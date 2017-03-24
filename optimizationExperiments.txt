@@ -1,0 +1,97 @@
+-O0
+Intpreter 1 results:
+empty loop: 593755 usecs 0.593754
+noop loop: 3083333 usecs 0.308333 (29.6 cycles)
+loopTest: 2500006 usecs 0.833334
+
+Intpreter 2 results:
+empty loop: 541672 usecs 0.541671
+noop loop: 2916665 usecs 0.291666 (28 cycles)
+loopTest: 2239589 usecs 0.746528
+
+Intpreter 3 results:
+empty loop: 447921 usecs 0.447920
+noop loop: 2458334 usecs 0.245833 (*23.6 cycles)
+loopTest: 1968755 usecs 0.656250
+
+-01
+Intpreter 1 results:
+empty loop: 260420 usecs 0.260419
+noop loop: 1770834 usecs 0.177083 (17 cycles)
+loopTest: 1031255 usecs 0.343751
+
+Intpreter 2 results:
+empty loop: 239588 usecs 0.239588
+noop loop: 1354166 usecs 0.135417 (*13 cycles)
+loopTest: 968755 usecs 0.322918
+
+Intpreter 3 results:
+empty loop: 250004 usecs 0.250003
+noop loop: 1593750 usecs 0.159375 (15.3 cycles)
+loopTest: 1104171 usecs 0.368056
+
+-02
+Intpreter 1 results:
+empty loop: 229171 usecs 0.229171
+noop loop: 1666667 usecs 0.166667 (16 cycles)
+loopTest: 1062505 usecs 0.354168
+
+Intpreter 2 results:
+empty loop: 354171 usecs 0.354170
+noop loop: 1833333 usecs 0.183333 (17.6 cycles)
+loopTest: 1197921 usecs 0.399306
+
+Intpreter 3 results:
+empty loop: 239587 usecs 0.239587
+noop loop: 1250000 usecs 0.125000 (*12 cycles)
+loopTest: 1072921 usecs 0.357640
+
+-O3
+Intpreter 1 results:
+empty loop: 229171 usecs 0.229171
+noop loop: 1666667 usecs 0.166667 (16 cycles)
+loopTest: 1062505 usecs 0.354168
+
+Intpreter 2 results:
+empty loop: 343754 usecs 0.343753
+noop loop: 1760417 usecs 0.176042 (16.9 cycles)
+loopTest: 1114587 usecs 0.371528
+
+Intpreter 3 results:
+empty loop: 239587 usecs 0.239587
+noop loop: 1250000 usecs 0.125000 (*12 cycles)
+loopTest: 1072921 usecs 0.357640
+
+-Ofast (same speeds at O3)
+Intpreter 1 results:
+empty loop: 229171 usecs 0.229171
+noop loop: 1666666 usecs 0.166667 (16 cycles)
+loopTest: 1062504 usecs 0.354167
+
+Intpreter 2 results:
+empty loop: 343754 usecs 0.343753
+noop loop: 1760417 usecs 0.176042 (16.9 cycles)
+loopTest: 1114587 usecs 0.371528
+
+Intpreter 3 results:
+empty loop: 239587 usecs 0.239587
+noop loop: 1250000 usecs 0.125000 (*12 cycles)
+loopTest: 1072921 usecs 0.357640
+
+-Os
+Intpreter 1 results:
+empty loop: 302088 usecs 0.302087
+noop loop: 1729166 usecs 0.172917 (16.9 cycles)
+loopTest: 1593755 usecs 0.531251
+
+Intpreter 2 results:
+empty loop: 281254 usecs 0.281253
+noop loop: 1666667 usecs 0.166667 (16 cycles)
+loopTest: 1510421 usecs 0.503473
+
+Intpreter 3 results:
+empty loop: 250005 usecs 0.250004
+noop loop: 1614582 usecs 0.161458 (*15.5 cycles)
+loopTest: 1562505 usecs 0.520834
+
+* lowest dispatch overhead for given optimization setting
