@@ -11,13 +11,23 @@ I have been developing on Mac OS using the GCC ARM compiler and an mbed LPC1768 
 
 I installed the ARM tools using:
 
+
+```
+#!shell script
+
 brew tap PX4/homebrew-px4
 brew update
 brew install gcc-arm-none-eabi
+```
 
 This might also work:
 
+
+```
+#!shell script
+
 brew cask install gcc-arm-embedded
+```
 
 It is also possible to develop using mbed's online compiler. In fact, this project started out
 that way and was exported to the GCC ARM toolchain.
