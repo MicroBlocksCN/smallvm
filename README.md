@@ -30,7 +30,7 @@ brew cask install gcc-arm-embedded
 ```
 
 It is also possible to develop using mbed's online compiler. In fact, this project started out
-that way and was exported to the GCC ARM toolchain.
+that way, then was exported to the GCC ARM toolchain. The mbed online compiler is very easy to use and probably sufficient for most people.
 
 It should be possible to develop for some ARM-based Arduinos using the Arduino library
 and toolchain, although that has not yet been explored.
