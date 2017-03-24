@@ -8,11 +8,16 @@ single-precision floating point numbers, booleans, and strings.
 ### How do I get set up? ###
 
 I have been developing on Mac OS using the GCC ARM compiler and an mbed LPC1768 board.
+
 I installed the ARM tools using:
 
-  brew tap PX4/homebrew-px4
-  brew update
-  brew install gcc-arm-none-eabi
+brew tap PX4/homebrew-px4
+brew update
+brew install gcc-arm-none-eabi
+
+This might also work:
+
+brew cask install gcc-arm-embedded
 
 It is also possible to develop using mbed's online compiler. In fact, this project started out
 that way and was exported to the GCC ARM toolchain.
