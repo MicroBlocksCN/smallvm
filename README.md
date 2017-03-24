@@ -7,7 +7,7 @@ single-precision floating point numbers, booleans, and strings.
 
 ### How do I get set up? ###
 
-I have been developing on Mac OS using the GCC ARM compiler and an mbed LPC1768 board.
+I have been developing on Mac OS X (10.11.8) using the GCC ARM compiler and an mbed LPC1768 board.
 
 I installed the ARM tools using:
 
