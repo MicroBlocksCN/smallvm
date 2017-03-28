@@ -7,18 +7,42 @@ single-precision floating point numbers, booleans, and strings.
 
 ### How do I get set up? ###
 
-I have been developing on Mac OS using the GCC ARM compiler and an mbed LPC1768 board.
+The quickest way to compile the VM is to use mbed's online compiler. You'll need to create an mbed account. It's free, but it may require some sort of registration key. I set up my mbed account years ago, so things may have changed.
+
+In any case, the mbed online compiler is super easy to use. Just create a new project, discard the main.cpp it gives you, and drag-drop all the .h and .c files onto it. Then hit the compile switch. This will download a .bin file to your computer. (It may also show some compiler warnings that you can ignore.) Plug in your mbed board and drag the .bin file onto the USB drive that appears. This will install the program. Press the reset button and the program will run. Easy!
+
+I wanted some additional options, such as the ability to output assembly code listings, so I have been developing on Mac OS X (10.11.8) using the GCC ARM compiler and an mbed LPC1768 board.
+
 I installed the ARM tools using:
 
-  brew tap PX4/homebrew-px4
-  brew update
-  brew install gcc-arm-none-eabi
 
-It is also possible to develop using mbed's online compiler. In fact, this project started out
-that way and was exported to the GCC ARM toolchain.
+```
+#!shell script
 
-It should be possible to develop for some ARM-based Arduinos using the Arduino library
-and toolchain, although that has not yet been explored.
+brew cask install gcc-arm-embedded
+```
+
+The build the VM with this tool, just type make in the smallvm directory.
+
+Finally, you can actually build and run the VM on a laptop. (Tested only on Mac OS, but should work on Linux.) The ARM hardware operations will be stubbed out, but the VM tests can be run. This path can be used for rapidly debugging of the VM and object memory. Many bugs can be found and fixed before testing on actual hardware.
+
+The Makefile is for the ARM toolchain. To compile the VM for your local computer just invoke the compiler like this:
+
+```
+#!shell script
+
+gcc -m32 *.c -o vm
+```
+
+If it succeeds, you can run the VM like this:
+
+
+```
+#!shell script
+
+./vm
+```
+
 
 ### Who do I talk to? ###
 
