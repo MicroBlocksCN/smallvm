@@ -7,20 +7,11 @@ single-precision floating point numbers, booleans, and strings.
 
 ### How do I get set up? ###
 
-I have been developing on Mac OS X (10.11.8) using the GCC ARM compiler and an mbed LPC1768 board.
+The quickest way to compile the VM is to use mbed's online compiler. You'll need to create an mbed account. It's free, but it may require some sort of registration key. I set up my mbed account years ago, so things may have changed. In any case, the mbed online compiler is super easy to use. Just create a new project, discard the main.cpp it gives you, and drag-drop all the .h and .c files onto it. Then hit the compile switch. This will download a .bin file to your computer. (It may also show some compiler warnings that you can ignore.) Plug in your mbed board and drag the .bin file onto the USB drive that appears. This will install the program. Press the reset button and the program will run. Easy!
+
+I wanted some additional options, such as the ability to output assembly code listings, so I have been developing on Mac OS X (10.11.8) using the GCC ARM compiler and an mbed LPC1768 board.
 
 I installed the ARM tools using:
-
-
-```
-#!shell script
-
-brew tap PX4/homebrew-px4
-brew update
-brew install gcc-arm-none-eabi
-```
-
-This might also work:
 
 
 ```
@@ -29,11 +20,7 @@ This might also work:
 brew cask install gcc-arm-embedded
 ```
 
-It is also possible to develop using mbed's online compiler. In fact, this project started out
-that way, then was exported to the GCC ARM toolchain. The mbed online compiler is very easy to use and probably sufficient for most people.
-
-It should be possible to develop for some ARM-based Arduinos using the Arduino library
-and toolchain, although that has not yet been explored.
+The build the VM with this tool, just type make in the smallvm directory.
 
 ### Who do I talk to? ###
 
