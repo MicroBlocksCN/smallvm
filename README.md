@@ -56,12 +56,13 @@ If it succeeds, you can run the VM like this:
 
 #### Blocks ####
 
-  * agree on run-time model (Scratch-like + Snap-style "when" hats)
+  * agree on run-time model (Scratch-like + Snap-style "when" hats?)
   * types of variables
   * control and hat blocks
   * math blocks
   * variable blocks
   * function blocks
+  * Arduinio I/O blocks
 
 #### Host-VM Communication Design ####
 
