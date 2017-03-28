@@ -79,7 +79,7 @@ char* obj2str(OBJ obj);
 // Other Operations
 
 void memInit(int wordCount);
-void memClear();
-void memPrintStatus();
-void memDump();
+void memClear(void);
+void memPrintStatus(void);
+void memDump(void);
 void dumpObj(OBJ obj);

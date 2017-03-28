@@ -8,8 +8,6 @@
 #include <stdlib.h>
 
 #ifdef __arm__
-	#include <objects.h>
-	#include <analogout_api.h>
 	#include <us_ticker_api.h>
 #else
 	#include <sys/time.h>
@@ -471,11 +469,6 @@ int primes1000_3[] = {
 #define START_TICKS() { /* noop */ }
 #define TICKS() (us_ticker_read())
 
-dac_t dacRecord;
-
-static void initDAC() { analogout_init(&dacRecord, p18); }
-static void writeDAC(float aFloat) { analogout_write(&dacRecord, aFloat); }
-
 #else
 
 #include <sys/time.h>
@@ -491,9 +484,6 @@ static inline unsigned TICKS() {
 	unsigned long long usecs = now.tv_usec - ticksStart.tv_usec;
 	return ((1000000 * secs) + usecs) & 0xFFFFFFFF;
 }
-
-static void initDAC() { /* noop */ }
-static void writeDAC(aFloat) { /* noop */ }
 
 #endif
 
