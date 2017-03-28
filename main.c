@@ -504,70 +504,12 @@ unsigned timerStart;
 #define START_TIMER() { timerStart = TICKS(); }
 #define TIMER_US() (TICKS() - timerStart)
 
-// DAC Test
-
-void sawtooth2(int freq, float secs) {
-	float delay = (1000000.0 / (freq * 100));
-	printf("freq %d delay %f\r\n", freq, delay);
-
-	unsigned long now = TICKS();
-	unsigned long end = (now + (int) (secs * 1000000));
-	float nextT = now;
-
-	int sample = 0;
-	while (now < end) {
-		if (now >= nextT) {
-			sample += 1;
-		if (sample >= 100) sample = 0;
-			writeDAC(sample / 2000.0);
-			nextT += delay;
-		}
-		now = TICKS();
-	}
-}
-
-void sawtooth3(int delay, float secs) {
-	printf("delay %d usecs\r\n", delay);
-
-	int *dac = (void *) 0x4008C000;
-
-	unsigned long now = TICKS();
-	unsigned long end = (now + (int) (secs * 1000000));
-	unsigned long nextT = now;
-
-	int sample = 0;
-	while (now < end) {
-		if (now >= nextT) {
-			sample += 1;
-			if (sample >= 100) sample = 0;
-			unsigned long before = TICKS() - now;
-//			writeDAC(sample / 2000.0);
-			*dac = (sample << 7) & 0x3FFF;
-			unsigned long after = TICKS() - now;
-			if ((before > (now + 1)) || (after > (now + 2))) {
-			   printf("before %d after %d \r\n", before, after);
-			}
-			nextT += delay;
-		}
-		now = TICKS();
-	}
-}
 
 int main(int argc, char *argv[]) {
 	int n, usecs, emptyLoopTime;
 
 	memInit(5000);
 	initLiterals();
-	initDAC();
-
-// 	for (int freq = 220; freq < 880; freq += 10) {
-// 		printf("freq %d\r\n", freq);
-// 		sawtooth2(freq, 0.2);
-// 	}
-	for (int delay = 15; delay >= 0; delay += -1) {
-		sawtooth3(delay, 0.3);
-	}
-	return 0;
 
 	for (int v = 1; v < 4; v++) {
 		printf("\r\nIntpreter %d results:\r\n", v);
@@ -590,8 +532,6 @@ int main(int argc, char *argv[]) {
 		usecs = TIMER_US();
 		n = 3000006;
 		printf("loopTest: %d usecs %f\r\n", usecs, ((double) usecs) / n);
-
-continue;
 
 		START_TIMER();
 		runProg(v, sumTest);
@@ -630,9 +570,11 @@ continue;
 		n = 2554645;
 		printf("primes1000_2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
+continue;
+
 		memClear();
 		START_TIMER();
-		runProg(v, primes1000_3);
+		runProg(v, primes1000_3); // this test still has a bug
 		usecs = TIMER_US();
 		printf("primes1000_3: %d usecs\r\n", usecs);
 	}
