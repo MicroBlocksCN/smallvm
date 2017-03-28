@@ -1,5 +1,12 @@
 // mem.h - Object memory definitions
 
+// Define C true/false constants for readability
+
+#define true 1
+#define false 0
+
+// Object pointer type (32-bits)
+
 typedef int * OBJ;
 
 // OBJ constants for nil, true, and false
@@ -8,23 +15,25 @@ typedef int * OBJ;
 #define nilObj ((OBJ) 0)
 #define trueObj ((OBJ) 2)
 #define falseObj ((OBJ) 4)
+#define isNilTrueFalse(obj) (((OBJ) obj) <= falseObj)
 
 // 31-bit signed integers have a 1 in their lowest bit and a value in their top 31 bits.
 // Note: The value of an integer is encoded in the object pointer; there is no memory object.
 
 #define isInt(obj) (((int) (obj)) & 1)
-#define isNilTrueFalse(obj) (((OBJ) obj) <= falseObj)
 #define int2obj(n) ((OBJ) (((n) << 1) | 1))
 #define obj2int(obj) ((int)(obj) >> 1)
 
+
 // Class ID Constants
 
-#define ObjectClass 1
-#define NilClass 2
-#define BooleanClass 3
-#define IntClass 4
+#define NilClass 1
+#define BooleanClass 2
+#define IntegerClass 3
+#define FloatClass 4
 #define StringClass 5
-#define ArrayClass 6
+#define ByteArrayClass 6
+#define ArrayClass 7
 
 // Objects
 //
@@ -33,7 +42,7 @@ typedef int * OBJ;
 // Note: All objects have at least these fields.
 
 typedef struct {
-	int gpClass;
+	int classID;
 	int wordCount;
 	int cache; // used by the garbage collector
 } objHeaderPtr;
@@ -42,21 +51,19 @@ typedef struct {
 #define CLASS(obj) ((obj)[0])
 #define WORDS(obj) ((int) (obj)[1])
 
-inline int objWords(OBJ obj) {
+static inline int objWords(OBJ obj) {
 	if (isInt(obj) || (obj <= falseObj)) return 0;
 	return ((int *) obj)[1];
 }
 
-inline int objClass(OBJ obj) {
-	if (isInt(obj)) return IntClass;
+static inline int objClass(OBJ obj) {
+	if (isInt(obj)) return IntegerClass;
 	if (obj <= falseObj) return (obj == nilObj) ? NilClass : BooleanClass;
 	return ((int *) obj)[0];
 }
 
-// Low level functions to get/set object fields. Zero-based indexing. NOT RANGE CHECKED!
-
-inline OBJ getField(OBJ obj, int i) { return ((OBJ *) obj)[HEADER_WORDS + i]; }
-inline void setField(OBJ obj, int i, OBJ newValue) { ((OBJ *) obj)[HEADER_WORDS + i] = newValue; }
+// FIELD() can be used either to get or set an object field
+#define FIELD(obj, i) ((OBJ *) obj)[HEADER_WORDS + (i)])
 
 // Class Check
 // Note: Only for classes with memory instances. There are faster ways to test for small integers, booleans, or nil.

@@ -49,5 +49,5 @@ extern int literals[];
 
 // Entry point
 
-int runProg(int which, int *prog);
+void runProg(int which, int *prog);
 
