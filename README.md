@@ -24,7 +24,25 @@ brew cask install gcc-arm-embedded
 
 The build the VM with this tool, just type make in the smallvm directory.
 
-Finally, you can actually build and run the VM on a laptop. The ARM hardware operations will be stubbed out, but the VM tests can be run. This path will be used for rapidly debugging of the VM and object memory. Many bugs can be found this way without testing on actual hardware.
+Finally, you can actually build and run the VM on a laptop. (Tested only on Mac OS, but should work on Linux.) The ARM hardware operations will be stubbed out, but the VM tests can be run. This path can be used for rapidly debugging of the VM and object memory. Many bugs can be found and fixed before testing on actual hardware.
+
+The Makefile is for the ARM toolchain, so to compile for the local machine just compile from the command line like this:
+
+```
+#!shell script
+
+gcc -m32 *.c -o vm
+```
+
+You can then run the VM like this:
+
+
+```
+#!shell script
+
+./vm
+```
+
 
 ### Who do I talk to? ###
 
