@@ -26,7 +26,7 @@ The build the VM with this tool, just type make in the smallvm directory.
 
 Finally, you can actually build and run the VM on a laptop. (Tested only on Mac OS, but should work on Linux.) The ARM hardware operations will be stubbed out, but the VM tests can be run. This path can be used for rapidly debugging of the VM and object memory. Many bugs can be found and fixed before testing on actual hardware.
 
-The Makefile is for the ARM toolchain, so to compile for the local machine just compile from the command line like this:
+The Makefile is for the ARM toolchain. To compile the VM for your local computer just invoke the compiler like this:
 
 ```
 #!shell script
@@ -34,7 +34,7 @@ The Makefile is for the ARM toolchain, so to compile for the local machine just 
 gcc -m32 *.c -o vm
 ```
 
-You can then run the VM like this:
+If it succeeds, you can run the VM like this:
 
 
 ```
