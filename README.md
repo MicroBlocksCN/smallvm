@@ -24,6 +24,8 @@ brew cask install gcc-arm-embedded
 
 The build the VM with this tool, just type make in the smallvm directory.
 
+Finally, you can actually build and run the VM on a laptop. The ARM hardware operations will be stubbed out, but the VM tests can be run. This path will be used for rapidly debugging of the VM and object memory. Many bugs can be found this way without testing on actual hardware.
+
 ### Who do I talk to? ###
 
 This project is a collaboration between Bernat Romagosa (Arduino), Jens Moenig (SAP), and John Maloney (YCR-HARC).
