@@ -45,7 +45,8 @@ If it succeeds, you can run the VM like this:
 
 ### To Do List
 
-Virtual Machine
+#### Virtual Machine ####
+
   * design object format
   * incorporate immediate floats
   * mixed-mode int/float arithmetic
@@ -53,7 +54,8 @@ Virtual Machine
   * lightweight task manager
   * Arduino I/O primitives (use Arduino library or roll our own?)
 
-Blocks
+#### Blocks ####
+
   * agree on run-time model (Scratch-like + Snap-style "when" hats)
   * types of variables
   * control and hat blocks
@@ -61,7 +63,8 @@ Blocks
   * variable blocks
   * function blocks
 
-#### Host-VM Communication Design
+#### Host-VM Communication Design ####
+
   * can we update Flash programatically?
   * understand SAM-BA protocol, if necessary
   * how to get blocks code onto Arduino
@@ -69,7 +72,8 @@ Blocks
   * monitoring Arduino state (e.g. pin values)
   * hooks for debugging code running on Arduino
   
-#### Blocks IDEs in Snap and GP
+#### Blocks IDEs in Snap and GP ####
+
   * top-level screen layout
   * design work flow
   * implement blocks
