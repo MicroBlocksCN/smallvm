@@ -45,7 +45,7 @@ If it succeeds, you can run the VM like this:
 
 ### To Do List
 
-#### VM
+Virtual Machine
   * design object format
   * incorporate immediate floats
   * mixed-mode int/float arithmetic
@@ -53,7 +53,7 @@ If it succeeds, you can run the VM like this:
   * lightweight task manager
   * Arduino I/O primitives (use Arduino library or roll our own?)
 
-#### Blocks
+Blocks
   * agree on run-time model (Scratch-like + Snap-style "when" hats)
   * types of variables
   * control and hat blocks
