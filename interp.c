@@ -10,7 +10,7 @@
 
 // Interpreter State
 
-int literals[5];
+OBJ literals[5];
 static int vars[5];
 static int stack[5];
 
@@ -69,7 +69,7 @@ OBJ arrayClassFailure() { primFailed("Must must be an Array"); return 0; }
 OBJ indexClassFailure() { primFailed("Index must be an integer"); return 0; }
 OBJ outOfRangeFailure() { primFailed("Index out of range"); return 0; }
 
-OBJ primnewArray(OBJ args[]) {
+OBJ primNewArray(OBJ args[]) {
     OBJ n = args[0];
     if (!isInt(n) || ((int) n < 0)) return sizeFailure();
     OBJ result = newObj(ArrayClass, (obj2int(n) + 3) / 4, nilObj); // bytes
@@ -103,7 +103,7 @@ OBJ primArrayAtPut(OBJ args[]) {
     return nilObj;
 }
 
-OBJ primArrayAtAllPut(OBJ args[]) {
+OBJ primArrayFill(OBJ args[]) {
     OBJ array = args[0];
     if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
     OBJ value = args[1];
@@ -134,8 +134,8 @@ int runProg1(int *prog) {
             case pushImmediate:
                 *sp++ = arg;
                 break;
-            case pushConstant:
-                *sp++ = literals[arg];
+            case pushLiteral:
+                *sp++ = (int) literals[arg];
                 break;
             case pushVar:
                 *sp++ = vars[arg];
@@ -143,7 +143,7 @@ int runProg1(int *prog) {
             case popVar:
                 vars[arg] = *--sp;
                 break;
-            case changeVarBy:
+            case incrementVar:
                 vars[arg] = (int) int2obj(evalInt((OBJ) vars[arg]) + evalInt((OBJ) (*--sp)));
                 break;
             case jmp:
@@ -222,18 +222,21 @@ int runProg2(int *prog) {
     OBJ array;
 
     // initialize jump table
-    static void *jumpTable[] = {
+     static void *jumpTable[] = {
 		&&halt_op,
 		&&noop_op,
 		&&pushImmediate_op,
-		&&pushConstant_op,
+		&&pushLiteral_op,
 		&&pushVar_op,
 		&&popVar_op,
-		&&changeVarBy_op,
+		&&incrementVar_op,
+		&&pop_op,
 		&&jmp_op,
 		&&jmpTrue_op,
 		&&jmpFalse_op,
 		&&decrementAndJmp_op,
+		&&callFunction_op,
+		&&returnResult_op,
 		&&primitive_op,
 		&&primitiveNoResult_op,
 		&&add_op,
@@ -257,8 +260,8 @@ int runProg2(int *prog) {
     pushImmediate_op:
         *sp++ = arg;
         goto dispatch;
-    pushConstant_op:
-        *sp++ = literals[arg];
+    pushLiteral_op:
+        *sp++ = (int) literals[arg];
         goto dispatch;
     pushVar_op:
         *sp++ = vars[arg];
@@ -266,8 +269,11 @@ int runProg2(int *prog) {
     popVar_op:
         vars[arg] = *--sp;
         goto dispatch;
-    changeVarBy_op:
+    incrementVar_op:
         vars[arg] = (int) int2obj(evalInt((OBJ) vars[arg]) + evalInt((OBJ) (*--sp)));
+        goto dispatch;
+    pop_op:
+        sp--;
         goto dispatch;
     jmp_op:
         ip += arg;
@@ -281,6 +287,10 @@ int runProg2(int *prog) {
     decrementAndJmp_op:
         if ((--*(sp - 1)) > 0) ip += arg; // loop counter > 0, so branch
         else sp--; // pop loop count
+        goto dispatch;
+    callFunction_op:
+        goto dispatch;
+    returnResult_op:
         goto dispatch;
     primitive_op:
         // arg = # of arguments
@@ -354,14 +364,17 @@ int runProg3(int *prog) {
 		&&halt_op,
 		&&noop_op,
 		&&pushImmediate_op,
-		&&pushConstant_op,
+		&&pushLiteral_op,
 		&&pushVar_op,
 		&&popVar_op,
-		&&changeVarBy_op,
+		&&incrementVar_op,
+		&&pop_op,
 		&&jmp_op,
 		&&jmpTrue_op,
 		&&jmpFalse_op,
 		&&decrementAndJmp_op,
+		&&callFunction_op,
+		&&returnResult_op,
 		&&primitive_op,
 		&&primitiveNoResult_op,
 		&&add_op,
@@ -381,8 +394,8 @@ int runProg3(int *prog) {
     pushImmediate_op:
         *sp++ = arg;
         DISPATCH();
-    pushConstant_op:
-        *sp++ = literals[arg];
+    pushLiteral_op:
+        *sp++ = (int) literals[arg];
         DISPATCH();
     pushVar_op:
         *sp++ = vars[arg];
@@ -390,8 +403,11 @@ int runProg3(int *prog) {
     popVar_op:
         vars[arg] = *--sp;
         DISPATCH();
-    changeVarBy_op:
+    incrementVar_op:
         vars[arg] = (int) int2obj(evalInt((OBJ) vars[arg]) + evalInt((OBJ) (*--sp)));
+        DISPATCH();
+    pop_op:
+        sp--;
         DISPATCH();
     jmp_op:
         ip += arg;
@@ -405,6 +421,10 @@ int runProg3(int *prog) {
     decrementAndJmp_op:
         if ((--*(sp - 1)) > 0) ip += arg; // loop counter > 0, so branch
         else sp--; // pop loop count
+        DISPATCH();
+    callFunction_op:
+        DISPATCH();
+    returnResult_op:
         DISPATCH();
     primitive_op:
         // arg = # of arguments

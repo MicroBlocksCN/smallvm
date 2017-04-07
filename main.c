@@ -1,5 +1,5 @@
-// wordCodeTest.c - Simple interpreter based on 16-bit opcodes.
-// John Maloney, October, 2013
+// main.c - Test interpreter.
+// John Maloney, October, 2017
 
 #include "mem.h"
 #include "interp.h"
@@ -22,22 +22,12 @@ void primHello(OBJ args[]) {
 		(isInt(args[1]) ? obj2int(args[1]) : (int) args[1]));
 }
 
-// vars and literal indices for findPrimes
+// var index names for findPrimes
 
-#define primeCount 0
-#define flags 1
-#define i 2
-#define j 3
-#define literal8190 2
-#define literal8188 3
-
-void initLiterals() {
-	literals[0] = 10000000; // loop counter, not int obj
-	literals[1] = (int) int2obj(1000000);
-	literals[2] = (int) int2obj(8190);
-	literals[3] = 8188; // loop counter, not int obj
-	literals[4] = 1000000; // loop counter, not int obj
-}
+#define var_primeCount 0
+#define var_flags 1
+#define var_i 2
+#define var_j 3
 
 // test programs
 
@@ -61,7 +51,7 @@ int prog3[] = {
 	OP(pushImmediate, 10), // loop counter
 
 	OP(pushImmediate, (int) int2obj(1)), // loop body start
-	OP(changeVarBy, 0), // n++
+	OP(incrementVar, 0), // n++
 	OP(pushVar, 0), // push n
 	OP(primitiveNoResult, 1),
 	(int) primHello,
@@ -99,7 +89,7 @@ int loopTest[] = {
 
 	OP(pushImmediate, 1000000), // push repeat count
 	OP(pushImmediate, (int) int2obj(1)),
-	OP(changeVarBy, 0),
+	OP(incrementVar, 0),
 	OP(decrementAndJmp, -3),
 
 	OP(halt, 0),
@@ -221,63 +211,63 @@ int sumTestWithRepeat2[] = {
 
 int findPrimes[] = {
 	OP(pushImmediate, (int) int2obj(0)),
-	OP(popVar, primeCount),
+	OP(popVar, var_primeCount),
 
-	OP(pushConstant, literal8190),
+	OP(pushImmediate, int2obj(8190)),
 	OP(primitive, 1),
-	(int) primnewArray,
-	OP(popVar, flags),
+	(int) primNewArray,
+	OP(popVar, var_flags),
 
-	OP(pushVar, flags),
+	OP(pushVar, var_flags),
 	OP(pushImmediate, (int) trueObj),
 	OP(primitive, 2),
-	(int) primArrayAtAllPut,
+	(int) primArrayFill,
 
 	OP(pushImmediate, (int) int2obj(2)),
-	OP(popVar, i),
+	OP(popVar, var_i),
 
-	OP(pushConstant, literal8188), // push repeat count
-	OP(pushVar, flags), // repeatLoopStart
-	OP(pushVar, i),
+	OP(pushImmediate, 8188), // push repeat count
+	OP(pushVar, var_flags), // repeatLoopStart
+	OP(pushVar, var_i),
 	OP(primitive, 2),
 	(int) primArrayAt,
 	OP(jmpFalse, 23), // jmpFalse ifEnd
 
-	OP(pushVar, i),
+	OP(pushVar, var_i),
 	OP(primitiveNoResult, 1),
 	(int) primPrint,
 
 	OP(pushImmediate, (int) int2obj(1)),
-	OP(changeVarBy, primeCount),
+	OP(incrementVar, var_primeCount),
 
 	OP(pushImmediate, (int) int2obj(2)),
-	OP(pushVar, i),
+	OP(pushVar, var_i),
 	OP(primitive, 2),
 	(int) primMul,
-	OP(popVar, j),
+	OP(popVar, var_j),
 
 	OP(jmp, 7), // jmp whileEndTest
-	OP(pushVar, flags), // whileLoopStart
-	OP(pushVar, j),
+	OP(pushVar, var_flags), // whileLoopStart
+	OP(pushVar, var_j),
 	OP(pushImmediate, (int) falseObj),
 	OP(primitiveNoResult, 3),
 	(int) primArrayAtPut,
 
-	OP(pushVar, i),
-	OP(changeVarBy, j),
+	OP(pushVar, var_i),
+	OP(incrementVar, var_j),
 
-	OP(pushVar, j), // whileEndTest
-	OP(pushConstant, literal8190),
+	OP(pushVar, var_j), // whileEndTest
+	OP(pushImmediate, int2obj(8190)),
 	OP(primitive, 2),
 	(int) primLess,
 	OP(jmpTrue, -12), // jmpTrue whileLoopStart
 
 	OP(pushImmediate, (int) int2obj(1)), // ifEnd
-	OP(changeVarBy, i),
+	OP(incrementVar, var_i),
 
 	OP(decrementAndJmp, -31), // decrementAndJmp, repeatLoopStart
 
-// 	OP(pushVar, primeCount),
+// 	OP(pushVar, var_primeCount),
 // 	OP(primitiveNoResult, 1),
 // 	(int) primPrint,
 
@@ -285,62 +275,62 @@ int findPrimes[] = {
 };
 
 int primes1000[] = {
-	OP(pushConstant, literal8190),
+	OP(pushImmediate, int2obj(8190)),
 	OP(primitive, 1),
-	(int) primnewArray,
-	OP(popVar, flags),
+	(int) primNewArray,
+	OP(popVar, var_flags),
 
 	OP(pushImmediate, 10), // outer loop counter
 
 	OP(pushImmediate, (int) int2obj(0)),
-	OP(popVar, primeCount),
+	OP(popVar, var_primeCount),
 
-	OP(pushVar, flags),
+	OP(pushVar, var_flags),
 	OP(pushImmediate, (int) trueObj),
 	OP(primitiveNoResult, 2),
-	(int) primArrayAtAllPut,
+	(int) primArrayFill,
 
 	OP(pushImmediate, (int) int2obj(2)),
-	OP(popVar, i),
+	OP(popVar, var_i),
 
-	OP(pushConstant, literal8188), // push repeat count
-	OP(pushVar, flags), // repeatLoopStart
-	OP(pushVar, i),
+	OP(pushImmediate, 8188), // push repeat count
+	OP(pushVar, var_flags), // repeatLoopStart
+	OP(pushVar, var_i),
 	OP(primitive, 2),
 	(int) primArrayAt,
 	OP(jmpFalse, 20), // jmpFalse ifEnd
 
 	OP(pushImmediate, (int) int2obj(1)),
-	OP(changeVarBy, primeCount),
+	OP(incrementVar, var_primeCount),
 
 	OP(pushImmediate, (int) int2obj(2)),
-	OP(pushVar, i),
+	OP(pushVar, var_i),
 	OP(primitive, 2),
 	(int) primMul,
-	OP(popVar, j),
+	OP(popVar, var_j),
 
 	OP(jmp, 7), // jmp whileEndTest
-	OP(pushVar, flags), // whileLoopStart
-	OP(pushVar, j),
+	OP(pushVar, var_flags), // whileLoopStart
+	OP(pushVar, var_j),
 	OP(pushImmediate, (int) falseObj),
 	OP(primitiveNoResult, 3),
 	(int) primArrayAtPut,
 
-	OP(pushVar, i),
-	OP(changeVarBy, j),
+	OP(pushVar, var_i),
+	OP(incrementVar, var_j),
 
-	OP(pushVar, j), // whileEndTest
-	OP(pushConstant, literal8190),
+	OP(pushVar, var_j), // whileEndTest
+	OP(pushImmediate, int2obj(8190)),
 	OP(primitive, 2),
 	(int) primLess,
 	OP(jmpTrue, -12), // jmpTrue whileLoopStart
 
 	OP(pushImmediate, (int) int2obj(1)), // ifEnd
-	OP(changeVarBy, i),
+	OP(incrementVar, var_i),
 
 	OP(decrementAndJmp, -28), // decrementAndJmp, repeatLoopStart
 
-	OP(pushVar, primeCount),
+	OP(pushVar, var_primeCount),
 	OP(primitiveNoResult, 1),
 	(int) primPrint,
 
@@ -351,56 +341,56 @@ int primes1000[] = {
 };
 
 int primes1000_2[] = {
-	OP(pushConstant, literal8190),
+	OP(pushImmediate, int2obj(8190)),
 	OP(primitive, 1),
-	(int) primnewArray,
-	OP(popVar, flags),
+	(int) primNewArray,
+	OP(popVar, var_flags),
 
 	OP(pushImmediate, 10), // outer loop counter
 
 	OP(pushImmediate, (int) int2obj(0)),
-	OP(popVar, primeCount),
+	OP(popVar, var_primeCount),
 
-	OP(pushVar, flags),
+	OP(pushVar, var_flags),
 	OP(pushImmediate, (int) trueObj),
 	OP(primitiveNoResult, 2),
-	(int) primArrayAtAllPut,
+	(int) primArrayFill,
 
 	OP(pushImmediate, (int) int2obj(2)),
-	OP(popVar, i),
+	OP(popVar, var_i),
 
-	OP(pushConstant, literal8188), // push repeat count
-	OP(pushVar, flags), // repeatLoopStart
-	OP(pushVar, i),
+	OP(pushImmediate, 8188), // push repeat count
+	OP(pushVar, var_flags), // repeatLoopStart
+	OP(pushVar, var_i),
 	OP(primitive, 2),
 	(int) primArrayAt,
 	OP(jmpFalse, 18), // jmpFalse ifEnd
 
 	OP(pushImmediate, (int) int2obj(1)),
-	OP(changeVarBy, primeCount),
+	OP(incrementVar, var_primeCount),
 
 	OP(pushImmediate, (int) int2obj(2)),
-	OP(pushVar, i),
+	OP(pushVar, var_i),
 	OP(multiply, 0),
-	OP(popVar, j),
+	OP(popVar, var_j),
 
 	OP(jmp, 7), // jmp whileEndTest
-	OP(pushVar, flags), // whileLoopStart
-	OP(pushVar, j),
+	OP(pushVar, var_flags), // whileLoopStart
+	OP(pushVar, var_j),
 	OP(pushImmediate, (int) falseObj),
 	OP(primitiveNoResult, 3),
 	(int) primArrayAtPut,
 
-	OP(pushVar, i),
-	OP(changeVarBy, j),
+	OP(pushVar, var_i),
+	OP(incrementVar, var_j),
 
-	OP(pushVar, j), // whileEndTest
-	OP(pushConstant, literal8190),
+	OP(pushVar, var_j), // whileEndTest
+	OP(pushImmediate, int2obj(8190)),
 	OP(lessThan, 0),
 	OP(jmpTrue, -11), // jmpTrue whileLoopStart
 
 	OP(pushImmediate, (int) int2obj(1)), // ifEnd
-	OP(changeVarBy, i),
+	OP(incrementVar, var_i),
 
 	OP(decrementAndJmp, -26), // decrementAndJmp, repeatLoopStart
 	OP(decrementAndJmp, -36), // decrementAndJmp, outerRepeatLoopStart
@@ -409,54 +399,54 @@ int primes1000_2[] = {
 };
 
 int primes1000_3[] = {
-	OP(pushConstant, literal8190),
+	OP(pushImmediate, int2obj(8190)),
 	OP(primitive, 1),
-	(int) primnewArray,
-	OP(popVar, flags),
+	(int) primNewArray,
+	OP(popVar, var_flags),
 
 	OP(pushImmediate, 10), // outer loop counter
 
 	OP(pushImmediate, (int) int2obj(0)),
-	OP(popVar, primeCount),
+	OP(popVar, var_primeCount),
 
-	OP(pushVar, flags),
+	OP(pushVar, var_flags),
 	OP(pushImmediate, (int) trueObj),
 	OP(primitiveNoResult, 2),
-	(int) primArrayAtAllPut,
+	(int) primArrayFill,
 
 	OP(pushImmediate, (int) int2obj(2)),
-	OP(popVar, i),
+	OP(popVar, var_i),
 
-	OP(pushConstant, literal8188), // push repeat count
-	OP(pushVar, flags), // repeatLoopStart
-	OP(pushVar, i),
+	OP(pushImmediate, 8188), // push repeat count
+	OP(pushVar, var_flags), // repeatLoopStart
+	OP(pushVar, var_i),
 	OP(at, 0),
 	OP(jmpFalse, 17), // jmpFalse ifEnd
 
 	OP(pushImmediate, (int) int2obj(1)),
-	OP(changeVarBy, primeCount),
+	OP(incrementVar, var_primeCount),
 
 	OP(pushImmediate, (int) int2obj(2)),
-	OP(pushVar, i),
+	OP(pushVar, var_i),
 	OP(multiply, 0),
-	OP(popVar, j),
+	OP(popVar, var_j),
 
 	OP(jmp, 6), // jmp whileEndTest
-	OP(pushVar, flags), // whileLoopStart
-	OP(pushVar, j),
+	OP(pushVar, var_flags), // whileLoopStart
+	OP(pushVar, var_j),
 	OP(pushImmediate, (int) falseObj),
 	OP(atPut, 0),
 
-	OP(pushVar, i),
-	OP(changeVarBy, j),
+	OP(pushVar, var_i),
+	OP(incrementVar, var_j),
 
-	OP(pushVar, j), // whileEndTest
-	OP(pushConstant, literal8188),
+	OP(pushVar, var_j), // whileEndTest
+	OP(pushImmediate, 8188),
 	OP(lessThan, 0),
 	OP(jmpTrue, -10), // jmpTrue whileLoopStart
 
 	OP(pushImmediate, (int) int2obj(1)), // ifEnd
-	OP(changeVarBy, i),
+	OP(incrementVar, var_i),
 
 	OP(decrementAndJmp, -24), // decrementAndJmp, repeatLoopStart
 	OP(decrementAndJmp, -34), // decrementAndJmp, outerRepeatLoopStart
@@ -494,15 +484,14 @@ unsigned timerStart;
 #define START_TIMER() { timerStart = TICKS(); }
 #define TIMER_US() (TICKS() - timerStart)
 
-
 int main(int argc, char *argv[]) {
 	int n, usecs, emptyLoopTime;
 
 	memInit(5000);
-	initLiterals();
+
 
 	for (int v = 1; v < 4; v++) {
-		printf("\r\nIntpreter %d results:\r\n", v);
+		printf("\r\nInterpreter %d results:\r\n", v);
 
 		START_TIMER();
 		runProg(v, emptyLoop);
@@ -522,6 +511,8 @@ int main(int argc, char *argv[]) {
 		usecs = TIMER_US();
 		n = 3000006;
 		printf("loopTest: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+
+continue;
 
 		START_TIMER();
 		runProg(v, sumTest);
@@ -559,8 +550,6 @@ int main(int argc, char *argv[]) {
 		usecs = TIMER_US();
 		n = 2554645;
 		printf("primes1000_2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
-
-continue;
 
 		memClear();
 		START_TIMER();
