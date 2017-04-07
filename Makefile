@@ -49,6 +49,7 @@ PROJECT := wordcode1
 OBJECTS += main.o
 OBJECTS += mem.o
 OBJECTS += interp.o
+OBJECTS += interpTests1.o
 
  SYS_OBJECTS += mbed/TARGET_LPC1768/TOOLCHAIN_GCC_ARM/analogin_api.o
  SYS_OBJECTS += mbed/TARGET_LPC1768/TOOLCHAIN_GCC_ARM/analogout_api.o

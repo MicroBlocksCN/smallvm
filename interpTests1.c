@@ -5,21 +5,42 @@
 #include "interp.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 
 #ifdef __arm__
-	#include <us_ticker_api.h>
+	#ifdef ARDUINO
+		#include "Arduino.h"
+		#define TICKS() (micros())
+	#else
+		#include <us_ticker_api.h>
+		#define TICKS() (us_ticker_read())
+	#endif
 #else
 	#include <sys/time.h>
 	#include <time.h>
+
+	struct timeval ticksStart;
+
+	static inline unsigned TICKS() {
+		struct timeval now;
+		gettimeofday(&now, NULL);
+		unsigned long long secs = now.tv_sec - ticksStart.tv_sec;
+		unsigned long long usecs = now.tv_usec - ticksStart.tv_usec;
+		return ((1000000 * secs) + usecs) & 0xFFFFFFFF;
+	}
 #endif
 
 // additional primitives
 
 void primHello(OBJ args[]) {
-	printf("hello(%d, %d)\r\n",
+#ifdef ARDUINO
+	Serial.print("hello");
+	Serial.print((isInt(args[0]) ? obj2int(args[0]) : (int) args[0]));
+	Serial.print((isInt(args[1]) ? obj2int(args[1]) : (int) args[1]));
+#else
+	printf("hello %d %d\n",
 		(isInt(args[0]) ? obj2int(args[0]) : (int) args[0]),
 		(isInt(args[1]) ? obj2int(args[1]) : (int) args[1]));
+#endif
 }
 
 // var index names for findPrimes
@@ -459,29 +480,6 @@ int primes1000_3[] = {
 	OP(halt, 0),
 };
 
-#ifdef __arm__
-
-#define START_TICKS() { /* noop */ }
-#define TICKS() (us_ticker_read())
-
-#else
-
-#include <sys/time.h>
-#include <time.h>
-
-struct timeval ticksStart;
-#define START_TICKS() { gettimeofday(&ticksStart, NULL); }
-
-static inline unsigned TICKS() {
-	struct timeval now;
-	gettimeofday(&now, NULL);
-	unsigned long long secs = now.tv_sec - ticksStart.tv_sec;
-	unsigned long long usecs = now.tv_usec - ticksStart.tv_usec;
-	return ((1000000 * secs) + usecs) & 0xFFFFFFFF;
-}
-
-#endif
-
 // Timer
 
 unsigned timerStart;
@@ -489,8 +487,21 @@ unsigned timerStart;
 #define START_TIMER() { timerStart = TICKS(); }
 #define TIMER_US() (TICKS() - timerStart)
 
-int interpTests1(int argc, char *argv[]) {
-	int n, usecs, emptyLoopTime;
+void printResult(char *testName, int usecs, int nanoSecsPerInstruction) {
+#ifdef ARDUINO
+	Serial.print(testName);
+	Serial.print(": ");
+	Serial.print(usecs);
+	Serial.print(" usecs, ");
+	Serial.print(nanoSecsPerInstruction);
+	Serial.println(" nanosecs per instruction");
+#else
+	printf("%s: %d usecs, %d nanosecs per instruction\n", testName, usecs, nanoSecsPerInstruction);
+#endif
+}
+
+void interpTests1() {
+	unsigned long n, usecs, emptyLoopTime;
 
 	memInit(5000);
 
@@ -499,63 +510,61 @@ int interpTests1(int argc, char *argv[]) {
 	usecs = TIMER_US();
 	emptyLoopTime = usecs;
 	n = 1000002;
-	printf("empty loop: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	printResult("empty loop", usecs, (1000 * usecs) / n);
 
 	START_TIMER();
 	runProg(loopWithNoops);
 	usecs = TIMER_US() - emptyLoopTime;
 	n = 10000000; // number of noops executed
-	printf("noop loop: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	printResult("noop loop", usecs, (1000 * usecs) / n);
 
 	START_TIMER();
 	runProg(loopTest);
 	usecs = TIMER_US();
 	n = 3000006;
-	printf("loopTest: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	printResult("loopTest", usecs, (1000 * usecs) / n);
 
 	START_TIMER();
 	runProg(sumTest);
 	usecs = TIMER_US();
 	n = 10000002;
-	printf("sumTest: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	printResult("sumTest", usecs, (1000 * usecs) / n);
 
 	START_TIMER();
 	runProg(sumTest2);
 	usecs = TIMER_US();
 	n = 12000012;
-	printf("sumTest2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	printResult("sumTest2", usecs, (1000 * usecs) / n);
 
 	START_TIMER();
 	runProg(sumTestWithRepeat);
 	usecs = TIMER_US();
 	n = 5000006;
-	printf("sumTestWithRepeat: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	printResult("sumTestWithRepeat", usecs, (1000 * usecs) / n);
 
 	START_TIMER();
 	runProg(sumTestWithRepeat2);
 	usecs = TIMER_US();
 	n = 5000006;
-	printf("sumTestWithRepeat2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	printResult("sumTestWithRepeat2", usecs, (1000 * usecs) / n);
 
 	START_TIMER();
 	runProg(primes1000);
 	usecs = TIMER_US();
 	n = 2554645;
-	printf("primes1000: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	printResult("primes1000", usecs, (1000 * usecs) / n);
 
 	memClear();
 	START_TIMER();
 	runProg(primes1000_2);
 	usecs = TIMER_US();
 	n = 2554645;
-	printf("primes1000_2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	printResult("primes1000_2", usecs, (1000 * usecs) / n);
 
 	memClear();
 	START_TIMER();
 	runProg(primes1000_3); // this test still has a bug
 	usecs = TIMER_US();
 	n = 2554345;
-	printf("primes1000_3: %d usecs %f\r\n", usecs, ((double) usecs) / n);
-
-	return 0;
+	printResult("primes1000_3", usecs, (1000 * usecs) / n);
 }
