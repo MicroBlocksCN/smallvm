@@ -344,9 +344,11 @@ int runProg2(int *prog) {
   return 0;
 }
 
+// Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
 #define DISPATCH() { \
 	op = *ip++; \
 	arg = ARG(op); \
+/*	printf("ip: %d cmd: %d arg: %d sp: %d\r\n", (ip - prog), CMD(op), arg, (sp - stack)); */ \
 	goto *jumpTable[CMD(op)]; \
 }
 
