@@ -1,6 +1,10 @@
 // mem.h - Object memory definitions
 
-// Define C true/false constants for readability
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Define true/false constants for readability
 
 #define true 1
 #define false 0
@@ -83,3 +87,7 @@ void memClear(void);
 void memPrintStatus(void);
 void memDump(void);
 void dumpObj(OBJ obj);
+
+#ifdef __cplusplus
+}
+#endif

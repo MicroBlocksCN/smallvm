@@ -1,5 +1,5 @@
 // main.c - Test interpreter.
-// John Maloney, October, 2017
+// John Maloney, April 2017
 
 #include "mem.h"
 #include "interp.h"
@@ -46,11 +46,11 @@ int prog2[] = {
 };
 
 int prog3[] = {
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // n = 0
 	OP(pushImmediate, 10), // loop counter
 
-	OP(pushImmediate, (int) int2obj(1)), // loop body start
+	OP(pushImmediate, int2obj(1)), // loop body start
 	OP(incrementVar, 0), // n++
 	OP(pushVar, 0), // push n
 	OP(primitiveNoResult, 1),
@@ -84,11 +84,11 @@ int loopWithNoops[] = {
 };
 
 int loopTest[] = {
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0),
 
 	OP(pushImmediate, 1000000), // push repeat count
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(incrementVar, 0),
 	OP(decrementAndJmp, -3),
 
@@ -98,29 +98,29 @@ int loopTest[] = {
 int sumTest[] = {
 	// This version calls primAdd and primLess primitives.
 
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // sum
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 1), // i
 
 	OP(jmp, 10), // jump to loop test
 
 	// loop body:
 	OP(pushVar, 0),
-	OP(pushImmediate, (int) int2obj(1)), // OP(pushVar, 1),
+	OP(pushImmediate, int2obj(1)), // OP(pushVar, 1),
 	OP(primitive, 2),
 	(int) primAdd,
 	OP(popVar, 0),
 
 	OP(pushVar, 1),
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(primitive, 2),
 	(int) primAdd,
 	OP(popVar, 1),
 
 	// loop test:
 	OP(pushVar, 1),
-	OP(pushImmediate, (int) int2obj(1000000)),
+	OP(pushImmediate, int2obj(1000000)),
 	OP(primitive, 2),
 	(int) primLess,
 	OP(jmpTrue, -15),
@@ -135,27 +135,27 @@ int sumTest[] = {
 int sumTest2[] = {
 	// This version uses internal add and less opcodes rather than primitives.
 
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // sum
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 1), // i
 
 	OP(jmp, 8), // jump to loop test
 
 	// loop body:
 	OP(pushVar, 0),
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(add, 0),
 	OP(popVar, 0),
 
 	OP(pushVar, 1),
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(add, 0),
 	OP(popVar, 1),
 
 	// loop test:
 	OP(pushVar, 1),
-	OP(pushImmediate, (int) int2obj(1000000)),
+	OP(pushImmediate, int2obj(1000000)),
 	OP(lessThan, 0),
 	OP(jmpTrue, -12),
 
@@ -168,14 +168,14 @@ int sumTest2[] = {
 
 int sumTestWithRepeat[] = {
 	// Calls primAdd
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // total = 0
 
 	OP(pushImmediate, 1000000), // push repeat count
 
 	// loop body:
 	OP(pushVar, 0),
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(primitive, 2),
 	(int) primAdd,
 	OP(popVar, 0),
@@ -190,14 +190,14 @@ int sumTestWithRepeat[] = {
 
 int sumTestWithRepeat2[] = {
 	// Uses the internal add opcode
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // total = 0
 
 	OP(pushImmediate, 1000000), // push repeat count
 
 	// loop body:
 	OP(pushVar, 0),
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(add, 0),
 	OP(popVar, 0),
 	OP(decrementAndJmp, -5),
@@ -210,7 +210,7 @@ int sumTestWithRepeat2[] = {
 };
 
 int findPrimes[] = {
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, var_primeCount),
 
 	OP(pushImmediate, int2obj(8190)),
@@ -223,7 +223,7 @@ int findPrimes[] = {
 	OP(primitive, 2),
 	(int) primArrayFill,
 
-	OP(pushImmediate, (int) int2obj(2)),
+	OP(pushImmediate, int2obj(2)),
 	OP(popVar, var_i),
 
 	OP(pushImmediate, 8188), // push repeat count
@@ -237,10 +237,10 @@ int findPrimes[] = {
 	OP(primitiveNoResult, 1),
 	(int) primPrint,
 
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(incrementVar, var_primeCount),
 
-	OP(pushImmediate, (int) int2obj(2)),
+	OP(pushImmediate, int2obj(2)),
 	OP(pushVar, var_i),
 	OP(primitive, 2),
 	(int) primMul,
@@ -262,7 +262,7 @@ int findPrimes[] = {
 	(int) primLess,
 	OP(jmpTrue, -12), // jmpTrue whileLoopStart
 
-	OP(pushImmediate, (int) int2obj(1)), // ifEnd
+	OP(pushImmediate, int2obj(1)), // ifEnd
 	OP(incrementVar, var_i),
 
 	OP(decrementAndJmp, -31), // decrementAndJmp, repeatLoopStart
@@ -275,6 +275,8 @@ int findPrimes[] = {
 };
 
 int primes1000[] = {
+	// Uses primitives for at, atPut, lessThan, multiply
+
 	OP(pushImmediate, int2obj(8190)),
 	OP(primitive, 1),
 	(int) primNewArray,
@@ -282,7 +284,7 @@ int primes1000[] = {
 
 	OP(pushImmediate, 10), // outer loop counter
 
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, var_primeCount),
 
 	OP(pushVar, var_flags),
@@ -290,7 +292,7 @@ int primes1000[] = {
 	OP(primitiveNoResult, 2),
 	(int) primArrayFill,
 
-	OP(pushImmediate, (int) int2obj(2)),
+	OP(pushImmediate, int2obj(2)),
 	OP(popVar, var_i),
 
 	OP(pushImmediate, 8188), // push repeat count
@@ -300,10 +302,10 @@ int primes1000[] = {
 	(int) primArrayAt,
 	OP(jmpFalse, 20), // jmpFalse ifEnd
 
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(incrementVar, var_primeCount),
 
-	OP(pushImmediate, (int) int2obj(2)),
+	OP(pushImmediate, int2obj(2)),
 	OP(pushVar, var_i),
 	OP(primitive, 2),
 	(int) primMul,
@@ -325,22 +327,18 @@ int primes1000[] = {
 	(int) primLess,
 	OP(jmpTrue, -12), // jmpTrue whileLoopStart
 
-	OP(pushImmediate, (int) int2obj(1)), // ifEnd
+	OP(pushImmediate, int2obj(1)), // ifEnd
 	OP(incrementVar, var_i),
 
 	OP(decrementAndJmp, -28), // decrementAndJmp, repeatLoopStart
-
-	OP(pushVar, var_primeCount),
-	OP(primitiveNoResult, 1),
-	(int) primPrint,
-
-	OP(decrementAndJmp, -41), // decrementAndJmp, outerRepeatLoopStart
-// 	OP(decrementAndJmp, -38), // decrementAndJmp, outerRepeatLoopStart
+ 	OP(decrementAndJmp, -38), // decrementAndJmp, outerRepeatLoopStart
 
 	OP(halt, 0),
 };
 
 int primes1000_2[] = {
+	// Uses primitives for at, atPut; inlines lessThan and multiply
+
 	OP(pushImmediate, int2obj(8190)),
 	OP(primitive, 1),
 	(int) primNewArray,
@@ -348,7 +346,7 @@ int primes1000_2[] = {
 
 	OP(pushImmediate, 10), // outer loop counter
 
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, var_primeCount),
 
 	OP(pushVar, var_flags),
@@ -356,7 +354,7 @@ int primes1000_2[] = {
 	OP(primitiveNoResult, 2),
 	(int) primArrayFill,
 
-	OP(pushImmediate, (int) int2obj(2)),
+	OP(pushImmediate, int2obj(2)),
 	OP(popVar, var_i),
 
 	OP(pushImmediate, 8188), // push repeat count
@@ -366,10 +364,10 @@ int primes1000_2[] = {
 	(int) primArrayAt,
 	OP(jmpFalse, 18), // jmpFalse ifEnd
 
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(incrementVar, var_primeCount),
 
-	OP(pushImmediate, (int) int2obj(2)),
+	OP(pushImmediate, int2obj(2)),
 	OP(pushVar, var_i),
 	OP(multiply, 0),
 	OP(popVar, var_j),
@@ -389,7 +387,7 @@ int primes1000_2[] = {
 	OP(lessThan, 0),
 	OP(jmpTrue, -11), // jmpTrue whileLoopStart
 
-	OP(pushImmediate, (int) int2obj(1)), // ifEnd
+	OP(pushImmediate, int2obj(1)), // ifEnd
 	OP(incrementVar, var_i),
 
 	OP(decrementAndJmp, -26), // decrementAndJmp, repeatLoopStart
@@ -399,6 +397,8 @@ int primes1000_2[] = {
 };
 
 int primes1000_3[] = {
+	// No primitives inside loops
+
 	OP(pushImmediate, int2obj(8190)),
 	OP(primitive, 1),
 	(int) primNewArray,
@@ -406,7 +406,7 @@ int primes1000_3[] = {
 
 	OP(pushImmediate, 10), // outer loop counter
 
-	OP(pushImmediate, (int) int2obj(0)),
+	OP(pushImmediate, int2obj(0)),
 	OP(popVar, var_primeCount),
 
 	OP(pushVar, var_flags),
@@ -414,7 +414,7 @@ int primes1000_3[] = {
 	OP(primitiveNoResult, 2),
 	(int) primArrayFill,
 
-	OP(pushImmediate, (int) int2obj(2)),
+	OP(pushImmediate, int2obj(2)),
 	OP(popVar, var_i),
 
 	OP(pushImmediate, 8188), // push repeat count
@@ -423,10 +423,10 @@ int primes1000_3[] = {
 	OP(at, 0),
 	OP(jmpFalse, 17), // jmpFalse ifEnd
 
-	OP(pushImmediate, (int) int2obj(1)),
+	OP(pushImmediate, int2obj(1)),
 	OP(incrementVar, var_primeCount),
 
-	OP(pushImmediate, (int) int2obj(2)),
+	OP(pushImmediate, int2obj(2)),
 	OP(pushVar, var_i),
 	OP(multiply, 0),
 	OP(popVar, var_j),
@@ -441,15 +441,20 @@ int primes1000_3[] = {
 	OP(incrementVar, var_j),
 
 	OP(pushVar, var_j), // whileEndTest
-	OP(pushImmediate, 8188),
+	OP(pushImmediate, int2obj(8188)),
 	OP(lessThan, 0),
 	OP(jmpTrue, -10), // jmpTrue whileLoopStart
 
-	OP(pushImmediate, (int) int2obj(1)), // ifEnd
+	OP(pushImmediate, int2obj(1)), // ifEnd
 	OP(incrementVar, var_i),
 
 	OP(decrementAndJmp, -24), // decrementAndJmp, repeatLoopStart
 	OP(decrementAndJmp, -34), // decrementAndJmp, outerRepeatLoopStart
+
+// 	OP(pushVar, var_primeCount),
+// 	OP(primitiveNoResult, 1),
+// 	(int) primPrint,
+// 	OP(decrementAndJmp, -37), // decrementAndJmp, outerRepeatLoopStart
 
 	OP(halt, 0),
 };
@@ -489,73 +494,68 @@ int main(int argc, char *argv[]) {
 
 	memInit(5000);
 
+	START_TIMER();
+	runProg(emptyLoop);
+	usecs = TIMER_US();
+	emptyLoopTime = usecs;
+	n = 1000002;
+	printf("empty loop: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-	for (int v = 1; v < 4; v++) {
-		printf("\r\nInterpreter %d results:\r\n", v);
+	START_TIMER();
+	runProg(loopWithNoops);
+	usecs = TIMER_US() - emptyLoopTime;
+	n = 10000000; // number of noops executed
+	printf("noop loop: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-		START_TIMER();
-		runProg(v, emptyLoop);
-		usecs = TIMER_US();
-		emptyLoopTime = usecs;
-		n = 1000002;
-		printf("empty loop: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	START_TIMER();
+	runProg(loopTest);
+	usecs = TIMER_US();
+	n = 3000006;
+	printf("loopTest: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-		START_TIMER();
-		runProg(v, loopWithNoops);
-		usecs = TIMER_US() - emptyLoopTime;
-		n = 10000000; // number of noops executed
-		printf("noop loop: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	START_TIMER();
+	runProg(sumTest);
+	usecs = TIMER_US();
+	n = 10000002;
+	printf("sumTest: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-		START_TIMER();
-		runProg(v, loopTest);
-		usecs = TIMER_US();
-		n = 3000006;
-		printf("loopTest: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	START_TIMER();
+	runProg(sumTest2);
+	usecs = TIMER_US();
+	n = 12000012;
+	printf("sumTest2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-continue;
+	START_TIMER();
+	runProg(sumTestWithRepeat);
+	usecs = TIMER_US();
+	n = 5000006;
+	printf("sumTestWithRepeat: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-		START_TIMER();
-		runProg(v, sumTest);
-		usecs = TIMER_US();
-		n = 10000002;
-		printf("sumTest: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	START_TIMER();
+	runProg(sumTestWithRepeat2);
+	usecs = TIMER_US();
+	n = 5000006;
+	printf("sumTestWithRepeat2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-		START_TIMER();
-		runProg(v, sumTest2);
-		usecs = TIMER_US();
-		n = 12000012;
-		printf("sumTest2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	START_TIMER();
+	runProg(primes1000);
+	usecs = TIMER_US();
+	n = 2554645;
+	printf("primes1000: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-		START_TIMER();
-		runProg(v, sumTestWithRepeat);
-		usecs = TIMER_US();
-		n = 5000006;
-		printf("sumTestWithRepeat: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	memClear();
+	START_TIMER();
+	runProg(primes1000_2);
+	usecs = TIMER_US();
+	n = 2554645;
+	printf("primes1000_2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-		START_TIMER();
-		runProg(v, sumTestWithRepeat2);
-		usecs = TIMER_US();
-		n = 5000006;
-		printf("sumTestWithRepeat2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
+	memClear();
+	START_TIMER();
+	runProg(primes1000_3); // this test still has a bug
+	usecs = TIMER_US();
+	n = 2554345;
+	printf("primes1000_3: %d usecs %f\r\n", usecs, ((double) usecs) / n);
 
-		START_TIMER();
-		runProg(v, primes1000);
-		usecs = TIMER_US();
-		n = 2554645;
-		printf("primes1000: %d usecs %f\r\n", usecs, ((double) usecs) / n);
-
-		memClear();
-		START_TIMER();
-		runProg(v, primes1000_2);
-		usecs = TIMER_US();
-		n = 2554645;
-		printf("primes1000_2: %d usecs %f\r\n", usecs, ((double) usecs) / n);
-
-		memClear();
-		START_TIMER();
-		runProg(v, primes1000_3); // this test still has a bug
-		usecs = TIMER_US();
-		printf("primes1000_3: %d usecs\r\n", usecs);
-	}
 	return 0;
 }

@@ -1,3 +1,10 @@
+// interp.h - SmallVM Interpreter
+// John Maloney, April 2017
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Opcodes
 
 #define halt 0
@@ -56,4 +63,8 @@ extern OBJ literals[];
 
 // Entry point
 
-void runProg(int which, int *prog);
+OBJ runProg(int *prog);
+
+#ifdef __cplusplus
+}
+#endif
