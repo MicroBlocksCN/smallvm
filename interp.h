@@ -48,7 +48,7 @@ typedef OBJ (*PrimFunc)(OBJ args[]);
 
 // Primitives
 
-void primPrint(OBJ args[]);
+OBJ primPrint(OBJ args[]);
 OBJ primAdd(OBJ args[]);
 OBJ primMul(OBJ args[]);
 OBJ primLess(OBJ args[]);
@@ -56,10 +56,6 @@ OBJ primNewArray(OBJ args[]);
 OBJ primArrayAt(OBJ args[]);
 OBJ primArrayAtPut(OBJ args[]);
 OBJ primArrayFill(OBJ args[]);
-
-// Interpreter state
-
-extern OBJ literals[];
 
 // Entry point
 

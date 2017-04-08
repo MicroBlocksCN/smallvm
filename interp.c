@@ -8,9 +8,8 @@
 
 // Interpreter State
 
-OBJ literals[5];
-static int vars[5];
-static int stack[5];
+static OBJ vars[25];
+static OBJ stack[25];
 
 // Helper Functions
 
@@ -38,18 +37,18 @@ static inline int evalInt(OBJ obj) {
 	return 0;
 }
 
-void showStack(int *sp, int *fp) {
-    int *ptr = sp;
-    printf("sp: %d\r\n", *ptr);
+void showStack(OBJ *sp, OBJ *fp) {
+    OBJ *ptr = sp;
+    printf("sp: %d\r\n", (int) *ptr);
     while (--ptr >= &stack[0]) {
-        printf("%s  %d\r\n", ((fp == ptr) ? "fp:" : ""), *ptr);
+        printf("%s  %d\r\n", ((fp == ptr) ? "fp:" : ""), (int) *ptr);
     }
     printf("-----\r\n");
 }
 
 // Basic Primitives
 
-void primPrint(OBJ args[]) { printlnObj(args[0]); }
+OBJ primPrint(OBJ args[]) { printlnObj(args[0]); return nilObj; }
 OBJ primAdd(OBJ args[]) { return int2obj(evalInt(args[0]) + evalInt(args[1])); }
 OBJ primMul(OBJ args[]) { return int2obj(evalInt(args[0]) * evalInt(args[1])); }
 OBJ primLess(OBJ args[]) { return (evalInt(args[0]) < evalInt(args[1])) ? trueObj : falseObj; }
@@ -69,6 +68,7 @@ OBJ outOfRangeFailure() { primFailed("Index out of range"); return 0; }
 OBJ primNewArray(OBJ args[]) {
     OBJ n = args[0];
     if (!isInt(n) || ((int) n < 0)) return sizeFailure();
+// hack for primes benchmark: use byte array to simulate array of booleans
     OBJ result = newObj(ArrayClass, (obj2int(n) + 3) / 4, nilObj); // bytes
     return result;
 }
@@ -81,6 +81,7 @@ OBJ primArrayAt(OBJ args[]) {
 
     int i = obj2int(index);
     if ((i < 1) || (i > (objWords(array) * 4))) { outOfRangeFailure(); return nilObj; }
+// hack for primes benchmark: use byte array to simulate array of booleans
     char *bytes = (char *) array;
     return (bytes[(4 * HEADER_WORDS) + (i - 1)]) ? trueObj : falseObj;
 }
@@ -95,6 +96,7 @@ OBJ primArrayAtPut(OBJ args[]) {
     int i = obj2int(index);
     if ((i < 1) || (i > (objWords(array) * 4))) return outOfRangeFailure();
 
+// hack for primes benchmark: use byte array to simulate array of booleans
     char *bytes = (char *) array;
     bytes[(4 * HEADER_WORDS) + (i - 1)] = (value == trueObj);
     return nilObj;
@@ -108,7 +110,7 @@ OBJ primArrayFill(OBJ args[]) {
     value = (OBJ) ((value == trueObj) ? 0x01010101 : 0); // hack to encode flag array as bytes
 
     int end = objWords(array) + HEADER_WORDS;
-    for (int i = HEADER_WORDS; i < end; i++) array[i] = (int) value;
+    for (int i = HEADER_WORDS; i < end; i++) ((OBJ *) array)[i] = value;
     return nilObj;
 }
 
@@ -121,7 +123,7 @@ OBJ primArrayFill(OBJ args[]) {
 }
 
 OBJ runProg(int *prog) {
-    register int *sp = stack;
+    register OBJ *sp = &stack[0];
     register int *ip = prog;
     register int arg;
     int op;
@@ -162,10 +164,10 @@ OBJ runProg(int *prog) {
     noop_op:
         DISPATCH();
     pushImmediate_op:
-        *sp++ = arg;
+        *sp++ = (OBJ) arg;
         DISPATCH();
     pushLiteral_op:
-        *sp++ = (int) literals[arg];
+//        *sp++ = (int) literals[arg]; // literals are now  PC-relative
         DISPATCH();
     pushVar_op:
         *sp++ = vars[arg];
@@ -174,7 +176,7 @@ OBJ runProg(int *prog) {
         vars[arg] = *--sp;
         DISPATCH();
     incrementVar_op:
-        vars[arg] = (int) int2obj(evalInt((OBJ) vars[arg]) + evalInt((OBJ) (*--sp)));
+        vars[arg] = int2obj(evalInt(vars[arg]) + evalInt(*--sp));
         DISPATCH();
     pop_op:
         sp--;
@@ -183,24 +185,30 @@ OBJ runProg(int *prog) {
         ip += arg;
         DISPATCH();
     jmpTrue_op:
-        if ((int) trueObj == (*--sp)) ip += arg;
+        if (trueObj == (*--sp)) ip += arg;
         DISPATCH();
     jmpFalse_op:
-        if ((int) falseObj == (*--sp)) ip += arg;
+        if (falseObj == (*--sp)) ip += arg;
         DISPATCH();
     decrementAndJmp_op:
-        if ((--*(sp - 1)) > 0) ip += arg; // loop counter > 0, so branch
-        else sp--; // pop loop count
+		tmp = ((int) *(sp - 1)) - 1;
+		if (tmp > 0) {
+			ip += arg; // loop counter > 0, so branch
+			*(sp - 1) = (OBJ) tmp; // update loop counter
+			DISPATCH();
+		} else {
+			sp--; // loop done, pop loop counter
+		}
         DISPATCH();
     callFunction_op:
         DISPATCH();
     returnResult_op:
-		return (OBJ) *sp;
+		return *sp;
         DISPATCH();
     primitive_op:
         // arg = # of arguments
         prim = (PrimFunc) *ip++;
-        *(sp - arg) = (int) prim((OBJ *) sp - arg);  // arg = #of arguments
+        *(sp - arg) = prim(sp - arg);  // arg = #of arguments
         sp -= arg - 1;
         DISPATCH();
     primitiveNoResult_op:
@@ -210,39 +218,45 @@ OBJ runProg(int *prog) {
         sp -= arg;
         DISPATCH();
     add_op:
-        *(sp - 2) = (int) int2obj(evalInt((OBJ) *(sp - 2)) + evalInt((OBJ) *(sp - 1)));
+        *(sp - 2) = int2obj(evalInt(*(sp - 2)) + evalInt(*(sp - 1)));
         sp -= 1;
         DISPATCH();
     subtract_op:
-        *(sp - 2) = (int) int2obj(evalInt((OBJ) *(sp - 2)) - evalInt((OBJ) *(sp - 1)));
+        *(sp - 2) = int2obj(evalInt(*(sp - 2)) - evalInt(*(sp - 1)));
         sp -= 1;
         DISPATCH();
     multiply_op:
-        *(sp - 2) = (int) int2obj(evalInt((OBJ) *(sp - 2)) * evalInt((OBJ) *(sp - 1)));
+        *(sp - 2) = int2obj(evalInt(*(sp - 2)) * evalInt(*(sp - 1)));
         sp -= 1;
         DISPATCH();
     lessThan_op:
-        *(sp - 2) = (int) ((evalInt((OBJ) *(sp - 2)) < evalInt((OBJ) *(sp - 1))) ? trueObj : falseObj);
+        *(sp - 2) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
         sp -= 1;
         DISPATCH();
     at_op:
-        array = (OBJ) *(sp - 2);
+        array = *(sp - 2);
         if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
         if (!isInt(*(sp - 1))) return indexClassFailure();
 
         tmp = obj2int(*(sp - 1)); // index
         if ((tmp < 1) || (tmp > (objWords(array) * 4))) { return outOfRangeFailure(); }
-        *(sp - 2) = array[HEADER_WORDS + tmp - 1];
+// hack for primes benchmark: use byte array to simulate array of booleans
+//		*(sp - 2) = (OBJ) array[HEADER_WORDS + tmp - 1];
+char *bytes = (char *) array;
+*(sp - 2) = (bytes[(4 * HEADER_WORDS) + tmp - 1]) ? trueObj : falseObj;
         sp -= 1;
         DISPATCH();
     atPut_op:
-        array = (OBJ) *(sp - 3);
+        array = *(sp - 3);
         if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
         if (!isInt(*(sp - 2))) return indexClassFailure();
 
         tmp = obj2int(*(sp - 2)); // index
         if ((tmp < 1) || (tmp > (objWords(array) * 4))) return outOfRangeFailure();
-        array[HEADER_WORDS + tmp - 1] = *(sp - 1);
+// hack for primes benchmark: use byte array to simulate array of booleans
+//		array[HEADER_WORDS + tmp - 1] = (int) *(sp - 1);
+bytes = (char *) array;
+bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
         sp -= 3;
         DISPATCH();
     return 0;

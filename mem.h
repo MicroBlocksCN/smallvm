@@ -87,6 +87,7 @@ void memClear(void);
 void memPrintStatus(void);
 void memDump(void);
 void dumpObj(OBJ obj);
+void debug(char *s);
 
 #ifdef __cplusplus
 }

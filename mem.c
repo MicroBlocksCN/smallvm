@@ -11,12 +11,16 @@ static OBJ memEnd;
 
 void memInit(int wordCount) {
 	if (sizeof(int) != sizeof(int*)) {
-		printf("GP must be compiled in 32-bit mode (e.g. gcc -m32 ...)\n");
+		debug("GP must be compiled in 32-bit mode (e.g. gcc -m32 ...)");
+		exit(-1);
+	}
+	if (sizeof(int) != sizeof(float)) {
+		debug("GP expects floats and ints to be the same size");
 		exit(-1);
 	}
 	memStart = (OBJ) malloc(wordCount * sizeof(int));
 	if (memStart == NULL) {
-		printf("memInit failed to malloc %d words\r\n", wordCount);
+		debug("memInit failed");
 		exit(-1);
 	}
 	printf("wordCount %d memStart %d\r\n", wordCount, (int) memStart);
@@ -51,9 +55,9 @@ OBJ newObj(int classID, int wordCount, OBJ fill) {
 	OBJ obj = freeStart;
 	freeStart += ((HEADER_WORDS + wordCount) / 4);
 	if (freeStart >= memEnd) {
-		printf("Out of memory!\n");
 		memPrintStatus();
-		exit(0);
+		debug("Out of memory!");
+		exit(-1);
 	}
 	for (OBJ p = obj; p < freeStart; ) *p++ = (int) fill;
 	obj[0] = classID;

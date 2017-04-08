@@ -1,32 +1,29 @@
 // interTests1.c - Test interpreter.
 // John Maloney, April 2017
 
+#include <stdio.h>
 #include "mem.h"
 #include "interp.h"
-
-#include <stdio.h>
 
 #ifdef __arm__
 	#ifdef ARDUINO
 		#include "Arduino.h"
 		#define TICKS() (micros())
+		void debug(char *s) { Serial.println(s); }
 	#else
 		#include <us_ticker_api.h>
 		#define TICKS() (us_ticker_read())
+		void debug(char *s) { printf("%s\r\n", s); }
 	#endif
 #else
 	#include <sys/time.h>
 	#include <time.h>
-
-	struct timeval ticksStart;
-
 	static inline unsigned TICKS() {
 		struct timeval now;
 		gettimeofday(&now, NULL);
-		unsigned long long secs = now.tv_sec - ticksStart.tv_sec;
-		unsigned long long usecs = now.tv_usec - ticksStart.tv_usec;
-		return ((1000000 * secs) + usecs) & 0xFFFFFFFF;
+		return ((1000000L * now.tv_sec) + now.tv_usec) & 0xFFFFFFFF;
 	}
+	void debug(char *s) { printf("%s\r\n", s); }
 #endif
 
 // additional primitives
@@ -146,9 +143,9 @@ int sumTest[] = {
 	(int) primLess,
 	OP(jmpTrue, -15),
 
-//	OP(pushVar, 0),
-//	OP(primitiveNoResult, 1),
-//	(int) primPrint,
+// OP(pushVar, 0),
+// OP(primitiveNoResult, 1),
+// (int) primPrint,
 
 	OP(halt, 0),
 };
@@ -180,9 +177,9 @@ int sumTest2[] = {
 	OP(lessThan, 0),
 	OP(jmpTrue, -12),
 
-// 	OP(pushVar, 0),
-// 	OP(primitiveNoResult, 1),
-// 	(int) primPrint,
+// OP(pushVar, 0),
+// OP(primitiveNoResult, 1),
+// (int) primPrint,
 
 	OP(halt, 0),
 };
@@ -202,9 +199,9 @@ int sumTestWithRepeat[] = {
 	OP(popVar, 0),
 	OP(decrementAndJmp, -6),
 
-// 	OP(pushVar, 0),
-// 	OP(primitiveNoResult, 1),
-// 	(int) primPrint,
+// OP(pushVar, 0),
+// OP(primitiveNoResult, 1),
+// (int) primPrint,
 
 	OP(halt, 0),
 };
@@ -223,9 +220,9 @@ int sumTestWithRepeat2[] = {
 	OP(popVar, 0),
 	OP(decrementAndJmp, -5),
 
-// 	OP(pushVar, 0),
-// 	OP(primitiveNoResult, 1),
-// 	(int) primPrint,
+// OP(pushVar, 0),
+// OP(primitiveNoResult, 1),
+// (int) primPrint,
 
 	OP(halt, 0),
 };
@@ -288,9 +285,9 @@ int findPrimes[] = {
 
 	OP(decrementAndJmp, -31), // decrementAndJmp, repeatLoopStart
 
-// 	OP(pushVar, var_primeCount),
-// 	OP(primitiveNoResult, 1),
-// 	(int) primPrint,
+	OP(pushVar, var_primeCount),
+	OP(primitiveNoResult, 1),
+	(int) primPrint,
 
 	OP(halt, 0),
 };
@@ -462,7 +459,7 @@ int primes1000_3[] = {
 	OP(incrementVar, var_j),
 
 	OP(pushVar, var_j), // whileEndTest
-	OP(pushImmediate, int2obj(8188)),
+	OP(pushImmediate, int2obj(8190)),
 	OP(lessThan, 0),
 	OP(jmpTrue, -10), // jmpTrue whileLoopStart
 
@@ -471,11 +468,6 @@ int primes1000_3[] = {
 
 	OP(decrementAndJmp, -24), // decrementAndJmp, repeatLoopStart
 	OP(decrementAndJmp, -34), // decrementAndJmp, outerRepeatLoopStart
-
-// 	OP(pushVar, var_primeCount),
-// 	OP(primitiveNoResult, 1),
-// 	(int) primPrint,
-// 	OP(decrementAndJmp, -37), // decrementAndJmp, outerRepeatLoopStart
 
 	OP(halt, 0),
 };
@@ -487,84 +479,87 @@ unsigned timerStart;
 #define START_TIMER() { timerStart = TICKS(); }
 #define TIMER_US() (TICKS() - timerStart)
 
-void printResult(char *testName, int usecs, int nanoSecsPerInstruction) {
+void printResult(char *testName, int usecs, float nanoSecsPerInstruction) {
+	float cyclesPerNanosec = 0.064; // clock rate divided by 10e9
+	float cyclesPerOp = cyclesPerNanosec * nanoSecsPerInstruction;
 #ifdef ARDUINO
 	Serial.print(testName);
 	Serial.print(": ");
 	Serial.print(usecs);
 	Serial.print(" usecs, ");
-	Serial.print(nanoSecsPerInstruction);
-	Serial.println(" nanosecs per instruction");
+	Serial.print(nanoSecsPerInstruction, 0);
+	Serial.print(" nsecs/op");
+	Serial.print(cyclesPerOp, 2);
+	Serial.println(" cycles/op");
 #else
-	printf("%s: %d usecs, %d nanosecs per instruction\n", testName, usecs, nanoSecsPerInstruction);
+	printf("%s: %d usecs (%.2f nsecs, %.2f cycles per op)\r\n",
+		testName, usecs, nanoSecsPerInstruction, cyclesPerOp);
 #endif
 }
 
 void interpTests1() {
 	unsigned long n, usecs, emptyLoopTime;
 
-	memInit(5000);
-
 	START_TIMER();
 	runProg(emptyLoop);
 	usecs = TIMER_US();
 	emptyLoopTime = usecs;
 	n = 1000002;
-	printResult("empty loop", usecs, (1000 * usecs) / n);
+	printResult("empty loop", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
 	runProg(loopWithNoops);
 	usecs = TIMER_US() - emptyLoopTime;
 	n = 10000000; // number of noops executed
-	printResult("noop loop", usecs, (1000 * usecs) / n);
+	printResult("noop loop", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
 	runProg(loopTest);
 	usecs = TIMER_US();
-	n = 3000006;
-	printResult("loopTest", usecs, (1000 * usecs) / n);
+	n = 3000004;
+	printResult("loopTest", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
 	runProg(sumTest);
 	usecs = TIMER_US();
-	n = 10000002;
-	printResult("sumTest", usecs, (1000 * usecs) / n);
+	n = 12000012;
+	printResult("sumTest", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
 	runProg(sumTest2);
 	usecs = TIMER_US();
 	n = 12000012;
-	printResult("sumTest2", usecs, (1000 * usecs) / n);
+	printResult("sumTest2", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
 	runProg(sumTestWithRepeat);
 	usecs = TIMER_US();
 	n = 5000006;
-	printResult("sumTestWithRepeat", usecs, (1000 * usecs) / n);
+	printResult("sumTestWithRepeat", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
 	runProg(sumTestWithRepeat2);
 	usecs = TIMER_US();
 	n = 5000006;
-	printResult("sumTestWithRepeat2", usecs, (1000 * usecs) / n);
+	printResult("sumTestWithRepeat2", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
 	runProg(primes1000);
 	usecs = TIMER_US();
-	n = 2554645;
-	printResult("primes1000", usecs, (1000 * usecs) / n);
+	n = 2554625;
+	printResult("primes1000", usecs, (1000.0 * usecs) / n);
 
 	memClear();
 	START_TIMER();
 	runProg(primes1000_2);
 	usecs = TIMER_US();
-	n = 2554645;
-	printResult("primes1000_2", usecs, (1000 * usecs) / n);
+	n = 2554625;
+	printResult("primes1000_2", usecs, (1000.0 * usecs) / n);
 
 	memClear();
 	START_TIMER();
-	runProg(primes1000_3); // this test still has a bug
+	runProg(primes1000_3);
 	usecs = TIMER_US();
-	n = 2554345;
-	printResult("primes1000_3", usecs, (1000 * usecs) / n);
+	n = 2554625;
+	printResult("primes1000_3", usecs, (1000.0 * usecs) / n);
 }
