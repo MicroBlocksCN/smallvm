@@ -5,7 +5,7 @@
 #include "mem.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 static OBJ memStart;
 static OBJ freeStart;
@@ -94,7 +94,8 @@ void memDumpObj(OBJ obj) {
 	}
 	int classID = CLASS(obj);
 	int wordCount = WORDS(obj);
-	printf("obj %d class %d size %d\n", (int) obj, classID, wordCount);
-	for (int i = 0; i < wordCount; i++) printf("  %d: %x\n", i, obj[HEADER_WORDS + i]);
+	printf("%x: %d words, classID %d\n", (int) obj, wordCount, classID);
+	printf("Header: %x\n", (int) obj[0]);
+	for (int i = 0; i < wordCount; i++) printf("	0x%x,\n", obj[HEADER_WORDS + i]);
 }
 

@@ -8,7 +8,6 @@
 
 // Interpreter State
 
-static OBJ helloString; // xxx
 static OBJ vars[25];
 static OBJ stack[25];
 
@@ -128,7 +127,7 @@ OBJ runProg(int *prog) {
     int arg, tmp;
     OBJ array;
 
-   // initialize jump table
+   // initialize jump table (padded to 32 entries since op is 5 bits)
     static void *jumpTable[] = {
 		&&halt_op,
 		&&noop_op,
@@ -154,10 +153,15 @@ OBJ runProg(int *prog) {
 		&&atPut_op,
 		&&newArray_op,
 		&&fillArray_op,
-		&&pushHello_op,
-    };
-
-	if (nilObj == helloString) helloString = newString("Hello!"); // xxx
+ 		&&halt_op,
+		&&halt_op,
+		&&halt_op,
+		&&halt_op,
+		&&halt_op,
+		&&halt_op,
+		&&halt_op,
+		&&halt_op,
+   };
 
     DISPATCH();
 
@@ -169,7 +173,7 @@ OBJ runProg(int *prog) {
         *sp++ = (OBJ) arg;
         DISPATCH();
     pushLiteral_op:
-//        *sp++ = (int) literals[arg]; // literals are now  PC-relative
+        *sp++ = (OBJ) (ip + arg); // arg is offset from the current ip to the literal object
         DISPATCH();
     pushVar_op:
         *sp++ = vars[arg];
@@ -233,6 +237,10 @@ OBJ runProg(int *prog) {
         *(sp - 2) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
         sp -= 1;
         DISPATCH();
+    print_op:
+        *(sp - arg) = primPrint(arg, sp - arg);  // arg = # of arguments
+        sp -= arg - 1;
+        DISPATCH();
     at_op:
         array = *(sp - 2);
         if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
@@ -244,7 +252,7 @@ OBJ runProg(int *prog) {
 //		*(sp - 2) = (OBJ) array[HEADER_WORDS + tmp - 1];
 char *bytes = (char *) array;
 *(sp - 2) = (bytes[(4 * HEADER_WORDS) + tmp - 1]) ? trueObj : falseObj;
-        sp -= 1;
+        sp -= arg - 1;
         DISPATCH();
     atPut_op:
         array = *(sp - 3);
@@ -257,7 +265,7 @@ char *bytes = (char *) array;
 //		array[HEADER_WORDS + tmp - 1] = (int) *(sp - 1);
 bytes = (char *) array;
 bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
-        sp -= 3;
+        sp -= arg - 1;
         DISPATCH();
     newArray_op:
         *(sp - arg) = primNewArray(sp - arg);  // arg = # of arguments
@@ -265,14 +273,6 @@ bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
         DISPATCH();
     fillArray_op:
         *(sp - arg) = primArrayFill(sp - arg);  // arg = # of arguments
-        sp -= arg - 1;
-        DISPATCH();
-    print_op:
-        *(sp - arg) = primPrint(arg, sp - arg);  // arg = # of arguments
-        sp -= arg - 1;
-        DISPATCH();
-    pushHello_op:
-        *(sp - arg) = helloString; // xxx
         sp -= arg - 1;
         DISPATCH();
 

@@ -29,19 +29,30 @@
 // test programs
 
 int prog1[] = {
-	OP(pushHello, 0),
+	OP(pushLiteral, 3),
 	OP(print, 1),
 	OP(pop, 1),
 	OP(halt, 0),
+
+	HEADER(StringClass, 4), // "Hello, uBlocks!"
+	0x6c6c6548,
+	0x75202c6f,
+	0x636f6c42,
+	0x21736b,
 };
+
 
 int prog2[] = {
 	OP(pushImmediate, int2obj(10)), // loop counter
-	OP(pushHello, 0),
+	OP(pushLiteral, 4),
 	OP(print, 1),
 	OP(pop, 1),
 	OP(decrementAndJmp, -4),
 	OP(halt, 0),
+
+	HEADER(StringClass, 2), // "Hello!"
+	0x6c6c6548,
+	0x216f,
 };
 
 int prog3[] = {
@@ -51,13 +62,16 @@ int prog3[] = {
 
 	OP(pushImmediate, int2obj(1)), // loop body start
 	OP(incrementVar, 0), // n++
-	OP(pushHello, 0),
+	OP(pushLiteral, 5),
 	OP(pushVar, 0), // push n
 	OP(print, 2),
 	OP(pop, 1),
 	OP(decrementAndJmp, -7),
 
 	OP(halt, 0),
+
+	HEADER(StringClass, 1), // "N ="
+	0x3d204e,
 };
 
 int emptyLoop[] = {
@@ -194,8 +208,7 @@ int findPrimes[] = {
 	OP(pushVar, var_flags), // repeatLoopStart
 	OP(pushVar, var_i),
 	OP(at, 2),
-//	(int) primArrayAt,
-	OP(jmpFalse, 23), // jmpFalse ifEnd
+	OP(jmpFalse, 21), // jmpFalse ifEnd
 
 	OP(pushVar, var_i),
 	OP(print, 1),
@@ -207,7 +220,6 @@ int findPrimes[] = {
 	OP(pushImmediate, int2obj(2)),
 	OP(pushVar, var_i),
 	OP(multiply, 2),
-//	(int) primMul,
 	OP(popVar, var_j),
 
 	OP(jmp, 7), // jmp whileEndTest
@@ -223,13 +235,12 @@ int findPrimes[] = {
 	OP(pushVar, var_j), // whileEndTest
 	OP(pushImmediate, int2obj(8190)),
 	OP(lessThan, 2),
-//	(int) primLess,
-	OP(jmpTrue, -12), // jmpTrue whileLoopStart
+	OP(jmpTrue, -11), // jmpTrue whileLoopStart
 
 	OP(pushImmediate, int2obj(1)), // ifEnd
 	OP(incrementVar, var_i),
 
-	OP(decrementAndJmp, -31), // decrementAndJmp, repeatLoopStart
+	OP(decrementAndJmp, -28), // decrementAndJmp, repeatLoopStart
 
 	OP(pushVar, var_primeCount),
 	OP(print, 1),
@@ -259,8 +270,8 @@ int primes1000[] = {
 	OP(pushImmediate, int2obj(8188)), // push repeat count
 	OP(pushVar, var_flags), // repeatLoopStart
 	OP(pushVar, var_i),
-	OP(at, 0),
-	OP(jmpFalse, 17), // jmpFalse ifEnd
+	OP(at, 2),
+	OP(jmpFalse, 18), // jmpFalse ifEnd
 
 	OP(pushImmediate, int2obj(1)),
 	OP(incrementVar, var_primeCount),
@@ -270,11 +281,12 @@ int primes1000[] = {
 	OP(multiply, 0),
 	OP(popVar, var_j),
 
-	OP(jmp, 6), // jmp whileEndTest
+	OP(jmp, 7), // jmp whileEndTest
 	OP(pushVar, var_flags), // whileLoopStart
 	OP(pushVar, var_j),
 	OP(pushImmediate, (int) falseObj),
-	OP(atPut, 0),
+	OP(atPut, 3),
+	OP(pop, 1),
 
 	OP(pushVar, var_i),
 	OP(incrementVar, var_j),
@@ -282,13 +294,17 @@ int primes1000[] = {
 	OP(pushVar, var_j), // whileEndTest
 	OP(pushImmediate, int2obj(8190)),
 	OP(lessThan, 0),
-	OP(jmpTrue, -10), // jmpTrue whileLoopStart
+	OP(jmpTrue, -11), // jmpTrue whileLoopStart
 
 	OP(pushImmediate, int2obj(1)), // ifEnd
 	OP(incrementVar, var_i),
 
-	OP(decrementAndJmp, -24), // decrementAndJmp, repeatLoopStart
-	OP(decrementAndJmp, -34), // decrementAndJmp, outerRepeatLoopStart
+	OP(decrementAndJmp, -25), // decrementAndJmp, repeatLoopStart
+	OP(decrementAndJmp, -35), // decrementAndJmp, outerRepeatLoopStart
+
+// 	OP(pushVar, var_primeCount),
+// 	OP(print, 1),
+// 	OP(pop, 1),
 
 	OP(halt, 0),
 };
@@ -301,7 +317,7 @@ unsigned timerStart;
 #define TIMER_US() (TICKS() - timerStart)
 
 void printResult(char *testName, int usecs, float nanoSecsPerInstruction) {
-	float cyclesPerNanosec = 2.5; // clock rate divided by 10e9
+	float cyclesPerNanosec = 0.064; // clock rate divided by 10e9
 	float cyclesPerOp = cyclesPerNanosec * nanoSecsPerInstruction;
 #ifdef ARDUINO
 	Serial.print(testName);

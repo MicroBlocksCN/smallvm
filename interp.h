@@ -31,19 +31,12 @@ extern "C" {
 #define atPut 21
 #define newArray 22
 #define fillArray 23
-#define pushHello 24 // temporary
-
-#define OPCODE_COUNT 25
 
 // Instruction Format
 
-// #define OP(opcode, arg) ((opcode << 24) | (arg & 0xFFFFFF))
-// #define CMD(n) ((n >> 24) & 0xFF)
-// #define ARG(n) (((n & 0xFFFFFF) << 8) >> 8)
-
-#define OP(opcode, arg) (((unsigned) arg << 8) | (opcode & 0xFF))
-#define CMD(n) (n & 0xFF)
-#define ARG(n) (n >> 8)
+#define OP(opcode, arg) (((unsigned) arg << 5) | (opcode & 0x1F))
+#define CMD(n) (n & 0x1F)
+#define ARG(n) (n >> 5)
 
 // Entry point
 
