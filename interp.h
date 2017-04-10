@@ -26,7 +26,7 @@ extern "C" {
 #define multiply 16
 #define divide 17
 #define lessThan 18
-#define print 19
+#define printIt 19
 #define at 20
 #define atPut 21
 #define newArray 22

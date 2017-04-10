@@ -148,7 +148,7 @@ OBJ runProg(int *prog) {
 		&&multiply_op,
 		&&divide_op,
 		&&lessThan_op,
-		&&print_op,
+		&&printIt_op,
 		&&at_op,
 		&&atPut_op,
 		&&newArray_op,
@@ -237,7 +237,7 @@ OBJ runProg(int *prog) {
         *(sp - 2) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
         sp -= 1;
         DISPATCH();
-    print_op:
+    printIt_op:
         *(sp - arg) = primPrint(arg, sp - arg);  // arg = # of arguments
         sp -= arg - 1;
         DISPATCH();

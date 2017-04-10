@@ -30,7 +30,7 @@
 
 int prog1[] = {
 	OP(pushLiteral, 3),
-	OP(print, 1),
+	OP(printIt, 1),
 	OP(pop, 1),
 	OP(halt, 0),
 
@@ -45,7 +45,7 @@ int prog1[] = {
 int prog2[] = {
 	OP(pushImmediate, int2obj(10)), // loop counter
 	OP(pushLiteral, 4),
-	OP(print, 1),
+	OP(printIt, 1),
 	OP(pop, 1),
 	OP(decrementAndJmp, -4),
 	OP(halt, 0),
@@ -64,7 +64,7 @@ int prog3[] = {
 	OP(incrementVar, 0), // n++
 	OP(pushLiteral, 5),
 	OP(pushVar, 0), // push n
-	OP(print, 2),
+	OP(printIt, 2),
 	OP(pop, 1),
 	OP(decrementAndJmp, -7),
 
@@ -135,7 +135,7 @@ int sumTest[] = {
 	OP(jmpTrue, -12),
 
 // OP(pushVar, 0),
-// OP(print, 1),
+// OP(printIt, 1),
 // OP(pop, 1),
 
 	OP(halt, 0),
@@ -156,7 +156,7 @@ int sumTestWithRepeat[] = {
 	OP(decrementAndJmp, -5),
 
 // OP(pushVar, 0),
-// OP(print, 1),
+// OP(printIt, 1),
 // OP(pop, 1),
 
 	OP(halt, 0),
@@ -175,7 +175,7 @@ int sumTestWithRepeatAndIncrement[] = {
 	OP(decrementAndJmp, -3),
 
 // OP(pushVar, 0),
-// OP(print, 1),
+// OP(printIt, 1),
 // OP(pop, 1),
 
 	OP(halt, 0),
@@ -211,7 +211,7 @@ int findPrimes[] = {
 	OP(jmpFalse, 21), // jmpFalse ifEnd
 
 	OP(pushVar, var_i),
-	OP(print, 1),
+	OP(printIt, 1),
 	OP(pop, 1),
 
 	OP(pushImmediate, int2obj(1)),
@@ -243,7 +243,7 @@ int findPrimes[] = {
 	OP(decrementAndJmp, -28), // decrementAndJmp, repeatLoopStart
 
 	OP(pushVar, var_primeCount),
-	OP(print, 1),
+	OP(printIt, 1),
 	OP(pop, 1),
 
 	OP(halt, 0),
@@ -303,7 +303,7 @@ int primes1000[] = {
 	OP(decrementAndJmp, -35), // decrementAndJmp, outerRepeatLoopStart
 
 // 	OP(pushVar, var_primeCount),
-// 	OP(print, 1),
+// 	OP(printIt, 1),
 // 	OP(pop, 1),
 
 	OP(halt, 0),
