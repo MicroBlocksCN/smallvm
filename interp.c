@@ -154,7 +154,7 @@ OBJ runProg(int *prog) {
 		&&multiply_op,
 		&&lessThan_op,
 		&&at_op,
-		&&atPut_op
+		&&atPut_op,
     };
 
     DISPATCH();
@@ -190,17 +190,18 @@ OBJ runProg(int *prog) {
     jmpFalse_op:
         if (falseObj == (*--sp)) ip += arg;
         DISPATCH();
-    decrementAndJmp_op:
-		tmp = ((int) *(sp - 1)) - 1;
+     decrementAndJmp_op:
+		tmp = obj2int(*(sp - 1)) - 1; // decrement loop counter
 		if (tmp > 0) {
 			ip += arg; // loop counter > 0, so branch
-			*(sp - 1) = (OBJ) tmp; // update loop counter
+			*(sp - 1) = int2obj(tmp); // update loop counter
 			DISPATCH();
 		} else {
 			sp--; // loop done, pop loop counter
 		}
         DISPATCH();
-    callFunction_op:
+   callFunction_op:
+		// not yet implemented
         DISPATCH();
     returnResult_op:
 		return *sp;
