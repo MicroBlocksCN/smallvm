@@ -1,5 +1,5 @@
-// interp.cpp - Simple interpreter based on 16-bit opcodes (several variations for testing)
-// John Maloney, October, 2013
+// interp.c - Simple interpreter based on 32-bit opcodes
+// John Maloney, April 2017
 
 #include <stdio.h>
 
@@ -8,12 +8,13 @@
 
 // Interpreter State
 
+static OBJ helloString; // xxx
 static OBJ vars[25];
 static OBJ stack[25];
 
 // Helper Functions
 
-void printObj(OBJ obj) {
+static void printObj(OBJ obj) {
     if (isInt(obj)) printf("%d", obj2int(obj));
     else if (obj == nilObj) printf("nil");
     else if (obj == trueObj) printf("true");
@@ -25,15 +26,11 @@ void printObj(OBJ obj) {
     }
 }
 
-void printlnObj(OBJ obj) {
-    printObj(obj);
-    printf("\r\n");
-}
-
 static inline int evalInt(OBJ obj) {
 	if (isInt(obj)) return obj2int(obj);
 	printf("evalInt got non-integer: ");
-	printlnObj(obj);
+	printObj(obj);
+    printf("\r\n");
 	return 0;
 }
 
@@ -46,24 +43,26 @@ void showStack(OBJ *sp, OBJ *fp) {
     printf("-----\r\n");
 }
 
-// Basic Primitives
+// Primitives
 
-OBJ primPrint(OBJ args[]) { printlnObj(args[0]); return nilObj; }
-OBJ primAdd(OBJ args[]) { return int2obj(evalInt(args[0]) + evalInt(args[1])); }
-OBJ primMul(OBJ args[]) { return int2obj(evalInt(args[0]) * evalInt(args[1])); }
-OBJ primLess(OBJ args[]) { return (evalInt(args[0]) < evalInt(args[1])) ? trueObj : falseObj; }
-
-// Array Primitives
-
-void primFailed(const char *reason) {
+static void failure(const char *reason) {
     // Print a message and stop the interpreter.
     printf("Primitive failed: %s\r\n", reason);
 }
 
-OBJ sizeFailure() { primFailed("Size must be a positive integer"); return 0; }
-OBJ arrayClassFailure() { primFailed("Must must be an Array"); return 0; }
-OBJ indexClassFailure() { primFailed("Index must be an integer"); return 0; }
-OBJ outOfRangeFailure() { primFailed("Index out of range"); return 0; }
+OBJ sizeFailure() { failure("Size must be a positive integer"); return nilObj; }
+OBJ arrayClassFailure() { failure("Must must be an Array"); return nilObj; }
+OBJ indexClassFailure() { failure("Index must be an integer"); return nilObj; }
+OBJ outOfRangeFailure() { failure("Index out of range"); return nilObj; }
+
+OBJ primPrint(int argCount, OBJ args[]) {
+	for (int i = 0; i < argCount; i++) {
+		printObj(args[i]);
+		printf(" ");
+	}
+	printf("\r\n");
+	return nilObj;
+}
 
 OBJ primNewArray(OBJ args[]) {
     OBJ n = args[0];
@@ -125,13 +124,11 @@ OBJ primArrayFill(OBJ args[]) {
 OBJ runProg(int *prog) {
     register OBJ *sp = &stack[0];
     register int *ip = prog;
-    register int arg;
-    int op;
-    int tmp;
-    PrimFunc prim;
+    register int op;
+    int arg, tmp;
     OBJ array;
 
-    // initialize jump table
+   // initialize jump table
     static void *jumpTable[] = {
 		&&halt_op,
 		&&noop_op,
@@ -147,15 +144,20 @@ OBJ runProg(int *prog) {
 		&&decrementAndJmp_op,
 		&&callFunction_op,
 		&&returnResult_op,
-		&&primitive_op,
-		&&primitiveNoResult_op,
 		&&add_op,
 		&&subtract_op,
 		&&multiply_op,
+		&&divide_op,
 		&&lessThan_op,
+		&&print_op,
 		&&at_op,
 		&&atPut_op,
+		&&newArray_op,
+		&&fillArray_op,
+		&&pushHello_op,
     };
+
+	if (nilObj == helloString) helloString = newString("Hello!"); // xxx
 
     DISPATCH();
 
@@ -179,7 +181,12 @@ OBJ runProg(int *prog) {
         vars[arg] = int2obj(evalInt(vars[arg]) + evalInt(*--sp));
         DISPATCH();
     pop_op:
-        sp--;
+        sp -= arg;
+        if (sp >= stack) {
+			DISPATCH();
+		} else {
+			panic("Stack underflow");
+		}
         DISPATCH();
     jmp_op:
         ip += arg;
@@ -200,23 +207,11 @@ OBJ runProg(int *prog) {
 			sp--; // loop done, pop loop counter
 		}
         DISPATCH();
-   callFunction_op:
+    callFunction_op:
 		// not yet implemented
         DISPATCH();
     returnResult_op:
 		return *sp;
-        DISPATCH();
-    primitive_op:
-        // arg = # of arguments
-        prim = (PrimFunc) *ip++;
-        *(sp - arg) = prim(sp - arg);  // arg = #of arguments
-        sp -= arg - 1;
-        DISPATCH();
-    primitiveNoResult_op:
-        // arg = # of arguments
-        prim = (PrimFunc) *ip++;
-        prim((OBJ *) (sp - arg));
-        sp -= arg;
         DISPATCH();
     add_op:
         *(sp - 2) = int2obj(evalInt(*(sp - 2)) + evalInt(*(sp - 1)));
@@ -228,6 +223,10 @@ OBJ runProg(int *prog) {
         DISPATCH();
     multiply_op:
         *(sp - 2) = int2obj(evalInt(*(sp - 2)) * evalInt(*(sp - 1)));
+        sp -= 1;
+        DISPATCH();
+    divide_op:
+        *(sp - 2) = int2obj(evalInt(*(sp - 2)) / evalInt(*(sp - 1)));
         sp -= 1;
         DISPATCH();
     lessThan_op:
@@ -260,5 +259,22 @@ bytes = (char *) array;
 bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
         sp -= 3;
         DISPATCH();
-    return 0;
+    newArray_op:
+        *(sp - arg) = primNewArray(sp - arg);  // arg = # of arguments
+        sp -= arg - 1;
+        DISPATCH();
+    fillArray_op:
+        *(sp - arg) = primArrayFill(sp - arg);  // arg = # of arguments
+        sp -= arg - 1;
+        DISPATCH();
+    print_op:
+        *(sp - arg) = primPrint(arg, sp - arg);  // arg = # of arguments
+        sp -= arg - 1;
+        DISPATCH();
+    pushHello_op:
+        *(sp - arg) = helloString; // xxx
+        sp -= arg - 1;
+        DISPATCH();
+
+  return 0;
 }

@@ -1,4 +1,4 @@
-// interp.h - SmallVM Interpreter
+// interp.h - Simple interpreter based on 32-bit opcodes
 // John Maloney, April 2017
 
 #ifdef __cplusplus
@@ -9,7 +9,7 @@ extern "C" {
 
 #define halt 0
 #define noop 1
-#define pushImmediate 2 // true, false, and small ints
+#define pushImmediate 2 // true, false, and ints that fit in 24 bits
 #define pushLiteral 3 // string or array from literals frame
 #define pushVar 4
 #define popVar 5
@@ -21,16 +21,19 @@ extern "C" {
 #define decrementAndJmp 11
 #define callFunction 12
 #define returnResult 13
-#define primitive 14
-#define primitiveNoResult 15
-#define add 16
-#define subtract 17
-#define multiply 18
-#define lessThan 19
+#define add 14
+#define subtract 15
+#define multiply 16
+#define divide 17
+#define lessThan 18
+#define print 19
 #define at 20
 #define atPut 21
+#define newArray 22
+#define fillArray 23
+#define pushHello 24 // temporary
 
-#define OPCODE_COUNT 22
+#define OPCODE_COUNT 25
 
 // Instruction Format
 
@@ -41,21 +44,6 @@ extern "C" {
 #define OP(opcode, arg) (((unsigned) arg << 8) | (opcode & 0xFF))
 #define CMD(n) (n & 0xFF)
 #define ARG(n) (n >> 8)
-
-// Primitive Function Typedef
-
-typedef OBJ (*PrimFunc)(OBJ args[]);
-
-// Primitives
-
-OBJ primPrint(OBJ args[]);
-OBJ primAdd(OBJ args[]);
-OBJ primMul(OBJ args[]);
-OBJ primLess(OBJ args[]);
-OBJ primNewArray(OBJ args[]);
-OBJ primArrayAt(OBJ args[]);
-OBJ primArrayAtPut(OBJ args[]);
-OBJ primArrayFill(OBJ args[]);
 
 // Entry point
 

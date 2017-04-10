@@ -1,27 +1,33 @@
-// Object memory for 32-bit object pointers.
+// mem.c - object memory
 // Just an allocator for now; no garbage collector.
+// John Maloney, April 2017
 
 #include "mem.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 
 static OBJ memStart;
 static OBJ freeStart;
 static OBJ memEnd;
 
+void panic(char *errorMessage) {
+	// Called when VM encountered as fatal error. Print the error message and exit.
+
+	debug(errorMessage);
+	exit(-1);
+}
+
 void memInit(int wordCount) {
 	if (sizeof(int) != sizeof(int*)) {
-		debug("GP must be compiled in 32-bit mode (e.g. gcc -m32 ...)");
-		exit(-1);
+		panic("GP must be compiled in 32-bit mode (e.g. gcc -m32 ...)");
 	}
 	if (sizeof(int) != sizeof(float)) {
-		debug("GP expects floats and ints to be the same size");
-		exit(-1);
+		panic("GP expects floats and ints to be the same size");
 	}
 	memStart = (OBJ) malloc(wordCount * sizeof(int));
 	if (memStart == NULL) {
-		debug("memInit failed");
-		exit(-1);
+		panic("memInit failed; insufficient memory");
 	}
 	printf("wordCount %d memStart %d\r\n", wordCount, (int) memStart);
 	if ((unsigned) memStart < 8) {
@@ -39,50 +45,26 @@ void memClear() {
 	freeStart = memStart;
 }
 
-void memDump() {
-	printf("----- Memory (%d) -----\n", (int) memStart);
-	for (int *ptr = memStart; ptr < freeStart; ptr++) {
-		printf("%d: %d\n", ((int) ptr) - ((int) memStart), *ptr);
-	}
-	printf("-----\n");
-}
-
-void memPrintStatus() {
-	printf("%d words used out of %d\n", freeStart - memStart, memEnd - memStart);
-}
-
 OBJ newObj(int classID, int wordCount, OBJ fill) {
 	OBJ obj = freeStart;
 	freeStart += ((HEADER_WORDS + wordCount) / 4);
 	if (freeStart >= memEnd) {
 		memPrintStatus();
-		debug("Out of memory!");
-		exit(-1);
+		panic("Out of memory!");
 	}
 	for (OBJ p = obj; p < freeStart; ) *p++ = (int) fill;
-	obj[0] = classID;
-	obj[1] = wordCount;
-	obj[2] = 888888;
+	unsigned header = HEADER(classID, wordCount);
+	obj[0] = header;
 	return obj;
-}
-
-void dumpObj(OBJ obj) {
-	if ((obj < memStart) || (obj >= memEnd)) {
-		printf("bad object at %ld\n", (long) obj);
-		return;
-	}
-	int classID = obj[0];
-	int wordCount = obj[1];
-	printf("obj %d class %d size %d\n", (int) obj, classID, wordCount);
-	for (int i = 0; i < wordCount; i++) printf("  %d: %d\n", i, obj[HEADER_WORDS + i]);
 }
 
 // String Primitives
 
-OBJ newString(char *s, int byteCount) {
+OBJ newString(char *s) {
 	// Create a new string object with the contents of s.
 	// Round up to an even number of words and pad with nulls.
-	byteCount++; // leave room for null terminator
+
+	int byteCount = strlen(s) + 1; // leave room for null terminator
 	int wordCount = (byteCount + 3) / 4;
 	OBJ result = newObj(StringClass, wordCount, 0);
 	char *dst = (char *) &result[HEADER_WORDS];
@@ -98,3 +80,21 @@ char* obj2str(OBJ obj) {
 	}
 	return (char *) &obj[HEADER_WORDS];
 }
+
+// Debugging
+
+void memPrintStatus() {
+	printf("%d words used out of %d\n", freeStart - memStart, memEnd - memStart);
+}
+
+void memDumpObj(OBJ obj) {
+	if ((obj < memStart) || (obj >= memEnd)) {
+		printf("bad object at %ld\n", (long) obj);
+		return;
+	}
+	int classID = CLASS(obj);
+	int wordCount = WORDS(obj);
+	printf("obj %d class %d size %d\n", (int) obj, classID, wordCount);
+	for (int i = 0; i < wordCount; i++) printf("  %d: %x\n", i, obj[HEADER_WORDS + i]);
+}
+

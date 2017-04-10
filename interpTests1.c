@@ -26,40 +26,21 @@
 	void debug(char *s) { printf("%s\r\n", s); }
 #endif
 
-// additional primitives
-
-void primHello(OBJ args[]) {
-#ifdef ARDUINO
-	Serial.print("hello");
-	Serial.print((isInt(args[0]) ? obj2int(args[0]) : (int) args[0]));
-	Serial.print((isInt(args[1]) ? obj2int(args[1]) : (int) args[1]));
-#else
-	printf("hello %d %d\n",
-		(isInt(args[0]) ? obj2int(args[0]) : (int) args[0]),
-		(isInt(args[1]) ? obj2int(args[1]) : (int) args[1]));
-#endif
-}
-
-// var index names for findPrimes
-
-#define var_primeCount 0
-#define var_flags 1
-#define var_i 2
-#define var_j 3
-
 // test programs
 
 int prog1[] = {
-	OP(primitiveNoResult, 0),
-	(int) primHello,
+	OP(pushHello, 0),
+	OP(print, 1),
+	OP(pop, 1),
 	OP(halt, 0),
 };
 
 int prog2[] = {
 	OP(pushImmediate, int2obj(10)), // loop counter
-	OP(primitiveNoResult, 0),
-	(int) primHello,
-	OP(decrementAndJmp, -3),
+	OP(pushHello, 0),
+	OP(print, 1),
+	OP(pop, 1),
+	OP(decrementAndJmp, -4),
 	OP(halt, 0),
 };
 
@@ -70,10 +51,11 @@ int prog3[] = {
 
 	OP(pushImmediate, int2obj(1)), // loop body start
 	OP(incrementVar, 0), // n++
+	OP(pushHello, 0),
 	OP(pushVar, 0), // push n
-	OP(primitiveNoResult, 1),
-	(int) primHello,
-	OP(decrementAndJmp, -6),
+	OP(print, 2),
+	OP(pop, 1),
+	OP(decrementAndJmp, -7),
 
 	OP(halt, 0),
 };
@@ -114,45 +96,6 @@ int loopTest[] = {
 };
 
 int sumTest[] = {
-	// This version calls primAdd and primLess primitives.
-
-	OP(pushImmediate, int2obj(0)),
-	OP(popVar, 0), // sum
-	OP(pushImmediate, int2obj(0)),
-	OP(popVar, 1), // i
-
-	OP(jmp, 10), // jump to loop test
-
-	// loop body:
-	OP(pushVar, 0),
-	OP(pushImmediate, int2obj(1)),
-	OP(primitive, 2),
-	(int) primAdd,
-	OP(popVar, 0),
-
-	OP(pushVar, 1),
-	OP(pushImmediate, int2obj(1)),
-	OP(primitive, 2),
-	(int) primAdd,
-	OP(popVar, 1),
-
-	// loop test:
-	OP(pushVar, 1),
-	OP(pushImmediate, int2obj(1000000)),
-	OP(primitive, 2),
-	(int) primLess,
-	OP(jmpTrue, -15),
-
-// OP(pushVar, 0),
-// OP(primitiveNoResult, 1),
-// (int) primPrint,
-
-	OP(halt, 0),
-};
-
-int sumTest2[] = {
-	// This version uses internal add and less opcodes rather than primitives.
-
 	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // sum
 	OP(pushImmediate, int2obj(0)),
@@ -178,35 +121,13 @@ int sumTest2[] = {
 	OP(jmpTrue, -12),
 
 // OP(pushVar, 0),
-// OP(primitiveNoResult, 1),
-// (int) primPrint,
+// OP(print, 1),
+// OP(pop, 1),
 
 	OP(halt, 0),
 };
 
 int sumTestWithRepeat[] = {
-	// Calls primAdd
-	OP(pushImmediate, int2obj(0)),
-	OP(popVar, 0), // total = 0
-
-	OP(pushImmediate, int2obj(1000000)), // push repeat count
-
-	// loop body:
-	OP(pushVar, 0),
-	OP(pushImmediate, int2obj(1)),
-	OP(primitive, 2),
-	(int) primAdd,
-	OP(popVar, 0),
-	OP(decrementAndJmp, -6),
-
-// OP(pushVar, 0),
-// OP(primitiveNoResult, 1),
-// (int) primPrint,
-
-	OP(halt, 0),
-};
-
-int sumTestWithRepeat2[] = {
 	// Uses the internal add opcode
 	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // total = 0
@@ -221,14 +142,14 @@ int sumTestWithRepeat2[] = {
 	OP(decrementAndJmp, -5),
 
 // OP(pushVar, 0),
-// OP(primitiveNoResult, 1),
-// (int) primPrint,
+// OP(print, 1),
+// OP(pop, 1),
 
 	OP(halt, 0),
 };
 
-int sumTestWithRepeat3[] = {
-	// Like sumTestWithRepeat2 but uses incrementVar
+int sumTestWithRepeatAndIncrement[] = {
+	// Like sumTestWithRepeat but uses incrementVar
 	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // total = 0
 
@@ -240,25 +161,31 @@ int sumTestWithRepeat3[] = {
 	OP(decrementAndJmp, -3),
 
 // OP(pushVar, 0),
-// OP(primitiveNoResult, 1),
-// (int) primPrint,
+// OP(print, 1),
+// OP(pop, 1),
 
 	OP(halt, 0),
 };
 
+// symbolic var names for findPrimes
+
+#define var_primeCount 0
+#define var_flags 1
+#define var_i 2
+#define var_j 3
+
 int findPrimes[] = {
+	OP(pushImmediate, int2obj(8190)),
+	OP(newArray, 1),
+	OP(popVar, var_flags),
+
 	OP(pushImmediate, int2obj(0)),
 	OP(popVar, var_primeCount),
 
-	OP(pushImmediate, int2obj(8190)),
-	OP(primitive, 1),
-	(int) primNewArray,
-	OP(popVar, var_flags),
-
 	OP(pushVar, var_flags),
 	OP(pushImmediate, (int) trueObj),
-	OP(primitive, 2),
-	(int) primArrayFill,
+	OP(fillArray, 2),
+	OP(pop, 1),
 
 	OP(pushImmediate, int2obj(2)),
 	OP(popVar, var_i),
@@ -266,37 +193,37 @@ int findPrimes[] = {
 	OP(pushImmediate, int2obj(8188)), // push repeat count
 	OP(pushVar, var_flags), // repeatLoopStart
 	OP(pushVar, var_i),
-	OP(primitive, 2),
-	(int) primArrayAt,
+	OP(at, 2),
+//	(int) primArrayAt,
 	OP(jmpFalse, 23), // jmpFalse ifEnd
 
 	OP(pushVar, var_i),
-	OP(primitiveNoResult, 1),
-	(int) primPrint,
+	OP(print, 1),
+	OP(pop, 1),
 
 	OP(pushImmediate, int2obj(1)),
 	OP(incrementVar, var_primeCount),
 
 	OP(pushImmediate, int2obj(2)),
 	OP(pushVar, var_i),
-	OP(primitive, 2),
-	(int) primMul,
+	OP(multiply, 2),
+//	(int) primMul,
 	OP(popVar, var_j),
 
 	OP(jmp, 7), // jmp whileEndTest
 	OP(pushVar, var_flags), // whileLoopStart
 	OP(pushVar, var_j),
 	OP(pushImmediate, (int) falseObj),
-	OP(primitiveNoResult, 3),
-	(int) primArrayAtPut,
+	OP(atPut, 3),
+	OP(pop, 1),
 
 	OP(pushVar, var_i),
 	OP(incrementVar, var_j),
 
 	OP(pushVar, var_j), // whileEndTest
 	OP(pushImmediate, int2obj(8190)),
-	OP(primitive, 2),
-	(int) primLess,
+	OP(lessThan, 2),
+//	(int) primLess,
 	OP(jmpTrue, -12), // jmpTrue whileLoopStart
 
 	OP(pushImmediate, int2obj(1)), // ifEnd
@@ -305,18 +232,15 @@ int findPrimes[] = {
 	OP(decrementAndJmp, -31), // decrementAndJmp, repeatLoopStart
 
 	OP(pushVar, var_primeCount),
-	OP(primitiveNoResult, 1),
-	(int) primPrint,
+	OP(print, 1),
+	OP(pop, 1),
 
 	OP(halt, 0),
 };
 
 int primes1000[] = {
-	// Uses primitives for at, atPut, lessThan, multiply
-
 	OP(pushImmediate, int2obj(8190)),
-	OP(primitive, 1),
-	(int) primNewArray,
+	OP(newArray, 1),
 	OP(popVar, var_flags),
 
 	OP(pushImmediate, int2obj(10)), // outer loop counter
@@ -326,130 +250,8 @@ int primes1000[] = {
 
 	OP(pushVar, var_flags),
 	OP(pushImmediate, (int) trueObj),
-	OP(primitiveNoResult, 2),
-	(int) primArrayFill,
-
-	OP(pushImmediate, int2obj(2)),
-	OP(popVar, var_i),
-
-	OP(pushImmediate, int2obj(8188)), // push repeat count
-	OP(pushVar, var_flags), // repeatLoopStart
-	OP(pushVar, var_i),
-	OP(primitive, 2),
-	(int) primArrayAt,
-	OP(jmpFalse, 20), // jmpFalse ifEnd
-
-	OP(pushImmediate, int2obj(1)),
-	OP(incrementVar, var_primeCount),
-
-	OP(pushImmediate, int2obj(2)),
-	OP(pushVar, var_i),
-	OP(primitive, 2),
-	(int) primMul,
-	OP(popVar, var_j),
-
-	OP(jmp, 7), // jmp whileEndTest
-	OP(pushVar, var_flags), // whileLoopStart
-	OP(pushVar, var_j),
-	OP(pushImmediate, (int) falseObj),
-	OP(primitiveNoResult, 3),
-	(int) primArrayAtPut,
-
-	OP(pushVar, var_i),
-	OP(incrementVar, var_j),
-
-	OP(pushVar, var_j), // whileEndTest
-	OP(pushImmediate, int2obj(8190)),
-	OP(primitive, 2),
-	(int) primLess,
-	OP(jmpTrue, -12), // jmpTrue whileLoopStart
-
-	OP(pushImmediate, int2obj(1)), // ifEnd
-	OP(incrementVar, var_i),
-
-	OP(decrementAndJmp, -28), // decrementAndJmp, repeatLoopStart
- 	OP(decrementAndJmp, -38), // decrementAndJmp, outerRepeatLoopStart
-
-	OP(halt, 0),
-};
-
-int primes1000_2[] = {
-	// Uses primitives for at, atPut; inlines lessThan and multiply
-
-	OP(pushImmediate, int2obj(8190)),
-	OP(primitive, 1),
-	(int) primNewArray,
-	OP(popVar, var_flags),
-
-	OP(pushImmediate, int2obj(10)), // outer loop counter
-
-	OP(pushImmediate, int2obj(0)),
-	OP(popVar, var_primeCount),
-
-	OP(pushVar, var_flags),
-	OP(pushImmediate, (int) trueObj),
-	OP(primitiveNoResult, 2),
-	(int) primArrayFill,
-
-	OP(pushImmediate, int2obj(2)),
-	OP(popVar, var_i),
-
-	OP(pushImmediate, int2obj(8188)), // push repeat count
-	OP(pushVar, var_flags), // repeatLoopStart
-	OP(pushVar, var_i),
-	OP(primitive, 2),
-	(int) primArrayAt,
-	OP(jmpFalse, 18), // jmpFalse ifEnd
-
-	OP(pushImmediate, int2obj(1)),
-	OP(incrementVar, var_primeCount),
-
-	OP(pushImmediate, int2obj(2)),
-	OP(pushVar, var_i),
-	OP(multiply, 0),
-	OP(popVar, var_j),
-
-	OP(jmp, 7), // jmp whileEndTest
-	OP(pushVar, var_flags), // whileLoopStart
-	OP(pushVar, var_j),
-	OP(pushImmediate, (int) falseObj),
-	OP(primitiveNoResult, 3),
-	(int) primArrayAtPut,
-
-	OP(pushVar, var_i),
-	OP(incrementVar, var_j),
-
-	OP(pushVar, var_j), // whileEndTest
-	OP(pushImmediate, int2obj(8190)),
-	OP(lessThan, 0),
-	OP(jmpTrue, -11), // jmpTrue whileLoopStart
-
-	OP(pushImmediate, int2obj(1)), // ifEnd
-	OP(incrementVar, var_i),
-
-	OP(decrementAndJmp, -26), // decrementAndJmp, repeatLoopStart
-	OP(decrementAndJmp, -36), // decrementAndJmp, outerRepeatLoopStart
-
-	OP(halt, 0),
-};
-
-int primes1000_3[] = {
-	// No primitives inside loops
-
-	OP(pushImmediate, int2obj(8190)),
-	OP(primitive, 1),
-	(int) primNewArray,
-	OP(popVar, var_flags),
-
-	OP(pushImmediate, int2obj(10)), // outer loop counter
-
-	OP(pushImmediate, int2obj(0)),
-	OP(popVar, var_primeCount),
-
-	OP(pushVar, var_flags),
-	OP(pushImmediate, (int) trueObj),
-	OP(primitiveNoResult, 2),
-	(int) primArrayFill,
+	OP(fillArray, 2),
+	OP(pop, 1),
 
 	OP(pushImmediate, int2obj(2)),
 	OP(popVar, var_i),
@@ -499,7 +301,7 @@ unsigned timerStart;
 #define TIMER_US() (TICKS() - timerStart)
 
 void printResult(char *testName, int usecs, float nanoSecsPerInstruction) {
-	float cyclesPerNanosec = 0.096; // clock rate divided by 10e9
+	float cyclesPerNanosec = 2.5; // clock rate divided by 10e9
 	float cyclesPerOp = cyclesPerNanosec * nanoSecsPerInstruction;
 #ifdef ARDUINO
 	Serial.print(testName);
@@ -541,36 +343,24 @@ void interpTests1() {
 	START_TIMER();
 	runProg(sumTest);
 	usecs = TIMER_US();
-	n = 12000012;
+	n = 12000010;
 	printResult("sumTest", usecs, (1000.0 * usecs) / n);
-
-	START_TIMER();
-	runProg(sumTest2);
-	usecs = TIMER_US();
-	n = 12000012;
-	printResult("sumTest2", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
 	runProg(sumTestWithRepeat);
 	usecs = TIMER_US();
-	n = 5000006;
+	n = 5000004;
 	printResult("sumTestWithRepeat", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
-	runProg(sumTestWithRepeat2);
+	runProg(sumTestWithRepeatAndIncrement);
 	usecs = TIMER_US();
-	n = 5000006;
-	printResult("sumTestWithRepeat2", usecs, (1000.0 * usecs) / n);
-
-	START_TIMER();
-	runProg(sumTestWithRepeat3);
-	usecs = TIMER_US();
-	n = 3000006;
-	printResult("sumTestWithRepeat3", usecs, (1000.0 * usecs) / n);
+	n = 3000004;
+	printResult("sumTestWithRepeatAndIncrement", usecs, (1000.0 * usecs) / n);
 
 return;
 
-	// The tests below this point require ~32kbytes (or ~8k if using a byte array for flags)
+	// The following test requires ~32kbytes (or ~8k if using a byte array for flags)
 	// and thus do not run on boards with limited RAM such as the micro:bit.
 
 	START_TIMER();
@@ -579,17 +369,4 @@ return;
 	n = 2554625;
 	printResult("primes1000", usecs, (1000.0 * usecs) / n);
 
-	memClear();
-	START_TIMER();
-	runProg(primes1000_2);
-	usecs = TIMER_US();
-	n = 2554625;
-	printResult("primes1000_2", usecs, (1000.0 * usecs) / n);
-
-	memClear();
-	START_TIMER();
-	runProg(primes1000_3);
-	usecs = TIMER_US();
-	n = 2554625;
-	printResult("primes1000_3", usecs, (1000.0 * usecs) / n);
 }
