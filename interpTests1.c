@@ -2,29 +2,9 @@
 // John Maloney, April 2017
 
 #include <stdio.h>
+
 #include "mem.h"
 #include "interp.h"
-
-#ifdef __arm__
-	#ifdef ARDUINO
-		#include "Arduino.h"
-		#define TICKS() (micros())
-		void debug(char *s) { Serial.println(s); }
-	#else
-		#include <us_ticker_api.h>
-		#define TICKS() (us_ticker_read())
-		void debug(char *s) { printf("%s\r\n", s); }
-	#endif
-#else
-	#include <sys/time.h>
-	#include <time.h>
-	static inline unsigned TICKS() {
-		struct timeval now;
-		gettimeofday(&now, NULL);
-		return ((1000000L * now.tv_sec) + now.tv_usec) & 0xFFFFFFFF;
-	}
-	void debug(char *s) { printf("%s\r\n", s); }
-#endif
 
 // test programs
 
@@ -311,7 +291,7 @@ int primes1000[] = {
 
 // Timer
 
-unsigned timerStart;
+static unsigned timerStart;
 
 #define START_TIMER() { timerStart = TICKS(); }
 #define TIMER_US() (TICKS() - timerStart)
@@ -319,19 +299,8 @@ unsigned timerStart;
 void printResult(char *testName, int usecs, float nanoSecsPerInstruction) {
 	float cyclesPerNanosec = 0.064; // clock rate divided by 10e9
 	float cyclesPerOp = cyclesPerNanosec * nanoSecsPerInstruction;
-#ifdef ARDUINO
-	Serial.print(testName);
-	Serial.print(": ");
-	Serial.print(usecs);
-	Serial.print(" usecs, ");
-	Serial.print(nanoSecsPerInstruction, 0);
-	Serial.print(" nsecs/op ");
-	Serial.print(cyclesPerOp, 2);
-	Serial.println(" cycles/op");
-#else
-	printf("%s: %d usecs (%.2f nsecs, %.2f cycles per op)\r\n",
+	printf("%s: %d usecs (%.2f nsecs, %.2f cycles per op)\n",
 		testName, usecs, nanoSecsPerInstruction, cyclesPerOp);
-#endif
 }
 
 void interpTests1() {

@@ -7,7 +7,7 @@
 void interpTests1(void);
 
 int main(int argc, char *argv[]) {
-    printf("Starting...\r\n");
+    printf("Starting...\n");
 	memInit(5000);
 	interpTests1();
 	return 0;

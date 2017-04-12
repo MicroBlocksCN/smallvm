@@ -83,10 +83,39 @@ char* obj2str(OBJ obj);
 
 // Debugging
 
-void debug(char *s);
 void panic(char *s);
 void memPrintStatus(void);
 void memDumpObj(OBJ obj);
+
+// Printf for Arduino (many thanks to Michael McElligott)
+
+#ifdef ARDUINO
+	extern char printfBuffer[100];
+
+	#define printf(format, ...) \
+		do { \
+		snprintf(printfBuffer, sizeof(printfBuffer), format, ##__VA_ARGS__); \
+		putSerial(printfBuffer); \
+		} while(0)
+#endif
+
+// Microsecond timer
+
+#if defined(ARDUINO)
+	#include "Arduino.h"
+	#define TICKS() (micros())
+#elif defined(__MBED__)
+	#include <us_ticker_api.h>
+	#define TICKS() (us_ticker_read())
+#else
+	#include <sys/time.h>
+	#include <time.h>
+	static inline unsigned TICKS() {
+		struct timeval now;
+		gettimeofday(&now, NULL);
+		return ((1000000L * now.tv_sec) + now.tv_usec) & 0xFFFFFFFF;
+	}
+#endif
 
 #ifdef __cplusplus
 }

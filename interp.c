@@ -29,24 +29,24 @@ static inline int evalInt(OBJ obj) {
 	if (isInt(obj)) return obj2int(obj);
 	printf("evalInt got non-integer: ");
 	printObj(obj);
-    printf("\r\n");
+    printf("\n");
 	return 0;
 }
 
 void showStack(OBJ *sp, OBJ *fp) {
     OBJ *ptr = sp;
-    printf("sp: %d\r\n", (int) *ptr);
+    printf("sp: %d\n", (int) *ptr);
     while (--ptr >= &stack[0]) {
-        printf("%s  %d\r\n", ((fp == ptr) ? "fp:" : ""), (int) *ptr);
+        printf("%s  %d\n", ((fp == ptr) ? "fp:" : ""), (int) *ptr);
     }
-    printf("-----\r\n");
+    printf("-----\n");
 }
 
 // Primitives
 
 static void failure(const char *reason) {
     // Print a message and stop the interpreter.
-    printf("Primitive failed: %s\r\n", reason);
+    printf("Primitive failed: %s\n", reason);
 }
 
 OBJ sizeFailure() { failure("Size must be a positive integer"); return nilObj; }
@@ -59,7 +59,7 @@ OBJ primPrint(int argCount, OBJ args[]) {
 		printObj(args[i]);
 		printf(" ");
 	}
-	printf("\r\n");
+	printf("\n");
 	return nilObj;
 }
 
@@ -116,7 +116,7 @@ OBJ primArrayFill(OBJ args[]) {
 #define DISPATCH() { \
 	op = *ip++; \
 	arg = ARG(op); \
-/*	printf("ip: %d cmd: %d arg: %d sp: %d\r\n", (ip - prog), CMD(op), arg, (sp - stack)); */ \
+/*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - prog), CMD(op), arg, (sp - stack)); */ \
 	goto *jumpTable[CMD(op)]; \
 }
 

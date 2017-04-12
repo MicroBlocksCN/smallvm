@@ -34,9 +34,9 @@ extern "C" {
 
 // Instruction Format
 
-#define OP(opcode, arg) (((unsigned) arg << 5) | (opcode & 0x1F))
-#define CMD(n) (n & 0x1F)
-#define ARG(n) (n >> 5)
+#define OP(opcode, arg) (((unsigned) arg << 8) | (opcode & 0xFF))
+#define CMD(n) (n & 0xFF)
+#define ARG(n) (n >> 8)
 
 // Entry point
 

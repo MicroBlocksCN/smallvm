@@ -2,21 +2,19 @@
 // Just an allocator for now; no garbage collector.
 // John Maloney, April 2017
 
-#include "mem.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "mem.h"
+
+#ifdef ARDUINO
+  char printfBuffer[100]; // used by printf macro in mem.h
+#endif
+
 static OBJ memStart;
 static OBJ freeStart;
 static OBJ memEnd;
-
-void panic(char *errorMessage) {
-	// Called when VM encountered as fatal error. Print the error message and exit.
-
-	debug(errorMessage);
-	exit(-1);
-}
 
 void memInit(int wordCount) {
 	if (sizeof(int) != sizeof(int*)) {
@@ -29,7 +27,7 @@ void memInit(int wordCount) {
 	if (memStart == NULL) {
 		panic("memInit failed; insufficient memory");
 	}
-	printf("wordCount %d memStart %d\r\n", wordCount, (int) memStart);
+	printf("wordCount %d memStart %d\n", wordCount, (int) memStart);
 	if ((unsigned) memStart < 8) {
 		// Reserve memory addresses below 8 vor special OOP values for nil, true, and false
 		// Details: In the very unlikely case that memStart is under 8, increment it by 8
@@ -83,6 +81,13 @@ char* obj2str(OBJ obj) {
 
 // Debugging
 
+void panic(char *errorMessage) {
+	// Called when VM encounters a fatal error. Print the panic message and exit.
+
+	printf("%s\n", errorMessage);
+	exit(-1);
+}
+
 void memPrintStatus() {
 	printf("%d words used out of %d\n", freeStart - memStart, memEnd - memStart);
 }
@@ -98,4 +103,3 @@ void memDumpObj(OBJ obj) {
 	printf("Header: %x\n", (int) obj[0]);
 	for (int i = 0; i < wordCount; i++) printf("	0x%x,\n", obj[HEADER_WORDS + i]);
 }
-
