@@ -56,7 +56,7 @@ This message carries no data.
 
 Direction: IDE → Board
 
-OpCode: 0x10 (mnemonic: 1/0)
+OpCode: 0x10 (mnemonic: I/O)
 
 This message carries no data.
 
@@ -92,7 +92,7 @@ This message carries the whole script ByteCode as data.
 
 2) Board → IDE : [0x75, 0x02] → The thread corresponding to script 0x02 has just started. The interpreter will start the script after sending this message.
 
-3) Board → IDE : [0x7E, 0x02, 0x03] → An error has occurred while running thread corresponding to script 0x02. Its error code is 0x03.
+3) Board → IDE : [0x7E, 0x02, 0x00, 0x01, 0xD0] → An error has occurred while running thread corresponding to script 0x02. Its error code is 0xD0.
 
 ### Requesting the value of a reporter
 

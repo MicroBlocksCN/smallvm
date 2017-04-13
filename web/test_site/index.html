@@ -1,0 +1,41 @@
+<html>
+    <head>
+        <title>µBlocks Chrome extension test site</title>
+        <script src="postal.js"></script>
+    </head>
+    <body>
+        <div id="portList"></div>
+        <input id="message" value="0x7C,0x01">
+        <button onclick="sendMe()">Send</button>
+        <br>
+        <button onclick="postal.sendCommand('disconnect');">Disconnect</button>
+    </body>
+    <script>
+        postal.sendCommand(
+            'getDevices',
+            null, 
+            function (devices) {
+                devices.forEach(function (each) {
+                    var button = document.createElement('button');
+                    button.addEventListener(
+                        'click', 
+                        function () { 
+                            postal.sendCommand('connect', [each.path]);
+                        }
+                    );
+                    button.innerText = each.path;
+                    document.querySelector('#portList').append(button);
+                });
+            });
+
+        function sendMe () {
+            var string = document.querySelector('#message').value;
+            postal.sendMessage(
+                string.split(',').map(
+                    function (each) { 
+                        return parseInt(each);
+                    }
+                ));
+        };
+    </script>
+</html>

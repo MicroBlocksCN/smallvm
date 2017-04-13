@@ -1,0 +1,23 @@
+char *messages[] = {
+  // The fist element just describes the length of the array.
+  (char[]){6, 0x7D, 0x03, 0x00, 0x01, 0x30},
+  (char[]){5, 0x7D, 0x04, 0x00, 0x00},
+  (char[]){3, 0x75, 0x01},
+  (char[]){6, 0x7E, 0x01, 0x00, 0x01, 0xD0},
+  (char[]){6, 0x7E, 0x03, 0x00, 0x01, 0x6E},
+  (char[]){6, 0x7E, 0x03, 0x00, 0x01, 0x6E},
+  (char[]){8, 0xB5, 0x01, 0x00, 0x03, 0x12, 0x43, 0x56}
+};
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(13, OUTPUT);
+}
+
+void loop() {
+  int messageIdx = random(7);
+  for (int n = 1; n < messages[messageIdx][0]; n++) {
+    Serial.print(messages[messageIdx][n]);
+  }
+  delay(random(10000));
+}
