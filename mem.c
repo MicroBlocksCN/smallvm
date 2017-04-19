@@ -9,7 +9,7 @@
 #include "mem.h"
 
 #ifdef ARDUINO
-  char printfBuffer[100]; // used by printf macro in mem.h
+	char printfBuffer[100]; // used by printf macro in mem.h
 #endif
 
 static OBJ memStart;

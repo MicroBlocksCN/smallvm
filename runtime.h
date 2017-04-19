@@ -12,7 +12,7 @@ extern "C" {
 //
 //	1. to specify the callee "address" in function calls
 //	2. to specify the code to run when starting a task
-//  3. to communicate with the client IDE about code chunks and tasks
+//	3. to communicate with the client IDE about code chunks and tasks
 //
 // A given code chunk may be located in either Flash or RAM memory. The index for a given
 // code chunk does not change even when that chunk is updated or moved.

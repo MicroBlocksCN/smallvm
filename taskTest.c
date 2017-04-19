@@ -119,7 +119,7 @@ static unsigned timerStart;
 int main(int argc, char *argv[]) {
 	int usecs;
 
-    printf("\r\nStarting 2...\r\n");
+	printf("\r\nStarting 2...\r\n");
 	memInit(5000);
 
 	START_TIMER();
