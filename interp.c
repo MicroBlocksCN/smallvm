@@ -2,16 +2,19 @@
 // John Maloney, April 2017
 
 #include <stdio.h>
+#include <string.h>
 
 #include "mem.h"
 #include "interp.h"
+#include "runtime.h"
+
 
 // Interpreter State
 
 static OBJ vars[25];
 static OBJ stack[25];
 
-// Helper Functions
+// Interpreter Helper Functions
 
 static void printObj(OBJ obj) {
     if (isInt(obj)) printf("%d", obj2int(obj));
@@ -112,26 +115,33 @@ OBJ primArrayFill(OBJ args[]) {
     return nilObj;
 }
 
+// Interpreter
+
 // Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
 #define DISPATCH() { \
 	op = *ip++; \
 	arg = ARG(op); \
-/*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - prog), CMD(op), arg, (sp - stack)); */ \
+/*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - stack)); */ \
 	goto *jumpTable[CMD(op)]; \
 }
 
-OBJ runProg(int *prog) {
-    register OBJ *sp = &stack[0];
-    register int *ip = prog;
+static inline OBJ runProg(Task *task) {
+    register int *ip;
+    register OBJ *sp;
     register int op;
     int arg, tmp;
     OBJ array;
+
+	// Restore task state
+	ip = task->code + task->ip;
+	sp = task->stack + task->sp;
 
    // initialize jump table (padded to 32 entries since op is 5 bits)
     static void *jumpTable[] = {
 		&&halt_op,
 		&&noop_op,
 		&&pushImmediate_op,
+		&&pushBigImmediate_op,
 		&&pushLiteral_op,
 		&&pushVar_op,
 		&&popVar_op,
@@ -165,12 +175,21 @@ OBJ runProg(int *prog) {
 
     DISPATCH();
 
+	suspend:
+		// save task state
+		task->ip = ip - task->code;
+		task->sp = sp - task->stack;
+		return nilObj;
     halt_op:
-        return nilObj;
+		task->status = done;
+		goto suspend;
     noop_op:
         DISPATCH();
     pushImmediate_op:
         *sp++ = (OBJ) arg;
+        DISPATCH();
+    pushBigImmediate_op:
+        *sp++ = (OBJ) *ip++;
         DISPATCH();
     pushLiteral_op:
         *sp++ = (OBJ) (ip + arg); // arg is offset from the current ip to the literal object
@@ -206,6 +225,11 @@ OBJ runProg(int *prog) {
 		if (tmp > 0) {
 			ip += arg; // loop counter > 0, so branch
 			*(sp - 1) = int2obj(tmp); // update loop counter
+
+#define USE_TASKS true
+#if USE_TASKS
+			goto suspend;
+#endif
 			DISPATCH();
 		} else {
 			sp--; // loop done, pop loop counter
@@ -277,4 +301,38 @@ bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
         DISPATCH();
 
   return 0;
+}
+
+int stepTasks() {
+	// Run every task that is runnable and update its status.
+	// Return true if task has changed status.
+
+	// get current usecs
+	// step each task that is now runnable:
+	//   update task wakeTime and status
+	//	 update status when a hat switches between polling and running
+	//   completed tasks will be processed by the caller
+	//   return when a task changes status or after stepTime usecs
+
+	int runnable = 0;
+	for (int i = 0; i < taskCount; i++) {
+		if (running == tasks[i].status) {
+			runProg(&tasks[i]);
+			runnable++;
+		}
+	}
+	return runnable;
+}
+
+void runTasksUntilDone() {
+	while (true) {
+		int done = true;
+		for (int i = 0; i < taskCount; i++) {
+			if (running == tasks[i].status) {
+				runProg(&tasks[i]);
+				done = false;
+			}
+		}
+		if (done) return;
+	}
 }

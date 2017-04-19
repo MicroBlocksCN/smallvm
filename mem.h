@@ -5,7 +5,13 @@
 extern "C" {
 #endif
 
-// Define true/false constants for readability
+// Unsigned integer types
+
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+
+// Boolean constants for readability
 
 #define true 1
 #define false 0
@@ -22,7 +28,8 @@ typedef int * OBJ;
 #define FloatClass 4
 #define StringClass 5
 #define ByteArrayClass 6
-#define ArrayClass 7
+#define CodeChunkClass 7
+#define ArrayClass 8
 
 // Non-memory Objects (object is encoded directly in the object reference
 
@@ -63,7 +70,7 @@ static inline int objClass(OBJ obj) {
 
 // FIELD() can be used either to get or set an object field
 
-#define FIELD(obj, i) ((OBJ *) obj)[HEADER_WORDS + (i)])
+#define FIELD(obj, i) (((OBJ *) obj)[HEADER_WORDS + (i)])
 
 // Class checks for classes with memory instances
 // (Note: there are faster ways to test for small integers, booleans, or nil)

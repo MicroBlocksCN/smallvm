@@ -45,7 +45,7 @@ void memClear() {
 
 OBJ newObj(int classID, int wordCount, OBJ fill) {
 	OBJ obj = freeStart;
-	freeStart += ((HEADER_WORDS + wordCount) / 4);
+	freeStart += HEADER_WORDS + wordCount;
 	if (freeStart >= memEnd) {
 		memPrintStatus();
 		panic("Out of memory!");
@@ -84,7 +84,7 @@ char* obj2str(OBJ obj) {
 void panic(char *errorMessage) {
 	// Called when VM encounters a fatal error. Print the panic message and exit.
 
-	printf("%s\n", errorMessage);
+	printf("\r\n%s\r\n", errorMessage);
 	exit(-1);
 }
 
