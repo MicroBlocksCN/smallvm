@@ -46,15 +46,16 @@ void showStack(OBJ *sp, OBJ *fp) {
 
 // Primitives
 
-static void failure(const char *reason) {
+OBJ failure(const char *reason) {
 	// Print a message and stop the interpreter.
 	printf("Primitive failed: %s\n", reason);
+	return 0;
 }
 
-OBJ sizeFailure() { failure("Size must be a positive integer"); return nilObj; }
-OBJ arrayClassFailure() { failure("Must must be an Array"); return nilObj; }
-OBJ indexClassFailure() { failure("Index must be an integer"); return nilObj; }
-OBJ outOfRangeFailure() { failure("Index out of range"); return nilObj; }
+OBJ sizeFailure() { return failure("Size must be a positive integer"); }
+OBJ arrayClassFailure() { return failure("Must must be an Array"); }
+OBJ indexClassFailure() { return failure("Index must be an integer"); }
+OBJ outOfRangeFailure() { return failure("Index out of range"); }
 
 OBJ primPrint(int argCount, OBJ args[]) {
 	for (int i = 0; i < argCount; i++) {
@@ -80,7 +81,7 @@ OBJ primArrayAt(OBJ args[]) {
 	if (!isInt(index)) return indexClassFailure();
 
 	int i = obj2int(index);
-	if ((i < 1) || (i > (objWords(array) * 4))) { outOfRangeFailure(); return nilObj; }
+	if ((i < 1) || (i > (objWords(array) * 4))) { return outOfRangeFailure(); }
 // hack for primes benchmark: use byte array to simulate array of booleans
 	char *bytes = (char *) array;
 	return (bytes[(4 * HEADER_WORDS) + (i - 1)]) ? trueObj : falseObj;
@@ -124,7 +125,7 @@ OBJ primArrayFill(OBJ args[]) {
 	goto *jumpTable[CMD(op)]; \
 }
 
-static inline OBJ runProg(Task *task) {
+static inline int runTask(Task *task) {
 	register int *ip;
 	register OBJ *sp;
 	register int op;
@@ -162,14 +163,14 @@ static inline OBJ runProg(Task *task) {
 		&&atPut_op,
 		&&newArray_op,
 		&&fillArray_op,
- 		&&halt_op,
-		&&halt_op,
-		&&halt_op,
-		&&halt_op,
-		&&halt_op,
-		&&halt_op,
-		&&halt_op,
-		&&halt_op,
+		&&analogRead_op,
+		&&analogWrite_op,
+		&&digitalRead_op,
+		&&digitalWrite_op,
+		&&micros_op,
+		&&millis_op,
+		&&peek_op,
+		&&poke_op,
 	};
 
 	DISPATCH();
@@ -178,7 +179,7 @@ static inline OBJ runProg(Task *task) {
 		// save task state
 		task->ip = ip - task->code;
 		task->sp = sp - task->stack;
-		return nilObj;
+		return task->status;
 	halt_op:
 		task->status = done;
 		goto suspend;
@@ -227,6 +228,7 @@ static inline OBJ runProg(Task *task) {
 
 #define USE_TASKS true
 #if USE_TASKS
+			task->status = running;
 			goto suspend;
 #endif
 			DISPATCH();
@@ -235,30 +237,31 @@ static inline OBJ runProg(Task *task) {
 		}
 		DISPATCH();
 	callFunction_op:
-		// not yet implemented
+		// xxx not yet implemented
 		DISPATCH();
 	returnResult_op:
-		return *sp;
+		task->status = done_Value;
+		return task->status;
 		DISPATCH();
 	add_op:
 		*(sp - 2) = int2obj(evalInt(*(sp - 2)) + evalInt(*(sp - 1)));
-		sp -= 1;
+		sp -= arg - 1;
 		DISPATCH();
 	subtract_op:
 		*(sp - 2) = int2obj(evalInt(*(sp - 2)) - evalInt(*(sp - 1)));
-		sp -= 1;
+		sp -= arg - 1;
 		DISPATCH();
 	multiply_op:
 		*(sp - 2) = int2obj(evalInt(*(sp - 2)) * evalInt(*(sp - 1)));
-		sp -= 1;
+		sp -= arg - 1;
 		DISPATCH();
 	divide_op:
 		*(sp - 2) = int2obj(evalInt(*(sp - 2)) / evalInt(*(sp - 1)));
-		sp -= 1;
+		sp -= arg - 1;
 		DISPATCH();
 	lessThan_op:
 		*(sp - 2) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
-		sp -= 1;
+		sp -= arg - 1;
 		DISPATCH();
 	printIt_op:
 		*(sp - arg) = primPrint(arg, sp - arg); // arg = # of arguments
@@ -266,11 +269,11 @@ static inline OBJ runProg(Task *task) {
 		DISPATCH();
 	at_op:
 		array = *(sp - 2);
-		if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
-		if (!isInt(*(sp - 1))) return indexClassFailure();
+		if (NOT_CLASS(array, ArrayClass)) return (int) arrayClassFailure();
+		if (!isInt(*(sp - 1))) return (int) indexClassFailure();
 
 		tmp = obj2int(*(sp - 1)); // index
-		if ((tmp < 1) || (tmp > (objWords(array) * 4))) { return outOfRangeFailure(); }
+		if ((tmp < 1) || (tmp > (objWords(array) * 4))) { return (int) outOfRangeFailure(); }
 // hack for primes benchmark: use byte array to simulate array of booleans
 //		*(sp - 2) = (OBJ) array[HEADER_WORDS + tmp - 1];
 char *bytes = (char *) array;
@@ -279,11 +282,11 @@ char *bytes = (char *) array;
 		DISPATCH();
 	atPut_op:
 		array = *(sp - 3);
-		if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
-		if (!isInt(*(sp - 2))) return indexClassFailure();
+		if (NOT_CLASS(array, ArrayClass)) return (int) arrayClassFailure();
+		if (!isInt(*(sp - 2))) return (int) indexClassFailure();
 
 		tmp = obj2int(*(sp - 2)); // index
-		if ((tmp < 1) || (tmp > (objWords(array) * 4))) return outOfRangeFailure();
+		if ((tmp < 1) || (tmp > (objWords(array) * 4))) return (int) outOfRangeFailure();
 // hack for primes benchmark: use byte array to simulate array of booleans
 //		array[HEADER_WORDS + tmp - 1] = (int) *(sp - 1);
 bytes = (char *) array;
@@ -296,6 +299,38 @@ bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
 		DISPATCH();
 	fillArray_op:
 		*(sp - arg) = primArrayFill(sp - arg); // arg = # of arguments
+		sp -= arg - 1;
+		DISPATCH();
+	analogRead_op:
+		// xxx to do
+		sp -= arg - 1;
+		DISPATCH();
+	analogWrite_op:
+		// xxx to do
+		sp -= arg - 1;
+		DISPATCH();
+	digitalRead_op:
+		// xxx to do
+		sp -= arg - 1;
+		DISPATCH();
+	digitalWrite_op:
+		// xxx to do
+		sp -= arg - 1;
+		DISPATCH();
+	micros_op:
+		// xxx to do
+		sp -= arg - 1;
+		DISPATCH();
+	millis_op:
+		// xxx to do
+		DISPATCH();
+		sp -= arg - 1;
+	peek_op:
+		// xxx to do
+		sp -= arg - 1;
+		DISPATCH();
+	poke_op:
+		// xxx to do
 		sp -= arg - 1;
 		DISPATCH();
 
@@ -316,7 +351,7 @@ int stepTasks() {
 	int runnable = 0;
 	for (int i = 0; i < taskCount; i++) {
 		if (running == tasks[i].status) {
-			runProg(&tasks[i]);
+			runTask(&tasks[i]);
 			runnable++;
 		}
 	}
@@ -328,7 +363,7 @@ void runTasksUntilDone() {
 		int done = true;
 		for (int i = 0; i < taskCount; i++) {
 			if (running == tasks[i].status) {
-				runProg(&tasks[i]);
+				runTask(&tasks[i]);
 				done = false;
 			}
 		}

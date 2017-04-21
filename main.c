@@ -5,10 +5,12 @@
 #include "mem.h"
 
 void interpTests1(void);
+void taskTest(void);
 
 int main(int argc, char *argv[]) {
 	printf("Starting...\n");
 	memInit(5000);
 	interpTests1();
+	taskTest();
 	return 0;
 }

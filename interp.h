@@ -32,6 +32,14 @@ extern "C" {
 #define atPut 22
 #define newArray 23
 #define fillArray 24
+#define analogRead 25
+#define analogWrite 26
+#define digitalRead 27
+#define digitalWrite 28
+#define micros 29
+#define millis 30
+#define peek 31
+#define poke 32
 
 // Instruction Format
 

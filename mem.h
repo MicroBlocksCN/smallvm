@@ -1,4 +1,4 @@
-// mem.h - Object memory definitions using 32-bit object pointers
+// mem.h - Object memory definitions using 32-bit object references
 // John Maloney, April 2017
 
 #ifdef __cplusplus
@@ -37,11 +37,11 @@ typedef int * OBJ;
 // Note: These are constants, not pointers to objects in memory.
 
 #define nilObj ((OBJ) 0)
-#define trueObj ((OBJ) 2)
-#define falseObj ((OBJ) 4)
+#define trueObj ((OBJ) 4)
+#define falseObj ((OBJ) 8)
 
-// 31-bit signed integers have a 1 in their lowest bit and a value in their top 31 bits.
-// Note: Integer values are encoded in the object pointer; there is no memory object.
+// Integer objects have a 1 in their lowest bit and a signed value in their top 31 bits.
+// Note: Integers are directly encoded in the object reference; they have no memory object.
 
 #define isInt(obj) (((int) (obj)) & 1)
 #define int2obj(n) ((OBJ) (((n) << 1) | 1))
@@ -49,7 +49,7 @@ typedef int * OBJ;
 
 // Memory Objects
 //
-// Even-valued object pointers (except nil, true, and false) point to an object in memory.
+// Even-valued object references (except nil, true, and false) point to an object in memory.
 // Memory objects start with one or more header words.
 
 #define HEADER_WORDS 1

@@ -28,12 +28,12 @@ void memInit(int wordCount) {
 		panic("memInit failed; insufficient memory");
 	}
 	printf("wordCount %d memStart %d\n", wordCount, (int) memStart);
-	if ((unsigned) memStart < 8) {
-		// Reserve memory addresses below 8 vor special OOP values for nil, true, and false
-		// Details: In the very unlikely case that memStart is under 8, increment it by 8
-		// and reduce wordCount by 2 words.
-		memStart = (OBJ) ((unsigned) memStart + 8);
-		wordCount -= 2;
+	if ((unsigned) memStart <= 8) {
+		// Reserve object references 0, 4, and 8 for constants nil, true, and false
+		// Details: In the unlikely case that memStart <= 8, increment it by 12
+		// and reduce wordCount by 3 words.
+		memStart = (OBJ) ((unsigned) memStart + 12);
+		wordCount -= 3;
 	}
 	freeStart = memStart;
 	memEnd = memStart + wordCount;

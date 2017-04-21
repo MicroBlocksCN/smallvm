@@ -81,6 +81,7 @@ int getStatusForAllTasks(uint8 *buf, int bufSize);
 
 void startTaskForChunk(uint8 chunkIndex);
 void stopChunkTask(uint8 chunkIndex);
+void runTasksUntilDone(void);
 
 void startAll(void);
 void stopAll(void);

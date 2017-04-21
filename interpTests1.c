@@ -5,10 +5,11 @@
 
 #include "mem.h"
 #include "interp.h"
+#include "runtime.h"
 
 // test programs
 
-int prog1[] = {
+static int prog1[] = {
 	OP(pushLiteral, 3),
 	OP(printIt, 1),
 	OP(pop, 1),
@@ -22,7 +23,7 @@ int prog1[] = {
 };
 
 
-int prog2[] = {
+static int prog2[] = {
 	OP(pushImmediate, int2obj(10)), // loop counter
 	OP(pushLiteral, 4),
 	OP(printIt, 1),
@@ -35,7 +36,7 @@ int prog2[] = {
 	0x216f,
 };
 
-int prog3[] = {
+static int prog3[] = {
 	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // n = 0
 	OP(pushImmediate, int2obj(10)), // loop counter
@@ -54,13 +55,13 @@ int prog3[] = {
 	0x3d204e,
 };
 
-int emptyLoop[] = {
+static int emptyLoop[] = {
 	OP(pushImmediate, int2obj(1000000)), // push repeat count
 	OP(decrementAndJmp, -1),
 	OP(halt, 0),
 };
 
-int loopWithNoops[] = {
+static int loopWithNoops[] = {
 	// Like emptyLoop but with 10 noop's in the body; used to measure dispatch overhead
 	OP(pushImmediate, int2obj(1000000)), // push repeat count
 	OP(noop, 0),
@@ -77,7 +78,7 @@ int loopWithNoops[] = {
 	OP(halt, 0),
 };
 
-int loopTest[] = {
+static int loopTest[] = {
 	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0),
 
@@ -89,7 +90,7 @@ int loopTest[] = {
 	OP(halt, 0),
 };
 
-int sumTest[] = {
+static int sumTest[] = {
 	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // sum
 	OP(pushImmediate, int2obj(0)),
@@ -100,18 +101,18 @@ int sumTest[] = {
 	// loop body:
 	OP(pushVar, 0),
 	OP(pushImmediate, int2obj(1)),
-	OP(add, 0),
+	OP(add, 2),
 	OP(popVar, 0),
 
 	OP(pushVar, 1),
 	OP(pushImmediate, int2obj(1)),
-	OP(add, 0),
+	OP(add, 2),
 	OP(popVar, 1),
 
 	// loop test:
 	OP(pushVar, 1),
 	OP(pushImmediate, int2obj(1000000)),
-	OP(lessThan, 0),
+	OP(lessThan, 2),
 	OP(jmpTrue, -12),
 
 // OP(pushVar, 0),
@@ -121,7 +122,7 @@ int sumTest[] = {
 	OP(halt, 0),
 };
 
-int sumTestWithRepeat[] = {
+static int sumTestWithRepeat[] = {
 	// Uses the internal add opcode
 	OP(pushImmediate, int2obj(0)),
 	OP(popVar, 0), // total = 0
@@ -131,7 +132,7 @@ int sumTestWithRepeat[] = {
 	// loop body:
 	OP(pushVar, 0),
 	OP(pushImmediate, int2obj(1)),
-	OP(add, 0),
+	OP(add, 2),
 	OP(popVar, 0),
 	OP(decrementAndJmp, -5),
 
@@ -168,7 +169,7 @@ int sumTestWithRepeatAndIncrement[] = {
 #define var_i 2
 #define var_j 3
 
-int findPrimes[] = {
+static int findPrimes[] = {
 	OP(pushImmediate, int2obj(8190)),
 	OP(newArray, 1),
 	OP(popVar, var_flags),
@@ -229,7 +230,7 @@ int findPrimes[] = {
 	OP(halt, 0),
 };
 
-int primes1000[] = {
+static int primes1000[] = {
 	OP(pushImmediate, int2obj(8190)),
 	OP(newArray, 1),
 	OP(popVar, var_flags),
@@ -258,7 +259,7 @@ int primes1000[] = {
 
 	OP(pushImmediate, int2obj(2)),
 	OP(pushVar, var_i),
-	OP(multiply, 0),
+	OP(multiply, 2),
 	OP(popVar, var_j),
 
 	OP(jmp, 7), // jmp whileEndTest
@@ -273,7 +274,7 @@ int primes1000[] = {
 
 	OP(pushVar, var_j), // whileEndTest
 	OP(pushImmediate, int2obj(8190)),
-	OP(lessThan, 0),
+	OP(lessThan, 2),
 	OP(jmpTrue, -11), // jmpTrue whileLoopStart
 
 	OP(pushImmediate, int2obj(1)), // ifEnd
@@ -296,7 +297,17 @@ static unsigned timerStart;
 #define START_TIMER() { timerStart = TICKS(); }
 #define TIMER_US() (TICKS() - timerStart)
 
-void printResult(char *testName, int usecs, float nanoSecsPerInstruction) {
+// Helpers
+
+static uint8 nextChunkIndex = 0;
+
+static void runProg(int* prog, int byteCount) {
+	storeCodeChunk(nextChunkIndex, 0, byteCount, (uint8 *) prog);
+	startTaskForChunk(nextChunkIndex++);
+	runTasksUntilDone();
+}
+
+static void printResult(char *testName, int usecs, float nanoSecsPerInstruction) {
 	float cyclesPerNanosec = 0.064; // clock rate divided by 10e9
 	float cyclesPerOp = cyclesPerNanosec * nanoSecsPerInstruction;
 	printf("%s: %d usecs (%.2f nsecs, %.2f cycles per op)\n",
@@ -307,38 +318,38 @@ void interpTests1() {
 	unsigned long n, usecs, emptyLoopTime;
 
 	START_TIMER();
-	runProg(emptyLoop);
+	runProg(emptyLoop, sizeof(emptyLoop));
 	usecs = TIMER_US();
 	emptyLoopTime = usecs;
 	n = 1000002;
 	printResult("empty loop", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
-	runProg(loopWithNoops);
+	runProg(loopWithNoops, sizeof(loopWithNoops));
 	usecs = TIMER_US() - emptyLoopTime;
 	n = 10000000; // number of noops executed
 	printResult("noop loop", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
-	runProg(loopTest);
+	runProg(loopTest, sizeof(loopTest));
 	usecs = TIMER_US();
 	n = 3000004;
 	printResult("loopTest", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
-	runProg(sumTest);
+	runProg(sumTest, sizeof(sumTest));
 	usecs = TIMER_US();
 	n = 12000010;
 	printResult("sumTest", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
-	runProg(sumTestWithRepeat);
+	runProg(sumTestWithRepeat, sizeof(sumTestWithRepeat));
 	usecs = TIMER_US();
 	n = 5000004;
 	printResult("sumTestWithRepeat", usecs, (1000.0 * usecs) / n);
 
 	START_TIMER();
-	runProg(sumTestWithRepeatAndIncrement);
+	runProg(sumTestWithRepeatAndIncrement, sizeof(sumTestWithRepeatAndIncrement));
 	usecs = TIMER_US();
 	n = 3000004;
 	printResult("sumTestWithRepeatAndIncrement", usecs, (1000.0 * usecs) / n);
@@ -349,7 +360,7 @@ return;
 	// and thus do not run on boards with limited RAM such as the micro:bit.
 
 	START_TIMER();
-	runProg(primes1000);
+	runProg(primes1000, sizeof(primes1000));
 	usecs = TIMER_US();
 	n = 2554625;
 	printResult("primes1000", usecs, (1000.0 * usecs) / n);

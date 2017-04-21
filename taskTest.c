@@ -7,8 +7,6 @@
 #include "interp.h"
 #include "runtime.h"
 
-void runTasksUntilDone();
-
 // test programs
 
 int prog1[] = {
@@ -103,7 +101,7 @@ int sum200k[] = {
 
 static uint8 nextChunkIndex = 0;
 
-void startTask(int* prog, int byteCount) {
+static void startTask(int* prog, int byteCount) {
 	storeCodeChunk(nextChunkIndex, 0, byteCount, (uint8 *) prog);
 	startTaskForChunk(nextChunkIndex);
 	nextChunkIndex++;
@@ -116,7 +114,7 @@ static unsigned timerStart;
 #define START_TIMER() { timerStart = TICKS(); }
 #define TIMER_US() (TICKS() - timerStart)
 
-int main(int argc, char *argv[]) {
+void taskTest() {
 	int usecs;
 
 	printf("\r\nStarting 2...\r\n");
@@ -151,6 +149,4 @@ int main(int argc, char *argv[]) {
 	runTasksUntilDone();
 	usecs = TIMER_US();
 	printf("One 200k task %d usecs\r\n", usecs);
-
-	return 0;
 }
