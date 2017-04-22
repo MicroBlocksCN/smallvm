@@ -243,24 +243,26 @@ static inline int runTask(Task *task) {
 		task->status = done_Value;
 		return task->status;
 		DISPATCH();
+	// For primitive ops, arg is the number of arguments (any primitive can be variadic).
+	// Primitive functions return a result that is left on the stack; all args are popped.
 	add_op:
-		*(sp - 2) = int2obj(evalInt(*(sp - 2)) + evalInt(*(sp - 1)));
+		*(sp - arg) = int2obj(evalInt(*(sp - 2)) + evalInt(*(sp - 1)));
 		sp -= arg - 1;
 		DISPATCH();
 	subtract_op:
-		*(sp - 2) = int2obj(evalInt(*(sp - 2)) - evalInt(*(sp - 1)));
+		*(sp - arg) = int2obj(evalInt(*(sp - 2)) - evalInt(*(sp - 1)));
 		sp -= arg - 1;
 		DISPATCH();
 	multiply_op:
-		*(sp - 2) = int2obj(evalInt(*(sp - 2)) * evalInt(*(sp - 1)));
+		*(sp - arg) = int2obj(evalInt(*(sp - 2)) * evalInt(*(sp - 1)));
 		sp -= arg - 1;
 		DISPATCH();
 	divide_op:
-		*(sp - 2) = int2obj(evalInt(*(sp - 2)) / evalInt(*(sp - 1)));
+		*(sp - arg) = int2obj(evalInt(*(sp - 2)) / evalInt(*(sp - 1)));
 		sp -= arg - 1;
 		DISPATCH();
 	lessThan_op:
-		*(sp - 2) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
+		*(sp - arg) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
 		sp -= arg - 1;
 		DISPATCH();
 	printIt_op:
@@ -275,9 +277,9 @@ static inline int runTask(Task *task) {
 		tmp = obj2int(*(sp - 1)); // index
 		if ((tmp < 1) || (tmp > (objWords(array) * 4))) { return (int) outOfRangeFailure(); }
 // hack for primes benchmark: use byte array to simulate array of booleans
-//		*(sp - 2) = (OBJ) array[HEADER_WORDS + tmp - 1];
+//		*(sp - arg) = (OBJ) array[HEADER_WORDS + tmp - 1];
 char *bytes = (char *) array;
-*(sp - 2) = (bytes[(4 * HEADER_WORDS) + tmp - 1]) ? trueObj : falseObj;
+*(sp - arg) = (bytes[(4 * HEADER_WORDS) + tmp - 1]) ? trueObj : falseObj;
 		sp -= arg - 1;
 		DISPATCH();
 	atPut_op:
@@ -302,35 +304,35 @@ bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
 		sp -= arg - 1;
 		DISPATCH();
 	analogRead_op:
-		// xxx to do
+		*(sp - arg) = primAnalogRead(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	analogWrite_op:
-		// xxx to do
+		*(sp - arg) = primAnalogWrite(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	digitalRead_op:
-		// xxx to do
+		*(sp - arg) = primDigitalRead(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	digitalWrite_op:
-		// xxx to do
+		*(sp - arg) = primDigitalWrite(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	micros_op:
-		// xxx to do
+		*(sp - arg) = primMicros(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	millis_op:
-		// xxx to do
-		DISPATCH();
+		*(sp - arg) = primMillis(sp - arg);
 		sp -= arg - 1;
+		DISPATCH();
 	peek_op:
-		// xxx to do
+		*(sp - arg) = primPeek(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	poke_op:
-		// xxx to do
+		*(sp - arg) = primPoke(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 
@@ -363,7 +365,13 @@ void runTasksUntilDone() {
 		int done = true;
 		for (int i = 0; i < taskCount; i++) {
 			if (running == tasks[i].status) {
-				runTask(&tasks[i]);
+				int newStatus = runTask(&tasks[i]);
+				if (done_Value == newStatus) {
+					OBJ returnValue = tasks[i].stack[tasks[i].sp - 1];
+					printf("Returned: %d ", (int) returnValue);
+					printObj(returnValue);
+					printf("\n");
+				}
 				done = false;
 			}
 		}

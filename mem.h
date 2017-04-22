@@ -97,6 +97,7 @@ void memDumpObj(OBJ obj);
 // Printf for Arduino (many thanks to Michael McElligott)
 
 #ifdef ARDUINO
+	void putSerial(char *s);
 	extern char printfBuffer[100];
 
 	#define printf(format, ...) \
@@ -109,8 +110,8 @@ void memDumpObj(OBJ obj);
 // Microsecond timer
 
 #if defined(ARDUINO)
-	#include "Arduino.h"
-	#define TICKS() (micros())
+	int microsecs(void);
+	#define TICKS() (microsecs())
 #elif defined(__MBED__)
 	#include <us_ticker_api.h>
 	#define TICKS() (us_ticker_read())

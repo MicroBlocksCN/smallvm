@@ -1,12 +1,14 @@
 #include "mem.h"
 #include "interp.h"
+#include "runtime.h"
 
 extern "C" {
   // Entry points called from C
 
   void interpTests1(void);
+  int microsecs() { return (int) micros; }
   void putLineSerial(char *s) { Serial.println(s); }
-  void putSerial(char *s, int x) { Serial.print(s); }
+  void putSerial(char *s) { Serial.print(s); }
   int serialAvailable() { return (Serial.available() > 0); }
 
 }
@@ -31,6 +33,14 @@ void loop() {
   }
 }
 
+static uint8 nextChunkIndex = 0;
+
+static void runProg(int* prog, int byteCount) {
+  storeCodeChunk(nextChunkIndex, 0, byteCount, (uint8 *) prog);
+  startTaskForChunk(nextChunkIndex++);
+  runTasksUntilDone();
+}
+
 void readAndEvaluate() {
   char header[4];
   char contents[5000];
@@ -42,6 +52,6 @@ void readAndEvaluate() {
   if (count > 5000) return; // fail - message too large
   n = Serial.readBytes(contents, count);
   Serial.print(n); Serial.println(" bytes read; Running...");
-  runProg((int *) contents);
+  runProg((int *) contents, count);
 }
 
