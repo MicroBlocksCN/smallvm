@@ -6,7 +6,8 @@
 
 #include "mem.h"
 #include "interp.h"
-#include "runtime.h"
+
+// Platform specific primitives
 
 #ifdef ARDUINO
 #include "arduino.h"
@@ -81,4 +82,3 @@ OBJ primPeek(OBJ *args) { return int2obj(0); }
 OBJ primPoke(OBJ *args) { return nilObj; }
 
 #endif
-

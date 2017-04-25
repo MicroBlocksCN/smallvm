@@ -75,7 +75,8 @@ static inline int objClass(OBJ obj) {
 // Class checks for classes with memory instances
 // (Note: there are faster ways to test for small integers, booleans, or nil)
 
-#define NOT_CLASS(obj, classID) ((((int) obj) & 1) || (obj <= falseObj) || (CLASS(obj) != classID))
+#define IS_CLASS(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > falseObj) && (CLASS(obj) == classID))
+#define NOT_CLASS(obj, classID) ((((int) obj) & 3) || ((obj) <= falseObj) || (CLASS(obj) != classID))
 
 // Object Memory Initialization
 

@@ -5,7 +5,6 @@
 
 #include "mem.h"
 #include "interp.h"
-#include "runtime.h"
 
 // test programs
 

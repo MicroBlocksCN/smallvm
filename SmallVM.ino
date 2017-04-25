@@ -1,16 +1,15 @@
 #include "mem.h"
 #include "interp.h"
-#include "runtime.h"
 
 extern "C" {
   // Entry points called from C
 
   void interpTests1(void);
   int microsecs() { return (int) micros; }
-  void putLineSerial(char *s) { Serial.println(s); }
+  int millisecs() { return (int) millis; }
   void putSerial(char *s) { Serial.print(s); }
-  int serialAvailable() { return (Serial.available() > 0); }
-
+  int readBytes(uint8 *buf, int count) { return Serial.readBytes(buf, count); }
+  int writeBytes(uint8 *buf, int count) { return Serial.writeBytes(buf, count);
 }
 
 void setup() {
@@ -43,7 +42,7 @@ static void runProg(int* prog, int byteCount) {
 
 void readAndEvaluate() {
   char header[4];
-  char contents[5000];
+  char contents[1000];
 
   int n = Serial.readBytes(header, 4);
   if (n < 4) return; // fail - timed out
@@ -54,4 +53,3 @@ void readAndEvaluate() {
   Serial.print(n); Serial.println(" bytes read; Running...");
   runProg((int *) contents, count);
 }
-

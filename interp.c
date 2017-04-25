@@ -6,36 +6,55 @@
 
 #include "mem.h"
 #include "interp.h"
-#include "runtime.h"
+
+#ifndef ARDUINO
+	#include <sys/time.h>
+	#include <time.h>
+	uint32 millisecs() {
+		struct timeval now;
+		gettimeofday(&now, NULL);
+		return (1000 * now.tv_sec) + (now.tv_usec / 1000);
+	}
+#endif
 
 // Interpreter State
 
 static OBJ vars[25];
-static OBJ stack[25];
+
+CodeChunkRecord chunks[MAX_CHUNKS];
+
+Task tasks[MAX_TASKS];
+int taskCount = 0;
+
+char printBuffer[PRINT_BUF_SIZE];
+int printBufferByteCount = 0;
 
 // Interpreter Helper Functions
 
 static void printObj(OBJ obj) {
-	if (isInt(obj)) printf("%d", obj2int(obj));
-	else if (obj == nilObj) printf("nil");
-	else if (obj == trueObj) printf("true");
-	else if (obj == falseObj) printf("false");
+	// Append a printed representation of the given object to printBuffer.
+
+	char *dst = &printBuffer[printBufferByteCount];
+	int n = PRINT_BUF_SIZE - printBufferByteCount;
+
+	if (isInt(obj)) snprintf(dst, n, "%d", obj2int(obj));
+	else if (obj == nilObj) snprintf(dst, n, "nil");
+	else if (obj == trueObj) snprintf(dst, n, "true");
+	else if (obj == falseObj) snprintf(dst, n, "false");
 	else if (objClass(obj) == StringClass) {
-		printf("%s", obj2str(obj));
+		snprintf(dst, n, "%s", obj2str(obj));
 	} else {
-		printf("OBJ(addr: %d, class: %d)", (int) obj, objClass(obj));
+		snprintf(dst, n, "OBJ(addr: %d, class: %d)", (int) obj, objClass(obj));
 	}
 }
 
 static inline int evalInt(OBJ obj) {
 	if (isInt(obj)) return obj2int(obj);
-	printf("evalInt got non-integer: ");
-	printObj(obj);
-	printf("\n");
+	printf("evalInt got non-integer (classID: %d)\n", objClass(obj));
 	return 0;
 }
 
-void showStack(OBJ *sp, OBJ *fp) {
+void showStack(OBJ *stack, OBJ *sp, OBJ *fp) {
 	OBJ *ptr = sp;
 	printf("sp: %d\n", (int) *ptr);
 	while (--ptr >= &stack[0]) {
@@ -169,6 +188,8 @@ static inline int runTask(Task *task) {
 		&&digitalWrite_op,
 		&&micros_op,
 		&&millis_op,
+		&&waitMicros_op,
+		&&waitMillis_op,
 		&&peek_op,
 		&&poke_op,
 	};
@@ -205,7 +226,7 @@ static inline int runTask(Task *task) {
 		DISPATCH();
 	pop_op:
 		sp -= arg;
-		if (sp >= stack) {
+		if (sp >= task->stack) {
 			DISPATCH();
 		} else {
 			panic("Stack underflow");
@@ -241,10 +262,11 @@ static inline int runTask(Task *task) {
 		DISPATCH();
 	returnResult_op:
 		task->status = done_Value;
+		chunks[task->chunkIndex].returnValueOrErrorIP = *(sp - 1);
 		return task->status;
-		DISPATCH();
-	// For primitive ops, arg is the number of arguments (any primitive can be variadic).
-	// Primitive functions return a result that is left on the stack; all args are popped.
+
+	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
+	// All primitive ops pop all their args and leave a result on the top of the stack.
 	add_op:
 		*(sp - arg) = int2obj(evalInt(*(sp - 2)) + evalInt(*(sp - 1)));
 		sp -= arg - 1;
@@ -266,6 +288,11 @@ static inline int runTask(Task *task) {
 		sp -= arg - 1;
 		DISPATCH();
 	printIt_op:
+		if (printBufferByteCount) { // print buffer is in use; restart this instruction
+			ip--; // restart this operation
+			task->status = waiting_print;
+			return task->status;
+		}
 		*(sp - arg) = primPrint(arg, sp - arg); // arg = # of arguments
 		sp -= arg - 1;
 		DISPATCH();
@@ -327,6 +354,20 @@ bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
 		*(sp - arg) = primMillis(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
+
+	waitMicros_op:
+	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
+		sp -= arg - 1;
+		task->status = waiting_micros;
+		task->wakeTime = TICKS() + tmp;
+		return task->status;
+	waitMillis_op:
+	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
+		sp -= arg - 1;
+		task->status = waiting_millis;
+		task->wakeTime = millisecs() + tmp;
+		return task->status;
+
 	peek_op:
 		*(sp - arg) = primPeek(sp - arg);
 		sp -= arg - 1;
@@ -339,7 +380,9 @@ bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
 	return 0;
 }
 
-int stepTasks() {
+#define RECENT 100000
+
+void stepTasks() {
 	// Run every task that is runnable and update its status.
 	// Return true if task has changed status.
 
@@ -350,14 +393,21 @@ int stepTasks() {
 	//	completed tasks will be processed by the caller
 	//	return when a task changes status or after stepTime usecs
 
-	int runnable = 0;
-	for (int i = 0; i < taskCount; i++) {
-		if (running == tasks[i].status) {
-			runTask(&tasks[i]);
-			runnable++;
+	for (int iter = 0; iter < 100; iter++) {
+		uint32 usecs = TICKS();
+		uint32 msecs = millisecs();
+		for (int t = 0; t < taskCount; t++) {
+			int status = tasks[t].status;
+			if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
+				tasks[t].status = status = running;
+			} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
+				tasks[t].status = status = running;
+			}
+			if (running == status) {
+				runTask(&tasks[t]);
+			}
 		}
 	}
-	return runnable;
 }
 
 void runTasksUntilDone() {
