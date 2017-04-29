@@ -117,7 +117,7 @@ void taskTest() {
 	int usecs;
 
 	printf("\r\nStarting 2...\r\n");
-	memInit(5000);
+	memClear();
 
 	START_TIMER();
 	for (int i = 0; i < 200000; i++) TICKS();

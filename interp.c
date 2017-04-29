@@ -7,15 +7,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#ifndef ARDUINO
-	#include <sys/time.h>
-	#include <time.h>
-	uint32 millisecs() {
-		struct timeval now;
-		gettimeofday(&now, NULL);
-		return (1000 * now.tv_sec) + (now.tv_usec / 1000);
-	}
-#endif
+#define USE_TASKS true
 
 // Interpreter State
 
@@ -25,6 +17,8 @@ CodeChunkRecord chunks[MAX_CHUNKS];
 
 Task tasks[MAX_TASKS];
 int taskCount = 0;
+
+static const char* errorMsg;
 
 char printBuffer[PRINT_BUF_SIZE];
 int printBufferByteCount = 0;
@@ -37,21 +31,16 @@ static void printObj(OBJ obj) {
 	char *dst = &printBuffer[printBufferByteCount];
 	int n = PRINT_BUF_SIZE - printBufferByteCount;
 
-	if (isInt(obj)) snprintf(dst, n, "%d", obj2int(obj));
-	else if (obj == nilObj) snprintf(dst, n, "nil");
-	else if (obj == trueObj) snprintf(dst, n, "true");
-	else if (obj == falseObj) snprintf(dst, n, "false");
+	if (isInt(obj)) snprintf(dst, n, "%d ", obj2int(obj));
+	else if (obj == nilObj) snprintf(dst, n, "nil ");
+	else if (obj == trueObj) snprintf(dst, n, "true ");
+	else if (obj == falseObj) snprintf(dst, n, "false ");
 	else if (objClass(obj) == StringClass) {
-		snprintf(dst, n, "%s", obj2str(obj));
+		snprintf(dst, n, "%s ", obj2str(obj));
 	} else {
-		snprintf(dst, n, "OBJ(addr: %d, class: %d)", (int) obj, objClass(obj));
+		snprintf(dst, n, "OBJ(addr: %d, class: %d) ", (int) obj, objClass(obj));
 	}
-}
-
-static inline int evalInt(OBJ obj) {
-	if (isInt(obj)) return obj2int(obj);
-	printf("evalInt got non-integer (classID: %d)\n", objClass(obj));
-	return 0;
+	printBufferByteCount = strlen(printBuffer);
 }
 
 void showStack(OBJ *stack, OBJ *sp, OBJ *fp) {
@@ -63,74 +52,25 @@ void showStack(OBJ *stack, OBJ *sp, OBJ *fp) {
 	printf("-----\n");
 }
 
-// Primitives
+// Failure
 
-OBJ failure(const char *reason) {
-	// Print a message and stop the interpreter.
-	printf("Primitive failed: %s\n", reason);
-	return 0;
-}
+OBJ failure(const char *reason) { errorMsg = reason; return nilObj; }
 
-OBJ sizeFailure() { return failure("Size must be a positive integer"); }
-OBJ arrayClassFailure() { return failure("Must must be an Array"); }
-OBJ indexClassFailure() { return failure("Index must be an integer"); }
-OBJ outOfRangeFailure() { return failure("Index out of range"); }
+// Print Primitive
 
 OBJ primPrint(int argCount, OBJ args[]) {
 	for (int i = 0; i < argCount; i++) {
 		printObj(args[i]);
-		printf(" ");
 	}
-	printf("\n");
-	return nilObj;
-}
-
-OBJ primNewArray(OBJ args[]) {
-	OBJ n = args[0];
-	if (!isInt(n) || ((int) n < 0)) return sizeFailure();
-// hack for primes benchmark: use byte array to simulate array of booleans
-	OBJ result = newObj(ArrayClass, (obj2int(n) + 3) / 4, nilObj); // bytes
-	return result;
-}
-
-OBJ primArrayAt(OBJ args[]) {
-	OBJ array = args[0];
-	if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
-	OBJ index = args[1];
-	if (!isInt(index)) return indexClassFailure();
-
-	int i = obj2int(index);
-	if ((i < 1) || (i > (objWords(array) * 4))) { return outOfRangeFailure(); }
-// hack for primes benchmark: use byte array to simulate array of booleans
-	char *bytes = (char *) array;
-	return (bytes[(4 * HEADER_WORDS) + (i - 1)]) ? trueObj : falseObj;
-}
-
-OBJ primArrayAtPut(OBJ args[]) {
-	OBJ array = args[0];
-	if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
-	OBJ index = args[1];
-	if (!isInt(index)) return indexClassFailure();
-	OBJ value = args[2];
-
-	int i = obj2int(index);
-	if ((i < 1) || (i > (objWords(array) * 4))) return outOfRangeFailure();
-
-// hack for primes benchmark: use byte array to simulate array of booleans
-	char *bytes = (char *) array;
-	bytes[(4 * HEADER_WORDS) + (i - 1)] = (value == trueObj);
-	return nilObj;
-}
-
-OBJ primArrayFill(OBJ args[]) {
-	OBJ array = args[0];
-	if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
-	OBJ value = args[1];
-
-	value = (OBJ) ((value == trueObj) ? 0x01010101 : 0); // hack to encode flag array as bytes
-
-	int end = objWords(array) + HEADER_WORDS;
-	for (int i = HEADER_WORDS; i < end; i++) ((OBJ *) array)[i] = value;
+	char *dst = &printBuffer[printBufferByteCount];
+	int n = PRINT_BUF_SIZE - printBufferByteCount;
+	snprintf(dst, n, "\r\n");
+	printBufferByteCount = strlen(printBuffer);
+#if !USE_TASKS
+	// if not using tasks, print immediately
+	printf("%s", printBuffer);
+	printBufferByteCount = 0;
+#endif
 	return nilObj;
 }
 
@@ -138,22 +78,27 @@ OBJ primArrayFill(OBJ args[]) {
 
 // Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
 #define DISPATCH() { \
+/*	if (errorMsg) goto error; */ \
 	op = *ip++; \
 	arg = ARG(op); \
-/*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - stack)); */ \
+/*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */   \
 	goto *jumpTable[CMD(op)]; \
 }
 
 static inline int runTask(Task *task) {
 	register int *ip;
 	register OBJ *sp;
+	register OBJ *fp;
 	register int op;
 	int arg, tmp;
-	OBJ array;
+	OBJ tmpObj;
+
+	errorMsg = NULL;
 
 	// Restore task state
 	ip = task->code + task->ip;
 	sp = task->stack + task->sp;
+	fp = task->stack + task->fp;
 
 	// initialize jump table (padded to 32 entries since op is 5 bits)
 	static void *jumpTable[] = {
@@ -165,6 +110,11 @@ static inline int runTask(Task *task) {
 		&&pushVar_op,
 		&&popVar_op,
 		&&incrementVar_op,
+		&&pushArgCount_op,
+		&&pushArg_op,
+		&&pushLocal_op,
+		&&popLocal_op,
+		&&incrementLocal_op,
 		&&pop_op,
 		&&jmp_op,
 		&&jmpTrue_op,
@@ -172,12 +122,14 @@ static inline int runTask(Task *task) {
 		&&decrementAndJmp_op,
 		&&callFunction_op,
 		&&returnResult_op,
+		&&waitMicros_op,
+		&&waitMillis_op,
+		&&printIt_op,
 		&&add_op,
 		&&subtract_op,
 		&&multiply_op,
 		&&divide_op,
 		&&lessThan_op,
-		&&printIt_op,
 		&&at_op,
 		&&atPut_op,
 		&&newArray_op,
@@ -188,18 +140,25 @@ static inline int runTask(Task *task) {
 		&&digitalWrite_op,
 		&&micros_op,
 		&&millis_op,
-		&&waitMicros_op,
-		&&waitMillis_op,
 		&&peek_op,
 		&&poke_op,
 	};
 
 	DISPATCH();
 
+	error:
+		// set error status and record ip
+		task->status = done_Error;
+		// encode and store the error location: <22 bit ip><8 bit chunkIndex>
+		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
+		chunks[task->taskChunkIndex].returnValueOrErrorIP = int2obj(tmp);
+		chunks[task->taskChunkIndex].errorMsg = errorMsg;
+		goto suspend;
 	suspend:
 		// save task state
 		task->ip = ip - task->code;
 		task->sp = sp - task->stack;
+		task->fp = fp - task->stack;
 		return task->status;
 	halt_op:
 		task->status = done;
@@ -224,6 +183,21 @@ static inline int runTask(Task *task) {
 	incrementVar_op:
 		vars[arg] = int2obj(evalInt(vars[arg]) + evalInt(*--sp));
 		DISPATCH();
+	pushArgCount_op:
+		*sp++ = *(fp - 3);
+		DISPATCH();
+	pushArg_op:
+		*sp++ = *(fp - obj2int(*(fp - 3)) - 3 + arg);
+		DISPATCH();
+	pushLocal_op:
+		*sp++ = *(fp + arg);
+		DISPATCH();
+	popLocal_op:
+		*(fp + arg) = *--sp;
+		DISPATCH();
+	incrementLocal_op:
+		*(fp + arg) = int2obj(obj2int(*(fp + arg)) + evalInt(*--sp));
+		DISPATCH();
 	pop_op:
 		sp -= arg;
 		if (sp >= task->stack) {
@@ -239,31 +213,86 @@ static inline int runTask(Task *task) {
 		if (trueObj == (*--sp)) ip += arg;
 		DISPATCH();
 	jmpFalse_op:
-		if (falseObj == (*--sp)) ip += arg;
+		if (falseObj == (*--sp)) {
+			ip += arg;
+			if (arg < 0) { // backward jmpFalse is a polling condition hat block
+				task->status = polling;
+				goto suspend;
+			}
+		}
 		DISPATCH();
 	 decrementAndJmp_op:
 		tmp = obj2int(*(sp - 1)) - 1; // decrement loop counter
 		if (tmp > 0) {
 			ip += arg; // loop counter > 0, so branch
 			*(sp - 1) = int2obj(tmp); // update loop counter
-
-#define USE_TASKS true
 #if USE_TASKS
 			task->status = running;
 			goto suspend;
-#endif
+#else
 			DISPATCH();
+#endif
 		} else {
 			sp--; // loop done, pop loop counter
 		}
 		DISPATCH();
 	callFunction_op:
-		// xxx not yet implemented
+		// function call stack layout for N function arguments and M local variables:
+		// local M-1
+		// ...
+		// local 0 <- fp points here during call, so the value of local m is *(fp + m)
+		// *(fp - 1), the old fp
+		// *(fp - 2), return address, <22 bit ip><8 bit chunkIndex> encoded as an integer object
+		// *(fp - 3), # of function arguments
+		// arg N-1
+		// ...
+		// arg 0
+		*sp++ = int2obj((arg >> 8) & 0xFF); // # of arguments (middle byte of arg)
+		*sp++ = int2obj(((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
+		*sp++ = int2obj(fp - task->stack); // old fp
+		fp = sp;
+		tmp = (arg >> 16) & 0xFF; // # of locals (high byte of arg)
+		while (tmp-- > 0) *sp++ = int2obj(0); // reserve space for local vars & initialize to zero
+		task->currentChunkIndex = arg & 0xFF; // callee's chunk index (low byte of arg)
+		task->code = chunks[task->currentChunkIndex].code;
+		ip = task->code + HEADER_WORDS; // first instruction in callee
 		DISPATCH();
 	returnResult_op:
-		task->status = done_Value;
-		chunks[task->chunkIndex].returnValueOrErrorIP = *(sp - 1);
-		return task->status;
+		tmpObj = *(sp - 1);
+		if (-1 == (fp - task->stack)) { // not in a function call
+			task->status = done_Value;
+			chunks[task->taskChunkIndex].returnValueOrErrorIP = tmpObj;
+			goto suspend;
+		}
+		sp = fp - obj2int(*(fp - 3)) - 3; // restore stack pointer; *(fp - 3) is the arg count
+		*sp++ = tmpObj;
+		tmp = obj2int(*(fp - 2)); // return address
+		task->currentChunkIndex = tmp & 0xFF;
+		task->code = chunks[task->currentChunkIndex].code;
+		ip = task->code + ((tmp >> 8) & 0x3FFFFF);
+		fp = task->stack + obj2int(*(fp - 1)); // restore the old fp
+		DISPATCH();
+	waitMicros_op:
+	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
+		sp -= arg - 1;
+		task->status = waiting_micros;
+		task->wakeTime = TICKS() + tmp;
+		goto suspend;
+	waitMillis_op:
+	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
+		sp -= arg - 1;
+		task->status = waiting_millis;
+		task->wakeTime = millisecs() + tmp;
+		goto suspend;
+	printIt_op:
+		if (printBufferByteCount) { // print buffer is in use
+			ip--; // restart this operation when resumed
+			task->status = waiting_print;
+			goto suspend;
+		}
+		*(sp - arg) = primPrint(arg, sp - arg); // arg = # of arguments
+		sp -= arg - 1;
+		DISPATCH();
 
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
 	// All primitive ops pop all their args and leave a result on the top of the stack.
@@ -287,39 +316,12 @@ static inline int runTask(Task *task) {
 		*(sp - arg) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
 		sp -= arg - 1;
 		DISPATCH();
-	printIt_op:
-		if (printBufferByteCount) { // print buffer is in use; restart this instruction
-			ip--; // restart this operation
-			task->status = waiting_print;
-			return task->status;
-		}
-		*(sp - arg) = primPrint(arg, sp - arg); // arg = # of arguments
-		sp -= arg - 1;
-		DISPATCH();
 	at_op:
-		array = *(sp - 2);
-		if (NOT_CLASS(array, ArrayClass)) return (int) arrayClassFailure();
-		if (!isInt(*(sp - 1))) return (int) indexClassFailure();
-
-		tmp = obj2int(*(sp - 1)); // index
-		if ((tmp < 1) || (tmp > (objWords(array) * 4))) { return (int) outOfRangeFailure(); }
-// hack for primes benchmark: use byte array to simulate array of booleans
-//		*(sp - arg) = (OBJ) array[HEADER_WORDS + tmp - 1];
-char *bytes = (char *) array;
-*(sp - arg) = (bytes[(4 * HEADER_WORDS) + tmp - 1]) ? trueObj : falseObj;
+		*(sp - arg) = primArrayAt(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	atPut_op:
-		array = *(sp - 3);
-		if (NOT_CLASS(array, ArrayClass)) return (int) arrayClassFailure();
-		if (!isInt(*(sp - 2))) return (int) indexClassFailure();
-
-		tmp = obj2int(*(sp - 2)); // index
-		if ((tmp < 1) || (tmp > (objWords(array) * 4))) return (int) outOfRangeFailure();
-// hack for primes benchmark: use byte array to simulate array of booleans
-//		array[HEADER_WORDS + tmp - 1] = (int) *(sp - 1);
-bytes = (char *) array;
-bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
+		*(sp - arg) = primArrayAtPut(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	newArray_op:
@@ -347,27 +349,13 @@ bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
 		sp -= arg - 1;
 		DISPATCH();
 	micros_op:
-		*(sp - arg) = primMicros(sp - arg);
+		*(sp - arg) = int2obj(TICKS());
 		sp -= arg - 1;
 		DISPATCH();
 	millis_op:
-		*(sp - arg) = primMillis(sp - arg);
+		*(sp - arg) = int2obj(millisecs());
 		sp -= arg - 1;
 		DISPATCH();
-
-	waitMicros_op:
-	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
-		sp -= arg - 1;
-		task->status = waiting_micros;
-		task->wakeTime = TICKS() + tmp;
-		return task->status;
-	waitMillis_op:
-	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
-		sp -= arg - 1;
-		task->status = waiting_millis;
-		task->wakeTime = millisecs() + tmp;
-		return task->status;
-
 	peek_op:
 		*(sp - arg) = primPeek(sp - arg);
 		sp -= arg - 1;
@@ -380,22 +368,30 @@ bytes[(4 * HEADER_WORDS) + tmp - 1] = (*(sp - 1) == trueObj);
 	return 0;
 }
 
-#define RECENT 100000
+// Task Scheduler
 
-void stepTasks() {
-	// Run every task that is runnable and update its status.
-	// Return true if task has changed status.
+// The number of times to go through the task list each time stepTasks() is called
+#define ITERS_PER_STEP 100
 
-	// get current usecs
-	// step each task that is now runnable:
-	//	update task wakeTime and status
-	//	update status when a hat switches between polling and running
-	//	completed tasks will be processed by the caller
-	//	return when a task changes status or after stepTime usecs
+// Threshold for waking up tasks waiting on timers
+// (The timer can be up to this much beyond the nominal wakeup time):
+#define RECENT 1000000
 
-	for (int iter = 0; iter < 100; iter++) {
+int stepTasks() {
+	// Run every runnable task and update its status. Handle tasks
+	// waiting for microseconds or milliseconds and poll condition hats.
+	// Return true if there are still running or waiting tasks.
+
+	// Make polling tasks runnable to test their condition
+	for (int t = 0; t < taskCount; t++) {
+		if (polling == tasks[t].status) tasks[t].status = running;
+	}
+
+	// Cycle through the tasks iter times, checking wakeTimes and running all runnables ones
+	uint32 msecs = millisecs();
+	for (int iter = 0; iter < ITERS_PER_STEP; iter++) {
+		int done = true;
 		uint32 usecs = TICKS();
-		uint32 msecs = millisecs();
 		for (int t = 0; t < taskCount; t++) {
 			int status = tasks[t].status;
 			if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
@@ -403,28 +399,40 @@ void stepTasks() {
 			} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
 				tasks[t].status = status = running;
 			}
-			if (running == status) {
-				runTask(&tasks[t]);
+			if (status == running) runTask(&tasks[t]);
+			if (done && (status >= waiting_micros)) done = false;
+		}
+		if (done) return false;
+	}
+	return true;
+}
+
+// The following are used for testing:
+
+static void printOutput() {
+	// Print output, if any. Used during testing/debugging on a laptop.
+	if (printBufferByteCount) {
+		printf("%s", printBuffer);
+		for (int i = 0; i < MAX_TASKS; i++) {
+			// Make all tasks waiting for the print buffer be runnable.
+			if (waiting_print == tasks[i].status) {
+				tasks[i].status = running;
 			}
 		}
+		printBufferByteCount = 0;
 	}
 }
 
 void runTasksUntilDone() {
-	while (true) {
-		int done = true;
-		for (int i = 0; i < taskCount; i++) {
-			if (running == tasks[i].status) {
-				int newStatus = runTask(&tasks[i]);
-				if (done_Value == newStatus) {
-					OBJ returnValue = tasks[i].stack[tasks[i].sp - 1];
-					printf("Returned: %d ", (int) returnValue);
-					printObj(returnValue);
-					printf("\n");
-				}
-				done = false;
-			}
-		}
-		if (done) return;
+#if USE_TASKS
+	int isRunning = true;
+	while (isRunning) {
+		if (printBufferByteCount) printOutput();
+		isRunning = stepTasks();
 	}
+	if (printBufferByteCount) printOutput();
+#else
+	runTask(&tasks[0]);
+#endif
+	if (errorMsg) printf("Error: %s\r\n", errorMsg);
 }

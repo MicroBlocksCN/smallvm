@@ -161,6 +161,75 @@ int sumTestWithRepeatAndIncrement[] = {
 	OP(halt, 0),
 };
 
+int function1[] = {
+	OP(pushLiteral, 13),
+	OP(pushArg, 0),
+	OP(printIt, 2),
+	OP(pop, 1),
+
+	OP(pushArgCount, 0),
+	OP(printIt, 1),
+	OP(pop, 1),
+
+	OP(pushImmediate, int2obj(42)),
+	OP(popLocal, 0),
+
+	OP(pushImmediate, int2obj(5)),
+	OP(incrementLocal, 0),
+
+	OP(pushLocal, 0),
+	OP(printIt, 1),
+	OP(pop, 1),
+
+	OP(pushImmediate, int2obj(17)), // return 17
+	OP(returnResult, 0),
+
+	HEADER(StringClass, 2), // "Hello!"
+	0x6c6c6548,
+	0x216f,
+};
+
+int callTest[] = {
+	// Call function with chunkIndex 0 three times, and print the three values it returns
+	OP(pushImmediate, int2obj(1)),
+	CALL(0, 1, 1),
+	OP(pushImmediate, int2obj(2)),
+	CALL(0, 1, 1),
+	OP(pushImmediate, int2obj(3)),
+	OP(pushImmediate, int2obj(17)),
+	CALL(0, 2, 1),
+	OP(printIt, 3),
+	OP(pop, 1),
+	OP(pushImmediate, int2obj(42)), // return 42
+	OP(returnResult, 0),
+};
+
+static int microWaitTest[] = {
+	OP(pushImmediate, int2obj(10)), // loop counter
+	OP(microsOp, 0),
+	OP(printIt, 1),
+	OP(pop, 1),
+	OP(pushImmediate, int2obj(1000000)), // 1 second
+	OP(waitMicrosOp, 1),
+	OP(pop, 1),
+	OP(decrementAndJmp, -7),
+//	OP(decrementAndJmp, -4),
+	OP(halt, 0),
+};
+
+static int milliWaitTest[] = {
+	OP(pushImmediate, int2obj(10)), // loop counter
+	OP(millisOp, 0),
+	OP(printIt, 1),
+	OP(pop, 1),
+	OP(pushImmediate, int2obj(500)), // 0.5 second
+	OP(waitMillisOp, 1),
+	OP(pop, 1),
+	OP(decrementAndJmp, -7),
+//	OP(decrementAndJmp, -4),
+	OP(halt, 0),
+};
+
 // symbolic var names for findPrimes
 
 #define var_primeCount 0
@@ -301,6 +370,7 @@ static unsigned timerStart;
 static uint8 nextChunkIndex = 0;
 
 static void runProg(int* prog, int byteCount) {
+	initTasks();
 	storeCodeChunk(nextChunkIndex, 0, byteCount, (uint8 *) prog);
 	startTaskForChunk(nextChunkIndex++);
 	runTasksUntilDone();
@@ -309,12 +379,24 @@ static void runProg(int* prog, int byteCount) {
 static void printResult(char *testName, int usecs, float nanoSecsPerInstruction) {
 	float cyclesPerNanosec = 0.064; // clock rate divided by 10e9
 	float cyclesPerOp = cyclesPerNanosec * nanoSecsPerInstruction;
-	printf("%s: %d usecs (%.2f nsecs, %.2f cycles per op)\n",
+	printf("%s: %d usecs (%.2f nsecs, %.2f cycles per op)\r\n",
 		testName, usecs, nanoSecsPerInstruction, cyclesPerOp);
 }
 
 void interpTests1() {
 	unsigned long n, usecs, emptyLoopTime;
+
+// 	START_TIMER();
+// 	runProg(microWaitTest, sizeof(microWaitTest));
+// 	printf("usecs test %d\r\n", (int) TIMER_US());
+// 	START_TIMER();
+// 	runProg(milliWaitTest, sizeof(milliWaitTest));
+// 	printf("msecs test %d\r\n", (int) TIMER_US());
+// return;
+
+// 	storeCodeChunk(nextChunkIndex++, 0, sizeof(function1), (uint8 *) function1);
+// 	runProg(callTest, sizeof(callTest));
+// 	return;
 
 	START_TIMER();
 	runProg(emptyLoop, sizeof(emptyLoop));

@@ -18,17 +18,25 @@ void startTaskForChunk(uint8 chunkIndex) {
 	// Start a task for the given chunk, if there is not one already.
 
 	int i;
+	for (i = 0; i < taskCount; i++) {
+		if ((unusedTask != tasks[i].status) && (chunkIndex == tasks[i].taskChunkIndex)) {
+			return; // already running
+		}
+	}
+
 	for (i = 0; i < MAX_TASKS; i++) {
 		if (unusedTask == tasks[i].status) break;
-		if (chunkIndex == tasks[i].chunkIndex) return; // already running
 	}
 	if (i >= MAX_TASKS) panic("No free task entries");
 	memset(&tasks[i], 0, sizeof(Task));
 	tasks[i].status = running;
+	tasks[i].taskChunkIndex = chunkIndex;
+	tasks[i].currentChunkIndex = chunkIndex;
 	tasks[i].code = chunks[chunkIndex].code;
-	tasks[i].sp = 0; // relative to start of stack
 	tasks[i].ip = HEADER_WORDS; // relative to start of code
-	taskCount++;
+	tasks[i].sp = 0; // relative to start of stack
+	tasks[i].fp = -1; // -1 means "not in a function call"
+	if (i >= taskCount) taskCount = i + 1;
 }
 
 static void stopTaskForChunk(uint8 chunkIndex) {
@@ -36,7 +44,7 @@ static void stopTaskForChunk(uint8 chunkIndex) {
 
 	int i;
 	for (i = 0; i < MAX_TASKS; i++) {
-		if (chunkIndex == tasks[i].chunkIndex) break;
+		if (chunkIndex == tasks[i].taskChunkIndex) break;
 	}
 	if (i >= MAX_TASKS) return; // no task for chunkIndex
 	memset(&tasks[i], 0, sizeof(Task)); // clear task

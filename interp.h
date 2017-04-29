@@ -15,39 +15,48 @@ extern "C" {
 #define pushVar 5
 #define popVar 6
 #define incrementVar 7
-#define pop 8
-#define jmp 9
-#define jmpTrue 10
-#define jmpFalse 11
-#define decrementAndJmp 12
-#define callFunction 13
-#define returnResult 14
-#define add 15
-#define subtract 16
-#define multiply 17
-#define divide 18
-#define lessThan 19
-#define printIt 20
-#define at 21
-#define atPut 22
-#define newArray 23
-#define fillArray 24
-#define analogReadOp 25
-#define analogWriteOp 26
-#define digitalReadOp 27
-#define digitalWriteOp 28
-#define microsOp 29
-#define millisOp 30
-#define waitMicrosOp 31
-#define waitMillisOp 32
-#define peekOp 33
-#define pokeOp 34
+#define pushArgCount 8
+#define pushArg 9
+#define pushLocal 10
+#define popLocal 11
+#define incrementLocal 12
+#define pop 13
+#define jmp 14
+#define jmpTrue 15
+#define jmpFalse 16
+#define decrementAndJmp 17
+#define callFunction 18
+#define returnResult 19
+#define waitMicrosOp 20
+#define waitMillisOp 21
+#define printIt 22
+#define add 23
+#define subtract 24
+#define multiply 25
+#define divide 26
+#define lessThan 27
+#define at 28
+#define atPut 29
+#define newArray 30
+#define fillArray 31
+#define analogReadOp 32
+#define analogWriteOp 33
+#define digitalReadOp 34
+#define digitalWriteOp 35
+#define microsOp 36
+#define millisOp 37
+#define peekOp 38
+#define pokeOp 39
 
 // Instruction Format
 
 #define OP(opcode, arg) (((unsigned) arg << 8) | (opcode & 0xFF))
 #define CMD(n) (n & 0xFF)
 #define ARG(n) (n >> 8)
+
+#define CALL(chunkIndex, argCount, localCount) \
+  (((localCount & 0xFF) << 24) | ((argCount & 0xFF) << 16) | \
+   ((chunkIndex & 0xFF) << 8)| callFunction)
 
 // Code Chunk Table
 
@@ -76,6 +85,7 @@ typedef struct {
 	uint8 chunkType;
 	uint8 taskStatus;
 	OBJ returnValueOrErrorIP;
+	const char *errorMsg;
 } CodeChunkRecord;
 
 #define MAX_CHUNKS 32
@@ -104,11 +114,13 @@ typedef enum {
 
 typedef struct {
 	uint8 status;
-	uint8 chunkIndex;
+	uint8 taskChunkIndex; // chunk index of the top-level stack for this task
+	uint8 currentChunkIndex; // chunk index when inside a function
 	uint32 wakeTime;
 	OBJ code;
-	int sp;
 	int ip;
+	int sp;
+	int fp;
 	OBJ stack[10];
 } Task;
 
@@ -119,10 +131,13 @@ extern int taskCount;
 // Task Ops
 
 void initTasks(void);
+int stepTasks(void);
 
-void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data);  // for testing
-void startTaskForChunk(uint8 chunkIndex); // for testing
-void runTasksUntilDone(void); // for testing
+// Testing Support
+
+void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data);
+void startTaskForChunk(uint8 chunkIndex);
+void runTasksUntilDone(void);
 
 // Client Interaction
 
@@ -159,16 +174,24 @@ uint32 millisecs(void);
 extern char printBuffer[PRINT_BUF_SIZE];
 extern int printBufferByteCount;
 
+// Failure
+
+OBJ failure(const char *reason);
+
 // Primitives
+
+OBJ primNewArray(OBJ args[]);
+OBJ primArrayFill(OBJ args[]);
+OBJ primArrayAt(OBJ args[]);
+OBJ primArrayAtPut(OBJ args[]);
 
 OBJ primAnalogRead(OBJ args[]);
 OBJ primAnalogWrite(OBJ args[]);
 OBJ primDigitalRead(OBJ args[]);
 OBJ primDigitalWrite(OBJ args[]);
-OBJ primMicros(OBJ args[]);
-OBJ primMillis(OBJ args[]);
-OBJ primPeek(OBJ args[]);
-OBJ primPoke(OBJ args[]);
+
+OBJ primPeek(OBJ *args);
+OBJ primPoke(OBJ *args);
 
 #ifdef __cplusplus
 }

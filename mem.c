@@ -27,7 +27,6 @@ void memInit(int wordCount) {
 	if (memStart == NULL) {
 		panic("memInit failed; insufficient memory");
 	}
-	printf("wordCount %d memStart %d\n", wordCount, (int) memStart);
 	if ((unsigned) memStart <= 8) {
 		// Reserve object references 0, 4, and 8 for constants nil, true, and false
 		// Details: In the unlikely case that memStart <= 8, increment it by 12
@@ -47,7 +46,7 @@ OBJ newObj(int classID, int wordCount, OBJ fill) {
 	OBJ obj = freeStart;
 	freeStart += HEADER_WORDS + wordCount;
 	if (freeStart >= memEnd) {
-		memPrintStatus();
+		printf("%d words used out of %d\n", freeStart - memStart, memEnd - memStart);
 		panic("Out of memory!");
 	}
 	for (OBJ p = obj; p < freeStart; ) *p++ = (int) fill;
@@ -86,10 +85,6 @@ void panic(char *errorMessage) {
 
 	printf("\r\n%s\r\n", errorMessage);
 	exit(-1);
-}
-
-void memPrintStatus() {
-	printf("%d words used out of %d\n", freeStart - memStart, memEnd - memStart);
 }
 
 void memDumpObj(OBJ obj) {

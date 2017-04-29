@@ -8,7 +8,7 @@ void interpTests1(void);
 void taskTest(void);
 
 int main(int argc, char *argv[]) {
-	printf("Starting...\n");
+	printf("Starting...\r\n");
 	memInit(5000);
 	interpTests1();
 	taskTest();

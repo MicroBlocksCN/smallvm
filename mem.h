@@ -78,6 +78,14 @@ static inline int objClass(OBJ obj) {
 #define IS_CLASS(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > falseObj) && (CLASS(obj) == classID))
 #define NOT_CLASS(obj, classID) ((((int) obj) & 3) || ((obj) <= falseObj) || (CLASS(obj) != classID))
 
+// Integers
+
+static inline int evalInt(OBJ obj) {
+	if (isInt(obj)) return obj2int(obj);
+	printf("evalInt got non-integer (classID: %d)\n", objClass(obj));
+	return 0;
+}
+
 // Object Memory Initialization
 
 void memInit(int wordCount);
@@ -92,8 +100,6 @@ char* obj2str(OBJ obj);
 // Debugging
 
 void panic(char *s);
-void memPrintStatus(void);
-void memDumpObj(OBJ obj);
 
 // Printf for Arduino (many thanks to Michael McElligott)
 
