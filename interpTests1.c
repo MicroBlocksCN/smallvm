@@ -162,7 +162,7 @@ int sumTestWithRepeatAndIncrement[] = {
 };
 
 int function1[] = {
-	OP(pushLiteral, 13),
+	OP(pushLiteral, 15),
 	OP(pushArg, 0),
 	OP(printIt, 2),
 	OP(pop, 1),
@@ -371,7 +371,7 @@ static uint8 nextChunkIndex = 0;
 
 static void runProg(int* prog, int byteCount) {
 	initTasks();
-	storeCodeChunk(nextChunkIndex, 0, byteCount, (uint8 *) prog);
+	storeCodeChunk(nextChunkIndex, 1, byteCount, (uint8 *) prog);
 	startTaskForChunk(nextChunkIndex++);
 	runTasksUntilDone();
 }
@@ -394,7 +394,7 @@ void interpTests1() {
 // 	printf("msecs test %d\r\n", (int) TIMER_US());
 // return;
 
-// 	storeCodeChunk(nextChunkIndex++, 0, sizeof(function1), (uint8 *) function1);
+// 	storeCodeChunk(nextChunkIndex++, 1, sizeof(function1), (uint8 *) function1);
 // 	runProg(callTest, sizeof(callTest));
 // 	return;
 

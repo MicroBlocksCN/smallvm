@@ -35,7 +35,7 @@ void startTaskForChunk(uint8 chunkIndex) {
 	tasks[i].code = chunks[chunkIndex].code;
 	tasks[i].ip = HEADER_WORDS; // relative to start of code
 	tasks[i].sp = 0; // relative to start of stack
-	tasks[i].fp = -1; // -1 means "not in a function call"
+	tasks[i].fp = 0; // 0 means "not in a function call"
 	if (i >= taskCount) taskCount = i + 1;
 }
 
@@ -80,6 +80,10 @@ static void startAll() {
 }
 
 // Code Chunk Ops
+
+static void initChunks() {
+	memset(chunks, 0, sizeof(chunks));
+}
 
 void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data) {
 	if (chunkIndex >= MAX_CHUNKS) return;
@@ -127,6 +131,19 @@ static void sendOkay() {
 static void sendError() {
 	writeMsgHeader(errorReply, 0, 0);
 	writeBytes(msgBuffer, 4);
+}
+
+static void updateChunkTaskStatus() {
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		chunks[i].taskStatus = unknown;
+	}
+
+	for (int i = 0; i < taskCount; i++) {
+		Task *task = &tasks[i];
+		if ((task->status > unusedTask) && (task->taskChunkIndex < MAX_CHUNKS)) {
+			chunks[task->taskChunkIndex].taskStatus = task->status;
+		}
+	}
 }
 
 static void sendTaskStatus() {
@@ -206,14 +223,54 @@ static void sendErrorIP(uint8 chunkID) {
 	writeBytes(msgBuffer, (4 + MAX_CHUNKS));
 }
 
+void clearAll() {
+	memClear();
+	initChunks();
+	initTasks();
+}
+
+void showChunks() {
+	updateChunkTaskStatus();
+	int usedChunkCount = 0;
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		CodeChunkRecord* chunk = &chunks[i];
+		if (chunk->chunkType != unusedChunk) {
+			usedChunkCount++;
+			printf("Chunk %d: type %d taskStatus %d code %u (%d words)\r\n",
+				i, chunk->chunkType, chunk->taskStatus, (uint32) chunk->code, objWords(chunk->code));
+			if (chunk->returnValueOrErrorIP) {
+				printf("  returnValueOrErrorIP: %d\r\n", (int) chunk->returnValueOrErrorIP);
+			}
+			if (chunk->errorMsg) printf("  errorMsg: %s\r\n", chunk->errorMsg);
+		}
+	}
+	if (0 == usedChunkCount) printf("No chunks\r\n");
+
+}
+
+void showTasks() {
+	printf("%d Tasks:\r\n", taskCount);
+	for (int i = 0; i < taskCount; i++) {
+		Task *task = &tasks[i];
+		if (task->status > unusedTask) {
+			printf("Task %d: status %d wake %u ip %d sp %d fp %d taskChunk %d ",
+				i, task->status, task->wakeTime, task->ip, task->sp, task->fp, task->taskChunkIndex);
+			if (task->currentChunkIndex != task->taskChunkIndex) {
+				printf("currentChunk %d code %u", task->currentChunkIndex, (uint32) task->code);
+			}
+			printf("\r\n");
+		}
+	}
+}
+
 void processMessage() {
 	// Process a message from the client.
 
 	msgByteCount += readBytes(&msgBuffer[msgByteCount], MAX_MSG - msgByteCount);
 	if (msgByteCount < 4) return; // incomplete message header
 
-	int bodyByteCount = (msgBuffer[2] << 8) + msgBuffer[3];
-	if (msgByteCount < (bodyByteCount + 4)) return; // message body incomplete
+	int bodyBytes = (msgBuffer[2] << 8) + msgBuffer[3];
+	if (msgByteCount < (bodyBytes + 4)) return; // message body incomplete
 
 	uint8 msgType = msgBuffer[0];
 	uint8 chunkID = msgBuffer[1];
@@ -221,7 +278,8 @@ void processMessage() {
 
 	switch (msgType) {
 	case storeChunkMsg:
-		storeCodeChunk(chunkID, 0, bodyByteCount, &msgBuffer[4]);
+		// body is: <chunkType (1 byte)> <instruction data>
+		storeCodeChunk(chunkID, msgBuffer[4], (bodyBytes - 1), &msgBuffer[5]);
 		break;
 	case deleteChunkMsg:
 		deleteCodeChunk(chunkID);
@@ -250,6 +308,15 @@ void processMessage() {
 	case getErrorIPMsg:
 		sendErrorIP(chunkID);
 		return;
+	case clearAllMsg:
+		clearAll();
+		break;
+	case showChunksMsg:
+		showChunks();
+		break;
+	case showTasksMsg:
+		showTasks();
+		break;
 	}
 	sendOkay();
 	msgByteCount = 0; // clear the message buffer

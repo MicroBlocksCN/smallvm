@@ -259,7 +259,7 @@ static inline int runTask(Task *task) {
 		DISPATCH();
 	returnResult_op:
 		tmpObj = *(sp - 1);
-		if (-1 == (fp - task->stack)) { // not in a function call
+		if (!(fp - task->stack)) { // not in a function call
 			task->status = done_Value;
 			chunks[task->taskChunkIndex].returnValueOrErrorIP = tmpObj;
 			goto suspend;

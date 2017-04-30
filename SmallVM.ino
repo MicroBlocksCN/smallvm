@@ -35,7 +35,7 @@ void loop() {
 static uint8 nextChunkIndex = 0;
 
 static void runProg(int* prog, int byteCount) {
-  storeCodeChunk(nextChunkIndex, 0, byteCount, (uint8 *) prog);
+  storeCodeChunk(nextChunkIndex, 1, byteCount, (uint8 *) prog);
   startTaskForChunk(nextChunkIndex++);
   runTasksUntilDone();
 }

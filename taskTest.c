@@ -101,7 +101,7 @@ int sum200k[] = {
 static uint8 nextChunkIndex = 0;
 
 static void startTask(int* prog, int byteCount) {
-	storeCodeChunk(nextChunkIndex, 0, byteCount, (uint8 *) prog);
+	storeCodeChunk(nextChunkIndex, 1, byteCount, (uint8 *) prog);
 	startTaskForChunk(nextChunkIndex);
 	nextChunkIndex++;
 }
