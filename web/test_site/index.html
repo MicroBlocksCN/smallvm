@@ -2,40 +2,32 @@
     <head>
         <title>µBlocks Chrome extension test site</title>
         <script src="postal.js"></script>
+        <script src="parser.js"></script>
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <div id="portList"></div>
+        <h1>µBlocks Chrome extension test site</h1>
         <input id="message" value="0x7C,0x01">
-        <button onclick="sendMe()">Send</button>
-        <br>
-        <button onclick="postal.sendCommand('disconnect');">Disconnect</button>
+        <button onclick="sendMe()">Send to board</button>
+        <h3>Messages received:</h3>
+        <pre id="log"></div>
     </body>
     <script>
-        postal.sendCommand(
-            'getDevices',
-            null, 
-            function (devices) {
-                devices.forEach(function (each) {
-                    var button = document.createElement('button');
-                    button.addEventListener(
-                        'click', 
-                        function () { 
-                            postal.sendCommand('connect', [each.path]);
-                        }
-                    );
-                    button.innerText = each.path;
-                    document.querySelector('#portList').append(button);
-                });
-            });
+        var postal = new Postal('ws://localhost:9999/', onReceive),
+            parser = new Parser();
 
         function sendMe () {
             var string = document.querySelector('#message').value;
-            postal.sendMessage(
+            postal.send(
                 string.split(',').map(
                     function (each) { 
                         return parseInt(each);
                     }
                 ));
+        };
+
+        function onReceive (data) {
+            parser.processRawData(data);
         };
     </script>
 </html>
