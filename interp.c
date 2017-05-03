@@ -58,7 +58,7 @@ OBJ failure(const char *reason) { errorMsg = reason; return nilObj; }
 
 // Print Primitive
 
-OBJ primPrint(int argCount, OBJ args[]) {
+OBJ primPrint(int argCount, OBJ *args) {
 	for (int i = 0; i < argCount; i++) {
 		printObj(args[i]);
 	}
@@ -83,7 +83,6 @@ printBufferByteCount = 0;
 
 // Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
 #define DISPATCH() { \
-/*	if (errorMsg) goto error; */ \
 	op = *ip++; \
 	arg = ARG(op); \
 /*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */   \
@@ -97,8 +96,6 @@ static inline int runTask(Task *task) {
 	register int op;
 	int arg, tmp;
 	OBJ tmpObj;
-
-	errorMsg = NULL;
 
 	// Restore task state
 	ip = task->code + task->ip;
@@ -136,10 +133,11 @@ static inline int runTask(Task *task) {
 		&&multiply_op,
 		&&divide_op,
 		&&lessThan_op,
+		&&newArray_op,
+		&&newByteArray_op,
+		&&fillArray_op,
 		&&at_op,
 		&&atPut_op,
-		&&newArray_op,
-		&&fillArray_op,
 		&&analogRead_op,
 		&&analogWrite_op,
 		&&digitalRead_op,
@@ -327,20 +325,24 @@ static inline int runTask(Task *task) {
 		*(sp - arg) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
 		sp -= arg - 1;
 		DISPATCH();
+	newArray_op:
+		*(sp - arg) = primNewArray(sp - arg); // arg = # of arguments
+		sp -= arg - 1;
+		DISPATCH();
+	newByteArray_op:
+		*(sp - arg) = primNewByteArray(sp - arg); // arg = # of arguments
+		sp -= arg - 1;
+		DISPATCH();
+	fillArray_op:
+		*(sp - arg) = primArrayFill(sp - arg); // arg = # of arguments
+		sp -= arg - 1;
+		DISPATCH();
 	at_op:
 		*(sp - arg) = primArrayAt(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	atPut_op:
 		*(sp - arg) = primArrayAtPut(sp - arg);
-		sp -= arg - 1;
-		DISPATCH();
-	newArray_op:
-		*(sp - arg) = primNewArray(sp - arg); // arg = # of arguments
-		sp -= arg - 1;
-		DISPATCH();
-	fillArray_op:
-		*(sp - arg) = primArrayFill(sp - arg); // arg = # of arguments
 		sp -= arg - 1;
 		DISPATCH();
 	analogRead_op:
@@ -385,43 +387,31 @@ static inline int runTask(Task *task) {
 
 // Task Scheduler
 
-// The number of times to go through the task list each time stepTasks() is called
-#define ITERS_PER_STEP 100
-
 // Threshold for waking up tasks waiting on timers
 // (The timer can be up to this much beyond the nominal wakeup time):
 #define RECENT 1000000
 
 int stepTasks() {
-	// Run every runnable task and update its status. Handle tasks
-	// waiting for microseconds or milliseconds and poll condition hats.
-	// Return true if there are still running or waiting tasks.
+	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time
+	// has arrived. Return true if there are still running or waiting tasks.
 
-while (!serialDataAvailable()) { // xxx test
-	// Make polling tasks runnable to test their condition
+	errorMsg = NULL;
+	int hasActiveTasks = false;
+ 	uint32 usecs = TICKS();
+ 	uint32 msecs = millisecs();
 	for (int t = 0; t < taskCount; t++) {
-		if (polling == tasks[t].status) tasks[t].status = running;
+ 		int status = tasks[t].status;
+		if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
+			tasks[t].status = status = running;
+		} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
+			tasks[t].status = status = running;
+		}
+		if (status >= polling) runTask(&tasks[t]);
+		if (status >= waiting_micros) hasActiveTasks = true;
 	}
 
-	// Cycle through the tasks iter times, checking wakeTimes and running all runnables ones
-	uint32 msecs = millisecs();
-	for (int iter = 0; iter < ITERS_PER_STEP; iter++) {
-		int done = true;
-		uint32 usecs = TICKS();
-		for (int t = 0; t < taskCount; t++) {
-			int status = tasks[t].status;
-			if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
-				tasks[t].status = status = running;
-			} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
-				tasks[t].status = status = running;
-			}
-			if (status == running) runTask(&tasks[t]);
-			if (done && (status >= waiting_micros)) done = false;
-		}
-		if (done) return false;
-	}
-}
-	return true;
+	if (errorMsg) printf("Error: %s\r\n", errorMsg);
+	return hasActiveTasks;
 }
 
 // The following are used for testing:

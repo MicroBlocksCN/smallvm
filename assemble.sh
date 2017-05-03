@@ -64,10 +64,11 @@ FLAGS="$FLAGS -DDEVICE_LOCALFILESYSTEM=1"
 FLAGS="$FLAGS -include"
 FLAGS="$FLAGS mbed_config.h"
 
-CC='arm-none-eabi-gcc -std=gnu99 -c -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fmessage-length=0 -fno-exceptions -fno-builtin -ffunction-sections -fdata-sections -funsigned-char -MMD -fno-delete-null-pointer-checks -fomit-frame-pointer -O5 -mcpu=cortex-m3 -mthumb'
+#CC='arm-none-eabi-gcc -std=gnu99 -c -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fmessage-length=0 -fno-exceptions -fno-builtin -ffunction-sections -fdata-sections -funsigned-char -MMD -fno-delete-null-pointer-checks -fomit-frame-pointer -O0 -mcpu=cortex-m3 -mthumb'
+CC='arm-none-eabi-gcc -c -Wall -Og -mcpu=cortex-m3 -mthumb'
 $CC $FLAGS $INCLUDE_PATHS $1 $2 $3 $4 $5 $6
 
 # For C++ use the following:
-#CPP='arm-none-eabi-g++ -std=gnu++98 -fno-rtti -Wvla -c -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fmessage-length=0 -fno-exceptions -fno-builtin -ffunction-sections -fdata-sections -funsigned-char -MMD -fno-delete-null-pointer-checks -fomit-frame-pointer -O5 -mcpu=cortex-m3 -mthumb'
+#CPP='arm-none-eabi-g++ -std=gnu++98 -fno-rtti -Wvla -c -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -fmessage-length=0 -fno-exceptions -fno-builtin -ffunction-sections -fdata-sections -funsigned-char -MMD -fno-delete-null-pointer-checks -fomit-frame-pointer -O0 -mcpu=cortex-m3 -mthumb'
 #$CPP $FLAGS $INCLUDE_PATHS $1 $2 $3 $4 $5 $6
 

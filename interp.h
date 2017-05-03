@@ -36,19 +36,20 @@ extern "C" {
 #define multiply 26
 #define divide 27
 #define lessThan 28
-#define at 29
-#define atPut 30
-#define newArray 31
-#define fillArray 32
-#define analogReadOp 33
-#define analogWriteOp 34
-#define digitalReadOp 35
-#define digitalWriteOp 36
-#define setLEDOp 37
-#define microsOp 38
-#define millisOp 39
-#define peekOp 40
-#define pokeOp 41
+#define newArray 29
+#define newByteArray 30
+#define fillArray 31
+#define at 32
+#define atPut 33
+#define analogReadOp 34
+#define analogWriteOp 35
+#define digitalReadOp 36
+#define digitalWriteOp 37
+#define setLEDOp 38
+#define microsOp 39
+#define millisOp 40
+#define peekOp 41
+#define pokeOp 42
 
 // Instruction Format
 
@@ -187,16 +188,17 @@ OBJ failure(const char *reason);
 
 // Primitives
 
-OBJ primNewArray(OBJ args[]);
-OBJ primArrayFill(OBJ args[]);
-OBJ primArrayAt(OBJ args[]);
-OBJ primArrayAtPut(OBJ args[]);
+OBJ primNewArray(OBJ *args);
+OBJ primNewByteArray(OBJ *args);
+OBJ primArrayFill(OBJ *args);
+OBJ primArrayAt(OBJ *args);
+OBJ primArrayAtPut(OBJ *args);
 
-OBJ primAnalogRead(OBJ args[]);
-OBJ primAnalogWrite(OBJ args[]);
-OBJ primDigitalRead(OBJ args[]);
-OBJ primDigitalWrite(OBJ args[]);
-OBJ primSetLED(OBJ args[]);
+OBJ primAnalogRead(OBJ *args);
+OBJ primAnalogWrite(OBJ *args);
+OBJ primDigitalRead(OBJ *args);
+OBJ primDigitalWrite(OBJ *args);
+OBJ primSetLED(OBJ *args);
 
 OBJ primPeek(OBJ *args);
 OBJ primPoke(OBJ *args);

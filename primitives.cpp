@@ -30,58 +30,78 @@ uint32 millisecs() {
 #endif // not ARDUINO
 
 OBJ sizeFailure() { return failure("Size must be a positive integer"); }
-OBJ arrayClassFailure() { return failure("Must must be an Array"); }
+OBJ arrayClassFailure() { return failure("Must must be an Array or ByteArray"); }
+OBJ byteValueFailure() { return failure("A ByteArray can only store integer values between 0 and 255"); }
 OBJ indexClassFailure() { return failure("Index must be an integer"); }
 OBJ outOfRangeFailure() { return failure("Index out of range"); }
 
 // Platform Agnostic Primitives
 
-OBJ primNewArray(OBJ args[]) {
+OBJ primNewArray(OBJ *args) {
 	OBJ n = args[0];
 	if (!isInt(n) || ((int) n < 0)) return sizeFailure();
-// hack for primes benchmark: use byte array to simulate array of booleans
-	OBJ result = newObj(ArrayClass, (obj2int(n) + 3) / 4, nilObj); // bytes
+	OBJ result = newObj(ArrayClass, obj2int(n), int2obj(0)); // filled with zero integers
 	return result;
 }
 
-OBJ primArrayFill(OBJ args[]) {
+OBJ primNewByteArray(OBJ *args) {
+	OBJ n = args[0];
+	if (!isInt(n) || ((int) n < 0)) return sizeFailure();
+	OBJ result = newObj(ByteArrayClass, (obj2int(n) + 3) / 4, nilObj); // filled with zero bytes
+	return result;
+}
+
+OBJ primArrayFill(OBJ *args) {
 	OBJ array = args[0];
-	if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
+	if (!(IS_CLASS(array, ArrayClass) || IS_CLASS(array, ByteArrayClass))) return arrayClassFailure();
 	OBJ value = args[1];
 
-	value = (OBJ) ((value == trueObj) ? 0x01010101 : 0); // hack to encode flag array as bytes
-
-	int end = objWords(array) + HEADER_WORDS;
-	for (int i = HEADER_WORDS; i < end; i++) ((OBJ *) array)[i] = value;
+	if (IS_CLASS(array, ArrayClass)) {
+		int end = objWords(array) + HEADER_WORDS;
+		for (int i = HEADER_WORDS; i < end; i++) ((OBJ *) array)[i] = value;
+	} else {
+		if (!isInt(value)) return byteValueFailure();
+		uint32 byteValue = obj2int(value);
+		if (byteValue > 255) return byteValueFailure();
+		uint8 *dst = (uint8 *) &FIELD(array, 0);
+		uint8 *end = dst + (4 * objWords(array));
+		while (dst < end) *dst++ = byteValue;
+	}
 	return nilObj;
 }
 
-OBJ primArrayAt(OBJ args[]) {
+OBJ primArrayAt(OBJ *args) {
 	OBJ array = args[0];
-	if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
-	OBJ index = args[1];
-	if (!isInt(index)) return indexClassFailure();
+	if (!isInt(args[1])) return indexClassFailure();
+	int i = obj2int(args[1]);
 
-	int i = obj2int(index);
-	if ((i < 1) || (i > (objWords(array) * 4))) { return outOfRangeFailure(); }
-// hack for primes benchmark: use byte array to simulate array of booleans
-	char *bytes = (char *) array;
-	return (bytes[(4 * HEADER_WORDS) + (i - 1)]) ? trueObj : falseObj;
+	if (IS_CLASS(array, ArrayClass)) {
+		if ((i < 1) || (i > objWords(array))) return outOfRangeFailure();
+		return FIELD(array, (i - 1));
+	} else if (IS_CLASS(array, ByteArrayClass)) {
+		if ((i < 1) || (i > (objWords(array) * 4))) return outOfRangeFailure();
+		uint8 *bytes = (uint8 *) &FIELD(array, 0);
+		return int2obj(bytes[i - 1]);
+	} else return arrayClassFailure();
+	return nilObj;
 }
 
-OBJ primArrayAtPut(OBJ args[]) {
+OBJ primArrayAtPut(OBJ *args) {
 	OBJ array = args[0];
-	if (NOT_CLASS(array, ArrayClass)) return arrayClassFailure();
-	OBJ index = args[1];
-	if (!isInt(index)) return indexClassFailure();
+	if (!isInt(args[1])) return indexClassFailure();
+	int i = obj2int(args[1]);
 	OBJ value = args[2];
 
-	int i = obj2int(index);
-	if ((i < 1) || (i > (objWords(array) * 4))) return outOfRangeFailure();
-
-// hack for primes benchmark: use byte array to simulate array of booleans
-	char *bytes = (char *) array;
-	bytes[(4 * HEADER_WORDS) + (i - 1)] = (value == trueObj);
+	if (IS_CLASS(array, ArrayClass)) {
+		if ((i < 1) || (i > objWords(array))) return outOfRangeFailure();
+		FIELD(array, (i - 1)) = value;
+	} else if (IS_CLASS(array, ByteArrayClass)) {
+		if ((i < 1) || (i > (objWords(array) * 4))) return outOfRangeFailure();
+		if (!isInt(value)) return byteValueFailure();
+		uint32 byteValue = obj2int(value);
+		if (byteValue > 255) return byteValueFailure();
+		((uint8 *) &FIELD(array, 0))[i - 1] = byteValue;
+	} else return arrayClassFailure();
 	return nilObj;
 }
 
