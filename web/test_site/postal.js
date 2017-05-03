@@ -1,19 +1,30 @@
-var extensionId = 'gkhiljdfnkgeeeadlpiiiejkdfchgiip',
-    postal = new Postal();
+// Messaging between web client and middleware
 
-// Messaging between web client and plugin
-
-function Postal() {};
-
-// Send a command for the plugin to run
-Postal.prototype.sendCommand = function (command, args, callback) {
-    // TODO Since we need to communicate with the client bidirectionally, onMessageExternal
-    // is not going to be enough. We need to use chrome.runtime.connect to establish a
-    // long-lived connection instead: https://developer.chrome.com/extensions/messaging#connect
-    chrome.runtime.sendMessage(extensionId, { command: command, args: args }, callback);
+function Postal (address, onReceive) {
+    this.init(address, onReceive);
 };
 
-// Send a message to the board
-Postal.prototype.sendMessageToBoard = function (message) {
-    this.sendCommand('sendMessage', [ message ]);
+Postal.prototype.init = function (address, onReceive) {
+    this.address = address;
+    this.socket = new WebSocket(address);
+
+    this.socket.addEventListener('open', function() {
+        log('socket connection open');
+    });
+
+    this.socket.onmessage = function (event) {
+        onReceive(event.data);
+    };
+
+    this.socket.onclose = function () {
+        this.socket = null;
+        log('socket connection closed');
+    };
+};
+
+Postal.prototype.send = function (message) {
+    log('sending ' + message);
+    if (this.socket) {
+        this.socket.send(message);
+    }
 };

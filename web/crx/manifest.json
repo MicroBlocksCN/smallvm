@@ -1,22 +1,23 @@
 {
     "name": "µBlocks serial connector",
-    "description": "Facilitates the µBlocks serial protocol between boards and web IDEs",
-    "version": "0.1",
+    "description": "µBlocks serial to webSocket bridge",
+    "version": "0.2",
     "manifest_version": 2,
     "app": {
         "background": {
-            "scripts": [ "main.js", "protocol.js" ]
+            "scripts": [ "background.js" ]
         }
     },
     "permissions": [
         "serial"
     ],
-    "externally_connectable": {
-        "matches": [
-            "http://localhost:8080/*",
-            "http://localhost/*"
-        ],
-        "accepts_tls_channel_id": false
+    "sockets": {
+        "tcp": {
+            "connect": "*"
+        },
+        "tcpServer": {
+            "listen": "*"
+        }
     },
     "icons": { "16": "icon-16.png", "128": "icon-128.png" }
 }
