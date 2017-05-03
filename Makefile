@@ -50,8 +50,8 @@ OBJECTS += mem.o
 OBJECTS += interp.o
 OBJECTS += runtime.o
 OBJECTS += microBlocksPrims.o
-OBJECTS += taskTest.o
-OBJECTS += interpTests1.o
+#OBJECTS += taskTest.o
+#OBJECTS += interpTests1.o
 OBJECTS += main.o
 
  SYS_OBJECTS += mbed/TARGET_LPC1768/TOOLCHAIN_GCC_ARM/analogin_api.o

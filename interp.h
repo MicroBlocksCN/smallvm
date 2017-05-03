@@ -30,23 +30,25 @@ extern "C" {
 #define waitMicrosOp 20
 #define waitMillisOp 21
 #define printIt 22
-#define add 23
-#define subtract 24
-#define multiply 25
-#define divide 26
-#define lessThan 27
-#define at 28
-#define atPut 29
-#define newArray 30
-#define fillArray 31
-#define analogReadOp 32
-#define analogWriteOp 33
-#define digitalReadOp 34
-#define digitalWriteOp 35
-#define microsOp 36
-#define millisOp 37
-#define peekOp 38
-#define pokeOp 39
+#define stopAll 23
+#define add 24
+#define subtract 25
+#define multiply 26
+#define divide 27
+#define lessThan 28
+#define at 29
+#define atPut 30
+#define newArray 31
+#define fillArray 32
+#define analogReadOp 33
+#define analogWriteOp 34
+#define digitalReadOp 35
+#define digitalWriteOp 36
+#define setLEDOp 37
+#define microsOp 38
+#define millisOp 39
+#define peekOp 40
+#define pokeOp 41
 
 // Instruction Format
 
@@ -142,31 +144,33 @@ void runTasksUntilDone(void);
 // Client Interaction
 
 typedef enum {
-	okayReply,
+	okayReply = 0,
 	errorReply,
 	storeChunkMsg,
 	deleteChunkMsg,
 	startAllMsg,
 	stopAllMsg,
-	startChunkMsg,
+	startChunkMsg = 6,
 	stopChunkMsg,
 	getTaskStatusMsg,
 	getTaskStatusReply,
-	getOutputMsg,
+	getOutputMsg, // 10
 	getOutputReply,
 	getReturnValueMsg,
 	getReturnValueReply,
 	getErrorIPMsg,
 	getErrorIPReply,
 	clearAllMsg,
-	showChunksMsg,
-	showTasksMsg,
+	showChunksMsg, // 17
+	showTasksMsg, // 18
 } MessageType_t;
 
 void processMessage(void);
+void stopAllTasks(void);
 
 // Platform Specific Operations
 
+int serialDataAvailable(void);
 int readBytes(uint8 *buf, int count);
 void writeBytes(uint8 *buf, int count);
 uint32 millisecs(void);
@@ -192,6 +196,7 @@ OBJ primAnalogRead(OBJ args[]);
 OBJ primAnalogWrite(OBJ args[]);
 OBJ primDigitalRead(OBJ args[]);
 OBJ primDigitalWrite(OBJ args[]);
+OBJ primSetLED(OBJ args[]);
 
 OBJ primPeek(OBJ *args);
 OBJ primPoke(OBJ *args);

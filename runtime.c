@@ -1,4 +1,4 @@
-// runtime.c - Runtime for uBlocks, including CodeChunk storage and Task management
+// runtime.c - Runtime for uBlocks, including code chunk storage and task management
 // John Maloney, April 2017
 
 #include <stdio.h>
@@ -19,13 +19,13 @@ void startTaskForChunk(uint8 chunkIndex) {
 
 	int i;
 	for (i = 0; i < taskCount; i++) {
-		if ((unusedTask != tasks[i].status) && (chunkIndex == tasks[i].taskChunkIndex)) {
+		if ((chunkIndex == tasks[i].taskChunkIndex) && (tasks[i].status >= waiting_micros)) {
 			return; // already running
 		}
 	}
 
 	for (i = 0; i < MAX_TASKS; i++) {
-		if (unusedTask == tasks[i].status) break;
+		if (tasks[i].status < waiting_micros) break;
 	}
 	if (i >= MAX_TASKS) panic("No free task entries");
 	memset(&tasks[i], 0, sizeof(Task));
@@ -53,10 +53,10 @@ static void stopTaskForChunk(uint8 chunkIndex) {
 	if (i == (taskCount - 1)) taskCount--;
 }
 
-static void stopAll() {
+void stopAllTasks() {
 	// Stop all tasks.
 
-	taskCount = 0;
+	initTasks();
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		uint8 status = chunks[i].taskStatus;
 		if (status >= waiting_micros) {
@@ -64,13 +64,12 @@ static void stopAll() {
 			chunks[i].returnValueOrErrorIP = nilObj;
 		}
 	}
-	initTasks();
 }
 
 static void startAll() {
 	// Start tasks for all start and 'when' hat blocks.
 
-	stopAll(); // stop any running tasks
+	stopAllTasks(); // stop any running tasks
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		uint8 chunkType = chunks[i].chunkType;
 		if ((startHat == chunkType) || (whenConditionHat == chunkType)) {
@@ -112,6 +111,7 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 // Client Interaction
 
 // Note: msgBuffer is used for both incoming messages and their replies
+
 #define MAX_MSG 512
 uint8 msgBuffer[MAX_MSG];
 int msgByteCount = 0;
@@ -124,11 +124,14 @@ static void writeMsgHeader(int msgType, int id, int byteCount) {
 }
 
 static void sendOkay() {
+return; // xxx
 	writeMsgHeader(okayReply, 0, 0);
 	writeBytes(msgBuffer, 4);
 }
 
 static void sendError() {
+printf("Error!\r\n"); // xxx
+return;
 	writeMsgHeader(errorReply, 0, 0);
 	writeBytes(msgBuffer, 4);
 }
@@ -160,11 +163,16 @@ static void sendTaskStatus() {
 static void sendOutput() {
 	// Send the last output string. If there is none, send a zero-length string.
 
-	writeMsgHeader(getOutputReply, 0, printBufferByteCount);
-	for (int i = 0; i < printBufferByteCount; i++) {
-		msgBuffer[4 + i] = printBuffer[i];
-	}
-	writeBytes(msgBuffer, (4 + printBufferByteCount));
+	if (printBufferByteCount == 0) return; // no output
+
+// xxx for testing
+// 	writeMsgHeader(getOutputReply, 0, printBufferByteCount);
+// 	for (int i = 0; i < printBufferByteCount; i++) {
+// 		msgBuffer[4 + i] = printBuffer[i];
+// 	}
+// 	writeBytes(msgBuffer, (4 + printBufferByteCount));
+printf("%s", printBuffer);
+
 	printBufferByteCount = 0;
 
 	// make runnable any tasks that were waiting to print
@@ -269,7 +277,7 @@ void processMessage() {
 	msgByteCount += readBytes(&msgBuffer[msgByteCount], MAX_MSG - msgByteCount);
 	if (msgByteCount < 4) return; // incomplete message header
 
-	int bodyBytes = (msgBuffer[2] << 8) + msgBuffer[3];
+	int bodyBytes = (msgBuffer[3] << 8) + msgBuffer[2]; // little endian
 	if (msgByteCount < (bodyBytes + 4)) return; // message body incomplete
 
 	uint8 msgType = msgBuffer[0];
@@ -288,7 +296,7 @@ void processMessage() {
 		startAll();
 		break;
 	case stopAllMsg:
-		stopAll();
+		stopAllTasks();
 		break;
 	case startChunkMsg:
 		startTaskForChunk(chunkID);
@@ -308,15 +316,16 @@ void processMessage() {
 	case getErrorIPMsg:
 		sendErrorIP(chunkID);
 		return;
+	// The following are for debugging
 	case clearAllMsg:
 		clearAll();
 		break;
 	case showChunksMsg:
 		showChunks();
-		break;
+		return;
 	case showTasksMsg:
 		showTasks();
-		break;
+		return;
 	}
 	sendOkay();
 	msgByteCount = 0; // clear the message buffer

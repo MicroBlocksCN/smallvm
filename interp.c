@@ -71,6 +71,11 @@ OBJ primPrint(int argCount, OBJ args[]) {
 	printf("%s", printBuffer);
 	printBufferByteCount = 0;
 #endif
+
+// xxx for testing, output immediately and clear printBufferByteCount
+printf("%s", printBuffer);
+printBufferByteCount = 0;
+
 	return nilObj;
 }
 
@@ -125,6 +130,7 @@ static inline int runTask(Task *task) {
 		&&waitMicros_op,
 		&&waitMillis_op,
 		&&printIt_op,
+		&&stopAll_op,
 		&&add_op,
 		&&subtract_op,
 		&&multiply_op,
@@ -138,6 +144,7 @@ static inline int runTask(Task *task) {
 		&&analogWrite_op,
 		&&digitalRead_op,
 		&&digitalWrite_op,
+		&&setLED_op,
 		&&micros_op,
 		&&millis_op,
 		&&peek_op,
@@ -164,6 +171,7 @@ static inline int runTask(Task *task) {
 		task->status = done;
 		goto suspend;
 	noop_op:
+		*sp++ = nilObj;
 		DISPATCH();
 	pushImmediate_op:
 		*sp++ = (OBJ) arg;
@@ -293,6 +301,9 @@ static inline int runTask(Task *task) {
 		*(sp - arg) = primPrint(arg, sp - arg); // arg = # of arguments
 		sp -= arg - 1;
 		DISPATCH();
+	stopAll_op:
+		stopAllTasks(); // clears all tasks, including the current one
+		return done;
 
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
 	// All primitive ops pop all their args and leave a result on the top of the stack.
@@ -348,6 +359,10 @@ static inline int runTask(Task *task) {
 		*(sp - arg) = primDigitalWrite(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
+	setLED_op:
+		*(sp - arg) = primSetLED(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
 	micros_op:
 		*(sp - arg) = int2obj(TICKS());
 		sp -= arg - 1;
@@ -382,6 +397,7 @@ int stepTasks() {
 	// waiting for microseconds or milliseconds and poll condition hats.
 	// Return true if there are still running or waiting tasks.
 
+while (!serialDataAvailable()) { // xxx test
 	// Make polling tasks runnable to test their condition
 	for (int t = 0; t < taskCount; t++) {
 		if (polling == tasks[t].status) tasks[t].status = running;
@@ -404,6 +420,7 @@ int stepTasks() {
 		}
 		if (done) return false;
 	}
+}
 	return true;
 }
 

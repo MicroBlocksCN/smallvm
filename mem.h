@@ -117,7 +117,7 @@ void panic(char *s);
 // Microsecond timer
 
 #if defined(ARDUINO)
-	int microsecs(void);
+	uint32 microsecs(void);
 	#define TICKS() (microsecs())
 #elif defined(__MBED__)
 	#include <us_ticker_api.h>
