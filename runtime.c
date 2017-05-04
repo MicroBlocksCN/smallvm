@@ -251,7 +251,11 @@ void showChunks() {
 }
 
 void showTasks() {
-	printf("%d Tasks:\r\n", taskCount);
+	if (!taskCount) {
+		printf("No tasks\r\n");
+		return;
+	}
+	printf("%d tasks:\r\n", taskCount);
 	for (int i = 0; i < taskCount; i++) {
 		Task *task = &tasks[i];
 		if (task->status > unusedTask) {

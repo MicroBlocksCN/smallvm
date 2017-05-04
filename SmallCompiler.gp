@@ -1,32 +1,19 @@
 // SmallCompiler.gp - A blocks compiler for SmallVM
 // John Maloney, April, 2017
 
-to compileSmallVM cmdOrReporter {
-	// Print the instructions.
-
-	compiler = (initialize (new 'SmallCompiler'))
-	code = (instructionsFor compiler cmdOrReporter)
-	for item code {
-		if (and (isClass item 'Array') ('pushImmediate' == (first item))) {
-			arg = (at item 2)
-			if (1 == (arg & 1)) { arg = (arg >> 1) } // decode integer
-			print (array 'pushImmediate' arg)
-		} else {
-			print item
-		}
+to smallRuntime {
+	if (isNil (global 'smallRuntime')) {
+		setGlobal 'smallRuntime' (new 'SmallRuntime')
 	}
-	print '----------'
+	return (global 'smallRuntime')
 }
 
-to evalOnArduino cmdOrReporter {
-	evalOnArduino (new 'SmallRuntime') cmdOrReporter
-}
+defineClass SmallRuntime port chunkIDs recvBuf msgDict
 
-defineClass SmallRuntime port codeChunks
-
-method evalOnArduino SmallRuntime cmdOrReporter {
+method evalOnArduino SmallRuntime aBlock showBytes {
+	if (isNil showBytes) { showBytes = false }
 	compiler = (initialize (new 'SmallCompiler'))
-	code = (instructionsFor compiler cmdOrReporter)
+	code = (instructionsFor compiler (expression aBlock))
 	bytes = (list)
 	for item code {
 		if (isClass item 'Array') {
@@ -39,47 +26,146 @@ method evalOnArduino SmallRuntime cmdOrReporter {
 			error 'Instruction must be an Array or String:' item
 		}
 	}
-print bytes
-sendMsg this bytes
-return
-	saveChunkForBlock this cmdOrReporter
-//	sendMsg bytes
+	id = (chunkIdFor this aBlock)
+	if showBytes {
+		print (join 'Bytes for chunk ' id ':') bytes
+		print '----------'
+		return
+	}
+	saveChunk this id 1 bytes
+	runChunk this id
 }
 
-method saveChunkForBlock SmallRuntime cmdOrReporter {
-	if (isNil codeChunks) { codeChunks = (dictionary) }
-	entry = (at codeChunks cmdOrReporter nil)
+method showInstructions SmallRuntime aBlockOrFunction {
+	// Print the instructions for the given stack.
+
+	compiler = (initialize (new 'SmallCompiler'))
+	if (isClass aBlockOrFunction 'Block') {
+		expr = (expression aBlockOrFunction)
+	} else {
+		expr = (cmdList aBlockOrFunction)
+	}
+	code = (instructionsFor compiler expr)
+	for item code {
+		if (and (isClass item 'Array') ('pushImmediate' == (first item))) {
+			arg = (at item 2)
+			if (1 == (arg & 1)) { arg = (arg >> 1) } // decode integer
+			if (2 == arg) { arg = true }
+			if (4 == arg) { arg = false }
+			print (array 'pushImmediate' arg)
+		} else {
+			print item
+		}
+	}
+	print '----------'
+}
+
+method chunkIdFor SmallRuntime aBlock {
+	if (isNil chunkIDs) { chunkIDs = (dictionary) }
+	entry = (at chunkIDs aBlock nil)
 	if (isNil entry) {
-		id = (count codeChunks)
-		entry = (array id cmdOrReporter)
-		atPut codeChunks entry
+		id = (count chunkIDs)
+		entry = (array id aBlock) // block -> <id> <last expression>
+		atPut chunkIDs aBlock entry
+	}
+	return (first entry)
+}
+
+method sendPing SmallRuntime {
+	ensurePortOpen this
+	sendMsg this 'showChunksMsg'
+	sendMsg this 'showTasksMsg'
+	showResult this // show results when called from command line
+}
+
+method sendStopAll SmallRuntime {
+	ensurePortOpen this
+	sendMsg this 'stopAllMsg'
+}
+
+method resetArduino SmallRuntime {
+	// Reset the Arduino by closing the serial port, opening it
+	// at 1200 baud, then closing and reopening the port.
+
+	if (notNil port) { closeSerialPort port }
+	port = (openSerialPort '/dev/tty.usbmodem1422' 1200)
+	closeSerialPort port
+	port = nil
+	ensurePortOpen this
+}
+
+method saveChunk SmallRuntime chunkID chunkType bytes {
+	ensurePortOpen this
+	byteCount = ((count bytes) + 1)
+	// msg body is: <chunkType (1 byte)> <instruction data>
+	msg = (list 2 chunkID (byteCount & 255) ((byteCount >> 8) & 255) chunkType)
+	addAll msg bytes
+	writeSerialPort port (toBinaryData (toArray msg))
+}
+
+method runChunk SmallRuntime chunkID {
+	sendMsg this 'startChunkMsg' chunkID
+}
+
+method msgNameToID SmallRuntime msgName {
+	if (isNil msgDict) {
+		msgDict = (dictionary)
+		atPut msgDict 'storeChunkMsg' 2
+		atPut msgDict 'deleteChunkMsg' 3
+		atPut msgDict 'startAllMsg' 4
+		atPut msgDict 'stopAllMsg' 5
+		atPut msgDict 'startChunkMsg' 6
+		atPut msgDict 'stopChunkMsg' 7
+		atPut msgDict 'getTaskStatusMsg' 8
+		atPut msgDict 'getOutputMsg' 10
+		atPut msgDict 'getReturnValueMsg' 12
+		atPut msgDict 'getErrorIPMsg' 14
+		atPut msgDict 'showChunksMsg' 16
+		atPut msgDict 'showTasksMsg' 17
+	}
+	msgID = (at msgDict msgName)
+	if (isNil msgID) { error 'Unknown message:' msgName }
+	return msgID
+}
+
+method sendMsg SmallRuntime msgName chunkID byteList {
+	if (isNil chunkID) { chunkID = 0 }
+	if (isNil byteList) { byteList = (list) }
+	msgID = (msgNameToID this msgName)
+	byteCount = (count byteList)
+	msg = (list msgID chunkID (byteCount & 255) ((byteCount >> 8) & 255))
+	addAll msg byteList
+	ensurePortOpen this
+	writeSerialPort port (toBinaryData (toArray msg))
+}
+
+method ensurePortOpen SmallRuntime {
+	if (isNil port) {
+		port = (openSerialPort '/dev/tty.usbmodem1422' 9600)
 	}
 }
 
-method sendMsg SmallRuntime byteList {
-	msg = (list 17 42 0 (count byteList))
-	addAll msg byteList
-	port = (openSerialPort '/dev/tty.usbmodem1422' 9600)
-	writeSerialPort port (toBinaryData (toArray msg))
-	monitorSerial this
-	closeSerialPort port
+method showResult SmallRuntime {
+	lastReadTime = (msecsSinceStart)
+	while (((msecsSinceStart) - lastReadTime) < 1000) {
+		showOutput this
+		waitMSecs 50
+	}
 }
 
-method monitorSerial SmallRuntime {
-	buf = ''
-	while true {
-		s = (readSerialPort port)
-		if (notNil s) {
-			buf = (join buf s)
-			while (notNil (findFirst buf (newline))) {
-				i = (findFirst buf (newline))
-				out = (substring buf 1 (i - 2))
-				buf = (substring buf (i + 1))
-				if ((count (words out)) > 0) { print out }
-				if (beginsWith out 'uBlocks>') { return }
-			}
+method showOutput SmallRuntime {
+	if (isNil port) { return }
+//	sendMsg this 'getOutputMsg'  // xxx using direct terminal output for now
+	s = (readSerialPort port)
+	if (notNil s) {
+		if (isNil recvBuf) { recvBuf = '' }
+		recvBuf = (join recvBuf s)
+		while (notNil (findFirst recvBuf (newline))) {
+			i = (findFirst recvBuf (newline))
+			out = (substring recvBuf 1 (i - 2))
+			recvBuf = (substring recvBuf (i + 1))
+			print out
 		}
-		waitMSecs 10
 	}
 }
 
@@ -94,22 +180,25 @@ method arduinoSpecs SmallRuntime {
 	return (array
 	'Arduino'
 		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello, Arduino!')
-		(array 'r' 'analogRead'			'read analog pin _' 'num' 1)
-		(array ' ' 'analogWrite'		'set analog pin _ to _' 'num num' 1 1023)
-		(array 'r' 'digitalRead'		'read digital pin _' 'num' 1)
-		(array ' ' 'digitalWrite'		'set digital pin _ to _' 'num bool' 1 true)
-		(array 'r' 'micros'				'micros')
-		(array 'r' 'millis'				'millis')
+		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
+		(array ' ' 'analogWriteOp'		'set analog pin _ to _' 'num num' 1 1023)
+		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
+		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
+		(array ' ' 'setLEDOp'			'set user LED _' 'bool' true)
+		(array 'r' 'microsOp'			'micros')
+		(array 'r' 'millisOp'			'millis')
 		(array ' ' 'noop'				'no op')
-		(array 'r' 'peek'				'memory at _' 'num' 0)
-		(array ' ' 'poke'				'set memory at _ to _' 'num num' 0 0)
+		(array 'r' 'peekOp'				'memory at _' 'num' 0)
+		(array ' ' 'pokeOp'				'set memory at _ to _' 'num num' 0 0)
 	'Control_' // Arduinio control blocks
 		(array ' ' 'animate'			'forever _' 'cmd')
 		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'halt'				'stop this task')
-		(array ' ' 'self_stopAll'		'stop all')
+		(array ' ' 'stopAll'			'stop all')
 		(array ' ' 'return'				'return _' 'auto')
+		(array ' ' 'waitMicrosOp'		'wait _ microsecs' 'num' 10000)
+		(array ' ' 'waitMillisOp'		'wait _ millisecs' 'num' 500)
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenCondition'		'when _' 'bool')
 	'Math' // Arduinio math blocks
@@ -118,6 +207,12 @@ method arduinoSpecs SmallRuntime {
 		(array 'r' 'multiply'			'_ × _ : × _ : ...' 'num num num' 10 2 10)
 		(array 'r' 'divide'				'_ / _' 'num num' 10 2)
 		(array 'r' 'lessThan'			'_ < _' 'num num' 3 4)
+	'Arrays'
+		(array 'r' 'newArray'			'new array _' 'num' 10)
+		(array 'r' 'newByteArray'		'new byte array _' 'num' 10)
+		(array ' ' 'fillArray'			'fill array _ with _' 'num auto' nil 0)
+		(array 'r' 'at'					'array _ at _' 'auto num' nil 1)
+		(array ' ' 'atPut'				'set array _ at _ to _' 'num num' nil 1 10)
 	)
 }
 
@@ -158,23 +253,26 @@ method initOpcodes SmallCompiler {
 #define waitMicrosOp 20
 #define waitMillisOp 21
 #define printIt 22
-#define add 23
-#define subtract 24
-#define multiply 25
-#define divide 26
-#define lessThan 27
-#define at 28
-#define atPut 29
-#define newArray 30
+#define stopAll 23
+#define add 24
+#define subtract 25
+#define multiply 26
+#define divide 27
+#define lessThan 28
+#define newArray 29
+#define newByteArray 30
 #define fillArray 31
-#define analogReadOp 32
-#define analogWriteOp 33
-#define digitalReadOp 34
-#define digitalWriteOp 35
-#define microsOp 36
-#define millisOp 37
-#define peekOp 38
-#define pokeOp 39
+#define at 32
+#define atPut 33
+#define analogReadOp 34
+#define analogWriteOp 35
+#define digitalReadOp 36
+#define digitalWriteOp 37
+#define setLEDOp 38
+#define microsOp 39
+#define millisOp 40
+#define peekOp 41
+#define pokeOp 42
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
@@ -194,11 +292,14 @@ method instructionsFor SmallCompiler cmdOrReporter {
 	} else {
 		result = (instructionsForCmdList this (newReporter 'return' cmdOrReporter))
 	}
-	if (or
-		(isEmpty result)
-		(not (isOneOf (first (last result)) 'halt' 'stopTask' 'return'))) {
-			// add halt to stop execution at end of script
-			add result (array 'halt' 0)
+	add result (array 'halt' 0)
+	if (and
+		((count result) == 2)
+		(isOneOf (first (first result)) 'halt' 'stopAll')) {
+			// In general, just looking at the final instructon isn't enough because
+			// it could just be the end of a conditional body that is jumped
+			// over; in that case, we need the final halt as the jump target.
+			removeLast result // remove the final halt
 	}
 	appendLiterals this result
 	return result
@@ -225,7 +326,11 @@ method instructionsForCmd SmallCompiler cmd {
 		addAll result (instructionsForExpression this (at args 2))
 		add result (array 'incrementVar' (globalVarIndex this (first args)))
 	} ('return' == op) {
-		addAll result (instructionsForExpression this (at args 1))
+		if (0 == (count args)) {
+			add result (array 'pushImmediate' 1)
+		} else {
+			addAll result (instructionsForExpression this (at args 1))
+		}
 		add result (array 'returnResult' 0)
 	} ('if' == op) {
 		return (instructionsForIf this args)
@@ -233,6 +338,10 @@ method instructionsForCmd SmallCompiler cmd {
 		return (instructionsForForever this args)
 	} ('repeat' == op) {
 		return (instructionsForRepeat this args)
+	} ('whenCondition' == op) {
+		return (instructionsForWhenCondition this args)
+	} ('whenStarted' == op) {
+		return (list)
 	} else {
 		return (primitive this op args true)
 	}
@@ -282,12 +391,20 @@ method instructionsForRepeat SmallCompiler args {
 	return result
 }
 
+method instructionsForWhenCondition SmallCompiler args {
+	result = (instructionsForExpression this (at args 1)) // evaluate condition
+	add result (array 'jumpFalse' (0 - ((count result) + 1)))
+	return result
+}
+
 method instructionsForExpression SmallCompiler expr {
 	// immediate values
 	if (true == expr) {
 		return (list (array 'pushImmediate' trueObj))
 	} (false == expr) {
 		return (list (array 'pushImmediate' falseObj))
+	} (isNil expr) {
+		return (list (array 'pushImmediate' 1)) // the integer zero
 	} (isClass expr 'Integer') {
 		if (and (-8388608 <= expr) (expr < 8388607)) {
 			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FFFFFF')) ))
@@ -320,7 +437,7 @@ method primitive SmallCompiler op args isCommand {
 			addAll result (instructionsForExpression this arg)
 		}
 		add result (array op (count args))
-		if isCommand {
+		if (and isCommand (not (isOneOf op 'halt' 'stopAll')))  {
 			add result (array 'pop' 1)
 		}
 	} else {
@@ -409,17 +526,7 @@ method addBytesForStringLiteral SmallCompiler s bytes {
 	}
 }
 
-
-// Patches to Scripter
-
-method devModeCategories Scripter {
-	return (userModeCategories this)
-}
-
-method userModeCategories Scripter {
-	addArduinoBlocks (new 'SmallRuntime')
-	return (array 'Control_' 'Arduino' 'Math' 'Variables' 'My Blocks')
-}
+// Patches to Block and Scripter
 
 method blockColorForCategory AuthoringSpecs cat {
   defaultColor = (color 4 148 220)
@@ -435,6 +542,79 @@ method blockColorForCategory AuthoringSpecs cat {
   }
   if (notNil (global 'defaultColor')) { return (global 'defaultColor') }
   return defaultColor
+}
+
+method contextMenu Block {
+  if (isPrototype this) {return nil}
+  menu = (menu nil this)
+  isInPalette = ('template' == (grabRule morph))
+// xxx
+addItem menu 'show instructions' 'showInstructions'
+addItem menu 'show compiled bytes' 'showCompiledBytes'
+addLine menu
+
+  if (isVariadic this) {
+    if (canExpand this) {addItem menu 'expand' 'expand'}
+    if (canCollapse this) {addItem menu 'collapse' 'collapse'}
+    addLine menu
+  }
+  if (and isInPalette (isRenamableVar this)) {
+    addItem menu 'rename...' 'userRenameVariable'
+    addLine menu
+  }
+  addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
+  if (and ('reporter' != type) (notNil (next this))) {
+    addItem menu '...all' 'grabDuplicateAll' 'duplicate including all attached blocks'
+  }
+  addItem menu 'copy to clipboard' 'copyToClipboard'
+
+  if (not isInPalette) {
+    addLine menu
+    addItem menu 'delete' 'delete'
+  }
+  return menu
+}
+
+method showInstructions Block { showInstructions (smallRuntime) this }
+method showCompiledBytes Block { evalOnArduino (smallRuntime) this true }
+
+method contextMenu BlockDefinition {
+  menu = (menu nil this)
+ // xxx
+addItem menu 'show instructions' 'showInstructions'
+addItem menu 'show compiled bytes' 'showCompiledBytes'
+addLine menu
+ if isShort {
+    addItem menu 'show details' 'showDetails'
+  } else {
+    addItem menu 'hide details' 'hideDetails'
+  }
+  addLine menu
+  for tp (array 'command' 'reporter') {
+    addItem menu '' (action 'setType' this tp) tp (fullCostume (morph (block tp (color 4 148 220) '                    ')))
+  }
+  addLine menu
+  addItem menu 'delete' 'deleteDefinition'
+  if (devMode) {
+   addItem menu 'set method name' 'setMethodNameUI'
+  }
+  popUp menu (global 'page') (left morph) (bottom morph)
+}
+
+method showInstructions BlockDefinition { showInstructions (smallRuntime) (functionNamed op) }
+method showCompiledBytes BlockDefinition { evalOnArduino (smallRuntime) this true }
+
+method clicked Block hand {
+  evalOnArduino (smallRuntime) (topBlock this)
+}
+
+method devModeCategories Scripter {
+	return (userModeCategories this)
+}
+
+method userModeCategories Scripter {
+	addArduinoBlocks (new 'SmallRuntime')
+	return (array 'Control_' 'Arduino' 'Math' 'Arrays' 'Variables' 'My Blocks')
 }
 
 method addVariableBlocks Scripter {
@@ -487,4 +667,49 @@ method addMyBlocks Scripter {
 	if (isNil spec) { spec = (blockSpecFor f) }
 	addBlock this (blockForSpec spec) spec
   }
+}
+
+method step ProjectEditor {
+  if ('Browser' == (platform)) { processImportedFiles this }
+  processDroppedFiles this
+  if (isNil fpsReadout) { return }
+  frameCount += 1
+  msecs = ((msecsSinceStart) - lastFrameTime)
+  if (and (frameCount > 2) (msecs > 200)) {
+	fps = ((1000 * frameCount) / msecs)
+	setText fpsReadout (join '' (round fps 0.1) ' fps')
+	lastFrameTime = (msecsSinceStart)
+	frameCount = 0
+  }
+  showOutput (smallRuntime)
+}
+
+method contextMenu ScriptEditor {
+  menu = (menu nil this)
+  // Arudino additions to background menu
+  addItem menu 'Arduino stop all' (action 'sendStopAll' (smallRuntime))
+  addItem menu 'Arduino status' (action 'sendPing' (smallRuntime))
+  addLine menu
+  addItem menu 'Arduino reset and clear' (action 'resetArduino' (smallRuntime))
+  addLine menu
+  addItem menu 'clean up' 'cleanUp' 'arrange scripts'
+  if (and (notNil lastDrop) (isRestorable lastDrop)) {
+    addItem menu 'undrop' 'undrop' 'undo last drop'
+  }
+  addLine menu
+  addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
+  clip = (getClipboard)
+  if (beginsWith clip 'GP Scripts') {
+	addItem menu 'paste scripts' 'pasteScripts'
+  } (beginsWith clip 'GP Script') {
+	addItem menu 'paste script' 'pasteScripts'
+  }
+  cb = (ownerThatIsA morph 'ClassBrowser')
+  if (notNil cb) {
+    if (wasEdited (handler cb)) {
+      addLine menu
+      addItem menu 'save changes' (action 'saveEditedFunction' (handler cb))
+    }
+  }
+  return menu
 }
