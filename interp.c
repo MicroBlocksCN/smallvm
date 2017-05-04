@@ -68,8 +68,9 @@ OBJ primPrint(int argCount, OBJ *args) {
 	printBufferByteCount = strlen(printBuffer);
 #if !USE_TASKS
 	// if not using tasks, print immediately
-	printf("%s", printBuffer);
+	printf("(NO TASKS) %s", printBuffer);
 	printBufferByteCount = 0;
+	return nilObj;
 #endif
 
 // xxx for testing, output immediately and clear printBufferByteCount
@@ -90,10 +91,10 @@ printBufferByteCount = 0;
 }
 
 static inline int runTask(Task *task) {
+	register int op;
 	register int *ip;
 	register OBJ *sp;
 	register OBJ *fp;
-	register int op;
 	int arg, tmp;
 	OBJ tmpObj;
 
@@ -326,15 +327,15 @@ static inline int runTask(Task *task) {
 		sp -= arg - 1;
 		DISPATCH();
 	newArray_op:
-		*(sp - arg) = primNewArray(sp - arg); // arg = # of arguments
+		*(sp - arg) = primNewArray(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	newByteArray_op:
-		*(sp - arg) = primNewByteArray(sp - arg); // arg = # of arguments
+		*(sp - arg) = primNewByteArray(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	fillArray_op:
-		*(sp - arg) = primArrayFill(sp - arg); // arg = # of arguments
+		*(sp - arg) = primArrayFill(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 	at_op:
@@ -395,22 +396,22 @@ int stepTasks() {
 	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time
 	// has arrived. Return true if there are still running or waiting tasks.
 
-	errorMsg = NULL;
 	int hasActiveTasks = false;
- 	uint32 usecs = TICKS();
- 	uint32 msecs = millisecs();
-	for (int t = 0; t < taskCount; t++) {
- 		int status = tasks[t].status;
-		if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
-			tasks[t].status = status = running;
-		} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
-			tasks[t].status = status = running;
+	while (!serialDataAvailable()) {
+		hasActiveTasks = false;
+		uint32 usecs = TICKS();
+		uint32 msecs = millisecs();
+		for (int t = 0; t < taskCount; t++) {
+			int status = tasks[t].status;
+			if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
+				tasks[t].status = status = running;
+			} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
+				tasks[t].status = status = running;
+			}
+			if (status >= polling) runTask(&tasks[t]);
+			if (status >= waiting_micros) hasActiveTasks = true;
 		}
-		if (status >= polling) runTask(&tasks[t]);
-		if (status >= waiting_micros) hasActiveTasks = true;
 	}
-
-	if (errorMsg) printf("Error: %s\r\n", errorMsg);
 	return hasActiveTasks;
 }
 
