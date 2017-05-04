@@ -437,8 +437,8 @@ void interpTests1() {
 
 return;
 
-	// The following test requires ~32kbytes (or ~8k if using a byte array for flags)
-	// and thus do not run on boards with limited RAM such as the micro:bit.
+	// The following test requires ~32kbytes (or ~8k if using a byte array for flags).
+	// The code current does not run; it needs to be updated to use byte arrays.
 
 	START_TIMER();
 	runProg(primes1000, sizeof(primes1000));

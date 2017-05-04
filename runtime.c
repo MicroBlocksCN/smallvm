@@ -231,12 +231,6 @@ static void sendErrorIP(uint8 chunkID) {
 	writeBytes(msgBuffer, (4 + MAX_CHUNKS));
 }
 
-void clearAll() {
-	memClear();
-	initChunks();
-	initTasks();
-}
-
 void showChunks() {
 	updateChunkTaskStatus();
 	int usedChunkCount = 0;
@@ -316,10 +310,8 @@ void processMessage() {
 	case getErrorIPMsg:
 		sendErrorIP(chunkID);
 		return;
+
 	// The following are for debugging
-	case clearAllMsg:
-		clearAll();
-		break;
 	case showChunksMsg:
 		showChunks();
 		return;

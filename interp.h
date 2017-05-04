@@ -161,9 +161,8 @@ typedef enum {
 	getReturnValueReply,
 	getErrorIPMsg,
 	getErrorIPReply,
-	clearAllMsg,
-	showChunksMsg, // 17
-	showTasksMsg, // 18
+	showChunksMsg, // 16
+	showTasksMsg, // 17
 } MessageType_t;
 
 void processMessage(void);
