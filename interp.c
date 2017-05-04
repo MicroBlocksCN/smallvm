@@ -18,7 +18,7 @@ CodeChunkRecord chunks[MAX_CHUNKS];
 Task tasks[MAX_TASKS];
 int taskCount = 0;
 
-static const char* errorMsg;
+static const char* errorMsg = NULL;
 
 char printBuffer[PRINT_BUF_SIZE];
 int printBufferByteCount = 0;
@@ -159,6 +159,7 @@ static inline int runTask(Task *task) {
 		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		chunks[task->taskChunkIndex].returnValueOrErrorIP = int2obj(tmp);
 		chunks[task->taskChunkIndex].errorMsg = errorMsg;
+		errorMsg = NULL; // clear the error
 		goto suspend;
 	suspend:
 		// save task state
@@ -329,22 +330,27 @@ static inline int runTask(Task *task) {
 	newArray_op:
 		*(sp - arg) = primNewArray(sp - arg);
 		sp -= arg - 1;
+		if (errorMsg) goto error;
 		DISPATCH();
 	newByteArray_op:
 		*(sp - arg) = primNewByteArray(sp - arg);
 		sp -= arg - 1;
+		if (errorMsg) goto error;
 		DISPATCH();
 	fillArray_op:
 		*(sp - arg) = primArrayFill(sp - arg);
 		sp -= arg - 1;
+		if (errorMsg) goto error;
 		DISPATCH();
 	at_op:
 		*(sp - arg) = primArrayAt(sp - arg);
 		sp -= arg - 1;
+		if (errorMsg) goto error;
 		DISPATCH();
 	atPut_op:
 		*(sp - arg) = primArrayAtPut(sp - arg);
 		sp -= arg - 1;
+		if (errorMsg) goto error;
 		DISPATCH();
 	analogRead_op:
 		*(sp - arg) = primAnalogRead(sp - arg);
@@ -391,6 +397,42 @@ static inline int runTask(Task *task) {
 // Threshold for waking up tasks waiting on timers
 // (The timer can be up to this much beyond the nominal wakeup time):
 #define RECENT 1000000
+
+int stepTasksTEST() {
+	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time
+	// has arrived. Return true if there are still running or waiting tasks.
+
+	initTasks();
+	tasks[0].status = running;
+	tasks[1].status = running;
+	tasks[2].status = running;
+	tasks[3].status = running;
+	tasks[4].status = running;
+	taskCount = 1;
+
+	int hasActiveTasks = false;
+	uint32 start = TICKS();
+	for (int i = 0; i < 1000000; i++) {
+	//	serialDataAvailable();
+		hasActiveTasks = false;
+		uint32 usecs = 0; // TICKS();
+		uint32 msecs = 0; // millisecs();
+		for (int t = 0; t < taskCount; t++) {
+			int status = tasks[t].status;
+			if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
+				tasks[t].status = status = running;
+			} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
+				tasks[t].status = status = running;
+			}
+			if (status >= polling) {
+				/* would run task here */; // runTask(&tasks[t]);
+			}
+			if (status >= waiting_micros) hasActiveTasks = true;
+		}
+	}
+	printf("%d usecs\n", (int) (TICKS() - start));
+	return hasActiveTasks;
+}
 
 int stepTasks() {
 	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time

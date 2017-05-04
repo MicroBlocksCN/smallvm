@@ -80,10 +80,6 @@ static void startAll() {
 
 // Code Chunk Ops
 
-static void initChunks() {
-	memset(chunks, 0, sizeof(chunks));
-}
-
 void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data) {
 	if (chunkIndex >= MAX_CHUNKS) return;
 	int wordCount = (byteCount + 3) / 4;

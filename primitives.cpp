@@ -128,8 +128,8 @@ OBJ primPoke(OBJ *args) {
 
 uint32 microsecs() { return (uint32) micros(); }
 uint32 millisecs() { return (uint32) millis(); }
-void putSerial(char *s) { Serial.print(s); }
 
+void putSerial(char *s) { Serial.print(s); }
 int serialDataAvailable() { return Serial.available(); }
 
 int readBytes(uint8 *buf, int count) {
@@ -144,6 +144,12 @@ void writeBytes(uint8 *buf, int count) {
 	for (int i = 0; i < count; i++) {
 		Serial.write(buf[i]);
 	}
+}
+
+NVIC_SystemReset(void); // CMSIS function to reset Arduino
+
+void resetHardware() {
+	NVIC_SystemReset();
 }
 
 // Arduino Primitives
@@ -213,6 +219,12 @@ void writeBytes(uint8 *buf, int count) {
 	for (int i = 0; i < count; i++) {
 		pc.putc(buf[i]);
 	}
+}
+
+extern "C" void mbed_reset(); // undocumented mbed reset function
+
+void resetHardware() {
+	mbed_reset();
 }
 
 // MBED Primitives (not yet implemented)
