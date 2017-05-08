@@ -122,7 +122,7 @@ OBJ primPoke(OBJ *args) {
 
 #if defined(ARDUINO)
 
-#include "arduino.h"
+#include "Arduino.h"
 
 // Arduino Helper Functions (callable from C)
 
@@ -146,9 +146,7 @@ void writeBytes(uint8 *buf, int count) {
 	}
 }
 
-NVIC_SystemReset(void); // CMSIS function to reset Arduino
-
-void resetHardware() {
+void systemReset() {
 	NVIC_SystemReset();
 }
 
@@ -202,6 +200,8 @@ OBJ primSetLED(OBJ *args) {
 // MBED Helper Functions
 
 #include "mbed.h"
+#include <gpio_api.h>
+#include <PinNames.h>
 
 Serial pc(USBTX, USBRX);
 
@@ -221,18 +221,136 @@ void writeBytes(uint8 *buf, int count) {
 	}
 }
 
-extern "C" void mbed_reset(); // undocumented mbed reset function
-
-void resetHardware() {
-	mbed_reset();
+void systemReset() {
+	NVIC_SystemReset();
 }
 
-// MBED Primitives (not yet implemented)
+// Pin Maps (for the micro:bit)
 
-OBJ primAnalogRead(OBJ *args) { return int2obj(0); }
-OBJ primAnalogWrite(OBJ *args) { return nilObj; }
-OBJ primDigitalRead(OBJ *args) { return falseObj; }
-OBJ primDigitalWrite(OBJ *args) { return nilObj; }
+#if defined(TARGET_LPC176X)
+
+#define TOTAL_PIN_COUNT 25
+#define ANALOG_PIN_COUNT 5
+
+PinName pinMap[] = { }; // LPC1768 pins not yet implemented
+
+#elif defined(TARGET_NRF51_MICROBIT)
+
+#define TOTAL_PIN_COUNT 25
+#define ANALOG_PIN_COUNT 5
+
+PinName pinMap[] = {
+ 	P0_3, P0_2, P0_1, P0_4, P0_5, // edge pins 0-4 (analog)
+ 	P0_17, // edge pin 5, button A
+ 	P0_12, P0_11, P0_18, P0_10, P0_6, // edge pins 6-10
+ 	P0_26, // edge pin 11, button B
+ 	P0_20, P0_23, P0_22, P0_21, P0_16, // edge pins 12-16
+ 	// edge pins 17-18 are 3.3v power
+	P0_0, P0_30, // edge pins 19-20
+	P0_7, P0_8, P0_9, // LED MATRIX COLS 4-6 (not on edge connector)
+	P0_13, P0_14, P0_15,  // LED MATRIX ROWS 1-3 (not on edge connector)
+};
+
+#endif
+
+// Pin Records
+
+analogin_t analogIn[ANALOG_PIN_COUNT];
+pwmout_t analogOut[ANALOG_PIN_COUNT];
+gpio_t digitalPin[TOTAL_PIN_COUNT];
+
+int pwmPeriodusecs = 1000; // 1 millisecond
+
+// Pin Modes
+
+#define digitalReadMode 1
+#define digitalWriteMode 2
+#define analogReadMode 3
+#define analoglWriteMode 4
+
+// This array records the most recent use of each pin:
+uint8 pinMode[TOTAL_PIN_COUNT];
+
+static void setPinMode(int pinNum, int newMode) {
+	// Change the mode of the given pin.
+	// Assumes client has ensured that the new mode is allowed for the given pin.
+
+	int oldMode = pinMode[pinNum];
+	pinMode[pinNum] = newMode;
+
+	// turn off old output, if any
+	if (analoglWriteMode == oldMode) pwmout_free(&analogOut[pinNum]);
+	gpio_dir(&digitalPin[pinNum], PIN_INPUT);
+
+	// set new output mode if needed
+	if (analoglWriteMode == newMode) {
+		pwmout_init(&analogOut[pinNum], pinMap[pinNum]);
+		pwmout_period_us(&analogOut[pinNum], pwmPeriodusecs);
+	}
+	if (digitalWriteMode == newMode) {
+		gpio_dir(&digitalPin[pinNum], PIN_OUTPUT);
+	}
+}
+
+// DigitalOut col0(P0_4, 0);
+//
+// DigitalOut row1(P0_13, 1);
+// DigitalOut row2(P0_14, 1);
+// DigitalOut row3(P0_15, 1);
+
+void initHardware() {
+	for (int i = 0; i < ANALOG_PIN_COUNT; i++) {
+		if (i != 4) {
+			// Workaround. If pin4 is initialized for analogIn, it doesn't
+			// work as a digital out. Why is pin 4 special?
+			analogin_init(&analogIn[i], pinMap[i]);
+		}
+	}
+	for (int i = 0; i < TOTAL_PIN_COUNT; i++) {
+		pinMode[i] = digitalReadMode;
+		gpio_init(&digitalPin[i], pinMap[i]);
+		gpio_dir(&digitalPin[i], PIN_INPUT);
+	}
+}
+
+OBJ primAnalogRead(OBJ *args) {
+	int pinNum = obj2int(args[0]);
+	if ((pinNum < 0) || (pinNum > ANALOG_PIN_COUNT)) return int2obj(0);
+
+	if (analogReadMode != pinMode[pinNum]) setPinMode(pinNum, analogReadMode);
+	int value = analogin_read_u16(&analogIn[pinNum]); // 16-bit
+	return int2obj(value);
+}
+
+OBJ primAnalogWrite(OBJ *args) {
+	int pinNum = obj2int(args[0]);
+	if ((pinNum < 0) || (pinNum > ANALOG_PIN_COUNT)) return nilObj;
+	float value = obj2int(args[1]) / 65535.0; // range: 0-65535 (16-bit unsigned)
+
+	if (analoglWriteMode != pinMode[pinNum]) setPinMode(pinNum, analoglWriteMode);
+	pwmout_write(&analogOut[pinNum], value);
+	return nilObj;
+}
+
+OBJ primDigitalRead(OBJ *args) {
+	int pinNum = obj2int(args[0]);
+	if ((pinNum < 0) || (pinNum > TOTAL_PIN_COUNT)) return falseObj;
+
+	if (digitalReadMode != pinMode[pinNum]) setPinMode(pinNum, digitalReadMode);
+	int value = gpio_read(&digitalPin[pinNum]);
+	return value ? trueObj : falseObj;
+}
+
+OBJ primDigitalWrite(OBJ *args) {
+	int pinNum = obj2int(args[0]);
+	if ((pinNum < 0) || (pinNum > TOTAL_PIN_COUNT)) return falseObj;
+	int value = (args[1] == trueObj) ? 1 : 0;
+
+	if (digitalWriteMode != pinMode[pinNum]) setPinMode(pinNum, digitalWriteMode);
+	gpio_write(&digitalPin[pinNum], value);
+	return nilObj;
+}
+
 OBJ primSetLED(OBJ *args) { return nilObj; }
 
 #else
@@ -242,6 +360,9 @@ OBJ primSetLED(OBJ *args) { return nilObj; }
 int serialDataAvailable() { return false; }
 int readBytes(uint8 *buf, int count) { return 0; }
 void writeBytes(uint8 *buf, int count) {}
+
+void initHardware() {}
+void systemReset() {}
 
 OBJ primAnalogRead(OBJ *args) { return int2obj(0); }
 OBJ primAnalogWrite(OBJ *args) { return nilObj; }

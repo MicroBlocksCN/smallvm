@@ -174,7 +174,9 @@ int serialDataAvailable(void);
 int readBytes(uint8 *buf, int count);
 void writeBytes(uint8 *buf, int count);
 uint32 millisecs(void);
-void resetHardware(void);
+
+void initHardware(void);
+void systemReset(void);
 
 // String buffer used by the 'print' block
 
