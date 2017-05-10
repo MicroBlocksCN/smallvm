@@ -221,8 +221,8 @@ defineClass SmallCompiler opcodes globals trueObj falseObj
 method initialize SmallCompiler {
 	initOpcodes this
 	globals = (dictionary)
-	trueObj = 2
-	falseObj = 4
+	trueObj = 4
+	falseObj = 8
 	return this
 }
 
