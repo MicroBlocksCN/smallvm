@@ -175,7 +175,7 @@ int readBytes(uint8 *buf, int count);
 void writeBytes(uint8 *buf, int count);
 uint32 millisecs(void);
 
-void initHardware(void);
+void hardwareInit(void);
 void systemReset(void);
 
 // String buffer used by the 'print' block

@@ -237,16 +237,17 @@ PinName pinMap[] = { }; // LPC1768 pins not yet implemented
 #elif defined(TARGET_NRF51_MICROBIT)
 
 #define TOTAL_PIN_COUNT 25
-#define ANALOG_PIN_COUNT 5
+#define ANALOG_PIN_COUNT 4
 
 PinName pinMap[] = {
- 	P0_3, P0_2, P0_1, P0_4, P0_5, // edge pins 0-4 (analog)
+ 	P0_3, P0_2, P0_1, P0_4, // edge pins 0-3 (analog)
+ 	P0_5, // edge pin 4, COL1 (does not work as digital out if set for analog in)
  	P0_17, // edge pin 5, button A
  	P0_12, P0_11, P0_18, P0_10, P0_6, // edge pins 6-10
  	P0_26, // edge pin 11, button B
  	P0_20, P0_23, P0_22, P0_21, P0_16, // edge pins 12-16
  	// edge pins 17-18 are 3.3v power
-	P0_0, P0_30, // edge pins 19-20
+	P0_0, P0_30, // uBlocks pins 17-18 -> edge pins 19-20
 	P0_7, P0_8, P0_9, // LED MATRIX COLS 4-6 (not on edge connector)
 	P0_13, P0_14, P0_15,  // LED MATRIX ROWS 1-3 (not on edge connector)
 };
@@ -292,13 +293,7 @@ static void setPinMode(int pinNum, int newMode) {
 	}
 }
 
-// DigitalOut col0(P0_4, 0);
-//
-// DigitalOut row1(P0_13, 1);
-// DigitalOut row2(P0_14, 1);
-// DigitalOut row3(P0_15, 1);
-
-void initHardware() {
+void hardwareInit() {
 	for (int i = 0; i < ANALOG_PIN_COUNT; i++) {
 		if (i != 4) {
 			// Workaround. If pin4 is initialized for analogIn, it doesn't
@@ -351,7 +346,23 @@ OBJ primDigitalWrite(OBJ *args) {
 	return nilObj;
 }
 
-OBJ primSetLED(OBJ *args) { return nilObj; }
+OBJ primSetLED(OBJ *args) {
+	int value = (args[0] == trueObj) ? 1 : 0;
+
+	const int col2 = 4;
+	const int row1 = 22;
+
+	setPinMode(col2, digitalWriteMode);
+	setPinMode(row1, digitalWriteMode);
+	if (value) {
+		gpio_write(&digitalPin[col2], 0);
+		gpio_write(&digitalPin[row1], 1);
+	} else {
+		gpio_write(&digitalPin[col2], 1);
+		gpio_write(&digitalPin[row1], 0);
+	}
+	return nilObj;
+}
 
 #else
 
@@ -361,7 +372,7 @@ int serialDataAvailable() { return false; }
 int readBytes(uint8 *buf, int count) { return 0; }
 void writeBytes(uint8 *buf, int count) {}
 
-void initHardware() {}
+void hardwareInit() {}
 void systemReset() {}
 
 OBJ primAnalogRead(OBJ *args) { return int2obj(0); }
