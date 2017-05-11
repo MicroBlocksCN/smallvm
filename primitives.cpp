@@ -189,7 +189,7 @@ OBJ primDigitalWrite(OBJ *args) {
 }
 
 OBJ primSetLED(OBJ *args) {
-	int value = (args[0] == trueObj) ? LOW : HIGH; // LOW turns the LED on
+	int value = (args[0] == trueObj) ? HIGH : LOW;
 	pinMode(PIN_LED, OUTPUT);
 	digitalWrite(PIN_LED, value);
 	return nilObj;
