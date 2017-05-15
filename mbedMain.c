@@ -18,7 +18,7 @@ gpio_t myPin;
 void pinTest(char *name, int p) {
 	gpio_init(&myPin, p);
 
-	printf("%s: pin %x mask %x dir %x set %x clr %x in %x\r\n",
+	printf("%s: pin %x mask %lx dir %x set %x clr %x in %x\r\n",
 		name, myPin.pin, myPin.mask,
 		(uint32) myPin.reg_dir, (uint32) myPin.reg_set,
 		(uint32) myPin.reg_clr, (uint32) myPin.reg_in);

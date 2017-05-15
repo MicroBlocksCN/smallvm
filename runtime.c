@@ -7,6 +7,86 @@
 #include "mem.h"
 #include "interp.h"
 
+// Helper Functions
+
+static void updateChunkTaskStatus() {
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		chunks[i].taskStatus = unknown;
+	}
+	for (int i = 0; i < taskCount; i++) {
+		Task *task = &tasks[i];
+		if ((task->status > unusedTask) && (task->taskChunkIndex < MAX_CHUNKS)) {
+			chunks[task->taskChunkIndex].taskStatus = task->status;
+		}
+	}
+}
+
+// Debugging Support
+
+// When DEBUG is true, respond to queries by printing human-readable strings to the teriminal
+// rather than sending binary messages. DEBUG mode is useful for all debugging since debugging
+// messages are simply mixed with protocol query results in the terminal output. Of course, the
+// client must also be modified to simply simply to print all incoming bytes to the terminal,
+// rather than expected binary protocol messages. While DEBUG mode might seem clumbsy, if you
+// don't have it the VM implementor cannot use printf for debugging, since its output would
+// "corrupt" the binary messages of the protocol. The root difficulty arises from the fact that
+// a single serial port is used for both normal operation and debugging. One might dedicate a
+// second serial port for debug output,but that would require a USB-serial cable and the use
+// of a second USB connection on the host computer. DEBUG mode allows you to debug over the
+// existing USB-serial connection.
+
+#define DEBUG true
+
+void showChunks() {
+	int usedChunkCount = 0;
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		CodeChunkRecord* chunk = &chunks[i];
+		if (chunk->chunkType != unusedChunk) {
+			usedChunkCount++;
+			printf("Chunk %d: type %d taskStatus %d code %u (%d words)\r\n",
+				i, chunk->chunkType, chunk->taskStatus, (uint32) chunk->code, objWords(chunk->code));
+			if (chunk->returnValueOrErrorIP) {
+				printf("  returnValueOrErrorIP: %d\r\n", (int) chunk->returnValueOrErrorIP);
+			}
+			if (chunk->errorMsg) printf("  errorMsg: %s\r\n", chunk->errorMsg);
+		}
+	}
+	if (0 == usedChunkCount) printf("No chunks\r\n");
+
+}
+
+void showTasks() {
+	if (!taskCount) {
+		printf("No tasks\r\n");
+		return;
+	}
+	printf("%d tasks:\r\n", taskCount);
+	for (int i = 0; i < taskCount; i++) {
+		Task *task = &tasks[i];
+		if (task->status > unusedTask) {
+			printf("Task %d: status %d wake %u ip %d sp %d fp %d taskChunk %d ",
+				i, task->status, task->wakeTime, task->ip, task->sp, task->fp, task->taskChunkIndex);
+			if (task->currentChunkIndex != task->taskChunkIndex) {
+				printf("currentChunk %d code %u", task->currentChunkIndex, (uint32) task->code);
+			}
+			printf("\r\n");
+		}
+	}
+}
+
+static void sendMsg(uint8 *buf, int count) {
+#define SHOW_BYTES false
+#if SHOW_BYTES
+	printf("[");
+	for (int i = 0; i < count; i++) {
+		printf("%d ", buf[i]);
+	}
+	printf("]\r\n");
+#else
+	writeBytes(buf, count);
+#endif
+}
+
 // Task Ops
 
 void initTasks() {
@@ -112,66 +192,67 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 uint8 msgBuffer[MAX_MSG];
 int msgByteCount = 0;
 
-static void writeMsgHeader(int msgType, int id, int byteCount) {
+static void setMsgHeader(int msgType, int msgID, int chunkIndex, int byteCount) {
 	msgBuffer[0] = msgType;
-	msgBuffer[1] = id;
-	msgBuffer[2] = byteCount & 0xFF;
-	msgBuffer[3] = (byteCount >> 8) & 0xFF;
+	msgBuffer[1] = msgID;
+	msgBuffer[2] = chunkIndex;
+	msgBuffer[3] = byteCount & 0xFF; // low byte
+	msgBuffer[4] = (byteCount >> 8) & 0xFF; // high byte
 }
 
-static void sendOkay() {
-return; // xxx
-	writeMsgHeader(okayReply, 0, 0);
-	writeBytes(msgBuffer, 4);
+static void sendOkay(uint8 msgID) {
+#if DEBUG
+	printf("Okay\r\n");
+#else
+	setMsgHeader(okayReply, msgID, 0, 0);
+	sendMsg(msgBuffer, 5);
+#endif
 }
 
-static void sendError() {
-printf("Error!\r\n"); // xxx
-return;
-	writeMsgHeader(errorReply, 0, 0);
-	writeBytes(msgBuffer, 4);
+static void sendError(uint8 msgID, uint8 errorCode) {
+	// Send a protocol error message (e.g. badChunkIndexError).
+	// The error code is stored in the third byte of the message,
+	// where the chunkIndex often appears.
+#if DEBUG
+	printf("Error: %d\r\n", errorCode);
+#else
+	setMsgHeader(errorReply, msgID, errorCode, 0);
+	sendMsg(msgBuffer, 5);
+#endif
 }
 
-static void updateChunkTaskStatus() {
-	for (int i = 0; i < MAX_CHUNKS; i++) {
-		chunks[i].taskStatus = unknown;
-	}
-
-	for (int i = 0; i < taskCount; i++) {
-		Task *task = &tasks[i];
-		if ((task->status > unusedTask) && (task->taskChunkIndex < MAX_CHUNKS)) {
-			chunks[task->taskChunkIndex].taskStatus = task->status;
-		}
-	}
-}
-
-static void sendTaskStatus() {
+static void sendTaskStatus(uint8 msgID) {
 	// Send a task status message containing a task status byte for each chunk.
 	// Chunks that have never been run will have a status of 'unknown'.
 
-	writeMsgHeader(getTaskStatusReply, 0, MAX_CHUNKS);
+	updateChunkTaskStatus();
+#if DEBUG
+	showChunks();
+	showTasks();
+#else
+	setMsgHeader(getTaskStatusReply, msgID, 0, MAX_CHUNKS);
 	for (int i = 0; i < MAX_CHUNKS; i++) {
-		msgBuffer[4 + i] = chunks[i].taskStatus;
+		msgBuffer[5 + i] = chunks[i].taskStatus;
 	}
-	writeBytes(msgBuffer, (4 + MAX_CHUNKS));
+	sendMsg(msgBuffer, (5 + MAX_CHUNKS));
+#endif
 }
 
-static void sendOutput() {
+static void sendOutput(uint8 msgID) {
 	// Send the last output string. If there is none, send a zero-length string.
 
-	if (printBufferByteCount == 0) return; // no output
+#if DEBUG
+	if (printBufferByteCount) printf("Output: %s", printBuffer);
+#else
+	setMsgHeader(getOutputReply, msgID, 0, printBufferByteCount);
+	for (int i = 0; i < printBufferByteCount; i++) {
+		msgBuffer[5 + i] = printBuffer[i];
+	}
+	sendMsg(msgBuffer, (5 + printBufferByteCount));
+#endif
 
-// xxx for testing
-// 	writeMsgHeader(getOutputReply, 0, printBufferByteCount);
-// 	for (int i = 0; i < printBufferByteCount; i++) {
-// 		msgBuffer[4 + i] = printBuffer[i];
-// 	}
-// 	writeBytes(msgBuffer, (4 + printBufferByteCount));
-printf("%s", printBuffer);
-
+	// clear the buffer and make runnable any tasks that were waiting to print
 	printBufferByteCount = 0;
-
-	// make runnable any tasks that were waiting to print
 	for (int i = 0; i < MAX_TASKS; i++) {
 		if (waiting_print == tasks[i].status) {
 			tasks[i].status = running;
@@ -179,146 +260,110 @@ printf("%s", printBuffer);
 	}
 }
 
-static void sendReturnValue(uint8 chunkID) {
+static void sendReturnValue(uint8 msgID, uint8 chunkIndex) {
 	// Send the return value for the task running the given chunk. Assume
 	// that the task status is done_Value. If it isn't, send an errorReply.
 
-	if ((chunkID >= MAX_CHUNKS) || (done_Value != chunks[chunkID].taskStatus)) {
-		sendError();
+	if ((chunkIndex >= MAX_CHUNKS) || (done_Value != chunks[chunkIndex].taskStatus)) {
+		sendError(msgID, badChunkIndexError);
 		return;
 	}
-	OBJ returnValue = chunks[chunkID].returnValueOrErrorIP;
+	OBJ returnValue = chunks[chunkIndex].returnValueOrErrorIP;
 	if (isInt(returnValue)) { // 32-bit integer, little endian
 		int n = obj2int(returnValue);
-		writeMsgHeader(getOutputReply, 0, 5); // id is type (0 is integer)
-		msgBuffer[4] = (n & 0xFF);
-		msgBuffer[5] = ((n >> 8) & 0xFF);
-		msgBuffer[6] = ((n >> 16) & 0xFF);
-		msgBuffer[7] = ((n >> 24) & 0xFF);
+		setMsgHeader(getOutputReply, msgID, 0, 4); // id is type (0 is integer)
+		msgBuffer[5] = (n & 0xFF);
+		msgBuffer[6] = ((n >> 8) & 0xFF);
+		msgBuffer[7] = ((n >> 16) & 0xFF);
+		msgBuffer[8] = ((n >> 24) & 0xFF);
 	} else if (IS_CLASS(returnValue, StringClass)) { // string
 		char *s = obj2str(returnValue);
 		int byteCount = strlen(s);
-		writeMsgHeader(getOutputReply, 1, byteCount); // id is type (1 is string)
+		setMsgHeader(getOutputReply, msgID, 1, byteCount); // id is type (1 is string)
 		for (int i = 0; i < MAX_CHUNKS; i++) {
-			msgBuffer[4 + i] = s[i];
+			msgBuffer[5 + i] = s[i];
 		}
 	} else { // floats support will be be added later
-		sendError();
+		sendError(msgID, unspecifiedError);
 		return;
 	}
-	writeBytes(msgBuffer, (4 + MAX_CHUNKS));
+	sendMsg(msgBuffer, (5 + MAX_CHUNKS));
 }
 
-static void sendErrorIP(uint8 chunkID) {
-	// Send the error IP for task that was running the given chunk. Assume
-	// that the task status is done_Error. If it isn't, send an errorReply.
+static void sendTaskErrorInfo(uint8 msgID, uint8 chunkIndex) {
+	// Send the error cod and IP for the task that was running the given chunk.
+	// Assume that the task status is done_Error. If it isn't, send an errorReply.
 
-	if ((chunkID >= MAX_CHUNKS) || (done_Error != chunks[chunkID].taskStatus)) {
-		sendError();
+	if ((chunkIndex >= MAX_CHUNKS) || (done_Error != chunks[chunkIndex].taskStatus)) {
+		sendError(msgID, badChunkIndexError);
 		return;
 	}
-	writeMsgHeader(getErrorIPReply, 0, 4);
-	int n = obj2int(chunks[chunkID].returnValueOrErrorIP);
-	writeMsgHeader(getErrorIPReply, 0, 5); // id is type (0 is integer)
-	msgBuffer[4] = (n & 0xFF);
-	msgBuffer[5] = ((n >> 8) & 0xFF);
-	msgBuffer[6] = ((n >> 16) & 0xFF);
-	msgBuffer[7] = ((n >> 24) & 0xFF);
-	writeBytes(msgBuffer, (4 + MAX_CHUNKS));
-}
-
-void showChunks() {
-	updateChunkTaskStatus();
-	int usedChunkCount = 0;
-	for (int i = 0; i < MAX_CHUNKS; i++) {
-		CodeChunkRecord* chunk = &chunks[i];
-		if (chunk->chunkType != unusedChunk) {
-			usedChunkCount++;
-			printf("Chunk %d: type %d taskStatus %d code %u (%d words)\r\n",
-				i, chunk->chunkType, chunk->taskStatus, (uint32) chunk->code, objWords(chunk->code));
-			if (chunk->returnValueOrErrorIP) {
-				printf("  returnValueOrErrorIP: %d\r\n", (int) chunk->returnValueOrErrorIP);
-			}
-			if (chunk->errorMsg) printf("  errorMsg: %s\r\n", chunk->errorMsg);
-		}
-	}
-	if (0 == usedChunkCount) printf("No chunks\r\n");
-
-}
-
-void showTasks() {
-	if (!taskCount) {
-		printf("No tasks\r\n");
-		return;
-	}
-	printf("%d tasks:\r\n", taskCount);
-	for (int i = 0; i < taskCount; i++) {
-		Task *task = &tasks[i];
-		if (task->status > unusedTask) {
-			printf("Task %d: status %d wake %u ip %d sp %d fp %d taskChunk %d ",
-				i, task->status, task->wakeTime, task->ip, task->sp, task->fp, task->taskChunkIndex);
-			if (task->currentChunkIndex != task->taskChunkIndex) {
-				printf("currentChunk %d code %u", task->currentChunkIndex, (uint32) task->code);
-			}
-			printf("\r\n");
-		}
-	}
+	setMsgHeader(getTaskErrorInfoReply, msgID, 0, 5);
+	int n = obj2int(chunks[chunkIndex].returnValueOrErrorIP);
+	msgBuffer[5] = (n & 0xFF);
+	msgBuffer[6] = ((n >> 8) & 0xFF);
+	msgBuffer[7] = ((n >> 16) & 0xFF);
+	msgBuffer[8] = ((n >> 24) & 0xFF);
+	sendMsg(msgBuffer, (5 + MAX_CHUNKS));
 }
 
 void processMessage() {
 	// Process a message from the client.
 
 	msgByteCount += readBytes(&msgBuffer[msgByteCount], MAX_MSG - msgByteCount);
-	if (msgByteCount < 4) return; // incomplete message header
+	if (msgByteCount < 5) return; // incomplete message header
 
-	int bodyBytes = (msgBuffer[3] << 8) + msgBuffer[2]; // little endian
-	if (msgByteCount < (bodyBytes + 4)) return; // message body incomplete
+	int bodyBytes = (msgBuffer[4] << 8) + msgBuffer[3]; // little endian
+	if (msgByteCount < (bodyBytes + 5)) return; // incomplete message body
 
 	uint8 msgType = msgBuffer[0];
-	uint8 chunkID = msgBuffer[1];
+	uint8 msgID = msgBuffer[1];
+	uint8 chunkIndex = msgBuffer[2];
+
+//xxx
+// printf("msg %d id %d chunk %d [", msgType, msgID, chunkIndex);
+// for (int i = 5; i < msgByteCount; i++) printf("%d ", msgBuffer[i]);
+// printf("]\r\n");
+
 	msgByteCount = 0; // clear the message buffer
 
 	switch (msgType) {
 	case storeChunkMsg:
 		// body is: <chunkType (1 byte)> <instruction data>
-		storeCodeChunk(chunkID, msgBuffer[4], (bodyBytes - 1), &msgBuffer[5]);
+		storeCodeChunk(chunkIndex, msgBuffer[5], (bodyBytes - 1), &msgBuffer[6]);
+		sendOkay(msgID);
 		break;
 	case deleteChunkMsg:
-		deleteCodeChunk(chunkID);
+		deleteCodeChunk(chunkIndex);
+		sendOkay(msgID);
 		break;
 	case startAllMsg:
 		startAll();
+		sendOkay(msgID);
 		break;
 	case stopAllMsg:
 		stopAllTasks();
+		sendOkay(msgID);
 		break;
 	case startChunkMsg:
-		startTaskForChunk(chunkID);
+		startTaskForChunk(chunkIndex);
+		sendOkay(msgID);
 		break;
 	case stopChunkMsg:
-		stopTaskForChunk(chunkID);
+		stopTaskForChunk(chunkIndex);
+		sendOkay(msgID);
 		break;
 	case getTaskStatusMsg:
-		sendTaskStatus();
-		return;
+		sendTaskStatus(msgID);
+		break;
 	case getOutputMsg:
-		sendOutput();
-		return;
+		sendOutput(msgID);
+		break;
 	case getReturnValueMsg:
-		sendReturnValue(chunkID);
-		return;
-	case getErrorIPMsg:
-		sendErrorIP(chunkID);
-		return;
-
-	// The following are for debugging
-	case showChunksMsg:
-		showChunks();
-		return;
-	case showTasksMsg:
-		showTasks();
-		return;
+		sendReturnValue(msgID, chunkIndex);
+		break;
+	case getTaskErrorInfoMsg:
+		sendTaskErrorInfo(msgID, chunkIndex);
+		break;
 	}
-	sendOkay();
-	msgByteCount = 0; // clear the message buffer
 }

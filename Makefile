@@ -52,7 +52,7 @@ OBJECTS += runtime.o
 OBJECTS += primitives.o
 #OBJECTS += taskTest.o
 #OBJECTS += interpTests1.o
-OBJECTS += main.o
+OBJECTS += mbedMain.o
 
  SYS_OBJECTS += mbed/TARGET_LPC1768/TOOLCHAIN_GCC_ARM/analogin_api.o
  SYS_OBJECTS += mbed/TARGET_LPC1768/TOOLCHAIN_GCC_ARM/analogout_api.o

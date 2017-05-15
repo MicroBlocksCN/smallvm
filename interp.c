@@ -74,8 +74,8 @@ OBJ primPrint(int argCount, OBJ *args) {
 #endif
 
 // xxx for testing, output immediately and clear printBufferByteCount
-printf("%s", printBuffer);
-printBufferByteCount = 0;
+// printf("%s", printBuffer);
+// printBufferByteCount = 0;
 
 	return nilObj;
 }
@@ -438,7 +438,7 @@ int stepTasks() {
 	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time
 	// has arrived. Return true if there are still running or waiting tasks.
 
-	int hasActiveTasks = false;
+	int hasActiveTasks = true;
 	while (!serialDataAvailable()) {
 		hasActiveTasks = false;
 		uint32 usecs = TICKS();
@@ -472,17 +472,40 @@ static void printOutput() {
 		printBufferByteCount = 0;
 	}
 }
+int stepTasksOnce() {
+	// Used for testing on laptop. Run every runnable task and update its status.
+	// Wake up waiting tasks whose wakeup time has arrived.
+	// Return true if there are still running or waiting tasks.
+
+	int hasActiveTasks = false;
+	uint32 usecs = TICKS();
+	uint32 msecs = millisecs();
+	for (int t = 0; t < taskCount; t++) {
+		int status = tasks[t].status;
+		if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
+			tasks[t].status = status = running;
+		} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
+			tasks[t].status = status = running;
+		}
+		if (status >= polling) runTask(&tasks[t]);
+		if (status >= waiting_micros) hasActiveTasks = true;
+	}
+	return hasActiveTasks;
+}
 
 void runTasksUntilDone() {
 #if USE_TASKS
 	int isRunning = true;
 	while (isRunning) {
 		if (printBufferByteCount) printOutput();
-		isRunning = stepTasks();
+		isRunning = stepTasksOnce();
 	}
 	if (printBufferByteCount) printOutput();
 #else
-	runTask(&tasks[0]);
+	// Run each task to completion
+	for (int i = 0; i < taskCount; i++) {
+		runTask(&tasks[i]);
+	}
 #endif
 	if (errorMsg) printf("Error: %s\r\n", errorMsg);
 }

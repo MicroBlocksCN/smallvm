@@ -61,7 +61,7 @@ extern "C" {
   (((localCount & 0xFF) << 24) | ((argCount & 0xFF) << 16) | \
    ((chunkIndex & 0xFF) << 8)| callFunction)
 
-// Code Chunk Table
+// Code Chunks
 
 // The code chunk table is an array of CodeChunkRecords. A code chunk is referenced by its
 // index in this table. This "chunk index" is used for several purposes:
@@ -71,8 +71,11 @@ extern "C" {
 //	3. to communicate with the client IDE about code chunks and tasks
 //
 // Referencing code chunks via their index in the code chunk table allows the actual code
-// chunk object, which may be located in either Flash or RAM memory, to be updated by user
-// or edits or moved by the garbage collector or Flash memory manager.
+// chunk objects, which may be located in either Flash or RAM memory, to be updated by user
+// or edits. When code chunks are stored in Flash (which is write-once until it is erased),
+// newer versions of a chunk are appended to the end of Flash. At startup time, Flash memory
+// is scanned, and the chunks[] table is reconstructed with references to the latest version
+// of each chunk.
 
 typedef enum {
 	unusedChunk = 0,
@@ -87,6 +90,7 @@ typedef struct {
 	OBJ code;
 	uint8 chunkType;
 	uint8 taskStatus;
+	uint8 taskErrorCode;
 	OBJ returnValueOrErrorIP;
 	const char *errorMsg;
 } CodeChunkRecord;
@@ -116,7 +120,7 @@ typedef enum {
 } TaskStatus_t;
 
 typedef struct {
-	uint8 status;
+	uint8 status; // TaskStatus_t, stored as a byte
 	uint8 taskChunkIndex; // chunk index of the top-level stack for this task
 	uint8 currentChunkIndex; // chunk index when inside a function
 	uint32 wakeTime;
@@ -127,56 +131,9 @@ typedef struct {
 	OBJ stack[10];
 } Task;
 
-#define MAX_TASKS 25
+#define MAX_TASKS 16
 extern Task tasks[MAX_TASKS];
 extern int taskCount;
-
-// Task Ops
-
-void initTasks(void);
-int stepTasks(void);
-
-// Testing Support
-
-void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data);
-void startTaskForChunk(uint8 chunkIndex);
-void runTasksUntilDone(void);
-
-// Client Interaction
-
-typedef enum {
-	okayReply = 0,
-	errorReply,
-	storeChunkMsg,
-	deleteChunkMsg,
-	startAllMsg,
-	stopAllMsg,
-	startChunkMsg = 6,
-	stopChunkMsg,
-	getTaskStatusMsg,
-	getTaskStatusReply,
-	getOutputMsg, // 10
-	getOutputReply,
-	getReturnValueMsg,
-	getReturnValueReply,
-	getErrorIPMsg,
-	getErrorIPReply,
-	showChunksMsg, // 16
-	showTasksMsg, // 17
-} MessageType_t;
-
-void processMessage(void);
-void stopAllTasks(void);
-
-// Platform Specific Operations
-
-int serialDataAvailable(void);
-int readBytes(uint8 *buf, int count);
-void writeBytes(uint8 *buf, int count);
-uint32 millisecs(void);
-
-void hardwareInit(void);
-void systemReset(void);
 
 // String buffer used by the 'print' block
 
@@ -184,9 +141,59 @@ void systemReset(void);
 extern char printBuffer[PRINT_BUF_SIZE];
 extern int printBufferByteCount;
 
-// Failure
+// Serial Protocol Messages
 
+#define okayReply				0
+#define errorReply				1
+#define storeChunkMsg			2
+#define deleteChunkMsg			3
+#define startAllMsg				4
+#define stopAllMsg				5
+#define startChunkMsg			6
+#define stopChunkMsg			7
+#define getTaskStatusMsg		8
+#define getTaskStatusReply		9
+#define getOutputMsg			10
+#define getOutputReply			11
+#define getReturnValueMsg		12
+#define getReturnValueReply		13
+#define getTaskErrorInfoMsg		14
+#define getTaskErrorInfoReply	15
+#define systemResetMsg			16
+
+// Error Codes (codes 1-9 reserved for protocol errors, codes 10 and up for task errors)
+
+#define noError					0
+#define unspecifiedError		1
+#define badChunkIndexError		2
+
+#define divideByZeroError		10
+
+// Runtime Operations
+
+void initTasks(void);
+int stepTasks(void);
+void stopAllTasks(void);
+
+void processMessage(void);
 OBJ failure(const char *reason);
+
+// Testing Support
+
+void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data);
+void startTaskForChunk(uint8 chunkIndex);
+void runTasksUntilDone(void);
+
+// Platform Specific Operations
+
+int serialDataAvailable(void);
+int readBytes(uint8 *buf, int count);
+void writeBytes(uint8 *buf, int count);
+
+uint32 millisecs(void);
+
+void hardwareInit(void);
+void systemReset(void);
 
 // Primitives
 
