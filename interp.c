@@ -62,6 +62,7 @@ static OBJ primPrint(int argCount, OBJ *args) {
 	// if not using tasks, print immediately
 	printf("(NO TASKS) %s", printBuffer);
 	printBufferByteCount = 0;
+	printBuffer[0] = 0;  // null terminate
 	return nilObj;
 #endif
 	return nilObj;
@@ -409,16 +410,15 @@ void stepTasks() {
 
 static void printOutput() {
 	// Print output, if any. Used during testing/debugging on a laptop.
-	if (printBufferByteCount) {
-		printf("%s", printBuffer);
-		for (int i = 0; i < MAX_TASKS; i++) {
-			// Make all tasks waiting for the print buffer be runnable.
-			if (waiting_print == tasks[i].status) {
-				tasks[i].status = running;
-			}
+	printf("%s", printBuffer);
+	for (int i = 0; i < MAX_TASKS; i++) {
+		// Make all tasks waiting for the print buffer be runnable.
+		if (waiting_print == tasks[i].status) {
+			tasks[i].status = running;
 		}
-		printBufferByteCount = 0;
 	}
+	printBufferByteCount = 0;
+	printBuffer[0] = 0; // null terminate
 }
 
 static int stepTasksOnce() {

@@ -253,6 +253,7 @@ static void sendOutput(uint8 msgID) {
 
 	// clear the buffer and make runnable any tasks that were waiting to print
 	printBufferByteCount = 0;
+	printBuffer[0] = 0;  // null terminate
 	for (int i = 0; i < MAX_TASKS; i++) {
 		if (waiting_print == tasks[i].status) {
 			tasks[i].status = running;
