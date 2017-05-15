@@ -48,7 +48,7 @@ void showChunks() {
 			if (chunk->returnValueOrErrorIP) {
 				printf("  returnValueOrErrorIP: %d\r\n", (int) chunk->returnValueOrErrorIP);
 			}
-			if (chunk->errorMsg) printf("  errorMsg: %s\r\n", chunk->errorMsg);
+			if (chunk->taskErrorCode) printf("  taskErrorCode: %d\r\n", chunk->taskErrorCode);
 		}
 	}
 	if (0 == usedChunkCount) printf("No chunks\r\n");

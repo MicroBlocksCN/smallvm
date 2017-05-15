@@ -92,7 +92,6 @@ typedef struct {
 	uint8 taskStatus;
 	uint8 taskErrorCode;
 	OBJ returnValueOrErrorIP;
-	const char *errorMsg;
 } CodeChunkRecord;
 
 #define MAX_CHUNKS 32
@@ -168,15 +167,19 @@ extern int printBufferByteCount;
 #define badChunkIndexError		2
 
 #define divideByZeroError		10
+#define needsNonNegativeError	11
+#define needsIntegerError		12
+#define needs0to255IntError		13
+#define needsArrayError			14
+#define indexOutOfRangeError	15
 
 // Runtime Operations
 
 void initTasks(void);
-int stepTasks(void);
+void stepTasks(void);
 void stopAllTasks(void);
-
 void processMessage(void);
-OBJ failure(const char *reason);
+OBJ failure(uint8 code, const char *explanation);
 
 // Testing Support
 

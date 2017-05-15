@@ -29,11 +29,13 @@ uint32 millisecs() {
 }
 #endif // not ARDUINO
 
-OBJ sizeFailure() { return failure("Size must be a positive integer"); }
-OBJ arrayClassFailure() { return failure("Must must be an Array or ByteArray"); }
-OBJ byteValueFailure() { return failure("A ByteArray can only store integer values between 0 and 255"); }
-OBJ indexClassFailure() { return failure("Index must be an integer"); }
-OBJ outOfRangeFailure() { return failure("Index out of range"); }
+// Error Reporting
+
+OBJ sizeFailure() { return failure(needsNonNegativeError, "Size must be a positive integer"); }
+OBJ byteValueFailure() { return failure(needs0to255IntError, "A ByteArray can only store integer values between 0 and 255"); }
+OBJ indexClassFailure() { return failure(needsIntegerError, "Index must be an integer"); }
+OBJ arrayClassFailure() { return failure(needsArrayError, "Must must be an Array or ByteArray"); }
+OBJ outOfRangeFailure() { return failure(indexOutOfRangeError, "Index out of range"); }
 
 // Platform Agnostic Primitives
 

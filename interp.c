@@ -18,12 +18,19 @@ CodeChunkRecord chunks[MAX_CHUNKS];
 Task tasks[MAX_TASKS];
 int taskCount = 0;
 
-static const char* errorMsg = NULL;
-
 char printBuffer[PRINT_BUF_SIZE];
 int printBufferByteCount = 0;
 
-// Interpreter Helper Functions
+// Error Reporting
+
+// When a primitive encounters an error, it calls failure() with an error code.
+// The VM stops the task and records the error code and IP where the error occurred.
+
+uint8 errorCode = noError;
+
+OBJ failure(uint8 reason, const char *explanation) { errorCode = reason; return nilObj; }
+
+// Printing
 
 static void printObj(OBJ obj) {
 	// Append a printed representation of the given object to printBuffer.
@@ -43,22 +50,7 @@ static void printObj(OBJ obj) {
 	printBufferByteCount = strlen(printBuffer);
 }
 
-void showStack(OBJ *stack, OBJ *sp, OBJ *fp) {
-	OBJ *ptr = sp;
-	printf("sp: %d\n", (int) *ptr);
-	while (--ptr >= &stack[0]) {
-		printf("%s %d\n", ((fp == ptr) ? "fp:" : ""), (int) *ptr);
-	}
-	printf("-----\n");
-}
-
-// Failure
-
-OBJ failure(const char *reason) { errorMsg = reason; return nilObj; }
-
-// Print Primitive
-
-OBJ primPrint(int argCount, OBJ *args) {
+static OBJ primPrint(int argCount, OBJ *args) {
 	for (int i = 0; i < argCount; i++) {
 		printObj(args[i]);
 	}
@@ -72,11 +64,6 @@ OBJ primPrint(int argCount, OBJ *args) {
 	printBufferByteCount = 0;
 	return nilObj;
 #endif
-
-// xxx for testing, output immediately and clear printBufferByteCount
-// printf("%s", printBuffer);
-// printBufferByteCount = 0;
-
 	return nilObj;
 }
 
@@ -158,8 +145,8 @@ static inline int runTask(Task *task) {
 		// encode and store the error location: <22 bit ip><8 bit chunkIndex>
 		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		chunks[task->taskChunkIndex].returnValueOrErrorIP = int2obj(tmp);
-		chunks[task->taskChunkIndex].errorMsg = errorMsg;
-		errorMsg = NULL; // clear the error
+		chunks[task->taskChunkIndex].taskErrorCode = errorCode;
+		errorCode = noError; // clear the error
 		goto suspend;
 	suspend:
 		// save task state
@@ -330,27 +317,27 @@ static inline int runTask(Task *task) {
 	newArray_op:
 		*(sp - arg) = primNewArray(sp - arg);
 		sp -= arg - 1;
-		if (errorMsg) goto error;
+		if (errorCode) goto error;
 		DISPATCH();
 	newByteArray_op:
 		*(sp - arg) = primNewByteArray(sp - arg);
 		sp -= arg - 1;
-		if (errorMsg) goto error;
+		if (errorCode) goto error;
 		DISPATCH();
 	fillArray_op:
 		*(sp - arg) = primArrayFill(sp - arg);
 		sp -= arg - 1;
-		if (errorMsg) goto error;
+		if (errorCode) goto error;
 		DISPATCH();
 	at_op:
 		*(sp - arg) = primArrayAt(sp - arg);
 		sp -= arg - 1;
-		if (errorMsg) goto error;
+		if (errorCode) goto error;
 		DISPATCH();
 	atPut_op:
 		*(sp - arg) = primArrayAtPut(sp - arg);
 		sp -= arg - 1;
-		if (errorMsg) goto error;
+		if (errorCode) goto error;
 		DISPATCH();
 	analogRead_op:
 		*(sp - arg) = primAnalogRead(sp - arg);
@@ -394,53 +381,16 @@ static inline int runTask(Task *task) {
 
 // Task Scheduler
 
-// Threshold for waking up tasks waiting on timers
-// (The timer can be up to this much beyond the nominal wakeup time):
+// RECENT is a threshold for waking up tasks waiting on timers
+// (The timer can be up to this many ticks or milliseconds after the wakeup time)
+
 #define RECENT 1000000
 
-int stepTasksTEST() {
+void stepTasks() {
 	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time
 	// has arrived. Return true if there are still running or waiting tasks.
 
-	initTasks();
-	tasks[0].status = running;
-	tasks[1].status = running;
-	tasks[2].status = running;
-	tasks[3].status = running;
-	tasks[4].status = running;
-	taskCount = 1;
-
-	int hasActiveTasks = false;
-	uint32 start = TICKS();
-	for (int i = 0; i < 1000000; i++) {
-	//	serialDataAvailable();
-		hasActiveTasks = false;
-		uint32 usecs = 0; // TICKS();
-		uint32 msecs = 0; // millisecs();
-		for (int t = 0; t < taskCount; t++) {
-			int status = tasks[t].status;
-			if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
-				tasks[t].status = status = running;
-			} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
-				tasks[t].status = status = running;
-			}
-			if (status >= polling) {
-				/* would run task here */; // runTask(&tasks[t]);
-			}
-			if (status >= waiting_micros) hasActiveTasks = true;
-		}
-	}
-	printf("%d usecs\n", (int) (TICKS() - start));
-	return hasActiveTasks;
-}
-
-int stepTasks() {
-	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time
-	// has arrived. Return true if there are still running or waiting tasks.
-
-	int hasActiveTasks = true;
 	while (!serialDataAvailable()) {
-		hasActiveTasks = false;
 		uint32 usecs = TICKS();
 		uint32 msecs = millisecs();
 		for (int t = 0; t < taskCount; t++) {
@@ -451,13 +401,11 @@ int stepTasks() {
 				tasks[t].status = status = running;
 			}
 			if (status >= polling) runTask(&tasks[t]);
-			if (status >= waiting_micros) hasActiveTasks = true;
 		}
 	}
-	return hasActiveTasks;
 }
 
-// The following are used for testing:
+// Testing (used for testing the interpreter on a desktop/laptop computer)
 
 static void printOutput() {
 	// Print output, if any. Used during testing/debugging on a laptop.
@@ -472,7 +420,8 @@ static void printOutput() {
 		printBufferByteCount = 0;
 	}
 }
-int stepTasksOnce() {
+
+static int stepTasksOnce() {
 	// Used for testing on laptop. Run every runnable task and update its status.
 	// Wake up waiting tasks whose wakeup time has arrived.
 	// Return true if there are still running or waiting tasks.
@@ -507,5 +456,5 @@ void runTasksUntilDone() {
 		runTask(&tasks[i]);
 	}
 #endif
-	if (errorMsg) printf("Error: %s\r\n", errorMsg);
+	if (errorCode) printf("Error: %d\r\n", errorCode);
 }
