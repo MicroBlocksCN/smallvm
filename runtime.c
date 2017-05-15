@@ -35,7 +35,7 @@ static void updateChunkTaskStatus() {
 // of a second USB connection on the host computer. DEBUG mode allows you to debug over the
 // existing USB-serial connection.
 
-#define DEBUG true
+#define DEBUG false
 
 void showChunks() {
 	int usedChunkCount = 0;
@@ -144,6 +144,9 @@ void stopAllTasks() {
 			chunks[i].returnValueOrErrorIP = nilObj;
 		}
 	}
+	// Clear buffered output
+	printBufferByteCount = 0;
+	printBuffer[0] = 0;  // null terminate
 }
 
 static void startAll() {
@@ -239,7 +242,9 @@ static void sendTaskStatus(uint8 msgID) {
 }
 
 static void sendOutput(uint8 msgID) {
-	// Send the last output string. If there is none, send a zero-length string.
+	// Send the last output string. If there is none, do nothing.
+
+	if (!printBufferByteCount) return; // no output to send
 
 #if DEBUG
 	if (printBufferByteCount) printf("Output: %s", printBuffer);
@@ -332,15 +337,12 @@ void processMessage() {
 	case storeChunkMsg:
 		// body is: <chunkType (1 byte)> <instruction data>
 		storeCodeChunk(chunkIndex, msgBuffer[5], (bodyBytes - 1), &msgBuffer[6]);
-		sendOkay(msgID);
 		break;
 	case deleteChunkMsg:
 		deleteCodeChunk(chunkIndex);
-		sendOkay(msgID);
 		break;
 	case startAllMsg:
 		startAll();
-		sendOkay(msgID);
 		break;
 	case stopAllMsg:
 		stopAllTasks();
@@ -348,11 +350,9 @@ void processMessage() {
 		break;
 	case startChunkMsg:
 		startTaskForChunk(chunkIndex);
-		sendOkay(msgID);
 		break;
 	case stopChunkMsg:
 		stopTaskForChunk(chunkIndex);
-		sendOkay(msgID);
 		break;
 	case getTaskStatusMsg:
 		sendTaskStatus(msgID);

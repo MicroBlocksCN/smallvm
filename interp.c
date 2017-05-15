@@ -54,10 +54,11 @@ static OBJ primPrint(int argCount, OBJ *args) {
 	for (int i = 0; i < argCount; i++) {
 		printObj(args[i]);
 	}
-	char *dst = &printBuffer[printBufferByteCount];
-	int n = PRINT_BUF_SIZE - printBufferByteCount;
-	snprintf(dst, n, "\r\n");
-	printBufferByteCount = strlen(printBuffer);
+	if (printBufferByteCount && (' ' == printBuffer[printBufferByteCount - 1])) {
+		// Remove final space character
+		printBuffer[printBufferByteCount - 1] = 0;
+		printBufferByteCount--;
+	}
 #if !USE_TASKS
 	// if not using tasks, print immediately
 	printf("(NO TASKS) %s", printBuffer);
@@ -66,6 +67,11 @@ static OBJ primPrint(int argCount, OBJ *args) {
 	return nilObj;
 #endif
 	return nilObj;
+}
+
+void printStartMessage(char *s) {
+	strcpy(printBuffer, s);
+	printBufferByteCount = strlen(printBuffer);
 }
 
 // Interpreter

@@ -7,11 +7,10 @@
 #include "interp.h"
 
 int main(int argc, char *argv[]) {
-	printf("Starting Micro Bit...\r\n");
-
 	hardwareInit();
 	memInit(2500);
 
+	printStartMessage("Welcome to uBlocks!");
 	while (true) {
 		processMessage();
 		stepTasks();

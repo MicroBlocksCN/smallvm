@@ -178,6 +178,7 @@ extern int printBufferByteCount;
 void initTasks(void);
 void stepTasks(void);
 void stopAllTasks(void);
+void printStartMessage(char *s);
 void processMessage(void);
 OBJ failure(uint8 code, const char *explanation);
 
