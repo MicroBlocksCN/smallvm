@@ -148,6 +148,8 @@ void writeBytes(uint8 *buf, int count) {
 	}
 }
 
+void hardwareInit() {}
+
 void systemReset() {
 	NVIC_SystemReset();
 }
@@ -274,6 +276,21 @@ int pwmPeriodusecs = 1000; // 1 millisecond
 // This array records the most recent use of each pin:
 uint8 pinMode[TOTAL_PIN_COUNT];
 
+void hardwareInit() {
+	for (int i = 0; i < ANALOG_PIN_COUNT; i++) {
+		if (i != 4) {
+			// Workaround. If pin4 is initialized for analogIn, it doesn't
+			// work as a digital out. Why is pin 4 special?
+			analogin_init(&analogIn[i], pinMap[i]);
+		}
+	}
+	for (int i = 0; i < TOTAL_PIN_COUNT; i++) {
+		pinMode[i] = digitalReadMode;
+		gpio_init(&digitalPin[i], pinMap[i]);
+		gpio_dir(&digitalPin[i], PIN_INPUT);
+	}
+}
+
 static void setPinMode(int pinNum, int newMode) {
 	// Change the mode of the given pin.
 	// Assumes client has ensured that the new mode is allowed for the given pin.
@@ -292,21 +309,6 @@ static void setPinMode(int pinNum, int newMode) {
 	}
 	if (digitalWriteMode == newMode) {
 		gpio_dir(&digitalPin[pinNum], PIN_OUTPUT);
-	}
-}
-
-void hardwareInit() {
-	for (int i = 0; i < ANALOG_PIN_COUNT; i++) {
-		if (i != 4) {
-			// Workaround. If pin4 is initialized for analogIn, it doesn't
-			// work as a digital out. Why is pin 4 special?
-			analogin_init(&analogIn[i], pinMap[i]);
-		}
-	}
-	for (int i = 0; i < TOTAL_PIN_COUNT; i++) {
-		pinMode[i] = digitalReadMode;
-		gpio_init(&digitalPin[i], pinMap[i]);
-		gpio_dir(&digitalPin[i], PIN_INPUT);
 	}
 }
 

@@ -10,8 +10,9 @@ extern "C" {
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Starting...");
+  hardwareInit();
   memInit(5000); // 5k words = 20k bytes
+  printStartMessage("Welcome to uBlocks for Arduino!");
 }
 
 void loop() {
