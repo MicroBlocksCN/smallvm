@@ -8,7 +8,7 @@ to smallRuntime {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime port chunkIDs recvBuf msgDict
+defineClass SmallRuntime port chunkIDs msgDict recvBuf nextPollMSecs
 
 method evalOnArduino SmallRuntime aBlock showBytes {
 	if (isNil showBytes) { showBytes = false }
@@ -71,11 +71,9 @@ method chunkIdFor SmallRuntime aBlock {
 	return (first entry)
 }
 
-method sendPing SmallRuntime {
+method sendGetTaskStatus SmallRuntime {
 	ensurePortOpen this
-	sendMsg this 'showChunksMsg'
-	sendMsg this 'showTasksMsg'
-	showResult this // show results when called from command line
+	sendMsg this 'getTaskStatusMsg'
 }
 
 method sendStopAll SmallRuntime {
@@ -92,15 +90,17 @@ method resetArduino SmallRuntime {
 	closeSerialPort port
 	port = nil
 	ensurePortOpen this
+	repeat 10 {
+		waitMSecs 100
+		readSerialPort port
+	}
+	recvBuf = nil
 }
 
 method saveChunk SmallRuntime chunkID chunkType bytes {
-	ensurePortOpen this
-	byteCount = ((count bytes) + 1)
-	// msg body is: <chunkType (1 byte)> <instruction data>
-	msg = (list 2 chunkID (byteCount & 255) ((byteCount >> 8) & 255) chunkType)
-	addAll msg bytes
-	writeSerialPort port (toBinaryData (toArray msg))
+	body = (list chunkType)
+	addAll body bytes
+	sendMsg this 'storeChunkMsg' chunkID body
 }
 
 method runChunk SmallRuntime chunkID {
@@ -120,20 +120,19 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'getOutputMsg' 10
 		atPut msgDict 'getReturnValueMsg' 12
 		atPut msgDict 'getErrorIPMsg' 14
-		atPut msgDict 'showChunksMsg' 16
-		atPut msgDict 'showTasksMsg' 17
 	}
-	msgID = (at msgDict msgName)
-	if (isNil msgID) { error 'Unknown message:' msgName }
-	return msgID
+	msgType = (at msgDict msgName)
+	if (isNil msgType) { error 'Unknown message:' msgName }
+	return msgType
 }
 
 method sendMsg SmallRuntime msgName chunkID byteList {
 	if (isNil chunkID) { chunkID = 0 }
 	if (isNil byteList) { byteList = (list) }
-	msgID = (msgNameToID this msgName)
+	msgType = (msgNameToID this msgName)
+	msgID = 222 // (rand 255)
 	byteCount = (count byteList)
-	msg = (list msgID chunkID (byteCount & 255) ((byteCount >> 8) & 255))
+	msg = (list msgType msgID chunkID (byteCount & 255) ((byteCount >> 8) & 255))
 	addAll msg byteList
 	ensurePortOpen this
 	writeSerialPort port (toBinaryData (toArray msg))
@@ -145,17 +144,45 @@ method ensurePortOpen SmallRuntime {
 	}
 }
 
-method showResult SmallRuntime {
-	lastReadTime = (msecsSinceStart)
-	while (((msecsSinceStart) - lastReadTime) < 1000) {
-		showOutput this
-		waitMSecs 50
+method processMessages SmallRuntime {
+	if (isNil port) { return }
+	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
+	if (isNil nextPollMSecs) { nextPollMSecs = 0 }
+	if ((msecsSinceStart) > nextPollMSecs) {
+		sendMsg this 'getOutputMsg'
+		nextPollMSecs = ((msecsSinceStart) + 40)
+	}
+	// Read any available bytes and append to recvBuf
+	s = (readSerialPort port true)
+	if (notNil s) { recvBuf = (join recvBuf s) }
+
+	// Parse messages
+	if ((byteCount recvBuf) < 5) { return } // incomplete header
+	bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
+	if ((byteCount recvBuf) < (5 + bodyBytes)) { return } // incomplete body
+	handleMessage this (copyFromTo recvBuf 1 (bodyBytes + 5))
+	recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
+}
+
+method handleMessage SmallRuntime msg {
+	op = (byteAt msg 1)
+	msgID =  (byteAt msg 2)
+	chunkOrError =  (byteAt msg 3)
+	if (0 == op) {
+		print 'Okay'  // xxx debugging
+	} (1 == op) {
+		print 'Error code' chunkOrError
+	} (11 == op) {
+		s = (toString (copyFromTo msg 6 (byteCount msg)))
+		print s
+	} else {
+		print 'msg:' (toArray msg)
 	}
 }
 
-method showOutput SmallRuntime {
+method showOutputStrings SmallRuntime {
+	// For debuggong. Just display incoming characters.
 	if (isNil port) { return }
-//	sendMsg this 'getOutputMsg'  // xxx using direct terminal output for now
 	s = (readSerialPort port)
 	if (notNil s) {
 		if (isNil recvBuf) { recvBuf = '' }
@@ -681,14 +708,14 @@ method step ProjectEditor {
 	lastFrameTime = (msecsSinceStart)
 	frameCount = 0
   }
-  showOutput (smallRuntime)
+  processMessages (smallRuntime)
 }
 
 method contextMenu ScriptEditor {
   menu = (menu nil this)
   // Arudino additions to background menu
   addItem menu 'Arduino stop all' (action 'sendStopAll' (smallRuntime))
-  addItem menu 'Arduino status' (action 'sendPing' (smallRuntime))
+  addItem menu 'Arduino status' (action 'sendGetTaskStatus' (smallRuntime))
   addLine menu
   addItem menu 'Arduino reset and clear' (action 'resetArduino' (smallRuntime))
   addLine menu
