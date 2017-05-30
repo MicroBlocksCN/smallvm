@@ -893,7 +893,7 @@ BlockMorph.prototype.userMenu = function () {
     }
 
     // +++
-    if (myself.receiver().isDevice) {
+    if (myself.scriptTarget().isDevice) {
         menu.addItem('show instructions...', function () {
             var codes = listify(new Compiler().instructionsFor(this));
             new TableDialogMorph(codes).popUp(this.world());
@@ -989,7 +989,7 @@ BlockMorph.prototype.userMenu = function () {
 
             // allow toggling inheritable attributes
             if (StageMorph.prototype.enableInheritance) {
-                rcvr = this.receiver();
+                rcvr = this.scriptTarget();
                 field = {
                     xPosition: 'x position',
                     yPosition: 'y position',
