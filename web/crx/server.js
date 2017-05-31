@@ -83,22 +83,22 @@ function serialDisconnect (retries, callback, onErrorCallback) {
 // Serial messaging
 
 function onSerialReceive (info) {
-    var data = Array.from(new Uint8Array(info.data));
+    var arrayBuffer = (new Uint8Array(info.data)).buffer;
     if (socket) {
-        log('serial to ws: ' + data);
-        socket.send(data.toString());
+        log('serial to ws: ' + info.data);
+        socket.send(arrayBuffer);
     } else {
         log('Socket is not connected');
     }
 };
 
-function serialSend (stringifiedArray) {
+function serialSend (arrayBuffer) {
     if (connectionId) {
         chrome.serial.send(
             connectionId,
-            (new Uint8Array(stringifiedArray.split(','))).buffer,
-            function () { 
-                log('ws to serial: ' + stringifiedArray); 
+            arrayBuffer,
+            function (result) { 
+                log('ws to serial: ' + result); 
             }
         );
     } else {

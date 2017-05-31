@@ -1,9 +1,0 @@
-body {
-    font-family: sans-serif;
-}
-
-#log {
-    height: 500px; 
-    border: 1px solid;
-    overflow: auto;
-}
