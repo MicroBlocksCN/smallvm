@@ -25,6 +25,7 @@ if (http.Server && http.WebSocketServer) {
     wsServer.addEventListener('request', function (request) {
         log('websocket client connected');
         socket = request.accept();
+        socket.binaryType = 'arraybuffer';
 
         // redirect anything we get on the socket to the serial port
         socket.addEventListener('message', function (event) {
@@ -83,10 +84,10 @@ function serialDisconnect (retries, callback, onErrorCallback) {
 // Serial messaging
 
 function onSerialReceive (info) {
-    var arrayBuffer = (new Uint8Array(info.data)).buffer;
+    //var arrayBuffer = (new Uint8Array(info.data)).buffer;
     if (socket) {
         log('serial to ws: ' + info.data);
-        socket.send(arrayBuffer);
+        socket.send(info.data);
     } else {
         log('Socket is not connected');
     }

@@ -66,34 +66,37 @@ Protocol.prototype.init = function () {
 };
 
 Protocol.prototype.processRawData = function (data) {
-    this.messageBuffer = this.messageBuffer.concat(data.split(','));
+    this.messageBuffer = this.messageBuffer.concat(data);
     this.parseMessage();
 };
 
-Protocol.prototype.parseMessage = function () {
-    var descriptor = this.descriptors[this.messageBuffer[0]],
-        dataSize;
+Protocol.prototype.clearBuffer = function () {
+    this.messageBuffer = [];
+};
 
-    console.log('→ ' + this.messageBuffer.toHexString());
+Protocol.prototype.parseMessage = function () {
+    var opCode = this.messageBuffer[0],
+        descriptor = this.descriptors[opCode],
+        dataSize;
 
     if (!descriptor) {
         // We probably connected to the board while it was sending a message
         // and missed its header.
-        this.messageBuffer = [];
+        this.clearBuffer();
         return;
     }
 
-    if (descriptor.carriesData && this.messageBuffer.length >= 4) {
-        dataSize = this.messageBuffer[2] | this.messageBuffer[3] << 8;
-        if (this.messageBuffer.length === dataSize + 4) {
+    if (descriptor.carriesData && this.messageBuffer.length >= 5) {
+        dataSize = this.messageBuffer[3] | this.messageBuffer[4] << 8;
+        if (this.messageBuffer.length === dataSize + 5) {
             // The message is complete, let's parse it.
             this.printMessage(descriptor, dataSize);
-            this.messageBuffer = this.messageBuffer.slice(4 + dataSize);
+            this.messageBuffer = this.messageBuffer.slice(5 + dataSize);
         } 
-    } else if (!descriptor.carriesData && this.messageBuffer.length === 2) {
+    } else if (!descriptor.carriesData && this.messageBuffer.length === 5) {
         // this message carries no data and is complete
         this.printMessage(descriptor);
-        this.messageBuffer = this.messageBuffer.slice(2);
+        this.messageBuffer = this.messageBuffer.slice(5);
     } 
 };
 
@@ -101,16 +104,18 @@ Protocol.prototype.parseMessage = function () {
 Protocol.prototype.printMessage = function (descriptor, dataSize) {
     var data;
     console.log('===');
-    console.log('Message complete');
+    console.log('Raw message:\t' + this.messageBuffer);
     console.log('OpCode:\t\t\t' + this.messageBuffer[0].toString(16));
-    console.log('Description:\t\t' + descriptor.description);
-    console.log('Object ID:\t\t' + this.messageBuffer[1]);
+    console.log('Description:\t' + descriptor.description);
+    console.log('Message ID:\t\t' + this.messageBuffer[1]);
+    console.log('Stack ID:\t\t' + this.messageBuffer[2]);
     console.log('Origin:\t\t\t' + descriptor.origin);
-    console.log('Carries data:\t\t' + (descriptor.carriesData && dataSize > 0));
+    console.log('Carries data:\t' + (descriptor.carriesData && dataSize > 0));
     if (dataSize) {
-        data = this.messageBuffer.slice(4, 4 + dataSize);
+        data = this.messageBuffer.slice(5, 5 + dataSize);
         console.log('Data size:\t\t' + dataSize);
-        console.log('Data:\t\t\t' + data.reverse().toHexString());
+        console.log('Raw data:\t\t' + data.toHexString());
+        console.log('Data as string:\t' + String.fromCharCode.apply(null, data));
         if (descriptor.dataDescriptor) {
             console.log('Data description:\t' + descriptor.dataDescriptor[data]);
         }
@@ -138,7 +143,6 @@ Protocol.prototype.packMessage = function (selector, stackId, data) {
         message = message.concat([0, 0]);
     }
 
-    console.log(message);
     return message;
 };
 
@@ -246,19 +250,6 @@ Protocol.prototype.descriptors = [
         origin: 'board',
         carriesData: true
     }
-    /* debug messages
-    ,
-    {
-        description: 'Show chunks',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        description: 'Show tasks',
-        origin: 'ide',
-        carriesData: false
-    }
-    */
 ];
 
 function Postal (address, onReceive) {
@@ -282,26 +273,25 @@ Postal.prototype.initSocket = function () {
     var myself = this;
 
     this.socket = new WebSocket(this.address);
+    this.socket.binaryType = 'arraybuffer';
 
     this.socket.addEventListener('open', function() {
-        console.log('socket connection open, clearing autoconnect interval');
         clearInterval(myself.connectInterval);
         myself.connectInterval = null;
     });
 
     this.socket.onmessage = function (event) {
-        myself.protocol.processRawData(event.data);
+        myself.protocol.processRawData(Array.from(new Uint8Array(event.data)));
     };
 
     this.socket.onclose = function () {
         this.socket = null;
-        console.log('socket connection closed, restarting autoconnect interval');
+        clearInterval(myself.connectInterval);
         myself.startAutoConnect();
     };
 };
 
 Postal.prototype.rawSend = function (message) {
-    console.log('sending ' + message);
     if (this.socket) {
         this.socket.send((new Uint8Array(message)).buffer);
     }

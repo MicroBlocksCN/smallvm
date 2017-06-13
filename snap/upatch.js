@@ -1233,6 +1233,7 @@ IDE_Morph.prototype.stopAllScripts = function () {
     }
     this.controlBar.stopButton.refresh();
     this.stage.fireStopAllEvent();
+    this.postal.protocol.clearBuffer();
     this.postal.sendMessage('stopAll');
 };
 
