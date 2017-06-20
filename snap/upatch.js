@@ -1245,5 +1245,5 @@ IDE_Morph.prototype.init = function (isAutoFill) {
     this.originalInit(isAutoFill);
 
     this.lastStackId = 0;
-    this.postal = new Postal('ws://localhost:9999/');
+    this.postal = new Postal('ws://localhost:9999/', this);
 };

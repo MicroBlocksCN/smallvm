@@ -1,6 +1,6 @@
 /*
 
-    uparser.js
+    uprotocol.js
 
     a µblocks message protocol for the µblocks VM
 
@@ -57,12 +57,13 @@ Array.prototype.toHexString = function () {
 
 // µBlocks message protocol
 
-function Protocol () {
-    this.init();
+function Protocol (ide) {
+    this.init(ide);
 };
 
-Protocol.prototype.init = function () {
+Protocol.prototype.init = function (ide) {
     this.messageBuffer = [];
+    this.ide = ide;
 };
 
 Protocol.prototype.processRawData = function (data) {
@@ -117,8 +118,10 @@ Protocol.prototype.processMessage = function (descriptor, dataSize) {
 };
 
 Protocol.prototype.processJSONMessage = function (json) {
-    console.log('JSON message:');
-    console.log(json);
+    this.dispatcher[json.selector].apply(
+        this.ide.currentSprite,
+        json.arguments
+    );
 };
 
 // Just for test purposes
@@ -299,13 +302,31 @@ Protocol.prototype.descriptors = [
     }
 ];
 
+Protocol.prototype.dispatcher = {
+    getSerialPortListResponse: function (portList) {
+        var portMenu = new MenuMorph(this, 'select a port'),
+            world = this.world(),
+            myself = this;
+
+        portList.forEach(function(port) {
+            portMenu.addItem(
+                port.displayName + ' (' + port.path + ')',
+                function() { myself.serialConnect(port.path); }
+            );
+        });
+
+        portMenu.popUpCenteredInWorld(world);
+    }
+};
+
 function Postal (address, onReceive) {
     this.init(address, onReceive);
 };
 
-Postal.prototype.init = function (address, protocol) {
+Postal.prototype.init = function (address, ide) {
     this.address = address;
-    this.protocol = new Protocol();
+    this.protocol = new Protocol(ide);
+    this.ide = ide;
     this.socket = null;
 
     this.startAutoConnect();
