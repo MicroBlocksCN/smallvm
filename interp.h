@@ -101,7 +101,7 @@ extern CodeChunkRecord chunks[MAX_CHUNKS];
 
 // The task list is an array of taskCount Tasks. Each Task has a chunkIndex and a
 // wakeTime based on the microsecond clock. "When <condition>" hats have their condition
-// test compiled into them and loop back and suspect when the condition is false. When
+// test compiled into them and loop back and suspend when the condition is false. When
 // the condition becomes true, execution proceeds to the blocks under the hat and the
 // task status changes from 'polling' to 'running'.
 

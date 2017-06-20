@@ -416,7 +416,7 @@ void stepTasks() {
 
 static void printOutput() {
 	// Print output, if any. Used during testing/debugging on a laptop.
-	printf("%s", printBuffer);
+	printf("%s\r\n", printBuffer);
 	for (int i = 0; i < MAX_TASKS; i++) {
 		// Make all tasks waiting for the print buffer be runnable.
 		if (waiting_print == tasks[i].status) {
