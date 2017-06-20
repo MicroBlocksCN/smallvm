@@ -30,7 +30,7 @@ if (http.Server && http.WebSocketServer) {
         // redirect anything we get on the socket to the serial port
         socket.addEventListener('message', function (event) {
             // event.data should contain an array of integers
-            serialSend(event.data);
+            processMessage(event.data);
         });
 
         socket.addEventListener('close', function() {
@@ -105,4 +105,37 @@ function serialSend (arrayBuffer) {
     } else {
         log('Board is not connected');
     }
+};
+
+// Message processing
+
+function processMessage (rawData) {
+    var array = new Uint8Array(rawData),
+        message;
+    if (array[0] === 0xFF) {
+        // this is an internal JSON message,
+        // not supposed to reach the board
+        array = array.slice(4);
+        message = JSON.parse(String.fromCharCode.apply(null, array.slice(1)));
+        dispatcher[message.selector].call(null, message.arguments);
+    } else {
+        serialSend(rawData);
+    }
+};
+
+dispatcher = {
+    getSerialPortList: function () {
+        chrome.serial.getDevices(function (devices) {
+            var object = { selector: 'getSerialPortListResponse', arguments: [ devices ] },
+                data = stringToByteArray(JSON.stringify(object)),
+                array = [0xFF, 0, 0, data.length & 255, data.length >> 8];
+            socket.send(array.concat(data));
+        });
+    }
+};
+
+function stringToByteArray (str) {
+    return str.split('').map(
+        function (char) { return char.charCodeAt(0); }
+    );
 };

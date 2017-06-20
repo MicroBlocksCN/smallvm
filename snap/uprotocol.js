@@ -76,7 +76,7 @@ Protocol.prototype.clearBuffer = function () {
 
 Protocol.prototype.parseMessage = function () {
     var opCode = this.messageBuffer[0],
-        descriptor = this.descriptors[opCode],
+        descriptor = this.descriptorFor(opCode),
         dataSize;
 
     if (!descriptor) {
@@ -90,19 +90,39 @@ Protocol.prototype.parseMessage = function () {
         dataSize = this.messageBuffer[3] | this.messageBuffer[4] << 8;
         if (this.messageBuffer.length === dataSize + 5) {
             // The message is complete, let's parse it.
-            this.printMessage(descriptor, dataSize);
+            this.processMessage(descriptor, dataSize);
             this.messageBuffer = this.messageBuffer.slice(5 + dataSize);
         } 
     } else if (!descriptor.carriesData && this.messageBuffer.length === 5) {
         // this message carries no data and is complete
-        this.printMessage(descriptor);
+        this.processMessage(descriptor);
         this.messageBuffer = this.messageBuffer.slice(5);
     } 
 };
 
+Protocol.prototype.processMessage = function (descriptor, dataSize) {
+    var data,
+        stringData;
+
+    if (dataSize) {
+        data = this.messageBuffer.slice(5, 5 + dataSize);
+        stringData = String.fromCharCode.apply(null, data);
+    }
+
+    if (descriptor.selector === 'jsonMessage') {
+        this.processJSONMessage(JSON.parse(stringData));
+    } else {
+        this.printMessage(descriptor, data, stringData);
+    }
+};
+
+Protocol.prototype.processJSONMessage = function (json) {
+    console.log('JSON message:');
+    console.log(json);
+};
+
 // Just for test purposes
-Protocol.prototype.printMessage = function (descriptor, dataSize) {
-    var data;
+Protocol.prototype.printMessage = function (descriptor, data, stringData) {
     console.log('===');
     console.log('Raw message:\t' + this.messageBuffer);
     console.log('OpCode:\t\t\t' + this.messageBuffer[0].toString(16));
@@ -110,12 +130,11 @@ Protocol.prototype.printMessage = function (descriptor, dataSize) {
     console.log('Message ID:\t\t' + this.messageBuffer[1]);
     console.log('Stack ID:\t\t' + this.messageBuffer[2]);
     console.log('Origin:\t\t\t' + descriptor.origin);
-    console.log('Carries data:\t' + (descriptor.carriesData && dataSize > 0));
-    if (dataSize) {
-        data = this.messageBuffer.slice(5, 5 + dataSize);
-        console.log('Data size:\t\t' + dataSize);
+    console.log('Carries data:\t' + (descriptor.carriesData && data));
+    if (data) {
+        console.log('Data size:\t\t' + data.length);
         console.log('Raw data:\t\t' + data.toHexString());
-        console.log('Data as string:\t' + String.fromCharCode.apply(null, data));
+        console.log('Data as string:\t' + stringData);
         if (descriptor.dataDescriptor) {
             console.log('Data description:\t' + descriptor.dataDescriptor[data]);
         }
@@ -124,9 +143,9 @@ Protocol.prototype.printMessage = function (descriptor, dataSize) {
 };
 
 Protocol.prototype.packMessage = function (selector, stackId, data) {
-    var opCode = this.opCodeFor(selector),
+    var descriptor = this.descriptorFor(selector),
         messageId = Math.floor(Math.random() * 255), // temporary
-        message = [opCode, messageId, stackId];
+        message = [descriptor.opCode, messageId, stackId];
 
     if (data) {
         if (selector === 'storeChunk') {
@@ -146,22 +165,30 @@ Protocol.prototype.packMessage = function (selector, stackId, data) {
     return message;
 };
 
-Protocol.prototype.opCodeFor = function (selector) {
-    for (var i = 0; i < this.descriptors.length; i += 1) {
-        if (this.descriptors[i].selector === selector) {
-            return i;
+Protocol.prototype.descriptorFor = function (selectorOrOpCode) {
+    return detect(
+        this.descriptors, 
+        function (descriptor) {
+            if (typeof selectorOrOpCode === 'string') {
+                return descriptor.selector === selectorOrOpCode;
+            } else {
+                return descriptor.opCode === selectorOrOpCode;
+            }
         }
-    }
+    );
 };
+
 // Message descriptors
 
 Protocol.prototype.descriptors = [
     {
+        opCode: 0x00,
         description: 'Okay reply',
         origin: 'board',
         carriesData: false
     },
     {
+        opCode: 0x01,
         description: 'Error reply',
         origin: 'board',
         carriesData: true,
@@ -171,83 +198,103 @@ Protocol.prototype.descriptors = [
         }
     },
     {
+        opCode: 0x02,
         description: 'Store a code chunk',
         selector: 'storeChunk',
         origin: 'ide',
         carriesData: true
     },
     {
+        opCode: 0x03,
         description: 'Delete a code chunk',
         selector: 'deleteChunk',
         origin: 'ide',
         carriesData: false
     },
     {
+        opCode: 0x04,
         description: 'Start all threads',
         selector: 'startAll',
         origin: 'ide',
         carriesData: false
     },
     {
+        opCode: 0x05,
         description: 'Stop all threads',
         selector: 'stopAll',
         origin: 'ide',
         carriesData: false
     },
     {
+        opCode: 0x06,
         description: 'Start a code chunk',
         selector: 'startChunk',
         origin: 'ide',
         carriesData: false
     },
     {
+        opCode: 0x07,
         description: 'Stop a code chunk',
         selector: 'stopChunk',
         origin: 'ide',
         carriesData: false
     },
     {
+        opCode: 0x08,
         description: 'Get task status',
         selector: 'getTaskStatus',
         origin: 'ide',
         carriesData: false
     },
     {
+        opCode: 0x09,
         description: 'Get task status reply',
         origin: 'board',
         carriesData: true
     },
     {
+        opCode: 0x0A,
         description: 'Get output message',
         selector: 'getOutputMessage',
         origin: 'ide',
         carriesData: false
     },
     {
+        opCode: 0x0B,
         description: 'Get output message reply',
         origin: 'board',
         carriesData: true
     },
     {
+        opCode: 0x0C,
         description: 'Get return value',
         selector: 'getReturnValue',
         origin: 'ide',
         carriesData: false
     },
     {
+        opCode: 0x0D,
         description: 'Get return value reply',
         origin: 'board',
         carriesData: true
     },
     {
+        opCode: 0x0E,
         description: 'Get error info',
         selector: 'getErrorInfo',
         origin: 'ide',
         carriesData: false
     },
     {
+        opCode: 0x0F,
         description: 'Get error info reply',
         origin: 'board',
+        carriesData: true
+    },
+    {
+        opCode: 0xFF,
+        description: 'JSON message',
+        selector: 'jsonMessage',
         carriesData: true
     }
 ];
@@ -298,5 +345,10 @@ Postal.prototype.rawSend = function (message) {
 };
 
 Postal.prototype.sendMessage = function (selector, stackId, data) {
+    if (selector === 'jsonMessage') {
+        data = data.split('').map(
+            function (char) { return char.charCodeAt(0); }
+        );
+    }
     this.rawSend(this.protocol.packMessage(selector, stackId, data));
 };
