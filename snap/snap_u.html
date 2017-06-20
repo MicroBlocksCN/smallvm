@@ -21,19 +21,20 @@
 		<script type="text/javascript" src="sha512.js"></script>
 		<script type="text/javascript" src="FileSaver.min.js"></script>
 		<script type="text/javascript" src="ucompile.js"></script>
+		<script type="text/javascript" src="uprotocol.js"></script>
 		<script type="text/javascript" src="upatch.js"></script>
 		<script type="text/javascript">
 			var world;
 			window.onload = function () {
-				world = new WorldMorph(document.getElementById('world'));
-                world.worldCanvas.focus();
-				new IDE_Morph().openIn(world);
-        loop();
-			};
-			function loop() {
-        requestAnimationFrame(loop);
-				world.doOneCycle();
-			}
+                            world = new WorldMorph(document.getElementById('world'));
+                            world.worldCanvas.focus();
+                            new IDE_Morph().openIn(world);
+                            loop();
+                        };
+                        function loop() {
+                            requestAnimationFrame(loop);
+                            world.doOneCycle();
+                        }
 		</script>
 	</head>
 	<body style="margin: 0;">

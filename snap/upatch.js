@@ -1179,3 +1179,71 @@ BlockMorph.prototype.userMenu = function () {
     return menu;
 };
 
+// Evaluate on board
+ThreadManager.prototype.startProcess = function (
+    block,
+    receiver,
+    isThreadSafe,
+    exportResult, // bool
+    callback,
+    isClicked,
+    rightAway
+) {
+    var top = block.topBlock(),
+        active = this.findProcess(top, receiver),
+        newProc, ide, codes, stackId;
+    if (active) {
+        if (isThreadSafe) {
+            return active;
+        }
+        active.stop();
+        this.removeTerminatedProcesses();
+    }
+
+    if (receiver.isDevice) {
+        ide = receiver.parentThatIsA(IDE_Morph);
+        codes = (new Compiler().bytesFor(top));
+
+        stackId = ide.lastStackId; // Obviously temporary
+        ide.lastStackId += 1;
+
+        ide.postal.sendMessage('storeChunk', stackId, codes);
+        ide.postal.sendMessage('startChunk', stackId);
+    } else {
+        newProc = new Process(top, receiver, callback, rightAway);
+        newProc.exportResult = exportResult;
+        newProc.isClicked = isClicked || false;
+        if (!newProc.homeContext.receiver.isClone) {
+            top.addHighlight();
+        }
+        this.processes.push(newProc);
+        if (rightAway) {
+            newProc.runStep();
+        }
+        return newProc;
+    }
+};
+
+IDE_Morph.prototype.stopAllScripts = function () {
+    if (this.stage.enableCustomHatBlocks) {
+        this.stage.threads.pauseCustomHatBlocks =
+            !this.stage.threads.pauseCustomHatBlocks;
+    } else {
+        this.stage.threads.pauseCustomHatBlocks = false;
+    }
+    this.controlBar.stopButton.refresh();
+    this.stage.fireStopAllEvent();
+    this.postal.protocol.clearBuffer();
+    this.postal.sendMessage('stopAll');
+};
+
+// Just a decorator to be made "native" when µBlocks becomes part of Snap!
+IDE_Morph.prototype.originalInit = IDE_Morph.prototype.init;
+IDE_Morph.prototype.init = function (isAutoFill) {
+    var myself = this;
+
+    this.originalInit(isAutoFill);
+
+    this.lastStackId = 0;
+    this.postal = new Postal('ws://localhost:9999/', this);
+};
