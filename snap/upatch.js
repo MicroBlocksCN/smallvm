@@ -862,17 +862,37 @@ SpriteMorph.prototype.serialConnect = function (portPath) {
 };
 
 SpriteMorph.prototype.serialConnected = function (success) {
-    var ide = this.parentThatIsA(IDE_Morph);
+    var ide = this.parentThatIsA(IDE_Morph),
+        world = this.world(),
+        dialog = new DialogBoxMorph(),
+        pic = new Morph();
+
+    pic.setColor(new Color(0,0,0,0));
+    pic.texture = 'ublocks.png';
+    pic.setExtent(new Point(128, 128));
+
     if (success) {
         this.isDevice = true;
         if (ide) {
-            ide.inform('Connection successful', 'µBlocks device successfully connected.\nHappy hopping!');
+            dialog.inform(
+                'Connection successful', 
+                'µBlocks device successfully connected.\n' + 
+                    'Happy hopping!', 
+                world, 
+                pic
+            );
             ide.flushBlocksCache();
             ide.refreshPalette();
         }
     } else {
         if (ide) {
-            ide.inform('Connection failed', 'Could not connect to µBlocks device.\nPlease make sure the µBlocks VM is loaded.');
+            dialog.inform(
+                'Connection failed',
+                'Could not connect to µBlocks device.\n' + 
+                    'Please make sure the µBlocks VM is loaded.',
+                world,
+                pic
+            );
         }
     }
 };

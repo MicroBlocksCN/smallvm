@@ -56,6 +56,7 @@ Array.prototype.toHexString = function () {
 };
 
 // µBlocks message protocol
+// I interpret and dispatch messages received via the µBlocks postal service
 
 function Protocol (ide) {
     this.init(ide);
@@ -325,6 +326,9 @@ Protocol.prototype.dispatcher = {
         this.serialDisconnected(success);
     }
 };
+
+// µBlocks postal service
+// I facilitate messaging between the web client and the µBlocks plugin
 
 function Postal (address, onReceive) {
     this.init(address, onReceive);
