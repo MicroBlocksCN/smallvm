@@ -306,7 +306,7 @@ Protocol.prototype.dispatcher = {
     getSerialPortListResponse: function (portList) {
         var portMenu = new MenuMorph(this, 'select a port'),
             world = this.world(),
-            myself = this;
+            myself = this; // The receiving SpriteMorph
 
         portList.forEach(function(port) {
             portMenu.addItem(
@@ -314,8 +314,15 @@ Protocol.prototype.dispatcher = {
                 function() { myself.serialConnect(port.path); }
             );
         });
-
-        portMenu.popUpCenteredInWorld(world);
+        
+        portMenu.popUpAtHand(world);
+    },
+    serialConnectResponse: function (success) {
+        // "this" is the receiving SpriteMorph
+        this.serialConnected(success);
+    },
+    serialDisconnectResponse: function (success) {
+        this.serialDisconnected(success);
     }
 };
 
@@ -372,4 +379,8 @@ Postal.prototype.sendMessage = function (selector, stackId, data) {
         );
     }
     this.rawSend(this.protocol.packMessage(selector, stackId, data));
+};
+
+Postal.prototype.sendJsonMessage = function (selector, arguments) {
+    this.sendMessage('jsonMessage', 0, JSON.stringify({ selector: selector, arguments: arguments }));
 };

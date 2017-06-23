@@ -57,7 +57,7 @@ function serialConnect (portName, callback) {
     );
 };
 
-function serialDisconnect (retries, callback, onErrorCallback) {
+function serialDisconnect (connectionId, callback, onErrorCallback, retries) {
     var myself = this;
     
     if (retries === 0) {
@@ -75,7 +75,7 @@ function serialDisconnect (retries, callback, onErrorCallback) {
                 chrome.runtime.reload();
             } else {
                 log('could not disconnect, retrying... (attempt #' + (3 - retries) + ')');
-                myself.disconnect(retries ? retries - 1 : 2, callback);
+                myself.serialDisconnect(connectionId, callback, onErrorCallback, retries ? retries - 1 : 2);
             }
         }
     );
@@ -107,6 +107,15 @@ function serialSend (arrayBuffer) {
     }
 };
 
+// Message composing
+
+function sendJsonMessage (selector, arguments) {
+    var object = { selector: selector, arguments: arguments },
+        data = stringToByteArray(JSON.stringify(object)),
+        array = [0xFF, 0, 0, data.length & 255, data.length >> 8];
+    socket.send(array.concat(data));
+};
+
 // Message processing
 
 function processMessage (rawData) {
@@ -126,11 +135,28 @@ function processMessage (rawData) {
 dispatcher = {
     getSerialPortList: function () {
         chrome.serial.getDevices(function (devices) {
-            var object = { selector: 'getSerialPortListResponse', arguments: [ devices ] },
-                data = stringToByteArray(JSON.stringify(object)),
-                array = [0xFF, 0, 0, data.length & 255, data.length >> 8];
-            socket.send(array.concat(data));
+            sendJsonMessage('getSerialPortListResponse', [ devices ]);
         });
+    },
+    serialConnect: function (portPath) {
+        serialConnect(portPath, function () {
+            // aiming for future error control
+            sendJsonMessage('serialConnectResponse', [ true ]);
+        });
+    },
+    serialDisconnect: function () {
+        serialDisconnect(
+            // aiming for a future multi-board scenario
+            connectionId, 
+            // success callback
+            function () { 
+                sendJsonMessage('serialDisconnectResponse', [ true ]);
+            },
+            // error callback
+            function () {
+                sendJsonMessage('serialConnectResponse', [ false ]);
+            }
+        );
     }
 };
 

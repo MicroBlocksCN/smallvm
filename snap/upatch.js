@@ -64,122 +64,127 @@ function listify (array) {
 
 // SpriteIconMorph
 
-SpriteMorph.prototype.blocks.analogReadOp = {
-    only: SpriteMorph,
-    type: 'reporter',
-    category: 'sensing',
-    spec: 'read analog pin %n',
-    defaults: [1]
-};
-SpriteMorph.prototype.blocks.analogWriteOp = {
-    only: SpriteMorph,
-    type: 'command',
-    category: 'sensing',
-    spec: 'set analog pin %n to %n',
-    defaults: [1, 1023]
-};
-SpriteMorph.prototype.blocks.digitalReadOp = {
-    only: SpriteMorph,
-    type: 'reporter',
-    category: 'sensing',
-    spec: 'read digital pin %n',
-    defaults: [1]
-};
-SpriteMorph.prototype.blocks.digitalWriteOp = {
-    only: SpriteMorph,
-    type: 'command',
-    category: 'sensing',
-    spec: 'set digital pin %n to %b',
-    defaults: [1, true]
-};
-SpriteMorph.prototype.blocks.setLEDOp = {
-    only: SpriteMorph,
-    type: 'command',
-    category: 'sensing',
-    spec: 'set user LED %b',
-    defaults: [true]
-};
-SpriteMorph.prototype.blocks.microsOp = {
-    only: SpriteMorph,
-    type: 'reporter',
-    category: 'sensing',
-    spec: 'micros'
-};
-SpriteMorph.prototype.blocks.millisOp = {
-    only: SpriteMorph,
-    type: 'reporter',
-    category: 'sensing',
-    spec: 'millis'
-};
-SpriteMorph.prototype.blocks.noop = {
-    only: SpriteMorph,
-    type: 'command',
-    category: 'sensing',
-    spec: 'no op'
-};
-SpriteMorph.prototype.blocks.peekOp = {
-    only: SpriteMorph,
-    type: 'reporter',
-    category: 'sensing',
-    spec: 'memory at %n',
-    defaults: [0]
-};
-SpriteMorph.prototype.blocks.pokeOp = {
-    only: SpriteMorph,
-    type: 'command',
-    category: 'sensing',
-    spec: 'set memory at %n to %n',
-    defaults: [0, 0]
-};
-SpriteMorph.prototype.blocks.waitMicrosOp = {
-    only: SpriteMorph,
-    type: 'command',
-    category: 'control',
-    spec: 'wait %n microsecs',
-    defaults: [10000]
-};
-SpriteMorph.prototype.blocks.waitMillisOp = {
-    only: SpriteMorph,
-    type: 'command',
-    category: 'control',
-    spec: 'wait %n millisecs',
-    defaults: [500]
-};
-SpriteMorph.prototype.blocks.doStopDevice = {
-    only: SpriteMorph,
-    type: 'command',
-    category: 'control',
-    spec: 'stop all %stop'
-},
-SpriteMorph.prototype.blocks.reportDeviceLessThan = {
-    only: SpriteMorph,
-    type: 'predicate',
-    category: 'operators',
-    spec: '%n < %n',
-    defaults: [3, 4]
-};
-SpriteMorph.prototype.blocks.newArray = {
-    only: SpriteMorph,
-    type: 'reporter',
-    category: 'lists',
-    spec: 'new array %n',
-    defaults: [10]
-};
-SpriteMorph.prototype.blocks.newByteArray = {
-    only: SpriteMorph,
-    type: 'reporter',
-    category: 'lists',
-    spec: 'new byte array %n',
-    defaults: [10]
-};
-SpriteMorph.prototype.blocks.fillArray = {
-    only: SpriteMorph,
-    type: 'command',
-    category: 'lists',
-    spec: 'fill %l with %n',
-    defaults: [null, 0]
-};
+SpriteMorph.prototype.originalInit = SpriteMorph.prototype.init;
+SpriteMorph.prototype.init = function (globals) {
 
+    this.originalInit(globals);
+
+    this.blocks.analogReadOp = {
+        only: SpriteMorph,
+        type: 'reporter',
+        category: 'sensing',
+        spec: 'read analog pin %n',
+        defaults: [1]
+    };
+    this.blocks.analogWriteOp = {
+        only: SpriteMorph,
+        type: 'command',
+        category: 'sensing',
+        spec: 'set analog pin %n to %n',
+        defaults: [1, 1023]
+    };
+    this.blocks.digitalReadOp = {
+        only: SpriteMorph,
+        type: 'reporter',
+        category: 'sensing',
+        spec: 'read digital pin %n',
+        defaults: [1]
+    };
+    this.blocks.digitalWriteOp = {
+        only: SpriteMorph,
+        type: 'command',
+        category: 'sensing',
+        spec: 'set digital pin %n to %b',
+        defaults: [1, true]
+    };
+    this.blocks.setLEDOp = {
+        only: SpriteMorph,
+        type: 'command',
+        category: 'sensing',
+        spec: 'set user LED %b',
+        defaults: [true]
+    };
+    this.blocks.microsOp = {
+        only: SpriteMorph,
+        type: 'reporter',
+        category: 'sensing',
+        spec: 'micros'
+    };
+    this.blocks.millisOp = {
+        only: SpriteMorph,
+        type: 'reporter',
+        category: 'sensing',
+        spec: 'millis'
+    };
+    this.blocks.noop = {
+        only: SpriteMorph,
+        type: 'command',
+        category: 'sensing',
+        spec: 'no op'
+    };
+    this.blocks.peekOp = {
+        only: SpriteMorph,
+        type: 'reporter',
+        category: 'sensing',
+        spec: 'memory at %n',
+        defaults: [0]
+    };
+    this.blocks.pokeOp = {
+        only: SpriteMorph,
+        type: 'command',
+        category: 'sensing',
+        spec: 'set memory at %n to %n',
+        defaults: [0, 0]
+    };
+    this.blocks.waitMicrosOp = {
+        only: SpriteMorph,
+        type: 'command',
+        category: 'control',
+        spec: 'wait %n microsecs',
+        defaults: [10000]
+    };
+    this.blocks.waitMillisOp = {
+        only: SpriteMorph,
+        type: 'command',
+        category: 'control',
+        spec: 'wait %n millisecs',
+        defaults: [500]
+    };
+    this.blocks.doStopDevice = {
+        only: SpriteMorph,
+        type: 'command',
+        category: 'control',
+        spec: 'stop all %stop'
+    },
+    this.blocks.reportDeviceLessThan = {
+        only: SpriteMorph,
+        type: 'predicate',
+        category: 'operators',
+        spec: '%n < %n',
+        defaults: [3, 4]
+    };
+    this.blocks.newArray = {
+        only: SpriteMorph,
+        type: 'reporter',
+        category: 'lists',
+        spec: 'new array %n',
+        defaults: [10]
+    };
+    this.blocks.newByteArray = {
+        only: SpriteMorph,
+        type: 'reporter',
+        category: 'lists',
+        spec: 'new byte array %n',
+        defaults: [10]
+    };
+    this.blocks.fillArray = {
+        only: SpriteMorph,
+        type: 'command',
+        category: 'lists',
+        spec: 'fill %l with %n',
+        defaults: [null, 0]
+    };
+};
 
 SpriteMorph.prototype.blockTemplates = function (category) {
     var blocks = [], myself = this, varNames, button,
@@ -815,7 +820,7 @@ SpriteIconMorph.prototype.userMenu = function () {
     // +++
     menu.addItem(
         (this.object.isDevice ? "disable" : "enable") + " µblocks",
-        function () {myself.object.toggleDevice(); }
+        function () { myself.object.toggleDevice(); }
     );
 
     menu.addItem("show", 'showSpriteOnStage');
@@ -844,10 +849,47 @@ SpriteIconMorph.prototype.userMenu = function () {
 
 SpriteMorph.prototype.toggleDevice = function () {
     var ide = this.parentThatIsA(IDE_Morph);
-    this.isDevice = !this.isDevice;
-    if (ide) {
-        ide.flushBlocksCache();
-        ide.refreshPalette();
+    // we ask the postal service to send the appropriate message to the serial plugin.
+    ide.postal.sendJsonMessage(this.isDevice ? 'serialDisconnect' : 'getSerialPortList'); 
+};
+
+SpriteMorph.prototype.serialConnect = function (portPath) {
+    var ide = this.parentThatIsA(IDE_Morph);
+    // We ask the postal service to deliver a serialConnect message to the serial plugin.
+    // When we get a response telling us the connection was successful, we will execute
+    // SpriteMorph >> serialConnected
+    ide.postal.sendJsonMessage('serialConnect', portPath);
+};
+
+SpriteMorph.prototype.serialConnected = function (success) {
+    var ide = this.parentThatIsA(IDE_Morph);
+    if (success) {
+        this.isDevice = true;
+        if (ide) {
+            ide.inform('Connection successful', 'µBlocks device successfully connected.\nHappy hopping!');
+            ide.flushBlocksCache();
+            ide.refreshPalette();
+        }
+    } else {
+        if (ide) {
+            ide.inform('Connection failed', 'Could not connect to µBlocks device.\nPlease make sure the µBlocks VM is loaded.');
+        }
+    }
+};
+
+SpriteMorph.prototype.serialDisconnected = function (success) {
+    var ide = this.parentThatIsA(IDE_Morph);
+    if (success) {
+        this.isDevice = false;
+        if (ide) {
+            ide.inform('Disconnected', 'µBlocks device disconnected.');
+            ide.flushBlocksCache();
+            ide.refreshPalette();
+        }
+    } else {
+        if (ide) {
+            ide.inform('Disconnection failed', 'Could not disconnect from µBlocks device.');
+        }
     }
 };
 
