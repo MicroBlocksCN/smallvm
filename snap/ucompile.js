@@ -327,7 +327,7 @@ Compiler.prototype.instructionsForRepeat = function (inputs) {
         result = this.instructionsForExpression(inputs[0]), // count
         body = this.instructionsForCommandList(script);
     result.push.apply(result,body);
-    result.push(['decrementAndJump', -(body.length + 1)]);
+    result.push(['decrementAndJmp', -(body.length + 1)]);
     return result;
 };
 

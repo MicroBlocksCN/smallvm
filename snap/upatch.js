@@ -873,6 +873,7 @@ SpriteMorph.prototype.serialConnected = function (success) {
 
     if (success) {
         this.isDevice = true;
+        this.fps = 1;
         if (ide) {
             dialog.inform(
                 'Connection successful', 
@@ -885,6 +886,7 @@ SpriteMorph.prototype.serialConnected = function (success) {
             ide.refreshPalette();
         }
     } else {
+        this.fps = 0;
         if (ide) {
             dialog.inform(
                 'Connection failed',
@@ -910,6 +912,13 @@ SpriteMorph.prototype.serialDisconnected = function (success) {
         if (ide) {
             ide.inform('Disconnection failed', 'Could not disconnect from µBlocks device.');
         }
+    }
+};
+
+SpriteMorph.prototype.step = function () {
+    var ide = this.parentThatIsA(IDE_Morph);
+    if (this.isDevice) {
+        ide.postal.sendMessage('getTaskStatus');
     }
 };
 
