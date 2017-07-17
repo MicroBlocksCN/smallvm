@@ -56,6 +56,7 @@ Array.prototype.toHexString = function () {
 };
 
 // µBlocks message protocol
+// I interpret and dispatch messages received via the µBlocks postal service
 
 function Protocol (ide) {
     this.init(ide);
@@ -113,7 +114,8 @@ Protocol.prototype.processMessage = function (descriptor, dataSize) {
     if (descriptor.selector === 'jsonMessage') {
         this.processJSONMessage(JSON.parse(stringData));
     } else {
-        this.printMessage(descriptor, data, stringData);
+        console.log(descriptor.selector);
+        this.dispatcher[descriptor.selector].call(this, data);
     }
 };
 
@@ -187,12 +189,14 @@ Protocol.prototype.descriptors = [
     {
         opCode: 0x00,
         description: 'Okay reply',
+        selector: 'okayReply',
         origin: 'board',
         carriesData: false
     },
     {
         opCode: 0x01,
         description: 'Error reply',
+        selector: 'errorReply',
         origin: 'board',
         carriesData: true,
         dataDescriptor: {
@@ -253,6 +257,7 @@ Protocol.prototype.descriptors = [
         opCode: 0x09,
         description: 'Get task status reply',
         origin: 'board',
+        selector: 'getTaskStatusReply',
         carriesData: true
     },
     {
@@ -265,6 +270,7 @@ Protocol.prototype.descriptors = [
     {
         opCode: 0x0B,
         description: 'Get output message reply',
+        selector: 'getOutputMessageReply',
         origin: 'board',
         carriesData: true
     },
@@ -278,6 +284,7 @@ Protocol.prototype.descriptors = [
     {
         opCode: 0x0D,
         description: 'Get return value reply',
+        selector: 'getReturnValueReply',
         origin: 'board',
         carriesData: true
     },
@@ -291,6 +298,7 @@ Protocol.prototype.descriptors = [
     {
         opCode: 0x0F,
         description: 'Get error info reply',
+        selector: 'getErrorInfoReply',
         origin: 'board',
         carriesData: true
     },
@@ -306,7 +314,7 @@ Protocol.prototype.dispatcher = {
     getSerialPortListResponse: function (portList) {
         var portMenu = new MenuMorph(this, 'select a port'),
             world = this.world(),
-            myself = this;
+            myself = this; // The receiving SpriteMorph
 
         portList.forEach(function(port) {
             portMenu.addItem(
@@ -314,10 +322,24 @@ Protocol.prototype.dispatcher = {
                 function() { myself.serialConnect(port.path); }
             );
         });
-
-        portMenu.popUpCenteredInWorld(world);
+        
+        portMenu.popUpAtHand(world);
+    },
+    serialConnectResponse: function (success) {
+        // "this" is the receiving SpriteMorph
+        this.serialConnected(success);
+    },
+    serialDisconnectResponse: function (success) {
+        this.serialDisconnected(success);
+    },
+    okayReply: nop,
+    getTaskStatusReply: function (taskTable) {
+        console.log(taskTable);
     }
 };
+
+// µBlocks postal service
+// I facilitate messaging between the web client and the µBlocks plugin
 
 function Postal (address, onReceive) {
     this.init(address, onReceive);
@@ -372,4 +394,8 @@ Postal.prototype.sendMessage = function (selector, stackId, data) {
         );
     }
     this.rawSend(this.protocol.packMessage(selector, stackId, data));
+};
+
+Postal.prototype.sendJsonMessage = function (selector, arguments) {
+    this.sendMessage('jsonMessage', 0, JSON.stringify({ selector: selector, arguments: arguments }));
 };
