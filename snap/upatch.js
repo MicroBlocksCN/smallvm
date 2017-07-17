@@ -873,7 +873,7 @@ SpriteMorph.prototype.serialConnected = function (success) {
 
     if (success) {
         this.isDevice = true;
-        this.fps = 1;
+        this.fps = 5;
         if (ide) {
             dialog.inform(
                 'Connection successful', 
@@ -1276,6 +1276,8 @@ ThreadManager.prototype.startProcess = function (
         codes = (new Compiler().bytesFor(top));
 
         stackId = ide.lastStackId; // Obviously temporary
+        block.stackId = stackId;
+
         ide.lastStackId += 1;
 
         ide.postal.sendMessage('storeChunk', stackId, codes);
@@ -1317,4 +1319,21 @@ IDE_Morph.prototype.init = function (isAutoFill) {
 
     this.lastStackId = 0;
     this.postal = new Postal('ws://localhost:9999/', this);
+};
+
+IDE_Morph.prototype.findStack = function (stackId) {
+    var script;
+
+    this.stage.children.forEach(function (sprite) {
+        if (sprite.isDevice && !script) {
+            sprite.scripts.children.forEach(function (child) {
+                if (child instanceof BlockMorph && child.stackId == stackId) {
+                    script = child;
+                    return;
+                }
+            });
+        }
+    });
+
+    return script;
 };

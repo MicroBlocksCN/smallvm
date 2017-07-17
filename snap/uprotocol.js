@@ -64,6 +64,7 @@ function Protocol (ide) {
 
 Protocol.prototype.init = function (ide) {
     this.messageBuffer = [];
+    this.taskTable = [];
     this.ide = ide;
 };
 
@@ -114,7 +115,6 @@ Protocol.prototype.processMessage = function (descriptor, dataSize) {
     if (descriptor.selector === 'jsonMessage') {
         this.processJSONMessage(JSON.parse(stringData));
     } else {
-        console.log(descriptor.selector);
         this.dispatcher[descriptor.selector].call(this, data);
     }
 };
@@ -333,8 +333,50 @@ Protocol.prototype.dispatcher = {
         this.serialDisconnected(success);
     },
     okayReply: nop,
-    getTaskStatusReply: function (taskTable) {
-        console.log(taskTable);
+    getTaskStatusReply: function (taskStatus) {
+        var i;
+        for (i = 0; i < taskStatus.length; i += 1) {
+            if (taskStatus[i] !== this.taskTable[i]) {
+                this.taskTable[i] = taskStatus[i];
+                this.taskStatusChanged(i);
+            }
+        }
+    }
+};
+
+Protocol.prototype.taskStatusChanged = function (taskId) {
+    var stack = this.ide.findStack(taskId);
+
+    if (!stack) {
+        return;
+    }
+
+    switch (this.taskTable[taskId]) {
+        case 0:
+            console.log('Task ' + taskId + ' should be unhighlighted.');
+            stack.removeHighlight();
+            break;
+        case 1:
+            console.log('Task ' + taskId + ' finished.');
+            stack.removeHighlight();
+            break;
+        case 2:
+            console.log('Task ' + taskId + ' returned a value.');
+            stack.showBubble(this.taskTable[taskId], false, this.ide.currentSprite);
+            break;
+        case 3:
+            console.log('Task ' + taskId + ' got an error.');
+            stack.addErrorHighlight();
+            break;
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+            console.log('Task ' + taskId + ' should be highlighted.');
+            stack.addHighlight();
+            break;
+
     }
 };
 

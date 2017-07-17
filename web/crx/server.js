@@ -9,10 +9,6 @@ var verbose = true,
 // Utility functions
 
 function log (string) {
-    var element = document.querySelector('#log');
-    if (!verbose) { return; }
-    element.append(string + '\n');
-    element.scrollTop = element.scrollHeight;
     console.log(string);
 };
 
@@ -86,7 +82,6 @@ function serialDisconnect (connectionId, callback, onErrorCallback, retries) {
 function onSerialReceive (info) {
     //var arrayBuffer = (new Uint8Array(info.data)).buffer;
     if (socket) {
-        log('serial to ws: ' + info.data);
         socket.send(info.data);
     } else {
         log('Socket is not connected');
@@ -98,9 +93,7 @@ function serialSend (arrayBuffer) {
         chrome.serial.send(
             connectionId,
             arrayBuffer,
-            function (result) { 
-                log('ws to serial: ' + result); 
-            }
+            function (result) { }
         );
     } else {
         log('Board is not connected');
