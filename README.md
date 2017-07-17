@@ -40,6 +40,12 @@ If it succeeds, you can run the VM like this:
 
 ### To Do List
 
+#### Current Issues ####
+
+  * debug lost messages
+  * Snap: keep track of stack ID's
+  * make Calliope work
+
 #### Virtual Machine ####
 
   * persistence (store chunks in Flash, restore on startup)
