@@ -26,6 +26,7 @@ if (http.Server && http.WebSocketServer) {
         // redirect anything we get on the socket to the serial port
         socket.addEventListener('message', function (event) {
             // event.data should contain an array of integers
+            console.log(new Uint8Array(event.data));
             processMessage(event.data);
         });
 

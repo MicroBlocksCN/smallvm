@@ -2,3 +2,4 @@ BUILD
 uBlocks.crx
 *.swp
 *.swo
+node_modules

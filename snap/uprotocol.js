@@ -105,7 +105,9 @@ Protocol.prototype.parseMessage = function () {
 
 Protocol.prototype.processMessage = function (descriptor, dataSize) {
     var data,
-        stringData;
+        stringData,
+        messageId = this.messageBuffer[1],
+        taskId = this.messageBuffer[2];
 
     if (dataSize) {
         data = this.messageBuffer.slice(5, 5 + dataSize);
@@ -115,7 +117,7 @@ Protocol.prototype.processMessage = function (descriptor, dataSize) {
     if (descriptor.selector === 'jsonMessage') {
         this.processJSONMessage(JSON.parse(stringData));
     } else {
-        this.dispatcher[descriptor.selector].call(this, data);
+        this.dispatcher[descriptor.selector].call(this, data, taskId, messageId);
     }
 };
 
@@ -147,10 +149,10 @@ Protocol.prototype.printMessage = function (descriptor, data, stringData) {
     console.log('===');
 };
 
-Protocol.prototype.packMessage = function (selector, stackId, data) {
+Protocol.prototype.packMessage = function (selector, taskId, data) {
     var descriptor = this.descriptorFor(selector),
         messageId = Math.floor(Math.random() * 255), // temporary
-        message = [descriptor.opCode, messageId, stackId];
+        message = [descriptor.opCode, messageId, taskId];
 
     if (data) {
         if (selector === 'storeChunk') {
@@ -335,11 +337,22 @@ Protocol.prototype.dispatcher = {
     okayReply: nop,
     getTaskStatusReply: function (taskStatus) {
         var i;
+        console.log('task status reply');
         for (i = 0; i < taskStatus.length; i += 1) {
             if (taskStatus[i] !== this.taskTable[i]) {
+                console.log('task status changed:');
+                console.log(taskStatus);
                 this.taskTable[i] = taskStatus[i];
                 this.taskStatusChanged(i);
             }
+        }
+    },
+    getReturnValueReply: function (data, taskId) {
+        var stack = this.ide.findStack(taskId);
+        if (stack) {
+            // this.ide.currentSprite may not be the actual target,
+            // in the future we may want to have board ids
+            stack.showBubble(data, false, this.ide.currentSprite);
         }
     }
 };
@@ -362,7 +375,8 @@ Protocol.prototype.taskStatusChanged = function (taskId) {
             break;
         case 2:
             console.log('Task ' + taskId + ' returned a value.');
-            stack.showBubble(this.taskTable[taskId], false, this.ide.currentSprite);
+            console.log('We\'ll be requesting the value now.');
+            this.ide.postal.sendMessage('getReturnValue', taskId);
             break;
         case 3:
             console.log('Task ' + taskId + ' got an error.');
@@ -429,13 +443,13 @@ Postal.prototype.rawSend = function (message) {
     }
 };
 
-Postal.prototype.sendMessage = function (selector, stackId, data) {
+Postal.prototype.sendMessage = function (selector, taskId, data) {
     if (selector === 'jsonMessage') {
         data = data.split('').map(
             function (char) { return char.charCodeAt(0); }
         );
     }
-    this.rawSend(this.protocol.packMessage(selector, stackId, data));
+    this.rawSend(this.protocol.packMessage(selector, taskId, data));
 };
 
 Postal.prototype.sendJsonMessage = function (selector, arguments) {

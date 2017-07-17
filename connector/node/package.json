@@ -1,0 +1,16 @@
+{
+  "name": "ublocks",
+  "version": "1.0.0",
+  "description": "µBlocks serial to ws connector",
+  "main": "index.js",
+  "dependencies": {
+    "serialport": "^5.0.0-beta8",
+    "ws": "^3.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "John Maloney, Jens Mönig, Bernat Romagosa",
+  "license": "GPL-3.0"
+}

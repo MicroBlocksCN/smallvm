@@ -1262,7 +1262,7 @@ ThreadManager.prototype.startProcess = function (
 ) {
     var top = block.topBlock(),
         active = this.findProcess(top, receiver),
-        newProc, ide, codes, stackId;
+        newProc, ide, codes;
     if (active) {
         if (isThreadSafe) {
             return active;
@@ -1275,13 +1275,13 @@ ThreadManager.prototype.startProcess = function (
         ide = receiver.parentThatIsA(IDE_Morph);
         codes = (new Compiler().bytesFor(top));
 
-        stackId = ide.lastStackId; // Obviously temporary
-        block.stackId = stackId;
+        if (isNil(block.stackId)) {
+            block.stackId = ide.lastStackId;
+            ide.lastStackId += 1;
+        }
 
-        ide.lastStackId += 1;
-
-        ide.postal.sendMessage('storeChunk', stackId, codes);
-        ide.postal.sendMessage('startChunk', stackId);
+        ide.postal.sendMessage('storeChunk', block.stackId, codes);
+        ide.postal.sendMessage('startChunk', block.stackId);
     } else {
         newProc = new Process(top, receiver, callback, rightAway);
         newProc.exportResult = exportResult;
