@@ -105,17 +105,16 @@ Protocol.prototype.parseMessage = function () {
 
 Protocol.prototype.processMessage = function (descriptor, dataSize) {
     var data,
-        stringData,
         messageId = this.messageBuffer[1],
         taskId = this.messageBuffer[2];
 
     if (dataSize) {
         data = this.messageBuffer.slice(5, 5 + dataSize);
-        stringData = String.fromCharCode.apply(null, data);
     }
 
     if (descriptor.selector === 'jsonMessage') {
-        this.processJSONMessage(JSON.parse(stringData));
+        value = 
+        this.processJSONMessage(JSON.parse(String.fromCharCode.apply(null, data)));
     } else {
         this.dispatcher[descriptor.selector].call(this, data, taskId, messageId);
     }
@@ -149,7 +148,7 @@ Protocol.prototype.processReturnValue = function (rawData) {
         value = (rawData[4] << 24) | (rawData[3] << 16) | (rawData[2] << 8) | (rawData[1]);
     } else if (type === 2) {
         // string
-        value = 'a random string';
+        value = String.fromCharCode.apply(null, rawData.slice(1));
     }
 
     return isNil(value) ? 'unknown type' : value;
@@ -363,7 +362,7 @@ Protocol.prototype.dispatcher = {
         this.showBubbleFor(taskId, data);
     },
     getOutputMessageReply: function (data, taskId) {
-        this.showBubbleFor(taskId, data);
+        console.log('# DEBUG # ' + this.processReturnValue(data));
     }
 };
 
@@ -383,12 +382,12 @@ Protocol.prototype.taskStatusChanged = function (taskId) {
             break;
         case 2:
             // Task returned a value. Let's request that value now.
-            stack.addHighlight();
+            stack.addHighlight(stack.topBlock().removeHighlight());
             this.ide.postal.sendMessage('getReturnValue', taskId);
             break;
         case 3:
             // An error occurred. Let's request the error code now.
-            stack.addErrorHighlight();
+            stack.addErrorHighlight(stack.topBlock().removeHighlight());
             this.ide.postal.sendMessage('getErrorInfo', taskId);
             break;
         case 4:
@@ -396,7 +395,7 @@ Protocol.prototype.taskStatusChanged = function (taskId) {
         case 6:
         case 7:
         case 8:
-            stack.addHighlight();
+            stack.addHighlight(stack.topBlock().removeHighlight());
             break;
 
     }

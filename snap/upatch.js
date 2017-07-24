@@ -1280,15 +1280,20 @@ ThreadManager.prototype.startProcess = function (
 
     if (receiver.isDevice) {
         ide = receiver.parentThatIsA(IDE_Morph);
-        codes = (new Compiler().bytesFor(top));
 
-        if (isNil(block.stackId)) {
-            block.stackId = ide.lastStackId;
-            ide.lastStackId += 1;
+        if (isNil(block.getHighlight())) {
+            codes = (new Compiler().bytesFor(top));
+
+            if (isNil(block.stackId)) {
+                block.stackId = ide.lastStackId;
+                ide.lastStackId += 1;
+            }
+
+            ide.postal.sendMessage('storeChunk', block.stackId, codes);
+            ide.postal.sendMessage('startChunk', block.stackId);
+        } else {
+            ide.postal.sendMessage('stopChunk', block.stackId);
         }
-
-        ide.postal.sendMessage('storeChunk', block.stackId, codes);
-        ide.postal.sendMessage('startChunk', block.stackId);
     } else {
         newProc = new Process(top, receiver, callback, rightAway);
         newProc.exportResult = exportResult;
