@@ -21,6 +21,21 @@ static void updateChunkTaskStatus() {
 	}
 }
 
+static void resetTask(int chunkIndex) {
+	// Reset the task status after getting return value or error (trigger highlight removal by IDE).
+
+	chunks[chunkIndex].taskStatus = done;
+	chunks[chunkIndex].taskErrorCode = 0;
+	chunks[chunkIndex].returnValueOrErrorIP = nilObj;
+
+	for (int i = 0; i < taskCount; i++) {
+		Task *task = &tasks[i];
+		if (task->taskChunkIndex == chunkIndex) {
+			task->status = done;
+		}
+	}
+}
+
 // Debugging Support
 
 // When DEBUG is true, respond to queries by printing human-readable strings to the teriminal
@@ -297,11 +312,7 @@ static void sendReturnValue(uint8 msgID, uint8 chunkIndex) {
 	} else { // floats support will be be added later
 		sendError(msgID, unspecifiedError);
 	}
-
-	// reset chunk entry (triggers highlight removal by IDE)
-	chunks[chunkIndex].taskStatus = done;
-	chunks[chunkIndex].taskErrorCode = 0;
-	chunks[chunkIndex].returnValueOrErrorIP = nilObj;
+	resetTask(chunkIndex);
 }
 
 static void sendTaskErrorInfo(uint8 msgID, uint8 chunkIndex) {
@@ -319,11 +330,7 @@ static void sendTaskErrorInfo(uint8 msgID, uint8 chunkIndex) {
 	msgBuffer[7] = ((n >> 16) & 0xFF);
 	msgBuffer[8] = ((n >> 24) & 0xFF);
 	sendMsg(msgBuffer, 9);
-
-	// reset chunk entry (triggers highlight removal by IDE)
-	chunks[chunkIndex].taskStatus = done;
-	chunks[chunkIndex].taskErrorCode = 0;
-	chunks[chunkIndex].returnValueOrErrorIP = nilObj;
+	resetTask(chunkIndex);
 }
 
 void processMessage() {
