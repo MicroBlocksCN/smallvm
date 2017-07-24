@@ -19,13 +19,13 @@ wsServer.on('connection', function (ws) {
 function serialConnect (portName, callback) {
     serial = new SerialPort(
         portName, 
-        { baudRate: 9600 },
+        { baudRate: 115200 },
         callback
     );
 
     serial.on('data', function (data) {
         if (socket) {
-            console.log('socket send');
+            console.log('board sends: ');
             console.log(data);
             socket.send(data);
         } else {
@@ -36,7 +36,7 @@ function serialConnect (portName, callback) {
 
 function serialSend (arrayBuffer) {
     if (serial) {
-        console.log('serial send');
+        console.log('IDE sends: ');
         console.log(arrayBuffer);
         serial.write(arrayBuffer);
     } else {

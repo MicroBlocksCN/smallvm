@@ -85,7 +85,7 @@ SpriteMorph.prototype.init = function (globals) {
     };
     this.blocks.digitalReadOp = {
         only: SpriteMorph,
-        type: 'reporter',
+        type: 'predicate',
         category: 'sensing',
         spec: 'read digital pin %n',
         defaults: [1]
@@ -856,7 +856,7 @@ SpriteMorph.prototype.toggleDevice = function () {
 SpriteMorph.prototype.serialConnect = function (portPath) {
     var ide = this.parentThatIsA(IDE_Morph);
     // We ask the postal service to deliver a serialConnect message to the serial plugin.
-    // When we get a response telling us the connection was successful, we will execute
+    // When we get a response telling us the connection was successful, we will run
     // SpriteMorph >> serialConnected
     ide.postal.sendJsonMessage('serialConnect', portPath);
 };
@@ -1248,6 +1248,13 @@ BlockMorph.prototype.userMenu = function () {
         );
     }
     return menu;
+};
+
+BlockMorph.prototype.originalFullCopy = BlockMorph.prototype.fullCopy;
+BlockMorph.prototype.fullCopy = function () {
+    var copy = this.originalFullCopy();
+    copy.stackId = null;
+    return copy;
 };
 
 // Evaluate on board
