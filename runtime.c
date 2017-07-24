@@ -278,25 +278,25 @@ static void sendReturnValue(uint8 msgID, uint8 chunkIndex) {
 	OBJ returnValue = chunks[chunkIndex].returnValueOrErrorIP;
 	if (isInt(returnValue)) { // 32-bit integer, little endian
 		int n = obj2int(returnValue);
-		setMsgHeader(getOutputReply, msgID, chunkIndex, 5);
+		setMsgHeader(getReturnValueReply, msgID, chunkIndex, 5);
 		msgBuffer[5] = 1; // result value type (0 is integer)
 		msgBuffer[6] = (n & 0xFF);
 		msgBuffer[7] = ((n >> 8) & 0xFF);
 		msgBuffer[8] = ((n >> 16) & 0xFF);
 		msgBuffer[9] = ((n >> 24) & 0xFF);
+		sendMsg(msgBuffer, 10);
 	} else if (IS_CLASS(returnValue, StringClass)) { // string
 		char *s = obj2str(returnValue);
 		int byteCount = strlen(s);
-		setMsgHeader(getOutputReply, msgID, chunkIndex, (byteCount + 1));
+		setMsgHeader(getReturnValueReply, msgID, chunkIndex, (byteCount + 1));
 		msgBuffer[5] = 1; // result value type (1 is string)
 		for (int i = 0; i < MAX_CHUNKS; i++) {
 			msgBuffer[6 + i] = s[i];
 		}
+		sendMsg(msgBuffer, (5 + (byteCount + 1)));
 	} else { // floats support will be be added later
 		sendError(msgID, unspecifiedError);
-		return;
 	}
-	sendMsg(msgBuffer, (5 + MAX_CHUNKS));
 }
 
 static void sendTaskErrorInfo(uint8 msgID, uint8 chunkIndex) {
