@@ -52,7 +52,6 @@ void showChunks() {
 		}
 	}
 	if (0 == usedChunkCount) printf("No chunks\r\n");
-
 }
 
 void showTasks() {
@@ -297,10 +296,15 @@ static void sendReturnValue(uint8 msgID, uint8 chunkIndex) {
 	} else { // floats support will be be added later
 		sendError(msgID, unspecifiedError);
 	}
+
+	// reset chunk entry (triggers highlight removal by IDE)
+	chunks[chunkIndex].taskStatus = done;
+	chunks[chunkIndex].taskErrorCode = 0;
+	chunks[chunkIndex].returnValueOrErrorIP = nilObj;
 }
 
 static void sendTaskErrorInfo(uint8 msgID, uint8 chunkIndex) {
-	// Send the error cod and IP for the task that was running the given chunk.
+	// Send the error code and IP for the task that was running the given chunk.
 	// Assume that the task status is done_Error. If it isn't, send an errorReply.
 
 	if ((chunkIndex >= MAX_CHUNKS) || (done_Error != chunks[chunkIndex].taskStatus)) {
@@ -313,7 +317,12 @@ static void sendTaskErrorInfo(uint8 msgID, uint8 chunkIndex) {
 	msgBuffer[6] = ((n >> 8) & 0xFF);
 	msgBuffer[7] = ((n >> 16) & 0xFF);
 	msgBuffer[8] = ((n >> 24) & 0xFF);
-	sendMsg(msgBuffer, (5 + MAX_CHUNKS));
+	sendMsg(msgBuffer, 9);
+
+	// reset chunk entry (triggers highlight removal by IDE)
+	chunks[chunkIndex].taskStatus = done;
+	chunks[chunkIndex].taskErrorCode = 0;
+	chunks[chunkIndex].returnValueOrErrorIP = nilObj;
 }
 
 void processMessage() {
