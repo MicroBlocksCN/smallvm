@@ -269,6 +269,7 @@ static void sendReturnValue(uint8 msgID, uint8 chunkIndex) {
 	// Send the return value for the task running the given chunk. Assume
 	// that the task status is done_Value. If it isn't, send an errorReply.
 	// Data is: <type byte><...data...>
+	// Types: 1 - integer, 2 - string
 
 	if ((chunkIndex >= MAX_CHUNKS) || (done_Value != chunks[chunkIndex].taskStatus)) {
 		sendError(msgID, badChunkIndexError);
@@ -278,7 +279,7 @@ static void sendReturnValue(uint8 msgID, uint8 chunkIndex) {
 	if (isInt(returnValue)) { // 32-bit integer, little endian
 		int n = obj2int(returnValue);
 		setMsgHeader(getReturnValueReply, msgID, chunkIndex, 5);
-		msgBuffer[5] = 1; // result value type (0 is integer)
+		msgBuffer[5] = 1; // data type (1 is integer)
 		msgBuffer[6] = (n & 0xFF);
 		msgBuffer[7] = ((n >> 8) & 0xFF);
 		msgBuffer[8] = ((n >> 16) & 0xFF);
@@ -288,7 +289,7 @@ static void sendReturnValue(uint8 msgID, uint8 chunkIndex) {
 		char *s = obj2str(returnValue);
 		int byteCount = strlen(s);
 		setMsgHeader(getReturnValueReply, msgID, chunkIndex, (byteCount + 1));
-		msgBuffer[5] = 1; // result value type (1 is string)
+		msgBuffer[5] = 2; // data type (2 is string)
 		for (int i = 0; i < MAX_CHUNKS; i++) {
 			msgBuffer[6 + i] = s[i];
 		}
