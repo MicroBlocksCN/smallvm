@@ -91,31 +91,30 @@ Protocol.prototype.parseMessage = function () {
 
     if (descriptor.carriesData && this.messageBuffer.length >= 5) {
         dataSize = this.messageBuffer[3] | this.messageBuffer[4] << 8;
-        if (this.messageBuffer.length === dataSize + 5) {
+        if (this.messageBuffer.length >= dataSize + 5) {
             // The message is complete, let's parse it.
             this.processMessage(descriptor, dataSize);
             this.messageBuffer = this.messageBuffer.slice(5 + dataSize);
-        } 
-    } else if (!descriptor.carriesData && this.messageBuffer.length === 5) {
+        }
+    } else if (!descriptor.carriesData && this.messageBuffer.length >= 5) {
         // this message carries no data and is complete
         this.processMessage(descriptor);
         this.messageBuffer = this.messageBuffer.slice(5);
-    } 
+    }
 };
 
 Protocol.prototype.processMessage = function (descriptor, dataSize) {
     var data,
-        stringData,
         messageId = this.messageBuffer[1],
         taskId = this.messageBuffer[2];
 
     if (dataSize) {
         data = this.messageBuffer.slice(5, 5 + dataSize);
-        stringData = String.fromCharCode.apply(null, data);
     }
 
     if (descriptor.selector === 'jsonMessage') {
-        this.processJSONMessage(JSON.parse(stringData));
+        value = 
+        this.processJSONMessage(JSON.parse(String.fromCharCode.apply(null, data)));
     } else {
         this.dispatcher[descriptor.selector].call(this, data, taskId, messageId);
     }
@@ -128,25 +127,31 @@ Protocol.prototype.processJSONMessage = function (json) {
     );
 };
 
-// Just for test purposes
-Protocol.prototype.printMessage = function (descriptor, data, stringData) {
-    console.log('===');
-    console.log('Raw message:\t' + this.messageBuffer);
-    console.log('OpCode:\t\t\t' + this.messageBuffer[0].toString(16));
-    console.log('Description:\t' + descriptor.description);
-    console.log('Message ID:\t\t' + this.messageBuffer[1]);
-    console.log('Stack ID:\t\t' + this.messageBuffer[2]);
-    console.log('Origin:\t\t\t' + descriptor.origin);
-    console.log('Carries data:\t' + (descriptor.carriesData && data));
-    if (data) {
-        console.log('Data size:\t\t' + data.length);
-        console.log('Raw data:\t\t' + data.toHexString());
-        console.log('Data as string:\t' + stringData);
-        if (descriptor.dataDescriptor) {
-            console.log('Data description:\t' + descriptor.dataDescriptor[data]);
-        }
+Protocol.prototype.showBubbleFor = function (taskId, data, isError) {
+    var stack = this.ide.findStack(taskId);
+    if (stack) {
+        // this.ide.currentSprite may not be the actual target,
+        // in the future we may want to have board ids
+        stack.showBubble(
+            (isError ? 'Error\n' : '') + this.processReturnValue(data),
+            false,
+            this.ide.currentSprite
+        );
     }
-    console.log('===');
+};
+
+Protocol.prototype.processReturnValue = function (rawData) {
+    var type = rawData[0],
+        value;
+    if (type === 1) {
+        // integer
+        value = (rawData[4] << 24) | (rawData[3] << 16) | (rawData[2] << 8) | (rawData[1]);
+    } else if (type === 2) {
+        // string
+        value = String.fromCharCode.apply(null, rawData.slice(1));
+    }
+
+    return isNil(value) ? 'unknown type' : value;
 };
 
 Protocol.prototype.packMessage = function (selector, taskId, data) {
@@ -174,7 +179,7 @@ Protocol.prototype.packMessage = function (selector, taskId, data) {
 
 Protocol.prototype.descriptorFor = function (selectorOrOpCode) {
     return detect(
-        this.descriptors, 
+        this.descriptors,
         function (descriptor) {
             if (typeof selectorOrOpCode === 'string') {
                 return descriptor.selector === selectorOrOpCode;
@@ -324,7 +329,7 @@ Protocol.prototype.dispatcher = {
                 function() { myself.serialConnect(port.path); }
             );
         });
-        
+
         portMenu.popUpAtHand(world);
     },
     serialConnectResponse: function (success) {
@@ -337,7 +342,6 @@ Protocol.prototype.dispatcher = {
     okayReply: nop,
     getTaskStatusReply: function (taskStatus) {
         var i;
-        console.log('task status reply');
         for (i = 0; i < taskStatus.length; i += 1) {
             if (taskStatus[i] !== this.taskTable[i]) {
                 console.log('task status changed:');
@@ -347,13 +351,18 @@ Protocol.prototype.dispatcher = {
             }
         }
     },
+    errorReply: function (data, taskId) {
+        this.ide.findStack(taskId).addErrorHighlight();
+        this.ide.postal.sendMessage('getErrorInfo', taskId);
+    },
+    getErrorInfoReply: function (data, taskId) {
+        this.showBubbleFor(taskId, data, true);
+    },
     getReturnValueReply: function (data, taskId) {
-        var stack = this.ide.findStack(taskId);
-        if (stack) {
-            // this.ide.currentSprite may not be the actual target,
-            // in the future we may want to have board ids
-            stack.showBubble(data, false, this.ide.currentSprite);
-        }
+        this.showBubbleFor(taskId, data);
+    },
+    getOutputMessageReply: function (data, taskId) {
+        console.log('# DEBUG # ' + this.processReturnValue(data));
     }
 };
 
@@ -366,29 +375,27 @@ Protocol.prototype.taskStatusChanged = function (taskId) {
 
     switch (this.taskTable[taskId]) {
         case 0:
-            console.log('Task ' + taskId + ' should be unhighlighted.');
             stack.removeHighlight();
             break;
         case 1:
-            console.log('Task ' + taskId + ' finished.');
             stack.removeHighlight();
             break;
         case 2:
-            console.log('Task ' + taskId + ' returned a value.');
-            console.log('We\'ll be requesting the value now.');
+            // Task returned a value. Let's request that value now.
+            stack.addHighlight(stack.topBlock().removeHighlight());
             this.ide.postal.sendMessage('getReturnValue', taskId);
             break;
         case 3:
-            console.log('Task ' + taskId + ' got an error.');
-            stack.addErrorHighlight();
+            // An error occurred. Let's request the error code now.
+            stack.addErrorHighlight(stack.topBlock().removeHighlight());
+            this.ide.postal.sendMessage('getErrorInfo', taskId);
             break;
         case 4:
         case 5:
         case 6:
         case 7:
         case 8:
-            console.log('Task ' + taskId + ' should be highlighted.');
-            stack.addHighlight();
+            stack.addHighlight(stack.topBlock().removeHighlight());
             break;
 
     }
