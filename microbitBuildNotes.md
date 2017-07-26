@@ -1,7 +1,23 @@
-Building the uBlocks VM for the BBC micro:bit
-John Maloney, May 2017
+# Building the uBlocks VM
 
-Building with mbed's online compiler
+### Building for Arduino
+
+The following assumes that you've installed the Arduino tools and configured them for your Arduino board.
+
+Create an empty folder for the Arduino project, if necessary.
+Copy the following files into that folder:
+
+	  SmallVM.ino
+	  interp.c
+	  interp.h
+	  mem.c
+	  mem.h
+	  primitives.cpp
+	  runtime.c
+
+Open SmallVM.ino and click the "upload" button.
+
+### Building with mbed's online compiler
 
 The easiest way to build the uBlocks VM for the micro:bit is to create a (free) account
 on the mbed website and then use their online compiler. I did by selecting "BBC micro:bit"
@@ -23,7 +39,7 @@ Once this works, delete 'main.cpp' and drag and drop the following files into th
 
 Just hit compile and install the resulting hex on your micro:bit. Easy!
 
-Building with gcc's ARM tools
+### Building with gcc's ARM tools
 
 Compiling offline allows you to customize the build process. You'll first need to installing
 the ARM gcc tools plus a program called srecord. I used homebrew to install these on my
@@ -51,7 +67,7 @@ That line should include only the s110 softdevice, not both the s110 and s130 so
 After those changes, typing "make" should build a file ending in -combined.hex; that's the
 file that you need to install on the micro:bit.
 
-Build without the BLE "softdevices" to save Flash and RAM
+### Build without the BLE "softdevices" to save Flash and RAM
 
 The uBlocks VM can be built for the micro:bit with or without a Nordic BLE softdevice.
 Including a softdevice provides BLE support, but consumes Flash and, more importantly, RAM.

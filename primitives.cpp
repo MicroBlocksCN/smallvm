@@ -180,7 +180,7 @@ OBJ primDigitalRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	if (pinNum < 0) return falseObj;
 	pinMode(pinNum, INPUT);
-	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
+	return (LOW == digitalRead(pinNum)) ? trueObj : falseObj;
 }
 
 OBJ primDigitalWrite(OBJ *args) {
