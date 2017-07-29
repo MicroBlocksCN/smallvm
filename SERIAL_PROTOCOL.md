@@ -1,80 +1,97 @@
-# µBlocks serial protocol
+# Microblocks Serial Protocol (version 2)
 
-The protocol describes how information should flow from the board to the IDE and the other way around. All messages are encoded into a byte array and start with an OpCode that specifies what kind of information we're dealing with. The following byte encodes the ID of the object that the message either originated from or is directed to.
+This protocol describes how information should flow from the board to the
+IDE and the other way around. All messages are encoded into a byte array
+and start with a pair of flag bytes that indicate the beginning of a new
+message. The second flag byte also indicates whether the message is a
+fixed size (4 byte) message or a message with a variable number of data
+bytes. The third byte is an OpCode that specifies the message type.
+For many messages, the fourth byte is a chunk ID indicating the stack
+of blocks that is the subject of the message. That field can also be
+used to indicate a pin number or global variable index when we implement
+watchers.
 
-Message format:
+Short message format (4 bytes):
 
-[Operation Code, Object ID, Data Size (2 bytes), Data]
+[0xF8, 0xFA, OpCode, ChunkID]
 
-### A thread has just started running.
+Long message format (6 + dataSize bytes):
 
-Direction: Board → IDE
+[0xF8, 0xFB, OpCode, ChunkID, DataSize (2 bytes, LSB first), Data]
 
-OpCode: 0x75 (mnemonic: 7hread 5tarted)
+## IDE → Board (OpCodes 0x01 to 0x07)
 
-This message carries no data.
+### Store Chunk (OpCode: 0x01; long message)
 
-### A thread has just stopped running.
+Set the code for the given chunkID to the given data.
 
-Direction: Board → IDE
+### Delete Chunk (OpCode: 0x02)
 
-OpCode: 0x7D (mnemonic: 7hread Died)
+Remove the code for the given chunkID. Stop any associated with the given chunkID.
+After this operation the chunkID can be recycled.
 
-If the thread has a value to report, it's carried along in the return message. Otherwise, the data size bytes will be zero.
+Note: When deleting a procedure chunk, care must be taken that no call
+to that procedure is in progress. It would probably be safest for the IDE
+to stop all tasks before deleting a procedure chunk.
 
-### An error has occurred inside a thread.
+### Start Chunk (OpCode: 0x03)
 
-Direction: Board → IDE
+Start a task for the given chunk. If there is already a task for this chunk,
+abort and restart it.
 
-OpCode: 0x7E (mnemonic: 7hread Error)
+### Stop Chunk (OpCode: 0x04)
 
-This message carries the error code back to the IDE.
+Stop the task for the given chunk. Do nothing there is no task for the given chunk.
 
-### The IDE wants to kill a thread.
+### Start All (OpCode: 0x05)
 
-Direction: IDE → Board
+Start tasks for "when started" hats and start polling "when <condition>" hats.
 
-OpCode: 0x7C (mnemonic: 7hread Cancel)
+### Stop All (OpCode: 0x06)
 
-This message carries no data.
+Stop all tasks and stop polling "when <condition>" hats.
 
-### The IDE wants to stop all threads
+### System Reset (OpCode: 0x10)
 
-Direction: IDE → Board
+Stop all tasks and reset the hardware.
 
-OpCode: 0x5A (mnemonic: 5top All)
+### Delete All Chunks (OpCode: 0x11)
 
-### The IDE requests the value of a variable
+Stop all tasks and delete all chunks from the board.
 
-Direction: IDE → Board
 
-OpCode: 0x1A (mnemonic: 1DE Asks)
+## Board → IDE (OpCodes 0x20 to 0x24)
 
-This message carries no data.
+The board sends these messages when tasks start and stop or when other events
+of interest occur. The board sends these messages without being asked and
+regardless of whether it is tethered.
 
-### The IDE requests the state of an I/O pin
+### Task Started (OpCode: 0x20)
 
-Direction: IDE → Board
+A task was started for the given chunk.
 
-OpCode: 0x10 (mnemonic: I/O)
+### Task Error (OpCode: 0x21, long message)
 
-This message carries no data.
+The task associated with the given chunk got an error.
+The data part of the message is a one-byte error code.
 
-### The board sends back the value of a variable or an I/O pin
+### Task Done (OpCode: 0x22)
 
-Direction: Board → IDE
+The task for the given chunk completed. It did not return a value.
 
-OpCode: 0xB5 (mnemonic: Board Sends)
+### Task Returned Value (OpCode: 0x23, long message)
 
-This message carries the value back to the IDE.
+The task for the given chunk completed and returned a value.
+The data part of the message consists of a one-byte type flag
+followed by the return value. The data types are:
 
-### A script is sent to the board
+  * integer (type = 1)
+  * string (type = 2)
 
-Direction: IDE → Board
+### Console Log String (OpCode: 0x24, long message)
 
-OpCode: 0x5C (mnemonic: Script Contents)
+Output the string in the data part of this message to the console. Used for debugging.
 
-This message carries the whole script ByteCode as data.
 
 ## Example Use Cases
 
