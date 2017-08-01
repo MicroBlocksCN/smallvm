@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
 	hardwareInit();
 	memInit(2500);
 
-	printStartMessage("Welcome to uBlocks!");
+	printStartMessage("Welcome to uBlocks for BBC micro:bit!");
 	while (true) {
 		processMessage();
 		stepTasks();

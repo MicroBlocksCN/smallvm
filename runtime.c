@@ -88,19 +88,6 @@ void showTasks() {
 	}
 }
 
-static void sendMsg(uint8 *buf, int count) {
-#define SHOW_BYTES false
-#if SHOW_BYTES
-	printf("[");
-	for (int i = 0; i < count; i++) {
-		printf("%d ", buf[i]);
-	}
-	printf("]\r\n");
-#else
-	writeBytes(buf, count);
-#endif
-}
-
 // Task Ops
 
 void initTasks() {
@@ -160,7 +147,7 @@ void stopAllTasks() {
 	}
 	// Clear buffered output
 	printBufferByteCount = 0;
-	printBuffer[0] = 0;  // null terminate
+	printBuffer[0] = 0; // null terminate
 }
 
 static void startAll() {
@@ -201,28 +188,51 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 	chunks[chunkIndex].returnValueOrErrorIP = nilObj;
 }
 
-// Client Interaction
+// Sending Messages to IDE
 
-// Note: msgBuffer is used for both incoming messages and their replies
+// Circular output buffer
+#define OUTBUF_SIZE 512 // must be a power of 2!
+#define OUTBUF_MASK (OUTBUF_SIZE - 1)
+uint8 outBuf[OUTBUF_SIZE];
+int outBufStart = 0;
+int outBufEnd = 0;
 
-#define MAX_MSG 512
-uint8 msgBuffer[MAX_MSG];
-int msgByteCount = 0;
+#define OUTBUF_BYTES() ((outBufEnd - outBufStart) & 0x1FF)
 
-static void setMsgHeader(int msgType, int msgID, int chunkIndex, int byteCount) {
-	msgBuffer[0] = msgType;
-	msgBuffer[1] = msgID;
-	msgBuffer[2] = chunkIndex;
-	msgBuffer[3] = byteCount & 0xFF; // low byte
-	msgBuffer[4] = (byteCount >> 8) & 0xFF; // high byte
+static inline void sendNextByte() {
+	if ((outBufStart != outBufEnd) && canSendByte()) {
+		sendByte(outBuf[outBufStart]);
+		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
+	}
+}
+
+static inline void queueByte(char aByte) {
+	outBuf[outBufEnd] = aByte;
+	outBufEnd = (outBufEnd + 1) & OUTBUF_MASK;
+}
+
+static void sendMessage(int msgType, int msgID, int chunkIndex, int dataSize, char *data) {
+	int totalBytes = 5 + dataSize;
+	if (totalBytes > ((OUTBUF_SIZE - 1) - OUTBUF_BYTES())) return; // no room in outBuf; should not happen
+	queueByte(msgType);
+	queueByte(msgID);
+	queueByte(chunkIndex);
+	queueByte(dataSize & 0xFF); // low byte of size
+	queueByte((dataSize >> 8) & 0xFF); // high byte of size
+	for (int i = 0; i < dataSize; i++) {
+		queueByte(data[i]);
+	}
+}
+
+void sendOutputMessage(char *s, int byteCount) {
+	sendMessage(getOutputReply, 0, 0, byteCount, s);
 }
 
 static void sendOkay(uint8 msgID) {
 #if DEBUG
 	printf("Okay\r\n");
 #else
-	setMsgHeader(okayReply, msgID, 0, 0);
-	sendMsg(msgBuffer, 5);
+	sendMessage(okayReply, msgID, 0, 0, NULL);
 #endif
 }
 
@@ -233,8 +243,7 @@ static void sendError(uint8 msgID, uint8 errorCode) {
 #if DEBUG
 	printf("Error: %d\r\n", errorCode);
 #else
-	setMsgHeader(errorReply, msgID, errorCode, 0);
-	sendMsg(msgBuffer, 5);
+	sendMessage(errorReply, msgID, errorCode, 0, NULL);
 #endif
 }
 
@@ -247,11 +256,11 @@ static void sendTaskStatus(uint8 msgID) {
 	showChunks();
 	showTasks();
 #else
-	setMsgHeader(getTaskStatusReply, msgID, 0, MAX_CHUNKS);
+	char statusData[MAX_CHUNKS];
 	for (int i = 0; i < MAX_CHUNKS; i++) {
-		msgBuffer[5 + i] = chunks[i].taskStatus;
+		statusData[i] = chunks[i].taskStatus;
 	}
-	sendMsg(msgBuffer, (5 + MAX_CHUNKS));
+	sendMessage(getTaskStatusReply, msgID, 0, sizeof(statusData), statusData);
 #endif
 }
 
@@ -263,16 +272,12 @@ static void sendOutput(uint8 msgID) {
 #if DEBUG
 	if (printBufferByteCount) printf("Output: %s", printBuffer);
 #else
-	setMsgHeader(getOutputReply, msgID, 0, printBufferByteCount);
-	for (int i = 0; i < printBufferByteCount; i++) {
-		msgBuffer[5 + i] = printBuffer[i];
-	}
-	sendMsg(msgBuffer, (5 + printBufferByteCount));
+	sendMessage(getOutputReply, msgID, 0, printBufferByteCount, printBuffer);
 #endif
 
 	// clear the buffer and make runnable any tasks that were waiting to print
 	printBufferByteCount = 0;
-	printBuffer[0] = 0;  // null terminate
+	printBuffer[0] = 0; // null terminate
 	for (int i = 0; i < MAX_TASKS; i++) {
 		if (waiting_print == tasks[i].status) {
 			tasks[i].status = running;
@@ -291,24 +296,24 @@ static void sendReturnValue(uint8 msgID, uint8 chunkIndex) {
 		return;
 	}
 	OBJ returnValue = chunks[chunkIndex].returnValueOrErrorIP;
+	char buf[100];
 	if (isInt(returnValue)) { // 32-bit integer, little endian
 		int n = obj2int(returnValue);
-		setMsgHeader(getReturnValueReply, msgID, chunkIndex, 5);
-		msgBuffer[5] = 1; // data type (1 is integer)
-		msgBuffer[6] = (n & 0xFF);
-		msgBuffer[7] = ((n >> 8) & 0xFF);
-		msgBuffer[8] = ((n >> 16) & 0xFF);
-		msgBuffer[9] = ((n >> 24) & 0xFF);
-		sendMsg(msgBuffer, 10);
+		buf[0] = 1; // data type (1 is integer)
+		buf[1] = (n & 0xFF);
+		buf[2] = ((n >> 8) & 0xFF);
+		buf[3] = ((n >> 16) & 0xFF);
+		buf[4] = ((n >> 24) & 0xFF);
+		sendMessage(getReturnValueReply, msgID, chunkIndex, 5, buf);
 	} else if (IS_CLASS(returnValue, StringClass)) { // string
 		char *s = obj2str(returnValue);
 		int byteCount = strlen(s);
-		setMsgHeader(getReturnValueReply, msgID, chunkIndex, (byteCount + 1));
-		msgBuffer[5] = 2; // data type (2 is string)
-		for (int i = 0; i < MAX_CHUNKS; i++) {
-			msgBuffer[6 + i] = s[i];
+		if (byteCount > (int) (sizeof(buf) - 1)) byteCount = sizeof(buf) - 1;
+		buf[0] = 2; // data type (2 is string)
+		for (int i = 0; i < byteCount; i++) {
+			buf[i + 1] = s[i];
 		}
-		sendMsg(msgBuffer, (5 + (byteCount + 1)));
+		sendMessage(getReturnValueReply, msgID, chunkIndex, (byteCount + 1), buf);
 	} else { // floats support will be be added later
 		sendError(msgID, unspecifiedError);
 	}
@@ -323,40 +328,66 @@ static void sendTaskErrorInfo(uint8 msgID, uint8 chunkIndex) {
 		sendError(msgID, badChunkIndexError);
 		return;
 	}
-	setMsgHeader(getTaskErrorInfoReply, msgID, 0, 5);
 	int n = obj2int(chunks[chunkIndex].returnValueOrErrorIP);
-	msgBuffer[5] = (n & 0xFF);
-	msgBuffer[6] = ((n >> 8) & 0xFF);
-	msgBuffer[7] = ((n >> 16) & 0xFF);
-	msgBuffer[8] = ((n >> 24) & 0xFF);
-	sendMsg(msgBuffer, 9);
+	char errorData[4];
+	errorData[0] = (n & 0xFF);
+	errorData[1] = ((n >> 8) & 0xFF);
+	errorData[2] = ((n >> 16) & 0xFF);
+	errorData[3] = ((n >> 24) & 0xFF);
+	sendMessage(getTaskErrorInfoReply, msgID, 0, sizeof(errorData), errorData);
 	resetTask(chunkIndex);
 }
+
+// Receiving Messages from IDE
+
+#define RCVBUF_SIZE 512
+uint8 rcvBuf[RCVBUF_SIZE];
+int rcvByteCount = 0;
+
+static void busyWaitMicrosecs(unsigned int usecs) {
+	unsigned long start = TICKS();
+	while ((TICKS() - start) < usecs) /* wait */;
+}
+
+unsigned long lastRcvTime = 0;
 
 void processMessage() {
 	// Process a message from the client.
 
-	msgByteCount += readBytes(&msgBuffer[msgByteCount], MAX_MSG - msgByteCount);
-	if (msgByteCount < 5) return; // incomplete message header
+	sendNextByte();
 
-	int bodyBytes = (msgBuffer[4] << 8) + msgBuffer[3]; // little endian
-	if (msgByteCount < (bodyBytes + 5)) return; // incomplete message body
+	int bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+	rcvByteCount += bytesRead;
+	while (bytesRead > 0) {
+		// wait time: on microBit, 35 seems to work, 25 fails
+		// on Arduino Primo, 100 sometimes fails; use 150 to be safe (character time is ~90 usecs)
+		busyWaitMicrosecs(150);
+		bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+		rcvByteCount += bytesRead;
+		lastRcvTime = TICKS();
+	}
 
-	uint8 msgType = msgBuffer[0];
-	uint8 msgID = msgBuffer[1];
-	uint8 chunkIndex = msgBuffer[2];
+	if (rcvByteCount < 5) return; // incomplete message header
 
-//xxx
-// printf("msg %d id %d chunk %d [", msgType, msgID, chunkIndex);
-// for (int i = 5; i < msgByteCount; i++) printf("%d ", msgBuffer[i]);
-// printf("]\r\n");
+	int bodyBytes = (rcvBuf[4] << 8) + rcvBuf[3]; // little endian
+	if (rcvByteCount < (bodyBytes + 5)) { // incomplete message body
+		int usecsSinceLastRcv = TICKS() - lastRcvTime;
+		if (usecsSinceLastRcv < 0) { // clock wrap
+			lastRcvTime = 0;
+			usecsSinceLastRcv = 0;
+		}
+		if (usecsSinceLastRcv > 20000) rcvByteCount = 0; // timeout: discard message
+		return;
+	}
 
-	msgByteCount = 0; // clear the message buffer
+	uint8 msgType = rcvBuf[0];
+	uint8 msgID = rcvBuf[1];
+	uint8 chunkIndex = rcvBuf[2];
 
 	switch (msgType) {
 	case storeChunkMsg:
 		// body is: <chunkType (1 byte)> <instruction data>
-		storeCodeChunk(chunkIndex, msgBuffer[5], (bodyBytes - 1), &msgBuffer[6]);
+		storeCodeChunk(chunkIndex, rcvBuf[5], (bodyBytes - 1), &rcvBuf[6]);
 		break;
 	case deleteChunkMsg:
 		deleteCodeChunk(chunkIndex);
@@ -386,5 +417,18 @@ void processMessage() {
 	case getTaskErrorInfoMsg:
 		sendTaskErrorInfo(msgID, chunkIndex);
 		break;
+	}
+
+	// consume the message just processed
+	if (rcvByteCount > (bodyBytes + 5)) {
+		// slide message bytes following this message to the start of rcvBuf
+		int extra = rcvByteCount - (bodyBytes + 5);
+		uint8 *dst = &rcvBuf[0];
+		uint8 *src = &rcvBuf[bodyBytes + 5];
+		for (int i = 0; i < extra; i++) *dst++ = *src++;
+		rcvByteCount = extra;
+	} else {
+		// this was the only message in the buffer; clear rcvByteCount
+		rcvByteCount = 0; // clear the message buffer
 	}
 }

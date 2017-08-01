@@ -175,12 +175,13 @@ extern int printBufferByteCount;
 
 // Runtime Operations
 
+OBJ failure(uint8 code, const char *explanation);
 void initTasks(void);
 void stepTasks(void);
 void stopAllTasks(void);
 void printStartMessage(char *s);
 void processMessage(void);
-OBJ failure(uint8 code, const char *explanation);
+void sendOutputMessage(char *s, int byteCount);
 
 // Testing Support
 
@@ -192,7 +193,8 @@ void runTasksUntilDone(void);
 
 int serialDataAvailable(void);
 int readBytes(uint8 *buf, int count);
-void writeBytes(uint8 *buf, int count);
+int canSendByte();
+void sendByte(char aByte);
 
 uint32 millisecs(void);
 

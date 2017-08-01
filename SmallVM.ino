@@ -5,7 +5,7 @@ extern "C" {
   // C function prototypes for tests
 
   void interpTests1(void);
-  void taslTest(void);
+  void taskTest(void);
 }
 
 void setup() {

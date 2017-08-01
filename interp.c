@@ -59,19 +59,18 @@ static OBJ primPrint(int argCount, OBJ *args) {
 		printBuffer[printBufferByteCount - 1] = 0;
 		printBufferByteCount--;
 	}
-#if !USE_TASKS
-	// if not using tasks, print immediately
+#if USE_TASKS
+	sendOutputMessage(printBuffer, printBufferByteCount);
+#else
 	printf("(NO TASKS) %s", printBuffer);
-	printBufferByteCount = 0;
-	printBuffer[0] = 0;  // null terminate
-	return nilObj;
 #endif
+	printBufferByteCount = 0;
+	printBuffer[0] = 0; // null terminate
 	return nilObj;
 }
 
 void printStartMessage(char *s) {
-	strcpy(printBuffer, s);
-	printBufferByteCount = strlen(printBuffer);
+	sendOutputMessage(s, strlen(s));
 }
 
 // Interpreter
@@ -397,7 +396,7 @@ void stepTasks() {
 	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time
 	// has arrived. Return true if there are still running or waiting tasks.
 
-	while (!serialDataAvailable()) {
+//	while (!serialDataAvailable()) {
 		uint32 usecs = TICKS();
 		uint32 msecs = millisecs();
 		for (int t = 0; t < taskCount; t++) {
@@ -409,7 +408,7 @@ void stepTasks() {
 			}
 			if (status >= polling) runTask(&tasks[t]);
 		}
-	}
+//	}
 }
 
 // Testing (used for testing the interpreter on a desktop/laptop computer)

@@ -142,11 +142,8 @@ int readBytes(uint8 *buf, int count) {
 	return bytesRead;
 }
 
-void writeBytes(uint8 *buf, int count) {
-	for (int i = 0; i < count; i++) {
-		Serial.write(buf[i]);
-	}
-}
+int canSendByte() { return true; } // Serial.availableForWrite not implemented for Primo
+void sendByte(char aByte) { Serial.write(aByte); }
 
 void hardwareInit() {}
 
@@ -207,7 +204,7 @@ OBJ primSetLED(OBJ *args) {
 #include <gpio_api.h>
 #include <PinNames.h>
 
-Serial pc(USBTX, USBRX);
+Serial pc(USBTX, USBRX, 115200);
 
 int serialDataAvailable() { return pc.readable(); }
 
@@ -219,11 +216,8 @@ int readBytes(uint8 *buf, int count) {
 	return bytesRead;
 }
 
-void writeBytes(uint8 *buf, int count) {
-	for (int i = 0; i < count; i++) {
-		pc.putc(buf[i]);
-	}
-}
+int canSendByte() { return pc.writeable (); }
+void sendByte(char aByte) { pc.putc(aByte); }
 
 void systemReset() {
 	NVIC_SystemReset();
@@ -374,7 +368,8 @@ OBJ primSetLED(OBJ *args) {
 
 int serialDataAvailable() { return false; }
 int readBytes(uint8 *buf, int count) { return 0; }
-void writeBytes(uint8 *buf, int count) {}
+int canSendByte() { return true; }
+void sendByte(char aByte) { }
 
 void hardwareInit() {}
 void systemReset() {}
