@@ -1,4 +1,4 @@
-# Microblocks Serial Protocol (version 2.02)
+# Microblocks Serial Protocol (version 2.03)
 
 This protocol describes how information flows from the
 board to the IDE and the other way around. All messages
@@ -73,20 +73,7 @@ Start tasks for "when started" hats and start polling
 
 Stop all tasks and stop polling "when *condition*" hats.
 
-### Request Digital Pin (OpCode: 0x07)
-
-Request the value of a digital pin specified by the ChunkID field.
-
-### Request Analog Pin (OpCode: 0x08)
-
-Request the value of the analog pin specified by the ChunkID field.
-
-### Request Variable (OpCode: 0x09)
-
-Request the value of the global variable whose index is
-specified by the ChunkID field.
-
-### Reserved (OpCodes 0x0A-0x0D)
+### Reserved (OpCodes 0x07-0x0D)
 
 Reserved for additional non-system messages.
 
@@ -153,28 +140,6 @@ The data part of the message is a one-byte error code.
 Logs the string in the data part of this message to the
 console. Used for debugging.
 
-### Reserved (OpCode 0x16)
-
-Reserved for a future Board → IDE message.
-
-### Digital Pin Value (OpCode: 0x17, long message)
-
-Returns the boolean value of the digital pin
-specified by the ChunkID field. Data is a type and
-value as described in "Task Returned Value".
-
-### Analog Pin Value (OpCode: 0x18, long message)
-
-Returns the integer value of the analog pin
-specified by the ChunkID field. Data is a type and
-value as described in "Task Returned Value".
-
-### Variable Value (OpCode: 0x19, long message)
-
-Returns the value of the global variable whose index is
-specified by the ChunkID field. Data is a type and
-value as described in "Task Returned Value".
-
-### Reserved (OpCodes 0x1A-0x1F)
+### Reserved (OpCodes 0x16-0x1F)
 
 Reserved for additional Board → IDE messages.
