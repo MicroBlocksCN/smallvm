@@ -139,14 +139,16 @@ static void stopTaskForChunk(uint8 chunkIndex) {
 void stopAllTasks() {
 	// Stop all tasks.
 
+	for (int t = 0; t < taskCount; t++) {
+		if (tasks[t].status >= waiting_micros) {
+			sendTaskDone(tasks[t].taskChunkIndex);
+		}
+	}
 	initTasks();
 	for (int i = 0; i < MAX_CHUNKS; i++) {
-		uint8 status = chunks[i].taskStatus;
-		if (status >= waiting_micros) {
-			chunks[i].taskStatus = unknown;
-			chunks[i].returnValueOrErrorIP = nilObj;
-			sendTaskDone(i);
-		}
+		chunks[i].taskStatus = unknown;
+		chunks[i].returnValueOrErrorIP = nilObj;
+
 	}
 	// Clear buffered output
 	printBufferByteCount = 0;
@@ -217,13 +219,13 @@ static inline void queueByte(char aByte) {
 static void sendMessage(int msgType, int msgID, int chunkIndex, int dataSize, char *data) {
 
 // xxx
-// printf("sendMessage %d %d %d %d \r\n", msgType, msgID, chunkIndex, dataSize);
-// if (dataSize) {
-//   printf("  data: ");
-//   for (int i = 0; i < dataSize; i++) printf("%d ", data[i]);
-//   printf("\r\n");
-// }
-// return; // xxx
+printf("sendMessage %d %d %d %d \r\n", msgType, msgID, chunkIndex, dataSize);
+if (dataSize) {
+  printf("  data: ");
+  for (int i = 0; i < dataSize; i++) printf("%d ", data[i]);
+  printf("\r\n");
+}
+return; // xxx
 
 	int totalBytes = 5 + dataSize;
 	if (totalBytes > ((OUTBUF_SIZE - 1) - OUTBUF_BYTES())) return; // no room in outBuf; should not happen
@@ -460,7 +462,6 @@ void processMessage() {
 		break;
 	case stopAllMsg:
 		stopAllTasks();
-		sendOkay(msgID);
 		break;
 	case startChunkMsg:
 		startTaskForChunk(chunkIndex);
