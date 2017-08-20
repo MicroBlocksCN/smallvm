@@ -152,6 +152,7 @@ static inline int runTask(Task *task) {
 		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		chunks[task->taskChunkIndex].returnValueOrErrorIP = int2obj(tmp);
 		chunks[task->taskChunkIndex].taskErrorCode = errorCode;
+		sendTaskError(task->taskChunkIndex, errorCode);
 		errorCode = noError; // clear the error
 		goto suspend;
 	suspend:
@@ -161,6 +162,7 @@ static inline int runTask(Task *task) {
 		task->fp = fp - task->stack;
 		return task->status;
 	halt_op:
+		sendTaskDone(task->taskChunkIndex);
 		task->status = done;
 		goto suspend;
 	noop_op:
@@ -263,6 +265,7 @@ static inline int runTask(Task *task) {
 		if (!(fp - task->stack)) { // not in a function call
 			task->status = done_Value;
 			chunks[task->taskChunkIndex].returnValueOrErrorIP = tmpObj;
+			sendTaskDoneReturnValue(task->taskChunkIndex, tmpObj);
 			goto suspend;
 		}
 		sp = fp - obj2int(*(fp - 3)) - 3; // restore stack pointer; *(fp - 3) is the arg count
@@ -396,19 +399,17 @@ void stepTasks() {
 	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time
 	// has arrived. Return true if there are still running or waiting tasks.
 
-//	while (!serialDataAvailable()) {
-		uint32 usecs = TICKS();
-		uint32 msecs = millisecs();
-		for (int t = 0; t < taskCount; t++) {
-			int status = tasks[t].status;
-			if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
-				tasks[t].status = status = running;
-			} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
-				tasks[t].status = status = running;
-			}
-			if (status >= polling) runTask(&tasks[t]);
+	uint32 usecs = TICKS();
+	uint32 msecs = millisecs();
+	for (int t = 0; t < taskCount; t++) {
+		int status = tasks[t].status;
+		if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
+			tasks[t].status = status = running;
+		} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
+			tasks[t].status = status = running;
 		}
-//	}
+		if (status >= polling) runTask(&tasks[t]);
+	}
 }
 
 // Testing (used for testing the interpreter on a desktop/laptop computer)

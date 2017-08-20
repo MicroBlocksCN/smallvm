@@ -159,6 +159,8 @@ extern int printBufferByteCount;
 #define getTaskErrorInfoMsg		14
 #define getTaskErrorInfoReply	15
 #define systemResetMsg			16
+#define taskStarted				17
+#define taskDone				18
 
 // Error Codes (codes 1-9 reserved for protocol errors, codes 10 and up for task errors)
 
@@ -182,6 +184,11 @@ void stopAllTasks(void);
 void printStartMessage(char *s);
 void processMessage(void);
 void sendOutputMessage(char *s, int byteCount);
+
+void sendTaskStarted(uint8 chunkIndex);
+void sendTaskDone(uint8 chunkIndex);
+void sendTaskDoneReturnValue(uint8 taskChunkIndex, OBJ returnValue);
+void sendTaskError(uint8 taskChunkIndex, uint8 errorCode);
 
 // Testing Support
 

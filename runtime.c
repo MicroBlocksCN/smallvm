@@ -118,6 +118,7 @@ void startTaskForChunk(uint8 chunkIndex) {
 	tasks[i].sp = 0; // relative to start of stack
 	tasks[i].fp = 0; // 0 means "not in a function call"
 	if (i >= taskCount) taskCount = i + 1;
+	sendTaskStarted(chunkIndex);
 }
 
 static void stopTaskForChunk(uint8 chunkIndex) {
@@ -212,6 +213,16 @@ static inline void queueByte(char aByte) {
 }
 
 static void sendMessage(int msgType, int msgID, int chunkIndex, int dataSize, char *data) {
+
+// xxx
+// printf("sendMessage %d %d %d %d \r\n", msgType, msgID, chunkIndex, dataSize);
+// if (dataSize) {
+//   printf("  data: ");
+//   for (int i = 0; i < dataSize; i++) printf("%d ", data[i]);
+//   printf("\r\n");
+// }
+// return; // xxx
+
 	int totalBytes = 5 + dataSize;
 	if (totalBytes > ((OUTBUF_SIZE - 1) - OUTBUF_BYTES())) return; // no room in outBuf; should not happen
 	queueByte(msgType);
@@ -283,6 +294,56 @@ static void sendOutput(uint8 msgID) {
 			tasks[i].status = running;
 		}
 	}
+}
+
+void sendTaskStarted(uint8 chunkIndex) {
+	// Inform the client that a task has started for the given chunk.
+
+	sendMessage(taskStarted, 0, chunkIndex, 0, NULL);
+}
+
+void sendTaskDone(uint8 chunkIndex) {
+	// Inform the client that the task for the given chunk is done.
+
+	sendMessage(taskDone, 0, chunkIndex, 0, NULL);
+	resetTask(chunkIndex);
+}
+
+void sendTaskDoneReturnValue(uint8 chunkIndex, OBJ returnValue) {
+	// Send the value returned by the task for the given chunk.
+	// Data is: <type byte><...data...>
+	// Types: 1 - integer, 2 - string
+
+	char buf[100];
+	if (isInt(returnValue)) { // 32-bit integer, little endian
+		int n = obj2int(returnValue);
+		buf[0] = 1; // data type (1 is integer)
+		buf[1] = (n & 0xFF);
+		buf[2] = ((n >> 8) & 0xFF);
+		buf[3] = ((n >> 16) & 0xFF);
+		buf[4] = ((n >> 24) & 0xFF);
+		sendMessage(getReturnValueReply, 0, chunkIndex, 5, buf);
+	} else if (IS_CLASS(returnValue, StringClass)) { // string
+		char *s = obj2str(returnValue);
+		int byteCount = strlen(s);
+		if (byteCount > (int) (sizeof(buf) - 1)) byteCount = sizeof(buf) - 1;
+		buf[0] = 2; // data type (2 is string)
+		for (int i = 0; i < byteCount; i++) {
+			buf[i + 1] = s[i];
+		}
+		sendMessage(getReturnValueReply, 0, chunkIndex, (byteCount + 1), buf);
+	} else if ((returnValue == trueObj) || (returnValue == falseObj)) { // boolean
+		buf[0] = 3; // data type (3 is boolean)
+		buf[1] = (returnValue == trueObj) ? 1 : 0;
+		sendMessage(getReturnValueReply, 0, chunkIndex, 2, buf);
+	} else { // floats support will be be added later
+		sendError(0, unspecifiedError);
+	}
+	resetTask(chunkIndex);
+}
+
+void sendTaskError(uint8 taskChunkIndex, uint8 errorCode) {
+	sendMessage(errorReply, taskChunkIndex, errorCode, 0, NULL);
 }
 
 static void sendReturnValue(uint8 msgID, uint8 chunkIndex) {
