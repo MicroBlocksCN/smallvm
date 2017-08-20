@@ -114,7 +114,7 @@ Protocol.prototype.processMessage = function (descriptor, dataSize) {
 
     if (descriptor.selector === 'jsonMessage') {
         value = 
-        this.processJSONMessage(JSON.parse(String.fromCharCode.apply(null, data)));
+            this.processJSONMessage(JSON.parse(String.fromCharCode.apply(null, data)));
     } else {
         this.dispatcher[descriptor.selector].call(this, data, taskId, messageId);
     }
@@ -122,7 +122,7 @@ Protocol.prototype.processMessage = function (descriptor, dataSize) {
 
 Protocol.prototype.processJSONMessage = function (json) {
     this.dispatcher[json.selector].apply(
-        this.ide.currentSprite,
+        this.ide,
         json.arguments
     );
 };
@@ -318,10 +318,11 @@ Protocol.prototype.descriptors = [
 ];
 
 Protocol.prototype.dispatcher = {
+    // JSON messages
     getSerialPortListResponse: function (portList) {
         var portMenu = new MenuMorph(this, 'select a port'),
             world = this.world(),
-            myself = this; // The receiving SpriteMorph
+            myself = this; // The receiving IDE_Morph
 
         portList.forEach(function(port) {
             portMenu.addItem(
@@ -333,19 +334,18 @@ Protocol.prototype.dispatcher = {
         portMenu.popUpAtHand(world);
     },
     serialConnectResponse: function (success) {
-        // "this" is the receiving SpriteMorph
+        // "this" is the IDE
         this.serialConnected(success);
     },
     serialDisconnectResponse: function (success) {
         this.serialDisconnected(success);
     },
+    // µBlocks messages
     okayReply: nop,
     getTaskStatusReply: function (taskStatus) {
         var i;
         for (i = 0; i < taskStatus.length; i += 1) {
             if (taskStatus[i] !== this.taskTable[i]) {
-                console.log('task status changed:');
-                console.log(taskStatus);
                 this.taskTable[i] = taskStatus[i];
                 this.taskStatusChanged(i);
             }
