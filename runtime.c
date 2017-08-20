@@ -133,6 +133,7 @@ static void stopTaskForChunk(uint8 chunkIndex) {
 	chunks[chunkIndex].taskStatus = unknown;
 	chunks[chunkIndex].returnValueOrErrorIP = nilObj;
 	if (i == (taskCount - 1)) taskCount--;
+	sendTaskDone(chunkIndex);
 }
 
 void stopAllTasks() {
@@ -144,6 +145,7 @@ void stopAllTasks() {
 		if (status >= waiting_micros) {
 			chunks[i].taskStatus = unknown;
 			chunks[i].returnValueOrErrorIP = nilObj;
+			sendTaskDone(i);
 		}
 	}
 	// Clear buffered output
