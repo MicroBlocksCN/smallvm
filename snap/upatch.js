@@ -608,8 +608,6 @@ DeviceMorph.prototype.drawNew = function () {
     context.fill();
 };
 
-StageMorph.prototype.enableMicroBlocks = true;
-
 // BlockMorph menu:
 
 BlockMorph.prototype.userMenu = function () {
@@ -1429,22 +1427,42 @@ IDE_Morph.prototype.settingsMenu = function () {
     );
     addPreference(
         'Enable µBlocks devices',
-        function () {
-            StageMorph.prototype.enableMicroBlocks =
-                !StageMorph.prototype.enableMicroBlocks;
-        },
-        StageMorph.prototype.enableMicroBlocks,
+        'toggleMicroBlocks',
+        IDE_Morph.prototype.microBlocksEnabled,
         'uncheck to disable\nsupport for µBlocks devices',
         'check to enable\nsupport for µBlocks devices',
         true
     );
+ 
     menu.popup(world, pos);
+};
+
+IDE_Morph.prototype.toggleMicroBlocks = function () {
+    IDE_Morph.prototype.microBlocksEnabled = !IDE_Morph.prototype.microBlocksEnabled;
+    if (IDE_Morph.prototype.microBlocksEnabled) {
+        this.saveSetting('ublocks', true);
+        if (this.devicebutton) {
+            this.devicebutton.show();
+        }
+    } else {
+        this.removeSetting('ublocks');
+        if (this.devicebutton) {
+            this.devicebutton.hide();
+        }
+    }
+};
+
+IDE_Morph.prototype.originalApplySavedSettings = IDE_Morph.prototype.applySavedSettings;
+IDE_Morph.prototype.applySavedSettings = function () {
+    this.originalApplySavedSettings();
+    if (this.getSetting('ublocks')) {
+        this.toggleMicroBlocks();
+    }
 };
 
 IDE_Morph.prototype.originalCreateCorralBar = IDE_Morph.prototype.createCorralBar;
 IDE_Morph.prototype.createCorralBar = function () {
-    var devicebutton,
-        padding = 5,
+    var padding = 5,
         colors = [
             this.groupColor,
             this.frameColor.darker(50),
@@ -1453,29 +1471,33 @@ IDE_Morph.prototype.createCorralBar = function () {
 
     this.originalCreateCorralBar();
 
-    devicebutton = new PushButtonMorph(
+    this.devicebutton = new PushButtonMorph(
         this,
         "newDevice",
         new SymbolMorph("robot", 15)
     );
-    devicebutton.corner = 12;
-    devicebutton.color = colors[0];
-    devicebutton.highlightColor = colors[1];
-    devicebutton.pressColor = colors[2];
-    devicebutton.labelMinExtent = new Point(36, 18);
-    devicebutton.padding = 0;
-    devicebutton.labelShadowOffset = new Point(-1, -1);
-    devicebutton.labelShadowColor = colors[1];
-    devicebutton.labelColor = this.buttonLabelColor;
-    devicebutton.contrast = this.buttonContrast;
-    devicebutton.drawNew();
-    devicebutton.hint = "add a µBlocks device";
-    devicebutton.fixLayout();
-    devicebutton.setCenter(this.corralBar.center());
-    devicebutton.setLeft(
-        this.corralBar.left() + padding + devicebutton.width() * 2 + padding * 2
+    this.devicebutton.corner = 12;
+    this.devicebutton.color = colors[0];
+    this.devicebutton.highlightColor = colors[1];
+    this.devicebutton.pressColor = colors[2];
+    this.devicebutton.labelMinExtent = new Point(36, 18);
+    this.devicebutton.padding = 0;
+    this.devicebutton.labelShadowOffset = new Point(-1, -1);
+    this.devicebutton.labelShadowColor = colors[1];
+    this.devicebutton.labelColor = this.buttonLabelColor;
+    this.devicebutton.contrast = this.buttonContrast;
+    this.devicebutton.drawNew();
+    this.devicebutton.hint = "add a µBlocks device";
+    this.devicebutton.fixLayout();
+    this.devicebutton.setCenter(this.corralBar.center());
+    this.devicebutton.setLeft(
+        this.corralBar.left() + padding + this.devicebutton.width() * 2 + padding * 2
     );
-    this.corralBar.add(devicebutton);
+    this.corralBar.add(this.devicebutton);
+
+    if (!IDE_Morph.prototype.microBlocksEnabled) {
+        this.devicebutton.hide();
+    }
 };
 
 IDE_Morph.prototype.newDevice = function () {

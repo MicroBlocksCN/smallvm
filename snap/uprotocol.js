@@ -346,8 +346,6 @@ Protocol.prototype.dispatcher = {
         var i;
         for (i = 0; i < taskStatus.length; i += 1) {
             if (taskStatus[i] !== this.taskTable[i]) {
-                console.log('task status changed:');
-                console.log(taskStatus);
                 this.taskTable[i] = taskStatus[i];
                 this.taskStatusChanged(i);
             }
