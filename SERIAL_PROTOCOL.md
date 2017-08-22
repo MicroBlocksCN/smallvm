@@ -1,4 +1,4 @@
-# Microblocks Serial Protocol (version 2.03)
+# Microblocks Serial Protocol (version 2.04)
 
 This protocol describes how information flows from the
 board to the IDE and the other way around. All messages
@@ -8,8 +8,7 @@ flag byte also indicates whether the message is fixed size
 (3 bytes) or variable size. The second byte is an OpCode that
 specifies the message type. For many messages, the third
 byte is a ChunkID indicating the stack of blocks that is
-the subject of the message. That field is also used to indicate
-a pin number or global variable index to support watchers.
+the subject of the message.
 
 If message framing is lost, perhaps because a byte was dropped,
 the receiver discards incoming bytes until it sees one of the two
@@ -34,7 +33,7 @@ The baud rate is 115.2 kbaud.
 The data size field specifies the number of data bytes. It is encoded as two bytes, least significant byte first.
 
 The incoming message buffer on the board sets a practical upper
-limit on the data size. All boards should be able receive messages with at least 250 bytes of data. This sets the upper limit on the size of a single compiled chunk.
+limit on the data size. This buffer size sets the upper limit on the size of a single compiled chunk.
 
 <br>
 ## IDE → Board (OpCodes 0x01 to 0x1F)
@@ -45,13 +44,13 @@ Set the code for the given chunkID to the given data.
 
 ### Delete Chunk (OpCode: 0x02)
 
-Remove the code for the given chunkID. Stop any running
+Delete the code for the given chunkID. Stop any running
 task associated with the given chunkID. After this operation
 the chunkID can be recycled.
 
 Note: When deleting a procedure chunk, care must be taken
-that no call to that procedure is in progress. It would
-probably be safest for the IDE to stop all tasks before
+that no call to that procedure is in progress. It might
+be best for the IDE to stop all tasks before
 deleting a procedure chunk.
 
 ### Start Chunk (OpCode: 0x03)
@@ -94,11 +93,8 @@ the program will persist.
 <br>
 ## Board → IDE (OpCodes 0x10 to 0x1F)
 
-The board sends task status change and
-console log messages without being asked and
-regardless of whether it is tethered.
-The board sends pin and variable values only in
-response to requests from the IDE.
+The board sends task status change and output messages
+without being asked and regardless of whether it is tethered.
 
 ### Task Started (OpCode: 0x10)
 
@@ -127,18 +123,22 @@ The data part of the message consists of a one-byte type flag
 followed by the return value. The current type flags are:
 
   * integer (type = 1; data is 4-byte signed integer, LSB first)
-  * boolean (type = 2; data is 1-byte, 0 for false, 1 for true)
-  * string (type = 3; data is a UTF-8 string)
+  * string (type = 2; data is a UTF-8 string)
+  * boolean (type = 3; data is 1-byte, 0 for false, 1 for true)
 
 ### Task Error (OpCode: 0x14, long message)
 
 The task associated with the given chunk got an error.
-The data part of the message is a one-byte error code.
+The data part of the message is a one-byte error code followed
+by a four-byte integer that encodes the current chunkID (which
+may be a procedure chunk, not necessarily the top-level chunk),
+and the IP address within that chunk. The format is:
 
-### Console Log String (OpCode: 0x15, long message)
+	[IP within chunk (high 24-bits)][chunk ID (low 8-bits)]
 
-Logs the string in the data part of this message to the
-console. Used for debugging.
+### Output String (OpCode: 0x15, long message)
+
+Outputs the string in the data part of this message.
 
 ### Reserved (OpCodes 0x16-0x1F)
 
