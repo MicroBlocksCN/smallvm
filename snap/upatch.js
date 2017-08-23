@@ -532,11 +532,6 @@ DeviceMorph.prototype.blockTemplates = function (category) {
     return blocks;
 };
 
-DeviceMorph.prototype.step = function () {
-    var ide = this.parentThatIsA(IDE_Morph);
-    ide.postal.sendMessage('getTaskStatus');
-};
-
 DeviceMorph.prototype.drawNew = function () {
     var context, w, h, n, n2, l;
 
