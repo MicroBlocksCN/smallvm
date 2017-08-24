@@ -64,7 +64,6 @@ function Protocol (ide) {
 
 Protocol.prototype.init = function (ide) {
     this.messageBuffer = [];
-    this.taskTable = [];
     this.ide = ide;
 };
 
@@ -80,7 +79,8 @@ Protocol.prototype.clearBuffer = function () {
 Protocol.prototype.parseMessage = function () {
     var opCode = this.messageBuffer[0],
         descriptor = this.descriptorFor(opCode),
-        dataSize;
+        dataSize,
+        dataRemainder;
 
     if (!descriptor) {
         // We probably connected to the board while it was sending a message
@@ -99,7 +99,9 @@ Protocol.prototype.parseMessage = function () {
     } else if (!descriptor.carriesData && this.messageBuffer.length >= 5) {
         // this message carries no data and is complete
         this.processMessage(descriptor);
-        this.messageBuffer = this.messageBuffer.slice(5);
+        dataRemainder = this.messageBuffer.slice(5);
+        this.clearBuffer();
+        this.processRawData(dataRemainder);
     }
 };
 
@@ -116,7 +118,11 @@ Protocol.prototype.processMessage = function (descriptor, dataSize) {
         value = 
             this.processJSONMessage(JSON.parse(String.fromCharCode.apply(null, data)));
     } else {
-        this.dispatcher[descriptor.selector].call(this, data, taskId, messageId);
+        if (descriptor.carriesData) {
+            this.dispatcher[descriptor.selector].call(this, data, taskId, messageId);
+        } else {
+            this.dispatcher[descriptor.selector].call(this, taskId, messageId);
+        }
     }
 };
 
@@ -310,6 +316,27 @@ Protocol.prototype.descriptors = [
         carriesData: true
     },
     {
+        opCode: 0x10,
+        description: 'System Reset',
+        selector: 'systemResetMsg',
+        origin: 'ide',
+        carriesData: false
+    },
+    {
+        opCode: 0x11,
+        description: 'Task Started',
+        selector: 'taskStarted',
+        origin: 'board',
+        carriesData: false
+    },
+    {
+        opCode: 0x12,
+        description: 'Task Done',
+        selector: 'taskDone',
+        origin: 'board',
+        carriesData: false
+    },
+    {
         opCode: 0xFF,
         description: 'JSON message',
         selector: 'jsonMessage',
@@ -342,14 +369,13 @@ Protocol.prototype.dispatcher = {
     },
     // µBlocks messages
     okayReply: nop,
-    getTaskStatusReply: function (taskStatus) {
-        var i;
-        for (i = 0; i < taskStatus.length; i += 1) {
-            if (taskStatus[i] !== this.taskTable[i]) {
-                this.taskTable[i] = taskStatus[i];
-                this.taskStatusChanged(i);
-            }
-        }
+    taskStarted: function (taskId) {
+        var stack = this.ide.findStack(taskId);
+        stack.addHighlight(stack.topBlock().removeHighlight());
+    },
+    taskDone: function (taskId) {
+        var stack = this.ide.findStack(taskId);
+        stack.removeHighlight();
     },
     errorReply: function (data, taskId) {
         this.ide.findStack(taskId).addErrorHighlight();
@@ -361,43 +387,9 @@ Protocol.prototype.dispatcher = {
     getReturnValueReply: function (data, taskId) {
         this.showBubbleFor(taskId, data);
     },
+    getOutputMessage: nop,
     getOutputMessageReply: function (data, taskId) {
         console.log('# DEBUG # ' + this.processReturnValue(data));
-    }
-};
-
-Protocol.prototype.taskStatusChanged = function (taskId) {
-    var stack = this.ide.findStack(taskId);
-
-    if (!stack) {
-        return;
-    }
-
-    switch (this.taskTable[taskId]) {
-        case 0:
-            stack.removeHighlight();
-            break;
-        case 1:
-            stack.removeHighlight();
-            break;
-        case 2:
-            // Task returned a value. Let's request that value now.
-            stack.addHighlight(stack.topBlock().removeHighlight());
-            this.ide.postal.sendMessage('getReturnValue', taskId);
-            break;
-        case 3:
-            // An error occurred. Let's request the error code now.
-            stack.addErrorHighlight(stack.topBlock().removeHighlight());
-            this.ide.postal.sendMessage('getErrorInfo', taskId);
-            break;
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-            stack.addHighlight(stack.topBlock().removeHighlight());
-            break;
-
     }
 };
 
