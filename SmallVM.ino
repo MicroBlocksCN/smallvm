@@ -16,6 +16,6 @@ void setup() {
 }
 
 void loop() {
-    processMessage();
-    stepTasks();
+  processMessage();
+  stepTasks();
 }
