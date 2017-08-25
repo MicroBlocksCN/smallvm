@@ -216,7 +216,7 @@ int readBytes(uint8 *buf, int count) {
 	return bytesRead;
 }
 
-int canSendByte() { return pc.writeable (); }
+int canSendByte() { return pc.writeable(); }
 void sendByte(char aByte) { pc.putc(aByte); }
 
 void systemReset() {

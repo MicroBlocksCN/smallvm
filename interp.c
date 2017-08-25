@@ -79,24 +79,25 @@ void printStartMessage(char *s) {
 #define DISPATCH() { \
 	op = *ip++; \
 	arg = ARG(op); \
-/*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */   \
+/*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */ \
 	goto *jumpTable[CMD(op)]; \
 }
 
-static inline int runTask(Task *task) {
+static inline void runTask(Task *task) {
 	register int op;
 	register int *ip;
 	register OBJ *sp;
 	register OBJ *fp;
 	int arg, tmp;
 	OBJ tmpObj;
+	int suspendCounter = 10;
 
 	// Restore task state
 	ip = task->code + task->ip;
 	sp = task->stack + task->sp;
 	fp = task->stack + task->fp;
 
-	// initialize jump table (padded to 32 entries since op is 5 bits)
+	// initialize jump table
 	static void *jumpTable[] = {
 		&&halt_op,
 		&&noop_op,
@@ -146,13 +147,10 @@ static inline int runTask(Task *task) {
 	DISPATCH();
 
 	error:
-		// set error status and record ip
-		task->status = done_Error;
-		// encode and store the error location: <22 bit ip><8 bit chunkIndex>
+		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
 		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
-		chunks[task->taskChunkIndex].returnValueOrErrorIP = int2obj(tmp);
-		chunks[task->taskChunkIndex].taskErrorCode = errorCode;
-		sendTaskError(task->taskChunkIndex, errorCode);
+		sendTaskError(task->taskChunkIndex, errorCode, tmp);
+		task->status = unusedTask;
 		errorCode = noError; // clear the error
 		goto suspend;
 	suspend:
@@ -160,10 +158,10 @@ static inline int runTask(Task *task) {
 		task->ip = ip - task->code;
 		task->sp = sp - task->stack;
 		task->fp = fp - task->stack;
-		return task->status;
+		return;
 	halt_op:
-		sendTaskDone(task->taskChunkIndex);
-		task->status = done;
+		sendMessage(taskDone, 0, task->taskChunkIndex, 0, NULL);
+		task->status = unusedTask;
 		goto suspend;
 	noop_op:
 		*sp++ = nilObj;
@@ -214,22 +212,32 @@ static inline int runTask(Task *task) {
 		DISPATCH();
 	jmpTrue_op:
 		if (trueObj == (*--sp)) ip += arg;
-		DISPATCH();
-	jmpFalse_op:
-		if (falseObj == (*--sp)) {
-			ip += arg;
-			if (arg < 0) { // backward jmpFalse is a polling condition hat block
-				task->status = polling;
-				goto suspend;
-			}
+#if USE_TASKS
+		if (arg < 0) { // backward jmpTrue is a while loop
+			if (suspendCounter-- > 0) DISPATCH();
+			task->status = running;
+			goto suspend;
 		}
+#else
 		DISPATCH();
+#endif
+	jmpFalse_op:
+		if (falseObj == (*--sp)) ip += arg;
+#if USE_TASKS
+		if (arg < 0) { // backward jmpFalse is a polling condition hat block; don't use suspendCounter
+			task->status = polling;
+			goto suspend;
+		}
+#else
+		DISPATCH();
+#endif
 	 decrementAndJmp_op:
 		tmp = obj2int(*(sp - 1)) - 1; // decrement loop counter
 		if (tmp > 0) {
 			ip += arg; // loop counter > 0, so branch
 			*(sp - 1) = int2obj(tmp); // update loop counter
 #if USE_TASKS
+			if (suspendCounter-- > 0) DISPATCH();
 			task->status = running;
 			goto suspend;
 #else
@@ -261,11 +269,10 @@ static inline int runTask(Task *task) {
 		ip = task->code + HEADER_WORDS; // first instruction in callee
 		DISPATCH();
 	returnResult_op:
-		tmpObj = *(sp - 1);
+		tmpObj = *(sp - 1); // return value
 		if (!(fp - task->stack)) { // not in a function call
-			task->status = done_Value;
-			chunks[task->taskChunkIndex].returnValueOrErrorIP = tmpObj;
-			sendTaskDoneReturnValue(task->taskChunkIndex, tmpObj);
+			sendTaskReturnValue(task->taskChunkIndex, tmpObj);
+			task->status = unusedTask;
 			goto suspend;
 		}
 		sp = fp - obj2int(*(fp - 3)) - 3; // restore stack pointer; *(fp - 3) is the arg count
@@ -299,7 +306,7 @@ static inline int runTask(Task *task) {
 		DISPATCH();
 	stopAll_op:
 		stopAllTasks(); // clears all tasks, including the current one
-		return done;
+		return;
 
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
 	// All primitive ops pop all their args and leave a result on the top of the stack.
@@ -384,8 +391,6 @@ static inline int runTask(Task *task) {
 		*(sp - arg) = primPoke(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
-
-	return 0;
 }
 
 // Task Scheduler
@@ -442,8 +447,10 @@ static int stepTasksOnce() {
 		} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
 			tasks[t].status = status = running;
 		}
-		if (status >= polling) runTask(&tasks[t]);
-		if (status >= waiting_micros) hasActiveTasks = true;
+		if (status) {
+			if ((status == running) || (status == polling)) runTask(&tasks[t]);
+			hasActiveTasks = true;
+		}
 	}
 	return hasActiveTasks;
 }
@@ -452,10 +459,10 @@ void runTasksUntilDone() {
 #if USE_TASKS
 	int isRunning = true;
 	while (isRunning) {
-		if (printBufferByteCount) printOutput();
+//		if (printBufferByteCount) printOutput();
 		isRunning = stepTasksOnce();
 	}
-	if (printBufferByteCount) printOutput();
+//	if (printBufferByteCount) printOutput();
 #else
 	// Run each task to completion
 	for (int i = 0; i < taskCount; i++) {

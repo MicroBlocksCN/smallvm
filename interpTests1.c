@@ -61,7 +61,7 @@ static int emptyLoop[] = {
 };
 
 static int loopWithNoops[] = {
-	// Like emptyLoop but with 10 noop's in the body; used to measure dispatch overhead
+	// Like emptyLoop but with 9 noop's and a pop in the body; used to measure dispatch overhead
 	OP(pushImmediate, int2obj(1000000)), // push repeat count
 	OP(noop, 0),
 	OP(noop, 0),
@@ -72,7 +72,7 @@ static int loopWithNoops[] = {
 	OP(noop, 0),
 	OP(noop, 0),
 	OP(noop, 0),
-	OP(noop, 0),
+	OP(pop, 9), // each noop pushes a nilObj onto the stack, so we must pop them
 	OP(decrementAndJmp, -11),
 	OP(halt, 0),
 };
@@ -360,10 +360,10 @@ static int primes1000[] = {
 
 // Timer
 
-static unsigned timerStart;
+static long timerStart;
 
 #define START_TIMER() { timerStart = TICKS(); }
-#define TIMER_US() (TICKS() - timerStart)
+#define TIMER_US() (((long) TICKS()) - timerStart)
 
 // Helpers
 
@@ -376,15 +376,16 @@ static void runProg(int* prog, int byteCount) {
 	runTasksUntilDone();
 }
 
-static void printResult(char *testName, int usecs, float nanoSecsPerInstruction) {
-	float cyclesPerNanosec = 0.064; // clock rate divided by 10e9
+static void printResult(char *testName, long usecs, long instructionCount) {
+	float nanoSecsPerInstruction = (1000.0 * usecs) / instructionCount;
+	float cyclesPerNanosec = 0.016; // clock rate divided by 10e9
 	float cyclesPerOp = cyclesPerNanosec * nanoSecsPerInstruction;
-	printf("%s: %d usecs (%.2f nsecs, %.2f cycles per op)\r\n",
-		testName, usecs, nanoSecsPerInstruction, cyclesPerOp);
+	printf("%s: %ld usecs (%d nsecs, %d cycles per op)\r\n",
+		testName, usecs, (int) nanoSecsPerInstruction, (int) cyclesPerOp);
 }
 
 void interpTests1() {
-	unsigned long n, usecs, emptyLoopTime;
+	long n, usecs, emptyLoopTime;
 
 // 	START_TIMER();
 // 	runProg(microWaitTest, sizeof(microWaitTest));
@@ -403,37 +404,37 @@ void interpTests1() {
 	usecs = TIMER_US();
 	emptyLoopTime = usecs;
 	n = 1000002;
-	printResult("empty loop", usecs, (1000.0 * usecs) / n);
+	printResult("empty loop", usecs, n);
 
 	START_TIMER();
 	runProg(loopWithNoops, sizeof(loopWithNoops));
 	usecs = TIMER_US() - emptyLoopTime;
 	n = 10000000; // number of noops executed
-	printResult("noop loop", usecs, (1000.0 * usecs) / n);
+	printResult("noops", usecs, n);
 
 	START_TIMER();
 	runProg(loopTest, sizeof(loopTest));
 	usecs = TIMER_US();
 	n = 3000004;
-	printResult("loopTest", usecs, (1000.0 * usecs) / n);
+	printResult("loopTest", usecs, n);
 
 	START_TIMER();
 	runProg(sumTest, sizeof(sumTest));
 	usecs = TIMER_US();
 	n = 12000010;
-	printResult("sumTest", usecs, (1000.0 * usecs) / n);
+	printResult("sumTest", usecs, n);
 
 	START_TIMER();
 	runProg(sumTestWithRepeat, sizeof(sumTestWithRepeat));
 	usecs = TIMER_US();
 	n = 5000004;
-	printResult("sumTestWithRepeat", usecs, (1000.0 * usecs) / n);
+	printResult("sumTestWithRepeat", usecs, n);
 
 	START_TIMER();
 	runProg(sumTestWithRepeatAndIncrement, sizeof(sumTestWithRepeatAndIncrement));
 	usecs = TIMER_US();
 	n = 3000004;
-	printResult("sumTestWithRepeatAndIncrement", usecs, (1000.0 * usecs) / n);
+	printResult("sumTestWithRepeatAndIncrement", usecs, n);
 
 return;
 
@@ -444,6 +445,6 @@ return;
 	runProg(primes1000, sizeof(primes1000));
 	usecs = TIMER_US();
 	n = 2554625;
-	printResult("primes1000", usecs, (1000.0 * usecs) / n);
+	printResult("primes1000", usecs, n);
 
 }

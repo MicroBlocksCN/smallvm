@@ -89,9 +89,6 @@ typedef enum {
 typedef struct {
 	OBJ code;
 	uint8 chunkType;
-	uint8 taskStatus;
-	uint8 taskErrorCode;
-	OBJ returnValueOrErrorIP;
 } CodeChunkRecord;
 
 #define MAX_CHUNKS 32
@@ -99,23 +96,26 @@ extern CodeChunkRecord chunks[MAX_CHUNKS];
 
 // Task List
 
-// The task list is an array of taskCount Tasks. Each Task has a chunkIndex and a
-// wakeTime based on the microsecond clock. "When <condition>" hats have their condition
-// test compiled into them and loop back and suspend when the condition is false. When
-// the condition becomes true, execution proceeds to the blocks under the hat and the
-// task status changes from 'polling' to 'running'.
+// The task list is an array of taskCount Tasks. Each Task has a chunkIndex for
+// the top-level block of the task, as well as for the current function chunk
+// when inside a call to  user-defined function. It also holds the task status, processor
+// state (instruction pointer (ip), stack pointer (sp), and frame pointer (fp)), and
+// the wakeTime (used when a task is waiting on the millisecond or microsecond clock).
+// In the current design, Tasks have a fixed-size stack built in. In the future,
+// this will become a reference to a growable stack object in memory.
+//
+// "When <condition>" hats have their condition test compiled into them. They
+// loop back and suspend themselves when the condition is false. When the condition
+// becomes true, execution proceeds to the blocks under the hat and the task status
+// changes from 'polling' to 'running'. (Note: "when" hat block support is not yet complete.)
 
 typedef enum {
 	unusedTask = 0, // task entry is available
-	unknown = 0, // not started
-	done = 1, // completed normally, no value returned
-	done_Value = 2, // returned a value; value stored in chunk's returnValueOrErrorIP
-	done_Error = 3, // got an error; IP of error block stored in chunk's returnValueOrErrorIP
-	waiting_micros = 4, // waiting for the timer to reach wakeTime
-	waiting_millis = 5, // waiting for the timer to reach wakeTime
-	waiting_print = 6, // waiting to use the console output buffer
-	polling = 7, // condition hat in polling mode
-	running = 8,
+	waiting_micros = 1, // waiting for microseconds to reach wakeTime
+	waiting_millis = 2, // waiting for milliseconds to reach wakeTime
+	waiting_print = 3, // waiting for sufficient space in the output buffer
+	polling = 4, // condition hat in polling mode
+	running = 5,
 } TaskStatus_t;
 
 typedef struct {
@@ -183,12 +183,10 @@ void stepTasks(void);
 void stopAllTasks(void);
 void printStartMessage(char *s);
 void processMessage(void);
+void sendMessage(int msgType, int msgID, int chunkIndex, int dataSize, char *data);
 void sendOutputMessage(char *s, int byteCount);
-
-void sendTaskStarted(uint8 chunkIndex);
-void sendTaskDone(uint8 chunkIndex);
-void sendTaskDoneReturnValue(uint8 taskChunkIndex, OBJ returnValue);
-void sendTaskError(uint8 taskChunkIndex, uint8 errorCode);
+void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
+void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 
 // Testing Support
 
