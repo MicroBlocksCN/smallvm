@@ -19,15 +19,15 @@ void startTaskForChunk(uint8 chunkIndex) {
 
 	int i;
 	for (i = 0; i < taskCount; i++) {
-		if ((chunkIndex == tasks[i].taskChunkIndex) && (tasks[i].status >= waiting_micros)) {
+		if ((chunkIndex == tasks[i].taskChunkIndex) && tasks[i].status) {
 			return; // already running
 		}
 	}
-
 	for (i = 0; i < MAX_TASKS; i++) {
-		if (tasks[i].status < waiting_micros) break;
+		if (unusedTask == tasks[i].status) break;
 	}
 	if (i >= MAX_TASKS) panic("No free task entries");
+
 	memset(&tasks[i], 0, sizeof(Task));
 	tasks[i].status = running;
 	tasks[i].taskChunkIndex = chunkIndex;
@@ -69,14 +69,11 @@ void stopAllTasks() {
 	// Stop all tasks.
 
 	for (int t = 0; t < taskCount; t++) {
-		if (tasks[t].status >= waiting_micros) {
+		if (tasks[t].status) {
 			sendMessage(taskDone, 0, tasks[t].taskChunkIndex, 0, NULL);
 		}
 	}
 	initTasks();
-	// Clear buffered output
-	printBufferByteCount = 0;
-	printBuffer[0] = 0; // null terminate
 }
 
 // Code Chunk Ops
@@ -104,11 +101,11 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 // Sending Messages to IDE
 
 // Circular output buffer
-#define OUTBUF_SIZE 512 // must be a power of 2!
+#define OUTBUF_SIZE 1024 // must be a power of 2!
 #define OUTBUF_MASK (OUTBUF_SIZE - 1)
-uint8 outBuf[OUTBUF_SIZE];
-int outBufStart = 0;
-int outBufEnd = 0;
+static uint8 outBuf[OUTBUF_SIZE];
+static int outBufStart = 0;
+static int outBufEnd = 0;
 
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & 0x1FF)
 
@@ -147,6 +144,8 @@ void sendMessage(int msgType, int msgID, int chunkIndex, int dataSize, char *dat
 		queueByte(data[i]);
 	}
 }
+
+int hasOutputSpace(int byteCount) { return ((OUTBUF_MASK - OUTBUF_BYTES()) > byteCount); }
 
 void sendOutputMessage(char *s, int byteCount) {
 	sendMessage(getOutputReply, 0, 0, byteCount, s);
@@ -197,9 +196,9 @@ void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where) {
 
 // Receiving Messages from IDE
 
-#define RCVBUF_SIZE 512
-uint8 rcvBuf[RCVBUF_SIZE];
-int rcvByteCount = 0;
+#define RCVBUF_SIZE 1024
+static uint8 rcvBuf[RCVBUF_SIZE];
+static int rcvByteCount = 0;
 
 static void busyWaitMicrosecs(unsigned int usecs) {
 	unsigned long start = TICKS();

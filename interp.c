@@ -7,30 +7,34 @@
 #include "mem.h"
 #include "interp.h"
 
+// Tasks - Set USE_TASKS to false to test interpreter performance without task switching
+
 #define USE_TASKS true
 
 // Interpreter State
-
-static OBJ vars[25];
 
 CodeChunkRecord chunks[MAX_CHUNKS];
 
 Task tasks[MAX_TASKS];
 int taskCount = 0;
 
-char printBuffer[PRINT_BUF_SIZE];
-int printBufferByteCount = 0;
+static OBJ vars[25];
 
 // Error Reporting
 
 // When a primitive encounters an error, it calls failure() with an error code.
 // The VM stops the task and records the error code and IP where the error occurred.
+// The explanation string is currently unused.
 
-uint8 errorCode = noError;
+static uint8 errorCode = noError;
 
 OBJ failure(uint8 reason, const char *explanation) { errorCode = reason; return nilObj; }
 
 // Printing
+
+#define PRINT_BUF_SIZE 100
+static char printBuffer[PRINT_BUF_SIZE];
+static int printBufferByteCount = 0;
 
 static void printObj(OBJ obj) {
 	// Append a printed representation of the given object to printBuffer.
@@ -51,6 +55,9 @@ static void printObj(OBJ obj) {
 }
 
 static OBJ primPrint(int argCount, OBJ *args) {
+	printBuffer[0] = 0; // null terminate
+	printBufferByteCount = 0;
+
 	for (int i = 0; i < argCount; i++) {
 		printObj(args[i]);
 	}
@@ -64,8 +71,6 @@ static OBJ primPrint(int argCount, OBJ *args) {
 #else
 	printf("(NO TASKS) %s", printBuffer);
 #endif
-	printBufferByteCount = 0;
-	printBuffer[0] = 0; // null terminate
 	return nilObj;
 }
 
@@ -224,8 +229,19 @@ static inline void runTask(Task *task) {
 	jmpFalse_op:
 		if (falseObj == (*--sp)) ip += arg;
 #if USE_TASKS
-		if (arg < 0) { // backward jmpFalse is a polling condition hat block; don't use suspendCounter
-			task->status = polling;
+		if (arg < 0) { // backward jmpFalse is a condition hat block polling its condition
+			// Note: This code hasn't been tested and probably needs refinement.
+			// For example, perhaps the condition hat should only be triggered only on
+			// the transition to the condition becoming true. Implementing that would require
+			// only a few more lines of code (e.g. it should take the jump if its status
+			// is already running).
+			if (trueObj == *(sp - 1)) {
+				if (running != task->status) sendMessage(taskStarted, 0, task->taskChunkIndex, 0, NULL);
+				task->status = running;
+			} else {
+				if (polling != task->status) sendMessage(taskPolling, 0, task->taskChunkIndex, 0, NULL);
+				task->status = polling;
+			}
 			goto suspend;
 		}
 #else
@@ -296,9 +312,8 @@ static inline void runTask(Task *task) {
 		task->wakeTime = millisecs() + tmp;
 		goto suspend;
 	printIt_op:
-		if (printBufferByteCount) { // print buffer is in use
-			ip--; // restart this operation when resumed
-			task->status = waiting_print;
+		if (!hasOutputSpace(PRINT_BUF_SIZE + 5)) {
+			ip--; // retry when task is resumed
 			goto suspend;
 		}
 		*(sp - arg) = primPrint(arg, sp - arg); // arg = # of arguments
@@ -413,24 +428,11 @@ void stepTasks() {
 		} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
 			tasks[t].status = status = running;
 		}
-		if (status >= polling) runTask(&tasks[t]);
+		if (status >= running) runTask(&tasks[t]);
 	}
 }
 
 // Testing (used for testing the interpreter on a desktop/laptop computer)
-
-static void printOutput() {
-	// Print output, if any. Used during testing/debugging on a laptop.
-	printf("%s\r\n", printBuffer);
-	for (int i = 0; i < MAX_TASKS; i++) {
-		// Make all tasks waiting for the print buffer be runnable.
-		if (waiting_print == tasks[i].status) {
-			tasks[i].status = running;
-		}
-	}
-	printBufferByteCount = 0;
-	printBuffer[0] = 0; // null terminate
-}
 
 static int stepTasksOnce() {
 	// Used for testing on laptop. Run every runnable task and update its status.
@@ -448,7 +450,7 @@ static int stepTasksOnce() {
 			tasks[t].status = status = running;
 		}
 		if (status) {
-			if ((status == running) || (status == polling)) runTask(&tasks[t]);
+			if (status >= running) runTask(&tasks[t]);
 			hasActiveTasks = true;
 		}
 	}
@@ -456,18 +458,8 @@ static int stepTasksOnce() {
 }
 
 void runTasksUntilDone() {
-#if USE_TASKS
 	int isRunning = true;
 	while (isRunning) {
-//		if (printBufferByteCount) printOutput();
 		isRunning = stepTasksOnce();
 	}
-//	if (printBufferByteCount) printOutput();
-#else
-	// Run each task to completion
-	for (int i = 0; i < taskCount; i++) {
-		runTask(&tasks[i]);
-	}
-#endif
-	if (errorCode) printf("Error: %d\r\n", errorCode);
 }

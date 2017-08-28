@@ -113,9 +113,8 @@ typedef enum {
 	unusedTask = 0, // task entry is available
 	waiting_micros = 1, // waiting for microseconds to reach wakeTime
 	waiting_millis = 2, // waiting for milliseconds to reach wakeTime
-	waiting_print = 3, // waiting for sufficient space in the output buffer
+	running = 3,
 	polling = 4, // condition hat in polling mode
-	running = 5,
 } TaskStatus_t;
 
 typedef struct {
@@ -130,15 +129,11 @@ typedef struct {
 	OBJ stack[10];
 } Task;
 
+// Task list shared by interp.c and runtime.c
+
 #define MAX_TASKS 16
 extern Task tasks[MAX_TASKS];
 extern int taskCount;
-
-// String buffer used by the 'print' block
-
-#define PRINT_BUF_SIZE 100
-extern char printBuffer[PRINT_BUF_SIZE];
-extern int printBufferByteCount;
 
 // Serial Protocol Messages
 
@@ -161,6 +156,7 @@ extern int printBufferByteCount;
 #define systemResetMsg			16
 #define taskStarted				17
 #define taskDone				18
+#define taskPolling				19
 
 // Error Codes (codes 1-9 reserved for protocol errors, codes 10 and up for task errors)
 
@@ -184,6 +180,7 @@ void stopAllTasks(void);
 void printStartMessage(char *s);
 void processMessage(void);
 void sendMessage(int msgType, int msgID, int chunkIndex, int dataSize, char *data);
+int hasOutputSpace(int byteCount);
 void sendOutputMessage(char *s, int byteCount);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
