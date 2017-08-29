@@ -95,12 +95,6 @@ static inline void runTask(Task *task) {
 	register OBJ *fp;
 	int arg, tmp;
 	OBJ tmpObj;
-	int suspendCounter = 10;
-
-	// Restore task state
-	ip = task->code + task->ip;
-	sp = task->stack + task->sp;
-	fp = task->stack + task->fp;
 
 	// initialize jump table
 	static void *jumpTable[] = {
@@ -148,6 +142,11 @@ static inline void runTask(Task *task) {
 		&&peek_op,
 		&&poke_op,
 	};
+
+	// Restore task state
+	ip = task->code + task->ip;
+	sp = task->stack + task->sp;
+	fp = task->stack + task->fp;
 
 	DISPATCH();
 
@@ -214,18 +213,16 @@ static inline void runTask(Task *task) {
 		DISPATCH();
 	jmp_op:
 		ip += arg;
+#if USE_TASKS
+		if (arg < 0) goto suspend; // backward jmp is a forever loop
+#endif
 		DISPATCH();
 	jmpTrue_op:
 		if (trueObj == (*--sp)) ip += arg;
 #if USE_TASKS
-		if (arg < 0) { // backward jmpTrue is a while loop
-			if (suspendCounter-- > 0) DISPATCH();
-			task->status = running;
-			goto suspend;
-		}
-#else
-		DISPATCH();
+		if ((arg < 0) && (trueObj == *sp)) goto suspend; // backward jmpTrue is a while loop
 #endif
+		DISPATCH();
 	jmpFalse_op:
 		if (falseObj == (*--sp)) ip += arg;
 #if USE_TASKS
@@ -235,7 +232,7 @@ static inline void runTask(Task *task) {
 			// the transition to the condition becoming true. Implementing that would require
 			// only a few more lines of code (e.g. it should take the jump if its status
 			// is already running).
-			if (trueObj == *(sp - 1)) {
+			if (trueObj == *sp) {
 				if (running != task->status) sendMessage(taskStarted, 0, task->taskChunkIndex, 0, NULL);
 				task->status = running;
 			} else {
@@ -244,17 +241,14 @@ static inline void runTask(Task *task) {
 			}
 			goto suspend;
 		}
-#else
-		DISPATCH();
 #endif
+		DISPATCH();
 	 decrementAndJmp_op:
 		tmp = obj2int(*(sp - 1)) - 1; // decrement loop counter
 		if (tmp > 0) {
 			ip += arg; // loop counter > 0, so branch
 			*(sp - 1) = int2obj(tmp); // update loop counter
 #if USE_TASKS
-			if (suspendCounter-- > 0) DISPATCH();
-			task->status = running;
 			goto suspend;
 #else
 			DISPATCH();
@@ -415,51 +409,69 @@ static inline void runTask(Task *task) {
 
 #define RECENT 1000000
 
-void stepTasks() {
-	// Run every runnable task and update its status. Wake up waiting tasks whose wakeup time
-	// has arrived. Return true if there are still running or waiting tasks.
+static int currentTaskIndex = -1;
+static int lastMsgTime = 0;
 
-	uint32 usecs = TICKS();
-	uint32 msecs = millisecs();
-	for (int t = 0; t < taskCount; t++) {
-		int status = tasks[t].status;
-		if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
-			tasks[t].status = status = running;
-		} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
-			tasks[t].status = status = running;
+void vmLoop() {
+	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
+
+	while (true) {
+		uint32 msecs = millisecs();
+		if (msecs != lastMsgTime) {
+			// Call processMessage() at most once per millisecond
+			processMessage();
+			lastMsgTime = msecs = millisecs();
 		}
-		if (status >= running) runTask(&tasks[t]);
+
+		uint32 usecs = 0; // TICKS() is moderately expensive on Arduino; compute only if needed
+		for (int i = 0; i < taskCount; i++) {
+			currentTaskIndex++;
+			if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
+			Task *task = &tasks[currentTaskIndex];
+			if (waiting_micros == task->status) {
+				if (!usecs) usecs = TICKS(); // compute TICKS()
+				if ((usecs - task->wakeTime) < RECENT) {
+					task->status = running;
+					runTask(task);
+					continue;
+				}
+			} else if ((waiting_millis == task->status) && ((msecs - task->wakeTime) < RECENT)) {
+				task->status = running;
+				runTask(task);
+				continue;
+			}
+			if (task->status >= running) {
+				runTask(task);
+				continue;
+			}
+		}
 	}
 }
 
-// Testing (used for testing the interpreter on a desktop/laptop computer)
-
-static int stepTasksOnce() {
-	// Used for testing on laptop. Run every runnable task and update its status.
-	// Wake up waiting tasks whose wakeup time has arrived.
-	// Return true if there are still running or waiting tasks.
-
-	int hasActiveTasks = false;
-	uint32 usecs = TICKS();
-	uint32 msecs = millisecs();
-	for (int t = 0; t < taskCount; t++) {
-		int status = tasks[t].status;
-		if ((waiting_micros == status) && ((usecs - tasks[t].wakeTime) < RECENT)) {
-			tasks[t].status = status = running;
-		} else if ((waiting_millis == status) && ((msecs - tasks[t].wakeTime) < RECENT)) {
-			tasks[t].status = status = running;
-		}
-		if (status) {
-			if (status >= running) runTask(&tasks[t]);
-			hasActiveTasks = true;
-		}
-	}
-	return hasActiveTasks;
-}
+// Testing
 
 void runTasksUntilDone() {
-	int isRunning = true;
-	while (isRunning) {
-		isRunning = stepTasksOnce();
+	// Used for testing/benchmarking the interpreter. Run all tasks to completion.
+
+	int hasActiveTasks = true;
+	while (hasActiveTasks) {
+		hasActiveTasks = false;
+		uint32 usecs = 0; // TICKS() is moderately expensive on Arduino; compute only if needed
+		uint32 msecs = millisecs();
+		for (int t = 0; t < taskCount; t++) {
+			Task *task = &tasks[t];
+			if (waiting_micros == task->status) {
+				if (!usecs) usecs = TICKS(); // compute TICKS()
+				if ((usecs - task->wakeTime) < RECENT) task->status = running;
+			} else if (waiting_millis == task->status) {
+				if ((msecs - task->wakeTime) < RECENT) task->status = running;
+			}
+			if (task->status >= running) {
+				runTask(task);
+				hasActiveTasks = true;
+			} else if (task->status != unusedTask) {
+				hasActiveTasks = true;
+			}
+		}
 	}
 }

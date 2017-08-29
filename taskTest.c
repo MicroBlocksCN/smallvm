@@ -116,7 +116,7 @@ static unsigned timerStart;
 void taskTest() {
 	int usecs;
 
-	printf("\r\nStarting 2...\r\n");
+	printf("\r\nTask tests...\r\n");
 	memClear();
 
 	START_TIMER();
@@ -148,4 +148,5 @@ void taskTest() {
 	runTasksUntilDone();
 	usecs = TIMER_US();
 	printf("One 200k task %d usecs\r\n", usecs);
+	printf("Done!\r\n");
 }

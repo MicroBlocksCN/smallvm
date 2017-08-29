@@ -175,7 +175,6 @@ extern int taskCount;
 
 OBJ failure(uint8 code, const char *explanation);
 void initTasks(void);
-void stepTasks(void);
 void stopAllTasks(void);
 void printStartMessage(char *s);
 void processMessage(void);
@@ -184,12 +183,16 @@ int hasOutputSpace(int byteCount);
 void sendOutputMessage(char *s, int byteCount);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
+void vmLoop(void);
 
 // Testing Support
 
 void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data);
 void startTaskForChunk(uint8 chunkIndex);
 void runTasksUntilDone(void);
+
+void interpTests1(void);
+void taskTest(void);
 
 // Platform Specific Operations
 

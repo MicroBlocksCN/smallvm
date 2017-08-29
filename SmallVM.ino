@@ -1,13 +1,6 @@
 #include "mem.h"
 #include "interp.h"
 
-extern "C" {
-  // C function prototypes for tests
-
-  void interpTests1(void);
-  void taskTest(void);
-}
-
 void setup() {
   Serial.begin(115200);
   hardwareInit();
@@ -16,6 +9,5 @@ void setup() {
 }
 
 void loop() {
-  processMessage();
-  stepTasks();
+  vmLoop();
 }
