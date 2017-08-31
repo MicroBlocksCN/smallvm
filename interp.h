@@ -196,9 +196,9 @@ void taskTest(void);
 
 // Platform Specific Operations
 
-int serialDataAvailable(void);
+int canReadByte(void);
 int readBytes(uint8 *buf, int count);
-int canSendByte();
+int canSendByte(void);
 void sendByte(char aByte);
 
 uint32 millisecs(void);

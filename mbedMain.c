@@ -86,13 +86,16 @@ void scanMemory(unsigned int startAddr) {
 }
 
 int main(int argc, char *argv[]) {
-	printf("Starting...\r\n");
+//	hardwareInit();
+	memInit(5000);
+	printStartMessage("Welcome to uBlocks for mbed!");
+	vmLoop();
+	return 0;
 
+	printf("Starting...\r\n");
 	showStackAndHeap();
     printf("Max malloc allocation: %d bytes\r\n", maxHeapChunk());
 	scanMemory(0); // scan Flash
-
-	memInit(5000);
 
 // pinTest("D8", D8);
 // pinTest("D9", D9);
@@ -118,15 +121,4 @@ int main(int argc, char *argv[]) {
 // 	turnOnLEDs(0, 0, 0, 1);
 // 	waitMillisecs(delay);
 // }
-//
-// return 0;
-
-// 	interpTests1();
-// 	taskTest();
-
-	while (true) {
-		processMessage();
-		stepTasks();
-	}
-	return 0;
 }

@@ -124,6 +124,8 @@ static inline void queueByte(char aByte) {
 void sendMessage(int msgType, int msgID, int chunkIndex, int dataSize, char *data) {
 #define DEBUG false
 #if DEBUG
+	return; // do nothing; comment out this line to see messages being sent
+
 	printf("sendMessage %d %d %d %d \r\n", msgType, msgID, chunkIndex, dataSize);
 	if (dataSize) {
 		printf("  data: ");
@@ -214,6 +216,8 @@ void processMessage() {
 
 	int bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
 	rcvByteCount += bytesRead;
+	if (!rcvByteCount) return;
+
 	while (bytesRead > 0) {
 		// wait time: on microBit, 35 seems to work, 25 fails
 		// on Arduino Primo, 100 sometimes fails; use 150 to be safe (character time is ~90 usecs)

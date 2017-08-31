@@ -88,7 +88,7 @@ void printStartMessage(char *s) {
 	goto *jumpTable[CMD(op)]; \
 }
 
-static inline void runTask(Task *task) {
+static void runTask(Task *task) {
 	register int op;
 	register int *ip;
 	register OBJ *sp;
@@ -410,39 +410,36 @@ static inline void runTask(Task *task) {
 #define RECENT 1000000
 
 static int currentTaskIndex = -1;
-static int lastMsgTime = 0;
 
 void vmLoop() {
 	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 
+	int count = 0;
 	while (true) {
-		uint32 msecs = millisecs();
-		if (msecs != lastMsgTime) {
-			// Call processMessage() at most once per millisecond
+		if (count-- <= 0) {
 			processMessage();
-			lastMsgTime = msecs = millisecs();
+			count = 50;
 		}
-
-		uint32 usecs = 0; // TICKS() is moderately expensive on Arduino; compute only if needed
-		for (int i = 0; i < taskCount; i++) {
+		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
+		for (int t = 0; t < taskCount; t++) {
 			currentTaskIndex++;
 			if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
 			Task *task = &tasks[currentTaskIndex];
-			if (waiting_micros == task->status) {
-				if (!usecs) usecs = TICKS(); // compute TICKS()
-				if ((usecs - task->wakeTime) < RECENT) {
-					task->status = running;
-					runTask(task);
-					continue;
-				}
-			} else if ((waiting_millis == task->status) && ((msecs - task->wakeTime) < RECENT)) {
-				task->status = running;
+			if (task->status >= running) {
 				runTask(task);
+				break;
+			} else if (unusedTask == task->status) {
 				continue;
+			} else if (waiting_micros == task->status) {
+				if (!usecs) usecs = TICKS(); // compute usecs
+				if ((usecs - task->wakeTime) < RECENT) task->status = running;
+			} else if (waiting_millis == task->status) {
+				if (!msecs) msecs = millisecs(); // compute msecs
+				if ((msecs - task->wakeTime) < RECENT) task->status = running;
 			}
 			if (task->status >= running) {
 				runTask(task);
-				continue;
+				break;
 			}
 		}
 	}
@@ -453,25 +450,32 @@ void vmLoop() {
 void runTasksUntilDone() {
 	// Used for testing/benchmarking the interpreter. Run all tasks to completion.
 
+	int count = 0;
 	int hasActiveTasks = true;
 	while (hasActiveTasks) {
+		if (count-- <= 0) {
+			processMessage();
+			count = 50;
+		}
 		hasActiveTasks = false;
-		uint32 usecs = 0; // TICKS() is moderately expensive on Arduino; compute only if needed
-		uint32 msecs = millisecs();
+		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
 			Task *task = &tasks[t];
-			if (waiting_micros == task->status) {
-				if (!usecs) usecs = TICKS(); // compute TICKS()
-				if ((usecs - task->wakeTime) < RECENT) task->status = running;
-			} else if (waiting_millis == task->status) {
-				if ((msecs - task->wakeTime) < RECENT) task->status = running;
-			}
 			if (task->status >= running) {
 				runTask(task);
 				hasActiveTasks = true;
-			} else if (task->status != unusedTask) {
-				hasActiveTasks = true;
+				continue;
+			} else if (unusedTask == task->status) {
+				continue;
+			} else if (waiting_micros == task->status) {
+				if (!usecs) usecs = TICKS(); // get usecs
+				if ((usecs - task->wakeTime) < RECENT) task->status = running;
+			} else if (waiting_millis == task->status) {
+				if (!msecs) msecs = millisecs(); // get msecs
+				if ((msecs - task->wakeTime) < RECENT) task->status = running;
 			}
+			if (task->status >= running) runTask(task);
+			hasActiveTasks = true;
 		}
 	}
 }

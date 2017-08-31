@@ -132,7 +132,6 @@ uint32 microsecs() { return (uint32) micros(); }
 uint32 millisecs() { return (uint32) millis(); }
 
 void putSerial(char *s) { Serial.print(s); }
-int serialDataAvailable() { return Serial.available(); }
 
 int readBytes(uint8 *buf, int count) {
 	int bytesRead = Serial.available();
@@ -142,6 +141,7 @@ int readBytes(uint8 *buf, int count) {
 	return bytesRead;
 }
 
+int canReadByte() { return Serial.available(); }
 int canSendByte() { return true; } // Serial.availableForWrite not implemented for Primo
 void sendByte(char aByte) { Serial.write(aByte); }
 
@@ -206,8 +206,6 @@ OBJ primSetLED(OBJ *args) {
 
 Serial pc(USBTX, USBRX, 115200);
 
-int serialDataAvailable() { return pc.readable(); }
-
 int readBytes(uint8 *buf, int count) {
 	int bytesRead = 0;
 	while ((bytesRead < count) && pc.readable()) {
@@ -216,6 +214,7 @@ int readBytes(uint8 *buf, int count) {
 	return bytesRead;
 }
 
+int canReadByte() { return pc.readable(); }
 int canSendByte() { return pc.writeable(); }
 void sendByte(char aByte) { pc.putc(aByte); }
 
@@ -366,7 +365,7 @@ OBJ primSetLED(OBJ *args) {
 
 // stubs for compiling/testing on laptop
 
-int serialDataAvailable() { return false; }
+int canReadByte() { return false; }
 int readBytes(uint8 *buf, int count) { return 0; }
 int canSendByte() { return true; }
 void sendByte(char aByte) { }
