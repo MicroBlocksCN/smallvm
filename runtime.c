@@ -65,15 +65,19 @@ static void startAll() {
 	}
 }
 
+static void clearOutputQueue(void); // forward reference
+
 void stopAllTasks() {
 	// Stop all tasks.
 
+	clearOutputQueue();
 	for (int t = 0; t < taskCount; t++) {
 		if (tasks[t].status) {
 			sendMessage(taskDone, 0, tasks[t].taskChunkIndex, 0, NULL);
 		}
 	}
 	initTasks();
+	printStartMessage("All tasks stopped");
 }
 
 // Code Chunk Ops
@@ -120,6 +124,8 @@ static inline void queueByte(char aByte) {
 	outBuf[outBufEnd] = aByte;
 	outBufEnd = (outBufEnd + 1) & OUTBUF_MASK;
 }
+
+static void clearOutputQueue() { outBufStart = outBufEnd = 0; }
 
 void sendMessage(int msgType, int msgID, int chunkIndex, int dataSize, char *data) {
 #define DEBUG false

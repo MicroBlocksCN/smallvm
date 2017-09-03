@@ -61,7 +61,7 @@ static int emptyLoop[] = {
 };
 
 static int loopWithNoops[] = {
-	// Like emptyLoop but with 9 noop's and a pop in the body; used to measure dispatch overhead
+	// Like emptyLoop but with 10 noops; used to measure dispatch overhead
 	OP(pushImmediate, int2obj(1000000)), // push repeat count
 	OP(noop, 0),
 	OP(noop, 0),
@@ -72,7 +72,7 @@ static int loopWithNoops[] = {
 	OP(noop, 0),
 	OP(noop, 0),
 	OP(noop, 0),
-	OP(pop, 9), // each noop pushes a nilObj onto the stack, so we must pop them
+	OP(noop, 0),
 	OP(decrementAndJmp, -11),
 	OP(halt, 0),
 };

@@ -50,6 +50,12 @@ extern "C" {
 #define millisOp 40
 #define peekOp 41
 #define pokeOp 42
+#define modulo 43
+#define lessOrEq 44
+#define equal 45
+#define greaterOrEq 46
+#define greaterThan 47
+#define notOp 48
 
 // Instruction Format
 
@@ -106,15 +112,13 @@ extern CodeChunkRecord chunks[MAX_CHUNKS];
 //
 // "When <condition>" hats have their condition test compiled into them. They
 // loop back and suspend themselves when the condition is false. When the condition
-// becomes true, execution proceeds to the blocks under the hat and the task status
-// changes from 'polling' to 'running'. (Note: "when" hat block support is not yet complete.)
+// becomes true, execution proceeds to the blocks under the hat.
 
 typedef enum {
 	unusedTask = 0, // task entry is available
 	waiting_micros = 1, // waiting for microseconds to reach wakeTime
 	waiting_millis = 2, // waiting for milliseconds to reach wakeTime
 	running = 3,
-	polling = 4, // condition hat in polling mode
 } TaskStatus_t;
 
 typedef struct {
@@ -170,6 +174,8 @@ extern int taskCount;
 #define needs0to255IntError		13
 #define needsArrayError			14
 #define indexOutOfRangeError	15
+#define needsBoolean			16
+#define nonComparable			17
 
 // Runtime Operations
 

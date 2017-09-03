@@ -29,6 +29,8 @@ static OBJ vars[25];
 static uint8 errorCode = noError;
 
 OBJ failure(uint8 reason, const char *explanation) { errorCode = reason; return nilObj; }
+OBJ nonBooleanFailure() { return failure(needsBoolean, "Must be a boolean"); }
+OBJ notComparableFailure() { return failure(nonComparable, "Those objects cannot be compared for equality"); }
 
 // Printing
 
@@ -141,6 +143,12 @@ static void runTask(Task *task) {
 		&&millis_op,
 		&&peek_op,
 		&&poke_op,
+		&&modulo_op,
+		&&lessOrEq_op,
+		&&equal_op,
+		&&greaterOrEq_op,
+		&&greaterThan_op,
+		&&not_op,
 	};
 
 	// Restore task state
@@ -168,7 +176,6 @@ static void runTask(Task *task) {
 		task->status = unusedTask;
 		goto suspend;
 	noop_op:
-		*sp++ = nilObj;
 		DISPATCH();
 	pushImmediate_op:
 		*sp++ = (OBJ) arg;
@@ -214,33 +221,19 @@ static void runTask(Task *task) {
 	jmp_op:
 		ip += arg;
 #if USE_TASKS
-		if (arg < 0) goto suspend; // backward jmp is a forever loop
+		if (arg < 0) goto suspend;
 #endif
 		DISPATCH();
 	jmpTrue_op:
 		if (trueObj == (*--sp)) ip += arg;
 #if USE_TASKS
-		if ((arg < 0) && (trueObj == *sp)) goto suspend; // backward jmpTrue is a while loop
+		if ((arg < 0) && (trueObj == *sp)) goto suspend;
 #endif
 		DISPATCH();
 	jmpFalse_op:
 		if (falseObj == (*--sp)) ip += arg;
 #if USE_TASKS
-		if (arg < 0) { // backward jmpFalse is a condition hat block polling its condition
-			// Note: This code hasn't been tested and probably needs refinement.
-			// For example, perhaps the condition hat should only be triggered only on
-			// the transition to the condition becoming true. Implementing that would require
-			// only a few more lines of code (e.g. it should take the jump if its status
-			// is already running).
-			if (trueObj == *sp) {
-				if (running != task->status) sendMessage(taskStarted, 0, task->taskChunkIndex, 0, NULL);
-				task->status = running;
-			} else {
-				if (polling != task->status) sendMessage(taskPolling, 0, task->taskChunkIndex, 0, NULL);
-				task->status = polling;
-			}
-			goto suspend;
-		}
+		if ((arg < 0) && (falseObj == *sp)) goto suspend;
 #endif
 		DISPATCH();
 	 decrementAndJmp_op:
@@ -400,6 +393,47 @@ static void runTask(Task *task) {
 		*(sp - arg) = primPoke(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
+	modulo_op:
+		*(sp - arg) = int2obj(evalInt(*(sp - 2)) % evalInt(*(sp - 1)));
+		sp -= arg - 1;
+		DISPATCH();
+	lessOrEq_op:
+		*(sp - arg) = ((evalInt(*(sp - 2)) <= evalInt(*(sp - 1))) ? trueObj : falseObj);
+		sp -= arg - 1;
+		DISPATCH();
+	equal_op:
+		tmpObj = *(sp - 2);
+		if (tmpObj == *(sp - 1)) { // identical objects
+			*(sp - arg) = trueObj;
+		} else if (tmpObj <= falseObj) { // nil, true, false
+			if (tmpObj == nilObj) notComparableFailure(); // nil was compared to a non-nil value
+			*(sp - arg) = falseObj; // two booleans compared, but not equal
+		} else if (isInt(tmpObj) && isInt(*(sp - 1))) {
+			*(sp - arg) = falseObj; // two integers compared, but not equal
+		} else {
+			notComparableFailure();
+		}
+		sp -= arg - 1;
+		DISPATCH();
+	greaterOrEq_op:
+		*(sp - arg) = ((evalInt(*(sp - 2)) >= evalInt(*(sp - 1))) ? trueObj : falseObj);
+		sp -= arg - 1;
+		DISPATCH();
+	greaterThan_op:
+		*(sp - arg) = ((evalInt(*(sp - 2)) > evalInt(*(sp - 1))) ? trueObj : falseObj);
+		sp -= arg - 1;
+		DISPATCH();
+	not_op:
+		tmpObj = *(sp - 1);
+		if (trueObj == tmpObj) {
+			*(sp - arg) = falseObj;
+		} else if (falseObj == tmpObj) {
+			*(sp - arg) = trueObj;
+		} else {
+			nonBooleanFailure();
+		}
+		sp -= arg - 1;
+		DISPATCH();
 }
 
 // Task Scheduler
@@ -425,7 +459,7 @@ void vmLoop() {
 			currentTaskIndex++;
 			if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
 			Task *task = &tasks[currentTaskIndex];
-			if (task->status >= running) {
+			if (running == task->status) {
 				runTask(task);
 				break;
 			} else if (unusedTask == task->status) {
@@ -437,7 +471,7 @@ void vmLoop() {
 				if (!msecs) msecs = millisecs(); // compute msecs
 				if ((msecs - task->wakeTime) < RECENT) task->status = running;
 			}
-			if (task->status >= running) {
+			if (running == task->status) {
 				runTask(task);
 				break;
 			}
@@ -461,7 +495,7 @@ void runTasksUntilDone() {
 		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
 			Task *task = &tasks[t];
-			if (task->status >= running) {
+			if (running == task->status) {
 				runTask(task);
 				hasActiveTasks = true;
 				continue;
@@ -474,7 +508,7 @@ void runTasksUntilDone() {
 				if (!msecs) msecs = millisecs(); // get msecs
 				if ((msecs - task->wakeTime) < RECENT) task->status = running;
 			}
-			if (task->status >= running) runTask(task);
+			if (running == task->status) runTask(task);
 			hasActiveTasks = true;
 		}
 	}
