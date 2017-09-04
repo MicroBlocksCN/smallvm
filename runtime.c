@@ -209,8 +209,8 @@ static uint8 rcvBuf[RCVBUF_SIZE];
 static int rcvByteCount = 0;
 
 static void busyWaitMicrosecs(unsigned int usecs) {
-	unsigned long start = TICKS();
-	while ((TICKS() - start) < usecs) /* wait */;
+	unsigned long start = microsecs();
+	while ((microsecs() - start) < usecs) /* wait */;
 }
 
 unsigned long lastRcvTime = 0;
@@ -230,14 +230,14 @@ void processMessage() {
 		busyWaitMicrosecs(150);
 		bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
 		rcvByteCount += bytesRead;
-		lastRcvTime = TICKS();
+		lastRcvTime = microsecs();
 	}
 
 	if (rcvByteCount < 5) return; // incomplete message header
 
 	int bodyBytes = (rcvBuf[4] << 8) + rcvBuf[3]; // little endian
 	if (rcvByteCount < (bodyBytes + 5)) { // incomplete message body
-		int usecsSinceLastRcv = TICKS() - lastRcvTime;
+		int usecsSinceLastRcv = microsecs() - lastRcvTime;
 		if (usecsSinceLastRcv < 0) { // clock wrap
 			lastRcvTime = 0;
 			usecsSinceLastRcv = 0;

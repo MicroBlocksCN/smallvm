@@ -7,8 +7,6 @@
 #include "interp.h"
 
 #include <gpio_api.h>
-#include <us_ticker_api.h>
-#define TICKS() (us_ticker_read())
 
 void interpTests1(void);
 void taskTest(void);

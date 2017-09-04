@@ -13,20 +13,30 @@
 // Note: mbed doesn't have a millisecond clock and not all mbed boards have a
 // realtime clock, so gettimeofday() doesn't work, either (it just returns 0).
 
-static uint32 msecsSinceStart = 0;
-static uint32 lastTicks = 0;
-static uint32 extraTicks = 0;
+static char *clock_base = (char *) 0x40008000;
+
+void initClock_NRF51() {
+	*((int *) (clock_base + 0x010)) = 1; // shutdown & clear
+	*((int *) (clock_base + 0x504)) = 0; // timer mode
+	*((int *) (clock_base + 0x508)) = 3; // 32-bit
+	*((int *) (clock_base + 0x510)) = 4; // prescale - divides 16MHz by 2^N
+	*((int *) (clock_base + 0x0)) = 1; // start
+}
+
+uint32 microsecs() {
+	*((int *) (clock_base + 0x40)) = 1; // capture into cc1
+	return *((uint32 *) (clock_base + 0x540)); // return contents of cc1
+}
 
 uint32 millisecs() {
-	uint32 now = TICKS();
-	extraTicks += (now - lastTicks);
-	while (extraTicks >= 1000) {
-		extraTicks -= 1000;
-		msecsSinceStart += 1;
-	}
-	lastTicks = now;
-	return msecsSinceStart;
+	// Approximate milliseconds as (usecs / 1024) using a bitshift, since divide is very slow.
+	// This avoids the need for a second hardware timer for milliseconds, but the millisecond
+	// clock is effectively only 22 bits, and (like the microseconds clock) it wraps around
+	// every 72 minutes.
+
+	return microsecs() >> 10;
 }
+
 #endif // not ARDUINO
 
 // Error Reporting
@@ -270,6 +280,7 @@ int pwmPeriodusecs = 1000; // 1 millisecond
 uint8 pinMode[TOTAL_PIN_COUNT];
 
 void hardwareInit() {
+	initClock_NRF51();
 	for (int i = 0; i < ANALOG_PIN_COUNT; i++) {
 		if (i != 4) {
 			// Workaround. If pin4 is initialized for analogIn, it doesn't
@@ -362,6 +373,24 @@ OBJ primSetLED(OBJ *args) {
 }
 
 #else
+
+#include <sys/time.h>
+#include <time.h>
+
+uint32 microsecs() {
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	return ((1000000L * now.tv_sec) + now.tv_usec) & 0xFFFFFFFF;
+}
+
+uint32 millisecs() {
+	// Approximate milliseconds as (usecs / 1024) using a bitshift, since divide is very slow.
+	// This avoids the need for a second hardware timer for milliseconds, but the millisecond
+	// clock is effectively only 22 bits, and (like the microseconds clock) it wraps around
+	// every 72 minutes.
+
+	return microsecs() >> 10;
+}
 
 // stubs for compiling/testing on laptop
 

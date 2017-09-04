@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "mem.h"
+#include "interp.h"
 
 #ifdef ARDUINO
 	char printfBuffer[100]; // used by printf macro in mem.h

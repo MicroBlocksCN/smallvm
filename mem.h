@@ -31,8 +31,6 @@ typedef int * OBJ;
 #define CodeChunkClass 7
 #define ArrayClass 8
 
-// Non-memory Objects (object is encoded directly in the object reference
-
 // OBJ constants for nil, true, and false
 // Note: These are constants, not pointers to objects in memory.
 
@@ -40,8 +38,10 @@ typedef int * OBJ;
 #define trueObj ((OBJ) 4)
 #define falseObj ((OBJ) 8)
 
-// Integer objects have a 1 in their lowest bit and a signed value in their top 31 bits.
-// Note: Integers are directly encoded in the object reference; they have no memory object.
+// Integers
+
+// Integers are encoded in object references; they have no memory object.
+// They have a 1 in their lowest bit and a signed value in their top 31 bits.
 
 #define isInt(obj) (((int) (obj)) & 1)
 #define int2obj(n) ((OBJ) (((n) << 1) | 1))
@@ -78,8 +78,6 @@ static inline int objClass(OBJ obj) {
 #define IS_CLASS(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > falseObj) && (CLASS(obj) == classID))
 #define NOT_CLASS(obj, classID) ((((int) obj) & 3) || ((obj) <= falseObj) || (CLASS(obj) != classID))
 
-// Integers
-
 static inline int evalInt(OBJ obj) {
 	if (isInt(obj)) return obj2int(obj);
 	printf("evalInt got non-integer (classID: %d)\n", objClass(obj));
@@ -96,41 +94,6 @@ void memClear(void);
 OBJ newObj(int classID, int wordCount, OBJ fill);
 OBJ newString(char *s);
 char* obj2str(OBJ obj);
-
-// Debugging
-
-void panic(char *s);
-
-// Printf for Arduino (many thanks to Michael McElligott)
-
-#ifdef ARDUINO
-	void putSerial(char *s);
-	extern char printfBuffer[100];
-
-	#define printf(format, ...) \
-		do { \
-		snprintf(printfBuffer, sizeof(printfBuffer), format, ##__VA_ARGS__); \
-		putSerial(printfBuffer); \
-		} while(0)
-#endif
-
-// Microsecond timer
-
-#if defined(ARDUINO)
-	uint32 microsecs(void);
-	#define TICKS() (microsecs())
-#elif defined(__MBED__)
-	#include <us_ticker_api.h>
-	#define TICKS() (us_ticker_read())
-#else
-	#include <sys/time.h>
-	#include <time.h>
-	static inline unsigned TICKS() {
-		struct timeval now;
-		gettimeofday(&now, NULL);
-		return ((1000000L * now.tv_sec) + now.tv_usec) & 0xFFFFFFFF;
-	}
-#endif
 
 #ifdef __cplusplus
 }

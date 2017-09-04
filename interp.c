@@ -288,13 +288,11 @@ static void runTask(Task *task) {
 		DISPATCH();
 	waitMicros_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
-		sp -= arg - 1;
 		task->status = waiting_micros;
-		task->wakeTime = TICKS() + tmp;
+		task->wakeTime = microsecs() + tmp;
 		goto suspend;
 	waitMillis_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
-		sp -= arg - 1;
 		task->status = waiting_millis;
 		task->wakeTime = millisecs() + tmp;
 		goto suspend;
@@ -378,12 +376,10 @@ static void runTask(Task *task) {
 		sp -= arg - 1;
 		DISPATCH();
 	micros_op:
-		*(sp - arg) = int2obj(TICKS());
-		sp -= arg - 1;
+		*sp++ = int2obj(microsecs() & 0x3FFFFFFF); // low 30-bits so result is positive
 		DISPATCH();
 	millis_op:
-		*(sp - arg) = int2obj(millisecs());
-		sp -= arg - 1;
+		*sp++ = int2obj(millisecs());
 		DISPATCH();
 	peek_op:
 		*(sp - arg) = primPeek(sp - arg);
@@ -439,7 +435,7 @@ static void runTask(Task *task) {
 // Task Scheduler
 
 // RECENT is a threshold for waking up tasks waiting on timers
-// (The timer can be up to this many ticks or milliseconds after the wakeup time)
+// The timer can be up to this much past the wakeup time.
 
 #define RECENT 1000000
 
@@ -465,11 +461,13 @@ void vmLoop() {
 			} else if (unusedTask == task->status) {
 				continue;
 			} else if (waiting_micros == task->status) {
-				if (!usecs) usecs = TICKS(); // compute usecs
+				if (!usecs) usecs = microsecs(); // get usecs
 				if ((usecs - task->wakeTime) < RECENT) task->status = running;
 			} else if (waiting_millis == task->status) {
-				if (!msecs) msecs = millisecs(); // compute msecs
-				if ((msecs - task->wakeTime) < RECENT) task->status = running;
+				// Note: The millisecond timer is effectively only 22 bits so
+				// compare only the low 22-bits of the current/wakeTime difference.
+				if (!msecs) msecs = millisecs(); // get msecs
+				if (((msecs - task->wakeTime) & 0x3FFFFF) < RECENT) task->status = running;
 			}
 			if (running == task->status) {
 				runTask(task);
@@ -502,11 +500,13 @@ void runTasksUntilDone() {
 			} else if (unusedTask == task->status) {
 				continue;
 			} else if (waiting_micros == task->status) {
-				if (!usecs) usecs = TICKS(); // get usecs
+				if (!usecs) usecs = microsecs(); // get usecs
 				if ((usecs - task->wakeTime) < RECENT) task->status = running;
 			} else if (waiting_millis == task->status) {
+				// Note: The millisecond timer is effectively only 22 bits so
+				// compare only the low 22-bits of the current/wakeTime difference.
 				if (!msecs) msecs = millisecs(); // get msecs
-				if ((msecs - task->wakeTime) < RECENT) task->status = running;
+				if (((msecs - task->wakeTime) & 0x3FFFFF) < RECENT) task->status = running;
 			}
 			if (running == task->status) runTask(task);
 			hasActiveTasks = true;

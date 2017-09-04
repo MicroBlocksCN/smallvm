@@ -362,8 +362,8 @@ static int primes1000[] = {
 
 static long timerStart;
 
-#define START_TIMER() { timerStart = TICKS(); }
-#define TIMER_US() (((long) TICKS()) - timerStart)
+#define START_TIMER() { timerStart = microsecs(); }
+#define TIMER_US() (((long) microsecs()) - timerStart)
 
 // Helpers
 
