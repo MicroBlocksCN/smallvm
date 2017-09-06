@@ -86,7 +86,7 @@ void scanMemory(unsigned int startAddr) {
 int main(int argc, char *argv[]) {
 //	hardwareInit();
 	memInit(5000);
-	printStartMessage("Welcome to uBlocks for mbed!");
+	outputString("Welcome to uBlocks for mbed!");
 	vmLoop();
 	return 0;
 

@@ -139,30 +139,26 @@ typedef struct {
 extern Task tasks[MAX_TASKS];
 extern int taskCount;
 
-// Serial Protocol Messages
+// Serial Protocol Messages: IDE -> Board
 
-#define okayReply				0
-#define errorReply				1
-#define storeChunkMsg			2
-#define deleteChunkMsg			3
-#define startAllMsg				4
-#define stopAllMsg				5
-#define startChunkMsg			6
-#define stopChunkMsg			7
-#define getTaskStatusMsg		8
-#define getTaskStatusReply		9
-#define getOutputMsg			10
-#define getOutputReply			11
-#define getReturnValueMsg		12
-#define getReturnValueReply		13
-#define getTaskErrorInfoMsg		14
-#define getTaskErrorInfoReply	15
-#define systemResetMsg			16
-#define taskStarted				17
-#define taskDone				18
-#define taskPolling				19
+#define storeChunkMsg			1
+#define deleteChunkMsg			2
+#define startChunkMsg			3
+#define stopChunkMsg			4
+#define startAllMsg				5
+#define stopAllMsg				6
+#define deleteAllChunksMsg		14
+#define systemResetMsg			15
 
-// Error Codes (codes 1-9 reserved for protocol errors, codes 10 and up for task errors)
+// Serial Protocol Messages: Board -> IDE
+
+#define taskStartedMsg			16
+#define taskDoneMsg				17
+#define taskReturnedValueMsg	18
+#define taskErrorMsg			19
+#define outputStringMsg			20
+
+// Error Codes (codes 1-9 are protocol errors, codes 10 and up are task errors)
 
 #define noError					0
 #define unspecifiedError		1
@@ -182,13 +178,13 @@ extern int taskCount;
 OBJ failure(uint8 code, const char *explanation);
 void initTasks(void);
 void stopAllTasks(void);
-void printStartMessage(char *s);
 void processMessage(void);
-void sendMessage(int msgType, int msgID, int chunkIndex, int dataSize, char *data);
 int hasOutputSpace(int byteCount);
+void outputString(char *s);
 void sendOutputMessage(char *s, int byteCount);
-void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
+void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
+void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void vmLoop(void);
 
 // Testing Support

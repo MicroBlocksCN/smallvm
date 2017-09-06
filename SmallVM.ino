@@ -5,7 +5,7 @@ void setup() {
   Serial.begin(115200);
   hardwareInit();
   memInit(5000); // 5k words = 20k bytes
-  printStartMessage("Welcome to uBlocks for Arduino!");
+  outputString("Welcome to uBlocks for Arduino!");
 }
 
 void loop() {

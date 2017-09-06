@@ -9,6 +9,6 @@
 int main(int argc, char *argv[]) {
 	hardwareInit();
 	memInit(2500);
-	printStartMessage("Welcome to uBlocks for BBC micro:bit!");
+	outputString("Welcome to uBlocks for BBC micro:bit!");
 	vmLoop();
 }

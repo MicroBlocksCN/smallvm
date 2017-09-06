@@ -76,10 +76,6 @@ static OBJ primPrint(int argCount, OBJ *args) {
 	return nilObj;
 }
 
-void printStartMessage(char *s) {
-	sendOutputMessage(s, strlen(s));
-}
-
 // Interpreter
 
 // Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
@@ -172,7 +168,7 @@ static void runTask(Task *task) {
 		task->fp = fp - task->stack;
 		return;
 	halt_op:
-		sendMessage(taskDone, 0, task->taskChunkIndex, 0, NULL);
+		sendTaskDone(task->taskChunkIndex);
 		task->status = unusedTask;
 		goto suspend;
 	noop_op:
