@@ -433,7 +433,7 @@ static void runTask(Task *task) {
 // RECENT is a threshold for waking up tasks waiting on timers
 // The timer can be up to this much past the wakeup time.
 
-#define RECENT 1000000
+#define RECENT 100000
 
 static int currentTaskIndex = -1;
 
@@ -483,7 +483,7 @@ void runTasksUntilDone() {
 	while (hasActiveTasks) {
 		if (count-- <= 0) {
 			processMessage();
-			count = 50;
+			count = 20;
 		}
 		hasActiveTasks = false;
 		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
