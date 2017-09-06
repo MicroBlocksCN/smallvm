@@ -448,7 +448,7 @@ void vmLoop() {
 	while (true) {
 		if (count-- <= 0) {
 			processMessage();
-			count = 50;
+			count = 20;
 		}
 		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
