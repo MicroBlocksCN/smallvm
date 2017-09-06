@@ -1,4 +1,4 @@
-# Microblocks Serial Protocol (version 2.04)
+# Microblocks Serial Protocol (version 2.05)
 
 This protocol describes how information flows from the
 board to the IDE and the other way around. All messages
@@ -100,23 +100,11 @@ without being asked and regardless of whether it is tethered.
 
 A task was started for the given chunk.
 
-### Task is Polling (OpCode: 0x11)
-
-The given chunk is a "when *condition*" hat that is
-polling (i.e. testing its condition).
-
-Note: When the condition becomes true, a "Task Started"
-message will be sent. When that task completes and the
-chunk returns to the polling state, a "Task is Polling"
-message is sent. This allows the IDE to show the difference
-between stopped, polling, and running (e.g. with different
-colored highlights around the block stack).
-
-### Task Done (OpCode: 0x12)
+### Task Done (OpCode: 0x11)
 
 The task for the given chunk completed. It did not return a value.
 
-### Task Returned Value (OpCode: 0x13, long message)
+### Task Returned Value (OpCode: 0x12, long message)
 
 The task for the given chunk completed and returned a value.
 The data part of the message consists of a one-byte type flag
@@ -126,20 +114,20 @@ followed by the return value. The current type flags are:
   * string (type = 2; data is a UTF-8 string)
   * boolean (type = 3; data is 1-byte, 0 for false, 1 for true)
 
-### Task Error (OpCode: 0x14, long message)
+### Task Error (OpCode: 0x13, long message)
 
 The task associated with the given chunk got an error.
 The data part of the message is a one-byte error code followed
-by a four-byte integer that encodes the current chunkID (which
-may be a procedure chunk, not necessarily the top-level chunk),
+by a four-byte integer that encodes the current chunkID (which may be
+a procedure chunk, not necessarily the top-level chunk for the task),
 and the IP address within that chunk. The format is:
 
 	[IP within chunk (high 24-bits)][chunk ID (low 8-bits)]
 
-### Output String (OpCode: 0x15, long message)
+### Output String (OpCode: 0x14, long message)
 
 Outputs the string in the data part of this message.
 
-### Reserved (OpCodes 0x16-0x1F)
+### Reserved (OpCodes 0x15-0x1F)
 
 Reserved for additional Board → IDE messages.
