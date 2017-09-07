@@ -80,7 +80,7 @@ Protocol.prototype.parseMessage = function () {
     var check = this.messageBuffer[0],
         isLong = check == 0xFB,
         opCode = this.messageBuffer[1],
-        descriptor, dataSize, dataRemainder;
+        descriptor, dataSize;
 
     if (check !== 0xFA && check !== 0xFB) {
         // We probably connected to the board while it was sending a message
@@ -102,13 +102,13 @@ Protocol.prototype.parseMessage = function () {
             // The message is complete, let's parse it.
             this.processMessage(descriptor, dataSize);
             this.messageBuffer = this.messageBuffer.slice(5 + dataSize);
+            this.parseMessage();
         }
     } else if (!isLong && this.messageBuffer.length >= 3) {
         // this message carries no data and is complete
         this.processMessage(descriptor);
-        dataRemainder = this.messageBuffer.slice(5);
-        this.clearBuffer();
-        this.processRawData(dataRemainder);
+        this.messageBuffer = this.messageBuffer.slice(3);
+        this.parseMessage();
     }
 };
 
@@ -139,12 +139,12 @@ Protocol.prototype.processJSONMessage = function (json) {
     );
 };
 
-Protocol.prototype.showBubbleFor = function (stack, data, isError) {
+Protocol.prototype.showBubbleFor = function (stack, contents, isError) {
     if (stack) {
         // this.ide.currentSprite may not be the actual target,
         // in the future we may want to have board IDs
         stack.showBubble(
-            (isError ? 'Error\n' : '') + this.processReturnValue(data),
+            isError ? ('Error\n' + contents) : contents,
             false,
             this.ide.currentSprite
         );
@@ -167,6 +167,11 @@ Protocol.prototype.processReturnValue = function (rawData) {
     }
 
     return isNil(value) ? 'unknown type' : value;
+};
+
+Protocol.prototype.processErrorValue = function (rawData) {
+    // rawData[0] contains the error code
+    return this.descriptorFor('taskError').dataDescriptor[rawData[0]] || 'Unspecified Error';
 };
 
 Protocol.prototype.packMessage = function (selector, taskId, data) {
@@ -254,8 +259,17 @@ Protocol.prototype.descriptors = [
         opCode: 0x13,
         selector: 'taskError',
         dataDescriptor: {
-            0x00: 'Division by zero',
-            0xFF: 'Generic Error'
+            0: 'No Error',
+            1: 'Unspecified Error',
+            2: 'Bad Chunk Index',
+            10: 'Divide By Zero',
+            11: 'Needs Non Negative',
+            12: 'Needs Integer',
+            13: 'Needs 0 to 255 Int',
+            14: 'Needs Array',
+            15: 'Index Out Of Range',
+            16: 'Needs Boolean',
+            17: 'Non Comparable'
         }
     },
     {
@@ -306,15 +320,18 @@ Protocol.prototype.dispatcher = {
     taskReturned: function (data, taskId) {
         var stack = this.ide.findStack(taskId);
         stack.removeHighlight();
-        this.showBubbleFor(stack, data, false);
+        this.showBubbleFor(stack, this.processReturnValue(data), false);
     },
     taskError: function (data, taskId) {
-        this.ide.findStack(taskId).addErrorHighlight();
+        var stack = this.ide.findStack(taskId);
+        stack.addErrorHighlight();
         // Not dealing with error codes yet
-        this.showBubbleFor(stack, data, true);
+        this.showBubbleFor(stack, this.processErrorValue(data), true);
     },
     outputString: function (data, taskId) {
-        console.log('# DEBUG # ' + this.processReturnValue(data));
+        // TODO: remove [2].concat once the VM sends all return values
+        // with a type byte preceding the data
+        console.log('# DEBUG # ' + this.processReturnValue([2].concat(data)));
     }
 };
 
