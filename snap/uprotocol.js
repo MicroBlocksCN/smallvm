@@ -77,26 +77,33 @@ Protocol.prototype.clearBuffer = function () {
 };
 
 Protocol.prototype.parseMessage = function () {
-    var opCode = this.messageBuffer[0],
-        descriptor = this.descriptorFor(opCode),
-        dataSize,
-        dataRemainder;
+    var check = this.messageBuffer[0],
+        isLong = check == 0xFB,
+        opCode = this.messageBuffer[1],
+        descriptor, dataSize, dataRemainder;
 
-    if (!descriptor) {
+    if (check !== 0xFA && check !== 0xFB) {
         // We probably connected to the board while it was sending a message
         // and missed its header.
         this.clearBuffer();
         return;
     }
 
-    if (descriptor.carriesData && this.messageBuffer.length >= 5) {
+    if (!opCode) {
+        // We haven't yet gotten our opCode, let's wait for it.
+        return;
+    }
+
+    descriptor = this.descriptorFor(opCode);
+
+    if (isLong && this.messageBuffer.length >= 5) {
         dataSize = this.messageBuffer[3] | this.messageBuffer[4] << 8;
         if (this.messageBuffer.length >= dataSize + 5) {
             // The message is complete, let's parse it.
             this.processMessage(descriptor, dataSize);
             this.messageBuffer = this.messageBuffer.slice(5 + dataSize);
         }
-    } else if (!descriptor.carriesData && this.messageBuffer.length >= 5) {
+    } else if (!isLong && this.messageBuffer.length >= 3) {
         // this message carries no data and is complete
         this.processMessage(descriptor);
         dataRemainder = this.messageBuffer.slice(5);
@@ -107,7 +114,6 @@ Protocol.prototype.parseMessage = function () {
 
 Protocol.prototype.processMessage = function (descriptor, dataSize) {
     var data,
-        messageId = this.messageBuffer[1],
         taskId = this.messageBuffer[2];
 
     if (dataSize) {
@@ -118,10 +124,10 @@ Protocol.prototype.processMessage = function (descriptor, dataSize) {
         value = 
             this.processJSONMessage(JSON.parse(String.fromCharCode.apply(null, data)));
     } else {
-        if (descriptor.carriesData) {
-            this.dispatcher[descriptor.selector].call(this, data, taskId, messageId);
+        if (dataSize) {
+            this.dispatcher[descriptor.selector].call(this, data, taskId);
         } else {
-            this.dispatcher[descriptor.selector].call(this, taskId, messageId);
+            this.dispatcher[descriptor.selector].call(this, taskId);
         }
     }
 };
@@ -133,11 +139,10 @@ Protocol.prototype.processJSONMessage = function (json) {
     );
 };
 
-Protocol.prototype.showBubbleFor = function (taskId, data, isError) {
-    var stack = this.ide.findStack(taskId);
+Protocol.prototype.showBubbleFor = function (stack, data, isError) {
     if (stack) {
         // this.ide.currentSprite may not be the actual target,
-        // in the future we may want to have board ids
+        // in the future we may want to have board IDs
         stack.showBubble(
             (isError ? 'Error\n' : '') + this.processReturnValue(data),
             false,
@@ -149,12 +154,16 @@ Protocol.prototype.showBubbleFor = function (taskId, data, isError) {
 Protocol.prototype.processReturnValue = function (rawData) {
     var type = rawData[0],
         value;
+
     if (type === 1) {
         // integer
         value = (rawData[4] << 24) | (rawData[3] << 16) | (rawData[2] << 8) | (rawData[1]);
     } else if (type === 2) {
         // string
         value = String.fromCharCode.apply(null, rawData.slice(1));
+    } else if (type === 3) {
+        // boolean
+        value = rawData.slice(1) == 1;
     }
 
     return isNil(value) ? 'unknown type' : value;
@@ -162,23 +171,18 @@ Protocol.prototype.processReturnValue = function (rawData) {
 
 Protocol.prototype.packMessage = function (selector, taskId, data) {
     var descriptor = this.descriptorFor(selector),
-        messageId = Math.floor(Math.random() * 255), // temporary
-        message = [descriptor.opCode, messageId, taskId];
+        message = [data ? 0xFB : 0xFA, descriptor.opCode, taskId];
 
     if (data) {
         if (selector === 'storeChunk') {
             // chunkType, hardcoded for now
             data = [1].concat(data);
         }
-
         // add the data size in little endian
         message = message.concat(data.length & 255).concat((data.length >> 8) & 255);
-
         // add the data
         message = message.concat(data);
-    } else {
-        message = message.concat([0, 0]);
-    }
+    } 
 
     return message;
 };
@@ -199,148 +203,70 @@ Protocol.prototype.descriptorFor = function (selectorOrOpCode) {
 // Message descriptors
 
 Protocol.prototype.descriptors = [
-    {
-        opCode: 0x00,
-        description: 'Okay reply',
-        selector: 'okayReply',
-        origin: 'board',
-        carriesData: false
-    },
+    // IDE → Board
     {
         opCode: 0x01,
-        description: 'Error reply',
-        selector: 'errorReply',
-        origin: 'board',
-        carriesData: true,
+        selector: 'storeChunk'
+    },
+    {
+        opCode: 0x02,
+        selector: 'deleteChunk'
+    },
+    {
+        opCode: 0x03,
+        selector: 'startChunk'
+    },
+    {
+        opCode: 0x04,
+        selector: 'stopChunk'
+    },
+    {
+        opCode: 0x05,
+        selector: 'startAll'
+    },
+    {
+        opCode: 0x06,
+        selector: 'stopAll'
+    },
+    {
+        opCode: 0x0E,
+        selector: 'deleteAll'
+    },
+    {
+        opCode: 0x0F,
+        selector: 'systemReset'
+    },
+
+    // Board → IDE
+    {
+        opCode: 0x10,
+        selector: 'taskStarted'
+    },
+    {
+        opCode: 0x11,
+        selector: 'taskDone'
+    },
+    {
+        opCode: 0x12,
+        selector: 'taskReturned'
+    },
+    {
+        opCode: 0x13,
+        selector: 'taskError',
         dataDescriptor: {
             0x00: 'Division by zero',
             0xFF: 'Generic Error'
         }
     },
     {
-        opCode: 0x02,
-        description: 'Store a code chunk',
-        selector: 'storeChunk',
-        origin: 'ide',
-        carriesData: true
-    },
-    {
-        opCode: 0x03,
-        description: 'Delete a code chunk',
-        selector: 'deleteChunk',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x04,
-        description: 'Start all threads',
-        selector: 'startAll',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x05,
-        description: 'Stop all threads',
-        selector: 'stopAll',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x06,
-        description: 'Start a code chunk',
-        selector: 'startChunk',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x07,
-        description: 'Stop a code chunk',
-        selector: 'stopChunk',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x08,
-        description: 'Get task status',
-        selector: 'getTaskStatus',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x09,
-        description: 'Get task status reply',
-        origin: 'board',
-        selector: 'getTaskStatusReply',
-        carriesData: true
-    },
-    {
-        opCode: 0x0A,
-        description: 'Get output message',
-        selector: 'getOutputMessage',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x0B,
-        description: 'Get output message reply',
-        selector: 'getOutputMessageReply',
-        origin: 'board',
-        carriesData: true
-    },
-    {
-        opCode: 0x0C,
-        description: 'Get return value',
-        selector: 'getReturnValue',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x0D,
-        description: 'Get return value reply',
-        selector: 'getReturnValueReply',
-        origin: 'board',
-        carriesData: true
-    },
-    {
-        opCode: 0x0E,
-        description: 'Get error info',
-        selector: 'getErrorInfo',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x0F,
-        description: 'Get error info reply',
-        selector: 'getErrorInfoReply',
-        origin: 'board',
-        carriesData: true
-    },
-    {
-        opCode: 0x10,
-        description: 'System Reset',
-        selector: 'systemResetMsg',
-        origin: 'ide',
-        carriesData: false
-    },
-    {
-        opCode: 0x11,
-        description: 'Task Started',
-        selector: 'taskStarted',
-        origin: 'board',
-        carriesData: false
-    },
-    {
-        opCode: 0x12,
-        description: 'Task Done',
-        selector: 'taskDone',
-        origin: 'board',
-        carriesData: false
-    },
+        opCode: 0x14,
+        selector: 'outputString'
+    }, 
+
+    // Bridge → IDE
     {
         opCode: 0xFF,
-        description: 'JSON message',
-        selector: 'jsonMessage',
-        carriesData: true
+        selector: 'jsonMessage'
     }
 ];
 
@@ -367,8 +293,8 @@ Protocol.prototype.dispatcher = {
     serialDisconnectResponse: function (success) {
         this.serialDisconnected(success);
     },
+
     // µBlocks messages
-    okayReply: nop,
     taskStarted: function (taskId) {
         var stack = this.ide.findStack(taskId);
         stack.addHighlight(stack.topBlock().removeHighlight());
@@ -377,18 +303,17 @@ Protocol.prototype.dispatcher = {
         var stack = this.ide.findStack(taskId);
         stack.removeHighlight();
     },
-    errorReply: function (data, taskId) {
+    taskReturned: function (data, taskId) {
+        var stack = this.ide.findStack(taskId);
+        stack.removeHighlight();
+        this.showBubbleFor(stack, data, false);
+    },
+    taskError: function (data, taskId) {
         this.ide.findStack(taskId).addErrorHighlight();
-        this.ide.postal.sendMessage('getErrorInfo', taskId);
+        // Not dealing with error codes yet
+        this.showBubbleFor(stack, data, true);
     },
-    getErrorInfoReply: function (data, taskId) {
-        this.showBubbleFor(taskId, data, true);
-    },
-    getReturnValueReply: function (data, taskId) {
-        this.showBubbleFor(taskId, data);
-    },
-    getOutputMessage: nop,
-    getOutputMessageReply: function (data, taskId) {
+    outputString: function (data, taskId) {
         console.log('# DEBUG # ' + this.processReturnValue(data));
     }
 };

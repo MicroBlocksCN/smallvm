@@ -124,6 +124,8 @@ and the IP address within that chunk. The format is:
 
 	[IP within chunk (high 24-bits)][chunk ID (low 8-bits)]
 
+**TODO:** Describe error codes
+
 ### Output String (OpCode: 0x14, long message)
 
 Outputs the string in the data part of this message.
@@ -131,3 +133,24 @@ Outputs the string in the data part of this message.
 ### Reserved (OpCodes 0x15-0x1F)
 
 Reserved for additional Board → IDE messages.
+
+<br>
+## IDE → Bridge, Bridge → IDE
+
+0xFF is reserved for all messages between the bridge and the IDE.
+
+In this case, the message data will be a JSON object of the form:
+
+    { selector: aMethorSelector, arguments: [ arg1, arg2, ... ] }.
+
+### Get Serial Port List (selector: getSerialPortList)
+
+### Serial Port List Response (selector: getSerialPortListResponse)
+
+### Serial Connect Request (selector: serialConnect)
+
+### Serial Connect Response (selector: serialConnectResponse)
+
+### Serial Disconnect Request (selector: serialDisconnect)
+
+### Serial Disconnect Response (selector: serialDisconnectResponse)
