@@ -1,4 +1,4 @@
-# Microblocks Serial Protocol (version 2.05)
+# Microblocks Serial Protocol (version 2.06)
 
 This protocol describes how information flows from the
 board to the IDE and the other way around. All messages
@@ -41,6 +41,8 @@ limit on the data size. This buffer size sets the upper limit on the size of a s
 ### Store Chunk (OpCode: 0x01; long message)
 
 Set the code for the given chunkID to the given data.
+The byte 0xFE is append after the chunk bytes to help
+the board to detect truncated messages.
 
 ### Delete Chunk (OpCode: 0x02)
 
@@ -124,9 +126,10 @@ and the IP address within that chunk. The format is:
 
 	[IP within chunk (high 24-bits)][chunk ID (low 8-bits)]
 
-### Output String (OpCode: 0x14, long message)
+### Output Value (OpCode: 0x14, long message)
 
-Outputs the string in the data part of this message.
+Outputs the value in the data part of this message. The value is
+encoded the same was as the Task Returned Value message.
 
 ### Reserved (OpCodes 0x15-0x1F)
 
