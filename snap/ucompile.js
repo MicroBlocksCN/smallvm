@@ -73,7 +73,7 @@ Compiler.prototype.selectors = {
     // returnResult
     // waitMicrosOp
     // waitMillisOp
-    bubble: 'printIt',
+    bubble: 'sayIt',
     doStopDevice: 'stopAll',
     reportSum: 'add',
     reportDifference: 'subtract',
@@ -141,7 +141,14 @@ Compiler.prototype.opcodes = {
     microsOp: 39,
     millisOp: 40,
     peekOp: 41,
-    pokeOp: 42
+    pokeOp: 42,
+    modulo: 43,
+    lessOrEq: 44,
+    equal: 45,
+    greaterOrEq: 46,
+    greaterThan: 47,
+    notOp: 48,
+    sayIt: 49
 };
 
 
