@@ -57,6 +57,8 @@ static void printObj(OBJ obj) {
 }
 
 static OBJ primPrint(int argCount, OBJ *args) {
+	// This is a variadic "print" for the GP IDE.
+
 	printBuffer[0] = 0; // null terminate
 	printBufferByteCount = 0;
 
@@ -65,15 +67,28 @@ static OBJ primPrint(int argCount, OBJ *args) {
 	}
 	if (printBufferByteCount && (' ' == printBuffer[printBufferByteCount - 1])) {
 		// Remove final space character
-		printBuffer[printBufferByteCount - 1] = 0;
+		printBuffer[printBufferByteCount - 1] = 0; // null terminate
 		printBufferByteCount--;
 	}
 #if USE_TASKS
-	sendOutputMessage(printBuffer, printBufferByteCount);
+	outputString(printBuffer);
 #else
 	printf("(NO TASKS) %s", printBuffer);
 #endif
 	return nilObj;
+}
+
+static int bytesForObject(OBJ value) {
+	// Return the number of
+	int headerBytes = 6; // message header (5 bytes) + type byte
+	if (isInt(value)) { // 32-bit integer
+		return headerBytes + 4;
+	} else if (IS_CLASS(value, StringClass)) { // string
+		return headerBytes + strlen(obj2str(value));
+	} else if ((value == trueObj) || (value == falseObj)) { // boolean
+		return headerBytes + 1;
+	}
+	return 0; // arrays and byte arrays are not yet serializeable
 }
 
 // Interpreter
@@ -145,6 +160,7 @@ static void runTask(Task *task) {
 		&&greaterOrEq_op,
 		&&greaterThan_op,
 		&&not_op,
+		&&sayIt_op,
 	};
 
 	// Restore task state
@@ -297,7 +313,7 @@ static void runTask(Task *task) {
 			ip--; // retry when task is resumed
 			goto suspend;
 		}
-		*(sp - arg) = primPrint(arg, sp - arg); // arg = # of arguments
+		primPrint(arg, sp - arg); // arg = # of arguments
 		sp -= arg - 1;
 		DISPATCH();
 	stopAll_op:
@@ -424,6 +440,14 @@ static void runTask(Task *task) {
 		} else {
 			nonBooleanFailure();
 		}
+		sp -= arg - 1;
+		DISPATCH();
+	sayIt_op:
+		if (!hasOutputSpace(bytesForObject(*(sp - arg)))) {
+			ip--; // retry when task is resumed
+			goto suspend;
+		}
+		outputValue(*(sp - arg), task->taskChunkIndex);
 		sp -= arg - 1;
 		DISPATCH();
 }

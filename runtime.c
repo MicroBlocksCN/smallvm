@@ -164,12 +164,51 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data) {
 
 int hasOutputSpace(int byteCount) { return ((OUTBUF_MASK - OUTBUF_BYTES()) > byteCount); }
 
-void outputString(char *s) {
-	sendOutputMessage(s, strlen(s));
+static void sendValueMessage(uint8 msgType, uint8 chunkIndex, OBJ value) {
+	// Send a value message of the given type for the task with the given chunkIndex.
+	// Data is: <type byte><...data...>
+	// Types: 1 - integer, 2 - string
+
+	char data[200];
+	if (isInt(value)) { // 32-bit integer, little endian
+		data[0] = 1; // data type (1 is integer)
+		int n = obj2int(value);
+		data[1] = (n & 0xFF);
+		data[2] = ((n >> 8) & 0xFF);
+		data[3] = ((n >> 16) & 0xFF);
+		data[4] = ((n >> 24) & 0xFF);
+		sendMessage(msgType, chunkIndex, 5, data);
+	} else if (IS_CLASS(value, StringClass)) { // string
+		data[0] = 2; // data type (2 is string)
+		char *s = obj2str(value);
+		int byteCount = strlen(s);
+		if (byteCount > (int) (sizeof(data) - 1)) byteCount = sizeof(data) - 1;
+		for (int i = 0; i < byteCount; i++) {
+			data[i + 1] = s[i];
+		}
+		sendMessage(msgType, chunkIndex, (byteCount + 1), data);
+	} else if ((value == trueObj) || (value == falseObj)) { // boolean
+		data[0] = 3; // data type (3 is boolean)
+		data[1] = (value == trueObj) ? 1 : 0;
+		sendMessage(msgType, chunkIndex, 2, data);
+	}
 }
 
-void sendOutputMessage(char *s, int byteCount) {
-	sendMessage(outputStringMsg, 0, byteCount, s);
+void outputString(char *s) {
+	// Special case for sending a debug string.
+
+	char data[200];
+	data[0] = 2; // data type (2 is string)
+	int byteCount = strlen(s);
+	if (byteCount > (int) (sizeof(data) - 1)) byteCount = sizeof(data) - 1;
+	for (int i = 0; i < byteCount; i++) {
+		data[i + 1] = s[i];
+	}
+	sendMessage(outputValueMsg, 0, (byteCount + 1), data);
+}
+
+void outputValue(OBJ value, int chunkIndex) {
+	sendValueMessage(outputValueMsg, chunkIndex, value);
 }
 
 void sendTaskDone(uint8 chunkIndex) {
@@ -191,32 +230,8 @@ void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where) {
 
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue) {
 	// Send the value returned by the task for the given chunk.
-	// Data is: <type byte><...data...>
-	// Types: 1 - integer, 2 - string
 
-	char data[100];
-	if (isInt(returnValue)) { // 32-bit integer, little endian
-		data[0] = 1; // data type (1 is integer)
-		int n = obj2int(returnValue);
-		data[1] = (n & 0xFF);
-		data[2] = ((n >> 8) & 0xFF);
-		data[3] = ((n >> 16) & 0xFF);
-		data[4] = ((n >> 24) & 0xFF);
-		sendMessage(taskReturnedValueMsg, chunkIndex, 5, data);
-	} else if (IS_CLASS(returnValue, StringClass)) { // string
-		data[0] = 2; // data type (2 is string)
-		char *s = obj2str(returnValue);
-		int byteCount = strlen(s);
-		if (byteCount > (int) (sizeof(data) - 1)) byteCount = sizeof(data) - 1;
-		for (int i = 0; i < byteCount; i++) {
-			data[i + 1] = s[i];
-		}
-		sendMessage(taskReturnedValueMsg, chunkIndex, (byteCount + 1), data);
-	} else if ((returnValue == trueObj) || (returnValue == falseObj)) { // boolean
-		data[0] = 3; // data type (3 is boolean)
-		data[1] = (returnValue == trueObj) ? 1 : 0;
-		sendMessage(taskReturnedValueMsg, chunkIndex, 2, data);
-	}
+	sendValueMessage(taskReturnedValueMsg, chunkIndex, returnValue);
 }
 
 // Receiving Messages from IDE
@@ -231,6 +246,10 @@ static void skipToStartByteAfter(int startIndex) {
 	for (i = startIndex; i < rcvByteCount; i++) {
 		int b = rcvBuf[i];
 		if ((0xFA == b) || (0xFB == b)) {
+			if ((i + 1) < rcvByteCount) {
+				b = rcvBuf[i + 1];
+				if ((b < 0x01) || (b > 0x20)) continue; // illegal msg type; keep scanning
+			}
 			nextStart = i;
 			break;
 		}
@@ -246,7 +265,21 @@ static void skipToStartByteAfter(int startIndex) {
 	rcvByteCount -= nextStart;
 }
 
+static int receiveTimeout() {
+	// Check for receive timeout. This allows recovery from bad length or incomplete message.
+
+	uint32 usecs = microsecs();
+	if (usecs < lastRcvTime) lastRcvTime = 0; // clock wrap
+	return (usecs - lastRcvTime) > 20000;
+}
+
 static void processShortMessage() {
+	if (rcvByteCount < 3) { // message is not complete
+		if (receiveTimeout()) {
+			skipToStartByteAfter(1);
+		}
+		return; // message incomplete
+	}
 	int cmd = rcvBuf[1];
 	int chunkIndex = rcvBuf[2];
 	switch (cmd) {
@@ -276,35 +309,32 @@ static void processShortMessage() {
 }
 
 static void processLongMessage() {
-	// check for receive timeout: allows recovery from bad length or incomplete message
-	int usecsSinceLastRcv = microsecs() - lastRcvTime;
-	if (usecsSinceLastRcv < 0) { // clock wrap
-		lastRcvTime = 0;
-		usecsSinceLastRcv = microsecs();
-	}
-	if (usecsSinceLastRcv > 20000) { // timeout: clear the receive buffer
-		rcvByteCount = 0;
-		return;
-	}
-
-	if (rcvByteCount < 5) return; // incomplete header
 
 	int msgLength = (rcvBuf[4] << 8) | rcvBuf[3];
-	if (rcvByteCount < (4 + msgLength)) return; // incomplete body
-
+	if ((rcvByteCount < 5) || (rcvByteCount < (5 + msgLength))) { // message is not complete
+		if (receiveTimeout()) {
+			skipToStartByteAfter(1);
+		}
+		return; // message incomplete
+	}
 	int cmd = rcvBuf[1];
 	int chunkIndex = rcvBuf[2];
 	int chunkType = rcvBuf[5];
 	if (storeChunkMsg == cmd) {
-		// body is: <chunkType (1 byte)> <instruction data>
-		storeCodeChunk(chunkIndex, chunkType, (msgLength - 1), &rcvBuf[6]);
+		// body is: <chunkType (1 byte)> <instruction data> <terminator byte (0xFE)>
+		if (0xFE != rcvBuf[5 + msgLength - 1]) { // chunk does not end with a terminator byte
+			skipToStartByteAfter(1);
+			return;
+		} else {
+			storeCodeChunk(chunkIndex, chunkType, (msgLength - 2), &rcvBuf[6]);
+		}
 	}
 	skipToStartByteAfter(5 + msgLength);
 }
 
-static void busyWaitMicrosecs(unsigned int usecs) {
-	unsigned long start = microsecs();
-	while ((microsecs() - start) < usecs) /* wait */;
+static void busyWaitMicrosecs(int usecs) {
+	uint32 start = microsecs();
+	while ((microsecs() - start) < (uint32) usecs) /* wait */;
 }
 
 void processMessage() {
@@ -324,9 +354,6 @@ void processMessage() {
 		rcvByteCount += bytesRead;
 		lastRcvTime = microsecs();
 	}
-
-	if (rcvByteCount < 3) return; // incomplete message header
-
 	int firstByte = rcvBuf[0];
 	if (0xFA == firstByte) {
 		processShortMessage();

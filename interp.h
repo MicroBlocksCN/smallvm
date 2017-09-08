@@ -56,6 +56,7 @@ extern "C" {
 #define greaterOrEq 46
 #define greaterThan 47
 #define notOp 48
+#define sayIt 49
 
 // Instruction Format
 
@@ -156,7 +157,7 @@ extern int taskCount;
 #define taskDoneMsg				17
 #define taskReturnedValueMsg	18
 #define taskErrorMsg			19
-#define outputStringMsg			20
+#define outputValueMsg			20
 
 // Error Codes (codes 1-9 are protocol errors, codes 10 and up are task errors)
 
@@ -181,7 +182,7 @@ void stopAllTasks(void);
 void processMessage(void);
 int hasOutputSpace(int byteCount);
 void outputString(char *s);
-void sendOutputMessage(char *s, int byteCount);
+void outputValue(OBJ value, int chunkIndex);
 void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);

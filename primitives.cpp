@@ -155,7 +155,7 @@ int canReadByte() { return Serial.available(); }
 int canSendByte() { return true; } // Serial.availableForWrite not implemented for Primo
 void sendByte(char aByte) { Serial.write(aByte); }
 
-void hardwareInit() {}
+void hardwareInit() { }
 
 void systemReset() {
 	NVIC_SystemReset();
@@ -176,10 +176,9 @@ OBJ primAnalogRead(OBJ *args) {
 OBJ primAnalogWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	int value = obj2int(args[1]);
-	if ((pinNum < 0) || (pinNum > 5)) return nilObj;
-	int pin = analogPin[pinNum];
-	pinMode(pin, OUTPUT);
-	analogWrite(pin, value);
+	if (pinNum < 0) return nilObj;
+	pinMode(pinNum, OUTPUT);
+	analogWrite(pinNum, value);
 	return nilObj;
 }
 
@@ -187,7 +186,7 @@ OBJ primDigitalRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	if (pinNum < 0) return falseObj;
 	pinMode(pinNum, INPUT);
-	return (LOW == digitalRead(pinNum)) ? trueObj : falseObj;
+	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
 }
 
 OBJ primDigitalWrite(OBJ *args) {
@@ -264,8 +263,8 @@ PinName pinMap[] = {
 // Pin Records
 
 analogin_t analogIn[ANALOG_PIN_COUNT];
-pwmout_t analogOut[ANALOG_PIN_COUNT];
 gpio_t digitalPin[TOTAL_PIN_COUNT];
+pwmout_t pwmPin[TOTAL_PIN_COUNT];
 
 int pwmPeriodusecs = 1000; // 1 millisecond
 
@@ -303,13 +302,13 @@ static void setPinMode(int pinNum, int newMode) {
 	pinMode[pinNum] = newMode;
 
 	// turn off old output, if any
-	if (analoglWriteMode == oldMode) pwmout_free(&analogOut[pinNum]);
+	if (analoglWriteMode == oldMode) pwmout_free(&pwmPin[pinNum]);
 	gpio_dir(&digitalPin[pinNum], PIN_INPUT);
 
 	// set new output mode if needed
 	if (analoglWriteMode == newMode) {
-		pwmout_init(&analogOut[pinNum], pinMap[pinNum]);
-		pwmout_period_us(&analogOut[pinNum], pwmPeriodusecs);
+		pwmout_init(&pwmPin[pinNum], pinMap[pinNum]);
+		pwmout_period_us(&pwmPin[pinNum], pwmPeriodusecs);
 	}
 	if (digitalWriteMode == newMode) {
 		gpio_dir(&digitalPin[pinNum], PIN_OUTPUT);
@@ -327,11 +326,11 @@ OBJ primAnalogRead(OBJ *args) {
 
 OBJ primAnalogWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	if ((pinNum < 0) || (pinNum > ANALOG_PIN_COUNT)) return nilObj;
-	float value = obj2int(args[1]) / 65535.0; // range: 0-65535 (16-bit unsigned)
+	if ((pinNum < 0) || (pinNum > TOTAL_PIN_COUNT)) return nilObj;
+	float value = obj2int(args[1]) / 1023.0; // range: 0-1023 (10-bit)
 
 	if (analoglWriteMode != pinMode[pinNum]) setPinMode(pinNum, analoglWriteMode);
-	pwmout_write(&analogOut[pinNum], value);
+	pwmout_write(&pwmPin[pinNum], value);
 	return nilObj;
 }
 
