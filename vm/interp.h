@@ -57,6 +57,9 @@ extern "C" {
 #define greaterThan 47
 #define notOp 48
 #define sayIt 49
+#define analogPinsOp 50
+#define digitalPinsOp 51
+#define hexToInt 52
 
 // Instruction Format
 
@@ -173,6 +176,8 @@ extern int taskCount;
 #define indexOutOfRangeError	15
 #define needsBoolean			16
 #define nonComparable			17
+#define needsStringError		18
+#define intOutOfRangeError		19
 
 // Runtime Operations
 
@@ -235,14 +240,16 @@ OBJ primArrayFill(OBJ *args);
 OBJ primArrayAt(OBJ *args);
 OBJ primArrayAtPut(OBJ *args);
 
+OBJ primPeek(OBJ *args);
+OBJ primPoke(OBJ *args);
+
 OBJ primAnalogRead(OBJ *args);
 OBJ primAnalogWrite(OBJ *args);
 OBJ primDigitalRead(OBJ *args);
 OBJ primDigitalWrite(OBJ *args);
 OBJ primSetLED(OBJ *args);
-
-OBJ primPeek(OBJ *args);
-OBJ primPoke(OBJ *args);
+OBJ primAnalogPins(OBJ *args);
+OBJ primDigitalPins(OBJ *args);
 
 #ifdef __cplusplus
 }

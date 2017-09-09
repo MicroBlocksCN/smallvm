@@ -161,6 +161,9 @@ static void runTask(Task *task) {
 		&&greaterThan_op,
 		&&not_op,
 		&&sayIt_op,
+		&&analogPins_op,
+		&&digitalPins_op,
+		&&primHexToInt_op,
 	};
 
 	// Restore task state
@@ -448,6 +451,18 @@ static void runTask(Task *task) {
 			goto suspend;
 		}
 		outputValue(*(sp - arg), task->taskChunkIndex);
+		sp -= arg - 1;
+		DISPATCH();
+	analogPins_op:
+		*(sp - arg) = primAnalogPins(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	digitalPins_op:
+		*(sp - arg) = primDigitalPins(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	primHexToInt_op:
+		*(sp - arg) = primHexToInt(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 }

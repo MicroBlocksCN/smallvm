@@ -1,6 +1,8 @@
 // arrayPrims.cpp - Microblocks arrau primitives
 // John Maloney, September 2017
 
+#include <stdlib.h>
+
 #include "mem.h"
 #include "interp.h"
 
@@ -11,6 +13,8 @@ OBJ byteValueFailure() { return failure(needs0to255IntError, "A ByteArray can on
 OBJ indexClassFailure() { return failure(needsIntegerError, "Index must be an integer"); }
 OBJ arrayClassFailure() { return failure(needsArrayError, "Must must be an Array or ByteArray"); }
 OBJ outOfRangeFailure() { return failure(indexOutOfRangeError, "Index out of range"); }
+OBJ nonStringFailure() { return failure(needsStringError, "Must be a string"); }
+OBJ intOutOfRangeFailure() { return failure(intOutOfRangeError, "Integer result out of range -536870912 to 536870911"); }
 
 // Platform Agnostic Primitives
 
@@ -82,15 +86,23 @@ OBJ primArrayAtPut(OBJ *args) {
 	return nilObj;
 }
 
+OBJ primHexToInt(OBJ *args) {
+	OBJ s = args[0];
+	if (NOT_CLASS(s, StringClass)) return nonStringFailure();
+	long result = strtol(obj2str(s), NULL, 16);
+	if ((result < -536870912) || (result > 536870911)) return intOutOfRangeFailure();
+	return int2obj(result);
+}
+
 OBJ primPeek(OBJ *args) {
-	if (!isInt(args[0])) return int2obj(0);
-	int *addr = (int *) obj2int(args[0]);
+	if (!isInt(args[0]) || !isInt(args[1])) return indexClassFailure();
+	int *addr = (int *) (((obj2int(args[0]) & 0xFFFF) << 16) | (obj2int(args[1]) & 0xFFFF));
 	return int2obj(*addr);
 }
 
 OBJ primPoke(OBJ *args) {
-	if (!isInt(args[0])) return nilObj;
-	int *addr = (int *) obj2int(args[0]);
-	*addr = obj2int(args[1]);
+	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return indexClassFailure();
+	int *addr = (int *) (((obj2int(args[0]) & 0xFFFF) << 16) | (obj2int(args[1]) & 0xFFFF));
+	*addr = obj2int(args[2]);
 	return nilObj;
 }
