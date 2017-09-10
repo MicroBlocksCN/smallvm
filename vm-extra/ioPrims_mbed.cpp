@@ -3,18 +3,22 @@
 
 #include <stdio.h>
 
+#include "mem.h"
+#include "interp.h"
+
 #include "mbed.h"
 #include <gpio_api.h>
 #include <PinNames.h>
 
-#include "mem.h"
-#include "interp.h"
-
 // Timing Functions
+
+#ifdef TARGET_NRF51_MICROBIT
+
+// Use 32-bit hardware clock to achieve usec precision
 
 static char *clock_base = (char *) 0x40008000;
 
-void initClock_NRF51() {
+static void initClock_NRF51() {
 	*((int *) (clock_base + 0x010)) = 1; // shutdown & clear
 	*((int *) (clock_base + 0x504)) = 0; // timer mode
 	*((int *) (clock_base + 0x508)) = 3; // 32-bit
@@ -36,7 +40,18 @@ uint32 millisecs() {
 	return microsecs() >> 10;
 }
 
-// Communications and System Reset
+#else
+
+#include <us_ticker_api.h>
+#define TICKS() (us_ticker_read())
+
+static void initClock_NRF51() { }
+uint32 microsecs() { return us_ticker_read(); }
+uint32 millisecs() { return microsecs() >> 10; }
+
+#endif
+
+// Communications
 
 Serial pc(USBTX, USBRX, 115200);
 
@@ -52,23 +67,22 @@ int canReadByte() { return pc.readable(); }
 int canSendByte() { return pc.writeable(); }
 void sendByte(char aByte) { pc.putc(aByte); }
 
-void systemReset() { NVIC_SystemReset(); }
-
 // GPIO Pin Map
 
-#if defined(TARGET_NRF51_MICROBIT)
+#ifdef TARGET_NRF51_MICROBIT
 
-#define TOTAL_PIN_COUNT 25
-#define ANALOG_PIN_COUNT 4
+#define DIGITAL_PINS 25
+#define ANALOG_PINS 4 // the first four digital pins can also be analog pins
+#define TOTAL_PINS DIGITAL_PINS
 
-PinName pinMap[] = {
+PinName pinMap[TOTAL_PINS] = {
  	P0_3, P0_2, P0_1, P0_4, // edge pins 0-3 (analog)
  	P0_5, // edge pin 4, COL1 (does not work as digital out if set for analog in)
  	P0_17, // edge pin 5, button A
  	P0_12, P0_11, P0_18, P0_10, P0_6, // edge pins 6-10
  	P0_26, // edge pin 11, button B
  	P0_20, P0_23, P0_22, P0_21, P0_16, // edge pins 12-16
- 	// edge pins 17-18 are 3.3v power
+	// edge pins 17-18 are 3.3v power
 	P0_0, P0_30, // uBlocks pins 17-18 -> edge pins 19-20
 	P0_7, P0_8, P0_9, // LED MATRIX COLS 4-6 (not on edge connector)
 	P0_13, P0_14, P0_15,  // LED MATRIX ROWS 1-3 (not on edge connector)
@@ -78,11 +92,9 @@ PinName pinMap[] = {
 
 // Pin Records
 
-analogin_t analogIn[ANALOG_PIN_COUNT];
-gpio_t digitalPin[TOTAL_PIN_COUNT];
-pwmout_t pwmPin[TOTAL_PIN_COUNT];
-
-int pwmPeriodusecs = 1000; // 1 millisecond
+analogin_t analogIn[ANALOG_PINS];
+gpio_t digitalPin[TOTAL_PINS];
+pwmout_t pwmPin[TOTAL_PINS];
 
 // Pin Modes
 
@@ -91,7 +103,7 @@ int pwmPeriodusecs = 1000; // 1 millisecond
 #define analogReadMode 3
 #define analoglWriteMode 4
 
-uint8 pinMode[TOTAL_PIN_COUNT]; // current mode of each pin
+uint8 pinMode[TOTAL_PINS]; // current mode of each pin
 
 static void setPinMode(int pinNum, int newMode) {
 	// Change the mode of the given pin.
@@ -107,7 +119,7 @@ static void setPinMode(int pinNum, int newMode) {
 	// set new output mode if needed
 	if (analoglWriteMode == newMode) {
 		pwmout_init(&pwmPin[pinNum], pinMap[pinNum]);
-		pwmout_period_us(&pwmPin[pinNum], pwmPeriodusecs);
+		pwmout_period_us(&pwmPin[pinNum], 1000); // 1 millisecond
 	}
 	if (digitalWriteMode == newMode) {
 		gpio_dir(&digitalPin[pinNum], PIN_OUTPUT);
@@ -118,25 +130,31 @@ static void setPinMode(int pinNum, int newMode) {
 
 void hardwareInit() {
 	initClock_NRF51();
-	for (int i = 0; i < ANALOG_PIN_COUNT; i++) {
+	for (int i = 0; i < ANALOG_PINS; i++) {
 		if (i != 4) {
 			// Workaround. If pin4 is initialized for analogIn, it doesn't
 			// work as a digital out. Why is pin 4 special?
 			analogin_init(&analogIn[i], pinMap[i]);
 		}
 	}
-	for (int i = 0; i < TOTAL_PIN_COUNT; i++) {
+	for (int i = 0; i < TOTAL_PINS; i++) {
 		pinMode[i] = digitalReadMode;
 		gpio_init(&digitalPin[i], pinMap[i]);
 		gpio_dir(&digitalPin[i], PIN_INPUT);
-	}
+ 	}
 }
 
-// Pin Primitives
+void systemReset() { NVIC_SystemReset(); }
+
+// Pin IO Primitives
+
+OBJ primAnalogPins(OBJ *args) { return int2obj(ANALOG_PINS); }
+
+OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 
 OBJ primAnalogRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	if ((pinNum < 0) || (pinNum > ANALOG_PIN_COUNT)) return int2obj(0);
+	if ((pinNum < 0) || (pinNum > ANALOG_PINS)) return int2obj(0);
 
 	if (analogReadMode != pinMode[pinNum]) setPinMode(pinNum, analogReadMode);
 	int value = analogin_read_u16(&analogIn[pinNum]); // 16-bit
@@ -145,8 +163,8 @@ OBJ primAnalogRead(OBJ *args) {
 
 OBJ primAnalogWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	if ((pinNum < 0) || (pinNum > TOTAL_PIN_COUNT)) return nilObj;
-	float value = obj2int(args[1]) / 1023.0; // range: 0-1023 (10-bit)
+	if ((pinNum < 0) || (pinNum > TOTAL_PINS)) return nilObj;
+	float value = obj2int(args[1]) / 255.0; // range: 0-255
 
 	if (analoglWriteMode != pinMode[pinNum]) setPinMode(pinNum, analoglWriteMode);
 	pwmout_write(&pwmPin[pinNum], value);
@@ -155,7 +173,7 @@ OBJ primAnalogWrite(OBJ *args) {
 
 OBJ primDigitalRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	if ((pinNum < 0) || (pinNum > TOTAL_PIN_COUNT)) return falseObj;
+	if ((pinNum < 0) || (pinNum > TOTAL_PINS)) return falseObj;
 
 	if (digitalReadMode != pinMode[pinNum]) setPinMode(pinNum, digitalReadMode);
 	int value = gpio_read(&digitalPin[pinNum]);
@@ -164,7 +182,7 @@ OBJ primDigitalRead(OBJ *args) {
 
 OBJ primDigitalWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	if ((pinNum < 0) || (pinNum > TOTAL_PIN_COUNT)) return falseObj;
+	if ((pinNum < 0) || (pinNum > TOTAL_PINS)) return falseObj;
 	int value = (args[1] == trueObj) ? 1 : 0;
 
 	if (digitalWriteMode != pinMode[pinNum]) setPinMode(pinNum, digitalWriteMode);

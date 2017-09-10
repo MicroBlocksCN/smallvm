@@ -240,6 +240,7 @@ OBJ primArrayFill(OBJ *args);
 OBJ primArrayAt(OBJ *args);
 OBJ primArrayAtPut(OBJ *args);
 
+OBJ primHexToInt(OBJ *args);
 OBJ primPeek(OBJ *args);
 OBJ primPoke(OBJ *args);
 

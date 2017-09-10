@@ -1,6 +1,7 @@
 // arrayPrims.cpp - Microblocks arrau primitives
 // John Maloney, September 2017
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "mem.h"
