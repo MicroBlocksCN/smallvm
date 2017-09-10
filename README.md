@@ -1,82 +1,73 @@
 # README #
 
-SmallVM is an "bytecoded" virtual machine designed to run on 32-bit embedded processors with as little as 4k of RAM.
-It is intended to be simple and easily ported and extended, yet high performance. It includes a garbage collected memory
-to allow working with dynamic data structures. Built-in data types include integers, single-precision floating point numbers, booleans, strings, object arrays, and byte arrays.
+Microblocks (uBlocks) is a virtual machine for blocks
+languages designed to run on 32-bit embedded processors with
+as little as 8k of RAM. It is intended to be simple and
+easily ported and extended, yet high performance. It
+includes a garbage collected memory to allow working with
+dynamic data structures and low-latency task scheduler
+that can work at timescales down to 10-20 microseconds.
 
-### How do I get set up? ###
+uBlocks supports incremental, "live" code development when
+a board is tethered but allows the program to run autonomously
+whent he board is disconnected from the host computer.
 
-The quickest way to compile the VM is to use mbed's online compiler. You'll need to create a free mbed account, but you don't need to download or install any software.
+Built-in data types will include integers, single-precision
+floating point numbers, booleans, strings, object arrays,
+and byte arrays.
 
-The mbed online compiler is super easy to use. Just select your board, create a new project, discard the main.cpp it gives you, and drag-and-drop the appropriate .h, .c, and .cpp files onto it. Use microbit.c for the BBC Micro Bit board and adapt mbedMain.c for generic mbed boards, and omit the other main and test .c files. Then hit the compile button. This will download a .bin file to your computer. (It may also show some compiler warnings that you can usually ignore.) Plug in your board and drag the .bin file onto the USB drive that appears. (For the Micro Bit, it will be a .hex file instead.) This will install the program. Press the reset button and the VM will start. Easy!
+### How do I compile the VM? ###
 
-You can also use the Arduino IDE 1.8.2 or later. Select your ARM-based Arduino board and create a new sketch. This will make a folder in your Arduino folder (which is in the Documents folder on Mac OS). Delete the .ino file in the sketch folder and replace it with the appropriate .h, .c, and .cpp files (i.e. all but the ones with "main" or "test" in their names). Also include SmallVM.ino. Quit the Arduinio IDE and double-click on SmallVM.ino to restart the IDE. You should see the .ino file and all the .c and .cpp files as tabs in the sketch. Hit the download button to compile the sketch and install it on your board.
+The uBlocks virtual machine is written in C and C++.
+The Arduino platform is preferred, but it can also
+be built using the mbed platform and it should be
+portable to other platforms with minimal effort.
 
-I needed some additional options, such as the ability to output assembly code listings, so I have been developing on Mac OS X (10.11.8) using the GCC ARM compiler and an mbed LPC1768 board.
-
-I installed the necessary tools with following commands:
-
-
-```
-brew update
-brew install srecord
-brew cask install gcc-arm-embedded
-```
-
-The build the mbed VM with this tool, just type make in the smallvm directory.
-
-Finally, you can build and run the VM on a laptop using your favorite C compiler. (Tested only on Mac OS with XCode, but should work on other platforms.) The ARM hardware operations will be stubbed out, of course, but basic VM tests can be run. This path is be used to debug the VM and object memory logic. Many bugs can be found and fixed before testing on actual hardware. The files interpTests1.c and taskTest.c were used, with suitable modifications of mbedMain.c. To compile the VM to run your local computer just invoke the compiler like this:
-
-```
-gcc -m32 macMain.c interp.c mem.c runtime.c primitives.cpp interpTests1.c taskTest.c -o vmTest
-```
-
-If it succeeds, you can run the VM like this:
-
-
-```
-./vmTest
-```
+The uBlocks virtual machine can be compiled and loaded onto
+a board using the Arduino IDE (version 1.8 or later)
+with the appropriate board installed and selected.
+Boards that have been tested so far include the
+Arduino Due and Primo and the BBC micro:bit.
 
 ### To Do List
 
-#### Current Issues ####
+#### Current Issues and Tasks ####
 
-  * debug lost messages
-  * Snap: keep track of stack ID's
-  * make Calliope work
+  * code persistence
+  * test/make work on the Calliope
 
 #### Virtual Machine ####
 
-  * persistence (store chunks in Flash, restore on startup)
+  * persistence (store code chunks in Flash, restore on startup)
   * incorporate immediate floats
   * mixed-mode int/float arithmetic
+  * support for function parameters and local variables
   * garbage collector
 
 #### Blocks ####
 
-  * additional math blocks
   * finish function support
-  * additional Arduino and Micro Bit I/O blocks
-  * string blocks?
+  * additional I/O blocks (e.g. I2C, accelerometer, etc.)
+  * improved support for arrays
+  * allow arrays to be returned (serialized) to the IDE
+  * string concatenation and manipulation blocks?
 
-#### Host-VM Communication Design ####
+#### Snap IDE ####
 
-  * update protocol spec
-  * finish and test protocol implementation
-  * implement client side in GP and Snap
+  * compiler support for condition hats, wait until, "and" and "or", and new primitives
+  * watchers
 
-#### Blocks IDEs in Snap and GP ####
+#### GP IDE ####
 
-  * top-level screen layout
-  * design the work flow
-  * implement compiler
-  * implement Host-VM communication
-  * feedback for running stacks
-  * support for user-defined functions
-  * visualizing Arduino state
+  * re-work top-level screen layout
+  * stack highlighting
+  * stop/go button support
+  * talk bubble for returned values
+  * finish support for user-defined functions
+  * watchers
+  * option to use helper app (needs websocket client support) to allow running in browser
 
 ### Who is working on this? ###
 
-This project is a collaboration between Bernat Romagosa (Arduino), Jens Moenig (SAP),
-and John Maloney (YCR-HARC).
+This project is a collaboration between Bernat Romagosa, Jens Moenig,
+and John Maloney.
