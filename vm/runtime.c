@@ -12,6 +12,12 @@
 static void clearOutputQueue(void);
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 
+// Printf Support
+
+#ifdef ARDUINO
+	char printfBuffer[100]; // used by printf macro in mem.h
+#endif
+
 // Task Ops
 
 void initTasks() {
@@ -349,7 +355,7 @@ void processMessage() {
 	while (bytesRead > 0) {
 		// wait time: on microBit, 35 seems to work, 25 fails
 		// on Arduino Primo, 100 sometimes fails; use 150 to be safe (character time is ~90 usecs)
-		busyWaitMicrosecs(150);
+//		busyWaitMicrosecs(150); // needed when built on mbed to avoid dropped bytes
 		bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
 		rcvByteCount += bytesRead;
 		lastRcvTime = microsecs();

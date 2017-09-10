@@ -483,7 +483,7 @@ void vmLoop() {
 	while (true) {
 		if (count-- <= 0) {
 			processMessage();
-			count = 20;
+			count = 100; // reduce to 30 when building on mbed to avoid serial errors
 		}
 		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
@@ -522,7 +522,7 @@ void runTasksUntilDone() {
 	while (hasActiveTasks) {
 		if (count-- <= 0) {
 			processMessage();
-			count = 20;
+			count = 100; // reduce to 30 when building on mbed to avoid serial errors
 		}
 		hasActiveTasks = false;
 		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed

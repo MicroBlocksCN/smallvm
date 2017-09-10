@@ -2,16 +2,10 @@
 // Just an allocator for now; no garbage collector.
 // John Maloney, April 2017
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "mem.h"
 #include "interp.h"
-
-#ifdef ARDUINO
-	char printfBuffer[100]; // used by printf macro in mem.h
-#endif
 
 static OBJ memStart;
 static OBJ freeStart;
