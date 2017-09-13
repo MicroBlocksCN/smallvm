@@ -2,6 +2,7 @@
 // John Maloney, April 2017
 
 #include "Arduino.h"
+#include "Wire.h"
 #include <stdio.h>
 
 #include "mem.h"
@@ -40,6 +41,7 @@ uint32 millisecs() {
 void hardwareInit() {
 	initClock_NRF51();
 	initPins();
+	Wire.begin();
 }
 
 #else
@@ -204,5 +206,36 @@ OBJ primSetLED(OBJ *args) {
 		SET_MODE(PIN_LED, OUTPUT);
 		digitalWrite(PIN_LED, (trueObj == args[0]) ? HIGH : LOW);
 	#endif
+	return nilObj;
+}
+
+static OBJ needs8BitIntFailure() { return failure(needs8BitIntError, "All arguments must be integers in the range 0-255"); }
+
+OBJ primI2cGet(OBJ *args) {
+	if (!isInt(args[0]) || !isInt(args[1])) return needs8BitIntFailure();
+	int deviceID = obj2int(args[0]) & 127;
+	int registerID = obj2int(args[1]) & 255;
+
+	Wire.beginTransmission(deviceID);
+	Wire.write(registerID);
+	int error = Wire.endTransmission(false);
+	if (error) return int2obj(0 - error);  // error; bad device ID?
+
+	Wire.requestFrom(deviceID, 1);
+	while (!Wire.available());
+	return int2obj(Wire.read());
+}
+
+OBJ primI2cSet(OBJ *args) {
+	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return needs8BitIntFailure();
+	int deviceID = obj2int(args[0]) & 127;
+	int registerID = obj2int(args[1]) & 255;
+	int value = obj2int(args[2]) & 255;
+
+	Wire.beginTransmission(deviceID);
+	Wire.write(registerID);
+	Wire.write(value);
+	Wire.endTransmission();
+
 	return nilObj;
 }

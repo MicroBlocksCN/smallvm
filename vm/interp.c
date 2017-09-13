@@ -164,6 +164,8 @@ static void runTask(Task *task) {
 		&&analogPins_op,
 		&&digitalPins_op,
 		&&primHexToInt_op,
+		&&primI2cGet_op,
+		&&primI2cSet_op,
 	};
 
 	// Restore task state
@@ -463,6 +465,14 @@ static void runTask(Task *task) {
 		DISPATCH();
 	primHexToInt_op:
 		*(sp - arg) = primHexToInt(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	primI2cGet_op:
+		*(sp - arg) = primI2cGet(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	primI2cSet_op:
+		*(sp - arg) = primI2cSet(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 }

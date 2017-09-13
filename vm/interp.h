@@ -60,6 +60,8 @@ extern "C" {
 #define analogPinsOp 50
 #define digitalPinsOp 51
 #define hexToInt 52
+#define i2cGet 53
+#define i2cSet 54
 
 // Instruction Format
 
@@ -178,6 +180,7 @@ extern int taskCount;
 #define nonComparable			17
 #define needsStringError		18
 #define intOutOfRangeError		19
+#define needs8BitIntError		20
 
 // Runtime Operations
 
@@ -244,13 +247,15 @@ OBJ primHexToInt(OBJ *args);
 OBJ primPeek(OBJ *args);
 OBJ primPoke(OBJ *args);
 
+OBJ primAnalogPins(OBJ *args);
+OBJ primDigitalPins(OBJ *args);
 OBJ primAnalogRead(OBJ *args);
 OBJ primAnalogWrite(OBJ *args);
 OBJ primDigitalRead(OBJ *args);
 OBJ primDigitalWrite(OBJ *args);
 OBJ primSetLED(OBJ *args);
-OBJ primAnalogPins(OBJ *args);
-OBJ primDigitalPins(OBJ *args);
+OBJ primI2cGet(OBJ *args);
+OBJ primI2cSet(OBJ *args);
 
 #ifdef __cplusplus
 }
