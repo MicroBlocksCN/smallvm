@@ -35,7 +35,6 @@ method chunkTypeForBlock SmallRuntime aBlock {
 	} (isClass expr 'Reporter') { chunkType = 2
 	} ('nop' == op) { chunkType = 3 // xxx need a better test for function def hats
 	}
-if (isNil chunkType) { halt }
 	return chunkType
 }
 method chunkBytesForBlock SmallRuntime aBlock {
@@ -130,6 +129,7 @@ method saveAllChunks SmallRuntime {
 method saveChunk SmallRuntime chunkID chunkType bytes {
 	body = (list chunkType)
 	addAll body bytes
+	add body 254 // terminator byte (helps board detect dropped bytes)
 	sendMsg this 'storeChunkMsg' chunkID body
 }
 
@@ -140,16 +140,19 @@ method runChunk SmallRuntime chunkID {
 method msgNameToID SmallRuntime msgName {
 	if (isNil msgDict) {
 		msgDict = (dictionary)
-		atPut msgDict 'storeChunkMsg' 2
-		atPut msgDict 'deleteChunkMsg' 3
-		atPut msgDict 'startAllMsg' 4
-		atPut msgDict 'stopAllMsg' 5
-		atPut msgDict 'startChunkMsg' 6
-		atPut msgDict 'stopChunkMsg' 7
-		atPut msgDict 'getTaskStatusMsg' 8
-		atPut msgDict 'getOutputMsg' 10
-		atPut msgDict 'getReturnValueMsg' 12
-		atPut msgDict 'getErrorIPMsg' 14
+		atPut msgDict 'storeChunkMsg' 1
+		atPut msgDict 'deleteChunkMsg' 2
+		atPut msgDict 'startChunkMsg' 3
+		atPut msgDict 'stopChunkMsg' 4
+		atPut msgDict 'startAllMsg' 5
+		atPut msgDict 'stopAllMsg' 6
+		atPut msgDict 'deleteAllChunksMsg' 14
+		atPut msgDict 'systemResetMsg' 15
+		atPut msgDict 'taskStartedMsg' 16
+		atPut msgDict 'taskDoneMsg' 17
+		atPut msgDict 'taskReturnedValueMsg' 18
+		atPut msgDict 'taskErrorMsg' 19
+		atPut msgDict 'outputStringMsg' 20
 	}
 	msgType = (at msgDict msgName)
 	if (isNil msgType) { error 'Unknown message:' msgName }
@@ -158,12 +161,14 @@ method msgNameToID SmallRuntime msgName {
 
 method sendMsg SmallRuntime msgName chunkID byteList {
 	if (isNil chunkID) { chunkID = 0 }
-	if (isNil byteList) { byteList = (list) }
-	msgType = (msgNameToID this msgName)
-	msgID = 222 // (rand 255)
-	byteCount = (count byteList)
-	msg = (list msgType msgID chunkID (byteCount & 255) ((byteCount >> 8) & 255))
-	addAll msg byteList
+	msgID = (msgNameToID this msgName)
+	if (isNil byteList) { // short message
+		msg = (list 250 msgID chunkID)
+	} else { // long message
+		byteCount = (count byteList)
+		msg = (list 251 msgID chunkID (byteCount & 255) ((byteCount >> 8) & 255))
+		addAll msg byteList
+	}
 	ensurePortOpen this
 	writeSerialPort port (toBinaryData (toArray msg))
 }
@@ -196,30 +201,36 @@ method processMessages SmallRuntime {
 	// Read any available bytes and append to recvBuf
 	s = (readSerialPort port true)
 	if (notNil s) { recvBuf = (join recvBuf s) }
+	if ((byteCount recvBuf) < 3) { return } // incomplete message
 
-	// Parse messages
-	if ((byteCount recvBuf) < 5) { return } // incomplete header
-	bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
-	if ((byteCount recvBuf) < (5 + bodyBytes)) { return } // incomplete body
-	handleMessage this (copyFromTo recvBuf 1 (bodyBytes + 5))
-	recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
+	// Parse and dispatch messages
+	firstByte = (byteAt recvBuf 1)
+	if (250 == firstByte) { // short message
+		handleMessage this (copyFromTo recvBuf 1 3)
+		recvBuf = (copyFromTo recvBuf 4) // remove message
+	} (251 == firstByte) { // long message
+		if ((byteCount recvBuf) < 5) { return } // incomplete length field
+		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
+		if ((byteCount recvBuf) < (5 + bodyBytes)) { return } // incomplete body
+		handleMessage this (copyFromTo recvBuf 1 (bodyBytes + 5))
+		recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
+	} else {
+		error 'Bad message header byte; should be 250 or 251 but is:' firstByte
+	}
 }
 
 method handleMessage SmallRuntime msg {
-	op = (byteAt msg 1)
-	msgID =  (byteAt msg 2)
-	chunkOrError =  (byteAt msg 3)
-	if (11 == op) {
-		s = (toString (copyFromTo msg 6 (byteCount msg)))
-		print s
-	} (13 == op) {
+	op = (byteAt msg 2)
+	if (op == (msgNameToID this 'taskStartedMsg')) {
+//		print 'started' (byteAt msg 3)
+	} (op == (msgNameToID this 'taskDoneMsg')) {
+//		print 'stopped' (byteAt msg 3)
+	} (op == (msgNameToID this 'taskReturnedValueMsg')) {
 		print (returnedValue this msg)
-	} (15 == op) {
+	} (op == (msgNameToID this 'taskErrorMsg')) {
 		print 'error:' (byteAt msg 6) // error code
-	} (17 == op) {
-//		print 'started' (byteAt msg 2)
-	} (18 == op) {
-//		print 'stopped' (byteAt msg 2)
+	} (op == (msgNameToID this 'outputStringMsg')) {
+		print (returnedValue this msg)
 	} else {
 		print 'msg:' (toArray msg)
 	}
@@ -267,17 +278,20 @@ method arduinoSpecs SmallRuntime {
 	return (array
 	'Arduino'
 		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello, Arduino!')
+		(array ' ' 'sayIt'				'say _' 'auto' 123)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
 		(array ' ' 'analogWriteOp'		'set analog pin _ to _' 'num num' 1 1023)
 		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
 		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array ' ' 'setLEDOp'			'set user LED _' 'bool' true)
+		(array 'r' 'analogPinsOp'		'analog pins')
+		(array 'r' 'digitalPinsOp'		'digital pins')
 		(array 'r' 'microsOp'			'micros')
 		(array 'r' 'millisOp'			'millis')
+		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
+		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 		(array ' ' 'noop'				'no op')
-		(array 'r' 'peekOp'				'memory at _' 'num' 0)
-		(array ' ' 'pokeOp'				'set memory at _ to _' 'num num' 0 0)
-	'Control' // Arduinio control blocks
+	'Control'
 		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'while'				'while _ _' 'bool cmd')
@@ -289,7 +303,7 @@ method arduinoSpecs SmallRuntime {
 		(array ' ' 'waitMillisOp'		'wait _ millisecs' 'num' 500)
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenCondition'		'when _' 'bool')
-	'Math' // Arduinio math blocks
+	'Math'
 		(array 'r' 'add'				'_ + _ : + _ : ...' 'num num num' 10 2 10)
 		(array 'r' 'subtract'			'_ − _' 'num num' 10 2)
 		(array 'r' 'multiply'			'_ × _ : × _ : ...' 'num num num' 10 2 10)
@@ -310,10 +324,13 @@ method arduinoSpecs SmallRuntime {
 		(array ' ' 'fillArray'			'fill array _ with _' 'num auto' nil 0)
 		(array 'r' 'at'					'array _ at _' 'auto num' nil 1)
 		(array ' ' 'atPut'				'set array _ at _ to _' 'num num' nil 1 10)
+		(array 'r' 'peekOp'				'memory at _ _' 'num num' 0 0)
+		(array ' ' 'pokeOp'				'set memory at _ _ to _' 'num num num' 0 0 0)
+		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 	'Variables'
-	  (array 'r' 'v'					'_' 'menu.sharedVarMenu' 'n')
-	  (array ' ' '='					'set _ to _' 'menu.sharedVarMenu auto' 'n' 0)
-	  (array ' ' '+='					'increase _ by _' 'menu.sharedVarMenu num' 'n' 1)
+		(array 'r' 'v'					'_' 'menu.sharedVarMenu' 'n')
+		(array ' ' '='					'set _ to _' 'menu.sharedVarMenu auto' 'n' 0)
+		(array ' ' '+='					'increase _ by _' 'menu.sharedVarMenu num' 'n' 1)
 	)
 }
 
@@ -379,6 +396,12 @@ method initOpcodes SmallCompiler {
 #define greaterOrEq 46
 #define greaterThan 47
 #define notOp 48
+#define sayIt 49
+#define analogPinsOp 50
+#define digitalPinsOp 51
+#define hexToInt 52
+#define i2cGet 53
+#define i2cSet 54
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
@@ -775,9 +798,7 @@ method clear AuthoringSpecs {
 }
 
 method clicked Block hand {
-print 'clicked'
   evalOnArduino (smallRuntime) (topBlock this)
-print 'ran'
 }
 
 method contextMenu Block {
