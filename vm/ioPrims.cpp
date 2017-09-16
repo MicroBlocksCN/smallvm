@@ -115,6 +115,17 @@ void systemReset() { NVIC_SystemReset(); }
 
 #endif
 
+#ifdef ARDUINO_SAMD_MKRZERO
+
+	#define DIGITAL_PINS 8
+	#define ANALOG_PINS 7
+	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
+
+	#define PIN_LED 32
+
+#endif
+
 // Pin Modes
 
 // The current pin input/output mode is recorded in the currentMode[] array to
