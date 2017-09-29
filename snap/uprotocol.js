@@ -49,6 +49,11 @@
 
 /*global modules */
 
+modules.uprotocol = '2017-September-29';
+
+var Protocol;
+var Postal;
+
 // Utility functions
 
 Array.prototype.toHexString = function () {
@@ -310,23 +315,34 @@ Protocol.prototype.dispatcher = {
 
     // µBlocks messages
     taskStarted: function (taskId) {
-        var stack = this.ide.findStack(taskId);
-        stack.addHighlight(stack.topBlock().removeHighlight());
+        var object = this.ide.objectForTask(taskId);
+        // object could be a WatcherMorph
+        if (object instanceof BlockMorph) {
+            object.addHighlight(object.topBlock().removeHighlight());
+        }
     },
     taskDone: function (taskId) {
-        var stack = this.ide.findStack(taskId);
-        stack.removeHighlight();
+        var object = this.ide.objectForTask(taskId);
+        if (object instanceof BlockMorph) {
+            object.removeHighlight();
+        }
     },
     taskReturned: function (data, taskId) {
-        var stack = this.ide.findStack(taskId);
-        stack.removeHighlight();
-        this.showBubbleFor(stack, this.processReturnValue(data), false);
+        var object = this.ide.objectForTask(taskId);
+        if (object instanceof BlockMorph) {
+            object.removeHighlight();
+            this.showBubbleFor(object, this.processReturnValue(data), false);
+        } else if (object instanceof WatcherMorph) {
+            object.target.watcherValues[object.getter] = this.processReturnValue(data);
+        }
     },
     taskError: function (data, taskId) {
-        var stack = this.ide.findStack(taskId);
-        stack.addErrorHighlight();
+        var object = this.ide.objectForTask(taskId);
+        object.addErrorHighlight();
         // Not dealing with error codes yet
-        this.showBubbleFor(stack, this.processErrorValue(data), true);
+        if (object instanceof BlockMorph) {
+            this.showBubbleFor(object, this.processErrorValue(data), true);
+        }
     },
     outputString: function (data, taskId) {
         console.log('# DEBUG # ' + this.processReturnValue(data));
