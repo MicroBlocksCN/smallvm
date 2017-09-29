@@ -178,7 +178,7 @@ Compiler.prototype.addBytesForInstruction = function (instr, bytes) {
     // append the bytes for the given instruction to bytes (little endian)
     var arg = instr[1];
     bytes.push(this.opcodes[instr[0]]);
-    if ((-8388608 <= arg) && (arg < 8388607)) {
+    if ((0 <= arg) && (arg <= 0xFFFFFF)) {
         bytes.push(arg & 255);
         bytes.push((arg >> 8) & 255);
         bytes.push((arg >> 16) & 255);
@@ -367,13 +367,15 @@ Compiler.prototype.instructionsForExpression = function (expr) {
                     'pushImmediate',
                     ((value << 1) | 1) & 0xFFFFFF // value
                 ]];
-            } else {
+            } else if ((-1073741824 <= value) && (value <= 1073741823)) {
                 return [
                     // 32-bit integer objects
                     // follows pushBigImmediate instruction
                     ['pushBigImmediate', 0],
                     (value << 1) | 1
                 ];
+            } else {
+                throw new Error('µBlocks only supports integers between -1073741824 and 1073741823');
             }
         } if (isString(value)) {
             return [['pushLiteral', value]];

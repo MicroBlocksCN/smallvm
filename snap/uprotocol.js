@@ -315,20 +315,20 @@ Protocol.prototype.dispatcher = {
 
     // µBlocks messages
     taskStarted: function (taskId) {
-        var object = this.ide.objectForTask(taskId);
+        var object = this.ide.findStackOrWatcher(taskId);
         // object could be a WatcherMorph
         if (object instanceof BlockMorph) {
             object.addHighlight(object.topBlock().removeHighlight());
         }
     },
     taskDone: function (taskId) {
-        var object = this.ide.objectForTask(taskId);
+        var object = this.ide.findStackOrWatcher(taskId);
         if (object instanceof BlockMorph) {
             object.removeHighlight();
         }
     },
     taskReturned: function (data, taskId) {
-        var object = this.ide.objectForTask(taskId);
+        var object = this.ide.findStackOrWatcher(taskId);
         if (object instanceof BlockMorph) {
             object.removeHighlight();
             this.showBubbleFor(object, this.processReturnValue(data), false);
@@ -337,7 +337,7 @@ Protocol.prototype.dispatcher = {
         }
     },
     taskError: function (data, taskId) {
-        var object = this.ide.objectForTask(taskId);
+        var object = this.ide.findStackOrWatcher(taskId);
         object.addErrorHighlight();
         // Not dealing with error codes yet
         if (object instanceof BlockMorph) {

@@ -339,7 +339,7 @@ DeviceMorph.prototype.blockTemplates = function (category) {
         return new ToggleMorph(
             'checkbox',
             this,
-            function () {
+            function () {DeviceMorph
                 myself.toggleWatcher(
                     selector,
                     localize(info.spec),
@@ -636,14 +636,14 @@ DeviceMorph.prototype.watcherGetterForSelector = function (selector) {
         if (!watcher.id) {
             watcher.id = ide.lastStackId;
             ide.lastStackId += 1;
+            ide.postal.sendMessage(
+                'storeChunk',
+                watcher.id,
+                new Compiler().bytesFor(this.blockForSelector(selector))
+            );
         }
 
         // we send two messages to get the next value, but display the last one
-        ide.postal.sendMessage(
-            'storeChunk',
-            watcher.id,
-            new Compiler().bytesFor(this.blockForSelector(selector))
-        );
         ide.postal.sendMessage('startChunk', watcher.id);
 
         // check out Protocol >> dispatcher >> taskReturned to understand where
@@ -1068,9 +1068,8 @@ IDE_Morph.prototype.init = function (isAutoFill) {
     this.postal = new Postal('ws://localhost:9999/', this);
 };
 
-IDE_Morph.prototype.objectForTask = function (taskId) {
+IDE_Morph.prototype.findStackOrWatcher = function (taskId) {
     var object;
-
     this.stage.children.forEach(function (morph) {
         if ((morph instanceof DeviceMorph) && !object) {
             morph.scripts.children.forEach(function (child) {
