@@ -180,8 +180,8 @@ Protocol.prototype.packMessage = function (selector, taskId, data) {
 
     if (data) {
         if (selector === 'storeChunk') {
-            // chunkType, hardcoded for now
-            data = [1].concat(data);
+            // [1] is the chunkType, hardcoded for now
+            data = [1].concat(data).concat(0xFE);
         }
         // add the data size in little endian
         message = message.concat(data.length & 255).concat((data.length >> 8) & 255);
@@ -329,9 +329,7 @@ Protocol.prototype.dispatcher = {
         this.showBubbleFor(stack, this.processErrorValue(data), true);
     },
     outputString: function (data, taskId) {
-        // TODO: remove [2].concat once the VM sends all return values
-        // with a type byte preceding the data
-        console.log('# DEBUG # ' + this.processReturnValue([2].concat(data)));
+        console.log('# DEBUG # ' + this.processReturnValue(data));
     }
 };
 
