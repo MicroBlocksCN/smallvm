@@ -339,7 +339,7 @@ DeviceMorph.prototype.blockTemplates = function (category) {
         return new ToggleMorph(
             'checkbox',
             this,
-            function () {DeviceMorph
+            function () {
                 myself.toggleWatcher(
                     selector,
                     localize(info.spec),
