@@ -131,6 +131,20 @@ DeviceMorph.prototype.initBlocks = function (globals) {
             category: 'sensing',
             spec: 'millis'
         },
+        i2cSet: {
+            only: DeviceMorph,
+            type: 'command',
+            category: 'sensing',
+            spec: 'i2c set device %n register %n to %n',
+            defaults: [0, 0, 0]
+        },
+        i2cGet: {
+            only: DeviceMorph,
+            type: 'reporter',
+            category: 'sensing',
+            spec: 'i2c get device %n register %n',
+            defaults: [0, 0]
+        },
         noop: {
             only: DeviceMorph,
             type: 'command',
@@ -236,7 +250,7 @@ DeviceMorph.prototype.initBlocks = function (globals) {
             spec: '%n < %n',
             defaults: [3, 4]
         },
-       doSetVar: {
+        doSetVar: {
             type: 'command',
             category: 'variables',
             spec: 'set %var to %s',
@@ -411,6 +425,9 @@ DeviceMorph.prototype.blockTemplates = function (category) {
         blocks.push('-');
         blocks.push(block('microsOp'));
         blocks.push(block('millisOp'));
+        blocks.push('-');
+        blocks.push(block('i2cSet'));
+        blocks.push(block('i2cGet'));
         blocks.push('-');
         blocks.push(block('noop'));
         blocks.push('-');

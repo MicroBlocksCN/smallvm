@@ -148,7 +148,9 @@ Compiler.prototype.opcodes = {
     greaterOrEq: 46,
     greaterThan: 47,
     notOp: 48,
-    sayIt: 49
+    sayIt: 49,
+    i2cGet: 53,
+    i2cSet: 54
 };
 
 
