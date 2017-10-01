@@ -49,6 +49,11 @@
 
 /*global modules */
 
+modules.uprotocol = '2017-September-29';
+
+var Protocol;
+var Postal;
+
 // Utility functions
 
 Array.prototype.toHexString = function () {
@@ -180,8 +185,8 @@ Protocol.prototype.packMessage = function (selector, taskId, data) {
 
     if (data) {
         if (selector === 'storeChunk') {
-            // chunkType, hardcoded for now
-            data = [1].concat(data);
+            // [1] is the chunkType, hardcoded for now
+            data = [1].concat(data).concat(0xFE);
         }
         // add the data size in little endian
         message = message.concat(data.length & 255).concat((data.length >> 8) & 255);
@@ -310,28 +315,37 @@ Protocol.prototype.dispatcher = {
 
     // µBlocks messages
     taskStarted: function (taskId) {
-        var stack = this.ide.findStack(taskId);
-        stack.addHighlight(stack.topBlock().removeHighlight());
+        var object = this.ide.findStackOrWatcher(taskId);
+        // object could be a WatcherMorph
+        if (object instanceof BlockMorph) {
+            object.addHighlight(object.topBlock().removeHighlight());
+        }
     },
     taskDone: function (taskId) {
-        var stack = this.ide.findStack(taskId);
-        stack.removeHighlight();
+        var object = this.ide.findStackOrWatcher(taskId);
+        if (object instanceof BlockMorph) {
+            object.removeHighlight();
+        }
     },
     taskReturned: function (data, taskId) {
-        var stack = this.ide.findStack(taskId);
-        stack.removeHighlight();
-        this.showBubbleFor(stack, this.processReturnValue(data), false);
+        var object = this.ide.findStackOrWatcher(taskId);
+        if (object instanceof BlockMorph) {
+            object.removeHighlight();
+            this.showBubbleFor(object, this.processReturnValue(data), false);
+        } else if (object instanceof WatcherMorph) {
+            object.target.watcherValues[object.getter] = this.processReturnValue(data);
+        }
     },
     taskError: function (data, taskId) {
-        var stack = this.ide.findStack(taskId);
-        stack.addErrorHighlight();
+        var object = this.ide.findStackOrWatcher(taskId);
+        object.addErrorHighlight();
         // Not dealing with error codes yet
-        this.showBubbleFor(stack, this.processErrorValue(data), true);
+        if (object instanceof BlockMorph) {
+            this.showBubbleFor(object, this.processErrorValue(data), true);
+        }
     },
     outputString: function (data, taskId) {
-        // TODO: remove [2].concat once the VM sends all return values
-        // with a type byte preceding the data
-        console.log('# DEBUG # ' + this.processReturnValue([2].concat(data)));
+        console.log('# DEBUG # ' + this.processReturnValue(data));
     }
 };
 

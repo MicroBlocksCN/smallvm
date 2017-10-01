@@ -41,7 +41,7 @@ VariableDialogMorph, BlockDialogMorph, Color, TableDialogMorph, HatBlockMorph,
 SyntaxElementMorph, BlockEditorMorph, InputSlotMorph, RingMorph,
 ReporterSlotMorph, CommandSlotMorph, SpriteIconMorph, Compiler*/
 
-modules.upatch = '2017-May-30';
+modules.upatch = '2017-September-29';
 
 var DeviceMorph;
 
@@ -74,6 +74,7 @@ function DeviceMorph(globals) {
 DeviceMorph.prototype.init = function (globals) {
     DeviceMorph.uber.init.call(this, globals);
     this.name = localize('Device');
+    this.watcherValues = {};
 };
 
 DeviceMorph.prototype.initBlocks = function (globals) {
@@ -130,6 +131,20 @@ DeviceMorph.prototype.initBlocks = function (globals) {
             type: 'reporter',
             category: 'sensing',
             spec: 'millis'
+        },
+        i2cSet: {
+            only: DeviceMorph,
+            type: 'command',
+            category: 'sensing',
+            spec: 'i2c set device %n register %n to %n',
+            defaults: [0, 0, 0]
+        },
+        i2cGet: {
+            only: DeviceMorph,
+            type: 'reporter',
+            category: 'sensing',
+            spec: 'i2c get device %n register %n',
+            defaults: [0, 0]
         },
         noop: {
             only: DeviceMorph,
@@ -236,7 +251,7 @@ DeviceMorph.prototype.initBlocks = function (globals) {
             spec: '%n < %n',
             defaults: [3, 4]
         },
-       doSetVar: {
+        doSetVar: {
             type: 'command',
             category: 'variables',
             spec: 'set %var to %s',
@@ -317,9 +332,9 @@ DeviceMorph.prototype.blockTemplates = function (category) {
     }
 
     function watcherToggle(selector) {
-        if (DeviceMorph.prototype.hiddenPrimitives[selector]) {
+        /*if (DeviceMorph.prototype.hiddenPrimitives[selector]) {
             return null;
-        }
+        }*/
         var info = DeviceMorph.prototype.blocks[selector];
         return new ToggleMorph(
             'checkbox',
@@ -409,8 +424,13 @@ DeviceMorph.prototype.blockTemplates = function (category) {
         blocks.push('-');
         blocks.push(block('setLEDOp'));
         blocks.push('-');
+        blocks.push(watcherToggle('microsOp'));
         blocks.push(block('microsOp'));
+        blocks.push(watcherToggle('millisOp'));
         blocks.push(block('millisOp'));
+        blocks.push('-');
+        blocks.push(block('i2cSet'));
+        blocks.push(block('i2cGet'));
         blocks.push('-');
         blocks.push(block('noop'));
         blocks.push('-');
@@ -602,6 +622,40 @@ DeviceMorph.prototype.drawNew = function () {
     context.closePath();
     context.fill();
 };
+
+
+// Watchers
+
+DeviceMorph.prototype.watcherGetterForSelector = function (selector) {
+    // Watcher getter factory
+    return function () {
+        var ide = this.parentThatIsA(IDE_Morph),
+            watcher = this.watcherFor(ide.stage, selector);
+
+        if (!watcher) { return; }
+        if (!watcher.id) {
+            watcher.id = ide.lastStackId;
+            ide.lastStackId += 1;
+            ide.postal.sendMessage(
+                'storeChunk',
+                watcher.id,
+                new Compiler().bytesFor(this.blockForSelector(selector))
+            );
+        }
+
+        // we send two messages to get the next value, but display the last one
+        ide.postal.sendMessage('startChunk', watcher.id);
+
+        // check out Protocol >> dispatcher >> taskReturned to understand where
+        // this values come from
+        return this.watcherValues[selector];
+    }
+};
+
+['microsOp', 'millisOp'].forEach(function (selector) {
+    DeviceMorph.prototype[selector] =
+        DeviceMorph.prototype.watcherGetterForSelector(selector);
+});
 
 // BlockMorph menu:
 
@@ -1014,21 +1068,25 @@ IDE_Morph.prototype.init = function (isAutoFill) {
     this.postal = new Postal('ws://localhost:9999/', this);
 };
 
-IDE_Morph.prototype.findStack = function (stackId) {
-    var script;
-
-    this.stage.children.forEach(function (sprite) {
-        if ((sprite instanceof DeviceMorph) && !script) {
-            sprite.scripts.children.forEach(function (child) {
-                if (child instanceof BlockMorph && child.stackId == stackId) {
-                    script = child;
+IDE_Morph.prototype.findStackOrWatcher = function (taskId) {
+    var object;
+    this.stage.children.forEach(function (morph) {
+        if ((morph instanceof DeviceMorph) && !object) {
+            morph.scripts.children.forEach(function (child) {
+                if (child instanceof BlockMorph && child.stackId == taskId) {
+                    object = child;
                     return;
                 }
             });
+        } else if (morph instanceof WatcherMorph) {
+            if (morph.id == taskId) {
+                object = morph;
+                return;
+            }
         }
     });
 
-    return script;
+    return object;
 };
 
 IDE_Morph.prototype.settingsMenu = function () {
@@ -1737,6 +1795,8 @@ IDE_Morph.prototype.createSpriteBar = function () {
     tabBar.add(tab);
 
     if (this.currentSprite instanceof DeviceMorph) {
+        // We haven't implemented any extra tabs for devices yet
+        /*
         tab = new TabMorph(
                 tabColors,
                 null, // target
@@ -1755,6 +1815,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
         tab.drawNew();
         tab.fixLayout();
         tabBar.add(tab);
+        */
     } else {
         tab = new TabMorph(
                 tabColors,
