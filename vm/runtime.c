@@ -9,7 +9,6 @@
 
 // Forward Reference Declarations
 
-static void clearOutputQueue(void);
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 
 // Printf Support
@@ -79,7 +78,6 @@ static void startAll() {
 void stopAllTasks() {
 	// Stop all tasks.
 
-	clearOutputQueue();
 	for (int t = 0; t < taskCount; t++) {
 		if (tasks[t].status) {
 			sendMessage(taskDoneMsg, tasks[t].taskChunkIndex, 0, NULL);
@@ -120,7 +118,7 @@ static uint8 outBuf[OUTBUF_SIZE];
 static int outBufStart = 0;
 static int outBufEnd = 0;
 
-#define OUTBUF_BYTES() ((outBufEnd - outBufStart) & 0x1FF)
+#define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
 static inline void sendNextByte() {
 	if ((outBufStart != outBufEnd) && canSendByte()) {
@@ -133,8 +131,6 @@ static inline void queueByte(char aByte) {
 	outBuf[outBufEnd] = aByte;
 	outBufEnd = (outBufEnd + 1) & OUTBUF_MASK;
 }
-
-static void clearOutputQueue() { outBufStart = outBufEnd = 0; }
 
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data) {
 #define DEBUG false
