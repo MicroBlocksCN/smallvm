@@ -178,13 +178,9 @@ Compiler.prototype.addBytesForInstruction = function (instr, bytes) {
     // append the bytes for the given instruction to bytes (little endian)
     var arg = instr[1];
     bytes.push(this.opcodes[instr[0]]);
-    if ((0 <= arg) && (arg <= 0xFFFFFF)) {
-        bytes.push(arg & 255);
-        bytes.push((arg >> 8) & 255);
-        bytes.push((arg >> 16) & 255);
-    } else {
-        throw new Error('Argument does not fit in 24 bits');
-    }
+    bytes.push(arg & 255);
+    bytes.push((arg >> 8) & 255);
+    bytes.push((arg >> 16) & 255);
 };
 
 Compiler.prototype.addBytesForInteger = function (n, bytes) {

@@ -33,6 +33,11 @@ function serialConnect (portName, callback) {
             //reconnect(boardId);
         }
     });
+
+    serial.on('error', function (err) {
+        log(err, 1);
+    });
+
 };
 
 function serialDisconnect (boardId, onSuccess, onError) {
