@@ -1,75 +1,151 @@
-var options = {},
+var Connector,
     WebSocket = require('ws'),
-    SerialPort = require('serialport'),
-    wsServer,
-    serial,
-    socket,
-    util = require('util');
+    util = require('util'),
+    Board = require('./board.js');
 
-function serialConnect (portName, callback) {
-    log('Connecting to board at ' + portName + '...');
+function Connector () {
+    this.boards = {};
+    this.options = {};
+    this.wsServer = null;
+    this.socket = null;
+    this.init();
+};
 
-    serial = new SerialPort(
-        portName, 
-        { baudRate: 115200 },
-        callback
-    );
+Connector.prototype.boardAt = function (portName) {
+    return this.boards[portName];
+};
 
-    serial.on('data', function (data) {
-        if (socket) {
-            log('board sends: ');
-            log(data, 0);
-            socket.send(data);
-        } else {
-            log('Socket is not connected', 1);
-        } 
+Connector.prototype.init = function () {
+    var myself = this;
+    this.parseArgs();
+
+    this.wsServer = new WebSocket.Server({ port: this.options.port || 9999 }),
+    this.wsServer.on('connection', function (ws) {
+        myself.socket = ws;
+        myself.log('websocket client connected');
+        myself.socket.on('message', function (message) {
+            myself.processMessage(message);
+        });
+        myself.socket.on('close', function () {
+            myself.log('websocket client disconnected');
+            myself.socket = null;
+        });
     });
 
-    serial.on('close', function (err) {
-        log('Board disconnected.', err ? 1 : 0);
-        if (err) {
-            // Not yet supporting multiple boards
-            // log('Starting auto-reconnect loop');
-            //reconnect(boardId);
+    console.log(
+        'µBlocks websockets-serial bridge started.\n' +
+        'Run me with --help for command line arguments\n' +
+        'Debug is ' + (this.options.debugMode ? 'enabled' : 'disabled') + '.\n');
+    this.log(
+        'Waiting for websockets client to connect at port ' +
+        (this.options.port || 9999) + '.'
+    );
+};
+
+Connector.prototype.parseArgs = function () {
+    var myself = this;
+    process.argv.forEach(function (val) {
+        var option = val.split('=');
+        switch (option[0]) {
+            case '--help':
+            case '-h':
+                myself.printHelp(option[1]);
+            break;
+            case '--debug':
+            case '-d':
+                myself.options.debugMode = true; 
+                break;
+            case '--port':
+            case '-p':
+                myself.options.port = option[1] || 9999;
+                break;
         }
     });
-
-    serial.on('error', function (err) {
-        log(err, 1);
-    });
-
 };
 
-function serialDisconnect (boardId, onSuccess, onError) {
-    // Not yet supporting multiple boards
-    serial.close(onError);
-    onSuccess();
-};
+// Serial Port
 
-function serialSend (arrayBuffer) {
-    if (serial) {
-        log('IDE sends: ');
-        log(arrayBuffer, 0);
-        serial.write(arrayBuffer);
+Connector.prototype.addBoard = function (portName, connectCallback) {
+    var myself = this,
+        board;
+
+    this.log('Connecting to board at ' + portName + '...');
+
+    if (this.boardAt(portName)) {
+        myself.log(
+            'There is already a board connected to port ' + portName + '.\n' +
+                'Please disconnect from that port and try again.',
+            1 // error log
+        );
     } else {
-        log('Board is not connected', 1);
+        board = new Board(portName, this.options);
+        board.connect(
+            connectCallback,
+            function (data) { // onData
+                if (myself.socket) {
+                    myself.log('board sends: ');
+                    myself.log(data, 0);
+                    myself.socket.send(data);
+                } else {
+                    myself.log('Socket is not connected', 1);
+                } 
+            },
+            function (err) { // onClose
+                myself.log('Board disconnected.', err ? 1 : 0);
+                if (err) {
+                    myself.log('Starting auto-reconnect loop');
+                    board.reconnectLoop();
+                } 
+            },
+            function (err) { myself.log(err, 1); } // onError
+        );
+
+        this.boards[portName] = board;
+    }
+};
+
+Connector.prototype.removeBoard = function (portName, onSuccess, onError) {
+    var myself = this;
+    this.boardAt(portName).disconnect(
+        function () {
+            delete myself.boards[portName];
+            onSuccess()
+        },
+        onError
+    );
+};
+
+Connector.prototype.boardSend = function (portName, arrayBuffer) {
+    var board = this.boardAt(portName);
+    if (board) {
+        this.log('IDE sends: ');
+        this.log(arrayBuffer, 0);
+        board.send(arrayBuffer);
+    } else {
+        this.log('Board is not connected', 1);
     }
 };
 
 // Message composing
 
-function sendJsonMessage (selector, arguments) {
+Connector.prototype.sendJsonMessage = function (selector, arguments) {
     var object = { selector: selector, arguments: arguments },
-        data = stringToByteArray(JSON.stringify(object)),
+        data = this.stringToByteArray(JSON.stringify(object)),
         array = [0xFB, 0xFF, 0, data.length & 255, data.length >> 8];
-    log('Sending JSON message to client:');
-    log(object, 0);
-    socket.send(array.concat(data));
+    this.log('Sending JSON message to client:');
+    this.log(object, 0);
+    this.socket.send(array.concat(data));
+};
+
+Connector.prototype.stringToByteArray = function (str) {
+    return str.split('').map(
+        function (char) { return char.charCodeAt(0); }
+    );
 };
 
 // Message processing
 
-function processMessage (rawData) {
+Connector.prototype.processMessage = function (rawData) {
     var array = new Uint8Array(rawData),
         message;
     if (array[1] === 0xFF) {
@@ -77,17 +153,22 @@ function processMessage (rawData) {
         // not supposed to reach the board
         array = array.slice(4);
         message = JSON.parse(String.fromCharCode.apply(null, array.slice(1)));
-        log('Client sent us a JSON message:');
-        log(message, 0);
-        dispatcher[message.selector].call(null, message.arguments);
+        this.log('Client sent us a JSON message:');
+        this.log(message, 0);
+        this.dispatcher[message.selector].call(this, message.arguments);
     } else {
-        serialSend(rawData);
+        // TODO We should get the portName somehow, but sending all messages
+        //      as JSON would probably slow things down by quite a lot.
+        //      For now, we only support one board, although the infrastructure
+        //      is there for a future multiboard support.
+        this.boardSend(Object.keys(this.boards)[0], rawData);
     }
 };
 
-dispatcher = {
+Connector.prototype.dispatcher = {
     getSerialPortList: function () {
-        SerialPort.list().then(function (devices) {
+        var myself = this;
+        Board.SerialPort.list().then(function (devices) {
             var actualDevices = [];
             devices.forEach(function (device) {
                 if (device.vendorId) {
@@ -96,74 +177,50 @@ dispatcher = {
                         displayName: device.manufacturer
                     });
                 } 
-            })
-            log('Client requested serial port list.');
-            sendJsonMessage('getSerialPortListResponse', [ actualDevices ]);
+            });
+            myself.log('Client requested serial port list.');
+            myself.sendJsonMessage('getSerialPortListResponse', [ actualDevices ]);
         });
     },
-    serialConnect: function (portPath) {
-        serialConnect(portPath, function () {
-            // aiming for future error control
-            log('Client asked me to connect to a board.');
-            sendJsonMessage('serialConnectResponse', [ true ]);
+    serialConnect: function (portName) {
+        var myself = this;
+        this.addBoard(portName, function (err) {
+            myself.log('Client asked me to connect to a board.');
+            myself.sendJsonMessage('serialConnectResponse', [ !err ]);
         });
     },
-    serialDisconnect: function () {
-        log('Client asked me to disconnect from a board.');
-        serialDisconnect(
-            // aiming for a future multi-board scenario
-            connectionId, 
+    serialDisconnect: function (portName) {
+        var myself = this;
+        this.log('Client asked me to disconnect from a board.');
+        this.removeBoard(
+            portName, 
             // success callback
             function () { 
-                sendJsonMessage('serialDisconnectResponse', [ true ]);
+                myself.sendJsonMessage('serialDisconnectResponse', [ true ]);
             },
             // error callback
             function () {
-                sendJsonMessage('serialDisconnectResponse', [ false ]);
+                myself.sendJsonMessage('serialDisconnectResponse', [ false ]);
             }
         );
     }
 };
 
-function stringToByteArray (str) {
-    return str.split('').map(
-        function (char) { return char.charCodeAt(0); }
-    );
-};
+// Printing and logging
 
-function log (str, code) {
+Connector.prototype.log = function (str, code) {
     var color = [
         // code defines the message type
         '\x1b[1m', // data (white)
         '\x1b[31m', // error message (red)
         ];
 
-    if (options.debugMode) {
+    if (this.options.debugMode) {
         console.log((color[code] || '\x1b[0m') + util.format(str));
     }
 };
 
-function parseArgs () {
-    process.argv.forEach(function (val) {
-        var option = val.split('=');
-        switch (option[0]) {
-            case '--help':
-            case '-h':
-                printHelp(option[1]);
-            break;
-            case '--debug':
-            case '-d':
-                options.debugMode = true; 
-                break;
-            case '--port':
-            case '-p':
-                options.port = option[1] || 9999;
-                break;
-        }
-    });
-};
-
-function printHelp (topic) {
+Connector.prototype.printHelp = function (topic) {
     switch (topic) {
         case 'protocol':
             console.log('The µBlocks communications protocol');
@@ -189,27 +246,4 @@ function printHelp (topic) {
     process.exit();
 };
 
-function startUp () {
-    parseArgs();
-
-    wsServer = new WebSocket.Server({ port: options.port || 9999 }),
-    wsServer.on('connection', function (ws) {
-        socket = ws;
-        log('websocket client connected');
-        socket.on('message', function (message) {
-            processMessage(message);
-        });
-        socket.on('close', function () {
-            log('websocket client disconnected');
-            socket = null;
-        });
-    });
-
-    console.log(
-        'µBlocks websockets-serial bridge started.\n' +
-        'Run me with --help for command line arguments\n' +
-        'Debug is ' + (options.debugMode ? 'enabled' : 'disabled') + '.\n');
-    log('Waiting for websockets client to connect at port ' + (options.port || 9999) + '.');
-};
-
-startUp();
+new Connector();
