@@ -112,39 +112,43 @@ Connector.prototype.init = function () {
 
 Connector.prototype.addBoard = function (portName, connectCallback) {
     var myself = this,
-        board;
+        oldBoard = this.boardAt(portName);
 
     log('Connecting to board at ' + portName + '...');
 
-    if (this.boardAt(portName)) {
-        log(
-            'There is already a board connected to port ' + portName + '.\n' +
-                'Please disconnect from that port and try again.',
-            1 // error log
-        );
-    } else {
-        board = new Board(portName);
-        board.connect(
-            connectCallback,
-            function (data) { // onData
-                if (myself.socket) {
-                    log('board sends: ');
-                    log(data, 0);
-                    myself.socket.send(data);
-                } else {
-                    log('Socket is not connected', 1);
-                }
-            },
-            function (err) { // onClose
-                log('Board disconnected.', err ? 1 : 0);
-                if (err) {
-                    log('Starting auto-reconnect loop');
-                    board.reconnectLoop();
-                }
-            },
-            function (err) { log(err, 1); } // onError
-        );
+    function onData (data) {
+        if (myself.socket) {
+            log('board sends: ');
+            log(data, 0);
+            myself.socket.send(data);
+        } else {
+            log('Socket is not connected', 1);
+        }
+    };
 
+    function onClose (err) {
+        log('Board disconnected.', err ? 1 : 0);
+        if (err) {
+            log('Starting auto-reconnect loop');
+            board.reconnectLoop();
+        }
+    };
+
+    function onError (err) {
+        log(err, 1);
+    };
+
+    board = new Board(portName);
+    board.connect(
+        connectCallback,
+        onData,
+        onClose,
+        onError,
+    );
+
+    if (oldBoard) {
+        log('There was a board already connected to this port. I\'m reusing it.');
+    } else {
         this.boards[portName] = board;
     }
 };
