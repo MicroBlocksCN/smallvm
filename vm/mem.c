@@ -13,14 +13,14 @@ static OBJ memEnd;
 
 void memInit(int wordCount) {
 	if (sizeof(int) != sizeof(int*)) {
-		panic("GP must be compiled in 32-bit mode (e.g. gcc -m32 ...)");
+		gpPanic("GP must be compiled in 32-bit mode (e.g. gcc -m32 ...)");
 	}
 	if (sizeof(int) != sizeof(float)) {
-		panic("GP expects floats and ints to be the same size");
+		gpPanic("GP expects floats and ints to be the same size");
 	}
 	memStart = (OBJ) malloc(wordCount * sizeof(int));
 	if (memStart == NULL) {
-		panic("memInit failed; insufficient memory");
+		gpPanic("memInit failed; insufficient memory");
 	}
 	if ((unsigned) memStart <= 8) {
 		// Reserve object references 0, 4, and 8 for constants nil, true, and false
@@ -42,7 +42,7 @@ OBJ newObj(int classID, int wordCount, OBJ fill) {
 	freeStart += HEADER_WORDS + wordCount;
 	if (freeStart >= memEnd) {
 		printf("%d words used out of %d\n", freeStart - memStart, memEnd - memStart);
-		panic("Out of memory!");
+		gpPanic("Out of memory!");
 	}
 	for (OBJ p = obj; p < freeStart; ) *p++ = (int) fill;
 	unsigned header = HEADER(classID, wordCount);
@@ -75,11 +75,11 @@ char* obj2str(OBJ obj) {
 
 // Debugging
 
-void panic(char *errorMessage) {
-	// Called when VM encounters a fatal error. Print the panic message and exit.
+void gpPanic(char *errorMessage) {
+	// Called when VM encounters a fatal error. Print the given message and stop.
 
 	printf("\r\n%s\r\n", errorMessage);
-	exit(-1);
+	while (true) { } // there's no way to recover; loop forever!
 }
 
 void memDumpObj(OBJ obj) {

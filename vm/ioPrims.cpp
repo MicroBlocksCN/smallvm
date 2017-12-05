@@ -73,20 +73,22 @@ void sendByte(char aByte) { Serial.write(aByte); }
 
 // System Reset
 
-void systemReset() { NVIC_SystemReset(); }
+void systemReset() {
+	#if defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52_PRIMO) || defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SAMD_MKRZERO)
+		NVIC_SystemReset();
+	#endif
+}
 
 // General Purpose I/O Pins
 
-#ifdef ARDUINO_SAM_DUE // Arduino DUE
+#if defined(ARDUINO_SAM_DUE)
 
 	#define DIGITAL_PINS 54
 	#define ANALOG_PINS 12
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
 
-#endif
-
-#ifdef ARDUINO_NRF52_PRIMO // Arduino Primo
+#elif defined(ARDUINO_NRF52_PRIMO)
 
 	#define DIGITAL_PINS 14
 	#define ANALOG_PINS 6
@@ -94,9 +96,7 @@ void systemReset() { NVIC_SystemReset(); }
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS + DEDICATED_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 
-#endif
-
-#ifdef ARDUINO_BBC_MICROBIT // BBC micro:bit
+#elif defined(ARDUINO_BBC_MICROBIT)
 
 	#define DIGITAL_PINS 29
 	#define ANALOG_PINS 6
@@ -113,9 +113,7 @@ void systemReset() { NVIC_SystemReset(); }
 	// Analog pins: The micro:bit does not have dedicated analog input pins;
 	// the analog pins are aliases for digital pins 0-4 and 10.
 
-#endif
-
-#ifdef ARDUINO_SAMD_MKRZERO
+#elif defined(ARDUINO_SAMD_MKRZERO)
 
 	#define DIGITAL_PINS 8
 	#define ANALOG_PINS 7
@@ -123,6 +121,14 @@ void systemReset() { NVIC_SystemReset(); }
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
 
 	#define PIN_LED 32
+
+#else // unknown board
+
+	#define DIGITAL_PINS 0
+	#define ANALOG_PINS 0
+	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	static const int analogPin[] = {};
+	#define PIN_LED 0
 
 #endif
 

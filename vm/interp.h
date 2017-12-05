@@ -207,7 +207,7 @@ void taskTest(void);
 
 // Debugging
 
-void panic(char *s);
+void gpPanic(char *s);
 
 // Printf macro for Arduino (many thanks to Michael McElligott)
 
