@@ -103,7 +103,7 @@ typedef struct {
 	uint8 chunkType;
 } CodeChunkRecord;
 
-#define MAX_CHUNKS 32
+#define MAX_CHUNKS 256
 extern CodeChunkRecord chunks[MAX_CHUNKS];
 
 // Task List
@@ -186,6 +186,7 @@ extern int taskCount;
 
 OBJ failure(uint8 code, const char *explanation);
 void initTasks(void);
+void startAll();
 void stopAllTasks(void);
 void processMessage(void);
 int hasOutputSpace(int byteCount);

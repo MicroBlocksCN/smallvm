@@ -6,6 +6,7 @@
 
 #include "mem.h"
 #include "interp.h"
+#include "persist.h"
 
 // Forward Reference Declarations
 
@@ -43,7 +44,7 @@ void startTaskForChunk(uint8 chunkIndex) {
 	tasks[i].taskChunkIndex = chunkIndex;
 	tasks[i].currentChunkIndex = chunkIndex;
 	tasks[i].code = chunks[chunkIndex].code;
-	tasks[i].ip = HEADER_WORDS; // relative to start of code
+	tasks[i].ip = PERSISTENT_HEADER_WORDS; // relative to start of code
 	tasks[i].sp = 0; // relative to start of stack
 	tasks[i].fp = 0; // 0 means "not in a function call"
 	if (i >= taskCount) taskCount = i + 1;
@@ -63,7 +64,7 @@ static void stopTaskForChunk(uint8 chunkIndex) {
 	sendMessage(taskDoneMsg, chunkIndex, 0, NULL);
 }
 
-static void startAll() {
+void startAll() {
 	// Start tasks for all start and 'when' hat blocks.
 
 	stopAllTasks(); // stop any running tasks
@@ -84,7 +85,6 @@ void stopAllTasks() {
 		}
 	}
 	initTasks();
-	outputString("All tasks stopped");
 }
 
 // Code Chunk Ops
@@ -92,13 +92,8 @@ void stopAllTasks() {
 void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data) {
 	if (chunkIndex >= MAX_CHUNKS) return;
 	int wordCount = (byteCount + 3) / 4;
-	OBJ newChunk = newObj(CodeChunkClass, wordCount, 0);
-	uint8 *src = data;
-	uint8 *end = data + byteCount;
-	uint8 *dst = (uint8 *) &FIELD(newChunk, 0);
-	while (src < end) *dst++ = *src++;
-
-	chunks[chunkIndex].code = newChunk;
+	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount, data);
+	chunks[chunkIndex].code = persistenChunk;
 	chunks[chunkIndex].chunkType = chunkType;
 }
 
@@ -299,8 +294,10 @@ static void processShortMessage() {
 		break;
 	case stopAllMsg:
 		stopAllTasks();
+		outputString("All tasks stopped");
 		break;
 	case deleteAllChunksMsg:
+		clearPersistentMemory();
 		memset(chunks, 0, sizeof(chunks));
 		break;
 	case systemResetMsg:
