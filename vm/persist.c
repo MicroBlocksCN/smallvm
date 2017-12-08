@@ -30,8 +30,15 @@
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_NRF52_PRIMO)
 	#include "nrf.h" // nRF51 and nRF52
 
-	#define START (32 * 1024)
-	#define HALF_SPACE (112 * 1024)
+	#ifdef ARDUINO_BBC_MICROBIT
+		// BBC micro:bit: App: 0-36k; Persistent Mem: 36k-256k
+		#define START (36 * 1024)
+		#define HALF_SPACE (110 * 1024)
+	#else
+		// Primo: SoftDevice: 0-112k; App: 112k-148k; Persistent Mem: 148k-488k; Boot: 488k-511k
+		#define START (148 * 1024)
+		#define HALF_SPACE (170 * 1024)
+	#endif
 
 	static void eraseFlash(int *startAddr, int *endAddr) {
 		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Een;
@@ -97,17 +104,17 @@
 		*NVMCTRL_CTRLB = *NVMCTRL_CTRLB & ~MANW;
 	}
 
-#elif defined(ARDUINO_SAM_DUE)
-	#include "samr.h" // AT91SAM3X8E
-
-	// Not yet implemented!
-
+// #elif defined(ARDUINO_SAM_DUE)
+// 	#include "samr.h" // AT91SAM3X8E
+//
+// 	// Not yet implemented!
+//
 #else
 	// Simulate Flash operations when testing on a laptop.
 
 	#define START (&flash[0])
-	#define HALF_SPACE (64 * 1024)
-	static unsigned char flash[2 * HALF_SPACE]; // simulated Flash memory
+	#define HALF_SPACE (5 * 1024)
+	static unsigned char flash[2 * HALF_SPACE]; // simulated Flash memory (10k)
 
 	static void eraseFlash(int *startAddr, int *endAddr) {
 		int *dst = (int *) startAddr;
@@ -243,7 +250,6 @@ static int * copyChunk(int *dst, int *src) {
 
 	int wordCount = *(src + 1) + 2;
 	while (wordCount-- > 0) *dst++ = *src++;
-//	finishFlashWrite(dst);
 	return dst;
 }
 
@@ -473,10 +479,10 @@ void persistTest() {
  	clearPersistentMemory();
 	printf("Memory intitialized; writing records...\n");
 
-	for (int i = 0; i < 30000; i++) {
-		appendPersistentRecord(chunkCode, i % 100, 0, i % 10, dummyData);
+	for (int i = 0; i < 3000; i++) {
+		appendPersistentRecord(chunkCode, i % 100, 0, (i % 5) * 4, dummyData);
 	}
- 	compact();
+	compact();
 
  	dumpWords(current, 100);
 	showRecordHeaders();
