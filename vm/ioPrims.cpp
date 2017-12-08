@@ -122,6 +122,14 @@ void systemReset() {
 
 	#define PIN_LED 32
 
+#elif defined(ARDUINO_ESP8266_NODEMCU)
+
+	#define DIGITAL_PINS 11
+	#define ANALOG_PINS 1
+	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	static const int analogPin[] = {A0};
+	#define PIN_LED BUILTIN_LED
+
 #else // unknown board
 
 	#define DIGITAL_PINS 0
