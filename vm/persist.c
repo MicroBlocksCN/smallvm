@@ -12,10 +12,9 @@
 //
 // and implement the platform-specific Flash functions:
 //
-//		void eraseFlash(int *startAddr, int *endAddr)
-//		void finishFlashWrite(int *dst)
-//		void lockFlash()
-//		void unlockFlash()
+//		void flashErase(int *startAddr, int *endAddr)
+//		void flashWriteData(int *dst, int wordCount, char *src)
+//		void flashWriteWord(int *addr, int value)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,8 +39,8 @@
 		#define HALF_SPACE (170 * 1024)
 	#endif
 
-	static void eraseFlash(int *startAddr, int *endAddr) {
-		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Een;
+	static void flashErase(int *startAddr, int *endAddr) {
+		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Een; // enable Flash erase
 		while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
 
 		while (startAddr < endAddr) {
@@ -49,20 +48,27 @@
 			startAddr += 256; // page size is 256 words (1024 bytes)
 		}
 
-		NRF_NVMC->CONFIG = 0; // clear erase enable bit
-		while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
+		NRF_NVMC->CONFIG = 0; // disable Flash erase
 	}
 
-	static void finishFlashWrite(int *dst) { } // not needed on nRF processors
-
-	static void lockFlash() {
-		NRF_NVMC->CONFIG = 0; // clear write enable bit
+	void flashWriteWord(int *addr, int value) {
+		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen; // enable Flash write
 		while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
+		*addr = value;
+		NRF_NVMC->CONFIG = 0; // disable Flash write
 	}
 
-	static void unlockFlash() {
-		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen;
+	void flashWriteData(int *dst, int wordCount, char *src) {
+		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen; // enable Flash write
 		while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
+		for ( ; wordCount > 0; wordCount--) {
+			int n = *src++;
+			n |= *src++ << 8;
+			n |= *src++ << 16;
+			n |= *src++ << 24;
+			*dst++ = n;
+		}
+		NRF_NVMC->CONFIG = 0; // disable Flash write
 	}
 
 #elif defined(ARDUINO_SAMD_MKRZERO)
@@ -71,59 +77,128 @@
 	#define START (40 * 1024)
 	#define HALF_SPACE (108 * 1024)
 
-	#define NVMCTRL_CTRLA ((int *) 0x41004000)
-	#define NVMCTRL_CTRLB ((int *) 0x41004004)
-	#define NVMCTRL_ADDR  ((int *) 0x4100401C)
-	#define MANW 128 // manual write bit in NVMCTRL_CTRLB
+	// SAM21 Non-Volatile Memory Controller Registers
+	#define NVMC_CTRLA   ((volatile int *) 0x41004000)
+	#define NVMC_CTRLB   ((volatile int *) 0x41004004)
+	#define NVMC_INTFLAG ((volatile int *) 0x41004014)
+	#define NVMC_ADDR    ((volatile int *) 0x4100401C)
 
-	static void eraseFlash(int *startAddr, int *endAddr) {
+	// SAM21 Non-Volatile Memory Controller Constants and Commands
+	#define MANW 128 // manual write bit in NVMC_CTRLB
+	#define READY_BIT 1 // ready bit in NVMC_INTFLAG
+	#define CMD_ERASE_PAGE 0xA502
+	#define CMD_WRITE_PAGE 0xA504
+
+	static void flashErase(int *startAddr, int *endAddr) {
+		while (!(*NVMC_INTFLAG & READY_BIT)){} // wait for previous operation to complete
+
 		while (startAddr < endAddr) {
-			*NVMCTRL_ADDR = ((int) startAddr) >> 1; // must shift address right by 1-bit (see processor data sheet)
-			*NVMCTRL_CTRLA = 0xA502; // cmd: erase page
+			*NVMC_ADDR = ((int) startAddr) >> 1; // must shift address right by 1-bit (see processor data sheet)
+			*NVMC_CTRLA = CMD_ERASE_PAGE;
 			startAddr += 64; // erasure unit (a "row") is 4 * 64 bytes = 64 words
 		}
 	}
 
-	static void finishFlashWrite(int *dst) {
-		// Finish a Flash write operation where the last word written is *(dst - 1).
-		// Details: Atmel SAM processors only write to Flash when the last word of a 64 byte
-		// Flash page buffer is written. To force that to happen, write -1 words (i.e. all 1 bits)
-		// until dst reaches the start of the next page. (Writing "1" bits has no effect on any
-		// previous contents of Flash.)
-
-		while (((int) dst) & 0x3F) *dst++ = -1;
+	void flashWriteWord(int *addr, int value) {
+ 		 while (!(*NVMC_INTFLAG & READY_BIT)){} // wait for previous operation to complete
+		*addr = value;
+		*NVMC_CTRLA = CMD_WRITE_PAGE;
 	}
 
-	static void lockFlash() {
-		// Protect Flash against accidental modification. (Require an explicit write command.)
-		*NVMCTRL_CTRLB = *NVMCTRL_CTRLB | MANW;
+	void flashWriteData(int *dst, int wordCount, char *src) {
+ 		 while (!(*NVMC_INTFLAG & READY_BIT)){} // wait for previous operation to complete
+
+		*NVMC_CTRLB = *NVMC_CTRLB & ~MANW; // automatically write pages at page boundaries
+		for ( ; wordCount > 0; wordCount--) {
+			int n = *src++;
+			n |= *src++ << 8;
+			n |= *src++ << 16;
+			n |= *src++ << 24;
+			*dst++ = n;
+		}
+		*NVMC_CTRLA = CMD_WRITE_PAGE; // write final partial page
+		*NVMC_CTRLB = *NVMC_CTRLB | MANW; // stop page auto-write
 	}
 
-	static void unlockFlash() {
-		// Allow Flash modification by sequentially writing into it.
-		*NVMCTRL_CTRLB = *NVMCTRL_CTRLB & ~MANW;
+#elif defined(ARDUINO_SAM_DUE)
+	#include "sam.h" // AT91SAM3X8E
+
+	// NOTE: Sam3 does not allow writing into the same Flash bank as the executing program.
+	// Since the uBlocks VM runs in the lower bank of Flash, the persistent memory area
+	// must be in the upper bank of Flash which starts at 256K.
+
+	#define START (256 * 1024)
+	#define HALF_SPACE (128 * 1024)
+
+	// SAM3 Flash Memory Controller Registers
+	#define EFC1_CMD    ((volatile int *) 0x400E0C04) // Command register for second 256k bank
+	#define EFC1_STATUS ((volatile int *) 0x400E0C08) // IntFlag register for second 256k bank
+
+	// SAM3 Flash Memory Controller Constants and Commands
+	#define READY_BIT 1
+	#define KEY 0x5A000000 // Flash command key
+	#define WRITE_PAGE 1
+	#define ERASE_PAGE 3
+
+	static void flashErase(int *startAddr, int *endAddr) {
+		while (startAddr < endAddr) {
+			*EFC1_CMD = KEY | ((int) startAddr & 0xFFFF00) | ERASE_PAGE;
+			while (!(*EFC1_STATUS & READY_BIT)){} // wait for operation to complete
+			startAddr += 64; // erasure unit (a "row") is 4 * 64 bytes = 64 words
+		}
 	}
 
-// #elif defined(ARDUINO_SAM_DUE)
-// 	#include "samr.h" // AT91SAM3X8E
-//
-// 	// Not yet implemented!
-//
+	void flashWriteWord(int *dst, int value) {
+		*dst = value;
+		*EFC1_CMD = KEY | ((int) dst & 0xFFFF00) | WRITE_PAGE;
+		while (!(*EFC1_STATUS & READY_BIT)){} // wait for operation to complete
+	}
+
+	void flashWriteData(int *dst, int wordCount, char *src) {
+		// Copy wordCount words into Flash memory starting at dst.
+		// The destination address must be word-aligned, but the source need not be.
+
+		dst = (int *) ((int) dst & 0xFFFFFFFC); // ensure that dst is word-aligned
+		for ( ; wordCount > 0; wordCount--) {
+			*dst++ = *((int *) src);
+			src += 4; // increment by 4 bytes
+			if (0 == ((int) dst & 0x3F)) { // page boundary
+				*EFC1_CMD = KEY | (((int) dst - 4) & 0xFFFF00) | WRITE_PAGE; // write the previous page
+				while (!(*EFC1_STATUS & READY_BIT)){} // wait for operation to complete
+			}
+		}
+		*EFC1_CMD = KEY | (((int) dst - 4) & 0xFFFF00) | WRITE_PAGE; // write the final page
+		while (!(*EFC1_STATUS & READY_BIT)){} // wait for operation to complete
+	}
+
 #else
-	// Simulate Flash operations when testing on a laptop.
+	// Simulate Flash operations using RAM; allows uBlocks to run in RAM on platforms
+	// that do not support Flash-based persistent memory.
 
 	#define START (&flash[0])
 	#define HALF_SPACE (5 * 1024)
 	static unsigned char flash[2 * HALF_SPACE]; // simulated Flash memory (10k)
 
-	static void eraseFlash(int *startAddr, int *endAddr) {
+	static void flashErase(int *startAddr, int *endAddr) {
 		int *dst = (int *) startAddr;
 		while (dst < endAddr) { *dst++ = -1; }
 	}
 
-	static void finishFlashWrite(int *dst) { }
-	static void lockFlash() { }
-	static void unlockFlash() { }
+	void flashWriteWord(int *addr, int value) {
+		*addr = value;
+	}
+
+	void flashWriteData(int *dst, int wordCount, char *src) {
+		for ( ; wordCount > 0; wordCount--) {
+			int n = *src++;
+			n |= *src++ << 8;
+			n |= *src++ << 16;
+			n |= *src++ << 24;
+			*dst++ = n;
+// 			*dst++ = *((int *) src);
+// 			src += 4;
+		}
+	}
 
 #endif
 
@@ -143,7 +218,7 @@ static int *freeStart;	// first free word
 static void clearHalfSpace(int halfSpace) {
 	int *startAddr = (0 == halfSpace) ? start0 : start1;
 	int *endAddr = (0 == halfSpace) ? end0 : end1;
-	eraseFlash(startAddr, endAddr);
+	flashErase(startAddr, endAddr);
 }
 
 static int cycleCount(int halfSpace) {
@@ -158,11 +233,8 @@ static int cycleCount(int halfSpace) {
 static void setCycleCount(int halfSpace, int cycleCount) {
 	// Store the given cycle count at the given address.
 
-	unlockFlash();
 	int *p = (0 == halfSpace) ? start0 : start1;
-	*p = ('S' << 24) | (cycleCount & 0xFFFFFF);
-	finishFlashWrite(p + 1);
-	lockFlash();
+	flashWriteWord(p, ('S' << 24) | (cycleCount & 0xFFFFFF));
 }
 
 static void initPersistentMemory() {
@@ -174,7 +246,7 @@ static void initPersistentMemory() {
 
 	if (!c0 && !c1) { // neither half-space has a valid counter
 		// Flash hasn't been used for uBlocks yet; erase it all.
-		eraseFlash(start0, end1);
+		flashErase(start0, end1);
 		setCycleCount(0, 1);
 		current = 0;
 		freeStart = start0 + 1;
@@ -249,8 +321,8 @@ static int * copyChunk(int *dst, int *src) {
 	// Copy the chunk record at src to dst and return the new value of dst.
 
 	int wordCount = *(src + 1) + 2;
-	while (wordCount-- > 0) *dst++ = *src++;
-	return dst;
+	flashWriteData(dst, wordCount, src);
+	return dst + wordCount;
 }
 
 static int * copyChunkInfo(int id, int *src, int *dst) {
@@ -345,7 +417,6 @@ static void compact() {
 	clearHalfSpace(!current);
 	int *dst = (0 == !current) ? start0 + 1 : start1 + 1;
 
-	unlockFlash();
 	int *src = recordAfter(NULL);
 	while (src) {
 		int header = *src;
@@ -358,8 +429,6 @@ static void compact() {
 		}
 		src = recordAfter(src);
 	}
-	finishFlashWrite(dst);
-	lockFlash();
 
 	// increment the cycle counter and switch to the other half-space
 	setCycleCount(!current, cycleCount(current) + 1); // this commits the compaction
@@ -394,23 +463,13 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, c
 			return NULL;
 		}
 	}
-
 	// write the record
 	int *result = freeStart;
-	unlockFlash();
 	int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
-	*freeStart++ = header;
-	*freeStart++ = wordCount;
-	for (int i = 0; i < wordCount; i++) {
-		int w = *data++;
-		w |= (*data++ << 8);
-		w |= (*data++ << 16);
-		w |= (*data++ << 24);
-		*freeStart++ = w;
-	}
-	finishFlashWrite(freeStart);
-	lockFlash();
-
+	flashWriteWord(freeStart++, header);
+	flashWriteWord(freeStart++, wordCount);
+	flashWriteData(freeStart, wordCount, data);
+	freeStart += wordCount;
 	return result;
 }
 
@@ -442,10 +501,6 @@ void restoreScripts() {
 
 // testing
 
-static int dummyData[] = {
-	  1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
-	 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
-
 static void dumpWords(int halfSpace, int count) {
 	// Dump the first count words of the given half-space.
 
@@ -472,9 +527,37 @@ static void showRecordHeaders() {
 	}
 }
 
-void persistTest() {
-	printf("Persistent Memory Test\n\n");
+void basicTest() {
+  int testData[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+  char charData[] = {
+      0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0,
+      5, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0};
 
+  #define PAGE ((int *) START)
+
+  flashErase(PAGE, PAGE + 100);
+  dumpWords(0, 35);
+  printf("-----\n");
+  flashWriteData(PAGE, 10, testData);
+  flashWriteWord(PAGE + 13, 13);
+  flashWriteWord(PAGE + 15, 42);
+  flashWriteWord(PAGE + 17, 17);
+  flashWriteData(PAGE + 19, 3, charData);
+  flashWriteData(PAGE + 23, 3, &charData[1]);
+  flashWriteData(PAGE + 27, 3, &charData[2]);
+  dumpWords(0, 35);
+  flashErase(PAGE, PAGE + 100);
+  dumpWords(0, 20);
+}
+
+void persistTest() {
+	int dummyData[] = {1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16};
+
+	printf("Persistent Memory Test\n\n");
+	basicTest();
+
+	printf("\nInitializing Memory\n");
+	initPersistentMemory();
 	initPersistentMemory();
  	clearPersistentMemory();
 	printf("Memory intitialized; writing records...\n");
@@ -484,7 +567,7 @@ void persistTest() {
 	}
 	compact();
 
- 	dumpWords(current, 100);
+ 	dumpWords(current, 150);
 	showRecordHeaders();
 
 	printf("Final: current %d used %d c0 %d c1 %d\n",
