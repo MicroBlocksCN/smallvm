@@ -321,7 +321,7 @@ static int * copyChunk(int *dst, int *src) {
 	// Copy the chunk record at src to dst and return the new value of dst.
 
 	int wordCount = *(src + 1) + 2;
-	flashWriteData(dst, wordCount, src);
+	flashWriteData(dst, wordCount, (char *) src);
 	return dst + wordCount;
 }
 
@@ -538,7 +538,7 @@ void basicTest() {
   flashErase(PAGE, PAGE + 100);
   dumpWords(0, 35);
   printf("-----\n");
-  flashWriteData(PAGE, 10, testData);
+  flashWriteData(PAGE, 10, (char *) testData);
   flashWriteWord(PAGE + 13, 13);
   flashWriteWord(PAGE + 15, 42);
   flashWriteWord(PAGE + 17, 17);
@@ -563,7 +563,7 @@ void persistTest() {
 	printf("Memory intitialized; writing records...\n");
 
 	for (int i = 0; i < 3000; i++) {
-		appendPersistentRecord(chunkCode, i % 100, 0, (i % 5) * 4, dummyData);
+		appendPersistentRecord(chunkCode, i % 100, 0, (i % 5) * 4, (char *) dummyData);
 	}
 	compact();
 
