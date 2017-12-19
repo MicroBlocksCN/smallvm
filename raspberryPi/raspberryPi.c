@@ -9,8 +9,6 @@
 #include "interp.h"
 #include "persist.h"
 
-static void initPins(void); // forward reference
-
 // Timing Functions
 
 uint32 microsecs() { return (uint32) micros(); }
@@ -41,62 +39,45 @@ void systemReset() { } // noop on Raspberry Pi
 
 // General Purpose I/O Pins
 
-#define DIGITAL_PINS 0
+#define DIGITAL_PINS 17
 #define ANALOG_PINS 0
 #define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
-static const int analogPin[] = {};
 #define PIN_LED 0
-
-#define LOW 0
-#define HIGH 1
 
 // Pin Modes
 
 // The current pin input/output mode is recorded in the currentMode[] array to
-// avoid calling pinMode() unless mode has actually changed. (This speeds up pin I/O.)
+// avoid calling pinMode() unless mode has actually changed. This speeds up pin I/O.
 
-#define MODE_NOT_SET (-1)
 static char currentMode[TOTAL_PINS];
 
-#define SET_MODE(pin, newMode) { }
-static void initPins(void) { }
+#define MODE_NOT_SET (-1)
 
-int analogRead(int pinNum) { return 0; }
-void analogWrite(int pinNum, int value) { }
+#define SET_MODE(pin, newMode) { \
+	if ((newMode) != currentMode[pin]) { \
+		pinMode((pin), newMode); \
+		currentMode[pin] = newMode; \
+	} \
+}
 
-int digitalRead(int pinNum) { return 0; }
-void digitalWrite(int pinNum, int value) { }
+static void initPins(void) {
+	// Initialize currentMode to MODE_NOT_SET (neigher INPUT nor OUTPUT)
+	// to force the pin's mode to be set on first use.
+
+	for (int i; i < TOTAL_PINS; i++) currentMode[i] = MODE_NOT_SET;
+}
 
 // Pin IO Primitives
 
 OBJ primAnalogPins(OBJ *args) { return int2obj(ANALOG_PINS); }
-
 OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 
-OBJ primAnalogRead(OBJ *args) {
-	int pinNum = obj2int(args[0]);
-	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
-	int pin = analogPin[pinNum];
-	SET_MODE(pin, INPUT);
-	return int2obj(analogRead(pin));
-}
-
-OBJ primAnalogWrite(OBJ *args) {
-	int pinNum = obj2int(args[0]);
-	int value = obj2int(args[1]);
-	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
-	SET_MODE(pinNum, OUTPUT);
-	analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
-	return nilObj;
-}
+OBJ primAnalogRead(OBJ *args) { return int2obj(0); } // no analog inputs
+OBJ primAnalogWrite(OBJ *args) { return nilObj; } // analog output not supported
 
 OBJ primDigitalRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
-	#ifdef ARDUINO_NRF52_PRIMO
-		if (20 == pinNum) return (HIGH == digitalRead(USER1_BUTTON)) ? trueObj : falseObj;
-		if (21 == pinNum) return falseObj;
-	#endif
 	SET_MODE(pinNum, INPUT);
 	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
 }
@@ -105,57 +86,33 @@ OBJ primDigitalWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	int value = (args[1] == trueObj) ? HIGH : LOW;
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
-	#ifdef ARDUINO_NRF52_PRIMO
-		if (20 == pinNum) return nilObj;
-		if (21 == pinNum) { digitalWrite(BUZZER, value); return nilObj; }
-	#endif
 	SET_MODE(pinNum, OUTPUT);
 	digitalWrite(pinNum, value);
 	return nilObj;
 }
 
 OBJ primSetLED(OBJ *args) {
-	 #ifdef ARDUINO_BBC_MICROBIT
-		// Special case: Use a row-column compinaton to turn on one LED in the LED matrix.
-		const int col2 = 4;
-		const int row1 = 26;
-		SET_MODE(col2, OUTPUT);
-		SET_MODE(row1, OUTPUT);
-		if (trueObj == args[0]) {
-			digitalWrite(col2, LOW);
-			digitalWrite(row1, HIGH);
-		} else {
-			digitalWrite(col2, HIGH);
-			digitalWrite(row1, LOW);
-		}
-	#else
-		SET_MODE(PIN_LED, OUTPUT);
-		digitalWrite(PIN_LED, (trueObj == args[0]) ? HIGH : LOW);
-	#endif
+	int value = (args[1] == trueObj) ? HIGH : LOW;
+	SET_MODE(PIN_LED, OUTPUT);
+	digitalWrite(PIN_LED, value);
 	return nilObj;
 }
 
-OBJ primI2cGet(OBJ *args) { return nilObj; } // not implemented
-OBJ primI2cSet(OBJ *args) { return nilObj; } // not implemented
+OBJ primI2cGet(OBJ *args) { return int2obj(0); } // not yet implemented
+OBJ primI2cSet(OBJ *args) { return nilObj; } // not yet implemented
 
 int main() {
+	wiringPiSetup();
 	serialPort = serialOpen("/dev/ttyGS0", 115200);
 	if (serialPort < 0) {
 		printf("Could not open serial port; exiting.\n");
 		return -1;
 	}
-	printf("Serial port: %d\n", serialPort);
-// 	while (true) {
-// 		if (canReadByte()) {
-// 			char ch = serialGetchar(serialPort);
-// 			printf("Char: %d\n", ch);
-// 			sendByte(ch - 32);
-// 		}
-// 	}
-
+	initPins();
 	memInit(5000); // 5k words = 20k bytes
 	restoreScripts();
 	startAll();
+	printf("MicroBlocks is running...\n");
 	outputString("Welcome to uBlocks for Raspberry Pi!");
 	vmLoop();
 }
