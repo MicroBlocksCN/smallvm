@@ -2,8 +2,11 @@
 // John Maloney, December 2017
 
 #include <stdio.h>
+#include <unistd.h>
+
 #include <wiringPi.h>
 #include <wiringSerial.h>
+#include <wiringPiI2C.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -46,8 +49,8 @@ void systemReset() { } // noop on Raspberry Pi
 
 // Pin Modes
 
-// The current pin input/output mode is recorded in the currentMode[] array to
-// avoid calling pinMode() unless mode has actually changed. This speeds up pin I/O.
+// To speed up pin I/O, the current pin input/output mode is recorded in the currentMode[]
+// array to avoid calling pinMode() unless the pin mode has actually changed.
 
 static char currentMode[TOTAL_PINS];
 
@@ -98,8 +101,34 @@ OBJ primSetLED(OBJ *args) {
 	return nilObj;
 }
 
-OBJ primI2cGet(OBJ *args) { return int2obj(0); } // not yet implemented
-OBJ primI2cSet(OBJ *args) { return nilObj; } // not yet implemented
+// I2C primitives
+
+static OBJ needs8BitIntFailure() { return failure(needs8BitIntError, "All arguments must be integers in the range 0-255"); }
+
+OBJ primI2cGet(OBJ *args) {
+	if (!isInt(args[0]) || !isInt(args[1])) return needs8BitIntFailure();
+	int deviceID = obj2int(args[0]) & 127;
+	int registerID = obj2int(args[1]) & 255;
+
+	int fd = wiringPiI2CSetup(deviceID);
+	int result = wiringPiI2CReadReg8 (fd, registerID);
+	close(fd);
+	return int2obj(result);
+}
+
+OBJ primI2cSet(OBJ *args) {
+	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return needs8BitIntFailure();
+	int deviceID = obj2int(args[0]) & 127;
+	int registerID = obj2int(args[1]) & 255;
+	int value = obj2int(args[2]) & 255;
+
+	int fd = wiringPiI2CSetup(deviceID);
+	wiringPiI2CWriteReg8(fd, registerID, value);
+	close(fd);
+	return nilObj;
+}
+
+// Raspberry Pi Main
 
 int main() {
 	wiringPiSetup();
