@@ -210,7 +210,8 @@ static void runTask(Task *task) {
 		vars[arg] = *--sp;
 		DISPATCH();
 	incrementVar_op:
-		vars[arg] = int2obj(evalInt(vars[arg]) + evalInt(*--sp));
+		tmp = isInt(vars[arg]) ? evalInt(vars[arg]) : 0;
+		vars[arg] = int2obj(tmp + evalInt(*--sp));
 		DISPATCH();
 	pushArgCount_op:
 		*sp++ = *(fp - 3);
