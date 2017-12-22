@@ -4,7 +4,7 @@
   "description": "µBlocks serial to ws connector",
   "main": "index.js",
   "dependencies": {
-    "serialport": "^5.0.0-beta8",
+    "serialport": "^5.0.0",
     "ws": "^3.0.0"
   },
   "devDependencies": {},
