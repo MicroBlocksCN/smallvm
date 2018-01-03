@@ -48,7 +48,6 @@ Board.prototype.disconnect = function (onSuccess, onError) {
 
 Board.prototype.reconnect = function (onSuccess) {
     var myself = this;
-    log('Attempting to reconnect...');
     this.connect(
         function (err) {
             if (!err) {
@@ -118,8 +117,13 @@ Connector.prototype.init = function () {
 // Serial Port
 
 Connector.prototype.addBoard = function (portName, connectCallback) {
-    var myself = this,
-        oldBoard = this.boardAt(portName);
+    var myself = this;
+
+    if (this.boardAt(portName)) {
+        log('There was a board already connected to this port. I\'m reusing it.');
+        connectCallback.call(this, false); // is there an error?
+        return;
+    }
 
     log('Connecting to board at ' + portName + '...');
 
@@ -135,13 +139,13 @@ Connector.prototype.addBoard = function (portName, connectCallback) {
 
     function onClose (err) {
         log('Board disconnected.', err ? 1 : 0);
-        myself.sendJsonMessage('boardUnplugged', [ this.portName ]);
         if (err) {
+            myself.sendJsonMessage('boardUnplugged', [ this.portName ]);
             log('Starting auto-reconnect loop');
             this.reconnectLoop(function () {
                 myself.sendJsonMessage('boardReconnected', [ this.portName ]);
             });
-        }
+        } 
     };
 
     function onError (err) {
@@ -156,22 +160,21 @@ Connector.prototype.addBoard = function (portName, connectCallback) {
         onError
     );
 
-    if (oldBoard) {
-        log('There was a board already connected to this port. I\'m reusing it.');
-    } else {
-        this.boards[portName] = board;
-    }
+    this.boards[portName] = board;
 };
 
 Connector.prototype.removeBoard = function (portName, onSuccess, onError) {
-    var myself = this;
-    this.boardAt(portName).disconnect(
-        function () {
-            delete myself.boards[portName];
-            onSuccess();
-        },
-        onError
-    );
+    var myself = this,
+        board = this.boardAt(portName);
+    if (board) {
+        board.disconnect(
+            function () {
+                delete myself.boards[portName];
+                onSuccess();
+            },
+            onError
+        );
+    }
 };
 
 Connector.prototype.boardSend = function (portName, arrayBuffer) {
@@ -255,11 +258,11 @@ Connector.prototype.dispatcher = {
             portName,
             // success callback
             function () {
-                myself.sendJsonMessage('serialDisconnectResponse', [ true ]);
+                myself.sendJsonMessage('serialDisconnectResponse', [ true, portName ]);
             },
             // error callback
             function () {
-                myself.sendJsonMessage('serialDisconnectResponse', [ false ]);
+                myself.sendJsonMessage('serialDisconnectResponse', [ false, portName ]);
             }
         );
     }
