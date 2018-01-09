@@ -33,6 +33,9 @@ void memInit(int wordCount) {
 	}
 	freeStart = memStart;
 	memEnd = memStart + wordCount;
+
+	// initialize all global variables to zero
+	for (int i = 0; i < MAX_VARS; i++) vars[i] = int2obj(0);
 }
 
 void memClear() {

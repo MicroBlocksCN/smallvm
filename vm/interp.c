@@ -18,7 +18,7 @@ CodeChunkRecord chunks[MAX_CHUNKS];
 Task tasks[MAX_TASKS];
 int taskCount = 0;
 
-static OBJ vars[25];
+OBJ vars[MAX_VARS];
 
 // Error Reporting
 

@@ -73,6 +73,11 @@ extern "C" {
   (((localCount & 0xFF) << 24) | ((argCount & 0xFF) << 16) | \
    ((chunkIndex & 0xFF) << 8)| callFunction)
 
+// Global Variables
+
+#define MAX_VARS 25
+extern OBJ vars[MAX_VARS];
+
 // Code Chunks
 
 // The code chunk table is an array of CodeChunkRecords. A code chunk is referenced by its
@@ -196,6 +201,14 @@ void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void vmLoop(void);
+
+// Integer Evaluation
+
+static inline int evalInt(OBJ obj) {
+	if (isInt(obj)) return obj2int(obj);
+	failure(needsIntegerError, "evalInt got non-integer");
+	return 0;
+}
 
 // Testing Support
 
