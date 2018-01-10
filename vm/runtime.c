@@ -37,7 +37,10 @@ void startTaskForChunk(uint8 chunkIndex) {
 	for (i = 0; i < MAX_TASKS; i++) {
 		if (unusedTask == tasks[i].status) break;
 	}
-	if (i >= MAX_TASKS) gpPanic("No free task entries");
+	if (i >= MAX_TASKS) {
+		outputString("No free task entries");
+		return;
+	}
 
 	memset(&tasks[i], 0, sizeof(Task));
 	tasks[i].status = running;

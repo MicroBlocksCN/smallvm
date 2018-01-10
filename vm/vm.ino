@@ -8,8 +8,8 @@ void setup() {
   #endif
   Serial.begin(115200);
   hardwareInit();
-  memInit(5000); // 5k words = 20k bytes
-  outputString("Welcome to uBlocks for Arduino!");
+  memInit(2000); // 2000 words = 8000 bytes
+  outputString("Welcome to MicroBlocks!");
   restoreScripts();
   startAll();
 }

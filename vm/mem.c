@@ -15,14 +15,17 @@ static OBJ memEnd;
 
 void memInit(int wordCount) {
 	if (sizeof(int) != sizeof(int*)) {
-		gpPanic("GP must be compiled in 32-bit mode (e.g. gcc -m32 ...)");
+		vmPanic("MicroBlocks must be compiled in 32-bit mode (e.g. gcc -m32 ...)");
 	}
 	if (sizeof(int) != sizeof(float)) {
-		gpPanic("GP expects floats and ints to be the same size");
+		vmPanic("MicroBlocks expects float and int to be the same size");
 	}
+
 	memStart = (OBJ) malloc(wordCount * sizeof(int));
-	if (memStart == NULL) {
-		gpPanic("memInit failed; insufficient memory");
+	int stackBytes; // address of this local variable approximates the current C stack pointer
+	stackBytes = ((int) &stackBytes) - ((int) (memStart + wordCount));
+	if ((memStart == NULL) || (stackBytes < 256)) {
+		vmPanic("Insufficient memory to start MicroBlocks");
 	}
 	if ((unsigned) memStart <= 8) {
 		// Reserve object references 0, 4, and 8 for constants nil, true, and false
@@ -38,6 +41,16 @@ void memInit(int wordCount) {
 	for (int i = 0; i < MAX_VARS; i++) vars[i] = int2obj(0);
 }
 
+void vmPanic(char *errorMessage) {
+	// Called when VM encounters a fatal error. Output the given message and loop forever.
+	// NOTE: This call never returns!
+
+	char s[100];
+	sprintf(s, "\r\nVM Panic: %s\r\n", errorMessage);
+	outputString(s);
+	while (true) processMessage(); // there's no way to recover; loop forever!
+}
+
 void memClear() {
 	freeStart = memStart;
 }
@@ -46,8 +59,7 @@ OBJ newObj(int classID, int wordCount, OBJ fill) {
 	OBJ obj = freeStart;
 	freeStart += HEADER_WORDS + wordCount;
 	if (freeStart >= memEnd) {
-		printf("%d words used out of %d\n", freeStart - memStart, memEnd - memStart);
-		gpPanic("Out of memory!");
+		vmPanic("Out of memory!");
 	}
 	for (OBJ p = obj; p < freeStart; ) *p++ = (int) fill;
 	unsigned header = HEADER(classID, wordCount);
@@ -79,13 +91,6 @@ char* obj2str(OBJ obj) {
 }
 
 // Debugging
-
-void gpPanic(char *errorMessage) {
-	// Called when VM encounters a fatal error. Print the given message and stop.
-
-	printf("\r\n%s\r\n", errorMessage);
-	while (true) { } // there's no way to recover; loop forever!
-}
 
 void memDumpObj(OBJ obj) {
 	if ((obj < memStart) || (obj >= memEnd)) {

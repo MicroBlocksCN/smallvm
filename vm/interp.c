@@ -233,7 +233,7 @@ static void runTask(Task *task) {
 		if (sp >= task->stack) {
 			DISPATCH();
 		} else {
-			gpPanic("Stack underflow");
+			vmPanic("Stack underflow");
 		}
 		DISPATCH();
 	jmp_op:

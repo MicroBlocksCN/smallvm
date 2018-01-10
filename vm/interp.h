@@ -201,6 +201,7 @@ void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void vmLoop(void);
+void vmPanic(char *s);
 
 // Integer Evaluation
 
@@ -218,10 +219,6 @@ void runTasksUntilDone(void);
 
 void interpTests1(void);
 void taskTest(void);
-
-// Debugging
-
-void gpPanic(char *s);
 
 // Printf macro for Arduino (many thanks to Michael McElligott)
 
