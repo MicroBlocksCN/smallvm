@@ -1,4 +1,5 @@
 var Connector,
+    connector,
     Board,
     WebSocket = require('ws'),
     util = require('util'),
@@ -6,7 +7,8 @@ var Connector,
     options = {},
     SysTray = require('systray').default,
     systray,
-    trayActions = {};
+    trayItems,
+    trayActions;
 
 
 // ===== Board ===== //
@@ -56,6 +58,7 @@ Board.prototype.reconnect = function (onSuccess) {
         function (err) {
             if (!err) {
                 log('Reconnection success!');
+                if (systray) { systray.setBoardStatus(true); }
                 clearInterval(myself.reconnectLoopId);
                 myself.reconnectLoopId = null;
                 onSuccess.call(myself);
@@ -99,11 +102,19 @@ Connector.prototype.init = function () {
     this.wsServer.on('connection', function (ws) {
         myself.socket = ws;
         log('websocket client connected');
+        if (systray) {
+            systray.linked();
+            systray.setClientStatus(true);
+        }
         myself.socket.on('message', function (message) {
             myself.processMessage(message);
         });
         myself.socket.on('close', function () {
             log('websocket client disconnected');
+            if (systray) {
+                systray.unlinked();
+                systray.setClientStatus(false);
+            }
             myself.socket = null;
         });
     });
@@ -145,6 +156,7 @@ Connector.prototype.addBoard = function (portName, connectCallback) {
         log('Board disconnected.', err ? 1 : 0);
         if (err) {
             myself.sendJsonMessage('boardUnplugged', [ this.portName ]);
+            if (systray) { systray.setBoardStatus(false); }
             log('Starting auto-reconnect loop');
             this.reconnectLoop(function () {
                 myself.sendJsonMessage('boardReconnected', [ this.portName ]);
@@ -252,6 +264,7 @@ Connector.prototype.dispatcher = {
         var myself = this;
         this.addBoard(portName, function (err) {
             log('Client asked me to connect to a board.');
+            if (systray && !err) { systray.setBoardStatus(true); }
             myself.sendJsonMessage('serialConnectResponse', [ !err, portName ]);
         });
     },
@@ -262,6 +275,7 @@ Connector.prototype.dispatcher = {
             portName,
             // success callback
             function () {
+                if (systray) { systray.setBoardStatus(false); }
                 myself.sendJsonMessage('serialDisconnectResponse', [ true, portName ]);
             },
             // error callback
@@ -347,7 +361,7 @@ process.argv.forEach(function (val) {
 
 if (options.placeTrayIcon) {
     fs.readFile(
-        'icon.b64',
+        'icons/unlinked.b64',
         'utf8',
         function (err, icon) {
             if (!err) {
@@ -357,20 +371,54 @@ if (options.placeTrayIcon) {
                     copyDir: true,
                     menu: {
                         icon: icon,
-                        tooltip: 'microBlocks connector',
-                        items: [
-                        {
-                            title: 'Quit',
-                            tooltip: 'stop the connector',
-                            enabled: true,
-                        }
-                        ]
+                        items: trayItems
                     }
                 });
 
                 systray.onClick(function (action) {
                     trayActions[action.item.title].call(systray);
                 });
+
+                systray.linked = function () {
+                    this.sendAction({
+                        type: 'update-menu',
+                        menu: {
+                            icon: fs.readFileSync('icons/linked.b64', 'utf8'),
+                            items: trayItems
+                        }
+                    });
+                };
+
+                systray.unlinked = function () {
+                    this.sendAction({
+                        type: 'update-menu',
+                        menu: {
+                            icon: fs.readFileSync('icons/unlinked.b64', 'utf8'),
+                            items: trayItems
+                        }
+                    });
+                };
+
+                systray.setStatus = function (status, itemIndex, checked) {
+                    this.sendAction({
+                        type: 'update-item',
+                        item: {
+                            title: status,
+                            enabled: false,
+                            checked: checked || false
+                        },
+                        seq_id: itemIndex
+                    });
+                };
+
+                systray.setClientStatus = function (connected) {
+                    this.setStatus((connected ? '' : 'not ') + 'connected to IDE', 0, connected);
+                };
+
+                systray.setBoardStatus = function (connected) {
+                    this.setStatus((connected ? '' : 'not ') + 'connected to device', 1, connected);
+                };
+
             } else {
                 log('failed to place system tray icon', 1);
                 log(err);
@@ -379,14 +427,35 @@ if (options.placeTrayIcon) {
         }
     );
 
-    trayActions['Quit'] = function () {
-        log('stopping connector at user\'s request');
-        this.kill();
+    trayItems = [
+        {
+            title: 'not connected to IDE',
+            enabled: false,
+            checked: false
+        },
+        {
+            title: 'not connected to device',
+            enabled: false,
+            checked: false
+        },
+        {
+            title: 'Quit',
+            tooltip: 'stop the connector',
+            enabled: true,
+        }
+    ];
+
+    trayActions = {
+        'Quit':
+            function () {
+                log('stopping connector at user\'s request');
+                this.kill();
+            }
     };
 }
 
 
 // ==== Connector Startup ==== //
 
-new Connector();
+connector = new Connector();
 
