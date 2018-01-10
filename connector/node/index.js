@@ -2,7 +2,11 @@ var Connector,
     Board,
     WebSocket = require('ws'),
     util = require('util'),
-    options = {};
+    fs = require('fs'),
+    options = {},
+    SysTray = require('systray').default,
+    systray,
+    trayActions = {};
 
 
 // ===== Board ===== //
@@ -289,22 +293,24 @@ printHelp = function (topic) {
             console.log('The µBlocks communications protocol');
             break;
         default:
-        console.log(
-            'Usage: ./start.sh [OPTION]…\n' +
-            '       node index.js [OPTION]…\n' +
-            'The µBlocks websockets-serial bridge enables communications between any device\n' +
-            'with a µBlocks virtual machine and a µBlocks client. Communication to and from\n' +
-            'the device is handled via serial port, whereas the client is interfaced via\n' +
-            'websockets. To learn more about the µBlocks communications protocol (only\n' +
-            'relevant to developers) run me with the --help=protocol option\n\n' +
+            console.log(
+                'Usage: ./start.sh [OPTION]…\n' +
+                '       node index.js [OPTION]…\n' +
+                'The µBlocks websockets-serial bridge enables communications between any device\n' +
+                'with a µBlocks virtual machine and a µBlocks client. Communication to and from\n' +
+                'the device is handled via serial port, whereas the client is interfaced via\n' +
+                'websockets. To learn more about the µBlocks communications protocol (only\n' +
+                'relevant to developers) run me with the --help=protocol option\n\n' +
 
-            '-h, --help=TOPIC   Print this message and exit, or print information about\n' +
-            '                   TOPIC, if specified. Possible topics are: protocol\n' +
-            '-d, --debug        Set debug (verbose) mode.\n' +
-            '-p=[PORT], --port=[PORT]\n' +
-            '                   Choose the websockets port. If not defined, it will default\n' +
-            '                   to 9999.\n'
-       );
+                '-h, --help=TOPIC   Print this message and exit, or print information about\n' +
+                '                   TOPIC, if specified. Possible topics are: protocol\n' +
+                '-d, --debug        Set debug (verbose) mode.\n' +
+                '-t, --tray         Place an icon in the system tray.\n' +
+                '-p=[PORT], --port=[PORT]\n' +
+                '                   Choose the websockets port. If not defined, it will default\n' +
+                '                   to 9999.\n'
+            );
+
     }
     process.exit();
 };
@@ -312,7 +318,7 @@ printHelp = function (topic) {
 function nop () {};
 
 
-// ==== Startup ==== //
+// ==== Command Line Parameters ==== //
 
 process.argv.forEach(function (val) {
     var option = val.split('=');
@@ -329,7 +335,58 @@ process.argv.forEach(function (val) {
         case '-p':
             options.port = option[1] || 9999;
             break;
+        case '--tray':
+        case '-t':
+            options.placeTrayIcon = true;
+            break;
     }
 });
 
+
+// ==== System Tray Icon ==== //
+
+if (options.placeTrayIcon) {
+    fs.readFile(
+        'icon.b64',
+        'utf8',
+        function (err, icon) {
+            if (!err) {
+                log('placing system tray icon');
+                systray = new SysTray({
+                    debug: options.debugMode,
+                    copyDir: true,
+                    menu: {
+                        icon: icon,
+                        tooltip: 'microBlocks connector',
+                        items: [
+                        {
+                            title: 'Quit',
+                            tooltip: 'stop the connector',
+                            enabled: true,
+                        }
+                        ]
+                    }
+                });
+
+                systray.onClick(function (action) {
+                    trayActions[action.item.title].call(systray);
+                });
+            } else {
+                log('failed to place system tray icon', 1);
+                log(err);
+                throw(err);
+            }
+        }
+    );
+
+    trayActions['Quit'] = function () {
+        log('stopping connector at user\'s request');
+        this.kill();
+    };
+}
+
+
+// ==== Connector Startup ==== //
+
 new Connector();
+
