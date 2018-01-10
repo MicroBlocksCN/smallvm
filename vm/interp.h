@@ -186,6 +186,7 @@ extern int taskCount;
 #define needsStringError		18
 #define intOutOfRangeError		19
 #define needs8BitIntError		20
+#define insufficientMemoryError	21
 
 // Runtime Operations
 

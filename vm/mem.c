@@ -56,11 +56,11 @@ void memClear() {
 }
 
 OBJ newObj(int classID, int wordCount, OBJ fill) {
+	if ((freeStart + HEADER_WORDS + wordCount) >= memEnd) {
+		return failure(insufficientMemoryError, "Insufficient memory");
+	}
 	OBJ obj = freeStart;
 	freeStart += HEADER_WORDS + wordCount;
-	if (freeStart >= memEnd) {
-		vmPanic("Out of memory!");
-	}
 	for (OBJ p = obj; p < freeStart; ) *p++ = (int) fill;
 	unsigned header = HEADER(classID, wordCount);
 	obj[0] = header;
@@ -84,7 +84,7 @@ OBJ newString(char *s) {
 
 char* obj2str(OBJ obj) {
 	if (NOT_CLASS(obj, StringClass)) {
-		printf("Non-string passed to obj2str()\n");
+		failure(needsStringError, "Non-string passed to obj2str()");
 		return (char *) "";
 	}
 	return (char *) &obj[HEADER_WORDS];
