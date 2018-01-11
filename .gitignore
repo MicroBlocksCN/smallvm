@@ -4,3 +4,4 @@ uBlocks.crx
 *.swo
 node_modules
 connector/node/package-lock.json
+connector/node/build
