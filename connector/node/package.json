@@ -7,7 +7,12 @@
   "pkg": {
     "assets": [
         "node_modules/systray/traybin/tray_linux_release",
-        "node_modules/systray/traybin/tray_linux"
+        "node_modules/systray/traybin/tray_linux",
+        "node_modules/systray/traybin/tray_windows_release.exe",
+        "node_modules/systray/traybin/tray_windows.exe",
+        "node_modules/systray/traybin/tray_darwin_release",
+        "node_modules/systray/traybin/tray_darwin",
+        "icons/*"
     ]
   },
   "dependencies": {

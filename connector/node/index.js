@@ -4,12 +4,12 @@ var Connector,
     WebSocket = require('ws'),
     util = require('util'),
     fs = require('fs'),
-    options = {},
+    options = { placeTrayIcon: true },
     SysTray = require('systray').default,
     systray,
     trayItems,
-    trayActions;
-
+    trayActions,
+    exec = require('child_process').exec;
 
 // ===== Board ===== //
 
@@ -101,7 +101,7 @@ Connector.prototype.init = function () {
     this.wsServer = new WebSocket.Server({ port: options.port || 9999 }),
     this.wsServer.on('connection', function (ws) {
         myself.socket = ws;
-        log('websocket client connected');
+        log('Websocket client connected');
         if (systray) {
             systray.linked();
             systray.setClientStatus(true);
@@ -110,7 +110,7 @@ Connector.prototype.init = function () {
             myself.processMessage(message);
         });
         myself.socket.on('close', function () {
-            log('websocket client disconnected');
+            log('Websocket client disconnected');
             if (systray) {
                 systray.unlinked();
                 systray.setClientStatus(false);
@@ -144,7 +144,7 @@ Connector.prototype.addBoard = function (portName, connectCallback) {
 
     function onData (data) {
         if (myself.socket) {
-            log('board sends: ');
+            log('Board sends: ');
             log(data, 0);
             myself.socket.send(data);
         } else {
@@ -319,7 +319,7 @@ printHelp = function (topic) {
                 '-h, --help=TOPIC   Print this message and exit, or print information about\n' +
                 '                   TOPIC, if specified. Possible topics are: protocol\n' +
                 '-d, --debug        Set debug (verbose) mode.\n' +
-                '-t, --tray         Place an icon in the system tray.\n' +
+                '-n, --no-tray      Do not place an icon in the system tray.\n' +
                 '-p=[PORT], --port=[PORT]\n' +
                 '                   Choose the websockets port. If not defined, it will default\n' +
                 '                   to 9999.\n'
@@ -349,9 +349,9 @@ process.argv.forEach(function (val) {
         case '-p':
             options.port = option[1] || 9999;
             break;
-        case '--tray':
-        case '-t':
-            options.placeTrayIcon = true;
+        case '--no-tray':
+        case '-n':
+            options.placeTrayIcon = false;
             break;
     }
 });
@@ -365,7 +365,7 @@ if (options.placeTrayIcon) {
         'utf8',
         function (err, icon) {
             if (!err) {
-                log('placing system tray icon');
+                log('Placing system tray icon');
                 systray = new SysTray({
                     debug: options.debugMode,
                     copyDir: true,
@@ -411,16 +411,16 @@ if (options.placeTrayIcon) {
                     });
                 };
 
-                systray.setClientStatus = function (connected) {
-                    this.setStatus((connected ? '' : 'not ') + 'connected to IDE', 0, connected);
+                systray.setClientStatus = function (linked) {
+                    this.setStatus((linked ? '' : 'not ') + 'linked to IDE', 0, linked);
                 };
 
-                systray.setBoardStatus = function (connected) {
-                    this.setStatus((connected ? '' : 'not ') + 'connected to device', 1, connected);
+                systray.setBoardStatus = function (linked) {
+                    this.setStatus((linked ? '' : 'not ') + 'linked to device', 1, linked);
                 };
 
             } else {
-                log('failed to place system tray icon', 1);
+                log('Failed to place system tray icon', 1);
                 log(err);
                 throw(err);
             }
@@ -429,12 +429,12 @@ if (options.placeTrayIcon) {
 
     trayItems = [
         {
-            title: 'not connected to IDE',
+            title: 'not linked to IDE',
             enabled: false,
             checked: false
         },
         {
-            title: 'not connected to device',
+            title: 'not linked to device',
             enabled: false,
             checked: false
         },
@@ -448,14 +448,21 @@ if (options.placeTrayIcon) {
     trayActions = {
         'Quit':
             function () {
-                log('stopping connector at user\'s request');
+                log('Stopping connector at user\'s request');
                 this.kill();
             }
     };
+} else {
+    log('Will not place system tray icon at users\'s request');
 }
 
 
 // ==== Connector Startup ==== //
+
+// If we're on Windows, hide the command line window
+if (process.platform.indexOf('win') > -1) {
+    exec('CONSOLESTATE /hide');
+}
 
 connector = new Connector();
 
