@@ -169,28 +169,30 @@ extern int taskCount;
 #define taskErrorMsg			19
 #define outputValueMsg			20
 
-// Error Codes (codes 1-9 are protocol errors, codes 10 and up are task errors)
+// Error Codes (codes 1-9 are protocol errors; 10 and up are runtime errors)
 
 #define noError					0
 #define unspecifiedError		1
 #define badChunkIndexError		2
 
-#define divideByZeroError		10
-#define needsNonNegativeError	11
-#define needsIntegerError		12
-#define needs0to255IntError		13
-#define needsArrayError			14
-#define indexOutOfRangeError	15
-#define needsBoolean			16
-#define nonComparable			17
-#define needsStringError		18
-#define intOutOfRangeError		19
-#define needs8BitIntError		20
-#define insufficientMemoryError	21
+#define insufficientMemoryError	10	// Insufficient memory to allocate object
+#define needsArrayError			11	// Needs an Array or ByteArray
+#define needsBooleanError		12	// Needs a boolean
+#define needsIntegerError		13	// Needs an integer
+#define needsStringError		14	// Needs a string
+#define nonComparableError		15	// Those objects cannot be compared for equality
+#define arraySizeError			16	// Array size must be a non-negative integer
+#define needsIntegerIndexError	17	// Array index must be an integer
+#define indexOutOfRangeError	18	// Array index out of range
+#define byteArrayStoreError		19 	// A ByteArray can only store integer values between 0 and 255
+#define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
+#define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
+#define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
+#define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
 
 // Runtime Operations
 
-OBJ failure(uint8 code, const char *explanation);
+OBJ fail(uint8 errCode);
 void initTasks(void);
 void startAll();
 void stopAllTasks(void);
@@ -208,7 +210,7 @@ void vmPanic(char *s);
 
 static inline int evalInt(OBJ obj) {
 	if (isInt(obj)) return obj2int(obj);
-	failure(needsIntegerError, "evalInt got non-integer");
+	fail(needsIntegerError);
 	return 0;
 }
 

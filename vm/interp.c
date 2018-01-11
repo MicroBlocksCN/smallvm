@@ -22,15 +22,15 @@ OBJ vars[MAX_VARS];
 
 // Error Reporting
 
-// When a primitive encounters an error, it calls failure() with an error code.
+// When a primitive encounters an error, it calls fail() with an error code.
 // The VM stops the task and records the error code and IP where the error occurred.
-// The explanation string is currently unused.
 
 static uint8 errorCode = noError;
 
-OBJ failure(uint8 reason, const char *explanation) { errorCode = reason; return nilObj; }
-OBJ nonBooleanFailure() { return failure(needsBoolean, "Must be a boolean"); }
-OBJ notComparableFailure() { return failure(nonComparable, "Those objects cannot be compared for equality"); }
+OBJ fail(uint8 errCode) {
+	errorCode = errCode;
+	return nilObj;
+}
 
 // Printing
 
@@ -95,6 +95,7 @@ static int bytesForObject(OBJ value) {
 
 // Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
 #define DISPATCH() { \
+	if (errorCode) goto error; \
 	op = *ip++; \
 	arg = ARG(op); \
 /*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */ \
@@ -351,27 +352,22 @@ static void runTask(Task *task) {
 	newArray_op:
 		*(sp - arg) = primNewArray(sp - arg);
 		sp -= arg - 1;
-		if (errorCode) goto error;
 		DISPATCH();
 	newByteArray_op:
 		*(sp - arg) = primNewByteArray(sp - arg);
 		sp -= arg - 1;
-		if (errorCode) goto error;
 		DISPATCH();
 	fillArray_op:
 		*(sp - arg) = primArrayFill(sp - arg);
 		sp -= arg - 1;
-		if (errorCode) goto error;
 		DISPATCH();
 	at_op:
 		*(sp - arg) = primArrayAt(sp - arg);
 		sp -= arg - 1;
-		if (errorCode) goto error;
 		DISPATCH();
 	atPut_op:
 		*(sp - arg) = primArrayAtPut(sp - arg);
 		sp -= arg - 1;
-		if (errorCode) goto error;
 		DISPATCH();
 	analogRead_op:
 		*(sp - arg) = primAnalogRead(sp - arg);
@@ -420,12 +416,12 @@ static void runTask(Task *task) {
 		if (tmpObj == *(sp - 1)) { // identical objects
 			*(sp - arg) = trueObj;
 		} else if (tmpObj <= falseObj) { // nil, true, false
-			if (tmpObj == nilObj) notComparableFailure(); // nil was compared to a non-nil value
+			if (tmpObj == nilObj) fail(nonComparableError); // nil was compared to a non-nil value
 			*(sp - arg) = falseObj; // two booleans compared, but not equal
 		} else if (isInt(tmpObj) && isInt(*(sp - 1))) {
 			*(sp - arg) = falseObj; // two integers compared, but not equal
 		} else {
-			notComparableFailure();
+			fail(nonComparableError);
 		}
 		sp -= arg - 1;
 		DISPATCH();
@@ -444,7 +440,7 @@ static void runTask(Task *task) {
 		} else if (falseObj == tmpObj) {
 			*(sp - arg) = trueObj;
 		} else {
-			nonBooleanFailure();
+			fail(needsBooleanError);
 		}
 		sp -= arg - 1;
 		DISPATCH();

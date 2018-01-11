@@ -57,7 +57,7 @@ void memClear() {
 
 OBJ newObj(int classID, int wordCount, OBJ fill) {
 	if ((freeStart + HEADER_WORDS + wordCount) >= memEnd) {
-		return failure(insufficientMemoryError, "Insufficient memory");
+		return fail(insufficientMemoryError);
 	}
 	OBJ obj = freeStart;
 	freeStart += HEADER_WORDS + wordCount;
@@ -84,7 +84,7 @@ OBJ newString(char *s) {
 
 char* obj2str(OBJ obj) {
 	if (NOT_CLASS(obj, StringClass)) {
-		failure(needsStringError, "Non-string passed to obj2str()");
+		fail(needsStringError);
 		return (char *) "";
 	}
 	return (char *) &obj[HEADER_WORDS];

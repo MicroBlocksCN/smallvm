@@ -103,12 +103,12 @@ OBJ primSetLED(OBJ *args) {
 
 // I2C primitives
 
-static OBJ needs8BitIntFailure() { return failure(needs8BitIntError, "All arguments must be integers in the range 0-255"); }
-
 OBJ primI2cGet(OBJ *args) {
-	if (!isInt(args[0]) || !isInt(args[1])) return needs8BitIntFailure();
-	int deviceID = obj2int(args[0]) & 127;
-	int registerID = obj2int(args[1]) & 255;
+	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
+	int deviceID = obj2int(args[0]);
+	int registerID = obj2int(args[1]);
+	if ((deviceID < 0) || (deviceID > 128)) return fail(i2cDeviceIDOutOfRange);
+	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
 
 	int fd = wiringPiI2CSetup(deviceID);
 	int result = wiringPiI2CReadReg8 (fd, registerID);
@@ -117,10 +117,13 @@ OBJ primI2cGet(OBJ *args) {
 }
 
 OBJ primI2cSet(OBJ *args) {
-	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return needs8BitIntFailure();
-	int deviceID = obj2int(args[0]) & 127;
-	int registerID = obj2int(args[1]) & 255;
-	int value = obj2int(args[2]) & 255;
+	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return fail(needsIntegerError);
+	int deviceID = obj2int(args[0]);
+	int registerID = obj2int(args[1]);
+	int value = obj2int(args[2]);
+	if ((deviceID < 0) || (deviceID > 128)) return fail(i2cDeviceIDOutOfRange);
+	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
+	if ((value < 0) || (value > 255)) return fail(i2cValueOutOfRange);
 
 	int fd = wiringPiI2CSetup(deviceID);
 	wiringPiI2CWriteReg8(fd, registerID, value);

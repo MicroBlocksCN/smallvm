@@ -234,12 +234,12 @@ OBJ primSetLED(OBJ *args) {
 	return nilObj;
 }
 
-static OBJ needs8BitIntFailure() { return failure(needs8BitIntError, "All arguments must be integers in the range 0-255"); }
-
 OBJ primI2cGet(OBJ *args) {
-	if (!isInt(args[0]) || !isInt(args[1])) return needs8BitIntFailure();
-	int deviceID = obj2int(args[0]) & 127;
-	int registerID = obj2int(args[1]) & 255;
+	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
+	int deviceID = obj2int(args[0]);
+	int registerID = obj2int(args[1]);
+	if ((deviceID < 0) || (deviceID > 128)) return fail(i2cDeviceIDOutOfRange);
+	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
 
 	Wire.beginTransmission(deviceID);
 	Wire.write(registerID);
@@ -252,10 +252,13 @@ OBJ primI2cGet(OBJ *args) {
 }
 
 OBJ primI2cSet(OBJ *args) {
-	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return needs8BitIntFailure();
-	int deviceID = obj2int(args[0]) & 127;
-	int registerID = obj2int(args[1]) & 255;
-	int value = obj2int(args[2]) & 255;
+	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return fail(needsIntegerError);
+	int deviceID = obj2int(args[0]);
+	int registerID = obj2int(args[1]);
+	int value = obj2int(args[2]);
+	if ((deviceID < 0) || (deviceID > 128)) return fail(i2cDeviceIDOutOfRange);
+	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
+	if ((value < 0) || (value > 255)) return fail(i2cValueOutOfRange);
 
 	Wire.beginTransmission(deviceID);
 	Wire.write(registerID);
