@@ -190,14 +190,14 @@ int function1[] = {
 };
 
 int callTest[] = {
-	// Call function with chunkIndex 0 three times, and print the three values it returns
+	// Call function with chunkIndex 1 three times, and print the three values it returns
 	OP(pushImmediate, int2obj(1)),
-	CALL(0, 1, 1),
+	CALL(1, 1, 1),
 	OP(pushImmediate, int2obj(2)),
-	CALL(0, 1, 1),
+	CALL(1, 1, 1),
 	OP(pushImmediate, int2obj(3)),
 	OP(pushImmediate, int2obj(17)),
-	CALL(0, 2, 1),
+	CALL(1, 2, 1),
 	OP(printIt, 3),
 	OP(pop, 1),
 	OP(pushImmediate, int2obj(42)), // return 42
@@ -367,12 +367,11 @@ static long timerStart;
 
 // Helpers
 
-static uint8 nextChunkIndex = 0;
-
 static void runProg(int* prog, int byteCount) {
 	initTasks();
-	storeCodeChunk(nextChunkIndex, 1, byteCount, (uint8 *) prog);
-	startTaskForChunk(nextChunkIndex++);
+	chunks[0].code = (uint8 *) (prog - 2); // adjust to simulate persistent store header
+	chunks[0].chunkType = 1;
+	startTaskForChunk(0);
 	runTasksUntilDone();
 }
 
@@ -395,7 +394,8 @@ void interpTests1() {
 // 	printf("msecs test %d\r\n", (int) TIMER_US());
 // return;
 
-// 	storeCodeChunk(nextChunkIndex++, 1, sizeof(function1), (uint8 *) function1);
+// 	chunks[1].chunkType = functionHat;
+// 	chunks[1].code = (uint8 *) (function1 - HEADER_WORDS); // later: change to persistent header words
 // 	runProg(callTest, sizeof(callTest));
 // 	return;
 

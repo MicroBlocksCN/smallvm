@@ -73,7 +73,7 @@ static OBJ primPrint(int argCount, OBJ *args) {
 #if USE_TASKS
 	outputString(printBuffer);
 #else
-	printf("(NO TASKS) %s", printBuffer);
+	printf("(NO TASKS) %s\r\n", printBuffer);
 #endif
 	return nilObj;
 }
