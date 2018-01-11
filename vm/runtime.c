@@ -94,7 +94,6 @@ void stopAllTasks() {
 
 void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data) {
 	if (chunkIndex >= MAX_CHUNKS) return;
-	int wordCount = (byteCount + 3) / 4;
 	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount, data);
 	chunks[chunkIndex].code = persistenChunk;
 	chunks[chunkIndex].chunkType = chunkType;

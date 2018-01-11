@@ -5,6 +5,7 @@
 
 #include "mem.h"
 #include "interp.h"
+#include "persist.h"
 
 // test programs
 
@@ -395,7 +396,7 @@ void interpTests1() {
 // return;
 
 // 	chunks[1].chunkType = functionHat;
-// 	chunks[1].code = (uint8 *) (function1 - HEADER_WORDS); // later: change to persistent header words
+// 	chunks[1].code = (uint8 *) (function1 - PERSISTENT_HEADER_WORDS);
 // 	runProg(callTest, sizeof(callTest));
 // 	return;
 

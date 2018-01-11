@@ -6,6 +6,7 @@
 
 #include "mem.h"
 #include "interp.h"
+#include "persist.h"
 
 // Tasks - Set USE_TASKS to false to test interpreter performance without task switching
 
@@ -288,7 +289,7 @@ static void runTask(Task *task) {
 		while (tmp-- > 0) *sp++ = int2obj(0); // reserve space for local vars & initialize to zero
 		task->currentChunkIndex = arg & 0xFF; // callee's chunk index (low byte of arg)
 		task->code = chunks[task->currentChunkIndex].code;
-		ip = task->code + HEADER_WORDS; // first instruction in callee
+		ip = task->code + PERSISTENT_HEADER_WORDS; // first instruction in callee
 		DISPATCH();
 	returnResult_op:
 		tmpObj = *(sp - 1); // return value
