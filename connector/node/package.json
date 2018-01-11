@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "description": "µBlocks serial to ws connector",
   "main": "index.js",
+  "bin": "index.js",
+  "pkg": {
+    "assets": [
+        "node_modules/systray/traybin/tray_linux_release",
+        "node_modules/systray/traybin/tray_linux"
+    ]
+  },
   "dependencies": {
     "serialport": "^5.0.0",
     "systray": "^1.0.3",
