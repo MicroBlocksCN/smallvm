@@ -2,6 +2,7 @@ BUILD
 uBlocks.crx
 *.swp
 *.swo
+*.exe
 node_modules
 connector/node/package-lock.json
 connector/node/build

@@ -8,8 +8,7 @@ var Connector,
     SysTray = require('systray').default,
     systray,
     trayItems,
-    trayActions,
-    exec = require('child_process').exec;
+    trayActions;
 
 // ===== Board ===== //
 
@@ -459,10 +458,4 @@ if (options.placeTrayIcon) {
 
 // ==== Connector Startup ==== //
 
-// If we're on Windows, hide the command line window
-if (process.platform.indexOf('win') > -1) {
-    exec('CONSOLESTATE /hide');
-}
-
 connector = new Connector();
-
