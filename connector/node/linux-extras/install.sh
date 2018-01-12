@@ -1,5 +1,5 @@
 #!/bin/sh
-unzip ../build/ublocks-linux.zip
+unzip -o ../build/ublocks-linux.zip
 sudo cp -rf ublocks /usr/local
 sudo cp ublocksd /usr/local/ublocks
 rm -rf ublocks
