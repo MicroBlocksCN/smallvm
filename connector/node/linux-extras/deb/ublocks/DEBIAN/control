@@ -1,0 +1,6 @@
+Package: ublocks
+Architecture: all
+Maintainer: @bromagosa
+Priority: optional
+Version: 1
+Description: microBlocks websocket to serial port bridge

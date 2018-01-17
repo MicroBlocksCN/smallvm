@@ -8,8 +8,7 @@ var Connector,
     SysTray = require('systray').default,
     systray,
     trayItems,
-    trayActions,
-    exec = require('child_process').exec;
+    trayActions;
 
 // ===== Board ===== //
 
@@ -119,10 +118,12 @@ Connector.prototype.init = function () {
         });
     });
 
-    console.log(
-        'µBlocks websockets-serial bridge started.\n' +
-        'Run me with --help for command line arguments\n' +
-        'Debug is ' + (options.debugMode ? 'enabled' : 'disabled') + '.\n');
+    if (!options.silent) {
+        console.log(
+            'µBlocks websockets-serial bridge started.\n' +
+            'Run me with --help for command line arguments\n' +
+            'Debug is ' + (options.debugMode ? 'enabled' : 'disabled') + '.\n');
+    }
     log(
         'Waiting for websockets client to connect at port ' +
         (options.port || 9999) + '.'
@@ -296,7 +297,7 @@ log = function (str, code) {
         '\x1b[31m', // error message (red)
         ];
 
-    if (options.debugMode) {
+    if (options.debugMode || (options.silent && code === 1)) {
         console.log((color[code] || '\x1b[0m') + util.format(str));
     }
 };
@@ -320,6 +321,7 @@ printHelp = function (topic) {
                 '                   TOPIC, if specified. Possible topics are: protocol\n' +
                 '-d, --debug        Set debug (verbose) mode.\n' +
                 '-n, --no-tray      Do not place an icon in the system tray.\n' +
+                '-s, --silent       Be silent except for errors.\n' +
                 '-p=[PORT], --port=[PORT]\n' +
                 '                   Choose the websockets port. If not defined, it will default\n' +
                 '                   to 9999.\n'
@@ -352,6 +354,10 @@ process.argv.forEach(function (val) {
         case '--no-tray':
         case '-n':
             options.placeTrayIcon = false;
+            break;
+        case '--silent':
+        case '-s':
+            options.silent = true;
             break;
     }
 });
@@ -459,10 +465,8 @@ if (options.placeTrayIcon) {
 
 // ==== Connector Startup ==== //
 
-// If we're on Windows, hide the command line window
-if (process.platform.indexOf('win') > -1) {
-    exec('CONSOLESTATE /hide');
-}
+// Set the process name to ublocks
+process.title = 'ublocks';
 
+// Start the connector
 connector = new Connector();
-

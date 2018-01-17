@@ -1,0 +1,4 @@
+#!/bin/sh
+ln -s /usr/local/ublocks/ublocksd /etc/profile.d/ublocksd.sh
+# Does not work when ran from software centre, as logname comes back empty (I believe)
+# sudo -u `logname` /etc/profile.d/ublocksd.sh

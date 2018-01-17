@@ -3,7 +3,7 @@
 
 # First, make sure pkg is installed
 
-if ! test -n `which pkg`; then
+if ! test `which pkg`; then
     echo "Please provide your superuser password so I can install pkg for you"
     sudo npm install pkg -g
 fi
@@ -27,7 +27,7 @@ mv ublocks-win.exe build/win
 echo "Copying additional files..."
 cp -r icons build/linux
 cp -r icons build/macos
-cp -r icons-win build/win/icons
+cp -r win-extras/icons build/win
 
 echo "Downloading serialport pre-built binaries..."
 wget https://github.com/node-serialport/node-serialport/releases/download/v6.0.4/serialport-v6.0.4-node-v57-linux-x64.tar.gz
