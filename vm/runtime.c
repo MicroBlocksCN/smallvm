@@ -8,6 +8,10 @@
 #include "interp.h"
 #include "persist.h"
 
+// VM Version
+
+#define VM_VERSION "v003"
+
 // Forward Reference Declarations
 
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
@@ -90,20 +94,58 @@ void stopAllTasks() {
 	initTasks();
 }
 
-// Code Chunk Ops
+// Store Ops
 
-void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data) {
+static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	if (chunkIndex >= MAX_CHUNKS) return;
-	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount, data);
+	int chunkType = data[0]; // first byte is the chunk type
+	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount - 1, &data[1]);
 	chunks[chunkIndex].code = persistenChunk;
 	chunks[chunkIndex].chunkType = chunkType;
 }
+
+void storeChunkPosition(uint8 chunkIndex, int byteCount, uint8 *data) {
+	if ((chunkIndex >= MAX_CHUNKS) || (byteCount != 4)) return;
+	appendPersistentRecord(chunkPosition, chunkIndex, 0, byteCount, &data);
+}
+
+void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
+	unsigned char attributeID = data[0];
+	if ((chunkIndex >= MAX_CHUNKS) || (attributeID >= ATTRIBUTE_COUNT)) return;
+	appendPersistentRecord(chunkAttribute, chunkIndex, attributeID, byteCount - 1, &data[1]);
+}
+
+void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
+	appendPersistentRecord(varName, varIndex, 0, byteCount, data);
+}
+
+void storeComment(uint8 commentIndex, int byteCount, uint8 *data) {
+	appendPersistentRecord(comment, commentIndex, 0, byteCount, data);
+}
+
+void storeCommentPosition(uint8 commentIndex, int byteCount, uint8 *data) {
+	if (byteCount != 4) return;
+	appendPersistentRecord(commentPosition, commentIndex, 0, byteCount, data);
+}
+
+// Delete Ops
 
 static void deleteCodeChunk(uint8 chunkIndex) {
 	if (chunkIndex >= MAX_CHUNKS) return;
 	stopTaskForChunk(chunkIndex);
 	chunks[chunkIndex].code = nilObj;
 	chunks[chunkIndex].chunkType = unusedChunk;
+	appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
+}
+
+static void deleteVar(uint8 varIndex) {
+	if (varIndex >= MAX_VARS) return;
+	vars[varIndex] = int2obj(0);
+	appendPersistentRecord(varDeleted, varIndex, 0, 0, NULL);
+}
+
+static void deleteComment(uint8 commentIndex) {
+	appendPersistentRecord(commentDeleted, commentIndex, 0, 0, NULL);
 }
 
 // Sending Messages to IDE
@@ -163,8 +205,8 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data) {
 
 int hasOutputSpace(int byteCount) { return ((OUTBUF_MASK - OUTBUF_BYTES()) > byteCount); }
 
-static void sendValueMessage(uint8 msgType, uint8 chunkIndex, OBJ value) {
-	// Send a value message of the given type for the task with the given chunkIndex.
+static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
+	// Send a value message of the given type for the given chunkOrVarIndex.
 	// Data is: <type byte><...data...>
 	// Types: 1 - integer, 2 - string
 
@@ -176,7 +218,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkIndex, OBJ value) {
 		data[2] = ((n >> 8) & 0xFF);
 		data[3] = ((n >> 16) & 0xFF);
 		data[4] = ((n >> 24) & 0xFF);
-		sendMessage(msgType, chunkIndex, 5, data);
+		sendMessage(msgType, chunkOrVarIndex, 5, data);
 	} else if (IS_CLASS(value, StringClass)) { // string
 		data[0] = 2; // data type (2 is string)
 		char *s = obj2str(value);
@@ -185,11 +227,11 @@ static void sendValueMessage(uint8 msgType, uint8 chunkIndex, OBJ value) {
 		for (int i = 0; i < byteCount; i++) {
 			data[i + 1] = s[i];
 		}
-		sendMessage(msgType, chunkIndex, (byteCount + 1), data);
+		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
 	} else if ((value == trueObj) || (value == falseObj)) { // boolean
 		data[0] = 3; // data type (3 is boolean)
 		data[1] = (value == trueObj) ? 1 : 0;
-		sendMessage(msgType, chunkIndex, 2, data);
+		sendMessage(msgType, chunkOrVarIndex, 2, data);
 	}
 }
 
@@ -231,6 +273,23 @@ void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue) {
 	// Send the value returned by the task for the given chunk.
 
 	sendValueMessage(taskReturnedValueMsg, chunkIndex, returnValue);
+}
+
+void sendVariableValue(int varID) {
+	if ((varID >= 0) && (varID < MAX_VARS)) {
+		sendValueMessage(argValueMsg, varID, vars[varID]);
+	}
+}
+
+void sendVersionString() {
+	char s[100];
+	snprintf(s, sizeof(s), " %s %s", VM_VERSION, boardType());
+	s[0] = 2; // data type (2 is string)
+	sendMessage(versionMsg, 0, strlen(s), s);
+}
+
+void sendAllCode() {
+	// xxx to be done
 }
 
 // Receiving Messages from IDE
@@ -298,7 +357,22 @@ static void processShortMessage() {
 		stopAllTasks();
 		outputString("All tasks stopped");
 		break;
-	case deleteAllChunksMsg:
+	case getVarMsg:
+		sendVariableValue(chunkIndex);
+		break;
+	case deleteVarMsg:
+		deleteVar(chunkIndex);
+		break;
+	case deleteCommentMsg:
+		deleteComment(chunkIndex);
+		break;
+	case getVersionMsg:
+		sendVersionString();
+		break;
+	case getAllCodeMsg:
+		sendAllCode();
+		break;
+	case deleteAllCodeMsg:
 		clearPersistentMemory();
 		memset(chunks, 0, sizeof(chunks));
 		break;
@@ -310,7 +384,6 @@ static void processShortMessage() {
 }
 
 static void processLongMessage() {
-
 	int msgLength = (rcvBuf[4] << 8) | rcvBuf[3];
 	if ((rcvByteCount < 5) || (rcvByteCount < (5 + msgLength))) { // message is not complete
 		if (receiveTimeout()) {
@@ -318,17 +391,32 @@ static void processLongMessage() {
 		}
 		return; // message incomplete
 	}
+	if (0xFE != rcvBuf[5 + msgLength - 1]) { // chunk does not end with a terminator byte
+		skipToStartByteAfter(1);
+		return;
+	}
 	int cmd = rcvBuf[1];
 	int chunkIndex = rcvBuf[2];
-	int chunkType = rcvBuf[5];
-	if (storeChunkMsg == cmd) {
-		// body is: <chunkType (1 byte)> <instruction data> <terminator byte (0xFE)>
-		if (0xFE != rcvBuf[5 + msgLength - 1]) { // chunk does not end with a terminator byte
-			skipToStartByteAfter(1);
-			return;
-		} else {
-			storeCodeChunk(chunkIndex, chunkType, (msgLength - 2), &rcvBuf[6]);
-		}
+	int bodyBytes = msgLength - 1; // subtract terminator byte
+	switch (cmd) {
+	case storeChunkMsg:
+		storeCodeChunk(chunkIndex, bodyBytes, &rcvBuf[5]);
+		break;
+	case chunkPositionMsg:
+		storeChunkPosition(chunkIndex, bodyBytes, &rcvBuf[5]);
+		break;
+	case chunkAttributeMsg:
+		storeChunkAttribute(chunkIndex, bodyBytes, &rcvBuf[5]);
+		break;
+	case varNameMsg:
+		storeVarName(chunkIndex, bodyBytes, &rcvBuf[5]);
+		break;
+	case commentMsg:
+		storeComment(chunkIndex, bodyBytes, &rcvBuf[5]);
+		break;
+	case commentPositionMsg:
+		storeCommentPosition(chunkIndex, bodyBytes, &rcvBuf[5]);
+		break;
 	}
 	skipToStartByteAfter(5 + msgLength);
 }

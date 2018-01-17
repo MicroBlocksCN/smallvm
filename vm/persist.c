@@ -306,7 +306,7 @@ static int * recordAfter(int *lastRecord) {
 struct {
 	int *chunkCodeRec;
 	int *positionRec;
-	int *sourceCodeRec;
+	int *attributeRecs[ATTRIBUTE_COUNT];
 } chunkData;
 
 struct {
@@ -336,6 +336,7 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 
 	// scan rest of the records to get the most recent info about this chunk
 	while (src) {
+		int attributeID;
 		if (id == ((*src >> 8) & 0xFF)) { // id field matche
 			int type = (*src >> 16) & 0xFF;
 			switch (type) {
@@ -345,8 +346,11 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 			case chunkPosition:
 				chunkData.positionRec = src;
 				break;
-			case chunkSource:
-				chunkData.sourceCodeRec = src;
+			case chunkAttribute:
+				attributeID = *src & 0xFF;
+				if (attributeID < ATTRIBUTE_COUNT) {
+					chunkData.attributeRecs[attributeID] = src;
+				}
 				break;
 			case chunkDeleted:
 				memset(&chunkData, 0, sizeof(chunkData)); // clear chunkData
@@ -358,7 +362,9 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 	if (chunkData.chunkCodeRec) {
 		dst = copyChunk(dst, chunkData.chunkCodeRec);
 		if (chunkData.positionRec) dst = copyChunk(dst, chunkData.positionRec);
-		if (chunkData.sourceCodeRec) dst = copyChunk(dst, chunkData.sourceCodeRec);
+		for (int i = 0; i < ATTRIBUTE_COUNT; i++) {
+			if (chunkData.attributeRecs[i]) dst = copyChunk(dst, chunkData.attributeRecs[i]);
+		}
 	}
 	chunkProcessed[id] = true;
 	return dst;
@@ -450,7 +456,7 @@ void clearPersistentMemory() {
 
 int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, char *data) {
 	// Append the given record at the end of the current half-space and return it's address.
-	// Header word: <tag = 'R'><record type><id of chunk/variable/comment><type> (8-bits each)
+	// Header word: <tag = 'R'><record type><id of chunk/variable/comment><extra> (8-bits each)
 	// Perform a compaction if necessary.
 
 	int wordCount = (byteCount + 3) / 4;

@@ -158,7 +158,12 @@ extern int taskCount;
 #define stopChunkMsg			4
 #define startAllMsg				5
 #define stopAllMsg				6
-#define deleteAllChunksMsg		14
+#define getVarMsg				7
+#define deleteVarMsg			10
+#define deleteCommentMsg		11
+#define getVersionMsg			12
+#define getAllCodeMsg			13
+#define deleteAllCodeMsg		14
 #define systemResetMsg			15
 
 // Serial Protocol Messages: Board -> IDE
@@ -168,8 +173,19 @@ extern int taskCount;
 #define taskReturnedValueMsg	18
 #define taskErrorMsg			19
 #define outputValueMsg			20
+#define argValueMsg				21
+#define versionMsg				22
+#define chunkCodeMsg			23
 
-// Error Codes (codes 1-9 are protocol errors; 10 and up are runtime errors)
+// Serial Protocol Messages: Bidirectional
+
+#define chunkPositionMsg		27
+#define chunkAttributeMsg		28
+#define varNameMsg				29
+#define commentMsg				30
+#define commentPositionMsg		31
+
+// Error Codes (codes 1-9 are reserved for protocol errors; 10 and up are runtime errors)
 
 #define noError					0
 #define unspecifiedError		1

@@ -8,18 +8,18 @@ extern "C" {
 // Persistent Memory Records
 
 // Records in persistent memory start with two header words. They have the form:
-//	<'R'><record type><id of chunk/variable/comment><type> (8-bits for each field)
+//	<'R'><record type><id of chunk/variable/comment><extra> (8-bits for each field)
 //	word count (32-bits)
 //	... word count data words ...
 //
-// Not all record types use all the header fields.
+// Not all record types use the <extra> header field.
 
 #define PERSISTENT_HEADER_WORDS 2
 
 typedef enum {
 	chunkCode = 10,
 	chunkPosition = 11,
-	chunkSource = 12,
+	chunkAttribute = 12,
 	chunkDeleted = 19,
 
 	varValue = 20,
@@ -30,6 +30,14 @@ typedef enum {
 	commentPosition = 31,
 	commentDeleted = 39,
 } RecordType_t;
+
+// Chunk Attributes
+
+typedef enum {
+	snapSourceString = 0,
+	gpSourceString = 1,
+	ATTRIBUTE_COUNT,
+} ChunkAttributeType_t;
 
 // Persistent Memory Operations
 
