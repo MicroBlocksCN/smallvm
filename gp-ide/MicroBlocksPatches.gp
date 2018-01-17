@@ -48,3 +48,28 @@ addLine menu
   }
   return menu
 }
+
+method blockColorForCategory AuthoringSpecs cat {
+  defaultColor = (color 4 148 220)
+  if (isOneOf cat 'Control' 'Functions') {
+	if (notNil (global 'controlColor')) { return (global 'controlColor') }
+	return (color 230 168 34)
+  } ('Variables' == cat) {
+	if (notNil (global 'variableColor')) { return (global 'variableColor') }
+	return (color 243 118 29)
+  } (isOneOf cat 'Operators' 'Math') {
+	if (notNil (global 'operatorsColor')) { return (global 'operatorsColor') }
+	return (color 98 194 19)
+  } ('Obsolete' == cat) {
+	return (color 196 15 0)
+  }
+  if (notNil (global 'defaultColor')) { return (global 'defaultColor') }
+  return defaultColor
+}
+
+method clear AuthoringSpecs {
+  specsList = (list)
+  specsByOp = (dictionary)
+  opCategory = (dictionary)
+  return this
+}
