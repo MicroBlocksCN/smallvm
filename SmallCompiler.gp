@@ -8,7 +8,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs msgDict portName port recvBuf
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port recvBuf
 
 method scripter SmallRuntime { return scripter }
 
@@ -37,6 +37,7 @@ method chunkTypeForBlock SmallRuntime aBlock {
 	}
 	return chunkType
 }
+
 method chunkBytesForBlock SmallRuntime aBlock {
 	compiler = (initialize (new 'SmallCompiler'))
 	code = (instructionsFor compiler (expression aBlock))
@@ -95,19 +96,47 @@ method chunkIdFor SmallRuntime aBlock {
 }
 
 method resetArduino SmallRuntime {
-	// Reset the Arduino by closing the serial port, opening it
-	// at 1200 baud, then closing and reopening the port.
+	// Reset the Arduino.
 
-	ensurePortOpen this // make sure portName is initialized
+//	ensurePortOpen this // make sure portName is initialized
+	// First try closing the serial port, opening it at 1200 baud,
+	// then closing and reopening the port at the normal speed.
+	// This only works for certain models of the Arduino. It does not work for non-Arduinos.
 	closeSerialPort port
 	port = (openSerialPort portName 1200)
 	closeSerialPort port
 	port = nil
 	ensurePortOpen this // reopen the port
 	recvBuf = nil
+
+	sendMsg this 'systemResetMsg' // send the reset message
 }
 
-method sendStopAll SmallRuntime { sendMsg this 'stopAllMsg' }
+method selectPort SmallRuntime {
+	menu = (menu 'Serial port:' (action 'setPort' this) true)
+	for fn (listFiles '/dev') {
+		if ((find (letters fn) (letters 'usb')) > 0) {
+			addItem menu fn
+		}
+	}
+	popUpAtHand menu (global 'page')
+}
+
+method setPort SmallRuntime newPortName {
+	if (notNil port) {
+		closeSerialPort port
+		port = nil
+	}
+	portName = (join '/dev/' newPortName)
+	ensurePortOpen this
+}
+
+method sendDeleteAll SmallRuntime { print 'delete all'; sendMsg this 'deleteAllChunksMsg' }
+
+method sendStopAll SmallRuntime {
+	sendMsg this 'stopAllMsg'
+	allStopped this
+}
 
 method sendStartAll SmallRuntime {
 	saveAllChunks this
@@ -137,6 +166,21 @@ method runChunk SmallRuntime chunkID {
 	sendMsg this 'startChunkMsg' chunkID
 }
 
+method stopRunningChunk SmallRuntime chunkID {
+	sendMsg this 'stopChunkMsg' chunkID
+}
+
+// Testing
+
+method getVar SmallRuntime varID {
+	if (isNil varID) { varID = 0 }
+	sendMsg this 'getVarMsg' varID
+}
+
+method getVersion SmallRuntime {
+	sendMsg this 'getVersionMsg'
+}
+
 method msgNameToID SmallRuntime msgName {
 	if (isNil msgDict) {
 		msgDict = (dictionary)
@@ -146,13 +190,26 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'stopChunkMsg' 4
 		atPut msgDict 'startAllMsg' 5
 		atPut msgDict 'stopAllMsg' 6
+		atPut msgDict 'getVarMsg' 7
+		atPut msgDict 'getVersionMsg' 8
+		atPut msgDict 'getAllCodeMsg' 9
+		atPut msgDict 'deleteVarMsg' 10
+		atPut msgDict 'deleteCommentMsg' 11
 		atPut msgDict 'deleteAllChunksMsg' 14
 		atPut msgDict 'systemResetMsg' 15
 		atPut msgDict 'taskStartedMsg' 16
 		atPut msgDict 'taskDoneMsg' 17
 		atPut msgDict 'taskReturnedValueMsg' 18
 		atPut msgDict 'taskErrorMsg' 19
-		atPut msgDict 'outputStringMsg' 20
+		atPut msgDict 'outputValueMsg' 20
+		atPut msgDict 'argValueMsg' 21
+		atPut msgDict 'versionMsg' 22
+		atPut msgDict 'chunkCodeMsg' 23
+		atPut msgDict 'chunkPositionMsg' 27
+		atPut msgDict 'chunkAttributeMsg' 28
+		atPut msgDict 'varNameMsg' 29
+		atPut msgDict 'commentMsg' 30
+		atPut msgDict 'commentPositionMsg' 31
 	}
 	msgType = (at msgDict msgName)
 	if (isNil msgType) { error 'Unknown message:' msgName }
@@ -177,6 +234,8 @@ method ensurePortOpen SmallRuntime {
 	if (isNil port) {
 		if (isNil portName) {
 //			portName = '/dev/tty.usbmodem105'
+//			portName = '/dev/tty.usbmodem1422'
+//			portName = '/dev/cu.SLAB_USBtoUART'
 			portName = '/dev/tty.usbmodem1422'
 		}
 		port = (openSerialPort portName 115200)
@@ -184,9 +243,12 @@ method ensurePortOpen SmallRuntime {
 }
 
 method processMessages SmallRuntime {
-	if (isNil port) { return }
+	if (or (isNil port) (not (isOpenSerialPort port))) { return }
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
+	repeat 20 { processMessages2 this }
+}
 
+method processMessages2 SmallRuntime {
 // showOutputStrings this
 // return // xxx
 
@@ -215,25 +277,74 @@ method processMessages SmallRuntime {
 		handleMessage this (copyFromTo recvBuf 1 (bodyBytes + 5))
 		recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
 	} else {
-		error 'Bad message header byte; should be 250 or 251 but is:' firstByte
+		print 'Bad message header byte; should be 250 or 251 but is:' firstByte
+		recvBuf = (newBinaryData 0) // discard
 	}
 }
 
 method handleMessage SmallRuntime msg {
 	op = (byteAt msg 2)
 	if (op == (msgNameToID this 'taskStartedMsg')) {
+		updateRunning this (byteAt msg 3) true
 //		print 'started' (byteAt msg 3)
 	} (op == (msgNameToID this 'taskDoneMsg')) {
+		updateRunning this (byteAt msg 3) false
 //		print 'stopped' (byteAt msg 3)
 	} (op == (msgNameToID this 'taskReturnedValueMsg')) {
-		print (returnedValue this msg)
+		showResult this (byteAt msg 3) (returnedValue this msg)
+//		print (returnedValue this msg)
 	} (op == (msgNameToID this 'taskErrorMsg')) {
 		print 'error:' (byteAt msg 6) // error code
-	} (op == (msgNameToID this 'outputStringMsg')) {
+	} (op == (msgNameToID this 'outputValueMsg')) {
+		print (returnedValue this msg)
+	} (op == (msgNameToID this 'argValueMsg')) {
+		print (returnedValue this msg)
+	} (op == (msgNameToID this 'versionMsg')) {
 		print (returnedValue this msg)
 	} else {
 		print 'msg:' (toArray msg)
 	}
+}
+
+method updateRunning SmallRuntime chunkID runFlag {
+	if (isNil chunkRunning) {
+		chunkRunning = (newArray 256 false)
+	}
+	atPut chunkRunning (chunkID + 1) runFlag
+	updateHighlights this
+}
+
+method isRunning SmallRuntime aBlock {
+	if (isNil chunkRunning) { return false }
+	return (at chunkRunning ((chunkIdFor this aBlock) + 1))
+}
+
+method allStopped SmallRuntime {
+	chunkRunning = (newArray 256 false) // clear all running flags
+	updateHighlights this
+}
+
+method updateHighlights SmallRuntime {
+	scale = (global 'scale')
+	for m (parts (morph (scriptEditor scripter))) {
+		if (isClass (handler m) 'Block') {
+			if (isRunning this (handler m)) {
+				addHighlight m (4 * scale)
+			} else {
+				removeHighlight m
+			}
+		}
+	}
+}
+
+method showResult SmallRuntime chunkID value {
+	for m (parts (morph (scriptEditor scripter))) {
+		h = (handler m)
+		if (and (isClass h 'Block') (chunkID == (chunkIdFor this h))) {
+			showHint m value
+		}
+	}
+	updateRunning this chunkID false
 }
 
 method returnedValue SmallRuntime msg {
@@ -679,6 +790,8 @@ method primitive SmallCompiler op args isCommand {
 		if (and isCommand (not (isOneOf op 'noop' 'stopTask' 'stopAll')))  {
 			add result (array 'pop' 1)
 		}
+	} ('comment' == op) {
+		// ignore comments
 	} else {
 		print 'Skipping unknown op:' op
 	}
@@ -798,7 +911,13 @@ method clear AuthoringSpecs {
 }
 
 method clicked Block hand {
-  evalOnArduino (smallRuntime) (topBlock this)
+  runtime = (smallRuntime)
+  topBlock = (topBlock this)
+  if (isRunning runtime topBlock) {
+	stopRunningChunk runtime (chunkIdFor runtime topBlock)
+  } else {
+	evalOnArduino runtime topBlock
+  }
 }
 
 method contextMenu Block {
@@ -861,20 +980,44 @@ addLine menu
 method showInstructions BlockDefinition { showInstructions (smallRuntime) (functionNamed op) }
 method showCompiledBytes BlockDefinition { evalOnArduino (smallRuntime) this true }
 
-method step ProjectEditor {
-  if ('Browser' == (platform)) { processImportedFiles this }
-  processDroppedFiles this
-  if (isNil fpsReadout) { return }
-  frameCount += 1
-  msecs = ((msecsSinceStart) - lastFrameTime)
-  if (and (frameCount > 2) (msecs > 200)) {
-	fps = ((1000 * frameCount) / msecs)
-	setText fpsReadout (join '' (round fps 0.1) ' fps')
-	lastFrameTime = (msecsSinceStart)
-	frameCount = 0
+method contextMenu ScriptEditor {
+  menu = (menu nil this)
+  // Arudino additions to background menu
+  addItem menu 'Arduino select port' (action 'selectPort' (smallRuntime))
+  addItem menu 'Arduino reset' (action 'resetArduino' (smallRuntime))
+  addLine menu
+  addItem menu 'Arduino delete all scripts' (action 'sendDeleteAll' (smallRuntime))
+//   addItem menu 'Arduino start all' (action 'sendStartAll' (smallRuntime))
+//   addItem menu 'Arduino stop all' (action 'sendStopAll' (smallRuntime))
+  addLine menu
+  addItem menu 'MicroBlocks Version' (action 'getVersion' (smallRuntime))
+  addItem menu 'Get Var 0' (action 'getVar' (smallRuntime) 0)
+  addLine menu
+  addItem menu 'clean up' 'cleanUp' 'arrange scripts'
+  if (and (notNil lastDrop) (isRestorable lastDrop)) {
+    addItem menu 'undrop' 'undrop' 'undo last drop'
   }
-  processMessages (smallRuntime)
+  addLine menu
+  addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
+  clip = (getClipboard)
+  if (beginsWith clip 'GP Scripts') {
+	addItem menu 'paste scripts' 'pasteScripts'
+  } (beginsWith clip 'GP Script') {
+	addItem menu 'paste script' 'pasteScripts'
+  }
+  cb = (ownerThatIsA morph 'ClassBrowser')
+  if (notNil cb) {
+    if (wasEdited (handler cb)) {
+      addLine menu
+      addItem menu 'save changes' (action 'saveEditedFunction' (handler cb))
+    }
+  }
+  return menu
 }
+
+// *****************************
+// Code below this point not needed by new MicroBlocksScripter
+// *****************************
 
 method devModeCategories Scripter {
 	return (userModeCategories this)
@@ -895,14 +1038,12 @@ method addVariableBlocks Scripter {
   sharedVars = (sharedVars this)
   if (notEmpty sharedVars) {
 	addButton this 'Delete a variable' (action 'deleteSharedVariable' this)
-	nextX += (-135 * scale) // suppress indentation of variable blocks by addBlock
 	nextY += (8 * scale)
 	for varName sharedVars {
 	  lastY = nextY
 	  b = (toBlock (newReporter 'v' varName))
-	  addBlock this b nil true
+	  addBlock this b nil
 	}
-	nextX += (135 * scale)
 	nextY += (5 * scale)
 	addBlock this (toBlock (newCommand '=' (first sharedVars) 0)) nil false
 	addBlock this (toBlock (newCommand '+=' (first sharedVars) 1)) nil false
@@ -928,31 +1069,20 @@ method scriptEditor Scripter {
   return (contents scriptsFrame)
 }
 
-method contextMenu ScriptEditor {
-  menu = (menu nil this)
-  // Arudino additions to background menu
-  addItem menu 'Arduino start all' (action 'sendStartAll' (smallRuntime))
-  addItem menu 'Arduino stop all' (action 'sendStopAll' (smallRuntime))
-  addItem menu 'Arduino reset and clear' (action 'resetArduino' (smallRuntime))
-  addLine menu
-  addItem menu 'clean up' 'cleanUp' 'arrange scripts'
-  if (and (notNil lastDrop) (isRestorable lastDrop)) {
-    addItem menu 'undrop' 'undrop' 'undo last drop'
+method step ProjectEditor {
+  if ('Browser' == (platform)) {
+  	processImportedFiles this
+  	checkForBrowserResize this
   }
-  addLine menu
-  addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
-  clip = (getClipboard)
-  if (beginsWith clip 'GP Scripts') {
-	addItem menu 'paste scripts' 'pasteScripts'
-  } (beginsWith clip 'GP Script') {
-	addItem menu 'paste script' 'pasteScripts'
+  processDroppedFiles this
+  if (isNil fpsReadout) { return }
+  frameCount += 1
+  msecs = ((msecsSinceStart) - lastFrameTime)
+  if (and (frameCount > 2) (msecs > 200)) {
+	fps = ((1000 * frameCount) / msecs)
+	setText fpsReadout (join '' (round fps 0.1) ' fps')
+	lastFrameTime = (msecsSinceStart)
+	frameCount = 0
   }
-  cb = (ownerThatIsA morph 'ClassBrowser')
-  if (notNil cb) {
-    if (wasEdited (handler cb)) {
-      addLine menu
-      addItem menu 'save changes' (action 'saveEditedFunction' (handler cb))
-    }
-  }
-  return menu
+  processMessages (smallRuntime)
 }
