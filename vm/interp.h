@@ -216,7 +216,6 @@ static inline int evalInt(OBJ obj) {
 
 // Testing Support
 
-void storeCodeChunk(uint8 chunkIndex, uint8 chunkType, int byteCount, uint8 *data);
 void startTaskForChunk(uint8 chunkIndex);
 void runTasksUntilDone(void);
 

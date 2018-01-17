@@ -5,6 +5,7 @@
 
 #include "mem.h"
 #include "interp.h"
+#include "persist.h"
 
 // test programs
 
@@ -100,8 +101,9 @@ int sum200k[] = {
 
 static uint8 nextChunkIndex = 0;
 
-static void startTask(int* prog, int byteCount) {
-	storeCodeChunk(nextChunkIndex, 1, byteCount, (uint8 *) prog);
+static void startTask(int* prog) {
+	chunks[chunkIndex].code = prog - PERSISTENT_HEADER_WORDS;
+	chunks[chunkIndex].chunkType = chunkType;
 	startTaskForChunk(nextChunkIndex);
 	nextChunkIndex++;
 }
@@ -124,16 +126,16 @@ void taskTest() {
 	printf("200k calls to TICKS() took %d usecs\r\n", (int) TIMER_US());
 
 	initTasks();
-	startTask(prog2, sizeof(prog2));
-	startTask(prog3, sizeof(prog3));
+	startTask(prog2);
+	startTask(prog3);
 	runTasksUntilDone();
 
 	// four tasks, 50k iterations each
 	initTasks();
-	startTask(sum50k, sizeof(sum50k));
-	startTask(sum50k, sizeof(sum50k));
-	startTask(sum50k, sizeof(sum50k));
-	startTask(sum50k, sizeof(sum50k));
+	startTask(sum50k);
+	startTask(sum50k);
+	startTask(sum50k);
+	startTask(sum50k);
 
 	START_TIMER();
 	runTasksUntilDone();
@@ -142,7 +144,7 @@ void taskTest() {
 
 	// single task 200k iterations
 	initTasks();
-	startTask(sum200k, sizeof(sum200k));
+	startTask(sum200k);
 
 	START_TIMER();
 	runTasksUntilDone();
