@@ -102,7 +102,7 @@ void systemReset() {
 #elif defined(ARDUINO_BBC_MICROBIT)
 
 	#define BOARD_TYPE "micro:bit"
-	#define DIGITAL_PINS 31
+	#define DIGITAL_PINS 33
 	#define ANALOG_PINS 6
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
