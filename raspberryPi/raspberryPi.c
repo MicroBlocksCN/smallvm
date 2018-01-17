@@ -38,6 +38,7 @@ void sendByte(char aByte) { serialPutchar(serialPort, aByte); }
 
 // System Functions
 
+const char * boardType() { return "Raspberry Pi"; }
 void systemReset() { } // noop on Raspberry Pi
 
 // General Purpose I/O Pins

@@ -51,6 +51,7 @@ uint32 millisecs() { return (uint32) millis(); }
 
 void hardwareInit() {
 	initPins();
+	Wire.begin();
 }
 
 #endif
@@ -83,6 +84,7 @@ void systemReset() {
 
 #if defined(ARDUINO_SAM_DUE)
 
+	#define BOARD_TYPE "Due"
 	#define DIGITAL_PINS 54
 	#define ANALOG_PINS 12
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
@@ -90,6 +92,7 @@ void systemReset() {
 
 #elif defined(ARDUINO_NRF52_PRIMO)
 
+	#define BOARD_TYPE "Primo"
 	#define DIGITAL_PINS 14
 	#define ANALOG_PINS 6
 	#define DEDICATED_PINS 2 // USER1_BUTTON (20) and BUZZER (21)
@@ -98,7 +101,8 @@ void systemReset() {
 
 #elif defined(ARDUINO_BBC_MICROBIT)
 
-	#define DIGITAL_PINS 29
+	#define BOARD_TYPE "micro:bit"
+	#define DIGITAL_PINS 31
 	#define ANALOG_PINS 6
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
@@ -115,6 +119,7 @@ void systemReset() {
 
 #elif defined(ARDUINO_SAMD_MKRZERO)
 
+	#define BOARD_TYPE "MKRZero"
 	#define DIGITAL_PINS 8
 	#define ANALOG_PINS 7
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
@@ -124,6 +129,7 @@ void systemReset() {
 
 #elif defined(ARDUINO_ESP8266_NODEMCU)
 
+	#define BOARD_TYPE "ESP8266"
 	#define DIGITAL_PINS 11
 	#define ANALOG_PINS 1
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
@@ -132,6 +138,7 @@ void systemReset() {
 
 #else // unknown board
 
+	#define BOARD_TYPE "Generic"
 	#define DIGITAL_PINS 0
 	#define ANALOG_PINS 0
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
@@ -139,6 +146,10 @@ void systemReset() {
 	#define PIN_LED 0
 
 #endif
+
+// Board Type
+
+const char * boardType() { return BOARD_TYPE; }
 
 // Pin Modes
 

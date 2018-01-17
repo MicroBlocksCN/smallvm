@@ -246,6 +246,7 @@ int readBytes(uint8 *buf, int count);
 int canSendByte(void);
 void sendByte(char aByte);
 
+const char *boardType();
 void hardwareInit(void);
 void systemReset(void);
 
