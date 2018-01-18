@@ -13,6 +13,9 @@ if ls build 2> /dev/null > /dev/null; then
     rm -rf build
 fi
 
+echo "Replacing tray icon module binaries for MacOSX..."
+cp macos-extras/* node_modules/systray/traybin
+
 echo "Building binaries..."
 pkg .
 
