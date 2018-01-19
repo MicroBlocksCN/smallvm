@@ -278,3 +278,256 @@ OBJ primI2cSet(OBJ *args) {
 
 	return nilObj;
 }
+
+// BBC micro:bit Primitives (noops on other boards)
+
+static int microBitDisplayBits = 0;
+
+#if defined(ARDUINO_BBC_MICROBIT)
+
+#define COL1 26
+#define COL2 27
+#define COL3 28
+
+#define ROW1 3
+#define ROW2 4
+#define ROW3 6
+#define ROW4 7
+#define ROW5 9
+#define ROW6 10
+#define ROW7 23
+#define ROW8 24
+#define ROW9 25
+
+#define DISPLAY_BIT(n) (((microBitDisplayBits >> (n - 1)) & 1) ? LOW : HIGH)
+
+static int displayCycle = 0;
+
+void updateMicrobitDisplay() {
+	if (!microBitDisplayBits) return; // display is off
+
+	// turn off all columns
+	digitalWrite(COL1, LOW);
+	digitalWrite(COL2, LOW);
+	digitalWrite(COL3, LOW);
+
+	switch (displayCycle) {
+	case 0:
+		digitalWrite(ROW1, DISPLAY_BIT(1));
+		digitalWrite(ROW2, DISPLAY_BIT(3));
+		digitalWrite(ROW3, DISPLAY_BIT(12));
+		digitalWrite(ROW4, DISPLAY_BIT(16));
+		digitalWrite(ROW5, DISPLAY_BIT(17));
+		digitalWrite(ROW6, DISPLAY_BIT(5));
+		digitalWrite(ROW7, DISPLAY_BIT(20));
+		digitalWrite(ROW8, DISPLAY_BIT(19));
+		digitalWrite(ROW9, DISPLAY_BIT(18));
+		digitalWrite(COL1, HIGH);
+		break;
+	case 1:
+		digitalWrite(ROW1, DISPLAY_BIT(15));
+		digitalWrite(ROW2, DISPLAY_BIT(11));
+		digitalWrite(ROW3, HIGH); // unused
+		digitalWrite(ROW4, HIGH); // unused
+		digitalWrite(ROW5, DISPLAY_BIT(22));
+		digitalWrite(ROW6, DISPLAY_BIT(13));
+		digitalWrite(ROW7, DISPLAY_BIT(2));
+		digitalWrite(ROW8, DISPLAY_BIT(4));
+		digitalWrite(ROW9, DISPLAY_BIT(24));
+		digitalWrite(COL2, HIGH);
+		break;
+	case 2:
+		digitalWrite(ROW1, DISPLAY_BIT(23));
+		digitalWrite(ROW2, DISPLAY_BIT(25));
+		digitalWrite(ROW3, DISPLAY_BIT(14));
+		digitalWrite(ROW4, DISPLAY_BIT(10));
+		digitalWrite(ROW5, DISPLAY_BIT(9));
+		digitalWrite(ROW6, DISPLAY_BIT(21));
+		digitalWrite(ROW7, DISPLAY_BIT(6));
+		digitalWrite(ROW8, DISPLAY_BIT(7));
+		digitalWrite(ROW9, DISPLAY_BIT(8));
+		digitalWrite(COL3, HIGH);
+		break;
+	}
+	displayCycle = (displayCycle + 1) % 3;
+}
+
+static void microbitDisplayOn() {
+	SET_MODE(COL1, OUTPUT);
+	SET_MODE(COL2, OUTPUT);
+	SET_MODE(COL3, OUTPUT);
+	SET_MODE(ROW1, OUTPUT);
+	SET_MODE(ROW2, OUTPUT);
+	SET_MODE(ROW3, OUTPUT);
+	SET_MODE(ROW4, OUTPUT);
+	SET_MODE(ROW5, OUTPUT);
+	SET_MODE(ROW6, OUTPUT);
+	SET_MODE(ROW7, OUTPUT);
+	SET_MODE(ROW8, OUTPUT);
+	SET_MODE(ROW9, OUTPUT);
+}
+
+static void microbitDisplayOff() {
+	SET_MODE(COL1, INPUT);
+	SET_MODE(COL2, INPUT);
+	SET_MODE(COL3, INPUT);
+	SET_MODE(ROW1, INPUT);
+	SET_MODE(ROW2, INPUT);
+	SET_MODE(ROW3, INPUT);
+	SET_MODE(ROW4, INPUT);
+	SET_MODE(ROW5, INPUT);
+	SET_MODE(ROW6, INPUT);
+	SET_MODE(ROW7, INPUT);
+	SET_MODE(ROW8, INPUT);
+	SET_MODE(ROW9, INPUT);
+}
+
+#define ACCEL_ID 29
+
+static int microbitAccel(int registerID) {
+	// turn on the accelerometer
+	Wire.beginTransmission(ACCEL_ID);
+	Wire.write(0x2A);
+	Wire.write(1);
+	Wire.endTransmission();
+
+	Wire.beginTransmission(ACCEL_ID);
+	Wire.write(registerID);
+	int error = Wire.endTransmission(false);
+	if (error) return 0;  // error; return 0
+
+	Wire.requestFrom(ACCEL_ID, 1);
+	while (!Wire.available());
+	int val = Wire.read();
+	return (val < 128) ? val : -(256 - val); // value is a signed byte
+}
+
+#define MAG_ID 14
+
+static int microbitTemp(int registerID) {
+	// Get the temp from magnetometer chip (faster response than CPU temp sensor)
+
+	// configure and turn on magnetometer
+	Wire.beginTransmission(MAG_ID);
+	Wire.write(0x10);
+	Wire.write(0x29);  // 20 Hz with 16x oversample (see spec sheet)
+	Wire.endTransmission();
+
+	// read a byte from register 1 to force an update
+	Wire.beginTransmission(MAG_ID);
+	Wire.write(1); // register 1
+	int error = Wire.endTransmission(false);
+	if (error) return 0;
+	Wire.requestFrom(MAG_ID, 1);
+	while (!Wire.available());
+	Wire.read();
+
+	// read temp from register 15
+	Wire.beginTransmission(MAG_ID);
+	Wire.write(15); // register 15
+	error = Wire.endTransmission(false);
+	if (error) return 0;
+	Wire.requestFrom(MAG_ID, 1);
+	while (!Wire.available());
+	int degrees = Wire.read();
+	degrees = (degrees < 128) ? degrees : -(256 - degrees); // temp is a signed byte
+
+	int adjustment = 5; // based on John's micro:bit, Jan 2018
+	return degrees + adjustment;
+}
+
+static int microbitMag(int registerID) {
+	// configure and turn on magnetometer
+	Wire.beginTransmission(MAG_ID);
+	Wire.write(0x10);
+	Wire.write(0x29);  // 20 Hz with 16x oversample (see spec sheet)
+	Wire.endTransmission();
+
+	Wire.beginTransmission(MAG_ID);
+	Wire.write(1); // read from register 1
+	int error = Wire.endTransmission(false);
+	if (error) { Serial.print("Error: "); Serial.println(error); }
+
+	// always read x, y, and z at 16-bit resolution
+	// even when reading temp, this is needed to force an update
+	Wire.requestFrom(MAG_ID, 6);
+	while (Wire.available() < 6);
+	int x = Wire.read() << 8;
+	x |= Wire.read();
+	if (x > 32767) x += -65536;
+	int y = Wire.read() << 8;
+	y |= Wire.read();
+	if (y > 32767) y += -65536;
+	int z = Wire.read() << 8;
+	z |= Wire.read();
+	if (z > 32767) z += -65536;
+
+	if (1 == registerID) return x;
+	if (3 == registerID) return y;
+	if (5 == registerID) return z;
+	if (15 == registerID) { // read temperature
+		Wire.beginTransmission(MAG_ID);
+		Wire.write(15);
+		int error = Wire.endTransmission(false);
+		if (error) return 0;  // error; return 0
+
+		Wire.requestFrom(MAG_ID, 1);
+		while (!Wire.available());
+		int val = Wire.read();
+		return (val < 128) ? val : -(256 - val); // temp is a signed byte
+	}
+	return 0;
+}
+
+#else // stubs for non-micro:bit boards
+
+void updateMicrobitDisplay() { }
+static void microbitDisplayOn() { }
+static void microbitDisplayOff() { }
+static int microbitAccel(int reg) { return 0; }
+static int microbitTemp(int registerID) { return 0; }
+
+#endif // micro:bit primitve support
+
+// Microbit Primitives (noops on other boards)
+
+OBJ primMBDisplay(OBJ *args) {
+	microBitDisplayBits = evalInt(args[0]);
+	if (microBitDisplayBits) {
+		microbitDisplayOn();
+	} else {
+		microbitDisplayOff();
+	}
+	return nilObj;
+}
+
+OBJ primMBDisplayOff(OBJ *args) {
+	microBitDisplayBits = 0;
+	microbitDisplayOff();
+	return nilObj;
+}
+
+OBJ primMBPlot(OBJ *args) {
+	int x = evalInt(args[0]);
+	int y = evalInt(args[1]);
+	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+		int shift = (5 * (y - 1)) + (x - 1);
+		microBitDisplayBits |= (1 << shift);
+	}
+	if (microBitDisplayBits) microbitDisplayOn();
+}
+
+OBJ primMBUnplot(OBJ *args) {
+	int x = evalInt(args[0]);
+	int y = evalInt(args[1]);
+	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+		int shift = (5 * (y - 1)) + (x - 1);
+		microBitDisplayBits &= ~(1 << shift);
+	}
+	if (!microBitDisplayBits) microbitDisplayOff();
+}
+
+OBJ primMBTiltX(OBJ *args) { return int2obj(microbitAccel(1)); }
+OBJ primMBTiltY(OBJ *args) { return int2obj(microbitAccel(3)); }
+OBJ primMBTiltZ(OBJ *args) { return int2obj(microbitAccel(5)); }
+OBJ primMBTemp(OBJ *args) { return int2obj(microbitTemp(15)); }

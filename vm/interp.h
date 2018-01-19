@@ -63,6 +63,15 @@ extern "C" {
 #define i2cGet 53
 #define i2cSet 54
 
+#define mbDisplay 55 // temporary micro:bit primitives for demos
+#define mbDisplayOff 56
+#define mbPlot 57
+#define mbUnplot 58
+#define mbTiltX 59
+#define mbTiltY 60
+#define mbTiltZ 61
+#define mbTemp 62
+
 // Instruction Format
 
 #define OP(opcode, arg) (((unsigned) arg << 8) | (opcode & 0xFF))
@@ -265,6 +274,8 @@ const char *boardType();
 void hardwareInit(void);
 void systemReset(void);
 
+void updateMicrobitDisplay(); // temporary
+
 // Primitives
 
 OBJ primNewArray(OBJ *args);
@@ -286,6 +297,15 @@ OBJ primDigitalWrite(OBJ *args);
 OBJ primSetLED(OBJ *args);
 OBJ primI2cGet(OBJ *args);
 OBJ primI2cSet(OBJ *args);
+
+OBJ primMBDisplay(OBJ *args);
+OBJ primMBDisplayOff(OBJ *args);
+OBJ primMBPlot(OBJ *args);
+OBJ primMBUnplot(OBJ *args);
+OBJ primMBTiltX(OBJ *args);
+OBJ primMBTiltY(OBJ *args);
+OBJ primMBTiltZ(OBJ *args);
+OBJ primMBTemp(OBJ *args);
 
 #ifdef __cplusplus
 }

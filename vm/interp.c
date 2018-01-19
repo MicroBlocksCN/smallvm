@@ -168,6 +168,14 @@ static void runTask(Task *task) {
 		&&primHexToInt_op,
 		&&primI2cGet_op,
 		&&primI2cSet_op,
+		&&mbDisplay_op,
+		&&mbDisplayOff_op,
+		&&mbPlot_op,
+		&&mbUnplot_op,
+		&&mbTiltX_op,
+		&&mbTiltY_op,
+		&&mbTiltZ_op,
+		&&mbTemp_op,
 	};
 
 	// Restore task state
@@ -473,6 +481,38 @@ static void runTask(Task *task) {
 		*(sp - arg) = primI2cSet(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
+	mbDisplay_op:
+		*(sp - arg) = primMBDisplay(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	mbDisplayOff_op:
+		*(sp - arg) = primMBDisplayOff(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	mbPlot_op:
+		*(sp - arg) = primMBPlot(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	mbUnplot_op:
+		*(sp - arg) = primMBUnplot(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	mbTiltX_op:
+		*(sp - arg) = primMBTiltX(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	mbTiltY_op:
+		*(sp - arg) = primMBTiltY(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	mbTiltZ_op:
+		*(sp - arg) = primMBTiltZ(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	mbTemp_op:
+		*(sp - arg) = primMBTemp(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
 }
 
 // Task Scheduler
@@ -490,6 +530,9 @@ void vmLoop() {
 	int count = 0;
 	while (true) {
 		if (count-- <= 0) {
+#if defined(ARDUINO_BBC_MICROBIT)
+			updateMicrobitDisplay();
+#endif
 			processMessage();
 			count = 100; // reduce to 30 when building on mbed to avoid serial errors
 		}
