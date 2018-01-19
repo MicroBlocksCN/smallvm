@@ -13,6 +13,9 @@ if ls build 2> /dev/null > /dev/null; then
     rm -rf build
 fi
 
+echo "Replacing tray icon module binaries for MacOSX..."
+cp macos-extras/* node_modules/systray/traybin
+
 echo "Building binaries..."
 pkg .
 
@@ -30,9 +33,9 @@ cp -r icons build/macos
 cp -r win-extras/icons build/win
 
 echo "Downloading serialport pre-built binaries..."
-wget https://github.com/node-serialport/node-serialport/releases/download/v6.0.4/serialport-v6.0.4-node-v57-linux-x64.tar.gz
-wget https://github.com/node-serialport/node-serialport/releases/download/v6.0.4/serialport-v6.0.4-node-v57-darwin-x64.tar.gz
-wget https://github.com/node-serialport/node-serialport/releases/download/v6.0.4/serialport-v6.0.4-node-v57-win32-x64.tar.gz
+curl -OL https://github.com/node-serialport/node-serialport/releases/download/v6.0.4/serialport-v6.0.4-node-v57-linux-x64.tar.gz
+curl -OL https://github.com/node-serialport/node-serialport/releases/download/v6.0.4/serialport-v6.0.4-node-v57-darwin-x64.tar.gz
+curl -OL https://github.com/node-serialport/node-serialport/releases/download/v6.0.4/serialport-v6.0.4-node-v57-win32-x64.tar.gz
 
 echo "Unpacking serialport lib pre-built binaries..."
 tar -xf serialport-v6.0.4-node-v57-linux-x64.tar.gz

@@ -374,7 +374,6 @@ if (options.placeTrayIcon) {
                 log('Placing system tray icon');
                 systray = new SysTray({
                     debug: options.debugMode,
-                    copyDir: true,
                     menu: {
                         icon: icon,
                         items: trayItems
