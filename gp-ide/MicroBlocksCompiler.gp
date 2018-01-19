@@ -76,10 +76,7 @@ method initOpcodes SmallCompiler {
 #define mbTiltX 59
 #define mbTiltY 60
 #define mbTiltZ 61
-#define mbMagX 62
-#define mbMagY 63
-#define mbMagZ 64
-#define mbMagTemp 65
+#define mbTemp 62
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {

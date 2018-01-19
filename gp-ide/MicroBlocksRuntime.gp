@@ -36,10 +36,7 @@ method microBlocksSpecs SmallRuntime {
 		(array 'r' 'mbTiltX'			'tilt x')
 		(array 'r' 'mbTiltY'			'tilt y')
 		(array 'r' 'mbTiltZ'			'tilt z')
-		(array 'r' 'mbMagX'				'magnetic x')
-		(array 'r' 'mbMagY'				'magnetic y')
-		(array 'r' 'mbMagZ'				'magnetic z')
-		(array 'r' 'mbMagTemp'			'temperature Celcius')
+		(array 'r' 'mbTemp'				'temperature Celcius')
 	'Control'
 		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
