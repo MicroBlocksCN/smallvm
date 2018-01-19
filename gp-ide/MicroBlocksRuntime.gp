@@ -14,21 +14,32 @@ method scripter SmallRuntime { return scripter }
 
 method microBlocksSpecs SmallRuntime {
 	return (array
-	'Arduino'
-		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello, Arduino!')
-		(array ' ' 'sayIt'				'say _' 'auto' 123)
+	'I/O'
+		(array ' ' 'setLEDOp'			'set user LED _' 'bool' true)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
-		(array ' ' 'analogWriteOp'		'set analog pin _ to _' 'num num' 1 1023)
+		(array ' ' 'analogWriteOp'		'write analog pin _ value _' 'num num' 1 1023)
 		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
 		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
-		(array ' ' 'setLEDOp'			'set user LED _' 'bool' true)
 		(array 'r' 'analogPinsOp'		'analog pins')
 		(array 'r' 'digitalPinsOp'		'digital pins')
 		(array 'r' 'microsOp'			'micros')
 		(array 'r' 'millisOp'			'millis')
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
-		(array ' ' 'noop'				'no op')
+		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello, Arduino!')
+		(array ' ' 'sayIt'				'say _' 'auto' 123)
+	'MicroBit'
+		(array ' ' 'mbDisplay'			'display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _' 'bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool')
+		(array ' ' 'mbDisplayOff'		'clear display')
+		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
+		(array ' ' 'mbUnplot'			'unplot x _ y _' 'num num' 3 3)
+		(array 'r' 'mbTiltX'			'tilt x')
+		(array 'r' 'mbTiltY'			'tilt y')
+		(array 'r' 'mbTiltZ'			'tilt z')
+		(array 'r' 'mbMagX'				'magnetic x')
+		(array 'r' 'mbMagY'				'magnetic y')
+		(array 'r' 'mbMagZ'				'magnetic z')
+		(array 'r' 'mbMagTemp'			'temperature Celcius')
 	'Control'
 		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
@@ -41,6 +52,7 @@ method microBlocksSpecs SmallRuntime {
 		(array ' ' 'waitMillisOp'		'wait _ millisecs' 'num' 500)
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenCondition'		'when _' 'bool')
+		(array ' ' 'noop'				'no op')
 	'Math'
 		(array 'r' 'add'				'_ + _ : + _ : ...' 'num num num' 10 2 10)
 		(array 'r' 'subtract'			'_ − _' 'num num' 10 2)
@@ -70,6 +82,14 @@ method microBlocksSpecs SmallRuntime {
 		(array ' ' '='					'set _ to _' 'menu.sharedVarMenu auto' 'n' 0)
 		(array ' ' '+='					'increase _ by _' 'menu.sharedVarMenu num' 'n' 1)
 	)
+}
+
+method initMicroBlocksSpecs SmallRuntime {
+	authoringSpecs = (authoringSpecs)
+	if (isEmpty (specsFor authoringSpecs 'Arduino')) {
+		clear authoringSpecs
+		addSpecs authoringSpecs (microBlocksSpecs this)
+	}
 }
 
 method evalOnArduino SmallRuntime aBlock showBytes {
@@ -158,10 +178,9 @@ method chunkIdFor SmallRuntime aBlock {
 method resetArduino SmallRuntime {
 	// Reset the Arduino.
 
-//	ensurePortOpen this // make sure portName is initialized
 	// First try closing the serial port, opening it at 1200 baud,
 	// then closing and reopening the port at the normal speed.
-	// This only works for certain models of the Arduino. It does not work for non-Arduinos.
+	// This works only for certain models of the Arduino. It does not work for non-Arduinos.
 	closeSerialPort port
 	port = (openSerialPort portName 1200)
 	closeSerialPort port
@@ -191,7 +210,11 @@ method setPort SmallRuntime newPortName {
 	ensurePortOpen this
 }
 
-method sendDeleteAll SmallRuntime { print 'delete all'; sendMsg this 'deleteAllChunksMsg' }
+method clearBoardIfConnected SmallRuntime {
+	if (notNil port) { sendDeleteAll this }
+}
+
+method sendDeleteAll SmallRuntime { sendMsg this 'deleteAllCodeMsg' }
 
 method sendStopAll SmallRuntime {
 	sendMsg this 'stopAllMsg'
@@ -251,11 +274,11 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'startAllMsg' 5
 		atPut msgDict 'stopAllMsg' 6
 		atPut msgDict 'getVarMsg' 7
-		atPut msgDict 'getVersionMsg' 8
-		atPut msgDict 'getAllCodeMsg' 9
 		atPut msgDict 'deleteVarMsg' 10
 		atPut msgDict 'deleteCommentMsg' 11
-		atPut msgDict 'deleteAllChunksMsg' 14
+		atPut msgDict 'getVersionMsg' 12
+		atPut msgDict 'getAllCodeMsg' 13
+		atPut msgDict 'deleteAllCodeMsg' 14
 		atPut msgDict 'systemResetMsg' 15
 		atPut msgDict 'taskStartedMsg' 16
 		atPut msgDict 'taskDoneMsg' 17
@@ -293,9 +316,6 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 method ensurePortOpen SmallRuntime {
 	if (isNil port) {
 		if (isNil portName) {
-//			portName = '/dev/tty.usbmodem105'
-//			portName = '/dev/tty.usbmodem1422'
-//			portName = '/dev/cu.SLAB_USBtoUART'
 			portName = '/dev/tty.usbmodem1422'
 		}
 		port = (openSerialPort portName 115200)
@@ -346,13 +366,10 @@ method handleMessage SmallRuntime msg {
 	op = (byteAt msg 2)
 	if (op == (msgNameToID this 'taskStartedMsg')) {
 		updateRunning this (byteAt msg 3) true
-//		print 'started' (byteAt msg 3)
 	} (op == (msgNameToID this 'taskDoneMsg')) {
 		updateRunning this (byteAt msg 3) false
-//		print 'stopped' (byteAt msg 3)
 	} (op == (msgNameToID this 'taskReturnedValueMsg')) {
 		showResult this (byteAt msg 3) (returnedValue this msg)
-//		print (returnedValue this msg)
 	} (op == (msgNameToID this 'taskErrorMsg')) {
 		print 'error:' (byteAt msg 6) // error code
 	} (op == (msgNameToID this 'outputValueMsg')) {
@@ -434,13 +451,5 @@ method showOutputStrings SmallRuntime {
 			recvBuf = (substring recvBuf (i + 1))
 			print out
 		}
-	}
-}
-
-method initMicroBlocksSpecs SmallRuntime {
-	authoringSpecs = (authoringSpecs)
-	if (isEmpty (specsFor authoringSpecs 'Arduino')) {
-		clear authoringSpecs
-		addSpecs authoringSpecs (microBlocksSpecs this)
 	}
 }

@@ -73,3 +73,187 @@ method clear AuthoringSpecs {
   opCategory = (dictionary)
   return this
 }
+
+method fixLayout Block {
+  space = 3
+  vSpace = 3
+
+  break = 450
+  lineHeights = (list)
+  lines = (list)
+  lineArgCount = 0
+
+  left = (left morph)
+  blockWidth = 0
+  blockHeight = 0
+  h = 0
+  w = 0
+
+  if (global 'stealthBlocks') {
+    if (type == 'hat') {
+      indentation = (stealthLevel (* scale (+ border space)) 0)
+    } (type == 'reporter') {
+      indentation = (stealthLevel (* scale rounding) (width (stealthText this '(')))
+    } (type == 'command') {
+      indentation = (stealthLevel (* scale (+ border inset dent (corner * 2))) 0)
+    }
+  } else {
+    if (type == 'hat') {
+      indentation = (* scale (+ border space))
+    } (type == 'reporter') {
+      indentation = (* scale rounding)
+    } (type == 'command') {
+      indentation = (* scale (+ border inset dent (corner * 2)))
+    }
+  }
+
+  // arrange label parts horizontally and break up into lines
+  currentLine = (list)
+  for group labelParts {
+    for each group {
+      if (isVisible (morph each)) {
+        if (isClass each 'CommandSlot') {
+          add lines currentLine
+          add lineHeights h
+          setLeft (morph each) (+ left (* scale (+ border corner)))
+          add lines (list each)
+          add lineHeights (height (morph each))
+          currentLine = (list)
+          w = 0
+          h = 0
+        } else {
+          x = (+ left indentation w)
+          w += (width (fullBounds (morph each)))
+          w += (space * scale)
+          if (and ('mbDisplay' == (primName expression)) (each == (first group))) {
+			lineArgCount = 10; // force a line break after first item of 'mbDisplay' block
+          }
+          if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
+            add lines currentLine
+            add lineHeights h
+            currentLine = (list)
+            h = 0
+            x = (+ left indentation)
+            w = ((width (fullBounds (morph each))) + (space * scale))
+            lineArgCount = 0
+          }
+          add currentLine each
+          h = (max h (height (morph each)))
+          setLeft (morph each) x
+		  if (not (isClass each 'Text')) { lineArgCount += 1 }
+        }
+      }
+    }
+  }
+
+  // add the block drawer, if any
+  drawer = (drawer this)
+  if (notNil drawer) {
+    x = (+ left indentation w)
+    w += (width (fullBounds (morph drawer)))
+    w += (space * scale)
+    if (and (w > (break * scale)) (notEmpty currentLine)) {
+      add lines currentLine
+      add lineHeights h
+      currentLine = (list)
+      h = 0
+      x = (+ left indentation)
+      w = ((width (fullBounds (morph drawer))) + (space * scale))
+    }
+    add currentLine drawer
+    h = (max h (height (morph drawer)))
+    setLeft (morph drawer) x
+  }
+
+  // add last label line
+  add lines currentLine
+  add lineHeights h
+
+  // purge empty lines
+  // to do: prevent empty lines from being added in the first place
+  for i (count lines) {
+    if (isEmpty (at lines i)) {
+      removeAt lines i
+      removeAt lineHeights i
+    }
+  }
+
+  // determine block dimensions from line data
+  blockWidth = 0
+  for each lines {
+    if (notEmpty each) {
+      elem = (last each)
+      if (not (isClass elem 'CommandSlot')) {
+        blockWidth = (max blockWidth ((right (fullBounds (morph elem))) - left))
+      }
+    }
+  }
+  blockWidth = (- blockWidth (space * scale))
+  blockHeight = (callWith + (toArray lineHeights))
+  blockHeight += (* (count lines) vSpace scale)
+
+  // arrange label parts vertically
+  if (global 'stealthBlocks') {
+    tp = (+ (top morph) (stealthLevel (* 2 scale border) 0))
+  } else {
+    tp =  (+ (top morph) (* 2 scale border))
+  }
+  if (type == 'hat') {
+    tp += (hatHeight this)
+  }
+  line = 0
+  for eachLine lines {
+    line += 1
+    bottom = (+ tp (at lineHeights line) (vSpace * scale))
+    for each eachLine {
+      setYCenterWithin (morph each) tp bottom
+    }
+    tp = bottom
+  }
+
+  // add extra space below the bottom-most c-slot
+  extraSpace = 0
+  if (and (isNil drawer) (isClass (last (last labelParts)) 'CommandSlot')) {
+    extraSpace = (scale * corner)
+  }
+
+  // set block dimensions
+  blockWidth += (* -1 scale space)
+  blockWidth += (* scale border)
+
+  if (global 'stealthBlocks') {
+    if (type == 'command') {
+      setWidth (bounds morph) (+ blockWidth indentation (stealthLevel (scale * corner) 0))
+      setHeight (bounds morph) (stealthLevel (+ blockHeight (* scale corner) (* scale border 4) extraSpace) blockHeight)
+    } (type == 'hat') {
+      setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (stealthLevel (scale * corner) 0)))
+      setHeight (bounds morph) (stealthLevel (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace) (+ blockHeight (hatHeight this)))
+    } (type == 'reporter') {
+      setWidth (bounds morph) (+ blockWidth (2 * indentation) (stealthLevel (scale * rounding) 0))
+      setHeight (bounds morph) (stealthLevel (+ blockHeight (* scale border 4) extraSpace) blockHeight)
+    }
+  } else {
+    if (type == 'command') {
+      setWidth (bounds morph) (max (scale * 50) (+ blockWidth indentation (scale * corner)))
+      setHeight (bounds morph) (+ blockHeight (* scale corner) (* scale border 4) extraSpace)
+    } (type == 'hat') {
+      setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (scale * corner)))
+      setHeight (bounds morph) (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace)
+    } (type == 'reporter') {
+      setWidth (bounds morph) (max (scale * 20) (+ blockWidth indentation (scale * rounding)))
+      setHeight (bounds morph) (+ blockHeight (* scale border 4) extraSpace)
+    }
+  }
+
+  for group labelParts {
+    for each group {
+      if (isClass each 'CommandSlot') {fixLayout each true}
+    }
+  }
+  redraw this
+  nb = (next this)
+  if (notNil nb) {
+    setPosition (morph nb) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
+  }
+  raise morph 'layoutChanged' this
+}

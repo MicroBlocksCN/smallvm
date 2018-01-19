@@ -124,7 +124,7 @@ method clearProject MicroBlocksEditor {
   setText title ''
   project = (emptyProject)
   developerModeChanged scripter // clear extensions
-  if (not isStarting) { sendDeleteAll (smallRuntime) }
+  clearBoardIfConnected (smallRuntime)
 }
 
 method openProjectMenu MicroBlocksEditor {

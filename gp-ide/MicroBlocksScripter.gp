@@ -1,6 +1,6 @@
 // MicroBlocksScripter.gp - authoring-level MicroBlocksScripter w/ built-in palette
 
-defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded categoriesFrame catResizer blocksFrame blocksResizer scriptsFrame nextX nextY
+defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded categoriesFrame catWidth catResizer blocksFrame blocksWidth blocksResizer scriptsFrame nextX nextY xxx
 
 method targetClass MicroBlocksScripter { return (classOf targetObj) }
 method targetObj MicroBlocksScripter { return targetObj }
@@ -67,7 +67,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (gray 220))
   setAutoScroll blocksFrame false
-  setExtent (morph blocksFrame) nil (285 * scale) // initial height
+  setExtent (morph blocksFrame) (200 * scale) // initial width
   addPart morph (morph blocksFrame)
 
   scriptsPane = (newScriptEditor 10 10 nil)
@@ -75,10 +75,10 @@ method initialize MicroBlocksScripter aProjectEditor {
   addPart morph (morph scriptsFrame)
 
   // add resizers last so they are in front
-  catResizer = (resizeHandle categoriesFrame 'vertical')
+  catResizer = (resizeHandle categoriesFrame 'horizontal')
   addPart morph (morph catResizer)
 
-  blocksResizer = (resizeHandle blocksFrame 'vertical')
+  blocksResizer = (resizeHandle blocksFrame 'horizontal')
   addPart morph (morph blocksResizer)
 
   setGrabRule morph 'ignore'
@@ -100,11 +100,11 @@ method redraw MicroBlocksScripter {
 }
 
 method fixLayout MicroBlocksScripter {
-  blocksWidth = 200 // xxx should be instance variable to allow pane resizing
+  catWidth = (max (toInteger ((width (morph categoriesFrame)) / (global 'scale'))) 75)
+  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / (global 'scale'))) 125)
+
   innerBorder = 2
   outerBorder = 2
-  catWidth = (max (toInteger ((width (morph categoriesFrame)) / (global 'scale'))) 20)
-  blocksHeight = (max (toInteger ((height (morph blocksFrame)) / (global 'scale'))) 5)
   packer = (newPanePacker (bounds morph) innerBorder outerBorder)
   packPanesH packer categoriesFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesV packer categoriesFrame '100%'
@@ -112,6 +112,7 @@ method fixLayout MicroBlocksScripter {
   packPanesV packer scriptsFrame '100%'
   finishPacking packer
   fixResizerLayout this
+
   if (notNil projectEditor) { fixLayout projectEditor true }
 }
 
@@ -125,7 +126,7 @@ method fixResizerLayout MicroBlocksScripter {
   drawPaneResizingCostumes catResizer
 
   // blocks pane resizer
-  setLeft (morph blocksResizer) (left (morph blocksFrame))
+  setLeft (morph blocksResizer) (right (morph blocksFrame))
   setTop (morph blocksResizer) (top morph)
   setExtent (morph blocksResizer) resizerWidth (height morph)
   drawPaneResizingCostumes blocksResizer
@@ -160,7 +161,7 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (smallRuntime this)
-  result = (array 'Control' 'Arduino' 'Math' 'Arrays' 'Variables' 'My Blocks')
+  result = (array 'Control' 'I/O' 'MicroBit' 'Math' 'Arrays' 'Variables') // 'My Blocks'
   result = (join result (extraCategories (project projectEditor)))
   return result
 }

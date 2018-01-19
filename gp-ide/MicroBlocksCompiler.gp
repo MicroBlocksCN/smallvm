@@ -69,6 +69,17 @@ method initOpcodes SmallCompiler {
 #define hexToInt 52
 #define i2cGet 53
 #define i2cSet 54
+#define mbDisplay 55 // temporary micro:bit primitives for demos
+#define mbDisplayOff 56
+#define mbPlot 57
+#define mbUnplot 58
+#define mbTiltX 59
+#define mbTiltY 60
+#define mbTiltZ 61
+#define mbMagX 62
+#define mbMagY 63
+#define mbMagZ 64
+#define mbMagTemp 65
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
@@ -260,7 +271,7 @@ method instructionsForExpression SmallCompiler expr {
 	} (isNil expr) {
 		return (list (array 'pushImmediate' 1)) // the integer zero
 	} (isClass expr 'Integer') {
-		if (and (-8388608 <= expr) (expr < 8388607)) {
+		if (and (-4194304 <= expr) (expr < 4194303)) { // 23-bit encoded as 24 bit int object
 			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FFFFFF')) ))
 		} else {
 			return (list
@@ -338,7 +349,22 @@ method instructionsForOr SmallCompiler args {
 method primitive SmallCompiler op args isCommand {
 	result = (list)
 	if ('print' == op) { op = 'printIt' }
-	if (contains opcodes op) {
+	if ('mbDisplay' == op) {
+	  if (25 != (count args)) {
+		print 'Display block expects 25 boolean arguments'
+		return result
+	  }
+	  shift = 0
+	  displayWord = 0
+	  for bit args {
+		if (true == bit) { displayWord = (displayWord | (1 << shift)) }
+		shift += 1
+	  }
+	  addAll result (instructionsForExpression this displayWord)
+	  add result (array 'mbDisplay' 1)
+	} ('comment' == op) {
+		// ignore comments
+	} (contains opcodes op) {
 		for arg args {
 			addAll result (instructionsForExpression this arg)
 		}
@@ -346,8 +372,6 @@ method primitive SmallCompiler op args isCommand {
 		if (and isCommand (not (isOneOf op 'noop' 'stopTask' 'stopAll')))  {
 			add result (array 'pop' 1)
 		}
-	} ('comment' == op) {
-		// ignore comments
 	} else {
 		print 'Skipping unknown op:' op
 	}
