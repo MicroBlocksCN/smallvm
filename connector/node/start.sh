@@ -6,6 +6,9 @@ if ! test -e node_modules; then
         exit 1
     else
         npm install
+        curl -OL https://github.com/zaaack/node-systray/raw/master/traybin/tray_darwin
+        curl -OL https://github.com/zaaack/node-systray/raw/master/traybin/tray_darwin_release
+        mv tray_darwin* node_modules/systray/traybin
     fi
 fi
 
