@@ -515,6 +515,7 @@ OBJ primMBPlot(OBJ *args) {
 		microBitDisplayBits |= (1 << shift);
 	}
 	if (microBitDisplayBits) microbitDisplayOn();
+	return nilObj;
 }
 
 OBJ primMBUnplot(OBJ *args) {
@@ -525,6 +526,7 @@ OBJ primMBUnplot(OBJ *args) {
 		microBitDisplayBits &= ~(1 << shift);
 	}
 	if (!microBitDisplayBits) microbitDisplayOff();
+	return nilObj;
 }
 
 OBJ primMBTiltX(OBJ *args) { return int2obj(microbitAccel(1)); }
