@@ -299,12 +299,60 @@ static int microBitDisplayBits = 0;
 #define ROW8 24
 #define ROW9 25
 
-#define DISPLAY_BIT(n) (((microBitDisplayBits >> (n - 1)) & 1) ? LOW : HIGH)
+static void turnDisplayOn() {
+	SET_MODE(COL1, OUTPUT);
+	SET_MODE(COL2, OUTPUT);
+	SET_MODE(COL3, OUTPUT);
+	SET_MODE(ROW1, OUTPUT);
+	SET_MODE(ROW2, OUTPUT);
+	SET_MODE(ROW3, OUTPUT);
+	SET_MODE(ROW4, OUTPUT);
+	SET_MODE(ROW5, OUTPUT);
+	SET_MODE(ROW6, OUTPUT);
+	SET_MODE(ROW7, OUTPUT);
+	SET_MODE(ROW8, OUTPUT);
+	SET_MODE(ROW9, OUTPUT);
+}
 
+static void turnDisplayOff() {
+	SET_MODE(COL1, INPUT);
+	SET_MODE(COL2, INPUT);
+	SET_MODE(COL3, INPUT);
+	SET_MODE(ROW1, INPUT);
+	SET_MODE(ROW2, INPUT);
+	SET_MODE(ROW3, INPUT);
+	SET_MODE(ROW4, INPUT);
+	SET_MODE(ROW5, INPUT);
+	SET_MODE(ROW6, INPUT);
+	SET_MODE(ROW7, INPUT);
+	SET_MODE(ROW8, INPUT);
+	SET_MODE(ROW9, INPUT);
+}
+
+static int displaySnapshot = 0;
 static int displayCycle = 0;
 
+static int callCount = 0;
+
+#define DISPLAY_BIT(n) (((displaySnapshot >> (n - 1)) & 1) ? LOW : HIGH)
+
 void updateMicrobitDisplay() {
-	if (!microBitDisplayBits) return; // display is off
+	// Update the display by cycling three the three columns, turning on the rows
+	// for each column. To minimize display artifacts, the display bits are snapshot
+	// at the start of each cycle and the snapshot is not changed during the cycle.
+
+	if (!microBitDisplayBits && !displaySnapshot) return; // display is off
+
+	if (0 == displayCycle) { // starting a new cycle
+		if (!displaySnapshot && microBitDisplayBits) turnDisplayOn(); // display just became on
+		if (displaySnapshot && !microBitDisplayBits) { // display just became off
+			displaySnapshot = 0;
+			turnDisplayOff();
+			return;
+		}
+		// take a snapshot of the display bits for the next cycle
+		displaySnapshot = microBitDisplayBits;
+	}
 
 	// turn off all columns
 	digitalWrite(COL1, LOW);
@@ -352,35 +400,6 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 3;
 }
 
-static void microbitDisplayOn() {
-	SET_MODE(COL1, OUTPUT);
-	SET_MODE(COL2, OUTPUT);
-	SET_MODE(COL3, OUTPUT);
-	SET_MODE(ROW1, OUTPUT);
-	SET_MODE(ROW2, OUTPUT);
-	SET_MODE(ROW3, OUTPUT);
-	SET_MODE(ROW4, OUTPUT);
-	SET_MODE(ROW5, OUTPUT);
-	SET_MODE(ROW6, OUTPUT);
-	SET_MODE(ROW7, OUTPUT);
-	SET_MODE(ROW8, OUTPUT);
-	SET_MODE(ROW9, OUTPUT);
-}
-
-static void microbitDisplayOff() {
-	SET_MODE(COL1, INPUT);
-	SET_MODE(COL2, INPUT);
-	SET_MODE(COL3, INPUT);
-	SET_MODE(ROW1, INPUT);
-	SET_MODE(ROW2, INPUT);
-	SET_MODE(ROW3, INPUT);
-	SET_MODE(ROW4, INPUT);
-	SET_MODE(ROW5, INPUT);
-	SET_MODE(ROW6, INPUT);
-	SET_MODE(ROW7, INPUT);
-	SET_MODE(ROW8, INPUT);
-	SET_MODE(ROW9, INPUT);
-}
 
 #define ACCEL_ID 29
 
@@ -482,8 +501,6 @@ static int microbitMag(int registerID) {
 #else // stubs for non-micro:bit boards
 
 void updateMicrobitDisplay() { }
-static void microbitDisplayOn() { }
-static void microbitDisplayOff() { }
 static int microbitAccel(int reg) { return 0; }
 static int microbitTemp(int registerID) { return 0; }
 
@@ -492,18 +509,13 @@ static int microbitTemp(int registerID) { return 0; }
 // Microbit Primitives (noops on other boards)
 
 OBJ primMBDisplay(OBJ *args) {
-	microBitDisplayBits = evalInt(args[0]);
-	if (microBitDisplayBits) {
-		microbitDisplayOn();
-	} else {
-		microbitDisplayOff();
-	}
+	OBJ arg = args[0];
+	if (isInt(arg)) microBitDisplayBits |= evalInt(arg);
 	return nilObj;
 }
 
 OBJ primMBDisplayOff(OBJ *args) {
 	microBitDisplayBits = 0;
-	microbitDisplayOff();
 	return nilObj;
 }
 
@@ -514,7 +526,6 @@ OBJ primMBPlot(OBJ *args) {
 		int shift = (5 * (y - 1)) + (x - 1);
 		microBitDisplayBits |= (1 << shift);
 	}
-	if (microBitDisplayBits) microbitDisplayOn();
 	return nilObj;
 }
 
@@ -525,7 +536,6 @@ OBJ primMBUnplot(OBJ *args) {
 		int shift = (5 * (y - 1)) + (x - 1);
 		microBitDisplayBits &= ~(1 << shift);
 	}
-	if (!microBitDisplayBits) microbitDisplayOff();
 	return nilObj;
 }
 
