@@ -176,6 +176,9 @@ static void runTask(Task *task) {
 		&&mbTiltY_op,
 		&&mbTiltZ_op,
 		&&mbTemp_op,
+		&&mbButtonA_op,
+		&&mbButtonB_op,
+		&&random_op,
 	};
 
 	// Restore task state
@@ -511,6 +514,20 @@ static void runTask(Task *task) {
 		DISPATCH();
 	mbTemp_op:
 		*(sp - arg) = primMBTemp(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	mbButtonA_op:
+		*(sp - arg) = primMBButtonA(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	mbButtonB_op:
+		*(sp - arg) = primMBButtonB(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	random_op:
+		tmp = evalInt(*(sp - 1));
+		if (tmp <= 0) tmp = 1;
+		*(sp - arg) = int2obj((rand() % tmp) + 1); // result range is [1..tmp], inclusive
 		sp -= arg - 1;
 		DISPATCH();
 }

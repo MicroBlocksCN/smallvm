@@ -71,6 +71,10 @@ extern "C" {
 #define mbTiltY 60
 #define mbTiltZ 61
 #define mbTemp 62
+#define mbButtonA 63
+#define mbButtonB 64
+
+#define random 65
 
 // Instruction Format
 
@@ -306,6 +310,8 @@ OBJ primMBTiltX(OBJ *args);
 OBJ primMBTiltY(OBJ *args);
 OBJ primMBTiltZ(OBJ *args);
 OBJ primMBTemp(OBJ *args);
+OBJ primMBButtonA(OBJ *args);
+OBJ primMBButtonB(OBJ *args);
 
 #ifdef __cplusplus
 }

@@ -498,11 +498,18 @@ static int microbitMag(int registerID) {
 	return 0;
 }
 
+static OBJ microbitButton(int buttonID) {
+	int pinNum = (1 == buttonID) ? 5 : 11;
+	SET_MODE(pinNum, INPUT);
+	return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
+}
+
 #else // stubs for non-micro:bit boards
 
 void updateMicrobitDisplay() { }
 static int microbitAccel(int reg) { return 0; }
 static int microbitTemp(int registerID) { return 0; }
+static OBJ microbitButton(int buttonID) { return falseObj; }
 
 #endif // micro:bit primitve support
 
@@ -543,3 +550,5 @@ OBJ primMBTiltX(OBJ *args) { return int2obj(microbitAccel(1)); }
 OBJ primMBTiltY(OBJ *args) { return int2obj(microbitAccel(3)); }
 OBJ primMBTiltZ(OBJ *args) { return int2obj(microbitAccel(5)); }
 OBJ primMBTemp(OBJ *args) { return int2obj(microbitTemp(15)); }
+OBJ primMBButtonA(OBJ *args) { return microbitButton(1); }
+OBJ primMBButtonB(OBJ *args) { return microbitButton(2); }
