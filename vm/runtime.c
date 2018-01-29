@@ -10,7 +10,7 @@
 
 // VM Version
 
-#define VM_VERSION "v004"
+#define VM_VERSION "v005"
 
 // Forward Reference Declarations
 
@@ -342,6 +342,7 @@ static void processShortMessage() {
 	int chunkIndex = rcvBuf[2];
 	switch (cmd) {
 	case deleteChunkMsg:
+		stopTaskForChunk(chunkIndex);
 		deleteCodeChunk(chunkIndex);
 		break;
 	case startChunkMsg:
@@ -373,6 +374,7 @@ static void processShortMessage() {
 		sendAllCode();
 		break;
 	case deleteAllCodeMsg:
+		stopAllTasks();
 		clearPersistentMemory();
 		memset(chunks, 0, sizeof(chunks));
 		break;

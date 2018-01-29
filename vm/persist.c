@@ -492,6 +492,13 @@ void restoreScripts() {
 				chunks[chunkIndex].code = p;
 			}
 		}
+		if (chunkDeleted == recType) {
+			int chunkIndex = (*p >> 8) & 0xFF;
+			if (chunkIndex < MAX_CHUNKS) {
+				chunks[chunkIndex].chunkType = unusedChunk;
+				chunks[chunkIndex].code = nilObj;
+			}
+		}
 		p = recordAfter(p);
 	}
 
