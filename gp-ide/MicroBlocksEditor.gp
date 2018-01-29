@@ -34,7 +34,7 @@ to openMicroBlocksEditor tryRetina devMode presentFlag {
   }
   setDevMode page devMode
   setGlobal 'page' page
-  open page tryRetina
+  open page tryRetina 'MicroBlocks'
   editor = (initialize (new 'MicroBlocksEditor') (emptyProject))
   addPart page editor
   if (notNil (global 'initialProject')) {

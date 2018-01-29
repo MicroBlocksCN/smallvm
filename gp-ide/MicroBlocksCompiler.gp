@@ -359,6 +359,7 @@ method primitive SmallCompiler op args isCommand {
 	  }
 	  addAll result (instructionsForExpression this displayWord)
 	  add result (array 'mbDisplay' 1)
+	  add result (array 'pop' 1)
 	} ('comment' == op) {
 		// ignore comments
 	} (contains opcodes op) {

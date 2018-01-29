@@ -190,9 +190,16 @@ method resetArduino SmallRuntime {
 
 method selectPort SmallRuntime {
 	menu = (menu 'Serial port:' (action 'setPort' this) true)
-	for fn (listFiles '/dev') {
-		if ((find (letters fn) (letters 'usb')) > 0) {
-			addItem menu fn
+	if ('Win' == (platform)) {
+		for n 32 { addItem menu (join 'COM' n) }
+	} else {
+		for fn (listFiles '/dev') {
+			if ((find (letters fn) (letters 'usb')) > 0) { // MacOS
+				addItem menu fn
+			}
+			if ((find (letters fn) (letters 'ACM')) > 0) { // linux
+				addItem menu fn
+			}
 		}
 	}
 	popUpAtHand menu (global 'page')
@@ -204,6 +211,7 @@ method setPort SmallRuntime newPortName {
 		port = nil
 	}
 	portName = (join '/dev/' newPortName)
+	if ('Win' == (platform)) { portName = newPortName }
 	ensurePortOpen this
 }
 
