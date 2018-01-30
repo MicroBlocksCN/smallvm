@@ -10,7 +10,7 @@
 
 // VM Version
 
-#define VM_VERSION "v006"
+#define VM_VERSION "v007"
 
 // Forward Reference Declarations
 
@@ -136,6 +136,14 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 	chunks[chunkIndex].code = nilObj;
 	chunks[chunkIndex].chunkType = unusedChunk;
 	appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
+}
+
+static void deleteAllChunks() {
+	stopAllTasks();
+	for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
+		appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
+	}
+	memset(chunks, 0, sizeof(chunks));
 }
 
 static void deleteVar(uint8 varIndex) {
@@ -342,7 +350,6 @@ static void processShortMessage() {
 	int chunkIndex = rcvBuf[2];
 	switch (cmd) {
 	case deleteChunkMsg:
-		stopTaskForChunk(chunkIndex);
 		deleteCodeChunk(chunkIndex);
 		break;
 	case startChunkMsg:
@@ -374,9 +381,7 @@ static void processShortMessage() {
 		sendAllCode();
 		break;
 	case deleteAllCodeMsg:
-		stopAllTasks();
-		clearPersistentMemory();
-		memset(chunks, 0, sizeof(chunks));
+		deleteAllChunks();
 		break;
 	case systemResetMsg:
 		systemReset();

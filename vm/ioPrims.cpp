@@ -332,8 +332,6 @@ static void turnDisplayOff() {
 static int displaySnapshot = 0;
 static int displayCycle = 0;
 
-static int callCount = 0;
-
 #define DISPLAY_BIT(n) (((displaySnapshot >> (n - 1)) & 1) ? LOW : HIGH)
 
 void updateMicrobitDisplay() {
@@ -400,15 +398,21 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 3;
 }
 
-
 #define ACCEL_ID 29
+#define MAG_ID 14
+
+static int accelerometerOn = false;
+static int magnetometerOn = false;
 
 static int microbitAccel(int registerID) {
-	// turn on the accelerometer
-	Wire.beginTransmission(ACCEL_ID);
-	Wire.write(0x2A);
-	Wire.write(1);
-	Wire.endTransmission();
+	if (!accelerometerOn) {
+		// turn on the accelerometer
+		Wire.beginTransmission(ACCEL_ID);
+		Wire.write(0x2A);
+		Wire.write(1);
+		Wire.endTransmission();
+		accelerometerOn = true;
+	}
 
 	Wire.beginTransmission(ACCEL_ID);
 	Wire.write(registerID);
@@ -421,16 +425,17 @@ static int microbitAccel(int registerID) {
 	return (val < 128) ? val : -(256 - val); // value is a signed byte
 }
 
-#define MAG_ID 14
-
 static int microbitTemp(int registerID) {
 	// Get the temp from magnetometer chip (faster response than CPU temp sensor)
 
-	// configure and turn on magnetometer
-	Wire.beginTransmission(MAG_ID);
-	Wire.write(0x10);
-	Wire.write(0x29);  // 20 Hz with 16x oversample (see spec sheet)
-	Wire.endTransmission();
+	if (!magnetometerOn) {
+		// configure and turn on magnetometer
+		Wire.beginTransmission(MAG_ID);
+		Wire.write(0x10);
+		Wire.write(0x29);  // 20 Hz with 16x oversample (see spec sheet)
+		Wire.endTransmission();
+		magnetometerOn = true;
+	}
 
 	// read a byte from register 1 to force an update
 	Wire.beginTransmission(MAG_ID);
@@ -456,11 +461,15 @@ static int microbitTemp(int registerID) {
 }
 
 static int microbitMag(int registerID) {
-	// configure and turn on magnetometer
-	Wire.beginTransmission(MAG_ID);
-	Wire.write(0x10);
-	Wire.write(0x29);  // 20 Hz with 16x oversample (see spec sheet)
-	Wire.endTransmission();
+
+	if (!magnetometerOn) {
+		// configure and turn on magnetometer
+		Wire.beginTransmission(MAG_ID);
+		Wire.write(0x10);
+		Wire.write(0x29);  // 20 Hz with 16x oversample (see spec sheet)
+		Wire.endTransmission();
+		magnetometerOn = true;
+	}
 
 	Wire.beginTransmission(MAG_ID);
 	Wire.write(1); // read from register 1
@@ -548,7 +557,7 @@ OBJ primMBUnplot(OBJ *args) {
 
 OBJ primMBTiltX(OBJ *args) { return int2obj(microbitAccel(1)); }
 OBJ primMBTiltY(OBJ *args) { return int2obj(microbitAccel(3)); }
-OBJ primMBTiltZ(OBJ *args) { return int2obj(microbitAccel(5)); }
+OBJ primMBTiltZ(OBJ *args) { return int2obj(-microbitAccel(5)); } // invert sign of Z
 OBJ primMBTemp(OBJ *args) { return int2obj(microbitTemp(15)); }
 OBJ primMBButtonA(OBJ *args) { return microbitButton(1); }
 OBJ primMBButtonB(OBJ *args) { return microbitButton(2); }
