@@ -1,6 +1,6 @@
 // MicroBlocksScripter.gp - authoring-level MicroBlocksScripter w/ built-in palette
 
-defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded categoriesFrame catWidth catResizer blocksFrame blocksWidth blocksResizer scriptsFrame nextX nextY xxx
+defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded categoriesFrame catWidth catResizer blocksFrame blocksWidth blocksResizer scriptsFrame nextX nextY
 
 method targetClass MicroBlocksScripter { return (classOf targetObj) }
 method targetObj MicroBlocksScripter { return targetObj }
@@ -153,7 +153,7 @@ method developerModeChanged MicroBlocksScripter {
   catList = (contents categoriesFrame)
   setCollection catList (categories this)
   if (not (contains (collection catList) (selection catList))) {
-    select catList 'Control'
+    select catList 'MicroBit'
   } else {
     updateBlocks this
   }
@@ -161,7 +161,7 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (smallRuntime this)
-  result = (array 'Control' 'I/O' 'MicroBit' 'Math' 'Arrays' 'Variables') // 'My Blocks'
+  result = (array 'Control' 'MicroBit' 'I/O' 'Math' 'Arrays' 'Variables') // 'My Blocks'
   result = (join result (extraCategories (project projectEditor)))
   return result
 }

@@ -14,7 +14,7 @@ method clicked Block hand {
   if (isRunning runtime topBlock) {
 	stopRunningChunk runtime (chunkIdFor runtime topBlock)
   } else {
-	evalOnArduino runtime topBlock
+	evalOnBoard runtime topBlock
   }
 }
 
@@ -23,7 +23,7 @@ method contextMenu Block {
   menu = (menu nil this)
 // MicroBlocks menu additions:
 addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
-addItem menu 'show compiled bytes' (action 'evalOnArduino' (smallRuntime) this true)
+addItem menu 'show compiled bytes' (action 'evalOnBoard' (smallRuntime) this true)
 addLine menu
 
   isInPalette = ('template' == (grabRule morph))
@@ -40,11 +40,36 @@ addLine menu
   if (and ('reporter' != type) (notNil (next this))) {
     addItem menu '...all' 'grabDuplicateAll' 'duplicate including all attached blocks'
   }
-  addItem menu 'copy to clipboard' 'copyToClipboard'
+//  addItem menu 'copy to clipboard' 'copyToClipboard'
 
   if (not isInPalette) {
     addLine menu
     addItem menu 'delete' 'delete'
+  }
+  return menu
+}
+
+method okayToBeDestroyedByUser Block {
+  if (isPrototypeHat this) {
+	editor = (findProjectEditor)
+	if (isNil editor) { return false }
+    function = (function (first (inputs this)))
+    if (confirm (global 'page') nil 'Are you sure you want to remove this block definition?') {
+	  removedUserDefinedBlock (scripter editor) function
+	  deleteChunkForBlock (smallRuntime) this
+      return true
+    }
+    return false
+  }
+  deleteChunkForBlock (smallRuntime) this
+  return true
+}
+
+method contextMenu ScriptEditor {
+  menu = (menu nil this)
+  addItem menu 'clean up' 'cleanUp' 'arrange scripts'
+  if (and (notNil lastDrop) (isRestorable lastDrop)) {
+    addItem menu 'undrop' 'undrop' 'undo last drop'
   }
   return menu
 }

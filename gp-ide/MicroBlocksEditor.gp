@@ -84,9 +84,11 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (textButton this 'New' 'newProject')
   add leftItems (textButton this 'Open' 'openProjectMenu')
   add leftItems (textButton this 'Save' 'saveProject')
+  add leftItems (textButton this 'Reset' 'resetBoard')
+  add leftItems (textButton this 'Connect' 'connectToBoard')
 
   rightItems = (list)
-  add rightItems (textButton this 'Go' 'startAll')
+  add rightItems (textButton this 'Start' 'startAll')
   add rightItems (textButton this 'Stop' 'stopAll')
 }
 
@@ -207,6 +209,11 @@ method isAbsolutePath MicroBlocksEditor fName {
   }
   return false
 }
+
+// board control
+
+method resetBoard MicroBlocksEditor { resetBoard (smallRuntime) }
+method connectToBoard MicroBlocksEditor { selectPort (smallRuntime) }
 
 // go and stop buttons
 
@@ -377,12 +384,7 @@ method rightClicked MicroBlocksEditor aHand {
 
 method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
-  addItem menu 'select port' (action 'selectPort' (smallRuntime))
-  addItem menu 'reset board' (action 'resetArduino' (smallRuntime))
-  addLine menu
+  addItem menu 'get virtual machine version' (action 'getVersion' (smallRuntime))
   addItem menu 'delete all scripts from board' (action 'sendDeleteAll' (smallRuntime))
-  addLine menu
-  addItem menu 'get VM version' (action 'getVersion' (smallRuntime))
-  addItem menu 'get var 0' (action 'getVar' (smallRuntime) 0)
   return menu
 }

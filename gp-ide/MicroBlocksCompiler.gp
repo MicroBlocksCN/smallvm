@@ -77,6 +77,9 @@ method initOpcodes SmallCompiler {
 #define mbTiltY 60
 #define mbTiltZ 61
 #define mbTemp 62
+#define mbButtonA 63
+#define mbButtonB 64
+#define random 65
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
@@ -176,6 +179,8 @@ method instructionsForCmd SmallCompiler cmd {
 		add result (array 'returnResult' 0)
 	} ('stopTask' == op) {
 		add result (array 'halt' 0)
+	} ('forever' == op) {
+		return (instructionsForWhile this (join (array true) args))
 	} ('if' == op) {
 		return (instructionsForIf this args)
 	} ('repeat' == op) {
