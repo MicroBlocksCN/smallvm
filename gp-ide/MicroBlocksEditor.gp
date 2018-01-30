@@ -16,7 +16,7 @@
 
 to o tryRetina devMode { openMicroBlocksEditor tryRetina devMode } // shortcut to open IDE
 
-defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems title
+defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus title
 
 method project MicroBlocksEditor { return project }
 method scripter MicroBlocksEditor { return scripter }
@@ -67,6 +67,7 @@ method initialize MicroBlocksEditor aProject {
   clearProject this
   createInitialClass scripter
   fixLayout this
+  setFPS morph 5
   return this
 }
 
@@ -86,6 +87,7 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (textButton this 'Save' 'saveProject')
   add leftItems (textButton this 'Reset' 'resetBoard')
   add leftItems (textButton this 'Connect' 'connectToBoard')
+  add leftItems (makeIndicator this)
 
   rightItems = (list)
   add rightItems (textButton this 'Start' 'startAll')
@@ -99,6 +101,15 @@ method textButton MicroBlocksEditor label selectorOrAction {
   result = (pushButton label (color 130 130 130) selectorOrAction)
   addPart morph (morph result)
   return result
+}
+
+method makeIndicator MicroBlocksEditor {
+  scale = (global 'scale')
+  indicator = (newBox (newMorph) (gray 100) 40 2)
+  setExtent (morph indicator) (15 * scale) (15 * scale)
+  redraw indicator
+  addPart morph (morph indicator)
+  return indicator
 }
 
 // project operations
@@ -244,7 +255,22 @@ method step MicroBlocksEditor {
   if ('Browser' == (platform)) {
 	checkForBrowserResize this
   }
+  updateIndicator this
   processMessages (smallRuntime)
+}
+
+method updateIndicator MicroBlocksEditor {
+	status = (connectionStatus (smallRuntime))
+	if (lastStatus == status) { return } // no change
+	if ('connected' == status) {
+		setColor indicator (color 0 200 0) // green
+	} ('board not responding' == status) {
+		setColor indicator (color 250 200 0) // orange
+	} else {
+		setColor indicator (color 200) // red
+	}
+	lastStatus = status
+	redraw indicator
 }
 
 method checkForBrowserResize MicroBlocksEditor {
@@ -384,7 +410,7 @@ method rightClicked MicroBlocksEditor aHand {
 
 method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
-  addItem menu 'get virtual machine version' (action 'getVersion' (smallRuntime))
+  addItem menu 'virtual machine version' (action 'showVersion' (smallRuntime))
   addItem menu 'delete all scripts from board' (action 'sendDeleteAll' (smallRuntime))
   return menu
 }

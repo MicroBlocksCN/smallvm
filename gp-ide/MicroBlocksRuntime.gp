@@ -8,7 +8,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port recvBuf
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port lastPingMSecs vmVersion recvBuf
 
 method scripter SmallRuntime { return scripter }
 method setScripter SmallRuntime aScripter { scripter = aScripter }
@@ -177,6 +177,15 @@ method chunkIdFor SmallRuntime aBlock {
 	return (first entry)
 }
 
+method lookupChunkID SmallRuntime aBlock {
+	// If the block has been assigned a chunkID, return it. Otherwise, return nil.
+
+	if (isNil chunkIDs) { return nil }
+	entry = (at chunkIDs aBlock nil)
+	if (isNil entry) { return nil }
+	return (first entry)
+}
+
 method deleteChunkForBlock SmallRuntime aBlock {
 	if (isNil chunkIDs) { chunkIDs = (dictionary) }
 	entry = (at chunkIDs aBlock nil)
@@ -239,6 +248,29 @@ method setPort SmallRuntime newPortName {
 	portName = (join '/dev/' newPortName)
 	if ('Win' == (platform)) { portName = newPortName }
 	ensurePortOpen this
+}
+
+method connectionStatus SmallRuntime {
+	if (isNil port) { return 'not connected' }
+	if (not (isOpenSerialPort port)) {
+		port = nil
+		return 'not connected'
+	}
+	sendMsg this 'getVersionMsg'
+	if (isNil lastPingMSecs) { lastPingMSecs = 0 }
+	msecsSinceLastPing = ((msecsSinceStart) - lastPingMSecs)
+	if (msecsSinceLastPing > 500) { return 'board not responding' }
+	return 'connected'
+}
+
+method vmVersion SmallRuntime {
+	if (isNil vmVersion) { vmVersion =  'No board connected' }
+	getVersion this
+	return vmVersion
+}
+
+method showVersion  SmallRuntime {
+	inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) (vmVersion this))
 }
 
 method clearBoardIfConnected SmallRuntime {
@@ -409,7 +441,8 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'argValueMsg')) {
 		print (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
-		inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) (returnedValue this msg))
+		vmVersion = (returnedValue this msg)
+		lastPingMSecs = (msecsSinceStart)
 	} else {
 		print 'msg:' (toArray msg)
 	}
@@ -449,7 +482,13 @@ method updateHighlights SmallRuntime {
 method showResult SmallRuntime chunkID value {
 	for m (parts (morph (scriptEditor scripter))) {
 		h = (handler m)
-		if (and (isClass h 'Block') (chunkID == (chunkIdFor this h))) {
+		if (and (isClass h 'Block') (chunkID == (lookupChunkID this h))) {
+			showHint m value
+		}
+	}
+	for m (parts (morph (blockPalette scripter))) {
+		h = (handler m)
+		if (and (isClass h 'Block') (chunkID == (lookupChunkID this h))) {
 			showHint m value
 		}
 	}

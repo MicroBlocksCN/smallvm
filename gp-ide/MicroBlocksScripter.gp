@@ -27,6 +27,10 @@ method scriptEditor MicroBlocksScripter {
   return (contents scriptsFrame)
 }
 
+method blockPalette MicroBlocksScripter {
+  return (contents blocksFrame)
+}
+
 method createInitialClass MicroBlocksScripter {
   module = (targetModule this)
   newClassName = (unusedClassName module 'MyClass')
