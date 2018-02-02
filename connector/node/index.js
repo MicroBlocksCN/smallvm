@@ -257,6 +257,9 @@ Connector.prototype.dispatcher = {
                     });
                 }
             });
+            if (options.tty) {
+                actualDevices.push({ path: options.tty, displayName: 'Linux TTY Console' })
+            }
             log('Client requested serial port list.');
             myself.sendJsonMessage('getSerialPortListResponse', [ actualDevices ]);
         });
@@ -354,6 +357,11 @@ process.argv.forEach(function (val) {
         case '--no-tray':
         case '-n':
             options.placeTrayIcon = false;
+            break;
+        case '--tty':
+        case '-t':
+            options.tty = option[1];
+            log('Added virtual serial port attached to GNU/Linux terminal ' + option[1]);
             break;
         case '--silent':
         case '-s':
