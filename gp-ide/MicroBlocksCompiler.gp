@@ -80,6 +80,8 @@ method initOpcodes SmallCompiler {
 #define mbButtonA 63
 #define mbButtonB 64
 #define random 65
+#define spiSend 66
+#define spiRecv 67
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {

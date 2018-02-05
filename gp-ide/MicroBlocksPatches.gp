@@ -282,5 +282,3 @@ method fixLayout Block {
   }
   raise morph 'layoutChanged' this
 }
-
-to isOpenSerialPort { return true } // workaround for old VM
