@@ -123,7 +123,7 @@ typedef struct {
 	uint8 chunkType;
 } CodeChunkRecord;
 
-#define MAX_CHUNKS 256
+#define MAX_CHUNKS 255
 extern CodeChunkRecord chunks[MAX_CHUNKS];
 
 // Task List
