@@ -75,6 +75,8 @@ extern "C" {
 #define mbButtonB 64
 
 #define random 65
+#define spiSend 66
+#define spiRecv 67
 
 // Instruction Format
 
@@ -301,6 +303,8 @@ OBJ primDigitalWrite(OBJ *args);
 OBJ primSetLED(OBJ *args);
 OBJ primI2cGet(OBJ *args);
 OBJ primI2cSet(OBJ *args);
+OBJ primSPISend(OBJ *args);
+OBJ primSPIRecv(OBJ *args);
 
 OBJ primMBDisplay(OBJ *args);
 OBJ primMBDisplayOff(OBJ *args);

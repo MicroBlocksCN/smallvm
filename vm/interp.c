@@ -2,6 +2,7 @@
 // John Maloney, April 2017
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "mem.h"
@@ -179,6 +180,8 @@ static void runTask(Task *task) {
 		&&mbButtonA_op,
 		&&mbButtonB_op,
 		&&random_op,
+		&&spiSend_op,
+		&&spiRecv_op,
 	};
 
 	// Restore task state
@@ -528,6 +531,14 @@ static void runTask(Task *task) {
 		tmp = evalInt(*(sp - 1));
 		if (tmp <= 0) tmp = 1;
 		*(sp - arg) = int2obj((rand() % tmp) + 1); // result range is [1..tmp], inclusive
+		sp -= arg - 1;
+		DISPATCH();
+	spiSend_op:
+		*(sp - arg) = primSPISend(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	spiRecv_op:
+		*(sp - arg) = primSPIRecv(sp - arg);
 		sp -= arg - 1;
 		DISPATCH();
 }

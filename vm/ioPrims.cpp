@@ -2,6 +2,7 @@
 // John Maloney, April 2017
 
 #include "Arduino.h"
+#include <SPI.h>
 #include "Wire.h"
 #include <stdio.h>
 
@@ -277,6 +278,29 @@ OBJ primI2cSet(OBJ *args) {
 	Wire.endTransmission();
 
 	return nilObj;
+}
+
+static void initSPI() {
+	SET_MODE(13, OUTPUT);
+	SET_MODE(14, OUTPUT);
+	SET_MODE(15, INPUT);
+	SPI.begin();
+	SPI.setClockDivider(SPI_CLOCK_DIV16);
+}
+
+OBJ primSPISend(OBJ *args) {
+	if (!isInt(args[0])) return fail(needsIntegerError);
+	unsigned data = obj2int(args[0]);
+	if (data > 255) return fail(i2cValueOutOfRange);
+	initSPI();
+	SPI.transfer(data); // send data byte to the slave
+	return nilObj;
+}
+
+OBJ primSPIRecv(OBJ *args) {
+	initSPI();
+	int result = SPI.transfer(0); // send a zero byte while receiving a data byte from slave
+	return int2obj(result);
 }
 
 // BBC micro:bit Primitives (noops on other boards)
