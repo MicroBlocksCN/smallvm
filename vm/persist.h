@@ -41,7 +41,7 @@ typedef enum {
 
 // Persistent Memory Operations
 
-int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, char *data);
+int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, uint8 *data);
 void clearPersistentMemory();
 void restoreScripts();
 

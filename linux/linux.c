@@ -18,18 +18,26 @@
 
 // Timing Functions
 
+static int startSecs = 0;
+
+static void initTimers() {
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	startSecs = now.tv_sec;
+}
+
 uint32 microsecs() {
 	struct timeval now;
 	gettimeofday(&now, NULL);
 
-    return (uint32) ((1000000 * now.tv_sec) + now.tv_usec);
+    return (1000000 * (now.tv_sec - startSecs)) + now.tv_usec;
 }
 
 uint32 millisecs() {
 	struct timeval now;
 	gettimeofday(&now, NULL);
 
-    return (uint32) ((1000 * now.tv_sec) + (now.tv_usec / 1000));
+    return (1000 * (now.tv_sec - startSecs)) + (now.tv_usec / 1000);
 }
 
 // Communication/System Functions
@@ -102,6 +110,7 @@ OBJ primMBButtonB(OBJ *args) { return nilObj; }
 int main() {
 	openPseudoTerminal();
     printf("Starting Linux MicroBlocks... Connect on %s\n", ptsname(pty));
+    initTimers();
     memInit(10000); // 10k words = 40k bytes
     initTasks();
 	restoreScripts();

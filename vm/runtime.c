@@ -10,7 +10,7 @@
 
 // VM Version
 
-#define VM_VERSION "v008"
+#define VM_VERSION "v009"
 
 // Forward Reference Declarations
 
@@ -99,33 +99,33 @@ void stopAllTasks() {
 static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	if (chunkIndex >= MAX_CHUNKS) return;
 	int chunkType = data[0]; // first byte is the chunk type
-	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount - 1, (char *) &data[1]);
+	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount - 1, &data[1]);
 	chunks[chunkIndex].code = persistenChunk;
 	chunks[chunkIndex].chunkType = chunkType;
 }
 
 void storeChunkPosition(uint8 chunkIndex, int byteCount, uint8 *data) {
 	if ((chunkIndex >= MAX_CHUNKS) || (byteCount != 4)) return;
-	appendPersistentRecord(chunkPosition, chunkIndex, 0, byteCount, (char *) data);
+	appendPersistentRecord(chunkPosition, chunkIndex, 0, byteCount, data);
 }
 
 void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
 	unsigned char attributeID = data[0];
 	if ((chunkIndex >= MAX_CHUNKS) || (attributeID >= ATTRIBUTE_COUNT)) return;
-	appendPersistentRecord(chunkAttribute, chunkIndex, attributeID, byteCount - 1, (char *) &data[1]);
+	appendPersistentRecord(chunkAttribute, chunkIndex, attributeID, byteCount - 1, &data[1]);
 }
 
 void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
-	appendPersistentRecord(varName, varIndex, 0, byteCount, (char *) data);
+	appendPersistentRecord(varName, varIndex, 0, byteCount, data);
 }
 
 void storeComment(uint8 commentIndex, int byteCount, uint8 *data) {
-	appendPersistentRecord(comment, commentIndex, 0, byteCount, (char *) data);
+	appendPersistentRecord(comment, commentIndex, 0, byteCount, data);
 }
 
 void storeCommentPosition(uint8 commentIndex, int byteCount, uint8 *data) {
 	if (byteCount != 4) return;
-	appendPersistentRecord(commentPosition, commentIndex, 0, byteCount, (char *) data);
+	appendPersistentRecord(commentPosition, commentIndex, 0, byteCount, data);
 }
 
 // Delete Ops

@@ -13,7 +13,7 @@
 // and implement the platform-specific Flash functions:
 //
 //		void flashErase(int *startAddr, int *endAddr)
-//		void flashWriteData(int *dst, int wordCount, char *src)
+//		void flashWriteData(int *dst, int wordCount, uint8 *src)
 //		void flashWriteWord(int *addr, int value)
 
 #include <stdio.h>
@@ -58,7 +58,7 @@
 		NRF_NVMC->CONFIG = 0; // disable Flash write
 	}
 
-	void flashWriteData(int *dst, int wordCount, char *src) {
+	void flashWriteData(int *dst, int wordCount, uint8 *src) {
 		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen; // enable Flash write
 		while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
 		for ( ; wordCount > 0; wordCount--) {
@@ -105,7 +105,7 @@
 		*NVMC_CTRLA = CMD_WRITE_PAGE;
 	}
 
-	void flashWriteData(int *dst, int wordCount, char *src) {
+	void flashWriteData(int *dst, int wordCount, uint8 *src) {
  		 while (!(*NVMC_INTFLAG & READY_BIT)){} // wait for previous operation to complete
 
 		*NVMC_CTRLB = *NVMC_CTRLB & ~MANW; // automatically write pages at page boundaries
@@ -154,7 +154,7 @@
 		while (!(*EFC1_STATUS & READY_BIT)){} // wait for operation to complete
 	}
 
-	void flashWriteData(int *dst, int wordCount, char *src) {
+	void flashWriteData(int *dst, int wordCount, uint8 *src) {
 		// Copy wordCount words into Flash memory starting at dst.
 		// The destination address must be word-aligned, but the source need not be.
 
@@ -177,7 +177,7 @@
 
 	#define START (&flash[0])
 	#define HALF_SPACE (5 * 1024)
-	static unsigned char flash[2 * HALF_SPACE]; // simulated Flash memory (10k)
+	static uint8 flash[2 * HALF_SPACE]; // simulated Flash memory (10k)
 
 	static void flashErase(int *startAddr, int *endAddr) {
 		int *dst = (int *) startAddr;
@@ -188,15 +188,13 @@
 		*addr = value;
 	}
 
-	void flashWriteData(int *dst, int wordCount, char *src) {
+	void flashWriteData(int *dst, int wordCount, uint8 *src) {
 		for ( ; wordCount > 0; wordCount--) {
 			int n = *src++;
 			n |= *src++ << 8;
 			n |= *src++ << 16;
 			n |= *src++ << 24;
 			*dst++ = n;
-// 			*dst++ = *((int *) src);
-// 			src += 4;
 		}
 	}
 
@@ -321,7 +319,7 @@ static int * copyChunk(int *dst, int *src) {
 	// Copy the chunk record at src to dst and return the new value of dst.
 
 	int wordCount = *(src + 1) + 2;
-	flashWriteData(dst, wordCount, (char *) src);
+	flashWriteData(dst, wordCount, (uint8 *) src);
 	return dst + wordCount;
 }
 
@@ -454,7 +452,7 @@ void clearPersistentMemory() {
 	setCycleCount(current, count + 1);
 }
 
-int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, char *data) {
+int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, uint8 *data) {
 	// Append the given record at the end of the current half-space and return it's address.
 	// Header word: <tag = 'R'><record type><id of chunk/variable/comment><extra> (8-bits each)
 	// Perform a compaction if necessary.
@@ -542,7 +540,7 @@ static void showRecordHeaders() {
 
 void basicTest() {
   int testData[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-  char charData[] = {
+  uint8 charData[] = {
       0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0,
       5, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0};
 
@@ -551,7 +549,7 @@ void basicTest() {
   flashErase(PAGE, PAGE + 100);
   dumpWords(0, 35);
   printf("-----\n");
-  flashWriteData(PAGE, 10, (char *) testData);
+  flashWriteData(PAGE, 10, (uint8 *) testData);
   flashWriteWord(PAGE + 13, 13);
   flashWriteWord(PAGE + 15, 42);
   flashWriteWord(PAGE + 17, 17);
@@ -576,7 +574,7 @@ void persistTest() {
 	printf("Memory intitialized; writing records...\n");
 
 	for (int i = 0; i < 3000; i++) {
-		appendPersistentRecord(chunkCode, i % 100, 0, (i % 5) * 4, (char *) dummyData);
+		appendPersistentRecord(chunkCode, i % 100, 0, (i % 5) * 4, (uint8 *) dummyData);
 	}
 	compact();
 
