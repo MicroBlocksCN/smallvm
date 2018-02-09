@@ -128,6 +128,14 @@ void systemReset() {
 
 	#define PIN_LED 32
 
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+
+	#define BOARD_TYPE "CircuitPlayground"
+	#define DIGITAL_PINS 39
+	#define ANALOG_PINS 11
+	#define TOTAL_PINS 39
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
+
 #elif defined(ARDUINO_ESP8266_NODEMCU)
 
 	#define BOARD_TYPE "ESP8266"
@@ -195,9 +203,10 @@ OBJ primAnalogRead(OBJ *args) {
 OBJ primAnalogWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	int value = obj2int(args[1]);
-	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
-	SET_MODE(pinNum, OUTPUT);
-	analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
+	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return nilObj;
+	int pin = analogPin[pinNum];
+	SET_MODE(pin, OUTPUT);
+	analogWrite(pin, value); // sets the PWM duty cycle on a digital pin
 	return nilObj;
 }
 
