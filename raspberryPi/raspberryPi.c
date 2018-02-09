@@ -1,7 +1,14 @@
 // raspberryPi.c - Microblocks for Raspberry Pi
 // John Maloney, December 2017
 
+#define _XOPEN_SOURCE 600
+
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include <wiringPi.h>
@@ -14,27 +21,81 @@
 
 // Timing Functions
 
-uint32 microsecs() { return (uint32) micros(); }
-uint32 millisecs() { return (uint32) millis(); }
+static int startSecs = 0;
 
-// Communciation/System Functions
+static void initTimers() {
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	startSecs = now.tv_sec;
+}
 
-static int serialPort;
+uint32 microsecs() {
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	return (1000000 * (now.tv_sec - startSecs)) + now.tv_usec;
+}
 
-void putSerial(char *s) { serialPuts(serialPort, s); }
+uint32 millisecs() {
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	return (1000 * (now.tv_sec - startSecs)) + (now.tv_usec / 1000);
+}
+
+// Communication/System Functions
+
+static int serialPort = -1; // hardware serial port (if >= 0)
+static int pty = -1; // pseudo terminal (if >= 0)
+
+static void openHardwareSerialPort() {
+	serialPort = serialOpen("/dev/ttyGS0", 115200);
+	if (serialPort < 0) {
+		perror("Could not open hardware serial port '/dev/ttyGS0'; exiting.\n");
+		exit(-1);
+	}
+}
+
+static void openPseudoTerminal() {
+	pty = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
+	if (pty < 0) {
+		perror("Could not open pseudo terminal; exiting.\n");
+		exit(-1);
+	}
+ 	grantpt(pty);
+ 	unlockpt(pty);
+}
 
 int readBytes(uint8 *buf, int count) {
 	int readCount = 0;
-	while (readCount < count) {
-		if (!serialDataAvail(serialPort)) return readCount;
-		buf[readCount++] = serialGetchar(serialPort);
+	if (pty > 0) {
+		readCount = read(pty, buf, count);
+		if (readCount < 0) readCount = 0;
+	} else {
+		while (readCount < count) {
+			if (!serialDataAvail(serialPort)) return readCount;
+			buf[readCount++] = serialGetchar(serialPort);
+		}
 	}
 	return readCount;
 }
 
-int canReadByte() { return serialDataAvail(serialPort); }
+int canReadByte() {
+	if (pty > 0) {
+		int bytesAvailable = 0;
+		ioctl(pty, FIONREAD, &bytesAvailable);
+		return (bytesAvailable > 0);
+	}
+	return serialDataAvail(serialPort);
+}
+
 int canSendByte() { return true; }
-void sendByte(char aByte) { serialPutchar(serialPort, aByte); }
+
+void sendByte(char aByte) {
+	if (pty > 0) {
+		write(pty, &aByte, 1);
+	} else {
+		serialPutchar(serialPort, aByte);
+	}
+}
 
 // System Functions
 
@@ -68,7 +129,7 @@ static void initPins(void) {
 	// Initialize currentMode to MODE_NOT_SET (neigher INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
-	for (int i; i < TOTAL_PINS; i++) currentMode[i] = MODE_NOT_SET;
+	for (int i = 0; i < TOTAL_PINS; i++) currentMode[i] = MODE_NOT_SET;
 }
 
 // Pin IO Primitives
@@ -132,20 +193,44 @@ OBJ primI2cSet(OBJ *args) {
 	return nilObj;
 }
 
+// Not yet implemented
+
+OBJ primSPISend(OBJ *args) { return nilObj; }
+OBJ primSPIRecv(OBJ *args) { return nilObj; }
+
+// Stubs for micro:bit primitives
+
+OBJ primMBDisplay(OBJ *args) { return nilObj; }
+OBJ primMBDisplayOff(OBJ *args) { return nilObj; }
+OBJ primMBPlot(OBJ *args) { return nilObj; }
+OBJ primMBUnplot(OBJ *args) { return nilObj; }
+OBJ primMBTiltX(OBJ *args) { return nilObj; }
+OBJ primMBTiltY(OBJ *args) { return nilObj; }
+OBJ primMBTiltZ(OBJ *args) { return nilObj; }
+OBJ primMBTemp(OBJ *args) { return nilObj; }
+OBJ primMBButtonA(OBJ *args) { return nilObj; }
+OBJ primMBButtonB(OBJ *args) { return nilObj; }
+
 // Raspberry Pi Main
 
-int main() {
-	wiringPiSetup();
-	serialPort = serialOpen("/dev/ttyGS0", 115200);
-	if (serialPort < 0) {
-		printf("Could not open serial port; exiting.\n");
-		return -1;
+int main(int argc, char *argv[]) {
+	if (argc == 1) {
+		openHardwareSerialPort();
+	} else if ((argc == 2) && strcmp("-p", argv[1]) == 0) {
+		openPseudoTerminal();
+	} else {
+		printf("Use '-p' to use a pseduoterminal, no arguments for hardware serial port\n");
+		exit(-1);
 	}
+
+	wiringPiSetup();
+	initTimers();
 	initPins();
 	memInit(5000); // 5k words = 20k bytes
 	restoreScripts();
 	startAll();
 	printf("MicroBlocks is running...\n");
+	if (pty >= 0) printf("Connect on pseduoterminal %s\n", ptsname(pty));
 	outputString("Welcome to uBlocks for Raspberry Pi!");
 	vmLoop();
 }
