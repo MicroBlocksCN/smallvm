@@ -179,6 +179,8 @@ static void initPins(void) {
 	// Initialize currentMode to MODE_NOT_SET (neigher INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
+	analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
+
 	for (int i; i < TOTAL_PINS; i++) currentMode[i] = MODE_NOT_SET;
 	#ifdef ARDUINO_NRF52_PRIMO
 		pinMode(USER1_BUTTON, INPUT);
@@ -203,6 +205,8 @@ OBJ primAnalogRead(OBJ *args) {
 OBJ primAnalogWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	int value = obj2int(args[1]);
+	if (value < 0) value = 0;
+	if (value > 1023) value = 1023;
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return nilObj;
 	int pin = analogPin[pinNum];
 	SET_MODE(pin, OUTPUT);
