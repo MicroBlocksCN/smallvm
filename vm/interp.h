@@ -77,6 +77,8 @@ extern "C" {
 #define random 65
 #define spiSend 66
 #define spiRecv 67
+#define sendBroadcast 68
+#define recvBroadcast 69
 
 // Instruction Format
 
@@ -116,6 +118,7 @@ typedef enum {
 	functionHat = 3,
 	startHat = 4,
 	whenConditionHat = 5,
+	broadcastHat = 6,
 } ChunkType_t;
 
 typedef struct {
@@ -167,13 +170,14 @@ extern int taskCount;
 
 // Serial Protocol Messages: IDE -> Board
 
-#define storeChunkMsg			1
+#define chunkCodeMsg			1	// bidirectional
 #define deleteChunkMsg			2
 #define startChunkMsg			3
 #define stopChunkMsg			4
 #define startAllMsg				5
 #define stopAllMsg				6
-#define getVarMsg				7
+#define getVarMsg				7	// value returned to IDE via argValueMsg
+#define setVarMsg				8
 #define deleteVarMsg			10
 #define deleteCommentMsg		11
 #define getVersionMsg			12
@@ -190,15 +194,21 @@ extern int taskCount;
 #define outputValueMsg			20
 #define argValueMsg				21
 #define versionMsg				22
-#define chunkCodeMsg			23
 
 // Serial Protocol Messages: Bidirectional
 
+#define pingMsg					25
+#define broadcastMsg			26
 #define chunkPositionMsg		27
 #define chunkAttributeMsg		28
 #define varNameMsg				29
 #define commentMsg				30
 #define commentPositionMsg		31
+
+// Attributes used with chunkAttributeMsg
+
+#define snapSourceAttribute		1
+#define gpSourceAttribute		2
 
 // Error Codes (codes 1-9 are reserved for protocol errors; 10 and up are runtime errors)
 
@@ -227,6 +237,7 @@ OBJ fail(uint8 errCode);
 void initTasks(void);
 void startAll();
 void stopAllTasks(void);
+void startReceiversOfBroadcast(char *msg, int byteCount);
 void processMessage(void);
 int hasOutputSpace(int byteCount);
 void outputString(char *s);
@@ -234,6 +245,7 @@ void outputValue(OBJ value, int chunkIndex);
 void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
+void sendBroadcastToIDE(char *s);
 void vmLoop(void);
 void vmPanic(char *s);
 

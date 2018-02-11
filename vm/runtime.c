@@ -94,6 +94,26 @@ void stopAllTasks() {
 	initTasks();
 }
 
+static int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
+	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
+	if (pushLiteral != CMD(*code)) return false; // should not happen
+	char *hatArg = obj2str((OBJ) code + ARG(*code) + 1);
+	for (int i = 0; i < byteCount; i++) {
+		if (hatArg[i] != msg[i]) return false;
+	}
+	return true;
+}
+
+void startReceiversOfBroadcast(char *msg, int byteCount) {
+	// Start tasks for chunks with hat blocks matching the given broadcast if not already running.
+
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		if ((broadcastHat == chunks[i].chunkType) && (broadcastMatches(i, msg, byteCount))) {
+			startTaskForChunk(i); // only starts a new task if if chunk is not already running
+		}
+	}
+}
+
 // Store Ops
 
 static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
@@ -104,26 +124,26 @@ static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	chunks[chunkIndex].chunkType = chunkType;
 }
 
-void storeChunkPosition(uint8 chunkIndex, int byteCount, uint8 *data) {
+static void storeChunkPosition(uint8 chunkIndex, int byteCount, uint8 *data) {
 	if ((chunkIndex >= MAX_CHUNKS) || (byteCount != 4)) return;
 	appendPersistentRecord(chunkPosition, chunkIndex, 0, byteCount, data);
 }
 
-void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
+static void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
 	unsigned char attributeID = data[0];
 	if ((chunkIndex >= MAX_CHUNKS) || (attributeID >= ATTRIBUTE_COUNT)) return;
 	appendPersistentRecord(chunkAttribute, chunkIndex, attributeID, byteCount - 1, &data[1]);
 }
 
-void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
+static void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
 	appendPersistentRecord(varName, varIndex, 0, byteCount, data);
 }
 
-void storeComment(uint8 commentIndex, int byteCount, uint8 *data) {
+static void storeComment(uint8 commentIndex, int byteCount, uint8 *data) {
 	appendPersistentRecord(comment, commentIndex, 0, byteCount, data);
 }
 
-void storeCommentPosition(uint8 commentIndex, int byteCount, uint8 *data) {
+static void storeCommentPosition(uint8 commentIndex, int byteCount, uint8 *data) {
 	if (byteCount != 4) return;
 	appendPersistentRecord(commentPosition, commentIndex, 0, byteCount, data);
 }
@@ -168,9 +188,10 @@ static int outBufEnd = 0;
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
 static inline void sendNextByte() {
-	if ((outBufStart != outBufEnd) && canSendByte()) {
-		sendByte(outBuf[outBufStart]);
-		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
+	if (outBufStart != outBufEnd) {
+		if (sendByte(outBuf[outBufStart])) {
+			outBufStart = (outBufStart + 1) & OUTBUF_MASK;
+		}
 	}
 }
 
@@ -283,21 +304,31 @@ void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue) {
 	sendValueMessage(taskReturnedValueMsg, chunkIndex, returnValue);
 }
 
-void sendVariableValue(int varID) {
+static void sendVariableValue(int varID) {
 	if ((varID >= 0) && (varID < MAX_VARS)) {
 		sendValueMessage(argValueMsg, varID, vars[varID]);
 	}
 }
 
-void sendVersionString() {
+static void setVariableValue(int varID, int byteCount, uint8 *data) {
+	if ((varID >= 0) && (varID < MAX_VARS)) {
+		// xxx not yet implemented
+	}
+}
+
+static void sendVersionString() {
 	char s[100];
 	snprintf(s, sizeof(s), " %s %s", VM_VERSION, boardType());
 	s[0] = 2; // data type (2 is string)
 	sendMessage(versionMsg, 0, strlen(s), s);
 }
 
-void sendAllCode() {
-	// xxx to be done
+void sendBroadcastToIDE(char *s) {
+	sendMessage(broadcastMsg, 0, strlen(s), s);
+}
+
+static void sendAllCode() {
+	// xxx not yet implemented
 }
 
 // Receiving Messages from IDE
@@ -386,6 +417,9 @@ static void processShortMessage() {
 	case systemResetMsg:
 		systemReset();
 		break;
+	case pingMsg:
+		sendMessage(pingMsg, 0, 0, NULL);
+		break;
 	}
 	skipToStartByteAfter(3);
 }
@@ -406,8 +440,14 @@ static void processLongMessage() {
 	int chunkIndex = rcvBuf[2];
 	int bodyBytes = msgLength - 1; // subtract terminator byte
 	switch (cmd) {
-	case storeChunkMsg:
+	case chunkCodeMsg:
 		storeCodeChunk(chunkIndex, bodyBytes, &rcvBuf[5]);
+		break;
+	case setVarMsg:
+		setVariableValue(rcvBuf[2], bodyBytes, &rcvBuf[5]);
+		break;
+	case broadcastMsg:
+		startReceiversOfBroadcast((char *) bodyBytes, bodyBytes);
 		break;
 	case chunkPositionMsg:
 		storeChunkPosition(chunkIndex, bodyBytes, &rcvBuf[5]);

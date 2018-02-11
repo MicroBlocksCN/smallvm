@@ -93,6 +93,17 @@ static int bytesForObject(OBJ value) {
 	return 0; // arrays and byte arrays are not yet serializeable
 }
 
+// Broadcast
+
+static OBJ primSendBroadcast(OBJ *args) {
+	if (IS_CLASS(args[0], StringClass)) {
+		char *s = obj2str(args[0]);
+		startReceiversOfBroadcast(s, strlen(s));
+		void sendBroadcastToIDE(s);
+	}
+	return nilObj;
+}
+
 // Interpreter
 
 // Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
@@ -182,6 +193,8 @@ static void runTask(Task *task) {
 		&&random_op,
 		&&spiSend_op,
 		&&spiRecv_op,
+		&&sendBroadcast_op,
+		&&recvBroadcast_op,
 	};
 
 	// Restore task state
@@ -540,6 +553,13 @@ static void runTask(Task *task) {
 	spiRecv_op:
 		*(sp - arg) = primSPIRecv(sp - arg);
 		sp -= arg - 1;
+		DISPATCH();
+	sendBroadcast_op:
+		*(sp - arg) = primSendBroadcast(sp - arg);
+		sp -= arg - 1;
+		DISPATCH();
+	recvBroadcast_op:
+		sp -= arg - 1; // pop the broadcast name (a literal string)
 		DISPATCH();
 }
 
