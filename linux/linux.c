@@ -66,11 +66,8 @@ int canReadByte() {
 	return (bytesAvailable > 0);
 }
 
-int canSendByte() { return true; }
-
-void sendByte(char aByte) {
-//printf("byte %d %c\n", aByte, ((aByte > 0) ? aByte : ' '));
-	write(pty, &aByte, 1);
+int sendByte(char aByte) {
+	return write(pty, &aByte, 1);
 }
 
 // System Functions

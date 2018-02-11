@@ -87,14 +87,9 @@ int canReadByte() {
 	return serialDataAvail(serialPort);
 }
 
-int canSendByte() { return true; }
-
-void sendByte(char aByte) {
-	if (pty > 0) {
-		write(pty, &aByte, 1);
-	} else {
-		serialPutchar(serialPort, aByte);
-	}
+int sendByte(char aByte) {
+	int fd = (pty > 0) ? pty : serialPort;
+	return write(fd, &aByte, 1);
 }
 
 // System Functions

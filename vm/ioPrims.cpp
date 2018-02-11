@@ -70,8 +70,7 @@ int readBytes(uint8 *buf, int count) {
 }
 
 int canReadByte() { return Serial.available(); }
-int canSendByte() { return true; } // Serial.availableForWrite not implemented for Primo
-void sendByte(char aByte) { Serial.write(aByte); }
+int sendByte(char aByte) { return Serial.write(aByte); }
 
 // System Reset
 

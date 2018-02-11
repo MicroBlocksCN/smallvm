@@ -64,8 +64,7 @@ int readBytes(uint8 *buf, int count) {
 }
 
 int canReadByte() { return pc.readable(); }
-int canSendByte() { return pc.writeable(); }
-void sendByte(char aByte) { pc.putc(aByte); }
+int sendByte(char aByte) { pc.putc(aByte); return 1; }
 
 // GPIO Pin Map
 

@@ -47,7 +47,7 @@ void vmPanic(char *errorMessage) {
 
 	char s[100];
 	sprintf(s, "\r\nVM Panic: %s\r\n", errorMessage);
-	printf(s);
+	printf("%s", s);
 	outputString(s);
 	while (true) processMessage(); // there's no way to recover; loop forever!
 }

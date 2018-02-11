@@ -273,8 +273,7 @@ uint32 millisecs(void);
 
 int canReadByte(void);
 int readBytes(uint8 *buf, int count);
-int canSendByte(void);
-void sendByte(char aByte);
+int sendByte(char aByte);
 
 const char *boardType();
 void hardwareInit(void);
