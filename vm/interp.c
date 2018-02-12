@@ -99,7 +99,7 @@ static OBJ primSendBroadcast(OBJ *args) {
 	if (IS_CLASS(args[0], StringClass)) {
 		char *s = obj2str(args[0]);
 		startReceiversOfBroadcast(s, strlen(s));
-		void sendBroadcastToIDE(s);
+		sendBroadcastToIDE(s);
 	}
 	return nilObj;
 }

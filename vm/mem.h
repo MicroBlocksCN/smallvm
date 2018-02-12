@@ -87,6 +87,7 @@ void memClear(void);
 
 OBJ newObj(int classID, int wordCount, OBJ fill);
 OBJ newString(char *s);
+OBJ newStringFromBytes(uint8 *bytes, int byteCount);
 char* obj2str(OBJ obj);
 
 #ifdef __cplusplus

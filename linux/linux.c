@@ -72,7 +72,7 @@ int sendByte(char aByte) {
 
 // System Functions
 
-const char * boardType() { return "Linux Computer"; }
+const char * boardType() { return "Linux"; }
 void systemReset() { } // noop on Linux
 
 // Stubs for IO primitives

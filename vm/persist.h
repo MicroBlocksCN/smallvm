@@ -18,8 +18,7 @@ extern "C" {
 
 typedef enum {
 	chunkCode = 10,
-	chunkPosition = 11,
-	chunkAttribute = 12,
+	chunkAttribute = 11,
 	chunkDeleted = 19,
 
 	varValue = 20,
@@ -34,8 +33,9 @@ typedef enum {
 // Chunk Attributes
 
 typedef enum {
-	snapSourceString = 0,
-	gpSourceString = 1,
+	sourcePosition = 0,
+	snapSourceString = 1,
+	gpSourceString = 2,
 	ATTRIBUTE_COUNT,
 } ChunkAttributeType_t;
 
@@ -43,6 +43,7 @@ typedef enum {
 
 int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, uint8 *data);
 void clearPersistentMemory();
+int * recordAfter(int *lastRecord);
 void restoreScripts();
 
 #ifdef __cplusplus

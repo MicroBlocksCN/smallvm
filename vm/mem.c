@@ -83,6 +83,18 @@ OBJ newString(char *s) {
 	return result;
 }
 
+OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
+	// Create a new string object with the given bytes.
+	// Round up to an even number of words and pad with nulls.
+
+	int wordCount = (byteCount + 3) / 4;
+	OBJ result = newObj(StringClass, wordCount, 0);
+	char *dst = (char *) &result[HEADER_WORDS];
+	for (int i = 0; i < byteCount; i++) *dst++ = *bytes++;
+	*dst = 0; // null terminator byte
+	return result;
+}
+
 char* obj2str(OBJ obj) {
 	if (NOT_CLASS(obj, StringClass)) {
 		fail(needsStringError);

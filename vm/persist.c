@@ -274,7 +274,7 @@ static void initPersistentMemory() {
 	if (freeStart >= end) freeStart = end;
 }
 
-static int * recordAfter(int *lastRecord) {
+int * recordAfter(int *lastRecord) {
 	// Return a pointer to the record following the given record, or NULL if there are
 	// no more records. Pass NULL to get the first record.
 
@@ -303,7 +303,6 @@ static int * recordAfter(int *lastRecord) {
 
 struct {
 	int *chunkCodeRec;
-	int *positionRec;
 	int *attributeRecs[ATTRIBUTE_COUNT];
 } chunkData;
 
@@ -341,9 +340,6 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 			case chunkCode:
 				chunkData.chunkCodeRec = src;
 				break;
-			case chunkPosition:
-				chunkData.positionRec = src;
-				break;
 			case chunkAttribute:
 				attributeID = *src & 0xFF;
 				if (attributeID < ATTRIBUTE_COUNT) {
@@ -359,7 +355,6 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 	}
 	if (chunkData.chunkCodeRec) {
 		dst = copyChunk(dst, chunkData.chunkCodeRec);
-		if (chunkData.positionRec) dst = copyChunk(dst, chunkData.positionRec);
 		for (int i = 0; i < ATTRIBUTE_COUNT; i++) {
 			if (chunkData.attributeRecs[i]) dst = copyChunk(dst, chunkData.attributeRecs[i]);
 		}

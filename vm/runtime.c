@@ -10,7 +10,7 @@
 
 // VM Version
 
-#define VM_VERSION "v010"
+#define VM_VERSION "v011"
 
 // Forward Reference Declarations
 
@@ -124,11 +124,6 @@ static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	chunks[chunkIndex].chunkType = chunkType;
 }
 
-static void storeChunkPosition(uint8 chunkIndex, int byteCount, uint8 *data) {
-	if ((chunkIndex >= MAX_CHUNKS) || (byteCount != 4)) return;
-	appendPersistentRecord(chunkPosition, chunkIndex, 0, byteCount, data);
-}
-
 static void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
 	unsigned char attributeID = data[0];
 	if ((chunkIndex >= MAX_CHUNKS) || (attributeID >= ATTRIBUTE_COUNT)) return;
@@ -189,7 +184,7 @@ static int outBufEnd = 0;
 
 static inline void sendNextByte() {
 	if (outBufStart != outBufEnd) {
-		if (sendByte(outBuf[outBufStart])) {
+		if (1 == sendByte(outBuf[outBufStart])) {
 			outBufStart = (outBufStart + 1) & OUTBUF_MASK;
 		}
 	}
@@ -312,7 +307,20 @@ static void sendVariableValue(int varID) {
 
 static void setVariableValue(int varID, int byteCount, uint8 *data) {
 	if ((varID >= 0) && (varID < MAX_VARS)) {
-		// xxx not yet implemented
+		int type = data[0];
+		switch (type) {
+		case 1: // integer
+			vars[varID] = int2obj((data[4] << 24) | (data[3] << 16) | (data[2] << 8) | data[1]);
+			break;
+		case 2: // string
+			if (byteCount >= 1) {
+				vars[varID] = newStringFromBytes(&data[1], byteCount - 1);
+			}
+			break;
+		case 3: // boolean
+			vars[varID] = data[1] ? trueObj : falseObj;
+			break;
+		}
 	}
 }
 
@@ -327,8 +335,77 @@ void sendBroadcastToIDE(char *s) {
 	sendMessage(broadcastMsg, 0, strlen(s), s);
 }
 
+// Retrieving source code and attributes
+
+static void waitForOutbufBytes(int bytesNeeded) {
+	// Wait until there is room for the given number of bytes in the output buffer.
+
+	while (bytesNeeded > ((OUTBUF_SIZE - 1) - OUTBUF_BYTES())) {
+		sendNextByte(); // should eventually create enough room for bytesNeeded
+	}
+}
+
+static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
+	if (!persistentRecord) return; // NULL persistentRecord; do nothing
+
+	int wordCount = *(persistentRecord + 1);
+	int bodyBytes = 1 + (4 * wordCount);
+	waitForOutbufBytes(5 + bodyBytes);
+
+	queueByte(251);
+	queueByte(chunkAttributeMsg);
+	queueByte(chunkIndex);
+	queueByte(bodyBytes & 0xFF); // low byte of size
+	queueByte((bodyBytes >> 8) & 0xFF); // high byte of size
+	queueByte(attributeID);
+	int *src = persistentRecord + 2;
+	for (int i = 0; i < wordCount; i++) {
+		int w = *src++;
+		queueByte(w & 0xFF);
+		queueByte((w >> 8) & 0xFF);
+		queueByte((w >> 16) & 0xFF);
+		queueByte((w >> 24) & 0xFF);
+	}
+}
+
 static void sendAllCode() {
-	// xxx not yet implemented
+	// Send the code and attributes for all chunks to the IDE.
+
+	for (int chunkID = 0; chunkID < MAX_CHUNKS; chunkID++) {
+		OBJ code = chunks[chunkID].code;
+		if (nilObj == code) continue; // skip unused chunk entry
+
+		// send the binary code
+		int words = *(code + 1); // size is the second word in the persistent store record
+		int *data = code + PERSISTENT_HEADER_WORDS;
+		waitForOutbufBytes(5 + (4 * words));
+		sendMessage(chunkCodeMsg, chunkID, (4 * words), (char *) data);
+
+		int *position = NULL;
+		int *snapSource = NULL;
+		int *gpSource = NULL;
+
+		int *p = recordAfter(NULL);
+		while (p) {
+			int recID = (*p >> 8) & 0xFF;
+			if (recID == chunkID) {
+				int recType = (*p >> 16) & 0xFF;
+				if (chunkAttribute == recType) {
+					int attrType = *p & 0xFF;
+					if (sourcePosition == attrType) position = p;
+					if (snapSourceString == attrType) snapSource = p;
+					if (gpSourceString == attrType) gpSource = p;
+				}
+				if (chunkDeleted == recType) {
+					position = snapSource = gpSource = NULL;
+				}
+			}
+			p = recordAfter(p);
+		}
+		if (snapSource) sendAttributeMessage(chunkID, snapSourceString, snapSource);
+		if (gpSource) sendAttributeMessage(chunkID, gpSourceString, gpSource);
+		if (position) sendAttributeMessage(chunkID, sourcePosition, position);
+	}
 }
 
 // Receiving Messages from IDE
@@ -447,10 +524,7 @@ static void processLongMessage() {
 		setVariableValue(rcvBuf[2], bodyBytes, &rcvBuf[5]);
 		break;
 	case broadcastMsg:
-		startReceiversOfBroadcast((char *) bodyBytes, bodyBytes);
-		break;
-	case chunkPositionMsg:
-		storeChunkPosition(chunkIndex, bodyBytes, &rcvBuf[5]);
+		startReceiversOfBroadcast((char *) &rcvBuf[5], bodyBytes);
 		break;
 	case chunkAttributeMsg:
 		storeChunkAttribute(chunkIndex, bodyBytes, &rcvBuf[5]);

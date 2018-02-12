@@ -197,18 +197,12 @@ extern int taskCount;
 
 // Serial Protocol Messages: Bidirectional
 
-#define pingMsg					25
-#define broadcastMsg			26
-#define chunkPositionMsg		27
+#define pingMsg					26
+#define broadcastMsg			27
 #define chunkAttributeMsg		28
 #define varNameMsg				29
 #define commentMsg				30
 #define commentPositionMsg		31
-
-// Attributes used with chunkAttributeMsg
-
-#define snapSourceAttribute		1
-#define gpSourceAttribute		2
 
 // Error Codes (codes 1-9 are reserved for protocol errors; 10 and up are runtime errors)
 
