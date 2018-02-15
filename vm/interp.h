@@ -176,7 +176,7 @@ extern int taskCount;
 #define stopChunkMsg			4
 #define startAllMsg				5
 #define stopAllMsg				6
-#define getVarMsg				7	// value returned to IDE via argValueMsg
+#define getVarMsg				7	// value returned to IDE via varValueMsg
 #define setVarMsg				8
 #define deleteVarMsg			10
 #define deleteCommentMsg		11
@@ -192,7 +192,7 @@ extern int taskCount;
 #define taskReturnedValueMsg	18
 #define taskErrorMsg			19
 #define outputValueMsg			20
-#define argValueMsg				21
+#define varValueMsg				21
 #define versionMsg				22
 
 // Serial Protocol Messages: Bidirectional
