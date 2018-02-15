@@ -67,7 +67,7 @@ method initialize MicroBlocksEditor aProject {
   clearProject this
   createInitialClass scripter
   fixLayout this
-  setFPS morph 5
+  setFPS morph 10
   return this
 }
 
@@ -410,7 +410,11 @@ method rightClicked MicroBlocksEditor aHand {
 
 method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
-  addItem menu 'virtual machine version' (action 'showVersion' (smallRuntime))
+  addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addItem menu 'delete all scripts from board' (action 'sendDeleteAll' (smallRuntime))
+//   addLine menu
+//   addItem menu 'broadcast test' (action 'broadcastTest' (smallRuntime))
+//   addItem menu 'set variable test' (action 'setVarTest' (smallRuntime))
+//   addItem menu 'get code test' (action 'getCodeTest' (smallRuntime))
   return menu
 }

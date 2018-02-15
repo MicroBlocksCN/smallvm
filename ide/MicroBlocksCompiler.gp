@@ -82,6 +82,8 @@ method initOpcodes SmallCompiler {
 #define random 65
 #define spiSend 66
 #define spiRecv 67
+#define sendBroadcast 68
+#define recvBroadcast 69
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
@@ -103,7 +105,12 @@ method instructionsFor SmallCompiler cmdOrReporter {
 		if ('whenCondition' == op) {
 			result = (instructionsForWhenCondition this cmdOrReporter)
 		} ('whenStarted' == op) {
-			result = (instructionsForWhenStarted this cmdOrReporter)
+			result = (instructionsForCmdList this (nextBlock cmdOrReporter))
+			add result (array 'halt' 0)
+		} ('whenBroadcastReceived' == op) {
+			result = (instructionsForExpression this (first (argList cmdOrReporter)))
+			add result (array 'recvBroadcast' 1)
+			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 			add result (array 'halt' 0)
 		} else {
 			result = (instructionsForCmdList this cmdOrReporter)
@@ -124,28 +131,23 @@ method instructionsFor SmallCompiler cmdOrReporter {
 	return result
 }
 
-// instruction generation: hat blocks
-
-method instructionsForWhenStarted SmallCompiler cmdOrReporter {
-	body = (instructionsForCmdList this (nextBlock cmdOrReporter))
-	return body
-}
+// instruction generation: when hat block
 
 method instructionsForWhenCondition SmallCompiler cmdOrReporter {
 	condition = (instructionsForExpression this (first (argList cmdOrReporter)))
 	body = (instructionsForCmdList this (nextBlock cmdOrReporter))
 	result = (list)
 
-	// poll until condition becomes true
+	// wait until condition becomes true
+	addAll result (instructionsForExpression this 10)
+	add result (array 'waitMillisOp' 1)
+	add result (array 'pop' 1)
 	addAll result condition
-	add result (array 'jmpFalse' (0 - ((count condition) + 1)))
+	add result (array 'jmpFalse' (0 - ((count condition) + 4)))
 
 	addAll result body
 
-	// loop until condition not true
- 	addAll result condition
- 	add result (array 'jmpTrue' (0 - ((count condition) + 1)))
-
+	// loop back to condition test
 	add result (array 'jmp' (0 - ((count result) + 1)))
 	return result
 }
@@ -182,15 +184,15 @@ method instructionsForCmd SmallCompiler cmd {
 	} ('stopTask' == op) {
 		add result (array 'halt' 0)
 	} ('forever' == op) {
-		return (instructionsForWhile this (join (array true) args))
+		return (instructionsForForever this args)
 	} ('if' == op) {
 		return (instructionsForIf this args)
 	} ('repeat' == op) {
 		return (instructionsForRepeat this args)
+	} ('repeatUntil' == op) {
+		return (instructionsForRepeatUntil this args)
 	} ('waitUntil' == op) {
 		return (instructionsForWaitUntil this args)
-	} ('while' == op) {
-		return (instructionsForWhile this args)
 	} else {
 		return (primitive this op args true)
 	}
@@ -240,27 +242,22 @@ method instructionsForRepeat SmallCompiler args {
 	return result
 }
 
-method instructionsForWaitUntil SmallCompiler args {
+method instructionsForRepeatUntil SmallCompiler args {
+	result = (list)
 	conditionTest = (instructionsForExpression this (at args 1))
-	result = (list)
-	addAll result conditionTest
-	add result (array 'jmpFalse' (0 - (+ (count conditionTest) 1)))
-	return result
-}
-
-method instructionsForWhile SmallCompiler args {
-	result = (list)
 	body = (instructionsForCmdList this (at args 2))
-	if (true == (at args 1)) { // special case: the condition is constant 'true'
-		addAll result body
-		add result (array 'jmp' (0 - (+ (count body) 1)))
-		return result
-	}
-	conditionTest = (instructionsForExpression this (at args 1))
 	add result (array 'jmp' (count body))
 	addAll result body
 	addAll result conditionTest
-	add result (array 'jmpTrue' (0 - (+ (count body) (count conditionTest) 1)))
+	add result (array 'jmpFalse' (0 - (+ (count body) (count conditionTest) 1)))
+	return result
+}
+
+method instructionsForWaitUntil SmallCompiler args {
+	result = (list)
+	conditionTest = (instructionsForExpression this (at args 1))
+	addAll result conditionTest
+	add result (array 'jmpFalse' (0 - (+ (count conditionTest) 1)))
 	return result
 }
 
@@ -389,6 +386,7 @@ method globalVarIndex SmallCompiler varName {
 	if (isNil id) {
 		error 'Unknown variable' varName
 	}
+	if (id >= 25) { error 'Id' id 'for variable' varName 'is out of range' }
 	return (id - 1) // VM uses zero-based index
 }
 

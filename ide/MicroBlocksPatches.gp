@@ -8,6 +8,10 @@
 //
 // John Maloney, January, 2018
 
+method confirmToQuit Page {
+	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
+}
+
 method clicked Block hand {
   runtime = (smallRuntime)
   topBlock = (topBlock this)

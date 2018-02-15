@@ -8,7 +8,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port lastPingMSecs vmVersion recvBuf
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port pingSentMSecs lastPingRecvMSecs recvBuf
 
 method scripter SmallRuntime { return scripter }
 method setScripter SmallRuntime aScripter { scripter = aScripter }
@@ -44,18 +44,20 @@ method microBlocksSpecs SmallRuntime {
 		(array 'r' 'mbTemp'				'temperature Celcius')
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
+ 		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
+		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
-		(array ' ' 'waitUntil'			'wait until _' 'bool')
 		(array ' ' 'waitMillisOp'		'wait _ millisecs' 'num' 500)
 		(array ' ' 'waitMicrosOp'		'wait _ microsecs' 'num' 10000)
+		(array ' ' 'waitUntil'			'wait until _' 'bool')
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop all')
-		(array ' ' 'while'				'while _ _' 'bool cmd')
+		(array 'h' 'whenBroadcastReceived' 'when _ received' 'str' 'go!')
+		(array ' ' 'sendBroadcast'		'broadcast _ ' 'str' 'go!')
  		(array ' ' 'return'				'return _' 'auto')
- 		(array 'h' 'whenCondition'		'when _' 'bool')
- 		(array ' ' 'noop'				'no op')
+		(array ' ' 'noop'				'no op')
 	'Math'
 		(array 'r' 'add'				'_ + _ : + _ : ...' 'num num num' 10 2 10)
 		(array 'r' 'subtract'			'_ − _' 'num num' 10 2)
@@ -104,10 +106,12 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		print '----------'
 		return
 	}
-	id = (chunkIdFor this aBlock)
-	chunkType = (chunkTypeForBlock this aBlock)
-	saveChunk this id chunkType bytes
-	runChunk this id
+
+	// save all chunks, including functions and broadcast receivers
+	// (it would be more efficient to save only chunks that have changed)
+	saveAllChunks this
+	saveChunk this aBlock
+	runChunk this (chunkIdFor this aBlock)
 }
 
 method chunkTypeForBlock SmallRuntime aBlock {
@@ -115,6 +119,7 @@ method chunkTypeForBlock SmallRuntime aBlock {
 	op = (primName expr)
 	if ('whenStarted' == op) { chunkType = 4
 	} ('whenCondition' == op) { chunkType = 5
+	} ('whenBroadcastReceived' == op) { chunkType = 6
 	} (isClass expr 'Command') { chunkType = 1
 	} (isClass expr 'Reporter') { chunkType = 2
 	} ('nop' == op) { chunkType = 3 // xxx need a better test for function def hats
@@ -203,8 +208,9 @@ method resetBoard SmallRuntime {
 
 	sendStopAll this
 	sendMsg this 'deleteAllCodeMsg' // delete all code from board
-	waitMSecs 50
+	waitMSecs 50 // leave time to write to flash or next message will be missed
 	sendMsg this 'systemResetMsg' // send the reset message
+	chunkIDs = (dictionary) // start over
 return
 
 	// The following reset code is not currently used
@@ -233,6 +239,9 @@ method selectPort SmallRuntime {
 			if ((find (letters fn) (letters 'ACM')) > 0) { // linux
 				addItem menu fn
 			}
+			if ((find (letters fn) (letters 'ttys00')) > 0) { // pseudo terminal
+				addItem menu fn
+			}
 		}
 	}
 	popUpAtHand menu (global 'page')
@@ -250,29 +259,35 @@ method setPort SmallRuntime newPortName {
 	portName = (join '/dev/' newPortName)
 	if ('Win' == (platform)) { portName = newPortName }
 	ensurePortOpen this
+	sendMsg this 'pingMsg'
 }
 
 method connectionStatus SmallRuntime {
-	if (isNil port) { return 'not connected' }
-	if (not (isOpenSerialPort port)) {
+	pingSendInterval = 2000 // msecs between pings
+	if (isNil pingSentMSecs) { pingSentMSecs = 0 }
+	if (isNil lastPingRecvMSecs) { lastPingRecvMSecs = 0 }
+
+	if (or (isNil port) (not (isOpenSerialPort port))) {
 		port = nil
 		return 'not connected'
 	}
+	if (((msecsSinceStart) - pingSentMSecs) > pingSendInterval) {
+		sendMsg this 'pingMsg'
+		pingSentMSecs = (msecsSinceStart)
+	}
+	msecsSinceLastPing = ((msecsSinceStart) - lastPingRecvMSecs)
+	if (msecsSinceLastPing < (pingSendInterval + 200)) {
+		return 'connected'
+	}
+	return 'board not responding'
+}
+
+method getVersion SmallRuntime {
 	sendMsg this 'getVersionMsg'
-	if (isNil lastPingMSecs) { lastPingMSecs = 0 }
-	msecsSinceLastPing = ((msecsSinceStart) - lastPingMSecs)
-	if (msecsSinceLastPing > 500) { return 'board not responding' }
-	return 'connected'
 }
 
-method vmVersion SmallRuntime {
-	if (isNil vmVersion) { vmVersion =  'No board connected' }
-	getVersion this
-	return vmVersion
-}
-
-method showVersion  SmallRuntime {
-	inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) (vmVersion this))
+method showVersion SmallRuntime versionString {
+	inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) versionString)
 }
 
 method clearBoardIfConnected SmallRuntime {
@@ -295,19 +310,33 @@ method saveAllChunks SmallRuntime {
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		op = (primName (expression aBlock))
 		if ('nop' != op) {
-			id = (chunkIdFor this aBlock)
-			chunkType = (chunkTypeForBlock this aBlock)
-			bytes = (chunkBytesForBlock this aBlock)
-			saveChunk this id chunkType bytes
+			saveChunk this aBlock
 		}
 	}
 }
 
-method saveChunk SmallRuntime chunkID chunkType bytes {
-	body = (list chunkType)
-	addAll body bytes
-	add body 254 // terminator byte (helps board detect dropped bytes)
-	sendMsg this 'storeChunkMsg' chunkID body
+method saveChunk SmallRuntime aBlock {
+	// Save the script starting with the given block as an executable code "chunk".
+	// Also save the source code (in GP format) and the script position.
+
+	// save the binary code for the chunk
+	chunkID = (chunkIdFor this aBlock)
+	chunkType = (chunkTypeForBlock this aBlock)
+	data = (list chunkType)
+	addAll data (chunkBytesForBlock this aBlock)
+	sendMsg this 'chunkCodeMsg' chunkID data
+
+	// save the GP source code
+	data = (list 2) // GP source code attribute
+	addAll data (toArray (toBinaryData (toTextCode aBlock)))
+	sendMsg this 'chunkAttributeMsg' chunkID data
+
+	// save the script position (relative to its owner)
+	posX = ((left (morph aBlock)) - (left (owner (morph aBlock))))
+	posY = ((top (morph aBlock)) - (top (owner (morph aBlock))))
+	data = (list 0) // source position attribute
+	addAll data (list (posX & 255) ((posX >> 8) & 255) (posY & 255) ((posY >> 8) & 255))
+	sendMsg this 'chunkAttributeMsg' chunkID data
 }
 
 method runChunk SmallRuntime chunkID {
@@ -318,27 +347,24 @@ method stopRunningChunk SmallRuntime chunkID {
 	sendMsg this 'stopChunkMsg' chunkID
 }
 
-// Testing
-
 method getVar SmallRuntime varID {
 	if (isNil varID) { varID = 0 }
 	sendMsg this 'getVarMsg' varID
 }
 
-method getVersion SmallRuntime {
-	sendMsg this 'getVersionMsg'
-}
+// Message handling
 
 method msgNameToID SmallRuntime msgName {
 	if (isNil msgDict) {
 		msgDict = (dictionary)
-		atPut msgDict 'storeChunkMsg' 1
+		atPut msgDict 'chunkCodeMsg' 1
 		atPut msgDict 'deleteChunkMsg' 2
 		atPut msgDict 'startChunkMsg' 3
 		atPut msgDict 'stopChunkMsg' 4
 		atPut msgDict 'startAllMsg' 5
 		atPut msgDict 'stopAllMsg' 6
 		atPut msgDict 'getVarMsg' 7
+		atPut msgDict 'setVarMsg' 8
 		atPut msgDict 'deleteVarMsg' 10
 		atPut msgDict 'deleteCommentMsg' 11
 		atPut msgDict 'getVersionMsg' 12
@@ -352,8 +378,8 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'outputValueMsg' 20
 		atPut msgDict 'argValueMsg' 21
 		atPut msgDict 'versionMsg' 22
-		atPut msgDict 'chunkCodeMsg' 23
-		atPut msgDict 'chunkPositionMsg' 27
+		atPut msgDict 'pingMsg' 26
+		atPut msgDict 'broadcastMsg' 27
 		atPut msgDict 'chunkAttributeMsg' 28
 		atPut msgDict 'varNameMsg' 29
 		atPut msgDict 'commentMsg' 30
@@ -370,20 +396,20 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 	if (isNil byteList) { // short message
 		msg = (list 250 msgID chunkID)
 	} else { // long message
-		byteCount = (count byteList)
+		byteCount = ((count byteList) + 1)
 		msg = (list 251 msgID chunkID (byteCount & 255) ((byteCount >> 8) & 255))
 		addAll msg byteList
+		add msg 254 // terminator byte (helps board detect dropped bytes)
 	}
 	ensurePortOpen this
 	writeSerialPort port (toBinaryData (toArray msg))
 }
 
 method ensurePortOpen SmallRuntime {
-	if (isNil port) {
-		if (isNil portName) {
-			portName = '/dev/tty.usbmodem1422'
+	if (or (isNil port) (not (isOpenSerialPort port))) {
+		if (notNil portName) {
+			port = (openSerialPort portName 115200)
 		}
-		port = (openSerialPort portName 115200)
 	}
 }
 
@@ -441,10 +467,17 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'outputValueMsg')) {
 		print (returnedValue this msg)
 	} (op == (msgNameToID this 'argValueMsg')) {
-		print (returnedValue this msg)
+		print 'arg value:' (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
-		vmVersion = (returnedValue this msg)
-		lastPingMSecs = (msecsSinceStart)
+		showVersion this (returnedValue this msg)
+	} (op == (msgNameToID this 'pingMsg')) {
+		lastPingRecvMSecs = (msecsSinceStart)
+	} (op == (msgNameToID this 'broadcastMsg')) {
+//		print 'received broadcast:' (toString (copyFromTo msg 6))
+	} (op == (msgNameToID this 'chunkCodeMsg')) {
+//		print 'chunkCodeMsg:' (byteCount msg) 'bytes'
+	} (op == (msgNameToID this 'chunkAttributeMsg')) {
+//		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} else {
 		print 'msg:' (toArray msg)
 	}
@@ -525,4 +558,40 @@ method showOutputStrings SmallRuntime {
 			print out
 		}
 	}
+}
+
+// testing
+
+method broadcastTest SmallRuntime {
+	msg = 'go!'
+	sendMsg this 'broadcastMsg' 0 (toArray (toBinaryData msg))
+}
+
+method setVarTest SmallRuntime {
+	val = 'foobar'
+	varID = 0
+	body = nil
+	if (isClass val 'Integer') {
+		body = (newBinaryData 5)
+		byteAtPut body 1 1 // type 1 - Integer
+		byteAtPut body 2 (val & 255)
+		byteAtPut body 3 ((val >> 8) & 255)
+		byteAtPut body 4 ((val >> 16) & 255)
+		byteAtPut body 5 ((val >> 24) & 255)
+	} (isClass val 'String') {
+		body = (toBinaryData (join (string 2) val))
+	} (isClass val 'Boolean') {
+		body = (newBinaryData 2)
+		byteAtPut body 1 3 // type 3 - Boolean
+		if val {
+			byteAtPut body 2 1 // true
+		} else {
+			byteAtPut body 2 0 // false
+		}
+	}
+	if (notNil body) { sendMsg this 'setVarMsg' 0 (toArray body) }
+}
+
+method getCodeTest SmallRuntime {
+	sendMsg this 'getAllCodeMsg'
 }
