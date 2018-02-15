@@ -1,4 +1,4 @@
-# Microblocks Serial Protocol (version 2.06)
+# Microblocks Serial Protocol (version 2.07)
 
 This protocol describes how information flows from the
 board to the IDE and the other way around. All messages
@@ -24,25 +24,32 @@ The baud rate is 115.2 kbaud.
 
 **Short message format (3 bytes):**
 
-[0xFA, OpCode, ChunkID]
+[0xFA, OpCode, ChunkOrVariableOrCommentID]
 
 **Long message format (5 + dataSize bytes):**
 
-[0xFB, OpCode, ChunkID, DataSize-LSB, DataSize-MSB, ...data...]
+[0xFB, OpCode, ChunkOrVariableOrCommentID, DataSize-LSB, DataSize-MSB, ...data...]
 
 The data size field specifies the number of data bytes. It is encoded as two bytes, least significant byte first.
 
 The incoming message buffer on the board sets a practical upper
-limit on the data size. This buffer size sets the upper limit on the size of a single compiled chunk.
+limit on the data size of long messages. This sets the upper limit on the size of a single compiled chunk or source attribute.
+
+**Terminator Byte**
+
+To help the board detect dropped bytes, all long messages sent to the board
+end with the terminator byte 0xFE. The data size field includes this terminator byte.
+Dropped bytes in messages from the board to the IDE have not (so far) been a problem,
+so long messages sent from the board to the IDE do not have a termination byte.
 
 <br>
-## IDE → Board (OpCodes 0x01 to 0x1F)
+## IDE → Board (OpCodes 0x01 to 0x0F)
 
-### Store Chunk (OpCode: 0x01; long message)
+### Chunk Code (OpCode: 0x01; long message; bidirectional)
 
-Set the code for the given chunkID to the given data.
-The byte 0xFE is append after the chunk bytes to help
-the board to detect truncated messages.
+Body contains the binary code for the given chunkID.
+This message is also used to return chunk code to the IDE
+in response to the Get All Code message.
 
 ### Delete Chunk (OpCode: 0x02)
 
@@ -74,17 +81,50 @@ Start tasks for "when started" hats and start polling
 
 Stop all tasks and stop polling "when *condition*" hats.
 
-### Reserved (OpCodes 0x07-0x0D)
+### Get Variable Value (OpCode: 0x07)
 
-Reserved for additional non-system messages.
+Request the value for the variable given by the ID field.
+The value is sent to the IDE with the Variable Value message.
 
-### Delete All Chunks (OpCode: 0x0E)
+### Set Variable Value (OpCode: 0x08; long message)
 
-Stop all tasks and delete all chunks from the board.
+Set the value for the given variable to the value in the body.
+
+The body consists of a one-byte type flag followed by the actual value.
+The supported data types are:
+
+  * integer (type = 1): 4-byte signed integer, LSB first
+  * string (type = 2):  the remainder of the message body is a UTF-8 string
+  * boolean (type = 3): 1-byte, 0 for false, 1 for true
+
+### *Reserved* (OpCode 0x09)
+
+Reserved for a future IDE->Board message.
+
+### Delete Variable (OpCode: 0x0A)
+
+Delete the given variable.
+
+### Delete Comment (OpCode: 0x0B)
+
+Delete the comment with the given ID.
+
+### Get Virtual Machine Version (OpCode: 0x0C)
+
+Request the virtual machine version and board type.
+The result is sent to the IDE with the Virtual Machine Version message.
+
+### Get All Code (OpCode: 0x0D)
+
+Request all stored code, including both binary code and attributes such as source strings and variable names, to be sent to the IDE.
+
+### Delete All Code (OpCode: 0x0E)
+
+Stop all tasks and delete all code and code attributes from the board.
 
 ### System Reset (OpCode: 0x0F)
 
-Stop all tasks and reset the hardware.
+Stop all tasks and reset/restart the hardware.
 
 Note: With the interim RAM-based chunk storage
 implementation, this will also delete all chunks.
@@ -93,7 +133,7 @@ implemented, it will just reset the hardware;
 the program will persist.
 
 <br>
-## Board → IDE (OpCodes 0x10 to 0x1F)
+## Board → IDE (OpCodes 0x10 to 0x16)
 
 The board sends task status change and output messages
 without being asked and regardless of whether it is tethered.
@@ -108,13 +148,8 @@ The task for the given chunk completed. It did not return a value.
 
 ### Task Returned Value (OpCode: 0x12, long message)
 
-The task for the given chunk completed and returned a value.
-The data part of the message consists of a one-byte type flag
-followed by the return value. The current type flags are:
-
-  * integer (type = 1; data is 4-byte signed integer, LSB first)
-  * string (type = 2; data is a UTF-8 string)
-  * boolean (type = 3; data is 1-byte, 0 for false, 1 for true)
+The task for the given chunk completed and returned the value in the body of this message.
+The value is encoded the same as in the Set Variable Value message.
 
 ### Task Error (OpCode: 0x13, long message)
 
@@ -126,16 +161,62 @@ and the IP address within that chunk. The format is:
 
 	[IP within chunk (high 24-bits)][chunk ID (low 8-bits)]
 
-**TODO:** Describe error codes
+The list of errors will grow as new features are added to the virtual machine.
+The error codes are defined by the source code file interp.h.
 
 ### Output Value (OpCode: 0x14, long message)
 
 Outputs the value in the data part of this message. The value is
 encoded the same was as the Task Returned Value message.
 
-### Reserved (OpCodes 0x15-0x1F)
+### Variable Value (OpCode: 0x15, long message)
+
+Return the value of the given variable in the data part of this message.
+The variable is given by the ID field.
+The value is encoded the same as in the Set Variable Value message.
+
+### Virtual Machine Version (OpCode: 0x16, long message)
+
+Return the version string in the body of this message.
+
+### *Reserved* (OpCodes 0x17-0x19)
 
 Reserved for additional Board → IDE messages.
+
+<br>
+## Bidirectional (OpCode: 0x1A to 0x1F)
+
+### Ping (OpCode: 0x1A)
+
+When the IDE sends a Ping message, and the board responds with a Ping message.
+This exchange is used to make sure that the board is still connected.
+
+### Broadcast (OpCode: 0x1B, long message)
+
+Transmit a broadcast message from board to IDE or vice versa.
+The body of the message is the broadcast string.
+
+### Chunk Attribute (OpCode: 0x1C, long message)
+
+The body of the message is an attribute for chunk with the given ID.
+The first byte of the body is the attribute type, current:
+
+  * 0: the chunk position in the scripting pane. Body is four bytes encoding two unsigned, 16-bit integers, LSB first, for the x and y offset
+  * 1: snap source code (body is a string )
+  * 2: GP source code (body is a string)
+
+### Variable Name (OpCode: 0x1D, long message)
+
+The name of the variable with the given ID. Body is a string.
+
+### Comment (OpCode: 0x1E, long message)
+
+A comment the given ID. Body is a string.
+
+### Comment Position (OpCode: 0x1F, long message)
+
+The offset of the comment with the given ID in the scripting pane.
+The position is encoded as 4 bytes in the same manner as the chunk position attribute.
 
 <br>
 ## IDE → Bridge, Bridge → IDE
