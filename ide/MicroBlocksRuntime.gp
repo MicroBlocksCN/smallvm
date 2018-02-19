@@ -376,7 +376,7 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'taskReturnedValueMsg' 18
 		atPut msgDict 'taskErrorMsg' 19
 		atPut msgDict 'outputValueMsg' 20
-		atPut msgDict 'argValueMsg' 21
+		atPut msgDict 'varValueMsg' 21
 		atPut msgDict 'versionMsg' 22
 		atPut msgDict 'pingMsg' 26
 		atPut msgDict 'broadcastMsg' 27
@@ -466,8 +466,8 @@ method handleMessage SmallRuntime msg {
 		print 'error:' (byteAt msg 6) // error code
 	} (op == (msgNameToID this 'outputValueMsg')) {
 		print (returnedValue this msg)
-	} (op == (msgNameToID this 'argValueMsg')) {
-		print 'arg value:' (returnedValue this msg)
+	} (op == (msgNameToID this 'varValueMsg')) {
+		print 'variable value:' (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
 		showVersion this (returnedValue this msg)
 	} (op == (msgNameToID this 'pingMsg')) {

@@ -141,8 +141,7 @@ method clearProject MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
-  examplesPath = (join (absolutePath '.') '/Examples')
-  pickFileToOpen (action 'openProjectFromFile' this) examplesPath (array '.gpp' '.gpe')
+  pickFileToOpen (action 'openProjectFromFile' this) './Examples' (array '.gpp' '.gpe')
 }
 
 method openProjectFromFile MicroBlocksEditor location {
