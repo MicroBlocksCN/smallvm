@@ -88,6 +88,7 @@ OBJ primI2cGet(OBJ *args) { return nilObj; }
 OBJ primI2cSet(OBJ *args) { return nilObj; }
 OBJ primSPISend(OBJ *args) { return nilObj; }
 OBJ primSPIRecv(OBJ *args) { return nilObj; }
+OBJ primNeoPixelSend(OBJ *args) { return nilObj; }
 
 // Bogus micro:bit primitives
 

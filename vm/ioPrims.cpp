@@ -549,12 +549,45 @@ static OBJ microbitButton(int buttonID) {
 	return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
 }
 
+// NeoPixel pin for Calliope:
+
+#define pinBit 0x40004 // pins 18 and 2 (Caliope)
+
+volatile int *pinSet = (int *) 0x50000508;
+volatile int *pinClr = (int *) 0x5000050C;
+volatile int tmp;
+
+static void sendNeoPixelByte(int val) {
+  for (int i = 0; i < 8; i++) {
+    if (val & 0x80) { // high pulse about 800 nanosecs on micro:bit
+      *pinSet = pinBit;
+      tmp = 0;
+      tmp = 0;
+      tmp = 0;
+      tmp = 0;
+      *pinClr = pinBit;
+    } else { // low pulse about 430 nanosecs on micro:bit
+      *pinSet = pinBit;
+      *pinClr = pinBit;
+    }
+    tmp = 0;
+    val <<= 1;
+  }
+}
+
+static void neoPixelSendRGB(int r, int g, int b) {
+  sendNeoPixelByte(g);
+  sendNeoPixelByte(r);
+  sendNeoPixelByte(b);
+}
+
 #else // stubs for non-micro:bit boards
 
 void updateMicrobitDisplay() { }
 static int microbitAccel(int reg) { return 0; }
 static int microbitTemp(int registerID) { return 0; }
 static OBJ microbitButton(int buttonID) { return falseObj; }
+static void neoPixelSendRGB(int r, int g, int b) { }
 
 #endif // micro:bit primitve support
 
@@ -597,3 +630,11 @@ OBJ primMBTiltZ(OBJ *args) { return int2obj(-microbitAccel(5)); } // invert sign
 OBJ primMBTemp(OBJ *args) { return int2obj(microbitTemp(15)); }
 OBJ primMBButtonA(OBJ *args) { return microbitButton(1); }
 OBJ primMBButtonB(OBJ *args) { return microbitButton(2); }
+
+OBJ primNeoPixelSend(OBJ *args) {
+	int r = evalInt(args[0]) & 255;
+	int g = evalInt(args[1]) & 255;
+	int b = evalInt(args[2]) & 255;
+	neoPixelSendRGB(r, g, b);
+	return nilObj;
+}

@@ -195,6 +195,7 @@ static void runTask(Task *task) {
 		&&spiRecv_op,
 		&&sendBroadcast_op,
 		&&recvBroadcast_op,
+		&&neoPixelSend_op,
 	};
 
 	// Restore task state
@@ -560,6 +561,10 @@ static void runTask(Task *task) {
 		DISPATCH();
 	recvBroadcast_op:
 		sp -= arg - 1; // pop the broadcast name (a literal string)
+		DISPATCH();
+	neoPixelSend_op:
+		*(sp - arg) = primNeoPixelSend(sp - arg);
+		sp -= arg - 1;
 		DISPATCH();
 }
 

@@ -79,6 +79,7 @@ extern "C" {
 #define spiRecv 67
 #define sendBroadcast 68
 #define recvBroadcast 69
+#define neoPixelSend 70
 
 // Instruction Format
 
@@ -321,6 +322,7 @@ OBJ primMBTiltZ(OBJ *args);
 OBJ primMBTemp(OBJ *args);
 OBJ primMBButtonA(OBJ *args);
 OBJ primMBButtonB(OBJ *args);
+OBJ primNeoPixelSend(OBJ *args);
 
 #ifdef __cplusplus
 }
