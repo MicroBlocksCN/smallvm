@@ -210,11 +210,13 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data) {
 #endif // DEBUG
 
 	if (!data) { // short message
+		if (!hasOutputSpace(3)) return; // no space; drop message
 		queueByte(250);
 		queueByte(msgType);
 		queueByte(chunkIndex);
 	} else {
 		int totalBytes = 5 + dataSize;
+		if (!hasOutputSpace(totalBytes)) return; // no space; drop message
 		if (totalBytes > ((OUTBUF_SIZE - 1) - OUTBUF_BYTES())) return; // no room in outBuf; should not happen
 		queueByte(251);
 		queueByte(msgType);

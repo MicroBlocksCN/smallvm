@@ -322,6 +322,10 @@ static void runTask(Task *task) {
 	returnResult_op:
 		tmpObj = *(sp - 1); // return value
 		if (!(fp - task->stack)) { // not in a function call
+			if (!hasOutputSpace(bytesForObject(*(sp - 1)))) {
+				ip--; // retry when task is resumed
+				goto suspend;
+			}
 			sendTaskReturnValue(task->taskChunkIndex, tmpObj);
 			task->status = unusedTask;
 			goto suspend;
