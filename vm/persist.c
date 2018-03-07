@@ -26,17 +26,17 @@
 
 // flash operations for supported platforms
 
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_NRF52_PRIMO)
+#if defined(ARDUINO_NRF52_PRIMO) || defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 	#include "nrf.h" // nRF51 and nRF52
 
-	#ifdef ARDUINO_BBC_MICROBIT
-		// BBC micro:bit: App: 0-36k; Persistent Mem: 36k-256k
-		#define START (36 * 1024)
-		#define HALF_SPACE (110 * 1024)
-	#else
+	#ifdef ARDUINO_NRF52_PRIMO
 		// Primo: SoftDevice: 0-112k; App: 112k-148k; Persistent Mem: 148k-488k; Boot: 488k-511k
 		#define START (148 * 1024)
 		#define HALF_SPACE (170 * 1024)
+	#else
+		// BBC micro:bit and Calliope: App: 0-36k; Persistent Mem: 36k-256k
+		#define START (36 * 1024)
+		#define HALF_SPACE (110 * 1024)
 	#endif
 
 	static void flashErase(int *startAddr, int *endAddr) {
@@ -71,7 +71,7 @@
 		NRF_NVMC->CONFIG = 0; // disable Flash write
 	}
 
-#elif defined(ARDUINO_SAMD_MKRZERO)
+#elif defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 	#include "samr.h" // SAM21D
 
 	#define START (40 * 1024)
