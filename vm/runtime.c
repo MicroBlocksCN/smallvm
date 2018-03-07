@@ -217,7 +217,6 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data) {
 	} else {
 		int totalBytes = 5 + dataSize;
 		if (!hasOutputSpace(totalBytes)) return; // no space; drop message
-		if (totalBytes > ((OUTBUF_SIZE - 1) - OUTBUF_BYTES())) return; // no room in outBuf; should not happen
 		queueByte(251);
 		queueByte(msgType);
 		queueByte(chunkIndex);
@@ -334,7 +333,9 @@ static void sendVersionString() {
 }
 
 void sendBroadcastToIDE(char *s) {
-	sendMessage(broadcastMsg, 0, strlen(s), s);
+	int len = strlen(s);
+	if (!hasOutputSpace(len + 50)) return; // leave room for other messages
+	sendMessage(broadcastMsg, 0, len, s);
 }
 
 // Retrieving source code and attributes
@@ -342,7 +343,7 @@ void sendBroadcastToIDE(char *s) {
 static void waitForOutbufBytes(int bytesNeeded) {
 	// Wait until there is room for the given number of bytes in the output buffer.
 
-	while (bytesNeeded > ((OUTBUF_SIZE - 1) - OUTBUF_BYTES())) {
+	while (bytesNeeded > (OUTBUF_MASK - OUTBUF_BYTES())) {
 		sendNextByte(); // should eventually create enough room for bytesNeeded
 	}
 }

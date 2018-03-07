@@ -322,7 +322,7 @@ static void runTask(Task *task) {
 	returnResult_op:
 		tmpObj = *(sp - 1); // return value
 		if (!(fp - task->stack)) { // not in a function call
-			if (!hasOutputSpace(bytesForObject(*(sp - 1)))) {
+			if (!hasOutputSpace(bytesForObject(*(sp - 1)) + 100)) { // leave room for other messages
 				ip--; // retry when task is resumed
 				goto suspend;
 			}
@@ -349,7 +349,7 @@ static void runTask(Task *task) {
 		task->wakeTime = millisecs() + tmp;
 		goto suspend;
 	printIt_op:
-		if (!hasOutputSpace(PRINT_BUF_SIZE + 5)) {
+		if (!hasOutputSpace(PRINT_BUF_SIZE + 100)) { // leave room for other messages
 			ip--; // retry when task is resumed
 			goto suspend;
 		}
@@ -478,7 +478,7 @@ static void runTask(Task *task) {
 		sp -= arg - 1;
 		DISPATCH();
 	sayIt_op:
-		if (!hasOutputSpace(bytesForObject(*(sp - arg)))) {
+		if (!hasOutputSpace(bytesForObject(*(sp - arg)) + 100)) { // leave room for other messages
 			ip--; // retry when task is resumed
 			goto suspend;
 		}
