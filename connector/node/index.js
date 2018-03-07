@@ -327,7 +327,10 @@ printHelp = function (topic) {
                 '-s, --silent       Be silent except for errors.\n' +
                 '-p=[PORT], --port=[PORT]\n' +
                 '                   Choose the websockets port. If not defined, it will default\n' +
-                '                   to 9999.\n'
+                '                   to 9999.\n' +
+                '-t=[TTY], --tty=[TTY]\n' +
+                '                   Add a GNU/Linux console TTY to the serial port list.\n' +
+                '                   Ex. --tty=/dev/pts/4'
             );
 
     }
@@ -361,7 +364,6 @@ process.argv.forEach(function (val) {
         case '--tty':
         case '-t':
             options.tty = option[1];
-            log('Added virtual serial port attached to GNU/Linux terminal ' + option[1]);
             break;
         case '--silent':
         case '-s':
@@ -369,6 +371,12 @@ process.argv.forEach(function (val) {
             break;
     }
 });
+
+if (options.tty) {
+    // If we do it inside the previous forEach we need to pass the -d option before the
+    // tty one, else this message won't show up
+    log('Added virtual serial port attached to GNU/Linux terminal ' + options.tty);
+}
 
 
 // ==== System Tray Icon ==== //
