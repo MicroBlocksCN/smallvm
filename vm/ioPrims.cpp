@@ -102,13 +102,13 @@ void systemReset() {
 
 #define ROW1 4
 #define ROW2 5
-#define ROW3 6
-#define ROW4 7
-#define ROW5 8
-#define ROW6 9
-#define ROW7 10
-#define ROW8 11
-#define ROW9 12
+#define ROW3 12
+#define ROW4 11
+#define ROW5 10
+#define ROW6 6
+#define ROW7 7
+#define ROW8 8
+#define ROW9 9
 
 #define COL1 13
 #define COL2 14
@@ -162,11 +162,13 @@ void systemReset() {
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 
 	// See variant.cpp in variants/Calliope folder for a detailed pin map.
-	// Pins 0-19 are for large pads and 26 pin connector
-	// Button A: pin 5
-	// Button B: pin 11
+	// Pins 0-19 are for the large pads and 26 pin connector
+	// Button A: pin 20
+	// Microphone: pin 21
+	// Button B: pin 22
+	// Motor/Speaker: pins 23-25
 	// Analog pins: The Calliope does not have dedicated analog input pins;
-	// the analog pins are aliases for digital pins 6, 1, 2, 22, 4, 5.
+	// the analog pins are aliases for digital pins 6, 1, 2, 21 (microphone), 4, 5.
 
 #elif defined(ARDUINO_SAMD_MKRZERO)
 
@@ -237,7 +239,7 @@ static void initPins(void) {
 		pinMode(BUZZER, OUTPUT);
 	#endif
 
-//	for (int i = 0; i < 30; i++) sendNeoPixelByte(0); // turn off NeoPixels (up to 10 of them)
+	for (int i = 0; i < 30; i++) sendNeoPixelByte(0); // turn off NeoPixels (up to 10 of them)
 }
 
 // Pin IO Primitives
@@ -440,85 +442,44 @@ void updateMicrobitDisplay() {
 	digitalWrite(COL2, LOW);
 	digitalWrite(COL3, LOW);
 
-#ifdef ARDUINO_BBC_MICROBIT
 	switch (displayCycle) {
 	case 0:
 		digitalWrite(ROW1, DISPLAY_BIT(1));
 		digitalWrite(ROW2, DISPLAY_BIT(3));
+		digitalWrite(ROW6, DISPLAY_BIT(5));
 		digitalWrite(ROW3, DISPLAY_BIT(12));
 		digitalWrite(ROW4, DISPLAY_BIT(16));
 		digitalWrite(ROW5, DISPLAY_BIT(17));
-		digitalWrite(ROW6, DISPLAY_BIT(5));
-		digitalWrite(ROW7, DISPLAY_BIT(20));
-		digitalWrite(ROW8, DISPLAY_BIT(19));
 		digitalWrite(ROW9, DISPLAY_BIT(18));
+		digitalWrite(ROW8, DISPLAY_BIT(19));
+		digitalWrite(ROW7, DISPLAY_BIT(20));
 		digitalWrite(COL1, HIGH);
 		break;
 	case 1:
-		digitalWrite(ROW1, DISPLAY_BIT(15));
-		digitalWrite(ROW2, DISPLAY_BIT(11));
-		digitalWrite(ROW3, HIGH); // unused
-		digitalWrite(ROW4, HIGH); // unused
-		digitalWrite(ROW5, DISPLAY_BIT(22));
-		digitalWrite(ROW6, DISPLAY_BIT(13));
 		digitalWrite(ROW7, DISPLAY_BIT(2));
 		digitalWrite(ROW8, DISPLAY_BIT(4));
+		digitalWrite(ROW2, DISPLAY_BIT(11));
+		digitalWrite(ROW6, DISPLAY_BIT(13));
+		digitalWrite(ROW1, DISPLAY_BIT(15));
+		digitalWrite(ROW5, DISPLAY_BIT(22));
 		digitalWrite(ROW9, DISPLAY_BIT(24));
+		digitalWrite(ROW3, HIGH); // unused
+		digitalWrite(ROW4, HIGH); // unused
 		digitalWrite(COL2, HIGH);
 		break;
 	case 2:
-		digitalWrite(ROW1, DISPLAY_BIT(23));
-		digitalWrite(ROW2, DISPLAY_BIT(25));
-		digitalWrite(ROW3, DISPLAY_BIT(14));
-		digitalWrite(ROW4, DISPLAY_BIT(10));
-		digitalWrite(ROW5, DISPLAY_BIT(9));
-		digitalWrite(ROW6, DISPLAY_BIT(21));
 		digitalWrite(ROW7, DISPLAY_BIT(6));
 		digitalWrite(ROW8, DISPLAY_BIT(7));
 		digitalWrite(ROW9, DISPLAY_BIT(8));
-		digitalWrite(COL3, HIGH);
-		break;
-	}
-#else
-	switch (displayCycle) {
-	case 0:
-		digitalWrite(ROW1, DISPLAY_BIT(1));
-		digitalWrite(ROW2, DISPLAY_BIT(3));
-		digitalWrite(ROW3, DISPLAY_BIT(5));
-		digitalWrite(ROW4, DISPLAY_BIT(20));
-		digitalWrite(ROW5, DISPLAY_BIT(19));
-		digitalWrite(ROW6, DISPLAY_BIT(18));
-		digitalWrite(ROW7, DISPLAY_BIT(17));
-		digitalWrite(ROW8, DISPLAY_BIT(16));
-		digitalWrite(ROW9, DISPLAY_BIT(12));
-		digitalWrite(COL1, HIGH);
-		break;
-	case 1:
-		digitalWrite(ROW1, DISPLAY_BIT(15));
-		digitalWrite(ROW2, DISPLAY_BIT(11));
-		digitalWrite(ROW3, DISPLAY_BIT(13));
-		digitalWrite(ROW4, DISPLAY_BIT(2));
-		digitalWrite(ROW5, DISPLAY_BIT(4));
-		digitalWrite(ROW6, DISPLAY_BIT(24));
-		digitalWrite(ROW7, DISPLAY_BIT(22));
-		digitalWrite(ROW8, HIGH); // unused
-		digitalWrite(ROW9, HIGH); // unused
-		digitalWrite(COL2, HIGH);
-		break;
-	case 2:
+		digitalWrite(ROW5, DISPLAY_BIT(9));
+		digitalWrite(ROW4, DISPLAY_BIT(10));
+		digitalWrite(ROW3, DISPLAY_BIT(14));
+		digitalWrite(ROW6, DISPLAY_BIT(21));
 		digitalWrite(ROW1, DISPLAY_BIT(23));
 		digitalWrite(ROW2, DISPLAY_BIT(25));
-		digitalWrite(ROW3, DISPLAY_BIT(21));
-		digitalWrite(ROW4, DISPLAY_BIT(6));
-		digitalWrite(ROW5, DISPLAY_BIT(7));
-		digitalWrite(ROW6, DISPLAY_BIT(8));
-		digitalWrite(ROW7, DISPLAY_BIT(9));
-		digitalWrite(ROW8, DISPLAY_BIT(10));
-		digitalWrite(ROW9, DISPLAY_BIT(14));
 		digitalWrite(COL3, HIGH);
 		break;
 	}
-#endif
 	displayCycle = (displayCycle + 1) % 3;
 }
 
@@ -726,12 +687,24 @@ static void sendNeoPixelByte(int val) { }
 
 #endif // NeoPixel Support
 
+OBJ primNeoPixelSend(OBJ *args) {
+	int r = evalInt(args[0]);
+	int g = evalInt(args[1]);
+	int b = evalInt(args[2]);
+	if (r < 0) r = 0; if (r > 255) r = 255;
+	if (g < 0) g = 0; if (g > 255) g = 255;
+	if (b < 0) b = 0; if (b > 255) b = 255;
+	sendNeoPixelByte(g);
+	sendNeoPixelByte(r);
+	sendNeoPixelByte(b);
+	return nilObj;
+}
 
 // Microbit Primitives (noops on other boards)
 
 OBJ primMBDisplay(OBJ *args) {
 	OBJ arg = args[0];
-	if (isInt(arg)) microBitDisplayBits |= evalInt(arg);
+	if (isInt(arg)) microBitDisplayBits = evalInt(arg);
 	return nilObj;
 }
 
@@ -766,16 +739,3 @@ OBJ primMBTiltZ(OBJ *args) { return int2obj(-microbitAccel(5)); } // invert sign
 OBJ primMBTemp(OBJ *args) { return int2obj(microbitTemp(15)); }
 OBJ primMBButtonA(OBJ *args) { return microbitButton(1); }
 OBJ primMBButtonB(OBJ *args) { return microbitButton(2); }
-
-OBJ primNeoPixelSend(OBJ *args) {
-	int r = evalInt(args[0]);
-	int g = evalInt(args[1]);
-	int b = evalInt(args[2]);
-	if (r < 0) r = 0; if (r > 255) r = 255;
-	if (g < 0) g = 0; if (g > 255) g = 255;
-	if (b < 0) b = 0; if (b > 255) b = 255;
-	sendNeoPixelByte(g);
-	sendNeoPixelByte(r);
-	sendNeoPixelByte(b);
-	return nilObj;
-}
