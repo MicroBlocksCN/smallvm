@@ -585,6 +585,48 @@ static OBJ microbitButton(int buttonID) {
 	return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
 }
 
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+
+#define ACCEL_ID 33
+
+int accelStarted = false;
+
+static int circuitPlayAccel(int registerID) {
+	// xxx not yet finished
+	if (!accelStarted) {
+		Wire1.begin(); // use internal I2C bus
+		// turn on the accelerometer
+		if (!wireStarted) startWire();
+		Wire1.beginTransmission(ACCEL_ID);
+		Wire1.write(0x2A);
+		Wire1.write(1);
+		Wire1.endTransmission();
+		accelStarted = true;
+	}
+
+	Wire1.beginTransmission(ACCEL_ID);
+	Wire1.write(registerID);
+	int error = Wire1.endTransmission(false);
+	if (error) return 0;  // error; return 0
+
+	Wire1.requestFrom(ACCEL_ID, 1);
+	while (!Wire1.available());
+	int val = Wire1.read();
+	return (val < 128) ? val : -(256 - val); // value is a signed byte
+}
+
+void updateMicrobitDisplay() { }
+static int microbitAccel(int reg) { return 0; }
+static int microbitTemp(int registerID) { return 0; }
+
+static OBJ microbitButton(int buttonID) {
+	// Circuit Playground Express buttons
+	int pinNum = (1 == buttonID) ? 4 : 5;
+	SET_MODE(pinNum, INPUT);
+	// xxx configure pulldown resistors?
+	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
+}
+
 #else // stubs for non-micro:bit boards
 
 void updateMicrobitDisplay() { }
