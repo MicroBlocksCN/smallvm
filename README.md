@@ -3,18 +3,18 @@
 Microblocks (uBlocks) is a virtual machine for blocks
 languages designed to run on 32-bit embedded processors with
 as little as 8k of RAM. It is intended to be simple and
-easily ported and extended, yet high performance. It
-includes a garbage collected memory to allow working with
+easily ported and extended, yet high performance. It will
+include a garbage collected memory to allow working with
 dynamic data structures and low-latency task scheduler
 that can work at timescales down to 10-20 microseconds.
 
 uBlocks supports incremental, "live" code development when
 a board is tethered but allows the program to run autonomously
-whent he board is disconnected from the host computer.
+whent the board is disconnected from the host computer.
 
-Built-in data types will include integers, single-precision
-floating point numbers, booleans, strings, object arrays,
-and byte arrays.
+Built-in data types include integers, booleans, strings, object
+arrays, and byte arrays. Support for single-precision
+floating point numbers is in our roadmap.
 
 ### How do I compile the VM? ###
 
@@ -29,16 +29,18 @@ with the appropriate board installed and selected.
 Boards that have been tested so far include the
 Arduino Due and Primo and the BBC micro:bit.
 
+We provide precompiled VMs for boards that support drag-and-drop
+firmware upload, such as the micro:bit, the Circuit Playground or
+the Calliope.
+
 ### To Do List
 
 #### Current Issues and Tasks ####
 
-  * code persistence
-  * test/make work on the Calliope
+  * decompiler
 
 #### Virtual Machine ####
 
-  * persistence (store code chunks in Flash, restore on startup)
   * incorporate immediate floats
   * mixed-mode int/float arithmetic
   * support for function parameters and local variables
@@ -47,7 +49,6 @@ Arduino Due and Primo and the BBC micro:bit.
 #### Blocks ####
 
   * finish function support
-  * additional I/O blocks (e.g. I2C, accelerometer, etc.)
   * improved support for arrays
   * allow arrays to be returned (serialized) to the IDE
   * string concatenation and manipulation blocks?
@@ -55,14 +56,9 @@ Arduino Due and Primo and the BBC micro:bit.
 #### Snap IDE ####
 
   * compiler support for condition hats, wait until, "and" and "or", and new primitives
-  * watchers
 
 #### GP IDE ####
 
-  * re-work top-level screen layout
-  * stack highlighting
-  * stop/go button support
-  * talk bubble for returned values
   * finish support for user-defined functions
   * watchers
   * option to use helper app (needs websocket client support) to allow running in browser
