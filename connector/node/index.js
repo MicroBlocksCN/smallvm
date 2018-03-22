@@ -105,8 +105,9 @@ Connector.prototype.init = function () {
             systray.linked();
             systray.setClientStatus(true);
         }
-        myself.socket.on('message', function (message) {
-            myself.processMessage(message);
+        myself.socket.on('message', function (jsonData) {
+            var json = JSON.parse(jsonData);
+            myself.processMessage(json.portPath, json.message);
         });
         myself.socket.on('close', function () {
             log('Websocket client disconnected');
@@ -145,7 +146,7 @@ Connector.prototype.addBoard = function (portName, connectCallback) {
 
     function onData (data) {
         if (myself.socket) {
-            log('Board sends: ');
+            log('Board sends from ' + portName + ' : ');
             log(data, 0);
             myself.socket.send(data);
         } else {
@@ -197,7 +198,7 @@ Connector.prototype.removeBoard = function (portName, onSuccess, onError) {
 Connector.prototype.boardSend = function (portName, arrayBuffer) {
     var board = this.boardAt(portName);
     if (board) {
-        log('IDE sends: ');
+        log('IDE sends to ' + portName + ': ');
         log(arrayBuffer, 0);
         board.send(arrayBuffer);
     } else {
@@ -224,7 +225,7 @@ Connector.prototype.stringToByteArray = function (str) {
 
 // Message processing
 
-Connector.prototype.processMessage = function (rawData) {
+Connector.prototype.processMessage = function (portName, rawData) {
     var array = new Uint8Array(rawData),
         message;
     if (array[1] === 0xFF) {
@@ -236,11 +237,7 @@ Connector.prototype.processMessage = function (rawData) {
         log(message, 0);
         this.dispatcher[message.selector].call(this, message.arguments);
     } else {
-        // TODO We should get the portName somehow, but sending all messages
-        //      as JSON would probably slow things down by quite a lot.
-        //      For now, we only support one board, although the infrastructure
-        //      is there for a future multiboard support.
-        this.boardSend(Object.keys(this.boards)[0], rawData);
+        this.boardSend(portName, rawData);
     }
 };
 
