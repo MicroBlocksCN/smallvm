@@ -13,6 +13,11 @@
 
 #define USE_TASKS true
 
+// RECENT is a threshold for waking up tasks waiting on timers
+// The timer can be up to this much past the wakeup time.
+
+#define RECENT 100000
+
 // Interpreter State
 
 CodeChunkRecord chunks[MAX_CHUNKS];
@@ -340,13 +345,25 @@ static void runTask(Task *task) {
 		DISPATCH();
 	waitMicros_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
+	 	if (tmp <= 30) {
+			// busy-wait for wait times up to 30 usecs to avoid a context switch
+			tmp = (microsecs() + tmp) - 8; // wake time, adjusted for dispatch overhead
+			while ((microsecs() - tmp) >= RECENT) /* busy wait */;
+			DISPATCH();
+		}
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + tmp;
+		task->wakeTime = (microsecs() + tmp) - 17; // adjusted for approximate scheduler overhead
 		goto suspend;
 	waitMillis_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
-		task->status = waiting_millis;
-		task->wakeTime = millisecs() + tmp;
+	 	if (tmp < 1000) {
+	 		// use usecs for waits under a second for greater precision
+			task->status = waiting_micros;
+			task->wakeTime = microsecs() + ((1000 * tmp) - 17);
+	 	} else {
+			task->status = waiting_millis;
+			task->wakeTime = millisecs() + tmp;
+		}
 		goto suspend;
 	printIt_op:
 		if (!hasOutputSpace(PRINT_BUF_SIZE + 100)) { // leave room for other messages
@@ -573,11 +590,6 @@ static void runTask(Task *task) {
 }
 
 // Task Scheduler
-
-// RECENT is a threshold for waking up tasks waiting on timers
-// The timer can be up to this much past the wakeup time.
-
-#define RECENT 100000
 
 static int currentTaskIndex = -1;
 

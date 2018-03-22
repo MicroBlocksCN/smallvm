@@ -74,8 +74,8 @@
 #elif defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 	#include "samr.h" // SAM21D
 
-	#define START (40 * 1024)
-	#define HALF_SPACE (108 * 1024)
+	#define START (56 * 1024)
+	#define HALF_SPACE (100 * 1024)
 
 	// SAM21 Non-Volatile Memory Controller Registers
 	#define NVMC_CTRLA   ((volatile int *) 0x41004000)
