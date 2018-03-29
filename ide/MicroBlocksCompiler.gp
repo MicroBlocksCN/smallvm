@@ -84,6 +84,7 @@ method initOpcodes SmallCompiler {
 #define spiRecv 67
 #define sendBroadcast 68
 #define recvBroadcast 69
+#define neoPixelSend 70
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {

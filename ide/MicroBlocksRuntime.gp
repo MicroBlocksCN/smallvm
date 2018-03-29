@@ -42,6 +42,7 @@ method microBlocksSpecs SmallRuntime {
 		(array 'r' 'mbTiltY'			'tilt y')
 		(array 'r' 'mbTiltZ'			'tilt z')
 		(array 'r' 'mbTemp'				'temperature Celcius')
+		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _' 'num num num' 2 0 5)
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
  		(array 'h' 'whenCondition'		'when _' 'bool')
@@ -110,7 +111,10 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 	// save all chunks, including functions and broadcast receivers
 	// (it would be more efficient to save only chunks that have changed)
 	saveAllChunks this
-	saveChunk this aBlock
+	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
+		// running a block from the palette, not included in saveAllChunks
+		saveChunk this aBlock
+	}
 	runChunk this (chunkIdFor this aBlock)
 }
 
@@ -325,10 +329,17 @@ method saveChunk SmallRuntime aBlock {
 	data = (list chunkType)
 	addAll data (chunkBytesForBlock this aBlock)
 	sendMsg this 'chunkCodeMsg' chunkID data
+	waitMSecs ((count data) / 10) // wait approximate transmission time
+
+return // xxx do not save source code for now; it can overwhealm serial connection
 
 	// save the GP source code
 	data = (list 2) // GP source code attribute
 	addAll data (toArray (toBinaryData (toTextCode aBlock)))
+	if ((count data) > 1000) {
+		print 'Source code too big; not saving:' (count data) 'bytes'
+		return
+	}
 	sendMsg this 'chunkAttributeMsg' chunkID data
 
 	// save the script position (relative to its owner)
