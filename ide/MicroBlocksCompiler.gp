@@ -228,9 +228,8 @@ method instructionsForWhenCondition SmallCompiler cmdOrReporter {
 	// wait until condition becomes true
 	addAll result (instructionsForExpression this 10)
 	add result (array 'waitMillisOp' 1)
-	add result (array 'pop' 1)
 	addAll result condition
-	add result (array 'jmpFalse' (0 - ((count condition) + 4)))
+	add result (array 'jmpFalse' (0 - ((count condition) + 3)))
 
 	addAll result body
 
@@ -450,7 +449,6 @@ method primitive SmallCompiler op args isCommand {
 	  }
 	  addAll result (instructionsForExpression this displayWord)
 	  add result (array 'mbDisplay' 1)
-	  add result (array 'pop' 1)
 	} ('comment' == op) {
 		// ignore comments
 	} (contains opcodes op) {
@@ -458,9 +456,6 @@ method primitive SmallCompiler op args isCommand {
 			addAll result (instructionsForExpression this arg)
 		}
 		add result (array op (count args))
-		if (and isCommand (not (isOneOf op 'noop' 'stopTask' 'stopAll')))  {
-			add result (array 'pop' 1)
-		}
 	} else {
 		print 'Skipping unknown op:' op
 	}

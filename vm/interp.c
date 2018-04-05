@@ -111,6 +111,10 @@ static OBJ primSendBroadcast(OBJ *args) {
 
 // Interpreter
 
+// Macros to pop arguments for commands and reporters (pops args, leaves result on stack)
+#define POP_ARGS_COMMAND() { sp -= arg; }
+#define POP_ARGS_REPORTER() { sp -= arg - 1; }
+
 // Macro to inline dispatch in the end of each opcode (avoiding a jump back to the top)
 #define DISPATCH() { \
 	if (errorCode) goto error; \
@@ -345,6 +349,7 @@ static void runTask(Task *task) {
 		DISPATCH();
 	waitMicros_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
+	 	POP_ARGS_COMMAND();
 	 	if (tmp <= 30) {
 			// busy-wait for wait times up to 30 usecs to avoid a context switch
 			tmp = (microsecs() + tmp) - 8; // wake time, adjusted for dispatch overhead
@@ -356,6 +361,7 @@ static void runTask(Task *task) {
 		goto suspend;
 	waitMillis_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
+	 	POP_ARGS_COMMAND();
 	 	if (tmp < 1000) {
 	 		// use usecs for waits under a second for greater precision
 			task->status = waiting_micros;
@@ -371,73 +377,74 @@ static void runTask(Task *task) {
 			goto suspend;
 		}
 		primPrint(arg, sp - arg); // arg = # of arguments
-		sp -= arg - 1;
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	stopAll_op:
 		stopAllTasks(); // clears all tasks, including the current one
 		return;
 
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
-	// All primitive ops pop all their args and leave a result on the top of the stack.
+	// Commands pop all their arguments.
+	// Reporters pop all their arguments and leave a result on the top of the stack.
 	add_op:
 		*(sp - arg) = int2obj(evalInt(*(sp - 2)) + evalInt(*(sp - 1)));
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	subtract_op:
 		*(sp - arg) = int2obj(evalInt(*(sp - 2)) - evalInt(*(sp - 1)));
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	multiply_op:
 		*(sp - arg) = int2obj(evalInt(*(sp - 2)) * evalInt(*(sp - 1)));
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	divide_op:
 		*(sp - arg) = int2obj(evalInt(*(sp - 2)) / evalInt(*(sp - 1)));
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	lessThan_op:
 		*(sp - arg) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	newArray_op:
 		*(sp - arg) = primNewArray(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	newByteArray_op:
 		*(sp - arg) = primNewByteArray(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	fillArray_op:
-		*(sp - arg) = primArrayFill(sp - arg);
-		sp -= arg - 1;
+		primArrayFill(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	at_op:
 		*(sp - arg) = primArrayAt(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	atPut_op:
-		*(sp - arg) = primArrayAtPut(sp - arg);
-		sp -= arg - 1;
+		primArrayAtPut(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	analogRead_op:
 		*(sp - arg) = primAnalogRead(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	analogWrite_op:
-		*(sp - arg) = primAnalogWrite(sp - arg);
-		sp -= arg - 1;
+		primAnalogWrite(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	digitalRead_op:
 		*(sp - arg) = primDigitalRead(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	digitalWrite_op:
-		*(sp - arg) = primDigitalWrite(sp - arg);
-		sp -= arg - 1;
+		primDigitalWrite(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	setLED_op:
 		*(sp - arg) = primSetLED(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	micros_op:
 		*sp++ = int2obj(microsecs() & 0x3FFFFFFF); // low 30-bits so result is positive
@@ -447,19 +454,19 @@ static void runTask(Task *task) {
 		DISPATCH();
 	peek_op:
 		*(sp - arg) = primPeek(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	poke_op:
-		*(sp - arg) = primPoke(sp - arg);
-		sp -= arg - 1;
+		primPoke(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	modulo_op:
 		*(sp - arg) = int2obj(evalInt(*(sp - 2)) % evalInt(*(sp - 1)));
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	lessOrEq_op:
 		*(sp - arg) = ((evalInt(*(sp - 2)) <= evalInt(*(sp - 1))) ? trueObj : falseObj);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	equal_op:
 		tmpObj = *(sp - 2);
@@ -473,15 +480,15 @@ static void runTask(Task *task) {
 		} else {
 			fail(nonComparableError);
 		}
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	greaterOrEq_op:
 		*(sp - arg) = ((evalInt(*(sp - 2)) >= evalInt(*(sp - 1))) ? trueObj : falseObj);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	greaterThan_op:
 		*(sp - arg) = ((evalInt(*(sp - 2)) > evalInt(*(sp - 1))) ? trueObj : falseObj);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	not_op:
 		tmpObj = *(sp - 1);
@@ -492,7 +499,7 @@ static void runTask(Task *task) {
 		} else {
 			fail(needsBooleanError);
 		}
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	sayIt_op:
 		if (!hasOutputSpace(bytesForObject(*(sp - arg)) + 100)) { // leave room for other messages
@@ -500,92 +507,92 @@ static void runTask(Task *task) {
 			goto suspend;
 		}
 		outputValue(*(sp - arg), task->taskChunkIndex);
-		sp -= arg - 1;
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	analogPins_op:
 		*(sp - arg) = primAnalogPins(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	digitalPins_op:
 		*(sp - arg) = primDigitalPins(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	primHexToInt_op:
 		*(sp - arg) = primHexToInt(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	primI2cGet_op:
 		*(sp - arg) = primI2cGet(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	primI2cSet_op:
-		*(sp - arg) = primI2cSet(sp - arg);
-		sp -= arg - 1;
+		primI2cSet(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbDisplay_op:
-		*(sp - arg) = primMBDisplay(sp - arg);
-		sp -= arg - 1;
+		primMBDisplay(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbDisplayOff_op:
-		*(sp - arg) = primMBDisplayOff(sp - arg);
-		sp -= arg - 1;
+		primMBDisplayOff(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbPlot_op:
-		*(sp - arg) = primMBPlot(sp - arg);
-		sp -= arg - 1;
+		primMBPlot(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbUnplot_op:
-		*(sp - arg) = primMBUnplot(sp - arg);
-		sp -= arg - 1;
+		primMBUnplot(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbTiltX_op:
 		*(sp - arg) = primMBTiltX(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	mbTiltY_op:
 		*(sp - arg) = primMBTiltY(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	mbTiltZ_op:
 		*(sp - arg) = primMBTiltZ(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	mbTemp_op:
 		*(sp - arg) = primMBTemp(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	mbButtonA_op:
 		*(sp - arg) = primMBButtonA(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	mbButtonB_op:
 		*(sp - arg) = primMBButtonB(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	random_op:
 		tmp = evalInt(*(sp - 1));
 		if (tmp <= 0) tmp = 1;
 		*(sp - arg) = int2obj((rand() % tmp) + 1); // result range is [1..tmp], inclusive
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	spiSend_op:
-		*(sp - arg) = primSPISend(sp - arg);
-		sp -= arg - 1;
+		primSPISend(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	spiRecv_op:
 		*(sp - arg) = primSPIRecv(sp - arg);
-		sp -= arg - 1;
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	sendBroadcast_op:
-		*(sp - arg) = primSendBroadcast(sp - arg);
-		sp -= arg - 1;
+		primSendBroadcast(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	recvBroadcast_op:
-		sp -= arg - 1; // pop the broadcast name (a literal string)
+		POP_ARGS_COMMAND(); // pop the broadcast name (a literal string)
 		DISPATCH();
 	neoPixelSend_op:
-		*(sp - arg) = primNeoPixelSend(sp - arg);
-		sp -= arg - 1;
+		primNeoPixelSend(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 }
 
