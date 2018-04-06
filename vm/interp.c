@@ -36,7 +36,7 @@ static uint8 errorCode = noError;
 
 OBJ fail(uint8 errCode) {
 	errorCode = errCode;
-	return nilObj;
+	return falseObj;
 }
 
 // Printing
@@ -52,9 +52,8 @@ static void printObj(OBJ obj) {
 	int n = PRINT_BUF_SIZE - printBufferByteCount;
 
 	if (isInt(obj)) snprintf(dst, n, "%d ", obj2int(obj));
-	else if (obj == nilObj) snprintf(dst, n, "nil ");
-	else if (obj == trueObj) snprintf(dst, n, "true ");
 	else if (obj == falseObj) snprintf(dst, n, "false ");
+	else if (obj == trueObj) snprintf(dst, n, "true ");
 	else if (objClass(obj) == StringClass) {
 		snprintf(dst, n, "%s ", obj2str(obj));
 	} else {
@@ -63,7 +62,7 @@ static void printObj(OBJ obj) {
 	printBufferByteCount = strlen(printBuffer);
 }
 
-static OBJ primPrint(int argCount, OBJ *args) {
+static void primPrint(int argCount, OBJ *args) {
 	// This is a variadic "print" for the GP IDE.
 
 	printBuffer[0] = 0; // null terminate
@@ -82,11 +81,11 @@ static OBJ primPrint(int argCount, OBJ *args) {
 #else
 	printf("(NO TASKS) %s\r\n", printBuffer);
 #endif
-	return nilObj;
 }
 
 static int bytesForObject(OBJ value) {
-	// Return the number of
+	// Return the number of bytes needed to transmit the given value.
+
 	int headerBytes = 6; // message header (5 bytes) + type byte
 	if (isInt(value)) { // 32-bit integer
 		return headerBytes + 4;
@@ -100,13 +99,12 @@ static int bytesForObject(OBJ value) {
 
 // Broadcast
 
-static OBJ primSendBroadcast(OBJ *args) {
+static void primSendBroadcast(OBJ *args) {
 	if (IS_CLASS(args[0], StringClass)) {
 		char *s = obj2str(args[0]);
 		startReceiversOfBroadcast(s, strlen(s));
 		sendBroadcastToIDE(s);
 	}
-	return nilObj;
 }
 
 // Interpreter
@@ -443,7 +441,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	setLED_op:
-		*(sp - arg) = primSetLED(sp - arg);
+		primSetLED(sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	micros_op:
@@ -472,11 +470,10 @@ static void runTask(Task *task) {
 		tmpObj = *(sp - 2);
 		if (tmpObj == *(sp - 1)) { // identical objects
 			*(sp - arg) = trueObj;
-		} else if (tmpObj <= falseObj) { // nil, true, false
-			if (tmpObj == nilObj) fail(nonComparableError); // nil was compared to a non-nil value
-			*(sp - arg) = falseObj; // two booleans compared, but not equal
+		} else if (tmpObj <= trueObj) { // tmpObj is a boolean
+			*(sp - arg) = falseObj; // booleans compared, but not equal
 		} else if (isInt(tmpObj) && isInt(*(sp - 1))) {
-			*(sp - arg) = falseObj; // two integers compared, but not equal
+			*(sp - arg) = falseObj; // integers compared, but not equal
 		} else {
 			fail(nonComparableError);
 		}

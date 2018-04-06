@@ -52,10 +52,6 @@ void vmPanic(char *errorMessage) {
 	while (true) processMessage(); // there's no way to recover; loop forever!
 }
 
-void memClear() {
-	freeStart = memStart;
-}
-
 OBJ newObj(int classID, int wordCount, OBJ fill) {
 	if ((freeStart + HEADER_WORDS + wordCount) >= memEnd) {
 		return fail(insufficientMemoryError);
@@ -70,19 +66,6 @@ OBJ newObj(int classID, int wordCount, OBJ fill) {
 
 // String Primitives
 
-OBJ newString(char *s) {
-	// Create a new string object with the contents of s.
-	// Round up to an even number of words and pad with nulls.
-
-	int byteCount = strlen(s) + 1; // leave room for null terminator
-	int wordCount = (byteCount + 3) / 4;
-	OBJ result = newObj(StringClass, wordCount, 0);
-	char *dst = (char *) &result[HEADER_WORDS];
-	for (int i = 0; i < byteCount; i++) *dst++ = *s++;
-	*dst = 0; // null terminator byte
-	return result;
-}
-
 OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
 	// Create a new string object with the given bytes.
 	// Round up to an even number of words and pad with nulls.
@@ -96,7 +79,7 @@ OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
 }
 
 char* obj2str(OBJ obj) {
-	if (NOT_CLASS(obj, StringClass)) {
+	if (!IS_CLASS(obj, StringClass)) {
 		fail(needsStringError);
 		return (char *) "";
 	}

@@ -292,37 +292,37 @@ void updateMicrobitDisplay(); // temporary
 
 OBJ primNewArray(OBJ *args);
 OBJ primNewByteArray(OBJ *args);
-OBJ primArrayFill(OBJ *args);
+void primArrayFill(OBJ *args);
 OBJ primArrayAt(OBJ *args);
-OBJ primArrayAtPut(OBJ *args);
+void primArrayAtPut(OBJ *args);
 
 OBJ primHexToInt(OBJ *args);
 OBJ primPeek(OBJ *args);
-OBJ primPoke(OBJ *args);
+void primPoke(OBJ *args);
 
 OBJ primAnalogPins(OBJ *args);
 OBJ primDigitalPins(OBJ *args);
 OBJ primAnalogRead(OBJ *args);
-OBJ primAnalogWrite(OBJ *args);
+void primAnalogWrite(OBJ *args);
 OBJ primDigitalRead(OBJ *args);
-OBJ primDigitalWrite(OBJ *args);
-OBJ primSetLED(OBJ *args);
+void primDigitalWrite(OBJ *args);
+void primSetLED(OBJ *args);
 OBJ primI2cGet(OBJ *args);
 OBJ primI2cSet(OBJ *args);
 OBJ primSPISend(OBJ *args);
 OBJ primSPIRecv(OBJ *args);
 
-OBJ primMBDisplay(OBJ *args);
-OBJ primMBDisplayOff(OBJ *args);
-OBJ primMBPlot(OBJ *args);
-OBJ primMBUnplot(OBJ *args);
+void primMBDisplay(OBJ *args);
+void primMBDisplayOff(OBJ *args);
+void primMBPlot(OBJ *args);
+void primMBUnplot(OBJ *args);
 OBJ primMBTiltX(OBJ *args);
 OBJ primMBTiltY(OBJ *args);
 OBJ primMBTiltZ(OBJ *args);
 OBJ primMBTemp(OBJ *args);
 OBJ primMBButtonA(OBJ *args);
 OBJ primMBButtonB(OBJ *args);
-OBJ primNeoPixelSend(OBJ *args);
+void primNeoPixelSend(OBJ *args);
 
 #ifdef __cplusplus
 }

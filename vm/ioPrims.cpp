@@ -256,21 +256,20 @@ OBJ primAnalogRead(OBJ *args) {
 	return int2obj(analogRead(pin));
 }
 
-OBJ primAnalogWrite(OBJ *args) {
+void primAnalogWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	int value = obj2int(args[1]);
 	if (value < 0) value = 0;
 	if (value > 1023) value = 1023;
-	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return nilObj;
+	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return;
 	int pin = analogPin[pinNum];
 	SET_MODE(pin, OUTPUT);
 	analogWrite(pin, value); // sets the PWM duty cycle on a digital pin
-	return nilObj;
 }
 
 OBJ primDigitalRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	#ifdef ARDUINO_NRF52_PRIMO
 		if (20 == pinNum) return (HIGH == digitalRead(USER1_BUTTON)) ? trueObj : falseObj;
 		if (21 == pinNum) return falseObj;
@@ -279,20 +278,19 @@ OBJ primDigitalRead(OBJ *args) {
 	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
 }
 
-OBJ primDigitalWrite(OBJ *args) {
+void primDigitalWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	int value = (args[1] == trueObj) ? HIGH : LOW;
-	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
 	#ifdef ARDUINO_NRF52_PRIMO
-		if (20 == pinNum) return nilObj;
-		if (21 == pinNum) { digitalWrite(BUZZER, value); return nilObj; }
+		if (20 == pinNum) return;
+		if (21 == pinNum) { digitalWrite(BUZZER, value); return; }
 	#endif
 	SET_MODE(pinNum, OUTPUT);
 	digitalWrite(pinNum, value);
-	return nilObj;
 }
 
-OBJ primSetLED(OBJ *args) {
+void primSetLED(OBJ *args) {
 	 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 		// Special case: Use a row-column compinaton to turn on one LED in the LED matrix.
 
@@ -309,7 +307,6 @@ OBJ primSetLED(OBJ *args) {
 		SET_MODE(PIN_LED, OUTPUT);
 		digitalWrite(PIN_LED, (trueObj == args[0]) ? HIGH : LOW);
 	#endif
-	return nilObj;
 }
 
 static int wireStarted = false;
@@ -351,8 +348,7 @@ OBJ primI2cSet(OBJ *args) {
 	Wire.write(registerID);
 	Wire.write(value);
 	Wire.endTransmission();
-
-	return nilObj;
+	return falseObj;
 }
 
 static void initSPI() {
@@ -369,7 +365,7 @@ OBJ primSPISend(OBJ *args) {
 	if (data > 255) return fail(i2cValueOutOfRange);
 	initSPI();
 	SPI.transfer(data); // send data byte to the slave
-	return nilObj;
+	return falseObj;
 }
 
 OBJ primSPIRecv(OBJ *args) {
@@ -711,7 +707,7 @@ static void sendNeoPixelByte(int val) { }
 
 #endif // NeoPixel Support
 
-OBJ primNeoPixelSend(OBJ *args) {
+void primNeoPixelSend(OBJ *args) {
 	int r = evalInt(args[0]);
 	int g = evalInt(args[1]);
 	int b = evalInt(args[2]);
@@ -721,40 +717,35 @@ OBJ primNeoPixelSend(OBJ *args) {
 	sendNeoPixelByte(g);
 	sendNeoPixelByte(r);
 	sendNeoPixelByte(b);
-	return nilObj;
 }
 
 // Microbit Primitives (noops on other boards)
 
-OBJ primMBDisplay(OBJ *args) {
+void primMBDisplay(OBJ *args) {
 	OBJ arg = args[0];
 	if (isInt(arg)) microBitDisplayBits = evalInt(arg);
-	return nilObj;
 }
 
-OBJ primMBDisplayOff(OBJ *args) {
+void primMBDisplayOff(OBJ *args) {
 	microBitDisplayBits = 0;
-	return nilObj;
 }
 
-OBJ primMBPlot(OBJ *args) {
+void primMBPlot(OBJ *args) {
 	int x = evalInt(args[0]);
 	int y = evalInt(args[1]);
 	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
 		int shift = (5 * (y - 1)) + (x - 1);
 		microBitDisplayBits |= (1 << shift);
 	}
-	return nilObj;
 }
 
-OBJ primMBUnplot(OBJ *args) {
+void primMBUnplot(OBJ *args) {
 	int x = evalInt(args[0]);
 	int y = evalInt(args[1]);
 	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
 		int shift = (5 * (y - 1)) + (x - 1);
 		microBitDisplayBits &= ~(1 << shift);
 	}
-	return nilObj;
 }
 
 OBJ primMBTiltX(OBJ *args) { return int2obj(microbitAccel(1)); }

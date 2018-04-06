@@ -22,21 +22,18 @@ typedef int * OBJ;
 
 // Class IDs
 
-#define NilClass 1
-#define BooleanClass 2
-#define IntegerClass 3
-#define FloatClass 4
-#define StringClass 5
-#define ByteArrayClass 6
-#define CodeChunkClass 7
-#define ArrayClass 8
+#define BooleanClass 1
+#define IntegerClass 2
+#define FloatClass 3 // not yet supported
+#define StringClass 4
+#define ByteArrayClass 5 // objects with class ID's <= 5 do not contain pointers
+#define ArrayClass 6
 
-// OBJ constants for nil, true, and false
+// OBJ constants for false and true
 // Note: These are constants, not pointers to objects in memory.
 
-#define nilObj ((OBJ) 0)
+#define falseObj ((OBJ) 0)
 #define trueObj ((OBJ) 4)
-#define falseObj ((OBJ) 8)
 
 // Integers
 
@@ -58,13 +55,13 @@ typedef int * OBJ;
 #define WORDS(obj) (*((unsigned*) (obj)) >> 4)
 
 static inline int objWords(OBJ obj) {
-	if (isInt(obj) || (obj <= falseObj)) return 0;
+	if (isInt(obj) || (obj <= trueObj)) return 0;
 	return WORDS(obj);
 }
 
 static inline int objClass(OBJ obj) {
 	if (isInt(obj)) return IntegerClass;
-	if (obj <= falseObj) return (obj == nilObj) ? NilClass : BooleanClass;
+	if (obj <= trueObj) return BooleanClass;
 	return CLASS(obj);
 }
 
@@ -72,21 +69,15 @@ static inline int objClass(OBJ obj) {
 
 #define FIELD(obj, i) (((OBJ *) obj)[HEADER_WORDS + (i)])
 
-// Class checks for classes with memory instances
-// (Note: there are faster ways to test for small integers, booleans, or nil)
+// Class check for classes with memory instances
+// (Note: there are faster tests for small integers and booleans)
 
-#define IS_CLASS(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > falseObj) && (CLASS(obj) == classID))
-#define NOT_CLASS(obj, classID) ((((int) obj) & 3) || ((obj) <= falseObj) || (CLASS(obj) != classID))
+#define IS_CLASS(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > trueObj) && (CLASS(obj) == classID))
 
-// Object Memory Initialization
+// Object Memory Operations
 
 void memInit(int wordCount);
-void memClear(void);
-
-// Object Allocation and String Operations
-
 OBJ newObj(int classID, int wordCount, OBJ fill);
-OBJ newString(char *s);
 OBJ newStringFromBytes(uint8 *bytes, int byteCount);
 char* obj2str(OBJ obj);
 

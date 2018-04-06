@@ -19,11 +19,11 @@ OBJ primNewArray(OBJ *args) {
 OBJ primNewByteArray(OBJ *args) {
 	OBJ n = args[0];
 	if (!isInt(n) || ((int) n < 0)) return fail(arraySizeError);
-	OBJ result = newObj(ByteArrayClass, (obj2int(n) + 3) / 4, nilObj); // filled with zero bytes
+	OBJ result = newObj(ByteArrayClass, (obj2int(n) + 3) / 4, 0); // filled with zero bytes
 	return result;
 }
 
-OBJ primArrayFill(OBJ *args) {
+void primArrayFill(OBJ *args) {
 	OBJ array = args[0];
 	if (!(IS_CLASS(array, ArrayClass) || IS_CLASS(array, ByteArrayClass))) return fail(needsArrayError);
 	OBJ value = args[1];
@@ -39,7 +39,6 @@ OBJ primArrayFill(OBJ *args) {
 		uint8 *end = dst + (4 * objWords(array));
 		while (dst < end) *dst++ = byteValue;
 	}
-	return nilObj;
 }
 
 OBJ primArrayAt(OBJ *args) {
@@ -54,11 +53,11 @@ OBJ primArrayAt(OBJ *args) {
 		if ((i < 1) || (i > (objWords(array) * 4))) return fail(indexOutOfRangeError);
 		uint8 *bytes = (uint8 *) &FIELD(array, 0);
 		return int2obj(bytes[i - 1]);
-	} else return fail(needsArrayError);
-	return nilObj;
+	}
+	return fail(needsArrayError);
 }
 
-OBJ primArrayAtPut(OBJ *args) {
+void primArrayAtPut(OBJ *args) {
 	OBJ array = args[0];
 	if (!isInt(args[1])) return fail(needsIntegerIndexError);
 	int i = obj2int(args[1]);
@@ -74,12 +73,11 @@ OBJ primArrayAtPut(OBJ *args) {
 		if (byteValue > 255) return fail(byteArrayStoreError);
 		((uint8 *) &FIELD(array, 0))[i - 1] = byteValue;
 	} else return fail(needsArrayError);
-	return nilObj;
 }
 
 OBJ primHexToInt(OBJ *args) {
 	OBJ s = args[0];
-	if (NOT_CLASS(s, StringClass)) return fail(needsStringError);
+	if (!IS_CLASS(s, StringClass)) return fail(needsStringError);
 	long result = strtol(obj2str(s), NULL, 16);
 	if ((result < -536870912) || (result > 536870911)) return fail(hexRangeError);
 	return int2obj(result);
@@ -91,9 +89,8 @@ OBJ primPeek(OBJ *args) {
 	return int2obj(*addr);
 }
 
-OBJ primPoke(OBJ *args) {
+void primPoke(OBJ *args) {
 	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return fail(needsIntegerError);
 	int *addr = (int *) (((obj2int(args[0]) & 0xFFFF) << 16) | (obj2int(args[1]) & 0xFFFF));
 	*addr = obj2int(args[2]);
-	return nilObj;
 }

@@ -489,7 +489,7 @@ void restoreScripts() {
 			int chunkIndex = (*p >> 8) & 0xFF;
 			if (chunkIndex < MAX_CHUNKS) {
 				chunks[chunkIndex].chunkType = unusedChunk;
-				chunks[chunkIndex].code = nilObj;
+				chunks[chunkIndex].code = NULL;
 			}
 		}
 		p = recordAfter(p);

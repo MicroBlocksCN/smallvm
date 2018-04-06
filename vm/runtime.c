@@ -148,7 +148,7 @@ static void storeCommentPosition(uint8 commentIndex, int byteCount, uint8 *data)
 static void deleteCodeChunk(uint8 chunkIndex) {
 	if (chunkIndex >= MAX_CHUNKS) return;
 	stopTaskForChunk(chunkIndex);
-	chunks[chunkIndex].code = nilObj;
+	chunks[chunkIndex].code = NULL;
 	chunks[chunkIndex].chunkType = unusedChunk;
 	appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
 }
@@ -376,7 +376,7 @@ static void sendAllCode() {
 
 	for (int chunkID = 0; chunkID < MAX_CHUNKS; chunkID++) {
 		OBJ code = chunks[chunkID].code;
-		if (nilObj == code) continue; // skip unused chunk entry
+		if (NULL == code) continue; // skip unused chunk entry
 
 		// send the binary code
 		int words = *(code + 1); // size is the second word in the persistent store record
