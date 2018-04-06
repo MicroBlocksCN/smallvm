@@ -78,10 +78,10 @@ method showInstructions SmallRuntime aBlockOrFunction {
 			arg = (at item 2)
 			if (1 == (arg & 1)) {
 				arg = (arg >> 1) // decode integer
+			} (0 == arg) {
+				arg = false
 			} (4 == arg) {
 				arg = true
-			} (8 == arg) {
-				arg = false
 			}
 			print (array 'pushImmediate' arg)
 		} else {

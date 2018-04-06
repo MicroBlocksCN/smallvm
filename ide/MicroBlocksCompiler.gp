@@ -5,8 +5,9 @@ defineClass SmallCompiler opcodes trueObj falseObj
 
 method initialize SmallCompiler {
 	initOpcodes this
+	falseObj = 0
 	trueObj = 4
-	falseObj = 8
+	stringClassID = 4
 	return this
 }
 
@@ -358,7 +359,7 @@ method instructionsForExpression SmallCompiler expr {
 	} (isNil expr) {
 		return (list (array 'pushImmediate' 1)) // the integer zero
 	} (isClass expr 'Integer') {
-		if (and (-4194304 <= expr) (expr < 4194303)) { // 23-bit encoded as 24 bit int object
+		if (and (-4194304 <= expr) (expr <= 4194303)) { // 23-bit encoded as 24 bit int object
 			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FFFFFF')) ))
 		} else {
 			return (list
@@ -535,7 +536,7 @@ method addBytesForStringLiteral SmallCompiler s bytes {
 
 	byteCount = (byteCount s)
 	wordCount = (floor ((byteCount + 4) / 4))
-	headerWord = ((wordCount << 4) | 5);
+	headerWord = ((wordCount << 4) | stringClassID);
 	repeat 4 { // add header bytes, little endian
 		add bytes (headerWord & 255)
 		headerWord = (headerWord >> 8)
