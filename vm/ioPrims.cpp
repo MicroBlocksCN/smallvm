@@ -280,17 +280,25 @@ OBJ primDigitalRead(OBJ *args) {
 
 void primDigitalWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	int value = (args[1] == trueObj) ? HIGH : LOW;
+	int flag = (trueObj == args[1]);
+	primDigitalSet(pinNum, flag);
+}
+
+void primDigitalSet(int pinNum, int flag) {
+	// This supports a compiler optimization. If the arguments of a digitalWrite
+	// are compile-time constants, the compiler can generate a digitalSet or digitalClear
+	// instruction, thus saving the cost of pushing the pin number and boolean.
+	// (This can make a difference in time-sensitives applications like sound generation.)
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
 	#ifdef ARDUINO_NRF52_PRIMO
 		if (20 == pinNum) return;
-		if (21 == pinNum) { digitalWrite(BUZZER, value); return; }
+		if (21 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
 	#endif
 	SET_MODE(pinNum, OUTPUT);
-	digitalWrite(pinNum, value);
+	digitalWrite(pinNum, (flag ? HIGH : LOW));
 }
 
-void primSetLED(OBJ *args) {
+void primSetUserLED(OBJ *args) {
 	 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 		// Special case: Use a row-column compinaton to turn on one LED in the LED matrix.
 
@@ -752,5 +760,6 @@ OBJ primMBTiltX(OBJ *args) { return int2obj(microbitAccel(1)); }
 OBJ primMBTiltY(OBJ *args) { return int2obj(microbitAccel(3)); }
 OBJ primMBTiltZ(OBJ *args) { return int2obj(-microbitAccel(5)); } // invert sign of Z
 OBJ primMBTemp(OBJ *args) { return int2obj(microbitTemp(15)); }
-OBJ primMBButtonA(OBJ *args) { return microbitButton(1); }
-OBJ primMBButtonB(OBJ *args) { return microbitButton(2); }
+
+OBJ primButtonA(OBJ *args) { return microbitButton(1); }
+OBJ primButtonB(OBJ *args) { return microbitButton(2); }

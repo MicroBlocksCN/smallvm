@@ -9,82 +9,118 @@ extern "C" {
 
 #define halt 0
 #define noop 1
-#define pushImmediate 2 // true, false, and ints that fit in 24 bits
-#define pushBigImmediate 3 // ints that do not fit in 24 bits (and later, floats)
-#define pushLiteral 4 // string or array constant from literals frame
+#define pushImmediate 2		// true, false, and ints that fit in 24 bits
+#define pushBigImmediate 3	// ints that do not fit in 24 bits (and later, floats)
+#define pushLiteral 4		// string or array constant from literals frame
 #define pushVar 5
-#define popVar 6
+#define storeVar 6
 #define incrementVar 7
 #define pushArgCount 8
 #define pushArg 9
-#define pushLocal 10
-#define popLocal 11
-#define incrementLocal 12
-#define pop 13
-#define jmp 14
-#define jmpTrue 15
-#define jmpFalse 16
-#define decrementAndJmp 17
-#define callFunction 18
-#define returnResult 19
-#define waitMicrosOp 20
-#define waitMillisOp 21
-#define printIt 22
-#define stopAll 23
-#define add 24
-#define subtract 25
-#define multiply 26
-#define divide 27
-#define lessThan 28
-#define newArray 29
-#define newByteArray 30
-#define fillArray 31
-#define at 32
-#define atPut 33
-#define analogReadOp 34
-#define analogWriteOp 35
-#define digitalReadOp 36
-#define digitalWriteOp 37
-#define setLEDOp 38
-#define microsOp 39
-#define millisOp 40
-#define peekOp 41
-#define pokeOp 42
-#define modulo 43
-#define lessOrEq 44
-#define equal 45
-#define greaterOrEq 46
-#define greaterThan 47
-#define notOp 48
-#define sayIt 49
-#define analogPinsOp 50
-#define digitalPinsOp 51
-#define hexToInt 52
-#define i2cGet 53
-#define i2cSet 54
-
-#define mbDisplay 55 // temporary micro:bit primitives for demos
-#define mbDisplayOff 56
-#define mbPlot 57
-#define mbUnplot 58
-#define mbTiltX 59
-#define mbTiltY 60
-#define mbTiltZ 61
-#define mbTemp 62
-#define mbButtonA 63
-#define mbButtonB 64
-
-#define random 65
-#define spiSend 66
-#define spiRecv 67
-#define sendBroadcast 68
-#define recvBroadcast 69
-#define neoPixelSend 70
+#define storeArg 10
+#define incrementArg 11
+#define pushLocal 12
+#define storeLocal 13
+#define incrementLocal 14
+#define pop 15
+#define jmp 16
+#define jmpTrue 17
+#define jmpFalse 18
+#define decrementAndJmp 19
+#define callFunction 20
+#define returnResult 21
+#define waitMicros 22
+#define waitMillis 23
+#define sendBroadcast 24
+#define recvBroadcast 25
+#define stopAll 26
+// reserved 27
+// reserved 28
+// reserved 29
+#define lessThan 30
+#define lessOrEq 31
+#define equal 32
+#define notEqual 33
+#define greaterOrEq 34
+#define greaterThan 35
+#define notOp 36
+#define add 37
+#define subtract 38
+#define multiply 39
+#define divide 40
+#define modulo 41
+#define absoluteValue 42
+#define random 43
+#define hexToInt 44
+// reserved 45
+// reserved 46
+// reserved 47
+// reserved 48
+// reserved 49
+#define bitAnd 50
+#define bitOr 51
+#define bitXor 52
+#define bitInvert 53
+#define bitShiftLeft 54
+#define bitShiftRight 55
+// reserved 56
+// reserved 57
+// reserved 58
+// reserved 59
+#define newArray 60
+#define newByteArray 61
+#define fillArray 62
+#define at 63
+#define atPut 64
+#define size 65
+// reserved 66
+// reserved 67
+// reserved 68
+// reserved 69
+#define millisOp 70
+#define microsOp 71
+#define peek 72
+#define poke 73
+#define sayIt 74
+#define printIt 75
+// reserved 76
+// reserved 77
+// reserved 78
+// reserved 79
+#define analogPins 80
+#define digitalPins 81
+#define analogReadOp 82
+#define analogWriteOp 83
+#define digitalReadOp 84
+#define digitalWriteOp 85
+#define digitalSet 86
+#define digitalClear 87
+#define buttonA 88
+#define buttonB 89
+#define setUserLED 90
+#define i2cSet 91
+#define i2cGet 92
+#define spiSend 93
+#define spiRecv 94
+// reserved 95
+// reserved 96
+// reserved 97
+// reserved 98
+// reserved 99
+#define mbDisplay 100 		// temporary micro:bit primitives for demos
+#define mbDisplayOff 101
+#define mbPlot 102
+#define mbUnplot 103
+#define mbTiltX 104
+#define mbTiltY 105
+#define mbTiltZ 106
+#define mbTemp 107
+#define neoPixelSend 108
 
 // Instruction Format
 
 #define OP(opcode, arg) (((unsigned) arg << 8) | (opcode & 0xFF))
-#define CMD(n) (n & 0xFF)
+#define CMD(n) (n & 0x7F) // use only low 7 bits for now
 #define ARG(n) (n >> 8)
 
 #define CALL(chunkIndex, argCount, localCount) \
@@ -225,6 +261,7 @@ extern int taskCount;
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
 #define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
+#define notInFunction			24  // Attempt to access argument or local variable outside of a function
 
 // Runtime Operations
 
@@ -295,6 +332,7 @@ OBJ primNewByteArray(OBJ *args);
 void primArrayFill(OBJ *args);
 OBJ primArrayAt(OBJ *args);
 void primArrayAtPut(OBJ *args);
+OBJ primArraySize(OBJ *args);
 
 OBJ primHexToInt(OBJ *args);
 OBJ primPeek(OBJ *args);
@@ -306,7 +344,11 @@ OBJ primAnalogRead(OBJ *args);
 void primAnalogWrite(OBJ *args);
 OBJ primDigitalRead(OBJ *args);
 void primDigitalWrite(OBJ *args);
-void primSetLED(OBJ *args);
+void primDigitalSet(int pinNum, int flag);
+OBJ primButtonA(OBJ *args);
+OBJ primButtonB(OBJ *args);
+void primSetUserLED(OBJ *args);
+
 OBJ primI2cGet(OBJ *args);
 OBJ primI2cSet(OBJ *args);
 OBJ primSPISend(OBJ *args);
@@ -320,8 +362,6 @@ OBJ primMBTiltX(OBJ *args);
 OBJ primMBTiltY(OBJ *args);
 OBJ primMBTiltZ(OBJ *args);
 OBJ primMBTemp(OBJ *args);
-OBJ primMBButtonA(OBJ *args);
-OBJ primMBButtonB(OBJ *args);
 void primNeoPixelSend(OBJ *args);
 
 #ifdef __cplusplus

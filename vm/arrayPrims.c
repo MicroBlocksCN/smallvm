@@ -75,6 +75,17 @@ void primArrayAtPut(OBJ *args) {
 	} else return fail(needsArrayError);
 }
 
+OBJ primArraySize(OBJ *args) {
+	OBJ obj = args[0];
+
+	if (IS_CLASS(obj, ArrayClass)) {
+		return int2obj(objWords(obj));
+	} else if (IS_CLASS(obj, ByteArrayClass)) {
+		return int2obj(4 * objWords(obj));
+	}
+	return fail(needsArrayError);
+}
+
 OBJ primHexToInt(OBJ *args) {
 	OBJ s = args[0];
 	if (!IS_CLASS(s, StringClass)) return fail(needsStringError);
@@ -85,12 +96,12 @@ OBJ primHexToInt(OBJ *args) {
 
 OBJ primPeek(OBJ *args) {
 	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
-	int *addr = (int *) (((obj2int(args[0]) & 0xFFFF) << 16) | (obj2int(args[1]) & 0xFFFF));
+	int *addr = (int *) (((obj2int(args[0]) & 0xF) << 28) | (obj2int(args[1]) & 0xFFFFFFC));
 	return int2obj(*addr);
 }
 
 void primPoke(OBJ *args) {
 	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return fail(needsIntegerError);
-	int *addr = (int *) (((obj2int(args[0]) & 0xFFFF) << 16) | (obj2int(args[1]) & 0xFFFF));
+	int *addr = (int *) (((obj2int(args[0]) & 0xF) << 28) | (obj2int(args[1]) & 0xFFFFFFC));
 	*addr = obj2int(args[2]);
 }
