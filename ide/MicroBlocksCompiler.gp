@@ -1,7 +1,7 @@
 // MicroBlocksCompiler.gp - A blocks compiler for microBlocks
 // John Maloney, April, 2017
 
-defineClass SmallCompiler opcodes trueObj falseObj
+defineClass SmallCompiler opcodes trueObj falseObj stringClassID
 
 method initialize SmallCompiler {
 	initOpcodes this
@@ -14,16 +14,16 @@ method initialize SmallCompiler {
 method microBlocksSpecs SmallCompiler {
 	return (array
 	'I/O'
-		(array ' ' 'setLEDOp'			'set user LED _' 'bool' true)
+		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
 		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
 		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
-		(array ' ' 'analogWriteOp'		'write analog pin _ value _' 'num num' 1 1023)
+		(array ' ' 'analogWriteOp'		'set pin _ to _' 'num num' 1 1023)
 		(array 'r' 'microsOp'			'micros')
 		(array 'r' 'millisOp'			'millis')
 		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello, MicroBlocks!')
-		(array 'r' 'analogPinsOp'		'analog pins')
-		(array 'r' 'digitalPinsOp'		'digital pins')
+		(array 'r' 'analogPins'			'analog pins')
+		(array 'r' 'digitalPins'		'digital pins')
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 		(array ' ' 'spiSend'			'spi send _' 'num' 0)
@@ -34,8 +34,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'mbDisplayOff'		'clear display')
 		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
 		(array ' ' 'mbUnplot'			'unplot x _ y _' 'num num' 3 3)
-		(array 'r' 'mbButtonA'			'button A')
-		(array 'r' 'mbButtonB'			'button B')
+		(array 'r' 'buttonA'			'button A')
+		(array 'r' 'buttonB'			'button B')
 		(array 'r' 'mbTiltX'			'tilt x')
 		(array 'r' 'mbTiltY'			'tilt y')
 		(array 'r' 'mbTiltZ'			'tilt z')
@@ -48,8 +48,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
-		(array ' ' 'waitMillisOp'		'wait _ millisecs' 'num' 500)
-		(array ' ' 'waitMicrosOp'		'wait _ microsecs' 'num' 10000)
+		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
+		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop all')
@@ -62,11 +62,13 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'subtract'			'_ − _' 'num num' 10 2)
 		(array 'r' 'multiply'			'_ × _' 'num num' 10 2)
 		(array 'r' 'divide'				'_ / _' 'num num' 10 2)
-		(array 'r' 'modulo'				'_ modulo _' 'num num' 10 2)
+		(array 'r' 'modulo'				'_ mod _' 'num num' 10 2)
+		(array 'r' 'absoluteValue'		'abs _ ' 'num' -10)
 		(array 'r' 'random'				'random _' 'num' 10)
 		(array 'r' 'lessThan'			'_ < _' 'num num' 3 4)
 		(array 'r' 'lessOrEq'			'_ <= _' 'num num' 3 4)
 		(array 'r' 'equal'				'_ = _' 'num num' 3 4)
+		(array 'r' 'notEqual'			'_ ≠ _' 'num num' 3 4)
 		(array 'r' 'greaterOrEq'		'_ >= _' 'num num' 3 4)
 		(array 'r' 'greaterThan'		'_ > _' 'num num' 3 4)
 		(array 'r' 'booleanConstant'	'_' 'bool' true)
@@ -79,13 +81,25 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'fillArray'			'fill array _ with _' 'num auto' nil 0)
 		(array 'r' 'at'					'array _ at _' 'auto num' nil 1)
 		(array ' ' 'atPut'				'set array _ at _ to _' 'num num' nil 1 10)
-		(array 'r' 'peekOp'				'memory at _ _' 'num num' 0 0)
-		(array ' ' 'pokeOp'				'set memory at _ _ to _' 'num num num' 0 0 0)
-		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
+		(array 'r' 'size'				'length of _ ' 'auto' nil)
 	'Variables'
 		(array 'r' 'v'					'_' 'menu.sharedVarMenu' 'n')
 		(array ' ' '='					'set _ to _' 'menu.sharedVarMenu auto' 'n' 0)
 		(array ' ' '+='					'increase _ by _' 'menu.sharedVarMenu num' 'n' 1)
+	'Advanced'
+		(array 'r' 'bitAnd'				'_ & _' 'num num' 1 3)
+		(array 'r' 'bitOr'				'_ | _' 'num num' 1 2)
+		(array 'r' 'bitXor'				'_ ^ _' 'num num' 1 3)
+		(array 'r' 'bitInvert'			'~ _' 'num' 1 3)
+		(array 'r' 'bitShiftLeft'		'_ << _' 'num num' 3 2)
+		(array 'r' 'bitShiftRight'		'_ >> _' 'num num' -100 2)
+
+		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
+		(array 'r' 'peek'				'memory at _ _' 'num num' 0 0)
+		(array ' ' 'poke'				'set memory at _ _ to _' 'num num num' 0 0 0)
+
+		(array ' ' 'digitalSet'			'turn pin 0 on')
+		(array ' ' 'digitalClear'		'turn pin 0 off')
 	)
 }
 
@@ -103,75 +117,113 @@ method initOpcodes SmallCompiler {
 	defsFromHeaderFile = '
 #define halt 0
 #define noop 1
-#define pushImmediate 2 // true, false, and ints that fit in 24 bits
-#define pushBigImmediate 3 // ints that do not fit in 24 bits (and later, floats)
-#define pushLiteral 4 // string or array constant from literals frame
+#define pushImmediate 2		// true, false, and ints that fit in 24 bits
+#define pushBigImmediate 3	// ints that do not fit in 24 bits (and later, floats)
+#define pushLiteral 4		// string or array constant from literals frame
 #define pushVar 5
-#define popVar 6
+#define storeVar 6
 #define incrementVar 7
 #define pushArgCount 8
 #define pushArg 9
-#define pushLocal 10
-#define popLocal 11
-#define incrementLocal 12
-#define pop 13
-#define jmp 14
-#define jmpTrue 15
-#define jmpFalse 16
-#define decrementAndJmp 17
-#define callFunction 18
-#define returnResult 19
-#define waitMicrosOp 20
-#define waitMillisOp 21
-#define printIt 22
-#define stopAll 23
-#define add 24
-#define subtract 25
-#define multiply 26
-#define divide 27
-#define lessThan 28
-#define newArray 29
-#define newByteArray 30
-#define fillArray 31
-#define at 32
-#define atPut 33
-#define analogReadOp 34
-#define analogWriteOp 35
-#define digitalReadOp 36
-#define digitalWriteOp 37
-#define setLEDOp 38
-#define microsOp 39
-#define millisOp 40
-#define peekOp 41
-#define pokeOp 42
-#define modulo 43
-#define lessOrEq 44
-#define equal 45
-#define greaterOrEq 46
-#define greaterThan 47
-#define notOp 48
-#define sayIt 49
-#define analogPinsOp 50
-#define digitalPinsOp 51
-#define hexToInt 52
-#define i2cGet 53
-#define i2cSet 54
-#define mbDisplay 55 // temporary micro:bit primitives for demos
-#define mbDisplayOff 56
-#define mbPlot 57
-#define mbUnplot 58
-#define mbTiltX 59
-#define mbTiltY 60
-#define mbTiltZ 61
-#define mbTemp 62
-#define mbButtonA 63
-#define mbButtonB 64
-#define random 65
-#define spiSend 66
-#define spiRecv 67
-#define sendBroadcast 68
-#define recvBroadcast 69
-#define neoPixelSend 70
+#define storeArg 10
+#define incrementArg 11
+#define pushLocal 12
+#define storeLocal 13
+#define incrementLocal 14
+#define pop 15
+#define jmp 16
+#define jmpTrue 17
+#define jmpFalse 18
+#define decrementAndJmp 19
+#define callFunction 20
+#define returnResult 21
+#define waitMicros 22
+#define waitMillis 23
+#define sendBroadcast 24
+#define recvBroadcast 25
+#define stopAll 26
+// reserved 27
+// reserved 28
+// reserved 29
+#define lessThan 30
+#define lessOrEq 31
+#define equal 32
+#define notEqual 33
+#define greaterOrEq 34
+#define greaterThan 35
+#define notOp 36
+#define add 37
+#define subtract 38
+#define multiply 39
+#define divide 40
+#define modulo 41
+#define absoluteValue 42
+#define random 43
+#define hexToInt 44
+// reserved 45
+// reserved 46
+// reserved 47
+// reserved 48
+// reserved 49
+#define bitAnd 50
+#define bitOr 51
+#define bitXor 52
+#define bitInvert 53
+#define bitShiftLeft 54
+#define bitShiftRight 55
+// reserved 56
+// reserved 57
+// reserved 58
+// reserved 59
+#define newArray 60
+#define newByteArray 61
+#define fillArray 62
+#define at 63
+#define atPut 64
+#define size 65
+// reserved 66
+// reserved 67
+// reserved 68
+// reserved 69
+#define millisOp 70
+#define microsOp 71
+#define peek 72
+#define poke 73
+#define sayIt 74
+#define printIt 75
+// reserved 76
+// reserved 77
+// reserved 78
+// reserved 79
+#define analogPins 80
+#define digitalPins 81
+#define analogReadOp 82
+#define analogWriteOp 83
+#define digitalReadOp 84
+#define digitalWriteOp 85
+#define digitalSet 86
+#define digitalClear 87
+#define buttonA 88
+#define buttonB 89
+#define setUserLED 90
+#define i2cSet 91
+#define i2cGet 92
+#define spiSend 93
+#define spiRecv 94
+// reserved 95
+// reserved 96
+// reserved 97
+// reserved 98
+// reserved 99
+#define mbDisplay 100 		// temporary micro:bit primitives for demos
+#define mbDisplayOff 101
+#define mbPlot 102
+#define mbUnplot 103
+#define mbTiltX 104
+#define mbTiltY 105
+#define mbTiltZ 106
+#define mbTemp 107
+#define neoPixelSend 108
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
@@ -228,7 +280,7 @@ method instructionsForWhenCondition SmallCompiler cmdOrReporter {
 
 	// wait until condition becomes true
 	addAll result (instructionsForExpression this 10)
-	add result (array 'waitMillisOp' 1)
+	add result (array 'waitMillis' 1)
 	addAll result condition
 	add result (array 'jmpFalse' (0 - ((count condition) + 3)))
 
@@ -257,7 +309,7 @@ method instructionsForCmd SmallCompiler cmd {
 	args = (argList cmd)
 	if (isOneOf op '=' 'local') {
 		addAll result (instructionsForExpression this (at args 2))
-		add result (array 'popVar' (globalVarIndex this (first args)))
+		add result (array 'storeVar' (globalVarIndex this (first args)))
 	} ('+=' == op) {
 		addAll result (instructionsForExpression this (at args 2))
 		add result (array 'incrementVar' (globalVarIndex this (first args)))
