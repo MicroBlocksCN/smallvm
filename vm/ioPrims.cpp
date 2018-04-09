@@ -308,10 +308,9 @@ OBJ primAnalogWrite(OBJ *args) {
 	int value = obj2int(args[1]);
 	if (value < 0) value = 0;
 	if (value > 1023) value = 1023;
-	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return nilObj;
-	int pin = analogPin[pinNum];
-	SET_MODE(pin, OUTPUT);
-	analogWrite(pin, value); // sets the PWM duty cycle on a digital pin
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
+	SET_MODE(pinNum, OUTPUT);
+	analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 	return nilObj;
 }
 
