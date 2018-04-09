@@ -278,7 +278,9 @@ static void initPins(void) {
 	// Initialize currentMode to MODE_NOT_SET (neigher INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
-	analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
+	#ifndef ARDUINO_ESP8266_NODEMCU
+		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
+	#endif
 
 	for (int i; i < TOTAL_PINS; i++) currentMode[i] = MODE_NOT_SET;
 	#ifdef ARDUINO_NRF52_PRIMO
@@ -308,7 +310,7 @@ void primAnalogWrite(OBJ *args) {
 	int value = obj2int(args[1]);
 	if (value < 0) value = 0;
 	if (value > 1023) value = 1023;
-	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
 	SET_MODE(pinNum, OUTPUT);
 	analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 }
@@ -702,14 +704,19 @@ static OBJ microbitButton(int buttonID) { return falseObj; }
   ); \
 }
 
-inline uint32_t saveIRQState(void) {
-    uint32_t pmask = __get_PRIMASK() & 1;
-    __set_PRIMASK(1);
-    return pmask;
+inline uint32 saveIRQState(void) {
+	uint32 pmask = 0;
+	#ifndef ARDUINO_ESP8266_NODEMCU
+		pmask = __get_PRIMASK() & 1;
+		__set_PRIMASK(1);
+	#endif
+	return pmask;
 }
 
-inline void restoreIRQState(uint32_t pmask) {
-     __set_PRIMASK(pmask);
+inline void restoreIRQState(uint32 pmask) {
+	#ifndef ARDUINO_ESP8266_NODEMCU
+ 	    __set_PRIMASK(pmask);
+	#endif
 }
 
 #if defined(ARDUINO_CALLIOPE)
@@ -727,7 +734,7 @@ static void sendNeoPixelByte(int val) { // Calliope (16 MHz)
       DELAY_CYCLES(8);
 	  *pinClr = pinBit;
     } else { // zero bit: goal < 350 nqnosecs
-      uint32_t oldIRQ = saveIRQState();
+      uint32 oldIRQ = saveIRQState();
       *pinSet = pinBit;
       *pinClr = pinBit;
       restoreIRQState(oldIRQ);
@@ -751,7 +758,7 @@ static void sendNeoPixelByte(int val) { // Circuit Playground (48 MHz)
       DELAY_CYCLES(15);
 	  *pinClr = pinBit;
     } else { // zero bit: goal < 350 nqnosecs
-      uint32_t oldIRQ = saveIRQState();
+      uint32 oldIRQ = saveIRQState();
       *pinSet = pinBit;
       *pinClr = pinBit;
       restoreIRQState(oldIRQ);
