@@ -58,18 +58,45 @@ void hardwareInit() {
 
 // Communciation/System Functions
 
-void putSerial(char *s) { Serial.print(s); } // callable from C; used to simulate printf for debugging
+void putSerial(char *s) {
+  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
+    SerialUSB.print(s);
+  #else
+    Serial.print(s);
+  #endif
+} // callable from C; used to simulate printf for debugging
 
 int readBytes(uint8 *buf, int count) {
-	int bytesRead = Serial.available();
+  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
+    int bytesRead = SerialUSB.available();
+  #else
+    int bytesRead = Serial.available();
+  #endif
 	for (int i = 0; i < bytesRead; i++) {
-		buf[i] = Serial.read();
+	  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
+      buf[i] = SerialUSB.read();
+    #else
+      buf[i] = Serial.read();
+    #endif
 	}
 	return bytesRead;
 }
 
-int canReadByte() { return Serial.available(); }
-int sendByte(char aByte) { return Serial.write(aByte); }
+int canReadByte() {
+  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
+    return SerialUSB.available();
+  #else
+    return Serial.available();
+  #endif
+}
+
+int sendByte(char aByte) {
+  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
+    return SerialUSB.write(aByte);
+  #else
+    return Serial.write(aByte);
+  #endif
+}
 
 // System Reset
 
@@ -180,6 +207,26 @@ void systemReset() {
 
 	#define PIN_LED 32
 
+#elif defined(ARDUINO_SAMD_ZERO)
+
+  #define BOARD_TYPE "Zero"
+  #define DIGITAL_PINS 14
+  #define ANALOG_PINS 6
+  #define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+  static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+
+  #define PIN_LED 13
+
+#elif defined(ARDUINO_SAM_ZERO)
+
+  #define BOARD_TYPE "M0"
+  #define DIGITAL_PINS 14
+  #define ANALOG_PINS 6
+  #define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+  static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+
+  #define PIN_LED 13
+
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 
 	#define BOARD_TYPE "CircuitPlayground"
@@ -261,10 +308,9 @@ void primAnalogWrite(OBJ *args) {
 	int value = obj2int(args[1]);
 	if (value < 0) value = 0;
 	if (value > 1023) value = 1023;
-	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return;
-	int pin = analogPin[pinNum];
-	SET_MODE(pin, OUTPUT);
-	analogWrite(pin, value); // sets the PWM duty cycle on a digital pin
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
+	SET_MODE(pinNum, OUTPUT);
+	analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 }
 
 OBJ primDigitalRead(OBJ *args) {
@@ -550,7 +596,13 @@ static int microbitMag(int registerID) {
 	Wire.beginTransmission(MAG_ID);
 	Wire.write(1); // read from register 1
 	int error = Wire.endTransmission(false);
-	if (error) { Serial.print("Error: "); Serial.println(error); }
+	if (error) {
+    #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
+	    SerialUSB.print("Error: "); SerialUSB.println(error);
+    #else
+      Serial.print("Error: "); Serial.println(error);
+    #endif
+	}
 
 	// always read x, y, and z at 16-bit resolution
 	// even when reading temp, this is needed to force an update
