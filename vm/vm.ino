@@ -6,7 +6,11 @@ void setup() {
   #ifdef ARDUINO_NRF52_PRIMO
     sd_softdevice_disable();
   #endif
-  Serial.begin(115200);
+  #ifdef ARDUINO_SAMD_ZERO
+    SerialUSB.begin(115200);
+  #else
+    Serial.begin(115200);
+  #endif
   hardwareInit();
   memInit(2000); // 2000 words = 8000 bytes
   outputString("Welcome to MicroBlocks!");

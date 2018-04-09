@@ -71,7 +71,7 @@
 		NRF_NVMC->CONFIG = 0; // disable Flash write
 	}
 
-#elif defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+#elif defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 	#include "samr.h" // SAM21D
 
 	#define START (56 * 1024)
