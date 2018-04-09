@@ -6,7 +6,7 @@ void setup() {
   #ifdef ARDUINO_NRF52_PRIMO
     sd_softdevice_disable();
   #endif
-  #ifdef ARDUINO_SAMD_ZERO
+  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
     SerialUSB.begin(115200);
   #else
     Serial.begin(115200);

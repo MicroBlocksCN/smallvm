@@ -59,7 +59,7 @@ void hardwareInit() {
 // Communciation/System Functions
 
 void putSerial(char *s) {
-  #ifdef ARDUINO_SAMD_ZERO
+  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
     SerialUSB.print(s);
   #else
     Serial.print(s);
@@ -67,13 +67,13 @@ void putSerial(char *s) {
 } // callable from C; used to simulate printf for debugging
 
 int readBytes(uint8 *buf, int count) {
-  #ifdef ARDUINO_SAMD_ZERO
+  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
     int bytesRead = SerialUSB.available();
   #else
     int bytesRead = Serial.available();
   #endif
 	for (int i = 0; i < bytesRead; i++) {
-	  #ifdef ARDUINO_SAMD_ZERO
+	  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
       buf[i] = SerialUSB.read();
     #else
       buf[i] = Serial.read();
@@ -83,7 +83,7 @@ int readBytes(uint8 *buf, int count) {
 }
 
 int canReadByte() {
-  #ifdef ARDUINO_SAMD_ZERO
+  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
     return SerialUSB.available();
   #else
     return Serial.available();
@@ -91,7 +91,7 @@ int canReadByte() {
 }
 
 int sendByte(char aByte) {
-  #ifdef ARDUINO_SAMD_ZERO
+  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
     return SerialUSB.write(aByte);
   #else
     return Serial.write(aByte);
@@ -210,6 +210,16 @@ void systemReset() {
 #elif defined(ARDUINO_SAMD_ZERO)
 
   #define BOARD_TYPE "Zero"
+  #define DIGITAL_PINS 14
+  #define ANALOG_PINS 6
+  #define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+  static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+
+  #define PIN_LED 13
+
+#elif defined(ARDUINO_SAM_ZERO)
+
+  #define BOARD_TYPE "M0"
   #define DIGITAL_PINS 14
   #define ANALOG_PINS 6
   #define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
@@ -584,7 +594,7 @@ static int microbitMag(int registerID) {
 	Wire.write(1); // read from register 1
 	int error = Wire.endTransmission(false);
 	if (error) {
-    #ifdef ARDUINO_SAMD_ZERO
+    #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
 	    SerialUSB.print("Error: "); SerialUSB.println(error);
     #else
       Serial.print("Error: "); Serial.println(error);
