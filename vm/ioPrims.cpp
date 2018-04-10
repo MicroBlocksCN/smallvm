@@ -43,6 +43,7 @@ uint32 millisecs() {
 void hardwareInit() {
 	initClock_NRF51();
 	initPins();
+  Serial.begin(115200);
 }
 
 #else
@@ -52,6 +53,10 @@ uint32 millisecs() { return (uint32) millis(); }
 
 void hardwareInit() {
 	initPins();
+  #if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && defined(SERIAL_PORT_USBVIRTUAL)
+    #define Serial SERIAL_PORT_USBVIRTUAL
+  #endif
+  Serial.begin(115200);
 }
 
 #endif
@@ -59,43 +64,23 @@ void hardwareInit() {
 // Communciation/System Functions
 
 void putSerial(char *s) {
-  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
-    SerialUSB.print(s);
-  #else
-    Serial.print(s);
-  #endif
+  Serial.print(s);
 } // callable from C; used to simulate printf for debugging
 
 int readBytes(uint8 *buf, int count) {
-  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
-    int bytesRead = SerialUSB.available();
-  #else
-    int bytesRead = Serial.available();
-  #endif
+  int bytesRead = Serial.available();
 	for (int i = 0; i < bytesRead; i++) {
-	  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
-      buf[i] = SerialUSB.read();
-    #else
-      buf[i] = Serial.read();
-    #endif
+    buf[i] = Serial.read();
 	}
 	return bytesRead;
 }
 
 int canReadByte() {
-  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
-    return SerialUSB.available();
-  #else
-    return Serial.available();
-  #endif
+  return Serial.available();
 }
 
 int sendByte(char aByte) {
-  #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
-    return SerialUSB.write(aByte);
-  #else
-    return Serial.write(aByte);
-  #endif
+  return Serial.write(aByte);
 }
 
 // System Reset
@@ -599,11 +584,7 @@ static int microbitMag(int registerID) {
 	Wire.write(1); // read from register 1
 	int error = Wire.endTransmission(false);
 	if (error) {
-    #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)
-	    SerialUSB.print("Error: "); SerialUSB.println(error);
-    #else
-      Serial.print("Error: "); Serial.println(error);
-    #endif
+    Serial.print("Error: "); Serial.println(error);
 	}
 
 	// always read x, y, and z at 16-bit resolution
