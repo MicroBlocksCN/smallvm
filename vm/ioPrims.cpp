@@ -197,6 +197,15 @@ void systemReset() {
 	// Analog pins: The Calliope does not have dedicated analog input pins;
 	// the analog pins are aliases for digital pins 6, 1, 2, 21 (microphone), 4, 5.
 
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+	// Note: This case muse come before the ARDUINO_SAMD_ZERO case.
+
+	#define BOARD_TYPE "CircuitPlayground"
+	#define DIGITAL_PINS 39
+	#define ANALOG_PINS 11
+	#define TOTAL_PINS 39
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
+
 #elif defined(ARDUINO_SAMD_MKRZERO)
 
 	#define BOARD_TYPE "MKRZero"
@@ -226,14 +235,6 @@ void systemReset() {
   static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 
   #define PIN_LED 13
-
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
-
-	#define BOARD_TYPE "CircuitPlayground"
-	#define DIGITAL_PINS 39
-	#define ANALOG_PINS 11
-	#define TOTAL_PINS 39
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
 
 #elif defined(ARDUINO_ESP8266_NODEMCU)
 
