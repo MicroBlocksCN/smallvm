@@ -34,29 +34,29 @@ extern "C" {
 #define sendBroadcast 24
 #define recvBroadcast 25
 #define stopAll 26
-// reserved 27
+#define forLoop 27
 // reserved 28
 // reserved 29
-#define lessThan 30
-#define lessOrEq 31
-#define equal 32
-#define notEqual 33
-#define greaterOrEq 34
-#define greaterThan 35
-#define notOp 36
-#define add 37
-#define subtract 38
-#define multiply 39
-#define divide 40
-#define modulo 41
-#define absoluteValue 42
-#define random 43
-#define hexToInt 44
-// reserved 45
-// reserved 46
-// reserved 47
-// reserved 48
-// reserved 49
+// reserved 30
+// reserved 31
+// reserved 32
+// reserved 33
+// reserved 34
+#define lessThan 35
+#define lessOrEq 36
+#define equal 37
+#define notEqual 38
+#define greaterOrEq 39
+#define greaterThan 40
+#define notOp 41
+#define add 42
+#define subtract 43
+#define multiply 44
+#define divide 45
+#define modulo 46
+#define absoluteValue 47
+#define random 48
+#define hexToInt 49
 #define bitAnd 50
 #define bitOr 51
 #define bitXor 52
@@ -262,6 +262,7 @@ extern int taskCount;
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
 #define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
 #define notInFunction			24  // Attempt to access argument or local variable outside of a function
+#define badForLoopArg			25  // For loop argument must be a positive integer, array, or bytearray
 
 // Runtime Operations
 

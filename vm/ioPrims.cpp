@@ -43,45 +43,39 @@ uint32 millisecs() {
 void hardwareInit() {
 	initClock_NRF51();
 	initPins();
-  Serial.begin(115200);
+	Serial.begin(115200);
 }
 
-#else
+#else // not NRF51
+
+  #if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && defined(SERIAL_PORT_USBVIRTUAL)
+	#define Serial SERIAL_PORT_USBVIRTUAL
+  #endif
 
 uint32 microsecs() { return (uint32) micros(); }
 uint32 millisecs() { return (uint32) millis(); }
 
 void hardwareInit() {
 	initPins();
-  #if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && defined(SERIAL_PORT_USBVIRTUAL)
-    #define Serial SERIAL_PORT_USBVIRTUAL
-  #endif
-  Serial.begin(115200);
+	Serial.begin(115200);
 }
 
 #endif
 
-// Communciation/System Functions
+// Communication Functions
 
-void putSerial(char *s) {
-  Serial.print(s);
-} // callable from C; used to simulate printf for debugging
+void putSerial(char *s) { Serial.print(s); } // callable from C; used to simulate printf for debugging
 
 int readBytes(uint8 *buf, int count) {
-  int bytesRead = Serial.available();
+	int bytesRead = Serial.available();
 	for (int i = 0; i < bytesRead; i++) {
-    buf[i] = Serial.read();
+		buf[i] = Serial.read();
 	}
 	return bytesRead;
 }
 
-int canReadByte() {
-  return Serial.available();
-}
-
-int sendByte(char aByte) {
-  return Serial.write(aByte);
-}
+int canReadByte() { return Serial.available(); }
+int sendByte(char aByte) { return Serial.write(aByte); }
 
 // System Reset
 
@@ -157,7 +151,7 @@ void systemReset() {
 
 	// See variant.cpp in variants/BBCMicrobit folder for a detailed pin map.
 	// Pins 0-20 are for micro:bit pads and edge connector
-	//   (but pin numbers 17-18 correspond to 3.3 volt pads, not actual I/O pins)
+	//	(but pin numbers 17-18 correspond to 3.3 volt pads, not actual I/O pins)
 	// Pins 21-22: RX, TX (for USB Serial?)
 	// Pins 23-28: COL4, COL5, COL6, ROW1, ROW2, ROW3
 	// Button A: pin 5
@@ -203,23 +197,23 @@ void systemReset() {
 
 #elif defined(ARDUINO_SAMD_ZERO)
 
-  #define BOARD_TYPE "Zero"
-  #define DIGITAL_PINS 14
-  #define ANALOG_PINS 6
-  #define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
-  static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+	#define BOARD_TYPE "Zero"
+	#define DIGITAL_PINS 14
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 
-  #define PIN_LED 13
+	#define PIN_LED 13
 
 #elif defined(ARDUINO_SAM_ZERO)
 
-  #define BOARD_TYPE "M0"
-  #define DIGITAL_PINS 14
-  #define ANALOG_PINS 6
-  #define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
-  static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+	#define BOARD_TYPE "M0"
+	#define DIGITAL_PINS 14
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 
-  #define PIN_LED 13
+	#define PIN_LED 13
 
 #elif defined(ARDUINO_ESP8266_NODEMCU)
 
@@ -369,7 +363,7 @@ OBJ primI2cGet(OBJ *args) {
 	Wire.beginTransmission(deviceID);
 	Wire.write(registerID);
 	int error = Wire.endTransmission(false);
-	if (error) return int2obj(0 - error);  // error; bad device ID?
+	if (error) return int2obj(0 - error); // error; bad device ID?
 
 	Wire.requestFrom(deviceID, 1);
 	while (!Wire.available());
@@ -504,8 +498,8 @@ void updateMicrobitDisplay() {
 }
 
 #if defined(ARDUINO_BBC_MICROBIT)
-  #define ACCEL_ID 29
-  #define MAG_ID 14
+	#define ACCEL_ID 29
+	#define MAG_ID 14
 #endif
 
 static int accelerometerOn = false;
@@ -525,7 +519,7 @@ static int microbitAccel(int registerID) {
 	Wire.beginTransmission(ACCEL_ID);
 	Wire.write(registerID);
 	int error = Wire.endTransmission(false);
-	if (error) return 0;  // error; return 0
+	if (error) return 0; // error; return 0
 
 	Wire.requestFrom(ACCEL_ID, 1);
 	while (!Wire.available());
@@ -541,7 +535,7 @@ static int microbitTemp(int registerID) {
 		if (!wireStarted) startWire();
 		Wire.beginTransmission(MAG_ID);
 		Wire.write(0x10);
-		Wire.write(0x29);  // 20 Hz with 16x oversample (see spec sheet)
+		Wire.write(0x29); // 20 Hz with 16x oversample (see spec sheet)
 		Wire.endTransmission();
 		magnetometerOn = true;
 	}
@@ -576,7 +570,7 @@ static int microbitMag(int registerID) {
 		if (!wireStarted) startWire();
 		Wire.beginTransmission(MAG_ID);
 		Wire.write(0x10);
-		Wire.write(0x29);  // 20 Hz with 16x oversample (see spec sheet)
+		Wire.write(0x29); // 20 Hz with 16x oversample (see spec sheet)
 		Wire.endTransmission();
 		magnetometerOn = true;
 	}
@@ -585,7 +579,7 @@ static int microbitMag(int registerID) {
 	Wire.write(1); // read from register 1
 	int error = Wire.endTransmission(false);
 	if (error) {
-    Serial.print("Error: "); Serial.println(error);
+		Serial.print("Error: "); Serial.println(error);
 	}
 
 	// always read x, y, and z at 16-bit resolution
@@ -609,7 +603,7 @@ static int microbitMag(int registerID) {
 		Wire.beginTransmission(MAG_ID);
 		Wire.write(15);
 		int error = Wire.endTransmission(false);
-		if (error) return 0;  // error; return 0
+		if (error) return 0; // error; return 0
 
 		Wire.requestFrom(MAG_ID, 1);
 		while (!Wire.available());
@@ -647,7 +641,7 @@ static int circuitPlayAccel(int registerID) {
 	Wire1.beginTransmission(ACCEL_ID);
 	Wire1.write(registerID);
 	int error = Wire1.endTransmission(false);
-	if (error) return 0;  // error; return 0
+	if (error) return 0; // error; return 0
 
 	Wire1.requestFrom(ACCEL_ID, 1);
 	while (!Wire1.available());
@@ -679,16 +673,18 @@ static OBJ microbitButton(int buttonID) { return falseObj; }
 // NeoPixel Support
 
 #define DELAY_CYCLES(n) { \
-  __asm__ __volatile__ ( \
-    ".rept " #n " \n\t" \
-    "nop \n\t" \
-    ".endr \n\t" \
-  ); \
+	__asm__ __volatile__ ( \
+		".rept " #n " \n\t" \
+		"nop \n\t" \
+		".endr \n\t" \
+	); \
 }
 
 inline uint32 saveIRQState(void) {
 	uint32 pmask = 0;
-	#ifndef ARDUINO_ESP8266_NODEMCU
+	#ifdef ARDUINO_ESP8266_NODEMCU
+		__asm__ volatile ("rsil %0, #2" : "=a" (pmask));
+	#else
 		pmask = __get_PRIMASK() & 1;
 		__set_PRIMASK(1);
 	#endif
@@ -696,8 +692,10 @@ inline uint32 saveIRQState(void) {
 }
 
 inline void restoreIRQState(uint32 pmask) {
-	#ifndef ARDUINO_ESP8266_NODEMCU
- 	    __set_PRIMASK(pmask);
+	#ifdef ARDUINO_ESP8266_NODEMCU
+		 __asm__ volatile ("wsr %0, ps; rsync" :: "a" (pmask));
+	#else
+		__set_PRIMASK(pmask);
 	#endif
 }
 
@@ -709,20 +707,20 @@ volatile int *pinSet = (int *) 0x50000508;
 volatile int *pinClr = (int *) 0x5000050C;
 
 static void sendNeoPixelByte(int val) { // Calliope (16 MHz)
-  *pinSetDir = pinBit;
-  for (int i = 0; i < 8; i++) {
-     if (val & 0x80) {  // one bit: goal > 600 nqnosecs
-      *pinSet = pinBit;
-      DELAY_CYCLES(8);
-	  *pinClr = pinBit;
-    } else { // zero bit: goal < 350 nqnosecs
-      uint32 oldIRQ = saveIRQState();
-      *pinSet = pinBit;
-      *pinClr = pinBit;
-      restoreIRQState(oldIRQ);
-    }
-    val <<= 1;
-  }
+	*pinSetDir = pinBit;
+	for (int i = 0; i < 8; i++) {
+		if (val & 0x80) { // one bit: goal > 600 nqnosecs
+			*pinSet = pinBit;
+			DELAY_CYCLES(8);
+			*pinClr = pinBit;
+		} else { // zero bit: goal < 350 nqnosecs
+			uint32 oldIRQ = saveIRQState();
+			*pinSet = pinBit;
+			*pinClr = pinBit;
+			restoreIRQState(oldIRQ);
+		}
+		val <<= 1;
+	}
 }
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
@@ -733,21 +731,21 @@ volatile int *pinSet = (int *) 0x41004498;
 volatile int *pinClr = (int *) 0x41004494;
 
 static void sendNeoPixelByte(int val) { // Circuit Playground (48 MHz)
-  *pinSetDir = pinBit;
-  for (int i = 0; i < 8; i++) {
-     if (val & 0x80) {  // one bit: goal > 600 nqnosecs
-      *pinSet = pinBit;
-      DELAY_CYCLES(15);
-	  *pinClr = pinBit;
-    } else { // zero bit: goal < 350 nqnosecs
-      uint32 oldIRQ = saveIRQState();
-      *pinSet = pinBit;
-      *pinClr = pinBit;
-      restoreIRQState(oldIRQ);
-    }
-	DELAY_CYCLES(5);
-    val <<= 1;
-  }
+	*pinSetDir = pinBit;
+	for (int i = 0; i < 8; i++) {
+		if (val & 0x80) { // one bit: goal > 600 nqnosecs
+			*pinSet = pinBit;
+			DELAY_CYCLES(15);
+			*pinClr = pinBit;
+		} else { // zero bit: goal < 350 nqnosecs
+			uint32 oldIRQ = saveIRQState();
+			*pinSet = pinBit;
+			*pinClr = pinBit;
+			restoreIRQState(oldIRQ);
+		}
+		DELAY_CYCLES(5);
+		val <<= 1;
+	}
 }
 
 #else // stub for boards without NeoPixels

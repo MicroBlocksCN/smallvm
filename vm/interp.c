@@ -162,6 +162,11 @@ static void runTask(Task *task) {
 		&&sendBroadcast_op,
 		&&recvBroadcast_op,
 		&&stopAll_op,
+		&&forLoop_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -180,11 +185,6 @@ static void runTask(Task *task) {
 		&&absoluteValue_op,
 		&&random_op,
 		&&hexToInt_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
 		&&bitAnd_op,
 		&&bitOr_op,
 		&&bitXor_op,
@@ -472,6 +472,50 @@ static void runTask(Task *task) {
 	stopAll_op:
 		stopAllTasks(); // clears all tasks, including the current one
 		return;
+	forLoop_op:
+		// stack layout:
+		// *(sp - 1) the loop counter (decreases from N to 1); falseObj the very first time
+		// *(sp - 2) N, the total loop count or size of the array/bytearray argument
+		// *(sp - 3) the object being iterated over, a positive integer, array, or bytearray
+
+		tmpObj = *(sp - 1); // loop counter, or falseObj the very first time
+		if (falseObj == tmpObj) { // first time: compute N, the total iterations (in tmp)
+			tmpObj = *(sp - 3);
+			if (isInt(tmpObj)) {
+				tmp = obj2int(tmpObj);
+			} else if (IS_CLASS(tmpObj, ArrayClass)) {
+				tmp = objWords(tmpObj);
+			} else if (IS_CLASS(tmpObj, ByteArrayClass)) {
+				tmp = 4 * objWords(tmpObj);
+			} else {
+				fail(badForLoopArg);
+				goto error;
+			}
+			*(sp - 2) = int2obj(tmp); // save N, the total iterations; tmp is initial loop counter
+		} else { // not the first time
+			tmp = obj2int(tmpObj) - 1; // decrement the loop counter (in tmp)
+		}
+		if (tmp > 0) { // loop counter > 0
+			*(sp - 1) = int2obj(tmp); // store the loop counter
+			tmp = obj2int(*(sp - 2)) - tmp; // set tmp to the loop index (increasing from 0 to N-1)
+			tmpObj = *(sp - 3); // set tmpObj to thing being iterated over
+			// xxx change from global variable (vars[arg]) to local variable
+			if (isInt(tmpObj)) {
+				// set the index variable to the loop index
+				vars[arg] = int2obj(tmp + 1); // add 1 get range 1 to N
+			} else if (IS_CLASS(tmpObj, ArrayClass)) {
+				// set the index variable to the array element at the index variable
+				vars[arg] = FIELD(tmpObj, tmp); // array elements
+			} else if (IS_CLASS(tmpObj, ByteArrayClass)) {
+				// set the index variable to the byte at the index variable
+				vars[arg] = int2obj( ((uint8 *) &FIELD(tmpObj, 0))[tmp] ); // bytearray elements
+			} else {
+				fail(badForLoopArg);
+			}
+		} else { // loop counter <= 0
+			ip++; // skip the following jmp instruction thus ending the loop
+		}
+		DISPATCH();
 
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
 	// Commands pop all their arguments.
