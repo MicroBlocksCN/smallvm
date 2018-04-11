@@ -1,12 +1,13 @@
 // MicroBlocksCompiler.gp - A blocks compiler for microBlocks
 // John Maloney, April, 2017
 
-defineClass SmallCompiler opcodes trueObj falseObj stringClassID
+defineClass SmallCompiler opcodes trueObj falseObj oneObj stringClassID
 
 method initialize SmallCompiler {
 	initOpcodes this
 	falseObj = 0
 	trueObj = 4
+	oneObj = ((1 << 1) | 1)
 	stringClassID = 4
 	return this
 }
@@ -47,6 +48,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
+		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
@@ -142,29 +144,29 @@ method initOpcodes SmallCompiler {
 #define sendBroadcast 24
 #define recvBroadcast 25
 #define stopAll 26
-// reserved 27
+#define forLoop 27
 // reserved 28
 // reserved 29
-#define lessThan 30
-#define lessOrEq 31
-#define equal 32
-#define notEqual 33
-#define greaterOrEq 34
-#define greaterThan 35
-#define notOp 36
-#define add 37
-#define subtract 38
-#define multiply 39
-#define divide 40
-#define modulo 41
-#define absoluteValue 42
-#define random 43
-#define hexToInt 44
-// reserved 45
-// reserved 46
-// reserved 47
-// reserved 48
-// reserved 49
+// reserved 30
+// reserved 31
+// reserved 32
+// reserved 33
+// reserved 34
+#define lessThan 35
+#define lessOrEq 36
+#define equal 37
+#define notEqual 38
+#define greaterOrEq 39
+#define greaterThan 40
+#define notOp 41
+#define add 42
+#define subtract 43
+#define multiply 44
+#define divide 45
+#define modulo 46
+#define absoluteValue 47
+#define random 48
+#define hexToInt 49
 #define bitAnd 50
 #define bitOr 51
 #define bitXor 52
@@ -332,6 +334,8 @@ method instructionsForCmd SmallCompiler cmd {
 		return (instructionsForRepeatUntil this args)
 	} ('waitUntil' == op) {
 		return (instructionsForWaitUntil this args)
+	} ('for' == op) {
+		return (instructionsForForLoop this args)
 	} else {
 		return (primitive this op args true)
 	}
@@ -376,6 +380,9 @@ method instructionsForForever SmallCompiler args {
 method instructionsForRepeat SmallCompiler args {
 	result = (instructionsForExpression this (at args 1)) // loop count
 	body = (instructionsForCmdList this (at args 2))
+	add result (array 'pushImmediate' oneObj)
+	add result (array 'add' 2)
+	add result (array 'jmp' (count body))
 	addAll result body
 	add result (array 'decrementAndJmp' (0 - ((count body) + 1)))
 	return result
@@ -397,6 +404,22 @@ method instructionsForWaitUntil SmallCompiler args {
 	conditionTest = (instructionsForExpression this (at args 1))
 	addAll result conditionTest
 	add result (array 'jmpFalse' (0 - (+ (count conditionTest) 1)))
+	return result
+}
+
+method instructionsForForLoop SmallCompiler args {
+	result = (instructionsForExpression this (at args 2))
+	loopVarIndex = (globalVarIndex this (first args)) // xxx should use the *local* var index
+	body = (instructionsForCmdList this (at args 3))
+	addAll result (array
+		(array 'pushImmediate' falseObj) // this will be N, the total loop count
+		(array 'pushImmediate' falseObj) // this will be a decrementing loop counter
+		(array 'jmp' (count body)))
+	addAll result body
+	addAll result (array
+		(array 'forLoop' loopVarIndex)
+		(array 'jmp' (0 - ((count body) + 2)))
+		(array 'pop' 3))
 	return result
 }
 
