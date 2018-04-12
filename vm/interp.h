@@ -35,7 +35,7 @@ extern "C" {
 #define recvBroadcast 25
 #define stopAll 26
 #define forLoop 27
-// reserved 28
+#define initLocals 28
 // reserved 29
 // reserved 30
 // reserved 31
@@ -196,7 +196,7 @@ typedef struct {
 	int ip;
 	int sp;
 	int fp;
-	OBJ stack[10];
+	OBJ stack[19];
 } Task;
 
 // Task list shared by interp.c and runtime.c

@@ -22,9 +22,9 @@ void memInit(int wordCount) {
 	}
 
 	memStart = (OBJ) malloc(wordCount * sizeof(int));
-	uint32 stackBytes; // address of this local variable approximates the current C stack pointer
-	stackBytes = ((uint32) &stackBytes) - ((uint32) (memStart + wordCount));
-	if ((memStart == NULL) || (stackBytes < 256)) {
+	char *stack; // the address of this local variable approximates the current C stack pointer
+	stack = ((char *) &stack) - 600; // reserve 600 bytes for stack (stack grows down in memory)
+	if ((memStart == NULL) || ((memStart + wordCount) > stack)) {
 		vmPanic("Insufficient memory to start MicroBlocks");
 	}
 	if ((unsigned) memStart <= 8) {
@@ -47,7 +47,6 @@ void vmPanic(char *errorMessage) {
 
 	char s[100];
 	sprintf(s, "\r\nVM Panic: %s\r\n", errorMessage);
-	printf("%s", s);
 	outputString(s);
 	while (true) processMessage(); // there's no way to recover; loop forever!
 }

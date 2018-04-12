@@ -163,7 +163,7 @@ static void runTask(Task *task) {
 		&&recvBroadcast_op,
 		&&stopAll_op,
 		&&forLoop_op,
-		&&RESERVED_op,
+		&&initLocals_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -338,25 +338,13 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	pushLocal_op:
-		if (IN_CALL()) {
-			*sp++ = *(fp + arg);
-		} else {
-			*sp++ = fail(notInFunction);
-		}
+		*sp++ = *(fp + arg);
 		DISPATCH();
 	storeLocal_op:
-		if (IN_CALL()) {
-			*(fp + arg) = *--sp;
-		} else {
-			fail(notInFunction);
-		}
+		*(fp + arg) = *--sp;
 		DISPATCH();
 	incrementLocal_op:
-		if (IN_CALL()) {
-			*(fp + arg) = int2obj(obj2int(*(fp + arg)) + evalInt(*--sp));
-		} else {
-			fail(notInFunction);
-		}
+		*(fp + arg) = int2obj(obj2int(*(fp + arg)) + evalInt(*--sp));
 		DISPATCH();
 	pop_op:
 		sp -= arg;
@@ -413,15 +401,13 @@ static void runTask(Task *task) {
 		*sp++ = int2obj(((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
 		*sp++ = int2obj(fp - task->stack); // old fp
 		fp = sp;
-		tmp = (arg >> 16) & 0xFF; // # of locals (high byte of arg)
-		while (tmp-- > 0) *sp++ = int2obj(0); // reserve space for local vars & initialize to zero
 		task->currentChunkIndex = arg & 0xFF; // callee's chunk index (low byte of arg)
 		task->code = chunks[task->currentChunkIndex].code;
 		ip = task->code + PERSISTENT_HEADER_WORDS; // first instruction in callee
 		DISPATCH();
 	returnResult_op:
 		tmpObj = *(sp - 1); // return value
-		if (!(fp - task->stack)) { // not in a function call
+		if (fp == task->stack) { // not in a function call
 			if (!hasOutputSpace(bytesForObject(*(sp - 1)) + 100)) { // leave room for other messages
 				ip--; // retry when task is resumed
 				goto suspend;
@@ -499,22 +485,26 @@ static void runTask(Task *task) {
 			*(sp - 1) = int2obj(tmp); // store the loop counter
 			tmp = obj2int(*(sp - 2)) - tmp; // set tmp to the loop index (increasing from 0 to N-1)
 			tmpObj = *(sp - 3); // set tmpObj to thing being iterated over
-			// xxx change from global variable (vars[arg]) to local variable
 			if (isInt(tmpObj)) {
 				// set the index variable to the loop index
-				vars[arg] = int2obj(tmp + 1); // add 1 get range 1 to N
+				*(fp + arg) = int2obj(tmp + 1); // add 1 get range 1 to N
 			} else if (IS_CLASS(tmpObj, ArrayClass)) {
 				// set the index variable to the array element at the index variable
-				vars[arg] = FIELD(tmpObj, tmp); // array elements
+				*(fp + arg) = FIELD(tmpObj, tmp); // array elements
 			} else if (IS_CLASS(tmpObj, ByteArrayClass)) {
 				// set the index variable to the byte at the index variable
-				vars[arg] = int2obj( ((uint8 *) &FIELD(tmpObj, 0))[tmp] ); // bytearray elements
+				*(fp + arg) = int2obj( ((uint8 *) &FIELD(tmpObj, 0))[tmp] ); // bytearray elements
 			} else {
 				fail(badForLoopArg);
+				goto error;
 			}
 		} else { // loop counter <= 0
 			ip++; // skip the following jmp instruction thus ending the loop
 		}
+		DISPATCH();
+	initLocals_op:
+		// Reserve stack space for arg locals initialized to false
+		while (arg-- > 0) *sp++ = falseObj;
 		DISPATCH();
 
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
