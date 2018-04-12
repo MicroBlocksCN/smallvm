@@ -218,7 +218,7 @@ void systemReset() {
 #elif defined(ARDUINO_ESP8266_NODEMCU)
 
 	#define BOARD_TYPE "ESP8266"
-	#define DIGITAL_PINS 11
+	#define DIGITAL_PINS 17
 	#define ANALOG_PINS 1
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0};

@@ -151,13 +151,13 @@ method selectPort SmallRuntime {
 		for n 32 { addItem menu (join 'COM' n) }
 	} else {
 		for fn (listFiles '/dev') {
-			if ((find (letters fn) (letters 'usb')) > 0) { // MacOS
+			if ((find (letters (toLowerCase fn)) (letters 'usb')) > 0) { // MacOS
 				addItem menu fn
 			}
-			if ((find (letters fn) (letters 'ACM')) > 0) { // linux
+			if ((find (letters (toLowerCase fn)) (letters 'acm')) > 0) { // linux
 				addItem menu fn
 			}
-			if ((find (letters fn) (letters 'ttys00')) > 0) { // pseudo terminal
+			if ((find (letters (toLowerCase fn)) (letters 'ttys00')) > 0) { // pseudo terminal
 				addItem menu fn
 			}
 		}
