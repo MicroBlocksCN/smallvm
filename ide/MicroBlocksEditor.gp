@@ -22,9 +22,8 @@ method project MicroBlocksEditor { return project }
 method scripter MicroBlocksEditor { return scripter }
 method stage MicroBlocksEditor { return (global 'Page') }
 
-to openMicroBlocksEditor tryRetina devMode presentFlag {
-  if (isNil tryRetina) { tryRetina = true }
-  if (isNil devMode) { devMode = true }
+to openMicroBlocksEditor devMode {
+  if (isNil devMode) { devMode = false }
   if (isNil (global 'alanMode')) { setGlobal 'alanMode' false }
   if (isNil (global 'vectorTrails')) { setGlobal 'vectorTrails' false }
   if (and ('Browser' == (platform)) (browserIsMobile)) {
@@ -34,6 +33,7 @@ to openMicroBlocksEditor tryRetina devMode presentFlag {
   }
   setDevMode page devMode
   setGlobal 'page' page
+  tryRetina = true
   open page tryRetina 'MicroBlocks'
   editor = (initialize (new 'MicroBlocksEditor') (emptyProject))
   addPart page editor
@@ -43,7 +43,7 @@ to openMicroBlocksEditor tryRetina devMode presentFlag {
   }
   pageResized editor
   developerModeChanged editor
-  startSteppingSafely page presentFlag
+  startSteppingSafely page
 }
 
 to findMicroBlocksEditor {
@@ -411,9 +411,24 @@ method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addItem menu 'delete all scripts from board' (action 'sendDeleteAll' (smallRuntime))
+  if (not (devMode)) {
+	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
+  } else {
+	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
+  }
 //   addLine menu
 //   addItem menu 'broadcast test' (action 'broadcastTest' (smallRuntime))
 //   addItem menu 'set variable test' (action 'setVarTest' (smallRuntime))
 //   addItem menu 'get code test' (action 'getCodeTest' (smallRuntime))
   return menu
+}
+
+method showAdvancedBlocks MicroBlocksEditor {
+  setDevMode (global 'page') true
+  developerModeChanged this
+}
+
+method hideAdvancedBlocks MicroBlocksEditor {
+  setDevMode (global 'page') false
+  developerModeChanged this
 }

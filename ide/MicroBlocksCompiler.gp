@@ -18,27 +18,22 @@ method microBlocksSpecs SmallCompiler {
 	return (array
 	'I/O'
 		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
+		(array 'r' 'buttonA'			'button A')
+		(array 'r' 'buttonB'			'button B')
+		(array ' ' 'sayIt'				'say _' 'auto' 123)
 		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
-		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
+		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array ' ' 'analogWriteOp'		'set pin _ to _' 'num num' 1 1023)
-		(array 'r' 'microsOp'			'micros')
-		(array 'r' 'millisOp'			'millis')
-		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello, MicroBlocks!')
 		(array 'r' 'analogPins'			'analog pins')
 		(array 'r' 'digitalPins'		'digital pins')
-		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
-		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
-		(array ' ' 'spiSend'			'spi send _' 'num' 0)
-		(array 'r' 'spiRecv'			'spi receive')
-		(array ' ' 'sayIt'				'say _' 'auto' 123)
+		(array 'r' 'microsOp'			'micros')
+		(array 'r' 'millisOp'			'millis')
 	'MicroBit'
 		(array ' ' 'mbDisplay'			'display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _' 'bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool')
 		(array ' ' 'mbDisplayOff'		'clear display')
 		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
 		(array ' ' 'mbUnplot'			'unplot x _ y _' 'num num' 3 3)
-		(array 'r' 'buttonA'			'button A')
-		(array 'r' 'buttonB'			'button B')
 		(array 'r' 'mbTiltX'			'tilt x')
 		(array 'r' 'mbTiltY'			'tilt y')
 		(array 'r' 'mbTiltZ'			'tilt z')
@@ -98,6 +93,14 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'bitInvert'			'~ _' 'num' 1 3)
 		(array 'r' 'bitShiftLeft'		'_ << _' 'num num' 3 2)
 		(array 'r' 'bitShiftRight'		'_ >> _' 'num num' -100 2)
+
+		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello!')
+
+		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
+		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
+
+		(array ' ' 'spiSend'			'spi send _' 'num' 0)
+		(array 'r' 'spiRecv'			'spi receive')
 
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 		(array 'r' 'peek'				'memory at _ _' 'num num' 0 0)

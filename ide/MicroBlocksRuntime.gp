@@ -385,12 +385,15 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'taskDoneMsg')) {
 		updateRunning this (byteAt msg 3) false
 	} (op == (msgNameToID this 'taskReturnedValueMsg')) {
-		showResult this (byteAt msg 3) (returnedValue this msg)
+		chunkID = (byteAt msg 3)
+		showResult this chunkID (returnedValue this msg)
+		updateRunning this chunkID false
 	} (op == (msgNameToID this 'taskErrorMsg')) {
 		updateRunning this (byteAt msg 3) false
 		print 'error:' (byteAt msg 6) // error code
 	} (op == (msgNameToID this 'outputValueMsg')) {
-		print (returnedValue this msg)
+		chunkID = (byteAt msg 3)
+		showResult this chunkID (returnedValue this msg)
 	} (op == (msgNameToID this 'varValueMsg')) {
 		print 'variable value:' (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
@@ -440,19 +443,14 @@ method updateHighlights SmallRuntime {
 }
 
 method showResult SmallRuntime chunkID value {
-	for m (parts (morph (scriptEditor scripter))) {
+	for m (join
+			(parts (morph (scriptEditor scripter)))
+			(parts (morph (blockPalette scripter)))) {
 		h = (handler m)
 		if (and (isClass h 'Block') (chunkID == (lookupChunkID this h))) {
 			showHint m value
 		}
 	}
-	for m (parts (morph (blockPalette scripter))) {
-		h = (handler m)
-		if (and (isClass h 'Block') (chunkID == (lookupChunkID this h))) {
-			showHint m value
-		}
-	}
-	updateRunning this chunkID false
 }
 
 method returnedValue SmallRuntime msg {
