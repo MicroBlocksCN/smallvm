@@ -221,18 +221,12 @@ method addVariableBlocks MicroBlocksScripter {
 // 	  step readout
 	}
 	nextY += (5 * scale)
-	addBlock this (toBlock (newCommand '=' (first sharedVars) 0)) nil false
-	addBlock this (toBlock (newCommand '+=' (first sharedVars) 1)) nil false
   }
 
-  allowScriptVariables = false
-  if allowScriptVariables {
-	addSectionLabel this 'Script Variables'
-	nextY += (2 * scale)
-	addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
-	addBlock this (toBlock (newCommand '=' 'var' 0)) nil false
-	addBlock this (toBlock (newCommand '+=' 'var' 1)) nil false
-  }
+  nextY += (10 * scale)
+  addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
+  addBlock this (toBlock (newCommand '=' 'var' 0)) nil false
+  addBlock this (toBlock (newCommand '+=' 'var' 1)) nil false
 }
 
 method addMyBlocks MicroBlocksScripter {

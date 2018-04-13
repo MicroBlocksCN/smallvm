@@ -15,8 +15,8 @@ method setScripter SmallRuntime aScripter { scripter = aScripter }
 
 method evalOnBoard SmallRuntime aBlock showBytes {
 	if (isNil showBytes) { showBytes = false }
-	bytes = (chunkBytesForBlock this aBlock)
 	if showBytes {
+		bytes = (chunkBytesForBlock this aBlock)
 		print (join 'Bytes for chunk ' id ':') bytes
 		print '----------'
 		return

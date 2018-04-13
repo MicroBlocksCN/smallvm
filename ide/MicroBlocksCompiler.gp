@@ -1,10 +1,12 @@
 // MicroBlocksCompiler.gp - A blocks compiler for microBlocks
 // John Maloney, April, 2017
 
-defineClass SmallCompiler opcodes trueObj falseObj oneObj stringClassID
+defineClass SmallCompiler opcodes argNames localVars trueObj falseObj oneObj stringClassID
 
 method initialize SmallCompiler {
 	initOpcodes this
+	argNames = (dictionary)
+	localVars = (dictionary)
 	falseObj = 0
 	trueObj = 4
 	oneObj = ((1 << 1) | 1)
@@ -85,9 +87,10 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'atPut'				'set array _ at _ to _' 'num num' nil 1 10)
 		(array 'r' 'size'				'length of _ ' 'auto' nil)
 	'Variables'
-		(array 'r' 'v'					'_' 'menu.sharedVarMenu' 'n')
-		(array ' ' '='					'set _ to _' 'menu.sharedVarMenu auto' 'n' 0)
-		(array ' ' '+='					'increase _ by _' 'menu.sharedVarMenu num' 'n' 1)
+		(array 'r' 'v'					'_' 'menu.allVarsMenu' 'n')
+		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
+		(array ' ' '+='					'increase _ by _' 'menu.allVarsMenu num' 'n' 1)
+		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Advanced'
 		(array 'r' 'bitAnd'				'_ & _' 'num num' 1 3)
 		(array 'r' 'bitOr'				'_ | _' 'num num' 1 2)
@@ -145,7 +148,7 @@ method initOpcodes SmallCompiler {
 #define recvBroadcast 25
 #define stopAll 26
 #define forLoop 27
-// reserved 28
+#define initLocals 28
 // reserved 29
 // reserved 30
 // reserved 31
@@ -242,24 +245,27 @@ method instructionsFor SmallCompiler cmdOrReporter {
 	// Return a list of instructions for stack of blocks or a reporter.
 	// Add a 'halt' if needed and append any literals (e.g. strings) used.
 
+	collectVars this cmdOrReporter
+	result = (list (array 'initLocals' (count localVars)))
+
 	if (isClass cmdOrReporter 'Command') {
 		op = (primName cmdOrReporter)
 		if ('whenCondition' == op) {
-			result = (instructionsForWhenCondition this cmdOrReporter)
+			addAll result (instructionsForWhenCondition this cmdOrReporter)
 		} ('whenStarted' == op) {
-			result = (instructionsForCmdList this (nextBlock cmdOrReporter))
+			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 			add result (array 'halt' 0)
 		} ('whenBroadcastReceived' == op) {
-			result = (instructionsForExpression this (first (argList cmdOrReporter)))
+			addAll result (instructionsForExpression this (first (argList cmdOrReporter)))
 			add result (array 'recvBroadcast' 1)
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 			add result (array 'halt' 0)
 		} else {
-			result = (instructionsForCmdList this cmdOrReporter)
+			addAll result (instructionsForCmdList this cmdOrReporter)
 			add result (array 'halt' 0)
 		}
 	} else {
-		result = (instructionsForCmdList this (newReporter 'return' cmdOrReporter))
+		addAll result (instructionsForCmdList this (newReporter 'return' cmdOrReporter))
 	}
 	if (and
 		((count result) == 2)
@@ -311,10 +317,10 @@ method instructionsForCmd SmallCompiler cmd {
 	args = (argList cmd)
 	if (isOneOf op '=' 'local') {
 		addAll result (instructionsForExpression this (at args 2))
-		add result (array 'storeVar' (globalVarIndex this (first args)))
+		add result (setVar this (first args))
 	} ('+=' == op) {
 		addAll result (instructionsForExpression this (at args 2))
-		add result (array 'incrementVar' (globalVarIndex this (first args)))
+		add result (incrementVar this (first args))
 	} ('return' == op) {
 		if (0 == (count args)) {
 			add result (array 'pushImmediate' 1)
@@ -409,7 +415,7 @@ method instructionsForWaitUntil SmallCompiler args {
 
 method instructionsForForLoop SmallCompiler args {
 	result = (instructionsForExpression this (at args 2))
-	loopVarIndex = (globalVarIndex this (first args)) // xxx should use the *local* var index
+	loopVarIndex = (at localVars (first args))
 	body = (instructionsForCmdList this (at args 3))
 	addAll result (array
 		(array 'pushImmediate' falseObj) // this will be N, the total loop count
@@ -451,7 +457,7 @@ method instructionsForExpression SmallCompiler expr {
 	op = (primName expr)
 	args = (argList expr)
 	if ('v' == op) { // variable
-		return (list (array 'pushVar' (globalVarIndex this (first args))))
+		return (list (getVar this (first args)))
 	} ('booleanConstant' == op) {
 		if (first args) {
 			return (list (array 'pushImmediate' trueObj))
@@ -536,6 +542,58 @@ method primitive SmallCompiler op args isCommand {
 		print 'Skipping unknown op:' op
 	}
 	return result
+}
+
+// Variables
+
+method collectVars SmallCompiler cmdOrReporter {
+	argNames = (dictionary) // xxx if this is a function, gets its parameter names
+
+	sharedVars = (variableNames (targetModule (scripter (smallRuntime))))
+	sharedVars = (copyWithout sharedVars 'extensions')
+
+	localVars = (dictionary)
+	todo = (list cmdOrReporter)
+	while ((count todo) > 0) {
+		cmd = (removeFirst todo)
+		if (isOneOf (primName cmd) 'v' '=' '+=' 'local' 'for') {
+			varName = (first (argList cmd))
+			if (not (or
+				('this' == varName)
+				(contains argNames varName)
+				(contains sharedVars varName)
+				(contains localVars varName))) {
+					atPut localVars varName (count localVars)
+			}
+		}
+		for arg (argList cmd) {
+			if (isAnyClass arg 'Command' 'Reporter') {
+				add todo arg
+			}
+		}
+		if (notNil (nextBlock cmd)) { add todo (nextBlock cmd) }
+	}
+}
+
+method getVar SmallCompiler varName {
+	localID = (at localVars varName)
+	if (notNil localID) { return (array 'pushLocal' localID) }
+	globalID = (globalVarIndex this varName)
+	if (notNil globalID) { return (array 'pushVar' globalID) }
+}
+
+method setVar SmallCompiler varName {
+	localID = (at localVars varName)
+	if (notNil localID) { return (array 'storeLocal' localID) }
+	globalID = (globalVarIndex this varName)
+	if (notNil globalID) { return (array 'storeVar' globalID) }
+}
+
+method incrementVar SmallCompiler varName {
+	localID = (at localVars varName)
+	if (notNil localID) { return (array 'incrementLocal' localID) }
+	globalID = (globalVarIndex this varName)
+	if (notNil globalID) { return (array 'incrementVar' globalID) }
 }
 
 method globalVarIndex SmallCompiler varName {
