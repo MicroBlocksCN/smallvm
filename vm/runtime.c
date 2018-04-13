@@ -10,7 +10,7 @@
 
 // VM Version
 
-#define VM_VERSION "v017"
+#define VM_VERSION "v018"
 
 // Forward Reference Declarations
 
@@ -234,9 +234,11 @@ int hasOutputSpace(int byteCount) { return ((OUTBUF_MASK - OUTBUF_BYTES()) > byt
 static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Send a value message of the given type for the given chunkOrVarIndex.
 	// Data is: <type byte><...data...>
-	// Types: 1 - integer, 2 - string
+	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - bytearray
 
-	char data[200];
+	char data[500];
+	int maxBytes = (int) sizeof(data) - 1; // leave room for type bytes
+
 	if (isInt(value)) { // 32-bit integer, little endian
 		data[0] = 1; // data type (1 is integer)
 		int n = obj2int(value);
@@ -245,11 +247,11 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		data[3] = ((n >> 16) & 0xFF);
 		data[4] = ((n >> 24) & 0xFF);
 		sendMessage(msgType, chunkOrVarIndex, 5, data);
-	} else if (IS_CLASS(value, StringClass)) { // string
+	} else if (IS_CLASS(value, StringClass)) {
 		data[0] = 2; // data type (2 is string)
 		char *s = obj2str(value);
 		int byteCount = strlen(s);
-		if (byteCount > (int) (sizeof(data) - 1)) byteCount = sizeof(data) - 1;
+		if (byteCount > maxBytes) byteCount = maxBytes;
 		for (int i = 0; i < byteCount; i++) {
 			data[i + 1] = s[i];
 		}
@@ -258,7 +260,17 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		data[0] = 3; // data type (3 is boolean)
 		data[1] = (value == trueObj) ? 1 : 0;
 		sendMessage(msgType, chunkOrVarIndex, 2, data);
+	} else if (IS_CLASS(value, ByteArrayClass)) {
+		int byteCount = 4 * objWords(value);
+		data[0] = 4; // data type (4 is bytearray)
+		if (byteCount > maxBytes) byteCount = maxBytes;
+		char *src = (char *) (&FIELD(value, 0));
+		for (int i = 0; i < byteCount; i++) {
+			data[i + 1] = *src++;
+		}
+		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
 	}
+	// xxx to do: support arrays (containing various data types including other arrays)
 }
 
 void outputString(char *s) {
@@ -271,7 +283,7 @@ void outputString(char *s) {
 	for (int i = 0; i < byteCount; i++) {
 		data[i + 1] = s[i];
 	}
-	sendMessage(outputValueMsg, 0, (byteCount + 1), data);
+	sendMessage(outputValueMsg, 255, (byteCount + 1), data);
 }
 
 void outputValue(OBJ value, int chunkIndex) {
