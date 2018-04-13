@@ -10,7 +10,7 @@
 
 // VM Version
 
-#define VM_VERSION "v016"
+#define VM_VERSION "v017"
 
 // Forward Reference Declarations
 
@@ -96,6 +96,7 @@ void stopAllTasks() {
 
 static int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
 	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
+	code++; // skip "initLocals" instruction
 	if (pushLiteral != CMD(*code)) return false; // should not happen
 	char *hatArg = obj2str((OBJ) code + ARG(*code) + 1);
 	for (int i = 0; i < byteCount; i++) {
