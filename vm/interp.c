@@ -308,11 +308,10 @@ static void runTask(Task *task) {
 		vars[arg] = *--sp;
 		DISPATCH();
 	incrementVar_op:
-		tmp = isInt(vars[arg]) ? evalInt(vars[arg]) : 0;
-		vars[arg] = int2obj(tmp + evalInt(*--sp));
+		vars[arg] = int2obj(evalInt(vars[arg]) + evalInt(*--sp));
 		DISPATCH();
 	pushArgCount_op:
-		*sp++ = IN_CALL() ? *(fp - 3) : 0;
+		*sp++ = IN_CALL() ? *(fp - 3) : int2obj(0);
 		DISPATCH();
 	pushArg_op:
 		if (IN_CALL()) {
@@ -330,9 +329,8 @@ static void runTask(Task *task) {
 		DISPATCH();
 	incrementArg_op:
 		if (IN_CALL()) {
-			tmpObj = *(fp - obj2int(*(fp - 3)) - 3 + arg);
-			tmp = isInt(tmpObj) ? evalInt(tmpObj) : 0;
-			*(fp - obj2int(*(fp - 3)) - 3 + arg) = int2obj(tmp + evalInt(*--sp));
+			tmp = evalInt(*(fp - obj2int(*(fp - 3)) - 3 + arg)) + evalInt(*--sp);
+			*(fp - obj2int(*(fp - 3)) - 3 + arg) = int2obj(tmp);
 		} else {
 			fail(notInFunction);
 		}
@@ -397,11 +395,11 @@ static void runTask(Task *task) {
 		// arg N-1
 		// ...
 		// arg 0
-		*sp++ = int2obj((arg >> 8) & 0xFF); // # of arguments (middle byte of arg)
+		*sp++ = int2obj(arg & 0xFF); // # of arguments (low byte of arg)
 		*sp++ = int2obj(((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
 		*sp++ = int2obj(fp - task->stack); // old fp
 		fp = sp;
-		task->currentChunkIndex = arg & 0xFF; // callee's chunk index (low byte of arg)
+		task->currentChunkIndex = (arg >> 8) & 0xFF; // callee's chunk index (middle byte of arg)
 		task->code = chunks[task->currentChunkIndex].code;
 		ip = task->code + PERSISTENT_HEADER_WORDS; // first instruction in callee
 		DISPATCH();
@@ -417,11 +415,11 @@ static void runTask(Task *task) {
 			goto suspend;
 		}
 		sp = fp - obj2int(*(fp - 3)) - 3; // restore stack pointer; *(fp - 3) is the arg count
-		*sp++ = tmpObj;
+		*sp++ = tmpObj; // push return value
 		tmp = obj2int(*(fp - 2)); // return address
 		task->currentChunkIndex = tmp & 0xFF;
 		task->code = chunks[task->currentChunkIndex].code;
-		ip = task->code + ((tmp >> 8) & 0x3FFFFF);
+		ip = task->code + ((tmp >> 8) & 0x3FFFFF); // restore old ip
 		fp = task->stack + obj2int(*(fp - 1)); // restore the old fp
 		DISPATCH();
 	waitMicros_op:

@@ -176,8 +176,8 @@
 	// that do not support Flash-based persistent memory.
 
 	#define START (&flash[0])
-	#define HALF_SPACE (5 * 1024)
-	static uint8 flash[2 * HALF_SPACE]; // simulated Flash memory (10k)
+	#define HALF_SPACE (8 * 1024)
+	static uint8 flash[2 * HALF_SPACE]; // simulated Flash memory (16k)
 
 	static void flashErase(int *startAddr, int *endAddr) {
 		int *dst = (int *) startAddr;

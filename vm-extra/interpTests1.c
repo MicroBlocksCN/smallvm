@@ -190,6 +190,10 @@ int function1[] = {
 	0x216f,
 };
 
+#define CALL(chunkIndex, argCount, localCount) \
+	(((localCount & 0xFF) << 24) | ((chunkIndex & 0xFF) << 16) | \
+	 ((argCount & 0xFF) << 8)| callFunction)
+
 int callTest[] = {
 	// Call function with chunkIndex 1 three times, and print the three values it returns
 	OP(pushImmediate, int2obj(1)),

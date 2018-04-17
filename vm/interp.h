@@ -123,10 +123,6 @@ extern "C" {
 #define CMD(n) (n & 0x7F) // use only low 7 bits for now
 #define ARG(n) (n >> 8)
 
-#define CALL(chunkIndex, argCount, localCount) \
-  (((localCount & 0xFF) << 24) | ((argCount & 0xFF) << 16) | \
-   ((chunkIndex & 0xFF) << 8)| callFunction)
-
 // Global Variables
 
 #define MAX_VARS 25
@@ -170,7 +166,7 @@ extern CodeChunkRecord chunks[MAX_CHUNKS];
 
 // The task list is an array of taskCount Tasks. Each Task has a chunkIndex for
 // the top-level block of the task, as well as for the current function chunk
-// when inside a call to  user-defined function. It also holds the task status, processor
+// when inside a call to user-defined function. It also holds the task status, processor
 // state (instruction pointer (ip), stack pointer (sp), and frame pointer (fp)), and
 // the wakeTime (used when a task is waiting on the millisecond or microsecond clock).
 // In the current design, Tasks have a fixed-size stack built in. In the future,
