@@ -136,7 +136,7 @@ method contextMenu ScriptEditor {
 
 method blockColorForCategory AuthoringSpecs cat {
   defaultColor = (color 4 148 220)
-  if (isOneOf cat 'Control' 'Functions') {
+  if (isOneOf cat 'Control' 'Control - More' 'Functions') {
 	if (notNil (global 'controlColor')) { return (global 'controlColor') }
 	return (color 230 168 34)
   } ('Variables' == cat) {

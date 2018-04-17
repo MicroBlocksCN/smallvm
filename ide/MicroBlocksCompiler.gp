@@ -17,46 +17,46 @@ method initialize SmallCompiler {
 
 method microBlocksSpecs SmallCompiler {
 	return (array
-	'I/O'
+	'Output'
+		(array ' ' 'mbDisplay'			'display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _' 'bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool')
+		(array ' ' 'mbDisplayOff'		'clear display')
+		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
+		(array ' ' 'mbUnplot'			'unplot x _ y _' 'num num' 3 3)
 		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
+		(array ' ' 'sayIt'				'say _' 'auto' 123)
+	'Input'
 		(array 'r' 'buttonA'			'button A')
 		(array 'r' 'buttonB'			'button B')
-		(array ' ' 'sayIt'				'say _' 'auto' 123)
+		(array 'r' 'mbTiltX'			'tilt x')
+		(array 'r' 'mbTiltY'			'tilt y')
+		(array 'r' 'mbTiltZ'			'tilt z')
+		(array 'r' 'mbTemp'				'temperature Celcius')
+		(array 'r' 'microsOp'			'micros')
+		(array 'r' 'millisOp'			'millis')
+	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
 		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array ' ' 'analogWriteOp'		'set pin _ to _' 'num num' 1 1023)
 		(array 'r' 'analogPins'			'analog pins')
 		(array 'r' 'digitalPins'		'digital pins')
-		(array 'r' 'microsOp'			'micros')
-		(array 'r' 'millisOp'			'millis')
-	'MicroBit'
-		(array ' ' 'mbDisplay'			'display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _' 'bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool')
-		(array ' ' 'mbDisplayOff'		'clear display')
-		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
-		(array ' ' 'mbUnplot'			'unplot x _ y _' 'num num' 3 3)
-		(array 'r' 'mbTiltX'			'tilt x')
-		(array 'r' 'mbTiltY'			'tilt y')
-		(array 'r' 'mbTiltZ'			'tilt z')
-		(array 'r' 'mbTemp'				'temperature Celcius')
-		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _' 'num num num' 2 0 5)
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
- 		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
-		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
-		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
-		(array ' ' 'waitUntil'			'wait until _' 'bool')
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop all')
+	'Control - More'
+		(array ' ' 'waitUntil'			'wait until _' 'bool')
+		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
+		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
+ 		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array 'h' 'whenBroadcastReceived' 'when _ received' 'str' 'go!')
 		(array ' ' 'sendBroadcast'		'broadcast _ ' 'str' 'go!')
- 		(array ' ' 'return'				'return _' 'auto')
-		(array ' ' 'noop'				'no op')
+ 		(array ' ' 'return'				'return _' 'auto' 0)
 	'Math'
 		(array 'r' 'add'				'_ + _' 'num num' 10 2)
 		(array 'r' 'subtract'			'_ − _' 'num num' 10 2)
@@ -75,6 +75,11 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'notOp'				'not _' 'bool' true)
 		(array 'r' 'and'				'_ and _ : and _ : ...' 'bool bool bool' true false)
 		(array 'r' 'or'					'_ or _ : or _ : ...' 'bool bool bool' true false)
+	'Variables'
+		(array 'r' 'v'					'_' 'menu.allVarsMenu' 'n')
+		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
+		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
+		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Arrays'
 		(array 'r' 'newArray'			'new array _' 'num' 10)
 		(array 'r' 'newByteArray'		'new byte array _' 'num' 10)
@@ -82,11 +87,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'at'					'array _ at _' 'auto num' nil 1)
 		(array ' ' 'atPut'				'set array _ at _ to _' 'num num' nil 1 10)
 		(array 'r' 'size'				'length of _ ' 'auto' nil)
-	'Variables'
-		(array 'r' 'v'					'_' 'menu.allVarsMenu' 'n')
-		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
-		(array ' ' '+='					'increase _ by _' 'menu.allVarsMenu num' 'n' 1)
-		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Advanced'
 		(array 'r' 'bitAnd'				'_ & _' 'num num' 1 3)
 		(array 'r' 'bitOr'				'_ | _' 'num num' 1 2)
@@ -95,21 +95,21 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'bitShiftLeft'		'_ << _' 'num num' 3 2)
 		(array 'r' 'bitShiftRight'		'_ >> _' 'num num' -100 2)
 
-		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello!')
-
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 
 		(array ' ' 'spiSend'			'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'			'spi receive')
 
+		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _' 'num num num' 2 0 5)
+
+		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello!')
+
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 		(array 'r' 'peek'				'memory at _ _' 'num num' 0 0)
 		(array ' ' 'poke'				'set memory at _ _ to _' 'num num num' 0 0 0)
 
-		(array ' ' 'digitalSet'			'turn pin 0 on')
-		(array ' ' 'digitalClear'		'turn pin 0 off')
-
+		(array ' ' 'noop'				'no op')
 		(array 'r' 'pushArgCount'		'arg count')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
 	)

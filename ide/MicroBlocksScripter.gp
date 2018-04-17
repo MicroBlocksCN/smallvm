@@ -165,7 +165,7 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (new 'SmallCompiler')
-  result = (list 'Control' 'MicroBit' 'I/O' 'Math' 'Variables' 'Arrays' 'Advanced' 'My Blocks')
+  result = (list 'Output' 'Input' 'Pins' 'Control' 'Control - More' 'Math' 'Variables' 'Arrays' 'Advanced' 'Functions')
   if (not (devMode)) {
   	removeAll result (list 'Arrays' 'Advanced')
   }
@@ -190,7 +190,7 @@ method updateBlocks MicroBlocksScripter {
   if ('Variables' == cat) {
 	setRule (alignment blocksPane) 'none'
 	addVariableBlocks this
-  } ('My Blocks' == cat) {
+  } ('Functions' == cat) {
 	setRule (alignment blocksPane) 'none'
     addMyBlocks this
   } else {
@@ -621,7 +621,7 @@ method addToBottom MicroBlocksScripter aBlock noScroll {
 }
 
 method reactToMethodDelete MicroBlocksScripter aPalette {
-  if ('My Blocks' == (selection (contents categoriesFrame))) {
+  if ('Functions' == (selection (contents categoriesFrame))) {
     updateBlocks this
   }
 }
