@@ -1,7 +1,7 @@
 // MicroBlocksCompiler.gp - A blocks compiler for microBlocks
 // John Maloney, April, 2017
 
-defineClass SmallCompiler opcodes argNames localVars trueObj falseObj oneObj stringClassID
+defineClass SmallCompiler opcodes argNames localVars trueObj falseObj zeroObj oneObj stringClassID
 
 method initialize SmallCompiler {
 	initOpcodes this
@@ -9,6 +9,7 @@ method initialize SmallCompiler {
 	localVars = (dictionary)
 	falseObj = 0
 	trueObj = 4
+	zeroObj = ((0 << 1) | 1)
 	oneObj = ((1 << 1) | 1)
 	stringClassID = 4
 	return this
@@ -108,6 +109,9 @@ method microBlocksSpecs SmallCompiler {
 
 		(array ' ' 'digitalSet'			'turn pin 0 on')
 		(array ' ' 'digitalClear'		'turn pin 0 off')
+
+		(array 'r' 'pushArgCount'		'arg count')
+		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
 	)
 }
 
@@ -244,11 +248,27 @@ method initOpcodes SmallCompiler {
 
 // instruction generation: entry point
 
-method instructionsFor SmallCompiler cmdOrReporter {
-	// Return a list of instructions for stack of blocks or a reporter.
+method instructionsFor SmallCompiler aBlock {
+	// Return a list of instructions for the given block or script.
 	// Add a 'halt' if needed and append any literals (e.g. strings) used.
 
+	argNames = (dictionary)
+	if (isPrototypeHat aBlock) {
+		func = (function (editedPrototype aBlock))
+		for a (argNames func) {
+			atPut argNames a (count argNames)
+		}
+		cmdOrReporter = (cmdList func)
+		if (isNil cmdOrReporter) { // a function hat without any blocks
+			cmdOrReporter = (newCommand 'noop')
+		}
+	} else {
+		cmdOrReporter = (expression aBlock)
+	}
+
 	collectVars this cmdOrReporter
+	if (isClass cmdOrReporter 'Function') { cmdOrReporter = (cmdList cmdOrReporter) }
+
 	result = (list (array 'initLocals' (count localVars)))
 
 	if (isClass cmdOrReporter 'Command') {
@@ -263,6 +283,10 @@ method instructionsFor SmallCompiler cmdOrReporter {
 			add result (array 'recvBroadcast' 1)
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 			add result (array 'halt' 0)
+		} (isPrototypeHat aBlock) { // function definition
+			addAll result (instructionsForCmdList this cmdOrReporter)
+			add result (array 'pushImmediate' falseObj)
+			add result (array 'returnResult' 0)
 		} else {
 			addAll result (instructionsForCmdList this cmdOrReporter)
 			add result (array 'halt' 0)
@@ -326,7 +350,7 @@ method instructionsForCmd SmallCompiler cmd {
 		add result (incrementVar this (first args))
 	} ('return' == op) {
 		if (0 == (count args)) {
-			add result (array 'pushImmediate' 1)
+			add result (array 'pushImmediate' zeroObj)
 		} else {
 			addAll result (instructionsForExpression this (at args 1))
 		}
@@ -345,6 +369,22 @@ method instructionsForCmd SmallCompiler cmd {
 		return (instructionsForWaitUntil this args)
 	} ('for' == op) {
 		return (instructionsForForLoop this args)
+	} (and ('digitalWriteOp' == op) (isClass (first args) 'Integer') (isClass (last args) 'Boolean')) {
+		pinNum = ((first args) & 255)
+		if (true == (last args)) {
+			add result (array 'digitalSet' pinNum)
+		} else {
+			add result (array 'digitalClear' pinNum)
+		}
+		return result
+	} ('ignoreArgs' == op) {
+		for arg args {
+			addAll result (instructionsForExpression this arg)
+		}
+		add result (array 'pop' (count args))
+		return result
+	} (isFunctionCall this op) {
+		return (instructionsForFunctonCall this op args true)
 	} else {
 		return (primitive this op args true)
 	}
@@ -441,7 +481,7 @@ method instructionsForExpression SmallCompiler expr {
 	} (false == expr) {
 		return (list (array 'pushImmediate' falseObj))
 	} (isNil expr) {
-		return (list (array 'pushImmediate' 1)) // the integer zero
+		return (list (array 'pushImmediate' zeroObj))
 	} (isClass expr 'Integer') {
 		if (and (-4194304 <= expr) (expr <= 4194303)) { // 23-bit encoded as 24 bit int object
 			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FFFFFF')) ))
@@ -471,6 +511,8 @@ method instructionsForExpression SmallCompiler expr {
 		return (instructionsForAnd this args)
 	} ('or' == op) {
 		return (instructionsForOr this args)
+	} (isFunctionCall this op) {
+		return (instructionsForFunctonCall this op args false)
 	} else {
 		return (primitive this op args false)
 	}
@@ -550,8 +592,6 @@ method primitive SmallCompiler op args isCommand {
 // Variables
 
 method collectVars SmallCompiler cmdOrReporter {
-	argNames = (dictionary) // xxx if this is a function, gets its parameter names
-
 	sharedVars = (variableNames (targetModule (scripter (smallRuntime))))
 	sharedVars = (copyWithout sharedVars 'extensions')
 
@@ -579,22 +619,31 @@ method collectVars SmallCompiler cmdOrReporter {
 }
 
 method getVar SmallCompiler varName {
-	localID = (at localVars varName)
-	if (notNil localID) { return (array 'pushLocal' localID) }
+	if (notNil (at localVars varName)) {
+		return (array 'pushLocal' (at localVars varName))
+	} (notNil (at argNames varName)) {
+		return (array 'pushArg' (at argNames varName))
+	}
 	globalID = (globalVarIndex this varName)
 	if (notNil globalID) { return (array 'pushVar' globalID) }
 }
 
 method setVar SmallCompiler varName {
-	localID = (at localVars varName)
-	if (notNil localID) { return (array 'storeLocal' localID) }
+	if (notNil (at localVars varName)) {
+		return (array 'storeLocal' (at localVars varName))
+	} (notNil (at argNames varName)) {
+		return (array 'storeArg' (at argNames varName))
+	}
 	globalID = (globalVarIndex this varName)
 	if (notNil globalID) { return (array 'storeVar' globalID) }
 }
 
 method incrementVar SmallCompiler varName {
-	localID = (at localVars varName)
-	if (notNil localID) { return (array 'incrementLocal' localID) }
+	if (notNil (at localVars varName)) {
+		return (array 'incrementLocal' (at localVars varName))
+	} (notNil (at argNames varName)) {
+		return (array 'incrementArg' (at argNames varName))
+	}
 	globalID = (globalVarIndex this varName)
 	if (notNil globalID) { return (array 'incrementVar' globalID) }
 }
@@ -607,6 +656,35 @@ method globalVarIndex SmallCompiler varName {
 	}
 	if (id >= 25) { error 'Id' id 'for variable' varName 'is out of range' }
 	return (id - 1) // VM uses zero-based index
+}
+
+// function calls
+
+method isFunctionCall SmallCompiler op {
+	return (notNil (chunkIDForFunction this op))
+}
+
+method instructionsForFunctonCall SmallCompiler op args isCmd {
+	result = (list)
+	callee = (chunkIDForFunction this op)
+	for arg args {
+		addAll result (instructionsForExpression this arg)
+	}
+	add result (array 'callFunction' (((callee & 255) << 8) | ((count args) & 255)))
+	if isCmd { add result (array 'pop' 1) } // discard the return value
+	return result
+}
+
+method chunkIDForFunction SmallCompiler op {
+	for aBlock (sortedScripts (scriptEditor (scripter (smallRuntime)))) {
+		if (isPrototypeHat aBlock) {
+			func = (function (editedPrototype aBlock))
+			if (op == (functionName func)) {
+				return (chunkIdFor (smallRuntime) aBlock)
+			}
+		}
+	}
+	return nil
 }
 
 // literal values (strings and large integers )

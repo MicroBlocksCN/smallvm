@@ -47,7 +47,7 @@ method chunkTypeForBlock SmallRuntime aBlock {
 
 method chunkBytesForBlock SmallRuntime aBlock {
 	compiler = (initialize (new 'SmallCompiler'))
-	code = (instructionsFor compiler (expression aBlock))
+	code = (instructionsFor compiler aBlock)
 	bytes = (list)
 	for item code {
 		if (isClass item 'Array') {
@@ -63,16 +63,11 @@ method chunkBytesForBlock SmallRuntime aBlock {
 	return bytes
 }
 
-method showInstructions SmallRuntime aBlockOrFunction {
+method showInstructions SmallRuntime aBlock {
 	// Print the instructions for the given stack.
 
 	compiler = (initialize (new 'SmallCompiler'))
-	if (isClass aBlockOrFunction 'Block') {
-		expr = (expression aBlockOrFunction)
-	} else {
-		expr = (cmdList aBlockOrFunction)
-	}
-	code = (instructionsFor compiler expr)
+	code = (instructionsFor compiler (topBlock aBlock))
 	for item code {
 		if (and (isClass item 'Array') ('pushImmediate' == (first item))) {
 			arg = (at item 2)
@@ -389,11 +384,16 @@ method handleMessage SmallRuntime msg {
 		showResult this chunkID (returnedValue this msg)
 		updateRunning this chunkID false
 	} (op == (msgNameToID this 'taskErrorMsg')) {
+		chunkID = (byteAt msg 3)
+		showResult this chunkID (join 'error: ' (byteAt msg 6)) // xxx look up error code
 		updateRunning this (byteAt msg 3) false
-		print 'error:' (byteAt msg 6) // error code
 	} (op == (msgNameToID this 'outputValueMsg')) {
 		chunkID = (byteAt msg 3)
-		showResult this chunkID (returnedValue this msg)
+		if (chunkID == 255) {
+			print (returnedValue this msg)
+		} else {
+			showResult this chunkID (returnedValue this msg)
+		}
 	} (op == (msgNameToID this 'varValueMsg')) {
 		print 'variable value:' (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
@@ -461,7 +461,9 @@ method returnedValue SmallRuntime msg {
 		return (toString (copyFromTo msg 7))
 	} (3 == type) {
 		return (0 != (byteAt msg 7))
-	} true {
+	} (4 == type) {
+		return (toArray (copyFromTo msg 7))
+	} else {
 		return (join 'unknown type: ' type)
 	}
 }

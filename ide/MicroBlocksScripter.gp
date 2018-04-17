@@ -165,8 +165,10 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (new 'SmallCompiler')
-  result = (list 'Control' 'MicroBit' 'I/O' 'Math' 'Arrays' 'Variables') // 'My Blocks'
-  if (devMode) { add result 'Advanced' }
+  result = (list 'Control' 'MicroBit' 'I/O' 'Math' 'Variables' 'Arrays' 'Advanced' 'My Blocks')
+  if (not (devMode)) {
+  	removeAll result (list 'Arrays' 'Advanced')
+  }
   result = (join result (extraCategories (project projectEditor)))
   return result
 }

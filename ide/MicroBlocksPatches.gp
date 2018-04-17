@@ -39,9 +39,38 @@ method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }
 
+to findProjectEditor {
+  page = (global 'page')
+  if (notNil page) {
+	for p (parts (morph page)) {
+	  if (isClass (handler p) 'MicroBlocksEditor') { return (handler p) }
+	}
+  }
+  return nil
+}
+
 method clicked Block hand {
-  runtime = (smallRuntime)
+  if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
+    userRenameVariable this
+    return
+  } (isPrototype this) {
+    def = (blockDefinition this)
+    if (notNil def) {
+      return (clicked def hand)
+    }
+    return true
+  } (isPrototypeHat this) {
+    prot = (editedPrototype this)
+    if (notNil prot) {
+      return (clicked prot hand)
+    }
+  } (isClass (handler (owner morph)) 'BlockOp') {
+    return
+  }
+
   topBlock = (topBlock this)
+  if (isPrototypeHat topBlock) { return }
+  runtime = (smallRuntime)
   if (isRunning runtime topBlock) {
 	stopRunningChunk runtime (chunkIdFor runtime topBlock)
   } else {
