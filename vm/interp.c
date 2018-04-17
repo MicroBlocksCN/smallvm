@@ -113,6 +113,14 @@ static void primSendBroadcast(OBJ *args) {
 #define POP_ARGS_COMMAND() { sp -= arg; }
 #define POP_ARGS_REPORTER() { sp -= arg - 1; }
 
+// Macro to check for stack overflow
+#define STACK_CHECK(n) { \
+	if (((sp + (n)) - task->stack) > STACK_LIMIT) { \
+		errorCode = stackOverflow; \
+		goto error; \
+	} \
+}
+
 // Macros to support function calls
 #define IN_CALL() (fp > task->stack)
 
@@ -293,15 +301,19 @@ static void runTask(Task *task) {
 	noop_op:
 		DISPATCH();
 	pushImmediate_op:
+		STACK_CHECK(1);
 		*sp++ = (OBJ) arg;
 		DISPATCH();
 	pushBigImmediate_op:
+		STACK_CHECK(1);
 		*sp++ = (OBJ) *ip++;
 		DISPATCH();
 	pushLiteral_op:
+		STACK_CHECK(1);
 		*sp++ = (OBJ) (ip + arg); // arg is offset from the current ip to the literal object
 		DISPATCH();
 	pushVar_op:
+		STACK_CHECK(1);
 		*sp++ = vars[arg];
 		DISPATCH();
 	storeVar_op:
@@ -311,9 +323,11 @@ static void runTask(Task *task) {
 		vars[arg] = int2obj(evalInt(vars[arg]) + evalInt(*--sp));
 		DISPATCH();
 	pushArgCount_op:
+		STACK_CHECK(1);
 		*sp++ = IN_CALL() ? *(fp - 3) : int2obj(0);
 		DISPATCH();
 	pushArg_op:
+		STACK_CHECK(1);
 		if (IN_CALL()) {
 			*sp++ = *(fp - obj2int(*(fp - 3)) - 3 + arg);
 		} else {
@@ -336,6 +350,7 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	pushLocal_op:
+		STACK_CHECK(1);
 		*sp++ = *(fp + arg);
 		DISPATCH();
 	storeLocal_op:
@@ -395,6 +410,7 @@ static void runTask(Task *task) {
 		// arg N-1
 		// ...
 		// arg 0
+		STACK_CHECK(3);
 		*sp++ = int2obj(arg & 0xFF); // # of arguments (low byte of arg)
 		*sp++ = int2obj(((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
 		*sp++ = int2obj(fp - task->stack); // old fp
@@ -415,7 +431,7 @@ static void runTask(Task *task) {
 			goto suspend;
 		}
 		sp = fp - obj2int(*(fp - 3)) - 3; // restore stack pointer; *(fp - 3) is the arg count
-		*sp++ = tmpObj; // push return value
+		*sp++ = tmpObj; // push return value (no need for a stack check; just recovered at least 3 words from the old call frame)
 		tmp = obj2int(*(fp - 2)); // return address
 		task->currentChunkIndex = tmp & 0xFF;
 		task->code = chunks[task->currentChunkIndex].code;
@@ -501,7 +517,8 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	initLocals_op:
-		// Reserve stack space for arg locals initialized to false
+		// Reserve stack space for 'arg' locals initialized to false
+		STACK_CHECK(arg);
 		while (arg-- > 0) *sp++ = falseObj;
 		DISPATCH();
 
@@ -650,9 +667,11 @@ static void runTask(Task *task) {
 
 	// miscellaneous operations:
 	millis_op:
+		STACK_CHECK(1);
 		*sp++ = int2obj(millisecs());
 		DISPATCH();
 	micros_op:
+		STACK_CHECK(1);
 		*sp++ = int2obj(microsecs() & 0x3FFFFFFF); // low 30-bits so result is positive
 		DISPATCH();
 	peek_op:

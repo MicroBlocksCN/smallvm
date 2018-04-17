@@ -183,6 +183,8 @@ typedef enum {
 	running = 3,
 } TaskStatus_t;
 
+#define STACK_LIMIT 19
+
 typedef struct {
 	uint8 status; // TaskStatus_t, stored as a byte
 	uint8 taskChunkIndex; // chunk index of the top-level stack for this task
@@ -192,7 +194,7 @@ typedef struct {
 	int ip;
 	int sp;
 	int fp;
-	OBJ stack[19];
+	OBJ stack[STACK_LIMIT];
 } Task;
 
 // Task list shared by interp.c and runtime.c
@@ -257,8 +259,9 @@ extern int taskCount;
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
 #define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
-#define notInFunction			24  // Attempt to access argument or local variable outside of a function
-#define badForLoopArg			25  // For loop argument must be a positive integer, array, or bytearray
+#define notInFunction			24	// Attempt to access argument or local variable outside of a function
+#define badForLoopArg			25	// For loop argument must be a positive integer, array, or bytearray
+#define stackOverflow			26	// Insufficient stack space for operation
 
 // Runtime Operations
 
