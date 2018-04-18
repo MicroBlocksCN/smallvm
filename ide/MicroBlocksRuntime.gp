@@ -69,7 +69,9 @@ method showInstructions SmallRuntime aBlock {
 	compiler = (initialize (new 'SmallCompiler'))
 	code = (instructionsFor compiler (topBlock aBlock))
 	for item code {
-		if (and (isClass item 'Array') ('pushImmediate' == (first item))) {
+		if (not (isClass item 'Array')) {
+			print item
+		} ('pushImmediate' == (first item)) {
 			arg = (at item 2)
 			if (1 == (arg & 1)) {
 				arg = (arg >> 1) // decode integer
@@ -78,9 +80,16 @@ method showInstructions SmallRuntime aBlock {
 			} (4 == arg) {
 				arg = true
 			}
-			print (array 'pushImmediate' arg)
+			print 'pushImmediate' arg
+		} ('pushBigImmediate' == (first item)) {
+			print 'pushBigImmediate' // don't show arg count; could be confusing
+		} ('callFunction' == (first item)) {
+			arg = (at item 2)
+			calledChunkID = ((arg >> 8) & 255)
+			argCount = (arg & 255)
+			print 'callFunction' calledChunkID argCount
 		} else {
-			print item
+			callWith 'print' item // print the array elements
 		}
 	}
 	print '----------'
@@ -139,28 +148,40 @@ return
 }
 
 method selectPort SmallRuntime {
-	menu = (menu 'Serial port:' (action 'setPort' this) true)
-	addItem menu 'none'
-	addLine menu
+	portList = (list)
 	if ('Win' == (platform)) {
-		for n 32 { addItem menu (join 'COM' n) }
+		for n 32 { add portList (join 'COM' n) }
 	} else {
 		for fn (listFiles '/dev') {
-			if ((find (letters (toLowerCase fn)) (letters 'usb')) > 0) { // MacOS
-				addItem menu fn
-			}
-			if ((find (letters (toLowerCase fn)) (letters 'acm')) > 0) { // linux
-				addItem menu fn
-			}
-			if ((find (letters (toLowerCase fn)) (letters 'ttys00')) > 0) { // pseudo terminal
-				addItem menu fn
+			if (or (notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
+				   (notNil (nextMatchIn 'acm' (toLowerCase fn) ))) { // Linux
+				add portList fn
 			}
 		}
+		// Mac OS (and perhaps Linuxes) list a port as both cu.<name> and tty.<name>
+		for s (copy portList) {
+			if (beginsWith s 'tty.') {
+				if (contains portList (join 'cu.' (substring s 5))) {
+					remove portList s
+				}
+			}
+		}
+		names = (dictionary)
+		addAll names portList
+
 	}
+	menu = (menu 'Serial port:' (action 'setPort' this) true)
+	for s portList { addItem menu s }
+	addLine menu
+	addItem menu 'other'
 	popUpAtHand menu (global 'page')
 }
 
 method setPort SmallRuntime newPortName {
+	if ('other' == newPortName) {
+		newPortName = (prompt (global 'page') 'Port name?' 'none')
+		if ('' == newPortName) { return }
+	}
 	if (notNil port) {
 		closeSerialPort port
 		port = nil
@@ -310,6 +331,44 @@ method msgNameToID SmallRuntime msgName {
 	return msgType
 }
 
+method errorString SmallRuntime errID {
+	// Return an error string for the given errID from error definitions copied and pasted from interp.h
+
+	defsFromHeaderFile = '
+#define noError					0	// No error
+#define unspecifiedError		1	// Unknown error
+#define badChunkIndexError		2	// Unknown chunk index
+
+#define insufficientMemoryError	10	// Insufficient memory to allocate object
+#define needsArrayError			11	// Needs an Array or ByteArray
+#define needsBooleanError		12	// Needs a boolean
+#define needsIntegerError		13	// Needs an integer
+#define needsStringError		14	// Needs a string
+#define nonComparableError		15	// Those objects cannot be compared for equality
+#define arraySizeError			16	// Array size must be a non-negative integer
+#define needsIntegerIndexError	17	// Array index must be an integer
+#define indexOutOfRangeError	18	// Array index out of range
+#define byteArrayStoreError		19 	// A ByteArray can only store integer values between 0 and 255
+#define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
+#define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
+#define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
+#define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
+#define notInFunction			24	// Attempt to access an argument outside of a function
+#define badForLoopArg			25	// for-loop argument must be a positive integer, array, or bytearray
+#define stackOverflow			26	// Insufficient stack space
+'
+	for line (lines defsFromHeaderFile) {
+		words = (words line)
+		if (and ((count words) > 2) ('#define' == (first words))) {
+			if (errID == (toInteger (at words 3))) {
+				msg = (joinStrings (copyFromTo words 5) ' ')
+				return (join 'Error: ' msg)
+			}
+		}
+	}
+	return (join 'Unknown error: ' errID)
+}
+
 method sendMsg SmallRuntime msgName chunkID byteList {
 	if (isNil chunkID) { chunkID = 0 }
 	msgID = (msgNameToID this msgName)
@@ -385,7 +444,7 @@ method handleMessage SmallRuntime msg {
 		updateRunning this chunkID false
 	} (op == (msgNameToID this 'taskErrorMsg')) {
 		chunkID = (byteAt msg 3)
-		showResult this chunkID (join 'error: ' (byteAt msg 6)) // xxx look up error code
+		showResult this chunkID (errorString this (byteAt msg 6))
 		updateRunning this (byteAt msg 3) false
 	} (op == (msgNameToID this 'outputValueMsg')) {
 		chunkID = (byteAt msg 3)

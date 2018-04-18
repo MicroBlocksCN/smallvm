@@ -411,11 +411,14 @@ method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addItem menu 'delete all scripts from board' (action 'sendDeleteAll' (smallRuntime))
+  addLine menu
   if (not (devMode)) {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
+//  addItem menu 'export code' 'exportCode'
+
 //   addLine menu
 //   addItem menu 'broadcast test' (action 'broadcastTest' (smallRuntime))
 //   addItem menu 'set variable test' (action 'setVarTest' (smallRuntime))
@@ -431,4 +434,8 @@ method showAdvancedBlocks MicroBlocksEditor {
 method hideAdvancedBlocks MicroBlocksEditor {
   setDevMode (global 'page') false
   developerModeChanged this
+}
+
+method exportCode MicroBlocksEditor {
+  exportCode scripter
 }

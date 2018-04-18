@@ -237,7 +237,7 @@ method addMyBlocks MicroBlocksScripter {
   nextX = ((left (morph (contents blocksFrame))) + (20 * scale))
   nextY = ((top (morph (contents blocksFrame))) + (16 * scale))
 
-  addButton this 'Make a block' (action 'createSharedBlock' this)
+  addButton this 'Add a function' (action 'createSharedBlock' this)
   nextY += (8 * scale)
 
   for f (functions (targetModule this)) {
@@ -787,4 +787,18 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 	addPart (morph scriptsPane) (morph block)
 	fixBlockColor block
   }
+}
+
+method exportCode MicroBlocksScripter {
+  aClass = (classOf targetObj)
+  fileName = (fileToWrite (className aClass) '.gp')
+  if (isEmpty fileName) { return }
+  pp = (new 'PrettyPrinter')
+  contents = (join
+	(specStringForFunctionsAndMethodsDefinedInClass aClass)
+	(defStringForFunctionsDefinedInClass aClass)
+	(prettyPrintClass pp aClass)
+	(newline)
+	(scriptString aClass))
+  writeFile fileName contents
 }
