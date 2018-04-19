@@ -150,7 +150,11 @@ return
 method selectPort SmallRuntime {
 	portList = (list)
 	if ('Win' == (platform)) {
-		for n 32 { add portList (join 'COM' n) }
+		portList = (listSerialPorts)
+		if (isEmpty portList) {
+			portList = (list)
+			for n 32 { add portList (join 'COM' n) }
+		}
 	} else {
 		for fn (listFiles '/dev') {
 			if (or (notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
@@ -188,12 +192,17 @@ method setPort SmallRuntime newPortName {
 	}
 	if (or (isNil newPortName) ('none' == newPortName)) { // just close port
 		portName = nil
-		return
+	} else {
+		portName = (join '/dev/' newPortName)
+		if ('Win' == (platform)) { portName = newPortName }
+		ensurePortOpen this
 	}
-	portName = (join '/dev/' newPortName)
-	if ('Win' == (platform)) { portName = newPortName }
-	ensurePortOpen this
-	sendMsg this 'pingMsg'
+	// update the connection indicator more quickly than it would otherwise
+	lastPingRecvMSecs = 0 // force ping timeout
+	updateIndicator (findMicroBlocksEditor)
+	waitMSecs 20
+	processMessages this
+	updateIndicator (findMicroBlocksEditor)
 }
 
 method connectionStatus SmallRuntime {
