@@ -241,9 +241,9 @@ extern int taskCount;
 
 // Error Codes (codes 1-9 are reserved for protocol errors; 10 and up are runtime errors)
 
-#define noError					0
-#define unspecifiedError		1
-#define badChunkIndexError		2
+#define noError					0	// No error
+#define unspecifiedError		1	// Unknown error
+#define badChunkIndexError		2	// Unknown chunk index
 
 #define insufficientMemoryError	10	// Insufficient memory to allocate object
 #define needsArrayError			11	// Needs an Array or ByteArray
@@ -259,9 +259,9 @@ extern int taskCount;
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
 #define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
-#define notInFunction			24	// Attempt to access argument or local variable outside of a function
-#define badForLoopArg			25	// For loop argument must be a positive integer, array, or bytearray
-#define stackOverflow			26	// Insufficient stack space for operation
+#define notInFunction			24	// Attempt to access an argument outside of a function
+#define badForLoopArg			25	// for-loop argument must be a positive integer, array, or bytearray
+#define stackOverflow			26	// Insufficient stack space
 
 // Runtime Operations
 
