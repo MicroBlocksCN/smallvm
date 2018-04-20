@@ -81,10 +81,10 @@ method clicked Block hand {
 method contextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
-// MicroBlocks menu additions:
-addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
-addItem menu 'show compiled bytes' (action 'evalOnBoard' (smallRuntime) this true)
-addLine menu
+
+  addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
+  addItem menu 'show compiled bytes' (action 'evalOnBoard' (smallRuntime) this true)
+  addLine menu
 
   isInPalette = ('template' == (grabRule morph))
   if (isVariadic this) {
@@ -96,17 +96,45 @@ addLine menu
     addItem menu 'rename...' 'userRenameVariable'
     addLine menu
   }
+  if (and isInPalette true) {
+    addItem menu 'show definition...' 'showDefinition'
+  }
   addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
   if (and ('reporter' != type) (notNil (next this))) {
     addItem menu '...all' 'grabDuplicateAll' 'duplicate including all attached blocks'
   }
 //  addItem menu 'copy to clipboard' 'copyToClipboard'
 
+//  addItem menu 'save picture of script' 'exportAsImage'
   if (not isInPalette) {
     addLine menu
     addItem menu 'delete' 'delete'
   }
   return menu
+}
+
+method contextMenu BlockDefinition {
+  menu = (menu nil this)
+  for tp (array 'command' 'reporter') {
+    addItem menu '' (action 'setType' this tp) tp (fullCostume (morph (block tp (color 4 148 220) '                    ')))
+  }
+  addLine menu
+  addItem menu 'show instructions' (action 'showInstructions' this)
+  addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
+  addLine menu
+  addItem menu 'hide definition' 'hideDefinition'
+//  addItem menu 'save picture of script' 'exportAsImage'
+  addLine menu
+  addItem menu 'delete' 'deleteDefinition'
+  popUp menu (global 'page') (left morph) (bottom morph)
+}
+
+method showInstructions BlockDefinition {
+  showInstructions (smallRuntime) (handler (owner (owner morph)))
+}
+
+method showCompiledBytes BlockDefinition {
+  evalOnBoard (smallRuntime) (handler (owner (owner morph))) true
 }
 
 method okayToBeDestroyedByUser Block {

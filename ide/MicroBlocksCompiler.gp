@@ -96,23 +96,25 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'bitShiftLeft'		'_ << _' 'num num' 3 2)
 		(array 'r' 'bitShiftRight'		'_ >> _' 'num num' -100 2)
 
+		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _' 'num num num' 2 0 5)
+
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 
 		(array ' ' 'spiSend'			'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'			'spi receive')
 
-		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _' 'num num num' 2 0 5)
-
 		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello!')
-
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
-		(array 'r' 'peek'				'memory at _ _' 'num num' 0 0)
-		(array ' ' 'poke'				'set memory at _ _ to _' 'num num num' 0 0 0)
 
 		(array ' ' 'noop'				'no op')
-		(array 'r' 'pushArgCount'		'arg count')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
+
+		// While these are useful, they can easily crash the VM (e.g. by addressing non-existent memory).
+		// Consider a more constrained version -- e.g blocks to access only the peripheral control
+		// register range with processor-specific range checks and that only allow word-aligned access.
+// 		(array 'r' 'peek'				'memory at _ _' 'num num' 0 0)
+// 		(array ' ' 'poke'				'set memory at _ _ to _' 'num num num' 0 0 0)
 	)
 }
 
