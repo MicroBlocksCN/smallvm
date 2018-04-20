@@ -435,7 +435,7 @@ method instructionsForRepeat SmallCompiler args {
 	result = (instructionsForExpression this (at args 1)) // loop count
 	body = (instructionsForCmdList this (at args 2))
 	add result (array 'pushImmediate' oneObj)
-	add result (array 'add' 2)
+	add result (array '+' 2)
 	add result (array 'jmp' (count body))
 	addAll result body
 	add result (array 'decrementAndJmp' (0 - ((count body) + 1)))
