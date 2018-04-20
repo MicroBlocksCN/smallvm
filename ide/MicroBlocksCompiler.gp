@@ -59,21 +59,21 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'sendBroadcast'		'broadcast _ ' 'str' 'go!')
  		(array ' ' 'return'				'return _' 'auto' 0)
 	'Math'
-		(array 'r' 'add'				'_ + _' 'num num' 10 2)
-		(array 'r' 'subtract'			'_ − _' 'num num' 10 2)
-		(array 'r' 'multiply'			'_ × _' 'num num' 10 2)
-		(array 'r' 'divide'				'_ / _' 'num num' 10 2)
-		(array 'r' 'modulo'				'_ mod _' 'num num' 10 2)
+		(array 'r' '+'					'_ + _' 'num num' 10 2)
+		(array 'r' '-'					'_ − _' 'num num' 10 2)
+		(array 'r' '*'					'_ × _' 'num num' 10 2)
+		(array 'r' '/'					'_ / _' 'num num' 10 2)
+		(array 'r' '%'					'_ mod _' 'num num' 10 2)
 		(array 'r' 'absoluteValue'		'abs _ ' 'num' -10)
 		(array 'r' 'random'				'random _' 'num' 10)
-		(array 'r' 'lessThan'			'_ < _' 'num num' 3 4)
-		(array 'r' 'lessOrEq'			'_ <= _' 'num num' 3 4)
-		(array 'r' 'equal'				'_ = _' 'num num' 3 4)
-		(array 'r' 'notEqual'			'_ ≠ _' 'num num' 3 4)
-		(array 'r' 'greaterOrEq'		'_ >= _' 'num num' 3 4)
-		(array 'r' 'greaterThan'		'_ > _' 'num num' 3 4)
+		(array 'r' '<'					'_ < _' 'num num' 3 4)
+		(array 'r' '<='					'_ <= _' 'num num' 3 4)
+		(array 'r' '=='					'_ = _' 'num num' 3 4)
+		(array 'r' '!='					'_ ≠ _' 'num num' 3 4)
+		(array 'r' '>='					'_ >= _' 'num num' 3 4)
+		(array 'r' '>'					'_ > _' 'num num' 3 4)
 		(array 'r' 'booleanConstant'	'_' 'bool' true)
-		(array 'r' 'notOp'				'not _' 'bool' true)
+		(array 'r' 'not'				'not _' 'bool' true)
 		(array 'r' 'and'				'_ and _ : and _ : ...' 'bool bool bool' true false)
 		(array 'r' 'or'					'_ or _ : or _ : ...' 'bool bool bool' true false)
 	'Variables'
@@ -89,12 +89,12 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'atPut'				'set array _ at _ to _' 'num num' nil 1 10)
 		(array 'r' 'size'				'length of _ ' 'auto' nil)
 	'Advanced'
-		(array 'r' 'bitAnd'				'_ & _' 'num num' 1 3)
-		(array 'r' 'bitOr'				'_ | _' 'num num' 1 2)
-		(array 'r' 'bitXor'				'_ ^ _' 'num num' 1 3)
-		(array 'r' 'bitInvert'			'~ _' 'num' 1 3)
-		(array 'r' 'bitShiftLeft'		'_ << _' 'num num' 3 2)
-		(array 'r' 'bitShiftRight'		'_ >> _' 'num num' -100 2)
+		(array 'r' '&'					'_ & _' 'num num' 1 3)
+		(array 'r' '|'					'_ | _' 'num num' 1 2)
+		(array 'r' '^'					'_ ^ _' 'num num' 1 3)
+		(array 'r' '~'					'~ _' 'num' 1 3)
+		(array 'r' '<<'					'_ << _' 'num num' 3 2)
+		(array 'r' '>>'					'_ >> _' 'num num' -100 2)
 
 		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _' 'num num num' 2 0 5)
 
@@ -165,27 +165,27 @@ method initOpcodes SmallCompiler {
 // reserved 32
 // reserved 33
 // reserved 34
-#define lessThan 35
-#define lessOrEq 36
-#define equal 37
-#define notEqual 38
-#define greaterOrEq 39
-#define greaterThan 40
-#define notOp 41
-#define add 42
-#define subtract 43
-#define multiply 44
-#define divide 45
-#define modulo 46
+#define < 35
+#define <= 36
+#define == 37
+#define != 38
+#define >= 39
+#define > 40
+#define not 41
+#define + 42
+#define - 43
+#define * 44
+#define / 45
+#define % 46
 #define absoluteValue 47
 #define random 48
 #define hexToInt 49
-#define bitAnd 50
-#define bitOr 51
-#define bitXor 52
-#define bitInvert 53
-#define bitShiftLeft 54
-#define bitShiftRight 55
+#define & 50
+#define | 51
+#define ^ 52
+#define ~ 53
+#define << 54
+#define >> 55
 // reserved 56
 // reserved 57
 // reserved 58
