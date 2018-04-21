@@ -627,6 +627,7 @@ method reactToMethodDelete MicroBlocksScripter aPalette {
 }
 
 method blockPrototypeChanged MicroBlocksScripter aBlock {
+  saveScripts this
   scriptsPane = (contents scriptsFrame)
   op = (primName (function aBlock))
 
