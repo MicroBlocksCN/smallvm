@@ -329,14 +329,14 @@ void updateMicrobitDisplay(); // temporary
 
 OBJ primNewArray(OBJ *args);
 OBJ primNewByteArray(OBJ *args);
-void primArrayFill(OBJ *args);
+OBJ primArrayFill(OBJ *args);
 OBJ primArrayAt(OBJ *args);
-void primArrayAtPut(OBJ *args);
+OBJ primArrayAtPut(OBJ *args);
 OBJ primArraySize(OBJ *args);
 
 OBJ primHexToInt(OBJ *args);
 OBJ primPeek(OBJ *args);
-void primPoke(OBJ *args);
+OBJ primPoke(OBJ *args);
 
 OBJ primAnalogPins(OBJ *args);
 OBJ primDigitalPins(OBJ *args);

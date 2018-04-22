@@ -23,7 +23,7 @@ OBJ primNewByteArray(OBJ *args) {
 	return result;
 }
 
-void primArrayFill(OBJ *args) {
+OBJ primArrayFill(OBJ *args) {
 	OBJ array = args[0];
 	if (!(IS_CLASS(array, ArrayClass) || IS_CLASS(array, ByteArrayClass))) return fail(needsArrayError);
 	OBJ value = args[1];
@@ -39,6 +39,7 @@ void primArrayFill(OBJ *args) {
 		uint8 *end = dst + (4 * objWords(array));
 		while (dst < end) *dst++ = byteValue;
 	}
+	return falseObj;
 }
 
 OBJ primArrayAt(OBJ *args) {
@@ -57,7 +58,7 @@ OBJ primArrayAt(OBJ *args) {
 	return fail(needsArrayError);
 }
 
-void primArrayAtPut(OBJ *args) {
+OBJ primArrayAtPut(OBJ *args) {
 	OBJ array = args[0];
 	if (!isInt(args[1])) return fail(needsIntegerIndexError);
 	int i = obj2int(args[1]);
@@ -73,6 +74,7 @@ void primArrayAtPut(OBJ *args) {
 		if (byteValue > 255) return fail(byteArrayStoreError);
 		((uint8 *) &FIELD(array, 0))[i - 1] = byteValue;
 	} else return fail(needsArrayError);
+	return falseObj;
 }
 
 OBJ primArraySize(OBJ *args) {
@@ -100,8 +102,9 @@ OBJ primPeek(OBJ *args) {
 	return int2obj(*addr);
 }
 
-void primPoke(OBJ *args) {
+OBJ primPoke(OBJ *args) {
 	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return fail(needsIntegerError);
 	int *addr = (int *) (((obj2int(args[0]) & 0xF) << 28) | (obj2int(args[1]) & 0xFFFFFFC));
 	*addr = obj2int(args[2]);
+	return falseObj;
 }
