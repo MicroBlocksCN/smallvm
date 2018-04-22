@@ -41,7 +41,7 @@ OBJ fail(uint8 errCode) {
 
 // Printing
 
-#define PRINT_BUF_SIZE 100
+#define PRINT_BUF_SIZE 800
 static char printBuffer[PRINT_BUF_SIZE];
 static int printBufferByteCount = 0;
 
@@ -99,12 +99,28 @@ static int bytesForObject(OBJ value) {
 
 // Broadcast
 
-static void primSendBroadcast(OBJ *args) {
-	if (IS_CLASS(args[0], StringClass)) {
-		char *s = obj2str(args[0]);
-		startReceiversOfBroadcast(s, strlen(s));
-		sendBroadcastToIDE(s);
+static void primSendBroadcast(int argCount, OBJ *args) {
+	// Variadic broadcast; all args are concatenated into printBuffer.
+
+	if (!IS_CLASS(args[0], StringClass)) {
+		fail(needsStringError);
+		return;
 	}
+
+	printBuffer[0] = 0; // null terminate
+	printBufferByteCount = 0;
+
+	for (int i = 0; i < argCount; i++) {
+		printObj(args[i]);
+	}
+	if (printBufferByteCount && (' ' == printBuffer[printBufferByteCount - 1])) {
+		// Remove final space character
+		printBuffer[printBufferByteCount - 1] = 0; // null terminate
+		printBufferByteCount--;
+	}
+
+	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
+	sendBroadcastToIDE(printBuffer, printBufferByteCount);
 }
 
 // Interpreter
@@ -463,7 +479,7 @@ static void runTask(Task *task) {
 		}
 		goto suspend;
 	sendBroadcast_op:
-		primSendBroadcast(sp - arg);
+		primSendBroadcast(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	recvBroadcast_op:

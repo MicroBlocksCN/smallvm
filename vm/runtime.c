@@ -10,7 +10,7 @@
 
 // VM Version
 
-#define VM_VERSION "v020"
+#define VM_VERSION "v021"
 
 // Forward Reference Declarations
 
@@ -99,6 +99,8 @@ static int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
 	code++; // skip "initLocals" instruction
 	if (pushLiteral != CMD(*code)) return false; // should not happen
 	char *hatArg = obj2str((OBJ) code + ARG(*code) + 1);
+
+	if (strlen(hatArg) != byteCount) return false;
 	for (int i = 0; i < byteCount; i++) {
 		if (hatArg[i] != msg[i]) return false;
 	}
@@ -345,14 +347,6 @@ static void sendVersionString() {
 	sendMessage(versionMsg, 0, strlen(s), s);
 }
 
-void sendBroadcastToIDE(char *s) {
-	int len = strlen(s);
-	if (!hasOutputSpace(len + 50)) return; // leave room for other messages
-	sendMessage(broadcastMsg, 0, len, s);
-}
-
-// Retrieving source code and attributes
-
 static void waitForOutbufBytes(int bytesNeeded) {
 	// Wait until there is room for the given number of bytes in the output buffer.
 
@@ -360,6 +354,13 @@ static void waitForOutbufBytes(int bytesNeeded) {
 		sendNextByte(); // should eventually create enough room for bytesNeeded
 	}
 }
+
+void sendBroadcastToIDE(char *s, int len) {
+	waitForOutbufBytes(len + 50); // leave a little room for other messages
+	sendMessage(broadcastMsg, 0, len, s);
+}
+
+// Retrieving source code and attributes
 
 static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
 	if (!persistentRecord) return; // NULL persistentRecord; do nothing

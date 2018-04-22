@@ -26,18 +26,17 @@ void memInit(int wordCount) {
 		vmPanic("Insufficient memory to start MicroBlocks");
 	}
 
-#if !defined(ARDUINO_ESP8266_NODEMCU) || !defined(ARDUINO_ESP32_DEV)
-        // On some platforms, the malloc() call succeeds even if there is not enough memory
-	// to fill the request while leaving sufficient space for the C stack. The following
-	// check assumes that the stack is immediately above the malloc() heap, so it fails
-	// on platforms that allocate the stack below the heap, such as the NodeMCU.
-
 	char *stack; // the address of this local variable approximates the current C stack pointer
-	stack = ((char *) &stack) - 600; // reserve 600 bytes for stack (stack grows down in memory)
-	if ((memStart + wordCount) > stack) {
-		vmPanic("Insufficient memory to start MicroBlocks");
+	if (&stack > (char *) memStart) {
+    	// On some platforms, the malloc() call succeeds even when there is not enough memory.
+    	// Check to be sure there's enough space for both the MicroBlock object heap and the stack.
+		// Do this check only if stack is above the heap, as it is on Arduinos.
+
+		stack = ((char *) &stack) - 1000; // reserve 1000 bytes for stack (stack grows down in memory)
+		if ((memStart + wordCount) > stack) {
+			vmPanic("Insufficient memory to start MicroBlocks");
+		}
 	}
-#endif
 
 	if ((unsigned) memStart <= 8) {
 		// Reserve object references 0, 4, and 8 for constants nil, true, and false

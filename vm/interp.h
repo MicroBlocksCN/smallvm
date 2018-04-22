@@ -277,7 +277,7 @@ void outputValue(OBJ value, int chunkIndex);
 void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
-void sendBroadcastToIDE(char *s);
+void sendBroadcastToIDE(char *s, int len);
 void vmLoop(void);
 void vmPanic(char *s);
 
