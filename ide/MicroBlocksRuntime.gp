@@ -404,6 +404,10 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		add msg 254 // terminator byte (helps board detect dropped bytes)
 	}
 	ensurePortOpen this
+	if (isNil port) {
+		inform 'Use "Connect" button to connect to a MicroBlocks device.'
+		return
+	}
 	writeSerialPort port (toBinaryData (toArray msg))
 }
 
