@@ -51,13 +51,13 @@ static void printObj(OBJ obj) {
 	char *dst = &printBuffer[printBufferByteCount];
 	int n = PRINT_BUF_SIZE - printBufferByteCount;
 
-	if (isInt(obj)) snprintf(dst, n, "%d ", obj2int(obj));
-	else if (obj == falseObj) snprintf(dst, n, "false ");
-	else if (obj == trueObj) snprintf(dst, n, "true ");
+	if (isInt(obj)) snprintf(dst, n, "%d", obj2int(obj));
+	else if (obj == falseObj) snprintf(dst, n, "false");
+	else if (obj == trueObj) snprintf(dst, n, "true");
 	else if (objClass(obj) == StringClass) {
-		snprintf(dst, n, "%s ", obj2str(obj));
+		snprintf(dst, n, "%s", obj2str(obj));
 	} else {
-		snprintf(dst, n, "OBJ(addr: %d, class: %d) ", (int) obj, objClass(obj));
+		snprintf(dst, n, "OBJ(addr: %d, class: %d)", (int) obj, objClass(obj));
 	}
 	printBufferByteCount = strlen(printBuffer);
 }
@@ -70,11 +70,10 @@ static void primPrint(int argCount, OBJ *args) {
 
 	for (int i = 0; i < argCount; i++) {
 		printObj(args[i]);
-	}
-	if (printBufferByteCount && (' ' == printBuffer[printBufferByteCount - 1])) {
-		// Remove final space character
-		printBuffer[printBufferByteCount - 1] = 0; // null terminate
-		printBufferByteCount--;
+		if (i < (argCount - 1)) {
+			printBuffer[printBufferByteCount++] = ' '; // add a space
+			printBuffer[printBufferByteCount] = 0; // null terminate
+		}
 	}
 #if USE_TASKS
 	outputString(printBuffer);
