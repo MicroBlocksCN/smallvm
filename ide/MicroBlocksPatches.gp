@@ -35,6 +35,13 @@ method allVarsMenu InputSlot {
   return menu
 }
 
+method typesMenu InputDeclaration {
+  menu = (menu nil (action 'setType' this) true)
+  addItem menu 'number/string' 'auto' 'editable number or string'
+  addItem menu '' 'bool' 'boolean switch' (fullCostume (morph (element this 'bool')))
+  popUp menu (global 'page') (left morph) (bottom morph)
+}
+
 method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }

@@ -56,7 +56,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
  		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array 'h' 'whenBroadcastReceived' 'when _ received' 'str' 'go!')
-		(array ' ' 'sendBroadcast'		'broadcast _ : _' 'str auto' 'go!' '')
+		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
  		(array ' ' 'return'				'return _' 'auto' 0)
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
