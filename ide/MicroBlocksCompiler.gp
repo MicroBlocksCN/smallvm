@@ -251,13 +251,18 @@ method initOpcodes SmallCompiler {
 
 // instruction generation: entry point
 
-method instructionsFor SmallCompiler aBlock {
-	// Return a list of instructions for the given block or script.
+method instructionsFor SmallCompiler aBlockOrFunction {
+	// Return a list of instructions for the given block, script, or function.
 	// Add a 'halt' if needed and append any literals (e.g. strings) used.
 
+	if (and (isClass aBlockOrFunction 'Block') (isPrototypeHat aBlockOrFunction)) {
+		// function definition hat: get its function
+		aBlockOrFunction = (function (editedPrototype aBlockOrFunction))
+	}
+
 	argNames = (dictionary)
-	if (isPrototypeHat aBlock) {
-		func = (function (editedPrototype aBlock))
+	if (isClass aBlockOrFunction 'Function') {
+		func = aBlockOrFunction
 		for a (argNames func) {
 			atPut argNames a (count argNames)
 		}
@@ -266,14 +271,13 @@ method instructionsFor SmallCompiler aBlock {
 			cmdOrReporter = (newCommand 'noop')
 		}
 	} else {
-		cmdOrReporter = (expression aBlock)
+		cmdOrReporter = (expression aBlockOrFunction)
 	}
 
+	assignFunctionIDs (smallRuntime)
 	collectVars this cmdOrReporter
-	if (isClass cmdOrReporter 'Function') { cmdOrReporter = (cmdList cmdOrReporter) }
 
 	result = (list (array 'initLocals' (count localVars)))
-
 	if (isClass cmdOrReporter 'Command') {
 		op = (primName cmdOrReporter)
 		if ('whenCondition' == op) {
@@ -286,7 +290,7 @@ method instructionsFor SmallCompiler aBlock {
 			add result (array 'recvBroadcast' 1)
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 			add result (array 'halt' 0)
-		} (isPrototypeHat aBlock) { // function definition
+		} (isClass aBlockOrFunction 'Function') {
 			addAll result (instructionsForCmdList this cmdOrReporter)
 			add result (array 'pushImmediate' falseObj)
 			add result (array 'returnResult' 0)
@@ -666,30 +670,18 @@ method globalVarIndex SmallCompiler varName {
 // function calls
 
 method isFunctionCall SmallCompiler op {
-	return (notNil (chunkIDForFunction this op))
+	return (notNil (lookupChunkID (smallRuntime) op))
 }
 
 method instructionsForFunctonCall SmallCompiler op args isCmd {
 	result = (list)
-	callee = (chunkIDForFunction this op)
+	callee = (lookupChunkID (smallRuntime) op)
 	for arg args {
 		addAll result (instructionsForExpression this arg)
 	}
 	add result (array 'callFunction' (((callee & 255) << 8) | ((count args) & 255)))
 	if isCmd { add result (array 'pop' 1) } // discard the return value
 	return result
-}
-
-method chunkIDForFunction SmallCompiler op {
-	for aBlock (sortedScripts (scriptEditor (scripter (smallRuntime)))) {
-		if (isPrototypeHat aBlock) {
-			func = (function (editedPrototype aBlock))
-			if (op == (functionName func)) {
-				return (chunkIdFor (smallRuntime) aBlock)
-			}
-		}
-	}
-	return nil
 }
 
 // literal values (strings and large integers )

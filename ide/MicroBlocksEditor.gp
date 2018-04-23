@@ -410,14 +410,15 @@ method rightClicked MicroBlocksEditor aHand {
 method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
-  addItem menu 'delete all scripts from board' (action 'sendDeleteAll' (smallRuntime))
+  addLine menu
+  addItem menu 'import library' 'importLibrary'
+  addItem menu 'export functions as library' 'exportAsLibrary'
   addLine menu
   if (not (devMode)) {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
-//  addItem menu 'export code' 'exportCode'
 
 //   addLine menu
 //   addItem menu 'broadcast test' (action 'broadcastTest' (smallRuntime))
@@ -436,6 +437,10 @@ method hideAdvancedBlocks MicroBlocksEditor {
   developerModeChanged this
 }
 
-method exportCode MicroBlocksEditor {
-  exportCode scripter
+method importLibrary MicroBlocksEditor {
+  importLibrary scripter fileName
+}
+
+method exportAsLibrary MicroBlocksEditor {
+  exportAsLibrary scripter fileName
 }

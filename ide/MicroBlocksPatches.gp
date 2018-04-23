@@ -72,7 +72,7 @@ method clicked Block hand {
   if (isPrototypeHat topBlock) { return }
   runtime = (smallRuntime)
   if (isRunning runtime topBlock) {
-	stopRunningChunk runtime (chunkIdFor runtime topBlock)
+	stopRunningChunk runtime (lookupChunkID runtime topBlock)
   } else {
 	evalOnBoard runtime topBlock
   }
@@ -97,7 +97,7 @@ method contextMenu Block {
     addLine menu
   }
   if (and isInPalette true) {
-//    addItem menu 'show definition...' 'showDefinition'
+	addItem menu 'show definition...' 'showDefinition'
   }
   addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
   if (and ('reporter' != type) (notNil (next this))) {
@@ -122,7 +122,7 @@ method contextMenu BlockDefinition {
   addItem menu 'show instructions' (action 'showInstructions' this)
   addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
   addLine menu
-//  addItem menu 'hide definition' 'hideDefinition'
+  addItem menu 'hide definition' 'hideDefinition'
 //  addItem menu 'save picture of script' 'exportAsImage'
   addLine menu
   addItem menu 'delete' 'deleteDefinition'

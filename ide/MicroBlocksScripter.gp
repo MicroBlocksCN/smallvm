@@ -157,7 +157,7 @@ method developerModeChanged MicroBlocksScripter {
   catList = (contents categoriesFrame)
   setCollection catList (categories this)
   if (not (contains (collection catList) (selection catList))) {
-    select catList 'MicroBit'
+    select catList 'Output'
   } else {
     updateBlocks this
   }
@@ -620,12 +620,6 @@ method addToBottom MicroBlocksScripter aBlock noScroll {
   scriptChanged this
 }
 
-method reactToMethodDelete MicroBlocksScripter aPalette {
-  if ('Functions' == (selection (contents categoriesFrame))) {
-    updateBlocks this
-  }
-}
-
 method blockPrototypeChanged MicroBlocksScripter aBlock {
   saveScripts this
   scriptsPane = (contents scriptsFrame)
@@ -790,16 +784,99 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
   }
 }
 
-method exportCode MicroBlocksScripter {
-  aClass = (classOf targetObj)
-  fileName = (fileToWrite (className aClass) '.gp')
+// Library import/export
+
+method importLibrary MicroBlocksScripter {
+  pickFileToOpen (action 'importLibraryFromFile' this) '' (array '.ulib')
+}
+
+method importLibraryFromFile MicroBlocksScripter fileName {
+  // Import a library with the give file path.
+
+  data = (readFile fileName)
+  if (isNil data) { error (join 'Could not read: ' fileName) }
+
+  myModule = (targetModule this)
+  for cmd (parse data) {
+	op = (primName cmd)
+	args = (argList cmd)
+	if ('sharedVariables' == op) {
+	  for v args { addVar myModule v }
+	} ('spec' == op) {
+	  blockType = (at args 1)
+	  blockOp = (at args 2)
+	  specString = (at args 3)
+	  slotTypes = ''
+	  if ((count args) > 3) { slotTypes = (at args 4) }
+	  slotDefaults = (copyFromTo args 5)
+	  spec = (blockSpecFromStrings blockOp blockType specString slotTypes slotDefaults)
+	  recordBlockSpec (authoringSpecs) blockOp spec
+	} ('to' == op) {
+	  args = (toList args)
+	  fName = (removeFirst args)
+	  fBody = nil
+	  if (isClass (last args) 'Command') { fBody = (removeLast args) }
+	  func = (newFunction fName args fBody myModule)
+	  oldFunc = (functionNamed myModule fName)
+	  if (notNil oldFunc) { removeFunction myModule oldFunc }
+	  addFunction myModule func
+	}
+  }
+  updateBlocks this
+}
+
+method exportAsLibrary MicroBlocksScripter defaultFileName {
+  fileName = (fileToWrite (withoutExtension defaultFileName) '.ulib')
   if (isEmpty fileName) { return }
+  if (not (endsWith fileName '.ulib' )) { fileName = (join fileName '.ulib') }
+
+  result = (list)
+
+  // Add shared variable declaration, if needed
+  sharedVars = (variableNames (targetModule this))
+  if ((count sharedVars) > 0) {
+	varDeclaration = (list 'sharedVariables')
+	for v sharedVars { add varDeclaration (printString v) }
+	add result (joinStrings varDeclaration ' ')
+	add result (newline)
+	add result (newline)
+  }
+
+  // Add block specs
+  for func (functions (targetModule this)) {
+	spec = (specForOp (authoringSpecs) (functionName func))
+	if (notNil spec) {
+	  add result (specDefinitionString spec)
+	}
+	add result (newline)
+  }
+  add result (newline)
+
+  // Add function definitions
   pp = (new 'PrettyPrinter')
-  contents = (join
-	(specStringForFunctionsAndMethodsDefinedInClass aClass)
-	(defStringForFunctionsDefinedInClass aClass)
-	(prettyPrintClass pp aClass)
-	(newline)
-	(scriptString aClass))
-  writeFile fileName contents
+  for func (functions (targetModule this)) {
+	add result (prettyPrintFunction pp func)
+	add result (newline)
+  }
+
+  writeFile fileName (joinStrings result)
+}
+
+// drop handling
+
+method wantsDropOf MicroBlocksScripter aHandler {
+  return (isAnyClass aHandler 'Block' 'Monitor')
+}
+
+method justReceivedDrop MicroBlocksScripter aHandler {
+  // Delete Blocks or Monitors dropped anywhere but the scripting area.
+
+  if (not (userDestroy (morph aHandler))) { // abort drop-to-delete
+    grab (hand (global 'page')) aHandler
+    return
+  }
+  if ('Functions' == (selection (contents categoriesFrame))) {
+	// May have just deleted a function, so update the palette
+	updateBlocks this
+  }
 }

@@ -3,7 +3,7 @@
 
 to smallRuntime aScripter {
 	if (isNil (global 'smallRuntime')) {
-		setGlobal 'smallRuntime' (new 'SmallRuntime' aScripter)
+		setGlobal 'smallRuntime' (setScripter (new 'SmallRuntime') aScripter)
 	}
 	return (global 'smallRuntime')
 }
@@ -11,12 +11,17 @@ to smallRuntime aScripter {
 defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port pingSentMSecs lastPingRecvMSecs recvBuf
 
 method scripter SmallRuntime { return scripter }
-method setScripter SmallRuntime aScripter { scripter = aScripter }
+
+method setScripter SmallRuntime aScripter {
+	scripter = aScripter
+	chunkIDs = (dictionary)
+	return this
+}
 
 method evalOnBoard SmallRuntime aBlock showBytes {
 	if (isNil showBytes) { showBytes = false }
 	if showBytes {
-		bytes = (chunkBytesForBlock this aBlock)
+		bytes = (chunkBytesFor this aBlock)
 		print (join 'Bytes for chunk ' id ':') bytes
 		print '----------'
 		return
@@ -29,25 +34,26 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		// running a block from the palette, not included in saveAllChunks
 		saveChunk this aBlock
 	}
-	runChunk this (chunkIdFor this aBlock)
+	runChunk this (lookupChunkID this aBlock)
 }
 
-method chunkTypeForBlock SmallRuntime aBlock {
-	expr = (expression aBlock)
+method chunkTypeFor SmallRuntime aBlockOrFunction {
+	if (isClass aBlockOrFunction 'Function') { return 3 }
+
+	expr = (expression aBlockOrFunction)
 	op = (primName expr)
-	if ('whenStarted' == op) { chunkType = 4
-	} ('whenCondition' == op) { chunkType = 5
-	} ('whenBroadcastReceived' == op) { chunkType = 6
-	} (isClass expr 'Command') { chunkType = 1
-	} (isClass expr 'Reporter') { chunkType = 2
-	} ('nop' == op) { chunkType = 3 // xxx need a better test for function def hats
-	}
-	return chunkType
+	if ('whenStarted' == op) { return 4 }
+	if ('whenCondition' == op) { return 5 }
+	if ('whenBroadcastReceived' == op) { return 6 }
+	if (isClass expr 'Command') { return 1 }
+	if (isClass expr 'Reporter') { return 2 }
+
+	error 'Unexpected argument to chunkTypeFor'
 }
 
-method chunkBytesForBlock SmallRuntime aBlock {
+method chunkBytesFor SmallRuntime aBlockOrFunction {
 	compiler = (initialize (new 'SmallCompiler'))
-	code = (instructionsFor compiler aBlock)
+	code = (instructionsFor compiler aBlockOrFunction)
 	bytes = (list)
 	for item code {
 		if (isClass item 'Array') {
@@ -88,6 +94,8 @@ method showInstructions SmallRuntime aBlock {
 			calledChunkID = ((arg >> 8) & 255)
 			argCount = (arg & 255)
 			print 'callFunction' calledChunkID argCount
+		} (not (isLetter (at (first item) 1))) { // operators
+			print (first item)
 		} else {
 			callWith 'print' item // print the array elements
 		}
@@ -95,8 +103,21 @@ method showInstructions SmallRuntime aBlock {
 	print '----------'
 }
 
-method chunkIdFor SmallRuntime aBlock {
-	if (isNil chunkIDs) { chunkIDs = (dictionary) }
+// chunk management
+
+method lookupChunkID SmallRuntime key {
+	// If the given block or function name has been assigned a chunkID, return it.
+	// Otherwise, return nil.
+
+	entry = (at chunkIDs key nil)
+	if (isNil entry) { return nil }
+	return (first entry)
+}
+
+method ensureChunkIdFor SmallRuntime aBlock {
+	// Return the chunkID for the given block. Functions are handled by assignFunctionIDs.
+	// If necessary, register the block in the chunkIDs dictionary.
+
 	entry = (at chunkIDs aBlock nil)
 	if (isNil entry) {
 		id = (count chunkIDs)
@@ -106,20 +127,25 @@ method chunkIdFor SmallRuntime aBlock {
 	return (first entry)
 }
 
-method lookupChunkID SmallRuntime aBlock {
-	// If the block has been assigned a chunkID, return it. Otherwise, return nil.
+method assignFunctionIDs SmallRuntime {
+	// Ensure that there is a chunk ID for every user-defined function.
+	// This must be done before generating any code to allow for recursive calls.
 
-	if (isNil chunkIDs) { return nil }
-	entry = (at chunkIDs aBlock nil)
-	if (isNil entry) { return nil }
-	return (first entry)
+	for func (functions (targetModule scripter)) {
+		fName = (functionName func)
+		if (not (contains chunkIDs fName)) {
+			atPut chunkIDs fName (array (count chunkIDs) nil)
+		}
+	}
 }
 
 method deleteChunkForBlock SmallRuntime aBlock {
-	if (isNil chunkIDs) { chunkIDs = (dictionary) }
-	entry = (at chunkIDs aBlock nil)
+	key = aBlock
+	if (isPrototypeHat aBlock) {
+		key = (functionName (function (editedPrototype aBlock)))
+	}
+	entry = (at chunkIDs key nil)
 	if (notNil entry) {
-		remove chunkIDs aBlock
 		chunkID = (first entry)
 		sendMsg this 'deleteChunkMsg' chunkID
 	}
@@ -128,23 +154,8 @@ method deleteChunkForBlock SmallRuntime aBlock {
 method resetBoard SmallRuntime {
 	// Stop everyting, clear all code, and reset the board.
 
-	sendStopAll this
-	sendMsg this 'deleteAllCodeMsg' // delete all code from board
-	waitMSecs 50 // leave time to write to flash or next message will be missed
+	clearBoardIfConnected this
 	sendMsg this 'systemResetMsg' // send the reset message
-	chunkIDs = (dictionary) // start over
-return
-
-	// The following reset code is not currently used
-	// First try closing the serial port, opening it at 1200 baud,
-	// then closing and reopening the port at the normal speed.
-	// This works only for certain models of the Arduino. It does not work for non-Arduinos.
-	closeSerialPort port
-	port = (openSerialPort portName 1200)
-	closeSerialPort port
-	port = nil
-	ensurePortOpen this // reopen the port
-	recvBuf = nil
 }
 
 method selectPort SmallRuntime {
@@ -234,10 +245,14 @@ method showVersion SmallRuntime versionString {
 }
 
 method clearBoardIfConnected SmallRuntime {
-	if (notNil port) { resetBoard this }
+	if (notNil port) {
+		sendStopAll this
+		sendMsg this 'deleteAllCodeMsg' // delete all code from board
+		waitMSecs 50 // leave time to write to flash or next message will be missed
+	}
+	allStopped this
+	chunkIDs = (dictionary)
 }
-
-method sendDeleteAll SmallRuntime { sendMsg this 'deleteAllCodeMsg' }
 
 method sendStopAll SmallRuntime {
 	sendMsg this 'stopAllMsg'
@@ -250,43 +265,42 @@ method sendStartAll SmallRuntime {
 }
 
 method saveAllChunks SmallRuntime {
+	// Save the code for all scripts and user-defined functions.
+
+	assignFunctionIDs this
+	for aFunction (functions (targetModule scripter)) {
+		saveChunk this aFunction
+	}
 	for aBlock (sortedScripts (scriptEditor scripter)) {
-		op = (primName (expression aBlock))
-		if ('nop' != op) {
+		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
 			saveChunk this aBlock
 		}
 	}
 }
 
-method saveChunk SmallRuntime aBlock {
-	// Save the script starting with the given block as an executable code "chunk".
+method saveChunk SmallRuntime aBlockOrFunction {
+	// Save the script starting with the given block or function as an executable code "chunk".
 	// Also save the source code (in GP format) and the script position.
 
+	if (isClass aBlockOrFunction 'Function') {
+		chunkID = (lookupChunkID this (functionName aBlockOrFunction))
+		entry = (at chunkIDs (functionName aBlockOrFunction))
+		newCode = (cmdList aBlockOrFunction)
+	} else {
+		chunkID = (ensureChunkIdFor this aBlockOrFunction)
+		entry = (at chunkIDs aBlockOrFunction)
+		newCode = (expression aBlockOrFunction)
+	}
+
+	if (newCode == (at entry 2)) { return } // code hasn't changed
+	atPut entry 2 (copy newCode) // remember the code we're about to save
+
 	// save the binary code for the chunk
-	chunkID = (chunkIdFor this aBlock)
-	chunkType = (chunkTypeForBlock this aBlock)
+	chunkType = (chunkTypeFor this aBlockOrFunction)
 	data = (list chunkType)
-	addAll data (chunkBytesForBlock this aBlock)
+	addAll data (chunkBytesFor this aBlockOrFunction)
 	sendMsg this 'chunkCodeMsg' chunkID data
 	waitMSecs ((count data) / 10) // wait approximate transmission time
-
-return // xxx do not save source code for now; it can overwhealm serial connection
-
-	// save the GP source code
-	data = (list 2) // GP source code attribute
-	addAll data (toArray (toBinaryData (toTextCode aBlock)))
-	if ((count data) > 1000) {
-		print 'Source code too big; not saving:' (count data) 'bytes'
-		return
-	}
-	sendMsg this 'chunkAttributeMsg' chunkID data
-
-	// save the script position (relative to its owner)
-	posX = ((left (morph aBlock)) - (left (owner (morph aBlock))))
-	posY = ((top (morph aBlock)) - (top (owner (morph aBlock))))
-	data = (list 0) // source position attribute
-	addAll data (list (posX & 255) ((posX >> 8) & 255) (posY & 255) ((posY >> 8) & 255))
-	sendMsg this 'chunkAttributeMsg' chunkID data
 }
 
 method runChunk SmallRuntime chunkID {
@@ -488,8 +502,9 @@ method updateRunning SmallRuntime chunkID runFlag {
 }
 
 method isRunning SmallRuntime aBlock {
-	if (isNil chunkRunning) { return false }
-	return (at chunkRunning ((chunkIdFor this aBlock) + 1))
+	chunkID = (lookupChunkID this aBlock)
+	if (or (isNil chunkRunning) (isNil chunkID)) { return false }
+	return (at chunkRunning (chunkID + 1))
 }
 
 method allStopped SmallRuntime {
