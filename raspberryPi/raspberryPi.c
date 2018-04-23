@@ -99,7 +99,7 @@ void systemReset() { } // noop on Raspberry Pi
 
 // General Purpose I/O Pins
 
-#define DIGITAL_PINS 17
+#define DIGITAL_PINS 32
 #define ANALOG_PINS 0
 #define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 #define PIN_LED 0
@@ -133,29 +133,31 @@ OBJ primAnalogPins(OBJ *args) { return int2obj(ANALOG_PINS); }
 OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 
 OBJ primAnalogRead(OBJ *args) { return int2obj(0); } // no analog inputs
-OBJ primAnalogWrite(OBJ *args) { return nilObj; } // analog output not supported
+void primAnalogWrite(OBJ *args) { } // analog output is not supported
 
 OBJ primDigitalRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, INPUT);
 	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
 }
 
-OBJ primDigitalWrite(OBJ *args) {
+void primDigitalWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	int value = (args[1] == trueObj) ? HIGH : LOW;
-	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return nilObj;
-	SET_MODE(pinNum, OUTPUT);
-	digitalWrite(pinNum, value);
-	return nilObj;
+	primDigitalSet(pinNum, value);
 }
 
-OBJ primSetLED(OBJ *args) {
+void primDigitalSet(int pinNum, int flag) {
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
+	SET_MODE(pinNum, OUTPUT);
+	digitalWrite(pinNum, flag);
+};
+
+void primSetUserLED(OBJ *args) {
 	int value = (args[1] == trueObj) ? HIGH : LOW;
 	SET_MODE(PIN_LED, OUTPUT);
 	digitalWrite(PIN_LED, value);
-	return nilObj;
 }
 
 // I2C primitives
@@ -185,26 +187,28 @@ OBJ primI2cSet(OBJ *args) {
 	int fd = wiringPiI2CSetup(deviceID);
 	wiringPiI2CWriteReg8(fd, registerID, value);
 	close(fd);
-	return nilObj;
+	return falseObj;
 }
 
 // Not yet implemented
 
-OBJ primSPISend(OBJ *args) { return nilObj; }
-OBJ primSPIRecv(OBJ *args) { return nilObj; }
+OBJ primSPISend(OBJ *args) { return int2obj(0); }
+OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
 
-// Stubs for micro:bit primitives
+// Stubs for micro:bit/Calliope primitives
 
-OBJ primMBDisplay(OBJ *args) { return nilObj; }
-OBJ primMBDisplayOff(OBJ *args) { return nilObj; }
-OBJ primMBPlot(OBJ *args) { return nilObj; }
-OBJ primMBUnplot(OBJ *args) { return nilObj; }
-OBJ primMBTiltX(OBJ *args) { return nilObj; }
-OBJ primMBTiltY(OBJ *args) { return nilObj; }
-OBJ primMBTiltZ(OBJ *args) { return nilObj; }
-OBJ primMBTemp(OBJ *args) { return nilObj; }
-OBJ primMBButtonA(OBJ *args) { return nilObj; }
-OBJ primMBButtonB(OBJ *args) { return nilObj; }
+void primMBDisplay(OBJ *args) { }
+void primMBDisplayOff(OBJ *args) { }
+void primMBPlot(OBJ *args) { }
+void primMBUnplot(OBJ *args) { }
+OBJ primMBTiltX(OBJ *args) { return int2obj(0); }
+OBJ primMBTiltY(OBJ *args) { return int2obj(0); }
+OBJ primMBTiltZ(OBJ *args) { return int2obj(0); }
+OBJ primMBTemp(OBJ *args) { return int2obj(0); }
+OBJ primButtonA(OBJ *args) { return falseObj; }
+OBJ primButtonB(OBJ *args) { return falseObj; }
+
+void primNeoPixelSend(OBJ *args) { }
 
 // Raspberry Pi Main
 

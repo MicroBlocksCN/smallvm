@@ -460,7 +460,8 @@ static void runTask(Task *task) {
 	 	if (tmp <= 30) {
 			// busy-wait for wait times up to 30 usecs to avoid a context switch
 			tmp = (microsecs() + tmp) - 8; // wake time, adjusted for dispatch overhead
-			while ((microsecs() - tmp) >= RECENT) /* busy wait */;
+			while ((microsecs() - tmp) >= RECENT)
+				/* busy wait */;
 			DISPATCH();
 		}
 		task->status = waiting_micros;

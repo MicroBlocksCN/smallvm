@@ -30,14 +30,14 @@ uint32 microsecs() {
 	struct timeval now;
 	gettimeofday(&now, NULL);
 
-    return (1000000 * (now.tv_sec - startSecs)) + now.tv_usec;
+	return (1000000 * (now.tv_sec - startSecs)) + now.tv_usec;
 }
 
 uint32 millisecs() {
 	struct timeval now;
 	gettimeofday(&now, NULL);
 
-    return (1000 * (now.tv_sec - startSecs)) + (now.tv_usec / 1000);
+	return (1000 * (now.tv_sec - startSecs)) + (now.tv_usec / 1000);
 }
 
 // Communication/System Functions
@@ -80,28 +80,31 @@ void systemReset() { } // noop on Linux
 OBJ primAnalogPins(OBJ *args) { return int2obj(0); }
 OBJ primDigitalPins(OBJ *args) { return int2obj(0); }
 OBJ primAnalogRead(OBJ *args) { return int2obj(0); }
-OBJ primAnalogWrite(OBJ *args) { return nilObj; }
-OBJ primDigitalRead(OBJ *args) { return nilObj; }
-OBJ primDigitalWrite(OBJ *args) { return nilObj; }
-OBJ primSetLED(OBJ *args) { return nilObj; }
-OBJ primI2cGet(OBJ *args) { return nilObj; }
-OBJ primI2cSet(OBJ *args) { return nilObj; }
-OBJ primSPISend(OBJ *args) { return nilObj; }
-OBJ primSPIRecv(OBJ *args) { return nilObj; }
-OBJ primNeoPixelSend(OBJ *args) { return nilObj; }
+void primAnalogWrite(OBJ *args) { }
+OBJ primDigitalRead(OBJ *args) { return int2obj(0); }
+void primDigitalWrite(OBJ *args) { }
+void primDigitalSet(int pinNum, int flag) { };
+OBJ primButtonA(OBJ *args) { return falseObj; }
+OBJ primButtonB(OBJ *args) { return falseObj; }
+void primSetUserLED(OBJ *args) { }
+
+OBJ primI2cGet(OBJ *args) { return int2obj(0); }
+OBJ primI2cSet(OBJ *args) { return int2obj(0); }
+OBJ primSPISend(OBJ *args) { return int2obj(0); }
+OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
 
 // Bogus micro:bit primitives
 
-OBJ primMBDisplay(OBJ *args) { return nilObj; }
-OBJ primMBDisplayOff(OBJ *args) { return nilObj; }
-OBJ primMBPlot(OBJ *args) { return nilObj; }
-OBJ primMBUnplot(OBJ *args) { return nilObj; }
-OBJ primMBTiltX(OBJ *args) { return nilObj; }
-OBJ primMBTiltY(OBJ *args) { return nilObj; }
-OBJ primMBTiltZ(OBJ *args) { return nilObj; }
-OBJ primMBTemp(OBJ *args) { return nilObj; }
-OBJ primMBButtonA(OBJ *args) { return nilObj; }
-OBJ primMBButtonB(OBJ *args) { return nilObj; }
+void primMBDisplay(OBJ *args) { }
+void primMBDisplayOff(OBJ *args) { }
+void primMBPlot(OBJ *args) { }
+void primMBUnplot(OBJ *args) { }
+OBJ primMBTiltX(OBJ *args) { return int2obj(0); }
+OBJ primMBTiltY(OBJ *args) { return int2obj(0); }
+OBJ primMBTiltZ(OBJ *args) { return int2obj(0); }
+OBJ primMBTemp(OBJ *args) { return int2obj(0); }
+
+void primNeoPixelSend(OBJ *args) { }
 
 // Linux Main
 

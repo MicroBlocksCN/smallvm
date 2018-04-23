@@ -26,14 +26,14 @@ void memInit(int wordCount) {
 		vmPanic("Insufficient memory to start MicroBlocks");
 	}
 
-	char *stack; // the address of this local variable approximates the current C stack pointer
-	if (&stack > (char *) memStart) {
+	char *stack = (char *) &stack; // the address of this local variable approximates the current C stack pointer
+	if (stack > (char *) memStart) {
     	// On some platforms, the malloc() call succeeds even when there is not enough memory.
     	// Check to be sure there's enough space for both the MicroBlock object heap and the stack.
 		// Do this check only if stack is above the heap, as it is on Arduinos.
 
-		stack = ((char *) &stack) - 1000; // reserve 1000 bytes for stack (stack grows down in memory)
-		if ((memStart + wordCount) > stack) {
+		stack = stack - 1000; // reserve 1000 bytes for stack (stack grows down in memory)
+		if ((memStart + wordCount) > (OBJ) stack) {
 			vmPanic("Insufficient memory to start MicroBlocks");
 		}
 	}
