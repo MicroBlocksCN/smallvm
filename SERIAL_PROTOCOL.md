@@ -1,4 +1,4 @@
-# Microblocks Serial Protocol (version 2.07)
+# Microblocks Serial Protocol (version 2.08)
 
 This protocol describes how information flows from the
 board to the IDE and the other way around. All messages
@@ -97,13 +97,17 @@ The supported data types are:
   * string (type = 2):  the remainder of the message body is a UTF-8 string
   * boolean (type = 3): 1-byte, 0 for false, 1 for true
 
-### *Reserved* (OpCode 0x09)
+### Get Variable Names (OpCode 0x09)
 
-Reserved for a future IDE->Board message.
+Report the names of all variables.
+Results are sent to the IDE as a sequence of Variable Name messages.
 
-### Delete Variable (OpCode: 0x0A)
+### Clear Variables (OpCode: 0x0A)
 
-Delete the given variable.
+Clear all variable name records.
+This message is sent by the IDE when a variable is deleted, followed
+by a sequence of Variable Name messages to record the new variable bindings,
+if any.
 
 ### Delete Comment (OpCode: 0x0B)
 
