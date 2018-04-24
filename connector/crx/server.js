@@ -1,3 +1,9 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+// Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
+
 var verbose = true,
     port = 9999,
     httpServer,
@@ -43,7 +49,7 @@ if (http.Server && http.WebSocketServer) {
 function serialConnect (portName, callback) {
     log('connecting to ' + portName);
     chrome.serial.connect(
-        portName, 
+        portName,
         { bitrate: 9600 },
         function (connectionInfo) {
             connectionId = connectionInfo.connectionId;
@@ -56,7 +62,7 @@ function serialConnect (portName, callback) {
 
 function serialDisconnect (connectionId, callback, onErrorCallback, retries) {
     var myself = this;
-    
+
     if (retries === 0) {
         onErrorCallback();
         throw new Error('Could not disconnect from board');
@@ -141,9 +147,9 @@ dispatcher = {
     serialDisconnect: function () {
         serialDisconnect(
             // aiming for a future multi-board scenario
-            connectionId, 
+            connectionId,
             // success callback
-            function () { 
+            function () {
                 sendJsonMessage('serialDisconnectResponse', [ true ]);
             },
             // error callback
