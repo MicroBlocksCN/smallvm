@@ -23,7 +23,7 @@ typedef enum {
 
 	varValue = 20,
 	varName = 21,
-	varDeleted = 29,
+	varsClearAll = 29,
 
 	comment = 30,
 	commentPosition = 31,

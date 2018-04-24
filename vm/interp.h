@@ -213,7 +213,8 @@ extern int taskCount;
 #define stopAllMsg				6
 #define getVarMsg				7	// value returned to IDE via varValueMsg
 #define setVarMsg				8
-#define deleteVarMsg			10
+#define getVarNamesMsg			9
+#define clearVarsMsg			10
 #define deleteCommentMsg		11
 #define getVersionMsg			12
 #define getAllCodeMsg			13

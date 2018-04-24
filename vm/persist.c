@@ -371,19 +371,17 @@ static int * copyVarInfo(int id, int *src, int *dst) {
 
 	// scan rest of the records to get the most recent info about this variable
 	while (src) {
-		if (id == ((*src >> 8) & 0xFF)) {
-			int type = (*src >> 16) & 0xFF;
-			switch (type) {
-			case varValue:
-				varData.valueRec = src;
-				break;
-			case varName:
-				varData.nameRec = src;
-				break;
-			case varDeleted:
-				memset(&varData, 0, sizeof(varData)); // clear varData
-				break;
-			}
+		int type = (*src >> 16) & 0xFF;
+		switch (type) {
+		case varValue:
+			if (id == ((*src >> 8) & 0xFF)) varData.valueRec = src;
+			break;
+		case varName:
+			if (id == ((*src >> 8) & 0xFF)) varData.nameRec = src;
+			break;
+		case varsClearAll:
+			memset(&varData, 0, sizeof(varData)); // clear varData
+			break;
 		}
 		src = recordAfter(src);
 	}
@@ -423,7 +421,7 @@ static void compact() {
 		int id = (header >> 8) & 0xFF;
 		if ((chunkCode <= type) && (type <= chunkDeleted)) {
 			dst = copyChunkInfo(id, src, dst);
-		} else if ((varValue <= type) && (type <= varDeleted)) {
+		} else if ((varValue <= type) && (type <= varsClearAll)) {
 			dst = copyVarInfo(id, src, dst);
 		}
 		src = recordAfter(src);

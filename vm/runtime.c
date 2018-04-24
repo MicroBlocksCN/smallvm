@@ -10,7 +10,7 @@
 
 // VM Version
 
-#define VM_VERSION "v023"
+#define VM_VERSION "v024"
 
 // Forward Reference Declarations
 
@@ -134,7 +134,12 @@ static void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
 }
 
 static void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
-	appendPersistentRecord(varName, varIndex, 0, byteCount, data);
+	uint8 buf[100];
+	if (byteCount > 99) byteCount = 99;
+	uint8 *dst = buf;
+	for (int i = 0; i < byteCount; i++) *dst++ = data[i];
+	*dst = 0; // null terminate
+	appendPersistentRecord(varName, varIndex, 0, (byteCount + 1), buf);
 }
 
 static void storeComment(uint8 commentIndex, int byteCount, uint8 *data) {
@@ -164,10 +169,11 @@ static void deleteAllChunks() {
 	memset(chunks, 0, sizeof(chunks));
 }
 
-static void deleteVar(uint8 varIndex) {
-	if (varIndex >= MAX_VARS) return;
-	vars[varIndex] = int2obj(0);
-	appendPersistentRecord(varDeleted, varIndex, 0, 0, NULL);
+static void clearAllVariables() {
+	for (int varIndex = 0; varIndex < MAX_VARS; varIndex++) {
+		vars[varIndex] = int2obj(0);
+	}
+	appendPersistentRecord(varsClearAll, 0, 0, 0, NULL);
 }
 
 static void deleteComment(uint8 commentIndex) {
@@ -425,6 +431,50 @@ static void sendAllCode() {
 	}
 }
 
+static int * varNameRecordFor(int varID) {
+	int *result = NULL;
+	int *p = recordAfter(NULL);
+	while (p) {
+		int recType = (*p >> 16) & 0xFF;
+		int id = (*p >> 8) & 0xFF;
+		if ((recType == varName) && (id == varID)) result = p;
+		if (recType == varsClearAll) result = NULL;
+		p = recordAfter(p);
+	}
+	return result;
+}
+
+static void sendVarNameMessage(int varID, int *persistentRecord) {
+	if (!persistentRecord) return; // NULL persistentRecord; do nothing
+
+	int wordCount = *(persistentRecord + 1);
+	int bodyBytes = 4 * wordCount;
+	waitForOutbufBytes(5 + bodyBytes);
+
+	queueByte(251);
+	queueByte(varNameMsg);
+	queueByte(varID);
+	queueByte(bodyBytes & 0xFF); // low byte of size
+	queueByte((bodyBytes >> 8) & 0xFF); // high byte of size
+	int *src = persistentRecord + 2;
+	for (int i = 0; i < wordCount; i++) {
+		int w = *src++;
+		queueByte(w & 0xFF);
+		queueByte((w >> 8) & 0xFF);
+		queueByte((w >> 16) & 0xFF);
+		queueByte((w >> 24) & 0xFF);
+	}
+}
+
+static void sendVarNames() {
+	// Send the names of all variables.
+
+	for (int varID = 0; varID < MAX_VARS; varID++) {
+		int *rec = varNameRecordFor(varID);
+		if (rec) sendVarNameMessage(varID, rec);
+	}
+}
+
 // Receiving Messages from IDE
 
 #define RCVBUF_SIZE 1024
@@ -493,8 +543,11 @@ static void processShortMessage() {
 	case getVarMsg:
 		sendVariableValue(chunkIndex);
 		break;
-	case deleteVarMsg:
-		deleteVar(chunkIndex);
+	case getVarNamesMsg:
+		sendVarNames();
+		break;
+	case clearVarsMsg:
+		clearAllVariables(chunkIndex);
 		break;
 	case deleteCommentMsg:
 		deleteComment(chunkIndex);
