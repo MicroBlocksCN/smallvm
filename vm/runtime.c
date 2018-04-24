@@ -10,7 +10,7 @@
 
 // VM Version
 
-#define VM_VERSION "v024"
+#define VM_VERSION "v025"
 
 // Forward Reference Declarations
 
@@ -447,8 +447,8 @@ static int * varNameRecordFor(int varID) {
 static void sendVarNameMessage(int varID, int *persistentRecord) {
 	if (!persistentRecord) return; // NULL persistentRecord; do nothing
 
-	int wordCount = *(persistentRecord + 1);
-	int bodyBytes = 4 * wordCount;
+	char *varName = (char *) (persistentRecord + 2);
+	int bodyBytes = strlen(varName);
 	waitForOutbufBytes(5 + bodyBytes);
 
 	queueByte(251);
@@ -456,13 +456,9 @@ static void sendVarNameMessage(int varID, int *persistentRecord) {
 	queueByte(varID);
 	queueByte(bodyBytes & 0xFF); // low byte of size
 	queueByte((bodyBytes >> 8) & 0xFF); // high byte of size
-	int *src = persistentRecord + 2;
-	for (int i = 0; i < wordCount; i++) {
-		int w = *src++;
-		queueByte(w & 0xFF);
-		queueByte((w >> 8) & 0xFF);
-		queueByte((w >> 16) & 0xFF);
-		queueByte((w >> 24) & 0xFF);
+	char *src = varName;
+	for (int i = 0; i < bodyBytes; i++) {
+		queueByte(*src++);
 	}
 }
 
@@ -547,7 +543,7 @@ static void processShortMessage() {
 		sendVarNames();
 		break;
 	case clearVarsMsg:
-		clearAllVariables(chunkIndex);
+		clearAllVariables();
 		break;
 	case deleteCommentMsg:
 		deleteComment(chunkIndex);
