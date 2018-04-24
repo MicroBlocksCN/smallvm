@@ -8,7 +8,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port pingSentMSecs lastPingRecvMSecs recvBuf
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames
 
 method scripter SmallRuntime { return scripter }
 
@@ -247,6 +247,7 @@ method showVersion SmallRuntime versionString {
 method clearBoardIfConnected SmallRuntime {
 	if (notNil port) {
 		sendStopAll this
+		clearVariableNames this
 		sendMsg this 'deleteAllCodeMsg' // delete all code from board
 		waitMSecs 50 // leave time to write to flash or next message will be missed
 	}
@@ -267,6 +268,7 @@ method sendStartAll SmallRuntime {
 method saveAllChunks SmallRuntime {
 	// Save the code for all scripts and user-defined functions.
 
+	saveVariableNames this
 	assignFunctionIDs this
 	for aFunction (functions (targetModule scripter)) {
 		saveChunk this aFunction
@@ -303,6 +305,18 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	waitMSecs ((count data) / 10) // wait approximate transmission time
 }
 
+method saveVariableNames SmallRuntime {
+	newVarNames = (variableNames (targetModule scripter))
+	if (oldVarNames == newVarNames) { return }
+
+	varID = 0
+	for varName newVarNames {
+		sendMsg this 'varNameMsg' varID (toArray (toBinaryData varName))
+		varID += 1
+	}
+	oldVarNames = (copy newVarNames)
+}
+
 method runChunk SmallRuntime chunkID {
 	sendMsg this 'startChunkMsg' chunkID
 }
@@ -314,6 +328,15 @@ method stopRunningChunk SmallRuntime chunkID {
 method getVar SmallRuntime varID {
 	if (isNil varID) { varID = 0 }
 	sendMsg this 'getVarMsg' varID
+}
+
+method clearVariableNames SmallRuntime {
+	oldVarNames = nil
+	sendMsg this 'clearVarsMsg'
+}
+
+method getAllVarNames SmallRuntime {
+	sendMsg this 'getVarNamesMsg'
 }
 
 // Message handling
@@ -329,7 +352,8 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'stopAllMsg' 6
 		atPut msgDict 'getVarMsg' 7
 		atPut msgDict 'setVarMsg' 8
-		atPut msgDict 'deleteVarMsg' 10
+		atPut msgDict 'getVarNamesMsg' 9
+		atPut msgDict 'clearVarsMsg' 10
 		atPut msgDict 'deleteCommentMsg' 11
 		atPut msgDict 'getVersionMsg' 12
 		atPut msgDict 'getAllCodeMsg' 13
@@ -487,11 +511,13 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
-//		print 'received broadcast:' (toString (copyFromTo msg 6))
+		print 'received broadcast:' (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
-//		print 'chunkCodeMsg:' (byteCount msg) 'bytes'
+		print 'chunkCodeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {
-//		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
+		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
+	} (op == (msgNameToID this 'varNameMsg')) {
+		print 'varNameMsg:' (byteAt msg 3) (toString (copyFromTo msg 6))
 	} else {
 		print 'msg:' (toArray msg)
 	}

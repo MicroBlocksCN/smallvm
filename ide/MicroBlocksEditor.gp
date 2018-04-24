@@ -424,6 +424,7 @@ method contextMenu MicroBlocksEditor {
 //   addItem menu 'broadcast test' (action 'broadcastTest' (smallRuntime))
 //   addItem menu 'set variable test' (action 'setVarTest' (smallRuntime))
 //   addItem menu 'get code test' (action 'getCodeTest' (smallRuntime))
+//   addItem menu 'get var names test' (action 'getAllVarNames' (smallRuntime))
   return menu
 }
 

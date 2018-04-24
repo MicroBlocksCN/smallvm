@@ -320,6 +320,7 @@ method createSharedVariable MicroBlocksScripter {
   varName = (prompt (global 'page') 'New shared variable name?' '')
   if (varName != '') {
 	setShared (uniqueVarName this varName) 0 (targetModule this)
+	saveVariableNames (smallRuntime)
 	updateBlocks this
   }
 }
@@ -353,6 +354,7 @@ method deleteSharedVariable MicroBlocksScripter {
 method removeSharedVariable MicroBlocksScripter varName {
   deleteSharedVarMonitors this (targetModule this) varName
   deleteVar (targetModule this) varName
+  clearVariableNames (smallRuntime)
   updateBlocks this
 }
 
