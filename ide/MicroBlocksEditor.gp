@@ -1,3 +1,9 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+//Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
+
 // MicroBlocksEditor.gp - Top-level window for the MicroBlocks IDE
 //
 // To use, load both the standard GP library the MicroBlocks IDE files using a command like:
@@ -424,7 +430,7 @@ method contextMenu MicroBlocksEditor {
 //   addItem menu 'broadcast test' (action 'broadcastTest' (smallRuntime))
 //   addItem menu 'set variable test' (action 'setVarTest' (smallRuntime))
 //   addItem menu 'get code test' (action 'getCodeTest' (smallRuntime))
-//   addItem menu 'get var names test' (action 'getAllVarNames' (smallRuntime))
+   addItem menu 'get var names test' (action 'getAllVarNames' (smallRuntime))
   return menu
 }
 

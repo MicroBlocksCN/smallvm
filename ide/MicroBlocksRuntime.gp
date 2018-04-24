@@ -1,3 +1,9 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+//Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
+
 // SmallCompiler.gp - A blocks compiler for SmallVM
 // John Maloney, April, 2017
 
@@ -517,7 +523,7 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {
 		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'varNameMsg')) {
-		print 'varNameMsg:' (byteAt msg 3) (toString (copyFromTo msg 6))
+		print 'varNameMsg:' (byteAt msg 3) (toString (copyFromTo msg 6)) ((byteCount msg) - 5) 'bytes'
 	} else {
 		print 'msg:' (toArray msg)
 	}
