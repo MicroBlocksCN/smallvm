@@ -187,12 +187,12 @@ typedef enum {
 	waiting_micros = 1, // waiting for microseconds to reach wakeTime
 	waiting_millis = 2, // waiting for milliseconds to reach wakeTime
 	running = 3,
-} TaskStatus_t;
+} MicroBlocksTaskStatus_t;
 
 #define STACK_LIMIT 19
 
 typedef struct {
-	uint8 status; // TaskStatus_t, stored as a byte
+	uint8 status; // MicroBlocksTaskStatus_t, stored as a byte
 	uint8 taskChunkIndex; // chunk index of the top-level stack for this task
 	uint8 currentChunkIndex; // chunk index when inside a function
 	uint32 wakeTime;

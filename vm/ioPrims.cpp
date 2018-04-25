@@ -230,7 +230,7 @@ void systemReset() {
 	static const int analogPin[] = {A0};
 	#define PIN_LED BUILTIN_LED
 
-#elif defined(ARDUINO_ESP32_DEV)
+#elif defined(ARDUINO_ARCH_ESP32)
 
 	#define BOARD_TYPE "ESP32"
 	#define DIGITAL_PINS 40
@@ -273,7 +273,7 @@ static void initPins(void) {
 	// Initialize currentMode to MODE_NOT_SET (neigher INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
-	#if !defined(ARDUINO_ESP8266_NODEMCU) && !defined(ARDUINO_ESP32_DEV)
+	#if !defined(ARDUINO_ESP8266_NODEMCU) && !defined(ARDUINO_ARCH_ESP32)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 
@@ -307,7 +307,7 @@ void primAnalogWrite(OBJ *args) {
 	if (value > 1023) value = 1023;
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
 	SET_MODE(pinNum, OUTPUT);
-	#ifndef ARDUINO_ESP32_DEV
+	#ifndef ARDUINO_ARCH_ESP32
 		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 	#endif
 }
@@ -699,7 +699,7 @@ static OBJ microbitButton(int buttonID) { return falseObj; }
 
 inline uint32 saveIRQState(void) {
 	uint32 pmask = 0;
-	#if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ESP32_DEV)
+	#if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32)
 		__asm__ volatile ("rsil %0, #2" : "=a" (pmask));
 	#else
 		pmask = __get_PRIMASK() & 1;
@@ -709,7 +709,7 @@ inline uint32 saveIRQState(void) {
 }
 
 inline void restoreIRQState(uint32 pmask) {
-	#if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ESP32_DEV)
+	#if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32)
 		 __asm__ volatile ("wsr %0, ps; rsync" :: "a" (pmask));
 	#else
 		__set_PRIMASK(pmask);

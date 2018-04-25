@@ -518,7 +518,7 @@ void restoreScripts() {
 	sprintf(s, "Restoring %d scripts...", chunkCount);
 	outputString(s);
 
-	pauseBeforeStarting(2000);
+//	pauseBeforeStarting(1000);
 	outputString("Started");
 }
 
