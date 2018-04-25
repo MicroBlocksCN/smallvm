@@ -795,7 +795,7 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 // Library import/export
 
 method importLibrary MicroBlocksScripter {
-  pickFileToOpen (action 'importLibraryFromFile' this) '' (array '.ulib')
+  pickFileToOpen (action 'importLibraryFromFile' this) './Examples' (array '.ulib')
 }
 
 method importLibraryFromFile MicroBlocksScripter fileName {
@@ -830,6 +830,7 @@ method importLibraryFromFile MicroBlocksScripter fileName {
 	  addFunction myModule func
 	}
   }
+  select (contents categoriesFrame) 'Functions'
   updateBlocks this
 }
 

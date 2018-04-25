@@ -151,13 +151,21 @@ method deleteChunkForBlock SmallRuntime aBlock {
 		key = (functionName (function (editedPrototype aBlock)))
 	}
 	entry = (at chunkIDs key nil)
-	if (notNil entry) {
+	if (and (notNil entry) (notNil port)) {
 		chunkID = (first entry)
 		sendMsg this 'deleteChunkMsg' chunkID
+		remove chunkIDs key
 	}
 }
 
 method resetBoard SmallRuntime {
+	// Stop everyting and sync scripts with the board.
+
+	clearBoardIfConnected this
+	saveAllChunks this
+}
+
+method hardwareReset SmallRuntime {
 	// Stop everyting, clear all code, and reset the board.
 
 	clearBoardIfConnected this
@@ -220,6 +228,7 @@ method setPort SmallRuntime newPortName {
 	waitMSecs 20
 	processMessages this
 	updateIndicator (findMicroBlocksEditor)
+	clearBoardIfConnected this
 }
 
 method connectionStatus SmallRuntime {
@@ -240,6 +249,17 @@ method connectionStatus SmallRuntime {
 		return 'connected'
 	}
 	return 'board not responding'
+}
+
+method ideVersion SmallRuntime { return '0.1.10' }
+
+method showAboutBox SmallRuntime {
+	inform (global 'page') (join
+		'MicroBlocks v' (ideVersion this) (newline)
+		'by' (newline)
+		'John Maloney, Bernat Romagosa, and Jens Mönig' (newline)
+		'Created with GP (gpblocks.org)' (newline)
+		'More info at http://microblocks.fun')
 }
 
 method getVersion SmallRuntime {

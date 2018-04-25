@@ -91,13 +91,13 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (textButton this 'New' 'newProject')
   add leftItems (textButton this 'Open' 'openProjectMenu')
   add leftItems (textButton this 'Save' 'saveProject')
-  add leftItems (textButton this 'Reset' 'resetBoard')
   add leftItems (textButton this 'Connect' 'connectToBoard')
   add leftItems (makeIndicator this)
 
   rightItems = (list)
+  add rightItems (textButton this 'Reset' 'resetBoard')
+//  add rightItems (textButton this 'Stop' 'resetBoard') // same as resetBoard
   add rightItems (textButton this 'Start' 'startAll')
-  add rightItems (textButton this 'Stop' 'stopAll')
 }
 
 method textButton MicroBlocksEditor label selectorOrAction {
@@ -178,7 +178,7 @@ method saveProject MicroBlocksEditor fName {
 
   if (and (isNil fName) (notNil fileName)) {
 	fName = fileName
-	if (beginsWith fName (gpExamplesFolder)) {
+	if (beginsWith fName './Examples/') {
 	  fName = (join (gpFolder) '/' (filePart fileName))
 	}
   }
@@ -415,14 +415,16 @@ method rightClicked MicroBlocksEditor aHand {
 
 method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
+  addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addLine menu
   addItem menu 'import library' 'importLibrary'
-  addItem menu 'export functions as library' 'exportAsLibrary'
-  addLine menu
   if (not (devMode)) {
+	addLine menu
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
+	addItem menu 'export functions as library' 'exportAsLibrary'
+	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
 
@@ -430,7 +432,7 @@ method contextMenu MicroBlocksEditor {
 //   addItem menu 'broadcast test' (action 'broadcastTest' (smallRuntime))
 //   addItem menu 'set variable test' (action 'setVarTest' (smallRuntime))
 //   addItem menu 'get code test' (action 'getCodeTest' (smallRuntime))
-   addItem menu 'get var names test' (action 'getAllVarNames' (smallRuntime))
+//   addItem menu 'get var names test' (action 'getAllVarNames' (smallRuntime))
   return menu
 }
 

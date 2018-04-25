@@ -62,6 +62,27 @@ to findProjectEditor {
   return nil
 }
 
+to gpFolder {
+  if ('iOS' == (platform)) { return '.' }
+  path = (userHomePath)
+
+  hidden = (global 'hideFolderShortcuts')
+  if (and (notNil hidden) (contains hidden 'Projects')) { return '/' } // if GP hidden, use computer
+
+  // Look for <home>/Documents
+  if (contains (listDirectories path) 'Documents') {
+	path = (join path '/Documents')
+  }
+  if (not (contains (listDirectories path) 'MicroBlocks Projects')) {
+	// create the MicroBlocks folder if it does not already exist
+	makeDirectory (join path '/MicroBlocks Projects')
+  }
+  if (contains (listDirectories path) 'MicroBlocks Projects') {
+	path = (join path '/MicroBlocks Projects')
+  }
+  return path
+}
+
 method clicked Block hand {
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
     userRenameVariable this
