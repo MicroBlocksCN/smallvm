@@ -56,7 +56,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop all')
 	'Control - More'
- 		(array ' ' 'comment'			'comment _' 'auto' '')
+ 		(array ' ' 'comment'			'comment _' 'str' 'Use this block to comment your code.')
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)

@@ -201,21 +201,27 @@ method selectPort SmallRuntime {
 	}
 	menu = (menu 'Serial port:' (action 'setPort' this) true)
 	for s portList { addItem menu s }
-	addLine menu
-	addItem menu 'other'
+	addItem menu 'other...'
+	if (notNil port) {
+		addLine menu
+		addItem menu 'disconnect'
+	}
 	popUpAtHand menu (global 'page')
 }
 
 method setPort SmallRuntime newPortName {
-	if ('other' == newPortName) {
+	if ('other...' == newPortName) {
 		newPortName = (prompt (global 'page') 'Port name?' 'none')
 		if ('' == newPortName) { return }
+	}
+	if (and ('disconnect' == newPortName) (notNil port)) {
+		if (notNil port) { resetBoard this }
 	}
 	if (notNil port) {
 		closeSerialPort port
 		port = nil
 	}
-	if (or (isNil newPortName) ('none' == newPortName)) { // just close port
+	if (or (isNil newPortName) (isOneOf newPortName 'disconnect' 'none')) { // just close port
 		portName = nil
 	} else {
 		portName = (join '/dev/' newPortName)
