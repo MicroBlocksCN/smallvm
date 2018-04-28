@@ -170,8 +170,8 @@ The error codes are defined by the source code file interp.h.
 
 ### Output Value (OpCode: 0x14, long message)
 
-Outputs the value in the data part of this message. The value is
-encoded the same was as the Task Returned Value message.
+Outputs the value in the data part of this message.
+The value is encoded the same as in the Set Variable Value message.
 
 ### Variable Value (OpCode: 0x15, long message)
 
