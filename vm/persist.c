@@ -87,10 +87,10 @@
 	#define HALF_SPACE (100 * 1024)
 
 	// SAM21 Non-Volatile Memory Controller Registers
-	#define NVMC_CTRLA   ((volatile int *) 0x41004000)
-	#define NVMC_CTRLB   ((volatile int *) 0x41004004)
-	#define NVMC_INTFLAG ((volatile int *) 0x41004014)
-	#define NVMC_ADDR    ((volatile int *) 0x4100401C)
+	#define NVMC_CTRLA		((volatile int *) 0x41004000)
+	#define NVMC_CTRLB		((volatile int *) 0x41004004)
+	#define NVMC_INTFLAG	((volatile int *) 0x41004014)
+	#define NVMC_ADDR		((volatile int *) 0x4100401C)
 
 	// SAM21 Non-Volatile Memory Controller Constants and Commands
 	#define MANW 128 // manual write bit in NVMC_CTRLB
@@ -554,30 +554,30 @@ static void showRecordHeaders() {
 }
 
 void basicTest() {
-  int testData[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
-  uint8 charData[] = {
-      0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0,
-      5, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0};
+	int testData[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+	uint8 charData[] = {
+		0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0,
+		5, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 8, 0, 0, 0, 9, 0, 0, 0};
 
-  #define PAGE ((int *) START)
+	#define PAGE ((int *) START)
 
-  flashErase(PAGE, PAGE + 100);
-  dumpWords(0, 35);
-  printf("-----\n");
-  flashWriteData(PAGE, 10, (uint8 *) testData);
-  flashWriteWord(PAGE + 13, 13);
-  flashWriteWord(PAGE + 15, 42);
-  flashWriteWord(PAGE + 17, 17);
-  flashWriteData(PAGE + 19, 3, charData);
-  flashWriteData(PAGE + 23, 3, &charData[1]);
-  flashWriteData(PAGE + 27, 3, &charData[2]);
-  dumpWords(0, 35);
-  flashErase(PAGE, PAGE + 100);
-  dumpWords(0, 20);
+	flashErase(PAGE, PAGE + 100);
+	dumpWords(0, 35);
+	printf("-----\n");
+	flashWriteData(PAGE, 10, (uint8 *) testData);
+	flashWriteWord(PAGE + 13, 13);
+	flashWriteWord(PAGE + 15, 42);
+	flashWriteWord(PAGE + 17, 17);
+	flashWriteData(PAGE + 19, 3, charData);
+	flashWriteData(PAGE + 23, 3, &charData[1]);
+	flashWriteData(PAGE + 27, 3, &charData[2]);
+	dumpWords(0, 35);
+	flashErase(PAGE, PAGE + 100);
+	dumpWords(0, 20);
 }
 
 void persistTest() {
-	int dummyData[] = {1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16};
+	int dummyData[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
 	printf("Persistent Memory Test\n\n");
 	basicTest();
