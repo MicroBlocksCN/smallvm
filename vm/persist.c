@@ -77,7 +77,10 @@
 		NRF_NVMC->CONFIG = 0; // disable Flash write
 	}
 
-#elif defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO) || defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+#elif defined(ARDUINO_ARCH_SAMD) || \
+  defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO) || \
+  defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ADAFRUIT_ITSYBITSY_M0)
+
 	#include "samr.h" // SAM21D
 
 	#define START (56 * 1024)
@@ -182,8 +185,8 @@
 	// that do not support Flash-based persistent memory.
 
 	#define START (&flash[0])
-	#define HALF_SPACE (8 * 1024)
-	static uint8 flash[2 * HALF_SPACE]; // simulated Flash memory (16k)
+	#define HALF_SPACE (5 * 1024)
+	static uint8 flash[2 * HALF_SPACE]; // simulated Flash memory (10k)
 
 	static void flashErase(int *startAddr, int *endAddr) {
 		int *dst = (int *) startAddr;

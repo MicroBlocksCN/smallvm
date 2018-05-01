@@ -7,9 +7,9 @@
 // ioPrims.cpp - Microblocks IO primitives and hardware dependent functions
 // John Maloney, April 2017
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <SPI.h>
-#include "Wire.h"
+#include <Wire.h>
 #include <stdio.h>
 
 #include "mem.h"
@@ -220,6 +220,22 @@ void systemReset() {
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 
 	#define PIN_LED 13
+
+#elif defined(ADAFRUIT_ITSYBITSY_M0)
+
+	#define BOARD_TYPE "Itsy Bitsy M0"
+	#define DIGITAL_PINS 42
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS 42
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+
+#elif defined(ADAFRUIT_TRINKET_M0)
+
+	#define BOARD_TYPE "Trinket M0"
+	#define DIGITAL_PINS 16
+	#define ANALOG_PINS 3
+	#define TOTAL_PINS 16
+	static const int analogPin[] = {A0, A1, A2};
 
 #elif defined(ARDUINO_ESP8266_NODEMCU)
 
