@@ -83,6 +83,14 @@ to gpFolder {
   return path
 }
 
+to gpExamplesFolder {
+  if ('Mac' == (platform)) {
+	// on Siera and later there seems to be no way to get a path to the folder containing the application
+	return (join (gpFolder) '/Examples')
+  }
+  return (join (absolutePath '.') '/Examples')
+}
+
 method clicked Block hand {
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
     userRenameVariable this
