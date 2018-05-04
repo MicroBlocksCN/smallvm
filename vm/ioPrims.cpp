@@ -286,14 +286,19 @@ static char currentMode[TOTAL_PINS];
 }
 
 static void initPins(void) {
-	// Initialize currentMode to MODE_NOT_SET (neigher INPUT nor OUTPUT)
+	// Initialize currentMode to MODE_NOT_SET (neither INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
 	#if !defined(ARDUINO_ESP8266_NODEMCU) && !defined(ARDUINO_ARCH_ESP32)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 
-	for (int i; i < TOTAL_PINS; i++) currentMode[i] = MODE_NOT_SET;
+	for (int i = 0; i < TOTAL_PINS; i++) {
+		digitalWrite(i, LOW);
+		pinMode(i, INPUT);
+		currentMode[i] = MODE_NOT_SET;
+	}
+
 	#ifdef ARDUINO_NRF52_PRIMO
 		pinMode(USER1_BUTTON, INPUT);
 		pinMode(BUZZER, OUTPUT);
@@ -807,6 +812,8 @@ void primMBDisplay(OBJ *args) {
 }
 
 void primMBDisplayOff(OBJ *args) {
+	OBJ off = falseObj;
+	primSetUserLED(&off);
 	microBitDisplayBits = 0;
 }
 
