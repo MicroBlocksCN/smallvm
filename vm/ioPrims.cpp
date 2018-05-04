@@ -47,9 +47,9 @@ uint32 millisecs() {
 }
 
 void hardwareInit() {
+	Serial.begin(115200);
 	initClock_NRF51();
 	initPins();
-	Serial.begin(115200);
 }
 
 #else // not NRF51
@@ -62,8 +62,8 @@ uint32 microsecs() { return (uint32) micros(); }
 uint32 millisecs() { return (uint32) millis(); }
 
 void hardwareInit() {
-	initPins();
 	Serial.begin(115200);
+	initPins();
 }
 
 #endif
@@ -295,7 +295,7 @@ static void initPins(void) {
 
 	for (int i = 0; i < TOTAL_PINS; i++) {
 		digitalWrite(i, LOW);
-		pinMode(i, INPUT);
+// 		pinMode(i, INPUT); // this breaks serial communication on Circuit Playground
 		currentMode[i] = MODE_NOT_SET;
 	}
 
