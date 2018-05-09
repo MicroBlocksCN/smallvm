@@ -1,6 +1,8 @@
 #!/bin/sh
-# Build uBlocks for GNU/Linux
+# Build uBlocks for generic GNU/Linux
+# No I/O pins or devices, but useful for testing
+# Connect to it via pseudo terminal
 
 # Prereqs: libc6-dev-i386
 
-gcc -m32 -O3 -Wall -I ../vm linux.c ../vm/*.c -o GnuBlocks
+gcc -m32 -O3 -Wall -I ../vm linux.c ../vm/*.c -o ublocks-generic

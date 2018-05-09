@@ -15,41 +15,41 @@
 #include "mem.h"
 #include "interp.h"
 
-static OBJ memStart;
-static OBJ freeStart;
-static OBJ memEnd;
+static OBJ memStart = NULL;
+static OBJ freeStart = NULL;
+static OBJ memEnd = NULL;
 
 void memInit(int wordCount) {
-	if (sizeof(int) != sizeof(int*)) {
-		vmPanic("MicroBlocks must be compiled in 32-bit mode (e.g. gcc -m32 ...)");
-	}
-	if (sizeof(int) != sizeof(float)) {
-		vmPanic("MicroBlocks expects float and int to be the same size");
+	// verify 32-bit architecture
+	if (!(sizeof(int) == 4 && sizeof(int*) == 4 && sizeof(float) == 4)) {
+		vmPanic("MicroBlocks expects int, int*, and float to all be 32-bits");
 	}
 
+	// allocate memory for object heap
+	if (memStart) free(memStart); // this allows memInit() to be called more than once
 	memStart = (OBJ) malloc(wordCount * sizeof(int));
 	if (memStart == NULL) {
-		vmPanic("Insufficient memory to start MicroBlocks");
+		vmPanic("Insufficient memory for MicroBlocks object heap");
 	}
 
 	char *stack = (char *) &stack; // the address of this local variable approximates the current C stack pointer
 	if (stack > (char *) memStart) {
-    	// On some platforms, the malloc() call succeeds even when there is not enough memory.
-    	// Check to be sure there's enough space for both the MicroBlock object heap and the stack.
-		// Do this check only if stack is above the heap, as it is on Arduinos.
+    	// On some platforms (e.g. micro:bit), the malloc() call succeeds even when there is not enough memory.
+    	// This check makes sure there's enough space for both the MicroBlock object heap and the stack.
+		// This check makes sense only if the stack is immediately above the heap.
 
 		stack = stack - 1000; // reserve 1000 bytes for stack (stack grows down in memory)
 		if ((memStart + wordCount) > (OBJ) stack) {
-			vmPanic("Insufficient memory to start MicroBlocks");
+			vmPanic("Insufficient memory for MicroBlocks stack");
 		}
 	}
 
-	if ((unsigned) memStart <= 8) {
-		// Reserve object references 0, 4, and 8 for constants nil, true, and false
-		// Details: In the unlikely case that memStart <= 8, increment it by 12
-		// and reduce wordCount by 3 words.
-		memStart = (OBJ) ((unsigned) memStart + 12);
-		wordCount -= 3;
+	if ((unsigned) memStart <= 4) {
+		// Reserve object references 0 and 4 for object pointer constants true and false.
+		// Details: In the very unlikely case that memStart <= 4, increment it by 8
+		// and reduce wordCount by 2 words.
+		memStart = (OBJ) ((unsigned) memStart + 8);
+		wordCount -= 2;
 	}
 	freeStart = memStart;
 	memEnd = memStart + wordCount;
@@ -69,7 +69,7 @@ void vmPanic(char *errorMessage) {
 }
 
 OBJ newObj(int classID, int wordCount, OBJ fill) {
-	if ((freeStart + HEADER_WORDS + wordCount) >= memEnd) {
+	if ((freeStart + HEADER_WORDS + wordCount) > memEnd) {
 		return fail(insufficientMemoryError);
 	}
 	OBJ obj = freeStart;
@@ -77,6 +77,19 @@ OBJ newObj(int classID, int wordCount, OBJ fill) {
 	for (OBJ p = obj; p < freeStart; ) *p++ = (int) fill;
 	unsigned header = HEADER(classID, wordCount);
 	obj[0] = header;
+
+	// for checking memory management:
+// 	char *stack = (char *) &stack;
+// 	char s[100];
+// 	sprintf(s, "%d bytes available (of %d total)", 4 * (memEnd - freeStart), 4 * (memEnd - memStart));
+// 	outputString(s);
+// 	if (stack > memEnd) {
+// 		sprintf(s, "%d stack bytes\n", stack - (char *) memEnd);
+// 		outputString(s);
+// 	} else {
+// 		outputString("Unknown stack bytes\n");
+// 	}
+
 	return obj;
 }
 

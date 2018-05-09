@@ -158,17 +158,16 @@ method deleteChunkForBlock SmallRuntime aBlock {
 	}
 }
 
-method resetBoard SmallRuntime {
+method stopAndSyncScripts SmallRuntime {
 	// Stop everyting and sync scripts with the board.
 
 	clearBoardIfConnected this
 	saveAllChunks this
 }
 
-method hardwareReset SmallRuntime {
-	// Stop everyting, clear all code, and reset the board.
+method softReset SmallRuntime {
+	// Stop everyting, clear memory, and reset the I/O pins.
 
-	clearBoardIfConnected this
 	sendMsg this 'systemResetMsg' // send the reset message
 }
 
@@ -215,7 +214,7 @@ method setPort SmallRuntime newPortName {
 		if ('' == newPortName) { return }
 	}
 	if (and ('disconnect' == newPortName) (notNil port)) {
-		if (notNil port) { resetBoard this }
+		if (notNil port) { stopAndSyncScripts this }
 	}
 	if (notNil port) {
 		closeSerialPort port
@@ -257,7 +256,7 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.10' }
+method ideVersion SmallRuntime { return '0.1.12' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
@@ -543,7 +542,7 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
-		print 'received broadcast:' (toString (copyFromTo msg 6))
+//		print 'received broadcast:' (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
 		print 'chunkCodeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {

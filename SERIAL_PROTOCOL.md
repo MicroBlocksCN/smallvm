@@ -42,7 +42,7 @@ end with the terminator byte 0xFE. The data size field includes this terminator 
 Dropped bytes in messages from the board to the IDE have not (so far) been a problem,
 so long messages sent from the board to the IDE do not have a termination byte.
 
-<br>
+
 ## IDE → Board (OpCodes 0x01 to 0x0F)
 
 ### Chunk Code (OpCode: 0x01; long message; bidirectional)
@@ -136,7 +136,7 @@ However, when persistent chunk storage is
 implemented, it will just reset the hardware;
 the program will persist.
 
-<br>
+
 ## Board → IDE (OpCodes 0x10 to 0x16)
 
 The board sends task status change and output messages
@@ -170,8 +170,8 @@ The error codes are defined by the source code file interp.h.
 
 ### Output Value (OpCode: 0x14, long message)
 
-Outputs the value in the data part of this message. The value is
-encoded the same was as the Task Returned Value message.
+Outputs the value in the data part of this message.
+The value is encoded the same as in the Set Variable Value message.
 
 ### Variable Value (OpCode: 0x15, long message)
 
@@ -187,7 +187,7 @@ Return the version string in the body of this message.
 
 Reserved for additional Board → IDE messages.
 
-<br>
+
 ## Bidirectional (OpCode: 0x1A to 0x1F)
 
 ### Ping (OpCode: 0x1A)
@@ -222,7 +222,7 @@ A comment the given ID. Body is a string.
 The offset of the comment with the given ID in the scripting pane.
 The position is encoded as 4 bytes in the same manner as the chunk position attribute.
 
-<br>
+
 ## IDE → Bridge, Bridge → IDE
 
 0xFF is reserved for all messages between the bridge and the IDE.

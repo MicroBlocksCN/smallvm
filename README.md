@@ -1,6 +1,9 @@
 # README #
 
-MicroBlocks is a free, live, blocks programming system
+This repository contains the source for the MicroBlocks
+virtual machine.
+
+[MicroBlocks](http://microblocks.fun) is a free, live, blocks programming system
 for educators, learners, and makers. It runs on the BBC
 micro:bit, the NodeMCU, ARM-based Arudino boards, and
 other tiny computers such as the Raspberry Pi.
@@ -29,7 +32,7 @@ further development.
 Built-in data types include integers, booleans, strings, object
 arrays, and byte arrays.
 
-## How do I compile the VM? ##
+## How do I build the VM? ##
 
 First of all, you may not need to. If you have a BBC micro:bit,
 Calliope mini, or an AdaFruit board such as the Circuit Playground
@@ -56,7 +59,35 @@ board manager, and click the upload button.
 
 See the MicroBlocks website for a list of currently supported boards.
 
-## Website ##
+## Building for Raspberry Pi ##
+
+To build on the Raspberry Pi, run "./build" in the raspberryPi folder.
+The Raspberry Pi version of MicroBlocks can control the digital I/O
+pins of the Raspberry Pi.
+
+On the Raspberry Pi, MicroBlocks can be run in two ways:
+
+Headless: If you configure your RaspberryPi Zero(W) to behave like a slave USB-serial
+device, then it can be plugged into a laptop as if it were an Arduino or micro:bit.
+MicroBlocks can be run either by connecting to the Pi via SSH and running ublocks-pi
+from the command line or configuring Linux to run it at boot time.
+
+Desktop: If you run ublocks-pi with the "-p" switch,
+it will create a pseudoterminal, and you can connect to that pseudoterminal
+from the MicroBlocks IDE running in a window on the same Raspberry Pi.
+
+## Building for generic Linux ##
+
+To build the VM to run on a desktop or laptop Linux computer, run "./build" in the linux folder.
+Running the resulting executable creates a pseudoterminal that you can connect
+to from the MicroBlocks IDE running in a window on the laptop.
+
+The generic Linux version of the VM can't control pins or other microcontroller I/O devices
+(there aren't any!), but it can be used to study the virtual machine or debug new features,
+since the VM can print debugging information to stdout without interfering with
+communications with the IDE over the psuedoterminal.
+
+## MicroBlocks Website ##
 
 <http://microblocks.fun>
 
@@ -66,16 +97,19 @@ MicroBlocks is licensed under the Mozilla Public License 2.0 (MPL 2.0).
 
 ## Status ##
 
-MicroBlocks is not yet released. It is currently "pre-alpha".
+MicroBlocks is not yet released, but it is available for early testing as "pre-alpha".
+
+It will be released as alpha in early summer 2018.
 
 ## Contributing ##
+
+We welcome your feedback, comments, feature requests, and
+[bug reports](https://bitbucket.org/john_maloney/smallvm/issues?status=new&status=open).
 
 Since MicroBlocks is not yet finished, we are not currently
 soliciting or accepting contributions or pull requests.
 
-However, we welcome your feedback, comments, feature requests, and bug reports.
-
-## Who created MicroBlocks? ##
+## Team ##
 
 This project is a collaboration between John Maloney, Bernat Romagosa,
 and Jens Moenig.

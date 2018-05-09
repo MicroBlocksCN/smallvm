@@ -795,7 +795,7 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 // Library import/export
 
 method importLibrary MicroBlocksScripter {
-  pickFileToOpen (action 'importLibraryFromFile' this) './Examples' (array '.ulib')
+  pickFileToOpen (action 'importLibraryFromFile' this) (gpExamplesFolder) (array '.ulib')
 }
 
 method importLibraryFromFile MicroBlocksScripter fileName {

@@ -189,7 +189,7 @@ typedef enum {
 	running = 3,
 } MicroBlocksTaskStatus_t;
 
-#define STACK_LIMIT 19
+#define STACK_LIMIT 34 // Task size is 6 + STACK_LIMIT words
 
 typedef struct {
 	uint8 status; // MicroBlocksTaskStatus_t, stored as a byte
@@ -205,7 +205,7 @@ typedef struct {
 
 // Task list shared by interp.c and runtime.c
 
-#define MAX_TASKS 16
+#define MAX_TASKS 10
 extern Task tasks[MAX_TASKS];
 extern int taskCount;
 

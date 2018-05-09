@@ -7,9 +7,9 @@
 // ioPrims.cpp - Microblocks IO primitives and hardware dependent functions
 // John Maloney, April 2017
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <SPI.h>
-#include "Wire.h"
+#include <Wire.h>
 #include <stdio.h>
 
 #include "mem.h"
@@ -47,9 +47,9 @@ uint32 millisecs() {
 }
 
 void hardwareInit() {
+	Serial.begin(115200);
 	initClock_NRF51();
 	initPins();
-	Serial.begin(115200);
 }
 
 #else // not NRF51
@@ -62,8 +62,8 @@ uint32 microsecs() { return (uint32) micros(); }
 uint32 millisecs() { return (uint32) millis(); }
 
 void hardwareInit() {
-	initPins();
 	Serial.begin(115200);
+	initPins();
 }
 
 #endif
@@ -221,6 +221,22 @@ void systemReset() {
 
 	#define PIN_LED 13
 
+#elif defined(ADAFRUIT_ITSYBITSY_M0)
+
+	#define BOARD_TYPE "Itsy Bitsy M0"
+	#define DIGITAL_PINS 42
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS 42
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+
+#elif defined(ADAFRUIT_TRINKET_M0)
+
+	#define BOARD_TYPE "Trinket M0"
+	#define DIGITAL_PINS 16
+	#define ANALOG_PINS 3
+	#define TOTAL_PINS 16
+	static const int analogPin[] = {A0, A1, A2};
+
 #elif defined(ARDUINO_ESP8266_NODEMCU)
 
 	#define BOARD_TYPE "ESP8266"
@@ -270,14 +286,19 @@ static char currentMode[TOTAL_PINS];
 }
 
 static void initPins(void) {
-	// Initialize currentMode to MODE_NOT_SET (neigher INPUT nor OUTPUT)
+	// Initialize currentMode to MODE_NOT_SET (neither INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
 	#if !defined(ARDUINO_ESP8266_NODEMCU) && !defined(ARDUINO_ARCH_ESP32)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 
-	for (int i; i < TOTAL_PINS; i++) currentMode[i] = MODE_NOT_SET;
+	for (int i = 0; i < TOTAL_PINS; i++) {
+		digitalWrite(i, LOW);
+// 		pinMode(i, INPUT); // this breaks serial communication on Circuit Playground
+		currentMode[i] = MODE_NOT_SET;
+	}
+
 	#ifdef ARDUINO_NRF52_PRIMO
 		pinMode(USER1_BUTTON, INPUT);
 		pinMode(BUZZER, OUTPUT);
@@ -791,6 +812,8 @@ void primMBDisplay(OBJ *args) {
 }
 
 void primMBDisplayOff(OBJ *args) {
+	OBJ off = falseObj;
+	primSetUserLED(&off);
 	microBitDisplayBits = 0;
 }
 

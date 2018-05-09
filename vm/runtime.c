@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v026"
+#define VM_VERSION "v028"
 
 // Forward Reference Declarations
 
@@ -188,6 +188,21 @@ static void clearAllVariables() {
 
 static void deleteComment(uint8 commentIndex) {
 	appendPersistentRecord(commentDeleted, commentIndex, 0, 0, NULL);
+}
+
+// Soft Reset
+
+static void softReset() {
+	// Reset the hardware and clear object memory as done at startup,
+	// but do not reload scripts from persistent memory.
+	// This is not a full hardware reset/reboot, but close.
+
+	stopAllTasks();
+	primMBDisplayOff(NULL);
+	updateMicrobitDisplay();
+	hardwareInit();
+	memInit(1800); // 1800 words = 7200 bytes
+	outputString("Welcome to MicroBlocks!");
 }
 
 // Sending Messages to IDE
@@ -568,7 +583,8 @@ static void processShortMessage() {
 		deleteAllChunks();
 		break;
 	case systemResetMsg:
-		systemReset();
+		softReset(); // do a 'soft reset' so the serial port is not closed
+//		systemReset(); // this does a full reset, as if the hardware were power-cycled
 		break;
 	case pingMsg:
 		sendMessage(pingMsg, 0, 0, NULL);

@@ -5,22 +5,9 @@
 //Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
 // MicroBlocksEditor.gp - Top-level window for the MicroBlocks IDE
-//
-// To use, load both the standard GP library the MicroBlocks IDE files using a command like:
-//
-//	./gp runtime/lib/* microBlocks/GP-IDE/* -
-//
-// Then type "o" (for "open") to start open the MicroBlocks IDE.
-//
 // John Maloney, January, 2018
 
-// To do:
-//	Pane resizing
-//	Button to select serial port (readout for port status?)
-//	Make go/stop give warning if port not open
-//	Try to reconnect to serial port? when? on go/script click?
-
-to o tryRetina devMode { openMicroBlocksEditor tryRetina devMode } // shortcut to open IDE
+to o { openMicroBlocksEditor } // shortcut to open IDE from GP command prompt
 
 defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus title
 
@@ -95,8 +82,7 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (makeIndicator this)
 
   rightItems = (list)
-  add rightItems (textButton this 'Reset' 'resetBoard')
-//  add rightItems (textButton this 'Stop' 'resetBoard') // same as resetBoard
+  add rightItems (textButton this 'Reset' 'stopAndSyncScripts')
   add rightItems (textButton this 'Start' 'startAll')
 }
 
@@ -147,7 +133,7 @@ method clearProject MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
-  pickFileToOpen (action 'openProjectFromFile' this) './Examples' (array '.gpp' '.gpe')
+  pickFileToOpen (action 'openProjectFromFile' this) (gpExamplesFolder) (array '.gpp' '.gpe')
 }
 
 method openProjectFromFile MicroBlocksEditor location {
@@ -178,7 +164,7 @@ method saveProject MicroBlocksEditor fName {
 
   if (and (isNil fName) (notNil fileName)) {
 	fName = fileName
-	if (beginsWith fName './Examples/') {
+	if (notNil (nextMatchIn '/Examples/' fName)) {
 	  fName = (join (gpFolder) '/' (filePart fileName))
 	}
   }
@@ -226,20 +212,11 @@ method isAbsolutePath MicroBlocksEditor fName {
   return false
 }
 
-// board control
+// board control buttons
 
-method resetBoard MicroBlocksEditor { resetBoard (smallRuntime) }
 method connectToBoard MicroBlocksEditor { selectPort (smallRuntime) }
-
-// go and stop buttons
-
-method startAll MicroBlocksEditor {
-  sendStartAll (smallRuntime)
-}
-
-method stopAll MicroBlocksEditor {
-  sendStopAll (smallRuntime)
-}
+method stopAndSyncScripts MicroBlocksEditor { stopAndSyncScripts (smallRuntime) }
+method startAll MicroBlocksEditor { sendStartAll (smallRuntime) }
 
 // project title
 
@@ -424,10 +401,12 @@ method contextMenu MicroBlocksEditor {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
 	addItem menu 'export functions as library' 'exportAsLibrary'
+	addItem menu 'reset pins and clear memory' 'softReset'
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
 
+// testing:
 //   addLine menu
 //   addItem menu 'broadcast test' (action 'broadcastTest' (smallRuntime))
 //   addItem menu 'set variable test' (action 'setVarTest' (smallRuntime))
@@ -452,4 +431,8 @@ method importLibrary MicroBlocksEditor {
 
 method exportAsLibrary MicroBlocksEditor {
   exportAsLibrary scripter fileName
+}
+
+method softReset MicroBlocksEditor {
+  softReset (smallRuntime)
 }
