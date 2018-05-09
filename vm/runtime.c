@@ -169,9 +169,13 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 
 static void deleteAllChunks() {
 	stopAllTasks();
-	for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
-		appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
-	}
+  #if defined(ARDUINO_ESP8266_NODEMCU)
+    clearCodeFile();  
+  #else
+	  for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
+      appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
+	  }
+	#endif
 	memset(chunks, 0, sizeof(chunks));
 }
 

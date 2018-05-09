@@ -78,7 +78,7 @@ extern "C" {
 #define fillArray 62
 #define at 63
 #define atPut 64
-#define size 65
+#define sizeOp 65
 // reserved 66
 // reserved 67
 // reserved 68
