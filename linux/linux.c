@@ -130,7 +130,7 @@ void clearCodeFile() {
 
 int main() {
 	openPseudoTerminal();
-    printf("Starting Linux MicroBlocks... Connect on %s\n", ptsname(pty));
+    printf("Starting Linux MicroBlocks... Connect on %s\n", (char*) ptsname(pty));
     initTimers();
     memInit(10000); // 10k words = 40k bytes
     initTasks();

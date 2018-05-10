@@ -5,4 +5,4 @@
 
 # Prereqs: libc6-dev-i386
 
-gcc -m32 -O3 -Wall -I ../vm linux.c ../vm/*.c -o ublocks-generic
+gcc -m32 -O3 -Wall -Wno-implicit-function-declaration -I ../vm linux.c ../vm/*.c -o ublocks-generic
