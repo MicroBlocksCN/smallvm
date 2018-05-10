@@ -4,8 +4,10 @@
 
 // Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// persistFile.cpp - Persistent file memory for code and variables
+// persistFile.cpp - Persistent file operations for NodeMCU (SPIFFS file system)
 // Bernat Romagosa and John Maloney
+
+#ifdef ARDUINO_ESP8266_NODEMCU
 
 #include <stdio.h>
 #include <FS.h>
@@ -42,3 +44,5 @@ extern "C"  void clearCodeFile() {
 	codeFile.flush();
 outputString("Code file cleared");
 }
+
+#endif
