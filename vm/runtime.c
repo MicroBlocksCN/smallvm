@@ -198,9 +198,11 @@ static void softReset() {
 	// This is not a full hardware reset/reboot, but close.
 
 	stopAllTasks();
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 	primMBDisplayOff(NULL);
 	updateMicrobitDisplay();
 	hardwareInit();
+#endif
 	memInit(1800); // 1800 words = 7200 bytes
 	outputString("Welcome to MicroBlocks!");
 }

@@ -112,6 +112,20 @@ OBJ primMBTemp(OBJ *args) { return int2obj(0); }
 
 void primNeoPixelSend(OBJ *args) { }
 
+// Persistence support
+
+void initCodeFile(uint8 *flash, int flashByteCount) {
+	// not yet implemented
+}
+
+void writeCodeFile(uint8 *code, int byteCount) {
+	// not yet implemented
+}
+
+void clearCodeFile() {
+	// not yet implemented
+}
+
 // Linux Main
 
 int main() {
