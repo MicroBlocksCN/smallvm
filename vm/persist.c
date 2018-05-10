@@ -295,22 +295,14 @@ int * recordAfter(int *lastRecord) {
 		start = start1;
 		end = end1;
 	}
-char* s[100];
-sprintf(s, "current is %d, start0 is %d, start1 is %d", current, start0, start1);
-outputString(s);
 	int *p = lastRecord;
 	if (NULL == lastRecord) { // return the first record
 		p = (start + 1);
-sprintf(s, "p is %d, *p is %d, condition is %d", p, *p, ((*p >> 24) & 0xFF));
-outputString(s);
 		return ('R' == ((*p >> 24) & 0xFF)) ? p : NULL;
 	}
-outputString("a");
 	if ((p >= end) || ('R' != ((*p >> 24) & 0xFF))) return NULL; // should not happen
-outputString("b");
 	p += *(p + 1) + 2; // increment by the record length plus 2-word header
 	if ((p >= end) || 'R' != ((*p >> 24) & 0xFF)) return NULL; // bad header; probably start of free space
-outputString("c");
 	return p;
 }
 
@@ -510,9 +502,6 @@ void restoreScripts() {
   #endif
 
 	int *p = recordAfter(NULL);
-char s[100];
-sprintf(s, "first record is at %p", p);
-outputString(s);
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
 		if (chunkCode == recType) {
@@ -530,8 +519,6 @@ outputString(s);
 			}
 		}
 		p = recordAfter(p);
-sprintf(s, "last record is at %p and is of type %d", p, recType);
-outputString(s);
 	}
 
 	// Give feedback:
@@ -539,7 +526,7 @@ outputString(s);
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		if (chunks[i].code) chunkCount++;
 	}
-	//char s[100];
+	char s[100];
 	sprintf(s, "Restoring %d scripts...", chunkCount);
 	outputString(s);
 
