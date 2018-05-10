@@ -30,10 +30,6 @@
 #include "interp.h"
 #include "persist.h"
 
-#if defined(ARDUINO_ESP8266_NODEMCU)
-    #include "persistFile.h"
-#endif
-
 // flash operations for supported platforms
 
 #if defined(ARDUINO_NRF52_PRIMO) || defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
@@ -249,11 +245,7 @@ static void setCycleCount(int halfSpace, int cycleCount) {
 }
 
 static void initPersistentMemory() {
-  #if defined(ARDUINO_ESP8266_NODEMCU)
-    initCodeFile(flash);
-  #endif
-
-  // Figure out which is the current half-space and find freeStart.
+	// Figure out which is the current half-space and find freeStart.
 	// If neither half-space has a valid cycle counter, initialize persistent memory.
 
 	int c0 = cycleCount(0);
@@ -303,22 +295,22 @@ int * recordAfter(int *lastRecord) {
 		start = start1;
 		end = end1;
 	}
-  char* s[100];
-  sprintf(s, "current is %d, start0 is %d, start1 is %d", current, start0, start1);
-	outputString(s);
+char* s[100];
+sprintf(s, "current is %d, start0 is %d, start1 is %d", current, start0, start1);
+outputString(s);
 	int *p = lastRecord;
 	if (NULL == lastRecord) { // return the first record
 		p = (start + 1);
-    sprintf(s, "p is %d, *p is %d, condition is %d", p, *p, ((*p >> 24) & 0xFF));
-    outputString(s);
+sprintf(s, "p is %d, *p is %d, condition is %d", p, *p, ((*p >> 24) & 0xFF));
+outputString(s);
 		return ('R' == ((*p >> 24) & 0xFF)) ? p : NULL;
 	}
-  outputString("a");
+outputString("a");
 	if ((p >= end) || ('R' != ((*p >> 24) & 0xFF))) return NULL; // should not happen
-  outputString("b");
+outputString("b");
 	p += *(p + 1) + 2; // increment by the record length plus 2-word header
 	if ((p >= end) || 'R' != ((*p >> 24) & 0xFF)) return NULL; // bad header; probably start of free space
-  outputString("c");
+outputString("c");
 	return p;
 }
 
@@ -484,13 +476,13 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	}
 	// write the record
   int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
-  
+
   #if defined(ARDUINO_ESP8266_NODEMCU)
-    writeCodeFile(header, 4);
-    writeCodeFile(wordCount, 4);
+    writeCodeFile(&header, 4);
+    writeCodeFile(&wordCount, 4);
     writeCodeFile(data, byteCount);
   #endif
-  
+
   int *result = freeStart;
   flashWriteWord(freeStart++, header);
   flashWriteWord(freeStart++, wordCount);
@@ -512,10 +504,15 @@ static void pauseBeforeStarting(int msecs) {
 void restoreScripts() {
 	initPersistentMemory();
 	memset(chunks, 0, sizeof(chunks));
+
+  #if defined(ARDUINO_ESP8266_NODEMCU)
+    initCodeFile(flash, HALF_SPACE);
+  #endif
+
 	int *p = recordAfter(NULL);
-  char s[100];
-  sprintf(s, "first record is at %p", p);
-  outputString(s);
+char s[100];
+sprintf(s, "first record is at %p", p);
+outputString(s);
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
 		if (chunkCode == recType) {
@@ -533,8 +530,8 @@ void restoreScripts() {
 			}
 		}
 		p = recordAfter(p);
-    sprintf(s, "last record is at %p and is of type %d", p, recType);
-    outputString(s);
+sprintf(s, "last record is at %p and is of type %d", p, recType);
+outputString(s);
 	}
 
 	// Give feedback:

@@ -52,6 +52,12 @@ void clearPersistentMemory();
 int * recordAfter(int *lastRecord);
 void restoreScripts();
 
+// File-Based Persistent Memory Operations
+
+void initCodeFile(uint8 *flash, int flashByteCount);
+void writeCodeFile(uint8 *code, int byteCount);
+void clearCodeFile();
+
 #ifdef __cplusplus
 }
 #endif
