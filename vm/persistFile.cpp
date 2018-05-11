@@ -21,13 +21,8 @@ File codeFile;
 extern "C" void initCodeFile(uint8 *flash, int flashByteCount) {
 	SPIFFS.begin();
 	codeFile = SPIFFS.open("ublockscode", "a+");
-
 	// read code file into simulated Flash:
 	long int bytesRead = codeFile.readBytes((char*) flash, flashByteCount);
-
-char s[100];
-sprintf(s, "Read %d bytes from code file (file size %d)", bytesRead, codeFile.size());
-outputString(s);
 }
 
 extern "C" void writeCodeFile(uint8 *code, int byteCount) {
@@ -42,7 +37,6 @@ extern "C"  void clearCodeFile() {
 	uint32 cycleCount = ('S' << 24) | 1; // Header record, version 1
 	int bytesWritten = codeFile.write((uint8 *) &cycleCount, 4);
 	codeFile.flush();
-outputString("Code file cleared");
 }
 
 #endif
