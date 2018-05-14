@@ -7,7 +7,7 @@
 // persistFile.cpp - Persistent file operations for NodeMCU (SPIFFS file system)
 // Bernat Romagosa and John Maloney
 
-#ifdef ARDUINO_ESP8266_NODEMCU
+#if defined(ARDUINO_ESP8266_NODEMCU)
 
 #include <stdio.h>
 #include <FS.h>
@@ -35,7 +35,7 @@ extern "C" void writeCodeFile(uint8 *code, int byteCount) {
 	codeFile.flush();
 }
 
-extern "C"  void clearCodeFile() {
+extern "C" void clearCodeFile() {
 	codeFile.close();
 	SPIFFS.remove("ublockscode");
 	codeFile = SPIFFS.open("ublockscode", "a+");
@@ -43,6 +43,32 @@ extern "C"  void clearCodeFile() {
 	int bytesWritten = codeFile.write((uint8 *) &cycleCount, 4);
 	codeFile.flush();
 outputString("Code file cleared");
+}
+
+#elif defined(ARDUINO_ARCH_ESP32)
+
+#include <SD.h>
+
+extern "C" void initCodeFile(uint8 *flash, int flashByteCount) {
+	SD.begin();
+	codeFile = SD.open("ublockscode", "a+");
+
+	// read code file into simulated Flash:
+	long int bytesRead = codeFile.readBytes((char*) flash, flashByteCount);
+}
+
+extern "C" void writeCodeFile(uint8 *code, int byteCount) {
+	int bytesWritten = codeFile.write(code, byteCount);
+	codeFile.flush();
+}
+
+extern "C" void clearCodeFile() {
+	codeFile.close();
+	SD.remove("ublockscode");
+	codeFile = SD.open("ublockscode", "a+");
+	uint32 cycleCount = ('S' << 24) | 1; // Header record, version 1
+	int bytesWritten = codeFile.write((uint8 *) &cycleCount, 4);
+	codeFile.flush();
 }
 
 #endif
