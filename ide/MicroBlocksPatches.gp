@@ -230,6 +230,8 @@ method clear AuthoringSpecs {
   specsList = (list)
   specsByOp = (dictionary)
   opCategory = (dictionary)
+  language = 'English'
+  translationDictionary = nil
   return this
 }
 

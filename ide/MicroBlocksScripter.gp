@@ -247,9 +247,11 @@ method addMyBlocks MicroBlocksScripter {
   nextY += (8 * scale)
 
   for f (functions (targetModule this)) {
-	spec = (specForOp (authoringSpecs) (functionName f))
-	if (isNil spec) { spec = (blockSpecFor f) }
-	addBlock this (blockForSpec spec) spec
+	if (or (devMode) (not (beginsWith (functionName f) '_'))) {
+	  spec = (specForOp (authoringSpecs) (functionName f))
+	  if (isNil spec) { spec = (blockSpecFor f) }
+	  addBlock this (blockForSpec spec) spec
+	}
   }
 }
 

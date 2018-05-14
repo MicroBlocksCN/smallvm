@@ -395,6 +395,11 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addLine menu
+  if ('English' != (language (authoringSpecs))) {
+	addItem menu 'English' (action 'setLanguage' this 'English')
+  } else {
+	addItem menu 'Catalan' (action 'setLanguage' this 'Catalan')
+  }
   addItem menu 'import library' 'importLibrary'
   if (not (devMode)) {
 	addLine menu
@@ -423,6 +428,13 @@ method showAdvancedBlocks MicroBlocksEditor {
 method hideAdvancedBlocks MicroBlocksEditor {
   setDevMode (global 'page') false
   developerModeChanged this
+}
+
+method setLanguage MicroBlocksEditor newLang {
+  setLanguage (authoringSpecs) newLang
+  updateBlocks scripter
+  saveScripts scripter
+  restoreScripts scripter
 }
 
 method importLibrary MicroBlocksEditor {
