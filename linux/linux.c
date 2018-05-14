@@ -40,6 +40,7 @@ uint32 microsecs() {
 }
 
 uint32 millisecs() {
+        debugString("millisecs called");
 	struct timeval now;
 	gettimeofday(&now, NULL);
 
@@ -114,16 +115,34 @@ void primNeoPixelSend(OBJ *args) { }
 
 // Persistence support
 
+FILE *codeFile;
+
 void initCodeFile(uint8 *flash, int flashByteCount) {
-	// not yet implemented
+    debugString("Reading code file");
+    codeFile = fopen("ublockscode", "ab+");
+    // read code file into simulated Flash:
+    fread((char*) flash, 1, flashByteCount, codeFile);
 }
 
 void writeCodeFile(uint8 *code, int byteCount) {
-	// not yet implemented
+    debugString("Writing to code file");
+    fwrite(code, 1, byteCount, codeFile);
+    fflush(codeFile);
 }
 
 void clearCodeFile() {
-	// not yet implemented
+    debugString("Clearing code file");
+    fclose(codeFile);
+    remove("ublockscode");
+    codeFile = fopen("ublockscode", "ab+");
+    uint32 cycleCount = ('S' << 24) | 1; // Header record, version 1
+    fwrite((uint8 *) &cycleCount, 1, 4, codeFile);
+}
+
+void debugString(char* str) {
+    char command[100];
+    sprintf(command, "echo \"%s\"", str);
+    system(command);
 }
 
 // Linux Main

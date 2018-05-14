@@ -5,4 +5,6 @@
 
 # Prereqs: libc6-dev-i386
 
-gcc -m32 -O3 -Wall -Wno-implicit-function-declaration -I ../vm linux.c ../vm/*.c -o ublocks-generic
+# add parameter -D GNUBLOCKS to enable disk persistence (!! not yet working !!)
+
+gcc -m32 -O3 -Wall -Wno-implicit-function-declaration -I ../vm linux.c ../vm/*.c -o GnuBlocks

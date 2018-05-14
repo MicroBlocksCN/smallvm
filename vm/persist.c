@@ -469,7 +469,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	// write the record
   int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
 
-  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32)
+  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
     writeCodeFile(&header, 4);
     writeCodeFile(&wordCount, 4);
     writeCodeFile(data, byteCount);
@@ -497,7 +497,7 @@ void restoreScripts() {
 	initPersistentMemory();
 	memset(chunks, 0, sizeof(chunks));
 
-  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32)
+  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
     initCodeFile(flash, HALF_SPACE);
   #endif
 
