@@ -13,9 +13,9 @@
 
 #include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> // still needed?
 #include <sys/ioctl.h>
-#include <sys/time.h>
+#include <sys/time.h> // still needed?
 #include <unistd.h>
 
 #include "mem.h"
@@ -40,7 +40,7 @@ uint32 microsecs() {
 }
 
 uint32 millisecs() {
-        debugString("millisecs called");
+printf("millisecs called\n"); // xxx
 	struct timeval now;
 	gettimeofday(&now, NULL);
 
@@ -118,43 +118,41 @@ void primNeoPixelSend(OBJ *args) { }
 FILE *codeFile;
 
 void initCodeFile(uint8 *flash, int flashByteCount) {
-    debugString("Reading code file");
-    codeFile = fopen("ublockscode", "ab+");
-    // read code file into simulated Flash:
-    fread((char*) flash, 1, flashByteCount, codeFile);
+	codeFile = fopen("ublockscode", "ab+");
+	// read code file into simulated Flash:
+	fseek(codeFile, 0L, SEEK_SET);
+	long byteCount = fread((char*) flash, 1, flashByteCount, codeFile);
 }
 
 void writeCodeFile(uint8 *code, int byteCount) {
-    debugString("Writing to code file");
-    fwrite(code, 1, byteCount, codeFile);
-    fflush(codeFile);
+	fwrite(code, 1, byteCount, codeFile);
+	fflush(codeFile);
+}
+
+void writeCodeFileWord(int word) {
+	fwrite(&word, 1, 4, codeFile);
+	fflush(codeFile);
 }
 
 void clearCodeFile() {
-    debugString("Clearing code file");
-    fclose(codeFile);
-    remove("ublockscode");
-    codeFile = fopen("ublockscode", "ab+");
-    uint32 cycleCount = ('S' << 24) | 1; // Header record, version 1
-    fwrite((uint8 *) &cycleCount, 1, 4, codeFile);
-}
-
-void debugString(char* str) {
-    char command[100];
-    sprintf(command, "echo \"%s\"", str);
-    system(command);
+	fclose(codeFile);
+	remove("ublockscode");
+	codeFile = fopen("ublockscode", "ab+");
+	uint32 cycleCount = ('S' << 24) | 1; // Header record, version 1
+	fwrite((uint8 *) &cycleCount, 1, 4, codeFile);
 }
 
 // Linux Main
 
 int main() {
 	openPseudoTerminal();
-    printf("Starting Linux MicroBlocks... Connect on %s\n", (char*) ptsname(pty));
-    initTimers();
-    memInit(10000); // 10k words = 40k bytes
-    initTasks();
+	printf("Starting Linux MicroBlocks... Connect on %s\n", (char*) ptsname(pty));
+	initTimers();
+	memInit(10000); // 10k words = 40k bytes
+	initTasks();
 	restoreScripts();
-    outputString("Welcome to uBlocks for Linux!");
-    vmLoop();
-    return 0;
+	outputString("Welcome to uBlocks for Linux!"); // xxx
+	startAll();
+	vmLoop();
+	return 0;
 }

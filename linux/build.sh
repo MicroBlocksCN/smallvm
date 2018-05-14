@@ -7,4 +7,6 @@
 
 # add parameter -D GNUBLOCKS to enable disk persistence (!! not yet working !!)
 
-gcc -m32 -O3 -Wall -Wno-implicit-function-declaration -I ../vm linux.c ../vm/*.c -o GnuBlocks
+gcc -m32 -O3 -Wall -Wno-implicit-function-declaration \
+	-D GNUBLOCKS -I ../vm linux.c ../vm/*.c \
+	-o GnuBlocks

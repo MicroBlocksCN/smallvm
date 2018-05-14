@@ -127,6 +127,7 @@ void startReceiversOfBroadcast(char *msg, int byteCount) {
 
 static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	if (chunkIndex >= MAX_CHUNKS) return;
+	stopTaskForChunk(chunkIndex);
 	int chunkType = data[0]; // first byte is the chunk type
 	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount - 1, &data[1]);
 	chunks[chunkIndex].code = persistenChunk;
@@ -170,11 +171,11 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 static void deleteAllChunks() {
 	stopAllTasks();
   #if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
-    clearCodeFile();
+	clearCodeFile();
   #else
-	  for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
-      appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
-	  }
+	for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
+		appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
+	}
   #endif
 	memset(chunks, 0, sizeof(chunks));
 }
@@ -238,7 +239,7 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data) {
 
 	printf("sendMessage %d %d %d \r\n", msgType, chunkIndex, dataSize);
 	if (data) {
-		printf("  data: ");
+		printf(" data: ");
 		for (int i = 0; i < dataSize; i++) printf("%d ", data[i]);
 		printf("\r\n");
 	}

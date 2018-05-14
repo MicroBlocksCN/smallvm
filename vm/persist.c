@@ -140,7 +140,7 @@
 	#define HALF_SPACE (128 * 1024)
 
 	// SAM3 Flash Memory Controller Registers
-	#define EFC1_CMD    ((volatile int *) 0x400E0C04) // Command register for second 256k bank
+	#define EFC1_CMD	((volatile int *) 0x400E0C04) // Command register for second 256k bank
 	#define EFC1_STATUS ((volatile int *) 0x400E0C08) // IntFlag register for second 256k bank
 
 	// SAM3 Flash Memory Controller Constants and Commands
@@ -467,20 +467,20 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 		}
 	}
 	// write the record
-  int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
+	int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
 
   #if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
-    writeCodeFile(&header, 4);
-    writeCodeFile(&wordCount, 4);
-    writeCodeFile(data, byteCount);
+	writeCodeFileWord(header);
+	writeCodeFileWord(wordCount);
+	writeCodeFile(data, byteCount);
   #endif
 
-  int *result = freeStart;
-  flashWriteWord(freeStart++, header);
-  flashWriteWord(freeStart++, wordCount);
-  flashWriteData(freeStart, wordCount, data);
-  freeStart += wordCount;
-  return result;
+	int *result = freeStart;
+	flashWriteWord(freeStart++, header);
+	flashWriteWord(freeStart++, wordCount);
+	flashWriteData(freeStart, wordCount, data);
+	freeStart += wordCount;
+	return result;
 }
 
 static void pauseBeforeStarting(int msecs) {
@@ -498,7 +498,7 @@ void restoreScripts() {
 	memset(chunks, 0, sizeof(chunks));
 
   #if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
-    initCodeFile(flash, HALF_SPACE);
+	initCodeFile(flash, HALF_SPACE);
   #endif
 
 	int *p = recordAfter(NULL);
