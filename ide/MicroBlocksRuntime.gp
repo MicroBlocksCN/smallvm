@@ -111,6 +111,10 @@ method showInstructions SmallRuntime aBlock {
 
 // chunk management
 
+method syncScripts SmallRuntime {
+	saveAllChunks this
+}
+
 method lookupChunkID SmallRuntime key {
 	// If the given block or function name has been assigned a chunkID, return it.
 	// Otherwise, return nil.
@@ -214,7 +218,8 @@ method setPort SmallRuntime newPortName {
 		if ('' == newPortName) { return }
 	}
 	if (and ('disconnect' == newPortName) (notNil port)) {
-		if (notNil port) { stopAndSyncScripts this }
+		stopAndSyncScripts this
+		sendStartAll this
 	}
 	if (notNil port) {
 		closeSerialPort port
@@ -256,7 +261,7 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.12' }
+method ideVersion SmallRuntime { return '0.1.13' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
@@ -504,14 +509,36 @@ method processMessages2 SmallRuntime {
 		recvBuf = (copyFromTo recvBuf 4) // remove message
 	} (251 == firstByte) { // long message
 		if ((byteCount recvBuf) < 5) { return } // incomplete length field
+		byteTwo = (byteAt recvBuf 2)
+		if (or (byteTwo < 1) (byteTwo > 32)) {
+			print 'Bad message type; should be 1-31 but is:' (byteAt recvBuf 2)
+			skipMessage this // discard
+			return
+		}
 		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
 		if ((byteCount recvBuf) < (5 + bodyBytes)) { return } // incomplete body
 		handleMessage this (copyFromTo recvBuf 1 (bodyBytes + 5))
 		recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
 	} else {
-		print 'Bad message header byte; should be 250 or 251 but is:' firstByte
-		recvBuf = (newBinaryData 0) // discard
+		print 'Bad message start byte; should be 250 or 251 but is:' firstByte
+		skipMessage this // discard
 	}
+}
+
+method skipMessage SmallRuntime {
+	// Discard bytes in recvBuf until the start of the next message, if any.
+
+	end = (byteCount recvBuf)
+	i = 2
+	while (i < end) {
+		byte = (byteAt recvBuf i)
+		if (or (250 == byte) (251 == byte)) {
+			recvBuf = (copyFromTo recvBuf i)
+			return
+		}
+		i += 1
+	}
+	recvBuf = (newBinaryData 0) // no message start found; discard entire buffer
 }
 
 method handleMessage SmallRuntime msg {

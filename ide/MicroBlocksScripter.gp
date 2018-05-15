@@ -171,9 +171,9 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (new 'SmallCompiler')
-  result = (list 'Output' 'Input' 'Pins' 'Control' 'Control - More' 'Math' 'Variables' 'Arrays' 'Advanced' 'Functions')
+  result = (list 'Output' 'Input' 'Pins' 'Control' 'Control - More' 'Math' 'Variables' 'Advanced' 'Functions')
   if (not (devMode)) {
-  	removeAll result (list 'Arrays' 'Advanced')
+  	removeAll result (list 'Advanced')
   }
   result = (join result (extraCategories (project projectEditor)))
   return result
@@ -390,7 +390,7 @@ method step MicroBlocksScripter {
   // saveScripts if the saveNeeded flag is true.
 
   if saveNeeded {
-	clearMethodCaches  // reset all cached after any programming change (probably only needs to be done for my scripts)
+	syncScripts (smallruntime)
     saveScripts this
     saveNeeded = false
   }

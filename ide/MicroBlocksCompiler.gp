@@ -21,6 +21,18 @@ method initialize SmallCompiler {
 	return this
 }
 
+method dumpTranslationTemplate SmallCompiler {
+  result = (list)
+  for item (microBlocksSpecs this) {
+	if (isClass item 'Array') {
+	  add result (at item 3)
+	  add result (at item 3)
+	  add result ''
+	}
+  }
+  writeFile 'microBlocksTranlationTemplate.txt' (joinStrings result (newline))
+}
+
 method microBlocksSpecs SmallCompiler {
 	return (array
 	'Output'
@@ -50,20 +62,20 @@ method microBlocksSpecs SmallCompiler {
 		(array 'h' 'whenStarted'		'when started')
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
-		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
+		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
+ 		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
-		(array ' ' 'stopTask'			'stop this task')
-		(array ' ' 'stopAll'			'stop all')
+		(array ' ' 'waitUntil'			'wait until _' 'bool')
+ 		(array ' ' 'return'				'return _' 'auto' 0)
 	'Control - More'
  		(array ' ' 'comment'			'comment _' 'str' 'Use this block to comment your code.')
-		(array ' ' 'waitUntil'			'wait until _' 'bool')
-		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
- 		(array 'h' 'whenCondition'		'when _' 'bool')
+		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		(array 'h' 'whenBroadcastReceived' 'when _ received' 'str' 'go!')
 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
- 		(array ' ' 'return'				'return _' 'auto' 0)
+		(array ' ' 'stopTask'			'stop this task')
+		(array ' ' 'stopAll'			'stop all')
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
