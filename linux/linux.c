@@ -11,6 +11,8 @@
 // John Maloney, December 2017
 // Bernat Romagosa, February 2018
 
+#define _XOPEN_SOURCE 600
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h> // still needed?
@@ -119,9 +121,15 @@ FILE *codeFile;
 
 void initCodeFile(uint8 *flash, int flashByteCount) {
 	codeFile = fopen("ublockscode", "ab+");
+	fseek(codeFile, 0 , SEEK_END);
+	long fileSize = ftell(codeFile);
+
 	// read code file into simulated Flash:
 	fseek(codeFile, 0L, SEEK_SET);
-	fread((char*) flash, 1, flashByteCount, codeFile);
+	long bytesRead = fread((char*) flash, 1, flashByteCount, codeFile);
+	if (bytesRead != fileSize) {
+		outputString("initCodeFile did not read entire file");
+	}
 }
 
 void writeCodeFile(uint8 *code, int byteCount) {
