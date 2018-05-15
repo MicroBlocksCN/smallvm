@@ -121,7 +121,7 @@ void initCodeFile(uint8 *flash, int flashByteCount) {
 	codeFile = fopen("ublockscode", "ab+");
 	// read code file into simulated Flash:
 	fseek(codeFile, 0L, SEEK_SET);
-	long byteCount = fread((char*) flash, 1, flashByteCount, codeFile);
+	fread((char*) flash, 1, flashByteCount, codeFile);
 }
 
 void writeCodeFile(uint8 *code, int byteCount) {
@@ -150,8 +150,8 @@ int main() {
 	initTimers();
 	memInit(10000); // 10k words = 40k bytes
 	initTasks();
+	outputString("Welcome to uBlocks for Linux!");
 	restoreScripts();
-	outputString("Welcome to uBlocks for Linux!"); // xxx
 	startAll();
 	vmLoop();
 	return 0;
