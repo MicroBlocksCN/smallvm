@@ -472,7 +472,7 @@ static int displayCycle = 0;
 #define DISPLAY_BIT(n) (((displaySnapshot >> (n - 1)) & 1) ? LOW : HIGH)
 
 void updateMicrobitDisplay() {
-	// Update the display by cycling three the three columns, turning on the rows
+	// Update the display by cycling through the three columns, turning on the rows
 	// for each column. To minimize display artifacts, the display bits are snapshot
 	// at the start of each cycle and the snapshot is not changed during the cycle.
 
