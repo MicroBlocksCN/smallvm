@@ -309,7 +309,9 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 			add result (array 'halt' 0)
 		} (isClass aBlockOrFunction 'Function') {
-			addAll result (instructionsForCmdList this cmdOrReporter)
+			if (or ('noop' != (primName cmdOrReporter)) (notNil (nextBlock cmdOrReporter))) {
+				addAll result (instructionsForCmdList this cmdOrReporter)
+			}
 			add result (array 'pushImmediate' falseObj)
 			add result (array 'returnResult' 0)
 		} else {

@@ -112,7 +112,7 @@ method showInstructions SmallRuntime aBlock {
 // chunk management
 
 method syncScripts SmallRuntime {
-	saveAllChunks this
+	if (notNil port) { saveAllChunks this }
 }
 
 method lookupChunkID SmallRuntime key {
@@ -144,7 +144,7 @@ method assignFunctionIDs SmallRuntime {
 	for func (functions (targetModule scripter)) {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
-			atPut chunkIDs fName (array (count chunkIDs) nil)
+			atPut chunkIDs fName (array (count chunkIDs) 'New Function!') // forces function save
 		}
 	}
 }
@@ -261,7 +261,7 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.13' }
+method ideVersion SmallRuntime { return '0.1.14' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
@@ -331,7 +331,8 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	}
 
 	if (newCode == (at entry 2)) { return } // code hasn't changed
-	atPut entry 2 (copy newCode) // remember the code we're about to save
+	if (notNil newCode) { newCode = (copy newCode) }
+	atPut entry 2 newCode // remember the code we're about to save
 
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
@@ -339,6 +340,12 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	addAll data (chunkBytesFor this aBlockOrFunction)
 	sendMsg this 'chunkCodeMsg' chunkID data
 	waitMSecs ((count data) / 10) // wait approximate transmission time
+
+	// restart the chunk if it is a Block and is running
+	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
+		stopRunningChunk this chunkID
+		runChunk this chunkID
+	}
 }
 
 method saveVariableNames SmallRuntime {
@@ -554,7 +561,7 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'taskErrorMsg')) {
 		chunkID = (byteAt msg 3)
 		showResult this chunkID (errorString this (byteAt msg 6))
-		updateRunning this (byteAt msg 3) false
+		updateRunning this chunkID false
 	} (op == (msgNameToID this 'outputValueMsg')) {
 		chunkID = (byteAt msg 3)
 		if (chunkID == 255) {
