@@ -91,6 +91,8 @@ void systemReset() {
 
 // General Purpose I/O Pins
 
+#define BUTTON_PRESSED LOW
+
 #if defined(ARDUINO_SAM_DUE)
 
 	#define BOARD_TYPE "Due"
@@ -107,6 +109,7 @@ void systemReset() {
 	#define DEDICATED_PINS 2 // USER1_BUTTON (20) and BUZZER (21)
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS + DEDICATED_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+	#define PIN_BUTTON_A USER1_BUTTON
 
 #elif defined(ARDUINO_BBC_MICROBIT)
 
@@ -145,12 +148,16 @@ void systemReset() {
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 	// Note: This case muse come before the ARDUINO_SAMD_ZERO case.
+	// Note: Pin count does not include pins 36-38, the USB serial pins
 
 	#define BOARD_TYPE "CircuitPlayground"
-	#define DIGITAL_PINS 39
+	#define DIGITAL_PINS 36
 	#define ANALOG_PINS 11
-	#define TOTAL_PINS 39
+	#define TOTAL_PINS 36
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
+	#define PIN_BUTTON_A 4
+	#define PIN_BUTTON_B 5
+	#define BUTTON_PRESSED HIGH
 
 #elif defined(ARDUINO_SAMD_MKRZERO)
 
@@ -362,29 +369,28 @@ void primSetUserLED(OBJ *args) {
 
 // User Buttons
 
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
-
-static OBJ userButton(int buttonID) {
-	int pinNum = (1 == buttonID) ? PIN_BUTTON_A : PIN_BUTTON_B;
-	SET_MODE(pinNum, INPUT);
-	return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
+OBJ primButtonA(OBJ *args) {
+	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+		// Momentarily set button pin low before reading (simulates a pull-down resistor)
+		primDigitalSet(PIN_BUTTON_A, false);
+	#endif
+	#ifdef PIN_BUTTON_A
+		SET_MODE(PIN_BUTTON_A, INPUT);
+		return (BUTTON_PRESSED == digitalRead(PIN_BUTTON_A)) ? trueObj : falseObj;
+	#else
+		return falseObj;
+	#endif
 }
 
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
-
-static OBJ userButton(int buttonID) {
-	// Circuit Playground Express buttons
-	int pinNum = (1 == buttonID) ? 4 : 5;
-	SET_MODE(pinNum, INPUT);
-	// xxx configure pulldown resistors?
-	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
+OBJ primButtonB(OBJ *args) {
+	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+		// Momentarily set button pin low before reading (simulates a pull-down resistor)
+		primDigitalSet(PIN_BUTTON_B, false);
+	#endif
+ 	#ifdef PIN_BUTTON_B
+		SET_MODE(PIN_BUTTON_B, INPUT);
+		return (BUTTON_PRESSED == digitalRead(PIN_BUTTON_B)) ? trueObj : falseObj;
+	#else
+		return falseObj;
+	#endif
 }
-
-#else
-
-static OBJ userButton(int buttonID) { return falseObj; }
-
-#endif
-
-OBJ primButtonA(OBJ *args) { return userButton(1); }
-OBJ primButtonB(OBJ *args) { return userButton(2); }
