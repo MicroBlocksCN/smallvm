@@ -49,9 +49,9 @@ OBJ primArrayFill(OBJ *args) {
 }
 
 OBJ primArrayAt(OBJ *args) {
-	OBJ array = args[0];
-	if (!isInt(args[1])) return fail(needsIntegerIndexError);
-	int i = obj2int(args[1]);
+	if (!isInt(args[0])) return fail(needsIntegerIndexError);
+	int i = obj2int(args[0]);
+	OBJ array = args[1];
 
 	if (IS_CLASS(array, ArrayClass)) {
 		if ((i < 1) || (i > objWords(array))) return fail(indexOutOfRangeError);
@@ -65,9 +65,9 @@ OBJ primArrayAt(OBJ *args) {
 }
 
 OBJ primArrayAtPut(OBJ *args) {
-	OBJ array = args[0];
-	if (!isInt(args[1])) return fail(needsIntegerIndexError);
-	int i = obj2int(args[1]);
+	if (!isInt(args[0])) return fail(needsIntegerIndexError);
+	int i = obj2int(args[0]);
+	OBJ array = args[1];
 	OBJ value = args[2];
 
 	if (IS_CLASS(array, ArrayClass)) {
