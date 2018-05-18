@@ -102,14 +102,14 @@ void systemReset() {
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
 
 #elif defined(ARDUINO_NRF52_PRIMO)
+	// Special pins: USER1_BUTTON (22->34) and BUZZER (23->35)
 
 	#define BOARD_TYPE "Primo"
-	#define DIGITAL_PINS 14
+	#define DIGITAL_PINS 24
 	#define ANALOG_PINS 6
-	#define DEDICATED_PINS 2 // USER1_BUTTON (20) and BUZZER (21)
-	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS + DEDICATED_PINS)
+	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
-	#define PIN_BUTTON_A USER1_BUTTON
+	#define PIN_BUTTON_A 34
 
 #elif defined(ARDUINO_BBC_MICROBIT)
 
@@ -213,6 +213,8 @@ void systemReset() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0};
 	#define PIN_LED BUILTIN_LED
+	#define PIN_BUTTON_A 0
+	#define INVERT_USER_LED true
 
 #elif defined(ARDUINO_ARCH_ESP32)
 
@@ -222,13 +224,14 @@ void systemReset() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A3, A4, A5, A6, A7, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19};
 	#define PIN_LED 2
+	#define PIN_BUTTON_A 0
 
 #else // unknown board
 
-	#define BOARD_TYPE "Generic"
+	#define BOARD_TYPE "Unknown Board"
 	#define DIGITAL_PINS 0
 	#define ANALOG_PINS 0
-	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	#define TOTAL_PINS 0
 	static const int analogPin[] = {};
 	#define PIN_LED 0
 
@@ -311,8 +314,8 @@ OBJ primDigitalRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	#ifdef ARDUINO_NRF52_PRIMO
-		if (20 == pinNum) return (HIGH == digitalRead(USER1_BUTTON)) ? trueObj : falseObj;
-		if (21 == pinNum) return falseObj;
+		if (22 == pinNum) return (LOW == digitalRead(USER1_BUTTON)) ? trueObj : falseObj;
+		if (23 == pinNum) return falseObj;
 	#endif
 	SET_MODE(pinNum, INPUT);
 	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
@@ -331,8 +334,8 @@ void primDigitalSet(int pinNum, int flag) {
 	// (This can make a difference in time-sensitives applications like sound generation.)
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
 	#ifdef ARDUINO_NRF52_PRIMO
-		if (20 == pinNum) return;
-		if (21 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
+		if (22 == pinNum) return;
+		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
 	#endif
 	SET_MODE(pinNum, OUTPUT);
 	digitalWrite(pinNum, (flag ? HIGH : LOW));
@@ -363,7 +366,11 @@ void primSetUserLED(OBJ *args) {
 		}
 	#else
 		SET_MODE(PIN_LED, OUTPUT);
-		digitalWrite(PIN_LED, (trueObj == args[0]) ? HIGH : LOW);
+		int output = (trueObj == args[0]) ? HIGH : LOW;
+		#ifdef INVERT_USER_LED
+			output = !output;
+		#endif
+		digitalWrite(PIN_LED, output);
 	#endif
 }
 

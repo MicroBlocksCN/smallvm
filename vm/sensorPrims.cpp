@@ -233,7 +233,6 @@ static int microbitTemp(int registerID) { return 0; }
 
 #else // stubs for non-micro:bit boards
 
-void updateMicrobitDisplay() { }
 static int microbitAccel(int reg) { return 0; }
 static int microbitTemp(int registerID) { return 0; }
 
