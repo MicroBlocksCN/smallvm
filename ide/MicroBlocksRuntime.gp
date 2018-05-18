@@ -641,6 +641,10 @@ method returnedValue SmallRuntime msg {
 		return (0 != (byteAt msg 7))
 	} (4 == type) {
 		return (toArray (copyFromTo msg 7))
+	} (5 == type) {
+		// xxx Arrays are not yet handled
+		intArraySize = (truncate (((byteCount msg) - 6) / 5))
+		return (join 'a list of ' intArraySize ' items')
 	} else {
 		return (join 'unknown type: ' type)
 	}

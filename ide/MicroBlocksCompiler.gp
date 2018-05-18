@@ -67,8 +67,6 @@ method microBlocksSpecs SmallCompiler {
  		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
- 		(array ' ' 'return'				'return _' 'auto' 0)
-	'Control - More'
  		(array ' ' 'comment'			'comment _' 'str' 'Use this block to comment your code.')
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
@@ -76,6 +74,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop all')
+ 		(array ' ' 'return'				'return _' 'auto' 0)
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
@@ -99,13 +98,13 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
-	'Arrays'
-		(array 'r' 'newArray'			'new array _' 'num' 10)
-		(array 'r' 'newByteArray'		'new byte array _' 'num' 10)
-		(array ' ' 'fillArray'			'fill array _ with _' 'num auto' nil 0)
-		(array 'r' 'at'					'array _ at _' 'auto num' nil 1)
-		(array ' ' 'atPut'				'set array _ at _ to _' 'num num' nil 1 10)
-		(array 'r' 'size'				'length of _ ' 'auto' nil)
+	'Lists'
+		(array 'r' 'newArray'			'new list length _' 'num' 10)
+//		(array 'r' 'newByteArray'		'new byte list _' 'num' 10)
+		(array ' ' 'fillArray'			'fill list _ with _' 'auto auto' nil 0)
+		(array 'r' 'at'					'item _ of _' 'num auto' 1 nil)
+		(array ' ' 'atPut'				'replace item _ of _ with _' 'num auto auto' 1 nil 10)
+		(array 'r' 'size'				'length of _' 'auto' nil)
 	'Advanced'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
 		(array 'r' '|'					'_ | _' 'num num' 1 2)
