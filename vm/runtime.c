@@ -272,7 +272,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Data is: <type byte><...data...>
 	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - bytearray, 5 - array
 
-	char data[500];
+	char data[504]; // big enough for an array of 100 integers
 	int maxBytes = (int) sizeof(data) - 1; // leave room for type bytes
 
 	if (isInt(value)) { // 32-bit integer, little endian
