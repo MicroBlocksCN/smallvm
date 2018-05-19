@@ -170,8 +170,10 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 
 static void deleteAllChunks() {
 	stopAllTasks();
-  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(GNUBLOCKS)
 	clearCodeFile();
+  #elif defined(ARDUINO_ARCH_ESP32)
+  clearNVS();
   #else
 	for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
 		appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
