@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v028"
+#define VM_VERSION "v030"
 
 // Forward Reference Declarations
 
@@ -270,9 +270,9 @@ int hasOutputSpace(int byteCount) { return ((OUTBUF_MASK - OUTBUF_BYTES()) > byt
 static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Send a value message of the given type for the given chunkOrVarIndex.
 	// Data is: <type byte><...data...>
-	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - bytearray
+	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - bytearray, 5 - array
 
-	char data[500];
+	char data[504]; // big enough for an array of 100 integers
 	int maxBytes = (int) sizeof(data) - 1; // leave room for type bytes
 
 	if (isInt(value)) { // 32-bit integer, little endian
@@ -303,6 +303,23 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		char *src = (char *) (&FIELD(value, 0));
 		for (int i = 0; i < byteCount; i++) {
 			data[i + 1] = *src++;
+		}
+		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
+	} else if (IS_CLASS(value, ArrayClass)) {
+		// Note: xxx Incomplete! Currently only handles arrays of integers.
+		int itemCount = objWords(value);
+		int byteCount = 5 * objWords(value); // assume ints; include a type byte for each item
+		if (byteCount > maxBytes) return; // too much data to send!
+		data[0] = 5; // data type (5 is array)
+		char *dst = &data[1];
+		for (int i = 0; i < itemCount; i++) {
+			OBJ item = FIELD(value, i);
+			int n = isInt(item) ? obj2int(item) : -999; // map non-integers to special value
+			*dst++ = 1; // item data type (1 is integer)
+			*dst++ = (n & 0xFF);
+			*dst++ = ((n >> 8) & 0xFF);
+			*dst++ = ((n >> 16) & 0xFF);
+			*dst++ = ((n >> 24) & 0xFF);
 		}
 		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
 	}

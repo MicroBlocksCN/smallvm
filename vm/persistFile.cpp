@@ -31,7 +31,7 @@ extern "C" void writeCodeFile(uint8 *code, int byteCount) {
 }
 
 extern "C" void writeCodeFileWord(int word) {
-	codeFile.write(&word, 4);
+	codeFile.write((uint8 *) &word, 4);
 	codeFile.flush();
 }
 
@@ -47,7 +47,7 @@ extern "C" void clearCodeFile() {
 #elif defined(ARDUINO_ARCH_ESP32)
 
 #include <stdio.h>
-#include <FS.h>
+#include <SD.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -56,8 +56,8 @@ extern "C" void clearCodeFile() {
 File codeFile;
 
 extern "C" void initCodeFile(uint8 *flash, int flashByteCount) {
-	SPIFFS.begin();
-	codeFile = SPIFFS.open("ublockscode", "a+");
+	SD.begin();
+	codeFile = SD.open("ublockscode", "a+");
 
 	// read code file into simulated Flash:
 	long int bytesRead = codeFile.readBytes((char*) flash, flashByteCount);
@@ -69,13 +69,13 @@ extern "C" void writeCodeFile(uint8 *code, int byteCount) {
 }
 
 extern "C" void writeCodeFileWord(int word) {
-	codeFile.write(&word, 4);
+	codeFile.write((uint8 *) &word, 4);
 	codeFile.flush();
 }
 
 extern "C" void clearCodeFile() {
 	codeFile.close();
-	SPIFFS.remove("ublockscode");
+	SD.remove("ublockscode");
 	codeFile = SD.open("ublockscode", "a+");
 	uint32 cycleCount = ('S' << 24) | 1; // Header record, version 1
 	int bytesWritten = codeFile.write((uint8 *) &cycleCount, 4);

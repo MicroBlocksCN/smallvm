@@ -111,6 +111,10 @@ method showInstructions SmallRuntime aBlock {
 
 // chunk management
 
+method syncScripts SmallRuntime {
+	if (notNil port) { saveAllChunks this }
+}
+
 method lookupChunkID SmallRuntime key {
 	// If the given block or function name has been assigned a chunkID, return it.
 	// Otherwise, return nil.
@@ -140,7 +144,7 @@ method assignFunctionIDs SmallRuntime {
 	for func (functions (targetModule scripter)) {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
-			atPut chunkIDs fName (array (count chunkIDs) nil)
+			atPut chunkIDs fName (array (count chunkIDs) 'New Function!') // forces function save
 		}
 	}
 }
@@ -214,7 +218,8 @@ method setPort SmallRuntime newPortName {
 		if ('' == newPortName) { return }
 	}
 	if (and ('disconnect' == newPortName) (notNil port)) {
-		if (notNil port) { stopAndSyncScripts this }
+		stopAndSyncScripts this
+		sendStartAll this
 	}
 	if (notNil port) {
 		closeSerialPort port
@@ -256,7 +261,7 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.12' }
+method ideVersion SmallRuntime { return '0.1.14' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
@@ -326,7 +331,8 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	}
 
 	if (newCode == (at entry 2)) { return } // code hasn't changed
-	atPut entry 2 (copy newCode) // remember the code we're about to save
+	if (notNil newCode) { newCode = (copy newCode) }
+	atPut entry 2 newCode // remember the code we're about to save
 
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
@@ -334,6 +340,12 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	addAll data (chunkBytesFor this aBlockOrFunction)
 	sendMsg this 'chunkCodeMsg' chunkID data
 	waitMSecs ((count data) / 10) // wait approximate transmission time
+
+	// restart the chunk if it is a Block and is running
+	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
+		stopRunningChunk this chunkID
+		runChunk this chunkID
+	}
 }
 
 method saveVariableNames SmallRuntime {
@@ -504,14 +516,36 @@ method processMessages2 SmallRuntime {
 		recvBuf = (copyFromTo recvBuf 4) // remove message
 	} (251 == firstByte) { // long message
 		if ((byteCount recvBuf) < 5) { return } // incomplete length field
+		byteTwo = (byteAt recvBuf 2)
+		if (or (byteTwo < 1) (byteTwo > 32)) {
+			print 'Bad message type; should be 1-31 but is:' (byteAt recvBuf 2)
+			skipMessage this // discard
+			return
+		}
 		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
 		if ((byteCount recvBuf) < (5 + bodyBytes)) { return } // incomplete body
 		handleMessage this (copyFromTo recvBuf 1 (bodyBytes + 5))
 		recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
 	} else {
-		print 'Bad message header byte; should be 250 or 251 but is:' firstByte
-		recvBuf = (newBinaryData 0) // discard
+		print 'Bad message start byte; should be 250 or 251 but is:' firstByte
+		skipMessage this // discard
 	}
+}
+
+method skipMessage SmallRuntime {
+	// Discard bytes in recvBuf until the start of the next message, if any.
+
+	end = (byteCount recvBuf)
+	i = 2
+	while (i < end) {
+		byte = (byteAt recvBuf i)
+		if (or (250 == byte) (251 == byte)) {
+			recvBuf = (copyFromTo recvBuf i)
+			return
+		}
+		i += 1
+	}
+	recvBuf = (newBinaryData 0) // no message start found; discard entire buffer
 }
 
 method handleMessage SmallRuntime msg {
@@ -527,7 +561,7 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'taskErrorMsg')) {
 		chunkID = (byteAt msg 3)
 		showResult this chunkID (errorString this (byteAt msg 6))
-		updateRunning this (byteAt msg 3) false
+		updateRunning this chunkID false
 	} (op == (msgNameToID this 'outputValueMsg')) {
 		chunkID = (byteAt msg 3)
 		if (chunkID == 255) {
@@ -607,6 +641,10 @@ method returnedValue SmallRuntime msg {
 		return (0 != (byteAt msg 7))
 	} (4 == type) {
 		return (toArray (copyFromTo msg 7))
+	} (5 == type) {
+		// xxx Arrays are not yet handled
+		intArraySize = (truncate (((byteCount msg) - 6) / 5))
+		return (join 'a list of ' intArraySize ' items')
 	} else {
 		return (join 'unknown type: ' type)
 	}

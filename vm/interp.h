@@ -330,7 +330,11 @@ const char *boardType();
 void hardwareInit(void);
 void systemReset(void);
 
-void updateMicrobitDisplay(); // temporary
+// I/O Support
+
+void setPinMode(int pin, int newMode);
+void sendNeoPixelByte(int val);
+void updateMicrobitDisplay();
 
 // Primitives
 

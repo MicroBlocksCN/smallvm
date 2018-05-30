@@ -61,8 +61,8 @@ method initialize MicroBlocksScripter aProjectEditor {
   nextX = 0
   nextY = 0
 
-  // save scripts once a second, if they could have changed
-  setFPS morph 1
+  // how often to check for script changes
+  setFPS morph 4
   saveNeeded = false
 
   lbox = (listBox (categories this) nil (action 'updateBlocks' this) listColor)
@@ -171,9 +171,9 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (new 'SmallCompiler')
-  result = (list 'Output' 'Input' 'Pins' 'Control' 'Control - More' 'Math' 'Variables' 'Arrays' 'Advanced' 'Functions')
+  result = (list 'Output' 'Input' 'Pins' 'Control' 'Math' 'Variables' 'Lists' 'Advanced' 'Functions')
   if (not (devMode)) {
-  	removeAll result (list 'Arrays' 'Advanced')
+  	removeAll result (list 'Lists' 'Advanced')
   }
   result = (join result (extraCategories (project projectEditor)))
   return result
@@ -383,6 +383,7 @@ method deleteSharedVarMonitors MicroBlocksScripter module sharedVarName {
 // save and restore scripts in class
 
 method scriptChanged MicroBlocksScripter { saveNeeded = true }
+method functionBodyChanged  MicroBlocksScripter { saveNeeded = true }
 
 method step MicroBlocksScripter {
   // Note: Sometimes get bursts of multiple 'changed' events, but those
@@ -390,8 +391,8 @@ method step MicroBlocksScripter {
   // saveScripts if the saveNeeded flag is true.
 
   if saveNeeded {
-	clearMethodCaches  // reset all cached after any programming change (probably only needs to be done for my scripts)
     saveScripts this
+	syncScripts (smallRuntime)
     saveNeeded = false
   }
 }

@@ -21,6 +21,18 @@ method initialize SmallCompiler {
 	return this
 }
 
+method dumpTranslationTemplate SmallCompiler {
+  result = (list)
+  for item (microBlocksSpecs this) {
+	if (isClass item 'Array') {
+	  add result (at item 3)
+	  add result (at item 3)
+	  add result ''
+	}
+  }
+  writeFile 'microBlocksTranlationTemplate.txt' (joinStrings result (newline))
+}
+
 method microBlocksSpecs SmallCompiler {
 	return (array
 	'Output'
@@ -50,19 +62,18 @@ method microBlocksSpecs SmallCompiler {
 		(array 'h' 'whenStarted'		'when started')
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
-		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
-		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
-		(array ' ' 'stopTask'			'stop this task')
-		(array ' ' 'stopAll'			'stop all')
-	'Control - More'
- 		(array ' ' 'comment'			'comment _' 'str' 'Use this block to comment your code.')
-		(array ' ' 'waitUntil'			'wait until _' 'bool')
-		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
-		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
+		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
  		(array 'h' 'whenCondition'		'when _' 'bool')
+		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
+		(array ' ' 'waitUntil'			'wait until _' 'bool')
+ 		(array ' ' 'comment'			'comment _' 'str' 'Use this block to comment your code.')
+		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
+		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		(array 'h' 'whenBroadcastReceived' 'when _ received' 'str' 'go!')
 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
+		(array ' ' 'stopTask'			'stop this task')
+		(array ' ' 'stopAll'			'stop all')
  		(array ' ' 'return'				'return _' 'auto' 0)
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
@@ -87,13 +98,13 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
-	'Arrays'
-		(array 'r' 'newArray'			'new array _' 'num' 10)
-		(array 'r' 'newByteArray'		'new byte array _' 'num' 10)
-		(array ' ' 'fillArray'			'fill array _ with _' 'num auto' nil 0)
-		(array 'r' 'at'					'array _ at _' 'auto num' nil 1)
-		(array ' ' 'atPut'				'set array _ at _ to _' 'num num' nil 1 10)
-		(array 'r' 'size'				'length of _ ' 'auto' nil)
+	'Lists'
+		(array 'r' 'newArray'			'new list length _' 'num' 10)
+//		(array 'r' 'newByteArray'		'new byte list _' 'num' 10)
+		(array ' ' 'fillArray'			'fill list _ with _' 'auto auto' nil 0)
+		(array 'r' 'at'					'item _ of _' 'num auto' 1 nil)
+		(array ' ' 'atPut'				'replace item _ of _ with _' 'num auto auto' 1 nil 10)
+		(array 'r' 'size'				'length of _' 'auto' nil)
 	'Advanced'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
 		(array 'r' '|'					'_ | _' 'num num' 1 2)
@@ -297,7 +308,9 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 			add result (array 'halt' 0)
 		} (isClass aBlockOrFunction 'Function') {
-			addAll result (instructionsForCmdList this cmdOrReporter)
+			if (or ('noop' != (primName cmdOrReporter)) (notNil (nextBlock cmdOrReporter))) {
+				addAll result (instructionsForCmdList this cmdOrReporter)
+			}
 			add result (array 'pushImmediate' falseObj)
 			add result (array 'returnResult' 0)
 		} else {
