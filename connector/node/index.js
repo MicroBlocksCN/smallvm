@@ -7,6 +7,7 @@
 var Connector,
     connector,
     Board,
+    Uploader = require('./uploader.js'),
     WebSocket = require('ws'),
     util = require('util'),
     fs = require('fs'),
@@ -45,6 +46,7 @@ Board.prototype.connect = function (connectCallback, onData, onClose, onError) {
     this.serial.on('data', this.onData);
     this.serial.on('close', this.onClose);
     this.serial.on('error', this.onError);
+
 };
 
 Board.prototype.disconnect = function (onSuccess, onError) {
@@ -78,12 +80,22 @@ Board.prototype.reconnect = function (onSuccess) {
 Board.prototype.reconnectLoop = function (onSuccess) {
     var myself = this;
     if (!this.reconnectLoopId) {
-        this.reconnectLoopId = setInterval(function () { myself.reconnect(onSuccess) }, 100);
+        this.reconnectLoopId =
+            setInterval(
+                function () {
+                    myself.reconnect(onSuccess);
+                },
+                100
+            );
     }
 };
 
 Board.prototype.send = function (arrayBuffer) {
     this.serial.write(arrayBuffer);
+};
+
+Board.prototype.pushVM = function (boardType) {
+    
 };
 
 
@@ -371,6 +383,18 @@ process.argv.forEach(function (val) {
         case '--silent':
         case '-s':
             options.silent = true;
+            break;
+        case '-u':
+        case '--upload-vm':
+            new Uploader('micro:bit').upload(
+                    function () {
+                        log('MicroBlocks VM installed into micro:bit');
+                    },
+                    function (err) {
+                        log('could not install MicroBlocks VM into micro:bit', 1);
+                        log(err, 1);
+                    }
+                );
             break;
     }
 });
