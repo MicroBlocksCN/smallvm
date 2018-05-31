@@ -473,6 +473,10 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	writeCodeFileWord(header);
 	writeCodeFileWord(wordCount);
 	writeCodeFile(data, byteCount);
+  #else if defined(ARDUINO_ARCH_ESP32)
+	writeNVSWord(header);
+	writeNVSWord(wordCount);
+	writeNVS(data, byteCount);
   #endif
 
 	int *result = freeStart;
@@ -499,6 +503,8 @@ void restoreScripts() {
 
   #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	initCodeFile(flash, HALF_SPACE);
+  #else defined defined(ARDUINO_ARCH_ESP32)
+	initNVS(flash, HALF_SPACE);
   #endif
 
 	int *p = recordAfter(NULL);
