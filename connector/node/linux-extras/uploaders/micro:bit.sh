@@ -6,7 +6,9 @@
 
 # Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
-# This will only when there's a single micro:bit connected to this PC.
-# We can't match serial devices to their virtual disk drives.
+# Find out the Serial ID for the device connected to $1
+# sed's ;t;d makes sure we only print the matching line
+serialId=`udevadm info --name=$1 | sed -e "s/.*SERIAL_SHORT=\(.*\)/\1/g;t;d"`
 
-openocd/bin/openocd -d2 -f interface/cmsis-dap.cfg -c "transport select swd;" -f target/nrf51.cfg -c "program ../../../../vms/vm.ino.BBCmicrobit.hex verify reset; shutdown;"
+# If serialId is not found, openocd will resort to the first cmsis-dap interface it finds
+openocd/bin/openocd -d2 -c "interface cmsis-dap; cmsis_dap_serial $serialId" -c "transport select swd;" -f target/nrf51.cfg -c "program ../../../../vms/vm.ino.BBCmicrobit.hex verify reset; shutdown;"
