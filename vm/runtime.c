@@ -172,8 +172,6 @@ static void deleteAllChunks() {
 	stopAllTasks();
   #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	clearCodeFile();
-  #elif defined(ARDUINO_ARCH_ESP32)
-	clearNVS();
   #else
 	for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
 		appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
