@@ -94,10 +94,6 @@ Board.prototype.send = function (arrayBuffer) {
     this.serial.write(arrayBuffer);
 };
 
-Board.prototype.pushVM = function (boardType) {
-    
-};
-
 
 // ===== Connector ===== //
 
@@ -253,13 +249,14 @@ Connector.prototype.processMessage = function (portName, rawData) {
         message = JSON.parse(String.fromCharCode.apply(null, array.slice(1)));
         log('Client sent us a JSON message:');
         log(message, 0);
-        this.dispatcher[message.selector].call(this, message.arguments);
+        this.dispatcher[message.selector].apply(this, message.arguments);
     } else {
         this.boardSend(portName, rawData);
     }
 };
 
 Connector.prototype.dispatcher = {
+    // methods triggered by JSON messages coming from the IDE
     getSerialPortList: function () {
         var myself = this;
         Board.SerialPort.list().then(function (devices) {
@@ -300,6 +297,20 @@ Connector.prototype.dispatcher = {
             // error callback
             function () {
                 myself.sendJsonMessage('serialDisconnectResponse', [ false, portName ]);
+            }
+        );
+    },
+    uploadVm: function (portName, boardType) {
+        var myself = this;
+        log('Client requested to upload VM to ' + boardType + ' at ' + portName + '.');
+        new Uploader(portName, boardType).upload(
+            function () {
+                log('VM successfully uploaded');
+                myself.sendJsonMessage('uploadVmResponse', [ true, portName ]);
+            },
+            function (err) {
+                log('Failed to upload VM: ' + err, 1);
+                myself.sendJsonMessage('uploadVmResponse', [ false, portName, err ]);
             }
         );
     }
@@ -383,18 +394,6 @@ process.argv.forEach(function (val) {
         case '--silent':
         case '-s':
             options.silent = true;
-            break;
-        case '-u':
-        case '--upload-vm':
-            new Uploader('micro:bit').upload(
-                    function () {
-                        log('MicroBlocks VM installed into micro:bit');
-                    },
-                    function (err) {
-                        log('could not install MicroBlocks VM into micro:bit', 1);
-                        log(err, 1);
-                    }
-                );
             break;
     }
 });

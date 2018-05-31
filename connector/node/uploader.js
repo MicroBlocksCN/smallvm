@@ -8,20 +8,18 @@ var Uploader,
     child_process = require('child_process'),
     os = require('os');
 
-function Uploader (boardType) {
+function Uploader (portName, boardType) {
     this.boardType = boardType;
+    this.portName = portName;
 };
 
 Uploader.prototype.upload = function (onSuccess, onError) {
-    Uploader.factory[this.boardType](onSuccess, onError);
-};
-
-// VM uploader factory for different boards
-Uploader.factory = {};
-Uploader.factory['micro:bit'] = function (onSuccess, onError) {
+    // os.platform() returns either linux, darwin or win32
+    // we keep the uploader scripts in [os]-extras/uploaders/[board]
     var extension = { linux: 'sh', darwin: 'sh', win32: 'bat' }[os.platform()];
     child_process.exec(
-        os.platform() + '-extras/uploaders/microbit.' + extension,
+        './' + this.boardType + '.' + extension + ' ' + this.portName,
+        { cwd: os.platform() + '-extras/uploaders' },
         function (err, stdout, stderr) {
             if (err) {
                 onError.call(null, stderr);
