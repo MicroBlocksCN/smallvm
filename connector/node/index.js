@@ -7,6 +7,7 @@
 var Connector,
     connector,
     Board,
+    Uploader = require('./uploader.js'),
     WebSocket = require('ws'),
     util = require('util'),
     fs = require('fs'),
@@ -45,6 +46,7 @@ Board.prototype.connect = function (connectCallback, onData, onClose, onError) {
     this.serial.on('data', this.onData);
     this.serial.on('close', this.onClose);
     this.serial.on('error', this.onError);
+
 };
 
 Board.prototype.disconnect = function (onSuccess, onError) {
@@ -78,7 +80,13 @@ Board.prototype.reconnect = function (onSuccess) {
 Board.prototype.reconnectLoop = function (onSuccess) {
     var myself = this;
     if (!this.reconnectLoopId) {
-        this.reconnectLoopId = setInterval(function () { myself.reconnect(onSuccess) }, 100);
+        this.reconnectLoopId =
+            setInterval(
+                function () {
+                    myself.reconnect(onSuccess);
+                },
+                100
+            );
     }
 };
 
@@ -241,13 +249,14 @@ Connector.prototype.processMessage = function (portName, rawData) {
         message = JSON.parse(String.fromCharCode.apply(null, array.slice(1)));
         log('Client sent us a JSON message:');
         log(message, 0);
-        this.dispatcher[message.selector].call(this, message.arguments);
+        this.dispatcher[message.selector].apply(this, message.arguments);
     } else {
         this.boardSend(portName, rawData);
     }
 };
 
 Connector.prototype.dispatcher = {
+    // methods triggered by JSON messages coming from the IDE
     getSerialPortList: function () {
         var myself = this;
         Board.SerialPort.list().then(function (devices) {
@@ -288,6 +297,20 @@ Connector.prototype.dispatcher = {
             // error callback
             function () {
                 myself.sendJsonMessage('serialDisconnectResponse', [ false, portName ]);
+            }
+        );
+    },
+    uploadVm: function (portName, boardType) {
+        var myself = this;
+        log('Client requested to upload VM to ' + boardType + ' at ' + portName + '.');
+        new Uploader(portName, boardType).upload(
+            function () {
+                log('VM successfully uploaded');
+                myself.sendJsonMessage('uploadVmResponse', [ true, portName ]);
+            },
+            function (err) {
+                log('Failed to upload VM: ' + err, 1);
+                myself.sendJsonMessage('uploadVmResponse', [ false, portName, err ]);
             }
         );
     }
