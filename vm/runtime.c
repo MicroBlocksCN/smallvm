@@ -170,7 +170,7 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 
 static void deleteAllChunks() {
 	stopAllTasks();
-  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	clearCodeFile();
   #else
 	for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {

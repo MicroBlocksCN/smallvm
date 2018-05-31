@@ -7,7 +7,7 @@
 // persistFile.cpp - Persistent file operations for NodeMCU (SPIFFS file system)
 // Bernat Romagosa and John Maloney
 
-#if defined(ARDUINO_ESP8266_NODEMCU)
+#if defined(ESP8266)
 
 #include <stdio.h>
 #include <FS.h>

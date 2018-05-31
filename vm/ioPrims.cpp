@@ -205,7 +205,7 @@ void systemReset() {
 	#define TOTAL_PINS 16
 	static const int analogPin[] = {A0, A1, A2};
 
-#elif defined(ARDUINO_ESP8266_NODEMCU)
+#elif defined(ESP8266)
 
 	#define BOARD_TYPE "ESP8266"
 	#define DIGITAL_PINS 17
@@ -266,7 +266,7 @@ static void initPins(void) {
 	// Initialize currentMode to MODE_NOT_SET (neither INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
-	#if !defined(ARDUINO_ESP8266_NODEMCU) && !defined(ARDUINO_ARCH_ESP32)
+	#if !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 

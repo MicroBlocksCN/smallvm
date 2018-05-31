@@ -156,7 +156,7 @@ void updateMicrobitDisplay() { }
 
 inline uint32 saveIRQState(void) {
 	uint32 pmask = 0;
-	#if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32)
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 		__asm__ volatile ("rsil %0, #2" : "=a" (pmask));
 	#else
 		pmask = __get_PRIMASK() & 1;
@@ -166,7 +166,7 @@ inline uint32 saveIRQState(void) {
 }
 
 inline void restoreIRQState(uint32 pmask) {
-	#if defined(ARDUINO_ESP8266_NODEMCU) || defined(ARDUINO_ARCH_ESP32)
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 		 __asm__ volatile ("wsr %0, ps; rsync" :: "a" (pmask));
 	#else
 		__set_PRIMASK(pmask);
