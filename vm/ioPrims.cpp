@@ -151,9 +151,9 @@ void systemReset() {
 	// Note: Pin count does not include pins 36-38, the USB serial pins
 
 	#define BOARD_TYPE "CircuitPlayground"
-	#define DIGITAL_PINS 36
+	#define DIGITAL_PINS 27
 	#define ANALOG_PINS 11
-	#define TOTAL_PINS 36
+	#define TOTAL_PINS 27
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
 	#define PIN_BUTTON_A 4
 	#define PIN_BUTTON_B 5

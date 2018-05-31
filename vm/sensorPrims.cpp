@@ -4,7 +4,7 @@
 
 // Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// sensorPrims.cpp - Microblocks I2C, SPI, accelerometer, and temperature sensor primitives
+// sensorPrims.cpp - Microblocks I2C, SPI, tilt, and temperature primitives
 // John Maloney, May 2018
 
 #include <Arduino.h>
@@ -80,17 +80,15 @@ OBJ primSPIRecv(OBJ *args) {
 	return int2obj(result);
 }
 
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
+#if defined(ARDUINO_BBC_MICROBIT)
 
-	#if defined(ARDUINO_BBC_MICROBIT)
-		#define ACCEL_ID 29
-		#define MAG_ID 14
-	#endif
+#define ACCEL_ID 29
+#define MAG_ID 14
 
 static int accelerometerOn = false;
 static int magnetometerOn = false;
 
-static int microbitAccel(int registerID) {
+static int readAcceleration(int registerID) {
 	if (!accelerometerOn) {
 		// turn on the accelerometer
 		if (!wireStarted) startWire();
@@ -109,10 +107,12 @@ static int microbitAccel(int registerID) {
 	Wire.requestFrom(ACCEL_ID, 1);
 	while (!Wire.available());
 	int val = Wire.read();
-	return (val < 128) ? val : -(256 - val); // value is a signed byte
+	val = (val < 128) ? val : -(256 - val); // value is a signed byte
+	if (5 == registerID) val = -val; // invert sign of Z (reads positive when board face up)
+	return val;
 }
 
-static int microbitTemp(int registerID) {
+static int readTemperature() {
 	// Get the temp from magnetometer chip (faster response than CPU temp sensor)
 
 	if (!magnetometerOn) {
@@ -148,77 +148,53 @@ static int microbitTemp(int registerID) {
 	return degrees + adjustment;
 }
 
-static int microbitMag(int registerID) {
+#elif defined(ARDUINO_CALLIOPE)
 
-	if (!magnetometerOn) {
-		// configure and turn on magnetometer
+static int accelerometerOn = false;
+
+static int readAcceleration(int registerID) {
+	if (!accelerometerOn) {
+		// turn on the accelerometer
 		if (!wireStarted) startWire();
-		Wire.beginTransmission(MAG_ID);
-		Wire.write(0x10);
-		Wire.write(0x29); // 20 Hz with 16x oversample (see spec sheet)
+		Wire.beginTransmission(ACCEL_ID);
+		Wire.write(0x2A);
+		Wire.write(1);
 		Wire.endTransmission();
-		magnetometerOn = true;
+		accelerometerOn = true;
 	}
 
-	Wire.beginTransmission(MAG_ID);
-	Wire.write(1); // read from register 1
+	Wire.beginTransmission(ACCEL_ID);
+	Wire.write(registerID);
 	int error = Wire.endTransmission(false);
-	if (error) {
-		Serial.print("Error: "); Serial.println(error);
-	}
+	if (error) return 0; // error; return 0
 
-	// always read x, y, and z at 16-bit resolution
-	// even when reading temp, this is needed to force an update
-	Wire.requestFrom(MAG_ID, 6);
-	while (Wire.available() < 6);
-	int x = Wire.read() << 8;
-	x |= Wire.read();
-	if (x > 32767) x += -65536;
-	int y = Wire.read() << 8;
-	y |= Wire.read();
-	if (y > 32767) y += -65536;
-	int z = Wire.read() << 8;
-	z |= Wire.read();
-	if (z > 32767) z += -65536;
-
-	if (1 == registerID) return x;
-	if (3 == registerID) return y;
-	if (5 == registerID) return z;
-	if (15 == registerID) { // read temperature
-		Wire.beginTransmission(MAG_ID);
-		Wire.write(15);
-		int error = Wire.endTransmission(false);
-		if (error) return 0; // error; return 0
-
-		Wire.requestFrom(MAG_ID, 1);
-		while (!Wire.available());
-		int val = Wire.read();
-		return (val < 128) ? val : -(256 - val); // temp is a signed byte
-	}
-	return 0;
+	Wire.requestFrom(ACCEL_ID, 1);
+	while (!Wire.available());
+	int val = Wire.read();
+	return (val < 128) ? val : -(256 - val); // value is a signed byte
 }
+
+static int readTemperature() { return 0; }
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 
-#define ACCEL_ID 33
+#define ACCEL_ID 25
 
 int accelStarted = false;
 
-static int circuitPlayAccel(int registerID) {
-	// xxx not yet finished
+static int readAcceleration(int registerID) {
 	if (!accelStarted) {
 		Wire1.begin(); // use internal I2C bus
 		// turn on the accelerometer
 		if (!wireStarted) startWire();
 		Wire1.beginTransmission(ACCEL_ID);
-		Wire1.write(0x2A);
-		Wire1.write(1);
+		Wire1.write(32);
+		Wire1.write(127);
 		Wire1.endTransmission();
 		accelStarted = true;
 	}
-
 	Wire1.beginTransmission(ACCEL_ID);
-	Wire1.write(registerID);
+	Wire1.write(40 + registerID);
 	int error = Wire1.endTransmission(false);
 	if (error) return 0; // error; return 0
 
@@ -228,17 +204,41 @@ static int circuitPlayAccel(int registerID) {
 	return (val < 128) ? val : -(256 - val); // value is a signed byte
 }
 
-static int microbitAccel(int reg) { return 0; }
-static int microbitTemp(int registerID) { return 0; }
+// The following constants come from the NCP15XH103F03RC thermister data sheet:
+#define SERIES_RESISTOR 10000
+#define RESISTANCE_AT_25C 10000
+#define B_CONSTANT 3380
+
+static int readTemperature() {
+	// Return the temperature in Celcius
+
+	setPinMode(A9, INPUT);
+	int adc = analogRead(A9);
+
+	return ((int) (0.111488 * adc)) - 36; // linear approximation
+
+	// The following unused code does not seem as accurate as the linear
+	// approximation above (based on comparing the temperature
+	// sensor in the accelerometer with that of the thermistor).
+	// See https://learn.adafruit.com/thermistor/using-a-thermistor
+	if (adc < 1) adc = 1; // avoid divide by zero (although adc should never be zero)
+	float r = ((1023 * SERIES_RESISTOR) / adc) - SERIES_RESISTOR;
+
+	float steinhart = log(r / RESISTANCE_AT_25C) / B_CONSTANT;
+	steinhart += 1.0 / (25 + 273.15); // add 1/T0 (T0 is 25C in Kelvin)
+	float result = (1.0 / steinhart) - 273.15;  // steinhart is 1/T; invert and convert to C
+
+	return (int) round(result * 10.0);
+}
 
 #else // stubs for non-micro:bit boards
 
-static int microbitAccel(int reg) { return 0; }
-static int microbitTemp(int registerID) { return 0; }
+static int readAcceleration(int reg) { return 0; }
+static int readTemperature() { return 0; }
 
 #endif // micro:bit primitve support
 
-OBJ primMBTiltX(OBJ *args) { return int2obj(microbitAccel(1)); }
-OBJ primMBTiltY(OBJ *args) { return int2obj(microbitAccel(3)); }
-OBJ primMBTiltZ(OBJ *args) { return int2obj(-microbitAccel(5)); } // invert sign of Z
-OBJ primMBTemp(OBJ *args) { return int2obj(microbitTemp(15)); }
+OBJ primMBTiltX(OBJ *args) { return int2obj(readAcceleration(1)); }
+OBJ primMBTiltY(OBJ *args) { return int2obj(readAcceleration(3)); }
+OBJ primMBTiltZ(OBJ *args) { return int2obj(readAcceleration(5)); }
+OBJ primMBTemp(OBJ *args) { return int2obj(readTemperature()); }
