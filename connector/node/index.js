@@ -301,14 +301,18 @@ Connector.prototype.dispatcher = {
         );
     },
     uploadVm: function (portName, boardType) {
-        var myself = this;
+        var myself = this,
+            board = this.boardAt(portName);
         log('Client requested to upload VM to ' + boardType + ' at ' + portName + '.');
+        board.serial.close();
         new Uploader(portName, boardType).upload(
             function () {
+                board.serial.open();
                 log('VM successfully uploaded');
                 myself.sendJsonMessage('uploadVmResponse', [ true, portName ]);
             },
             function (err) {
+                board.serial.open();
                 log('Failed to upload VM: ' + err, 1);
                 myself.sendJsonMessage('uploadVmResponse', [ false, portName, err ]);
             }
