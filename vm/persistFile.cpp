@@ -46,8 +46,8 @@ extern "C" void clearCodeFile() {
 }
 
 #elif defined(ARDUINO_ARCH_ESP32)
-	// Persistent operations for ESP32 using NVS (Non Volatile Storage, Gilles Mateu - IMERIR)
-	// Contributed by Jordi Orts
+	// Persistent operations for ESP32 using NVS
+	// Contributed by Gilles Mateu - IMERIR
 
 #include "nvs_flash.h"
 #include "nvs.h"
