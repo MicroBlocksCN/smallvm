@@ -83,10 +83,8 @@ OBJ primSPIRecv(OBJ *args) {
 #if defined(ARDUINO_BBC_MICROBIT)
 
 #define ACCEL_ID 29
-#define MAG_ID 14
 
 static int accelerometerOn = false;
-static int magnetometerOn = false;
 
 static int readAcceleration(int registerID) {
 	if (!accelerometerOn) {
@@ -113,58 +111,28 @@ static int readAcceleration(int registerID) {
 }
 
 static int readTemperature() {
-	// Get the temp from magnetometer chip (faster response than CPU temp sensor)
+	volatile int *startReg = (int *) 0x4000C000;
+	volatile int *readyReg = (int *) 0x4000C100;
+	volatile int *tempReg = (int *) 0x4000C508;
 
-	if (!magnetometerOn) {
-		// configure and turn on magnetometer
-		if (!wireStarted) startWire();
-		Wire.beginTransmission(MAG_ID);
-		Wire.write(0x10);
-		Wire.write(0x29); // 20 Hz with 16x oversample (see spec sheet)
-		Wire.endTransmission();
-		magnetometerOn = true;
-	}
-
-	// read a byte from register 1 to force an update
-	Wire.beginTransmission(MAG_ID);
-	Wire.write(1); // register 1
-	int error = Wire.endTransmission(false);
-	if (error) return 0;
-	Wire.requestFrom(MAG_ID, 1);
-	while (!Wire.available());
-	Wire.read();
-
-	// read temp from register 15
-	Wire.beginTransmission(MAG_ID);
-	Wire.write(15); // register 15
-	error = Wire.endTransmission(false);
-	if (error) return 0;
-	Wire.requestFrom(MAG_ID, 1);
-	while (!Wire.available());
-	int degrees = Wire.read();
-	degrees = (degrees < 128) ? degrees : -(256 - degrees); // temp is a signed byte
-
-	int adjustment = 5; // based on John's micro:bit, Jan 2018
-	return degrees + adjustment;
+	*startReg = 1;
+	while (!(*readyReg)) { /* busy wait */ }
+	return (*tempReg / 4) - 1;
 }
 
 #elif defined(ARDUINO_CALLIOPE)
 
-static int accelerometerOn = false;
-
 static int readAcceleration(int registerID) {
-	if (!accelerometerOn) {
-		// turn on the accelerometer
-		if (!wireStarted) startWire();
-		Wire.beginTransmission(ACCEL_ID);
-		Wire.write(0x2A);
-		Wire.write(1);
-		Wire.endTransmission();
-		accelerometerOn = true;
-	}
+	// adjust register offsets for Calliope
+	int reg = registerID;
+	if (1 == registerID) reg = 5; // x-axis
+	else if (3 == registerID) reg = 3; // y-axis
+	else if (5 == registerID) reg = 7; // z axis
+
+	if (!wireStarted) startWire();
 
 	Wire.beginTransmission(ACCEL_ID);
-	Wire.write(registerID);
+	Wire.write(reg);
 	int error = Wire.endTransmission(false);
 	if (error) return 0; // error; return 0
 
@@ -174,7 +142,10 @@ static int readAcceleration(int registerID) {
 	return (val < 128) ? val : -(256 - val); // value is a signed byte
 }
 
-static int readTemperature() { return 0; }
+static int readTemperature() {
+	int fudgeFactor = 2;
+	return (readAcceleration(8) / 2) + 23 - fudgeFactor;
+}
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 
@@ -204,23 +175,22 @@ static int readAcceleration(int registerID) {
 	return (val < 128) ? val : -(256 - val); // value is a signed byte
 }
 
-// The following constants come from the NCP15XH103F03RC thermister data sheet:
-#define SERIES_RESISTOR 10000
-#define RESISTANCE_AT_25C 10000
-#define B_CONSTANT 3380
-
 static int readTemperature() {
 	// Return the temperature in Celcius
 
 	setPinMode(A9, INPUT);
 	int adc = analogRead(A9);
 
-	return ((int) (0.111488 * adc)) - 36; // linear approximation
+	return ((int) (0.116 * adc)) - 37; // linear approximation
 
-	// The following unused code does not seem as accurate as the linear
-	// approximation above (based on comparing the temperature
-	// sensor in the accelerometer with that of the thermistor).
+	// The following unused code does not seem as accurate as the linear approximation
+	// above (based on comparing the thermistor to a household digital thermometer).
 	// See https://learn.adafruit.com/thermistor/using-a-thermistor
+	// The following constants come from the NCP15XH103F03RC thermister data sheet:
+	#define SERIES_RESISTOR 10000
+	#define RESISTANCE_AT_25C 10000
+	#define B_CONSTANT 3380
+
 	if (adc < 1) adc = 1; // avoid divide by zero (although adc should never be zero)
 	float r = ((1023 * SERIES_RESISTOR) / adc) - SERIES_RESISTOR;
 
@@ -228,7 +198,7 @@ static int readTemperature() {
 	steinhart += 1.0 / (25 + 273.15); // add 1/T0 (T0 is 25C in Kelvin)
 	float result = (1.0 / steinhart) - 273.15;  // steinhart is 1/T; invert and convert to C
 
-	return (int) round(result * 10.0);
+	return (int) round(result);
 }
 
 #else // stubs for non-micro:bit boards
