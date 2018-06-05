@@ -6,12 +6,12 @@ AppPublisher=microBlocks
 AppPublisherURL=http://microblocks.fun
 AppSupportURL=http://microblocks.fun
 AppUpdatesURL=http://microblocks.fun
-DefaultDirName={pf}\microBlocks
+DefaultDirName={pf}\microBlocks connector
 DisableProgramGroupPage=yes
 Compression=lzma
 SolidCompression=yes
 PrivilegesRequired=admin
-OutputBaseFilename=microBlocks setup
+OutputBaseFilename=microBlocks connector setup
 OutputDir=.
 
 [Languages]
@@ -27,7 +27,7 @@ Source: "serialport.node"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion
 
 [Icons]
-Name: "{userstartup}\microBlocks"; Filename: "{app}\daemon.vbs"; WorkingDir: "{app}"
+Name: "{userstartup}\microBlocks connector"; Filename: "{app}\daemon.vbs"; WorkingDir: "{app}"
 
 [Run]
 Filename: "{app}\ublocks-win.exe"; Description: "{cm:LaunchProgram,microBlocks connector}"; Flags: nowait runascurrentuser runhidden

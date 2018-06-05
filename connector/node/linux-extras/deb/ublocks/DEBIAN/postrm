@@ -1,3 +1,2 @@
 #!/bin/sh
 rm -f /etc/profile.d/ublocksd.sh
-killall -q ublocks -9

@@ -9,6 +9,6 @@ mv ublocks/* .
 cp ../daemon.vbs .
 cp ../install-config.iss .
 wine "`find ~/.wine/drive_c | grep ISCC.exe`" install-config.iss
-mv microBlocks\ setup.exe ..
+mv microBlocks\ connector\ setup.exe ..
 cd ..
 rm -rf build

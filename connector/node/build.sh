@@ -14,7 +14,7 @@ if ls build 2> /dev/null > /dev/null; then
 fi
 
 echo "Building binaries..."
-pkg .
+pkg . --debug > /tmp/pkg.log
 
 echo "Packaging binaries for all three OSes..."
 mkdir -p build/linux

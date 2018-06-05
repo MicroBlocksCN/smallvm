@@ -420,6 +420,7 @@ if (options.placeTrayIcon) {
                 log('Placing system tray icon');
                 systray = new SysTray({
                     debug: options.debugMode,
+                    copyDir: true, // Needed when packing with pkg. Do not remove!
                     menu: {
                         icon: icon,
                         items: trayItems
