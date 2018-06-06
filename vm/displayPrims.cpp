@@ -4,7 +4,7 @@
 
 // Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// displayPrims.c - Microblocks display primitives
+// displayPrims.c - 5x5 LED display and NeoPixel primitives
 // John Maloney, May 2018
 
 #include <Arduino.h>
@@ -134,15 +134,42 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 3;
 }
 
-#else // stubs for boards without 5x5 LED displays
+#else
 
-void updateMicrobitDisplay() { }
-// xxx delete:
-// static int microbitAccel(int reg) { return 0; }
-// static int microbitTemp(int registerID) { return 0; }
-// static OBJ microbitButton(int buttonID) { return falseObj; }
+void updateMicrobitDisplay() { } // stub for boards without 5x5 LED displays
 
-#endif // micro:bit/Calliope display support
+#endif
+
+// Display Primitives for micro:bit/Calliope (noops on other boards)
+
+void primMBDisplay(OBJ *args) {
+	OBJ arg = args[0];
+	if (isInt(arg)) microBitDisplayBits = evalInt(arg);
+}
+
+void primMBDisplayOff(OBJ *args) {
+	OBJ off = falseObj;
+	primSetUserLED(&off);
+	microBitDisplayBits = 0;
+}
+
+void primMBPlot(OBJ *args) {
+	int x = evalInt(args[0]);
+	int y = evalInt(args[1]);
+	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+		int shift = (5 * (y - 1)) + (x - 1);
+		microBitDisplayBits |= (1 << shift);
+	}
+}
+
+void primMBUnplot(OBJ *args) {
+	int x = evalInt(args[0]);
+	int y = evalInt(args[1]);
+	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+		int shift = (5 * (y - 1)) + (x - 1);
+		microBitDisplayBits &= ~(1 << shift);
+	}
+}
 
 // NeoPixel Support
 
@@ -228,38 +255,6 @@ void sendNeoPixelByte(int val) { }
 
 #endif // NeoPixel Support
 
-// Display Primitives for micro:bit/Calliope (noops on other boards)
-
-void primMBDisplay(OBJ *args) {
-	OBJ arg = args[0];
-	if (isInt(arg)) microBitDisplayBits = evalInt(arg);
-}
-
-void primMBDisplayOff(OBJ *args) {
-	OBJ off = falseObj;
-	primSetUserLED(&off);
-	microBitDisplayBits = 0;
-}
-
-void primMBPlot(OBJ *args) {
-	int x = evalInt(args[0]);
-	int y = evalInt(args[1]);
-	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
-		int shift = (5 * (y - 1)) + (x - 1);
-		microBitDisplayBits |= (1 << shift);
-	}
-}
-
-void primMBUnplot(OBJ *args) {
-	int x = evalInt(args[0]);
-	int y = evalInt(args[1]);
-	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
-		int shift = (5 * (y - 1)) + (x - 1);
-		microBitDisplayBits &= ~(1 << shift);
-	}
-}
-
-// NeoPixel Primitive
 
 void primNeoPixelSend(OBJ *args) {
 	int r = evalInt(args[0]);
