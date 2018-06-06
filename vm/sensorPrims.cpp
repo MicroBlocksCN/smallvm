@@ -105,8 +105,10 @@ static int readAcceleration(int registerID) {
 	Wire.requestFrom(ACCEL_ID, 1);
 	while (!Wire.available());
 	int val = Wire.read();
+
 	val = (val < 128) ? val : -(256 - val); // value is a signed byte
-	if (5 == registerID) val = -val; // invert sign of Z (reads positive when board face up)
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = -((val * 100) / 127); // invert sign and scale to range 0-100
 	return val;
 }
 
@@ -139,7 +141,12 @@ static int readAcceleration(int registerID) {
 	Wire.requestFrom(ACCEL_ID, 1);
 	while (!Wire.available());
 	int val = Wire.read();
-	return (val < 128) ? val : -(256 - val); // value is a signed byte
+
+	val = (val < 128) ? val : -(256 - val); // value is a signed byte
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = -((val * 100) / 127); // invert sign and scale to range 0-100
+	if (5 == registerID) val = -val; // invert z-axis
+	return val;
 }
 
 static int readTemperature() {
@@ -172,7 +179,12 @@ static int readAcceleration(int registerID) {
 	Wire1.requestFrom(ACCEL_ID, 1);
 	while (!Wire1.available());
 	int val = Wire1.read();
-	return (val < 128) ? val : -(256 - val); // value is a signed byte
+
+	val = (val < 128) ? val : -(256 - val); // value is a signed byte
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = ((val * 100) / 127); // scale to range 0-100
+	if (1 == registerID) val = -val; // invert sign for x axis
+	return val;
 }
 
 static int readTemperature() {

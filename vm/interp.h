@@ -122,6 +122,8 @@ extern "C" {
 #define mbTiltZ 106
 #define mbTemp 107
 #define neoPixelSend 108
+#define mbDrawShape 109
+#define mbShapeForLetter 110
 
 // Instruction Format
 
@@ -369,10 +371,15 @@ void primMBDisplay(OBJ *args);
 void primMBDisplayOff(OBJ *args);
 void primMBPlot(OBJ *args);
 void primMBUnplot(OBJ *args);
+
+void primMBDrawShape(int argCount, OBJ *args);
+OBJ primMBShapeForLetter(OBJ *args);
+
 OBJ primMBTiltX(OBJ *args);
 OBJ primMBTiltY(OBJ *args);
 OBJ primMBTiltZ(OBJ *args);
 OBJ primMBTemp(OBJ *args);
+
 void primNeoPixelSend(OBJ *args);
 
 #ifdef __cplusplus

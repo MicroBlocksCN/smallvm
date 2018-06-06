@@ -128,6 +128,36 @@ static void primSendBroadcast(int argCount, OBJ *args) {
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
 }
 
+// Misc primitives
+
+static OBJ primRandom(int argCount, OBJ *args) {
+	int base, range;
+	if (argCount == 1) {
+		base = 1;
+		range = evalInt(args[0]);
+	} else {
+		base = evalInt(args[0]);
+		range = (evalInt(args[1]) + 1) - base;
+	}
+	if (range < 1) range = 1;
+	return int2obj((rand() % range) + base); // result range is [base..base+range], inclusive
+}
+
+static int stringsEqual(OBJ obj1, OBJ obj2) {
+	// Return true if the given strings have the same length and contents.
+	// Assume s1 and s2 are of Strings.
+
+	int byteCount = 4 * objWords(obj1);
+	if (byteCount != (4 * objWords(obj2))) return false; // different lengths
+	char *s1 = (char *) &FIELD(obj1, 0);
+	char *s2 = (char *) &FIELD(obj2, 0);
+	char *end = s1 + byteCount;
+	while (s1 < end) {
+		if (*s1++ != *s2++) return false; // not equal
+	}
+	return true;
+}
+
 // Interpreter
 
 // Macros to pop arguments for commands and reporters (pops args, leaves result on stack)
@@ -273,8 +303,8 @@ static void runTask(Task *task) {
 		&&mbTiltZ_op,
 		&&mbTemp_op,
 		&&neoPixelSend_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&drawShape_op,
+		&&shapeForLetter_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -563,6 +593,8 @@ static void runTask(Task *task) {
 			*(sp - arg) = falseObj; // boolean, not equal
 		} else if (isInt(tmpObj) && isInt(*(sp - 1))) {
 			*(sp - arg) = falseObj; // integer, not equal
+		} else if (IS_CLASS(tmpObj, StringClass) && IS_CLASS(*(sp - 1), StringClass)) {
+			*(sp - arg) = (stringsEqual(tmpObj, *(sp - 1)) ? trueObj : falseObj);
 		} else {
 			fail(nonComparableError);
 		}
@@ -576,6 +608,8 @@ static void runTask(Task *task) {
 			*(sp - arg) = trueObj; // boolean, not equal
 		} else if (isInt(tmpObj) && isInt(*(sp - 1))) {
 			*(sp - arg) = trueObj; // integer, not equal
+		} else if (IS_CLASS(tmpObj, StringClass) && IS_CLASS(*(sp - 1), StringClass)) {
+			*(sp - arg) = (stringsEqual(tmpObj, *(sp - 1)) ? falseObj : trueObj);
 		} else {
 			fail(nonComparableError);
 		}
@@ -625,9 +659,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	random_op:
-		tmp = evalInt(*(sp - 1));
-		if (tmp <= 0) tmp = 1;
-		*(sp - arg) = int2obj((rand() % tmp) + 1); // result range is [1..tmp], inclusive
+		*(sp - arg) = primRandom(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	hexToInt_op:
@@ -819,6 +851,14 @@ static void runTask(Task *task) {
 	neoPixelSend_op:
 		primNeoPixelSend(sp - arg);
 		POP_ARGS_COMMAND();
+		DISPATCH();
+	drawShape_op:
+		primMBDrawShape(arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	shapeForLetter_op:
+		*(sp - arg) = primMBShapeForLetter(sp - arg);
+		POP_ARGS_REPORTER();
 		DISPATCH();
 }
 
