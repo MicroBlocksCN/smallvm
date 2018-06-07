@@ -236,7 +236,9 @@ method centerTitle MicroBlocksEditor {
 method step MicroBlocksEditor {
   if ('Browser' == (platform)) {
 	checkForBrowserResize this
+	processBrowserDroppedFile this
   }
+  processDroppedFiles this
   updateIndicator this
   processMessages (smallRuntime)
 }
@@ -255,6 +257,8 @@ method updateIndicator MicroBlocksEditor {
 	redraw indicator
 }
 
+// browser support
+
 method checkForBrowserResize MicroBlocksEditor {
   browserSize = (browserSize)
   w = (first browserSize)
@@ -265,6 +269,33 @@ method checkForBrowserResize MicroBlocksEditor {
   pageM = (morph (global 'page'))
   setExtent pageM w h
   for each (parts pageM) { pageResized (handler each) w h this }
+}
+
+method processBrowserDroppedFile MicroBlocksEditor {
+  pair = (browserGetDroppedFile)
+  if (isNil pair) { return }
+  fName = (callWith 'string' (first pair))
+  data = (last pair)
+  processDroppedFile this fName data
+}
+
+method processDroppedFiles MicroBlocksEditor {
+  for evt (droppedFiles (global 'page')) {
+	fName = (at evt 'file')
+	data = (readFile fName true)
+	if (notNil data) {
+	  processDroppedFile this fName data
+	}
+  }
+}
+
+method processDroppedFile MicroBlocksEditor fName data {
+  if (endsWith fName '.gpp') {
+	ok = (confirm (global 'page') nil 'Discard current project?')
+	if (not ok) { return }
+	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
+	openProject this data fName
+  }
 }
 
 // handle drops

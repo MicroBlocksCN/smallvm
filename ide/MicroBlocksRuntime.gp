@@ -183,6 +183,10 @@ method selectPort SmallRuntime {
 			portList = (list)
 			for n 32 { add portList (join 'COM' n) }
 		}
+	} ('Browser' == (platform)) {
+		listSerialPorts // first call triggers callback
+		waitMSecs 50
+		portList = (listSerialPorts)
 	} else {
 		for fn (listFiles '/dev') {
 			if (or (notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
@@ -229,7 +233,7 @@ method setPort SmallRuntime newPortName {
 		portName = nil
 	} else {
 		portName = (join '/dev/' newPortName)
-		if ('Win' == (platform)) { portName = newPortName }
+		if (isOneOf (platform) 'Browser' 'Win') { portName = newPortName }
 		ensurePortOpen this
 	}
 	// update the connection indicator more quickly than it would otherwise
@@ -261,7 +265,7 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.14' }
+method ideVersion SmallRuntime { return '0.1.15' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join

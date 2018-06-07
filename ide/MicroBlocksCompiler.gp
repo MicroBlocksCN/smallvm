@@ -48,7 +48,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'mbTiltX'			'tilt x')
 		(array 'r' 'mbTiltY'			'tilt y')
 		(array 'r' 'mbTiltZ'			'tilt z')
-		(array 'r' 'mbTemp'				'temperature Celcius')
+		(array 'r' 'mbTemp'				'temperature (°C)')
 		(array 'r' 'microsOp'			'micros')
 		(array 'r' 'millisOp'			'millis')
 	'Pins'
@@ -63,18 +63,19 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
-		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
- 		(array 'h' 'whenCondition'		'when _' 'bool')
-		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
+		(array ' ' 'if'					'if _ _ ' 'bool cmd')
+ 		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
+		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
- 		(array ' ' 'comment'			'comment _' 'str' 'Use this block to comment your code.')
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
+		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
+		(array ' ' 'sendBroadcastSimple'	'broadcast _' 'str' 'go!' '')
+ 		(array ' ' 'return'				'return _' 'auto' 0)
+ 		(array ' ' 'comment'			'comment _' 'str' 'Use this block to comment your code.')
+		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
-		(array 'h' 'whenBroadcastReceived' 'when _ received' 'str' 'go!')
-		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop all')
- 		(array ' ' 'return'				'return _' 'auto' 0)
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
@@ -82,17 +83,17 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '/'					'_ / _' 'num num' 10 2)
 		(array 'r' '%'					'_ mod _' 'num num' 10 2)
 		(array 'r' 'absoluteValue'		'abs _ ' 'num' -10)
-		(array 'r' 'random'				'random _' 'num' 10)
+		(array 'r' 'random'				'random _ to _' 'num num' 1 10)
 		(array 'r' '<'					'_ < _' 'num num' 3 4)
 		(array 'r' '<='					'_ <= _' 'num num' 3 4)
-		(array 'r' '=='					'_ = _' 'num num' 3 4)
-		(array 'r' '!='					'_ ≠ _' 'num num' 3 4)
+		(array 'r' '=='					'_ = _' 'auto auto' 3 4)
+		(array 'r' '!='					'_ ≠ _' 'auto auto' 3 4)
 		(array 'r' '>='					'_ >= _' 'num num' 3 4)
 		(array 'r' '>'					'_ > _' 'num num' 3 4)
 		(array 'r' 'booleanConstant'	'_' 'bool' true)
 		(array 'r' 'not'				'not _' 'bool' true)
-		(array 'r' 'and'				'_ and _ : and _ : ...' 'bool bool bool' true false)
-		(array 'r' 'or'					'_ or _ : or _ : ...' 'bool bool bool' true false)
+		(array 'r' 'and'				'_ and _' 'bool bool' true false)
+		(array 'r' 'or'					'_ or _ ' 'bool bool' true false)
 	'Variables'
 		(array 'r' 'v'					'_' 'menu.allVarsMenu' 'n')
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
@@ -101,10 +102,10 @@ method microBlocksSpecs SmallCompiler {
 	'Lists'
 		(array 'r' 'newArray'			'new list length _' 'num' 10)
 //		(array 'r' 'newByteArray'		'new byte list _' 'num' 10)
-		(array ' ' 'fillArray'			'fill list _ with _' 'auto auto' nil 0)
-		(array 'r' 'at'					'item _ of _' 'num auto' 1 nil)
-		(array ' ' 'atPut'				'replace item _ of _ with _' 'num auto auto' 1 nil 10)
-		(array 'r' 'size'				'length of _' 'auto' nil)
+		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
+		(array 'r' 'at'					'item _ of _' 'num str' 1 nil)
+		(array ' ' 'atPut'				'replace item _ of _ with _' 'num str auto' 1 nil 10)
+		(array 'r' 'size'				'length of _' 'str' nil)
 	'Advanced'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
 		(array 'r' '|'					'_ | _' 'num num' 1 2)
@@ -113,7 +114,12 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '<<'					'_ << _' 'num num' 3 2)
 		(array 'r' '>>'					'_ >> _' 'num num' -100 2)
 
-		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _' 'num num num' 2 0 5)
+		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
+
+		(array ' ' 'mbDrawShape'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
+		(array 'r' 'mbShapeForLetter'	'shape for letter _' 'auto' 'A')
+
+		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _ : pin _' 'num num num num' 2 0 5 -1)
 
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
@@ -256,6 +262,8 @@ method initOpcodes SmallCompiler {
 #define mbTiltZ 106
 #define mbTemp 107
 #define neoPixelSend 108
+#define mbDrawShape 109
+#define mbShapeForLetter 110
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
@@ -387,6 +395,8 @@ method instructionsForCmd SmallCompiler cmd {
 		return (instructionsForForever this args)
 	} ('if' == op) {
 		return (instructionsForIf this args)
+	} ('ifElse' == op) {
+		return (instructionsForIfElse this (toList args))
 	} ('repeat' == op) {
 		return (instructionsForRepeat this args)
 	} ('repeatUntil' == op) {
@@ -403,6 +413,8 @@ method instructionsForCmd SmallCompiler cmd {
 			add result (array 'digitalClear' pinNum)
 		}
 		return result
+	} ('sendBroadcastSimple' == op) {
+		return (primitive this 'sendBroadcast' args true)
 	} ('comment' == op) {
 		// comments do not generate any code
 	} ('ignoreArgs' == op) {
@@ -446,6 +458,12 @@ method instructionsForIf SmallCompiler args {
 		atPut jumpInstruction 2 (instructionCount - ((at jumpInstruction 2) + 1)) // fix jump offset
 	}
 	return result
+}
+
+method instructionsForIfElse SmallCompiler args {
+	if ((count args) != 3) { error 'compiler error: expected three arguments to ifElse' }
+	addAt args 3 true // insert true before 'else' case
+	return (instructionsForIf this args)
 }
 
 method instructionsForForever SmallCompiler args {
