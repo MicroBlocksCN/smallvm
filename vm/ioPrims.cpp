@@ -289,7 +289,8 @@ static void initPins(void) {
 		pinMode(BUZZER, OUTPUT);
 	#endif
 
-	for (int i = 0; i < 30; i++) sendNeoPixelByte(0); // turn off NeoPixels (up to 10 of them)
+	// xxx rewrite this in terms of the primitive, using the default pin number:
+	// for (int i = 0; i < 30; i++) sendNeoPixelByte(0); // turn off NeoPixels (up to 10 of them)
 }
 
 // Pin IO Primitives

@@ -173,6 +173,11 @@ void primMBUnplot(OBJ *args) {
 
 // NeoPixel Support
 
+uint32 pinBit = 0;
+volatile int *pinSetDir;
+volatile int *pinSet;
+volatile int *pinClr;
+
 #define DELAY_CYCLES(n) { \
 	__asm__ __volatile__ ( \
 		".rept " #n " \n\t" \
@@ -200,14 +205,25 @@ inline void restoreIRQState(uint32 pmask) {
 	#endif
 }
 
-#if defined(ARDUINO_CALLIOPE)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 
-#define pinBit 0x40004 // pin 18 (Calliope)
-volatile int *pinSetDir = (int *) 0x50000518;
-volatile int *pinSet = (int *) 0x50000508;
-volatile int *pinClr = (int *) 0x5000050C;
+#define GPIO_BASE 0x50000000
 
-void sendNeoPixelByte(int val) { // Calliope (16 MHz)
+static void initNeoPixelPin(int pinNum) {
+	if ((pinNum < 0) || (pinNum >= PINS_COUNT)) {
+		#if defined(ARDUINO_BBC_MICROBIT)
+			pinNum = 0; // use left exteranl pad on micro:bit
+		#else
+			pinNum = 26; // internal NeoPixel pin on Calliope
+		#endif
+	}
+	pinBit = 1 << g_ADigitalPinMap[pinNum];
+	pinSetDir = (int *) (GPIO_BASE + 0x518);
+	pinSet = (int *) (GPIO_BASE + 0x508);
+	pinClr = (int *) (GPIO_BASE + 0x50C);
+}
+
+static void sendNeoPixelByte(int val) { // Calliope (16 MHz)
 	*pinSetDir = pinBit;
 	for (int i = 0; i < 8; i++) {
 		if (val & 0x80) { // one bit: goal > 600 nqnosecs
@@ -224,14 +240,27 @@ void sendNeoPixelByte(int val) { // Calliope (16 MHz)
 	}
 }
 
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+#elif defined(ARDUINO_ARCH_SAMD)
 
-#define pinBit 0x800000 // pin PB23 (CircuitPlayground)
-volatile int *pinSetDir = (int *) 0x41004488;
-volatile int *pinSet = (int *) 0x41004498;
-volatile int *pinClr = (int *) 0x41004494;
+#define PORT_BASE 0x41004400
 
-void sendNeoPixelByte(int val) { // Circuit Playground (48 MHz)
+static void initNeoPixelPin(int pinNum) {
+	if ((pinNum < 0) || (pinNum >= PINS_COUNT)) {
+		#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+			pinNum = 8; // internal NeoPixel pin
+		#else
+			pinNum = 0; // default to pin 0
+		#endif
+	}
+
+	pinBit = 1 << g_APinDescription[pinNum].ulPin;
+	int baseReg = PORT_BASE + (0x80 * g_APinDescription[pinNum].ulPort);
+	pinSetDir = (int *) (baseReg + 0x08);
+	pinSet = (int *) (baseReg + 0x18);
+	pinClr = (int *) (baseReg + 0x14);
+}
+
+static void sendNeoPixelByte(int val) { // Circuit Playground (48 MHz)
 	*pinSetDir = pinBit;
 	for (int i = 0; i < 8; i++) {
 		if (val & 0x80) { // one bit: goal > 600 nqnosecs
@@ -251,12 +280,16 @@ void sendNeoPixelByte(int val) { // Circuit Playground (48 MHz)
 
 #else // stub for boards without NeoPixels
 
-void sendNeoPixelByte(int val) { }
+static void initNeoPixelPin(int pinNum) { }
+static void sendNeoPixelByte(int val) { }
 
 #endif // NeoPixel Support
 
+void primNeoPixelSend(int argCount, OBJ *args) {
+	int pinNum = -1; // -1 means to use the internal NeoPixel pin
+	if ((argCount > 3) && isInt(args[3])) pinNum = obj2int(args[3]);
 
-void primNeoPixelSend(OBJ *args) {
+	initNeoPixelPin(pinNum);
 	int r = evalInt(args[0]);
 	int g = evalInt(args[1]);
 	int b = evalInt(args[2]);

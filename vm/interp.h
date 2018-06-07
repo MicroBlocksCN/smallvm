@@ -335,7 +335,6 @@ void systemReset(void);
 // I/O Support
 
 void setPinMode(int pin, int newMode);
-void sendNeoPixelByte(int val);
 void updateMicrobitDisplay();
 
 // Primitives
@@ -380,7 +379,7 @@ OBJ primMBTiltY(OBJ *args);
 OBJ primMBTiltZ(OBJ *args);
 OBJ primMBTemp(OBJ *args);
 
-void primNeoPixelSend(OBJ *args);
+void primNeoPixelSend(int argCount, OBJ *args);
 
 #ifdef __cplusplus
 }

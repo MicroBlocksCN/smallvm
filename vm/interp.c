@@ -849,7 +849,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	neoPixelSend_op:
-		primNeoPixelSend(sp - arg);
+		primNeoPixelSend(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	drawShape_op:
