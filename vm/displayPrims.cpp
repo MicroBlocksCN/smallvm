@@ -173,11 +173,6 @@ void primMBUnplot(OBJ *args) {
 
 // NeoPixel Support
 
-uint32 pinBit = 0;
-volatile int *pinSetDir;
-volatile int *pinSet;
-volatile int *pinClr;
-
 #define DELAY_CYCLES(n) { \
 	__asm__ __volatile__ ( \
 		".rept " #n " \n\t" \
@@ -205,9 +200,15 @@ inline void restoreIRQState(uint32 pmask) {
 	#endif
 }
 
+uint32 neoPixelPinMask = 0;
+volatile int *neoPixelPinSet = NULL;
+volatile int *neoPixelPinClr = NULL;
+
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 
-#define GPIO_BASE 0x50000000
+#define GPIO_SET 0x50000508
+#define GPIO_CLR 0x5000050C
+#define GPIO_SET_DIR 0x50000518
 
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= PINS_COUNT)) {
@@ -217,27 +218,33 @@ static void initNeoPixelPin(int pinNum) {
 			pinNum = 26; // internal NeoPixel pin on Calliope
 		#endif
 	}
-	pinBit = 1 << g_ADigitalPinMap[pinNum];
-	pinSetDir = (int *) (GPIO_BASE + 0x518);
-	pinSet = (int *) (GPIO_BASE + 0x508);
-	pinClr = (int *) (GPIO_BASE + 0x50C);
+	neoPixelPinMask = 1 << g_ADigitalPinMap[pinNum];
+	neoPixelPinSet = (int *) GPIO_SET;
+	neoPixelPinClr = (int *) GPIO_CLR;
+
+	volatile int *neoPixelPinSetDir = (int *) GPIO_SET_DIR;
+	*neoPixelPinSetDir = neoPixelPinMask;
 }
 
-static void sendNeoPixelByte(int val) { // Calliope (16 MHz)
-	*pinSetDir = pinBit;
-	for (int i = 0; i < 8; i++) {
-		if (val & 0x80) { // one bit: goal > 600 nqnosecs
-			*pinSet = pinBit;
+static void sendNeoPixelData(int val) { // Calliope (16 MHz)
+	// Note: This code is timing sensitive and the timing changes in unpredictable
+	// ways with code changes. For example, the zero-bit code uses constant register
+	// addresses while the one-bit uses the indirect variables. Making those
+	// consistent (either way) increases the timing. Go figure! Thus, if you change
+	// this code in any way, be sure to check the timing with an oscilloscope.
+	uint32 oldIRQ = saveIRQState();
+	for (int mask = (1 << 23); mask > 0; mask >>= 1) {
+		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
+			*neoPixelPinSet = neoPixelPinMask;
 			DELAY_CYCLES(8);
-			*pinClr = pinBit;
-		} else { // zero bit: goal < 350 nqnosecs
-			uint32 oldIRQ = saveIRQState();
-			*pinSet = pinBit;
-			*pinClr = pinBit;
-			restoreIRQState(oldIRQ);
+			*neoPixelPinClr = neoPixelPinMask;
+		} else { // zero bit; timing goal: high 350 nsecs, low 800 nsecs
+			// This addressing mode gave the shortest pulse width.
+			*((int *) GPIO_SET) = neoPixelPinMask;
+			*((int *) GPIO_CLR) = neoPixelPinMask;
 		}
-		val <<= 1;
 	}
+	restoreIRQState(oldIRQ);
 }
 
 #elif defined(ARDUINO_ARCH_SAMD)
@@ -253,52 +260,52 @@ static void initNeoPixelPin(int pinNum) {
 		#endif
 	}
 
-	pinBit = 1 << g_APinDescription[pinNum].ulPin;
+	neoPixelPinMask = 1 << g_APinDescription[pinNum].ulPin;
 	int baseReg = PORT_BASE + (0x80 * g_APinDescription[pinNum].ulPort);
-	pinSetDir = (int *) (baseReg + 0x08);
-	pinSet = (int *) (baseReg + 0x18);
-	pinClr = (int *) (baseReg + 0x14);
+	neoPixelPinSet = (int *) (baseReg + 0x18);
+	neoPixelPinClr = (int *) (baseReg + 0x14);
+
+	volatile int *neoPixelPinSetDir = (int *) (baseReg + 0x08);
+	*neoPixelPinSetDir = neoPixelPinMask;
 }
 
-static void sendNeoPixelByte(int val) { // Circuit Playground (48 MHz)
-	*pinSetDir = pinBit;
-	for (int i = 0; i < 8; i++) {
-		if (val & 0x80) { // one bit: goal > 600 nqnosecs
-			*pinSet = pinBit;
-			DELAY_CYCLES(15);
-			*pinClr = pinBit;
-		} else { // zero bit: goal < 350 nqnosecs
-			uint32 oldIRQ = saveIRQState();
-			*pinSet = pinBit;
-			*pinClr = pinBit;
-			restoreIRQState(oldIRQ);
+static void sendNeoPixelData(int val) { // SAMD21 (48 MHz)
+	uint32 oldIRQ = saveIRQState();
+	for (int mask = (1 << 23); mask > 0; mask >>= 1) {
+		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
+			*neoPixelPinSet = neoPixelPinMask;
+			DELAY_CYCLES(19);
+			*neoPixelPinClr = neoPixelPinMask;
+			DELAY_CYCLES(0);
+		} else { // zero bit; timing goal: high 350 nsecs, low 800 nsecs
+			*neoPixelPinSet = neoPixelPinMask;
+			DELAY_CYCLES(0);
+			*neoPixelPinClr = neoPixelPinMask;
+			DELAY_CYCLES(20);
 		}
-		DELAY_CYCLES(5);
-		val <<= 1;
 	}
+	restoreIRQState(oldIRQ);
 }
 
 #else // stub for boards without NeoPixels
 
 static void initNeoPixelPin(int pinNum) { }
-static void sendNeoPixelByte(int val) { }
+static void sendNeoPixelData(int val) { }
 
 #endif // NeoPixel Support
 
-void primNeoPixelSend(int argCount, OBJ *args) {
-	int pinNum = -1; // -1 means to use the internal NeoPixel pin
-	if ((argCount > 3) && isInt(args[3])) pinNum = obj2int(args[3]);
+void primNeoPixelSend(OBJ *args) {
+	if (!neoPixelPinSet) initNeoPixelPin(-1); // if pin not set, use the internal NeoPixel pin
 
+	int rgb = evalInt(args[0]);
+	// re-order RGB -> GBR (NeoPixel order)
+	int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
+	sendNeoPixelData(val); // blue
+}
+
+void primNeoPixelSetPin(OBJ *args) {
+	int pinNum = isInt(args[0]) ? obj2int(args[0]) : -1; // -1 means "internal NeoPixel pin"
 	initNeoPixelPin(pinNum);
-	int r = evalInt(args[0]);
-	int g = evalInt(args[1]);
-	int b = evalInt(args[2]);
-	if (r < 0) r = 0; if (r > 255) r = 255;
-	if (g < 0) g = 0; if (g > 255) g = 255;
-	if (b < 0) b = 0; if (b > 255) b = 255;
-	sendNeoPixelByte(g);
-	sendNeoPixelByte(r);
-	sendNeoPixelByte(b);
 }
 
 // MicroBit Font

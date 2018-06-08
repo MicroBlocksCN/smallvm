@@ -305,7 +305,7 @@ static void runTask(Task *task) {
 		&&neoPixelSend_op,
 		&&drawShape_op,
 		&&shapeForLetter_op,
-		&&RESERVED_op,
+		&&neoPixelSetPin_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -849,7 +849,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	neoPixelSend_op:
-		primNeoPixelSend(arg, sp - arg);
+		primNeoPixelSend(sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	drawShape_op:
@@ -859,6 +859,10 @@ static void runTask(Task *task) {
 	shapeForLetter_op:
 		*(sp - arg) = primMBShapeForLetter(sp - arg);
 		POP_ARGS_REPORTER();
+		DISPATCH();
+	neoPixelSetPin_op:
+		primNeoPixelSetPin(sp - arg);
+		POP_ARGS_COMMAND();
 		DISPATCH();
 }
 
