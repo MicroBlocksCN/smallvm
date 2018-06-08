@@ -119,7 +119,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'mbDrawShape'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
 		(array 'r' 'mbShapeForLetter'	'shape for letter _' 'auto' 'A')
 
-		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _ : pin _' 'num num num num' 2 0 5 -1)
+		(array ' ' 'neoPixelSetPin'		'set NeoPixel pin _' 'num' 0)
+		(array ' ' 'neoPixelSend'		'send NeoPixel rgb _' 'num' 5)
 
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
@@ -264,6 +265,7 @@ method initOpcodes SmallCompiler {
 #define neoPixelSend 108
 #define mbDrawShape 109
 #define mbShapeForLetter 110
+#define neoPixelSetPin 111
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
