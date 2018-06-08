@@ -297,10 +297,23 @@ static void sendNeoPixelData(int val) { }
 void primNeoPixelSend(OBJ *args) {
 	if (!neoPixelPinSet) initNeoPixelPin(-1); // if pin not set, use the internal NeoPixel pin
 
-	int rgb = evalInt(args[0]);
-	// re-order RGB -> GBR (NeoPixel order)
-	int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
-	sendNeoPixelData(val); // blue
+	OBJ arg = args[0];
+	if (isInt(arg)) {
+		int rgb = obj2int(arg);
+		// re-order RGB -> GBR (NeoPixel order)
+		int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
+		sendNeoPixelData(val); // blue
+	} else if (IS_CLASS(arg, ArrayClass)) {
+		int count = objWords(arg);
+		for (int i = 0; i < count; i++) {
+			OBJ item = FIELD(arg, i);
+			if (isInt(item)) {
+				int rgb = obj2int(item);
+				int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
+				sendNeoPixelData(val); // blue
+			}
+		}
+	}
 }
 
 void primNeoPixelSetPin(OBJ *args) {
