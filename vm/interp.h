@@ -381,6 +381,10 @@ OBJ primMBTemp(OBJ *args);
 
 void primNeoPixelSend(int argCount, OBJ *args);
 
+#define RCVBUF_SIZE 1024
+extern uint8 rcvBuf[RCVBUF_SIZE];
+extern int rcvByteCount;
+
 #ifdef __cplusplus
 }
 #endif

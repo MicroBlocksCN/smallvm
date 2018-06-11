@@ -14,6 +14,11 @@
 #include "interp.h"
 #include "persist.h"
 
+#ifdef ESP8266
+  #include "websocket.h"
+#endif
+
+
 // VM Version
 
 #define VM_VERSION "v032"
@@ -518,9 +523,8 @@ static void sendVarNames() {
 
 // Receiving Messages from IDE
 
-#define RCVBUF_SIZE 1024
-static uint8 rcvBuf[RCVBUF_SIZE];
-static int rcvByteCount = 0;
+uint8 rcvBuf[RCVBUF_SIZE];
+int rcvByteCount = 0;
 static uint32 lastRcvTime = 0;
 
 static void skipToStartByteAfter(int startIndex) {
@@ -665,9 +669,19 @@ void processMessage() {
 
 	sendNextByte();
 
-	int bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
-	rcvByteCount += bytesRead;
-	if (!rcvByteCount) return;
+  int bytesRead;
+  #ifdef ESP8266
+  if (!websocketEnabled) {
+  #endif
+	  bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+  #ifdef ESP8266
+	} else {
+    bytesRead = rcvByteCount;
+  }
+  #endif
+
+  rcvByteCount += bytesRead;
+  if (!rcvByteCount) return;
 
 	while (bytesRead > 0) {
 		// wait time: on microBit, 35 seems to work, 25 fails

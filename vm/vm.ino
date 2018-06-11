@@ -8,10 +8,20 @@
 #include "interp.h"
 #include "persist.h"
 
+#ifdef ESP8266
+  #include "websocket.h"
+#endif
+
 void setup() {
-  #ifdef ARDUINO_NRF52_PRIMO
-    sd_softdevice_disable();
-  #endif
+  
+#ifdef ARDUINO_NRF52_PRIMO
+  sd_softdevice_disable();
+#endif
+
+#ifdef ESP8266
+  websocketInit();
+#endif
+
   hardwareInit();
   memInit(1800); // 1800 words = 7200 bytes
   outputString("Welcome to MicroBlocks!");

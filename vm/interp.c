@@ -15,6 +15,10 @@
 #include "interp.h"
 #include "persist.h"
 
+#ifdef ESP8266
+  #include "websocket.h"
+#endif
+
 // Tasks - Set USE_TASKS to false to test interpreter performance without task switching
 
 #define USE_TASKS true
@@ -874,6 +878,9 @@ void vmLoop() {
 		if (count-- <= 0) {
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 			updateMicrobitDisplay();
+#endif
+#ifdef ESP8266
+      websocketLoop();
 #endif
 			processMessage();
 			count = 25; // must be under 30 when building on mbed to avoid serial errors
