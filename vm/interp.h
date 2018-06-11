@@ -124,6 +124,7 @@ extern "C" {
 #define neoPixelSend 108
 #define mbDrawShape 109
 #define mbShapeForLetter 110
+#define neoPixelSetPin 111
 
 // Instruction Format
 
@@ -379,7 +380,8 @@ OBJ primMBTiltY(OBJ *args);
 OBJ primMBTiltZ(OBJ *args);
 OBJ primMBTemp(OBJ *args);
 
-void primNeoPixelSend(int argCount, OBJ *args);
+void primNeoPixelSend(OBJ *args);
+void primNeoPixelSetPin(OBJ *args);
 
 #define RCVBUF_SIZE 1024
 extern uint8 rcvBuf[RCVBUF_SIZE];
