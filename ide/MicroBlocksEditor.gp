@@ -7,7 +7,7 @@
 // MicroBlocksEditor.gp - Top-level window for the MicroBlocks IDE
 // John Maloney, January, 2018
 
-to o { openMicroBlocksEditor } // shortcut to open IDE from GP command prompt
+to startup { openMicroBlocksEditor } // run at startup if not in interactive mode
 
 defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus title
 
