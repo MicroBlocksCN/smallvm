@@ -226,7 +226,7 @@ static void initNeoPixelPin(int pinNum) {
 	*neoPixelPinSetDir = neoPixelPinMask;
 }
 
-static void sendNeoPixelData(int val) { // Calliope (16 MHz)
+static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 	// Note: This code is timing sensitive and the timing changes in unpredictable
 	// ways with code changes. For example, the zero-bit code uses constant register
 	// addresses while the one-bit uses the indirect variables. Making those
@@ -302,7 +302,7 @@ void primNeoPixelSend(OBJ *args) {
 		int rgb = obj2int(arg);
 		// re-order RGB -> GBR (NeoPixel order)
 		int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
-		sendNeoPixelData(val); // blue
+		sendNeoPixelData(val);
 	} else if (IS_CLASS(arg, ArrayClass)) {
 		int count = objWords(arg);
 		for (int i = 0; i < count; i++) {
@@ -310,7 +310,7 @@ void primNeoPixelSend(OBJ *args) {
 			if (isInt(item)) {
 				int rgb = obj2int(item);
 				int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
-				sendNeoPixelData(val); // blue
+				sendNeoPixelData(val);
 			}
 		}
 	}

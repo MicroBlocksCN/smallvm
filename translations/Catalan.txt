@@ -1,0 +1,188 @@
+display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+pantalla _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+
+clear display
+neteja pantalla
+
+plot x _ y _
+encén x _ y _
+
+unplot x _ y _
+apaga x _ y _
+
+set user LED _
+encén LED integrat _
+
+say _
+digues _
+
+button A
+botó A
+
+button B
+botó B
+
+tilt x
+inclinació x
+
+tilt y
+inclinació y
+
+tilt z
+inclinació z
+
+temperature Celcius
+temperatura Celcius
+
+micros
+microsegons
+
+millis
+mil·lisegons
+
+read digital pin _
+lectura digital _
+
+read analog pin _
+lectura analògica _
+
+set digital pin _ to _
+posa el pin digital _ a _
+
+set pin _ to _
+posa el pin _ a _
+
+analog pins
+pins analògics
+
+digital pins
+pins digitals
+
+when started
+en començar
+
+forever _
+per sempre _
+
+repeat _ _
+repeteix _ vegades _
+
+if _ _
+si _ _
+
+else if _ _
+si no, si _ _
+
+wait _ millisecs
+espera _ mil·lisegons
+
+wait _ microsecs
+espera _ microsegons
+
+stop this task
+atura aquesta tasca
+
+stop all
+atura-ho tot
+
+comment _
+comentari _
+
+wait until _
+espera fins que _
+
+repeat until _ _
+repeteix fins que _ _
+
+for _ in _ _
+for _ in _ _
+
+when _
+quan _
+
+when _ received
+quan rebi _
+
+broadcast _
+envia _
+
+return _
+retorna _
+
+_ mod _
+_ mòdul _
+
+abs _
+valor absolut de _
+
+random _
+nombre a l'atzar entre 1 i _
+
+not _
+no _
+
+_ and _
+_ i _
+
+and _
+i _
+
+_ or _
+_ o _
+
+or _
+o _
+
+set _ to _
+assigna _ a _
+
+change _ by _
+augmenta _ en _
+
+local _ _
+variable local _ _
+
+new array _
+nou vector _
+
+new byte array _
+nou vector de bytes _
+
+fill array _ with _
+omple vector _ amb _
+
+array _ at _
+vector _ element _
+
+set array _ at _ to _
+assigna al vector _ la posició _ a _
+
+length of _
+llargada de _
+
+neo pixel send r _ g _ b _
+neo pixel vermell _ verd _ blau _
+
+i2c get device _ register _
+i2c llegeix del dispositiu _ el registre _
+
+i2c set device _ register _ to _
+i2c escriu al dispositiu _ el registere _ amb _
+
+spi send _
+spi envia _
+
+spi receive
+spi llegeix
+
+print _
+escriu _
+
+hex _
+hexadecimal _
+
+no op
+no op
+
+ignore
+ignora
