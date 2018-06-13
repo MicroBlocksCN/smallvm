@@ -448,10 +448,15 @@ method contextMenu MicroBlocksEditor {
 }
 
 method languageMenu MicroBlocksEditor {
-  menu = (menu nil this)
+  menu = (menu 'Language:' this)
   addItem menu 'English' (action 'setLanguage' this 'English')
-  addItem menu 'Català' (action 'setLanguage' this 'Catalan')
-  addItem menu 'Castellano' (action 'setLanguage' this 'Spanish')
+  for fn (listEmbeddedFiles) {
+	fn = (withoutExtension fn)
+	if (beginsWith fn 'translations/') {
+	  language = (withoutExtension (substring fn 14))
+	  addItem menu language (action 'setLanguage' this language)
+	}
+  }
   popUpAtHand menu (global 'page')
 }
 

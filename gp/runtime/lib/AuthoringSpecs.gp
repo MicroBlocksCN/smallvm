@@ -238,8 +238,14 @@ to fixBlockColors {
 method language AuthoringSpecs { return language }
 
 method setLanguage AuthoringSpecs newLang {
+  translationData = (readEmbeddedFile (join 'translations/' newLang '.txt'))
+  if (isNil translationData) {
+	language = 'English'
+	translationDictionary = nil
+  } else {
 	language = newLang
-	readTranslationFile this (join './runtime/locale/' newLang '.txt')
+	installTranslation this translationData
+  }
 }
 
 method translateToCurrentLanguage AuthoringSpecs spec {
@@ -264,20 +270,15 @@ method needsTranslation AuthoringSpecs spec {
   return false
 }
 
-method readTranslationFile AuthoringSpecs fileName {
-  // A translation file consists of three-line entries:
+method installTranslation AuthoringSpecs translationData {
+  // Translations data is string consisting of three-line entries:
   //	original string
   //	translated string
   //	<blank line>
   //	...
 
-  translationDictionary = nil
-  data = (readFile fileName)
-  if (isNil data) {
-	return }
-
   translationDictionary = (dictionary)
-  lines = (toList (lines data))
+  lines = (toList (lines translationData))
   while ((count lines) >= 2) {
 	from = (removeFirst lines)
 	to = (removeFirst lines)

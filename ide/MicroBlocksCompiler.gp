@@ -119,7 +119,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'mbDrawShape'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
 		(array 'r' 'mbShapeForLetter'	'shape for letter _' 'auto' 'A')
 
-		(array ' ' 'neoPixelSetPin'		'set NeoPixel pin _' 'num' 0)
+		(array ' ' 'neoPixelSetPin'		'set NeoPixel pin _ has white _' 'num bool' 0 false)
 		(array ' ' 'neoPixelSend'		'send NeoPixel rgb _' 'num' 5)
 
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
