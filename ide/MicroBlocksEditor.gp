@@ -426,11 +426,7 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addLine menu
-  if ('English' != (language (authoringSpecs))) {
-	addItem menu 'English' (action 'setLanguage' this 'English')
-  } else {
-	addItem menu 'Catalan' (action 'setLanguage' this 'Catalan')
-  }
+  addItem menu 'Language' (action 'languageMenu')
   addItem menu 'import library' 'importLibrary'
   if (not (devMode)) {
 	addLine menu
@@ -449,6 +445,14 @@ method contextMenu MicroBlocksEditor {
 //   addItem menu 'get code test' (action 'getCodeTest' (smallRuntime))
 //   addItem menu 'get var names test' (action 'getAllVarNames' (smallRuntime))
   return menu
+}
+
+method languageMenu MicroBlocksEditor {
+  menu = (menu nil this)
+  addItem menu 'English' (action 'setLanguage' this 'English')
+  addItem menu 'Català' (action 'setLanguage' this 'Catalan')
+  addItem menu 'Castellano' (action 'setLanguage' this 'Spanish')
+  popUpAtHand menu (global 'page')
 }
 
 method showAdvancedBlocks MicroBlocksEditor {
