@@ -9,6 +9,19 @@
 
 to startup { openMicroBlocksEditor } // run at startup if not in interactive mode
 
+to uload fileName {
+  // Reload a top level module file when working on MicroBlocks. The 'lib/' prefix and '.gp'
+  // suffix can be omitted. Example: "reload 'List'"
+
+  if (not (endsWith fileName '.gp')) { fileName = (join fileName '.gp') }
+  if (contains (listFiles '../ide') fileName) {
+	fileName = (join '../ide/' fileName)
+  } else {
+	fileName = (join '../gp/runtime/lib/' fileName)
+  }
+  return (load fileName (topLevelModule))
+}
+
 defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus title
 
 method project MicroBlocksEditor { return project }
