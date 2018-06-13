@@ -219,15 +219,18 @@ method addVariableBlocks MicroBlocksScripter {
 	addButton this 'Delete a variable' (action 'deleteSharedVariable' this)
 	nextY += (8 * scale)
 	for varName sharedVars {
-	  lastY = nextY
-	  b = (toBlock (newReporter 'v' varName))
-	  addBlock this b nil // true xxx
-//	  readout = (makeMonitor b)
-// 	  setGrabRule (morph readout) 'ignore'
-// 	  setStyle readout 'varPane'
-// 	  setPosition (morph readout) nextX lastY
-// 	  addPart (morph (contents blocksFrame)) (morph readout)
-// 	  step readout
+          // hide vars that start with underscore, used for libraries
+          if (or ((at varName 1) != '_') (devMode)) {
+	    lastY = nextY
+	    b = (toBlock (newReporter 'v' varName))
+	    addBlock this b nil // true xxx
+//	    readout = (makeMonitor b)
+// 	    setGrabRule (morph readout) 'ignore'
+// 	    setStyle readout 'varPane'
+// 	    setPosition (morph readout) nextX lastY
+// 	    addPart (morph (contents blocksFrame)) (morph readout)
+// 	    step readout
+          }
 	}
 	nextY += (5 * scale)
   }

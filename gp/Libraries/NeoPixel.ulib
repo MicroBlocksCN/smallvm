@@ -1,0 +1,23 @@
+sharedVariables '_np_pixels'
+
+spec ' ' 'attach' 'attach _ LED NeoPixel strip to pin _' 'auto auto' 16 '10'
+spec ' ' 'set NeoPixel LED' 'set NeoPixel LED _ to r _ g _ b _' 'auto auto auto auto' 2 100 50 25
+spec ' ' 'set all NeoPixels r' 'set all NeoPixels r _ g _ b _' 'auto auto auto' 0 100 10
+
+to attach number pinNumber {
+  _np_pixels = (newArray number)
+  fillArray _np_pixels 0
+  neoPixelSetPin pinNumber
+}
+
+to 'set NeoPixel LED' number r g b {
+  atPut number _np_pixels (((r << 16) | (g << 8)) | b)
+  neoPixelSend _np_pixels
+}
+
+to 'set all NeoPixels r' r g b {
+  for i (size _np_pixels) {
+    'set NeoPixel LED' i r g b
+  }
+}
+

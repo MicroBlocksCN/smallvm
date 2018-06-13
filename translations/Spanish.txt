@@ -2,70 +2,70 @@ display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
 pantalla _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
 
 clear display
-neteja pantalla
+limpiar pantalla
 
 plot x _ y _
-encén x _ y _
+encender x _ y _
 
 unplot x _ y _
-apaga x _ y _
+apagar x _ y _
 
 set user LED _
-encén LED integrat _
+encender LED integrado _
 
 say _
-digues _
+decir _
 
 button A
-botó A
+botón A
 
 button B
-botó B
+botón B
 
 tilt x
-inclinació x
+inclinación x
 
 tilt y
-inclinació y
+inclinación y
 
 tilt z
-inclinació z
+inclinación z
 
 temperature Celcius
 temperatura Celsius
 
 micros
-microsegons
+microsegundos
 
 millis
-mil·lisegons
+milisegundos
 
 read digital pin _
 lectura digital _
 
 read analog pin _
-lectura analògica _
+lectura analógica _
 
 set digital pin _ to _
-posa el pin digital _ a _
+poner pin digital _ a _
 
 set pin _ to _
-posa el pin _ a _
+poner pin _ a _
 
 analog pins
-pins analògics
+pines analógicos
 
 digital pins
-pins digitals
+pines digitales
 
 when started
-en començar
+al empezar
 
 forever _
-per sempre _
+por siempre _
 
 repeat _ _
-repeteix _ vegades _
+repetir _ veces _
 
 if _ _
 si _ _
@@ -74,58 +74,58 @@ else if _ _
 si no, si _ _
 
 wait _ millisecs
-espera _ mil·lisegons
+esperar _ milisegundos
 
 wait _ microsecs
-espera _ microsegons
+esperar _ microsegundos
 
 stop this task
-atura aquesta tasca
+detener esta tarea
 
 stop all
-atura-ho tot
+detenerlo todo
 
 comment _
-comentari _
+comentario _
 
 wait until _
-espera fins que _
+esperar hasta que _
 
 repeat until _ _
-repeteix fins que _ _
+repetir hasta que _ _
 
 for _ in _ _
-per cada _ en _ _
+por cada _ en _ _
 
 when _
-quan _
+cuando _
 
 when _ received
-quan rebi _
+al recibir _
 
 broadcast _
-envia _
+enviar _
 
 return _
-retorna _
+retornar _
 
 _ mod _
-_ mòdul _
+_ módulo _
 
 abs _
-valor absolut de _
+valor absoluto de _
 
 random _
-nombre a l'atzar entre 1 i _
+número al azar entre 1 y _
 
 not _
 no _
 
 _ and _
-_ i _
+_ y _
 
 and _
-i _
+y _
 
 _ or _
 _ o _
@@ -134,49 +134,49 @@ or _
 o _
 
 set _ to _
-assigna _ a _
+asignar _ a _
 
 change _ by _
-augmenta _ en _
+aumentar _ en _
 
 local _ _
 variable local _ _
 
 new array _
-nou vector _
+nuevo vector _
 
 new byte array _
-nou vector de bytes _
+nuevo vector de bytes _
 
 fill array _ with _
-omple vector _ amb _
+llenar vector _ con _
 
 array _ at _
-vector _ element _
+vector _ elemento _
 
 set array _ at _ to _
-assigna al vector _ la posició _ a _
+asigna al vector _ la posición _ a _
 
 length of _
-llargada de _
+tamaño de _
 
 neo pixel send r _ g _ b _
-neo pixel vermell _ verd _ blau _
+neo pixel rojo _ verde _ azul _
 
 i2c get device _ register _
-i2c llegeix del dispositiu _ el registre _
+i2c leer del dispositivo _ el registro _
 
 i2c set device _ register _ to _
-i2c escriu al dispositiu _ el registre _ amb _
+i2c escribir al dispositivo _ el registro _ con _
 
 spi send _
-spi envia _
+spi enviar _
 
 spi receive
-spi llegeix
+spi leer
 
 print _
-escriu _
+escribir _
 
 hex _
 hexadecimal _
@@ -185,4 +185,4 @@ no op
 no op
 
 ignore
-ignora
+ignorar

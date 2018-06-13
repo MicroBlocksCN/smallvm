@@ -23,7 +23,10 @@ method allVarsMenu InputSlot {
   if (notNil scripter) {
 	varNames = (copyWithout (variableNames (targetModule (handler scripter))) 'extensions')
 	for varName varNames {
-	  addItem menu varName varName
+          // hide vars that start with underscore, used for libraries
+          if (or ((at varName 1) != '_') (devMode)) {
+            addItem menu varName varName
+          }
 	}
 	if ((count varNames) > 0) { addLine menu }
   }

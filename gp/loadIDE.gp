@@ -1,9 +1,9 @@
-reload '/Users/johnmaloney/Projects-2017/Small VM/smallvm/ide/MicroBlocksAppMaker.gp'
-reload '/Users/johnmaloney/Projects-2017/Small VM/smallvm/ide/MicroBlocksCompiler.gp'
-reload '/Users/johnmaloney/Projects-2017/Small VM/smallvm/ide/MicroBlocksEditor.gp'
-reload '/Users/johnmaloney/Projects-2017/Small VM/smallvm/ide/MicroBlocksRuntime.gp'
-reload '/Users/johnmaloney/Projects-2017/Small VM/smallvm/ide/MicroBlocksScripter.gp'
-reload '/Users/johnmaloney/Projects-2017/Small VM/smallvm/ide/MicroBlocksPatches.gp'
+reload '../ide/MicroBlocksAppMaker.gp'
+reload '../ide/MicroBlocksCompiler.gp'
+reload '../ide/MicroBlocksEditor.gp'
+reload '../ide/MicroBlocksRuntime.gp'
+reload '../ide/MicroBlocksScripter.gp'
+reload '../ide/MicroBlocksPatches.gp'
 
 to startup {
 	// Open the MicroBlocks IDE in developer mode
