@@ -31,8 +31,8 @@ inclinación y
 tilt z
 inclinación z
 
-temperature Celcius
-temperatura Celsius
+temperature (°C)
+temperatura (°C)
 
 micros
 microsegundos
@@ -72,6 +72,9 @@ si _ _
 
 else if _ _
 si no, si _ _
+
+if _ _ else _
+si _ _ si no _
 
 wait _ millisecs
 esperar _ milisegundos
@@ -115,8 +118,8 @@ _ módulo _
 abs _
 valor absoluto de _
 
-random _
-número al azar entre 1 y _
+random _ to _
+número al azar entre _ y _
 
 not _
 no _
@@ -186,3 +189,15 @@ no op
 
 ignore
 ignorar
+
+draw shape _ at x _ y _
+draw shape _ at x _ y _
+
+shape for letter _
+shape for letter _
+
+set NeoPixel pin _ has white _
+set NeoPixel pin _ has white _
+
+send NeoPixel rgb _
+send NeoPixel rgb _
