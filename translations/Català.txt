@@ -73,6 +73,9 @@ si _ _
 if _ _ else _
 si _ _ si no _
 
+if _ _ else _
+si _ _ si no _
+
 wait _ millisecs
 espera _ mil·lisegons
 
@@ -186,3 +189,15 @@ no op
 
 ignore
 ignora
+
+draw shape _ at x _ y _
+draw shape _ at x _ y _
+
+shape for letter _
+shape for letter _
+
+set NeoPixel pin _ has white _
+set NeoPixel pin _ has white _
+
+send NeoPixel rgb _
+send NeoPixel rgb _

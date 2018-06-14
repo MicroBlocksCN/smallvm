@@ -1,0 +1,203 @@
+display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+pantalla _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+
+clear display
+limpiar pantalla
+
+plot x _ y _
+encender x _ y _
+
+unplot x _ y _
+apagar x _ y _
+
+set user LED _
+encender LED integrado _
+
+say _
+decir _
+
+button A
+botón A
+
+button B
+botón B
+
+tilt x
+inclinación x
+
+tilt y
+inclinación y
+
+tilt z
+inclinación z
+
+temperature (°C)
+temperatura (°C)
+
+micros
+microsegundos
+
+millis
+milisegundos
+
+read digital pin _
+lectura digital _
+
+read analog pin _
+lectura analógica _
+
+set digital pin _ to _
+poner pin digital _ a _
+
+set pin _ to _
+poner pin _ a _
+
+analog pins
+pines analógicos
+
+digital pins
+pines digitales
+
+when started
+al empezar
+
+forever _
+por siempre _
+
+repeat _ _
+repetir _ veces _
+
+if _ _
+si _ _
+
+if _ _ else _
+si _ _ si no _
+
+if _ _ else _
+si _ _ si no _
+
+wait _ millisecs
+esperar _ milisegundos
+
+wait _ microsecs
+esperar _ microsegundos
+
+stop this task
+detener esta tarea
+
+stop all
+detenerlo todo
+
+comment _
+comentario _
+
+wait until _
+esperar hasta que _
+
+repeat until _ _
+repetir hasta que _ _
+
+for _ in _ _
+por cada _ de _ _
+
+when _
+cuando _
+
+when _ received
+al recibir _
+
+broadcast _
+enviar _
+
+return _
+retornar _
+
+_ mod _
+_ módulo _
+
+abs _
+valor absoluto de _
+
+random _ to _
+número al azar entre _ y _
+
+not _
+no _
+
+_ and _
+_ y _
+
+and _
+y _
+
+_ or _
+_ o _
+
+or _
+o _
+
+set _ to _
+asignar _ a _
+
+change _ by _
+aumentar _ en _
+
+local _ _
+variable local _ _
+
+new array _
+nuevo vector _
+
+new byte array _
+nuevo vector de bytes _
+
+fill array _ with _
+llenar vector _ con _
+
+array _ at _
+vector _ elemento _
+
+set array _ at _ to _
+asigna al vector _ la posición _ a _
+
+length of _
+tamaño de _
+
+neo pixel send r _ g _ b _
+neo pixel rojo _ verde _ azul _
+
+i2c get device _ register _
+i2c leer del dispositivo _ el registro _
+
+i2c set device _ register _ to _
+i2c escribir al dispositivo _ el registro _ con _
+
+spi send _
+spi enviar _
+
+spi receive
+spi leer
+
+print _
+escribir _
+
+hex _
+hexadecimal _
+
+no op
+no op
+
+ignore
+ignorar
+
+draw shape _ at x _ y _
+draw shape _ at x _ y _
+
+shape for letter _
+shape for letter _
+
+set NeoPixel pin _ has white _
+set NeoPixel pin _ has white _
+
+send NeoPixel rgb _
+send NeoPixel rgb _

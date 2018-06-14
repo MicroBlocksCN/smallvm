@@ -70,6 +70,9 @@ repetir _ veces _
 if _ _
 si _ _
 
+else if _ _
+si no, si _ _
+
 if _ _ else _
 si _ _ si no _
 
@@ -95,7 +98,7 @@ repeat until _ _
 repetir hasta que _ _
 
 for _ in _ _
-por cada _ de _ _
+por cada _ en _ _
 
 when _
 cuando _
@@ -186,3 +189,15 @@ no op
 
 ignore
 ignorar
+
+draw shape _ at x _ y _
+draw shape _ at x _ y _
+
+shape for letter _
+shape for letter _
+
+set NeoPixel pin _ has white _
+set NeoPixel pin _ has white _
+
+send NeoPixel rgb _
+send NeoPixel rgb _

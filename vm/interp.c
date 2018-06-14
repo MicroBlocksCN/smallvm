@@ -865,7 +865,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	neoPixelSetPin_op:
-		primNeoPixelSetPin(sp - arg);
+		primNeoPixelSetPin(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 }
