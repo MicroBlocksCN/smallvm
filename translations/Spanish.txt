@@ -31,8 +31,8 @@ inclinación y
 tilt z
 inclinación z
 
-temperature Celcius
-temperatura Celsius
+temperature (°C)
+temperatura (°C)
 
 micros
 microsegundos
@@ -70,8 +70,8 @@ repetir _ veces _
 if _ _
 si _ _
 
-else if _ _
-si no, si _ _
+if _ _ else _
+si _ _ si no _
 
 wait _ millisecs
 esperar _ milisegundos
@@ -95,7 +95,7 @@ repeat until _ _
 repetir hasta que _ _
 
 for _ in _ _
-por cada _ en _ _
+por cada _ de _ _
 
 when _
 cuando _
@@ -115,8 +115,8 @@ _ módulo _
 abs _
 valor absoluto de _
 
-random _
-número al azar entre 1 y _
+random _ to _
+número al azar entre _ y _
 
 not _
 no _
