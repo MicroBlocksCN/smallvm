@@ -200,7 +200,8 @@ inline void restoreIRQState(uint32 pmask) {
 	#endif
 }
 
-uint32 neoPixelPinMask = 0;
+int neoPixelBits = 24;
+int neoPixelPinMask = 0;
 volatile int *neoPixelPinSet = NULL;
 volatile int *neoPixelPinClr = NULL;
 
@@ -233,7 +234,7 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 	// consistent (either way) increases the timing. Go figure! Thus, if you change
 	// this code in any way, be sure to check the timing with an oscilloscope.
 	uint32 oldIRQ = saveIRQState();
-	for (int mask = (1 << 23); mask > 0; mask >>= 1) {
+	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
 			*neoPixelPinSet = neoPixelPinMask;
 			DELAY_CYCLES(8);
@@ -271,7 +272,7 @@ static void initNeoPixelPin(int pinNum) {
 
 static void sendNeoPixelData(int val) { // SAMD21 (48 MHz)
 	uint32 oldIRQ = saveIRQState();
-	for (int mask = (1 << 23); mask > 0; mask >>= 1) {
+	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
 			*neoPixelPinSet = neoPixelPinMask;
 			DELAY_CYCLES(19);
@@ -294,6 +295,11 @@ static void sendNeoPixelData(int val) { }
 
 #endif // NeoPixel Support
 
+const int whiteTable[64] = {
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32,
+	35, 38, 41, 44, 47, 50, 54, 58, 62, 66, 70, 75, 80, 85, 90, 97, 104, 111, 118, 125, 132,
+	139, 146, 153, 160, 167, 174, 181, 188, 195, 202, 209, 216, 223, 230, 237, 244, 251, 255};
+
 void primNeoPixelSend(OBJ *args) {
 	if (!neoPixelPinSet) initNeoPixelPin(-1); // if pin not set, use the internal NeoPixel pin
 
@@ -302,6 +308,9 @@ void primNeoPixelSend(OBJ *args) {
 		int rgb = obj2int(arg);
 		// re-order RGB -> GBR (NeoPixel order)
 		int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
+		if (32 == neoPixelBits) { // send white as the final byte of four
+			val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
+		}
 		sendNeoPixelData(val);
 	} else if (IS_CLASS(arg, ArrayClass)) {
 		int count = objWords(arg);
@@ -309,15 +318,20 @@ void primNeoPixelSend(OBJ *args) {
 			OBJ item = FIELD(arg, i);
 			if (isInt(item)) {
 				int rgb = obj2int(item);
+				// re-order RGB -> GBR (NeoPixel order)
 				int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
+				if (32 == neoPixelBits) { // send white as the final byte of four
+					val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
+				}
 				sendNeoPixelData(val);
 			}
 		}
 	}
 }
 
-void primNeoPixelSetPin(OBJ *args) {
+void primNeoPixelSetPin(int argCount, OBJ *args) {
 	int pinNum = isInt(args[0]) ? obj2int(args[0]) : -1; // -1 means "internal NeoPixel pin"
+	neoPixelBits = ((argCount > 1) && (trueObj == args[1])) ? 32 : 24;
 	initNeoPixelPin(pinNum);
 }
 
