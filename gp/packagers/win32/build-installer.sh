@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Pass the directory where the IDE files are as a parameter
-idedir=$1
-if [ -z "$idedir" ]; then
-    echo "Please provide a directory where I can find the IDE files"
+exepath=$1
+if [ -z "$exepath" ]; then
+    echo "Please provide a path to the win32 IDE executable"
     echo "Example:"
     echo
-    echo "./make-installer.sh ~/Microblocks-v14"
+    echo "./build-installer.sh ~/ublocks-win.exe [destination] [version-number]"
     exit 1
 fi;
 
@@ -36,13 +36,20 @@ if [ -z "$isccpath" ]; then
     fi
 fi;
 
+# Run InnoSetup and generate the installer
+destdir=$2
+if [ -z "$destdir" ]; then destdir=".."; fi
+
+version=$3
+if [ -z "$version" ]; then version="missing-version"; fi
+
 unset DISPLAY
 mkdir build
-cp $idedir/* -r build
+cp $exepath -r build
 cp microBlocks.ico build
-cp install-config.iss build
+cat install-config.iss | sed -E "s/@AppVersion/$version/" > build/install-config.iss
 cd build
 wine "$isccpath" install-config.iss
-mv microBlocks\ setup.exe ..
 cd ..
+mv build/microBlocks\ setup.exe $destdir
 rm -rf build
