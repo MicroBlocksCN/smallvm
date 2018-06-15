@@ -2,45 +2,24 @@
 // John Maloney, June 2018
 //
 // Build stand-alone MicroBlocks application.
-// To do: allow saving apps for platforms other than current one
 
 // ToDo:
-//	[x] output mutiple applications
-//	generate Mac .app with correct plist and icons
-//	pull examples from internal file system
-//	button to import a library
-//	get translations from 'translations'
-//	translation button
-
-// createEmbeddedFS (new 'MicroBlocksAppMaker')
-// test (new 'MicroBlocksAppMaker')
+//	[ ] button to import a library
+//	[ ] translation button
+//	[ ] mechanism to install MicroBlocks VM onto board
+//	[ ] open library from embedded file system
 
 defineClass MicroBlocksAppMaker
 
 method test MicroBlocksAppMaker {
 	embeddedFS = (createEmbeddedFS this)
-	writeExeFile this (appPath) embeddedFS '../apps/ublocks-test'
 	writeExeFile this 'gp-win.exe' embeddedFS '../apps/ublocks-win.exe'
 	writeExeFile this 'gp-linux32bit' embeddedFS '../apps/ublocks-linux32bit'
 	writeExeFile this 'gp-linux64bit' embeddedFS '../apps/ublocks-linux64bit'
 	writeExeFile this 'gp-raspberryPi' embeddedFS '../apps/ublocks-raspberryPi'
+	writeExeFile this 'gp-mac' embeddedFS '../apps/ublocks-test'
+	writeMacApp this 'gp-mac' embeddedFS '../apps'
 	print 'Done!'
-}
-
-method exportApp MicroBlocksAppMaker name {
-  if (isNil name) { name = 'MicroBlocks' }
-  dir = (directoryPart name)
-  if ('' == dir) { dir = (gpFolder) }
-  name = (filePart name)
-  embeddedFS = (createEmbeddedFS this)
-  if ('Mac' == (platform)) {
-	exportMacApp this dir name embeddedFS
-  } else {
-	extension = nil
-	if ('Win' == (platform)) { extension = '.exe' }
-	fileName = (uniqueNameNotIn (join (listDirectories dir) (listFiles dir)) name extension)
-	writeExeFile this (join dir '/' fileName) embeddedFS
-  }
 }
 
 method createEmbeddedFS MicroBlocksAppMaker {
@@ -111,37 +90,98 @@ method findAppEnd MicroBlocksAppMaker appData {
 
 // Macintosh App Bundle Support
 
-method exportMacApp MicroBlocksAppMaker dir name embeddedFS {
-  // Create a Mac application bundle with the given embedded file system (a ZipFile).
+method writeMacApp MicroBlocksAppMaker srcAppPath embeddedFS dstPath {
+	// Create a Mac application that combines the given GP virtual macine
+	// with the given embedded file system (a ZipFile).
 
-  name = (uniqueNameNotIn (join (listDirectories dir) (listFiles dir)) name '.app')
-  appName = (join dir '/' name)
-  name = (withoutExtension name)
+  name = 'MicroBlocks'
+  appName = (join dstPath '/' name '.app')
   makeDirectory appName
   makeDirectory (join appName '/Contents')
   makeDirectory (join appName '/Contents/MacOS')
   makeDirectory (join appName '/Contents/Resources')
   writeFile (join appName '/Contents/info.plist') (macInfoFile this name)
   writeShellScript this name (join appName '/Contents/MacOS/start.sh')
-  writeExeFile this (appPath) embeddedFS (join appName '/Contents/MacOS/' name)
+  writeExeFile this srcAppPath embeddedFS (join appName '/Contents/MacOS/' name)
+  makeDirectory (join appName '/Resources')
+  writeFile (join appName '/Resources/App.icns') (readFile 'MicroBlocks.icns' true)
 }
 
 method macInfoFile MicroBlocksAppMaker name {
-  return (join '<?xml version="1.0" encoding="UTF-8"?>
+  return '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
+
 <dict>
 	<key>CFBundleName</key>
-	<string>' name '</string>
-	<key>CFBundleDisplayName</key>
-	<string>' name '</string>
+	<string>MicroBlocks</string>
 	<key>CFBundleExecutable</key>
 	<string>start.sh</string>
 	<key>CFBundleIconFile</key>
-	<string>AppIcons</string>
+	<string>App</string>
+
+   <key>NSHighResolutionCapable</key><true/>
+
+	<key>CFBundleIdentifier</key>
+	<string>org.gpblocks.MicroBlocks</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>MicroBlocks Project File</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<!-- MicroBlocks specific extensions (see UTExportedTypeDeclarations) -->
+			<string>org.gpblocks.gp.gpp</string>
+			</array>
+		</dict>
+
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Media File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.data</string>
+			</array>
+		</dict>
+
+	</array>
+
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>org.gpblocks.gp.gpp</string>
+			<key>UTTypeDescription</key>
+			<string>GP Project File</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<string>gpp</string>
+				<key>public.mime-type</key>
+				<string>application/octet-stream</string>
+			</dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+		</dict>
+	</array>
+
 </dict>
 </plist>
-')
+'
 }
 
 method writeShellScript MicroBlocksAppMaker name fileName {
