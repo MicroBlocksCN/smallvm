@@ -1,7 +1,7 @@
 [Setup]
 AppId={{20638B6B-EDD6-46A7-975B-A5B867243D9A}
 AppName=microBlocks
-AppVerName=microBlocks-0.1.14
+AppVerName=microBlocks-@AppVersion
 AppPublisher=microBlocks
 AppPublisherURL=http://microblocks.fun
 AppSupportURL=http://microblocks.fun
@@ -23,7 +23,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Files]
-Source: "*.*"; Excludes: "install-config.iss,ublocks-linux32bit,ublocks-linux64bit,ublocks-raspberryPi,ublocks-mac.app"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+Source: "ublocks-win.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "microBlocks.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\microBlocks"; Filename: "{app}\ublocks-win.exe"; IconFilename: "{app}\microBlocks.ico"; WorkingDir: "{app}"

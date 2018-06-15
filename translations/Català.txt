@@ -163,9 +163,6 @@ assigna al vector _ la posició _ a _
 length of _
 llargada de _
 
-neo pixel send r _ g _ b _
-neo pixel vermell _ verd _ blau _
-
 i2c get device _ register _
 i2c llegeix del dispositiu _ el registre _
 
@@ -197,7 +194,7 @@ shape for letter _
 shape for letter _
 
 set NeoPixel pin _ has white _
-set NeoPixel pin _ has white _
+configura un NeoPixel al pin _ amb color blanc _
 
 send NeoPixel rgb _
-send NeoPixel rgb _
+envia RGB _ al NeoPixel

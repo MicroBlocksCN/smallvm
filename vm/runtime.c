@@ -225,10 +225,20 @@ static int outBufEnd = 0;
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
 static inline void sendNextByte() {
+  int byteSent;
 	if (outBufStart != outBufEnd) {
-		if (1 == sendByte(outBuf[outBufStart])) {
-			outBufStart = (outBufStart + 1) & OUTBUF_MASK;
-		}
+#if defined(ESP8266)
+    if (websocketEnabled) {
+      byteSent = websocketSendByte(outBuf[outBufStart]);
+    } else {
+#endif
+      byteSent = sendByte(outBuf[outBufStart]);
+#if defined(ESP8266)
+    }
+#endif
+    if (1 == byteSent) {
+		  outBufStart = (outBufStart + 1) & OUTBUF_MASK;
+	  }
 	}
 }
 

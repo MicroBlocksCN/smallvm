@@ -13,11 +13,9 @@
 #endif
 
 void setup() {
-  
 #ifdef ARDUINO_NRF52_PRIMO
   sd_softdevice_disable();
 #endif
-
 #ifdef ESP8266
   websocketInit();
 #endif
