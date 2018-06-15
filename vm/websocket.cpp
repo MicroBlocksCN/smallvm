@@ -24,6 +24,7 @@
 ESP8266WiFiMulti WiFiMulti;
 
 char websocketEnabled = 0;
+int connectionId;
 
 WebSocketsServer websocket = WebSocketsServer(9999);
 
@@ -37,11 +38,12 @@ void websocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       break;
     case WStype_CONNECTED:
       {
-        websocketEnabled = 1;
         char s[100];
         IPAddress ip = websocket.remoteIP(num);
         sprintf(s, "Client connected from IP: %d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
         outputString(s);
+        websocketEnabled = 1;
+        connectionId = num;
       }
       break;
     case WStype_TEXT:
@@ -49,6 +51,7 @@ void websocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       outputString(message);
       break;
     case WStype_BIN:
+      connectionId = num;
       for (int i = 0; i < length; i++) {
         rcvBuf[rcvByteCount + i] = payload[i];
       }
@@ -57,15 +60,20 @@ void websocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
   }
 }
 
-extern "C" void websocketSend(uint8_t * payload, size_t length) {
+void websocketSend(uint8_t * payload, size_t length) {
+  websocket.sendBIN(connectionId, payload, length);
+}
+
+extern "C" int websocketSendByte(char payload) {
   // first parameter is the socket connection number
   // we should only accept one connection per device
-  websocket.sendBIN(0, payload, length);
+  uint8 byteToSend[] = { ( char ) payload };
+  websocket.sendBIN(connectionId, byteToSend, 1);
+  return 1;
 }
 
 extern "C" void websocketInit() {
   // delay(4000);
-
   outputString("Connecting to WiFi network\n");
   
   WiFiMulti.addAP(ESSID, PSK);

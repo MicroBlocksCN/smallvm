@@ -16,6 +16,7 @@ extern char websocketEnabled;
 void websocketInit();
 void websocketLoop();
 int readWebsocketBytes(uint8 *buf);
+int websocketSendByte(uint8 payload);
 
 #ifdef __cplusplus
 }
