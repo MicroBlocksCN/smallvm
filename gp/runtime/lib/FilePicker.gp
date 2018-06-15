@@ -1,6 +1,6 @@
 // FilePicker.gp - Dialog box for specifying files for opening or saving.
 
-defineClass FilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir action forSaving extensions isDone answer
+defineClass FilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer
 
 to pickFileToOpen anAction defaultPath extensionList {
   // Pick an existing file to open starting at defaultPath, if provided. If anAction is not
@@ -82,6 +82,7 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   if (isNil defaultPath) { defaultPath = (absolutePath '.') }
   if (isNil saveFlag) { saveFlag = false }
   scale = (global 'scale')
+  useEmbeddedFS = false
 
   forSaving = saveFlag
   if forSaving {
@@ -183,6 +184,11 @@ method addShortcutButtons FilePicker {
 	(not forSaving)
 	(isClass extensions 'Array')
 	(contains extensions '.gpp'))
+  showLibraries = (and
+	(not (contains hidden 'Libraries'))
+	(not forSaving)
+	(isClass extensions 'Array')
+	(contains extensions '.ulib'))
   showDesktop = (not (contains hidden 'Desktop'))
   showDownloads = (and
 	(not (contains hidden 'Downloads'))
@@ -192,12 +198,16 @@ method addShortcutButtons FilePicker {
   buttonX = ((left morph) + (22 * scale))
   buttonY = ((top morph) + (55 * scale))
   dy = (60 * scale)
-  if showGP {
-	addIconButton this buttonX buttonY 'gpFolderIcon' (action 'setGPFolder' this) 'My Stuff'
-	buttonY += dy
-  }
   if showExamples {
 	addIconButton this buttonX buttonY 'examplesIcon' (action 'setExamples' this)
+	buttonY += dy
+  }
+  if showLibraries {
+	addIconButton this buttonX buttonY 'examplesIcon' (action 'setLibraries' this) 'Libraries'
+	buttonY += dy
+  }
+  if showGP {
+	addIconButton this buttonX buttonY 'gpFolderIcon' (action 'setGPFolder' this) 'My Stuff'
 	buttonY += dy
   }
   if (not (isOneOf (platform) 'Browser' 'iOS')) {
@@ -253,22 +263,34 @@ method textButton FilePicker x y label selectorOrAction {
 // actions
 
 method setComputer FilePicker {
+  useEmbeddedFS = false
   showFolder this '/' true
 }
 
 method setDesktop FilePicker {
+  useEmbeddedFS = false
   showFolder this (join (userHomePath) '/Desktop') true
 }
 
 method setDownloads FilePicker {
+  useEmbeddedFS = false
   showFolder this (join (userHomePath) '/Downloads') true
 }
 
 method setExamples FilePicker {
-  showFolder this (gpExamplesFolder) true
+print 'setExamples' // xxx
+  useEmbeddedFS = true
+  showFolder this 'Examples' true
+//  showFolder this (gpExamplesFolder) true
+}
+
+method setLibraries FilePicker {
+  useEmbeddedFS = true
+  showFolder this 'Libraries' true
 }
 
 method setGPFolder FilePicker {
+  useEmbeddedFS = false
   showFolder this (gpFolder) true
 }
 
@@ -283,21 +305,77 @@ method showFolder FilePicker path isTop {
   currentDir = path
   if isTop { topDir = path }
   setText folderReadout (filePart path)
-  newContents = (list)
-  for dir (sorted (listDirectories currentDir)) {
+  updateParentAndNewFolderButtons this
+  setCollection (contents listPane) (folderContents this)
+}
+
+method folderContents FilePicker {
+  result = (list)
+  if useEmbeddedFS {
+	dirsAndFiles = (embeddedFilesAndDirs this (join currentDir '/'))
+	dirList = (at dirsAndFiles 1)
+	fileList = (at dirsAndFiles 2)
+
+// 	dirsSeen = (dictionary)
+// 	dirList = (list)
+// 	fileList = (list)
+// 	prefix = (join currentDir '/')
+// 	offset = ((count prefix) + 1)
+// 	for fn (listEmbeddedFiles) {
+// 	  if (beginsWith fn prefix) {
+// 		fn = (substring fn offset)
+// 		i = (findFirst fn '/')
+// 		if (isNil i) {
+// 		  add fileList fn
+// 		} else {
+// 		  dirName = (substring fn 1 (i - 1))
+// 		  if (not (contains dirsSeen dirName)) {
+// 			add dirList dirName
+// 			add dirsSeen dirName
+// 		  }
+// 		}
+// 	  }
+// 	}
+  } else {
+	dirList = (listDirectories currentDir)
+	fileList = (listFiles currentDir)
+  }
+  for dir (sorted dirList) {
 	if (not (beginsWith dir '.')) {
-	  add newContents (join '[ ] ' dir)
+	  add result (join '[ ] ' dir)
 	}
   }
-  for fn (sorted (listFiles currentDir)) {
+  for fn (sorted fileList) {
 	if (not (beginsWith fn '.')) {
 	  if (or (isNil extensions) (hasExtension fn extensions)) {
-		add newContents fn
+		add result fn
 	  }
 	}
   }
-  updateParentAndNewFolderButtons this
-  setCollection (contents listPane) newContents
+  return result
+}
+
+method embeddedFilesAndDirs FilePicker prefix {
+  dirsSeen = (dictionary)
+  dirList = (list)
+  fileList = (list)
+  offset = ((count prefix) + 1)
+  for fn (listEmbeddedFiles) {
+	if (beginsWith fn prefix) {
+	  fn = (substring fn offset)
+	  i = (findFirst fn '/')
+	  if (isNil i) {
+		add fileList fn
+	  } else {
+		dirName = (substring fn 1 (i - 1))
+		if (not (contains dirsSeen dirName)) {
+		  add dirList dirName
+		  add dirsSeen dirName
+		}
+	  }
+	}
+  }
+  return (list dirList fileList)
 }
 
 method newFolder FilePicker {
@@ -308,6 +386,7 @@ method newFolder FilePicker {
   }
   newPath = (join currentDir '/' newFolderName)
   makeDirectory newPath
+  useEmbeddedFS = false
   showFolder this newPath false
 }
 

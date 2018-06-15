@@ -88,10 +88,13 @@ method addTopBarParts MicroBlocksEditor {
   addPart morph (morph title)
 
   leftItems = (list)
+  add leftItems (addLanguageButton this)
+  add leftItems (5 * scale)
   add leftItems (textButton this 'New' 'newProject')
   add leftItems (textButton this 'Open' 'openProjectMenu')
   add leftItems (textButton this 'Save' 'saveProject')
   add leftItems (textButton this 'Connect' 'connectToBoard')
+  add leftItems (5 * scale)
   add leftItems (makeIndicator this)
 
   rightItems = (list)
@@ -500,4 +503,89 @@ method exportAsLibrary MicroBlocksEditor {
 
 method softReset MicroBlocksEditor {
   softReset (smallRuntime)
+}
+
+method installVM MicroBlocksEditor {
+  boards = (collectBoardDrives this)
+  if ((count boards) > 0) {
+	menu = (menu 'Select Board:' this)
+	for b boards { addItem menu b (action 'copyVMToBoard' this b) }
+	popUpAtHand menu (global 'page')
+  } else {
+	inform 'No boards found; is your board plugged in?'
+  }
+}
+
+method collectBoardDrives MicroBlocksEditor {
+  result = (list)
+  if ('Mac' == (platform)) {
+	for v (listDirectories '/Volumes') {
+	  if (beginsWith v 'MICROBIT') { add result v }
+	  if (beginsWith v 'MINI') { add result v }
+	  if (beginsWith v 'CPLAYBOOT') { add result v }
+	}
+  }
+  return result
+}
+
+method copyVMToBoard MicroBlocksEditor boardName {
+  if (beginsWith boardName 'MICROBIT') {
+	vmFileName = 'vm.ino.BBCmicrobit.hex'
+  } (beginsWith boardName 'MINI') {
+	vmFileName = 'vm.ino.Calliope.hex'
+  } (beginsWith boardName 'MINI') {
+	vmFileName = 'vm.circuitplay.uf2'
+  }
+  vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+
+print 'copyVM:' boardName 'hex data:' (byteCount vmData) 'to:' (join '/Volumes/' boardName '/' vmFileName)
+
+  if ('Mac' == (platform)) {
+	writeFile (join '/Volumes/' boardName '/' vmFileName) vmData
+  }
+}
+
+method addLanguageButton MicroBlocksEditor {
+  button = (newButton '' (action 'languageMenu' this))
+  setCostumes button (languageButtonIcon this) (languageButtonOverIcon this)
+  addPart morph (morph button)
+  return button
+}
+
+method languageButtonIcon MicroBlocksEditor {
+  data = '
+iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAACLUlEQVR4nK2Sy0vqYRCG/bPMC5qX3Cgu
+RFy5SFzqpo2LtiKICwmRIGzhRndiChIJEkoQppKKYqEhtFDxXt5T3pg56DnRsbM5Ay+/T/nmmXfmG4Fg
+T6RSKVxfXyMSiSAYDOLs7Az77n6LTCaDdDoNgmw2G6zXa5bH48Hp6SnsdvvPsNvbW04kkYvpdIrJZIK3
+tzc4nU7U63XUajWYTKa/g25ubnaARCKB+XyO5XKJxWLB5/f3d9hsNlSrVZTLZRwdHX0FRaPRHWA2myEU
+CvGXkkl0JjfHx8doNpt4fHxEPB6HUqn8DQqHw9w3WSd5vV6uTMnUEmk0GsFgMDDs6ekJVPjw8PAX5Pz8
+HBcXFyy/3w+32w2HwwGLxQKj0Qi9Xg+dTseiFlQqFTsggFwuh0wmg8DlcuHj44NtU7XhcAir1cpfcrPV
+YDCAWq1Gp9Ph4WazWX56iUQCwcnJCVarFVuni/1+n6dP5z8hvV6PXby+vqJUKoFWIRAIQCQSQWA2mxlC
+s+h2uyytVssQ6p80Ho/ZgUKhQKPRwMPDA5LJJLcvFAoh0Gg03CtZ3aftHGgGUqmUq1PyVjxcukCVX15e
+WPSbbLfbbbRaLT7THAhwf3+Pq6srXoMdgIJs0mVapEqlwhXpGWlDn5+f+T8a5MHBAQN8Ph/rC4SCnopc
+FAoF5HI5rlosFpHP57k6JfwI2MbW7t3dHfdN6x+LxTiZkv4J2IZYLGbbdPHy8nKnb4P83/EJ/9B4j8wl
+crwAAAAASUVORK5CYII='
+  return (scaledIcon this data)
+}
+
+method languageButtonOverIcon MicroBlocksEditor {
+  data = '
+iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAACBElEQVR4nK1SSWtiYRB8fzjuRg8SUDwI
+0ZM5CIK3SAgoiqjgwZNGQgzBBdzQJC5RAtFo3LcK1cNzyGTiXKaheN/36K6urq8V5Yd4eHjA3d0dMpkM
+UqkUwuEwfsr9FqVSCcViESTZ7/fY7XaC6+trBAIBXFxcHCcrFApSSFDFcrnEYrHAbDbD5eUler0e2u02
+nE7n34ny+fyB4Pb2FqvVCpvNBuv1Ws7z+RxerxfPz894fHyExWL5SpTNZg8E7J5Op+XLYoJnqjk/P8dg
+MECz2UQul4PZbP5NxCLOTelEKBSSzixWMZ1OYbfbhazT6YCNTSbTL5JYLIZ4PC6IRqO4urqC3++H2+2G
+w+HA2dkZbDabgCOcnp6KAhIYjUYYDAYowWAQ2+1WZLPbx8cHPB6PfKlGBe8kGY1GYm61WpWn1+l0UHw+
+nxhIyUycTCbi/p8k4/FYVLy+vqLVaoGrkEgkoNVqobhcLiGhF+/v7wJKJwnnV0EFHOHl5QW1Wg339/cy
+/snJCRSr1Soyj0H1gR7o9XrpzmIVYi4T2Lnf7wt4p+zhcIi3tzc50wcSVCoV3NzcyBocCBiUyWQu0tPT
+k3TkM3JDu92u/KORGo1GCCKRiOALCYNPRRWNRgP1el26cql4ZncWHCVQQ5VbLpdlbq4/N5PFLPongRos
+pmwmJpPJA74Z+b/jE3cbtWGJekUkAAAAAElFTkSuQmCC'
+  return (scaledIcon this data)
+}
+
+method scaledIcon MicroBlocksEditor data {
+  scale = (global 'scale')
+  bm = (readFrom (new 'PNGReader') (base64Decode data))
+  if (1 != scale) { bm = (scaleAndRotate bm scale) }
+  return bm
 }
