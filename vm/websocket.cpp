@@ -19,6 +19,7 @@
 
 #define ESSID "YOUR_NETWORK_ESSID"
 #define PSK "YOUR_NETWORK_PASSWORD"
+
 #define USE_SERIAL Serial;
 
 ESP8266WiFiMulti WiFiMulti;
@@ -26,11 +27,14 @@ ESP8266WiFiMulti WiFiMulti;
 char websocketEnabled = 0;
 int connectionId;
 
+static uint8 messageBuffer[1024];
+static int msgBufIndex = 0;
+
 WebSocketsServer websocket = WebSocketsServer(9999);
 
 void websocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
   int msgStart = 0;
-  char *message = (char*)payload;
+  char *message = (char*) payload;
   switch(type) {
     case WStype_DISCONNECTED:
       outputString("Websocket connection dropped\n");
@@ -60,15 +64,17 @@ void websocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
   }
 }
 
-void websocketSend(uint8_t * payload, size_t length) {
-  websocket.sendBIN(connectionId, payload, length);
-}
-
 extern "C" int websocketSendByte(char payload) {
-  // first parameter is the socket connection number
-  // we should only accept one connection per device
-  uint8 byteToSend[] = { ( char ) payload };
-  websocket.sendBIN(connectionId, byteToSend, 1);
+  messageBuffer[msgBufIndex] = payload;
+  // only send out the actual websockets message when it's complete
+  if ((0xFA == messageBuffer[0] && 2 == msgBufIndex) ||
+    (0xFB == messageBuffer[0] && msgBufIndex > 4 &&
+    (messageBuffer[4] << 8) | messageBuffer[3] == msgBufIndex - 4)) {
+    websocket.sendBIN(connectionId, messageBuffer, msgBufIndex + 1);
+    msgBufIndex = 0;
+  } else {
+    msgBufIndex ++;
+  }
   return 1;
 }
 
