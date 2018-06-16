@@ -126,6 +126,9 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   if (and ((count defaultPath) > 1) (endsWith defaultPath '/')) {
 	defaultPath = (substring defaultPath 1 ((count defaultPath) - 1))
   }
+  if (isOneOf defaultPath 'Examples' 'Libraries') {
+	useEmbeddedFS = true
+  }
   showFolder this defaultPath true
   return this
 }
@@ -195,7 +198,7 @@ method addShortcutButtons FilePicker {
 	('Linux' != (platform)))
   showcComputer = (not (contains hidden 'Computer'))
 
-  buttonX = ((left morph) + (22 * scale))
+  buttonX = ((left morph) + (17 * scale))
   buttonY = ((top morph) + (55 * scale))
   dy = (60 * scale)
   if showExamples {
@@ -207,7 +210,7 @@ method addShortcutButtons FilePicker {
 	buttonY += dy
   }
   if showGP {
-	addIconButton this buttonX buttonY 'gpFolderIcon' (action 'setGPFolder' this) 'My Stuff'
+	addIconButton this buttonX buttonY 'gpFolderIcon' (action 'setGPFolder' this) (filePart (gpFolder))
 	buttonY += dy
   }
   if (not (isOneOf (platform) 'Browser' 'iOS')) {
@@ -236,9 +239,13 @@ method addIconButton FilePicker x y iconName anAction label {
   }
   scale = (global 'scale')
   iconBM = (scaleAndRotate (call iconName (new 'FilePickerIcons')) (0.75 * scale))
-  bm = (newBitmap (62 * scale) (40 * scale))
+  bm = (newBitmap (70 * scale) (40 * scale))
   drawBitmap bm iconBM (half ((width bm) - (width iconBM))) 0
-  setFont 'Arial Bold' (12 * scale)
+  if (1 == scale) {
+	setFont 'Arial Bold' (9 * scale)
+  } else {
+	setFont 'Arial Bold' (12 * scale)
+  }
   labelX = (half ((width bm) - (stringWidth label)))
   labelY = ((height bm) - (fontHeight))
   drawString bm label (gray 0) labelX labelY
@@ -278,10 +285,8 @@ method setDownloads FilePicker {
 }
 
 method setExamples FilePicker {
-print 'setExamples' // xxx
   useEmbeddedFS = true
   showFolder this 'Examples' true
-//  showFolder this (gpExamplesFolder) true
 }
 
 method setLibraries FilePicker {
@@ -315,27 +320,6 @@ method folderContents FilePicker {
 	dirsAndFiles = (embeddedFilesAndDirs this (join currentDir '/'))
 	dirList = (at dirsAndFiles 1)
 	fileList = (at dirsAndFiles 2)
-
-// 	dirsSeen = (dictionary)
-// 	dirList = (list)
-// 	fileList = (list)
-// 	prefix = (join currentDir '/')
-// 	offset = ((count prefix) + 1)
-// 	for fn (listEmbeddedFiles) {
-// 	  if (beginsWith fn prefix) {
-// 		fn = (substring fn offset)
-// 		i = (findFirst fn '/')
-// 		if (isNil i) {
-// 		  add fileList fn
-// 		} else {
-// 		  dirName = (substring fn 1 (i - 1))
-// 		  if (not (contains dirsSeen dirName)) {
-// 			add dirList dirName
-// 			add dirsSeen dirName
-// 		  }
-// 		}
-// 	  }
-// 	}
   } else {
 	dirList = (listDirectories currentDir)
 	fileList = (listFiles currentDir)
@@ -400,6 +384,7 @@ method okay FilePicker {
 	  answer = (join currentDir '/' sel)
 	}
   }
+  if useEmbeddedFS { answer = (join '//' answer) }
   if (and (notNil action) ('' != answer)) { call action answer }
   isDone = true
   removeFromOwner morph
@@ -428,7 +413,9 @@ method fileOrFolderDoubleClicked FilePicker {
 	}
   } else { // file selected
 	if (not forSaving) {
-	  if (notNil action) { call action (join currentDir '/' sel) }
+	  answer = (join currentDir '/' sel)
+	  if useEmbeddedFS { answer = (join '//' answer) }
+	  if (notNil action) { call action answer }
 	  removeFromOwner morph
 	}
   }
