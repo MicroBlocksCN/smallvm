@@ -76,23 +76,22 @@ to gpFolder {
   if (contains (listDirectories path) 'Documents') {
 	path = (join path '/Documents')
   }
-  if (not (contains (listDirectories path) 'MicroBlocks Projects')) {
-	// create the MicroBlocks folder if it does not already exist
-	makeDirectory (join path '/MicroBlocks Projects')
+  if (not (contains (listDirectories path) 'MicroBlocks')) {
+	if (contains (listDirectories path) 'MicroBlocks Projects') {
+		// if it exists, rename old 'MicroBlocks Projects' folder to 'MicroBlocks'
+		renameFile (join path '/MicroBlocks Projects') (join path '/MicroBlocks')
+	} else {
+		// create the MicroBlocks folder if it does not already exist
+		makeDirectory (join path '/MicroBlocks')
+	}
   }
-  if (contains (listDirectories path) 'MicroBlocks Projects') {
-	path = (join path '/MicroBlocks Projects')
+  if (contains (listDirectories path) 'MicroBlocks') {
+	path = (join path '/MicroBlocks')
   }
   return path
 }
 
-to gpExamplesFolder {
-  if ('Mac' == (platform)) {
-	// on Siera and later there seems to be no way to get a path to the folder containing the application
-	return (join (gpFolder) '/Examples')
-  }
-  return (join (absolutePath '.') '/Examples')
-}
+to gpExamplesFolder { return 'Examples' }
 
 method clicked Block hand {
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {

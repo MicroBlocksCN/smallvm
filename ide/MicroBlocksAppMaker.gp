@@ -5,9 +5,7 @@
 
 // ToDo:
 //	[ ] button to import a library
-//	[ ] translation button
 //	[ ] mechanism to install MicroBlocks VM onto board
-//	[ ] open library from embedded file system
 
 defineClass MicroBlocksAppMaker
 
@@ -27,7 +25,7 @@ method createEmbeddedFS MicroBlocksAppMaker {
 
 	zip = (create (new 'ZipFile'))
 	libDir = (join (directoryPart (appPath)) 'runtime/lib')
-	addFolderToEmbeddedFS this libDir 'lib' zip // xxx check this on Sierra...
+	addFolderToEmbeddedFS this libDir 'lib' zip
 	addFolderToEmbeddedFS this '../ide' 'lib' zip // note: must add MicroBlocks ide after GP lib
 	addFolderToEmbeddedFS this '../gp/Examples' 'Examples' zip
 	addFolderToEmbeddedFS this '../gp/Libraries' 'Libraries' zip
@@ -44,7 +42,7 @@ method addFolderToEmbeddedFS MicroBlocksAppMaker srcFolder dstFolder zip {
 		if (contains dirs fn) {
 			addFolderToEmbeddedFS this (join srcFolder '/' fn) (join dstFolder '/' fn) zip
 		} (not (isOneOf fn '.DS_Store' '.' '..')) {
-			data = (readFile (join srcFolder '/' fn))
+			data = (readFile (join srcFolder '/' fn) true)
 			addFile zip (join dstFolder '/' fn) data true
 		}
 	}
@@ -88,10 +86,10 @@ method findAppEnd MicroBlocksAppMaker appData {
   return (byteCount appData)
 }
 
-// Macintosh App Bundle Support
+// Macintosh App Creation
 
 method writeMacApp MicroBlocksAppMaker srcAppPath embeddedFS dstPath {
-	// Create a Mac application that combines the given GP virtual macine
+	// Create a Mac application bundle that combines the given GP virtual macine
 	// with the given embedded file system (a ZipFile).
 
   name = 'MicroBlocks'

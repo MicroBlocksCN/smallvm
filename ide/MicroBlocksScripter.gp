@@ -801,13 +801,17 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 // Library import/export
 
 method importLibrary MicroBlocksScripter {
-  pickFileToOpen (action 'importLibraryFromFile' this) (gpExamplesFolder) (array '.ulib')
+  pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ulib')
 }
 
 method importLibraryFromFile MicroBlocksScripter fileName {
   // Import a library with the give file path.
 
-  data = (readFile fileName)
+  if (beginsWith fileName '//') {
+	data = (readEmbeddedFile (substring fileName 3))
+  } else {
+	data = (readFile fileName)
+  }
   if (isNil data) { error (join 'Could not read: ' fileName) }
 
   myModule = (targetModule this)

@@ -93,6 +93,7 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (textButton this 'New' 'newProject')
   add leftItems (textButton this 'Open' 'openProjectMenu')
   add leftItems (textButton this 'Save' 'saveProject')
+  add leftItems (textButton this 'Library' 'importLibrary')
   add leftItems (textButton this 'Connect' 'connectToBoard')
   add leftItems (5 * scale)
   add leftItems (makeIndicator this)
@@ -155,7 +156,11 @@ method openProjectMenu MicroBlocksEditor {
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the give file path or URL.
 
-  data = (readData (new 'Project') location)
+  if (beginsWith location '//') {
+	data = (readEmbeddedFile (substring location 3) true)
+  } else {
+	data = (readFile location true)
+  }
   if (isNil data) {
 	error (join 'Could not read: ' location)
   }
@@ -180,7 +185,7 @@ method saveProject MicroBlocksEditor fName {
 
   if (and (isNil fName) (notNil fileName)) {
 	fName = fileName
-	if (notNil (nextMatchIn '/Examples/' fName)) {
+	if (beginsWith fName (gpExamplesFolder)) {
 	  fName = (join (gpFolder) '/' (filePart fileName))
 	}
   }
@@ -442,14 +447,13 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addLine menu
-  addItem menu 'Language' (action 'languageMenu')
-  addItem menu 'import library' 'importLibrary'
+  addItem menu 'install MicroBlocks on board' 'installVM'
   if (not (devMode)) {
 	addLine menu
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
 	addItem menu 'export functions as library' 'exportAsLibrary'
-	addItem menu 'reset pins and clear memory' 'softReset'
+//	addItem menu 'reset pins and clear memory' 'softReset'
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
@@ -462,6 +466,106 @@ method contextMenu MicroBlocksEditor {
 //   addItem menu 'get var names test' (action 'getAllVarNames' (smallRuntime))
   return menu
 }
+
+method showAdvancedBlocks MicroBlocksEditor {
+  setDevMode (global 'page') true
+  developerModeChanged this
+}
+
+method hideAdvancedBlocks MicroBlocksEditor {
+  setDevMode (global 'page') false
+  developerModeChanged this
+}
+
+method importLibrary MicroBlocksEditor {
+  importLibrary scripter
+}
+
+method exportAsLibrary MicroBlocksEditor {
+  exportAsLibrary scripter fileName
+}
+
+method softReset MicroBlocksEditor {
+  softReset (smallRuntime)
+}
+
+// Virtual Machine Installer
+
+method installVM MicroBlocksEditor {
+  boards = (collectBoardDrives this)
+  if ((count boards) > 0) {
+	menu = (menu 'Select board:' this)
+	for b boards {
+		addItem menu (first b) (action 'copyVMToBoard' this (first b) (last b))
+	}
+	popUpAtHand menu (global 'page')
+  } else {
+	inform 'No boards found; is your board plugged in?'
+  }
+}
+
+method collectBoardDrives MicroBlocksEditor {
+  result = (list)
+  if ('Mac' == (platform)) {
+	for v (listDirectories '/Volumes') {
+	  path = (join '/Volumes/' v '/')
+	  if (beginsWith v 'MICROBIT') { add result (list v path) }
+	  if (beginsWith v 'MINI') { add result (list v path) }
+	  if (beginsWith v 'CPLAYBOOT') { add result (list v path) }
+	}
+  } ('Linux' == (platform)) {
+	for dir (listDirectories '/media') {
+	  prefix = (join '/media/' dir)
+	  for v (listDirectories prefix) {
+		path = (join prefix '/' v '/')
+		if (beginsWith v 'MICROBIT') { add result (list v path) }
+		if (beginsWith v 'MINI') { add result (list v path) }
+		if (beginsWith v 'CPLAYBOOT') { add result (list v path) }
+	  }
+	}
+  } ('Win' == (platform)) {
+	for letter (range 65 90) {
+	  drive = (join (string letter) ':/')
+	  boardName = (getBoardName this drive)
+	}
+  }
+  return result
+}
+
+method getBoardName MicroBlocksEditor path {
+  for fn (listFiles path) {
+	if ('MICROBIT.HTM' == fn) { return 'BBC micro:bit' }
+	if ('MINI.HTM' == fn) { return 'Calliope Mini' }
+	if ('INFO_UF2.TXT' == fn) {
+	  contents = (readFile (join path fn))
+	  if (notNil (nextMatchIn 'CPlay Express' contents)) {
+		return 'Circuit Playground Express'
+	  }
+	}
+  }
+  return nil
+}
+
+method copyVMToBoard MicroBlocksEditor boardName boardPath {
+  if (beginsWith boardName 'MICROBIT') {
+	vmFileName = 'vm.ino.BBCmicrobit.hex'
+  } (beginsWith boardName 'MINI') {
+	vmFileName = 'vm.ino.Calliope.hex'
+  } (beginsWith boardName 'CPLAYBOOT') {
+	vmFileName = 'vm.circuitplay.uf2'
+  }
+  if (notNil vmFileName) {
+	vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+  }
+  if (isNil vmData) {
+	error (join 'Could not read: ' (join 'precompiled/' vmFileName))
+  }
+  writeFile (join boardPath vmFileName) vmData
+// xxx
+print 'copyed VM:' boardName 'bytes:' (byteCount vmData) 'to:' (join '/Volumes/' boardName '/' vmFileName)
+}
+
+// Language Button
 
 method languageMenu MicroBlocksEditor {
   menu = (menu 'Language:' this)
@@ -476,73 +580,11 @@ method languageMenu MicroBlocksEditor {
   popUpAtHand menu (global 'page')
 }
 
-method showAdvancedBlocks MicroBlocksEditor {
-  setDevMode (global 'page') true
-  developerModeChanged this
-}
-
-method hideAdvancedBlocks MicroBlocksEditor {
-  setDevMode (global 'page') false
-  developerModeChanged this
-}
-
 method setLanguage MicroBlocksEditor newLang {
   setLanguage (authoringSpecs) newLang
   updateBlocks scripter
   saveScripts scripter
   restoreScripts scripter
-}
-
-method importLibrary MicroBlocksEditor {
-  importLibrary scripter fileName
-}
-
-method exportAsLibrary MicroBlocksEditor {
-  exportAsLibrary scripter fileName
-}
-
-method softReset MicroBlocksEditor {
-  softReset (smallRuntime)
-}
-
-method installVM MicroBlocksEditor {
-  boards = (collectBoardDrives this)
-  if ((count boards) > 0) {
-	menu = (menu 'Select Board:' this)
-	for b boards { addItem menu b (action 'copyVMToBoard' this b) }
-	popUpAtHand menu (global 'page')
-  } else {
-	inform 'No boards found; is your board plugged in?'
-  }
-}
-
-method collectBoardDrives MicroBlocksEditor {
-  result = (list)
-  if ('Mac' == (platform)) {
-	for v (listDirectories '/Volumes') {
-	  if (beginsWith v 'MICROBIT') { add result v }
-	  if (beginsWith v 'MINI') { add result v }
-	  if (beginsWith v 'CPLAYBOOT') { add result v }
-	}
-  }
-  return result
-}
-
-method copyVMToBoard MicroBlocksEditor boardName {
-  if (beginsWith boardName 'MICROBIT') {
-	vmFileName = 'vm.ino.BBCmicrobit.hex'
-  } (beginsWith boardName 'MINI') {
-	vmFileName = 'vm.ino.Calliope.hex'
-  } (beginsWith boardName 'MINI') {
-	vmFileName = 'vm.circuitplay.uf2'
-  }
-  vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
-
-print 'copyVM:' boardName 'hex data:' (byteCount vmData) 'to:' (join '/Volumes/' boardName '/' vmFileName)
-
-  if ('Mac' == (platform)) {
-	writeFile (join '/Volumes/' boardName '/' vmFileName) vmData
-  }
 }
 
 method addLanguageButton MicroBlocksEditor {
