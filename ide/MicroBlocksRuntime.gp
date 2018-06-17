@@ -679,6 +679,97 @@ method showOutputStrings SmallRuntime {
 	}
 }
 
+// Virtual Machine Installer
+
+method installVM SmallRuntime {
+  boards = (collectBoardDrives this)
+  if ((count boards) > 0) {
+	menu = (menu 'Select board:' this)
+	for b boards {
+		addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
+	}
+	popUpAtHand menu (global 'page')
+  } else {
+	inform 'No boards found; is your board plugged in?'
+  }
+}
+
+method niceBoardName SmallRuntime board {
+  name = (first board)
+  if (beginsWith name 'MICROBIT') {
+	return 'BBC micro:bit'
+  } (beginsWith name 'MINI') {
+	return 'Calliope mini'
+  } (beginsWith name 'CPLAYBOOT') {
+	return 'Circuit Playground Express'
+  }
+  return name
+}
+
+method collectBoardDrives SmallRuntime {
+  result = (list)
+  if ('Mac' == (platform)) {
+	for v (listDirectories '/Volumes') {
+	  path = (join '/Volumes/' v '/')
+	  if (beginsWith v 'MICROBIT') { add result (list v path) }
+	  if (beginsWith v 'MINI') { add result (list v path) }
+	  if (beginsWith v 'CPLAYBOOT') { add result (list v path) }
+	}
+  } ('Linux' == (platform)) {
+	for dir (listDirectories '/media') {
+	  prefix = (join '/media/' dir)
+	  for v (listDirectories prefix) {
+		path = (join prefix '/' v '/')
+		if (beginsWith v 'MICROBIT') { add result (list v path) }
+		if (beginsWith v 'MINI') { add result (list v path) }
+		if (beginsWith v 'CPLAYBOOT') { add result (list v path) }
+	  }
+	}
+  } ('Win' == (platform)) {
+	for letter (range 65 90) {
+	  drive = (join (string letter) ':')
+	  boardName = (getBoardName this drive)
+	  if (notNil boardName) { add result (list boardName drive) }
+	}
+  }
+  return result
+}
+
+method getBoardName SmallRuntime path {
+  for fn (listFiles path) {
+	if ('MICROBIT.HTM' == fn) { return 'MICROBIT' }
+	if ('MINI.HTM' == fn) { return 'MINI' }
+	if ('INFO_UF2.TXT' == fn) {
+	  contents = (readFile (join path fn))
+	  if (notNil (nextMatchIn 'CPlay Express' contents)) {
+		return 'CPLAYBOOT'
+	  }
+	}
+  }
+  return nil
+}
+
+method copyVMToBoard SmallRuntime boardName boardPath {
+  if (beginsWith boardName 'MICROBIT') {
+	vmFileName = 'vm.ino.BBCmicrobit.hex'
+  } (beginsWith boardName 'MINI') {
+	vmFileName = 'vm.ino.Calliope.hex'
+  } (beginsWith boardName 'CPLAYBOOT') {
+	vmFileName = 'vm.circuitplay.uf2'
+  }
+  if (notNil vmFileName) {
+	vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+  }
+  if (isNil vmData) {
+	error (join 'Could not read: ' (join 'precompiled/' vmFileName))
+  }
+  closePort (smallRuntime) // disconnect
+  writeFile (join boardPath vmFileName) vmData
+  print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
+  waitMSecs 8000
+  ensurePortOpen (smallRuntime)
+}
+
 // testing
 
 method broadcastTest SmallRuntime {
