@@ -273,7 +273,7 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.15' }
+method ideVersion SmallRuntime { return '0.1.16rc1' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join

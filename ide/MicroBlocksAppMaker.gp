@@ -15,7 +15,7 @@ method test MicroBlocksAppMaker {
 	writeExeFile this 'gp-linux32bit' embeddedFS '../apps/ublocks-linux32bit'
 	writeExeFile this 'gp-linux64bit' embeddedFS '../apps/ublocks-linux64bit'
 	writeExeFile this 'gp-raspberryPi' embeddedFS '../apps/ublocks-raspberryPi'
-	writeExeFile this 'gp-mac' embeddedFS '../apps/ublocks-test'
+	writeExeFile this 'gp-mac' embeddedFS '../apps/ublocks-mac'
 	writeMacApp this 'gp-mac' embeddedFS '../apps'
 	print 'Done!'
 }
