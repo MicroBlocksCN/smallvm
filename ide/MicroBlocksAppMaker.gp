@@ -9,7 +9,7 @@
 
 defineClass MicroBlocksAppMaker
 
-method test MicroBlocksAppMaker {
+method buildApps MicroBlocksAppMaker {
 	embeddedFS = (createEmbeddedFS this)
 	writeExeFile this 'gp-win.exe' embeddedFS '../apps/ublocks-win.exe'
 	writeExeFile this 'gp-linux32bit' embeddedFS '../apps/ublocks-linux32bit'

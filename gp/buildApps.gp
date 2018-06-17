@@ -1,3 +1,3 @@
 to startup {
-	test (new 'MicroBlocksAppMaker')
+	buildApps (new 'MicroBlocksAppMaker')
 }
