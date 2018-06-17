@@ -144,7 +144,7 @@ method microBlocksSpecs SmallCompiler {
 
 method initMicroBlocksSpecs SmallCompiler {
 	authoringSpecs = (authoringSpecs)
-	if (isEmpty (specsFor authoringSpecs 'I/O')) {
+	if (isEmpty (specsFor authoringSpecs 'Output')) {
 		clear authoringSpecs
 		addSpecs authoringSpecs (microBlocksSpecs this)
 	}
