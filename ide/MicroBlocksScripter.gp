@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - authoring-level MicroBlocksScripter w/ built-in palette
 
-defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded categoriesFrame catWidth catResizer blocksFrame blocksWidth blocksResizer scriptsFrame nextX nextY
+defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded categoriesFrame catWidth catResizer blocksFrame blocksWidth blocksResizer scriptsFrame nextX nextY labelSpecs
 
 method targetClass MicroBlocksScripter { return (classOf targetObj) }
 method targetObj MicroBlocksScripter { return targetObj }
@@ -60,6 +60,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   fontSize = 13
   nextX = 0
   nextY = 0
+  initLabelSpecs this
 
   // how often to check for script changes
   setFPS morph 4
@@ -77,7 +78,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (gray 220))
   setAutoScroll blocksFrame false
-  setExtent (morph blocksFrame) (200 * scale) // initial width
+  setExtent (morph blocksFrame) (265 * scale) // initial width
   addPart morph (morph blocksFrame)
 
   scriptsPane = (newScriptEditor 10 10 nil)
@@ -188,30 +189,35 @@ method currentCategory MicroBlocksScripter {
 }
 
 method updateBlocks MicroBlocksScripter {
+  scale = (global 'scale')
   blocksPane = (contents blocksFrame)
   removeAllParts (morph blocksPane)
+  setRule (alignment blocksPane) 'none'
+
+  nextX = ((left (morph (contents blocksFrame))) + (16 * scale))
+  nextY = ((top (morph (contents blocksFrame))) + (16 * scale))
 
   cat = (selection (contents categoriesFrame))
-  setRule (alignment blocksPane) 'multi-column'
   if ('Variables' == cat) {
-	setRule (alignment blocksPane) 'none'
 	addVariableBlocks this
   } ('Functions' == cat) {
-	setRule (alignment blocksPane) 'none'
     addMyBlocks this
   } else {
-    specs = (specsFor (authoringSpecs) cat)
-    for spec specs {
-	  addBlock this (blockForSpec spec) spec
-    }
+	addBlocksForCategory this cat
   }
   cleanUp blocksPane
 }
 
+method addBlocksForCategory MicroBlocksScripter cat {
+  specs = (specsFor (authoringSpecs) cat)
+  for spec specs {
+	addSpaceOrLabelBefore this spec
+	addBlock this (blockForSpec spec) spec
+  }
+}
+
 method addVariableBlocks MicroBlocksScripter {
   scale = (global 'scale')
-  nextX = ((left (morph (contents blocksFrame))) + (20 * scale))
-  nextY = ((top (morph (contents blocksFrame))) + (16 * scale))
 
   addButton this 'Add a variable' (action 'createSharedVariable' this) 'Variables are visible to all scripts.'
   sharedVars = (sharedVars this)
@@ -243,8 +249,6 @@ method addVariableBlocks MicroBlocksScripter {
 
 method addMyBlocks MicroBlocksScripter {
   scale = (global 'scale')
-  nextX = ((left (morph (contents blocksFrame))) + (20 * scale))
-  nextY = ((top (morph (contents blocksFrame))) + (16 * scale))
 
   addButton this 'Add a function' (action 'createSharedBlock' this)
   nextY += (8 * scale)
@@ -258,21 +262,6 @@ method addMyBlocks MicroBlocksScripter {
   }
 }
 
-method addSharedBlocks MicroBlocksScripter {
-  scriptsPane = (contents scriptsFrame)
-  for m (parts (morph scriptsPane)) {
-    if (isClass (handler m) 'Block') {
-      script = (expression (handler m) (className (classOf targetObj)))
-      if ('to' == (primName script)) {
-        op = (first (argList script))
-        spec = (specForOp (authoringSpecs) op)
-        if (isNil spec) {spec = (blockSpecFor (functionNamed op))}
-        addBlock this (blockForSpec spec) spec
-      }
-    }
-  }
-}
-
 method addButton MicroBlocksScripter label action hint {
   btn = (pushButton label (gray 130) action)
   if (notNil hint) { setHint btn hint }
@@ -281,19 +270,9 @@ method addButton MicroBlocksScripter label action hint {
   nextY += ((height (morph btn)) + (7 * (global 'scale')))
 }
 
-method addSectionLabel MicroBlocksScripter label {
-  scale = (global 'scale')
-  labelColor = (gray 60)
-  fontSize = (14 * scale)
-  label = (newText label nil fontSize labelColor)
-  nextY += (15 * scale)
-  setPosition (morph label) (nextX - (10 * scale)) nextY
-  addPart (morph (contents blocksFrame)) (morph label)
-  nextY += ((height (morph label)) + (8 * scale))
-}
-
 method addBlock MicroBlocksScripter b spec isVarReporter {
   // install a 'morph' variable reporter for any slot that has 'morph' or 'Morph' as a hint
+
   if (isNil spec) { spec = (blockSpec b) }
   if (isNil isVarReporter) { isVarReporter = false }
   scale = (global 'scale')
@@ -318,6 +297,69 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
   if isVarReporter { setLeft (morph b) (nextX + (135 * scale)) }
   addPart (morph (contents blocksFrame)) (morph b)
   nextY += ((height (morph b)) + (4 * (global 'scale')))
+}
+
+// Palette Section Labels
+
+method initLabelSpecs MicroBlocksScripter {
+  labelSpecs = (dictionary)
+
+  // Output
+  atPut labelSpecs 'mbDisplay' 'micro:bit, Calliope:'
+
+  // Input
+  atPut labelSpecs 'mbTiltX' 'micro:bit, Calliope, CP Express:'
+  atPut labelSpecs 'millisOp' '-'
+
+  // Pins
+  atPut labelSpecs 'digitalWriteOp' '-'
+  atPut labelSpecs 'analogPins' '-'
+
+  // Control
+  atPut labelSpecs 'if' '-'
+  atPut labelSpecs 'whenCondition' '-'
+  atPut labelSpecs 'whenBroadcastReceived' '-'
+  atPut labelSpecs 'comment' '-'
+  atPut labelSpecs 'stopTask' '-'
+
+  // Math
+  atPut labelSpecs 'absoluteValue' '-'
+  atPut labelSpecs '<' '-'
+  atPut labelSpecs 'booleanConstant' '-'
+
+  // Lists
+  atPut labelSpecs 'fillArray' '-'
+  atPut labelSpecs 'at' '-'
+
+  // Advanced
+  atPut labelSpecs 'sendBroadcast' '-'
+  atPut labelSpecs 'mbDrawShape' '-'
+  atPut labelSpecs 'neoPixelSetPin' '-'
+  atPut labelSpecs 'i2cGet' '-'
+  atPut labelSpecs 'spiSend' '-'
+  atPut labelSpecs 'printIt' '-'
+  atPut labelSpecs 'noop' '-'
+}
+
+method addSpaceOrLabelBefore MicroBlocksScripter spec {
+  scale = (global 'scale')
+  item = (at labelSpecs (blockOp spec))
+  if ('-' == item) {
+	nextY += (15 * scale)
+  } (notNil item) {
+	addSectionLabel this item
+  }
+}
+
+method addSectionLabel MicroBlocksScripter label {
+  scale = (global 'scale')
+  labelColor = (gray 80)
+  fontSize = (14 * scale)
+  label = (newText label 'Arial Bold' fontSize labelColor)
+  nextY += (12 * scale)
+  setPosition (morph label) (nextX - (10 * scale)) nextY
+  addPart (morph (contents blocksFrame)) (morph label)
+  nextY += ((height (morph label)) + (8 * scale))
 }
 
 // variable operations
