@@ -496,12 +496,24 @@ method installVM MicroBlocksEditor {
   if ((count boards) > 0) {
 	menu = (menu 'Select board:' this)
 	for b boards {
-		addItem menu (first b) (action 'copyVMToBoard' this (first b) (last b))
+		addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
 	}
 	popUpAtHand menu (global 'page')
   } else {
 	inform 'No boards found; is your board plugged in?'
   }
+}
+
+method niceBoardName MicroBlocksEditor board {
+  name = (first board)
+  if (beginsWith name 'MICROBIT') {
+	return 'BBC micro:bit'
+  } (beginsWith name 'MINI') {
+	return 'Calliope mini'
+  } (beginsWith name 'CPLAYBOOT') {
+	return 'Circuit Playground Express'
+  }
+  return name
 }
 
 method collectBoardDrives MicroBlocksEditor {
@@ -525,8 +537,9 @@ method collectBoardDrives MicroBlocksEditor {
 	}
   } ('Win' == (platform)) {
 	for letter (range 65 90) {
-	  drive = (join (string letter) ':/')
+	  drive = (join (string letter) ':')
 	  boardName = (getBoardName this drive)
+	  if (notNil boardName) { add result (list boardName drive) }
 	}
   }
   return result
@@ -534,12 +547,12 @@ method collectBoardDrives MicroBlocksEditor {
 
 method getBoardName MicroBlocksEditor path {
   for fn (listFiles path) {
-	if ('MICROBIT.HTM' == fn) { return 'BBC micro:bit' }
-	if ('MINI.HTM' == fn) { return 'Calliope Mini' }
+	if ('MICROBIT.HTM' == fn) { return 'MICROBIT' }
+	if ('MINI.HTM' == fn) { return 'MINI' }
 	if ('INFO_UF2.TXT' == fn) {
 	  contents = (readFile (join path fn))
 	  if (notNil (nextMatchIn 'CPlay Express' contents)) {
-		return 'Circuit Playground Express'
+		return 'CPLAYBOOT'
 	  }
 	}
   }
@@ -560,9 +573,11 @@ method copyVMToBoard MicroBlocksEditor boardName boardPath {
   if (isNil vmData) {
 	error (join 'Could not read: ' (join 'precompiled/' vmFileName))
   }
+  closePort (smallRuntime) // disconnect
   writeFile (join boardPath vmFileName) vmData
-// xxx
-print 'copyed VM:' boardName 'bytes:' (byteCount vmData) 'to:' (join '/Volumes/' boardName '/' vmFileName)
+  print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
+  waitMSecs 8000
+  ensurePortOpen (smallRuntime)
 }
 
 // Language Button

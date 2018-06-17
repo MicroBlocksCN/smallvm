@@ -245,6 +245,14 @@ method setPort SmallRuntime newPortName {
 	clearBoardIfConnected this
 }
 
+method closePort SmallRuntime {
+	if (notNil port) {
+		stopAndSyncScripts this
+		closeSerialPort port
+		port = nil
+	}
+}
+
 method connectionStatus SmallRuntime {
 	pingSendInterval = 2000 // msecs between pings
 	if (isNil pingSentMSecs) { pingSentMSecs = 0 }
