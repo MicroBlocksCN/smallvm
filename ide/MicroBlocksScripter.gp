@@ -226,7 +226,7 @@ method addVariableBlocks MicroBlocksScripter {
 	nextY += (8 * scale)
 	for varName sharedVars {
 	  // only show vars that start with underscore (used by libraries) in dev mode
-	  if (or (beginsWith varName '_') (devMode)) {
+	  if (or (not (beginsWith varName '_')) (devMode)) {
 		lastY = nextY
 		b = (toBlock (newReporter 'v' varName))
 		addBlock this b nil // true xxx
