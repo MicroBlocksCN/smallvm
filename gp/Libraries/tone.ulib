@@ -1,0 +1,62 @@
+sharedVariables '_bz_frequencies' '_bz_pinNumber' '_bz_note_names'
+
+spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' 2
+spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto auto auto' 'G#' 3 250
+spec ' ' 'freq' 'play frequency _ at pin _ during _ ms' 'auto auto auto' 440 2 '100'
+spec 'r' '_bz_index of' '_bz_index of _ in _' 'auto auto any any' '10' '' nil nil
+
+to 'attach buzzer to pin' pinNumber {
+  _bz_pinNumber = pinNumber
+  _bz_frequencies = (newArray 12)
+  atPut 1 _bz_frequencies 13081
+  atPut 2 _bz_frequencies 13859
+  atPut 3 _bz_frequencies 14683
+  atPut 4 _bz_frequencies 15556
+  atPut 5 _bz_frequencies 16481
+  atPut 6 _bz_frequencies 17461
+  atPut 7 _bz_frequencies 18500
+  atPut 8 _bz_frequencies 19600
+  atPut 9 _bz_frequencies 20765
+  atPut 10 _bz_frequencies 22000
+  atPut 11 _bz_frequencies 23308
+  atPut 12 _bz_frequencies 24694
+  _bz_note_names = (newArray 12)
+  atPut 1 _bz_note_names 'C'
+  atPut 2 _bz_note_names 'C#'
+  atPut 3 _bz_note_names 'D'
+  atPut 4 _bz_note_names 'D#'
+  atPut 5 _bz_note_names 'E'
+  atPut 6 _bz_note_names 'F'
+  atPut 7 _bz_note_names 'F#'
+  atPut 8 _bz_note_names 'G'
+  atPut 9 _bz_note_names 'G#'
+  atPut 10 _bz_note_names 'A'
+  atPut 11 _bz_note_names 'A#'
+  atPut 12 _bz_note_names 'B'
+}
+
+to 'play tone' note octave ms {
+  local 'base frequency' (at ('_bz_index of' note _bz_note_names nil nil) _bz_frequencies)
+  repeat octave {
+    'base frequency' = ((v 'base frequency') * 2)
+  }
+  freq ((v 'base frequency') / 100) _bz_pinNumber ms
+}
+
+to freq freq pin ms {
+  local 'initial time' (millisOp)
+  repeatUntil (((millisOp) - (v 'initial time')) > ms) {
+    digitalWriteOp pin true
+    waitMicros (500000 / freq)
+    digitalWriteOp pin false
+    waitMicros (500000 / freq)
+  }
+}
+
+to '_bz_index of' item list {
+  for i (size list) {
+    if ((at i list) == item) {return i}
+  }
+  return 0
+}
+
