@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames
 
 method scripter SmallRuntime { return scripter }
 
@@ -234,6 +234,7 @@ method setPort SmallRuntime newPortName {
 	} else {
 		portName = (join '/dev/' newPortName)
 		if (isOneOf (platform) 'Browser' 'Win') { portName = newPortName }
+		connectMSecs = (msecsSinceStart)
 		ensurePortOpen this
 	}
 	// update the connection indicator more quickly than it would otherwise
@@ -267,13 +268,23 @@ method connectionStatus SmallRuntime {
 		pingSentMSecs = (msecsSinceStart)
 	}
 	msecsSinceLastPing = ((msecsSinceStart) - lastPingRecvMSecs)
-	if (msecsSinceLastPing < (pingSendInterval + 200)) {
+	if (msecsSinceLastPing < (pingSendInterval + 500)) {
 		return 'connected'
+	}
+	if (notNil connectMSecs) {
+		msecsSinceConnect = ((msecsSinceStart) - connectMSecs)
+		if (msecsSinceConnect > 5000) {
+			connectMSecs = nil // don't do this again unti next connection attempt
+			ok = (confirm (global 'page') nil
+'The board is not responding.
+Try to Install MicroBlocks on the board?')
+			if ok { installVM this }
+		}
 	}
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.16rc1' }
+method ideVersion SmallRuntime { return '0.1.16rc2' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join

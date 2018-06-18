@@ -394,8 +394,10 @@ method fileOrFolderSelected FilePicker {
   sel = (selection (contents listPane))
   if (beginsWith sel '[ ] ') {
 	sel = (substring sel 5)
-	if (or (endsWith sel ':')) {
+	if (endsWith sel ':') {
 	  showFolder this sel true
+	} ('/' == currentDir) {
+	  showFolder this (join currentDir sel) false
 	} else {
 	  showFolder this (join currentDir '/' sel) false
 	}

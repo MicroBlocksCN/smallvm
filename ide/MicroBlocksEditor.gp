@@ -448,12 +448,12 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addLine menu
   addItem menu 'install MicroBlocks on board' 'installVM'
+  addItem menu 'reset board and clear memory' 'softReset'
   if (not (devMode)) {
 	addLine menu
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
 	addItem menu 'export functions as library' 'exportAsLibrary'
-//	addItem menu 'reset pins and clear memory' 'softReset'
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
