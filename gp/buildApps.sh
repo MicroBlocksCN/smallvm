@@ -38,10 +38,10 @@ if test -n "$pack"; then
     mkdir -p ../apps/packages
     # build Win32 installer
     (cd packagers/win32/; ./build-installer.sh ../../../apps/ublocks-win.exe ../../../apps/packages $version)
-    # build .deb packages
+    # build .deb packages for amd64, i386 and armhf (Raspberry Pi)
     (cd packagers/linux/; ./build-deb.sh ../../../apps/ublocks-linux64bit ../../../apps/packages $version amd64)
     (cd packagers/linux/; ./build-deb.sh ../../../apps/ublocks-linux32bit ../../../apps/packages $version i386)
     (cd packagers/linux/; ./build-deb.sh ../../../apps/ublocks-raspberryPi ../../../apps/packages $version armhf)
-    # build dmg image
-    # (cd packagers/darwin/; ./build-dmg.sh ../../../apps/ublocks-??? ../../../apps/packages $version armhf)
+    # build dmg image for Mac
+    (cd packagers/darwin/; ./build-dmg.sh ../../../apps/MicroBlocks.app ../../../apps/packages $version)
 fi
