@@ -13,7 +13,7 @@
 # Author: Jon Cowie
 # Creation Date: 02/04/2008
 #
-# Modified by Bernat Romagosa, 18/06/2018
+# Modified by Bernat Romagosa on 18/06/2018
 
 if [ ! $# == 4 ]; then
     echo "Usage: makedmg <imagename> <imagetitle> <imagesize (MB)> <contentdir>"
@@ -39,6 +39,13 @@ else
         echo "Copying content to DMG File..."
         cp -R ${CONTENTDIR} ${TMPDIR}
         ln -s /Applications ${TMPDIR}/Applications
+
+        echo "Adding background..."
+        mkdir ${TMPDIR}/.background
+        cp macInstaller3.png ${TMPDIR}/.background
+
+        echo "Adding .DS_Store..."
+        cp .DS_Store ${TMPDIR}
 
         echo "Unmounting DMG File..."
         umount ${TMPDIR}
