@@ -285,7 +285,7 @@ Try to Install MicroBlocks on the board?')
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.16rc3' }
+method ideVersion SmallRuntime { return '0.1.16' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
