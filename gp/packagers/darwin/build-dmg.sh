@@ -43,5 +43,7 @@ echo
 echo "================"
 echo "Will now try to build a dmg file for Mac."
 echo "Please provide your sudo password if asked:"
+# remove old dmg file
+rm -f ../../../apps/packages/MicroBlocks.dmg
 sudo ./makedmg "MicroBlocks.dmg" "MicroBlocks" $size $exepath
 mv MicroBlocks.dmg $destdir
