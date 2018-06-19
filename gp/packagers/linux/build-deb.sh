@@ -10,10 +10,6 @@ if [ -z "$exepath" ]; then
     exit 1
 fi;
 
-# take only the executable name, removing everything up to the last slash
-# also works if there are no slashes at all in $exepath
-executable=${exepath##*/}
-
 destdir=$2
 if [ -z "$destdir" ]; then destdir=".."; fi
 
@@ -24,12 +20,19 @@ arch=$4
 if [ -z "$arch" ]; then arch="all"; fi
 
 mkdir -p deb/ublocks/usr/local/bin
+mkdir -p deb/ublocks/usr/share/icons
+mkdir -p deb/ublocks/usr/share/applications
 mkdir -p deb/ublocks/DEBIAN
+mkdir -p deb/ublocks/usr/share/doc/ublocks
+chmod 0755 deb/ublocks/usr -R
 
-cat control | sed -E "s/@AppVersion/$version/" | sed -E "s/@Arch/$arch/" > deb/ublocks/DEBIAN/control
-cp $exepath deb/ublocks/usr/local/bin/
-cat ublocks | sed -E "s/@Executable/$executable/" > deb/ublocks/usr/local/bin/ublocks
-fakeroot chmod 755 deb/ublocks/usr/local/bin/ublocks
+cp $exepath deb/ublocks/usr/local/bin/ublocks
+cp MicroBlocks.png deb/ublocks/usr/share/icons
+cp MicroBlocks.desktop deb/ublocks/usr/share/applications
+cp copyright deb/ublocks/usr/share/doc/ublocks
+
+size=`du deb/ublocks | tail -n1 | cut -f1`
+cat control | sed -E "s/@AppVersion/$version/" | sed -E "s/@Arch/$arch/" | sed -E "s/@InstalledSize/$size/"> deb/ublocks/DEBIAN/control
 
 cd deb
 fakeroot dpkg-deb --build ublocks

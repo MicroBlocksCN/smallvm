@@ -12,36 +12,45 @@
 #
 # Author: Jon Cowie
 # Creation Date: 02/04/2008
+#
+# Modified by Bernat Romagosa on 18/06/2018
 
 if [ ! $# == 4 ]; then
-	echo "Usage: makedmg <imagename> <imagetitle> <imagesize (MB)> <contentdir>"
+    echo "Usage: makedmg <imagename> <imagetitle> <imagesize (MB)> <contentdir>"
 else
-	OUTPUT=$1
-	TITLE=$2
-	FILESIZE=$3
-	CONTENTDIR=$4
-	USER=`whoami`
-	TMPDIR="/tmp/dmgdir"
+    OUTPUT=$1
+    TITLE=$2
+    FILESIZE=$3
+    CONTENTDIR=$4
+    USER=`whoami`
+    TMPDIR="/tmp/dmgdir"
 
-	if [ ${USER} != "root" ]; then
-		echo "makedmg must be run as root!"
-	else
-		echo "Creating DMG File..."
-		dd if=/dev/zero of=${OUTPUT} bs=1M count=$FILESIZE
-		mkfs.hfsplus -v "${TITLE}" ${OUTPUT}
+    if [ ${USER} != "root" ]; then
+        echo "makedmg must be run as root!"
+    else
+        echo "Creating DMG File..."
+        dd if=/dev/zero of=${OUTPUT} bs=1M count=$FILESIZE
+        mkfs.hfsplus -v "${TITLE}" ${OUTPUT}
 
-		echo "Mounting DMG File..."
-		mkdir -p ${TMPDIR}
-		mount -t hfsplus -o loop ${OUTPUT} ${TMPDIR} 
+        echo "Mounting DMG File..."
+        mkdir -p ${TMPDIR}
+        mount -t hfsplus -o loop ${OUTPUT} ${TMPDIR}
 
-		echo "Copying content to DMG File..."
-		cp -R ${CONTENTDIR}/* ${TMPDIR}
+        echo "Copying content to DMG File..."
+        cp -R ${CONTENTDIR} ${TMPDIR}
+        ln -s /Applications ${TMPDIR}/Applications
 
-		echo "Unmounting DMG File..."
-		umount ${TMPDIR}
-		rm -rf ${TMPDIR}
+        echo "Adding background..."
+        mkdir ${TMPDIR}/.background
+        cp macInstaller3.png ${TMPDIR}/.background
 
-		echo "All Done!"
-	fi
+        echo "Adding .DS_Store..."
+        cp .DS_Store ${TMPDIR}
+
+        echo "Unmounting DMG File..."
+        umount ${TMPDIR}
+        rm -rf ${TMPDIR}
+
+        echo "All Done!"
+    fi
 fi
-

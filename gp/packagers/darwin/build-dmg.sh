@@ -18,17 +18,23 @@ if [ -z "$version" ]; then version="unknown"; fi
 
 # untested in Mac!
 if test -z `which mkfs.hfsplus`; then
-    echo "I will now try to install hfstools for you."
-    echo "Please provide your sudo password when asked."
-    ./hfstools-install
-    if test $? != 0; then
-        # errors occurred when installing hfstools. We cannot proceed.
-        echo "I tried to install hfstools into your system but failed."
-        echo "Please install them manually and try again."
-        echo "Here's the list of commands I ran for you:"
-        echo
-        cat hfstools-install
-        exit 1
+    echo "hfstools not installed in this system."
+    if [ -n "$tools" ]; then
+        echo "I will now try to install them for you."
+        echo "Please provide your sudo password when asked."
+        ./hfstools-install
+        if test $? != 0; then
+            # errors occurred when installing hfstools. We cannot proceed.
+            echo "I tried to install hfstools into your system but failed."
+            echo "Please install them manually and try again."
+            echo "Here's the list of commands I ran for you:"
+            echo
+            cat hfstools-install
+            exit 1
+        fi
+    else
+        echo "Unable to build .dmg package for Mac."
+        exit 0
     fi
 fi
 
@@ -37,5 +43,7 @@ echo
 echo "================"
 echo "Will now try to build a dmg file for Mac."
 echo "Please provide your sudo password if asked:"
+# remove old dmg file
+rm -f ../../../apps/packages/MicroBlocks.dmg
 sudo ./makedmg "MicroBlocks.dmg" "MicroBlocks" $size $exepath
 mv MicroBlocks.dmg $destdir
