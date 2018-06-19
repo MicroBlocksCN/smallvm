@@ -7,32 +7,36 @@ spec 'r' '_bz_index of' '_bz_index of _ in _' 'auto auto any any' '10' '' nil ni
 
 to 'attach buzzer to pin' pinNumber {
   _bz_pinNumber = pinNumber
-  _bz_frequencies = (newArray 12)
-  atPut 1 _bz_frequencies 13081
-  atPut 2 _bz_frequencies 13859
-  atPut 3 _bz_frequencies 14683
-  atPut 4 _bz_frequencies 15556
-  atPut 5 _bz_frequencies 16481
-  atPut 6 _bz_frequencies 17461
-  atPut 7 _bz_frequencies 18500
-  atPut 8 _bz_frequencies 19600
-  atPut 9 _bz_frequencies 20765
-  atPut 10 _bz_frequencies 22000
-  atPut 11 _bz_frequencies 23308
-  atPut 12 _bz_frequencies 24694
-  _bz_note_names = (newArray 12)
-  atPut 1 _bz_note_names 'C'
-  atPut 2 _bz_note_names 'C#'
-  atPut 3 _bz_note_names 'D'
-  atPut 4 _bz_note_names 'D#'
-  atPut 5 _bz_note_names 'E'
-  atPut 6 _bz_note_names 'F'
-  atPut 7 _bz_note_names 'F#'
-  atPut 8 _bz_note_names 'G'
-  atPut 9 _bz_note_names 'G#'
-  atPut 10 _bz_note_names 'A'
-  atPut 11 _bz_note_names 'A#'
-  atPut 12 _bz_note_names 'B'
+  if (_bz_frequencies == 0) {
+    _bz_frequencies = (newArray 12)
+    atPut 1 _bz_frequencies 13081
+    atPut 2 _bz_frequencies 13859
+    atPut 3 _bz_frequencies 14683
+    atPut 4 _bz_frequencies 15556
+    atPut 5 _bz_frequencies 16481
+    atPut 6 _bz_frequencies 17461
+    atPut 7 _bz_frequencies 18500
+    atPut 8 _bz_frequencies 19600
+    atPut 9 _bz_frequencies 20765
+    atPut 10 _bz_frequencies 22000
+    atPut 11 _bz_frequencies 23308
+    atPut 12 _bz_frequencies 24694
+  }
+  if (_bz_note_names == 0) {
+    _bz_note_names = (newArray 12)
+    atPut 1 _bz_note_names 'C'
+    atPut 2 _bz_note_names 'C#'
+    atPut 3 _bz_note_names 'D'
+    atPut 4 _bz_note_names 'D#'
+    atPut 5 _bz_note_names 'E'
+    atPut 6 _bz_note_names 'F'
+    atPut 7 _bz_note_names 'F#'
+    atPut 8 _bz_note_names 'G'
+    atPut 9 _bz_note_names 'G#'
+    atPut 10 _bz_note_names 'A'
+    atPut 11 _bz_note_names 'A#'
+    atPut 12 _bz_note_names 'B'
+  }
 }
 
 to 'play tone' note octave ms {
