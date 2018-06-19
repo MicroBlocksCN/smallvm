@@ -600,7 +600,7 @@ static void runTask(Task *task) {
 		} else if (IS_CLASS(tmpObj, StringClass) && IS_CLASS(*(sp - 1), StringClass)) {
 			*(sp - arg) = (stringsEqual(tmpObj, *(sp - 1)) ? trueObj : falseObj);
 		} else {
-			fail(nonComparableError);
+			*(sp - arg) = falseObj; // not comparable, so not equal
 		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
@@ -615,7 +615,7 @@ static void runTask(Task *task) {
 		} else if (IS_CLASS(tmpObj, StringClass) && IS_CLASS(*(sp - 1), StringClass)) {
 			*(sp - arg) = (stringsEqual(tmpObj, *(sp - 1)) ? falseObj : trueObj);
 		} else {
-			fail(nonComparableError);
+			*(sp - arg) = trueObj; // not comparable, so not equal
 		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
