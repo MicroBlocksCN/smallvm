@@ -5,15 +5,23 @@
 while echo $1 | grep ^- > /dev/null; do eval $( echo $1 | sed 's/-//g' | sed 's/=.*//g' | tr -d '\012')=$( echo $1 | sed 's/.*=//g' | tr -d '\012'); shift; done
 
 if test -n "$help"; then
-    echo "The microBlocks desktop IDE builder and packager generates executables"
-    echo "for Windows, MacOS and GNU/Linux (including RaspberryPi)."
-    echo "It can also generate installers for Windows and MacOS, and .deb packages"
-    echo "for GNU/Linux."
+    echo "The microBlocks desktop IDE builder and packager generates executables for"
+    echo "Windows, MacOS and GNU/Linux (including RaspberryPi)."
+    echo "It can also generate installers for Windows and MacOS, and .deb packages for"
+    echo "GNU/Linux."
     echo
-    echo "usage: ./buildApps.sh [--pack] [--version=[[VERSION-NUMBER]]]"
+    echo "usage: ./buildApps.sh [OPTIONS]"
+    echo
+    echo "--help                        Print this message."
+    echo "--pack                        Create packages and installers for all systems."
+    echo "--version=VERSION-NUMBER      Specify a version number, i.e. 0.1.16rc3."
+    echo "--tools                       Automatically try to install missing tools needed"
+    echo "                              by the build process."
     echo
     exit 0
 fi
+
+if [ -n $tools ]; then export tools=1; fi
 
 # build the IDE by using the corresponding executable for our host system
 mkdir -p ../apps
@@ -32,6 +40,7 @@ fi
 
 if [ -z $version ]; then version="unknown"; fi
 
+
 # app packaging
 if test -n "$pack"; then
     echo "Packaging microBlocks version $version..."
@@ -45,3 +54,6 @@ if test -n "$pack"; then
     # build dmg image for Mac
     (cd packagers/darwin/; ./build-dmg.sh ../../../apps/MicroBlocks.app ../../../apps/packages $version)
 fi
+
+echo
+echo "Done building $version"
