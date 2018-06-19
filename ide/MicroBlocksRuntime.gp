@@ -178,11 +178,12 @@ method softReset SmallRuntime {
 method selectPort SmallRuntime {
 	portList = (list)
 	if ('Win' == (platform)) {
-		portList = (listSerialPorts)
+		portList = (toList (listSerialPorts))
 		if (isEmpty portList) {
 			portList = (list)
 			for n 32 { add portList (join 'COM' n) }
 		}
+		removeFirst portList 'COM1'
 	} ('Browser' == (platform)) {
 		listSerialPorts // first call triggers callback
 		waitMSecs 50
@@ -284,7 +285,7 @@ Try to Install MicroBlocks on the board?')
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.16rc2' }
+method ideVersion SmallRuntime { return '0.1.16rc3' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
