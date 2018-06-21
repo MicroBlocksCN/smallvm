@@ -22,14 +22,12 @@ if test -z `which mkfs.hfsplus`; then
     if [ -n "$tools" ]; then
         echo "I will now try to install them for you."
         echo "Please provide your sudo password when asked."
-        ./hfstools-install
+        sudo apt-get install hfsplus hfsutils hfsprogs
+        #./hfstools-install
         if test $? != 0; then
             # errors occurred when installing hfstools. We cannot proceed.
             echo "I tried to install hfstools into your system but failed."
             echo "Please install them manually and try again."
-            echo "Here's the list of commands I ran for you:"
-            echo
-            cat hfstools-install
             exit 1
         fi
     else
