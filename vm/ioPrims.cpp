@@ -71,6 +71,7 @@ void putSerial(char *s) { Serial.print(s); } // callable from C; used to simulat
 
 int readBytes(uint8 *buf, int count) {
 	int bytesRead = Serial.available();
+	if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
 	for (int i = 0; i < bytesRead; i++) {
 		buf[i] = Serial.read();
 	}

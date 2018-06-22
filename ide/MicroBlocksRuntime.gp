@@ -599,6 +599,7 @@ method handleMessage SmallRuntime msg {
 		showVersion this (returnedValue this msg)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
+		connectMSecs = nil // we've received a ping, to don't ask user to install the VM
 	} (op == (msgNameToID this 'broadcastMsg')) {
 //		print 'received broadcast:' (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
@@ -778,6 +779,7 @@ method copyVMToBoard SmallRuntime boardName boardPath {
   closePort (smallRuntime) // disconnect
   writeFile (join boardPath vmFileName) vmData
   print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
+  connectMSecs = nil // don't ask user to install the VM again
   waitMSecs 8000
   ensurePortOpen (smallRuntime)
 }
