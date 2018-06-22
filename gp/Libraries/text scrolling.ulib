@@ -1,0 +1,13 @@
+spec ' ' 'scroll' 'scroll _ pausing _ ms' 'auto auto' 'HELLO ROSA' '150'
+
+to scroll text delay {
+  local 'length' (size text)
+  for position ((length * 6) + 5) {
+    mbDisplayOff
+    for i length {
+      mbDrawShape (mbShapeForLetter (at i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
