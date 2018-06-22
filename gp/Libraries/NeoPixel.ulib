@@ -14,6 +14,7 @@ to attach number pinNumber {
 to 'set NeoPixel LED' number r g b {
   atPut number _np_pixels (((r << 16) | (g << 8)) | b)
   neoPixelSend _np_pixels
+  waitMicros 100
 }
 
 to 'set all NeoPixels r' r g b {

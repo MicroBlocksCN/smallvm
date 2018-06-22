@@ -41,6 +41,11 @@ to 'attach buzzer to pin' pinNumber {
 
 to 'play tone' note octave ms {
   local 'base frequency' (at ('_bz_index of' note _bz_note_names nil nil) _bz_frequencies)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      'base frequency' = ((v 'base frequency') / 2)
+    }
+  }
   repeat octave {
     'base frequency' = ((v 'base frequency') * 2)
   }
@@ -49,11 +54,12 @@ to 'play tone' note octave ms {
 
 to freq freq pin ms {
   local 'initial time' (millisOp)
+  local 'halfCycle' ((500000 / freq) - 25)
   repeatUntil (((millisOp) - (v 'initial time')) > ms) {
     digitalWriteOp pin true
-    waitMicros (500000 / freq)
+    waitMicros halfCycle
     digitalWriteOp pin false
-    waitMicros (500000 / freq)
+    waitMicros halfCycle
   }
 }
 
