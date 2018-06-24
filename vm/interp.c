@@ -66,30 +66,32 @@ static void printObj(OBJ obj) {
 	else if (obj == trueObj) snprintf(dst, n, "true");
 	else if (objClass(obj) == StringClass) {
 		snprintf(dst, n, "%s", obj2str(obj));
+	} else if (objClass(obj) == ArrayClass) {
+		snprintf(dst, n, "list of %d items", objWords(obj));
 	} else {
-		snprintf(dst, n, "OBJ(addr: %d, class: %d)", (int) obj, objClass(obj));
+		snprintf(dst, n, "object of class: %d", objClass(obj));
 	}
 	printBufferByteCount = strlen(printBuffer);
 }
 
-static void primPrint(int argCount, OBJ *args) {
-	// This is a variadic "print" for the GP IDE.
+static void printArgs(int argCount, OBJ *args, int forSay, int insertSpaces) {
+	// Print all args into printBuffer ad return the size of the resulting string.
 
-	printBuffer[0] = 0; // null terminate
-	printBufferByteCount = 0;
+	if (forSay) {
+		printBuffer[0] = 2; // type is string (printBuffer is used as outputValue message body)
+		printBufferByteCount = 1;
+	} else {
+		printBufferByteCount = 0;
+	}
+	printBuffer[printBufferByteCount] = 0; // null terminate
 
 	for (int i = 0; i < argCount; i++) {
 		printObj(args[i]);
-		if (i < (argCount - 1)) {
+		if (insertSpaces && (i < (argCount - 1)) && (printBufferByteCount < PRINT_BUF_SIZE)) {
 			printBuffer[printBufferByteCount++] = ' '; // add a space
 			printBuffer[printBufferByteCount] = 0; // null terminate
 		}
 	}
-#if USE_TASKS
-	outputString(printBuffer);
-#else
-	printf("(NO TASKS) %s\r\n", printBuffer);
-#endif
 }
 
 static int bytesForObject(OBJ value) {
@@ -103,8 +105,9 @@ static int bytesForObject(OBJ value) {
 	} else if ((value == trueObj) || (value == falseObj)) { // boolean
 		return headerBytes + 1;
 	}
-	return 0; // arrays and byte arrays are not yet serializeable
+	return 512; // maximum that might be needed, based on size of buffer in sendValueMessage
 }
+
 
 // Broadcast
 
@@ -115,19 +118,7 @@ static void primSendBroadcast(int argCount, OBJ *args) {
 		fail(needsStringError);
 		return;
 	}
-
-	printBuffer[0] = 0; // null terminate
-	printBufferByteCount = 0;
-
-	for (int i = 0; i < argCount; i++) {
-		printObj(args[i]);
-	}
-	if (printBufferByteCount && (' ' == printBuffer[printBufferByteCount - 1])) {
-		// Remove final space character
-		printBuffer[printBufferByteCount - 1] = 0; // null terminate
-		printBufferByteCount--;
-	}
-
+	printArgs(argCount, args, false, false);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
 }
@@ -477,7 +468,7 @@ static void runTask(Task *task) {
 	returnResult_op:
 		tmpObj = *(sp - 1); // return value
 		if (fp == task->stack) { // not in a function call
-			if (!hasOutputSpace(bytesForObject(*(sp - 1)) + 100)) { // leave room for other messages
+			if (!hasOutputSpace(bytesForObject(tmpObj) + 100)) { // leave room for other messages
 				ip--; // retry when task is resumed
 				goto suspend;
 			}
@@ -741,21 +732,33 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	sayIt_op:
-		if (!hasOutputSpace(bytesForObject(*(sp - arg)) + 100)) { // leave room for other messages
+		printArgs(arg, sp - arg, true, true);
+		if (!hasOutputSpace(printBufferByteCount + 100)) { // leave room for other messages
 			ip--; // retry when task is resumed
 			goto suspend;
 		}
-		outputValue(*(sp - arg), task->taskChunkIndex);
+		sendSayForChunk(printBuffer, printBufferByteCount, task->taskChunkIndex);
 		POP_ARGS_COMMAND();
-		DISPATCH();
+		// wait for data to be sent; prevents use in tight loop from clogging serial line
+		task->status = waiting_millis;
+		task->wakeTime = millisecs() + printBufferByteCount + 5; // assume 1k bytes/sec
+		goto suspend;
 	printIt_op:
-		if (!hasOutputSpace(PRINT_BUF_SIZE + 100)) { // leave room for other messages
+		printArgs(arg, sp - arg, false, true);
+		if (!hasOutputSpace(printBufferByteCount + 100)) { // leave room for other messages
 			ip--; // retry when task is resumed
 			goto suspend;
 		}
-		primPrint(arg, sp - arg); // arg = # of arguments
+		#if USE_TASKS
+			outputString(printBuffer);
+		#else
+			printf("(NO TASKS) %s\r\n", printBuffer);
+		#endif
 		POP_ARGS_COMMAND();
-		DISPATCH();
+		// wait for data to be sent; prevents use in tight loop from clogging serial line
+		task->status = waiting_millis;
+		task->wakeTime = millisecs() + printBufferByteCount + 5; // assume 1k bytes/sec
+		goto suspend;
 
 	// I/O operations:
 	analogPins_op:

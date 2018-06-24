@@ -288,6 +288,7 @@ void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendBroadcastToIDE(char *s, int len);
+void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void vmPanic(char *s);
 

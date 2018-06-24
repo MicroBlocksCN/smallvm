@@ -20,7 +20,7 @@
 
 // VM Version
 
-#define VM_VERSION "v036.7"
+#define VM_VERSION "v036.8"
 
 // Forward Reference Declarations
 
@@ -423,6 +423,11 @@ static void waitForOutbufBytes(int bytesNeeded) {
 void sendBroadcastToIDE(char *s, int len) {
 	waitForOutbufBytes(len + 50); // leave a little room for other messages
 	sendMessage(broadcastMsg, 0, len, s);
+}
+
+void sendSayForChunk(char *s, int len, uint8 chunkIndex) {
+	// Used by the "say" primitive. The buffer s includes the string value type byte.
+	sendMessage(outputValueMsg, chunkIndex, len, s);
 }
 
 // Retrieving source code and attributes
