@@ -283,7 +283,7 @@ void startReceiversOfBroadcast(char *msg, int byteCount);
 void processMessage(void);
 int hasOutputSpace(int byteCount);
 void outputString(char *s);
-void outputValue(OBJ value, int chunkIndex);
+void outputValue(OBJ value, uint8 chunkIndex);
 void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
@@ -384,6 +384,7 @@ void primNeoPixelSend(OBJ *args);
 void primNeoPixelSetPin(int argCount, OBJ *args);
 
 #define RCVBUF_SIZE 1024
+#define MAX_MSG_SIZE (RCVBUF_SIZE - 10) // 5 header + 1 terminator bytes plus a few extra
 extern uint8 rcvBuf[RCVBUF_SIZE];
 extern int rcvByteCount;
 

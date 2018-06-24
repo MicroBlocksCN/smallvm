@@ -337,6 +337,9 @@ OBJ primDigitalRead(OBJ *args) {
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, INPUT);
+	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+		if (7 == pinNum) pinMode(7, INPUT_PULLUP); // slide switch
+	#endif
 	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
 }
 

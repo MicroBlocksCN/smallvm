@@ -18,10 +18,9 @@
   #include "websocket.h"
 #endif
 
-
 // VM Version
 
-#define VM_VERSION "v036"
+#define VM_VERSION "v036.7"
 
 // Forward Reference Declarations
 
@@ -354,7 +353,7 @@ void outputString(char *s) {
 	sendMessage(outputValueMsg, 255, (byteCount + 1), data);
 }
 
-void outputValue(OBJ value, int chunkIndex) {
+void outputValue(OBJ value, uint8 chunkIndex) {
 	sendValueMessage(outputValueMsg, chunkIndex, value);
 }
 
@@ -629,6 +628,10 @@ static void processShortMessage() {
 
 static void processLongMessage() {
 	int msgLength = (rcvBuf[4] << 8) | rcvBuf[3];
+	if ((rcvByteCount >= 5) && (msgLength > MAX_MSG_SIZE)) { // message too large for buffer
+		skipToStartByteAfter(1);
+		return;
+	}
 	if ((rcvByteCount < 5) || (rcvByteCount < (5 + msgLength))) { // message is not complete
 		if (receiveTimeout()) {
 			skipToStartByteAfter(1);
