@@ -8,6 +8,8 @@ spec ' ' '_measureLoopOverhead' '_measureLoopOverhead' 'any' nil
 
 to 'attach buzzer to pin' pinNumber {
   _bz_pinNumber = pinNumber
+  mbDisplayOff
+  '_measureLoopOverhead'
   if (_bz_frequencies == 0) {
     _bz_frequencies = (newArray 12)
     atPut 1 _bz_frequencies 13081
