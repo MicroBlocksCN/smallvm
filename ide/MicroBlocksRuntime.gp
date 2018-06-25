@@ -513,6 +513,11 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		byteCount = (min 1000 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
+		if (not (isOpenSerialPort port)) {
+			print 'serial port closed; board disconnected?'
+			port = nil
+			return
+		}
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
 		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
 	}
