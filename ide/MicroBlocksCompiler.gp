@@ -37,7 +37,7 @@ method microBlocksSpecs SmallCompiler {
 	return (array
 	'Output'
 		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
-		(array ' ' 'sayIt'				'say _' 'auto' 123)
+		(array ' ' 'sayIt'				'say _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 123 '' '')
 		(array ' ' 'mbDisplay'			'display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _' 'bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool')
 		(array ' ' 'mbDisplayOff'		'clear display')
 		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
@@ -45,8 +45,8 @@ method microBlocksSpecs SmallCompiler {
 	'Input'
 		(array 'r' 'buttonA'			'button A')
 		(array 'r' 'buttonB'			'button B')
-		(array 'r' 'millisOp'			'millis')
-		(array 'r' 'microsOp'			'micros')
+		(array 'r' 'millisOp'			'milliseconds')
+		(array 'r' 'microsOp'			'microseconds')
 		(array 'r' 'mbTiltX'			'tilt x')
 		(array 'r' 'mbTiltY'			'tilt y')
 		(array 'r' 'mbTiltZ'			'tilt z')

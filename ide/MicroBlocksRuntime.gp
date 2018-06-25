@@ -363,7 +363,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	data = (list chunkType)
 	addAll data (chunkBytesFor this aBlockOrFunction)
 	sendMsg this 'chunkCodeMsg' chunkID data
-	waitMSecs ((count data) / 10) // wait approximate transmission time
+	waitMSecs ((count data) / 5) // wait approximate transmission time (assuming 5k bytes/sec)
 
 	// restart the chunk if it is a Block and is running
 	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
@@ -454,21 +454,21 @@ method errorString SmallRuntime errID {
 #define badChunkIndexError		2	// Unknown chunk index
 
 #define insufficientMemoryError	10	// Insufficient memory to allocate object
-#define needsArrayError			11	// Needs an Array or ByteArray
+#define needsArrayError			11	// Needs a list
 #define needsBooleanError		12	// Needs a boolean
 #define needsIntegerError		13	// Needs an integer
 #define needsStringError		14	// Needs a string
 #define nonComparableError		15	// Those objects cannot be compared for equality
-#define arraySizeError			16	// Array size must be a non-negative integer
-#define needsIntegerIndexError	17	// Array index must be an integer
-#define indexOutOfRangeError	18	// Array index out of range
+#define arraySizeError			16	// List size must be a non-negative integer
+#define needsIntegerIndexError	17	// List index must be an integer
+#define indexOutOfRangeError	18	// List index out of range
 #define byteArrayStoreError		19 	// A ByteArray can only store integer values between 0 and 255
 #define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
 #define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
 #define notInFunction			24	// Attempt to access an argument outside of a function
-#define badForLoopArg			25	// for-loop argument must be a positive integer, array, or bytearray
+#define badForLoopArg			25	// for-loop argument must be a positive integer or list
 #define stackOverflow			26	// Insufficient stack space
 '
 	for line (lines defsFromHeaderFile) {
@@ -499,7 +499,16 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		inform 'Use "Connect" button to connect to a MicroBlocks device.'
 		return
 	}
-	writeSerialPort port (toBinaryData (toArray msg))
+	dataToSend = (toBinaryData (toArray msg))
+	while ((byteCount dataToSend) > 0) {
+		// Note: AdaFruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
+		// written in one call to writeSerialPort, so send smaller chunks
+		byteCount = (min 1000 (byteCount dataToSend))
+		chunk = (copyFromTo dataToSend 1 byteCount)
+		bytesSent = (writeSerialPort port chunk)
+		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
+		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
+	}
 }
 
 method ensurePortOpen SmallRuntime {
@@ -667,9 +676,9 @@ method returnedValue SmallRuntime msg {
 	} (4 == type) {
 		return (toArray (copyFromTo msg 7))
 	} (5 == type) {
-		// xxx Arrays are not yet handled
+		// xxx Arrays are not yet fully handled
 		intArraySize = (truncate (((byteCount msg) - 6) / 5))
-		return (join 'a list of ' intArraySize ' items')
+		return (join 'list of ' intArraySize ' items')
 	} else {
 		return (join 'unknown type: ' type)
 	}
