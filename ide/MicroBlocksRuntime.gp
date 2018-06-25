@@ -362,6 +362,13 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	chunkType = (chunkTypeFor this aBlockOrFunction)
 	data = (list chunkType)
 	addAll data (chunkBytesFor this aBlockOrFunction)
+	if ((count data) > 1000) {
+		if (isClass aBlockOrFunction 'Function') {
+			inform (global 'page') (join 'Function "' (functionName aBlockOrFunction) '" is too large to send to board.')
+		} else {
+			showHint (morph aBlockOrFunction) 'Script is too large to send to board.'
+		}
+	}
 	sendMsg this 'chunkCodeMsg' chunkID data
 	waitMSecs ((count data) / 5) // wait approximate transmission time (assuming 5k bytes/sec)
 

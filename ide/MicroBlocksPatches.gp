@@ -185,6 +185,38 @@ method showCompiledBytes BlockDefinition {
   evalOnBoard (smallRuntime) (handler (owner (owner morph))) true
 }
 
+method initializeRepeater BlockDefinition aBlockSpec {
+  if (isNil aBlockSpec) {
+    isRepeating = false
+  } else {
+    isRepeating = (repeatLastSpec aBlockSpec)
+  }
+  drawer = (newBlockDrawer this nil 'vertical')
+  repeater = (newAlignment 'centered-line' 0 'bounds')
+  setMorph repeater (newMorph repeater)
+  if isShort {
+    hide (morph repeater)
+  }
+  setPadding repeater (5 * (global 'scale'))
+return // xxx suppress the ability to make variadic user-defined blocks
+
+  addPart (morph repeater) (morph drawer)
+
+  scale = (global 'scale')
+  if (global 'stealthBlocks') {
+    labelColor = (gray (stealthLevel 255 0))
+  } else {
+    labelColor = (global 'blockTextColor')
+    if (isNil labelColor) { labelColor = (gray 255) }
+  }
+  txt = (newText 'repeat last section:' 'Arial' (10 * scale) labelColor)
+  addPart (morph repeater) (morph txt)
+
+  corner = 5
+  toggle = (toggleButton (action 'toggleRepeat' this) (action 'isRepeating' this) (scale * 20) (scale * 13) (scale * corner) (max 1 (scale / 2)) false false)
+  addPart (morph repeater) (morph toggle)
+}
+
 method okayToBeDestroyedByUser Block {
   if (isPrototypeHat this) {
 	editor = (findProjectEditor)
