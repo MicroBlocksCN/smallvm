@@ -65,7 +65,6 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
 		(array ' ' 'if'					'if _ _ ' 'bool cmd')
-// 		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
 		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
@@ -133,6 +132,9 @@ method microBlocksSpecs SmallCompiler {
 
 		(array ' ' 'noop'				'no op')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
+
+	'Disabled'
+ 		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
 
 		// While these are useful, they can easily crash the VM (e.g. by addressing non-existent memory).
 		// Consider a more constrained version -- e.g blocks to access only the peripheral control
