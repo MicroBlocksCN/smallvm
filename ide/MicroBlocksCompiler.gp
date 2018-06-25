@@ -64,7 +64,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
-		(array ' ' 'if'					'if _ _ ' 'bool cmd')
+		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
 		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
