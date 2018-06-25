@@ -384,7 +384,7 @@ method okay FilePicker {
 	  answer = (join currentDir '/' sel)
 	}
   }
-  if useEmbeddedFS { answer = (join '//' answer) }
+  if (and useEmbeddedFS ('' != answer)) { answer = (join '//' answer) }
   if (and (notNil action) ('' != answer)) { call action answer }
   isDone = true
   removeFromOwner morph
