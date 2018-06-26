@@ -116,7 +116,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
 
 		(array ' ' 'mbDrawShape'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
-		(array 'r' 'mbShapeForLetter'	'shape for letter _' 'auto' 'A')
+		(array 'r' 'mbShapeForLetter'	'shape for letter _' 'str' 'A')
 
 		(array ' ' 'neoPixelSetPin'		'set NeoPixel pin _ is RGBW _' 'num bool' 0 false)
 		(array ' ' 'neoPixelSend'		'send NeoPixel rgb _' 'num' 5)
