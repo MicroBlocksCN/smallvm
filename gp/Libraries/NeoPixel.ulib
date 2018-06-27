@@ -1,12 +1,15 @@
-sharedVariables '_np_pixels'
+sharedVariables '_np_pixels' '_np_first_rotated' '_np_length'
 
 spec ' ' 'attach' 'attach _ LED NeoPixel strip to pin _ has white _' 'auto auto bool' 16 '' false
 spec ' ' 'set NeoPixel LED' 'set NeoPixel LED _ to r _ g _ b _' 'auto auto auto auto' 2 100 50 25
 spec ' ' 'set all NeoPixels r' 'set all NeoPixels r _ g _ b _' 'auto auto auto' 0 100 10
 spec ' ' 'detach NeoPixel strip' 'detach NeoPixel strip' ''
+spec ' ' '_np_rotate' '_np_rotate_dir _' 'bool any any any' true nil nil nil
+spec ' ' 'rotate NeoPixels by' 'rotate NeoPixels by _' 'auto' '10'
 
 to attach number pinNumber hasWhite {
   if (_np_pixels == 0) {_np_pixels = (newArray number)}
+  _np_length = number
   fillArray _np_pixels 0
   neoPixelSetPin pinNumber hasWhite
 }
@@ -25,5 +28,28 @@ to 'set all NeoPixels r' r g b {
 
 to 'detach NeoPixel strip' {
   _np_pixels = 0
+}
+
+to '_np_rotate' left {
+  if left {
+    _np_first_rotated = (at 1 _np_pixels)
+    for i (_np_length - 1) {
+      atPut i _np_pixels (at (i + 1) _np_pixels)
+    }
+    atPut _np_length _np_pixels _np_first_rotated
+  } else {
+    _np_first_rotated = (at _np_length _np_pixels)
+    for i ((size _np_pixels) - 1) {
+      atPut ((_np_length - i) + 1) _np_pixels (at (_np_length - i) _np_pixels)
+    }
+    atPut 1 _np_pixels _np_first_rotated
+  }
+}
+
+to 'rotate NeoPixels by' n {
+  repeat (absoluteValue n) {
+    '_np_rotate' (n > 0) nil nil nil
+  }
+  neoPixelSend _np_pixels
 }
 
