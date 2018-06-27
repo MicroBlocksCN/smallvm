@@ -29,6 +29,9 @@ to fileToWrite defaultPath extensionList {
 to pickFile anAction defaultPath extensionList saveFlag {
   if (isNil saveFlag) { saveFlag = false }
   page = (global 'page')
+  if (and (notNil defaultPath) (beginsWith defaultPath '//')) {
+	defaultPath = ''
+  }
   picker = (initialize (new 'FilePicker') anAction defaultPath extensionList saveFlag)
   addPart page picker
   pickerM = (morph picker)
@@ -384,7 +387,7 @@ method okay FilePicker {
 	  answer = (join currentDir '/' sel)
 	}
   }
-  if useEmbeddedFS { answer = (join '//' answer) }
+  if (and useEmbeddedFS ('' != answer)) { answer = (join '//' answer) }
   if (and (notNil action) ('' != answer)) { call action answer }
   isDone = true
   removeFromOwner morph
