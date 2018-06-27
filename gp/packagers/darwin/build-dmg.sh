@@ -36,7 +36,9 @@ if test -z `which mkfs.hfsplus`; then
     fi
 fi
 
+declare -i size num
 size=`du -B1048576 $exepath | tail -n1 | cut -f1`
+size+=`du -B1048576 . | tail -n1 | cut -f1`
 echo
 echo "================"
 echo "Will now try to build a dmg file for Mac."

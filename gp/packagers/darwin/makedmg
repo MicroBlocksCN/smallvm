@@ -22,6 +22,7 @@ else
     TITLE=$2
     FILESIZE=$3
     CONTENTDIR=$4
+    CONTENTDIRNAME=`echo $CONTENTDIR | sed "s:/.*/::g"`
     USER=`whoami`
     TMPDIR="/tmp/dmgdir"
 
@@ -40,12 +41,14 @@ else
         cp -R ${CONTENTDIR} ${TMPDIR}
         ln -s /Applications ${TMPDIR}/Applications
 
-        echo "Adding background..."
-        mkdir ${TMPDIR}/.background
-        cp macInstaller3.png ${TMPDIR}/.background
+        echo "Adding icon..."
+        cp Icon ${TMPDIR}/${CONTENTDIRNAME}
 
         echo "Adding .DS_Store..."
         cp .DS_Store ${TMPDIR}
+
+        echo "Adding .fseventsd..."
+        cp -r .fseventsd ${TMPDIR}
 
         echo "Unmounting DMG File..."
         umount ${TMPDIR}
