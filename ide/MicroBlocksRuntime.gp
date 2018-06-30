@@ -183,7 +183,7 @@ method selectPort SmallRuntime {
 			portList = (list)
 			for n 32 { add portList (join 'COM' n) }
 		}
-		removeFirst portList 'COM1'
+		remove portList 'COM1'
 	} ('Browser' == (platform)) {
 		listSerialPorts // first call triggers callback
 		waitMSecs 50
@@ -285,7 +285,7 @@ Try to Install MicroBlocks on the board?')
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.17' }
+method ideVersion SmallRuntime { return '0.1.17.3' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join

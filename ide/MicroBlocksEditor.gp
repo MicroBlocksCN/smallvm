@@ -90,6 +90,7 @@ method addTopBarParts MicroBlocksEditor {
   leftItems = (list)
   add leftItems (addLanguageButton this)
   add leftItems (5 * scale)
+  add leftItems (textButton this 'About' 'rightClicked')
   add leftItems (textButton this 'New' 'newProject')
   add leftItems (textButton this 'Open' 'openProjectMenu')
   add leftItems (textButton this 'Save' 'saveProject')
@@ -438,7 +439,7 @@ method drawIcon MicroBlocksEditor {
 // context menu
 
 method rightClicked MicroBlocksEditor aHand {
-  popUpAtHand (contextMenu this) (page aHand)
+  popUpAtHand (contextMenu this) (global 'page')
   return true
 }
 
