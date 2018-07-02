@@ -52,8 +52,8 @@ if test -n "$pack"; then
     (cd packagers/linux/; ./build-deb.sh ../../../apps/ublocks-linux64bit ../../../apps/packages $version amd64)
     (cd packagers/linux/; ./build-deb.sh ../../../apps/ublocks-linux32bit ../../../apps/packages $version i386)
     (cd packagers/linux/; ./build-deb.sh ../../../apps/ublocks-raspberryPi ../../../apps/packages $version armhf)
-    # build dmg image for Mac
-    (cd packagers/darwin/; ./build-dmg.sh ../../../apps/MicroBlocks.app ../../../apps/packages $version)
+    # build zip package for Mac
+    (cd packagers/darwin/; ./build-zip.sh ../../../apps/MicroBlocks.app ../../../apps/packages $version)
 fi
 
 echo
