@@ -1,6 +1,11 @@
-spec ' ' 'scroll' 'scroll _ pausing _ ms' 'str auto' 'HELLO ROSA' '150'
+sharedVariables '_digit_shapes' '_digit_shapes_start_index'
 
-to scroll text delay {
+spec ' ' 'scroll_text' 'scroll text _ pausing _ ms' 'str num' 'HELLO ROSA!' 100
+spec ' ' 'scroll_number' 'scroll number _ pausing _ ms' 'num num' 123 100
+spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num' 42
+spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num' 100
+
+to scroll_text text delay {
   local 'length' (size text)
   for position ((length * 6) + 5) {
     mbDisplayOff
@@ -8,6 +13,56 @@ to scroll text delay {
       mbDrawShape (mbShapeForLetter (at i text)) (((i * 6) + 2) - position) 1
     }
     waitMillis delay
+  }
+}
+
+to scroll_number n delay {
+  '_covert_to_shapes' n
+  '_scroll_digit_shapes' delay
+}
+
+to '_covert_to_shapes' n {
+  if (_digit_shapes == 0) {_digit_shapes = (newArray 12)}
+  fillArray _digit_shapes (mbShapeForLetter ' ')
+  local 'index' (size _digit_shapes)
+  local 'isNegative' (booleanConstant false)
+  if (n < 0) {
+    isNegative = (booleanConstant true)
+    n = (0 - n)
+  } (n == 0) {
+    atPut index _digit_shapes (mbShapeForLetter '0')
+    _digit_shapes_start_index = index
+  }
+  repeatUntil (n == 0) {
+    local 'digit' (n % 10)
+    atPut index _digit_shapes (mbShapeForLetter (48 + digit))
+    index += -1
+    n = (n / 10)
+  }
+  if isNegative {
+    atPut index _digit_shapes (mbShapeForLetter '-')
+    index += -1
+  }
+  _digit_shapes_start_index = index
+}
+
+to '_scroll_digit_shapes' delay {
+  local 'prevShape' (mbShapeForLetter ' ')
+  local 'i' _digit_shapes_start_index
+  local 'end' ((size _digit_shapes) + 1)
+  repeatUntil (i > end) {
+    local 'shape' (mbShapeForLetter ' ')
+    if (i < end) {
+      shape = (at i _digit_shapes)
+    }
+    for j 5 {
+      local 'x' (1 - j)
+      mbDrawShape shape (x + 5) 1
+      mbDrawShape prevShape x 1
+      waitMillis delay
+    }
+    prevShape = shape
+    i += 1
   }
 }
 
