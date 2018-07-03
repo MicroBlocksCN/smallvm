@@ -179,10 +179,6 @@ method selectPort SmallRuntime {
 	portList = (list)
 	if ('Win' == (platform)) {
 		portList = (toList (listSerialPorts))
-		if (isEmpty portList) {
-			portList = (list)
-			for n 32 { add portList (join 'COM' n) }
-		}
 		remove portList 'COM1'
 	} ('Browser' == (platform)) {
 		listSerialPorts // first call triggers callback
@@ -285,7 +281,7 @@ Try to Install MicroBlocks on the board?')
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.17.3' }
+method ideVersion SmallRuntime { return '0.1.18' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join

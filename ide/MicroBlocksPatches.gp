@@ -153,7 +153,8 @@ method contextMenu Block {
   }
 //  addItem menu 'copy to clipboard' 'copyToClipboard'
 
-//  addItem menu 'save picture of script' 'exportAsImage'
+  addLine menu
+  addItem menu 'save picture of script' 'exportAsImage'
   if (not isInPalette) {
     addLine menu
     addItem menu 'delete' 'delete'
@@ -171,7 +172,7 @@ method contextMenu BlockDefinition {
   addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
   addLine menu
   addItem menu 'hide definition' 'hideDefinition'
-//  addItem menu 'save picture of script' 'exportAsImage'
+  addItem menu 'save picture of script' 'exportAsImage'
   addLine menu
   addItem menu 'delete' 'deleteDefinition'
   popUp menu (global 'page') (left morph) (bottom morph)
@@ -239,6 +240,8 @@ method contextMenu ScriptEditor {
   if (and (notNil lastDrop) (isRestorable lastDrop)) {
     addItem menu 'undrop' 'undrop' 'undo last drop'
   }
+  addLine menu
+  addItem menu 'save picture of all scripts' 'saveScriptsImage'
   return menu
 }
 
