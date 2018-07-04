@@ -119,7 +119,7 @@ static int readTemperature() {
 
 	*startReg = 1;
 	while (!(*readyReg)) { /* busy wait */ }
-	return (*tempReg / 4) - 1;
+	return (*tempReg / 4) - 6; // callibrated at 26 degrees C using average of 3 micro:bits
 }
 
 #elif defined(ARDUINO_CALLIOPE)
@@ -143,6 +143,8 @@ static int readAcceleration(int registerID) {
 	int val = Wire.read();
 
 	val = (val < 128) ? val : -(256 - val); // value is a signed byte
+	if (8 == registerID) return val; // temperature sensor
+
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = -((val * 100) / 127); // invert sign and scale to range 0-100
 	if (5 == registerID) val = -val; // invert z-axis
