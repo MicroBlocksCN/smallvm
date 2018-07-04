@@ -54,7 +54,7 @@ cp $exepath -r build
 cp microBlocks.ico build
 cat install-config.iss | sed -E "s/@AppVersion/$version/" > build/install-config.iss
 cd build
-wine "$isccpath" install-config.iss
+wine "$isccpath" /Qp install-config.iss
 cd ..
 mv build/microBlocks\ setup.exe $destdir
 rm -rf build
