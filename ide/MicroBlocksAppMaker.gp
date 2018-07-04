@@ -39,7 +39,9 @@ method addFolderToEmbeddedFS MicroBlocksAppMaker srcFolder dstFolder zip {
 
 	dirs = (listDirectories srcFolder)
 	for fn (listFiles srcFolder) {
-		if (and (not (isOneOf fn '.DS_Store' '.' '..')) (not (contains dirs fn))) {
+		if (and (not (isOneOf fn '.DS_Store' '.' '..'))
+                        (not (contains dirs fn))
+                        (not (beginsWith fn '.'))) {
 			data = (readFile (join srcFolder '/' fn) true)
 			addFile zip (join dstFolder '/' fn) data true
 		}
