@@ -280,7 +280,7 @@ static void initPins(void) {
 	#endif
 
 	for (int i = 0; i < TOTAL_PINS; i++) {
-		digitalWrite(i, LOW);
+//		digitalWrite(i, LOW); // this breaks serial recieve of Due
 // 		pinMode(i, INPUT); // this breaks serial communication on Circuit Playground
 		currentMode[i] = MODE_NOT_SET;
 	}
