@@ -220,23 +220,20 @@ method addVariableBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
   addButton this 'Add a variable' (action 'createSharedVariable' this) 'Variables are visible to all scripts.'
-  sharedVars = (sharedVars this)
+  sharedVars = (visibleVars this)
   if (notEmpty sharedVars) {
 	addButton this 'Delete a variable' (action 'deleteSharedVariable' this)
 	nextY += (8 * scale)
 	for varName sharedVars {
-	  // only show vars that start with underscore (used by libraries) in dev mode
-	  if (or (not (beginsWith varName '_')) (devMode)) {
-		lastY = nextY
-		b = (toBlock (newReporter 'v' varName))
-		addBlock this b nil // true xxx
+	    lastY = nextY
+	    b = (toBlock (newReporter 'v' varName))
+	    addBlock this b nil // true xxx
 //	    readout = (makeMonitor b)
 // 	    setGrabRule (morph readout) 'ignore'
 // 	    setStyle readout 'varPane'
 // 	    setPosition (morph readout) nextX lastY
 // 	    addPart (morph (contents blocksFrame)) (morph readout)
 // 	    step readout
-	  }
 	}
 	nextY += (5 * scale)
   }
@@ -368,6 +365,17 @@ method sharedVars MicroBlocksScripter {
   return (copyWithout (variableNames (targetModule this)) 'extensions')
 }
 
+method visibleVars MicroBlocksScripter {
+  // only show vars that start with underscore (used by libraries) in dev mode
+  if (devMode) {
+    return (sharedVars this)
+  } else {
+    return (filter
+      (function each { return (not (beginsWith each '_')) })
+      (sharedVars this))
+  }
+}
+
 method createSharedVariable MicroBlocksScripter {
   // Temporary hack. Create shared variables in the session module.
   varName = (prompt (global 'page') 'New shared variable name?' '')
@@ -398,9 +406,11 @@ method uniqueVarName MicroBlocksScripter varName forScriptVar {
 }
 
 method deleteSharedVariable MicroBlocksScripter {
-  if (isEmpty (sharedVars this)) { return }
+  if (isEmpty (visibleVars this)) { return }
   menu = (menu nil (action 'removeSharedVariable' this) true)
-  for v (sharedVars this) { addItem menu v }
+  for v (visibleVars this) {
+    addItem menu v
+  }
   popUpAtHand menu (global 'page')
 }
 

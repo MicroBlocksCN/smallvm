@@ -130,9 +130,11 @@ method contextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
 
-  addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
-  addItem menu 'show compiled bytes' (action 'evalOnBoard' (smallRuntime) this true)
-  addLine menu
+  if (devMode) {
+    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
+    addItem menu 'show compiled bytes' (action 'evalOnBoard' (smallRuntime) this true)
+    addLine menu
+  }
 
   isInPalette = ('template' == (grabRule morph))
   if (isVariadic this) {
@@ -167,9 +169,11 @@ method contextMenu BlockDefinition {
   for tp (array 'command' 'reporter') {
     addItem menu '' (action 'setType' this tp) tp (fullCostume (morph (block tp (color 4 148 220) '                    ')))
   }
-  addLine menu
-  addItem menu 'show instructions' (action 'showInstructions' this)
-  addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
+  if (devMode) {
+    addLine menu
+    addItem menu 'show instructions' (action 'showInstructions' this)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
+  }
   addLine menu
   addItem menu 'hide definition' 'hideDefinition'
   addItem menu 'save picture of script' 'exportAsImage'
