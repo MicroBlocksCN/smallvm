@@ -16,6 +16,7 @@ if [ -z "$destdir" ]; then destdir=".."; fi
 version=$3
 if [ -z "$version" ]; then version="unknown"; fi
 
+echo "Packaging MacOS version..."
 cp -r $exepath .
 zip -r MicroBlocks.zip MicroBlocks.app
 rm -R MicroBlocks.app
