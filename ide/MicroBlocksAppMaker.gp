@@ -12,24 +12,22 @@ defineClass MicroBlocksAppMaker
 method buildApps MicroBlocksAppMaker {
 
 	embeddedFS = (createEmbeddedFS this)
-        system = (detect (function each { return (isOneOf each 'win' 'linux32bit' 'linux64bit' 'raspberryPi' 'mac') }) (commandLine))
+	system = (detect (function each { return (isOneOf each 'win' 'linux32bit' 'linux64bit' 'raspberryPi' 'mac') }) (commandLine))
 
-        if (notNil system) {
-            if (system == 'win') {
-                system = 'win.exe'
-            }
-            writeExeFile this (join 'gp-' system) embeddedFS (join '../apps/ublocks-' system)
-            if (system == 'mac') {
-                writeMacApp this 'gp-mac' embeddedFS '../apps'
-            }
-        } else {
-            writeExeFile this 'gp-win.exe' embeddedFS '../apps/ublocks-win.exe'
-            writeExeFile this 'gp-linux32bit' embeddedFS '../apps/ublocks-linux32bit'
-            writeExeFile this 'gp-linux64bit' embeddedFS '../apps/ublocks-linux64bit'
-            writeExeFile this 'gp-raspberryPi' embeddedFS '../apps/ublocks-raspberryPi'
-            writeExeFile this 'gp-mac' embeddedFS '../apps/ublocks-mac'
-            writeMacApp this 'gp-mac' embeddedFS '../apps'
-        }
+	if (notNil system) {
+		if (system == 'win') { system = 'win.exe' }
+		writeExeFile this (join 'gp-' system) embeddedFS (join '../apps/ublocks-' system)
+		if (system == 'mac') {
+			writeMacApp this 'gp-mac' embeddedFS '../apps'
+		}
+	} else {
+		writeExeFile this 'gp-win.exe' embeddedFS '../apps/ublocks-win.exe'
+		writeExeFile this 'gp-linux32bit' embeddedFS '../apps/ublocks-linux32bit'
+		writeExeFile this 'gp-linux64bit' embeddedFS '../apps/ublocks-linux64bit'
+		writeExeFile this 'gp-raspberryPi' embeddedFS '../apps/ublocks-raspberryPi'
+		writeExeFile this 'gp-mac' embeddedFS '../apps/ublocks-mac'
+		writeMacApp this 'gp-mac' embeddedFS '../apps'
+	}
 	print 'Done!'
 }
 
@@ -53,8 +51,8 @@ method addFolderToEmbeddedFS MicroBlocksAppMaker srcFolder dstFolder zip {
 	dirs = (listDirectories srcFolder)
 	for fn (listFiles srcFolder) {
 		if (and (not (isOneOf fn '.DS_Store' '.' '..'))
-                        (not (contains dirs fn))
-                        (not (beginsWith fn '.'))) {
+				(not (contains dirs fn))
+				(not (beginsWith fn '.'))) {
 			data = (readFile (join srcFolder '/' fn) true)
 			addFile zip (join dstFolder '/' fn) data true
 		}
@@ -71,35 +69,35 @@ method writeExeFile MicroBlocksAppMaker srcAppPath embeddedFS dstPath {
 	print 'Writing' dstPath '...'
 	appData = (readFile srcAppPath true)
 	writeFile dstPath (executableWithData this appData (contents embeddedFS))
-	setFileMode dstPath (+ (7 << 6) (5 << 3) 5)  // set executable bits
+	setFileMode dstPath (+ (7 << 6) (5 << 3) 5) // set executable bits
 }
 
 method executableWithData MicroBlocksAppMaker appData embeddedFSData {
-  appEnd = (findAppEnd this appData)
-  byteCount = (+ appEnd 4 (byteCount embeddedFSData))
-  result = (newBinaryData byteCount)
-  replaceByteRange result 1 appEnd appData
-  replaceByteRange result (appEnd + 1) (appEnd + 4) 'GPFS'
-  replaceByteRange result (appEnd + 5) byteCount embeddedFSData
-  return result
+	appEnd = (findAppEnd this appData)
+	byteCount = (+ appEnd 4 (byteCount embeddedFSData))
+	result = (newBinaryData byteCount)
+	replaceByteRange result 1 appEnd appData
+	replaceByteRange result (appEnd + 1) (appEnd + 4) 'GPFS'
+	replaceByteRange result (appEnd + 5) byteCount embeddedFSData
+	return result
 }
 
 method findAppEnd MicroBlocksAppMaker appData {
-  // Return the index of 'GPFSPK\03\04'
-  for i (byteCount appData) {
-	if (and
-		(71 == (byteAt appData i))
-		(80 == (byteAt appData (i + 1)))
-		(70 == (byteAt appData (i + 2)))
-		(83 == (byteAt appData (i + 3)))
-		(80 == (byteAt appData (i + 4)))
-		(75 == (byteAt appData (i + 5)))
-		( 3 == (byteAt appData (i + 6)))
-		( 4 == (byteAt appData (i + 7)))) {
-			return i
-		}
-  }
-  return (byteCount appData)
+	// Return the index of 'GPFSPK\03\04'
+	for i (byteCount appData) {
+		if (and
+			(71 == (byteAt appData i))
+			(80 == (byteAt appData (i + 1)))
+			(70 == (byteAt appData (i + 2)))
+			(83 == (byteAt appData (i + 3)))
+			(80 == (byteAt appData (i + 4)))
+			(75 == (byteAt appData (i + 5)))
+			( 3 == (byteAt appData (i + 6)))
+			( 4 == (byteAt appData (i + 7)))) {
+				return i
+			}
+	}
+	return (byteCount appData)
 }
 
 // Macintosh App Creation
@@ -108,21 +106,21 @@ method writeMacApp MicroBlocksAppMaker srcAppPath embeddedFS dstPath {
 	// Create a Mac application bundle that combines the given GP virtual macine
 	// with the given embedded file system (a ZipFile).
 
-  name = 'MicroBlocks'
-  appName = (join dstPath '/' name '.app')
-  makeDirectory appName
-  makeDirectory (join appName '/Contents')
-  makeDirectory (join appName '/Contents/MacOS')
-  makeDirectory (join appName '/Contents/Resources')
-  writeFile (join appName '/Contents/info.plist') (macInfoFile this name)
-  writeShellScript this name (join appName '/Contents/MacOS/start.sh')
-  writeExeFile this srcAppPath embeddedFS (join appName '/Contents/MacOS/' name)
-  makeDirectory (join appName '/Contents/Resources')
-  writeFile (join appName '/Contents/Resources/MicroBlocks.icns') (readFile 'MicroBlocks.icns' true)
+	name = 'MicroBlocks'
+	appName = (join dstPath '/' name '.app')
+	makeDirectory appName
+	makeDirectory (join appName '/Contents')
+	makeDirectory (join appName '/Contents/MacOS')
+	makeDirectory (join appName '/Contents/Resources')
+	writeFile (join appName '/Contents/info.plist') (macInfoFile this name)
+	writeShellScript this name (join appName '/Contents/MacOS/start.sh')
+	writeExeFile this srcAppPath embeddedFS (join appName '/Contents/MacOS/' name)
+	makeDirectory (join appName '/Contents/Resources')
+	writeFile (join appName '/Contents/Resources/MicroBlocks.icns') (readFile 'MicroBlocks.icns' true)
 }
 
 method macInfoFile MicroBlocksAppMaker name {
-  return '<?xml version="1.0" encoding="UTF-8"?>
+	return '<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 
@@ -134,7 +132,7 @@ method macInfoFile MicroBlocksAppMaker name {
 	<key>CFBundleIconFile</key>
 	<string>MicroBlocks</string>
 
-   <key>NSHighResolutionCapable</key><true/>
+	<key>NSHighResolutionCapable</key><true/>
 
 	<key>CFBundleIdentifier</key>
 	<string>org.gpblocks.MicroBlocks</string>
@@ -199,7 +197,7 @@ method macInfoFile MicroBlocksAppMaker name {
 }
 
 method writeShellScript MicroBlocksAppMaker name fileName {
-  shellScript = (join '#!/bin/sh
+	shellScript = (join '#!/bin/sh
 # This shell script starts GP with the appropriate top-level directory.
 # Add >>app.log 2>&1 to redirect stdout and stderr to app.log for debugging.
 
@@ -208,6 +206,6 @@ cd "$DIR"
 cd ../../..
 "$DIR"/"' name '"
 ')
-  writeFile fileName shellScript
-  setFileMode fileName (7 << 6) // set executable bits
+	writeFile fileName shellScript
+	setFileMode fileName (7 << 6) // set executable bits
 }
