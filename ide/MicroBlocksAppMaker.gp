@@ -10,13 +10,26 @@
 defineClass MicroBlocksAppMaker
 
 method buildApps MicroBlocksAppMaker {
+
 	embeddedFS = (createEmbeddedFS this)
-	writeExeFile this 'gp-win.exe' embeddedFS '../apps/ublocks-win.exe'
-	writeExeFile this 'gp-linux32bit' embeddedFS '../apps/ublocks-linux32bit'
-	writeExeFile this 'gp-linux64bit' embeddedFS '../apps/ublocks-linux64bit'
-	writeExeFile this 'gp-raspberryPi' embeddedFS '../apps/ublocks-raspberryPi'
-	writeExeFile this 'gp-mac' embeddedFS '../apps/ublocks-mac'
-	writeMacApp this 'gp-mac' embeddedFS '../apps'
+        system = (detect (function each { return (isOneOf each 'win' 'linux32bit' 'linux64bit' 'raspberryPi' 'mac') }) (commandLine))
+
+        if (notNil system) {
+            if (system == 'win') {
+                system = 'win.exe'
+            }
+            writeExeFile this (join 'gp-' system) embeddedFS (join '../apps/ublocks-' system)
+            if (system == 'mac') {
+                writeMacApp this 'gp-mac' embeddedFS '../apps'
+            }
+        } else {
+            writeExeFile this 'gp-win.exe' embeddedFS '../apps/ublocks-win.exe'
+            writeExeFile this 'gp-linux32bit' embeddedFS '../apps/ublocks-linux32bit'
+            writeExeFile this 'gp-linux64bit' embeddedFS '../apps/ublocks-linux64bit'
+            writeExeFile this 'gp-raspberryPi' embeddedFS '../apps/ublocks-raspberryPi'
+            writeExeFile this 'gp-mac' embeddedFS '../apps/ublocks-mac'
+            writeMacApp this 'gp-mac' embeddedFS '../apps'
+        }
 	print 'Done!'
 }
 
