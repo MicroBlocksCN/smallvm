@@ -129,6 +129,7 @@ method devMenu Hand currentObj {
 method contextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
+  pe = (findProjectEditor)
 
   if (devMode) {
     addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
@@ -146,8 +147,8 @@ method contextMenu Block {
     addItem menu 'rename...' 'userRenameVariable'
     addLine menu
   }
-  if (and isInPalette true) {
-	addItem menu 'show definition...' 'showDefinition'
+  if (and isInPalette (notNil (functionNamed (module (project pe)) (primName expression)))) {
+    addItem menu 'show definition...' 'showDefinition'
   }
   addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
   if (and ('reporter' != type) (notNil (next this))) {
