@@ -87,6 +87,9 @@ to 'Hummingbird Sensor2' port {
 
 to 'Hummingbird Battery Voltage (mV)' {
   comment 'Contributed by Tom Lauwers'
+  if (_spi_lock == 0) {
+    _spi_lock = (booleanConstant false)
+  }
   local 'return_val' 0
   local 'trash' 0
   waitUntil (not _spi_lock)
@@ -106,6 +109,9 @@ to 'Hummingbird Battery Voltage (mV)' {
 
 to '_Hummingbird Command' cmd arg1 arg2 arg3 {
   comment 'Contributed by Tom Lauwers'
+  if (_spi_lock == 0) {
+    _spi_lock = (booleanConstant false)
+  }
   waitUntil (not _spi_lock)
   _spi_lock = (booleanConstant true)
   digitalWriteOp 16 false
