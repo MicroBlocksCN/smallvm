@@ -1,4 +1,4 @@
-sharedVariables 'spi_lock'
+sharedVariables '_spi_lock'
 
 spec ' ' 'Hummingbird LED' 'Hummingbird LED _  _ %' 'auto auto' 1 '50'
 spec ' ' 'Hummingbird Tri-LED' 'Hummingbird Tri-LED _ R _ % G _ % B _ %' 'auto auto auto auto' 1 0 50 50
@@ -6,14 +6,15 @@ spec ' ' 'Hummingbird Position Servo' 'Hummingbird Position Servo _ _ °' 'auto 
 spec ' ' 'Hummingbird Rotation Servo' 'Hummingbird Rotation Servo _ _ %' 'auto auto' 1 0
 spec 'r' 'Hummingbird Sensor2' 'Hummingbird Sensor _' 'auto' 1
 spec 'r' 'Hummingbird Battery Voltage (mV)' 'Hummingbird Battery Voltage (mV)' ''
-spec ' ' '_Hummingbird Command' 'SPI Command _ _ _ _' 'auto auto auto auto' '10' '10' '10' '10'
+spec ' ' '_Hummingbird Command' 'SPI Command _ _ _ _' 'auto auto auto auto any' '10' '10' '10' '10' nil
 spec 'r' '_within' '_ within _ and _' 'auto auto auto' 10 0 100
 
 to 'Hummingbird LED' port intensity {
+  comment 'Contributed by Tom Lauwers'
   intensity = ('_within' intensity 0 100)
   port = ('_within' port 1 3)
   if (port == 1) {
-    '_Hummingbird Command' 192 ((intensity * 51) / 20) 255 255
+    '_Hummingbird Command' 192 ((intensity * 51) / 20) 255 255 nil
   } (port == 2) {
     analogWriteOp 2 (intensity * 10)
   } (port == 3) {
@@ -22,35 +23,39 @@ to 'Hummingbird LED' port intensity {
 }
 
 to 'Hummingbird Tri-LED' port red green blue {
+  comment 'Contributed by Tom Lauwers'
   red = ('_within' red 0 100)
   green = ('_within' green 0 100)
   blue = ('_within' blue 0 100)
   port = ('_within' port 1 2)
-  '_Hummingbird Command' (port + 195) ((red * 51) / 20) ((green * 51) / 20) ((blue * 51) / 20)
+  '_Hummingbird Command' (port + 195) ((red * 51) / 20) ((green * 51) / 20) ((blue * 51) / 20) nil
 }
 
 to 'Hummingbird Position Servo' port angle {
+  comment 'Contributed by Tom Lauwers'
   angle = ((('_within' angle 0 180) * 254) / 180)
   port = (('_within' port 1 4) + 197)
-  '_Hummingbird Command' port angle 255 255
+  '_Hummingbird Command' port angle 255 255 nil
 }
 
 to 'Hummingbird Rotation Servo' port speed {
+  comment 'Contributed by Tom Lauwers'
   if (speed == 0) {
     speed = 255
   } else {
     speed = (124 + ((('_within' speed -100 100) * 23) / 100))
   }
   port = (('_within' port 1 4) + 197)
-  '_Hummingbird Command' port speed 255 255
+  '_Hummingbird Command' port speed 255 255 nil
 }
 
 to 'Hummingbird Sensor2' port {
+  comment 'Contributed by Tom Lauwers'
   local 'return_val' 0
   local 'trash' 0
   port = ('_within' port 1 3)
-  waitUntil (spi_lock == 0)
-  spi_lock = 1
+  waitUntil (not _spi_lock)
+  _spi_lock = (booleanConstant true)
   digitalWriteOp 16 false
   waitMicros 5
   if (port == 1) {
@@ -76,15 +81,16 @@ to 'Hummingbird Sensor2' port {
   waitMicros 5
   digitalWriteOp 16 true
   waitMicros 300
-  spi_lock = 0
+  _spi_lock = (booleanConstant false)
   return return_val
 }
 
 to 'Hummingbird Battery Voltage (mV)' {
+  comment 'Contributed by Tom Lauwers'
   local 'return_val' 0
   local 'trash' 0
-  waitUntil (spi_lock == 0)
-  spi_lock = 1
+  waitUntil (not _spi_lock)
+  _spi_lock = (booleanConstant true)
   digitalWriteOp 16 false
   waitMicros 5
   trash = (spiRecv)
@@ -94,13 +100,14 @@ to 'Hummingbird Battery Voltage (mV)' {
   waitMicros 5
   digitalWriteOp 16 true
   waitMicros 300
-  spi_lock = 0
+  _spi_lock = (booleanConstant false)
   return return_val
 }
 
 to '_Hummingbird Command' cmd arg1 arg2 arg3 {
-  waitUntil (spi_lock == 0)
-  spi_lock = 1
+  comment 'Contributed by Tom Lauwers'
+  waitUntil (not _spi_lock)
+  _spi_lock = (booleanConstant true)
   digitalWriteOp 16 false
   waitMicros 5
   spiSend cmd
@@ -110,11 +117,17 @@ to '_Hummingbird Command' cmd arg1 arg2 arg3 {
   waitMicros 5
   digitalWriteOp 16 true
   waitMicros 300
-  spi_lock = 0
+  _spi_lock = (booleanConstant false)
 }
 
 to '_within' number low high {
-  if (number < low) {return low}
-  if (number > high) {return high}
+  comment 'Contributed by Tom Lauwers'
+  if (number < low) {
+    return low
+  }
+  if (number > high) {
+    return high
+  }
   return number
 }
+
