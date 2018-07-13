@@ -131,6 +131,7 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   }
   if (isOneOf defaultPath 'Examples' 'Libraries') {
 	useEmbeddedFS = true
+	if ('Browser' == (platform)) { useEmbeddedFS = false }
   }
   showFolder this defaultPath true
   return this
@@ -289,11 +290,13 @@ method setDownloads FilePicker {
 
 method setExamples FilePicker {
   useEmbeddedFS = true
+  if ('Browser' == (platform)) { useEmbeddedFS = false }
   showFolder this 'Examples' true
 }
 
 method setLibraries FilePicker {
   useEmbeddedFS = true
+  if ('Browser' == (platform)) { useEmbeddedFS = false }
   showFolder this 'Libraries' true
 }
 

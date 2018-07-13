@@ -183,7 +183,12 @@ method selectPort SmallRuntime {
 	} ('Browser' == (platform)) {
 		listSerialPorts // first call triggers callback
 		waitMSecs 50
-		portList = (listSerialPorts)
+		portList = (list)
+		for portName (listSerialPorts) {
+			if (not (beginsWith portName '/dev/tty.')) {
+				add portList portName
+			}
+		}
 	} else {
 		for fn (listFiles '/dev') {
 			if (or (notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
@@ -523,6 +528,7 @@ method ensurePortOpen SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		if (notNil portName) {
 			port = (openSerialPort portName 115200)
+			if ('Browser' == (platform)) { waitMSecs 5 } // let browser callback complete
 		}
 	}
 }
@@ -712,6 +718,10 @@ method showOutputStrings SmallRuntime {
 // Virtual Machine Installer
 
 method installVM SmallRuntime {
+  if ('Browser' == (platform)) {
+	installVMInBrowser this
+	return
+  }
   boards = (collectBoardDrives this)
   if ((count boards) > 0) {
 	menu = (menu 'Select board:' this)
@@ -788,7 +798,11 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 	vmFileName = 'vm.circuitplay.uf2'
   }
   if (notNil vmFileName) {
-	vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+	if ('Browser' == (platform)) {
+	  vmData = (readFile (join 'precompiled/' vmFileName) true)
+	} else {
+	  vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+	}
   }
   if (isNil vmData) {
 	error (join 'Could not read: ' (join 'precompiled/' vmFileName))
@@ -799,6 +813,30 @@ method copyVMToBoard SmallRuntime boardName boardPath {
   connectMSecs = nil // don't ask user to install the VM again
   waitMSecs 8000
   ensurePortOpen (smallRuntime)
+}
+
+method installVMInBrowser SmallRuntime {
+  menu = (menu 'Board type:' (action 'downloadVMFile' this) true)
+  addItem menu 'BBC micro:bit'
+  addItem menu 'Calliope mini'
+  addItem menu 'Circuit Playground Express'
+  popUpAtHand menu (global 'page')
+}
+
+method downloadVMFile SmallRuntime boardName {
+  if ('BBC micro:bit' == boardName) {
+	vmFileName = 'vm.ino.BBCmicrobit.hex'
+  } ('Calliope mini' == boardName) {
+	vmFileName = 'vm.ino.Calliope.hex'
+  } ('Circuit Playground Express' == boardName) {
+	vmFileName = 'vm.circuitplay.uf2'
+  }
+  vmData = (readFile (join 'precompiled/' vmFileName) true)
+  writeFile vmFileName vmData
+  inform (join 'To install MicroBlocks, drag "' vmFileName '" from your Downloads' (newline)
+  	'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
+  	'to copy the file, then the USB drive for your board will dismount.' (newline)
+  	'When it remounts, use the "Connect" button to connect to the board.')
 }
 
 // testing

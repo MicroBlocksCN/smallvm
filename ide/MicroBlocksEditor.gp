@@ -499,11 +499,19 @@ method installVM MicroBlocksEditor {
 method languageMenu MicroBlocksEditor {
   menu = (menu 'Language:' this)
   addItem menu 'English' (action 'setLanguage' this 'English')
-  for fn (listEmbeddedFiles) {
-	fn = (withoutExtension fn)
-	if (beginsWith fn 'translations/') {
-	  language = (withoutExtension (substring fn 14))
+  if ('Browser' == (platform)) {
+	for fn (listFiles 'translations') {
+	  fn = (withoutExtension fn)
+	  language = (withoutExtension fn)
 	  addItem menu language (action 'setLanguage' this language)
+	}
+  } else {
+	for fn (listEmbeddedFiles) {
+	  fn = (withoutExtension fn)
+	  if (beginsWith fn 'translations/') {
+		language = (withoutExtension (substring fn 14))
+		addItem menu language (action 'setLanguage' this language)
+	  }
 	}
   }
   popUpAtHand menu (global 'page')
