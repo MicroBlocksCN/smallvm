@@ -1377,6 +1377,7 @@ method updateCallsInScriptingArea Scripter op {
 	  block = (scriptForFunction func)
 	} else {
 	  block = (toBlock expr)
+	  setNext block (next each)
 	}
 	x = (left (morph each))
 	y = (top (morph each))

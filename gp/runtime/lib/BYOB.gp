@@ -312,7 +312,7 @@ method hideDefinition BlockDefinition {
   targetClass = (targetClass scripter)
   if (isNil targetClass) { return } // shouldn't happen
 
-  saveScripts scripter // xxx new!
+  saveScripts scripter
   newScripts = (list)
   for entry (scripts targetClass) {
 	cmd = (at entry 3)

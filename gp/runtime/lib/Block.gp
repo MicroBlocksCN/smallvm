@@ -981,7 +981,6 @@ method browseImplementors Block {
 }
 
 method openClassBrowser Block className {
-print 'openClassBrowser' className
   if ('<generic>' == className) {
 	page = (global 'page')
 	brs = (newClassBrowser)

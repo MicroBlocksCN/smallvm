@@ -41,6 +41,10 @@ method updateContents SpriteList newInstances {
 	removeAllParts morph
 	return
   }
+  if (not (contains (fieldNames targetClass) 'morph')) { // helper class
+	removeAllParts morph
+	return
+  }
 
   // make a dictionary mapping instances to their icons
   oldIcons = (dictionary)
