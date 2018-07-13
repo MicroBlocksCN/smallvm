@@ -240,6 +240,10 @@ method language AuthoringSpecs { return language }
 method setLanguage AuthoringSpecs newLang {
   translationData = (readEmbeddedFile (join 'translations/' newLang '.txt'))
   if (isNil translationData) {
+	// if not embedded file, try reading external file
+	translationData = (readFile (join 'translations/' newLang '.txt'))
+  }
+  if (isNil translationData) {
 	language = 'English'
 	translationDictionary = nil
   } else {
