@@ -114,7 +114,10 @@ OBJ primMBTiltZ(OBJ *args) { return int2obj(0); }
 OBJ primMBTemp(OBJ *args) { return int2obj(0); }
 
 void primNeoPixelSend(OBJ *args) { }
-
+void primNeoPixelSetPin(int argCount, OBJ *args) { }
+void primMBDrawShape(int argCount, OBJ *args) { }
+OBJ primMBShapeForLetter(OBJ *args) { }
+//
 // Persistence support
 
 FILE *codeFile;
