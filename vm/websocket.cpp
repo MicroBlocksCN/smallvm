@@ -10,10 +10,11 @@
 #ifdef ESP8266
 
 #include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
+//#include <ESP8266WiFiMulti.h>
 #include <WebSocketsServer.h>
 #include <ESP8266WebServer.h>
 #include <Hash.h>
+#include <FS.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -21,13 +22,13 @@
 // You can either specify your network configuration here or use a
 // computer to connect to the ESP8266 access point (essid will be
 // ESP_XXXXXX), then head to http://192.168.4.1 in your browser.
-
 char ESSID[32] = ""; // Your network ESSID
 char PSK[63] = "";   // Your network PSK
 
+File credentialsFile;
+
 #define USE_SERIAL Serial;
 
-ESP8266WiFiMulti WiFiMulti;
 ESP8266WebServer server(80);
 
 char websocketEnabled = 0;
@@ -85,22 +86,22 @@ extern "C" int websocketSendByte(char payload) {
 }
 
 void websocketConnect() {
-  char s[100];
-  outputString("\nAttempting to connect to WiFi network\n");
-  sprintf(s, "ESSID: %s - PSK: %s\n", ESSID, PSK);
+  char s[300];
+  sprintf(s, "\nAttempting to connect to WiFi network: %s\n", ESSID);
   outputString(s);
-  WiFiMulti.addAP(ESSID, PSK);
+
+  WiFi.disconnect();
+  WiFi.begin(ESSID, PSK);
 
   for (int retries = 20; retries > 0; retries --) {
-    if (WiFiMulti.run() != WL_CONNECTED) {
+    if (WiFi.status() != WL_CONNECTED) {
       delay(500);
     }
   }
 
-  if (WiFiMulti.run() == WL_CONNECTED) {
-    char s[300];
+  if (WiFi.status() == WL_CONNECTED) {
     IPAddress ip = WiFi.localIP();
-    sprintf(s, "Connected to WiFi\nIP: %d.%d.%d.%d\n", ip[0], ip[1], ip[2], ip[3]);
+    sprintf(s, "Connected to WiFi network: %s\nIP: %d.%d.%d.%d\n", ESSID, ip[0], ip[1], ip[2], ip[3]);
     outputString(s);
     sprintf(
       s,
@@ -115,9 +116,21 @@ void websocketConnect() {
       ip[0], ip[1], ip[2], ip[3]
     );
     server.send(200, "text/html", s);
-    server.stop();
   } else {
     outputString("Failed to connect to network\nPlease check your ESSID and PSK\n");
+    sprintf(
+      s,
+      "<html><body>"
+        "<h1>microBlocks network configuration</h1>"
+        "<h2><strong>COULD NOT CONNECT TO NETWORK!</strong></h2>"
+        "<p>ESSID set to <strong>%s</strong></p>"
+        "<p>PSK set to <strong>%s</strong></p>"
+      "</body></html>",
+      ESSID,
+      PSK
+    );
+    // This never gets sent back to the client. Needs further investigation.
+    server.send(400, "text/html", s);
   }
 
   websocket.begin();
@@ -140,7 +153,6 @@ void handleRootPath() {
 }
 
 void handleConfigPath() {
-  char s[300];
   for (int i = 0; i < server.args(); i++) {
     if (strcmp(server.argName(i).c_str(), "essid") == 0) {
       strcpy(ESSID, server.arg(i).c_str());
@@ -149,14 +161,36 @@ void handleConfigPath() {
     }
   }
 
+  // store network credentials in flash
+  credentialsFile.close();
+  SPIFFS.remove("network");
+  credentialsFile = SPIFFS.open("network", "a+");
+  credentialsFile.write((uint8 *) ESSID, 32);
+  credentialsFile.write((uint8 *) PSK, 63);
+  credentialsFile.close();
   websocketConnect();
 }
 
 extern "C" void websocketInit() {
+  SPIFFS.begin();
+  if (strlen(ESSID) == 0) {
+    // Try to read credentials from the network file in flash
+    credentialsFile.close();
+    credentialsFile = SPIFFS.open("network", "r");
+    credentialsFile.read((uint8 *) ESSID, 32);
+    credentialsFile.read((uint8 *) PSK, 63);
+    credentialsFile.close();
+  }
+
   if (strlen(ESSID) > 0) {
     websocketConnect();
   } else {
-    outputString("ESSID unspecified.\n");
+    outputString(
+      "\nCould not find network credentials file.\n"
+      "Please connect to the ESP8266 access point and head to "
+      "http://192.168.4.1 in order to set your network ESSID "
+      "and PSK.\n"
+    );
   }
 
   server.on("/", handleRootPath);
