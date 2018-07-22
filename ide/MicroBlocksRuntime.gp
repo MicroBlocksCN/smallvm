@@ -528,7 +528,7 @@ method ensurePortOpen SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		if (notNil portName) {
 			port = (openSerialPort portName 115200)
-			if ('Browser' == (platform)) { waitMSecs 5 } // let browser callback complete
+			if ('Browser' == (platform)) { waitMSecs 100 } // let browser callback complete
 		}
 	}
 }
