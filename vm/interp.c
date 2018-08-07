@@ -114,10 +114,6 @@ static int bytesForObject(OBJ value) {
 static void primSendBroadcast(int argCount, OBJ *args) {
 	// Variadic broadcast; all args are concatenated into printBuffer.
 
-	if (!IS_CLASS(args[0], StringClass)) {
-		fail(needsStringError);
-		return;
-	}
 	printArgs(argCount, args, false, false);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
