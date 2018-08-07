@@ -205,7 +205,7 @@ int neoPixelPinMask = 0;
 volatile int *neoPixelPinSet = NULL;
 volatile int *neoPixelPinClr = NULL;
 
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE) || defined(NRF51)
 
 #define GPIO_SET 0x50000508
 #define GPIO_CLR 0x5000050C
@@ -213,10 +213,10 @@ volatile int *neoPixelPinClr = NULL;
 
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= PINS_COUNT)) {
-		#if defined(ARDUINO_BBC_MICROBIT)
-			pinNum = 0; // use left exteranl pad on micro:bit
-		#else
+		#if defined(ARDUINO_CALLIOPE)
 			pinNum = 26; // internal NeoPixel pin on Calliope
+		#else
+			pinNum = 0; // use left external pad on micro:bit and sino:bit
 		#endif
 	}
 	neoPixelPinMask = 1 << g_ADigitalPinMap[pinNum];

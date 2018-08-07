@@ -85,7 +85,7 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 
 void systemReset() {
 	initPins();
-	#if defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52_PRIMO) || defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE) || defined(ARDUINO_SAMD_MKRZERO)
+	#if defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52_PRIMO) || defined(NRF51) || defined(ARDUINO_SAMD_MKRZERO)
 		NVIC_SystemReset();
 	#endif
 }
@@ -146,6 +146,24 @@ void systemReset() {
 	// Motor/Speaker: pins 23-25
 	// Analog pins: The Calliope does not have dedicated analog input pins;
 	// the analog pins are aliases for digital pins 6, 1, 2, 21 (microphone), 4, 5.
+
+#elif defined(ARDUINO_SINOBIT)
+
+	#define BOARD_TYPE "sino:bit"
+	#define DIGITAL_PINS 33
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS DIGITAL_PINS
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+
+	// See variant.cpp in variants/Sinbit folder for a detailed pin map.
+	// Pins 0-20 are for sino:bit pads and edge connector
+	//	(but pin numbers 17-18 correspond to 3.3 volt pads, not actual I/O pins)
+	// Pins 21-22: RX, TX (for USB Serial?)
+	// Pins 23-28: COL4, COL5, COL6, ROW1, ROW2, ROW3
+	// Button A: pin 5
+	// Button B: pin 11
+	// Analog pins: The dino:bit does not have dedicated analog input pins;
+	// the analog pins are aliases for digital pins 0-4 and 10.
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 	// Note: This case muse come before the ARDUINO_SAMD_ZERO case.
