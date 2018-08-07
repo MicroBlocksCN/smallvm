@@ -1,14 +1,19 @@
-sharedVariables '_digit_shapes' '_digit_shapes_start_index'
+sharedVariables '_digit_shapes' '_digit_shapes_start_index' '_stop_scrolling_text'
 
 spec ' ' 'scroll_text' 'scroll text _ pausing _ ms' 'str num' 'HELLO ROSA!' 100
 spec ' ' 'scroll_number' 'scroll number _ pausing _ ms' 'num num' 123 100
 spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num' 42
 spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num' 100
+spec ' ' 'stopScrollingText' 'stop scrolling' ''
 
 to scroll_text text delay {
+  _stop_scrolling_text = (booleanConstant false)
   local 'length' (size text)
   for position ((length * 6) + 5) {
     mbDisplayOff
+    if _stop_scrolling_text {
+      return 0
+    }
     for i length {
       mbDrawShape (mbShapeForLetter (at i text)) (((i * 6) + 2) - position) 1
     }
@@ -47,6 +52,7 @@ to '_covert_to_shapes' n {
 }
 
 to '_scroll_digit_shapes' delay {
+  _stop_scrolling_text = (booleanConstant false)
   local 'prevShape' (mbShapeForLetter ' ')
   local 'i' _digit_shapes_start_index
   local 'end' ((size _digit_shapes) + 1)
@@ -60,9 +66,19 @@ to '_scroll_digit_shapes' delay {
       mbDrawShape shape (x + 5) 1
       mbDrawShape prevShape x 1
       waitMillis delay
+      if _stop_scrolling_text {
+        mbDisplayOff
+        return 0
+      }
     }
     prevShape = shape
     i += 1
   }
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  mbDisplayOff
 }
 
