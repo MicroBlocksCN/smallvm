@@ -80,7 +80,7 @@ OBJ primSPIRecv(OBJ *args) {
 	return int2obj(result);
 }
 
-#if defined(ARDUINO_BBC_MICROBIT)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT)
 
 #define ACCEL_ID 29
 
