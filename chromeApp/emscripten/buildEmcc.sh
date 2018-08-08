@@ -25,7 +25,6 @@ emcc -std=c99 -Wall -O3 \
 -s USE_ZLIB=1 \
 -s TOTAL_MEMORY=117440512 \
 -s ALLOW_MEMORY_GROWTH=0 \
--s LEGACY_VM_SUPPORT=1 \
 --memory-init-file 0 \
 -s WASM=1 \
 browserPrims.c cache.c dict.c embeddedFS.c events.c gp.c interp.c mem.c memGC.c \

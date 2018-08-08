@@ -45,6 +45,7 @@ void websocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
   switch(type) {
     case WStype_DISCONNECTED:
       outputString("Websocket connection dropped\n");
+      websocket.disconnect(num);
       websocketEnabled = 0;
       break;
     case WStype_CONNECTED:
