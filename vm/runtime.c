@@ -14,10 +14,6 @@
 #include "interp.h"
 #include "persist.h"
 
-#ifdef ESP8266
-  #include "websocket.h"
-#endif
-
 // VM Version
 
 #define VM_VERSION "v040"
@@ -224,18 +220,8 @@ static int outBufEnd = 0;
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
 static inline void sendNextByte() {
-  int byteSent;
 	if (outBufStart != outBufEnd) {
-#if defined(ESP8266)
-    if (websocketEnabled) {
-      byteSent = websocketSendByte(outBuf[outBufStart]);
-    } else {
-#endif
-      byteSent = sendByte(outBuf[outBufStart]);
-#if defined(ESP8266)
-    }
-#endif
-    if (1 == byteSent) {
+    if (1 == sendByte(outBuf[outBufStart])) {
 		  outBufStart = (outBufStart + 1) & OUTBUF_MASK;
 	  }
 	}
@@ -687,16 +673,7 @@ void processMessage() {
 
 	sendNextByte();
 
-  int bytesRead;
-  #ifdef ESP8266
-  if (!websocketEnabled) {
-  #endif
-	  bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
-  #ifdef ESP8266
-	} else {
-    bytesRead = rcvByteCount;
-  }
-  #endif
+  int bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
 
   rcvByteCount += bytesRead;
   if (!rcvByteCount) return;
