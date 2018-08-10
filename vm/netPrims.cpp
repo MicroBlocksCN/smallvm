@@ -7,22 +7,22 @@
 // netPrims.cpp - MicroBlocks network primitives
 // Bernat Romagosa, August 2018
 
+#include "mem.h"
+#include "interp.h"
+
 #ifdef ESP8266
 
 #include <ESP8266WiFi.h>
 
-#include "mem.h"
-#include "interp.h"
-
 void primWifiConnect(OBJ *args) {
   char s[100];
-  
+
   char *essid = obj2str(args[0]);
   char *psk = obj2str(args[1]);
- 
+
   sprintf(s, "Connecting to %s\n", essid);
   outputString(s);
-  
+
   WiFi.disconnect();
   WiFi.begin(essid, psk);
   for (int retries = 20; retries > 0; retries--) {
@@ -52,6 +52,17 @@ OBJ primGetIP(OBJ *args) {
   } else {
     fail(noNetwork);
   }
+}
+
+#else
+
+void primWifiConnect(OBJ *args) {
+  fail(noNetwork);
+}
+
+OBJ primGetIP(OBJ *args) {
+  fail(noNetwork);
+  return int2obj(0);
 }
 
 #endif

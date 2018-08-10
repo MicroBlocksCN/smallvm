@@ -642,7 +642,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	absoluteValue_op:
-		*(sp - arg) =  int2obj(abs(evalInt(*(sp - 1))));
+		*(sp - arg) = int2obj(abs(evalInt(*(sp - 1))));
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	random_op:
@@ -864,17 +864,15 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 
-  // Network ops
-  #ifdef ESP8266
-  wifiConnect_op:
-    primWifiConnect(sp - arg);
-    POP_ARGS_COMMAND();
-    DISPATCH();
-  getIP_op:
-    *(sp - arg) = primGetIP(sp - arg);
-    POP_ARGS_REPORTER();
-    DISPATCH();
-  #endif
+	// network operations:
+	wifiConnect_op:
+		primWifiConnect(sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	getIP_op:
+		*(sp - arg) = primGetIP(sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
 }
 
 // Task Scheduler
