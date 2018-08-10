@@ -336,6 +336,7 @@ method initLabelSpecs MicroBlocksScripter {
   atPut labelSpecs 'spiSend' '-'
   atPut labelSpecs 'printIt' '-'
   atPut labelSpecs 'noop' '-'
+  atPut labelSpecs 'wifiConnect' 'ESP8266:'
 }
 
 method addSpaceOrLabelBefore MicroBlocksScripter spec {
