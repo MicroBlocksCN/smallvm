@@ -133,6 +133,9 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'noop'				'no op')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
 
+		(array ' ' 'wifiConnect'		'connect to WiFi _ with password _' 'str str' 'SSID' 'MyPassword')
+		(array 'r' 'getIP'		        'my IP address')
+
 	'Disabled'
  		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
 
@@ -268,6 +271,8 @@ method initOpcodes SmallCompiler {
 #define mbDrawShape 109
 #define mbShapeForLetter 110
 #define neoPixelSetPin 111
+#define wifiConnect 112
+#define getIP 113
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {

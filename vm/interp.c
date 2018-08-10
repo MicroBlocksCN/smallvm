@@ -293,8 +293,8 @@ static void runTask(Task *task) {
 		&&drawShape_op,
 		&&shapeForLetter_op,
 		&&neoPixelSetPin_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&wifiConnect_op,
+		&&getIP_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -863,6 +863,18 @@ static void runTask(Task *task) {
 		primNeoPixelSetPin(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
+
+  // Network ops
+  #ifdef ESP8266
+  wifiConnect_op:
+    primWifiConnect(sp - arg);
+    POP_ARGS_COMMAND();
+    DISPATCH();
+  getIP_op:
+    *(sp - arg) = primGetIP(sp - arg);
+    POP_ARGS_REPORTER();
+    DISPATCH();
+  #endif
 }
 
 // Task Scheduler
