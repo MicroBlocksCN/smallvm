@@ -544,6 +544,12 @@ method instructionsForExpression SmallCompiler expr {
 		return (list (array 'pushLiteral' expr))
 	} (isClass expr 'Float') {
 		error 'Floats are not yet supported'
+	} (isClass expr 'Color') {
+		// Map color the saturated LED color
+		brightness = (((raise 2 (5 * (brightness expr))) - 1) / 31) // range: 0-1
+		saturation = (2 * (saturation expr)) // increase saturation
+		color = (colorHSV (hue expr) saturation (0.125 * brightness)) // RGB components all 0-31
+		return (instructionsForExpression this (pixelRGB color))
 	}
 
 	// expressions
