@@ -388,6 +388,7 @@ void primNeoPixelSend(OBJ *args);
 void primNeoPixelSetPin(int argCount, OBJ *args);
 
 void primWifiConnect(OBJ *args);
+int wifiStatus();
 OBJ primGetIP(OBJ *args);
 
 #define RCVBUF_SIZE 1024

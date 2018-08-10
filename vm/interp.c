@@ -867,6 +867,11 @@ static void runTask(Task *task) {
 	// network operations:
 	wifiConnect_op:
 		primWifiConnect(sp - arg);
+		// wait until connection attempt ends
+		if (wifiStatus() < 3) {
+			ip--;
+			goto suspend;
+		}
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	getIP_op:

@@ -14,32 +14,30 @@
 #include <ESP8266WiFi.h>
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
+char connecting = false;
+
 void primWifiConnect(OBJ *args) {
-  char s[100];
+  // don't cancel ongoing connection attempts
+  if (!connecting) {
+    connecting = true;
+    char s[100];
+    char *essid = obj2str(args[0]);
+    char *psk = obj2str(args[1]);
 
-  char *essid = obj2str(args[0]);
-  char *psk = obj2str(args[1]);
-
-  sprintf(s, "Connecting to %s\n", essid);
-  outputString(s);
-
-  WiFi.disconnect();
-  WiFi.begin(essid, psk);
-  for (int retries = 20; retries > 0; retries--) {
-    if (WiFi.status() != WL_CONNECTED) {
-      sprintf(s, "Will retry %d more times\n", retries);
-      outputString(s);
-      delay(500);
-    }
+    WiFi.disconnect();
+    WiFi.begin(essid, psk);
   }
-  if (WiFi.status() != WL_CONNECTED) {
-    fail(noNetwork);
-    outputString("\nFailed to connect to network.\n");
-  } else {
-    IPAddress ip = WiFi.localIP();
-    sprintf(s, "Connected to %s\nIP is: %d.%d.%d.%d\n", essid, ip[0], ip[1], ip[2], ip[3]);
-    outputString(s);
-  }
+}
+
+int wifiStatus() {
+  //  WiFi.status() codes:
+  //  WL_CONNECTED        = 3
+  //  WL_CONNECT_FAILED   = 4
+  //  WL_CONNECTION_LOST  = 5
+  //  WL_DISCONNECTED     = 6
+  int status = WiFi.status();
+  if (status >= 3) connecting = false;
+  return status;
 }
 
 OBJ primGetIP(OBJ *args) {
