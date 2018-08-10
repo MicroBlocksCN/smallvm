@@ -8,11 +8,11 @@
 // Bernat Romagosa, August 2018
 
 #include "mem.h"
-#include "interp.h"
 
 #ifdef ESP8266
 
 #include <ESP8266WiFi.h>
+#include "interp.h" // must be included *after* ESP8266WiFi.h
 
 void primWifiConnect(OBJ *args) {
   char s[100];
@@ -55,6 +55,8 @@ OBJ primGetIP(OBJ *args) {
 }
 
 #else
+
+#include "interp.h"
 
 void primWifiConnect(OBJ *args) {
   fail(noNetwork);
