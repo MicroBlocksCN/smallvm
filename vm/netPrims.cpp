@@ -60,6 +60,10 @@ void primWifiConnect(OBJ *args) {
   fail(noNetwork);
 }
 
+int wifiStatus() {
+  return 4; // WL_CONNECT_FAILED = 4
+}
+
 OBJ primGetIP(OBJ *args) {
   fail(noNetwork);
   return int2obj(0);
