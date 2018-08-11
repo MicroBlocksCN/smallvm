@@ -4,7 +4,7 @@ spec ' ' '_captureIRMessage' '_captureIRMessage' 'any' nil
 spec ' ' '_dumpIR' '_dumpIR' 'any' nil
 spec 'r' '_getIRByte' '_getIRByte _' 'auto any' 4 nil
 spec 'r' '_got32Bits' '_got32Bits' 'any' nil
-spec 'r' 'receiveIR' 'receive IR code from device _' 'auto' 175
+spec 'r' 'receiveIR' 'receive IR code from device _' 'auto' 253
 spec ' ' 'testIR' 'test IR' ''
 
 to '_captureIRMessage' {
