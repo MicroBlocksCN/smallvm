@@ -1,0 +1,101 @@
+sharedVariables 'pulse_times'
+
+spec ' ' '_captureIRMessage' '_captureIRMessage' 'any' nil
+spec ' ' '_dumpIR' '_dumpIR' 'any' nil
+spec 'r' '_getIRByte' '_getIRByte _' 'auto any' 4 nil
+spec 'r' '_got32Bits' '_got32Bits' 'any' nil
+spec 'r' 'receiveIR' 'receive IR code from device _' 'auto' 175
+spec ' ' 'testIR' 'test IR' ''
+
+to '_captureIRMessage' {
+  local 'IR_Receive_Pin' 26
+  if (pulse_times == 0) {
+    pulse_times = (newArray 200)
+  }
+  fillArray pulse_times 0
+  local 'i' 1
+  comment 'Wait for IR signal -- this is the start of a new message.
+Note: THe pin goes low when an IR signal is detected.'
+  waitUntil (not (digitalReadOp IR_Receive_Pin))
+  local 'start' (microsOp)
+  forever {
+    comment 'Record the time until the end of the current IR pulse ("mark")'
+    waitUntil (digitalReadOp IR_Receive_Pin)
+    local 'end' (microsOp)
+    atPut i pulse_times (end - start)
+    i += 1
+    start = end
+    comment 'Record time until the start of the next IR pulse ("space")'
+    repeatUntil (not (digitalReadOp IR_Receive_Pin)) {
+      if (((microsOp) - start) > 5000) {
+        comment 'No IR pulse for 5000 usecs means "end of message"'
+        return 0
+      }
+    }
+    local 'end' (microsOp)
+    atPut i pulse_times (end - start)
+    i += 1
+    start = end
+  }
+}
+
+to '_dumpIR' {
+  comment 'Print raw pulse timings to the terminal.
+Can be used to analyze new protocols.'
+  local 'i' 1
+  printIt '-----'
+  repeat (size pulse_times) {
+    local 'mark usecs' (at i pulse_times)
+    local 'space usecs' (at (i + 1) pulse_times)
+    printIt (v 'mark usecs') (v 'space usecs')
+    i += 2
+    if ((v 'space usecs') == 0) {
+      printIt 'timing entries:' (i - 2)
+      return 0
+    }
+  }
+}
+
+to '_getIRByte' position {
+  local 'result' 0
+  local 'i' position
+  repeat 8 {
+    if ((at i pulse_times) < 1000) {
+      result = ((result << 1) | 0)
+    } else {
+      result = ((result << 1) | 1)
+    }
+    i += 2
+  }
+  return result
+}
+
+to '_got32Bits' {
+  return (and ((at 67 pulse_times) != 0) ((at 68 pulse_times) == 0))
+}
+
+to receiveIR deviceID {
+  forever {
+    '_captureIRMessage'
+    if ('_got32Bits') {
+      local 'id' ('_getIRByte' 20 nil)
+      if (id == deviceID) {
+        return ('_getIRByte' 36 nil)
+      }
+    }
+  }
+}
+
+to testIR {
+  forever {
+    '_captureIRMessage'
+    if ('_got32Bits') {
+      local 'b1' ('_getIRByte' 4 nil)
+      local 'b2' ('_getIRByte' 20 nil)
+      local 'b3' ('_getIRByte' 36 nil)
+      local 'b4' ('_getIRByte' 52 nil)
+      sayIt 'Device:' b2 'code:' b3
+    }
+  }
+}
+

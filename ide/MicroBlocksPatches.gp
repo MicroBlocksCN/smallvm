@@ -44,13 +44,6 @@ method allVarsMenu InputSlot {
   return menu
 }
 
-method typesMenu InputDeclaration {
-  menu = (menu nil (action 'setType' this) true)
-  addItem menu 'number/string' 'auto' 'editable number or string'
-  addItem menu '' 'bool' 'boolean switch' (fullCostume (morph (element this 'bool')))
-  popUp menu (global 'page') (left morph) (bottom morph)
-}
-
 method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }
@@ -301,10 +294,13 @@ method fixLayout Block {
           x = (+ left indentation w)
           w += (width (fullBounds (morph each)))
           w += (space * scale)
-          if (and ('mbDisplay' == (primName expression)) (each == (first group))) {
+		  if (and ('mbDisplay' == (primName expression)) (each == (first group))) {
 			lineArgCount = 10; // force a line break after first item of 'mbDisplay' block
-          }
-          if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
+		  }
+		  if (and ('setNeoPixelColors10' == (primName expression)) (each == (at group 3))) {
+			lineArgCount = 10; // force a line break after first item of 'mbDisplay' block
+		  }
+		  if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
             add lines currentLine
             add lineHeights h
             currentLine = (list)

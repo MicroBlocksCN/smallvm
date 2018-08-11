@@ -1,22 +1,18 @@
-sharedVariables '_servo_1_pin' '_servo_1_usecs' '_servo_2_pin' '_servo_2_usecs' '_servo_3_pin' '_servo_3_usecs'
+sharedVariables '_servo_0_usecs' '_servo_1_usecs' '_servo_2_usecs'
 
-spec ' ' 'setServoPins' 'start servo loop pins  _ _ _' 'auto auto auto' 0 -1 -1
-spec ' ' '_servo_pulse' '_servo_pulse _ usecs _' 'auto auto' 0 1500
-spec ' ' 'setServoAngle' 'set servo _ speed _' 'auto auto' 1 0
-spec ' ' 'setServoSpeed' 'set servo _ angle _' 'auto auto' 1 0
+spec ' ' 'runServoLoop' 'run servo loop (pins 0-2)'
+spec ' ' 'setServo' 'set servo _ to _ (-100 to 100)' 'num num' 0 100
+spec ' ' '_servo_pulse' '_servo_pulse _ usecs _' 'num num' 0 1500
 
-to setServoPins p1 p2 p3 {
-  _servo_1_pin = p1
-  _servo_2_pin = p2
-  _servo_3_pin = p3
-  _servo_1_usecs = 1500
-  _servo_2_usecs = 1500
-  _servo_3_usecs = 1500
+to runServoLoop {
+  '_servo_0_usecs' = 1500
+  '_servo_1_usecs' = 1500
+  '_servo_2_usecs' = 1500
   forever {
-    if (_servo_1_pin >= 0) {'_servo_pulse' _servo_1_pin _servo_1_usecs}
-    if (_servo_2_pin >= 0) {'_servo_pulse' _servo_2_pin _servo_2_usecs}
-    if (_servo_3_pin >= 0) {'_servo_pulse' _servo_3_pin _servo_3_usecs}
-    waitMillis 20
+	'_servo_pulse' 0 _servo_0_usecs
+	'_servo_pulse' 1 _servo_1_usecs
+	'_servo_pulse' 2 _servo_2_usecs
+    waitMillis 15
   }
 }
 
@@ -28,35 +24,21 @@ to '_servo_pulse' pin usecs {
   }
   digitalWriteOp pin true
   comment 'Split wait into a long wait followed by a wait of <= 30 usecs for greater accuracy'
-  local 'endTime' ((microsOp) + usecs)
-  waitMicros (usecs - 55)
+  local endTime ((microsOp) + usecs)
+  waitMicros (usecs - 30)
   waitMicros (endTime - (microsOp))
   digitalWriteOp pin false
 }
 
-to setServoAngle servo speed {
-  comment 'Speed is -100 to 100.
-Those map to 800 to 2200 usecs with 1500 being "off"'
-  local 'usecs' (1500 - (7 * speed))
-  if (1 == servo) {
+to setServo servo speedOrAngle {
+  comment 'Range is -100 to 100 with 0 being "center" or "off".'
+  local usecs (1500 - (7 * speedOrAngle))
+  if (0 == servo) {
+    _servo_0_usecs = usecs
+  } (1 == servo) {
     _servo_1_usecs = usecs
   } (2 == servo) {
     _servo_2_usecs = usecs
-  } (3 == servo) {
-    _servo_3_usecs = usecs
-  }
-}
-
-to setServoSpeed servo angle {
-  comment 'Angle is -90 to 90
-Those map to 800 to 2200 usecs with 1500 being "center"'
-  local 'usecs' (1500 - ((70 * angle) / 9))
-  if (1 == servo) {
-    _servo_1_usecs = usecs
-  } (2 == servo) {
-    _servo_2_usecs = usecs
-  } (3 == servo) {
-    _servo_3_usecs = usecs
   }
 }
 
