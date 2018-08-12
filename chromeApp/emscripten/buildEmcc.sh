@@ -10,7 +10,9 @@
 # copy folders to be included in embedded file system
 cp -r ../../gp/Examples .
 cp -r ../../gp/Libraries .
-cp -r ../../precompiled .
+mkdir precompiled
+cp -r ../../precompiled/*.hex precompiled
+cp -r ../../precompiled/vm.circuitplay.uf2 precompiled
 cp -r ../../gp/runtime .
 cp ../../ide/* runtime/lib
 mv runtime/lib/MicroBlocksPatches.gp runtime/lib/AAAMicroBlocksPatches.gp # makes patches load last
