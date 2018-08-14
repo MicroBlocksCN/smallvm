@@ -44,6 +44,47 @@ method allVarsMenu InputSlot {
   return menu
 }
 
+method thingTypesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu ''
+  addItem menu 'OnOffSwitch'
+  addItem menu 'MultiLevelSwitch'
+  addItem menu 'BinarySensor'
+  addItem menu 'MultiLevelSensor'
+  addItem menu 'ColorControl'
+  addItem menu 'EnergyMonitor'
+  addItem menu 'SmartPlug'
+  addItem menu 'Light'
+  return menu
+}
+
+method varTypesMenu InputSlot {
+  // TODO: support object and array
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'null'
+  addItem menu 'boolean'
+  addItem menu 'number'
+  addItem menu 'integer'
+  addItem menu 'string'
+  return menu
+}
+
+method propertyTypesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu ''
+  addItem menu 'BooleanProperty'
+  addItem menu 'OnOffProperty'
+  addItem menu 'LevelProperty'
+  addItem menu 'BrightnessProperty'
+  addItem menu 'ColorProperty'
+  addItem menu 'ColorTemperatureProperty'
+  addItem menu 'InstantaneousPowerProperty'
+  addItem menu 'CurrentProperty'
+  addItem menu 'VoltageProperty'
+  addItem menu 'FrequencyProperty'
+  return menu
+}
+
 method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }

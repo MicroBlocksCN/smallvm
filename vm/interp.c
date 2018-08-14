@@ -295,7 +295,7 @@ static void runTask(Task *task) {
 		&&neoPixelSetPin_op,
 		&&wifiConnect_op,
 		&&getIP_op,
-		&&RESERVED_op,
+		&&makeWebThing_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -868,7 +868,8 @@ static void runTask(Task *task) {
 	wifiConnect_op:
 		primWifiConnect(sp - arg);
 		// wait until connection attempt ends
-		if (wifiStatus() < 3) {
+		if (wifiStatus() == 0) {
+      // 0: WL_IDLE_STATUS
 			ip--;
 			goto suspend;
 		}
@@ -876,8 +877,12 @@ static void runTask(Task *task) {
 		DISPATCH();
 	getIP_op:
 		*(sp - arg) = primGetIP(sp - arg);
-		POP_ARGS_REPORTER();
+    POP_ARGS_REPORTER();
 		DISPATCH();
+  makeWebThing_op:
+    primMakeWebThing(arg, sp - arg);
+    POP_ARGS_COMMAND();
+    DISPATCH();
 }
 
 // Task Scheduler

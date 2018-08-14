@@ -127,6 +127,7 @@ extern "C" {
 #define neoPixelSetPin 111
 #define wifiConnect 112
 #define getIP 113
+#define makeWebThing 114
 
 // Instruction Format
 
@@ -391,6 +392,7 @@ void primWifiConnect(OBJ *args);
 void webServerLoop();
 int wifiStatus();
 OBJ primGetIP(OBJ *args);
+OBJ primMakeWebThing(int argCount, OBJ *args);
 
 #define RCVBUF_SIZE 1024
 #define MAX_MSG_SIZE (RCVBUF_SIZE - 10) // 5 header + 1 terminator bytes plus a few extra
