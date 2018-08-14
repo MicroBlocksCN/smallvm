@@ -55,7 +55,11 @@ void webServerLoop() {
     client.flush();
     client.print(webThingBuffer);
   } else {
-    client.stop();
+    client.flush();
+    client.print(
+      "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\n\r\n"
+      "{\"error\":\"Wrong URL\"}"
+    );
   }
 }
 
@@ -86,40 +90,37 @@ int wifiStatus() {
 
 OBJ primGetIP(OBJ *args) {
   IPAddress ip = WiFi.localIP();
-  char ipString[16];
+  char ipString[17];
   sprintf(ipString, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
-  return newStringFromBytes((uint8*) ipString, 16);
+  return newStringFromBytes((uint8*) ipString, strlen(ipString));
 }
 
 OBJ primMakeWebThing(int argCount, OBJ *args) {
-  char* thingType = obj2str(args[0]);
-  char* thingName = obj2str(args[1]);
+  char* thingName = obj2str(args[0]);
   int bytesWritten = sprintf(
     webThingBuffer,
     "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n"
     "{\"name\":\"%s\","
+    "\"@type\":\"MicroBlocks\","
+    "\"description\":\"%s\","
     "\"href\":\"/things/ub\","
-    "\"@type\":[\"%s\"],"
     "\"properties\":{",
     thingName,
-    thingType
+    thingName
   );
-  for (int i = 2; i < argCount; i += 4) {
+  for (int i = 1; i < argCount; i += 3) {
     char* propertyType = obj2str(args[i]);
-    char* propertyThingType = obj2str(args[i+1]);
-    char* propertyLabel = obj2str(args[i+2]);
-    char* propertyVar = obj2str(args[i+3]);
+    char* propertyLabel = obj2str(args[i+1]);
+    char* propertyVar = obj2str(args[i+2]);
     bytesWritten += sprintf(
       webThingBuffer + bytesWritten,
       "\"%s\":"
         "{\"type\":\"%s\","
-         "\"@type\":\"%s\","
          "\"label\":\"%s\","
          "\"href\":\"/things/ub/properties/%s\""
         "},",
       propertyVar,
       propertyType,
-      propertyThingType,
       propertyLabel,
       propertyVar
     );
@@ -129,7 +130,6 @@ OBJ primMakeWebThing(int argCount, OBJ *args) {
     bytesWritten --;
   }
   sprintf(webThingBuffer + bytesWritten, "}}\0");
-  outputString(webThingBuffer);
 }
 
 #else
