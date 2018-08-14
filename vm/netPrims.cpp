@@ -15,41 +15,85 @@
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
 char connecting = false;
+uint32 initTime;
+
+WiFiServer server(80);
 
 void primWifiConnect(OBJ *args) {
   // don't cancel ongoing connection attempts
   if (!connecting) {
     connecting = true;
-    char s[100];
+    WiFi.disconnect();
+    WiFi.mode(WIFI_STA);
     char *essid = obj2str(args[0]);
     char *psk = obj2str(args[1]);
-
-    WiFi.disconnect();
     WiFi.begin(essid, psk);
   }
 }
 
+void initWebServer() {
+  server.stop();
+  server.begin();
+}
+
+void webServerLoop() {
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+  while (!client.available()) {
+    delay(1);
+  }
+  String req = client.readStringUntil('\r');
+  client.flush();
+  if (req.indexOf("/things/microblocks") != -1) {
+    client.flush();
+    client.print(
+      "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n"
+      "{\"name\":\"My MicroBlocks Thingie\","
+      "\"href\":\"/things/microblocks\","
+      "\"@context\":\"https://iot.mozilla.org/schemas\","
+      "\"@type\":[\"OnOffSwitch\",\"Light\"],"
+      "\"properties\":"
+        "{\"on\":"
+          "{\"type\":\"boolean\","
+          "\"@type\":\"OnOffProperty\","
+          "\"href\":\"/things/microblocks/properties/on\""
+      "}}}"
+    );
+  } else {
+    client.stop();
+  }
+}
+
 int wifiStatus() {
-  //  WiFi.status() codes:
+  //  WL_IDLE_STATUS      = 0
   //  WL_CONNECTED        = 3
   //  WL_CONNECT_FAILED   = 4
   //  WL_CONNECTION_LOST  = 5
   //  WL_DISCONNECTED     = 6
   int status = WiFi.status();
-  if (status >= 3) connecting = false;
+  if (WiFi.localIP()[0] != 0) {
+    // Got an IP. We're online.
+    connecting = false;
+    initWebServer();
+  } else if (status != 3 && millisecs() > initTime + 10000) {
+    // We time out after 10s
+    WiFi.disconnect();
+    status = WL_DISCONNECTED;
+    connecting = false;
+  } else {
+    // Still waiting
+    status = WL_IDLE_STATUS;
+  }
   return status;
 }
 
 OBJ primGetIP(OBJ *args) {
+  IPAddress ip = WiFi.localIP();
   char ipString[16];
-  IPAddress ip;
-  if (WiFi.status() == WL_CONNECTED) {
-    ip = WiFi.localIP();
-    sprintf(ipString, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
-    return newStringFromBytes((uint8*) ipString, 16);
-  } else {
-    fail(noNetwork);
-  }
+  sprintf(ipString, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+  return newStringFromBytes((uint8*) ipString, 16);
 }
 
 #else
