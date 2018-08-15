@@ -481,7 +481,7 @@ static void sendAllCode() {
 	}
 }
 
-static int * varNameRecordFor(int varID) {
+int * varNameRecordFor(int varID) {
 	int *result = NULL;
 	int *p = recordAfter(NULL);
 	while (p) {
