@@ -34,12 +34,14 @@ WiFiServer server(80);
 void primWifiConnect(OBJ *args) {
   // don't cancel ongoing connection attempts
   if (!connecting) {
-    WiFi.disconnect();
-    WiFi.mode(WIFI_STA);
     connecting = true;
     initTime = millisecs();
     char *essid = obj2str(args[0]);
     char *psk = obj2str(args[1]);
+    // Kill active connection, if there was one
+    WiFi.persistent(false);
+    WiFi.mode(WIFI_OFF);
+    WiFi.mode(WIFI_STA);
     WiFi.begin(essid, psk);
   }
 }
@@ -50,11 +52,11 @@ void initWebServer() {
 }
 
 void notFoundResponse(WiFiClient client) {
-  client.flush();
   client.print(
     "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\n\r\n"
     "{\"error\":\"Resource not found\"}"
   );
+  client.flush();
 }
 
 void webServerLoop() {
@@ -69,27 +71,45 @@ void webServerLoop() {
   char request[100];
   char url[100];
   char *part;
+  char body[100];
+  char property[100];
+  char value[100];
   client.readStringUntil('\r').toCharArray(request, 100);
-  // request looks like "GET /some/url HTTP/1.1"
+  // request looks like "[GET/PUT] /some/url HTTP/1.1"
+
+  // We first find out whether this is a PUT request
+  bool isPutRequest = strstr(request, "PUT");
+  if (isPutRequest) {
+    // FIXME: This is both blocking and slow!
+    while (client.available()) {
+      client.readStringUntil('\r').toCharArray(body, 100);
+    }
+    // body looks like {"property name":"value to set"}
+    strtok(body, "{\":}"); // ignore first newline
+    strcpy(property, strtok(NULL, "{\":}"));
+    strcpy(value, strtok(NULL, "{\":}"));
+  }
+
   // The URL lives between the two only spaces in the request
   strcpy(url, strtok(strchr(request, ' '), " "));
 
   // We tokenize the URL and walk the tree
-  part = strtok(url,"/");
-  if (part != NULL && strcmp(part, "things") == 0) {
+  part = strtok(url, "/");
+  if (part && strcmp(part, "things") == 0) {
     // We're at /things
-    part = strtok(NULL,"/");
-    if (part != NULL && strcmp(part, "ub") == 0) {
+    part = strtok(NULL, "/");
+    if (part && strcmp(part, "ub") == 0) {
       // We're at /things/ub
       part = strtok(NULL, "/");
-      if (part != NULL && strcmp(part, "properties") == 0) {
+      if (part && strcmp(part, "properties") == 0) {
         // We're at /things/ub/properties
         // next token contains the property name
-        char* varName = strtok(NULL,"/");
-        if (varName != NULL) {
+        char* varName = strtok(NULL, "/");
+        if (varName) {
           OBJ variable;
+          int varID;
           // We now look for the varID of this var in our records
-          for (int varID = 0; varID < MAX_VARS; varID++) {
+          for (varID = 0; varID < MAX_VARS; varID++) {
             int *rec = varNameRecordFor(varID);
             if (rec) {
               char *eachVarName = (char *) (rec + 2);
@@ -102,27 +122,41 @@ void webServerLoop() {
           char s[100];
           switch (objClass(variable)) {
             case StringClass:
-              sprintf(s, "%s {\"%s\": \"%s\"}", JSON_HEADER, varName, obj2str(variable));
+              if (isPutRequest) {
+                vars[varID] = newStringFromBytes((uint8*) value, strlen(value));
+              } else {
+                sprintf(s, "%s {\"%s\": \"%s\"}", JSON_HEADER, varName, obj2str(variable));
+              }
               break;
             case IntegerClass:
-              sprintf(s, "%s {\"%s\": %i}", JSON_HEADER, varName, obj2int(variable));
+              if (isPutRequest) {
+                vars[varID] = int2obj(atoi(value));
+              } else {
+                sprintf(s, "%s {\"%s\": %i}", JSON_HEADER, varName, obj2int(variable));
+              }
               break;
             case BooleanClass:
-              sprintf(s, "%s {\"%s\": %s}", JSON_HEADER, varName, (trueObj == variable ? "true" : "false"));;
+              if (isPutRequest) {
+                vars[varID] = (strcmp(value, "true") == 0) ? trueObj : falseObj;
+              } else {
+                sprintf(s, "%s {\"%s\": %s}", JSON_HEADER, varName, (trueObj == variable ? "true" : "false"));
+              }
               break;
             default:
-              sprintf(s, "%s {\"%s\": \"unknown variable type\"}", JSON_HEADER, varName);;
+              if (isPutRequest) {
+                sprintf(s, "%s {\"%s\": \"unknown variable type\"}", JSON_HEADER, varName);
+              }
               break;
           }
-          client.flush();
           client.print(s);
+          client.flush();
         } else {
           notFoundResponse(client);
         }
       } else {
         // Full URL is /things/ub
-        client.flush();
         client.print(webThingBuffer);
+        client.flush();
       }
     } else {
       notFoundResponse(client);
@@ -144,8 +178,8 @@ int wifiStatus() {
     // we may have read an old state
     connecting = false;
     initWebServer();
-  } else if (status != 3 && millisecs() > initTime + 15000) {
-    // We time out after 15s
+  } else if (status != 3 && millisecs() > initTime + 10000) {
+    // We time out after 10s
     WiFi.disconnect();
     status = WL_DISCONNECTED;
     connecting = false;
