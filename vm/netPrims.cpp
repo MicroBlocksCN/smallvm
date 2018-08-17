@@ -9,9 +9,16 @@
 
 #include "mem.h"
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
+#if defined(ESP8266)
 #include <ESP8266WiFi.h>
+#endif
+
+#if defined(ARDUINO_ARCH_ESP32)
+#include <WiFi.h>
+#endif
+
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
 // Buffer for Mozilla Web of Things JSON definition
@@ -137,8 +144,8 @@ int wifiStatus() {
     // we may have read an old state
     connecting = false;
     initWebServer();
-  } else if (status != 3 && millisecs() > initTime + 10000) {
-    // We time out after 10s
+  } else if (status != 3 && millisecs() > initTime + 15000) {
+    // We time out after 15s
     WiFi.disconnect();
     status = WL_DISCONNECTED;
     connecting = false;

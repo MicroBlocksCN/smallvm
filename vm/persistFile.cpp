@@ -12,10 +12,14 @@
 #include "mem.h"
 #include "persist.h"
 
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 	// Persistent file operations for NodeMCU (SPIFFS file system)
 
+#if defined(ESP8266)
 #include <FS.h>
+#elif defined(ARDUINO_ARCH_ESP32)
+#include <SPIFFS.h>
+#endif
 
 File codeFile;
 
@@ -45,6 +49,13 @@ extern "C" void clearCodeFile() {
 	codeFile.flush();
 }
 
+// Commented out as it makes the board unresponsive
+// Our SPIFFS approach doesn't fully work in ESP32 yet, so we
+// don't have persistence anymore, but at least the VM responds
+// and you can build programs in flash. We need to investigate
+// why SPIFFS is not working.
+
+/*
 #elif defined(ARDUINO_ARCH_ESP32)
 	// Persistent operations for ESP32 using NVS
 	// Contributed by Gilles Mateu - IMERIR
@@ -87,7 +98,7 @@ extern "C" void writeCodeFile(uint8 *code, int byteCount) {
 	memcpy(&(NVS_blob[NVS_offset]), code, byteCount);
 	err = nvs_open(NVS_NAME, NVS_READWRITE, &NVS_handle);
 
-	/* very ugly code, we write all the memory */
+	// very ugly code, we write all the memory
 	for (int i = 0; i < NVS_blob_count + 1; i++) {
 		char nvskey[32];
 		sprintf(nvskey,"%s%d", NVS_KEY, i);
@@ -118,5 +129,5 @@ extern "C" void clearCodeFile() {
 	}
 	nvs_close(NVS_handle);
 }
-
+*/
 #endif

@@ -32,7 +32,11 @@ OBJ primI2cGet(OBJ *args) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(registerID);
+#ifdef ARDUINO_ARCH_ESP32
+  int error = Wire.endTransmission();
+#else
 	int error = Wire.endTransmission(false);
+#endif
 	if (error) return int2obj(0 - error); // error; bad device ID?
 
 	Wire.requestFrom(deviceID, 1);

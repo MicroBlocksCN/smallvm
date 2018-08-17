@@ -47,9 +47,28 @@ to openMicroBlocksEditor devMode {
 	dataAndURL = (global 'initialProject')
   	openProject editor (first dataAndURL) (last dataAndURL)
   }
+//  latestVersion = (getLatestVersion)
+//  currentVersion = (splitWith (ideVersion (smallRuntime)) '.')
+//  for i (count latestVersion) {
+//    if (> (at latestVersion i) (at currentVersion i)) {
+//      inform (global 'page') (join
+//            'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
+//            (newline)
+//            'Get it now at http://microblocks.fun')
+//    }
+//  }
   pageResized editor
   developerModeChanged editor
   startSteppingSafely page
+}
+
+to getLatestVersion {
+  // Fails at the VM level if there is no network connection
+  html = (httpGet 'microblocks.fun' '/download.html')
+  if (isNil html) { return (array 0 0 0) }
+  from = (findSubstring 'version: <strong>' html 1)
+  if (isNil from) { return (array 0 0 0) }
+  return (splitWith (substring html (+ from (count 'version: <strong>')) (- (findSubstring '</strong>' html from) 1)) '.')
 }
 
 to findMicroBlocksEditor {
