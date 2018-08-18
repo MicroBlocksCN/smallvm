@@ -550,11 +550,7 @@ method instructionsForExpression SmallCompiler expr {
 	} (isClass expr 'Float') {
 		error 'Floats are not yet supported'
 	} (isClass expr 'Color') {
-		// Map color the saturated LED color
-		brightness = (((raise 2 (5 * (brightness expr))) - 1) / 31) // range: 0-1
-		saturation = (2 * (saturation expr)) // increase saturation
-		color = (colorHSV (hue expr) saturation (0.125 * brightness)) // RGB components all 0-31
-		return (instructionsForExpression this (pixelRGB color))
+		return (instructionsForExpression this (scaledRGB this expr))
 	}
 
 	// expressions
@@ -568,6 +564,9 @@ method instructionsForExpression SmallCompiler expr {
 		} else {
 			return (list (array 'pushImmediate' falseObj))
 		}
+	} ('colorSwatch' == op) {
+		c = (color (at args 1) (at args 2) (at args 3))
+		return (instructionsForExpression this (scaledRGB this c))
 	} ('and' == op) {
 		return (instructionsForAnd this args)
 	} ('or' == op) {
@@ -577,6 +576,13 @@ method instructionsForExpression SmallCompiler expr {
 	} else {
 		return (primitive this op args false)
 	}
+}
+
+method scaledRGB SmallCompiler aColor {
+	brightness = (((raise 2 (5 * (brightness aColor))) - 1) / 31) // range: 0-1
+	saturation = (2 * (saturation aColor)) // increase saturation
+	color = (colorHSV (hue aColor) saturation (0.125 * brightness)) // RGB components all 0-31
+	return (pixelRGB color)
 }
 
 method instructionsForAnd SmallCompiler args {
