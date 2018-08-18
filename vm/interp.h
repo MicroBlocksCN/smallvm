@@ -127,6 +127,7 @@ extern "C" {
 #define neoPixelSetPin 111
 #define wifiConnect 112
 #define getIP 113
+#define makeWebThing 114
 
 // Instruction Format
 
@@ -294,6 +295,7 @@ void sendBroadcastToIDE(char *s, int len);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void vmPanic(char *s);
+int * varNameRecordFor(int varID);
 
 // Integer Evaluation
 
@@ -388,8 +390,10 @@ void primNeoPixelSend(OBJ *args);
 void primNeoPixelSetPin(int argCount, OBJ *args);
 
 void primWifiConnect(OBJ *args);
+void webServerLoop();
 int wifiStatus();
 OBJ primGetIP(OBJ *args);
+OBJ primMakeWebThing(int argCount, OBJ *args);
 
 #define RCVBUF_SIZE 1024
 #define MAX_MSG_SIZE (RCVBUF_SIZE - 10) // 5 header + 1 terminator bytes plus a few extra

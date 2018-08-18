@@ -295,7 +295,7 @@ static void runTask(Task *task) {
 		&&neoPixelSetPin_op,
 		&&wifiConnect_op,
 		&&getIP_op,
-		&&RESERVED_op,
+		&&makeWebThing_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -868,16 +868,21 @@ static void runTask(Task *task) {
 	wifiConnect_op:
 		primWifiConnect(sp - arg);
 		// wait until connection attempt ends
-		if (wifiStatus() < 3) {
+		if (wifiStatus() == 0) {
+      // 0: WL_IDLE_STATUS
 			ip--;
 			goto suspend;
 		}
-		POP_ARGS_COMMAND();
+    POP_ARGS_COMMAND();
 		DISPATCH();
 	getIP_op:
 		*(sp - arg) = primGetIP(sp - arg);
-		POP_ARGS_REPORTER();
+    POP_ARGS_REPORTER();
 		DISPATCH();
+  makeWebThing_op:
+    primMakeWebThing(arg, sp - arg);
+    POP_ARGS_COMMAND();
+    DISPATCH();
 }
 
 // Task Scheduler
@@ -892,6 +897,9 @@ void vmLoop() {
 		if (count-- <= 0) {
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 			updateMicrobitDisplay();
+#endif
+#if defined(ESP8266)
+      webServerLoop();
 #endif
 			processMessage();
 			count = 25; // must be under 30 when building on mbed to avoid serial errors
