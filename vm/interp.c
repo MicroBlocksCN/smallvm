@@ -898,12 +898,12 @@ void vmLoop() {
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 			updateMicrobitDisplay();
 #endif
-#if defined(ESP8266)
-      webServerLoop();
-#endif
 			processMessage();
 			count = 25; // must be under 30 when building on mbed to avoid serial errors
 		}
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+      webServerLoop();
+#endif
 		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
 			currentTaskIndex++;

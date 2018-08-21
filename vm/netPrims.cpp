@@ -24,12 +24,15 @@
 // Buffer for Mozilla Web of Things JSON definition
 #define WEBTHING_BUF_SIZE 1024
 static char webThingBuffer[WEBTHING_BUF_SIZE];
+static char request[WEBTHING_BUF_SIZE];
+static int requestPos = 0;
 
 #define JSON_HEADER "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n"
 static char connecting = false;
 static uint32 initTime;
 
 WiFiServer server(80);
+WiFiClient client;
 
 void primWifiConnect(OBJ *args) {
   // don't cancel ongoing connection attempts
@@ -51,7 +54,7 @@ void initWebServer() {
   server.begin();
 }
 
-void notFoundResponse(WiFiClient client) {
+void notFoundResponse() {
   client.print(
     "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\n\r\n"
     "{\"error\":\"Resource not found\"}"
@@ -60,39 +63,31 @@ void notFoundResponse(WiFiClient client) {
 }
 
 void webServerLoop() {
-  WiFiClient client = server.available();
   if (!client) {
-    return;
+    client = server.available();
   }
-  while (!client.available()) {
-    delay(1);
-  }
-
-  char request[100];
+  if (!client) return;
+  int bytesAvailable = client.available();
+  if (!bytesAvailable) return;
+  client.readBytes(request, bytesAvailable);
+  
   char url[100];
   char *part;
   char body[100];
   char property[100];
   char value[100];
-  client.readStringUntil('\r').toCharArray(request, 100);
   // request looks like "[GET/PUT] /some/url HTTP/1.1"
-
   // We first find out whether this is a PUT request
   bool isPutRequest = strstr(request, "PUT");
   if (isPutRequest) {
-    // FIXME: This is both blocking and slow!
-    while (client.available()) {
-      client.readStringUntil('\r').toCharArray(body, 100);
-    }
-    // body looks like {"property name":"value to set"}
-    strtok(body, "{\":}"); // ignore first newline
-    strcpy(property, strtok(NULL, "{\":}"));
+    strcpy(body, strrchr(request, '{'));
+    strcpy(property, strtok(body, "{\":}"));
     strcpy(value, strtok(NULL, "{\":}"));
   }
-
-  // The URL lives between the two only spaces in the request
+  
+  // The URL lives between the two only spaces in the first line of the request
   strcpy(url, strtok(strchr(request, ' '), " "));
-
+  
   // We tokenize the URL and walk the tree
   part = strtok(url, "/");
   if (part && strcmp(part, "things") == 0) {
@@ -151,7 +146,7 @@ void webServerLoop() {
           client.print(s);
           client.flush();
         } else {
-          notFoundResponse(client);
+          notFoundResponse();
         }
       } else {
         // Full URL is /things/ub
@@ -159,11 +154,13 @@ void webServerLoop() {
         client.flush();
       }
     } else {
-      notFoundResponse(client);
+      notFoundResponse();
     }
   } else {
-    notFoundResponse(client);
+    notFoundResponse();
   }
+  client.flush();
+  client.stop();
 }
 
 int wifiStatus() {
