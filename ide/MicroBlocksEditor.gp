@@ -47,19 +47,24 @@ to openMicroBlocksEditor devMode {
 	dataAndURL = (global 'initialProject')
   	openProject editor (first dataAndURL) (last dataAndURL)
   }
-//  latestVersion = (getLatestVersion)
-//  currentVersion = (splitWith (ideVersion (smallRuntime)) '.')
-//  for i (count latestVersion) {
-//    if (> (at latestVersion i) (at currentVersion i)) {
-//      inform (global 'page') (join
-//            'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
-//            (newline)
-//            'Get it now at http://microblocks.fun')
-//    }
-//  }
+  // seems to block the main thread even when launched, and crashes when it can't reach the server
+  // launch (global 'page') (checkLatestVersion)
   pageResized editor
   developerModeChanged editor
   startSteppingSafely page
+}
+
+to checkLatestVersion {
+  latestVersion = (getLatestVersion)
+  currentVersion = (splitWith (ideVersion (smallRuntime)) '.')
+  for i (count latestVersion) {
+    if (> (at latestVersion i) (at currentVersion i)) {
+      inform (global 'page') (join
+          'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
+          (newline)
+          'Get it now at http://microblocks.fun')
+    }
+  }
 }
 
 to getLatestVersion {

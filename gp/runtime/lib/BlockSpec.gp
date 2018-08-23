@@ -204,7 +204,7 @@ method slotInfoForIndex BlockSpec slotIndex {
   if (repeatedSlotCount == 0) { error 'The repeated slot spec must have at least one input slot' }
   repeatedSlotStart = (((count slotInfo) - repeatedSlotCount))
   n = (slotIndex - repeatedSlotStart)
-  i = (max 1 ((((n - repeatedSlotStart) % repeatedSlotCount)) + repeatedSlotStart))
+  i = (max 1 ((((n - repeatedSlotStart) % repeatedSlotCount) + 1) + repeatedSlotStart))
   return (at slotInfo i)
 }
 

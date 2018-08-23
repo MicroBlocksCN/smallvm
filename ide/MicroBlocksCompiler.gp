@@ -136,8 +136,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'wifiConnect'		'connect to WiFi _ with password _' 'str str' 'SSID' 'MyPassword')
 		(array 'r' 'getIP'		        'my IP address')
 		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
-                                                        'str menu.varTypesMenu str menu.allVarsMenu'
-                                                        'MicroBlocks thingie')
+                                                            'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
 
 // Advanced WebThing definition. Not yet working.
 //		(array ' ' 'makeWebThing'		'define _ named _ : with _ _ labeled _ mapped to _ : ...'
