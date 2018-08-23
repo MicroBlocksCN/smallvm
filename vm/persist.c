@@ -472,7 +472,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
   #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	writeCodeFileWord(header);
 	writeCodeFileWord(wordCount);
-	writeCodeFile(data, byteCount);
+	writeCodeFile(data, 4 * wordCount);
   #endif
 
 	int *result = freeStart;

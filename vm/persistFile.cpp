@@ -52,8 +52,8 @@ extern "C" void clearCodeFile() {
 // Commented out as it makes the board unresponsive
 // Our SPIFFS approach doesn't fully work in ESP32 yet, so we
 // don't have persistence anymore, but at least the VM responds
-// and you can build programs in flash. We need to investigate
-// why SPIFFS is not working.
+// and you can build programs in RAM. We need to investigate why
+// SPIFFS is not working.
 
 /*
 #elif defined(ARDUINO_ARCH_ESP32)
