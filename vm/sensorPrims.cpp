@@ -32,8 +32,10 @@ OBJ primI2cGet(OBJ *args) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(registerID);
+	// xxx Should this releasing the i2c bus (on ESP32) when we're about to request data?
+	// Need to revisit how i2c works...
 #ifdef ARDUINO_ARCH_ESP32
-  int error = Wire.endTransmission();
+	int error = Wire.endTransmission();
 #else
 	int error = Wire.endTransmission(false);
 #endif
@@ -214,7 +216,7 @@ static int readTemperature() {
 
 	float steinhart = log(r / RESISTANCE_AT_25C) / B_CONSTANT;
 	steinhart += 1.0 / (25 + 273.15); // add 1/T0 (T0 is 25C in Kelvin)
-	float result = (1.0 / steinhart) - 273.15;  // steinhart is 1/T; invert and convert to C
+	float result = (1.0 / steinhart) - 273.15; // steinhart is 1/T; invert and convert to C
 
 	return (int) round(result);
 }
