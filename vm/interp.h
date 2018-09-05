@@ -128,6 +128,8 @@ extern "C" {
 #define wifiConnect 112
 #define getIP 113
 #define makeWebThing 114
+#define setServo 115
+#define playTone 116
 
 // Instruction Format
 
@@ -393,6 +395,11 @@ void webServerLoop();
 int wifiStatus();
 OBJ primGetIP(OBJ *args);
 OBJ primMakeWebThing(int argCount, OBJ *args);
+
+OBJ primSetServo(OBJ *args);
+void resetServos();
+OBJ primPlayTone(OBJ *args);
+void stopTone();
 
 #ifdef __cplusplus
 }

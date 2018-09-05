@@ -138,6 +138,9 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
                                                             'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
 
+		(array 'r' 'setServo'			'set servo pin _ to _ msecs' 'num num' 0 1500)
+		(array 'r' 'playTone'			'play tone pin _ frequency _' 'num num' 0 440)
+
 // Advanced WebThing definition. Not yet working.
 //		(array ' ' 'makeWebThing'		'define _ named _ : with _ _ labeled _ mapped to _ : ...'
 //                                                        'menu.thingTypesMenu str menu.varTypesMenu menu.propertyTypesMenu str menu.allVarsMenu'
@@ -281,6 +284,8 @@ method initOpcodes SmallCompiler {
 #define wifiConnect 112
 #define getIP 113
 #define makeWebThing 114
+#define setServo 115
+#define playTone 116
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {

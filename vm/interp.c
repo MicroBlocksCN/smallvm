@@ -296,8 +296,8 @@ static void runTask(Task *task) {
 		&&wifiConnect_op,
 		&&getIP_op,
 		&&makeWebThing_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&setServo_op,
+		&&playTone_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -869,20 +869,30 @@ static void runTask(Task *task) {
 		primWifiConnect(sp - arg);
 		// wait until connection attempt ends
 		if (wifiStatus() == 0) {
-      // 0: WL_IDLE_STATUS
+			// 0: WL_IDLE_STATUS
 			ip--;
 			goto suspend;
 		}
-    POP_ARGS_COMMAND();
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	getIP_op:
 		*(sp - arg) = primGetIP(sp - arg);
-    POP_ARGS_REPORTER();
+		POP_ARGS_REPORTER();
 		DISPATCH();
-  makeWebThing_op:
-    primMakeWebThing(arg, sp - arg);
-    POP_ARGS_COMMAND();
-    DISPATCH();
+	makeWebThing_op:
+		primMakeWebThing(arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+
+	// servo and tone operations:
+	setServo_op:
+		*(sp - arg) = primSetServo(sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	playTone_op:
+		*(sp - arg) = primPlayTone(sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
 }
 
 // Task Scheduler

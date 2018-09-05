@@ -450,3 +450,79 @@ OBJ primButtonB(OBJ *args) {
 		return falseObj;
 	#endif
 }
+
+// Servo
+
+#if !(defined(NRF51) || defined(ESP32))
+  #include <Servo.h>
+  Servo servo[DIGITAL_PINS];
+#endif
+
+void resetServos() {
+	#if !(defined(NRF51) || defined(ESP32))
+		for (int pin = 0; pin < DIGITAL_PINS; pin++) {
+			if (servo[pin].attached()) servo[pin].detach();
+		}
+	#endif
+}
+
+OBJ primSetServo(OBJ *args) {
+	// setServo <pin> <usecs>
+	// If usecs > 0, generate a servo control signal with the given pulse width
+	// on the given pin. If usecs <= 0 stop generating the servo signal.
+	// Return true on success, false if primitive is not supported.
+	#if !(defined(NRF51) || defined(ESP32))
+		OBJ pinArg = args[0];
+		OBJ usecsArg = args[1];
+		if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
+		int pin = obj2int(pinArg);
+		if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
+		int usecs = obj2int(usecsArg);
+		if (usecs > 15000) usecs = 15000; // maximum pulse width is 15000 usecs
+		if (usecs <= 0) {
+			if (servo[pin].attached()) servo[pin].detach();
+		} else {
+			if (!servo[pin].attached()) servo[pin].attach(pin);
+			servo[pin].writeMicroseconds(usecs);
+		}
+		return trueObj;
+	#else
+		return falseObj;
+	#endif
+}
+
+// Tone Generation
+
+int tonePin = -1;
+
+void stopTone() {
+	#if !(defined(NRF51) || defined(ESP32) || defined(ARDUINO_SAM_DUE))
+		if (tonePin >= 0) noTone(tonePin);
+		tonePin = -1;
+	#endif
+}
+
+OBJ primPlayTone(OBJ *args) {
+	// playTone <pin> <freq>
+	// If freq > 0, generate a 50% duty cycle square wave of the given frequency
+	// on the given pin. If freq <= 0 stop generating the square wave.
+	// Return true on success, false if primitive is not supported.
+	#if !(defined(NRF51) || defined(ESP32) || defined(ARDUINO_SAM_DUE))
+		OBJ pinArg = args[0];
+		OBJ freqArg = args[1];
+		if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
+		int pin = obj2int(pinArg);
+		if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
+		int frequency = obj2int(freqArg);
+		if ((frequency > 0) && (frequency <= 500000)) {
+			if (pin != tonePin) stopTone();
+			tonePin = pin;
+			tone(tonePin, frequency);
+		} else {
+			stopTone();
+		}
+		return trueObj;
+	#else
+		return falseObj;
+	#endif
+}
