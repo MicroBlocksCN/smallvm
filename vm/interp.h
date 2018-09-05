@@ -394,11 +394,6 @@ int wifiStatus();
 OBJ primGetIP(OBJ *args);
 OBJ primMakeWebThing(int argCount, OBJ *args);
 
-#define RCVBUF_SIZE 1024
-#define MAX_MSG_SIZE (RCVBUF_SIZE - 10) // 5 header + 1 terminator bytes plus a few extra
-extern uint8 rcvBuf[RCVBUF_SIZE];
-extern int rcvByteCount;
-
 #ifdef __cplusplus
 }
 #endif

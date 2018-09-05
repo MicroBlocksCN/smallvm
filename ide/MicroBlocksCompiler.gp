@@ -334,6 +334,10 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			add result (array 'halt' 0)
 		} (isClass aBlockOrFunction 'Function') {
 			if (or ('noop' != (primName cmdOrReporter)) (notNil (nextBlock cmdOrReporter))) {
+				if (isEmpty (argNames func)) {
+					add result (array 'pushLiteral' (functionName func))
+					add result (array 'recvBroadcast' 1)
+				}
 				addAll result (instructionsForCmdList this cmdOrReporter)
 			}
 			add result (array 'pushImmediate' falseObj)

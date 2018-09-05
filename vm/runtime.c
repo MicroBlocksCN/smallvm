@@ -102,13 +102,21 @@ void stopAllTasks() {
 
 static int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
 	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
-	code++; // skip "initLocals" instruction
-	if (pushLiteral != CMD(*code)) return false; // should not happen
-	char *hatArg = obj2str((OBJ) code + ARG(*code) + 1);
+	// First three instructions of a broadcast hat should be:
+	//	initLocals
+	//	pushLiteral
+	//	recvBroadcast
+	// A function with zero arguments can be also launched via a broadcast.
+	if ((initLocals != CMD(code[0])) ||
+		(pushLiteral != CMD(code[1])) ||
+		(recvBroadcast != CMD(code[2])))
+			return false;
 
-	if (strlen(hatArg) != byteCount) return false;
+	code++; // skip initLocals
+	char *s = obj2str((OBJ) code + ARG(*code) + 1);
+	if (strlen(s) != byteCount) return false;
 	for (int i = 0; i < byteCount; i++) {
-		if (hatArg[i] != msg[i]) return false;
+		if (s[i] != msg[i]) return false;
 	}
 	return true;
 }
@@ -117,7 +125,8 @@ void startReceiversOfBroadcast(char *msg, int byteCount) {
 	// Start tasks for chunks with hat blocks matching the given broadcast if not already running.
 
 	for (int i = 0; i < MAX_CHUNKS; i++) {
-		if ((broadcastHat == chunks[i].chunkType) && (broadcastMatches(i, msg, byteCount))) {
+		int chunkType = chunks[i].chunkType;
+		if (((broadcastHat == chunkType) || (functionHat == chunkType)) && (broadcastMatches(i, msg, byteCount))) {
 			startTaskForChunk(i); // only starts a new task if if chunk is not already running
 		}
 	}
@@ -523,8 +532,10 @@ static void sendVarNames() {
 
 // Receiving Messages from IDE
 
-uint8 rcvBuf[RCVBUF_SIZE];
-int rcvByteCount = 0;
+#define RCVBUF_SIZE 1024
+#define MAX_MSG_SIZE (RCVBUF_SIZE - 10) // 5 header + 1 terminator bytes plus a few extra
+static uint8 rcvBuf[RCVBUF_SIZE];
+static int rcvByteCount = 0;
 static uint32 lastRcvTime = 0;
 
 static void skipToStartByteAfter(int startIndex) {
