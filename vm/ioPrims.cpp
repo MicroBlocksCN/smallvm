@@ -78,7 +78,6 @@ int readBytes(uint8 *buf, int count) {
 	return bytesRead;
 }
 
-int canReadByte() { return Serial.available(); }
 int sendByte(char aByte) { return Serial.write(aByte); }
 
 // System Reset

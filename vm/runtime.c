@@ -221,9 +221,9 @@ static int outBufEnd = 0;
 
 static inline void sendNextByte() {
 	if (outBufStart != outBufEnd) {
-    if (1 == sendByte(outBuf[outBufStart])) {
-		  outBufStart = (outBufStart + 1) & OUTBUF_MASK;
-	  }
+		if (sendByte(outBuf[outBufStart])) {
+			outBufStart = (outBufStart + 1) & OUTBUF_MASK;
+		}
 	}
 }
 
@@ -673,10 +673,10 @@ void processMessage() {
 
 	sendNextByte();
 
-  int bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+	int bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
 
-  rcvByteCount += bytesRead;
-  if (!rcvByteCount) return;
+	rcvByteCount += bytesRead;
+	if (!rcvByteCount) return;
 
 	while (bytesRead > 0) {
 		// wait time: on microBit, 35 seems to work, 25 fails

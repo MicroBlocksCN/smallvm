@@ -275,7 +275,7 @@ extern int taskCount;
 #define notInFunction			24	// Attempt to access an argument outside of a function
 #define badForLoopArg			25	// for-loop argument must be a positive integer, array, or bytearray
 #define stackOverflow			26	// Insufficient stack space
-#define noNetwork         27  // Cannot reach network, maybe due to wrong ESSID or password
+#define noNetwork				27	// Cannot reach network, maybe due to wrong ESSID or password
 
 // Runtime Operations
 
@@ -331,7 +331,6 @@ void taskTest(void);
 uint32 microsecs(void);
 uint32 millisecs(void);
 
-int canReadByte(void);
 int readBytes(uint8 *buf, int count);
 int sendByte(char aByte);
 

@@ -28,8 +28,6 @@ static int stringSize(OBJ obj) {
 	return byteCount;
 }
 
-// Platform Agnostic Primitives
-
 OBJ primNewArray(OBJ *args) {
 	OBJ n = args[0];
 	if (!isInt(n) || ((int) n < 0)) return fail(arraySizeError);
