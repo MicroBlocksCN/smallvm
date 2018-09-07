@@ -113,8 +113,3 @@ soliciting or accepting contributions or pull requests.
 
 This project is a collaboration between John Maloney, Bernat Romagosa,
 and Jens Moenig.
-
-## Third Party Software ##
-
-MicroBlocks uses [Serge Zaitsev](https://github.com/zserge)'s [jsmn](https://github.com/zserge/jsmn)
-to parse JSON for the Mozilla Web of Things layer.

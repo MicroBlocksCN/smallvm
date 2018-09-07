@@ -25,7 +25,6 @@
 #define WEBTHING_BUF_SIZE 1024
 static char webThingBuffer[WEBTHING_BUF_SIZE];
 static char request[WEBTHING_BUF_SIZE];
-static int requestPos = 0;
 
 #define JSON_HEADER "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n"
 static char connecting = false;
