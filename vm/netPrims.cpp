@@ -90,75 +90,64 @@ void webServerLoop() {
   
   // We tokenize the URL and walk the tree
   part = strtok(url, "/");
-  if (part && strcmp(part, "things") == 0) {
-    // We're at /things
-    part = strtok(NULL, "/");
-    if (part && strcmp(part, "ub") == 0) {
-      // We're at /things/ub
-      part = strtok(NULL, "/");
-      if (part && strcmp(part, "properties") == 0) {
-        // We're at /things/ub/properties
-        // next token contains the property name
-        char* varName = strtok(NULL, "/");
-        if (varName) {
-          OBJ variable;
-          int varID;
-          // We now look for the varID of this var in our records
-          for (varID = 0; varID < MAX_VARS; varID++) {
-            int *rec = varNameRecordFor(varID);
-            if (rec) {
-              char *eachVarName = (char *) (rec + 2);
-              if (strcmp(eachVarName, varName) == 0) {
-                variable = vars[varID];
-                break;
-              }
-            }
+  if (part && strcmp(part, "properties") == 0) {
+    // We're at /properties
+    // next token contains the property name
+    char* varName = strtok(NULL, "/");
+    if (varName) {
+      OBJ variable;
+      int varID;
+      // We now look for the varID of this var in our records
+      for (varID = 0; varID < MAX_VARS; varID++) {
+        int *rec = varNameRecordFor(varID);
+        if (rec) {
+          char *eachVarName = (char *) (rec + 2);
+          if (strcmp(eachVarName, varName) == 0) {
+            variable = vars[varID];
+            break;
           }
-          char s[100];
-          switch (objClass(variable)) {
-            case StringClass:
-              if (isPutRequest) {
-                vars[varID] = newStringFromBytes((uint8*) value, strlen(value));
-              } else {
-                sprintf(s, "%s {\"%s\": \"%s\"}", JSON_HEADER, varName, obj2str(variable));
-              }
-              break;
-            case IntegerClass:
-              if (isPutRequest) {
-                vars[varID] = int2obj(atoi(value));
-              } else {
-                sprintf(s, "%s {\"%s\": %i}", JSON_HEADER, varName, obj2int(variable));
-              }
-              break;
-            case BooleanClass:
-              if (isPutRequest) {
-                vars[varID] = (strcmp(value, "true") == 0) ? trueObj : falseObj;
-              } else {
-                sprintf(s, "%s {\"%s\": %s}", JSON_HEADER, varName, (trueObj == variable ? "true" : "false"));
-              }
-              break;
-            default:
-              if (isPutRequest) {
-                sprintf(s, "%s {\"%s\": \"unknown variable type\"}", JSON_HEADER, varName);
-              }
-              break;
-          }
-          client.print(s);
-          client.flush();
-        } else {
-          notFoundResponse();
         }
-      } else {
-        // Full URL is /things/ub
-        client.print(webThingBuffer);
-        client.flush();
       }
+      char s[100];
+      switch (objClass(variable)) {
+        case StringClass:
+          if (isPutRequest) {
+            vars[varID] = newStringFromBytes((uint8*) value, strlen(value));
+          } else {
+            sprintf(s, "%s {\"%s\": \"%s\"}", JSON_HEADER, varName, obj2str(variable));
+          }
+          break;
+        case IntegerClass:
+          if (isPutRequest) {
+            vars[varID] = int2obj(atoi(value));
+          } else {
+            sprintf(s, "%s {\"%s\": %i}", JSON_HEADER, varName, obj2int(variable));
+          }
+          break;
+        case BooleanClass:
+          if (isPutRequest) {
+            vars[varID] = (strcmp(value, "true") == 0) ? trueObj : falseObj;
+          } else {
+            sprintf(s, "%s {\"%s\": %s}", JSON_HEADER, varName, (trueObj == variable ? "true" : "false"));
+          }
+          break;
+        default:
+          if (isPutRequest) {
+            sprintf(s, "%s {\"%s\": \"unknown variable type\"}", JSON_HEADER, varName);
+          }
+          break;
+      }
+      client.print(s);
+      client.flush();
     } else {
       notFoundResponse();
     }
   } else {
-    notFoundResponse();
+    // Full URL is /
+    client.print(webThingBuffer);
+    client.flush();
   }
+    
   client.flush();
   client.stop();
 }
@@ -203,7 +192,7 @@ OBJ primMakeWebThing(int argCount, OBJ *args) {
     "{\"name\":\"%s\","
     "\"@type\":\"MicroBlocks\","
     "\"description\":\"%s\","
-    "\"href\":\"/things/ub\","
+    "\"href\":\"/\","
     "\"properties\":{",
     JSON_HEADER,
     thingName,
@@ -218,7 +207,7 @@ OBJ primMakeWebThing(int argCount, OBJ *args) {
       "\"%s\":"
         "{\"type\":\"%s\","
          "\"label\":\"%s\","
-         "\"href\":\"/things/ub/properties/%s\""
+         "\"href\":\"/properties/%s\""
         "},",
       propertyVar,
       propertyType,
