@@ -69,7 +69,8 @@ void webServerLoop() {
   int bytesAvailable = client.available();
   if (!bytesAvailable) return;
   client.readBytes(request, bytesAvailable);
-  
+  request[bytesAvailable] = 0; // null terminate
+
   char url[100];
   char *part;
   char body[100];
@@ -83,10 +84,10 @@ void webServerLoop() {
     strcpy(property, strtok(body, "{\":}"));
     strcpy(value, strtok(NULL, "{\":}"));
   }
-  
+
   // The URL lives between the two only spaces in the first line of the request
   strcpy(url, strtok(strchr(request, ' '), " "));
-  
+
   // We tokenize the URL and walk the tree
   part = strtok(url, "/");
   if (part && strcmp(part, "properties") == 0) {
@@ -146,7 +147,7 @@ void webServerLoop() {
     client.print(webThingBuffer);
     client.flush();
   }
-    
+
   client.flush();
   client.stop();
 }
