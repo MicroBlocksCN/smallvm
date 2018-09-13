@@ -490,6 +490,8 @@ static void sendAllCode() {
 	}
 }
 
+// Variable support
+
 int * varNameRecordFor(int varID) {
 	int *result = NULL;
 	int *p = recordAfter(NULL);
@@ -528,6 +530,19 @@ static void sendVarNames() {
 		int *rec = varNameRecordFor(varID);
 		if (rec) sendVarNameMessage(varID, rec);
 	}
+}
+
+int indexOfVarNamed(char *varName) {
+	// Return the index of the given variable or -1 if not found.
+
+	for (int i = 0; i < MAX_VARS; i++) {
+		int *rec = varNameRecordFor(i);
+		if (rec) {
+			char *thisVarName = (char *) (rec + 2);
+			if (0 == strcmp(varName, thisVarName)) return i;
+		}
+	}
+	return -1; // not found
 }
 
 // Receiving Messages from IDE

@@ -7,26 +7,30 @@
 // netPrims.cpp - MicroBlocks network primitives
 // Bernat Romagosa, August 2018
 
+#include <stdio.h>
+#include <string.h>
 #include "mem.h"
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-
 #if defined(ESP8266)
-#include <ESP8266WiFi.h>
-#endif
-
-#if defined(ARDUINO_ARCH_ESP32)
-#include <WiFi.h>
+  #include <ESP8266WiFi.h>
+#elif defined(ARDUINO_ARCH_ESP32)
+  #include <WiFi.h>
 #endif
 
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
-// Buffer for Mozilla Web of Things JSON definition
-#define WEBTHING_BUF_SIZE 1024
-static char webThingBuffer[WEBTHING_BUF_SIZE];
-static char request[WEBTHING_BUF_SIZE];
+char *responseString(); // forward reference
+
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+
+#define RESPONSE_SIZE 2000
+
+// Buffer for HTTP requests
+#define REQUEST_SIZE 1024
+static char request[REQUEST_SIZE];
 
 #define JSON_HEADER "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n"
+
 static char connecting = false;
 static uint32 initTime;
 
@@ -72,7 +76,6 @@ void webServerLoop() {
   request[bytesAvailable] = 0; // null terminate
 
   char url[100];
-  char *part;
   char body[100];
   char property[100];
   char value[100];
@@ -89,25 +92,17 @@ void webServerLoop() {
   strcpy(url, strtok(strchr(request, ' '), " "));
 
   // We tokenize the URL and walk the tree
-  part = strtok(url, "/");
+  char *part = strtok(url, "/");
   if (part && strcmp(part, "properties") == 0) {
     // We're at /properties
     // next token contains the property name
+    int varID = -1;
     char* varName = strtok(NULL, "/");
-    if (varName) {
-      OBJ variable;
-      int varID;
-      // We now look for the varID of this var in our records
-      for (varID = 0; varID < MAX_VARS; varID++) {
-        int *rec = varNameRecordFor(varID);
-        if (rec) {
-          char *eachVarName = (char *) (rec + 2);
-          if (strcmp(eachVarName, varName) == 0) {
-            variable = vars[varID];
-            break;
-          }
-        }
-      }
+    if (varName) varID = indexOfVarNamed(varName);
+    if (varID < 0) {
+      notFoundResponse();
+    } else {
+      OBJ variable = vars[varID];
       char s[100];
       switch (objClass(variable)) {
         case StringClass:
@@ -139,12 +134,10 @@ void webServerLoop() {
       }
       client.print(s);
       client.flush();
-    } else {
-      notFoundResponse();
     }
   } else {
     // Full URL is /
-    client.print(webThingBuffer);
+    client.print(responseString());
     client.flush();
   }
 
@@ -177,7 +170,7 @@ int wifiStatus() {
   return status;
 }
 
-OBJ primGetIP(OBJ *args) {
+OBJ primGetIP() {
   IPAddress ip = WiFi.localIP();
   char ipString[17];
   sprintf(ipString, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
@@ -187,7 +180,7 @@ OBJ primGetIP(OBJ *args) {
 OBJ primMakeWebThing(int argCount, OBJ *args) {
   char* thingName = obj2str(args[0]);
   int bytesWritten = sprintf(
-    webThingBuffer,
+    responseString(),
     "%s"
     "{\"name\":\"%s\","
     "\"@type\":\"MicroBlocks\","
@@ -203,7 +196,7 @@ OBJ primMakeWebThing(int argCount, OBJ *args) {
     char* propertyLabel = obj2str(args[i+1]);
     char* propertyVar = obj2str(args[i+2]);
     bytesWritten += sprintf(
-      webThingBuffer + bytesWritten,
+      responseString() + bytesWritten,
       "\"%s\":"
         "{\"type\":\"%s\","
          "\"label\":\"%s\","
@@ -219,12 +212,12 @@ OBJ primMakeWebThing(int argCount, OBJ *args) {
     // we subtract one position to overwrite the last comma
     bytesWritten --;
   }
-  sprintf(webThingBuffer + bytesWritten, "}}\0");
+  sprintf(responseString() + bytesWritten, "}}\0");
 }
 
-#else
+#else // not ESP8266 or ESP32
 
-#include "interp.h"
+#define RESPONSE_SIZE 100
 
 void primWifiConnect(OBJ *args) {
   fail(noNetwork);
@@ -234,13 +227,66 @@ int wifiStatus() {
   return 4; // WL_CONNECT_FAILED = 4
 }
 
-OBJ primGetIP(OBJ *args) {
-  fail(noNetwork);
-  return int2obj(0);
+OBJ primGetIP() {
+  return fail(noNetwork);
 }
 
 OBJ primMakeWebThing(int argCount, OBJ *args) {
-  fail(noNetwork);
+  return fail(noNetwork);
 }
 
 #endif
+
+// Response string building primitives (interim, until we have string concatenation)
+
+// Hack: Simulate a MicroBlocks object with a C struct. Since this is not a
+// dynamically allocated object, it would confuse the garbage collector. However,
+// we will replace this entire interim mechanism once we have a garbage collector.
+
+struct {
+	uint32 header;
+	char body[RESPONSE_SIZE];
+} responseObj;
+
+char *responseString() {
+	// Return a reference to the buffer used by both primMakeWebThing and the response primitives.
+
+	return responseObj.body;
+}
+
+OBJ primResponse() {
+	int wordCount = (strlen(responseObj.body) + 4) / 4;
+	responseObj.header = HEADER(StringClass, wordCount);
+	OBJ result = (OBJ) &responseObj;
+
+	return result; }
+
+void primClearResponse() {
+	responseObj.body[0] = 0;
+}
+
+static void appendObjToResponse(OBJ obj) {
+	// Append a printed representation of the given object to the responseObj.body.
+	// Do nothing if obj is not a string, integer, or boolean.
+
+	int currentSize = strlen(responseObj.body);
+	char *dst = &responseObj.body[currentSize];
+	int n = (RESPONSE_SIZE - currentSize) - 1;
+
+	if (objClass(obj) == StringClass) snprintf(dst, n, "%s", obj2str(obj));
+	else if (isInt(obj)) snprintf(dst, n, "%d", obj2int(obj));
+	else if (obj == trueObj) snprintf(dst, n, "true");
+	else if (obj == falseObj) snprintf(dst, n, "false");
+}
+
+void primAppendToResponse(int argCount, OBJ *args) {
+	for (int i = 0; i < argCount; i++) {
+		appendObjToResponse(args[i]);
+	}
+	int currentSize = strlen(responseObj.body);
+	if (currentSize < (RESPONSE_SIZE - 1)) {
+		// add a newline, if there is room
+		responseObj.body[currentSize] = '\n';
+		responseObj.body[currentSize + 1] = 0;
+	}
+}

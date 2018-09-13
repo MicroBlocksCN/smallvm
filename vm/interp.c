@@ -296,6 +296,11 @@ static void runTask(Task *task) {
 		&&wifiConnect_op,
 		&&getIP_op,
 		&&makeWebThing_op,
+		&&response_op,
+		&&clearResponse_op,
+		&&appendToResponse_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
 		&&setServo_op,
 		&&playTone_op,
 		&&RESERVED_op,
@@ -304,12 +309,16 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
 	};
+
+#define makeWebThing 114
+#define response 115
+#define clearResponse 116
+#define appendToResponse 117
+// reserved 118
+// reserved 119
+#define setServo 120
+#define playTone 121
 
 	// Restore task state
 	ip = task->code + task->ip;
@@ -876,11 +885,23 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	getIP_op:
-		*(sp - arg) = primGetIP(sp - arg);
+		*(sp - arg) = primGetIP();
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	makeWebThing_op:
 		primMakeWebThing(arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	response_op:
+		*(sp - arg) = primResponse();
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	clearResponse_op:
+		primClearResponse();
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	appendToResponse_op:
+		primAppendToResponse(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 

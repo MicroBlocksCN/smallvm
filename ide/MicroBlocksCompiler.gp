@@ -137,6 +137,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'getIP'		        'my IP address')
 		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
                                                             'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
+		(array 'r' 'response'			'response')
+		(array ' ' 'clearResponse'		'clear response')
+		(array ' ' 'appendToResponse'	'append to response _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
 
 		(array 'r' 'setServo'			'set servo pin _ to _ msecs' 'num num' 0 1500)
 		(array 'r' 'playTone'			'play tone pin _ frequency _' 'num num' 0 440)
@@ -284,8 +287,13 @@ method initOpcodes SmallCompiler {
 #define wifiConnect 112
 #define getIP 113
 #define makeWebThing 114
-#define setServo 115
-#define playTone 116
+#define response 115
+#define clearResponse 116
+#define appendToResponse 117
+// reserved 118
+// reserved 119
+#define setServo 120
+#define playTone 121
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {

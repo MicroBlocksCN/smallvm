@@ -128,8 +128,13 @@ extern "C" {
 #define wifiConnect 112
 #define getIP 113
 #define makeWebThing 114
-#define setServo 115
-#define playTone 116
+#define response 115
+#define clearResponse 116
+#define appendToResponse 117
+// reserved 118
+// reserved 119
+#define setServo 120
+#define playTone 121
 
 // Instruction Format
 
@@ -261,21 +266,21 @@ extern int taskCount;
 #define badChunkIndexError		2	// Unknown chunk index
 
 #define insufficientMemoryError	10	// Insufficient memory to allocate object
-#define needsArrayError			11	// Needs an Array or ByteArray
+#define needsArrayError			11	// Needs a list
 #define needsBooleanError		12	// Needs a boolean
 #define needsIntegerError		13	// Needs an integer
 #define needsStringError		14	// Needs a string
 #define nonComparableError		15	// Those objects cannot be compared for equality
-#define arraySizeError			16	// Array size must be a non-negative integer
-#define needsIntegerIndexError	17	// Array index must be an integer
-#define indexOutOfRangeError	18	// Array index out of range
+#define arraySizeError			16	// List size must be a non-negative integer
+#define needsIntegerIndexError	17	// List index must be an integer
+#define indexOutOfRangeError	18	// List index out of range
 #define byteArrayStoreError		19 	// A ByteArray can only store integer values between 0 and 255
 #define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
 #define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
 #define notInFunction			24	// Attempt to access an argument outside of a function
-#define badForLoopArg			25	// for-loop argument must be a positive integer, array, or bytearray
+#define badForLoopArg			25	// for-loop argument must be a positive integer or list
 #define stackOverflow			26	// Insufficient stack space
 #define noNetwork				27	// Cannot reach network, maybe due to wrong ESSID or password
 
@@ -297,7 +302,7 @@ void sendBroadcastToIDE(char *s, int len);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void vmPanic(char *s);
-int * varNameRecordFor(int varID);
+int indexOfVarNamed(char *varName);
 
 // Integer Evaluation
 
@@ -393,8 +398,11 @@ void primNeoPixelSetPin(int argCount, OBJ *args);
 void primWifiConnect(OBJ *args);
 void webServerLoop();
 int wifiStatus();
-OBJ primGetIP(OBJ *args);
+OBJ primGetIP();
 OBJ primMakeWebThing(int argCount, OBJ *args);
+OBJ primResponse();
+void primClearResponse();
+void primAppendToResponse(int argCount, OBJ *args);
 
 OBJ primSetServo(OBJ *args);
 void resetServos();
