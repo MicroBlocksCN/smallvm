@@ -128,9 +128,9 @@ extern "C" {
 #define wifiConnect 112
 #define getIP 113
 #define makeWebThing 114
-#define response 115
-#define clearResponse 116
-#define appendToResponse 117
+#define thingDescription 115
+#define clearThingDescription 116
+#define appendToThingDescription 117
 // reserved 118
 // reserved 119
 #define setServo 120
@@ -400,9 +400,9 @@ void webServerLoop();
 int wifiStatus();
 OBJ primGetIP();
 OBJ primMakeWebThing(int argCount, OBJ *args);
-OBJ primResponse();
-void primClearResponse();
-void primAppendToResponse(int argCount, OBJ *args);
+OBJ primThingDescription();
+void primClearThingDescription();
+void primAppendToThingDescription(int argCount, OBJ *args);
 
 OBJ primSetServo(OBJ *args);
 void resetServos();

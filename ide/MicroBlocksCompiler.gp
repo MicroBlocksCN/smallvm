@@ -137,17 +137,12 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'getIP'		        'my IP address')
 		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
                                                             'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
-		(array 'r' 'response'			'response')
-		(array ' ' 'clearResponse'		'clear response')
-		(array ' ' 'appendToResponse'	'append to response _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
+		(array 'r' 'thingDescription'			'thing description')
+		(array ' ' 'clearthingDescription'		'clear thing description')
+		(array ' ' 'appendToThingDescription'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
 
 		(array 'r' 'setServo'			'set servo pin _ to _ msecs' 'num num' 0 1500)
 		(array 'r' 'playTone'			'play tone pin _ frequency _' 'num num' 0 440)
-
-// Advanced WebThing definition. Not yet working.
-//		(array ' ' 'makeWebThing'		'define _ named _ : with _ _ labeled _ mapped to _ : ...'
-//                                                        'menu.thingTypesMenu str menu.varTypesMenu menu.propertyTypesMenu str menu.allVarsMenu'
-//                                                        'OnOffSwitch' 'My Light Switch')
 
 	'Disabled'
  		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
@@ -287,9 +282,9 @@ method initOpcodes SmallCompiler {
 #define wifiConnect 112
 #define getIP 113
 #define makeWebThing 114
-#define response 115
-#define clearResponse 116
-#define appendToResponse 117
+#define thingDescription 115
+#define clearThingDescription 116
+#define appendToThingDescription 117
 // reserved 118
 // reserved 119
 #define setServo 120

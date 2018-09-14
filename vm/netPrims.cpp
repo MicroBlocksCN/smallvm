@@ -19,17 +19,26 @@
 
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
-char *responseString(); // forward reference
-
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-
-#define RESPONSE_SIZE 2000
 
 // Buffer for HTTP requests
 #define REQUEST_SIZE 1024
 static char request[REQUEST_SIZE];
 
 #define JSON_HEADER "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n"
+
+// Primitives to build a Thing description (interim, until we have string concatenation)
+
+// Hack: Simulate a MicroBlocks object with a C struct. Since this is not a
+// dynamically allocated object, it could confuse the garbage collector. But
+// we'll replace this interim mechanism once we do have a garbage collector.
+
+#define DESCRIPTION_SIZE 2048
+
+struct {
+	uint32 header;
+	char body[DESCRIPTION_SIZE];
+} descriptionObj;
 
 static char connecting = false;
 static uint32 initTime;
@@ -66,10 +75,10 @@ void notFoundResponse() {
 }
 
 void webServerLoop() {
-  if (!client) {
-    client = server.available();
-  }
+  if (!client) client = server.available(); // attempt to accept a client connection
   if (!client) return;
+
+  // read HTTP request
   int bytesAvailable = client.available();
   if (!bytesAvailable) return;
   client.readBytes(request, bytesAvailable);
@@ -136,8 +145,9 @@ void webServerLoop() {
       client.flush();
     }
   } else {
-    // Full URL is /
-    client.print(responseString());
+    // Respond with the Thing description
+    client.print(JSON_HEADER);
+    client.print(descriptionObj.body);
     client.flush();
   }
 
@@ -180,14 +190,12 @@ OBJ primGetIP() {
 OBJ primMakeWebThing(int argCount, OBJ *args) {
   char* thingName = obj2str(args[0]);
   int bytesWritten = sprintf(
-    responseString(),
-    "%s"
+    descriptionObj.body,
     "{\"name\":\"%s\","
     "\"@type\":\"MicroBlocks\","
     "\"description\":\"%s\","
     "\"href\":\"/\","
     "\"properties\":{",
-    JSON_HEADER,
     thingName,
     thingName
   );
@@ -196,7 +204,7 @@ OBJ primMakeWebThing(int argCount, OBJ *args) {
     char* propertyLabel = obj2str(args[i+1]);
     char* propertyVar = obj2str(args[i+2]);
     bytesWritten += sprintf(
-      responseString() + bytesWritten,
+      descriptionObj.body + bytesWritten,
       "\"%s\":"
         "{\"type\":\"%s\","
          "\"label\":\"%s\","
@@ -212,66 +220,26 @@ OBJ primMakeWebThing(int argCount, OBJ *args) {
     // we subtract one position to overwrite the last comma
     bytesWritten --;
   }
-  sprintf(responseString() + bytesWritten, "}}\0");
+  sprintf(descriptionObj.body + bytesWritten, "}}\0");
 }
 
-#else // not ESP8266 or ESP32
-
-#define RESPONSE_SIZE 100
-
-void primWifiConnect(OBJ *args) {
-  fail(noNetwork);
+OBJ primThingDescription() {
+	int wordCount = (strlen(descriptionObj.body) + 4) / 4;
+	descriptionObj.header = HEADER(StringClass, wordCount);
+	return (OBJ) &descriptionObj;
 }
 
-int wifiStatus() {
-  return 4; // WL_CONNECT_FAILED = 4
+void primClearThingDescription() {
+	descriptionObj.body[0] = 0;
 }
 
-OBJ primGetIP() {
-  return fail(noNetwork);
-}
-
-OBJ primMakeWebThing(int argCount, OBJ *args) {
-  return fail(noNetwork);
-}
-
-#endif
-
-// Response string building primitives (interim, until we have string concatenation)
-
-// Hack: Simulate a MicroBlocks object with a C struct. Since this is not a
-// dynamically allocated object, it would confuse the garbage collector. However,
-// we will replace this entire interim mechanism once we have a garbage collector.
-
-struct {
-	uint32 header;
-	char body[RESPONSE_SIZE];
-} responseObj;
-
-char *responseString() {
-	// Return a reference to the buffer used by both primMakeWebThing and the response primitives.
-
-	return responseObj.body;
-}
-
-OBJ primResponse() {
-	int wordCount = (strlen(responseObj.body) + 4) / 4;
-	responseObj.header = HEADER(StringClass, wordCount);
-	OBJ result = (OBJ) &responseObj;
-
-	return result; }
-
-void primClearResponse() {
-	responseObj.body[0] = 0;
-}
-
-static void appendObjToResponse(OBJ obj) {
-	// Append a printed representation of the given object to the responseObj.body.
+static void appendObjToDescription(OBJ obj) {
+	// Append a printed representation of the given object to the descriptionObj.body.
 	// Do nothing if obj is not a string, integer, or boolean.
 
-	int currentSize = strlen(responseObj.body);
-	char *dst = &responseObj.body[currentSize];
-	int n = (RESPONSE_SIZE - currentSize) - 1;
+	int currentSize = strlen(descriptionObj.body);
+	char *dst = &descriptionObj.body[currentSize];
+	int n = (DESCRIPTION_SIZE - currentSize) - 1;
 
 	if (objClass(obj) == StringClass) snprintf(dst, n, "%s", obj2str(obj));
 	else if (isInt(obj)) snprintf(dst, n, "%d", obj2int(obj));
@@ -279,14 +247,28 @@ static void appendObjToResponse(OBJ obj) {
 	else if (obj == falseObj) snprintf(dst, n, "false");
 }
 
-void primAppendToResponse(int argCount, OBJ *args) {
+void primAppendToThingDescription(int argCount, OBJ *args) {
 	for (int i = 0; i < argCount; i++) {
-		appendObjToResponse(args[i]);
+		appendObjToDescription(args[i]);
 	}
-	int currentSize = strlen(responseObj.body);
-	if (currentSize < (RESPONSE_SIZE - 1)) {
+	int currentSize = strlen(descriptionObj.body);
+	if (currentSize < (DESCRIPTION_SIZE - 1)) {
 		// add a newline, if there is room
-		responseObj.body[currentSize] = '\n';
-		responseObj.body[currentSize + 1] = 0;
+		descriptionObj.body[currentSize] = '\n';
+		descriptionObj.body[currentSize + 1] = 0;
 	}
 }
+
+#else // not ESP8266 or ESP32
+
+int wifiStatus() { return 4; } // WL_CONNECT_FAILED = 4
+
+void primWifiConnect(OBJ *args) { fail(noNetwork); }
+OBJ primGetIP() { return fail(noNetwork); }
+OBJ primMakeWebThing(int argCount, OBJ *args) { return fail(noNetwork); }
+
+OBJ primThingDescription() { return fail(noNetwork); }
+void primClearThingDescription() { fail(noNetwork); }
+void primAppendToThingDescription(int argCount, OBJ *args) { fail(noNetwork); }
+
+#endif
