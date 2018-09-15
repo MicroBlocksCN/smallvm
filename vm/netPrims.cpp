@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "mem.h"
+#include "tinyJSON.h"
 
 #if defined(ESP8266)
   #include <ESP8266WiFi.h>
@@ -25,7 +26,14 @@
 #define REQUEST_SIZE 1024
 static char request[REQUEST_SIZE];
 
-#define JSON_HEADER "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n"
+#define JSON_HEADER \
+"HTTP/1.1 200 OK\r\n" \
+"Content-Type: application/json\r\n\r\n"
+
+#define NOT_FOUND_RESPONSE \
+"HTTP/1.1 404 Not Found\r\n" \
+"Content-Type: application/json\r\n\r\n" \
+"{ \"error\":\"Resource not found\" }"
 
 // Primitives to build a Thing description (interim, until we have string concatenation)
 
@@ -61,96 +69,115 @@ void primWifiConnect(OBJ *args) {
   }
 }
 
-void initWebServer() {
+static void initWebServer() {
   server.stop();
   server.begin();
 }
 
-void notFoundResponse() {
-  client.print(
-    "HTTP/1.1 404 Not Found\r\nContent-Type: application/json\r\n\r\n"
-    "{\"error\":\"Resource not found\"}"
-  );
-  client.flush();
+static int hasPrefix(char *s, char *requestPrefix, char *arg, int argSize) {
+	// Return true if the HTTP request string s begins with the given prefix.
+	// If arg is not NULL, the request string from the end of the prefix up to
+	// the next space will be copied into arg.
+
+	if (arg) arg[0] = '\0'; // clear arg result, if provided
+
+	if ((strstr(s, requestPrefix) != s)) return false; // request does not match prefix
+
+	if (arg) {
+		// extract last part of URL into arg
+		char *start = s + strlen(requestPrefix);
+		char *end = strchr(start, ' '); // find the next space
+		if (!end) strchr(start, '\r'); // if no space, use the end of the line
+		if (!end) return true; // no space or line end found
+		int count = end - start;
+		if (count > argSize) count = argSize;
+		if (count > 0) {
+		  strncpy(arg, start, count);
+		  arg[count] = '\0'; // null terminate
+		}
+	}
+	return true;
+}
+
+static char * valueJSON(char *response, char *varName, int varID) {
+  // Write a object with the name and value of the given variable into response.
+
+  OBJ value = vars[varID];
+  if (isInt(value)) {
+	sprintf(response, "{ \"%s\": %d }\r\n", varName, obj2int(value));
+  } else if ((trueObj == value) || (falseObj == value)) {
+	sprintf(response, "{ \"%s\": %s }\r\n", varName, (trueObj == value) ? "true" : "false");
+  } else if (IS_CLASS(value, StringClass)) {
+	sprintf(response, "{ \"%s\": \"%s\" }\r\n", varName, obj2str(value));
+  } else {
+    sprintf(response, "{ \"%s\": \"<Unknown type>\" }\r\n", varName);
+  }
+  return response;
+}
+
+static void setVariableValue(char *varName, int varID, char *jsonData) {
+  // Set the value of the given variable from the given JSON data.
+
+  char *p = tjr_atPath(jsonData, varName);
+  int type = tjr_type(p);
+  if (tjr_Number == type) {
+    vars[varID] = int2obj(tjr_readInteger(p));
+  } else if (tjr_String == type) {
+    char s[100];
+    tjr_readStringInto(p, s, sizeof(s));
+    vars[varID] = newStringFromBytes((uint8 *) s, strlen(s));
+  } else if (tjr_True == type) {
+    vars[varID] = trueObj;
+  } else if (tjr_False == type) {
+    vars[varID] = falseObj;
+  }
 }
 
 void webServerLoop() {
   if (!client) client = server.available(); // attempt to accept a client connection
-  if (!client) return;
+  if (!client) return; // no client connection
 
-  // read HTTP request
+  // read an HTTP request
   int bytesAvailable = client.available();
   if (!bytesAvailable) return;
   client.readBytes(request, bytesAvailable);
   request[bytesAvailable] = 0; // null terminate
 
-  char url[100];
-  char body[100];
-  char property[100];
-  char value[100];
-  // request looks like "[GET/PUT] /some/url HTTP/1.1"
-  // We first find out whether this is a PUT request
-  bool isPutRequest = strstr(request, "PUT");
-  if (isPutRequest) {
-    strcpy(body, strrchr(request, '{'));
-    strcpy(property, strtok(body, "{\":}"));
-    strcpy(value, strtok(NULL, "{\":}"));
-  }
+  // the body starts after the first blank line (or at end of request, if no blank lines)
+  char *body = strstr(request, "\r\n\r\n");
+  body = body ? (body + 4) : request + strlen(request);
 
-  // The URL lives between the two only spaces in the first line of the request
-  strcpy(url, strtok(strchr(request, ' '), " "));
+  char response[1000];
+  char varName[100];
+  int varID = -1;
 
-  // We tokenize the URL and walk the tree
-  char *part = strtok(url, "/");
-  if (part && strcmp(part, "properties") == 0) {
-    // We're at /properties
-    // next token contains the property name
-    int varID = -1;
-    char* varName = strtok(NULL, "/");
-    if (varName) varID = indexOfVarNamed(varName);
-    if (varID < 0) {
-      notFoundResponse();
-    } else {
-      OBJ variable = vars[varID];
-      char s[100];
-      switch (objClass(variable)) {
-        case StringClass:
-          if (isPutRequest) {
-            vars[varID] = newStringFromBytes((uint8*) value, strlen(value));
-          } else {
-            sprintf(s, "%s {\"%s\": \"%s\"}", JSON_HEADER, varName, obj2str(variable));
-          }
-          break;
-        case IntegerClass:
-          if (isPutRequest) {
-            vars[varID] = int2obj(atoi(value));
-          } else {
-            sprintf(s, "%s {\"%s\": %i}", JSON_HEADER, varName, obj2int(variable));
-          }
-          break;
-        case BooleanClass:
-          if (isPutRequest) {
-            vars[varID] = (strcmp(value, "true") == 0) ? trueObj : falseObj;
-          } else {
-            sprintf(s, "%s {\"%s\": %s}", JSON_HEADER, varName, (trueObj == variable ? "true" : "false"));
-          }
-          break;
-        default:
-          if (isPutRequest) {
-            sprintf(s, "%s {\"%s\": \"unknown variable type\"}", JSON_HEADER, varName);
-          }
-          break;
-      }
-      client.print(s);
-      client.flush();
-    }
-  } else {
-    // Respond with the Thing description
+  // HTTP request format: "[GET/PUT] /some/url HTTP/1.1"
+  if (hasPrefix(request, "GET / ", NULL, 0)) {
+    // Get the Thing description
     client.print(JSON_HEADER);
     client.print(descriptionObj.body);
-    client.flush();
+  } else if (hasPrefix(request, "GET /properties/", varName, sizeof(varName))) {
+    // Get variable value
+    varID = indexOfVarNamed(varName);
+    if (varID < 0) {
+      client.print(NOT_FOUND_RESPONSE);
+    } else {
+	  client.print(JSON_HEADER);
+      client.print(valueJSON(response, varName, varID));
+    }
+  } else if (hasPrefix(request, "PUT /properties/", varName, sizeof(varName))) {
+    // Set variable value
+    varID = indexOfVarNamed(varName);
+    if (varID < 0) {
+      client.print(NOT_FOUND_RESPONSE);
+    } else {
+      setVariableValue(varName, varID, body);
+	  client.print(JSON_HEADER);
+      client.print(valueJSON(response, varName, varID));
+    }
+  } else {
+    client.print(NOT_FOUND_RESPONSE);
   }
-
   client.flush();
   client.stop();
 }
