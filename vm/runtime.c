@@ -28,6 +28,47 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 	char printfBuffer[100]; // used by printf macro in mem.h
 #endif
 
+// Named Primitive Support
+
+typedef struct {
+	char *setName;
+	int entryCount;
+	PrimEntry *entries;
+} PrimitiveSet;
+
+#define MAX_PRIM_SETS 5
+PrimitiveSet primSets[MAX_PRIM_SETS];
+int primSetCount = 0;
+
+void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries) {
+	if (primSetCount < MAX_PRIM_SETS) {
+		primSets[primSetCount].setName = setName;
+		primSets[primSetCount].entryCount = entryCount;
+		primSets[primSetCount].entries = entries;
+		primSetCount++;
+	}
+}
+
+void callPrimitive(char *setName, char *primName, int argCount, OBJ *args) {
+	for (int i = 0; i < primSetCount; i++) {
+		if (0 == strcmp(primSets[i].setName, setName)) {
+			PrimEntry *entries = primSets[i].entries;
+			int lastEntry = 2 * primSets[i].entryCount;
+			for (int j = 0; j < lastEntry; j += 2) {
+				if (0 == strcmp(entries[j].primName, primName)) {
+					return (entries[j].primFunc)(argCount, args); // call primitive
+				}
+			}
+		}
+	}
+	return falseObj;
+}
+
+void primsInit() {
+	addNetPrims();
+	callPrimitive("net", "thingDescription", 0, NULL);
+}
+
 // Task Ops
 
 void initTasks() {

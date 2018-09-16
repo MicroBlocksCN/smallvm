@@ -400,14 +400,29 @@ void webServerLoop();
 int wifiStatus();
 OBJ primGetIP();
 OBJ primMakeWebThing(int argCount, OBJ *args);
-OBJ primThingDescription();
-void primClearThingDescription();
-void primAppendToThingDescription(int argCount, OBJ *args);
+OBJ primThingDescription(int argCount, OBJ *args);
+OBJ primClearThingDescription(int argCount, OBJ *args);
+OBJ primAppendToThingDescription(int argCount, OBJ *args);
 
-OBJ primSetServo(OBJ *args);
+OBJ primSetServo(int argCount, OBJ *args);
 void resetServos();
-OBJ primPlayTone(OBJ *args);
+OBJ primPlayTone(int argCount, OBJ *args);
 void stopTone();
+
+// Primitive Sets
+
+typedef OBJ (*PrimitiveFunction)(int argCount, OBJ *args);
+
+typedef struct {
+	char *primName;
+	PrimitiveFunction primFunc;
+} PrimEntry;
+
+void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries);
+void callPrimitive(char *setName, char *primName, int argCount, OBJ *args);
+void primsInit();
+
+void addNetPrims();
 
 #ifdef __cplusplus
 }

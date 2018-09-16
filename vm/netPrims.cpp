@@ -250,13 +250,13 @@ OBJ primMakeWebThing(int argCount, OBJ *args) {
   sprintf(descriptionObj.body + bytesWritten, "}}\0");
 }
 
-OBJ primThingDescription() {
+OBJ primThingDescription(int argCount, OBJ *args) {
 	int wordCount = (strlen(descriptionObj.body) + 4) / 4;
 	descriptionObj.header = HEADER(StringClass, wordCount);
 	return (OBJ) &descriptionObj;
 }
 
-void primClearThingDescription() {
+OBJ primClearThingDescription(int argCount, OBJ *args) {
 	descriptionObj.body[0] = 0;
 }
 
@@ -274,7 +274,7 @@ static void appendObjToDescription(OBJ obj) {
 	else if (obj == falseObj) snprintf(dst, n, "false");
 }
 
-void primAppendToThingDescription(int argCount, OBJ *args) {
+OBJ primAppendToThingDescription(int argCount, OBJ *args) {
 	for (int i = 0; i < argCount; i++) {
 		appendObjToDescription(args[i]);
 	}
@@ -294,8 +294,18 @@ void primWifiConnect(OBJ *args) { fail(noNetwork); }
 OBJ primGetIP() { return fail(noNetwork); }
 OBJ primMakeWebThing(int argCount, OBJ *args) { return fail(noNetwork); }
 
-OBJ primThingDescription() { return fail(noNetwork); }
-void primClearThingDescription() { fail(noNetwork); }
-void primAppendToThingDescription(int argCount, OBJ *args) { fail(noNetwork); }
+OBJ primThingDescription(int argCount, OBJ *args) { return fail(noNetwork); }
+OBJ primClearThingDescription(int argCount, OBJ *args) { fail(noNetwork); }
+OBJ primAppendToThingDescription(int argCount, OBJ *args) { fail(noNetwork); }
 
 #endif
+
+static PrimEntry entries[] = {
+	"thingDescription", primThingDescription,
+	"clearThingDescription", primClearThingDescription,
+	"appendToThingDescription", primAppendToThingDescription,
+};
+
+void addNetPrims() {
+	addPrimitiveSet("net", sizeof(entries) / sizeof(PrimEntry), entries);
+}

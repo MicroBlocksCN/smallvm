@@ -14,6 +14,7 @@ void setup() {
 #endif
   hardwareInit();
   memInit(1800); // 1800 words = 7200 bytes
+  primsInit();
   outputString("Welcome to MicroBlocks!");
   restoreScripts();
   startAll();

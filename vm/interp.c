@@ -884,11 +884,11 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	thingDescription_op:
-		*(sp - arg) = primThingDescription();
+		*(sp - arg) = primThingDescription(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	clearThingDescription_op:
-		primClearThingDescription();
+		primClearThingDescription(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	appendToThingDescription_op:
@@ -898,11 +898,11 @@ static void runTask(Task *task) {
 
 	// servo and tone operations:
 	setServo_op:
-		*(sp - arg) = primSetServo(sp - arg);
+		*(sp - arg) = primSetServo(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	playTone_op:
-		*(sp - arg) = primPlayTone(sp - arg);
+		*(sp - arg) = primPlayTone(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 }

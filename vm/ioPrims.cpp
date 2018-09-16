@@ -466,7 +466,7 @@ void resetServos() {
 	#endif
 }
 
-OBJ primSetServo(OBJ *args) {
+OBJ primSetServo(int argCount, OBJ *args) {
 	// setServo <pin> <usecs>
 	// If usecs > 0, generate a servo control signal with the given pulse width
 	// on the given pin. If usecs <= 0 stop generating the servo signal.
@@ -502,7 +502,7 @@ void stopTone() {
 	#endif
 }
 
-OBJ primPlayTone(OBJ *args) {
+OBJ primPlayTone(int argCount, OBJ *args) {
 	// playTone <pin> <freq>
 	// If freq > 0, generate a 50% duty cycle square wave of the given frequency
 	// on the given pin. If freq <= 0 stop generating the square wave.
