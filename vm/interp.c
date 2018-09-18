@@ -307,8 +307,8 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&callCommandPrimitive_op,
+		&&callReporterPrimitive_op,
 	};
 
 	// Restore task state
@@ -903,6 +903,16 @@ static void runTask(Task *task) {
 		DISPATCH();
 	playTone_op:
 		*(sp - arg) = primPlayTone(arg, sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
+
+	// named primitives:
+	callCommandPrimitive_op:
+		callPrimitive(arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	callReporterPrimitive_op:
+		*(sp - arg) = callPrimitive(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 }

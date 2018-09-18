@@ -135,6 +135,12 @@ extern "C" {
 // reserved 119
 #define setServo 120
 #define playTone 121
+// reserved 122
+// reserved 123
+// reserved 124
+// reserved 125
+#define callCommandPrimitive 126
+#define callReporterPrimitive 127
 
 // Instruction Format
 
@@ -282,7 +288,8 @@ extern int taskCount;
 #define notInFunction			24	// Attempt to access an argument outside of a function
 #define badForLoopArg			25	// for-loop argument must be a positive integer or list
 #define stackOverflow			26	// Insufficient stack space
-#define noNetwork				27	// Cannot reach network, maybe due to wrong ESSID or password
+#define primitiveNotImplemented	27	// Primitive not implemented in this virtual machine
+#define noNetwork				28	// Cannot connect to WiFi, maybe due to wrong ESSID or password
 
 // Runtime Operations
 
@@ -419,7 +426,7 @@ typedef struct {
 } PrimEntry;
 
 void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries);
-void callPrimitive(char *setName, char *primName, int argCount, OBJ *args);
+OBJ callPrimitive(int argCount, OBJ *args);
 void primsInit();
 
 void addNetPrims();

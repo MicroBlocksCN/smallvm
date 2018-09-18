@@ -49,24 +49,38 @@ void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries) {
 	}
 }
 
-void callPrimitive(char *setName, char *primName, int argCount, OBJ *args) {
+OBJ callPrimitive(int argCount, OBJ *args) {
+	// Call a named primitive. The first two arguments are the primitive set name
+	// and the primitive name, followed by the arguments to the primitive itself.
+	//
+	// Note: The overhead of named primitives on BBC micro:bit is 43 to 150 usecs or more.
+	// In contrast, the overhead for a primitive built into the interpreter dispatch loop
+	// (with one argument) ia about 17 usecs. So, named primitives should not be used for
+	// operations that may need to be done really fast (e.g. toggling a pin in a loop)
+	// but are fine for slower operations (e.g. updating the micro:bit display).
+
+	if (argCount < 2) return fail(primitiveNotImplemented);
+	char *setName = IS_CLASS(args[0], StringClass) ? obj2str(args[0]) : "";
+	char *primName =  IS_CLASS(args[1], StringClass) ? obj2str(args[1]) : "";
+
 	for (int i = 0; i < primSetCount; i++) {
 		if (0 == strcmp(primSets[i].setName, setName)) {
 			PrimEntry *entries = primSets[i].entries;
-			int lastEntry = 2 * primSets[i].entryCount;
-			for (int j = 0; j < lastEntry; j += 2) {
+			int entryCount = primSets[i].entryCount;
+			for (int j = 0; j < entryCount; j++) {
 				if (0 == strcmp(entries[j].primName, primName)) {
-					return (entries[j].primFunc)(argCount, args); // call primitive
+					return (entries[j].primFunc)(argCount - 2, args + 2); // call primitive
 				}
 			}
 		}
 	}
-	return falseObj;
+	return fail(primitiveNotImplemented);
 }
 
 void primsInit() {
+	// Called at startup to call functions to add named primitive sets.
+
 	addNetPrims();
-	callPrimitive("net", "thingDescription", 0, NULL);
 }
 
 // Task Ops

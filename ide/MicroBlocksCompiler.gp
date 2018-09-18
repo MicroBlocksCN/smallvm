@@ -289,6 +289,12 @@ method initOpcodes SmallCompiler {
 // reserved 119
 #define setServo 120
 #define playTone 121
+// reserved 122
+// reserved 123
+// reserved 124
+// reserved 125
+#define callCommandPrimitive 126
+#define callReporterPrimitive 127
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
@@ -670,6 +676,23 @@ method primitive SmallCompiler op args isCommand {
 			addAll result (instructionsForExpression this arg)
 		}
 		add result (array op (count args))
+	} (and (beginsWith op '[') (endsWith op ']')) {
+		// named primitives of the form '[primSetName:primName]'
+		i = (findFirst op ':')
+		if (notNil i) {
+			primSetName = (substring op 2 (i - 1))
+			primName = (substring op (i + 1) ((count op) - 1))
+			add result (array 'pushLiteral' primSetName)
+			add result (array 'pushLiteral' primName)
+			for arg args {
+				addAll result (instructionsForExpression this arg)
+			}
+			if isCommand {
+				add result (array 'callCommandPrimitive' ((count args) + 2))
+			} else {
+				add result (array 'callReporterPrimitive' ((count args) + 2))
+			}
+		}
 	} else {
 		print 'Skipping unknown op:' op
 	}
