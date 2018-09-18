@@ -526,3 +526,12 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 		return falseObj;
 	#endif
 }
+
+static PrimEntry entries[] = {
+	"setServo", primSetServo,
+	"playTone", primPlayTone,
+};
+
+void addIOPrims() {
+	addPrimitiveSet("io", sizeof(entries) / sizeof(PrimEntry), entries);
+}

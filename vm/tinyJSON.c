@@ -42,7 +42,7 @@ Limitations:
 	* assumes input is legal JSON
 	* each property name component of a path must be under 100 characters long
 	* floating point numbers are not supported, only integers
-	* the \uXXXX escape sequence in strings is not supported; it is passed through verbatim
+	* the \uHHHH hex escape sequence in strings is not supported; it is passed through verbatim
 */
 
 #include <stdio.h>
@@ -201,7 +201,7 @@ void tjr_readStringInto(char *p, char *dstString, int dstSize) {
 			return;
 		}
 		if ('\\' == ch) {
-			// Note: \uXXXX escape is not handled; it is passed through unchanged
+			// Note: the \uHHHH escape is not handled; it is passed through unchanged
 			ch = *p++;
 			if ('b' == ch) ch = '\b';
 			if ('f' == ch) ch = '\f';

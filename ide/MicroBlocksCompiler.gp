@@ -124,8 +124,8 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 
-		(array 'r' 'setServo'			'set servo pin _ to _ msecs' 'num num' 0 1500)
-		(array 'r' 'playTone'			'play tone pin _ frequency _' 'num num' 0 440)
+		(array 'r' '[io:setServo]'		'set servo pin _ to _ msecs' 'num num' 0 1500)
+		(array 'r' '[io:playTone]'		'play tone pin _ frequency _' 'num num' 0 440)
 
 		(array ' ' 'spiSend'			'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'			'spi receive')
@@ -292,8 +292,8 @@ method initOpcodes SmallCompiler {
 // reserved 117
 // reserved 118
 // reserved 119
-#define setServo 120
-#define playTone 121
+// reserved 120
+// reserved 121
 // reserved 122
 // reserved 123
 // reserved 124

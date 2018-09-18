@@ -80,6 +80,7 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 void primsInit() {
 	// Called at startup to call functions to add named primitive sets.
 
+	addIOPrims();
 	addNetPrims();
 }
 

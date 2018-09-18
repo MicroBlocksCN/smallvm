@@ -301,8 +301,8 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&setServo_op,
-		&&playTone_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -882,16 +882,6 @@ static void runTask(Task *task) {
 	makeWebThing_op:
 		primMakeWebThing(arg, sp - arg);
 		POP_ARGS_COMMAND();
-		DISPATCH();
-
-	// servo and tone operations:
-	setServo_op:
-		*(sp - arg) = primSetServo(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	playTone_op:
-		*(sp - arg) = primPlayTone(arg, sp - arg);
-		POP_ARGS_REPORTER();
 		DISPATCH();
 
 	// named primitives:

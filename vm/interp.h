@@ -133,8 +133,8 @@ extern "C" {
 // reserved 117
 // reserved 118
 // reserved 119
-#define setServo 120
-#define playTone 121
+// reserved 120
+// reserved 121
 // reserved 122
 // reserved 123
 // reserved 124
@@ -359,6 +359,8 @@ void systemReset(void);
 
 void setPinMode(int pin, int newMode);
 void updateMicrobitDisplay();
+void resetServos();
+void stopTone();
 
 // Primitives
 
@@ -410,14 +412,6 @@ void webServerLoop();
 int wifiStatus();
 OBJ primGetIP(int argCount, OBJ *args);
 OBJ primMakeWebThing(int argCount, OBJ *args);
-OBJ primThingDescription(int argCount, OBJ *args);
-OBJ primClearThingDescription(int argCount, OBJ *args);
-OBJ primAppendToThingDescription(int argCount, OBJ *args);
-
-OBJ primSetServo(int argCount, OBJ *args);
-void resetServos();
-OBJ primPlayTone(int argCount, OBJ *args);
-void stopTone();
 
 // Primitive Sets
 
@@ -432,6 +426,7 @@ void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
 void primsInit();
 
+void addIOPrims();
 void addNetPrims();
 
 #ifdef __cplusplus
