@@ -113,9 +113,11 @@ OBJ primArraySize(OBJ *args) {
 }
 
 OBJ primHexToInt(OBJ *args) {
-	OBJ s = args[0];
-	if (!IS_CLASS(s, StringClass)) return fail(needsStringError);
-	long result = strtol(obj2str(s), NULL, 16);
+	if (!IS_CLASS(args[0], StringClass)) return fail(needsStringError);
+
+	char *s = obj2str(args[0]);
+	if ('#' == *s) s++; // skip leading # if there is one
+	long result = strtol(s, NULL, 16);
 	if ((result < -536870912) || (result > 536870911)) return fail(hexRangeError);
 	return int2obj(result);
 }

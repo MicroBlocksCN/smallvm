@@ -291,7 +291,7 @@ extern int taskCount;
 #define primitiveNotImplemented	27	// Primitive not implemented in this virtual machine
 #define notEnoughArguments		28	// Not enough arguments passed to primitive
 #define noWiFi					29	// This board does not support WiFi
-#define wifiNetworkNotFound		30	// Unknown WiFi network name (SSID)
+#define wifiNetworkNotFound		30	// Unknown WiFi network; bad SSID?
 #define couldNotJoinWifiNetwork	31	// Attempt to join WiFi network failed; bad password?
 
 // Runtime Operations
