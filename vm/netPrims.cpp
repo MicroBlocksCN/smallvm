@@ -255,7 +255,7 @@ OBJ primIsWifiConnected(int argCount, OBJ *args) {
   return (WL_CONNECTED == status) ? trueObj : falseObj;
 }
 
-OBJ primGetIP() {
+OBJ primGetIP(int argCount, OBJ *args) {
   IPAddress ip = (WIFI_AP_STA == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
   char ipString[17];
   sprintf(ipString, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
@@ -343,11 +343,11 @@ OBJ primAppendToThingDescription(int argCount, OBJ *args) {
 int wifiStatus() { return 4; } // WL_CONNECT_FAILED = 4
 
 void primWifiConnect(OBJ *args) { fail(noWiFi); }
-OBJ primGetIP() { return fail(noWiFi); }
 OBJ primMakeWebThing(int argCount, OBJ *args) { return fail(noWiFi); }
 
-OBJ startWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
-OBJ isWiFiConnected(int argCount, OBJ *args) { return falseObj; }
+OBJ primStartWifi(int argCount, OBJ *args) { return fail(noWiFi); }
+OBJ primIsWifiConnected(int argCount, OBJ *args) { return fail(noWiFi); }
+OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 
 OBJ primThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
 OBJ primClearThingDescription(int argCount, OBJ *args) { fail(noWiFi); }

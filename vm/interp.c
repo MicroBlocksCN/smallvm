@@ -876,7 +876,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	getIP_op:
-		*(sp - arg) = primGetIP();
+		*(sp - arg) = primGetIP(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	makeWebThing_op:

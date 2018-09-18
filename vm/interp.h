@@ -408,7 +408,7 @@ void primNeoPixelSetPin(int argCount, OBJ *args);
 void primWifiConnect(OBJ *args);
 void webServerLoop();
 int wifiStatus();
-OBJ primGetIP();
+OBJ primGetIP(int argCount, OBJ *args);
 OBJ primMakeWebThing(int argCount, OBJ *args);
 OBJ primThingDescription(int argCount, OBJ *args);
 OBJ primClearThingDescription(int argCount, OBJ *args);
