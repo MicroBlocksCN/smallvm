@@ -128,9 +128,9 @@ extern "C" {
 #define wifiConnect 112
 #define getIP 113
 #define makeWebThing 114
-#define thingDescription 115
-#define clearThingDescription 116
-#define appendToThingDescription 117
+// reserved 115
+// reserved 116
+// reserved 117
 // reserved 118
 // reserved 119
 #define setServo 120
@@ -289,7 +289,10 @@ extern int taskCount;
 #define badForLoopArg			25	// for-loop argument must be a positive integer or list
 #define stackOverflow			26	// Insufficient stack space
 #define primitiveNotImplemented	27	// Primitive not implemented in this virtual machine
-#define noNetwork				28	// Cannot connect to WiFi, maybe due to wrong ESSID or password
+#define notEnoughArguments		28	// Not enough arguments passed to primitive
+#define noWiFi					29	// This board does not support WiFi
+#define wifiNetworkNotFound		30	// Unknown WiFi network name (SSID)
+#define couldNotJoinWifiNetwork	31	// Attempt to join WiFi network failed; bad password?
 
 // Runtime Operations
 

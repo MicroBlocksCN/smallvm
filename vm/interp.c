@@ -296,9 +296,9 @@ static void runTask(Task *task) {
 		&&wifiConnect_op,
 		&&getIP_op,
 		&&makeWebThing_op,
-		&&thingDescription_op,
-		&&clearThingDescription_op,
-		&&appendToThingDescription_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&setServo_op,
@@ -881,18 +881,6 @@ static void runTask(Task *task) {
 		DISPATCH();
 	makeWebThing_op:
 		primMakeWebThing(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	thingDescription_op:
-		*(sp - arg) = primThingDescription(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	clearThingDescription_op:
-		primClearThingDescription(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	appendToThingDescription_op:
-		primAppendToThingDescription(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 

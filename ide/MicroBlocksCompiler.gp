@@ -124,6 +124,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 
+		(array 'r' 'setServo'			'set servo pin _ to _ msecs' 'num num' 0 1500)
+		(array 'r' 'playTone'			'play tone pin _ frequency _' 'num num' 0 440)
+
 		(array ' ' 'spiSend'			'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'			'spi receive')
 
@@ -137,12 +140,14 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'getIP'		        'my IP address')
 		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
                                                             'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
-		(array 'r' 'thingDescription'			'thing description')
-		(array ' ' 'clearthingDescription'		'clear thing description')
-		(array ' ' 'appendToThingDescription'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
 
-		(array 'r' 'setServo'			'set servo pin _ to _ msecs' 'num num' 0 1500)
-		(array 'r' 'playTone'			'play tone pin _ frequency _' 'num num' 0 440)
+		(array ' ' '[net:startWiFi]'				'start WiFi _ password _ : be hotspot _' 'str str bool' 'SSID' 'MyPassword' true)
+		(array 'r' '[net:isWiFiConnected]'			'connected to WiFi?')
+		(array 'r' '[net:myIPAddress]'				'my IP address')
+
+		(array 'r' '[net:thingDescription]'			'thing description')
+		(array ' ' '[net:clearThingDescription]'	'clear thing description')
+		(array ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
 
 	'Disabled'
  		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
@@ -282,9 +287,9 @@ method initOpcodes SmallCompiler {
 #define wifiConnect 112
 #define getIP 113
 #define makeWebThing 114
-#define thingDescription 115
-#define clearThingDescription 116
-#define appendToThingDescription 117
+// reserved 115
+// reserved 116
+// reserved 117
 // reserved 118
 // reserved 119
 #define setServo 120

@@ -69,6 +69,8 @@ void primWifiConnect(OBJ *args) {
   }
 }
 
+// Web Server for Mozilla IoT Things
+
 static void initWebServer() {
   server.stop();
   server.begin();
@@ -182,6 +184,8 @@ void webServerLoop() {
   client.stop();
 }
 
+// WiFi Connections (old)
+
 int wifiStatus() {
   //  WL_IDLE_STATUS      = 0
   //  WL_CONNECTED        = 3
@@ -199,7 +203,7 @@ int wifiStatus() {
     WiFi.disconnect();
     status = WL_DISCONNECTED;
     connecting = false;
-    fail(noNetwork);
+    fail(couldNotJoinWifiNetwork);
   } else {
     // Still waiting
     status = WL_IDLE_STATUS;
@@ -207,12 +211,58 @@ int wifiStatus() {
   return status;
 }
 
+// WiFi Connections (new)
+
+OBJ primStartWifi(int argCount, OBJ *args) {
+  // Start a WiFi connection attempt. The client should call wifiIsConnected
+  // until the connection is established or the attempt fails with an error.
+
+  if (argCount < 2) return fail(notEnoughArguments);
+
+  char *networkName = obj2str(args[0]);
+  char *password = obj2str(args[1]);
+  int createHotSpot = (argCount > 2) && (trueObj == args[2]);
+
+  WiFi.persistent(false); // don't save network info to Flash
+  WiFi.mode(WIFI_OFF); // Kill the current connection, if any
+
+  if (createHotSpot) {
+    WiFi.mode(WIFI_AP_STA); // access point & station mode
+    WiFi.softAP(networkName, password);
+  } else {
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(networkName, password);
+  }
+}
+
+OBJ primIsWifiConnected(int argCount, OBJ *args) {
+  // Return true if connected to WiFi. If the connection attempt fails, report an error.
+
+  int status = WiFi.status();
+
+  if (WL_NO_SSID_AVAIL == status) return fail(wifiNetworkNotFound);
+  if (WL_CONNECT_FAILED == status) return fail(couldNotJoinWifiNetwork);
+
+  if ((WL_IDLE_STATUS == status) && (WIFI_AP_STA == WiFi.getMode())) { // acting as hotspot
+    status = WL_CONNECTED;
+  }
+
+  if ((WL_CONNECTED == status) && !server.status()) {
+    // start the server when the connection is first established
+    initWebServer();
+  }
+
+  return (WL_CONNECTED == status) ? trueObj : falseObj;
+}
+
 OBJ primGetIP() {
-  IPAddress ip = WiFi.localIP();
+  IPAddress ip = (WIFI_AP_STA == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
   char ipString[17];
   sprintf(ipString, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
   return newStringFromBytes((uint8*) ipString, strlen(ipString));
 }
+
+// Thing Description (old)
 
 OBJ primMakeWebThing(int argCount, OBJ *args) {
   char* thingName = obj2str(args[0]);
@@ -249,6 +299,8 @@ OBJ primMakeWebThing(int argCount, OBJ *args) {
   }
   sprintf(descriptionObj.body + bytesWritten, "}}\0");
 }
+
+// Thing Description (new)
 
 OBJ primThingDescription(int argCount, OBJ *args) {
 	int wordCount = (strlen(descriptionObj.body) + 4) / 4;
@@ -290,17 +342,23 @@ OBJ primAppendToThingDescription(int argCount, OBJ *args) {
 
 int wifiStatus() { return 4; } // WL_CONNECT_FAILED = 4
 
-void primWifiConnect(OBJ *args) { fail(noNetwork); }
-OBJ primGetIP() { return fail(noNetwork); }
-OBJ primMakeWebThing(int argCount, OBJ *args) { return fail(noNetwork); }
+void primWifiConnect(OBJ *args) { fail(noWiFi); }
+OBJ primGetIP() { return fail(noWiFi); }
+OBJ primMakeWebThing(int argCount, OBJ *args) { return fail(noWiFi); }
 
-OBJ primThingDescription(int argCount, OBJ *args) { return fail(noNetwork); }
-OBJ primClearThingDescription(int argCount, OBJ *args) { fail(noNetwork); }
-OBJ primAppendToThingDescription(int argCount, OBJ *args) { fail(noNetwork); }
+OBJ startWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
+OBJ isWiFiConnected(int argCount, OBJ *args) { return falseObj; }
+
+OBJ primThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
+OBJ primClearThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
+OBJ primAppendToThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
 
 #endif
 
 static PrimEntry entries[] = {
+	"startWiFi", primStartWifi,
+	"isWiFiConnected", primIsWifiConnected,
+	"myIPAddress", primGetIP,
 	"thingDescription", primThingDescription,
 	"clearThingDescription", primClearThingDescription,
 	"appendToThingDescription", primAppendToThingDescription,
