@@ -213,6 +213,8 @@ int wifiStatus() {
 
 // WiFi Connections (new)
 
+int firstTime = true;
+
 OBJ primStartWifi(int argCount, OBJ *args) {
   // Start a WiFi connection attempt. The client should call wifiIsConnected
   // until the connection is established or the attempt fails with an error.
@@ -232,6 +234,14 @@ OBJ primStartWifi(int argCount, OBJ *args) {
   } else {
     WiFi.mode(WIFI_STA);
     WiFi.begin(networkName, password);
+  }
+
+  // workaround for an apparent ESP8266 WiFi startup bug; calling WiFi.status() during
+  // the first few seconds after starting WiFi for the first time results in strange
+  // behavior (task just stops without either error or completion; memory corruption?)
+  if (firstTime) {
+    delay(3000); // 3000 works, 2500 does not
+    firstTime = false;
   }
 }
 
