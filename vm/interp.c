@@ -480,6 +480,7 @@ static void runTask(Task *task) {
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
 	 	POP_ARGS_COMMAND();
 	 	if (tmp <= 30) {
+	 		if (tmp <= 0) { DISPATCH(); } // don't wait at all
 			// busy-wait for wait times up to 30 usecs to avoid a context switch
 			tmp = (microsecs() + tmp) - 8; // wake time, adjusted for dispatch overhead
 			while ((microsecs() - tmp) >= RECENT)
@@ -493,6 +494,7 @@ static void runTask(Task *task) {
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
 	 	POP_ARGS_COMMAND();
 	 	if (tmp < 1000) {
+	 		if (tmp <= 0) { DISPATCH(); } // don't wait at all
 	 		// use usecs for waits under a second for greater precision
 			task->status = waiting_micros;
 			task->wakeTime = microsecs() + ((1000 * tmp) - 17);
