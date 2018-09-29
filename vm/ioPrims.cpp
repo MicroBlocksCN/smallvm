@@ -71,20 +71,20 @@ void putSerial(char *s) { Serial.print(s); } // callable from C; used to simulat
 
 int readBytes(uint8 *buf, int count) {
 	int bytesRead = Serial.available();
+	if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
 	for (int i = 0; i < bytesRead; i++) {
 		buf[i] = Serial.read();
 	}
 	return bytesRead;
 }
 
-int canReadByte() { return Serial.available(); }
 int sendByte(char aByte) { return Serial.write(aByte); }
 
 // System Reset
 
 void systemReset() {
 	initPins();
-	#if defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52_PRIMO) || defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE) || defined(ARDUINO_SAMD_MKRZERO)
+	#if defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52_PRIMO) || defined(NRF51) || defined(ARDUINO_SAMD_MKRZERO)
 		NVIC_SystemReset();
 	#endif
 }
@@ -114,7 +114,7 @@ void systemReset() {
 #elif defined(ARDUINO_BBC_MICROBIT)
 
 	#define BOARD_TYPE "micro:bit"
-	#define DIGITAL_PINS 33
+	#define DIGITAL_PINS 29
 	#define ANALOG_PINS 6
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
@@ -146,18 +146,60 @@ void systemReset() {
 	// Analog pins: The Calliope does not have dedicated analog input pins;
 	// the analog pins are aliases for digital pins 6, 1, 2, 21 (microphone), 4, 5.
 
+#elif defined(ARDUINO_SINOBIT)
+
+	#define BOARD_TYPE "sino:bit"
+	#define DIGITAL_PINS 29
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS DIGITAL_PINS
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+
+	// See variant.cpp in variants/Sinbit folder for a detailed pin map.
+	// Pins 0-19 are for the large pads and 26 pin connector
+	//	(but pin numbers 17-18 correspond to 3.3 volt pads, not actual I/O pins)
+	// Pins 21-22: RX, TX (for USB Serial?)
+	// Pins 23-28: COL4, COL5, COL6, ROW1, ROW2, ROW3
+	// Button A: pin 5
+	// Button B: pin 11
+	// Analog pins: The sino:bit does not have dedicated analog input pins;
+	// the analog pins are aliases for digital pins 0-4 and 10.
+
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 	// Note: This case muse come before the ARDUINO_SAMD_ZERO case.
 	// Note: Pin count does not include pins 36-38, the USB serial pins
 
 	#define BOARD_TYPE "CircuitPlayground"
-	#define DIGITAL_PINS 36
+	#define DIGITAL_PINS 27
 	#define ANALOG_PINS 11
-	#define TOTAL_PINS 36
+	#define TOTAL_PINS 27
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
 	#define PIN_BUTTON_A 4
 	#define PIN_BUTTON_B 5
 	#define BUTTON_PRESSED HIGH
+
+#elif defined(ADAFRUIT_GEMMA_M0)
+
+	#define BOARD_TYPE "Gemma M0"
+	#define DIGITAL_PINS 5
+	#define ANALOG_PINS 3
+	#define TOTAL_PINS 14
+	static const int analogPin[] = {A0, A1, A2};
+
+#elif defined(ADAFRUIT_ITSYBITSY_M0)
+
+	#define BOARD_TYPE "Itsy Bitsy M0"
+	#define DIGITAL_PINS 28
+	#define ANALOG_PINS 12
+	#define TOTAL_PINS 42
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
+
+#elif defined(ADAFRUIT_TRINKET_M0)
+
+	#define BOARD_TYPE "Trinket M0"
+	#define DIGITAL_PINS 7
+	#define ANALOG_PINS 5
+	#define TOTAL_PINS 14
+	static const int analogPin[] = {A0, A1, A2, A3, A4};
 
 #elif defined(ARDUINO_SAMD_MKRZERO)
 
@@ -189,23 +231,7 @@ void systemReset() {
 
 	#define PIN_LED 13
 
-#elif defined(ADAFRUIT_ITSYBITSY_M0)
-
-	#define BOARD_TYPE "Itsy Bitsy M0"
-	#define DIGITAL_PINS 42
-	#define ANALOG_PINS 6
-	#define TOTAL_PINS 42
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
-
-#elif defined(ADAFRUIT_TRINKET_M0)
-
-	#define BOARD_TYPE "Trinket M0"
-	#define DIGITAL_PINS 16
-	#define ANALOG_PINS 3
-	#define TOTAL_PINS 16
-	static const int analogPin[] = {A0, A1, A2};
-
-#elif defined(ARDUINO_ESP8266_NODEMCU)
+#elif defined(ESP8266)
 
 	#define BOARD_TYPE "ESP8266"
 	#define DIGITAL_PINS 17
@@ -266,12 +292,12 @@ static void initPins(void) {
 	// Initialize currentMode to MODE_NOT_SET (neither INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
-	#if !defined(ARDUINO_ESP8266_NODEMCU) && !defined(ARDUINO_ARCH_ESP32)
+	#if !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 
 	for (int i = 0; i < TOTAL_PINS; i++) {
-		digitalWrite(i, LOW);
+//		digitalWrite(i, LOW); // this breaks serial recieve of Due
 // 		pinMode(i, INPUT); // this breaks serial communication on Circuit Playground
 		currentMode[i] = MODE_NOT_SET;
 	}
@@ -281,7 +307,8 @@ static void initPins(void) {
 		pinMode(BUZZER, OUTPUT);
 	#endif
 
-	for (int i = 0; i < 30; i++) sendNeoPixelByte(0); // turn off NeoPixels (up to 10 of them)
+	// xxx rewrite this in terms of the primitive, using the default pin number:
+	// for (int i = 0; i < 30; i++) sendNeoPixelByte(0); // turn off NeoPixels (up to 10 of them)
 }
 
 // Pin IO Primitives
@@ -300,6 +327,11 @@ OBJ primAnalogRead(OBJ *args) {
 
 void primAnalogWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
+	#if defined(ADAFRUIT_ITSYBITSY_M0)
+		if (pinNum > 25) return;
+	#elif defined(ADAFRUIT_TRINKET_M0)
+		if (pinNum > 4) return;
+	#endif
 	int value = obj2int(args[1]);
 	if (value < 0) value = 0;
 	if (value > 1023) value = 1023;
@@ -312,12 +344,19 @@ void primAnalogWrite(OBJ *args) {
 
 OBJ primDigitalRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
-	#ifdef ARDUINO_NRF52_PRIMO
+	#if defined(ADAFRUIT_ITSYBITSY_M0)
+		if (pinNum > 25) return falseObj;
+	#elif defined(ADAFRUIT_TRINKET_M0)
+		if (pinNum > 4) return falseObj;
+	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return (LOW == digitalRead(USER1_BUTTON)) ? trueObj : falseObj;
 		if (23 == pinNum) return falseObj;
 	#endif
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, INPUT);
+	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+		if (7 == pinNum) pinMode(7, INPUT_PULLUP); // slide switch
+	#endif
 	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
 }
 
@@ -333,7 +372,17 @@ void primDigitalSet(int pinNum, int flag) {
 	// instruction, thus saving the cost of pushing the pin number and boolean.
 	// (This can make a difference in time-sensitives applications like sound generation.)
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
-	#ifdef ARDUINO_NRF52_PRIMO
+	#if defined(ADAFRUIT_ITSYBITSY_M0)
+		// Map pins 26 & 27 to the DotStar LED (internal pins 41 and 40)
+		if (pinNum == 26) pinNum = 41; // DotStar data
+		else if (pinNum == 27) pinNum = 40; // DotStar clock
+		else if (pinNum > 27) return;
+	#elif defined(ADAFRUIT_TRINKET_M0)
+		// Map pins 5 & 6 to the DotStar LED (internal pins 7 and 8)
+		if (pinNum == 5) pinNum = 7;
+		else if (pinNum == 6) pinNum = 8;
+		else if (pinNum > 6) return;
+	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
 	#endif
@@ -400,4 +449,89 @@ OBJ primButtonB(OBJ *args) {
 	#else
 		return falseObj;
 	#endif
+}
+
+// Servo
+
+#if !(defined(NRF51) || defined(ESP32))
+  #include <Servo.h>
+  Servo servo[DIGITAL_PINS];
+#endif
+
+void resetServos() {
+	#if !(defined(NRF51) || defined(ESP32))
+		for (int pin = 0; pin < DIGITAL_PINS; pin++) {
+			if (servo[pin].attached()) servo[pin].detach();
+		}
+	#endif
+}
+
+OBJ primSetServo(int argCount, OBJ *args) {
+	// setServo <pin> <usecs>
+	// If usecs > 0, generate a servo control signal with the given pulse width
+	// on the given pin. If usecs <= 0 stop generating the servo signal.
+	// Return true on success, false if primitive is not supported.
+	#if !(defined(NRF51) || defined(ESP32))
+		OBJ pinArg = args[0];
+		OBJ usecsArg = args[1];
+		if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
+		int pin = obj2int(pinArg);
+		if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
+		int usecs = obj2int(usecsArg);
+		if (usecs > 15000) usecs = 15000; // maximum pulse width is 15000 usecs
+		if (usecs <= 0) {
+			if (servo[pin].attached()) servo[pin].detach();
+		} else {
+			if (!servo[pin].attached()) servo[pin].attach(pin);
+			servo[pin].writeMicroseconds(usecs);
+		}
+		return trueObj;
+	#else
+		return falseObj;
+	#endif
+}
+
+// Tone Generation
+
+int tonePin = -1;
+
+void stopTone() {
+	#if !(defined(NRF51) || defined(ESP32) || defined(ARDUINO_SAM_DUE))
+		if (tonePin >= 0) noTone(tonePin);
+		tonePin = -1;
+	#endif
+}
+
+OBJ primPlayTone(int argCount, OBJ *args) {
+	// playTone <pin> <freq>
+	// If freq > 0, generate a 50% duty cycle square wave of the given frequency
+	// on the given pin. If freq <= 0 stop generating the square wave.
+	// Return true on success, false if primitive is not supported.
+	#if !(defined(NRF51) || defined(ESP32) || defined(ARDUINO_SAM_DUE))
+		OBJ pinArg = args[0];
+		OBJ freqArg = args[1];
+		if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
+		int pin = obj2int(pinArg);
+		if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
+		int frequency = obj2int(freqArg);
+		if ((frequency > 0) && (frequency <= 500000)) {
+			if (pin != tonePin) stopTone();
+			tonePin = pin;
+			tone(tonePin, frequency);
+		} else {
+			stopTone();
+		}
+		return trueObj;
+	#else
+		return falseObj;
+	#endif
+}
+
+static PrimEntry entries[] = {
+	"setServo", primSetServo,
+	"playTone", primPlayTone,
+};
+
+void addIOPrims() {
+	addPrimitiveSet("io", sizeof(entries) / sizeof(PrimEntry), entries);
 }

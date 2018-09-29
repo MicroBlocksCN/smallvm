@@ -32,7 +32,7 @@
 
 // flash operations for supported platforms
 
-#if defined(ARDUINO_NRF52_PRIMO) || defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
+#if defined(ARDUINO_NRF52_PRIMO) || defined(NRF51)
 	#include "nrf.h" // nRF51 and nRF52
 
 	#ifdef ARDUINO_NRF52_PRIMO
@@ -469,14 +469,10 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	// write the record
 	int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
 
-  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(GNUBLOCKS)
+  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	writeCodeFileWord(header);
 	writeCodeFileWord(wordCount);
-	writeCodeFile(data, byteCount);
-  #else if defined(ARDUINO_ARCH_ESP32) 
-  writeNVSWord(header);
-  writeNVSWord(wordCount);
-  writeNVS(data, byteCount);
+	writeCodeFile(data, 4 * wordCount);
   #endif
 
 	int *result = freeStart;
@@ -501,10 +497,8 @@ void restoreScripts() {
 	initPersistentMemory();
 	memset(chunks, 0, sizeof(chunks));
 
-  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(GNUBLOCKS)
+  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	initCodeFile(flash, HALF_SPACE);
-  #else defined defined(ARDUINO_ARCH_ESP32)
-  initNVS(flash, HALF_SPACE);
   #endif
 
 	int *p = recordAfter(NULL);

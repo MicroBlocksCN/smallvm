@@ -23,7 +23,10 @@ method allVarsMenu InputSlot {
   if (notNil scripter) {
 	varNames = (copyWithout (variableNames (targetModule (handler scripter))) 'extensions')
 	for varName varNames {
-	  addItem menu varName varName
+          // hide vars that start with underscore, used for libraries
+          if (or ((at varName 1) != '_') (devMode)) {
+            addItem menu varName varName
+          }
 	}
 	if ((count varNames) > 0) { addLine menu }
   }
@@ -41,11 +44,45 @@ method allVarsMenu InputSlot {
   return menu
 }
 
-method typesMenu InputDeclaration {
-  menu = (menu nil (action 'setType' this) true)
-  addItem menu 'number/string' 'auto' 'editable number or string'
-  addItem menu '' 'bool' 'boolean switch' (fullCostume (morph (element this 'bool')))
-  popUp menu (global 'page') (left morph) (bottom morph)
+method thingTypesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu ''
+  addItem menu 'OnOffSwitch'
+  addItem menu 'MultiLevelSwitch'
+  addItem menu 'BinarySensor'
+  addItem menu 'MultiLevelSensor'
+  addItem menu 'ColorControl'
+  addItem menu 'EnergyMonitor'
+  addItem menu 'SmartPlug'
+  addItem menu 'Light'
+  return menu
+}
+
+method varTypesMenu InputSlot {
+  // TODO: support object and array
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'null'
+  addItem menu 'boolean'
+  addItem menu 'number'
+  addItem menu 'integer'
+  addItem menu 'string'
+  return menu
+}
+
+method propertyTypesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu ''
+  addItem menu 'BooleanProperty'
+  addItem menu 'OnOffProperty'
+  addItem menu 'LevelProperty'
+  addItem menu 'BrightnessProperty'
+  addItem menu 'ColorProperty'
+  addItem menu 'ColorTemperatureProperty'
+  addItem menu 'InstantaneousPowerProperty'
+  addItem menu 'CurrentProperty'
+  addItem menu 'VoltageProperty'
+  addItem menu 'FrequencyProperty'
+  return menu
 }
 
 method confirmToQuit Page {
@@ -73,23 +110,22 @@ to gpFolder {
   if (contains (listDirectories path) 'Documents') {
 	path = (join path '/Documents')
   }
-  if (not (contains (listDirectories path) 'MicroBlocks Projects')) {
-	// create the MicroBlocks folder if it does not already exist
-	makeDirectory (join path '/MicroBlocks Projects')
+  if (not (contains (listDirectories path) 'MicroBlocks')) {
+	if (contains (listDirectories path) 'MicroBlocks Projects') {
+		// if it exists, rename old 'MicroBlocks Projects' folder to 'MicroBlocks'
+		renameFile (join path '/MicroBlocks Projects') (join path '/MicroBlocks')
+	} else {
+		// create the MicroBlocks folder if it does not already exist
+		makeDirectory (join path '/MicroBlocks')
+	}
   }
-  if (contains (listDirectories path) 'MicroBlocks Projects') {
-	path = (join path '/MicroBlocks Projects')
+  if (contains (listDirectories path) 'MicroBlocks') {
+	path = (join path '/MicroBlocks')
   }
   return path
 }
 
-to gpExamplesFolder {
-  if ('Mac' == (platform)) {
-	// on Siera and later there seems to be no way to get a path to the folder containing the application
-	return (join (gpFolder) '/Examples')
-  }
-  return (join (absolutePath '.') '/Examples')
-}
+to gpExamplesFolder { return 'Examples' }
 
 method clicked Block hand {
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
@@ -127,10 +163,13 @@ method devMenu Hand currentObj {
 method contextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
+  pe = (findProjectEditor)
 
-  addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
-  addItem menu 'show compiled bytes' (action 'evalOnBoard' (smallRuntime) this true)
-  addLine menu
+  if (devMode) {
+    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
+    addItem menu 'show compiled bytes' (action 'evalOnBoard' (smallRuntime) this true)
+    addLine menu
+  }
 
   isInPalette = ('template' == (grabRule morph))
   if (isVariadic this) {
@@ -142,8 +181,8 @@ method contextMenu Block {
     addItem menu 'rename...' 'userRenameVariable'
     addLine menu
   }
-  if (and isInPalette true) {
-	addItem menu 'show definition...' 'showDefinition'
+  if (and isInPalette (notNil (functionNamed (module (project pe)) (primName expression)))) {
+    addItem menu 'show definition...' 'showDefinition'
   }
   addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
   if (and ('reporter' != type) (notNil (next this))) {
@@ -151,7 +190,8 @@ method contextMenu Block {
   }
 //  addItem menu 'copy to clipboard' 'copyToClipboard'
 
-//  addItem menu 'save picture of script' 'exportAsImage'
+  addLine menu
+  addItem menu 'save picture of script' 'exportAsImage'
   if (not isInPalette) {
     addLine menu
     addItem menu 'delete' 'delete'
@@ -164,12 +204,14 @@ method contextMenu BlockDefinition {
   for tp (array 'command' 'reporter') {
     addItem menu '' (action 'setType' this tp) tp (fullCostume (morph (block tp (color 4 148 220) '                    ')))
   }
-  addLine menu
-  addItem menu 'show instructions' (action 'showInstructions' this)
-  addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
+  if (devMode) {
+    addLine menu
+    addItem menu 'show instructions' (action 'showInstructions' this)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
+  }
   addLine menu
   addItem menu 'hide definition' 'hideDefinition'
-//  addItem menu 'save picture of script' 'exportAsImage'
+  addItem menu 'save picture of script' 'exportAsImage'
   addLine menu
   addItem menu 'delete' 'deleteDefinition'
   popUp menu (global 'page') (left morph) (bottom morph)
@@ -181,6 +223,38 @@ method showInstructions BlockDefinition {
 
 method showCompiledBytes BlockDefinition {
   evalOnBoard (smallRuntime) (handler (owner (owner morph))) true
+}
+
+method initializeRepeater BlockDefinition aBlockSpec {
+  if (isNil aBlockSpec) {
+    isRepeating = false
+  } else {
+    isRepeating = (repeatLastSpec aBlockSpec)
+  }
+  drawer = (newBlockDrawer this nil 'vertical')
+  repeater = (newAlignment 'centered-line' 0 'bounds')
+  setMorph repeater (newMorph repeater)
+  if isShort {
+    hide (morph repeater)
+  }
+  setPadding repeater (5 * (global 'scale'))
+return // xxx suppress the ability to make variadic user-defined blocks
+
+  addPart (morph repeater) (morph drawer)
+
+  scale = (global 'scale')
+  if (global 'stealthBlocks') {
+    labelColor = (gray (stealthLevel 255 0))
+  } else {
+    labelColor = (global 'blockTextColor')
+    if (isNil labelColor) { labelColor = (gray 255) }
+  }
+  txt = (newText 'repeat last section:' 'Arial' (10 * scale) labelColor)
+  addPart (morph repeater) (morph txt)
+
+  corner = 5
+  toggle = (toggleButton (action 'toggleRepeat' this) (action 'isRepeating' this) (scale * 20) (scale * 13) (scale * corner) (max 1 (scale / 2)) false false)
+  addPart (morph repeater) (morph toggle)
 }
 
 method okayToBeDestroyedByUser Block {
@@ -205,34 +279,9 @@ method contextMenu ScriptEditor {
   if (and (notNil lastDrop) (isRestorable lastDrop)) {
     addItem menu 'undrop' 'undrop' 'undo last drop'
   }
+  addLine menu
+  addItem menu 'save picture of all scripts' 'saveScriptsImage'
   return menu
-}
-
-method blockColorForCategory AuthoringSpecs cat {
-  defaultColor = (color 4 148 220)
-  if (isOneOf cat 'Control' 'Functions') {
-	if (notNil (global 'controlColor')) { return (global 'controlColor') }
-	return (color 230 168 34)
-  } ('Variables' == cat) {
-	if (notNil (global 'variableColor')) { return (global 'variableColor') }
-	return (color 243 118 29)
-  } (isOneOf cat 'Operators' 'Math') {
-	if (notNil (global 'operatorsColor')) { return (global 'operatorsColor') }
-	return (color 98 194 19)
-  } ('Obsolete' == cat) {
-	return (color 196 15 0)
-  }
-  if (notNil (global 'defaultColor')) { return (global 'defaultColor') }
-  return defaultColor
-}
-
-method clear AuthoringSpecs {
-  specsList = (list)
-  specsByOp = (dictionary)
-  opCategory = (dictionary)
-  language = 'English'
-  translationDictionary = nil
-  return this
 }
 
 method fixLayout Block {
@@ -286,10 +335,13 @@ method fixLayout Block {
           x = (+ left indentation w)
           w += (width (fullBounds (morph each)))
           w += (space * scale)
-          if (and ('mbDisplay' == (primName expression)) (each == (first group))) {
+		  if (and ('mbDisplay' == (primName expression)) (each == (first group))) {
 			lineArgCount = 10; // force a line break after first item of 'mbDisplay' block
-          }
-          if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
+		  }
+		  if (and ('setNeoPixelColors10' == (primName expression)) (each == (at group 3))) {
+			lineArgCount = 10; // force a line break after first item of 'mbDisplay' block
+		  }
+		  if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
             add lines currentLine
             add lineHeights h
             currentLine = (list)
@@ -417,4 +469,16 @@ method fixLayout Block {
     setPosition (morph nb) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
   }
   raise morph 'layoutChanged' this
+}
+
+method updateRGBReadouts ColorPicker c {
+  // Adjust color for NeoPixels (see SmallCompiler instructionsForExpression)
+
+  brightness = (((raise 2 (5 * (brightness c))) - 1) / 31) // range: 0-1
+  saturation = (2 * (saturation c)) // increase saturation
+  c = (colorHSV (hue c) saturation (0.125 * brightness))
+
+  setText rText (join 'R ' (leftPadded (toString (red c)) 2 '0'))
+  setText gText (join 'G ' (leftPadded (toString (green c)) 2 '0'))
+  setText bText (join 'B ' (leftPadded (toString (blue c)) 2 '0'))
 }

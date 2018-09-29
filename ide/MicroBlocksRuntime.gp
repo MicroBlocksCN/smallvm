@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames
 
 method scripter SmallRuntime { return scripter }
 
@@ -178,10 +178,16 @@ method softReset SmallRuntime {
 method selectPort SmallRuntime {
 	portList = (list)
 	if ('Win' == (platform)) {
-		portList = (listSerialPorts)
-		if (isEmpty portList) {
-			portList = (list)
-			for n 32 { add portList (join 'COM' n) }
+		portList = (toList (listSerialPorts))
+		remove portList 'COM1'
+	} ('Browser' == (platform)) {
+		listSerialPorts // first call triggers callback
+		waitMSecs 50
+		portList = (list)
+		for portName (listSerialPorts) {
+			if (not (beginsWith portName '/dev/tty.')) {
+				add portList portName
+			}
 		}
 	} else {
 		for fn (listFiles '/dev') {
@@ -229,7 +235,8 @@ method setPort SmallRuntime newPortName {
 		portName = nil
 	} else {
 		portName = (join '/dev/' newPortName)
-		if ('Win' == (platform)) { portName = newPortName }
+		if (isOneOf (platform) 'Browser' 'Win') { portName = newPortName }
+		connectMSecs = (msecsSinceStart)
 		ensurePortOpen this
 	}
 	// update the connection indicator more quickly than it would otherwise
@@ -239,6 +246,14 @@ method setPort SmallRuntime newPortName {
 	processMessages this
 	updateIndicator (findMicroBlocksEditor)
 	clearBoardIfConnected this
+}
+
+method closePort SmallRuntime {
+	if (notNil port) {
+		stopAndSyncScripts this
+		closeSerialPort port
+		port = nil
+	}
 }
 
 method connectionStatus SmallRuntime {
@@ -255,13 +270,23 @@ method connectionStatus SmallRuntime {
 		pingSentMSecs = (msecsSinceStart)
 	}
 	msecsSinceLastPing = ((msecsSinceStart) - lastPingRecvMSecs)
-	if (msecsSinceLastPing < (pingSendInterval + 200)) {
+	if (msecsSinceLastPing < (pingSendInterval + 500)) {
 		return 'connected'
+	}
+	if (notNil connectMSecs) {
+		msecsSinceConnect = ((msecsSinceStart) - connectMSecs)
+		if (msecsSinceConnect > 5000) {
+			connectMSecs = nil // don't do this again unti next connection attempt
+			ok = (confirm (global 'page') nil
+'The board is not responding.
+Try to Install MicroBlocks on the board?')
+			if ok { installVM this }
+		}
 	}
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.14' }
+method ideVersion SmallRuntime { return '0.1.22' }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
@@ -297,6 +322,7 @@ method sendStopAll SmallRuntime {
 }
 
 method sendStartAll SmallRuntime {
+	oldVarNames = nil // force var names to be updated
 	saveAllChunks this
 	sendMsg this 'startAllMsg'
 }
@@ -338,8 +364,15 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	chunkType = (chunkTypeFor this aBlockOrFunction)
 	data = (list chunkType)
 	addAll data (chunkBytesFor this aBlockOrFunction)
+	if ((count data) > 1000) {
+		if (isClass aBlockOrFunction 'Function') {
+			inform (global 'page') (join 'Function "' (functionName aBlockOrFunction) '" is too large to send to board.')
+		} else {
+			showHint (morph aBlockOrFunction) 'Script is too large to send to board.'
+		}
+	}
 	sendMsg this 'chunkCodeMsg' chunkID data
-	waitMSecs ((count data) / 10) // wait approximate transmission time
+	waitMSecs ((count data) / 5) // wait approximate transmission time (assuming 5k bytes/sec)
 
 	// restart the chunk if it is a Block and is running
 	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
@@ -430,22 +463,27 @@ method errorString SmallRuntime errID {
 #define badChunkIndexError		2	// Unknown chunk index
 
 #define insufficientMemoryError	10	// Insufficient memory to allocate object
-#define needsArrayError			11	// Needs an Array or ByteArray
+#define needsArrayError			11	// Needs a list
 #define needsBooleanError		12	// Needs a boolean
 #define needsIntegerError		13	// Needs an integer
 #define needsStringError		14	// Needs a string
 #define nonComparableError		15	// Those objects cannot be compared for equality
-#define arraySizeError			16	// Array size must be a non-negative integer
-#define needsIntegerIndexError	17	// Array index must be an integer
-#define indexOutOfRangeError	18	// Array index out of range
+#define arraySizeError			16	// List size must be a non-negative integer
+#define needsIntegerIndexError	17	// List index must be an integer
+#define indexOutOfRangeError	18	// List index out of range
 #define byteArrayStoreError		19 	// A ByteArray can only store integer values between 0 and 255
 #define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
 #define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
 #define notInFunction			24	// Attempt to access an argument outside of a function
-#define badForLoopArg			25	// for-loop argument must be a positive integer, array, or bytearray
+#define badForLoopArg			25	// for-loop argument must be a positive integer or list
 #define stackOverflow			26	// Insufficient stack space
+#define primitiveNotImplemented	27	// Primitive not implemented in this virtual machine
+#define notEnoughArguments		28	// Not enough arguments passed to primitive
+#define noWiFi					29	// This board does not support WiFi
+#define wifiNetworkNotFound		30	// Unknown WiFi network; bad SSID?
+#define couldNotJoinWifiNetwork	31	// Attempt to join WiFi network failed; bad password?
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
@@ -475,13 +513,28 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		inform 'Use "Connect" button to connect to a MicroBlocks device.'
 		return
 	}
-	writeSerialPort port (toBinaryData (toArray msg))
+	dataToSend = (toBinaryData (toArray msg))
+	while ((byteCount dataToSend) > 0) {
+		// Note: AdaFruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
+		// written in one call to writeSerialPort, so send smaller chunks
+		byteCount = (min 1000 (byteCount dataToSend))
+		chunk = (copyFromTo dataToSend 1 byteCount)
+		bytesSent = (writeSerialPort port chunk)
+		if (not (isOpenSerialPort port)) {
+			print 'serial port closed; board disconnected?'
+			port = nil
+			return
+		}
+		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
+		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
+	}
 }
 
 method ensurePortOpen SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		if (notNil portName) {
 			port = (openSerialPort portName 115200)
+			if ('Browser' == (platform)) { waitMSecs 100 } // let browser callback complete
 		}
 	}
 }
@@ -575,6 +628,7 @@ method handleMessage SmallRuntime msg {
 		showVersion this (returnedValue this msg)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
+		connectMSecs = nil // we've received a ping, to don't ask user to install the VM
 	} (op == (msgNameToID this 'broadcastMsg')) {
 //		print 'received broadcast:' (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
@@ -642,9 +696,9 @@ method returnedValue SmallRuntime msg {
 	} (4 == type) {
 		return (toArray (copyFromTo msg 7))
 	} (5 == type) {
-		// xxx Arrays are not yet handled
+		// xxx Arrays are not yet fully handled
 		intArraySize = (truncate (((byteCount msg) - 6) / 5))
-		return (join 'a list of ' intArraySize ' items')
+		return (join 'list of ' intArraySize ' items')
 	} else {
 		return (join 'unknown type: ' type)
 	}
@@ -665,6 +719,130 @@ method showOutputStrings SmallRuntime {
 			print out
 		}
 	}
+}
+
+// Virtual Machine Installer
+
+method installVM SmallRuntime {
+  if ('Browser' == (platform)) {
+	installVMInBrowser this
+	return
+  }
+  boards = (collectBoardDrives this)
+  if ((count boards) > 0) {
+	menu = (menu 'Select board:' this)
+	for b boards {
+		addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
+	}
+	popUpAtHand menu (global 'page')
+  } else {
+	inform 'No boards found; is your board plugged in?'
+  }
+}
+
+method niceBoardName SmallRuntime board {
+  name = (first board)
+  if (beginsWith name 'MICROBIT') {
+	return 'BBC micro:bit'
+  } (beginsWith name 'MINI') {
+	return 'Calliope mini'
+  } (beginsWith name 'CPLAYBOOT') {
+	return 'Circuit Playground Express'
+  }
+  return name
+}
+
+method collectBoardDrives SmallRuntime {
+  result = (list)
+  if ('Mac' == (platform)) {
+	for v (listDirectories '/Volumes') {
+	  path = (join '/Volumes/' v '/')
+	  if (beginsWith v 'MICROBIT') { add result (list v path) }
+	  if (beginsWith v 'MINI') { add result (list v path) }
+	  if (beginsWith v 'CPLAYBOOT') { add result (list v path) }
+	}
+  } ('Linux' == (platform)) {
+	for dir (listDirectories '/media') {
+	  prefix = (join '/media/' dir)
+	  for v (listDirectories prefix) {
+		path = (join prefix '/' v '/')
+		if (beginsWith v 'MICROBIT') { add result (list v path) }
+		if (beginsWith v 'MINI') { add result (list v path) }
+		if (beginsWith v 'CPLAYBOOT') { add result (list v path) }
+	  }
+	}
+  } ('Win' == (platform)) {
+	for letter (range 65 90) {
+	  drive = (join (string letter) ':')
+	  boardName = (getBoardName this drive)
+	  if (notNil boardName) { add result (list boardName drive) }
+	}
+  }
+  return result
+}
+
+method getBoardName SmallRuntime path {
+  for fn (listFiles path) {
+	if ('MICROBIT.HTM' == fn) { return 'MICROBIT' }
+	if ('MINI.HTM' == fn) { return 'MINI' }
+	if ('INFO_UF2.TXT' == fn) {
+	  contents = (readFile (join path fn))
+	  if (notNil (nextMatchIn 'CPlay Express' contents)) {
+		return 'CPLAYBOOT'
+	  }
+	}
+  }
+  return nil
+}
+
+method copyVMToBoard SmallRuntime boardName boardPath {
+  if (beginsWith boardName 'MICROBIT') {
+	vmFileName = 'vm.ino.BBCmicrobit.hex'
+  } (beginsWith boardName 'MINI') {
+	vmFileName = 'vm.ino.Calliope.hex'
+  } (beginsWith boardName 'CPLAYBOOT') {
+	vmFileName = 'vm.circuitplay.uf2'
+  }
+  if (notNil vmFileName) {
+	if ('Browser' == (platform)) {
+	  vmData = (readFile (join 'precompiled/' vmFileName) true)
+	} else {
+	  vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+	}
+  }
+  if (isNil vmData) {
+	error (join 'Could not read: ' (join 'precompiled/' vmFileName))
+  }
+  closePort (smallRuntime) // disconnect
+  writeFile (join boardPath vmFileName) vmData
+  print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
+  connectMSecs = nil // don't ask user to install the VM again
+  waitMSecs 8000
+  ensurePortOpen (smallRuntime)
+}
+
+method installVMInBrowser SmallRuntime {
+  menu = (menu 'Board type:' (action 'downloadVMFile' this) true)
+  addItem menu 'BBC micro:bit'
+  addItem menu 'Calliope mini'
+  addItem menu 'Circuit Playground Express'
+  popUpAtHand menu (global 'page')
+}
+
+method downloadVMFile SmallRuntime boardName {
+  if ('BBC micro:bit' == boardName) {
+	vmFileName = 'vm.ino.BBCmicrobit.hex'
+  } ('Calliope mini' == boardName) {
+	vmFileName = 'vm.ino.Calliope.hex'
+  } ('Circuit Playground Express' == boardName) {
+	vmFileName = 'vm.circuitplay.uf2'
+  }
+  vmData = (readFile (join 'precompiled/' vmFileName) true)
+  writeFile vmFileName vmData
+  inform (join 'To install MicroBlocks, drag "' vmFileName '" from your Downloads' (newline)
+  	'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
+  	'to copy the file, then the USB drive for your board will dismount.' (newline)
+  	'When it remounts, use the "Connect" button to connect to the board.')
 }
 
 // testing

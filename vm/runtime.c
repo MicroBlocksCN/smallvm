@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v030"
+#define VM_VERSION "v042"
 
 // Forward Reference Declarations
 
@@ -27,6 +27,62 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 #ifdef ARDUINO
 	char printfBuffer[100]; // used by printf macro in mem.h
 #endif
+
+// Named Primitive Support
+
+typedef struct {
+	char *setName;
+	int entryCount;
+	PrimEntry *entries;
+} PrimitiveSet;
+
+#define MAX_PRIM_SETS 5
+PrimitiveSet primSets[MAX_PRIM_SETS];
+int primSetCount = 0;
+
+void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries) {
+	if (primSetCount < MAX_PRIM_SETS) {
+		primSets[primSetCount].setName = setName;
+		primSets[primSetCount].entryCount = entryCount;
+		primSets[primSetCount].entries = entries;
+		primSetCount++;
+	}
+}
+
+OBJ callPrimitive(int argCount, OBJ *args) {
+	// Call a named primitive. The first two arguments are the primitive set name
+	// and the primitive name, followed by the arguments to the primitive itself.
+	//
+	// Note: The overhead of named primitives on BBC micro:bit is 43 to 150 usecs or more.
+	// In contrast, the overhead for a primitive built into the interpreter dispatch loop
+	// (with one argument) ia about 17 usecs. So, named primitives should not be used for
+	// operations that may need to be done really fast (e.g. toggling a pin in a loop)
+	// but are fine for slower operations (e.g. updating the micro:bit display).
+
+	if (argCount < 2) return fail(primitiveNotImplemented);
+	char *setName = IS_CLASS(args[0], StringClass) ? obj2str(args[0]) : "";
+	char *primName =  IS_CLASS(args[1], StringClass) ? obj2str(args[1]) : "";
+
+	for (int i = 0; i < primSetCount; i++) {
+		if (0 == strcmp(primSets[i].setName, setName)) {
+			PrimEntry *entries = primSets[i].entries;
+			int entryCount = primSets[i].entryCount;
+			for (int j = 0; j < entryCount; j++) {
+				if (0 == strcmp(entries[j].primName, primName)) {
+					return (entries[j].primFunc)(argCount - 2, args + 2); // call primitive
+				}
+			}
+		}
+	}
+	return fail(primitiveNotImplemented);
+}
+
+void primsInit() {
+	// Called at startup to call functions to add named primitive sets.
+
+	addIOPrims();
+	addNetPrims();
+}
 
 // Task Ops
 
@@ -102,13 +158,21 @@ void stopAllTasks() {
 
 static int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
 	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
-	code++; // skip "initLocals" instruction
-	if (pushLiteral != CMD(*code)) return false; // should not happen
-	char *hatArg = obj2str((OBJ) code + ARG(*code) + 1);
+	// First three instructions of a broadcast hat should be:
+	//	initLocals
+	//	pushLiteral
+	//	recvBroadcast
+	// A function with zero arguments can be also launched via a broadcast.
+	if ((initLocals != CMD(code[0])) ||
+		(pushLiteral != CMD(code[1])) ||
+		(recvBroadcast != CMD(code[2])))
+			return false;
 
-	if (strlen(hatArg) != byteCount) return false;
+	code++; // skip initLocals
+	char *s = obj2str((OBJ) code + ARG(*code) + 1);
+	if (strlen(s) != byteCount) return false;
 	for (int i = 0; i < byteCount; i++) {
-		if (hatArg[i] != msg[i]) return false;
+		if (s[i] != msg[i]) return false;
 	}
 	return true;
 }
@@ -117,7 +181,8 @@ void startReceiversOfBroadcast(char *msg, int byteCount) {
 	// Start tasks for chunks with hat blocks matching the given broadcast if not already running.
 
 	for (int i = 0; i < MAX_CHUNKS; i++) {
-		if ((broadcastHat == chunks[i].chunkType) && (broadcastMatches(i, msg, byteCount))) {
+		int chunkType = chunks[i].chunkType;
+		if (((broadcastHat == chunkType) || (functionHat == chunkType)) && (broadcastMatches(i, msg, byteCount))) {
 			startTaskForChunk(i); // only starts a new task if if chunk is not already running
 		}
 	}
@@ -170,10 +235,8 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 
 static void deleteAllChunks() {
 	stopAllTasks();
-  #if defined(ARDUINO_ESP8266_NODEMCU) || defined(GNUBLOCKS)
+  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	clearCodeFile();
-  #elif defined(ARDUINO_ARCH_ESP32)
-  clearNVS();
   #else
 	for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
 		appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
@@ -223,7 +286,7 @@ static int outBufEnd = 0;
 
 static inline void sendNextByte() {
 	if (outBufStart != outBufEnd) {
-		if (1 == sendByte(outBuf[outBufStart])) {
+		if (sendByte(outBuf[outBufStart])) {
 			outBufStart = (outBufStart + 1) & OUTBUF_MASK;
 		}
 	}
@@ -341,7 +404,7 @@ void outputString(char *s) {
 	sendMessage(outputValueMsg, 255, (byteCount + 1), data);
 }
 
-void outputValue(OBJ value, int chunkIndex) {
+void outputValue(OBJ value, uint8 chunkIndex) {
 	sendValueMessage(outputValueMsg, chunkIndex, value);
 }
 
@@ -413,6 +476,11 @@ void sendBroadcastToIDE(char *s, int len) {
 	sendMessage(broadcastMsg, 0, len, s);
 }
 
+void sendSayForChunk(char *s, int len, uint8 chunkIndex) {
+	// Used by the "say" primitive. The buffer s includes the string value type byte.
+	sendMessage(outputValueMsg, chunkIndex, len, s);
+}
+
 // Retrieving source code and attributes
 
 static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
@@ -478,7 +546,9 @@ static void sendAllCode() {
 	}
 }
 
-static int * varNameRecordFor(int varID) {
+// Variable support
+
+int * varNameRecordFor(int varID) {
 	int *result = NULL;
 	int *p = recordAfter(NULL);
 	while (p) {
@@ -518,9 +588,23 @@ static void sendVarNames() {
 	}
 }
 
+int indexOfVarNamed(char *varName) {
+	// Return the index of the given variable or -1 if not found.
+
+	for (int i = 0; i < MAX_VARS; i++) {
+		int *rec = varNameRecordFor(i);
+		if (rec) {
+			char *thisVarName = (char *) (rec + 2);
+			if (0 == strcmp(varName, thisVarName)) return i;
+		}
+	}
+	return -1; // not found
+}
+
 // Receiving Messages from IDE
 
 #define RCVBUF_SIZE 1024
+#define MAX_MSG_SIZE (RCVBUF_SIZE - 10) // 5 header + 1 terminator bytes plus a few extra
 static uint8 rcvBuf[RCVBUF_SIZE];
 static int rcvByteCount = 0;
 static uint32 lastRcvTime = 0;
@@ -617,6 +701,10 @@ static void processShortMessage() {
 
 static void processLongMessage() {
 	int msgLength = (rcvBuf[4] << 8) | rcvBuf[3];
+	if ((rcvByteCount >= 5) && (msgLength > MAX_MSG_SIZE)) { // message too large for buffer
+		skipToStartByteAfter(1);
+		return;
+	}
 	if ((rcvByteCount < 5) || (rcvByteCount < (5 + msgLength))) { // message is not complete
 		if (receiveTimeout()) {
 			skipToStartByteAfter(1);
@@ -668,6 +756,7 @@ void processMessage() {
 	sendNextByte();
 
 	int bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+
 	rcvByteCount += bytesRead;
 	if (!rcvByteCount) return;
 

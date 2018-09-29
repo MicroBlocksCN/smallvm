@@ -36,21 +36,21 @@ method dumpTranslationTemplate SmallCompiler {
 method microBlocksSpecs SmallCompiler {
 	return (array
 	'Output'
+		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
+		(array ' ' 'sayIt'				'say _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 123 '' '')
 		(array ' ' 'mbDisplay'			'display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _' 'bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool')
 		(array ' ' 'mbDisplayOff'		'clear display')
 		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
 		(array ' ' 'mbUnplot'			'unplot x _ y _' 'num num' 3 3)
-		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
-		(array ' ' 'sayIt'				'say _' 'auto' 123)
 	'Input'
 		(array 'r' 'buttonA'			'button A')
 		(array 'r' 'buttonB'			'button B')
+		(array 'r' 'millisOp'			'milliseconds')
+		(array 'r' 'microsOp'			'microseconds')
 		(array 'r' 'mbTiltX'			'tilt x')
 		(array 'r' 'mbTiltY'			'tilt y')
 		(array 'r' 'mbTiltZ'			'tilt z')
-		(array 'r' 'mbTemp'				'temperature Celcius')
-		(array 'r' 'microsOp'			'micros')
-		(array 'r' 'millisOp'			'millis')
+		(array 'r' 'mbTemp'				'temperature (°C)')
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
@@ -63,18 +63,18 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
-		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
- 		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
+		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
+		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
- 		(array ' ' 'comment'			'comment _' 'str' 'Use this block to comment your code.')
+		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
+		(array ' ' 'sendBroadcastSimple'	'broadcast _' 'str' 'go!' '')
+ 		(array ' ' 'return'				'return _' 'auto' 0)
+ 		(array ' ' 'comment'			'comment _' 'str' 'Comment your code :-)')
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
-		(array 'h' 'whenBroadcastReceived' 'when _ received' 'str' 'go!')
-		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop all')
- 		(array ' ' 'return'				'return _' 'auto' 0)
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
@@ -82,17 +82,17 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '/'					'_ / _' 'num num' 10 2)
 		(array 'r' '%'					'_ mod _' 'num num' 10 2)
 		(array 'r' 'absoluteValue'		'abs _ ' 'num' -10)
-		(array 'r' 'random'				'random _' 'num' 10)
+		(array 'r' 'random'				'random _ to _' 'num num' 1 10)
 		(array 'r' '<'					'_ < _' 'num num' 3 4)
 		(array 'r' '<='					'_ <= _' 'num num' 3 4)
-		(array 'r' '=='					'_ = _' 'num num' 3 4)
-		(array 'r' '!='					'_ ≠ _' 'num num' 3 4)
+		(array 'r' '=='					'_ = _' 'auto auto' 3 4)
+		(array 'r' '!='					'_ ≠ _' 'auto auto' 3 4)
 		(array 'r' '>='					'_ >= _' 'num num' 3 4)
 		(array 'r' '>'					'_ > _' 'num num' 3 4)
 		(array 'r' 'booleanConstant'	'_' 'bool' true)
 		(array 'r' 'not'				'not _' 'bool' true)
-		(array 'r' 'and'				'_ and _ : and _ : ...' 'bool bool bool' true false)
-		(array 'r' 'or'					'_ or _ : or _ : ...' 'bool bool bool' true false)
+		(array 'r' 'and'				'_ and _' 'bool bool' true false)
+		(array 'r' 'or'					'_ or _ ' 'bool bool' true false)
 	'Variables'
 		(array 'r' 'v'					'_' 'menu.allVarsMenu' 'n')
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
@@ -101,10 +101,10 @@ method microBlocksSpecs SmallCompiler {
 	'Lists'
 		(array 'r' 'newArray'			'new list length _' 'num' 10)
 //		(array 'r' 'newByteArray'		'new byte list _' 'num' 10)
-		(array ' ' 'fillArray'			'fill list _ with _' 'auto auto' nil 0)
-		(array 'r' 'at'					'item _ of _' 'num auto' 1 nil)
-		(array ' ' 'atPut'				'replace item _ of _ with _' 'num auto auto' 1 nil 10)
-		(array 'r' 'size'				'length of _' 'auto' nil)
+		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
+		(array ' ' 'atPut'				'replace item _ of _ with _' 'num str auto' 1 nil 10)
+		(array 'r' 'at'					'item _ of _' 'num str' 1 nil)
+		(array 'r' 'size'				'length of _' 'str' nil)
 	'Advanced'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
 		(array 'r' '|'					'_ | _' 'num num' 1 2)
@@ -113,10 +113,19 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '<<'					'_ << _' 'num num' 3 2)
 		(array 'r' '>>'					'_ >> _' 'num num' -100 2)
 
-		(array ' ' 'neoPixelSend'		'neo pixel send r _ g _ b _' 'num num num' 2 0 5)
+		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
+
+		(array ' ' 'mbDrawShape'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
+		(array 'r' 'mbShapeForLetter'	'shape for letter _' 'str' 'A')
+
+		(array ' ' 'neoPixelSetPin'		'set NeoPixel pin _ is RGBW _' 'num bool' 0 false)
+		(array ' ' 'neoPixelSend'		'send NeoPixel rgb _' 'num' 5)
 
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
+
+		(array 'r' '[io:setServo]'		'set servo pin _ to _ msecs' 'num num' 0 1500)
+		(array 'r' '[io:playTone]'		'play tone pin _ frequency _' 'num num' 0 440)
 
 		(array ' ' 'spiSend'			'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'			'spi receive')
@@ -126,6 +135,22 @@ method microBlocksSpecs SmallCompiler {
 
 		(array ' ' 'noop'				'no op')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
+
+		(array ' ' 'wifiConnect'		'connect to WiFi _ with password _' 'str str' 'SSID' 'MyPassword')
+		(array 'r' 'getIP'		        'my IP address')
+		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
+                                                            'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
+
+		(array ' ' '[net:startWiFi]'				'start WiFi _ password _ : be hotspot _' 'str str bool' 'SSID' 'MyPassword' true)
+		(array 'r' '[net:isWiFiConnected]'			'connected to WiFi?')
+		(array 'r' '[net:myIPAddress]'				'my IP address')
+
+		(array 'r' '[net:thingDescription]'			'thing description')
+		(array ' ' '[net:clearThingDescription]'	'clear thing description')
+		(array ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
+
+	'Disabled'
+ 		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
 
 		// While these are useful, they can easily crash the VM (e.g. by addressing non-existent memory).
 		// Consider a more constrained version -- e.g blocks to access only the peripheral control
@@ -137,7 +162,7 @@ method microBlocksSpecs SmallCompiler {
 
 method initMicroBlocksSpecs SmallCompiler {
 	authoringSpecs = (authoringSpecs)
-	if (isEmpty (specsFor authoringSpecs 'I/O')) {
+	if (isEmpty (specsFor authoringSpecs 'Output')) {
 		clear authoringSpecs
 		addSpecs authoringSpecs (microBlocksSpecs this)
 	}
@@ -256,6 +281,25 @@ method initOpcodes SmallCompiler {
 #define mbTiltZ 106
 #define mbTemp 107
 #define neoPixelSend 108
+#define mbDrawShape 109
+#define mbShapeForLetter 110
+#define neoPixelSetPin 111
+#define wifiConnect 112
+#define getIP 113
+#define makeWebThing 114
+// reserved 115
+// reserved 116
+// reserved 117
+// reserved 118
+// reserved 119
+// reserved 120
+// reserved 121
+// reserved 122
+// reserved 123
+// reserved 124
+// reserved 125
+#define callCommandPrimitive 126
+#define callReporterPrimitive 127
 '
 	opcodes = (dictionary)
 	for line (lines defsFromHeaderFile) {
@@ -309,6 +353,10 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			add result (array 'halt' 0)
 		} (isClass aBlockOrFunction 'Function') {
 			if (or ('noop' != (primName cmdOrReporter)) (notNil (nextBlock cmdOrReporter))) {
+				if (isEmpty (argNames func)) {
+					add result (array 'pushLiteral' (functionName func))
+					add result (array 'recvBroadcast' 1)
+				}
 				addAll result (instructionsForCmdList this cmdOrReporter)
 			}
 			add result (array 'pushImmediate' falseObj)
@@ -387,6 +435,8 @@ method instructionsForCmd SmallCompiler cmd {
 		return (instructionsForForever this args)
 	} ('if' == op) {
 		return (instructionsForIf this args)
+	} ('ifElse' == op) {
+		return (instructionsForIfElse this (toList args))
 	} ('repeat' == op) {
 		return (instructionsForRepeat this args)
 	} ('repeatUntil' == op) {
@@ -403,6 +453,8 @@ method instructionsForCmd SmallCompiler cmd {
 			add result (array 'digitalClear' pinNum)
 		}
 		return result
+	} ('sendBroadcastSimple' == op) {
+		return (primitive this 'sendBroadcast' args true)
 	} ('comment' == op) {
 		// comments do not generate any code
 	} ('ignoreArgs' == op) {
@@ -446,6 +498,12 @@ method instructionsForIf SmallCompiler args {
 		atPut jumpInstruction 2 (instructionCount - ((at jumpInstruction 2) + 1)) // fix jump offset
 	}
 	return result
+}
+
+method instructionsForIfElse SmallCompiler args {
+	if ((count args) != 3) { error 'compiler error: expected three arguments to ifElse' }
+	addAt args 3 true // insert true before 'else' case
+	return (instructionsForIf this args)
 }
 
 method instructionsForForever SmallCompiler args {
@@ -522,6 +580,8 @@ method instructionsForExpression SmallCompiler expr {
 		return (list (array 'pushLiteral' expr))
 	} (isClass expr 'Float') {
 		error 'Floats are not yet supported'
+	} (isClass expr 'Color') {
+		return (instructionsForExpression this (scaledRGB this expr))
 	}
 
 	// expressions
@@ -535,6 +595,9 @@ method instructionsForExpression SmallCompiler expr {
 		} else {
 			return (list (array 'pushImmediate' falseObj))
 		}
+	} ('colorSwatch' == op) {
+		c = (color (at args 1) (at args 2) (at args 3))
+		return (instructionsForExpression this (scaledRGB this c))
 	} ('and' == op) {
 		return (instructionsForAnd this args)
 	} ('or' == op) {
@@ -544,6 +607,13 @@ method instructionsForExpression SmallCompiler expr {
 	} else {
 		return (primitive this op args false)
 	}
+}
+
+method scaledRGB SmallCompiler aColor {
+	brightness = (((raise 2 (5 * (brightness aColor))) - 1) / 31) // range: 0-1
+	saturation = (2 * (saturation aColor)) // increase saturation
+	color = (colorHSV (hue aColor) saturation (0.125 * brightness)) // RGB components all 0-31
+	return (pixelRGB color)
 }
 
 method instructionsForAnd SmallCompiler args {
@@ -611,6 +681,23 @@ method primitive SmallCompiler op args isCommand {
 			addAll result (instructionsForExpression this arg)
 		}
 		add result (array op (count args))
+	} (and (beginsWith op '[') (endsWith op ']')) {
+		// named primitives of the form '[primSetName:primName]'
+		i = (findFirst op ':')
+		if (notNil i) {
+			primSetName = (substring op 2 (i - 1))
+			primName = (substring op (i + 1) ((count op) - 1))
+			add result (array 'pushLiteral' primSetName)
+			add result (array 'pushLiteral' primName)
+			for arg args {
+				addAll result (instructionsForExpression this arg)
+			}
+			if isCommand {
+				add result (array 'callCommandPrimitive' ((count args) + 2))
+			} else {
+				add result (array 'callReporterPrimitive' ((count args) + 2))
+			}
+		}
 	} else {
 		print 'Skipping unknown op:' op
 	}

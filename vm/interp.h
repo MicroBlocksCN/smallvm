@@ -122,6 +122,25 @@ extern "C" {
 #define mbTiltZ 106
 #define mbTemp 107
 #define neoPixelSend 108
+#define mbDrawShape 109
+#define mbShapeForLetter 110
+#define neoPixelSetPin 111
+#define wifiConnect 112
+#define getIP 113
+#define makeWebThing 114
+// reserved 115
+// reserved 116
+// reserved 117
+// reserved 118
+// reserved 119
+// reserved 120
+// reserved 121
+// reserved 122
+// reserved 123
+// reserved 124
+// reserved 125
+#define callCommandPrimitive 126
+#define callReporterPrimitive 127
 
 // Instruction Format
 
@@ -253,22 +272,27 @@ extern int taskCount;
 #define badChunkIndexError		2	// Unknown chunk index
 
 #define insufficientMemoryError	10	// Insufficient memory to allocate object
-#define needsArrayError			11	// Needs an Array or ByteArray
+#define needsArrayError			11	// Needs a list
 #define needsBooleanError		12	// Needs a boolean
 #define needsIntegerError		13	// Needs an integer
 #define needsStringError		14	// Needs a string
 #define nonComparableError		15	// Those objects cannot be compared for equality
-#define arraySizeError			16	// Array size must be a non-negative integer
-#define needsIntegerIndexError	17	// Array index must be an integer
-#define indexOutOfRangeError	18	// Array index out of range
+#define arraySizeError			16	// List size must be a non-negative integer
+#define needsIntegerIndexError	17	// List index must be an integer
+#define indexOutOfRangeError	18	// List index out of range
 #define byteArrayStoreError		19 	// A ByteArray can only store integer values between 0 and 255
 #define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
 #define i2cValueOutOfRange		23	// I2C value must be between 0 and 255
 #define notInFunction			24	// Attempt to access an argument outside of a function
-#define badForLoopArg			25	// for-loop argument must be a positive integer, array, or bytearray
+#define badForLoopArg			25	// for-loop argument must be a positive integer or list
 #define stackOverflow			26	// Insufficient stack space
+#define primitiveNotImplemented	27	// Primitive not implemented in this virtual machine
+#define notEnoughArguments		28	// Not enough arguments passed to primitive
+#define noWiFi					29	// This board does not support WiFi
+#define wifiNetworkNotFound		30	// Unknown WiFi network; bad SSID?
+#define couldNotJoinWifiNetwork	31	// Attempt to join WiFi network failed; bad password?
 
 // Runtime Operations
 
@@ -280,13 +304,15 @@ void startReceiversOfBroadcast(char *msg, int byteCount);
 void processMessage(void);
 int hasOutputSpace(int byteCount);
 void outputString(char *s);
-void outputValue(OBJ value, int chunkIndex);
+void outputValue(OBJ value, uint8 chunkIndex);
 void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendBroadcastToIDE(char *s, int len);
+void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void vmPanic(char *s);
+int indexOfVarNamed(char *varName);
 
 // Integer Evaluation
 
@@ -322,7 +348,6 @@ void taskTest(void);
 uint32 microsecs(void);
 uint32 millisecs(void);
 
-int canReadByte(void);
 int readBytes(uint8 *buf, int count);
 int sendByte(char aByte);
 
@@ -333,8 +358,9 @@ void systemReset(void);
 // I/O Support
 
 void setPinMode(int pin, int newMode);
-void sendNeoPixelByte(int val);
 void updateMicrobitDisplay();
+void resetServos();
+void stopTone();
 
 // Primitives
 
@@ -369,11 +395,39 @@ void primMBDisplay(OBJ *args);
 void primMBDisplayOff(OBJ *args);
 void primMBPlot(OBJ *args);
 void primMBUnplot(OBJ *args);
+
+void primMBDrawShape(int argCount, OBJ *args);
+OBJ primMBShapeForLetter(OBJ *args);
+
 OBJ primMBTiltX(OBJ *args);
 OBJ primMBTiltY(OBJ *args);
 OBJ primMBTiltZ(OBJ *args);
 OBJ primMBTemp(OBJ *args);
+
 void primNeoPixelSend(OBJ *args);
+void primNeoPixelSetPin(int argCount, OBJ *args);
+
+void primWifiConnect(OBJ *args);
+void webServerLoop();
+int wifiStatus();
+OBJ primGetIP(int argCount, OBJ *args);
+OBJ primMakeWebThing(int argCount, OBJ *args);
+
+// Primitive Sets
+
+typedef OBJ (*PrimitiveFunction)(int argCount, OBJ *args);
+
+typedef struct {
+	char *primName;
+	PrimitiveFunction primFunc;
+} PrimEntry;
+
+void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries);
+OBJ callPrimitive(int argCount, OBJ *args);
+void primsInit();
+
+void addIOPrims();
+void addNetPrims();
 
 #ifdef __cplusplus
 }

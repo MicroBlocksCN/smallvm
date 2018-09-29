@@ -14,7 +14,7 @@ if ls build 2> /dev/null > /dev/null; then
 fi
 
 echo "Building binaries..."
-pkg .
+pkg . --debug > /tmp/pkg.log
 
 echo "Packaging binaries for all three OSes..."
 mkdir -p build/linux
@@ -27,7 +27,7 @@ mv ublocks-win.exe build/win
 echo "Copying additional files..."
 cp -r icons build/linux
 cp -r icons build/macos
-cp -r win-extras/icons build/win
+cp -r win32-extras/icons build/win
 
 echo "Downloading serialport pre-built binaries..."
 curl -OL https://github.com/node-serialport/node-serialport/releases/download/v6.0.4/serialport-v6.0.4-node-v57-linux-x64.tar.gz

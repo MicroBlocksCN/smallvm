@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=MicroBlocks
+Comment=MicroBlocks is a graphical and dynamic blocks language for 32 bit microcontroller boards such as the BBC micro:bit, the Adafruit Circuit Playground Express, the NodeMCU and many Arduinos.
+Exec=/usr/local/bin/ublocks
+Icon=/usr/share/icons/MicroBlocks.png
+Type=Application
+Categories=Development;

@@ -1,0 +1,3 @@
+?package(ublocks):needs="X11" section="Applications/Programming" \
+  title="MicroBlocks" command="/usr/local/bin/ublocks" \
+  icon="/usr/share/icons/MicroBlocks.png"

@@ -4,7 +4,7 @@
 
 // Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// sensorPrims.cpp - Microblocks I2C, SPI, accelerometer, and temperature sensor primitives
+// sensorPrims.cpp - Microblocks I2C, SPI, tilt, and temperature primitives
 // John Maloney, May 2018
 
 #include <Arduino.h>
@@ -32,7 +32,13 @@ OBJ primI2cGet(OBJ *args) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(registerID);
+	// xxx Should this releasing the i2c bus (on ESP32) when we're about to request data?
+	// Need to revisit how i2c works...
+#ifdef ARDUINO_ARCH_ESP32
+	int error = Wire.endTransmission();
+#else
 	int error = Wire.endTransmission(false);
+#endif
 	if (error) return int2obj(0 - error); // error; bad device ID?
 
 	Wire.requestFrom(deviceID, 1);
@@ -80,17 +86,13 @@ OBJ primSPIRecv(OBJ *args) {
 	return int2obj(result);
 }
 
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT)
 
-	#if defined(ARDUINO_BBC_MICROBIT)
-		#define ACCEL_ID 29
-		#define MAG_ID 14
-	#endif
+#define ACCEL_ID 29
 
 static int accelerometerOn = false;
-static int magnetometerOn = false;
 
-static int microbitAccel(int registerID) {
+static int readAcceleration(int registerID) {
 	if (!accelerometerOn) {
 		// turn on the accelerometer
 		if (!wireStarted) startWire();
@@ -109,136 +111,124 @@ static int microbitAccel(int registerID) {
 	Wire.requestFrom(ACCEL_ID, 1);
 	while (!Wire.available());
 	int val = Wire.read();
-	return (val < 128) ? val : -(256 - val); // value is a signed byte
+
+	val = (val < 128) ? val : -(256 - val); // value is a signed byte
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = -((val * 100) / 127); // invert sign and scale to range 0-100
+	return val;
 }
 
-static int microbitTemp(int registerID) {
-	// Get the temp from magnetometer chip (faster response than CPU temp sensor)
+static int readTemperature() {
+	volatile int *startReg = (int *) 0x4000C000;
+	volatile int *readyReg = (int *) 0x4000C100;
+	volatile int *tempReg = (int *) 0x4000C508;
 
-	if (!magnetometerOn) {
-		// configure and turn on magnetometer
-		if (!wireStarted) startWire();
-		Wire.beginTransmission(MAG_ID);
-		Wire.write(0x10);
-		Wire.write(0x29); // 20 Hz with 16x oversample (see spec sheet)
-		Wire.endTransmission();
-		magnetometerOn = true;
-	}
-
-	// read a byte from register 1 to force an update
-	Wire.beginTransmission(MAG_ID);
-	Wire.write(1); // register 1
-	int error = Wire.endTransmission(false);
-	if (error) return 0;
-	Wire.requestFrom(MAG_ID, 1);
-	while (!Wire.available());
-	Wire.read();
-
-	// read temp from register 15
-	Wire.beginTransmission(MAG_ID);
-	Wire.write(15); // register 15
-	error = Wire.endTransmission(false);
-	if (error) return 0;
-	Wire.requestFrom(MAG_ID, 1);
-	while (!Wire.available());
-	int degrees = Wire.read();
-	degrees = (degrees < 128) ? degrees : -(256 - degrees); // temp is a signed byte
-
-	int adjustment = 5; // based on John's micro:bit, Jan 2018
-	return degrees + adjustment;
+	*startReg = 1;
+	while (!(*readyReg)) { /* busy wait */ }
+	return (*tempReg / 4) - 6; // callibrated at 26 degrees C using average of 3 micro:bits
 }
 
-static int microbitMag(int registerID) {
+#elif defined(ARDUINO_CALLIOPE)
 
-	if (!magnetometerOn) {
-		// configure and turn on magnetometer
-		if (!wireStarted) startWire();
-		Wire.beginTransmission(MAG_ID);
-		Wire.write(0x10);
-		Wire.write(0x29); // 20 Hz with 16x oversample (see spec sheet)
-		Wire.endTransmission();
-		magnetometerOn = true;
-	}
+static int readAcceleration(int registerID) {
+	// adjust register offsets for Calliope
+	int reg = registerID;
+	if (1 == registerID) reg = 5; // x-axis
+	else if (3 == registerID) reg = 3; // y-axis
+	else if (5 == registerID) reg = 7; // z axis
 
-	Wire.beginTransmission(MAG_ID);
-	Wire.write(1); // read from register 1
+	if (!wireStarted) startWire();
+
+	Wire.beginTransmission(ACCEL_ID);
+	Wire.write(reg);
 	int error = Wire.endTransmission(false);
-	if (error) {
-		Serial.print("Error: "); Serial.println(error);
-	}
+	if (error) return 0; // error; return 0
 
-	// always read x, y, and z at 16-bit resolution
-	// even when reading temp, this is needed to force an update
-	Wire.requestFrom(MAG_ID, 6);
-	while (Wire.available() < 6);
-	int x = Wire.read() << 8;
-	x |= Wire.read();
-	if (x > 32767) x += -65536;
-	int y = Wire.read() << 8;
-	y |= Wire.read();
-	if (y > 32767) y += -65536;
-	int z = Wire.read() << 8;
-	z |= Wire.read();
-	if (z > 32767) z += -65536;
+	Wire.requestFrom(ACCEL_ID, 1);
+	while (!Wire.available());
+	int val = Wire.read();
 
-	if (1 == registerID) return x;
-	if (3 == registerID) return y;
-	if (5 == registerID) return z;
-	if (15 == registerID) { // read temperature
-		Wire.beginTransmission(MAG_ID);
-		Wire.write(15);
-		int error = Wire.endTransmission(false);
-		if (error) return 0; // error; return 0
+	val = (val < 128) ? val : -(256 - val); // value is a signed byte
+	if (8 == registerID) return val; // temperature sensor
 
-		Wire.requestFrom(MAG_ID, 1);
-		while (!Wire.available());
-		int val = Wire.read();
-		return (val < 128) ? val : -(256 - val); // temp is a signed byte
-	}
-	return 0;
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = -((val * 100) / 127); // invert sign and scale to range 0-100
+	if (5 == registerID) val = -val; // invert z-axis
+	return val;
+}
+
+static int readTemperature() {
+	int fudgeFactor = 2;
+	return (readAcceleration(8) / 2) + 23 - fudgeFactor;
 }
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 
-#define ACCEL_ID 33
+#define ACCEL_ID 25
 
 int accelStarted = false;
 
-static int circuitPlayAccel(int registerID) {
-	// xxx not yet finished
+static int readAcceleration(int registerID) {
 	if (!accelStarted) {
 		Wire1.begin(); // use internal I2C bus
 		// turn on the accelerometer
 		if (!wireStarted) startWire();
 		Wire1.beginTransmission(ACCEL_ID);
-		Wire1.write(0x2A);
-		Wire1.write(1);
+		Wire1.write(32);
+		Wire1.write(127);
 		Wire1.endTransmission();
 		accelStarted = true;
 	}
-
 	Wire1.beginTransmission(ACCEL_ID);
-	Wire1.write(registerID);
+	Wire1.write(40 + registerID);
 	int error = Wire1.endTransmission(false);
 	if (error) return 0; // error; return 0
 
 	Wire1.requestFrom(ACCEL_ID, 1);
 	while (!Wire1.available());
 	int val = Wire1.read();
-	return (val < 128) ? val : -(256 - val); // value is a signed byte
+
+	val = (val < 128) ? val : -(256 - val); // value is a signed byte
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = ((val * 100) / 127); // scale to range 0-100
+	if (1 == registerID) val = -val; // invert sign for x axis
+	return val;
 }
 
-static int microbitAccel(int reg) { return 0; }
-static int microbitTemp(int registerID) { return 0; }
+static int readTemperature() {
+	// Return the temperature in Celcius
+
+	setPinMode(A9, INPUT);
+	int adc = analogRead(A9);
+
+	return ((int) (0.116 * adc)) - 37; // linear approximation
+
+	// The following unused code does not seem as accurate as the linear approximation
+	// above (based on comparing the thermistor to a household digital thermometer).
+	// See https://learn.adafruit.com/thermistor/using-a-thermistor
+	// The following constants come from the NCP15XH103F03RC thermister data sheet:
+	#define SERIES_RESISTOR 10000
+	#define RESISTANCE_AT_25C 10000
+	#define B_CONSTANT 3380
+
+	if (adc < 1) adc = 1; // avoid divide by zero (although adc should never be zero)
+	float r = ((1023 * SERIES_RESISTOR) / adc) - SERIES_RESISTOR;
+
+	float steinhart = log(r / RESISTANCE_AT_25C) / B_CONSTANT;
+	steinhart += 1.0 / (25 + 273.15); // add 1/T0 (T0 is 25C in Kelvin)
+	float result = (1.0 / steinhart) - 273.15; // steinhart is 1/T; invert and convert to C
+
+	return (int) round(result);
+}
 
 #else // stubs for non-micro:bit boards
 
-static int microbitAccel(int reg) { return 0; }
-static int microbitTemp(int registerID) { return 0; }
+static int readAcceleration(int reg) { return 0; }
+static int readTemperature() { return 0; }
 
 #endif // micro:bit primitve support
 
-OBJ primMBTiltX(OBJ *args) { return int2obj(microbitAccel(1)); }
-OBJ primMBTiltY(OBJ *args) { return int2obj(microbitAccel(3)); }
-OBJ primMBTiltZ(OBJ *args) { return int2obj(-microbitAccel(5)); } // invert sign of Z
-OBJ primMBTemp(OBJ *args) { return int2obj(microbitTemp(15)); }
+OBJ primMBTiltX(OBJ *args) { return int2obj(readAcceleration(1)); }
+OBJ primMBTiltY(OBJ *args) { return int2obj(readAcceleration(3)); }
+OBJ primMBTiltZ(OBJ *args) { return int2obj(readAcceleration(5)); }
+OBJ primMBTemp(OBJ *args) { return int2obj(readTemperature()); }

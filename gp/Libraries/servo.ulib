@@ -1,0 +1,44 @@
+sharedVariables '_servo_0_usecs' '_servo_1_usecs' '_servo_2_usecs'
+
+spec ' ' 'runServoLoop' 'run servo loop (pins 0-2)'
+spec ' ' 'setServo' 'set servo _ to _ (-100 to 100)' 'num num' 0 100
+spec ' ' '_servo_pulse' '_servo_pulse _ usecs _' 'num num' 0 1500
+
+to runServoLoop {
+  '_servo_0_usecs' = 1500
+  '_servo_1_usecs' = 1500
+  '_servo_2_usecs' = 1500
+  forever {
+	'_servo_pulse' 0 _servo_0_usecs
+	'_servo_pulse' 1 _servo_1_usecs
+	'_servo_pulse' 2 _servo_2_usecs
+    waitMillis 15
+  }
+}
+
+to '_servo_pulse' pin usecs {
+  if (usecs < 850) {
+    usecs = 850
+  } (usecs > 2150) {
+    usecs = 2150
+  }
+  digitalWriteOp pin true
+  comment 'Split wait into a long wait followed by a wait of <= 30 usecs for greater accuracy'
+  local endTime ((microsOp) + usecs)
+  waitMicros (usecs - 30)
+  waitMicros (endTime - (microsOp))
+  digitalWriteOp pin false
+}
+
+to setServo servo speedOrAngle {
+  comment 'Range is -100 to 100 with 0 being "center" or "off".'
+  local usecs (1500 - (7 * speedOrAngle))
+  if (0 == servo) {
+    _servo_0_usecs = usecs
+  } (1 == servo) {
+    _servo_1_usecs = usecs
+  } (2 == servo) {
+    _servo_2_usecs = usecs
+  }
+}
+

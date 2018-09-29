@@ -62,30 +62,32 @@ static void printObj(OBJ obj) {
 	else if (obj == trueObj) snprintf(dst, n, "true");
 	else if (objClass(obj) == StringClass) {
 		snprintf(dst, n, "%s", obj2str(obj));
+	} else if (objClass(obj) == ArrayClass) {
+		snprintf(dst, n, "list of %d items", objWords(obj));
 	} else {
-		snprintf(dst, n, "OBJ(addr: %d, class: %d)", (int) obj, objClass(obj));
+		snprintf(dst, n, "object of class: %d", objClass(obj));
 	}
 	printBufferByteCount = strlen(printBuffer);
 }
 
-static void primPrint(int argCount, OBJ *args) {
-	// This is a variadic "print" for the GP IDE.
+static void printArgs(int argCount, OBJ *args, int forSay, int insertSpaces) {
+	// Print all args into printBuffer ad return the size of the resulting string.
 
-	printBuffer[0] = 0; // null terminate
-	printBufferByteCount = 0;
+	if (forSay) {
+		printBuffer[0] = 2; // type is string (printBuffer is used as outputValue message body)
+		printBufferByteCount = 1;
+	} else {
+		printBufferByteCount = 0;
+	}
+	printBuffer[printBufferByteCount] = 0; // null terminate
 
 	for (int i = 0; i < argCount; i++) {
 		printObj(args[i]);
-		if (i < (argCount - 1)) {
+		if (insertSpaces && (i < (argCount - 1)) && (printBufferByteCount < PRINT_BUF_SIZE)) {
 			printBuffer[printBufferByteCount++] = ' '; // add a space
 			printBuffer[printBufferByteCount] = 0; // null terminate
 		}
 	}
-#if USE_TASKS
-	outputString(printBuffer);
-#else
-	printf("(NO TASKS) %s\r\n", printBuffer);
-#endif
 }
 
 static int bytesForObject(OBJ value) {
@@ -99,33 +101,48 @@ static int bytesForObject(OBJ value) {
 	} else if ((value == trueObj) || (value == falseObj)) { // boolean
 		return headerBytes + 1;
 	}
-	return 0; // arrays and byte arrays are not yet serializeable
+	return 512; // maximum that might be needed, based on size of buffer in sendValueMessage
 }
+
 
 // Broadcast
 
 static void primSendBroadcast(int argCount, OBJ *args) {
 	// Variadic broadcast; all args are concatenated into printBuffer.
 
-	if (!IS_CLASS(args[0], StringClass)) {
-		fail(needsStringError);
-		return;
-	}
-
-	printBuffer[0] = 0; // null terminate
-	printBufferByteCount = 0;
-
-	for (int i = 0; i < argCount; i++) {
-		printObj(args[i]);
-	}
-	if (printBufferByteCount && (' ' == printBuffer[printBufferByteCount - 1])) {
-		// Remove final space character
-		printBuffer[printBufferByteCount - 1] = 0; // null terminate
-		printBufferByteCount--;
-	}
-
+	printArgs(argCount, args, false, false);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
+}
+
+// Misc primitives
+
+static OBJ primRandom(int argCount, OBJ *args) {
+	int base, range;
+	if (argCount == 1) {
+		base = 1;
+		range = evalInt(args[0]);
+	} else {
+		base = evalInt(args[0]);
+		range = (evalInt(args[1]) + 1) - base;
+	}
+	if (range < 1) range = 1;
+	return int2obj((rand() % range) + base); // result range is [base..base+range], inclusive
+}
+
+static int stringsEqual(OBJ obj1, OBJ obj2) {
+	// Return true if the given strings have the same length and contents.
+	// Assume s1 and s2 are of Strings.
+
+	int byteCount = 4 * objWords(obj1);
+	if (byteCount != (4 * objWords(obj2))) return false; // different lengths
+	char *s1 = (char *) &FIELD(obj1, 0);
+	char *s2 = (char *) &FIELD(obj2, 0);
+	char *end = s1 + byteCount;
+	while (s1 < end) {
+		if (*s1++ != *s2++) return false; // not equal
+	}
+	return true;
 }
 
 // Interpreter
@@ -273,6 +290,12 @@ static void runTask(Task *task) {
 		&&mbTiltZ_op,
 		&&mbTemp_op,
 		&&neoPixelSend_op,
+		&&drawShape_op,
+		&&shapeForLetter_op,
+		&&neoPixelSetPin_op,
+		&&wifiConnect_op,
+		&&getIP_op,
+		&&makeWebThing_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -284,14 +307,8 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&callCommandPrimitive_op,
+		&&callReporterPrimitive_op,
 	};
 
 	// Restore task state
@@ -443,7 +460,7 @@ static void runTask(Task *task) {
 	returnResult_op:
 		tmpObj = *(sp - 1); // return value
 		if (fp == task->stack) { // not in a function call
-			if (!hasOutputSpace(bytesForObject(*(sp - 1)) + 100)) { // leave room for other messages
+			if (!hasOutputSpace(bytesForObject(tmpObj) + 100)) { // leave room for other messages
 				ip--; // retry when task is resumed
 				goto suspend;
 			}
@@ -463,6 +480,7 @@ static void runTask(Task *task) {
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
 	 	POP_ARGS_COMMAND();
 	 	if (tmp <= 30) {
+	 		if (tmp <= 0) { DISPATCH(); } // don't wait at all
 			// busy-wait for wait times up to 30 usecs to avoid a context switch
 			tmp = (microsecs() + tmp) - 8; // wake time, adjusted for dispatch overhead
 			while ((microsecs() - tmp) >= RECENT)
@@ -476,6 +494,7 @@ static void runTask(Task *task) {
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
 	 	POP_ARGS_COMMAND();
 	 	if (tmp < 1000) {
+	 		if (tmp <= 0) { DISPATCH(); } // don't wait at all
 	 		// use usecs for waits under a second for greater precision
 			task->status = waiting_micros;
 			task->wakeTime = microsecs() + ((1000 * tmp) - 17);
@@ -563,8 +582,10 @@ static void runTask(Task *task) {
 			*(sp - arg) = falseObj; // boolean, not equal
 		} else if (isInt(tmpObj) && isInt(*(sp - 1))) {
 			*(sp - arg) = falseObj; // integer, not equal
+		} else if (IS_CLASS(tmpObj, StringClass) && IS_CLASS(*(sp - 1), StringClass)) {
+			*(sp - arg) = (stringsEqual(tmpObj, *(sp - 1)) ? trueObj : falseObj);
 		} else {
-			fail(nonComparableError);
+			*(sp - arg) = falseObj; // not comparable, so not equal
 		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
@@ -576,8 +597,10 @@ static void runTask(Task *task) {
 			*(sp - arg) = trueObj; // boolean, not equal
 		} else if (isInt(tmpObj) && isInt(*(sp - 1))) {
 			*(sp - arg) = trueObj; // integer, not equal
+		} else if (IS_CLASS(tmpObj, StringClass) && IS_CLASS(*(sp - 1), StringClass)) {
+			*(sp - arg) = (stringsEqual(tmpObj, *(sp - 1)) ? falseObj : trueObj);
 		} else {
-			fail(nonComparableError);
+			*(sp - arg) = trueObj; // not comparable, so not equal
 		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
@@ -621,13 +644,11 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	absoluteValue_op:
-		*(sp - arg) =  int2obj(abs(evalInt(*(sp - 1))));
+		*(sp - arg) = int2obj(abs(evalInt(*(sp - 1))));
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	random_op:
-		tmp = evalInt(*(sp - 1));
-		if (tmp <= 0) tmp = 1;
-		*(sp - arg) = int2obj((rand() % tmp) + 1); // result range is [1..tmp], inclusive
+		*(sp - arg) = primRandom(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	hexToInt_op:
@@ -705,21 +726,33 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	sayIt_op:
-		if (!hasOutputSpace(bytesForObject(*(sp - arg)) + 100)) { // leave room for other messages
+		printArgs(arg, sp - arg, true, true);
+		if (!hasOutputSpace(printBufferByteCount + 100)) { // leave room for other messages
 			ip--; // retry when task is resumed
 			goto suspend;
 		}
-		outputValue(*(sp - arg), task->taskChunkIndex);
+		sendSayForChunk(printBuffer, printBufferByteCount, task->taskChunkIndex);
 		POP_ARGS_COMMAND();
-		DISPATCH();
+		// wait for data to be sent; prevents use in tight loop from clogging serial line
+		task->status = waiting_millis;
+		task->wakeTime = millisecs() + printBufferByteCount + 5; // assume 1k bytes/sec
+		goto suspend;
 	printIt_op:
-		if (!hasOutputSpace(PRINT_BUF_SIZE + 100)) { // leave room for other messages
+		printArgs(arg, sp - arg, false, true);
+		if (!hasOutputSpace(printBufferByteCount + 100)) { // leave room for other messages
 			ip--; // retry when task is resumed
 			goto suspend;
 		}
-		primPrint(arg, sp - arg); // arg = # of arguments
+		#if USE_TASKS
+			outputString(printBuffer);
+		#else
+			printf("(NO TASKS) %s\r\n", printBuffer);
+		#endif
 		POP_ARGS_COMMAND();
-		DISPATCH();
+		// wait for data to be sent; prevents use in tight loop from clogging serial line
+		task->status = waiting_millis;
+		task->wakeTime = millisecs() + printBufferByteCount + 5; // assume 1k bytes/sec
+		goto suspend;
 
 	// I/O operations:
 	analogPins_op:
@@ -820,6 +853,48 @@ static void runTask(Task *task) {
 		primNeoPixelSend(sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
+	drawShape_op:
+		primMBDrawShape(arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	shapeForLetter_op:
+		*(sp - arg) = primMBShapeForLetter(sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	neoPixelSetPin_op:
+		primNeoPixelSetPin(arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+
+	// network operations:
+	wifiConnect_op:
+		primWifiConnect(sp - arg);
+		// wait until connection attempt ends
+		if (wifiStatus() == 0) {
+			// 0: WL_IDLE_STATUS
+			ip--;
+			goto suspend;
+		}
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	getIP_op:
+		*(sp - arg) = primGetIP(arg, sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	makeWebThing_op:
+		primMakeWebThing(arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+
+	// named primitives:
+	callCommandPrimitive_op:
+		callPrimitive(arg, sp - arg);
+		POP_ARGS_COMMAND();
+		DISPATCH();
+	callReporterPrimitive_op:
+		*(sp - arg) = callPrimitive(arg, sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
 }
 
 // Task Scheduler
@@ -838,6 +913,9 @@ void vmLoop() {
 			processMessage();
 			count = 25; // must be under 30 when building on mbed to avoid serial errors
 		}
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+		webServerLoop();
+#endif
 		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
 			currentTaskIndex++;
