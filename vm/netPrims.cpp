@@ -16,6 +16,7 @@
   #include <ESP8266WiFi.h>
 #elif defined(ARDUINO_ARCH_ESP32)
   #include <WiFi.h>
+  #include <esp_wifi.h>
 #endif
 
 #include "interp.h" // must be included *after* ESP8266WiFi.h
@@ -257,7 +258,11 @@ OBJ primIsWifiConnected(int argCount, OBJ *args) {
     status = WL_CONNECTED;
   }
 
+#if defined(ARDUINO_ARCH_ESP32)
+  if (WL_CONNECTED == status) {
+#else
   if ((WL_CONNECTED == status) && !server.status()) {
+#endif
     // start the server when the connection is first established
     initWebServer();
   }
