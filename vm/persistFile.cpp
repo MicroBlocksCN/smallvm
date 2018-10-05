@@ -15,38 +15,44 @@
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 	// Persistent file operations for NodeMCU (SPIFFS file system)
 
-#if defined(ESP8266)
 #include <FS.h>
-#elif defined(ARDUINO_ARCH_ESP32)
-#include <SPIFFS.h>
+#ifdef ARDUINO_ARCH_ESP32
+  #include <SPIFFS.h>
 #endif
+
+#define FILE_NAME "/ublockscode"
 
 File codeFile;
 
+static void closeAndOpenCodeFile() {
+	codeFile.close();
+	codeFile = SPIFFS.open(FILE_NAME, "a");
+}
+
 extern "C" void initCodeFile(uint8 *flash, int flashByteCount) {
 	SPIFFS.begin();
-	codeFile = SPIFFS.open("ublockscode", "a+");
+	codeFile = SPIFFS.open(FILE_NAME, "r");
 	// read code file into simulated Flash:
 	long int bytesRead = codeFile.readBytes((char*) flash, flashByteCount);
+	closeAndOpenCodeFile();
 }
 
 extern "C" void writeCodeFile(uint8 *code, int byteCount) {
 	codeFile.write(code, byteCount);
-	codeFile.flush();
+	closeAndOpenCodeFile();
 }
 
 extern "C" void writeCodeFileWord(int word) {
 	codeFile.write((uint8 *) &word, 4);
-	codeFile.flush();
 }
 
 extern "C" void clearCodeFile() {
 	codeFile.close();
-	SPIFFS.remove("ublockscode");
-	codeFile = SPIFFS.open("ublockscode", "a+");
+	SPIFFS.remove(FILE_NAME);
+	codeFile = SPIFFS.open(FILE_NAME, "a");
 	uint32 cycleCount = ('S' << 24) | 1; // Header record, version 1
 	int bytesWritten = codeFile.write((uint8 *) &cycleCount, 4);
-	codeFile.flush();
+	closeAndOpenCodeFile();
 }
 
 // Commented out as it makes the board unresponsive
