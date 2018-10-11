@@ -149,6 +149,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[net:clearThingDescription]'	'clear thing description')
 		(array ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
 
+		(array 'r' '[display:lightLevel]'			'light level')
+
 	'Disabled'
  		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
 
