@@ -426,6 +426,7 @@ void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
 void primsInit();
 
+void addDisplayPrims();
 void addIOPrims();
 void addNetPrims();
 

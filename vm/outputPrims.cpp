@@ -51,7 +51,16 @@
 
 static int microBitDisplayBits = 0;
 
+static int lightLevelReadTime = 0;
+static int lightReadingRequested = false;
+static int lightLevel = 0;
+
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
+
+static int displaySnapshot = 0;
+static int displayCycle = 0;
+
+#define DISPLAY_BIT(n) (((displaySnapshot >> (n - 1)) & 1) ? LOW : HIGH)
 
 static void turnDisplayOn() {
 	char pins[] = {COL1, COL2, COL3, ROW1, ROW2, ROW3, ROW4, ROW5, ROW6, ROW7, ROW8, ROW9};
@@ -65,20 +74,69 @@ static void turnDisplayOff() {
 	for (int i = 0; i < 12; i++) setPinMode(pins[i], INPUT);
 }
 
-static int displaySnapshot = 0;
-static int displayCycle = 0;
+static int updateLightLevel() {
+	// If a light level reading has been started and the integration time has elapsed,
+	// update the lightLevel variable and return true.
+	// Otherwise, if light level reading is not in progress, start one and return false.
+	// Otherwise, integration time has not elapsed. Do nothing and return false.
 
-#define DISPLAY_BIT(n) (((displaySnapshot >> (n - 1)) & 1) ? LOW : HIGH)
+	char col[] = {COL1, COL2, COL3};
+	char row[] = {ROW1, ROW2, ROW3, ROW4, ROW5, ROW6, ROW7, ROW8, ROW9};
+	int i;
+
+	if (lightLevelReadTime > (millisecs() + 10000)) lightLevelReadTime = 0; // clock wrap
+
+	if (0 == lightLevelReadTime) { // start a light level reading
+		// set all row lines high to reverse-bias the LED's
+		for (i = 0; i < 9; i++) {
+			setPinMode(row[i], OUTPUT);
+			digitalWrite(row[i], HIGH);
+		}
+
+		// set all column lines LOW to discharge capacitance
+		for (i = 0; i < 3; i++) {
+			setPinMode(col[i], OUTPUT);
+			digitalWrite(col[i], LOW);
+		}
+
+		// use A4 as input; this pin is ROW2 on micro:bit and ROW1 on Calliope
+// 		setPinMode(A4, OUTPUT);
+// 		digitalWrite(A4, LOW);
+// 		delay(1);
+		setPinMode(A4, INPUT);
+
+		// make all column lines high-impedance inputs, effectively disconnecting them
+		for (i = 0; i < 3; i++) setPinMode(col[i], INPUT);
+
+		lightLevelReadTime = millisecs() + 20;
+ 		lightReadingRequested = false;
+		return false; // in progress
+	} else if (millisecs() >= lightLevelReadTime) {
+ 		lightLevel = analogRead(A4) - 270;
+//  		if (lightLevel < 0) lightLevel = 0;
+//  		lightLevel = lightLevel / 3; // record the light level
+
+		lightLevelReadTime = 0;
+		return true;
+	} else { // just keep waiting
+		return false;
+	}
+}
 
 void updateMicrobitDisplay() {
 	// Update the display by cycling through the three columns, turning on the rows
 	// for each column. To minimize display artifacts, the display bits are snapshot
 	// at the start of each cycle and the snapshot is not changed during the cycle.
 
-	if (!microBitDisplayBits && !displaySnapshot) return; // display is off
+	if (!microBitDisplayBits && !displaySnapshot) { // display is off
+		updateLightLevel();
+		return;
+	}
 
 	if (0 == displayCycle) { // starting a new cycle
-		if (!displaySnapshot && microBitDisplayBits) turnDisplayOn(); // display just became on
+		if (lightReadingRequested && !updateLightLevel()) return; // waiting for light level; stay in current state
+		turnDisplayOn();
+//		if (!displaySnapshot && microBitDisplayBits) turnDisplayOn(); // display just became on
 		if (displaySnapshot && !microBitDisplayBits) { // display just became off
 			displaySnapshot = 0;
 			turnDisplayOff();
@@ -136,7 +194,9 @@ void updateMicrobitDisplay() {
 
 #else
 
-void updateMicrobitDisplay() { } // stub for boards without 5x5 LED displays
+ // stubs for boards without 5x5 LED displays or light sensors
+
+void updateMicrobitDisplay() { }
 
 #endif
 
@@ -169,6 +229,11 @@ void primMBUnplot(OBJ *args) {
 		int shift = (5 * (y - 1)) + (x - 1);
 		microBitDisplayBits &= ~(1 << shift);
 	}
+}
+
+static OBJ primLightLevel(int argCount, OBJ *args) {
+	lightReadingRequested = true;
+	return int2obj(lightLevel);
 }
 
 // NeoPixel Support
@@ -341,7 +406,7 @@ void primNeoPixelSetPin(int argCount, OBJ *args) {
 // https://github.com/lancaster-university/microbit-dal/blob/master/source/core/MicroBitFont.cpp
 //
 // Each 5x5 character is represented by the lower five bits of five bytes (top to bottom rows
-// of the LED matrix). There are 95 characters. The first  is the space character (ASCII 32)
+// of the LED matrix). There are 95 characters. The first is the space character (ASCII 32)
 // the last is the tilde (ASCII 126, '~').
 
 const unsigned char pendolino3[475] = {
@@ -378,6 +443,15 @@ OBJ primMBShapeForLetter(OBJ *args) {
 		}
 	}
 	return int2obj(result);
+}
+
+
+static PrimEntry entries[] = {
+	"lightLevel", primLightLevel,
+};
+
+void addDisplayPrims() {
+	addPrimitiveSet("display", sizeof(entries) / sizeof(PrimEntry), entries);
 }
 
 void primMBDrawShape(int argCount, OBJ *args) {
