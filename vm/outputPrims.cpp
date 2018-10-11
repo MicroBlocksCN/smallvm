@@ -98,25 +98,23 @@ static int updateLightLevel() {
 			setPinMode(col[i], OUTPUT);
 			digitalWrite(col[i], LOW);
 		}
+		delayMicroseconds(800);
 
 		// use A4 as input; this pin is ROW2 on micro:bit and ROW1 on Calliope
-// 		setPinMode(A4, OUTPUT);
-// 		digitalWrite(A4, LOW);
-// 		delay(1);
 		setPinMode(A4, INPUT);
 
 		// make all column lines high-impedance inputs, effectively disconnecting them
 		for (i = 0; i < 3; i++) setPinMode(col[i], INPUT);
 
-		lightLevelReadTime = millisecs() + 20;
- 		lightReadingRequested = false;
+		lightLevelReadTime = millisecs() + 19;
 		return false; // in progress
 	} else if (millisecs() >= lightLevelReadTime) {
- 		lightLevel = analogRead(A4) - 270;
-//  		if (lightLevel < 0) lightLevel = 0;
-//  		lightLevel = lightLevel / 3; // record the light level
+		lightLevel = analogRead(A4) - 312;
+		if (lightLevel < 0) lightLevel = 0;
+		lightLevel = lightLevel / 3; // record scaled light level
 
 		lightLevelReadTime = 0;
+		lightReadingRequested = false;
 		return true;
 	} else { // just keep waiting
 		return false;
@@ -134,9 +132,12 @@ void updateMicrobitDisplay() {
 	}
 
 	if (0 == displayCycle) { // starting a new cycle
-		if (lightReadingRequested && !updateLightLevel()) return; // waiting for light level; stay in current state
-		turnDisplayOn();
-//		if (!displaySnapshot && microBitDisplayBits) turnDisplayOn(); // display just became on
+		if (lightReadingRequested) {
+			if (!updateLightLevel()) return; // waiting for light level; stay in current state
+			turnDisplayOn();
+		} else if (!displaySnapshot && microBitDisplayBits) {
+			turnDisplayOn(); // display just became on
+		}
 		if (displaySnapshot && !microBitDisplayBits) { // display just became off
 			displaySnapshot = 0;
 			turnDisplayOff();
@@ -445,15 +446,6 @@ OBJ primMBShapeForLetter(OBJ *args) {
 	return int2obj(result);
 }
 
-
-static PrimEntry entries[] = {
-	"lightLevel", primLightLevel,
-};
-
-void addDisplayPrims() {
-	addPrimitiveSet("display", sizeof(entries) / sizeof(PrimEntry), entries);
-}
-
 void primMBDrawShape(int argCount, OBJ *args) {
 	// Draw a 5x5 at the given x,y position, where 1,1 is the top-left of the LED display.
 	// For example, x = 2 is shifted one column to the right and y = 3 is shifted two rows down.
@@ -480,4 +472,14 @@ void primMBDrawShape(int argCount, OBJ *args) {
 			srcMask <<= 1; // advance to next bit of shape
 		}
 	}
+}
+
+// Primitives
+
+static PrimEntry entries[] = {
+	"lightLevel", primLightLevel,
+};
+
+void addDisplayPrims() {
+	addPrimitiveSet("display", sizeof(entries) / sizeof(PrimEntry), entries);
 }
