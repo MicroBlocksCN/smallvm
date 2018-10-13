@@ -128,7 +128,8 @@ static int detectAccelerometer() {
 		writeI2CReg(LSM303_ID, 0x20, 0x5F); // 100 Hz sample rate, low power, all axes
 	} else if (0xC7 == readI2CReg(FXOS8700_ID, 0x0D)) {
 		accelType = accel_FXOS8700;
-		// xxx initialize FXOS8700
+		writeI2CReg(FXOS8700_ID, 0x2A, 0); // turn off chip before configuring
+		writeI2CReg(FXOS8700_ID, 0x2A, 0x1B); // 100 Hz sample rate, fast read, turn on
 	} else {
 		accelType = accel_none;
 	}
@@ -148,7 +149,7 @@ static int readAcceleration(int registerID) {
 		if (5 == registerID) val = readI2CReg(LSM303_ID, 0x2D); // z-axis
 		break;
 	case accel_FXOS8700:
-		// xxx read FXOS8700 data
+		val = readI2CReg(FXOS8700_ID, registerID);
 		break;
 	}
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
