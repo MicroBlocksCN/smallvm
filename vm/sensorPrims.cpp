@@ -15,12 +15,36 @@
 #include "mem.h"
 #include "interp.h"
 
+// i2c helper functions
+
 static int wireStarted = false;
 
 static void startWire() {
 	Wire.begin();
 	wireStarted = true;
 }
+
+static int readI2CReg(int deviceID, int reg) {
+	if (!wireStarted) startWire();
+	Wire.beginTransmission(deviceID);
+	Wire.write(reg);
+	int error = Wire.endTransmission((bool) false);
+	if (error) return -error; // error; bad device ID?
+
+	Wire.requestFrom(deviceID, 1);
+	while (!Wire.available());
+	return Wire.read();
+}
+
+static void writeI2CReg(int deviceID, int reg, int value) {
+	if (!wireStarted) startWire();
+	Wire.beginTransmission(deviceID);
+	Wire.write(reg);
+	Wire.write(value);
+	Wire.endTransmission();
+}
+
+// i2c prims
 
 OBJ primI2cGet(OBJ *args) {
 	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
@@ -29,15 +53,7 @@ OBJ primI2cGet(OBJ *args) {
 	if ((deviceID < 0) || (deviceID > 128)) return fail(i2cDeviceIDOutOfRange);
 	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
 
-	if (!wireStarted) startWire();
-	Wire.beginTransmission(deviceID);
-	Wire.write(registerID);
-	int error = Wire.endTransmission((bool) false);
-	if (error) return int2obj(0 - error); // error; bad device ID?
-
-	Wire.requestFrom(deviceID, 1);
-	while (!Wire.available());
-	return int2obj(Wire.read());
+	return int2obj(readI2CReg(deviceID, registerID));
 }
 
 OBJ primI2cSet(OBJ *args) {
@@ -49,13 +65,11 @@ OBJ primI2cSet(OBJ *args) {
 	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
 	if ((value < 0) || (value > 255)) return fail(i2cValueOutOfRange);
 
-	if (!wireStarted) startWire();
-	Wire.beginTransmission(deviceID);
-	Wire.write(registerID);
-	Wire.write(value);
-	Wire.endTransmission();
+	writeI2CReg(deviceID, registerID, value);
 	return falseObj;
 }
+
+// SPI prims
 
 static void initSPI() {
 	setPinMode(13, OUTPUT);
@@ -92,32 +106,9 @@ typedef enum {
 
 static AccelerometerType_t accelType = accel_unknown;
 
-#define ACCEL_ID 29 // xxx
 #define MMA8653_ID 29
 #define LSM303_ID 25
 #define FXOS8700_ID 30
-
-static int accelerometerOn = false; // xxx
-
-static int readI2CReg(int deviceID, int reg) {
-	if (!wireStarted) startWire();
-	Wire.beginTransmission(deviceID);
-	Wire.write(reg);
-	int error = Wire.endTransmission(false);
-	if (error) return -error; // error; bad device ID?
-
-	Wire.requestFrom(deviceID, 1);
-	while (!Wire.available());
-	return Wire.read();
-}
-
-static void writeI2CReg(int deviceID, int reg, int value) {
-	if (!wireStarted) startWire();
-	Wire.beginTransmission(deviceID);
-	Wire.write(reg);
-	Wire.write(value);
-	Wire.endTransmission();
-}
 
 static int detectAccelerometer() {
 	if (0x5A == readI2CReg(MMA8653_ID, 0x0D)) {
@@ -158,32 +149,6 @@ static int readAcceleration(int registerID) {
 	return val;
 }
 
-static int OLDreadAcceleration(int registerID) {
-	if (!accelerometerOn) {
-		// turn on the accelerometer
-		if (!wireStarted) startWire();
-		Wire.beginTransmission(ACCEL_ID);
-		Wire.write(0x2A);
-		Wire.write(1);
-		Wire.endTransmission();
-		accelerometerOn = true;
-	}
-
-	Wire.beginTransmission(ACCEL_ID);
-	Wire.write(registerID);
-	int error = Wire.endTransmission(false);
-	if (error) return 0; // error; return 0
-
-	Wire.requestFrom(ACCEL_ID, 1);
-	while (!Wire.available());
-	int val = Wire.read();
-
-	val = (val < 128) ? val : -(256 - val); // value is a signed byte
-	if (val < -127) val = -127; // keep in range -127 to 127
-	val = -((val * 100) / 127); // invert sign and scale to range 0-100
-	return val;
-}
-
 static int readTemperature() {
 	volatile int *startReg = (int *) 0x4000C000;
 	volatile int *readyReg = (int *) 0x4000C100;
@@ -197,26 +162,12 @@ static int readTemperature() {
 #elif defined(ARDUINO_CALLIOPE)
 
 static int readAcceleration(int registerID) {
-	// adjust register offsets for Calliope
-	int reg = registerID;
-	if (1 == registerID) reg = 5; // x-axis
-	else if (3 == registerID) reg = 3; // y-axis
-	else if (5 == registerID) reg = 7; // z axis
+	val = 0;
+	if (1 == registerID) val = readI2CReg(ACCEL_ID, 5); // x-axis
+	if (3 == registerID) val = readI2CReg(ACCEL_ID, 3); // y-axis
+	if (5 == registerID) val = readI2CReg(ACCEL_ID, 7); // z-axis
 
-	if (!wireStarted) startWire();
-
-	Wire.beginTransmission(ACCEL_ID);
-	Wire.write(reg);
-	int error = Wire.endTransmission(false);
-	if (error) return 0; // error; return 0
-
-	Wire.requestFrom(ACCEL_ID, 1);
-	while (!Wire.available());
-	int val = Wire.read();
-
-	val = (val < 128) ? val : -(256 - val); // value is a signed byte
-	if (8 == registerID) return val; // temperature sensor
-
+	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = -((val * 100) / 127); // invert sign and scale to range 0-100
 	if (5 == registerID) val = -val; // invert z-axis
@@ -225,7 +176,7 @@ static int readAcceleration(int registerID) {
 
 static int readTemperature() {
 	int fudgeFactor = 2;
-	return (readAcceleration(8) / 2) + 23 - fudgeFactor;
+	return (readI2CReg(ACCEL_ID, 8) / 2) + 23 - fudgeFactor;
 }
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
@@ -238,7 +189,6 @@ static int readAcceleration(int registerID) {
 	if (!accelStarted) {
 		Wire1.begin(); // use internal I2C bus
 		// turn on the accelerometer
-		if (!wireStarted) startWire();
 		Wire1.beginTransmission(ACCEL_ID);
 		Wire1.write(32);
 		Wire1.write(127);
@@ -254,7 +204,7 @@ static int readAcceleration(int registerID) {
 	while (!Wire1.available());
 	int val = Wire1.read();
 
-	val = (val < 128) ? val : -(256 - val); // value is a signed byte
+	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = ((val * 100) / 127); // scale to range 0-100
 	if (1 == registerID) val = -val; // invert sign for x axis
