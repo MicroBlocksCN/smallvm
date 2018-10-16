@@ -51,6 +51,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'mbTiltY'			'tilt y')
 		(array 'r' 'mbTiltZ'			'tilt z')
 		(array 'r' 'mbTemp'				'temperature (°C)')
+		(array 'r' '[display:lightLevel]' 'light level')
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
@@ -148,8 +149,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[net:thingDescription]'			'thing description')
 		(array ' ' '[net:clearThingDescription]'	'clear thing description')
 		(array ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
-
-		(array 'r' '[display:lightLevel]'			'light level')
 
 	'Disabled'
  		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
