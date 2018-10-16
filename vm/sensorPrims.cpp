@@ -159,10 +159,10 @@ static int readTemperature() {
 	return (*tempReg / 4) - 6; // callibrated at 26 degrees C using average of 3 micro:bits
 }
 
-#elif defined(ARDUINO_CALLIOPE)
+#elif defined(ARDUINO_CALLIOPE_MINI)
 
 static int readAcceleration(int registerID) {
-	val = 0;
+	int val = 0;
 	if (1 == registerID) val = readI2CReg(ACCEL_ID, 5); // x-axis
 	if (3 == registerID) val = readI2CReg(ACCEL_ID, 3); // y-axis
 	if (5 == registerID) val = readI2CReg(ACCEL_ID, 7); // z-axis

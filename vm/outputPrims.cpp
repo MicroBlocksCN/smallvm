@@ -31,7 +31,7 @@
 #define COL2 27
 #define COL3 28
 
-#elif defined(ARDUINO_CALLIOPE)
+#elif defined(ARDUINO_CALLIOPE_MINI)
 
 #define ROW1 4
 #define ROW2 5
@@ -55,7 +55,7 @@ static int lightLevel = 0;
 static int lightLevelReadTime = 0;
 static int lightReadingRequested = false;
 
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 
 static int displaySnapshot = 0;
 static int displayCycle = 0;
@@ -311,7 +311,7 @@ int neoPixelPinMask = 0;
 volatile int *neoPixelPinSet = NULL;
 volatile int *neoPixelPinClr = NULL;
 
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE) || defined(NRF51)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(NRF51)
 
 #define GPIO_SET 0x50000508
 #define GPIO_CLR 0x5000050C
@@ -319,7 +319,7 @@ volatile int *neoPixelPinClr = NULL;
 
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= PINS_COUNT)) {
-		#if defined(ARDUINO_CALLIOPE)
+		#if defined(ARDUINO_CALLIOPE_MINI)
 			pinNum = 26; // internal NeoPixel pin on Calliope
 		#else
 			pinNum = 0; // use left external pad on micro:bit and sino:bit

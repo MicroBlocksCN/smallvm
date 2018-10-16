@@ -907,7 +907,7 @@ void vmLoop() {
 	int count = 0;
 	while (true) {
 		if (count-- <= 0) {
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 			updateMicrobitDisplay();
 #endif
 			processMessage();

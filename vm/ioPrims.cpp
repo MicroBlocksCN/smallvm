@@ -129,7 +129,7 @@ void systemReset() {
 	// Analog pins: The micro:bit does not have dedicated analog input pins;
 	// the analog pins are aliases for digital pins 0-4 and 10.
 
-#elif defined(ARDUINO_CALLIOPE)
+#elif defined(ARDUINO_CALLIOPE_MINI)
 
 	#define BOARD_TYPE "Calliope"
 	#define DIGITAL_PINS 26
@@ -393,7 +393,7 @@ void primDigitalSet(int pinNum, int flag) {
 // User LED
 
 void primSetUserLED(OBJ *args) {
-	 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
+	 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 		// Special case: Use a row-column compinaton to turn on one LED in the LED matrix.
 
 		#if defined(ARDUINO_BBC_MICROBIT)

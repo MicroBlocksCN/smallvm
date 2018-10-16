@@ -265,7 +265,7 @@ static void softReset() {
 	// This is not a full hardware reset/reboot, but close.
 
 	stopAllTasks();
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 	primMBDisplayOff(NULL);
 	updateMicrobitDisplay();
 	hardwareInit();
