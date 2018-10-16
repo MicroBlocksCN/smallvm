@@ -51,9 +51,9 @@
 
 static int microBitDisplayBits = 0;
 
+static int lightLevel = 0;
 static int lightLevelReadTime = 0;
 static int lightReadingRequested = false;
-static int lightLevel = 0;
 
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE)
 
@@ -75,6 +75,46 @@ static void turnDisplayOff() {
 }
 
 static int updateLightLevel() {
+	// If light level reading is not in progress, start one and return false.
+	// If a light level reading is in progress and the integration time has
+	// elapsed, update the lightLevel variable and return true.
+	// If integration time has not elapsed, do nothing and return false.
+
+	char col[] = {COL1, COL2, COL3};
+	char row[] = {ROW1, ROW2, ROW3};
+	int i;
+
+	if (lightLevelReadTime > (millisecs() + 10000)) lightLevelReadTime = 0; // clock wrap
+
+	if (0 == lightLevelReadTime) { // start a light level reading
+		// set column lines LOW
+		for (i = 0; i < 3; i++) {
+			setPinMode(col[i], OUTPUT);
+			digitalWrite(col[i], LOW);
+		}
+		// set row lines high to reverse-bias the LED's, then disconnect
+		for (i = 0; i < 3; i++) {
+			setPinMode(row[i], OUTPUT);
+			digitalWrite(row[i], HIGH);
+			delayMicroseconds(50); // allow time to charge capacitance
+			setPinMode(row[i], INPUT);
+		}
+		lightLevelReadTime = millisecs() + 5;
+		return false; // keep waiting
+	} else if (millisecs() >= lightLevelReadTime) { // integration complete; update level
+		lightLevel = 0;
+		for (i = 0; i < 3; i++) lightLevel += analogRead(row[i]);
+		lightLevel = (650 - lightLevel) / 6; // invert and scale
+
+		lightLevelReadTime = 0;
+		lightReadingRequested = false;
+		return true; // done waiting
+	} else { // integration in progress
+		return false; // keep waiting
+	}
+}
+
+static int updateLightLevelOLD() {
 	// If a light level reading has been started and the integration time has elapsed,
 	// update the lightLevel variable and return true.
 	// Otherwise, if light level reading is not in progress, start one and return false.
