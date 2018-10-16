@@ -394,24 +394,12 @@ void primDigitalSet(int pinNum, int flag) {
 
 void primSetUserLED(OBJ *args) {
 	 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
-		// Special case: Use a row-column compinaton to turn on one LED in the LED matrix.
-
-		#if defined(ARDUINO_BBC_MICROBIT)
-			#define COL1 26
-			#define ROW2 4
-		#else
-			#define COL1 13
-			#define ROW2 5
-		#endif
-
-		SET_MODE(COL1, OUTPUT);
-		SET_MODE(ROW2, OUTPUT);
+		// Special case: Plot or unplot one LED in the LED matrix.
+		OBJ coords[2] = { int2obj(3), int2obj(1) };
 		if (trueObj == args[0]) {
-			digitalWrite(ROW2, LOW);
-			digitalWrite(COL1, HIGH);
+			primMBPlot(coords);
 		} else {
-			digitalWrite(ROW2, HIGH);
-			digitalWrite(COL1, LOW);
+			primMBUnplot(coords);
 		}
 	#else
 		SET_MODE(PIN_LED, OUTPUT);

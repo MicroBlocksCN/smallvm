@@ -249,8 +249,6 @@ void primMBDisplay(OBJ *args) {
 }
 
 void primMBDisplayOff(OBJ *args) {
-	OBJ off = falseObj;
-	primSetUserLED(&off);
 	microBitDisplayBits = 0;
 }
 
