@@ -891,12 +891,12 @@ method exportAsImage Block {
   if ('' == fName) { return }
   if (not (endsWith fName '.png')) { fName = (join fName '.png') }
   gc
-  pixelsPerInch = 288
+  pixelsPerInch = 144
   scaledScript = (scaledScript this (pixelsPerInch / 72))
   bnds = (fullBounds (morph scaledScript))
   bm = (newBitmap (width bnds) (height bnds))
   draw2 (morph scaledScript) bm (- (left bnds)) (- (top bnds))
-  writeFile fName (encodePNG bm 288)
+  writeFile fName (encodePNG bm pixelsPerInch)
 }
 
 method scaledScript Block scriptScale {
