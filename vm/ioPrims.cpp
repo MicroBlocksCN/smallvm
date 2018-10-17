@@ -298,7 +298,7 @@ static void initPins(void) {
 
 	for (int i = 0; i < TOTAL_PINS; i++) {
 //		digitalWrite(i, LOW); // this breaks serial recieve of Due
-// 		pinMode(i, INPUT); // this breaks serial communication on Circuit Playground
+//		pinMode(i, INPUT); // this breaks serial communication on Circuit Playground
 		currentMode[i] = MODE_NOT_SET;
 	}
 
@@ -431,7 +431,7 @@ OBJ primButtonB(OBJ *args) {
 		// Momentarily set button pin low before reading (simulates a pull-down resistor)
 		primDigitalSet(PIN_BUTTON_B, false);
 	#endif
- 	#ifdef PIN_BUTTON_B
+	#ifdef PIN_BUTTON_B
 		SET_MODE(PIN_BUTTON_B, INPUT);
 		return (BUTTON_PRESSED == digitalRead(PIN_BUTTON_B)) ? trueObj : falseObj;
 	#else
@@ -441,13 +441,15 @@ OBJ primButtonB(OBJ *args) {
 
 // Servo
 
-#if !(defined(NRF51) || defined(ESP32))
-  #include <Servo.h>
-  Servo servo[DIGITAL_PINS];
+#define HAS_SERVO !(defined(NRF51) || defined(ESP32))
+
+#if HAS_SERVO
+	#include <Servo.h>
+	Servo servo[DIGITAL_PINS];
 #endif
 
 void resetServos() {
-	#if !(defined(NRF51) || defined(ESP32))
+	#if HAS_SERVO
 		for (int pin = 0; pin < DIGITAL_PINS; pin++) {
 			if (servo[pin].attached()) servo[pin].detach();
 		}
@@ -459,7 +461,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	// If usecs > 0, generate a servo control signal with the given pulse width
 	// on the given pin. If usecs <= 0 stop generating the servo signal.
 	// Return true on success, false if primitive is not supported.
-	#if !(defined(NRF51) || defined(ESP32))
+	#if HAS_SERVO
 		OBJ pinArg = args[0];
 		OBJ usecsArg = args[1];
 		if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
@@ -481,10 +483,12 @@ OBJ primSetServo(int argCount, OBJ *args) {
 
 // Tone Generation
 
+#define HAS_TONE !(defined(NRF51) || defined(ESP32) || defined(ARDUINO_SAM_DUE))
+
 int tonePin = -1;
 
 void stopTone() {
-	#if !(defined(NRF51) || defined(ESP32) || defined(ARDUINO_SAM_DUE))
+	#if HAS_TONE
 		if (tonePin >= 0) noTone(tonePin);
 		tonePin = -1;
 	#endif
@@ -495,7 +499,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	// If freq > 0, generate a 50% duty cycle square wave of the given frequency
 	// on the given pin. If freq <= 0 stop generating the square wave.
 	// Return true on success, false if primitive is not supported.
-	#if !(defined(NRF51) || defined(ESP32) || defined(ARDUINO_SAM_DUE))
+	#if HAS_TONE
 		OBJ pinArg = args[0];
 		OBJ freqArg = args[1];
 		if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
