@@ -473,7 +473,7 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addLine menu
   addItem menu 'install MicroBlocks on board' 'installVM'
-  addItem menu 'reset board and clear memory' 'softReset'
+  addItem menu 'clear memory and variables' 'softReset'
   if (not (devMode)) {
 	addLine menu
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
