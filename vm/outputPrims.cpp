@@ -104,7 +104,9 @@ static int updateLightLevel() {
 	} else if (millisecs() >= lightLevelReadTime) { // integration complete; update level
 		lightLevel = 0;
 		for (i = 0; i < 3; i++) lightLevel += analogRead(row[i]);
-		lightLevel = (650 - lightLevel) / 6; // invert and scale
+		lightLevel = 655 - lightLevel; // invert and scale
+		if (lightLevel < 0) lightLevel = 0;
+		lightLevel = lightLevel / 5; // record scaled light level
 
 		lightLevelReadTime = 0;
 		lightReadingRequested = false;
@@ -274,6 +276,7 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
   #ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
 	OBJ analogPin = int2obj(8);
 	lightLevel = obj2int(primAnalogRead(&analogPin));
+	lightLevel = lightLevel / 10;
   #else
 	lightReadingRequested = true;
   #endif

@@ -453,6 +453,14 @@ void resetServos() {
 	#endif
 }
 
+OBJ primHasServo(int argCount, OBJ *args) {
+	#if HAS_SERVO
+		return trueObj;
+	#else
+		return falseObj;
+	#endif
+}
+
 OBJ primSetServo(int argCount, OBJ *args) {
 	// setServo <pin> <usecs>
 	// If usecs > 0, generate a servo control signal with the given pulse width
@@ -491,6 +499,14 @@ void stopTone() {
 	#endif
 }
 
+OBJ primHasTone(int argCount, OBJ *args) {
+	#if HAS_TONE
+		return trueObj;
+	#else
+		return falseObj;
+	#endif
+}
+
 OBJ primPlayTone(int argCount, OBJ *args) {
 	// playTone <pin> <freq>
 	// If freq > 0, generate a 50% duty cycle square wave of the given frequency
@@ -517,8 +533,10 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 }
 
 static PrimEntry entries[] = {
-	"setServo", primSetServo,
+	"hasTone", primHasTone,
 	"playTone", primPlayTone,
+	"hasServo", primHasServo,
+	"setServo", primSetServo,
 };
 
 void addIOPrims() {
