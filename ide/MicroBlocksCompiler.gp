@@ -119,14 +119,11 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'mbDrawShape'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
 		(array 'r' 'mbShapeForLetter'	'shape for letter _' 'str' 'A')
 
-		(array ' ' 'neoPixelSetPin'		'set NeoPixel pin _ is RGBW _' 'num bool' 0 false)
+		(array ' ' 'neoPixelSetPin'		'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
 		(array ' ' 'neoPixelSend'		'send NeoPixel rgb _' 'num' 5)
 
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
-
-		(array 'r' '[io:setServo]'		'set servo pin _ to _ msecs' 'num num' 0 1500)
-		(array 'r' '[io:playTone]'		'play tone pin _ frequency _' 'num num' 0 440)
 
 		(array ' ' 'spiSend'			'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'			'spi receive')
@@ -136,6 +133,12 @@ method microBlocksSpecs SmallCompiler {
 
 		(array ' ' 'noop'				'no op')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
+
+		(array 'r' '[io:hasTone]'		'has tone support')
+		(array ' ' '[io:playTone]'		'play tone pin _ frequency _' 'num num' 0 440)
+
+		(array 'r' '[io:hasServo]'		'has servo support')
+		(array ' ' '[io:setServo]'		'set servo pin _ to _ usecs' 'num num' 0 1500)
 
 		(array ' ' 'wifiConnect'		'connect to WiFi _ with password _' 'str str' 'SSID' 'MyPassword')
 		(array 'r' 'getIP'		        'my IP address')

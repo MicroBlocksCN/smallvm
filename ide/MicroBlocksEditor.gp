@@ -124,7 +124,7 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (makeIndicator this)
 
   rightItems = (list)
-  add rightItems (textButton this 'Reset' 'stopAndSyncScripts')
+  add rightItems (textButton this 'Stop' 'stopAndSyncScripts')
   add rightItems (textButton this 'Start' 'startAll')
 }
 
