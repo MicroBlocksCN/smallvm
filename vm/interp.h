@@ -222,11 +222,11 @@ int sendByte(char aByte);
 
 const char *boardType();
 void hardwareInit(void);
-void systemReset(void);
 
 // I/O Support
 
 void setPinMode(int pin, int newMode);
+void turnOffPins();
 void updateMicrobitDisplay();
 void resetServos();
 void stopTone();
@@ -275,6 +275,7 @@ OBJ primMBTemp(OBJ *args);
 
 void primNeoPixelSend(OBJ *args);
 void primNeoPixelSetPin(int argCount, OBJ *args);
+void turnOffInternalNeoPixels();
 
 void primWifiConnect(OBJ *args);
 void webServerLoop();

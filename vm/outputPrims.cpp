@@ -444,6 +444,17 @@ void primNeoPixelSetPin(int argCount, OBJ *args) {
 	initNeoPixelPin(pinNum);
 }
 
+void turnOffInternalNeoPixels() {
+	initNeoPixelPin(-1); // internal
+	int count = 0;
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+		count = 10;
+	#elif defined(ARDUINO_CALLIOPE_MINI)
+		count = 1;
+	#endif
+	for (int i = 0; i < count; i++) sendNeoPixelData(0);
+}
+
 // MicroBit Font
 
 // From the Lancaster University MicroBit library (under the MIT license):

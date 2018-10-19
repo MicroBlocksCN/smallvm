@@ -61,7 +61,7 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 
 	if (argCount < 2) return fail(primitiveNotImplemented);
 	char *setName = IS_CLASS(args[0], StringClass) ? obj2str(args[0]) : "";
-	char *primName =  IS_CLASS(args[1], StringClass) ? obj2str(args[1]) : "";
+	char *primName = IS_CLASS(args[1], StringClass) ? obj2str(args[1]) : "";
 
 	for (int i = 0; i < primSetCount; i++) {
 		if (0 == strcmp(primSets[i].setName, setName)) {
@@ -253,9 +253,7 @@ static void deleteAllChunks() {
 }
 
 static void clearAllVariables() {
-	for (int varIndex = 0; varIndex < MAX_VARS; varIndex++) {
-		vars[varIndex] = int2obj(0);
-	}
+	// Clear variable name records (but don't clear the variable values).
 	appendPersistentRecord(varsClearAll, 0, 0, 0, NULL);
 }
 
@@ -265,19 +263,25 @@ static void deleteComment(uint8 commentIndex) {
 
 // Soft Reset
 
-static void softReset() {
-	// Reset the hardware and clear object memory as done at startup,
-	// but do not reload scripts from persistent memory.
+static void softReset(int clearMemoryFlag) {
+	// Reset the hardware and, optionally, clear memory.
+	// Do not reload scripts from persistent memory.
 	// This is not a full hardware reset/reboot, but close.
 
 	stopAllTasks();
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 	primMBDisplayOff(NULL);
 	updateMicrobitDisplay();
-	hardwareInit();
 #endif
-	memInit(1800); // 1800 words = 7200 bytes
+	resetServos();
+	stopTone();
+	turnOffInternalNeoPixels();
+	turnOffPins();
 	outputString("Welcome to MicroBlocks!");
+	if (clearMemoryFlag) {
+		memClear();
+		outputString("Memory cleared.");
+	}
 }
 
 // Sending Messages to IDE
@@ -672,6 +676,7 @@ static void processShortMessage() {
 		break;
 	case stopAllMsg:
 		stopAllTasks();
+		softReset(false);
 		outputString("All tasks stopped");
 		break;
 	case getVarMsg:
@@ -696,8 +701,7 @@ static void processShortMessage() {
 		deleteAllChunks();
 		break;
 	case systemResetMsg:
-		softReset(); // do a 'soft reset' so the serial port is not closed
-//		systemReset(); // this does a full reset, as if the hardware were power-cycled
+		softReset(true);
 		break;
 	case pingMsg:
 		sendMessage(pingMsg, 0, 0, NULL);

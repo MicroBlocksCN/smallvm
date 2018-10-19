@@ -47,6 +47,7 @@ void hardwareInit() {
 	Serial.begin(115200);
 	initClock_NRF51();
 	initPins();
+	turnOffInternalNeoPixels();
 }
 
 #else // not NRF51
@@ -61,6 +62,7 @@ uint32 millisecs() { return (uint32) millis(); }
 void hardwareInit() {
 	Serial.begin(115200);
 	initPins();
+	turnOffInternalNeoPixels();
 }
 
 #endif
@@ -79,15 +81,6 @@ int readBytes(uint8 *buf, int count) {
 }
 
 int sendByte(char aByte) { return Serial.write(aByte); }
-
-// System Reset
-
-void systemReset() {
-	initPins();
-	#if defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52_PRIMO) || defined(NRF51) || defined(ARDUINO_SAMD_MKRZERO)
-		NVIC_SystemReset();
-	#endif
-}
 
 // General Purpose I/O Pins
 
@@ -297,8 +290,6 @@ static void initPins(void) {
 	#endif
 
 	for (int i = 0; i < TOTAL_PINS; i++) {
-//		digitalWrite(i, LOW); // this breaks serial recieve of Due
-//		pinMode(i, INPUT); // this breaks serial communication on Circuit Playground
 		currentMode[i] = MODE_NOT_SET;
 	}
 
@@ -306,9 +297,15 @@ static void initPins(void) {
 		pinMode(USER1_BUTTON, INPUT);
 		pinMode(BUZZER, OUTPUT);
 	#endif
+}
 
-	// xxx rewrite this in terms of the primitive, using the default pin number:
-	// for (int i = 0; i < 30; i++) sendNeoPixelByte(0); // turn off NeoPixels (up to 10 of them)
+void turnOffPins() {
+	for (int pin = 0; pin < TOTAL_PINS; pin++) {
+		if (OUTPUT == currentMode[pin]) {
+			pinMode(pin, INPUT);
+			currentMode[pin] = INPUT;
+		}
+	}
 }
 
 // Pin IO Primitives

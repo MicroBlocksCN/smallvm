@@ -83,6 +83,7 @@ static inline int objClass(OBJ obj) {
 // Object Memory Operations
 
 void memInit(int wordCount);
+void memClear();
 OBJ newObj(int classID, int wordCount, OBJ fill);
 OBJ newStringFromBytes(uint8 *bytes, int byteCount);
 char* obj2str(OBJ obj);

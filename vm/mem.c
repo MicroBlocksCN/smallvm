@@ -34,8 +34,8 @@ void memInit(int wordCount) {
 
 	char *stack = (char *) &stack; // the address of this local variable approximates the current C stack pointer
 	if (stack > (char *) memStart) {
-    	// On some platforms (e.g. micro:bit), the malloc() call succeeds even when there is not enough memory.
-    	// This check makes sure there's enough space for both the MicroBlock object heap and the stack.
+		// On some platforms (e.g. micro:bit), the malloc() call succeeds even when there is not enough memory.
+		// This check makes sure there's enough space for both the MicroBlock object heap and the stack.
 		// This check makes sense only if the stack is immediately above the heap.
 
 		stack = stack - 1000; // reserve 1000 bytes for stack (stack grows down in memory)
@@ -55,6 +55,13 @@ void memInit(int wordCount) {
 	memEnd = memStart + wordCount;
 
 	// initialize all global variables to zero
+	for (int i = 0; i < MAX_VARS; i++) vars[i] = int2obj(0);
+}
+
+void memClear() {
+	// Clear object memory and set all global variables to zero.
+
+	freeStart = memStart;
 	for (int i = 0; i < MAX_VARS; i++) vars[i] = int2obj(0);
 }
 
