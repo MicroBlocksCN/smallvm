@@ -117,7 +117,21 @@ void primNeoPixelSend(OBJ *args) { }
 void primNeoPixelSetPin(int argCount, OBJ *args) { }
 void primMBDrawShape(int argCount, OBJ *args) { }
 OBJ primMBShapeForLetter(OBJ *args) { }
-//
+
+// Other bogus primitives
+
+void resetServos() {}
+void stopTone() {}
+void turnOffInternalNeoPixels() {}
+void turnOffPins() {}
+void addDisplayPrims() {}
+void addIOPrims() {}
+void addNetPrims() {}
+void primWifiConnect(OBJ *args) {}
+int wifiStatus() {}
+OBJ primMakeWebThing(int argCount, OBJ *args) {}
+OBJ primGetIP(int argCount, OBJ *args) {}
+
 // Persistence support
 
 FILE *codeFile;
