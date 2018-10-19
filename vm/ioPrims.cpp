@@ -438,7 +438,7 @@ OBJ primButtonB(OBJ *args) {
 
 // Servo
 
-#define HAS_SERVO !(defined(NRF51) || defined(ESP32))
+#define HAS_SERVO !(defined(NRF51) || defined(ARDUINO_NRF52_PRIMO) || defined(ESP32))
 
 #if HAS_SERVO
 	#include <Servo.h>

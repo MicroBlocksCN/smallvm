@@ -269,10 +269,14 @@ static void softReset(int clearMemoryFlag) {
 	// This is not a full hardware reset/reboot, but close.
 
 	stopAllTasks();
+
+	OBJ off = falseObj;
+	primSetUserLED(&off);
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 	primMBDisplayOff(NULL);
 	updateMicrobitDisplay();
 #endif
+
 	resetServos();
 	stopTone();
 	turnOffInternalNeoPixels();

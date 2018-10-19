@@ -36,9 +36,9 @@
 	#include "nrf.h" // nRF51 and nRF52
 
 	#ifdef ARDUINO_NRF52_PRIMO
-		// Primo: SoftDevice: 0-112k; App: 112k-148k; Persistent Mem: 148k-488k; Boot: 488k-511k
-		#define START (148 * 1024)
-		#define HALF_SPACE (170 * 1024)
+		// Primo: SoftDevice: 0-112k; App: 112k-168k; Persistent Mem: 168k-488k; Boot: 488k-511k
+		#define START (168 * 1024)
+		#define HALF_SPACE (160 * 1024)
 	#else
 		// BBC micro:bit and Calliope: App: 0-36k; Persistent Mem: 36k-256k
 		#define START (36 * 1024)
