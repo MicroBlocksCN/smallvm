@@ -173,7 +173,7 @@ method readEscapedChar JSONReader {
   } ('t' == ch) {
 	return (string 9)
   } ('u' == ch) {
-	return (hex (next this 4))
+	return (stringFromCodePoints (array (hex (next this 4))))
   } else {
 	return ch // handles back slash, forward slash (solidus), double-quote
   }

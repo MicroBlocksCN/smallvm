@@ -101,6 +101,9 @@ defineClass SampledInstrument instrumentName sampleSet
 method instrumentName SampledInstrument { return instrumentName }
 
 to newSampledInstrument instName {
+  if (isClass instName 'Array') { // allow using sample array as an instrument
+	return (sampledInstrumentFromSamples instName)
+  }
   return (init (new 'SampledInstrument') instName)
 }
 
