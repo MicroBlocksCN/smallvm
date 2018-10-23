@@ -234,16 +234,29 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 	#define PIN_LED BUILTIN_LED
 	#define PIN_BUTTON_A 0
 	#define INVERT_USER_LED true
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 
 	#define BOARD_TYPE "ESP32"
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
-	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
-	static const int analogPin[] = {A0, A3, A4, A5, A6, A7, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19};
-	#define PIN_LED 2
-	#define PIN_BUTTON_A 0
+	#define TOTAL_PINS 40
+	#ifdef BUILTIN_LED
+		#define PIN_LED BUILTIN_LED
+	#else
+		#define PIN_LED 2
+	#endif
+	#ifdef KEY_BUILTIN
+		#define PIN_BUTTON_A KEY_BUILTIN
+	#endif
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
 #else // unknown board
 
@@ -274,6 +287,9 @@ static char currentMode[TOTAL_PINS];
 		currentMode[pin] = newMode; \
 	} \
 }
+
+// Check for reserved pin on boards that define a reservedPin array
+#define RESERVED(pin) (((pin) < 0) || ((pin) >= TOTAL_PINS) || (reservedPin[(pin)]))
 
 void setPinMode(int pin, int newMode) {
 	// Function to set pin modes from other modules. (The SET_MODE macro is local to this file.)
@@ -316,10 +332,17 @@ OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 
 OBJ primAnalogRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
+	#ifdef ARDUINO_ARCH_ESP32
+		// use the ESP32 pin number directly (if not reserved)
+		if (RESERVED(pinNum)) return int2obj(0);
+		SET_MODE(pinNum, INPUT);
+		return int2obj(analogRead(pinNum) >> 2); // convert from 12-bit to 10-bit resolution
+	#else
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
 	int pin = analogPin[pinNum];
 	SET_MODE(pin, INPUT);
 	return int2obj(analogRead(pin));
+	#endif
 }
 
 void primAnalogWrite(OBJ *args) {
@@ -328,6 +351,8 @@ void primAnalogWrite(OBJ *args) {
 		if (pinNum > 25) return;
 	#elif defined(ADAFRUIT_TRINKET_M0)
 		if (pinNum > 4) return;
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+		if (RESERVED(pinNum)) return;
 	#endif
 	int value = obj2int(args[1]);
 	if (value < 0) value = 0;
@@ -348,6 +373,8 @@ OBJ primDigitalRead(OBJ *args) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return (LOW == digitalRead(USER1_BUTTON)) ? trueObj : falseObj;
 		if (23 == pinNum) return falseObj;
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+		if (RESERVED(pinNum)) return falseObj;
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, INPUT);
@@ -359,6 +386,9 @@ OBJ primDigitalRead(OBJ *args) {
 
 void primDigitalWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+		if (RESERVED(pinNum)) return;
+	#endif
 	int flag = (trueObj == args[1]);
 	primDigitalSet(pinNum, flag);
 }
@@ -382,6 +412,8 @@ void primDigitalSet(int pinNum, int flag) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+		if (RESERVED(pinNum)) return;
 	#endif
 	SET_MODE(pinNum, OUTPUT);
 	digitalWrite(pinNum, (flag ? HIGH : LOW));
