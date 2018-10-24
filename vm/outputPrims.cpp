@@ -169,7 +169,7 @@ void updateMicrobitDisplay() {
 	// at the start of each cycle and the snapshot is not changed during the cycle.
 
 	if (!microBitDisplayBits && !displaySnapshot) { // display is off
-		updateLightLevel();
+		if (lightReadingRequested) updateLightLevel();
 		return;
 	}
 
