@@ -48,8 +48,7 @@ extern "C" void writeCodeFileWord(int word) {
 
 extern "C" void clearCodeFile() {
 	if (codeFile) codeFile.close();
-	SPIFFS.remove(FILE_NAME);
-	codeFile = SPIFFS.open(FILE_NAME, "a");
+	codeFile = SPIFFS.open(FILE_NAME, "w"); // truncate file to zero length
 	int cycleCount = ('S' << 24) | 1; // Header record, version 1
 	writeCodeFileWord(cycleCount);
 	closeAndOpenCodeFile();

@@ -129,7 +129,7 @@
 		*NVMC_CTRLB = *NVMC_CTRLB | MANW; // stop page auto-write
 	}
 
-#elif defined(ARDUINO_SAM_DUE)
+#elif defined(ARDUINO_SAM_DUE_XXX) // xxx disabled because way too slow! need to revisit this
 	#include "sam.h" // AT91SAM3X8E
 
 	// NOTE: Sam3 does not allow writing into the same Flash bank as the executing program.
@@ -478,7 +478,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	int *result = freeStart;
 	flashWriteWord(freeStart++, header);
 	flashWriteWord(freeStart++, wordCount);
-	flashWriteData(freeStart, wordCount, data);
+	if (wordCount) flashWriteData(freeStart, wordCount, data);
 	freeStart += wordCount;
 	return result;
 }
