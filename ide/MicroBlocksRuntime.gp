@@ -484,6 +484,7 @@ method errorString SmallRuntime errID {
 #define noWiFi					29	// This board does not support WiFi
 #define wifiNetworkNotFound		30	// Unknown WiFi network; bad SSID?
 #define couldNotJoinWifiNetwork	31	// Attempt to join WiFi network failed; bad password?
+#define waitTooLong				32	// The maximum wait time is 3600000 milliseconds (one hour)
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)

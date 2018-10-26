@@ -59,10 +59,10 @@ extern CodeChunkRecord chunks[MAX_CHUNKS];
 // Task List
 
 // The task list is an array of taskCount Tasks. Each Task has a chunkIndex for
-// the top-level block of the task, as well as for the current function chunk
-// when inside a call to user-defined function. It also holds the task status, processor
-// state (instruction pointer (ip), stack pointer (sp), and frame pointer (fp)), and
-// the wakeTime (used when a task is waiting on the millisecond or microsecond clock).
+// the top-level block of the task, as well as for the current function chunk when
+// inside a call to user-defined function. It also holds the task status, processor
+// state (instruction pointer (ip), stack pointer (sp), and frame pointer (fp)),
+// and the wakeTime (used when a task is waiting on the microsecond clock).
 // In the current design, Tasks have a fixed-size stack built in. In the future,
 // this will become a reference to a growable stack object in memory.
 //
@@ -73,8 +73,7 @@ extern CodeChunkRecord chunks[MAX_CHUNKS];
 typedef enum {
 	unusedTask = 0, // task entry is available
 	waiting_micros = 1, // waiting for microseconds to reach wakeTime
-	waiting_millis = 2, // waiting for milliseconds to reach wakeTime
-	running = 3,
+	running = 2,
 } MicroBlocksTaskStatus_t;
 
 #define STACK_LIMIT 34 // Task size is 6 + STACK_LIMIT words
@@ -162,6 +161,7 @@ extern int taskCount;
 #define noWiFi					29	// This board does not support WiFi
 #define wifiNetworkNotFound		30	// Unknown WiFi network; bad SSID?
 #define couldNotJoinWifiNetwork	31	// Attempt to join WiFi network failed; bad password?
+#define waitTooLong				32	// The maximum wait time is 3600000 milliseconds (one hour)
 
 // Runtime Operations
 

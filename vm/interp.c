@@ -482,26 +482,23 @@ static void runTask(Task *task) {
 	 	if (tmp <= 30) {
 	 		if (tmp <= 0) { DISPATCH(); } // don't wait at all
 			// busy-wait for wait times up to 30 usecs to avoid a context switch
-			tmp = (microsecs() + tmp) - 8; // wake time, adjusted for dispatch overhead
-			while ((microsecs() - tmp) >= RECENT)
-				/* busy wait */;
+			tmp = (microsecs() + tmp) - 6; // wake time, adjusted for dispatch overhead
+			while ((microsecs() - tmp) >= RECENT) { } // busy wait
 			DISPATCH();
 		}
 		task->status = waiting_micros;
-		task->wakeTime = (microsecs() + tmp) - 17; // adjusted for approximate scheduler overhead
+		task->wakeTime = (microsecs() + tmp) - 10; // adjusted for approximate scheduler overhead
 		goto suspend;
 	waitMillis_op:
 	 	tmp = evalInt(*(sp - 1)); // wait time in usecs
 	 	POP_ARGS_COMMAND();
-	 	if (tmp < 1000) {
-	 		if (tmp <= 0) { DISPATCH(); } // don't wait at all
-	 		// use usecs for waits under a second for greater precision
-			task->status = waiting_micros;
-			task->wakeTime = microsecs() + ((1000 * tmp) - 17);
-	 	} else {
-			task->status = waiting_millis;
-			task->wakeTime = millisecs() + tmp;
-		}
+	 	if (tmp <= 0) { DISPATCH(); } // don't wait at all
+	 	if (tmp > 3600000) {
+	 		tmp = fail(waitTooLong);
+	 		goto error;
+	 	}
+		task->status = waiting_micros;
+		task->wakeTime = microsecs() + ((1000 * tmp) - 10);
 		goto suspend;
 	sendBroadcast_op:
 		primSendBroadcast(arg, sp - arg);
@@ -734,8 +731,8 @@ static void runTask(Task *task) {
 		sendSayForChunk(printBuffer, printBufferByteCount, task->taskChunkIndex);
 		POP_ARGS_COMMAND();
 		// wait for data to be sent; prevents use in tight loop from clogging serial line
-		task->status = waiting_millis;
-		task->wakeTime = millisecs() + printBufferByteCount + 5; // assume 1k bytes/sec
+		task->status = waiting_micros;
+		task->wakeTime = microsecs() + (1000 * (printBufferByteCount + 5)); // assume 1k bytes/sec
 		goto suspend;
 	printIt_op:
 		printArgs(arg, sp - arg, false, true);
@@ -750,8 +747,8 @@ static void runTask(Task *task) {
 		#endif
 		POP_ARGS_COMMAND();
 		// wait for data to be sent; prevents use in tight loop from clogging serial line
-		task->status = waiting_millis;
-		task->wakeTime = millisecs() + printBufferByteCount + 5; // assume 1k bytes/sec
+		task->status = waiting_micros;
+		task->wakeTime = microsecs() + (1000 * (printBufferByteCount + 5)); // assume 1k bytes/sec
 		goto suspend;
 
 	// I/O operations:
@@ -921,19 +918,14 @@ void vmLoop() {
 			currentTaskIndex++;
 			if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
 			Task *task = &tasks[currentTaskIndex];
-			if (running == task->status) {
+			if (unusedTask == task->status) {
+				continue;
+			} else if (running == task->status) {
 				runTask(task);
 				break;
-			} else if (unusedTask == task->status) {
-				continue;
 			} else if (waiting_micros == task->status) {
 				if (!usecs) usecs = microsecs(); // get usecs
 				if ((usecs - task->wakeTime) < RECENT) task->status = running;
-			} else if (waiting_millis == task->status) {
-				// Note: The millisecond timer is effectively only 22 bits so
-				// compare only the low 22-bits of the current/wakeTime difference.
-				if (!msecs) msecs = millisecs(); // get msecs
-				if (((msecs - task->wakeTime) & 0x3FFFFF) < RECENT) task->status = running;
 			}
 			if (running == task->status) {
 				runTask(task);
@@ -968,11 +960,6 @@ void runTasksUntilDone() {
 			} else if (waiting_micros == task->status) {
 				if (!usecs) usecs = microsecs(); // get usecs
 				if ((usecs - task->wakeTime) < RECENT) task->status = running;
-			} else if (waiting_millis == task->status) {
-				// Note: The millisecond timer is effectively only 22 bits so
-				// compare only the low 22-bits of the current/wakeTime difference.
-				if (!msecs) msecs = millisecs(); // get msecs
-				if (((msecs - task->wakeTime) & 0x3FFFFF) < RECENT) task->status = running;
 			}
 			if (running == task->status) runTask(task);
 			hasActiveTasks = true;
