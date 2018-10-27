@@ -86,13 +86,19 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 
 #define BUTTON_PRESSED LOW
 
+#if defined(ARDUINO_SAMD_MKR1000) || defined(ARDUINO_SAMD_MKRWIFI1010) || \
+	defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_MKRFox1200) || \
+	defined(ARDUINO_SAMD_MKRGSM1400) || defined(ARDUINO_SAMD_MKRWAN1300)
+		#define ARDUINO_SAMD_MKR
+#endif
+
 #if defined(ARDUINO_SAM_DUE)
 
 	#define BOARD_TYPE "Due"
 	#define DIGITAL_PINS 54
-	#define ANALOG_PINS 12
+	#define ANALOG_PINS 14
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, DAC0, DAC1};
 
 #elif defined(ARDUINO_NRF52_PRIMO)
 	// Special pins: USER1_BUTTON (22->34) and BUZZER (23->35)
@@ -194,10 +200,10 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 	#define TOTAL_PINS 14
 	static const int analogPin[] = {A0, A1, A2, A3, A4};
 
-#elif defined(ARDUINO_SAMD_MKRZERO)
+#elif defined(ARDUINO_SAMD_MKR)
 
-	#define BOARD_TYPE "MKRZero"
-	#define DIGITAL_PINS 8
+	#define BOARD_TYPE "MKR Series"
+	#define DIGITAL_PINS 15
 	#define ANALOG_PINS 7
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
@@ -217,7 +223,7 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 #elif defined(ARDUINO_SAM_ZERO)
 
 	#define BOARD_TYPE "M0"
-	#define DIGITAL_PINS 14
+	#define DIGITAL_PINS 24
 	#define ANALOG_PINS 6
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
@@ -337,12 +343,16 @@ OBJ primAnalogRead(OBJ *args) {
 		if (RESERVED(pinNum)) return int2obj(0);
 		SET_MODE(pinNum, INPUT);
 		return int2obj(analogRead(pinNum) >> 2); // convert from 12-bit to 10-bit resolution
-	#else
+	#elif defined(ARDUINO_SAM_DUE)
+		if (pinNum < 2) return int2obj(0);
+	#elif defined(ARDUINO_SAM_ZERO) // M0
+		if ((pinNum == 14) || (pinNum == 15) ||
+			((18 <= pinNum) && (pinNum <= 23))) return int2obj(0);
+	#endif
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
 	int pin = analogPin[pinNum];
 	SET_MODE(pin, INPUT);
 	return int2obj(analogRead(pin));
-	#endif
 }
 
 void primAnalogWrite(OBJ *args) {
@@ -353,6 +363,11 @@ void primAnalogWrite(OBJ *args) {
 		if (pinNum > 4) return;
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
 		if (RESERVED(pinNum)) return;
+	#elif defined(ARDUINO_SAM_DUE)
+		if (pinNum < 2) return;
+	#elif defined(ARDUINO_SAM_ZERO) // M0
+		if ((pinNum == 14) || (pinNum == 15) ||
+			((18 <= pinNum) && (pinNum <= 23))) return;
 	#endif
 	int value = obj2int(args[1]);
 	if (value < 0) value = 0;
@@ -375,6 +390,11 @@ OBJ primDigitalRead(OBJ *args) {
 		if (23 == pinNum) return falseObj;
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
 		if (RESERVED(pinNum)) return falseObj;
+	#elif defined(ARDUINO_SAM_DUE)
+		if (pinNum < 2) return falseObj;
+	#elif defined(ARDUINO_SAM_ZERO) // M0
+		if ((pinNum == 14) || (pinNum == 15) ||
+			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, INPUT);
@@ -388,6 +408,11 @@ void primDigitalWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
 		if (RESERVED(pinNum)) return;
+	#elif defined(ARDUINO_SAM_DUE)
+		if (pinNum < 2) return;
+	#elif defined(ARDUINO_SAM_ZERO) // M0
+		if ((pinNum == 14) || (pinNum == 15) ||
+			((18 <= pinNum) && (pinNum <= 23))) return;
 	#endif
 	int flag = (trueObj == args[1]);
 	primDigitalSet(pinNum, flag);
@@ -414,6 +439,11 @@ void primDigitalSet(int pinNum, int flag) {
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
 		if (RESERVED(pinNum)) return;
+	#elif defined(ARDUINO_SAM_DUE)
+		if (pinNum < 2) return;
+	#elif defined(ARDUINO_SAM_ZERO) // M0
+		if ((pinNum == 14) || (pinNum == 15) ||
+			((18 <= pinNum) && (pinNum <= 23))) return;
 	#endif
 	SET_MODE(pinNum, OUTPUT);
 	digitalWrite(pinNum, (flag ? HIGH : LOW));
