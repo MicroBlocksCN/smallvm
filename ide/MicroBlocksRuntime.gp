@@ -310,7 +310,7 @@ method clearBoardIfConnected SmallRuntime {
 		sendStopAll this
 		clearVariableNames this
 		sendMsg this 'deleteAllCodeMsg' // delete all code from board
-		waitMSecs 50 // leave time to write to flash or next message will be missed
+		waitMSecs 300 // leave time to write to flash or next message will be missed
 	}
 	allStopped this
 	chunkIDs = (dictionary)
