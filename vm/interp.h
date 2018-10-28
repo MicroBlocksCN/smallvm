@@ -46,6 +46,8 @@ typedef enum {
 	startHat = 4,
 	whenConditionHat = 5,
 	broadcastHat = 6,
+	buttonAHat = 7,
+	buttonBHat = 8,
 } ChunkType_t;
 
 typedef struct {
@@ -228,6 +230,7 @@ void hardwareInit(void);
 void setPinMode(int pin, int newMode);
 void turnOffPins();
 void updateMicrobitDisplay();
+void checkButtons();
 void resetServos();
 void stopTone();
 

@@ -61,6 +61,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'digitalPins'		'digital pins')
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
+		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'str' 'A')
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
@@ -346,7 +347,7 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 		op = (primName cmdOrReporter)
 		if ('whenCondition' == op) {
 			addAll result (instructionsForWhenCondition this cmdOrReporter)
-		} ('whenStarted' == op) {
+		} (or ('whenStarted' == op) ('whenButtonPressed' == op)) {
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 			add result (array 'halt' 0)
 		} ('whenBroadcastReceived' == op) {

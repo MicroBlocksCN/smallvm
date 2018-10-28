@@ -195,6 +195,34 @@ void startReceiversOfBroadcast(char *msg, int byteCount) {
 	}
 }
 
+// Button Hat Support
+
+#define BUTTON_CHECK_INTERVAL 10000 // microseconds
+
+static uint32 lastCheck = 0;
+
+void checkButtons() {
+	// If either button A or button B is pressed, start tasks for all of that button's
+	// hat blocks if they are not already running. This check is done at most once
+	// every BUTTON_CHECK_INTERVAL microseconds.
+
+	uint32 now = microsecs();
+	if (now < lastCheck) lastCheck = 0; // clock wrap
+	if ((now - lastCheck) < BUTTON_CHECK_INTERVAL) return; // not time yet
+	lastCheck = now;
+
+	int chunkTypeA = (primButtonA(NULL)) ? buttonAHat : -1;
+	int chunkTypeB = (primButtonB(NULL)) ? buttonBHat : -1;
+	if ((chunkTypeA < 0) && (chunkTypeB < 0)) return; // neither button pressed
+
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		int chunkType = chunks[i].chunkType;
+		if ((chunkTypeA == chunkType) || (chunkTypeB == chunkType)) {
+			startTaskForChunk(i); // only starts a new task if if chunk is not already running
+		}
+	}
+}
+
 // Store Ops
 
 static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {

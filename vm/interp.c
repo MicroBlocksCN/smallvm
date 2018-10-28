@@ -904,16 +904,17 @@ void vmLoop() {
 	int count = 0;
 	while (true) {
 		if (count-- <= 0) {
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
-			updateMicrobitDisplay();
-#endif
+			// do background VM tasks (done once every N cycles)
+			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
+				updateMicrobitDisplay();
+			#elif defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+				webServerLoop();
+			#endif
+			checkButtons();
 			processMessage();
 			count = 25; // must be under 30 when building on mbed to avoid serial errors
 		}
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-		webServerLoop();
-#endif
-		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
+		uint32 usecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
 			currentTaskIndex++;
 			if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
@@ -948,7 +949,7 @@ void runTasksUntilDone() {
 			count = 100; // reduce to 30 when building on mbed to avoid serial errors
 		}
 		hasActiveTasks = false;
-		uint32 usecs = 0, msecs = 0; // compute times only the first time they are needed
+		uint32 usecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
 			Task *task = &tasks[t];
 			if (running == task->status) {

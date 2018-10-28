@@ -51,6 +51,11 @@ method chunkTypeFor SmallRuntime aBlockOrFunction {
 	if ('whenStarted' == op) { return 4 }
 	if ('whenCondition' == op) { return 5 }
 	if ('whenBroadcastReceived' == op) { return 6 }
+	if ('whenButtonPressed' == op) {
+		button = (first (argList expr))
+		if ('A' == button) { return 7 }
+		return 8
+	}
 	if (isClass expr 'Command') { return 1 }
 	if (isClass expr 'Reporter') { return 2 }
 
