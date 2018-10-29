@@ -483,16 +483,6 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	return result;
 }
 
-static void pauseBeforeStarting(int msecs) {
-	// Wait a bit before autostarting scripts to give the user a chance
-	// to clear any possibly broken scripts before they are auto-started.
-
-	int startT = millisecs();
-	while ((millisecs() - startT) < msecs) {
-		processMessage();
-	}
-}
-
 void restoreScripts() {
 	initPersistentMemory();
 	memset(chunks, 0, sizeof(chunks));
@@ -529,8 +519,6 @@ void restoreScripts() {
 	char s[100];
 	sprintf(s, "Restoring %d scripts...", chunkCount);
 	outputString(s);
-
-//	pauseBeforeStarting(1000);
 	outputString("Started");
 }
 

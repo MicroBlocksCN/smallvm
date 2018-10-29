@@ -327,11 +327,10 @@ static int outBufEnd = 0;
 
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
-static inline void sendNextByte() {
-	if (outBufStart != outBufEnd) {
-		if (sendByte(outBuf[outBufStart])) {
-			outBufStart = (outBufStart + 1) & OUTBUF_MASK;
-		}
+static inline void sendData() {
+	while (outBufStart != outBufEnd) {
+		if (!sendByte(outBuf[outBufStart])) break;
+		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
 	}
 }
 
@@ -510,7 +509,7 @@ static void waitForOutbufBytes(int bytesNeeded) {
 	// Wait until there is room for the given number of bytes in the output buffer.
 
 	while (bytesNeeded > (OUTBUF_MASK - OUTBUF_BYTES())) {
-		sendNextByte(); // should eventually create enough room for bytesNeeded
+		sendData(); // should eventually create enough room for bytesNeeded
 	}
 }
 
@@ -796,10 +795,9 @@ static void processLongMessage() {
 void processMessage() {
 	// Process a message from the client.
 
-	sendNextByte();
+	sendData();
 
-	int bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
-
+	int bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
 	rcvByteCount += bytesRead;
 	if (!rcvByteCount) return;
 
@@ -807,7 +805,7 @@ void processMessage() {
 		// wait time: on microBit, 35 seems to work, 25 fails
 		// on Arduino Primo, 100 sometimes fails; use 150 to be safe (character time is ~90 usecs)
 //		busyWaitMicrosecs(150); // needed when built on mbed to avoid dropped bytes
-		bytesRead = readBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+		bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
 		rcvByteCount += bytesRead;
 		lastRcvTime = microsecs();
 	}

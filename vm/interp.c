@@ -482,7 +482,7 @@ static void runTask(Task *task) {
 	 	if (tmp <= 30) {
 	 		if (tmp <= 0) { DISPATCH(); } // don't wait at all
 			// busy-wait for wait times up to 30 usecs to avoid a context switch
-			tmp = (microsecs() + tmp) - 6; // wake time, adjusted for dispatch overhead
+			tmp = microsecs() + tmp - 3; // wake time
 			while ((microsecs() - tmp) >= RECENT) { } // busy wait
 			DISPATCH();
 		}
@@ -732,7 +732,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		// wait for data to be sent; prevents use in tight loop from clogging serial line
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + (1000 * (printBufferByteCount + 5)); // assume 1k bytes/sec
+		task->wakeTime = microsecs() + (300 * (printBufferByteCount + 6)); // assume 1k bytes/sec
 		goto suspend;
 	printIt_op:
 		printArgs(arg, sp - arg, false, true);
@@ -748,7 +748,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		// wait for data to be sent; prevents use in tight loop from clogging serial line
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + (1000 * (printBufferByteCount + 5)); // assume 1k bytes/sec
+		task->wakeTime = microsecs() + (300 * (printBufferByteCount + 6)); // assume 1k bytes/sec
 		goto suspend;
 
 	// I/O operations:
@@ -903,8 +903,8 @@ void vmLoop() {
 
 	int count = 0;
 	while (true) {
-		if (count-- <= 0) {
-			// do background VM tasks (done once every N cycles)
+		if (count-- < 0) {
+			// do background VM tasks once every N VM loop cycles
 			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 				updateMicrobitDisplay();
 			#elif defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
@@ -912,7 +912,7 @@ void vmLoop() {
 			#endif
 			checkButtons();
 			processMessage();
-			count = 25; // must be under 30 when building on mbed to avoid serial errors
+			count = 100; // must be under 30 when building on mbed to avoid serial errors
 		}
 		uint32 usecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {

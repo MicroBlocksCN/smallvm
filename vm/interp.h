@@ -219,7 +219,7 @@ void taskTest(void);
 uint32 microsecs(void);
 uint32 millisecs(void);
 
-int readBytes(uint8 *buf, int count);
+int recvBytes(uint8 *buf, int count);
 int sendByte(char aByte);
 
 const char *boardType();

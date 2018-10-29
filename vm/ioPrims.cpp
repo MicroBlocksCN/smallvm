@@ -35,12 +35,11 @@ uint32 microsecs() {
 }
 
 uint32 millisecs() {
-	// Approximate milliseconds as (usecs / 1024) using a bitshift, since divide is very slow.
-	// This avoids the need for a second hardware timer for milliseconds, but the millisecond
-	// clock is effectively only 22 bits, and (like the microseconds clock) it wraps around
-	// every 72 minutes.
+	// Note: The divide operation makes this slower than microsecs(), so use microsecs()
+	// when high-performance is needed. The millisecond clock is effectively only 22 bits
+	// so, like the microseconds clock, it wraps around every 72 minutes.
 
-	return microsecs() >> 10;
+	return microsecs() / 1000;
 }
 
 void hardwareInit() {
@@ -71,7 +70,7 @@ void hardwareInit() {
 
 void putSerial(char *s) { Serial.print(s); } // callable from C; used to simulate printf for debugging
 
-int readBytes(uint8 *buf, int count) {
+int recvBytes(uint8 *buf, int count) {
 	int bytesRead = Serial.available();
 	if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
 	for (int i = 0; i < bytesRead; i++) {
@@ -250,6 +249,7 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
 	#ifdef BUILTIN_LED
 		#define PIN_LED BUILTIN_LED
 	#else
