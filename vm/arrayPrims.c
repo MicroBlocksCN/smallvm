@@ -17,7 +17,7 @@
 
 static int stringSize(OBJ obj) {
 	int wordCount = objWords(obj);
-	if (!wordCount) return int2obj(0); // empty string
+	if (!wordCount) return 0; // empty string
 	char *s = (char *) &FIELD(obj, 0);
 	int byteCount = 4 * (wordCount - 1);
 	for (int i = 0; i < 4; i++) {

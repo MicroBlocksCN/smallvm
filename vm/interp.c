@@ -494,7 +494,7 @@ static void runTask(Task *task) {
 	 	POP_ARGS_COMMAND();
 	 	if (tmp <= 0) { DISPATCH(); } // don't wait at all
 	 	if (tmp > 3600000) {
-	 		tmp = fail(waitTooLong);
+	 		fail(waitTooLong);
 	 		goto error;
 	 	}
 		task->status = waiting_micros;

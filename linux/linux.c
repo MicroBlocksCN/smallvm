@@ -42,7 +42,6 @@ uint32 microsecs() {
 }
 
 uint32 millisecs() {
-printf("millisecs called\n"); // xxx
 	struct timeval now;
 	gettimeofday(&now, NULL);
 
@@ -63,7 +62,7 @@ static void openPseudoTerminal() {
  	unlockpt(pty);
 }
 
-int readBytes(uint8 *buf, int count) {
+int recvBytes(uint8 *buf, int count) {
 	int readCount = read(pty, buf, count);
 	if (readCount < 0) readCount = 0;
 	return readCount;
@@ -116,7 +115,7 @@ OBJ primMBTemp(OBJ *args) { return int2obj(0); }
 void primNeoPixelSend(OBJ *args) { }
 void primNeoPixelSetPin(int argCount, OBJ *args) { }
 void primMBDrawShape(int argCount, OBJ *args) { }
-OBJ primMBShapeForLetter(OBJ *args) { }
+OBJ primMBShapeForLetter(OBJ *args) { return int2obj(0); }
 
 // Other bogus primitives
 
@@ -128,9 +127,9 @@ void addDisplayPrims() {}
 void addIOPrims() {}
 void addNetPrims() {}
 void primWifiConnect(OBJ *args) {}
-int wifiStatus() {}
-OBJ primMakeWebThing(int argCount, OBJ *args) {}
-OBJ primGetIP(int argCount, OBJ *args) {}
+int wifiStatus() { return 0; }
+OBJ primMakeWebThing(int argCount, OBJ *args) { return falseObj; }
+OBJ primGetIP(int argCount, OBJ *args) { return falseObj; }
 
 // Persistence support
 
