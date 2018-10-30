@@ -38,8 +38,8 @@ static char request[REQUEST_SIZE];
 
 // Primitives to build a Thing description (interim, until we have string concatenation)
 
-// Hack: Simulate a MicroBlocks object with a C struct. Since this is not a
-// dynamically allocated object, it could confuse the garbage collector. But
+// Hack: Simulate a MicroBlocks string object with a C struct. Since this is not a
+// a dynamically allocated object, it could confuse the garbage collector. But
 // we'll replace this interim mechanism once we do have a garbage collector.
 
 #define DESCRIPTION_SIZE 2048
@@ -52,6 +52,7 @@ struct {
 static char connecting = false;
 static uint32 initTime;
 
+int serverStarted = false;
 WiFiServer server(80);
 WiFiClient client;
 
@@ -73,8 +74,9 @@ void primWifiConnect(OBJ *args) {
 // Web Server for Mozilla IoT Things
 
 static void initWebServer() {
-  server.stop();
-  server.begin();
+	server.stop();
+	server.begin();
+	serverStarted = true;
 }
 
 static int hasPrefix(char *s, char *requestPrefix, char *arg, int argSize) {
@@ -214,11 +216,20 @@ int wifiStatus() {
 
 // WiFi Connections (new)
 
+#define STRING_OBJ_CONST(s) \
+  struct { uint32 header = HEADER(StringClass, ((sizeof(s) + 3) / 4)); char body[sizeof(s)] = s; }
+
+STRING_OBJ_CONST("Not connected") statusNotConnected;
+STRING_OBJ_CONST("Trying...") statusTrying;
+STRING_OBJ_CONST("Connected") statusConnected;
+STRING_OBJ_CONST("Failed; bad password?") statusFailed;
+STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
+
 int firstTime = true;
 
-OBJ primStartWifi(int argCount, OBJ *args) {
-  // Start a WiFi connection attempt. The client should call wifiIsConnected
-  // until the connection is established or the attempt fails with an error.
+OBJ primStartWiFi(int argCount, OBJ *args) {
+  // Start a WiFi connection attempt. The client should call wifiStatus until either
+  // the connection is established or the attempt fails.
 
   if (argCount < 2) return fail(notEnoughArguments);
 
@@ -237,6 +248,7 @@ OBJ primStartWifi(int argCount, OBJ *args) {
     WiFi.begin(networkName, password);
   }
 
+#ifdef ESP8266
   // workaround for an apparent ESP8266 WiFi startup bug; calling WiFi.status() during
   // the first few seconds after starting WiFi for the first time results in strange
   // behavior (task just stops without either error or completion; memory corruption?)
@@ -244,37 +256,60 @@ OBJ primStartWifi(int argCount, OBJ *args) {
     delay(3000); // 3000 works, 2500 does not
     firstTime = false;
   }
-}
-
-OBJ primIsWifiConnected(int argCount, OBJ *args) {
-  // Return true if connected to WiFi. If the connection attempt fails, report an error.
-
-  int status = WiFi.status();
-
-  if (WL_NO_SSID_AVAIL == status) return fail(wifiNetworkNotFound);
-  if (WL_CONNECT_FAILED == status) return fail(couldNotJoinWifiNetwork);
-
-  if ((WL_IDLE_STATUS == status) && (WIFI_AP_STA == WiFi.getMode())) { // acting as hotspot
-    status = WL_CONNECTED;
-  }
-
-#if defined(ARDUINO_ARCH_ESP32)
-  if (WL_CONNECTED == status) {
-#else
-  if ((WL_CONNECTED == status) && !server.status()) {
 #endif
-    // start the server when the connection is first established
-    initWebServer();
-  }
 
-  return (WL_CONNECTED == status) ? trueObj : falseObj;
+outputString("VM: Connecting...");
+  connecting = true;
 }
+
+OBJ primStopWiFi(int argCount, OBJ *args) {
+	server.stop();
+	WiFi.mode(WIFI_OFF);
+	connecting = false;
+	return falseObj;
+}
+
+OBJ primWiFiStatus(int argCount, OBJ *args) {
+	int status = WiFi.status();
+
+	if (WL_NO_SHIELD == status) return (OBJ) &statusNotConnected; // reported on ESP32
+	if (WL_NO_SSID_AVAIL == status) return (OBJ) &statusUnknownNetwork; // reported only on ESP8266
+	if (WL_CONNECT_FAILED == status) return (OBJ) &statusFailed; // reported only on ESP8266
+
+	if (WL_DISCONNECTED == status) {
+		return connecting ? (OBJ) &statusTrying : (OBJ) &statusNotConnected;
+	}
+	if (WL_CONNECTION_LOST == status) {
+		primStopWiFi(0, NULL);
+		return (OBJ) &statusNotConnected;
+	}
+	if (WL_IDLE_STATUS == status) {
+		if (WIFI_AP_STA == WiFi.getMode()) {
+			status = WL_CONNECTED; // acting as a hotspot
+		} else {
+			return connecting ? (OBJ) &statusTrying : (OBJ) &statusNotConnected;
+		}
+	}
+	if (WL_CONNECTED == status) {
+		if (!serverStarted) {
+			// start the server when a connection is first established
+			initWebServer();
+		}
+		return (OBJ) &statusConnected;
+	}
+	return int2obj(status); // should not happen
+}
+
+struct {
+	uint32 header;
+	char body[16];
+} ipStringObject;
 
 OBJ primGetIP(int argCount, OBJ *args) {
   IPAddress ip = (WIFI_AP_STA == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
-  char ipString[17];
-  sprintf(ipString, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
-  return newStringFromBytes((uint8*) ipString, strlen(ipString));
+  sprintf(ipStringObject.body, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+  ipStringObject.header = HEADER(StringClass, (strlen(ipStringObject.body) + 4) / 4);
+  return (OBJ) &ipStringObject;
 }
 
 // Thing Description (old)
@@ -360,8 +395,9 @@ int wifiStatus() { return 4; } // WL_CONNECT_FAILED = 4
 void primWifiConnect(OBJ *args) { fail(noWiFi); }
 OBJ primMakeWebThing(int argCount, OBJ *args) { return fail(noWiFi); }
 
-OBJ primStartWifi(int argCount, OBJ *args) { return fail(noWiFi); }
-OBJ primIsWifiConnected(int argCount, OBJ *args) { return fail(noWiFi); }
+OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
+OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
+OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 
 OBJ primThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -371,8 +407,9 @@ OBJ primAppendToThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
 #endif
 
 static PrimEntry entries[] = {
-	"startWiFi", primStartWifi,
-	"isWiFiConnected", primIsWifiConnected,
+	"startWiFi", primStartWiFi,
+	"stopWiFi", primStopWiFi,
+	"wifiStatus", primWiFiStatus,
 	"myIPAddress", primGetIP,
 	"thingDescription", primThingDescription,
 	"clearThingDescription", primClearThingDescription,

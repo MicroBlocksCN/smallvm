@@ -146,9 +146,10 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
                                                             'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
 
-		(array ' ' '[net:startWiFi]'				'start WiFi _ password _ : be hotspot _' 'str str bool' 'SSID' 'MyPassword' true)
-		(array 'r' '[net:isWiFiConnected]'			'connected to WiFi?')
-		(array 'r' '[net:myIPAddress]'				'my IP address')
+		(array ' ' '[net:startWiFi]'	'start WiFi _ password _ : be hotspot _' 'str str bool' 'SSID' 'MyPassword' true)
+		(array ' ' '[net:stopWiFi]'		'stop WiFi')
+		(array 'r' '[net:wifiStatus]'	'WiFi status')
+		(array 'r' '[net:myIPAddress]'	'my IP address')
 
 		(array 'r' '[net:thingDescription]'			'thing description')
 		(array ' ' '[net:clearThingDescription]'	'clear thing description')
