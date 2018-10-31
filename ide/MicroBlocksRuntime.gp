@@ -171,6 +171,7 @@ method stopAndSyncScripts SmallRuntime {
 	// Stop everyting and sync scripts with the board.
 
 	clearBoardIfConnected this
+	oldVarNames = nil // force var names to be updated
 	saveAllChunks this
 }
 
@@ -825,6 +826,7 @@ method copyVMToBoard SmallRuntime boardName boardPath {
   connectMSecs = nil // don't ask user to install the VM again
   waitMSecs 8000
   ensurePortOpen (smallRuntime)
+  stopAndSyncScripts this
 }
 
 method installVMInBrowser SmallRuntime {
