@@ -184,9 +184,13 @@
 	// Simulate Flash operations using RAM; allows uBlocks to run in RAM on platforms
 	// that do not support Flash-based persistent memory.
 
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+		#define HALF_SPACE (10 * 1024) // 20k total
+	#else
+		#define HALF_SPACE (5 * 1024) // 10k total
+	#endif
 	#define START (&flash[0])
-	#define HALF_SPACE (5 * 1024)
-	static uint8 flash[2 * HALF_SPACE]; // simulated Flash memory (10k)
+	static uint8 flash[2 * HALF_SPACE]; // simulated Flash memory
 
 	static void flashErase(int *startAddr, int *endAddr) {
 		int *dst = (int *) startAddr;
@@ -469,7 +473,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	// write the record
 	int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
 
-  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32XXX) || defined(GNUBLOCKS)
 	writeCodeFileWord(header);
 	writeCodeFileWord(wordCount);
 	writeCodeFile(data, 4 * wordCount);
@@ -487,7 +491,7 @@ void restoreScripts() {
 	initPersistentMemory();
 	memset(chunks, 0, sizeof(chunks));
 
-  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32XXX) || defined(GNUBLOCKS)
 	initCodeFile(flash, HALF_SPACE);
   #endif
 
