@@ -44,6 +44,13 @@ method allVarsMenu InputSlot {
   return menu
 }
 
+method buttonMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'A'
+  addItem menu 'B'
+  return menu
+}
+
 method thingTypesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu ''
@@ -55,16 +62,16 @@ method thingTypesMenu InputSlot {
   addItem menu 'EnergyMonitor'
   addItem menu 'SmartPlug'
   addItem menu 'Light'
+  addItem menu 'MotionSensor'
+  addItem menu 'DoorSensor'
+  addItem menu 'PushButton'
   return menu
 }
 
 method varTypesMenu InputSlot {
-  // TODO: support object and array
   menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'null'
   addItem menu 'boolean'
   addItem menu 'number'
-  addItem menu 'integer'
   addItem menu 'string'
   return menu
 }
@@ -74,6 +81,9 @@ method propertyTypesMenu InputSlot {
   addItem menu ''
   addItem menu 'BooleanProperty'
   addItem menu 'OnOffProperty'
+  addItem menu 'MotionProperty'
+  addItem menu 'OpenProperty'
+  addItem menu 'PushedProperty'
   addItem menu 'LevelProperty'
   addItem menu 'BrightnessProperty'
   addItem menu 'ColorProperty'

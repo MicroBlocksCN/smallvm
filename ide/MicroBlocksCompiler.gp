@@ -61,7 +61,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'digitalPins'		'digital pins')
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
-		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'str' 'A')
+		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'menu.buttonMenu' 'A')
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
