@@ -162,7 +162,7 @@ method deleteChunkForBlock SmallRuntime aBlock {
 	entry = (at chunkIDs key nil)
 	if (and (notNil entry) (notNil port)) {
 		chunkID = (first entry)
-		sendMsg this 'deleteChunkMsg' chunkID
+		sendMsgSync this 'deleteChunkMsg' chunkID
 		remove chunkIDs key
 	}
 }
@@ -315,8 +315,8 @@ method clearBoardIfConnected SmallRuntime {
 	if (notNil port) {
 		sendStopAll this
 		clearVariableNames this
-		sendMsg this 'deleteAllCodeMsg' // delete all code from board
-		waitMSecs 300 // leave time to write to flash or next message will be missed
+		sendMsgSync this 'deleteAllCodeMsg' // delete all code from board
+		waitMSecs 300 // this can be slow; give the board a chance to process it
 	}
 	allStopped this
 	chunkIDs = (dictionary)
@@ -377,8 +377,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 			showHint (morph aBlockOrFunction) 'Script is too large to send to board.'
 		}
 	}
-	sendMsg this 'chunkCodeMsg' chunkID data
-	waitMSecs ((count data) / 5) // wait approximate transmission time (assuming 5k bytes/sec)
+	sendMsgSync this 'chunkCodeMsg' chunkID data
 
 	// restart the chunk if it is a Block and is running
 	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
@@ -393,7 +392,7 @@ method saveVariableNames SmallRuntime {
 
 	varID = 0
 	for varName newVarNames {
-		sendMsg this 'varNameMsg' varID (toArray (toBinaryData varName))
+		sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
 		varID += 1
 	}
 	oldVarNames = (copy newVarNames)
@@ -414,7 +413,7 @@ method getVar SmallRuntime varID {
 
 method clearVariableNames SmallRuntime {
 	oldVarNames = nil
-	sendMsg this 'clearVarsMsg'
+	sendMsgSync this 'clearVarsMsg'
 }
 
 method getAllVarNames SmallRuntime {
@@ -534,6 +533,36 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		}
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
 		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
+	}
+}
+
+method sendMsgSync SmallRuntime msgName chunkID byteList {
+	readAvailableSerialData this
+	sendMsg this msgName chunkID byteList
+	waitForResponse this
+}
+
+method readAvailableSerialData SmallRuntime {
+	// Read any available data into recvBuf so that waitForResponse well await fresh data.
+
+	waitMSecs 20 // leave some time for queued data to arrive
+	s = (readSerialPort port true)
+	if (notNil s) { recvBuf = (join recvBuf s) }
+}
+
+method waitForResponse SmallRuntime {
+	// Wait for some data to arrive from the board. This is taken to mean that the
+	// previous operation has completed.
+
+	timeout = 2000
+	start = (msecsSinceStart)
+	while (((msecsSinceStart) - start) < timeout) {
+		s = (readSerialPort port true)
+		if (notNil s) {
+			recvBuf = (join recvBuf s)
+			return
+		}
+		waitMSecs 5
 	}
 }
 
