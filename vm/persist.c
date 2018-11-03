@@ -129,7 +129,7 @@
 		*NVMC_CTRLB = *NVMC_CTRLB | MANW; // stop page auto-write
 	}
 
-#elif defined(ARDUINO_SAM_DUE_XXX) // xxx disabled because way too slow! need to revisit this
+#elif defined(ARDUINO_SAM_DUE)
 	#include "sam.h" // AT91SAM3X8E
 
 	// NOTE: Sam3 does not allow writing into the same Flash bank as the executing program.
@@ -473,7 +473,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	// write the record
 	int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
 
-  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32XXX) || defined(GNUBLOCKS)
+  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	writeCodeFileWord(header);
 	writeCodeFileWord(wordCount);
 	writeCodeFile(data, 4 * wordCount);
@@ -491,7 +491,7 @@ void restoreScripts() {
 	initPersistentMemory();
 	memset(chunks, 0, sizeof(chunks));
 
-  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32XXX) || defined(GNUBLOCKS)
+  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	initCodeFile(flash, HALF_SPACE);
   #endif
 
