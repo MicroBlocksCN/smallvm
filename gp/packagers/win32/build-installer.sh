@@ -55,7 +55,7 @@ cp microBlocks.ico build
 cat install-config.iss | sed -E "s/@AppVersion/$version/" > build/install-config.iss
 cd build
 echo "Creating Windows installer..."
-wine "$isccpath" /Qp install-config.iss 2> /dev/null
+wine "$isccpath" /Q install-config.iss 2> /dev/null
 if [ -e microBlocks\ setup.exe ]; then
     echo "Windows installer created"
 else

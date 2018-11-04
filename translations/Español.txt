@@ -34,10 +34,10 @@ inclinación z
 temperature (°C)
 temperatura (°C)
 
-micros
+microseconds
 microsegundos
 
-millis
+milliseconds
 milisegundos
 
 read digital pin _
@@ -60,6 +60,9 @@ pines digitales
 
 when started
 al empezar
+
+when button _ pressed
+cuando se pulse el botón _
 
 forever _
 por siempre _
@@ -198,3 +201,51 @@ configurar un NeoPixel en el pin _ con color blanco _
 
 send NeoPixel rgb _
 enviar RGB _ al NeoPixel
+
+light level
+nivel de luz
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+pon NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+apaga NeoPixels
+
+set NeoPixel _ color _
+pon NeoPixel _ de color _
+
+set all NeoPixels color _
+pon todos los NeoPixels de color _
+
+rotate NeoPixels by _
+rota NeoPixels en _
+
+color r _ g _ b _
+color r _ v _ a _
+
+attach _ LED NeoPixel strip to pin _ has white _
+inicializa tira de _ NeoPixels en el pin _ con blanco _
+
+receive IR code from device _
+recibe código IR del dispositivo _
+
+test IR
+prueba IR
+
+scroll text _ pausing _ ms
+anima el texto _ con _ ms de pausa
+
+scroll number _ pausing _ ms
+anima el número _ con _ ms de pausa
+
+stop scrolling
+detén la animación
+
+attach buzzer to pin _
+inicializa zumbador en el pin _
+
+play note _ octave _ during _ ms
+toca la nota _ en la octava _ durante _ ms
+
+play frequency _ on pin _ for _ ms
+toca la frecuencia _ en el pin _ durante _ ms

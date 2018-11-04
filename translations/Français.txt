@@ -34,10 +34,10 @@ inclinaison z
 temperature (°C)
 température (°C)
 
-micros
+microseconds
 microsecondes
 
-millis
+milliseconds
 millisecondes
 
 read digital pin _
@@ -60,6 +60,9 @@ broches numériques
 
 when started
 au début
+
+when button _ pressed
+quand le bouton _ est pressé
 
 forever _
 répéter indéfiniment _
