@@ -232,14 +232,12 @@ static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 	int *persistenChunk = appendPersistentRecord(chunkCode, chunkIndex, chunkType, byteCount - 1, &data[1]);
 	chunks[chunkIndex].code = persistenChunk;
 	chunks[chunkIndex].chunkType = chunkType;
-	sendMessage(pingMsg, 1, 0, NULL);
 }
 
 static void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
 	unsigned char attributeID = data[0];
 	if ((chunkIndex >= MAX_CHUNKS) || (attributeID >= ATTRIBUTE_COUNT)) return;
 	appendPersistentRecord(chunkAttribute, chunkIndex, attributeID, byteCount - 1, &data[1]);
-	sendMessage(pingMsg, 1, 0, NULL);
 }
 
 static void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
@@ -249,18 +247,15 @@ static void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
 	for (int i = 0; i < byteCount; i++) *dst++ = data[i];
 	*dst = 0; // null terminate
 	appendPersistentRecord(varName, varIndex, 0, (byteCount + 1), buf);
-	sendMessage(pingMsg, 1, 0, NULL);
 }
 
 static void storeComment(uint8 commentIndex, int byteCount, uint8 *data) {
 	appendPersistentRecord(comment, commentIndex, 0, byteCount, data);
-	sendMessage(pingMsg, 1, 0, NULL);
 }
 
 static void storeCommentPosition(uint8 commentIndex, int byteCount, uint8 *data) {
 	if (byteCount != 4) return;
 	appendPersistentRecord(commentPosition, commentIndex, 0, byteCount, data);
-	sendMessage(pingMsg, 1, 0, NULL);
 }
 
 // Delete Ops
@@ -271,7 +266,6 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 	chunks[chunkIndex].code = NULL;
 	chunks[chunkIndex].chunkType = unusedChunk;
 	appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
-	sendMessage(pingMsg, 1, 0, NULL);
 }
 
 static void deleteAllChunks() {
@@ -284,18 +278,15 @@ static void deleteAllChunks() {
 	}
   #endif
 	memset(chunks, 0, sizeof(chunks));
-	sendMessage(pingMsg, 1, 0, NULL);
 }
 
 static void clearAllVariables() {
 	// Clear variable name records (but don't clear the variable values).
 	appendPersistentRecord(varsClearAll, 0, 0, 0, NULL);
-	sendMessage(pingMsg, 1, 0, NULL);
 }
 
 static void deleteComment(uint8 commentIndex) {
 	appendPersistentRecord(commentDeleted, commentIndex, 0, 0, NULL);
-	sendMessage(pingMsg, 1, 0, NULL);
 }
 
 // Soft Reset
