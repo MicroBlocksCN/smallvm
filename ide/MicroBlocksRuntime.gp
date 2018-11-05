@@ -537,8 +537,11 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 }
 
 method sendMsgSync SmallRuntime msgName chunkID byteList {
+	// Send a message followed by a 'pingMsg', then a wait for a ping response from VM.
+
 	readAvailableSerialData this
 	sendMsg this msgName chunkID byteList
+	sendMsg this 'pingMsg'
 	waitForResponse this
 }
 
