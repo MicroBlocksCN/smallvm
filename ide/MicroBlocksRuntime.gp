@@ -170,7 +170,7 @@ method deleteChunkForBlock SmallRuntime aBlock {
 method stopAndSyncScripts SmallRuntime {
 	// Stop everyting and sync scripts with the board.
 
-	clearBoardIfConnected this
+	clearBoardIfConnected this false
 	oldVarNames = nil // force var names to be updated
 	saveAllChunks this
 }
@@ -251,7 +251,7 @@ method setPort SmallRuntime newPortName {
 	waitMSecs 20
 	processMessages this
 	updateIndicator (findMicroBlocksEditor)
-	clearBoardIfConnected this
+	clearBoardIfConnected this true
 }
 
 method closePort SmallRuntime {
@@ -311,9 +311,10 @@ method showVersion SmallRuntime versionString {
 	inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) versionString)
 }
 
-method clearBoardIfConnected SmallRuntime {
+method clearBoardIfConnected SmallRuntime doReset {
 	if (notNil port) {
 		sendStopAll this
+		if doReset { softReset this }
 		clearVariableNames this
 		sendMsgSync this 'deleteAllCodeMsg' // delete all code from board
 		waitMSecs 300 // this can be slow; give the board a chance to process it

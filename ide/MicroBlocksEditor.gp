@@ -171,7 +171,7 @@ method clearProject MicroBlocksEditor {
   setText title ''
   project = (emptyProject)
   developerModeChanged scripter // clear extensions
-  clearBoardIfConnected (smallRuntime)
+  clearBoardIfConnected (smallRuntime) true
 }
 
 method openProjectMenu MicroBlocksEditor {
