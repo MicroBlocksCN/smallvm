@@ -215,6 +215,23 @@ OBJ primButtonA(OBJ *args) { return falseObj; }
 OBJ primButtonB(OBJ *args) { return falseObj; }
 
 void primNeoPixelSend(OBJ *args) { }
+void primNeoPixelSetPin(int argCount, OBJ *args) { }
+void primMBDrawShape(int argCount, OBJ *args) { }
+OBJ primMBShapeForLetter(OBJ *args) { return int2obj(0); }
+
+// Other bogus primitives
+
+void resetServos() {}
+void stopTone() {}
+void turnOffInternalNeoPixels() {}
+void turnOffPins() {}
+void addDisplayPrims() {}
+void addIOPrims() {}
+void addNetPrims() {}
+void primWifiConnect(OBJ *args) {}
+int wifiStatus() { return 0; }
+OBJ primMakeWebThing(int argCount, OBJ *args) { return falseObj; }
+OBJ primGetIP(int argCount, OBJ *args) { return falseObj; }
 
 // Raspberry Pi Main
 

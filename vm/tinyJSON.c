@@ -53,7 +53,7 @@ Limitations:
 
 // helper functions
 
-static inline int isDigit(ch) {
+static inline int isDigit(char ch) {
 	return (('0' <= ch) && (ch <= '9'));
 }
 
