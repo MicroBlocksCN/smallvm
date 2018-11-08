@@ -84,15 +84,6 @@ int recvBytes(uint8 *buf, int count) {
 	return readCount;
 }
 
-// int canReadByte() {
-// 	if (pty > 0) {
-// 		int bytesAvailable = 0;
-// 		ioctl(pty, FIONREAD, &bytesAvailable);
-// 		return (bytesAvailable > 0);
-// 	}
-// 	return serialDataAvail(serialPort);
-// }
-
 int sendByte(char aByte) {
 	int fd = (pty > 0) ? pty : serialPort;
 	return write(fd, &aByte, 1);
