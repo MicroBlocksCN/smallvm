@@ -202,9 +202,8 @@ method slotInfoForIndex BlockSpec slotIndex {
   if (not repeatLastSpec) { error 'Slot index is out of range' }
   repeatedSlotCount = (countInputSlots this (last specs))
   if (repeatedSlotCount == 0) { error 'The repeated slot spec must have at least one input slot' }
-  repeatedSlotStart = (((count slotInfo) - repeatedSlotCount))
-  n = (slotIndex - repeatedSlotStart)
-  i = (max 1 ((((n - repeatedSlotStart) % repeatedSlotCount) + 1) + repeatedSlotStart))
+  firstRepeatedSlot = ((((count slotInfo) - repeatedSlotCount)) + 1)
+  i = (firstRepeatedSlot + ((slotIndex - firstRepeatedSlot) % repeatedSlotCount))
   return (at slotInfo i)
 }
 
