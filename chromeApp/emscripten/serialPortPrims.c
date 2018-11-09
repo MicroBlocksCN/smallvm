@@ -170,7 +170,8 @@ static int readPort(PortHandle port, char *buf, int bufSize) {
 
 static int writePort(PortHandle port, char *buf, int bufSize) {
 	DWORD bytesWritten = 0;
-	WriteFile((HANDLE) port, (void *) buf, bufSize, &bytesWritten, NULL);
+	BOOL ok = WriteFile((HANDLE) port, (void *) buf, bufSize, &bytesWritten, NULL);
+	if (!ok && (ERROR_IO_PENDING != GetLastError())) return -1;
 	return (int) bytesWritten;
 }
 
@@ -381,7 +382,7 @@ OBJ primWriteSerialPort(int nargs, OBJ args[]) {
 	int portID = obj2int(args[0]);
 
 	PortHandle h = getPortHandle(portID);
-	if (h == CLOSED) return int2obj(0);
+	if (h == CLOSED) return -1;
 
 	OBJ data = args[1];
 	if (!(IS_CLASS(data, BinaryDataClass) || IS_CLASS(data, StringClass))) {
@@ -395,7 +396,7 @@ OBJ primWriteSerialPort(int nargs, OBJ args[]) {
 		printf("Write error, serial port %d\n", portID);
 		closePort(portID, h);
 		portHandle[portID] = CLOSED;
-		return int2obj(0);
+		return -1;
 	}
 	return int2obj(n); // return bytes written
 }
