@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion
 
 method scripter SmallRuntime { return scripter }
 
@@ -273,6 +273,7 @@ method connectionStatus SmallRuntime {
 	}
 	if (((msecsSinceStart) - pingSentMSecs) > pingSendInterval) {
 		sendMsg this 'pingMsg'
+		if (isNil vmVersion) { getVersion this }
 		pingSentMSecs = (msecsSinceStart)
 	}
 	msecsSinceLastPing = ((msecsSinceStart) - lastPingRecvMSecs)
@@ -283,10 +284,12 @@ method connectionStatus SmallRuntime {
 		msecsSinceConnect = ((msecsSinceStart) - connectMSecs)
 		if (msecsSinceConnect > 5000) {
 			connectMSecs = nil // don't do this again unti next connection attempt
-			ok = (confirm (global 'page') nil
+			if (not (isEmpty (collectBoardDrives this))) {
+				ok = (confirm (global 'page') nil
 'The board is not responding.
 Try to Install MicroBlocks on the board?')
-			if ok { installVM this }
+				if ok { installVM this }
+			}
 		}
 	}
 	return 'board not responding'
@@ -305,6 +308,25 @@ method showAboutBox SmallRuntime {
 
 method getVersion SmallRuntime {
 	sendMsg this 'getVersionMsg'
+}
+
+method extractVersionNumber SmallRuntime versionString {
+	// Return the version number from the versionString.
+	// Parse carefully in case version format changes in the future.
+
+	words = (words (substring versionString 2))
+	if (isEmpty words) { return -1 }
+	s = (first words)
+	if (not (representsANumber s)) { return -2 }
+	return (toInteger s)
+}
+
+method versionReceived SmallRuntime versionString {
+	if (isNil vmVersion) { //  first time: just record the version number
+		vmVersion = (extractVersionNumber this versionString)
+	} else {
+		inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) versionString)
+	}
 }
 
 method showVersion SmallRuntime versionString {
@@ -665,7 +687,7 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'varValueMsg')) {
 		print 'variable value:' (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
-		showVersion this (returnedValue this msg)
+		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 		connectMSecs = nil // we've received a ping, to don't ask user to install the VM
