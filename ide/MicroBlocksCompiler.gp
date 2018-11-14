@@ -146,11 +146,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[io:hasServo]'		'has servo support')
 		(array ' ' '[io:setServo]'		'set servo pin _ to _ usecs' 'num num' 0 1500)
 
-// 		(array ' ' 'wifiConnect'		'connect to WiFi _ with password _' 'str str' 'SSID' 'MyPassword')
-// 		(array 'r' 'getIP'		        'my IP address')
-// 		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
-//                                                             'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
-
 		(array 'r' '[net:hasWiFi]'		'has WiFi support')
 		(array ' ' '[net:startWiFi]'	'start WiFi _ password _ : be hotspot _' 'str str bool' 'SSID' 'MyPassword' true)
 		(array ' ' '[net:stopWiFi]'		'stop WiFi')
@@ -161,7 +156,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[net:clearThingDescription]'	'clear thing description')
 		(array ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
 
-	'Disabled'
+	'Disabled (does not work)'
  		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
 
 		// While these are useful, they can easily crash the VM (e.g. by addressing non-existent memory).
@@ -296,9 +291,9 @@ method initOpcodes SmallCompiler {
 		mbDrawShape 109
 		mbShapeForLetter 110
 		neoPixelSetPin 111
-		wifiConnect 112
-		getIP 113
-		makeWebThing 114
+	RESERVED 112
+	RESERVED 113
+	RESERVED 114
 	RESERVED 115
 	RESERVED 116
 	RESERVED 117

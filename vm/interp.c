@@ -333,9 +333,9 @@ static void runTask(Task *task) {
 		&&drawShape_op,
 		&&shapeForLetter_op,
 		&&neoPixelSetPin_op,
-		&&wifiConnect_op,
-		&&getIP_op,
-		&&makeWebThing_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -912,26 +912,6 @@ static void runTask(Task *task) {
 		DISPATCH();
 	neoPixelSetPin_op:
 		primNeoPixelSetPin(arg, sp - arg);
-		POP_ARGS_COMMAND();
-		DISPATCH();
-
-	// network operations:
-	wifiConnect_op:
-		primWifiConnect(sp - arg);
-		// wait until connection attempt ends
-		if (wifiStatus() == 0) {
-			// 0: WL_IDLE_STATUS
-			ip--;
-			goto suspend;
-		}
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	getIP_op:
-		*(sp - arg) = primGetIP(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	makeWebThing_op:
-		primMakeWebThing(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 

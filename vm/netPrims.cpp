@@ -6,6 +6,7 @@
 
 // netPrims.cpp - MicroBlocks network primitives
 // Bernat Romagosa, August 2018
+// Revised by John Maloney, November 2018
 
 #include <stdio.h>
 #include <string.h>
@@ -42,7 +43,7 @@ static char request[REQUEST_SIZE];
 // a dynamically allocated object, it could confuse the garbage collector. But
 // we'll replace this interim mechanism once we do have a garbage collector.
 
-#define DESCRIPTION_SIZE 2048
+#define DESCRIPTION_SIZE 1024
 
 struct {
 	uint32 header;
@@ -55,21 +56,6 @@ static uint32 initTime;
 int serverStarted = false;
 WiFiServer server(80);
 WiFiClient client;
-
-void primWifiConnect(OBJ *args) {
-	// don't cancel ongoing connection attempts
-	if (!connecting) {
-		connecting = true;
-		initTime = millisecs();
-		char *essid = obj2str(args[0]);
-		char *psk = obj2str(args[1]);
-		// Kill active connection, if there was one
-		WiFi.persistent(false);
-		WiFi.mode(WIFI_OFF);
-		WiFi.mode(WIFI_STA);
-		WiFi.begin(essid, psk);
-	}
-}
 
 // Web Server for Mozilla IoT Things
 
@@ -186,38 +172,11 @@ void webServerLoop() {
 	client.stop();
 }
 
-// WiFi Connections (old)
-
-int wifiStatus() {
-	// WL_IDLE_STATUS		= 0
-	// WL_CONNECTED			= 3
-	// WL_CONNECT_FAILED	= 4
-	// WL_CONNECTION_LOST	= 5
-	// WL_DISCONNECTED		= 6
-	int status = WiFi.status();
-	if (status == 3 && WiFi.localIP()[0] != 0 && millisecs() > initTime + 250) {
-		// Got an IP. We're online. We wait at least a quarter second, otherwise
-		// we may have read an old state
-		connecting = false;
-		initWebServer();
-	} else if (status != 3 && millisecs() > initTime + 10000) {
-		// We time out after 10s
-		WiFi.disconnect();
-		status = WL_DISCONNECTED;
-		connecting = false;
-		fail(couldNotJoinWifiNetwork);
-	} else {
-		// Still waiting
-		status = WL_IDLE_STATUS;
-	}
-	return status;
-}
-
-// WiFi Connections (new)
+// WiFi Connection
 
 // Macro for creating MicroBlocks string object constants
 #define STRING_OBJ_CONST(s) \
-	struct { uint32 header = HEADER(StringClass, ((sizeof(s) + 3) / 4)); char body[sizeof(s)] = s; }
+	struct { uint32 header = HEADER(StringClass, ((sizeof(s) + 4) / 4)); char body[sizeof(s)] = s; }
 
 // Status strings that can be returned by WiFiStatus primitive
 
@@ -229,7 +188,9 @@ STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
 
 int firstTime = true;
 
-OBJ primStartWiFi(int argCount, OBJ *args) {
+static OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
+
+static OBJ primStartWiFi(int argCount, OBJ *args) {
 	// Start a WiFi connection attempt. The client should call wifiStatus until either
 	// the connection is established or the attempt fails.
 
@@ -262,14 +223,14 @@ OBJ primStartWiFi(int argCount, OBJ *args) {
 	connecting = true;
 }
 
-OBJ primStopWiFi(int argCount, OBJ *args) {
+static OBJ primStopWiFi(int argCount, OBJ *args) {
 	server.stop();
 	WiFi.mode(WIFI_OFF);
 	connecting = false;
 	return falseObj;
 }
 
-OBJ primWiFiStatus(int argCount, OBJ *args) {
+static OBJ primWiFiStatus(int argCount, OBJ *args) {
 	int status = WiFi.status();
 
 	if (WL_NO_SHIELD == status) return (OBJ) &statusNotConnected; // reported on ESP32
@@ -305,60 +266,22 @@ struct {
 	char body[16];
 } ipStringObject;
 
-OBJ primGetIP(int argCount, OBJ *args) {
+static OBJ primGetIP(int argCount, OBJ *args) {
 	IPAddress ip = (WIFI_AP_STA == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
 	sprintf(ipStringObject.body, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 	ipStringObject.header = HEADER(StringClass, (strlen(ipStringObject.body) + 4) / 4);
 	return (OBJ) &ipStringObject;
 }
 
-// Thing Description (old)
+// Thing Description
 
-OBJ primMakeWebThing(int argCount, OBJ *args) {
-	char* thingName = obj2str(args[0]);
-	int bytesWritten = sprintf(
-		descriptionObj.body,
-			"{\"name\":\"%s\","
-			"\"@type\":\"MicroBlocks\","
-			"\"description\":\"%s\","
-			"\"href\":\"/\","
-			"\"properties\":{",
-		thingName,
-		thingName
-	);
-	for (int i = 1; i < argCount; i += 3) {
-		char* propertyType = obj2str(args[i]);
-		char* propertyLabel = obj2str(args[i+1]);
-		char* propertyVar = obj2str(args[i+2]);
-		bytesWritten += sprintf(
-			descriptionObj.body + bytesWritten,
-				"\"%s\":"
-				"{\"type\":\"%s\","
-				"\"label\":\"%s\","
-				"\"href\":\"/properties/%s\""
-				"},",
-			propertyVar,
-			propertyType,
-			propertyLabel,
-			propertyVar
-		);
-	}
-	if (argCount > 2) {
-		// we subtract one position to overwrite the last comma
-		bytesWritten --;
-	}
-	sprintf(descriptionObj.body + bytesWritten, "}}\0");
-}
-
-// Thing Description (new)
-
-OBJ primThingDescription(int argCount, OBJ *args) {
+static OBJ primThingDescription(int argCount, OBJ *args) {
 	int wordCount = (strlen(descriptionObj.body) + 4) / 4;
 	descriptionObj.header = HEADER(StringClass, wordCount);
 	return (OBJ) &descriptionObj;
 }
 
-OBJ primClearThingDescription(int argCount, OBJ *args) {
+static OBJ primClearThingDescription(int argCount, OBJ *args) {
 	descriptionObj.body[0] = 0;
 }
 
@@ -376,7 +299,7 @@ static void appendObjToDescription(OBJ obj) {
 	else if (obj == falseObj) snprintf(dst, n, "false");
 }
 
-OBJ primAppendToThingDescription(int argCount, OBJ *args) {
+static OBJ primAppendToThingDescription(int argCount, OBJ *args) {
 	for (int i = 0; i < argCount; i++) {
 		appendObjToDescription(args[i]);
 	}
@@ -390,23 +313,20 @@ OBJ primAppendToThingDescription(int argCount, OBJ *args) {
 
 #else // not ESP8266 or ESP32
 
-int wifiStatus() { return 4; } // WL_CONNECT_FAILED = 4
+static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
+static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 
-void primWifiConnect(OBJ *args) { fail(noWiFi); }
-OBJ primMakeWebThing(int argCount, OBJ *args) { return fail(noWiFi); }
-
-OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
-OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
-OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
-OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
-
-OBJ primThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
-OBJ primClearThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
-OBJ primAppendToThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
+static OBJ primThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primClearThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
+static OBJ primAppendToThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
 
 #endif
 
 static PrimEntry entries[] = {
+	"hasWiFi", primHasWiFi,
 	"startWiFi", primStartWiFi,
 	"stopWiFi", primStopWiFi,
 	"wifiStatus", primWiFiStatus,

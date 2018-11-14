@@ -160,10 +160,8 @@ extern int taskCount;
 #define stackOverflow			26	// Insufficient stack space
 #define primitiveNotImplemented	27	// Primitive not implemented in this virtual machine
 #define notEnoughArguments		28	// Not enough arguments passed to primitive
-#define noWiFi					29	// This board does not support WiFi
-#define wifiNetworkNotFound		30	// Unknown WiFi network; bad SSID?
-#define couldNotJoinWifiNetwork	31	// Attempt to join WiFi network failed; bad password?
-#define waitTooLong				32	// The maximum wait time is 3600000 milliseconds (one hour)
+#define waitTooLong				29	// The maximum wait time is 3600000 milliseconds (one hour)
+#define noWiFi					30	// This board does not support WiFi
 
 // Runtime Operations
 
@@ -233,6 +231,7 @@ void updateMicrobitDisplay();
 void checkButtons();
 void resetServos();
 void stopTone();
+void webServerLoop();
 
 // Primitives
 
@@ -279,12 +278,6 @@ OBJ primMBTemp(OBJ *args);
 void primNeoPixelSend(OBJ *args);
 void primNeoPixelSetPin(int argCount, OBJ *args);
 void turnOffInternalNeoPixels();
-
-void primWifiConnect(OBJ *args);
-void webServerLoop();
-int wifiStatus();
-OBJ primGetIP(int argCount, OBJ *args);
-OBJ primMakeWebThing(int argCount, OBJ *args);
 
 // Primitive Sets
 
