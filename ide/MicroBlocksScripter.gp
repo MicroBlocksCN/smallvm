@@ -329,6 +329,7 @@ method initLabelSpecs MicroBlocksScripter {
   atPut labelSpecs 'at' '-'
 
   // Advanced
+  atPut labelSpecs 'boardType' '-'
   atPut labelSpecs 'sendBroadcast' '-'
   atPut labelSpecs 'mbDrawShape' '-'
   atPut labelSpecs 'neoPixelSetPin' '-'

@@ -84,6 +84,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '/'					'_ / _' 'num num' 10 2)
 		(array 'r' '%'					'_ mod _' 'num num' 10 2)
 		(array 'r' 'absoluteValue'		'abs _ ' 'num' -10)
+		(array 'r' 'minimum'			'min _ : _ : ...' 'num num' 1 2)
+		(array 'r' 'maximum'			'max _ : _ : ...' 'num num' 1 2)
+
 		(array 'r' 'random'				'random _ to _' 'num num' 1 10)
 		(array 'r' '<'					'_ < _' 'num num' 3 4)
 		(array 'r' '<='					'_ <= _' 'num num' 3 4)
@@ -115,6 +118,8 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '<<'					'_ << _' 'num num' 3 2)
 		(array 'r' '>>'					'_ >> _' 'num num' -100 2)
 
+		(array 'r' 'boardType'			'board type')
+
 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
 
 		(array ' ' 'mbDrawShape'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
@@ -141,11 +146,12 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[io:hasServo]'		'has servo support')
 		(array ' ' '[io:setServo]'		'set servo pin _ to _ usecs' 'num num' 0 1500)
 
-		(array ' ' 'wifiConnect'		'connect to WiFi _ with password _' 'str str' 'SSID' 'MyPassword')
-		(array 'r' 'getIP'		        'my IP address')
-		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
-                                                            'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
+// 		(array ' ' 'wifiConnect'		'connect to WiFi _ with password _' 'str str' 'SSID' 'MyPassword')
+// 		(array 'r' 'getIP'		        'my IP address')
+// 		(array ' ' 'makeWebThing'		'define webThing named _ : with _ property labeled _ mapped to _ : ...'
+//                                                             'str menu.varTypesMenu str menu.allVarsMenu' 'MicroBlocks thingie')
 
+		(array 'r' '[net:hasWiFi]'		'has WiFi support')
 		(array ' ' '[net:startWiFi]'	'start WiFi _ password _ : be hotspot _' 'str str bool' 'SSID' 'MyPassword' true)
 		(array ' ' '[net:stopWiFi]'		'stop WiFi')
 		(array 'r' '[net:wifiStatus]'	'WiFi status')
@@ -211,8 +217,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 30
 	RESERVED 31
 	RESERVED 32
-	RESERVED 33
-	RESERVED 34
+		minimum 33
+		maximum 34
 		< 35
 		<= 36
 		== 37
@@ -254,7 +260,7 @@ method initOpcodes SmallCompiler {
 		poke 73
 		sayIt 74
 		printIt 75
-	RESERVED 76
+		boardType 76
 	RESERVED 77
 	RESERVED 78
 	RESERVED 79
