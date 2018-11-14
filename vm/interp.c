@@ -104,7 +104,6 @@ static int bytesForObject(OBJ value) {
 	return 512; // maximum that might be needed, based on size of buffer in sendValueMessage
 }
 
-
 // Broadcast
 
 static void primSendBroadcast(int argCount, OBJ *args) {
@@ -113,6 +112,23 @@ static void primSendBroadcast(int argCount, OBJ *args) {
 	printArgs(argCount, args, false, false);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
+}
+
+// Board Type
+
+#define BOARD_TYPE_SIZE 32
+
+// statically allocated object for the boardType primitive result
+static struct {
+	uint32 header;
+	char body[BOARD_TYPE_SIZE];
+} boardTypeObj;
+
+OBJ primBoardType() {
+	strncpy(boardTypeObj.body, boardType(), BOARD_TYPE_SIZE - 1);
+	int wordCount = (strlen(boardTypeObj.body) + 4) / 4;
+	boardTypeObj.header = HEADER(StringClass, wordCount);
+	return (OBJ) &boardTypeObj;
 }
 
 // Misc primitives
@@ -128,6 +144,30 @@ static OBJ primRandom(int argCount, OBJ *args) {
 	}
 	if (range < 1) range = 1;
 	return int2obj((rand() % range) + base); // result range is [base..base+range], inclusive
+}
+
+static OBJ primMinimum(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	int result = obj2int(args[0]);
+	for (int i = 0; i < argCount; i++) {
+		OBJ arg = args[i];
+		if (!isInt(arg)) return fail(needsIntegerError);
+		int n = obj2int(arg);
+		if (n < result) result = n;
+	}
+	return int2obj(result);
+}
+
+static OBJ primMaximum(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	int result = obj2int(args[0]);
+	for (int i = 0; i < argCount; i++) {
+		OBJ arg = args[i];
+		if (!isInt(arg)) return fail(needsIntegerError);
+		int n = obj2int(arg);
+		if (n > result) result = n;
+	}
+	return int2obj(result);
 }
 
 static int stringsEqual(OBJ obj1, OBJ obj2) {
@@ -214,8 +254,8 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&minimum_op,
+		&&maximum_op,
 		&&lessThan_op,
 		&&lessOrEq_op,
 		&&equal_op,
@@ -257,7 +297,7 @@ static void runTask(Task *task) {
 		&&poke_op,
 		&&sayIt_op,
 		&&printIt_op,
-		&&RESERVED_op,
+		&&boardType_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -563,6 +603,14 @@ static void runTask(Task *task) {
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
 	// Commands pop all their arguments.
 	// Reporters pop all their arguments and leave a result on the top of the stack.
+	minimum_op:
+		*(sp - arg) = primMinimum(arg, sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	maximum_op:
+		*(sp - arg) = primMaximum(arg, sp - arg);
+		POP_ARGS_REPORTER();
+		DISPATCH();
 	lessThan_op:
 		*(sp - arg) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
 		POP_ARGS_REPORTER();
@@ -750,6 +798,10 @@ static void runTask(Task *task) {
 		task->status = waiting_micros;
 		task->wakeTime = microsecs() + (300 * (printBufferByteCount + 6)); // assume 1k bytes/sec
 		goto suspend;
+	boardType_op:
+		*(sp - arg) = primBoardType();
+		POP_ARGS_REPORTER();
+		DISPATCH();
 
 	// I/O operations:
 	analogPins_op:
