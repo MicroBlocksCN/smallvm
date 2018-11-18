@@ -13,7 +13,7 @@
 #include "persist.h"
 
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-	// Persistent file operations for NodeMCU (SPIFFS file system)
+// Persistent file operations for Espressif boards (SPIFFS file system)
 
 #include <FS.h>
 #ifdef ARDUINO_ARCH_ESP32
@@ -30,7 +30,7 @@ static void closeAndOpenCodeFile() {
 }
 
 extern "C" void initCodeFile(uint8 *flash, int flashByteCount) {
-	SPIFFS.begin();
+	SPIFFS.begin(true);
 	codeFile = SPIFFS.open(FILE_NAME, "r");
 	// read code file into simulated Flash:
 	if (codeFile) codeFile.readBytes((char*) flash, flashByteCount);

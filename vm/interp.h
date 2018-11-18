@@ -296,6 +296,16 @@ void addDisplayPrims();
 void addIOPrims();
 void addNetPrims();
 
+// TFT Support for the Citilab ED1 board
+#ifdef ARDUINO_CITILAB_ED1
+void addTFTPrims();
+void tftInit();
+void tftClear();
+OBJ primTftSetPixel(int argCount, OBJ *args);
+void tftSetHugePixel(int x, int y, int state);
+void tftSetHugePixelBits(int bits);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

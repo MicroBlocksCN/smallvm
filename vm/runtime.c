@@ -83,6 +83,9 @@ void primsInit() {
 	addDisplayPrims();
 	addIOPrims();
 	addNetPrims();
+#ifdef ARDUINO_CITILAB_ED1
+	addTFTPrims();
+#endif
 }
 
 // Task Ops
