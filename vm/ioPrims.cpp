@@ -62,6 +62,10 @@ void hardwareInit() {
 	Serial.begin(115200);
 	initPins();
 	turnOffInternalNeoPixels();
+	#ifdef ARDUINO_CITILAB_ED1
+	dacWrite(26,0); // prevents serial TX noise on buzzer
+	tftInit();
+	#endif
 }
 
 #endif
@@ -243,6 +247,22 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1};
 
+#elif defined(ARDUINO_CITILAB_ED1)
+
+	#define BOARD_TYPE "Citilab ED1"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+		0, 0, 1, 0, 1, 0, 0, 0, 0, 0};
+    #define PIN_LED 0
+	#define PIN_BUTTON_A 15
+	#define PIN_BUTTON_B 14
+
 #elif defined(ARDUINO_ARCH_ESP32)
 
 	#define BOARD_TYPE "ESP32"
@@ -250,6 +270,8 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
 	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 15
+	#define PIN_BUTTON_B 14
 	#ifdef BUILTIN_LED
 		#define PIN_LED BUILTIN_LED
 	#else
@@ -318,6 +340,16 @@ static void initPins(void) {
 	#ifdef ARDUINO_NRF52_PRIMO
 		pinMode(USER1_BUTTON, INPUT);
 		pinMode(BUZZER, OUTPUT);
+	#endif
+
+	#ifdef ARDUINO_CITILAB_ED1
+		// set up buttons
+		pinMode(2, INPUT_PULLUP);  // ←
+		pinMode(4, INPUT_PULLUP);  // ↑
+		pinMode(13, INPUT_PULLUP); // ↓
+		pinMode(14, INPUT_PULLUP); // X
+		pinMode(15, INPUT_PULLUP); // OK
+		pinMode(27, INPUT_PULLUP); // →
 	#endif
 }
 
@@ -388,13 +420,21 @@ OBJ primDigitalRead(OBJ *args) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return (LOW == digitalRead(USER1_BUTTON)) ? trueObj : falseObj;
 		if (23 == pinNum) return falseObj;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
-		if (RESERVED(pinNum)) return falseObj;
 	#elif defined(ARDUINO_SAM_DUE)
 		if (pinNum < 2) return falseObj;
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
+	#elif defined(ARDUINO_CITILAB_ED1)
+		if (pinNum == 2 || pinNum == 4 || pinNum == 13 ||
+				pinNum == 14 || pinNum == 15 || pinNum == 27) {
+			// Do not reset pin mode, it should stay as INPUT_PULLUP
+			// like we specified in initPins.
+			// These buttons are reversed too.
+			return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
+		}
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+		if (RESERVED(pinNum)) return falseObj;
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, INPUT);
@@ -460,6 +500,12 @@ void primSetUserLED(OBJ *args) {
 		} else {
 			primMBUnplot(coords);
 		}
+	#elif defined(ARDUINO_CITILAB_ED1)
+		if (trueObj == args[0]) {
+			tftSetHugePixel(3, 1, HIGH); // x, y, state
+		} else {
+			tftClear();
+		}
 	#else
 		SET_MODE(PIN_LED, OUTPUT);
 		int output = (trueObj == args[0]) ? HIGH : LOW;
@@ -478,7 +524,10 @@ OBJ primButtonA(OBJ *args) {
 		primDigitalSet(PIN_BUTTON_A, false);
 	#endif
 	#ifdef PIN_BUTTON_A
+		// do not set pin mode for ED1 board, it needs to stay INPUT_PULLUP
+	#ifndef ARDUINO_CITILAB_ED1
 		SET_MODE(PIN_BUTTON_A, INPUT);
+	#endif
 		return (BUTTON_PRESSED == digitalRead(PIN_BUTTON_A)) ? trueObj : falseObj;
 	#else
 		return falseObj;
@@ -491,7 +540,10 @@ OBJ primButtonB(OBJ *args) {
 		primDigitalSet(PIN_BUTTON_B, false);
 	#endif
 	#ifdef PIN_BUTTON_B
+		// do not set pin mode for ED1 board, it needs to stay INPUT_PULLUP
+	#ifndef ARDUINO_CITILAB_ED1
 		SET_MODE(PIN_BUTTON_B, INPUT);
+	#endif
 		return (BUTTON_PRESSED == digitalRead(PIN_BUTTON_B)) ? trueObj : falseObj;
 	#else
 		return falseObj;
@@ -500,7 +552,7 @@ OBJ primButtonB(OBJ *args) {
 
 // Servo
 
-#define HAS_SERVO !(defined(NRF51) || defined(ARDUINO_NRF52_PRIMO) || defined(ESP32))
+#define HAS_SERVO !(defined(NRF51) || defined(ARDUINO_NRF52_PRIMO) || defined(ESP32) || defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS))
 
 #if HAS_SERVO
 	#include <Servo.h>

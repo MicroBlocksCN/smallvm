@@ -246,27 +246,43 @@ void updateMicrobitDisplay() { }
 void primMBDisplay(OBJ *args) {
 	OBJ arg = args[0];
 	if (isInt(arg)) microBitDisplayBits = evalInt(arg);
+
+	#ifdef ARDUINO_CITILAB_ED1
+	tftSetHugePixelBits(microBitDisplayBits);
+	#endif
 }
 
 void primMBDisplayOff(OBJ *args) {
+	#ifdef ARDUINO_CITILAB_ED1
+	tftClear();
+	#else
 	microBitDisplayBits = 0;
+	#endif
 }
 
 void primMBPlot(OBJ *args) {
-	int x = evalInt(args[0]);
-	int y = evalInt(args[1]);
-	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
-		int shift = (5 * (y - 1)) + (x - 1);
-		microBitDisplayBits |= (1 << shift);
-	}
+    int x = evalInt(args[0]);
+    int y = evalInt(args[1]);
+    if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+		#ifdef ARDUINO_CITILAB_ED1
+		tftSetHugePixel(x, y, HIGH);
+		#else
+        int shift = (5 * (y - 1)) + (x - 1);
+        microBitDisplayBits |= (1 << shift);
+		#endif
+    }
 }
 
 void primMBUnplot(OBJ *args) {
 	int x = evalInt(args[0]);
 	int y = evalInt(args[1]);
 	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+		#ifdef ARDUINO_CITILAB_ED1
+		tftSetHugePixel(x, y, LOW);
+		#else
 		int shift = (5 * (y - 1)) + (x - 1);
 		microBitDisplayBits &= ~(1 << shift);
+		#endif
 	}
 }
 
@@ -275,6 +291,8 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 	OBJ analogPin = int2obj(8);
 	lightLevel = obj2int(primAnalogRead(&analogPin));
 	lightLevel = lightLevel / 10;
+  #elif defined ARDUINO_CITILAB_ED1
+	lightLevel = analogRead(34) * 1000 / 4095;
   #else
 	lightReadingRequested = true;
   #endif
@@ -527,6 +545,9 @@ void primMBDrawShape(int argCount, OBJ *args) {
 			srcMask <<= 1; // advance to next bit of shape
 		}
 	}
+	#ifdef ARDUINO_CITILAB_ED1
+	tftSetHugePixelBits(microBitDisplayBits);
+	#endif
 }
 
 // Primitives

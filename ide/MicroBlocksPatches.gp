@@ -51,6 +51,13 @@ method buttonMenu InputSlot {
   return menu
 }
 
+method directions InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'clockwise'
+  addItem menu 'counter-clockwise'
+  return menu
+}
+
 method thingTypesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu ''
