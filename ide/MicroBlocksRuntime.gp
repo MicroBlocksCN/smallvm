@@ -817,18 +817,16 @@ method collectBoardDrives SmallRuntime {
   if ('Mac' == (platform)) {
 	for v (listDirectories '/Volumes') {
 	  path = (join '/Volumes/' v '/')
-	  if (beginsWith v 'MICROBIT') { add result (list v path) }
-	  if (beginsWith v 'MINI') { add result (list v path) }
-	  if (beginsWith v 'CPLAYBOOT') { add result (list v path) }
+	  boardName = (getBoardName this path)
+	  if (notNil boardName) { add result (list boardName path) }
 	}
   } ('Linux' == (platform)) {
 	for dir (listDirectories '/media') {
 	  prefix = (join '/media/' dir)
 	  for v (listDirectories prefix) {
 		path = (join prefix '/' v '/')
-		if (beginsWith v 'MICROBIT') { add result (list v path) }
-		if (beginsWith v 'MINI') { add result (list v path) }
-		if (beginsWith v 'CPLAYBOOT') { add result (list v path) }
+		boardName = (getBoardName this path)
+		if (notNil boardName) { add result (list boardName path) }
 	  }
 	}
   } ('Win' == (platform)) {

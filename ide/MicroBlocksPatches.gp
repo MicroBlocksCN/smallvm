@@ -481,6 +481,21 @@ method fixLayout Block {
   raise morph 'layoutChanged' this
 }
 
+to newColorPicker action initialColor {
+  // If there is already a ColorPicker on the screen, return it.
+  // Otherwise, create and return a new one.
+
+  for m (parts (morph (global 'page'))) {
+	if (isClass (handler m) 'ColorPicker') {
+	  setAction (handler m) action
+	  return (handler m)
+	}
+  }
+  return (initialize (new 'ColorPicker') action initialColor)
+}
+
+method setAction ColorPicker anAction { action = anAction }
+
 method updateRGBReadouts ColorPicker c {
   // Adjust color for NeoPixels (see SmallCompiler instructionsForExpression)
 
