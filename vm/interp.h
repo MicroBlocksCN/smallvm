@@ -150,7 +150,7 @@ extern int taskCount;
 #define arraySizeError			16	// List size must be a non-negative integer
 #define needsIntegerIndexError	17	// List index must be an integer
 #define indexOutOfRangeError	18	// List index out of range
-#define byteArrayStoreError		19 	// A ByteArray can only store integer values between 0 and 255
+#define byteArrayStoreError		19	// A ByteArray can only store integer values between 0 and 255
 #define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255

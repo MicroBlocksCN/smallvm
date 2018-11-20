@@ -47,8 +47,8 @@ void tftSetHugePixel(int x, int y, int state) {
 	int w = tft.width() / 5;
 	int h = tft.height() / 5;
 	tft.fillRect(
-		(x - 1) * w, 	// x position
-		(y - 1) * h, 	// y position
+		(x - 1) * w,	// x position
+		(y - 1) * h,	// y position
 		w,				// "pixel" width
 		h,				// "pixel" height
 		state ? TFT_GREEN : TFT_BLACK);

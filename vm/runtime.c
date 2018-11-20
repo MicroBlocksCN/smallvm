@@ -83,9 +83,9 @@ void primsInit() {
 	addDisplayPrims();
 	addIOPrims();
 	addNetPrims();
-#ifdef ARDUINO_CITILAB_ED1
-	addTFTPrims();
-#endif
+	#ifdef ARDUINO_CITILAB_ED1
+		addTFTPrims();
+	#endif
 }
 
 // Task Ops
@@ -273,13 +273,13 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 
 static void deleteAllChunks() {
 	stopAllTasks();
-  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
-	clearCodeFile();
-  #else
-	for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
-		appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
-	}
-  #endif
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+		clearCodeFile();
+	#else
+		for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
+			appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
+		}
+	#endif
 	memset(chunks, 0, sizeof(chunks));
 }
 
@@ -791,8 +791,8 @@ static void processLongMessage() {
 
 // Uncomment when building on mbed:
 // static void busyWaitMicrosecs(int usecs) {
-// 	uint32 start = microsecs();
-// 	while ((microsecs() - start) < (uint32) usecs) /* wait */;
+//	uint32 start = microsecs();
+//	while ((microsecs() - start) < (uint32) usecs) /* wait */;
 // }
 
 void processMessage() {

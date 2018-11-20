@@ -261,16 +261,16 @@ void primMBDisplayOff(OBJ *args) {
 }
 
 void primMBPlot(OBJ *args) {
-    int x = evalInt(args[0]);
-    int y = evalInt(args[1]);
-    if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+	int x = evalInt(args[0]);
+	int y = evalInt(args[1]);
+	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
 		#ifdef ARDUINO_CITILAB_ED1
-		tftSetHugePixel(x, y, HIGH);
+			tftSetHugePixel(x, y, HIGH);
 		#else
-        int shift = (5 * (y - 1)) + (x - 1);
-        microBitDisplayBits |= (1 << shift);
+			int shift = (5 * (y - 1)) + (x - 1);
+			microBitDisplayBits |= (1 << shift);
 		#endif
-    }
+	}
 }
 
 void primMBUnplot(OBJ *args) {
@@ -278,24 +278,24 @@ void primMBUnplot(OBJ *args) {
 	int y = evalInt(args[1]);
 	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
 		#ifdef ARDUINO_CITILAB_ED1
-		tftSetHugePixel(x, y, LOW);
+			tftSetHugePixel(x, y, LOW);
 		#else
-		int shift = (5 * (y - 1)) + (x - 1);
-		microBitDisplayBits &= ~(1 << shift);
+			int shift = (5 * (y - 1)) + (x - 1);
+			microBitDisplayBits &= ~(1 << shift);
 		#endif
 	}
 }
 
 static OBJ primLightLevel(int argCount, OBJ *args) {
-  #ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
-	OBJ analogPin = int2obj(8);
-	lightLevel = obj2int(primAnalogRead(&analogPin));
-	lightLevel = lightLevel / 10;
-  #elif defined ARDUINO_CITILAB_ED1
-	lightLevel = analogRead(34) * 1000 / 4095;
-  #else
-	lightReadingRequested = true;
-  #endif
+	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+		OBJ analogPin = int2obj(8);
+		lightLevel = obj2int(primAnalogRead(&analogPin));
+		lightLevel = lightLevel / 10;
+	#elif defined ARDUINO_CITILAB_ED1
+		lightLevel = analogRead(34) * 1000 / 4095;
+	#else
+		lightReadingRequested = true;
+	#endif
 	return int2obj(lightLevel);
 }
 
@@ -322,7 +322,7 @@ inline uint32 saveIRQState(void) {
 
 inline void restoreIRQState(uint32 pmask) {
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-		 __asm__ volatile ("wsr %0, ps; rsync" :: "a" (pmask));
+		__asm__ volatile ("wsr %0, ps; rsync" :: "a" (pmask));
 	#else
 		__set_PRIMASK(pmask);
 	#endif

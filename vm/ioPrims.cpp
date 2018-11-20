@@ -259,7 +259,7 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 		0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
 		0, 0, 1, 0, 1, 0, 0, 0, 0, 0};
-    #define PIN_LED 0
+	#define PIN_LED 0
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 14
 
@@ -344,8 +344,8 @@ static void initPins(void) {
 
 	#ifdef ARDUINO_CITILAB_ED1
 		// set up buttons
-		pinMode(2, INPUT_PULLUP);  // ←
-		pinMode(4, INPUT_PULLUP);  // ↑
+		pinMode(2, INPUT_PULLUP); // ←
+		pinMode(4, INPUT_PULLUP); // ↑
 		pinMode(13, INPUT_PULLUP); // ↓
 		pinMode(14, INPUT_PULLUP); // X
 		pinMode(15, INPUT_PULLUP); // OK
@@ -492,7 +492,7 @@ void primDigitalSet(int pinNum, int flag) {
 // User LED
 
 void primSetUserLED(OBJ *args) {
-	 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 		// Special case: Plot or unplot one LED in the LED matrix.
 		OBJ coords[2] = { int2obj(3), int2obj(1) };
 		if (trueObj == args[0]) {
