@@ -249,3 +249,36 @@ toca la nota _ a l'octava _ durant _ ms
 
 play frequency _ on pin _ for _ ms
 toca la freqüència _ al pin _ durant _ ms
+
+button OK
+botó OK
+
+button ✖
+botó ✖
+
+button 🔺
+botó 🔺
+
+button 🔻
+botó 🔻
+
+button ◀️
+botó ◀️
+
+button ▶️
+botó ▶️
+
+move motor _  _ steps _
+mou motor _ _ passos en _
+
+move motor 1 _ and motor 2 _ _ steps
+mou motor 1 en _ i motor 2 en _ _ passos
+
+stop steppers
+atura motors
+
+clockwise
+sentit horari
+
+counter-clockwise
+sentit antihorari

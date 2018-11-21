@@ -1,0 +1,31 @@
+spec 'r' 'OK button' 'button OK' ''
+spec 'r' 'cancel button' 'button ✖' ''
+spec 'r' 'up button' 'button 🔺' ''
+spec 'r' 'down button' 'button 🔻' ''
+spec 'r' 'left button' 'button ◀️' ''
+spec 'r' 'right button' 'button ▶️' ''
+
+to 'OK button' {
+  return (digitalReadOp 15)
+}
+
+to 'cancel button' {
+  return (digitalReadOp 14)
+}
+
+to 'up button' {
+  return (digitalReadOp 4)
+}
+
+to 'down button' {
+  return (digitalReadOp 13)
+}
+
+to 'left button' {
+  return (digitalReadOp 2)
+}
+
+to 'right button' {
+  return (digitalReadOp 27)
+}
+
