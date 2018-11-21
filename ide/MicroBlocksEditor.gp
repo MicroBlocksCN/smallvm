@@ -203,6 +203,7 @@ method openProject MicroBlocksEditor projectData projectName {
   }
   setTargetObj scripter targetObj
   developerModeChanged scripter
+  stopAndSyncScripts (smallRuntime)
 }
 
 method saveProject MicroBlocksEditor fName {

@@ -251,7 +251,7 @@ method setPort SmallRuntime newPortName {
 	waitMSecs 20
 	processMessages this
 	updateIndicator (findMicroBlocksEditor)
-	clearBoardIfConnected this true
+	stopAndSyncScripts this
 }
 
 method closePort SmallRuntime {
@@ -359,6 +359,7 @@ method sendStartAll SmallRuntime {
 method saveAllChunks SmallRuntime {
 	// Save the code for all scripts and user-defined functions.
 
+	if (isNil port) { return }
 	saveVariableNames this
 	assignFunctionIDs this
 	for aFunction (functions (targetModule scripter)) {
@@ -570,6 +571,7 @@ method readAvailableSerialData SmallRuntime {
 	// Read any available data into recvBuf so that waitForResponse well await fresh data.
 
 	waitMSecs 20 // leave some time for queued data to arrive
+	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
 	s = (readSerialPort port true)
 	if (notNil s) { recvBuf = (join recvBuf s) }
 }
@@ -796,7 +798,8 @@ method installVM SmallRuntime {
 	}
 	popUpAtHand menu (global 'page')
   } else {
-	inform 'No boards found; is your board plugged in?'
+	inform 'No boards found; is your board plugged in?
+For AdaFruit boards, double-click button and try again.'
   }
 }
 
