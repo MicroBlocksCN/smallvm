@@ -49,6 +49,9 @@ if [ -z $version ]; then
     version=`cat ../ide/MicroBlocksRuntime.gp | sed -n -E "s/^method ideVersion.*'(.*)'.*/\1/p"`
 fi
 
+# update date of MicroBlocks.app
+touch ../apps/MicroBlocks.app
+
 # app packaging
 if test -n "$pack"; then
     echo "Packaging microBlocks version $version..."
