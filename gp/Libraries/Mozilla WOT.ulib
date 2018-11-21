@@ -45,8 +45,8 @@ to getIPAddress {
 }
 
 to '_defineThing' name capability {
-  _useWifi = (booleanConstant false)
-  if _useWifi {
+  _useWiFi = ('[net:hasWiFi]')
+  if _useWiFi {
     '[net:clearThingDescription]'
     if ('' == capability) {
       '[net:appendToThingDescription]' '{ "name": "' name '",
@@ -64,7 +64,7 @@ to '_defineThing' name capability {
 }
 
 to '_addProperty' var type {
-  if _useWifi {
+  if _useWiFi {
     '[net:appendToThingDescription]' '    "' var '": {"type": "' type '", "href": "/properties/' var '"},'
   } else {
     if ('boolean' == type) {
@@ -78,7 +78,7 @@ to '_addProperty' var type {
 }
 
 to '_addLevel' var min max {
-  if _useWifi {
+  if _useWiFi {
     '[net:appendToThingDescription]' '    "' var '": {"type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '"},'
   } else {
     sendBroadcast 'moz-property {"name":"' var '","type":"number","value":0,"min":' min ',"max":' max '}'
@@ -86,7 +86,7 @@ to '_addLevel' var min max {
 }
 
 to '_endThing' {
-  if _useWifi {
+  if _useWiFi {
     '[net:appendToThingDescription]' '    "end": {}
   }
 }'
