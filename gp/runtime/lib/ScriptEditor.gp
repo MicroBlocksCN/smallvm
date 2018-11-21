@@ -484,6 +484,7 @@ method saveScriptsImage ScriptEditor {
 
 method copyScriptsToClipboard ScriptEditor {
   scripter = (ownerThatIsA morph 'Scripter')
+  if (isNil scripter) { scripter = (ownerThatIsA morph 'MicroBlocksScripter') }
   if (isNil scripter) { return }
   targetObj = (targetObj (handler scripter))
   setClipboard (join 'GP Scripts' (newline) (scriptStringWithDefinitionBodies (classOf targetObj)))
@@ -491,6 +492,7 @@ method copyScriptsToClipboard ScriptEditor {
 
 method pasteScripts ScriptEditor {
   scripter = (ownerThatIsA morph 'Scripter')
+  if (isNil scripter) { scripter = (ownerThatIsA morph 'MicroBlocksScripter') }
   if (isNil scripter) { return }
   s = (getClipboard)
   i = (find (letters s) (newline))

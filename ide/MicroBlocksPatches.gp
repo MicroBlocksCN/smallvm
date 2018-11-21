@@ -205,10 +205,11 @@ method contextMenu Block {
   if (and ('reporter' != type) (notNil (next this))) {
     addItem menu '...all' 'grabDuplicateAll' 'duplicate including all attached blocks'
   }
-//  addItem menu 'copy to clipboard' 'copyToClipboard'
 
   addLine menu
   addItem menu 'save picture of script' 'exportAsImage'
+  addLine menu
+  addItem menu 'copy script' 'copyToClipboard'
   if (not isInPalette) {
     addLine menu
     addItem menu 'delete' 'delete'
@@ -297,9 +298,19 @@ method contextMenu ScriptEditor {
     addItem menu 'undrop' 'undrop' 'undo last drop'
   }
   addLine menu
+  addItem menu 'copy all scripts' 'copyScriptsToClipboard'
+  clip = (getClipboard)
+  if (beginsWith clip 'GP Scripts') {
+	addItem menu 'paste all scripts' 'pasteScripts'
+  } (beginsWith clip 'GP Script') {
+	addItem menu 'paste script' 'pasteScripts'
+  }
+  addLine menu
   addItem menu 'save picture of all scripts' 'saveScriptsImage'
   return menu
 }
+
+// Block layout tweak
 
 method fixLayout Block {
   space = 3
@@ -487,6 +498,8 @@ method fixLayout Block {
   }
   raise morph 'layoutChanged' this
 }
+
+// Color picker tweaks
 
 to newColorPicker action initialColor {
   // If there is already a ColorPicker on the screen, return it.
