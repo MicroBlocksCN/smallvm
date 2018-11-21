@@ -30,7 +30,11 @@ static void closeAndOpenCodeFile() {
 }
 
 extern "C" void initCodeFile(uint8 *flash, int flashByteCount) {
-	SPIFFS.begin(true);
+	#ifdef ESP8266
+		SPIFFS.begin();
+	#else
+		SPIFFS.begin(true);
+	#endif
 	codeFile = SPIFFS.open(FILE_NAME, "r");
 	// read code file into simulated Flash:
 	if (codeFile) codeFile.readBytes((char*) flash, flashByteCount);
