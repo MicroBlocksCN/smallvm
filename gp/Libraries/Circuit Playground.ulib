@@ -1,14 +1,8 @@
 spec ' ' 'Circuit Playground set speaker' 'Circuit Playground set speaker _' 'bool' true
-spec 'r' 'Circuit Playground light' 'Circuit Playground brighness' ''
 spec 'r' 'Circuit Playground slide switch' 'Circuit Playground slide switch' ''
 
 to 'Circuit Playground set speaker' onOff {
   digitalWriteOp 12 onOff
-}
-
-to 'Circuit Playground light' {
-  local 'light' (analogReadOp 8)
-  return (light / 10)
 }
 
 to 'Circuit Playground slide switch' {

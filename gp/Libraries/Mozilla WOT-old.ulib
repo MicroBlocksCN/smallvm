@@ -1,0 +1,26 @@
+spec ' ' 'announce board' 'announce board _' 'auto' 'my device'
+spec ' ' 'announce boolean' 'announce boolean _ default _' 'menu.allVarsMenu bool' 'var' true
+spec ' ' 'announce property' 'announce number _ default _ min _ max _' 'menu.allVarsMenu auto auto auto' 'var' '10' 1 '10'
+spec ' ' 'announce property change' 'announce property changed _  value _' 'menu.allVarsMenu auto' 'var' '10'
+spec ' ' 'finish pairing' 'finish pairing' ''
+
+to 'announce board' name {
+  sendBroadcast 'moz-pair ' name
+}
+
+to 'announce boolean' name value {
+  sendBroadcast 'moz-property {"name":"' name '","type":"boolean","value":' value '}'
+}
+
+to 'announce property' name value min max {
+  sendBroadcast 'moz-property {"name":"' name '","type":"number","value":' value ',"min":' min ',"max":' max '}'
+}
+
+to 'announce property change' propertyName value {
+  sendBroadcast 'moz-property-changed {"name":"' propertyName '","value":' value '}'
+}
+
+to 'finish pairing' {
+  sendBroadcast 'moz-done'
+}
+

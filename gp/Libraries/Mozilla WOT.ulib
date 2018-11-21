@@ -1,26 +1,141 @@
-spec ' ' 'announce board' 'announce board _' 'auto' 'my device'
-spec ' ' 'announce boolean' 'announce boolean _ default _' 'menu.allVarsMenu bool' 'var' true
-spec ' ' 'announce property' 'announce number _ default _ min _ max _' 'menu.allVarsMenu auto auto auto' 'var' '10' 1 '10'
-spec ' ' 'announce property change' 'announce property changed _  value _' 'menu.allVarsMenu auto' 'var' '10'
-spec ' ' 'finish pairing' 'finish pairing' ''
+sharedVariables '_useWiFi'
 
-to 'announce board' name {
-  sendBroadcast 'moz-pair ' name
+spec ' ' 'wifi connect to' 'wifi connect to _ password _' 'str str' 'Network_Name' ''
+spec 'r' 'getIPAddress' 'IP address'
+spec ' ' '_defineThing' '_custom thing _ capability _' 'str str.thingTypesMenu' 'Thing Name' ''
+spec ' ' '_addProperty' '_add property named _ type _ ' 'str menu.varTypesMenu' '' 'boolean'
+spec ' ' '_addLevel' '_add level property _ min _ max _' 'str num num' 'level' '0' '100'
+spec ' ' '_endThing' '_end thing description'
+
+spec ' ' 'switch' 'switch _ onOff _' 'str menu.allVarsMenu' 'On/Off Switch'
+spec ' ' 'dimmer switch' 'dimmer switch _ onOff _ level _' 'str menu.allVarsMenu menu.allVarsMenu' 'Dimmer'
+spec ' ' 'binary sensor' 'binary sensor _ onOff _' 'str menu.allVarsMenu' 'Button'
+spec ' ' 'level sensor' 'level sensor _ level _ min _ max _' 'str menu.allVarsMenu num num' 'Temperature' '' 0 100
+spec ' ' 'light' 'light _ onOff _' 'str menu.allVarsMenu' 'Light Switch'
+spec ' ' 'dimmable light' 'dimmable light _ onOff _ level _' 'str menu.allVarsMenu menu.allVarsMenu' 'Light Dimmer'
+spec ' ' 'colored light' 'colored light _ onOff _ color _' 'str menu.allVarsMenu menu.allVarsMenu' 'Colored Light'
+
+to 'wifi connect to' ssid password {
+  '[net:startWiFi]' ssid password
+  repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  if ('Connected' == ('[net:wifiStatus]')) {
+    repeat 8 {
+      comment 'Quick blinks when connected'
+      setUserLED true
+      waitMillis 50
+      setUserLED false
+      waitMillis 50
+    }
+    sayIt 'My IP address is:' ('[net:myIPAddress]')
+  } else {
+    comment 'Connection failure'
+    setUserLED true
+    sayIt ('[net:wifiStatus]')
+  }
 }
 
-to 'announce boolean' name value {
-  sendBroadcast 'moz-property {"name":"' name '","type":"boolean","value":' value '}'
+to getIPAddress {
+  return ('[net:myIPAddress]')
 }
 
-to 'announce property' name value min max {
-  sendBroadcast 'moz-property {"name":"' name '","type":"number","value":' value ',"min":' min ',"max":' max '}'
+to '_defineThing' name capability {
+  _useWifi = (booleanConstant false)
+  if _useWifi {
+    '[net:clearThingDescription]'
+    if ('' == capability) {
+      '[net:appendToThingDescription]' '{ "name": "' name '",
+  "@type": [ ],
+  "properties": {'
+    } else {
+      '[net:appendToThingDescription]' '{ "name": "' name '",
+  "@context": "https://iot.mozilla.org/schemas/",
+  "@type": ["' capability '"],
+  "properties": {'
+    }
+  } else {
+    sendBroadcast 'moz-pair ' name
+  }
 }
 
-to 'announce property change' propertyName value {
-  sendBroadcast 'moz-property-changed {"name":"' propertyName '","value":' value '}'
+to '_addProperty' var type {
+  if _useWifi {
+    '[net:appendToThingDescription]' '    "' var '": {"type": "' type '", "href": "/properties/' var '"},'
+  } else {
+    if ('boolean' == type) {
+      sendBroadcast 'moz-property {"name":"' var '","type":"boolean","value":false}'
+    } ('number' == type) {
+      sendBroadcast 'moz-property {"name":"' var '","type":"number","value":0,"min":0,"max":100}'
+    } ('string' == type) {
+      sendBroadcast 'moz-property {"name":"' var '","type":"string","value":""}'
+    }
+  }
 }
 
-to 'finish pairing' {
-  sendBroadcast 'moz-done'
+to '_addLevel' var min max {
+  if _useWifi {
+    '[net:appendToThingDescription]' '    "' var '": {"type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '"},'
+  } else {
+    sendBroadcast 'moz-property {"name":"' var '","type":"number","value":0,"min":' min ',"max":' max '}'
+  }
 }
 
+to '_endThing' {
+  if _useWifi {
+    '[net:appendToThingDescription]' '    "end": {}
+  }
+}'
+  } else {
+    sendBroadcast 'moz-done'
+  }
+}
+
+to switch name onOff {
+  '_defineThing' name 'OnOffSwitch'
+  '_addProperty' onOff 'boolean' false
+  '_endThing'
+}
+
+to 'dimmer switch' name onOff level {
+  '_defineThing' name 'MultiLevelSwitch'
+  '_addProperty' onOff 'boolean' false
+  '_addProperty' level 'number' true
+  '_endThing'
+}
+
+to 'binary sensor' name onOff {
+  '_defineThing' name 'BinarySensor'
+  '_addProperty' onOff 'boolean' false
+  '_endThing'
+}
+
+to 'level sensor' name level min max {
+  '_defineThing' name 'MultiLevelSensor'
+  '_addLevel' level min max
+  '_endThing'
+}
+
+to light name onOff {
+  '_defineThing' name 'Light'
+  '_addProperty' onOff 'boolean' false
+  '_endThing'
+}
+
+to 'dimmable light' name onOff level {
+  '_defineThing' name 'Light'
+  '_addProperty' onOff 'boolean' false
+  '_addProperty' level 'number' true
+  '_endThing'
+}
+
+to 'colored light' name onOff color {
+  '_defineThing' name 'Light'
+  '_addProperty' onOff 'boolean' false
+  '_addProperty' color 'string' true
+  '_endThing'
+}
