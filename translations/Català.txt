@@ -282,3 +282,24 @@ sentit horari
 
 counter-clockwise
 sentit antihorari
+
+capacitive OK
+capacitiu OK
+
+capacitive ✖
+capacitiu ✖
+
+capacitive 🔺
+capacitiu 🔺
+
+capacitive 🔻
+capacitiu 🔻
+
+capacitive ◀️
+capacitiu ◀️
+
+capacitive ▶️
+capacitiu ▶️
+
+capacitive sensor _
+sensor capacitiu _

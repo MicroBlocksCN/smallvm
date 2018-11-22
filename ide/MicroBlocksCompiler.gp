@@ -52,6 +52,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'mbTiltZ'			'tilt z')
 		(array 'r' 'mbTemp'				'temperature (°C)')
 		(array 'r' '[display:lightLevel]' 'light level')
+		(array 'r' '[sensors:touchRead]'	'capacitive sensor _' 'num' 1)
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)

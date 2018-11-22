@@ -305,6 +305,9 @@ OBJ primTftSetPixel(int argCount, OBJ *args);
 void tftSetHugePixel(int x, int y, int state);
 void tftSetHugePixelBits(int bits);
 #endif
+#ifdef ARDUINO_ARCH_ESP32
+void addSensorPrims();
+#endif
 
 #ifdef __cplusplus
 }

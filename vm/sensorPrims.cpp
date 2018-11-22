@@ -248,3 +248,19 @@ OBJ primMBTiltX(OBJ *args) { return int2obj(readAcceleration(1)); }
 OBJ primMBTiltY(OBJ *args) { return int2obj(readAcceleration(3)); }
 OBJ primMBTiltZ(OBJ *args) { return int2obj(readAcceleration(5)); }
 OBJ primMBTemp(OBJ *args) { return int2obj(readTemperature()); }
+
+// ESP32 Primitives
+
+#ifdef ARDUINO_ARCH_ESP32
+OBJ primTouchRead(int argCount, OBJ *args) {
+	return int2obj(touchRead(obj2int(args[0])));
+}
+
+static PrimEntry entries[] = {
+	"touchRead", primTouchRead,
+};
+
+void addSensorPrims() {
+	addPrimitiveSet("sensors", sizeof(entries) / sizeof(PrimEntry), entries);
+}
+#endif

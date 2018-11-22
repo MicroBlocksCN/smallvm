@@ -1,0 +1,60 @@
+spec 'r' 'OK capacitive' 'capacitive OK' ''
+spec 'r' 'cancel capacitive' 'capacitive ✖' ''
+spec 'r' 'up capacitive' 'capacitive 🔺' ''
+spec 'r' 'down capacitive' 'capacitive 🔻' ''
+spec 'r' 'left capacitive' 'capacitive ◀️' ''
+spec 'r' 'right capacitive' 'capacitive ▶️' ''
+
+to 'OK capacitive' {
+  local 'value' ('[sensors:touchRead]' 15)
+  repeat 4 {
+    waitMillis 1
+    value += ('[sensors:touchRead]' 15)
+  }
+  return (value <= 100)
+}
+
+to 'cancel capacitive' {
+  local 'value' ('[sensors:touchRead]' 14)
+  repeat 4 {
+    waitMillis 1
+    value += ('[sensors:touchRead]' 14)
+  }
+  return (value <= 100)
+}
+
+to 'up capacitive' {
+  local 'value' ('[sensors:touchRead]' 4)
+  repeat 4 {
+    waitMillis 1
+    value += ('[sensors:touchRead]' 4)
+  }
+  return (value <= 100)
+}
+
+to 'down capacitive' {
+  local 'value' ('[sensors:touchRead]' 13)
+  repeat 4 {
+    waitMillis 1
+    value += ('[sensors:touchRead]' 13)
+  }
+  return (value <= 100)
+}
+
+to 'left capacitive' {
+  local 'value' ('[sensors:touchRead]' 2)
+  repeat 4 {
+    waitMillis 1
+    value += ('[sensors:touchRead]' 2)
+  }
+  return (value <= 100)
+}
+
+to 'right capacitive' {
+  local 'value' ('[sensors:touchRead]' 27)
+  repeat 4 {
+    waitMillis 1
+    value += ('[sensors:touchRead]' 27)
+  }
+  return (value <= 100)
+}
