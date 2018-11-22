@@ -6,6 +6,7 @@ spec ' ' '_defineThing' '_custom thing _ capability _' 'str str.thingTypesMenu' 
 spec ' ' '_addProperty' '_add property named _ type _ ' 'str menu.varTypesMenu' '' 'boolean'
 spec ' ' '_addLevel' '_add level property _ min _ max _' 'str num num' 'level' '0' '100'
 spec ' ' '_endThing' '_end thing description'
+spec ' ' '_reportChanged' '_reportChanged _ value _' 'menu.allVarsMenu auto' '' ''
 
 spec ' ' 'switch' 'switch _ onOff _' 'str menu.allVarsMenu' 'On/Off Switch'
 spec ' ' 'dimmer switch' 'dimmer switch _ onOff _ level _' 'str menu.allVarsMenu menu.allVarsMenu' 'Dimmer'
@@ -93,6 +94,11 @@ to '_endThing' {
   } else {
     sendBroadcast 'moz-done'
   }
+}
+
+to '_reportChanged' var value {
+  // Temporary, until MicroBlocks-adaptor is updated
+  sendBroadcast 'moz-property-changed {"name":"' var '","value":' value '}'
 }
 
 to switch name onOff {
