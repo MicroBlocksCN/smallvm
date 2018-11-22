@@ -307,6 +307,7 @@ method initLabelSpecs MicroBlocksScripter {
   // Input
   atPut labelSpecs 'mbTiltX' 'micro:bit, Calliope, CP Express:'
   atPut labelSpecs 'millisOp' '-'
+  atPut labelSpecs '[sensors:touchRead]' 'ESP32:'
 
   // Pins
   atPut labelSpecs 'digitalWriteOp' '-'

@@ -86,6 +86,9 @@ void primsInit() {
 	#ifdef ARDUINO_CITILAB_ED1
 		addTFTPrims();
 	#endif
+	#ifdef ARDUINO_ARCH_ESP32
+		addSensorPrims();
+	#endif
 }
 
 // Task Ops
