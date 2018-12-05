@@ -28,7 +28,8 @@ static int readI2CReg(int deviceID, int reg) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
-	int error = Wire.endTransmission((bool) false);
+//	int error = Wire.endTransmission((bool) false); // xxx
+	int error = Wire.endTransmission();
 	if (error) return -error; // error; bad device ID?
 
 	Wire.requestFrom(deviceID, 1);
@@ -235,6 +236,30 @@ static int readTemperature() {
 	float result = (1.0 / steinhart) - 273.15; // steinhart is 1/T; invert and convert to C
 
 	return (int) round(result);
+}
+
+#elif defined(ARDUINO_CITILAB_ED1)
+
+#define ACCEL_ID 25 // LIS3DH
+
+int accelStarted = false;
+
+static int readAcceleration(int registerID) {
+	if (!accelStarted) {
+		writeI2CReg(ACCEL_ID, 0x20, 0x7F); // turn on accelerometer, 400 Hz update, 8-bit
+		accelStarted = true;
+	}
+	int val = readI2CReg(ACCEL_ID, 0x28 + registerID);
+	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = ((val * 100) / 127); // scale to range 0-100
+	val = -val; // invert sign for all axes
+	return val;
+}
+
+static int readTemperature() {
+	// Could not get meaningful temperature data from the LIS3DH; just return 0
+	return 0;
 }
 
 #else // stubs for non-micro:bit boards
