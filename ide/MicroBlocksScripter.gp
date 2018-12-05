@@ -341,7 +341,7 @@ method initLabelSpecs MicroBlocksScripter {
   atPut labelSpecs '[io:hasTone]' 'Tone (experimental)'
   atPut labelSpecs '[io:hasServo]' 'Servo (experimental)'
   atPut labelSpecs '[net:hasWiFi]' 'WiFi (experimental):'
-  atPut labelSpecs '[tft:setPixel]' 'QVGA Display (experimental):'
+  atPut labelSpecs '[tft:enableDisplay]' 'TFT Display (experimental):'
 }
 
 method addSpaceOrLabelBefore MicroBlocksScripter spec {
