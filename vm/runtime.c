@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v047"
+#define VM_VERSION "v047b"
 
 // Forward Reference Declarations
 
@@ -83,12 +83,8 @@ void primsInit() {
 	addDisplayPrims();
 	addIOPrims();
 	addNetPrims();
-	#ifdef ARDUINO_CITILAB_ED1
-		addTFTPrims();
-	#endif
-	#ifdef ARDUINO_ARCH_ESP32
-		addSensorPrims();
-	#endif
+	addSensorPrims();
+	addTFTPrims();
 }
 
 // Task Ops

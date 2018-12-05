@@ -244,23 +244,33 @@ static int readTemperature() { return 0; }
 
 #endif // micro:bit primitve support
 
-OBJ primMBTiltX(OBJ *args) { return int2obj(readAcceleration(1)); }
-OBJ primMBTiltY(OBJ *args) { return int2obj(readAcceleration(3)); }
-OBJ primMBTiltZ(OBJ *args) { return int2obj(readAcceleration(5)); }
-OBJ primMBTemp(OBJ *args) { return int2obj(readTemperature()); }
+OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(readAcceleration(1)); }
+OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(readAcceleration(3)); }
+OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(readAcceleration(5)); }
+OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(readTemperature()); }
 
-// ESP32 Primitives
+// Capacitive Touch Primitives for ESP32
 
 #ifdef ARDUINO_ARCH_ESP32
+
 OBJ primTouchRead(int argCount, OBJ *args) {
 	return int2obj(touchRead(obj2int(args[0])));
 }
 
+#else // stubs for non-ESP32 boards
+
+OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
+
+#endif // Capacitive Touch Primitives
+
 static PrimEntry entries[] = {
+	"temperature", primMBTemp,
+	"tiltX", primMBTiltX,
+	"tiltY", primMBTiltY,
+	"tiltZ", primMBTiltZ,
 	"touchRead", primTouchRead,
 };
 
 void addSensorPrims() {
 	addPrimitiveSet("sensors", sizeof(entries) / sizeof(PrimEntry), entries);
 }
-#endif

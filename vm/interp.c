@@ -883,19 +883,19 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbTiltX_op:
-		*(sp - arg) = primMBTiltX(sp - arg);
+		*(sp - arg) = primMBTiltX(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	mbTiltY_op:
-		*(sp - arg) = primMBTiltY(sp - arg);
+		*(sp - arg) = primMBTiltY(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	mbTiltZ_op:
-		*(sp - arg) = primMBTiltZ(sp - arg);
+		*(sp - arg) = primMBTiltZ(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	mbTemp_op:
-		*(sp - arg) = primMBTemp(sp - arg);
+		*(sp - arg) = primMBTemp(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	neoPixelSend_op:

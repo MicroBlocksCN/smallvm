@@ -246,30 +246,21 @@ void updateMicrobitDisplay() { }
 void primMBDisplay(OBJ *args) {
 	OBJ arg = args[0];
 	if (isInt(arg)) microBitDisplayBits = evalInt(arg);
-
-	#ifdef ARDUINO_CITILAB_ED1
-	tftSetHugePixelBits(microBitDisplayBits);
-	#endif
+	if (useTFT) tftSetHugePixelBits(microBitDisplayBits);
 }
 
 void primMBDisplayOff(OBJ *args) {
-	#ifdef ARDUINO_CITILAB_ED1
-	tftClear();
-	#else
 	microBitDisplayBits = 0;
-	#endif
+	if (useTFT) tftClear();
 }
 
 void primMBPlot(OBJ *args) {
 	int x = evalInt(args[0]);
 	int y = evalInt(args[1]);
 	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
-		#ifdef ARDUINO_CITILAB_ED1
-			tftSetHugePixel(x, y, HIGH);
-		#else
-			int shift = (5 * (y - 1)) + (x - 1);
-			microBitDisplayBits |= (1 << shift);
-		#endif
+		int shift = (5 * (y - 1)) + (x - 1);
+		microBitDisplayBits |= (1 << shift);
+		if (useTFT) tftSetHugePixel(x, y, true);
 	}
 }
 
@@ -277,12 +268,9 @@ void primMBUnplot(OBJ *args) {
 	int x = evalInt(args[0]);
 	int y = evalInt(args[1]);
 	if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
-		#ifdef ARDUINO_CITILAB_ED1
-			tftSetHugePixel(x, y, LOW);
-		#else
-			int shift = (5 * (y - 1)) + (x - 1);
-			microBitDisplayBits &= ~(1 << shift);
-		#endif
+		int shift = (5 * (y - 1)) + (x - 1);
+		microBitDisplayBits &= ~(1 << shift);
+		if (useTFT) tftSetHugePixel(x, y, false);
 	}
 }
 
@@ -291,7 +279,7 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 		OBJ analogPin = int2obj(8);
 		lightLevel = obj2int(primAnalogRead(&analogPin));
 		lightLevel = lightLevel / 10;
-	#elif defined ARDUINO_CITILAB_ED1
+	#elif defined(ARDUINO_CITILAB_ED1)
 		lightLevel = analogRead(34) * 1000 / 4095;
 	#else
 		lightReadingRequested = true;
@@ -538,16 +526,23 @@ void primMBDrawShape(int argCount, OBJ *args) {
 				int shift = (5 * (dstY - 1)) + (dstX - 1);
 				if (shape & srcMask) {
 					microBitDisplayBits |= (1 << shift); // plot
+					if (useTFT) tftSetHugePixel(dstX, dstY, true);
 				} else {
 					microBitDisplayBits &= ~(1 << shift); // unplot
+					if (useTFT) tftSetHugePixel(dstX, dstY, false);
 				}
 			}
 			srcMask <<= 1; // advance to next bit of shape
 		}
 	}
-	#ifdef ARDUINO_CITILAB_ED1
-	tftSetHugePixelBits(microBitDisplayBits);
-	#endif
+	if ((-4 <= x) && (x <= 0) && (1 == y)) {
+		// Clear the column of pixels to the right of the shape; this avoids having to clear
+		// the display when scrolling, saving time and avoiding flickering on a TFT display.
+		for (int i = 0; i < 5; i++) {
+			microBitDisplayBits &= ~(1 << ((5 * i) + 4 + x));
+			if (useTFT) tftSetHugePixel(5 + x, (i + 1), false);
+		}
+	}
 }
 
 // Primitives

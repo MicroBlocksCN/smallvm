@@ -62,9 +62,9 @@ void hardwareInit() {
 	Serial.begin(115200);
 	initPins();
 	turnOffInternalNeoPixels();
-	#ifdef ARDUINO_CITILAB_ED1
-	dacWrite(26,0); // prevents serial TX noise on buzzer
-	tftInit();
+	#if defined(ARDUINO_CITILAB_ED1)
+		dacWrite(26, 0); // prevents serial TX noise on buzzer
+		tftInit();
 	#endif
 }
 
@@ -427,12 +427,12 @@ OBJ primDigitalRead(OBJ *args) {
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if (pinNum == 2 || pinNum == 4 || pinNum == 13 ||
-				pinNum == 14 || pinNum == 15 || pinNum == 27) {
-			// Do not reset pin mode, it should stay as INPUT_PULLUP
-			// like we specified in initPins.
-			// These buttons are reversed too.
+			pinNum == 14 || pinNum == 15 || pinNum == 27) {
+			// Do not reset pin mode, it should remain INPUT_PULLUP as set in initPins.
+			// These buttons are reversed, too.
 			return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
 		}
+		if (RESERVED(pinNum)) return falseObj;
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
 		if (RESERVED(pinNum)) return falseObj;
 	#endif
@@ -501,11 +501,7 @@ void primSetUserLED(OBJ *args) {
 			primMBUnplot(coords);
 		}
 	#elif defined(ARDUINO_CITILAB_ED1)
-		if (trueObj == args[0]) {
-			tftSetHugePixel(3, 1, HIGH); // x, y, state
-		} else {
-			tftClear();
-		}
+		tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#else
 		SET_MODE(PIN_LED, OUTPUT);
 		int output = (trueObj == args[0]) ? HIGH : LOW;
@@ -525,9 +521,9 @@ OBJ primButtonA(OBJ *args) {
 	#endif
 	#ifdef PIN_BUTTON_A
 		// do not set pin mode for ED1 board, it needs to stay INPUT_PULLUP
-	#ifndef ARDUINO_CITILAB_ED1
-		SET_MODE(PIN_BUTTON_A, INPUT);
-	#endif
+		#ifndef ARDUINO_CITILAB_ED1
+			SET_MODE(PIN_BUTTON_A, INPUT);
+		#endif
 		return (BUTTON_PRESSED == digitalRead(PIN_BUTTON_A)) ? trueObj : falseObj;
 	#else
 		return falseObj;
@@ -541,9 +537,9 @@ OBJ primButtonB(OBJ *args) {
 	#endif
 	#ifdef PIN_BUTTON_B
 		// do not set pin mode for ED1 board, it needs to stay INPUT_PULLUP
-	#ifndef ARDUINO_CITILAB_ED1
-		SET_MODE(PIN_BUTTON_B, INPUT);
-	#endif
+		#ifndef ARDUINO_CITILAB_ED1
+			SET_MODE(PIN_BUTTON_B, INPUT);
+		#endif
 		return (BUTTON_PRESSED == digitalRead(PIN_BUTTON_B)) ? trueObj : falseObj;
 	#else
 		return falseObj;

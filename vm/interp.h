@@ -270,16 +270,33 @@ void primMBUnplot(OBJ *args);
 void primMBDrawShape(int argCount, OBJ *args);
 OBJ primMBShapeForLetter(OBJ *args);
 
-OBJ primMBTiltX(OBJ *args);
-OBJ primMBTiltY(OBJ *args);
-OBJ primMBTiltZ(OBJ *args);
-OBJ primMBTemp(OBJ *args);
+OBJ primMBTiltX(int argCount, OBJ *args);
+OBJ primMBTiltY(int argCount, OBJ *args);
+OBJ primMBTiltZ(int argCount, OBJ *args);
+OBJ primMBTemp(int argCount, OBJ *args);
 
 void primNeoPixelSend(OBJ *args);
 void primNeoPixelSetPin(int argCount, OBJ *args);
 void turnOffInternalNeoPixels();
 
+// TFT Support
+
+extern int useTFT;
+
+void tftInit();
+void tftClear();
+void tftSetHugePixel(int x, int y, int state);
+void tftSetHugePixelBits(int bits);
+
 // Primitive Sets
+
+void addDisplayPrims();
+void addIOPrims();
+void addNetPrims();
+void addSensorPrims();
+void addTFTPrims();
+
+// Named Primitive Support
 
 typedef OBJ (*PrimitiveFunction)(int argCount, OBJ *args);
 
@@ -291,23 +308,6 @@ typedef struct {
 void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
 void primsInit();
-
-void addDisplayPrims();
-void addIOPrims();
-void addNetPrims();
-
-// TFT Support for the Citilab ED1 board
-#ifdef ARDUINO_CITILAB_ED1
-void addTFTPrims();
-void tftInit();
-void tftClear();
-OBJ primTftSetPixel(int argCount, OBJ *args);
-void tftSetHugePixel(int x, int y, int state);
-void tftSetHugePixelBits(int bits);
-#endif
-#ifdef ARDUINO_ARCH_ESP32
-void addSensorPrims();
-#endif
 
 #ifdef __cplusplus
 }
