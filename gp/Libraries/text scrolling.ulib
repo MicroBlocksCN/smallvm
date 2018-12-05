@@ -9,11 +9,8 @@ spec ' ' 'stopScrollingText' 'stop scrolling' ''
 to scroll_text text delay {
   _stop_scrolling_text = (booleanConstant false)
   local 'length' (size text)
-  for position ((length * 6) + 5) {
-    mbDisplayOff
-    if _stop_scrolling_text {
-      return 0
-    }
+  for position ((length * 6) + 6) {
+    if _stop_scrolling_text {return 0}
     for i length {
       mbDrawShape (mbShapeForLetter (at i text)) (((i * 6) + 2) - position) 1
     }
