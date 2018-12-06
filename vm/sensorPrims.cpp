@@ -28,8 +28,11 @@ static int readI2CReg(int deviceID, int reg) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
-//	int error = Wire.endTransmission((bool) false); // xxx
-	int error = Wire.endTransmission();
+	#if defined(ARDUINO_ARCH_ESP32)
+		int error = Wire.endTransmission();
+	#else
+		int error = Wire.endTransmission((bool) false);
+	#endif
 	if (error) return -error; // error; bad device ID?
 
 	Wire.requestFrom(deviceID, 1);
@@ -182,7 +185,7 @@ static int readTemperature() {
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 
-#define ACCEL_ID 25
+#define ACCEL_ID 25 // LIS3DH
 
 int accelStarted = false;
 
@@ -191,13 +194,13 @@ static int readAcceleration(int registerID) {
 		Wire1.begin(); // use internal I2C bus
 		// turn on the accelerometer
 		Wire1.beginTransmission(ACCEL_ID);
-		Wire1.write(32);
-		Wire1.write(127);
+		Wire1.write(0x20);
+		Wire1.write(0x7F);
 		Wire1.endTransmission();
 		accelStarted = true;
 	}
 	Wire1.beginTransmission(ACCEL_ID);
-	Wire1.write(40 + registerID);
+	Wire1.write(0x28 + registerID);
 	int error = Wire1.endTransmission(false);
 	if (error) return 0; // error; return 0
 
