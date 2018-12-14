@@ -91,7 +91,8 @@ OBJ primSetPixel(int argCount, OBJ *args) {
 	int r = (color24b >> 16) & 0xFF;
 	int g = (color24b >> 8) & 0xFF;
 	int b = color24b & 0xFF;
-	int color16b = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+	// convert 24-bit RGB888 format to 16-bit RGB565
+	int color16b = ((r << 8) & 0xF800) | ((g << 3) & 0x7E0) | ((b >> 3) & 0x1F);
 	tft.drawPixel(x, y, color16b);
 }
 
