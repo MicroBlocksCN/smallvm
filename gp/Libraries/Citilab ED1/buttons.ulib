@@ -1,9 +1,9 @@
 spec 'r' 'OK button' 'button OK' ''
-spec 'r' 'cancel button' 'button ✖' ''
-spec 'r' 'up button' 'button 🔺' ''
-spec 'r' 'down button' 'button 🔻' ''
-spec 'r' 'left button' 'button ◀️' ''
-spec 'r' 'right button' 'button ▶️' ''
+spec 'r' 'cancel button' 'button X' ''
+spec 'r' 'up button' 'button up' ''
+spec 'r' 'down button' 'button down' ''
+spec 'r' 'left button' 'button left' ''
+spec 'r' 'right button' 'button right' ''
 
 to 'OK button' {
   return (digitalReadOp 15)

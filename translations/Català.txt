@@ -253,20 +253,20 @@ toca la freqüència _ al pin _ durant _ ms
 button OK
 botó OK
 
-button ✖
-botó ✖
+button X
+botó X
 
-button 🔺
-botó 🔺
+button up
+botó amunt
 
-button 🔻
-botó 🔻
+button down
+botó avall
 
-button ◀️
-botó ◀️
+button left
+botó esquerra
 
-button ▶️
-botó ▶️
+button right
+botó dreta
 
 move motor _  _ steps _
 mou motor _ _ passos en _
@@ -286,20 +286,26 @@ sentit antihorari
 capacitive OK
 capacitiu OK
 
-capacitive ✖
-capacitiu ✖
+capacitive X
+capacitiu X
 
-capacitive 🔺
-capacitiu 🔺
+capacitive up
+capacitiu amunt
 
-capacitive 🔻
-capacitiu 🔻
+capacitive down
+capacitiu avall
 
-capacitive ◀️
-capacitiu ◀️
+capacitive left
+capacitiu esquerra
 
-capacitive ▶️
-capacitiu ▶️
+capacitive right
+capacitiu dreta
 
 capacitive sensor _
 sensor capacitiu _
+
+set TFT pixel x _ y _ to _
+pinta el píxel x _ y _ de color _
+
+set capacitive threshold to _
+fixa llindar capacitiu a _
