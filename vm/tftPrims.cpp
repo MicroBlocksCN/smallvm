@@ -77,7 +77,7 @@ void tftClear() {
 
 OBJ primEnableDisplay(int argCount, OBJ *args) {
 	if (trueObj == args[0]) {
-		tftInit();
+		if (!useTFT) tftInit();
 	} else {
 		useTFT = false;
 	}
