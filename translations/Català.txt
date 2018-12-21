@@ -303,3 +303,9 @@ capacitiu dreta
 
 capacitive sensor _
 sensor capacitiu _
+
+set TFT pixel x _ y _ to _
+pinta el píxel x _ y _ de color _
+
+set capacitive threshold to _
+fixa llindar capacitiu a _
