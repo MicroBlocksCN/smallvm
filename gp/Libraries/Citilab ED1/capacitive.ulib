@@ -1,9 +1,9 @@
 spec 'r' 'OK capacitive' 'capacitive OK' ''
-spec 'r' 'cancel capacitive' 'capacitive ✖' ''
-spec 'r' 'up capacitive' 'capacitive 🔺' ''
-spec 'r' 'down capacitive' 'capacitive 🔻' ''
-spec 'r' 'left capacitive' 'capacitive ◀️' ''
-spec 'r' 'right capacitive' 'capacitive ▶️' ''
+spec 'r' 'cancel capacitive' 'capacitive X' ''
+spec 'r' 'up capacitive' 'capacitive up' ''
+spec 'r' 'down capacitive' 'capacitive down' ''
+spec 'r' 'left capacitive' 'capacitive left' ''
+spec 'r' 'right capacitive' 'capacitive right' ''
 
 to 'OK capacitive' {
   local 'value' ('[sensors:touchRead]' 15)
