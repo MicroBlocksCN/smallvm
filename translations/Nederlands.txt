@@ -1,0 +1,251 @@
+display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+scherm _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+
+clear display
+wis scherm
+
+plot x _ y _
+zet aan x _ y _
+
+unplot x _ y _
+zet uit x _ y _
+
+set user LED _
+maak gebruiker LED _
+
+say _
+zeg _
+
+button A
+knop A
+
+button B
+knop B
+
+tilt x
+kantel x
+
+tilt y
+kantel y
+
+tilt z
+kantel z
+
+temperature (°C)
+temperatuur (°C)
+
+microseconds
+microseconden
+
+milliseconds
+milliseconden
+
+read digital pin _
+lees digitale pin_
+
+read analog pin _
+lees analoge pin _
+
+set digital pin _ to _
+maak digitale pin _  _
+
+set pin _ to _
+maak pin _  _
+
+analog pins
+analoge pinnen
+
+digital pins
+digitale pinnen
+
+when started
+wanneer gestart
+
+when button _ pressed
+wanneer knop _ wordt ingedrukt
+
+forever _
+herhaal _
+
+repeat _ _
+herhaal _ _
+
+if _ dan _
+als _ _
+
+else if _ _
+anders als _ dan _
+
+if _ _ else _
+als _ dan _ anders _
+
+wait _ millisecs
+wacht _ millisec.
+
+wait _ microsecs
+wacht _ microsec.
+
+stop this task
+stop deze taak
+
+stop all
+stop alles
+
+comment _
+commentaar _
+
+wait until _
+wacht tot _
+
+repeat until _ _
+herhaal tot _ _
+
+for _ in _ _
+voor _ in _ _
+
+when _
+wanneer _
+
+when _ received
+wanneer _ ontvangen
+
+broadcast _
+zend _
+
+return _
+terug _
+
+_ mod _
+_ modulo _
+
+abs _
+absolute waarde van _
+
+random _ to _
+willekeurig getal tussen _ en _
+
+not _
+niet _
+
+_ and _
+_ en _
+
+and _
+en _
+
+_ or _
+_ of _
+
+or _
+of _
+
+set _ to _
+maak _  _
+
+change _ by _
+verander _ met _
+
+local _ _
+lokale variabele _ _
+
+new array _
+nieuwe lijst _
+
+new byte array _
+nieuwe byte lijst _
+
+fill array _ with _
+vul lijst _ met _
+
+array _ at _
+lijst _ item _
+
+set array _ at _ to _
+stel lijst _ item _ in op _
+
+length of _
+lengte van _
+
+i2c get device _ register _
+i2c verkrijg device _ register _
+
+i2c set device _ register _ to _
+i2c set device _ register _ to _
+
+spi send _
+spi zend _
+
+spi receive
+spi ontvang
+
+print _
+schrijf _
+
+hex _
+hexadecimaal _
+
+no op
+doe niets
+
+ignore
+negeer
+
+draw shape _ at x _ y _
+teken vorm _ op x _ y _
+
+shape for letter _
+vorm voor letter _
+
+set NeoPixel pin _ has white _
+maak NeoPixel pin _ met wit _
+
+send NeoPixel rgb _
+zend NeoPixel rgb _
+
+light level
+lichtsterkte
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+maak NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+wis NeoPixels
+
+set NeoPixel _ color _
+maak NeoPixel _ kleur _
+
+set all NeoPixels color _
+maak alle NeoPixels kleur _
+
+rotate NeoPixels by _
+draai NeoPixels met _
+
+color r _ g _ b _
+kleur r _ g _ b _
+
+attach _ LED NeoPixel strip to pin _ has white _
+verbind _ LED NeoPixel strip aan pin _ heeft wit _
+
+receive IR code from device _
+ontvang IR code van apparaat _
+
+test IR
+test IR
+
+scroll text _ pausing _ ms
+scroll tekst _ met _ ms pauze
+
+scroll number _ pausing _ ms
+scroll nummer _ met _ ms pauze
+
+stop scrolling
+stop met scrollen
+
+attach buzzer to pin _
+verbind buzzer aan pin _
+
+play note _ octave _ during _ ms
+speel noot _ octaaf  _ gedurende _ ms
+
+play frequency _ on pin _ for _ ms
+speel frequentie _ op pin _ gedurende _ ms
