@@ -77,7 +77,7 @@ void tftClear() {
 
 OBJ primEnableDisplay(int argCount, OBJ *args) {
 	if (trueObj == args[0]) {
-		if (!useTFT) tftInit();
+		tftInit();
 	} else {
 		useTFT = false;
 	}
@@ -98,18 +98,20 @@ OBJ primSetPixel(int argCount, OBJ *args) {
 
 void tftSetHugePixel(int x, int y, int state) {
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
-	int d, xInset = 0, yInset = 0;
+	int minDimension, xInset = 0, yInset = 0;
 	if (tft.width() > tft.height()) {
-		d = tft.height() / 5;
+		minDimension = tft.height();
 		xInset = (tft.width() - tft.height()) / 2;
 	} else {
-		d = tft.width() / 5;
+		minDimension = tft.width();
 		yInset = (tft.height() - tft.width()) / 2;
 	}
+	int lineWidth = 3;
+	int squareSize = (minDimension - (6 * lineWidth)) / 5;
 	tft.fillRect(
-		xInset + ((x - 1) * d), // x
-		yInset + ((y - 1) * d), // y
-		d - 5, d - 5, // rect width and height
+		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
+		yInset + ((y - 1) * squareSize) + (y * lineWidth), // y
+		squareSize, squareSize,
 		state ? TFT_GREEN : TFT_BLACK);
 }
 
