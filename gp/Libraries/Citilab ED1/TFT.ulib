@@ -9,6 +9,6 @@ to '_tft color' 'color hex' {
 }
 
 to 'set TFT pixel x' x y color {
-  '[tft:setPixel]' x y (color2 color nil)
+  '[tft:setPixel]' x y ('_tft color' color)
 }
 
