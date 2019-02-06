@@ -1,0 +1,251 @@
+display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+
+clear display
+lösche display
+
+plot x _ y _
+zeichne x _ y _
+
+unplot x _ y _
+lösche_ y _
+
+set user LED _
+setze nutzer LED _
+
+say _
+sage _
+
+button A
+Knopf A
+
+button B
+Knopf B
+
+tilt x
+neige x
+
+tilt y
+neige y
+
+tilt z
+neige z
+
+temperature (°C)
+Temperatur (°C)
+
+microseconds
+Mikrosekunden
+
+milliseconds
+Millisekunden
+
+read digital pin _
+lese digitalen pin_
+
+read analog pin _
+lese analogen pin _
+
+set digital pin _ to _
+setze digitalen pin _  _
+
+set pin _ to _
+setze pin _ auf  _
+
+analog pins
+analoge pins
+
+digital pins
+digitale pins
+
+when started
+wenn gestartet
+
+when button _ pressed
+wenn Knopf _ gedrückt wurde
+
+forever _
+wiederhole immer _
+
+repeat _ _
+wiederhole _ mal _
+
+if _ dan _
+wenn _ dann _
+
+else if _ _
+sonst _ _
+
+if _ _ else _
+wenn _ dann _ sonst _
+
+wait _ millisecs
+warte _ Millisekunden
+
+wait _ microsecs
+warte _ Mikrosekunden
+
+stop this task
+stoppe diesen task
+
+stop all
+stoppe alles
+
+comment _
+kommentiere _
+
+wait until _
+warte bis _
+
+repeat until _ _
+wiederhole sobald _ _
+
+for _ in _ _
+für _ in _ _
+
+when _
+wenn _
+
+when _ received
+wenn _ empfangen
+
+broadcast _
+sende _
+
+return _
+zurück _
+
+_ mod _
+_ modulo _
+
+abs _
+Absolutwert von _
+
+random _ to _
+Zufallszahl von _ bis _
+
+not _
+nicht _
+
+_ and _
+_ und _
+
+and _
+und _
+
+_ or _
+_ oder _
+
+or _
+oder _
+
+set _ to _
+setze _ auf  _
+
+change _ by _
+verändere _ um _
+
+local _ _
+lokale Variabele _ _
+
+new array _
+neue Liste _
+
+new byte array _
+neue byte Liste _
+
+fill array _ with _
+fülle Liste _ mit _
+
+array _ at _
+Liste _ Element _
+
+set array _ at _ to _
+setze Liste _ Element _ auf _
+
+length of _
+Länge von _
+
+i2c get device _ register _
+i2c lese Modul _ Register _
+
+i2c set device _ register _ to _
+i2c sete Modul _ Register _ auf _
+
+spi send _
+spi sende _
+
+spi receive
+spi empfange
+
+print _
+print _
+
+hex _
+hexadecimal _
+
+no op
+tue nichts
+
+ignore
+ignoriere
+
+draw shape _ at x _ y _
+zeichne Form _ nach x _ y _
+
+shape for letter _
+Form von Buchstabe _
+
+set NeoPixel pin _ has white _
+setze NeoPixel pin _ mit weiß _
+
+send NeoPixel rgb _
+sende NeoPixel rgb _
+
+light level
+Lichtstärkte
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+setze NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+lösche NeoPixels
+
+set NeoPixel _ color _
+setze NeoPixel _ Farbe _
+
+set all NeoPixels color _
+setze alle NeoPixels Farbe _
+
+rotate NeoPixels by _
+rotiere NeoPixels um _
+
+color r _ g _ b _
+Farbe r _ g _ b _
+
+attach _ LED NeoPixel strip to pin _ has white _
+verbinde _ LED NeoPixel strip mit pin _ hat weiß _
+
+receive IR code from device _
+empfange IR code vom Gerät _
+
+test IR
+teste IR
+
+scroll text _ pausing _ ms
+scroll Text _ mit _ ms pause
+
+scroll number _ pausing _ ms
+scroll Nummer _ mit _ ms pause
+
+stop scrolling
+stoppe scrollen
+
+attach buzzer to pin _
+verbinde buzzer mit pin _
+
+play note _ octave _ during _ ms
+spiele Note _ Oktave _ für _ ms
+
+play frequency _ on pin _ for _ ms
+spiele Frequenz _ mit pin _ für _ ms
