@@ -527,3 +527,120 @@ method updateRGBReadouts ColorPicker c {
   setText gText (join 'G ' (leftPadded (toString (green c)) 2 '0'))
   setText bText (join 'B ' (leftPadded (toString (blue c)) 2 '0'))
 }
+
+method blockColorForCategoryV1 AuthoringSpecs cat {
+  defaultColor = (color 4 148 220)
+  if ('Output' == cat) { return (color 19 122 212)
+  } ('Input' == cat) { return (color 178 22 156)
+  } ('Pins' == cat) { return (color 166 5 14)
+  } ('Control' == cat) { return (color 230 168 34)
+  } ('Math' == cat) { return (color 98 194 19)
+  } ('Variables' == cat) { return (color 243 118 29)
+  } ('Lists' == cat) { return (color 12 105 111)
+  } ('Advanced' == cat) { return (color 12 105 111)
+  } ('Functions' == cat) { return (color 11 92 156)
+  } ('Obsolete' == cat) { return (color 196 15 0)
+  }
+  return defaultColor
+}
+
+method blockColorForCategory AuthoringSpecsV2 cat {
+  defaultColor = (color 4 148 220)
+  if ('Output' == cat) { return (color 76 111 209)
+  } ('Input' == cat) { return (color 36 139 216)
+  } ('Pins' == cat) { return (color 185 72 193)
+  } ('Control' == cat) { return (color 230 168 34)
+  } ('Math' == cat) { return (color 95 181 39)
+  } ('Variables' == cat) { return (color 226 95 27)
+  } ('Lists' == cat) { return (color 236 125 42)
+  } ('Advanced' == cat) { return (color 98 50 151)
+  } ('Functions' == cat) { return (color 29 153 109)
+  } ('Obsolete' == cat) { return (color 196 15 0)
+  }
+  return defaultColor
+}
+
+method blockColorForCategory AuthoringSpecs cat {
+  defaultColor = (color 4 148 220)
+  if ('Output' == cat) { return (color 76 111 209)
+  } ('Input' == cat) { return (color 35 165 124)
+  } ('Pins' == cat) { return (color 185 72 193)
+  } ('Control' == cat) { return (color 227 154 43)
+  } ('Math' == cat) { return (color 98 194 19) // (color 99 196 44)
+  } ('Variables' == cat) { return (color 226 95 27)
+  } ('Lists' == cat) { return (color 236 125 42)
+  } ('Advanced' == cat) { return (color 180 130 50)
+  } ('Functions' == cat) { return (color 39 149 230)
+  } ('Obsolete' == cat) { return (color 196 15 0)
+  }
+  return defaultColor
+}
+
+// Scratch		1.0					2.0
+// Motion	(color 102 124 236)	(color 76 111 209)
+// Looks	(color 147 84 235)	(color 36 139 216)
+// Sound	(color 217 43 225)	(color 185 72 193)
+// Pen		(color 35 165 124)	(color 29 153 109)
+// Control	(color 227 154 43)	(color 224 168 48)
+// Sensing	(color 39 149 230)	(color 53 166 223) like default color
+// Operators (color 99 196 44)	(color 95 181 39)
+// Variables (color 226 95 27)	(color 236 125 42) variables is like 2.0
+// Events						(color 199 130 57)
+// More Blocks					(color 98 50 151)))
+
+
+// ListBox tweaks for colored category selectors:
+
+method normalCostume ListBox data accessor {
+  // optimized for text list items
+  // oldCode: {return (itemCostume this data txtClrNormal nil normalAlpha accessor)}
+
+  if (isNil accessor) {accessor = getEntry}
+  dta = (call accessor data)
+  if (isClass dta 'String') {
+	// MakeCode-like look for UMD study:
+	if (and (isClass onSelect 'Action') ('updateBlocks' == (function onSelect))) {
+	  // add color swatch for category
+	  c = (blockColorForCategory (authoringSpecs) dta)
+	  stringBM = (stringImage dta fontName fontSize c nil nil nil nil paddingX paddingY)
+	  bm = (newBitmap ((width stringBM) + 15) (height stringBM))
+	  fillRect bm c 2 1 13 ((height bm) - 2) // 0
+	  drawBitmap bm stringBM 15 0
+	  return bm
+	}
+	return (stringImage dta fontName fontSize txtClrNormal nil nil nil nil paddingX paddingY)
+  } (isClass dta 'Bitmap') {
+    bm = (newBitmap (+ (* 2 paddingX) (width dta)) (+ (height dta) (* 2 paddingY)) bgClrNormal)
+    drawBitmap bm dta paddingX paddingY normalAlpha
+    return bm
+  }
+  return (itemCostume this dta txtClrNormal nil normalAlpha 'id')
+}
+
+method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
+  // private - return a bitmap representing a list item
+  if (isNil accessor) {accessor = getEntry}
+  dta = (call accessor data)
+  if (isClass dta 'Bitmap') {
+    bm = (newBitmap (max (+ (* 2 paddingX) (width dta)) (width morph)) (+ (height dta) (* 2 paddingY)) backgroundColor)
+    drawBitmap bm dta paddingX paddingY alpha
+    return bm
+  } (isClass dta 'Morph') {
+    return (itemCostume this (fullCostume dta) foregroundColor backgroundColor alpha 'id')
+  } (hasField dta 'morph') {
+    return (itemCostume this (fullCostume (getField dta 'morph')) foregroundColor backgroundColor alpha 'id')
+  } (isAnyClass dta 'Command' 'Reporter') {
+    return (itemCostume this (fullCostume (morph (toBlock dta))) foregroundColor backgroundColor alpha 'id')
+  } (isClass dta 'String') {
+	// MakeCode-like look for UMD study:
+	if (and (isClass onSelect 'Action') ('updateBlocks' == (function onSelect))) {
+	  c = (blockColorForCategory (authoringSpecs) dta)
+	  isMouseOver = (bgClrReady == backgroundColor)
+	  if isMouseOver { c = (lighter c 40) }
+	  return (itemCostume this (stringImage dta fontName fontSize (gray 255)) foregroundColor c alpha 'id')
+	}
+    return (itemCostume this (stringImage dta fontName fontSize foregroundColor) foregroundColor backgroundColor alpha 'id')
+  } else {
+    return (itemCostume this (toString dta) foregroundColor backgroundColor alpha 'id')
+  }
+}
