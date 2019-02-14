@@ -293,6 +293,7 @@ void tftSetHugePixelBits(int bits);
 void addDisplayPrims();
 void addIOPrims();
 void addNetPrims();
+void addRadioPrims();
 void addSensorPrims();
 void addTFTPrims();
 

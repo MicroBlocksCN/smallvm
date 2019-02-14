@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v048"
+#define VM_VERSION "v048a"
 
 // Forward Reference Declarations
 
@@ -83,6 +83,7 @@ void primsInit() {
 	addDisplayPrims();
 	addIOPrims();
 	addNetPrims();
+	addRadioPrims();
 	addSensorPrims();
 	addTFTPrims();
 }

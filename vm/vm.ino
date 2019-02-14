@@ -13,7 +13,7 @@ void setup() {
   sd_softdevice_disable();
 #endif
   hardwareInit();
-  memInit(1750); // 1750 words = 7000 bytes
+  memInit(1600); // 1600 words = 6400 bytes
   primsInit();
   outputString("Welcome to MicroBlocks!");
   restoreScripts();
