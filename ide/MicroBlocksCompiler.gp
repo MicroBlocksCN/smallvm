@@ -157,8 +157,23 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[net:clearThingDescription]'	'clear thing description')
 		(array ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
 
-		(array ' ' '[tft:enableDisplay]' 	'enable TFT _' 'bool' true)
+		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
+
+		(array 'r' '[radio:messageReceived]'		'radio message received?')
+		(array 'r' '[radio:receivedInteger]'		'radio last number')
+		(array 'r' '[radio:receivedString]'			'radio last string')
+		(array 'r' '[radio:receivedMessageType]'	'radio last message type')
+		(array 'r' '[radio:setSignalStrength]'		'radio last signal strength')
+		(array ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123)
+		(array ' ' '[radio:sendPair]'				'radio send _ = _' 'str num' 'temperature' 22)
+		(array ' ' '[radio:sendString]'				'radio send string _' 'str' 'Hello!')
+		(array ' ' '[radio:setGroup]'				'radio set group _' 'num' 0)
+		(array ' ' '[radio:setPower]'				'radio set power (0-7) _' 'num' 4)
+		(array ' ' '[radio:setChannel]'				'radio set channel (0-83)  _' 'num' 50)
+		(array 'r' '[radio:packetReceive]'			'radio receive packet _' 'str')
+		(array ' ' '[radio:packetSend]'				'radio send packet _' 'str')
+		(array ' ' '[radio:disableRadio]'			'disable radio')
 
 	'Disabled (does not work)'
  		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
