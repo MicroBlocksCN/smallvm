@@ -1,0 +1,4 @@
+The boot and partition files are from Arduino esp32 development system.
+
+The ed1_xxx files were dumped from a new(?) Citilab ED1 board.
+The latter files are different but appear to be compatible with the MicroBlocks VM.
