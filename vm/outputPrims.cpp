@@ -300,7 +300,7 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 inline uint32 saveIRQState(void) {
 	uint32 pmask = 0;
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-		__asm__ volatile ("rsil %0, #2" : "=a" (pmask));
+		__asm__ volatile ("rsil %0, 15" : "=a" (pmask));
 	#else
 		pmask = __get_PRIMASK() & 1;
 		__set_PRIMASK(1);
@@ -404,6 +404,72 @@ static void sendNeoPixelData(int val) { // SAMD21 (48 MHz)
 	restoreIRQState(oldIRQ);
 }
 
+#elif defined(ESP8266)
+
+static void initNeoPixelPin(int pinNum) {
+	if ((0 < pinNum) && (pinNum <= 15)) {
+		// must use a pin betwee 0-15
+		setPinMode(pinNum, OUTPUT);
+		neoPixelPinMask = 1 << pinNum;
+	} else {
+		neoPixelPinMask = 0;
+	}
+}
+
+static void sendNeoPixelData(int val) {
+	if (!neoPixelPinMask) return;
+
+	noInterrupts();
+	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
+		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
+			GPOS = neoPixelPinMask;
+			DELAY_CYCLES(52);
+			GPOC = neoPixelPinMask;
+			DELAY_CYCLES(14);
+		} else { // zero bit; timing goal: high 350 nsecs, low 800 nsecs
+			GPOS = neoPixelPinMask;
+			DELAY_CYCLES(17);
+			GPOC = neoPixelPinMask;
+			DELAY_CYCLES(50);
+		}
+	}
+	GPOC = neoPixelPinMask; // this greatly improves reliability; no idea why!
+	interrupts();
+}
+
+#elif defined(ARDUINO_ARCH_ESP32)
+
+static void initNeoPixelPin(int pinNum) {
+	if ((0 < pinNum) && (pinNum <= 31)) {
+		// must use a pin betwee 0-31
+		setPinMode(pinNum, OUTPUT);
+		neoPixelPinMask = 1 << pinNum;
+	} else {
+		neoPixelPinMask = 0;
+	}
+}
+
+static void sendNeoPixelData(int val) {
+	if (!neoPixelPinMask) return;
+
+	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+	portENTER_CRITICAL(&mux);
+	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
+		if (val & mask) { // one bit; timing goal: high 700 nsecs, low 300 nsecs
+			GPIO.out_w1ts = neoPixelPinMask;
+			DELAY_CYCLES(170); // 210
+			GPIO.out_w1tc = neoPixelPinMask;
+			DELAY_CYCLES(60); // 90
+		} else { // zero bit; timing goal: high 300 nsecs, low 700 nsecs
+			GPIO.out_w1ts = neoPixelPinMask;
+			DELAY_CYCLES(60);
+			GPIO.out_w1tc = neoPixelPinMask;
+			DELAY_CYCLES(170);
+		}
+	}
+	portEXIT_CRITICAL(&mux);
+}
+
 #else // stub for boards without NeoPixels
 
 static void initNeoPixelPin(int pinNum) { }
@@ -417,7 +483,7 @@ const int whiteTable[64] = {
 	139, 146, 153, 160, 167, 174, 181, 188, 195, 202, 209, 216, 223, 230, 237, 244, 251, 255};
 
 void primNeoPixelSend(OBJ *args) {
-	if (!neoPixelPinSet) initNeoPixelPin(-1); // if pin not set, use the internal NeoPixel pin
+	if (!neoPixelPinMask) initNeoPixelPin(-1); // if pin not set, use the internal NeoPixel pin
 
 	OBJ arg = args[0];
 	if (isInt(arg)) {
