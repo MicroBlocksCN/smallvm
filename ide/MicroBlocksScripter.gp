@@ -56,8 +56,8 @@ method initialize MicroBlocksScripter aProjectEditor {
   morph = (newMorph this)
   setCostume morph (gray 150) // border color
   listColor = (gray 240)
-  fontName = 'Arial'
-  fontSize = 13
+  fontName = 'Arial Bold'
+  fontSize = 16
   nextX = 0
   nextY = 0
   initLabelSpecs this
@@ -69,7 +69,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   lbox = (listBox (categories this) nil (action 'updateBlocks' this) listColor)
   setFont lbox fontName fontSize
   categoriesFrame = (scrollFrame lbox listColor)
-  setExtent (morph categoriesFrame) (82 * scale) // initial width
+  setExtent (morph categoriesFrame) (100 * scale) // initial width
   addPart morph (morph categoriesFrame)
 
   blocksPane = (newBlocksPalette)

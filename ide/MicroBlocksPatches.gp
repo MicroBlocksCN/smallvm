@@ -528,50 +528,18 @@ method updateRGBReadouts ColorPicker c {
   setText bText (join 'B ' (leftPadded (toString (blue c)) 2 '0'))
 }
 
-method blockColorForCategoryV1 AuthoringSpecs cat {
-  defaultColor = (color 4 148 220)
-  if ('Output' == cat) { return (color 19 122 212)
-  } ('Input' == cat) { return (color 178 22 156)
-  } ('Pins' == cat) { return (color 166 5 14)
-  } ('Control' == cat) { return (color 230 168 34)
-  } ('Math' == cat) { return (color 98 194 19)
-  } ('Variables' == cat) { return (color 243 118 29)
-  } ('Lists' == cat) { return (color 12 105 111)
-  } ('Advanced' == cat) { return (color 12 105 111)
-  } ('Functions' == cat) { return (color 11 92 156)
-  } ('Obsolete' == cat) { return (color 196 15 0)
-  }
-  return defaultColor
-}
-
-method blockColorForCategory AuthoringSpecsV2 cat {
-  defaultColor = (color 4 148 220)
-  if ('Output' == cat) { return (color 76 111 209)
-  } ('Input' == cat) { return (color 36 139 216)
-  } ('Pins' == cat) { return (color 185 72 193)
-  } ('Control' == cat) { return (color 230 168 34)
-  } ('Math' == cat) { return (color 95 181 39)
-  } ('Variables' == cat) { return (color 226 95 27)
-  } ('Lists' == cat) { return (color 236 125 42)
-  } ('Advanced' == cat) { return (color 98 50 151)
-  } ('Functions' == cat) { return (color 29 153 109)
-  } ('Obsolete' == cat) { return (color 196 15 0)
-  }
-  return defaultColor
-}
-
 method blockColorForCategory AuthoringSpecs cat {
-  defaultColor = (color 4 148 220)
-  if ('Output' == cat) { return (color 76 111 209)
-  } ('Input' == cat) { return (color 35 165 124)
-  } ('Pins' == cat) { return (color 185 72 193)
-  } ('Control' == cat) { return (color 227 154 43)
-  } ('Math' == cat) { return (color 98 194 19) // (color 99 196 44)
-  } ('Variables' == cat) { return (color 226 95 27)
-  } ('Lists' == cat) { return (color 236 125 42)
-  } ('Advanced' == cat) { return (color 180 130 50)
-  } ('Functions' == cat) { return (color 39 149 230)
-  } ('Obsolete' == cat) { return (color 196 15 0)
+  defaultColor = (colorHSV 200.0 0.982 0.863)
+  if ('Output' == cat) { return (colorHSV 235 0.62 0.80) // (colorHSV 224.211 0.636 0.82)
+  } ('Input' == cat) { return (colorHSV 170 0.78 0.62) // (colorHSV 161.077 0.788 0.647)
+  } ('Pins' == cat) { return (colorHSV 296 0.60 0.63) // (colorHSV 296.033 0.627 0.757)
+  } ('Control' == cat) { return (colorHSV 36.196 0.811 0.89)
+  } ('Math' == cat) { return (colorHSV 93 0.85 0.68) // (colorHSV 92.914 0.902 0.761)
+  } ('Variables' == cat) { return (colorHSV 26 0.80 0.88) // (colorHSV 25.67 0.822 0.925)
+  } ('Lists' == cat) { return (colorHSV 21 0.85 0.80) // (colorHSV 20.503 0.881 0.886)
+  } ('Advanced' == cat) { return (colorHSV 36.923 0.722 0.706)
+  } ('Functions' == cat) { return (colorHSV 205.445 0.83 0.902)
+  } ('Obsolete' == cat) { return (colorHSV 4.592 1.0 0.769)
   }
   return defaultColor
 }
@@ -588,24 +556,20 @@ method blockColorForCategory AuthoringSpecs cat {
 // Events						(color 199 130 57)
 // More Blocks					(color 98 50 151)))
 
-
-// ListBox tweaks for colored category selectors:
+// ListBox: Support for colored blocks categories
 
 method normalCostume ListBox data accessor {
-  // optimized for text list items
-  // oldCode: {return (itemCostume this data txtClrNormal nil normalAlpha accessor)}
-
   if (isNil accessor) {accessor = getEntry}
   dta = (call accessor data)
   if (isClass dta 'String') {
-	// MakeCode-like look for UMD study:
+	// Colored categories:
 	if (and (isClass onSelect 'Action') ('updateBlocks' == (function onSelect))) {
 	  // add color swatch for category
 	  c = (blockColorForCategory (authoringSpecs) dta)
-	  stringBM = (stringImage dta fontName fontSize c nil nil nil nil paddingX paddingY)
-	  bm = (newBitmap ((width stringBM) + 15) (height stringBM))
-	  fillRect bm c 2 1 13 ((height bm) - 2) // 0
-	  drawBitmap bm stringBM 15 0
+	  stringBM = (stringImage dta fontName fontSize (gray 50) nil nil nil nil paddingX paddingY)
+	  bm = (newBitmap ((width stringBM) + 15) ((height stringBM) + 3))
+	  fillRect bm c 4 0 20 ((height bm) - 7) // 0 // 22->20
+	  drawBitmap bm stringBM 25 0
 	  return bm
 	}
 	return (stringImage dta fontName fontSize txtClrNormal nil nil nil nil paddingX paddingY)
@@ -632,12 +596,16 @@ method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
   } (isAnyClass dta 'Command' 'Reporter') {
     return (itemCostume this (fullCostume (morph (toBlock dta))) foregroundColor backgroundColor alpha 'id')
   } (isClass dta 'String') {
-	// MakeCode-like look for UMD study:
+	// Colored categories:
 	if (and (isClass onSelect 'Action') ('updateBlocks' == (function onSelect))) {
 	  c = (blockColorForCategory (authoringSpecs) dta)
 	  isMouseOver = (bgClrReady == backgroundColor)
-	  if isMouseOver { c = (lighter c 40) }
-	  return (itemCostume this (stringImage dta fontName fontSize (gray 255)) foregroundColor c alpha 'id')
+	  if isMouseOver { c = (shiftSaturation (lighter c 20) -30) }
+	  stringBM = (stringImage dta fontName fontSize (gray 255) nil nil nil nil paddingX paddingY)
+	  bm = (newBitmap (width morph) ((height stringBM) + 7))
+	  fillRect bm c 0 0 (width bm) ((height bm) - 8)
+	  drawBitmap bm stringBM 25 0
+	  return bm
 	}
     return (itemCostume this (stringImage dta fontName fontSize foregroundColor) foregroundColor backgroundColor alpha 'id')
   } else {
