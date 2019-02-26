@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - authoring-level MicroBlocksScripter w/ built-in palette
 
-defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded categoriesFrame catWidth catResizer blocksFrame blocksWidth blocksResizer scriptsFrame nextX nextY labelSpecs
+defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded categoriesFrame catResizer libHeader libFrame blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
 
 method targetClass MicroBlocksScripter { return (classOf targetObj) }
 method targetObj MicroBlocksScripter { return targetObj }
@@ -72,6 +72,13 @@ method initialize MicroBlocksScripter aProjectEditor {
   setExtent (morph categoriesFrame) (100 * scale) // initial width
   addPart morph (morph categoriesFrame)
 
+  makeLibraryHeader this
+  lbox = (listBox (array 'NeoPixels' 'Radio') nil (action 'updateBlocks' this) listColor)
+  setFont lbox fontName fontSize
+  libFrame = (scrollFrame lbox listColor)
+  setExtent (morph libFrame) (100 * scale) // initial width
+  addPart morph (morph libFrame)
+
   blocksPane = (newBlocksPalette)
   setSortingOrder (alignment blocksPane) nil
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
@@ -104,6 +111,13 @@ method initialize MicroBlocksScripter aProjectEditor {
   return this
 }
 
+method makeLibraryHeader MicroBlocksScripter {
+  libHeader = (newBox (newMorph) (colorHSV 180 0.045 1.0) 0 0)
+  redraw libHeader
+  addPart morph (morph libHeader)
+  return libHeader
+}
+
 // layout
 
 method redraw MicroBlocksScripter {
@@ -111,18 +125,24 @@ method redraw MicroBlocksScripter {
 }
 
 method fixLayout MicroBlocksScripter {
-  catWidth = (max (toInteger ((width (morph categoriesFrame)) / (global 'scale'))) 75)
-  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / (global 'scale'))) 125)
+  scale = (global 'scale')
+  catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 75)
+  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) 125)
+  catHeight = (((height (morph (contents categoriesFrame))) / scale) + 14)
 
   innerBorder = 2
   outerBorder = 2
   packer = (newPanePacker (bounds morph) innerBorder outerBorder)
   packPanesH packer categoriesFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesV packer categoriesFrame '100%'
+  packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
+  packPanesH packer libFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
+  packPanesV packer categoriesFrame catHeight libHeader 30 libFrame '100%'
   packPanesV packer blocksFrame '100%'
   packPanesV packer scriptsFrame '100%'
   finishPacking packer
   fixResizerLayout this
+
+  redraw libHeader
 
   if (notNil projectEditor) { fixLayout projectEditor true }
 }
