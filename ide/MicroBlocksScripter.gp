@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - authoring-level MicroBlocksScripter w/ built-in palette
 
-defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded categoriesFrame catResizer libHeader libFrame blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
+defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded libraries categoriesFrame catResizer libHeader libFrame blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
 
 method targetClass MicroBlocksScripter { return (classOf targetObj) }
 method targetObj MicroBlocksScripter { return targetObj }
@@ -52,6 +52,7 @@ method createInitialClass MicroBlocksScripter {
 method initialize MicroBlocksScripter aProjectEditor {
   targetObj = nil
   projectEditor = aProjectEditor
+  libraries = (dictionary)
   scale = (global 'scale')
   morph = (newMorph this)
   setCostume morph (gray 150) // border color
@@ -66,17 +67,17 @@ method initialize MicroBlocksScripter aProjectEditor {
   setFPS morph 4
   saveNeeded = false
 
-  lbox = (listBox (categories this) nil (action 'updateBlocks' this) listColor)
+  lbox = (listBox (categories this) nil (action 'categorySelected' this) listColor)
   setFont lbox fontName fontSize
-  categoriesFrame = (scrollFrame lbox listColor)
-  setExtent (morph categoriesFrame) (100 * scale) // initial width
+  categoriesFrame = (scrollFrame lbox listColor true)
+  setExtent (morph categoriesFrame) (115 * scale) // initial width
   addPart morph (morph categoriesFrame)
 
   makeLibraryHeader this
-  lbox = (listBox (array 'NeoPixels' 'Radio') nil (action 'updateBlocks' this) listColor)
+  lbox = (listBox (array) nil (action 'librarySelected' this) listColor)
   setFont lbox fontName fontSize
-  libFrame = (scrollFrame lbox listColor)
-  setExtent (morph libFrame) (100 * scale) // initial width
+  libFrame = (scrollFrame lbox listColor true)
+  setExtent (morph libFrame) (115 * scale) // initial width
   addPart morph (morph libFrame)
 
   blocksPane = (newBlocksPalette)
@@ -85,7 +86,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (gray 220))
   setAutoScroll blocksFrame false
-  setExtent (morph blocksFrame) (265 * scale) // initial width
+  setExtent (morph blocksFrame) (235 * scale) // initial width
   addPart morph (morph blocksFrame)
 
   scriptsPane = (newScriptEditor 10 10 nil)
@@ -112,10 +113,33 @@ method initialize MicroBlocksScripter aProjectEditor {
 }
 
 method makeLibraryHeader MicroBlocksScripter {
+  scale = (global 'scale')
   libHeader = (newBox (newMorph) (colorHSV 180 0.045 1.0) 0 0)
-  redraw libHeader
+
+  label = (newText 'Libraries' 'Arial' (18 * scale) (gray 30))
+  setPosition (morph label) (6 * scale) (9 * scale)
+  addPart (morph libHeader) (morph label)
+
+  addButton = (addLibraryButton this '+' (33 * scale) (37 * scale))
+  setPosition (morph addButton) (82 * scale) 0
+  addPart (morph libHeader) (morph addButton)
+
   addPart morph (morph libHeader)
   return libHeader
+}
+
+method addLibraryButton MicroBlocksScripter label w h {
+  scale = (global 'scale')
+  setFont 'Arial Bold' (24 * scale)
+
+  labelY = (6 * scale)
+  bm1 = (newBitmap w h (topBarBlue projectEditor))
+  drawString bm1 label (gray 60) (9 * scale) labelY
+  bm2 = (newBitmap w h (topBarBlueHighlight projectEditor))
+  drawString bm2 label (gray 40) (9 * scale) labelY
+  button = (newButton '' (action 'importLibrary' projectEditor))
+  setCostumes button bm1 bm2
+  return button
 }
 
 // layout
@@ -126,9 +150,10 @@ method redraw MicroBlocksScripter {
 
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
-  catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 75)
-  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) 125)
-  catHeight = (((height (morph (contents categoriesFrame))) / scale) + 14)
+  catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 115)
+  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) 130)
+  catHeight = (((height (morph (contents categoriesFrame))) / scale) + 4)
+  libHeaderHeight = 37
 
   innerBorder = 2
   outerBorder = 2
@@ -136,7 +161,7 @@ method fixLayout MicroBlocksScripter {
   packPanesH packer categoriesFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesV packer categoriesFrame catHeight libHeader 30 libFrame '100%'
+  packPanesV packer categoriesFrame catHeight libHeader libHeaderHeight libFrame '100%'
   packPanesV packer blocksFrame '100%'
   packPanesV packer scriptsFrame '100%'
   finishPacking packer
@@ -163,27 +188,13 @@ method fixResizerLayout MicroBlocksScripter {
   drawPaneResizingCostumes blocksResizer
 }
 
-// animation
-
-method slideOpen MicroBlocksScripter end {
-  show morph
-  if (isNil end) { end = 50 }
-  start = (- (height morph))
-  addSchedule (global 'page') (newAnimation start end 250 (action 'setTop' morph))
-}
-
-method slideClosed MicroBlocksScripter {
-  start = (top morph)
-  end = (-5 - (height morph)) // off the top of the screen
-  addSchedule (global 'page') (newAnimation start end 250 (action 'setTop' morph) (action 'hide' morph))
-}
-
 // MicroBlocksScripter UI support
 
 method developerModeChanged MicroBlocksScripter {
   catList = (contents categoriesFrame)
   setCollection catList (categories this)
-  if (not (contains (collection catList) (selection catList))) {
+  if (not (or (contains (collection catList) (selection catList))
+  			  (notNil (selection (contents libFrame))))) {
     select catList 'Output'
   } else {
     updateBlocks this
@@ -208,6 +219,16 @@ method currentCategory MicroBlocksScripter {
   return (selection (contents categoriesFrame))
 }
 
+method categorySelected MicroBlocksScripter {
+   select (contents libFrame) nil // deselect library
+   updateBlocks this
+}
+
+method librarySelected MicroBlocksScripter {
+   select (contents categoriesFrame) nil // deselect category
+   updateBlocks this
+}
+
 method updateBlocks MicroBlocksScripter {
   scale = (global 'scale')
   blocksPane = (contents blocksFrame)
@@ -218,7 +239,9 @@ method updateBlocks MicroBlocksScripter {
   nextY = ((top (morph (contents blocksFrame))) + (16 * scale))
 
   cat = (selection (contents categoriesFrame))
-  if ('Variables' == cat) {
+  if (isNil cat) {
+	addBlocksForLibrary this (selection (contents libFrame))
+  } ('Variables' == cat) {
 	addVariableBlocks this
   } ('Functions' == cat) {
     addMyBlocks this
@@ -233,6 +256,17 @@ method addBlocksForCategory MicroBlocksScripter cat {
   for spec specs {
 	addSpaceOrLabelBefore this spec
 	addBlock this (blockForSpec spec) spec
+  }
+}
+
+method addBlocksForLibrary MicroBlocksScripter lib {
+  if (isNil lib) { return }
+  specs = (at libraries lib (list))
+  for spec specs {
+	if (or (devMode) (not (beginsWith (blockOp spec) '_'))) {
+	  addSpaceOrLabelBefore this spec
+	  addBlock this (blockForSpec spec) spec
+	}
   }
 }
 
@@ -879,6 +913,16 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 
 // Library import/export
 
+method clearLibraries MicroBlocksScripter {
+  libraries = (dictionary)
+  setCollection (contents libFrame) (array)
+  if (notNil (selection (contents libFrame))) {
+	select (contents libFrame) nil // deselect library
+	select (contents categoriesFrame) 'Output'
+  }
+  updateBlocks this
+}
+
 method importLibrary MicroBlocksScripter {
   pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ulib')
 }
@@ -893,6 +937,8 @@ method importLibraryFromFile MicroBlocksScripter fileName {
   }
   if (isNil data) { error (join 'Could not read: ' fileName) }
 
+  libName = (withoutExtension (filePart fileName))
+  libSpecs = (list)
   myModule = (targetModule this)
   for cmd (parse data) {
 	op = (primName cmd)
@@ -908,6 +954,7 @@ method importLibraryFromFile MicroBlocksScripter fileName {
 	  slotDefaults = (copyFromTo args 5)
 	  spec = (blockSpecFromStrings blockOp blockType specString slotTypes slotDefaults)
 	  recordBlockSpec (authoringSpecs) blockOp spec
+	  add libSpecs spec
 	} ('to' == op) {
 	  args = (toList args)
 	  fName = (removeFirst args)
@@ -919,7 +966,11 @@ method importLibraryFromFile MicroBlocksScripter fileName {
 	  addFunction myModule func
 	}
   }
-  select (contents categoriesFrame) 'Functions'
+  atPut libraries libName libSpecs
+  setCollection (contents libFrame) (sorted (keys libraries))
+
+  select (contents categoriesFrame) nil
+  select (contents libFrame) libName
   updateBlocks this
 }
 

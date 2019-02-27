@@ -24,11 +24,10 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus title
+defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus
 
 method project MicroBlocksEditor { return project }
 method scripter MicroBlocksEditor { return scripter }
-method stage MicroBlocksEditor { return (global 'Page') }
 
 to openMicroBlocksEditor devMode {
   if (isNil devMode) { devMode = false }
@@ -114,7 +113,6 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (textButton this 'New' 'newProject')
   add leftItems (textButton this 'Open' 'openProjectMenu')
   add leftItems (textButton this 'Save' 'saveProjectToFile')
-  add leftItems (textButton this 'Library' 'importLibrary')
 
   rightItems = (list)
   add rightItems (textButton this 'Connect' 'connectToBoard')
@@ -174,7 +172,7 @@ method clearProject MicroBlocksEditor {
   isStarting = (isNil fileName)
   fileName = ''
   project = (emptyProject)
-  developerModeChanged scripter // clear extensions
+  clearLibraries scripter
   clearBoardIfConnected (smallRuntime) true
 }
 

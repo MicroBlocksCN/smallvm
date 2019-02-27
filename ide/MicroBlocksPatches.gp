@@ -563,7 +563,7 @@ method normalCostume ListBox data accessor {
   dta = (call accessor data)
   if (isClass dta 'String') {
 	// Colored categories:
-	if (and (isClass onSelect 'Action') ('updateBlocks' == (function onSelect))) {
+	if (and (isClass onSelect 'Action') (isOneOf (function onSelect) 'categorySelected' 'librarySelected')) {
 	  // add color swatch for category
 	  c = (blockColorForCategory (authoringSpecs) dta)
 	  stringBM = (stringImage dta fontName fontSize (gray 50) nil nil nil nil paddingX paddingY)
@@ -597,12 +597,12 @@ method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
     return (itemCostume this (fullCostume (morph (toBlock dta))) foregroundColor backgroundColor alpha 'id')
   } (isClass dta 'String') {
 	// Colored categories:
-	if (and (isClass onSelect 'Action') ('updateBlocks' == (function onSelect))) {
+	if (and (isClass onSelect 'Action') (isOneOf (function onSelect) 'categorySelected' 'librarySelected')) {
 	  c = (blockColorForCategory (authoringSpecs) dta)
 	  isMouseOver = (bgClrReady == backgroundColor)
 	  if isMouseOver { c = (shiftSaturation (lighter c 20) -30) }
 	  stringBM = (stringImage dta fontName fontSize (gray 255) nil nil nil nil paddingX paddingY)
-	  bm = (newBitmap (width morph) ((height stringBM) + 7))
+	  bm = (newBitmap ((width morph) + (20 * (global 'scale'))) ((height stringBM) + 7))
 	  fillRect bm c 0 0 (width bm) ((height bm) - 8)
 	  drawBitmap bm stringBM 25 0
 	  return bm
