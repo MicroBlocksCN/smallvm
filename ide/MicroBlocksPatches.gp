@@ -544,6 +544,12 @@ method updateRGBReadouts ColorPicker c {
   setText bText (join 'B ' (leftPadded (toString (blue c)) 2 '0'))
 }
 
+// Block colors
+
+method setCategoryFor AuthoringSpecs op category {
+  atPut opCategory op category
+}
+
 method blockColorForCategory AuthoringSpecs cat {
   defaultColor = (colorHSV 200.0 0.982 0.863)
   if ('Output' == cat) { return (colorHSV 235 0.62 0.80) // (colorHSV 224.211 0.636 0.82)

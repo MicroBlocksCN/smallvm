@@ -955,6 +955,7 @@ method importLibraryFromFile MicroBlocksScripter fileName {
 	  slotDefaults = (copyFromTo args 5)
 	  spec = (blockSpecFromStrings blockOp blockType specString slotTypes slotDefaults)
 	  recordBlockSpec (authoringSpecs) blockOp spec
+	  setCategoryFor (authoringSpecs) blockOp 'Library'
 	  add libSpecs spec
 	} ('to' == op) {
 	  args = (toList args)
