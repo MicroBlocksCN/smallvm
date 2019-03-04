@@ -60,8 +60,8 @@ to '_scroll_digit_shapes' delay {
     }
     for j 5 {
       local 'x' (1 - j)
-      mbDrawShape shape (x + 5) 1
       mbDrawShape prevShape x 1
+      mbDrawShape shape (x + 5) 1
       waitMillis delay
       if _stop_scrolling_text {
         mbDisplayOff

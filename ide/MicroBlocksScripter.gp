@@ -397,7 +397,7 @@ method initLabelSpecs MicroBlocksScripter {
   atPut labelSpecs '[io:hasServo]' 'Servo (experimental)'
   atPut labelSpecs '[net:hasWiFi]' 'WiFi (experimental):'
   atPut labelSpecs '[tft:enableDisplay]' 'TFT Display (experimental)'
-  atPut labelSpecs '[radio:messageReceived]' 'BBC micro:bit Radio'
+  atPut labelSpecs '[radio:sendInteger]' 'BBC micro:bit Radio'
 }
 
 method addSpaceOrLabelBefore MicroBlocksScripter spec {
