@@ -164,7 +164,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[radio:receivedInteger]'		'radio last number')
 		(array 'r' '[radio:receivedString]'			'radio last string')
 		(array 'r' '[radio:receivedMessageType]'	'radio last message type')
-		(array 'r' '[radio:setSignalStrength]'		'radio last signal strength')
+		(array 'r' '[radio:signalStrength]'			'radio last signal strength')
 		(array ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123)
 		(array ' ' '[radio:sendPair]'				'radio send _ = _' 'str num' 'temperature' 22)
 		(array ' ' '[radio:sendString]'				'radio send string _' 'str' 'Hello!')

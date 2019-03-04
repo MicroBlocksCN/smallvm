@@ -442,10 +442,10 @@ static OBJ primReceivedMessageType(int argCount, OBJ *args) {
 	char *s = "other";
 	if (-1 == receivedMessageType) s = "none";
 	if (MAKECODE_PACKET_INTEGER == receivedMessageType) s = "number";
-	if (MAKECODE_PACKET_PAIR == receivedMessageType) s = "name-number pair";
+	if (MAKECODE_PACKET_PAIR == receivedMessageType) s = "pair";
 	if (MAKECODE_PACKET_STRING == receivedMessageType) s = "string";
 	if (MAKECODE_PACKET_DOUBLE == receivedMessageType) s = "number";
-	if (MAKECODE_PACKET_DOUBLE_PAIR == receivedMessageType) s = "name-number pair";
+	if (MAKECODE_PACKET_DOUBLE_PAIR == receivedMessageType) s = "pair";
 
 	// return non-heap string object to avoid using up heap space
 	strcpy(messageTypeString.body, s);
@@ -478,7 +478,7 @@ static PrimEntry entries[] = {
 	"setChannel", primSetChannel,
 	"setGroup", primSetGroup,
 	"setPower", primSetPower,
-	"setSignalStrength", primSignalStrength,
+	"signalStrength", primSignalStrength,
 };
 
 void addRadioPrims() {
