@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - authoring-level MicroBlocksScripter w/ built-in palette
 
-defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded libraries categoriesFrame catResizer libHeader libFrame blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
+defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded libraries categoriesFrame catResizer libHeader libFrame libAddButton blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
 
 method targetClass MicroBlocksScripter { return (classOf targetObj) }
 method targetObj MicroBlocksScripter { return targetObj }
@@ -120,9 +120,9 @@ method makeLibraryHeader MicroBlocksScripter {
   setPosition (morph label) (6 * scale) (9 * scale)
   addPart (morph libHeader) (morph label)
 
-  addButton = (addLibraryButton this '+' (33 * scale) (37 * scale))
-  setPosition (morph addButton) (82 * scale) 0
-  addPart (morph libHeader) (morph addButton)
+  libAddButton = (addLibraryButton this '+' (33 * scale) (37 * scale))
+  setPosition (morph libAddButton) (82 * scale) 0
+  addPart (morph libHeader) (morph libAddButton)
 
   addPart morph (morph libHeader)
   return libHeader
@@ -167,6 +167,7 @@ method fixLayout MicroBlocksScripter {
   finishPacking packer
   fixResizerLayout this
 
+  setRight (morph libAddButton) (right (owner (morph libAddButton)))
   redraw libHeader
 
   if (notNil projectEditor) { fixLayout projectEditor true }

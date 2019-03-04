@@ -54,7 +54,7 @@ with the appropriate board installed and selected.
 Open the file "vm.ino", select your board from the
 board manager, and click the upload button.
 
-See <a href="https://bitbucket.org/john_maloney/smallvm/wiki/Devices">supported devices</a> for a list of currently supported boards.
+See [supported devices](https://bitbucket.org/john_maloney/smallvm/wiki/Devices) for a list of currently supported boards.
 
 ## Building for Raspberry Pi ##
 

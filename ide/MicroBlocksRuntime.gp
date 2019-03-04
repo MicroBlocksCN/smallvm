@@ -80,7 +80,7 @@ method chunkBytesFor SmallRuntime aBlockOrFunction {
 	return bytes
 }
 
-method showInstructions SmallRuntime aBlock {
+method showInstructionsOLD SmallRuntime aBlock {
 	// Print the instructions for the given stack.
 
 	compiler = (initialize (new 'SmallCompiler'))
@@ -112,6 +112,60 @@ method showInstructions SmallRuntime aBlock {
 		}
 	}
 	print '----------'
+}
+
+method showInstructions SmallRuntime aBlock {
+	// Display the instructions for the given stack.
+
+	compiler = (initialize (new 'SmallCompiler'))
+	code = (instructionsFor compiler (topBlock aBlock))
+	result = (list)
+	for item code {
+		if (not (isClass item 'Array')) {
+			add result (toString item)
+		} ('pushImmediate' == (first item)) {
+			arg = (at item 2)
+			if (1 == (arg & 1)) {
+				arg = (arg >> 1) // decode integer
+			} (0 == arg) {
+				arg = false
+			} (4 == arg) {
+				arg = true
+			}
+			add result (join 'pushImmediate ' arg)
+		} ('pushBigImmediate' == (first item)) {
+			add result 'pushBigImmediate' // don't show arg count; could be confusing
+		} ('callFunction' == (first item)) {
+			arg = (at item 2)
+			calledChunkID = ((arg >> 8) & 255)
+			argCount = (arg & 255)
+			add result (join 'callFunction ' calledChunkID ' ' argCount)
+		} (not (isLetter (at (first item) 1))) { // operator; don't show arg count
+			add result (toString (first item))
+		} else {
+			// instruction (an array of form <cmd> <args...>)
+			instr = ''
+			for s item { instr = (join instr s ' ') }
+			add result instr
+		}
+	}
+	openWorkspace (global 'page') (joinStrings result (newline))
+}
+
+method showCompiledBytes SmallRuntime aBlock {
+	// Display the instruction bytes for the given stack.
+
+	bytes = (chunkBytesFor this aBlock)
+	result = (list)
+	for i (count bytes) {
+		add result (toString (at bytes i))
+		if (0 == (i % 4)) {
+			add result (newline)
+		} else {
+			add result ' '
+		}
+	}
+	openWorkspace (global 'page') (joinStrings result)
 }
 
 // chunk management

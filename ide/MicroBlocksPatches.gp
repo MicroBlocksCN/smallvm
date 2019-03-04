@@ -184,7 +184,7 @@ method contextMenu Block {
 
   if (devMode) {
     addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
-    addItem menu 'show compiled bytes' (action 'evalOnBoard' (smallRuntime) this true)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
     addLine menu
   }
 
@@ -240,7 +240,7 @@ method showInstructions BlockDefinition {
 }
 
 method showCompiledBytes BlockDefinition {
-  evalOnBoard (smallRuntime) (handler (owner (owner morph))) true
+  showCompiledBytes (smallRuntime) (handler (owner (owner morph)))
 }
 
 method initializeRepeater BlockDefinition aBlockSpec {
@@ -497,6 +497,22 @@ method fixLayout Block {
     setPosition (morph nb) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
   }
   raise morph 'layoutChanged' this
+}
+
+// Make ColorSlots be round
+
+method redraw ColorSlot {
+  scale = (global 'scale')
+  border = (1 * scale)
+  center = (9 * scale)
+  radius = (center - 1)
+  size = (2 * center)
+  bm = (costume morph)
+  bm = nil
+  if (isNil bm) { bm = (newBitmap size size) }
+  fill bm (gray 0 0)
+  drawCircle (newShapeMaker bm) center center radius contents border (gray 0)
+  setCostume morph bm
 }
 
 // Color picker tweaks
