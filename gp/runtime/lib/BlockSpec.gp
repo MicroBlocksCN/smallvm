@@ -102,7 +102,7 @@ method setSlotInfo BlockSpec typeString defaults {
 	  if ((count w) == 2) {
 		menuSelector = (at w 2)
 	  }
-	  if (not (contains (array 'num' 'str' 'auto' 'bool' 'color' 'cmd' 'var' 'menu') type)) {
+	  if (not (contains (array 'num' 'str' 'auto' 'bool' 'color' 'cmd' 'var' 'menu' 'microbitDisplay') type)) {
 		hint = type
 		type = 'any'
 	  }
@@ -169,6 +169,9 @@ method inputSlot BlockSpec slotIndex blockColor isFormalParameter argNames {
   }
   if ('color' == slotType) {
     return (newColorSlot)
+  }
+  if ('microbitDisplay' == slotType) {
+    return (newMicroBitDisplaySlot)
   }
   if ('menu' == slotType) {
     slotContent = (at info 2)

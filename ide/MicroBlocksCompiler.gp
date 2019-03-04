@@ -38,7 +38,7 @@ method microBlocksSpecs SmallCompiler {
 	'Output'
 		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
 		(array ' ' 'sayIt'				'say _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 123 '' '')
-		(array ' ' 'mbDisplay'			'display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _' 'bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool  bool bool bool bool bool')
+		(array ' ' 'mbDisplay'			'display _' 'microbitDisplay')
 		(array ' ' 'mbDisplayOff'		'clear display')
 		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
 		(array ' ' 'mbUnplot'			'unplot x _ y _' 'num num' 3 3)
@@ -687,15 +687,18 @@ method primitive SmallCompiler op args isCommand {
 	result = (list)
 	if ('print' == op) { op = 'printIt' }
 	if ('mbDisplay' == op) {
-	  if (25 != (count args)) {
-		print 'Display block expects 25 boolean arguments'
+	  if (25 == (count args)) {
+		shift = 0
+		displayWord = 0
+		for bit args {
+		  if (true == bit) { displayWord = (displayWord | (1 << shift)) }
+			shift += 1
+		}
+	  } (1 == (count args)) {
+		displayWord = (first args)
+	  } else {
+		print 'Bad mbDisplay arguments'
 		return result
-	  }
-	  shift = 0
-	  displayWord = 0
-	  for bit args {
-		if (true == bit) { displayWord = (displayWord | (1 << shift)) }
-		shift += 1
 	  }
 	  addAll result (instructionsForExpression this displayWord)
 	  add result (array 'mbDisplay' 1)

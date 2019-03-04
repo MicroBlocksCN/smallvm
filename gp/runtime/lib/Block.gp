@@ -39,7 +39,7 @@ to block type color opName {
   }
   argValues = (list op)
   for each group {
-    if (isAnyClass each 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot') {add argValues (contents each)}
+    if (isAnyClass each 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'MicroBitDisplaySlot') {add argValues (contents each)}
   }
   block = (new 'Block')
   setField block 'type' type
@@ -402,7 +402,7 @@ method inputIndex Block anInput {
   }
 
   for each items {
-    if (isAnyClass each 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block') {
+    if (isAnyClass each 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block' 'MicroBitDisplaySlot') {
       idx += 1
       if (each === anInput) {return idx}
     }
@@ -413,7 +413,7 @@ method inputIndex Block anInput {
 method inputs Block {
   // disregard variable accessing
   return (filter
-    (function each {return (isAnyClass each 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block')})
+    (function each {return (isAnyClass each 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block' 'MicroBitDisplaySlot')})
     (flattened labelParts)
   )
 }
@@ -1306,7 +1306,7 @@ method initializeForNode Block commandOrReporter silently {
         replaceInput this slot (toBlock each) false
       }
     } else {
-      if (isAnyClass slot 'InputSlot' 'BooleanSlot' 'ColorSlot') {
+      if (isAnyClass slot 'InputSlot' 'BooleanSlot' 'ColorSlot' 'MicroBitDisplaySlot') {
         setContents slot each
       } (and (isClass slot 'Block') (isRenamableVar slot)) {
         renameVariableTo slot each
@@ -1555,7 +1555,7 @@ method addAllLabelParts Block silently {
   // create a new expression with the matching number of empty argument slots
   cmdAndArgs = (list (blockOp blockSpec))
   for p allParts {
-    if (isAnyClass p 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block') {
+    if (isAnyClass p 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block' 'MicroBitDisplaySlot') {
       add cmdAndArgs nil
     }
   }
@@ -1572,7 +1572,7 @@ method addAllLabelParts Block silently {
   // in something different)
   if (not (isPrototype this)) {
     for p allParts {
-      if (isAnyClass p 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block') {
+      if (isAnyClass p 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block' 'MicroBitDisplaySlot') {
         inputChanged this p
       }
     }
