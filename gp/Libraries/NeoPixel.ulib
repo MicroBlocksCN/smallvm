@@ -9,21 +9,41 @@ spec 'r' 'colorFromRGB' 'color r _ g _ b _' 'num num num' 0 1 1
 spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ has white _' 'auto auto bool' 10 '' false
 
 spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
-spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_dir _' 'bool' true
+spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
 spec ' ' '_NeoPixel_update' '_NeoPixel_update'
 
 to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
   '_NeoPixel_ensureInitialized'
-  atPut 1 _np_pixels c1
-  atPut 2 _np_pixels c2
-  atPut 3 _np_pixels c3
-  atPut 4 _np_pixels c4
-  atPut 5 _np_pixels c5
-  atPut 6 _np_pixels c6
-  atPut 7 _np_pixels c7
-  atPut 8 _np_pixels c8
-  atPut 9 _np_pixels c9
-  atPut 10 _np_pixels c10
+  if ((size _np_pixels) >= 1) {
+    atPut 1 _np_pixels c1
+  }
+  if ((size _np_pixels) >= 2) {
+    atPut 2 _np_pixels c2
+  }
+  if ((size _np_pixels) >= 3) {
+    atPut 3 _np_pixels c3
+  }
+  if ((size _np_pixels) >= 4) {
+    atPut 4 _np_pixels c4
+  }
+  if ((size _np_pixels) >= 5) {
+    atPut 5 _np_pixels c5
+  }
+  if ((size _np_pixels) >= 6) {
+    atPut 6 _np_pixels c6
+  }
+  if ((size _np_pixels) >= 7) {
+    atPut 7 _np_pixels c7
+  }
+  if ((size _np_pixels) >= 8) {
+    atPut 8 _np_pixels c8
+  }
+  if ((size _np_pixels) >= 9) {
+    atPut 9 _np_pixels c9
+  }
+  if ((size _np_pixels) >= 10) {
+    atPut 10 _np_pixels c10
+  }
   '_NeoPixel_update'
 }
 
@@ -57,7 +77,7 @@ to colorFromRGB r g b {
 }
 
 to neoPixelAttach number pinNumber hasWhite {
-  if (_np_pixels == 0) {_np_pixels = (newArray number)}
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {_np_pixels = (newArray number)}
   fillArray _np_pixels 0
   neoPixelSetPin pinNumber hasWhite
 }
