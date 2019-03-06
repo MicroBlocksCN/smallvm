@@ -2,10 +2,10 @@ sharedVariables '_capacitive threshold'
 
 spec 'r' 'OK capacitive' 'capacitive OK' ''
 spec 'r' 'cancel capacitive' 'capacitive X' ''
-spec 'r' 'up capacitive' 'capacitive amunt' ''
-spec 'r' 'down capacitive' 'capacitive avall' ''
-spec 'r' 'left capacitive' 'capacitive esquerra' ''
-spec 'r' 'right capacitive' 'capacitive dreta' ''
+spec 'r' 'up capacitive' 'capacitive up' ''
+spec 'r' 'down capacitive' 'capacitive down' ''
+spec 'r' 'left capacitive' 'capacitive left' ''
+spec 'r' 'right capacitive' 'capacitive right' ''
 spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 200
 
 to 'OK capacitive' {

@@ -1,5 +1,5 @@
-display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
-scherm _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+display _
+scherm _
 
 clear display
 wis scherm

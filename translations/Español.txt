@@ -1,5 +1,5 @@
-display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
-pantalla _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+display _
+pantalla _
 
 clear display
 limpiar pantalla

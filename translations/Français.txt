@@ -1,5 +1,5 @@
-display _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
-écran _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _  _ _ _ _ _
+display _
+écran _
 
 clear display
 effacer l'écran

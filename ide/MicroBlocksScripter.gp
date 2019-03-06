@@ -121,13 +121,13 @@ method makeLibraryHeader MicroBlocksScripter {
   if ('Linux' == (platform)) {
 	label = (newText 'Libraries' 'Liberation Sans' (15 * scale) (gray 30))
   }
+  setHandler (morph label) this
   setPosition (morph label) (6 * scale) (8 * scale)
   addPart (morph libHeader) (morph label)
 
   libAddButton = (addLibraryButton this '+' (37 * scale) (37 * scale))
   setPosition (morph libAddButton) (82 * scale) 0
   addPart (morph libHeader) (morph libAddButton)
-
   addPart morph (morph libHeader)
   return libHeader
 }
