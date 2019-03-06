@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v050"
+#define VM_VERSION "v051"
 
 // Forward Reference Declarations
 
@@ -36,7 +36,7 @@ typedef struct {
 	PrimEntry *entries;
 } PrimitiveSet;
 
-#define MAX_PRIM_SETS 5
+#define MAX_PRIM_SETS 10
 PrimitiveSet primSets[MAX_PRIM_SETS];
 int primSetCount = 0;
 
@@ -79,6 +79,7 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 
 void primsInit() {
 	// Called at startup to call functions to add named primitive sets.
+	// Note: when adding a new primitive set, increase MAX_PRIM_SETS if necessary.
 
 	addDisplayPrims();
 	addIOPrims();
