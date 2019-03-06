@@ -59,6 +59,10 @@ method initialize MicroBlocksScripter aProjectEditor {
   listColor = (gray 240)
   fontName = 'Arial Bold'
   fontSize = 16
+  if ('Linux' == (platform)) {
+	fontName = 'Liberation Sans Bold'
+	fontSize = 13
+  }
   nextX = 0
   nextY = 0
   initLabelSpecs this
@@ -70,14 +74,12 @@ method initialize MicroBlocksScripter aProjectEditor {
   lbox = (listBox (categories this) nil (action 'categorySelected' this) listColor)
   setFont lbox fontName fontSize
   categoriesFrame = (scrollFrame lbox listColor true)
-  setExtent (morph categoriesFrame) (115 * scale) // initial width
   addPart morph (morph categoriesFrame)
 
   makeLibraryHeader this
   lbox = (listBox (array) nil (action 'librarySelected' this) listColor)
   setFont lbox fontName fontSize
   libFrame = (scrollFrame lbox listColor true)
-  setExtent (morph libFrame) (115 * scale) // initial width
   addPart morph (morph libFrame)
 
   blocksPane = (newBlocksPalette)
@@ -86,7 +88,6 @@ method initialize MicroBlocksScripter aProjectEditor {
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (gray 220))
   setAutoScroll blocksFrame false
-  setExtent (morph blocksFrame) (235 * scale) // initial width
   addPart morph (morph blocksFrame)
 
   scriptsPane = (newScriptEditor 10 10 nil)
@@ -117,10 +118,13 @@ method makeLibraryHeader MicroBlocksScripter {
   libHeader = (newBox (newMorph) (colorHSV 180 0.045 1.0) 0 0)
 
   label = (newText 'Libraries' 'Arial' (18 * scale) (gray 30))
-  setPosition (morph label) (6 * scale) (9 * scale)
+  if ('Linux' == (platform)) {
+	label = (newText 'Libraries' 'Liberation Sans' (15 * scale) (gray 30))
+  }
+  setPosition (morph label) (6 * scale) (8 * scale)
   addPart (morph libHeader) (morph label)
 
-  libAddButton = (addLibraryButton this '+' (33 * scale) (37 * scale))
+  libAddButton = (addLibraryButton this '+' (37 * scale) (37 * scale))
   setPosition (morph libAddButton) (82 * scale) 0
   addPart (morph libHeader) (morph libAddButton)
 
@@ -131,12 +135,22 @@ method makeLibraryHeader MicroBlocksScripter {
 method addLibraryButton MicroBlocksScripter label w h {
   scale = (global 'scale')
   setFont 'Arial Bold' (24 * scale)
+  halfW = (1.5 * scale)
+  lineW = (2 * halfW)
+  halfLen = (7 * scale)
+  len = (2 * halfLen)
+  centerX = (toInteger (w / 2))
+  centerY = (toInteger (h / 2))
 
   labelY = (6 * scale)
   bm1 = (newBitmap w h (topBarBlue projectEditor))
-  drawString bm1 label (gray 60) (9 * scale) labelY
+  fillRect bm1 (gray 60) (centerX - halfLen) (centerY - halfW) len lineW
+  fillRect bm1 (gray 60) (centerX - halfW) (centerY - halfLen) lineW len
+
   bm2 = (newBitmap w h (topBarBlueHighlight projectEditor))
-  drawString bm2 label (gray 40) (9 * scale) labelY
+  fillRect bm2 (gray 30) (centerX - halfLen) (centerY - halfW) len lineW
+  fillRect bm2 (gray 30) (centerX - halfW) (centerY - halfLen) lineW len
+
   button = (newButton '' (action 'importLibrary' projectEditor))
   setCostumes button bm1 bm2
   return button
@@ -150,7 +164,7 @@ method redraw MicroBlocksScripter {
 
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
-  catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 115)
+  catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 130)
   blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) 130)
   catHeight = (((height (morph (contents categoriesFrame))) / scale) + 4)
   libHeaderHeight = 37

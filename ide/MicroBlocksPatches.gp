@@ -581,6 +581,7 @@ method blockColorForCategory AuthoringSpecs cat {
 // ListBox: Support for colored blocks categories
 
 method normalCostume ListBox data accessor {
+  scale = (global 'scale')
   if (isNil accessor) {accessor = getEntry}
   dta = (call accessor data)
   if (isClass dta 'String') {
@@ -588,10 +589,10 @@ method normalCostume ListBox data accessor {
 	if (and (isClass onSelect 'Action') (isOneOf (function onSelect) 'categorySelected' 'librarySelected')) {
 	  // add color swatch for category
 	  c = (blockColorForCategory (authoringSpecs) dta)
-	  stringBM = (stringImage dta fontName fontSize (gray 50) nil nil nil nil paddingX paddingY)
-	  bm = (newBitmap ((width stringBM) + 15) ((height stringBM) + 3))
-	  fillRect bm c 4 0 20 ((height bm) - 7) // 0 // 22->20
-	  drawBitmap bm stringBM 25 0
+	  stringBM = (stringImage dta fontName fontSize (gray 50))
+	  bm = (newBitmap ((width stringBM) + (50 * scale)) (21 * scale))
+	  fillRect bm c (4 * scale) (1 * scale) (10 * scale) ((height bm) - (4 * scale))
+	  drawBitmap bm stringBM (19 * scale) (1 * scale)
 	  return bm
 	}
 	return (stringImage dta fontName fontSize txtClrNormal nil nil nil nil paddingX paddingY)
@@ -604,7 +605,7 @@ method normalCostume ListBox data accessor {
 }
 
 method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
-  // private - return a bitmap representing a list item
+  scale = (global 'scale')
   if (isNil accessor) {accessor = getEntry}
   dta = (call accessor data)
   if (isClass dta 'Bitmap') {
@@ -623,10 +624,10 @@ method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
 	  c = (blockColorForCategory (authoringSpecs) dta)
 	  isMouseOver = (bgClrReady == backgroundColor)
 	  if isMouseOver { c = (shiftSaturation (lighter c 20) -30) }
-	  stringBM = (stringImage dta fontName fontSize (gray 255) nil nil nil nil paddingX paddingY)
-	  bm = (newBitmap ((width morph) + (20 * (global 'scale'))) ((height stringBM) + 7))
-	  fillRect bm c 0 0 (width bm) ((height bm) - 8)
-	  drawBitmap bm stringBM 25 0
+	  bm = (newBitmap ((width morph) + (20 * scale)) (21 * scale))
+	  fillRect bm c 0 0 (width bm) ((height bm) - (2 * scale))
+	  stringBM = (stringImage dta fontName fontSize (gray 255))
+	  drawBitmap bm stringBM (29 * scale) (1 * scale)
 	  return bm
 	}
     return (itemCostume this (stringImage dta fontName fontSize foregroundColor) foregroundColor backgroundColor alpha 'id')
