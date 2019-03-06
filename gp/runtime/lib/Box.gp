@@ -4,7 +4,10 @@ defineClass Box morph color corner border isInset hasFrame
 
 to newBox morph color corner border isInset hasFrame {
   result = (initialize (new 'Box'))
-  if (notNil morph) { setField result 'morph' morph }
+  if (notNil morph) {
+  	setField result 'morph' morph
+  	setHandler morph result
+  }
   if (notNil color) { setField result 'color' color }
   if (notNil corner) { setField result 'corner' corner }
   if (notNil border) { setField result 'border' border }
