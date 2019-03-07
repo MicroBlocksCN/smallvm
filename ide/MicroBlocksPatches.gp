@@ -103,7 +103,7 @@ method propertyTypesMenu InputSlot {
 }
 
 method confirmToQuit Page {
-	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
+	confirm this nil (join (localized 'Quit MicroBlocks?')) nil nil 'exit'
 }
 
 to findProjectEditor {
@@ -183,36 +183,36 @@ method contextMenu Block {
   pe = (findProjectEditor)
 
   if (devMode) {
-    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
-    addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
+    addItem menu (localized 'show instructions') (action 'showInstructions' (smallRuntime) this)
+    addItem menu (localized 'show compiled bytes') (action 'showCompiledBytes' (smallRuntime) this)
     addLine menu
   }
 
   isInPalette = ('template' == (grabRule morph))
   if (isVariadic this) {
-    if (canExpand this) {addItem menu 'expand' 'expand'}
-    if (canCollapse this) {addItem menu 'collapse' 'collapse'}
+    if (canExpand this) {addItem menu (localized 'expand') 'expand'}
+    if (canCollapse this) {addItem menu (localized 'collapse') 'collapse'}
     addLine menu
   }
   if (and isInPalette (isRenamableVar this)) {
-    addItem menu 'rename...' 'userRenameVariable'
+    addItem menu (localized 'rename...') 'userRenameVariable'
     addLine menu
   }
   if (and isInPalette (notNil (functionNamed (module (project pe)) (primName expression)))) {
-    addItem menu 'show definition...' 'showDefinition'
+    addItem menu (localized 'show definition...') 'showDefinition'
   }
-  addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
+  addItem menu (localized 'duplicate') 'grabDuplicate' (localized 'just this one block')
   if (and ('reporter' != type) (notNil (next this))) {
-    addItem menu '...all' 'grabDuplicateAll' 'duplicate including all attached blocks'
+    addItem menu (localized '...all') 'grabDuplicateAll' (localized 'duplicate including all attached blocks')
   }
 
   addLine menu
-  addItem menu 'save picture of script' 'exportAsImage'
+  addItem menu (localized 'save picture of script') 'exportAsImage'
   addLine menu
-  addItem menu 'copy script' 'copyToClipboard'
+  addItem menu (localized 'copy script') 'copyToClipboard'
   if (not isInPalette) {
     addLine menu
-    addItem menu 'delete' 'delete'
+    addItem menu (localized 'delete') 'delete'
   }
   return menu
 }
@@ -224,14 +224,14 @@ method contextMenu BlockDefinition {
   }
   if (devMode) {
     addLine menu
-    addItem menu 'show instructions' (action 'showInstructions' this)
-    addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
+    addItem menu (localized 'show instructions') (action 'showInstructions' this)
+    addItem menu (localized 'show compiled bytes') (action 'showCompiledBytes' this)
   }
   addLine menu
-  addItem menu 'hide definition' 'hideDefinition'
-  addItem menu 'save picture of script' 'exportAsImage'
+  addItem menu (localized 'hide definition') 'hideDefinition'
+  addItem menu (localized 'save picture of script') 'exportAsImage'
   addLine menu
-  addItem menu 'delete' 'deleteDefinition'
+  addItem menu (localized 'delete') 'deleteDefinition'
   popUp menu (global 'page') (left morph) (bottom morph)
 }
 
@@ -280,7 +280,7 @@ method okayToBeDestroyedByUser Block {
 	editor = (findProjectEditor)
 	if (isNil editor) { return false }
     function = (function (first (inputs this)))
-    if (confirm (global 'page') nil 'Are you sure you want to remove this block definition?') {
+    if (confirm (global 'page') nil (localized 'Are you sure you want to remove this block definition?')) {
 	  removedUserDefinedBlock (scripter editor) function
 	  deleteChunkForBlock (smallRuntime) this
       return true
@@ -293,20 +293,20 @@ method okayToBeDestroyedByUser Block {
 
 method contextMenu ScriptEditor {
   menu = (menu nil this)
-  addItem menu 'clean up' 'cleanUp' 'arrange scripts'
+  addItem menu (localized 'clean up') 'cleanUp' (localized 'arrange scripts')
   if (and (notNil lastDrop) (isRestorable lastDrop)) {
-    addItem menu 'undrop' 'undrop' 'undo last drop'
+    addItem menu (localized 'undrop') 'undrop' (localized 'undo last drop')
   }
   addLine menu
-  addItem menu 'copy all scripts' 'copyScriptsToClipboard'
+  addItem menu (localized 'copy all scripts') 'copyScriptsToClipboard'
   clip = (getClipboard)
   if (beginsWith clip 'GP Scripts') {
-	addItem menu 'paste all scripts' 'pasteScripts'
+	addItem menu (localized 'paste all scripts') 'pasteScripts'
   } (beginsWith clip 'GP Script') {
-	addItem menu 'paste script' 'pasteScripts'
+	addItem menu (localized 'paste script') 'pasteScripts'
   }
   addLine menu
-  addItem menu 'save picture of all scripts' 'saveScriptsImage'
+  addItem menu (localized 'save picture of all scripts') 'saveScriptsImage'
   return menu
 }
 

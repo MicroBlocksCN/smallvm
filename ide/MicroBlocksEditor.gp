@@ -110,17 +110,17 @@ method addTopBarParts MicroBlocksEditor {
   leftItems = (list)
   add leftItems (addLogoButton this)
   add leftItems (5 * scale)
-  add leftItems (textButton this 'New' 'newProject')
-  add leftItems (textButton this 'Open' 'openProjectMenu')
-  add leftItems (textButton this 'Save' 'saveProjectToFile')
+  add leftItems (textButton this (localized 'New') 'newProject')
+  add leftItems (textButton this (localized 'Open') 'openProjectMenu')
+  add leftItems (textButton this (localized 'Save') 'saveProjectToFile')
 
   rightItems = (list)
-  add rightItems (textButton this 'Connect' 'connectToBoard')
+  add rightItems (textButton this (localized 'Connect') 'connectToBoard')
   add rightItems (4 * scale)
   add rightItems (makeIndicator this)
   add rightItems (25 * scale)
-  add rightItems (textButton this 'Stop' 'stopAndSyncScripts')
-  add rightItems (textButton this 'Start' 'startAll')
+  add rightItems (textButton this (localized 'Stop') 'stopAndSyncScripts')
+  add rightItems (textButton this (localized 'Start') 'startAll')
   add rightItems (addLanguageButton this)
 }
 
@@ -155,7 +155,7 @@ method makeIndicator MicroBlocksEditor {
 // project operations
 
 method newProject MicroBlocksEditor {
-  ok = (confirm (global 'page') nil 'Discard current project?')
+  ok = (confirm (global 'page') nil (localized 'Discard current project?'))
   if (not ok) { return }
   clearProject this
   createInitialClass scripter
@@ -192,7 +192,7 @@ method openProjectFromFile MicroBlocksEditor location {
 	data = (readFile location true)
   }
   if (isNil data) {
-	error (join 'Could not read: ' location)
+	error (join (localized 'Could not read: ') location)
   }
   openProject this data location
 }
@@ -341,7 +341,7 @@ method processDroppedFiles MicroBlocksEditor {
 
 method processDroppedFile MicroBlocksEditor fName data {
   if (endsWith fName '.gpp') {
-	ok = (confirm (global 'page') nil 'Discard current project?')
+	ok = (confirm (global 'page') nil (localized 'Discard current project?'))
 	if (not ok) { return }
 	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
 	openProject this data fName
@@ -481,19 +481,19 @@ method rightClicked MicroBlocksEditor aHand {
 
 method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
-  addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
+  addItem menu (localized 'about...') (action 'showAboutBox' (smallRuntime))
   addLine menu
-  addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
-  addItem menu 'install MicroBlocks on board' 'installVM'
+  addItem menu (localized 'virtual machine version') (action 'getVersion' (smallRuntime))
+  addItem menu (localized 'install MicroBlocks on board') 'installVM'
   addLine menu
-  addItem menu 'clear memory and variables' 'softReset'
+  addItem menu (localized 'clear memory and variables') 'softReset'
   if (not (devMode)) {
 	addLine menu
-	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
+	addItem menu (localized 'show advanced blocks') 'showAdvancedBlocks'
   } else {
-	addItem menu 'export functions as library' 'exportAsLibrary'
+	addItem menu (localized 'export functions as library') 'exportAsLibrary'
 	addLine menu
-	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
+	addItem menu (localized 'hide advanced blocks') 'hideAdvancedBlocks'
   }
 
 // testing:
@@ -549,7 +549,7 @@ method addLogoButton MicroBlocksEditor {
 // Language Button
 
 method languageMenu MicroBlocksEditor {
-  menu = (menu 'Language:' this)
+  menu = (menu (localized 'Language:') this)
   addItem menu 'English' (action 'setLanguage' this 'English')
   if ('Browser' == (platform)) {
 	for fn (listFiles 'translations') {
@@ -570,10 +570,23 @@ method languageMenu MicroBlocksEditor {
 }
 
 method setLanguage MicroBlocksEditor newLang {
+  oldScripter = scripter
   setLanguage (authoringSpecs) newLang
   updateBlocks scripter
   saveScripts scripter
-  restoreScripts scripter
+  updateLibraryHeader scripter
+
+  for item (join leftItems rightItems) {
+    if (not (isNumber item)) {
+      removePart morph (morph item)
+      destroy (morph item)
+    }
+  }
+
+  addTopBarParts this
+  drawTopBar this
+  updateIndicator this // why is this not working?
+  fixLayout this
 }
 
 method addLanguageButton MicroBlocksEditor {
@@ -587,6 +600,21 @@ method addLanguageButton MicroBlocksEditor {
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
+}
+
+to localized string {
+  dict = (getField (authoringSpecs) 'translationDictionary')
+  if (isNil dict) {
+    return string
+  } else {
+    localization = (at dict string)
+    if (isNil localization) {
+      return string
+    } else {
+      return localization
+    }
+  }
+
 }
 
 // UI image resources

@@ -109,17 +109,22 @@ method initialize MicroBlocksScripter aProjectEditor {
   restoreScripts this
 
   smallRuntime this // create a SmallRuntime instance
-  if (isNil projectEditor) { select (contents categoriesFrame) 'Control' }
+  if (isNil projectEditor) { select (contents categoriesFrame) (localized 'Control') }
   return this
+}
+
+method updateLibraryHeader MicroBlocksScripter {
+  destroy (morph libHeader)
+  makeLibraryHeader this
 }
 
 method makeLibraryHeader MicroBlocksScripter {
   scale = (global 'scale')
   libHeader = (newBox (newMorph) (colorHSV 180 0.045 1.0) 0 0)
 
-  label = (newText 'Libraries' 'Arial' (18 * scale) (gray 30))
+  label = (newText (localized 'Libraries') 'Arial' (18 * scale) (gray 30))
   if ('Linux' == (platform)) {
-	label = (newText 'Libraries' 'Liberation Sans' (15 * scale) (gray 30))
+	label = (newText (localized 'Libraries') 'Liberation Sans' (15 * scale) (gray 30))
   }
   setHandler (morph label) this
   setPosition (morph label) (6 * scale) (8 * scale)
@@ -288,10 +293,10 @@ method addBlocksForLibrary MicroBlocksScripter lib {
 method addVariableBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
-  addButton this 'Add a variable' (action 'createSharedVariable' this) 'Variables are visible to all scripts.'
+  addButton this (localized 'Add a variable') (action 'createSharedVariable' this) 'Variables are visible to all scripts.'
   sharedVars = (visibleVars this)
   if (notEmpty sharedVars) {
-	addButton this 'Delete a variable' (action 'deleteSharedVariable' this)
+	addButton this (localized 'Delete a variable') (action 'deleteSharedVariable' this)
 	nextY += (8 * scale)
 	for varName sharedVars {
 	    lastY = nextY
@@ -316,7 +321,7 @@ method addVariableBlocks MicroBlocksScripter {
 method addMyBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
-  addButton this 'Add a function' (action 'createSharedBlock' this)
+  addButton this (localized 'Add a function') (action 'createSharedBlock' this)
   nextY += (8 * scale)
 
   for f (functions (targetModule this)) {
@@ -939,7 +944,7 @@ method clearLibraries MicroBlocksScripter {
 }
 
 method importLibrary MicroBlocksScripter {
-  pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ulib')
+  pickFileToOpen (action 'importLibraryFromFile' this) (localized 'Libraries') (array '.ulib')
 }
 
 method importLibraryFromFile MicroBlocksScripter fileName {
