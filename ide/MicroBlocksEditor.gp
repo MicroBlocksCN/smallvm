@@ -481,19 +481,19 @@ method rightClicked MicroBlocksEditor aHand {
 
 method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
-  addItem menu (localized 'about...') (action 'showAboutBox' (smallRuntime))
+  addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addLine menu
-  addItem menu (localized 'virtual machine version') (action 'getVersion' (smallRuntime))
-  addItem menu (localized 'install MicroBlocks on board') 'installVM'
+  addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
+  addItem menu 'install MicroBlocks on board' 'installVM'
   addLine menu
-  addItem menu (localized 'clear memory and variables') 'softReset'
+  addItem menu 'clear memory and variables' 'softReset'
   if (not (devMode)) {
 	addLine menu
-	addItem menu (localized 'show advanced blocks') 'showAdvancedBlocks'
+	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
-	addItem menu (localized 'export functions as library') 'exportAsLibrary'
+	addItem menu 'export functions as library' 'exportAsLibrary'
 	addLine menu
-	addItem menu (localized 'hide advanced blocks') 'hideAdvancedBlocks'
+	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
 
 // testing:

@@ -270,10 +270,10 @@ method selectPort SmallRuntime {
 	}
 	menu = (menu (localized 'Serial port:') (action 'setPort' this) true)
 	for s portList { addItem menu s }
-	addItem menu (localized 'other...')
+	addItem menu 'other...'
 	if (notNil port) {
 		addLine menu
-		addItem menu (localized 'disconnect')
+		addItem menu 'disconnect'
 	}
 	popUpAtHand menu (global 'page')
 }

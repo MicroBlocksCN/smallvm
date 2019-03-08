@@ -183,36 +183,36 @@ method contextMenu Block {
   pe = (findProjectEditor)
 
   if (devMode) {
-    addItem menu (localized 'show instructions') (action 'showInstructions' (smallRuntime) this)
-    addItem menu (localized 'show compiled bytes') (action 'showCompiledBytes' (smallRuntime) this)
+    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
     addLine menu
   }
 
   isInPalette = ('template' == (grabRule morph))
   if (isVariadic this) {
-    if (canExpand this) {addItem menu (localized 'expand') 'expand'}
-    if (canCollapse this) {addItem menu (localized 'collapse') 'collapse'}
+    if (canExpand this) {addItem menu 'expand' 'expand'}
+    if (canCollapse this) {addItem menu 'collapse' 'collapse'}
     addLine menu
   }
   if (and isInPalette (isRenamableVar this)) {
-    addItem menu (localized 'rename...') 'userRenameVariable'
+    addItem menu 'rename...' 'userRenameVariable'
     addLine menu
   }
   if (and isInPalette (notNil (functionNamed (module (project pe)) (primName expression)))) {
-    addItem menu (localized 'show definition...') 'showDefinition'
+    addItem menu 'show definition...' 'showDefinition'
   }
-  addItem menu (localized 'duplicate') 'grabDuplicate' (localized 'just this one block')
+  addItem menu 'duplicate' 'grabDuplicate' (localized 'just this one block')
   if (and ('reporter' != type) (notNil (next this))) {
-    addItem menu (localized '...all') 'grabDuplicateAll' (localized 'duplicate including all attached blocks')
+    addItem menu '...all' 'grabDuplicateAll' (localized 'duplicate including all attached blocks')
   }
 
   addLine menu
-  addItem menu (localized 'save picture of script') 'exportAsImage'
+  addItem menu 'save picture of script' 'exportAsImage'
   addLine menu
-  addItem menu (localized 'copy script') 'copyToClipboard'
+  addItem menu 'copy script' 'copyToClipboard'
   if (not isInPalette) {
     addLine menu
-    addItem menu (localized 'delete') 'delete'
+    addItem menu 'delete' 'delete'
   }
   return menu
 }
@@ -224,14 +224,14 @@ method contextMenu BlockDefinition {
   }
   if (devMode) {
     addLine menu
-    addItem menu (localized 'show instructions') (action 'showInstructions' this)
-    addItem menu (localized 'show compiled bytes') (action 'showCompiledBytes' this)
+    addItem menu 'show instructions' (action 'showInstructions' this)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
   }
   addLine menu
-  addItem menu (localized 'hide definition') 'hideDefinition'
-  addItem menu (localized 'save picture of script') 'exportAsImage'
+  addItem menu 'hide definition' 'hideDefinition'
+  addItem menu 'save picture of script' 'exportAsImage'
   addLine menu
-  addItem menu (localized 'delete') 'deleteDefinition'
+  addItem menu 'delete' 'deleteDefinition'
   popUp menu (global 'page') (left morph) (bottom morph)
 }
 
@@ -293,20 +293,20 @@ method okayToBeDestroyedByUser Block {
 
 method contextMenu ScriptEditor {
   menu = (menu nil this)
-  addItem menu (localized 'clean up') 'cleanUp' (localized 'arrange scripts')
+  addItem menu 'clean up' 'cleanUp' (localized 'arrange scripts')
   if (and (notNil lastDrop) (isRestorable lastDrop)) {
-    addItem menu (localized 'undrop') 'undrop' (localized 'undo last drop')
+    addItem menu 'undrop' 'undrop' (localized 'undo last drop')
   }
   addLine menu
-  addItem menu (localized 'copy all scripts') 'copyScriptsToClipboard'
+  addItem menu 'copy all scripts' 'copyScriptsToClipboard'
   clip = (getClipboard)
   if (beginsWith clip 'GP Scripts') {
-	addItem menu (localized 'paste all scripts') 'pasteScripts'
+	addItem menu 'paste all scripts' 'pasteScripts'
   } (beginsWith clip 'GP Script') {
-	addItem menu (localized 'paste script') 'pasteScripts'
+	addItem menu 'paste script' 'pasteScripts'
   }
   addLine menu
-  addItem menu (localized 'save picture of all scripts') 'saveScriptsImage'
+  addItem menu 'save picture of all scripts' 'saveScriptsImage'
   return menu
 }
 
