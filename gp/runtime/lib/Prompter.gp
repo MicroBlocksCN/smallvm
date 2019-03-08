@@ -43,16 +43,16 @@ method initializeForConfirm Prompter label question yesLabel noLabel anAction {
   if (isNil noLabel) {noLabel = 'No'}
   callback = anAction // optional
 
-  window = (window label)
+  window = (window (localized label))
   hide (morph (getField window 'resizer'))
   border = (border window)
   morph = (morph window)
   setHandler morph this
 
   lbl = (getField window 'label')
-  textFrame = (newText question (fontName lbl) (fontSize lbl) (gray 0) 'center')
+  textFrame = (newText (localized question) (fontName lbl) (fontSize lbl) (gray 0) 'center')
   addPart morph (morph textFrame)
-  createButtons this yesLabel noLabel
+  createButtons this (localized yesLabel) (localized noLabel)
 
   textWidth = (width (morph textFrame))
   buttonWidth = (width buttons)

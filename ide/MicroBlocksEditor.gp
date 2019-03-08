@@ -156,7 +156,7 @@ method makeIndicator MicroBlocksEditor {
 // project operations
 
 method newProject MicroBlocksEditor {
-  ok = (confirm (global 'page') nil (localized 'Discard current project?'))
+  ok = (confirm (global 'page') nil 'Discard current project?')
   if (not ok) { return }
   clearProject this
   createInitialClass scripter
@@ -342,7 +342,7 @@ method processDroppedFiles MicroBlocksEditor {
 
 method processDroppedFile MicroBlocksEditor fName data {
   if (endsWith fName '.gpp') {
-	ok = (confirm (global 'page') nil (localized 'Discard current project?'))
+	ok = (confirm (global 'page') nil 'Discard current project?')
 	if (not ok) { return }
 	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
 	openProject this data fName

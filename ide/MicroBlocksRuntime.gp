@@ -592,7 +592,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 	}
 	ensurePortOpen this
 	if (isNil port) {
-		inform (localized 'Use "Connect" button to connect to a MicroBlocks device.')
+		inform 'Use "Connect" button to connect to a MicroBlocks device.'
 		return
 	}
 	dataToSend = (toBinaryData (toArray msg))

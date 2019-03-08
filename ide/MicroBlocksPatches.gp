@@ -103,7 +103,7 @@ method propertyTypesMenu InputSlot {
 }
 
 method confirmToQuit Page {
-	confirm this nil (join (localized 'Quit MicroBlocks?')) nil nil 'exit'
+	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }
 
 to findProjectEditor {
@@ -280,7 +280,7 @@ method okayToBeDestroyedByUser Block {
 	editor = (findProjectEditor)
 	if (isNil editor) { return false }
     function = (function (first (inputs this)))
-    if (confirm (global 'page') nil (localized 'Are you sure you want to remove this block definition?')) {
+    if (confirm (global 'page') nil 'Are you sure you want to remove this block definition?') {
 	  removedUserDefinedBlock (scripter editor) function
 	  deleteChunkForBlock (smallRuntime) this
       return true
