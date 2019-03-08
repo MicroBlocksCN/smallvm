@@ -98,7 +98,7 @@ method initialize MicroBlocksEditor aProject {
   clearProject this
   createInitialClass scripter
   fixLayout this
-  setFPS morph 10
+  setFPS morph 60
   return this
 }
 
@@ -486,6 +486,11 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
   addItem menu 'install MicroBlocks on board' 'installVM'
   addLine menu
+  addItem menu 'graph data' 'graphData'
+  addItem menu 'show recent data' 'showRecentData'
+  addItem menu 'copy data to clipboard' 'copyDataToClipboard'
+  addItem menu 'clear data' 'clearData'
+  addLine menu
   addItem menu 'clear memory and variables' 'softReset'
   if (not (devMode)) {
 	addLine menu
@@ -503,6 +508,27 @@ method contextMenu MicroBlocksEditor {
 //   addItem menu 'get code test' (action 'getCodeTest' (smallRuntime))
 //   addItem menu 'get var names test' (action 'getAllVarNames' (smallRuntime))
   return menu
+}
+
+method graphData MicroBlocksEditor {
+  openMicroBlockDataGraph
+}
+
+method showRecentData MicroBlocksEditor {
+  data = (loggedData (smallRuntime))
+  recentData = (copyFromTo data (max 1 ((count data) - 100))) // show the last 100 entries
+  ws = (openWorkspace (global 'page') (joinStrings recentData (newline)))
+  setTitle ws 'Recent Data'
+  setFont ws 'Arial' (16 * (global 'scale'))
+}
+
+method copyDataToClipboard MicroBlocksEditor {
+  data = (loggedData (smallRuntime))
+  setClipboard (joinStrings data (newline))
+}
+
+method clearData MicroBlocksEditor {
+  clearData (smallRuntime)
 }
 
 method showAdvancedBlocks MicroBlocksEditor {

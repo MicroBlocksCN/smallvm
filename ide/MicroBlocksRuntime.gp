@@ -9,18 +9,19 @@
 
 to smallRuntime aScripter {
 	if (isNil (global 'smallRuntime')) {
-		setGlobal 'smallRuntime' (setScripter (new 'SmallRuntime') aScripter)
+		setGlobal 'smallRuntime' (initialize (new 'SmallRuntime') aScripter)
 	}
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData
 
 method scripter SmallRuntime { return scripter }
 
-method setScripter SmallRuntime aScripter {
+method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
+	loggedData = (list)
 	return this
 }
 
@@ -730,6 +731,9 @@ method handleMessage SmallRuntime msg {
 		chunkID = (byteAt msg 3)
 		if (chunkID == 255) {
 			print (returnedValue this msg)
+		} (chunkID == 254) {
+			add loggedData (toString (returnedValue this msg))
+			if ((count loggedData) > 10000) { removeFirst loggedData }
 		} else {
 			showResult this chunkID (returnedValue this msg)
 		}
@@ -955,6 +959,11 @@ method downloadVMFile SmallRuntime boardName {
   	'to copy the file, then the USB drive for your board will dismount.' (newline)
   	'When it remounts, use the "Connect" button to connect to the board.')
 }
+
+// data logging
+
+method loggedData SmallRuntime { return loggedData }
+method clearData SmallRuntime { loggedData = (list) }
 
 // testing
 
