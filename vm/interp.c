@@ -296,7 +296,7 @@ static void runTask(Task *task) {
 		&&peek_op,
 		&&poke_op,
 		&&sayIt_op,
-		&&printIt_op,
+		&&logData_op,
 		&&boardType_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -782,14 +782,14 @@ static void runTask(Task *task) {
 		task->status = waiting_micros;
 		task->wakeTime = microsecs() + (300 * (printBufferByteCount + 6)); // assume 1k bytes/sec
 		goto suspend;
-	printIt_op:
+	logData_op:
 		printArgs(arg, sp - arg, false, true);
 		if (!hasOutputSpace(printBufferByteCount + 100)) { // leave room for other messages
 			ip--; // retry when task is resumed
 			goto suspend;
 		}
 		#if USE_TASKS
-			outputString(printBuffer);
+			logData(printBuffer);
 		#else
 			printf("(NO TASKS) %s\r\n", printBuffer);
 		#endif

@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v051"
+#define VM_VERSION "v051a"
 
 // Forward Reference Declarations
 
@@ -437,8 +437,21 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// xxx to do: support arrays (containing various data types including other arrays)
 }
 
+void logData(char *s) {
+	// Log data (the former 'print' command). Use chunkID 254.
+
+	char data[200];
+	data[0] = 2; // data type (2 is string)
+	int byteCount = strlen(s);
+	if (byteCount > (int) (sizeof(data) - 1)) byteCount = sizeof(data) - 1;
+	for (int i = 0; i < byteCount; i++) {
+		data[i + 1] = s[i];
+	}
+	sendMessage(outputValueMsg, 254, (byteCount + 1), data);
+}
+
 void outputString(char *s) {
-	// Special case for sending a debug string.
+	// Sending a debug string. Use chunkID 255.
 
 	char data[200];
 	data[0] = 2; // data type (2 is string)
@@ -448,10 +461,6 @@ void outputString(char *s) {
 		data[i + 1] = s[i];
 	}
 	sendMessage(outputValueMsg, 255, (byteCount + 1), data);
-}
-
-void outputValue(OBJ value, uint8 chunkIndex) {
-	sendValueMessage(outputValueMsg, chunkIndex, value);
 }
 
 void sendTaskDone(uint8 chunkIndex) {
