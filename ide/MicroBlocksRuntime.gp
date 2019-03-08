@@ -269,7 +269,7 @@ method selectPort SmallRuntime {
 		addAll names portList
 
 	}
-	menu = (menu 'Serial port:' (action 'setPort' this) true)
+	menu = (menu (localized 'Serial port:') (action 'setPort' this) true)
 	for s portList { addItem menu s }
 	addItem menu 'other...'
 	if (notNil port) {
@@ -280,11 +280,11 @@ method selectPort SmallRuntime {
 }
 
 method setPort SmallRuntime newPortName {
-	if ('other...' == newPortName) {
-		newPortName = (prompt (global 'page') 'Port name?' 'none')
+	if ((localized 'other...') == newPortName) {
+		newPortName = (prompt (global 'page') (localized 'Port name?') (localized 'none'))
 		if ('' == newPortName) { return }
 	}
-	if (and ('disconnect' == newPortName) (notNil port)) {
+	if (and ((localized 'disconnect') == newPortName) (notNil port)) {
 		stopAndSyncScripts this
 		sendStartAll this
 	}
@@ -292,7 +292,7 @@ method setPort SmallRuntime newPortName {
 		closeSerialPort port
 		port = nil
 	}
-	if (or (isNil newPortName) (isOneOf newPortName 'disconnect' 'none')) { // just close port
+	if (or (isNil newPortName) (isOneOf newPortName (localized 'disconnect') (localized 'none'))) { // just close port
 		portName = nil
 	} else {
 		portName = (join '/dev/' newPortName)
@@ -341,8 +341,8 @@ method connectionStatus SmallRuntime {
 			connectMSecs = nil // don't do this again unti next connection attempt
 			if (not (isEmpty (collectBoardDrives this))) {
 				ok = (confirm (global 'page') nil
-'The board is not responding.
-Try to Install MicroBlocks on the board?')
+                                        (join (localized 'The board is not responding.') (newline)
+                                         (localized 'Try to Install MicroBlocks on the board?')))
 				if ok { installVM this }
 			}
 		}
@@ -355,10 +355,10 @@ method ideVersion SmallRuntime { return '0.1.32' }
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
 		'MicroBlocks v' (ideVersion this) (newline)
-		'by' (newline)
+		(localized 'by') (newline)
 		'John Maloney, Bernat Romagosa, and Jens Mönig' (newline)
 		'Created with GP (gpblocks.org)' (newline)
-		'More info at http://microblocks.fun')
+		(localized 'More info at http://microblocks.fun'))
 }
 
 method getVersion SmallRuntime {
@@ -451,9 +451,9 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	addAll data (chunkBytesFor this aBlockOrFunction)
 	if ((count data) > 1000) {
 		if (isClass aBlockOrFunction 'Function') {
-			inform (global 'page') (join 'Function "' (functionName aBlockOrFunction) '" is too large to send to board.')
+			inform (global 'page') (join (localized 'Function "') (functionName aBlockOrFunction) (localized '" is too large to send to board.'))
 		} else {
-			showHint (morph aBlockOrFunction) 'Script is too large to send to board.'
+			showHint (morph aBlockOrFunction) (localized 'Script is too large to send to board.')
 		}
 	}
 	sendMsgSync this 'chunkCodeMsg' chunkID data
@@ -845,14 +845,14 @@ method installVM SmallRuntime {
   }
   boards = (collectBoardDrives this)
   if ((count boards) > 0) {
-	menu = (menu 'Select board:' this)
+	menu = (menu (localized 'Select board:') this)
 	for b boards {
 		addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
 	}
 	popUpAtHand menu (global 'page')
   } else {
-	inform 'No boards found; is your board plugged in?
-For AdaFruit boards, double-click button and try again.'
+	inform (join (localized 'No boards found; is your board plugged in?') (newline)
+            (localized 'For AdaFruit boards, double-click button and try again.'))
   }
 }
 
@@ -925,7 +925,7 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 	}
   }
   if (isNil vmData) {
-	error (join 'Could not read: ' (join 'precompiled/' vmFileName))
+	error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))
   }
   closePort (smallRuntime) // disconnect
   writeFile (join boardPath vmFileName) vmData
@@ -937,7 +937,7 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 }
 
 method installVMInBrowser SmallRuntime {
-  menu = (menu 'Board type:' (action 'downloadVMFile' this) true)
+  menu = (menu (localized 'Board type:') (action 'downloadVMFile' this) true)
   addItem menu 'BBC micro:bit'
   addItem menu 'Calliope mini'
   addItem menu 'Circuit Playground Express'

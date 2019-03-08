@@ -125,6 +125,7 @@ method addTopBarParts MicroBlocksEditor {
 }
 
 method textButton MicroBlocksEditor label selector {
+  label = (localized label)
   scale = (global 'scale')
   setFont 'Arial Bold' (16 * scale)
   if ('Linux' == (platform)) {
@@ -192,7 +193,7 @@ method openProjectFromFile MicroBlocksEditor location {
 	data = (readFile location true)
   }
   if (isNil data) {
-	error (join 'Could not read: ' location)
+	error (join (localized 'Could not read: ') location)
   }
   openProject this data location
 }
@@ -575,7 +576,7 @@ method addLogoButton MicroBlocksEditor {
 // Language Button
 
 method languageMenu MicroBlocksEditor {
-  menu = (menu 'Language:' this)
+  menu = (menu (localized 'Language:') this)
   addItem menu 'English' (action 'setLanguage' this 'English')
   if ('Browser' == (platform)) {
 	for fn (listFiles 'translations') {
@@ -596,10 +597,23 @@ method languageMenu MicroBlocksEditor {
 }
 
 method setLanguage MicroBlocksEditor newLang {
+  oldScripter = scripter
   setLanguage (authoringSpecs) newLang
   updateBlocks scripter
   saveScripts scripter
-  restoreScripts scripter
+  updateLibraryHeader scripter
+
+  for item (join leftItems rightItems) {
+    if (not (isNumber item)) {
+      removePart morph (morph item)
+      destroy (morph item)
+    }
+  }
+
+  addTopBarParts this
+  drawTopBar this
+  updateIndicator this // why is this not working?
+  fixLayout this
 }
 
 method addLanguageButton MicroBlocksEditor {
@@ -613,6 +627,21 @@ method addLanguageButton MicroBlocksEditor {
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
+}
+
+to localized string {
+  dict = (getField (authoringSpecs) 'translationDictionary')
+  if (isNil dict) {
+    return string
+  } else {
+    localization = (at dict string)
+    if (isNil localization) {
+      return string
+    } else {
+      return localization
+    }
+  }
+
 }
 
 // UI image resources

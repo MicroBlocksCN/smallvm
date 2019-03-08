@@ -309,3 +309,225 @@ pinta el píxel x _ y _ de color _
 
 set capacitive threshold to _
 fixa llindar capacitiu a _
+
+New
+Nou
+
+Open
+Obre
+
+Save
+Desa
+
+Connect
+Connecta
+
+disconnect
+desconnecta
+
+Serial port:
+Port sèrie:
+
+other...
+un altre...
+
+none
+cap
+
+Port name?
+Nom del port?
+
+Board type:
+Tipus de placa:
+
+Select board:
+Selecciona la placa:
+
+Could not read: 
+No s'ha pogut llegir: 
+
+by
+per
+
+More info at http://microblocks.fun
+Més informació a http://microblocks.fun
+
+Function "
+La funció "
+
+" is too large to send to board.
+" és massa gran per enviar-se a la placa.
+
+Script is too large to send to board.
+El programa és massa gran per enviar-se a la placa.
+
+Use "Connect" button to connect to a MicroBlocks device.
+Utilitza el botó "Connecta" per connectar-te a un dispositiu MicroBlocks.
+
+No boards found; is your board plugged in?
+No s'ha trobat cap placa; has connectat la teva placa?
+
+For AdaFruit boards, double-click button and try again.
+En plaques AdaFruit, prem el botó dues vegades ràpidament i torna-ho a provar.
+
+The board is not responding.
+La placa no respon.
+
+Try to Install MicroBlocks on the board?
+Vols provar d'instal·lar-hi MicroBlocks?
+
+Stop
+Atura
+
+Start
+Inicia
+
+Quit MicroBlocks?
+Sortir de MicroBlocks?
+
+Discard current project?
+Vols descartar el projecte actual?
+
+clean up
+neteja
+
+arrange scripts
+organitza programes
+
+undo last drop
+desfes l'últim moviment
+
+copy all scripts
+copia tots els programes
+
+paste all scripts
+enganxa tots els programes
+
+paste script
+enganxa el programa
+
+save picture of all scripts
+desa la imatge de tots els programes
+
+about...
+sobre...
+
+virtual machine version
+versió de la màquina virtual
+
+install MicroBlocks on board
+instal·la MicroBlocks a la placa
+
+clear memory and variables
+neteja memòria i variables
+
+show advanced blocks
+mostra els blocs avançats
+
+export functions as library
+exporta funcions com a llibreria
+
+hide advanced blocks
+amaga els blocs avançats
+
+show instructions
+mostra instruccions
+
+show compiled bytes
+mostra els bytes compilats
+
+expand
+expandeix
+
+collapse
+replega
+
+rename...
+reanomena...
+
+show definition...
+mostra definició...
+
+duplicate
+duplica
+
+just this one block
+només aquest bloc
+
+...all
+...fins a baix
+
+duplicate including all attached blocks
+duplica aquest bloc i tots els que el segueixen
+
+save picture of script
+desa la imatge del programa
+
+copy script
+copia el programa
+
+delete
+elimina
+
+hide definition
+amaga la definició
+
+Are you sure you want to remove this block definition?
+Segur que vols esborrar la definició d'aquest bloc?
+
+Libraries
+Llibreries
+
+Language:
+Idioma:
+
+Add a function
+Crea una funció
+
+Add a variable
+Crea una variable
+
+Delete a variable
+Elimina una variable
+
+Output
+Sortida
+
+Input
+Entrada
+
+Pins
+Pins
+
+Control
+Control
+
+Math
+Operacions
+
+Variables
+Variables
+
+Lists
+Llistes
+
+Advanced
+Avançats
+
+Functions
+Funcions
+
+Obsolete
+Obsolet
+
+Ok
+D'acord
+
+Yes
+Sí
+
+No
+No
+
+Confirm
+Confirmació
