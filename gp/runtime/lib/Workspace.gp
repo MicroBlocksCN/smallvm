@@ -32,9 +32,18 @@ method redraw Workspace {
   fixLayout this
 }
 
+method setTitle Workspace s {
+  setLabelString window s
+}
+
+method setFont Workspace fontName fontSize {
+  setFont textBox fontName fontSize
+}
+
 to openWorkspace page contents {
   ws = (new 'Workspace')
   initialize ws contents
   setPosition (morph ws) (x (hand page)) (y (hand page))
   addPart page ws
+  return ws
 }
