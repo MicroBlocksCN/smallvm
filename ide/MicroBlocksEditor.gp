@@ -110,21 +110,22 @@ method addTopBarParts MicroBlocksEditor {
   leftItems = (list)
   add leftItems (addLogoButton this)
   add leftItems (5 * scale)
-  add leftItems (textButton this (localized 'New') 'newProject')
-  add leftItems (textButton this (localized 'Open') 'openProjectMenu')
-  add leftItems (textButton this (localized 'Save') 'saveProjectToFile')
+  add leftItems (textButton this 'New' 'newProject')
+  add leftItems (textButton this 'Open' 'openProjectMenu')
+  add leftItems (textButton this 'Save' 'saveProjectToFile')
 
   rightItems = (list)
-  add rightItems (textButton this (localized 'Connect') 'connectToBoard')
+  add rightItems (textButton this 'Connect' 'connectToBoard')
   add rightItems (4 * scale)
   add rightItems (makeIndicator this)
   add rightItems (25 * scale)
-  add rightItems (textButton this (localized 'Stop') 'stopAndSyncScripts')
-  add rightItems (textButton this (localized 'Start') 'startAll')
+  add rightItems (textButton this 'Stop' 'stopAndSyncScripts')
+  add rightItems (textButton this 'Start' 'startAll')
   add rightItems (addLanguageButton this)
 }
 
 method textButton MicroBlocksEditor label selector {
+  label = (localized label)
   scale = (global 'scale')
   setFont 'Arial Bold' (16 * scale)
   if ('Linux' == (platform)) {
