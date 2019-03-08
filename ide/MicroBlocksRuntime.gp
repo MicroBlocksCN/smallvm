@@ -658,25 +658,19 @@ method ensurePortOpen SmallRuntime {
 method processMessages SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) { return }
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
-	repeat 20 { processMessages2 this }
+	processingMessages = true
+	while processingMessages {
+		processingMessages = (processNextMessage this)
+	}
 }
 
-method processMessages2 SmallRuntime {
-// showOutputStrings this
-// return // xxx
-
-// s = (readSerialPort port)
-// if (notNil s) { print s } // print raw debug strings from VM
-// return // xxx
-
-// s = (readSerialPort port true)
-// if (notNil s) { print (toArray s) } // print message bytes
-// return // xxx
+method processNextMessage SmallRuntime {
+	// Process the next message, if any. Return false when there are no more messages.
 
 	// Read any available bytes and append to recvBuf
 	s = (readSerialPort port true)
 	if (notNil s) { recvBuf = (join recvBuf s) }
-	if ((byteCount recvBuf) < 3) { return } // incomplete message
+	if ((byteCount recvBuf) < 3) { return false } // not enough bytes for even a short message
 
 	// Parse and dispatch messages
 	firstByte = (byteAt recvBuf 1)
@@ -684,21 +678,22 @@ method processMessages2 SmallRuntime {
 		handleMessage this (copyFromTo recvBuf 1 3)
 		recvBuf = (copyFromTo recvBuf 4) // remove message
 	} (251 == firstByte) { // long message
-		if ((byteCount recvBuf) < 5) { return } // incomplete length field
+		if ((byteCount recvBuf) < 5) { return false } // incomplete length field
 		byteTwo = (byteAt recvBuf 2)
 		if (or (byteTwo < 1) (byteTwo > 32)) {
 			print 'Bad message type; should be 1-31 but is:' (byteAt recvBuf 2)
-			skipMessage this // discard
-			return
+			skipMessage this // discard unrecognized message
+			return true
 		}
 		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
-		if ((byteCount recvBuf) < (5 + bodyBytes)) { return } // incomplete body
+		if ((byteCount recvBuf) < (5 + bodyBytes)) { return false } // incomplete body
 		handleMessage this (copyFromTo recvBuf 1 (bodyBytes + 5))
 		recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
 	} else {
 		print 'Bad message start byte; should be 250 or 251 but is:' firstByte
 		skipMessage this // discard
 	}
+	return true
 }
 
 method skipMessage SmallRuntime {
