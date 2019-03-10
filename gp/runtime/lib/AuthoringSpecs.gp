@@ -293,6 +293,20 @@ method installTranslation AuthoringSpecs translationData {
   }
 }
 
+to localized string {
+  dict = (getField (authoringSpecs) 'translationDictionary')
+  if (isNil dict) {
+	return string
+  } else {
+	localization = (at dict string)
+	if (isNil localization) {
+	  return string
+	} else {
+	  return localization
+	}
+  }
+}
+
 // authoring specs
 
 method initialSpecs AuthoringSpecs {

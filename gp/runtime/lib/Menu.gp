@@ -4,7 +4,7 @@ defineClass Menu morph label target items reverseCall selection returnFocus
 
 to menu label target reverseCall returnFocus {
   if (isNil reverseCall) {reverseCall = false}
-  return (new 'Menu' nil label target (list) reverseCall)
+  return (new 'Menu' nil (localized label) target (list) reverseCall)
 }
 
 method addItem Menu itemLabel itemAction itemHint itemThumb {
@@ -215,7 +215,7 @@ method buildMorph Menu page yPos {
         (action 'destroy' morph)
         itemAction)
       item = (new 'Trigger' nil action nbm hbm pbm)
-      setHint item (at tuple 3)
+      setHint item (localized (at tuple 3))
       m = (newMorph item)
       setMorph item m
       normal item
