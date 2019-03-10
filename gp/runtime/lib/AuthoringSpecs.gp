@@ -293,14 +293,15 @@ method installTranslation AuthoringSpecs translationData {
   }
 }
 
-to localized string {
+to localized aString {
+  if (isNil aString) { return nil }
   dict = (getField (authoringSpecs) 'translationDictionary')
   if (isNil dict) {
-	return string
+	return aString
   } else {
-	localization = (at dict string)
+	localization = (at dict aString)
 	if (isNil localization) {
-	  return string
+	  return aString
 	} else {
 	  return localization
 	}

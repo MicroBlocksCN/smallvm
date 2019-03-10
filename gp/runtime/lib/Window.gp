@@ -22,7 +22,7 @@ method initialize Window labelString {
   morph = (newMorph this)
   setGrabRule morph 'handle'
   setTransparentTouch morph false // optimization
-  label = (newText labelString 'Arial Bold' (scale * 12) clientColor)
+  label = (newText (localized labelString) 'Arial Bold' (scale * 12) clientColor)
   addPart morph (morph label)
   closeBtn = (pushButton 'X' (color 140 100 100) (action 'destroy' (morph this)))
   addPart morph (morph closeBtn)
@@ -79,7 +79,7 @@ method addShadow Window {
 }
 
 method setLabelString Window aString {
-  setText label aString
+  setText label (localized aString)
   redraw label
   fixLayout this
 }

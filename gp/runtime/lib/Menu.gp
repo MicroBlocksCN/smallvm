@@ -10,7 +10,7 @@ to menu label target reverseCall returnFocus {
 method addItem Menu itemLabel itemAction itemHint itemThumb {
   if (isNil itemAction) { itemAction = itemLabel }
   if (not (isAnyClass itemLabel 'Bitmap' 'String')) {
-	itemLabel = (localized (toString itemLabel))
+	itemLabel = (toString itemLabel)
   }
   if (isClass itemLabel 'String') {
         itemLabel = (localized itemLabel)

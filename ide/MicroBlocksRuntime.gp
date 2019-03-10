@@ -472,7 +472,9 @@ method saveVariableNames SmallRuntime {
 
 	varID = 0
 	for varName newVarNames {
-		sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
+		if (notNil port) {
+			sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
+		}
 		varID += 1
 	}
 	oldVarNames = (copy newVarNames)
@@ -493,7 +495,9 @@ method getVar SmallRuntime varID {
 
 method clearVariableNames SmallRuntime {
 	oldVarNames = nil
-	sendMsgSync this 'clearVarsMsg'
+	if (notNil port) {
+		sendMsgSync this 'clearVarsMsg'
+	}
 }
 
 method getAllVarNames SmallRuntime {
