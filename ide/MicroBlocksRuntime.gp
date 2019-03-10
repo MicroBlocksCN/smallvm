@@ -269,7 +269,7 @@ method selectPort SmallRuntime {
 		addAll names portList
 
 	}
-	menu = (menu (localized 'Serial port:') (action 'setPort' this) true)
+	menu = (menu 'Serial port:' (action 'setPort' this) true)
 	for s portList { addItem menu s }
 	addItem menu 'other...'
 	if (notNil port) {
@@ -280,11 +280,11 @@ method selectPort SmallRuntime {
 }
 
 method setPort SmallRuntime newPortName {
-	if ((localized 'other...') == newPortName) {
-		newPortName = (prompt (global 'page') (localized 'Port name?') (localized 'none'))
+	if ('other...' == newPortName) {
+		newPortName = (prompt (global 'page') 'Port name?' (localized 'none'))
 		if ('' == newPortName) { return }
 	}
-	if (and ((localized 'disconnect') == newPortName) (notNil port)) {
+	if (and ('disconnect' == newPortName) (notNil port)) {
 		stopAndSyncScripts this
 		sendStartAll this
 	}
@@ -292,7 +292,8 @@ method setPort SmallRuntime newPortName {
 		closeSerialPort port
 		port = nil
 	}
-	if (or (isNil newPortName) (isOneOf newPortName (localized 'disconnect') (localized 'none'))) { // just close port
+	// the prompt answer 'none' is entered by the user in the current language
+	if (or (isNil newPortName) (isOneOf newPortName 'disconnect' (localized 'none'))) { // just close port
 		portName = nil
 	} else {
 		portName = (join '/dev/' newPortName)
@@ -845,7 +846,7 @@ method installVM SmallRuntime {
   }
   boards = (collectBoardDrives this)
   if ((count boards) > 0) {
-	menu = (menu (localized 'Select board:') this)
+	menu = (menu 'Select board:' this)
 	for b boards {
 		addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
 	}
@@ -937,7 +938,7 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 }
 
 method installVMInBrowser SmallRuntime {
-  menu = (menu (localized 'Board type:') (action 'downloadVMFile' this) true)
+  menu = (menu 'Board type:' (action 'downloadVMFile' this) true)
   addItem menu 'BBC micro:bit'
   addItem menu 'Calliope mini'
   addItem menu 'Circuit Playground Express'

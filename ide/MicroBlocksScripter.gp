@@ -113,9 +113,19 @@ method initialize MicroBlocksScripter aProjectEditor {
   return this
 }
 
-method updateLibraryHeader MicroBlocksScripter {
+method languageChanged MicroBlocksScripter {
+  // update categories and library names
+  updateMorphContents (handler (first (parts (morph categoriesFrame))))
+  updateMorphContents (handler (first (parts (morph libFrame))))
+
+  // update library header
   destroy (morph libHeader)
   makeLibraryHeader this
+
+  // update the scripts
+  updateBlocks this
+  saveScripts this
+  restoreScripts this
 }
 
 method makeLibraryHeader MicroBlocksScripter {

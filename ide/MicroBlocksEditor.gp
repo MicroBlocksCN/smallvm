@@ -150,6 +150,7 @@ method makeIndicator MicroBlocksEditor {
   setExtent (morph indicator) (15 * scale) (15 * scale)
   redraw indicator
   addPart morph (morph indicator)
+  lastStatus = nil // clear cache
   return indicator
 }
 
@@ -576,7 +577,7 @@ method addLogoButton MicroBlocksEditor {
 // Language Button
 
 method languageMenu MicroBlocksEditor {
-  menu = (menu (localized 'Language:') this)
+  menu = (menu 'Language:' this)
   addItem menu 'English' (action 'setLanguage' this 'English')
   if ('Browser' == (platform)) {
 	for fn (listFiles 'translations') {
@@ -597,22 +598,16 @@ method languageMenu MicroBlocksEditor {
 }
 
 method setLanguage MicroBlocksEditor newLang {
-  oldScripter = scripter
   setLanguage (authoringSpecs) newLang
-  updateBlocks scripter
-  saveScripts scripter
-  updateLibraryHeader scripter
+  languageChanged scripter
 
+  // update items in top-bar
+  destroy (morph indicator)
   for item (join leftItems rightItems) {
-    if (not (isNumber item)) {
-      removePart morph (morph item)
-      destroy (morph item)
-    }
+	if (not (isNumber item)) { destroy (morph item) }
   }
-
   addTopBarParts this
-  drawTopBar this
-  updateIndicator this // why is this not working?
+  updateIndicator this
   fixLayout this
 }
 
@@ -627,21 +622,6 @@ method addLanguageButton MicroBlocksEditor {
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
-}
-
-to localized string {
-  dict = (getField (authoringSpecs) 'translationDictionary')
-  if (isNil dict) {
-    return string
-  } else {
-    localization = (at dict string)
-    if (isNil localization) {
-      return string
-    } else {
-      return localization
-    }
-  }
-
 }
 
 // UI image resources

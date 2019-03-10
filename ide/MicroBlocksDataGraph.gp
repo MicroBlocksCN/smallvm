@@ -87,7 +87,7 @@ method pointCount MicroBlockDataGraph {
 
 	scale = (global 'scale')
 	leftInset = (40 * scale)
-	lineW = scale // (2 * scale)
+	lineW = scale
 	return (toInteger (((width (clientArea window)) - leftInset) / lineW))
 }
 
