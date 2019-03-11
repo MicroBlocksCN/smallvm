@@ -38,6 +38,7 @@ method microBlocksSpecs SmallCompiler {
 	'Output'
 		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
 		(array ' ' 'sayIt'				'say _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 123 '' '')
+		(array ' ' 'printIt'			'log data _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello!')
 		(array ' ' 'mbDisplay'			'display _' 'microbitDisplay')
 		(array ' ' 'mbDisplayOff'		'clear display')
 		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
@@ -135,7 +136,6 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'spiSend'			'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'			'spi receive')
 
-		(array ' ' 'printIt'			'print _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello!')
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 
 		(array ' ' 'noop'				'no op')
