@@ -87,6 +87,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (gray 220))
+  setExtent (morph blocksFrame) (235 * scale) (100 * scale)
   setAutoScroll blocksFrame false
   addPart morph (morph blocksFrame)
 
@@ -109,13 +110,23 @@ method initialize MicroBlocksScripter aProjectEditor {
   restoreScripts this
 
   smallRuntime this // create a SmallRuntime instance
-  if (isNil projectEditor) { select (contents categoriesFrame) (localized 'Control') }
+  if (isNil projectEditor) { select (contents categoriesFrame) 'Control' }
   return this
 }
 
-method updateLibraryHeader MicroBlocksScripter {
+method languageChanged MicroBlocksScripter {
+  // update categories and library names
+  updateMorphContents (handler (first (parts (morph categoriesFrame))))
+  updateMorphContents (handler (first (parts (morph libFrame))))
+
+  // update library header
   destroy (morph libHeader)
   makeLibraryHeader this
+
+  // update the scripts
+  updateBlocks this
+  saveScripts this
+  restoreScripts this
 }
 
 method makeLibraryHeader MicroBlocksScripter {
@@ -378,7 +389,7 @@ method initLabelSpecs MicroBlocksScripter {
   atPut labelSpecs 'mbDisplay' 'micro:bit, Calliope:'
 
   // Input
-  atPut labelSpecs 'mbTiltX' 'micro:bit, Calliope, CP Express:'
+  atPut labelSpecs 'mbTiltX' 'micro:bit, Calliope, CPX:'
   atPut labelSpecs 'millisOp' '-'
   atPut labelSpecs '[sensors:touchRead]' 'ESP32:'
 
@@ -943,7 +954,7 @@ method clearLibraries MicroBlocksScripter {
 }
 
 method importLibrary MicroBlocksScripter {
-  pickFileToOpen (action 'importLibraryFromFile' this) (localized 'Libraries') (array '.ulib')
+  pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ulib')
 }
 
 method importLibraryFromFile MicroBlocksScripter fileName {

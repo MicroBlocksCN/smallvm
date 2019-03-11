@@ -150,6 +150,7 @@ method makeIndicator MicroBlocksEditor {
   setExtent (morph indicator) (15 * scale) (15 * scale)
   redraw indicator
   addPart morph (morph indicator)
+  lastStatus = nil // clear cache
   return indicator
 }
 
@@ -488,7 +489,7 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'install MicroBlocks on board' 'installVM'
   addLine menu
   addItem menu 'graph data' 'graphData'
-  addItem menu 'show recent data' 'showRecentData'
+//  addItem menu 'show recent data' 'showRecentData' // commented out until it shows data in real-time
   addItem menu 'copy data to clipboard' 'copyDataToClipboard'
   addItem menu 'clear data' 'clearData'
   addLine menu
@@ -516,9 +517,8 @@ method graphData MicroBlocksEditor {
 }
 
 method showRecentData MicroBlocksEditor {
-  data = (loggedData (smallRuntime))
-  recentData = (copyFromTo data (max 1 ((count data) - 100))) // show the last 100 entries
-  ws = (openWorkspace (global 'page') (joinStrings recentData (newline)))
+  data = (loggedData (smallRuntime) 100) // get the most recent 100 entries
+  ws = (openWorkspace (global 'page') (joinStrings data (newline)))
   setTitle ws 'Recent Data'
   setFont ws 'Arial' (16 * (global 'scale'))
 }
@@ -529,7 +529,7 @@ method copyDataToClipboard MicroBlocksEditor {
 }
 
 method clearData MicroBlocksEditor {
-  clearData (smallRuntime)
+  clearLoggedData (smallRuntime)
 }
 
 method showAdvancedBlocks MicroBlocksEditor {
@@ -576,7 +576,7 @@ method addLogoButton MicroBlocksEditor {
 // Language Button
 
 method languageMenu MicroBlocksEditor {
-  menu = (menu (localized 'Language:') this)
+  menu = (menu 'Language:' this)
   addItem menu 'English' (action 'setLanguage' this 'English')
   if ('Browser' == (platform)) {
 	for fn (listFiles 'translations') {
@@ -597,22 +597,16 @@ method languageMenu MicroBlocksEditor {
 }
 
 method setLanguage MicroBlocksEditor newLang {
-  oldScripter = scripter
   setLanguage (authoringSpecs) newLang
-  updateBlocks scripter
-  saveScripts scripter
-  updateLibraryHeader scripter
+  languageChanged scripter
 
+  // update items in top-bar
+  destroy (morph indicator)
   for item (join leftItems rightItems) {
-    if (not (isNumber item)) {
-      removePart morph (morph item)
-      destroy (morph item)
-    }
+	if (not (isNumber item)) { destroy (morph item) }
   }
-
   addTopBarParts this
-  drawTopBar this
-  updateIndicator this // why is this not working?
+  updateIndicator this
   fixLayout this
 }
 
@@ -627,21 +621,6 @@ method addLanguageButton MicroBlocksEditor {
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
-}
-
-to localized string {
-  dict = (getField (authoringSpecs) 'translationDictionary')
-  if (isNil dict) {
-    return string
-  } else {
-    localization = (at dict string)
-    if (isNil localization) {
-      return string
-    } else {
-      return localization
-    }
-  }
-
 }
 
 // UI image resources

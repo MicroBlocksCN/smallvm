@@ -976,7 +976,7 @@ method showMenu Page aMenu x y {
 to inform msg { inform (global 'page') msg }
 
 method inform Page msg {
-  m = (menu (localized msg))
+  m = (menu msg)
   addItem m (localized 'Ok') 'nop'
   buildMorph m this (y hand)
   setGrabRule (morph m) 'handle'
@@ -1028,7 +1028,7 @@ method prompt Page question default editRule callback {
   // to use in scripts
   if (isNil editRule) { editRule = 'line' }
   p = (new 'Prompter')
-  initialize p question default editRule callback
+  initialize p (localized question) (localized default) editRule callback
   fixLayout p
   setCenter (morph p) (x hand) (y hand)
   keepWithin (morph p) (bounds morph)

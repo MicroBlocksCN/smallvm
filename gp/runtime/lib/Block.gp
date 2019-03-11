@@ -1192,6 +1192,10 @@ method labelText Block aString {
   if (isOneOf aString '+' '-' '*' '/' '×' '−') {  // the last two are unicode multiple and minus
   	fontSize = (12 * scale)
   }
+  if ('Linux' == (platform)) {
+	fontName =  'Sans Bold'
+	fontSize = (round (0.92 * fontSize))
+  }
   if (global 'stealthBlocks') {
     labelColor = (gray (stealthLevel 255 0))
     if ((red labelColor) < 100) {

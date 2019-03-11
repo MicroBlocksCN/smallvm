@@ -14,14 +14,14 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData loggedDataNext loggedDataCount
 
 method scripter SmallRuntime { return scripter }
 
 method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
-	loggedData = (list)
+	clearLoggedData this
 	return this
 }
 
@@ -81,40 +81,6 @@ method chunkBytesFor SmallRuntime aBlockOrFunction {
 	return bytes
 }
 
-method showInstructionsOLD SmallRuntime aBlock {
-	// Print the instructions for the given stack.
-
-	compiler = (initialize (new 'SmallCompiler'))
-	code = (instructionsFor compiler (topBlock aBlock))
-	for item code {
-		if (not (isClass item 'Array')) {
-			print item
-		} ('pushImmediate' == (first item)) {
-			arg = (at item 2)
-			if (1 == (arg & 1)) {
-				arg = (arg >> 1) // decode integer
-			} (0 == arg) {
-				arg = false
-			} (4 == arg) {
-				arg = true
-			}
-			print 'pushImmediate' arg
-		} ('pushBigImmediate' == (first item)) {
-			print 'pushBigImmediate' // don't show arg count; could be confusing
-		} ('callFunction' == (first item)) {
-			arg = (at item 2)
-			calledChunkID = ((arg >> 8) & 255)
-			argCount = (arg & 255)
-			print 'callFunction' calledChunkID argCount
-		} (not (isLetter (at (first item) 1))) { // operators
-			print (first item)
-		} else {
-			callWith 'print' item // print the array elements
-		}
-	}
-	print '----------'
-}
-
 method showInstructions SmallRuntime aBlock {
 	// Display the instructions for the given stack.
 
@@ -123,34 +89,52 @@ method showInstructions SmallRuntime aBlock {
 	result = (list)
 	for item code {
 		if (not (isClass item 'Array')) {
-			add result (toString item)
+			addWithLineNum this result (toString item)
 		} ('pushImmediate' == (first item)) {
 			arg = (at item 2)
 			if (1 == (arg & 1)) {
 				arg = (arg >> 1) // decode integer
+				if (arg >= 4194304) { arg = (arg - 8388608) }
 			} (0 == arg) {
 				arg = false
 			} (4 == arg) {
 				arg = true
 			}
-			add result (join 'pushImmediate ' arg)
+			addWithLineNum this result (join 'pushImmediate ' arg)
 		} ('pushBigImmediate' == (first item)) {
-			add result 'pushBigImmediate' // don't show arg count; could be confusing
+			addWithLineNum this result 'pushBigImmediate' // don't show arg count; could be confusing
 		} ('callFunction' == (first item)) {
 			arg = (at item 2)
 			calledChunkID = ((arg >> 8) & 255)
 			argCount = (arg & 255)
-			add result (join 'callFunction ' calledChunkID ' ' argCount)
+			addWithLineNum this result (join 'callFunction ' calledChunkID ' ' argCount)
 		} (not (isLetter (at (first item) 1))) { // operator; don't show arg count
-			add result (toString (first item))
+			addWithLineNum this result (toString (first item))
 		} else {
 			// instruction (an array of form <cmd> <args...>)
 			instr = ''
 			for s item { instr = (join instr s ' ') }
-			add result instr
+			addWithLineNum this result instr item
 		}
 	}
-	openWorkspace (global 'page') (joinStrings result (newline))
+	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
+	setTitle ws 'Instructions'
+	setFont ws 'Arial' (16 * (global 'scale'))
+	setExtent (morph ws) (240 * (global 'scale')) (500 * (global 'scale'))
+}
+
+method addWithLineNum SmallRuntime aList instruction items {
+	currentLine = ((count aList) + 1)
+	targetLine = ''
+	if (and
+		(notNil items)
+		(isOneOf (first items)
+			'pushLiteral' 'jmp' 'jmpTrue' 'jmpFalse'
+			'decrementAndJmp' 'callFunction' 'forLoop')) {
+		offset = (toInteger (last items))
+		targetLine = (join ' (line ' (+ currentLine 1 offset) ')')
+	}
+	add aList (join '' currentLine ' ' instruction targetLine)
 }
 
 method showCompiledBytes SmallRuntime aBlock {
@@ -166,7 +150,11 @@ method showCompiledBytes SmallRuntime aBlock {
 			add result ' '
 		}
 	}
-	openWorkspace (global 'page') (joinStrings result)
+	if (and ((count result) > 0) ((newline) == (last result))) { removeLast result }
+	ws = (openWorkspace (global 'page') (joinStrings result))
+	setTitle ws 'Instruction Bytes'
+	setFont ws 'Arial' (16 * (global 'scale'))
+	setExtent (morph ws) (240 * (global 'scale')) (500 * (global 'scale'))
 }
 
 // chunk management
@@ -269,7 +257,7 @@ method selectPort SmallRuntime {
 		addAll names portList
 
 	}
-	menu = (menu (localized 'Serial port:') (action 'setPort' this) true)
+	menu = (menu 'Serial port:' (action 'setPort' this) true)
 	for s portList { addItem menu s }
 	addItem menu 'other...'
 	if (notNil port) {
@@ -280,11 +268,11 @@ method selectPort SmallRuntime {
 }
 
 method setPort SmallRuntime newPortName {
-	if ((localized 'other...') == newPortName) {
-		newPortName = (prompt (global 'page') (localized 'Port name?') (localized 'none'))
+	if ('other...' == newPortName) {
+		newPortName = (prompt (global 'page') 'Port name?' (localized 'none'))
 		if ('' == newPortName) { return }
 	}
-	if (and ((localized 'disconnect') == newPortName) (notNil port)) {
+	if (and ('disconnect' == newPortName) (notNil port)) {
 		stopAndSyncScripts this
 		sendStartAll this
 	}
@@ -292,7 +280,8 @@ method setPort SmallRuntime newPortName {
 		closeSerialPort port
 		port = nil
 	}
-	if (or (isNil newPortName) (isOneOf newPortName (localized 'disconnect') (localized 'none'))) { // just close port
+	// the prompt answer 'none' is entered by the user in the current language
+	if (or (isNil newPortName) (isOneOf newPortName 'disconnect' (localized 'none'))) { // just close port
 		portName = nil
 	} else {
 		portName = (join '/dev/' newPortName)
@@ -471,7 +460,9 @@ method saveVariableNames SmallRuntime {
 
 	varID = 0
 	for varName newVarNames {
-		sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
+		if (notNil port) {
+			sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
+		}
 		varID += 1
 	}
 	oldVarNames = (copy newVarNames)
@@ -492,7 +483,9 @@ method getVar SmallRuntime varID {
 
 method clearVariableNames SmallRuntime {
 	oldVarNames = nil
-	sendMsgSync this 'clearVarsMsg'
+	if (notNil port) {
+		sendMsgSync this 'clearVarsMsg'
+	}
 }
 
 method getAllVarNames SmallRuntime {
@@ -732,8 +725,7 @@ method handleMessage SmallRuntime msg {
 		if (chunkID == 255) {
 			print (returnedValue this msg)
 		} (chunkID == 254) {
-			add loggedData (toString (returnedValue this msg))
-			if ((count loggedData) > 10000) { removeFirst loggedData }
+			addLoggedData this (toString (returnedValue this msg))
 		} else {
 			showResult this chunkID (returnedValue this msg)
 		}
@@ -845,7 +837,7 @@ method installVM SmallRuntime {
   }
   boards = (collectBoardDrives this)
   if ((count boards) > 0) {
-	menu = (menu (localized 'Select board:') this)
+	menu = (menu 'Select board:' this)
 	for b boards {
 		addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
 	}
@@ -937,7 +929,7 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 }
 
 method installVMInBrowser SmallRuntime {
-  menu = (menu (localized 'Board type:') (action 'downloadVMFile' this) true)
+  menu = (menu 'Board type:' (action 'downloadVMFile' this) true)
   addItem menu 'BBC micro:bit'
   addItem menu 'Calliope mini'
   addItem menu 'Circuit Playground Express'
@@ -962,8 +954,34 @@ method downloadVMFile SmallRuntime boardName {
 
 // data logging
 
-method loggedData SmallRuntime { return loggedData }
-method clearData SmallRuntime { loggedData = (list) }
+method clearLoggedData SmallRuntime {
+	loggedData = (newArray 10000)
+	loggedDataNext = 1
+	loggedDataCount = 0
+}
+
+method addLoggedData SmallRuntime s {
+	atPut loggedData loggedDataNext s
+	loggedDataNext = ((loggedDataNext % (count loggedData)) + 1)
+	if (loggedDataCount < (count loggedData)) { loggedDataCount += 1 }
+}
+
+method loggedData SmallRuntime howMany {
+	if (or (isNil howMany) (howMany > loggedDataCount)) {
+		howMany = loggedDataCount
+	}
+	result = (newArray howMany)
+	start = (loggedDataNext - howMany)
+	if (start > 0) {
+		replaceArrayRange result 1 howMany loggedData start
+	} else {
+		tailCount = (- start)
+		tailStart = (((count loggedData) - tailCount) + 1)
+		replaceArrayRange result 1 tailCount loggedData tailStart
+		replaceArrayRange result (tailCount + 1) howMany loggedData 1
+	}
+	return result
+}
 
 // testing
 
