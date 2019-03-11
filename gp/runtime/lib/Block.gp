@@ -1193,7 +1193,7 @@ method labelText Block aString {
   	fontSize = (12 * scale)
   }
   if ('Linux' == (platform)) {
-	fontName =  'Liberation Sans Bold'
+	fontName =  'Sans Bold'
 	fontSize = (round (0.92 * fontSize))
   }
   if (global 'stealthBlocks') {
