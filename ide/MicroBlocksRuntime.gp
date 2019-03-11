@@ -14,14 +14,14 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData loggedDataNext loggedDataCount
 
 method scripter SmallRuntime { return scripter }
 
 method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
-	loggedData = (list)
+	clearLoggedData this
 	return this
 }
 
@@ -725,8 +725,7 @@ method handleMessage SmallRuntime msg {
 		if (chunkID == 255) {
 			print (returnedValue this msg)
 		} (chunkID == 254) {
-			add loggedData (toString (returnedValue this msg))
-			if ((count loggedData) > 10000) { removeFirst loggedData }
+			addLoggedData this (toString (returnedValue this msg))
 		} else {
 			showResult this chunkID (returnedValue this msg)
 		}
@@ -955,8 +954,34 @@ method downloadVMFile SmallRuntime boardName {
 
 // data logging
 
-method loggedData SmallRuntime { return loggedData }
-method clearData SmallRuntime { loggedData = (list) }
+method clearLoggedData SmallRuntime {
+	loggedData = (newArray 10000)
+	loggedDataNext = 1
+	loggedDataCount = 0
+}
+
+method addLoggedData SmallRuntime s {
+	atPut loggedData loggedDataNext s
+	loggedDataNext = ((loggedDataNext % (count loggedData)) + 1)
+	if (loggedDataCount < (count loggedData)) { loggedDataCount += 1 }
+}
+
+method loggedData SmallRuntime howMany {
+	if (or (isNil howMany) (howMany > loggedDataCount)) {
+		howMany = loggedDataCount
+	}
+	result = (newArray howMany)
+	start = (loggedDataNext - howMany)
+	if (start > 0) {
+		replaceArrayRange result 1 howMany loggedData start
+	} else {
+		tailCount = (- start)
+		tailStart = (((count loggedData) - tailCount) + 1)
+		replaceArrayRange result 1 tailCount loggedData tailStart
+		replaceArrayRange result (tailCount + 1) howMany loggedData 1
+	}
+	return result
+}
 
 // testing
 

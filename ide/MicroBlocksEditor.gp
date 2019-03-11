@@ -489,7 +489,7 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'install MicroBlocks on board' 'installVM'
   addLine menu
   addItem menu 'graph data' 'graphData'
-  addItem menu 'show recent data' 'showRecentData'
+//  addItem menu 'show recent data' 'showRecentData' // commented out until it shows data in real-time
   addItem menu 'copy data to clipboard' 'copyDataToClipboard'
   addItem menu 'clear data' 'clearData'
   addLine menu
@@ -517,9 +517,8 @@ method graphData MicroBlocksEditor {
 }
 
 method showRecentData MicroBlocksEditor {
-  data = (loggedData (smallRuntime))
-  recentData = (copyFromTo data (max 1 ((count data) - 100))) // show the last 100 entries
-  ws = (openWorkspace (global 'page') (joinStrings recentData (newline)))
+  data = (loggedData (smallRuntime) 100) // get the most recent 100 entries
+  ws = (openWorkspace (global 'page') (joinStrings data (newline)))
   setTitle ws 'Recent Data'
   setFont ws 'Arial' (16 * (global 'scale'))
 }
@@ -530,7 +529,7 @@ method copyDataToClipboard MicroBlocksEditor {
 }
 
 method clearData MicroBlocksEditor {
-  clearData (smallRuntime)
+  clearLoggedData (smallRuntime)
 }
 
 method showAdvancedBlocks MicroBlocksEditor {

@@ -20,7 +20,7 @@ method initialize MicroBlockDataGraph {
 	setExtent morph (scale * 200) (scale * 120)
 	lastDataCount = 0
 	lastDataItem = nil
-	setFPS morph 30
+	setFPS morph 60
 }
 
 method step MicroBlockDataGraph {
@@ -64,19 +64,15 @@ method drawData MicroBlockDataGraph {
 }
 
 method extractSequences MicroBlockDataGraph {
-	loggedData = (loggedData (smallRuntime))
-	maxPoints = (pointCount this)
-	if ((count loggedData) > maxPoints) {
-		loggedData = (copyFromTo loggedData ((count loggedData) - maxPoints))
-	}
+	loggedData = (loggedData (smallRuntime) (pointCount this))
 	sequences = (list)
 	for line loggedData {
-		nums = (filter 'representsANumber' (splitWith line ' '))
-		while ((count sequences) < (count nums)) {
+		items = (splitWith line ' ')
+		while ((count sequences) < (count items)) {
 			add sequences (list)
 		}
-		for i (count nums) {
-			add (at sequences i) (toNumber (at nums i))
+		for i (count items) {
+			add (at sequences i) (toNumber (at items i))
 		}
 	}
 	return sequences
