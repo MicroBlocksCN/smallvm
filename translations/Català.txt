@@ -16,6 +16,9 @@ encén LED integrat _
 say _
 digues _
 
+log data _
+enregistra dades _
+
 button A
 botó A
 
@@ -109,9 +112,6 @@ quan _
 when _ received
 quan rebi _
 
-broadcast _
-envia _
-
 return _
 retorna _
 
@@ -148,23 +148,26 @@ augmenta _ en _
 local _ _
 variable local _ _
 
-new array _
-nou vector _
+new list length _
+nova llista de llargada _
 
-new byte array _
-nou vector de bytes _
+fill list _ with _
+omple lista _ amb _
 
-fill array _ with _
-omple vector _ amb _
+item _ of _
+element _ de _
 
-array _ at _
-vector _ element _
-
-set array _ at _ to _
-assigna al vector _ la posició _ a _
+replace item _ of _ with _
+canvia l'element _ de _ per _
 
 length of _
 llargada de _
+
+board type
+tipus de tarja
+
+broadcast _
+envia _
 
 i2c get device _ register _
 i2c llegeix del dispositiu _ el registre _
@@ -191,16 +194,94 @@ ignore
 ignora
 
 draw shape _ at x _ y _
-draw shape _ at x _ y _
+dibuixa forma _ a x _ y _
 
 shape for letter _
-shape for letter _
+forma de la lletra _
 
-set NeoPixel pin _ has white _
-configura un NeoPixel al pin _ amb color blanc _
+set NeoPixel pin _ is RGBW _
+configura un NeoPixel al pin _ tipus RGBW _
 
 send NeoPixel rgb _
 envia RGB _ al NeoPixel
+
+has tone support
+té suport per a tons
+
+play tone pin _ frequency _
+toca un to al pin _ de freqüència _
+
+has servo support
+té suport per a servos
+
+set servo pin _ to _ usecs
+posa el servo del pin _ a _ usecs
+
+has WiFi support
+té suport per a WiFi
+
+start WiFi _ password _
+inicia WiFi _ amb contrasenya _
+
+be hotspot _
+com a punt d'accés _
+
+stop WiFi
+atura WiFi
+
+WiFi status
+estat de la WiFi
+
+my IP address
+la meva adreça IP
+
+enable TFT _
+activa TFT _
+
+set TFT pixel x _ y _ to _
+posa el píxel TFT x _ y _ a _
+
+radio send number _
+envia nombre _ per ràdio
+
+radio send string _
+envia text _ per ràdio
+
+radio send pair _ = _
+envia associació _ = _ per ràdio
+
+radio message received?
+missatge de ràdio rebut?
+
+radio last number
+últim nombre rebut per ràdio
+
+radio last string
+últim text rebut per ràdio
+
+radio last message type
+tipus de l'últim missatge rebut per ràdio
+
+radio set group _
+fixa el grup de ràdio a _
+
+radio set channel (0-83) _
+fixa el canal de ràdio a (0-83) _
+
+radio set power (0-7) _
+fixa potència de ràdio a (0-7) _
+
+radio last signal strength
+intensitat de l'última senyal de ràdio
+
+radio receive packet _
+rep paquet per ràdio _
+
+radio send packet _
+envia paquet per ràdio _
+
+disable radio
+inhabilita ràdio
 
 light level
 nivell de llum
@@ -418,6 +499,15 @@ versió de la màquina virtual
 install MicroBlocks on board
 instal·la MicroBlocks a la placa
 
+graph data
+gràfica de dades
+
+copy data to clipboard
+copia les dades al portapapers
+
+clear data
+neteja dades
+
 clear memory and variables
 neteja memòria i variables
 
@@ -429,6 +519,18 @@ exporta funcions com a llibreria
 
 hide advanced blocks
 amaga els blocs avançats
+
+Data Graph
+Gràfica de dades
+
+File Open
+Obre arxiu
+
+File Save
+Desa arxiu
+
+File name:
+Nom d'arxiu:
 
 show instructions
 mostra instruccions
@@ -528,6 +630,12 @@ Sí
 
 No
 No
+
+Cancel
+Cancel·la
+
+Okay
+D'acord
 
 Confirm
 Confirmació
