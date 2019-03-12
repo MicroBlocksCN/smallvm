@@ -27,7 +27,6 @@
 // Variables
 
 static uint8_t radioInitialized = false;
-static uint8_t radioGroup = 0;
 static uint8_t receivedPacketCount = 0;
 static uint8_t packetIndex = 0; // index of current packet buffer (0..(MAX_PACKETS - 1)
 
@@ -46,7 +45,6 @@ struct {
 	uint32 header;
 	char body[30];
 } messageTypeString; // Static string OBJ containing MakeCode type of most recent message
-
 
 #if defined(ARDUINO_BBC_MICROBIT)
 
@@ -77,8 +75,7 @@ static void disableRadio() {
 	while (NRF_RADIO->EVENTS_DISABLED == 0);
 }
 
-// static xxx
-void initializeRadio() {
+static void initializeRadio() {
 	// Set up the Nordic radio for peer-to-peer communication.
 	// The radio configuration is interoperable with the micro:bit DAL radio commands.
 
@@ -99,7 +96,7 @@ void initializeRadio() {
 	// combines base address with an 8-bit "group" ID. All micro:bits with the same group ID
 	// receive each other's broadcasts.
 	NRF_RADIO->BASE0 = 0x75626974;
-	NRF_RADIO->PREFIX0 = (uint32_t) radioGroup;
+	NRF_RADIO->PREFIX0 = (uint32_t) 0; // default to group 0
 	NRF_RADIO->TXADDRESS = 0;
 	NRF_RADIO->RXADDRESSES = 1;
 
@@ -157,16 +154,12 @@ void RADIO_IRQHandler(void) {
 
 // Radio Functions
 
-// static xxx
-void setGroup(int groupID) {
+static void setGroup(int groupID) {
 	// Set our radio group ID (0-255). Receive only packets with this groupID.
 
-	if ((0 <= groupID) && (groupID <= 255)) {
-		radioGroup = groupID;
-		if (radioInitialized) {
-			NRF_RADIO->PREFIX0 = (uint32_t) radioGroup;
-		}
-	}
+	if ((groupID < 0) || (groupID > 255)) return;
+	if (!radioInitialized) initializeRadio();
+	NRF_RADIO->PREFIX0 = (uint32_t) groupID;
 }
 
 static void setPower(int level) {
@@ -174,26 +167,25 @@ static void setPower(int level) {
 
 	const int8_t powerLevels[] = {-30, -20, -16, -12, -8, -4, 0, 4};
 
-	if (radioInitialized && (0 <= level) && (level <= 7)) {
-		NRF_RADIO->TXPOWER = (uint32_t) powerLevels[level];
-	}
+	if ((level < 0) || (level > 7)) return;
+	if (!radioInitialized) initializeRadio();
+	NRF_RADIO->TXPOWER = (uint32_t) powerLevels[level];
 }
 
 static void setChannel(int channel) {
 	// Set the radio channe (center frequency). The argument (0-83) maps to frequencies
 	// 2400 to 2483 MHz in 1 MHz increments.
 
-	if (radioInitialized && (0 <= channel) && (channel <= 83)) {
-		disableRadio();
-		NRF_RADIO->FREQUENCY = (uint32_t) channel;
-		startReceiving();
-	}
-}
-
-// static xxx
-int receivePacket(uint8_t *packet) {
+	if ((channel < 0) || (channel > 83)) return;
 	if (!radioInitialized) initializeRadio();
 
+	disableRadio(); // must turn off radio to change channel
+	NRF_RADIO->FREQUENCY = (uint32_t) channel;
+	startReceiving();
+}
+
+static int receivePacket(uint8_t *packet) {
+	if (!radioInitialized) initializeRadio();
 	if (receivedPacketCount <= 0) return false;
 
 	int readIndex = (packetIndex - receivedPacketCount) & (MAX_PACKETS - 1);
@@ -203,8 +195,7 @@ int receivePacket(uint8_t *packet) {
 	return true;
 }
 
-// static xxx
-void sendPacket(uint8_t *packet) {
+static void sendPacket(uint8_t *packet) {
 	// Transmit the given 32-byte packet. Block until transmisson is complete.
 	// Note: The radio can do only one thing at at time; we need to stop receiving to transmit.
 
@@ -313,6 +304,7 @@ static int initMakeCodePacket(uint8_t *packet, int makeCodePacketType, int packe
 
 static OBJ primDisableRadio(int argCount, OBJ *args) {
 	if (radioInitialized) disableRadio();
+	radioInitialized = false;
 }
 
 static OBJ primMessageReceived(int argCount, OBJ *args) {
