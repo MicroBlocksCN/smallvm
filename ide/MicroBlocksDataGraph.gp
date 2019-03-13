@@ -45,6 +45,7 @@ method redraw MicroBlockDataGraph {
 	fixLayout window
 	redraw window
 	drawData this
+	costumeChanged morph
 }
 
 method drawData MicroBlockDataGraph {
