@@ -17,7 +17,7 @@ say _
 digues _
 
 log data _
-enregistra dades _
+registra dades _
 
 button A
 botó A
