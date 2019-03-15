@@ -11,8 +11,8 @@ defineClass MicroBlocksAppMaker
 
 method buildApps MicroBlocksAppMaker {
 
-	embeddedFS = (createEmbeddedFS this)
 	system = (detect (function each { return (isOneOf each 'win' 'linux32bit' 'linux64bit' 'raspberryPi' 'mac') }) (commandLine))
+	embeddedFS = (createEmbeddedFS this system)
 
 	if (notNil system) {
 		if (system == 'win') { system = 'win.exe' }
@@ -31,7 +31,7 @@ method buildApps MicroBlocksAppMaker {
 	print 'Done!'
 }
 
-method createEmbeddedFS MicroBlocksAppMaker {
+method createEmbeddedFS MicroBlocksAppMaker system {
 	// Return a ZipFile object containing the embedded file system.
 
 	zip = (create (new 'ZipFile'))
@@ -42,6 +42,13 @@ method createEmbeddedFS MicroBlocksAppMaker {
 	addFolderToEmbeddedFS this '../gp/Libraries' 'Libraries' zip
 	addFolderToEmbeddedFS this '../precompiled' 'precompiled' zip
 	addFolderToEmbeddedFS this '../translations' 'translations' zip
+        if (isOneOf system 'linux32bit' 'linux64bit' 'raspberryPi') {
+            addFolderToEmbeddedFS this '../gp/packagers/linux/esptool' 'esptool' zip
+        } (system == 'win') {
+            addFolderToEmbeddedFS this '../gp/packagers/win32/esptool' 'esptool' zip
+        } (system == 'mac') {
+            addFolderToEmbeddedFS this '../gp/packagers/darwin/esptool' 'esptool' zip
+        }
 	return zip
 }
 
