@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData loggedDataNext loggedDataCount
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData loggedDataNext loggedDataCount shouldShowVersion
 
 method scripter SmallRuntime { return scripter }
 
@@ -268,6 +268,7 @@ method selectPort SmallRuntime {
 }
 
 method setPort SmallRuntime newPortName {
+        vmVersion = nil
 	if ('other...' == newPortName) {
 		newPortName = (prompt (global 'page') 'Port name?' (localized 'none'))
 		if ('' == newPortName) { return }
@@ -303,6 +304,7 @@ method closePort SmallRuntime {
 		stopAndSyncScripts this
 		closeSerialPort port
 		port = nil
+                vmVersion = nil
 	}
 }
 
@@ -340,6 +342,7 @@ method connectionStatus SmallRuntime {
 }
 
 method ideVersion SmallRuntime { return '0.1.33' }
+method latestVmVersion SmallRuntime { return 53 }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
@@ -367,14 +370,29 @@ method extractVersionNumber SmallRuntime versionString {
 
 method versionReceived SmallRuntime versionString {
 	if (isNil vmVersion) { //  first time: just record the version number
+                shouldShowVersion = true
 		vmVersion = (extractVersionNumber this versionString)
-	} else {
-		inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) versionString)
+                checkVmVersion this
+	} shouldShowVersion {
+		showVersion this versionString
 	}
 }
 
 method showVersion SmallRuntime versionString {
 	inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) versionString)
+}
+
+method checkVmVersion SmallRuntime {
+    if ((latestVmVersion this) > vmVersion) {
+        // For some reason this goes on to call versionReceived again and I can't
+        // figure out why. This is what the shouldShowVersion flag-klugde "fixes"
+        shouldShowVersion = false 
+        ok = (confirm (global 'page') nil
+                (join (localized 'The VM version in your board is too old') 
+                    ' (v' vmVersion ' vs. v' (latestVmVersion this) ')' (newline)
+                    (localized 'Try to update MicroBlocks on the board?')))
+        if ok { installVM this }
+    }
 }
 
 method clearBoardIfConnected SmallRuntime doReset {
@@ -599,6 +617,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		if (not (isOpenSerialPort port)) {
 			print 'serial port closed; board disconnected?'
 			port = nil
+                        vmVersion = nil
 			return
 		}
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
