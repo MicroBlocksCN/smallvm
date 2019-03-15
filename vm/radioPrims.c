@@ -385,7 +385,7 @@ static OBJ primSendMakeCodeString(int argCount, OBJ *args) {
 		initMakeCodePacket(packet, MAKECODE_PACKET_STRING, 13 + len);
 		packet[13] = len;
 		for (int i = 0; i < len; i++) {
-			packet[13 + i] = s[i];
+			packet[14 + i] = s[i];
 		}
 		sendPacket(packet);
 	}

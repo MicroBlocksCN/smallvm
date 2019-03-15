@@ -78,7 +78,7 @@ typedef enum {
 	running = 2,
 } MicroBlocksTaskStatus_t;
 
-#define STACK_LIMIT 34 // Task size is 6 + STACK_LIMIT words
+#define STACK_LIMIT 54 // Task size is 6 + STACK_LIMIT words
 
 typedef struct {
 	uint8 status; // MicroBlocksTaskStatus_t, stored as a byte
