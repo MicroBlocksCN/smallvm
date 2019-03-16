@@ -90,14 +90,7 @@ OBJ primLine(int argCount, OBJ *args) {
 	int y1 = obj2int(args[3]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[4]));
-	// optimize horizontal and vertical lines
-	if (x0 == x1) {
-		tft.drawFastVLine(x0, y0, abs(y1 - y0), color16b);
-        } else if (y0 == y1) {
-		tft.drawFastHLine(x0, y0, abs(x1 - x0), color16b);
-        } else {
-		tft.drawLine(x0, y0, x1, y1, color16b);
-	}
+        tft.drawLine(x0, y0, x1, y1, color16b);
 }
 
 OBJ primRect(int argCount, OBJ *args) {
