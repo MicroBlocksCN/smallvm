@@ -108,6 +108,22 @@ OBJ primRect(int argCount, OBJ *args) {
 	}
 }
 
+OBJ primRoundedRect(int argCount, OBJ *args) {
+	int x = obj2int(args[0]);
+	int y = obj2int(args[1]);
+	int width = obj2int(args[2]);
+	int height = obj2int(args[3]);
+	int radius = obj2int(args[4]);
+	// Re-encode color from 24 bits into 16 bits
+	int color16b = color24to16b(obj2int(args[5]));
+	int fill = (trueObj == args[6]);
+	if (fill) {
+		tft.fillRoundRect(x, y, width, height, radius, color16b);
+        } else {
+		tft.drawRoundRect(x, y, width, height, radius, color16b);
+	}
+}
+
 OBJ primCircle(int argCount, OBJ *args) {
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
@@ -119,6 +135,23 @@ OBJ primCircle(int argCount, OBJ *args) {
 		tft.fillCircle(x, y, radius, color16b);
         } else {
 		tft.drawCircle(x, y, radius, color16b);
+	}
+}
+
+OBJ primTriangle(int argCount, OBJ *args) {
+	int x0 = obj2int(args[0]);
+	int y0 = obj2int(args[1]);
+	int x1 = obj2int(args[2]);
+	int y1 = obj2int(args[3]);
+	int x2 = obj2int(args[4]);
+	int y2 = obj2int(args[5]);
+	// Re-encode color from 24 bits into 16 bits
+	int color16b = color24to16b(obj2int(args[6]));
+	int fill = (trueObj == args[7]);
+	if (fill) {
+		tft.fillTriangle(x0, y0, x1, y1, x2, y2, color16b);
+        } else {
+		tft.drawTriangle(x0, y0, x1, y1, x2, y2, color16b);
 	}
 }
 
@@ -179,7 +212,9 @@ OBJ primEnableDisplay(int argCount, OBJ *args) { return falseObj; }
 OBJ primSetPixel(int argCount, OBJ *args) { return falseObj; }
 OBJ primLine(int argCount, OBJ *args) { return falseObj; }
 OBJ primRect(int argCount, OBJ *args) { return falseObj; }
+OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
 OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
+OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
 OBJ primText(int argCount, OBJ *args) { return falseObj; }
 
 #endif
@@ -191,7 +226,9 @@ static PrimEntry entries[] = {
 	"setPixel", primSetPixel,
 	"line", primLine,
 	"rect", primRect,
+	"roundedRect", primRoundedRect,
 	"circle", primCircle,
+	"triangle", primTriangle,
 	"text", primText,
 };
 
