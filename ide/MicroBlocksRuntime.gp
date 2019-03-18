@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData loggedDataNext loggedDataCount shouldShowVersion
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData loggedDataNext loggedDataCount
 
 method scripter SmallRuntime { return scripter }
 
@@ -268,11 +268,11 @@ method selectPort SmallRuntime {
 }
 
 method setPort SmallRuntime newPortName {
-        vmVersion = nil
 	if ('other...' == newPortName) {
 		newPortName = (prompt (global 'page') 'Port name?' (localized 'none'))
 		if ('' == newPortName) { return }
 	}
+	vmVersion = nil
 	if (and ('disconnect' == newPortName) (notNil port)) {
 		stopAndSyncScripts this
 		sendStartAll this
@@ -359,21 +359,25 @@ method getVersion SmallRuntime {
 
 method extractVersionNumber SmallRuntime versionString {
 	// Return the version number from the versionString.
-	// Parse carefully in case version format changes in the future.
+	// Version string format: vNNN, where NNN is one or more decimal digits,
+	// followed by non-digits characters that are ignored. Ex: 'v052a micro:bit'
 
 	words = (words (substring versionString 2))
 	if (isEmpty words) { return -1 }
-	s = (first words)
-	if (not (representsANumber s)) { return -2 }
-	return (toInteger s)
+	result = 0
+	for ch (letters (first words)) {
+		if (not (isDigit ch)) { return result }
+		digit = ((byteAt ch 1) - (byteAt '0' 1))
+		result = ((10 * result) + digit)
+	}
+	return result
 }
 
 method versionReceived SmallRuntime versionString {
-	if (isNil vmVersion) { //  first time: just record the version number
-                shouldShowVersion = true
+	if (isNil vmVersion) { // first time: record and check the version number
 		vmVersion = (extractVersionNumber this versionString)
-                checkVmVersion this
-	} shouldShowVersion {
+		checkVmVersion this
+	} else { // not first time: show the vresion number
 		showVersion this versionString
 	}
 }
@@ -383,16 +387,13 @@ method showVersion SmallRuntime versionString {
 }
 
 method checkVmVersion SmallRuntime {
-    if ((latestVmVersion this) > vmVersion) {
-        // For some reason this goes on to call versionReceived again and I can't
-        // figure out why. This is what the shouldShowVersion flag-klugde "fixes"
-        shouldShowVersion = false 
-        ok = (confirm (global 'page') nil
-                (join (localized 'The VM version in your board is too old') 
-                    ' (v' vmVersion ' vs. v' (latestVmVersion this) ')' (newline)
-                    (localized 'Try to update MicroBlocks on the board?')))
-        if ok { installVM this }
-    }
+	if ((latestVmVersion this) > vmVersion) {
+		ok = (confirm (global 'page') nil (join
+			(localized 'The MicroBlocks in your board is not current ')
+			'(v' vmVersion ' vs. v' (latestVmVersion this) ').' (newline)
+			(localized 'Try to update MicroBlocks on the board?')))
+		if ok { installVM this }
+	}
 }
 
 method clearBoardIfConnected SmallRuntime doReset {
@@ -688,8 +689,9 @@ method processNextMessage SmallRuntime {
 	// Parse and dispatch messages
 	firstByte = (byteAt recvBuf 1)
 	if (250 == firstByte) { // short message
-		handleMessage this (copyFromTo recvBuf 1 3)
+		msg = (copyFromTo recvBuf 1 3)
 		recvBuf = (copyFromTo recvBuf 4) // remove message
+		handleMessage this msg
 	} (251 == firstByte) { // long message
 		if ((byteCount recvBuf) < 5) { return false } // incomplete length field
 		byteTwo = (byteAt recvBuf 2)
@@ -700,8 +702,9 @@ method processNextMessage SmallRuntime {
 		}
 		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
 		if ((byteCount recvBuf) < (5 + bodyBytes)) { return false } // incomplete body
-		handleMessage this (copyFromTo recvBuf 1 (bodyBytes + 5))
+		msg = (copyFromTo recvBuf 1 (bodyBytes + 5))
 		recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
+		handleMessage this msg
 	} else {
 		print 'Bad message start byte; should be 250 or 251 but is:' firstByte
 		skipMessage this // discard
