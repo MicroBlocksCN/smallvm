@@ -240,8 +240,8 @@ method selectPort SmallRuntime {
 		}
 	} else {
 		for fn (listFiles '/dev') {
-			if (or (notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
-				   (notNil (nextMatchIn 'acm' (toLowerCase fn) ))) { // Linux
+			if (or	(notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
+					(notNil (nextMatchIn 'acm' (toLowerCase fn) ))) { // Linux
 				add portList fn
 			}
 		}
@@ -304,7 +304,7 @@ method closePort SmallRuntime {
 		stopAndSyncScripts this
 		closeSerialPort port
 		port = nil
-                vmVersion = nil
+		vmVersion = nil
 	}
 }
 
@@ -331,9 +331,9 @@ method connectionStatus SmallRuntime {
 		if (msecsSinceConnect > 5000) {
 			connectMSecs = nil // don't do this again unti next connection attempt
 			if (not (isEmpty (collectBoardDrives this))) {
-				ok = (confirm (global 'page') nil
-                                        (join (localized 'The board is not responding.') (newline)
-                                         (localized 'Try to Install MicroBlocks on the board?')))
+				ok = (confirm (global 'page') nil (join
+					(localized 'The board is not responding.') (newline)
+					(localized 'Try to Install MicroBlocks on the board?')))
 				if ok { installVM this }
 			}
 		}
@@ -459,7 +459,9 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	addAll data (chunkBytesFor this aBlockOrFunction)
 	if ((count data) > 1000) {
 		if (isClass aBlockOrFunction 'Function') {
-			inform (global 'page') (join (localized 'Function "') (functionName aBlockOrFunction) (localized '" is too large to send to board.'))
+			inform (global 'page') (join
+				(localized 'Function "') (functionName aBlockOrFunction)
+				(localized '" is too large to send to board.'))
 		} else {
 			showHint (morph aBlockOrFunction) (localized 'Script is too large to send to board.')
 		}
@@ -618,7 +620,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		if (not (isOpenSerialPort port)) {
 			print 'serial port closed; board disconnected?'
 			port = nil
-                        vmVersion = nil
+			vmVersion = nil
 			return
 		}
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
@@ -865,8 +867,9 @@ method installVM SmallRuntime {
 	}
 	popUpAtHand menu (global 'page')
   } else {
-	inform (join (localized 'No boards found; is your board plugged in?') (newline)
-            (localized 'For AdaFruit boards, double-click button and try again.'))
+	inform (join
+		(localized 'No boards found; is your board plugged in?') (newline)
+		(localized 'For AdaFruit boards, double-click reset button and try again.'))
   }
 }
 
