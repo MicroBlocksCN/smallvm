@@ -979,6 +979,8 @@ method downloadVMFile SmallRuntime boardName {
 
 // data logging
 
+method lastDataIndex SmallRuntime { return loggedDataNext }
+
 method clearLoggedData SmallRuntime {
 	loggedData = (newArray 10000)
 	loggedDataNext = 1

@@ -98,7 +98,7 @@ method initialize MicroBlocksEditor aProject {
   clearProject this
   createInitialClass scripter
   fixLayout this
-  setFPS morph 60
+  setFPS morph 100
   return this
 }
 
