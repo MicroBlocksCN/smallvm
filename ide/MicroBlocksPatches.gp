@@ -102,6 +102,16 @@ method propertyTypesMenu InputSlot {
   return menu
 }
 
+method hummingbirdSensorsMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'Light'
+  addItem menu 'Dial'
+  addItem menu 'Distance (cm)'
+  addItem menu 'Sound'
+  addItem menu 'Other'
+  return menu
+}
+
 method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }

@@ -1,6 +1,6 @@
 // editable input slot for blocks
 
-defineClass InputSlot morph text contents scale color menuSelector isStatic isAuto isID
+defineClass InputSlot morph text contents scale color menuSelector menuRange isStatic isAuto isID
 
 to newInputSlot default editRule blockColor menuSelector {
   if (isNil default) {default = ''}
@@ -43,6 +43,14 @@ method initialize InputSlot default editRule blockColor slotMenu {
   if ((or (contents == true) (contents == false))) {
     menuSelector = 'boolMenu'
   } else {
+	if (and (notNil slotMenu) (beginsWith slotMenu 'range:')) {
+	  // integer range such as 'range:1-3'
+	  pair = (splitWith (substring slotMenu 7) '-')
+	  if (and (2 == (count pair)) (allDigits (first pair)) (allDigits (last pair))) {
+		menuRange = (array (toInteger (first pair)) (toInteger (last pair)))
+		slotMenu = 'rangeMenu'
+	  }
+	}
     menuSelector = slotMenu
   }
   isStatic = (isOneOf menuSelector 'sharedVarMenu' 'myVarMenu' 'localVarMenu' 'allVarsMenu' 'propertyMenu')
@@ -179,6 +187,16 @@ method wantsDropOf InputSlot aHandler {
 method justReceivedDrop InputSlot aText {
   setText text (text aText)
   destroy (morph aText)
+}
+
+// range menu
+
+method rangeMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  for i (range (first menuRange) (last menuRange)) {
+	addItem menu (toNumber i) i
+  }
+  return menu
 }
 
 // menus
