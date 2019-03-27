@@ -21,7 +21,23 @@ int useTFT = false;
 	#define TFT_BLACK 0
 	#define TFT_GREEN 0x7E0
 
-	#if defined(ARDUINO_CITILAB_ED1)
+	// Optional TFT_ESPI code was added by John to study performance differences
+	#define USE_TFT_ESPI false // true to use TFT_eSPI library, false to use AdaFruit GFX library
+	#if USE_TFT_ESPI
+		#include <TFT_eSPI.h>
+
+		TFT_eSPI tft = TFT_eSPI();
+
+		void tftInit() {
+			tft.init();
+			tft.setRotation(0);
+			tftClear();
+			// Turn on backlight on IoT-Bus
+			pinMode(33, OUTPUT);
+			digitalWrite(33, HIGH);
+			useTFT = true;
+		}
+	#elif defined(ARDUINO_CITILAB_ED1)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7735.h"
 
@@ -33,6 +49,7 @@ int useTFT = false;
 		void tftInit() {
 			tft.initR(INITR_144GREENTAB);
 			tft.setRotation(0);
+//			tft._freq = 40000000; // this requires moving _freq to public in AdaFruit_SITFT.h
 			tftClear();
 			useTFT = true;
 		}

@@ -780,7 +780,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		// wait for data to be sent; prevents use in tight loop from clogging serial line
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + (300 * (printBufferByteCount + 6)); // assume 1k bytes/sec
+		task->wakeTime = microsecs() + (1600 * (printBufferByteCount + 6)); // assume 625 bytes/sec
 		goto suspend;
 	logData_op:
 		printArgs(arg, sp - arg, false, true);
@@ -796,7 +796,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		// wait for data to be sent; prevents use in tight loop from clogging serial line
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + (300 * (printBufferByteCount + 6)); // assume 1k bytes/sec
+		task->wakeTime = microsecs() + (1600 * (printBufferByteCount + 6)); // assume 625 bytes/sec
 		goto suspend;
 	boardType_op:
 		*(sp - arg) = primBoardType();
