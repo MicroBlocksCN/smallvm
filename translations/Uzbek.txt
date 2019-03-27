@@ -1,0 +1,641 @@
+display _
+namoyish qilish (displey) _
+
+clear display
+displeyni olib tashlash
+
+plot x _ y _
+qurish x _ y _
+
+unplot x _ y _
+chiqarish x _ y _
+
+set user LED _
+foydalanuvchi LED o'rnatish _
+
+say _
+aytmoq _
+
+log data _
+ma'lumotlarni saqlash _
+
+button A
+A tugmasi
+
+button B
+B tugmasi
+
+tilt x
+burilish x
+
+tilt y
+burilish y
+
+tilt z
+burilish z
+
+temperature (°C)
+harorat (°C)
+
+microseconds
+mikrosoniyalar
+
+milliseconds
+millisekundlar
+
+read digital pin _
+raqamli pinni o'qish_
+
+read analog pin _
+analog pinni o'qish __
+
+set digital pin _ to _
+raqamli pinni o'rnatish _ ga _
+
+set pin _ to _
+pin o'rnatish_ ga _
+
+analog pins
+pin analoglari
+
+digital pins
+raqamli pin
+
+when started
+qachon boshlangan 
+
+when button _ pressed
+_ tugmasini bosganingizda
+
+forever _
+doimiy _
+
+repeat _ _
+takrorlash _ _
+
+if _ _
+agar _ _
+
+else if _ _
+yana boshqa, agar _ _
+
+if _ _ else _
+agar _ _ yana boshqa _
+
+wait _ millisecs
+kutish _ millisekundlar
+
+wait _ microsecs
+kutish _ microsekundlar
+
+stop this task
+bu vazifani to'xtatish 
+
+stop all
+hammasini to'htatish 
+
+comment _
+izoh _
+
+wait until _
+kutish _ gacha 
+
+repeat until _ _
+takrorlash _ _ gacha 
+
+for _ in _ _
+uchun _ da _ _
+
+when _
+qachon _
+
+when _ received
+qachon _ qabul qilinganda 
+
+return _
+qaytish _
+
+_ mod _
+_ rejim _
+
+abs _
+abs _
+
+random _ to _
+tasodifiy _ ga _
+
+not _
+yo'q _
+
+_ and _
+_ va _
+
+and _
+va _
+
+_ or _
+_ yoki _
+
+or _
+yoki _
+
+set _ to _
+o'rnatish _ ga _
+
+change _ by _
+_ tomonidan _o'zgartirish 
+
+local _ _
+mahalliy _ _
+
+new list length _
+yangi ro'yxatning uzunligi _
+
+fill list _ with _
+ro'yxatni to'ldirish _ bilan _
+
+item _ of _
+element _ ning_
+
+replace item _ of _ with _
+elementni _ bilan _almashtirish _
+
+length of _
+uzunligi _
+
+board type
+karta turi
+
+broadcast _
+broadcast _
+
+i2c get device _ register _
+i2c qurilmani olish _ ro'yxatga olish _
+
+i2c set device _ register _ to _
+i2c sozlamalari qurilma _ ro'yxatga olish _ ga _
+
+spi send _
+spi yuboring _
+
+spi receive
+spi olish
+
+print _
+chop etish _
+
+hex _
+hex _
+
+no op
+op yo'q
+
+ignore
+e'tibor bermaslik
+
+draw shape _ at x _ y _
+ning shaklini chizish _ x _ y _
+
+shape for letter _
+xatning shakli _
+
+set NeoPixel pin _ is RGBW _
+o'rnatilgan NeoPixel pin _ RGBW _
+
+send NeoPixel rgb _
+NeoPixel rgb ni yuborish
+
+has tone support
+ohangni qo'llab-quvvatlaydi
+
+play tone pin _ frequency _
+ohang tezligini _ ijro etish_ 
+
+has servo support
+ohang tezligini _ ijro etish_ 
+
+set servo pin _ to _ usecs
+servo pinni _ to _ usecs ga sozlang
+
+has WiFi support
+Wi-Fi qo'llab-quvvatlashi bor
+
+start WiFi _ password _
+Wi-Fi-ni boshlash _ parol _
+
+be hotspot _
+hotspot bo'lishi _
+
+stop WiFi
+Wi-Fi-ni to'xtatish
+
+WiFi status
+Wi-Fi holati
+
+my IP address
+mening IP manzilim
+
+enable TFT _
+yoqish TFT _
+
+set TFT pixel x _ y _ to _
+o'rnatish TFT piksel x _ y _ ga _
+
+radio send number _
+radiosi raqamini yuborish _
+
+radio send string _
+radio yuborish string _
+
+radio send pair _ = _
+radio yuborish jufti _ = _
+
+radio message received?
+radio xabar olinganmi?
+
+radio last number
+radio oxirgi raqami
+
+radio last string
+radio oxirgi satr
+
+radio last message type
+radio so'nggi xabar turi
+
+radio set group _
+radio seti guruhi _
+
+radio set channel (0-83) _
+radiokanali kanal (0-83) _
+
+radio set power (0-7) _
+radio rostlagich kuchi (0-7) _
+
+radio last signal strength
+radio oxirgi signal kuchi
+
+radio receive packet _
+radio qabul qilish paketi _
+
+radio send packet _
+radio paketini jo'natish _
+
+disable radio
+radioni o'chirib qo'yish
+
+light level
+yorug'lik darajasi
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+o'rnatish NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+NeoPixelsni tozalash
+
+set NeoPixel _ color _
+o'rnatish NeoPixel _ rang _
+
+set all NeoPixels color _
+barcha NeoPixels ranglarini sozlash _
+
+rotate NeoPixels by _
+NeoPixels ni _ bilan almashtirish
+
+color r _ g _ b _
+rang r _ g _ b _
+
+attach _ LED NeoPixel strip to pin _ has white _
+qo'shing _ LED NeoPixel chiziqli pin _ uchun oq _
+
+receive IR code from device _
+qurilmadan IR kodni olish _
+
+test IR
+IR ni sinash
+
+scroll text _ pausing _ ms
+matnni aylantirish _ to'xtash _ ms
+
+scroll number _ pausing _ ms
+raqamni aylantirish _ to'xtash _ ms
+
+stop scrolling
+o'tishni to'xtatish
+
+attach buzzer to pin _
+biriktirish buzzerni pinga _
+
+play note _ octave _ during _ ms
+eslatmani ijro etish _ octave _ vaqt davomida _ ms
+
+play frequency _ on pin _ for _ ms
+chastotani o'ynatish _ uchun pin _ _ ms
+
+button OK
+OK tugmasi
+
+button X
+X tugmasi
+
+button up
+tepaga tugmasi
+
+button down
+pastga tugmasi
+
+button left
+chapga tugmasi
+
+button right
+o'ngga tugmasi
+
+move motor _ _ steps _
+harakatlantiring motor _ _ qadamlar _
+
+move motor 1 _ and motor 2 _ _ steps
+motor 1_ va motor 2 _ _ qadamlarini harakatlantiring
+
+stop steppers
+qadamlarni to'xtating
+
+clockwise
+soat yo'nalishi bo'yicha
+
+counter-clockwise
+soat yo'nalishi bo'yicha-hisoblash
+
+capacitive OK
+sig'imi OK
+
+capacitive X
+sig'imi X
+
+capacitive up
+sig'imi tepaga
+
+capacitive down
+sig'imi pastga
+
+capacitive left
+sig'imi chapga
+
+capacitive right
+sig'imi o'ngga 
+
+capacitive sensor _
+sig'imi sesor _
+
+set TFT pixel x _ y _ to _
+o'rnatish TFT piksel x _ y _ ga _
+
+set capacitive threshold to _
+threshold sig'imini o'rnatish _
+
+New
+Yangi
+
+Open
+Ochiq
+
+Save
+Saqlash
+
+Connect
+Ulanish
+
+disconnect
+ajratish
+
+Serial port:
+Ketma-ket port:
+
+other...
+boshqa...
+
+none
+xech qaysi
+
+Port name?
+Port nomi?
+
+Board type:
+Kengash turi:
+
+Select board:
+Kengashni tanlang:
+
+Could not read: 
+O'qilmadi: 
+
+by
+tomonidan
+
+More info at http://microblocks.fun
+Qo'shimcha ma'lumot: http://microblocks.fun
+
+Function "
+Funktsiya "
+
+" is too large to send to board.
+" Kengashga yuborish juda katta.
+
+Script is too large to send to board.
+Skript buyurtma berish uchun juda katta.
+
+Use "Connect" button to connect to a MicroBlocks device.
+MicroBlocks qurilmasiga ulanish uchun "Connect" tugmasini bosing.
+
+No boards found; is your board plugged in?
+Hech qanday plitalar topilmadi; sizning kengashingizga ulanganmi?
+
+For AdaFruit boards, double-click button and try again.
+AdaFruit kengashlari uchun ikki marta bosish va qayta urinib ko'ring.
+
+The board is not responding.
+Kengash javob bermayapti.
+
+Try to Install MicroBlocks on the board?
+Kengashda MicroBlockni o'rnatishga harakat qilib ko'ring.
+
+Stop
+To'xta
+
+Start
+Boshlang
+
+Quit MicroBlocks?
+MicroBlocks dan chiqasizmi?
+
+Discard current project?
+Joriy loyihani bekor qilinsinmi?
+
+clean up
+tozalamoq
+
+arrange scripts
+skriptlarni tashkil qilish
+
+undo last drop
+oxirgi tomchini bekor qilish 
+
+copy all scripts
+barcha skriptlarni nusxalash
+
+paste all scripts
+barcha skriptlarni joylashtirish
+
+paste script
+skriptni joylashtirish 
+
+save picture of all scripts
+barcha skriptlarning rasmini saqlash
+
+about...
+haqida...
+
+virtual machine version
+virtual mashina versiyasi
+
+install MicroBlocks on board
+Bortda (kengash) MicroBlocks-ni joylashtiring
+
+graph data
+grafik ma'lumotlari
+
+copy data to clipboard
+ma'lumotni clipboardga ko'chirish
+
+clear data
+ma'lumotlarni tozalash
+
+clear memory and variables
+hotirani va o'zgaruvchini tozalash
+
+show advanced blocks
+rivojlangan bloklarni ko'rsatish
+
+export functions as library
+funktsiyalarni kutubhona sifatida eksport qilish
+
+hide advanced blocks
+rivojlangan bloklarni yashirish
+
+Data Graph
+Ma'lumotlar grafigi
+
+File Open
+Faylni ochish
+
+File Save
+Faylni saqlash
+
+File name:
+Fayl nomi:
+
+show instructions
+yo'riqnomalarni ko'rsatish
+
+show compiled bytes
+olingan baytlarni ko'rsatish
+
+expand
+kengaytirish
+
+collapse
+qulash
+
+rename...
+qayta nomlash ...
+
+show definition...
+ta'rifni ko'rsatish ...
+
+duplicate
+nusxa ko'chirish 
+
+just this one block
+faqat shu bitta blok
+
+...all
+...hamma
+
+duplicate including all attached blocks
+barcha o'z ichiga olgan biriktirilgan bloklardan nusxa ko'chirish
+
+save picture of script
+skript rasmini saqlash
+
+copy script
+skriptdan nusxa olish 
+
+delete
+o'chirish
+
+hide definition
+ta'rifni yashirish
+
+Are you sure you want to remove this block definition?
+Ushbu blok ta'rifini olib tashlashga ishonchingiz komilmi?
+
+Libraries
+Kutubxonalar
+
+Language:
+Til:
+
+Add a function
+Funktsiyani qo'shish
+
+Add a variable
+O'zgaruvchini qo'shing
+
+Delete a variable
+O'zgaruvchini o'chirish 
+
+Output
+Chiqarish
+
+Input
+Kiritish
+
+Pins
+Pins
+
+Control
+Nazorat
+
+Math
+Mutanosiblik
+
+Variables
+O'zgaruvchan
+
+Lists
+Ruyhatlari
+
+Advanced
+Yetakchi
+
+Functions
+Funktsiyalari
+
+Obsolete
+iste'moldan chiqqan
+
+Ok
+ok
+
+Yes
+Ha
+
+No
+Yo'q
+
+Cancel
+bekor qilish
+
+Okay
+Hop
+
+Confirm
+Tasdiqlash 
