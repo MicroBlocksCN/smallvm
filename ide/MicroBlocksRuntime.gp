@@ -675,8 +675,10 @@ method processMessages SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) { return }
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
 	processingMessages = true
-	while processingMessages {
+	count = 0
+	while (and processingMessages (count < 10)) {
 		processingMessages = (processNextMessage this)
+		count += 1
 	}
 }
 
