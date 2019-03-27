@@ -249,3 +249,36 @@ toca la nota _ en la octava _ durante _ ms
 
 play frequency _ on pin _ for _ ms
 toca la frecuencia _ en el pin _ durante _ ms
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird LED tricolor _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ ∞
+Hummingbird Servo de posicion _ _ ∞
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Servo de rotacion _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Bateria (mV)
+
+Light
+Luz
+
+Distance
+Distancia
+
+Dial
+Dial
+
+Sound
+Sonido
+
+Other
+Otro

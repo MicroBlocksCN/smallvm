@@ -249,3 +249,36 @@ speel noot _ octaaf  _ gedurende _ ms
 
 play frequency _ on pin _ for _ ms
 speel frequentie _ op pin _ gedurende _ ms
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ ∞
+Hummingbird Positie-Servo _ _ ∞
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Draai-Servo _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Batterij (mV)
+
+Light
+Licht
+
+Distance
+Afstand
+
+Dial
+Draaiknop
+
+Sound
+Geluid
+
+Other
+Ander
