@@ -227,6 +227,36 @@ method contextMenu Block {
   return menu
 }
 
+method inputIndex Block anInput {
+  idx = 0
+  items = (flattened labelParts)
+
+  // Note: removed special case for variable assignments
+
+  for each items {
+    if (isAnyClass each 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block' 'MicroBitDisplaySlot') {
+      idx += 1
+      if (each === anInput) {return idx}
+    }
+  }
+  return nil
+}
+
+method representsANumber String {
+	// MicroBlocks only supports integers.
+	if ('' == String) { return true }
+	isFirst = true
+	for c (letters this) {
+		if ('-' == c) {
+			if (not isFirst) { return false }
+		} (not (isDigit c)) {
+			return false
+		}
+		isFirst = false
+	}
+	return true
+}
+
 method contextMenu BlockDefinition {
   menu = (menu nil this)
   for tp (array 'command' 'reporter') {

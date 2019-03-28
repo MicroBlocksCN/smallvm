@@ -47,7 +47,7 @@ read digital pin _
 raqamli pinni o'qish_
 
 read analog pin _
-analog pinni o'qish __
+analog pinni o'qish _
 
 set digital pin _ to _
 raqamli pinni o'rnatish _ ga _
@@ -62,7 +62,7 @@ digital pins
 raqamli pin
 
 when started
-qachon boshlangan 
+qachon boshlangan
 
 when button _ pressed
 _ tugmasini bosganingizda
@@ -89,19 +89,19 @@ wait _ microsecs
 kutish _ microsekundlar
 
 stop this task
-bu vazifani to'xtatish 
+bu vazifani to'xtatish
 
 stop all
-hammasini to'htatish 
+hammasini to'htatish
 
 comment _
 izoh _
 
 wait until _
-kutish _ gacha 
+kutish _ gacha
 
 repeat until _ _
-takrorlash _ _ gacha 
+takrorlash _ _ gacha
 
 for _ in _ _
 uchun _ da _ _
@@ -110,7 +110,7 @@ when _
 qachon _
 
 when _ received
-qachon _ qabul qilinganda 
+qachon _ qabul qilinganda
 
 return _
 qaytish _
@@ -143,7 +143,7 @@ set _ to _
 o'rnatish _ ga _
 
 change _ by _
-_ tomonidan _o'zgartirish 
+_ tomonidan _ o'zgartirish
 
 local _ _
 mahalliy _ _
@@ -209,10 +209,10 @@ has tone support
 ohangni qo'llab-quvvatlaydi
 
 play tone pin _ frequency _
-ohang tezligini _ ijro etish_ 
+ohang tezligini _ ijro etish _
 
 has servo support
-ohang tezligini _ ijro etish_ 
+servo qo'llab-quvvatlashi bor
 
 set servo pin _ to _ usecs
 servo pinni _ to _ usecs ga sozlang
@@ -380,7 +380,7 @@ capacitive left
 sig'imi chapga
 
 capacitive right
-sig'imi o'ngga 
+sig'imi o'ngga
 
 capacitive sensor _
 sig'imi sesor _
@@ -424,8 +424,8 @@ Kengash turi:
 Select board:
 Kengashni tanlang:
 
-Could not read: 
-O'qilmadi: 
+Could not read:
+O'qilmadi:
 
 by
 tomonidan
@@ -476,7 +476,7 @@ arrange scripts
 skriptlarni tashkil qilish
 
 undo last drop
-oxirgi tomchini bekor qilish 
+oxirgi tomchini bekor qilish
 
 copy all scripts
 barcha skriptlarni nusxalash
@@ -485,7 +485,7 @@ paste all scripts
 barcha skriptlarni joylashtirish
 
 paste script
-skriptni joylashtirish 
+skriptni joylashtirish
 
 save picture of all scripts
 barcha skriptlarning rasmini saqlash
@@ -551,7 +551,7 @@ show definition...
 ta'rifni ko'rsatish ...
 
 duplicate
-nusxa ko'chirish 
+nusxa ko'chirish
 
 just this one block
 faqat shu bitta blok
@@ -566,7 +566,7 @@ save picture of script
 skript rasmini saqlash
 
 copy script
-skriptdan nusxa olish 
+skriptdan nusxa olish
 
 delete
 o'chirish
@@ -590,7 +590,7 @@ Add a variable
 O'zgaruvchini qo'shing
 
 Delete a variable
-O'zgaruvchini o'chirish 
+O'zgaruvchini o'chirish
 
 Output
 Chiqarish
@@ -638,4 +638,4 @@ Okay
 Hop
 
 Confirm
-Tasdiqlash 
+Tasdiqlash
