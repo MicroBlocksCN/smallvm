@@ -305,7 +305,10 @@ method processSwipe Hand xDelta yDelta {
 
 method processDown Hand button {
   currentObj = (currentObject this)
-  stopEditingUnfocusedText this currentObj
+  if (isNil (ownerThatIsA (morph currentObj) 'Menu')) {
+	// stop editing unless this is a menu selection (it could a text edit menu command)
+	stopEditingUnfocusedText this currentObj
+  }
   if (or (button == 3) (commandKeyDown (keyboard page))) {
     processRightClicked this currentObj
     return
