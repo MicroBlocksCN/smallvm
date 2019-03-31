@@ -748,12 +748,20 @@ method collectVars SmallCompiler cmdOrReporter {
 	todo = (list cmdOrReporter)
 	while ((count todo) > 0) {
 		cmd = (removeFirst todo)
-		if (isOneOf (primName cmd) 'v' '=' '+=' 'local' 'for') {
+		if (isOneOf (primName cmd) 'local' 'for') {
+			// explicit local variables and 'for' loop indexes are always local
 			varName = (first (argList cmd))
 			if (not (or
-				('this' == varName)
 				(contains argNames varName)
+				(contains localVars varName))) {
+					atPut localVars varName (count localVars)
+			}
+		} (isOneOf (primName cmd) 'v' '=' '+=') {
+			// undeclared variables that are not global (shared) are treated as local
+			varName = (first (argList cmd))
+			if (not (or
 				(contains sharedVars varName)
+				(contains argNames varName)
 				(contains localVars varName))) {
 					atPut localVars varName (count localVars)
 			}
