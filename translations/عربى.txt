@@ -1,0 +1,641 @@
+display _
+شاشة _
+
+clear display
+مسح الشاشة
+
+plot x _ y _
+رسم س _ ص _
+
+unplot x _ y _
+ محو رسم س _ ص _
+
+set user LED _
+ضبط الصمام الثنائي للمستخدم _
+
+say _
+قل _
+
+log data _
+تسجيل بيان _
+
+button A
+زر أ
+
+button B
+زر ب
+
+tilt x
+الميل س
+
+tilt y
+الميل ص
+
+tilt z
+الميل ض
+
+temperature (°C)
+درجة الحرارة (درجة مئوية)
+
+microseconds
+ميكروثانية
+
+milliseconds
+ميلي ثانية
+
+read digital pin _
+قراءة pin الرقمي _
+
+read analog pin _
+قراءة pin التناظري _
+
+set digital pin _ to _
+إجعل pin الرقمي _ يساوي _
+
+set pin _ to _
+إجعل pin _ يساوي _
+
+analog pins
+pin الرقمي
+
+digital pins
+pin التناظري
+
+when started
+عند البداية
+
+when button _ pressed
+عند الضغط على زر _
+
+forever _
+باستمرار _
+
+repeat _ _
+تكرار _ _
+
+if _ _
+إذا _ _
+
+else if _ _
+آخر إذا _ _
+
+if _ _ else _
+إذا _ _ آخر _
+
+wait _ millisecs
+انتظر _ ميلي ثانية
+
+wait _ microsecs
+انتظر _ ميكروثانية
+
+stop this task
+وقف هذه المهمة
+
+stop all
+توقيف كل شيء
+
+comment _
+تعليق _
+
+wait until _
+انتظر حتى _
+
+repeat until _ _
+كرر حتى _ _
+
+for _ in _ _
+ل _ في _ _
+
+when _
+عندما _
+
+when _ received
+عند تلقي _
+
+return _
+رجع _
+
+_ mod _
+_ mod _
+
+abs _
+قيمه مطلقه _
+
+random _ to _
+رقم عشوائي من _ إلى _
+
+not _
+ليس _
+
+_ and _
+_ و _
+
+and _
+و _
+
+_ or _
+_ أو _
+
+or _
+أو _
+
+set _ to _
+إجعل _ بقيمة _
+
+change _ by _
+غير _ ب _
+
+local _ _
+متغير محلي _ _
+
+new list length _
+قائمة جديدة طول _
+
+fill list _ with _
+ملء قائمة _ ب _
+
+item _ of _
+غرض _ من _
+
+replace item _ of _ with _
+إستبدل غرض _ من _ ب _
+
+length of _
+طول _
+
+board type
+نوع اللوحة
+
+broadcast _
+نشر _
+
+i2c get device _ register _
+الحصول على جهاز _ سجل _ i2c
+
+i2c set device _ register _ to _
+ضبط جهاز _ سجل _ إلى _ i2c
+
+spi send _
+spi بعث _
+
+spi receive
+spi إستلم
+
+print _
+طبع _
+
+hex _
+hex _
+
+no op
+لا عملية
+
+ignore
+تجاهل
+
+draw shape _ at x _ y _
+رسم شكل _ في س _ ص _
+
+shape for letter _
+شكل الحرف _
+
+set NeoPixel pin _ is RGBW _
+set NeoPixel pin _ is RGBW _
+
+send NeoPixel rgb _
+send NeoPixel rgb _
+
+has tone support
+لديه دعم نغمة
+
+play tone pin _ frequency _
+لعب نغمة pin _ موجة تردد _
+
+has servo support
+لديه دعم مضاعفات
+
+set servo pin _ to _ usecs
+set servo pin _ to _ usecs
+
+has WiFi support
+لديه دعم واي فاي
+
+start WiFi _ password _
+ابدأ واي فاي _ كلمة المرور _
+
+be hotspot _
+كن نقطة ساخنة _
+
+stop WiFi
+وقف واي فاي
+
+WiFi status
+حالة واي فاي
+
+my IP address
+عنوان IP الخاص بي
+
+enable TFT _
+مكن TFT _
+
+set TFT pixel x _ y _ to _
+set TFT pixel x _ y _ to _
+
+radio send number _
+أرسل عبر الراديو رقم _
+
+radio send string _
+أرسل عبر الراديو سلسلة _
+
+radio send pair _ = _
+أرسل عبر الراديو زوج _ = _
+
+radio message received?
+وصلت الرسالة عبر الراديو؟
+
+radio last number
+راديو آخر رقم
+
+radio last string
+راديو أخر سلسلة
+
+radio last message type
+راديو نوع الرسالة الماضية
+
+radio set group _
+راديو ضبط مجموعة _
+
+radio set channel (0-83) _
+راديو ضبط قناة (0-83) _
+
+radio set power (0-7) _
+راديو ضبط طاقة (0-7) _
+
+radio last signal strength
+راديو قوة الإشارة الأخيرة
+
+radio receive packet _
+radio receive packet _
+
+radio send packet _
+radio send packet _
+
+disable radio
+تعطيل الراديو
+
+light level
+مستوى الضوء
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+Set NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+Clear NeoPixels
+
+set NeoPixel _ color _
+set NeoPixel _ color _
+
+set all NeoPixels color _
+set all NeoPixels color _
+
+rotate NeoPixels by _
+rotate NeoPixels by _
+
+color r _ g _ b _
+اللون أحمر _ أخضر _ أزرق _
+
+attach _ LED NeoPixel strip to pin _ has white _
+attach _ LED NeoPixel strip to pin _ has white _
+
+receive IR code from device _
+تلقي رمز الأشعة تحت الحمراء من الجهاز _
+
+test IR
+اختبار الأشعة تحت الحمراء
+
+scroll text _ pausing _ ms
+تمرير النص _ الإيقاف المؤقت _ مللي ثانية
+
+scroll number _ pausing _ ms
+تمرير الرقم _ الإيقاف المؤقت _ مللي ثانية
+
+stop scrolling
+توقف عن التمرير
+
+attach buzzer to pin _
+attach buzzer to pin _
+
+play note _ octave _ during _ ms
+تلعب نوتا _ اوكتاف _ خلال _ مللي ثانية
+
+play frequency _ on pin _ for _ ms
+لعب تردد _ على pin _ ل _ مللي ثانية
+
+button OK
+زر موافق
+
+button X
+زر X
+
+button up
+زر فوق
+
+button down
+زر تحت
+
+button left
+زر يسار
+
+button right
+زر يمين
+
+move motor _  _ steps _
+تحرك المحرك _ _ خطوات _
+
+move motor 1 _ and motor 2 _ _ steps
+تحرك المحرك 1 _ والمحرك 2 _ _ الخطوات
+
+stop steppers
+وقف السائر
+
+clockwise
+بإتجاه عقارب الساعة
+
+counter-clockwise
+عكس عقارب الساعه
+
+capacitive OK
+capacitiu OK
+
+capacitive X
+مكثف X
+
+capacitive up
+مكثف فوق
+
+capacitive down
+مكثف تحت
+
+capacitive left
+مكثف يسار
+
+capacitive right
+مكثف يمين
+
+capacitive sensor _
+مستشعر سعوي ‪_‬
+
+set TFT pixel x _ y _ to _
+set TFT pixel x _ y _ to _
+
+set capacitive threshold to _
+ضبط عتبة سعوية إلى _
+
+New
+جديد
+
+Open
+فتح
+
+Save
+حفظ
+
+Connect
+وصل
+
+disconnect
+قطع الاتصال
+
+Serial port:
+منفذ تسلسلي:
+
+other...
+غير...
+
+none
+لا شيء
+
+Port name?
+إسم المنفذ؟
+
+Board type:
+نوع اللوحة:
+
+Select board:
+اختر الوحة:
+
+Could not read:
+لا يمكن قراءة:
+
+by
+من قبل
+
+More info at http://microblocks.fun
+More info at http://microblocks.fun
+
+الدالة "
+La funció "
+
+" is too large to send to board.
+" كبيرة جدا لإرسالها إلى اللوحة
+
+Script is too large to send to board.
+البرنامج النصي كبير جدًا بحيث لا يمكن إرساله إلى اللوحة
+
+Use "Connect" button to connect to a MicroBlocks device.
+استخدم زر "وصل" للاتصال بجهاز MicroBlocks.
+
+No boards found; is your board plugged in?
+لم يتم العثور على لوحات‪.‬ هل تم توصيل اللوحة الخاصة بك؟
+
+For AdaFruit boards, double-click button and try again.
+للوحات AdaFruit ، انقر نقرًا مزدوجًا فوق الزر وحاول مرة أخرى.
+
+The board is not responding.
+اللوحة لا تستجيب.
+
+Try to Install MicroBlocks on the board?
+محاولة تثبيت MicroBlocks على اللوحة؟
+
+Stop
+توقف
+
+Start
+بداية
+
+Quit MicroBlocks?
+الخروج من MicroBlocks؟
+
+Discard current project?
+تجاهل المشروع الحالي؟
+
+clean up
+تنظيف
+
+arrange scripts
+ترتيب البرامج النصية
+
+undo last drop
+التراجع عن الخطوة الأخيرة
+
+copy all scripts
+نسخ جميع البرامج النصية
+
+paste all scripts
+لصق جميع البرامج النصية
+
+paste script
+لصق البرنامج النصي
+
+save picture of all scripts
+حفظ صورة لجميع البرامج النصية
+
+about...
+عن...
+
+virtual machine version
+نسخة الجهاز الظاهري
+
+install MicroBlocks on board
+تثبيت MicroBlocks على اللوحة
+
+graph data
+رسم البيانات
+
+copy data to clipboard
+نسخ البيانات إلى الحافظة
+
+clear data
+مسح البيانات
+
+clear memory and variables
+مسح الذاكرة والمتغيرات
+
+show advanced blocks
+إظهار الكتل المتقدمة
+
+export functions as library
+تصدير دوال كمكتبة
+
+hide advanced blocks
+إخفاء الكتل المتقدمة
+
+Data Graph
+الرسم البياني
+
+File Open
+فتح الملف
+
+File Save
+حفظ الملف
+
+File name:
+اسم الملف:
+
+show instructions
+عرض التعليمات
+
+show compiled bytes
+عرض بايت المترجمة
+
+expand
+وسع
+
+collapse
+إخفاء
+
+rename...
+إعادة تسمية ...
+
+show definition...
+عرض التعريف ...
+
+duplicate
+كرر
+
+just this one block
+فقط هذه الكتلة
+
+...all
+...الكل
+
+duplicate including all attached blocks
+تكرار بما في ذلك جميع الكتل المرفقة
+
+save picture of script
+حفظ صورة للبرنامج النصي
+
+copy script
+نسخ البرنامج النصي
+
+delete
+حذف
+
+hide definition
+إخفاء التعريف
+
+Are you sure you want to remove this block definition?
+هل أنت متأكد من أنك تريد إزالة تعريف الكتلة؟
+
+Libraries
+المكتبات
+
+Language:
+لغة:
+
+Add a function
+إضافة دالة
+
+Add a variable
+إضافة متغير
+
+Delete a variable
+حذف متغير
+
+Output
+المخرجات
+
+Input
+المدخلات
+
+Pins
+Pins
+
+Control
+مراقبة
+
+Math
+الرياضيات
+
+Variables
+المتغيرات
+
+Lists
+القوائم
+
+Advanced
+المتقدمة
+
+Functions
+دوال
+
+Obsolete
+قديم
+
+Ok
+وافق
+
+Yes
+نعم
+
+No
+لا
+
+Cancel
+إلغاء
+
+Okay
+وافق
+
+Confirm
+أكد
