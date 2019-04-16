@@ -1,27 +1,32 @@
-sharedVariables  '_turtleScreenWidth' '_turtleScreenHeight' '_turtleX' '_turtleY' '_turtleHeading'
+sharedVariables '_turtleScreenWidth' '_turtleScreenHeight' '_turtleX' '_turtleY' '_turtleHeading' '_turtlePenState' '_turtleColor'
 
 spec ' ' 'initTurtle' 'init turtle screen w _ h _' 'auto auto' 128 128
 spec ' ' 'home' 'home' ''
 spec ' ' 'move' 'move _' 'auto' '10'
 spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
 spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
-spec ' ' 'setHeading' 'set heading _ degrees' 'auto' 0
-
+spec ' ' 'setHeading' 'point in direction  _' 'auto' 0
 spec ' ' '_turtleNotes' '_turtleNotes' 'any' nil
 spec 'r' '_turtleSine' '_turtleSine _ hundreths' 'auto any' 0 nil
 spec 'r' '_turtleCosine' '_turtleCosine _ hunredths' 'auto any' 0 nil
+spec ' ' 'pen down' 'pen down' ''
+spec ' ' 'pen up' 'pen up' ''
+spec ' ' 'set pen color to' 'set pen color to _' 'color' nil
+spec 'r' '_tft color' '_tft color _ to number' 'color any' nil nil
+spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
 
 to initTurtle w h {
   '[tft:enableDisplay]' true
   _turtleScreenWidth = w
   _turtleScreenHeight = h
+  'set pen color to' (colorSwatch 7 255 1 255)
   home
+  'pen up'
   mbDisplayOff
 }
 
 to home {
-  _turtleX = ((_turtleScreenWidth / 2) * 4096)
-  _turtleY = ((_turtleScreenHeight / 2) * 4096)
+  'go to x' 0 0
   setHeading 0
 }
 
@@ -32,7 +37,9 @@ to move n {
   _turtleY += (n * ('_turtleSine' _turtleHeading nil))
   local 'endX' (_turtleX >> 12)
   local 'endY' (_turtleY >> 12)
-  '[tft:line]' startX startY endX endY (hexToInt 'FFFFFF')
+  if _turtlePenState {
+    '[tft:line]' startX startY endX endY _turtleColor
+  }
 }
 
 to turnBy a {
@@ -80,3 +87,35 @@ to '_turtleCosine' a {
 The cosine is just the sine shifted by 90 degrees.'
   return ('_turtleSine' (a + 9000) nil)
 }
+
+to 'pen down' {
+  _turtlePenState = (booleanConstant true)
+}
+
+to 'pen up' {
+  _turtlePenState = (booleanConstant false)
+}
+
+to 'set pen color to' color {
+  _turtleColor = ('_tft color' color)
+}
+
+to '_tft color' 'color hex' {
+  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
+  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
+  local 'b' ((((v 'color hex') & 255) * 255) / 31)
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to 'go to x' x y {
+  local 'startX' (_turtleX >> 12)
+  local 'startY' (_turtleY >> 12)
+  _turtleX = (((_turtleScreenWidth / 2) + x) * 4096)
+  _turtleY = (((_turtleScreenHeight / 2) + y) * 4096)
+  local 'endX' (_turtleX >> 12)
+  local 'endY' (_turtleY >> 12)
+  if _turtlePenState {
+    '[tft:line]' startX startY endX endY _turtleColor
+  }
+}
+
