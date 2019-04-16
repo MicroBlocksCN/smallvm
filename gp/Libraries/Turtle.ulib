@@ -1,0 +1,82 @@
+sharedVariables  '_turtleScreenWidth' '_turtleScreenHeight' '_turtleX' '_turtleY' '_turtleHeading'
+
+spec ' ' 'initTurtle' 'init turtle screen w _ h _' 'auto auto' 128 128
+spec ' ' 'home' 'home' ''
+spec ' ' 'move' 'move _' 'auto' '10'
+spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
+spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
+spec ' ' 'setHeading' 'set heading _ degrees' 'auto' 0
+
+spec ' ' '_turtleNotes' '_turtleNotes' 'any' nil
+spec 'r' '_turtleSine' '_turtleSine _ hundreths' 'auto any' 0 nil
+spec 'r' '_turtleCosine' '_turtleCosine _ hunredths' 'auto any' 0 nil
+
+to initTurtle w h {
+  '[tft:enableDisplay]' true
+  _turtleScreenWidth = w
+  _turtleScreenHeight = h
+  home
+  mbDisplayOff
+}
+
+to home {
+  _turtleX = ((_turtleScreenWidth / 2) * 4096)
+  _turtleY = ((_turtleScreenHeight / 2) * 4096)
+  setHeading 0
+}
+
+to move n {
+  local 'startX' (_turtleX >> 12)
+  local 'startY' (_turtleY >> 12)
+  _turtleX += (n * ('_turtleCosine' _turtleHeading nil))
+  _turtleY += (n * ('_turtleSine' _turtleHeading nil))
+  local 'endX' (_turtleX >> 12)
+  local 'endY' (_turtleY >> 12)
+  '[tft:line]' startX startY endX endY (hexToInt 'FFFFFF')
+}
+
+to turnBy a {
+  _turtleHeading += (a * 100)
+  _turtleHeading = (_turtleHeading % 36000)
+}
+
+to turnFraction num denom {
+  _turtleHeading += ((num * 36000) / denom)
+  _turtleHeading = (_turtleHeading % 36000)
+}
+
+to setHeading a {
+  _turtleHeading = ((a * 100) % 36000)
+}
+
+to '_turtleNotes' {
+  comment 'Representation:
+  _turtleHeading is in hundreths of a degree  (e.g. 4500 means 45 degrees)
+  _turtleX and _turtleY are scaled by 4096 (2^12)
+
+The sine and cosine functions take angles in hundreds of a degree and
+return numbers scaled by 4096. Those numbers are shifted right by 12 bits
+to get pixel locations.'
+}
+
+to '_turtleSine' a {
+  comment 'Angle is in hundreths of degrees. E.g. 4500 is a 45 degree angle
+See http://www.coranac.com/2009/07/sines/.'
+  local 'x' ((a << 10) / 1125)
+  local 'c' (x << 16)
+  x += -8192
+  x = ((x << 17) >> 17)
+  x = ((x * x) >> 12)
+  local 'y' (19900 - ((x * 3516) >> 14))
+  y = (4096 - ((x * y) >> 16))
+  if (c < 0) {
+    y = (0 - y)
+  }
+  return y
+}
+
+to '_turtleCosine' a {
+  comment 'Angle is in hundreths of degrees. E.g. 4500 is a 45 degree angle.
+The cosine is just the sine shifted by 90 degrees.'
+  return ('_turtleSine' (a + 9000) nil)
+}
