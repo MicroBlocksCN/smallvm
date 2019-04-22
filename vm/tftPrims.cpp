@@ -49,7 +49,7 @@ int useTFT = false;
 		void tftInit() {
 			tft.initR(INITR_144GREENTAB);
 			tft.setRotation(0);
-//			tft._freq = 40000000; // this requires moving _freq to public in AdaFruit_SITFT.h
+//			tft._freq = 26666667; // (80MHz/3) this requires moving _freq to public in AdaFruit_SITFT.h
 			tftClear();
 			useTFT = true;
 		}
@@ -64,6 +64,7 @@ int useTFT = false;
 		void tftInit() {
 			tft.begin();
 			tft.setRotation(1);
+//			tft._freq = 80000000; // this requires moving _freq to public in AdaFruit_SITFT.h
 			tftClear();
 			// Turn on backlight on IoT-Bus
 			pinMode(33, OUTPUT);
