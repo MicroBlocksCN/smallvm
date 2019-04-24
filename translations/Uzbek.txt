@@ -44,7 +44,7 @@ milliseconds
 millisekundlar
 
 read digital pin _
-raqamli pinni o'qish_
+raqamli pinni o'qish _
 
 read analog pin _
 analog pinni o'qish _
@@ -53,7 +53,7 @@ set digital pin _ to _
 raqamli pinni o'rnatish _ ga _
 
 set pin _ to _
-pin o'rnatish_ ga _
+pin o'rnatish _ ga _
 
 analog pins
 pin analoglari
@@ -155,7 +155,7 @@ fill list _ with _
 ro'yxatni to'ldirish _ bilan _
 
 item _ of _
-element _ ning_
+element _ ning _
 
 replace item _ of _ with _
 elementni _ bilan _almashtirish _
@@ -353,7 +353,7 @@ move motor _ _ steps _
 harakatlantiring motor _ _ qadamlar _
 
 move motor 1 _ and motor 2 _ _ steps
-motor 1_ va motor 2 _ _ qadamlarini harakatlantiring
+motor 1 _ va motor 2 _ _ qadamlarini harakatlantiring
 
 stop steppers
 qadamlarni to'xtating
