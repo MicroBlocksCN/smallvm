@@ -102,6 +102,16 @@ method propertyTypesMenu InputSlot {
   return menu
 }
 
+method hummingbirdSensorsMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'Light'
+  addItem menu 'Dial'
+  addItem menu 'Distance (cm)'
+  addItem menu 'Sound'
+  addItem menu 'Other'
+  return menu
+}
+
 method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }
@@ -215,6 +225,36 @@ method contextMenu Block {
     addItem menu 'delete' 'delete'
   }
   return menu
+}
+
+method inputIndex Block anInput {
+  idx = 0
+  items = (flattened labelParts)
+
+  // Note: removed special case for variable assignments
+
+  for each items {
+    if (isAnyClass each 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block' 'MicroBitDisplaySlot') {
+      idx += 1
+      if (each === anInput) {return idx}
+    }
+  }
+  return nil
+}
+
+method representsANumber String {
+	// MicroBlocks only supports integers.
+	if ('' == String) { return true }
+	isFirst = true
+	for c (letters this) {
+		if ('-' == c) {
+			if (not isFirst) { return false }
+		} (not (isDigit c)) {
+			return false
+		}
+		isFirst = false
+	}
+	return true
 }
 
 method contextMenu BlockDefinition {

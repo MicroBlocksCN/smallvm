@@ -51,6 +51,35 @@ to extractCommand url {
   return (substring url (start + 1) (end - 1))
 }
 
+// usage logging
+
+to logSessionStart sessionID projName {
+  logEntry = (join
+	'/usage/log.php?id=' sessionID
+	'&type=S&secs=' 0)
+  if ('' != projName) {
+	if (beginsWith projName 'http://') { projName = (substring projName 8) }
+	if (beginsWith projName 'https://') { projName = (substring projName 9) }
+	logEntry = (join logEntry '&proj=' projName) }
+  startFetch (join (httpPrefx) logEntry)
+}
+
+to logSessionActivity sessionID sessionSecs editCount {
+  logEntry = (join
+	'/usage/log.php?id=' sessionID
+	'&type=A&secs=' sessionSecs
+	'&edits=' editCount)
+  startFetch (join (httpPrefx) logEntry)
+}
+
+to httpPrefx {
+  if (and (notNil (browserURL)) (beginsWith (browserURL) 'https:')) {
+	return 'https://gpblocks.org'
+  } else {
+	return 'http://gpblocks.org'
+  }
+}
+
 // fetch primitive tests
 
 to clearRequests {

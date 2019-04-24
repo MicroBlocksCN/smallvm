@@ -214,5 +214,5 @@ cd ../../..
 "$DIR"/"' name '"
 ')
 	writeFile fileName shellScript
-	setFileMode fileName (7 << 6) // set executable bits
+	setFileMode fileName (+ (7 << 6) (5 << 3) 5) // set executable bits
 }

@@ -1,6 +1,6 @@
 // interactively eval GP code in a morphic window
 
-defineClass MicroBlockDataGraph morph window lastDataCount lastDataItem
+defineClass MicroBlockDataGraph morph window lastDataIndex
 
 to openMicroBlockDataGraph {
 	page = (global 'page')
@@ -18,27 +18,14 @@ method initialize MicroBlockDataGraph {
 	setHandler morph this
 	setMinExtent morph (scale * 140) (scale * 50)
 	setExtent morph (scale * 200) (scale * 120)
-	lastDataCount = 0
-	lastDataItem = nil
+	lastDataIndex = 0
 	setFPS morph 60
 }
 
 method step MicroBlockDataGraph {
-	if (not (newDataAvailable this)) { return }
+	if ((lastDataIndex (smallRuntime)) == lastDataIndex) { return }
 	redraw this
-	loggedData = (loggedData (smallRuntime))
-	lastDataCount = (count loggedData)
-	lastDataItem = nil
-	if (lastDataCount > 0) {
-		lastDataItem = (last loggedData)
-	}
-}
-
-method newDataAvailable MicroBlockDataGraph {
-	loggedData = (loggedData (smallRuntime))
-	if (lastDataCount != (count loggedData)) { return true }
-	if (and ((count loggedData) > 0) ((last loggedData) != lastDataItem)) { return true }
-	return false
+	lastDataIndex = (lastDataIndex (smallRuntime))
 }
 
 method redraw MicroBlockDataGraph {

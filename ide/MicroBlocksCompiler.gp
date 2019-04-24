@@ -159,6 +159,12 @@ method microBlocksSpecs SmallCompiler {
 
 		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
+		(array ' ' '[tft:line]'			'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)
+		(array ' ' '[tft:rect]'			'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false)
+		(array ' ' '[tft:roundedRect]'			'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false)
+		(array ' ' '[tft:circle]'			'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false)
+		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
+		(array ' ' '[tft:text]'			'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
 
 		(array ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123)
 		(array ' ' '[radio:sendString]'				'radio send string _' 'str' 'Hello!')
@@ -742,12 +748,20 @@ method collectVars SmallCompiler cmdOrReporter {
 	todo = (list cmdOrReporter)
 	while ((count todo) > 0) {
 		cmd = (removeFirst todo)
-		if (isOneOf (primName cmd) 'v' '=' '+=' 'local' 'for') {
+		if (isOneOf (primName cmd) 'local' 'for') {
+			// explicit local variables and 'for' loop indexes are always local
 			varName = (first (argList cmd))
 			if (not (or
-				('this' == varName)
 				(contains argNames varName)
+				(contains localVars varName))) {
+					atPut localVars varName (count localVars)
+			}
+		} (isOneOf (primName cmd) 'v' '=' '+=') {
+			// undeclared variables that are not global (shared) are treated as local
+			varName = (first (argList cmd))
+			if (not (or
 				(contains sharedVars varName)
+				(contains argNames varName)
 				(contains localVars varName))) {
 					atPut localVars varName (count localVars)
 			}

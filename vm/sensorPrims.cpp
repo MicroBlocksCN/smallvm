@@ -21,6 +21,7 @@ static int wireStarted = false;
 
 static void startWire() {
 	Wire.begin();
+	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 	wireStarted = true;
 }
 
@@ -71,6 +72,56 @@ OBJ primI2cSet(OBJ *args) {
 
 	writeI2CReg(deviceID, registerID, value);
 	return falseObj;
+}
+
+OBJ primI2cRead(int argCount, OBJ *args) {
+	// Read multiple bytes from the given I2C device into the given array and return the
+	// number of bytes read. The array size determines the number of bytes to read.
+	// This operation is usually preceded by an I2C write to request some data.
+
+	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
+	int deviceID = obj2int(args[0]);
+	OBJ array = args[1];
+	if (!IS_CLASS(array, ArrayClass)) return int2obj(0);
+
+	if (!wireStarted) startWire();
+	int count = objWords(array);
+	if (count > 32) count = 32; // the Arduino Wire library limits reads to a max of 32 bytes
+	Wire.requestFrom(deviceID, count);
+	for (int i = 0; i < count; i++) {
+		while (!Wire.available()) /* wait for data */;
+		int byte = Wire.read();
+		FIELD(array, i) = int2obj(byte);
+	}
+	return int2obj(count);
+}
+
+OBJ primI2cWrite(int argCount, OBJ *args) {
+	// Write multiple bytes from the given array to the given I2C device and return the
+	// number of bytes written. The array size determines the number of bytes to write.
+	// The array should contain integers in the range 0..255; anything else will be skipped.
+
+	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
+	int deviceID = obj2int(args[0]);
+	OBJ array = args[1];
+	if (!IS_CLASS(array, ArrayClass)) return int2obj(0);
+
+	if (!wireStarted) startWire();
+	Wire.beginTransmission(deviceID);
+	int count = objWords(array);
+	int sent = 0;
+	for (int i = 0; i < count; i++) {
+		OBJ item = FIELD(array, i);
+		if (isInt(item)) {
+			int byte = obj2int(item);
+			if ((0 <= byte) && (byte <= 255)) {
+				Wire.write(byte);
+				sent++;
+			}
+		}
+	}
+	Wire.endTransmission();
+	return int2obj(sent);
 }
 
 // SPI prims
@@ -297,6 +348,8 @@ static PrimEntry entries[] = {
 	"tiltY", primMBTiltY,
 	"tiltZ", primMBTiltZ,
 	"touchRead", primTouchRead,
+	"i2cRead", primI2cRead,
+	"i2cWrite", primI2cWrite,
 };
 
 void addSensorPrims() {

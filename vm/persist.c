@@ -40,9 +40,9 @@
 		#define START (168 * 1024)
 		#define HALF_SPACE (160 * 1024)
 	#else
-		// BBC micro:bit and Calliope: App: 0-36k; Persistent Mem: 36k-256k
-		#define START (36 * 1024)
-		#define HALF_SPACE (110 * 1024)
+		// BBC micro:bit and Calliope: App: 0-56k; Persistent Mem: 56k-256k
+		#define START (56 * 1024)
+		#define HALF_SPACE (100 * 1024)
 	#endif
 
 	static void flashErase(int *startAddr, int *endAddr) {

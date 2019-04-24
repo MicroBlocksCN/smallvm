@@ -639,3 +639,36 @@ D'acord
 
 Confirm
 Confirmació
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ Vermell _ % Verd _ % Blau _ %
+
+Hummingbird Position Servo _ _ ∞
+Hummingbird Servo Posicional _ _ ∞
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Servo Rotacional _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Bateria (mV)
+
+Light
+Llum
+
+Distance
+Dist‡ncia
+
+Dial
+Rodeta
+
+Sound
+So
+
+Other
+Altres

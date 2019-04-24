@@ -249,3 +249,36 @@ spiele Note _ Oktave _ für _ ms
 
 play frequency _ on pin _ for _ ms
 spiele Frequenz _ mit pin _ für _ ms
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Dreifarben-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ ∞
+Hummingbird Position Servo _ _ ∞
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Drehung Servo _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Batterie (mV)
+
+Light
+Licht
+
+Distance
+Entfernung
+
+Dial
+Drehknopf
+
+Sound
+Klang
+
+Other
+Sonstige

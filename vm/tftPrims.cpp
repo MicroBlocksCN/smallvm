@@ -21,7 +21,23 @@ int useTFT = false;
 	#define TFT_BLACK 0
 	#define TFT_GREEN 0x7E0
 
-	#if defined(ARDUINO_CITILAB_ED1)
+	// Optional TFT_ESPI code was added by John to study performance differences
+	#define USE_TFT_ESPI false // true to use TFT_eSPI library, false to use AdaFruit GFX library
+	#if USE_TFT_ESPI
+		#include <TFT_eSPI.h>
+
+		TFT_eSPI tft = TFT_eSPI();
+
+		void tftInit() {
+			tft.init();
+			tft.setRotation(0);
+			tftClear();
+			// Turn on backlight on IoT-Bus
+			pinMode(33, OUTPUT);
+			digitalWrite(33, HIGH);
+			useTFT = true;
+		}
+	#elif defined(ARDUINO_CITILAB_ED1)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7735.h"
 
@@ -33,6 +49,7 @@ int useTFT = false;
 		void tftInit() {
 			tft.initR(INITR_144GREENTAB);
 			tft.setRotation(0);
+//			tft._freq = 26666667; // (80MHz/3) this requires moving _freq to public in AdaFruit_SITFT.h
 			tftClear();
 			useTFT = true;
 		}
@@ -47,6 +64,7 @@ int useTFT = false;
 		void tftInit() {
 			tft.begin();
 			tft.setRotation(1);
+//			tft._freq = 80000000; // this requires moving _freq to public in AdaFruit_SITFT.h
 			tftClear();
 			// Turn on backlight on IoT-Bus
 			pinMode(33, OUTPUT);
@@ -67,17 +85,107 @@ OBJ primEnableDisplay(int argCount, OBJ *args) {
 	}
 }
 
-OBJ primSetPixel(int argCount, OBJ *args) {
-	// Re-encode color from 24 bits into 16 bits
-	int x = obj2int(args[0]);
-	int y = obj2int(args[1]);
-	int color24b = obj2int(args[2]);
+int color24to16b(int color24b) {
+	// converts 24-bit RGB888 format to 16-bit RGB565
 	int r = (color24b >> 16) & 0xFF;
 	int g = (color24b >> 8) & 0xFF;
 	int b = color24b & 0xFF;
-	// convert 24-bit RGB888 format to 16-bit RGB565
-	int color16b = ((r << 8) & 0xF800) | ((g << 3) & 0x7E0) | ((b >> 3) & 0x1F);
+	return ((r << 8) & 0xF800) | ((g << 3) & 0x7E0) | ((b >> 3) & 0x1F);
+}
+
+OBJ primSetPixel(int argCount, OBJ *args) {
+	int x = obj2int(args[0]);
+	int y = obj2int(args[1]);
+	// Re-encode color from 24 bits into 16 bits
+	int color16b = color24to16b(obj2int(args[2]));
 	tft.drawPixel(x, y, color16b);
+}
+
+OBJ primLine(int argCount, OBJ *args) {
+	int x0 = obj2int(args[0]);
+	int y0 = obj2int(args[1]);
+	int x1 = obj2int(args[2]);
+	int y1 = obj2int(args[3]);
+	// Re-encode color from 24 bits into 16 bits
+	int color16b = color24to16b(obj2int(args[4]));
+        tft.drawLine(x0, y0, x1, y1, color16b);
+}
+
+OBJ primRect(int argCount, OBJ *args) {
+	int x = obj2int(args[0]);
+	int y = obj2int(args[1]);
+	int width = obj2int(args[2]);
+	int height = obj2int(args[3]);
+	// Re-encode color from 24 bits into 16 bits
+	int color16b = color24to16b(obj2int(args[4]));
+	int fill = (trueObj == args[5]);
+	if (fill) {
+		tft.fillRect(x, y, width, height, color16b);
+        } else {
+		tft.drawRect(x, y, width, height, color16b);
+	}
+}
+
+OBJ primRoundedRect(int argCount, OBJ *args) {
+	int x = obj2int(args[0]);
+	int y = obj2int(args[1]);
+	int width = obj2int(args[2]);
+	int height = obj2int(args[3]);
+	int radius = obj2int(args[4]);
+	// Re-encode color from 24 bits into 16 bits
+	int color16b = color24to16b(obj2int(args[5]));
+	int fill = (trueObj == args[6]);
+	if (fill) {
+		tft.fillRoundRect(x, y, width, height, radius, color16b);
+        } else {
+		tft.drawRoundRect(x, y, width, height, radius, color16b);
+	}
+}
+
+OBJ primCircle(int argCount, OBJ *args) {
+	int x = obj2int(args[0]);
+	int y = obj2int(args[1]);
+	int radius = obj2int(args[2]);
+	// Re-encode color from 24 bits into 16 bits
+	int color16b = color24to16b(obj2int(args[3]));
+	int fill = (trueObj == args[4]);
+	if (fill) {
+		tft.fillCircle(x, y, radius, color16b);
+        } else {
+		tft.drawCircle(x, y, radius, color16b);
+	}
+}
+
+OBJ primTriangle(int argCount, OBJ *args) {
+	int x0 = obj2int(args[0]);
+	int y0 = obj2int(args[1]);
+	int x1 = obj2int(args[2]);
+	int y1 = obj2int(args[3]);
+	int x2 = obj2int(args[4]);
+	int y2 = obj2int(args[5]);
+	// Re-encode color from 24 bits into 16 bits
+	int color16b = color24to16b(obj2int(args[6]));
+	int fill = (trueObj == args[7]);
+	if (fill) {
+		tft.fillTriangle(x0, y0, x1, y1, x2, y2, color16b);
+        } else {
+		tft.drawTriangle(x0, y0, x1, y1, x2, y2, color16b);
+	}
+}
+
+OBJ primText(int argCount, OBJ *args) {
+	char *text = obj2str(args[0]);
+	int x = obj2int(args[1]);
+	int y = obj2int(args[2]);
+	// Re-encode color from 24 bits into 16 bits
+	int color16b = color24to16b(obj2int(args[3]));
+	int scale = obj2int(args[4]);
+	int wrap = (trueObj == args[5]);
+	tft.setCursor(x, y);
+	tft.setTextColor(color16b);
+	tft.setTextSize(scale);
+	tft.setTextWrap(wrap);
+	tft.print(text);
 }
 
 void tftSetHugePixel(int x, int y, int state) {
@@ -120,6 +228,12 @@ void tftSetHugePixelBits(int bits) { }
 
 OBJ primEnableDisplay(int argCount, OBJ *args) { return falseObj; }
 OBJ primSetPixel(int argCount, OBJ *args) { return falseObj; }
+OBJ primLine(int argCount, OBJ *args) { return falseObj; }
+OBJ primRect(int argCount, OBJ *args) { return falseObj; }
+OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
+OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
+OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
+OBJ primText(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
@@ -128,6 +242,12 @@ OBJ primSetPixel(int argCount, OBJ *args) { return falseObj; }
 static PrimEntry entries[] = {
 	"enableDisplay", primEnableDisplay,
 	"setPixel", primSetPixel,
+	"line", primLine,
+	"rect", primRect,
+	"roundedRect", primRoundedRect,
+	"circle", primCircle,
+	"triangle", primTriangle,
+	"text", primText,
 };
 
 void addTFTPrims() {

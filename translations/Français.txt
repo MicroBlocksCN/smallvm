@@ -201,3 +201,37 @@ mettre le NeoPixel à la broche _ avec la couleur blanche _
 
 send NeoPixel rgb _
 envoyer RGB _ au NeoPixel
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ ∞
+Hummingbird Position Servo _ _ ∞
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Rotation Servo _ _ %
+
+Hummingbird _ _
+Hummingbird _ _ 
+
+Hummingbird Battery (mV)
+Hummingbird Batterie (mV)
+
+Light
+LumiËre
+
+Distance
+Distance
+
+Dial
+Cadran
+
+Sound
+Son
+
+Other
+Autre
+

@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData loggedDataNext loggedDataCount shouldShowVersion
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData loggedDataNext loggedDataCount
 
 method scripter SmallRuntime { return scripter }
 
@@ -240,8 +240,8 @@ method selectPort SmallRuntime {
 		}
 	} else {
 		for fn (listFiles '/dev') {
-			if (or (notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
-				   (notNil (nextMatchIn 'acm' (toLowerCase fn) ))) { // Linux
+			if (or	(notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
+					(notNil (nextMatchIn 'acm' (toLowerCase fn) ))) { // Linux
 				add portList fn
 			}
 		}
@@ -268,11 +268,11 @@ method selectPort SmallRuntime {
 }
 
 method setPort SmallRuntime newPortName {
-        vmVersion = nil
 	if ('other...' == newPortName) {
 		newPortName = (prompt (global 'page') 'Port name?' (localized 'none'))
 		if ('' == newPortName) { return }
 	}
+	vmVersion = nil
 	if (and ('disconnect' == newPortName) (notNil port)) {
 		stopAndSyncScripts this
 		sendStartAll this
@@ -304,7 +304,7 @@ method closePort SmallRuntime {
 		stopAndSyncScripts this
 		closeSerialPort port
 		port = nil
-                vmVersion = nil
+		vmVersion = nil
 	}
 }
 
@@ -331,9 +331,9 @@ method connectionStatus SmallRuntime {
 		if (msecsSinceConnect > 5000) {
 			connectMSecs = nil // don't do this again unti next connection attempt
 			if (not (isEmpty (collectBoardDrives this))) {
-				ok = (confirm (global 'page') nil
-                                        (join (localized 'The board is not responding.') (newline)
-                                         (localized 'Try to Install MicroBlocks on the board?')))
+				ok = (confirm (global 'page') nil (join
+					(localized 'The board is not responding.') (newline)
+					(localized 'Try to Install MicroBlocks on the board?')))
 				if ok { installVM this }
 			}
 		}
@@ -341,8 +341,8 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.33' }
-method latestVmVersion SmallRuntime { return 53 }
+method ideVersion SmallRuntime { return '0.1.34' }
+method latestVmVersion SmallRuntime { return 54 }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
@@ -359,21 +359,25 @@ method getVersion SmallRuntime {
 
 method extractVersionNumber SmallRuntime versionString {
 	// Return the version number from the versionString.
-	// Parse carefully in case version format changes in the future.
+	// Version string format: vNNN, where NNN is one or more decimal digits,
+	// followed by non-digits characters that are ignored. Ex: 'v052a micro:bit'
 
 	words = (words (substring versionString 2))
 	if (isEmpty words) { return -1 }
-	s = (first words)
-	if (not (representsANumber s)) { return -2 }
-	return (toInteger s)
+	result = 0
+	for ch (letters (first words)) {
+		if (not (isDigit ch)) { return result }
+		digit = ((byteAt ch 1) - (byteAt '0' 1))
+		result = ((10 * result) + digit)
+	}
+	return result
 }
 
 method versionReceived SmallRuntime versionString {
-	if (isNil vmVersion) { //  first time: just record the version number
-                shouldShowVersion = true
+	if (isNil vmVersion) { // first time: record and check the version number
 		vmVersion = (extractVersionNumber this versionString)
-                checkVmVersion this
-	} shouldShowVersion {
+		checkVmVersion this
+	} else { // not first time: show the vresion number
 		showVersion this versionString
 	}
 }
@@ -383,16 +387,13 @@ method showVersion SmallRuntime versionString {
 }
 
 method checkVmVersion SmallRuntime {
-    if ((latestVmVersion this) > vmVersion) {
-        // For some reason this goes on to call versionReceived again and I can't
-        // figure out why. This is what the shouldShowVersion flag-klugde "fixes"
-        shouldShowVersion = false 
-        ok = (confirm (global 'page') nil
-                (join (localized 'The VM version in your board is too old') 
-                    ' (v' vmVersion ' vs. v' (latestVmVersion this) ')' (newline)
-                    (localized 'Try to update MicroBlocks on the board?')))
-        if ok { installVM this }
-    }
+	if ((latestVmVersion this) > vmVersion) {
+		ok = (confirm (global 'page') nil (join
+			(localized 'The MicroBlocks in your board is not current ')
+			'(v' vmVersion ' vs. v' (latestVmVersion this) ').' (newline)
+			(localized 'Try to update MicroBlocks on the board?')))
+		if ok { installVM this }
+	}
 }
 
 method clearBoardIfConnected SmallRuntime doReset {
@@ -458,7 +459,9 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	addAll data (chunkBytesFor this aBlockOrFunction)
 	if ((count data) > 1000) {
 		if (isClass aBlockOrFunction 'Function') {
-			inform (global 'page') (join (localized 'Function "') (functionName aBlockOrFunction) (localized '" is too large to send to board.'))
+			inform (global 'page') (join
+				(localized 'Function "') (functionName aBlockOrFunction)
+				(localized '" is too large to send to board.'))
 		} else {
 			showHint (morph aBlockOrFunction) (localized 'Script is too large to send to board.')
 		}
@@ -617,7 +620,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		if (not (isOpenSerialPort port)) {
 			print 'serial port closed; board disconnected?'
 			port = nil
-                        vmVersion = nil
+			vmVersion = nil
 			return
 		}
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
@@ -672,8 +675,10 @@ method processMessages SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) { return }
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
 	processingMessages = true
-	while processingMessages {
+	count = 0
+	while (and processingMessages (count < 10)) {
 		processingMessages = (processNextMessage this)
+		count += 1
 	}
 }
 
@@ -688,8 +693,9 @@ method processNextMessage SmallRuntime {
 	// Parse and dispatch messages
 	firstByte = (byteAt recvBuf 1)
 	if (250 == firstByte) { // short message
-		handleMessage this (copyFromTo recvBuf 1 3)
+		msg = (copyFromTo recvBuf 1 3)
 		recvBuf = (copyFromTo recvBuf 4) // remove message
+		handleMessage this msg
 	} (251 == firstByte) { // long message
 		if ((byteCount recvBuf) < 5) { return false } // incomplete length field
 		byteTwo = (byteAt recvBuf 2)
@@ -700,8 +706,9 @@ method processNextMessage SmallRuntime {
 		}
 		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
 		if ((byteCount recvBuf) < (5 + bodyBytes)) { return false } // incomplete body
-		handleMessage this (copyFromTo recvBuf 1 (bodyBytes + 5))
+		msg = (copyFromTo recvBuf 1 (bodyBytes + 5))
 		recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
+		handleMessage this msg
 	} else {
 		print 'Bad message start byte; should be 250 or 251 but is:' firstByte
 		skipMessage this // discard
@@ -862,8 +869,9 @@ method installVM SmallRuntime {
 	}
 	popUpAtHand menu (global 'page')
   } else {
-	inform (join (localized 'No boards found; is your board plugged in?') (newline)
-            (localized 'For AdaFruit boards, double-click button and try again.'))
+	inform (join
+		(localized 'No boards found; is your board plugged in?') (newline)
+		(localized 'For AdaFruit boards, double-click reset button and try again.'))
   }
 }
 
@@ -972,6 +980,8 @@ method downloadVMFile SmallRuntime boardName {
 }
 
 // data logging
+
+method lastDataIndex SmallRuntime { return loggedDataNext }
 
 method clearLoggedData SmallRuntime {
 	loggedData = (newArray 10000)

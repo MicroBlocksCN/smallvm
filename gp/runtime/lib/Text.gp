@@ -383,7 +383,7 @@ method contextMenu Text {
   txt = (getClipboard)
   if (txt != '') {
     edits = true
-    addItem menu 'paste' (action 'insertRight' caret txt) txt
+    addItem menu 'paste' (action 'insertRight' caret txt)
   }
   if edits {addLine menu}
   if ((originalContents caret) != text) {

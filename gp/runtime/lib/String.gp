@@ -671,3 +671,10 @@ method representsANumber String {
   }
   return true
 }
+
+method allDigits String {
+  for c (letters this) {
+	if (not (isDigit c)) { return false }
+  }
+  return true
+}
