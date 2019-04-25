@@ -28,7 +28,30 @@ if test -n "$help"; then
     exit 0
 fi
 
-if [ -n $tools ]; then export tools=1; fi
+if test -n "$tools"; then
+    echo $tools
+    export tools=1;
+    # get esptool for the requested systems
+    if [ -z $system ] || [ $system == 'win' ]; then
+        wget https://dl.espressif.com/dl/esptool-4dab24e-windows.zip
+        unzip esptool-4dab24e-windows.zip
+        rm esptool-4dab24e-windows.zip
+        mkdir -p packagers/win32/esptool
+        mv esptool.exe packagers/win32/esptool
+    fi
+    if [ -z $system ] || [ $system == 'linux64bit' ] || [ $system == 'linux32bit' ] || [ $system == 'raspberryPi' ]; then
+        wget https://raw.githubusercontent.com/espressif/esptool/master/esptool.py
+        mkdir -p packagers/linux/esptool
+        mv esptool.py packagers/linux/esptool
+    fi
+    if [ -z $system ] || [ $system == 'mac' ]; then
+        wget https://dl.espressif.com/dl/esptool-4dab24e-macos.tar.gz
+        tar -xf esptool-4dab24e-macos.tar.gz
+        rm esptool-4dab24e-macos.tar.gz
+        mkdir -p packagers/darwin/esptool
+        mv esptool packagers/darwin/esptool
+    fi
+fi
 
 # build the IDE by using the corresponding executable for our host system
 mkdir -p ../apps

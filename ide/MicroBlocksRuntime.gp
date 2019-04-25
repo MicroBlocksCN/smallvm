@@ -225,6 +225,18 @@ method softReset SmallRuntime {
 }
 
 method selectPort SmallRuntime {
+        portList = (portList this)
+	menu = (menu 'Serial port:' (action 'setPort' this) true)
+	for s portList { addItem menu s }
+	addItem menu 'other...'
+	if (notNil port) {
+		addLine menu
+		addItem menu 'disconnect'
+	}
+	popUpAtHand menu (global 'page')
+}
+
+method portList SmallRuntime {
 	portList = (list)
 	if ('Win' == (platform)) {
 		portList = (toList (listSerialPorts))
@@ -245,7 +257,7 @@ method selectPort SmallRuntime {
 				add portList fn
 			}
 		}
-		// Mac OS (and perhaps Linuxes) list a port as both cu.<name> and tty.<name>
+		// Mac OS lists a port as both cu.<name> and tty.<name>
 		for s (copy portList) {
 			if (beginsWith s 'tty.') {
 				if (contains portList (join 'cu.' (substring s 5))) {
@@ -257,14 +269,7 @@ method selectPort SmallRuntime {
 		addAll names portList
 
 	}
-	menu = (menu 'Serial port:' (action 'setPort' this) true)
-	for s portList { addItem menu s }
-	addItem menu 'other...'
-	if (notNil port) {
-		addLine menu
-		addItem menu 'disconnect'
-	}
-	popUpAtHand menu (global 'page')
+        return portList
 }
 
 method setPort SmallRuntime newPortName {
@@ -392,7 +397,9 @@ method checkVmVersion SmallRuntime {
 			(localized 'The MicroBlocks in your board is not current ')
 			'(v' vmVersion ' vs. v' (latestVmVersion this) ').' (newline)
 			(localized 'Try to update MicroBlocks on the board?')))
-		if ok { installVM this }
+		if ok { 
+                    installVM this
+                }
 	}
 }
 
@@ -863,15 +870,21 @@ method installVM SmallRuntime {
   }
   boards = (collectBoardDrives this)
   if ((count boards) > 0) {
-	menu = (menu 'Select board:' this)
+        menu = (menu 'Select board:' this)
 	for b boards {
 		addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
 	}
 	popUpAtHand menu (global 'page')
+  } ((count (portList this)) > 0) {
+        menu = (menu 'Select board type:' this)
+        for boardType (array 'NodeMCU' 'Generic ESP32' 'Citilab ED1') {
+                addItem menu boardType (action 'flashVMtoPort' this boardType)
+        }
+        popUpAtHand menu (global 'page')
   } else {
-	inform (join
-		(localized 'No boards found; is your board plugged in?') (newline)
-		(localized 'For AdaFruit boards, double-click reset button and try again.'))
+      inform (join
+            (localized 'No boards found; is your board plugged in?') (newline)
+            (localized 'For AdaFruit boards, double-click reset button and try again.'))
   }
 }
 
@@ -977,6 +990,78 @@ method downloadVMFile SmallRuntime boardName {
   	'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
   	'to copy the file, then the USB drive for your board will dismount.' (newline)
   	'When it remounts, use the "Connect" button to connect to the board.')
+}
+
+method flashVMtoPort SmallRuntime boardType {
+  closePort (smallRuntime)
+  copyEspToolToDisk this
+  copyEspFilesToDisk this
+  copyVMtoDisk this boardType
+  
+  if ('Mac' == (platform)) {
+    esptool = 'esptool'
+  } ('Linux' == (platform)) {
+    esptool = 'esptool.py'
+  } ('Win' == (platform)) {
+    esptool = 'esptool.exe'
+  }
+
+  if (boardType == 'Generic ESP32') {
+    exec (join (tmpPath this) esptool) 'erase_flash'
+    exec (join (tmpPath this) esptool) 'write_flash' '0xe00' (join (tmpPath this) 'boot_app0.bin')
+    exec (join (tmpPath this) esptool) 'write_flash' '0x1000' (join (tmpPath this) 'bootloader_dio_80m.bin')
+    exec (join (tmpPath this) esptool) 'write_flash' '0x8000' (join (tmpPath this) 'partitions.bin')
+    exec (join (tmpPath this) esptool) 'write_flash' '0x10000' (join (tmpPath this) 'vm')
+  } (boardType == 'Citilab ED1') {
+    inform (join (localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
+                 (localized 'Then wait for the screen to turn off again.'))
+    exec (join (tmpPath this) esptool) 'write_flash' '0x10000' (join (tmpPath this) 'vm')
+  } else {
+    // NodeMCU
+    inform 'Please wait for the on-board LED to stop flashing.'
+    exec (join (tmpPath this) esptool) 'write_flash' '0' (join (tmpPath this) 'vm')
+  }
+}
+
+method tmpPath SmallRuntime {
+  if (or ('Mac' == (platform)) ('Linux' == (platform))) {
+    return '/tmp/'
+  } else {
+    error 'ESP VM installation not yet supported in Windows'
+  }
+}
+
+method copyEspToolToDisk SmallRuntime {
+  if ('Mac' == (platform)) {
+    esptoolData = (readEmbeddedFile 'esptool/esptool' true)
+    destination = (join (tmpPath this) 'esptool')
+  } ('Linux' == (platform)) {
+    esptoolData = (readEmbeddedFile 'esptool/esptool.py')
+    destination = (join (tmpPath this) 'esptool.py')
+  } ('Win' == (platform)) {
+    esptoolData = (readEmbeddedFile 'esptool/esptool.exe' true)
+    destination = (join (tmpPath this) 'esptool.exe')
+  }
+  writeFile destination esptoolData
+  setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
+}
+
+method copyVMtoDisk SmallRuntime boardType {
+  if (boardType == 'NodeMCU') {
+    vmData = (readEmbeddedFile 'precompiled/vm.ino.nodemcu.bin' true)
+  } (boardType == 'Generic ESP32') {
+    vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
+  } (boardType == 'Citilab ED1') {
+    vmData = (readEmbeddedFile 'precompiled/vm.ino.citilab-ed1.bin' true)
+  }
+  writeFile (join (tmpPath this) 'vm') vmData
+}
+
+method copyEspFilesToDisk SmallRuntime {
+  for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin') {
+    fileData = (readEmbeddedFile (join 'esp32/' fn) true)
+    writeFile (join (tmpPath this) '/' fn) fileData
+  }
 }
 
 // data logging

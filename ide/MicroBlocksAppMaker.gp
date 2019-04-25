@@ -42,6 +42,7 @@ method createEmbeddedFS MicroBlocksAppMaker system {
 	addFolderToEmbeddedFS this '../gp/Libraries' 'Libraries' zip
 	addFolderToEmbeddedFS this '../precompiled' 'precompiled' zip
 	addFolderToEmbeddedFS this '../translations' 'translations' zip
+        addFolderToEmbeddedFS this '../esp32' 'esp32' zip
         if (isOneOf system 'linux32bit' 'linux64bit' 'raspberryPi') {
             addFolderToEmbeddedFS this '../gp/packagers/linux/esptool' 'esptool' zip
         } (system == 'win') {
