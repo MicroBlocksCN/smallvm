@@ -1,0 +1,593 @@
+display _
+ekran _
+
+clear display
+ekranı sil
+
+plot x _ y _
+yak x _ y _
+
+unplot x _ y _
+söndür_ y _
+
+set user LED _
+kullanıcı LED i _ yap
+
+say _
+söyle _
+
+button A
+düğme A
+
+button B
+düğme B
+
+tilt x
+eğilim x
+
+tilt y
+eğilim y
+
+tilt z
+eğilim z
+
+temperature (Â°C)
+ısı (Â°C)
+
+microseconds
+mikrosaniye
+
+milliseconds
+milisaniye
+
+read digital pin _
+dijital pin oku _
+
+read analog pin _
+analog pin oku _
+
+set digital pin _ to _
+dijital pin _ ayarla _
+
+set pin _ to _
+pin _ ayarla  _
+
+analog pins
+analog pinler
+
+digital pins
+dijital pinler
+
+when started
+başladığında
+
+when button _ pressed
+düğme _ basıldığında
+
+forever _
+devamlı tekrarla _
+
+repeat _ _
+tekrarla _ kere _
+
+if _ dan _
+eğer _ yap _
+
+else if _ _
+yoksa eğer _ _
+
+if _ _ else _
+eğer _ yap _ değilse _
+
+wait _ millisecs
+bekle _ milisaniye
+
+wait _ microsecs
+bekle _ mikrosaniye
+
+stop this task
+bu betiği durdur
+
+stop all
+tüm betikleri durdur
+
+comment _
+yorum _
+
+wait until _
+_ olana kadar bekle
+
+repeat until _ _
+_ _ olana kadar tekrarla
+
+for _ in _ _
+her _ için _ _ değerindeki
+
+when _
+olunca _
+
+when _ received
+_ mesajı geldiğinde
+
+broadcast _
+yolla _
+
+return _
+döndür _
+
+_ mod _
+_ mod _
+
+abs _
+mutlak değer _
+
+random _ to _
+rastgele _ ve _ arası
+
+not _
+_ değil
+
+_ and _
+_ ve _
+
+and _
+ve _
+
+_ or _
+_ veya _
+
+or _
+veya _
+
+set _ to _
+_ değişkenini _ yap
+
+change _ by _
+_ değişkenini _ kadar değiştir
+
+local _ _
+yerel değişken _ _
+
+new array _
+yeni dizi _
+
+new byte array _
+yeni bayt dizisi _
+
+fill array _ with _
+_ dizisini _ ile doldur
+
+array _ at _
+_ dizisinin _ öğesi
+
+set array _ at _ to _
+_ dizisi _ öğesini _ yap
+
+length of _
+_ uzunluğu
+
+i2c get device _ register _
+i2c modül oku _ sayaç _
+
+i2c set device _ register _ to _
+i2c modül yaz _ sayaç _ değer _
+
+spi send _
+spi yolla _
+
+spi receive
+spi oku
+
+print _
+yaz _
+
+hex _
+hex _
+
+no op
+işlem yok
+
+ignore
+aldırma
+
+draw shape _ at x _ y _
+_ şeklini çiz x _ y _ 
+
+shape for letter _
+_ harfinin şekli
+
+set NeoPixel pin _ has white _
+NeoPixel _ pinini beyaz _ yap
+
+send NeoPixel rgb _
+NeoPixel rgb _ yolla
+
+light level
+ışık seviyesi
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+NeoPixel leri _ _ _ _ _ _ _ _ _ _ yap
+
+clear NeoPixels
+NeoPixelleri söndür
+
+set NeoPixel _ color _
+NeoPixel _ renk _ yap
+
+set all NeoPixels color _
+Tüm NeoPixel renklerini  _ yap
+
+rotate NeoPixels by _
+NeoPixelleri _ döndür
+
+color r _ g _ b _
+renk r _ g _ b _
+
+attach _ LED NeoPixel strip to pin _ has white _
+_ LED NeoPixel şeritini _ pine bağla beyaz değer _ 
+
+receive IR code from device _
+_ aygıtından IR kod oku
+
+test IR
+IR testi
+
+scroll text _ pausing _ ms
+_ metni kaydır _ ms bekleyerek
+
+scroll number _ pausing _ ms
+_ sayı kaydır _ ms bekleyerek
+
+stop scrolling
+kaydırmayı durdur
+
+attach buzzer to pin _
+sesli uyarıcıyı _ pinine bağla
+
+play note _ octave _ during _ ms
+_ notasını _ oktavda _ ms çal
+
+play frequency _ on pin _ for _ ms
+_ frekansını _ pininde _ ms çal
+
+button OK
+buton OK
+
+button X
+buton X
+
+button up
+buton yukarı
+
+button down
+buton aşağı
+
+button left
+buton sol
+
+button right
+buton sağ
+
+move motor _  _ steps _
+ _  _ motorunu _ yürüt
+
+move motor 1 _ and motor 2 _ _ steps
+motor 1 _ ve motor 2 _ yi _ adım yürüt
+
+stop steppers
+step motorları durdur
+
+clockwise
+saat yönünde
+
+counter-clockwise
+saat yönüne ters
+
+capacitive OK
+kapasitif OK
+
+capacitive X
+kapasitif X
+
+capacitive up
+kapasitif yukarı
+
+capacitive down
+kapasitif aşağı
+
+capacitive left
+kapasitif sol
+
+capacitive right
+kapasitif sağ
+
+capacitive sensor _
+kapasitif sensör _
+
+set TFT pixel x _ y _ to _
+x _ y _ TFT pikselini _ yap
+
+set capacitive threshold to _
+kapasitif eşik değerini _ yap
+
+New
+Yeni
+
+Open
+Aç
+
+Save
+Kaydet
+
+Connect
+Bağlan
+
+disconnect
+ayrıl
+
+Serial port:
+Seri port:
+
+other...
+diğer...
+
+none
+hiçbiri
+
+Port name?
+Port adı?
+
+Board type:
+Kart tipi:
+
+Select board:
+Kart seç:
+
+Could not read: 
+Okuyamadık:
+
+by
+tarafından
+
+More info at http://microblocks.fun
+Daha fazla bilgi için: http://microblocks.fun
+
+Function "
+Fonksiyon "
+
+" is too large to send to board.
+" karta yüklemek için çok büyük.
+
+Script is too large to send to board.
+Betik karta yüklemek için çok büyük.
+
+Use "Connect" button to connect to a MicroBlocks device.
+MikroBlok cihazına balanmak için "Bağlan" düğmesini kullan.
+
+No boards found; is your board plugged in?
+Kart algılanmadı; kardınız bağlı mı?
+
+For AdaFruit boards, double-click button and try again.
+AdaFruıt kartları için butonu çift tıklayın ve gene deneyin.
+
+The board is not responding.
+Kart cevap vermiyor.
+
+Try to Install MicroBlocks on the board?
+Karta Mikrobloks kurmayı deneyin.
+
+Stop
+Dur
+
+Start
+Başla
+
+Quit MicroBlocks?
+MikroBloks'dan çıkmak istermisiniz?
+
+Discard current project?
+Projenizi iptal etmek istermisiniz?
+
+clean up
+temizle
+
+arrange scripts
+betikleri düzenle
+
+undo last drop
+son bırak'ı geri al
+
+copy all scripts
+tüm betikleri kopyala
+
+paste all scripts
+tüm betikleri yapıştır
+
+paste script
+betik yapıştır
+
+save picture of all scripts
+Tüm betiklerin resmini kaydet
+
+about...
+hakkında...
+
+virtual machine version
+sanal makine sürümü
+
+install MicroBlocks on board
+MikroBloks'u karta kur
+
+graph data
+verilerin grafiğini yap
+
+copy data to clipboard
+verileri panoya kopyala
+
+clear data
+verileri sil
+
+clear memory and variables
+bellek ve değişkenleri sil
+
+show advanced blocks
+gelişmiş blokları göster
+
+export functions as library
+fonksiyonları kütüphane olarak dışarı aktar
+
+hide advanced blocks
+gelişmiş blokları gizle
+
+Data Graph
+Veri Grafiği
+
+File Open
+Dosya Aç
+
+File Save
+Dosya Kaydet
+
+File name:
+Dosya adı:
+
+show instructions
+yönergeleri göster
+
+show compiled bytes
+derlenmiş baytları göster
+
+expand
+açındır
+
+collapse
+daralt
+
+rename...
+adını değiştir...
+
+show definition...
+tanım göster...
+
+duplicate
+çoğalt
+
+just this one block
+yalnız bu blok
+
+...all
+tümü...
+
+duplicate including all attached blocks
+ekteki blokların tümüyle çoğalt
+
+save picture of script
+betiğin resmini kaydet
+
+copy script
+betiği kopyala
+
+delete
+sil
+
+hide definition
+tanımı gizle
+
+Are you sure you want to remove this block definition?
+Bu bloğun tanımını sileceğinizden emin miziniz?
+
+Libraries
+Kütüphaneler
+
+Language:
+Dil:
+
+Add a function
+Fonksiyon ekle
+
+Add a variable
+Değişken ekle
+
+Delete a variable
+Değişken sil
+
+Output
+Çıktı
+
+Input
+Girdi
+
+Pins
+Pinler
+
+Control
+Kontrol
+
+Math
+Matematik
+
+Variables
+Değişkenler
+
+Lists
+Listeler
+
+Advanced
+Gelişmiş
+
+Functions
+Fonksiyonlar
+
+Obsolete
+Geçersiz
+
+Ok
+Tamam
+
+Yes
+Evet
+
+No
+Hayır
+
+Cancel
+İptal
+
+Okay
+Tamam
+
+Confirm
+Onayla
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird 3renkli-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ âˆž
+Hummingbird Konumlu Servo _ _ âˆž
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Sürekli Servo _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Pil (mV)
+
+Light
+Işık
+
+Distance
+Mesafe
+
+Dial
+Kadran
+
+Sound
+Ses
+
+Other
+Diğer
