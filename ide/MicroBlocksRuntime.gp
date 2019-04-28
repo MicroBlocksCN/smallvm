@@ -397,9 +397,9 @@ method checkVmVersion SmallRuntime {
 			(localized 'The MicroBlocks in your board is not current ')
 			'(v' vmVersion ' vs. v' (latestVmVersion this) ').' (newline)
 			(localized 'Try to update MicroBlocks on the board?')))
-		if ok { 
-                    installVM this
-                }
+		if ok {
+			installVM this
+		}
 	}
 }
 
@@ -576,7 +576,7 @@ method errorString SmallRuntime errID {
 #define arraySizeError			16	// List size must be a non-negative integer
 #define needsIntegerIndexError	17	// List index must be an integer
 #define indexOutOfRangeError	18	// List index out of range
-#define byteArrayStoreError		19 	// A ByteArray can only store integer values between 0 and 255
+#define byteArrayStoreError		19	// A ByteArray can only store integer values between 0 and 255
 #define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
 #define i2cRegisterIDOutOfRange	22	// I2C register must be between 0 and 255
@@ -987,9 +987,9 @@ method downloadVMFile SmallRuntime boardName {
   vmData = (readFile (join 'precompiled/' vmFileName) true)
   writeFile vmFileName vmData
   inform (join 'To install MicroBlocks, drag "' vmFileName '" from your Downloads' (newline)
-  	'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
-  	'to copy the file, then the USB drive for your board will dismount.' (newline)
-  	'When it remounts, use the "Connect" button to connect to the board.')
+	'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
+	'to copy the file, then the USB drive for your board will dismount.' (newline)
+	'When it remounts, use the "Connect" button to connect to the board.')
 }
 
 method flashVMtoPort SmallRuntime boardType {
@@ -997,7 +997,7 @@ method flashVMtoPort SmallRuntime boardType {
   copyEspToolToDisk this
   copyEspFilesToDisk this
   copyVMtoDisk this boardType
-  
+
   if ('Mac' == (platform)) {
     esptool = 'esptool'
   } ('Linux' == (platform)) {
