@@ -672,6 +672,14 @@ method representsANumber String {
   return true
 }
 
+method representsAnInteger String {
+  if ('' == this) { return false }
+  if ('-' == (at this 1)) {
+  	return (and ((count this) > 1) (allDigits (substring this 2)))
+  }
+  return (allDigits this)
+}
+
 method allDigits String {
   for c (letters this) {
 	if (not (isDigit c)) { return false }

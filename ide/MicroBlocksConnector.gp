@@ -37,28 +37,29 @@ method stop MicroBlocksConnector {
 	clients = (list)
 }
 
+method step MicroBlocksConnector {
+	// accept a new client connection if there is one
+	clientSock = (acceptConnection serverSocket)
+	if (notNil clientSock) {
+		print (dateString) 'Connection from' (remoteAddress clientSock)
+		add clients (newMicroBlocksConnection this clientSock)
+	}
+
+	// serve clients
+	connectionWasClosed = false
+	for c clients {
+		serveClient c
+		if (not (isOpen c)) { connectionWasClosed = true }
+	}
+	if connectionWasClosed {
+		clients = (filter 'isOpen' clients)
+	}
+}
+
 method run MicroBlocksConnector {
 	while true {
-		// accept a new client connection if there is one
-		clientSock = (acceptConnection serverSocket)
-		if (notNil clientSock) {
-			print (dateString) 'Connection from' (remoteAddress clientSock)
-			add clients (newMicroBlocksConnection this clientSock)
-		}
-
-		// serve clients
-		connectionWasClosed = false
-		for c clients {
-			serveClient c
-			if (not (isOpen c)) { connectionWasClosed = true }
-		}
-		if connectionWasClosed {
-			clients = (filter 'isOpen' clients)
-		}
-
-		// chill for a bit to avoid burning CPU time
-		waitTime = 1 // xxx
-		waitMSecs waitTime
+		step this
+		waitMSecs 1 // chill for a bit to avoid burning CPU time
 	}
 }
 
