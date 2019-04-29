@@ -997,7 +997,7 @@ method flashVM SmallRuntime boardType {
   copyEspToolToDisk this
   copyEspFilesToDisk this
   copyVMtoDisk this boardType
-  
+
   if ('Mac' == (platform)) {
     esptool = 'esptool'
   } ('Linux' == (platform)) {
@@ -1007,7 +1007,7 @@ method flashVM SmallRuntime boardType {
   }
 
   if (boardType == 'Generic ESP32') {
-    exec (join (tmpPath this) 'esp32flash')
+    exec (join (tmpPath this) 'esp32flash.cmd')
   } (boardType == 'Citilab ED1') {
     inform (join (localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
                  (localized 'Then wait for the screen to turn off again.'))
@@ -1022,8 +1022,8 @@ method flashVM SmallRuntime boardType {
 method tmpPath SmallRuntime {
   if (or ('Mac' == (platform)) ('Linux' == (platform))) {
     return '/tmp/'
-  } else {
-    error 'ESP VM installation not yet supported in Windows'
+  } else { // Windows
+    return (join (userHomePath) '/AppData/Local/Temp/')
   }
 }
 
@@ -1054,11 +1054,11 @@ method copyVMtoDisk SmallRuntime boardType {
 }
 
 method copyEspFilesToDisk SmallRuntime {
-  for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin' 'esp32flash') {
+  for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin' 'esp32flash.cmd') {
     fileData = (readEmbeddedFile (join 'esp32/' fn) true)
     writeFile (join (tmpPath this) fn) fileData
   }
-  setFileMode (join (tmpPath this) 'esp32flash') (+ (7 << 6) (5 << 3) 5) // set executable bits
+  setFileMode (join (tmpPath this) 'esp32flash.cmd') (+ (7 << 6) (5 << 3) 5) // set executable bits
 }
 
 // data logging
