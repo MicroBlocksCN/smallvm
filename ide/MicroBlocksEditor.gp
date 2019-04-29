@@ -282,7 +282,7 @@ method startAll MicroBlocksEditor { sendStartAll (smallRuntime) }
 
 method updateTitle MicroBlocksEditor {
   projName = (withoutExtension (filePart fileName))
-  // xxx todo: set window title bar to projName
+  setWindowTitle projName
 }
 
 // stepping
