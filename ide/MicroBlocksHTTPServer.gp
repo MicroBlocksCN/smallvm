@@ -246,7 +246,7 @@ method helpString MicroBlocksHTTPWorker {
 	add result '/testLong - return a 1000 character string<br>'
 	add result '<br>'
 	add result '/getBroadcasts - return a list of URL-encoded messages from the board, one per line<br>'
-	add result '/broadcast/URL_encoded_message<br>'
+	add result '/broadcast/URL_encoded_message - broadcast the given message to the board<br>'
 	add result '/getVar/URL_encoded_var_name - return variable value<br>'
 	add result '/setVar/URL_encoded_var_name/value - set variable to value, where value is: true, false, INTEGER, url_encoded_string<br>'
 	add result '</html>'
