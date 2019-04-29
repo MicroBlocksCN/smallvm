@@ -8,7 +8,7 @@
 // MicroBlocks IDE running in the browser to communicate with the MicroBlocks IDE.
 // John Maloney, April, 2019
 
-defineClass MicroBlocksHTTPServer serverSocket workers
+defineClass MicroBlocksHTTPServer serverSocket vars workers
 
 to newMicroBlocksHTTPServer {
 	result = (initialize (new 'MicroBlocksHTTPServer'))
@@ -17,15 +17,9 @@ to newMicroBlocksHTTPServer {
 
 method initialize MicroBlocksHTTPServer {
 	serverSocket = nil
+	vars = (dictionary)
 	workers = (list)
 	return this
-}
-
-method restart MicroBlocksHTTPServer {
-	stop this
-	serverSocket = (openServerSocket 8080)
-	print (dateString) 'MicroBlocks HTTP Server listening on port 8080'
-	run this
 }
 
 method start MicroBlocksHTTPServer {
@@ -47,8 +41,8 @@ method step MicroBlocksHTTPServer {
 	// accept a new HTTP connection if there is one
 	clientSock = (acceptConnection serverSocket)
 	if (notNil clientSock) {
-		print (dateString) 'Connection from' (remoteAddress clientSock)
-		add workers (newMicroBlocksConnection clientSock)
+print (dateString) 'Connection from' (remoteAddress clientSock) // xxx
+		add workers (newMicroBlocksConnection this clientSock)
 	}
 
 	// process requests
@@ -63,31 +57,77 @@ method step MicroBlocksHTTPServer {
 }
 
 method run MicroBlocksHTTPServer {
+	start this
 	while true {
 		step this
 		waitMSecs 1 // chill for a bit to avoid burning CPU time
 	}
 }
 
-defineClass MicroBlocksHTTPWorker sock inBuf outBuf broadcastsFromBoard broadcastsToBoard
+// Variables
+
+method clearVars MicroBlocksHTTPServer {
+	vars = (dictionary)
+}
+
+method variableID MicroBlocksHTTPServer varName {
+	// Return the id of the given variable or nil if the variable is not defined.
+
+	varNames = (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions')
+	return (indexOf varNames varName)
+}
+
+method requestVarFromBoard MicroBlocksHTTPServer varName {
+	// Request the given variable from the board and return its last known value.
+	// Note: This design allows the HTTP request to complete immediately, but the
+	// variable value may be out of date. However, if the client is continuously
+	// requesting the value of a variable (e.g. for a variable watcher) than it
+	// will only lag by one request.
+
+	id = (variableID this varName)
+	if (isNil id) { return 0 }
+	getVar (smallRuntime) (id - 1) // VM uses zero-based index
+
+	if (not (contains vars varName)) { atPut vars varName 0 }
+	return (at vars varName)
+}
+
+method varValueReceived MicroBlocksHTTPServer varID value {
+	varNames = (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions')
+	if (varID < (count varNames)) {
+		varName = (at varNames (varID + 1))
+		atPut vars varName value
+	}
+}
+
+// Broadcasts
+
+method broadcastReceived MicroBlocksHTTPServer msg {
+print 'httpServer broadcastReceived' msg workers // xxx
+	for w workers {
+		broadcastReceived msg
+	}
+}
+
+defineClass MicroBlocksHTTPWorker server sock inBuf outBuf broadcastsFromBoard
 
 method socket MicroBlocksHTTPWorker { return sock }
 
-to newMicroBlocksConnection sock {
-	return (initialize (new 'MicroBlocksHTTPWorker') sock)
+to newMicroBlocksConnection aMicroBlocksHTTPServer aSocket {
+	return (initialize (new 'MicroBlocksHTTPWorker') aMicroBlocksHTTPServer aSocket)
 }
 
-method initialize MicroBlocksHTTPWorker aSocket {
+method initialize MicroBlocksHTTPWorker aMicroBlocksHTTPServer aSocket {
+	server = aMicroBlocksHTTPServer
 	sock = aSocket
 	inBuf = (newBinaryData 0)
 	outBuf = (newBinaryData 0)
 	broadcastsFromBoard = (list)
-	broadcastsToBoard = (list)
 	return this
 }
 
 method closeConnection MicroBlocksHTTPWorker {
-print 'closeConnection'
+print 'closeConnection' // xxx
 	if (notNil sock) { closeSocket sock }
 	sock = nil
 }
@@ -202,11 +242,10 @@ method handleRequest MicroBlocksHTTPWorker header body {
 
 method helpString MicroBlocksHTTPWorker {
 	result = (list)
-//	add result '<!doctype html>'
 	add result '<html>'
 	add result '<head> <meta charset="utf-8"> </meta> </head>'
 	add result '<h4>MicroBlocks HTTP Server</h4>'
-	add result '/ - print this help text<br>'
+	add result '/ - return this help text<br>'
 	add result '/test - return the string "hello!"<br>'
 	add result '/testLong - return a 1000 character string<br>'
 	add result '<br>'
@@ -224,41 +263,55 @@ method longString MicroBlocksHTTPWorker {
 	return (joinStrings result)
 }
 
+// Broadcasts
+
+method broadcastReceived MicroBlocksHTTPWorker msg {
+	// Add the given message to the list of received broadcasts.
+
+	add broadcastsFromBoard msg
+}
+
 method getBroadcasts MicroBlocksHTTPWorker path {
 	// Handle URL of form: /getBroadcasts
 	// Return a list of URL-encoded broacast strings received from the board, one per line.
 
-	broacasts = (array 'broadcast1' 'broadcast2')
-	return (joinStrings broacasts (newline))
+print 'broadcastsFromBoard' (joinStrings broadcastsFromBoard (newline)) // xxx
+	result = (joinStrings broadcastsFromBoard (newline))
+	broadcastReceived = (list) // clear list
+	return result
 }
 
 method sendBroadcast MicroBlocksHTTPWorker path {
 	// Handle URL of form: /sendBroadcast/<URL_encoded broadcast string>
 	// Send the given broadcast to the board.
 
-	broadcastString = (substring path 16)
-	return (join 'broadcast sent: ' broadcastString)
+	msg = (substring path 16)
+	sendBroadcastToBoard (smallRuntime) msg
 }
+
+// Variables
 
 method getVar MicroBlocksHTTPWorker path {
 	// Handle URL of form: /getVar/<URL_encoded var name>
 	// Return the value of the given variable.
 
-	i = (indexOf (letters path) '/' 8)
-	if (isNil i) { return 'unexpected URL format' }
-	varName = (substring path 9 (i - 1))
-	// xxx to do: return the variable value from the board
-	return (join 'getVar ' varName)
+	varName = (urlDecode (substring path 9))
+	if (endsWith varName '/') { varName = (substring varName 1 ((count varName) - 1)) }
+	if ('' == varName) { return 'error: missing var name' }
+	value = (requestVarFromBoard server varName)
+	return (toString value)
 }
 
 method setVar MicroBlocksHTTPWorker path {
 	// Handle URL of form: /setVar/<URL_encoded var name>/<value> where value is:
-	// true, false, <integer value>, "url-encoded string"
+	//	true, false, <integer value>, <url-encoded string>
 	// Set the given variable to the given value.
+	// A string can be enclosed in optional double-quotes to pass strings that
+	// would otherwise be interpreted as booleans or integers.
 
 	i = (indexOf (letters path) '/' 8)
-	if (isNil i) { return 'unexpected URL format' }
-	varName = (substring path 9 (i - 1))
+	if (isNil i) { return 'error: unexpected URL format' }
+	varName = (urlDecode (substring path 9 (i - 1)))
 	valueString = (substring path (i + 1))
 	if (representsAnInteger valueString)  {
 		value = (toInteger valueString)
@@ -266,12 +319,13 @@ method setVar MicroBlocksHTTPWorker path {
 		value = true
 	} ('false' == valueString) {
 		value = false
-	} (and ('"' == (at valueString 1)) ('"' == (at valueString (count valueString)))) {
+	} else {
 		value = (urlDecode (substring valueString 2 ((count valueString) - 1)))
+		if (and ((count value) >= 2) (beginsWith value '"') (endsWith value '"')) {
+			// string enclosed in double quotes: remove quotes
+			value = (substring value 2 ((count value) - 1))
+		}
 	}
-	if (isNil value) {
-		return 'setVar value must be true, false, an integer, or a URL-encoded string in double quotes'
-	}
-	// xxx to do: set the variable value in the board
-	return (join 'setVar ' varName ' = ' valueString)
+	id = (variableID server varName)
+	if (notNil id) { setVar (smallRuntime) id value }
 }

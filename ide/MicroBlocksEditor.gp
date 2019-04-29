@@ -24,8 +24,9 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus
+defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus httpServer
 
+method httpServer MicroBlocksEditor { return httpServer }
 method project MicroBlocksEditor { return project }
 method scripter MicroBlocksEditor { return scripter }
 
@@ -91,6 +92,8 @@ method initialize MicroBlocksEditor aProject {
   scale = (global 'scale')
   morph = (newMorph this)
   project = aProject
+  httpServer = (newMicroBlocksHTTPServer)
+  start httpServer
   addTopBarParts this
   scripter = (initialize (new 'MicroBlocksScripter') this)
   addPart morph (morph scripter)
@@ -98,7 +101,7 @@ method initialize MicroBlocksEditor aProject {
   clearProject this
   createInitialClass scripter
   fixLayout this
-  setFPS morph 100
+  setFPS morph 200
   return this
 }
 
@@ -181,6 +184,7 @@ method clearProject MicroBlocksEditor {
   project = (emptyProject)
   clearLibraries scripter
   clearBoardIfConnected (smallRuntime) true
+  clearVars httpServer
 }
 
 method openProjectMenu MicroBlocksEditor {
@@ -295,6 +299,7 @@ method step MicroBlocksEditor {
   processDroppedFiles this
   updateIndicator this
   processMessages (smallRuntime)
+  step httpServer
 }
 
 method updateIndicator MicroBlocksEditor {
@@ -504,13 +509,6 @@ method contextMenu MicroBlocksEditor {
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
-
-// testing:
-//   addLine menu
-//   addItem menu 'broadcast test' (action 'broadcastTest' (smallRuntime))
-//   addItem menu 'set variable test' (action 'setVarTest' (smallRuntime))
-//   addItem menu 'get code test' (action 'getCodeTest' (smallRuntime))
-//   addItem menu 'get var names test' (action 'getAllVarNames' (smallRuntime))
   return menu
 }
 

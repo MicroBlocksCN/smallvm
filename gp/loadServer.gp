@@ -9,5 +9,5 @@ reload '../ide/MicroBlocksPatches.gp'
 
 to startup {
 	setGlobal 'server' (newMicroBlocksHTTPServer)
-	restart (global 'server')
+	run (global 'server')
 }

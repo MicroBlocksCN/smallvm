@@ -504,9 +504,36 @@ method stopRunningChunk SmallRuntime chunkID {
 	sendMsg this 'stopChunkMsg' chunkID
 }
 
+method sendBroadcastToBoard SmallRuntime msg {
+	sendMsg this 'broadcastMsg' 0 (toArray (toBinaryData msg))
+}
+
 method getVar SmallRuntime varID {
 	if (isNil varID) { varID = 0 }
 	sendMsg this 'getVarMsg' varID
+}
+
+method setVar SmallRuntime varID val {
+	body = nil
+	if (isClass val 'Integer') {
+		body = (newArray 5)
+		atPut body 1 1 // type 1 - Integer
+		atPut body 2 (val & 255)
+		atPut body 3 ((val >> 8) & 255)
+		atPut body 4 ((val >> 16) & 255)
+		atPut body 5 ((val >> 24) & 255)
+	} (isClass val 'String') {
+		body = (toArray (toBinaryData (join (string 2) val)))
+	} (isClass val 'Boolean') {
+		body = (newArray 2)
+		atPut body 1 3 // type 3 - Boolean
+		if val {
+			atPut body 2 1 // true
+		} else {
+			atPut body 2 0 // false
+		}
+	}
+	if (notNil body) { sendMsg this 'setVarMsg' 0 body }
 }
 
 method clearVariableNames SmallRuntime {
@@ -763,14 +790,14 @@ method handleMessage SmallRuntime msg {
 			showResult this chunkID (returnedValue this msg)
 		}
 	} (op == (msgNameToID this 'varValueMsg')) {
-		print 'variable value:' (returnedValue this msg)
+		varValueReceived (httpServer scripter) (byteAt msg 3) (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
 		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 		connectMSecs = nil // we've received a ping, to don't ask user to install the VM
 	} (op == (msgNameToID this 'broadcastMsg')) {
-//		print 'received broadcast:' (toString (copyFromTo msg 6))
+		broadcastReceived (httpServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
 		print 'chunkCodeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {
@@ -1095,40 +1122,4 @@ method loggedData SmallRuntime howMany {
 		replaceArrayRange result (tailCount + 1) howMany loggedData 1
 	}
 	return result
-}
-
-// testing
-
-method broadcastTest SmallRuntime {
-	msg = 'go!'
-	sendMsg this 'broadcastMsg' 0 (toArray (toBinaryData msg))
-}
-
-method setVarTest SmallRuntime {
-	val = 'foobar'
-	varID = 0
-	body = nil
-	if (isClass val 'Integer') {
-		body = (newBinaryData 5)
-		byteAtPut body 1 1 // type 1 - Integer
-		byteAtPut body 2 (val & 255)
-		byteAtPut body 3 ((val >> 8) & 255)
-		byteAtPut body 4 ((val >> 16) & 255)
-		byteAtPut body 5 ((val >> 24) & 255)
-	} (isClass val 'String') {
-		body = (toBinaryData (join (string 2) val))
-	} (isClass val 'Boolean') {
-		body = (newBinaryData 2)
-		byteAtPut body 1 3 // type 3 - Boolean
-		if val {
-			byteAtPut body 2 1 // true
-		} else {
-			byteAtPut body 2 0 // false
-		}
-	}
-	if (notNil body) { sendMsg this 'setVarMsg' 0 (toArray body) }
-}
-
-method getCodeTest SmallRuntime {
-	sendMsg this 'getAllCodeMsg'
 }
