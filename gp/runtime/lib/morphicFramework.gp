@@ -789,7 +789,7 @@ method doOneCycle Page {
   step soundMixer
   // sleep for any extra time, but always sleep a little to ensure that
   // we get events (and to return control to the browser)
-  sleepTime = (max 1 (15 - (msecs t)))
+  sleepTime = (max 1 (10 - (msecs t)))
   waitMSecs sleepTime
 }
 

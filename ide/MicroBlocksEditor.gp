@@ -161,6 +161,8 @@ method newProject MicroBlocksEditor {
   if (not ok) { return }
   clearProject this
   createInitialClass scripter
+  fileName = ''
+  updateTitle this
 }
 
 method clearProject MicroBlocksEditor {

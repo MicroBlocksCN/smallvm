@@ -56,6 +56,13 @@ method isDigit String {
   return (and ('0' <= this) (this <= '9'))
 }
 
+method isHexDigit String {
+  return (or
+  	(and ('0' <= this) (this <= '9'))
+  	(and ('A' <= this) (this <= 'F'))
+  	(and ('a' <= this) (this <= 'f')))
+}
+
 method isSymbol String {
   // Return true if this character is an ASCII symbol
   return (or (and ('!' <= this) (this <= '/'))
@@ -619,13 +626,44 @@ method canonicalizedWord String {
   return (joinStringArray (toArray result))
 }
 
+method urlDecode String {
+  result = (list)
+  letters = (letters this)
+  n = (count letters)
+  i = 1
+  while (i <= n) {
+	ch = (at letters i)
+	if (and
+	  ('%' == ch)
+	  (i <= (n - 2))
+	  (isHexDigit (at letters (i + 1)))
+	  (isHexDigit (at letters (i + 2)))) {
+		hexDigits = (join (at letters (i + 1)) (at letters (i + 2)))
+		add result (hex hexDigits)
+		i += 3
+	} else {
+		addAll result (toArray (toBinaryData ch))
+		i += 1
+	}
+  }
+  return (toString (toBinaryData (toArray result)))
+}
+
 method urlEncode String {
   result = (list)
   for ch (toArray (toBinaryData this)) {
-	if (and (32 < ch) (ch < 127)) {
-	   add result (string ch)
+	if (or
+		(and (97 <= ch) (ch <= 122)) // a-z
+		(and (65 <= ch) (ch <= 90)) // A-Z
+		(and (48 <= ch) (ch <= 57)) // 0-9
+		(isOneOf ch 45 46 95 126)) { // characters: - . _ ~
+			// ch is an unreserved character
+			add result (string ch)
 	} else {
-	  add result (join '%' (toStringBase16 ch))
+			// ch must be percent-encoded (this includes the bytes of utf-8 encoded characters
+			hexDigits = (toStringBase16 ch)
+			if ((count hexDigits) < 2) { hexDigits = (join '0' hexDigits) }
+			add result (join '%' hexDigits)
 	}
   }
   return (joinStringArray (toArray result))
