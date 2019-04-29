@@ -33,11 +33,12 @@ if test -n "$tools"; then
     export tools=1;
     # get esptool for the requested systems
     if [ -z $system ] || [ $system == 'win' ]; then
-        wget https://dl.espressif.com/dl/esptool-4dab24e-windows.zip
-        unzip esptool-4dab24e-windows.zip
-        rm esptool-4dab24e-windows.zip
+        wget https://dl.espressif.com/dl/esptool-2.6.1-windows.zip
+        unzip esptool-2.6.1-windows.zip
+        rm esptool-2.6.1-windows.zip
         mkdir -p packagers/win32/esptool
-        mv esptool.exe packagers/win32/esptool
+        mv esptool/esptool.exe packagers/win32/esptool
+        rm -r esptool
     fi
     if [ -z $system ] || [ $system == 'linux64bit' ] || [ $system == 'linux32bit' ] || [ $system == 'raspberryPi' ]; then
         wget https://raw.githubusercontent.com/espressif/esptool/master/esptool.py
@@ -45,11 +46,12 @@ if test -n "$tools"; then
         mv esptool.py packagers/linux/esptool
     fi
     if [ -z $system ] || [ $system == 'mac' ]; then
-        wget https://dl.espressif.com/dl/esptool-4dab24e-macos.tar.gz
-        tar -xf esptool-4dab24e-macos.tar.gz
-        rm esptool-4dab24e-macos.tar.gz
+        wget https://dl.espressif.com/dl/esptool-2.6.1-macos.tar.gz
+        tar -xf esptool-2.6.1-macos.tar.gz
+        rm esptool-2.6.1-macos.tar.gz
         mkdir -p packagers/darwin/esptool
-        mv esptool packagers/darwin/esptool
+        mv esptool/esptool packagers/darwin/esptool
+        rm -r esptool
     fi
 fi
 
