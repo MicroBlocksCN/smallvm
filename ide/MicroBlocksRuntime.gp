@@ -878,7 +878,7 @@ method installVM SmallRuntime {
   } ((count (portList this)) > 0) {
         menu = (menu 'Select board type:' this)
         for boardType (array 'NodeMCU' 'Generic ESP32' 'Citilab ED1') {
-                addItem menu boardType (action 'flashVMtoPort' this boardType)
+                addItem menu boardType (action 'flashVM' this boardType)
         }
         popUpAtHand menu (global 'page')
   } else {
@@ -992,7 +992,7 @@ method downloadVMFile SmallRuntime boardName {
   	'When it remounts, use the "Connect" button to connect to the board.')
 }
 
-method flashVMtoPort SmallRuntime boardType {
+method flashVM SmallRuntime boardType {
   closePort (smallRuntime)
   copyEspToolToDisk this
   copyEspFilesToDisk this
@@ -1007,11 +1007,7 @@ method flashVMtoPort SmallRuntime boardType {
   }
 
   if (boardType == 'Generic ESP32') {
-    exec (join (tmpPath this) esptool) 'erase_flash'
-    exec (join (tmpPath this) esptool) 'write_flash' '0xe00' (join (tmpPath this) 'boot_app0.bin')
-    exec (join (tmpPath this) esptool) 'write_flash' '0x1000' (join (tmpPath this) 'bootloader_dio_80m.bin')
-    exec (join (tmpPath this) esptool) 'write_flash' '0x8000' (join (tmpPath this) 'partitions.bin')
-    exec (join (tmpPath this) esptool) 'write_flash' '0x10000' (join (tmpPath this) 'vm')
+    exec (join (tmpPath this) 'esp32flash')
   } (boardType == 'Citilab ED1') {
     inform (join (localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
                  (localized 'Then wait for the screen to turn off again.'))
@@ -1058,10 +1054,11 @@ method copyVMtoDisk SmallRuntime boardType {
 }
 
 method copyEspFilesToDisk SmallRuntime {
-  for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin') {
+  for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin' 'esp32flash') {
     fileData = (readEmbeddedFile (join 'esp32/' fn) true)
-    writeFile (join (tmpPath this) '/' fn) fileData
+    writeFile (join (tmpPath this) fn) fileData
   }
+  setFileMode (join (tmpPath this) 'esp32flash') (+ (7 << 6) (5 << 3) 5) // set executable bits
 }
 
 // data logging
