@@ -25,7 +25,7 @@ method initialize MicroBlocksHTTPServer {
 method start MicroBlocksHTTPServer {
 	stop this
 	serverSocket = (openServerSocket 8080)
-	print (dateString) 'MicroBlocks HTTP Server listening on port 8080'
+	print 'MicroBlocks HTTP Server listening on port 8080'
 }
 
 method stop MicroBlocksHTTPServer {
@@ -41,7 +41,6 @@ method step MicroBlocksHTTPServer {
 	// accept a new HTTP connection if there is one
 	clientSock = (acceptConnection serverSocket)
 	if (notNil clientSock) {
-print (dateString) 'Connection from' (remoteAddress clientSock) // xxx
 		add workers (newMicroBlocksConnection this clientSock)
 	}
 
@@ -64,13 +63,22 @@ method run MicroBlocksHTTPServer {
 	}
 }
 
+// Broadcasts
+
+method broadcastReceived MicroBlocksHTTPServer msg {
+	// Called by the the runtime system when a broadcast is received from the board.
+	// Add the broadcast to the queue for each worker.
+
+	for w workers { broadcastReceived w msg }
+}
+
 // Variables
 
 method clearVars MicroBlocksHTTPServer {
 	vars = (dictionary)
 }
 
-method variableID MicroBlocksHTTPServer varName {
+method variableIndex MicroBlocksHTTPServer varName {
 	// Return the id of the given variable or nil if the variable is not defined.
 
 	varNames = (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions')
@@ -84,7 +92,7 @@ method requestVarFromBoard MicroBlocksHTTPServer varName {
 	// requesting the value of a variable (e.g. for a variable watcher) than it
 	// will only lag by one request.
 
-	id = (variableID this varName)
+	id = (variableIndex this varName)
 	if (isNil id) { return 0 }
 	getVar (smallRuntime) (id - 1) // VM uses zero-based index
 
@@ -100,18 +108,7 @@ method varValueReceived MicroBlocksHTTPServer varID value {
 	}
 }
 
-// Broadcasts
-
-method broadcastReceived MicroBlocksHTTPServer msg {
-print 'httpServer broadcastReceived' msg workers // xxx
-	for w workers {
-		broadcastReceived msg
-	}
-}
-
 defineClass MicroBlocksHTTPWorker server sock inBuf outBuf broadcastsFromBoard
-
-method socket MicroBlocksHTTPWorker { return sock }
 
 to newMicroBlocksConnection aMicroBlocksHTTPServer aSocket {
 	return (initialize (new 'MicroBlocksHTTPWorker') aMicroBlocksHTTPServer aSocket)
@@ -127,7 +124,6 @@ method initialize MicroBlocksHTTPWorker aMicroBlocksHTTPServer aSocket {
 }
 
 method closeConnection MicroBlocksHTTPWorker {
-print 'closeConnection' // xxx
 	if (notNil sock) { closeSocket sock }
 	sock = nil
 }
@@ -221,7 +217,7 @@ method handleRequest MicroBlocksHTTPWorker header body {
 		responseBody = (longString this)
 	} (beginsWith path '/getBroadcasts') {
 		responseBody = (getBroadcasts this path)
-	} (beginsWith path '/sendBroadcast') {
+	} (beginsWith path '/broadcast') {
 		responseBody = (sendBroadcast this path)
 	} (beginsWith path '/getVar') {
 		responseBody = (getVar this path)
@@ -249,10 +245,10 @@ method helpString MicroBlocksHTTPWorker {
 	add result '/test - return the string "hello!"<br>'
 	add result '/testLong - return a 1000 character string<br>'
 	add result '<br>'
-	add result '/getBroadcasts - return a list of URL-encoded broacast strings from the board, one per line<br>'
-	add result '/sendBroadcast/<URL_encoded broadcast string><br>'
-	add result '/getVar/<URL_encoded var name><br>'
-	add result '/setVar/<URL_encoded var name>/<value>, where value is: true, false, <INTEGER>, "url-encoded string"<br>'
+	add result '/getBroadcasts - return a list of URL-encoded messages from the board, one per line<br>'
+	add result '/broadcast/URL_encoded_message<br>'
+	add result '/getVar/URL_encoded_var_name - return variable value<br>'
+	add result '/setVar/URL_encoded_var_name/value - set variable to value, where value is: true, false, INTEGER, url_encoded_string<br>'
 	add result '</html>'
 	return (joinStrings result (newline))
 }
@@ -275,17 +271,16 @@ method getBroadcasts MicroBlocksHTTPWorker path {
 	// Handle URL of form: /getBroadcasts
 	// Return a list of URL-encoded broacast strings received from the board, one per line.
 
-print 'broadcastsFromBoard' (joinStrings broadcastsFromBoard (newline)) // xxx
 	result = (joinStrings broadcastsFromBoard (newline))
-	broadcastReceived = (list) // clear list
+	broadcastsFromBoard = (list) // clear list
 	return result
 }
 
 method sendBroadcast MicroBlocksHTTPWorker path {
-	// Handle URL of form: /sendBroadcast/<URL_encoded broadcast string>
+	// Handle URL of form: /broadcast/<URL_encoded broadcast string>
 	// Send the given broadcast to the board.
 
-	msg = (substring path 16)
+	msg = (urlDecode (substring path 12))
 	sendBroadcastToBoard (smallRuntime) msg
 }
 
@@ -326,6 +321,6 @@ method setVar MicroBlocksHTTPWorker path {
 			value = (substring value 2 ((count value) - 1))
 		}
 	}
-	id = (variableID server varName)
-	if (notNil id) { setVar (smallRuntime) id value }
+	id = (variableIndex server varName)
+	if (notNil id) { setVar (smallRuntime) (id - 1) value } // VM uses zero-based index
 }

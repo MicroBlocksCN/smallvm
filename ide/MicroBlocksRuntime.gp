@@ -533,7 +533,7 @@ method setVar SmallRuntime varID val {
 			atPut body 2 0 // false
 		}
 	}
-	if (notNil body) { sendMsg this 'setVarMsg' 0 body }
+	if (notNil body) { sendMsg this 'setVarMsg' varID body }
 }
 
 method clearVariableNames SmallRuntime {
