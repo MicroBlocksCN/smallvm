@@ -41,7 +41,7 @@ method step MicroBlocksHTTPServer {
 	// accept a new HTTP connection if there is one
 	clientSock = (acceptConnection serverSocket)
 	if (notNil clientSock) {
-		add workers (newMicroBlocksConnection this clientSock)
+		add workers (newMicroBlocksHTTPWorker this clientSock)
 	}
 
 	// process requests
@@ -110,7 +110,7 @@ method varValueReceived MicroBlocksHTTPServer varID value {
 
 defineClass MicroBlocksHTTPWorker server sock inBuf outBuf broadcastsFromBoard
 
-to newMicroBlocksConnection aMicroBlocksHTTPServer aSocket {
+to newMicroBlocksHTTPWorker aMicroBlocksHTTPServer aSocket {
 	return (initialize (new 'MicroBlocksHTTPWorker') aMicroBlocksHTTPServer aSocket)
 }
 
