@@ -24,8 +24,8 @@ method initialize MicroBlocksHTTPServer {
 
 method start MicroBlocksHTTPServer {
 	stop this
-	serverSocket = (openServerSocket 8080)
-	print 'MicroBlocks HTTP Server listening on port 8080'
+	serverSocket = (openServerSocket 6473)
+	print 'MicroBlocks HTTP Server listening on port 6473'
 }
 
 method stop MicroBlocksHTTPServer {
