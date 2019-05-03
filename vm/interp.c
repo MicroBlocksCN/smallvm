@@ -277,7 +277,7 @@ static void runTask(Task *task) {
 		&&bitInvert_op,
 		&&bitShiftLeft_op,
 		&&bitShiftRight_op,
-		&&RESERVED_op,
+		&&longMultiply_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -724,6 +724,14 @@ static void runTask(Task *task) {
 		DISPATCH();
 	bitShiftRight_op:
 		*(sp - arg) = int2obj(evalInt(*(sp - 2)) >> evalInt(*(sp - 1)));
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	longMultiply_op:
+		{
+			long long product = (long long) (evalInt(*(sp - 3))) * (long long) (evalInt(*(sp - 2)));
+			tmp = (int) ((product >> (evalInt(*(sp - 1)))) & 0xFFFFFFFF);
+			*(sp - arg) = int2obj(tmp);
+		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
 

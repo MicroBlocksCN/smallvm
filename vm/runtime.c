@@ -83,6 +83,7 @@ void primsInit() {
 
 	addDisplayPrims();
 	addIOPrims();
+	addMiscPrims();
 	addNetPrims();
 	addRadioPrims();
 	addSensorPrims();

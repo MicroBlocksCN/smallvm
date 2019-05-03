@@ -119,6 +119,8 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '~'					'~ _' 'num' 1 3)
 		(array 'r' '<<'					'_ << _' 'num num' 3 2)
 		(array 'r' '>>'					'_ >> _' 'num num' -100 2)
+		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
+		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
 
 		(array 'r' 'boardType'			'board type')
 
@@ -132,6 +134,8 @@ method microBlocksSpecs SmallCompiler {
 
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
+		(array ' ' '[sensors:i2cRead]'	'i2c device _ read _' 'num auto')
+		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write _' 'num auto')
 
 		(array ' ' 'spiSend'			'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'			'spi receive')
@@ -260,7 +264,7 @@ method initOpcodes SmallCompiler {
 		~ 53
 		<< 54
 		>> 55
-	RESERVED 56
+		longMult 56
 	RESERVED 57
 	RESERVED 58
 	RESERVED 59
