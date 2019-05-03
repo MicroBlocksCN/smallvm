@@ -8,6 +8,7 @@
 // John Maloney, May 2019
 
 #include <Arduino.h>
+#include <math.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -17,7 +18,7 @@ static OBJ primSine(int argCount, OBJ *args) {
 	// fraction). The input is the angle in hundreths of a degree (e.g. 4500 means 45 degrees).
 
 	const float hundrethsToRadians = 6.2831853071795864769 / 36000.0;
-	return int2obj((int) (16384.0 * sin(evalInt(args[0]) * hundrethsToRadians)));
+	return int2obj((int) round(16384.0 * sin(evalInt(args[0]) * hundrethsToRadians)));
 }
 
 // Primitives
