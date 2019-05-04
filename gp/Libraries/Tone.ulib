@@ -1,12 +1,45 @@
 sharedVariables '_tonePin' '_toneInitalized' '_toneLoopOverhead'
 
+spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
+spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
+spec ' ' 'playMIDIKey' 'play midi key _ for _ milliseconds' 'num num' 60 500
 spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
-spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto auto auto' 'G#' 3 250
 spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
-spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 440 500
 spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
 spec 'r' '_baseFreqForSharpOrFlat' '_baseFreqForSharpOrFlat _' 'auto' 'c#'
+spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
 spec ' ' '_toneLoop' '_toneLoop _ for _ milliseconds' 'num num' 440000 100
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' (key % 12))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
 
 to 'attach buzzer to pin' pinNumber {
   if (pinNumber == '') {
@@ -25,19 +58,6 @@ to 'attach buzzer to pin' pinNumber {
   _toneInitalized = (booleanConstant true)
 }
 
-to 'play tone' note octave ms {
-  local 'freq' ('_baseFreqForNote' note)
-  if (octave < 0) {
-    repeat (absoluteValue octave) {
-      freq = (freq / 2)
-    }
-  }
-  repeat octave {
-    freq = (freq * 2)
-  }
-  '_toneLoop' freq ms
-}
-
 to '_measureLoopOverhead' {
   comment 'Measure the loop overhead on this device'
   mbDisplayOff
@@ -51,10 +71,6 @@ to '_measureLoopOverhead' {
   }
   local 'usecs' ((microsOp) - startT)
   return ((usecs - 20000) / 200)
-}
-
-to 'play frequency' freq ms {
-  '_toneLoop' (freq * 1000) ms
 }
 
 to '_baseFreqForNote' note {
@@ -100,6 +116,34 @@ This helps users find typos in their tunes.'
   return 100
 }
 
+to '_baseFreqForSemitone' semitone {
+  if (0 == semitone) {
+    return 261626
+  } (1 == semitone) {
+    return 277183
+  } (2 == semitone) {
+    return 293665
+  } (3 == semitone) {
+    return 311127
+  } (4 == semitone) {
+    return 329628
+  } (5 == semitone) {
+    return 349228
+  } (6 == semitone) {
+    return 369994
+  } (7 == semitone) {
+    return 391995
+  } (8 == semitone) {
+    return 415305
+  } (9 == semitone) {
+    return 440000
+  } (10 == semitone) {
+    return 466164
+  } (11 == semitone) {
+    return 493883
+  }
+}
+
 to '_toneLoop' scaledFreq ms {
   if (_toneInitalized == 0) {'attach buzzer to pin' ''}
   local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
@@ -111,4 +155,3 @@ to '_toneLoop' scaledFreq ms {
     waitMicros halfCycle
   }
 }
-
