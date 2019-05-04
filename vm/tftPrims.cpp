@@ -83,6 +83,7 @@ OBJ primEnableDisplay(int argCount, OBJ *args) {
 	} else {
 		useTFT = false;
 	}
+	return falseObj;
 }
 
 int color24to16b(int color24b) {
@@ -99,6 +100,7 @@ OBJ primSetPixel(int argCount, OBJ *args) {
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[2]));
 	tft.drawPixel(x, y, color16b);
+	return falseObj;
 }
 
 OBJ primLine(int argCount, OBJ *args) {
@@ -108,7 +110,8 @@ OBJ primLine(int argCount, OBJ *args) {
 	int y1 = obj2int(args[3]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[4]));
-        tft.drawLine(x0, y0, x1, y1, color16b);
+	tft.drawLine(x0, y0, x1, y1, color16b);
+	return falseObj;
 }
 
 OBJ primRect(int argCount, OBJ *args) {
@@ -121,9 +124,10 @@ OBJ primRect(int argCount, OBJ *args) {
 	int fill = (trueObj == args[5]);
 	if (fill) {
 		tft.fillRect(x, y, width, height, color16b);
-        } else {
+	} else {
 		tft.drawRect(x, y, width, height, color16b);
 	}
+	return falseObj;
 }
 
 OBJ primRoundedRect(int argCount, OBJ *args) {
@@ -137,9 +141,10 @@ OBJ primRoundedRect(int argCount, OBJ *args) {
 	int fill = (trueObj == args[6]);
 	if (fill) {
 		tft.fillRoundRect(x, y, width, height, radius, color16b);
-        } else {
+	} else {
 		tft.drawRoundRect(x, y, width, height, radius, color16b);
 	}
+	return falseObj;
 }
 
 OBJ primCircle(int argCount, OBJ *args) {
@@ -151,9 +156,10 @@ OBJ primCircle(int argCount, OBJ *args) {
 	int fill = (trueObj == args[4]);
 	if (fill) {
 		tft.fillCircle(x, y, radius, color16b);
-        } else {
+	} else {
 		tft.drawCircle(x, y, radius, color16b);
 	}
+	return falseObj;
 }
 
 OBJ primTriangle(int argCount, OBJ *args) {
@@ -168,9 +174,10 @@ OBJ primTriangle(int argCount, OBJ *args) {
 	int fill = (trueObj == args[7]);
 	if (fill) {
 		tft.fillTriangle(x0, y0, x1, y1, x2, y2, color16b);
-        } else {
+	} else {
 		tft.drawTriangle(x0, y0, x1, y1, x2, y2, color16b);
 	}
+	return falseObj;
 }
 
 OBJ primText(int argCount, OBJ *args) {
@@ -186,6 +193,7 @@ OBJ primText(int argCount, OBJ *args) {
 	tft.setTextSize(scale);
 	tft.setTextWrap(wrap);
 	tft.print(text);
+	return falseObj;
 }
 
 void tftSetHugePixel(int x, int y, int state) {

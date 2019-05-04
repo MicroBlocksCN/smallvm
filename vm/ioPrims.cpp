@@ -286,6 +286,16 @@ int sendByte(char aByte) { return Serial.write(aByte); }
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
+#elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+
+	#define BOARD_TYPE "SAMW25_XPRO"
+	#define DIGITAL_PINS 20
+	#define ANALOG_PINS 2
+	#define TOTAL_PINS DIGITAL_PINS
+	#define INVERT_USER_LED true
+	#define PIN_BUTTON_A PIN_BUTTON
+	static const int analogPin[] = {A0, A1};
+
 #else // unknown board
 
 	#define BOARD_TYPE "Unknown Board"
@@ -520,8 +530,9 @@ OBJ primButtonA(OBJ *args) {
 		primDigitalSet(PIN_BUTTON_A, false);
 	#endif
 	#ifdef PIN_BUTTON_A
-		// do not set pin mode for ED1 board, it needs to stay INPUT_PULLUP
-		#ifndef ARDUINO_CITILAB_ED1
+		#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
+		#else
 			SET_MODE(PIN_BUTTON_A, INPUT);
 		#endif
 		return (BUTTON_PRESSED == digitalRead(PIN_BUTTON_A)) ? trueObj : falseObj;
@@ -536,8 +547,9 @@ OBJ primButtonB(OBJ *args) {
 		primDigitalSet(PIN_BUTTON_B, false);
 	#endif
 	#ifdef PIN_BUTTON_B
-		// do not set pin mode for ED1 board, it needs to stay INPUT_PULLUP
-		#ifndef ARDUINO_CITILAB_ED1
+		#if defined(ARDUINO_CITILAB_ED1)
+			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
+		#else
 			SET_MODE(PIN_BUTTON_B, INPUT);
 		#endif
 		return (BUTTON_PRESSED == digitalRead(PIN_BUTTON_B)) ? trueObj : falseObj;
