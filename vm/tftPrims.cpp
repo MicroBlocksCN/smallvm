@@ -121,7 +121,7 @@ OBJ primRect(int argCount, OBJ *args) {
 	int height = obj2int(args[3]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[4]));
-	int fill = (trueObj == args[5]);
+	int fill = (argCount > 5) ? (trueObj == args[5]) : false;
 	if (fill) {
 		tft.fillRect(x, y, width, height, color16b);
 	} else {
@@ -138,7 +138,7 @@ OBJ primRoundedRect(int argCount, OBJ *args) {
 	int radius = obj2int(args[4]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[5]));
-	int fill = (trueObj == args[6]);
+	int fill = (argCount > 6) ? (trueObj == args[6]) : false;
 	if (fill) {
 		tft.fillRoundRect(x, y, width, height, radius, color16b);
 	} else {
@@ -153,7 +153,7 @@ OBJ primCircle(int argCount, OBJ *args) {
 	int radius = obj2int(args[2]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[3]));
-	int fill = (trueObj == args[4]);
+	int fill = (argCount > 4) ? (trueObj == args[4]) : false;
 	if (fill) {
 		tft.fillCircle(x, y, radius, color16b);
 	} else {
@@ -171,7 +171,7 @@ OBJ primTriangle(int argCount, OBJ *args) {
 	int y2 = obj2int(args[5]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[6]));
-	int fill = (trueObj == args[7]);
+	int fill = (argCount > 7) ? (trueObj == args[7]) : false;
 	if (fill) {
 		tft.fillTriangle(x0, y0, x1, y1, x2, y2, color16b);
 	} else {
@@ -186,8 +186,8 @@ OBJ primText(int argCount, OBJ *args) {
 	int y = obj2int(args[2]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[3]));
-	int scale = obj2int(args[4]);
-	int wrap = (trueObj == args[5]);
+	int scale = (argCount > 4) ? obj2int(args[4]) : 1;
+	int wrap = (argCount > 5) ? (trueObj == args[5]) : false;
 	tft.setCursor(x, y);
 	tft.setTextColor(color16b);
 	tft.setTextSize(scale);
