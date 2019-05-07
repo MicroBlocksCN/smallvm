@@ -90,6 +90,7 @@ method propertyTypesMenu InputSlot {
   addItem menu 'OnOffProperty'
   addItem menu 'MotionProperty'
   addItem menu 'OpenProperty'
+  addItem menu 'LeakProperty'
   addItem menu 'PushedProperty'
   addItem menu 'LevelProperty'
   addItem menu 'BrightnessProperty'
@@ -99,6 +100,10 @@ method propertyTypesMenu InputSlot {
   addItem menu 'CurrentProperty'
   addItem menu 'VoltageProperty'
   addItem menu 'FrequencyProperty'
+  addItem menu 'TemperatureProperty'
+//   addItem menu 'ImageProperty'
+//   addItem menu 'VideoProperty'
+  addItem menu 'AlarmProperty'
   return menu
 }
 
