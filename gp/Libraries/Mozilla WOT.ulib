@@ -2,19 +2,11 @@ sharedVariables '_useWiFi'
 
 spec ' ' 'wifi connect to' 'wifi connect to _ password _' 'str str' 'Network_Name' ''
 spec 'r' 'getIPAddress' 'IP address'
-spec ' ' '_defineThing' '_custom thing _ capability _' 'str str.thingTypesMenu' 'Thing Name' ''
-spec ' ' '_addProperty' '_add property named _ type _ ' 'str menu.varTypesMenu' '' 'boolean'
-spec ' ' '_addLevel' '_add level property _ min _ max _' 'str num num' 'level' '0' '100'
+spec ' ' 'defineThing' 'define thing _ capability _' 'str str.thingTypesMenu' 'Thing Name' ''
+spec ' ' 'addProperty' 'add property named _ type _ @Type _' 'str menu.varTypesMenu str.propertyTypesMenu' 'onOff' 'boolean' 'BooleanProperty'
+spec ' ' 'addLevel' 'add level property _ min _ max _' 'str num num' 'level' '0' '100'
 spec ' ' '_endThing' '_end thing description'
 spec ' ' '_reportChanged' '_reportChanged _ value _' 'menu.allVarsMenu auto' '' ''
-
-spec ' ' 'switch' 'switch _ onOff _' 'str menu.allVarsMenu' 'On/Off Switch'
-spec ' ' 'dimmer switch' 'dimmer switch _ onOff _ level _' 'str menu.allVarsMenu menu.allVarsMenu' 'Dimmer'
-spec ' ' 'binary sensor' 'binary sensor _ onOff _' 'str menu.allVarsMenu' 'Button'
-spec ' ' 'level sensor' 'level sensor _ level _ min _ max _' 'str menu.allVarsMenu num num' 'Temperature' '' 0 100
-spec ' ' 'light' 'light _ onOff _' 'str menu.allVarsMenu' 'Light Switch'
-spec ' ' 'dimmable light' 'dimmable light _ onOff _ level _' 'str menu.allVarsMenu menu.allVarsMenu' 'Light Dimmer'
-spec ' ' 'colored light' 'colored light _ onOff _ color _' 'str menu.allVarsMenu menu.allVarsMenu' 'Colored Light'
 
 to 'wifi connect to' ssid password {
   '[net:startWiFi]' ssid password
@@ -45,7 +37,7 @@ to getIPAddress {
   return ('[net:myIPAddress]')
 }
 
-to '_defineThing' name capability {
+to 'defineThing' name capability {
   _useWiFi = ('[net:hasWiFi]')
   if _useWiFi {
     '[net:clearThingDescription]'
@@ -64,9 +56,9 @@ to '_defineThing' name capability {
   }
 }
 
-to '_addProperty' var type {
+to 'addProperty' var type typeName {
   if _useWiFi {
-    '[net:appendToThingDescription]' '    "' var '": {"type": "' type '", "href": "/properties/' var '"},'
+    '[net:appendToThingDescription]' '    "' var '": {"type": "' type '", "href": "/properties/' var '", "@type": "' typeName '"},'
   } else {
     if ('boolean' == type) {
       sendBroadcast 'moz-property {"name":"' var '","type":"boolean","value":false}'
@@ -78,20 +70,17 @@ to '_addProperty' var type {
   }
 }
 
-to '_addLevel' var min max {
+to 'addLevel' var min max {
   if _useWiFi {
-    '[net:appendToThingDescription]' '    "' var '": {"type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '"},'
+    '[net:appendToThingDescription]' '    "' var '": {"type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "LevelProperty"},'
   } else {
     sendBroadcast 'moz-property {"name":"' var '","type":"number","value":0,"min":' min ',"max":' max '}'
   }
 }
 
 to '_endThing' {
-  if _useWiFi {
-    '[net:appendToThingDescription]' '    "end": {}
-  }
-}'
-  } else {
+  // Temporary, until MicroBlocks-adaptor is updated
+  if (not _useWiFi) {
     sendBroadcast 'moz-done'
   }
 }
@@ -99,49 +88,4 @@ to '_endThing' {
 to '_reportChanged' var value {
   // Temporary, until MicroBlocks-adaptor is updated
   sendBroadcast 'moz-property-changed {"name":"' var '","value":' value '}'
-}
-
-to switch name onOff {
-  '_defineThing' name 'OnOffSwitch'
-  '_addProperty' onOff 'boolean' false
-  '_endThing'
-}
-
-to 'dimmer switch' name onOff level {
-  '_defineThing' name 'MultiLevelSwitch'
-  '_addProperty' onOff 'boolean' false
-  '_addProperty' level 'number' true
-  '_endThing'
-}
-
-to 'binary sensor' name onOff {
-  '_defineThing' name 'BinarySensor'
-  '_addProperty' onOff 'boolean' false
-  '_endThing'
-}
-
-to 'level sensor' name level min max {
-  '_defineThing' name 'MultiLevelSensor'
-  '_addLevel' level min max
-  '_endThing'
-}
-
-to light name onOff {
-  '_defineThing' name 'Light'
-  '_addProperty' onOff 'boolean' false
-  '_endThing'
-}
-
-to 'dimmable light' name onOff level {
-  '_defineThing' name 'Light'
-  '_addProperty' onOff 'boolean' false
-  '_addProperty' level 'number' true
-  '_endThing'
-}
-
-to 'colored light' name onOff color {
-  '_defineThing' name 'Light'
-  '_addProperty' onOff 'boolean' false
-  '_addProperty' color 'string' true
-  '_endThing'
 }
