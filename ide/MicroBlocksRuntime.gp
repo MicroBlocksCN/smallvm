@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-//Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
+// Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
 // SmallCompiler.gp - A blocks compiler for SmallVM
 // John Maloney, April, 2017
