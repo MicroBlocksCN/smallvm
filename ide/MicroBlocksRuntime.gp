@@ -790,14 +790,14 @@ method handleMessage SmallRuntime msg {
 			showResult this chunkID (returnedValue this msg)
 		}
 	} (op == (msgNameToID this 'varValueMsg')) {
-		varValueReceived (httpServer scripter) (byteAt msg 3) (returnedValue this msg)
+		varValueReceived (thingServer scripter) (byteAt msg 3) (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
 		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 		connectMSecs = nil // we've received a ping, to don't ask user to install the VM
 	} (op == (msgNameToID this 'broadcastMsg')) {
-		broadcastReceived (httpServer scripter) (toString (copyFromTo msg 6))
+		broadcastReceived (thingServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
 		print 'chunkCodeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {

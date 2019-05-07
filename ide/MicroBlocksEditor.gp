@@ -24,9 +24,9 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus httpServer
+defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus thingServer
 
-method httpServer MicroBlocksEditor { return httpServer }
+method thingServer MicroBlocksEditor { return thingServer }
 method project MicroBlocksEditor { return project }
 method scripter MicroBlocksEditor { return scripter }
 
@@ -92,8 +92,8 @@ method initialize MicroBlocksEditor aProject {
   scale = (global 'scale')
   morph = (newMorph this)
   project = aProject
-  httpServer = (newMicroBlocksHTTPServer)
-  start httpServer
+  thingServer = (newMicroBlocksThingServer)
+  start thingServer
   addTopBarParts this
   scripter = (initialize (new 'MicroBlocksScripter') this)
   addPart morph (morph scripter)
@@ -184,7 +184,7 @@ method clearProject MicroBlocksEditor {
   project = (emptyProject)
   clearLibraries scripter
   clearBoardIfConnected (smallRuntime) true
-  clearVars httpServer
+  clearVars thingServer
 }
 
 method openProjectMenu MicroBlocksEditor {
@@ -299,7 +299,7 @@ method step MicroBlocksEditor {
   processDroppedFiles this
   updateIndicator this
   processMessages (smallRuntime)
-  step httpServer
+  step thingServer
 }
 
 method updateIndicator MicroBlocksEditor {

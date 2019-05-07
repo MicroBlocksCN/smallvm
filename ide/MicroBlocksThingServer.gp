@@ -4,44 +4,44 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// MicroBlocksHTTPServer.gp - An HTTP server that runs as a helper application, allowing a
+// MicroBlocksThingServer.gp - An HTTP server that runs as a helper application, allowing a
 // MicroBlocks IDE running in the browser to communicate with the MicroBlocks IDE.
 // John Maloney, April, 2019
 
-defineClass MicroBlocksHTTPServer serverSocket vars workers
+defineClass MicroBlocksThingServer serverSocket vars workers
 
-to newMicroBlocksHTTPServer {
-	result = (initialize (new 'MicroBlocksHTTPServer'))
+to newMicroBlocksThingServer {
+	result = (initialize (new 'MicroBlocksThingServer'))
 	return result
 }
 
-method initialize MicroBlocksHTTPServer {
+method initialize MicroBlocksThingServer {
 	serverSocket = nil
 	vars = (dictionary)
 	workers = (list)
 	return this
 }
 
-method start MicroBlocksHTTPServer {
+method start MicroBlocksThingServer {
 	stop this
 	serverSocket = (openServerSocket 6473)
 	print 'MicroBlocks HTTP Server listening on port 6473'
 }
 
-method stop MicroBlocksHTTPServer {
+method stop MicroBlocksThingServer {
 	if (notNil serverSocket) { closeSocket serverSocket }
 	serverSocket = nil
 	for c workers { closeConnection c }
 	workers = (list)
 }
 
-method step MicroBlocksHTTPServer {
+method step MicroBlocksThingServer {
 	if (isNil serverSocket) { return }
 
 	// accept a new HTTP connection if there is one
 	clientSock = (acceptConnection serverSocket)
 	if (notNil clientSock) {
-		add workers (newMicroBlocksHTTPWorker this clientSock)
+		add workers (newMicroBlocksThingWorker this clientSock)
 	}
 
 	// process requests
@@ -55,7 +55,7 @@ method step MicroBlocksHTTPServer {
 	}
 }
 
-method run MicroBlocksHTTPServer {
+method run MicroBlocksThingServer {
 	start this
 	while true {
 		step this
@@ -65,7 +65,7 @@ method run MicroBlocksHTTPServer {
 
 // Broadcasts
 
-method broadcastReceived MicroBlocksHTTPServer msg {
+method broadcastReceived MicroBlocksThingServer msg {
 	// Called by the the runtime system when a broadcast is received from the board.
 	// Add the broadcast to the queue for each worker.
 
@@ -74,18 +74,18 @@ method broadcastReceived MicroBlocksHTTPServer msg {
 
 // Variables
 
-method clearVars MicroBlocksHTTPServer {
+method clearVars MicroBlocksThingServer {
 	vars = (dictionary)
 }
 
-method variableIndex MicroBlocksHTTPServer varName {
+method variableIndex MicroBlocksThingServer varName {
 	// Return the id of the given variable or nil if the variable is not defined.
 
 	varNames = (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions')
 	return (indexOf varNames varName)
 }
 
-method requestVarFromBoard MicroBlocksHTTPServer varName {
+method requestVarFromBoard MicroBlocksThingServer varName {
 	// Request the given variable from the board and return its last known value.
 	// Note: This design allows the HTTP request to complete immediately, but the
 	// variable value may be out of date. However, if the client is continuously
@@ -100,7 +100,7 @@ method requestVarFromBoard MicroBlocksHTTPServer varName {
 	return (at vars varName)
 }
 
-method varValueReceived MicroBlocksHTTPServer varID value {
+method varValueReceived MicroBlocksThingServer varID value {
 	varNames = (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions')
 	if (varID < (count varNames)) {
 		varName = (at varNames (varID + 1))
@@ -108,14 +108,14 @@ method varValueReceived MicroBlocksHTTPServer varID value {
 	}
 }
 
-defineClass MicroBlocksHTTPWorker server sock inBuf outBuf broadcastsFromBoard
+defineClass MicroBlocksThingWorker server sock inBuf outBuf broadcastsFromBoard
 
-to newMicroBlocksHTTPWorker aMicroBlocksHTTPServer aSocket {
-	return (initialize (new 'MicroBlocksHTTPWorker') aMicroBlocksHTTPServer aSocket)
+to newMicroBlocksThingWorker aMicroBlocksThingServer aSocket {
+	return (initialize (new 'MicroBlocksThingWorker') aMicroBlocksThingServer aSocket)
 }
 
-method initialize MicroBlocksHTTPWorker aMicroBlocksHTTPServer aSocket {
-	server = aMicroBlocksHTTPServer
+method initialize MicroBlocksThingWorker aMicroBlocksThingServer aSocket {
+	server = aMicroBlocksThingServer
 	sock = aSocket
 	inBuf = (newBinaryData 0)
 	outBuf = (newBinaryData 0)
@@ -123,16 +123,16 @@ method initialize MicroBlocksHTTPWorker aMicroBlocksHTTPServer aSocket {
 	return this
 }
 
-method closeConnection MicroBlocksHTTPWorker {
+method closeConnection MicroBlocksThingWorker {
 	if (notNil sock) { closeSocket sock }
 	sock = nil
 }
 
-method isOpen MicroBlocksHTTPWorker {
+method isOpen MicroBlocksThingWorker {
 	return (notNil sock)
 }
 
-method stepWorker MicroBlocksHTTPWorker {
+method stepWorker MicroBlocksThingWorker {
 	// This is where data is actually received and transmited.
 
 	if (isNil sock) { return }
@@ -155,7 +155,7 @@ method stepWorker MicroBlocksHTTPWorker {
 	processNext this
 }
 
-method processNext MicroBlocksHTTPWorker {
+method processNext MicroBlocksThingWorker {
 	// Process the next HTTP request in inBuf. Do nothing if the request is not complete.
 
 	headers = (extractHeaders this)
@@ -169,7 +169,7 @@ method processNext MicroBlocksHTTPWorker {
 	handleRequest this headers body
 }
 
-method extractHeaders MicroBlocksHTTPWorker {
+method extractHeaders MicroBlocksThingWorker {
 	// Extract the header fields from inBuf. Return nil if a complete set of header has not been received.
 
 	bufLen = (byteCount inBuf)
@@ -185,7 +185,7 @@ method extractHeaders MicroBlocksHTTPWorker {
 	return nil // did not find end of headers; incomplete request
 }
 
-method contentLength MicroBlocksHTTPWorker headers {
+method contentLength MicroBlocksThingWorker headers {
 	// Return the value of the Content-Length: header or zero if there isn't one.
 
 	s = (getHeader this headers 'Content-Length:')
@@ -193,7 +193,7 @@ method contentLength MicroBlocksHTTPWorker headers {
 	return 0
 }
 
-method getHeader MicroBlocksHTTPWorker headers headerName {
+method getHeader MicroBlocksThingWorker headers headerName {
 	// Return the (string) value of the header line with the given name or nil if there isn't one'
 
 	headerName = (toLowerCase headerName)
@@ -207,10 +207,10 @@ method getHeader MicroBlocksHTTPWorker headers headerName {
 	return nil
 }
 
-method handleRequest MicroBlocksHTTPWorker header body {
+method handleRequest MicroBlocksThingWorker header body {
 	path = (at (words (first (lines header))) 2)
 	if ('/' == path) {
-		responseBody = (helpString this)
+		responseBody = (getWebThingDefinition this)
 	} ('/test' == path) {
 		responseBody = 'Hello!'
 	} ('/testLong' == path) {
@@ -219,41 +219,57 @@ method handleRequest MicroBlocksHTTPWorker header body {
 		responseBody = (getBroadcasts this path)
 	} (beginsWith path '/broadcast') {
 		responseBody = (sendBroadcast this path)
-	} (beginsWith path '/getVar') {
-		responseBody = (getVar this path)
-	} (beginsWith path '/setVar') {
-		responseBody = (setVar this path)
+	} (beginsWith path '/properties') {
+		responseBody = (getProperties this path)
 	} else {
 		responseBody = 'Unrecognized command'
 	}
 	responseHeaders = (list)
 	add responseHeaders 'HTTP/1.1 200 OK'
 	add responseHeaders 'Access-Control-Allow-Origin: *'
-	add responseHeaders 'Access-Control-Allow-Methods: PUT'
+	add responseHeaders 'Access-Control-Allow-Methods: PUT, GET, OPTIONS, POST'
+        add responseHeaders 'Content-Type: application/json'
 	add responseHeaders (join 'Content-Length: ' (count responseBody))
 	add responseHeaders ''
 	add responseHeaders (toString responseBody)
 	outBuf = (join outBuf (joinStrings responseHeaders (string 13 10)))
 }
 
-method helpString MicroBlocksHTTPWorker {
+method getWebThingDefinition MicroBlocksThingWorker {
+	varNames = (filter
+             (function each { return (not (beginsWith each '_')) })
+             (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions'))
 	result = (list)
-	add result '<html>'
-	add result '<head> <meta charset="utf-8"> </meta> </head>'
-	add result '<h4>MicroBlocks HTTP Server</h4>'
-	add result '/ - return this help text<br>'
-	add result '/test - return the string "hello!"<br>'
-	add result '/testLong - return a 1000 character string<br>'
-	add result '<br>'
-	add result '/getBroadcasts - return a list of URL-encoded messages from the board, one per line<br>'
-	add result '/broadcast/URL_encoded_message - broadcast the given message to the board<br>'
-	add result '/getVar/URL_encoded_var_name - return variable value<br>'
-	add result '/setVar/URL_encoded_var_name/value - set variable to value, where value is: true, false, INTEGER, url_encoded_string<br>'
-	add result '</html>'
+	add result '{ "name": "MicroBlocks IDE",'
+	add result '"@context": "https://iot.mozilla.org/schemas/",'
+	add result '"@type": "MicroBlocksIDE",'
+	add result '"properties": {'
+        if ((count varNames) > 0) {
+            for v varNames {
+                add result (join '"' v '":{')
+                add result (join '"href":"/properties/' v '",')
+                add result (join '"type":"string"')
+                add result '},'
+            }
+            // remove last comma
+            atPut result (count result) (substring (last result) 1 ((count (last result)) - 1))
+        }
+        add result '}}'
 	return (joinStrings result (newline))
 }
 
-method longString MicroBlocksHTTPWorker {
+method getProperties MicroBlocksThingWorker path {
+        if ((count path) > 12) {
+            varName = (urlDecode (substring path 13))
+            if (endsWith varName '/') { varName = (substring varName 1 ((count varName) - 1)) }
+            value = (requestVarFromBoard server varName)
+            return (join '{"' varName '":' (toString value) '}')
+        } else {
+            return '{}'
+        }
+}
+
+method longString MicroBlocksThingWorker {
 	result = (list)
 	repeat 100 { add result '0123456789' }
 	return (joinStrings result)
@@ -261,13 +277,13 @@ method longString MicroBlocksHTTPWorker {
 
 // Broadcasts
 
-method broadcastReceived MicroBlocksHTTPWorker msg {
+method broadcastReceived MicroBlocksThingWorker msg {
 	// Add the given message to the list of received broadcasts.
 
 	add broadcastsFromBoard msg
 }
 
-method getBroadcasts MicroBlocksHTTPWorker path {
+method getBroadcasts MicroBlocksThingWorker path {
 	// Handle URL of form: /getBroadcasts
 	// Return a list of URL-encoded broacast strings received from the board, one per line.
 
@@ -276,7 +292,7 @@ method getBroadcasts MicroBlocksHTTPWorker path {
 	return result
 }
 
-method sendBroadcast MicroBlocksHTTPWorker path {
+method sendBroadcast MicroBlocksThingWorker path {
 	// Handle URL of form: /broadcast/<URL_encoded broadcast string>
 	// Send the given broadcast to the board.
 
@@ -286,18 +302,7 @@ method sendBroadcast MicroBlocksHTTPWorker path {
 
 // Variables
 
-method getVar MicroBlocksHTTPWorker path {
-	// Handle URL of form: /getVar/<URL_encoded var name>
-	// Return the value of the given variable.
-
-	varName = (urlDecode (substring path 9))
-	if (endsWith varName '/') { varName = (substring varName 1 ((count varName) - 1)) }
-	if ('' == varName) { return 'error: missing var name' }
-	value = (requestVarFromBoard server varName)
-	return (toString value)
-}
-
-method setVar MicroBlocksHTTPWorker path {
+method setVar MicroBlocksThingWorker path {
 	// Handle URL of form: /setVar/<URL_encoded var name>/<value> where value is:
 	//	true, false, <integer value>, <url-encoded string>
 	// Set the given variable to the given value.

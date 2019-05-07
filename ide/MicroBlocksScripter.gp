@@ -10,7 +10,7 @@ defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded librari
 
 method targetClass MicroBlocksScripter { return (classOf targetObj) }
 method targetObj MicroBlocksScripter { return targetObj }
-method httpServer MicroBlocksScripter { return (httpServer projectEditor) }
+method thingServer MicroBlocksScripter { return (thingServer projectEditor) }
 
 method setTargetObj MicroBlocksScripter obj {
   if (targetObj === obj) { return }
