@@ -28,6 +28,8 @@ if test -n "$help"; then
     exit 0
 fi
 
+systems=("linux64bit" "linux32bit" "raspberryPi" "win" "mac")
+
 if test -n "$tools"; then
     echo $tools
     export tools=1;
@@ -59,15 +61,24 @@ fi
 mkdir -p ../apps
 currentOS=`uname -s`
 if [ "$currentOS" == "Darwin" ]; then
-    ./gp-mac runtime/lib/* loadIDE.gp buildApps.gp -- $system
+    gp="gp-mac"
 elif [ "$currentOS" == "Linux" ]; then
-    ./gp-linux64bit runtime/lib/* loadIDE.gp buildApps.gp -- $system
+    gp="gp-linux64bit"
 else
     echo "Platform $currentOS is not (yet?) supported by this build script."
     echo "Try to find the gp executable for your platform in this folder and run:"
     echo "[command-to-run-GP] runtime/lib/* loadIDE.gp buildApps.gp"
     echo "Good luck!"
     exit 1
+fi
+
+if [ -z $system ]; then
+    # build for all systems
+    for sys in ${systems[@]}; do
+        ./$gp runtime/lib/* loadIDE.gp buildApps.gp -- $sys
+    done
+else
+    ./$gp runtime/lib/* loadIDE.gp buildApps.gp -- $system
 fi
 
 if [ -z $version ]; then

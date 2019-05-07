@@ -9,10 +9,6 @@
 //
 // Build stand-alone MicroBlocks application.
 
-// ToDo:
-//	[ ] button to import a library
-//	[ ] mechanism to install MicroBlocks VM onto board
-
 defineClass MicroBlocksAppMaker
 
 method buildApps MicroBlocksAppMaker {
