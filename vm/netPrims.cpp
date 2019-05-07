@@ -131,6 +131,16 @@ static void setVariableValue(char *varName, int varID, char *jsonData) {
 	}
 }
 
+static char* getDescription() {
+    // if thing description ends with ",\n", then we need to replace that with "}}" to make it legal JSON
+    int currentSize = strlen(descriptionObj.body);
+    if (descriptionObj.body[currentSize - 1] == '\n') {
+        descriptionObj.body[currentSize - 2] = '}';
+        descriptionObj.body[currentSize - 1] = '}';
+    }
+    return descriptionObj.body;
+}
+
 void webServerLoop() {
 	if (!client) client = server.available(); // attempt to accept a client connection
 	if (!client) return; // no client connection
@@ -153,7 +163,7 @@ void webServerLoop() {
 	if (hasPrefix(request, "GET / ", NULL, 0)) {
 		// Get the Thing description
 		client.print(JSON_HEADER);
-		client.print(descriptionObj.body);
+		client.print(getDescription());
 	} else if (hasPrefix(request, "OPTIONS", NULL, 0)) {
                 client.print(OPTIONS_HEADER);
 	} else if (hasPrefix(request, "GET /properties/", varName, sizeof(varName))) {
