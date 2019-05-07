@@ -49,6 +49,7 @@ typedef int * OBJ;
 #define isInt(obj) (((int) (obj)) & 1)
 #define int2obj(n) ((OBJ) (((n) << 1) | 1))
 #define obj2int(obj) ((int)(obj) >> 1)
+#define zeroObj ((OBJ) 1)
 
 // Memory Objects
 //

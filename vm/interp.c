@@ -402,7 +402,7 @@ static void runTask(Task *task) {
 		DISPATCH();
 	pushArgCount_op:
 		STACK_CHECK(1);
-		*sp++ = IN_CALL() ? *(fp - 3) : int2obj(0);
+		*sp++ = IN_CALL() ? *(fp - 3) : zeroObj;
 		DISPATCH();
 	pushArg_op:
 		STACK_CHECK(1);
@@ -453,12 +453,20 @@ static void runTask(Task *task) {
 		DISPATCH();
 	jmpTrue_op:
 		if (trueObj == (*--sp)) ip += arg;
+		else if (falseObj != *sp) {
+			errorCode = needsBooleanError;
+			DISPATCH();
+		}
 #if USE_TASKS
 		if ((arg < 0) && (trueObj == *sp)) goto suspend;
 #endif
 		DISPATCH();
 	jmpFalse_op:
 		if (falseObj == (*--sp)) ip += arg;
+		else if (trueObj != *sp) {
+			errorCode = needsBooleanError;
+			DISPATCH();
+		}
 #if USE_TASKS
 		if ((arg < 0) && (falseObj == *sp)) goto suspend;
 #endif
@@ -597,7 +605,7 @@ static void runTask(Task *task) {
 	initLocals_op:
 		// Reserve stack space for 'arg' locals initialized to false
 		STACK_CHECK(arg);
-		while (arg-- > 0) *sp++ = falseObj;
+		while (arg-- > 0) *sp++ = zeroObj;
 		DISPATCH();
 
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
