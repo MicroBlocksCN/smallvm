@@ -30,6 +30,7 @@ static char request[REQUEST_SIZE];
 
 #define JSON_HEADER \
 "HTTP/1.1 200 OK\r\n" \
+"Access-Control-Allow-Origin: *\r\n" \
 "Content-Type: application/json\r\n\r\n"
 
 #define NOT_FOUND_RESPONSE \
