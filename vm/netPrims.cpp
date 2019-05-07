@@ -35,8 +35,15 @@ static char request[REQUEST_SIZE];
 
 #define NOT_FOUND_RESPONSE \
 "HTTP/1.1 404 Not Found\r\n" \
+"Access-Control-Allow-Origin: *\r\n" \
 "Content-Type: application/json\r\n\r\n" \
 "{ \"error\":\"Resource not found\" }"
+
+#define OPTIONS_HEADER \
+"HTTP/1.1 200 OK\r\n" \
+"Access-Control-Allow-Origin: *\r\n" \
+"Access-Control-Allow-Methods: PUT, GET, OPTIONS\r\n" \
+"Access-Control-Allow-Headers: Content-Type\r\n\r\n"
 
 // Primitives to build a Thing description (interim, until we have string concatenation)
 
@@ -147,6 +154,8 @@ void webServerLoop() {
 		// Get the Thing description
 		client.print(JSON_HEADER);
 		client.print(descriptionObj.body);
+	} else if (hasPrefix(request, "OPTIONS", NULL, 0)) {
+                client.print(OPTIONS_HEADER);
 	} else if (hasPrefix(request, "GET /properties/", varName, sizeof(varName))) {
 		// Get variable value
 		varID = indexOfVarNamed(varName);
