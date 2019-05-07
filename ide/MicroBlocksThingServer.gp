@@ -208,21 +208,37 @@ method getHeader MicroBlocksThingWorker headers headerName {
 }
 
 method handleRequest MicroBlocksThingWorker header body {
+	method = (at (words (first (lines header))) 1)
 	path = (at (words (first (lines header))) 2)
 	if ('/' == path) {
-		responseBody = (getWebThingDefinition this)
-	} ('/test' == path) {
-		responseBody = 'Hello!'
-	} ('/testLong' == path) {
-		responseBody = (longString this)
+                if ('GET' == method) {
+                    responseBody = (getWebThingDefinition this)
+                } else {
+                    responseBody = (errorResponse this 'Unhandled method')
+                }
 	} (beginsWith path '/getBroadcasts') {
-		responseBody = (getBroadcasts this path)
+                if ('GET' == method) {
+                    responseBody = (getBroadcasts this path)
+                } else {
+                    responseBody = (errorResponse this 'Unhandled method')
+                }
 	} (beginsWith path '/broadcast') {
-		responseBody = (sendBroadcast this path)
+                if ('GET' == method) {
+                    responseBody = (sendBroadcast this path)
+                } else {
+                    responseBody = (errorResponse this 'Unhandled method')
+                }
 	} (beginsWith path '/properties') {
-		responseBody = (getProperties this path)
+                if ('GET' == method) {
+                    responseBody = (getProperties this path)
+                } ('PUT' == method) {
+                    (setProperty this path body)
+                    responseBody = (getProperties this path)
+                } else {
+                    responseBody = (errorResponse this 'Unhandled method')
+                }
 	} else {
-		responseBody = 'Unrecognized command'
+		responseBody = (errorResponse this)
 	}
 	responseHeaders = (list)
 	add responseHeaders 'HTTP/1.1 200 OK'
@@ -235,39 +251,85 @@ method handleRequest MicroBlocksThingWorker header body {
 	outBuf = (join outBuf (joinStrings responseHeaders (string 13 10)))
 }
 
+method errorResponse MicroBlocksThingWorker errorString {
+    if (isNil errorString) {
+        errorString = 'Unrecognized command'
+    }
+    return (join '{"error":' errorString '}')
+}
+
+// WebThing definition
+
 method getWebThingDefinition MicroBlocksThingWorker {
-	varNames = (filter
-             (function each { return (not (beginsWith each '_')) })
-             (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions'))
 	result = (list)
 	add result '{ "name": "MicroBlocks IDE",'
 	add result '"@context": "https://iot.mozilla.org/schemas/",'
 	add result '"@type": "MicroBlocksIDE",'
-	add result '"properties": {'
-        if ((count varNames) > 0) {
-            for v varNames {
-                add result (join '"' v '":{')
-                add result (join '"href":"/properties/' v '",')
-                add result (join '"type":"string"')
-                add result '},'
-            }
-            // remove last comma
-            atPut result (count result) (substring (last result) 1 ((count (last result)) - 1))
-        }
-        add result '}}'
+	add result '"properties":'
+        add result (getProperties this)
+        add result '}'
 	return (joinStrings result (newline))
 }
 
+// Properties (uBlocks variables)
+
 method getProperties MicroBlocksThingWorker path {
-        if ((count path) > 12) {
+        if ((count path) > 11) {
             varName = (urlDecode (substring path 13))
             if (endsWith varName '/') { varName = (substring varName 1 ((count varName) - 1)) }
             value = (requestVarFromBoard server varName)
             return (join '{"' varName '":' (toString value) '}')
         } else {
-            return '{}'
+            result = (list)
+            varNames = (filter
+                 (function each { return (not (beginsWith each '_')) })
+                 (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions'))
+            add result '{'
+            if ((count varNames) > 0) {
+                for v varNames {
+                    add result (join '"' v '":{')
+                    add result (join '"href":"/properties/' v '",')
+                    add result (join '"type":"string"')
+                    add result '},'
+                }
+                // remove last comma
+                atPut result (count result) (substring (last result) 1 ((count (last result)) - 1))
+            }
+            add result '}'
+            return (joinStrings result (newline))
         }
 }
+
+method setProperty MicroBlocksThingWorker path body {
+	// Handle PUT request with URL of form: /properties/<URL_encoded var name>
+        //      with body: {"varName":value}
+        //      where value is:
+	//	        true, false, <integer value>, <url-encoded string>
+	// Set the given variable to the given value.
+	// A string can be enclosed in optional double-quotes to pass strings that
+	// would otherwise be interpreted as booleans or integers.
+
+        dict = (jsonParse (toString body))
+	varName = (first (keys dict))
+	valueString = (at dict varName)
+	if (representsAnInteger valueString)  {
+		value = (toInteger valueString)
+	} ('true' == valueString) {
+		value = true
+	} ('false' == valueString) {
+		value = false
+	} else {
+		value = (urlDecode (substring valueString 2 ((count valueString) - 1)))
+		if (and ((count value) >= 2) (beginsWith value '"') (endsWith value '"')) {
+			// string enclosed in double quotes: remove quotes
+			value = (substring value 2 ((count value) - 1))
+		}
+	}
+	id = (variableIndex server varName)
+	if (notNil id) { setVar (smallRuntime) (id - 1) value } // VM uses zero-based index
+}
+
+// Test methods
 
 method longString MicroBlocksThingWorker {
 	result = (list)
@@ -302,30 +364,4 @@ method sendBroadcast MicroBlocksThingWorker path {
 
 // Variables
 
-method setVar MicroBlocksThingWorker path {
-	// Handle URL of form: /setVar/<URL_encoded var name>/<value> where value is:
-	//	true, false, <integer value>, <url-encoded string>
-	// Set the given variable to the given value.
-	// A string can be enclosed in optional double-quotes to pass strings that
-	// would otherwise be interpreted as booleans or integers.
 
-	i = (indexOf (letters path) '/' 8)
-	if (isNil i) { return 'error: unexpected URL format' }
-	varName = (urlDecode (substring path 9 (i - 1)))
-	valueString = (substring path (i + 1))
-	if (representsAnInteger valueString)  {
-		value = (toInteger valueString)
-	} ('true' == valueString) {
-		value = true
-	} ('false' == valueString) {
-		value = false
-	} else {
-		value = (urlDecode (substring valueString 2 ((count valueString) - 1)))
-		if (and ((count value) >= 2) (beginsWith value '"') (endsWith value '"')) {
-			// string enclosed in double quotes: remove quotes
-			value = (substring value 2 ((count value) - 1))
-		}
-	}
-	id = (variableIndex server varName)
-	if (notNil id) { setVar (smallRuntime) (id - 1) value } // VM uses zero-based index
-}
