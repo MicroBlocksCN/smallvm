@@ -346,8 +346,8 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.34' }
-method latestVmVersion SmallRuntime { return 54 }
+method ideVersion SmallRuntime { return '0.1.35' }
+method latestVmVersion SmallRuntime { return 56 }
 
 method showAboutBox SmallRuntime {
 	inform (global 'page') (join
