@@ -346,7 +346,7 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.35' }
+method ideVersion SmallRuntime { return '0.1.36' }
 method latestVmVersion SmallRuntime { return 56 }
 
 method showAboutBox SmallRuntime {
