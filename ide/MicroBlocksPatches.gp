@@ -60,7 +60,6 @@ method directions InputSlot {
 
 method thingTypesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
-  addItem menu ''
   addItem menu 'OnOffSwitch'
   addItem menu 'MultiLevelSwitch'
   addItem menu 'BinarySensor'
@@ -71,7 +70,13 @@ method thingTypesMenu InputSlot {
   addItem menu 'Light'
   addItem menu 'MotionSensor'
   addItem menu 'DoorSensor'
+  addItem menu 'TemperatureSensor'
+  addItem menu 'LeakSensor'
   addItem menu 'PushButton'
+//   addItem menu 'Camera'
+//   addItem menu 'VideoCamera'
+  addItem menu 'Alarm'
+
   return menu
 }
 
@@ -83,18 +88,10 @@ method varTypesMenu InputSlot {
   return menu
 }
 
-method propertyTypesMenu InputSlot {
+method numberPropertyTypesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
-  addItem menu ''
-  addItem menu 'BooleanProperty'
-  addItem menu 'OnOffProperty'
-  addItem menu 'MotionProperty'
-  addItem menu 'OpenProperty'
-  addItem menu 'LeakProperty'
-  addItem menu 'PushedProperty'
   addItem menu 'LevelProperty'
   addItem menu 'BrightnessProperty'
-  addItem menu 'ColorProperty'
   addItem menu 'ColorTemperatureProperty'
   addItem menu 'InstantaneousPowerProperty'
   addItem menu 'CurrentProperty'
@@ -103,7 +100,25 @@ method propertyTypesMenu InputSlot {
   addItem menu 'TemperatureProperty'
 //   addItem menu 'ImageProperty'
 //   addItem menu 'VideoProperty'
+  return menu
+}
+
+method booleanPropertyTypesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'BooleanProperty'
+  addItem menu 'OnOffProperty'
+  addItem menu 'MotionProperty'
+  addItem menu 'OpenProperty'
+  addItem menu 'LeakProperty'
+  addItem menu 'PushedProperty'
   addItem menu 'AlarmProperty'
+  return menu
+}
+
+method stringPropertyTypesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'ColorProperty'
+  addItem menu 'TextProperty'
   return menu
 }
 

@@ -2,9 +2,10 @@ sharedVariables '_useWiFi'
 
 spec ' ' 'wifi connect to' 'wifi connect to _ password _' 'str str' 'Network_Name' ''
 spec 'r' 'getIPAddress' 'IP address'
-spec ' ' 'defineThing' 'define thing _ capability _' 'str str.thingTypesMenu' 'Thing Name' ''
-spec ' ' 'addProperty' 'add property named _ type _ @Type _' 'str menu.varTypesMenu str.propertyTypesMenu' 'onOff' 'boolean' 'BooleanProperty'
-spec ' ' 'addLevel' 'add level property _ min _ max _' 'str num num' 'level' '0' '100'
+spec ' ' 'defineThing' 'define thing _ capability _' 'str str.thingTypesMenu' 'Hello LED' 'Light'
+spec ' ' 'addBooleanProperty' 'add boolean property named _ @Type _' 'menu.allVarsMenu str.booleanPropertyTypesMenu' '' 'OnOffProperty'
+spec ' ' 'addNumProp' 'add number property named _ min _ max _ @Type _' 'menu.allVarsMenu num num str.numberPropertyTypesMenu' '' '0' '100' 'LevelProperty'
+spec ' ' 'addStringProperty' 'add string property named _ @Type _' 'menu.allVarsMenu str.stringPropertyTypesMenu' '' 'ColorProperty'
 spec ' ' '_endThing' '_end thing description'
 spec ' ' '_reportChanged' '_reportChanged _ value _' 'menu.allVarsMenu auto' '' ''
 
@@ -56,25 +57,31 @@ to 'defineThing' name capability {
   }
 }
 
-to 'addProperty' var type typeName {
+to 'addBooleanProperty' var typeName {
   if _useWiFi {
-    '[net:appendToThingDescription]' '    "' var '": {"type": "' type '", "href": "/properties/' var '", "@type": "' typeName '"},'
+    '[net:appendToThingDescription]' '    "' var '": {"type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"},'
   } else {
-    if ('boolean' == type) {
-      sendBroadcast 'moz-property {"name":"' var '","type":"boolean","value":false}'
-    } ('number' == type) {
-      sendBroadcast 'moz-property {"name":"' var '","type":"number","value":0,"min":0,"max":100}'
-    } ('string' == type) {
-      sendBroadcast 'moz-property {"name":"' var '","type":"string","value":""}'
-    }
+	sendBroadcast 'moz-property {"name":"' var '","type":"boolean","value":false}'
   }
 }
 
-to 'addLevel' var min max {
+to 'addNumProp' var min max typeName {
   if _useWiFi {
-    '[net:appendToThingDescription]' '    "' var '": {"type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "LevelProperty"},'
+    '[net:appendToThingDescription]' '    "' var '": {"type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"'
+    if ('TemperatureProperty' == typeName) {
+		'[net:appendToThingDescription]' ', "unit": "degree celsius"'
+    }
+	'[net:appendToThingDescription]' '},'
   } else {
     sendBroadcast 'moz-property {"name":"' var '","type":"number","value":0,"min":' min ',"max":' max '}'
+  }
+}
+
+to 'addStringProperty' var typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"type": "string", "href": "/properties/' var '", "@type": "' typeName '"},'
+  } else {
+	sendBroadcast 'moz-property {"name":"' var '","type":"string","value":""}'
   }
 }
 
