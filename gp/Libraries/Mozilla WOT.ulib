@@ -1,6 +1,6 @@
 sharedVariables '_useWiFi'
 
-spec ' ' 'wifi connect to' 'wifi connect to _ password _' 'str str' 'Network_Name' ''
+spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 spec 'r' 'getIPAddress' 'IP address'
 spec ' ' 'defineThing' 'define thing _ capability _' 'str str.thingTypesMenu' 'Hello LED' 'Light'
 spec ' ' 'addBooleanProperty' 'add boolean property named _ @Type _' 'menu.allVarsMenu str.booleanPropertyTypesMenu' '' 'OnOffProperty'
@@ -9,30 +9,28 @@ spec ' ' 'addStringProperty' 'add string property named _ @Type _' 'menu.allVars
 spec ' ' '_endThing' '_end thing description'
 spec ' ' '_reportChanged' '_reportChanged _ value _' 'menu.allVarsMenu auto' '' ''
 
-to 'wifi connect to' ssid password {
-  '[net:startWiFi]' ssid password
-  repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
-    comment 'Slow blink while connecting'
-    setUserLED true
-    waitMillis 500
-    setUserLED false
-    waitMillis 500
-  }
-  if ('Connected' == ('[net:wifiStatus]')) {
-    repeat 8 {
-      comment 'Quick blinks when connected'
+to 'wifi connect to' ssid password tries {
+  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+    '[net:startWiFi]' ssid password
+    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+      comment 'Slow blink while connecting'
       setUserLED true
-      waitMillis 50
+      waitMillis 500
       setUserLED false
-      waitMillis 50
+      waitMillis 500
     }
-    sayIt 'My IP address is:' ('[net:myIPAddress]')
-  } else {
-    comment 'Connection failure'
-    setUserLED true
-    sayIt ('[net:wifiStatus]')
+    tries += -1
   }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
+
 
 to getIPAddress {
   return ('[net:myIPAddress]')
