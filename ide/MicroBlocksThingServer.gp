@@ -108,7 +108,7 @@ method varValueReceived MicroBlocksThingServer varID value {
 	}
 }
 
-defineClass MicroBlocksThingWorker server sock inBuf outBuf broadcastsFromBoard
+defineClass MicroBlocksThingWorker server sock inBuf outBuf broadcastsFromBoard requestStartTime timeout
 
 to newMicroBlocksThingWorker aMicroBlocksThingServer aSocket {
 	return (initialize (new 'MicroBlocksThingWorker') aMicroBlocksThingServer aSocket)
@@ -120,6 +120,8 @@ method initialize MicroBlocksThingWorker aMicroBlocksThingServer aSocket {
 	inBuf = (newBinaryData 0)
 	outBuf = (newBinaryData 0)
 	broadcastsFromBoard = (list)
+        requestStartTime = 0
+        timeout = 1000
 	return this
 }
 
@@ -135,6 +137,12 @@ method isOpen MicroBlocksThingWorker {
 method stepWorker MicroBlocksThingWorker {
 	// This is where data is actually received and transmited.
 
+        if (and (requestStartTime > 0) ((msecsSinceStart) > (requestStartTime + timeout))) {
+            // Timeout. Let's ignore this request
+            requestStartTime = 0
+            return
+        }
+
 	if (isNil sock) { return }
 	if (isNil (socketStatus sock)) { // connection closed by other end
 		closeConnection this
@@ -142,6 +150,7 @@ method stepWorker MicroBlocksThingWorker {
 	}
 	data = (readSocket sock true)
 	if ((byteCount data) > 0) {
+            requestStartTime = (msecsSinceStart)
 		inBuf = (join inBuf data)
 	}
 	if ((byteCount outBuf) > 0) {
