@@ -10,6 +10,7 @@ spec ' ' '_endThing' '_end thing description'
 spec ' ' '_reportChanged' '_reportChanged _ value _' 'menu.allVarsMenu auto' '' ''
 
 to 'wifi connect to' ssid password tries {
+  if (not ('[net:hasWiFi]')) { return }
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -30,7 +31,6 @@ to 'wifi connect to' ssid password tries {
   }
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
-
 
 to getIPAddress {
   return ('[net:myIPAddress]')
