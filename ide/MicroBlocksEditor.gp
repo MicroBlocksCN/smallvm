@@ -93,7 +93,6 @@ method initialize MicroBlocksEditor aProject {
   morph = (newMorph this)
   project = aProject
   thingServer = (newMicroBlocksThingServer)
-  start thingServer
   addTopBarParts this
   scripter = (initialize (new 'MicroBlocksScripter') this)
   addPart morph (morph scripter)
@@ -184,7 +183,9 @@ method clearProject MicroBlocksEditor {
   project = (emptyProject)
   clearLibraries scripter
   clearBoardIfConnected (smallRuntime) true
-  clearVars thingServer
+  if (isRunning thingServer) {
+      clearVars thingServer
+  }
 }
 
 method openProjectMenu MicroBlocksEditor {
@@ -299,7 +300,9 @@ method step MicroBlocksEditor {
   processDroppedFiles this
   updateIndicator this
   processMessages (smallRuntime)
-  step thingServer
+  if (isRunning thingServer) {
+      step thingServer
+  }
 }
 
 method updateIndicator MicroBlocksEditor {
@@ -501,6 +504,12 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'clear data' 'clearData'
   addLine menu
   addItem menu 'clear memory and variables' 'softReset'
+  addLine menu
+  if (not (isRunning thingServer)) {
+      addItem menu 'start Mozilla WebThing server' 'startThingServer'
+  } else {
+      addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
+  }
   if (not (devMode)) {
 	addLine menu
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
@@ -552,6 +561,19 @@ method exportAsLibrary MicroBlocksEditor {
 
 method softReset MicroBlocksEditor {
   softReset (smallRuntime)
+}
+
+method startThingServer MicroBlocksEditor {
+  if (start thingServer) {
+      inform 'MicroBlocks HTTP Server listening on port 6473'
+  } else {
+      inform (join 'Failed to start Mozilla WebThings server.' (newline)
+                'Please make sure that no other service is running at port 6473.')
+  }
+}
+
+method stopThingServer MicroBlocksEditor {
+  stop thingServer
 }
 
 method installVM MicroBlocksEditor {

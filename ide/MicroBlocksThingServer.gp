@@ -26,6 +26,7 @@ method start MicroBlocksThingServer {
 	stop this
 	serverSocket = (openServerSocket 6473)
 	print 'MicroBlocks HTTP Server listening on port 6473'
+        return (isRunning this)
 }
 
 method stop MicroBlocksThingServer {
@@ -33,6 +34,10 @@ method stop MicroBlocksThingServer {
 	serverSocket = nil
 	for c workers { closeConnection c }
 	workers = (list)
+}
+
+method isRunning MicroBlocksThingServer {
+        return (notNil serverSocket)
 }
 
 method step MicroBlocksThingServer {
