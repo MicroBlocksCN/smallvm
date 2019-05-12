@@ -345,7 +345,7 @@ method addMyBlocks MicroBlocksScripter {
 }
 
 method addButton MicroBlocksScripter label action hint {
-  btn = (pushButton label (gray 130) action)
+  btn = (pushButton label (gray 130) action 120 30)
   if (notNil hint) { setHint btn hint }
   setPosition (morph btn) nextX nextY
   addPart (morph (contents blocksFrame)) (morph btn)
