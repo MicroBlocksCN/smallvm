@@ -1,17 +1,17 @@
 display _
-display _
+Display _
 
 clear display
-lösche display
+lösche Display
 
 plot x _ y _
-zeichne x _ y _
+plotte x _ y _
 
 unplot x _ y _
-lösche_ y _
+lösche x _ y _
 
 set user LED _
-setze nutzer LED _
+setze Nutzer-LED _
 
 say _
 sage _
@@ -23,13 +23,13 @@ button B
 Knopf B
 
 tilt x
-neige x
+Neigung x
 
 tilt y
-neige y
+Neigung y
 
 tilt z
-neige z
+Neigung z
 
 temperature (°C)
 Temperatur (°C)
@@ -41,43 +41,43 @@ milliseconds
 Millisekunden
 
 read digital pin _
-lese digitalen pin_
+lies digitalen Pin _
 
 read analog pin _
-lese analogen pin _
+lies analogen Pin _
 
 set digital pin _ to _
-setze digitalen pin _  _
+setze digitalen Pin _ auf _
 
 set pin _ to _
-setze pin _ auf  _
+setze Pin _ auf _
 
 analog pins
-analoge pins
+analoge Pins
 
 digital pins
-digitale pins
+digitale Pins
 
 when started
-wenn gestartet
+Wenn gestartet
 
 when button _ pressed
-wenn Knopf _ gedrückt wurde
+Wenn Knopf _ gedrückt
 
 forever _
-wiederhole immer _
+fortlaufend _
 
 repeat _ _
 wiederhole _ mal _
 
-if _ dan _
-wenn _ dann _
+if _ _
+falls _ _
 
 else if _ _
-sonst _ _
+sonst falls _ _
 
 if _ _ else _
-wenn _ dann _ sonst _
+falls _ _ sonst _
 
 wait _ millisecs
 warte _ Millisekunden
@@ -86,40 +86,40 @@ wait _ microsecs
 warte _ Mikrosekunden
 
 stop this task
-stoppe diesen task
+stoppe dieses Skript
 
 stop all
 stoppe alles
 
 comment _
-kommentiere _
+Kommentar _
 
 wait until _
 warte bis _
 
 repeat until _ _
-wiederhole sobald _ _
+wiederhole bis _ _
 
 for _ in _ _
 für _ in _ _
 
 when _
-wenn _
+Wenn _
 
 when _ received
-wenn _ empfangen
+Wenn _ empfangen
 
 broadcast _
 sende _
 
 return _
-zurück _
+berichte _
 
 _ mod _
 _ modulo _
 
 abs _
-Absolutwert von _
+abs _
 
 random _ to _
 Zufallszahl von _ bis _
@@ -140,115 +140,392 @@ or _
 oder _
 
 set _ to _
-setze _ auf  _
+setze _ auf _
 
 change _ by _
-verändere _ um _
+ändere _ um _
 
 local _ _
-lokale Variabele _ _
-
-new array _
-neue Liste _
-
-new byte array _
-neue byte Liste _
-
-fill array _ with _
-fülle Liste _ mit _
-
-array _ at _
-Liste _ Element _
-
-set array _ at _ to _
-setze Liste _ Element _ auf _
+lokale Variable _ _
 
 length of _
 Länge von _
 
 i2c get device _ register _
-i2c lese Modul _ Register _
+i2c lies Gerät _ an Register _
 
 i2c set device _ register _ to _
-i2c sete Modul _ Register _ auf _
+i2c setze Gerät _ an Register _ auf _
 
 spi send _
-spi sende _
+sende mit SPI _
 
 spi receive
-spi empfange
+empfange mit SPI
 
 print _
-print _
+drucke _
 
 hex _
-hexadecimal _
+hex _
 
 no op
-tue nichts
+no op
 
 ignore
 ignoriere
 
 draw shape _ at x _ y _
-zeichne Form _ nach x _ y _
+zeichne Form _ bei x _ y _
 
 shape for letter _
-Form von Buchstabe _
+Form für Buchstabe _
 
 set NeoPixel pin _ has white _
-setze NeoPixel pin _ mit weiß _
+setze NeoPixel Pin _ hat weiß _
 
 send NeoPixel rgb _
-sende NeoPixel rgb _
+sende NeoPixel RGB _
 
 light level
-Lichtstärkte
+Lichtstärke
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
-setze NeoPixels _ _ _ _ _ _ _ _ _ _
+setze NeoPixel _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
-lösche NeoPixels
+lösche NeoPixel
 
 set NeoPixel _ color _
 setze NeoPixel _ Farbe _
 
 set all NeoPixels color _
-setze alle NeoPixels Farbe _
+setze alle NeoPixel auf Farbe _
 
 rotate NeoPixels by _
-rotiere NeoPixels um _
+rotiere NeoPixel um _
 
 color r _ g _ b _
-Farbe r _ g _ b _
+Farbe R _ G _ B _
 
 attach _ LED NeoPixel strip to pin _ has white _
-verbinde _ LED NeoPixel strip mit pin _ hat weiß _
+verbinde _ LED NeoPixel-Streifen mit Pin _ mit Weiß _
 
 receive IR code from device _
-empfange IR code vom Gerät _
+empfange IR Code von Gerät _
 
 test IR
 teste IR
 
 scroll text _ pausing _ ms
-scroll Text _ mit _ ms pause
+scrolle Text _ mit _ ms Pause
 
 scroll number _ pausing _ ms
-scroll Nummer _ mit _ ms pause
+scrolle Zahl _ mit _ ms Pause
 
 stop scrolling
-stoppe scrollen
+stoppe Scrollen
 
 attach buzzer to pin _
-verbinde buzzer mit pin _
+verbinde Summer mit Pin _
 
 play note _ octave _ during _ ms
 spiele Note _ Oktave _ für _ ms
 
 play frequency _ on pin _ for _ ms
-spiele Frequenz _ mit pin _ für _ ms
+spiele Frequenz _ mit Pin _ für _ ms
+
+button OK
+Knopf OK
+
+button X
+Knopf X
+
+button up
+Knopf Pfeil nach oben
+
+button down
+Knopf Pfeil nach unten
+
+button left
+Knopf Pfeil nach links
+
+button right
+Knopf Pfeil nach rechts
+
+move motor _  _ steps _
+bewege Motor _ _ Schritte _
+
+move motor 1 _ and motor 2 _ _ steps
+bewege Motor 1 _ und Motor 2 _ _ Schritte
+
+stop steppers
+Stoppe Schrittmotoren
+
+clockwise
+im Uhrzeigersinn
+
+counter-clockwise
+gegen Uhrzeigersinn
+
+capacitive sensor _
+kapazitiver Sensor _
+
+set TFT pixel x _ y _ to _
+setze TFT-Pixel x _ y _ auf _
+
+set capacitive threshold to _
+Setze kapazitiven Schwellenwert auf _ 
+
+New
+Neu
+
+Open
+Öffnen
+
+Save
+Speichern
+
+Connect
+Verbinden
+
+disconnect
+trennen
+
+Serial port:
+Serieller Anschluss: 
+
+other...
+sonstige...
+
+none
+kein Anschluss
+
+Port name?
+Anschluss-Name?
+
+Board type:
+Board-Typ: 
+
+Select board:
+Board auswählen:
+
+Could not read: 
+Lesen nicht möglich: 
+
+by
+von
+
+More info at http://microblocks.fun
+Mehr Informationen unter http://microblocks.fun
+
+Function "
+Funktion "
+
+" is too large to send to board.
+" ist zu groß, um an das Board gesendet zu werden.
+
+Script is too large to send to board.
+Skript ist zu groß, um an das Board gesendet zu werden.
+
+Use "Connect" button to connect to a MicroBlocks device.
+Drücke "Verbinden", um dein MicroBlocks-Gerät zu verbinden. 
+
+No boards found; is your board plugged in?
+Kein Board gefunden; ist dein Board eingesteckt?
+
+For AdaFruit boards, double-click button and try again.
+Bei AdaFruit Boards doppelklicken und erneut versuchen. 
+
+The board is not responding.
+Das Board reagiert nicht. 
+
+Try to Install MicroBlocks on the board?
+MicroBlocks auf dem Board installieren?
+
+Stop
+Stop
+
+Start
+Start
+
+Quit MicroBlocks?
+MicroBlocks beenden?
+
+Discard current project?
+Aktuelles Projekt verwerfen
+
+clean up
+aufräumen
+
+arrange scripts
+Skripte in einer Reihe anordnen
+
+
+undo last drop
+letzten Block rückgängig machen
+
+copy all scripts
+alle Skripte kopieren
+
+paste all scripts
+alle Skripte einfügen
+
+paste script
+Skript einfügen 
+
+save picture of all scripts
+Bilder aller Skripte speichern
+
+about...
+über...
+
+virtual machine version
+Virtual Machine Version
+
+install MicroBlocks on board
+MicroBlocks auf dem Board installieren
+
+graph data
+Daten aufzeichnen
+
+copy data to clipboard
+Daten in der Ablage speichern
+
+clear data
+Daten löschen
+
+clear memory and variables
+Variablen und Speicher zurücksetzen
+
+show advanced blocks
+Fortgeschrittene Blöcke anzeigen
+
+export functions as library
+Funktionen als Modul exportieren
+
+hide advanced blocks
+Fortgeschrittene Blöcke ausblenden
+
+Data Graph
+Daten-Graph
+
+File Open
+Datei öffnen
+
+File Save
+Datei speichern
+
+File name:
+Dateiname: 
+
+show instructions
+Op-Code anzeigen
+
+show compiled bytes
+Byte-Code anzeigen
+
+expand
+ausklappen
+
+collapse
+einklappen
+
+rename...
+umbenennen...
+
+show definition...
+Definition anzeigen...
+
+duplicate
+duplizieren
+
+just this one block
+nur diesen Block
+
+...all
+...alles
+
+duplicate including all attached blocks
+dupliziere mit anhängenden Blöcken
+
+save picture of script
+Skriptbild speichern
+
+copy script
+Skript duplizieren
+
+delete
+löschen
+
+hide definition
+Definition verstecken
+
+Are you sure you want to remove this block definition?
+Bist du sicher, dass du diese Blockdefinition löschen möchtest? 
+
+Libraries
+Module
+
+Language:
+Sprache:
+
+Add a function
+Funktion hinzufügen
+
+Add a variable
+Variable hinzufügen
+
+Delete a variable
+Variable löschen
+
+Output
+Ausgabe
+
+Input
+Eingabe
+
+Pins
+Pins
+
+Control
+Steuerung
+
+Math
+Mathematik
+
+Variables
+Variablen
+
+Lists
+Listen
+
+Advanced
+Fortgeschritten
+
+Functions
+Funktionen
+
+Obsolete
+obsolet
+
+Ok
+Ok
+
+Yes
+Ja
+
+No
+Nein
+
+Cancel
+Abbrechen
+
+Okay
+Okay
+
+Confirm
+Bestätigen
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
