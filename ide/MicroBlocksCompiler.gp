@@ -187,12 +187,6 @@ method microBlocksSpecs SmallCompiler {
 
 	'Disabled (does not work)'
  		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
-
-		// While these are useful, they can easily crash the VM (e.g. by addressing non-existent memory).
-		// Consider a more constrained version -- e.g blocks to access only the peripheral control
-		// register range with processor-specific range checks and that only allow word-aligned access.
-// 		(array 'r' 'peek'				'memory at _ _' 'num num' 0 0)
-// 		(array ' ' 'poke'				'set memory at _ _ to _' 'num num num' 0 0 0)
 	)
 }
 
@@ -280,8 +274,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 69
 		millisOp 70
 		microsOp 71
-		peek 72
-		poke 73
+	RESERVED 72
+	RESERVED 73
 		sayIt 74
 		printIt 75
 		boardType 76

@@ -293,8 +293,8 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&millis_op,
 		&&micros_op,
-		&&peek_op,
-		&&poke_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
 		&&sayIt_op,
 		&&logData_op,
 		&&boardType_op,
@@ -762,14 +762,6 @@ static void runTask(Task *task) {
 	micros_op:
 		STACK_CHECK(1);
 		*sp++ = int2obj(microsecs() & 0x3FFFFFFF); // low 30-bits so result is positive
-		DISPATCH();
-	peek_op:
-		*(sp - arg) = primPeek(sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	poke_op:
-		primPoke(sp - arg);
-		POP_ARGS_COMMAND();
 		DISPATCH();
 	sayIt_op:
 		printArgs(arg, sp - arg, true, true);
