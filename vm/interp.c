@@ -453,20 +453,12 @@ static void runTask(Task *task) {
 		DISPATCH();
 	jmpTrue_op:
 		if (trueObj == (*--sp)) ip += arg;
-		else if (falseObj != *sp) {
-			errorCode = needsBooleanError;
-			DISPATCH();
-		}
 #if USE_TASKS
 		if ((arg < 0) && (trueObj == *sp)) goto suspend;
 #endif
 		DISPATCH();
 	jmpFalse_op:
-		if (falseObj == (*--sp)) ip += arg;
-		else if (trueObj != *sp) {
-			errorCode = needsBooleanError;
-			DISPATCH();
-		}
+		if (trueObj != (*--sp)) ip += arg; // treat any value by true as false
 #if USE_TASKS
 		if ((arg < 0) && (falseObj == *sp)) goto suspend;
 #endif
@@ -666,14 +658,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	not_op:
-		tmpObj = *(sp - 1);
-		if (trueObj == tmpObj) {
-			*(sp - arg) = falseObj;
-		} else if (falseObj == tmpObj) {
-			*(sp - arg) = trueObj;
-		} else {
-			fail(needsBooleanError);
-		}
+		*(sp - arg) = (trueObj == *(sp - 1)) ? falseObj : trueObj;
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	add_op:
