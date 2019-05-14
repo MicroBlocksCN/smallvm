@@ -132,13 +132,13 @@ static void setVariableValue(char *varName, int varID, char *jsonData) {
 }
 
 static char* getDescription() {
-    // if thing description ends with ",\n", then we need to replace that with "}}" to make it legal JSON
-    int currentSize = strlen(descriptionObj.body);
-    if (descriptionObj.body[currentSize - 1] == '\n') {
-        descriptionObj.body[currentSize - 2] = '}';
-        descriptionObj.body[currentSize - 1] = '}';
-    }
-    return descriptionObj.body;
+	// if thing description ends with ",\n", then we need to replace that with "}}" to make it legal JSON
+	int currentSize = strlen(descriptionObj.body);
+	if ((currentSize > 2) && (descriptionObj.body[currentSize - 1] == '\n')) {
+		descriptionObj.body[currentSize - 2] = '}';
+		descriptionObj.body[currentSize - 1] = '}';
+	}
+	return descriptionObj.body;
 }
 
 void webServerLoop() {
@@ -165,7 +165,7 @@ void webServerLoop() {
 		client.print(JSON_HEADER);
 		client.print(getDescription());
 	} else if (hasPrefix(request, "OPTIONS", NULL, 0)) {
-                client.print(OPTIONS_HEADER);
+		client.print(OPTIONS_HEADER);
 	} else if (hasPrefix(request, "GET /properties/", varName, sizeof(varName))) {
 		// Get variable value
 		varID = indexOfVarNamed(varName);
