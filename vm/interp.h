@@ -250,7 +250,7 @@ OBJ primAnalogPins(OBJ *args);
 OBJ primDigitalPins(OBJ *args);
 OBJ primAnalogRead(OBJ *args);
 void primAnalogWrite(OBJ *args);
-OBJ primDigitalRead(OBJ *args);
+OBJ primDigitalRead(int argCount, OBJ *args);
 void primDigitalWrite(OBJ *args);
 void primDigitalSet(int pinNum, int flag);
 OBJ primButtonA(OBJ *args);

@@ -55,7 +55,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[display:lightLevel]' 'light level')
 		(array 'r' '[sensors:touchRead]'	'capacitive sensor _' 'num' 1)
 	'Pins'
-		(array 'r' 'digitalReadOp'		'read digital pin _' 'num' 1)
+		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
 		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array ' ' 'analogWriteOp'		'set pin _ to _' 'num num' 1 1023)

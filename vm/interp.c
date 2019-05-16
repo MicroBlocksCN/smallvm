@@ -814,7 +814,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	digitalRead_op:
-		*(sp - arg) = primDigitalRead(sp - arg);
+		*(sp - arg) = primDigitalRead(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	digitalWrite_op:
