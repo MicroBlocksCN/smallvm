@@ -38,12 +38,12 @@ static int receivedInteger = 0;
 
 struct {
 	uint32 header;
-	char body[20];
+	char body[32];
 } receivedString; // static string OBJ containing string from most recent message
 
 struct {
 	uint32 header;
-	char body[30];
+	char body[20];
 } messageTypeString; // Static string OBJ containing MakeCode type of most recent message
 
 #if defined(ARDUINO_BBC_MICROBIT)

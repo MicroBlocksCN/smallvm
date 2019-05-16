@@ -7,6 +7,9 @@
 // mem.h - Object memory definitions using 32-bit object references
 // John Maloney, April 2017
 
+#ifndef _MEM_H_
+#define _MEM_H_
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -92,3 +95,5 @@ char* obj2str(OBJ obj);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // _MEM_H_

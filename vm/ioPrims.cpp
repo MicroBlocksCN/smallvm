@@ -421,7 +421,7 @@ void primAnalogWrite(OBJ *args) {
 	#endif
 }
 
-OBJ primDigitalRead(OBJ *args) {
+OBJ primDigitalRead(int argCount, OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	#if defined(ADAFRUIT_ITSYBITSY_M0)
 		if (pinNum > 25) return falseObj;
@@ -447,10 +447,12 @@ OBJ primDigitalRead(OBJ *args) {
 		if (RESERVED(pinNum)) return falseObj;
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
-	SET_MODE(pinNum, INPUT);
+	int mode = INPUT;
+	if ((argCount > 1) && (trueObj == args[1])) mode = INPUT_PULLUP;
 	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
-		if (7 == pinNum) pinMode(7, INPUT_PULLUP); // slide switch
+		if (7 == pinNum) mode = INPUT_PULLUP; // slide switch
 	#endif
+	SET_MODE(pinNum, mode);
 	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
 }
 
@@ -560,7 +562,7 @@ OBJ primButtonB(OBJ *args) {
 
 // Servo
 
-#define HAS_SERVO !(defined(NRF51) || defined(ARDUINO_NRF52_PRIMO) || defined(ESP32) || defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS))
+#define HAS_SERVO !(defined(NRF51) || defined(ARDUINO_NRF52_PRIMO) || defined(ESP32))
 
 #if HAS_SERVO
 	#include <Servo.h>
@@ -614,15 +616,33 @@ OBJ primSetServo(int argCount, OBJ *args) {
 
 int tonePin = -1;
 
+#ifdef ESP32
+	static void initESP32Tone(int pin) {
+		if (pin == tonePin) return;
+		if (tonePin < 0) {
+			ledcSetup(0, 1E5, 12); // do setup on first call
+		} else {
+			ledcWrite(0, 0); // stop current tone, if any
+ 			ledcDetachPin(tonePin);
+		}
+		tonePin = pin;
+	}
+#endif
+
 void stopTone() {
 	#if HAS_TONE
 		if (tonePin >= 0) noTone(tonePin);
 		tonePin = -1;
+	#elif defined(ESP32)
+		if (tonePin >= 0) {
+			ledcWrite(0, 0);
+ 			ledcDetachPin(tonePin);
+		}
 	#endif
 }
 
 OBJ primHasTone(int argCount, OBJ *args) {
-	#if HAS_TONE
+	#if (HAS_TONE || defined(ESP32))
 		return trueObj;
 	#else
 		return falseObj;
@@ -634,17 +654,30 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	// If freq > 0, generate a 50% duty cycle square wave of the given frequency
 	// on the given pin. If freq <= 0 stop generating the square wave.
 	// Return true on success, false if primitive is not supported.
+
+	OBJ pinArg = args[0];
+	OBJ freqArg = args[1];
+	if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
+	int pin = obj2int(pinArg);
+	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
+	int frequency = obj2int(freqArg);
+
 	#if HAS_TONE
-		OBJ pinArg = args[0];
-		OBJ freqArg = args[1];
-		if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
-		int pin = obj2int(pinArg);
-		if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
-		int frequency = obj2int(freqArg);
 		if ((frequency > 0) && (frequency <= 500000)) {
 			if (pin != tonePin) stopTone();
 			tonePin = pin;
 			tone(tonePin, frequency);
+		} else {
+			stopTone();
+		}
+		return trueObj;
+	#elif defined(ESP32)
+		if ((frequency > 0) && (frequency <= 500000)) {
+			initESP32Tone(pin);
+			if (tonePin >= 0) {
+				ledcAttachPin(tonePin, 0);
+				ledcWriteTone(0, frequency);
+			}
 		} else {
 			stopTone();
 		}
