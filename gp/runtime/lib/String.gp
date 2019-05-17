@@ -650,14 +650,18 @@ method urlDecode String {
 }
 
 method urlEncode String {
+  safe = (toArray (toBinaryData '-_.~'))
+  // Note: could add some of these: '$''()*,' to reserved but it seems best to escape them
+  reserved = (toArray (toBinaryData '!#&+/:;=?@'))
   result = (list)
   for ch (toArray (toBinaryData this)) {
 	if (or
 		(and (97 <= ch) (ch <= 122)) // a-z
 		(and (65 <= ch) (ch <= 90)) // A-Z
 		(and (48 <= ch) (ch <= 57)) // 0-9
-		(isOneOf ch 45 46 95 126)) { // characters: - . _ ~
-			// ch is an unreserved character
+		(contains safe ch)
+		(contains reserved ch)) {
+			// ch does not need to be encoded
 			add result (string ch)
 	} else {
 			// ch must be percent-encoded (this includes the bytes of utf-8 encoded characters
