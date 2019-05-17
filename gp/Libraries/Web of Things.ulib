@@ -6,6 +6,7 @@ spec ' ' 'defineThing' 'define thing _ capability _' 'str str.thingTypesMenu' 'H
 spec ' ' 'addBooleanProperty' 'add boolean property title _ variable _ @Type _' 'str menu.allVarsMenu str.booleanPropertyTypesMenu' '' '' 'OnOffProperty'
 spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str.numberPropertyTypesMenu' '' '' '0' '100' 'LevelProperty'
 spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str.stringPropertyTypesMenu' '' '' 'ColorProperty'
+spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str any' '' '"json value"'
 spec ' ' '_endThing' '_end thing description'
 spec ' ' '_reportChanged' '_reportChanged _ value _' 'menu.allVarsMenu auto' '' ''
 
@@ -81,6 +82,10 @@ to 'addStringProperty' title var typeName {
   } else {
 	sendBroadcast 'moz-property {"name":"' var '","type":"string","value":""}'
   }
+}
+
+to '_addCustomProperty' key jsonValue {
+  '[net:appendToThingProperty]' '"' key '": ' jsonValue
 }
 
 to '_endThing' {

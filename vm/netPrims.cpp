@@ -241,6 +241,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 		}
 	#endif
 	connecting = true;
+	return falseObj;
 }
 
 static OBJ primStopWiFi(int argCount, OBJ *args) {
@@ -303,6 +304,7 @@ static OBJ primThingDescription(int argCount, OBJ *args) {
 
 static OBJ primClearThingDescription(int argCount, OBJ *args) {
 	descriptionObj.body[0] = 0;
+	return falseObj;
 }
 
 static void appendObjToDescription(OBJ obj) {
@@ -329,6 +331,23 @@ static OBJ primAppendToThingDescription(int argCount, OBJ *args) {
 		descriptionObj.body[currentSize] = '\n';
 		descriptionObj.body[currentSize + 1] = 0;
 	}
+	return falseObj;
+}
+
+static OBJ primAppendToThingProperty(int argCount, OBJ *args) {
+	int currentSize = strlen(descriptionObj.body);
+	if ((currentSize > 3) &&
+		('}' == descriptionObj.body[currentSize - 3]) &&
+		(',' == descriptionObj.body[currentSize - 2]) &&
+		('\n' == descriptionObj.body[currentSize - 1])) {
+			descriptionObj.body[currentSize - 3] = '\0';// remove trailing "},\n"
+			strncat(descriptionObj.body, ",\n", DESCRIPTION_SIZE);
+			for (int i = 0; i < argCount; i++) {
+				appendObjToDescription(args[i]);
+			}
+			strncat(descriptionObj.body, "},\n", DESCRIPTION_SIZE);
+	}
+	return falseObj;
 }
 
 #else // not ESP8266 or ESP32
@@ -342,6 +361,7 @@ static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primClearThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
 static OBJ primAppendToThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
+static OBJ primAppendToThingProperty(int argCount, OBJ *args) { fail(noWiFi); }
 
 #endif
 
@@ -354,6 +374,7 @@ static PrimEntry entries[] = {
 	"thingDescription", primThingDescription,
 	"clearThingDescription", primClearThingDescription,
 	"appendToThingDescription", primAppendToThingDescription,
+	"appendToThingProperty", primAppendToThingProperty,
 };
 
 void addNetPrims() {
