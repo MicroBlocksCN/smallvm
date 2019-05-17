@@ -649,10 +649,15 @@ method urlDecode String {
   return (toString (toBinaryData (toArray result)))
 }
 
-method urlEncode String {
+method percentEncode String {
+  return (urlEncode this true)
+}
+
+method urlEncode String safeOnly {
   safe = (toArray (toBinaryData '-_.~'))
   // Note: could add some of these: '$''()*,' to reserved but it seems best to escape them
   reserved = (toArray (toBinaryData '!#&+/:;=?@'))
+  if (true == safeOnly) { reserved = (array) } // percent encode reserved characters
   result = (list)
   for ch (toArray (toBinaryData this)) {
 	if (or
