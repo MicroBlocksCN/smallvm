@@ -146,12 +146,18 @@ to '_baseFreqForSemitone' semitone {
 
 to '_toneLoop' scaledFreq ms {
   if (_toneInitalized == 0) {'attach buzzer to pin' ''}
-  local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
-  local 'cycles' ((ms * 500) / halfCycle)
-  repeat cycles {
-    digitalWriteOp _tonePin true
-    waitMicros halfCycle
-    digitalWriteOp _tonePin false
-    waitMicros halfCycle
+  if ('[io:hasTone]') {
+    '[io:playTone]' _tonePin (scaledFreq / 1000)
+    waitMillis ms
+    '[io:playTone]' _tonePin 0
+  } else {
+    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+    local 'cycles' ((ms * 500) / halfCycle)
+    repeat cycles {
+      digitalWriteOp _tonePin true
+      waitMicros halfCycle
+      digitalWriteOp _tonePin false
+      waitMicros halfCycle
+    }
   }
 }
