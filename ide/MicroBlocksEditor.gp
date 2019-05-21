@@ -7,8 +7,6 @@
 // MicroBlocksEditor.gp - Top-level window for the MicroBlocks IDE
 // John Maloney, January, 2018
 
-// [ ] put project title in window title bar
-
 to startup { openMicroBlocksEditor } // run at startup if not in interactive mode
 
 to uload fileName {
@@ -615,11 +613,32 @@ method languageMenu MicroBlocksEditor {
 	  }
 	}
   }
+  if (devMode) {
+	addLine menu
+	addItem menu 'Custom...' (action 'readCustomTranslationFile' this)
+  }
   popUpAtHand menu (global 'page')
 }
 
 method setLanguage MicroBlocksEditor newLang {
   setLanguage (authoringSpecs) newLang
+  languageChanged this
+}
+
+method readCustomTranslationFile MicroBlocksEditor {
+  pickFileToOpen (action 'readCustomTranslation' this) nil (array '.txt')
+}
+
+method readCustomTranslation MicroBlocksEditor fName {
+  languageName = (withoutExtension (filePart fName))
+  translationData = (readFile fName)
+  if (notNil translationData) {
+	installTranslation (authoringSpecs) translationData languageName
+	languageChanged this
+  }
+}
+
+method languageChanged MicroBlocksEditor {
   languageChanged scripter
 
   // update items in top-bar

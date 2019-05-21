@@ -8,7 +8,7 @@ plot x _ y _
 yak x _ y _
 
 unplot x _ y _
-söndür_ y _
+söndür x _ y _
 
 set user LED _
 kullanıcı LED i _ yap
@@ -17,10 +17,10 @@ say _
 söyle _
 
 button A
-düğme A
+buton A
 
 button B
-düğme B
+buton B
 
 tilt x
 eğilim x
@@ -62,7 +62,7 @@ when started
 başladığında
 
 when button _ pressed
-düğme _ basıldığında
+buton _ basıldığında
 
 forever _
 devamlı tekrarla _
@@ -70,7 +70,7 @@ devamlı tekrarla _
 repeat _ _
 tekrarla _ kere _
 
-if _ dan _
+if _ _
 eğer _ yap _
 
 else if _ _
@@ -110,7 +110,7 @@ when _ received
 _ mesajı geldiğinde
 
 broadcast _
-yolla _
+_ gönder
 
 return _
 döndür _
@@ -143,10 +143,10 @@ set _ to _
 _ değişkenini _ yap
 
 change _ by _
-_ değişkenini _ kadar değiştir
+_ değişkenini _ değiştir
 
 local _ _
-yerel değişken _ _
+yerel değişken _ = _
 
 new array _
 yeni dizi _
@@ -173,7 +173,7 @@ i2c set device _ register _ to _
 i2c modül yaz _ sayaç _ değer _
 
 spi send _
-spi yolla _
+spi gönder _
 
 spi receive
 spi oku
@@ -200,7 +200,7 @@ set NeoPixel pin _ has white _
 NeoPixel _ pinini beyaz _ yap
 
 send NeoPixel rgb _
-NeoPixel rgb _ yolla
+NeoPixel rgb _ gönder
 
 light level
 ışık seviyesi
@@ -269,10 +269,10 @@ button right
 buton sağ
 
 move motor _  _ steps _
- _  _ motorunu _ yürüt
+ _ motorunu _ adım yürüt _
 
 move motor 1 _ and motor 2 _ _ steps
-motor 1 _ ve motor 2 _ yi _ adım yürüt
+motor 1 _ ve motor 2 _  _ adım yürüt
 
 stop steppers
 step motorları durdur
@@ -362,19 +362,19 @@ Script is too large to send to board.
 Betik karta yüklemek için çok büyük.
 
 Use "Connect" button to connect to a MicroBlocks device.
-MikroBlok cihazına balanmak için "Bağlan" düğmesini kullan.
+MicroBlocks cihazına balanmak için "Bağlan" düğmesini kullan.
 
 No boards found; is your board plugged in?
 Kart algılanmadı; kardınız bağlı mı?
 
 For AdaFruit boards, double-click button and try again.
-AdaFruıt kartları için butonu çift tıklayın ve gene deneyin.
+AdaFruit kartları için butonu çift tıklayın ve gene deneyin.
 
 The board is not responding.
 Kart cevap vermiyor.
 
 Try to Install MicroBlocks on the board?
-Karta Mikrobloks kurmayı deneyin.
+Karta Microblocks kurmayı deneyin.
 
 Stop
 Dur
@@ -383,7 +383,7 @@ Start
 Başla
 
 Quit MicroBlocks?
-MikroBloks'dan çıkmak istermisiniz?
+MicroBlocks'dan çıkmak istermisiniz?
 
 Discard current project?
 Projenizi iptal etmek istermisiniz?
@@ -416,7 +416,7 @@ virtual machine version
 sanal makine sürümü
 
 install MicroBlocks on board
-MikroBloks'u karta kur
+MicroBlocks'u karta kur
 
 graph data
 verilerin grafiğini yap
@@ -494,7 +494,7 @@ hide definition
 tanımı gizle
 
 Are you sure you want to remove this block definition?
-Bu bloğun tanımını sileceğinizden emin miziniz?
+Bu bloğun tanımını sileceğinizden emin misiniz?
 
 Libraries
 Kütüphaneler
