@@ -6,7 +6,7 @@
 
 // MicroBlocksThingServer.gp - An HTTP server that runs as a helper application, allowing a
 // MicroBlocks IDE running in the browser to communicate with the MicroBlocks IDE.
-// John Maloney, April, 2019
+// John Maloney and Bernat Romagosa, May, 2019
 
 defineClass MicroBlocksThingServer serverSocket vars workers
 
@@ -26,7 +26,7 @@ method start MicroBlocksThingServer {
 	stop this
 	serverSocket = (openServerSocket 6473)
 	print 'MicroBlocks HTTP Server listening on port 6473'
-        return (isRunning this)
+	return (isRunning this)
 }
 
 method stop MicroBlocksThingServer {
@@ -37,7 +37,7 @@ method stop MicroBlocksThingServer {
 }
 
 method isRunning MicroBlocksThingServer {
-        return (notNil serverSocket)
+	return (notNil serverSocket)
 }
 
 method step MicroBlocksThingServer {
@@ -125,8 +125,8 @@ method initialize MicroBlocksThingWorker aMicroBlocksThingServer aSocket {
 	inBuf = (newBinaryData 0)
 	outBuf = (newBinaryData 0)
 	broadcastsFromBoard = (list)
-        requestStartTime = 0
-        timeout = 1000
+	requestStartTime = 0
+	timeout = 1000
 	return this
 }
 
@@ -142,11 +142,11 @@ method isOpen MicroBlocksThingWorker {
 method stepWorker MicroBlocksThingWorker {
 	// This is where data is actually received and transmited.
 
-        if (and (requestStartTime > 0) ((msecsSinceStart) > (requestStartTime + timeout))) {
-            // Timeout. Let's ignore this request
-            requestStartTime = 0
-            return
-        }
+	if (and (requestStartTime > 0) ((msecsSinceStart) > (requestStartTime + timeout))) {
+		// Timeout. Let's ignore this request
+		requestStartTime = 0
+		return
+	}
 
 	if (isNil sock) { return }
 	if (isNil (socketStatus sock)) { // connection closed by other end
@@ -155,7 +155,7 @@ method stepWorker MicroBlocksThingWorker {
 	}
 	data = (readSocket sock true)
 	if ((byteCount data) > 0) {
-            requestStartTime = (msecsSinceStart)
+		requestStartTime = (msecsSinceStart)
 		inBuf = (join inBuf data)
 	}
 	if ((byteCount outBuf) > 0) {
@@ -225,32 +225,32 @@ method handleRequest MicroBlocksThingWorker header body {
 	method = (at (words (first (lines header))) 1)
 	path = (at (words (first (lines header))) 2)
 	if ('/' == path) {
-                if ('GET' == method) {
-                    responseBody = (getWebThingDefinition this)
-                } else {
-                    responseBody = (errorResponse this 'Unhandled method')
-                }
+		if ('GET' == method) {
+			responseBody = (getWebThingDefinition this)
+		} else {
+			responseBody = (errorResponse this 'Unhandled method')
+		}
 	} (beginsWith path '/getBroadcasts') {
-                if ('GET' == method) {
-                    responseBody = (getBroadcasts this path)
-                } else {
-                    responseBody = (errorResponse this 'Unhandled method')
-                }
+		if ('GET' == method) {
+			responseBody = (getBroadcasts this path)
+		} else {
+			responseBody = (errorResponse this 'Unhandled method')
+		}
 	} (beginsWith path '/broadcast') {
-                if ('GET' == method) {
-                    responseBody = (sendBroadcast this path)
-                } else {
-                    responseBody = (errorResponse this 'Unhandled method')
-                }
+		if ('GET' == method) {
+			responseBody = (sendBroadcast this path)
+		} else {
+			responseBody = (errorResponse this 'Unhandled method')
+		}
 	} (beginsWith path '/properties') {
-                if ('GET' == method) {
-                    responseBody = (getProperties this path)
-                } ('PUT' == method) {
-                    (setProperty this path body)
-                    responseBody = (getProperties this path)
-                } else {
-                    responseBody = (errorResponse this 'Unhandled method')
-                }
+		if ('GET' == method) {
+			responseBody = (getProperties this path)
+		} ('PUT' == method) {
+			(setProperty this path body)
+			responseBody = (getProperties this path)
+		} else {
+			responseBody = (errorResponse this 'Unhandled method')
+		}
 	} else {
 		responseBody = (errorResponse this)
 	}
@@ -258,7 +258,7 @@ method handleRequest MicroBlocksThingWorker header body {
 	add responseHeaders 'HTTP/1.1 200 OK'
 	add responseHeaders 'Access-Control-Allow-Origin: *'
 	add responseHeaders 'Access-Control-Allow-Methods: PUT, GET, OPTIONS, POST'
-        add responseHeaders 'Content-Type: application/json'
+	add responseHeaders 'Content-Type: application/json'
 	add responseHeaders (join 'Content-Length: ' (count responseBody))
 	add responseHeaders ''
 	add responseHeaders (toString responseBody)
@@ -266,10 +266,10 @@ method handleRequest MicroBlocksThingWorker header body {
 }
 
 method errorResponse MicroBlocksThingWorker errorString {
-    if (isNil errorString) {
-        errorString = 'Unrecognized command'
-    }
-    return (join '{"error":' errorString '}')
+	if (isNil errorString) {
+		errorString = 'Unrecognized command'
+	}
+	return (join '{"error":' errorString '}')
 }
 
 // WebThing definition
@@ -280,53 +280,53 @@ method getWebThingDefinition MicroBlocksThingWorker {
 	add result '"@context": "https://iot.mozilla.org/schemas/",'
 	add result '"@type": "MicroBlocksIDE",'
 	add result '"properties":'
-        add result (getProperties this)
-        add result '}'
+	add result (getProperties this)
+	add result '}'
 	return (joinStrings result (newline))
 }
 
 // Properties (uBlocks variables)
 
 method getProperties MicroBlocksThingWorker path {
-        if ((count path) > 11) {
-            varName = (urlDecode (substring path 13))
-            if (endsWith varName '/') { varName = (substring varName 1 ((count varName) - 1)) }
-            value = (requestVarFromBoard server varName)
-            return (join '{"' varName '":' (toString value) '}')
-        } else {
-            result = (list)
-            varNames = (filter
-                 (function each { return (not (beginsWith each '_')) })
-                 (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions'))
-            add result '{'
-            if ((count varNames) > 0) {
-                for v varNames {
-                    add result (join '"' v '":{')
-                    add result (join '"href":"/properties/' v '",')
-                    add result (join '"type":"string"')
-                    add result '},'
-                }
-                // remove last comma
-                atPut result (count result) (substring (last result) 1 ((count (last result)) - 1))
-            }
-            add result '}'
-            return (joinStrings result (newline))
-        }
+	if ((count path) > 11) {
+		varName = (urlDecode (substring path 13))
+		if (endsWith varName '/') { varName = (substring varName 1 ((count varName) - 1)) }
+		value = (requestVarFromBoard server varName)
+		return (join '{"' varName '":' (toString value) '}')
+	} else {
+		result = (list)
+		varNames = (filter
+		(function each { return (not (beginsWith each '_')) })
+		(copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions'))
+		add result '{'
+	if ((count varNames) > 0) {
+		for v varNames {
+			add result (join '"' v '":{')
+			add result (join '"href":"/properties/' v '",')
+			add result (join '"type":"string"')
+			add result '},'
+		}
+		// remove last comma
+		atPut result (count result) (substring (last result) 1 ((count (last result)) - 1))
+	}
+		add result '}'
+		return (joinStrings result (newline))
+	}
 }
 
 method setProperty MicroBlocksThingWorker path body {
 	// Handle PUT request with URL of form: /properties/<URL_encoded var name>
-        //      with body: {"varName":value}
-        //      where value is:
-	//	        true, false, <integer value>, <url-encoded string>
+	//	with body: {"varName":value}
+	//	where value is:
+	//		true, false, <integer value>, <url-encoded string>
 	// Set the given variable to the given value.
 	// A string can be enclosed in optional double-quotes to pass strings that
 	// would otherwise be interpreted as booleans or integers.
 
-        dict = (jsonParse (toString body))
+	dict = (jsonParse (toString body))
 	varName = (first (keys dict))
 	valueString = (at dict varName)
-	if (representsAnInteger valueString)  {
+	if (representsAnInteger valueString) {
 		value = (toInteger valueString)
 	} ('true' == valueString) {
 		value = true
@@ -375,7 +375,3 @@ method sendBroadcast MicroBlocksThingWorker path {
 	msg = (urlDecode (substring path 12))
 	sendBroadcastToBoard (smallRuntime) msg
 }
-
-// Variables
-
-
