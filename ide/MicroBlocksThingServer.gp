@@ -4,8 +4,10 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// MicroBlocksThingServer.gp - An HTTP server that runs as a helper application, allowing a
-// MicroBlocks IDE running in the browser to communicate with the MicroBlocks IDE.
+// MicroBlocksThingServer.gp - An HTTP server implementing the Mozilla Web of THings REST
+// protocol. This server allows a Snap! and other tools running in the browser to communicate
+// with a board tethered via a USB cable to the MicroBlocks IDE.
+//
 // John Maloney and Bernat Romagosa, May, 2019
 
 defineClass MicroBlocksThingServer serverSocket vars workers
@@ -25,7 +27,7 @@ method initialize MicroBlocksThingServer {
 method start MicroBlocksThingServer {
 	stop this
 	serverSocket = (openServerSocket 6473)
-	print 'MicroBlocks HTTP Server listening on port 6473'
+	print 'MicroBlocks Thing Server listening on port 6473'
 	return (isRunning this)
 }
 
@@ -43,7 +45,7 @@ method isRunning MicroBlocksThingServer {
 method step MicroBlocksThingServer {
 	if (isNil serverSocket) { return }
 
-	// accept a new HTTP connection if there is one
+	// accept a new connection if there is one
 	clientSock = (acceptConnection serverSocket)
 	if (notNil clientSock) {
 		add workers (newMicroBlocksThingWorker this clientSock)
@@ -170,7 +172,7 @@ method stepWorker MicroBlocksThingWorker {
 }
 
 method processNext MicroBlocksThingWorker {
-	// Process the next HTTP request in inBuf. Do nothing if the request is not complete.
+	// Process the next request in inBuf. Do nothing if the request is not complete.
 
 	headers = (extractHeaders this)
 	if (isNil headers) { return } // incomplete headers
