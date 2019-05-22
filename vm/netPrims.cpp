@@ -18,11 +18,16 @@
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
 	#include <esp_wifi.h>
+#elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#define USE_WIFI101
+	#define uint32 wifi_uint32
+	#include <WiFi101.h>
+	#undef uint32
 #endif
 
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
 
 // Buffer for HTTP requests
 #define REQUEST_SIZE 1024
@@ -68,7 +73,6 @@ WiFiClient client;
 // Web Server for Mozilla IoT Things
 
 static void initWebServer() {
-	server.stop();
 	server.begin();
 	serverStarted = true;
 }
@@ -220,16 +224,20 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 	char *password = obj2str(args[1]);
 	int createHotSpot = (argCount > 2) && (trueObj == args[2]);
 
-	WiFi.persistent(false); // don't save network info to Flash
-	WiFi.mode(WIFI_OFF); // Kill the current connection, if any
-
-	if (createHotSpot) {
-		WiFi.mode(WIFI_AP_STA); // access point & station mode
-		WiFi.softAP(networkName, password);
-	} else {
-		WiFi.mode(WIFI_STA);
+	#ifdef USE_WIFI101
 		WiFi.begin(networkName, password);
-	}
+	#else
+		WiFi.persistent(false); // don't save network info to Flash
+		WiFi.mode(WIFI_OFF); // Kill the current connection, if any
+
+		if (createHotSpot) {
+			WiFi.mode(WIFI_AP_STA); // access point & station mode
+			WiFi.softAP(networkName, password);
+		} else {
+			WiFi.mode(WIFI_STA);
+			WiFi.begin(networkName, password);
+		}
+	#endif
 
 	#ifdef ESP8266
 		// workaround for an apparent ESP8266 WiFi startup bug: calling WiFi.status() during
@@ -245,8 +253,11 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 }
 
 static OBJ primStopWiFi(int argCount, OBJ *args) {
-	server.stop();
-	WiFi.mode(WIFI_OFF);
+	#ifndef USE_WIFI101
+		server.stop();
+		WiFi.mode(WIFI_OFF);
+		serverStarted = false;
+	#endif
 	connecting = false;
 	return falseObj;
 }
@@ -266,11 +277,15 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) {
 		return (OBJ) &statusNotConnected;
 	}
 	if (WL_IDLE_STATUS == status) {
+	#ifdef USE_WIFI101
+		return connecting ? (OBJ) &statusTrying : (OBJ) &statusNotConnected;
+	#else
 		if (WIFI_AP_STA == WiFi.getMode()) {
 			status = WL_CONNECTED; // acting as a hotspot
 		} else {
 			return connecting ? (OBJ) &statusTrying : (OBJ) &statusNotConnected;
 		}
+	#endif
 	}
 	if (WL_CONNECTED == status) {
 		if (!serverStarted) {
@@ -288,7 +303,11 @@ struct {
 } ipStringObject;
 
 static OBJ primGetIP(int argCount, OBJ *args) {
-	IPAddress ip = (WIFI_AP_STA == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
+	#ifdef USE_WIFI101
+		IPAddress ip = WiFi.localIP();
+	#else
+		IPAddress ip = (WIFI_AP_STA == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
+	#endif
 	sprintf(ipStringObject.body, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 	ipStringObject.header = HEADER(StringClass, (strlen(ipStringObject.body) + 4) / 4);
 	return (OBJ) &ipStringObject;
