@@ -49,7 +49,6 @@ to openMicroBlocksEditor devMode {
 	dataAndURL = (global 'initialProject')
   	openProject editor (first dataAndURL) (last dataAndURL)
   }
-  // seems to block the main thread even when launched, and crashes when it can't reach the server
   launch (global 'page') (checkLatestVersion)
   pageResized editor
   developerModeChanged editor

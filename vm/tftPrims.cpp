@@ -15,6 +15,7 @@
 #include "interp.h"
 
 int useTFT = false;
+int touchEnabled = false;
 
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_ARCH_ESP32)
 
@@ -53,9 +54,23 @@ int useTFT = false;
 			tftClear();
 			useTFT = true;
 		}
+
 	#else
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ILI9341.h"
+                #include <XPT2046_Touchscreen.h>
+                #include <SPI.h>
+
+                #define HAS_TFT_TOUCH
+
+                #define CS_PIN  16
+
+                XPT2046_Touchscreen ts(CS_PIN);
+
+                #define X_MIN 256
+                #define X_MAX 3632
+                #define Y_MIN 274
+                #define Y_MAX 3579
 
 		#define TFT_CS	5
 		#define TFT_DC	27
@@ -69,9 +84,17 @@ int useTFT = false;
 			// Turn on backlight on IoT-Bus
 			pinMode(33, OUTPUT);
 			digitalWrite(33, HIGH);
+
 			useTFT = true;
 		}
-	#endif
+
+                void touchInit() {
+                    ts.begin();
+                    ts.setCalibration(X_MIN, X_MAX, Y_MIN, Y_MAX);
+                    ts.setRotation(1);
+                    touchEnabled = true;
+                }
+#endif
 
 void tftClear() {
 	tft.fillScreen(TFT_BLACK);
@@ -227,6 +250,47 @@ void tftSetHugePixelBits(int bits) {
 	}
 }
 
+OBJ primTftTouched(int argCount, OBJ *args) {
+#ifdef HAS_TFT_TOUCH
+    if (!touchEnabled) { touchInit(); }
+    return ts.touched() ? trueObj : falseObj;
+#endif
+    return falseObj;
+}
+
+OBJ primTftTouchX(int argCount, OBJ *args) {
+#ifdef HAS_TFT_TOUCH
+    if (!touchEnabled) { touchInit(); }
+    if (ts.touched()) {
+        TS_Point p = ts.getMappedPoint();
+        return int2obj(p.x);
+    }
+#endif
+    return int2obj(-1);
+}
+
+OBJ primTftTouchY(int argCount, OBJ *args) {
+#ifdef HAS_TFT_TOUCH
+    if (!touchEnabled) { touchInit(); }
+    if (ts.touched()) {
+        TS_Point p = ts.getMappedPoint();
+        return int2obj(p.y);
+    }
+#endif
+    return int2obj(-1);
+}
+
+OBJ primTftTouchPressure(int argCount, OBJ *args) {
+#ifdef HAS_TFT_TOUCH
+    if (!touchEnabled) { touchInit(); }
+    if (ts.touched()) {
+        TS_Point p = ts.getMappedPoint();
+        return int2obj(p.z);
+    }
+#endif
+    return int2obj(-1);
+}
+
 #else // stubs
 
 void tftInit() { }
@@ -242,6 +306,10 @@ OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
 OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
 OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
 OBJ primText(int argCount, OBJ *args) { return falseObj; }
+OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
+OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
+OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
+OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
@@ -256,6 +324,10 @@ static PrimEntry entries[] = {
 	"circle", primCircle,
 	"triangle", primTriangle,
 	"text", primText,
+	"tftTouched", primTftTouched,
+	"tftTouchX", primTftTouchX,
+	"tftTouchY", primTftTouchY,
+	"tftTouchPressure", primTftTouchPressure,
 };
 
 void addTFTPrims() {
