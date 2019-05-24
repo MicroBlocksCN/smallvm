@@ -274,7 +274,7 @@ method needsTranslation AuthoringSpecs spec {
   return false
 }
 
-method installTranslation AuthoringSpecs translationData {
+method installTranslation AuthoringSpecs translationData langName {
   // Translations data is string consisting of three-line entries:
   //	original string
   //	translated string
@@ -291,6 +291,7 @@ method installTranslation AuthoringSpecs translationData {
 	  // skip lines until the next blank line
 	}
   }
+  if (notNil langName) { language = langName }
 }
 
 to localized aString {
