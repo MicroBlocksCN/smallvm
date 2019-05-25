@@ -171,6 +171,11 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
 		(array ' ' '[tft:text]'			'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
 
+		(array 'r' '[tft:tftTouched]'			'TFT touched')
+		(array 'r' '[tft:tftTouchX]'			'TFT touch X position')
+		(array 'r' '[tft:tftTouchY]'			'TFT touch Y position')
+		(array 'r' '[tft:tftTouchPressure]'	        'TFT touch pressure')
+
 		(array ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123)
 		(array ' ' '[radio:sendString]'				'radio send string _' 'str' 'Hello!')
 		(array ' ' '[radio:sendPair]'				'radio send pair _ = _' 'str num' 'light' 10)

@@ -427,6 +427,7 @@ method initLabelSpecs MicroBlocksScripter {
   atPut labelSpecs '[io:hasServo]' 'Servo (experimental)'
   atPut labelSpecs '[net:hasWiFi]' 'WiFi (experimental):'
   atPut labelSpecs '[tft:enableDisplay]' 'TFT Display (experimental)'
+  atPut labelSpecs '[tft:tftTouched]' 'TFT Touch Screen (experimental):'
   atPut labelSpecs '[radio:sendInteger]' 'BBC micro:bit Radio'
 }
 
