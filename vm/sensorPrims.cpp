@@ -234,7 +234,7 @@ static int readTemperature() {
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 
-#define ACCEL_ID 25 // LIS3DH
+#define LIS3DH_ID 25
 
 int accelStarted = false;
 
@@ -242,18 +242,18 @@ static int readAcceleration(int registerID) {
 	if (!accelStarted) {
 		Wire1.begin(); // use internal I2C bus
 		// turn on the accelerometer
-		Wire1.beginTransmission(ACCEL_ID);
+		Wire1.beginTransmission(LIS3DH_ID);
 		Wire1.write(0x20);
 		Wire1.write(0x7F);
 		Wire1.endTransmission();
 		accelStarted = true;
 	}
-	Wire1.beginTransmission(ACCEL_ID);
+	Wire1.beginTransmission(LIS3DH_ID);
 	Wire1.write(0x28 + registerID);
 	int error = Wire1.endTransmission(false);
 	if (error) return 0; // error; return 0
 
-	Wire1.requestFrom(ACCEL_ID, 1);
+	Wire1.requestFrom(LIS3DH_ID, 1);
 	while (!Wire1.available());
 	int val = Wire1.read();
 
@@ -292,16 +292,21 @@ static int readTemperature() {
 
 #elif defined(ARDUINO_CITILAB_ED1)
 
-#define ACCEL_ID 25 // LIS3DH
+#define LIS3DH_ID 25
 
 int accelStarted = false;
 
 static int readAcceleration(int registerID) {
 	if (!accelStarted) {
-		writeI2CReg(ACCEL_ID, 0x20, 0x7F); // turn on accelerometer, 400 Hz update, 8-bit
+		writeI2CReg(LIS3DH_ID, 0x20, 0x7F); // turn on accelerometer, 400 Hz update, 8-bit
+
+		// set up temperature reporting
+		writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
+		writeI2CReg(LIS3DH_ID, 0x23, 0x80); // enable block data update (needed for temperature)
+
 		accelStarted = true;
 	}
-	int val = readI2CReg(ACCEL_ID, 0x28 + registerID);
+	int val = readI2CReg(LIS3DH_ID, 0x28 + registerID);
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = ((val * 100) / 127); // scale to range 0-100
@@ -310,8 +315,18 @@ static int readAcceleration(int registerID) {
 }
 
 static int readTemperature() {
-	// Could not get meaningful temperature data from the LIS3DH; just return 0
-	return 0;
+	if (!accelStarted) readAcceleration(1); // initialize accelerometer if necessary
+
+	int hiByte = readI2CReg(LIS3DH_ID, 0x0D);
+	int lowByte = readI2CReg(LIS3DH_ID, 0x0C);
+	int offsetDegreesC;
+
+	if (hiByte <= 127) { // positive offset
+		offsetDegreesC = hiByte + ((lowByte >= 128) ? 1 : 0); // round up
+	} else { // negative offset
+		offsetDegreesC = (hiByte - 256) + ((lowByte >= 128) ? -1 : 0); // round down
+	}
+	return 20 + offsetDegreesC;
 }
 
 #else // stubs for non-micro:bit boards

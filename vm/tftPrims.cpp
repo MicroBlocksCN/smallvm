@@ -181,7 +181,7 @@ OBJ primTriangle(int argCount, OBJ *args) {
 }
 
 OBJ primText(int argCount, OBJ *args) {
-	char *text = obj2str(args[0]);
+	OBJ value = args[0];
 	int x = obj2int(args[1]);
 	int y = obj2int(args[2]);
 	// Re-encode color from 24 bits into 16 bits
@@ -192,7 +192,18 @@ OBJ primText(int argCount, OBJ *args) {
 	tft.setTextColor(color16b);
 	tft.setTextSize(scale);
 	tft.setTextWrap(wrap);
-	tft.print(text);
+
+	if (IS_CLASS(value, StringClass)) {
+		tft.print(obj2str(value));
+	} else if (trueObj == value) {
+		tft.print("true");
+	} else if (falseObj == value) {
+		tft.print("false");
+	} else if (isInt(value)) {
+		char s[50];
+		sprintf(s, "%d", obj2int(value));
+		tft.print(s);
+	}
 	return falseObj;
 }
 
