@@ -1,14 +1,13 @@
 sharedVariables '_useWiFi'
 
 spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
+spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
 spec 'r' 'getIPAddress' 'IP address'
 spec ' ' 'defineThing' 'define thing _ capability _' 'str str.thingTypesMenu' 'Hello LED' 'Light'
 spec ' ' 'addBooleanProperty' 'add boolean property title _ variable _ @Type _' 'str menu.allVarsMenu str.booleanPropertyTypesMenu' '' '' 'OnOffProperty'
-spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str.numberPropertyTypesMenu' '' '' '0' '100' 'LevelProperty'
+spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str.numberPropertyTypesMenu' '' '' 0 100 'LevelProperty'
 spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str.stringPropertyTypesMenu' '' '' 'ColorProperty'
 spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
-spec ' ' '_endThing' '_end thing description'
-spec ' ' '_reportChanged' '_reportChanged _ value _' 'menu.allVarsMenu auto' '' ''
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) { return }
@@ -33,11 +32,15 @@ to 'wifi connect to' ssid password tries {
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
+to 'wifiCreateHotspot' ssid password {
+  '[net:startWiFi]' ssid password true
+}
+
 to getIPAddress {
   return ('[net:myIPAddress]')
 }
 
-to 'defineThing' name capability {
+to defineThing name capability {
   _useWiFi = ('[net:hasWiFi]')
   if _useWiFi {
     '[net:clearThingDescription]'
@@ -52,50 +55,40 @@ to 'defineThing' name capability {
   "properties": {'
     }
   } else {
-    sendBroadcast 'moz-pair ' name
+    sendBroadcast 'moz-thing { "name": "' name '","@context": "https://iot.mozilla.org/schemas/","@type": ["' capability '"]}'
   }
 }
 
-to 'addBooleanProperty' title var typeName {
+to addBooleanProperty title var typeName {
   if _useWiFi {
     '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"},'
   } else {
-	sendBroadcast 'moz-property {"name":"' var '","type":"boolean","value":false}'
+    sendBroadcast 'moz-property {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"}'
   }
 }
 
-to 'addNumProp' title var min max typeName {
+to addNumProp title var min max typeName {
   if _useWiFi {
     '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"'
     if ('TemperatureProperty' == typeName) {
-		'[net:appendToThingDescription]' ', "unit": "degree celsius"'
+	  '[net:appendToThingDescription]' ', "unit": "degree celsius"'
     }
 	'[net:appendToThingDescription]' '},'
   } else {
-    sendBroadcast 'moz-property {"name":"' var '","type":"number","value":0,"min":' min ',"max":' max '}'
+    sendBroadcast 'moz-property {"title":"' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"}'
   }
 }
 
-to 'addStringProperty' title var typeName {
+to addStringProperty title var typeName {
   if _useWiFi {
     '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"},'
   } else {
-	sendBroadcast 'moz-property {"name":"' var '","type":"string","value":""}'
+    sendBroadcast 'moz-property {"title":"' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"}'
   }
 }
 
 to '_addCustomProperty' key jsonValue {
-  '[net:appendToThingProperty]' '"' key '": ' jsonValue
-}
-
-to '_endThing' {
-  // Temporary, until MicroBlocks-adaptor is updated
-  if (not _useWiFi) {
-    sendBroadcast 'moz-done'
+  if _useWiFi {
+	'[net:appendToThingProperty]' '"' key '": ' jsonValue
   }
-}
-
-to '_reportChanged' var value {
-  // Temporary, until MicroBlocks-adaptor is updated
-  sendBroadcast 'moz-property-changed {"name":"' var '","value":' value '}'
 }
