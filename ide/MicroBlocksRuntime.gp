@@ -225,7 +225,7 @@ method softReset SmallRuntime {
 }
 
 method selectPort SmallRuntime {
-        portList = (portList this)
+	portList = (portList this)
 	menu = (menu 'Serial port:' (action 'setPort' this) true)
 	for s portList { addItem menu s }
 	addItem menu 'other...'
@@ -903,15 +903,17 @@ method installVM SmallRuntime {
 	}
 	popUpAtHand menu (global 'page')
   } ((count (portList this)) > 0) {
-        menu = (menu 'Select board type:' this)
-        for boardType (array 'NodeMCU' 'Generic ESP32' 'Citilab ED1') {
-                addItem menu boardType (action 'flashVM' this boardType)
-        }
-        popUpAtHand menu (global 'page')
+	menu = (menu 'Select board type:' this)
+	for boardType (array 'NodeMCU' 'Generic ESP32' 'Citilab ED1') {
+	  addItem menu boardType (action 'flashVM' this boardType)
+	}
+	addLine menu
+	addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
+	popUpAtHand menu (global 'page')
   } else {
       inform (join
-            (localized 'No boards found; is your board plugged in?') (newline)
-            (localized 'For AdaFruit boards, double-click reset button and try again.'))
+		(localized 'No boards found; is your board plugged in?') (newline)
+		(localized 'For AdaFruit boards, double-click reset button and try again.'))
   }
 }
 
@@ -1017,6 +1019,10 @@ method downloadVMFile SmallRuntime boardName {
 	'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
 	'to copy the file, then the USB drive for your board will dismount.' (newline)
 	'When it remounts, use the "Connect" button to connect to the board.')
+}
+
+method adaFruitMessage SmallRuntime {
+	inform (localized 'For AdaFruit boards, double-click reset button and try again.')
 }
 
 method flashVM SmallRuntime boardType {
