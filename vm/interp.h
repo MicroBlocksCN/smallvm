@@ -19,7 +19,7 @@ extern "C" {
 
 // Global Variables
 
-#define MAX_VARS 25
+#define MAX_VARS 100
 extern OBJ vars[MAX_VARS];
 
 // Code Chunks
