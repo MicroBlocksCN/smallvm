@@ -1,74 +1,49 @@
-sharedVariables '_capacitive threshold'
+sharedVariables '_capacitive threshold' '_toneInitalized' '_toneLoopOverhead' '_tonePin' 'tries'
 
 spec 'r' 'OK capacitive' 'capacitive OK' ''
 spec 'r' 'cancel capacitive' 'capacitive X' ''
-spec 'r' 'up capacitive' 'capacitive up' ''
+spec 'r' 'capacitive sensor ' '_capacitive sensor _ pressed' 'auto any' 2 nil
 spec 'r' 'down capacitive' 'capacitive down' ''
 spec 'r' 'left capacitive' 'capacitive left' ''
 spec 'r' 'right capacitive' 'capacitive right' ''
-spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 200
+spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 30
+spec 'r' 'up capacitive' 'capacitive up' ''
 
 to 'OK capacitive' {
-  if ((v '_capacitive threshold') == 0) {'_capacitive threshold' = 100}
-  local 'value' ('[sensors:touchRead]' 15)
-  repeat 4 {
-    waitMillis 1
-    value += ('[sensors:touchRead]' 15)
-  }
-  return (value <= (v '_capacitive threshold'))
+  return ('capacitive sensor ' 15)
 }
 
 to 'cancel capacitive' {
-  if ((v '_capacitive threshold') == 0) {'_capacitive threshold' = 100}
-  local 'value' ('[sensors:touchRead]' 14)
-  repeat 4 {
-    waitMillis 1
-    value += ('[sensors:touchRead]' 14)
-  }
-  return (value <= (v '_capacitive threshold'))
+  return ('capacitive sensor ' 14)
 }
 
-to 'up capacitive' {
-  if ((v '_capacitive threshold') == 0) {'_capacitive threshold' = 100}
-  local 'value' ('[sensors:touchRead]' 4)
-  repeat 4 {
-    waitMillis 1
-    value += ('[sensors:touchRead]' 4)
+to 'capacitive sensor ' pin {
+  if ((v '_capacitive threshold') == 0) {'_capacitive threshold' = 30}
+  if (('[sensors:touchRead]' pin) <= (v '_capacitive threshold')) {
+    waitMicros 500
+    return (('[sensors:touchRead]' pin) <= (v '_capacitive threshold'))
+  } else {
+    return (booleanConstant false)
   }
-  return (value <= (v '_capacitive threshold'))
 }
 
 to 'down capacitive' {
-  if ((v '_capacitive threshold') == 0) {'_capacitive threshold' = 100}
-  local 'value' ('[sensors:touchRead]' 13)
-  repeat 4 {
-    waitMillis 1
-    value += ('[sensors:touchRead]' 13)
-  }
-  return (value <= (v '_capacitive threshold'))
+  return ('capacitive sensor ' 13)
 }
 
 to 'left capacitive' {
-  if ((v '_capacitive threshold') == 0) {'_capacitive threshold' = 100}
-  local 'value' ('[sensors:touchRead]' 2)
-  repeat 4 {
-    waitMillis 1
-    value += ('[sensors:touchRead]' 2)
-  }
-  return (value <= (v '_capacitive threshold'))
+  return ('capacitive sensor ' 2)
 }
 
 to 'right capacitive' {
-  if ((v '_capacitive threshold') == 0) {'_capacitive threshold' = 100}
-  local 'value' ('[sensors:touchRead]' 27)
-  repeat 4 {
-    waitMillis 1
-    value += ('[sensors:touchRead]' 27)
-  }
-  return (value <= (v '_capacitive threshold'))
+  return ('capacitive sensor ' 27)
 }
 
 to 'set capacitive threshold to' threshold {
   '_capacitive threshold' = threshold
+}
+
+to 'up capacitive' {
+  return ('capacitive sensor ' 4)
 }
 
