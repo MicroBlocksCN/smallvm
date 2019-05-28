@@ -278,7 +278,7 @@ method scriptString MicroBlocksModule {
 	newline = (newline)
 	result = (list)
 	pp = (new 'PrettyPrinter')
-	for scripts {
+	for entry scripts {
 		x = (toInteger (at entry 1))
 		y = (toInteger (at entry 2))
 		expr = (at entry 3)
