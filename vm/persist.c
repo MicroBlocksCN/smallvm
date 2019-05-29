@@ -479,7 +479,7 @@ void compact() {
 		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 	outputString(s);
 
-outputRecordHeaders(); // xxx for testing
+// outputRecordHeaders(); // xxx for testing
 }
 
 // entry points
