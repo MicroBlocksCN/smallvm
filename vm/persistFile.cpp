@@ -50,11 +50,11 @@ extern "C" void writeCodeFileWord(int word) {
 	if (codeFile) codeFile.write((uint8 *) &word, 4);
 }
 
-extern "C" void clearCodeFile() {
+extern "C" void clearCodeFile(int cycleCount) {
 	if (codeFile) codeFile.close();
 	codeFile = SPIFFS.open(FILE_NAME, "w"); // truncate file to zero length
-	int cycleCount = ('S' << 24) | 1; // Header record, version 1
-	writeCodeFileWord(cycleCount);
+	int headerWord = ('S' << 24) | cycleCount; // Header record, version 1
+	writeCodeFileWord(headerWord);
 	closeAndOpenCodeFile();
 }
 

@@ -57,7 +57,7 @@ void restoreScripts();
 void initCodeFile(uint8 *flash, int flashByteCount);
 void writeCodeFile(uint8 *code, int byteCount);
 void writeCodeFileWord(int word);
-void clearCodeFile();
+void clearCodeFile(int cycleCount);
 
 #ifdef __cplusplus
 }

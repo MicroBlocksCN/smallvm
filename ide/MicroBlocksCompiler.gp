@@ -421,7 +421,7 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 
 method instructionsForButtonPressed SmallCompiler cmdOrReporter {
 	result = (list)
-	addAll result (instructionsForCmdList this cmdOrReporter)
+	addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 	button = (first (argList cmdOrReporter))
 	if ('A' == button) {
 		condition = (list (newReporter 'not' (newReporter 'buttonA')))

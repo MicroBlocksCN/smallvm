@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v057"
+#define VM_VERSION "v057b"
 
 // Forward Reference Declarations
 
@@ -276,7 +276,8 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 static void deleteAllChunks() {
 	stopAllTasks();
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
-		clearCodeFile();
+		clearPersistentMemory();
+		clearCodeFile(0);
 	#else
 		for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
 			appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
@@ -316,6 +317,11 @@ static void softReset(int clearMemoryFlag) {
 	turnOffPins();
 	outputString("Welcome to MicroBlocks!");
 	if (clearMemoryFlag) {
+
+// xxx temporary, to test compaction
+void compact();
+compact();
+
 		memClear();
 		outputString("Memory cleared.");
 	}

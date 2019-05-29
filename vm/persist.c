@@ -187,7 +187,7 @@
 	#if defined(ARDUINO_ARCH_ESP32)
 		#define HALF_SPACE (32 * 1024) // 64k total (max half-space is 36)
 	#elif defined(ESP8266)
-		#define HALF_SPACE (12 * 1024) // 32k total (max half-space is 18)
+		#define HALF_SPACE (10 * 1024) // 20k total (max half-space is 18, but unreliable at 12)
 	#else
 		#define HALF_SPACE (5 * 1024) // 10k total
 	#endif
@@ -406,7 +406,29 @@ static int * copyVarInfo(int id, int *src, int *dst) {
 	return dst;
 }
 
-static void compact() {
+// xxx for testing
+static void outputRecordHeaders() {
+	// Output record headers of the current half-space.
+
+	int recordCount = 0;
+	int wordCount = 0;
+
+	char s[200];
+	int *p = recordAfter(NULL);
+	while (p) {
+		recordCount++;
+		wordCount += 2 + *(p + 1);
+		sprintf(s, "(%d %d %d %d) %d",
+			(*p >> 24) & 0xFF, (*p >> 16) & 0xFF, (*p >> 8) & 0xFF, *p & 0xFF, *(p + 1));
+		outputString(s);
+		p = recordAfter(p);
+	}
+	sprintf(s, "%d records, %d words", recordCount, wordCount);
+	outputString(s);
+}
+
+// xxx static
+void compact() {
 	// Copy only the most recent chunk and variable records to the other half-space.
 	// Details:
 	//   1. erase the other half-space
@@ -446,10 +468,18 @@ static void compact() {
 	freeStart = dst;
 
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
-		clearCodeFile();
+		clearCodeFile(cycleCount(current));
 		int *codeStart = ((0 == current) ? start0 : start1) + 1; // skip half-space header
 		writeCodeFile(codeStart, 4 * (freeStart - codeStart));
 	#endif
+
+	char s[100];
+	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
+	sprintf(s, "Compacted code; %d bytes used (%d percent) of %d",
+		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
+	outputString(s);
+
+outputRecordHeaders(); // xxx for testing
 }
 
 // entry points
@@ -514,7 +544,7 @@ void restoreScripts() {
 		clearPersistentMemory();
 		#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 			initCodeFile(NULL, 0);
-			clearCodeFile();
+			clearCodeFile(0);
 		#endif
 		outputString("Scripts cleared");
 		outputString("Started");
