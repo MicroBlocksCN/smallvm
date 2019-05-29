@@ -385,6 +385,14 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data) {
 
 int hasOutputSpace(int byteCount) { return ((OUTBUF_MASK - OUTBUF_BYTES()) > byteCount); }
 
+static void waitForOutbufBytes(int bytesNeeded) {
+	// Wait until there is room for the given number of bytes in the output buffer.
+
+	while (bytesNeeded > (OUTBUF_MASK - OUTBUF_BYTES())) {
+		sendData(); // should eventually create enough room for bytesNeeded
+	}
+}
+
 static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Send a value message of the given type for the given chunkOrVarIndex.
 	// Data is: <type byte><...data...>
@@ -467,6 +475,8 @@ void outputString(char *s) {
 	for (int i = 0; i < byteCount; i++) {
 		data[i + 1] = s[i];
 	}
+
+	waitForOutbufBytes(byteCount + 50);
 	sendMessage(outputValueMsg, 255, (byteCount + 1), data);
 }
 
@@ -523,14 +533,6 @@ static void sendVersionString() {
 	snprintf(s, sizeof(s), " %s %s", VM_VERSION, boardType());
 	s[0] = 2; // data type (2 is string)
 	sendMessage(versionMsg, 0, strlen(s), s);
-}
-
-static void waitForOutbufBytes(int bytesNeeded) {
-	// Wait until there is room for the given number of bytes in the output buffer.
-
-	while (bytesNeeded > (OUTBUF_MASK - OUTBUF_BYTES())) {
-		sendData(); // should eventually create enough room for bytesNeeded
-	}
 }
 
 void sendBroadcastToIDE(char *s, int len) {
