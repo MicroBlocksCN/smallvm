@@ -615,6 +615,7 @@ method errorString SmallRuntime errID {
 #define notEnoughArguments		28	// Not enough arguments passed to primitive
 #define waitTooLong				29	// The maximum wait time is 3600000 milliseconds (one hour)
 #define noWiFi					30	// This board does not support WiFi
+#define zeroDivide				31	// Division (or modulo) by zero is not defined
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)

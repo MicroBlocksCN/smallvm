@@ -674,11 +674,13 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	divide_op:
-		*(sp - arg) = int2obj(evalInt(*(sp - 2)) / evalInt(*(sp - 1)));
+		tmp = evalInt(*(sp - 1));
+		*(sp - arg) = ((0 == tmp) ? fail(zeroDivide) : int2obj(evalInt(*(sp - 2)) / tmp));
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	modulo_op:
-		*(sp - arg) = int2obj(evalInt(*(sp - 2)) % evalInt(*(sp - 1)));
+		tmp = evalInt(*(sp - 1));
+		*(sp - arg) = ((0 == tmp) ? fail(zeroDivide) : int2obj(evalInt(*(sp - 2)) % tmp));
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	absoluteValue_op:
