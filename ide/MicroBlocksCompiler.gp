@@ -835,7 +835,7 @@ method globalVarIndex SmallCompiler varName {
 	if (isNil id) {
 		error 'Unknown variable' varName
 	}
-	if (id >= 25) { error 'Id' id 'for variable' varName 'is out of range' }
+	if (id >= 100) { error 'Id' id 'for variable' varName 'is out of range' }
 	return (id - 1) // VM uses zero-based index
 }
 
