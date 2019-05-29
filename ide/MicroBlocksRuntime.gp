@@ -745,6 +745,7 @@ method processNextMessage SmallRuntime {
 		handleMessage this msg
 	} else {
 		print 'Bad message start byte; should be 250 or 251 but is:' firstByte
+		print (toString recvBuf) // show the bad string (could be an ESP error message)
 		skipMessage this // discard
 	}
 	return true

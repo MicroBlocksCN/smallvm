@@ -184,8 +184,10 @@
 	// Simulate Flash operations using RAM; allows uBlocks to run in RAM on platforms
 	// that do not support Flash-based persistent memory.
 
-	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-		#define HALF_SPACE (10 * 1024) // 20k total
+	#if defined(ARDUINO_ARCH_ESP32)
+		#define HALF_SPACE (32 * 1024) // 64k total (max half-space is 36)
+	#elif defined(ESP8266)
+		#define HALF_SPACE (12 * 1024) // 32k total (max half-space is 18)
 	#else
 		#define HALF_SPACE (5 * 1024) // 10k total
 	#endif
@@ -442,6 +444,12 @@ static void compact() {
 	setCycleCount(!current, cycleCount(current) + 1); // this commits the compaction
 	current = !current;
 	freeStart = dst;
+
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+		clearCodeFile();
+		int *codeStart = ((0 == current) ? start0 : start1) + 1; // skip half-space header
+		writeCodeFile(codeStart, 4 * (freeStart - codeStart));
+	#endif
 }
 
 // entry points
@@ -487,9 +495,31 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	return result;
 }
 
+static int clearOnStartup() {
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_SINOBIT) || \
+		defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_CITILAB_ED1)
+			if ((trueObj == primButtonA(NULL)) && (trueObj == primButtonB(NULL))) return true;
+	#else
+		OBJ args[2] = { int2obj(4), trueObj };
+		return (falseObj == primDigitalRead(2, args)); // return true if pin4 is low
+	#endif
+	return false;
+}
+
 void restoreScripts() {
 	initPersistentMemory();
 	memset(chunks, 0, sizeof(chunks));
+
+	if (clearOnStartup()) {
+		clearPersistentMemory();
+		#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+			initCodeFile(NULL, 0);
+			clearCodeFile();
+		#endif
+		outputString("Scripts cleared");
+		outputString("Started");
+		return;
+	}
 
   #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 	initCodeFile(flash, HALF_SPACE);
