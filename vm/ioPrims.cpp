@@ -85,6 +85,11 @@ int recvBytes(uint8 *buf, int count) {
 
 int sendByte(char aByte) { return Serial.write(aByte); }
 
+void restartSerial() {
+ 	Serial.end();
+ 	Serial.begin(115200);
+}
+
 // General Purpose I/O Pins
 
 #define BUTTON_PRESSED LOW

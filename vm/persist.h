@@ -34,6 +34,8 @@ typedef enum {
 	comment = 30,
 	commentPosition = 31,
 	commentDeleted = 39,
+
+	deleteAll = 218, // 218 in hex is 0xDA, short for "delete all"
 } RecordType_t;
 
 // Chunk Attributes

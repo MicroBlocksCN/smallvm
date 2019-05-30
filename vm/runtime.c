@@ -279,9 +279,7 @@ static void deleteAllChunks() {
 		clearPersistentMemory();
 		clearCodeFile(0);
 	#else
-		for (int chunkIndex = 0; chunkIndex < MAX_CHUNKS; chunkIndex++) {
-			appendPersistentRecord(chunkDeleted, chunkIndex, 0, 0, NULL);
-		}
+		appendPersistentRecord(deleteAll, 0, 0, 0, NULL);
 	#endif
 	memset(chunks, 0, sizeof(chunks));
 }
@@ -315,15 +313,9 @@ static void softReset(int clearMemoryFlag) {
 	stopTone();
 	turnOffInternalNeoPixels();
 	turnOffPins();
-	outputString("Welcome to MicroBlocks!");
 	if (clearMemoryFlag) {
-
-// xxx temporary, to test compaction
-void compact();
-compact();
-
 		memClear();
-		outputString("Memory cleared.");
+		outputString("Memory cleared");
 	}
 }
 
@@ -705,6 +697,10 @@ static int receiveTimeout() {
 	return (usecs - lastRcvTime) > 20000;
 }
 
+// xxx temporarily import these to test compaction
+void compact();
+void outputRecordHeaders();
+
 static void processShortMessage() {
 	if (rcvByteCount < 3) { // message is not complete
 		if (receiveTimeout()) {
@@ -754,6 +750,10 @@ static void processShortMessage() {
 		deleteAllChunks();
 		break;
 	case systemResetMsg:
+		// xxx temporary, to test compaction
+		if (1 == chunkIndex) { outputRecordHeaders(); break; }
+		if (2 == chunkIndex) { compact(); break; }
+
 		softReset(true);
 		break;
 	case pingMsg:

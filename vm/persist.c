@@ -347,7 +347,7 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 	// scan rest of the records to get the most recent info about this chunk
 	while (src) {
 		int attributeID;
-		if (id == ((*src >> 8) & 0xFF)) { // id field matche
+		if (id == ((*src >> 8) & 0xFF)) { // id field matches
 			int type = (*src >> 16) & 0xFF;
 			switch (type) {
 			case chunkCode:
@@ -406,25 +406,46 @@ static int * copyVarInfo(int id, int *src, int *dst) {
 	return dst;
 }
 
-// xxx for testing
-static void outputRecordHeaders() {
-	// Output record headers of the current half-space.
+void outputRecordHeaders() {
+	// For debugging. Output all the record headers of the current half-space.
 
 	int recordCount = 0;
 	int wordCount = 0;
+	int maxID = 0;
 
 	char s[200];
 	int *p = recordAfter(NULL);
 	while (p) {
 		recordCount++;
 		wordCount += 2 + *(p + 1);
-		sprintf(s, "(%d %d %d %d) %d",
-			(*p >> 24) & 0xFF, (*p >> 16) & 0xFF, (*p >> 8) & 0xFF, *p & 0xFF, *(p + 1));
+		int id = (*p >> 8) & 0xFF;
+		if (id > maxID) maxID = id;
+		sprintf(s, "%d %d %d (%d words)",
+			(*p >> 16) & 0xFF, (*p >> 8) & 0xFF, *p & 0xFF, *(p + 1));
 		outputString(s);
 		p = recordAfter(p);
 	}
-	sprintf(s, "%d records, %d words", recordCount, wordCount);
+	sprintf(s, "%d records, %d words, maxID %d, compaction cycles %d",
+		recordCount, wordCount, maxID, cycleCount(current));
 	outputString(s);
+
+	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
+	sprintf(s, "%d bytes used (%d%%) of %d",
+		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
+	outputString(s);
+}
+
+static int * compactionStartRecord() {
+	// Return a pointer to the first record at which to start compaction.
+
+	int *ptr = recordAfter(NULL);
+	int *result = ptr; // first record in half-space; default if no 'deleteAll' records found
+	while (ptr) {
+		int type = (*ptr >> 16) & 0xFF;
+		ptr = recordAfter(ptr);
+		if (deleteAll == type) result = ptr;
+	}
+	return result;
 }
 
 // xxx static
@@ -433,13 +454,14 @@ void compact() {
 	// Details:
 	//   1. erase the other half-space
 	//   2. clear the chunk and variable processed flags
-	//   3. for each chunk and variable record the current half-space
+	//	 3. find the start point for the scan (half space start or after latest 'deleteAll' record)
+	//   4. for each chunk and variable record in the current half-space
 	//		a. if the chunk or variable has been processed, skip it
 	//		b. gather the most recent information about that chunk or variable
-	//		c. write that information into the other half-space
+	//		c. copy that information into the other half-space
 	//		d. mark the chunk or variable as processed
-	//   4. switch to the other half-space
-	//   5. remember the free pointer for the new half-space
+	//   5. switch to the other half-space
+	//   6. remember the free pointer for the new half-space
 
 	// clear the processed flags
 	memset(chunkProcessed, 0, sizeof(chunkProcessed));
@@ -447,9 +469,9 @@ void compact() {
 
 	// clear the destination half-space and init dst pointer
 	clearHalfSpace(!current);
-	int *dst = (0 == !current) ? start0 + 1 : start1 + 1;
+	int *dst = ((0 == !current) ? start0 : start1) + 1;
 
-	int *src = recordAfter(NULL);
+	int *src = compactionStartRecord(NULL);
 	while (src) {
 		int header = *src;
 		int type = (header >> 16) & 0xFF;
@@ -473,13 +495,16 @@ void compact() {
 		writeCodeFile(codeStart, 4 * (freeStart - codeStart));
 	#endif
 
+	#ifdef NRF51
+		// Not sure why, but compaction messes up the serial port on the micro:bit
+		restartSerial();
+	#endif
+
 	char s[100];
 	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-	sprintf(s, "Compacted code; %d bytes used (%d percent) of %d",
+	sprintf(s, "Compacted code\n%d bytes used (%d%%) of %d",
 		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 	outputString(s);
-
-// outputRecordHeaders(); // xxx for testing
 }
 
 // entry points

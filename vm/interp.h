@@ -220,6 +220,7 @@ uint32 millisecs(void);
 
 int recvBytes(uint8 *buf, int count);
 int sendByte(char aByte);
+void restartSerial();
 
 const char *boardType();
 void hardwareInit(void);
