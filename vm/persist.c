@@ -436,7 +436,8 @@ void outputRecordHeaders() {
 }
 
 static int * compactionStartRecord() {
-	// Return a pointer to the first record at which to start compaction.
+	// Return a pointer to the first record at which to start compaction or script restoration
+	// at startup.
 
 	int *ptr = recordAfter(NULL);
 	int *result = ptr; // first record in half-space; default if no 'deleteAll' records found
@@ -555,8 +556,15 @@ static int clearOnStartup() {
 		defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_CITILAB_ED1)
 			if ((trueObj == primButtonA(NULL)) && (trueObj == primButtonB(NULL))) return true;
 	#else
-		OBJ args[2] = { int2obj(4), trueObj };
-		return (falseObj == primDigitalRead(2, args)); // return true if pin4 is low
+		#if defined(ARDUINO_ARCH_ESP32)
+			#define TEST_PIN 26 // DAC2
+		#elif defined(ESP8266)
+			#define TEST_PIN 4
+		#else
+			#define TEST_PIN 1 // digital pin 1 on Arduinos and AdaFruit boards
+		#endif
+		OBJ args[2] = { int2obj(TEST_PIN), trueObj };
+		return (falseObj == primDigitalRead(2, args)); // return true if TEST_PIN is low
 	#endif
 	return false;
 }
@@ -580,7 +588,7 @@ void restoreScripts() {
 	initCodeFile(flash, HALF_SPACE);
   #endif
 
-	int *p = recordAfter(NULL);
+	int *p = compactionStartRecord(NULL);
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
 		if (chunkCode == recType) {
