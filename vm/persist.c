@@ -109,13 +109,13 @@
 	}
 
 	void flashWriteWord(int *addr, int value) {
- 		 while (!(*NVMC_INTFLAG & READY_BIT)){} // wait for previous operation to complete
+		while (!(*NVMC_INTFLAG & READY_BIT)){} // wait for previous operation to complete
 		*addr = value;
 		*NVMC_CTRLA = CMD_WRITE_PAGE;
 	}
 
 	void flashWriteData(int *dst, int wordCount, uint8 *src) {
- 		 while (!(*NVMC_INTFLAG & READY_BIT)){} // wait for previous operation to complete
+		while (!(*NVMC_INTFLAG & READY_BIT)){} // wait for previous operation to complete
 
 		*NVMC_CTRLB = *NVMC_CTRLB & ~MANW; // automatically write pages at page boundaries
 		for ( ; wordCount > 0; wordCount--) {
@@ -452,16 +452,16 @@ static int * compactionStartRecord() {
 void compact() {
 	// Copy only the most recent chunk and variable records to the other half-space.
 	// Details:
-	//   1. erase the other half-space
-	//   2. clear the chunk and variable processed flags
-	//	 3. find the start point for the scan (half space start or after latest 'deleteAll' record)
-	//   4. for each chunk and variable record in the current half-space
+	//	1. erase the other half-space
+	//	2. clear the chunk and variable processed flags
+	//	3. find the start point for the scan (half space start or after latest 'deleteAll' record)
+	//	4. for each chunk and variable record in the current half-space
 	//		a. if the chunk or variable has been processed, skip it
 	//		b. gather the most recent information about that chunk or variable
 	//		c. copy that information into the other half-space
 	//		d. mark the chunk or variable as processed
-	//   5. switch to the other half-space
-	//   6. remember the free pointer for the new half-space
+	//	5. switch to the other half-space
+	//	6. remember the free pointer for the new half-space
 
 	// clear the processed flags
 	memset(chunkProcessed, 0, sizeof(chunkProcessed));
@@ -606,7 +606,7 @@ void restoreScripts() {
 		if (chunks[i].code) chunkCount++;
 	}
 	char s[100];
-	sprintf(s, "Restoring %d scripts...", chunkCount);
+	sprintf(s, "Restored %d scripts", chunkCount);
 	outputString(s);
 	outputString("Started");
 }
@@ -671,7 +671,7 @@ void persistTest() {
 	printf("\nInitializing Memory\n");
 	initPersistentMemory();
 	initPersistentMemory();
- 	clearPersistentMemory();
+	clearPersistentMemory();
 	printf("Memory intitialized; writing records...\n");
 
 	for (int i = 0; i < 3000; i++) {
@@ -679,7 +679,7 @@ void persistTest() {
 	}
 	compact();
 
- 	dumpWords(current, 150);
+	dumpWords(current, 150);
 	showRecordHeaders();
 
 	printf("Final: current %d used %d c0 %d c1 %d\n",
