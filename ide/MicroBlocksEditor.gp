@@ -502,6 +502,12 @@ method contextMenu MicroBlocksEditor {
   addLine menu
   addItem menu 'clear memory and variables' 'softReset'
   addLine menu
+
+// xxx testing
+// addItem menu 'dump persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 1 nil)
+// addItem menu 'compact persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
+// addLine menu
+
   if (not (isRunning thingServer)) {
       addItem menu 'start Mozilla WebThing server' 'startThingServer'
   } else {
