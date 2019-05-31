@@ -561,9 +561,12 @@ static int clearOnStartup() {
 		#elif defined(ESP8266)
 			#define TEST_PIN 4
 		#else
-			#define TEST_PIN 1 // digital pin 1 on Arduinos and AdaFruit boards
+			#define TEST_PIN 2
+			return false; // not supported on Arduinos and AdaFruit boards (fails on ItsyBitsy)
 		#endif
-		OBJ args[2] = { int2obj(TEST_PIN), trueObj };
+		OBJ args[2] = { int2obj(TEST_PIN), trueObj }; // use pullup
+		primDigitalRead(2, args);
+		delay(5); // wait a bit for the pullup resistor to take hold
 		return (falseObj == primDigitalRead(2, args)); // return true if TEST_PIN is low
 	#endif
 	return false;
