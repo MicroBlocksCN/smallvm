@@ -562,7 +562,7 @@ static int clearOnStartup() {
 			#define TEST_PIN 4
 		#else
 			#define TEST_PIN 2
-			return false; // not supported on Arduinos and AdaFruit boards (fails on ItsyBitsy)
+			return false; // not supported on Arduinos and AdaFruit boards (e.g. fails on ItsyBitsy)
 		#endif
 		OBJ args[2] = { int2obj(TEST_PIN), trueObj }; // use pullup
 		primDigitalRead(2, args);
