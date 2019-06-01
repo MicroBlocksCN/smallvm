@@ -317,11 +317,6 @@ struct {
 	int *attributeRecs[ATTRIBUTE_COUNT];
 } chunkData;
 
-struct {
-	int *valueRec;
-	int *nameRec;
-} varData;
-
 static char chunkProcessed[256];
 static char varProcessed[256];
 
@@ -377,29 +372,29 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 static int * copyVarInfo(int id, int *src, int *dst) {
 	if (varProcessed[id]) return dst;
 
-	// clear varData
-	memset(&varData, 0, sizeof(varData));
+	// record info from first reference to this variable (either a varValue or varName record)
+	int type = (*src >> 16) & 0xFF;
+	int *valueRec = (varValue == type) ? src : NULL;
+	int *nameRec = (varName == type) ? src : NULL;
 
 	// scan rest of the records to get the most recent info about this variable
 	while (src) {
 		int type = (*src >> 16) & 0xFF;
 		switch (type) {
 		case varValue:
-			if (id == ((*src >> 8) & 0xFF)) varData.valueRec = src;
+			if (id == ((*src >> 8) & 0xFF)) valueRec = src;
 			break;
 		case varName:
-			if (id == ((*src >> 8) & 0xFF)) varData.nameRec = src;
+			if (id == ((*src >> 8) & 0xFF)) nameRec = src;
 			break;
 		case varsClearAll:
-			memset(&varData, 0, sizeof(varData)); // clear varData
+			valueRec = nameRec = NULL;
 			break;
 		}
 		src = recordAfter(src);
 	}
-	if (varData.valueRec) {
-		dst = copyChunk(dst, varData.valueRec);
-		if (varData.nameRec) dst = copyChunk(dst, varData.nameRec);
-	}
+	if (valueRec) dst = copyChunk(dst, valueRec);
+	if (nameRec) dst = copyChunk(dst, nameRec);
 	varProcessed[id] = true;
 	return dst;
 }
