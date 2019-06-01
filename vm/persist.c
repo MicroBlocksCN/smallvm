@@ -184,10 +184,8 @@
 	// Simulate Flash operations using RAM; allows uBlocks to run in RAM on platforms
 	// that do not support Flash-based persistent memory.
 
-	#if defined(ARDUINO_ARCH_ESP32)
-		#define HALF_SPACE (32 * 1024) // 64k total (max half-space is 36)
-	#elif defined(ESP8266)
-		#define HALF_SPACE (10 * 1024) // 20k total (max half-space is 18, but unreliable at 12)
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+		#define HALF_SPACE (10 * 1024) // 20k total (max half-space on ESP8266 18, but unreliable at 12)
 	#else
 		#define HALF_SPACE (5 * 1024) // 10k total
 	#endif
