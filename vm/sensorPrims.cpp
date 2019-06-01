@@ -299,11 +299,7 @@ int accelStarted = false;
 static int readAcceleration(int registerID) {
 	if (!accelStarted) {
 		writeI2CReg(LIS3DH_ID, 0x20, 0x7F); // turn on accelerometer, 400 Hz update, 8-bit
-
-		// set up temperature reporting
 		writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
-		writeI2CReg(LIS3DH_ID, 0x23, 0x80); // enable block data update (needed for temperature)
-
 		accelStarted = true;
 	}
 	int val = readI2CReg(LIS3DH_ID, 0x28 + registerID);
@@ -317,8 +313,10 @@ static int readAcceleration(int registerID) {
 static int readTemperature() {
 	if (!accelStarted) readAcceleration(1); // initialize accelerometer if necessary
 
+	writeI2CReg(LIS3DH_ID, 0x23, 0x80); // enable block data update (needed for temperature)
 	int hiByte = readI2CReg(LIS3DH_ID, 0x0D);
 	int lowByte = readI2CReg(LIS3DH_ID, 0x0C);
+	writeI2CReg(LIS3DH_ID, 0x23, 0); // disable block data update
 	int offsetDegreesC;
 
 	if (hiByte <= 127) { // positive offset
