@@ -562,7 +562,6 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'setVarMsg' 8
 		atPut msgDict 'getVarNamesMsg' 9
 		atPut msgDict 'clearVarsMsg' 10
-		atPut msgDict 'deleteCommentMsg' 11
 		atPut msgDict 'getVersionMsg' 12
 		atPut msgDict 'getAllCodeMsg' 13
 		atPut msgDict 'deleteAllCodeMsg' 14
@@ -578,8 +577,6 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'broadcastMsg' 27
 		atPut msgDict 'chunkAttributeMsg' 28
 		atPut msgDict 'varNameMsg' 29
-		atPut msgDict 'commentMsg' 30
-		atPut msgDict 'commentPositionMsg' 31
 	}
 	msgType = (at msgDict msgName)
 	if (isNil msgType) { error 'Unknown message:' msgName }
