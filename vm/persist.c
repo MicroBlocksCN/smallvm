@@ -326,7 +326,7 @@ int * recordAfter(int *lastRecord) {
 
 struct {
 	int *chunkCodeRec;
-	int *attributeRecs[ATTRIBUTE_COUNT];
+	int *attributeRecs[CHUNK_ATTRIBUTE_COUNT];
 } chunkData;
 
 static char chunkProcessed[256];
@@ -360,7 +360,7 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 				break;
 			case chunkAttribute:
 				attributeID = *src & 0xFF;
-				if (attributeID < ATTRIBUTE_COUNT) {
+				if (attributeID < CHUNK_ATTRIBUTE_COUNT) {
 					chunkData.attributeRecs[attributeID] = src;
 				}
 				break;
@@ -373,7 +373,7 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 	}
 	if (chunkData.chunkCodeRec) {
 		dst = copyChunk(dst, chunkData.chunkCodeRec);
-		for (int i = 0; i < ATTRIBUTE_COUNT; i++) {
+		for (int i = 0; i < CHUNK_ATTRIBUTE_COUNT; i++) {
 			if (chunkData.attributeRecs[i]) dst = copyChunk(dst, chunkData.attributeRecs[i]);
 		}
 	}
@@ -539,14 +539,8 @@ static void compactRAM() {
 	//	6. update the compaction count
 	//	7. re-write the code file
 
-int startT = microsecs();
-
 	int *dst = ((0 == !current) ? start0 : start1) + 1;
 	int *src = compactionStartRecord(NULL);
-
-char s[100];
-// sprintf(s, "RAM compaction of %d words; src: %d dst: %d", end0 - start0, src - start0, dst - start0);
-// outputString(s);
 
 	if (!src) return; // nothing to compact
 
@@ -564,43 +558,27 @@ char s[100];
 		int type = (header >> 16) & 0xFF;
 		int id = (header >> 8) & 0xFF;
 		if ((chunkCode <= type) && (type <= chunkAttribute) && keepCodeChunk(id, header, next)) {
-// sprintf(s, "  chunk %d %d (%d -> %d)", type, id, src - start0, dst - start0);
-// outputString(s);
 			dst = copyChunk(dst, src);
 		} else if ((varName == type) && (src >= varsStart)) {
-// sprintf(s, "  var %d %d (%d -> %d)", type, id, src - start0, dst - start0);
-// outputString(s);
 			dst = copyChunk(dst, src);
 		} else {
-// sprintf(s, "  skipping %d %d", type, id);
-// outputString(s);
 		}
 		src = next;
 	}
-// outputString("-------");
 
 	freeStart = dst;
 	memset(freeStart, 0, (4 * (end0 - freeStart))); // clear everything following freeStart
 
-int t1 = microsecs() - startT;
-
 	// re-write the code file
 	setCycleCount(current, cycleCount(current) + 1);
-startT = microsecs();
 	clearCodeFile(cycleCount(current));
 	int *codeStart = ((0 == current) ? start0 : start1) + 1; // skip half-space header
-int t2 = microsecs() - startT;
-startT = microsecs();
 	writeCodeFile(codeStart, 4 * (freeStart - codeStart));
-int t3 = microsecs() - startT;
 
-	sprintf(s, "t1 %d t2 %d t3 %d", t1, t2, t3);
-	outputString(s);
-
-//	char s[100];
+	char s[100];
 	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-	sprintf(s, "Compacted RAM code store2 in %d usecs\n%d bytes used (%d%%) of %d",
-		t1, bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
+	sprintf(s, "Compacted RAM code store\n%d bytes used (%d%%) of %d",
+		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 	outputString(s);
 }
 
