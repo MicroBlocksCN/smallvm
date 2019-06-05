@@ -241,10 +241,33 @@ method contextMenu Block {
   addLine menu
   addItem menu 'copy script' 'copyToClipboard'
   if (not isInPalette) {
+    addItem menu 'pick up' 'pickUp'
     addLine menu
     addItem menu 'delete' 'delete'
   }
   return menu
+}
+
+method pickUp Block {
+  if ('reporter' != type) { // hat or command
+    nxt = (next this)
+    if (and (notNil nxt) (notNil (owner morph))) {
+      prev = (ownerThatIsA (owner morph) 'Block')
+      cslot = (ownerThatIsA (owner morph) 'CommandSlot')
+      scripts = (ownerThatIsA (owner morph) 'ScriptEditor')
+      if (and (notNil prev) (=== this (next (handler prev)))) {
+        setNext this nil
+        setNext (handler prev) nxt
+      } (and (notNil cslot) (=== this (nested (handler cslot)))) {
+        setNext this nil
+        setNested (handler cslot) nxt
+      } (notNil scripts) {
+        addPart scripts (morph nxt)
+        fixBlockColor nxt
+      }
+    }
+  }
+  grabCentered morph this
 }
 
 method inputIndex Block anInput {
