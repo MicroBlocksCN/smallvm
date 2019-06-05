@@ -200,6 +200,9 @@ void runTasksUntilDone(void);
 void interpTests1(void);
 void taskTest(void);
 
+void compact();
+void outputRecordHeaders();
+
 // Printf macro for Arduino (many thanks to Michael McElligott)
 
 #ifdef ARDUINO

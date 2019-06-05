@@ -181,16 +181,21 @@
 	}
 
 #else
-	// Simulate Flash operations using RAM; allows uBlocks to run in RAM on platforms
-	// that do not support Flash-based persistent memory.
+	// Simulate Flash operations using a RAM code store; allows MicroBlocks to run in RAM
+	// on platforms that do not support Flash-based persistent memory. On systems with
+	// a file system, the RAM code store is stored in a file to provide persistence.
+
+	#define RAM_CODE_STORE true
 
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
-		#define HALF_SPACE (10 * 1024) // 20k total (max half-space on ESP8266 18, but unreliable at 12)
+		#define USE_CODE_FILE true
+		#define HALF_SPACE (20 * 1024) // ESP8266 is unreliable at 24
 	#else
-		#define HALF_SPACE (5 * 1024) // 10k total
+		#define HALF_SPACE (10 * 1024)
 	#endif
+
 	#define START (&flash[0])
-	static uint8 flash[2 * HALF_SPACE]; // simulated Flash memory
+	static uint8 flash[HALF_SPACE]; // simulated Flash memory
 
 	static void flashErase(int *startAddr, int *endAddr) {
 		int *dst = (int *) startAddr;
@@ -251,6 +256,13 @@ static void setCycleCount(int halfSpace, int cycleCount) {
 static void initPersistentMemory() {
 	// Figure out which is the current half-space and find freeStart.
 	// If neither half-space has a valid cycle counter, initialize persistent memory.
+
+	#ifdef RAM_CODE_STORE
+		// Use a single persistent memory; HALF_SPACE is the total amount of RAM to use
+		// Make starts and ends the same to allow the same code to work for either RAM or Flash
+		start0 = start1 = (int *) START;
+		end0 = end1 = (int *) (START + HALF_SPACE);
+	#endif
 
 	int c0 = cycleCount(0);
 	int c1 = cycleCount(1);
@@ -372,28 +384,23 @@ static int * copyChunkInfo(int id, int *src, int *dst) {
 static int * copyVarInfo(int id, int *src, int *dst) {
 	if (varProcessed[id]) return dst;
 
-	// record info from first reference to this variable (either a varValue or varName record)
+	// record info from first reference to this variable
 	int type = (*src >> 16) & 0xFF;
-	int *valueRec = (varValue == type) ? src : NULL;
 	int *nameRec = (varName == type) ? src : NULL;
 
 	// scan rest of the records to get the most recent info about this variable
 	while (src) {
 		int type = (*src >> 16) & 0xFF;
 		switch (type) {
-		case varValue:
-			if (id == ((*src >> 8) & 0xFF)) valueRec = src;
-			break;
 		case varName:
 			if (id == ((*src >> 8) & 0xFF)) nameRec = src;
 			break;
 		case varsClearAll:
-			valueRec = nameRec = NULL;
+			nameRec = NULL;
 			break;
 		}
 		src = recordAfter(src);
 	}
-	if (valueRec) dst = copyChunk(dst, valueRec);
 	if (nameRec) dst = copyChunk(dst, nameRec);
 	varProcessed[id] = true;
 	return dst;
@@ -442,8 +449,7 @@ static int * compactionStartRecord() {
 	return result;
 }
 
-// xxx static
-void compact() {
+static void compactFlash() {
 	// Copy only the most recent chunk and variable records to the other half-space.
 	// Details:
 	//	1. erase the other half-space
@@ -472,7 +478,7 @@ void compact() {
 		int id = (header >> 8) & 0xFF;
 		if ((chunkCode <= type) && (type <= chunkDeleted)) {
 			dst = copyChunkInfo(id, src, dst);
-		} else if ((varValue <= type) && (type <= varsClearAll)) {
+		} else if ((varName <= type) && (type <= varsClearAll)) {
 			dst = copyVarInfo(id, src, dst);
 		}
 		src = recordAfter(src);
@@ -483,12 +489,6 @@ void compact() {
 	current = !current;
 	freeStart = dst;
 
-	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
-		clearCodeFile(cycleCount(current));
-		int *codeStart = ((0 == current) ? start0 : start1) + 1; // skip half-space header
-		writeCodeFile(codeStart, 4 * (freeStart - codeStart));
-	#endif
-
 	#ifdef NRF51
 		// Not sure why, but compaction messes up the serial port on the micro:bit
 		restartSerial();
@@ -496,8 +496,111 @@ void compact() {
 
 	char s[100];
 	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-	sprintf(s, "Compacted code\n%d bytes used (%d%%) of %d",
+	sprintf(s, "Compacted Flash code store\n%d bytes used (%d%%) of %d",
 		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
+	outputString(s);
+}
+
+// RAM compaction
+
+static int keepCodeChunk(int id, int header, int *start) {
+	// Return true if this code chunk should be kept when compacting RAM.
+
+	if (unusedChunk == chunks[id].chunkType) return false; // code chunk was deleted
+
+	int *rec = start;
+	while (rec) {
+		// superceded only if all fields of header match (i.e. type, id, attributeType)
+		if (*rec == header) return false; // superceded
+		rec = recordAfter(rec);
+	}
+	return true;
+}
+
+static void compactRAM() {
+	// Compact a RAM-based code store in place. In-place compaction is possible in RAM since,
+	// unlike Flash memory, RAM can be re-written without first erasing it. This approach
+	// allows twice as much space for code as the half-space design.
+	//
+	// In-place compaction differs from half-space compaction because the destination of the
+	// copying operations cannot overlap with the unprocessed portion of the code store. This
+	// constraint is ensured by maintaining record order and "sliding down" all the surviving
+	// records to so that all unused space is left at the end of the code store. where it is
+	// available for storing new records.
+	//
+	// Details:
+	//	1. find the start point for the scan (half space start or after latest 'deleteAll' record)
+	//	2. find the most recent "varsClearAll" record
+	//	3. for each chunk and variable record in the current half-space
+	//		a. deterimine if the record should be kept or skipped
+	//		b. if kept, copy the record down to the destination pointer
+	//	4. update the free pointer
+	//	5. clear the rest of the code store
+	//	6. update the compaction count
+	//	7. re-write the code file
+
+int startT = microsecs();
+
+	int *dst = ((0 == !current) ? start0 : start1) + 1;
+	int *src = compactionStartRecord(NULL);
+
+char s[100];
+// sprintf(s, "RAM compaction of %d words; src: %d dst: %d", end0 - start0, src - start0, dst - start0);
+// outputString(s);
+
+	if (!src) return; // nothing to compact
+
+	// find the most recent varsClearAll record
+	int *varsStart = src;
+	int *rec = src;
+	while (rec) {
+		if (varsClearAll == ((*rec >> 16) & 0xFF)) varsStart = rec;
+		rec = recordAfter(rec);
+	}
+
+	while (src) {
+		int *next = recordAfter(src);
+		int header = *src;
+		int type = (header >> 16) & 0xFF;
+		int id = (header >> 8) & 0xFF;
+		if ((chunkCode <= type) && (type <= chunkAttribute) && keepCodeChunk(id, header, next)) {
+// sprintf(s, "  chunk %d %d (%d -> %d)", type, id, src - start0, dst - start0);
+// outputString(s);
+			dst = copyChunk(dst, src);
+		} else if ((varName == type) && (src >= varsStart)) {
+// sprintf(s, "  var %d %d (%d -> %d)", type, id, src - start0, dst - start0);
+// outputString(s);
+			dst = copyChunk(dst, src);
+		} else {
+// sprintf(s, "  skipping %d %d", type, id);
+// outputString(s);
+		}
+		src = next;
+	}
+// outputString("-------");
+
+	freeStart = dst;
+	memset(freeStart, 0, (4 * (end0 - freeStart))); // clear everything following freeStart
+
+int t1 = microsecs() - startT;
+
+	// re-write the code file
+	setCycleCount(current, cycleCount(current) + 1);
+startT = microsecs();
+	clearCodeFile(cycleCount(current));
+	int *codeStart = ((0 == current) ? start0 : start1) + 1; // skip half-space header
+int t2 = microsecs() - startT;
+startT = microsecs();
+	writeCodeFile(codeStart, 4 * (freeStart - codeStart));
+int t3 = microsecs() - startT;
+
+	sprintf(s, "t1 %d t2 %d t3 %d", t1, t2, t3);
+	outputString(s);
+
+//	char s[100];
+	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
+	sprintf(s, "Compacted RAM code store2 in %d usecs\n%d bytes used (%d%%) of %d",
+		t1, bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 	outputString(s);
 }
 
@@ -530,7 +633,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	// write the record
 	int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
 
-  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+  #if USE_CODE_FILE
 	writeCodeFileWord(header);
 	writeCodeFileWord(wordCount);
 	writeCodeFile(data, 4 * wordCount);
@@ -565,13 +668,21 @@ static int clearOnStartup() {
 	return false;
 }
 
+void compact() {
+	#ifdef RAM_CODE_STORE
+		compactRAM();
+	#else
+		compactFlash();
+	#endif
+}
+
 void restoreScripts() {
 	initPersistentMemory();
 	memset(chunks, 0, sizeof(chunks));
 
 	if (clearOnStartup()) {
 		clearPersistentMemory();
-		#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+		#if USE_CODE_FILE
 			initCodeFile(NULL, 0);
 			clearCodeFile(0);
 		#endif
@@ -580,7 +691,7 @@ void restoreScripts() {
 		return;
 	}
 
-  #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+  #if USE_CODE_FILE
 	initCodeFile(flash, HALF_SPACE);
   #endif
 
