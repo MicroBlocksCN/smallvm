@@ -191,6 +191,9 @@ method openProjectMenu MicroBlocksEditor {
 
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the give file path or URL.
+  ok = (confirm (global 'page') nil 'Discard current project?')
+
+  if (not ok) { return }
 
   if (beginsWith location '//') {
 	data = (readEmbeddedFile (substring location 3) true)
