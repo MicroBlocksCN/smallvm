@@ -6,54 +6,18 @@
 
 // MicroBlocksScripter.gp - authoring-level MicroBlocksScripter w/ built-in palette
 
-defineClass MicroBlocksScripter morph targetObj projectEditor saveNeeded libraries categoriesFrame catResizer libHeader libFrame libAddButton blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categoriesFrame catResizer libHeader libFrame libAddButton blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
 
-method targetClass MicroBlocksScripter { return (classOf targetObj) }
-method targetObj MicroBlocksScripter { return targetObj }
+method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
+method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
+method project MicroBlocksScripter { return mbProject }
 method thingServer MicroBlocksScripter { return (thingServer projectEditor) }
-
-method setTargetObj MicroBlocksScripter obj {
-  if (targetObj === obj) { return }
-  oldClass = (classOf targetObj)
-  targetObj = obj
-  if ((classOf obj) != oldClass) {
-    restoreScripts this
-    saveScripts this
-  }
-  if ('Variables' == (selection (contents categoriesFrame))) {
-	updateBlocks this
-  }
-}
-
-method targetModule MicroBlocksScripter {
-  if (notNil targetObj) { return (module (classOf targetObj)) }
-  return (module (project projectEditor))
-}
-
-method scriptEditor MicroBlocksScripter {
-  return (contents scriptsFrame)
-}
-
-method blockPalette MicroBlocksScripter {
-  return (contents blocksFrame)
-}
-
-method createInitialClass MicroBlocksScripter {
-  module = (targetModule this)
-  newClassName = (unusedClassName module 'MyClass')
-  cl = (defineClassInModule module newClassName)
-  removeAllParts (morph (contents scriptsFrame))
-  targetObj = (instantiate cl)
-  restoreScripts this
-  saveScripts this
-}
 
 // initialization
 
 method initialize MicroBlocksScripter aProjectEditor {
-  targetObj = nil
+  mbProject = (newMicroBlocksProject)
   projectEditor = aProjectEditor
-  libraries = (dictionary)
   scale = (global 'scale')
   morph = (newMorph this)
   setCostume morph (gray 150) // border color
@@ -238,7 +202,6 @@ method categories MicroBlocksScripter {
   if (not (devMode)) {
   	removeAll result (list 'Lists' 'Advanced')
   }
-  result = (join result (extraCategories (project projectEditor)))
   return result
 }
 
@@ -290,10 +253,11 @@ method addBlocksForCategory MicroBlocksScripter cat {
   }
 }
 
-method addBlocksForLibrary MicroBlocksScripter lib {
+method addBlocksForLibrary MicroBlocksScripter libName {
+  if (isNil libName) { return }
+  lib = (at (libraries mbProject) libName)
   if (isNil lib) { return }
-  specs = (at libraries lib (list))
-  for spec specs {
+  for spec (values (blockSpecs lib)) {
 	if (or (devMode) (not (beginsWith (blockOp spec) '_'))) {
 	  addSpaceOrLabelBefore this spec
 	  addBlock this (blockForSpec spec) spec
@@ -304,12 +268,12 @@ method addBlocksForLibrary MicroBlocksScripter lib {
 method addVariableBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
-  addButton this (localized 'Add a variable') (action 'createSharedVariable' this) 'Variables are visible to all scripts.'
-  sharedVars = (visibleVars this)
-  if (notEmpty sharedVars) {
-	addButton this (localized 'Delete a variable') (action 'deleteSharedVariable' this)
+  addButton this (localized 'Add a variable') (action 'createVariable' this) 'Create a global variable (i.e. visible in all scripts).'
+  visibleVars = (visibleVars this)
+  if (notEmpty visibleVars) {
+	addButton this (localized 'Delete a variable') (action 'deleteVariableMenu' this)
 	nextY += (8 * scale)
-	for varName sharedVars {
+	for varName visibleVars {
 	    lastY = nextY
 	    b = (toBlock (newReporter 'v' varName))
 	    addBlock this b nil // true xxx
@@ -332,10 +296,10 @@ method addVariableBlocks MicroBlocksScripter {
 method addMyBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
-  addButton this (localized 'Add a function') (action 'createSharedBlock' this)
+  addButton this (localized 'Add a function') (action 'createFunction' this)
   nextY += (8 * scale)
 
-  for f (functions (targetModule this)) {
+  for f (functions (main mbProject)) {
 	if (or (devMode) (not (beginsWith (functionName f) '_'))) {
 	  spec = (specForOp (authoringSpecs) (functionName f))
 	  if (isNil spec) { spec = (blockSpecFor f) }
@@ -358,7 +322,6 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
   if (isNil spec) { spec = (blockSpec b) }
   if (isNil isVarReporter) { isVarReporter = false }
   scale = (global 'scale')
-  targetClass = (classOf targetObj)
   if (notNil spec) {
 	inputs = (inputs b)
 	for i (slotCount spec) {
@@ -368,9 +331,6 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
 	  }
 	  if ('page' == hint) {
 		replaceInput b (at inputs i) (toBlock (newReporter 'v' 'page'))
-	  }
-	  if (or ('this' == hint) (and ('list' != hint) ((className targetClass) == hint))) {
-		replaceInput b (at inputs i) (toBlock (newReporter 'v' 'this'))
 	  }
 	}
   }
@@ -452,40 +412,68 @@ method addSectionLabel MicroBlocksScripter label {
   nextY += ((height (morph label)) + (8 * scale))
 }
 
-// variable operations
+// project creation and loading
 
-method sharedVars MicroBlocksScripter {
-  return (copyWithout (variableNames (targetModule this)) 'extensions')
-}
-
-method visibleVars MicroBlocksScripter {
-  // only show vars that start with underscore (used by libraries) in dev mode
-  if (devMode) {
-    return (sharedVars this)
-  } else {
-    return (filter
-      (function each { return (not (beginsWith each '_')) })
-      (sharedVars this))
+method createEmptyProject MicroBlocksScripter {
+  mbProject = (newMicroBlocksProject)
+  if (notNil scriptsFrame) {
+	removeAllParts (morph (contents scriptsFrame))
+	restoreScripts this
+	saveScripts this
   }
 }
 
-method createSharedVariable MicroBlocksScripter {
-  // Temporary hack. Create shared variables in the session module.
-  varName = (prompt (global 'page') 'New shared variable name?' '')
+method loadOldProjectFromClass MicroBlocksScripter aClass specs {
+  // Load an old-style (GP-format) MicroBlocks project from the given class and spec list.
+
+  mbProject = (newMicroBlocksProject)
+  if (notNil aClass) {
+	initFromOldProjectClassAndSpecs (main mbProject) aClass specs
+  }
+  restoreScripts this
+  saveScripts this
+  if ('Variables' == (selection (contents categoriesFrame))) {
+	updateBlocks this
+  }
+}
+
+method loadNewProjectFromData MicroBlocksScripter data {
+  // Load an new-style MicroBlocks project from the given data.
+print 'new project'
+print data
+}
+
+// variable operations
+
+method visibleVars MicroBlocksScripter {
+  // Include vars that start with underscore only in dev mode.
+
+  allVars = (variableNames mbProject)
+  if (devMode) {
+    return allVars
+  } else {
+    return (filter
+      (function each { return (not (beginsWith each '_')) })
+      allVars)
+  }
+}
+
+method createVariable MicroBlocksScripter {
+  varName = (prompt (global 'page') 'New variable name?' '')
   if (varName != '') {
-	setShared (uniqueVarName this varName) 0 (targetModule this)
+	addVariable (main mbProject) (uniqueVarName this varName)
 	saveVariableNames (smallRuntime)
 	updateBlocks this
   }
 }
 
 method uniqueVarName MicroBlocksScripter varName forScriptVar {
-  // If varName matches an instance or shared variable, return a unique variant of it.
+  // If varName matches global variable, return a unique variant of it.
   // Otherwise, return varName unchanged.
 
   if (isNil forScriptVar) { forScriptVar = false }
-  existingVars = (toList (join (sharedVars this) (fieldNames (classOf targetObj))))
-  scripts = (scripts (classOf targetObj))
+  existingVars = (variableNames mbProject)
+  scripts = (scripts (main mbProject))
   if (and (notNil scripts) (not forScriptVar)) {
 	for entry scripts {
 	  for b (allBlocks (at entry 3)) {
@@ -498,34 +486,19 @@ method uniqueVarName MicroBlocksScripter varName forScriptVar {
   return (uniqueNameNotIn existingVars varName)
 }
 
-method deleteSharedVariable MicroBlocksScripter {
+method deleteVariableMenu MicroBlocksScripter {
   if (isEmpty (visibleVars this)) { return }
-  menu = (menu nil (action 'removeSharedVariable' this) true)
+  menu = (menu nil (action 'deleteVariable' this) true)
   for v (visibleVars this) {
     addItem menu v
   }
   popUpAtHand menu (global 'page')
 }
 
-method removeSharedVariable MicroBlocksScripter varName {
-  deleteSharedVarMonitors this (targetModule this) varName
-  deleteVar (targetModule this) varName
+method deleteVariable MicroBlocksScripter varName {
+  deleteVariable (main mbProject) varName
   clearVariableNames (smallRuntime)
   updateBlocks this
-}
-
-method deleteSharedVarMonitors MicroBlocksScripter module sharedVarName {
-  for m (allMorphs (morph (global 'page'))) {
-	if (isClass (handler m) 'Monitor') {
-	  monitorAction = (getAction (handler m))
-	  if (and (notNil monitorAction) ((count (arguments monitorAction)) >= 2)) {
-		args = (arguments monitorAction)
-		if (and (sharedVarName == (at args 1)) (module == (at args 2))) {
-		  removeFromOwner m
-		}
-	  }
-	}
-  }
 }
 
 // save and restore scripts in class
@@ -547,7 +520,6 @@ method step MicroBlocksScripter {
 
 method saveScripts MicroBlocksScripter {
   scale = (global 'scale')
-  if (isNil targetObj) { return }
   scriptsPane = (contents scriptsFrame)
   paneX = (left (morph scriptsPane))
   paneY = (top (morph scriptsPane))
@@ -556,21 +528,17 @@ method saveScripts MicroBlocksScripter {
     if (isClass (handler m) 'Block') {
       x = (((left m) - paneX) / scale)
       y = (((top m) - paneY) / scale)
-      script = (expression (handler m) (className (classOf targetObj)))
-      if (isOneOf (primName script) 'method' 'to') {
+      script = (expression (handler m) 'main')
+      if ('to' == (primName script)) {
         updateFunctionOrMethod this script
         args = (argList script)
-        // only store the stub for a method or function in scripts
-        if ('method' == (primName script)) {
-          script = (newCommand (primName script) (first args) (at args 2))
-        } else {
-	      script = (newCommand (primName script) (first args))
-        }
+        // only store the stub for a function in scripts
+		script = (newCommand (primName script) (first args))
       }
       add scriptsCopy (array x y script)
     }
   }
-  setScripts (classOf targetObj) scriptsCopy
+  setScripts (main mbProject) scriptsCopy
 }
 
 method updateFunctionOrMethod MicroBlocksScripter script {
@@ -578,9 +546,7 @@ method updateFunctionOrMethod MicroBlocksScripter script {
   functionName = (first args)
   newCmdList = (last args)
   if ('to' == (primName script)) {
-    f = (functionNamed functionName)
-  } ('method' == (primName script)) {
-    f = (methodNamed (classOf targetObj) functionName)
+    f = (functionNamed mbProject functionName)
   }
   if (notNil f) { updateCmdList f newCmdList }
 }
@@ -591,19 +557,14 @@ method restoreScripts MicroBlocksScripter {
   removeAllParts (morph scriptsPane)
   clearDropHistory scriptsPane
   updateSliders scriptsFrame
-  if (isNil targetObj) { return }
-  targetClass = (classOf targetObj)
-  scripts = (scripts targetClass)
+  scripts = (scripts (main mbProject))
   if (notNil scripts) {
     paneX = (left (morph scriptsPane))
     paneY = (top (morph scriptsPane))
     for entry (reversed scripts) {
       dta = (last entry)
-      if ('method' == (primName dta)) {
-        func = (methodNamed targetClass (first (argList dta)))
-        block = (scriptForFunction func)
-      } ('to' == (primName dta)) {
-        func = (functionNamed (first (argList dta)))
+      if ('to' == (primName dta)) {
+        func = (functionNamed mbProject (first (argList dta)))
         if (notNil func) {
 		  block = (scriptForFunction func)
 		} else {
@@ -638,13 +599,9 @@ method pasteScripts MicroBlocksScripter scriptString {
     for entry scripts {
       if ('script' == (primName entry)) {
 		script = (last (argList entry))
-		if  ('method' == (primName script)) {
-		  targetClass = (classOf targetObj)
-		  cmd = (copyMethodOrFunction this script targetClass)
-		  block = (scriptForFunction (methodNamed targetClass (first (argList cmd))))
-		} ('to' == (primName script)) {
-		  cmd = (copyMethodOrFunction this script nil)
-		  block = (scriptForFunction (functionNamed (first (argList cmd))))
+		if ('to' == (primName script)) {
+		  cmd = (copyFunction this script nil)
+		  block = (scriptForFunction (functionNamed mbProject (first (argList cmd))))
 		} else {
 		  block = (toBlock script)
 		}
@@ -675,57 +632,48 @@ method scrollToDefinitionOf MicroBlocksScripter aFunctionName {
 
 // Build Your Own Blocks
 
-method createSharedBlock MicroBlocksScripter {
-  page = (global 'page')
-  cls = (classOf targetObj)
-  name = (prompt page 'Enter a new block name:' 'myBlock')
+method createFunction MicroBlocksScripter {
+  name = (prompt (global 'page') 'Enter function name:' 'myBlock')
   if (name == '') {return}
-  opName = (uniqueMethodOrFunctionName this name)
-  func = (defineFunctionInModule (targetModule this) opName (array) nil)
-  spec = (blockSpecFromStrings opName ' ' name '')
-  recordBlockSpec (authoringSpecs) opName spec
+  opName = (uniqueFunctionName this name)
+  func = (defineFunctionInModule (main mbProject) opName (array) nil)
+  spec = (blockSpecFromStrings opName ' ' opName '')
+  recordBlockSpec this opName spec
   addToBottom this (scriptForFunction func)
   updateBlocks this
 }
 
-method copyMethodOrFunction MicroBlocksScripter definition targetClass {
+method recordBlockSpec MicroBlocksScripter opName spec {
+	atPut (blockSpecs (main mbProject)) opName spec
+}
+
+method copyFunction MicroBlocksScripter definition {
   primName = (primName definition)
   args = (argList definition)
   body = (last args)
   if (notNil body) { body = (copy body) }
   oldOp = (first args)
   oldSpec = (specForOp (authoringSpecs) oldOp)
-  if ('method' == primName) {
-	newOp = (uniqueMethodOrFunctionName this oldOp targetClass)
-	parameterNames = (copyFromTo args 3 ((count args) - 1))
-	addMethod targetClass newOp parameterNames body
-	if (notNil oldSpec) {
-	  oldClassName = (at args 2)
-	  newSpec = (copyWithOp oldSpec newOp oldClassName (className targetClass))
-	} else {
-	  newSpec = (blockSpecFor (methodNamed targetClass newOp))
-	}
-  } else {
-	newOp = (uniqueMethodOrFunctionName this oldOp)
+  if ('to' == primName) {} else {
+	newOp = (uniqueFunctionName this oldOp)
 	parameterNames = (copyFromTo args 2 ((count args) - 1))
-	defineFunctionInModule (targetModule this) newOp parameterNames body
+	defineFunctionInModule (main mbProject) newOp parameterNames body
 	if (notNil oldSpec) {
-	oldLabel = (first (specs oldSpec))
-	newLabel = (uniqueFunctionName this oldLabel)
-	newSpec = (copyWithOp oldSpec newOp oldLabel newLabel)
+	  oldLabel = (first (specs oldSpec))
+	  newLabel = (uniqueFunctionName this oldLabel)
+	  newSpec = (copyWithOp oldSpec newOp oldLabel newLabel)
 	} else {
-	  newSpec = (blockSpecFor (functionNamed (targetModule this) newOp))
+	  newSpec = (blockSpecFor (functionNamed mbProject newOp))
 	}
   }
-  recordBlockSpec (authoringSpecs) newOp newSpec
+  recordBlockSpec this newOp newSpec
   return (newCommand primName newOp)
 }
 
 method uniqueFunctionName MicroBlocksScripter baseSpec {
   existingNames = (list)
-  for spec (values (blockSpecs (project projectEditor))) {
-	add existingNames (first (words (first (specs spec))))
-  }
+  addAll existingNames (allOpNames (authoringSpecs))
+  addAll existingNames (keys (blockSpecs (project projectEditor)))
   specWords = (words baseSpec)
   firstWord = (first specWords)
   if ('_' == firstWord) {
@@ -737,29 +685,10 @@ method uniqueFunctionName MicroBlocksScripter baseSpec {
 }
 
 method removedUserDefinedBlock MicroBlocksScripter function {
-  // Remove the given user-defined function or method.
+  // Remove the given user-defined function.
 
-  if (isMethod function) {
-	removeMethodNamed (class (classIndex function)) (functionName function)
-  } else {
-	removeFunction (module function) function
-  }
-
-  blockDeleted (project projectEditor) (functionName function)
-}
-
-method uniqueMethodOrFunctionName MicroBlocksScripter baseName aClass {
-  baseName = (withoutTrailingDigits baseName)
-  if (baseName == '') { baseName = 'm' }
-  existingNames = (list)
-  addAll existingNames (allOpNames (authoringSpecs))
-  if (isNil aClass) {
-	for f (globalFuncs) { add existingNames (functionName f) }
-	for f (functions (targetModule this)) { add existingNames (functionName f) }
-  } else {
-	addAll existingNames (methodNames aClass)
-  }
-  return (uniqueNameNotIn existingNames baseName)
+  removeFunction (module function) function
+  functionDeleted (project projectEditor) (functionName function)
 }
 
 method addToBottom MicroBlocksScripter aBlock noScroll {
@@ -925,11 +854,8 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
   }
   for each affected {
 	expr = (expression each)
-	if ('method' == (primName expr)) {
-	  func = (methodNamed (classOf targetObj) (first (argList expr)))
-	  block = (scriptForFunction func)
-	} ('to' == (primName expr)) {
-	  func = (functionNamed (first (argList expr)))
+	if ('to' == (primName expr)) {
+	  func = (functionNamed mbProject (first (argList expr)))
 	  block = (scriptForFunction func)
 	} else {
 	  block = (toBlock expr)
@@ -944,16 +870,6 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 }
 
 // Library import/export
-
-method clearLibraries MicroBlocksScripter {
-  libraries = (dictionary)
-  setCollection (contents libFrame) (array)
-  if (notNil (selection (contents libFrame))) {
-	select (contents libFrame) nil // deselect library
-	select (contents categoriesFrame) 'Output'
-  }
-  updateBlocks this
-}
 
 method importLibrary MicroBlocksScripter {
   pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ulib')
@@ -970,13 +886,13 @@ method importLibraryFromFile MicroBlocksScripter fileName {
   if (isNil data) { error (join 'Could not read: ' fileName) }
 
   libName = (withoutExtension (filePart fileName))
-  libSpecs = (list)
-  myModule = (targetModule this)
+  libSpecs = (dictionary)
+  libModule = (newMicroBlocksModule libName)
   for cmd (parse data) {
 	op = (primName cmd)
 	args = (argList cmd)
 	if ('sharedVariables' == op) {
-	  for v args { addVar myModule v }
+	  for v args { addVariable libModule v }
 	} ('spec' == op) {
 	  blockType = (at args 1)
 	  blockOp = (at args 2)
@@ -985,23 +901,22 @@ method importLibraryFromFile MicroBlocksScripter fileName {
 	  if ((count args) > 3) { slotTypes = (at args 4) }
 	  slotDefaults = (copyFromTo args 5)
 	  spec = (blockSpecFromStrings blockOp blockType specString slotTypes slotDefaults)
-	  recordBlockSpec (authoringSpecs) blockOp spec
-	  setCategoryFor (authoringSpecs) blockOp 'Library'
-	  add libSpecs spec
+	  recordBlockSpec this blockOp spec
+	  atPut libSpecs blockOp spec
 	} ('to' == op) {
 	  args = (toList args)
 	  fName = (removeFirst args)
 	  fBody = nil
 	  if (isClass (last args) 'Command') { fBody = (removeLast args) }
-	  func = (newFunction fName args fBody myModule)
-	  oldFunc = (functionNamed myModule fName)
-	  if (notNil oldFunc) { removeFunction myModule oldFunc }
-	  addFunction myModule func
+	  func = (newFunction fName args fBody libModule)
+	  addFunction libModule func
 	}
   }
-  atPut libraries libName libSpecs
-  setCollection (contents libFrame) (sorted (keys libraries))
+  setBlockSpecs libModule libSpecs
+  addLibrary mbProject libModule
 
+  // update library list and select the new library
+  setCollection (contents libFrame) (sorted (keys (libraries mbProject)))
   select (contents categoriesFrame) nil
   select (contents libFrame) libName
   updateBlocks this
@@ -1014,18 +929,18 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 
   result = (list)
 
-  // Add shared variable declaration, if needed
-  sharedVars = (variableNames (targetModule this))
-  if ((count sharedVars) > 0) {
+  // Add variable declarations
+  allVars = (variableNames (main mbProject))
+  if ((count allVars) > 0) {
 	varDeclaration = (list 'sharedVariables')
-	for v sharedVars { add varDeclaration (printString v) }
+	for v allVars { add varDeclaration (printString v) }
 	add result (joinStrings varDeclaration ' ')
 	add result (newline)
 	add result (newline)
   }
 
   // Add block specs
-  for func (functions (targetModule this)) {
+  for func (functions (main mbProject)) {
 	spec = (specForOp (authoringSpecs) (functionName func))
 	if (notNil spec) {
 	  add result (specDefinitionString spec)
@@ -1036,7 +951,7 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 
   // Add function definitions
   pp = (new 'PrettyPrinter')
-  for func (functions (targetModule this)) {
+  for func (functions (main mbProject)) {
 	add result (prettyPrintFunction pp func)
 	add result (newline)
   }

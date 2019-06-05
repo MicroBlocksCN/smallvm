@@ -18,10 +18,9 @@ method allVarsMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
 
   // shared vars
-  scripter = (ownerThatIsA morph 'Scripter')
-  if (isNil scripter) { scripter = (ownerThatIsA morph 'MicroBlocksScripter') }
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (notNil scripter) {
-	varNames = (copyWithout (variableNames (targetModule (handler scripter))) 'extensions')
+	varNames = (variableNames (project (handler scripter)))
 	for varName varNames {
           // hide vars that start with underscore, used for libraries
           if (or ((at varName 1) != '_') (devMode)) {
@@ -228,7 +227,7 @@ method contextMenu Block {
     addItem menu 'rename...' 'userRenameVariable'
     addLine menu
   }
-  if (and isInPalette (notNil (functionNamed (module (project pe)) (primName expression)))) {
+  if (notNil (functionNamed (project pe) (primName expression))) {
     addItem menu 'show definition...' 'showDefinition'
   }
   addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
@@ -268,6 +267,48 @@ method pickUp Block {
     }
   }
   grabCentered morph this
+}
+
+method showDefinition Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  scripter = (scripter pe)
+  project = (project scripter)
+  calledFunction = (primName expression)
+
+  if (not (isShowingDefinition this (main project) calledFunction)) {
+	f = (functionNamed (project pe) calledFunction)
+	if (isNil f) { return } // shouldn't happen
+	ref = (newCommand 'to' calledFunction)
+
+	// add the method/function definition to the scripts
+	entry = (array (rand 50 200) (rand 50 200) ref)
+	setScripts (main project) (join (array entry) (scripts (main project)))
+	restoreScripts scripter
+  }
+  scrollToDefinitionOf scripter calledFunction
+}
+
+method hideDefinition BlockDefinition {
+  // Remove this method/function definition from the scripting area.
+
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  scripter = (scripter pe)
+  project = (project scripter)
+
+  saveScripts scripter
+  newScripts = (list)
+  for entry (scripts (main project)) {
+	cmd = (at entry 3)
+	if ('to' == (primName cmd)) {
+	  if (op != (first (argList cmd))) { add newScripts entry }
+	} else {
+	  add newScripts entry
+	}
+  }
+  setScripts (main project) newScripts
+  restoreScripts scripter
 }
 
 method inputIndex Block anInput {

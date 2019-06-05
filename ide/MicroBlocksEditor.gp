@@ -22,16 +22,15 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus thingServer
+defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer
 
-method thingServer MicroBlocksEditor { return thingServer }
-method project MicroBlocksEditor { return project }
+method project MicroBlocksEditor { return (project scripter) }
 method scripter MicroBlocksEditor { return scripter }
+method thingServer MicroBlocksEditor { return thingServer }
 
 to openMicroBlocksEditor devMode {
   if (isNil devMode) { devMode = false }
   if (isNil (global 'alanMode')) { setGlobal 'alanMode' false }
-  if (isNil (global 'vectorTrails')) { setGlobal 'vectorTrails' false }
   if (and ('Browser' == (platform)) (browserIsMobile)) {
 	page = (newPage 1024 640)
   } else {
@@ -85,17 +84,15 @@ to findMicroBlocksEditor {
   return nil
 }
 
-method initialize MicroBlocksEditor aProject {
+method initialize MicroBlocksEditor {
   scale = (global 'scale')
   morph = (newMorph this)
-  project = aProject
   thingServer = (newMicroBlocksThingServer)
   addTopBarParts this
   scripter = (initialize (new 'MicroBlocksScripter') this)
   addPart morph (morph scripter)
   drawTopBar this
   clearProject this
-  createInitialClass scripter
   fixLayout this
   setFPS morph 200
   return this
@@ -159,7 +156,6 @@ method newProject MicroBlocksEditor {
   ok = (confirm (global 'page') nil 'Discard current project?')
   if (not ok) { return }
   clearProject this
-  createInitialClass scripter
   fileName = ''
   updateTitle this
 }
@@ -169,16 +165,12 @@ method clearProject MicroBlocksEditor {
 
   page = (global 'page')
   stopAll page
-  setTargetObj scripter nil
   for p (copy (parts (morph page))) {
 	// remove explorers, table views -- everything but the MicroBlocksEditor
 	if (p != morph) { removePart (morph page) p }
   }
-
-  isStarting = (isNil fileName)
   fileName = ''
-  project = (emptyProject)
-  clearLibraries scripter
+  createEmptyProject scripter
   clearBoardIfConnected (smallRuntime) true
   if (isRunning thingServer) {
       clearVars thingServer
@@ -186,7 +178,7 @@ method clearProject MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
-  pickFileToOpen (action 'openProjectFromFile' this) (gpExamplesFolder) (array '.gpp' '.gpe')
+  pickFileToOpen (action 'openProjectFromFile' this) (gpExamplesFolder) (array '.gpp' '.ubp')
 }
 
 method openProjectFromFile MicroBlocksEditor location {
@@ -208,14 +200,19 @@ method openProjectFromFile MicroBlocksEditor location {
 
 method openProject MicroBlocksEditor projectData projectName {
   clearProject this
-  project = (readProject (emptyProject) projectData)
   fileName = projectName
   updateTitle this
-  targetObj = nil
-  if ((count (classes (module project))) > 0) {
-	targetObj = (new (first (classes (module project))))
+  if (endsWith projectName '.gpp') {
+	// read old project
+	mainClass = nil
+	proj = (readProject (emptyProject) projectData)
+	if ((count (classes (module proj))) > 0) {
+		mainClass = (first (classes (module proj)))
+	}
+	loadOldProjectFromClass scripter mainClass (blockSpecs proj)
+  } else {
+	loadNewProjectFromData scripter projectData
   }
-  setTargetObj scripter targetObj
   developerModeChanged scripter
   stopAndSyncScripts (smallRuntime)
 }
@@ -258,7 +255,7 @@ method saveProject MicroBlocksEditor fName {
   fileName = fName
   updateTitle this
 
-  result = (safelyRun (action 'saveProject' project fileName nil))
+  result = (safelyRun (action 'saveProject' scripter fileName nil))
   if (isClass result 'Task') { // saveProject encountered an error
 	addPart (global 'page') (new 'Debugger' result) // open debugger on the task
 	return false

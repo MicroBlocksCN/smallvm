@@ -1,58 +1,101 @@
 defineClass MicroBlocksProject main libraries
 
+to mbProj {
+	gc
+	projects = (allInstances 'MicroBlocksProject')
+	if ((count projects) > 1) {
+		print 'multiple MicroBlocksProject instances'
+	}
+	return (first projects)
+}
+
 to newMicroBlocksProject {
 	return (initialize (new 'MicroBlocksProject'))
 }
 
 method initialize MicroBlocksProject {
 	main = (newMicroBlocksModule 'main')
-	libraries = (array)
+	libraries = (dictionary)
 	return this
 }
 
-method blockSpecs MicroBlocksProject { print 'MicroBlocksProject>blockSpecs called'; return (dictionary) }
-method extraCategories MicroBlocksProject { print 'MicroBlocksProject>extraCategories called'; return (array) }
-
-method extraCategories MicroBlocksProject { return (array) }
+method extraCategories MicroBlocksProject { return (array) } // called by AuthoringSpecs>specsFor
 method main MicroBlocksProject { return main }
 method libraries MicroBlocksProject { return libraries }
-method scripts MicroBlocksProject { return (scripts main) }
-method setScripts MicroBlocksProject newScripts { setScripts main newScripts }
 
-method className MicroBlocksProject { return '' } // act like a class when called by Scripter
+// Block Specs
+
+method blockSpecs MicroBlocksProject {
+	result = (copy (blockSpecs main))
+	for lib (values libraries) {
+		specs = (blockSpecs lib)
+		for k (keys specs) {
+			atPut result k (at specs k)
+		}
+	}
+	return result
+}
+
+// Functions
+
+method functions MicroBlocksProject {
+	result = (list)
+	addAll result (functions main)
+	for lib (values libraries) {
+		addAll result (functions lib)
+	}
+	return result
+}
+
+method functionNamed MicroBlocksProject functionName {
+	f = (functionNamed main functionName)
+	if (notNil f) { return f }
+	for lib (values libraries) {
+		f = (functionNamed lib functionName)
+		if (notNil f) { return f }
+	}
+	return nil
+}
+
+method functionDeleted MicroBlocksProject functionName {
+  print 'functionDeleted' functionName
+  // xxx remove definition (could be in a library)
+}
 
 // Libraries
 
 method addLibrary MicroBlocksProject aMicroBlocksModule {
-	removeLibraryNamed this (moduleName aMicroBlocksModule)
-	libraries = (copyWith libraries aMicroBlocksModule)
+	libName = (moduleName aMicroBlocksModule)
+	remove libraries libName
+	atPut libraries libName aMicroBlocksModule
 }
 
 method removeLibraryNamed MicroBlocksProject libName {
-	newLibs = (list)
-	for lib libraries {
-		if (libName != (moduleName lib)) { add newLibs lib }
-	}
-	libraries = (toArray newLibs)
+	remove libraries libName
 }
 
 // Variables
 
 method variableNames MicroBlocksProject {
-	// Return all global variables names in this project.
-
 	result = (dictionary)
 	addAll result (variableNames main)
-	for each lib libraries {
+	for lib (values libraries) {
 		addAll result (variableNames lib)
 	}
 	return (sorted (keys result))
 }
 
-defineClass MicroBlocksModule moduleName functions variableNames scripts
+method addVariable MicroBlocksProject newVar {
+	addVariable main newVar
+}
 
-method blockSpecs MicroBlocksModule { print 'MicroBlocksModule>blockSpecs called'; return (dictionary) }
-method extraCategories MicroBlocksModule { print 'MicroBlocksModule>extraCategories called'; return (array) }
+method deleteVariable MicroBlocksProject varName {
+	for lib (values libraries) {
+		deleteVariable lib varName
+	}
+}
+
+defineClass MicroBlocksModule moduleName blockSpecs functions variableNames scripts
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -61,17 +104,25 @@ to newMicroBlocksModule modName {
 method initialize MicroBlocksModule modName {
 	if (isNil modName) { modName = '' }
 	moduleName = modName
+	blockSpecs = (dictionary)
 	functions = (array)
 	variableNames = (array)
 	scripts = (array)
 	return this
 }
 
+method className MicroBlocksModule { return moduleName }
 method moduleName MicroBlocksModule { return moduleName }
 
-// methods (needed??? xxx)
+method blockSpecs MicroBlocksModule { return blockSpecs }
+method setBlockSpecs MicroBlocksModule specs { blockSpecs = specs }
 
-method methodNamed MicroBlocksModule s { return nil }
+method initFromOldProjectClassAndSpecs MicroBlocksModule aClass specList {
+	for k (keys specList) { atPut blockSpecs k (at specList k) }
+	for func (functions (module aClass)) { addFunction this func }
+	for varName (variableNames (module aClass)) { addVariable this varName }
+	setScripts this (copy (scripts aClass))
+}
 
 // scripts
 
@@ -82,9 +133,9 @@ method setScripts MicroBlocksModule newScripts { scripts = (toArray newScripts) 
 
 method functions MicroBlocksModule { return functions }
 
-method functionNamed MicroBlocksModule fName {
+method functionNamed MicroBlocksModule functionName {
 	for f functions {
-		if (fName == (functionName f)) { return f }
+		if (functionName == (functionName f)) { return f }
 	}
 	return nil
 }
@@ -103,9 +154,9 @@ method defineFunctionInModule MicroBlocksModule funcName funcParams funcBody {
 
 method addFunction MicroBlocksModule aFunction {
 	if (notNil (indexOf functions aFunction)) { return } // already there
-	for f functions {
+	for f (copy functions) {
 		if ((functionName f) == (functionName aFunction)) {
-			error (join 'This modue already has a function named' (functionName aFunction))
+			removeFunction this f
 		}
 	}
 	setField aFunction 'module' this
@@ -122,27 +173,17 @@ method removeFunction MicroBlocksModule aFunction {
 method variableNames MicroBlocksModule { return (copy variableNames) }
 
 method removeAllVariables MicroBlocksModule {
-	variableNames = (newArray 0)
+	variableNames = (array)
 }
 
-method addVar MicroBlocksModule varName {
-	if (not (contains variableNames varName)) {
-		variableNames = (copyWith variableNames varName)
+method addVariable MicroBlocksModule newVar {
+	if (not (contains variableNames newVar)) {
+		variableNames = (copyWith variableNames newVar)
 	}
 }
 
-method deleteVar MicroBlocksModule varName {
-	// Remove the variable with the given name from this module.
-
-	i = (indexOf variableNames varName)
-	if (isNil i) { return }
-	n = ((count variableNames) - 1)
-	newVarNames = (newArray n)
-	newVars = (newArray n)
-
-	replaceArrayRange newVarNames 1 (i - 1) variableNames
-	replaceArrayRange newVarNames i n variableNames (i + 1)
-	variableNames = newVarNames
+method deleteVariable MicroBlocksModule varName {
+	variableNames = (copyWithout variableNames varName)
 }
 
 // printing
@@ -167,8 +208,7 @@ method loadScripts MicroBlocksModule cmdList {
 	for cmd cmdList {
 		if ('script' == (primName cmd)) {
 			args = (argList cmd)
-			className = (first args) // className is ignored by MicroBlocks
-			add scripts (copyFromTo args 2)
+			add scripts (copyFromTo args 2) // className (first arg) is ignored by MicroBlocks
 		}
 	}
 }
