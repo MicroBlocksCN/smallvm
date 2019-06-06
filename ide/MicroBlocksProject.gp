@@ -95,6 +95,19 @@ method deleteVariable MicroBlocksProject varName {
 	}
 }
 
+// Saving
+
+method codeString MicroBlocksProject {
+  result = (list)
+  add result (codeString main)
+  add result (newline)
+  for lib (values libraries) {
+	add result (codeString lib)
+	add result (newline)
+  }
+  return (joinStrings result)
+}
+
 defineClass MicroBlocksModule moduleName blockSpecs functions variableNames scripts
 
 to newMicroBlocksModule modName {
@@ -192,6 +205,92 @@ method toString MicroBlocksModule {
 	return (join 'MicroBlocksModule(''' moduleName ''')')
 }
 
+// saving
+
+method codeString MicroBlocksModule {
+	// Return a string containing the code for this MicroBlocksModule.
+
+	result = (list)
+
+	// Add variable declaration
+	if ((count variableNames) > 0) {
+		varDeclaration = (list 'variables')
+		for v variableNames {
+			if (needsQuotes this v) { v = (join '''' v '''') }
+			add varDeclaration v
+		}
+		add result (joinStrings varDeclaration ' ')
+		add result (newline)
+		add result (newline)
+	}
+
+	// Add block specs for functions
+	sortedFunctions = (sorted
+		functions
+		(function a b {return ((functionName a) < (functionName b))})
+	)
+	for func sortedFunctions {
+		spec = (specForOp (authoringSpecs) (functionName func))
+		if (notNil spec) {
+			add result (specDefinitionString spec)
+		}
+		add result (newline)
+	}
+	add result (newline)
+
+	// Add function definitions
+	pp = (new 'PrettyPrinter')
+	for func sortedFunctions {
+		add result (prettyPrintFunction pp func)
+		add result (newline)
+	}
+
+	// Add scripts
+	if (not (isEmpty scripts)) { add result (scriptString this) }
+
+	return (joinStrings result)
+}
+
+method scriptString MicroBlocksModule {
+	newline = (newline)
+	result = (list)
+	pp = (new 'PrettyPrinter')
+	for entry scripts {
+		x = (toInteger (at entry 1))
+		y = (toInteger (at entry 2))
+		expr = (at entry 3)
+		add result (join 'script ' x ' ' y ' ')
+		if (isClass expr 'Reporter') {
+			if (isOneOf (primName expr) 'v' 'my') {
+				add result (join '(v ' (first (argList expr)) ')')
+			} else {
+				add result (join '(' (prettyPrint pp expr) ')')
+			}
+			add result newline
+		} else {
+			add result (join '{' newline)
+			add result (prettyPrintList pp expr)
+			add result (join '}' newline)
+		}
+		add result newline
+	}
+	return (joinStrings result)
+}
+
+method needsQuotes MicroBlocksModule s {
+	// Return true if the given string needs to be quoted in order to be parsed as
+	// a variable or function name.
+
+	letters = (letters s)
+	if (isEmpty letters) { return true }
+	firstLetter = (first letters)
+	if (not (or (isLetter firstLetter) ('_' == firstLetter))) { return true }
+	for ch letters {
+		if (not (or (isLetter ch) (isDigit ch) ('_' == ch))) { return true }
+	}
+	return false
+}
+
 // loading
 
 method loadModuleFromString MicroBlocksModule s {
@@ -259,83 +358,57 @@ method loadVariables MicroBlocksModule cmdList {
 	variableNames = (toArray varNames)
 }
 
-// saving
+// saving (old)
 
-method code MicroBlocksModule {
-	lf = (newline)
-	aStream = (dataStream (newBinaryData 1000))
-	nextPutAll aStream 'module'
-	if (and (notNil moduleName) (moduleName != '')) {
-		nextPutAll aStream ' '
-		nextPutAll aStream moduleName
-	}
-	nextPutAll aStream lf
-	printVarNamesOn this aStream
-
-	if (and (notNil functions) ((count functions) > 0)) {
-		nextPutAll aStream lf
-		printFunctionsOn this aStream
-	}
-	nextPutAll aStream lf
-	nextPutAll aStream (scriptString this)
-
-	return (stringContents aStream)
-}
-
-method printVarNamesOn MicroBlocksModule aStream {
-	if (and (notNil variableNames) ((count variableNames) > 0)) {
-		lf = (newline)
-		nextPutAll aStream 'variables'
-		for v (sorted variableNames) {
-			nextPutAll aStream ' '
-			if (containsWhitespace v) {
-				nextPutAll aStream (printString v)
-			} else {
-				nextPutAll aStream v
-			}
-		}
-		nextPutAll aStream lf
-	}
-}
-
-method printFunctionsOn MicroBlocksModule aStream {
-	if (isNil functions) { return }
-	lf = (newline)
-	pp = (new 'PrettyPrinter')
-	list = (sorted
-		functions
-		(function a b {return ((functionName a) < (functionName b))})
-	)
-	for f list {
-		nextPutAll aStream (prettyPrintFunction pp f)
-		if (not (f === (last list))) {
-			nextPutAll aStream lf
-		}
-	}
-}
-
-method scriptString MicroBlocksModule {
-	newline = (newline)
-	result = (list)
-	pp = (new 'PrettyPrinter')
-	for entry scripts {
-		x = (toInteger (at entry 1))
-		y = (toInteger (at entry 2))
-		expr = (at entry 3)
-		add result (join 'script ' x ' ' y ' ')
-		if (isClass expr 'Reporter') {
-			if (isOneOf (primName expr) 'v' 'my') {
-				add result (join '(v ' (first (argList expr)) ')')
-			} else {
-				add result (join '(' (prettyPrint pp expr) ')')
-			}
-			add result newline
-		} else {
-			add result (join '{' newline)
-			add result (prettyPrintList pp expr)
-			add result (join '}' newline)
-		}
-		add result newline
-	}
-	return (joinStrings result)
-}
+// method code MicroBlocksModule {
+// 	lf = (newline)
+// 	aStream = (dataStream (newBinaryData 1000))
+// 	nextPutAll aStream 'module'
+// 	if (and (notNil moduleName) (moduleName != '')) {
+// 		nextPutAll aStream ' '
+// 		nextPutAll aStream moduleName
+// 	}
+// 	nextPutAll aStream lf
+// 	printVarNamesOn this aStream
+//
+// 	if (and (notNil functions) ((count functions) > 0)) {
+// 		nextPutAll aStream lf
+// 		printFunctionsOn this aStream
+// 	}
+// 	nextPutAll aStream lf
+// 	nextPutAll aStream (scriptString this)
+//
+// 	return (stringContents aStream)
+// }
+//
+// method printVarNamesOn MicroBlocksModule aStream {
+// 	if (and (notNil variableNames) ((count variableNames) > 0)) {
+// 		lf = (newline)
+// 		nextPutAll aStream 'variables'
+// 		for v (sorted variableNames) {
+// 			nextPutAll aStream ' '
+// 			if (containsWhitespace v) {
+// 				nextPutAll aStream (printString v)
+// 			} else {
+// 				nextPutAll aStream v
+// 			}
+// 		}
+// 		nextPutAll aStream lf
+// 	}
+// }
+//
+// method printFunctionsOn MicroBlocksModule aStream {
+// 	if (isNil functions) { return }
+// 	lf = (newline)
+// 	pp = (new 'PrettyPrinter')
+// 	list = (sorted
+// 		functions
+// 		(function a b {return ((functionName a) < (functionName b))})
+// 	)
+// 	for f list {
+// 		nextPutAll aStream (prettyPrintFunction pp f)
+// 		if (not (f === (last list))) {
+// 			nextPutAll aStream lf
+// 		}
+// 	}
+// }

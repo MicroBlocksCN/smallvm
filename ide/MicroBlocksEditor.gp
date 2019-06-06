@@ -227,40 +227,24 @@ method saveProject MicroBlocksEditor fName {
   if (and (isNil fName) (notNil fileName)) {
 	fName = fileName
 	if (beginsWith fName (gpExamplesFolder)) {
+	  // if an example was opened, do a "save as" into the Microblocks folder
 	  fName = (join (gpFolder) '/' (filePart fileName))
 	}
   }
 
-  if (isNil fName) {
-	conf = (gpServerConfiguration)
-	if (and (notNil conf) ((at conf 'beDefaultSaveLocation') == true)) {
-	  user = (at conf 'username')
-	  serverDirectory = (at conf 'serverDirectory')
-	  fName = (join serverDirectory user '/' (filePart fileName))
-	} else {
-	  fName = ''
-	}
-  }
-  fName = (fileToWrite fName (array '.gpp' '.gpe'))
+  fName = (fileToWrite fName (array '.ubp'))
   if ('' == fName) { return false }
 
   if (and
 	(not (isAbsolutePath this fName))
-	(not (beginsWith fName 'http://'))
 	(not (beginsWith fName (gpFolder)))) {
 	  fName = (join (gpFolder) '/' fName)
   }
-  if (not (or (endsWith fName '.gpp') (endsWith fName '.gpe'))) { fName = (join fName '.gpp') }
+  if (not (endsWith fName '.ubp')) { fName = (join fName '.ubp') }
 
   fileName = fName
   updateTitle this
-
-  result = (safelyRun (action 'saveProject' scripter fileName nil))
-  if (isClass result 'Task') { // saveProject encountered an error
-	addPart (global 'page') (new 'Debugger' result) // open debugger on the task
-	return false
-  }
-  return true
+  writeFile fileName (codeString (project scripter))
 }
 
 method isAbsolutePath MicroBlocksEditor fName {
@@ -349,7 +333,7 @@ method processDroppedFiles MicroBlocksEditor {
 }
 
 method processDroppedFile MicroBlocksEditor fName data {
-  if (endsWith fName '.gpp') {
+  if (or (endsWith fName '.ubp') (endsWith fName '.gpp')) {
 	ok = (confirm (global 'page') nil 'Discard current project?')
 	if (not ok) { return }
 	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
