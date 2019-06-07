@@ -80,6 +80,17 @@ method thingTypesMenu InputSlot {
   return menu
 }
 
+method thingEventTypesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'OverheatedEvent'
+  addItem menu 'PressedEvent'
+  addItem menu 'DoublePressedEvent'
+  addItem menu 'LongPressedEvent'
+  addItem menu 'AlarmEvent'
+
+  return menu
+}
+
 method varTypesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'boolean'
