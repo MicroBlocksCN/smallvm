@@ -26,6 +26,8 @@ method libraries MicroBlocksProject { return libraries }
 // Block Specs
 
 method blockSpecs MicroBlocksProject {
+	return (blockSpecs main)
+// xxx return actual dictionary, not a copy!
 	result = (copy (blockSpecs main))
 	for lib (values libraries) {
 		specs = (blockSpecs lib)
@@ -100,10 +102,9 @@ method deleteVariable MicroBlocksProject varName {
 method codeString MicroBlocksProject {
   result = (list)
   add result (codeString main)
-  add result (newline)
   for lib (values libraries) {
-	add result (codeString lib)
 	add result (newline)
+	add result (codeString lib)
   }
   return (joinStrings result)
 }
@@ -127,14 +128,20 @@ method initialize MicroBlocksModule modName {
 method className MicroBlocksModule { return moduleName }
 method moduleName MicroBlocksModule { return moduleName }
 
-method blockSpecs MicroBlocksModule { return blockSpecs }
-method setBlockSpecs MicroBlocksModule specs { blockSpecs = specs }
-
 method initFromOldProjectClassAndSpecs MicroBlocksModule aClass specList {
 	for k (keys specList) { atPut blockSpecs k (at specList k) }
 	for func (functions (module aClass)) { addFunction this func }
 	for varName (variableNames (module aClass)) { addVariable this varName }
 	setScripts this (copy (scripts aClass))
+}
+
+// block specs
+
+method blockSpecs MicroBlocksModule { return blockSpecs }
+method setBlockSpecs MicroBlocksModule specs { blockSpecs = specs }
+
+method recordBlockSpec MicroBlocksModule opName spec {
+	atPut blockSpecs opName spec
 }
 
 // scripts
@@ -212,7 +219,7 @@ method codeString MicroBlocksModule {
 
 	result = (list)
 
-	// Add variable declaration
+	// add variable declaration
 	if ((count variableNames) > 0) {
 		varDeclaration = (list 'variables')
 		for v variableNames {
@@ -224,34 +231,39 @@ method codeString MicroBlocksModule {
 		add result (newline)
 	}
 
-	// Add block specs for functions
-	sortedFunctions = (sorted
-		functions
-		(function a b {return ((functionName a) < (functionName b))})
-	)
-	for func sortedFunctions {
-		spec = (specForOp (authoringSpecs) (functionName func))
-		if (notNil spec) {
-			add result (specDefinitionString spec)
+	if (not (isEmpty functions)) {
+		// sort functions by name (this canonicalizes function order)
+		sortedFunctions = (sorted
+			functions
+			(function a b {return ((functionName a) < (functionName b))})
+		)
+		// add function block specs
+		for func sortedFunctions {
+//			spec = (specForOp (authoringSpecs) (functionName func))
+			spec = (at blockSpecs (functionName func))
+			if (notNil spec) {
+				add result (specDefinitionString spec)
+			}
+			add result (newline)
 		}
 		add result (newline)
-	}
-	add result (newline)
 
-	// Add function definitions
-	pp = (new 'PrettyPrinter')
-	for func sortedFunctions {
-		add result (prettyPrintFunction pp func)
-		add result (newline)
+		// add function definitions
+		pp = (new 'PrettyPrinter')
+		for func sortedFunctions {
+			add result (prettyPrintFunction pp func)
+			add result (newline)
+		}
 	}
 
 	// Add scripts
-	if (not (isEmpty scripts)) { add result (scriptString this) }
+	add result (scriptString this)
 
 	return (joinStrings result)
 }
 
 method scriptString MicroBlocksModule {
+	if (isEmpty scripts) { return '' }
 	newline = (newline)
 	result = (list)
 	pp = (new 'PrettyPrinter')

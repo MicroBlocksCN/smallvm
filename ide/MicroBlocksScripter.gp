@@ -4,7 +4,7 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// MicroBlocksScripter.gp - authoring-level MicroBlocksScripter w/ built-in palette
+// MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
 defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categoriesFrame catResizer libHeader libFrame libAddButton blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
 
@@ -439,8 +439,9 @@ method loadOldProjectFromClass MicroBlocksScripter aClass specs {
 
 method loadNewProjectFromData MicroBlocksScripter data {
   // Load an new-style MicroBlocks project from the given data.
-print 'new project'
-print data
+
+// xxx to do
+print 'load new project yet implemented'
 }
 
 // variable operations
@@ -644,7 +645,7 @@ method createFunction MicroBlocksScripter {
 }
 
 method recordBlockSpec MicroBlocksScripter opName spec {
-	atPut (blockSpecs (main mbProject)) opName spec
+	recordBlockSpec (main mbProject) opName spec
 }
 
 method copyFunction MicroBlocksScripter definition {
@@ -654,7 +655,7 @@ method copyFunction MicroBlocksScripter definition {
   if (notNil body) { body = (copy body) }
   oldOp = (first args)
   oldSpec = (specForOp (authoringSpecs) oldOp)
-  if ('to' == primName) {} else {
+  if ('to' == primName) {
 	newOp = (uniqueFunctionName this oldOp)
 	parameterNames = (copyFromTo args 2 ((count args) - 1))
 	defineFunctionInModule (main mbProject) newOp parameterNames body
@@ -774,21 +775,13 @@ method updateCallsOf MicroBlocksScripter op {
 }
 
 method allCmdsInProject MicroBlocksScripter {
-  m = (module (project projectEditor))
+  main = (main (project projectEditor))
   result = (dictionary)
-  for f (functions m) {
+  for f (functions main) {
 	addAll result (allBlocks (cmdList f))
   }
-  for c (classes m) {
-	for m (methods c) {
-	  addAll result (allBlocks (cmdList m))
-	}
-	scripts = (scripts c)
-	if (notNil (scripts c)) {
-	  for s (scripts c) {
-		addAll result (allBlocks (at s 3))
-	  }
-	}
+  for s (scripts main) {
+	addAll result (allBlocks (at s 3))
   }
   return (keys result)
 }
