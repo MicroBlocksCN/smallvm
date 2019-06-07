@@ -179,7 +179,7 @@ void webServerLoop() {
 			client.print(JSON_HEADER);
 			client.print(valueJSON(response, varName, varID));
 		}
-	} else if (hasPrefix(request, "PUT /properties/", varName, sizeof(varName))) {
+        } else if (hasPrefix(request, "PUT /properties/", varName, sizeof(varName))) {
 		// Set variable value
 		varID = indexOfVarNamed(varName);
 		if (varID < 0) {
@@ -189,6 +189,20 @@ void webServerLoop() {
 			client.print(JSON_HEADER);
 			client.print(valueJSON(response, varName, varID));
 		}
+        } else if (hasPrefix(request, "GET /events", NULL, 0)) {
+		client.print(JSON_HEADER);
+                client.print("[\n  ");
+		circular_buffer buffer = getBroadcastBuffer();
+		for (int i = 0; i < CIRCULAR_BUFFER_SIZE; i++) {
+			int position = (buffer.position + i) % CIRCULAR_BUFFER_SIZE;
+			if (strcmp(buffer.body[position], "") != 0) {
+				client.print("  { \"");
+				client.print(buffer.body[position]);
+				client.print("\" : {\"timestamp\":\"\"} },\n");
+			}
+                }
+                client.print("  {}\n]");
+                clearBroadcastBuffer();
 	} else {
 		client.print(NOT_FOUND_RESPONSE);
 	}
