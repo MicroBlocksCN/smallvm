@@ -45,7 +45,7 @@ to openMicroBlocksEditor devMode {
   addPart page editor
   if (notNil (global 'initialProject')) {
 	dataAndURL = (global 'initialProject')
-  	openProject editor (first dataAndURL) (last dataAndURL)
+	openProject editor (first dataAndURL) (last dataAndURL)
   }
   launch (global 'page') (checkLatestVersion)
   pageResized editor
@@ -57,12 +57,12 @@ to checkLatestVersion {
   latestVersion = (getLatestVersion)
   currentVersion = (splitWith (ideVersion (smallRuntime)) '.')
   for i (count latestVersion) {
-    if (> (at latestVersion i) (at currentVersion i)) {
-      inform (global 'page') (join
-          'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
-          (newline)
-          'Get it now at http://microblocks.fun')
-    }
+	if (> (at latestVersion i) (at currentVersion i)) {
+	  inform (global 'page') (join
+		'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
+		(newline)
+		'Get it now at http://microblocks.fun')
+	}
   }
 }
 
@@ -181,7 +181,7 @@ method clearProject MicroBlocksEditor {
   clearLibraries scripter
   clearBoardIfConnected (smallRuntime) true
   if (isRunning thingServer) {
-      clearVars thingServer
+	clearVars thingServer
   }
 }
 
@@ -236,11 +236,11 @@ method saveProject MicroBlocksEditor fName {
 
   if (isNil fName) {
 	conf = (gpServerConfiguration)
-    if (and (notNil conf) ((at conf 'beDefaultSaveLocation') == true)) {
-      user = (at conf 'username')
-      serverDirectory = (at conf 'serverDirectory')
-      fName = (join serverDirectory user '/' (filePart fileName))
-    } else {
+	if (and (notNil conf) ((at conf 'beDefaultSaveLocation') == true)) {
+	  user = (at conf 'username')
+	  serverDirectory = (at conf 'serverDirectory')
+	  fName = (join serverDirectory user '/' (filePart fileName))
+	} else {
 	  fName = ''
 	}
   }
@@ -272,7 +272,7 @@ method isAbsolutePath MicroBlocksEditor fName {
   count = (count letters)
   if (and (count >= 1) ('/' == (first letters))) { return true } // Mac, Linux
   if (and (count >= 3) (':' == (at letters 2)) (isOneOf (at letters 3) '/' '\')) {
-  	return true // Win
+	return true // Win
   }
   return false
 }
@@ -301,7 +301,7 @@ method step MicroBlocksEditor {
   updateIndicator this
   processMessages (smallRuntime)
   if (isRunning thingServer) {
-      step thingServer
+	step thingServer
   }
 }
 
@@ -512,9 +512,9 @@ method contextMenu MicroBlocksEditor {
 // addLine menu
 
   if (not (isRunning thingServer)) {
-      addItem menu 'start Mozilla WebThing server' 'startThingServer'
+	addItem menu 'start Mozilla WebThing server' 'startThingServer'
   } else {
-      addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
+	addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
   }
   if (not (devMode)) {
 	addLine menu
@@ -571,10 +571,11 @@ method softReset MicroBlocksEditor {
 
 method startThingServer MicroBlocksEditor {
   if (start thingServer) {
-      inform 'MicroBlocks HTTP Server listening on port 6473'
+	inform 'MicroBlocks HTTP Server listening on port 6473'
   } else {
-      inform (join 'Failed to start Mozilla WebThings server.' (newline)
-                'Please make sure that no other service is running at port 6473.')
+	inform (join
+		'Failed to start Mozilla WebThings server.' (newline)
+		'Please make sure that no other service is running at port 6473.')
   }
 }
 

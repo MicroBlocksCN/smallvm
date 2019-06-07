@@ -33,9 +33,6 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		print '----------'
 		return
 	}
-
-	// save all chunks, including functions and broadcast receivers
-	// (it would be more efficient to save only chunks that have changed)
 	saveAllChunks this
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
 		// running a block from the palette, not included in saveAllChunks
@@ -172,13 +169,47 @@ method lookupChunkID SmallRuntime key {
 	return (first entry)
 }
 
+method removeObsoleteChunks SmallRuntime {
+	// Remove obsolete chunks. Chunks become obsolete when they are deleted or inserted into
+	// a script so they are no longer a stand-alone chunk.
+
+	for k (keys chunkIDs) {
+		entry = (at chunkIDs k)
+		if (isClass k 'Block') {
+			owner = (owner (morph k))
+			isObsolete = (or
+				(isNil owner)
+				(isNil (handler owner))
+				(not (isAnyClass (handler owner) 'Hand' 'ScriptEditor' 'BlocksPalette')))
+			if isObsolete {
+				id = (first entry)
+				deleteChunkForBlock this k
+			}
+		}
+	}
+}
+
+method unusedChunkID SmallRuntime {
+	// Return an unused chunkID.
+
+	inUse = (dictionary)
+	for entry (values chunkIDs) {
+		add inUse (first entry) // the chunk ID is first element of entry
+	}
+	for i 256 {
+		id = (i - 1)
+		if (not (contains inUse id)) { print 'new id' id; return id }
+	}
+	error 'Too many code chunks (functions and scripts). Max is 256).'
+}
+
 method ensureChunkIdFor SmallRuntime aBlock {
 	// Return the chunkID for the given block. Functions are handled by assignFunctionIDs.
 	// If necessary, register the block in the chunkIDs dictionary.
 
 	entry = (at chunkIDs aBlock nil)
 	if (isNil entry) {
-		id = (count chunkIDs)
+		id = (unusedChunkID this)
 		entry = (array id aBlock) // block -> <id> <last expression>
 		atPut chunkIDs aBlock entry
 	}
@@ -192,7 +223,7 @@ method assignFunctionIDs SmallRuntime {
 	for func (functions (targetModule scripter)) {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
-			atPut chunkIDs fName (array (count chunkIDs) 'New Function!') // forces function save
+			atPut chunkIDs fName (array (unusedChunkID this) 'New Function!') // forces function save
 		}
 	}
 }
@@ -432,6 +463,7 @@ method saveAllChunks SmallRuntime {
 	if (isNil port) { return }
 	saveVariableNames this
 	assignFunctionIDs this
+	removeObsoleteChunks this
 	for aFunction (functions (targetModule scripter)) {
 		saveChunk this aFunction
 	}
@@ -562,7 +594,6 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'setVarMsg' 8
 		atPut msgDict 'getVarNamesMsg' 9
 		atPut msgDict 'clearVarsMsg' 10
-		atPut msgDict 'deleteCommentMsg' 11
 		atPut msgDict 'getVersionMsg' 12
 		atPut msgDict 'getAllCodeMsg' 13
 		atPut msgDict 'deleteAllCodeMsg' 14
@@ -578,8 +609,6 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'broadcastMsg' 27
 		atPut msgDict 'chunkAttributeMsg' 28
 		atPut msgDict 'varNameMsg' 29
-		atPut msgDict 'commentMsg' 30
-		atPut msgDict 'commentPositionMsg' 31
 	}
 	msgType = (at msgDict msgName)
 	if (isNil msgType) { error 'Unknown message:' msgName }

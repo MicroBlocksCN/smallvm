@@ -26,15 +26,8 @@ typedef enum {
 	chunkCode = 10,
 	chunkAttribute = 11,
 	chunkDeleted = 19,
-
-	varValue = 20,
 	varName = 21,
 	varsClearAll = 29,
-
-	comment = 30,
-	commentPosition = 31,
-	commentDeleted = 39,
-
 	deleteAll = 218, // 218 in hex is 0xDA, short for "delete all"
 } RecordType_t;
 
@@ -44,7 +37,7 @@ typedef enum {
 	sourcePosition = 0,
 	snapSourceString = 1,
 	gpSourceString = 2,
-	ATTRIBUTE_COUNT,
+	CHUNK_ATTRIBUTE_COUNT,
 } ChunkAttributeType_t;
 
 // Persistent Memory Operations

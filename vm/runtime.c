@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v060"
+#define VM_VERSION "v060a"
 
 // Forward Reference Declarations
 
@@ -241,7 +241,7 @@ static void storeCodeChunk(uint8 chunkIndex, int byteCount, uint8 *data) {
 
 static void storeChunkAttribute(uint8 chunkIndex, int byteCount, uint8 *data) {
 	unsigned char attributeID = data[0];
-	if ((chunkIndex >= MAX_CHUNKS) || (attributeID >= ATTRIBUTE_COUNT)) return;
+	if ((chunkIndex >= MAX_CHUNKS) || (attributeID >= CHUNK_ATTRIBUTE_COUNT)) return;
 	appendPersistentRecord(chunkAttribute, chunkIndex, attributeID, byteCount - 1, &data[1]);
 }
 
@@ -252,15 +252,6 @@ static void storeVarName(uint8 varIndex, int byteCount, uint8 *data) {
 	for (int i = 0; i < byteCount; i++) *dst++ = data[i];
 	*dst = 0; // null terminate
 	appendPersistentRecord(varName, varIndex, 0, (byteCount + 1), buf);
-}
-
-static void storeComment(uint8 commentIndex, int byteCount, uint8 *data) {
-	appendPersistentRecord(comment, commentIndex, 0, byteCount, data);
-}
-
-static void storeCommentPosition(uint8 commentIndex, int byteCount, uint8 *data) {
-	if (byteCount != 4) return;
-	appendPersistentRecord(commentPosition, commentIndex, 0, byteCount, data);
 }
 
 // Delete Ops
@@ -287,10 +278,6 @@ static void deleteAllChunks() {
 static void clearAllVariables() {
 	// Clear variable name records (but don't clear the variable values).
 	appendPersistentRecord(varsClearAll, 0, 0, 0, NULL);
-}
-
-static void deleteComment(uint8 commentIndex) {
-	appendPersistentRecord(commentDeleted, commentIndex, 0, 0, NULL);
 }
 
 // Soft Reset
@@ -697,10 +684,6 @@ static int receiveTimeout() {
 	return (usecs - lastRcvTime) > 20000;
 }
 
-// xxx temporarily import these to test compaction
-void compact();
-void outputRecordHeaders();
-
 static void processShortMessage() {
 	if (rcvByteCount < 3) { // message is not complete
 		if (receiveTimeout()) {
@@ -737,9 +720,6 @@ static void processShortMessage() {
 	case clearVarsMsg:
 		clearAllVariables();
 		break;
-	case deleteCommentMsg:
-		deleteComment(chunkIndex);
-		break;
 	case getVersionMsg:
 		sendVersionString();
 		break;
@@ -750,10 +730,9 @@ static void processShortMessage() {
 		deleteAllChunks();
 		break;
 	case systemResetMsg:
-		// xxx temporary, to test compaction
+		// non-zero chunkIndex is used for debugging operations
 		if (1 == chunkIndex) { outputRecordHeaders(); break; }
 		if (2 == chunkIndex) { compact(); break; }
-
 		softReset(true);
 		break;
 	case pingMsg:
@@ -797,12 +776,6 @@ static void processLongMessage() {
 		break;
 	case varNameMsg:
 		storeVarName(chunkIndex, bodyBytes, &rcvBuf[5]);
-		break;
-	case commentMsg:
-		storeComment(chunkIndex, bodyBytes, &rcvBuf[5]);
-		break;
-	case commentPositionMsg:
-		storeCommentPosition(chunkIndex, bodyBytes, &rcvBuf[5]);
 		break;
 	}
 	skipToStartByteAfter(5 + msgLength);
