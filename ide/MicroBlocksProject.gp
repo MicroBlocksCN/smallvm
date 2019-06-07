@@ -26,8 +26,6 @@ method libraries MicroBlocksProject { return libraries }
 // Block Specs
 
 method blockSpecs MicroBlocksProject {
-	return (blockSpecs main)
-// xxx return actual dictionary, not a copy!
 	result = (copy (blockSpecs main))
 	for lib (values libraries) {
 		specs = (blockSpecs lib)
@@ -36,6 +34,10 @@ method blockSpecs MicroBlocksProject {
 		}
 	}
 	return result
+}
+
+method recordBlockSpec MicroBlocksProject opName spec {
+	recordBlockSpec main opName spec
 }
 
 // Functions
@@ -239,8 +241,7 @@ method codeString MicroBlocksModule {
 		)
 		// add function block specs
 		for func sortedFunctions {
-//			spec = (specForOp (authoringSpecs) (functionName func))
-			spec = (at blockSpecs (functionName func))
+			spec = (specForOp (authoringSpecs) (functionName func))
 			if (notNil spec) {
 				add result (specDefinitionString spec)
 			}
@@ -369,58 +370,3 @@ method loadVariables MicroBlocksModule cmdList {
 	}
 	variableNames = (toArray varNames)
 }
-
-// saving (old)
-
-// method code MicroBlocksModule {
-// 	lf = (newline)
-// 	aStream = (dataStream (newBinaryData 1000))
-// 	nextPutAll aStream 'module'
-// 	if (and (notNil moduleName) (moduleName != '')) {
-// 		nextPutAll aStream ' '
-// 		nextPutAll aStream moduleName
-// 	}
-// 	nextPutAll aStream lf
-// 	printVarNamesOn this aStream
-//
-// 	if (and (notNil functions) ((count functions) > 0)) {
-// 		nextPutAll aStream lf
-// 		printFunctionsOn this aStream
-// 	}
-// 	nextPutAll aStream lf
-// 	nextPutAll aStream (scriptString this)
-//
-// 	return (stringContents aStream)
-// }
-//
-// method printVarNamesOn MicroBlocksModule aStream {
-// 	if (and (notNil variableNames) ((count variableNames) > 0)) {
-// 		lf = (newline)
-// 		nextPutAll aStream 'variables'
-// 		for v (sorted variableNames) {
-// 			nextPutAll aStream ' '
-// 			if (containsWhitespace v) {
-// 				nextPutAll aStream (printString v)
-// 			} else {
-// 				nextPutAll aStream v
-// 			}
-// 		}
-// 		nextPutAll aStream lf
-// 	}
-// }
-//
-// method printFunctionsOn MicroBlocksModule aStream {
-// 	if (isNil functions) { return }
-// 	lf = (newline)
-// 	pp = (new 'PrettyPrinter')
-// 	list = (sorted
-// 		functions
-// 		(function a b {return ((functionName a) < (functionName b))})
-// 	)
-// 	for f list {
-// 		nextPutAll aStream (prettyPrintFunction pp f)
-// 		if (not (f === (last list))) {
-// 			nextPutAll aStream lf
-// 		}
-// 	}
-// }
