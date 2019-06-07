@@ -484,6 +484,10 @@ method saveSoundAs Project snd name {
 
 // extensions
 
+method recordBlockSpec Project opName spec {
+	atPut blockSpecs opName spec
+}
+
 method specsForCategory Project cat {
   result = (list)
   for op (at paletteBlocks cat (array)) {

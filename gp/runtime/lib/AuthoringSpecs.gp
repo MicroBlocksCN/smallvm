@@ -54,7 +54,7 @@ method recordBlockSpec AuthoringSpecs op spec {
   // Record a block spec for the give op. Called when creating/changing functions and methods.
   editor = (findProjectEditor)
   if (isNil editor) { return } // should not happen
-  atPut (blockSpecs (project editor)) op spec
+  recordBlockSpec (project editor) op spec
 }
 
 // queries
