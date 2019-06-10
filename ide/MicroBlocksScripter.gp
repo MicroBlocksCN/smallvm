@@ -451,7 +451,7 @@ print 'load new project yet implemented'
 method visibleVars MicroBlocksScripter {
   // Include vars that start with underscore only in dev mode.
 
-  allVars = (variableNames mbProject)
+  allVars = (allVariableNames mbProject)
   if (devMode) {
     return allVars
   } else {
@@ -475,7 +475,7 @@ method uniqueVarName MicroBlocksScripter varName forScriptVar {
   // Otherwise, return varName unchanged.
 
   if (isNil forScriptVar) { forScriptVar = false }
-  existingVars = (variableNames mbProject)
+  existingVars = (allVariableNames mbProject)
   scripts = (scripts (main mbProject))
   if (and (notNil scripts) (not forScriptVar)) {
 	for entry scripts {

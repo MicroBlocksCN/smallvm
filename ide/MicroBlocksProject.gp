@@ -49,7 +49,7 @@ method recordBlockSpec MicroBlocksProject opName spec {
 
 // Functions
 
-method functions MicroBlocksProject {
+method allFunctions MicroBlocksProject {
 	result = (list)
 	addAll result (functions main)
 	for lib (values libraries) {
@@ -86,7 +86,7 @@ method removeLibraryNamed MicroBlocksProject libName {
 
 // Variables
 
-method variableNames MicroBlocksProject {
+method allVariableNames MicroBlocksProject {
 	result = (dictionary)
 	addAll result (variableNames main)
 	for lib (values libraries) {

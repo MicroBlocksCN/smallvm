@@ -765,7 +765,7 @@ method primitive SmallCompiler op args isCommand {
 // Variables
 
 method collectVars SmallCompiler cmdOrReporter {
-	sharedVars = (variableNames (project (scripter (smallRuntime))))
+	sharedVars = (allVariableNames (project (scripter (smallRuntime))))
 
 	localVars = (dictionary)
 	todo = (list cmdOrReporter)
@@ -829,7 +829,7 @@ method incrementVar SmallCompiler varName {
 }
 
 method globalVarIndex SmallCompiler varName {
-	varNames = (variableNames (project (scripter (smallRuntime))))
+	varNames = (allVariableNames (project (scripter (smallRuntime))))
 	id = (indexOf varNames varName)
 	if (isNil id) {
 		error 'Unknown variable' varName

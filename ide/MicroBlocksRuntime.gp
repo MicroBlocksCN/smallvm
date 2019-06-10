@@ -220,7 +220,7 @@ method assignFunctionIDs SmallRuntime {
 	// Ensure that there is a chunk ID for every user-defined function.
 	// This must be done before generating any code to allow for recursive calls.
 
-	for func (functions (project scripter)) {
+	for func (allFunctions (project scripter)) {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
 			atPut chunkIDs fName (array (unusedChunkID this) 'New Function!') // forces function save
@@ -464,7 +464,7 @@ method saveAllChunks SmallRuntime {
 	saveVariableNames this
 	assignFunctionIDs this
 	removeObsoleteChunks this
-	for aFunction (functions (project scripter)) {
+	for aFunction (allFunctions (project scripter)) {
 		saveChunk this aFunction
 	}
 	for aBlock (sortedScripts (scriptEditor scripter)) {
@@ -515,7 +515,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 }
 
 method saveVariableNames SmallRuntime {
-	newVarNames = (variableNames (project scripter))
+	newVarNames = (allVariableNames (project scripter))
 	if (oldVarNames == newVarNames) { return }
 
 	varID = 0

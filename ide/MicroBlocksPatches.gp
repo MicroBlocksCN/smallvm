@@ -20,7 +20,7 @@ method allVarsMenu InputSlot {
   // shared vars
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (notNil scripter) {
-	varNames = (variableNames (project (handler scripter)))
+	varNames = (allVariableNames (project (handler scripter)))
 	for varName varNames {
           // hide vars that start with underscore, used for libraries
           if (or ((at varName 1) != '_') (devMode)) {
