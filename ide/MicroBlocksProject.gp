@@ -1,6 +1,15 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+// Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
+
+// MicroBlocksProject.gp - Representation of a MicroBlocks project and its libraries
+
 defineClass MicroBlocksProject main libraries blockSpecs
 
 to mbProj {
+	// Just for debugging. Find the currently installed project.
 	gc
 	projects = (allInstances 'MicroBlocksProject')
 	if ((count projects) > 1) {
@@ -20,24 +29,9 @@ method initialize MicroBlocksProject {
 	return this
 }
 
-method initFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
-	initialize this
-	for func (functions (module aClass)) { addFunction main func }
-	for varName (variableNames (module aClass)) { addVariable main varName }
-	for k (keys specList) { atPut blockSpecs k (at specList k) }
-	setScripts main (copy (scripts aClass))
-}
-
-
 // Support
 
 method extraCategories MicroBlocksProject { return (array) } // called by AuthoringSpecs>specsFor
-
-// Libraries
-
-method main MicroBlocksProject { return main }
-method libraries MicroBlocksProject { return libraries }
-method libraryNamed MicroBlocksProject name { return (at libraries name) }
 
 // Block Specs
 
@@ -45,6 +39,26 @@ method blockSpecs MicroBlocksProject { return blockSpecs }
 
 method recordBlockSpec MicroBlocksProject opName spec {
 	atPut blockSpecs opName spec
+}
+
+method deleteBlockSpecFor MicroBlocksProject functionName {
+	remove blockSpecs functionName
+}
+
+// Libraries
+
+method main MicroBlocksProject { return main }
+method libraries MicroBlocksProject { return libraries }
+method libraryNamed MicroBlocksProject name { return (at libraries name) }
+
+method addLibrary MicroBlocksProject aMicroBlocksModule {
+	libName = (moduleName aMicroBlocksModule)
+	remove libraries libName
+	atPut libraries libName aMicroBlocksModule
+}
+
+method removeLibraryNamed MicroBlocksProject libName {
+	remove libraries libName
 }
 
 // Functions
@@ -68,22 +82,6 @@ method functionNamed MicroBlocksProject functionName {
 	return nil
 }
 
-method functionDeleted MicroBlocksProject functionName {
-  remove blockSpecs functionName
-}
-
-// Libraries
-
-method addLibrary MicroBlocksProject aMicroBlocksModule {
-	libName = (moduleName aMicroBlocksModule)
-	remove libraries libName
-	atPut libraries libName aMicroBlocksModule
-}
-
-method removeLibraryNamed MicroBlocksProject libName {
-	remove libraries libName
-}
-
 // Variables
 
 method allVariableNames MicroBlocksProject {
@@ -105,16 +103,77 @@ method deleteVariable MicroBlocksProject varName {
 	}
 }
 
+// Loading
+
+method loadFromString MicroBlocksProject s {
+	initialize this
+	cmdList = (parse s)
+	loadSpecs this cmdList
+	cmdsByModule = (splitCmdListIntoModules this cmdList)
+	isFirst = true
+	for cmdList cmdsByModule {
+		if isFirst {
+			loadFromCmds main cmdList
+			isFirst = false
+		} else {
+			lib = (loadFromCmds (newMicroBlocksModule) cmdList)
+			atPut libraries (moduleName lib) lib
+		}
+	}
+	return this
+}
+
+method loadSpecs MicroBlocksProject cmdList {
+	blockSpecs = (dictionary)
+	for cmd cmdList {
+		if ('spec' == (primName cmd)) {
+			args = (argList cmd)
+			// swap first two elements of args before calling blockSpecFromStrings
+			op = (at args 2)
+			atPut args 2 (at args 1)
+			atPut args 1 op
+			spec = (callWith 'blockSpecFromStrings' args)
+			atPut blockSpecs op spec
+		}
+	}
+}
+
+method splitCmdListIntoModules MicroBlocksProject cmdList {
+	// Split the list of commands into a list of command lists for each module of the project.
+	// Each module after the first (main) module begins with a 'module' command.
+	result = (list)
+	m = (list)
+	for cmd cmdList {
+		if ('module' == (primName cmd)) {
+			add result m
+			m = (list cmd)
+		}
+		add m cmd
+	}
+	add result m // add final module
+	return result
+}
+
 // Saving
 
 method codeString MicroBlocksProject {
-  result = (list)
-  add result (codeString main)
-  for lib (values libraries) {
-	add result (newline)
-	add result (codeString lib)
-  }
-  return (joinStrings result)
+	result = (list)
+	add result (codeString main)
+	for lib (values libraries) {
+		add result (newline)
+		addResult (join 'module ' (moduleName lib))
+		add result (newline)
+		add result (codeString lib)
+	}
+	return (joinStrings result)
+}
+
+method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
+	initialize this
+	for f (functions (module aClass)) { addFunction main f }
+	for v (variableNames (module aClass)) { addVariable main v }
+	for k (keys specList) { atPut blockSpecs k (at specList k) }
+	setScripts main (copy (scripts aClass))
 }
 
 defineClass MicroBlocksModule moduleName variableNames functions scripts
@@ -131,7 +190,6 @@ method initialize MicroBlocksModule name {
 	return this
 }
 
-//method className MicroBlocksModule { return moduleName } // xxx not needed?
 method moduleName MicroBlocksModule { return moduleName }
 method toString MicroBlocksModule { return (join 'MicroBlocksModule(''' moduleName ''')') }
 
@@ -195,9 +253,6 @@ method addVariable MicroBlocksModule newVar {
 method deleteVariable MicroBlocksModule varName {
 	variableNames = (copyWithout variableNames varName)
 }
-
-// printing
-
 
 // saving
 
@@ -291,11 +346,10 @@ method needsQuotes MicroBlocksModule s {
 
 // loading
 
-method loadModuleFromString MicroBlocksModule s {
-	cmds = (parse s)
-	loadVariables this cmds
-	loadFunctions this cmds
-	loadScripts this cmds
+method loadFromCmds MicroBlocksModule cmdList {
+	loadVariables this cmdList
+	loadFunctions this cmdList
+	loadScripts this cmdList
 	return this
 }
 
@@ -333,8 +387,7 @@ method loadScripts MicroBlocksModule cmdList {
 	scripts = (list)
 	for cmd cmdList {
 		if ('script' == (primName cmd)) {
-			args = (argList cmd)
-			add scripts (copyFromTo args 2) // className (first arg) is ignored by MicroBlocks
+			add scripts (argList cmd)
 		}
 	}
 }

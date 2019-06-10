@@ -211,7 +211,7 @@ method openProject MicroBlocksEditor projectData projectName {
 	}
 	loadOldProjectFromClass scripter mainClass (blockSpecs proj)
   } else {
-	loadNewProjectFromData scripter projectData
+	loadNewProjectFromData scripter (toString projectData)
   }
   developerModeChanged scripter
   stopAndSyncScripts (smallRuntime)

@@ -430,20 +430,17 @@ method loadOldProjectFromClass MicroBlocksScripter aClass specs {
 
   mbProject = (newMicroBlocksProject)
   if (notNil aClass) {
-	initFromOldProjectClassAndSpecs mbProject aClass specs
+	loadFromOldProjectClassAndSpecs mbProject aClass specs
   }
   restoreScripts this
-  saveScripts this
-  if ('Variables' == (selection (contents categoriesFrame))) {
-	updateBlocks this
-  }
 }
 
-method loadNewProjectFromData MicroBlocksScripter data {
-  // Load an new-style MicroBlocks project from the given data.
+method loadNewProjectFromData MicroBlocksScripter aString {
+  // Load an new-style MicroBlocks project from the given string.
 
-// xxx to do
-print 'load new project yet implemented'
+  mbProject = (newMicroBlocksProject)
+  loadFromString mbProject aString
+  restoreScripts this
 }
 
 // variable operations
@@ -687,7 +684,7 @@ method removedUserDefinedBlock MicroBlocksScripter function {
   // Remove the given user-defined function.
 
   removeFunction (module function) function // in MicroBlocks the function "module" is its library
-  functionDeleted (project projectEditor) (functionName function)
+  deleteBlockSpecFor (project projectEditor) (functionName function)
 }
 
 method addToBottom MicroBlocksScripter aBlock noScroll {

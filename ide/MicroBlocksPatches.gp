@@ -33,7 +33,6 @@ method allVarsMenu InputSlot {
   // local vars
   myBlock = (handler (ownerThatIsA morph 'Block'))
   localVars = (collectLocals (expression (topBlock myBlock)))
-  for field (fieldNames (classOf targetObj)) { remove localVars field }
   if (notEmpty localVars) {
 	localVars = (sorted (keys localVars))
 	for varName localVars {
