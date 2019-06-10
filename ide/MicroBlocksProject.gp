@@ -1,4 +1,4 @@
-defineClass MicroBlocksProject main libraries
+defineClass MicroBlocksProject main libraries blockSpecs
 
 to mbProj {
 	gc
@@ -16,28 +16,35 @@ to newMicroBlocksProject {
 method initialize MicroBlocksProject {
 	main = (newMicroBlocksModule 'main')
 	libraries = (dictionary)
+	blockSpecs = (dictionary)
 	return this
 }
 
+method initFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
+	initialize this
+	for func (functions (module aClass)) { addFunction main func }
+	for varName (variableNames (module aClass)) { addVariable main varName }
+	for k (keys specList) { atPut blockSpecs k (at specList k) }
+	setScripts main (copy (scripts aClass))
+}
+
+
+// Support
+
 method extraCategories MicroBlocksProject { return (array) } // called by AuthoringSpecs>specsFor
+
+// Libraries
+
 method main MicroBlocksProject { return main }
 method libraries MicroBlocksProject { return libraries }
+method libraryNamed MicroBlocksProject name { return (at libraries name) }
 
 // Block Specs
 
-method blockSpecs MicroBlocksProject {
-	result = (copy (blockSpecs main))
-	for lib (values libraries) {
-		specs = (blockSpecs lib)
-		for k (keys specs) {
-			atPut result k (at specs k)
-		}
-	}
-	return result
-}
+method blockSpecs MicroBlocksProject { return blockSpecs }
 
 method recordBlockSpec MicroBlocksProject opName spec {
-	recordBlockSpec main opName spec
+	atPut blockSpecs opName spec
 }
 
 // Functions
@@ -62,8 +69,7 @@ method functionNamed MicroBlocksProject functionName {
 }
 
 method functionDeleted MicroBlocksProject functionName {
-  print 'functionDeleted' functionName
-  // xxx remove definition (could be in a library)
+  remove blockSpecs functionName
 }
 
 // Libraries
@@ -111,40 +117,23 @@ method codeString MicroBlocksProject {
   return (joinStrings result)
 }
 
-defineClass MicroBlocksModule moduleName blockSpecs functions variableNames scripts
+defineClass MicroBlocksModule moduleName variableNames functions scripts
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
 }
 
-method initialize MicroBlocksModule modName {
-	if (isNil modName) { modName = '' }
-	moduleName = modName
-	blockSpecs = (dictionary)
-	functions = (array)
+method initialize MicroBlocksModule name {
+	moduleName = name
 	variableNames = (array)
+	functions = (array)
 	scripts = (array)
 	return this
 }
 
-method className MicroBlocksModule { return moduleName }
+//method className MicroBlocksModule { return moduleName } // xxx not needed?
 method moduleName MicroBlocksModule { return moduleName }
-
-method initFromOldProjectClassAndSpecs MicroBlocksModule aClass specList {
-	for k (keys specList) { atPut blockSpecs k (at specList k) }
-	for func (functions (module aClass)) { addFunction this func }
-	for varName (variableNames (module aClass)) { addVariable this varName }
-	setScripts this (copy (scripts aClass))
-}
-
-// block specs
-
-method blockSpecs MicroBlocksModule { return blockSpecs }
-method setBlockSpecs MicroBlocksModule specs { blockSpecs = specs }
-
-method recordBlockSpec MicroBlocksModule opName spec {
-	atPut blockSpecs opName spec
-}
+method toString MicroBlocksModule { return (join 'MicroBlocksModule(''' moduleName ''')') }
 
 // scripts
 
@@ -187,7 +176,6 @@ method addFunction MicroBlocksModule aFunction {
 
 method removeFunction MicroBlocksModule aFunction {
 	functions = (copyWithout functions aFunction)
-	clearMethodCaches
 }
 
 // variables
@@ -210,9 +198,6 @@ method deleteVariable MicroBlocksModule varName {
 
 // printing
 
-method toString MicroBlocksModule {
-	return (join 'MicroBlocksModule(''' moduleName ''')')
-}
 
 // saving
 
@@ -308,11 +293,40 @@ method needsQuotes MicroBlocksModule s {
 
 method loadModuleFromString MicroBlocksModule s {
 	cmds = (parse s)
-	loadScripts this cmds
-	loadFunctions this cmds
 	loadVariables this cmds
-	clearMethodCache
+	loadFunctions this cmds
+	loadScripts this cmds
 	return this
+}
+
+method loadVariables MicroBlocksModule cmdList {
+	varNames = (list)
+	for cmd cmdList {
+		if ('variables' == (primName cmd)) {
+			for v (argList cmd) {
+				if (isClass v 'String') { // quoted var name
+					add varNames v
+				} else { // unquoted var: mapped to "(v 'varName')" block by the parser
+					add varNames (first (argList v))
+				}
+			}
+		}
+	}
+	variableNames = (toArray varNames)
+}
+
+method loadFunctions MicroBlocksModule cmdList {
+	for cmd cmdList {
+		if ('to' == (primName cmd)) {
+			args = (toList (argList cmd))
+			functionName = (removeFirst args)
+			addFirst args nil
+			f = (callWith 'functionFor' (toArray args))
+			setField f 'functionName' functionName
+			setField f 'module' this
+			functions = (appendFunction this functions f)
+		}
+	}
 }
 
 method loadScripts MicroBlocksModule cmdList {
@@ -339,34 +353,4 @@ method appendFunction MicroBlocksModule anArray f {
 		}
 	}
 	return (copyWith anArray f)
-}
-
-method loadFunctions MicroBlocksModule cmdList {
-	for cmd cmdList {
-		if ('to' == (primName cmd)) {
-			args = (toList (argList cmd))
-			functionName = (removeFirst args)
-			addFirst args nil
-			f = (callWith 'functionFor' (toArray args))
-			setField f 'functionName' functionName
-			setField f 'module' this
-			functions = (appendFunction this functions f)
-		}
-	}
-}
-
-method loadVariables MicroBlocksModule cmdList {
-	varNames = (list)
-	for cmd cmdList {
-		if ('variables' == (primName cmd)) {
-			for v (argList cmd) {
-				if (isClass v 'String') { // quoted var name
-					add varNames v
-				} else { // unquoted var: mapped to "(v 'varName')" block by the parser
-					add varNames (first (argList v))
-				}
-			}
-		}
-	}
-	variableNames = (toArray varNames)
 }

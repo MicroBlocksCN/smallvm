@@ -257,9 +257,11 @@ method addBlocksForLibrary MicroBlocksScripter libName {
   if (isNil libName) { return }
   lib = (at (libraries mbProject) libName)
   if (isNil lib) { return }
-  for spec (values (blockSpecs lib)) {
-	if (or (devMode) (not (beginsWith (blockOp spec) '_'))) {
-	  addSpaceOrLabelBefore this spec
+
+  for f (functions lib) {
+	op = (functionName f)
+	if (or (devMode) (not (beginsWith op '_'))) {
+	  spec = (specForOp (authoringSpecs) op)
 	  addBlock this (blockForSpec spec) spec
 	}
   }
@@ -428,7 +430,7 @@ method loadOldProjectFromClass MicroBlocksScripter aClass specs {
 
   mbProject = (newMicroBlocksProject)
   if (notNil aClass) {
-	initFromOldProjectClassAndSpecs (main mbProject) aClass specs
+	initFromOldProjectClassAndSpecs mbProject aClass specs
   }
   restoreScripts this
   saveScripts this
@@ -639,13 +641,9 @@ method createFunction MicroBlocksScripter {
   opName = (uniqueFunctionName this name)
   func = (defineFunctionInModule (main mbProject) opName (array) nil)
   spec = (blockSpecFromStrings opName ' ' opName '')
-  recordBlockSpec this opName spec
+  recordBlockSpec mbProject opName spec
   addToBottom this (scriptForFunction func)
   updateBlocks this
-}
-
-method recordBlockSpec MicroBlocksScripter opName spec {
-	recordBlockSpec (main mbProject) opName spec
 }
 
 method copyFunction MicroBlocksScripter definition {
@@ -667,7 +665,7 @@ method copyFunction MicroBlocksScripter definition {
 	  newSpec = (blockSpecFor (functionNamed mbProject newOp))
 	}
   }
-  recordBlockSpec this newOp newSpec
+  recordBlockSpec mbProject newOp newSpec
   return (newCommand primName newOp)
 }
 
@@ -688,7 +686,7 @@ method uniqueFunctionName MicroBlocksScripter baseSpec {
 method removedUserDefinedBlock MicroBlocksScripter function {
   // Remove the given user-defined function.
 
-  removeFunction (module function) function
+  removeFunction (module function) function // in MicroBlocks the function "module" is its library
   functionDeleted (project projectEditor) (functionName function)
 }
 
@@ -895,7 +893,7 @@ method importLibraryFromFile MicroBlocksScripter fileName {
 	  if ((count args) > 3) { slotTypes = (at args 4) }
 	  slotDefaults = (copyFromTo args 5)
 	  spec = (blockSpecFromStrings blockOp blockType specString slotTypes slotDefaults)
-	  recordBlockSpec this blockOp spec
+	  recordBlockSpec mbProject blockOp spec
 	  atPut libSpecs blockOp spec
 	} ('to' == op) {
 	  args = (toList args)
@@ -906,7 +904,6 @@ method importLibraryFromFile MicroBlocksScripter fileName {
 	  addFunction libModule func
 	}
   }
-  setBlockSpecs libModule libSpecs
   addLibrary mbProject libModule
 
   // update library list and select the new library
