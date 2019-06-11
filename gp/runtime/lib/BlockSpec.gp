@@ -339,6 +339,11 @@ method specDefinitionString BlockSpec className {
 	}
 	if (notNil className) { atPut slotTypes 1 className } // for methods, first type is the class name
 	add result (printString (joinStrings slotTypes ' '))
+
+	// remove trailing nil's from defaultValues, then add them
+	while (and (notEmpty defaultValues) ('nil' == (last defaultValues))) {
+		removeLast defaultValues
+	}
 	for v defaultValues { add result v }
   } else {
 	add result (printString '') // empty slot type string

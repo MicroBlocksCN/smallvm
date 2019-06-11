@@ -117,6 +117,7 @@ method loadFromString MicroBlocksProject s {
 			isFirst = false
 		} else {
 			lib = (loadFromCmds (newMicroBlocksModule) cmdList)
+print 'lib name:' (moduleName lib) lib // xxx
 			atPut libraries (moduleName lib) lib
 		}
 	}
@@ -128,11 +129,14 @@ method loadSpecs MicroBlocksProject cmdList {
 	for cmd cmdList {
 		if ('spec' == (primName cmd)) {
 			args = (argList cmd)
-			// swap first two elements of args before calling blockSpecFromStrings
+			blockType = (at args 1)
 			op = (at args 2)
-			atPut args 2 (at args 1)
-			atPut args 1 op
-			spec = (callWith 'blockSpecFromStrings' args)
+			specString = (at args 3)
+			slotTypes = ''
+			if ((count args) > 3) { slotTypes = (at args 4) }
+			slotDefaults = (array)
+			if ((count args) > 4) { slotDefaults = (copyArray args ((count args) - 4) 5) }
+			spec = (blockSpecFromStrings op blockType specString slotTypes slotDefaults)
 			atPut blockSpecs op spec
 		}
 	}
@@ -145,7 +149,7 @@ method splitCmdListIntoModules MicroBlocksProject cmdList {
 	m = (list)
 	for cmd cmdList {
 		if ('module' == (primName cmd)) {
-			add result m
+			if (not (isEmpty m)) { add result m }
 			m = (list cmd)
 		}
 		add m cmd
@@ -160,8 +164,6 @@ method codeString MicroBlocksProject {
 	result = (list)
 	add result (codeString main)
 	for lib (values libraries) {
-		add result (newline)
-		addResult (join 'module ' (moduleName lib))
 		add result (newline)
 		add result (codeString lib)
 	}
@@ -259,7 +261,8 @@ method deleteVariable MicroBlocksModule varName {
 method codeString MicroBlocksModule {
 	// Return a string containing the code for this MicroBlocksModule.
 
-	result = (list)
+	result = (list (join 'module ' moduleName))
+	add result (newline)
 
 	// add variable declaration
 	if ((count variableNames) > 0) {
@@ -305,10 +308,20 @@ method codeString MicroBlocksModule {
 
 method scriptString MicroBlocksModule {
 	if (isEmpty scripts) { return '' }
-	newline = (newline)
+
+	// sort scripts so the scriptString does not depend on z-ordering of scripts
+	sortedScripts = (sorted scripts
+		(function e1 e2 {
+			if ((at e1 2) == (at e2 2)) {
+				return ((at e1 1) < (at e2 1)) // y's equal, sort by x
+			} else {
+				return ((at e1 2) < (at e2 2)) // sort by y
+			}
+		}))
+
 	result = (list)
 	pp = (new 'PrettyPrinter')
-	for entry scripts {
+	for entry sortedScripts {
 		x = (toInteger (at entry 1))
 		y = (toInteger (at entry 2))
 		expr = (at entry 3)
@@ -319,13 +332,13 @@ method scriptString MicroBlocksModule {
 			} else {
 				add result (join '(' (prettyPrint pp expr) ')')
 			}
-			add result newline
+			add result (newline)
 		} else {
-			add result (join '{' newline)
+			add result (join '{' (newline))
 			add result (prettyPrintList pp expr)
-			add result (join '}' newline)
+			add result (join '}' (newline))
 		}
-		add result newline
+		add result (newline)
 	}
 	return (joinStrings result)
 }
@@ -347,10 +360,25 @@ method needsQuotes MicroBlocksModule s {
 // loading
 
 method loadFromCmds MicroBlocksModule cmdList {
+	loadModuleName this cmdList
 	loadVariables this cmdList
 	loadFunctions this cmdList
 	loadScripts this cmdList
 	return this
+}
+
+method loadModuleName MicroBlocksModule cmdList {
+	if (not (isEmpty cmdList)) {
+		cmd = (first cmdList)
+		if ('module' == (primName cmd)) {
+			arg = (first (argList cmd))
+			if (isClass arg 'String') { // quoted var name
+				moduleName = arg
+			} else { // unquoted var: mapped to "(v 'varName')" block by the parser
+				moduleName = (first (argList arg))
+			}
+		}
+	}
 }
 
 method loadVariables MicroBlocksModule cmdList {

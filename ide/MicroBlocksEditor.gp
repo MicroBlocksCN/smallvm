@@ -156,6 +156,7 @@ method newProject MicroBlocksEditor {
   ok = (confirm (global 'page') nil 'Discard current project?')
   if (not ok) { return }
   clearProject this
+  updateLibraryList scripter
   fileName = ''
   updateTitle this
 }
@@ -213,6 +214,7 @@ method openProject MicroBlocksEditor projectData projectName {
   } else {
 	loadNewProjectFromData scripter (toString projectData)
   }
+  updateLibraryList scripter
   developerModeChanged scripter
   stopAndSyncScripts (smallRuntime)
 }

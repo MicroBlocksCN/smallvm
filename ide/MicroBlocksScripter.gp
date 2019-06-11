@@ -904,10 +904,15 @@ method importLibraryFromFile MicroBlocksScripter fileName {
   addLibrary mbProject libModule
 
   // update library list and select the new library
-  setCollection (contents libFrame) (sorted (keys (libraries mbProject)))
+  updateLibraryList this
   select (contents categoriesFrame) nil
   select (contents libFrame) libName
   updateBlocks this
+}
+
+method updateLibraryList MicroBlocksScripter {
+  setCollection (contents libFrame) (sorted (keys (libraries mbProject)))
+  select (contents libFrame) nil
 }
 
 method exportAsLibrary MicroBlocksScripter defaultFileName {
