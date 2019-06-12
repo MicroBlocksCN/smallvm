@@ -58,7 +58,12 @@ method addLibrary MicroBlocksProject aMicroBlocksModule {
 }
 
 method removeLibraryNamed MicroBlocksProject libName {
+	lib = (at libraries libName)
+	if (isNil lib) { return }
 	remove libraries libName
+	for f (functions lib) {
+		remove blockSpecs (functionName func)
+	}
 }
 
 // Functions
@@ -105,7 +110,19 @@ method deleteVariable MicroBlocksProject varName {
 
 // Loading
 
+method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
+	// Used when reading projects in the old .gpp format.
+
+	initialize this
+	for f (functions (module aClass)) { addFunction main f }
+	for v (variableNames (module aClass)) { addVariable main v }
+	for k (keys specList) { atPut blockSpecs k (at specList k) }
+	setScripts main (copy (scripts aClass))
+}
+
 method loadFromString MicroBlocksProject s {
+	// Load project from a string in .ubp format. Keep libraries (modules) together.
+
 	initialize this
 	cmdList = (parse s)
 	loadSpecs this cmdList
@@ -117,7 +134,6 @@ method loadFromString MicroBlocksProject s {
 			isFirst = false
 		} else {
 			lib = (loadFromCmds (newMicroBlocksModule) cmdList)
-print 'lib name:' (moduleName lib) lib // xxx
 			atPut libraries (moduleName lib) lib
 		}
 	}
@@ -145,6 +161,7 @@ method loadSpecs MicroBlocksProject cmdList {
 method splitCmdListIntoModules MicroBlocksProject cmdList {
 	// Split the list of commands into a list of command lists for each module of the project.
 	// Each module after the first (main) module begins with a 'module' command.
+
 	result = (list)
 	m = (list)
 	for cmd cmdList {
@@ -161,21 +178,20 @@ method splitCmdListIntoModules MicroBlocksProject cmdList {
 // Saving
 
 method codeString MicroBlocksProject {
+	// Return a string representing this project in the new .ubp format.
+
+	// sort libraries by name (this canonicalizes their order)
+	sortedLibs = (sorted
+		(values libraries)
+		(function a b {return ((moduleName a) < (moduleName b))}))
+
 	result = (list)
 	add result (codeString main)
-	for lib (values libraries) {
+	for lib sortedLibs {
 		add result (newline)
 		add result (codeString lib)
 	}
 	return (joinStrings result)
-}
-
-method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
-	initialize this
-	for f (functions (module aClass)) { addFunction main f }
-	for v (variableNames (module aClass)) { addVariable main v }
-	for k (keys specList) { atPut blockSpecs k (at specList k) }
-	setScripts main (copy (scripts aClass))
 }
 
 defineClass MicroBlocksModule moduleName variableNames functions scripts
@@ -273,8 +289,8 @@ method codeString MicroBlocksModule {
 		}
 		add result (joinStrings varDeclaration ' ')
 		add result (newline)
-		add result (newline)
 	}
+	add result (newline)
 
 	if (not (isEmpty functions)) {
 		// sort functions by name (this canonicalizes function order)
@@ -411,15 +427,6 @@ method loadFunctions MicroBlocksModule cmdList {
 	}
 }
 
-method loadScripts MicroBlocksModule cmdList {
-	scripts = (list)
-	for cmd cmdList {
-		if ('script' == (primName cmd)) {
-			add scripts (argList cmd)
-		}
-	}
-}
-
 method appendFunction MicroBlocksModule anArray f {
 	// Append function f to the given array of functions and return the new array. If the
 	// array already contains a function with the same name, replace it and issue a warning.
@@ -434,4 +441,13 @@ method appendFunction MicroBlocksModule anArray f {
 		}
 	}
 	return (copyWith anArray f)
+}
+
+method loadScripts MicroBlocksModule cmdList {
+	scripts = (list)
+	for cmd cmdList {
+		if ('script' == (primName cmd)) {
+			add scripts (argList cmd)
+		}
+	}
 }

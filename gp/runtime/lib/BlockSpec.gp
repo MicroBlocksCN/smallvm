@@ -328,14 +328,15 @@ method specDefinitionString BlockSpec className {
 	defaultValues = (list)
 	for info slotInfo {
 	  slotType = (at info 1)
-	  add slotTypes slotType
-	  if (isOneOf slotType 'auto' 'str') {
+	  if (isOneOf slotType 'auto' 'menu' 'str') {
 		add defaultValues (printString (at info 2))
 	  } (isOneOf slotType 'bool' 'num') {
 		add defaultValues (toString (at info 2))
 	  } else {
 		add defaultValues 'nil'
 	  }
+	  if ('menu' == slotType) { slotType = (join 'menu.' (at info 4)) }
+	  add slotTypes slotType
 	}
 	if (notNil className) { atPut slotTypes 1 className } // for methods, first type is the class name
 	add result (printString (joinStrings slotTypes ' '))
@@ -345,8 +346,6 @@ method specDefinitionString BlockSpec className {
 		removeLast defaultValues
 	}
 	for v defaultValues { add result v }
-  } else {
-	add result (printString '') // empty slot type string
   }
   return (joinStrings result ' ')
 }
