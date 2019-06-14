@@ -24,6 +24,7 @@ to uload fileName {
 
 defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer
 
+method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
 method scripter MicroBlocksEditor { return scripter }
 method thingServer MicroBlocksEditor { return thingServer }

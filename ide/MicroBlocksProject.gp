@@ -18,6 +18,29 @@ to mbProj {
 	return (first projects)
 }
 
+to newProjTest fileName {
+  // Test that saving and reading projects in the new format preserves the project content.
+
+  print (filePart fileName) '...'
+  projectData = (readFile fileName true)
+  project = (newMicroBlocksProject)
+  if (endsWith fileName '.gpp') {
+	// read old project
+	mainClass = nil
+	oldProj = (readProject (emptyProject) projectData)
+	if ((count (classes (module oldProj))) > 0) {
+		mainClass = (first (classes (module oldProj)))
+		loadFromOldProjectClassAndSpecs project mainClass (blockSpecs oldProj)
+	} else {
+		error 'no class in old project'
+	}
+  } else {
+	loadNewProjectFromData project (toString projectData)
+  }
+  if (not (saveLoadTest project)) { print '  FAILED!' }
+}
+
+
 to newMicroBlocksProject {
 	return (initialize (new 'MicroBlocksProject'))
 }
@@ -55,6 +78,14 @@ method addLibrary MicroBlocksProject aMicroBlocksModule {
 	libName = (moduleName aMicroBlocksModule)
 	remove libraries libName
 	atPut libraries libName aMicroBlocksModule
+
+	// the functions in this new library supercede all earlier versions of those functions
+	newFunctionNames = (dictionary)
+	for f (functions aMicroBlocksModule) { add newFunctionNames (functionName f) }
+	removeSupercededFunctions main newFunctionNames
+	for lib (values libraries) {
+		if (lib != aMicroBlocksModule) { removeSupercededFunctions lib newFunctionNames }
+	}
 }
 
 method removeLibraryNamed MicroBlocksProject libName {
@@ -62,7 +93,7 @@ method removeLibraryNamed MicroBlocksProject libName {
 	if (isNil lib) { return }
 	remove libraries libName
 	for f (functions lib) {
-		remove blockSpecs (functionName func)
+		remove blockSpecs (functionName f)
 	}
 }
 
@@ -118,6 +149,7 @@ method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
 	for v (variableNames (module aClass)) { addVariable main v }
 	for k (keys specList) { atPut blockSpecs k (at specList k) }
 	setScripts main (copy (scripts aClass))
+	return this
 }
 
 method loadFromString MicroBlocksProject s {
@@ -186,12 +218,62 @@ method codeString MicroBlocksProject {
 		(function a b {return ((moduleName a) < (moduleName b))}))
 
 	result = (list)
-	add result (codeString main)
+	add result (codeString main this)
 	for lib sortedLibs {
 		add result (newline)
-		add result (codeString lib)
+		add result (codeString lib this)
 	}
 	return (joinStrings result)
+}
+
+method libraryCodeString MicroBlocksProject modName {
+	// Return a string containing the code for this project formatted as a library.
+
+	setModuleName main modName // rename main to module name for saving
+	result = (codeString this)
+	setModuleName main 'main'
+	return result
+}
+
+// save/load test
+
+method saveLoadTest MicroBlocksProject {
+	// Verify that this project can be saved and reloaded.
+
+	s1 = (codeString this)
+	p2 = (loadFromString (newMicroBlocksProject) s1)
+	s2 = (codeString p2)
+	if (s1 != s2) { print 'second codeString does not match first'; return false }
+	if (not (equal this p2)) { print 'second project does not match first'; return false }
+	return true
+}
+
+// equality
+
+method equal MicroBlocksProject proj {
+	// Return true if the given project has the same contents as this one.
+
+	if (not (equal main (main proj))) { return false }
+	for lib (values libraries) {
+		if (not (equal lib (libraryNamed proj (moduleName lib)))) {
+			print '  libs not equal:' (moduleName lib)
+			return false
+		}
+	}
+	sortedKeys = (sorted (keys blockSpecs))
+	if (sortedKeys != (sorted (keys (blockSpecs proj)))) {
+		print '  spec keys mismatch'
+		return false;
+	}
+	for k sortedKeys {
+		s1 = (specDefinitionString (at blockSpecs k))
+		s2 = (specDefinitionString (at (blockSpecs proj) k))
+		if (s1 != s2) {
+			print '  spec mismatch' k
+			return false
+		}
+	}
+	return true
 }
 
 defineClass MicroBlocksModule moduleName variableNames functions scripts
@@ -209,6 +291,7 @@ method initialize MicroBlocksModule name {
 }
 
 method moduleName MicroBlocksModule { return moduleName }
+method setModuleName MicroBlocksModule modName { moduleName = modName }
 method toString MicroBlocksModule { return (join 'MicroBlocksModule(''' moduleName ''')') }
 
 // scripts
@@ -254,6 +337,14 @@ method removeFunction MicroBlocksModule aFunction {
 	functions = (copyWithout functions aFunction)
 }
 
+method removeSupercededFunctions MicroBlocksModule superceded {
+	for f (copy functions) {
+		if (contains superceded (functionName f)) {
+			removeFunction this f
+		}
+	}
+}
+
 // variables
 
 method variableNames MicroBlocksModule { return (copy variableNames) }
@@ -274,11 +365,12 @@ method deleteVariable MicroBlocksModule varName {
 
 // saving
 
-method codeString MicroBlocksModule {
+method codeString MicroBlocksModule owningProject {
 	// Return a string containing the code for this MicroBlocksModule.
 
-	result = (list (join 'module ' moduleName))
-	add result (newline)
+	modName = moduleName
+	if (needsQuotes this modName) { modName = (join '''' modName '''') }
+	result = (list (join 'module ' modName) (newline))
 
 	// add variable declaration
 	if ((count variableNames) > 0) {
@@ -292,6 +384,7 @@ method codeString MicroBlocksModule {
 	}
 	add result (newline)
 
+	projectSpecs = (blockSpecs owningProject)
 	if (not (isEmpty functions)) {
 		// sort functions by name (this canonicalizes function order)
 		sortedFunctions = (sorted
@@ -300,7 +393,7 @@ method codeString MicroBlocksModule {
 		)
 		// add function block specs
 		for func sortedFunctions {
-			spec = (specForOp (authoringSpecs) (functionName func))
+			spec = (at projectSpecs (functionName func))
 			if (notNil spec) {
 				add result (specDefinitionString spec)
 			}
@@ -450,4 +543,56 @@ method loadScripts MicroBlocksModule cmdList {
 			add scripts (argList cmd)
 		}
 	}
+}
+
+// equality
+
+method equal MicroBlocksModule otherMod {
+	// Return true if the given module has the same content as this one.
+
+	if (moduleName != (moduleName otherMod)) { return false }
+	if (variableNames != (variableNames otherMod)) { return false }
+	if ((count functions) != (count (functions otherMod))) { return false }
+	if ((count scripts) != (count (scripts otherMod))) { return false }
+
+	for i (count functions) {
+		if (not (functionsEqual this (at functions i) (at (functions otherMod) i))) {
+			print 'function mismatch:' (functionName (at functions i))
+			return false
+		}
+	}
+
+	// sort script entries by position
+	scriptSortFunc = (function e1 e2 {
+		if ((at e1 2) == (at e2 2)) {
+			return ((at e1 1) < (at e2 1)) // y's equal, sort by x
+		} else {
+			return ((at e1 2) < (at e2 2)) // sort by y
+		}
+	})
+	sortedScripts1 = (sorted scripts scriptSortFunc)
+	sortedScripts2 = (sorted (scripts otherMod) scriptSortFunc)
+
+	for i (count sortedScripts1) {
+		e1 = (at sortedScripts1 i)
+		e2 = (at sortedScripts2 i)
+		if (not (and ((at e1 1) == (at e2 1))
+					 ((at e1 2) == (at e2 2))
+					 ((at e1 3) == (at e2 3))
+					 )) {
+			print 'script mismatch' e1 e2
+			return false
+		}
+	}
+	return true
+}
+
+method functionsEqual MicroBlocksModule f1 f2 {
+	if ((functionName f1) != (functionName f1)) { return false }
+	if ((classIndex f1) != (classIndex f1)) { return false }
+	if ((argNames f1) != (argNames f1)) { return false }
+	if ((localNames f1) != (localNames f1)) { return false }
+	if ((cmdList f1) != (cmdList f1)) { return false }
+	if ((module f1) != (module f1)) { return false }
+	return true
 }

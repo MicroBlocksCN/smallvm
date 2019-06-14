@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categoriesFrame catResizer libHeader libFrame libAddButton blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded boardType boardTypeHeader categoriesFrame catResizer libHeader libFrame blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -18,6 +18,7 @@ method thingServer MicroBlocksScripter { return (thingServer projectEditor) }
 method initialize MicroBlocksScripter aProjectEditor {
   mbProject = (newMicroBlocksProject)
   projectEditor = aProjectEditor
+  boardType = 'BBC micro:bit'
   scale = (global 'scale')
   morph = (newMorph this)
   setCostume morph (gray 150) // border color
@@ -36,12 +37,13 @@ method initialize MicroBlocksScripter aProjectEditor {
   setFPS morph 4
   saveNeeded = false
 
+  makeColumnHeaders this
+
   lbox = (listBox (categories this) nil (action 'categorySelected' this) listColor)
   setFont lbox fontName fontSize
   categoriesFrame = (scrollFrame lbox listColor true)
   addPart morph (morph categoriesFrame)
 
-  makeLibraryHeader this
   lbox = (listBox (array) nil (action 'librarySelected' this) listColor)
   setFont lbox fontName fontSize
   libFrame = (scrollFrame lbox listColor true)
@@ -80,13 +82,11 @@ method initialize MicroBlocksScripter aProjectEditor {
 }
 
 method languageChanged MicroBlocksScripter {
+  redrawColumnHeaders this
+
   // update categories and library names
   updateMorphContents (handler (first (parts (morph categoriesFrame))))
   updateMorphContents (handler (first (parts (morph libFrame))))
-
-  // update library header
-  destroy (morph libHeader)
-  makeLibraryHeader this
 
   // update the scripts
   updateBlocks this
@@ -94,46 +94,99 @@ method languageChanged MicroBlocksScripter {
   restoreScripts this
 }
 
-method makeLibraryHeader MicroBlocksScripter {
-  scale = (global 'scale')
-  libHeader = (newBox (newMorph) (colorHSV 180 0.045 1.0) 0 0)
-
-  label = (newText (localized 'Libraries') 'Arial' (18 * scale) (gray 30))
-  if ('Linux' == (platform)) {
-	label = (newText (localized 'Libraries') 'Liberation Sans' (15 * scale) (gray 30))
-  }
-  setPosition (morph label) (6 * scale) (8 * scale)
-  addPart (morph libHeader) (morph label)
-
-  libAddButton = (addLibraryButton this '+' (37 * scale) (37 * scale))
-  setPosition (morph libAddButton) (82 * scale) 0
-  addPart (morph libHeader) (morph libAddButton)
+method makeColumnHeaders MicroBlocksScripter {
+  boardTypeHeader = (newButton '' (action 'boardTypeMenu' this))
+  addPart morph (morph boardTypeHeader)
+  libHeader = (newButton '' (action 'libraryMenu' this))
   addPart morph (morph libHeader)
-  return libHeader
 }
 
-method addLibraryButton MicroBlocksScripter label w h {
-  scale = (global 'scale')
-  setFont 'Arial Bold' (24 * scale)
-  halfW = (1.5 * scale)
-  lineW = (2 * halfW)
-  halfLen = (7 * scale)
-  len = (2 * halfLen)
-  centerX = (toInteger (w / 2))
-  centerY = (toInteger (h / 2))
+method redrawColumnHeaders MicroBlocksScripter {
+  w = (width (morph boardTypeHeader))
+  h = (height (morph boardTypeHeader))
+  setColumnHeaderButtonCostumes this boardTypeHeader (localized boardType) w h
+  setColumnHeaderButtonCostumes this libHeader (localized 'Libraries') w h
+}
 
-  labelY = (6 * scale)
+method setColumnHeaderButtonCostumes MicroBlocksScripter aButton label w h {
+  scale = (global 'scale')
+  if ('Linux' == (platform)) {
+  	setFont 'Liberation Sans' (13 * scale)
+  } else {
+	setFont 'Arial' (16 * scale)
+  }
+
+  inset = 0
+  labelX = (5 * scale)
+  labelY = (5 * scale)
   bm1 = (newBitmap w h (topBarBlue projectEditor))
-  fillRect bm1 (gray 60) (centerX - halfLen) (centerY - halfW) len lineW
-  fillRect bm1 (gray 60) (centerX - halfW) (centerY - halfLen) lineW len
+  drawString bm1 label (gray 20) labelX labelY
 
   bm2 = (newBitmap w h (topBarBlueHighlight projectEditor))
-  fillRect bm2 (gray 30) (centerX - halfLen) (centerY - halfW) len lineW
-  fillRect bm2 (gray 30) (centerX - halfW) (centerY - halfLen) lineW len
+  drawString bm2 label (gray 20) labelX labelY
 
-  button = (newButton '' (action 'importLibrary' projectEditor))
-  setCostumes button bm1 bm2
-  return button
+  arrowW = (9 * scale)
+  arrowH = (7 * scale)
+  arrowX = (w - (arrowW + (6 * scale)))
+  arrowY = (labelY + (5 * scale))
+  fillArrow (newShapeMaker bm1) (rect arrowX arrowY arrowW arrowH) 'down' (gray 40)
+  fillArrow (newShapeMaker bm2) (rect arrowX arrowY arrowW arrowH) 'down' (gray 40)
+
+  setCostumes aButton bm1 bm2
+}
+
+// board type menu
+
+method boardTypeMenu MicroBlocksScripter {
+  boardTypes = (array
+	'All Boards'
+	'BBC micro:bit'
+	'Calliope mini'
+	'Adafruit CPX'
+	'Citilab ED1'
+	'ESP32'
+	'ESP8266'
+  )
+  menu = (menu nil (action 'setBoardType' this) true)
+  for t boardTypes { addItem menu t }
+  popUpAtHand menu (global 'page')
+}
+
+method setBoardType MicroBlocksScripter newType {
+  boardType = newType
+  redrawColumnHeaders this
+}
+
+// library menu
+
+method libraryMenu MicroBlocksScripter {
+  menu = (menu nil this)
+  addItem menu 'import library' 'importLibrary'
+  if (notEmpty (libraries mbProject)) {
+	addItem menu 'remove library' 'removeLibraryMenu'
+  }
+  if (devMode) {
+  	addLine menu
+	addItem menu 'save this project as a library' (action 'exportAsLibrary' this (fileName projectEditor))
+  }
+  popUpAtHand menu (global 'page')
+}
+
+method removeLibraryMenu MicroBlocksScripter removeLibraryMenu {
+  menu = (menu nil (action 'removeLibraryNamed' this) true)
+  for libName (sorted (keys (libraries mbProject))) { addItem menu libName }
+  popUpAtHand menu (global 'page')
+}
+
+method removeLibraryNamed MicroBlocksScripter libName {
+  removeLibraryNamed mbProject libName
+  updateLibraryList this
+}
+
+method exportLibraryMenu MicroBlocksScripter removeLibraryMenu {
+  menu = (menu nil (action 'exportLibrary' mbProject) true)
+  for libName (sorted (keys (libraries mbProject))) { addItem menu libName }
+  popUpAtHand menu (global 'page')
 }
 
 // layout
@@ -147,23 +200,20 @@ method fixLayout MicroBlocksScripter {
   catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 130)
   blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) 130)
   catHeight = (((height (morph (contents categoriesFrame))) / scale) + 4)
-  libHeaderHeight = 37
+  columnHeaderHeight = (14 * scale)
 
-  innerBorder = 2
-  outerBorder = 2
-  packer = (newPanePacker (bounds morph) innerBorder outerBorder)
+  packer = (newPanePacker (bounds morph) scale scale)
+  packPanesH packer boardTypeHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer categoriesFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesV packer categoriesFrame catHeight libHeader libHeaderHeight libFrame '100%'
+  packPanesV packer boardTypeHeader columnHeaderHeight categoriesFrame catHeight libHeader columnHeaderHeight libFrame '100%'
   packPanesV packer blocksFrame '100%'
   packPanesV packer scriptsFrame '100%'
   finishPacking packer
+
   fixResizerLayout this
-
-  setRight (morph libAddButton) (right (owner (morph libAddButton)))
-  redraw libHeader
-
+  redrawColumnHeaders this
   if (notNil projectEditor) { fixLayout projectEditor true }
 }
 
@@ -911,8 +961,12 @@ method importLibraryFromFile MicroBlocksScripter fileName {
 }
 
 method updateLibraryList MicroBlocksScripter {
-  setCollection (contents libFrame) (sorted (keys (libraries mbProject)))
-  select (contents libFrame) nil
+  libNames = (sorted (keys (libraries mbProject)))
+  setCollection (contents libFrame) libNames
+  oldSelection = (selection (contents libFrame))
+  if (not (contains libNames oldSelection)) {
+	selectCategory this 'Control'
+  }
 }
 
 method exportAsLibrary MicroBlocksScripter defaultFileName {
@@ -920,36 +974,8 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
   if (isEmpty fileName) { return }
   if (not (endsWith fileName '.ulib' )) { fileName = (join fileName '.ulib') }
 
-  result = (list)
-
-  // Add variable declarations
-  allVars = (variableNames (main mbProject))
-  if ((count allVars) > 0) {
-	varDeclaration = (list 'sharedVariables')
-	for v allVars { add varDeclaration (printString v) }
-	add result (joinStrings varDeclaration ' ')
-	add result (newline)
-	add result (newline)
-  }
-
-  // Add block specs
-  for func (functions (main mbProject)) {
-	spec = (specForOp (authoringSpecs) (functionName func))
-	if (notNil spec) {
-	  add result (specDefinitionString spec)
-	}
-	add result (newline)
-  }
-  add result (newline)
-
-  // Add function definitions
-  pp = (new 'PrettyPrinter')
-  for func (functions (main mbProject)) {
-	add result (prettyPrintFunction pp func)
-	add result (newline)
-  }
-
-  writeFile fileName (joinStrings result)
+  libName = (withoutExtension (filePart fileName))
+  writeFile fileName (libraryCodeString mbProject libName)
 }
 
 // drop handling
