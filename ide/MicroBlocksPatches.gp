@@ -227,7 +227,11 @@ method contextMenu Block {
     addLine menu
   }
   if (notNil (functionNamed (project pe) (primName expression))) {
-    addItem menu 'show definition...' 'showDefinition'
+	if isInPalette {
+	  addItem menu 'delete function...' 'deleteFunction'
+	}
+    addItem menu 'show function definition...' 'showDefinition'
+    addLine menu
   }
   addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
   if (and ('reporter' != type) (notNil (next this))) {
@@ -268,24 +272,16 @@ method pickUp Block {
   grabCentered morph this
 }
 
+method deleteFunction Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  deleteFunction (scripter pe) (primName expression)
+}
+
 method showDefinition Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
-  scripter = (scripter pe)
-  project = (project scripter)
-  calledFunction = (primName expression)
-
-  if (not (isShowingDefinition this (main project) calledFunction)) {
-	f = (functionNamed (project pe) calledFunction)
-	if (isNil f) { return } // shouldn't happen
-	ref = (newCommand 'to' calledFunction)
-
-	// add the method/function definition to the scripts
-	entry = (array (rand 50 200) (rand 50 200) ref)
-	setScripts (main project) (join (array entry) (scripts (main project)))
-	restoreScripts scripter
-  }
-  scrollToDefinitionOf scripter calledFunction
+  showDefinition (scripter pe) (primName expression)
 }
 
 method hideDefinition BlockDefinition {
@@ -293,21 +289,7 @@ method hideDefinition BlockDefinition {
 
   pe = (findProjectEditor)
   if (isNil pe) { return }
-  scripter = (scripter pe)
-  project = (project scripter)
-
-  saveScripts scripter
-  newScripts = (list)
-  for entry (scripts (main project)) {
-	cmd = (at entry 3)
-	if ('to' == (primName cmd)) {
-	  if (op != (first (argList cmd))) { add newScripts entry }
-	} else {
-	  add newScripts entry
-	}
-  }
-  setScripts (main project) newScripts
-  restoreScripts scripter
+  hideDefinition (scripter pe) op
 }
 
 method inputIndex Block anInput {
@@ -342,16 +324,12 @@ method representsANumber String {
 
 method contextMenu BlockDefinition {
   menu = (menu nil this)
-  for tp (array 'command' 'reporter') {
-    addItem menu '' (action 'setType' this tp) tp (fullCostume (morph (block tp (color 4 148 220) '                    ')))
-  }
   if (devMode) {
-    addLine menu
     addItem menu 'show instructions' (action 'showInstructions' this)
     addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
+    addLine menu
   }
-  addLine menu
-  addItem menu 'hide definition' 'hideDefinition'
+  addItem menu 'hide function definition' 'hideDefinition'
   addItem menu 'save picture of script' 'exportAsImage'
   addLine menu
   addItem menu 'delete' 'deleteDefinition'

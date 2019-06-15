@@ -6,8 +6,6 @@
 
 // MicroBlocksProject.gp - Representation of a MicroBlocks project and its libraries
 
-defineClass MicroBlocksProject main libraries blockSpecs
-
 to mbProj {
 	// Just for debugging. Find the currently installed project.
 	gc
@@ -19,27 +17,30 @@ to mbProj {
 }
 
 to newProjTest fileName {
-  // Test that saving and reading projects in the new format preserves the project content.
+	// Test that saving and reading projects in the new format preserves the project content.
 
-  print (filePart fileName) '...'
-  projectData = (readFile fileName true)
-  project = (newMicroBlocksProject)
-  if (endsWith fileName '.gpp') {
-	// read old project
-	mainClass = nil
-	oldProj = (readProject (emptyProject) projectData)
-	if ((count (classes (module oldProj))) > 0) {
-		mainClass = (first (classes (module oldProj)))
-		loadFromOldProjectClassAndSpecs project mainClass (blockSpecs oldProj)
+	print (filePart fileName) '...'
+	projectData = (readFile fileName true)
+	project = (newMicroBlocksProject)
+	if (endsWith fileName '.gpp') {
+		// read old project
+		mainClass = nil
+		oldProj = (readProject (emptyProject) projectData)
+		if ((count (classes (module oldProj))) > 0) {
+			mainClass = (first (classes (module oldProj)))
+			loadFromOldProjectClassAndSpecs project mainClass (blockSpecs oldProj)
+		} else {
+			error 'no class in old project'
+		}
 	} else {
-		error 'no class in old project'
+		loadNewProjectFromData project (toString projectData)
 	}
-  } else {
-	loadNewProjectFromData project (toString projectData)
-  }
-  if (not (saveLoadTest project)) { print '  FAILED!' }
+	if (not (saveLoadTest project)) { print '	FAILED!' }
 }
 
+// MicroBlocksProject Class
+
+defineClass MicroBlocksProject main libraries blockSpecs
 
 to newMicroBlocksProject {
 	return (initialize (new 'MicroBlocksProject'))
@@ -256,25 +257,27 @@ method equal MicroBlocksProject proj {
 	if (not (equal main (main proj))) { return false }
 	for lib (values libraries) {
 		if (not (equal lib (libraryNamed proj (moduleName lib)))) {
-			print '  libs not equal:' (moduleName lib)
+			print '	libs not equal:' (moduleName lib)
 			return false
 		}
 	}
 	sortedKeys = (sorted (keys blockSpecs))
 	if (sortedKeys != (sorted (keys (blockSpecs proj)))) {
-		print '  spec keys mismatch'
+		print '	spec keys mismatch'
 		return false;
 	}
 	for k sortedKeys {
 		s1 = (specDefinitionString (at blockSpecs k))
 		s2 = (specDefinitionString (at (blockSpecs proj) k))
 		if (s1 != s2) {
-			print '  spec mismatch' k
+			print '	spec mismatch' k
 			return false
 		}
 	}
 	return true
 }
+
+// MicroBlocksModule Class
 
 defineClass MicroBlocksModule moduleName variableNames functions scripts
 

@@ -348,7 +348,8 @@ method addVariableBlocks MicroBlocksScripter {
 method addMyBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
-  addButton this (localized 'Add a function') (action 'createFunction' this)
+  addButton this (localized 'Add a command') (action 'createFunction' this false)
+  addButton this (localized 'Add a reporter') (action 'createFunction' this true)
   nextY += (8 * scale)
 
   for f (functions (main mbProject)) {
@@ -667,12 +668,55 @@ method pasteScripts MicroBlocksScripter scriptString {
   updateBlocks this
 }
 
-method scrollToDefinitionOf MicroBlocksScripter aFunctionName {
+// hide/show function definition
+
+method hideDefinition MicroBlocksScripter funcName {
+  // Hide the given method/function definition.
+
+  saveScripts this
+  newScripts = (list)
+  for entry (scripts (main mbProject)) {
+	cmd = (at entry 3)
+	if ('to' == (primName cmd)) {
+	  if (funcName != (first (argList cmd))) { add newScripts entry }
+	} else {
+	  add newScripts entry
+	}
+  }
+  setScripts (main mbProject) newScripts
+  restoreScripts this
+}
+
+method showDefinition MicroBlocksScripter funcName {
+  if (not (isShowingDefinition this funcName)) {
+	f = (functionNamed mbProject funcName)
+	if (isNil f) { return } // shouldn't happen
+	ref = (newCommand 'to' funcName)
+
+	// add the method/function definition to the scripts
+	entry = (array (rand 50 200) (rand 50 200) ref)
+	setScripts (main mbProject) (join (array entry) (scripts (main mbProject)))
+	restoreScripts this
+  }
+  scrollToDefinitionOf this funcName
+}
+
+method isShowingDefinition MicroBlocksScripter funcName {
+  for entry (scripts (main mbProject)) {
+	cmd = (at entry 3) // third item of entry is command
+	if ('to' ==  (primName cmd)) {
+	  if (funcName == (first (argList cmd))) { return true }
+	}
+  }
+  return false // not found
+}
+
+method scrollToDefinitionOf MicroBlocksScripter funcName {
   for m (parts (morph (contents scriptsFrame))) {
     if (isClass (handler m) 'Block') {
       def = (editedDefinition (handler m))
       if (notNil def) {
-        if ((op def) == aFunctionName) {
+        if ((op def) == funcName) {
           scrollIntoView scriptsFrame (fullBounds m) true // favorTopLeft
         }
       }
@@ -682,12 +726,14 @@ method scrollToDefinitionOf MicroBlocksScripter aFunctionName {
 
 // Build Your Own Blocks
 
-method createFunction MicroBlocksScripter {
+method createFunction MicroBlocksScripter isReporter {
   name = (prompt (global 'page') 'Enter function name:' 'myBlock')
   if (name == '') {return}
   opName = (uniqueFunctionName this name)
   func = (defineFunctionInModule (main mbProject) opName (array) nil)
-  spec = (blockSpecFromStrings opName ' ' opName '')
+  blockType = ' '
+  if isReporter { blockType = 'r' }
+  spec = (blockSpecFromStrings opName blockType opName '')
   recordBlockSpec mbProject opName spec
   addToBottom this (scriptForFunction func)
   updateBlocks this
@@ -730,11 +776,20 @@ method uniqueFunctionName MicroBlocksScripter baseSpec {
   return (joinStrings specWords ' ')
 }
 
+// function deleting
+
+method deleteFunction MicroBlocksScripter funcName {
+  if (isShowingDefinition this funcName) { hideDefinition this funcName }
+  f = (functionNamed mbProject funcName)
+  if (notNil f) { removedUserDefinedBlock this f }
+}
+
 method removedUserDefinedBlock MicroBlocksScripter function {
   // Remove the given user-defined function.
 
   removeFunction (module function) function // in MicroBlocks the function "module" is its library
   deleteBlockSpecFor (project projectEditor) (functionName function)
+  updateBlocks this
 }
 
 method addToBottom MicroBlocksScripter aBlock noScroll {
@@ -976,23 +1031,4 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 
   libName = (withoutExtension (filePart fileName))
   writeFile fileName (libraryCodeString mbProject libName)
-}
-
-// drop handling
-
-method wantsDropOf MicroBlocksScripter aHandler {
-  return (isAnyClass aHandler 'Block' 'Monitor')
-}
-
-method justReceivedDrop MicroBlocksScripter aHandler {
-  // Delete Blocks or Monitors dropped anywhere but the scripting area.
-
-  if (not (userDestroy (morph aHandler))) { // abort drop-to-delete
-    grab (hand (global 'page')) aHandler
-    return
-  }
-  if ('Functions' == (selection (contents categoriesFrame))) {
-	// May have just deleted a function, so update the palette
-	updateBlocks this
-  }
 }
