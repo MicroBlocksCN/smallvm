@@ -109,16 +109,16 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (5 * scale)
   add leftItems (addLanguageButton this)
   add leftItems (addSettingsButton this)
-  add leftItems (addProjectButton this)
+  add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu')
+  add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard')
+  indicator = (last leftItems)
+  add leftItems (4 * scale)
+  add leftItems (makeIndicator this)
 
   rightItems = (list)
-  add rightItems (addConnectButton this)
-  add rightItems (4 * scale)
-  add rightItems (makeIndicator this)
-  add rightItems (50 * scale)
-  add rightItems (addStopButton this)
-  add rightItems (addStartButton this)
-  add rightItems (12 * scale)
+  add rightItems (addIconButton this (startButtonIcon this) 'startAll' 36)
+  add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 36)
+  add rightItems (7 * scale)
 }
 
 method textButton MicroBlocksEditor label selector {
@@ -635,7 +635,6 @@ method languageChanged MicroBlocksEditor {
   languageChanged scripter
 
   // update items in top-bar
-  destroy (morph indicator)
   for item (join leftItems rightItems) {
 	if (not (isNumber item)) { destroy (morph item) }
   }
@@ -654,12 +653,17 @@ method settingsMenu MicroBlocksEditor {
   popUpAtHand (contextMenu this) (global 'page')
 }
 
-method addIconButton MicroBlocksEditor icon selector {
+method addIconButton MicroBlocksEditor icon selector width {
   scale = (global 'scale')
-  bm1 = (newBitmap (41 * scale) (41 * scale) (topBarBlue this))
-  drawBitmap bm1 icon (10 * scale) (11 * scale)
-  bm2 = (newBitmap (41 * scale) (41 * scale) (topBarBlueHighlight this))
-  drawBitmap bm2 icon (10 * scale) (11 * scale)
+  w = (43 * scale)
+  if (notNil width) { w = (width * scale) }
+  h = (41 * scale)
+  x = (half (w - (width icon)))
+  y = (11 * scale)
+  bm1 = (newBitmap w h (topBarBlue this))
+  drawBitmap bm1 icon x y
+  bm2 = (newBitmap w h (topBarBlueHighlight this))
+  drawBitmap bm2 icon x y
   button = (newButton '' (action selector this))
   setCostumes button bm1 bm2
   addPart morph (morph button)
@@ -676,22 +680,6 @@ method projectMenu MicroBlocksEditor {
   addItem menu 'Open' 'openProjectMenu'
   addItem menu 'Save' 'saveProjectToFile'
   popUpAtHand menu (global 'page')
-}
-
-method addProjectButton MicroBlocksEditor {
-  return (addIconButton this (projectButtonIcon this) 'projectMenu')
-}
-
-method addConnectButton MicroBlocksEditor {
-  return (addIconButton this (connectButtonIcon this) 'connectToBoard')
-}
-
-method addStopButton MicroBlocksEditor {
-  return (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts')
-}
-
-method addStartButton MicroBlocksEditor {
-  return (addIconButton this (startButtonIcon this) 'startAll')
 }
 
 // UI image resources
