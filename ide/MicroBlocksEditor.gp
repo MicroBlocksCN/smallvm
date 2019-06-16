@@ -229,7 +229,7 @@ method saveProject MicroBlocksEditor fName {
 
   if (and (isNil fName) (notNil fileName)) {
 	fName = fileName
-	if (beginsWith fName (gpExamplesFolder)) {
+	if (beginsWith fName '//Examples') {
 	  // if an example was opened, do a "save as" into the Microblocks folder
 	  fName = (join (gpFolder) '/' (filePart fileName))
 	}
