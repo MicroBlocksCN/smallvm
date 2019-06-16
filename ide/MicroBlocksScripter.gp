@@ -523,7 +523,7 @@ method uniqueVarName MicroBlocksScripter varName forScriptVar {
   // Otherwise, return varName unchanged.
 
   if (isNil forScriptVar) { forScriptVar = false }
-  existingVars = (allVariableNames mbProject)
+  existingVars = (toList (allVariableNames mbProject))
   scripts = (scripts (main mbProject))
   if (and (notNil scripts) (not forScriptVar)) {
 	for entry scripts {
