@@ -112,8 +112,8 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu')
   add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard')
   indicator = (last leftItems)
-  add leftItems (4 * scale)
-  add leftItems (makeIndicator this)
+//   add leftItems (4 * scale)
+//   add leftItems (makeIndicator this)
 
   rightItems = (list)
   add rightItems (addIconButton this (startButtonIcon this) 'startAll' 36)
@@ -139,16 +139,6 @@ method textButton MicroBlocksEditor label selector {
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
-}
-
-method makeIndicator MicroBlocksEditor {
-  scale = (global 'scale')
-  indicator = (newBox (newMorph) (gray 100) 40 2)
-  setExtent (morph indicator) (15 * scale) (15 * scale)
-  redraw indicator
-  addPart morph (morph indicator)
-  lastStatus = nil // clear cache
-  return indicator
 }
 
 // project operations
@@ -289,7 +279,17 @@ method step MicroBlocksEditor {
   }
 }
 
-method updateIndicator MicroBlocksEditor {
+method makeIndicator MicroBlocksEditor { // xxx old?
+  scale = (global 'scale')
+  indicator = (newBox (newMorph) (gray 100) 40 2)
+  setExtent (morph indicator) (15 * scale) (15 * scale)
+  redraw indicator
+  addPart morph (morph indicator)
+  lastStatus = nil // clear cache
+  return indicator
+}
+
+method updateIndicatorOLD MicroBlocksEditor { // xxx old?
 	status = (connectionStatus (smallRuntime))
 	if (lastStatus == status) { return } // no change
 	if ('connected' == status) {
@@ -301,6 +301,23 @@ method updateIndicator MicroBlocksEditor {
 	}
 	lastStatus = status
 	redraw indicator
+}
+
+method updateIndicator MicroBlocksEditor {
+	status = (connectionStatus (smallRuntime))
+	if (lastStatus == status) { return } // no change
+	if ('connected' == status) {
+		c = (color 0 200 0) // green
+	} ('board not responding' == status) {
+		c = (color 250 200 0) // orange
+	} else {
+		c = (gray 30) // black
+	}
+	centerX = (half (width (morph indicator)))
+	centerY = (half (height (morph indicator)))
+	floodFillAt (getField indicator 'onCostume') centerX centerY c
+	floodFillAt (getField indicator 'offCostume') centerX centerY c
+	lastStatus = status
 }
 
 // browser support
