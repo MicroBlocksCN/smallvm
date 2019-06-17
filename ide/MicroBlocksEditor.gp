@@ -112,8 +112,6 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu')
   add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard')
   indicator = (last leftItems)
-//   add leftItems (4 * scale)
-//   add leftItems (makeIndicator this)
 
   rightItems = (list)
   add rightItems (addIconButton this (startButtonIcon this) 'startAll' 36)
@@ -279,30 +277,6 @@ method step MicroBlocksEditor {
   }
 }
 
-method makeIndicator MicroBlocksEditor { // xxx old?
-  scale = (global 'scale')
-  indicator = (newBox (newMorph) (gray 100) 40 2)
-  setExtent (morph indicator) (15 * scale) (15 * scale)
-  redraw indicator
-  addPart morph (morph indicator)
-  lastStatus = nil // clear cache
-  return indicator
-}
-
-method updateIndicatorOLD MicroBlocksEditor { // xxx old?
-	status = (connectionStatus (smallRuntime))
-	if (lastStatus == status) { return } // no change
-	if ('connected' == status) {
-		setColor indicator (color 0 200 0) // green
-	} ('board not responding' == status) {
-		setColor indicator (color 250 200 0) // orange
-	} else {
-		setColor indicator (color 200) // red
-	}
-	lastStatus = status
-	redraw indicator
-}
-
 method updateIndicator MicroBlocksEditor {
 	status = (connectionStatus (smallRuntime))
 	if (lastStatus == status) { return } // no change
@@ -311,12 +285,28 @@ method updateIndicator MicroBlocksEditor {
 	} ('board not responding' == status) {
 		c = (color 250 200 0) // orange
 	} else {
-		c = (gray 30) // black
+		c = nil // no circle
 	}
-	centerX = (half (width (morph indicator)))
-	centerY = (half (height (morph indicator)))
-	floodFillAt (getField indicator 'onCostume') centerX centerY c
-	floodFillAt (getField indicator 'offCostume') centerX centerY c
+	if (notNil c) { c = (mixed c 70 (topBarBlue this)) }
+
+	scale = (global 'scale')
+	bm1 = (getField indicator 'offCostume')
+	bm2 = (getField indicator 'onCostume')
+	cx = (half (width bm1))
+	cy = ((half (height bm1)) + scale)
+	icon = (connectButtonIcon this)
+	x = (10 * scale)
+	y = (10 * scale)
+	radius = (13 * scale)
+
+	fill bm1 (topBarBlue this)
+	if (notNil c) { drawCircle (newShapeMaker bm1) cx cy radius c }
+	drawBitmap bm1 icon x y
+
+	fill bm2 (topBarBlueHighlight this)
+	if (notNil c) { drawCircle (newShapeMaker bm2) cx cy radius c }
+	drawBitmap bm2 icon x y
+
 	lastStatus = status
 }
 
