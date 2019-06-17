@@ -513,9 +513,9 @@ void primSetUserLED(OBJ *args) {
 		// Special case: Plot or unplot one LED in the LED matrix.
 		OBJ coords[2] = { int2obj(3), int2obj(1) };
 		if (trueObj == args[0]) {
-			primMBPlot(coords);
+			primMBPlot(2, coords);
 		} else {
-			primMBUnplot(coords);
+			primMBUnplot(2, coords);
 		}
 	#elif defined(ARDUINO_CITILAB_ED1)
 		tftSetHugePixel(3, 1, (trueObj == args[0]));

@@ -28,21 +28,21 @@ static int stringSize(OBJ obj) {
 	return byteCount;
 }
 
-OBJ primNewArray(OBJ *args) {
+OBJ primNewArray(int argCount, OBJ *args) {
 	OBJ n = args[0];
 	if (!isInt(n) || ((int) n < 0)) return fail(arraySizeError);
 	OBJ result = newObj(ArrayClass, obj2int(n), int2obj(0)); // filled with zero integers
 	return result;
 }
 
-OBJ primNewByteArray(OBJ *args) {
+OBJ primNewByteArray(int argCount, OBJ *args) {
 	OBJ n = args[0];
 	if (!isInt(n) || ((int) n < 0)) return fail(arraySizeError);
 	OBJ result = newObj(ByteArrayClass, (obj2int(n) + 3) / 4, 0); // filled with zero bytes
 	return result;
 }
 
-OBJ primArrayFill(OBJ *args) {
+OBJ primArrayFill(int argCount, OBJ *args) {
 	OBJ array = args[0];
 	OBJ value = args[1];
 
@@ -62,7 +62,7 @@ OBJ primArrayFill(OBJ *args) {
 	return falseObj;
 }
 
-OBJ primArrayAt(OBJ *args) {
+OBJ primArrayAt(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerIndexError);
 	int i = obj2int(args[0]);
 	OBJ array = args[1];
@@ -80,7 +80,7 @@ OBJ primArrayAt(OBJ *args) {
 	return fail(needsArrayError);
 }
 
-OBJ primArrayAtPut(OBJ *args) {
+OBJ primArrayAtPut(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerIndexError);
 	int i = obj2int(args[0]);
 	OBJ array = args[1];
@@ -99,7 +99,7 @@ OBJ primArrayAtPut(OBJ *args) {
 	return falseObj;
 }
 
-OBJ primArraySize(OBJ *args) {
+OBJ primLength(int argCount, OBJ *args) {
 	OBJ obj = args[0];
 
 	if (IS_CLASS(obj, ArrayClass)) {
@@ -110,27 +110,4 @@ OBJ primArraySize(OBJ *args) {
 		return int2obj(stringSize(obj));
 	}
 	return fail(needsArrayError);
-}
-
-OBJ primHexToInt(OBJ *args) {
-	if (!IS_CLASS(args[0], StringClass)) return fail(needsStringError);
-
-	char *s = obj2str(args[0]);
-	if ('#' == *s) s++; // skip leading # if there is one
-	long result = strtol(s, NULL, 16);
-	if ((result < -536870912) || (result > 536870911)) return fail(hexRangeError);
-	return int2obj(result);
-}
-
-OBJ primPeek(OBJ *args) {
-	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
-	int *addr = (int *) (((obj2int(args[0]) & 0xF) << 28) | (obj2int(args[1]) & 0xFFFFFFC));
-	return int2obj(*addr);
-}
-
-OBJ primPoke(OBJ *args) {
-	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return fail(needsIntegerError);
-	int *addr = (int *) (((obj2int(args[0]) & 0xF) << 28) | (obj2int(args[1]) & 0xFFFFFFC));
-	*addr = obj2int(args[2]);
-	return falseObj;
 }
