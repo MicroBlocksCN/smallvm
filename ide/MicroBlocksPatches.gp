@@ -658,12 +658,27 @@ method updateRGBReadouts ColorPicker c {
 
 // Block colors
 
-method setCategoryFor AuthoringSpecs op category {
-  atPut opCategory op category
+method blockColorForOp AuthoringSpecs op {
+  if ('comment' == op) { return (colorHSV 55 0.6 0.93) }
+  cat = (at opCategory op) // get category of a built-in block
+  if (isNil cat) { // if op is not a built it block, ask the project for its category
+	pe = (findProjectEditor)
+	if (notNil pe) { cat = (categoryForOp (project pe) op) }
+  }
+  return (blockColorForCategory this cat)
 }
 
 method blockColorForCategory AuthoringSpecs cat {
-  if (and (notNil cat) (endsWith cat '-Advanced')) { cat = (substring cat 1 ((count cat) - 9)) }
+  if (and (notNil cat) (endsWith cat '-Advanced')) {
+  	cat = (substring cat 1 ((count cat) - 9))
+  }
+  pe = (findProjectEditor)
+  if (notNil pe) {
+	lib = (libraryNamed (project pe) cat) // is cat the name of a library?
+	if (and (notNil lib) (notNil (moduleCategory lib))) { // if so, use that library's category
+		cat = (moduleCategory lib)
+	}
+  }
   defaultColor = (colorHSV 200 0.98 0.86)
   if ('Output' == cat) { return (colorHSV 235 0.62 0.80) // (colorHSV 224.211 0.636 0.82)
   } ('Input' == cat) { return (colorHSV 170 0.78 0.62) // (colorHSV 161.077 0.788 0.647)

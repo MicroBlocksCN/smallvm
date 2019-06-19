@@ -98,6 +98,15 @@ method removeLibraryNamed MicroBlocksProject libName {
 	}
 }
 
+method categoryForOp MicroBlocksProject op {
+	// Return the category for the give op if it is in one of my libraries.
+
+	for lib (values libraries) {
+		if (contains (blockList lib) op) { return (moduleCategory lib) }
+	}
+	return nil
+}
+
 // Functions
 
 method allFunctions MicroBlocksProject {
@@ -176,7 +185,6 @@ method loadFromString MicroBlocksProject s {
 method addLibraryFromString MicroBlocksProject s fileName {
 	// Load a library from a string.
 
-	initialize this
 	cmdList = (parse s)
 	loadSpecs this cmdList
 	cmdsByModule = (splitCmdListIntoModules this cmdList)
@@ -295,7 +303,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName variableNames functions scripts blockList
+defineClass MicroBlocksModule moduleName moduleCategory variableNames functions scripts blockList
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -311,6 +319,7 @@ method initialize MicroBlocksModule name {
 }
 
 method blockList MicroBlocksModule { return blockList }
+method moduleCategory MicroBlocksModule { return moduleCategory }
 method moduleName MicroBlocksModule { return moduleName }
 method setModuleName MicroBlocksModule modName { moduleName = modName }
 method toString MicroBlocksModule { return (join 'MicroBlocksModule(''' moduleName ''')') }
@@ -507,6 +516,11 @@ method loadModuleName MicroBlocksModule cmdList {
 				moduleName = arg
 			} else { // unquoted var: mapped to "(v 'varName')" block by the parser
 				moduleName = (first (argList arg))
+			}
+			if ((count (argList cmd)) > 1) {
+				cat = (at (argList cmd) 2)
+				if (isClass cat 'Reporter') { cat = (first (argList cat)) } // unquoted var (see above)
+				moduleCategory = cat
 			}
 		}
 	}
