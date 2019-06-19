@@ -272,8 +272,6 @@ method addBlocksForCategory MicroBlocksScripter cat {
   addBlocksForSpecs this (specsFor (authoringSpecs) cat)
   advancedSpecs = (specsFor (authoringSpecs) (join cat '-Advanced'))
   if (and (devMode) (not (isEmpty advancedSpecs))) {
-	// add some vertical space
-	nextY += (20 * (global 'scale'))
 	addSectionLabel this 'Advanced:'
 	addBlocksForSpecs this advancedSpecs
   }
@@ -386,7 +384,7 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
 
 // Palette Section Labels
 
-method addLabelBefore MicroBlocksScripter spec {
+method addLabelBefore MicroBlocksScripter spec { // xxx maybe remove
   scale = (global 'scale')
   item = (labelForOp this (blockOp spec))
   if (notNil item) {
@@ -394,7 +392,7 @@ method addLabelBefore MicroBlocksScripter spec {
   }
 }
 
-method labelForOp MicroBlocksScripter op {
+method labelForOp MicroBlocksScripter op { // xxx maybe remove
   if ('mbDisplay' == op) {
   	return 'micro:bit, Calliope:, ED1:'
   } ('mbTiltX' == op) {
