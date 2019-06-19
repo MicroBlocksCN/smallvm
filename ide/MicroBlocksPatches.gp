@@ -663,7 +663,7 @@ method setCategoryFor AuthoringSpecs op category {
 }
 
 method blockColorForCategory AuthoringSpecs cat {
-  if (endsWith cat '-Advanced') { cat = (substring cat 1 ((count cat) - 9)) }
+  if (and (notNil cat) (endsWith cat '-Advanced')) { cat = (substring cat 1 ((count cat) - 9)) }
   defaultColor = (colorHSV 200 0.98 0.86)
   if ('Output' == cat) { return (colorHSV 235 0.62 0.80) // (colorHSV 224.211 0.636 0.82)
   } ('Input' == cat) { return (colorHSV 170 0.78 0.62) // (colorHSV 161.077 0.788 0.647)
