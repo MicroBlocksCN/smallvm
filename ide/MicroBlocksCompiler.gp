@@ -38,7 +38,8 @@ method microBlocksSpecs SmallCompiler {
 	'Output'
 		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
 		(array ' ' 'sayIt'				'say _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 123 '' '')
-		(array ' ' 'printIt'			'log data _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello!')
+		(array ' ' 'printIt'			'graph _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'Hello!')
+
 		(array ' ' 'mbDisplay'			'display _' 'microbitDisplay')
 		(array ' ' 'mbDisplayOff'		'clear display')
 		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
@@ -46,60 +47,97 @@ method microBlocksSpecs SmallCompiler {
 	'Input'
 		(array 'r' 'buttonA'			'button A')
 		(array 'r' 'buttonB'			'button B')
+		'-'
 		(array 'r' 'millisOp'			'milliseconds')
 		(array 'r' 'microsOp'			'microseconds')
+		'-'
+		(array 'r' 'boardType'			'board type')
+
 		(array 'r' 'mbTiltX'			'tilt x')
 		(array 'r' 'mbTiltY'			'tilt y')
 		(array 'r' 'mbTiltZ'			'tilt z')
-		(array 'r' 'mbTemp'				'temperature (°C)')
 		(array 'r' '[display:lightLevel]' 'light level')
-		(array 'r' '[sensors:touchRead]'	'capacitive sensor _' 'num' 1)
+		(array 'r' 'mbTemp'				'temperature (°C)')
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
+		'-'
 		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array ' ' 'analogWriteOp'		'set pin _ to _' 'num num' 1 1023)
+		'-'
 		(array 'r' 'analogPins'			'analog pins')
 		(array 'r' 'digitalPins'		'digital pins')
+	'Comm'
+		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
+		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
+		'-'
+		(array ' ' 'spiSend'			'spi send _' 'num' 0)
+		(array 'r' 'spiRecv'			'spi receive')
+		'-'
+		(array ' ' '[sensors:i2cRead]'	'i2c device _ read list _' 'num auto')
+		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _' 'num auto')
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'menu.buttonMenu' 'A')
 		(array ' ' 'forever'			'forever _' 'cmd')
 		(array ' ' 'repeat'				'repeat _ _' 'num cmd' 10)
 		(array ' ' 'waitMillis'			'wait _ millisecs' 'num' 500)
-		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
+		'-'
 		(array ' ' 'if'					'if _ _ : else if _ _ : ...' 'bool cmd bool cmd')
+		'-'
 		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
+		'-'
+		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
+ 		(array ' ' 'return'				'return _' 'auto' 0)
+		'-'
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
 		(array ' ' 'sendBroadcastSimple'	'broadcast _' 'str' 'go!' '')
- 		(array ' ' 'return'				'return _' 'auto' 0)
- 		(array ' ' 'comment'			'comment _' 'str' 'Comment your code :-)')
+		'-'
+ 		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
+		'-'
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop all')
+	'Control-Advanced'
+		(array ' ' 'noop'				'no op')
+		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
 		(array 'r' '*'					'_ × _' 'num num' 10 2)
 		(array 'r' '/'					'_ / _' 'num num' 10 2)
 		(array 'r' '%'					'_ mod _' 'num num' 10 2)
+		'-'
 		(array 'r' 'absoluteValue'		'abs _ ' 'num' -10)
-		(array 'r' 'minimum'			'min _ : _ : ...' 'num num' 1 2)
-		(array 'r' 'maximum'			'max _ : _ : ...' 'num num' 1 2)
-
+		(array 'r' 'minimum'			'min _ _ : _ : ...' 'num num num' 1 2)
+		(array 'r' 'maximum'			'max _ _ : _ : ...' 'num num num' 1 2)
 		(array 'r' 'random'				'random _ to _' 'num num' 1 10)
+		'-'
 		(array 'r' '<'					'_ < _' 'num num' 3 4)
 		(array 'r' '<='					'_ <= _' 'num num' 3 4)
 		(array 'r' '=='					'_ = _' 'auto auto' 3 4)
 		(array 'r' '!='					'_ ≠ _' 'auto auto' 3 4)
 		(array 'r' '>='					'_ >= _' 'num num' 3 4)
 		(array 'r' '>'					'_ > _' 'num num' 3 4)
+		'-'
 		(array 'r' 'booleanConstant'	'_' 'bool' true)
 		(array 'r' 'not'				'not _' 'bool' true)
 		(array 'r' 'and'				'_ and _' 'bool bool' true false)
 		(array 'r' 'or'					'_ or _ ' 'bool bool' true false)
+	'Math-Advanced'
+		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
+		'-'
+		(array 'r' '&'					'_ & _' 'num num' 1 3)
+		(array 'r' '|'					'_ | _' 'num num' 1 2)
+		(array 'r' '^'					'_ ^ _' 'num num' 1 3)
+		(array 'r' '~'					'~ _' 'num' 1 3)
+		(array 'r' '<<'					'_ << _' 'num num' 3 2)
+		(array 'r' '>>'					'_ >> _' 'num num' -100 2)
+		'-'
+		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
+		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
 	'Variables'
 		(array 'r' 'v'					'_' 'menu.allVarsMenu' 'n')
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
@@ -107,43 +145,22 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Lists'
 		(array 'r' 'newArray'			'new list length _' 'num' 10)
-//		(array 'r' 'newByteArray'		'new byte list _' 'num' 10)
+		(array 'r' 'size'				'length of _' 'str' nil)
+		'-'
+		(array 'r' 'at'					'item _ of _' 'num str' 1 nil)
+		'-'
 		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
 		(array ' ' 'atPut'				'replace item _ of _ with _' 'num str auto' 1 nil 10)
-		(array 'r' 'at'					'item _ of _' 'num str' 1 nil)
-		(array 'r' 'size'				'length of _' 'str' nil)
 	'Advanced'
-		(array 'r' '&'					'_ & _' 'num num' 1 3)
-		(array 'r' '|'					'_ | _' 'num num' 1 2)
-		(array 'r' '^'					'_ ^ _' 'num num' 1 3)
-		(array 'r' '~'					'~ _' 'num' 1 3)
-		(array 'r' '<<'					'_ << _' 'num num' 3 2)
-		(array 'r' '>>'					'_ >> _' 'num num' -100 2)
-		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
-		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
-
-		(array 'r' 'boardType'			'board type')
-
 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
+
+		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
 
 		(array ' ' 'mbDrawShape'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
 		(array 'r' 'mbShapeForLetter'	'shape for letter _' 'str' 'A')
 
 		(array ' ' 'neoPixelSetPin'		'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
 		(array ' ' 'neoPixelSend'		'send NeoPixel rgb _' 'num' 5)
-
-		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
-		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
-		(array ' ' '[sensors:i2cRead]'	'i2c device _ read _' 'num auto')
-		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write _' 'num auto')
-
-		(array ' ' 'spiSend'			'spi send _' 'num' 0)
-		(array 'r' 'spiRecv'			'spi receive')
-
-		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
-
-		(array ' ' 'noop'				'no op')
-		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
 
 		(array 'r' '[io:hasTone]'		'has tone support')
 		(array ' ' '[io:playTone]'		'play tone pin _ frequency _' 'num num' 0 440)
