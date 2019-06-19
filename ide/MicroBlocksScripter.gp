@@ -296,9 +296,11 @@ method addBlocksForLibrary MicroBlocksScripter libName {
   lib = (at (libraries mbProject) libName)
   if (isNil lib) { return }
 
-  for f (functions lib) {
-	op = (functionName f)
-	if (or (devMode) (not (beginsWith op '_'))) {
+  for op (blockList lib) {
+	if ('-' == op) {
+	  // add some vertical space
+	   nextY += (20 * (global 'scale'))
+	} (or (devMode) (not (beginsWith op '_'))) {
 	  spec = (specForOp (authoringSpecs) op)
 	  addBlock this (blockForSpec spec) spec
 	}
@@ -940,33 +942,7 @@ method importLibraryFromFile MicroBlocksScripter fileName {
   if (isNil data) { error (join 'Could not read: ' fileName) }
 
   libName = (withoutExtension (filePart fileName))
-  libSpecs = (dictionary)
-  libModule = (newMicroBlocksModule libName)
-  for cmd (parse data) {
-	op = (primName cmd)
-	args = (argList cmd)
-	if ('sharedVariables' == op) {
-	  for v args { addVariable libModule v }
-	} ('spec' == op) {
-	  blockType = (at args 1)
-	  blockOp = (at args 2)
-	  specString = (at args 3)
-	  slotTypes = ''
-	  if ((count args) > 3) { slotTypes = (at args 4) }
-	  slotDefaults = (copyFromTo args 5)
-	  spec = (blockSpecFromStrings blockOp blockType specString slotTypes slotDefaults)
-	  recordBlockSpec mbProject blockOp spec
-	  atPut libSpecs blockOp spec
-	} ('to' == op) {
-	  args = (toList args)
-	  fName = (removeFirst args)
-	  fBody = nil
-	  if (isClass (last args) 'Command') { fBody = (removeLast args) }
-	  func = (newFunction fName args fBody libModule)
-	  addFunction libModule func
-	}
-  }
-  addLibrary mbProject libModule
+  addLibraryFromString mbProject data libName
 
   // update library list and select the new library
   updateLibraryList this

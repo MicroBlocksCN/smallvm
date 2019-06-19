@@ -173,8 +173,24 @@ method loadFromString MicroBlocksProject s {
 	return this
 }
 
+method addLibraryFromString MicroBlocksProject s fileName {
+	// Load a library from a string.
+
+	initialize this
+	cmdList = (parse s)
+	loadSpecs this cmdList
+	cmdsByModule = (splitCmdListIntoModules this cmdList)
+	for cmdList cmdsByModule {
+		lib = (loadFromCmds (newMicroBlocksModule) cmdList)
+		if (isNil (moduleName lib)) {
+			setModuleName lib fileName
+		}
+		atPut libraries (moduleName lib) lib
+	}
+	return this
+}
+
 method loadSpecs MicroBlocksProject cmdList {
-	blockSpecs = (dictionary)
 	for cmd cmdList {
 		if ('spec' == (primName cmd)) {
 			args = (argList cmd)
@@ -279,7 +295,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName variableNames functions scripts
+defineClass MicroBlocksModule moduleName variableNames functions scripts blockList
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -290,9 +306,11 @@ method initialize MicroBlocksModule name {
 	variableNames = (array)
 	functions = (array)
 	scripts = (array)
+	blockList = (array)
 	return this
 }
 
+method blockList MicroBlocksModule { return blockList }
 method moduleName MicroBlocksModule { return moduleName }
 method setModuleName MicroBlocksModule modName { moduleName = modName }
 method toString MicroBlocksModule { return (join 'MicroBlocksModule(''' moduleName ''')') }
@@ -476,6 +494,7 @@ method loadFromCmds MicroBlocksModule cmdList {
 	loadVariables this cmdList
 	loadFunctions this cmdList
 	loadScripts this cmdList
+	loadBlockList this cmdList
 	return this
 }
 
@@ -496,7 +515,7 @@ method loadModuleName MicroBlocksModule cmdList {
 method loadVariables MicroBlocksModule cmdList {
 	varNames = (list)
 	for cmd cmdList {
-		if ('variables' == (primName cmd)) {
+		if (isOneOf (primName cmd) 'variables' 'sharedVariables') {
 			for v (argList cmd) {
 				if (isClass v 'String') { // quoted var name
 					add varNames v
@@ -544,6 +563,21 @@ method loadScripts MicroBlocksModule cmdList {
 	for cmd cmdList {
 		if ('script' == (primName cmd)) {
 			add scripts (argList cmd)
+		}
+	}
+}
+
+method loadBlockList MicroBlocksModule cmdList {
+	// The blockList is a list of blocks for this library's palette in order
+	// of appearance. It is derived from the module specs. The 'space' keyword
+	// can be used to add some space between groups of blocks.
+
+	blockList = (list)
+	for cmd cmdList {
+		if ('space' == (primName cmd)) {
+			add blockList '-' // spacer
+		} ('spec' == (primName cmd)) {
+			add blockList (at (argList cmd) 2)
 		}
 	}
 }
