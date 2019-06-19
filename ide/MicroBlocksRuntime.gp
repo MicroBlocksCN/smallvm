@@ -198,7 +198,7 @@ method unusedChunkID SmallRuntime {
 	}
 	for i 256 {
 		id = (i - 1)
-		if (not (contains inUse id)) { print 'new id' id; return id }
+		if (not (contains inUse id)) { return id }
 	}
 	error 'Too many code chunks (functions and scripts). Max is 256).'
 }

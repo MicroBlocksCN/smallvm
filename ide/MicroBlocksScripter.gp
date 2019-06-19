@@ -140,7 +140,7 @@ method libraryMenu MicroBlocksScripter {
   }
   if (devMode) {
   	addLine menu
-	addItem menu 'save this project as a library' (action 'exportAsLibrary' this (fileName projectEditor))
+	addItem menu 'save project as a library' (action 'exportAsLibrary' this (fileName projectEditor))
   }
   popUpAtHand menu (global 'page')
 }
@@ -221,9 +221,9 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (new 'SmallCompiler')
-  result = (list 'Output' 'Input' 'Pins' 'Control' 'Math' 'Variables' 'Lists' 'Comm' 'Advanced' 'My Blocks')
+  result = (list 'Output' 'Input' 'Pins' 'Control' 'Math' 'Variables' 'Lists' 'Comm' 'My Blocks')
   if (not (devMode)) {
-  	removeAll result (list 'Lists' 'Advanced' 'Comm')
+  	removeAll result (list 'Lists' 'Comm')
   }
   return result
 }
