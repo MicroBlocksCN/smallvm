@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded boardType boardTypeHeader categoriesFrame catResizer libHeader libFrame blocksFrame blocksResizer scriptsFrame nextX nextY labelSpecs
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categoriesFrame catResizer libHeader libFrame blocksFrame blocksResizer scriptsFrame nextX nextY
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -18,7 +18,6 @@ method thingServer MicroBlocksScripter { return (thingServer projectEditor) }
 method initialize MicroBlocksScripter aProjectEditor {
   mbProject = (newMicroBlocksProject)
   projectEditor = aProjectEditor
-  boardType = 'BBC micro:bit'
   scale = (global 'scale')
   morph = (newMorph this)
   setCostume morph (gray 150) // border color
@@ -31,7 +30,6 @@ method initialize MicroBlocksScripter aProjectEditor {
   }
   nextX = 0
   nextY = 0
-  initLabelSpecs this
 
   // how often to check for script changes
   setFPS morph 4
@@ -95,16 +93,13 @@ method languageChanged MicroBlocksScripter {
 }
 
 method makeColumnHeaders MicroBlocksScripter {
-  boardTypeHeader = (newButton '' (action 'boardTypeMenu' this))
-  addPart morph (morph boardTypeHeader)
   libHeader = (newButton '' (action 'libraryMenu' this))
   addPart morph (morph libHeader)
 }
 
 method redrawColumnHeaders MicroBlocksScripter {
-  w = (width (morph boardTypeHeader))
-  h = (height (morph boardTypeHeader))
-  setColumnHeaderButtonCostumes this boardTypeHeader (localized boardType) w h
+  w = (width (morph libHeader))
+  h = (height (morph libHeader))
   setColumnHeaderButtonCostumes this libHeader (localized 'Libraries') w h
 }
 
@@ -133,28 +128,6 @@ method setColumnHeaderButtonCostumes MicroBlocksScripter aButton label w h {
   fillArrow (newShapeMaker bm2) (rect arrowX arrowY arrowW arrowH) 'down' (gray 40)
 
   setCostumes aButton bm1 bm2
-}
-
-// board type menu
-
-method boardTypeMenu MicroBlocksScripter {
-  boardTypes = (array
-	'All Boards'
-	'BBC micro:bit'
-	'Calliope mini'
-	'Adafruit CPX'
-	'Citilab ED1'
-	'ESP32'
-	'ESP8266'
-  )
-  menu = (menu nil (action 'setBoardType' this) true)
-  for t boardTypes { addItem menu t }
-  popUpAtHand menu (global 'page')
-}
-
-method setBoardType MicroBlocksScripter newType {
-  boardType = newType
-  redrawColumnHeaders this
 }
 
 // library menu
@@ -203,11 +176,11 @@ method fixLayout MicroBlocksScripter {
   columnHeaderHeight = (14 * scale)
 
   packer = (newPanePacker (bounds morph) scale scale)
-  packPanesH packer boardTypeHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
+  packPanesH packer blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer categoriesFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesV packer boardTypeHeader columnHeaderHeight categoriesFrame catHeight libHeader columnHeaderHeight libFrame '100%'
+  packPanesV packer categoriesFrame catHeight libHeader columnHeaderHeight libFrame '100%'
   packPanesV packer blocksFrame '100%'
   packPanesV packer scriptsFrame '100%'
   finishPacking packer
@@ -248,9 +221,9 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (new 'SmallCompiler')
-  result = (list 'Output' 'Input' 'Pins' 'Control' 'Math' 'Variables' 'Lists' 'Advanced' 'Functions')
+  result = (list 'Output' 'Input' 'Pins' 'Control' 'Math' 'Variables' 'Lists' 'Comm' 'Advanced' 'My Blocks')
   if (not (devMode)) {
-  	removeAll result (list 'Lists' 'Advanced')
+  	removeAll result (list 'Lists' 'Advanced' 'Comm')
   }
   return result
 }
@@ -287,7 +260,7 @@ method updateBlocks MicroBlocksScripter {
 	addBlocksForLibrary this (selection (contents libFrame))
   } ('Variables' == cat) {
 	addVariableBlocks this
-  } ('Functions' == cat) {
+  } ('My Blocks' == cat) {
     addMyBlocks this
   } else {
 	addBlocksForCategory this cat
@@ -296,10 +269,25 @@ method updateBlocks MicroBlocksScripter {
 }
 
 method addBlocksForCategory MicroBlocksScripter cat {
-  specs = (specsFor (authoringSpecs) cat)
-  for spec specs {
-	addSpaceOrLabelBefore this spec
-	addBlock this (blockForSpec spec) spec
+  addBlocksForSpecs this (specsFor (authoringSpecs) cat)
+  advancedSpecs = (specsFor (authoringSpecs) (join cat '-Advanced'))
+  if (and (devMode) (not (isEmpty advancedSpecs))) {
+	// add some vertical space
+	nextY += (20 * (global 'scale'))
+	addSectionLabel this 'Advanced:'
+	addBlocksForSpecs this advancedSpecs
+  }
+}
+
+method addBlocksForSpecs MicroBlocksScripter specList {
+  for spec specList {
+	if ('-' == spec) {
+	  // add some vertical space
+	   nextY += (20 * (global 'scale'))
+	} else {
+	  addLabelBefore this spec
+	  addBlock this (blockForSpec spec) spec
+	}
   }
 }
 
@@ -396,61 +384,33 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
 
 // Palette Section Labels
 
-method initLabelSpecs MicroBlocksScripter {
-  labelSpecs = (dictionary)
-
-  // Output
-  atPut labelSpecs 'mbDisplay' 'micro:bit, Calliope:'
-
-  // Input
-  atPut labelSpecs 'mbTiltX' 'micro:bit, Calliope, CPX:'
-  atPut labelSpecs 'millisOp' '-'
-  atPut labelSpecs '[sensors:touchRead]' 'ESP32:'
-
-  // Pins
-  atPut labelSpecs 'digitalWriteOp' '-'
-  atPut labelSpecs 'analogPins' '-'
-
-  // Control
-  atPut labelSpecs 'if' '-'
-  atPut labelSpecs 'whenCondition' '-'
-  atPut labelSpecs 'whenBroadcastReceived' '-'
-  atPut labelSpecs 'comment' '-'
-  atPut labelSpecs 'stopTask' '-'
-
-  // Math
-  atPut labelSpecs 'absoluteValue' '-'
-  atPut labelSpecs '<' '-'
-  atPut labelSpecs 'booleanConstant' '-'
-
-  // Lists
-  atPut labelSpecs 'fillArray' '-'
-  atPut labelSpecs 'at' '-'
-
-  // Advanced
-  atPut labelSpecs 'boardType' '-'
-  atPut labelSpecs 'sendBroadcast' '-'
-  atPut labelSpecs 'mbDrawShape' '-'
-  atPut labelSpecs 'neoPixelSetPin' '-'
-  atPut labelSpecs 'i2cGet' '-'
-  atPut labelSpecs 'spiSend' '-'
-  atPut labelSpecs 'printIt' '-'
-  atPut labelSpecs 'noop' '-'
-  atPut labelSpecs '[io:hasTone]' 'Tone (experimental)'
-  atPut labelSpecs '[io:hasServo]' 'Servo (experimental)'
-  atPut labelSpecs '[net:hasWiFi]' 'WiFi (experimental):'
-  atPut labelSpecs '[tft:enableDisplay]' 'TFT Display (experimental)'
-  atPut labelSpecs '[tft:tftTouched]' 'TFT Touch Screen (experimental):'
-  atPut labelSpecs '[radio:sendInteger]' 'BBC micro:bit Radio'
+method addLabelBefore MicroBlocksScripter spec {
+  scale = (global 'scale')
+  item = (labelForOp this (blockOp spec))
+  if (notNil item) {
+	addSectionLabel this item
+  }
 }
 
-method addSpaceOrLabelBefore MicroBlocksScripter spec {
-  scale = (global 'scale')
-  item = (at labelSpecs (blockOp spec))
-  if ('-' == item) {
-	nextY += (15 * scale)
-  } (notNil item) {
-	addSectionLabel this item
+method labelForOp MicroBlocksScripter op {
+  if ('mbDisplay' == op) {
+  	return 'micro:bit, Calliope:, ED1:'
+  } ('mbTiltX' == op) {
+	return 'micro:bit, Calliope, CPX, ED1:'
+  } ('[sensors:touchRead]' == op) {
+	return 'ESP32:'
+  } ('[io:hasTone]' == op) {
+	return 'Tone (experimental)'
+  } ('[io:hasServo]' == op) {
+	return 'Servo (experimental)'
+  } ('[net:hasWiFi]' == op) {
+	return 'WiFi (experimental):'
+  } ('[tft:enableDisplay]' == op) {
+	return 'TFT Display (experimental)'
+  } ('[tft:tftTouched]' == op) {
+	return 'TFT Touch Screen (experimental):'
+  } ('[radio:sendInteger]' == op) {
+	return  'BBC micro:bit Radio'
   }
 }
 
@@ -462,7 +422,7 @@ method addSectionLabel MicroBlocksScripter label {
   nextY += (12 * scale)
   setPosition (morph label) (nextX - (10 * scale)) nextY
   addPart (morph (contents blocksFrame)) (morph label)
-  nextY += ((height (morph label)) + (8 * scale))
+  nextY += ((height (morph label)) + (12 * scale))
 }
 
 // project creation and loading

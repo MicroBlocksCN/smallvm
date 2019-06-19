@@ -105,8 +105,7 @@ method addTopBarParts MicroBlocksEditor {
   scale = (global 'scale')
 
   leftItems = (list)
-  add leftItems (addLogoButton this)
-  add leftItems (5 * scale)
+  add leftItems (140 * scale)
   add leftItems (addLanguageButton this)
   add leftItems (addSettingsButton this)
   add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu')
@@ -400,6 +399,7 @@ method drawTopBar MicroBlocksEditor {
   fill bm (topBarBlue this)
   grassHeight = (4 * scale)
   fillRect bm (color 137 169 31) 0 ((height bm) - grassHeight) (width bm) grassHeight
+  drawBitmap bm (logoAndText this)
   costumeChanged morph
 }
 
@@ -576,21 +576,6 @@ method stopThingServer MicroBlocksEditor {
 
 method installVM MicroBlocksEditor {
   installVM (smallRuntime)
-}
-
-// Logo Button
-
-method addLogoButton MicroBlocksEditor {
-  scale = (global 'scale')
-  logo = (logoAndText this)
-  bm1 = (newBitmap ((width logo) + (4 * scale)) (41 * scale) (topBarBlue this))
-  drawBitmap bm1 logo (1 * scale) (1 * scale)
-  bm2 = (newBitmap (width bm1) (height bm1) (topBarBlueHighlight this))
-  drawBitmap bm2 logo (1 * scale) (1 * scale)
-  button = (newButton '' (action 'rightClicked' this))
-  setCostumes button bm1 bm2
-  addPart morph (morph button)
-  return button
 }
 
 // Language Button

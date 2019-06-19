@@ -663,17 +663,19 @@ method setCategoryFor AuthoringSpecs op category {
 }
 
 method blockColorForCategory AuthoringSpecs cat {
-  defaultColor = (colorHSV 200.0 0.982 0.863)
+  if (endsWith cat '-Advanced') { cat = (substring cat 1 ((count cat) - 9)) }
+  defaultColor = (colorHSV 200 0.98 0.86)
   if ('Output' == cat) { return (colorHSV 235 0.62 0.80) // (colorHSV 224.211 0.636 0.82)
   } ('Input' == cat) { return (colorHSV 170 0.78 0.62) // (colorHSV 161.077 0.788 0.647)
-  } ('Pins' == cat) { return (colorHSV 296 0.60 0.63) // (colorHSV 296.033 0.627 0.757)
-  } ('Control' == cat) { return (colorHSV 36.196 0.811 0.89)
-  } ('Math' == cat) { return (colorHSV 93 0.85 0.68) // (colorHSV 92.914 0.902 0.761)
-  } ('Variables' == cat) { return (colorHSV 26 0.80 0.88) // (colorHSV 25.67 0.822 0.925)
-  } ('Lists' == cat) { return (colorHSV 21 0.85 0.80) // (colorHSV 20.503 0.881 0.886)
-  } ('Advanced' == cat) { return (colorHSV 36.923 0.722 0.706)
-  } ('Functions' == cat) { return (colorHSV 205.445 0.83 0.902)
-  } ('Obsolete' == cat) { return (colorHSV 4.592 1.0 0.769)
+  } ('Pins' == cat) { return (colorHSV 296 0.60 0.65) // (colorHSV 296.033 0.627 0.757)
+  } ('Comm' == cat) { return (colorHSV 195 0.50 0.60)
+  } ('Control' == cat) { return (colorHSV 36 0.70 0.87)
+  } ('Math' == cat) { return (colorHSV 100 0.75 0.65) // (colorHSV 92.914 0.902 0.761)
+  } ('Variables' == cat) { return (colorHSV 26 0.80 0.83) // (colorHSV 25.67 0.822 0.925)
+  } ('Lists' == cat) { return (colorHSV 16 0.75 0.75) // (colorHSV 20.503 0.881 0.886)
+  } ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
+  } ('Functions' == cat) { return (colorHSV 205 0.83 0.90)
+  } ('Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
   }
   return defaultColor
 }
