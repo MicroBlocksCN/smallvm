@@ -485,14 +485,14 @@ method rightClicked MicroBlocksEditor aHand {
 method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
-  addLine menu
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
+  addLine menu
   addItem menu 'install MicroBlocks on board' 'installVM'
   addLine menu
-  addItem menu 'graph data' 'graphData'
+  addItem menu 'show graph' 'graphData'
 //  addItem menu 'show recent data' 'showRecentData' // commented out until it shows data in real-time
-  addItem menu 'copy data to clipboard' 'copyDataToClipboard'
-  addItem menu 'clear data' 'clearData'
+  addItem menu 'copy graph data to clipboard' 'copyDataToClipboard'
+  addItem menu 'clear graph' 'clearData'
   addLine menu
   addItem menu 'clear memory and variables' 'softReset'
   addLine menu
@@ -502,12 +502,12 @@ method contextMenu MicroBlocksEditor {
 // addItem menu 'compact persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
 // addLine menu
 
-  if (not (isRunning thingServer)) {
-	addItem menu 'start Mozilla WebThing server' 'startThingServer'
-  } else {
-	addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
-  }
   if (not (devMode)) {
+	  if (not (isRunning thingServer)) {
+		addItem menu 'start Mozilla WebThing server' 'startThingServer'
+	  } else {
+		addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
+	  }
 	addLine menu
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {

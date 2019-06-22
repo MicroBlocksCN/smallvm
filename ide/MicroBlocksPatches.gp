@@ -239,9 +239,9 @@ method contextMenu Block {
   }
   if (notNil (functionNamed (project pe) (primName expression))) {
 	if isInPalette {
-	  addItem menu 'delete function...' 'deleteFunction'
+	  addItem menu 'delete block definition...' 'deleteBlockDefinition'
 	}
-    addItem menu 'show function definition...' 'showDefinition'
+    addItem menu 'show block definition...' 'showDefinition'
     addLine menu
   }
   addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
@@ -283,7 +283,11 @@ method pickUp Block {
   grabCentered morph this
 }
 
-method deleteFunction Block {
+method deleteBlockDefinition Block {
+  if (not (confirm (global 'page') nil
+  	'Are you sure you want to remove this block definition?')) {
+		return
+  }
   pe = (findProjectEditor)
   if (isNil pe) { return }
   deleteFunction (scripter pe) (primName expression)
@@ -293,6 +297,16 @@ method showDefinition Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
   showDefinition (scripter pe) (primName expression)
+}
+
+method deleteBlockDefinition BlockDefinition {
+  if (not (confirm (global 'page') nil
+  	'Are you sure you want to remove this block definition?')) {
+		return
+  }
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  deleteFunction (scripter pe) op
 }
 
 method hideDefinition BlockDefinition {
@@ -340,7 +354,9 @@ method contextMenu BlockDefinition {
     addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
     addLine menu
   }
-  addItem menu 'hide function definition' 'hideDefinition'
+  addItem menu 'delete block definition...' 'deleteBlockDefinition'
+  addItem menu 'hide block definition' 'hideDefinition'
+  addLine menu
   addItem menu 'save picture of script' 'exportAsImage'
   addLine menu
   addItem menu 'delete' 'deleteDefinition'
@@ -475,11 +491,11 @@ method fixLayout Block {
           x = (+ left indentation w)
           w += (width (fullBounds (morph each)))
           w += (space * scale)
-		  if (and ('mbDisplay' == (primName expression)) (each == (first group))) {
-			lineArgCount = 10; // force a line break after first item of 'mbDisplay' block
+		  if (and ('[display:mbDisplay]' == (primName expression)) (each == (first group))) {
+			lineArgCount = 10; // force a line break after first item of block
 		  }
 		  if (and ('setNeoPixelColors10' == (primName expression)) (each == (at group 3))) {
-			lineArgCount = 10; // force a line break after first item of 'mbDisplay' block
+			lineArgCount = 10; // force a line break after first item of block
 		  }
 		  if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
             add lines currentLine
