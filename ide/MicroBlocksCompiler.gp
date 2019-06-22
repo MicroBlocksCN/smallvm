@@ -39,11 +39,6 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'setUserLED'			'set user LED _' 'bool' true)
 		(array ' ' 'sayIt'				'say _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 123 '' '')
 		(array ' ' 'printIt'			'graph _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 100)
-
-// 		(array ' ' 'mbDisplay'			'display _' 'microbitDisplay')
-// 		(array ' ' 'mbDisplayOff'		'clear display')
-// 		(array ' ' 'mbPlot'				'plot x _ y _' 'num num' 3 3)
-// 		(array ' ' 'mbUnplot'			'unplot x _ y _' 'num num' 3 3)
 	'Input'
 		(array 'r' 'buttonA'			'button A')
 		(array 'r' 'buttonB'			'button B')
@@ -52,12 +47,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'microsOp'			'microseconds')
 		'-'
 		(array 'r' 'boardType'			'board type')
-
-// 		(array 'r' 'mbTiltX'			'tilt x')
-// 		(array 'r' 'mbTiltY'			'tilt y')
-// 		(array 'r' 'mbTiltZ'			'tilt z')
-// 		(array 'r' '[display:lightLevel]' 'light level')
-// 		(array 'r' 'mbTemp'				'temperature (°C)')
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
 		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
@@ -325,18 +314,18 @@ method initOpcodes SmallCompiler {
 	RESERVED 97
 	RESERVED 98
 	RESERVED 99
-		mbDisplay 100 		// temporary micro:bit primitives for demos
-		mbDisplayOff 101
-		mbPlot 102
-		mbUnplot 103
-		mbTiltX 104
-		mbTiltY 105
-		mbTiltZ 106
-		mbTemp 107
-		neoPixelSend 108
-		mbDrawShape 109
-		mbShapeForLetter 110
-		neoPixelSetPin 111
+	RESERVED 100
+	RESERVED 101
+	RESERVED 102
+	RESERVED 103
+	RESERVED 104
+	RESERVED 105
+	RESERVED 106
+	RESERVED 107
+	RESERVED 108
+	RESERVED 109
+	RESERVED 110
+	RESERVED 111
 	RESERVED 112
 	RESERVED 113
 	RESERVED 114
@@ -733,23 +722,7 @@ method instructionsForOr SmallCompiler args {
 method primitive SmallCompiler op args isCommand {
 	result = (list)
 	if ('print' == op) { op = 'printIt' }
-	if ('mbDisplay' == op) {
-	  if (25 == (count args)) {
-		shift = 0
-		displayWord = 0
-		for bit args {
-		  if (true == bit) { displayWord = (displayWord | (1 << shift)) }
-			shift += 1
-		}
-	  } (1 == (count args)) {
-		displayWord = (first args)
-	  } else {
-		print 'Bad mbDisplay arguments'
-		return result
-	  }
-	  addAll result (instructionsForExpression this displayWord)
-	  add result (array 'mbDisplay' 1)
-	} ('comment' == op) {
+	if ('comment' == op) {
 		// ignore comments
 	} (contains opcodes op) {
 		for arg args {
@@ -911,7 +884,9 @@ method wordsForLiteral SmallCompiler literal {
 method addBytesForInstructionTo SmallCompiler instr bytes {
 	// Append the bytes for the given instruction to bytes (little endian).
 
-	add bytes (at opcodes (first instr))
+	opcode = (at opcodes (first instr))
+	if (isNil opcode) { error 'Unknown opcode:' (first instr) }
+	add bytes opcode
 	arg = (at instr 2)
 	if (not (and (-16777216 <= arg) (arg <= 16777215))) {
 		error 'Argument does not fit in 24 bits'

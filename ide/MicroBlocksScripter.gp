@@ -283,7 +283,6 @@ method addBlocksForSpecs MicroBlocksScripter specList {
 	  // add some vertical space
 	   nextY += (20 * (global 'scale'))
 	} else {
-	  addLabelBefore this spec
 	  addBlock this (blockForSpec spec) spec
 	}
   }
@@ -300,7 +299,9 @@ method addBlocksForLibrary MicroBlocksScripter libName {
 	   nextY += (20 * (global 'scale'))
 	} (or (devMode) (not (beginsWith op '_'))) {
 	  spec = (specForOp (authoringSpecs) op)
-	  addBlock this (blockForSpec spec) spec
+	  if (notNil spec) {
+	  	addBlock this (blockForSpec spec) spec
+	  }
 	}
   }
 }
@@ -383,36 +384,6 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
 }
 
 // Palette Section Labels
-
-method addLabelBefore MicroBlocksScripter spec { // xxx maybe remove
-  scale = (global 'scale')
-  item = (labelForOp this (blockOp spec))
-  if (notNil item) {
-	addSectionLabel this item
-  }
-}
-
-method labelForOp MicroBlocksScripter op { // xxx maybe remove
-  if ('mbDisplay' == op) {
-  	return 'micro:bit, Calliope:, ED1:'
-  } ('mbTiltX' == op) {
-	return 'micro:bit, Calliope, CPX, ED1:'
-  } ('[sensors:touchRead]' == op) {
-	return 'ESP32:'
-  } ('[io:hasTone]' == op) {
-	return 'Tone (experimental)'
-  } ('[io:hasServo]' == op) {
-	return 'Servo (experimental)'
-  } ('[net:hasWiFi]' == op) {
-	return 'WiFi (experimental):'
-  } ('[tft:enableDisplay]' == op) {
-	return 'TFT Display (experimental)'
-  } ('[tft:tftTouched]' == op) {
-	return 'TFT Touch Screen (experimental):'
-  } ('[radio:sendInteger]' == op) {
-	return  'BBC micro:bit Radio'
-  }
-}
 
 method addSectionLabel MicroBlocksScripter label {
   scale = (global 'scale')
@@ -628,7 +599,7 @@ method pasteScripts MicroBlocksScripter scriptString {
   updateBlocks this
 }
 
-// hide/show function definition
+// hide/show block definition
 
 method hideDefinition MicroBlocksScripter funcName {
   // Hide the given method/function definition.
