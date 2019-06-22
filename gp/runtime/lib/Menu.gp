@@ -84,15 +84,15 @@ method buildMorph Menu page yPos {
   labelPadding = (scale * 4)
   itemPaddingV = (scale * 1)
   itemPaddingH = (scale * 3)
-  color = (color 255 255 255)
-  labelTextColor = color
-  labelBackgroundColor = (color 60 60 60)
+  color = (gray 255)
+  labelTextColor = (gray 255)
+  labelBackgroundColor = (gray 60)
   borderColor = labelBackgroundColor
-  itemTextColorNormal = (color)
+  itemTextColorNormal = (gray 0)
   itemTextColorHighlighted = itemTextColorNormal
-  itemTextColorPressed = (color 255 255 255)
-  itemBackgroundColorHighlighted = (lighter labelBackgroundColor 70)
-  itemBackgroundColorPressed = (lighter labelBackgroundColor 20)
+  itemTextColorPressed = (gray 255)
+  itemBackgroundColorHighlighted = (gray 210)
+  itemBackgroundColorPressed = (gray 100)
 
   minHeight = (min (scale * 100) (height (morph page)))
   maxHeight = ((height (morph page)) - 100)
@@ -170,7 +170,7 @@ method buildMorph Menu page yPos {
   setCostume morph bg
 
   if (widgetHeight < menuHeight) {
-    box = (newBox nil (color 0 0 0 0) 0 0 false false)
+    box = (newBox nil (transparent) 0 0 false false)
     container = (morph box)
     setExtent container menuWidth (menuHeight - lblHeight)
     scrollFrame = (scrollFrame box)
