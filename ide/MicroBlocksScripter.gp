@@ -149,6 +149,7 @@ method addLibraryButton MicroBlocksScripter label w h {
 // library item menu
 
 method handleListContextRequest MicroBlocksScripter anArray {
+  if ((first anArray) != (contents libFrame)) { return } // not a library list entry; ignore
   libName = (data (last anArray))
   menu = (menu)
   addItem menu 'delete library' (action 'removeLibraryNamed' this libName)
@@ -220,9 +221,9 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (new 'SmallCompiler')
-  result = (list 'Output' 'Input' 'Pins' 'Control' 'Math' 'Variables' 'Lists' 'Comm' 'My Blocks')
+  result = (list 'Output' 'Input' 'Pins' 'Comm' 'Control' 'Math' 'Variables' 'Lists' 'My Blocks')
   if (not (devMode)) {
-  	removeAll result (list 'Lists' 'Comm')
+  	removeAll result (list 'Comm' 'Lists')
   }
   return result
 }
