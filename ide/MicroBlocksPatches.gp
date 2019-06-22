@@ -438,6 +438,15 @@ method contextMenu ScriptEditor {
   return menu
 }
 
+// Dropping on palette to delete
+
+method wantsDropOf BlocksPalette aHandler {
+  if (isClass aHandler 'Block') {
+	return (not (isPrototypeHat aHandler)) // don't delete blocks
+  }
+  return false;
+}
+
 // Block layout tweak
 
 method fixLayout Block {
