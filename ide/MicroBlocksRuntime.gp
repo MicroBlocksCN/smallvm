@@ -117,7 +117,7 @@ method showInstructions SmallRuntime aBlock {
 	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
 	setTitle ws 'Instructions'
 	setFont ws 'Arial' (16 * (global 'scale'))
-	setExtent (morph ws) (240 * (global 'scale')) (500 * (global 'scale'))
+	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
 }
 
 method addWithLineNum SmallRuntime aList instruction items {
@@ -151,7 +151,7 @@ method showCompiledBytes SmallRuntime aBlock {
 	ws = (openWorkspace (global 'page') (joinStrings result))
 	setTitle ws 'Instruction Bytes'
 	setFont ws 'Arial' (16 * (global 'scale'))
-	setExtent (morph ws) (240 * (global 'scale')) (500 * (global 'scale'))
+	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
 }
 
 // chunk management

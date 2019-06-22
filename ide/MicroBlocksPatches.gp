@@ -221,42 +221,36 @@ method contextMenu Block {
   menu = (menu nil this)
   pe = (findProjectEditor)
 
-  if (devMode) {
-    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
-    addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
-    addLine menu
-  }
-
   isInPalette = ('template' == (grabRule morph))
-  if (isVariadic this) {
-    if (canExpand this) {addItem menu 'expand' 'expand'}
-    if (canCollapse this) {addItem menu 'collapse' 'collapse'}
-    addLine menu
-  }
   if (and isInPalette (isRenamableVar this)) {
     addItem menu 'rename...' 'userRenameVariable'
     addLine menu
   }
-  if (notNil (functionNamed (project pe) (primName expression))) {
-	if isInPalette {
-	  addItem menu 'delete block definition...' 'deleteBlockDefinition'
-	}
-    addItem menu 'show block definition...' 'showDefinition'
-    addLine menu
-  }
-  addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
+  addItem menu 'duplicate' 'grabDuplicate' 'duplicate this block'
   if (and ('reporter' != type) (notNil (next this))) {
-    addItem menu '...all' 'grabDuplicateAll' 'duplicate including all attached blocks'
+    addItem menu 'duplicate all' 'grabDuplicateAll' 'duplicate these blocks'
   }
-
   addLine menu
-  addItem menu 'save picture of script' 'exportAsImage'
+  if (and (not isInPalette) (notNil (next this))) {
+    addItem menu 'extract block' 'pickUp' 'pull out this block'
+  }
   addLine menu
-  addItem menu 'copy script' 'copyToClipboard'
-  if (not isInPalette) {
-    addItem menu 'pick up' 'pickUp'
+  addItem menu 'delete block' 'delete' 'delete this block'
+  if (devMode) {
     addLine menu
-    addItem menu 'delete' 'delete'
+	addItem menu 'copy to clipboard' 'copyToClipboard' 'copy these blocks to the clipboard'
+	addItem menu 'save picture of script' 'exportAsImage' 'save a picture these blocks as a PNG file'
+	addLine menu
+    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
+  }
+  if (notNil (functionNamed (project pe) (primName expression))) {
+    addLine menu
+    addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
+	if isInPalette {
+	  addLine menu
+	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
+	}
   }
   return menu
 }
@@ -283,6 +277,14 @@ method pickUp Block {
   grabCentered morph this
 }
 
+// Block definition operations
+
+method showDefinition Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  showDefinition (scripter pe) (primName expression)
+}
+
 method deleteBlockDefinition Block {
   if (not (confirm (global 'page') nil
   	'Are you sure you want to remove this block definition?')) {
@@ -291,12 +293,6 @@ method deleteBlockDefinition Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
   deleteFunction (scripter pe) (primName expression)
-}
-
-method showDefinition Block {
-  pe = (findProjectEditor)
-  if (isNil pe) { return }
-  showDefinition (scripter pe) (primName expression)
 }
 
 method deleteBlockDefinition BlockDefinition {
@@ -316,6 +312,20 @@ method hideDefinition BlockDefinition {
   if (isNil pe) { return }
   hideDefinition (scripter pe) op
 }
+
+method justReceivedDrop BlocksPalette aHandler {
+  // Hide a block definitions when it is is dropped on the palette.
+
+  if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
+	pe = (findProjectEditor)
+	proto = (editedPrototype aHandler)
+	if (and (notNil pe) (notNil proto) (notNil (function proto))) {
+		hideDefinition (scripter pe) op
+	}
+  }
+}
+
+// Input slots
 
 method inputIndex Block anInput {
   idx = 0
@@ -349,17 +359,15 @@ method representsANumber String {
 
 method contextMenu BlockDefinition {
   menu = (menu nil this)
+  addItem menu 'hide block definition' 'hideDefinition'
+  addItem menu 'save picture of script' 'exportAsImage' 'save a picture this block definition as a PNG file'
   if (devMode) {
+    addLine menu
     addItem menu 'show instructions' (action 'showInstructions' this)
     addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
-    addLine menu
   }
+  addLine menu
   addItem menu 'delete block definition...' 'deleteBlockDefinition'
-  addItem menu 'hide block definition' 'hideDefinition'
-  addLine menu
-  addItem menu 'save picture of script' 'exportAsImage'
-  addLine menu
-  addItem menu 'delete' 'deleteDefinition'
   popUp menu (global 'page') (left morph) (bottom morph)
 }
 
@@ -403,48 +411,23 @@ return // xxx suppress the ability to make variadic user-defined blocks
   addPart (morph repeater) (morph toggle)
 }
 
-method okayToBeDestroyedByUser Block {
-  if (isPrototypeHat this) {
-	editor = (findProjectEditor)
-	if (isNil editor) { return false }
-    function = (function (first (inputs this)))
-    if (confirm (global 'page') nil 'Are you sure you want to remove this block definition?') {
-	  removedUserDefinedBlock (scripter editor) function
-	  deleteChunkForBlock (smallRuntime) this
-      return true
-    }
-    return false
-  }
-  deleteChunkForBlock (smallRuntime) this
-  return true
-}
-
 method contextMenu ScriptEditor {
   menu = (menu nil this)
   addItem menu 'clean up' 'cleanUp' 'arrange scripts'
   if (and (notNil lastDrop) (isRestorable lastDrop)) {
-    addItem menu 'undrop' 'undrop' 'undo last drop'
+    addItem menu 'undrop' 'undrop' 'undo the last block drop'
   }
   addLine menu
-  addItem menu 'copy all scripts' 'copyScriptsToClipboard'
+  addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
   clip = (getClipboard)
   if (beginsWith clip 'GP Scripts') {
-	addItem menu 'paste all scripts' 'pasteScripts'
+	addItem menu 'paste all scripts from clipboard' 'pasteScripts'
   } (beginsWith clip 'GP Script') {
-	addItem menu 'paste script' 'pasteScripts'
+	addItem menu 'paste script from clipboard' 'pasteScripts'
   }
   addLine menu
-  addItem menu 'save picture of all scripts' 'saveScriptsImage'
+  addItem menu 'save a picture of all scripts' 'saveScriptsImage'
   return menu
-}
-
-// Dropping on palette to delete
-
-method wantsDropOf BlocksPalette aHandler {
-  if (isClass aHandler 'Block') {
-	return (not (isPrototypeHat aHandler)) // don't delete blocks
-  }
-  return false;
 }
 
 // Block layout tweak
