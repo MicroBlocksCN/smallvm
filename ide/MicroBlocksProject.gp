@@ -159,6 +159,7 @@ method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
 	for v (variableNames (module aClass)) { addVariable main v }
 	for k (keys specList) { atPut blockSpecs k (at specList k) }
 	setScripts main (copy (scripts aClass))
+	updatePrimitives this
 	return this
 }
 
@@ -179,6 +180,7 @@ method loadFromString MicroBlocksProject s {
 			atPut libraries (moduleName lib) lib
 		}
 	}
+	updatePrimitives this
 	return this
 }
 
@@ -193,6 +195,7 @@ method addLibraryFromString MicroBlocksProject s fileName {
 		if (isNil (moduleName lib)) {
 			setModuleName lib fileName
 		}
+		updatePrimitives lib
 		atPut libraries (moduleName lib) lib
 	}
 	return this
@@ -260,6 +263,15 @@ method libraryCodeString MicroBlocksProject modName {
 	return result
 }
 
+// Updating primitives
+
+method updatePrimitives MicroBlocksProject {
+	// Update primitives that have been replaced with newer versions.
+
+	updatePrimitives main
+	for lib (values libraries) { updatePrimitives lib }
+}
+
 // save/load test
 
 method saveLoadTest MicroBlocksProject {
@@ -303,7 +315,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName moduleCategory variableNames functions scripts blockList
+defineClass MicroBlocksModule moduleName moduleCategory variableNames blockList functions scripts
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -311,10 +323,11 @@ to newMicroBlocksModule modName {
 
 method initialize MicroBlocksModule name {
 	moduleName = name
+	moduleCategory = ''
 	variableNames = (array)
+	blockList = (array)
 	functions = (array)
 	scripts = (array)
-	blockList = (array)
 	return this
 }
 
@@ -398,9 +411,17 @@ method deleteVariable MicroBlocksModule varName {
 method codeString MicroBlocksModule owningProject {
 	// Return a string containing the code for this MicroBlocksModule.
 
+	result = (list)
 	modName = moduleName
 	if (needsQuotes this modName) { modName = (join '''' modName '''') }
-	result = (list (join 'module ' modName) (newline))
+	add result (join 'module ' modName)
+
+	if ('' != moduleCategory) {
+		modCat = moduleCategory
+		if (needsQuotes this modCat) { modCat = (join '''' modCat '''') }
+		add result (join ' ' modCat)
+	}
+	add result (newline)
 
 	// add variable declaration
 	if ((count variableNames) > 0) {
@@ -415,6 +436,18 @@ method codeString MicroBlocksModule owningProject {
 	add result (newline)
 
 	projectSpecs = (blockSpecs owningProject)
+	processed = (dictionary)
+
+	for op blockList {
+		if ('space' != op) {
+			spec = (at projectSpecs op)
+			if (notNil spec) {
+				add result (join '	' (specDefinitionString spec) (newline))
+				add processed op
+			}
+		}
+	}
+
 	if (not (isEmpty functions)) {
 		// sort functions by name (this canonicalizes function order)
 		sortedFunctions = (sorted
@@ -423,11 +456,15 @@ method codeString MicroBlocksModule owningProject {
 		)
 		// add function block specs
 		for func sortedFunctions {
-			spec = (at projectSpecs (functionName func))
-			if (notNil spec) {
-				add result (specDefinitionString spec)
+			op = (functionName func)
+			if (not (contains processed op)) {
+				spec = (at projectSpecs op)
+				if (notNil spec) {
+					add result (join '	' (specDefinitionString spec) (newline))
+					add processed op
+				}
+				add result (newline)
 			}
-			add result (newline)
 		}
 		add result (newline)
 
@@ -499,15 +536,15 @@ method needsQuotes MicroBlocksModule s {
 // loading
 
 method loadFromCmds MicroBlocksModule cmdList {
-	loadModuleName this cmdList
+	loadModuleNameAndCategory this cmdList
 	loadVariables this cmdList
+	loadBlockList this cmdList
 	loadFunctions this cmdList
 	loadScripts this cmdList
-	loadBlockList this cmdList
 	return this
 }
 
-method loadModuleName MicroBlocksModule cmdList {
+method loadModuleNameAndCategory MicroBlocksModule cmdList {
 	if (not (isEmpty cmdList)) {
 		cmd = (first cmdList)
 		if ('module' == (primName cmd)) {
@@ -594,6 +631,44 @@ method loadBlockList MicroBlocksModule cmdList {
 			add blockList (at (argList cmd) 2)
 		}
 	}
+}
+
+// Updating primitives
+
+method updatePrimitives MicroBlocksModule {
+	// Update primitives that have been replaced with newer versions.
+
+	for f functions {
+		for b (allBlocks (cmdList f)) {
+			newPrim = (newPrimFor this (primName b))
+if (notNil newPrim) { print (primName b) '->' newPrim }
+			if (notNil newPrim) { setField b 'primName' newPrim }
+		}
+	}
+	for entry scripts {
+		for b (allBlocks (at entry 3)) {
+			newPrim = (newPrimFor this (primName b))
+if (notNil newPrim) { print (primName b) '->' newPrim }
+			if (notNil newPrim) { setField b 'primName' newPrim }
+		}
+	}
+}
+
+method newPrimFor MicroBlocksModule oldPrim {
+	if ('mbDisplay' == oldPrim) { return '[display:mbDisplay]'
+	} ('mbDisplayOff' == oldPrim) { return '[display:mbDisplayOff]'
+	} ('mbPlot' == oldPrim) { return '[display:mbPlot]'
+	} ('mbUnplot' == oldPrim) { return '[display:mbUnplot]'
+	} ('mbDrawShape' == oldPrim) { return '[display:mbDrawShape]'
+	} ('mbShapeForLetter' == oldPrim) { return '[display:mbShapeForLetter]'
+	} ('neoPixelSetPin' == oldPrim) { return '[display:neoPixelSetPin]'
+	} ('neoPixelSend' == oldPrim) { return '[display:neoPixelSend]'
+	} ('mbTiltX' == oldPrim) { return '[sensors:tiltX]'
+	} ('mbTiltY' == oldPrim) { return '[sensors:tiltY]'
+	} ('mbTiltZ' == oldPrim) { return '[sensors:tiltZ]'
+	} ('mbTemp' == oldPrim) { return '[sensors:temperature]'
+	}
+	return nil
 }
 
 // equality

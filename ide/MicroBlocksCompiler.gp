@@ -89,9 +89,6 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop all')
-	'Control-Advanced'
-		(array ' ' 'noop'				'no op')
-		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
@@ -140,65 +137,81 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
 		(array ' ' 'atPut'				'replace item _ of _ with _' 'num str auto' 1 nil 10)
-// 	'Advanced'
-// 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
-//
-// 		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
-//
-// 		(array ' ' 'mbDrawShape'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
-// 		(array 'r' 'mbShapeForLetter'	'shape for letter _' 'str' 'A')
-//
-// 		(array ' ' 'neoPixelSetPin'		'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
-// 		(array ' ' 'neoPixelSend'		'send NeoPixel rgb _' 'num' 5)
-//
-// 		(array 'r' '[io:hasTone]'		'has tone support')
-// 		(array ' ' '[io:playTone]'		'play tone pin _ frequency _' 'num num' 0 440)
-//
-// 		(array 'r' '[io:hasServo]'		'has servo support')
-// 		(array ' ' '[io:setServo]'		'set servo pin _ to _ usecs' 'num num' 0 1500)
-//
-// 		(array 'r' '[net:hasWiFi]'		'has WiFi support')
-// 		(array ' ' '[net:startWiFi]'	'start WiFi _ password _ : be hotspot _' 'str str bool' 'SSID' 'MyPassword' true)
-// 		(array ' ' '[net:stopWiFi]'		'stop WiFi')
-// 		(array 'r' '[net:wifiStatus]'	'WiFi status')
-// 		(array 'r' '[net:myIPAddress]'	'my IP address')
-//
-// 		(array 'r' '[net:thingDescription]'			'thing description')
-// 		(array ' ' '[net:clearThingDescription]'	'clear thing description')
-// 		(array ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
-// 		(array ' ' '[net:appendToThingProperty]'	'append to thing property _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
-//
-// 		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
-// 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
-// 		(array ' ' '[tft:line]'			'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)
-// 		(array ' ' '[tft:rect]'			'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false)
-// 		(array ' ' '[tft:roundedRect]'			'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false)
-// 		(array ' ' '[tft:circle]'			'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false)
-// 		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
-// 		(array ' ' '[tft:text]'			'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
-//
-// 		(array 'r' '[tft:tftTouched]'			'TFT touched')
-// 		(array 'r' '[tft:tftTouchX]'			'TFT touch X position')
-// 		(array 'r' '[tft:tftTouchY]'			'TFT touch Y position')
-// 		(array 'r' '[tft:tftTouchPressure]'	        'TFT touch pressure')
-//
-// 		(array ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123)
-// 		(array ' ' '[radio:sendString]'				'radio send string _' 'str' 'Hello!')
-// 		(array ' ' '[radio:sendPair]'				'radio send pair _ = _' 'str num' 'light' 10)
-// 		(array 'r' '[radio:messageReceived]'		'radio message received?')
-// 		(array 'r' '[radio:receivedInteger]'		'radio last number')
-// 		(array 'r' '[radio:receivedString]'			'radio last string')
-// 		(array 'r' '[radio:receivedMessageType]'	'radio last message type')
-// 		(array ' ' '[radio:setGroup]'				'radio set group _' 'num' 0)
-// 		(array ' ' '[radio:setChannel]'				'radio set channel (0-83)  _' 'num' 7)
-// 		(array ' ' '[radio:setPower]'				'radio set power (0-7) _' 'num' 4)
-// 		(array 'r' '[radio:signalStrength]'			'radio last signal strength')
-// 		(array 'r' '[radio:packetReceive]'			'radio receive packet _' 'str')
-// 		(array ' ' '[radio:packetSend]'				'radio send packet _' 'str')
-// 		(array ' ' '[radio:disableRadio]'			'disable radio')
-//
-// 	'Disabled (does not work)'
-//  		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
+
+	// The following block specs allow primitives to be rendered correctly
+	// even if the primitive spec was not included in the project or library.
+	// This allows MicroBlocks to correctly render scripts in older projects.
+
+	'Prims-Display (not in palette)'
+		(array ' ' '[display:mbDisplay]'	'display _' 'microbitDisplay')
+		(array ' ' '[display:mbDisplayOff]'	'clear display')
+		(array ' ' '[display:mbPlot]'		'plot x _ y _' 'num num' 3 3)
+		(array ' ' '[display:mbUnplot]'		'unplot x _ y _' 'num num' 3 3)
+		(array ' ' '[display:mbDrawShape]'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
+		(array 'r' '[display:mbShapeForLetter]'	'shape for letter _' 'str' 'A')
+		(array ' ' '[display:neoPixelSetPin]'		'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
+		(array ' ' '[display:neoPixelSend]'		'send NeoPixel rgb _' 'num' 5)
+	'Prims-Sensing (not in palette)'
+		(array 'r' '[sensors:tiltX]'		'tilt x')
+		(array 'r' '[sensors:tiltY]'		'tilt y')
+		(array 'r' '[sensors:tiltZ]'		'tilt z')
+		(array 'r' '[display:lightLevel]' 	'light level')
+		(array 'r' '[sensors:temperature]'		'temperature (°C)')
+	'Prims-Advanced (not in palette)'
+		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
+		(array ' ' 'noop'				'no op')
+		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
+
+		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
+
+		(array 'r' '[io:hasTone]'		'has tone support')
+		(array ' ' '[io:playTone]'		'play tone pin _ frequency _' 'num num' 0 440)
+
+		(array 'r' '[io:hasServo]'		'has servo support')
+		(array ' ' '[io:setServo]'		'set servo pin _ to _ usecs' 'num num' 0 1500)
+
+		(array 'r' '[net:hasWiFi]'		'has WiFi support')
+		(array ' ' '[net:startWiFi]'	'start WiFi _ password _ : be hotspot _' 'str str bool' 'SSID' 'MyPassword' true)
+		(array ' ' '[net:stopWiFi]'		'stop WiFi')
+		(array 'r' '[net:wifiStatus]'	'WiFi status')
+		(array 'r' '[net:myIPAddress]'	'my IP address')
+
+		(array 'r' '[net:thingDescription]'			'thing description')
+		(array ' ' '[net:clearThingDescription]'	'clear thing description')
+		(array ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
+		(array ' ' '[net:appendToThingProperty]'	'append to thing property _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
+
+		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
+		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
+		(array ' ' '[tft:line]'			'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)
+		(array ' ' '[tft:rect]'			'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false)
+		(array ' ' '[tft:roundedRect]'			'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false)
+		(array ' ' '[tft:circle]'			'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false)
+		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
+		(array ' ' '[tft:text]'			'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
+
+		(array 'r' '[tft:tftTouched]'			'TFT touched')
+		(array 'r' '[tft:tftTouchX]'			'TFT touch X position')
+		(array 'r' '[tft:tftTouchY]'			'TFT touch Y position')
+		(array 'r' '[tft:tftTouchPressure]'	        'TFT touch pressure')
+
+		(array ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123)
+		(array ' ' '[radio:sendString]'				'radio send string _' 'str' 'Hello!')
+		(array ' ' '[radio:sendPair]'				'radio send pair _ = _' 'str num' 'light' 10)
+		(array 'r' '[radio:messageReceived]'		'radio message received?')
+		(array 'r' '[radio:receivedInteger]'		'radio last number')
+		(array 'r' '[radio:receivedString]'			'radio last string')
+		(array 'r' '[radio:receivedMessageType]'	'radio last message type')
+		(array ' ' '[radio:setGroup]'				'radio set group _' 'num' 0)
+		(array ' ' '[radio:setChannel]'				'radio set channel (0-83)  _' 'num' 7)
+		(array ' ' '[radio:setPower]'				'radio set power (0-7) _' 'num' 4)
+		(array 'r' '[radio:signalStrength]'			'radio last signal strength')
+		(array 'r' '[radio:packetReceive]'			'radio receive packet _' 'str')
+		(array ' ' '[radio:packetSend]'				'radio send packet _' 'str')
+		(array ' ' '[radio:disableRadio]'			'disable radio')
+
+	'Disabled (does not work)'
+ 		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
 	)
 }
 

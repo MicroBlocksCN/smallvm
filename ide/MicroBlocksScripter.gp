@@ -152,6 +152,11 @@ method handleListContextRequest MicroBlocksScripter anArray {
   if ((first anArray) != (contents libFrame)) { return } // not a library list entry; ignore
   libName = (data (last anArray))
   menu = (menu)
+  if (devMode) {
+	addItem menu 'show all block definitions' (action 'showAllLibraryDefinitions' this libName)
+	addItem menu 'export this library' (action 'exportLibrary' this libName)
+	addLine menu
+  }
   addItem menu 'delete library' (action 'removeLibraryNamed' this libName)
   popUpAtHand menu (global 'page')
 }
@@ -159,6 +164,23 @@ method handleListContextRequest MicroBlocksScripter anArray {
 method removeLibraryNamed MicroBlocksScripter libName {
   removeLibraryNamed mbProject libName
   updateLibraryList this
+}
+
+method showAllLibraryDefinitions MicroBlocksScripter libName {
+  lib = (libraryNamed mbProject libName)
+  if (isNil lib) { return }
+  for f (functions lib) {
+	showDefinition this (functionName f)
+  }
+}
+
+method exportLibrary MicroBlocksScripter libName {
+  lib = (libraryNamed mbProject libName)
+  if (isNil lib) { return }
+  fName = (fileToWrite (moduleName lib) (array '.ubl'))
+  if ('' == fName) { return false }
+  if (not (endsWith fName '.ubl' )) { fName = (join fName '.ubl') }
+  writeFile fName (codeString lib mbProject)
 }
 
 // layout
@@ -900,7 +922,7 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 // Library import/export
 
 method importLibrary MicroBlocksScripter {
-  pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ulib')
+  pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ulib' '.ubl')
 }
 
 method importLibraryFromFile MicroBlocksScripter fileName {
@@ -933,9 +955,9 @@ method updateLibraryList MicroBlocksScripter {
 }
 
 method exportAsLibrary MicroBlocksScripter defaultFileName {
-  fileName = (fileToWrite (withoutExtension defaultFileName) '.ulib')
+  fileName = (fileToWrite (withoutExtension defaultFileName) '.ubl')
   if (isEmpty fileName) { return }
-  if (not (endsWith fileName '.ulib' )) { fileName = (join fileName '.ulib') }
+  if (not (endsWith fileName '.ubl' )) { fileName = (join fileName '.ubl') }
 
   libName = (withoutExtension (filePart fileName))
   writeFile fileName (libraryCodeString mbProject libName)

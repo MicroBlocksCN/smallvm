@@ -673,11 +673,11 @@ method updateRGBReadouts ColorPicker c {
 
 method blockColorForOp AuthoringSpecs op {
   if ('comment' == op) { return (colorHSV 55 0.6 0.93) }
-  cat = (at opCategory op) // get category of a built-in block
-  if (isNil cat) { // if op is not a built it block, ask the project for its category
-	pe = (findProjectEditor)
-	if (notNil pe) { cat = (categoryForOp (project pe) op) }
+  pe = (findProjectEditor)
+  if (notNil pe) {
+	cat = (categoryForOp (project pe) op) // get category from project, if possible
   }
+  if (isNil cat) { cat = (at opCategory op) } // get category of a built-in block
   return (blockColorForCategory this cat)
 }
 
