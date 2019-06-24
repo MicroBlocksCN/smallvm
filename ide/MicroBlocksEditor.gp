@@ -348,6 +348,9 @@ method processDroppedFile MicroBlocksEditor fName data {
 	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
 	openProject this data fName
   }
+  if (or (endsWith fName '.ubl') (endsWith fName '.ulib')) {
+	importLibraryFromFile scripter fName
+  }
 }
 
 // handle drops

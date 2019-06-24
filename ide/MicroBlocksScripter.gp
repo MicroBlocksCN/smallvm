@@ -783,8 +783,11 @@ method updateCallsOf MicroBlocksScripter op {
 	info = (slotInfoForIndex spec i)
 	typeStr = (at info 1)
 	defaultValue = (at info 2)
-	if (and (isNil defaultValue) ('color' == typeStr)) {
+	if (and ('color' == typeStr) (isNil defaultValue)) {
       defaultValue = (color 35 190 30)
+	}
+	if (and ('auto' == typeStr) (representsANumber defaultValue)) {
+	  defaultValue = (toNumber defaultValue defaultValue)
 	}
 	add argTypes typeStr
 	add argDefaults defaultValue

@@ -316,13 +316,18 @@ method hideDefinition BlockDefinition {
 method justReceivedDrop BlocksPalette aHandler {
   // Hide a block definitions when it is is dropped on the palette.
 
+  pe = (findProjectEditor)
   if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
-	pe = (findProjectEditor)
 	proto = (editedPrototype aHandler)
 	if (and (notNil pe) (notNil proto) (notNil (function proto))) {
 		hideDefinition (scripter pe) op
+		return
 	}
   }
+  if (and (isClass aHandler 'Block') (notNil pe)) {
+	recordDrop (scriptEditor (scripter pe)) aHandler
+  }
+  removeFromOwner (morph aHandler)
 }
 
 // Input slots
@@ -415,7 +420,7 @@ method contextMenu ScriptEditor {
   menu = (menu nil this)
   addItem menu 'clean up' 'cleanUp' 'arrange scripts'
   if (and (notNil lastDrop) (isRestorable lastDrop)) {
-    addItem menu 'undrop' 'undrop' 'undo the last block drop'
+    addItem menu 'undrop  (ctrl-Z)' 'undrop' 'undo the last block drop'
   }
   addLine menu
   addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
@@ -770,5 +775,34 @@ method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
     return (itemCostume this (stringImage dta fontName fontSize foregroundColor) foregroundColor backgroundColor alpha 'id')
   } else {
     return (itemCostume this (toString dta) foregroundColor backgroundColor alpha 'id')
+  }
+}
+
+method processEvent Keyboard evt {
+  type = (at evt 'type')
+  key = (at evt 'keycode')
+  updateModifiedKeys this (at evt 'modifierKeys')
+  if (and (1 <= key) (key <= 255)) {
+	if (type == 'keyUp') {
+	  atPut currentKeys key false
+	} (type == 'keyDown') {
+	  if (at currentKeys key) { return } // suppress duplicated keyDown events on Gnome and some other Linux desktops
+	  atPut currentKeys key true
+	  if (isNil focus) {
+		if (27 == key) { // escape key
+		  stopAndSyncScripts (smallRuntime)
+		}
+		if (and (122 == (at evt 'char'))
+				(or (controlKeyDown this) (commandKeyDown this))
+				(isNil (grabbedObject (hand (global 'page'))))) {
+		  // cmd-Z or ctrl-Z - undo last drop
+		  pe = (findProjectEditor)
+		  if (notNil pe) { undrop (scriptEditor (scripter pe)) }
+		}
+	  }
+	}
+  }
+  if (notNil focus) {
+	call type focus evt this
   }
 }
