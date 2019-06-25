@@ -1,0 +1,21 @@
+module 'Radio Prims' Comm
+
+	// BBC micro:bit radio primitives. The messages to send and receive strings, numbers,
+	// and pairs use the same packet format as MakeCode and cand interact with it.
+	// The packetSend/packetReceive primitives allow access to raw 32-byte packets so you
+	// can create your own protocol.
+
+	spec ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123
+	spec ' ' '[radio:sendString]'			'radio send string _' 'str' 'Hello!'
+	spec ' ' '[radio:sendPair]'				'radio send pair _ = _' 'str num' 'light' 10
+	spec 'r' '[radio:messageReceived]'		'radio message received?'
+	spec 'r' '[radio:receivedInteger]'		'radio last number'
+	spec 'r' '[radio:receivedString]'		'radio last string'
+	spec 'r' '[radio:receivedMessageType]'	'radio last message type'
+	spec ' ' '[radio:setGroup]'				'radio set group _' 'num' 0
+	spec ' ' '[radio:setChannel]'			'radio set channel (0-83) _' 'num' 7
+	spec ' ' '[radio:setPower]'				'radio set power (0-7) _' 'num' 4
+	spec 'r' '[radio:signalStrength]'		'radio last signal strength'
+	spec 'r' '[radio:packetReceive]'		'radio receive packet _' 'str'
+	spec ' ' '[radio:packetSend]'			'radio send packet _' 'str'
+	spec ' ' '[radio:disableRadio]'			'disable radio'

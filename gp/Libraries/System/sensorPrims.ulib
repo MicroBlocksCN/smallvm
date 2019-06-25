@@ -1,0 +1,14 @@
+module 'Sensor Primitives' Input
+
+	// Sensor primitives for the BBC micro:bit, Calliope mini, Citilab ED1, and AdaFruit
+	// Circuit Playground Express. These boards all have accelerometers and use various
+	// techniques to sense temperature and light. The new ED1 board uses capacitive sensing
+	// for its buttons.
+
+	spec 'r' '[sensors:tiltX]'			'tilt x'
+	spec 'r' '[sensors:tiltY]'			'tilt y'
+	spec 'r' '[sensors:tiltZ]'			'tilt z'
+	spec 'r' '[display:lightLevel]'		'light level'
+	spec 'r' '[sensors:temperature]'	'temperature (°C)'
+	space
+	spec 'r' '[sensors:touchRead]'		'capacitive sensor _' 'num' 1

@@ -1,0 +1,4 @@
+module 'Servo Primitives' Output
+
+	spec 'r' '[io:hasServo]'				'has servo support'
+	spec ' ' '[io:setServo]'				'set servo pin _ to _ usecs' 'num num' 0 1500
