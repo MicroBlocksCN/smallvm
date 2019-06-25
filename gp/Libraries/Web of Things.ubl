@@ -10,6 +10,8 @@ variables _useWiFi
 	spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str' '' '' 0 100 'LevelProperty'
 	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str' '' '' 'ColorProperty'
 	spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
+	spec 'r' '[net:thingDescription]' 'thing description'
+	spec ' ' '[net:clearThingDescription]'	'clear thing description'
 
 to '_addCustomProperty' key jsonValue {
   if _useWiFi {'[net:appendToThingProperty]' '"' key '": ' jsonValue}
