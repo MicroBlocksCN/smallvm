@@ -336,6 +336,9 @@ method specDefinitionString BlockSpec className {
 		add defaultValues 'nil'
 	  }
 	  if ('menu' == slotType) { slotType = (join 'menu.' (at info 4)) }
+	  if (and ('str' == slotType) (notNil (at info 4))) {
+		slotType = (join 'str.' (at info 4))
+	  }
 	  add slotTypes slotType
 	}
 	if (notNil className) { atPut slotTypes 1 className } // for methods, first type is the class name
