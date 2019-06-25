@@ -145,6 +145,8 @@ static char* getDescription() {
 	return descriptionObj.body;
 }
 
+int event_id = 0;
+
 void webServerLoop() {
 	if (!client) client = server.available(); // attempt to accept a client connection
 	if (!client) return; // no client connection
@@ -191,17 +193,19 @@ void webServerLoop() {
 		}
         } else if (hasPrefix(request, "GET /events", NULL, 0)) {
 		client.print(JSON_HEADER);
-                client.print("[\n  ");
+                client.print("[\n");
 		circular_buffer buffer = getBroadcastBuffer();
 		for (int i = 0; i < CIRCULAR_BUFFER_SIZE; i++) {
 			int position = (buffer.position + i) % CIRCULAR_BUFFER_SIZE;
 			if (strcmp(buffer.body[position], "") != 0) {
 				client.print("  { \"");
 				client.print(buffer.body[position]);
-				client.print("\" : {\"timestamp\":\"\"} },\n");
+                                client.print("\":{\"data\":");
+                                client.print(event_id++);
+                                client.print("}},\n");
 			}
                 }
-                client.print("  {}\n]");
+                client.print("  { \"_\":{}}\n]");
                 clearBroadcastBuffer();
 	} else {
 		client.print(NOT_FOUND_RESPONSE);
