@@ -1,0 +1,8 @@
+module 'Tone Primitives' Output
+
+	// These primitives work on boards that support the Arduino tone library for low-level
+	// waveform generation. Using these primitives when available results in smoother music
+	// output, but they are not supported on all boards.
+
+	spec 'r' '[io:hasTone]'					'has tone support'
+	spec ' ' '[io:playTone]'				'play tone pin _ frequency _' 'num num' 0 440

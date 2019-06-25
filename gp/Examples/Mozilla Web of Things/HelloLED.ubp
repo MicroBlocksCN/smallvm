@@ -1,0 +1,289 @@
+module main
+variables _np_pixels _useWiFi last_on on
+
+	spec ' ' 'cpx-LEDs' 'cpx-LEDs'
+	spec ' ' 'microbit-LEDs' 'microbit-LEDs'
+
+to 'cpx-LEDs' {
+  if on {
+    setNeoPixelColors10 (colorSwatch 191 63 4 255) (colorSwatch 191 119 4 255) (colorSwatch 179 191 11 255) (colorSwatch 56 191 1 255) (colorSwatch 4 191 146 255) (colorSwatch 2 128 191 255) (colorSwatch 4 23 191 255) (colorSwatch 57 2 191 255) (colorSwatch 191 4 138 255) (colorSwatch 191 1 7 255)
+  } else {
+    clearNeoPixels
+  }
+  last_on = on
+}
+
+to 'microbit-LEDs' {
+  if on {
+    '[display:mbDisplay]' 15728622
+  } else {
+    '[display:mbDisplayOff]'
+  }
+  last_on = on
+}
+
+script 74 50 {
+comment 'This script lets you control the built-in LED of a board, much like you might control a smart bulb using the Mozilla WebThings Gateway UI.'
+}
+
+script 71 100 {
+whenStarted
+'wifi connect to' 'Network_Name' '' 3
+defineThing 'Hello LED' 'Light'
+addBooleanProperty 'Lit' 'on' 'OnOffProperty'
+setUserLED true
+waitMillis 500
+setUserLED false
+on = (booleanConstant false)
+last_on = (booleanConstant true)
+forever {
+  if (and ((boardType) == 'micro:bit') (on != last_on)) {
+    'microbit-LEDs'
+  } (and ((boardType) == 'CircuitPlayground') (on != last_on)) {
+    'cpx-LEDs'
+  } (on != last_on) {
+    setUserLED on
+    last_on = on
+  }
+  waitMillis 50
+}
+}
+
+script 540 133 {
+comment 'To test, click to toggle the LED.'
+on = (not on)
+}
+
+script 763 221 {
+to 'cpx-LEDs' {}
+}
+
+script 570 222 {
+to 'microbit-LEDs' {}
+}
+
+script 373 605 {
+comment 'Click to check IP address'
+sayIt (getIPAddress)
+}
+
+script 621 608 {
+comment 'Check thing description'
+sayIt ('[net:thingDescription]')
+}
+
+
+module NeoPixel Output
+variables _np_pixels
+
+	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+	spec ' ' 'clearNeoPixels' 'clear NeoPixels'
+	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
+	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+	spec 'r' 'colorFromRGB' 'color r _ g _ b _' 'num num num' 0 1 1
+	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ has white _' 'auto auto bool' 10 '' false
+	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
+	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
+	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+
+to '_NeoPixel_ensureInitialized' {
+  if (_np_pixels == 0) {neoPixelAttach 10 '' false}
+}
+
+to '_NeoPixel_rotate' left {
+  local 'length' (size _np_pixels)
+  if left {
+    local 'first' (at 1 _np_pixels)
+    for i (length - 1) {
+      atPut i _np_pixels (at (i + 1) _np_pixels)
+    }
+    atPut length _np_pixels first
+  } else {
+    local 'last' (at length _np_pixels)
+    for i (length - 1) {
+      atPut ((length - i) + 1) _np_pixels (at (length - i) _np_pixels)
+    }
+    atPut 1 _np_pixels last
+  }
+}
+
+to '_NeoPixel_update' {
+  '[display:neoPixelSend]' _np_pixels
+  waitMicros 100
+}
+
+to clearNeoPixels {
+  '_NeoPixel_ensureInitialized'
+  fillArray _np_pixels 0
+  '_NeoPixel_update'
+}
+
+to colorFromRGB r g b {
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to neoPixelAttach number pinNumber hasWhite {
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {_np_pixels = (newArray number)}
+  fillArray _np_pixels 0
+  '[display:neoPixelSetPin]' pinNumber hasWhite
+}
+
+to neoPixelSetAllToColor color {
+  '_NeoPixel_ensureInitialized'
+  fillArray _np_pixels color
+  '_NeoPixel_update'
+}
+
+to rotateNeoPixelsBy n {
+  '_NeoPixel_ensureInitialized'
+  repeat (absoluteValue n) {
+    '_NeoPixel_rotate' (n > 0) nil nil nil
+  }
+  '_NeoPixel_update'
+}
+
+to setNeoPixelColor number color {
+  atPut number _np_pixels color
+  '_NeoPixel_update'
+}
+
+to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
+  '_NeoPixel_ensureInitialized'
+  if ((size _np_pixels) >= 1) {
+    atPut 1 _np_pixels c1
+  }
+  if ((size _np_pixels) >= 2) {
+    atPut 2 _np_pixels c2
+  }
+  if ((size _np_pixels) >= 3) {
+    atPut 3 _np_pixels c3
+  }
+  if ((size _np_pixels) >= 4) {
+    atPut 4 _np_pixels c4
+  }
+  if ((size _np_pixels) >= 5) {
+    atPut 5 _np_pixels c5
+  }
+  if ((size _np_pixels) >= 6) {
+    atPut 6 _np_pixels c6
+  }
+  if ((size _np_pixels) >= 7) {
+    atPut 7 _np_pixels c7
+  }
+  if ((size _np_pixels) >= 8) {
+    atPut 8 _np_pixels c8
+  }
+  if ((size _np_pixels) >= 9) {
+    atPut 9 _np_pixels c9
+  }
+  if ((size _np_pixels) >= 10) {
+    atPut 10 _np_pixels c10
+  }
+  '_NeoPixel_update'
+}
+
+
+module 'Web of Things' Comm
+variables _useWiFi
+
+	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
+	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+	spec 'r' 'getIPAddress' 'IP address'
+	spec ' ' 'defineThing' 'define thing _ capability _' 'str str' 'Hello LED' 'Light'
+	spec ' ' 'registerEvent' 'register event _ type _' 'str str' 'Button Pressed' 'PressedEvent'
+	spec ' ' 'addBooleanProperty' 'add boolean property title _ variable _ @Type _' 'str menu.allVarsMenu str' '' '' 'OnOffProperty'
+	spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str' '' '' 0 100 'LevelProperty'
+	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str' '' '' 'ColorProperty'
+	spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
+
+to '_addCustomProperty' key jsonValue {
+  if _useWiFi {'[net:appendToThingProperty]' '"' key '": ' jsonValue}
+}
+
+to addBooleanProperty title var typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"},'
+  } else {
+    sendBroadcast 'moz-property {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"}'
+  }
+}
+
+to addNumProp title var min max typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"'
+    if ('TemperatureProperty' == typeName) {
+      '[net:appendToThingDescription]' ', "unit": "degree celsius"'
+    }
+    '[net:appendToThingDescription]' '},'
+  } else {
+    sendBroadcast 'moz-property {"title":"' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"}'
+  }
+}
+
+to addStringProperty title var typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"},'
+  } else {
+    sendBroadcast 'moz-property {"title":"' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"}'
+  }
+}
+
+to defineThing name capability {
+  _useWiFi = ('[net:hasWiFi]')
+  if _useWiFi {
+    '[net:clearThingDescription]'
+    if ('' == capability) {
+      '[net:appendToThingDescription]' '{ "name": "' name '",
+  "@type": [ ],
+  "properties": {'
+    } else {
+      '[net:appendToThingDescription]' '{ "name": "' name '",
+  "@context": "https://iot.mozilla.org/schemas/",
+  "@type": ["' capability '"],
+  "properties": {'
+    }
+  } else {
+    sendBroadcast 'moz-thing { "name": "' name '","@context": "https://iot.mozilla.org/schemas/","@type": ["' capability '"]}'
+  }
+}
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to registerEvent title type {
+  if _useWiFi {
+    sayIt 'Not yet supported'
+  } else {
+    sendBroadcast 'moz-event {"name":"' title '", "metadata":{"description":"MicroBlocks event", "@type":"' type '"}}'
+  }
+}
+
+to 'wifi connect to' ssid password tries {
+  if (not ('[net:hasWiFi]')) {return}
+  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+    '[net:startWiFi]' ssid password
+    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+      comment 'Slow blink while connecting'
+      setUserLED true
+      waitMillis 500
+      setUserLED false
+      waitMillis 500
+    }
+    tries += -1
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  '[net:startWiFi]' ssid password true
+}
+

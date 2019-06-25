@@ -50,6 +50,31 @@ static char request[REQUEST_SIZE];
 "Access-Control-Allow-Methods: PUT, GET, OPTIONS\r\n" \
 "Access-Control-Allow-Headers: Content-Type\r\n\r\n"
 
+// WoT Event Queue
+
+// On WiFi-enabled boards, we store the last few broadcasts in a circular event buffer.
+// Note: Only the first 51 bytes of each broadcast string is stored.
+
+#define BROADCAST_BUFFER_COUNT 5 // number of queued broadcasts
+#define BROADCAST_STRING_SIZE 51 // number of bytes stored for each broadcast
+
+static char broadcastBuffer[BROADCAST_BUFFER_COUNT][BROADCAST_STRING_SIZE + 1];
+static int nextBroadcastBuffer = 0; // next free slot
+
+static void clearBroadcastBuffer() {
+	memset(broadcastBuffer, 0, sizeof(broadcastBuffer));
+}
+
+void queueBroadcastAsThingEvent(char *s, int len) {
+	// Queue the given broadcast string (truncated to BROADCAST_STRING_SIZE).
+	char *evt = broadcastBuffer[nextBroadcastBuffer];
+	int count = (len <= BROADCAST_STRING_SIZE) ? len : BROADCAST_STRING_SIZE;
+	memcpy(evt, s, count);
+	evt[count] = '/0'; // add null terminator
+	nextBroadcastBuffer = (nextBroadcastBuffer + 1) % BROADCAST_BUFFER_COUNT;
+}
+
+
 // Primitives to build a Thing description (interim, until we have string concatenation)
 
 // Hack: Simulate a MicroBlocks string object with a C struct. Since this is not a
@@ -193,14 +218,13 @@ void webServerLoop() {
 		}
         } else if (hasPrefix(request, "GET /events", NULL, 0)) {
 		client.print(JSON_HEADER);
-                client.print("[\n");
-		circular_buffer buffer = getBroadcastBuffer();
-		for (int i = 0; i < CIRCULAR_BUFFER_SIZE; i++) {
-			int position = (buffer.position + i) % CIRCULAR_BUFFER_SIZE;
-			if (strcmp(buffer.body[position], "") != 0) {
+                client.print("[\n  ");
+		for (int i = 0; i < BROADCAST_BUFFER_COUNT; i++) {
+			char *evt = broadcastBuffer[(nextBroadcastBuffer + i) % BROADCAST_BUFFER_COUNT];
+			if (strcmp(evt, "") != 0) {
 				client.print("  { \"");
-				client.print(buffer.body[position]);
-                                client.print("\":{\"data\":");
+				client.print(evt);
+				client.print("\" : {\"data\":");
                                 client.print(event_id++);
                                 client.print("}},\n");
 			}
@@ -388,6 +412,8 @@ static OBJ primAppendToThingProperty(int argCount, OBJ *args) {
 }
 
 #else // not ESP8266 or ESP32
+
+void queueBroadcastAsThingEvent(char *s, int len) { } // noop
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
 static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }

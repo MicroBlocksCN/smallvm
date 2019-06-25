@@ -1,0 +1,66 @@
+module DotStar Output
+variables '_DotStar brightness' '_DotStar clock pin' '_DotStar data pin' '_DotStar pixels'
+
+	spec ' ' 'DotStar attach' 'attach  _ DotStar LEDs to data pin _ clock pin _' 'auto auto auto' 1 5 6
+	spec ' ' 'set all DotStars' 'set all DotStar LEDs to r _ g _ b _' 'auto auto auto' 0 0 0
+	spec ' ' 'set DotStar LED' 'set DotStar LED _ to r _ g _ b _' 'auto auto auto auto' 1 60 0 255
+	spec ' ' 'set DotStar brightness' 'set DotStar brightness _' 'auto' 31
+	spec ' ' '_DotStar send byte' '_DotStar send byte _' 'auto any' 0
+	spec ' ' '_update DotStar strip' '_update DotStar strip' 'any'
+
+to 'DotStar attach' count dataPin clockPin {
+  '_DotStar data pin' = dataPin
+  '_DotStar clock pin' = clockPin
+  '_DotStar brightness' = 31
+  if (0 == (v '_DotStar pixels')) {
+    '_DotStar pixels' = (newArray count)
+  }
+  if (count != (size (v '_DotStar pixels'))) {
+    '_DotStar pixels' = (newArray count)
+  }
+}
+
+to 'set all DotStars' r g b {
+  for i (size (v '_DotStar pixels')) {
+    atPut i (v '_DotStar pixels') (((r << 16) | (g << 8)) | b)
+  }
+  '_update DotStar strip'
+}
+
+to 'set DotStar LED' number r g b {
+  atPut number (v '_DotStar pixels') (((r << 16) | (g << 8)) | b)
+  '_update DotStar strip'
+}
+
+to 'set DotStar brightness' number {
+  if (number > 31) {number = 31}
+  if (number < 0) {number = 0}
+  '_DotStar brightness' = number
+  '_update DotStar strip'
+}
+
+to '_DotStar send byte' byte {
+  printIt byte
+  local 'mask' 128
+  repeat 8 {
+    digitalWriteOp (v '_DotStar data pin') ((byte & mask) != 0)
+    digitalWriteOp (v '_DotStar clock pin') true
+    digitalWriteOp (v '_DotStar clock pin') false
+    mask = (mask >> 1)
+  }
+}
+
+to '_update DotStar strip' {
+  repeat 4 {
+    '_DotStar send byte' 0
+  }
+  for pix (v '_DotStar pixels') {
+    '_DotStar send byte' ((7 << 5) | (v '_DotStar brightness'))
+    '_DotStar send byte' (pix & 255)
+    '_DotStar send byte' ((pix >> 8) & 255)
+    '_DotStar send byte' ((pix >> 16) & 255)
+  }
+  repeat 4 {
+    '_DotStar send byte' 255
+  }
+}

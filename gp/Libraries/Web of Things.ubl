@@ -1,0 +1,105 @@
+module 'Web of Things' Comm
+variables _useWiFi
+
+	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
+	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+	spec 'r' 'getIPAddress' 'IP address'
+	spec ' ' 'defineThing' 'define thing _ capability _' 'str str' 'Hello LED' 'Light'
+	spec ' ' 'registerEvent' 'register event _ type _' 'str str' 'Button Pressed' 'PressedEvent'
+	spec ' ' 'addBooleanProperty' 'add boolean property title _ variable _ @Type _' 'str menu.allVarsMenu str' '' '' 'OnOffProperty'
+	spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str' '' '' 0 100 'LevelProperty'
+	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str' '' '' 'ColorProperty'
+	spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
+	spec 'r' '[net:thingDescription]' 'thing description'
+	spec ' ' '[net:clearThingDescription]'	'clear thing description'
+
+to '_addCustomProperty' key jsonValue {
+  if _useWiFi {'[net:appendToThingProperty]' '"' key '": ' jsonValue}
+}
+
+to addBooleanProperty title var typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"},'
+  } else {
+    sendBroadcast 'moz-property {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"}'
+  }
+}
+
+to addNumProp title var min max typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"'
+    if ('TemperatureProperty' == typeName) {
+      '[net:appendToThingDescription]' ', "unit": "degree celsius"'
+    }
+    '[net:appendToThingDescription]' '},'
+  } else {
+    sendBroadcast 'moz-property {"title":"' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"}'
+  }
+}
+
+to addStringProperty title var typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"},'
+  } else {
+    sendBroadcast 'moz-property {"title":"' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"}'
+  }
+}
+
+to defineThing name capability {
+  _useWiFi = ('[net:hasWiFi]')
+  if _useWiFi {
+    '[net:clearThingDescription]'
+    if ('' == capability) {
+      '[net:appendToThingDescription]' '{ "name": "' name '",
+  "@type": [ ],
+  "properties": {'
+    } else {
+      '[net:appendToThingDescription]' '{ "name": "' name '",
+  "@context": "https://iot.mozilla.org/schemas/",
+  "@type": ["' capability '"],
+  "properties": {'
+    }
+  } else {
+    sendBroadcast 'moz-thing { "name": "' name '","@context": "https://iot.mozilla.org/schemas/","@type": ["' capability '"]}'
+  }
+}
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to registerEvent title type {
+  if _useWiFi {
+    sayIt 'Not yet supported'
+  } else {
+    sendBroadcast 'moz-event {"name":"' title '", "metadata":{"description":"MicroBlocks event", "@type":"' type '"}}'
+  }
+}
+
+to 'wifi connect to' ssid password tries {
+  if (not ('[net:hasWiFi]')) {return}
+  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+    '[net:startWiFi]' ssid password
+    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+      comment 'Slow blink while connecting'
+      setUserLED true
+      waitMillis 500
+      setUserLED false
+      waitMillis 500
+    }
+    tries += -1
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  '[net:startWiFi]' ssid password true
+}
+

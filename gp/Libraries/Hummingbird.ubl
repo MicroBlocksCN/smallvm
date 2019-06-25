@@ -1,0 +1,163 @@
+module Hummingbird
+variables _spi_lock
+
+	spec ' ' 'Hummingbird LED' 'Hummingbird LED _  _ %' 'menu.range:1-3 num' 1 0
+	spec ' ' 'Hummingbird Tri-LED' 'Hummingbird Tri-LED _ R _ % G _ % B _ %' 'menu.range:1-2 num num num' 1 0 0 0
+	spec ' ' 'Hummingbird Position Servo' 'Hummingbird Position Servo _ _ °' 'menu.range:1-4 num' 1 90
+	spec ' ' 'Hummingbird Rotation Servo' 'Hummingbird Rotation Servo _ _ %' 'menu.range:1-4 num' 1 0
+	spec 'r' 'Hummingbird Sensor' 'Hummingbird _ _' 'menu.hummingbirdSensorsMenu menu.range:1-3' 'Light' 1
+	spec 'r' 'Hummingbird Battery Voltage (mV)' 'Hummingbird Battery (mV)'
+	spec ' ' '_SPI HB Lock' 'SPI HB Lock'
+	spec ' ' '_SPI HB Unlock' 'SPI HB Unlock'
+	spec ' ' '_Hummingbird Command' 'SPI Command _ _ _ _' 'num num num num'
+	spec 'r' '_within' '_ within _ and _' 'num num num' 10 0 100
+
+to 'Hummingbird Battery Voltage (mV)' {
+  comment 'Contributed by Tom Lauwers'
+  return (('Hummingbird Sensor' 'Other' 4) * 96)
+}
+
+to 'Hummingbird LED' port intensity {
+  comment 'Contributed by Tom Lauwers'
+  intensity = ('_within' intensity 0 100)
+  port = ('_within' port 1 3)
+  if (port == 1) {
+    '_Hummingbird Command' 192 ((intensity * 51) / 20) 255 255
+  } (port == 2) {
+    analogWriteOp 2 (intensity * 10)
+  } (port == 3) {
+    analogWriteOp 8 (intensity * 10)
+  }
+}
+
+to 'Hummingbird Position Servo' port angle {
+  comment 'Contributed by Tom Lauwers'
+  angle = ((('_within' angle 0 180) * 254) / 180)
+  port = (('_within' port 1 4) + 197)
+  '_Hummingbird Command' port angle 255 255
+}
+
+to 'Hummingbird Rotation Servo' port speed {
+  comment 'Contributed by Tom Lauwers'
+  if (and (speed < 2) (speed > -2)) {
+    speed = 255
+  } else {
+    speed = (124 + ((('_within' speed -100 100) * 23) / 100))
+  }
+  port = (('_within' port 1 4) + 197)
+  '_Hummingbird Command' port speed 255 255
+}
+
+to 'Hummingbird Sensor' type port {
+  comment 'Contributed by Tom Lauwers'
+  local 'return_val' 0
+  local 'trash' 0
+  port = ('_within' port 1 4)
+  '_SPI HB Lock'
+  trash = (spiRecv)
+  waitMicros 100
+  trash = (spiRecv)
+  waitMicros 100
+  trash = (spiRecv)
+  waitMicros 100
+  trash = (spiRecv)
+  waitMicros 100
+  digitalWriteOp 16 true
+  waitMicros 500
+  digitalWriteOp 16 false
+  waitMicros 50
+  if (port == 1) {
+    return_val = (spiRecv)
+  } else {
+    trash = (spiRecv)
+  }
+  waitMicros 100
+  if (port == 2) {
+    return_val = (spiRecv)
+  } else {
+    trash = (spiRecv)
+  }
+  waitMicros 100
+  if (port == 3) {
+    return_val = (spiRecv)
+  } else {
+    trash = (spiRecv)
+  }
+  waitMicros 100
+  if (port == 4) {
+    return_val = (spiRecv)
+  } else {
+    trash = (spiRecv)
+  }
+  '_SPI HB Unlock'
+  if (type == 'Distance (cm)') {
+    return_val = ((return_val * 117) / 100)
+  } (type == 'Sound') {
+    return_val = ((return_val * 40) / 51)
+  } (type == 'Dial') {
+    return_val = ((return_val * 10) / 23)
+    if (return_val > 100) {
+      return_val = 100
+    }
+  } else {
+    return_val = ((return_val * 20) / 51)
+  }
+  return return_val
+}
+
+to 'Hummingbird Tri-LED' port red green blue {
+  comment 'Contributed by Tom Lauwers'
+  red = ('_within' red 0 100)
+  green = ('_within' green 0 100)
+  blue = ('_within' blue 0 100)
+  port = ('_within' port 1 2)
+  '_Hummingbird Command' (port + 195) ((red * 51) / 20) ((green * 51) / 20) ((blue * 51) / 20)
+}
+
+to '_Hummingbird Command' cmd arg1 arg2 arg3 {
+  comment 'Contributed by Tom Lauwers'
+  '_SPI HB Lock'
+  spiSend cmd
+  waitMicros 100
+  spiSend arg1
+  waitMicros 100
+  spiSend arg2
+  waitMicros 100
+  spiSend arg3
+  '_SPI HB Unlock'
+}
+
+to '_SPI HB Lock' {
+  if (_spi_lock == 0) {_spi_lock = (booleanConstant false)}
+  local 'time_out' 0
+  repeatUntil (or (not _spi_lock) (time_out > 100)) {
+    time_out += 1
+    waitMicros 30
+  }
+  _spi_lock = (booleanConstant true)
+  if (time_out > 100) {
+    digitalWriteOp 16 true
+    waitMicros 100
+  }
+  digitalWriteOp 16 false
+  waitMicros 5
+}
+
+to '_SPI HB Unlock' {
+  waitMicros 5
+  digitalWriteOp 16 true
+  waitMicros 300
+  _spi_lock = (booleanConstant false)
+}
+
+to '_within' number low high {
+  comment 'Contributed by Tom Lauwers'
+  if (number < low) {
+    return low
+  }
+  if (number > high) {
+    return high
+  }
+  return number
+}
+

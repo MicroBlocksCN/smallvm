@@ -1,0 +1,9 @@
+module 'Touch Screen' Input
+
+	// Primitives to support the QVGA touch screen display the IoT-Bus Io system.
+	// https://www.oddwires.com/iot-bus-qvga-2-4-tft-touch-display/
+
+	spec 'r' '[tft:tftTouched]'				'TFT touched'
+	spec 'r' '[tft:tftTouchX]'				'TFT touch X position'
+	spec 'r' '[tft:tftTouchY]'				'TFT touch Y position'
+	spec 'r' '[tft:tftTouchPressure]'		'TFT touch pressure'

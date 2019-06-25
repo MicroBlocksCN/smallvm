@@ -1,0 +1,110 @@
+module NeoPixel Output
+variables _np_pixels
+
+	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+	spec ' ' 'clearNeoPixels' 'clear NeoPixels'
+	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
+	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+	spec 'r' 'colorFromRGB' 'color r _ g _ b _' 'num num num' 0 1 1
+	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ has white _' 'auto auto bool' 10 '' false
+	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
+	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
+	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+
+to '_NeoPixel_ensureInitialized' {
+  if (_np_pixels == 0) {neoPixelAttach 10 '' false}
+}
+
+to '_NeoPixel_rotate' left {
+  local 'length' (size _np_pixels)
+  if left {
+    local 'first' (at 1 _np_pixels)
+    for i (length - 1) {
+      atPut i _np_pixels (at (i + 1) _np_pixels)
+    }
+    atPut length _np_pixels first
+  } else {
+    local 'last' (at length _np_pixels)
+    for i (length - 1) {
+      atPut ((length - i) + 1) _np_pixels (at (length - i) _np_pixels)
+    }
+    atPut 1 _np_pixels last
+  }
+}
+
+to '_NeoPixel_update' {
+  '[display:neoPixelSend]' _np_pixels
+  waitMicros 100
+}
+
+to clearNeoPixels {
+  '_NeoPixel_ensureInitialized'
+  fillArray _np_pixels 0
+  '_NeoPixel_update'
+}
+
+to colorFromRGB r g b {
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to neoPixelAttach number pinNumber hasWhite {
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {_np_pixels = (newArray number)}
+  fillArray _np_pixels 0
+  '[display:neoPixelSetPin]' pinNumber hasWhite
+}
+
+to neoPixelSetAllToColor color {
+  '_NeoPixel_ensureInitialized'
+  fillArray _np_pixels color
+  '_NeoPixel_update'
+}
+
+to rotateNeoPixelsBy n {
+  '_NeoPixel_ensureInitialized'
+  repeat (absoluteValue n) {
+    '_NeoPixel_rotate' (n > 0) nil nil nil
+  }
+  '_NeoPixel_update'
+}
+
+to setNeoPixelColor number color {
+  atPut number _np_pixels color
+  '_NeoPixel_update'
+}
+
+to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
+  '_NeoPixel_ensureInitialized'
+  if ((size _np_pixels) >= 1) {
+    atPut 1 _np_pixels c1
+  }
+  if ((size _np_pixels) >= 2) {
+    atPut 2 _np_pixels c2
+  }
+  if ((size _np_pixels) >= 3) {
+    atPut 3 _np_pixels c3
+  }
+  if ((size _np_pixels) >= 4) {
+    atPut 4 _np_pixels c4
+  }
+  if ((size _np_pixels) >= 5) {
+    atPut 5 _np_pixels c5
+  }
+  if ((size _np_pixels) >= 6) {
+    atPut 6 _np_pixels c6
+  }
+  if ((size _np_pixels) >= 7) {
+    atPut 7 _np_pixels c7
+  }
+  if ((size _np_pixels) >= 8) {
+    atPut 8 _np_pixels c8
+  }
+  if ((size _np_pixels) >= 9) {
+    atPut 9 _np_pixels c9
+  }
+  if ((size _np_pixels) >= 10) {
+    atPut 10 _np_pixels c10
+  }
+  '_NeoPixel_update'
+}
+

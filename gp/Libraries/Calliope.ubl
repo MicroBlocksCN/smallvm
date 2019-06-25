@@ -1,0 +1,50 @@
+module Calliope
+
+	spec ' ' 'Calliope set LED' 'Calliope set LED red _ green _ blue _' 'auto auto auto' 0 0 100
+	spec ' ' 'Calliope set speaker' 'Calliope set speaker _' 'bool' true
+	spec 'r' 'Calliope sound' 'Calliope loudness'
+
+to 'Calliope set LED' red green blue {
+  '[display:neoPixelSetPin]' -1 false
+  local 'rgb' ((((255 * red) / 100) & 255) << 16)
+  rgb = (rgb | ((((255 * green) / 100) & 255) << 8))
+  rgb = (rgb | (((255 * blue) / 100) & 255))
+  '[display:neoPixelSend]' rgb
+}
+
+to 'Calliope set speaker' onOff {
+  digitalWriteOp 23 true
+  digitalWriteOp 24 onOff
+  digitalWriteOp 25 (not onOff)
+}
+
+to 'Calliope sound' {
+  local 'min' 10000
+  local 'max' 0
+  local 'end_msecs' ((millisOp) + 50)
+  repeatUntil ((millisOp) > end_msecs) {
+    local 'sample' (analogReadOp 0)
+    if (sample < min) {
+      min = sample
+    }
+    if (sample > max) {
+      max = sample
+    }
+  }
+  return ((100 * (max - min)) / 1020)
+}
+
+module 'Basic Sensors' Input
+
+	spec 'r' '[sensors:tiltX]' 'tilt x'
+	spec 'r' '[sensors:tiltY]' 'tilt y'
+	spec 'r' '[sensors:tiltZ]' 'tilt z'
+	spec 'r' '[display:lightLevel]' 'light level'
+	spec 'r' '[sensors:temperature]' 'temperature (°C)'
+
+module 'LED Display' Output
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3

@@ -1,0 +1,25 @@
+module main
+variables 'reaction time' remark 'start time'
+
+script 50 50 {
+whenButtonPressed 'A'
+sayIt ''
+waitMillis (500 + (random 2000))
+'[display:mbDisplay]' 33554431
+'start time' = (millisOp)
+waitUntil (buttonB)
+'reaction time' = ((millisOp) - (v 'start time'))
+if ((v 'reaction time') < 150) {
+  remark = 'Impressive!'
+} ((v 'reaction time') < 200) {
+  remark = 'Not bad...'
+} ((v 'reaction time') < 350) {
+  remark = 'Come on! My grandmother could do better than that.'
+} else {
+  remark = 'WAY too slow! Are you even awake?'
+}
+sayIt (v 'reaction time') 'msecs' remark
+waitUntil (not (buttonB))
+'[display:mbDisplayOff]'
+}
+
