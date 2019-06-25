@@ -301,8 +301,8 @@ method countAllSpecSlots BlockSpec {
 method countInputSlots BlockSpec specString {
   // Return the number of underscores (input slots) in the given string.
   result = 0
-  for ch (letters specString) {
-	if ('_' == ch) { result += 1 }
+  for w (words specString) {
+	if ('_' == w) { result += 1 }
   }
   return result
 }
@@ -328,20 +328,24 @@ method specDefinitionString BlockSpec className {
 	defaultValues = (list)
 	for info slotInfo {
 	  slotType = (at info 1)
-	  add slotTypes slotType
-	  if (isOneOf slotType 'auto' 'str') {
+	  if (isOneOf slotType 'auto' 'menu' 'str') {
 		add defaultValues (printString (at info 2))
 	  } (isOneOf slotType 'bool' 'num') {
 		add defaultValues (toString (at info 2))
 	  } else {
 		add defaultValues 'nil'
 	  }
+	  if ('menu' == slotType) { slotType = (join 'menu.' (at info 4)) }
+	  add slotTypes slotType
 	}
 	if (notNil className) { atPut slotTypes 1 className } // for methods, first type is the class name
 	add result (printString (joinStrings slotTypes ' '))
+
+	// remove trailing nil's from defaultValues, then add them
+	while (and (notEmpty defaultValues) ('nil' == (last defaultValues))) {
+		removeLast defaultValues
+	}
 	for v defaultValues { add result v }
-  } else {
-	add result (printString '') // empty slot type string
   }
   return (joinStrings result ' ')
 }

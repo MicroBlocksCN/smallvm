@@ -18,10 +18,9 @@ method allVarsMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
 
   // shared vars
-  scripter = (ownerThatIsA morph 'Scripter')
-  if (isNil scripter) { scripter = (ownerThatIsA morph 'MicroBlocksScripter') }
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (notNil scripter) {
-	varNames = (copyWithout (variableNames (targetModule (handler scripter))) 'extensions')
+	varNames = (allVariableNames (project (handler scripter)))
 	for varName varNames {
           // hide vars that start with underscore, used for libraries
           if (or ((at varName 1) != '_') (devMode)) {
@@ -34,7 +33,6 @@ method allVarsMenu InputSlot {
   // local vars
   myBlock = (handler (ownerThatIsA morph 'Block'))
   localVars = (collectLocals (expression (topBlock myBlock)))
-  for field (fieldNames (classOf targetObj)) { remove localVars field }
   if (notEmpty localVars) {
 	localVars = (sorted (keys localVars))
 	for varName localVars {
@@ -223,38 +221,36 @@ method contextMenu Block {
   menu = (menu nil this)
   pe = (findProjectEditor)
 
-  if (devMode) {
-    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
-    addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
-    addLine menu
-  }
-
   isInPalette = ('template' == (grabRule morph))
-  if (isVariadic this) {
-    if (canExpand this) {addItem menu 'expand' 'expand'}
-    if (canCollapse this) {addItem menu 'collapse' 'collapse'}
-    addLine menu
-  }
   if (and isInPalette (isRenamableVar this)) {
     addItem menu 'rename...' 'userRenameVariable'
     addLine menu
   }
-  if (and isInPalette (notNil (functionNamed (module (project pe)) (primName expression)))) {
-    addItem menu 'show definition...' 'showDefinition'
-  }
-  addItem menu 'duplicate' 'grabDuplicate' 'just this one block'
+  addItem menu 'duplicate' 'grabDuplicate' 'duplicate this block'
   if (and ('reporter' != type) (notNil (next this))) {
-    addItem menu '...all' 'grabDuplicateAll' 'duplicate including all attached blocks'
+    addItem menu 'duplicate all' 'grabDuplicateAll' 'duplicate these blocks'
   }
-
   addLine menu
-  addItem menu 'save picture of script' 'exportAsImage'
+  if (and (not isInPalette) (notNil (next this))) {
+    addItem menu 'extract block' 'pickUp' 'pull out this block'
+  }
   addLine menu
-  addItem menu 'copy script' 'copyToClipboard'
-  if (not isInPalette) {
-    addItem menu 'pick up' 'pickUp'
+  addItem menu 'delete block' 'delete' 'delete this block'
+  if (devMode) {
     addLine menu
-    addItem menu 'delete' 'delete'
+	addItem menu 'copy to clipboard' 'copyToClipboard' 'copy these blocks to the clipboard'
+	addItem menu 'save picture of script' 'exportAsImage' 'save a picture these blocks as a PNG file'
+	addLine menu
+    addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
+    addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
+  }
+  if (notNil (functionNamed (project pe) (primName expression))) {
+    addLine menu
+    addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
+	if isInPalette {
+	  addLine menu
+	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
+	}
   }
   return menu
 }
@@ -280,6 +276,61 @@ method pickUp Block {
   }
   grabCentered morph this
 }
+
+// Block definition operations
+
+method showDefinition Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  showDefinition (scripter pe) (primName expression)
+}
+
+method deleteBlockDefinition Block {
+  if (not (confirm (global 'page') nil
+  	'Are you sure you want to remove this block definition?')) {
+		return
+  }
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  deleteFunction (scripter pe) (primName expression)
+}
+
+method deleteBlockDefinition BlockDefinition {
+  if (not (confirm (global 'page') nil
+  	'Are you sure you want to remove this block definition?')) {
+		return
+  }
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  deleteFunction (scripter pe) op
+}
+
+method hideDefinition BlockDefinition {
+  // Remove this method/function definition from the scripting area.
+
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  hideDefinition (scripter pe) op
+}
+
+method justReceivedDrop BlocksPalette aHandler {
+  // Hide a block definitions when it is is dropped on the palette.
+
+  pe = (findProjectEditor)
+  if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
+	proto = (editedPrototype aHandler)
+	if (and (notNil pe) (notNil proto) (notNil (function proto))) {
+		hideDefinition (scripter pe) op
+		return
+	}
+  }
+  if (and (isClass aHandler 'Block') (notNil pe)) {
+	recordDrop (scriptEditor (scripter pe)) aHandler
+  }
+  removeFromOwner (morph aHandler)
+}
+
+// Input slots
 
 method inputIndex Block anInput {
   idx = 0
@@ -313,19 +364,15 @@ method representsANumber String {
 
 method contextMenu BlockDefinition {
   menu = (menu nil this)
-  for tp (array 'command' 'reporter') {
-    addItem menu '' (action 'setType' this tp) tp (fullCostume (morph (block tp (color 4 148 220) '                    ')))
-  }
+  addItem menu 'hide block definition' 'hideDefinition'
+  addItem menu 'save picture of script' 'exportAsImage' 'save a picture this block definition as a PNG file'
   if (devMode) {
     addLine menu
     addItem menu 'show instructions' (action 'showInstructions' this)
     addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
   }
   addLine menu
-  addItem menu 'hide definition' 'hideDefinition'
-  addItem menu 'save picture of script' 'exportAsImage'
-  addLine menu
-  addItem menu 'delete' 'deleteDefinition'
+  addItem menu 'delete block definition...' 'deleteBlockDefinition'
   popUp menu (global 'page') (left morph) (bottom morph)
 }
 
@@ -369,38 +416,22 @@ return // xxx suppress the ability to make variadic user-defined blocks
   addPart (morph repeater) (morph toggle)
 }
 
-method okayToBeDestroyedByUser Block {
-  if (isPrototypeHat this) {
-	editor = (findProjectEditor)
-	if (isNil editor) { return false }
-    function = (function (first (inputs this)))
-    if (confirm (global 'page') nil 'Are you sure you want to remove this block definition?') {
-	  removedUserDefinedBlock (scripter editor) function
-	  deleteChunkForBlock (smallRuntime) this
-      return true
-    }
-    return false
-  }
-  deleteChunkForBlock (smallRuntime) this
-  return true
-}
-
 method contextMenu ScriptEditor {
   menu = (menu nil this)
   addItem menu 'clean up' 'cleanUp' 'arrange scripts'
   if (and (notNil lastDrop) (isRestorable lastDrop)) {
-    addItem menu 'undrop' 'undrop' 'undo last drop'
+    addItem menu 'undrop  (ctrl-Z)' 'undrop' 'undo the last block drop'
   }
   addLine menu
-  addItem menu 'copy all scripts' 'copyScriptsToClipboard'
+  addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
   clip = (getClipboard)
   if (beginsWith clip 'GP Scripts') {
-	addItem menu 'paste all scripts' 'pasteScripts'
+	addItem menu 'paste all scripts from clipboard' 'pasteScripts'
   } (beginsWith clip 'GP Script') {
-	addItem menu 'paste script' 'pasteScripts'
+	addItem menu 'paste script from clipboard' 'pasteScripts'
   }
   addLine menu
-  addItem menu 'save picture of all scripts' 'saveScriptsImage'
+  addItem menu 'save a picture of all scripts' 'saveScriptsImage'
   return menu
 }
 
@@ -457,11 +488,11 @@ method fixLayout Block {
           x = (+ left indentation w)
           w += (width (fullBounds (morph each)))
           w += (space * scale)
-		  if (and ('mbDisplay' == (primName expression)) (each == (first group))) {
-			lineArgCount = 10; // force a line break after first item of 'mbDisplay' block
+		  if (and ('[display:mbDisplay]' == (primName expression)) (each == (first group))) {
+			lineArgCount = 10; // force a line break after first item of block
 		  }
 		  if (and ('setNeoPixelColors10' == (primName expression)) (each == (at group 3))) {
-			lineArgCount = 10; // force a line break after first item of 'mbDisplay' block
+			lineArgCount = 10; // force a line break after first item of block
 		  }
 		  if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
             add lines currentLine
@@ -640,22 +671,39 @@ method updateRGBReadouts ColorPicker c {
 
 // Block colors
 
-method setCategoryFor AuthoringSpecs op category {
-  atPut opCategory op category
+method blockColorForOp AuthoringSpecs op {
+  if ('comment' == op) { return (colorHSV 55 0.6 0.93) }
+  pe = (findProjectEditor)
+  if (notNil pe) {
+	cat = (categoryForOp (project pe) op) // get category from project, if possible
+  }
+  if (isNil cat) { cat = (at opCategory op) } // get category of a built-in block
+  return (blockColorForCategory this cat)
 }
 
 method blockColorForCategory AuthoringSpecs cat {
-  defaultColor = (colorHSV 200.0 0.982 0.863)
+  if (and (notNil cat) (endsWith cat '-Advanced')) {
+  	cat = (substring cat 1 ((count cat) - 9))
+  }
+  pe = (findProjectEditor)
+  if (notNil pe) {
+	lib = (libraryNamed (project pe) cat) // is cat the name of a library?
+	if (and (notNil lib) (notNil (moduleCategory lib))) { // if so, use that library's category
+		cat = (moduleCategory lib)
+	}
+  }
+  defaultColor = (colorHSV 200 0.98 0.86)
   if ('Output' == cat) { return (colorHSV 235 0.62 0.80) // (colorHSV 224.211 0.636 0.82)
   } ('Input' == cat) { return (colorHSV 170 0.78 0.62) // (colorHSV 161.077 0.788 0.647)
-  } ('Pins' == cat) { return (colorHSV 296 0.60 0.63) // (colorHSV 296.033 0.627 0.757)
-  } ('Control' == cat) { return (colorHSV 36.196 0.811 0.89)
-  } ('Math' == cat) { return (colorHSV 93 0.85 0.68) // (colorHSV 92.914 0.902 0.761)
-  } ('Variables' == cat) { return (colorHSV 26 0.80 0.88) // (colorHSV 25.67 0.822 0.925)
-  } ('Lists' == cat) { return (colorHSV 21 0.85 0.80) // (colorHSV 20.503 0.881 0.886)
-  } ('Advanced' == cat) { return (colorHSV 36.923 0.722 0.706)
-  } ('Functions' == cat) { return (colorHSV 205.445 0.83 0.902)
-  } ('Obsolete' == cat) { return (colorHSV 4.592 1.0 0.769)
+  } ('Pins' == cat) { return (colorHSV 296 0.60 0.65) // (colorHSV 296.033 0.627 0.757)
+  } ('Comm' == cat) { return (colorHSV 195 0.50 0.60)
+  } ('Control' == cat) { return (colorHSV 36 0.70 0.87)
+  } ('Math' == cat) { return (colorHSV 100 0.75 0.65) // (colorHSV 92.914 0.902 0.761)
+  } ('Variables' == cat) { return (colorHSV 26 0.80 0.83) // (colorHSV 25.67 0.822 0.925)
+  } ('Lists' == cat) { return (colorHSV 16 0.75 0.75) // (colorHSV 20.503 0.881 0.886)
+  } ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
+  } ('Functions' == cat) { return (colorHSV 205 0.83 0.90)
+  } ('Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
   }
   return defaultColor
 }
@@ -727,5 +775,34 @@ method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
     return (itemCostume this (stringImage dta fontName fontSize foregroundColor) foregroundColor backgroundColor alpha 'id')
   } else {
     return (itemCostume this (toString dta) foregroundColor backgroundColor alpha 'id')
+  }
+}
+
+method processEvent Keyboard evt {
+  type = (at evt 'type')
+  key = (at evt 'keycode')
+  updateModifiedKeys this (at evt 'modifierKeys')
+  if (and (1 <= key) (key <= 255)) {
+	if (type == 'keyUp') {
+	  atPut currentKeys key false
+	} (type == 'keyDown') {
+	  if (at currentKeys key) { return } // suppress duplicated keyDown events on Gnome and some other Linux desktops
+	  atPut currentKeys key true
+	  if (isNil focus) {
+		if (27 == key) { // escape key
+		  stopAndSyncScripts (smallRuntime)
+		}
+		if (and (122 == (at evt 'char'))
+				(or (controlKeyDown this) (commandKeyDown this))
+				(isNil (grabbedObject (hand (global 'page'))))) {
+		  // cmd-Z or ctrl-Z - undo last drop
+		  pe = (findProjectEditor)
+		  if (notNil pe) { undrop (scriptEditor (scripter pe)) }
+		}
+	  }
+	}
+  }
+  if (notNil focus) {
+	call type focus evt this
   }
 }

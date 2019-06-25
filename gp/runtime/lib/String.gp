@@ -84,6 +84,24 @@ method containsWhitespace String {
   return false
 }
 
+// Sorting
+
+method caseInsensitiveSort String aString {
+  // Return true if this string would come before aString in a case-insensitive ASCII sort.
+  // NOTE: Does not sort Unicode characters correctly!
+
+  count = (min (count this) (count aString))
+  for i count {
+	ch1 = (at this i)
+	ch2 = (at aString i)
+	if (isLowerCase ch1) { ch1 = (string ((byteAt ch1 1) - 32)) }
+	if (isLowerCase ch2) { ch2 = (string ((byteAt ch2 1) - 32)) }
+	if (ch1 < ch2) { return  true }
+	if (ch1 > ch2) { return  false }
+  }
+  return (count this) <= (count aString)
+}
+
 // Splitting file paths
 
 method directoryPart String {

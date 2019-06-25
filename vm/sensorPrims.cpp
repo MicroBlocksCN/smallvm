@@ -29,11 +29,7 @@ static int readI2CReg(int deviceID, int reg) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
-	#if defined(ARDUINO_ARCH_ESP32)
-		int error = Wire.endTransmission();
-	#else
-		int error = Wire.endTransmission((bool) false);
-	#endif
+	int error = Wire.endTransmission();
 	if (error) return -error; // error; bad device ID?
 
 	Wire.requestFrom(deviceID, 1);

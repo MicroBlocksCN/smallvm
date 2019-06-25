@@ -13,6 +13,17 @@
 #include "mem.h"
 #include "interp.h"
 
+
+OBJ primHexToInt(int argCount, OBJ *args) {
+	if (!IS_CLASS(args[0], StringClass)) return fail(needsStringError);
+
+	char *s = obj2str(args[0]);
+	if ('#' == *s) s++; // skip leading # if there is one
+	long result = strtol(s, NULL, 16);
+	if ((result < -536870912) || (result > 536870911)) return fail(hexRangeError);
+	return int2obj(result);
+}
+
 static OBJ primSine(int argCount, OBJ *args) {
 	// Returns the sine of the given angle * 2^14 (i.e. a fixed point integer with 13 bits of
 	// fraction). The input is the angle in hundreths of a degree (e.g. 4500 means 45 degrees).
@@ -24,6 +35,7 @@ static OBJ primSine(int argCount, OBJ *args) {
 // Primitives
 
 static PrimEntry entries[] = {
+	"hexToInt", primHexToInt,
 	"sin", primSine,
 };
 

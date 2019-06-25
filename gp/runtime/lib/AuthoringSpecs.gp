@@ -34,7 +34,7 @@ method addSpecs AuthoringSpecs newSpecs {
   for entry newSpecs {
 	add specsList entry
 	if (isClass entry 'String') {
-	  category = entry
+	  if ('-' != entry) { category = entry }
 	} else {
 	  op = (at entry 2)
 	  specsForOp = (at specsByOp op (list))
@@ -54,7 +54,7 @@ method recordBlockSpec AuthoringSpecs op spec {
   // Record a block spec for the give op. Called when creating/changing functions and methods.
   editor = (findProjectEditor)
   if (isNil editor) { return } // should not happen
-  atPut (blockSpecs (project editor)) op spec
+  recordBlockSpec (project editor) op spec
 }
 
 // queries
@@ -135,7 +135,11 @@ method specsFor AuthoringSpecs category {
   currentCategory = ''
   for entry specsList {
 	if (isClass entry 'String') {
-	  currentCategory = entry
+	  if ('-' == entry) {
+		if (currentCategory == category) { add result '-' }
+	  } else {
+		currentCategory = entry
+	  }
 	} (currentCategory == category) {
 	  add result (specForEntry this entry)
 	}

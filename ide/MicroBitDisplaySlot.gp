@@ -16,9 +16,9 @@ method initialize MicroBitDisplaySlot anInteger {
 	setGrabRule morph 'defer'
 	setTransparentTouch morph true
 	display = (newArray 25 false)
-	inset = 5
+	inset = 0
 	stride = 15
-	ledWidth = 8
+	ledWidth = 9
 	ledHeight = 12
 	if (notNil anInteger) { setContents this anInteger }
 	redraw this
@@ -61,7 +61,7 @@ method redraw MicroBitDisplaySlot {
 	offColor = (colorHSV 235 0.62 0.40)
 	onColor = (colorHSV 0 1.0 0.9)
 	bm = (costumeData morph)
-	if (isNil bm) { bm = (newBitmap (76 * scale) (82 * scale) bgColor) }
+	if (isNil bm) { bm = (newBitmap (69 * scale) (78 * scale) bgColor) }
 	for y 5 {
 		for x 5 {
 			index = ((5 * (y - 1)) + x)

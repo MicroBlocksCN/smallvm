@@ -66,7 +66,12 @@ method extractSequences MicroBlockDataGraph {
 			add sequences (list)
 		}
 		for i (count items) {
-			add (at sequences i) (toNumber (at items i))
+			val = (at items i)
+			if ('true' == val) {
+				add (at sequences i) 100 // map true to 100 (useful for graphing digital pins)
+			} else {
+				add (at sequences i) (toNumber val)
+			}
 		}
 	}
 	return sequences

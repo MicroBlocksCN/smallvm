@@ -117,7 +117,7 @@ method showInstructions SmallRuntime aBlock {
 	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
 	setTitle ws 'Instructions'
 	setFont ws 'Arial' (16 * (global 'scale'))
-	setExtent (morph ws) (240 * (global 'scale')) (500 * (global 'scale'))
+	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
 }
 
 method addWithLineNum SmallRuntime aList instruction items {
@@ -151,7 +151,7 @@ method showCompiledBytes SmallRuntime aBlock {
 	ws = (openWorkspace (global 'page') (joinStrings result))
 	setTitle ws 'Instruction Bytes'
 	setFont ws 'Arial' (16 * (global 'scale'))
-	setExtent (morph ws) (240 * (global 'scale')) (500 * (global 'scale'))
+	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
 }
 
 // chunk management
@@ -198,7 +198,7 @@ method unusedChunkID SmallRuntime {
 	}
 	for i 256 {
 		id = (i - 1)
-		if (not (contains inUse id)) { print 'new id' id; return id }
+		if (not (contains inUse id)) { return id }
 	}
 	error 'Too many code chunks (functions and scripts). Max is 256).'
 }
@@ -220,7 +220,7 @@ method assignFunctionIDs SmallRuntime {
 	// Ensure that there is a chunk ID for every user-defined function.
 	// This must be done before generating any code to allow for recursive calls.
 
-	for func (functions (targetModule scripter)) {
+	for func (allFunctions (project scripter)) {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
 			atPut chunkIDs fName (array (unusedChunkID this) 'New Function!') // forces function save
@@ -464,7 +464,7 @@ method saveAllChunks SmallRuntime {
 	saveVariableNames this
 	assignFunctionIDs this
 	removeObsoleteChunks this
-	for aFunction (functions (targetModule scripter)) {
+	for aFunction (allFunctions (project scripter)) {
 		saveChunk this aFunction
 	}
 	for aBlock (sortedScripts (scriptEditor scripter)) {
@@ -515,7 +515,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 }
 
 method saveVariableNames SmallRuntime {
-	newVarNames = (variableNames (targetModule scripter))
+	newVarNames = (allVariableNames (project scripter))
 	if (oldVarNames == newVarNames) { return }
 
 	varID = 0

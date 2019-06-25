@@ -22,16 +22,16 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName project scripter leftItems rightItems indicator lastStatus thingServer
+defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer
 
-method thingServer MicroBlocksEditor { return thingServer }
-method project MicroBlocksEditor { return project }
+method fileName MicroBlocksEditor { return fileName }
+method project MicroBlocksEditor { return (project scripter) }
 method scripter MicroBlocksEditor { return scripter }
+method thingServer MicroBlocksEditor { return thingServer }
 
 to openMicroBlocksEditor devMode {
   if (isNil devMode) { devMode = false }
   if (isNil (global 'alanMode')) { setGlobal 'alanMode' false }
-  if (isNil (global 'vectorTrails')) { setGlobal 'vectorTrails' false }
   if (and ('Browser' == (platform)) (browserIsMobile)) {
 	page = (newPage 1024 640)
   } else {
@@ -85,17 +85,15 @@ to findMicroBlocksEditor {
   return nil
 }
 
-method initialize MicroBlocksEditor aProject {
+method initialize MicroBlocksEditor {
   scale = (global 'scale')
   morph = (newMorph this)
-  project = aProject
   thingServer = (newMicroBlocksThingServer)
   addTopBarParts this
   scripter = (initialize (new 'MicroBlocksScripter') this)
   addPart morph (morph scripter)
   drawTopBar this
   clearProject this
-  createInitialClass scripter
   fixLayout this
   setFPS morph 200
   return this
@@ -107,20 +105,17 @@ method addTopBarParts MicroBlocksEditor {
   scale = (global 'scale')
 
   leftItems = (list)
-  add leftItems (addLogoButton this)
-  add leftItems (5 * scale)
+  add leftItems (140 * scale)
   add leftItems (addLanguageButton this)
   add leftItems (addSettingsButton this)
-  add leftItems (addProjectButton this)
+  add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu')
+  add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard')
+  indicator = (last leftItems)
 
   rightItems = (list)
-  add rightItems (addConnectButton this)
-  add rightItems (4 * scale)
-  add rightItems (makeIndicator this)
-  add rightItems (50 * scale)
-  add rightItems (addStopButton this)
-  add rightItems (addStartButton this)
-  add rightItems (12 * scale)
+  add rightItems (addIconButton this (startButtonIcon this) 'startAll' 36)
+  add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 36)
+  add rightItems (7 * scale)
 }
 
 method textButton MicroBlocksEditor label selector {
@@ -143,23 +138,13 @@ method textButton MicroBlocksEditor label selector {
   return button
 }
 
-method makeIndicator MicroBlocksEditor {
-  scale = (global 'scale')
-  indicator = (newBox (newMorph) (gray 100) 40 2)
-  setExtent (morph indicator) (15 * scale) (15 * scale)
-  redraw indicator
-  addPart morph (morph indicator)
-  lastStatus = nil // clear cache
-  return indicator
-}
-
 // project operations
 
 method newProject MicroBlocksEditor {
   ok = (confirm (global 'page') nil 'Discard current project?')
   if (not ok) { return }
   clearProject this
-  createInitialClass scripter
+  updateLibraryList scripter
   fileName = ''
   updateTitle this
 }
@@ -169,16 +154,12 @@ method clearProject MicroBlocksEditor {
 
   page = (global 'page')
   stopAll page
-  setTargetObj scripter nil
   for p (copy (parts (morph page))) {
 	// remove explorers, table views -- everything but the MicroBlocksEditor
 	if (p != morph) { removePart (morph page) p }
   }
-
-  isStarting = (isNil fileName)
   fileName = ''
-  project = (emptyProject)
-  clearLibraries scripter
+  createEmptyProject scripter
   clearBoardIfConnected (smallRuntime) true
   if (isRunning thingServer) {
 	clearVars thingServer
@@ -186,7 +167,7 @@ method clearProject MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
-  pickFileToOpen (action 'openProjectFromFile' this) (gpExamplesFolder) (array '.gpp' '.gpe')
+  pickFileToOpen (action 'openProjectFromFile' this) (gpExamplesFolder) (array '.gpp' '.ubp')
 }
 
 method openProjectFromFile MicroBlocksEditor location {
@@ -208,14 +189,20 @@ method openProjectFromFile MicroBlocksEditor location {
 
 method openProject MicroBlocksEditor projectData projectName {
   clearProject this
-  project = (readProject (emptyProject) projectData)
   fileName = projectName
   updateTitle this
-  targetObj = nil
-  if ((count (classes (module project))) > 0) {
-	targetObj = (new (first (classes (module project))))
+  if (endsWith projectName '.gpp') {
+	// read old project
+	mainClass = nil
+	proj = (readProject (emptyProject) projectData)
+	if ((count (classes (module proj))) > 0) {
+		mainClass = (first (classes (module proj)))
+	}
+	loadOldProjectFromClass scripter mainClass (blockSpecs proj)
+  } else {
+	loadNewProjectFromData scripter (toString projectData)
   }
-  setTargetObj scripter targetObj
+  updateLibraryList scripter
   developerModeChanged scripter
   stopAndSyncScripts (smallRuntime)
 }
@@ -229,41 +216,25 @@ method saveProject MicroBlocksEditor fName {
 
   if (and (isNil fName) (notNil fileName)) {
 	fName = fileName
-	if (beginsWith fName (gpExamplesFolder)) {
+	if (beginsWith fName '//Examples') {
+	  // if an example was opened, do a "save as" into the Microblocks folder
 	  fName = (join (gpFolder) '/' (filePart fileName))
 	}
   }
 
-  if (isNil fName) {
-	conf = (gpServerConfiguration)
-	if (and (notNil conf) ((at conf 'beDefaultSaveLocation') == true)) {
-	  user = (at conf 'username')
-	  serverDirectory = (at conf 'serverDirectory')
-	  fName = (join serverDirectory user '/' (filePart fileName))
-	} else {
-	  fName = ''
-	}
-  }
-  fName = (fileToWrite fName (array '.gpp' '.gpe'))
+  fName = (fileToWrite fName (array '.ubp'))
   if ('' == fName) { return false }
 
   if (and
 	(not (isAbsolutePath this fName))
-	(not (beginsWith fName 'http://'))
 	(not (beginsWith fName (gpFolder)))) {
 	  fName = (join (gpFolder) '/' fName)
   }
-  if (not (or (endsWith fName '.gpp') (endsWith fName '.gpe'))) { fName = (join fName '.gpp') }
+  if (not (endsWith fName '.ubp')) { fName = (join fName '.ubp') }
 
   fileName = fName
   updateTitle this
-
-  result = (safelyRun (action 'saveProject' project fileName nil))
-  if (isClass result 'Task') { // saveProject encountered an error
-	addPart (global 'page') (new 'Debugger' result) // open debugger on the task
-	return false
-  }
-  return true
+  writeFile fileName (codeString (project scripter))
 }
 
 method isAbsolutePath MicroBlocksEditor fName {
@@ -309,14 +280,33 @@ method updateIndicator MicroBlocksEditor {
 	status = (connectionStatus (smallRuntime))
 	if (lastStatus == status) { return } // no change
 	if ('connected' == status) {
-		setColor indicator (color 0 200 0) // green
+		c = (color 0 200 0) // green
 	} ('board not responding' == status) {
-		setColor indicator (color 250 200 0) // orange
+		c = (color 250 200 0) // orange
 	} else {
-		setColor indicator (color 200) // red
+		c = nil // no circle
 	}
+	if (notNil c) { c = (mixed c 70 (topBarBlue this)) }
+
+	scale = (global 'scale')
+	bm1 = (getField indicator 'offCostume')
+	bm2 = (getField indicator 'onCostume')
+	cx = (half (width bm1))
+	cy = ((half (height bm1)) + scale)
+	icon = (connectButtonIcon this)
+	x = (10 * scale)
+	y = (10 * scale)
+	radius = (13 * scale)
+
+	fill bm1 (topBarBlue this)
+	if (notNil c) { drawCircle (newShapeMaker bm1) cx cy radius c }
+	drawBitmap bm1 icon x y
+
+	fill bm2 (topBarBlueHighlight this)
+	if (notNil c) { drawCircle (newShapeMaker bm2) cx cy radius c }
+	drawBitmap bm2 icon x y
+
 	lastStatus = status
-	redraw indicator
 }
 
 // browser support
@@ -352,11 +342,14 @@ method processDroppedFiles MicroBlocksEditor {
 }
 
 method processDroppedFile MicroBlocksEditor fName data {
-  if (endsWith fName '.gpp') {
+  if (or (endsWith fName '.ubp') (endsWith fName '.gpp')) {
 	ok = (confirm (global 'page') nil 'Discard current project?')
 	if (not ok) { return }
 	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
 	openProject this data fName
+  }
+  if (or (endsWith fName '.ubl') (endsWith fName '.ulib')) {
+	importLibraryFromFile scripter fName
   }
 }
 
@@ -409,6 +402,7 @@ method drawTopBar MicroBlocksEditor {
   fill bm (topBarBlue this)
   grassHeight = (4 * scale)
   fillRect bm (color 137 169 31) 0 ((height bm) - grassHeight) (width bm) grassHeight
+  drawBitmap bm (logoAndText this)
   costumeChanged morph
 }
 
@@ -494,14 +488,14 @@ method rightClicked MicroBlocksEditor aHand {
 method contextMenu MicroBlocksEditor {
   menu = (menu nil this)
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
-  addLine menu
   addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
+  addLine menu
   addItem menu 'install MicroBlocks on board' 'installVM'
   addLine menu
-  addItem menu 'graph data' 'graphData'
+  addItem menu 'show graph' 'graphData'
 //  addItem menu 'show recent data' 'showRecentData' // commented out until it shows data in real-time
-  addItem menu 'copy data to clipboard' 'copyDataToClipboard'
-  addItem menu 'clear data' 'clearData'
+  addItem menu 'copy graph data to clipboard' 'copyDataToClipboard'
+  addItem menu 'clear graph' 'clearData'
   addLine menu
   addItem menu 'clear memory and variables' 'softReset'
   addLine menu
@@ -511,12 +505,12 @@ method contextMenu MicroBlocksEditor {
 // addItem menu 'compact persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
 // addLine menu
 
-  if (not (isRunning thingServer)) {
-	addItem menu 'start Mozilla WebThing server' 'startThingServer'
-  } else {
-	addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
-  }
   if (not (devMode)) {
+	  if (not (isRunning thingServer)) {
+		addItem menu 'start Mozilla WebThing server' 'startThingServer'
+	  } else {
+		addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
+	  }
 	addLine menu
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
@@ -587,21 +581,6 @@ method installVM MicroBlocksEditor {
   installVM (smallRuntime)
 }
 
-// Logo Button
-
-method addLogoButton MicroBlocksEditor {
-  scale = (global 'scale')
-  logo = (logoAndText this)
-  bm1 = (newBitmap ((width logo) + (4 * scale)) (41 * scale) (topBarBlue this))
-  drawBitmap bm1 logo (1 * scale) (1 * scale)
-  bm2 = (newBitmap (width bm1) (height bm1) (topBarBlueHighlight this))
-  drawBitmap bm2 logo (1 * scale) (1 * scale)
-  button = (newButton '' (action 'rightClicked' this))
-  setCostumes button bm1 bm2
-  addPart morph (morph button)
-  return button
-}
-
 // Language Button
 
 method languageMenu MicroBlocksEditor {
@@ -651,7 +630,6 @@ method languageChanged MicroBlocksEditor {
   languageChanged scripter
 
   // update items in top-bar
-  destroy (morph indicator)
   for item (join leftItems rightItems) {
 	if (not (isNumber item)) { destroy (morph item) }
   }
@@ -670,12 +648,17 @@ method settingsMenu MicroBlocksEditor {
   popUpAtHand (contextMenu this) (global 'page')
 }
 
-method addIconButton MicroBlocksEditor icon selector {
+method addIconButton MicroBlocksEditor icon selector width {
   scale = (global 'scale')
-  bm1 = (newBitmap (41 * scale) (41 * scale) (topBarBlue this))
-  drawBitmap bm1 icon (10 * scale) (11 * scale)
-  bm2 = (newBitmap (41 * scale) (41 * scale) (topBarBlueHighlight this))
-  drawBitmap bm2 icon (10 * scale) (11 * scale)
+  w = (43 * scale)
+  if (notNil width) { w = (width * scale) }
+  h = (41 * scale)
+  x = (half (w - (width icon)))
+  y = (11 * scale)
+  bm1 = (newBitmap w h (topBarBlue this))
+  drawBitmap bm1 icon x y
+  bm2 = (newBitmap w h (topBarBlueHighlight this))
+  drawBitmap bm2 icon x y
   button = (newButton '' (action selector this))
   setCostumes button bm1 bm2
   addPart morph (morph button)
@@ -692,22 +675,6 @@ method projectMenu MicroBlocksEditor {
   addItem menu 'Open' 'openProjectMenu'
   addItem menu 'Save' 'saveProjectToFile'
   popUpAtHand menu (global 'page')
-}
-
-method addProjectButton MicroBlocksEditor {
-  return (addIconButton this (projectButtonIcon this) 'projectMenu')
-}
-
-method addConnectButton MicroBlocksEditor {
-  return (addIconButton this (connectButtonIcon this) 'connectToBoard')
-}
-
-method addStopButton MicroBlocksEditor {
-  return (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts')
-}
-
-method addStartButton MicroBlocksEditor {
-  return (addIconButton this (startButtonIcon this) 'startAll')
 }
 
 // UI image resources

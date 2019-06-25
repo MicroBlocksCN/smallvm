@@ -240,16 +240,14 @@ void webServerLoop();
 
 // Primitives
 
-OBJ primNewArray(OBJ *args);
-OBJ primNewByteArray(OBJ *args);
-OBJ primArrayFill(OBJ *args);
-OBJ primArrayAt(OBJ *args);
-OBJ primArrayAtPut(OBJ *args);
-OBJ primArraySize(OBJ *args);
+OBJ primNewArray(int argCount, OBJ *args);
+OBJ primNewByteArray(int argCount, OBJ *args);
+OBJ primArrayFill(int argCount, OBJ *args);
+OBJ primArrayAt(int argCount, OBJ *args);
+OBJ primArrayAtPut(int argCount, OBJ *args);
+OBJ primLength(int argCount, OBJ *args);
 
-OBJ primHexToInt(OBJ *args);
-OBJ primPeek(OBJ *args);
-OBJ primPoke(OBJ *args);
+OBJ primHexToInt(int argCount, OBJ *args);
 
 OBJ primAnalogPins(OBJ *args);
 OBJ primDigitalPins(OBJ *args);
@@ -267,21 +265,21 @@ OBJ primI2cSet(OBJ *args);
 OBJ primSPISend(OBJ *args);
 OBJ primSPIRecv(OBJ *args);
 
-void primMBDisplay(OBJ *args);
-void primMBDisplayOff(OBJ *args);
-void primMBPlot(OBJ *args);
-void primMBUnplot(OBJ *args);
+OBJ primMBDisplay(int argCount, OBJ *args);
+OBJ primMBDisplayOff(int argCount, OBJ *args);
+OBJ primMBPlot(int argCount, OBJ *args);
+OBJ primMBUnplot(int argCount, OBJ *args);
 
-void primMBDrawShape(int argCount, OBJ *args);
-OBJ primMBShapeForLetter(OBJ *args);
+OBJ primMBDrawShape(int argCount, OBJ *args);
+OBJ primMBShapeForLetter(int argCount, OBJ *args);
 
 OBJ primMBTiltX(int argCount, OBJ *args);
 OBJ primMBTiltY(int argCount, OBJ *args);
 OBJ primMBTiltZ(int argCount, OBJ *args);
 OBJ primMBTemp(int argCount, OBJ *args);
 
-void primNeoPixelSend(OBJ *args);
-void primNeoPixelSetPin(int argCount, OBJ *args);
+OBJ primNeoPixelSend(int argCount, OBJ *args);
+OBJ primNeoPixelSetPin(int argCount, OBJ *args);
 void turnOffInternalNeoPixels();
 
 // TFT Support
@@ -297,6 +295,7 @@ void tftSetHugePixelBits(int bits);
 
 void addDisplayPrims();
 void addIOPrims();
+void addMiscPrims();
 void addNetPrims();
 void addRadioPrims();
 void addSensorPrims();

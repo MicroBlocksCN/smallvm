@@ -292,7 +292,7 @@ static void softReset(int clearMemoryFlag) {
 	OBJ off = falseObj;
 	primSetUserLED(&off);
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
-	primMBDisplayOff(NULL);
+	primMBDisplayOff(0, NULL);
 	updateMicrobitDisplay();
 #endif
 

@@ -1,7 +1,7 @@
 // Button.gp - Simple button
 // addPart (global 'page') (morph (newButton)) xxx
 
-defineClass Button morph clickAction offCostume onCostume isOn
+defineClass Button morph clickAction offCostume onCostume isOn hint
 
 to newButton label action {
   return (initialize (new 'Button') label action)
@@ -19,6 +19,9 @@ method initialize Button label action {
 
 method toggle Button { setOn this (not isOn) }
 method isOn Button { return isOn }
+
+method setHint Button aStringOrNil { hint = aStringOrNil }
+method hint Button { return hint }
 
 method setOn Button bool {
   isOn = (true == bool)
@@ -92,8 +95,13 @@ method handEnter Button aHand {
   if (notNil onCostume) {
 	setCostume morph onCostume
   }
+  if (notNil hint) {
+	addSchedule (global 'page') (schedule (action 'showHint' morph hint) 800)
+  }
 }
 
 method handLeave Button aHand {
   setOn this isOn
+  if (notNil hint) {removeHint (page aHand)}
+  removeSchedulesFor (global 'page') 'showHint' morph
 }

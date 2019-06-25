@@ -312,7 +312,7 @@ static void runTask(Task *task) {
 		&&fillArray_op,
 		&&at_op,
 		&&atPut_op,
-		&&size_op,
+		&&length_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -718,7 +718,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	hexToInt_op:
-		*(sp - arg) = primHexToInt(sp - arg);
+		*(sp - arg) = primHexToInt(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 
@@ -758,27 +758,27 @@ static void runTask(Task *task) {
 
 	// array operations:
 	newArray_op:
-		*(sp - arg) = primNewArray(sp - arg);
+		*(sp - arg) = primNewArray(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	newByteArray_op:
-		*(sp - arg) = primNewByteArray(sp - arg);
+		*(sp - arg) = primNewByteArray(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	fillArray_op:
-		primArrayFill(sp - arg);
+		primArrayFill(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	at_op:
-		*(sp - arg) = primArrayAt(sp - arg);
+		*(sp - arg) = primArrayAt(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	atPut_op:
-		primArrayAtPut(sp - arg);
+		primArrayAtPut(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
-	size_op:
-		*(sp - arg) = primArraySize(sp - arg);
+	length_op:
+		*(sp - arg) = primLength(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 
@@ -888,19 +888,19 @@ static void runTask(Task *task) {
 
 	// micro:bit operations:
 	mbDisplay_op:
-		primMBDisplay(sp - arg);
+		primMBDisplay(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbDisplayOff_op:
-		primMBDisplayOff(sp - arg);
+		primMBDisplayOff(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbPlot_op:
-		primMBPlot(sp - arg);
+		primMBPlot(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbUnplot_op:
-		primMBUnplot(sp - arg);
+		primMBUnplot(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	mbTiltX_op:
@@ -920,7 +920,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	neoPixelSend_op:
-		primNeoPixelSend(sp - arg);
+		primNeoPixelSend(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	drawShape_op:
@@ -928,7 +928,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	shapeForLetter_op:
-		*(sp - arg) = primMBShapeForLetter(sp - arg);
+		*(sp - arg) = primMBShapeForLetter(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	neoPixelSetPin_op:

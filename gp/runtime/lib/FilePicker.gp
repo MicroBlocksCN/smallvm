@@ -345,12 +345,12 @@ method folderContents FilePicker {
 	dirList = (listDirectories currentDir)
 	fileList = (listFiles currentDir)
   }
-  for dir (sorted dirList) {
+  for dir (sorted dirList 'caseInsensitiveSort') {
 	if (not (beginsWith dir '.')) {
 	  add result (join '[ ] ' dir)
 	}
   }
-  for fn (sorted fileList) {
+  for fn (sorted fileList 'caseInsensitiveSort') {
 	if (not (beginsWith fn '.')) {
 	  if (or (isNil extensions) (hasExtension fn extensions)) {
 		add result fn

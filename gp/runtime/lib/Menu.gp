@@ -73,33 +73,29 @@ method itemLabel Menu labelPic thumbPic bgColor itemWidth itemPaddingH itemPaddi
 }
 
 method buildMorph Menu page yPos {
-
   scale =  (global 'scale')
 
   // settings, to be refactored later to somewhere else
   labelFontName = 'Arial Bold'
   fontName = 'Arial'
-  fontSize = (scale * 12)
+  fontSize = (scale * 14)
   border = (scale * 1)
-  frame =  1 // note: don't scale, only for slight background contrast
   corner = (scale * 2)
   labelPadding = (scale * 4)
   itemPaddingV = (scale * 1)
   itemPaddingH = (scale * 3)
-  color = (color 255 255 255)
-  labelTextColor = color
-  labelBackgroundColor = (color 60 60 60)
-  frameColor = (darker color)
+  color = (gray 255)
+  labelTextColor = (gray 255)
+  labelBackgroundColor = (gray 60)
   borderColor = labelBackgroundColor
-  itemTextColorNormal = (color)
+  itemTextColorNormal = (gray 0)
   itemTextColorHighlighted = itemTextColorNormal
-  itemTextColorPressed = (color 255 255 255)
-  itemBackgroundColorHighlighted = (lighter labelBackgroundColor 70)
-  itemBackgroundColorPressed = (lighter labelBackgroundColor 20)
+  itemTextColorPressed = (gray 255)
+  itemBackgroundColorHighlighted = (gray 210)
+  itemBackgroundColorPressed = (gray 100)
 
   minHeight = (min (scale * 100) (height (morph page)))
-  dist = ((2 * (+ border corner frame)) + 50) // note: 50 is the page's padding for menus
-  maxHeight = (max minHeight (((bottom (morph page)) - yPos) - dist))
+  maxHeight = ((height (morph page)) - 100)
 
   if (notNil morph) {destroy morph}
 
@@ -149,16 +145,11 @@ method buildMorph Menu page yPos {
 
   // create the actual menu Morph
   morph = (newMorph this)
-  bg = (newBitmap (+ widgetWidth border border frame frame) (+ widgetHeight border border frame frame corner corner))
+  bg = (newBitmap (+ widgetWidth border border) (+ widgetHeight border border))
 
   pen = (newShapeMaker bg)
   area = (rect 0 0 (width bg) (height bg))
-  fillRoundedRect pen area (corner + frame) borderColor 1 frameColor
-  if (corner > border) {
-	fillRoundedRect pen (insetBy area (border + frame)) (corner - border) color 1
-  }
-
-  fillRect bg borderColor frame (+ corner border frame) (- (- (width bg) frame) frame) widgetHeight true 1
+  fillRoundedRect pen area corner borderColor 1 frameColor
   setWidth (bounds morph) (width bg)
   setHeight (bounds morph) (height bg)
 
@@ -171,20 +162,20 @@ method buildMorph Menu page yPos {
     drawBitmap fullLabel lbl x y
 
     // render full label on menu
-    drawBitmap bg fullLabel (+ border frame) (+ border corner frame)
+    drawBitmap bg fullLabel border (+ border corner)
   } else {
     fullLabel = (rect)
   }
-  y = (+ (height fullLabel) border corner frame)
+  y = (+ (height fullLabel) border)
   setCostume morph bg
 
   if (widgetHeight < menuHeight) {
-    box = (newBox nil (color 0 0 0 0) 0 0 false false)
+    box = (newBox nil (transparent) 0 0 false false)
     container = (morph box)
     setExtent container menuWidth (menuHeight - lblHeight)
     scrollFrame = (scrollFrame box)
     setExtent (morph scrollFrame) widgetWidth (widgetHeight - lblHeight)
-    setPosition (morph scrollFrame) (+ border frame) (+ (height fullLabel) border corner frame)
+    setPosition (morph scrollFrame) border (+ (height fullLabel) border)
     addPart morph (morph scrollFrame)
     updateSliders scrollFrame
     setAlpha (morph (getField scrollFrame 'vSlider')) 255
@@ -222,7 +213,7 @@ method buildMorph Menu page yPos {
       setWidth (bounds m) (width nbm)
       setHeight (bounds m) (height nbm)
       setTransparentTouch m true
-      setPosition m (+ border frame) y
+      setPosition m border y
       addPart container m
         y += (height nbm)
     } (isClass ilbl 'Array') {

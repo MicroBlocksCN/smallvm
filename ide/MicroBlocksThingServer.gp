@@ -88,7 +88,7 @@ method clearVars MicroBlocksThingServer {
 method variableIndex MicroBlocksThingServer varName {
 	// Return the id of the given variable or nil if the variable is not defined.
 
-	varNames = (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions')
+	varNames = (allVariableNames (project (scripter (smallRuntime))))
 	return (indexOf varNames varName)
 }
 
@@ -108,7 +108,7 @@ method requestVarFromBoard MicroBlocksThingServer varName {
 }
 
 method varValueReceived MicroBlocksThingServer varID value {
-	varNames = (copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions')
+	varNames = (allVariableNames (project (scripter (smallRuntime))))
 	if (varID < (count varNames)) {
 		varName = (at varNames (varID + 1))
 		atPut vars varName value
@@ -290,7 +290,7 @@ method getProperties MicroBlocksThingWorker path {
 		result = (list)
 		varNames = (filter
 		(function each { return (not (beginsWith each '_')) })
-		(copyWithout (variableNames (targetModule (scripter (smallRuntime)))) 'extensions'))
+		(allVariableNames (project (scripter (smallRuntime)))))
 		add result '{'
 	if ((count varNames) > 0) {
 		for v varNames {
