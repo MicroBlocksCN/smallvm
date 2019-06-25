@@ -29,7 +29,11 @@ static int readI2CReg(int deviceID, int reg) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
-	int error = Wire.endTransmission();
+	#if defined(ARDUINO_ARCH_ESP32)
+		int error = Wire.endTransmission();
+	#else
+		int error = Wire.endTransmission((bool) false);
+	#endif
 	if (error) return -error; // error; bad device ID?
 
 	Wire.requestFrom(deviceID, 1);
@@ -70,7 +74,7 @@ OBJ primI2cSet(OBJ *args) {
 	return falseObj;
 }
 
-OBJ primI2cRead(int argCount, OBJ *args) {
+static OBJ primI2cRead(int argCount, OBJ *args) {
 	// Read multiple bytes from the given I2C device into the given array and return the
 	// number of bytes read. The array size determines the number of bytes to read (up to a
 	// max of 32). This operation is usually preceded by an I2C write to request some data.
@@ -92,7 +96,7 @@ OBJ primI2cRead(int argCount, OBJ *args) {
 	return int2obj(count);
 }
 
-OBJ primI2cWrite(int argCount, OBJ *args) {
+static OBJ primI2cWrite(int argCount, OBJ *args) {
 	// Write one or multiple bytes to the given I2C device. If the second argument is an
 	// integer, write it as a single byte. If it is an array of bytes, write those bytes.
 	// The array should contain integers in the range 0..255; anything else will be skipped.
@@ -232,7 +236,7 @@ static int readTemperature() {
 
 #define LIS3DH_ID 25
 
-int accelStarted = false;
+static int accelStarted = false;
 
 static int readAcceleration(int registerID) {
 	if (!accelStarted) {
@@ -290,7 +294,7 @@ static int readTemperature() {
 
 #define LIS3DH_ID 25
 
-int accelStarted = false;
+static int accelStarted = false;
 
 static int readAcceleration(int registerID) {
 	if (!accelStarted) {
@@ -339,13 +343,13 @@ OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(readTemperature()); }
 
 #ifdef ARDUINO_ARCH_ESP32
 
-OBJ primTouchRead(int argCount, OBJ *args) {
+static OBJ primTouchRead(int argCount, OBJ *args) {
 	return int2obj(touchRead(obj2int(args[0])));
 }
 
 #else // stubs for non-ESP32 boards
 
-OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
 
 #endif // Capacitive Touch Primitives
 
