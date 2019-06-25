@@ -314,6 +314,19 @@ void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
 void primsInit();
 
+// Broadcast buffer for Mozilla WoT
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
+// in WiFi-enabled boards, we store the last broadcast into a string
+#define CIRCULAR_BUFFER_SIZE 5
+typedef struct {
+	int position;
+	char body[CIRCULAR_BUFFER_SIZE][50];
+} circular_buffer;
+circular_buffer getBroadcastBuffer();
+void clearBroadcastBuffer();
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif
