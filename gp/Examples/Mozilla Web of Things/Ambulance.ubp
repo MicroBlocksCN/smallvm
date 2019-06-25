@@ -9,7 +9,7 @@ script 54 95 {
 whenStarted
 comment 'modify these two blocks if not CPX'
 'attach buzzer to pin' 12
-attach 10 '' false
+neoPixelAttach 10 '' false
 'wifi connect to' 'Network_Name' '' 3
 defineThing 'Ambulance' 'OnOffSwitch'
 addBooleanProperty 'Triggered' 'onOff' 'OnOffProperty'
@@ -21,17 +21,17 @@ interval = 500
 forever {
   if onOff {
     for i 5 {
-      'set NeoPixel LED' i 0 0 100
-      'set NeoPixel LED' (i + 5) 100 0 0
+      setNeoPixelColor i (colorSwatch 10 3 191 255)
+      setNeoPixelColor (i + 5) (colorSwatch 191 0 14 255)
     }
     repeatUntil (not onOff) {
       'play tone' 'F' octave interval
-      'rotate NeoPixels by' 5
+      rotateNeoPixelsBy 5
       'play tone' 'A#' octave interval
-      'rotate NeoPixels by' 5
+      rotateNeoPixelsBy 5
     }
   } else {
-    'set all NeoPixels r' 0 0 0
+    neoPixelSetAllToColor (colorSwatch 0 0 0 255)
     waitMillis 10
   }
 }

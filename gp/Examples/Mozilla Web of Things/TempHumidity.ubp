@@ -1,0 +1,252 @@
+module main
+variables humidity temperature
+
+script 50 50 {
+whenStarted
+'wifi connect to' 'Network_Name' '' 3
+defineThing 'Temperature' 'TemperatureSensor'
+addNumProp 'Temperature' 'temperature' -40 100 'TemperatureProperty'
+addNumProp 'Humidity' 'humidity' 0 100 'LevelProperty'
+forever {
+  temperature = (temperature_DHT11 25)
+  waitMillis 2000
+  humidity = (humidity_DHT11 25)
+  waitMillis 2000
+}
+}
+
+script 495 226 {
+comment 'test temp'
+forever {
+  sayIt (temperature_DHT11 25)
+  waitMillis 2000
+}
+}
+
+script 489 359 {
+comment 'test humidity'
+forever {
+  sayIt (humidity_DHT11 25)
+  waitMillis 2000
+}
+}
+
+script 88 526 {
+comment 'add this once the VM supports it'
+'_addCustomProperty' 'unit' '"percent"'
+}
+
+script 313 583 ('[net:thingDescription]')
+
+
+module DHT Input
+variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime
+
+	spec 'r' 'temperature_DHT11' 'temperature (Celsius) DHT11 pin _' 'auto' 4
+	spec 'r' 'humidity_DHT11' 'humidity DHT11 pin _' 'auto' 4
+	spec 'r' 'temperature_DHT22' 'temperature (Celsius) DHT22 _' 'auto' 4
+	spec 'r' 'humidity_DHT22' 'humidity DHT22 pin _' 'auto' 4
+	spec ' ' '_dhtReadData' '_dhtReadData pin _' 'auto any' '10'
+	spec 'r' '_dhtChecksumOkay' '_dhtChecksumOkay' 'any'
+	spec ' ' '_dhtUpdate' '_dhtUpdate _ isDHT11 _' 'auto bool any' 4 true
+	spec 'r' '_dhtReady' '_dhtReady' 'any'
+
+to '_dhtChecksumOkay' {
+  local 'checksum' 0
+  for i 4 {
+    checksum += (at i _dhtData)
+  }
+  checksum = (checksum & 255)
+  return (checksum == (at 5 _dhtData))
+}
+
+to '_dhtReadData' pin {
+  comment 'Create DHT data array the first time'
+  if (_dhtData == 0) {
+    _dhtData = (newArray 5)
+  }
+  comment 'Pull pin low for >18msec to request data'
+  digitalWriteOp pin false
+  waitMillis 20
+  comment 'Read DHT start pulses (H L H L)'
+  waitUntil (digitalReadOp pin)
+  waitUntil (not (digitalReadOp pin))
+  waitUntil (digitalReadOp pin)
+  waitUntil (not (digitalReadOp pin))
+  local 'i' 1
+  local 'byte' 0
+  local 'bit' 1
+  comment 'Read 40 bits (5 bytes)'
+  repeat 40 {
+    waitUntil (digitalReadOp pin)
+    local 'start' (microsOp)
+    waitUntil (not (digitalReadOp pin))
+    if (((microsOp) - start) > 40) {
+      comment 'Long pulse - append a "1" bit'
+      byte += 1
+    }
+    if (bit == 8) {
+      atPut i _dhtData byte
+      i += 1
+      byte = 0
+      bit = 1
+    } else {
+      byte = (byte << 1)
+      bit += 1
+    }
+    waitUntil (not (digitalReadOp pin))
+  }
+}
+
+to '_dhtReady' {
+  local 'elapsed' ((millisOp) - _dhtLastReadTime)
+  return (or (elapsed < 0) (elapsed > 2000))
+}
+
+to '_dhtUpdate' pin isDHT11 {
+  if ('_dhtReady') {
+    '_dhtReadData' pin
+    _dhtLastReadTime = (millisOp)
+  }
+  if ('_dhtChecksumOkay') {
+    if isDHT11 {
+      _dht_temperature = (at 3 _dhtData)
+      _dht_humidity = (at 1 _dhtData)
+    } else {
+      local 'n' (((at 1 _dhtData) * 256) + (at 2 _dhtData))
+      _dht_humidity = ((n + 5) / 10)
+      n = ((((at 3 _dhtData) & 127) * 256) + (at 4 _dhtData))
+      if (((at 3 _dhtData) & 128) != 0) {
+        n = (0 - n)
+      }
+      _dht_temperature = ((n + 5) / 10)
+    }
+  }
+}
+
+to humidity_DHT11 pin {
+  '_dhtUpdate' pin true
+  return _dht_humidity
+}
+
+to humidity_DHT22 pin {
+  '_dhtUpdate' pin false
+  return _dht_humidity
+}
+
+to temperature_DHT11 pin {
+  '_dhtUpdate' pin true
+  return _dht_temperature
+}
+
+to temperature_DHT22 pin {
+  '_dhtUpdate' pin false
+  return _dht_temperature
+}
+
+
+module 'Web of Things' Comm
+variables _useWiFi
+
+	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
+	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+	spec 'r' 'getIPAddress' 'IP address'
+	spec ' ' 'defineThing' 'define thing _ capability _' 'str str' 'Hello LED' 'Light'
+	spec ' ' 'registerEvent' 'register event _ type _' 'str str' 'Button Pressed' 'PressedEvent'
+	spec ' ' 'addBooleanProperty' 'add boolean property title _ variable _ @Type _' 'str menu.allVarsMenu str' '' '' 'OnOffProperty'
+	spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str' '' '' 0 100 'LevelProperty'
+	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str' '' '' 'ColorProperty'
+	spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
+	spec 'r' '[net:thingDescription]' 'thing description'
+	spec ' ' '[net:clearThingDescription]' 'clear thing description'
+
+to '_addCustomProperty' key jsonValue {
+  if _useWiFi {'[net:appendToThingProperty]' '"' key '": ' jsonValue}
+}
+
+to addBooleanProperty title var typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"},'
+  } else {
+    sendBroadcast 'moz-property {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"}'
+  }
+}
+
+to addNumProp title var min max typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"'
+    if ('TemperatureProperty' == typeName) {
+      '[net:appendToThingDescription]' ', "unit": "degree celsius"'
+    }
+    '[net:appendToThingDescription]' '},'
+  } else {
+    sendBroadcast 'moz-property {"title":"' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"}'
+  }
+}
+
+to addStringProperty title var typeName {
+  if _useWiFi {
+    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"},'
+  } else {
+    sendBroadcast 'moz-property {"title":"' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"}'
+  }
+}
+
+to defineThing name capability {
+  _useWiFi = ('[net:hasWiFi]')
+  if _useWiFi {
+    '[net:clearThingDescription]'
+    if ('' == capability) {
+      '[net:appendToThingDescription]' '{ "name": "' name '",
+  "@type": [ ],
+  "properties": {'
+    } else {
+      '[net:appendToThingDescription]' '{ "name": "' name '",
+  "@context": "https://iot.mozilla.org/schemas/",
+  "@type": ["' capability '"],
+  "properties": {'
+    }
+  } else {
+    sendBroadcast 'moz-thing { "name": "' name '","@context": "https://iot.mozilla.org/schemas/","@type": ["' capability '"]}'
+  }
+}
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to registerEvent title type {
+  if _useWiFi {
+    sayIt 'Not yet supported'
+  } else {
+    sendBroadcast 'moz-event {"name":"' title '", "metadata":{"description":"MicroBlocks event", "@type":"' type '"}}'
+  }
+}
+
+to 'wifi connect to' ssid password tries {
+  if (not ('[net:hasWiFi]')) {return}
+  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+    '[net:startWiFi]' ssid password
+    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+      comment 'Slow blink while connecting'
+      setUserLED true
+      waitMillis 500
+      setUserLED false
+      waitMillis 500
+    }
+    tries += -1
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  '[net:startWiFi]' ssid password true
+}
+

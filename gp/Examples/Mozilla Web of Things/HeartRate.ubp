@@ -46,6 +46,13 @@ forever {
 }
 
 
+module 'LED Display' Output
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+
 module 'Web of Things' Comm
 variables _useWiFi
 
