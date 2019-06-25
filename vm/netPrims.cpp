@@ -70,7 +70,7 @@ void queueBroadcastAsThingEvent(char *s, int len) {
 	char *evt = broadcastBuffer[nextBroadcastBuffer];
 	int count = (len <= BROADCAST_STRING_SIZE) ? len : BROADCAST_STRING_SIZE;
 	memcpy(evt, s, count);
-	evt[count] = '/0'; // add null terminator
+	evt[count] = '\0'; // add null terminator
 	nextBroadcastBuffer = (nextBroadcastBuffer + 1) % BROADCAST_BUFFER_COUNT;
 }
 
@@ -170,6 +170,8 @@ static char* getDescription() {
 	return descriptionObj.body;
 }
 
+int event_id = 0;
+
 void webServerLoop() {
 	if (!client) client = server.available(); // attempt to accept a client connection
 	if (!client) return; // no client connection
@@ -222,10 +224,12 @@ void webServerLoop() {
 			if (strcmp(evt, "") != 0) {
 				client.print("  { \"");
 				client.print(evt);
-				client.print("\" : {\"timestamp\":\"\"} },\n");
+				client.print("\" : {\"data\":");
+                                client.print(event_id++);
+                                client.print("}},\n");
 			}
                 }
-                client.print("  {}\n]");
+                client.print("  { \"_\":{}}\n]");
                 clearBroadcastBuffer();
 	} else {
 		client.print(NOT_FOUND_RESPONSE);
