@@ -196,7 +196,7 @@ method addLibraryFromString MicroBlocksProject s fileName {
 			setModuleName lib fileName
 		}
 		updatePrimitives lib
-		atPut libraries (moduleName lib) lib
+		addLibrary this lib
 	}
 	return this
 }
@@ -386,6 +386,11 @@ method removeSupercededFunctions MicroBlocksModule superceded {
 			removeFunction this f
 		}
 	}
+	newBlockList = (list)
+	for op blockList {
+		if (not (contains superceded op)) { add newBlockList op }
+	}
+	blockList = (toArray newBlockList)
 }
 
 // variables
