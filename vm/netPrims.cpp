@@ -70,7 +70,7 @@ void queueBroadcastAsThingEvent(char *s, int len) {
 	char *evt = broadcastBuffer[nextBroadcastBuffer];
 	int count = (len <= BROADCAST_STRING_SIZE) ? len : BROADCAST_STRING_SIZE;
 	memcpy(evt, s, count);
-	evt[count] = '/0'; // add null terminator
+	evt[count] = '\0'; // add null terminator
 	nextBroadcastBuffer = (nextBroadcastBuffer + 1) % BROADCAST_BUFFER_COUNT;
 }
 
