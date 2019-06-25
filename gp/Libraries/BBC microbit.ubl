@@ -1,0 +1,22 @@
+module 'Basic Sensors' Input
+
+	// Sensing primitives for the BBC micro:bit, Calliope mini, Citilab ED1, and AdaFruit
+	// Circuit Playground Express. These boards all have accelerometers and use various
+	// techniques to sense temperature and light.
+
+	spec 'r' '[sensors:tiltX]'			'tilt x'
+	spec 'r' '[sensors:tiltY]'			'tilt y'
+	spec 'r' '[sensors:tiltZ]'			'tilt z'
+	spec 'r' '[display:lightLevel]'		'light level'
+	spec 'r' '[sensors:temperature]'	'temperature (°C)'
+
+module 'LED Display' Output
+
+	// Display primitives for the 5x5 LED display on the BBC micro:bit and Calliope mini
+	// These operations are simulated boards with TFT displays such as the ED1 and
+	// the IoT-Bus Io with a QVGA display.
+
+	spec ' ' '[display:mbDisplay]'		'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplayOff]'	'clear display'
+	spec ' ' '[display:mbPlot]'			'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]'		'unplot x _ y _' 'num num' 3 3

@@ -1,0 +1,17 @@
+module TFT Output
+
+	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+	spec ' ' 'set TFT pixel x' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680
+	spec 'r' '_tft color' '_tft color _ to number' 'color any'
+
+to 'set TFT pixel x' x y color {
+  '[tft:setPixel]' x y ('_tft color' color)
+}
+to '_tft color' 'color hex' {
+  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
+  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
+  local 'b' ((((v 'color hex') & 255) * 255) / 31)
+  return ((r << 16) | ((g << 8) | b))
+}
+
