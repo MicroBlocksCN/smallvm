@@ -222,7 +222,7 @@ method saveProject MicroBlocksEditor fName {
 	}
   }
 
-  fName = (fileToWrite fName (array '.ubp'))
+  fName = (fileToWrite (withoutExtension fName) (array '.ubp'))
   if ('' == fName) { return false }
 
   if (and
