@@ -106,38 +106,13 @@ static int bytesForObject(OBJ value) {
 
 // Broadcast
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
-circular_buffer broadcast_buffer = { 0 };
-
-circular_buffer getBroadcastBuffer() {
-	return broadcast_buffer;
-}
-
-void clearBroadcastBuffer() {
-	for (int i = 0; i < CIRCULAR_BUFFER_SIZE; i++) {
-		sprintf(broadcast_buffer.body[i], "");
-	}
-	broadcast_buffer.position = 0;
-}
-#endif
-
 static void primSendBroadcast(int argCount, OBJ *args) {
 	// Variadic broadcast; all args are concatenated into printBuffer.
 
 	printArgs(argCount, args, false, false);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
-        // broadcasts are stored into a broadcast buffer so Mozilla WoT requests can get them
-        broadcast_buffer.position =
-            (broadcast_buffer.position + 1) % CIRCULAR_BUFFER_SIZE;
-        sprintf(
-            broadcast_buffer.body[broadcast_buffer.position],
-            "%.*s",
-            printBufferByteCount,
-            printBuffer
-        );
-#endif
+	queueBroadcastAsThingEvent(printBuffer, printBufferByteCount);
 }
 
 // Board Type
