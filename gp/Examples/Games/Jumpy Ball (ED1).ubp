@@ -1,0 +1,185 @@
+module main
+variables 'ball speed' 'ball y' 'pipe height' 'pipe x' playing 'previous ball y' score
+
+	spec 'r' 'OK button' 'button OK'
+
+	spec 'r' 'cancel button' 'button X'
+
+	spec ' ' 'check buttons' 'check buttons'
+
+	spec ' ' 'check collision' 'check collision'
+
+	spec 'r' 'down button' 'button down'
+
+	spec ' ' 'draw ball' 'draw ball'
+
+	spec ' ' 'draw pipes' 'draw pipe'
+
+	spec ' ' 'game over' 'game over'
+
+	spec 'r' 'left button' 'button left'
+
+	spec ' ' 'new game' 'new game'
+
+	spec 'r' 'right button' 'button right'
+
+	spec ' ' 'step ball' 'step ball'
+
+	spec ' ' 'step pipe' 'step pipe'
+
+	spec 'r' 'up button' 'button up'
+
+	spec ' ' 'welcome screen' 'welcome screen'
+
+
+to 'OK button' {
+  return (digitalReadOp 15)
+}
+
+to 'cancel button' {
+  return (digitalReadOp 14)
+}
+
+to 'check buttons' {
+  if (and playing (or ('OK button') ('cancel button'))) {
+    'ball speed' = 0
+    'ball y' += -30
+  }
+}
+
+to 'check collision' {
+  if (and ((v 'pipe x') <= 20) (or (((v 'ball y') / 10) >= ((v 'pipe height') + 40)) (((v 'ball y') / 10) <= (v 'pipe height')))) {playing = (booleanConstant false)}
+}
+
+to 'down button' {
+  return (digitalReadOp 13)
+}
+
+to 'draw ball' {
+  '[tft:circle]' 5 ((v 'previous ball y') / 10) 5 0 true
+  '[tft:circle]' 5 ((v 'ball y') / 10) 5 65535 true
+}
+
+to 'draw pipes' {
+  '[tft:rect]' ((v 'pipe x') + 22) 0 2 (v 'pipe height') 0 true
+  '[tft:rect]' (v 'pipe x') 0 20 (v 'pipe height') 65280 true
+  '[tft:rect]' ((v 'pipe x') + 22) ((v 'pipe height') + 40) 20 (126 - ((v 'pipe height') + 40)) 0 true
+  '[tft:rect]' (v 'pipe x') ((v 'pipe height') + 40) 20 (126 - ((v 'pipe height') + 40)) 65280 true
+}
+
+to 'game over' {
+  '[display:mbDisplayOff]'
+  '[tft:text]' 'GAME' 6 2 16777215 5 false
+  '[tft:text]' 'OVER' 6 50 16777215 5 false
+  '[tft:text]' 'SCORE' 5 100 16777215 2 false
+  '[tft:text]' score 75 100 16777215 2 false
+}
+
+to 'left button' {
+  return (digitalReadOp 2)
+}
+
+to 'new game' {
+  '[display:mbDisplayOff]'
+  score = 0
+  'pipe x' = 120
+  'pipe height' = (random 10 50)
+  comment 'ball y is multiplied by 10 for precision'
+  'ball y' = 630
+  playing = (booleanConstant true)
+  'ball speed' = 2
+}
+
+to 'right button' {
+  return (digitalReadOp 27)
+}
+
+to 'step ball' {
+  'ball speed' += 2
+  if ((v 'ball y') < 0) {
+    'ball y' = ((v 'ball y') * (v 'ball speed'))
+  }
+  'previous ball y' = (v 'ball y')
+  'ball y' += (v 'ball speed')
+  if ((v 'ball y') > 1260) {
+    playing = (booleanConstant false)
+  }
+  'check buttons'
+}
+
+to 'step pipe' {
+  'pipe x' += ((score / -10) - 1)
+  if ((v 'pipe x') < -22) {
+    'pipe x' = 126
+    'pipe height' = (random 10 50)
+    score += 1
+  }
+}
+
+to 'up button' {
+  return (digitalReadOp 4)
+}
+
+to 'welcome screen' {
+  '[display:mbDisplayOff]'
+  '[tft:text]' 'JUMPY' 6 2 16000215 4 false
+  '[tft:text]' 'BALL' 7 40 16000215 5 false
+  '[tft:text]' 'Press OK' 15 88 16777215 2 false
+  '[tft:text]' 'or X' 40 108 16777215 2 false
+}
+
+script 87 54 {
+whenStarted
+'welcome screen'
+forever {
+  waitUntil (or ('OK button') ('cancel button'))
+  'new game'
+  repeatUntil (not playing) {
+    'step ball'
+    'draw ball'
+    'step pipe'
+    'draw pipes'
+    'check collision'
+    waitMillis 10
+  }
+  'game over'
+  waitUntil (not (or ('OK button') ('cancel button')))
+}
+}
+
+script 518 70 {
+to 'step pipe' {}
+}
+
+script 928 75 {
+to 'draw pipes' {}
+}
+
+script 517 345 {
+to 'step ball' {}
+}
+
+script 925 503 {
+to 'draw ball' {}
+}
+
+script 59 523 {
+to 'new game' {}
+}
+
+script 928 720 {
+to 'game over' {}
+}
+
+script 517 738 {
+to 'check buttons' {}
+}
+
+script 57 796 {
+to 'check collision' {}
+}
+
+script 517 931 {
+to 'welcome screen' {}
+}
+

@@ -1,0 +1,33 @@
+module main
+variables x y
+
+script 50 50 {
+whenStarted
+x = 1
+y = 1
+forever {
+  if (and (('[sensors:tiltX]') < -4) (x > 1)) {x += -1}
+  if (and (('[sensors:tiltX]') > 4) (x < 5)) {x += 1}
+  if (and (('[sensors:tiltY]') < -4) (y > 1)) {y += -1}
+  if (and (('[sensors:tiltY]') > 4) (y < 5)) {y += 1}
+  '[display:mbDisplayOff]'
+  '[display:mbPlot]' x y
+  waitMillis 70
+}
+}
+
+
+module Display Output
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+
+module 'Microbit Sensors' Input
+
+	spec 'r' '[sensors:tiltX]' 'tilt x'
+	spec 'r' '[sensors:tiltY]' 'tilt y'
+	spec 'r' '[sensors:tiltZ]' 'tilt z'
+	spec 'r' '[display:lightLevel]' 'light level'
+	spec 'r' '[sensors:temperature]' 'temperature (°C)'

@@ -1,0 +1,345 @@
+module main
+variables _bz_frequencies _bz_note_names _bz_pinNumber _loop_overhead 'ball radius' 'delta x' 'delta y' 'paddle 1 x' 'paddle 2 x' 'paddle width' playing 'refresh rate' speed x y
+
+	spec 'r' 'OK button' 'button OK'
+
+	spec 'r' '_bz_index of' '_bz_index of _ in _' 'auto auto any any' '10' ''
+
+	spec ' ' '_measureLoopOverhead' '_measureLoopOverhead' 'any'
+
+	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+
+	spec ' ' 'bounce ball' 'bounce ball'
+
+	spec ' ' 'bounce on paddle' 'bounce on paddle _' 'auto' 2
+
+	spec 'r' 'cancel button' 'button X'
+
+	spec ' ' 'clear ball' 'clear ball'
+
+	spec 'r' 'down button' 'button down'
+
+	spec ' ' 'freq' 'play frequency _ on pin _ for _ ms' 'auto auto auto' 440 0 '100'
+
+	spec ' ' 'game over' 'player  _ wins' 'auto' 1
+
+	spec 'r' 'left button' 'button left'
+
+	spec ' ' 'new game' 'new game'
+
+	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto auto auto' 'G#' 3 250
+
+	spec ' ' 'plot ball' 'draw ball'
+
+	spec ' ' 'plot paddles' 'draw paddles'
+
+	spec 'r' 'right button' 'button right'
+
+	spec 'r' 'up button' 'button up'
+
+
+to 'OK button' {
+  return (digitalReadOp 15)
+}
+
+to '_bz_index of' item list {
+  for i (size list) {
+    if ((at i list) == item) {return i}
+  }
+  return 0
+}
+
+to '_measureLoopOverhead' {
+  local 'startT' (microsOp)
+  repeat 20 {
+    comment 'Loop to measure timing'
+    repeat 5 {
+      digitalWriteOp 0 false
+    }
+  }
+  _loop_overhead = (((microsOp) - startT) / 100)
+}
+
+to 'attach buzzer to pin' pinNumber {
+  if (pinNumber == '') {
+    if ((boardType) == 'Citilab ED1') {
+      _bz_pinNumber = 26
+    } ((boardType) == 'CircuitPlayground') {
+      _bz_pinNumber = 12
+    } else {
+      _bz_pinNumber = 0
+    }
+  } else {
+    _bz_pinNumber = pinNumber
+  }
+  '[display:mbDisplayOff]'
+  '_measureLoopOverhead'
+  if (_bz_frequencies == 0) {
+    _bz_frequencies = (newArray 12)
+    atPut 1 _bz_frequencies 13081
+    atPut 2 _bz_frequencies 13859
+    atPut 3 _bz_frequencies 14683
+    atPut 4 _bz_frequencies 15556
+    atPut 5 _bz_frequencies 16481
+    atPut 6 _bz_frequencies 17461
+    atPut 7 _bz_frequencies 18500
+    atPut 8 _bz_frequencies 19600
+    atPut 9 _bz_frequencies 20765
+    atPut 10 _bz_frequencies 22000
+    atPut 11 _bz_frequencies 23308
+    atPut 12 _bz_frequencies 24694
+  }
+  if (_bz_note_names == 0) {
+    _bz_note_names = (newArray 12)
+    atPut 1 _bz_note_names 'C'
+    atPut 2 _bz_note_names 'C#'
+    atPut 3 _bz_note_names 'D'
+    atPut 4 _bz_note_names 'D#'
+    atPut 5 _bz_note_names 'E'
+    atPut 6 _bz_note_names 'F'
+    atPut 7 _bz_note_names 'F#'
+    atPut 8 _bz_note_names 'G'
+    atPut 9 _bz_note_names 'G#'
+    atPut 10 _bz_note_names 'A'
+    atPut 11 _bz_note_names 'A#'
+    atPut 12 _bz_note_names 'B'
+  }
+}
+
+to 'bounce ball' {
+  if (or (x >= (128 - ((v 'ball radius') * 2))) (x <= ((v 'ball radius') * 2))) {
+    'delta x' = ((v 'delta x') * -1)
+    'play tone' 'D' 1 50
+  }
+  if (y <= 1) {
+    'game over' 1
+  } (y >= 126) {
+    'game over' 2
+  } (and (y <= 19) (and (x >= (v 'paddle 2 x')) (x <= ((v 'paddle 2 x') + (v 'paddle width'))))) {
+    'bounce on paddle' 2
+  } (and (y >= 113) (and (x >= (v 'paddle 1 x')) (x <= ((v 'paddle 1 x') + (v 'paddle width'))))) {
+    'bounce on paddle' 1
+  }
+}
+
+to 'bounce on paddle' n {
+  'delta y' = ((v 'delta y') * -1)
+  local 'paddle x' 0
+  if (n == 1) {
+    'paddle x' = (v 'paddle 1 x')
+  } else {
+    'paddle x' = (v 'paddle 2 x')
+  }
+  if (and (x >= (v 'paddle x')) (x <= ((v 'paddle x') + 10))) {
+    'delta x' = (speed * -2)
+    'play tone' 'G#' 1 50
+  } (and (x >= ((v 'paddle x') + ((v 'paddle width') - 10))) (x <= ((v 'paddle x') + (v 'paddle width')))) {
+    'delta x' = (speed * 2)
+    'play tone' 'G#' 1 50
+  } ((v 'delta x') > 0) {
+    'delta x' = speed
+    'play tone' 'D' 1 50
+  } else {
+    'delta x' = (speed * -1)
+    'play tone' 'D' 1 50
+  }
+  speed += 10
+}
+
+to 'cancel button' {
+  return (digitalReadOp 14)
+}
+
+to 'clear ball' {
+  '[tft:circle]' x y (v 'ball radius') 0 true
+}
+
+to 'down button' {
+  return (digitalReadOp 13)
+}
+
+to freq freq pin ms {
+  local 'initial time' (millisOp)
+  local 'halfCycle' ((500000 / freq) - _loop_overhead)
+  repeatUntil (((millisOp) - (v 'initial time')) > ms) {
+    digitalWriteOp pin true
+    waitMicros halfCycle
+    digitalWriteOp pin false
+    waitMicros halfCycle
+  }
+}
+
+to 'game over' n {
+  playing = (booleanConstant false)
+  '[display:mbDisplayOff]'
+  '[tft:text]' 'GAME' 18 30 (hexToInt 'FF0000') 4 false
+  '[tft:text]' 'OVER' 18 70 (hexToInt 'FF0000') 4 false
+  if (n == 1) {
+    '[tft:text]' 'v WINNER v' 38 110 (hexToInt '00FF00') 1 false
+    '[tft:line]' 40 115 40 105 (hexToInt '00FF00')
+    '[tft:line]' 94 115 94 105 (hexToInt '00FF00')
+  } else {
+    '[tft:text]' '^ WINNER ^' 38 10 (hexToInt '00FF00') 1 false
+    '[tft:line]' 40 10 40 20 (hexToInt '00FF00')
+    '[tft:line]' 94 10 94 20 (hexToInt '00FF00')
+  }
+  'play tone' 'E' 2 150
+  'play tone' 'D#' 2 150
+  'play tone' 'D' 2 150
+  'play tone' 'C#' 2 150
+  'play tone' 'C' 2 150
+  'play tone' 'B' 1 300
+  waitMillis 1000
+  'new game'
+}
+
+to 'left button' {
+  return (digitalReadOp 2)
+}
+
+to 'new game' {
+  speed = 200
+  'paddle 1 x' = (random 30 80)
+  'paddle 2 x' = (random 30 80)
+  x = (random 30 80)
+  y = 63
+  if ((random 1 2) == 1) {
+    'delta x' = speed
+  } else {
+    'delta x' = (speed * -1)
+  }
+  if ((random 1 2) == 1) {
+    'delta y' = speed
+  } else {
+    'delta y' = (speed * -1)
+  }
+  '[display:mbDisplayOff]'
+  '[tft:text]' 'PONG' 18 40 (hexToInt 'FFFF00') 4 false
+  '[tft:text]' 'Press OK to start' 15 80 (hexToInt 'FFFFFF') 1 false
+  waitUntil ('OK button')
+  '[display:mbDisplayOff]'
+  '[tft:text]' 'GO!' 30 30 (hexToInt 'FFFF00') 5 false
+  waitMillis 1000
+  '[display:mbDisplayOff]'
+  playing = (booleanConstant true)
+}
+
+to 'play tone' note octave ms {
+  if (_bz_frequencies == 0) {'attach buzzer to pin' ''}
+  local 'base frequency' (at ('_bz_index of' note _bz_note_names nil nil) _bz_frequencies)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      'base frequency' = ((v 'base frequency') / 2)
+    }
+  }
+  repeat octave {
+    'base frequency' = ((v 'base frequency') * 2)
+  }
+  freq ((v 'base frequency') / 100) _bz_pinNumber ms
+}
+
+to 'plot ball' {
+  '[tft:circle]' x y (v 'ball radius') (hexToInt 'FF0000') true
+}
+
+to 'plot paddles' {
+  '[tft:rect]' 0 6 128 8 0 true
+  '[tft:roundedRect]' (v 'paddle 2 x') 6 (v 'paddle width') 8 4 (hexToInt 'FFFF00') true
+  '[tft:rect]' 0 120 128 8 0 true
+  '[tft:roundedRect]' (v 'paddle 1 x') 120 (v 'paddle width') 8 4 (hexToInt 'FFFF00') true
+}
+
+to 'right button' {
+  return (digitalReadOp 27)
+}
+
+to 'up button' {
+  return (digitalReadOp 4)
+}
+
+script 1165 50 {
+to 'bounce ball' {}
+}
+
+script 246 55 {
+comment 'A rendition to one of the first videogames ever.
+This one fits in your pocket!
+
+Player 1 uses keys OK and X.
+Player 2 uses ← and →.'
+}
+
+script 649 70 {
+to 'new game' {}
+}
+
+script 66 122 {
+whenStarted
+'refresh rate' = 40
+'ball radius' = 4
+'paddle width' = 40
+'new game'
+forever {
+  if playing {
+    'clear ball'
+    x += ((v 'delta x') / 100)
+    y += ((v 'delta y') / 100)
+    'plot ball'
+    'bounce ball'
+  }
+  waitMillis (v 'refresh rate')
+}
+}
+
+script 374 171 {
+whenCondition ('OK button')
+if ((v 'paddle 1 x') >= 4) {
+  'paddle 1 x' += -2
+}
+'plot paddles'
+}
+
+script 384 363 {
+whenCondition ('left button')
+if ((v 'paddle 2 x') >= 4) {
+  'paddle 2 x' += -2
+}
+'plot paddles'
+}
+
+script 54 587 {
+whenCondition ('cancel button')
+if ((v 'paddle 1 x') <= (126 - (v 'paddle width'))) {
+  'paddle 1 x' += 2
+}
+'plot paddles'
+}
+
+script 60 772 {
+whenCondition ('right button')
+if ((v 'paddle 2 x') <= (126 - (v 'paddle width'))) {
+  'paddle 2 x' += 2
+}
+'plot paddles'
+}
+
+script 1168 881 {
+to 'bounce on paddle' {}
+}
+
+script 643 922 {
+to 'plot ball' {}
+}
+
+script 62 951 {
+to 'game over' {}
+}
+
+script 642 1061 {
+to 'plot paddles' {}
+}
+
+script 631 1400 {
+to 'clear ball' {}
+}
+
