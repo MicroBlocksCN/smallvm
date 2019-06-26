@@ -74,6 +74,7 @@ void queueBroadcastAsThingEvent(char *s, int len) {
 	nextBroadcastBuffer = (nextBroadcastBuffer + 1) % BROADCAST_BUFFER_COUNT;
 }
 
+static int event_id = 0; // events need an incremental id
 
 // Primitives to build a Thing description (interim, until we have string concatenation)
 
@@ -170,8 +171,6 @@ static char* getDescription() {
 	return descriptionObj.body;
 }
 
-int event_id = 0;
-
 void webServerLoop() {
 	if (!client) client = server.available(); // attempt to accept a client connection
 	if (!client) return; // no client connection
@@ -224,9 +223,9 @@ void webServerLoop() {
 			if (strcmp(evt, "") != 0) {
 				client.print("  { \"");
 				client.print(evt);
-				client.print("\" : {\"data\":");
+				client.print("\":{ \"data\":{\"id\":\"");
                                 client.print(event_id++);
-                                client.print("}},\n");
+                                client.print("\"}}},\n");
 			}
                 }
                 client.print("  { \"_\":{}}\n]");
