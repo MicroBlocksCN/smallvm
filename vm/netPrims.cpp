@@ -74,7 +74,7 @@ void queueBroadcastAsThingEvent(char *s, int len) {
 	nextBroadcastBuffer = (nextBroadcastBuffer + 1) % BROADCAST_BUFFER_COUNT;
 }
 
-static int event_id = 0; // events need an incremental id
+static int event_id = rand(); // events need an incremental id
 
 // Primitives to build a Thing description (interim, until we have string concatenation)
 
