@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion loggedData loggedDataNext loggedDataCount
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType loggedData loggedDataNext loggedDataCount
 
 method scripter SmallRuntime { return scripter }
 
@@ -309,6 +309,7 @@ method setPort SmallRuntime newPortName {
 		if ('' == newPortName) { return }
 	}
 	vmVersion = nil
+        boardType = nil
 	if (and ('disconnect' == newPortName) (notNil port)) {
 		stopAndSyncScripts this
 		sendStartAll this
@@ -341,6 +342,7 @@ method closePort SmallRuntime {
 		closeSerialPort port
 		port = nil
 		vmVersion = nil
+                boardType = nil
 	}
 }
 
@@ -409,11 +411,22 @@ method extractVersionNumber SmallRuntime versionString {
 	return result
 }
 
+method extractBoardType SmallRuntime versionString {
+	// Return the board type from the versionString.
+	// Version string format: vNNN [boardType]
+
+	words = (words (substring versionString 2))
+	if (isEmpty words) { return -1 }
+	return (joinStrings (copyWithout words (at words 1)) ' ')
+}
+
 method versionReceived SmallRuntime versionString {
 	if (isNil vmVersion) { // first time: record and check the version number
 		vmVersion = (extractVersionNumber this versionString)
+                boardType = (extractBoardType this versionString)
 		checkVmVersion this
-	} else { // not first time: show the vresion number
+                installBoardSpecificBlocks this
+	} else { // not first time: show the version number
 		showVersion this versionString
 	}
 }
@@ -432,6 +445,27 @@ method checkVmVersion SmallRuntime {
 			installVM this
 		}
 	}
+}
+
+method installBoardSpecificBlocks SmallRuntime {
+        // installs default blocks libraries for each type of board
+        if ('Citilab ED1' == boardType) {
+            importLibraryFromFile scripter '//Libraries/Citilab ED1/ED1 Buttons.ubl'
+            importLibraryFromFile scripter '//Libraries/Tone.ubl'
+            importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
+            importLibraryFromFile scripter '//Libraries/TFT.ubl'
+            importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+        } ('micro:bit' == boardType) {
+            importLibraryFromFile scripter '//Libraries/BBC microbit.ubl'
+        } ('Calliope' == boardType) {
+            importLibraryFromFile scripter '//Libraries/Calliope.ubl'
+        } ('CircuitPlayground' == boardType) {
+            importLibraryFromFile scripter '//Libraries/Circuit Playground.ubl'
+        } ('ESP8266' == boardType) {
+            importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+        } ('ESP32' == boardType) {
+            importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+        }
 }
 
 method clearBoardIfConnected SmallRuntime doReset {
@@ -685,6 +719,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 			print 'serial port closed; board disconnected?'
 			port = nil
 			vmVersion = nil
+			boardType = nil
 			return
 		}
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
@@ -934,13 +969,17 @@ method installVM SmallRuntime {
 	}
 	popUpAtHand menu (global 'page')
   } ((count (portList this)) > 0) {
-	menu = (menu 'Select board type:' this)
-	for boardType (array 'NodeMCU' 'Generic ESP32' 'Citilab ED1') {
-	  addItem menu boardType (action 'flashVM' this boardType)
-	}
-	addLine menu
-	addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
-	popUpAtHand menu (global 'page')
+        if (boardType == nil) {
+          menu = (menu 'Select board type:' this)
+              for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1') {
+                  addItem menu boardName (action 'flashVM' this boardName)
+              }
+          addLine menu
+              addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
+              popUpAtHand menu (global 'page')
+        } else {
+          flashVM this boardType
+        }
   } else {
       inform (join
 		(localized 'No boards found; is your board plugged in?') (newline)
@@ -1056,11 +1095,11 @@ method adaFruitMessage SmallRuntime {
 	inform (localized 'For AdaFruit boards, double-click reset button and try again.')
 }
 
-method flashVM SmallRuntime boardType {
+method flashVM SmallRuntime boardName {
   closePort (smallRuntime)
   copyEspToolToDisk this
   copyEspFilesToDisk this
-  copyVMtoDisk this boardType
+  copyVMtoDisk this boardName
 
   if ('Mac' == (platform)) {
     esptool = 'esptool'
@@ -1070,14 +1109,14 @@ method flashVM SmallRuntime boardType {
     esptool = 'esptool.exe'
   }
 
-  if (boardType == 'Generic ESP32') {
+  if (boardName == 'ESP32') {
     exec (join (tmpPath this) 'esp32flash.cmd')
-  } (boardType == 'Citilab ED1') {
+  } (boardName == 'Citilab ED1') {
     inform (join (localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
                  (localized 'Then wait for the screen to turn off again.'))
     exec (join (tmpPath this) esptool) 'write_flash' '0x10000' (join (tmpPath this) 'vm')
   } else {
-    // NodeMCU
+    // ESP8266
     inform 'Please wait for the on-board LED to stop flashing.'
     exec (join (tmpPath this) esptool) 'write_flash' '0' (join (tmpPath this) 'vm')
   }
@@ -1106,12 +1145,12 @@ method copyEspToolToDisk SmallRuntime {
   setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
 }
 
-method copyVMtoDisk SmallRuntime boardType {
-  if (boardType == 'NodeMCU') {
+method copyVMtoDisk SmallRuntime boardName {
+  if (boardName == 'ESP8266') {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.nodemcu.bin' true)
-  } (boardType == 'Generic ESP32') {
+  } (boardName == 'ESP32') {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
-  } (boardType == 'Citilab ED1') {
+  } (boardName == 'Citilab ED1') {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.citilab-ed1.bin' true)
   }
   writeFile (join (tmpPath this) 'vm') vmData
