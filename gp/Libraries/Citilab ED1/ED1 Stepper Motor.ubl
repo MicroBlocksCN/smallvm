@@ -1,0 +1,90 @@
+module 'ED1 Stepper Motor' Output
+variables _ED1_stepper_init _ED1_CW1 _ED1_CW2 _ED1_CCW1 _ED1_CCW2 _ED1_motor_running _ED1_exp_register
+
+	spec ' ' 'motor step' 'move motor _  _ steps _' 'auto auto menu.directions' 1 '128' 'clockwise'
+	spec ' ' 'move motor ' 'move motor 1 _ and motor 2 _ _ steps' 'menu.directions menu.directions auto' 'clockwise' 'counter-clockwise' '64'
+	spec ' ' '_ED1_stepper_init' '_ED1_stepper_init'
+	spec ' ' 'stop steppers' 'stop steppers'
+
+to '_ED1_stepper_init' {
+  if (_ED1_stepper_init == 0) {
+    comment '0 for ED1 V2'
+    if ((i2cGet (hexToInt '20') 1) == 0) {
+      _ED1_exp_register = (hexToInt '9')
+    } else {
+      _ED1_exp_register = (hexToInt '14')
+    }
+    _ED1_CW1 = (hexToInt 'C')
+    _ED1_CW2 = (hexToInt '3')
+    _ED1_CCW1 = (hexToInt '3')
+    _ED1_CCW2 = (hexToInt 'C')
+    _ED1_stepper_init = (booleanConstant true)
+    i2cSet (hexToInt '20') 0 0
+  }
+}
+
+to 'motor step' 'motor number' steps direction {
+  '_ED1_stepper_init'
+  _ED1_motor_running = (booleanConstant true)
+  repeat steps {
+    if _ED1_motor_running {
+      i2cSet (hexToInt '20') _ED1_exp_register ((hexToInt '9') << (((v 'motor number') - 1) << 2))
+      waitMicros 1500
+      if (direction == 'clockwise') {
+        i2cSet (hexToInt '20') _ED1_exp_register ((hexToInt 'C') << (((v 'motor number') - 1) << 2))
+      } else {
+        i2cSet (hexToInt '20') _ED1_exp_register ((hexToInt '3') << (((v 'motor number') - 1) << 2))
+      }
+      waitMicros 1500
+      i2cSet (hexToInt '20') _ED1_exp_register ((hexToInt '6') << (((v 'motor number') - 1) << 2))
+      waitMicros 1500
+      if (direction == 'clockwise') {
+        i2cSet (hexToInt '20') _ED1_exp_register ((hexToInt '3') << (((v 'motor number') - 1) << 2))
+      } else {
+        i2cSet (hexToInt '20') _ED1_exp_register ((hexToInt 'C') << (((v 'motor number') - 1) << 2))
+      }
+      waitMicros 1500
+    }
+  }
+  'stop steppers'
+}
+
+to 'move motor ' 'direction 1' 'direction 2' steps {
+  '_ED1_stepper_init'
+  _ED1_motor_running = (booleanConstant true)
+  local 'step 1' 0
+  local 'step 2' 0
+  if ((v 'direction 1') == 'clockwise') {
+    'step 1' = _ED1_CW1
+    'step 2' = _ED1_CW2
+  } else {
+    'step 1' = _ED1_CCW1
+    'step 2' = _ED1_CCW2
+  }
+  if ((v 'direction 2') == 'clockwise') {
+    'step 1' = (((v 'step 1') << 4) | _ED1_CW1)
+    'step 2' = (((v 'step 2') << 4) | _ED1_CW2)
+  } else {
+    'step 1' = (((v 'step 1') << 4) | _ED1_CCW1)
+    'step 2' = (((v 'step 2') << 4) | _ED1_CCW2)
+  }
+  repeat steps {
+    if _ED1_motor_running {
+      i2cSet (hexToInt '20') _ED1_exp_register (hexToInt '99')
+      waitMicros 1500
+      i2cSet (hexToInt '20') _ED1_exp_register (v 'step 1')
+      waitMicros 1500
+      i2cSet (hexToInt '20') _ED1_exp_register (hexToInt '66')
+      waitMicros 1500
+      i2cSet (hexToInt '20') _ED1_exp_register (v 'step 2')
+      waitMicros 1500
+    }
+  }
+  'stop steppers'
+}
+
+to 'stop steppers' {
+  i2cSet (hexToInt '20') _ED1_exp_register 0
+  _ED1_motor_running = (booleanConstant false)
+  waitMicros 1500
+}

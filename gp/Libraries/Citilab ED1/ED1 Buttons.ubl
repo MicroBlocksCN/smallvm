@@ -1,0 +1,75 @@
+module 'ED1 Buttons' Input
+variables _ED1_buttons_init '_capacitive threshold' '_use capacitive'
+
+	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
+	spec 'r' '_button pressed' '_button pressed _' 'auto any' 15
+	spec 'r' '_capacitive' '_capacitive sensor _ pressed' 'auto any' 15
+	spec 'r' 'OK button' 'button OK'
+	spec 'r' 'cancel button' 'button X'
+	spec 'r' 'up button' 'button up'
+	spec 'r' 'down button' 'button down'
+	spec 'r' 'left button' 'button left'
+	spec 'r' 'right button' 'button right'
+	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 30
+	spec ' ' 'set use capacitive to' 'set use capacitive to _' 'bool' true
+
+to 'OK button' {
+  return ('_button pressed' 15)
+}
+
+to '_ED1_buttons_init' {
+  if (_ED1_buttons_init == 0) {
+    comment 'true by default for ED1 V2 board'
+    '_use capacitive' = ((i2cGet (hexToInt '20') 1) == 0)
+    if ((v '_capacitive threshold') == 0) {
+      '_capacitive threshold' = 30
+    }
+    _ED1_buttons_init = (booleanConstant true)
+  }
+}
+
+to '_button pressed' pin {
+  '_ED1_buttons_init'
+  if (v '_use capacitive') {
+    return ('_capacitive' pin)
+  } else {
+    return (digitalReadOp pin)
+  }
+}
+
+to '_capacitive' pin {
+  if (('[sensors:touchRead]' pin) <= (v '_capacitive threshold')) {
+    waitMicros 500
+    return (('[sensors:touchRead]' pin) <= (v '_capacitive threshold'))
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to 'cancel button' {
+  return ('_button pressed' 14)
+}
+
+to 'down button' {
+  return ('_button pressed' 13)
+}
+
+to 'left button' {
+  return ('_button pressed' 2)
+}
+
+to 'right button' {
+  return ('_button pressed' 27)
+}
+
+to 'set capacitive threshold to' threshold {
+  '_capacitive threshold' = threshold
+}
+
+to 'set use capacitive to' value {
+  '_use capacitive' = value
+}
+
+to 'up button' {
+  return ('_button pressed' 4)
+}
