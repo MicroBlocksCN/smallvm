@@ -1,3 +1,64 @@
+module main
+variables _WoT_definingEvents _useWiFi
+
+script 297 50 {
+comment 'Mozila Web of Things pushbutton example.
+
+To test it, either press, long-press or double-press the A button
+in your board and look at the display.'
+}
+
+script 50 130 {
+whenButtonPressed 'A'
+local 'time' (millisOp)
+waitUntil (or (not (buttonA)) (((millisOp) - time) > 500))
+if (((millisOp) - time) > 500) {
+  sendBroadcastSimple 'Button long-pressed'
+} (not (buttonA)) {
+  waitUntil (or (buttonA) (((millisOp) - time) > 250))
+  if (((millisOp) - time) > 250) {
+    sendBroadcastSimple 'Button pressed'
+  } (buttonA) {
+    sendBroadcastSimple 'Button double-pressed'
+  }
+}
+}
+
+script 553 186 {
+whenStarted
+'wifi connect to' 'Network_Name' '' 3
+defineThing 'microButton' 'PushButton'
+registerEvent 'Button pressed' 'PressedEvent'
+registerEvent 'Button double-pressed' 'DoublePressedEvent'
+registerEvent 'Button long-pressed' 'LongPressedEvent'
+}
+
+script 860 390 {
+whenBroadcastReceived 'Button long-pressed'
+setUserLED true
+waitMillis 500
+setUserLED false
+}
+
+script 557 410 {
+whenBroadcastReceived 'Button double-pressed'
+setUserLED true
+waitMillis 100
+setUserLED false
+waitMillis 100
+setUserLED true
+waitMillis 100
+setUserLED false
+}
+
+script 865 522 {
+whenBroadcastReceived 'Button pressed'
+setUserLED true
+waitMillis 100
+setUserLED false
+}
+
+
 module 'Web of Things' Comm
 variables _WoT_definingEvents _useWiFi
 
@@ -11,7 +72,7 @@ variables _WoT_definingEvents _useWiFi
 	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str.stringPropertyTypesMenu' '' '' 'ColorProperty'
 	spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
 	spec 'r' '[net:thingDescription]' 'thing description'
-	spec ' ' '[net:clearThingDescription]'	'clear thing description'
+	spec ' ' '[net:clearThingDescription]' 'clear thing description'
 
 to '_addCustomProperty' key jsonValue {
   if _useWiFi {'[net:appendToThingProperty]' '"' key '": ' jsonValue}
@@ -122,3 +183,4 @@ to 'wifi connect to' ssid password tries {
 to wifiCreateHotspot ssid password {
   '[net:startWiFi]' ssid password true
 }
+

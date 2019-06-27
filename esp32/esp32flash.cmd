@@ -1,4 +1,4 @@
-:; if [ uname = 'Linux' ]; then
+:; if [ `uname` = 'Linux' ]; then
 :;      command=esptool.py
 :; else
 :;      command=esptool
