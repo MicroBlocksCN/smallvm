@@ -42,10 +42,16 @@ uint32 millisecs() {
 	return microsecs() / 1000;
 }
 
+static void initRandomSeed() {
+	// Initialize the random number generator with a random seed when started (if possible).
+	// Not yet implemented; will use nrf51 hardware RNG
+}
+
 void hardwareInit() {
 	Serial.begin(115200);
 	initClock_NRF51();
 	initPins();
+	initRandomSeed();
 	turnOffInternalNeoPixels();
 }
 
@@ -58,9 +64,22 @@ void hardwareInit() {
 uint32 microsecs() { return (uint32) micros(); }
 uint32 millisecs() { return (uint32) millis(); }
 
+static void initRandomSeed() {
+	// Initialize the random number generator with a random seed when started (if possible).
+
+	#if defined(ESP8266)
+		randomSeed(RANDOM_REG32);
+	#elif defined(ARDUINO_ARCH_ESP32)
+		randomSeed(esp_random());
+	#else
+		// Not yet implemented for non-ESP boards: collect some random bits from analog pins
+	#endif
+}
+
 void hardwareInit() {
 	Serial.begin(115200);
 	initPins();
+	initRandomSeed();
 	turnOffInternalNeoPixels();
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
