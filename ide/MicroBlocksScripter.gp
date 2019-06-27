@@ -960,5 +960,5 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
   if (not (endsWith fileName '.ubl' )) { fileName = (join fileName '.ubl') }
 
   libName = (withoutExtension (filePart fileName))
-  writeFile fileName (libraryCodeString mbProject libName)
+  writeFile fileName (codeString (main mbProject) mbProject libName)
 }

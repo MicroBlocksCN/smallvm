@@ -551,14 +551,6 @@ method hideAdvancedBlocks MicroBlocksEditor {
   developerModeChanged this
 }
 
-method importLibrary MicroBlocksEditor {
-  importLibrary scripter
-}
-
-method exportAsLibrary MicroBlocksEditor {
-  exportAsLibrary scripter fileName
-}
-
 method softReset MicroBlocksEditor {
   softReset (smallRuntime)
 }
@@ -674,6 +666,10 @@ method projectMenu MicroBlocksEditor {
   addItem menu 'New' 'newProject'
   addItem menu 'Open' 'openProjectMenu'
   addItem menu 'Save' 'saveProjectToFile'
+  if (devMode) {
+	addLine menu
+	addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
+  }
   popUpAtHand menu (global 'page')
 }
 
