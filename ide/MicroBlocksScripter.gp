@@ -141,7 +141,7 @@ method addLibraryButton MicroBlocksScripter label w h {
   fillRect bm2 (gray 30) (centerX - halfLen) (centerY - halfW) len lineW
   fillRect bm2 (gray 30) (centerX - halfW) (centerY - halfLen) lineW len
 
-  button = (newButton '' (action 'importLibrary' projectEditor))
+  button = (newButton '' (action 'importLibrary' this))
   setCostumes button bm1 bm2
   return button
 }
