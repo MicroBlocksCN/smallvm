@@ -78,7 +78,7 @@ method buildMorph Menu page yPos {
   // settings, to be refactored later to somewhere else
   labelFontName = 'Arial Bold'
   fontName = 'Arial'
-  fontSize = (scale * 14)
+  fontSize = (scale * 16)
   border = (scale * 1)
   corner = (scale * 2)
   labelPadding = (scale * 4)

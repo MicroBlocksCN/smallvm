@@ -257,9 +257,12 @@ method softReset SmallRuntime {
 
 method selectPort SmallRuntime {
 	portList = (portList this)
-	menu = (menu 'Serial port:' (action 'setPort' this) true)
+	menu = (menu 'Connect' (action 'setPort' this) true)
 	for s portList { addItem menu s }
-	addItem menu 'other...'
+	if (devMode) {
+		addLine menu
+		addItem menu 'other...'
+	}
 	if (notNil port) {
 		addLine menu
 		addItem menu 'disconnect'
@@ -379,12 +382,17 @@ method connectionStatus SmallRuntime {
 	return 'board not responding'
 }
 
-method ideVersion SmallRuntime { return '0.1.42' }
+method ideVersion SmallRuntime { return '0.1.43' }
 method latestVmVersion SmallRuntime { return 61 }
 
 method showAboutBox SmallRuntime {
+	vmVersionReport = ''
+	if (notNil vmVersion) {
+		vmVersionReport = (join '(Firmware v' vmVersion ')' (newline))
+	}
 	inform (global 'page') (join
 		'MicroBlocks v' (ideVersion this) (newline)
+		vmVersionReport
 		(localized 'by') (newline)
 		'John Maloney, Bernat Romagosa, and Jens Mönig' (newline)
 		'Created with GP (gpblocks.org)' (newline)

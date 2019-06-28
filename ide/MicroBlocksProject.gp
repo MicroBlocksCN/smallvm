@@ -254,15 +254,6 @@ method codeString MicroBlocksProject {
 	return (joinStrings result)
 }
 
-method libraryCodeString MicroBlocksProject modName {
-	// Return a string containing the code for this project formatted as a library.
-
-	setModuleName main modName // rename main to module name for saving
-	result = (codeString this)
-	setModuleName main 'main'
-	return result
-}
-
 // Updating primitives
 
 method updatePrimitives MicroBlocksProject {
@@ -323,7 +314,7 @@ to newMicroBlocksModule modName {
 
 method initialize MicroBlocksModule name {
 	moduleName = name
-	moduleCategory = ''
+	moduleCategory = 'Library'
 	variableNames = (array)
 	blockList = (array)
 	functions = (array)
@@ -413,15 +404,17 @@ method deleteVariable MicroBlocksModule varName {
 
 // saving
 
-method codeString MicroBlocksModule owningProject {
+method codeString MicroBlocksModule owningProject newLibName {
 	// Return a string containing the code for this MicroBlocksModule.
+	// If newLibName is not nil, this module is being exported as a library.
 
 	result = (list)
 	modName = moduleName
+	if (notNil newLibName) { modName = newLibName }
 	if (needsQuotes this modName) { modName = (join '''' modName '''') }
 	add result (join 'module ' modName)
 
-	if ('' != moduleCategory) {
+	if ('Library' != moduleCategory) {
 		modCat = moduleCategory
 		if (needsQuotes this modCat) { modCat = (join '''' modCat '''') }
 		add result (join ' ' modCat)
@@ -468,7 +461,6 @@ method codeString MicroBlocksModule owningProject {
 					add result (join '	' (specDefinitionString spec) (newline))
 					add processed op
 				}
-				add result (newline)
 			}
 		}
 		add result (newline)
@@ -481,8 +473,10 @@ method codeString MicroBlocksModule owningProject {
 		}
 	}
 
-	// Add scripts
-	add result (scriptString this)
+	// Add scripts if not exporting as a library
+	if (isNil newLibName) {
+		add result (scriptString this)
+	}
 
 	return (joinStrings result)
 }

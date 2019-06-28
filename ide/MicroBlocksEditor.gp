@@ -486,35 +486,32 @@ method rightClicked MicroBlocksEditor aHand {
 }
 
 method contextMenu MicroBlocksEditor {
-  menu = (menu nil this)
+  menu = (menu 'MicroBlocks' this)
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
-  addItem menu 'virtual machine version' (action 'getVersion' (smallRuntime))
-  addLine menu
-  addItem menu 'install MicroBlocks on board' 'installVM'
-  addLine menu
-  addItem menu 'show graph' 'graphData'
-//  addItem menu 'show recent data' 'showRecentData' // commented out until it shows data in real-time
-  addItem menu 'copy graph data to clipboard' 'copyDataToClipboard'
-  addItem menu 'clear graph' 'clearData'
+  addItem menu 'update firmware on board' 'installVM'
   addLine menu
   addItem menu 'clear memory and variables' 'softReset'
+  addItem menu 'show data graph' 'graphData'
   addLine menu
 
-// xxx testing
+// xxx testing (used by John)
 // addItem menu 'dump persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 1 nil)
 // addItem menu 'compact persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
 // addLine menu
 
   if (not (devMode)) {
-	  if (not (isRunning thingServer)) {
-		addItem menu 'start Mozilla WebThing server' 'startThingServer'
-	  } else {
-		addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
-	  }
-	addLine menu
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
-	addItem menu 'export functions as library' 'exportAsLibrary'
+	addItem menu 'copy graph data to clipboard (temporary!)' 'copyDataToClipboard'
+	addItem menu 'clear graph data (temporary!)' 'clearData'
+	addLine menu
+	addItem menu 'firmware version' (action 'getVersion' (smallRuntime))
+	addLine menu
+	if (not (isRunning thingServer)) {
+	  addItem menu 'start Mozilla WebThing server' 'startThingServer'
+	} else {
+	  addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
+	}
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
@@ -551,14 +548,6 @@ method hideAdvancedBlocks MicroBlocksEditor {
   developerModeChanged this
 }
 
-method importLibrary MicroBlocksEditor {
-  importLibrary scripter
-}
-
-method exportAsLibrary MicroBlocksEditor {
-  exportAsLibrary scripter fileName
-}
-
 method softReset MicroBlocksEditor {
   softReset (smallRuntime)
 }
@@ -584,7 +573,7 @@ method installVM MicroBlocksEditor {
 // Language Button
 
 method languageMenu MicroBlocksEditor {
-  menu = (menu 'Language:' this)
+  menu = (menu 'Language' this)
   addItem menu 'English' (action 'setLanguage' this 'English')
   if ('Browser' == (platform)) {
 	for fn (listFiles 'translations') {
@@ -670,10 +659,14 @@ method addSettingsButton MicroBlocksEditor {
 }
 
 method projectMenu MicroBlocksEditor {
-  menu = (menu 'Project' this)
+  menu = (menu 'File' this)
   addItem menu 'New' 'newProject'
   addItem menu 'Open' 'openProjectMenu'
   addItem menu 'Save' 'saveProjectToFile'
+  if (devMode) {
+	addLine menu
+	addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
+  }
   popUpAtHand menu (global 'page')
 }
 
