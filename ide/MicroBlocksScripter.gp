@@ -359,8 +359,8 @@ method addVariableBlocks MicroBlocksScripter {
 method addMyBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
-  addButton this (localized 'Add a command') (action 'createFunction' this false)
-  addButton this (localized 'Add a reporter') (action 'createFunction' this true)
+  addButton this (localized 'Add a command block') (action 'createFunction' this false)
+  addButton this (localized 'Add a reporter block') (action 'createFunction' this true)
   nextY += (8 * scale)
 
   for f (functions (main mbProject)) {
