@@ -977,7 +977,9 @@ method installVM SmallRuntime {
 	}
 	popUpAtHand menu (global 'page')
   } ((count (portList this)) > 0) {
-        if (boardType == nil) {
+        if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1') boardType) {
+          flashVM this boardType
+        } (boardType == 'nil') {
           menu = (menu 'Select board type:' this)
               for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1') {
                   addItem menu boardName (action 'flashVM' this boardName)
@@ -985,8 +987,6 @@ method installVM SmallRuntime {
           addLine menu
               addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
               popUpAtHand menu (global 'page')
-        } else {
-          flashVM this boardType
         }
   } else {
       inform (join
