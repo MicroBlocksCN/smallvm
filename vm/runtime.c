@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v061"
+#define VM_VERSION "v061c"
 
 // Forward Reference Declarations
 
@@ -278,6 +278,20 @@ static void deleteAllChunks() {
 static void clearAllVariables() {
 	// Clear variable name records (but don't clear the variable values).
 	appendPersistentRecord(varsClearAll, 0, 0, 0, NULL);
+}
+
+// Extended Messages
+
+static void processExtendedMessage(uint8 msgID, int byteCount, uint8 *data) {
+	switch (msgID) {
+	case 1: // set extraByteDelay
+		if (byteCount < 1) break;
+		int arg = *data;
+		if (arg < 1) arg = 1;
+		if (arg > 50) arg = 50;
+		extraByteDelay = data;
+		break;
+	}
 }
 
 // Soft Reset
@@ -776,6 +790,9 @@ static void processLongMessage() {
 		break;
 	case varNameMsg:
 		storeVarName(chunkIndex, bodyBytes, &rcvBuf[5]);
+		break;
+	case extendedMsg:
+		processExtendedMessage(chunkIndex, bodyBytes, &rcvBuf[5]);
 		break;
 	}
 	skipToStartByteAfter(5 + msgLength);

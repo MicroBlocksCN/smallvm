@@ -24,11 +24,11 @@ The baud rate is 115.2 kbaud.
 
 **Short message format (3 bytes):**
 
-[0xFA, OpCode, ChunkOrVariableOrCommentID]
+[0xFA, OpCode, ChunkOrVariableID]
 
 **Long message format (5 + dataSize bytes):**
 
-[0xFB, OpCode, ChunkOrVariableOrCommentID, DataSize-LSB, DataSize-MSB, ...data...]
+[0xFB, OpCode, ChunkOrVariableID, DataSize-LSB, DataSize-MSB, ...data...]
 
 The data size field specifies the number of data bytes. It is encoded as two bytes, least significant byte first.
 
@@ -109,9 +109,7 @@ This message is sent by the IDE when a variable is deleted, followed
 by a sequence of Variable Name messages to record the new variable bindings,
 if any.
 
-### Delete Comment (OpCode: 0x0B)
-
-Delete the comment with the given ID.
+### *Reserved* (OpCode: 0x0B)
 
 ### Get Virtual Machine Version (OpCode: 0x0C)
 
@@ -213,32 +211,10 @@ The first byte of the body is the attribute type, current:
 
 The name of the variable with the given ID. Body is a string.
 
-### Comment (OpCode: 0x1E, long message)
+### Extended Message (OpCode: 0x1E, long message)
 
-A comment the given ID. Body is a string.
+The ID specifies the extended message type. The format depends on the message type:
 
-### Comment Position (OpCode: 0x1F, long message)
+  * 1: set the per-byte delay for 'say' and 'graph' blocks. Body is one-byte value in the range 1-50.
 
-The offset of the comment with the given ID in the scripting pane.
-The position is encoded as 4 bytes in the same manner as the chunk position attribute.
-
-
-## IDE → Bridge, Bridge → IDE
-
-0xFF is reserved for all messages between the bridge and the IDE.
-
-In this case, the message data will be a JSON object of the form:
-
-    { selector: aMethorSelector, arguments: [ arg1, arg2, ... ] }.
-
-### Get Serial Port List (selector: getSerialPortList)
-
-### Serial Port List Response (selector: getSerialPortListResponse)
-
-### Serial Connect Request (selector: serialConnect)
-
-### Serial Connect Response (selector: serialConnectResponse)
-
-### Serial Disconnect Request (selector: serialDisconnect)
-
-### Serial Disconnect Response (selector: serialDisconnectResponse)
+### *Reserved* (OpCode: 0x1F, long message)

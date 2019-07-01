@@ -51,6 +51,8 @@ OBJ fail(uint8 errCode) {
 static char printBuffer[PRINT_BUF_SIZE];
 static int printBufferByteCount = 0;
 
+int extraByteDelay = 1600; // default of 1600 usecs assumes serial throughput of 625 bytes/sec
+
 static void printObj(OBJ obj) {
 	// Append a printed representation of the given object to printBuffer.
 
@@ -776,7 +778,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		// wait for data to be sent; prevents use in tight loop from clogging serial line
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + (1600 * (printBufferByteCount + 6)); // assume 625 bytes/sec
+		task->wakeTime = microsecs() + (extraByteDelay * (printBufferByteCount + 6));
 		goto suspend;
 	logData_op:
 		printArgs(arg, sp - arg, false, true);
@@ -792,7 +794,7 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		// wait for data to be sent; prevents use in tight loop from clogging serial line
 		task->status = waiting_micros;
-		task->wakeTime = microsecs() + (1600 * (printBufferByteCount + 6)); // assume 625 bytes/sec
+		task->wakeTime = microsecs() + (extraByteDelay * (printBufferByteCount + 6));
 		goto suspend;
 	boardType_op:
 		*(sp - arg) = primBoardType();

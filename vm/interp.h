@@ -98,6 +98,10 @@ typedef struct {
 extern Task tasks[MAX_TASKS];
 extern int taskCount;
 
+// Extra delay used to limit serial transmission speed
+
+extern int extraByteDelay;
+
 // Serial Protocol Messages: IDE -> Board
 
 #define chunkCodeMsg			1	// bidirectional
@@ -110,7 +114,6 @@ extern int taskCount;
 #define setVarMsg				8
 #define getVarNamesMsg			9
 #define clearVarsMsg			10
-#define deleteCommentMsg		11	// unused
 #define getVersionMsg			12
 #define getAllCodeMsg			13
 #define deleteAllCodeMsg		14
@@ -132,8 +135,7 @@ extern int taskCount;
 #define broadcastMsg			27
 #define chunkAttributeMsg		28
 #define varNameMsg				29
-#define commentMsg				30	// unused
-#define commentPositionMsg		31	// unused
+#define extendedMsg				30
 
 // Error Codes (codes 1-9 are reserved for protocol errors; 10 and up are runtime errors)
 
