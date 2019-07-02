@@ -1,0 +1,13 @@
+module 'Misc Primitives'
+
+	// Miscellaneous system primtives.
+
+	spec ' ' 'noop'				'no op'
+	spec ' ' 'ignoreArgs'		'ignore : _ : ...' 'auto' 0
+	space
+	spec 'r' 'pushArgCount'		'arg count'
+	spec 'r' 'getArg'			'arg _' 'num' 0
+	space
+	spec 'r' 'hexToInt'			'hex _' 'str' '3F'
+	spec 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10
+	spec 'r' '[misc:sin]'		'fixed sine _' 'num' 9000
