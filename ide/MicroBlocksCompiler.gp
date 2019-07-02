@@ -256,7 +256,7 @@ method initOpcodes SmallCompiler {
 		stopAll 26
 		forLoop 27
 		initLocals 28
-	RESERVED 29
+	    getArg 29
 	RESERVED 30
 	RESERVED 31
 	RESERVED 32

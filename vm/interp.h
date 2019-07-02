@@ -165,6 +165,7 @@ extern int extraByteDelay;
 #define waitTooLong				29	// The maximum wait time is 3600000 milliseconds (one hour)
 #define noWiFi					30	// This board does not support WiFi
 #define zeroDivide				31	// Division (or modulo) by zero is not defined
+#define argIndexOutOfRange		32	// Argument index out of range
 
 // Runtime Operations
 

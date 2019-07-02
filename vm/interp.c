@@ -253,7 +253,7 @@ static void runTask(Task *task) {
 		&&stopAll_op,
 		&&forLoop_op,
 		&&initLocals_op,
-		&&RESERVED_op,
+		&&getArg_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
@@ -601,6 +601,21 @@ static void runTask(Task *task) {
 		// Reserve stack space for 'arg' locals initialized to false
 		STACK_CHECK(arg);
 		while (arg-- > 0) *sp++ = zeroObj;
+		DISPATCH();
+	getArg_op:
+		// For variadic functions. Unlike pushVar, the argument index is passed on the stack.
+		STACK_CHECK(1);
+		if (IN_CALL()) {
+			tmp = evalInt(*(sp - 1));
+			if ((1 <= tmp) && (tmp <= obj2int(*(fp - 3)))) { // if arg index in range:
+				*(sp - arg) = *(fp - obj2int(*(fp - 3)) - 4 + tmp);
+			} else {
+				fail(argIndexOutOfRange);
+			}
+		} else {
+			fail(notInFunction);
+		}
+		POP_ARGS_REPORTER();
 		DISPATCH();
 
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
