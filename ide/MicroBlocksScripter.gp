@@ -808,7 +808,7 @@ method updateCallsOf MicroBlocksScripter op {
 	if (and ('color' == typeStr) (isNil defaultValue)) {
       defaultValue = (color 35 190 30)
 	}
-	if (and ('auto' == typeStr) (representsANumber defaultValue)) {
+	if (and ('auto' == typeStr) (isClass defaultValue 'String') (representsANumber defaultValue)) {
 	  defaultValue = (toNumber defaultValue defaultValue)
 	}
 	add argTypes typeStr

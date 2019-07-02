@@ -651,6 +651,7 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'broadcastMsg' 27
 		atPut msgDict 'chunkAttributeMsg' 28
 		atPut msgDict 'varNameMsg' 29
+		atPut msgDict 'extendedMsg' 30
 	}
 	msgType = (at msgDict msgName)
 	if (isNil msgType) { error 'Unknown message:' msgName }

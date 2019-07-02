@@ -504,6 +504,7 @@ method contextMenu MicroBlocksEditor {
   } else {
 	addItem menu 'copy graph data to clipboard (temporary!)' 'copyDataToClipboard'
 	addItem menu 'clear graph data (temporary!)' 'clearData'
+	addItem menu 'set serial delay' 'serialDelayMenu'
 	addLine menu
 	addItem menu 'firmware version' (action 'getVersion' (smallRuntime))
 	addLine menu
@@ -536,6 +537,16 @@ method copyDataToClipboard MicroBlocksEditor {
 
 method clearData MicroBlocksEditor {
   clearLoggedData (smallRuntime)
+}
+
+method serialDelayMenu MicroBlocksEditor {
+  menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
+  for i 20 { addItem menu i }
+  popUpAtHand menu (global 'page')
+}
+
+method setSerialDelay MicroBlocksEditor newDelay {
+  sendMsg (smallRuntime) 'extendedMsg' 1 (list newDelay)
 }
 
 method showAdvancedBlocks MicroBlocksEditor {
