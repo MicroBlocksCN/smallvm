@@ -331,7 +331,7 @@ method addBlocksForLibrary MicroBlocksScripter libName {
 method addVariableBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
-  addButton this (localized 'Add a variable') (action 'createVariable' this) 'Create a global variable (i.e. visible in all scripts).'
+  addButton this (localized 'Add a variable') (action 'createVariable' this) 'Create a variable usable in all scripts'
   visibleVars = (visibleVars this)
   if (notEmpty visibleVars) {
 	addButton this (localized 'Delete a variable') (action 'deleteVariableMenu' this)
@@ -373,7 +373,7 @@ method addMyBlocks MicroBlocksScripter {
 }
 
 method addButton MicroBlocksScripter label action hint {
-  btn = (pushButton label (gray 130) action 120 30)
+  btn = (newButton label action)
   if (notNil hint) { setHint btn hint }
   setPosition (morph btn) nextX nextY
   addPart (morph (contents blocksFrame)) (morph btn)
@@ -933,7 +933,7 @@ method importLibraryFromFile MicroBlocksScripter fileName {
   } else {
 	data = (readFile fileName)
   }
-  if (isNil data) { error (join 'Could not read: ' fileName) }
+  if (isNil data) { return } // could not read file
 
   libName = (withoutExtension (filePart fileName))
   addLibraryFromString mbProject data libName

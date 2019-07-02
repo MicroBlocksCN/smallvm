@@ -687,6 +687,7 @@ method errorString SmallRuntime errID {
 #define waitTooLong				29	// The maximum wait time is 3600000 milliseconds (one hour)
 #define noWiFi					30	// This board does not support WiFi
 #define zeroDivide				31	// Division (or modulo) by zero is not defined
+#define argIndexOutOfRange		32	// Argument index out of range
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
@@ -922,6 +923,7 @@ method showResult SmallRuntime chunkID value {
 		h = (handler m)
 		if (and (isClass h 'Block') (chunkID == (lookupChunkID this h))) {
 			showHint m value
+			if ('' == value) { removeHint (global 'page') }
 		}
 	}
 }

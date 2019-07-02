@@ -655,6 +655,7 @@ to newColorPicker action initialColor {
   return (initialize (new 'ColorPicker') action initialColor)
 }
 
+method addTransparentButton ColorPicker x y { } // don't add a transparent button
 method setAction ColorPicker anAction { action = anAction }
 
 method updateRGBReadouts ColorPicker c {
@@ -809,3 +810,64 @@ method processEvent Keyboard evt {
 	call type focus evt this
   }
 }
+
+// "say" block formatting
+
+method initialize SpeechBubble aString bubbleWidth dir {
+  scale = (global 'scale')
+  font = 'Arial'
+  fontSize = (18 * scale)
+  maxLines = 30
+  shadowOffset = 3 // optional; if nil, no shadow is drawn
+
+  if (isNil aString) {aString = 'hint!'}
+  if (isNil bubbleWidth) {bubbleWidth = (175 * scale) }
+  if (isNil dir) {dir = 'right'}
+  direction = dir
+
+  setFont font fontSize
+  lines = (toList (wordWrapped aString bubbleWidth))
+  if ((count lines) > maxLines) {
+	lines = (copyFromTo lines 1 maxLines)
+	add lines '...'
+  }
+  contents = (newText (joinStrings lines (newline)) font fontSize (gray 0) 'center')
+
+  morph = (newMorph this)
+  addPart morph (morph contents)
+  fixLayout this
+  return this
+}
+
+// Increase font size in confirm dialogs
+
+method initializeForConfirm Prompter label question yesLabel noLabel anAction {
+  answer = false
+  isDone = false
+  if (isNil label) {label = 'Confirm'}
+  if (isNil question) {question = ''}
+  if (isNil yesLabel) {yesLabel = 'Yes'}
+  if (isNil noLabel) {noLabel = 'No'}
+  callback = anAction // optional
+
+  window = (window (localized label))
+  hide (morph (getField window 'resizer'))
+  border = (border window)
+  morph = (morph window)
+  setHandler morph this
+
+  lbl = (getField window 'label')
+  fontSize = (16 * (global 'scale'))
+  textFrame = (newText (localized question) (fontName lbl) fontSize (gray 0) 'center')
+  addPart morph (morph textFrame)
+  createButtons this (localized yesLabel) (localized noLabel)
+
+  textWidth = (width (morph textFrame))
+  buttonWidth = (width buttons)
+  labelWidth = (width (morph lbl))
+  xBtnWidth = (width (morph (getField window 'closeBtn')))
+  w = (max textWidth buttonWidth labelWidth)
+  setExtent morph (+ w xBtnWidth (4 * border)) (+ (height (morph lbl)) (height (morph textFrame)) (height (bounds buttons)) (8 * border))
+  setMinExtent morph (width morph) (height morph)
+}
+
