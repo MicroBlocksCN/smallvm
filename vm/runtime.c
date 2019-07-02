@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v062"
+#define VM_VERSION "v062a"
 
 // Forward Reference Declarations
 
@@ -289,7 +289,7 @@ static void processExtendedMessage(uint8 msgID, int byteCount, uint8 *data) {
 		int arg = *data;
 		if (arg < 1) arg = 1;
 		if (arg > 50) arg = 50;
-		extraByteDelay = data;
+		extraByteDelay = arg * 100; // 100 to 5000 microseconds per character
 		break;
 	}
 }
