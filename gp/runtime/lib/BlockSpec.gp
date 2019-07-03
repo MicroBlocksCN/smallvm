@@ -171,7 +171,8 @@ method inputSlot BlockSpec slotIndex blockColor isFormalParameter argNames {
     return (newColorSlot)
   }
   if ('microbitDisplay' == slotType) {
-    return (newMicroBitDisplaySlot)
+    slotContent = (at info 2)
+    return (newMicroBitDisplaySlot slotContent)
   }
   if ('menu' == slotType) {
     slotContent = (at info 2)

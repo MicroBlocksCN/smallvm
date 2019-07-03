@@ -7,7 +7,7 @@
 defineClass MicroBitDisplaySlot morph display paintMode inset stride ledWidth ledHeight
 
 to newMicroBitDisplaySlot anInteger {
-	return (initialize (new 'MicroBitDisplaySlot') contents)
+	return (initialize (new 'MicroBitDisplaySlot') anInteger)
 }
 
 method initialize MicroBitDisplaySlot anInteger {
