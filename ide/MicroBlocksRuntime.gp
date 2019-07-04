@@ -303,7 +303,7 @@ method portList SmallRuntime {
 		addAll names portList
 
 	}
-        return portList
+	return portList
 }
 
 method setPort SmallRuntime newPortName {
@@ -312,7 +312,7 @@ method setPort SmallRuntime newPortName {
 		if ('' == newPortName) { return }
 	}
 	vmVersion = nil
-        boardType = nil
+	boardType = nil
 	if (and ('disconnect' == newPortName) (notNil port)) {
 		stopAndSyncScripts this
 		sendStartAll this
@@ -345,7 +345,7 @@ method closePort SmallRuntime {
 		closeSerialPort port
 		port = nil
 		vmVersion = nil
-                boardType = nil
+		boardType = nil
 	}
 }
 
@@ -431,9 +431,9 @@ method extractBoardType SmallRuntime versionString {
 method versionReceived SmallRuntime versionString {
 	if (isNil vmVersion) { // first time: record and check the version number
 		vmVersion = (extractVersionNumber this versionString)
-                boardType = (extractBoardType this versionString)
+		boardType = (extractBoardType this versionString)
 		checkVmVersion this
-                installBoardSpecificBlocks this
+		installBoardSpecificBlocks this
 	} else { // not first time: show the version number
 		showVersion this versionString
 	}
@@ -456,24 +456,25 @@ method checkVmVersion SmallRuntime {
 }
 
 method installBoardSpecificBlocks SmallRuntime {
-        // installs default blocks libraries for each type of board
-        if ('Citilab ED1' == boardType) {
-            importLibraryFromFile scripter '//Libraries/Citilab ED1/ED1 Buttons.ubl'
-            importLibraryFromFile scripter '//Libraries/Tone.ubl'
-            importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
-            importLibraryFromFile scripter '//Libraries/TFT.ubl'
-            importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
-        } ('micro:bit' == boardType) {
-            importLibraryFromFile scripter '//Libraries/BBC microbit.ubl'
-        } ('Calliope' == boardType) {
-            importLibraryFromFile scripter '//Libraries/Calliope.ubl'
-        } ('CircuitPlayground' == boardType) {
-            importLibraryFromFile scripter '//Libraries/Circuit Playground.ubl'
-        } ('ESP8266' == boardType) {
-            importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
-        } ('ESP32' == boardType) {
-            importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
-        }
+	// installs default blocks libraries for each type of board.
+
+	if ('Citilab ED1' == boardType) {
+		importLibraryFromFile scripter '//Libraries/Citilab ED1/ED1 Buttons.ubl'
+		importLibraryFromFile scripter '//Libraries/Tone.ubl'
+		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
+		importLibraryFromFile scripter '//Libraries/TFT.ubl'
+		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+	} ('micro:bit' == boardType) {
+		importLibraryFromFile scripter '//Libraries/BBC microbit.ubl'
+	} ('Calliope' == boardType) {
+		importLibraryFromFile scripter '//Libraries/Calliope.ubl'
+	} ('CircuitPlayground' == boardType) {
+		importLibraryFromFile scripter '//Libraries/Circuit Playground.ubl'
+	} ('ESP8266' == boardType) {
+		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+	} ('ESP32' == boardType) {
+		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+	}
 }
 
 method clearBoardIfConnected SmallRuntime doReset {
@@ -968,138 +969,137 @@ method showOutputStrings SmallRuntime {
 // Virtual Machine Installer
 
 method installVM SmallRuntime {
-  if ('Browser' == (platform)) {
-	installVMInBrowser this
-	return
-  }
-  boards = (collectBoardDrives this)
-  if ((count boards) > 0) {
-        menu = (menu 'Select board:' this)
-	for b boards {
-		addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
+	if ('Browser' == (platform)) {
+		installVMInBrowser this
+		return
 	}
-	popUpAtHand menu (global 'page')
-  } ((count (portList this)) > 0) {
-        if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1') boardType) {
-          flashVM this boardType
-        } (boardType == 'nil') {
-          menu = (menu 'Select board type:' this)
-              for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1') {
-                  addItem menu boardName (action 'flashVM' this boardName)
-              }
-          addLine menu
-              addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
-              popUpAtHand menu (global 'page')
-        }
-  } else {
-      inform (join
-		(localized 'No boards found; is your board plugged in?') (newline)
-		(localized 'For AdaFruit boards, double-click reset button and try again.'))
-  }
+	boards = (collectBoardDrives this)
+	if ((count boards) > 0) {
+		menu = (menu 'Select board:' this)
+		for b boards {
+			addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
+		}
+		popUpAtHand menu (global 'page')
+	} ((count (portList this)) > 0) {
+		if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1') boardType) {
+			flashVM this boardType
+		} (boardType == 'nil') {
+			menu = (menu 'Select board type:' this)
+			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1') {
+				addItem menu boardName (action 'flashVM' this boardName)
+			}
+			addLine menu
+			addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
+			popUpAtHand menu (global 'page')
+		}
+	} else {
+		inform (join
+			(localized 'No boards found; is your board plugged in?') (newline)
+			(localized 'For AdaFruit boards, double-click reset button and try again.'))
+	}
 }
 
 method niceBoardName SmallRuntime board {
-  name = (first board)
-  if (beginsWith name 'MICROBIT') {
-	return 'BBC micro:bit'
-  } (beginsWith name 'MINI') {
-	return 'Calliope mini'
-  } (beginsWith name 'CPLAYBOOT') {
-	return 'Circuit Playground Express'
-  }
-  return name
+	name = (first board)
+	if (beginsWith name 'MICROBIT') {
+		return 'BBC micro:bit'
+	} (beginsWith name 'MINI') {
+		return 'Calliope mini'
+	} (beginsWith name 'CPLAYBOOT') {
+		return 'Circuit Playground Express'
+	}
+	return name
 }
 
 method collectBoardDrives SmallRuntime {
-  result = (list)
-  if ('Mac' == (platform)) {
-	for v (listDirectories '/Volumes') {
-	  path = (join '/Volumes/' v '/')
-	  boardName = (getBoardName this path)
-	  if (notNil boardName) { add result (list boardName path) }
+	result = (list)
+	if ('Mac' == (platform)) {
+		for v (listDirectories '/Volumes') {
+			path = (join '/Volumes/' v '/')
+			boardName = (getBoardName this path)
+			if (notNil boardName) { add result (list boardName path) }
+		}
+	} ('Linux' == (platform)) {
+		for dir (listDirectories '/media') {
+			prefix = (join '/media/' dir)
+			for v (listDirectories prefix) {
+				path = (join prefix '/' v '/')
+				boardName = (getBoardName this path)
+				if (notNil boardName) { add result (list boardName path) }
+			}
+		}
+	} ('Win' == (platform)) {
+		for letter (range 65 90) {
+			drive = (join (string letter) ':')
+			boardName = (getBoardName this drive)
+			if (notNil boardName) { add result (list boardName drive) }
+		}
 	}
-  } ('Linux' == (platform)) {
-	for dir (listDirectories '/media') {
-	  prefix = (join '/media/' dir)
-	  for v (listDirectories prefix) {
-		path = (join prefix '/' v '/')
-		boardName = (getBoardName this path)
-		if (notNil boardName) { add result (list boardName path) }
-	  }
-	}
-  } ('Win' == (platform)) {
-	for letter (range 65 90) {
-	  drive = (join (string letter) ':')
-	  boardName = (getBoardName this drive)
-	  if (notNil boardName) { add result (list boardName drive) }
-	}
-  }
-  return result
+	return result
 }
 
 method getBoardName SmallRuntime path {
-  for fn (listFiles path) {
-	if ('MICROBIT.HTM' == fn) { return 'MICROBIT' }
-	if ('MINI.HTM' == fn) { return 'MINI' }
-	if ('INFO_UF2.TXT' == fn) {
-	  contents = (readFile (join path fn))
-	  if (notNil (nextMatchIn 'CPlay Express' contents)) {
-		return 'CPLAYBOOT'
-	  }
+	for fn (listFiles path) {
+		if ('MICROBIT.HTM' == fn) { return 'MICROBIT' }
+		if ('MINI.HTM' == fn) { return 'MINI' }
+		if ('INFO_UF2.TXT' == fn) {
+			contents = (readFile (join path fn))
+			if (notNil (nextMatchIn 'CPlay Express' contents)) { return 'CPLAYBOOT' }
+		}
 	}
-  }
-  return nil
+	return nil
 }
 
 method copyVMToBoard SmallRuntime boardName boardPath {
-  if (beginsWith boardName 'MICROBIT') {
-	vmFileName = 'vm.ino.BBCmicrobit.hex'
-  } (beginsWith boardName 'MINI') {
-	vmFileName = 'vm.ino.Calliope.hex'
-  } (beginsWith boardName 'CPLAYBOOT') {
-	vmFileName = 'vm.circuitplay.uf2'
-  }
-  if (notNil vmFileName) {
-	if ('Browser' == (platform)) {
-	  vmData = (readFile (join 'precompiled/' vmFileName) true)
-	} else {
-	  vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+	if (beginsWith boardName 'MICROBIT') {
+		vmFileName = 'vm.ino.BBCmicrobit.hex'
+	} (beginsWith boardName 'MINI') {
+		vmFileName = 'vm.ino.Calliope.hex'
+	} (beginsWith boardName 'CPLAYBOOT') {
+		vmFileName = 'vm.circuitplay.uf2'
 	}
-  }
-  if (isNil vmData) {
-	error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))
-  }
-  closePort (smallRuntime) // disconnect
-  writeFile (join boardPath vmFileName) vmData
-  print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
-  connectMSecs = nil // don't ask user to install the VM again
-  waitMSecs 8000
-  ensurePortOpen (smallRuntime)
-  stopAndSyncScripts this
+	if (notNil vmFileName) {
+		if ('Browser' == (platform)) {
+			vmData = (readFile (join 'precompiled/' vmFileName) true)
+		} else {
+			vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+		}
+	}
+	if (isNil vmData) {
+		error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))
+	}
+	closePort (smallRuntime) // disconnect
+	writeFile (join boardPath vmFileName) vmData
+	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
+	connectMSecs = nil // don't ask user to install the VM again
+	waitMSecs 8000
+	ensurePortOpen (smallRuntime)
+	stopAndSyncScripts this
 }
 
 method installVMInBrowser SmallRuntime {
-  menu = (menu 'Board type:' (action 'downloadVMFile' this) true)
-  addItem menu 'BBC micro:bit'
-  addItem menu 'Calliope mini'
-  addItem menu 'Circuit Playground Express'
-  popUpAtHand menu (global 'page')
+	menu = (menu 'Board type:' (action 'downloadVMFile' this) true)
+	addItem menu 'BBC micro:bit'
+	addItem menu 'Calliope mini'
+	addItem menu 'Circuit Playground Express'
+	popUpAtHand menu (global 'page')
 }
 
 method downloadVMFile SmallRuntime boardName {
-  if ('BBC micro:bit' == boardName) {
-	vmFileName = 'vm.ino.BBCmicrobit.hex'
-  } ('Calliope mini' == boardName) {
-	vmFileName = 'vm.ino.Calliope.hex'
-  } ('Circuit Playground Express' == boardName) {
-	vmFileName = 'vm.circuitplay.uf2'
-  }
-  vmData = (readFile (join 'precompiled/' vmFileName) true)
-  writeFile vmFileName vmData
-  inform (join 'To install MicroBlocks, drag "' vmFileName '" from your Downloads' (newline)
-	'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
-	'to copy the file, then the USB drive for your board will dismount.' (newline)
-	'When it remounts, use the "Connect" button to connect to the board.')
+	if ('BBC micro:bit' == boardName) {
+		vmFileName = 'vm.ino.BBCmicrobit.hex'
+	} ('Calliope mini' == boardName) {
+		vmFileName = 'vm.ino.Calliope.hex'
+	} ('Circuit Playground Express' == boardName) {
+		vmFileName = 'vm.circuitplay.uf2'
+	}
+	vmData = (readFile (join 'precompiled/' vmFileName) true)
+	writeFile vmFileName vmData
+	inform (join
+		'To install MicroBlocks, drag "' vmFileName '" from your Downloads' (newline)
+		'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
+		'to copy the file, then the USB drive for your board will dismount.' (newline)
+		'When it remounts, use the "Connect" button to connect to the board.')
 }
 
 method adaFruitMessage SmallRuntime {
@@ -1107,72 +1107,72 @@ method adaFruitMessage SmallRuntime {
 }
 
 method flashVM SmallRuntime boardName {
-  closePort (smallRuntime)
-  copyEspToolToDisk this
-  copyEspFilesToDisk this
-  copyVMtoDisk this boardName
+	closePort (smallRuntime)
+	copyEspToolToDisk this
+	copyEspFilesToDisk this
+	copyVMtoDisk this boardName
 
-  if ('Mac' == (platform)) {
-    esptool = 'esptool'
-  } ('Linux' == (platform)) {
-    esptool = 'esptool.py'
-  } ('Win' == (platform)) {
-    esptool = 'esptool.exe'
-  }
+	if ('Mac' == (platform)) {
+		esptool = 'esptool'
+	} ('Linux' == (platform)) {
+		esptool = 'esptool.py'
+	} ('Win' == (platform)) {
+		esptool = 'esptool.exe'
+	}
 
-  if (boardName == 'ESP32') {
-    exec (join (tmpPath this) 'esp32flash.cmd')
-  } (boardName == 'Citilab ED1') {
-    inform (join (localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
-                 (localized 'Then wait for the screen to turn off again.'))
-    exec (join (tmpPath this) esptool) 'write_flash' '0x10000' (join (tmpPath this) 'vm')
-  } else {
-    // ESP8266
-    inform 'Please wait for the on-board LED to stop flashing.'
-    exec (join (tmpPath this) esptool) 'write_flash' '0' (join (tmpPath this) 'vm')
-  }
+	if (boardName == 'ESP32') {
+		exec (join (tmpPath this) 'esp32flash.cmd')
+	} (boardName == 'Citilab ED1') {
+		inform (join (localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
+		(localized 'Then wait for the screen to turn off again.'))
+		exec (join (tmpPath this) esptool) 'write_flash' '0x10000' (join (tmpPath this) 'vm')
+	} else {
+		// ESP8266
+		inform 'Please wait for the on-board LED to stop flashing.'
+		exec (join (tmpPath this) esptool) 'write_flash' '0' (join (tmpPath this) 'vm')
+	}
 }
 
 method tmpPath SmallRuntime {
-  if (or ('Mac' == (platform)) ('Linux' == (platform))) {
-    return '/tmp/'
-  } else { // Windows
-    return (join (userHomePath) '/AppData/Local/Temp/')
-  }
+	if (or ('Mac' == (platform)) ('Linux' == (platform))) {
+		return '/tmp/'
+	} else { // Windows
+		return (join (userHomePath) '/AppData/Local/Temp/')
+	}
 }
 
 method copyEspToolToDisk SmallRuntime {
-  if ('Mac' == (platform)) {
-    esptoolData = (readEmbeddedFile 'esptool/esptool' true)
-    destination = (join (tmpPath this) 'esptool')
-  } ('Linux' == (platform)) {
-    esptoolData = (readEmbeddedFile 'esptool/esptool.py')
-    destination = (join (tmpPath this) 'esptool.py')
-  } ('Win' == (platform)) {
-    esptoolData = (readEmbeddedFile 'esptool/esptool.exe' true)
-    destination = (join (tmpPath this) 'esptool.exe')
-  }
-  writeFile destination esptoolData
-  setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
+	if ('Mac' == (platform)) {
+		esptoolData = (readEmbeddedFile 'esptool/esptool' true)
+		destination = (join (tmpPath this) 'esptool')
+	} ('Linux' == (platform)) {
+		esptoolData = (readEmbeddedFile 'esptool/esptool.py')
+		destination = (join (tmpPath this) 'esptool.py')
+	} ('Win' == (platform)) {
+		esptoolData = (readEmbeddedFile 'esptool/esptool.exe' true)
+		destination = (join (tmpPath this) 'esptool.exe')
+	}
+	writeFile destination esptoolData
+	setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
 }
 
 method copyVMtoDisk SmallRuntime boardName {
-  if (boardName == 'ESP8266') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.nodemcu.bin' true)
-  } (boardName == 'ESP32') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
-  } (boardName == 'Citilab ED1') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.citilab-ed1.bin' true)
-  }
-  writeFile (join (tmpPath this) 'vm') vmData
+	if (boardName == 'ESP8266') {
+		vmData = (readEmbeddedFile 'precompiled/vm.ino.nodemcu.bin' true)
+	} (boardName == 'ESP32') {
+		vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
+	} (boardName == 'Citilab ED1') {
+		vmData = (readEmbeddedFile 'precompiled/vm.ino.citilab-ed1.bin' true)
+	}
+	writeFile (join (tmpPath this) 'vm') vmData
 }
 
 method copyEspFilesToDisk SmallRuntime {
-  for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin' 'esp32flash.cmd') {
-    fileData = (readEmbeddedFile (join 'esp32/' fn) true)
-    writeFile (join (tmpPath this) fn) fileData
-  }
-  setFileMode (join (tmpPath this) 'esp32flash.cmd') (+ (7 << 6) (5 << 3) 5) // set executable bits
+	for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin' 'esp32flash.cmd') {
+		fileData = (readEmbeddedFile (join 'esp32/' fn) true)
+		writeFile (join (tmpPath this) fn) fileData
+	}
+	setFileMode (join (tmpPath this) 'esp32flash.cmd') (+ (7 << 6) (5 << 3) 5) // set executable bits
 }
 
 // data logging
