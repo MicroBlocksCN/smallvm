@@ -244,6 +244,8 @@ method handleRequest MicroBlocksThingWorker header body {
 		} else {
 			responseBody = (errorResponse this 'Unhandled method')
 		}
+	} (beginsWith path '/mb') {
+		responseBody = (handleMBRequest this (substring path 4))
 	} else {
 		responseBody = (errorResponse this)
 	}
@@ -336,12 +338,33 @@ method setProperty MicroBlocksThingWorker path body {
 	if (notNil id) { setVar (smallRuntime) (id - 1) value } // VM uses zero-based index
 }
 
-// Test methods
+method handleMBRequest MicroBlocksThingWorker path {
+	if ('/' == path) {
+		return (helpString this)
+	} (beginsWith path '/getBroadcasts') {
+		return (getBroadcasts this path)
+	} (beginsWith path '/broadcast') {
+		return (sendBroadcast this path)
+	} (beginsWith path '/getVar') {
+		return (getVar this path)
+	} (beginsWith path '/setVar') {
+		return (setVar this path)
+	} else {
+		return 'Unrecognized /mb command'
+	}
+}
 
-method longString MicroBlocksThingWorker {
+method helpString MicroBlocksThingWorker {
 	result = (list)
-	repeat 100 { add result '0123456789' }
-	return (joinStrings result)
+	add result 'MicroBlocks HTTP Server'
+	add result ''
+	add result '/mb/ - this help text'
+	add result '/mb/getBroadcasts - get broadcasts from board, (URL-encoded strings, one per line)'
+	add result '/mb/broadcast/URL_encoded_message - broadcast message to board'
+	add result '/mb/getVar/URL_encoded_var_name - get variable value'
+	add result '/mb/setVar/URL_encoded_var_name/value - set variable value'
+	add result '  (value is: true, false, INTEGER, or a url_encoded_string)'
+	return (joinStrings result (newline))
 }
 
 // Broadcasts
@@ -367,4 +390,45 @@ method sendBroadcast MicroBlocksThingWorker path {
 
 	msg = (urlDecode (substring path 12))
 	sendBroadcastToBoard (smallRuntime) msg
+}
+
+// Variables
+
+method getVar MicroBlocksThingWorker path {
+	// Handle URL of form: /getVar/<URL_encoded var name>
+	// Return the value of the given variable.
+
+	varName = (urlDecode (substring path 9))
+	if (endsWith varName '/') { varName = (substring varName 1 ((count varName) - 1)) }
+	if ('' == varName) { return 'error: missing var name' }
+	value = (requestVarFromBoard server varName)
+	return (toString value)
+}
+
+method setVar MicroBlocksThingWorker path {
+	// Handle URL of form: /setVar/<URL_encoded var name>/<value> where value is:
+	//	true, false, <integer value>, <url-encoded string>
+	// Set the given variable to the given value.
+	// A string can be enclosed in optional double-quotes to pass strings that
+	// would otherwise be interpreted as booleans or integers.
+
+	i = (indexOf (letters path) '/' 8)
+	if (isNil i) { return 'error: unexpected URL format' }
+	varName = (urlDecode (substring path 9 (i - 1)))
+	valueString = (substring path (i + 1))
+	if (representsAnInteger valueString)  {
+		value = (toInteger valueString)
+	} ('true' == valueString) {
+		value = true
+	} ('false' == valueString) {
+		value = false
+	} else {
+		value = (urlDecode (substring valueString 2 ((count valueString) - 1)))
+		if (and ((count value) >= 2) (beginsWith value '"') (endsWith value '"')) {
+			// string enclosed in double quotes: remove quotes
+			value = (substring value 2 ((count value) - 1))
+		}
+	}
+	id = (variableIndex server varName)
+	if (notNil id) { setVar (smallRuntime) (id - 1) value } // VM uses zero-based index
 }
