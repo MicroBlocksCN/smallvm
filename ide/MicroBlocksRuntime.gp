@@ -288,20 +288,17 @@ method portList SmallRuntime {
 		for fn (listFiles '/dev') {
 			if (or	(notNil (nextMatchIn 'usb' (toLowerCase fn) )) // MacOS
 					(notNil (nextMatchIn 'acm' (toLowerCase fn) ))) { // Linux
-				add portList fn
+				add portList (join '/dev/' fn)
 			}
 		}
 		// Mac OS lists a port as both cu.<name> and tty.<name>
 		for s (copy portList) {
-			if (beginsWith s 'tty.') {
-				if (contains portList (join 'cu.' (substring s 5))) {
+			if (beginsWith s '/dev/tty.') {
+				if (contains portList (join '/dev/cu.' (substring s 10))) {
 					remove portList s
 				}
 			}
 		}
-		names = (dictionary)
-		addAll names portList
-
 	}
 	return portList
 }
@@ -872,7 +869,7 @@ method handleMessage SmallRuntime msg {
 		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
-		connectMSecs = nil // we've received a ping, to don't ask user to install the VM
+		connectMSecs = nil // we've received a ping, so don't ask user to install the VM
 	} (op == (msgNameToID this 'broadcastMsg')) {
 		broadcastReceived (thingServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {

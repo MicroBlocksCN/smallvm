@@ -144,6 +144,7 @@ method newProject MicroBlocksEditor {
   ok = (confirm (global 'page') nil 'Discard current project?')
   if (not ok) { return }
   clearProject this
+  installBoardSpecificBlocks (smallRuntime)
   updateLibraryList scripter
   fileName = ''
   updateTitle this
@@ -306,6 +307,7 @@ method updateIndicator MicroBlocksEditor {
 	if (notNil c) { drawCircle (newShapeMaker bm2) cx cy radius c }
 	drawBitmap bm2 icon x y
 
+	costumeChanged (morph indicator)
 	lastStatus = status
 }
 
