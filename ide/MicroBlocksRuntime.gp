@@ -427,14 +427,13 @@ method updateConnection SmallRuntime {
 		// got a ping recently: we're connected
 		return 'connected'
 	} else {
-print 'ping timeout' // xxx
 		// ping timout: close port to force reconnection
 		closePort this
 		return 'not connected'
 	}
 }
 
-method ideVersion SmallRuntime { return '0.1.44' }
+method ideVersion SmallRuntime { return '0.1.45' }
 method latestVmVersion SmallRuntime { return 62 }
 
 method showAboutBox SmallRuntime {
