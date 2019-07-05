@@ -33,18 +33,3 @@ to 'Calliope sound' {
   }
   return ((100 * (max - min)) / 1020)
 }
-
-module 'Basic Sensors' Input
-
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
-
-module 'LED Display' Output
-
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
