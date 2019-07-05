@@ -278,16 +278,13 @@ method step MicroBlocksEditor {
 }
 
 method updateIndicator MicroBlocksEditor {
-	status = (connectionStatus (smallRuntime))
+	status = (updateConnection (smallRuntime))
 	if (lastStatus == status) { return } // no change
 	if ('connected' == status) {
-		c = (color 0 200 0) // green
-	} ('board not responding' == status) {
-		c = (color 250 200 0) // orange
+		c = (mixed (color 0 200 0) 70 (topBarBlue this)) // green circle
 	} else {
 		c = nil // no circle
 	}
-	if (notNil c) { c = (mixed c 70 (topBarBlue this)) }
 
 	scale = (global 'scale')
 	bm1 = (getField indicator 'offCostume')

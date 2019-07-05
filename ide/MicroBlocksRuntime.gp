@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType loggedData loggedDataNext loggedDataCount
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount
 
 method scripter SmallRuntime { return scripter }
 
@@ -257,15 +257,12 @@ method softReset SmallRuntime {
 
 method selectPort SmallRuntime {
 	portList = (portList this)
+	if (not (or (devMode) ((count portList) > 1))) { return }
 	menu = (menu 'Connect' (action 'setPort' this) true)
 	for s portList { addItem menu s }
 	if (devMode) {
 		addLine menu
 		addItem menu 'other...'
-	}
-	if (notNil port) {
-		addLine menu
-		addItem menu 'disconnect'
 	}
 	popUpAtHand menu (global 'page')
 }
@@ -308,75 +305,133 @@ method setPort SmallRuntime newPortName {
 		newPortName = (prompt (global 'page') 'Port name?' (localized 'none'))
 		if ('' == newPortName) { return }
 	}
-	vmVersion = nil
-	boardType = nil
-	if (and ('disconnect' == newPortName) (notNil port)) {
-		stopAndSyncScripts this
-		sendStartAll this
-	}
-	if (notNil port) {
-		closeSerialPort port
-		port = nil
-	}
+	closePort this
+
 	// the prompt answer 'none' is entered by the user in the current language
-	if (or (isNil newPortName) (isOneOf newPortName 'disconnect' (localized 'none'))) { // just close port
+	if (or (isNil newPortName) (newPortName == (localized 'none'))) {
 		portName = nil
 	} else {
-		portName = (join '/dev/' newPortName)
-		if (isOneOf (platform) 'Browser' 'Win') { portName = newPortName }
-		connectMSecs = (msecsSinceStart)
-		ensurePortOpen this
+		portName = newPortName
+		reconnectToCurrentPort this
 	}
-	// update the connection indicator more quickly than it would otherwise
-	lastPingRecvMSecs = 0 // force ping timeout
 	updateIndicator (findMicroBlocksEditor)
-	waitMSecs 20
-	processMessages this
-	updateIndicator (findMicroBlocksEditor)
-	stopAndSyncScripts this
 }
 
 method closePort SmallRuntime {
-	if (notNil port) {
-		stopAndSyncScripts this
-		closeSerialPort port
-		port = nil
-		vmVersion = nil
-		boardType = nil
-	}
+	// Close the serial port and clear info about the currently connected board.
+
+	if (notNil port) { closeSerialPort port }
+	port = nil
+	vmVersion = nil
+	boardType = nil
 }
 
-method connectionStatus SmallRuntime {
+method boardRespondsToPing SmallRuntime {
+	// Return true if the board responds to a ping request.
+
+	shortTimeout = 50
+	if (isNil port) { return false }
+	lastPingRecvMSecs = 0
+	sendMsg this 'pingMsg'
+	pingSentMSecs = (msecsSinceStart)
+	while (0 == lastPingRecvMSecs) {
+		processMessages this
+		now = (msecsSinceStart)
+		if (now < pingSentMSecs) { pingSentMSecs = 0 } // clock wrap
+		if ((now - pingSentMSecs) > shortTimeout) { return false } // timed out
+	}
+	return true
+}
+
+method reconnectToCurrentPort SmallRuntime {
+	// Close and reopen the current port and wait for a ping. Return true if successful.
+
+	if (isNil portName) { return false }
+	if (not (contains (portList this) portName)) { return false }
+
+	closePort this // close the port
+	ensurePortOpen this // attempt to reopen the port
+	if (and (notNil port) (boardRespondsToPing this)) {
+		// succeeded! request the VM version
+		vmVersion = nil
+		sendMsg this 'getVersionMsg'
+		stopAndSyncScripts this
+		return true
+	}
+
+	// board not responding; look for board on another port
+	if (notNil port) { closePort this }
+	return false
+}
+
+method tryToConnect SmallRuntime {
+	// Called when there is no connection or the board does not respond.
+	// First, try to close and reopen the existing port, if there is one.
+	// If that fails, look for a port that responds to a 'ping'.
+
+	if (reconnectToCurrentPort this) { return 'connected' }
+
+	if (isNil lastScanMSecs) { lastScanMSecs = 0 }
+	msecsSinceLastScan = ((msecsSinceStart) - lastScanMSecs)
+	if (and (msecsSinceLastScan > 0) (msecsSinceLastScan < 1000)) { return }
+	lastScanMSecs = (msecsSinceStart)
+
+	for p (portList this) {
+		portName = p
+		if (reconnectToCurrentPort this) { return 'connected' }
+	}
+	portName = nil
+
+	// no port responded ping requests; try to install VM
+	tryToInstallVM this
+	return 'not connected'
+}
+
+method tryToInstallVM SmallRuntime {
+	// If we see a board drive, invite the user to install VM.
+	// Remember the last set of boardDrives so we don't keep asking.
+
+	boardDrives = (collectBoardDrives this)
+	if (lastBoardDrives == boardDrives) { return }
+	lastBoardDrives = boardDrives
+	if (isEmpty boardDrives) { return }
+
+	ok = (confirm (global 'page') nil (join
+		(localized 'The board is not responding.') (newline)
+		(localized 'Try to Install MicroBlocks on the board?')))
+	if ok { installVM this }
+}
+
+method updateConnection SmallRuntime {
 	pingSendInterval = 2000 // msecs between pings
+	pingTimeout = 3000
 	if (isNil pingSentMSecs) { pingSentMSecs = 0 }
 	if (isNil lastPingRecvMSecs) { lastPingRecvMSecs = 0 }
 
+	// if port is not open, try to reconnect or find a different board
 	if (or (isNil port) (not (isOpenSerialPort port))) {
-		port = nil
-		return 'not connected'
+		closePort this
+		return (tryToConnect this)
 	}
-	if (((msecsSinceStart) - pingSentMSecs) > pingSendInterval) {
+
+	// if the port is open and it is time, send a ping
+	now = (msecsSinceStart)
+	if ((now - pingSentMSecs) > pingSendInterval) {
 		sendMsg this 'pingMsg'
-		if (isNil vmVersion) { getVersion this }
-		pingSentMSecs = (msecsSinceStart)
-	}
-	msecsSinceLastPing = ((msecsSinceStart) - lastPingRecvMSecs)
-	if (msecsSinceLastPing < (pingSendInterval + 500)) {
+		pingSentMSecs = now
 		return 'connected'
 	}
-	if (notNil connectMSecs) {
-		msecsSinceConnect = ((msecsSinceStart) - connectMSecs)
-		if (msecsSinceConnect > 5000) {
-			connectMSecs = nil // don't do this again unti next connection attempt
-			if (not (isEmpty (collectBoardDrives this))) {
-				ok = (confirm (global 'page') nil (join
-					(localized 'The board is not responding.') (newline)
-					(localized 'Try to Install MicroBlocks on the board?')))
-				if ok { installVM this }
-			}
-		}
+
+	msecsSinceLastPing = (now - lastPingRecvMSecs)
+	if (msecsSinceLastPing < pingTimeout) {
+		// got a ping recently: we're connected
+		return 'connected'
+	} else {
+print 'ping timeout' // xxx
+		// ping timout: close port to force reconnection
+		closePort this
+		return 'not connected'
 	}
-	return 'board not responding'
 }
 
 method ideVersion SmallRuntime { return '0.1.44' }
@@ -432,12 +487,8 @@ method versionReceived SmallRuntime versionString {
 		checkVmVersion this
 		installBoardSpecificBlocks this
 	} else { // not first time: show the version number
-		showVersion this versionString
+		inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) versionString)
 	}
-}
-
-method showVersion SmallRuntime versionString {
-	inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) versionString)
 }
 
 method checkVmVersion SmallRuntime {
@@ -462,11 +513,17 @@ method installBoardSpecificBlocks SmallRuntime {
 		importLibraryFromFile scripter '//Libraries/TFT.ubl'
 		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	} ('micro:bit' == boardType) {
-		importLibraryFromFile scripter '//Libraries/BBC microbit.ubl'
+		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
+		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
 	} ('Calliope' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Calliope.ubl'
+		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
+		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
 	} ('CircuitPlayground' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Circuit Playground.ubl'
+		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
+		importLibraryFromFile scripter '//Libraries/NeoPixel.ubl'
+		importLibraryFromFile scripter '//Libraries/Tone.ubl'
 	} ('ESP8266' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	} ('ESP32' == boardType) {
@@ -701,6 +758,9 @@ method errorString SmallRuntime errID {
 }
 
 method sendMsg SmallRuntime msgName chunkID byteList {
+	ensurePortOpen this
+	if (isNil port) { return }
+
 	if (isNil chunkID) { chunkID = 0 }
 	msgID = (msgNameToID this msgName)
 	if (isNil byteList) { // short message
@@ -711,11 +771,6 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		addAll msg byteList
 		add msg 254 // terminator byte (helps board detect dropped bytes)
 	}
-	ensurePortOpen this
-	if (isNil port) {
-		inform 'Use "Connect" button to connect to a MicroBlocks device.'
-		return
-	}
 	dataToSend = (toBinaryData (toArray msg))
 	while ((byteCount dataToSend) > 0) {
 		// Note: AdaFruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
@@ -724,10 +779,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
 		if (not (isOpenSerialPort port)) {
-			print 'serial port closed; board disconnected?'
-			port = nil
-			vmVersion = nil
-			boardType = nil
+			closePort this
 			return
 		}
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
@@ -747,6 +799,7 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 method readAvailableSerialData SmallRuntime {
 	// Read any available data into recvBuf so that waitForResponse well await fresh data.
 
+	if (isNil port) { return }
 	waitMSecs 20 // leave some time for queued data to arrive
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
 	s = (readSerialPort port true)
@@ -757,6 +810,7 @@ method waitForResponse SmallRuntime {
 	// Wait for some data to arrive from the board. This is taken to mean that the
 	// previous operation has completed.
 
+	if (isNil port) { return }
 	timeout = 2000
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
@@ -771,8 +825,9 @@ method waitForResponse SmallRuntime {
 
 method ensurePortOpen SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
-		if (notNil portName) {
-			port = (openSerialPort portName 115200)
+		if (and (notNil portName) (contains (portList this) portName)) {
+			port = (safelyRun (action 'openSerialPort' portName 115200))
+			if (not (isClass port 'Integer')) { port = nil } // failed
 			if ('Browser' == (platform)) { waitMSecs 100 } // let browser callback complete
 		}
 	}
@@ -869,7 +924,6 @@ method handleMessage SmallRuntime msg {
 		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
-		connectMSecs = nil // we've received a ping, so don't ask user to install the VM
 	} (op == (msgNameToID this 'broadcastMsg')) {
 		broadcastReceived (thingServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
@@ -1065,13 +1119,12 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 	if (isNil vmData) {
 		error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))
 	}
-	closePort (smallRuntime) // disconnect
+	stopAndSyncScripts this
+	closePort (smallRuntime)
 	writeFile (join boardPath vmFileName) vmData
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
-	connectMSecs = nil // don't ask user to install the VM again
-	waitMSecs 8000
-	ensurePortOpen (smallRuntime)
-	stopAndSyncScripts this
+
+	waitMSecs 8000 // leave time for installation and VM startup
 }
 
 method installVMInBrowser SmallRuntime {
@@ -1096,7 +1149,7 @@ method downloadVMFile SmallRuntime boardName {
 		'To install MicroBlocks, drag "' vmFileName '" from your Downloads' (newline)
 		'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
 		'to copy the file, then the USB drive for your board will dismount.' (newline)
-		'When it remounts, use the "Connect" button to connect to the board.')
+		'When it remounts, MicroBLocks should reconnect to the board.')
 }
 
 method adaFruitMessage SmallRuntime {
@@ -1104,6 +1157,7 @@ method adaFruitMessage SmallRuntime {
 }
 
 method flashVM SmallRuntime boardName {
+	stopAndSyncScripts this
 	closePort (smallRuntime)
 	copyEspToolToDisk this
 	copyEspFilesToDisk this
