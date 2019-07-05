@@ -490,9 +490,9 @@ method rightClicked MicroBlocksEditor aHand {
 method contextMenu MicroBlocksEditor {
   menu = (menu 'MicroBlocks' this)
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
-  addItem menu 'update firmware on board' 'installVM'
+  addItem menu 'update firmware on board' (action 'installVM' (smallRuntime))
   addLine menu
-  addItem menu 'clear memory and variables' 'softReset'
+  addItem menu 'clear memory and variables' (action 'softReset' (smallRuntime))
   addItem menu 'show data graph' 'graphData'
   addLine menu
 
@@ -561,10 +561,6 @@ method hideAdvancedBlocks MicroBlocksEditor {
   developerModeChanged this
 }
 
-method softReset MicroBlocksEditor {
-  softReset (smallRuntime)
-}
-
 method startThingServer MicroBlocksEditor {
   if (start thingServer) {
 	inform 'MicroBlocks HTTP Server listening on port 6473'
@@ -577,10 +573,6 @@ method startThingServer MicroBlocksEditor {
 
 method stopThingServer MicroBlocksEditor {
   stop thingServer
-}
-
-method installVM MicroBlocksEditor {
-  installVM (smallRuntime)
 }
 
 // Language Button
