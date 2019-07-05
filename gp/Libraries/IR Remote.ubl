@@ -1,8 +1,9 @@
 module 'IR Remote' Comm
-variables _ir_pulse_times
+variables _ir_pin _ir_pulse_times
 
 	spec 'r' 'receiveIR' 'receive IR code from device _' 'auto' 253
 	spec ' ' 'testIR' 'test IR'
+	spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 1
 	spec ' ' '_captureIRMessage' '_captureIRMessage' 'any'
 	spec ' ' '_dumpIR' '_dumpIR' 'any'
 	spec 'r' '_getIRByte' '_getIRByte _' 'auto any' 4
@@ -34,26 +35,32 @@ to testIR {
   }
 }
 
+to attachIR pin {
+  _ir_pin = pin
+}
+
 to '_captureIRMessage' {
-  local 'IR_Receive_Pin' 26
   if (_ir_pulse_times == 0) {
     _ir_pulse_times = (newArray 200)
+    if (and (_ir_pin == 0) ((boardType) == 'CircuitPlayground')) {
+      _ir_pin = 26
+    }
   }
   fillArray _ir_pulse_times 0
   local 'i' 1
   comment 'Wait for IR signal -- this is the start of a new message.
 Note: THe pin goes low when an IR signal is detected.'
-  waitUntil (not (digitalReadOp IR_Receive_Pin))
+  waitUntil (not (digitalReadOp _ir_pin))
   local 'start' (microsOp)
   forever {
     comment 'Record the time until the end of the current IR pulse ("mark")'
-    waitUntil (digitalReadOp IR_Receive_Pin)
+    waitUntil (digitalReadOp _ir_pin)
     local 'end' (microsOp)
     atPut i _ir_pulse_times (end - start)
     i += 1
     start = end
     comment 'Record time until the start of the next IR pulse ("space")'
-    repeatUntil (not (digitalReadOp IR_Receive_Pin)) {
+    repeatUntil (not (digitalReadOp _ir_pin)) {
       if (((microsOp) - start) > 5000) {
         comment 'No IR pulse for 5000 usecs means "end of message"'
         return 0

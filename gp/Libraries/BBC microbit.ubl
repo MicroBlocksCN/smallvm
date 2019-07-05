@@ -16,7 +16,7 @@ module 'LED Display' Output
 	// These operations are simulated boards with TFT displays such as the ED1 and
 	// the IoT-Bus Io with a QVGA display.
 
-	spec ' ' '[display:mbDisplay]'		'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplay]'		'display _' 'microbitDisplay' 15237450
 	spec ' ' '[display:mbDisplayOff]'	'clear display'
 	spec ' ' '[display:mbPlot]'			'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]'		'unplot x _ y _' 'num num' 3 3
