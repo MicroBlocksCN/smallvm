@@ -1,8 +1,9 @@
 module Servo Output
-variables _servoInitialized _servo_1_pin _servo_2_pin _servo_3_pin _servo_4_pin _servo_1_usecs _servo_2_usecs _servo_3_usecs _servo_4_usecs _servoMSecs
+variables _servoInitialized _servo_1_pin _servo_2_pin _servo_3_pin _servo_4_pin _servo_1_usecs _servo_2_usecs _servo_3_usecs _servo_4_usecs _servo_1_flip _servo_2_flip _servo_3_flip _servo_4_flip _servoMSecs
 
 	spec ' ' 'setServo' 'set servo _ to _ (-100 to 100)' 'menu.range:1-4 num' 1 0
 	spec ' ' 'resetServos' 'resetServos'
+	spec ' ' 'flipServo' 'flip servo _ _' 'menu.range:1-4 bool' 1
 	spec ' ' 'attachServos' 'attach servos 1 to 4 to pins _ _ _ _' 'auto auto auto auto' 1 2 '' ''
 	spec ' ' '_initServos' '_initServos'
 	spec ' ' '_servoLoop' '_servoLoop'
@@ -14,6 +15,10 @@ to '_initServos' {
     _servo_2_pin = 2
     _servo_3_pin = -1
     _servo_4_pin = -1
+    _servo_1_flip = 1
+    _servo_2_flip = 1
+    _servo_3_flip = 1
+    _servo_4_flip = 1
     resetServos
     _servoInitialized = (booleanConstant true)
   }
@@ -65,6 +70,29 @@ to attachServos p1 p2 p3 p4 {
   sendBroadcastSimple '_servoLoop'
 }
 
+to flipServo servo flip {
+  comment 'Flipping a servo reverses the direction it moves. It is useful when building a robotic vehicle where the two wheel servos are physically flipped.'
+  '_initServos'
+  if flip {
+	flip = -1
+  } else {
+    flip = 1
+  }
+  if (and (1 == servo) (_servo_1_flip != flip)) {
+    _servo_1_usecs = (1500 - (_servo_1_usecs - 1500))
+    _servo_1_flip = flip
+  } (and (2 == servo) (_servo_2_flip != flip)) {
+    _servo_2_usecs = (1500 - (_servo_2_usecs - 1500))
+    _servo_2_flip = flip
+  } (and (3 == servo) (_servo_3_flip != flip)) {
+    _servo_3_usecs = (1500 - (_servo_3_usecs - 1500))
+    _servo_3_flip = flip
+  } (and (4 == servo) (_servo_4_flip != flip)) {
+    _servo_4_usecs = (1500 - (_servo_4_usecs - 1500))
+    _servo_4_flip = flip
+  }
+}
+
 to resetServos {
   _servo_1_usecs = 1500
   _servo_2_usecs = 1500
@@ -75,16 +103,14 @@ to resetServos {
 to setServo servo speedOrAngle {
   comment 'Range is -100 to 100 with 0 being "center" or "off".'
   '_initServos'
-  local 'usecs' (1500 - (7 * speedOrAngle))
   if (1 == servo) {
-    _servo_1_usecs = usecs
+    _servo_1_usecs = (1500 - (_servo_1_flip * (7 * speedOrAngle)))
   } (2 == servo) {
-    _servo_2_usecs = usecs
+    _servo_2_usecs = (1500 - (_servo_2_flip * (7 * speedOrAngle)))
   } (3 == servo) {
-    _servo_3_usecs = usecs
+    _servo_3_usecs = (1500 - (_servo_3_flip * (7 * speedOrAngle)))
   } (4 == servo) {
-    _servo_4_usecs = usecs
+    _servo_4_usecs = (1500 - (_servo_4_flip * (7 * speedOrAngle)))
   }
   sendBroadcastSimple '_servoLoop'
 }
-
