@@ -41,8 +41,8 @@
 		#define HALF_SPACE (160 * 1024)
 	#else
 		// BBC micro:bit and Calliope: App: 0-56k; Persistent Mem: 56k-256k
-		#define START (56 * 1024)
-		#define HALF_SPACE (100 * 1024)
+		#define START (76 * 1024)
+		#define HALF_SPACE (90 * 1024)
 	#endif
 
 	static void flashErase(int *startAddr, int *endAddr) {
@@ -83,8 +83,8 @@
 
 	#include "samr.h" // SAM21D
 
-	#define START (56 * 1024)
-	#define HALF_SPACE (100 * 1024)
+	#define START (76 * 1024)
+	#define HALF_SPACE (90 * 1024)
 
 	// SAM21 Non-Volatile Memory Controller Registers
 	#define NVMC_CTRLA		((volatile int *) 0x41004000)
