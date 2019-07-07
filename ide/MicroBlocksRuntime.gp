@@ -433,8 +433,8 @@ method updateConnection SmallRuntime {
 	}
 }
 
-method ideVersion SmallRuntime { return '0.1.45' }
-method latestVmVersion SmallRuntime { return 62 }
+method ideVersion SmallRuntime { return '0.1.46' }
+method latestVmVersion SmallRuntime { return 63 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = ''
