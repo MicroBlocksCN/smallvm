@@ -8,3 +8,8 @@ module 'LED Display' Output
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+
+to displayCharacter s {
+	'[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}

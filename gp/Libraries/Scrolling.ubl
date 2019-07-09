@@ -1,8 +1,8 @@
 module Scrolling Output
 variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text
 
-	spec ' ' 'scroll_text' 'scroll text _ pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'scroll_number' 'scroll number _ pausing _ ms' 'num num' 123 100
+	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+	spec ' ' 'scroll_number' 'scroll number _ : pausing _ ms' 'num num' 123 100
 	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num' 42
 	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num' 100
 	spec ' ' 'stopScrollingText' 'stop scrolling'
@@ -57,12 +57,16 @@ to '_scroll_digit_shapes' delay {
   }
 }
 
-to scroll_number n delay {
+to scroll_number n optionalDelay {
+  delay = 100
+  if ((pushArgCount) > 1) { delay = optionalDelay }
   '_covert_to_shapes' n
   '_scroll_digit_shapes' delay
 }
 
-to scroll_text text delay {
+to scroll_text text optionalDelay {
+  delay = 100
+  if ((pushArgCount) > 1) { delay = optionalDelay }
   _stop_scrolling_text = (booleanConstant false)
   local 'length' (size text)
   for position ((length * 6) + 6) {
