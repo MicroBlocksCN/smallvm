@@ -490,7 +490,7 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'update firmware on board' (action 'installVM' (smallRuntime))
   addLine menu
   addItem menu 'clear memory and variables' (action 'softReset' (smallRuntime))
-  addItem menu 'show data graph' 'graphData'
+  addItem menu 'show data graph' 'showGraph'
   addLine menu
 
 // xxx testing (used by John)
@@ -501,8 +501,6 @@ method contextMenu MicroBlocksEditor {
   if (not (devMode)) {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
-	addItem menu 'copy graph data to clipboard (temporary!)' 'copyDataToClipboard'
-	addItem menu 'clear graph data (temporary!)' 'clearData'
 	addItem menu 'set serial delay' 'serialDelayMenu'
 	addLine menu
 	addItem menu 'firmware version' (action 'getVersion' (smallRuntime))
@@ -518,24 +516,11 @@ method contextMenu MicroBlocksEditor {
   return menu
 }
 
-method graphData MicroBlocksEditor {
-  openMicroBlockDataGraph
-}
-
-method showRecentData MicroBlocksEditor {
-  data = (loggedData (smallRuntime) 100) // get the most recent 100 entries
-  ws = (openWorkspace (global 'page') (joinStrings data (newline)))
-  setTitle ws 'Recent Data'
-  setFont ws 'Arial' (16 * (global 'scale'))
-}
-
-method copyDataToClipboard MicroBlocksEditor {
-  data = (loggedData (smallRuntime))
-  setClipboard (joinStrings data (newline))
-}
-
-method clearData MicroBlocksEditor {
-  clearLoggedData (smallRuntime)
+method showGraph MicroBlocksEditor {
+	page = (global 'page')
+	graph = (newMicroBlockDataGraph)
+	setPosition (morph graph) (x (hand page)) (y (hand page))
+	addPart page graph
 }
 
 method serialDelayMenu MicroBlocksEditor {

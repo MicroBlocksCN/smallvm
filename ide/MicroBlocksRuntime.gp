@@ -267,7 +267,7 @@ method selectPort SmallRuntime {
 		addLine menu
 		addItem menu 'other...'
 	}
-	if (notNil port) {
+	if (or (notNil port) (devMode)) {
 		addLine menu
 		addItem menu 'disconnect'
 	}
