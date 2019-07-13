@@ -472,7 +472,7 @@ method updateConnection SmallRuntime {
 	}
 }
 
-method ideVersion SmallRuntime { return '0.2.0' }
+method ideVersion SmallRuntime { return '0.2.1' }
 method latestVmVersion SmallRuntime { return 63 }
 
 method showAboutBox SmallRuntime {
