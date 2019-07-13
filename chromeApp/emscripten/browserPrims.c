@@ -295,6 +295,42 @@ static OBJ primBrowserGetDroppedText(int nargs, OBJ args[]) {
 	return result;
 }
 
+OBJ primBrowserGetMessage(int nargs, OBJ args[]) {
+	int len = EM_ASM_INT({
+		if (0 == GP.messages.length) return 0;
+		return GP.messages[0].length;
+	}, NULL);
+	if (!len) return nilObj;
+
+	if (!canAllocate(len / 4)) return nilObj;
+	OBJ result = allocateString(len);
+	EM_ASM_({
+		var src = GP.messages.pop();
+		var dst = $0;
+		var len = $1;
+		for (var i = 0; i < len; i++) {
+			Module.HEAPU8[dst++] = src[i];
+		}
+	}, &FIELD(result, 0), len);
+
+	return result;
+}
+
+OBJ primBrowserPostMessage(int nargs, OBJ args[]) {
+	if (nargs < 1) return notEnoughArgsFailure();
+	if (NOT_CLASS(args[0], StringClass)) return primFailed("Argument must be a string");
+	int postToParent = ((nargs > 1) && (trueObj == args[1]));
+
+	EM_ASM_({
+		if ($1) {
+			window.parent.postMessage(Pointer_stringify($0), "*");
+		} else {
+			window.postMessage(Pointer_stringify($0), "*");
+		}
+	}, obj2str(args[0]), postToParent);
+	return nilObj;
+}
+
 // ***** Mobile Browser Detection *****
 
 static OBJ primBrowserIsMobile(int nargs, OBJ args[]) {
@@ -940,6 +976,8 @@ static PrimEntry browserPrimList[] = {
 	{"browserFileImport",		primBrowserFileImport,	"Show a file input button that the user can click to import a file."},
 	{"browserGetDroppedFile",	primBrowserGetDroppedFile,	"Get the next dropped file record array (fileName, binaryData), or nil if there isn't one."},
 	{"browserGetDroppedText",	primBrowserGetDroppedText,	"Get last dropped or pasted text, or nil if there isn't any."},
+	{"browserGetMessage",		primBrowserGetMessage,		"Get the next message from the browser, or nil if there isn't any."},
+	{"browserPostMessage",		primBrowserPostMessage,		"Post a message to the browser using the 'postMessage' function."},
 	{"browserIsMobile",			primBrowserIsMobile,		"Return true if running in a mobile browser."},
 };
 
