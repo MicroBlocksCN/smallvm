@@ -241,7 +241,7 @@ static void fillPath(OBJ bitmap, OBJ path, OBJ fillColor) {
 	createCanvas(bitmap);
 	interpretPath(NULL, path);
 	EM_ASM_({
-		GP.ctx.fillStyle = Pointer_stringify($0);
+		GP.ctx.fillStyle = UTF8ToString($0);
 		GP.ctx.fill();
 	}, fillColorString);
 	copyResultToBitmap(bitmap, fillColor);
@@ -269,10 +269,10 @@ static void strokePath(OBJ bitmap, OBJ path, OBJ strokeColor, double lineWidth, 
 	createCanvas(bitmap);
 	interpretPath(NULL, path);
 	EM_ASM_({
-		GP.ctx.strokeStyle = Pointer_stringify($0);
+		GP.ctx.strokeStyle = UTF8ToString($0);
 		GP.ctx.lineWidth = $1;
-		GP.ctx.lineJoin = Pointer_stringify($2);
-		GP.ctx.lineCap = Pointer_stringify($3);
+		GP.ctx.lineJoin = UTF8ToString($2);
+		GP.ctx.lineCap = UTF8ToString($3);
 		GP.ctx.stroke();
 	}, strokeColorString, lineWidth, lineJoin, lineCap);
 	copyResultToBitmap(bitmap, strokeColor);
