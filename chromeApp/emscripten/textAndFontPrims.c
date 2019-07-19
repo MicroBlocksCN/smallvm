@@ -639,8 +639,8 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
 	}
 
 	EM_ASM_({
-		var s = Pointer_stringify($0);
-		var fontName = Pointer_stringify($1);
+		var s = UTF8ToString($0);
+		var fontName = UTF8ToString($1);
 		var fontHeight = $2;
 		var bmData = $3;
 		var bmWidth = $4;
@@ -693,10 +693,10 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
 
 static int stringWidth(char *s, FontRef font) {
 	int result = EM_ASM_INT({
-		var s = Pointer_stringify($0);
+		var s = UTF8ToString($0);
 		var cnv = document.createElement('canvas');
 		var ctx = cnv.getContext('2d');
-		ctx.font = Pointer_stringify($1);
+		ctx.font = UTF8ToString($1);
 		return Math.round(ctx.measureText(s).width);
 	}, s, font);
 	return result;

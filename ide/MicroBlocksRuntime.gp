@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected
 
 method scripter SmallRuntime { return scripter }
 
@@ -256,13 +256,20 @@ method softReset SmallRuntime {
 }
 
 method selectPort SmallRuntime {
+	if (isNil disconnected) { disconnected = false }
+
 	portList = (portList this)
-	if (not (or (devMode) ((count portList) > 1))) { return }
 	menu = (menu 'Connect' (action 'setPort' this) true)
-	for s portList { addItem menu s }
+	if (or disconnected (devMode)) {
+		for s portList { addItem menu s }
+	}
 	if (devMode) {
 		addLine menu
 		addItem menu 'other...'
+	}
+	if (or (notNil port) (devMode)) {
+		addLine menu
+		addItem menu 'disconnect'
 	}
 	popUpAtHand menu (global 'page')
 }
@@ -301,11 +308,22 @@ method portList SmallRuntime {
 }
 
 method setPort SmallRuntime newPortName {
+	if ('disconnect' == newPortName) {
+		if (notNil port) {
+			stopAndSyncScripts this
+			sendStartAll this
+		}
+		closePort this
+		disconnected = true
+		updateIndicator (findMicroBlocksEditor)
+		return
+	}
 	if ('other...' == newPortName) {
 		newPortName = (prompt (global 'page') 'Port name?' (localized 'none'))
 		if ('' == newPortName) { return }
 	}
 	closePort this
+	disconnected = false
 
 	// the prompt answer 'none' is entered by the user in the current language
 	if (or (isNil newPortName) (newPortName == (localized 'none'))) {
@@ -353,6 +371,7 @@ method reconnectToCurrentPort SmallRuntime {
 	ensurePortOpen this // attempt to reopen the port
 	if (and (notNil port) (boardRespondsToPing this)) {
 		// succeeded! request the VM version
+		lastPingRecvMSecs = (msecsSinceStart)
 		vmVersion = nil
 		sendMsg this 'getVersionMsg'
 		stopAndSyncScripts this
@@ -388,18 +407,30 @@ method tryToConnect SmallRuntime {
 }
 
 method tryToInstallVM SmallRuntime {
-	// If we see a board drive, invite the user to install VM.
-	// Remember the last set of boardDrives so we don't keep asking.
+	// Invite the user to install VM if we see a new board drive and are not able to connect to
+	// it withing a few seconds. Remember the last set of boardDrives so we don't keep asking.
+	// Details: On Mac OS (at least), 3-4 seconds elapse between when the board drive appears
+	// and when the USB-serial port appears. Thus, the IDE waits a bit to see if it can connect
+	// to the board before prompting the user to install the VM to avoid spurious prompts.
+
+	if (and (notNil vmInstallMSecs) ((msecsSinceStart) > vmInstallMSecs)) {
+		vmInstallMSecs = nil
+		if (and (notNil port) (isOpenSerialPort port)) { return }
+		ok = (confirm (global 'page') nil (join
+			(localized 'The board is not responding.') (newline)
+			(localized 'Try to Install MicroBlocks on the board?')))
+		if ok { installVM this }
+		return
+	}
 
 	boardDrives = (collectBoardDrives this)
 	if (lastBoardDrives == boardDrives) { return }
 	lastBoardDrives = boardDrives
-	if (isEmpty boardDrives) { return }
-
-	ok = (confirm (global 'page') nil (join
-		(localized 'The board is not responding.') (newline)
-		(localized 'Try to Install MicroBlocks on the board?')))
-	if ok { installVM this }
+	if (isEmpty boardDrives) {
+		vmInstallMSecs = nil
+	} else {
+		vmInstallMSecs = ((msecsSinceStart) + 5000) // prompt to install VM in a few seconds
+	}
 }
 
 method updateConnection SmallRuntime {
@@ -407,6 +438,9 @@ method updateConnection SmallRuntime {
 	pingTimeout = 3000
 	if (isNil pingSentMSecs) { pingSentMSecs = 0 }
 	if (isNil lastPingRecvMSecs) { lastPingRecvMSecs = 0 }
+	if (isNil disconnected) { disconnected = false }
+
+	if disconnected { return 'not connected' }
 
 	// if port is not open, try to reconnect or find a different board
 	if (or (isNil port) (not (isOpenSerialPort port))) {
@@ -417,6 +451,11 @@ method updateConnection SmallRuntime {
 	// if the port is open and it is time, send a ping
 	now = (msecsSinceStart)
 	if ((now - pingSentMSecs) > pingSendInterval) {
+		if ((now - pingSentMSecs) > 5000) {
+			// it's been a long time since we sent a ping; laptop may have been asleep
+			// set lastPingRecvMSecs to N seconds into future to suppress warnings
+			lastPingRecvMSecs = now
+		}
 		sendMsg this 'pingMsg'
 		pingSentMSecs = now
 		return 'connected'
@@ -433,7 +472,7 @@ method updateConnection SmallRuntime {
 	}
 }
 
-method ideVersion SmallRuntime { return '0.1.46' }
+method ideVersion SmallRuntime { return '0.2.1' }
 method latestVmVersion SmallRuntime { return 63 }
 
 method showAboutBox SmallRuntime {
@@ -509,6 +548,7 @@ method installBoardSpecificBlocks SmallRuntime {
 		importLibraryFromFile scripter '//Libraries/Citilab ED1/ED1 Buttons.ubl'
 		importLibraryFromFile scripter '//Libraries/Tone.ubl'
 		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
+		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
 		importLibraryFromFile scripter '//Libraries/TFT.ubl'
 		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	} ('micro:bit' == boardType) {
@@ -827,13 +867,13 @@ method ensurePortOpen SmallRuntime {
 		if (and (notNil portName) (contains (portList this) portName)) {
 			port = (safelyRun (action 'openSerialPort' portName 115200))
 			if (not (isClass port 'Integer')) { port = nil } // failed
+			disconnected = false
 			if ('Browser' == (platform)) { waitMSecs 100 } // let browser callback complete
 		}
 	}
 }
 
 method processMessages SmallRuntime {
-	if (or (isNil port) (not (isOpenSerialPort port))) { return }
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
 	processingMessages = true
 	count = 0
@@ -845,6 +885,8 @@ method processMessages SmallRuntime {
 
 method processNextMessage SmallRuntime {
 	// Process the next message, if any. Return false when there are no more messages.
+
+	if (or (isNil port) (not (isOpenSerialPort port))) { return false }
 
 	// Read any available bytes and append to recvBuf
 	s = (readSerialPort port true)
@@ -1019,6 +1061,8 @@ method showOutputStrings SmallRuntime {
 // Virtual Machine Installer
 
 method installVM SmallRuntime {
+	disconnected = true
+
 	if ('Browser' == (platform)) {
 		installVMInBrowser this
 		return
@@ -1033,7 +1077,7 @@ method installVM SmallRuntime {
 	} ((count (portList this)) > 0) {
 		if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1') boardType) {
 			flashVM this boardType
-		} (boardType == 'nil') {
+		} (isNil boardType) {
 			menu = (menu 'Select board type:' this)
 			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1') {
 				addItem menu boardName (action 'flashVM' this boardName)
@@ -1173,12 +1217,16 @@ method flashVM SmallRuntime boardName {
 	if (boardName == 'ESP32') {
 		exec (join (tmpPath this) 'esp32flash.cmd')
 	} (boardName == 'Citilab ED1') {
-		inform (join (localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
-		(localized 'Then wait for the screen to turn off again.'))
+		inform (join
+			(localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
+			(localized 'Wait for the screen to turn off again.') (newline)
+			(localized 'Then use the "Connect" menu to connect to board.'))
 		exec (join (tmpPath this) esptool) 'write_flash' '0x10000' (join (tmpPath this) 'vm')
 	} else {
 		// ESP8266
-		inform 'Please wait for the on-board LED to stop flashing.'
+		inform (join
+			(localized 'Please wait for the LED on the 8266 module to stop flashing.') (newline)
+			(localized 'Then use the "Connect" menu to connect to board.'))
 		exec (join (tmpPath this) esptool) 'write_flash' '0' (join (tmpPath this) 'vm')
 	}
 }

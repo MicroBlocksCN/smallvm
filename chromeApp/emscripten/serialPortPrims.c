@@ -210,7 +210,7 @@ static OBJ serialPortList() {
 static PortHandle openPort(int portID, char *portName, int baudRate) {
 	int success = EM_ASM_INT({
 		var id = $0;
-		var path = Pointer_stringify($1);
+		var path = UTF8ToString($1);
 		var rate = $2;
 		return GP_openSerialPort(id, path, rate);
 	}, portID, portName, baudRate);

@@ -8,14 +8,7 @@
 
 defineClass MicroBlockDataGraph morph window lastDataIndex
 
-to openMicroBlockDataGraph {
-	page = (global 'page')
-	result = (new 'MicroBlockDataGraph')
-	initialize result
-	setPosition (morph result) (x (hand page)) (y (hand page))
-	addPart page result
-	return result
-}
+to newMicroBlockDataGraph { return (initialize (new 'MicroBlockDataGraph')) }
 
 method initialize MicroBlockDataGraph {
 	scale = (global 'scale')
@@ -26,6 +19,7 @@ method initialize MicroBlockDataGraph {
 	setExtent morph (scale * 200) (scale * 120)
 	lastDataIndex = 0
 	setFPS morph 60
+	return this
 }
 
 method step MicroBlockDataGraph {
@@ -149,4 +143,78 @@ method drawLabel MicroBlockDataGraph bm label left y {
 	label = (stringImage label fontName fontSize (gray 100))
 	x = (left - ((width label) + (7 * scale)))
 	drawBitmap bm label x (y - (half (fontSize + scale)))
+}
+
+// context menu
+
+method rightClicked MicroBlockDataGraph aHand {
+	popUpAtHand (contextMenu this) (global 'page')
+	return true
+}
+
+method contextMenu MicroBlockDataGraph {
+	menu = (menu 'Graph' this)
+	addItem menu 'clear graph' 'clearGraph'
+	addItem menu 'export data to CSV file' 'exportData'
+	addItem menu 'import data from CSV file' 'importData'
+	if (devMode) {
+		addItem menu 'copy graph data to clipboard' 'copyDataToClipboard'
+	}
+	return menu
+}
+
+method clearGraph MicroBlockDataGraph {
+	clearLoggedData (smallRuntime)
+}
+
+method exportData MicroBlockDataGraph {
+	fileName = (fileToWrite 'data')
+	if (isEmpty fileName) { return }
+	if (not (endsWith fileName '.csv' )) { fileName = (join fileName '.csv') }
+
+	// collect data as .csv entries
+	result = (list)
+	for entry (loggedData (smallRuntime)) {
+		csvLine = (list)
+		items = (splitWith entry ' ')
+		for i (count items) {
+			val = (at items i)
+			if ('false' == val) {
+				add csvLine 0 // map false to 0 (useful for graphing digital pins)
+			} ('true' == val) {
+				add csvLine 100 // map true to 100 (useful for graphing digital pins)
+			} (representsANumber val) {
+				add csvLine (toString (toNumber val))
+			} else {
+				add csvLine val
+			}
+			if (i < (count items)) { add csvLine ', ' }
+		}
+		add result (joinStrings csvLine)
+	}
+	writeFile fileName (joinStrings result (newline))
+}
+
+method importData MicroBlockDataGraph {
+	pickFileToOpen (action 'importDataFromCSVFile' this) (gpFolder) (array '.csv' '.txt')
+}
+
+method importDataFromCSVFile MicroBlockDataGraph fileName {
+	data = (readFile fileName)
+	if (isNil data) { return } // could not read file
+	data = (joinStrings (splitWith data ',')) // remove commas
+	clearLoggedData (smallRuntime)
+	for entry (lines data) { addLoggedData (smallRuntime) entry }
+}
+
+method copyDataToClipboard MicroBlockDataGraph {
+  data = (loggedData (smallRuntime))
+  setClipboard (joinStrings data (newline))
+}
+
+method showRecentData MicroBlockDataGraph {
+  data = (loggedData (smallRuntime) 100) // get the most recent 100 entries
+  ws = (openWorkspace (global 'page') (joinStrings data (newline)))
+  setTitle ws 'Recent Data'
+  setFont ws 'Arial' (16 * (global 'scale'))
 }
