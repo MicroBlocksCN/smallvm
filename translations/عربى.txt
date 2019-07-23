@@ -1,3 +1,6 @@
+RTL
+true
+
 display _
 شاشة _
 

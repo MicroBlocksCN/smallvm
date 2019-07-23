@@ -616,12 +616,36 @@ method fixLayout Block {
       if (isClass each 'CommandSlot') {fixLayout each true}
     }
   }
+  if ((localized 'RTL') == 'true') { fixLayoutRTL this }
   redraw this
   nb = (next this)
   if (notNil nb) {
     setPosition (morph nb) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
   }
   raise morph 'layoutChanged' this
+}
+
+//Right-to-Left Support
+method fixLayoutRTL Block {
+	block_width = (width morph)
+	block_left = (left (fullBounds morph ))
+	drawer = (drawer this)
+	if (notNil drawer) {
+		block_width = (block_width - (width (fullBounds (morph drawer))))
+		block_width = (block_width - (3 * scale))
+	}
+
+	for group labelParts {
+		for each group {
+			if (isVisible (morph each)) {
+				word_left = ((left (fullBounds (morph each))) - block_left)
+				w = (width (fullBounds (morph each)))
+				if (not (isClass each 'CommandSlot')) {
+					setLeft (morph each) (block_left + ((block_width - word_left) - w ))
+				}
+			}
+		}
+	}
 }
 
 // Make ColorSlots be round
@@ -870,4 +894,3 @@ method initializeForConfirm Prompter label question yesLabel noLabel anAction {
   setExtent morph (+ w xBtnWidth (4 * border)) (+ (height (morph lbl)) (height (morph textFrame)) (height (bounds buttons)) (8 * border))
   setMinExtent morph (width morph) (height morph)
 }
-
