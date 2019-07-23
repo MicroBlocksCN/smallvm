@@ -47,22 +47,22 @@ milliseconds
 ميلي ثانية
 
 read digital pin _
-قراءة pin الرقمي _
+قراءة المنفذ الرقمي _ 
 
 read analog pin _
-قراءة pin التناظري _
+قراءة المنفذ التناظري _
 
 set digital pin _ to _
-إجعل pin الرقمي _ يساوي _
+جعل المنفذ الرقمي _ يساوي _ 
 
 set pin _ to _
-إجعل pin _ يساوي _
+جعل المنفذ _ يساوي _
 
 analog pins
-pin الرقمي
+المنافذ التناظرية
 
 digital pins
-pin التناظري
+المنافذ الرقمية
 
 when started
 عند البداية
@@ -212,7 +212,7 @@ has tone support
 لديه دعم نغمة
 
 play tone pin _ frequency _
-لعب نغمة pin _ موجة تردد _
+لعب نغمة منفذ _ موجة تردد _ 
 
 has servo support
 لديه دعم مضاعفات
@@ -368,7 +368,7 @@ counter-clockwise
 عكس عقارب الساعه
 
 capacitive OK
-capacitiu OK
+السعة في حالة جيدة
 
 capacitive X
 مكثف X
@@ -436,8 +436,8 @@ by
 More info at http://microblocks.fun
 More info at http://microblocks.fun
 
+The function "
 الدالة "
-La funció "
 
 " is too large to send to board.
 " كبيرة جدا لإرسالها إلى اللوحة
@@ -494,7 +494,7 @@ save picture of all scripts
 حفظ صورة لجميع البرامج النصية
 
 about...
-عن...
+حول... 
 
 virtual machine version
 نسخة الجهاز الظاهري
@@ -602,7 +602,7 @@ Input
 المدخلات
 
 Pins
-Pins
+المنافذ
 
 Control
 مراقبة
