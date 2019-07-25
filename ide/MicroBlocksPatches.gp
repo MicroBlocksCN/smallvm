@@ -239,7 +239,7 @@ method contextMenu Block {
   if (devMode) {
     addLine menu
 	addItem menu 'copy to clipboard' 'copyToClipboard' 'copy these blocks to the clipboard'
-	addItem menu 'save picture of script' 'exportAsImage' 'save a picture these blocks as a PNG file'
+	addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
 	addLine menu
     addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
     addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
@@ -365,7 +365,7 @@ method representsANumber String {
 method contextMenu BlockDefinition {
   menu = (menu nil this)
   addItem menu 'hide block definition' 'hideDefinition'
-  addItem menu 'save picture of script' 'exportAsImage' 'save a picture this block definition as a PNG file'
+  addItem menu 'save picture of script' 'exportAsImage' 'save a picture of this block definition as a PNG file'
   if (devMode) {
     addLine menu
     addItem menu 'show instructions' (action 'showInstructions' this)
