@@ -1,3 +1,6 @@
+LED Display
+Pantalla LED
+
 display _
 pantalla _
 
@@ -10,14 +13,17 @@ encén x _ y _
 unplot x _ y _
 apaga x _ y _
 
+display character _
+mostra caràcter _
+
 set user LED _
 encén LED integrat _
 
 say _
 digues _
 
-log data _
-registra dades _
+graph _
+afegeix a la gràfica _
 
 button A
 botó A
@@ -211,20 +217,11 @@ té suport per a tons
 play tone pin _ frequency _
 toca un to al pin _ de freqüència _
 
-has servo support
-té suport per a servos
-
-set servo pin _ to _ usecs
-posa el servo del pin _ a _ usecs
-
 has WiFi support
 té suport per a WiFi
 
 start WiFi _ password _
 inicia WiFi _ amb contrasenya _
-
-be hotspot _
-com a punt d'accés _
 
 stop WiFi
 atura WiFi
@@ -234,12 +231,6 @@ estat de la WiFi
 
 my IP address
 la meva adreça IP
-
-enable TFT _
-activa TFT _
-
-set TFT pixel x _ y _ to _
-posa el píxel TFT x _ y _ a _
 
 radio send number _
 envia nombre _ per ràdio
@@ -307,30 +298,6 @@ color vermell _ verd _ blau _
 attach _ LED NeoPixel strip to pin _ has white _
 inicialitza tira de _ NeoPixels al pin _ amb blanc _
 
-receive IR code from device _
-rep codi IR del dispositiu _
-
-test IR
-prova IR
-
-scroll text _ pausing _ ms
-anima el text _ amb _ ms de pausa
-
-scroll number _ pausing _ ms
-anima el nombre _ amb _ ms de pausa
-
-stop scrolling
-atura l'animació
-
-attach buzzer to pin _
-inicialitza brunzidor al pin _
-
-play note _ octave _ during _ ms
-toca la nota _ a l'octava _ durant _ ms
-
-play frequency _ on pin _ for _ ms
-toca la freqüència _ al pin _ durant _ ms
-
 button OK
 botó OK
 
@@ -349,6 +316,9 @@ botó esquerra
 button right
 botó dreta
 
+ED1 Stepper Motor
+Motors ED1
+
 move motor _  _ steps _
 mou motor _ _ passos en _
 
@@ -363,6 +333,9 @@ sentit horari
 
 counter-clockwise
 sentit antihorari
+
+ED1 Buttons
+Botons ED1
 
 capacitive OK
 capacitiu OK
@@ -385,11 +358,11 @@ capacitiu dreta
 capacitive sensor _
 sensor capacitiu _
 
-set TFT pixel x _ y _ to _
-pinta el píxel x _ y _ de color _
-
 set capacitive threshold to _
 fixa llindar capacitiu a _
+
+set use capacitive to _
+utilitza botons capacitius _
 
 New
 Nou
@@ -583,14 +556,20 @@ Llibreries
 Language:
 Idioma:
 
-Add a function
-Crea una funció
+Add a command block
+Crea un bloc comanda
+
+Add a reporter block
+Crea un bloc reportador
 
 Add a variable
 Crea una variable
 
 Delete a variable
 Elimina una variable
+
+New variable name?
+Nom de la variable?
 
 Output
 Sortida
@@ -616,11 +595,17 @@ Llistes
 Advanced
 Avançats
 
-Functions
-Funcions
+My Blocks
+Els meus blocs
+
+Basic Sensors
+Sensors bàsics
 
 Obsolete
 Obsolet
+
+OK
+D'acord
 
 Ok
 D'acord
@@ -646,8 +631,8 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird Tri-LED _ Vermell _ % Verd _ % Blau _ %
 
-Hummingbird Position Servo _ _ ∞
-Hummingbird Servo Posicional _ _ ∞
+Hummingbird Position Servo _ _ º
+Hummingbird Servo Posicional _ _ º
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Servo Rotacional _ _ %
@@ -662,7 +647,7 @@ Light
 Llum
 
 Distance
-Dist‡ncia
+Distància
 
 Dial
 Rodeta
@@ -672,3 +657,120 @@ So
 
 Other
 Altres
+
+distance (cm) trigger _ echo _
+distància (cm) trigger _ echo _
+
+IR Remote
+Infraroigs
+
+receive IR code from device _
+rep codi IR del dispositiu _
+
+test IR
+prova IR
+
+attach IR receiver to pin _
+inicialitza receptor IR al pin _
+
+Radio
+Ràdio
+
+Scrolling
+Text animat
+
+scroll text _
+anima el text _
+
+scroll number _
+anima el nombre _
+
+stop scrolling
+atura l'animació
+
+Servo
+Servomotors
+
+has servo support
+té suport per a servos
+
+set servo _ to _ (-100 to 100)
+posa el servo _ a _ (-100 a 100)
+
+resetServos
+re-inicialitza servos
+
+flip servo _ _
+inverteix servo _ _
+
+attach servos 1 to 4 to pins _ _ _ _
+inicialitza servos 1 a 4 als pins _ _ _ _
+
+enable TFT _
+activa TFT _
+
+set TFT pixel x _ y _ to _
+pinta el píxel x _ y _ de color _
+
+draw line on TFT from x _ y _ to x _ y _ color _
+dibuixa línia de x _ y _ a x _ y _ color _
+
+draw rectangle on TFT at x _ y _ width _ height _ color _ filled _
+dibuixa rectangle a x _ y _ amplada _ alçada _ color _ ple _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ filled _
+dibuixa rectangle arrodonit a x _ y _ amplada _ alçada _ radi _ color _ ple _
+
+draw circle on TFT at x _ y _ radius _ color _ filled _
+dibuixa cercle a x _ y _ radi _ color _ ple _
+
+write _ on TFT at x _ y _ color _ scale _ wrap _
+escriu _ a x _ y _ color _ escala _ amb salts de línia _
+
+Tone
+Tons
+
+attach buzzer to pin _
+inicialitza brunzidor al pin _
+
+play note _ octave _ during _ ms
+toca la nota _ a l'octava _ durant _ ms
+
+play frequency _ for _ milliseconds
+toca la freqüència _ durant _ mil·lisegons
+
+play midi key _ for _ milliseconds
+toca la tecla MIDI _ durant _ mil·lisegons
+
+Web of Things
+Web de les coses
+
+wifi connect to _ password _ try _ times
+connecta't a la wifi _ amb contrasenya _ amb _ intents
+
+wifi create hotspot _ password _
+crea punt d'accés wifi _ amb contrasenya _
+
+IP address
+adreça IP
+
+define thing _ capability _
+defineix cosa _ amb capacitat de _
+
+register event _ type _
+registra l'esdeveniment _ de tipus _
+
+add boolean property title _ variable _ @Type _
+afegeix propietat booleana amb nom _ variable _ de tipus _
+
+add number property title _ variable _ @Type _
+afegeix propietat numèrica amb nom _ variable _ de tipus _
+
+add string property title _ variable _ @Type _
+afegeix propietat textual amb nom _ variable _ de tipus _
+
+thing description
+descripció de la cosa
+
+clear thing description
+esborra la descripció de la cosa
