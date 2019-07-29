@@ -59,7 +59,7 @@ when button _ pressed
 cando se preme o botón _
 
 forever _
-para sempre _
+por sempre _
 
 repeat _ _
 repetir _ veces _
