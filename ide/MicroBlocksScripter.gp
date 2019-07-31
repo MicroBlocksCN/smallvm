@@ -591,6 +591,52 @@ method restoreScripts MicroBlocksScripter {
   updateBlocks this
 }
 
+method allScriptsString MicroBlocksScripter {
+  // Return a string with all scripts in the scripting area.
+
+  scale = (global 'scale')
+  newline = (newline)
+  pp = (new 'PrettyPrinter')
+  result = (list)
+
+  scriptsPane = (contents scriptsFrame)
+  paneX = (left (morph scriptsPane))
+  paneY = (top (morph scriptsPane))
+  scriptsCopy = (list)
+  for m (parts (morph scriptsPane)) {
+    if (isClass (handler m) 'Block') {
+	  expr = (expression (handler m))
+      x = (((left m) - paneX) / scale)
+      y = (((top m) - paneY) / scale)
+
+	  add result (join 'script ' x ' ' y ' ')
+
+	  if (isClass expr 'Reporter') {
+		op = (primName expr)
+		if (isOneOf op 'v' 'my') {
+		  add result (join '(v ' (first (argList expr)) ')')
+		} else {
+		  add result (join '(' (prettyPrint pp expr) ')')
+		}
+		add result newline
+	  } else {
+		add result (join '{' newline)
+		op = (primName expr)
+		if ('to' == op) {
+// xxx
+//print 'to' (first (argList expr)) (functionNamed mbProject (first (argList expr)))
+//		  add result (prettyPrintFunction pp (functionNamed (first (argList expr))))
+		} else {
+		  add result (prettyPrintList pp expr)
+		}
+		add result (join '}' newline)
+	  }
+	  add result newline
+	}
+  }
+  return (joinStrings result)
+}
+
 method pasteScripts MicroBlocksScripter scriptString {
   scale = (global 'scale')
   scriptsPane = (contents scriptsFrame)

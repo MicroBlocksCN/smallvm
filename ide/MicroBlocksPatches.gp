@@ -435,6 +435,12 @@ method contextMenu ScriptEditor {
   return menu
 }
 
+method copyScriptsToClipboard ScriptEditor {
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (isNil scripter) { return }
+  setClipboard (join 'GP Scripts' (newline) (allScriptsString (handler scripter)))
+}
+
 // Block layout tweak
 
 method fixLayout Block {
