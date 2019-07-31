@@ -1008,7 +1008,7 @@ OBJ primWriteFile(int nargs, OBJ args[]) {
 
 #ifdef EMSCRIPTEN
 	EM_ASM_({
-		var fileName = Pointer_stringify($0);
+		var fileName = UTF8ToString($0);
 		fileName = fileName.slice(fileName.lastIndexOf('/') + 1);
 		var src = $1;
 		var isBinary = $2;

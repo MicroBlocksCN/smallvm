@@ -1,14 +1,5 @@
-display _
-pantalla _
-
-clear display
-neteja pantalla
-
-plot x _ y _
-encén x _ y _
-
-unplot x _ y _
-apaga x _ y _
+Output
+Sortida
 
 set user LED _
 encén LED integrat _
@@ -16,8 +7,11 @@ encén LED integrat _
 say _
 digues _
 
-log data _
-registra dades _
+graph _
+afegeix a la gràfica _
+
+Input
+Entrada
 
 button A
 botó A
@@ -25,23 +19,17 @@ botó A
 button B
 botó B
 
-tilt x
-inclinació x
-
-tilt y
-inclinació y
-
-tilt z
-inclinació z
-
-temperature (°C)
-temperatura (°C)
-
 microseconds
 microsegons
 
 milliseconds
 mil·lisegons
+
+board type
+tipus de tarja
+
+Pins
+Pins
 
 read digital pin _
 lectura digital _
@@ -60,6 +48,9 @@ pins analògics
 
 digital pins
 pins digitals
+
+Control
+Control
 
 when started
 en començar
@@ -115,6 +106,9 @@ quan rebi _
 return _
 retorna _
 
+Math
+Operacions
+
 _ mod _
 _ mòdul _
 
@@ -139,6 +133,18 @@ _ o _
 or _
 o _
 
+Variables
+Variables
+
+Add a variable
+Crea una variable
+
+Delete a variable
+Elimina una variable
+
+New variable name?
+Nom de la variable?
+
 set _ to _
 assigna _ a _
 
@@ -147,6 +153,9 @@ augmenta _ en _
 
 local _ _
 variable local _ _
+
+Lists
+Llistes
 
 new list length _
 nova llista de llargada _
@@ -163,11 +172,23 @@ canvia l'element _ de _ per _
 length of _
 llargada de _
 
-board type
-tipus de tarja
-
 broadcast _
 envia _
+
+My Blocks
+Els meus blocs
+
+Add a command block
+Crea un bloc comanda
+
+Add a reporter block
+Crea un bloc reportador
+
+Enter function name:
+Nom de la funció:
+
+Comm
+Comunicacions
 
 i2c get device _ register _
 i2c llegeix del dispositiu _ el registre _
@@ -211,20 +232,11 @@ té suport per a tons
 play tone pin _ frequency _
 toca un to al pin _ de freqüència _
 
-has servo support
-té suport per a servos
-
-set servo pin _ to _ usecs
-posa el servo del pin _ a _ usecs
-
 has WiFi support
 té suport per a WiFi
 
 start WiFi _ password _
 inicia WiFi _ amb contrasenya _
-
-be hotspot _
-com a punt d'accés _
 
 stop WiFi
 atura WiFi
@@ -234,12 +246,6 @@ estat de la WiFi
 
 my IP address
 la meva adreça IP
-
-enable TFT _
-activa TFT _
-
-set TFT pixel x _ y _ to _
-posa el píxel TFT x _ y _ a _
 
 radio send number _
 envia nombre _ per ràdio
@@ -307,30 +313,6 @@ color vermell _ verd _ blau _
 attach _ LED NeoPixel strip to pin _ has white _
 inicialitza tira de _ NeoPixels al pin _ amb blanc _
 
-receive IR code from device _
-rep codi IR del dispositiu _
-
-test IR
-prova IR
-
-scroll text _ pausing _ ms
-anima el text _ amb _ ms de pausa
-
-scroll number _ pausing _ ms
-anima el nombre _ amb _ ms de pausa
-
-stop scrolling
-atura l'animació
-
-attach buzzer to pin _
-inicialitza brunzidor al pin _
-
-play note _ octave _ during _ ms
-toca la nota _ a l'octava _ durant _ ms
-
-play frequency _ on pin _ for _ ms
-toca la freqüència _ al pin _ durant _ ms
-
 button OK
 botó OK
 
@@ -349,6 +331,9 @@ botó esquerra
 button right
 botó dreta
 
+ED1 Stepper Motor
+Motors ED1
+
 move motor _  _ steps _
 mou motor _ _ passos en _
 
@@ -363,6 +348,9 @@ sentit horari
 
 counter-clockwise
 sentit antihorari
+
+ED1 Buttons
+Botons ED1
 
 capacitive OK
 capacitiu OK
@@ -385,11 +373,179 @@ capacitiu dreta
 capacitive sensor _
 sensor capacitiu _
 
+set capacitive threshold to _
+fixa llindar capacitiu a _
+
+set use capacitive to _
+utilitza botons capacitius _
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ Vermell _ % Verd _ % Blau _ %
+
+Hummingbird Position Servo _ _ º
+Hummingbird Servo Posicional _ _ º
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Servo Rotacional _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Bateria (mV)
+
+Light
+Llum
+
+Distance
+Distància
+
+Dial
+Rodeta
+
+Sound
+So
+
+Other
+Altres
+
+distance (cm) trigger _ echo _
+distància (cm) trigger _ echo _
+
+IR Remote
+Infraroigs
+
+receive IR code from device _
+rep codi IR del dispositiu _
+
+test IR
+prova IR
+
+attach IR receiver to pin _
+inicialitza receptor IR al pin _
+
+Radio
+Ràdio
+
+Scrolling
+Text animat
+
+scroll text _
+anima el text _
+
+scroll number _
+anima el nombre _
+
+stop scrolling
+atura l'animació
+
+Servo
+Servomotors
+
+has servo support
+té suport per a servos
+
+set servo _ to _ (-100 to 100)
+posa el servo _ a _ (-100 a 100)
+
+resetServos
+re-inicialitza servos
+
+flip servo _ _
+inverteix servo _ _
+
+attach servos 1 to 4 to pins _ _ _ _
+inicialitza servos 1 a 4 als pins _ _ _ _
+
+LED Display
+Pantalla LED
+
+display _
+pantalla _
+
+clear display
+neteja pantalla
+
+plot x _ y _
+encén x _ y _
+
+unplot x _ y _
+apaga x _ y _
+
+display character _
+mostra caràcter _
+
+enable TFT _
+activa TFT _
+
 set TFT pixel x _ y _ to _
 pinta el píxel x _ y _ de color _
 
-set capacitive threshold to _
-fixa llindar capacitiu a _
+draw line on TFT from x _ y _ to x _ y _ color _
+dibuixa línia de x _ y _ a x _ y _ color _
+
+draw rectangle on TFT at x _ y _ width _ height _ color _ filled _
+dibuixa rectangle a x _ y _ amplada _ alçada _ color _ ple _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ filled _
+dibuixa rectangle arrodonit a x _ y _ amplada _ alçada _ radi _ color _ ple _
+
+draw circle on TFT at x _ y _ radius _ color _ filled _
+dibuixa cercle a x _ y _ radi _ color _ ple _
+
+write _ on TFT at x _ y _ color _ scale _ wrap _
+escriu _ a x _ y _ color _ escala _ amb salts de línia _
+
+Tone
+Tons
+
+attach buzzer to pin _
+inicialitza brunzidor al pin _
+
+play note _ octave _ during _ ms
+toca la nota _ a l'octava _ durant _ ms
+
+play frequency _ for _ milliseconds
+toca la freqüència _ durant _ mil·lisegons
+
+play midi key _ for _ milliseconds
+toca la tecla MIDI _ durant _ mil·lisegons
+
+Web of Things
+Web de les coses
+
+wifi connect to _ password _ try _ times
+connecta't a la wifi _ amb contrasenya _ amb _ intents
+
+wifi create hotspot _ password _
+crea punt d'accés wifi _ amb contrasenya _
+
+IP address
+adreça IP
+
+define thing _ capability _
+defineix cosa _ amb capacitat de _
+
+register event _ type _
+registra l'esdeveniment _ de tipus _
+
+add boolean property title _ variable _ @Type _
+afegeix propietat booleana amb nom _ variable _ de tipus _
+
+add number property title _ variable _ @Type _
+afegeix propietat numèrica amb nom _ variable _ de tipus _
+
+add string property title _ variable _ @Type _
+afegeix propietat textual amb nom _ variable _ de tipus _
+
+thing description
+descripció de la cosa
+
+clear thing description
+esborra la descripció de la cosa
 
 New
 Nou
@@ -475,11 +631,11 @@ neteja
 arrange scripts
 organitza programes
 
-undo last drop
-desfes l'últim moviment
+undrop  (ctrl-Z)
+desfés  (ctrl-Z)
 
-copy all scripts
-copia tots els programes
+copy all scripts to clipboard
+copia tots els programes al porta-retalls
 
 paste all scripts
 enganxa tots els programes
@@ -487,7 +643,7 @@ enganxa tots els programes
 paste script
 enganxa el programa
 
-save picture of all scripts
+save a picture of all scripts
 desa la imatge de tots els programes
 
 about...
@@ -496,14 +652,29 @@ sobre...
 virtual machine version
 versió de la màquina virtual
 
-install MicroBlocks on board
-instal·la MicroBlocks a la placa
+update firmware on board
+actualitza firmware a la placa
 
-graph data
-gràfica de dades
+show data graph
+mostra la gràfica de dades
+
+set serial delay
+ajusta la latència del port sèrie
+
+firmware version
+versió del firmware
+
+start Mozilla WebThing server
+inicia el servidor de Mozilla WebThings
+
+stop Mozilla WebThing server
+ature el servidor de Mozilla WebThings
+
+MicroBlocks HTTP Server listening on port 6473
+El servidor HTTP de MicroBlocks està actiu al port 6473
 
 copy data to clipboard
-copia les dades al portapapers
+copia les dades al porta-retalls
 
 clear data
 neteja dades
@@ -522,6 +693,9 @@ amaga els blocs avançats
 
 Data Graph
 Gràfica de dades
+
+File
+Arxiu
 
 File Open
 Obre arxiu
@@ -547,23 +721,59 @@ replega
 rename...
 reanomena...
 
-show definition...
-mostra definició...
+show block definition...
+mostra la definició del bloc...
+
+show the definition of this block
+mostra la definició d'aquest bloc
+
+delete block definition...
+elimina la definició del bloc...
+
+delete the definition of this block
+esborra la definició d'aquest bloc
 
 duplicate
 duplica
 
+duplicate this block
+duplica aquest bloc
+
+delete block
+elimina bloc
+
+delete this block
+elimina aquest bloc
+
 just this one block
 només aquest bloc
 
-...all
-...fins a baix
+copy to clipboard
+copia al porta-retalls
 
-duplicate including all attached blocks
+copy these blocks to the clipboard
+copia aquests blocs al porta-retalls
+
+duplicate all
+duplica fins a baix
+
+duplicate these blocks
 duplica aquest bloc i tots els que el segueixen
+
+extract block
+extrau bloc
+
+pull out this block
+agafa aquest bloc
 
 save picture of script
 desa la imatge del programa
+
+save a picture of this block definition as a PNG file
+desa una imatge de la definició d'aquest bloc en format PNG
+
+save a picture of these blocks as a PNG file
+desa una imatge d'aquests blocs en format PNG
 
 copy script
 copia el programa
@@ -571,8 +781,35 @@ copia el programa
 delete
 elimina
 
-hide definition
-amaga la definició
+Input type:
+Tipus de ranura:
+
+string only
+només text
+
+string or number
+text o nombre
+
+number only
+només nombre
+
+define
+defineix
+
+number/string
+nombre/text
+
+editable number or string
+nombre o text editable
+
+label
+etiqueta
+
+input
+ranura
+
+hide block definition
+amaga la definició d'aquest bloc
 
 Are you sure you want to remove this block definition?
 Segur que vols esborrar la definició d'aquest bloc?
@@ -580,47 +817,32 @@ Segur que vols esborrar la definició d'aquest bloc?
 Libraries
 Llibreries
 
-Language:
-Idioma:
+Language
+Idioma
 
-Add a function
-Crea una funció
+Custom...
+Arxiu...
 
-Add a variable
-Crea una variable
+Basic Sensors
+Sensors bàsics
 
-Delete a variable
-Elimina una variable
+tilt x
+inclinació x
 
-Output
-Sortida
+tilt y
+inclinació y
 
-Input
-Entrada
+tilt z
+inclinació z
 
-Pins
-Pins
-
-Control
-Control
-
-Math
-Operacions
-
-Variables
-Variables
-
-Lists
-Llistes
-
-Advanced
-Avançats
-
-Functions
-Funcions
+temperature (°C)
+temperatura (°C)
 
 Obsolete
 Obsolet
+
+OK
+D'acord
 
 Ok
 D'acord
@@ -639,36 +861,3 @@ D'acord
 
 Confirm
 Confirmació
-
-Hummingbird LED _ _ %
-Hummingbird LED _ _ %
-
-Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird Tri-LED _ Vermell _ % Verd _ % Blau _ %
-
-Hummingbird Position Servo _ _ ∞
-Hummingbird Servo Posicional _ _ ∞
-
-Hummingbird Rotation Servo _ _ %
-Hummingbird Servo Rotacional _ _ %
-
-Hummingbird _ _
-Hummingbird _ _
-
-Hummingbird Battery (mV)
-Hummingbird Bateria (mV)
-
-Light
-Llum
-
-Distance
-Dist‡ncia
-
-Dial
-Rodeta
-
-Sound
-So
-
-Other
-Altres

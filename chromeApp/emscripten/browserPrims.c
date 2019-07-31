@@ -946,7 +946,7 @@ OBJ primSetClipboard(int nargs, OBJ args[]) {
 	if (NOT_CLASS(args[0], StringClass)) return primFailed("Argument must be a string");
 
 	EM_ASM_({
-		setGPClipboard(Pointer_stringify($0));
+		setGPClipboard(UTF8ToString($0));
 	}, obj2str(args[0]));
 	return nilObj;
 }

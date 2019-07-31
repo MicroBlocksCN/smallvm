@@ -1,0 +1,860 @@
+Output
+Saída
+
+set user LED _
+acender LED integrado _
+
+say _
+dicir _
+
+graph _
+engadir á gráfica _
+
+Input
+Entrada
+
+button A
+botón A
+
+button B
+botón B
+
+microseconds
+microsegundos
+
+milliseconds
+milisegundos
+
+board type
+tipo de placa
+
+Pins
+Pins
+
+read digital pin _
+lectura dixital _
+
+read analog pin _
+lectura analóxica _
+
+set digital pin _ to _
+poñer o pin dixital _ a _
+
+set pin _ to _
+poñer o pin _ a _
+
+analog pins
+pins analóxicos
+
+digital pins
+pins dixitais
+
+Control
+Control
+
+when started
+ao comezar
+
+when button _ pressed
+cando se preme o botón _
+
+forever _
+por sempre _
+
+repeat _ _
+repetir _ veces _
+
+if _ _
+se _ _
+
+else if _ _
+se non, se _ _
+
+if _ _ else _
+se _ _ se non _
+
+wait _ millisecs
+agardar _ milisegundos
+
+wait _ microsecs
+agardar _ microsegundos
+
+stop this task
+deter esta tarefa
+
+stop all
+detelo todo
+
+comment _
+comentario _
+
+wait until _
+agardar ata que _
+
+repeat until _ _
+repetir ata que _ _
+
+for _ in _ _
+por cada _ en _ _
+
+when _
+cando _
+
+when _ received
+ao recibir _
+
+return _
+retornar _
+
+_ mod _
+_ módulo _
+
+abs _
+valor absoluto de _
+
+random _ to _
+número ao chou entre _ e _
+
+not _
+non _
+
+_ and _
+_ e _
+
+and _
+e _
+
+_ or _
+_ ou _
+
+or _
+ou _
+
+Variables
+Variábeis
+
+Add a variable
+Crear unha variábel
+
+Delete a variable
+Eliminar unha variábel
+
+New variable name?
+Novo nome da variábel?
+
+set _ to _
+asignar _ a _
+
+change _ by _
+aumentar _ en _
+
+local _ _
+variábel local _ _
+
+Lists
+Listas
+
+new list length _
+nova lonxitude da lista _
+
+fill list _ with _
+encher a lista _ con _
+
+item _ of _
+elemento _ de _
+
+replace item _ of _ with _
+cambiar o elemento _ de _ por _
+
+length of _
+largo de _
+
+broadcast _
+difundir _
+
+My Blocks
+Os meus bloques
+
+Add a command block
+Engadir un bloque de ordes
+
+Add a reporter block
+Engadir un bloque de reportes
+
+Enter function name:
+Nome da función:
+
+Comm
+Comunicacións
+
+2c get device _ register _
+i2c ler do dispositivo _ o rexistro _
+
+i2c set device _ register _ to _
+i2c escribir no dispositivo _ o rexistro _ con _
+
+spi send _
+spi enviar _
+
+spi receive
+spi ler
+
+print _
+escribir _
+
+hex _
+hexadecimal _
+
+no op
+no op
+
+ignore
+ignorar
+
+draw shape _ at x _ y _
+debuxar a forma _ en x _ y _
+
+shape for letter _
+forma para a letra _
+
+set NeoPixel pin _ is RGBW _
+poñer un NeoPixel no pin _ tipo RGBW _
+
+send NeoPixel rgb _
+enviar RGB _ ao NeoPixel
+
+has tone support
+admite tons
+
+play tone pin _ frequency _
+toca un ton no pin _ na frecuencia _
+
+has WiFi support
+admite WiFi
+
+start WiFi _ password _
+iniciar a WiFi _ co contrasinal _
+
+stop WiFi
+deter a WiFi
+
+WiFi status
+estado da WiFi
+
+my IP address
+o meu enderezo IP
+
+radio send number _
+enviar número _ por radio
+
+radio send string _
+enviar texto _ por radio
+
+radio send pair _ = _
+enviar asociación _ = _ por radio
+
+radio message received?
+mensaxe de radio recibida?
+
+radio last number
+último número recibido por radio
+
+radio last string
+último texto recibido por radio
+
+radio last message type
+tipo da última mensaxe recibido por radio
+
+radio set group _
+pon o grupo de radio a _
+
+radio set channel (0-83) _
+pon a canle de rádio a (0-83) _
+
+radio set power (0-7) _
+pon a potencia da radio a (0-7) _
+
+radio last signal strength
+intensidade da última señal de radio
+
+radio receive packet _
+recepción de paquetes por radio _
+
+radio send packet _
+enviar paquetes por radio _
+
+disable radio
+desactivar a radio
+
+light level
+nivel de luz
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+poñer NeoPixeis _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+apagar NeoPixeis
+
+set NeoPixel _ color _
+poñer NeoPixel _ de cor _
+
+set all NeoPixels color _
+poñer todos os NeoPixeis de cor _
+
+rotate NeoPixels by _
+rotar NeoPixeis en _
+
+color r _ g _ b _
+cor vermello _ verde _ azul _
+
+attach _ LED NeoPixel strip to pin _ has white _
+inicializa tira de _ NeoPixeis no pin _ con branco _
+
+button OK
+botón Aceptar
+
+button X
+botón X
+
+button up
+botón arriba
+
+button down
+botón abaixo
+
+button left
+botón esquerda
+
+button right
+botón dereita
+
+ED1 Stepper Motor
+Motores ED1
+
+move motor _  _ steps _
+mover o motor _ _ pasos en _
+
+move motor 1 _ and motor 2 _ _ steps
+mover o motor 1 en _ e o motor 2 en _ _ pasos
+
+stop steppers
+deter motores
+
+clockwise
+sentido horario
+
+counter-clockwise
+sentido antihorario
+
+ED1 Buttons
+Botóns ED1
+
+capacitive OK
+capacitivo Aceptar
+
+capacitive X
+capacitivo X
+
+capacitive up
+capacitivo arriba
+
+capacitive down
+capacitivo abaixo
+
+capacitive left
+capacitivo esquerda
+
+capacitive right
+capacitivo dereita
+
+capacitive sensor _
+sensor capacitivo _
+
+set capacitive threshold to _
+poñer o limiar capacitivo a _
+
+set use capacitive to _
+utilizar botóns capacitivos _
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ Vermello _ % Verde _ % Azul _ %
+
+Hummingbird Position Servo _ _ º
+Hummingbird Servo Posicional _ _ º
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Servo Rotacional _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Batería (mV)
+
+Light
+Luz
+
+Distance
+Distancia
+
+Dial
+Dial
+
+Sound
+Son
+
+Other
+Outros
+
+distance (cm) trigger _ echo _
+distancia (cm) disparador _ eco _
+
+IR Remote
+Infravermellos
+
+receive IR code from device _
+recibir código IR dende o dispositivo _
+
+test IR
+probar IR
+
+attach IR receiver to pin _
+inicializar o receptor IR no pin _
+
+Radio
+Radio
+
+Scrolling
+Texto animado
+
+scroll text _
+animar o texto _
+
+scroll number _
+animar o número _
+
+stop scrolling
+deter a animación
+
+Servo
+Servomotores
+
+has servo support
+admite servos
+
+set servo _ to _ (-100 to 100)
+poñer o servo _ a _ (-100 a 100)
+
+resetServos
+reiniciar os servos
+
+flip servo _ _
+inverter o servo _ _
+
+attach servos 1 to 4 to pins _ _ _ _
+inicializar os servos 1 a 4 nos pins _ _ _ _
+
+LED Display
+Pantalla LED
+
+display _
+pantalla _
+
+clear display
+limpar pantalla
+
+plot x _ y _
+acender x _ y _
+
+unplot x _ y _
+apagar x _ y _
+
+display character _
+amosar carácter _
+
+enable TFT _
+activar TFT _
+
+set TFT pixel x _ y _ to _
+poñer o píxel x _ y _ da cor _
+
+draw line on TFT from x _ y _ to x _ y _ color _
+debuxar liña de x _ y _ a x _ y _ cor _
+
+draw rectangle on TFT at x _ y _ width _ height _ cor _ recheo _
+debuxar rectángulo en x _ y _ largura _ altura _ cor _ ple _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ filled _
+debuxar un rectángulo arredondado en x _ y _ largura _ altura _ radio _ cor _ recheo _
+
+draw circle on TFT at x _ y _ radius _ color _ filled _
+debuxar círculo en x _ y _ radio _ cor _ recheo _
+
+write _ on TFT at x _ y _ color _ scale _ wrap _
+escribir _ en x _ y _ cor _ escala _ con saltos de liñaa _
+
+Tone
+Tons
+
+attach buzzer to pin _
+inicializar zunidor no pin _
+
+play note _ octave _ during _ ms
+tocar a nota _ na oitava _ durante _ ms
+
+play frequency _ for _ milliseconds
+tocar a frecuencia _ durante _ milisegundos
+
+play midi key _ for _ milliseconds
+tocar a tecla MIDI _ durante _ milisegundos
+
+Web of Things
+Web das cousas
+
+wifi connect to _ password _ try _ times
+conectar á WiFi _ co contrasinal _ con _ intentos
+
+wifi create hotspot _ password _
+crear punto de acceso WiFi _ co contrasinal _
+
+IP address
+enderezo IP
+
+define thing _ capability _
+definir cousa _ coa capacidade de _
+
+register event _ type _
+rexistrar o evento _ do tipo _
+
+add boolean property title _ variable _ @Type _
+engadir a propiedade booleana co nome _ variábel _ do tipo _
+
+add number property title _ variable _ @Type _
+engadir a propiedade numérica co nome _ variábel _ do tipo _
+
+add string property title _ variable _ @Type _
+engadir a propiedade textual co nome _ variábel _ do tipo _
+
+thing description
+descrición da cousa
+
+clear thing description
+borrar a descrición da cousa
+
+New
+Novo
+
+Open
+Abrir
+
+Save
+Gardar
+
+Connect
+Conectar
+
+disconnect
+desconectar
+
+Serial port:
+Porto serie:
+
+other...
+outro...
+
+none
+ningún
+
+Port name?
+Nome do porto?
+
+Board type:
+Tipo de placa:
+
+Select board:
+Seleccionar a placa:
+
+Could not read: 
+Non foi posíbel ler: 
+
+by
+por
+
+More info at http://microblocks.fun
+Máis información en http://microblocks.fun
+
+Function "
+A función «
+
+" is too large to send to board.
+» é grande de máis para enviala á placa.
+
+Script is too large to send to board.
+O programa é grande de máis para envialo á placa..
+
+Use "Connect" button to connect to a MicroBlocks device.
+Utilice o botón «Conectar» para conectarse a un dispositivo MicroBlocks.
+
+No boards found; is your board plugged in?
+Non se atopou ningunha placa; ten conectada a súa placa?
+
+For AdaFruit boards, double-click button and try again.
+Nas placas AdaFruit, prema o botón dúas veces rapidamente e próbeo de novo.
+
+The board is not responding.
+A placa non responde.
+
+Try to Install MicroBlocks on the board?
+Tentar instalar MicroBlocks na placa?
+
+Stop
+Deter
+
+Start
+Iniciar
+
+Quit MicroBlocks?
+Saír de MicroBlocks?
+
+Discard current project?
+Quere desbotar o proxecto actual?
+
+clean up
+limpeza
+
+arrange scripts
+organizar programas
+
+undrop  (ctrl-Z)
+desfacer  (ctrl-Z)
+
+copy all scripts to clipboard
+copiar todos os programas no portappeis
+
+paste all scripts
+pegar todos os programas
+
+paste script
+pegar o programa
+
+save a picture of all scripts
+gardar a imaxe de todos os programas
+
+about...
+sobre...
+
+virtual machine version
+versión da máquina virtual
+
+update firmware on board
+actualizar o firmware da placa
+
+show data graph
+amosar a gráfica de datos
+
+set serial delay
+axustar a latencia do porto serie
+
+firmware version
+versión do firmware
+
+start Mozilla WebThing server
+iniciar o servidor de Mozilla WebThings
+
+stop Mozilla WebThing server
+deter o servidor de Mozilla WebThings
+
+MicroBlocks HTTP Server listening on port 6473
+o servidor HTTP de MicroBlocks esta activo no porto 6473
+
+copy data to clipboard
+copiar os datos no portapapeis
+
+clear data
+limpar os datos
+
+clear memory and variables
+limpar a memoria e as variábeis
+
+show advanced blocks
+amosar os bloques avanzados
+
+export functions as library
+exportar as funcións como unha biblioteca
+
+hide advanced blocks
+agochar os bloques avanzados
+
+Data Graph
+Gráfico de datos
+
+File
+Ficheiro
+
+File Open
+Abrir ficheiro
+
+File Save
+Gardar ficheiro
+
+File name:
+Nome de ficheiro:
+
+show instructions
+amosar as instrucións
+
+show compiled bytes
+amosar os bytes compilados
+
+expand
+expandir
+
+collapse
+contraer
+
+rename...
+renomear...
+
+show block definition...
+amosar a definición do bloque...
+
+show the definition of this block
+amosa a definición deste bloque
+
+delete block definition...
+eliminar a definición do bloque...
+
+delete the definition of this block
+elimina a definición deste bloque
+
+duplicate
+duplicar
+
+duplicate this block
+duplicar este bloque
+
+delete block
+eliminar bloque
+
+delete this block
+eliminar este bloque
+
+just this one block
+só este bloque
+
+copy to clipboard
+copiar no portapapeis
+
+copy these blocks to the clipboard
+copia estes bloques no portapapeis
+
+duplicate all
+duplicar ata abaixo
+
+duplicate these blocks
+duplica este bloque e todos os que lle seguen
+
+extract block
+extraer bloque
+
+pull out this block
+sacar este bloque
+
+save picture of script
+gardar a imaxe do programa
+
+save a picture of this block definition as a PNG file
+gardar unha imaxe da definición deste bloque en formato PNG
+
+save a picture of these blocks as a PNG file
+garda unha imaxe destes bloques como un ficheiro PNG
+
+copy script
+copia el programa
+
+delete
+eliminar
+
+Input type:
+Tipo de entrada:
+
+string only
+só texto
+
+string or number
+texto ou número
+
+number only
+só número
+
+define
+definir
+
+number/string
+número/texto
+
+editable number or string
+número ou texto editábel
+
+label
+etiqueta
+
+input
+entrada
+
+hide block definition
+agochar a definición do bloque
+
+Are you sure you want to remove this block definition?
+Confirma que quere retirar a definición deste bloque?
+
+Libraries
+Bibliotecas
+
+Language
+Idioma
+
+Custom...
+Personalizado...
+
+Basic Sensors
+Sensores básicos
+
+tilt x
+inclinación x
+
+tilt y
+inclinación y
+
+tilt z
+inclinación z
+
+temperature (°C)
+temperatura (°C)
+
+Obsolete
+Obsoleto
+
+OK
+Aceptar
+
+Ok
+Aceptar
+
+Yes
+Si
+
+No
+Non
+
+Cancel
+Cancelar
+
+Okay
+Aceptar
+
+Confirm
+Confirmar
