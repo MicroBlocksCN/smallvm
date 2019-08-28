@@ -32,7 +32,7 @@
 
 // flash operations for supported platforms
 
-#if defined(ARDUINO_NRF52_PRIMO) || defined(NRF51)
+#if defined(ARDUINO_NRF52_PRIMO) || defined(NRF51) || defined(ARDUINO_NRF52_FEATHER)
 	#include "nrf.h" // nRF51 and nRF52
 
 	#ifdef ARDUINO_NRF52_PRIMO
