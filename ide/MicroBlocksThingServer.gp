@@ -253,7 +253,9 @@ method handleRequest MicroBlocksThingWorker header body {
 	add responseHeaders 'HTTP/1.1 200 OK'
 	add responseHeaders 'Access-Control-Allow-Origin: *'
 	add responseHeaders 'Access-Control-Allow-Methods: PUT, GET, OPTIONS, POST'
-	add responseHeaders 'Content-Type: application/json'
+	if (not (beginsWith path '/mb')) {
+		add responseHeaders 'Content-Type: application/json'
+	}
 	add responseHeaders (join 'Content-Length: ' (count responseBody))
 	add responseHeaders ''
 	add responseHeaders (toString responseBody)
@@ -423,7 +425,7 @@ method setVar MicroBlocksThingWorker path {
 	} ('false' == valueString) {
 		value = false
 	} else {
-		value = (urlDecode (substring valueString 2 ((count valueString) - 1)))
+		value = (urlDecode valueString)
 		if (and ((count value) >= 2) (beginsWith value '"') (endsWith value '"')) {
 			// string enclosed in double quotes: remove quotes
 			value = (substring value 2 ((count value) - 1))
