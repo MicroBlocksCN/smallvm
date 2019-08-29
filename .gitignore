@@ -14,3 +14,4 @@ esptool
 chromeApp/MicroBlocks/gp_wasm.data
 chromeApp/MicroBlocks/gp_wasm.js
 chromeApp/MicroBlocks/gp_wasm.wasm
+.pio
