@@ -52,11 +52,11 @@
 static int microBitDisplayBits = 0;
 
 static int lightLevel = 0;
-static int lightLevelReadTime = 0;
 static int lightReadingRequested = false;
 
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 
+static int lightLevelReadTime = 0;
 static int displaySnapshot = 0;
 static int displayCycle = 0;
 
@@ -332,7 +332,7 @@ volatile int *neoPixelPinClr = NULL;
 #define GPIO_SET_DIR 0x50000518
 
 static void initNeoPixelPin(int pinNum) {
-	if ((pinNum < 0) || (pinNum >= PINS_COUNT)) {
+	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#if defined(ARDUINO_CALLIOPE_MINI)
 			pinNum = 26; // internal NeoPixel pin on Calliope
 		#else
@@ -373,7 +373,7 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 #define PORT_BASE 0x41004400
 
 static void initNeoPixelPin(int pinNum) {
-	if ((pinNum < 0) || (pinNum >= PINS_COUNT)) {
+	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
 			pinNum = 8; // internal NeoPixel pin
 		#else

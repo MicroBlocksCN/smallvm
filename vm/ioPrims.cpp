@@ -358,6 +358,8 @@ static char currentMode[TOTAL_PINS];
 // Check for reserved pin on boards that define a reservedPin array
 #define RESERVED(pin) (((pin) < 0) || ((pin) >= TOTAL_PINS) || (reservedPin[(pin)]))
 
+int pinCount() { return TOTAL_PINS; }
+
 void setPinMode(int pin, int newMode) {
 	// Function to set pin modes from other modules. (The SET_MODE macro is local to this file.)
 

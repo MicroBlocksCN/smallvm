@@ -234,6 +234,7 @@ void hardwareInit(void);
 
 // I/O Support
 
+int pinCount();
 void setPinMode(int pin, int newMode);
 void turnOffPins();
 void updateMicrobitDisplay();
@@ -310,11 +311,11 @@ void addTFTPrims();
 typedef OBJ (*PrimitiveFunction)(int argCount, OBJ *args);
 
 typedef struct {
-	char *primName;
+	const char *primName;
 	PrimitiveFunction primFunc;
 } PrimEntry;
 
-void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries);
+void addPrimitiveSet(const char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
 void primsInit();
 
