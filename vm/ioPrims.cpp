@@ -227,6 +227,21 @@ void restartSerial() {
 	#define TOTAL_PINS 14
 	static const int analogPin[] = {A0, A1, A2, A3, A4};
 
+#elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	// Note: The VM for this board can only be built with PlatformIO.
+	// Note: This case must come before the ARDUINO_SAMD_MKR case when using PlatformIO.
+
+	#define BOARD_TYPE "SAMW25_XPRO"
+	#define DIGITAL_PINS 18
+	#define ANALOG_PINS 3
+	#define TOTAL_PINS DIGITAL_PINS
+	#define INVERT_USER_LED true
+	#define PIN_BUTTON_A 13 // PB10, pin13 in PlatformIO
+	static const int analogPin[] = {A0, A1, A2};
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0};
+
 #elif defined(ARDUINO_SAMD_MKR)
 
 	#define BOARD_TYPE "MKR Series"
@@ -309,16 +324,6 @@ void restartSerial() {
 		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
-
-#elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
-
-	#define BOARD_TYPE "SAMW25_XPRO"
-	#define DIGITAL_PINS 20
-	#define ANALOG_PINS 2
-	#define TOTAL_PINS DIGITAL_PINS
-	#define INVERT_USER_LED true
-	#define PIN_BUTTON_A PIN_BUTTON
-	static const int analogPin[] = {A0, A1};
 
 #else // unknown board
 
@@ -427,7 +432,7 @@ void primAnalogWrite(OBJ *args) {
 		if (pinNum > 25) return;
 	#elif defined(ADAFRUIT_TRINKET_M0)
 		if (pinNum > 4) return;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE)
 		if (pinNum < 2) return;
@@ -467,7 +472,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 			return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
 		}
 		if (RESERVED(pinNum)) return falseObj;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return falseObj;
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
@@ -482,7 +487,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 
 void primDigitalWrite(OBJ *args) {
 	int pinNum = obj2int(args[0]);
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE)
 		if (pinNum < 2) return;
@@ -513,7 +518,7 @@ void primDigitalSet(int pinNum, int flag) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE)
 		if (pinNum < 2) return;
