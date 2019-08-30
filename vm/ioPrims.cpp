@@ -13,6 +13,12 @@
 #include "mem.h"
 #include "interp.h"
 
+#ifdef ARDUINO_SAMD_ATMEL_SAMW25_XPRO
+	// Redefine serial port mapping for Samw25x to use "Target USB" port
+	// The default "Debug USB" port failed to accept long scripts.
+	#define Serial SerialUSB
+#endif
+
 static void initPins(void); // forward reference
 
 // Timing Functions and Hardware Initialization
