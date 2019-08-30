@@ -25,19 +25,7 @@
 
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
-#include <unistd.h>
-
-int usleep(unsigned);
-
-#define M_PI 3.14159
-#define DT_DIR 4
-#define DT_REG 8
-
-struct timezone {
-	int tz_minuteswest;
-	int tz_dsttime;
-};
-#endif // EMSCRIPTEN
+#endif
 
 #ifdef IOS
 #include "iosOps.h"

@@ -15,7 +15,6 @@
 #include "mem.h"
 #include "interp.h"
 
-#define M_PI 3.14159
 #define MAX_TEXTURE_SIZE 2048
 
 // ***** Fetch request state *****

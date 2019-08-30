@@ -18,7 +18,7 @@ cp ../../ide/* runtime/lib
 mv runtime/lib/MicroBlocksPatches.gp runtime/lib/AAAMicroBlocksPatches.gp # makes patches load last
 cp -r ../../translations .
 
-emcc -std=c99 -Wall -O3 \
+emcc -std=gnu99 -Wall -O3 \
 -D EMSCRIPTEN \
 -D NO_JPEG \
 -D NO_SDL \

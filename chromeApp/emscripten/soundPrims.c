@@ -14,7 +14,6 @@
 #ifdef EMSCRIPTEN
 
 #include <emscripten.h>
-#define M_PI 3.14159
 
 static void startAudioOutput(int frameCount, int stereoFlag) {
 	EM_ASM_({
