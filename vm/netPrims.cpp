@@ -90,7 +90,6 @@ struct {
 } descriptionObj;
 
 static char connecting = false;
-static uint32 initTime;
 
 int serverStarted = false;
 WiFiServer server(80);
@@ -103,7 +102,7 @@ static void initWebServer() {
 	serverStarted = true;
 }
 
-static int hasPrefix(char *s, char *requestPrefix, char *arg, int argSize) {
+static int hasPrefix(char *s, const char *requestPrefix, char *arg, int argSize) {
 	// Return true if the HTTP request string s begins with the given prefix.
 	// If arg is not NULL, the request string from the end of the prefix up to
 	// the next space will be copied into arg.
@@ -115,7 +114,7 @@ static int hasPrefix(char *s, char *requestPrefix, char *arg, int argSize) {
 		// extract last part of URL into arg
 		char *start = s + strlen(requestPrefix);
 		char *end = strchr(start, ' '); // find the next space
-		if (!end) strchr(start, '\r'); // if no space, use the end of the line
+		if (!end) end = strchr(start, '\r'); // if no space, use the end of the line
 		if (!end) return true; // no space or line end found
 		int count = end - start;
 		if (count > argSize) count = argSize;
@@ -263,11 +262,12 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 
 	char *networkName = obj2str(args[0]);
 	char *password = obj2str(args[1]);
-	int createHotSpot = (argCount > 2) && (trueObj == args[2]);
 
 	#ifdef USE_WIFI101
 		WiFi.begin(networkName, password);
 	#else
+		int createHotSpot = (argCount > 2) && (trueObj == args[2]);
+
 		WiFi.persistent(false); // don't save network info to Flash
 		WiFi.mode(WIFI_OFF); // Kill the current connection, if any
 
@@ -421,9 +421,9 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 
 static OBJ primThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primClearThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
-static OBJ primAppendToThingDescription(int argCount, OBJ *args) { fail(noWiFi); }
-static OBJ primAppendToThingProperty(int argCount, OBJ *args) { fail(noWiFi); }
+static OBJ primClearThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primAppendToThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primAppendToThingProperty(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
