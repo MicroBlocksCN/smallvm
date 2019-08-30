@@ -40,9 +40,9 @@
 		#define START (168 * 1024)
 		#define HALF_SPACE (160 * 1024)
 	#else
-		// BBC micro:bit and Calliope: App: 0-56k; Persistent Mem: 56k-256k
-		#define START (76 * 1024)
-		#define HALF_SPACE (90 * 1024)
+		// BBC micro:bit and Calliope: App: 0-96k; Persistent Mem: 96k-256k
+		#define START (96 * 1024)
+		#define HALF_SPACE (80 * 1024)
 	#endif
 
 	static void flashErase(int *startAddr, int *endAddr) {
@@ -83,8 +83,9 @@
 
 	#include "samr.h" // SAM21D
 
-	#define START (76 * 1024)
-	#define HALF_SPACE (90 * 1024)
+	// SAMD: App: 0-96k; Persistent Mem: 96k-256k
+	#define START (96 * 1024)
+	#define HALF_SPACE (80 * 1024)
 
 	// SAM21 Non-Volatile Memory Controller Registers
 	#define NVMC_CTRLA		((volatile int *) 0x41004000)
@@ -423,6 +424,20 @@ void outputRecordHeaders() {
 		sprintf(s, "%d %d %d (%d words)",
 			(*p >> 16) & 0xFF, (*p >> 8) & 0xFF, *p & 0xFF, *(p + 1));
 		outputString(s);
+
+// xxx debug: dump contents
+// int chunkWords = *(p + 1);
+// sprintf(s, "  %x (%d words)", *p, chunkWords);
+// outputString(s);
+// int *w = p + 2;
+// for (int i = 0; i < chunkWords; i++) {
+// 	int word = *w;
+// 	sprintf(s, "    %d: %d %d %d %d ", i,
+// 	(word & 255), ((word >> 8) & 255), ((word >> 16) & 255), ((word >> 24) & 255));
+// 	outputString(s);
+// 	w++;
+// }
+
 		p = recordAfter(p);
 	}
 	sprintf(s, "%d records, %d words, maxID %d, compaction cycles %d",
@@ -614,6 +629,17 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	}
 	// write the record
 	int header = ('R' << 24) | ((recordType & 0xFF) << 16) | ((id & 0xFF) << 8) | (extra & 0xFF);
+
+// xxx debug: dump contents
+// char s[500];
+// sprintf(s, "Appending type %d id %d (%d words)", recordType, id, wordCount);
+// outputString(s);
+// char *p = data;
+// for (int i = 0; i < wordCount; i++) {
+// 	sprintf(s, "  %d: %d %d %d %d ", i, *p, *(p + 1), *(p + 2), *(p + 3));
+// 	outputString(s);
+// 	p += 4;
+// }
 
   #if USE_CODE_FILE
 	writeCodeFileWord(header);
