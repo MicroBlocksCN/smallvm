@@ -31,7 +31,7 @@ static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 // Named Primitive Support
 
 typedef struct {
-	char *setName;
+	const char *setName;
 	int entryCount;
 	PrimEntry *entries;
 } PrimitiveSet;
@@ -40,7 +40,7 @@ typedef struct {
 PrimitiveSet primSets[MAX_PRIM_SETS];
 int primSetCount = 0;
 
-void addPrimitiveSet(char *setName, int entryCount, PrimEntry *entries) {
+void addPrimitiveSet(const char *setName, int entryCount, PrimEntry *entries) {
 	if (primSetCount < MAX_PRIM_SETS) {
 		primSets[primSetCount].setName = setName;
 		primSets[primSetCount].entryCount = entryCount;

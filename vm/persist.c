@@ -503,6 +503,8 @@ static void compactFlash() {
 
 // RAM compaction
 
+#ifdef RAM_CODE_STORE
+
 static int keepCodeChunk(int id, int header, int *start) {
 	// Return true if this code chunk should be kept when compacting RAM.
 
@@ -573,7 +575,7 @@ static void compactRAM() {
 	setCycleCount(current, cycleCount(current) + 1);
 	clearCodeFile(cycleCount(current));
 	int *codeStart = ((0 == current) ? start0 : start1) + 1; // skip half-space header
-	writeCodeFile(codeStart, 4 * (freeStart - codeStart));
+	writeCodeFile((uint8 *) codeStart, 4 * (freeStart - codeStart));
 
 	char s[100];
 	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
@@ -581,6 +583,8 @@ static void compactRAM() {
 		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 	outputString(s);
 }
+
+#endif
 
 // entry points
 

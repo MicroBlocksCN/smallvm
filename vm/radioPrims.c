@@ -9,12 +9,10 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mem.h"
 #include "interp.h"
-
-#define PACKET_SIZE 32
-#define MAX_PACKETS 4 // number of packets in the receive buffer; must be a power of 2
 
 // MakeCode Packet Types
 
@@ -25,12 +23,6 @@
 #define MAKECODE_PACKET_DOUBLE_PAIR 5
 
 // Variables
-
-static uint8_t radioInitialized = false;
-static uint8_t receivedPacketCount = 0;
-static uint8_t packetIndex = 0; // index of current packet buffer (0..(MAX_PACKETS - 1)
-
-static uint8_t receiveBuffer[MAX_PACKETS * PACKET_SIZE];
 
 static int radioSignalStrength = -999;
 static int receivedMessageType = -1;
@@ -50,6 +42,14 @@ struct {
 
 #include <nrf51.h>
 #include <nrf51_bitfields.h>
+
+#define PACKET_SIZE 32
+#define MAX_PACKETS 4 // number of packets in the receive buffer; must be a power of 2
+static uint8_t receiveBuffer[MAX_PACKETS * PACKET_SIZE];
+
+static uint8_t radioInitialized = false;
+static uint8_t receivedPacketCount = 0;
+static uint8_t packetIndex = 0; // index of current packet buffer (0..(MAX_PACKETS - 1)
 
 // Radio Setup
 
