@@ -575,7 +575,7 @@ function GP_getSerialPorts() {
 			GP_serialPortNames.push(toUTF8Array(ports[i].path));
 		}
 	}
-	if (!chrome.serial) return; // serial port API not available; do nothing
+	if ((typeof chrome == 'undefined') || !chrome.serial) return; // serial port API not available; do nothing
 	chrome.serial.getDevices(listPorts);
 }
 

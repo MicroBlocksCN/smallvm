@@ -25,6 +25,7 @@ return (joinStrings response)
 }
 
 to httpGet host path port {
+	if ('Browser' == (platform)) { return '' }
 	if (isNil path) { path = '/' }
 	if (isNil port) { port = 80 }
 	socket = (openClientSocket host port)

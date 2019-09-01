@@ -108,6 +108,9 @@ static void browserStep() {
 		stepCurrentTask();
 		return;
 	}
+	printf("GP has crashed. Sadly, newer browsers no longer support the interactive debugger.");
+	return; // old code follows
+
 	// collect a command
 	char buf[BUF_SIZE];
 	int bufCount = 0;
@@ -149,9 +152,26 @@ static void browserStep() {
 	}
 }
 
+void sortFileList(OBJ fileList) {
+	// Sort file list (an array of String object) using bubble sort.
+
+	int n = objWords(fileList);
+	for (int j = 0; j < n - 1; j++) {
+		for (int i = j + 1; i < n; i++) {
+			if (strcmp(obj2str(FIELD(fileList, j)), obj2str(FIELD(fileList, i))) > 0) {
+				OBJ tmp = FIELD(fileList, j);
+				FIELD(fileList, j) = FIELD(fileList, i);
+				FIELD(fileList, i) = tmp;
+			}
+		}
+	}
+}
+
 static void loadLibInBrowser() {
 	OBJ directoryContents(char *dirName, int listDirectories); // declaration
 	OBJ fileList = directoryContents("runtime/lib/", false);
+
+	sortFileList(fileList);
 	int fileCount = objWords(fileList);
 	int loadedCount = 0;
 	for (int i = 0; i < fileCount; i++) {

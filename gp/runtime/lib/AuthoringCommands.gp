@@ -822,7 +822,7 @@ to points n {
   return (n * (global 'scale'))
 }
 
-to httpGet host path port {
+to httpGetOld host path port {
   if (isNil path) { path = '/' }
   if (not (beginsWith path '/')) { path = (join '/' path) }
   if (isNil port) { port = 80 }

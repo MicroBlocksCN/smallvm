@@ -15,7 +15,7 @@ cp -r ../../precompiled/*.hex precompiled
 cp -r ../../precompiled/vm.circuitplay.uf2 precompiled
 cp -r ../../gp/runtime .
 cp ../../ide/* runtime/lib
-mv runtime/lib/MicroBlocksPatches.gp runtime/lib/AAAMicroBlocksPatches.gp # makes patches load last
+mv runtime/lib/MicroBlocksPatches.gp runtime/lib/zzzMicroBlocksPatches.gp # makes patches load last
 cp -r ../../translations .
 
 emcc -std=gnu99 -Wall -O3 \
