@@ -655,6 +655,8 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	return result;
 }
 
+void delay(int); // declare Arduino delay() function to suppress compiler warning
+
 static int clearOnStartup() {
 	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_SINOBIT) || \
 		defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_CITILAB_ED1)

@@ -20,10 +20,12 @@ typedef unsigned char uint8;
 typedef unsigned short uint16;
 typedef unsigned int uint32;
 
-// Boolean constants for readability
+// Boolean constants for readability (if not already defined)
 
-#define true 1
-#define false 0
+#if !defined(true) || !defined(false)
+	#define true 1
+	#define false 0
+#endif
 
 // Object reference type (32-bits)
 

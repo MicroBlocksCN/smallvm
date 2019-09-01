@@ -7,6 +7,7 @@
 // radioPrims.cpp - Primitives for the BBC micro:bit radio
 // John Maloney, February 2019
 
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -277,7 +278,7 @@ static int receiveMakeCodeMessage() {
 	return true;
 }
 
-static int initMakeCodePacket(uint8_t *packet, int makeCodePacketType, int packetLength) {
+static void initMakeCodePacket(uint8_t *packet, int makeCodePacketType, int packetLength) {
 	uint32 timestamp = millisecs();
 	uint32 id = NRF_FICR->DEVICEID[1];
 
@@ -305,6 +306,7 @@ static int initMakeCodePacket(uint8_t *packet, int makeCodePacketType, int packe
 static OBJ primDisableRadio(int argCount, OBJ *args) {
 	if (radioInitialized) disableRadio();
 	radioInitialized = false;
+	return falseObj;
 }
 
 static OBJ primMessageReceived(int argCount, OBJ *args) {
@@ -341,6 +343,7 @@ static OBJ primPacketSend(int argCount, OBJ *args) {
 		}
 		sendPacket(packet);
 	}
+	return falseObj;
 }
 
 static OBJ primSendMakeCodeInteger(int argCount, OBJ *args) {
@@ -354,6 +357,7 @@ static OBJ primSendMakeCodeInteger(int argCount, OBJ *args) {
 		packet[16] = (n >> 24) & 255;
 		sendPacket(packet);
 	}
+	return falseObj;
 }
 
 static OBJ primSendMakeCodePair(int argCount, OBJ *args) {
@@ -374,6 +378,7 @@ static OBJ primSendMakeCodePair(int argCount, OBJ *args) {
 		}
 		sendPacket(packet);
 	}
+	return falseObj;
 }
 
 static OBJ primSendMakeCodeString(int argCount, OBJ *args) {
@@ -389,24 +394,28 @@ static OBJ primSendMakeCodeString(int argCount, OBJ *args) {
 		}
 		sendPacket(packet);
 	}
+	return falseObj;
 }
 
 static OBJ primSetChannel(int argCount, OBJ *args) {
 	if ((argCount > 0) && isInt(args[0])) {
 		setChannel(obj2int(args[0]));
 	}
+	return falseObj;
 }
 
 static OBJ primSetGroup(int argCount, OBJ *args) {
 	if ((argCount > 0) && isInt(args[0])) {
 		setGroup(obj2int(args[0]));
 	}
+	return falseObj;
 }
 
 static OBJ primSetPower(int argCount, OBJ *args) {
 	if ((argCount > 0) && isInt(args[0])) {
 		setPower(obj2int(args[0]));
 	}
+	return falseObj;
 }
 
 #else // not micro:bit

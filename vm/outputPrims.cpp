@@ -56,7 +56,7 @@ static int lightReadingRequested = false;
 
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 
-static int lightLevelReadTime = 0;
+static unsigned int lightLevelReadTime = 0;
 static int displaySnapshot = 0;
 static int displayCycle = 0;
 
@@ -279,6 +279,7 @@ OBJ primMBUnplot(int argCount, OBJ *args) {
 }
 
 static OBJ primLightLevel(int argCount, OBJ *args) {
+	lightReadingRequested = false;
 	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
 		OBJ analogPin = int2obj(8);
 		lightLevel = obj2int(primAnalogRead(&analogPin));

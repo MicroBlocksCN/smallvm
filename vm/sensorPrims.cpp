@@ -163,7 +163,7 @@ static AccelerometerType_t accelType = accel_unknown;
 #define LSM303_ID 25
 #define FXOS8700_ID 30
 
-static int detectAccelerometer() {
+static void detectAccelerometer() {
 	if (0x5A == readI2CReg(MMA8653_ID, 0x0D)) {
 		accelType = accel_MMA8653;
 		writeI2CReg(MMA8653_ID, 0x2A, 1);
@@ -194,6 +194,9 @@ static int readAcceleration(int registerID) {
 		break;
 	case accel_FXOS8700:
 		val = readI2CReg(FXOS8700_ID, registerID);
+		break;
+	default:
+		val = 0;
 		break;
 	}
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
