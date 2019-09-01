@@ -952,7 +952,7 @@ void vmLoop() {
 			// do background VM tasks once every N VM loop cycles
 			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 				updateMicrobitDisplay();
-			#elif defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+			#elif defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 				webServerLoop();
 			#endif
 			checkButtons();
