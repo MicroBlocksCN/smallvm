@@ -443,6 +443,7 @@ static OBJ primWindowSize(int nargs, OBJ args[]) {
 }
 
 static OBJ primSetFullScreen(int nargs, OBJ args[]) { return nilObj; } // noop
+static OBJ primSetWindowTitle(int nargs, OBJ args[]) { return nilObj; } // noop
 
 static OBJ primClearWindowBuffer(int nargs, OBJ args[]) {
 	uint32 color = (nargs > 0) ? colorWord(args[0]) : 0xFFFFFFFF;
@@ -869,6 +870,12 @@ static OBJ primDrawBitmap(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+static OBJ primWarpBitmap(int nargs, OBJ args[]) {
+	// Not yet implemented.
+
+	return nilObj;
+}
+
 static inline void plot(OBJ dst, int isBitmap, int x, int y, int width, int c) {
 	// Plot a width x width square on the given bitmap or canvas.
 	int halfW = width / 2;
@@ -986,6 +993,7 @@ static PrimEntry graphicsPrimList[] = {
 	{"closeWindow",		primCloseWindow,		"Close the graphics window."},
 	{"windowSize",		primWindowSize,			"Return an array containing the width and height of the window in logical and physical (high resolution) pixels."},
 	{"setFullScreen",	primSetFullScreen,		"Set full screen mode. Argument: fullScreenFlag"},
+	{"setWindowTitle",	primSetWindowTitle,		"Set the graphics window title to the given string."},
 	{"clearBuffer",		primClearWindowBuffer,	"Clear the offscreen window buffer to a color. Ex. clearBuffer (color 255 0 0); flipBuffer"},
 	{"flipBuffer",		primFlipWindowBuffer,	"Flip the onscreen and offscreen window buffers to make changes visible."},
 	{"-----", NULL, "Graphics: Textures"},
@@ -997,6 +1005,7 @@ static PrimEntry graphicsPrimList[] = {
 	{"-----", NULL, "Graphics: Drawing"},
 	{"fillRect",		primFillRect,			"Draw a rectangle. Draw to window buffer if textureOrBitmap is nil. Arguments: textureOrBitmap color [x y width height blendMode]."},
 	{"drawBitmap",		primDrawBitmap,			"Draw a bitmap. Draw to window buffer if textureOrBitmap is nil. Arguments: textureOrBitmap srcBitmap [x y alpha blendMode clipRect]"},
+	{"warpBitmap",		primWarpBitmap,			"Scaled and/or rotate a bitmap. Arguments: dstBitmap srcBitmap [x y scaleX scaleY rotation]"},
 	{"drawLineOnBitmap", primDrawLineOnBitmap,	"Draw a line on a bitmap. Only 1-pixel anti-aliased lines are supported. Arguments: dstBitmap x1 y1 x2 y2 [color lineWidth antiAliasFlag]"},
 	{"-----", NULL, "User Input"},
 	{"nextEvent",		primNextEvent,			"Return a dictionary representing the next user input event, or nil if the queue is empty."},
