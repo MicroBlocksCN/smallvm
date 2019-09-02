@@ -242,7 +242,7 @@ static int receiveMakeCodeMessage() {
 	receivedInteger = 0;
 	receivedString.body[0] = '\0';
 	char *src;
-	int maxStringLen;
+	int maxStringLen = 19;
 	int stringLength = 0;
 	double dbl;
 
@@ -266,10 +266,11 @@ static int receiveMakeCodeMessage() {
 		receivedInteger = (int) rint(dbl);
 		stringLength = packet[21];
 		src = (char *) &packet[22];
-		maxStringLen = 32 - 21;
+		maxStringLen = 32 - 22;
 	}
 
 	// copy string into receivedString
+	if (stringLength > maxStringLen) stringLength = maxStringLen;
 	if (stringLength > 19) stringLength = 19;
 	for (int i = 0; i < stringLength; i++) receivedString.body[i] = *src++;
 	receivedString.body[stringLength] = '\0'; // null terminator

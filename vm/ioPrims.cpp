@@ -16,6 +16,7 @@
 #ifdef ARDUINO_SAMD_ATMEL_SAMW25_XPRO
 	// Redefine serial port mapping for Samw25x to use "Target USB" port
 	// The default "Debug USB" port failed to accept long scripts.
+	#undef Serial
 	#define Serial SerialUSB
 #endif
 
@@ -64,6 +65,7 @@ void hardwareInit() {
 #else // not NRF51
 
   #if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && defined(SERIAL_PORT_USBVIRTUAL)
+	#undef Serial
 	#define Serial SERIAL_PORT_USBVIRTUAL
   #endif
 
@@ -207,6 +209,7 @@ void restartSerial() {
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
 	#define PIN_BUTTON_A 4
 	#define PIN_BUTTON_B 5
+	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
 
 #elif defined(ADAFRUIT_GEMMA_M0)
@@ -256,8 +259,6 @@ void restartSerial() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
 
-	#define PIN_LED 32
-
 #elif defined(ARDUINO_SAMD_ZERO)
 
 	#define BOARD_TYPE "Zero"
@@ -265,8 +266,6 @@ void restartSerial() {
 	#define ANALOG_PINS 6
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
-
-	#define PIN_LED 13
 
 #elif defined(ARDUINO_SAM_ZERO)
 
@@ -276,8 +275,6 @@ void restartSerial() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 
-	#define PIN_LED 13
-
 #elif defined(ESP8266)
 
 	#define BOARD_TYPE "ESP8266"
@@ -285,7 +282,7 @@ void restartSerial() {
 	#define ANALOG_PINS 1
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0};
-	#define PIN_LED BUILTIN_LED
+	#define PIN_LED LED_BUILTIN
 	#define PIN_BUTTON_A 0
 	#define INVERT_USER_LED true
 	static const char reservedPin[TOTAL_PINS] = {
@@ -551,6 +548,11 @@ void primSetUserLED(OBJ *args) {
 		}
 	#elif defined(ARDUINO_CITILAB_ED1)
 		tftSetHugePixel(3, 1, (trueObj == args[0]));
+	#elif defined(ARDUINO_SAMD_MKR)
+		// PIN_LED is outside pin range
+		pinMode(PIN_LED, OUTPUT);
+		int output = (trueObj == args[0]) ? HIGH : LOW;
+		digitalWrite(PIN_LED, output);
 	#else
 		SET_MODE(PIN_LED, OUTPUT);
 		int output = (trueObj == args[0]) ? HIGH : LOW;
@@ -697,9 +699,9 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
 	int pin = obj2int(pinArg);
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
-	int frequency = obj2int(freqArg);
 
 	#if HAS_TONE
+		int frequency = obj2int(freqArg);
 		if ((frequency > 0) && (frequency <= 500000)) {
 			if (pin != tonePin) stopTone();
 			tonePin = pin;
@@ -709,6 +711,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 		}
 		return trueObj;
 	#elif defined(ESP32)
+		int frequency = obj2int(freqArg);
 		if ((frequency > 0) && (frequency <= 500000)) {
 			initESP32Tone(pin);
 			if (tonePin >= 0) {
