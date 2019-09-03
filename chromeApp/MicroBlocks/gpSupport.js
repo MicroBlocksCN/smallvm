@@ -1,13 +1,12 @@
 // The following code decides whether to use WebAssembly or asm.js
 //
-// Note: As of Safari in iOS 11.2.6, GP WebAssembly does not work on John's iPad Pro
-// Seems to be an iOS Safari bug, fix is expected in iOS 11.3:
+// Note: In iOS 11.2.6 Safari, GP WebAssembly did not work on John's iPad Pro.
+// Seemed to be an iOS Safari bug:
 //   https://github.com/kripken/emscripten/issues/6042
-// Meanwhile, WebAssembly is disabled on iOS.
+// A fix was expected in iOS 11.3, which came out in March 2018.
+// WebAssembly seems to be working in iOS 12, so workaround was removed.
 
-var is_iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
-
-if ((typeof WebAssembly === 'object') && !is_iOS) {
+if (typeof WebAssembly === 'object') {
 	console.log("WebAssembly supported");
 	var script = document.createElement('script');
 	script.src = "./gp_wasm.js"
@@ -21,19 +20,32 @@ if ((typeof WebAssembly === 'object') && !is_iOS) {
 
 // Handlers are ignored in gp.html when running as a Chrome App so must be added here:
 
-var kbdButton = document.getElementById('KeyboardButton');
-var backspaceButton = document.getElementById('BackspaceButton');
-var fullscreenButton = document.getElementById('FullscreenButton');
-var uploadButton = document.getElementById('UploadButton');
-var fileUploader = document.getElementById('FileUploader');
-var canvas = document.getElementById('canvas');
+function addGPHandlers() {
+	var kbdButton = document.getElementById('KeyboardButton');
+	var backspaceButton = document.getElementById('BackspaceButton');
+	var fullscreenButton = document.getElementById('FullscreenButton');
+	var enableMicrophoneButton = document.getElementById('EnableMicrophoneButton');
+	var uploadButton = document.getElementById('UploadButton');
+	var seeInsideButton = document.getElementById('SeeInsideButton');
+	var presentButton = document.getElementById('PresentButton');
+	var goButton = document.getElementById('GoButton');
+	var stopButton = document.getElementById('StopButton');
+	var fileUploader = document.getElementById('FileUploader');
+	var canvas = document.getElementById('canvas');
 
-kbdButton.onclick = function(evt) { GP.clipboard.focus(); };
-backspaceButton.onclick = function(evt) { GP_backspace(); };
-fullscreenButton.onclick = function(evt) { GP_toggleFullscreen(); };
-uploadButton.onclick = function(evt) { GP_UploadFiles(); };
-fileUploader.onchange = function(evt) { uploadFiles(fileUploader.files); };
-canvas.oncontextmenu = function(evt) { evt.preventDefault(); }
+	kbdButton.onclick = function(evt) { GP.clipboard.focus(); };
+	backspaceButton.onclick = function(evt) { GP_backspace(); };
+	fullscreenButton.onclick = function(evt) { GP_toggleFullscreen(); };
+	uploadButton.onclick = function(evt) { GP_UploadFiles(); };
+	enableMicrophoneButton.onclick = function(evt) { GP_startAudioInput(1024, 22050); };
+	seeInsideButton.onclick = function(evt) { queueGPMessage('seeInside'); };
+	presentButton.onclick = function(evt) { queueGPMessage('present'); };
+	goButton.onclick = function(evt) { queueGPMessage('go'); };
+	stopButton.onclick = function(evt) { queueGPMessage('stop'); };
+	fileUploader.onchange = function(evt) { uploadFiles(fileUploader.files); };
+	canvas.oncontextmenu = function(evt) { evt.preventDefault(); }
+}
+addGPHandlers();
 
 // GP variables
 
@@ -44,6 +56,7 @@ var GP = {
 	clipboardBytes: [],
 	droppedTextBytes: [],
 	droppedFiles: [],
+	messages: [],
 
 	audioOutBuffer: null,
 	audioOutIsStereo: false,
@@ -313,6 +326,33 @@ window.addEventListener(
 	false
 );
 
+// message handling
+
+function queueGPMessage(s) {
+	// Queue a message that can be read by GP with the 'browserGetMessage' primitive
+	// This mechanism is currently used by HTML buttons for 'go', 'stop', and 'see inside'.
+
+	GP.messages.push(toUTF8Array(s));
+}
+
+function handleMessage(evt) {
+	// Handle a message sent by the JavaScript postMessage() function.
+	// This is used to control button visibility or to queue a message to GP.
+
+	var msg = evt.data;
+	if (msg.startsWith('showButton ')) {
+		var btn = document.getElementById(msg.substring(11));
+		if (btn) btn.style.display = 'inline';
+	} else if (msg.startsWith('hideButton ')){
+		var btn = document.getElementById(msg.substring(11));
+		if (btn) btn.style.display = 'none';
+	} else {
+		queueGPMessage(msg);
+	}
+}
+
+window.addEventListener("message", handleMessage, false);
+
 // file upload support
 
 function GP_UploadFiles(evt) {
@@ -390,6 +430,19 @@ function adjustButtonVisibility() {
 		fsButton.style.display = 'none';
 	} else {
 		fsButton.style.display = 'inline';
+	}
+
+	if (window.parent === window) {
+		document.getElementById('EnableMicrophoneButton').style.display = 'none';
+	}
+
+	// adjust buttons when opened with 'go.html' URL
+	if ((typeof window !== 'undefined') && (window.location.href.includes('go.html'))) {
+		document.getElementById('SeeInsideButton').style.display = 'inline';
+		document.getElementById('PresentButton').style.display = 'none';
+	} else {
+		document.getElementById('SeeInsideButton').style.display = 'none';
+		document.getElementById('PresentButton').style.display = 'inline';
 	}
 }
 adjustButtonVisibility();
@@ -643,4 +696,14 @@ function GP_writeSerialPort(data) {
 	if (GP_serialPortID < 0) return -1; // port not open
 	chrome.serial.send(GP_serialPortID, data.buffer, dataSent);
 	return data.buffer.byteLength;
+}
+
+function GP_setSerialPortDTR(flag) {
+	if (GP_serialPortID < 0) return; // port not open
+	chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag });
+}
+
+function GP_setSerialPortRTS(flag) {
+	if (GP_serialPortID < 0) return; // port not open
+	chrome.serial.setControlSignals(GP_serialPortID, { rts: flag });
 }
