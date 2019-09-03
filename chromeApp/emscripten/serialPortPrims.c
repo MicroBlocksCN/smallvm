@@ -15,6 +15,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -67,6 +68,24 @@ static int writePort(PortHandle port, char *buf, int bufSize) {
 	int n = write(port, buf, bufSize);
 	if ((n < 0) && (errno == EAGAIN)) n = 0;
 	return n;
+}
+
+static void setDTR(PortHandle port, int flag) {
+	int DTR_bit = TIOCM_DTR;
+	if (flag) {
+		ioctl(port, TIOCMBIS, &DTR_bit);
+	} else {
+		ioctl(port, TIOCMBIC, &DTR_bit);
+	}
+}
+
+static void setRTS(PortHandle port, int flag) {
+	int RTS_bit = TIOCM_RTS;
+	if (flag) {
+		ioctl(port, TIOCMBIS, &RTS_bit);
+	} else {
+		ioctl(port, TIOCMBIC, &RTS_bit);
+	}
 }
 
 #elif defined(_WIN32)
@@ -175,6 +194,22 @@ static int writePort(PortHandle port, char *buf, int bufSize) {
 	return (int) bytesWritten;
 }
 
+static void setDTR(PortHandle port, int flag) {
+	if (flag) {
+		EscapeCommFunction(port, SETDTR);
+	} else {
+		EscapeCommFunction(port, CLRDTR);
+	}
+}
+
+static void setRTS(PortHandle port, int flag) {
+	if (flag) {
+		EscapeCommFunction(port, SETRTS);
+	} else {
+		EscapeCommFunction(port, CLRRTS);
+	}
+}
+
 #elif defined(EMSCRIPTEN)
 
 #include <emscripten.h>
@@ -252,6 +287,18 @@ static int writePort(PortHandle port, char *buf, int bufSize) {
 	return bytesWritten;
 }
 
+static void setDTR(PortHandle port, int flag) {
+	EM_ASM_({
+		GP_setSerialPortDTR($0);
+	}, flag);
+}
+
+static void setRTS(PortHandle port, int flag) {
+	EM_ASM_({
+		GP_setSerialPortRTS($0);
+	}, flag);
+}
+
 #else // stubs for platforms without serial port support
 
 typedef int PortHandle;
@@ -262,6 +309,8 @@ static PortHandle openPort(int portID, char *portName, int baudRate) { return NO
 static void closePort(int portID, PortHandle h) { }
 static int readPort(PortHandle port, char *buf, int bufSize) { return -1; }
 static int writePort(PortHandle port, char *buf, int bufSize) { return -1; }
+static void setDTR(PortHandle port, int flag) { }
+static void setRTS(PortHandle port, int flag) { }
 
 #endif
 
@@ -382,7 +431,7 @@ OBJ primWriteSerialPort(int nargs, OBJ args[]) {
 	int portID = obj2int(args[0]);
 
 	PortHandle h = getPortHandle(portID);
-	if (h == CLOSED) return -1;
+	if (h == CLOSED) return -1; // same as int2obj(-1)
 
 	OBJ data = args[1];
 	if (!(IS_CLASS(data, BinaryDataClass) || IS_CLASS(data, StringClass))) {
@@ -396,9 +445,25 @@ OBJ primWriteSerialPort(int nargs, OBJ args[]) {
 		printf("Write error, serial port %d\n", portID);
 		closePort(portID, h);
 		portHandle[portID] = CLOSED;
-		return -1;
+		return -1; // same as int2obj(-1)
 	}
 	return int2obj(n); // return bytes written
+}
+
+OBJ primSetSerialPortDTR(int nargs, OBJ args[]) {
+	if (nargs < 2) return notEnoughArgsFailure();
+	if (!isInt(args[0])) return badPortIDFailure();
+	PortHandle h = getPortHandle(obj2int(args[0]));
+	if (h != CLOSED) setDTR(h, (trueObj == args[1]));
+	return nilObj;
+}
+
+OBJ primSetSerialPortRTS(int nargs, OBJ args[]) {
+	if (nargs < 2) return notEnoughArgsFailure();
+	if (!isInt(args[0])) return badPortIDFailure();
+	PortHandle h = getPortHandle(obj2int(args[0]));
+	if (h != CLOSED) setRTS(h, (trueObj == args[1]));
+	return nilObj;
 }
 
 PrimEntry serialPortPrimList[] = {
@@ -409,6 +474,8 @@ PrimEntry serialPortPrimList[] = {
 	{"closeSerialPort",		primCloseSerialPort,	"Close the given serial port. Arguments: portID"},
 	{"readSerialPort",		primReadSerialPort,		"Read data from a serial port. Return a String or BinaryData object or nil. Arguments: portID [binaryFlag]"},
 	{"writeSerialPort",		primWriteSerialPort,	"Write data to a serial port. Arguments: portID stringOrBinaryData"},
+	{"setSerialPortDTR",	primSetSerialPortDTR,	"Set the DTR line of a serial port. Arguments: portID dtrFlag"},
+	{"setSerialPortRTS",	primSetSerialPortRTS,	"Set the RTS line of a serial port. Arguments: portID rtsFlag"},
 };
 
 PrimEntry* serialPortPrimitives(int *primCount) {

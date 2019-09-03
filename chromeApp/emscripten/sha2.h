@@ -47,7 +47,6 @@ extern "C" {
  */
 #include <sys/types.h>
 
-//#if defined(_WIN32)
 #if !defined(LITTLE_ENDIAN) || !defined(BYTE_ORDER)
 #define LITTLE_ENDIAN 1234
 #define BYTE_ORDER LITTLE_ENDIAN

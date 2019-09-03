@@ -322,9 +322,9 @@ OBJ primBrowserPostMessage(int nargs, OBJ args[]) {
 
 	EM_ASM_({
 		if ($1) {
-			window.parent.postMessage(Pointer_stringify($0), "*");
+			window.parent.postMessage(UTF8ToString($0), "*");
 		} else {
-			window.postMessage(Pointer_stringify($0), "*");
+			window.postMessage(UTF8ToString($0), "*");
 		}
 	}, obj2str(args[0]), postToParent);
 	return nilObj;

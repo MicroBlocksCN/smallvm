@@ -30,7 +30,7 @@ emcc -std=gnu99 -Wall -O3 \
 --memory-init-file 0 \
 -s WASM=1 \
 browserPrims.c cache.c dict.c embeddedFS.c events.c gp.c interp.c mem.c memGC.c \
-oop.c parse.c prims.c serialPortPrims.c sha2.c soundPrims.c textAndFontPrims.c vectorPrims.c \
+oop.c parse.c prims.c serialPortPrims.c sha1.c sha2.c soundPrims.c textAndFontPrims.c vectorPrims.c \
 --preload-file Examples \
 --preload-file Libraries \
 --preload-file precompiled \

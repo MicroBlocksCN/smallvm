@@ -10,9 +10,11 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <zlib.h>
 
+#include "sha1.h"
 #include "sha2.h"
 
 #include "mem.h"
@@ -35,11 +37,12 @@
 #include <windows.h>
 #include <direct.h>		// used by makeDirectory (for _wmkdir)
 #include <Shlobj.h>		// used by userHomePath (for SHGetFolderPathW)
+#include <process.h>
 #endif
 
 // ***** Version Date and Time *****
 
-static char *versionNum = "v262";
+static char *versionNum = "v264";
 static char *versionDate = __DATE__;
 static char *versionTime = __TIME__;
 
@@ -1870,6 +1873,28 @@ OBJ primSHA256(int nargs, OBJ args[]) {
 	return newString(result);
 }
 
+OBJ primSHA1(int nargs, OBJ args[]) {
+	if (nargs < 1) return notEnoughArgsFailure();
+	OBJ data = args[0];
+	if (!(IS_CLASS(data, StringClass) || IS_CLASS(data, BinaryDataClass))) {
+		return primFailed("First argument must be a String or BinaryData");
+	}
+	unsigned char *buf = (unsigned char *)BODY(data);
+	unsigned int byteCount = IS_CLASS(data, StringClass) ? stringBytes(data) : objBytes(data);
+	char hash[21];
+
+	SHA1(hash, (const char *) buf, byteCount);
+
+	// copy the hash into BinaryData object
+	OBJ result = newBinaryData(20);
+	if (!result) return outOfMemoryFailure();
+	char *dst = (char *) &FIELD(result, 0);
+	for (int i = 0; i < 20; i++) {
+		*dst++ = hash[i];
+	}
+	return result;
+}
+
 // ***** Pixel Manipulation *****
 
 static OBJ failedBadPixelData() { return primFailed("PixelData must be BinaryData"); }
@@ -2731,6 +2756,83 @@ OBJ primPlatform(int nargs, OBJ args[]) {
  #endif
 }
 
+// ***** System Execute Support *****
+
+#ifdef _WIN32
+	#define WIN_PROC_HANDLES 10
+	HANDLE winProcHandle[WIN_PROC_HANDLES + 1];
+
+	static int winEmptyProcSlot() {
+		// Return an unused process handle slot. The index of this slot is
+		// used as the Windows equivalent of Unix process ID. The slot is released
+		// when the client requests the status of a completed process.
+
+		for (int i = 1; i <= WIN_PROC_HANDLES; i++) {
+			if (!winProcHandle[i]) return i;
+		}
+		return -1;
+	}
+#endif
+
+OBJ primExec(int nargs, OBJ args[]) {
+	if (nargs < 1) return notEnoughArgsFailure();
+	char *argList[32];
+	int argCount = (nargs <= 31) ? nargs : 31;
+
+	for (int i = 0; i < argCount; i++) {
+		OBJ arg = args[i];
+		if (!IS_CLASS(arg, StringClass)) return nilObj; // all args must be strings
+		argList[i] = obj2str(args[i]);
+	}
+	argList[argCount] = NULL;
+	int pid = 0;
+
+#if defined(EMSCRIPTEN)
+	return nilObj;
+#elif defined(_WIN32)
+	pid = winEmptyProcSlot();
+	if (-1 == pid) return nilObj;
+	char *cmd = argList[0];
+	HANDLE procHndl = (HANDLE) _spawnvp(_P_NOWAIT, (const char *) cmd, (const char **) argList);
+	winProcHandle[pid] = procHndl;
+#else
+	pid = fork();
+	char *cmd = argList[0];
+	if (pid == 0) {
+		execvp(cmd, (char * const *) argList);
+		exit(0);
+		return nilObj;
+	}
+#endif
+	return int2obj(pid);
+}
+
+OBJ primExecStatus(int nargs, OBJ args[]) {
+	if (nargs < 1) return notEnoughArgsFailure();
+	if (!isInt(args[0])) return nilObj;
+
+#if defined(EMSCRIPTEN)
+	return nilObj;
+#elif defined(_WIN32)
+	int pid = obj2int(args[0]);
+	if ((pid < 1) || (pid > WIN_PROC_HANDLES)) return nilObj;
+	HANDLE procHndl = winProcHandle[pid];
+	if (!procHndl) return nilObj;
+	unsigned long status = 0;
+	GetExitCodeProcess(procHndl, &status);
+	if (STILL_ACTIVE == status) return nilObj;
+	winProcHandle[pid] = NULL;  // process has completed, so recycle the winProcHandle slot
+	return int2obj(status);
+#else
+	int pid = obj2int(args[0]);
+	int status;
+	int rc = waitpid(pid, &status, WNOHANG);
+	if ((rc <= 0) || (!WIFEXITED(status))) return nilObj; // process not completed or does not exist
+	return int2obj(WEXITSTATUS(status));
+#endif
+	return nilObj;
+}
+
 // ***** Debugger/Process Hooks *****
 
 OBJ primDebugeeTask(int nargs, OBJ args[]) { return debugeeTask; }
@@ -3267,6 +3369,7 @@ PrimEntry corePrimList[] = {
 	{"inflate",		primZlibInflate,	"Decompress data using the Inflate algorithm and return the result. If stringFlag is true, return the result as a String. Arguments: compressedData [stringFlag]"},
 	{"crc",			primZlibCRC,		"Return the CRC-32 (or Adler-32, if adlerFlag is true) checksum for the given String or BinaryData. lastCRC can be provided to combine CRCs. Arguments: data [adlerFlag lastCRC]"},
 	{"sha256",		primSHA256,			"Return the digest of the SHA 256 hash value for the given String or BinaryData. Arguments: data"},
+	{"sha1",		primSHA1,			"Return the 20-byte SHA-1 hash for the given String or BinaryData. Arguments: data"},
 
 	{"-----", NULL, "Graphics: Pixel Manipulation"},
 	{"getPixelAlpha",	primGetPixelAlpha,			"Return the alpha value of a pixel. Arguments: pixelData offset."},
@@ -3297,6 +3400,8 @@ PrimEntry corePrimList[] = {
 	{"sleep",		primSleep,			"Sleep (i.e. pause) for the given number of milliseconds. Ex. sleep 1000"},
 	{"commandLine",	primCommandLine,	"Return an array containing the command and arguments used to launch GP."},
 	{"platform",	primPlatform,		"Return a string describing the platform (e.g. 'iOS')."},
+	{"exec",		primExec,			"Ask the OS to execute a command (a string) with zero or more argument strings. Return the pid of the exec-ed process"},
+	{"execStatus",	primExecStatus,		"Return the status of an exec-ed process. Return nil if the project is still running. Argument: the process ID returned by exec."},
 
 	{"-----", NULL, "Debugging"},
 	{"error",		primHalt,			"Stop the script due to an error. By convention, the first argument is an error message."},
