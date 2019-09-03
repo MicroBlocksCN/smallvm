@@ -941,6 +941,10 @@ static void runTask(Task *task) {
 
 // Task Scheduler
 
+#define HAS_WIFI \
+	defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || \
+	defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
+
 static int currentTaskIndex = -1;
 
 void vmLoop() {
@@ -952,7 +956,8 @@ void vmLoop() {
 			// do background VM tasks once every N VM loop cycles
 			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
 				updateMicrobitDisplay();
-			#elif defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+			#endif
+			#if HAS_WIFI
 				webServerLoop();
 			#endif
 			checkButtons();

@@ -18,7 +18,7 @@
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
 	#include <esp_wifi.h>
-#elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) // disabled for now
+#elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
 	#define USE_WIFI101
 	#define uint32 wifi_uint32
 	#include <WiFi101.h>
