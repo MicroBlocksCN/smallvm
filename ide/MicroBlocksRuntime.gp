@@ -347,6 +347,9 @@ method closePort SmallRuntime {
 method boardRespondsToPing SmallRuntime {
 	// Return true if the board responds to a ping request.
 
+	// A Chromebook can't poll; it must return control to the DOM to receive serial data.
+	if ('Browser' == (platform)) { return true }
+
 	shortTimeout = 50
 	if (isNil port) { return false }
 	lastPingRecvMSecs = 0
@@ -371,6 +374,7 @@ method reconnectToCurrentPort SmallRuntime {
 	ensurePortOpen this // attempt to reopen the port
 	if (and (notNil port) (boardRespondsToPing this)) {
 		// succeeded! request the VM version
+		print 'Connected!'
 		lastPingRecvMSecs = (msecsSinceStart)
 		vmVersion = nil
 		sendMsg this 'getVersionMsg'
@@ -395,6 +399,7 @@ method tryToConnect SmallRuntime {
 	if (and (msecsSinceLastScan > 0) (msecsSinceLastScan < 1000)) { return }
 	lastScanMSecs = (msecsSinceStart)
 
+	print 'Trying to connect...'
 	for p (portList this) {
 		portName = p
 		if (reconnectToCurrentPort this) { return 'connected' }
