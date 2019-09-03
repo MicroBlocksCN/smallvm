@@ -548,13 +548,12 @@ void primSetUserLED(OBJ *args) {
 		}
 	#elif defined(ARDUINO_CITILAB_ED1)
 		tftSetHugePixel(3, 1, (trueObj == args[0]));
-	#elif defined(ARDUINO_SAMD_MKR)
-		// PIN_LED is outside pin range
-		pinMode(PIN_LED, OUTPUT);
-		int output = (trueObj == args[0]) ? HIGH : LOW;
-		digitalWrite(PIN_LED, output);
 	#else
-		SET_MODE(PIN_LED, OUTPUT);
+		if (PIN_LED < TOTAL_PINS) {
+			SET_MODE(PIN_LED, OUTPUT);
+		} else {
+			pinMode(PIN_LED, OUTPUT);
+		}
 		int output = (trueObj == args[0]) ? HIGH : LOW;
 		#ifdef INVERT_USER_LED
 			output = !output;
