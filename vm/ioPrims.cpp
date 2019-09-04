@@ -13,7 +13,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#ifdef ARDUINO_SAMD_ATMEL_SAMW25_XPRO
+#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAM_DUE)
 	// Redefine serial port mapping for Samw25x to use "Target USB" port
 	// The default "Debug USB" port failed to accept long scripts.
 	#undef Serial
