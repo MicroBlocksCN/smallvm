@@ -55,6 +55,25 @@ int touchEnabled = false;
 			useTFT = true;
 		}
 
+	#elif defined(ARDUINO_M5Stack_Core_ESP32)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ILI9341.h"
+		#define TFT_CS	14
+		#define TFT_DC	27
+		#define TFT_RST	33
+		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
+		void tftInit() {
+			tft.begin(40000000); // Run SPI at 80MHz/2
+			tft.setRotation(1);
+			uint8_t m = 0x08 | 0x04; // RGB pixel order, refresh LCD right to left
+			tft.sendCommand(ILI9341_MADCTL, &m, 1);
+			tftClear();
+			// Turn on backlight:
+			pinMode(32, OUTPUT);
+			digitalWrite(32, HIGH);
+			useTFT = true;
+		}
+
 	#else
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ILI9341.h"

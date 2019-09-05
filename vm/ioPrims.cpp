@@ -305,6 +305,29 @@ void restartSerial() {
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 14
 
+#elif defined(ARDUINO_M5Stack_Core_ESP32)
+
+	#define BOARD_TYPE "M5Stack-Core"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 39
+	#define PIN_BUTTON_B 38
+	#ifdef BUILTIN_LED
+		#define PIN_LED BUILTIN_LED
+	#else
+		#define PIN_LED 2
+	#endif
+	#ifdef KEY_BUILTIN
+		#define PIN_BUTTON_A KEY_BUILTIN
+	#endif
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 1, 0, 1, 1, 0, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 1, 0, 1};
+
 #elif defined(ARDUINO_ARCH_ESP32)
 
 	#define BOARD_TYPE "ESP32"
