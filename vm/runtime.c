@@ -139,6 +139,17 @@ static void stopTaskForChunk(uint8 chunkIndex) {
 	sendMessage(taskDoneMsg, chunkIndex, 0, NULL);
 }
 
+static void stopAllTasks() {
+	// Stop all tasks.
+
+	for (int t = 0; t < taskCount; t++) {
+		if (tasks[t].status) {
+			sendMessage(taskDoneMsg, tasks[t].taskChunkIndex, 0, NULL);
+		}
+	}
+	initTasks();
+}
+
 void startAll() {
 	// Start tasks for all start and 'when' hat blocks.
 
@@ -151,15 +162,17 @@ void startAll() {
 	}
 }
 
-void stopAllTasks() {
-	// Stop all tasks.
+void stopAllTasksButThis(Task *thisTask) {
+	// Stop all tasks except the given one.
 
-	for (int t = 0; t < taskCount; t++) {
-		if (tasks[t].status) {
-			sendMessage(taskDoneMsg, tasks[t].taskChunkIndex, 0, NULL);
+	for (int i = 0; i < MAX_TASKS; i++) {
+		Task *task = &tasks[i];
+		if ((task != thisTask) && task->status) {
+			sendMessage(taskDoneMsg, task->taskChunkIndex, 0, NULL);
+			memset(task, 0, sizeof(Task)); // clear task
 		}
+		if (task == thisTask) { taskCount = i; }
 	}
-	initTasks();
 }
 
 // Selected Opcodes (see MicroBlocksCompiler.gp for complete set)

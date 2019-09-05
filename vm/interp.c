@@ -250,7 +250,7 @@ static void runTask(Task *task) {
 		&&waitMillis_op,
 		&&sendBroadcast_op,
 		&&recvBroadcast_op,
-		&&stopAll_op,
+		&&stopAllButThis_op,
 		&&forLoop_op,
 		&&initLocals_op,
 		&&getArg_op,
@@ -550,9 +550,9 @@ static void runTask(Task *task) {
 	recvBroadcast_op:
 		POP_ARGS_COMMAND(); // pop the broadcast name (a literal string)
 		DISPATCH();
-	stopAll_op:
-		stopAllTasks(); // clears all tasks, including the current one
-		return;
+	stopAllButThis_op:
+		stopAllTasksButThis(task); // clears all tasks except the current one
+		DISPATCH();
 	forLoop_op:
 		// stack layout:
 		// *(sp - 1) the loop counter (decreases from N to 1); falseObj the very first time
