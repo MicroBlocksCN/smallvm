@@ -1204,36 +1204,77 @@ method adaFruitMessage SmallRuntime {
 	inform (localized 'For AdaFruit boards, double-click reset button and try again.')
 }
 
+method esptoolCommandName SmallRuntime {
+    if ('Mac' == (platform)) {
+        return 'esptool'
+    } ('Linux' == (platform)) {
+        return 'esptool.py'
+    } ('Win' == (platform)) {
+        return 'esptool.exe'
+    }
+    return ''
+}
+
+method repartitionFlash SmallRuntime boardName {
+    stopAndSyncScripts this
+    closePort (smallRuntime)
+    copyEspToolToDisk this
+    copyEspFilesToDisk this
+
+    esptool = (join (tmpPath this) (esptoolCommandName this))
+
+    commands = (array
+        (array esptool '-b' '921600' 'write_flash' '0x0e00' (join (tmpPath this) 'boot_app0.bin'))
+        (array esptool '-b' '921600' 'write_flash' '0x1000' (join (tmpPath this) 'bootloader_dio_80m.bin'))
+        (array esptool '-b' '921600' 'write_flash' '0x8000' (join (tmpPath this) 'partitions.bin')))
+
+    for command commands {
+        processPID = (call (new 'Action' 'exec' command))
+        processStatus = (execStatus processPID)
+        while (processStatus == nil) {
+            print 'repartitioning ...'
+            waitMSecs 500
+            processStatus = (execStatus processPID)
+        }
+        if (processStatus == 1) {
+            error (join 'Command ' (joinStrings command ' ') ' failed')
+        } else {
+            print (join 'Command ' (joinStrings command ' ') ' done')
+        }
+    }
+    inform (localized 'Board has been wiped and repartitioned.')
+}
+
 method flashVM SmallRuntime boardName {
-	stopAndSyncScripts this
-	closePort (smallRuntime)
-	copyEspToolToDisk this
-	copyEspFilesToDisk this
-	copyVMtoDisk this boardName
+    stopAndSyncScripts this
+    closePort (smallRuntime)
+    copyEspToolToDisk this
+    copyVMtoDisk this boardName
 
-	if ('Mac' == (platform)) {
-		esptool = 'esptool'
-	} ('Linux' == (platform)) {
-		esptool = 'esptool.py'
-	} ('Win' == (platform)) {
-		esptool = 'esptool.exe'
-	}
+    esptool = (join (tmpPath this) (esptoolCommandName this))
+    address = '0x10000' // for ESP32-based boards
 
-	if (boardName == 'ESP32') {
-		exec (join (tmpPath this) 'esp32flash.cmd')
-	} (boardName == 'Citilab ED1') {
-		inform (join
-			(localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
-			(localized 'Wait for the screen to turn off again.') (newline)
-			(localized 'Then use the "Connect" menu to connect to board.'))
-		exec (join (tmpPath this) esptool) 'write_flash' '0x10000' (join (tmpPath this) 'vm')
-	} else {
-		// ESP8266
-		inform (join
-			(localized 'Please wait for the LED on the 8266 module to stop flashing.') (newline)
-			(localized 'Then use the "Connect" menu to connect to board.'))
-		exec (join (tmpPath this) esptool) 'write_flash' '0' (join (tmpPath this) 'vm')
-	}
+    //page = (global 'page')
+    //m = (newMorph)
+    //addPart page m
+    //redraw m
+    //addSchedule (global 'page') (newAnimation 0 1000 500 (action 'setLeft' m))
+
+    if (boardName == 'ESP8266') { address = '0' }
+
+    processPID = (exec esptool '-b' '921600' 'write_flash' address (join (tmpPath this) 'vm'))
+        processStatus = (execStatus processPID)
+        while (processStatus == nil) {
+            print 'flashing ...'
+            waitMSecs 500
+            processStatus = (execStatus processPID)
+        }
+    if (processStatus == 1) {
+        error (join 'Command ' (joinStrings command ' ') ' failed')
+    } else {
+        print (join 'VM flashed: ' processStatus)
+        inform (localized 'Firmware installed.')
+    }
 }
 
 method tmpPath SmallRuntime {
@@ -1271,11 +1312,10 @@ method copyVMtoDisk SmallRuntime boardName {
 }
 
 method copyEspFilesToDisk SmallRuntime {
-	for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin' 'esp32flash.cmd') {
+	for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin') {
 		fileData = (readEmbeddedFile (join 'esp32/' fn) true)
 		writeFile (join (tmpPath this) fn) fileData
 	}
-	setFileMode (join (tmpPath this) 'esp32flash.cmd') (+ (7 << 6) (5 << 3) 5) // set executable bits
 }
 
 // data logging
