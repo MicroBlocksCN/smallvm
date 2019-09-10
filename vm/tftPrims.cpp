@@ -77,19 +77,19 @@ int touchEnabled = false;
 	#else
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ILI9341.h"
-                #include <XPT2046_Touchscreen.h>
-                #include <SPI.h>
+		#include <XPT2046_Touchscreen.h>
+		#include <SPI.h>
 
-                #define HAS_TFT_TOUCH
+		#define HAS_TFT_TOUCH
 
-                #define CS_PIN  16
+		#define CS_PIN 16
 
-                XPT2046_Touchscreen ts(CS_PIN);
+		XPT2046_Touchscreen ts(CS_PIN);
 
-                #define X_MIN 256
-                #define X_MAX 3632
-                #define Y_MIN 274
-                #define Y_MAX 3579
+		#define X_MIN 256
+		#define X_MAX 3632
+		#define Y_MIN 274
+		#define Y_MAX 3579
 
 		#define TFT_CS	5
 		#define TFT_DC	27
@@ -107,12 +107,12 @@ int touchEnabled = false;
 			useTFT = true;
 		}
 
-                void touchInit() {
-                    ts.begin();
-                    ts.setCalibration(X_MIN, X_MAX, Y_MIN, Y_MAX);
-                    ts.setRotation(1);
-                    touchEnabled = true;
-                }
+		void touchInit() {
+			ts.begin();
+			ts.setCalibration(X_MIN, X_MAX, Y_MIN, Y_MAX);
+			ts.setRotation(1);
+			touchEnabled = true;
+		}
 #endif
 
 void tftClear() {
@@ -282,43 +282,43 @@ void tftSetHugePixelBits(int bits) {
 
 OBJ primTftTouched(int argCount, OBJ *args) {
 #ifdef HAS_TFT_TOUCH
-    if (!touchEnabled) { touchInit(); }
-    return ts.touched() ? trueObj : falseObj;
+	if (!touchEnabled) { touchInit(); }
+	return ts.touched() ? trueObj : falseObj;
 #endif
-    return falseObj;
+	return falseObj;
 }
 
 OBJ primTftTouchX(int argCount, OBJ *args) {
 #ifdef HAS_TFT_TOUCH
-    if (!touchEnabled) { touchInit(); }
-    if (ts.touched()) {
-        TS_Point p = ts.getMappedPoint();
-        return int2obj(p.x);
-    }
+	if (!touchEnabled) { touchInit(); }
+	if (ts.touched()) {
+		TS_Point p = ts.getMappedPoint();
+		return int2obj(p.x);
+	}
 #endif
-    return int2obj(-1);
+	return int2obj(-1);
 }
 
 OBJ primTftTouchY(int argCount, OBJ *args) {
 #ifdef HAS_TFT_TOUCH
-    if (!touchEnabled) { touchInit(); }
-    if (ts.touched()) {
-        TS_Point p = ts.getMappedPoint();
-        return int2obj(p.y);
-    }
+	if (!touchEnabled) { touchInit(); }
+	if (ts.touched()) {
+		TS_Point p = ts.getMappedPoint();
+		return int2obj(p.y);
+	}
 #endif
-    return int2obj(-1);
+	return int2obj(-1);
 }
 
 OBJ primTftTouchPressure(int argCount, OBJ *args) {
 #ifdef HAS_TFT_TOUCH
-    if (!touchEnabled) { touchInit(); }
-    if (ts.touched()) {
-        TS_Point p = ts.getMappedPoint();
-        return int2obj(p.z);
-    }
+	if (!touchEnabled) { touchInit(); }
+	if (ts.touched()) {
+		TS_Point p = ts.getMappedPoint();
+		return int2obj(p.z);
+	}
 #endif
-    return int2obj(-1);
+	return int2obj(-1);
 }
 
 #else // stubs
