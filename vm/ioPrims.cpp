@@ -13,9 +13,9 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAM_DUE)
+#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 	// Redefine serial port mapping for Samw25x to use "Target USB" port
-	// The default "Debug USB" port failed to accept long scripts.
+	// The default "Debug USB" port fails to accept long scripts.
 	#undef Serial
 	#define Serial SerialUSB
 #endif
@@ -91,6 +91,8 @@ void hardwareInit() {
 	turnOffInternalNeoPixels();
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
+	#endif
+	#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32)
 		tftInit();
 	#endif
 }
@@ -569,7 +571,7 @@ void primSetUserLED(OBJ *args) {
 		} else {
 			primMBUnplot(2, coords);
 		}
-	#elif defined(ARDUINO_CITILAB_ED1)
+	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32)
 		tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#else
 		if (PIN_LED < TOTAL_PINS) {
