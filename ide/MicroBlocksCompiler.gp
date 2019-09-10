@@ -88,7 +88,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		'-'
 		(array ' ' 'stopTask'			'stop this task')
-		(array ' ' 'stopAll'			'stop all')
+		(array ' ' 'stopAll'			'stop other tasks')
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
