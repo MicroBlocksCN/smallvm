@@ -398,7 +398,8 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 		if ('whenCondition' == op) {
 			addAll result (instructionsForWhenCondition this cmdOrReporter)
 		} ('whenButtonPressed' == op) {
-			addAll result (instructionsForButtonPressed this cmdOrReporter)
+			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
+			add result (array 'halt' 0)
 		} ('whenStarted' == op) {
 			addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
 			add result (array 'halt' 0)
@@ -433,24 +434,6 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			removeLast result // remove the final halt
 	}
 	appendLiterals this result
-	return result
-}
-
-// instruction generation: when button pressed hat block
-
-method instructionsForButtonPressed SmallCompiler cmdOrReporter {
-	result = (list)
-	addAll result (instructionsForCmdList this (nextBlock cmdOrReporter))
-	button = (first (argList cmdOrReporter))
-	if ('A' == button) {
-		condition = (list (newReporter 'not' (newReporter 'buttonA')))
-	} ('B' == button) {
-		condition = (list (newReporter 'not' (newReporter 'buttonB')))
-	}
-	if (notNil condition) { // add wait until bubtton up
-		addAll result (instructionsForWaitUntil this condition)
-	}
-	add result (array 'halt' 0)
 	return result
 }
 

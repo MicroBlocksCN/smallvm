@@ -46,6 +46,7 @@ method buttonMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'A'
   addItem menu 'B'
+  addItem menu 'A+B'
   return menu
 }
 

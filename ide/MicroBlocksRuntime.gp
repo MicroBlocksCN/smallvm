@@ -52,7 +52,8 @@ method chunkTypeFor SmallRuntime aBlockOrFunction {
 	if ('whenButtonPressed' == op) {
 		button = (first (argList expr))
 		if ('A' == button) { return 7 }
-		return 8
+		if ('B' == button) { return 8 }
+		return 9 // A+B
 	}
 	if (isClass expr 'Command') { return 1 }
 	if (isClass expr 'Reporter') { return 2 }
@@ -876,6 +877,10 @@ method ensurePortOpen SmallRuntime {
 			if ('Browser' == (platform)) { waitMSecs 100 } // let browser callback complete
 		}
 	}
+	if (notNil port) {
+		setSerialPortDTR port false
+		setSerialPortRTS port false
+	}
 }
 
 method processMessages SmallRuntime {
@@ -1028,6 +1033,7 @@ method showResult SmallRuntime chunkID value {
 }
 
 method returnedValue SmallRuntime msg {
+	if (byteCount msg < 7) { return nil } // incomplete msg
 	type = (byteAt msg 6)
 	if (1 == type) {
 		return (+ ((byteAt msg 10) << 24) ((byteAt msg 9) << 16) ((byteAt msg 8) << 8) (byteAt msg 7))

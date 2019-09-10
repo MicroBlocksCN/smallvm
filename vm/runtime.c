@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v063i"
+#define VM_VERSION "v063k"
 
 // Forward Reference Declarations
 
@@ -139,6 +139,17 @@ static void stopTaskForChunk(uint8 chunkIndex) {
 	sendMessage(taskDoneMsg, chunkIndex, 0, NULL);
 }
 
+static void stopAllTasks() {
+	// Stop all tasks.
+
+	for (int t = 0; t < taskCount; t++) {
+		if (tasks[t].status) {
+			sendMessage(taskDoneMsg, tasks[t].taskChunkIndex, 0, NULL);
+		}
+	}
+	initTasks();
+}
+
 void startAll() {
 	// Start tasks for all start and 'when' hat blocks.
 
@@ -151,15 +162,17 @@ void startAll() {
 	}
 }
 
-void stopAllTasks() {
-	// Stop all tasks.
+void stopAllTasksButThis(Task *thisTask) {
+	// Stop all tasks except the given one.
 
-	for (int t = 0; t < taskCount; t++) {
-		if (tasks[t].status) {
-			sendMessage(taskDoneMsg, tasks[t].taskChunkIndex, 0, NULL);
+	for (int i = 0; i < MAX_TASKS; i++) {
+		Task *task = &tasks[i];
+		if ((task != thisTask) && task->status) {
+			sendMessage(taskDoneMsg, task->taskChunkIndex, 0, NULL);
+			memset(task, 0, sizeof(Task)); // clear task
 		}
+		if (task == thisTask) { taskCount = i; }
 	}
-	initTasks();
 }
 
 // Selected Opcodes (see MicroBlocksCompiler.gp for complete set)
@@ -203,12 +216,30 @@ void startReceiversOfBroadcast(char *msg, int byteCount) {
 // Button Hat Support
 
 #define BUTTON_CHECK_INTERVAL 10000 // microseconds
+#define BUTTON_CLICK_TIME 100 // milliseconds
 
 static uint32 lastCheck = 0;
+static uint32 buttonADownTime = 0;
+static uint32 buttonBDownTime = 0;
+static char buttonAHandled = false;
+static char buttonBHandled = false;
+
+static void startButtonHats(int hatType) {
+
+char s[100];
+sprintf(s, "Start button hats: %d", hatType);
+outputString(s);
+
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		if (hatType == chunks[i].chunkType) {
+			startTaskForChunk(i); // only starts a new task if if chunk is not already running
+		}
+	}
+}
 
 void checkButtons() {
-	// If either button A or button B is pressed, start tasks for all of that button's
-	// hat blocks if they are not already running. This check is done at most once
+	// If button A, button B, or both are pressed, start tasks for all of the relevant
+	// hat blocks (if they are not already running). This check is done at most once
 	// every BUTTON_CHECK_INTERVAL microseconds.
 
 	uint32 now = microsecs();
@@ -216,15 +247,63 @@ void checkButtons() {
 	if ((now - lastCheck) < BUTTON_CHECK_INTERVAL) return; // not time yet
 	lastCheck = now;
 
-	int chunkTypeA = (primButtonA(NULL)) ? buttonAHat : -1;
-	int chunkTypeB = (primButtonB(NULL)) ? buttonBHat : -1;
-	if ((chunkTypeA < 0) && (chunkTypeB < 0)) return; // neither button pressed
+	now = millisecs(); // use milliseconds for button timeouts
+	if (!now) now = 1; // the value is reserved to mean button is not down
 
-	for (int i = 0; i < MAX_CHUNKS; i++) {
-		int chunkType = chunks[i].chunkType;
-		if ((chunkTypeA == chunkType) || (chunkTypeB == chunkType)) {
-			startTaskForChunk(i); // only starts a new task if if chunk is not already running
+	int buttonAIsDown = primButtonA(NULL);
+	int buttonBIsDown = primButtonB(NULL);
+
+	if (buttonAIsDown && !buttonADownTime) { // button A up -> down
+		buttonADownTime = now;
+		if (buttonBDownTime) {
+			if (!buttonBHandled) {
+				startButtonHats(buttonsAandBHat);
+				buttonAHandled = true;
+				buttonBHandled = true;
+			} else {
+				startButtonHats(buttonAHat);
+				buttonAHandled = true;
+			}
 		}
+	}
+	if (buttonBIsDown && !buttonBDownTime) { // button B up -> down
+		buttonBDownTime = now;
+		if (buttonADownTime) {
+			if (!buttonAHandled) {
+				startButtonHats(buttonsAandBHat);
+				buttonAHandled = true;
+				buttonBHandled = true;
+			} else {
+				startButtonHats(buttonBHat);
+				buttonBHandled = true;
+			}
+		}
+	}
+
+	if (buttonADownTime && !buttonAHandled) {
+		if (now < buttonADownTime) buttonADownTime = now; // clock wrap
+		if ((now - buttonADownTime) >= BUTTON_CLICK_TIME) { // button A held for click time
+			startButtonHats(buttonAHat);
+			buttonAHandled = true;
+		}
+	}
+	if (buttonBDownTime && !buttonBHandled) {
+		if (now < buttonBDownTime) buttonBDownTime = now; // clock wrap
+		if ((now - buttonBDownTime) >= BUTTON_CLICK_TIME) { // button B held for click time
+			startButtonHats(buttonBHat);
+			buttonBHandled = true;
+		}
+	}
+
+	if (buttonADownTime && !buttonAIsDown) { // button A down -> up
+		if (!buttonAHandled) startButtonHats(buttonAHat); // fast click (< BUTTON_CLICK_TIME)
+		buttonADownTime = 0;
+		buttonAHandled = false;
+	}
+	if (buttonBDownTime && !buttonBIsDown) { // button B down -> up
+		if (!buttonBHandled) startButtonHats(buttonBHat); // fast click (< BUTTON_CLICK_TIME)
+		buttonBDownTime = 0;
+		buttonBHandled = false;
 	}
 }
 

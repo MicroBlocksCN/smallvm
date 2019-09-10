@@ -48,6 +48,7 @@ typedef enum {
 	broadcastHat = 6,
 	buttonAHat = 7,
 	buttonBHat = 8,
+	buttonsAandBHat = 9,
 } ChunkType_t;
 
 typedef struct {
@@ -172,7 +173,7 @@ extern int extraByteDelay;
 OBJ fail(uint8 errCode);
 void initTasks(void);
 void startAll();
-void stopAllTasks(void);
+void stopAllTasksButThis(Task *task);
 void startReceiversOfBroadcast(char *msg, int byteCount);
 void processMessage(void);
 int hasOutputSpace(int byteCount);
