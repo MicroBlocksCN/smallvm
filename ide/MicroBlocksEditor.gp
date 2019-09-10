@@ -275,6 +275,9 @@ method step MicroBlocksEditor {
   if (isRunning thingServer) {
 	step thingServer
   }
+  if (notNil (flasher (smallRuntime))) {
+    step (flasher (smallRuntime))
+  }
 }
 
 method updateIndicator MicroBlocksEditor {

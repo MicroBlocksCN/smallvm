@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher
 
 method scripter SmallRuntime { return scripter }
 
@@ -877,10 +877,10 @@ method ensurePortOpen SmallRuntime {
 			if ('Browser' == (platform)) { waitMSecs 100 } // let browser callback complete
 		}
 	}
-	if (notNil port) {
-		setSerialPortDTR port false
-		setSerialPortRTS port false
-	}
+	//if (notNil port) {
+	//	setSerialPortDTR port false
+	//	setSerialPortRTS port false
+	//}
 }
 
 method processMessages SmallRuntime {
@@ -1221,66 +1221,34 @@ method esptoolCommandName SmallRuntime {
     return ''
 }
 
+method flasher SmallRuntime {
+    return flasher
+}
+
 method repartitionFlash SmallRuntime boardName {
     stopAndSyncScripts this
-    closePort (smallRuntime)
+    setPort this 'disconnect'
     copyEspToolToDisk this
     copyEspFilesToDisk this
 
     esptool = (join (tmpPath this) (esptoolCommandName this))
+    flasher = (newFlasher)
+    addPart (global 'page') (morph flasher)
 
-    commands = (array
-        (array esptool '-b' '921600' 'write_flash' '0x0e00' (join (tmpPath this) 'boot_app0.bin'))
-        (array esptool '-b' '921600' 'write_flash' '0x1000' (join (tmpPath this) 'bootloader_dio_80m.bin'))
-        (array esptool '-b' '921600' 'write_flash' '0x8000' (join (tmpPath this) 'partitions.bin')))
-
-    for command commands {
-        processPID = (call (new 'Action' 'exec' command))
-        processStatus = (execStatus processPID)
-        while (processStatus == nil) {
-            print 'repartitioning ...'
-            waitMSecs 500
-            processStatus = (execStatus processPID)
-        }
-        if (processStatus == 1) {
-            error (join 'Command ' (joinStrings command ' ') ' failed')
-        } else {
-            print (join 'Command ' (joinStrings command ' ') ' done')
-        }
-    }
-    inform (localized 'Board has been wiped and repartitioned.')
+    repartitionFlash flasher boardName esptool (tmpPath this)
 }
 
 method flashVM SmallRuntime boardName {
     stopAndSyncScripts this
-    closePort (smallRuntime)
+    setPort this 'disconnect'
     copyEspToolToDisk this
     copyVMtoDisk this boardName
 
     esptool = (join (tmpPath this) (esptoolCommandName this))
-    address = '0x10000' // for ESP32-based boards
+    flasher = (newFlasher)
+    addPart (global 'page') (morph flasher)
 
-    //page = (global 'page')
-    //m = (newMorph)
-    //addPart page m
-    //redraw m
-    //addSchedule (global 'page') (newAnimation 0 1000 500 (action 'setLeft' m))
-
-    if (boardName == 'ESP8266') { address = '0' }
-
-    processPID = (exec esptool '-b' '921600' 'write_flash' address (join (tmpPath this) 'vm'))
-        processStatus = (execStatus processPID)
-        while (processStatus == nil) {
-            print 'flashing ...'
-            waitMSecs 500
-            processStatus = (execStatus processPID)
-        }
-    if (processStatus == 1) {
-        error (join 'Command ' (joinStrings command ' ') ' failed')
-    } else {
-        print (join 'VM flashed: ' processStatus)
-        inform (localized 'Firmware installed.')
-    }
+    flashVM flasher boardName esptool (tmpPath this)
 }
 
 method tmpPath SmallRuntime {
