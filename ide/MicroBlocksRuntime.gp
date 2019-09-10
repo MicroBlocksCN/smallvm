@@ -1210,16 +1210,7 @@ method adaFruitMessage SmallRuntime {
 	inform (localized 'For AdaFruit boards, double-click reset button and try again.')
 }
 
-method esptoolCommandName SmallRuntime {
-    if ('Mac' == (platform)) {
-        return 'esptool'
-    } ('Linux' == (platform)) {
-        return 'esptool.py'
-    } ('Win' == (platform)) {
-        return 'esptool.exe'
-    }
-    return ''
-}
+// espressif board flashing
 
 method flasher SmallRuntime {
     return flasher
@@ -1228,68 +1219,21 @@ method flasher SmallRuntime {
 method repartitionFlash SmallRuntime boardName {
     stopAndSyncScripts this
     setPort this 'disconnect'
-    copyEspToolToDisk this
-    copyEspFilesToDisk this
 
-    esptool = (join (tmpPath this) (esptoolCommandName this))
-    flasher = (newFlasher)
+    flasher = (newFlasher 'repartitionFlash' boardName)
     addPart (global 'page') (morph flasher)
 
-    repartitionFlash flasher boardName esptool (tmpPath this)
+    start flasher
 }
 
 method flashVM SmallRuntime boardName {
     stopAndSyncScripts this
     setPort this 'disconnect'
-    copyEspToolToDisk this
-    copyVMtoDisk this boardName
 
-    esptool = (join (tmpPath this) (esptoolCommandName this))
-    flasher = (newFlasher)
+    flasher = (newFlasher 'flashVM' boardName)
     addPart (global 'page') (morph flasher)
 
-    flashVM flasher boardName esptool (tmpPath this)
-}
-
-method tmpPath SmallRuntime {
-	if (or ('Mac' == (platform)) ('Linux' == (platform))) {
-		return '/tmp/'
-	} else { // Windows
-		return (join (userHomePath) '/AppData/Local/Temp/')
-	}
-}
-
-method copyEspToolToDisk SmallRuntime {
-	if ('Mac' == (platform)) {
-		esptoolData = (readEmbeddedFile 'esptool/esptool' true)
-		destination = (join (tmpPath this) 'esptool')
-	} ('Linux' == (platform)) {
-		esptoolData = (readEmbeddedFile 'esptool/esptool.py')
-		destination = (join (tmpPath this) 'esptool.py')
-	} ('Win' == (platform)) {
-		esptoolData = (readEmbeddedFile 'esptool/esptool.exe' true)
-		destination = (join (tmpPath this) 'esptool.exe')
-	}
-	writeFile destination esptoolData
-	setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
-}
-
-method copyVMtoDisk SmallRuntime boardName {
-	if (boardName == 'ESP8266') {
-		vmData = (readEmbeddedFile 'precompiled/vm.ino.nodemcu.bin' true)
-	} (boardName == 'ESP32') {
-		vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
-	} (boardName == 'Citilab ED1') {
-		vmData = (readEmbeddedFile 'precompiled/vm.ino.citilab-ed1.bin' true)
-	}
-	writeFile (join (tmpPath this) 'vm') vmData
-}
-
-method copyEspFilesToDisk SmallRuntime {
-	for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin') {
-		fileData = (readEmbeddedFile (join 'esp32/' fn) true)
-		writeFile (join (tmpPath this) fn) fileData
-	}
+    start flasher
 }
 
 // data logging
