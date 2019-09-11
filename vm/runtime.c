@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v063m"
+#define VM_VERSION "v063n"
 
 // Forward Reference Declarations
 
@@ -216,7 +216,7 @@ void startReceiversOfBroadcast(char *msg, int byteCount) {
 // Button Hat Support
 
 #define BUTTON_CHECK_INTERVAL 10000 // microseconds
-#define BUTTON_CLICK_TIME 100 // milliseconds
+#define BUTTON_CLICK_TIME 50 // milliseconds
 
 static uint32 lastCheck = 0;
 static uint32 buttonADownTime = 0;
@@ -225,11 +225,6 @@ static char buttonAHandled = false;
 static char buttonBHandled = false;
 
 static void startButtonHats(int hatType) {
-
-char s[100];
-sprintf(s, "Start button hats: %d", hatType);
-outputString(s);
-
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		if (hatType == chunks[i].chunkType) {
 			startTaskForChunk(i); // only starts a new task if if chunk is not already running
