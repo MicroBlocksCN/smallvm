@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected
 
 method scripter SmallRuntime { return scripter }
 
@@ -331,7 +331,7 @@ method setPort SmallRuntime newPortName {
 		portName = nil
 	} else {
 		portName = newPortName
-		reconnectToCurrentPort this
+		openPortAndSendPing this
 	}
 	updateIndicator (findMicroBlocksEditor)
 }
@@ -343,73 +343,6 @@ method closePort SmallRuntime {
 	port = nil
 	vmVersion = nil
 	boardType = nil
-}
-
-method boardRespondsToPing SmallRuntime {
-	// Return true if the board responds to a ping request.
-
-	// A Chromebook can't poll; it must return control to the DOM to receive serial data.
-	if ('Browser' == (platform)) { return true }
-
-	shortTimeout = 50
-	if (isNil port) { return false }
-	lastPingRecvMSecs = 0
-	sendMsg this 'pingMsg'
-	pingSentMSecs = (msecsSinceStart)
-	while (0 == lastPingRecvMSecs) {
-		processMessages this
-		now = (msecsSinceStart)
-		if (now < pingSentMSecs) { pingSentMSecs = 0 } // clock wrap
-		if ((now - pingSentMSecs) > shortTimeout) { return false } // timed out
-	}
-	return true
-}
-
-method reconnectToCurrentPort SmallRuntime {
-	// Close and reopen the current port and wait for a ping. Return true if successful.
-
-	if (isNil portName) { return false }
-	if (not (contains (portList this) portName)) { return false }
-
-	closePort this // close the port
-	ensurePortOpen this // attempt to reopen the port
-	if (and (notNil port) (boardRespondsToPing this)) {
-		// succeeded! request the VM version
-		print 'Connected!'
-		lastPingRecvMSecs = (msecsSinceStart)
-		vmVersion = nil
-		sendMsg this 'getVersionMsg'
-		stopAndSyncScripts this
-		return true
-	}
-
-	// board not responding; look for board on another port
-	if (notNil port) { closePort this }
-	return false
-}
-
-method tryToConnect SmallRuntime {
-	// Called when there is no connection or the board does not respond.
-	// First, try to close and reopen the existing port, if there is one.
-	// If that fails, look for a port that responds to a 'ping'.
-
-	if (reconnectToCurrentPort this) { return 'connected' }
-
-	if (isNil lastScanMSecs) { lastScanMSecs = 0 }
-	msecsSinceLastScan = ((msecsSinceStart) - lastScanMSecs)
-	if (and (msecsSinceLastScan > 0) (msecsSinceLastScan < 1000)) { return }
-	lastScanMSecs = (msecsSinceStart)
-
-	print 'Trying to connect...'
-	for p (portList this) {
-		portName = p
-		if (reconnectToCurrentPort this) { return 'connected' }
-	}
-	portName = nil
-
-	// no port responded ping requests; try to install VM
-	tryToInstallVM this
-	return 'not connected'
 }
 
 method tryToInstallVM SmallRuntime {
@@ -448,6 +381,9 @@ method updateConnection SmallRuntime {
 
 	if disconnected { return 'not connected' }
 
+	// handle connection attempt in progress
+	if (notNil connectionStartTime) { return (tryToConnect this) }
+
 	// if port is not open, try to reconnect or find a different board
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		closePort this
@@ -476,6 +412,61 @@ method updateConnection SmallRuntime {
 		closePort this
 		return 'not connected'
 	}
+}
+
+method tryToConnect SmallRuntime {
+	// Called when there is no connection or the board does not respond.
+
+	connectionAttemptTimeout = 500 // milliseconds
+
+	// check connection status only N times/sec
+	now = (msecsSinceStart)
+	if (isNil lastScanMSecs) { lastScanMSecs = 0 }
+	msecsSinceLastScan = (now - lastScanMSecs)
+	if (and (msecsSinceLastScan > 0) (msecsSinceLastScan < 20)) { return 'not connected' }
+	lastScanMSecs = now
+
+	if (notNil connectionStartTime) {
+		sendMsg this 'pingMsg'
+		processMessages this
+		if (lastPingRecvMSecs != 0) { // got a ping; we're connected!
+			print 'Connected to' portName
+			connectionStartTime = nil
+			vmVersion = nil
+			sendMsg this 'getVersionMsg'
+			stopAndSyncScripts this
+			return 'connected'
+		}
+		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
+		if ((now - connectionStartTime) < connectionAttemptTimeout) { return 'not connected' } // keep trying
+	}
+
+	closePort this
+	connectionStartTime = nil
+
+	portNames = (portList this)
+	if (isEmpty portNames) { return 'not connected' } // no ports available
+
+	// try the port following portName in portNames
+	// xxx to do: after trying all the ports, call tryToInstallVM (but only if portNames isn't empty)
+	i = 1
+	if (notNil portName) {
+		i = (indexOf portNames portName)
+		if (isNil i) { i = 0 }
+		i = ((i % (count portNames)) + 1)
+	}
+	portName = (at portNames i)
+	openPortAndSendPing this
+}
+
+method openPortAndSendPing SmallRuntime {
+	// Open port and send ping request
+
+	closePort this // ensure port is closed
+	connectionStartTime = (msecsSinceStart)
+	ensurePortOpen this // attempt to reopen the port
+	lastPingRecvMSecs = 0
+	sendMsg this 'pingMsg'
 }
 
 method ideVersion SmallRuntime { return '0.2.1' }
@@ -876,10 +867,6 @@ method ensurePortOpen SmallRuntime {
 			disconnected = false
 			if ('Browser' == (platform)) { waitMSecs 100 } // let browser callback complete
 		}
-	}
-	if (notNil port) {
-		setSerialPortDTR port false
-		setSerialPortRTS port false
 	}
 }
 
