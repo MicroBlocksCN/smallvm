@@ -365,7 +365,8 @@ method helpString MicroBlocksThingWorker {
 	add result '/mb/broadcast/URL_encoded_message - broadcast message to board'
 	add result '/mb/getVar/URL_encoded_var_name - get variable value'
 	add result '/mb/setVar/URL_encoded_var_name/value - set variable value'
-	add result '  (value is: true, false, INTEGER, or a url_encoded_string)'
+	add result '  (value is: true, false, an integer, or a url_encoded_string)'
+	add result '  (use double-quotes for string values that would otherwise be treated as a boolean or integer such as "true", "false", or "12345")'
 	return (joinStrings result (newline))
 }
 
