@@ -440,6 +440,11 @@ function adjustButtonVisibility() {
 	if ((typeof window !== 'undefined') && (window.location.href.includes('go.html'))) {
 		document.getElementById('SeeInsideButton').style.display = 'inline';
 		document.getElementById('PresentButton').style.display = 'none';
+	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks.html'))) {
+		document.getElementById('PresentButton').style.display = 'none';
+		document.getElementById('SeeInsideButton').style.display = 'none';
+		document.getElementById('GoButton').style.display = 'none';
+		document.getElementById('StopButton').style.display = 'none';
 	} else {
 		document.getElementById('SeeInsideButton').style.display = 'none';
 		document.getElementById('PresentButton').style.display = 'inline';
