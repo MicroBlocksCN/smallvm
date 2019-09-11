@@ -16,7 +16,7 @@
 
 // VM Version
 
-#define VM_VERSION "v063l"
+#define VM_VERSION "v063m"
 
 // Forward Reference Declarations
 
@@ -171,7 +171,7 @@ void stopAllTasksButThis(Task *thisTask) {
 			sendMessage(taskDoneMsg, task->taskChunkIndex, 0, NULL);
 			memset(task, 0, sizeof(Task)); // clear task
 		}
-		if (task == thisTask) { taskCount = i; }
+		if (task == thisTask) { taskCount = i + 1; }
 	}
 }
 
