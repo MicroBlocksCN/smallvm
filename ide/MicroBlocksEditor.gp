@@ -275,6 +275,9 @@ method step MicroBlocksEditor {
   if (isRunning thingServer) {
 	step thingServer
   }
+  if (notNil (flasher (smallRuntime))) {
+    step (flasher (smallRuntime))
+  }
 }
 
 method updateIndicator MicroBlocksEditor {
@@ -487,7 +490,9 @@ method rightClicked MicroBlocksEditor aHand {
 method contextMenu MicroBlocksEditor {
   menu = (menu 'MicroBlocks' this)
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
+  addLine menu
   addItem menu 'update firmware on board' (action 'installVM' (smallRuntime))
+  addItem menu 'wipe and repartition board' (action 'repartitionFlash' (smallRuntime))
   addLine menu
   addItem menu 'clear memory and variables' (action 'softReset' (smallRuntime))
   addItem menu 'show data graph' 'showGraph'

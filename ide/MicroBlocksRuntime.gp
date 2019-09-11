@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher
 
 method scripter SmallRuntime { return scripter }
 
@@ -1197,78 +1197,30 @@ method adaFruitMessage SmallRuntime {
 	inform (localized 'For AdaFruit boards, double-click reset button and try again.')
 }
 
+// espressif board flashing
+
+method flasher SmallRuntime {
+    return flasher
+}
+
+method repartitionFlash SmallRuntime boardName {
+    stopAndSyncScripts this
+    setPort this 'disconnect'
+
+    flasher = (newFlasher 'repartitionFlash' boardName)
+    addPart (global 'page') (morph flasher)
+
+    start flasher
+}
+
 method flashVM SmallRuntime boardName {
-	stopAndSyncScripts this
-	closePort (smallRuntime)
-	copyEspToolToDisk this
-	copyEspFilesToDisk this
-	copyVMtoDisk this boardName
+    stopAndSyncScripts this
+    setPort this 'disconnect'
 
-	if ('Mac' == (platform)) {
-		esptool = 'esptool'
-	} ('Linux' == (platform)) {
-		esptool = 'esptool.py'
-	} ('Win' == (platform)) {
-		esptool = 'esptool.exe'
-	}
+    flasher = (newFlasher 'flashVM' boardName)
+    addPart (global 'page') (morph flasher)
 
-	if (boardName == 'ESP32') {
-		exec (join (tmpPath this) 'esp32flash.cmd')
-	} (boardName == 'Citilab ED1') {
-		inform (join
-			(localized 'Please press the PRG button for a couple of seconds when the screen lights up.') (newline)
-			(localized 'Wait for the screen to turn off again.') (newline)
-			(localized 'Then use the "Connect" menu to connect to board.'))
-		exec (join (tmpPath this) esptool) 'write_flash' '0x10000' (join (tmpPath this) 'vm')
-	} else {
-		// ESP8266
-		inform (join
-			(localized 'Please wait for the LED on the 8266 module to stop flashing.') (newline)
-			(localized 'Then use the "Connect" menu to connect to board.'))
-		exec (join (tmpPath this) esptool) 'write_flash' '0' (join (tmpPath this) 'vm')
-	}
-}
-
-method tmpPath SmallRuntime {
-	if (or ('Mac' == (platform)) ('Linux' == (platform))) {
-		return '/tmp/'
-	} else { // Windows
-		return (join (userHomePath) '/AppData/Local/Temp/')
-	}
-}
-
-method copyEspToolToDisk SmallRuntime {
-	if ('Mac' == (platform)) {
-		esptoolData = (readEmbeddedFile 'esptool/esptool' true)
-		destination = (join (tmpPath this) 'esptool')
-	} ('Linux' == (platform)) {
-		esptoolData = (readEmbeddedFile 'esptool/esptool.py')
-		destination = (join (tmpPath this) 'esptool.py')
-	} ('Win' == (platform)) {
-		esptoolData = (readEmbeddedFile 'esptool/esptool.exe' true)
-		destination = (join (tmpPath this) 'esptool.exe')
-	}
-	writeFile destination esptoolData
-	setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
-}
-
-method copyVMtoDisk SmallRuntime boardName {
-	if (boardName == 'ESP8266') {
-		vmData = (readEmbeddedFile 'precompiled/vm.ino.nodemcu.bin' true)
-	} (boardName == 'ESP32') {
-		vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
-	} (boardName == 'Citilab ED1') {
-		vmData = (readEmbeddedFile 'precompiled/vm.ino.citilab-ed1.bin' true)
-	}
-	writeFile (join (tmpPath this) 'vm') vmData
-}
-
-method copyEspFilesToDisk SmallRuntime {
-	for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin' 'esp32flash.cmd') {
-		fileData = (readEmbeddedFile (join 'esp32/' fn) true)
-		writeFile (join (tmpPath this) fn) fileData
-	}
-	setFileMode (join (tmpPath this) 'esp32flash.cmd') (+ (7 << 6) (5 << 3) 5) // set executable bits
+    start flasher
 }
 
 // data logging
