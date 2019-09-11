@@ -491,11 +491,13 @@ method contextMenu MicroBlocksEditor {
   menu = (menu 'MicroBlocks' this)
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addLine menu
-  addItem menu 'update firmware on board' (action 'installVM' (smallRuntime))
-  addItem menu 'wipe and repartition board' (action 'repartitionFlash' (smallRuntime))
-  addLine menu
-  addItem menu 'clear memory and variables' (action 'softReset' (smallRuntime))
   addItem menu 'show data graph' 'showGraph'
+  addItem menu 'clear memory and variables' (action 'softReset' (smallRuntime))
+  addLine menu
+  addItem menu 'update firmware on board' (action 'installVM' (smallRuntime))
+  if ('Browser' != (platform)) {
+	addItem menu 'wipe and repartition board' (action 'repartitionFlash' (smallRuntime))
+  }
   addLine menu
 
 // xxx testing (used by John)
@@ -506,15 +508,16 @@ method contextMenu MicroBlocksEditor {
   if (not (devMode)) {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
-	addItem menu 'set serial delay' 'serialDelayMenu'
-	addLine menu
 	addItem menu 'firmware version' (action 'getVersion' (smallRuntime))
-	addLine menu
-	if (not (isRunning thingServer)) {
-	  addItem menu 'start Mozilla WebThing server' 'startThingServer'
-	} else {
-	  addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
+	if ('Browser' != (platform)) {
+	  addLine menu
+	  if (not (isRunning thingServer)) {
+		addItem menu 'start Mozilla WebThing server' 'startThingServer'
+	  } else {
+		addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
+	  }
 	}
+	addItem menu 'set serial delay' 'serialDelayMenu'
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
