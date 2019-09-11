@@ -282,7 +282,7 @@ method portList SmallRuntime {
 		remove portList 'COM1'
 	} ('Browser' == (platform)) {
 		listSerialPorts // first call triggers callback
-		waitMSecs 50
+		waitMSecs 5
 		portList = (list)
 		for portName (listSerialPorts) {
 			if (not (beginsWith portName '/dev/tty.')) {
@@ -847,6 +847,7 @@ method waitForResponse SmallRuntime {
 	// previous operation has completed.
 
 	if (isNil port) { return }
+	sendMsg this 'pingMsg'
 	timeout = 2000
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
@@ -855,7 +856,8 @@ method waitForResponse SmallRuntime {
 			recvBuf = (join recvBuf s)
 			return
 		}
-		waitMSecs 5
+		sendMsg this 'pingMsg'
+		waitMSecs 25
 	}
 }
 
