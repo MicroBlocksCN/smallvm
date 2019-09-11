@@ -351,7 +351,7 @@ method processDroppedFile MicroBlocksEditor fName data {
 	openProject this data fName
   }
   if (or (endsWith fName '.ubl') (endsWith fName '.ulib')) {
-	importLibraryFromFile scripter fName
+	importLibraryFromFile scripter fName data
   }
 }
 

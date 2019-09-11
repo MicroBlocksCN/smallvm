@@ -971,18 +971,21 @@ method importLibrary MicroBlocksScripter {
   pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ulib' '.ubl')
 }
 
-method importLibraryFromFile MicroBlocksScripter fileName {
-  // Import a library with the give file path.
+method importLibraryFromFile MicroBlocksScripter fileName data {
+  // Import a library with the give file path. If data is not nil, it came from
+  // a browser upload or file drop. Use it rather than attempting to read the file.
 
-  if (beginsWith fileName '//') {
-	data = (readEmbeddedFile (substring fileName 3))
-  } else {
-	data = (readFile fileName)
+  if (isNil data) {
+	if (beginsWith fileName '//') {
+	  data = (readEmbeddedFile (substring fileName 3))
+	} else {
+	  data = (readFile fileName)
+	}
+	if (isNil data) { return } // could not read file
   }
-  if (isNil data) { return } // could not read file
 
   libName = (withoutExtension (filePart fileName))
-  addLibraryFromString mbProject data libName
+  addLibraryFromString mbProject (toString data) libName
 
   // update library list and select the new library
   updateLibraryList this
