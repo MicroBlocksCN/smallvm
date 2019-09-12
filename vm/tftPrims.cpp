@@ -45,6 +45,8 @@ int touchEnabled = false;
 		#define TFT_CS	5
 		#define TFT_DC	9
 		#define TFT_RST	10
+                #define TFT_WIDTH 128
+                #define TFT_HEIGHT 128
 		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 		void tftInit() {
@@ -61,6 +63,8 @@ int touchEnabled = false;
 		#define TFT_CS	14
 		#define TFT_DC	27
 		#define TFT_RST	33
+                #define TFT_WIDTH 320
+                #define TFT_HEIGHT 240
 		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 		void tftInit() {
 			tft.begin(40000000); // Run SPI at 80MHz/2
@@ -75,6 +79,7 @@ int touchEnabled = false;
 		}
 
 	#else
+                // IoT-Bus
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ILI9341.h"
 		#include <XPT2046_Touchscreen.h>
@@ -93,6 +98,9 @@ int touchEnabled = false;
 
 		#define TFT_CS	5
 		#define TFT_DC	27
+
+                #define TFT_WIDTH 320
+                #define TFT_HEIGHT 240
 		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
 		void tftInit() {
@@ -134,6 +142,22 @@ int color24to16b(int color24b) {
 	int g = (color24b >> 8) & 0xFF;
 	int b = color24b & 0xFF;
 	return ((r << 8) & 0xF800) | ((g << 3) & 0x7E0) | ((b >> 3) & 0x1F);
+}
+
+OBJ primGetWidth(int argCount, OBJ *args) {
+	#ifdef TFT_WIDTH
+	return int2obj(TFT_WIDTH);
+	#else
+        return int2obj(0);
+	#endif
+}
+
+OBJ primGetHeight(int argCount, OBJ *args) {
+	#ifdef TFT_HEIGHT
+	return int2obj(TFT_HEIGHT);
+	#else
+        return int2obj(0);
+	#endif
 }
 
 OBJ primSetPixel(int argCount, OBJ *args) {
@@ -329,6 +353,8 @@ void tftSetHugePixel(int x, int y, int state) { }
 void tftSetHugePixelBits(int bits) { }
 
 OBJ primEnableDisplay(int argCount, OBJ *args) { return falseObj; }
+OBJ primGetWidth(int argCount, OBJ *args) { return falseObj; }
+OBJ primGetHeight(int argCount, OBJ *args) { return falseObj; }
 OBJ primSetPixel(int argCount, OBJ *args) { return falseObj; }
 OBJ primLine(int argCount, OBJ *args) { return falseObj; }
 OBJ primRect(int argCount, OBJ *args) { return falseObj; }
@@ -347,6 +373,8 @@ OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 
 static PrimEntry entries[] = {
 	"enableDisplay", primEnableDisplay,
+	"getWidth", primGetWidth,
+	"getHeight", primGetHeight,
 	"setPixel", primSetPixel,
 	"line", primLine,
 	"rect", primRect,

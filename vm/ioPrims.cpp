@@ -91,6 +91,7 @@ void hardwareInit() {
 	turnOffInternalNeoPixels();
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
+        	touchSetCycles(0x800, 0x800);
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32)
 		tftInit();
