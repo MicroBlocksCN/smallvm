@@ -2,13 +2,9 @@ module main
 variables e h 'h.' q 'q.'
 
 	spec ' ' 'part' 'part1'
-
 	spec ' ' 'part2' 'part2'
-
 	spec ' ' 'part3' 'part3'
-
 	spec ' ' 'part4' 'part4'
-
 
 to part {
   waitMillis q
@@ -245,6 +241,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 26
     } ((boardType) == 'CircuitPlayground') {
       _tonePin = 12
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
     } else {
       _tonePin = 0
     }

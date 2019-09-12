@@ -1,11 +1,8 @@
 module main
 
 	spec ' ' 'part A' 'part A'
-
 	spec ' ' 'part A2' 'part A1'
-
 	spec ' ' 'part A3' 'part A2'
-
 
 to 'part A' {
   'play tone' 'C' 3 250
@@ -204,6 +201,8 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 26
     } ((boardType) == 'CircuitPlayground') {
       _tonePin = 12
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
     } else {
       _tonePin = 0
     }
