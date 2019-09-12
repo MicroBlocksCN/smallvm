@@ -10,7 +10,7 @@ variables _ED1_buttons_init '_capacitive threshold' '_use capacitive'
 	spec 'r' 'down button' 'button down'
 	spec 'r' 'left button' 'button left'
 	spec 'r' 'right button' 'button right'
-	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 30
+	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 15
 	spec ' ' 'set use capacitive to' 'set use capacitive to _' 'bool' true
 
 to 'OK button' {
@@ -22,7 +22,7 @@ to '_ED1_buttons_init' {
     comment 'true by default for ED1 V2 board'
     '_use capacitive' = ((i2cGet (hexToInt '20') 1) == 0)
     if ((v '_capacitive threshold') == 0) {
-      '_capacitive threshold' = 30
+      '_capacitive threshold' = 15
     }
     _ED1_buttons_init = (booleanConstant true)
   }
@@ -39,7 +39,7 @@ to '_button pressed' pin {
 
 to '_capacitive' pin {
   if (('[sensors:touchRead]' pin) <= (v '_capacitive threshold')) {
-    waitMicros 500
+    waitMicros 50
     return (('[sensors:touchRead]' pin) <= (v '_capacitive threshold'))
   } else {
     return (booleanConstant false)

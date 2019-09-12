@@ -148,7 +148,11 @@ method copyVMtoDisk MicroBlocksFlasher {
   } (boardName == 'ESP32') {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
   } (boardName == 'Citilab ED1') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.citilab-ed1.bin' true)
+    vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
+  } (boardName == 'M5Stack-Gray') {
+    vmData = (readEmbeddedFile 'precompiled/vm.ino.m5stack-gray.bin' true)
+  } (boardName == 'M5Stack-Core') {
+    vmData = (readEmbeddedFile 'precompiled/vm.ino.m5stack-core.bin' true)
   }
   writeFile (join (tmpPath this) 'vm') vmData
 }
