@@ -560,6 +560,11 @@ method installBoardSpecificBlocks SmallRuntime {
 		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
 		importLibraryFromFile scripter '//Libraries/NeoPixel.ubl'
 		importLibraryFromFile scripter '//Libraries/Tone.ubl'
+	} (or ('M5Stack-Core' == boardType) ('M5Stack-Gray' == boardType)) {
+		importLibraryFromFile scripter '//Libraries/Tone.ubl'
+		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
+		importLibraryFromFile scripter '//Libraries/TFT.ubl'
+		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	} ('ESP8266' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	} ('ESP32' == boardType) {
@@ -1075,11 +1080,11 @@ method installVM SmallRuntime {
 		}
 		popUpAtHand menu (global 'page')
 	} ((count (portList this)) > 0) {
-		if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1') boardType) {
+		if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5Stack-Gray') boardType) {
 			flashVM this boardType
 		} (isNil boardType) {
 			menu = (menu 'Select board type:' this)
-			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1') {
+			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5Stack-Gray') {
 				addItem menu boardName (action 'flashVM' this boardName)
 			}
 			addLine menu
