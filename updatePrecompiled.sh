@@ -1,11 +1,12 @@
 #!/bin/bash
-# Update the precompile binaries.
-# You must first use the Arduino IDE to export the compiled binary for each board.
-
-cp vm/vm.ino.BBCmicrobit.hex precompiled
-cp vm/vm.ino.CalliopeMini.hex precompiled/vm.ino.Calliope.hex
-cp vm/vm.ino.nodemcu.bin precompiled
-cp vm/vm.ino.citilab-ed1.bin precompiled
-cp vm/vm.ino.lolin32.bin precompiled/vm.ino.esp32.bin
-python uf2conv.py -c vm/vm.ino.circuitplay.bin -o precompiled/vm.circuitplay.uf2
-python uf2conv.py -c vm/vm.ino.itsybitsy_m0.bin -o precompiled/vm.itsybitsy.uf2
+# Rebuild and update the precompiled binaries.
+pio run
+cp .pio/build/microbit/firmware.hex precompiled/vm.ino.BBCmicrobit.hex 
+cp .pio/build/calliope/firmware.hex precompiled/vm.ino.Calliope.hex
+cp .pio/build/nodemcu/firmware.bin precompiled/vm.ino.nodemcu.bin
+cp .pio/build/ed1/firmware.bin precompiled/vm.ino.citilab-ed1.bin
+cp .pio/build/m5stack-grey/firmware.bin precompiled/vm.ino.m5stack-grey.bin
+cp .pio/build/m5stack-core/firmware.bin precompiled/vm.ino.m5stack-core.bin
+cp .pio/build/esp32/firmware.bin precompiled/vm.ino.esp32.bin
+python uf2conv.py -c .pio/build/cpx/firmware.bin -o precompiled/vm.circuitplay.uf2
+python uf2conv.py -c .pio/build/itsybitsy/firmware.bin -o precompiled/vm.itsybitsy.uf2
