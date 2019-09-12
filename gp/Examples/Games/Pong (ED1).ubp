@@ -1,109 +1,21 @@
 module main
 variables _bz_frequencies _bz_note_names _bz_pinNumber _loop_overhead 'ball radius' 'delta x' 'delta y' 'paddle 1 x' 'paddle 2 x' 'paddle width' playing 'refresh rate' speed x y
 
-	spec 'r' 'OK button' 'button OK'
-
 	spec 'r' '_bz_index of' '_bz_index of _ in _' 'auto auto any any' '10' ''
-
-	spec ' ' '_measureLoopOverhead' '_measureLoopOverhead' 'any'
-
-	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
-
 	spec ' ' 'bounce ball' 'bounce ball'
-
 	spec ' ' 'bounce on paddle' 'bounce on paddle _' 'auto' 2
-
-	spec 'r' 'cancel button' 'button X'
-
 	spec ' ' 'clear ball' 'clear ball'
-
-	spec 'r' 'down button' 'button down'
-
 	spec ' ' 'freq' 'play frequency _ on pin _ for _ ms' 'auto auto auto' 440 0 '100'
-
 	spec ' ' 'game over' 'player  _ wins' 'auto' 1
-
-	spec 'r' 'left button' 'button left'
-
 	spec ' ' 'new game' 'new game'
-
-	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto auto auto' 'G#' 3 250
-
 	spec ' ' 'plot ball' 'draw ball'
-
 	spec ' ' 'plot paddles' 'draw paddles'
-
-	spec 'r' 'right button' 'button right'
-
-	spec 'r' 'up button' 'button up'
-
-
-to 'OK button' {
-  return (digitalReadOp 15)
-}
 
 to '_bz_index of' item list {
   for i (size list) {
     if ((at i list) == item) {return i}
   }
   return 0
-}
-
-to '_measureLoopOverhead' {
-  local 'startT' (microsOp)
-  repeat 20 {
-    comment 'Loop to measure timing'
-    repeat 5 {
-      digitalWriteOp 0 false
-    }
-  }
-  _loop_overhead = (((microsOp) - startT) / 100)
-}
-
-to 'attach buzzer to pin' pinNumber {
-  if (pinNumber == '') {
-    if ((boardType) == 'Citilab ED1') {
-      _bz_pinNumber = 26
-    } ((boardType) == 'CircuitPlayground') {
-      _bz_pinNumber = 12
-    } else {
-      _bz_pinNumber = 0
-    }
-  } else {
-    _bz_pinNumber = pinNumber
-  }
-  '[display:mbDisplayOff]'
-  '_measureLoopOverhead'
-  if (_bz_frequencies == 0) {
-    _bz_frequencies = (newArray 12)
-    atPut 1 _bz_frequencies 13081
-    atPut 2 _bz_frequencies 13859
-    atPut 3 _bz_frequencies 14683
-    atPut 4 _bz_frequencies 15556
-    atPut 5 _bz_frequencies 16481
-    atPut 6 _bz_frequencies 17461
-    atPut 7 _bz_frequencies 18500
-    atPut 8 _bz_frequencies 19600
-    atPut 9 _bz_frequencies 20765
-    atPut 10 _bz_frequencies 22000
-    atPut 11 _bz_frequencies 23308
-    atPut 12 _bz_frequencies 24694
-  }
-  if (_bz_note_names == 0) {
-    _bz_note_names = (newArray 12)
-    atPut 1 _bz_note_names 'C'
-    atPut 2 _bz_note_names 'C#'
-    atPut 3 _bz_note_names 'D'
-    atPut 4 _bz_note_names 'D#'
-    atPut 5 _bz_note_names 'E'
-    atPut 6 _bz_note_names 'F'
-    atPut 7 _bz_note_names 'F#'
-    atPut 8 _bz_note_names 'G'
-    atPut 9 _bz_note_names 'G#'
-    atPut 10 _bz_note_names 'A'
-    atPut 11 _bz_note_names 'A#'
-    atPut 12 _bz_note_names 'B'
-  }
 }
 
 to 'bounce ball' {
@@ -146,16 +58,8 @@ to 'bounce on paddle' n {
   speed += 10
 }
 
-to 'cancel button' {
-  return (digitalReadOp 14)
-}
-
 to 'clear ball' {
   '[tft:circle]' x y (v 'ball radius') 0 true
-}
-
-to 'down button' {
-  return (digitalReadOp 13)
 }
 
 to freq freq pin ms {
@@ -193,10 +97,6 @@ to 'game over' n {
   'new game'
 }
 
-to 'left button' {
-  return (digitalReadOp 2)
-}
-
 to 'new game' {
   speed = 200
   'paddle 1 x' = (random 30 80)
@@ -224,20 +124,6 @@ to 'new game' {
   playing = (booleanConstant true)
 }
 
-to 'play tone' note octave ms {
-  if (_bz_frequencies == 0) {'attach buzzer to pin' ''}
-  local 'base frequency' (at ('_bz_index of' note _bz_note_names nil nil) _bz_frequencies)
-  if (octave < 0) {
-    repeat (absoluteValue octave) {
-      'base frequency' = ((v 'base frequency') / 2)
-    }
-  }
-  repeat octave {
-    'base frequency' = ((v 'base frequency') * 2)
-  }
-  freq ((v 'base frequency') / 100) _bz_pinNumber ms
-}
-
 to 'plot ball' {
   '[tft:circle]' x y (v 'ball radius') (hexToInt 'FF0000') true
 }
@@ -247,14 +133,6 @@ to 'plot paddles' {
   '[tft:roundedRect]' (v 'paddle 2 x') 6 (v 'paddle width') 8 4 (hexToInt 'FFFF00') true
   '[tft:rect]' 0 120 128 8 0 true
   '[tft:roundedRect]' (v 'paddle 1 x') 120 (v 'paddle width') 8 4 (hexToInt 'FFFF00') true
-}
-
-to 'right button' {
-  return (digitalReadOp 27)
-}
-
-to 'up button' {
-  return (digitalReadOp 4)
 }
 
 script 1165 50 {
@@ -341,5 +219,250 @@ to 'plot paddles' {}
 
 script 631 1400 {
 to 'clear ball' {}
+}
+
+
+module 'ED1 Buttons' Input
+variables _ED1_buttons_init '_capacitive threshold' '_use capacitive'
+
+	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
+	spec 'r' '_button pressed' '_button pressed _' 'auto any' 15
+	spec 'r' '_capacitive' '_capacitive sensor _ pressed' 'auto any' 15
+	spec 'r' 'OK button' 'button OK'
+	spec 'r' 'cancel button' 'button X'
+	spec 'r' 'up button' 'button up'
+	spec 'r' 'down button' 'button down'
+	spec 'r' 'left button' 'button left'
+	spec 'r' 'right button' 'button right'
+	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 30
+	spec ' ' 'set use capacitive to' 'set use capacitive to _' 'bool' true
+
+to 'OK button' {
+  return ('_button pressed' 15)
+}
+
+to '_ED1_buttons_init' {
+  if (_ED1_buttons_init == 0) {
+    comment 'true by default for ED1 V2 board'
+    '_use capacitive' = ((i2cGet (hexToInt '20') 1) == 0)
+    if ((v '_capacitive threshold') == 0) {
+      '_capacitive threshold' = 30
+    }
+    _ED1_buttons_init = (booleanConstant true)
+  }
+}
+
+to '_button pressed' pin {
+  '_ED1_buttons_init'
+  if (v '_use capacitive') {
+    return ('_capacitive' pin)
+  } else {
+    return (digitalReadOp pin)
+  }
+}
+
+to '_capacitive' pin {
+  if (('[sensors:touchRead]' pin) <= (v '_capacitive threshold')) {
+    waitMicros 500
+    return (('[sensors:touchRead]' pin) <= (v '_capacitive threshold'))
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to 'cancel button' {
+  return ('_button pressed' 14)
+}
+
+to 'down button' {
+  return ('_button pressed' 13)
+}
+
+to 'left button' {
+  return ('_button pressed' 2)
+}
+
+to 'right button' {
+  return ('_button pressed' 27)
+}
+
+to 'set capacitive threshold to' threshold {
+  '_capacitive threshold' = threshold
+}
+
+to 'set use capacitive to' value {
+  '_use capacitive' = value
+}
+
+to 'up button' {
+  return ('_button pressed' 4)
+}
+
+
+module Tone Output
+variables _tonePin _toneInitalized _toneLoopOverhead
+
+	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
+	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
+	spec ' ' 'playMIDIKey' 'play midi key _ for _ milliseconds' 'num num' 60 500
+	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+	spec 'r' '_baseFreqForSharpOrFlat' '_baseFreqForSharpOrFlat _' 'auto' 'c#'
+	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+	spec ' ' '_toneLoop' '_toneLoop _ for _ milliseconds' 'num num' 440000 100
+
+to '_baseFreqForNote' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  if (or (note == 'c') (note == 'C')) {
+    return 261626
+  } (or (note == 'd') (note == 'D')) {
+    return 293665
+  } (or (note == 'e') (note == 'E')) {
+    return 329628
+  } (or (note == 'f') (note == 'F')) {
+    return 349228
+  } (or (note == 'g') (note == 'G')) {
+    return 391995
+  } (or (note == 'a') (note == 'A')) {
+    return 440000
+  } (or (note == 'b') (note == 'B')) {
+    return 493883
+  }
+  return ('_baseFreqForSharpOrFlat' note)
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (0 == semitone) {
+    return 261626
+  } (1 == semitone) {
+    return 277183
+  } (2 == semitone) {
+    return 293665
+  } (3 == semitone) {
+    return 311127
+  } (4 == semitone) {
+    return 329628
+  } (5 == semitone) {
+    return 349228
+  } (6 == semitone) {
+    return 369994
+  } (7 == semitone) {
+    return 391995
+  } (8 == semitone) {
+    return 415305
+  } (9 == semitone) {
+    return 440000
+  } (10 == semitone) {
+    return 466164
+  } (11 == semitone) {
+    return 493883
+  }
+}
+
+to '_baseFreqForSharpOrFlat' note {
+  comment 'Return the frequency for the given sharp or flat note in the
+middle-C octave scaled by 1000. Only handles black keys.
+Thus, you can''t write E# to mean F.'
+  if (or (or (note == 'c#') (note == 'C#')) (or (note == 'db') (note == 'Db'))) {
+    return 277183
+  } (or (or (note == 'd#') (note == 'D#')) (or (note == 'eb') (note == 'Eb'))) {
+    return 311127
+  } (or (or (note == 'f#') (note == 'F#')) (or (note == 'gb') (note == 'Gb'))) {
+    return 369994
+  } (or (or (note == 'g#') (note == 'G#')) (or (note == 'ab') (note == 'Ab'))) {
+    return 415305
+  } (or (or (note == 'a#') (note == 'A#')) (or (note == 'bb') (note == 'Bb'))) {
+    return 466164
+  }
+  comment 'Unrecognized note names map to 0.1 Hz, which is inaudible.
+This helps users find typos in their tunes.'
+  return 100
+}
+
+to '_measureLoopOverhead' {
+  comment 'Measure the loop overhead on this device'
+  '[display:mbDisplayOff]'
+  local 'halfCycle' 100
+  local 'startT' (microsOp)
+  repeat 100 {
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+  }
+  local 'usecs' ((microsOp) - startT)
+  return ((usecs - 20000) / 200)
+}
+
+to '_toneLoop' scaledFreq ms {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {
+    '[io:playTone]' _tonePin (scaledFreq / 1000)
+    waitMillis ms
+    '[io:playTone]' _tonePin 0
+  } else {
+    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+    local 'cycles' ((ms * 500) / halfCycle)
+    repeat cycles {
+      digitalWriteOp _tonePin true
+      waitMicros halfCycle
+      digitalWriteOp _tonePin false
+      waitMicros halfCycle
+    }
+  }
+}
+
+to 'attach buzzer to pin' pinNumber {
+  if (pinNumber == '') {
+    comment 'Pin number not specified; use default pin for this device'
+    if ((boardType) == 'Citilab ED1') {
+      _tonePin = 26
+    } ((boardType) == 'CircuitPlayground') {
+      _tonePin = 12
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
+    } else {
+      _tonePin = 0
+    }
+  } else {
+    _tonePin = pinNumber
+  }
+  _toneLoopOverhead = ('_measureLoopOverhead')
+  _toneInitalized = (booleanConstant true)
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' (key % 12))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
 }
 
