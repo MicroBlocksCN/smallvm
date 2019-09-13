@@ -851,11 +851,11 @@ method waitForResponse SmallRuntime {
 	// Wait for some data to arrive from the board. This is taken to mean that the
 	// previous operation has completed.
 
-	if (isNil port) { return }
 	sendMsg this 'pingMsg'
 	timeout = 2000
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
+		if (isNil port) { return }
 		s = (readSerialPort port true)
 		if (notNil s) {
 			recvBuf = (join recvBuf s)
@@ -1066,7 +1066,6 @@ method showOutputStrings SmallRuntime {
 // Virtual Machine Installer
 
 method installVM SmallRuntime {
-	disconnected = true
 	if ('Browser' == (platform)) {
 		installVMInBrowser this
 		return
@@ -1075,7 +1074,7 @@ method installVM SmallRuntime {
 	if ((count boards) == 1) {
 		b = (first boards)
 		copyVMToBoard this (first b) (last b)
-	} ((count boards) > 0) {
+	} ((count boards) > 1) {
 		menu = (menu 'Select board:' this)
 		for b boards {
 			addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
@@ -1084,7 +1083,7 @@ method installVM SmallRuntime {
 	} ((count (portList this)) > 0) {
 		if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') boardType) {
 			flashVM this boardType
-		} (isNil boardType) {
+		} else {
 			menu = (menu 'Select board type:' this)
 			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') {
 				addItem menu boardName (action 'flashVM' this boardName)
@@ -1152,7 +1151,10 @@ method getBoardName SmallRuntime path {
 }
 
 method copyVMToBoard SmallRuntime boardName boardPath {
+	// disable auto-connect and close the serial port
 	disconnected = true
+	closePort this
+
 	if (beginsWith boardName 'MICROBIT') {
 		vmFileName = 'vm.ino.BBCmicrobit.hex'
 	} (beginsWith boardName 'MINI') {
@@ -1170,12 +1172,10 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 	if (isNil vmData) {
 		error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))
 	}
-	stopAndSyncScripts this
-	closePort (smallRuntime)
 	writeFile (join boardPath vmFileName) vmData
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
-
-	disconnected = false
+	waitMSecs 2000
+	disconnected = false // re-enable auto-connect
 }
 
 method installVMInBrowser SmallRuntime {
