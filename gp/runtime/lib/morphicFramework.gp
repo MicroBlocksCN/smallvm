@@ -1033,8 +1033,7 @@ method prompt Page question default editRule callback {
   p = (new 'Prompter')
   initialize p (localized question) (localized default) editRule callback
   fixLayout p
-  setCenter (morph p) (x hand) (y hand)
-  keepWithin (morph p) (bounds morph)
+  setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
   addPart morph (morph p)
   edit (textBox p) hand
   selectAll (textBox p)
@@ -1050,8 +1049,7 @@ method confirm Page title question yesLabel noLabel callback {
   // see comment for ::prompt
   p = (new 'Prompter')
   initializeForConfirm p title question yesLabel noLabel callback
-  setCenter (morph p) (x hand) (y hand)
-  keepWithin (morph p) (insetBy (bounds morph) 50)
+  setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
   addPart morph (morph p)
   if (isNil callback) {
     setField hand 'lastTouchTime' nil

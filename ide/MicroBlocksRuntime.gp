@@ -469,7 +469,7 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '0.2.2' }
+method ideVersion SmallRuntime { return '0.2.3' }
 method latestVmVersion SmallRuntime { return 64 }
 
 method showAboutBox SmallRuntime {
@@ -560,7 +560,7 @@ method installBoardSpecificBlocks SmallRuntime {
 		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
 		importLibraryFromFile scripter '//Libraries/NeoPixel.ubl'
 		importLibraryFromFile scripter '//Libraries/Tone.ubl'
-	} (or ('M5Stack-Core' == boardType) ('M5Stack-Gray' == boardType)) {
+	} ('M5Stack-Core' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Tone.ubl'
 		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
 		importLibraryFromFile scripter '//Libraries/TFT.ubl'
@@ -1067,24 +1067,26 @@ method showOutputStrings SmallRuntime {
 
 method installVM SmallRuntime {
 	disconnected = true
-
 	if ('Browser' == (platform)) {
 		installVMInBrowser this
 		return
 	}
 	boards = (collectBoardDrives this)
-	if ((count boards) > 0) {
+	if ((count boards) == 1) {
+		b = (first boards)
+		copyVMToBoard this (first b) (last b)
+	} ((count boards) > 0) {
 		menu = (menu 'Select board:' this)
 		for b boards {
 			addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
 		}
 		popUpAtHand menu (global 'page')
 	} ((count (portList this)) > 0) {
-		if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5Stack-Gray') boardType) {
+		if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') boardType) {
 			flashVM this boardType
 		} (isNil boardType) {
 			menu = (menu 'Select board type:' this)
-			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5Stack-Gray') {
+			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') {
 				addItem menu boardName (action 'flashVM' this boardName)
 			}
 			addLine menu
@@ -1150,6 +1152,7 @@ method getBoardName SmallRuntime path {
 }
 
 method copyVMToBoard SmallRuntime boardName boardPath {
+	disconnected = true
 	if (beginsWith boardName 'MICROBIT') {
 		vmFileName = 'vm.ino.BBCmicrobit.hex'
 	} (beginsWith boardName 'MINI') {
@@ -1172,7 +1175,7 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 	writeFile (join boardPath vmFileName) vmData
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
 
-	waitMSecs 8000 // leave time for installation and VM startup
+	disconnected = false
 }
 
 method installVMInBrowser SmallRuntime {
@@ -1208,6 +1211,12 @@ method adaFruitMessage SmallRuntime {
 
 method flasher SmallRuntime {
     return flasher
+}
+
+method removeFlasher SmallRuntime {
+    destroy flasher
+    flasher = nil
+    tryToConnect this
 }
 
 method repartitionFlash SmallRuntime boardName {

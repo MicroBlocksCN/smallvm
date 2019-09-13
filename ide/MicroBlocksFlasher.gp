@@ -56,10 +56,9 @@ method step MicroBlocksFlasher {
     setTransparency (morph paddle2) ((transparency (morph paddle2)) + 5)
     setTransparency (morph overlay) ((transparency (morph overlay)) + 5)
     if ((msecsSinceStart) > destroyAtMs) {
-      destroy this
+      removeFlasher (smallRuntime)
     }
   }
-  timeout = timeout
   rotation = (rotation - 1)
   rotateAndScale (morph paddle1) rotation
   redraw this
@@ -68,7 +67,7 @@ method step MicroBlocksFlasher {
     if (processStatus == 1) {
       setText label (localized 'An error occurred!')
       setColor label (color 255 50 50)
-      destroyAtMs = ((msecsSinceStart) + 1000)
+      destroyAtMs = ((msecsSinceStart) + 3000)
       print (join 'Command ' (joinStrings (first commands) ' ') ' failed')
     } else {
       removeFirst commands
@@ -149,10 +148,8 @@ method copyVMtoDisk MicroBlocksFlasher {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
   } (boardName == 'Citilab ED1') {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
-  } (boardName == 'M5Stack-Gray') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.m5stack-gray.bin' true)
   } (boardName == 'M5Stack-Core') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.m5stack-core.bin' true)
+    vmData = (readEmbeddedFile 'precompiled/vm.ino.m5stack.bin' true)
   }
   writeFile (join (tmpPath this) 'vm') vmData
 }
