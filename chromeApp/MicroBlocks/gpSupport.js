@@ -441,6 +441,7 @@ function adjustButtonVisibility() {
 		document.getElementById('SeeInsideButton').style.display = 'inline';
 		document.getElementById('PresentButton').style.display = 'none';
 	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks.html'))) {
+		document.getElementById('FullscreenButton').style.display = 'none';
 		document.getElementById('PresentButton').style.display = 'none';
 		document.getElementById('SeeInsideButton').style.display = 'none';
 		document.getElementById('GoButton').style.display = 'none';
