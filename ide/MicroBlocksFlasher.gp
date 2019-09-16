@@ -7,7 +7,7 @@
 // MicroBlocksFlasher.gp - An interface to esptool to flash Espressif boards
 // Bernat Romagosa, September 2019
 
-defineClass MicroBlocksFlasher overlay morph paddle1 paddle2 rotation commands currentCommandPID label destroyAtMs selector boardName
+defineClass MicroBlocksFlasher overlay morph paddle1 paddle2 rotation commands currentCommandPID label sublabel destroyAtMs selector boardName
 
 to newFlasher actionSelector board {
   return (initialize (new 'MicroBlocksFlasher') actionSelector board)
@@ -29,6 +29,9 @@ method initialize MicroBlocksFlasher actionSelector board {
   label = (newText (localized 'Uploading...') 'Arial' (18 * scale) (gray 200))
   addPart morph (morph label)
 
+  sublabel = (newText (localized '(press ESC to cancel)') 'Arial' (12 * scale) (gray 170))
+  addPart morph (morph sublabel)
+
   addPart morph (morph paddle1)
   addPart (morph paddle1) (morph paddle2)
 
@@ -45,7 +48,9 @@ method redraw MicroBlocksFlasher {
   gotoCenterOf (morph paddle1) (morph (global 'page'))
   gotoCenterOf (morph paddle2) (morph (global 'page'))
   gotoCenterOf (morph label) (morph (global 'page'))
+  gotoCenterOf (morph sublabel) (morph (global 'page'))
   moveBy (morph label) 0 80
+  moveBy (morph sublabel) 0 110
   redraw overlay
   redraw paddle1
 }
@@ -67,6 +72,7 @@ method step MicroBlocksFlasher {
     if (processStatus == 1) {
       setText label (localized 'An error occurred!')
       setColor label (color 255 50 50)
+      removePart morph (morph sublabel)
       destroyAtMs = ((msecsSinceStart) + 3000)
       print (join 'Command ' (joinStrings (first commands) ' ') ' failed')
     } else {
@@ -74,6 +80,7 @@ method step MicroBlocksFlasher {
       if (isEmpty commands) {
         setText label (localized 'Done!')
         setColor label (gray 50)
+        removePart morph (morph sublabel)
         destroyAtMs = ((msecsSinceStart) + 1000)
       } else {
         currentCommandPID = (call (new 'Action' 'exec' (first commands)))
