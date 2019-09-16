@@ -25,9 +25,13 @@ return (joinStrings response)
 }
 
 to httpGet host path port {
-	if ('Browser' == (platform)) { return '' }
 	if (isNil path) { path = '/' }
 	if (isNil port) { port = 80 }
+	if ('Browser' == (platform)) {
+		url = (join 'http://' host path)
+		if (80 != port) { url = (join url ':' port) }
+		return (toString (httpGetInBrowser url))
+	}
 	socket = (openClientSocket host port)
 	if (isNil socket) { return '' }
 	nl = (string 13 10)
@@ -45,6 +49,18 @@ to httpGet host path port {
 	}
 	closeSocket socket
 	return (joinStrings response)
+}
+
+to httpGetInBrowser url timeout {
+	if (isNil timeout) { timeout = 1000 }
+	requestID = (startFetch url)
+	start = (msecsSinceStart)
+	while (((msecsSinceStart) - start) < timeout) {
+		result = (fetchResult requestID)
+		if (false == result) { return '' } // request failed
+		if (notNil result) { return result } // request completed
+		waitMSecs 20
+	}
 }
 
 to httpBody response {

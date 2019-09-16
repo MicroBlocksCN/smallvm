@@ -495,9 +495,6 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'clear memory and variables' (action 'softReset' (smallRuntime))
   addLine menu
   addItem menu 'update firmware on board' (action 'installVM' (smallRuntime))
-  if ('Browser' != (platform)) {
-	addItem menu 'wipe and repartition board' (action 'repartitionFlash' (smallRuntime))
-  }
   addLine menu
 
 // xxx testing (used by John)
@@ -516,6 +513,9 @@ method contextMenu MicroBlocksEditor {
 	  } else {
 		addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
 	  }
+	}
+	if ('Browser' != (platform)) {
+	  addItem menu 'wipe and repartition esp32' (action 'repartitionFlash' (smallRuntime))
 	}
 	addItem menu 'set serial delay' 'serialDelayMenu'
 	addLine menu
