@@ -11,12 +11,11 @@ defineClass MicroBlocksFlasher overlay morph paddle1 paddle2 rotation commands c
 
 to newFlasher actionSelector board {
   return (initialize (new 'MicroBlocksFlasher') actionSelector board)
-} 
+}
 
 method initialize MicroBlocksFlasher actionSelector board {
   selector = actionSelector
   boardName = board
-
   overlay = (newBox nil (gray 100))
   morph = (morph overlay)
   setTransparency (morph overlay) 30
@@ -98,7 +97,7 @@ method start MicroBlocksFlasher {
 }
 
 method repartitionFlash MicroBlocksFlasher {
-  setText label (localized 'Wiping board...') 
+  setText label (localized 'Wiping board...')
 
   copyEspToolToDisk this
   copyEspFilesToDisk this
@@ -113,7 +112,7 @@ method repartitionFlash MicroBlocksFlasher {
 }
 
 method flashVM MicroBlocksFlasher {
-  setText label (localized 'Uploading MicroBlocks to board...') 
+  setText label (localized 'Uploading MicroBlocks to board...')
 
   copyEspToolToDisk this
   copyVMtoDisk this
@@ -154,7 +153,7 @@ method copyVMtoDisk MicroBlocksFlasher {
   } (boardName == 'ESP32') {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
   } (boardName == 'Citilab ED1') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
+    vmData = (readEmbeddedFile 'precompiled/vm.ino.citilab-ed1.bin' true)
   } (boardName == 'M5Stack-Core') {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.m5stack.bin' true)
   }

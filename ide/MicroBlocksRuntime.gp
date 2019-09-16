@@ -1081,7 +1081,8 @@ method installVM SmallRuntime {
 		}
 		popUpAtHand menu (global 'page')
 	} ((count (portList this)) > 0) {
-		if (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') boardType) {
+		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') boardType)
+				(confirm (global 'page') nil (join 'Use board type ' boardType '?'))) {
 			flashVM this boardType
 		} else {
 			menu = (menu 'Select board type:' this)
@@ -1091,7 +1092,7 @@ method installVM SmallRuntime {
 			addLine menu
 			addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
 			popUpAtHand menu (global 'page')
-		}
+ 		}
 	} else {
 		inform (join
 			(localized 'No boards found; is your board plugged in?') (newline)
