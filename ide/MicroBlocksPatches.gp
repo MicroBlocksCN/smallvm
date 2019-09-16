@@ -826,6 +826,9 @@ method processEvent Keyboard evt {
 	  if (isNil focus) {
 		if (27 == key) { // escape key
 		  stopAndSyncScripts (smallRuntime)
+                  if (notNil (flasher (smallRuntime))) {
+                    confirmRemoveFlasher (smallRuntime)
+		  }
 		}
 		if (and (122 == (at evt 'char'))
 				(or (controlKeyDown this) (commandKeyDown this))

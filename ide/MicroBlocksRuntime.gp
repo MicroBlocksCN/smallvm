@@ -1213,6 +1213,14 @@ method flasher SmallRuntime {
     return flasher
 }
 
+method confirmRemoveFlasher SmallRuntime {
+    ok = (confirm
+        (global 'page')
+        nil
+        (localized 'Are you sure you want to cancel the upload process?'))
+    if ok { removeFlasher this }
+}
+
 method removeFlasher SmallRuntime {
     destroy flasher
     flasher = nil
