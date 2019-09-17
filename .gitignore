@@ -11,6 +11,7 @@ connector/node/build
 ublockscode
 apps
 esptool
+precompiled
 chromeApp/MicroBlocks/gp_wasm.data
 chromeApp/MicroBlocks/gp_wasm.js
 chromeApp/MicroBlocks/gp_wasm.wasm
