@@ -441,11 +441,7 @@ function adjustButtonVisibility() {
 		document.getElementById('SeeInsideButton').style.display = 'inline';
 		document.getElementById('PresentButton').style.display = 'none';
 	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks.html'))) {
-		document.getElementById('FullscreenButton').style.display = 'none';
-		document.getElementById('PresentButton').style.display = 'none';
-		document.getElementById('SeeInsideButton').style.display = 'none';
-		document.getElementById('GoButton').style.display = 'none';
-		document.getElementById('StopButton').style.display = 'none';
+		document.getElementById('controls').style.display = 'none';
 	} else {
 		document.getElementById('SeeInsideButton').style.display = 'none';
 		document.getElementById('PresentButton').style.display = 'inline';
@@ -712,4 +708,12 @@ function GP_setSerialPortDTR(flag) {
 function GP_setSerialPortRTS(flag) {
 	if (GP_serialPortID < 0) return; // port not open
 	chrome.serial.setControlSignals(GP_serialPortID, { rts: flag });
+}
+
+function GP_writeFile(data, defaultName) {
+	function writeToFile(writer) { writer.write(new Blob([data], {type: 'text/plain'})); }
+	function onFileSelected(entry) { entry.createWriter(writeToFile); }
+
+	if (typeof chrome == 'undefined') { console.log('not chrome'); return; } // not running in Chrome
+	chrome.fileSystem.chooseEntry( {type: 'saveFile', suggestedName: defaultName}, onFileSelected);
 }

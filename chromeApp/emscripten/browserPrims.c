@@ -330,13 +330,39 @@ OBJ primBrowserPostMessage(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
-// ***** Mobile Browser Detection *****
+// ***** Mobile Browser and Chromebook Detection *****
 
 static OBJ primBrowserIsMobile(int nargs, OBJ args[]) {
 	int isMobile = EM_ASM_INT({
 		return (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
 	}, NULL);
 	return isMobile ? trueObj : falseObj;
+}
+
+static OBJ primBrowserIsChromebook(int nargs, OBJ args[]) {
+	int isChromebook = EM_ASM_INT({
+		return (/X11; CrOS/i.test(navigator.userAgent));
+	}, NULL);
+	return isChromebook ? trueObj : falseObj;
+}
+
+// ***** Chromebook File Operations *****
+
+static OBJ primChromeUploadFile(int nargs, OBJ args[]) {
+	EM_ASM({ GP_UploadFiles(); }, 0);
+	return nilObj;
+}
+
+static OBJ primChromeWriteFile(int nargs, OBJ args[]) {
+	if (nargs < 1) return notEnoughArgsFailure();
+	if (NOT_CLASS(args[0], StringClass)) return primFailed("Argument must be a string");
+	char *suggestedFileName = "";
+	if ((nargs > 1) && (IS_CLASS(args[1], StringClass))) suggestedFileName = obj2str(args[1]);
+
+	EM_ASM_({
+		GP_writeFile(UTF8ToString($0), UTF8ToString($1));
+	}, obj2str(args[0]), suggestedFileName);
+	return nilObj;
 }
 
 // ***** Graphics Helper Functions *****
@@ -870,11 +896,7 @@ static OBJ primDrawBitmap(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
-static OBJ primWarpBitmap(int nargs, OBJ args[]) {
-	// Not yet implemented.
-
-	return nilObj;
-}
+static OBJ primWarpBitmap(int nargs, OBJ args[]) { return nilObj; } // Not yet implemented
 
 static inline void plot(OBJ dst, int isBitmap, int x, int y, int width, int c) {
 	// Plot a width x width square on the given bitmap or canvas.
@@ -985,6 +1007,9 @@ static PrimEntry browserPrimList[] = {
 	{"browserGetMessage",		primBrowserGetMessage,		"Get the next message from the browser, or nil if there isn't any."},
 	{"browserPostMessage",		primBrowserPostMessage,		"Post a message to the browser using the 'postMessage' function."},
 	{"browserIsMobile",			primBrowserIsMobile,		"Return true if running in a mobile browser."},
+	{"browserIsChromebook",		primBrowserIsChromebook,	"Return true if running on a Chromebook."},
+	{"chromeReadFile",			primChromeUploadFile,		"Select and upload a file on Chromebook."},
+	{"chromeWriteFile",			primChromeWriteFile,		"Write a file on a Chromebook. Args: data [suggestedFileName]"},
 };
 
 static PrimEntry graphicsPrimList[] = {

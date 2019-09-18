@@ -16,7 +16,7 @@
       .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
       div.emscripten { text-align: center; }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; margin-left: 0px; margin-top: -7px }
+      canvas.emscripten { border: 0px none; margin-left: 0px; margin-top: -15px }
 
       .spinner {
         height: 30px;
@@ -61,8 +61,8 @@
       #status {
         display: inline-block;
         vertical-align: top;
-        margin-top: 5px;
-        margin-left: 20px;
+        margin-top: 15px;
+        margin-left: 15px;
         font-weight: bold;
         color: rgb(120, 120, 120);
       }
@@ -115,7 +115,6 @@
       <progress value="0" max="100" id="progress" hidden=1></progress>
     </div>
 
-	<br>
     <div class="emscripten">
       <canvas class="emscripten" id="canvas" width="500px" height="500px"></canvas>
     </div>
