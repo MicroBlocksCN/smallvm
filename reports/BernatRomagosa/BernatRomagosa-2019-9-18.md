@@ -21,5 +21,4 @@ Funding source: Mozilla MOSS grant
 | 12/09/2019 | 5 | Flasher now supports M5Stack board
 | 13/09/2019 | 8 | Trying to get the flasher to also show up for micro:bit and CPX, but failing :(
 | 18/09/2019 | 3 | Several tweaks to flasher | 315e0882441ebcf7f9a749b5ee738e81680256c8
-
 | **Total** | 105 | |
