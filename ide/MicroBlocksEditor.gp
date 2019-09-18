@@ -494,7 +494,7 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'show data graph' 'showGraph'
   addItem menu 'clear memory and variables' (action 'softReset' (smallRuntime))
   addLine menu
-  addItem menu 'update firmware on board' (action 'installVM' (smallRuntime))
+  addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false) // do not wipe flash first
   addLine menu
 
 // xxx testing (used by John)
@@ -515,7 +515,7 @@ method contextMenu MicroBlocksEditor {
 	  }
 	}
 	if ('Browser' != (platform)) {
-	  addItem menu 'wipe and repartition esp32' (action 'repartitionFlash' (smallRuntime))
+            addItem menu 'wipe and repartition esp32' (action 'installVM' (smallRuntime) true) // wipe flash first
 	}
 	addItem menu 'set serial delay' 'serialDelayMenu'
 	addLine menu

@@ -7,14 +7,15 @@
 // MicroBlocksFlasher.gp - An interface to esptool to flash Espressif boards
 // Bernat Romagosa, September 2019
 
-defineClass MicroBlocksFlasher overlay morph paddle1 paddle2 rotation commands currentCommandPID label sublabel destroyAtMs selector boardName
+defineClass MicroBlocksFlasher overlay morph paddle1 paddle2 rotation commands currentCommandPID label sublabel destroyAtMs selector arguments boardName
 
-to newFlasher actionSelector board {
-  return (initialize (new 'MicroBlocksFlasher') actionSelector board)
+to newFlasher actionSelector args board {
+  return (initialize (new 'MicroBlocksFlasher') actionSelector args board)
 }
 
-method initialize MicroBlocksFlasher actionSelector board {
+method initialize MicroBlocksFlasher actionSelector args board {
   selector = actionSelector
+  arguments = args
   boardName = board
   overlay = (newBox nil (gray 100))
   morph = (morph overlay)
@@ -93,34 +94,37 @@ method destroy MicroBlocksFlasher {
 }
 
 method start MicroBlocksFlasher {
-  call selector this
+  callWith selector (join (array this) arguments)
 }
 
-method repartitionFlash MicroBlocksFlasher {
-  setText label (localized 'Wiping board...')
+method flashVM MicroBlocksFlasher wipeFlashFlag {
+  if wipeFlashFlag {
+    setText label (localized 'Wiping board...')
+  } else {
+    setText label (localized 'Uploading MicroBlocks to board...')
+  }
 
   copyEspToolToDisk this
   copyEspFilesToDisk this
-
-  esptool = (join (tmpPath this) (esptoolCommandName this))
-  tmpPath = (tmpPath this)
-  commands = (list
-    (array esptool '-b' '921600' 'write_flash' '0x0e00' (join tmpPath 'boot_app0.bin'))
-    (array esptool '-b' '921600' 'write_flash' '0x1000' (join tmpPath 'bootloader_dio_80m.bin'))
-    (array esptool '-b' '921600' 'write_flash' '0x8000' (join tmpPath 'partitions.bin')))
-  currentCommandPID = (call (new 'Action' 'exec' (first commands)))
-}
-
-method flashVM MicroBlocksFlasher {
-  setText label (localized 'Uploading MicroBlocks to board...')
-
-  copyEspToolToDisk this
   copyVMtoDisk this
 
   esptool = (join (tmpPath this) (esptoolCommandName this))
+  tmpPath = (tmpPath this)
   address = '0x10000' // for ESP32-based boards
   if (boardName == 'ESP8266') { address = '0' }
-  commands = (list (array esptool '-b' '921600' 'write_flash' address (join (tmpPath this) 'vm')))
+
+  commands = (list 
+    (array 
+        'esptool' '-b' '921600' 'write_flash'
+            '0x1000' (join tmpPath 'bootloader_dio_80m.bin')
+            '0x8000' (join tmpPath 'partitions.bin')
+            '0xe000' (join tmpPath 'boot_app0.bin')
+            address (join tmpPath 'vm')))
+
+  if wipeFlashFlag {
+    addFirst commands (array 'esptool' 'erase_flash')
+  }
+
   currentCommandPID = (call (new 'Action' 'exec' (first commands)))
 }
 
@@ -134,17 +138,24 @@ method tmpPath MicroBlocksFlasher {
 
 method copyEspToolToDisk MicroBlocksFlasher {
   if ('Mac' == (platform)) {
-    esptoolData = (readEmbeddedFile 'esptool/esptool' true)
-    destination = (join (tmpPath this) 'esptool')
+    embeddedFileName = 'esptool/esptool'
+    newFileName = 'esptool'
+    isBinary = true
   } ('Linux' == (platform)) {
-    esptoolData = (readEmbeddedFile 'esptool/esptool.py')
-    destination = (join (tmpPath this) 'esptool.py')
+    embeddedFileName = 'esptool/esptool.py'
+    newFileName = 'esptool.py'
+    isBinary = false
   } ('Win' == (platform)) {
-    esptoolData = (readEmbeddedFile 'esptool/esptool.exe' true)
-    destination = (join (tmpPath this) 'esptool.exe')
+    embeddedFileName = 'esptool/esptool.exe'
+    esptoolFileName = 'esptool.exe'
+    isBinary = true
   }
-  writeFile destination esptoolData
-  setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
+  if (not (contains (listFiles (tmpPath this)) esptoolFileName)) {
+    esptoolData = (readEmbeddedFile embeddedFileName isBinary)
+    destination = (join (tmpPath this) esptoolFileName)
+    writeFile destination esptoolData
+    setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
+  }
 }
 
 method copyVMtoDisk MicroBlocksFlasher {
@@ -161,9 +172,12 @@ method copyVMtoDisk MicroBlocksFlasher {
 }
 
 method copyEspFilesToDisk MicroBlocksFlasher {
-  for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'ed1_1000.bin' 'ed1_8000.bin' 'ed1_E00.bin' 'partitions.bin') {
-    fileData = (readEmbeddedFile (join 'esp32/' fn) true)
-    writeFile (join (tmpPath this) fn) fileData
+  tmpFiles = (listFiles (tmpPath this))
+  for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'partitions.bin') {
+    if (not (contains tmpFiles fn)) {
+      fileData = (readEmbeddedFile (join 'esp32/' fn) true)
+      writeFile (join (tmpPath this) fn) fileData
+    }
   }
 }
 
