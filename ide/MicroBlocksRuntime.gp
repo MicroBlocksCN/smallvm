@@ -358,7 +358,7 @@ method tryToInstallVM SmallRuntime {
 		ok = (confirm (global 'page') nil (join
 			(localized 'The board is not responding.') (newline)
 			(localized 'Try to Install MicroBlocks on the board?')))
-		if ok { installVM this }
+		if ok { installVM this false } // do not wipe flash first
 		return
 	}
 
@@ -533,7 +533,7 @@ method checkVmVersion SmallRuntime {
 			'(v' vmVersion ' vs. v' (latestVmVersion this) ').' (newline)
 			(localized 'Try to update MicroBlocks on the board?')))
 		if ok {
-			installVM this
+			installVM this false // do not wipe flash first
 		}
 	}
 }
@@ -1065,7 +1065,7 @@ method showOutputStrings SmallRuntime {
 
 // Virtual Machine Installer
 
-method installVM SmallRuntime {
+method installVM SmallRuntime wipeFlashFlag {
 	if ('Browser' == (platform)) {
 		installVMInBrowser this
 		return
@@ -1083,11 +1083,11 @@ method installVM SmallRuntime {
 	} ((count (portList this)) > 0) {
 		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') boardType)
 				(confirm (global 'page') nil (join 'Use board type ' boardType '?'))) {
-			flashVM this boardType
+			flashVM this boardType wipeFlashFlag
 		} else {
 			menu = (menu 'Select board type:' this)
 			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') {
-				addItem menu boardName (action 'flashVM' this boardName)
+				addItem menu boardName (action 'flashVM' this boardName wipeFlashFlag)
 			}
 			addLine menu
 			addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
@@ -1228,21 +1228,11 @@ method removeFlasher SmallRuntime {
     tryToConnect this
 }
 
-method repartitionFlash SmallRuntime boardName {
+method flashVM SmallRuntime boardName wipeFlashFlag {
     stopAndSyncScripts this
     setPort this 'disconnect'
 
-    flasher = (newFlasher 'repartitionFlash' boardName)
-    addPart (global 'page') (morph flasher)
-
-    start flasher
-}
-
-method flashVM SmallRuntime boardName {
-    stopAndSyncScripts this
-    setPort this 'disconnect'
-
-    flasher = (newFlasher 'flashVM' boardName)
+    flasher = (newFlasher 'flashVM' (array wipeFlashFlag) boardName)
     addPart (global 'page') (morph flasher)
 
     start flasher
