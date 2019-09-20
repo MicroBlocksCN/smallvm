@@ -109,7 +109,10 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
   setFont lbox 'Arial' 16
   if ('Linux' == (platform)) {
-	setFont lbox 'Liberation Sans' 12
+	setFont lbox 'Liberation Sans' (12 * scale)
+  }
+  if ('Browser' == (platform)) {
+	setFont lbox 'Arial' (16 * scale)
   }
   listPane = (scrollFrame lbox clr)
   addPart morph (morph listPane)
@@ -147,8 +150,12 @@ method addFolderReadoutAndParentButton FilePicker {
   fontName = 'Arial Bold'
   fontSize = (16 * scale)
   if ('Linux' == (platform)) {
-	fontName =  'Liberation Sans Bold'
+	fontName = 'Liberation Sans Bold'
 	fontSize = (12 * scale)
+  }
+  if ('Browser' == (platform)) {
+	fontName = 'Arial'
+	fontSize = (16 * scale)
   }
 
   folderReadout = (newText 'Folder Readout')
@@ -171,8 +178,12 @@ method addFileNameField FilePicker defaultName {
   fontName = 'Arial Bold'
   fontSize = (15 * scale)
   if ('Linux' == (platform)) {
-	fontName =  'Liberation Sans'
+	fontName = 'Liberation Sans'
 	fontSize = (12 * scale)
+  }
+  if ('Browser' == (platform)) {
+	fontName = 'Arial'
+	fontSize = (15 * scale)
   }
 
   // name label
@@ -215,7 +226,7 @@ method addShortcutButtons FilePicker {
   showDownloads = (and
 	(not (contains hidden 'Downloads'))
 	('Linux' != (platform)))
-  showcComputer = (not (contains hidden 'Computer'))
+  showComputer = (not (contains hidden 'Computer'))
 
   buttonX = ((left morph) + (17 * scale))
   buttonY = ((top morph) + (55 * scale))
@@ -241,11 +252,16 @@ method addShortcutButtons FilePicker {
 	  addIconButton this buttonX buttonY 'downloadsIcon' (action 'setDownloads' this)
 	  buttonY += dy
 	}
-	if showcComputer {
+	if showComputer {
 	  addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
 	  buttonY += dy
 	}
   }
+  if (and showComputer ('Browser' == (platform)) (browserIsChromebook)) {
+	addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
+	buttonY += dy
+  }
+
   newFolderButton = (textButton this (buttonX + (2 * scale)) buttonY 'New Folder' 'newFolder')
 }
 
@@ -264,6 +280,9 @@ method addIconButton FilePicker x y iconName anAction label {
 	setFont 'Arial Bold' (9 * scale)
   } else {
 	setFont 'Arial Bold' (12 * scale)
+  }
+  if ('Browser' == (platform)) {
+	setFont 'Helvetica' (13 * scale)
   }
   labelX = (half ((width bm) - (stringWidth label)))
   labelY = ((height bm) - (fontHeight))
