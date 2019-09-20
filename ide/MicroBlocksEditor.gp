@@ -280,9 +280,9 @@ method step MicroBlocksEditor {
   }
 }
 
-method updateIndicator MicroBlocksEditor {
+method updateIndicator MicroBlocksEditor forcefully {
 	status = (updateConnection (smallRuntime))
-	if (lastStatus == status) { return } // no change
+	if (and (lastStatus == status) (forcefully != true)) { return } // no change
 	if ('connected' == status) {
 		c = (mixed (color 0 200 0) 70 (topBarBlue this)) // green circle
 	} else {
@@ -618,7 +618,7 @@ method languageChanged MicroBlocksEditor {
 	if (not (isNumber item)) { destroy (morph item) }
   }
   addTopBarParts this
-  updateIndicator this
+  updateIndicator this true
   fixLayout this
 }
 
