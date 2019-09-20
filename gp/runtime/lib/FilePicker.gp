@@ -289,6 +289,16 @@ method textButton FilePicker x y label selectorOrAction {
 // actions
 
 method setComputer FilePicker {
+  if (and ('Browser' == (platform)) (browserIsChromebook)) {
+	isDone = true
+	removeFromOwner morph
+	repeat 3 { // hack: need several cycles to remove FilePicker when file is double-clicked
+		doOneCycle (global 'page')
+		waitMSecs 10 // refresh screen
+	}
+	chromeReadFile
+	return
+  }
   useEmbeddedFS = false
   showFolder this '/' true
 }

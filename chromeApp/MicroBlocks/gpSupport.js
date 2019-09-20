@@ -710,10 +710,15 @@ function GP_setSerialPortRTS(flag) {
 	chrome.serial.setControlSignals(GP_serialPortID, { rts: flag });
 }
 
-function GP_writeFile(data, defaultName) {
+function GP_writeFile(data, fName) {
 	function writeToFile(writer) { writer.write(new Blob([data], {type: 'text/plain'})); }
-	function onFileSelected(entry) { entry.createWriter(writeToFile); }
+	function onFileSelected(entry) {
+		void chrome.runtime.lastError;
+		if (entry) entry.createWriter(writeToFile);
+	}
 
 	if (typeof chrome == 'undefined') { console.log('not chrome'); return; } // not running in Chrome
-	chrome.fileSystem.chooseEntry( {type: 'saveFile', suggestedName: defaultName}, onFileSelected);
+	chrome.fileSystem.chooseEntry(
+		{type: 'saveFile', suggestedName: fName},
+		onFileSelected);
 }

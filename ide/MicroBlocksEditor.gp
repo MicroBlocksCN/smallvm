@@ -223,6 +223,13 @@ method saveProject MicroBlocksEditor fName {
 	}
   }
 
+  if (and ('Browser' == (platform)) (browserIsChromebook)) {
+	if (or (isNil fName) ('' == fName)) { fName = 'Untitled' }
+	if (not (endsWith fName '.ubp')) { fName = (join fName '.ubp') }
+	chromeWriteFile (codeString (project scripter)) fName
+	return
+  }
+
   fName = (fileToWrite (withoutExtension fName) (array '.ubp'))
   if ('' == fName) { return false }
 
