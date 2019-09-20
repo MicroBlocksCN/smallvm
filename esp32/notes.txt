@@ -1,9 +1,16 @@
-The boot and partition files are from Arduino esp32 development system.
+These boot and partition files are from Arduino ESP32 development system. The same files files are also used by PlatformIO. The partitions.bin is the default.bin from the partitions folder in the ESP32 package.
 
-The ed1_xxx files were dumped from a new(?) Citilab ED1 board.
-The ED1 files are different from the Arduino ones but appear to be compatible with the MicroBlocks VM.
+Address		File
+0x1000		bootloader_dio_80m.bin
+0x8000		partitions.bin
+0xE000		boot_app0.bin
 
-Address (hex)		Arduino ESP32			ED1
-0E00			boot_app0.bin				ed1_E00.bin
-1000			bootloader_dio_80m.bin		ed1_1000.bin
-8000			partitions.bin				ed1_8000.bin
+In theory, an ESP32 module with a different Flash configuration might require different files, but so far this set of files works for  all the boards MicroBlocks currently supports (the ESP32 dev board, ED1, and m5stack).
+
+Useful references:
+https://github.com/espressif/arduino-esp32
+http://www.polargraph.co.uk/2018/10/how-to-upload-new-firmware-to-the-polargraphsd-v30/
+https://www.letscontrolit.com/forum/viewtopic.php?t=5870
+http://forum.banana-pi.org/t/platform-io-for-simple-understanding-of-esp32-code-burning/5478
+https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/partition-tables.html
+https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/bootloader.html#factory-reset
