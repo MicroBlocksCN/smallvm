@@ -1164,11 +1164,7 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 		vmFileName = 'vm.circuitplay.uf2'
 	}
 	if (notNil vmFileName) {
-		if ('Browser' == (platform)) {
-			vmData = (readFile (join 'precompiled/' vmFileName) true)
-		} else {
-			vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
-		}
+		vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
 	}
 	if (isNil vmData) {
 		error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))

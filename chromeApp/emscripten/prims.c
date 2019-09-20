@@ -1288,6 +1288,10 @@ OBJ primReadEmbeddedFile(int nargs, OBJ args[]) {
 	if (NOT_CLASS(args[0], StringClass)) return firstArgMustBeString();
 	int isBinary = (nargs > 1) && (args[1] == trueObj);
 
+#ifdef EMSCRIPTEN
+	return primReadFile(nargs, args);
+#endif
+
 	FILE *f = openAppFile();
 	if (!f) return nilObj;
 
