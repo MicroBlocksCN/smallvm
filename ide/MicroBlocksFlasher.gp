@@ -83,7 +83,7 @@ method step MicroBlocksFlasher {
         removePart morph (morph sublabel)
         destroyAtMs = ((msecsSinceStart) + 1000)
       } else {
-        currentCommandPID = (call (new 'Action' 'exec' (first commands)))
+        currentCommandPID = (callWith 'exec' (first commands))
       }
     }
   }
@@ -113,19 +113,19 @@ method flashVM MicroBlocksFlasher wipeFlashFlag {
   address = '0x10000' // for ESP32-based boards
   if (boardName == 'ESP8266') { address = '0' }
 
-  commands = (list 
-    (array 
-        'esptool' '-b' '921600' 'write_flash'
-            '0x1000' (join tmpPath 'bootloader_dio_80m.bin')
+  commands = (list
+    (array
+        esptool '-b' '921600' 'write_flash'
+            '0x1000' (join tmpPath 'bootloader_dio_40m.bin')
             '0x8000' (join tmpPath 'partitions.bin')
             '0xe000' (join tmpPath 'boot_app0.bin')
             address (join tmpPath 'vm')))
 
   if wipeFlashFlag {
-    addFirst commands (array 'esptool' 'erase_flash')
+    addFirst commands (array esptool 'erase_flash')
   }
 
-  currentCommandPID = (call (new 'Action' 'exec' (first commands)))
+  currentCommandPID = (callWith 'exec' (first commands))
 }
 
 method tmpPath MicroBlocksFlasher {
@@ -139,11 +139,11 @@ method tmpPath MicroBlocksFlasher {
 method copyEspToolToDisk MicroBlocksFlasher {
   if ('Mac' == (platform)) {
     embeddedFileName = 'esptool/esptool'
-    newFileName = 'esptool'
+    esptoolFileName = 'esptool'
     isBinary = true
   } ('Linux' == (platform)) {
     embeddedFileName = 'esptool/esptool.py'
-    newFileName = 'esptool.py'
+    esptoolFileName = 'esptool.py'
     isBinary = false
   } ('Win' == (platform)) {
     embeddedFileName = 'esptool/esptool.exe'
@@ -173,7 +173,7 @@ method copyVMtoDisk MicroBlocksFlasher {
 
 method copyEspFilesToDisk MicroBlocksFlasher {
   tmpFiles = (listFiles (tmpPath this))
-  for fn (array 'boot_app0.bin' 'bootloader_dio_80m.bin' 'partitions.bin') {
+  for fn (array 'boot_app0.bin' 'bootloader_dio_40m.bin' 'partitions.bin') {
     if (not (contains tmpFiles fn)) {
       fileData = (readEmbeddedFile (join 'esp32/' fn) true)
       writeFile (join (tmpPath this) fn) fileData

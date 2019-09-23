@@ -1,13 +1,16 @@
-These boot and partition files are from Arduino ESP32 development system. The same files files are also used by PlatformIO. The partitions.bin is the default.bin from the partitions folder in the ESP32 package.
+These boot and partition files are from the PlatformIO ESP32 board package. The exact same files are also used by the Arduino IDE.
 
 Address		File
-0x1000		bootloader_dio_80m.bin
+0x1000		bootloader_dio_40m.bin
 0x8000		partitions.bin
 0xE000		boot_app0.bin
 
-In theory, an ESP32 module with a different Flash configuration might require different files, but so far this set of files works for  all the boards MicroBlocks currently supports (the ESP32 dev board, ED1, and m5stack).
+In theory, an ESP32 module with a different Flash configuration might require a different bootloader, but bootloader_dio_40m.bin works for  all the boards MicroBlocks currently supports (the ESP32 dev board, ED1, and m5stack).
+
+The file partitions.bin was derived from default.csv in the partitions folder in the PlatformIO ESP32 package using gen_esp32part.py (from https://github.com/espressif/esp-idf/tree/master/components/partition_table). Note that gen_esp32part.py can also be used to convert a binary partition file back to a human-readable .csv file. Because the generated file includes an md5 hash whereas the file partitions.bin (a copy of default.bin from the ESP32 package) does not, the files are not identical even though the partition information is the same.
 
 Useful references:
+
 https://github.com/espressif/arduino-esp32
 http://www.polargraph.co.uk/2018/10/how-to-upload-new-firmware-to-the-polargraphsd-v30/
 https://www.letscontrolit.com/forum/viewtopic.php?t=5870
