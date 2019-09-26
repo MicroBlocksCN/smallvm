@@ -3,18 +3,19 @@
 ## MicroBlocks Website ##
 
 This repository contains the source code for MicroBlocks.
-To learn more about MicroBlocks and how to use it please visit the website:
-
+To learn more about MicroBlocks and how to use it please visit the MicroBlocks website,
 <http://microblocks.fun>
 
 ## What is MicroBlocks? ##
 
 [MicroBlocks](http://microblocks.fun) is a free, live, blocks programming system
-for educators, learners, and makers. It runs on the BBC
-micro:bit, the NodeMCU, ARM-based Arudino boards, and
+for educators, learners, and makers that its creaters hope will become "the Scratch
+of physical computing." It runs on the BBC
+micro:bit, Calliope mini, AdaFruit CircuitPlaygraound Express,
+NodeMCU, ESP32, many ARM-based Arudino boards, and
 other tiny computers such as the Raspberry Pi.
 
-The MicroBlock virtual machine (or **firmware**) runs on 32-bit embedded processors
+The MicroBlock firmware (or *virtual machine*) runs on 32-bit embedded processors
 with as little as 16k of RAM. It is intended to be simple,
 easily ported and extended, and offer decent performance.
 It includes a low-latency task scheduler that works
@@ -30,7 +31,7 @@ Autonomous operation means that programs continue to run when the board
 is untethered from the host computer. Because MicroBlocks programs run
 directly on the microcontroller -- in contrast to tethered systems where
 the program runs on a laptop and uses the microcontroller as an I/O device --
-programs can work down to timescales measures in 10's of microseconds.
+programs can work precisely at timescales down to 10's of microseconds.
 For example, MicroBlocks can generate musical tones and servo waveforms
 and it can analyze incoming signals such as those from an infrared remote
 control.
@@ -41,22 +42,28 @@ allow the user's program stored on the board to be read back into a
 MicroBlocks development environment for inspection and
 further development.
 
+MicroBlocks supports user-defined blocks (commands and functions).
+That mechanism is used to create MicroBlocks libraries, so advanced
+users can explore the implementation of libraries learn how they work
+or even extend them.
+
 Built-in data types include integers, booleans, strings, and lists.
 
-## How do I build the MicroBlocks Virtual Machine (firmware)? ##
+## How do I build the MicroBlocks firmware? ##
 
 First of all, you may not need to. The firmware for many boards, including BBC micro:bit,
 Calliope mini, AdaFruit Circuit Playground Express, Citilab ED1, M5Stack, NodeMCU,
 and ESP32 Dev board is can be installed using the "update firmware on board" menu
-command in the IDE. For other AdaFruit boards, such as the ItsyBitsy, Trinket, and Gemma,
-you can drop the appropriate .uf2 file onto the virtual disk for your board to install it.
+command in the interactive development environment (IDE). For other AdaFruit boards,
+such as the ItsyBitsy, Trinket, and Gemma, you can drop the appropriate .uf2 file onto
+the virtual disk for your board to install it.
 
 However, if you have one of the other
 [supported boards](https://bitbucket.org/john_maloney/smallvm/wiki/Devices),
 or if you just want to build the firmware yourself, read on.
 
-The MicroBlocks firmware, also called the **virtual machine** is written in C and C++.
-The current version is built on the Arduino platform and uses Arduino library for
+The MicroBlocks firmware, also called the **virtual machine**, is written in C and C++.
+The current version is built on the Arduino platform and uses Arduino libraries for
 features such as graphics and WiFi (on boards that support those features).
 
 ### Building with PlatformIO ###
@@ -70,10 +77,8 @@ To compile the firmware for all platforms, just enter the "smallvm" folder and r
 
 <pre>pio run</pre>
 
-To compile the firmware for all platforms, just enter the "smallvm" folder and run:
-
 To compile and install the VM for a particular board (e.g. the BBC micro:bit),
-plun in the board and run:
+plug in the board and run:
 
 <pre>pio run -e microbit -t upload</pre>
 
@@ -83,7 +88,7 @@ The MicroBlocks virtual machine can also be compiled and loaded onto a board usi
 Arduino IDE (version 1.8 or later) with the appropriate board package and libraries
 installed.
 
-To build with the Arduino IDE, open the file "vm.ino", select your board from the
+To build with the Arduino IDE, open the file *vm.ino*, select your board from the
 boards manager, then click the upload button.
 
 ### Building for Raspberry Pi ###
@@ -118,14 +123,14 @@ the pseudoterminal connection).
 
 ## MicroBlocks IDE ##
 
-The MicroBlocks IDE is written in GP Blocks. You'd find source code for the IDE is in the ide
+The MicroBlocks IDE is written in [GP Blocks](https://gpblocks.org). You'd find source code for the IDE is in the ide
 and the gp libraries and build scripts in the the gp folder.
 
 ## Status ##
 
 Although MicroBlocks is currently "alpha", it is stable and has been used by hundreds of people,
 many of them complete beginners. The "alpha" status is because MicroBlocks is still evolving.
-If you are writing documentation, plan to update it to track changes to the libraries, blocks, and UI.
+If you are writing documentation, you should to update it to track changes to the libraries, blocks, and UI.
 
 We hope to enter "beta" by late 2019 or early 2020.
 
