@@ -541,6 +541,8 @@ method checkVmVersion SmallRuntime {
 method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
+	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
+
 	if ('Citilab ED1' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Citilab ED1/ED1 Buttons.ubl'
 		importLibraryFromFile scripter '//Libraries/Tone.ubl'
