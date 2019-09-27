@@ -183,6 +183,7 @@ static int stringsEqual(OBJ obj1, OBJ obj2) {
 	char *s2 = (char *) &FIELD(obj2, 0);
 	char *end = s1 + byteCount;
 	while (s1 < end) {
+		if (!*s1 && !*s2) return true; // null terminator in both strings
 		if (*s1++ != *s2++) return false; // not equal
 	}
 	return true;
