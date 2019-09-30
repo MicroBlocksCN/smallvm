@@ -1,8 +1,8 @@
 #!/bin/bash
 # Rebuild and update the precompiled binaries.
-mkdir precompiled 2>/dev/null
+cd ..
 pio run -e microbit
-cp .pio/build/microbit/firmware.hex precompiled/vm.ino.BBCmicrobit.hex 
+cp .pio/build/microbit/firmware.hex precompiled/vm.ino.BBCmicrobit.hex
 pio run -e calliope
 cp .pio/build/calliope/firmware.hex precompiled/vm.ino.Calliope.hex
 pio run -e nodemcu
@@ -14,6 +14,7 @@ cp .pio/build/m5stack/firmware.bin precompiled/vm.ino.m5stack.bin
 pio run -e esp32
 cp .pio/build/esp32/firmware.bin precompiled/vm.ino.esp32.bin
 pio run -e cpx
-python uf2conv.py -c .pio/build/cpx/firmware.bin -o precompiled/vm.circuitplay.uf2
+python precompiled/uf2conv.py -c .pio/build/cpx/firmware.bin -o precompiled/vm.circuitplay.uf2
 pio run -e itsybitsy
-python uf2conv.py -c .pio/build/itsybitsy/firmware.bin -o precompiled/vm.itsybitsy.uf2
+python precompiled/uf2conv.py -c .pio/build/itsybitsy/firmware.bin -o precompiled/vm.itsybitsy.uf2
+cd precompiled

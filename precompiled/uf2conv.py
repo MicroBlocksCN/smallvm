@@ -85,8 +85,8 @@ def convertToUF2(fileContent):
         flags = 0x0
         if familyid:
             flags |= 0x2000
-        hd = struct.pack("<IIIIIIII",  
-            UF2_MAGIC_START0, UF2_MAGIC_START1, 
+        hd = struct.pack("<IIIIIIII",
+            UF2_MAGIC_START0, UF2_MAGIC_START1,
             flags, ptr + appstartaddr, 256, blockno, numblocks, familyid)
         while len(chunk) < 256:
             chunk += "\x00"
@@ -107,8 +107,8 @@ class Block:
         flags = 0x0
         if familyid:
             flags |= 0x2000
-        hd = struct.pack("<IIIIIIII",  
-            UF2_MAGIC_START0, UF2_MAGIC_START1, 
+        hd = struct.pack("<IIIIIIII",
+            UF2_MAGIC_START0, UF2_MAGIC_START1,
             flags, self.addr, 256, blockno, numblocks, familyid)
         for i in range(0, 256):
             hd += chr(self.bytes[i])
@@ -116,7 +116,7 @@ class Block:
             hd += "\x00"
         hd += struct.pack("<I", UF2_MAGIC_END)
         return hd
-      
+
 def convertFromHexToUF2(buf):
     global appstartaddr
     appstartaddr = None
@@ -176,20 +176,20 @@ def getdrives():
                 rootpath = tmp
         for d in os.listdir(rootpath):
             drives.append(os.path.join(rootpath, d))
-    
+
     def hasInfo(d):
         try:
             return os.path.isfile(d + INFO_FILE)
         except:
             return False
-    
+
     return filter(hasInfo, drives)
 
 def boardID(path):
     with open(path + INFO_FILE, mode='r') as file:
         fileContent = file.read()
     return re.search("Board-ID: ([^\r\n]*)", fileContent).group(1)
- 
+
 def listdrives():
     for d in getdrives():
         print d, boardID(d)
@@ -205,7 +205,7 @@ def main():
         print msg
         sys.exit(1)
     parser = argparse.ArgumentParser(description='Convert to UF2 or flash directly.')
-    parser.add_argument('input', metavar='INPUT', type=str, nargs='?', 
+    parser.add_argument('input', metavar='INPUT', type=str, nargs='?',
                         help='input file (HEX, BIN or UF2)')
     parser.add_argument('-b' , '--base', dest='base', type=str,
                         default="0x2000",
@@ -256,7 +256,7 @@ def main():
                 args.output = "flash." + ext
         else:
             drives = getdrives()
-        
+
         if args.output:
             writeFile(args.output, outbuf)
         else:
