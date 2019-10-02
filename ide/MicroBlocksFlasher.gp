@@ -161,6 +161,8 @@ method copyEspToolToDisk MicroBlocksFlasher {
 method copyVMtoDisk MicroBlocksFlasher {
   if (boardName == 'ESP8266') {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.nodemcu.bin' true)
+  } (boardName == 'IOT-BUS') {
+    vmData = (readEmbeddedFile 'precompiled/vm.ino.iot-bus.bin' true)
   } (boardName == 'ESP32') {
     vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
   } (boardName == 'Citilab ED1') {

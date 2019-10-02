@@ -332,8 +332,11 @@ void restartSerial() {
 		1, 1, 1, 1, 1, 0, 0, 0, 1, 1};
 
 #elif defined(ARDUINO_ARCH_ESP32)
-
-	#define BOARD_TYPE "ESP32"
+	#ifdef ARDUINO_IOT_BUS
+		#define BOARD_TYPE "IOT-BUS"
+	#else
+		#define BOARD_TYPE "ESP32"
+	#endif
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
