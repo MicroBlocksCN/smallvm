@@ -342,15 +342,15 @@ OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(readAcceleration(3)); 
 OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(readAcceleration(5)); }
 OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(readTemperature()); }
 
-// Capacitive Touch Primitives for ARDUINO_IOT_BUS
+// Capacitive Touch Primitives for ESP32
 
-#ifdef ARDUINO_IOT_BUS
+#ifdef ARDUINO_ARCH_ESP32
 
 static OBJ primTouchRead(int argCount, OBJ *args) {
 	return int2obj(touchRead(obj2int(args[0])));
 }
 
-#else // stubs for non-ARDUINO_IOT_BUS boards
+#else // stubs for non-ESP32 boards
 
 static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
 
