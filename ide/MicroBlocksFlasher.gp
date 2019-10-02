@@ -110,16 +110,20 @@ method flashVM MicroBlocksFlasher wipeFlashFlag {
 
   esptool = (join (tmpPath this) (esptoolCommandName this))
   tmpPath = (tmpPath this)
-  address = '0x10000' // for ESP32-based boards
-  if (boardName == 'ESP8266') { address = '0' }
 
   commands = (list
     (array
-        esptool '-b' '921600' 'write_flash'
-            '0x1000' (join tmpPath 'bootloader_dio_40m.bin')
-            '0x8000' (join tmpPath 'partitions.bin')
-            '0xe000' (join tmpPath 'boot_app0.bin')
-            address (join tmpPath 'vm')))
+      esptool '-b' '921600' 'write_flash'
+        '0x1000' (join tmpPath 'bootloader_dio_40m.bin')
+        '0x8000' (join tmpPath 'partitions.bin')
+        '0xe000' (join tmpPath 'boot_app0.bin')
+        '0x10000' (join tmpPath 'vm')))
+
+  if (boardName == 'ESP8266') {
+    commands = (list
+      (array
+        esptool '-b' '921600' 'write_flash' '0' (join tmpPath 'vm')))
+  }
 
   if wipeFlashFlag {
     addFirst commands (array esptool 'erase_flash')
