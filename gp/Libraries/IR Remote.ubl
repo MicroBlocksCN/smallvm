@@ -9,41 +9,13 @@ variables _ir_pin _ir_pulse_times
 	spec 'r' '_getIRByte' '_getIRByte _' 'auto any' 4
 	spec 'r' '_got32Bits' '_got32Bits' 'any'
 
-
-to receiveIR deviceID {
-  forever {
-    '_captureIRMessage'
-    if ('_got32Bits') {
-      local 'id' ('_getIRByte' 20 nil)
-      if (id == deviceID) {
-        return ('_getIRByte' 36 nil)
-      }
-    }
-  }
-}
-
-to testIR {
-  forever {
-    '_captureIRMessage'
-    if ('_got32Bits') {
-      local 'b1' ('_getIRByte' 4 nil)
-      local 'b2' ('_getIRByte' 20 nil)
-      local 'b3' ('_getIRByte' 36 nil)
-      local 'b4' ('_getIRByte' 52 nil)
-      sayIt 'Device:' b2 'code:' b3
-    }
-  }
-}
-
-to attachIR pin {
-  _ir_pin = pin
-}
-
 to '_captureIRMessage' {
   if (_ir_pulse_times == 0) {
     _ir_pulse_times = (newArray 200)
     if (and (_ir_pin == 0) ((boardType) == 'CircuitPlayground')) {
       _ir_pin = 26
+    } (and (_ir_pin == 0) ((boardType) == 'Citilab ED1')) {
+      _ir_pin = 35
     }
   }
   fillArray _ir_pulse_times 0
@@ -107,3 +79,33 @@ to '_getIRByte' position {
 to '_got32Bits' {
   return (and ((at 67 _ir_pulse_times) != 0) ((at 68 _ir_pulse_times) == 0))
 }
+
+to attachIR pin {
+  _ir_pin = pin
+}
+
+to receiveIR deviceID {
+  forever {
+    '_captureIRMessage'
+    if ('_got32Bits') {
+      local 'id' ('_getIRByte' 20 nil)
+      if (id == deviceID) {
+        return ('_getIRByte' 36 nil)
+      }
+    }
+  }
+}
+
+to testIR {
+  forever {
+    '_captureIRMessage'
+    if ('_got32Bits') {
+      local 'b1' ('_getIRByte' 4 nil)
+      local 'b2' ('_getIRByte' 20 nil)
+      local 'b3' ('_getIRByte' 36 nil)
+      local 'b4' ('_getIRByte' 52 nil)
+      sayIt 'Device:' b2 'code:' b3
+    }
+  }
+}
+
