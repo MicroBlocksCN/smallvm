@@ -547,6 +547,7 @@ method installBoardSpecificBlocks SmallRuntime {
 		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
 		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
 		importLibraryFromFile scripter '//Libraries/TFT.ubl'
+		importLibraryFromFile scripter '//Libraries/IR Remote.ubl'
 		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	} ('micro:bit' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
