@@ -22,7 +22,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer
+defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -54,7 +54,7 @@ to openMicroBlocksEditor devMode {
 }
 
 to checkLatestVersion {
-  latestVersion = (getLatestVersion)
+  latestVersion = (fetchLatestVersionNumber)
   currentVersion = (splitWith (ideVersion (smallRuntime)) '.')
   for i (count latestVersion) {
 	if (> (at latestVersion i) (at currentVersion i)) {
@@ -66,13 +66,20 @@ to checkLatestVersion {
   }
 }
 
-to getLatestVersion {
-  // Fails at the VM level if there is no network connection
+to fetchLatestVersionNumber {
   html = (httpGet 'microblocks.fun' '/download.html')
   if (isNil html) { return (array 0 0 0) }
   from = (findSubstring 'version: <strong>' html 1)
   if (isNil from) { return (array 0 0 0) }
   return (splitWith (substring html (+ from (count 'version: <strong>')) (- (findSubstring '</strong>' html from) 1)) '.')
+}
+
+to getLatestVersion {
+  return latestVersion
+}
+
+to getCurrentVersion {
+  return currentVersion
 }
 
 to findMicroBlocksEditor {
@@ -501,7 +508,7 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'show data graph' 'showGraph'
   addItem menu 'clear memory and variables' (action 'softReset' (smallRuntime))
   addLine menu
-  addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false) // do not wipe flash first
+  addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
   addLine menu
 
 // xxx testing (used by John)
@@ -521,9 +528,12 @@ method contextMenu MicroBlocksEditor {
 		addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
 	  }
 	}
+        addLine menu
 	if ('Browser' != (platform)) {
-            addItem menu 'wipe and repartition esp32' (action 'installVM' (smallRuntime) true) // wipe flash first
+            addItem menu 'wipe and repartition esp32' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 	}
+        addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
+        addLine menu
 	addItem menu 'set serial delay' 'serialDelayMenu'
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'

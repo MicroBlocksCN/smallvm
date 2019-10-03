@@ -24,11 +24,12 @@ closeSocket socket
 return (joinStrings response)
 }
 
-to httpGet host path port {
+to httpGet host path port protocol {
+        if (isNil protocol) { protocol = 'http' }
 	if (isNil path) { path = '/' }
 	if (isNil port) { port = 80 }
 	if ('Browser' == (platform)) {
-		url = (join 'http://' host path)
+		url = (join protocol '://' host path)
 		if (80 != port) { url = (join url ':' port) }
 		return (toString (httpGetInBrowser url))
 	}

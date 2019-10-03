@@ -358,7 +358,7 @@ method tryToInstallVM SmallRuntime {
 		ok = (confirm (global 'page') nil (join
 			(localized 'The board is not responding.') (newline)
 			(localized 'Try to Install MicroBlocks on the board?')))
-		if ok { installVM this false } // do not wipe flash first
+		if ok { installVM this false false } // do not wipe flash, do not download VM from server
 		return
 	}
 
@@ -533,7 +533,7 @@ method checkVmVersion SmallRuntime {
 			'(v' vmVersion ' vs. v' (latestVmVersion this) ').' (newline)
 			(localized 'Try to update MicroBlocks on the board?')))
 		if ok {
-			installVM this false // do not wipe flash first
+			installVM this false false // do not wipe flash, do not download VM from server
 		}
 	}
 }
@@ -1065,7 +1065,12 @@ method showOutputStrings SmallRuntime {
 
 // Virtual Machine Installer
 
-method installVM SmallRuntime wipeFlashFlag {
+method installVM SmallRuntime wipeFlashFlag downloadLatest {
+	if ((getCurrentVersion (findMicroBlocksEditor)) == 
+            ((getLatestVersion (findMicroBlocksEditor))) {
+		downloadLatest = false
+	}
+
 	if ('Browser' == (platform)) {
 		installVMInBrowser this
 		return
@@ -1073,11 +1078,11 @@ method installVM SmallRuntime wipeFlashFlag {
 	boards = (collectBoardDrives this)
 	if ((count boards) == 1) {
 		b = (first boards)
-		copyVMToBoard this (first b) (last b)
+		copyVMToBoard this (first b) (last b) downloadLatest
 	} ((count boards) > 1) {
 		menu = (menu 'Select board:' this)
 		for b boards {
-			addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
+			addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b) downloadLatest)
 		}
 		popUpAtHand menu (global 'page')
 	} ((count (portList this)) > 0) {
@@ -1151,7 +1156,11 @@ method getBoardName SmallRuntime path {
 	return nil
 }
 
-method copyVMToBoard SmallRuntime boardName boardPath {
+method latestReleasePath SmallRuntime {
+	return '/repos/bromagosa/microblocks-site/releases/latest/'
+}
+
+method copyVMToBoard SmallRuntime boardName boardPath downloadLatest {
 	// disable auto-connect and close the serial port
 	disconnected = true
 	closePort this
@@ -1164,7 +1173,12 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 		vmFileName = 'vm.circuitplay.uf2'
 	}
 	if (notNil vmFileName) {
-		vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+		if downloadLatest {
+			vm = (httpGet 'github.com' latestReleasePath vmFileName)
+			
+                } else {
+			vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
+		}
 	}
 	if (isNil vmData) {
 		error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))
@@ -1176,14 +1190,14 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 }
 
 method installVMInBrowser SmallRuntime {
-	menu = (menu 'Board type:' (action 'downloadVMFile' this) true)
+	menu = (menu 'Board type:' (action 'downloadEmbeddedVMFile' this) true)
 	addItem menu 'BBC micro:bit'
 	addItem menu 'Calliope mini'
 	addItem menu 'Circuit Playground Express'
 	popUpAtHand menu (global 'page')
 }
 
-method downloadVMFile SmallRuntime boardName {
+method downloadEmbeddedVMFile SmallRuntime boardName {
 	if ('BBC micro:bit' == boardName) {
 		vmFileName = 'vm.ino.BBCmicrobit.hex'
 	} ('Calliope mini' == boardName) {
