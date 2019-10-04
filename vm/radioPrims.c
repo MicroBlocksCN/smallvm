@@ -456,6 +456,12 @@ static OBJ primReceivedMessageType(int argCount, OBJ *args) {
 }
 
 static OBJ primReceivedString() {
+	if (!receivedString.header) {
+		// initialize the object header on first access
+		receivedString.header = HEADER(StringClass, 1);
+		receivedString.body[0] = '\0'; // null terminator
+	}
+
 	return (OBJ) &receivedString;
 }
 
