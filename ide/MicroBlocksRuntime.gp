@@ -549,6 +549,7 @@ method installBoardSpecificBlocks SmallRuntime {
 		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
 		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
 		importLibraryFromFile scripter '//Libraries/TFT.ubl'
+		importLibraryFromFile scripter '//Libraries/IR Remote.ubl'
 		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	} ('micro:bit' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
@@ -569,6 +570,11 @@ method installBoardSpecificBlocks SmallRuntime {
 		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	} ('ESP8266' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+	} ('IOT-BUS' == boardType) {
+		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
+		importLibraryFromFile scripter '//Libraries/TFT.ubl'
+		importLibraryFromFile scripter '//Libraries/TFT.ubl'
+		importLibraryFromFile scripter '//Libraries/System/touchScreenPrims.ubl'
 	} ('ESP32' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	}
@@ -1083,12 +1089,12 @@ method installVM SmallRuntime wipeFlashFlag {
 		}
 		popUpAtHand menu (global 'page')
 	} ((count (portList this)) > 0) {
-		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') boardType)
+		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'IOT-BUS') boardType)
 				(confirm (global 'page') nil (join 'Use board type ' boardType '?'))) {
 			flashVM this boardType wipeFlashFlag
 		} else {
 			menu = (menu 'Select board type:' this)
-			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') {
+			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'IOT-BUS') {
 				addItem menu boardName (action 'flashVM' this boardName wipeFlashFlag)
 			}
 			addLine menu

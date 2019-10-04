@@ -31,6 +31,7 @@ to '_ED1_buttons_init' {
 to '_button pressed' pin {
   '_ED1_buttons_init'
   if (v '_use capacitive') {
+    if (pin > 100) {pin = (pin - 100)}
     return ('_capacitive' pin)
   } else {
     return (digitalReadOp pin)
@@ -55,7 +56,7 @@ to 'down button' {
 }
 
 to 'left button' {
-  return ('_button pressed' 2)
+  return ('_button pressed' 102)
 }
 
 to 'right button' {
@@ -71,5 +72,6 @@ to 'set use capacitive to' value {
 }
 
 to 'up button' {
-  return ('_button pressed' 4)
+  return ('_button pressed' 104)
 }
+
