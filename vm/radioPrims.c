@@ -39,10 +39,15 @@ struct {
 	char body[20];
 } messageTypeString; // Static string OBJ containing MakeCode type of most recent message
 
-#if defined(ARDUINO_BBC_MICROBIT)
+#if defined(NRF51) || defined(NRF52) || defined(NRF52_SERIES)
 
-#include <nrf51.h>
-#include <nrf51_bitfields.h>
+#if defined(NRF51)
+	#include <nrf51.h>
+	#include <nrf51_bitfields.h>
+#else
+	#include <nrf52.h>
+	#include <nrf52_bitfields.h>
+#endif
 
 #define PACKET_SIZE 32
 #define MAX_PACKETS 4 // number of packets in the receive buffer; must be a power of 2

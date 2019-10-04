@@ -280,7 +280,7 @@ OBJ primMBUnplot(int argCount, OBJ *args) {
 
 static OBJ primLightLevel(int argCount, OBJ *args) {
 	lightReadingRequested = false;
-	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		OBJ analogPin = int2obj(8);
 		lightLevel = obj2int(primAnalogRead(&analogPin));
 		lightLevel = lightLevel / 10;

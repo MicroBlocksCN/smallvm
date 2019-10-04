@@ -215,6 +215,19 @@ void restartSerial() {
 	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
 
+#elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
+
+	#define BOARD_TYPE "CircuitPlayground nrf52"
+	#define DIGITAL_PINS 23
+	#define ANALOG_PINS 10
+	#define TOTAL_PINS 23
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
+	#define PIN_LED 13
+	#define PIN_BUTTON_A 4
+	#define PIN_BUTTON_B 5
+	#undef BUTTON_PRESSED
+	#define BUTTON_PRESSED HIGH
+
 #elif defined(ADAFRUIT_GEMMA_M0)
 
 	#define BOARD_TYPE "Gemma M0"
@@ -509,7 +522,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	int mode = INPUT;
 	if ((argCount > 1) && (trueObj == args[1])) mode = INPUT_PULLUP;
-	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		if (7 == pinNum) mode = INPUT_PULLUP; // slide switch
 	#endif
 	SET_MODE(pinNum, mode);
@@ -591,7 +604,7 @@ void primSetUserLED(OBJ *args) {
 // User Buttons
 
 OBJ primButtonA(OBJ *args) {
-	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		// Momentarily set button pin low before reading (simulates a pull-down resistor)
 		primDigitalSet(PIN_BUTTON_A, false);
 	#endif
@@ -608,7 +621,7 @@ OBJ primButtonA(OBJ *args) {
 }
 
 OBJ primButtonB(OBJ *args) {
-	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		// Momentarily set button pin low before reading (simulates a pull-down resistor)
 		primDigitalSet(PIN_BUTTON_B, false);
 	#endif

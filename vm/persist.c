@@ -32,17 +32,21 @@
 
 // flash operations for supported platforms
 
-#if defined(ARDUINO_NRF52_PRIMO) || defined(NRF51) || defined(ARDUINO_NRF52_FEATHER)
+#if defined(NRF51) || defined(NRF52) || defined(NRF52_SERIES) || defined(ARDUINO_NRF52_PRIMO)
 	#include "nrf.h" // nRF51 and nRF52
 
-	#ifdef ARDUINO_NRF52_PRIMO
-		// Primo: SoftDevice: 0-112k; App: 112k-168k; Persistent Mem: 168k-488k; Boot: 488k-511k
-		#define START (168 * 1024)
-		#define HALF_SPACE (160 * 1024)
-	#else
+	#if defined(NRF51)
 		// BBC micro:bit and Calliope: App: 0-96k; Persistent Mem: 96k-256k
 		#define START (96 * 1024)
 		#define HALF_SPACE (80 * 1024)
+	#elif defined(ARDUINO_NRF52_PRIMO)
+		// Primo: SoftDevice: 0-112k; App: 112k-168k; Persistent Mem: 168k-488k; Boot: 488k-512k
+		#define START (168 * 1024)
+		#define HALF_SPACE (160 * 1024)
+	#elif defined(NRF52_SERIES)
+		// nrf52832: SoftDevice + app: 0-256k; Persistent Mem: 256-436k; User data: 436k-464k; Boot: 464k-512k
+		#define START (256 * 1024)
+		#define HALF_SPACE (90 * 1024)
 	#endif
 
 	static void flashErase(int *startAddr, int *endAddr) {
