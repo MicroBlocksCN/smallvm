@@ -807,6 +807,7 @@ static void processShortMessage() {
 		break;
 	case clearVarsMsg:
 		clearAllVariables();
+		memClear();
 		break;
 	case getVersionMsg:
 		sendVersionString();
@@ -816,6 +817,7 @@ static void processShortMessage() {
 		break;
 	case deleteAllCodeMsg:
 		deleteAllChunks();
+		memClear();
 		break;
 	case systemResetMsg:
 		// non-zero chunkIndex is used for debugging operations
