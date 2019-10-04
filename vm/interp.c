@@ -942,9 +942,10 @@ static void runTask(Task *task) {
 
 // Task Scheduler
 
-#define HAS_WIFI \
-	defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || \
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || \
 	defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
+		#define HAS_WIFI true
+#endif
 
 static int currentTaskIndex = -1;
 

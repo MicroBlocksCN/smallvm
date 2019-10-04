@@ -8,6 +8,8 @@
 // John Maloney, April 2017
 
 #include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 #include <string.h>
 
 #include "mem.h"
