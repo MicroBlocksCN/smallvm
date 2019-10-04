@@ -115,6 +115,7 @@ extern int extraByteDelay;
 #define setVarMsg				8
 #define getVarNamesMsg			9
 #define clearVarsMsg			10
+#define getChunkCRCMsg			11
 #define getVersionMsg			12
 #define getAllCodeMsg			13
 #define deleteAllCodeMsg		14
@@ -129,6 +130,7 @@ extern int extraByteDelay;
 #define outputValueMsg			20
 #define varValueMsg				21
 #define versionMsg				22
+#define chunkCRCMsg				23
 
 // Serial Protocol Messages: Bidirectional
 
