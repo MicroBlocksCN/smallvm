@@ -478,20 +478,20 @@ static OBJ primSignalStrength(int argCount, OBJ *args) {
 }
 
 static PrimEntry entries[] = {
-	"disableRadio", primDisableRadio,
-	"messageReceived", primMessageReceived,
-	"packetReceive", primPacketReceive,
-	"packetSend", primPacketSend,
-	"receivedInteger", primReceivedInteger,
-	"receivedMessageType", primReceivedMessageType,
-	"receivedString", primReceivedString,
-	"sendInteger", primSendMakeCodeInteger,
-	"sendPair", primSendMakeCodePair,
-	"sendString", primSendMakeCodeString,
-	"setChannel", primSetChannel,
-	"setGroup", primSetGroup,
-	"setPower", primSetPower,
-	"signalStrength", primSignalStrength,
+	{"disableRadio", primDisableRadio},
+	{"messageReceived", primMessageReceived},
+	{"packetReceive", primPacketReceive},
+	{"packetSend", primPacketSend},
+	{"receivedInteger", primReceivedInteger},
+	{"receivedMessageType", primReceivedMessageType},
+	{"receivedString", primReceivedString},
+	{"sendInteger", primSendMakeCodeInteger},
+	{"sendPair", primSendMakeCodePair},
+	{"sendString", primSendMakeCodeString},
+	{"setChannel", primSetChannel},
+	{"setGroup", primSetGroup},
+	{"setPower", primSetPower},
+	{"signalStrength", primSignalStrength},
 };
 
 void addRadioPrims() {

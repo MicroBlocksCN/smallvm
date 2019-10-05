@@ -361,13 +361,13 @@ static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
 #endif // Capacitive Touch Primitives
 
 static PrimEntry entries[] = {
-	"temperature", primMBTemp,
-	"tiltX", primMBTiltX,
-	"tiltY", primMBTiltY,
-	"tiltZ", primMBTiltZ,
-	"touchRead", primTouchRead,
-	"i2cRead", primI2cRead,
-	"i2cWrite", primI2cWrite,
+	{"temperature", primMBTemp},
+	{"tiltX", primMBTiltX},
+	{"tiltY", primMBTiltY},
+	{"tiltZ", primMBTiltZ},
+	{"touchRead", primTouchRead},
+	{"i2cRead", primI2cRead},
+	{"i2cWrite", primI2cWrite},
 };
 
 void addSensorPrims() {

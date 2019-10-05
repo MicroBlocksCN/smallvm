@@ -34,8 +34,8 @@ static OBJ primSine(int argCount, OBJ *args) {
 // Primitives
 
 static PrimEntry entries[] = {
-	"hexToInt", primHexToInt,
-	"sin", primSine,
+	{"hexToInt", primHexToInt},
+	{"sin", primSine},
 };
 
 void addMiscPrims() {

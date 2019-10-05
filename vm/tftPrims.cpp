@@ -371,20 +371,20 @@ OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 // Primitives
 
 static PrimEntry entries[] = {
-	"enableDisplay", primEnableDisplay,
-	"getWidth", primGetWidth,
-	"getHeight", primGetHeight,
-	"setPixel", primSetPixel,
-	"line", primLine,
-	"rect", primRect,
-	"roundedRect", primRoundedRect,
-	"circle", primCircle,
-	"triangle", primTriangle,
-	"text", primText,
-	"tftTouched", primTftTouched,
-	"tftTouchX", primTftTouchX,
-	"tftTouchY", primTftTouchY,
-	"tftTouchPressure", primTftTouchPressure,
+	{"enableDisplay", primEnableDisplay},
+	{"getWidth", primGetWidth},
+	{"getHeight", primGetHeight},
+	{"setPixel", primSetPixel},
+	{"line", primLine},
+	{"rect", primRect},
+	{"roundedRect", primRoundedRect},
+	{"circle", primCircle},
+	{"triangle", primTriangle},
+	{"text", primText},
+	{"tftTouched", primTftTouched},
+	{"tftTouchX", primTftTouchX},
+	{"tftTouchY", primTftTouchY},
+	{"tftTouchPressure", primTftTouchPressure},
 };
 
 void addTFTPrims() {

@@ -622,15 +622,15 @@ OBJ primMBDrawShape(int argCount, OBJ *args) {
 // Primitives
 
 static PrimEntry entries[] = {
-	"lightLevel", primLightLevel,
-	"mbDisplay", primMBDisplay,
-	"mbDisplayOff", primMBDisplayOff,
-	"mbPlot", primMBPlot,
-	"mbUnplot", primMBUnplot,
-	"mbDrawShape", primMBDrawShape,
-	"mbShapeForLetter", primMBShapeForLetter,
-	"neoPixelSend", primNeoPixelSend,
-	"neoPixelSetPin", primNeoPixelSetPin,
+	{"lightLevel", primLightLevel},
+	{"mbDisplay", primMBDisplay},
+	{"mbDisplayOff", primMBDisplayOff},
+	{"mbPlot", primMBPlot},
+	{"mbUnplot", primMBUnplot},
+	{"mbDrawShape", primMBDrawShape},
+	{"mbShapeForLetter", primMBShapeForLetter},
+	{"neoPixelSend", primNeoPixelSend},
+	{"neoPixelSetPin", primNeoPixelSetPin},
 };
 
 void addDisplayPrims() {

@@ -791,10 +791,10 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 }
 
 static PrimEntry entries[] = {
-	"hasTone", primHasTone,
-	"playTone", primPlayTone,
-	"hasServo", primHasServo,
-	"setServo", primSetServo,
+	{"hasTone", primHasTone},
+	{"playTone", primPlayTone},
+	{"hasServo", primHasServo},
+	{"setServo", primSetServo},
 };
 
 void addIOPrims() {
