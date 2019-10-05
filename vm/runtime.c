@@ -247,8 +247,8 @@ void checkButtons() {
 	now = millisecs(); // use milliseconds for button timeouts
 	if (!now) now = 1; // the value is reserved to mean button is not down
 
-	int buttonAIsDown = primButtonA(NULL);
-	int buttonBIsDown = primButtonB(NULL);
+	int buttonAIsDown = (int) primButtonA(NULL);
+	int buttonBIsDown = (int) primButtonB(NULL);
 
 	if (buttonAIsDown && !buttonADownTime) { // button A up -> down
 		buttonADownTime = now;
@@ -414,7 +414,7 @@ static inline void sendData() {
 	}
 }
 
-static inline void queueByte(char aByte) {
+static inline void queueByte(uint8 aByte) {
 	outBuf[outBufEnd] = aByte;
 	outBufEnd = (outBufEnd + 1) & OUTBUF_MASK;
 }
@@ -666,7 +666,7 @@ void sendChunkCRC(int chunkID) {
 	OBJ code = chunks[chunkID].code;
 	if (code) {
 		int wordCount = *(code + 1); // size is the second word in the persistent store record
-		int *chunkData = (uint8_t *) (code + PERSISTENT_HEADER_WORDS);
+		uint8_t *chunkData = (uint8_t *) (code + PERSISTENT_HEADER_WORDS);
 		crc = crc32(chunkData, (4 * wordCount));
 	}
 	waitForOutbufBytes(9);

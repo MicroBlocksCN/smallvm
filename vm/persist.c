@@ -327,15 +327,62 @@ int * recordAfter(int *lastRecord) {
 	return p;
 }
 
-// compaction
+void outputRecordHeaders() {
+	// For debugging. Output all the record headers of the current half-space.
 
-struct {
-	int *chunkCodeRec;
-	int *attributeRecs[CHUNK_ATTRIBUTE_COUNT];
-} chunkData;
+	int recordCount = 0;
+	int wordCount = 0;
+	int maxID = 0;
 
-static char chunkProcessed[256];
-static char varProcessed[256];
+	char s[200];
+	int *p = recordAfter(NULL);
+	while (p) {
+		recordCount++;
+		wordCount += 2 + *(p + 1);
+		int id = (*p >> 8) & 0xFF;
+		if (id > maxID) maxID = id;
+		sprintf(s, "%d %d %d (%d words)",
+			(*p >> 16) & 0xFF, (*p >> 8) & 0xFF, *p & 0xFF, *(p + 1));
+		outputString(s);
+
+// xxx debug: dump contents
+// int chunkWords = *(p + 1);
+// sprintf(s, "  %x (%d words)", *p, chunkWords);
+// outputString(s);
+// int *w = p + 2;
+// for (int i = 0; i < chunkWords; i++) {
+// 	int word = *w;
+// 	sprintf(s, "    %d: %d %d %d %d ", i,
+// 	(word & 255), ((word >> 8) & 255), ((word >> 16) & 255), ((word >> 24) & 255));
+// 	outputString(s);
+// 	w++;
+// }
+
+		p = recordAfter(p);
+	}
+	sprintf(s, "%d records, %d words, maxID %d, compaction cycles %d",
+		recordCount, wordCount, maxID, cycleCount(current));
+	outputString(s);
+
+	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
+	sprintf(s, "%d bytes used (%d%%) of %d",
+		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
+	outputString(s);
+}
+
+static int * compactionStartRecord() {
+	// Return a pointer to the first record at which to start compaction or script restoration
+	// at startup.
+
+	int *ptr = recordAfter(NULL);
+	int *result = ptr; // first record in half-space; default if no 'deleteAll' records found
+	while (ptr) {
+		int type = (*ptr >> 16) & 0xFF;
+		ptr = recordAfter(ptr);
+		if (deleteAll == type) result = ptr;
+	}
+	return result;
+}
 
 static int * copyChunk(int *dst, int *src) {
 	// Copy the chunk record at src to dst and return the new value of dst.
@@ -344,6 +391,18 @@ static int * copyChunk(int *dst, int *src) {
 	flashWriteData(dst, wordCount, (uint8 *) src);
 	return dst + wordCount;
 }
+
+// Flash Compaction
+
+#ifndef RAM_CODE_STORE
+
+struct {
+	int *chunkCodeRec;
+	int *attributeRecs[CHUNK_ATTRIBUTE_COUNT];
+} chunkData;
+
+static char chunkProcessed[256];
+static char varProcessed[256];
 
 static int * copyChunkInfo(int id, int *src, int *dst) {
 	// Copy the most recent data about the chunk with the given ID to dst and return
@@ -411,63 +470,6 @@ static int * copyVarInfo(int id, int *src, int *dst) {
 	return dst;
 }
 
-void outputRecordHeaders() {
-	// For debugging. Output all the record headers of the current half-space.
-
-	int recordCount = 0;
-	int wordCount = 0;
-	int maxID = 0;
-
-	char s[200];
-	int *p = recordAfter(NULL);
-	while (p) {
-		recordCount++;
-		wordCount += 2 + *(p + 1);
-		int id = (*p >> 8) & 0xFF;
-		if (id > maxID) maxID = id;
-		sprintf(s, "%d %d %d (%d words)",
-			(*p >> 16) & 0xFF, (*p >> 8) & 0xFF, *p & 0xFF, *(p + 1));
-		outputString(s);
-
-// xxx debug: dump contents
-// int chunkWords = *(p + 1);
-// sprintf(s, "  %x (%d words)", *p, chunkWords);
-// outputString(s);
-// int *w = p + 2;
-// for (int i = 0; i < chunkWords; i++) {
-// 	int word = *w;
-// 	sprintf(s, "    %d: %d %d %d %d ", i,
-// 	(word & 255), ((word >> 8) & 255), ((word >> 16) & 255), ((word >> 24) & 255));
-// 	outputString(s);
-// 	w++;
-// }
-
-		p = recordAfter(p);
-	}
-	sprintf(s, "%d records, %d words, maxID %d, compaction cycles %d",
-		recordCount, wordCount, maxID, cycleCount(current));
-	outputString(s);
-
-	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-	sprintf(s, "%d bytes used (%d%%) of %d",
-		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
-	outputString(s);
-}
-
-static int * compactionStartRecord() {
-	// Return a pointer to the first record at which to start compaction or script restoration
-	// at startup.
-
-	int *ptr = recordAfter(NULL);
-	int *result = ptr; // first record in half-space; default if no 'deleteAll' records found
-	while (ptr) {
-		int type = (*ptr >> 16) & 0xFF;
-		ptr = recordAfter(ptr);
-		if (deleteAll == type) result = ptr;
-	}
-	return result;
-}
-
 static void compactFlash() {
 	// Copy only the most recent chunk and variable records to the other half-space.
 	// Details:
@@ -520,6 +522,8 @@ static void compactFlash() {
 	outputString(s);
 }
 
+#endif // compactFlash
+
 // RAM compaction
 
 #ifdef RAM_CODE_STORE
@@ -561,7 +565,7 @@ static void compactRAM() {
 	//	7. re-write the code file
 
 	int *dst = ((0 == !current) ? start0 : start1) + 1;
-	int *src = compactionStartRecord(NULL);
+	int *src = compactionStartRecord();
 
 	if (!src) return; // nothing to compact
 
@@ -709,7 +713,7 @@ void restoreScripts() {
 	initCodeFile(flash, HALF_SPACE);
   #endif
 
-	int *p = compactionStartRecord(NULL);
+	int *p = compactionStartRecord();
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
 		if (chunkCode == recType) {
