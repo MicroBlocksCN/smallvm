@@ -132,6 +132,7 @@ void primWifiConnect(OBJ *args) {}
 int wifiStatus() { return 0; }
 OBJ primMakeWebThing(int argCount, OBJ *args) { return falseObj; }
 OBJ primGetIP(int argCount, OBJ *args) { return falseObj; }
+void queueBroadcastAsThingEvent(char *s, int len) { }
 
 // Persistence support
 
@@ -160,7 +161,7 @@ void writeCodeFileWord(int word) {
 	fflush(codeFile);
 }
 
-void clearCodeFile() {
+void clearCodeFile(int ignore) {
 	fclose(codeFile);
 	remove("ublockscode");
 	codeFile = fopen("ublockscode", "ab+");
