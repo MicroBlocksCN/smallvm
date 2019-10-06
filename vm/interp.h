@@ -210,19 +210,6 @@ void taskTest(void);
 void compact();
 void outputRecordHeaders();
 
-// Printf macro for Arduino (many thanks to Michael McElligott)
-
-#ifdef ARDUINO
-	void putSerial(char *s);
-	extern char printfBuffer[100];
-
-	#define printf(format, ...) \
-		do { \
-		snprintf(printfBuffer, sizeof(printfBuffer), format, ##__VA_ARGS__); \
-		putSerial(printfBuffer); \
-		} while(0)
-#endif
-
 // Platform Specific Operations
 
 uint32 microsecs(void);

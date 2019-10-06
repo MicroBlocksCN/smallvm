@@ -24,12 +24,6 @@
 
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 
-// Printf Support
-
-#ifdef ARDUINO
-	char printfBuffer[100]; // used by printf macro in mem.h
-#endif
-
 // Named Primitive Support
 
 typedef struct {
@@ -420,19 +414,6 @@ static inline void queueByte(uint8 aByte) {
 }
 
 static void sendMessage(int msgType, int chunkIndex, int dataSize, char *data) {
-#define DEBUG false
-#if DEBUG
-	return; // comment out this line to display the messages being sent
-
-	printf("sendMessage %d %d %d \r\n", msgType, chunkIndex, dataSize);
-	if (data) {
-		printf(" data: ");
-		for (int i = 0; i < dataSize; i++) printf("%d ", data[i]);
-		printf("\r\n");
-	}
-	return;
-#endif // DEBUG
-
 	if (!data) { // short message
 		if (!hasOutputSpace(3)) return; // no space; drop message
 		queueByte(250);
