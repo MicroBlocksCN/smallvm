@@ -295,7 +295,7 @@ static void initPersistentMemory() {
 	while ((freeStart < end) && (-1 != *freeStart)) {
 		int header = *freeStart;
 		if ('R' != ((header >> 24) & 0xFF)) {
-			printf("Bad record found during initialization!\n");
+			outputString("Bad record found during initialization");
 			clearPersistentMemory();
 			return;
 		}
@@ -631,7 +631,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 		compact();
 		end = (0 == current) ? end0 : end1;
 		if ((freeStart + 2 + wordCount) > end) {
-			printf("Not enough room even after compaction\n");
+			outputString("Not enough room even after compaction");
 			return NULL;
 		}
 	}
@@ -749,13 +749,15 @@ void restoreScripts() {
 static void dumpWords(int halfSpace, int count) {
 	// Dump the first count words of the given half-space.
 
+	char s[100];
 	int *p = (current == 0) ? start0 : start1;
 	for (int i = 0; i < count; i++) {
-		printf("%d %d %d %d\n",
+		sprintf(s, "%d %d %d %d",
 			(*p >> 24) & 0xFF,
 			(*p >> 16) & 0xFF,
 			(*p >> 8) & 0xFF,
 			*p & 0xFF);
+		outputString(s);
 		p++;
 	}
 }
@@ -763,11 +765,13 @@ static void dumpWords(int halfSpace, int count) {
 static void showRecordHeaders() {
 	// Dump the record headers of the current half-space.
 
+	char s[100];
 	int *p = recordAfter(NULL);
 	while (p) {
-		printf("Record at offset %d: %d %d %d %d (%d words)\n",
+		sprintf(s, "Record at offset %d: %d %d %d %d (%d words)",
 			(p - start0),
 			(*p >> 24) & 0xFF, (*p >> 16) & 0xFF, (*p >> 8) & 0xFF, *p & 0xFF, *(p + 1));
+		outputString(s);
 		p = recordAfter(p);
 	}
 }
@@ -782,7 +786,7 @@ void basicTest() {
 
 	flashErase(PAGE, PAGE + 100);
 	dumpWords(0, 35);
-	printf("-----\n");
+	outputString("-----");
 	flashWriteData(PAGE, 10, (uint8 *) testData);
 	flashWriteWord(PAGE + 13, 13);
 	flashWriteWord(PAGE + 15, 42);
@@ -798,14 +802,14 @@ void basicTest() {
 void persistTest() {
 	int dummyData[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
 
-	printf("Persistent Memory Test\n\n");
+	outputString("Persistent Memory Test\n");
 	basicTest();
 
-	printf("\nInitializing Memory\n");
+	outputString("\nInitializing Memory");
 	initPersistentMemory();
 	initPersistentMemory();
 	clearPersistentMemory();
-	printf("Memory intitialized; writing records...\n");
+	outputString("Memory intitialized; writing records...");
 
 	for (int i = 0; i < 3000; i++) {
 		appendPersistentRecord(chunkCode, i % 100, 0, (i % 5) * 4, (uint8 *) dummyData);
@@ -815,8 +819,10 @@ void persistTest() {
 	dumpWords(current, 150);
 	showRecordHeaders();
 
-	printf("Final: current %d used %d c0 %d c1 %d\n",
+	char s[100];
+	sprintf(s, "Final: current %d used %d c0 %d c1 %d",
 		current,
 		freeStart - ((0 == current) ? start0 : start1),
 		cycleCount(0), cycleCount(1));
+	outputString(s);
 }

@@ -125,13 +125,23 @@ char* obj2str(OBJ obj) {
 // Debugging
 
 void memDumpObj(OBJ obj) {
+	char s[200];
+
 	if ((obj < memStart) || (obj >= memEnd)) {
-		printf("bad object at %ld\n", (long) obj);
+		sprintf(s, "bad object at %ld", (long) obj);
+		outputString(s);
 		return;
 	}
 	int classID = CLASS(obj);
 	int wordCount = WORDS(obj);
-	printf("%x: %d words, classID %d\n", (int) obj, wordCount, classID);
-	printf("Header: %x\n", (int) obj[0]);
-	for (int i = 0; i < wordCount; i++) printf("	0x%x,\n", obj[HEADER_WORDS + i]);
+	sprintf(s, "%x: %d words, classID %d", (int) obj, wordCount, classID);
+	outputString(s);
+
+	sprintf(s, "Header: %x", (int) obj[0]);
+	outputString(s);
+
+	for (int i = 0; i < wordCount; i++) {
+		sprintf(s, "	0x%x,", obj[HEADER_WORDS + i]);
+		outputString(s);
+	}
 }
