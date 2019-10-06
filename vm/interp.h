@@ -313,7 +313,7 @@ void addTFTPrims();
 
 typedef OBJ (*PrimitiveFunction)(int argCount, OBJ *args);
 
-typedef struct {
+typedef const struct {
 	const char *primName;
 	PrimitiveFunction primFunc;
 } PrimEntry;
