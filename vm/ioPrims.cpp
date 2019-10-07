@@ -102,8 +102,6 @@ void hardwareInit() {
 
 // Communication Functions
 
-void putSerial(char *s) { Serial.print(s); } // callable from C; used to simulate printf for debugging
-
 int recvBytes(uint8 *buf, int count) {
 	int bytesRead = Serial.available();
 	if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
