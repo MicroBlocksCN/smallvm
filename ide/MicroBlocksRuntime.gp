@@ -1074,10 +1074,10 @@ method showOutputStrings SmallRuntime {
 // Virtual Machine Installer
 
 method installVM SmallRuntime wipeFlashFlag downloadLatest {
-	if ((getCurrentVersion (findMicroBlocksEditor)) == 
-            ((getLatestVersion (findMicroBlocksEditor))) {
-		downloadLatest = false
-	}
+//	if ((getCurrentVersion (findMicroBlocksEditor)) == 
+//            (getLatestVersion (findMicroBlocksEditor))) {
+//		downloadLatest = false
+//	}
 
 	if ('Browser' == (platform)) {
 		installVMInBrowser this
@@ -1096,11 +1096,11 @@ method installVM SmallRuntime wipeFlashFlag downloadLatest {
 	} ((count (portList this)) > 0) {
 		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'IOT-BUS') boardType)
 				(confirm (global 'page') nil (join 'Use board type ' boardType '?'))) {
-			flashVM this boardType wipeFlashFlag
+			flashVM this boardType wipeFlashFlag downloadLatest
 		} else {
 			menu = (menu 'Select board type:' this)
 			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'IOT-BUS') {
-				addItem menu boardName (action 'flashVM' this boardName wipeFlashFlag)
+				addItem menu boardName (action 'flashVM' this boardName wipeFlashFlag downloadLatest)
 			}
 			addLine menu
 			addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
@@ -1165,7 +1165,7 @@ method getBoardName SmallRuntime path {
 }
 
 method latestReleasePath SmallRuntime {
-	return '/repos/bromagosa/microblocks-site/releases/latest/'
+	return '/mbvm/latest/'
 }
 
 method copyVMToBoard SmallRuntime boardName boardPath downloadLatest {
@@ -1182,8 +1182,7 @@ method copyVMToBoard SmallRuntime boardName boardPath downloadLatest {
 	}
 	if (notNil vmFileName) {
 		if downloadLatest {
-			vm = (httpGet 'github.com' latestReleasePath vmFileName)
-			
+			vmData = (httpGet 'gpblocks.org' (join (latestReleasePath this) vmFileName))
                 } else {
 			vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
 		}
@@ -1246,11 +1245,11 @@ method removeFlasher SmallRuntime {
     tryToConnect this
 }
 
-method flashVM SmallRuntime boardName wipeFlashFlag {
+method flashVM SmallRuntime boardName wipeFlashFlag downloadLatest {
     stopAndSyncScripts this
     setPort this 'disconnect'
 
-    flasher = (newFlasher 'flashVM' (array wipeFlashFlag) boardName)
+    flasher = (newFlasher 'flashVM' (array wipeFlashFlag downloadLatest) boardName)
     addPart (global 'page') (morph flasher)
 
     start flasher

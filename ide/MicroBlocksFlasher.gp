@@ -97,7 +97,7 @@ method start MicroBlocksFlasher {
   callWith selector (join (array this) arguments)
 }
 
-method flashVM MicroBlocksFlasher wipeFlashFlag {
+method flashVM MicroBlocksFlasher wipeFlashFlag downloadLatest {
   if wipeFlashFlag {
     setText label (localized 'Wiping board...')
   } else {
@@ -106,7 +106,11 @@ method flashVM MicroBlocksFlasher wipeFlashFlag {
 
   copyEspToolToDisk this
   copyEspFilesToDisk this
-  copyVMtoDisk this
+  if downloadLatest {
+    downloadVMtoDisk this
+  } else {
+    copyVMtoDisk this
+  }
 
   esptool = (join (tmpPath this) (esptoolCommandName this))
   tmpPath = (tmpPath this)
@@ -162,19 +166,28 @@ method copyEspToolToDisk MicroBlocksFlasher {
   }
 }
 
+method vmNameForCurrentBoard MicroBlocksFlasher {
+  d = (dictionary)
+  atPut d 'ESP8266' 'vm.ino.nodemcu.bin'
+  atPut d 'IOT-BUS' 'vm.ino.iot-bus.bin'
+  atPut d 'ESP32' 'vm.ino.esp32.bin'
+  atPut d 'Citilab ED1' 'vm.ino.citilab-ed1.bin'
+  atPut d 'M5Stack-Core' 'vm.ino.m5stack.bin'
+  return (at d boardName)
+}
+
 method copyVMtoDisk MicroBlocksFlasher {
-  if (boardName == 'ESP8266') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.nodemcu.bin' true)
-  } (boardName == 'IOT-BUS') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.iot-bus.bin' true)
-  } (boardName == 'ESP32') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.esp32.bin' true)
-  } (boardName == 'Citilab ED1') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.citilab-ed1.bin' true)
-  } (boardName == 'M5Stack-Core') {
-    vmData = (readEmbeddedFile 'precompiled/vm.ino.m5stack.bin' true)
-  }
+  vmData = (readEmbeddedFile (join 'precompiled/' (vmNameForCurrentBoard this)) true)
   writeFile (join (tmpPath this) 'vm') vmData
+}
+
+method downloadVMtoDisk MicroBlocksFlasher {
+  runtime = (smallRuntime)
+  vmPath = (join (latestReleasePath runtime) (vmNameForCurrentBoard this))
+  response = (httpGet 'gpblocks.org' vmPath)
+  (writeFile
+    (join (tmpPath this) 'vm')
+    (httpBody response))
 }
 
 method copyEspFilesToDisk MicroBlocksFlasher {
