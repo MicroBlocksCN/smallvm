@@ -45,7 +45,10 @@ to httpGet host path port {
 	while (count > 0) {
 		chunk = (readSocket socket)
 		count = (byteCount chunk)
-		if (count > 0) { add response chunk }
+		if (count > 0) {
+			add response chunk
+			waitMSecs 50
+		}
 	}
 	closeSocket socket
 	return (joinStrings response)
@@ -69,6 +72,53 @@ to httpBody response {
 	i = (indexOf lines '')
 	if (isNil i) { return '' } // no body
 	return (joinStrings (copyFromTo lines (i + 1)) (newline))
+}
+
+to httpGetBinary host path port {
+	if (isNil path) { path = '/' }
+	if (isNil port) { port = 80 }
+	if ('Browser' == (platform)) {
+		url = (join 'http://' host path)
+		if (80 != port) { url = (join url ':' port) }
+		return (toString (httpGetInBrowser url))
+	}
+	socket = (openClientSocket host port)
+	if (isNil socket) { return '' }
+	nl = (string 13 10)
+	request = (join
+		'GET ' path ' HTTP/1.1' nl
+		'Host: ' host nl
+		'Accept:' 'application/octet-stream' nl nl)
+	writeSocket socket request
+	waitMSecs 1000 // wait a bit
+	response = (newBinaryData)
+	count = 1 // start loop
+	while (count > 0) {
+		chunk = (readSocket socket true)
+		count = (byteCount chunk)
+		if (count > 0) {
+			response = (join response chunk)
+			waitMSecs 50
+		}
+	}
+	closeSocket socket
+	return (httpBinaryBody response)
+}
+
+to httpBinaryBody data {
+	for i (byteCount data) {
+		// find the end of the header (byte sequence 13 10 13 10)
+		if (and
+			(13 == (byteAt data i))
+			(10 == (byteAt data (i + 1)))
+			(13 == (byteAt data (i + 2)))
+			(10 == (byteAt data (i + 3)))
+		) {
+			// return the body of the response as binary data
+			return (copyFromTo data (i + 4))
+		}
+	}
+	return nil
 }
 
 to httpHeaders response {
