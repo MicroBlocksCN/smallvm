@@ -9,4 +9,5 @@
 
 gcc -m32 -std=c99 -Wall -O3 \
 	-D GNUBLOCKS -I ../vm linux.c ../vm/*.c \
+	-lm \
 	-o GnuBlocks

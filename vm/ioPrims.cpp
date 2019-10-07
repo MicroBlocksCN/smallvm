@@ -215,6 +215,19 @@ void restartSerial() {
 	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
 
+#elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
+
+	#define BOARD_TYPE "CircuitPlayground nrf52"
+	#define DIGITAL_PINS 23
+	#define ANALOG_PINS 10
+	#define TOTAL_PINS 23
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
+	#define PIN_LED 13
+	#define PIN_BUTTON_A 4
+	#define PIN_BUTTON_B 5
+	#undef BUTTON_PRESSED
+	#define BUTTON_PRESSED HIGH
+
 #elif defined(ADAFRUIT_GEMMA_M0)
 
 	#define BOARD_TYPE "Gemma M0"
@@ -303,10 +316,12 @@ void restartSerial() {
 		1, 0, 1, 0, 1, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-		0, 0, 1, 0, 1, 0, 0, 0, 0, 0};
+		0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
 	#define PIN_LED 0
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 14
+        static const char analogPinMappings[4] = { 36, 37, 38, 39 };
+        static const char digitalPinMappings[4] = { 12, 25, 32, 26 };
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32)
 
@@ -332,8 +347,11 @@ void restartSerial() {
 		1, 1, 1, 1, 1, 0, 0, 0, 1, 1};
 
 #elif defined(ARDUINO_ARCH_ESP32)
-
-	#define BOARD_TYPE "ESP32"
+	#ifdef ARDUINO_IOT_BUS
+		#define BOARD_TYPE "IOT-BUS"
+	#else
+		#define BOARD_TYPE "ESP32"
+	#endif
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
@@ -440,6 +458,13 @@ OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 
 OBJ primAnalogRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
+	#ifdef ARDUINO_CITILAB_ED1
+		if (pinNum > 100) {
+			pinNum = pinNum - 100;
+		} else if (analogPinMappings[pinNum - 1] > 0) {
+			pinNum = analogPinMappings[pinNum - 1];
+		}
+	#endif
 	#ifdef ARDUINO_ARCH_ESP32
 		// use the ESP32 pin number directly (if not reserved)
 		if (RESERVED(pinNum)) return int2obj(0);
@@ -496,6 +521,11 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
 	#elif defined(ARDUINO_CITILAB_ED1)
+		if (pinNum > 100) {
+			pinNum = pinNum - 100;
+		} else if (digitalPinMappings[pinNum - 1] > 0) {
+			pinNum = digitalPinMappings[pinNum - 1];
+		}
 		if (pinNum == 2 || pinNum == 4 || pinNum == 13 ||
 			pinNum == 14 || pinNum == 15 || pinNum == 27) {
 			// Do not reset pin mode, it should remain INPUT_PULLUP as set in initPins.
@@ -509,7 +539,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	int mode = INPUT;
 	if ((argCount > 1) && (trueObj == args[1])) mode = INPUT_PULLUP;
-	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		if (7 == pinNum) mode = INPUT_PULLUP; // slide switch
 	#endif
 	SET_MODE(pinNum, mode);
@@ -549,6 +579,14 @@ void primDigitalSet(int pinNum, int flag) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
+	#elif defined(ARDUINO_CITILAB_ED1)
+		if (pinNum > 100) {
+			pinNum = pinNum - 100;
+		} else if (digitalPinMappings[pinNum - 1] > 0) {
+			pinNum = digitalPinMappings[pinNum - 1];
+		} else if (RESERVED(pinNum)) {
+			return;
+		}
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE)
@@ -591,7 +629,7 @@ void primSetUserLED(OBJ *args) {
 // User Buttons
 
 OBJ primButtonA(OBJ *args) {
-	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		// Momentarily set button pin low before reading (simulates a pull-down resistor)
 		primDigitalSet(PIN_BUTTON_A, false);
 	#endif
@@ -608,7 +646,7 @@ OBJ primButtonA(OBJ *args) {
 }
 
 OBJ primButtonB(OBJ *args) {
-	#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		// Momentarily set button pin low before reading (simulates a pull-down resistor)
 		primDigitalSet(PIN_BUTTON_B, false);
 	#endif
@@ -753,10 +791,10 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 }
 
 static PrimEntry entries[] = {
-	"hasTone", primHasTone,
-	"playTone", primPlayTone,
-	"hasServo", primHasServo,
-	"setServo", primSetServo,
+	{"hasTone", primHasTone},
+	{"playTone", primPlayTone},
+	{"hasServo", primHasServo},
+	{"setServo", primSetServo},
 };
 
 void addIOPrims() {

@@ -11,6 +11,8 @@ pio run -e ed1
 cp .pio/build/ed1/firmware.bin precompiled/vm.ino.citilab-ed1.bin
 pio run -e m5stack
 cp .pio/build/m5stack/firmware.bin precompiled/vm.ino.m5stack.bin
+pio run -e iot-bus
+cp .pio/build/iot-bus/firmware.bin precompiled/vm.ino.iot-bus.bin
 pio run -e esp32
 cp .pio/build/esp32/firmware.bin precompiled/vm.ino.esp32.bin
 pio run -e cpx

@@ -17,7 +17,7 @@
 int useTFT = false;
 int touchEnabled = false;
 
-#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_IOT_BUS)
 
 	#define TFT_BLACK 0
 	#define TFT_GREEN 0x7E0
@@ -78,8 +78,7 @@ int touchEnabled = false;
 			useTFT = true;
 		}
 
-	#else
-                // IoT-Bus
+	#elif defined(ARDUINO_IOT_BUS)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ILI9341.h"
 		#include <XPT2046_Touchscreen.h>
@@ -121,7 +120,7 @@ int touchEnabled = false;
 			ts.setRotation(1);
 			touchEnabled = true;
 		}
-#endif
+	#endif
 
 void tftClear() {
 	tft.fillScreen(TFT_BLACK);
@@ -372,20 +371,20 @@ OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 // Primitives
 
 static PrimEntry entries[] = {
-	"enableDisplay", primEnableDisplay,
-	"getWidth", primGetWidth,
-	"getHeight", primGetHeight,
-	"setPixel", primSetPixel,
-	"line", primLine,
-	"rect", primRect,
-	"roundedRect", primRoundedRect,
-	"circle", primCircle,
-	"triangle", primTriangle,
-	"text", primText,
-	"tftTouched", primTftTouched,
-	"tftTouchX", primTftTouchX,
-	"tftTouchY", primTftTouchY,
-	"tftTouchPressure", primTftTouchPressure,
+	{"enableDisplay", primEnableDisplay},
+	{"getWidth", primGetWidth},
+	{"getHeight", primGetHeight},
+	{"setPixel", primSetPixel},
+	{"line", primLine},
+	{"rect", primRect},
+	{"roundedRect", primRoundedRect},
+	{"circle", primCircle},
+	{"triangle", primTriangle},
+	{"text", primText},
+	{"tftTouched", primTftTouched},
+	{"tftTouchX", primTftTouchX},
+	{"tftTouchY", primTftTouchY},
+	{"tftTouchPressure", primTftTouchPressure},
 };
 
 void addTFTPrims() {

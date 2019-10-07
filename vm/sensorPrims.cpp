@@ -235,7 +235,11 @@ static int readTemperature() {
 	return (readI2CReg(ACCEL_ID, 8) / 2) + 23 - fudgeFactor;
 }
 
-#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+
+#ifdef ARDUINO_NRF52840_CIRCUITPLAY
+	#define Wire1 Wire
+#endif
 
 #define LIS3DH_ID 25
 
@@ -357,13 +361,13 @@ static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
 #endif // Capacitive Touch Primitives
 
 static PrimEntry entries[] = {
-	"temperature", primMBTemp,
-	"tiltX", primMBTiltX,
-	"tiltY", primMBTiltY,
-	"tiltZ", primMBTiltZ,
-	"touchRead", primTouchRead,
-	"i2cRead", primI2cRead,
-	"i2cWrite", primI2cWrite,
+	{"temperature", primMBTemp},
+	{"tiltX", primMBTiltX},
+	{"tiltY", primMBTiltY},
+	{"tiltZ", primMBTiltZ},
+	{"touchRead", primTouchRead},
+	{"i2cRead", primI2cRead},
+	{"i2cWrite", primI2cWrite},
 };
 
 void addSensorPrims() {

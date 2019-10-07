@@ -147,9 +147,14 @@ method textButton MicroBlocksEditor label selector {
 
 // project operations
 
+method canReplaceCurrentProject MicroBlocksEditor {
+  return (or
+	(not (hasUserCode (project scripter)))
+	(confirm (global 'page') nil 'Discard current project?'))
+}
+
 method newProject MicroBlocksEditor {
-  ok = (confirm (global 'page') nil 'Discard current project?')
-  if (not ok) { return }
+  if (not (canReplaceCurrentProject this)) { return }
   clearProject this
   installBoardSpecificBlocks (smallRuntime)
   updateLibraryList scripter
@@ -180,9 +185,8 @@ method openProjectMenu MicroBlocksEditor {
 
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the give file path or URL.
-  ok = (confirm (global 'page') nil 'Discard current project?')
 
-  if (not ok) { return }
+  if (not (canReplaceCurrentProject this)) { return }
 
   if (beginsWith location '//') {
 	data = (readEmbeddedFile (substring location 3) true)
@@ -359,8 +363,7 @@ method processDroppedFiles MicroBlocksEditor {
 
 method processDroppedFile MicroBlocksEditor fName data {
   if (or (endsWith fName '.ubp') (endsWith fName '.gpp')) {
-	ok = (confirm (global 'page') nil 'Discard current project?')
-	if (not ok) { return }
+	if (not (canReplaceCurrentProject this)) { return }
 	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
 	openProject this data fName
   }

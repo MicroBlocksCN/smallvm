@@ -7,12 +7,11 @@
 // miscPrims.c - Miscellaneous primitives
 // John Maloney, May 2019
 
-#include <Arduino.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "mem.h"
 #include "interp.h"
-
 
 OBJ primHexToInt(int argCount, OBJ *args) {
 	if (!IS_CLASS(args[0], StringClass)) return fail(needsStringError);
@@ -35,8 +34,8 @@ static OBJ primSine(int argCount, OBJ *args) {
 // Primitives
 
 static PrimEntry entries[] = {
-	"hexToInt", primHexToInt,
-	"sin", primSine,
+	{"hexToInt", primHexToInt},
+	{"sin", primSine},
 };
 
 void addMiscPrims() {

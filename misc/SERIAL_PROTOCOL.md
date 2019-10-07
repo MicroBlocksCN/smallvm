@@ -1,4 +1,4 @@
-# Microblocks Serial Protocol (version 2.08)
+# Microblocks Serial Protocol (version 2.09)
 
 This protocol describes how information flows from the
 board to the IDE and the other way around. All messages
@@ -109,7 +109,9 @@ This message is sent by the IDE when a variable is deleted, followed
 by a sequence of Variable Name messages to record the new variable bindings,
 if any.
 
-### *Reserved* (OpCode: 0x0B)
+### Get CRC (OpCode: 0x0B)
+
+Request the CRC-32 (cyclic redundancy check) of the given chunk. Board responds with a Chunk CRC message.
 
 ### Get Virtual Machine Version (OpCode: 0x0C)
 
@@ -181,7 +183,11 @@ The value is encoded the same as in the Set Variable Value message.
 
 Return the version string in the body of this message.
 
-### *Reserved* (OpCodes 0x17-0x19)
+### Chunk CRC (OpCode: 0x17, long message)
+
+Return the four-byte CRC-32 (cyclic redundancy check) of the given chunk.
+
+### *Reserved* (OpCodes 0x18-0x19)
 
 Reserved for additional Board → IDE messages.
 

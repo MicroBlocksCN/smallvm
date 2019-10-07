@@ -89,7 +89,7 @@ OBJ primAnalogPins(OBJ *args) { return int2obj(0); }
 OBJ primDigitalPins(OBJ *args) { return int2obj(0); }
 OBJ primAnalogRead(OBJ *args) { return int2obj(0); }
 void primAnalogWrite(OBJ *args) { }
-OBJ primDigitalRead(OBJ *args) { return int2obj(0); }
+OBJ primDigitalRead(int argCount, OBJ *args) { return int2obj(0); }
 void primDigitalWrite(OBJ *args) { }
 void primDigitalSet(int pinNum, int flag) { };
 OBJ primButtonA(OBJ *args) { return falseObj; }
@@ -103,19 +103,19 @@ OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
 
 // Bogus micro:bit primitives
 
-void primMBDisplay(OBJ *args) { }
-void primMBDisplayOff(OBJ *args) { }
-void primMBPlot(OBJ *args) { }
-void primMBUnplot(OBJ *args) { }
-OBJ primMBTiltX(OBJ *args) { return int2obj(0); }
-OBJ primMBTiltY(OBJ *args) { return int2obj(0); }
-OBJ primMBTiltZ(OBJ *args) { return int2obj(0); }
-OBJ primMBTemp(OBJ *args) { return int2obj(0); }
+OBJ primMBDisplay(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBDisplayOff(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBPlot(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBUnplot(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
 
-void primNeoPixelSend(OBJ *args) { }
-void primNeoPixelSetPin(int argCount, OBJ *args) { }
-void primMBDrawShape(int argCount, OBJ *args) { }
-OBJ primMBShapeForLetter(OBJ *args) { return int2obj(0); }
+OBJ primNeoPixelSend(int argCount, OBJ *args) { return falseObj; }
+OBJ primNeoPixelSetPin(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBDrawShape(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBShapeForLetter(int argCount, OBJ *args) { return int2obj(0); }
 
 // Other bogus primitives
 
@@ -124,12 +124,15 @@ void stopTone() {}
 void turnOffInternalNeoPixels() {}
 void turnOffPins() {}
 void addDisplayPrims() {}
+void addSensorPrims() {}
+void addTFTPrims() {}
 void addIOPrims() {}
 void addNetPrims() {}
 void primWifiConnect(OBJ *args) {}
 int wifiStatus() { return 0; }
 OBJ primMakeWebThing(int argCount, OBJ *args) { return falseObj; }
 OBJ primGetIP(int argCount, OBJ *args) { return falseObj; }
+void queueBroadcastAsThingEvent(char *s, int len) { }
 
 // Persistence support
 
@@ -158,7 +161,7 @@ void writeCodeFileWord(int word) {
 	fflush(codeFile);
 }
 
-void clearCodeFile() {
+void clearCodeFile(int ignore) {
 	fclose(codeFile);
 	remove("ublockscode");
 	codeFile = fopen("ublockscode", "ab+");

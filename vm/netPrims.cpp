@@ -428,15 +428,15 @@ static OBJ primAppendToThingProperty(int argCount, OBJ *args) { return fail(noWi
 #endif
 
 static PrimEntry entries[] = {
-	"hasWiFi", primHasWiFi,
-	"startWiFi", primStartWiFi,
-	"stopWiFi", primStopWiFi,
-	"wifiStatus", primWiFiStatus,
-	"myIPAddress", primGetIP,
-	"thingDescription", primThingDescription,
-	"clearThingDescription", primClearThingDescription,
-	"appendToThingDescription", primAppendToThingDescription,
-	"appendToThingProperty", primAppendToThingProperty,
+	{"hasWiFi", primHasWiFi},
+	{"startWiFi", primStartWiFi},
+	{"stopWiFi", primStopWiFi},
+	{"wifiStatus", primWiFiStatus},
+	{"myIPAddress", primGetIP},
+	{"thingDescription", primThingDescription},
+	{"clearThingDescription", primClearThingDescription},
+	{"appendToThingDescription", primAppendToThingDescription},
+	{"appendToThingProperty", primAppendToThingProperty},
 };
 
 void addNetPrims() {

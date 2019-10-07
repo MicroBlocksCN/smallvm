@@ -57,6 +57,14 @@ method initialize MicroBlocksProject {
 
 method extraCategories MicroBlocksProject { return (array) } // called by AuthoringSpecs>specsFor
 
+method hasUserCode MicroBlocksProject {
+	if (isNil main) { return false }
+	if (and (isEmpty (scripts main)) (isEmpty (functions main)) (isEmpty (variableNames main))) {
+		return false
+	}
+	return true
+}
+
 // Block Specs
 
 method blockSpecs MicroBlocksProject { return blockSpecs }
