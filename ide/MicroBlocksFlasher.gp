@@ -184,7 +184,7 @@ method copyVMtoDisk MicroBlocksFlasher {
 method downloadVMtoDisk MicroBlocksFlasher {
   runtime = (smallRuntime)
   vmPath = (join (latestReleasePath runtime) (vmNameForCurrentBoard this))
-  response = (httpGet 'gpblocks.org' vmPath)
+  response = (httpGetBinary 'gpblocks.org' vmPath)
   (writeFile
     (join (tmpPath this) 'vm')
     (httpBody response))
