@@ -20,7 +20,7 @@ if test -n "$help"; then
     echo "--pack                        Create packages and installers. If --system parameter"
     echo "                              is present, it will only create it for the specified"
     echo "                              platform."
-    echo "--version=VERSION-NUMBER      Specify a version number, i.e. 0.1.16rc3. If not set,"
+    echo "--version=[VERSION-NUMBER]    Specify a version number, i.e. 0.1.16rc3. If not set,"
     echo "                              it will try to parse it from the GP source files."
     echo "--esptool                     Download esptool in order to embed it into the IDE so"
     echo "                              it can install the VM into espressif boards."
@@ -28,6 +28,7 @@ if test -n "$help"; then
     echo "                              will be embedded into the IDE."
     echo "--tools                       Automatically try to install missing tools needed"
     echo "                              by the build process."
+    echo "--upload=[USER]@[URL]:[PATH]  Try to upload the VMs to a remote server."
     echo
     exit 0
 fi
@@ -36,6 +37,22 @@ systems=("linux64bit" "linux32bit" "raspberryPi" "win" "mac")
 
 if test -n "$vm"; then
     (cd precompiled; ./updatePrecompiled.sh)
+fi
+
+if [ -z $version ]; then
+    version=`cat ide/MicroBlocksRuntime.gp | sed -n -E "s/^method ideVersion.*'(.*)'.*/\1/p"`
+fi
+
+if test -n "$upload"; then
+    if [ $upload == '--upload' ]; then
+        echo "usage: --upload=[user]@[url]:[path]"
+        exit 0
+    else
+        mkdir /tmp/$version
+        cp precompiled/vm.* /tmp/$version
+        scp -r /tmp/$version $upload
+        rm -r /tmp/$version
+    fi
 fi
 
 if test -n "$tools"; then
@@ -91,10 +108,6 @@ if [ -z $system ]; then
     done
 else
     (cd gp; ./$gp runtime/lib/* loadIDE.gp buildApps.gp -- $system)
-fi
-
-if [ -z $version ]; then
-    version=`cat ide/MicroBlocksRuntime.gp | sed -n -E "s/^method ideVersion.*'(.*)'.*/\1/p"`
 fi
 
 # update date of MicroBlocks.app
