@@ -45,8 +45,8 @@ int touchEnabled = false;
 		#define TFT_CS	5
 		#define TFT_DC	9
 		#define TFT_RST	10
-                #define TFT_WIDTH 128
-                #define TFT_HEIGHT 128
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 128
 		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 		void tftInit() {
@@ -63,8 +63,8 @@ int touchEnabled = false;
 		#define TFT_CS	14
 		#define TFT_DC	27
 		#define TFT_RST	33
-                #define TFT_WIDTH 320
-                #define TFT_HEIGHT 240
+		#define TFT_WIDTH 320
+		#define TFT_HEIGHT 240
 		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 		void tftInit() {
 			tft.begin(40000000); // Run SPI at 80MHz/2
@@ -98,8 +98,8 @@ int touchEnabled = false;
 		#define TFT_CS	5
 		#define TFT_DC	27
 
-                #define TFT_WIDTH 320
-                #define TFT_HEIGHT 240
+		#define TFT_WIDTH 320
+		#define TFT_HEIGHT 240
 		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
 		void tftInit() {
@@ -145,17 +145,17 @@ int color24to16b(int color24b) {
 
 OBJ primGetWidth(int argCount, OBJ *args) {
 	#ifdef TFT_WIDTH
-	return int2obj(TFT_WIDTH);
+		return int2obj(TFT_WIDTH);
 	#else
-        return int2obj(0);
+		return int2obj(0);
 	#endif
 }
 
 OBJ primGetHeight(int argCount, OBJ *args) {
 	#ifdef TFT_HEIGHT
-	return int2obj(TFT_HEIGHT);
+		return int2obj(TFT_HEIGHT);
 	#else
-        return int2obj(0);
+		return int2obj(0);
 	#endif
 }
 

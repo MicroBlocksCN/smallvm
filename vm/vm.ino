@@ -10,16 +10,16 @@
 
 void setup() {
 #ifdef ARDUINO_NRF52_PRIMO
-  sd_softdevice_disable();
+	sd_softdevice_disable();
 #endif
-  hardwareInit();
-  memInit(1250); // 1250 words = 5000 bytes
-  primsInit();
-  outputString((char *) "Welcome to MicroBlocks!");
-  restoreScripts();
-  startAll();
+	hardwareInit();
+	memInit(1250); // 1250 words = 5000 bytes
+	primsInit();
+	outputString((char *) "Welcome to MicroBlocks!");
+	restoreScripts();
+	startAll();
 }
 
 void loop() {
-  vmLoop();
+	vmLoop();
 }

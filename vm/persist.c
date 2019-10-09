@@ -82,8 +82,8 @@
 	}
 
 #elif defined(ARDUINO_ARCH_SAMD) || \
-  defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO) || \
-  defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ADAFRUIT_ITSYBITSY_M0)
+	defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO) || \
+	defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ADAFRUIT_ITSYBITSY_M0)
 
 	#include "samr.h" // SAM21D
 
@@ -347,12 +347,12 @@ void outputRecordHeaders() {
 
 // xxx debug: dump contents
 // int chunkWords = *(p + 1);
-// sprintf(s, "  %x (%d words)", *p, chunkWords);
+// sprintf(s, "\t%x (%d words)", *p, chunkWords);
 // outputString(s);
 // int *w = p + 2;
 // for (int i = 0; i < chunkWords; i++) {
 // 	int word = *w;
-// 	sprintf(s, "    %d: %d %d %d %d ", i,
+// 	sprintf(s, "\t\t%d: %d %d %d %d ", i,
 // 	(word & 255), ((word >> 8) & 255), ((word >> 16) & 255), ((word >> 24) & 255));
 // 	outputString(s);
 // 	w++;
@@ -644,16 +644,16 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 // outputString(s);
 // char *p = data;
 // for (int i = 0; i < wordCount; i++) {
-// 	sprintf(s, "  %d: %d %d %d %d ", i, *p, *(p + 1), *(p + 2), *(p + 3));
+// 	sprintf(s, "\t%d: %d %d %d %d ", i, *p, *(p + 1), *(p + 2), *(p + 3));
 // 	outputString(s);
 // 	p += 4;
 // }
 
-  #if USE_CODE_FILE
-	writeCodeFileWord(header);
-	writeCodeFileWord(wordCount);
-	writeCodeFile(data, 4 * wordCount);
-  #endif
+	#if USE_CODE_FILE
+		writeCodeFileWord(header);
+		writeCodeFileWord(wordCount);
+		writeCodeFile(data, 4 * wordCount);
+	#endif
 
 	int *result = freeStart;
 	flashWriteWord(freeStart++, header);
@@ -709,9 +709,9 @@ void restoreScripts() {
 		return;
 	}
 
-  #if USE_CODE_FILE
-	initCodeFile(flash, HALF_SPACE);
-  #endif
+	#if USE_CODE_FILE
+		initCodeFile(flash, HALF_SPACE);
+	#endif
 
 	int *p = compactionStartRecord();
 	while (p) {

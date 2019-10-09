@@ -64,10 +64,10 @@ void hardwareInit() {
 
 #else // not NRF51
 
-  #if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && defined(SERIAL_PORT_USBVIRTUAL)
-	#undef Serial
-	#define Serial SERIAL_PORT_USBVIRTUAL
-  #endif
+	#if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && defined(SERIAL_PORT_USBVIRTUAL)
+		#undef Serial
+		#define Serial SERIAL_PORT_USBVIRTUAL
+	#endif
 
 uint32 microsecs() { return (uint32) micros(); }
 uint32 millisecs() { return (uint32) millis(); }
@@ -91,7 +91,7 @@ void hardwareInit() {
 	turnOffInternalNeoPixels();
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
-        	touchSetCycles(0x800, 0x800);
+		touchSetCycles(0x800, 0x800);
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32)
 		tftInit();
@@ -114,8 +114,8 @@ int recvBytes(uint8 *buf, int count) {
 int sendByte(char aByte) { return Serial.write(aByte); }
 
 void restartSerial() {
- 	Serial.end();
- 	Serial.begin(115200);
+	Serial.end();
+	Serial.begin(115200);
 }
 
 // General Purpose I/O Pins
@@ -318,8 +318,8 @@ void restartSerial() {
 	#define PIN_LED 0
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 14
-        static const char analogPinMappings[4] = { 36, 37, 38, 39 };
-        static const char digitalPinMappings[4] = { 12, 25, 32, 26 };
+	static const char analogPinMappings[4] = { 36, 37, 38, 39 };
+	static const char digitalPinMappings[4] = { 12, 25, 32, 26 };
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32)
 
@@ -723,7 +723,7 @@ int tonePin = -1;
 			ledcSetup(0, 1E5, 12); // do setup on first call
 		} else {
 			ledcWrite(0, 0); // stop current tone, if any
- 			ledcDetachPin(tonePin);
+			ledcDetachPin(tonePin);
 		}
 		tonePin = pin;
 	}
@@ -736,7 +736,7 @@ void stopTone() {
 	#elif defined(ESP32)
 		if (tonePin >= 0) {
 			ledcWrite(0, 0);
- 			ledcDetachPin(tonePin);
+			ledcDetachPin(tonePin);
 		}
 	#endif
 }

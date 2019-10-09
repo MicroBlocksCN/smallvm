@@ -1075,8 +1075,8 @@ method showOutputStrings SmallRuntime {
 
 method installVM SmallRuntime wipeFlashFlag downloadLatest {
 //	if ((getCurrentVersion (findMicroBlocksEditor)) ==
-//            (getLatestVersion (findMicroBlocksEditor))) {
-//		downloadLatest = false
+//		(getLatestVersion (findMicroBlocksEditor))) {
+//			downloadLatest = false
 //	}
 
 	if ('Browser' == (platform)) {
@@ -1105,7 +1105,7 @@ method installVM SmallRuntime wipeFlashFlag downloadLatest {
 			addLine menu
 			addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
 			popUpAtHand menu (global 'page')
- 		}
+		}
 	} else {
 		inform (join
 			(localized 'No boards found; is your board plugged in?') (newline)
@@ -1183,7 +1183,7 @@ method copyVMToBoard SmallRuntime boardName boardPath downloadLatest {
 	if (notNil vmFileName) {
 		if downloadLatest {
 			vmData = (httpGetBinary 'gpblocks.org' (join (latestReleasePath this) vmFileName))
-        } else {
+		} else {
 			vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
 		}
 	}
@@ -1229,31 +1229,31 @@ method adaFruitMessage SmallRuntime {
 // espressif board flashing
 
 method flasher SmallRuntime {
-    return flasher
+	return flasher
 }
 
 method confirmRemoveFlasher SmallRuntime {
-    ok = (confirm
-        (global 'page')
-        nil
-        (localized 'Are you sure you want to cancel the upload process?'))
-    if ok { removeFlasher this }
+	ok = (confirm
+		(global 'page')
+		nil
+		(localized 'Are you sure you want to cancel the upload process?'))
+	if ok { removeFlasher this }
 }
 
 method removeFlasher SmallRuntime {
-    destroy flasher
-    flasher = nil
-    tryToConnect this
+	destroy flasher
+	flasher = nil
+	tryToConnect this
 }
 
 method flashVM SmallRuntime boardName wipeFlashFlag downloadLatest {
-    stopAndSyncScripts this
-    setPort this 'disconnect'
+	stopAndSyncScripts this
+	setPort this 'disconnect'
 
-    flasher = (newFlasher 'flashVM' (array wipeFlashFlag downloadLatest) boardName)
-    addPart (global 'page') (morph flasher)
+	flasher = (newFlasher 'flashVM' (array wipeFlashFlag downloadLatest) boardName)
+	addPart (global 'page') (morph flasher)
 
-    start flasher
+	start flasher
 }
 
 // data logging

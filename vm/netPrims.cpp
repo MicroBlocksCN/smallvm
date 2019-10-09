@@ -204,7 +204,7 @@ void webServerLoop() {
 			client.print(JSON_HEADER);
 			client.print(valueJSON(response, varName, varID));
 		}
-        } else if (hasPrefix(request, "PUT /properties/", varName, sizeof(varName))) {
+	} else if (hasPrefix(request, "PUT /properties/", varName, sizeof(varName))) {
 		// Set variable value
 		varID = indexOfVarNamed(varName);
 		if (varID < 0) {
@@ -214,21 +214,21 @@ void webServerLoop() {
 			client.print(JSON_HEADER);
 			client.print(valueJSON(response, varName, varID));
 		}
-        } else if (hasPrefix(request, "GET /events", NULL, 0)) {
+	} else if (hasPrefix(request, "GET /events", NULL, 0)) {
 		client.print(JSON_HEADER);
-                client.print("[\n  ");
+		client.print("[\n  ");
 		for (int i = 0; i < BROADCAST_BUFFER_COUNT; i++) {
 			char *evt = broadcastBuffer[(nextBroadcastBuffer + i) % BROADCAST_BUFFER_COUNT];
 			if (strcmp(evt, "") != 0) {
 				client.print("  { \"");
 				client.print(evt);
 				client.print("\":{ \"data\":{\"id\":\"");
-                                client.print(event_id++);
-                                client.print("\"}}},\n");
+				client.print(event_id++);
+				client.print("\"}}},\n");
 			}
-                }
-                client.print("  { \"_\":{}}\n]");
-                clearBroadcastBuffer();
+		}
+		client.print("  { \"_\":{}}\n]");
+		clearBroadcastBuffer();
 	} else {
 		client.print(NOT_FOUND_RESPONSE);
 	}

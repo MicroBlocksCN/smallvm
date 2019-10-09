@@ -227,7 +227,7 @@ static void sendPacket(uint8_t *packet) {
 	// restore the receive packet
 	NRF_RADIO->PACKETPTR = (uint32_t) &receiveBuffer[packetIndex * PACKET_SIZE];
 
-	disableRadio();  // disable the transmitter
+	disableRadio(); // disable the transmitter
 	startReceiving();
 }
 
