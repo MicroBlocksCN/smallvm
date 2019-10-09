@@ -1074,7 +1074,7 @@ method showOutputStrings SmallRuntime {
 // Virtual Machine Installer
 
 method installVM SmallRuntime wipeFlashFlag downloadLatest {
-//	if ((getCurrentVersion (findMicroBlocksEditor)) == 
+//	if ((getCurrentVersion (findMicroBlocksEditor)) ==
 //            (getLatestVersion (findMicroBlocksEditor))) {
 //		downloadLatest = false
 //	}
@@ -1193,6 +1193,7 @@ method copyVMToBoard SmallRuntime boardName boardPath downloadLatest {
 	writeFile (join boardPath vmFileName) vmData
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
 	waitMSecs 2000
+	if (beginsWith boardName 'MICROBIT') { waitMSecs 3000 }
 	disconnected = false // re-enable auto-connect
 }
 
