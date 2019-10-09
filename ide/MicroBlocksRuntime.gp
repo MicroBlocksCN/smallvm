@@ -1182,8 +1182,8 @@ method copyVMToBoard SmallRuntime boardName boardPath downloadLatest {
 	}
 	if (notNil vmFileName) {
 		if downloadLatest {
-			vmData = (httpGet 'gpblocks.org' (join (latestReleasePath this) vmFileName))
-                } else {
+			vmData = (httpGetBinary 'gpblocks.org' (join (latestReleasePath this) vmFileName))
+        } else {
 			vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
 		}
 	}
