@@ -96,6 +96,11 @@ to httpGetBinary host path port {
 	while (count > 0) {
 		chunk = (readSocket socket true)
 		count = (byteCount chunk)
+		if (count == 0) {
+			waitMSecs 600
+			chunk = (readSocket socket true)
+			count = (byteCount chunk)
+		}
 		if (count > 0) {
 			response = (join response chunk)
 			waitMSecs 50
