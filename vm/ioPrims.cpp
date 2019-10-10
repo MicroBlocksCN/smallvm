@@ -318,8 +318,12 @@ void restartSerial() {
 	#define PIN_LED 0
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 14
-        static const char analogPinMappings[4] = { 36, 37, 38, 39 };
-        static const char digitalPinMappings[4] = { 12, 25, 32, 26 };
+        static const int analogPinMappings[4] = { 36, 37, 38, 39 };
+        static const int digitalPinMappings[4] = { 12, 25, 32, 26 };
+        static int aButtonReadings[10] = {0};
+        static int bButtonReadings[10] = {0};
+        static int aButtonIndex = 0;
+        static int bButtonIndex = 0;
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32)
 
@@ -632,8 +636,17 @@ OBJ primButtonA(OBJ *args) {
 		primDigitalSet(PIN_BUTTON_A, false);
 	#endif
 	#ifdef PIN_BUTTON_A
-		#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+		#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
+		#elif defined(ARDUINO_CITILAB_ED1)
+                        // we average the last 10 touch readings
+			aButtonReadings[aButtonIndex] = touchRead(PIN_BUTTON_A);
+                        aButtonIndex = (aButtonIndex + 1) % 10;
+                        int sum = 0;
+                        for (int i = 0; i < 10; i ++) {
+                            sum = sum + aButtonReadings[i];
+                        }
+			return ((sum/10) < 16) ? trueObj : falseObj;
 		#else
 			SET_MODE(PIN_BUTTON_A, INPUT);
 		#endif
@@ -650,7 +663,13 @@ OBJ primButtonB(OBJ *args) {
 	#endif
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
-			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
+			bButtonReadings[bButtonIndex] = touchRead(PIN_BUTTON_B);
+                        bButtonIndex = (bButtonIndex + 1) % 10;
+                        int sum = 0;
+                        for (int i = 0; i < 10; i ++) {
+                            sum = sum + bButtonReadings[i];
+                        }
+			return ((sum/10) < 16) ? trueObj : falseObj;
 		#else
 			SET_MODE(PIN_BUTTON_B, INPUT);
 		#endif
