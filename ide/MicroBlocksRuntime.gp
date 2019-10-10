@@ -1193,7 +1193,7 @@ method copyVMToBoard SmallRuntime boardName boardPath downloadLatest {
 	writeFile (join boardPath vmFileName) vmData
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
 	waitMSecs 2000
-	if (beginsWith boardName 'MICROBIT') { waitMSecs 3000 }
+	if (or (beginsWith boardName 'MICROBIT') (beginsWith boardName 'MINI')) { waitMSecs 4000 }
 	disconnected = false // re-enable auto-connect
 }
 
