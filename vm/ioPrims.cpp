@@ -639,14 +639,15 @@ OBJ primButtonA(OBJ *args) {
 		#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
 		#elif defined(ARDUINO_CITILAB_ED1)
-                        // we average the last 10 touch readings
+			// we average the last 10 touch readings
 			aButtonReadings[aButtonIndex] = touchRead(PIN_BUTTON_A);
-                        aButtonIndex = (aButtonIndex + 1) % 10;
-                        int sum = 0;
-                        for (int i = 0; i < 10; i ++) {
-                            sum = sum + aButtonReadings[i];
-                        }
-			return ((sum/10) < 16) ? trueObj : falseObj;
+			aButtonIndex = (aButtonIndex + 1) % 10;
+			int sum = 0;
+			for (int i = 0; i < 10; i ++) {
+				sum = sum + aButtonReadings[i];
+			}
+			return ((BUTTON_PRESSED == digitalRead(PIN_BUTTON_A))
+				&& ((sum/10) < 16)) ? trueObj : falseObj;
 		#else
 			SET_MODE(PIN_BUTTON_A, INPUT);
 		#endif
@@ -664,12 +665,12 @@ OBJ primButtonB(OBJ *args) {
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
 			bButtonReadings[bButtonIndex] = touchRead(PIN_BUTTON_B);
-                        bButtonIndex = (bButtonIndex + 1) % 10;
-                        int sum = 0;
-                        for (int i = 0; i < 10; i ++) {
-                            sum = sum + bButtonReadings[i];
-                        }
-			return ((sum/10) < 16) ? trueObj : falseObj;
+			bButtonIndex = (bButtonIndex + 1) % 10;
+			int sum = 0;
+			for (int i = 0; i < 10; i ++) {
+				sum = sum + bButtonReadings[i];
+			}
+			return ((BUTTON_PRESSED == digitalRead(PIN_BUTTON_B)) && ((sum/10) < 16)) ? trueObj : falseObj;
 		#else
 			SET_MODE(PIN_BUTTON_B, INPUT);
 		#endif
