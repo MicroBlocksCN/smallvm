@@ -7,7 +7,7 @@ home
 'pen down'
 repeat 36 {
   repeat 4 {
-    move 80
+    move (('[tft:getHeight]') / 3)
     turnBy 90
   }
   turnBy 10
@@ -28,6 +28,34 @@ to displayCharacter s {
 }
 
 
+module TFT Output
+
+	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec 'r' '[tft:getWidth]' 'TFT width'
+	spec 'r' '[tft:getHeight]' 'TFT height'
+	spec ' ' 'set TFT pixel x' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255
+	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false
+	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false
+	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false
+	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false
+	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false
+	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680
+	spec 'r' '_tft color' '_tft color _ to number' 'color any'
+
+to '_tft color' 'color hex' {
+  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
+  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
+  local 'b' ((((v 'color hex') & 255) * 255) / 31)
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to 'set TFT pixel x' x y color {
+  '[tft:setPixel]' x y ('_tft color' color)
+}
+
+
 module Turtle
 variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
 
@@ -44,14 +72,6 @@ variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
 	spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
 	spec ' ' 'setHeading' 'point in direction  _' 'auto' 0
 	spec ' ' '_turtleNotes' '_turtleNotes'
-	spec 'r' '_tft color' '_tft color _ to number' 'color'
-
-to '_tft color' 'color hex' {
-  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
-  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
-  local 'b' ((((v 'color hex') & 255) * 255) / 31)
-  return ((r << 16) | ((g << 8) | b))
-}
 
 to '_turtleNotes' {
   comment 'Representation:

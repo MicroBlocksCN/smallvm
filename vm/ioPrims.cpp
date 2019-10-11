@@ -318,12 +318,12 @@ void restartSerial() {
 	#define PIN_LED 0
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 14
-        static const int analogPinMappings[4] = { 36, 37, 38, 39 };
-        static const int digitalPinMappings[4] = { 12, 25, 32, 26 };
-        static int aButtonReadings[10] = {0};
-        static int bButtonReadings[10] = {0};
-        static int aButtonIndex = 0;
-        static int bButtonIndex = 0;
+	static const char analogPinMappings[4] = { 36, 37, 38, 39 };
+	static const char digitalPinMappings[4] = { 12, 25, 32, 26 };
+	static int aButtonReadings[10] = {0};
+	static int bButtonReadings[10] = {0};
+	static int aButtonIndex = 0;
+	static int bButtonIndex = 0;
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32)
 
@@ -461,9 +461,9 @@ OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 OBJ primAnalogRead(OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	#ifdef ARDUINO_CITILAB_ED1
-		if (pinNum > 100) {
-			pinNum = pinNum - 100;
-		} else if (analogPinMappings[pinNum - 1] > 0) {
+		if ((100 <= pinNum) && (pinNum <= 139)) {
+			pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
+		} else if ((1 <= pinNum) && (pinNum <= 4)) {
 			pinNum = analogPinMappings[pinNum - 1];
 		}
 	#endif
@@ -523,9 +523,9 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
 	#elif defined(ARDUINO_CITILAB_ED1)
-		if (pinNum > 100) {
-			pinNum = pinNum - 100;
-		} else if (digitalPinMappings[pinNum - 1] > 0) {
+		if ((100 <= pinNum) && (pinNum <= 139)) {
+			pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
+		} else if ((1 <= pinNum) && (pinNum <= 4)) {
 			pinNum = digitalPinMappings[pinNum - 1];
 		}
 		if (pinNum == 2 || pinNum == 4 || pinNum == 13 ||
@@ -582,13 +582,12 @@ void primDigitalSet(int pinNum, int flag) {
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
 	#elif defined(ARDUINO_CITILAB_ED1)
-		if (pinNum > 100) {
-			pinNum = pinNum - 100;
-		} else if (digitalPinMappings[pinNum - 1] > 0) {
+		if ((100 <= pinNum) && (pinNum <= 139)) {
+			pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
+		} else if ((1 <= pinNum) && (pinNum <= 4)) {
 			pinNum = digitalPinMappings[pinNum - 1];
-		} else if (RESERVED(pinNum)) {
-			return;
 		}
+		if (RESERVED(pinNum)) { return; }
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE)
