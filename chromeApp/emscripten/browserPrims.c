@@ -442,6 +442,8 @@ static OBJ primOpenWindow(int nargs, OBJ args[]) {
 		if (winCnv) {
 			winCnv.width = w;
 			winCnv.height = h;
+			winCnv.style.setProperty("width", w + "px");
+			winCnv.style.setProperty("height", h + "px");
 		}
 	}, w, h);
 
