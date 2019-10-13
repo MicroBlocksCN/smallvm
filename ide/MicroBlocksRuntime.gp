@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcTable
 
 method scripter SmallRuntime { return scripter }
 
@@ -740,6 +740,7 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'setVarMsg' 8
 		atPut msgDict 'getVarNamesMsg' 9
 		atPut msgDict 'clearVarsMsg' 10
+		atPut msgDict 'getChunkCRCMsg' 11
 		atPut msgDict 'getVersionMsg' 12
 		atPut msgDict 'getAllCodeMsg' 13
 		atPut msgDict 'deleteAllCodeMsg' 14
@@ -751,6 +752,7 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'outputValueMsg' 20
 		atPut msgDict 'varValueMsg' 21
 		atPut msgDict 'versionMsg' 22
+		atPut msgDict 'chunkCRCMsg' 23
 		atPut msgDict 'pingMsg' 26
 		atPut msgDict 'broadcastMsg' 27
 		atPut msgDict 'chunkAttributeMsg' 28
@@ -946,6 +948,35 @@ method skipMessage SmallRuntime {
 		i += 1
 	}
 	recvBuf = (newBinaryData 0) // no message start found; discard entire buffer
+}
+
+method buildCRCTable SmallRuntime {
+	coefficients = (largeInteger (hex 'ed') (hex 'b8') (hex '83') (hex '20'))
+	crcTable = (newArray 256)
+	for i 256 {
+		rem = (largeInteger (i - 1))
+		repeat 8 {
+			if ((rem & 1) != 0) { // rem is odd
+				rem = (rem >> 1)
+				rem = ((toLargeInteger rem) ^ coefficients)
+			} else { // rem is even
+				rem = (rem >> 1)
+			}
+		}
+		atPut crcTable i (toLargeInteger rem)
+	}
+}
+
+method crc SmallRuntime data {
+	// Compute the CRC-32 of the given data, assumed to be a String or BinaryData.
+
+	if (isNil crcTable) { buildCRCTable this }
+	crc = (largeInteger 255 255 255 255)
+	if (isClass data 'String') { data = (toBinaryData data) }
+	for byte (toArray data) {
+		crc = (((toLargeInteger (crc >> 8)) ^ (at crcTable ((crc & 255) + 1))) ^ byte)
+	}
+	return ((largeInteger 255 255 255 255) ^ crc)
 }
 
 method handleMessage SmallRuntime msg {
