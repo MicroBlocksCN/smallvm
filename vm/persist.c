@@ -663,29 +663,6 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	return result;
 }
 
-void delay(int); // declare Arduino delay() function to suppress compiler warning
-
-static int clearOnStartup() {
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_SINOBIT) || \
-		defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_CITILAB_ED1)
-			if ((trueObj == primButtonA(NULL)) && (trueObj == primButtonB(NULL))) return true;
-	#else
-		#if defined(ARDUINO_ARCH_ESP32)
-			#define TEST_PIN 26 // DAC2
-		#elif defined(ESP8266)
-			#define TEST_PIN 4
-		#else
-			#define TEST_PIN 2
-			return false; // not supported on Arduinos and AdaFruit boards (e.g. fails on ItsyBitsy)
-		#endif
-		OBJ args[2] = { int2obj(TEST_PIN), trueObj }; // use pullup
-		primDigitalRead(2, args);
-		delay(5); // wait a bit for the pullup resistor to take hold
-		return (falseObj == primDigitalRead(2, args)); // return true if TEST_PIN is low
-	#endif
-	return false;
-}
-
 void compact() {
 	#ifdef RAM_CODE_STORE
 		compactRAM();
@@ -697,17 +674,6 @@ void compact() {
 void restoreScripts() {
 	initPersistentMemory();
 	memset(chunks, 0, sizeof(chunks));
-
-	if (clearOnStartup()) {
-		clearPersistentMemory();
-		#if USE_CODE_FILE
-			initCodeFile(NULL, 0);
-			clearCodeFile(0);
-		#endif
-		outputString("Scripts cleared");
-		outputString("Started");
-		return;
-	}
 
 	#if USE_CODE_FILE
 		initCodeFile(flash, HALF_SPACE);
