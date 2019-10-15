@@ -307,14 +307,14 @@ void restartSerial() {
 
 	#define BOARD_TYPE "Citilab ED1"
 	#define DIGITAL_PINS 40
-	#define ANALOG_PINS 16
+	#define ANALOG_PINS 4
 	#define TOTAL_PINS 40
 	static const int analogPin[] = {};
 	static const char reservedPin[TOTAL_PINS] = {
-		1, 0, 1, 0, 1, 0, 0, 0, 0, 0,
-		0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-		0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 1, 0, 0, 0, 0, 0, 0};
 	#define PIN_LED 0
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 14
