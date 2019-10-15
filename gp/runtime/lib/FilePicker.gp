@@ -274,6 +274,7 @@ method addIconButton FilePicker x y iconName anAction label {
   }
   scale = (global 'scale')
   iconBM = (scaleAndRotate (call iconName (new 'FilePickerIcons')) (0.75 * scale))
+//  iconBM = (scaledIcon this iconName) // don't activate this until warpBitmap works in browsers
   bm = (newBitmap (70 * scale) (40 * scale))
   drawBitmap bm iconBM (half ((width bm) - (width iconBM))) 0
   if (1 == scale) {
@@ -293,6 +294,16 @@ method addIconButton FilePicker x y iconName anAction label {
   setPosition (morph button) x y
   addPart morph (morph button)
   return button
+}
+
+method scaledIcon FilePicker iconName {
+	// This works on SDL 2.0.10 but warpBitmap has not yet been implemented for browsers.
+	scaleFactor = (0.8 * (global 'scale'))
+	iconBM = (call iconName (new 'FilePickerIcons'))
+	resultBM = (newBitmap (scaleFactor * (width iconBM)) (scaleFactor * (height iconBM)))
+	// warpBitmap args: dstBM srcBM xScale yScale rotation
+	warpBitmap resultBM iconBM 0 0 scaleFactor scaleFactor
+	return resultBM
 }
 
 method textButton FilePicker x y label selectorOrAction {
