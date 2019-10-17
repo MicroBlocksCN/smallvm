@@ -12,11 +12,7 @@ linux+pi/ublockscode
 linux+pi/GnuBlocks
 precompiled/vm.*
 BUILD
-uBlocks.crx
 *.swp
 *.swo
 *.exe
 *.deb
-misc/connector/node/build
-misc/connector/node/package-lock.json
-misc/connector/node/node_modules
