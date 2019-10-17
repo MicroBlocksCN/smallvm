@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=ublocks
-Icon=nm-device-wireless
-Comment=microBlocks connector
-Exec=/usr/local/ublocks/ublocksd start
-Terminal=false
-NoDisplay=true
-NotShowIn=KDE;GNOME;

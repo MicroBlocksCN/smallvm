@@ -1,3 +1,0 @@
-#!/bin/bash
-killall ublocks -9 > /dev/null 2>&1
-(cd /usr/local/ublocks; ./ublocks-linux -s >> /tmp/ublocks.log 2>&1 &) &
