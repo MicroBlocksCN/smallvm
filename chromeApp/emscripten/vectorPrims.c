@@ -17,7 +17,7 @@
 
 #else
 
-  #include "cairo.h"
+  #include <cairo/cairo.h>
 
   #define closePath cairo_close_path
   #define curveTo cairo_curve_to
@@ -281,7 +281,7 @@ static void strokePath(OBJ bitmap, OBJ path, OBJ strokeColor, double lineWidth, 
 
 #else
 
-#include "cairo.h"
+#include <cairo/cairo.h>
 
 static inline cairo_surface_t * bitmap2surface(OBJ bitmap) {
 	if (!isBitmap(bitmap)) return NULL;
