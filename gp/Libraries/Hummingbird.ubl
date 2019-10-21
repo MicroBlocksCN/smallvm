@@ -42,7 +42,7 @@ to 'Hummingbird Rotation Servo' port speed {
   if (and (speed < 2) (speed > -2)) {
     speed = 255
   } else {
-    speed = (124 + ((('_within' speed -100 100) * 23) / 100))
+    speed = (128 + ((('_within' speed -100 100) * 23) / 100))
   }
   port = (('_within' port 1 4) + 197)
   '_Hummingbird Command' port speed 255 255
