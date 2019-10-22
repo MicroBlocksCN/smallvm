@@ -320,10 +320,12 @@ void restartSerial() {
 	#define PIN_BUTTON_B 14
 	static const char analogPinMappings[4] = { 36, 37, 38, 39 };
 	static const char digitalPinMappings[4] = { 12, 25, 32, 26 };
-	static int aButtonReadings[10] = {0};
-	static int bButtonReadings[10] = {0};
-	static int aButtonIndex = 0;
-	static int bButtonIndex = 0;
+	#define CAP_THRESHOLD 16
+	static const char buttonsPins[6] = { 2, 4, 13, 14, 15, 27 };
+	static int buttonIndex = 0;
+	int buttonReadings[6] = {
+		CAP_THRESHOLD, CAP_THRESHOLD, CAP_THRESHOLD,
+		CAP_THRESHOLD, CAP_THRESHOLD, CAP_THRESHOLD };
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32)
 
@@ -638,15 +640,19 @@ OBJ primButtonA(OBJ *args) {
 		#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
 		#elif defined(ARDUINO_CITILAB_ED1)
-			// we average the last 10 touch readings
-			aButtonReadings[aButtonIndex] = touchRead(PIN_BUTTON_A);
-			aButtonIndex = (aButtonIndex + 1) % 10;
-			int sum = 0;
-			for (int i = 0; i < 10; i ++) {
-				sum = sum + aButtonReadings[i];
+			int value = touchRead(buttonsPins[buttonIndex]);
+			if (value < CAP_THRESHOLD) {
+				if (value == 0) { // physical button
+					buttonReadings[buttonIndex] = 0;
+				}
+				if (buttonReadings[buttonIndex] > 0) {
+					buttonReadings[buttonIndex]--;
+				}
+			} else {
+				buttonReadings[buttonIndex] = CAP_THRESHOLD + 4; // try four times
 			}
-			return ((BUTTON_PRESSED == digitalRead(PIN_BUTTON_A))
-				&& ((sum/10) < 16)) ? trueObj : falseObj;
+			buttonIndex = (buttonIndex + 1) % 6;
+			return (buttonReadings[4] < CAP_THRESHOLD) ? trueObj : falseObj;
 		#else
 			SET_MODE(PIN_BUTTON_A, INPUT);
 		#endif
@@ -663,13 +669,7 @@ OBJ primButtonB(OBJ *args) {
 	#endif
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
-			bButtonReadings[bButtonIndex] = touchRead(PIN_BUTTON_B);
-			bButtonIndex = (bButtonIndex + 1) % 10;
-			int sum = 0;
-			for (int i = 0; i < 10; i ++) {
-				sum = sum + bButtonReadings[i];
-			}
-			return ((BUTTON_PRESSED == digitalRead(PIN_BUTTON_B)) && ((sum/10) < 16)) ? trueObj : falseObj;
+			return (buttonReadings[3] < CAP_THRESHOLD) ? trueObj : falseObj;
 		#else
 			SET_MODE(PIN_BUTTON_B, INPUT);
 		#endif

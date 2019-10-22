@@ -350,9 +350,31 @@ OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(readTemperature()); }
 
 #ifdef ARDUINO_ARCH_ESP32
 
+#ifdef ARDUINO_CITILAB_ED1
+
+extern int buttonReadings[6];
+
+static OBJ primTouchRead(int argCount, OBJ *args) {
+	//return int2obj(touchRead(obj2int(args[0])));
+	int pin = obj2int(args[0]);
+	switch (pin) {
+		case 2: return int2obj(buttonReadings[0]);
+		case 4: return int2obj(buttonReadings[1]);
+		case 13: return int2obj(buttonReadings[2]);
+		case 14: return int2obj(buttonReadings[3]);
+		case 15: return int2obj(buttonReadings[4]);
+		case 27: return int2obj(buttonReadings[5]);
+		default: return int2obj(touchRead(pin));
+	}
+}
+
+#else
+
 static OBJ primTouchRead(int argCount, OBJ *args) {
 	return int2obj(touchRead(obj2int(args[0])));
 }
+
+#endif
 
 #else // stubs for non-ESP32 boards
 
