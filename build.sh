@@ -114,21 +114,27 @@ fi
 touch apps/MicroBlocks.app
 
 # app packaging
+# also zips standalone executables
 if test -n "$pack"; then
     echo "Packaging microBlocks version $version..."
     mkdir -p apps/packages
+    mkdir -p apps/standalone
     # build Win32 installer
     if [ -z $system ] || [ $system == 'win' ]; then
+        (cd apps; zip ublocks-win.zip ublocks-win.exe; mv ublocks-win.zip standalone)
         (cd gp/packagers/win32/; ./build-installer.sh ../../../apps/ublocks-win.exe ../../../apps/packages $version)
     fi
     # build .deb packages for amd64, i386 and armhf (Raspberry Pi)
     if [ -z $system ] || [ $system == 'linux64bit' ]; then
+        (cd apps; zip ublocks-linux64bit.zip ublocks-linux64bit; mv ublocks-linux64bit.zip standalone)
         (cd gp/packagers/linux/; ./build-deb.sh ../../../apps/ublocks-linux64bit ../../../apps/packages $version amd64)
     fi
     if [ -z $system ] || [ $system == 'linux32bit' ]; then
+        (cd apps; zip ublocks-linux32bit.zip ublocks-linux32bit; mv ublocks-linux32bit.zip standalone)
         (cd gp/packagers/linux/; ./build-deb.sh ../../../apps/ublocks-linux32bit ../../../apps/packages $version i386)
     fi
     if [ -z $system ] || [ $system == 'raspberryPi' ]; then
+        (cd apps; zip ublocks-raspberryPi.zip ublocks-raspberryPi; mv ublocks-raspberryPi.zip standalone)
         (cd gp/packagers/linux/; ./build-deb.sh ../../../apps/ublocks-raspberryPi ../../../apps/packages $version armhf)
     fi
     # build zip package for Mac
