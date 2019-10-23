@@ -2,28 +2,28 @@ Output
 Output
 
 set user LED _
-maak gebruiker LED _
+set user LED _
 
 say _
-zeg _
+say _
 
 graph _
-grafiek _
+graph _
 
 Input
 Input
 
 button A
-knop A
+button A
 
 button B
-knop B
+button B
 
 microseconds
-microseconden
+microseconds
 
 milliseconds
-milliseconden
+milliseconds
 
 board type
 board type
@@ -32,112 +32,112 @@ Pins
 Pins
 
 read digital pin _
-lees digitale pin_
+read digital pin _
 
 read analog pin _
-lees analoge pin _
+read analog pin _
 
 set digital pin _ to _
-maak digitale pin _  _
+set digital pin _ to _
 
 set pin _ to _
-maak pin _  _
+set pin _ to _
 
 analog pins
-analoge pinnen
+analog pins
 
 digital pins
-digitale pinnen
+digital pins
 
 Control
 Control
 
 when started
-wanneer gestart
+when started
 
 when button _ pressed
-wanneer knop _ wordt ingedrukt
+when button _ pressed
 
 forever _
-herhaal _
+forever _
 
 repeat _ _
-herhaal _ _
+repeat _ _
 
 if _ _
-als _ _
+if _ _
 
 else if _ _
-anders als _ dan _
+else if _ _
 
 if _ _ else _
-als _ dan _ anders _
+if _ _ else _
 
 wait _ millisecs
-wacht _ millisec.
+wait _ millisecs
 
 wait _ microsecs
-wacht _ microsec.
+wait _ microsecs
 
 stop this task
-stop deze taak
+stop this task
 
 stop other tasks
 stop other tasks
 
 stop all
-stop alles
+stop all
 
 comment _
-commentaar _
+comment _
 
 wait until _
-wacht tot _
+wait until _
 
 repeat until _ _
-herhaal tot _ _
+repeat until _ _
 
 for _ in _ _
-voor _ in _ _
+for _ in _ _
 
 when _
-wanneer _
+when _
 
 when _ received
-wanneer _ ontvangen
+when _ received
 
 broadcast _
-zend _
+broadcast _
 
 return _
-terug _
+return _
 
 Math
 Math
 
 _ mod _
-_ modulo _
+_ mod _
 
 abs _
-absolute waarde van _
+abs _
 
 random _ to _
-willekeurig getal tussen _ en _
+random _ to _
 
 not _
-niet _
+not _
 
 _ and _
-_ en _
+_ and _
 
 and _
-en _
+and _
 
 _ or _
-_ of _
+_ or _
 
 or _
-of _
+or _
 
 Variables
 Variables
@@ -152,22 +152,22 @@ New variable name?
 New variable name?
 
 set _ to _
-maak _  _
+set _ to _
 
 change _ by _
-verander _ met _
+change _ by _
 
 local _ _
-lokale variabele _ _
+local _ _
 
 Lists
 Lists
 
 new list length _
-nieuwe lijst _
+new list length _
 
 fill list _ with _
-vul lijst _ met _
+fill list _ with _
 
 item _ of _
 item _ of _
@@ -176,16 +176,16 @@ replace item _ of _ with _
 replace item _ of _ with _
 
 length of _
-lengte van _
+length of _
 
 My Blocks
 My Blocks
 
 Add a command block
-Maak een commando blok
+Add a command block
 
 Add a reporter block
-Maak een reporter blok
+Add a reporter block
 
 Enter function name:
 Enter function name:
@@ -194,40 +194,40 @@ Comm
 Comm
 
 i2c get device _ register _
-i2c verkrijg device _ register _
+i2c get device _ register _
 
 i2c set device _ register _ to _
 i2c set device _ register _ to _
 
 spi send _
-spi zend _
+spi send _
 
 spi receive
-spi ontvang
+spi receive
 
 print _
-schrijf _
+print _
 
 hex _
-hexadecimaal _
+hex _
 
 no op
-doe niets
+no op
 
 ignore
-negeer
+ignore
 
 draw shape _ at x _ y _
-teken vorm _ op x _ y _
+draw shape _ at x _ y _
 
 shape for letter _
-vorm voor letter _
+shape for letter _
 
-set NeoPixel pin _ has white _
-maak NeoPixel pin _ met wit _
+set NeoPixel pin _ is RGBW _
+set NeoPixel pin _ is RGBW _
 
 send NeoPixel rgb _
-zend NeoPixel rgb _
+send NeoPixel rgb _
 
 has tone support
 has tone support
@@ -251,37 +251,37 @@ my IP address
 my IP address
 
 radio send number _
-radio zend nummer _
+radio send number _
 
 radio send string _
-radio zend tekst _
+radio send string _
 
 radio send pair _ = _
-radio zend paar _ = _
+radio send pair _ = _
 
 radio message received?
-radio boodschap ontvangen?
+radio message received?
 
 radio last number
-radio laatste nummer
+radio last number
 
 radio last string
-radio laatste tekst
+radio last string
 
 radio last message type
-radio laatste type boodschap
+radio last message type
 
 radio set group _
-radio instellen groep _
+radio set group _
 
 radio set channel (0-83) _
-radio instellen kanaal (0-83) _
+radio set channel (0-83) _
 
 radio set power (0-7) _
-radio instellen vermogen (0-7) _
+radio set power (0-7) _
 
 radio last signal strength
-radio laatste signaal sterkte
+radio last signal strength
 
 radio receive packet _
 radio receive packet _
@@ -293,28 +293,28 @@ disable radio
 disable radio
 
 light level
-lichtsterkte
+light level
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
-maak NeoPixels _ _ _ _ _ _ _ _ _ _
+set NeoPixels _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
-wis NeoPixels
+clear NeoPixels
 
 set NeoPixel _ color _
-maak NeoPixel _ kleur _
+set NeoPixel _ color _
 
 set all NeoPixels color _
-maak alle NeoPixels kleur _
+set all NeoPixels color _
 
 rotate NeoPixels by _
-draai NeoPixels met _
+rotate NeoPixels by _
 
 color r _ g _ b _
-kleur r _ g _ b _
+color r _ g _ b _
 
 attach _ LED NeoPixel strip to pin _ has white _
-verbind _ LED NeoPixel strip aan pin _ heeft wit _
+attach _ LED NeoPixel strip to pin _ has white _
 
 ED1 Stepper Motor
 ED1 Stepper Motor
@@ -388,47 +388,47 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ ∞
-Hummingbird Positie-Servo _ _ ∞
+Hummingbird Position Servo _ _ º
+Hummingbird Position Servo _ _ º
 
 Hummingbird Rotation Servo _ _ %
-Hummingbird Draai-Servo _ _ %
+Hummingbird Rotation Servo _ _ %
 
 Hummingbird _ _
 Hummingbird _ _
 
 Hummingbird Battery (mV)
-Hummingbird Batterij (mV)
+Hummingbird Battery (mV)
 
 Light
-Licht
+Light
 
 Distance
-Afstand
+Distance
 
 Dial
-Draaiknop
+Dial
 
 Sound
-Geluid
+Sound
 
 Other
-Ander
+Other
 
 distance (cm) trigger _ echo _
-afstand (cm) trigger _ echo _
+distance (cm) trigger _ echo _
 
 IR Remote
 IR Remote
 
 receive IR code from device _
-ontvang IR code van apparaat _
+receive IR code from device _
 
 test IR
 test IR
 
 attach IR receiver to pin _
-verbind IR receiver aan pin _
+attach IR receiver to pin _
 
 Radio
 Radio
@@ -437,16 +437,16 @@ Scrolling
 Scrolling
 
 scroll text _
-scroll tekst _
+scroll text _
 
 scroll number _
-scroll nummer _
+scroll number _
 
 pausing _ ms
-met _ ms pauze
+pausing _ ms
 
 stop scrolling
-stop met scrollen
+stop scrolling
 
 Servo
 Servo
@@ -455,67 +455,67 @@ has servo support
 has servo support
 
 set servo _ to _ (-100 to 100)
-stel servo _ in _ (-100 op 100)
+set servo _ to _ (-100 to 100)
 
 resetServos
-reset servo's
+resetServos
 
 flip servo _ _
 flip servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
-verbind servo's 1 to 4 aan pins _ _ _ _
+attach servos 1 to 4 to pins _ _ _ _
 
 LED Display
 LED Display
 
 display _
-scherm _
+display _
 
 clear display
-wis scherm
+clear display
 
 plot x _ y _
-zet aan x _ y _
+plot x _ y _
 
 unplot x _ y _
-zet uit x _ y _
+unplot x _ y _
 
 display character _
-toon teken _
+display character _
 
 enable TFT _
-activeer TFT _
+enable TFT _
 
 TFT width
-TFT breedte
+TFT width
 
 TFT height
-TFT hoogte
+TFT height
 
 set TFT pixel x _ y _ to _
-zet TFT pixel x _ y _ op _
+set TFT pixel x _ y _ to _
 
 draw line on TFT from x _ y _ to x _ y _ color _
-teken lijn op TFT van x _ y _ naar x _ y _ kleur _
+draw line on TFT from x _ y _ to x _ y _ color _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
-teken rechthoek op TFT op x _ y _ breed _ hoog _ kleur _
+draw rectangle on TFT at x _ y _ width _ height _ color _
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
-teken afgeronde rechthoek op TFT op x _ y _ breed _ hoog _ radius _ kleur _
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
 
 draw circle on TFT at x _ y _ radius _ color _
-teken cirkel op TFT op x _ y _ radius _ kleur _
+draw circle on TFT at x _ y _ radius _ color _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
-teken driehoek op TFT op x _ y _ , x _ y _ , x _ y _ kleur _
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
 
 filled _
 filled _
 
 write _ on TFT at x _ y _ color _
-schrijf _ op TFT op x _ y _ kleur _
+write _ on TFT at x _ y _ color _
 
 scale _ wrap _
 scale _ wrap _
@@ -524,16 +524,16 @@ Tone
 Tone
 
 attach buzzer to pin _
-verbind buzzer aan pin _
+attach buzzer to pin _
 
 play note _ octave _ during _ ms
-speel noot _ octaaf  _ gedurende _ ms
+play note _ octave _ during _ ms
 
 play frequency _ for _ milliseconds
-speel frequentie _ gedurende _ ms
+play frequency _ for _ milliseconds
 
 play midi key _ for _ milliseconds
-speel midi toon _ gedurende _ ms
+play midi key _ for _ milliseconds
 
 Turtle
 Turtle
@@ -881,7 +881,7 @@ number only
 number only
 
 define
-Definieer
+define
 
 number/string
 number/string
@@ -914,16 +914,16 @@ Basic Sensors
 Basic Sensors
 
 tilt x
-kantel x
+tilt x
 
 tilt y
-kantel y
+tilt y
 
 tilt z
-kantel z
+tilt z
 
 temperature (°C)
-temperatuur (°C)
+temperature (°C)
 
 Obsolete
 Obsolete
