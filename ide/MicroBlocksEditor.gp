@@ -591,13 +591,13 @@ method languageMenu MicroBlocksEditor {
   menu = (menu 'Language' this)
   addItem menu 'English' (action 'setLanguage' this 'English')
   if ('Browser' == (platform)) {
-	for fn (listFiles 'translations') {
+	for fn (sorted (listFiles 'translations')) {
 	  fn = (withoutExtension fn)
 	  language = (withoutExtension fn)
 	  addItem menu language (action 'setLanguage' this language)
 	}
   } else {
-	for fn (listEmbeddedFiles) {
+	for fn (sorted (listEmbeddedFiles)) {
 	  fn = (withoutExtension fn)
 	  if (beginsWith fn 'translations/') {
 		language = (withoutExtension (substring fn 14))
