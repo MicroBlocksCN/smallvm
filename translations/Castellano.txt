@@ -1,32 +1,32 @@
 Output
-Sortida
+Salida
 
 set user LED _
-encén LED integrat _
+encender LED integrado _
 
 say _
-digues _
+decir _
 
 graph _
-afegeix a la gràfica _
+añade al gráfico _
 
 Input
 Entrada
 
 button A
-botó A
+botón A
 
 button B
-botó B
+botón B
 
 microseconds
-microsegons
+microsegundos
 
 milliseconds
-mil·lisegons
+milisegundos
 
 board type
-tipus de placa
+tipo de placa
 
 Pins
 Pins
@@ -35,34 +35,34 @@ read digital pin _
 lectura digital _
 
 read analog pin _
-lectura analògica _
+lectura analógica _
 
 set digital pin _ to _
-posa el pin digital _ a _
+poner pin digital _ a _
 
 set pin _ to _
-posa el pin _ a _
+poner pin _ a _
 
 analog pins
-pins analògics
+pines analógicos
 
 digital pins
-pins digitals
+pines digitales
 
 Control
 Control
 
 when started
-en començar
+al empezar
 
 when button _ pressed
-quan es premi el botó _
+cuando se pulse el botón _
 
 forever _
-per sempre _
+por siempre _
 
 repeat _ _
-repeteix _ vegades _
+repetir _ veces _
 
 if _ _
 si _ _
@@ -74,64 +74,64 @@ if _ _ else _
 si _ _ si no _
 
 wait _ millisecs
-espera _ mil·lisegons
+esperar _ milisegundos
 
 wait _ microsecs
-espera _ microsegons
+esperar _ microsegundos
 
 stop this task
-atura aquesta tasca
+detener esta tarea
 
 stop other tasks
-atura les altres tasques
+detener las otras tareas
 
 stop all
-atura-ho tot
+detenerlo todo
 
 comment _
-comentari _
+comentario _
 
 wait until _
-espera fins que _
+esperar hasta que _
 
 repeat until _ _
-repeteix fins que _ _
+repetir hasta que _ _
 
 for _ in _ _
-per cada _ en _ _
+por cada _ en _ _
 
 when _
-quan _
+cuando _
 
 when _ received
-quan rebi _
+al recibir _
 
 broadcast _
-envia _
+envíar _
 
 return _
-retorna _
+retornar _
 
 Math
-Operacions
+Operaciones
 
 _ mod _
-_ mòdul _
+_ módulo _
 
 abs _
-valor absolut de _
+valor absoluto de _
 
 random _ to _
-nombre a l'atzar entre _ i _
+número al azar entre _ y _
 
 not _
 no _
 
 _ and _
-_ i _
+_ y _
 
 and _
-i _
+y _
 
 _ or _
 _ o _
@@ -149,64 +149,64 @@ Delete a variable
 Elimina una variable
 
 New variable name?
-Nom de la variable?
+¿Nombre de la variable?
 
 set _ to _
-assigna _ a _
+asignar _ a _
 
 change _ by _
-augmenta _ en _
+aumentar _ en _
 
 local _ _
 variable local _ _
 
 Lists
-Llistes
+Listas
 
 new list length _
-nova llista de llargada _
+nueva lista de tamaño _
 
 fill list _ with _
-omple llista _ amb _
+llena lista _ con _
 
 item _ of _
-element _ de _
+elemento _ de _
 
 replace item _ of _ with _
-canvia l'element _ de _ per _
+cambia el elemento _ de _ por _
 
 length of _
-llargada de _
+tamaño de _
 
 My Blocks
-Els meus blocs
+Mis bloques
 
 Add a command block
-Crea un bloc comanda
+Crea un bloque comando
 
 Add a reporter block
-Crea un bloc reportador
+Crea un bloque reportador
 
 Enter function name:
-Nom de la funció:
+Nombre de la función:
 
 Comm
-Comunicacions
+Comunicaciones
 
 i2c get device _ register _
-i2c llegeix del dispositiu _ el registre _
+i2c leer del dispositivo _ el registro _
 
 i2c set device _ register _ to _
-i2c escriu al dispositiu _ el registre _ amb _
+i2c escribir al dispositivo _ el registro _ con _
 
 spi send _
-spi envia _
+spi envíar _
 
 spi receive
-spi llegeix
+spi leer
 
 print _
-escriu _
+escribir _
 
 hex _
 hexadecimal _
@@ -215,184 +215,184 @@ no op
 no op
 
 ignore
-ignora
+ignorar
 
 draw shape _ at x _ y _
-dibuixa forma _ a x _ y _
+dibuja forma _ en x _ y _
 
 shape for letter _
-forma de la lletra _
+forma para letra _
 
 set NeoPixel pin _ is RGBW _
-configura un NeoPixel al pin _ tipus RGBW _
+configurar un NeoPixel en el pin _ tipo RGBW _
 
 send NeoPixel rgb _
-envia RGB _ al NeoPixel
+envíar RGB _ al NeoPixel
 
 has tone support
-té suport per a tons
+tiene soporte para tonos
 
 play tone pin _ frequency _
-toca un to al pin _ de freqüència _
+toca un tono en el pin _ con frecuencia _
 
 has WiFi support
-té suport per a WiFi
+tiene soporte para WiFi
 
 start WiFi _ password _
-inicia WiFi _ amb contrasenya _
+inicia WiFi _ con contraseña _
 
 stop WiFi
-atura WiFi
+detén WiFi
 
 WiFi status
-estat de la WiFi
+estado de la WiFi
 
 my IP address
-la meva adreça IP
+mi dirección IP
 
 radio send number _
-envia nombre _ per ràdio
+envía número _ por radio
 
 radio send string _
-envia text _ per ràdio
+envía texto _ por radio
 
 radio send pair _ = _
-envia associació _ = _ per ràdio
+envía associación _ = _ por radio
 
 radio message received?
-missatge de ràdio rebut?
+¿mensaje de radio recibido?
 
 radio last number
-últim nombre rebut per ràdio
+último número recibido por radio
 
 radio last string
-últim text rebut per ràdio
+último texto recibido por radio
 
 radio last message type
-tipus de l'últim missatge rebut per ràdio
+tipo del último mensaje recibido por radio
 
 radio set group _
-fixa el grup de ràdio a _
+fija el grupo de radio a _
 
 radio set channel (0-83) _
-fixa el canal de ràdio a (0-83) _
+fija el canal de radio a (0-83) _
 
 radio set power (0-7) _
-fixa potència de ràdio a (0-7) _
+fija potencia de radio a (0-7) _
 
 radio last signal strength
-intensitat de l'última senyal de ràdio
+intensidad de la última señal de radio
 
 radio receive packet _
-rep paquet per ràdio _
+recibe paquete por radio _
 
 radio send packet _
-envia paquet per ràdio _
+envía paquete por radio _
 
 disable radio
-inhabilita ràdio
+inhabilita radio
 
 light level
-nivell de llum
+nivel de luz
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
-posa NeoPixels _ _ _ _ _ _ _ _ _ _
+pon NeoPixels _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
 apaga NeoPixels
 
 set NeoPixel _ color _
-posa NeoPixel _ de color _
+pon NeoPixel _ de color _
 
 set all NeoPixels color _
-posa tots els NeoPixels de color _
+pon todos los NeoPixels de color _
 
 rotate NeoPixels by _
 rota NeoPixels en _
 
 color r _ g _ b _
-color vermell _ verd _ blau _
+color r _ v _ a _
 
 attach _ LED NeoPixel strip to pin _ has white _
-inicialitza tira de _ NeoPixels al pin _ amb blanc _
+inicializa tira de _ NeoPixels en el pin _ con blanco _
 
 ED1 Stepper Motor
-Motors ED1
+Motores ED1
 
 move motor _  _ steps _
-mou motor _ _ passos en _
+mueve motor _ _ pasos en _
 
 move motor 1 _ and motor 2 _ _ steps
-mou motor 1 en _ i motor 2 en _ _ passos
+mueve motor 1 en _ y motor 2 en _ _ pasos
 
 stop steppers
-atura motors
+detén motores
 
 clockwise
-sentit horari
+sentido horario
 
 counter-clockwise
-sentit antihorari
+sentido antihorario
 
 ED1 Buttons
-Botons ED1
+Botones ED1
 
 button OK
-botó OK
+botón OK
 
 button X
-botó X
+botón X
 
 button up
-botó amunt
+botón arriba
 
 button down
-botó avall
+botón abajo
 
 button left
-botó esquerra
+botón izquierda
 
 button right
-botó dreta
+botón derecha
 
 capacitive OK
-capacitiu OK
+capacitivo OK
 
 capacitive X
-capacitiu X
+capacitivo X
 
 capacitive up
-capacitiu amunt
+capacitivo arriba
 
 capacitive down
-capacitiu avall
+capacitivo abajo
 
 capacitive left
-capacitiu esquerra
+capacitivo izquierda
 
 capacitive right
-capacitiu dreta
+capacitivo derecha
 
 capacitive sensor _
-sensor capacitiu _
+sensor capacitivo _
 
 set capacitive threshold to _
-fixa llindar capacitiu a _
+fija umbral capacitivo en _
 
 set use capacitive to _
-utilitza botons capacitius _
+utiliza botones capacitivos _
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird Tri-LED _ Vermell _ % Verd _ % Blau _ %
+Hummingbird LED tricolor _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ º
-Hummingbird Servo Posicional _ _ º
+Hummingbird Position Servo _ _ ∞
+Hummingbird Servo de posicion _ _ ∞
 
 Hummingbird Rotation Servo _ _ %
-Hummingbird Servo Rotacional _ _ %
+Hummingbird Servo de rotacion _ _ %
 
 Hummingbird _ _
 Hummingbird _ _
@@ -401,70 +401,70 @@ Hummingbird Battery (mV)
 Hummingbird Bateria (mV)
 
 Light
-Llum
+Luz
 
 Distance
-Distància
+Distancia
 
 Dial
-Rodeta
+Dial
 
 Sound
-So
+Sonido
 
 Other
-Altres
+Otro
 
 distance (cm) trigger _ echo _
-distància (cm) trigger _ echo _
+distancia (cm) trigger _ echo _
 
 IR Remote
-Infraroigs
+Infrarrojos
 
 receive IR code from device _
-rep codi IR del dispositiu _
+recibe código IR del dispositivo _
 
 test IR
-prova IR
+prueba IR
 
 attach IR receiver to pin _
-inicialitza receptor IR al pin _
+inicializa receptor IR en el pin _
 
 Radio
-Ràdio
+Radio
 
 Scrolling
-Text animat
+Texto animado
 
 scroll text _
-anima el text _
+anima el texto _
 
 scroll number _
-anima el nombre _
+anima el número _
 
 pausing _ ms
-pausant _ ms
+pausando _ ms
 
 stop scrolling
-atura l'animació
+detén la animación
 
 Servo
-Servomotors
+Servomotores
 
 has servo support
-té suport per a servos
+tiene soporte para servos
 
 set servo _ to _ (-100 to 100)
-posa el servo _ a _ (-100 a 100)
+pon el servo _ a _ (-100 a 100)
 
 resetServos
-re-inicialitza servos
+reinicializa servos
 
 flip servo _ _
-inverteix servo _ _
+invierte servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
-inicialitza servos 1 a 4 als pins _ _ _ _
+inicializa servos 1 a 4 en los pines _ _ _ _
 
 LED Display
 Pantalla LED
@@ -473,394 +473,394 @@ display _
 pantalla _
 
 clear display
-neteja pantalla
+limpiar pantalla
 
 plot x _ y _
-encén x _ y _
+encender x _ y _
 
 unplot x _ y _
-apaga x _ y _
+apagar x _ y _
 
 display character _
-mostra caràcter _
+muestra carácter _
 
 enable TFT _
 activa TFT _
 
 TFT width
-amplada de la pantalla TFT
+ancho de la pantalla TFT
 
 TFT height
-alçada de la pantalla TFT
+alto de la pantalla TFT
 
 set TFT pixel x _ y _ to _
 pinta el píxel x _ y _ de color _
 
 draw line on TFT from x _ y _ to x _ y _ color _
-dibuixa línia de x _ y _ a x _ y _ color _
+dibuja línea de x _ y _ a x _ y _ color _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
-dibuixa rectangle a x _ y _ amplada _ alçada _ color _
+dibuja rectángulo en x _ y _ ancho _ alto _ color _
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
-dibuixa rectangle arrodonit a x _ y _ amplada _ alçada _ radi _ color _
+dibuja rectángulo redondeado en x _ y _ ancho _ alto _ radio _ color _
 
 draw circle on TFT at x _ y _ radius _ color _
-dibuixa cercle a x _ y _ radi _ color _
+dibuja círculo en x _ y _ radio _ color _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
-dibuixa triangle a x _ y _ , x _ y _ , x _ y _ color _
+dibuja triángulo en x _ y _ , x _ y _ , x _ y _ color _
 
 filled _
-ple _
+lleno _
 
 write _ on TFT at x _ y _ color _
-escriu _ a x _ y _ color _
+escribe _ en x _ y _ color _
 
 scale _ wrap _
-escala _ amb salts de línia _
+escala _ con saltos de línea _
 
 Tone
-Tons
+Tonos
 
 attach buzzer to pin _
-inicialitza brunzidor al pin _
+inicializa zumbador en el pin _
 
 play note _ octave _ during _ ms
-toca la nota _ a l'octava _ durant _ ms
+toca la nota _ en la octava _ durante _ ms
 
 play frequency _ for _ milliseconds
-toca la freqüència _ durant _ mil·lisegons
+toca la frecuencia _ durante _ milisegundos
 
 play midi key _ for _ milliseconds
-toca la tecla MIDI _ durant _ mil·lisegons
+toca la tecla MIDI _ durante _ milisegundos
 
 Turtle
 Tortuga
 
 home
-torna a casa
+vuelve a casa
 
 move _
-mou-te _ passes
+muévete _ pasos
 
 turn _ degrees
-gira _ graus
+gira _ grados
 
 turn _ / _ of circle
-gira _ / _ de volta
+gira _ / _ de vuelta
 
 pen down
-abaixa el llapis
+baja el lápiz
 
 pen up
-apuja el llapis
+sube el lápiz
 
 set pen color to _
-fixa el color del llapis a _
+fija el color del lápiz a _
 
 set pen to random color
-tria un color a l'atzar per al llapis
+fija un color al azar para el lápiz
 
 fill display with _
-omple la pantalla de color _
+llena la pantalla de color _
 
 go to x _ y _
-ves a x _ y _
+ve a x _ y _
 
 point in direction  _
-apunta en direcció _
+apunta en dirección _
 
 Web of Things
-Web de les coses
+Web de las cosas
 
 wifi connect to _ password _ try _ times
-connecta't a la wifi _ amb contrasenya _ amb _ intents
+connéctate a la wifi _ con contraseña _ en _ intentos
 
 wifi create hotspot _ password _
-crea punt d'accés wifi _ amb contrasenya _
+crea punto de acceso wifi _ con contraseña _
 
 IP address
-adreça IP
+dirección IP
 
 define thing _ capability _
-defineix cosa _ amb capacitat de _
+define cosa _ con capacidad de _
 
 register event _ type _
-registra l'esdeveniment _ de tipus _
+registra el evento _ de tipo _
 
 add boolean property title _ variable _ @Type _
-afegeix propietat booleana amb nom _ variable _ de tipus _
+añade propiedad booleana con nombe _ variable _ de tipo _
 
 add number property title _ variable _ min _ max _ @Type _
-afegeix propietat numèrica amb nom _ variable _ min _ max _ de tipus _
+añade propiedad numérica con nombre _ variable _ min _ max _ de tipo _
 
 add string property title _ variable _ @Type _
-afegeix propietat textual amb nom _ variable _ de tipus _
+añade propiedad textual con nombre _ variable _ de tipo _
 
 thing description
-descripció de la cosa
+descripción de la cosa
 
 clear thing description
-esborra la descripció de la cosa
+borra la descripción de la cosa
 
 New
-Nou
+Nuevo
 
 Open
-Obre
+Abre
 
 Save
-Desa
+Guarda
 
 Connect
-Connecta
+Conecta
 
 disconnect
-desconnecta
+desconecta
 
 Serial port:
-Port sèrie:
+Puerto serie:
 
 other...
-un altre...
+otro...
 
 none
-cap
+ninguno
 
 Port name?
-Nom del port?
+¿Nombre del puerto?
 
 Board type:
-Tipus de placa:
+Tipo de placa:
 
 Select board:
 Selecciona la placa:
 
 Could not read: 
-No s'ha pogut llegir: 
+No se ha podido leer:
 
 by
-per
+por
 
 More info at http://microblocks.fun
-Més informació a http://microblocks.fun
+Más información en http://microblocks.fun
 
 Function "
-La funció "
+La función "
 
 " is too large to send to board.
-" és massa gran per enviar-se a la placa.
+" es demasiado grande para mandarlo a la placa.
 
 Script is too large to send to board.
-El programa és massa gran per enviar-se a la placa.
+El programa es demasiado grande para mandarlo a la placa.
 
 Use "Connect" button to connect to a MicroBlocks device.
-Utilitza el botó "Connecta" per connectar-te a un dispositiu MicroBlocks.
+Utiliza el botón "Conecta" para conectarte a un dispositivo MicroBlocks.
 
 No boards found; is your board plugged in?
-No s'ha trobat cap placa; has connectat la teva placa?
+No se ha encontrado ninguna placa; ¿has conectado tu placa?
 
 For AdaFruit boards, double-click reset button and try again.
-En plaques AdaFruit, prem el botó de reinici dues vegades ràpidament i torna-ho a provar.
+En placas AdaFruit, pulsa el botón de reseteo dos veces rápidamente y vuelve a probar.
 
 The board is not responding.
-La placa no respon.
+La placa no responde.
 
 Try to Install MicroBlocks on the board?
-Vols provar d'instal·lar-hi MicroBlocks?
+¿Quieres intentar instalar MicroBlocks en la placa?
 
 The MicroBlocks in your board is not current
-El MicroBlocks instal·lat a la teva placa no està actualitzat
+El MicroBlocks instalado en tu placa no está actualizado
 
 Try to update MicroBlocks on the board?
-Vols provar d'actualitzar-lo?
+¿Quieres intentar actualizarlo?
 
 Stop
-Atura
+Detén
 
 Start
 Inicia
 
 Quit MicroBlocks?
-Sortir de MicroBlocks?
+¿Salir de MicroBlocks?
 
 Discard current project?
-Vols descartar el projecte actual?
+¿Quieres descartar el proyecto actual?
 
 clean up
-neteja
+limpia
 
 arrange scripts
-organitza programes
+organiza programas
 
 undrop  (ctrl-Z)
-desfés  (ctrl-Z)
+deshaz  (ctrl-Z)
 
 copy all scripts to clipboard
-copia tots els programes al porta-retalls
+copia todos los programas al portapapeles
 
 paste all scripts
-enganxa tots els programes
+pega tocos los programas
 
 paste script
-enganxa el programa
+pega el programa
 
 save a picture of all scripts
-desa la imatge de tots els programes
+guarda la imagen de todos los programas
 
 about...
 sobre...
 
 virtual machine version
-versió de la màquina virtual
+versión de la máquina virtual
 
 update firmware on board
-actualitza firmware a la placa
+actualiza firmware de la placa
 
 show data graph
-mostra la gràfica de dades
+muestra el gráfico de datos
 
 set serial delay
-ajusta la latència del port sèrie
+ajusta la latencia del puerto serie
 
 firmware version
-versió del firmware
+versión del firmware
 
 start Mozilla WebThing server
 inicia el servidor de Mozilla WebThings
 
 stop Mozilla WebThing server
-atura el servidor de Mozilla WebThings
+detén el servidor de Mozilla WebThings
 
 MicroBlocks HTTP Server listening on port 6473
-El servidor HTTP de MicroBlocks està actiu al port 6473
+El servidor HTTP de MicroBlocks está activo en el puerto 6473
 
 wipe and repartition esp32
-esborra i reparticiona esp32
+borra y reparticiona esp32
 
 Use board type 
-La placa connectada és de tipus 
+¿La placa conectada es de tipo 
 
 Wiping board...
-Esborrant placa...
+Borrando placa...
 
 (press ESC to cancel)
-(prem ESC per cancel·lar)
+(pulsa ESC para cancelar)
 
 Done!
-Fet!
+¡Hecho!
 
 download and install latest VM
-descarrega i instal·la l'última màquina virtual
+descarga e instala la última máquina virtual
 
 Select board type:
-Selecciona la teva placa:
+Selecciona tu placa:
 
 Uploading MicroBlocks to board...
-Instal·lant MicroBlocks a la placa...
+Instalando MicroBlocks en la placa...
 
 copy data to clipboard
-copia les dades al porta-retalls
+copia los datos al portapapeles
 
 clear data
-neteja dades
+limpia dades
 
 clear memory and variables
-neteja memòria i variables
+limpia memoria y variables
 
 show advanced blocks
-mostra els blocs avançats
+muestra los bloques avanzados
 
 export functions as library
-exporta funcions com a llibreria
+exporta funciones como librería
 
 hide advanced blocks
-amaga els blocs avançats
+oculta los bloques avanzados
 
 Data Graph
-Gràfica de dades
+Gráfico de datos
 
 File
-Arxiu
+Fichero
 
 File Open
-Obre arxiu
+Abre fichero
 
 File Save
-Desa arxiu
+Guarda fichero
 
 File name:
-Nom d'arxiu:
+Nombre del fichero:
 
 show instructions
-mostra instruccions
+muestra instrucciones
 
 show compiled bytes
-mostra els bytes compilats
+muestra los bytes compilados
 
 expand
-expandeix
+expande
 
 collapse
-replega
+pliega
 
 rename...
-reanomena...
+renombra...
 
 show block definition...
-mostra la definició del bloc...
+muestra la definiciónn del bloque...
 
 show the definition of this block
-mostra la definició d'aquest bloc
+muestra la definiciónn de este bloque
 
 delete block definition...
-elimina la definició del bloc...
+elimina la definiciónn del bloque...
 
 delete the definition of this block
-esborra la definició d'aquest bloc
+borra la definición de este bloque
 
 duplicate
 duplica
 
 duplicate this block
-duplica aquest bloc
+duplica este bloc
 
 delete block
-elimina bloc
+elimina bloque
 
 delete this block
-elimina aquest bloc
+elimina este bloque
 
 just this one block
-només aquest bloc
+solo este bloque
 
 copy to clipboard
-copia al porta-retalls
+copia al portapapeles
 
 copy these blocks to the clipboard
-copia aquests blocs al porta-retalls
+copia estos bloques al portapapeles
 
 duplicate all
-duplica fins a baix
+duplica hasta abajo
 
 duplicate these blocks
-duplica aquest bloc i tots els que el segueixen
+duplica este bloque y todos los que le siguen
 
 extract block
-extrau bloc
+extrae bloque
 
 pull out this block
-agafa aquest bloc
+agarra este bloque
 
 save picture of script
-desa la imatge del programa
+guarda la imagen del programa
 
 save a picture of this block definition as a PNG file
-desa una imatge de la definició d'aquest bloc en format PNG
+guarda una imagen de la definición de este bloque en formato PNG
 
 save a picture of these blocks as a PNG file
-desa una imatge d'aquests blocs en format PNG
+guarda una imagen de estos bloques en formato PNG
 
 copy script
 copia el programa
@@ -869,25 +869,25 @@ delete
 elimina
 
 Input type:
-Tipus de ranura:
+Tipo de ranura:
 
 string only
-només text
+solo texto
 
 string or number
-text o nombre
+texto o número
 
 number only
-només nombre
+solo número
 
 define
-defineix
+define
 
 number/string
-nombre/text
+número/texto
 
 editable number or string
-nombre o text editable
+número o texto editable
 
 label
 etiqueta
@@ -896,43 +896,43 @@ input
 ranura
 
 hide block definition
-amaga la definició d'aquest bloc
+oculta la definición de este bloque
 
 Are you sure you want to remove this block definition?
-Segur que vols esborrar la definició d'aquest bloc?
+¿Seguro que quieres borrar la definición de este bloque?
 
 Libraries
-Llibreries
+Librerías
 
 Language
 Idioma
 
 Custom...
-Arxiu...
+Archivo...
 
 Basic Sensors
-Sensors bàsics
+Sensores básicos
 
 tilt x
-inclinació x
+inclinación x
 
 tilt y
-inclinació y
+inclinación y
 
 tilt z
-inclinació z
+inclinación z
 
 temperature (°C)
 temperatura (°C)
 
 Obsolete
-Obsolet
+Obsoleto
 
 OK
-D'acord
+De acuerdo
 
 Ok
-D'acord
+De acuerdo
 
 Yes
 Sí
@@ -941,10 +941,10 @@ No
 No
 
 Cancel
-Cancel·la
+Cancela
 
 Okay
-D'acord
+De acuerdo
 
 Confirm
-Confirmació
+Confirmación

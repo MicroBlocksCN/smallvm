@@ -203,7 +203,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[radio:receivedString]'			'radio last string')
 		(array 'r' '[radio:receivedMessageType]'	'radio last message type')
 		(array ' ' '[radio:setGroup]'				'radio set group _' 'num' 0)
-		(array ' ' '[radio:setChannel]'				'radio set channel (0-83)  _' 'num' 7)
+		(array ' ' '[radio:setChannel]'				'radio set channel (0-83) _' 'num' 7)
 		(array ' ' '[radio:setPower]'				'radio set power (0-7) _' 'num' 4)
 		(array 'r' '[radio:signalStrength]'			'radio last signal strength')
 		(array 'r' '[radio:packetReceive]'			'radio receive packet _' 'str')
