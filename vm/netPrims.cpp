@@ -306,6 +306,10 @@ static OBJ primStopWiFi(int argCount, OBJ *args) {
 static OBJ primWiFiStatus(int argCount, OBJ *args) {
 	int status = WiFi.status();
 
+	if (WIFI_AP_STA == WiFi.getMode()) {
+		status = WL_CONNECTED; // acting as a hotspot
+	}
+
 	if (WL_NO_SHIELD == status) return (OBJ) &statusNotConnected; // reported on ESP32
 	if (WL_NO_SSID_AVAIL == status) return (OBJ) &statusUnknownNetwork; // reported only on ESP8266
 	if (WL_CONNECT_FAILED == status) return (OBJ) &statusFailed; // reported only on ESP8266
@@ -321,11 +325,7 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) {
 	#ifdef USE_WIFI101
 		return connecting ? (OBJ) &statusTrying : (OBJ) &statusNotConnected;
 	#else
-		if (WIFI_AP_STA == WiFi.getMode()) {
-			status = WL_CONNECTED; // acting as a hotspot
-		} else {
-			return connecting ? (OBJ) &statusTrying : (OBJ) &statusNotConnected;
-		}
+		return connecting ? (OBJ) &statusTrying : (OBJ) &statusNotConnected;
 	#endif
 	}
 	if (WL_CONNECTED == status) {

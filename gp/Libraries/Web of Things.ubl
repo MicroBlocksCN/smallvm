@@ -11,7 +11,7 @@ variables _WoT_definingEvents _useWiFi
 	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str.stringPropertyTypesMenu' '' '' 'ColorProperty'
 	spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
 	spec 'r' '[net:thingDescription]' 'thing description'
-	spec ' ' '[net:clearThingDescription]'	'clear thing description'
+	spec ' ' '[net:clearThingDescription]' 'clear thing description'
 
 to '_addCustomProperty' key jsonValue {
   if _useWiFi {'[net:appendToThingProperty]' '"' key '": ' jsonValue}
@@ -98,6 +98,8 @@ to registerEvent title type {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  tries += -1
+  '[net:startWiFi]' ssid password
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -120,5 +122,22 @@ to 'wifi connect to' ssid password tries {
 }
 
 to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
   '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
+
