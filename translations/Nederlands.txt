@@ -29,7 +29,7 @@ board type
 board type
 
 Pins
-Pins
+Pinnen
 
 read digital pin _
 lees digitale pin_
@@ -50,7 +50,7 @@ digital pins
 digitale pinnen
 
 Control
-Control
+Besturen
 
 when started
 wanneer gestart
@@ -83,7 +83,7 @@ stop this task
 stop deze taak
 
 stop other tasks
-stop other tasks
+stop andere taken
 
 stop all
 stop alles
@@ -113,7 +113,7 @@ return _
 terug _
 
 Math
-Math
+Functies
 
 _ mod _
 _ modulo _
@@ -140,16 +140,16 @@ or _
 of _
 
 Variables
-Variables
+Variabelen
 
 Add a variable
-Add a variable
+Voeg een variabele toe
 
 Delete a variable
-Delete a variable
+Verwijder een variabele
 
 New variable name?
-New variable name?
+Nieuwe variabele naam?
 
 set _ to _
 maak _  _
@@ -161,34 +161,34 @@ local _ _
 lokale variabele _ _
 
 Lists
-Lists
+Lijsten
 
 new list length _
-nieuwe lijst _
+nieuwe lijst lengte _
 
 fill list _ with _
 vul lijst _ met _
 
 item _ of _
-item _ of _
+item _ van _
 
 replace item _ of _ with _
-replace item _ of _ with _
+vervang item _ van _ door _
 
 length of _
 lengte van _
 
 My Blocks
-My Blocks
+Mijn blokken
 
 Add a command block
-Maak een commando blok
+Voeg een commando blok toe
 
 Add a reporter block
-Maak een reporter blok
+Voeg een reporter blok toe
 
 Enter function name:
-Enter function name:
+Geef functie naam:
 
 Comm
 Comm
@@ -197,7 +197,7 @@ i2c get device _ register _
 i2c verkrijg device _ register _
 
 i2c set device _ register _ to _
-i2c set device _ register _ to _
+i2c maak device _ register _ naar _
 
 spi send _
 spi zend _
@@ -209,7 +209,7 @@ print _
 schrijf _
 
 hex _
-hexadecimaal _
+hex _
 
 no op
 doe niets
@@ -230,16 +230,16 @@ send NeoPixel rgb _
 zend NeoPixel rgb _
 
 has tone support
-has tone support
+heeft toonondersteuning
 
 play tone pin _ frequency _
-play tone pin _ frequency _
+speel toon pin _ frequentie _
 
 has WiFi support
-has WiFi support
+heeft WiFi ondersteuning
 
 start WiFi _ password _
-start WiFi _ password _
+start WiFi _ wachtwoord _
 
 stop WiFi
 stop WiFi
@@ -248,7 +248,7 @@ WiFi status
 WiFi status
 
 my IP address
-my IP address
+mijn IP adres
 
 radio send number _
 radio zend nummer _
@@ -284,13 +284,13 @@ radio last signal strength
 radio laatste signaal sterkte
 
 radio receive packet _
-radio receive packet _
+radio ontvang pakket _
 
 radio send packet _
-radio send packet _
+radio zend pakket _
 
 disable radio
-disable radio
+zet radio uit
 
 light level
 lichtsterkte
@@ -317,70 +317,70 @@ attach _ LED NeoPixel strip to pin _ has white _
 verbind _ LED NeoPixel strip aan pin _ heeft wit _
 
 ED1 Stepper Motor
-ED1 Stepper Motor
+ED1 Stappenmotor
 
 move motor _  _ steps _
-move motor _  _ steps _
+beweeg motor _  _ stappen _
 
 move motor 1 _ and motor 2 _ _ steps
-move motor 1 _ and motor 2 _ _ steps
+beweeg motor 1 _ and motor 2 _ _ stappen
 
 stop steppers
-stop steppers
+stop stappenmotoren
 
 clockwise
-clockwise
+met de klok mee
 
 counter-clockwise
-counter-clockwise
+tegen de klok in
 
 ED1 Buttons
-ED1 Buttons
+ED1 knoppen
 
 button OK
-button OK
+knop OK
 
 button X
-button X
+knop X
 
 button up
-button up
+knop omhoog
 
 button down
-button down
+knop omlaag
 
 button left
-button left
+knop links
 
 button right
-button right
+knop rechts
 
 capacitive OK
-capacitive OK
+capacitief OK
 
 capacitive X
-capacitive X
+capacitief X
 
 capacitive up
-capacitive up
+capacitief omhoog
 
 capacitive down
-capacitive down
+capacitief omlaag
 
 capacitive left
-capacitive left
+capacitief links
 
 capacitive right
-capacitive right
+capacitief rechts
 
 capacitive sensor _
-capacitive sensor _
+capacitieve sensor _
 
 set capacitive threshold to _
-set capacitive threshold to _
+maak capacitieve drempelwaarde _
 
 set use capacitive to _
-set use capacitive to _
+maak gebruik capacitief _
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
@@ -419,7 +419,7 @@ distance (cm) trigger _ echo _
 afstand (cm) trigger _ echo _
 
 IR Remote
-IR Remote
+IR afstandsbediening
 
 receive IR code from device _
 ontvang IR code van apparaat _
@@ -428,13 +428,13 @@ test IR
 test IR
 
 attach IR receiver to pin _
-verbind IR receiver aan pin _
+verbind IR ontvanger aan pin _
 
 Radio
 Radio
 
 Scrolling
-Scrolling
+Scrollen
 
 scroll text _
 scroll tekst _
@@ -443,7 +443,7 @@ scroll number _
 scroll nummer _
 
 pausing _ ms
-met _ ms pauze
+_ ms pauze
 
 stop scrolling
 stop met scrollen
@@ -452,22 +452,22 @@ Servo
 Servo
 
 has servo support
-has servo support
+heeft servo ondersteuning
 
 set servo _ to _ (-100 to 100)
-stel servo _ in _ (-100 op 100)
+maak servo van _ tot _ (-100 tot 100)
 
 resetServos
 reset servo's
 
 flip servo _ _
-flip servo _ _
+keer om servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
-verbind servo's 1 to 4 aan pins _ _ _ _
+verbind servo's 1 tot 4 aan pinnen _ _ _ _
 
 LED Display
-LED Display
+LED scherm
 
 display _
 scherm _
@@ -512,16 +512,16 @@ draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
 teken driehoek op TFT op x _ y _ , x _ y _ , x _ y _ kleur _
 
 filled _
-filled _
+gevuld _
 
 write _ on TFT at x _ y _ color _
 schrijf _ op TFT op x _ y _ kleur _
 
 scale _ wrap _
-scale _ wrap _
+schaal _ wrap _
 
 Tone
-Tone
+Toon
 
 attach buzzer to pin _
 verbind buzzer aan pin _
@@ -542,139 +542,139 @@ home
 home
 
 move _
-move _
+ga vooruit _
 
 turn _ degrees
-turn _ degrees
+draai _ graden
 
 turn _ / _ of circle
-turn _ / _ of circle
+draai _ / _ van cirkel
 
 pen down
-pen down
+pen neer
 
 pen up
-pen up
+pen op
 
 set pen color to _
-set pen color to _
+maak penkleur _
 
 set pen to random color
-set pen to random color
+maak penkleur willekeurig
 
 fill display with _
-fill display with _
+vul scherm met _
 
 go to x _ y _
-go to x _ y _
+ga naar x _ y _
 
 point in direction  _
-point in direction  _
+wijs naar richting  _
 
 Web of Things
-Web of Things
+Netwerk van dingen
 
 wifi connect to _ password _ try _ times
-wifi connect to _ password _ try _ times
+wifi verbind met _ wachtwoord _ probeer _ keer
 
 wifi create hotspot _ password _
-wifi create hotspot _ password _
+wifi maak hotspot _ wachtwoord _
 
 IP address
-IP address
+IP adres
 
 define thing _ capability _
-define thing _ capability _
+definieer ding _ vermogen _
 
 register event _ type _
-register event _ type _
+registreer gebeurtenis _ type _
 
 add boolean property title _ variable _ @Type _
-add boolean property title _ variable _ @Type _
+voeg booleaanse eigenschap toe titel _ variabele _ @Type _
 
 add number property title _ variable _ min _ max _ @Type _
-add number property title _ variable _ min _ max _ @Type _
+voeg nummer eigenschap toe titel _ variabele _ min _ max _ @Type _
 
 add string property title _ variable _ @Type _
-add string property title _ variable _ @Type _
+voeg tekst eigenschap toe titel _ variabele _ @Type _
 
 thing description
-thing description
+ding omschrijving
 
 clear thing description
-clear thing description
+wis ding omschrijving
 
 New
-New
+Nieuw
 
 Open
 Open
 
 Save
-Save
+Bewaar
 
 Connect
-Connect
+Verbind
 
 disconnect
-disconnect
+verbreek verbinding
 
 Serial port:
-Serial port:
+Seriële poort:
 
 other...
-other...
+ander...
 
 none
-none
+geen
 
 Port name?
-Port name?
+Poort naam?
 
 Board type:
 Board type:
 
 Select board:
-Select board:
+Selecteer board:
 
 Could not read: 
-Could not read: 
+Kon niet lezen: 
 
 by
-by
+door
 
 More info at http://microblocks.fun
-More info at http://microblocks.fun
+Meer info op http://microblocks.fun
 
 Function "
-Function "
+Functie "
 
 " is too large to send to board.
-" is too large to send to board.
+" is te groot om naar board te zenden.
 
 Script is too large to send to board.
-Script is too large to send to board.
+Script is is te groot om naar board te zenden.
 
 Use "Connect" button to connect to a MicroBlocks device.
-Use "Connect" button to connect to a MicroBlocks device.
+Gebruik "Verbind" knop om te verbinden met een MicroBlocks device.
 
 No boards found; is your board plugged in?
-No boards found; is your board plugged in?
+Geen boards gevonden; is je board aangesloten?
 
 For AdaFruit boards, double-click reset button and try again.
-For AdaFruit boards, double-click reset button and try again.
+Voor AdaFruit boards, dubbelklik op de reset knop en probeer het opnieuw.
 
 The board is not responding.
-The board is not responding.
+Het board reageert niet.
 
 Try to Install MicroBlocks on the board?
-Try to Install MicroBlocks on the board?
+Proberen om MicroBlocks op het board te installeren?
 
 The MicroBlocks in your board is not current
-The MicroBlocks in your board is not current
+De MicroBlocks op je board is niet actueel.
 
 Try to update MicroBlocks on the board?
-Try to update MicroBlocks on the board?
+Proberen om MicroBlocks op het board te updaten?
 
 Stop
 Stop
@@ -683,49 +683,49 @@ Start
 Start
 
 Quit MicroBlocks?
-Quit MicroBlocks?
+MicroBlocks verlaten?
 
 Discard current project?
-Discard current project?
+Huidig project weggooien?
 
 clean up
-clean up
+opruimen
 
 arrange scripts
-arrange scripts
+arrangeer scripts
 
 undrop  (ctrl-Z)
-undrop  (ctrl-Z)
+laatste blokactie ongedaan maken (ctrl-Z)
 
 copy all scripts to clipboard
-copy all scripts to clipboard
+kopieer alle scripts naar klembord
 
 paste all scripts
-paste all scripts
+plak alle scripts
 
 paste script
-paste script
+plak script
 
 save a picture of all scripts
-save a picture of all scripts
+bewaar een afbeelding van alle scripts
 
 about...
-about...
+over...
 
 virtual machine version
-virtual machine version
+virtuele machine versie
 
 update firmware on board
-update firmware on board
+update firmware op board
 
 show data graph
-show data graph
+toon data grafiek
 
 set serial delay
-set serial delay
+maak seriële vertraging
 
 firmware version
-firmware version
+firmware versie
 
 start Mozilla WebThing server
 start Mozilla WebThing server
@@ -734,160 +734,160 @@ stop Mozilla WebThing server
 stop Mozilla WebThing server
 
 MicroBlocks HTTP Server listening on port 6473
-MicroBlocks HTTP Server listening on port 6473
+MicroBlocks HTTP Server via poort 6473
 
 wipe and repartition esp32
-wipe and repartition esp32
+wis en partitioneer esp32
 
 Use board type 
-Use board type 
+Gebruik board type 
 
 Wiping board...
-Wiping board...
+Board wissen ...
 
 (press ESC to cancel)
-(press ESC to cancel)
+(druk ESC om te annuleren)
 
 Done!
-Done!
+Klaar!
 
 download and install latest VM
-download and install latest VM
+download en installeer de nieuwste VM
 
 Select board type:
-Select board type:
+Selecteer board type:
 
 Uploading MicroBlocks to board...
-Uploading MicroBlocks to board...
+MicroBlocks opladen naar board...
 
 copy data to clipboard
-copy data to clipboard
+kopieer data naar klembord
 
 clear data
-clear data
+wis data
 
 clear memory and variables
-clear memory and variables
+wis geheugen en variabelen
 
 show advanced blocks
-show advanced blocks
+toon geavanceerde blokken
 
 export functions as library
-export functions as library
+exporteer functies als bibliotheek
 
 hide advanced blocks
-hide advanced blocks
+verberg geavanceerde blokken
 
 Data Graph
-Data Graph
+Data Grafiek
 
 File
-File
+Bestand
 
 File Open
-File Open
+Bestand openen
 
 File Save
-File Save
+Bestand opslaan
 
 File name:
-File name:
+Bestandsnaam:
 
 show instructions
-show instructions
+toon instructies
 
 show compiled bytes
-show compiled bytes
+toon gecompileerde bytes
 
 expand
-expand
+breid uit
 
 collapse
-collapse
+bind in
 
 rename...
-rename...
+hernoem...
 
 show block definition...
-show block definition...
+toon blok definitie...
 
 show the definition of this block
-show the definition of this block
+toon de definitie van dit blok
 
 delete block definition...
-delete block definition...
+verwijder blok definitie...
 
 delete the definition of this block
-delete the definition of this block
+verwijder de definitie van dit blok
 
 duplicate
-duplicate
+dupliceer
 
 duplicate this block
-duplicate this block
+dupliceer dit blok
 
 delete block
-delete block
+verwijder blok
 
 delete this block
-delete this block
+verwijder dit blok
 
 just this one block
-just this one block
+alleen dit ene blok
 
 copy to clipboard
-copy to clipboard
+kopieer naar klembord
 
 copy these blocks to the clipboard
-copy these blocks to the clipboard
+kopieer deze blokken naar het klembord
 
 duplicate all
-duplicate all
+dupliceer alles
 
 duplicate these blocks
-duplicate these blocks
+dupliceer deze blokken
 
 extract block
-extract block
+extract blok
 
 pull out this block
-pull out this block
+trek dit blok er uit
 
 save picture of script
-save picture of script
+bewaar afbeelding van script
 
 save a picture of this block definition as a PNG file
-save a picture of this block definition as a PNG file
+bewaar een afbeelding van deze blok definitie als een PNG bestand
 
 save a picture of these blocks as a PNG file
-save a picture of these blocks as a PNG file
+bewaar een afbeelding van deze blokken als een PNG bestand
 
 copy script
-copy script
+kopieer script
 
 delete
-delete
+verwijder
 
 Input type:
 Input type:
 
 string only
-string only
+alleen tekst
 
 string or number
-string or number
+tekst of nummer
 
 number only
-number only
+alleen nummer
 
 define
-Definieer
+definieer
 
 number/string
-number/string
+nummer/tekst
 
 editable number or string
-editable number or string
+bewerkbaar nummer of tekst
 
 label
 label
@@ -896,22 +896,22 @@ input
 input
 
 hide block definition
-hide block definition
+verberg blok definitie
 
 Are you sure you want to remove this block definition?
-Are you sure you want to remove this block definition?
+Weet je zeker dat je deze blok definitie wil verwijderen?
 
 Libraries
-Libraries
+Bibliotheken
 
 Language
-Language
+Taal
 
 Custom...
-Custom...
+Aangepast...
 
 Basic Sensors
-Basic Sensors
+Basis Sensoren
 
 tilt x
 kantel x
@@ -926,7 +926,7 @@ temperature (°C)
 temperatuur (°C)
 
 Obsolete
-Obsolete
+Verouderd
 
 OK
 OK
@@ -935,16 +935,16 @@ Ok
 Ok
 
 Yes
-Yes
+Ja
 
 No
-No
+Nee
 
 Cancel
-Cancel
+Annuleren
 
 Okay
-Okay
+Oké
 
 Confirm
-Confirm
+Bevestig
