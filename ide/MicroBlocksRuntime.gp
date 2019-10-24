@@ -417,7 +417,7 @@ method updateConnection SmallRuntime {
 method tryToConnect SmallRuntime {
 	// Called when there is no connection or the board does not respond.
 
-	connectionAttemptTimeout = 500 // milliseconds
+	connectionAttemptTimeout = 5000 // milliseconds
 
 	// check connection status only N times/sec
 	now = (msecsSinceStart)
@@ -548,9 +548,6 @@ method installBoardSpecificBlocks SmallRuntime {
 		importLibraryFromFile scripter '//Libraries/Tone.ubl'
 		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
 		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
-		importLibraryFromFile scripter '//Libraries/TFT.ubl'
-		importLibraryFromFile scripter '//Libraries/IR Remote.ubl'
-		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
 	} ('micro:bit' == boardType) {
 		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
 		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
