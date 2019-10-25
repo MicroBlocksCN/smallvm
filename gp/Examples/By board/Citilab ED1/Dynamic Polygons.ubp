@@ -1,0 +1,305 @@
+module main
+variables deco
+
+	spec ' ' 'polygon' 'polygon _ _ _' 'auto auto auto' 5 100 0
+	spec ' ' 'decoration' 'decoration _' 'auto' 0
+
+to decoration num {
+  local 'x' (_turtleX >> 14)
+  local 'y' (_turtleY >> 14)
+  if (num == 1) {
+    '[tft:circle]' x y 4 _turtleColor true
+  } (num == 2) {
+    '[tft:rect]' (x - 4) (y - 4) 8 8 _turtleColor true
+  } (num == 3) {
+    '[tft:text]' '@' (x - 4) (y - 4) _turtleColor 2 false
+  }
+}
+
+to polygon sides size xoffset {
+  local 'd' ((('[misc:sin]' (360 / sides)) * size) / ('[misc:sin]' 120))
+  'pen up'
+  setHeading 0
+  'go to x' (xoffset - (d / 2)) (0 - (size / 2))
+  'pen down'
+  repeat sides {
+    move d
+    turnBy (360 / sides)
+    decoration deco
+  }
+  'pen up'
+}
+
+script 50 50 {
+comment '    By José García Yeste - Citilab
+===========================
+A cool Turtle library demo!
+
+Draws polygons on the ED1 display.
+Tilt the board to change the sides of
+the shape. Shake it to cycle between
+node styles. Press the OK button to
+change the polygon color.'
+}
+
+script 528 177 {
+whenCondition (('[sensors:tiltZ]') < -70)
+deco += 1
+deco = (deco % 4)
+waitMillis 200
+}
+
+script 52 248 {
+whenStarted
+deco = 1
+'set pen color to' (colorSwatch 195 188 254 255)
+forever {
+  polygon (maximum 3 ((('[sensors:tiltY]') / 10) + 6)) 100 ('[sensors:tiltX]')
+  waitMillis 40
+  '[display:mbDisplayOff]'
+  waitMillis 1
+}
+}
+
+script 526 334 {
+whenCondition ('OK button')
+setPenToRandomColor
+}
+
+
+module 'Basic Sensors' Input
+
+	spec 'r' '[sensors:tiltX]' 'tilt x'
+	spec 'r' '[sensors:tiltY]' 'tilt y'
+	spec 'r' '[sensors:tiltZ]' 'tilt z'
+	spec 'r' '[display:lightLevel]' 'light level'
+	spec 'r' '[sensors:temperature]' 'temperature (°C)'
+
+module 'ED1 Buttons' Input
+variables _ED1_buttons_init '_capacitive threshold' '_use capacitive'
+
+	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
+	spec 'r' '_button pressed' '_button pressed _' 'auto any' 15
+	spec 'r' '_capacitive' '_capacitive sensor _ pressed' 'auto any' 15
+	spec 'r' 'OK button' 'button OK'
+	spec 'r' 'cancel button' 'button X'
+	spec 'r' 'up button' 'button up'
+	spec 'r' 'down button' 'button down'
+	spec 'r' 'left button' 'button left'
+	spec 'r' 'right button' 'button right'
+	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 15
+	spec ' ' 'set use capacitive to' 'set use capacitive to _' 'bool' true
+
+to 'OK button' {
+  return ('_button pressed' 15)
+}
+
+to '_ED1_buttons_init' {
+  if (_ED1_buttons_init == 0) {
+    comment 'true by default for ED1 V2 board'
+    '_use capacitive' = ((i2cGet (hexToInt '20') 1) == 0)
+    if ((v '_capacitive threshold') == 0) {
+      '_capacitive threshold' = 15
+    }
+    _ED1_buttons_init = (booleanConstant true)
+  }
+}
+
+to '_button pressed' pin {
+  '_ED1_buttons_init'
+  if (v '_use capacitive') {
+    if (pin > 100) {pin = (pin - 100)}
+    return ('_capacitive' pin)
+  } else {
+    return (digitalReadOp pin)
+  }
+}
+
+to '_capacitive' pin {
+  if (('[sensors:touchRead]' pin) <= (v '_capacitive threshold')) {
+    waitMicros 50
+    return (('[sensors:touchRead]' pin) <= (v '_capacitive threshold'))
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to 'cancel button' {
+  return ('_button pressed' 14)
+}
+
+to 'down button' {
+  return ('_button pressed' 13)
+}
+
+to 'left button' {
+  return ('_button pressed' 102)
+}
+
+to 'right button' {
+  return ('_button pressed' 27)
+}
+
+to 'set capacitive threshold to' threshold {
+  '_capacitive threshold' = threshold
+}
+
+to 'set use capacitive to' value {
+  '_use capacitive' = value
+}
+
+to 'up button' {
+  return ('_button pressed' 104)
+}
+
+
+module 'LED Display' Output
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+
+to displayCharacter s {
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+
+module TFT Output
+
+	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec 'r' '[tft:getWidth]' 'TFT width'
+	spec 'r' '[tft:getHeight]' 'TFT height'
+	spec ' ' 'set TFT pixel x' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255
+	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false
+	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false
+	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false
+	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false
+	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false
+	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680
+
+to 'set TFT pixel x' x y color {
+  '[tft:setPixel]' x y ('_tft color' color)
+}
+
+
+module Turtle
+variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
+
+	spec ' ' 'home' 'home'
+	spec ' ' 'move' 'move _' 'auto' '10'
+	spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
+	spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
+	spec ' ' 'pen down' 'pen down'
+	spec ' ' 'pen up' 'pen up'
+	spec ' ' 'set pen color to' 'set pen color to _' 'color'
+	spec ' ' 'setPenToRandomColor' 'set pen to random color'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' 'clearDisplay' 'fill display with _' 'color'
+	spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
+	spec ' ' 'setHeading' 'point in direction  _' 'auto' 0
+	spec ' ' '_turtleNotes' '_turtleNotes'
+	spec 'r' '_tft color' '_tft color _ to number' 'color'
+
+to '_tft color' 'color hex' {
+  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
+  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
+  local 'b' ((((v 'color hex') & 255) * 255) / 31)
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to '_turtleNotes' {
+  comment 'Representation:
+  _turtleHeading is in hundreths of a degree  (e.g. 4500 means 45 degrees)
+  _turtleX and _turtleY are scaled by 16384 (2^14)
+
+The sine function takes an angle in hundreds of a degree and returns a
+number scaled by 16384. _turtleX and _turtleY are also scaled by 16384.
+Those numbers are shifted right by 14 bits to get pixel locations.'
+}
+
+to clearDisplay color {
+  '[tft:rect]' 0 0 ('[tft:getWidth]') ('[tft:getHeight]') ('_tft color' color) true
+  comment 'Give the display controller time to finish this operation'
+  waitMillis 1
+}
+
+to 'go to x' x y {
+  local 'startX' (_turtleX >> 14)
+  local 'startY' (_turtleY >> 14)
+  _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
+  _turtleY = (((('[tft:getHeight]') / 2) + y) << 14)
+  local 'endX' (_turtleX >> 14)
+  local 'endY' (_turtleY >> 14)
+  if _turtlePenIsDown {
+    '[tft:line]' startX startY endX endY _turtleColor
+  }
+}
+
+to home {
+  if (0 == _turtlePenIsDown) {
+    '[tft:enableDisplay]' true
+    'set pen color to' (colorSwatch 7 255 1 255)
+    '[display:mbDisplayOff]'
+    'pen up'
+  }
+  'go to x' 0 0
+  setHeading 0
+}
+
+to move n {
+  local 'startX' (_turtleX >> 14)
+  local 'startY' (_turtleY >> 14)
+  comment 'The cosine is just the sine shifted by 90 degrees.'
+  _turtleX += (n * ('[misc:sin]' (_turtleHeading + 9000)))
+  _turtleY += (n * ('[misc:sin]' _turtleHeading))
+  local 'endX' (_turtleX >> 14)
+  local 'endY' (_turtleY >> 14)
+  if _turtlePenIsDown {
+    '[tft:line]' startX startY endX endY _turtleColor
+  }
+}
+
+to 'pen down' {
+  _turtlePenIsDown = (booleanConstant true)
+}
+
+to 'pen up' {
+  _turtlePenIsDown = (booleanConstant false)
+}
+
+to 'set pen color to' color {
+  _turtleColor = ('_tft color' color)
+}
+
+to setHeading a {
+  _turtleHeading = ((a * 100) % 36000)
+}
+
+to setPenToRandomColor {
+  local 'c1' (random 150 220)
+  local 'c2' (random 0 ((3 * c1) / 4))
+  local 'c3' (random 0 ((3 * c1) / 4))
+  local 'which' (random 1 3)
+  if (1 == which) {
+    _turtleColor = ((c1 << 16) | ((c2 << 8) | c3))
+  } (2 == which) {
+    _turtleColor = ((c2 << 16) | ((c3 << 8) | c1))
+  } else {
+    _turtleColor = ((c3 << 16) | ((c1 << 8) | c2))
+  }
+}
+
+to turnBy a {
+  _turtleHeading += (a * 100)
+  _turtleHeading = (_turtleHeading % 36000)
+}
+
+to turnFraction num denom {
+  _turtleHeading += ((num * 36000) / denom)
+  _turtleHeading = (_turtleHeading % 36000)
+}
+
