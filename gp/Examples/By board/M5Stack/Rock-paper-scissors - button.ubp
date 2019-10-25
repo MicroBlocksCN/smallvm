@@ -1,0 +1,24 @@
+module main
+variables t tilt
+
+script 50 50 {
+whenButtonPressed 'A'
+'[display:mbDisplayOff]'
+waitMillis 600
+local 'which' (random 1 3)
+if (which == 1) {
+  '[display:mbDisplay]' 473536
+}
+if (which == 2) {
+  '[display:mbDisplay]' 16033071
+}
+if (which == 3) {
+  '[display:mbDisplay]' 18157898
+}
+}
+
+script 313 52 {
+whenButtonPressed 'B'
+'[display:mbDisplayOff]'
+}
+

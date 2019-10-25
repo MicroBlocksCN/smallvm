@@ -1,0 +1,20 @@
+module main
+
+script 50 50 {
+whenStarted
+'[display:mbDisplayOff]'
+forever {
+  setUserLED true
+  waitMillis 200
+  setUserLED false
+  waitMillis 200
+}
+}
+
+
+module Display Output
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3

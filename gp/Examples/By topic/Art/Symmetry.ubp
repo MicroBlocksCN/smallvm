@@ -1,0 +1,142 @@
+module main
+variables _digit_shapes _digit_shapes_start_index 'changing sparsity' sparsity
+
+script 416 50 {
+comment 'Generates symmetric patterns on the BBC micro:bit 5x5 LED display'
+comment 'Use the A and B buttons to control the sparsity of dots in the patterns'
+}
+
+script 54 56 {
+whenStarted
+'changing sparsity' = (booleanConstant false)
+sparsity = 4
+forever {
+  '[display:mbDisplayOff]'
+  for x 3 {
+    for y 3 {
+      if (not (v 'changing sparsity')) {if ((random 1 sparsity) == 1) {
+        '[display:mbPlot]' x y
+        '[display:mbPlot]' y x
+        '[display:mbPlot]' (6 - x) (6 - y)
+        '[display:mbPlot]' (6 - y) (6 - x)
+        '[display:mbPlot]' (6 - x) y
+        '[display:mbPlot]' (6 - y) x
+        '[display:mbPlot]' x (6 - y)
+        '[display:mbPlot]' y (6 - x)
+      }}
+    }
+  }
+  waitMillis 250
+}
+}
+
+script 418 122 {
+whenButtonPressed 'A'
+'changing sparsity' = (booleanConstant true)
+if (sparsity > 1) {
+  sparsity += -1
+}
+waitUntil (not (buttonA))
+scroll_number sparsity 100
+'changing sparsity' = (booleanConstant false)
+}
+
+script 418 375 {
+whenButtonPressed 'B'
+'changing sparsity' = (booleanConstant true)
+sparsity += 1
+waitUntil (not (buttonB))
+scroll_number sparsity 100
+'changing sparsity' = (booleanConstant false)
+}
+
+
+module Display Output
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+
+module Scrolling Output
+variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text
+
+	spec ' ' 'scroll_text' 'scroll text _ pausing _ ms' 'str num' 'HELLO ROSA!' 100
+	spec ' ' 'scroll_number' 'scroll number _ pausing _ ms' 'num num' 123 100
+	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num' 42
+	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num' 100
+	spec ' ' 'stopScrollingText' 'stop scrolling'
+
+to '_covert_to_shapes' n {
+  if (_digit_shapes == 0) {_digit_shapes = (newArray 12)}
+  fillArray _digit_shapes ('[display:mbShapeForLetter]' ' ')
+  local 'index' (size _digit_shapes)
+  local 'isNegative' (booleanConstant false)
+  if (n < 0) {
+    isNegative = (booleanConstant true)
+    n = (0 - n)
+  } (n == 0) {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '0')
+    _digit_shapes_start_index = index
+  }
+  repeatUntil (n == 0) {
+    local 'digit' (n % 10)
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' (48 + digit))
+    index += -1
+    n = (n / 10)
+  }
+  if isNegative {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '-')
+    index += -1
+  }
+  _digit_shapes_start_index = index
+}
+
+to '_scroll_digit_shapes' delay {
+  _stop_scrolling_text = (booleanConstant false)
+  local 'prevShape' ('[display:mbShapeForLetter]' ' ')
+  local 'i' _digit_shapes_start_index
+  local 'end' ((size _digit_shapes) + 1)
+  repeatUntil (i > end) {
+    local 'shape' ('[display:mbShapeForLetter]' ' ')
+    if (i < end) {
+      shape = (at i _digit_shapes)
+    }
+    for j 5 {
+      local 'x' (1 - j)
+      '[display:mbDrawShape]' prevShape x 1
+      '[display:mbDrawShape]' shape (x + 5) 1
+      waitMillis delay
+      if _stop_scrolling_text {
+        '[display:mbDisplayOff]'
+        return 0
+      }
+    }
+    prevShape = shape
+    i += 1
+  }
+}
+
+to scroll_number n delay {
+  '_covert_to_shapes' n
+  '_scroll_digit_shapes' delay
+}
+
+to scroll_text text delay {
+  _stop_scrolling_text = (booleanConstant false)
+  local 'length' (size text)
+  for position ((length * 6) + 6) {
+    if _stop_scrolling_text {return 0}
+    for i length {
+      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
+}
+

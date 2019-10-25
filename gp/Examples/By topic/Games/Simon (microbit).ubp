@@ -1,0 +1,191 @@
+module main
+variables _bz_frequencies _bz_note_names _bz_pinNumber _digit_shapes _digit_shapes_start_index _loop_overhead _np_first_rotated _np_length _np_pixels 'current index' letters
+
+	spec 'r' '_bz_index of' '_bz_index of _ in _' 'auto auto any any' '10' ''
+
+	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num any any any' 42
+
+	spec ' ' '_measureLoopOverhead' '_measureLoopOverhead' 'any'
+
+	spec ' ' '_np_rotate' '_np_rotate_dir _' 'bool any any any' true
+
+	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num any any any' 100
+
+	spec 'r' 'correct guess' 'correct guess at _' 'auto' '10'
+
+	spec ' ' 'initialize letters' 'initialize letters'
+
+	spec ' ' 'scroll_number' 'scroll number _ pausing _ ms' 'num num' 123 100
+
+	spec ' ' 'scroll_text' 'scroll text _ pausing _ ms' 'str num' 'HELLO ROSA!' 100
+
+	spec 'r' 'wrong guess' 'wrong guess at _' 'auto' '10'
+
+
+to '_bz_index of' item list {
+  for i (size list) {
+    if ((at i list) == item) {return i}
+  }
+  return 0
+}
+
+to '_covert_to_shapes' n {
+  if (_digit_shapes == 0) {_digit_shapes = (newArray 12)}
+  fillArray _digit_shapes ('[display:mbShapeForLetter]' ' ')
+  local 'index' (size _digit_shapes)
+  local 'isNegative' (booleanConstant false)
+  if (n < 0) {
+    isNegative = (booleanConstant true)
+    n = (0 - n)
+  } (n == 0) {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '0')
+    _digit_shapes_start_index = index
+  }
+  repeatUntil (n == 0) {
+    local 'digit' (n % 10)
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' (48 + digit))
+    index += -1
+    n = (n / 10)
+  }
+  if isNegative {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '-')
+    index += -1
+  }
+  _digit_shapes_start_index = index
+}
+
+to '_measureLoopOverhead' {
+  local 'startT' (microsOp)
+  repeat 20 {
+    comment 'Loop to measure timing'
+    repeat 5 {
+      digitalWriteOp 0 false
+    }
+  }
+  _loop_overhead = (((microsOp) - startT) / 100)
+}
+
+to '_np_rotate' left {
+  if left {
+    _np_first_rotated = (at 1 _np_pixels)
+    for i (_np_length - 1) {
+      atPut i _np_pixels (at (i + 1) _np_pixels)
+    }
+    atPut _np_length _np_pixels _np_first_rotated
+  } else {
+    _np_first_rotated = (at _np_length _np_pixels)
+    for i ((size _np_pixels) - 1) {
+      atPut ((_np_length - i) + 1) _np_pixels (at (_np_length - i) _np_pixels)
+    }
+    atPut 1 _np_pixels _np_first_rotated
+  }
+}
+
+to '_scroll_digit_shapes' delay {
+  local 'prevShape' ('[display:mbShapeForLetter]' ' ')
+  local 'i' _digit_shapes_start_index
+  local 'end' ((size _digit_shapes) + 1)
+  repeatUntil (i > end) {
+    local 'shape' ('[display:mbShapeForLetter]' ' ')
+    if (i < end) {
+      shape = (at i _digit_shapes)
+    }
+    for j 5 {
+      local 'x' (1 - j)
+      '[display:mbDrawShape]' shape (x + 5) 1
+      '[display:mbDrawShape]' prevShape x 1
+      waitMillis delay
+    }
+    prevShape = shape
+    i += 1
+  }
+}
+
+to 'correct guess' index {
+  return (or (and (buttonA) ((at index letters) == 'A')) (and (buttonB) ((at index letters) == 'B')))
+}
+
+to 'initialize letters' {
+  if (letters == 0) {letters = (newArray 20)}
+  for i (size letters) {
+    if ((random 1 2) == 1) {
+      atPut i letters 'A'
+    } else {
+      atPut i letters 'B'
+    }
+  }
+}
+
+to scroll_number n delay {
+  '_covert_to_shapes' n
+  '_scroll_digit_shapes' delay
+}
+
+to scroll_text text delay {
+  local 'length' (size text)
+  for position ((length * 6) + 5) {
+    '[display:mbDisplayOff]'
+    for i length {
+      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
+to 'wrong guess' index {
+  return (or (and (buttonA) ((at index letters) == 'B')) (and (buttonB) ((at index letters) == 'A')))
+}
+
+script 453 54 {
+whenBroadcastReceived 'play'
+local 'index' 1
+repeatUntil (index > (v 'current index')) {
+  if ('correct guess' index) {
+    '[display:mbDisplay]' 2269696
+    index += 1
+    waitUntil (and (not (buttonA)) (not (buttonB)))
+    '[display:mbDisplayOff]'
+  } ('wrong guess' index) {
+    repeat 10 {
+      '[display:mbDisplay]' 18157905
+      waitMillis 50
+      '[display:mbDisplayOff]'
+      waitMillis 50
+    }
+    scroll_text 'FAIL' 100
+    stopAll
+  }
+}
+'current index' += 1
+sendBroadcastSimple 'draw sequence'
+}
+
+script 50 60 {
+comment 'This is the "Simon" memory game for the
+BBC micro:bit.'
+}
+
+script 52 111 {
+whenStarted
+'initialize letters'
+'current index' = 1
+scroll_text 'GO!' 100
+sendBroadcastSimple 'draw sequence'
+}
+
+script 53 255 {
+whenBroadcastReceived 'draw sequence'
+if ((v 'current index') > 20) {
+  '[display:mbDisplay]' 15237440
+  waitMillis 1000
+  '[display:mbDisplayOff]'
+  scroll_text 'WIN' 100
+  stopAll
+} else {
+  for i (v 'current index') {
+    scroll_text (at i letters) 100
+  }
+  sendBroadcastSimple 'play'
+}
+}
+

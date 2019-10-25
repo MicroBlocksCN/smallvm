@@ -1,0 +1,69 @@
+module main
+variables 'player x' 'player y' playing 'stone x' 'stone y'
+
+	spec ' ' 'scroll' 'scroll _ pausing _ ms' 'str auto' 'HELLO ROSA' '150'
+
+
+to scroll text delay {
+  local 'length' (size text)
+  for position ((length * 6) + 5) {
+    '[display:mbDisplayOff]'
+    for i length {
+      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
+script 55 50 {
+comment 'Game written by David Sánchez Marín
+============================
+
+Use the two buttons in the micro:bit to
+try to avoid the falling stones.
+
+Have fun!'
+}
+
+script 792 62 {
+whenCondition (and ((v 'player x') == (v 'stone x')) ((v 'player y') == (v 'stone y')))
+playing = (booleanConstant false)
+scroll 'GAME OVER' 100
+'[display:mbDisplayOff]'
+waitMillis 1000
+playing = (booleanConstant true)
+}
+
+script 375 205 {
+whenStarted
+'player x' = 3
+'player y' = 5
+forever {
+  if playing {
+    if (and (buttonA) ((v 'player x') > 1)) {'player x' += -1}
+    if (and (buttonB) ((v 'player x') < 5)) {'player x' += 1}
+    '[display:mbDisplayOff]'
+    '[display:mbPlot]' (v 'stone x') (v 'stone y')
+    '[display:mbPlot]' (v 'player x') (v 'player y')
+    waitMillis 100
+  }
+}
+}
+
+script 54 213 {
+whenStarted
+playing = (booleanConstant true)
+'stone x' = (random 5)
+'stone y' = 0
+forever {
+  if playing {
+    repeatUntil ((v 'stone y') == 5) {
+      'stone y' += 1
+      waitMillis 200
+    }
+    'stone x' = (random 5)
+    'stone y' = 0
+  }
+}
+}
+

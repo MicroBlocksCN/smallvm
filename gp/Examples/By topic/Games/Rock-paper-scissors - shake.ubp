@@ -1,0 +1,25 @@
+module main
+variables t tilt
+
+script 331 52 {
+whenButtonPressed 'B'
+'[display:mbDisplayOff]'
+}
+
+script 71 54 {
+whenCondition (('[sensors:tiltZ]') > 85)
+'[display:mbDisplayOff]'
+waitMillis 500
+local 'which' (random 1 3)
+if (which == 1) {
+  '[display:mbDisplay]' 473536
+}
+if (which == 2) {
+  '[display:mbDisplay]' 16033071
+}
+if (which == 3) {
+  '[display:mbDisplay]' 18157898
+}
+waitMillis 500
+}
+

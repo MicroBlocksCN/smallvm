@@ -1,0 +1,23 @@
+module main
+
+script 50 50 {
+whenButtonPressed 'A'
+'[display:mbDisplay]' 15237450
+waitMillis 1000
+'[display:mbDisplayOff]'
+}
+
+script 51 261 {
+whenButtonPressed 'B'
+'[display:mbDisplay]' 18284874
+waitMillis 1000
+'[display:mbDisplayOff]'
+}
+
+
+module Display Output
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
