@@ -50,6 +50,15 @@ method buttonMenu InputSlot {
   return menu
 }
 
+method AtoDMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'A'
+  addItem menu 'B'
+  addItem menu 'C'
+  addItem menu 'D'
+  return menu
+}
+
 method directions InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'clockwise'

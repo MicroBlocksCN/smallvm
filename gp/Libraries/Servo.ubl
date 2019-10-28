@@ -1,45 +1,44 @@
-module Servo Output
-variables _servoInitialized _servo_1_pin _servo_2_pin _servo_3_pin _servo_4_pin _servo_1_usecs _servo_2_usecs _servo_3_usecs _servo_4_usecs _servo_1_flip _servo_2_flip _servo_3_flip _servo_4_flip _servoMSecs
+module servoLib3 Output
+variables _servoPin _servoPulseWidth _servoReversed _lastServoUpdate
 
-	spec ' ' 'setServo' 'set servo _ to _ (-100 to 100)' 'menu.range:1-4 num' 1 0
-	spec ' ' 'resetServos' 'resetServos'
-	spec ' ' 'flipServo' 'flip servo _ _' 'menu.range:1-4 bool' 1
-	spec ' ' 'attachServos' 'attach servos 1 to 4 to pins _ _ _ _' 'auto auto auto auto' 1 2 '' ''
-	spec ' ' '_initServos' '_initServos'
-	spec ' ' '_servoLoop' '_servoLoop'
-	spec ' ' '_servo_pulse' '_servo_pulse _ usecs _' 'num num' 0 1500
+	spec 'r' '_servoIndex' '_servoIndex _' 'str' 'A'
+	spec ' ' 'attachServoToPin' 'attach servo _ to pin _ reversed _' 'menu.AtoDMenu auto bool' 'A' '1' false
+	spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'menu.AtoDMenu auto' 'A' 90
+	spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100)' 'menu.AtoDMenu auto' 'A' 50
+	spec ' ' '_initServos2' '_initServos2'
+	spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'auto auto' 0 1500
+	spec ' ' '_servoUpdateLoop' '_servoUpdateLoop'
 
-to '_initServos' {
-  if (_servoInitialized != (booleanConstant true)) {
-    _servo_1_pin = 1
-    _servo_2_pin = 2
-    _servo_3_pin = -1
-    _servo_4_pin = -1
-    _servo_1_flip = 1
-    _servo_2_flip = 1
-    _servo_3_flip = 1
-    _servo_4_flip = 1
-    resetServos
-    _servoInitialized = (booleanConstant true)
+to '_initServos2' {
+  if (_servoPin == 0) {
+    _servoPin = (newArray 4)
+    fillArray _servoPin -1
+    _servoPulseWidth = (newArray 4)
+    fillArray _servoPulseWidth 1500
+    _servoReversed = (newArray 4)
+    fillArray _servoReversed (booleanConstant false)
   }
-  local 'msecsSinceLastPulse' ((millisOp) - _servoMSecs)
-  if (or (msecsSinceLastPulse < 0) (msecsSinceLastPulse > 100)) {
-    resetServos
-  }
+  sendBroadcastSimple '_servoUpdateLoop'
 }
 
-to '_servoLoop' {
-  forever {
-    if (_servo_1_pin >= 0) {'_servo_pulse' _servo_1_pin _servo_1_usecs}
-    if (_servo_2_pin >= 0) {'_servo_pulse' _servo_2_pin _servo_2_usecs}
-    if (_servo_3_pin >= 0) {'_servo_pulse' _servo_3_pin _servo_3_usecs}
-    if (_servo_4_pin >= 0) {'_servo_pulse' _servo_4_pin _servo_4_usecs}
-    _servoMSecs = (millisOp)
-    waitMillis 15
+to '_servoIndex' which {
+  if ('A' == which) {
+    return 1
+  } ('B' == which) {
+    return 2
+  } ('C' == which) {
+    return 3
+  } ('D' == which) {
+    return 4
   }
+  return 1
 }
 
-to '_servo_pulse' pin usecs {
+to '_servoPulse' pin usecs {
+  if (usecs == 0) {
+    comment 'Servo stopped; do nothing'
+    return 0
+  }
   usecs = (maximum 850 (minimum usecs 2150))
   comment 'Split wait into a long wait followed by a wait of <= 30 usecs for greater accuracy'
   local 'endTime' ((microsOp) + usecs)
@@ -49,68 +48,45 @@ to '_servo_pulse' pin usecs {
   digitalWriteOp pin false
 }
 
-to attachServos p1 p2 p3 p4 {
-  '_initServos'
-  _servo_1_pin = -1
-  _servo_2_pin = -1
-  _servo_3_pin = -1
-  _servo_4_pin = -1
-  if (p1 != '') {
-    _servo_1_pin = p1
-  }
-  if (p2 != '') {
-    _servo_2_pin = p2
-  }
-  if (p3 != '') {
-    _servo_3_pin = p3
-  }
-  if (p4 != '') {
-    _servo_4_pin = p4
-  }
-  sendBroadcastSimple '_servoLoop'
-}
-
-to flipServo servo flip {
-  comment 'Flipping a servo reverses the direction it moves. It is useful when building a robotic vehicle where the two wheel servos are physically flipped.'
-  '_initServos'
-  if flip {
-	flip = -1
-  } else {
-    flip = 1
-  }
-  if (and (1 == servo) (_servo_1_flip != flip)) {
-    _servo_1_usecs = (1500 - (_servo_1_usecs - 1500))
-    _servo_1_flip = flip
-  } (and (2 == servo) (_servo_2_flip != flip)) {
-    _servo_2_usecs = (1500 - (_servo_2_usecs - 1500))
-    _servo_2_flip = flip
-  } (and (3 == servo) (_servo_3_flip != flip)) {
-    _servo_3_usecs = (1500 - (_servo_3_usecs - 1500))
-    _servo_3_flip = flip
-  } (and (4 == servo) (_servo_4_flip != flip)) {
-    _servo_4_usecs = (1500 - (_servo_4_usecs - 1500))
-    _servo_4_flip = flip
+to '_servoUpdateLoop' {
+  '_initServos2'
+  forever {
+    for i 4 {
+      local 'pin' (at i _servoPin)
+      local 'usecs' (at i _servoPulseWidth)
+      if (and (pin >= 0) (usecs != 0)) {
+        '_servoPulse' pin usecs
+      }
+    }
+    waitMillis 15
   }
 }
 
-to resetServos {
-  _servo_1_usecs = 1500
-  _servo_2_usecs = 1500
-  _servo_3_usecs = 1500
-  _servo_4_usecs = 1500
+to attachServoToPin which pin reversed {
+  '_initServos2'
+  atPut ('_servoIndex' which) _servoPin pin
+  atPut ('_servoIndex' which) _servoPulseWidth 1500
+  atPut ('_servoIndex' which) _servoReversed reversed
 }
 
-to setServo servo speedOrAngle {
-  comment 'Range is -100 to 100 with 0 being "center" or "off".'
-  '_initServos'
-  if (1 == servo) {
-    _servo_1_usecs = (1500 - (_servo_1_flip * (7 * speedOrAngle)))
-  } (2 == servo) {
-    _servo_2_usecs = (1500 - (_servo_2_flip * (7 * speedOrAngle)))
-  } (3 == servo) {
-    _servo_3_usecs = (1500 - (_servo_3_flip * (7 * speedOrAngle)))
-  } (4 == servo) {
-    _servo_4_usecs = (1500 - (_servo_4_flip * (7 * speedOrAngle)))
+to setServoAngle which degrees {
+  '_initServos2'
+  if (at ('_servoIndex' which) _servoReversed) {
+    degrees = (0 - degrees)
   }
-  sendBroadcastSimple '_servoLoop'
+  local 'pulseWidth' (1500 - (7 * degrees))
+  atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
 }
+
+to setServoSpeed which speed {
+  '_initServos2'
+  if (at ('_servoIndex' which) _servoReversed) {
+    speed = (0 - speed)
+  }
+  local 'pulseWidth' (1500 - (7 * speed))
+  if ((absoluteValue speed) < 5) {
+    pulseWidth = 0
+  }
+  atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
+}
+
