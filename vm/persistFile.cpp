@@ -22,7 +22,7 @@
 
 #define FILE_NAME "/ublockscode"
 
-File codeFile;
+static File codeFile;
 
 static void closeAndOpenCodeFile() {
 	if (codeFile) codeFile.close();

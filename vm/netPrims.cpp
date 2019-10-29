@@ -250,7 +250,7 @@ STRING_OBJ_CONST("Connected") statusConnected;
 STRING_OBJ_CONST("Failed; bad password?") statusFailed;
 STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
 
-int firstTime = true;
+static int firstTime = true;
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
 

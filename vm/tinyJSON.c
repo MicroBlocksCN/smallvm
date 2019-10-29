@@ -166,7 +166,7 @@ int tjr_type(char *p) {
 	if ('f' == ch) return tjr_False;
 	if ('n' == ch) return tjr_Null;
 	if ('\0' == ch) return tjr_End;
-	return tir_Error;
+	return tjr_Error;
 }
 
 int tjr_readInteger(char *p) {

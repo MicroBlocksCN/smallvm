@@ -14,7 +14,7 @@ extern "C" {
 // JSON Types returned by tjr_type()
 
 enum {
-	tir_Error = -1,
+	tjr_Error = -1,
 	tjr_End = 0,	// end of JSON string
 	tjr_Array = 1,
 	tjr_Object = 2,

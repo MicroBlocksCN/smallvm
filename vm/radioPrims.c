@@ -424,7 +424,7 @@ static OBJ primSetPower(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-#else // not micro:bit
+#else // not nrf51 or nrf52
 
 // stubs
 

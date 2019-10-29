@@ -85,10 +85,8 @@ int touchEnabled = false;
 		#include <SPI.h>
 
 		#define HAS_TFT_TOUCH
-
-		#define CS_PIN 16
-
-		XPT2046_Touchscreen ts(CS_PIN);
+		#define TOUCH_CS_PIN 16
+		XPT2046_Touchscreen ts(TOUCH_CS_PIN);
 
 		#define X_MIN 256
 		#define X_MAX 3632
@@ -135,7 +133,7 @@ OBJ primEnableDisplay(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-int color24to16b(int color24b) {
+static int color24to16b(int color24b) {
 	// converts 24-bit RGB888 format to 16-bit RGB565
 	int r = (color24b >> 16) & 0xFF;
 	int g = (color24b >> 8) & 0xFF;
@@ -143,7 +141,7 @@ int color24to16b(int color24b) {
 	return ((r << 8) & 0xF800) | ((g << 3) & 0x7E0) | ((b >> 3) & 0x1F);
 }
 
-OBJ primGetWidth(int argCount, OBJ *args) {
+static OBJ primGetWidth(int argCount, OBJ *args) {
 	#ifdef TFT_WIDTH
 		return int2obj(TFT_WIDTH);
 	#else
@@ -151,7 +149,7 @@ OBJ primGetWidth(int argCount, OBJ *args) {
 	#endif
 }
 
-OBJ primGetHeight(int argCount, OBJ *args) {
+static OBJ primGetHeight(int argCount, OBJ *args) {
 	#ifdef TFT_HEIGHT
 		return int2obj(TFT_HEIGHT);
 	#else
@@ -159,7 +157,7 @@ OBJ primGetHeight(int argCount, OBJ *args) {
 	#endif
 }
 
-OBJ primSetPixel(int argCount, OBJ *args) {
+static OBJ primSetPixel(int argCount, OBJ *args) {
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
 	// Re-encode color from 24 bits into 16 bits
@@ -168,7 +166,7 @@ OBJ primSetPixel(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primLine(int argCount, OBJ *args) {
+static OBJ primLine(int argCount, OBJ *args) {
 	int x0 = obj2int(args[0]);
 	int y0 = obj2int(args[1]);
 	int x1 = obj2int(args[2]);
@@ -179,7 +177,7 @@ OBJ primLine(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primRect(int argCount, OBJ *args) {
+static OBJ primRect(int argCount, OBJ *args) {
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
 	int width = obj2int(args[2]);
@@ -195,7 +193,7 @@ OBJ primRect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primRoundedRect(int argCount, OBJ *args) {
+static OBJ primRoundedRect(int argCount, OBJ *args) {
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
 	int width = obj2int(args[2]);
@@ -212,7 +210,7 @@ OBJ primRoundedRect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primCircle(int argCount, OBJ *args) {
+static OBJ primCircle(int argCount, OBJ *args) {
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
 	int radius = obj2int(args[2]);
@@ -227,7 +225,7 @@ OBJ primCircle(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primTriangle(int argCount, OBJ *args) {
+static OBJ primTriangle(int argCount, OBJ *args) {
 	int x0 = obj2int(args[0]);
 	int y0 = obj2int(args[1]);
 	int x1 = obj2int(args[2]);
@@ -245,7 +243,7 @@ OBJ primTriangle(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primText(int argCount, OBJ *args) {
+static OBJ primText(int argCount, OBJ *args) {
 	OBJ value = args[0];
 	int x = obj2int(args[1]);
 	int y = obj2int(args[2]);
@@ -303,44 +301,44 @@ void tftSetHugePixelBits(int bits) {
 	}
 }
 
-OBJ primTftTouched(int argCount, OBJ *args) {
-#ifdef HAS_TFT_TOUCH
-	if (!touchEnabled) { touchInit(); }
-	return ts.touched() ? trueObj : falseObj;
-#endif
+static OBJ primTftTouched(int argCount, OBJ *args) {
+	#ifdef HAS_TFT_TOUCH
+		if (!touchEnabled) { touchInit(); }
+		return ts.touched() ? trueObj : falseObj;
+	#endif
 	return falseObj;
 }
 
-OBJ primTftTouchX(int argCount, OBJ *args) {
-#ifdef HAS_TFT_TOUCH
-	if (!touchEnabled) { touchInit(); }
-	if (ts.touched()) {
-		TS_Point p = ts.getMappedPoint();
-		return int2obj(p.x);
-	}
-#endif
+static OBJ primTftTouchX(int argCount, OBJ *args) {
+	#ifdef HAS_TFT_TOUCH
+		if (!touchEnabled) { touchInit(); }
+		if (ts.touched()) {
+			TS_Point p = ts.getMappedPoint();
+			return int2obj(p.x);
+		}
+	#endif
 	return int2obj(-1);
 }
 
-OBJ primTftTouchY(int argCount, OBJ *args) {
-#ifdef HAS_TFT_TOUCH
-	if (!touchEnabled) { touchInit(); }
-	if (ts.touched()) {
-		TS_Point p = ts.getMappedPoint();
-		return int2obj(p.y);
-	}
-#endif
+static OBJ primTftTouchY(int argCount, OBJ *args) {
+	#ifdef HAS_TFT_TOUCH
+		if (!touchEnabled) { touchInit(); }
+		if (ts.touched()) {
+			TS_Point p = ts.getMappedPoint();
+			return int2obj(p.y);
+		}
+	#endif
 	return int2obj(-1);
 }
 
-OBJ primTftTouchPressure(int argCount, OBJ *args) {
-#ifdef HAS_TFT_TOUCH
-	if (!touchEnabled) { touchInit(); }
-	if (ts.touched()) {
-		TS_Point p = ts.getMappedPoint();
-		return int2obj(p.z);
-	}
-#endif
+static OBJ primTftTouchPressure(int argCount, OBJ *args) {
+	#ifdef HAS_TFT_TOUCH
+		if (!touchEnabled) { touchInit(); }
+		if (ts.touched()) {
+			TS_Point p = ts.getMappedPoint();
+			return int2obj(p.z);
+		}
+	#endif
 	return int2obj(-1);
 }
 
@@ -351,20 +349,20 @@ void tftClear() { }
 void tftSetHugePixel(int x, int y, int state) { }
 void tftSetHugePixelBits(int bits) { }
 
-OBJ primEnableDisplay(int argCount, OBJ *args) { return falseObj; }
-OBJ primGetWidth(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primGetHeight(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primSetPixel(int argCount, OBJ *args) { return falseObj; }
-OBJ primLine(int argCount, OBJ *args) { return falseObj; }
-OBJ primRect(int argCount, OBJ *args) { return falseObj; }
-OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
-OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
-OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
-OBJ primText(int argCount, OBJ *args) { return falseObj; }
-OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
-OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
-OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
-OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
+static OBJ primEnableDisplay(int argCount, OBJ *args) { return falseObj; }
+static OBJ primGetWidth(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primGetHeight(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primSetPixel(int argCount, OBJ *args) { return falseObj; }
+static OBJ primLine(int argCount, OBJ *args) { return falseObj; }
+static OBJ primRect(int argCount, OBJ *args) { return falseObj; }
+static OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
+static OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
+static OBJ primText(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
