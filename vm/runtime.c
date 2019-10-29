@@ -18,7 +18,7 @@
 
 // VM Version
 
-#define VM_VERSION "v068"
+#define VM_VERSION "v068a"
 
 // Forward Reference Declarations
 
@@ -484,7 +484,8 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	} else if (IS_CLASS(value, ArrayClass)) {
 		// Note: xxx Incomplete! Currently only handles arrays of integers.
 		int itemCount = objWords(value);
-		int byteCount = 5 * objWords(value); // assume ints; include a type byte for each item
+		if (itemCount > 100) itemCount = 100;
+		int byteCount = 5 * itemCount; // assume ints; include a type byte for each item
 		if (byteCount > maxBytes) return; // too much data to send!
 		data[0] = 5; // data type (5 is array)
 		char *dst = &data[1];

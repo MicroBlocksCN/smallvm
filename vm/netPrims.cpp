@@ -306,9 +306,13 @@ static OBJ primStopWiFi(int argCount, OBJ *args) {
 static OBJ primWiFiStatus(int argCount, OBJ *args) {
 	int status = WiFi.status();
 
-	if (WIFI_AP_STA == WiFi.getMode()) {
-		status = WL_CONNECTED; // acting as a hotspot
-	}
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+		if (WIFI_AP_STA == WiFi.getMode()) {
+			status = WL_CONNECTED; // acting as a hotspot
+		}
+	#else
+		// todo: handle station mode for SAMW25_XPRO and MKR1000, if possible
+	#endif
 
 	if (WL_NO_SHIELD == status) return (OBJ) &statusNotConnected; // reported on ESP32
 	if (WL_NO_SSID_AVAIL == status) return (OBJ) &statusUnknownNetwork; // reported only on ESP8266
