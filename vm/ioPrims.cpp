@@ -637,15 +637,16 @@ OBJ primButtonA(OBJ *args) {
 			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
 		#elif defined(ARDUINO_CITILAB_ED1)
 			int value = touchRead(buttonsPins[buttonIndex]);
+
 			if (value < CAP_THRESHOLD) {
-				if (value == 0) { // physical button
-					buttonReadings[buttonIndex] = 0;
-				}
 				if (buttonReadings[buttonIndex] > 0) {
 					buttonReadings[buttonIndex]--;
 				}
+				if ((value == 0) && (buttonReadings[buttonIndex] > CAP_THRESHOLD)) {
+					buttonReadings[buttonIndex] = CAP_THRESHOLD;
+				}
 			} else {
-				buttonReadings[buttonIndex] = CAP_THRESHOLD + 4; // try four times
+				buttonReadings[buttonIndex] = CAP_THRESHOLD + 2; // try 3 times
 			}
 			buttonIndex = (buttonIndex + 1) % 6;
 			return (buttonReadings[4] < CAP_THRESHOLD) ? trueObj : falseObj;
