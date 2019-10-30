@@ -250,7 +250,9 @@ STRING_OBJ_CONST("Connected") statusConnected;
 STRING_OBJ_CONST("Failed; bad password?") statusFailed;
 STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
 
-static int firstTime = true;
+#ifdef ESP8266
+	static int firstTime = true;
+#endif
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
 

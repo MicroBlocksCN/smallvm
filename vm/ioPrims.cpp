@@ -461,6 +461,7 @@ OBJ primAnalogPins(OBJ *args) { return int2obj(ANALOG_PINS); }
 OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 
 OBJ primAnalogRead(OBJ *args) {
+	if (!isInt(args[0])) { fail(needsIntegerError); return int2obj(0); }
 	int pinNum = obj2int(args[0]);
 	#ifdef ARDUINO_CITILAB_ED1
 		if ((100 <= pinNum) && (pinNum <= 139)) {
@@ -487,6 +488,7 @@ OBJ primAnalogRead(OBJ *args) {
 }
 
 void primAnalogWrite(OBJ *args) {
+	if (!isInt(args[0]) || !isInt(args[1])) { fail(needsIntegerError); return; }
 	int pinNum = obj2int(args[0]);
 	#if defined(ADAFRUIT_ITSYBITSY_M0)
 		if (pinNum > 25) return;
@@ -511,6 +513,7 @@ void primAnalogWrite(OBJ *args) {
 }
 
 OBJ primDigitalRead(int argCount, OBJ *args) {
+	if (!isInt(args[0])) { fail(needsIntegerError); return int2obj(0); }
 	int pinNum = obj2int(args[0]);
 	#if defined(ADAFRUIT_ITSYBITSY_M0)
 		if (pinNum > 25) return falseObj;
@@ -551,15 +554,8 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 }
 
 void primDigitalWrite(OBJ *args) {
+	if (!isInt(args[0])) { fail(needsIntegerError); return; }
 	int pinNum = obj2int(args[0]);
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
-		if (RESERVED(pinNum)) return;
-	#elif defined(ARDUINO_SAM_DUE)
-		if (pinNum < 2) return;
-	#elif defined(ARDUINO_SAM_ZERO) // M0
-		if ((pinNum == 14) || (pinNum == 15) ||
-			((18 <= pinNum) && (pinNum <= 23))) return;
-	#endif
 	int flag = (trueObj == args[1]);
 	primDigitalSet(pinNum, flag);
 }
