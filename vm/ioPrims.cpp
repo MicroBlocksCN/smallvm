@@ -22,6 +22,35 @@
 
 static void initPins(void); // forward reference
 
+// Random number generator seed
+
+static void initRandomSeed() {
+	// Initialize the random number generator with a random seed when started (if possible).
+
+	#if defined(ESP8266)
+		randomSeed(RANDOM_REG32);
+	#elif defined(ARDUINO_ARCH_ESP32)
+		randomSeed(esp_random());
+	#elif defined(NRF51) || defined(NRF52) || defined(NRF52_SERIES)
+		#define RNG_BASE 0x4000D000
+		#define RNG_START (RNG_BASE)
+		#define RNG_STOP (RNG_BASE + 4)
+		#define RNG_VALRDY (RNG_BASE + 0x100)
+		#define RNG_VALUE (RNG_BASE + 0x508)
+		uint32 seed = 0;
+		*((int *) RNG_START) = true; // start random number generation
+		for (int i = 0; i < 4; i++) {
+			while (!*((volatile int *) RNG_VALRDY)) /* wait */;
+			seed = (seed << 8) | *((volatile int *) RNG_VALUE);
+			*((volatile int *) RNG_VALRDY) = 0;
+		}
+		*((int *) RNG_STOP) = true; // end random number generation
+		randomSeed(seed);
+	#else
+		// Not yet implemented: collect some random bits from analog pins
+	#endif
+}
+
 // Timing Functions and Hardware Initialization
 
 #ifdef NRF51
@@ -49,11 +78,6 @@ uint32 millisecs() {
 	return microsecs() / 1000;
 }
 
-static void initRandomSeed() {
-	// Initialize the random number generator with a random seed when started (if possible).
-	// Not yet implemented; will use nrf51 hardware RNG
-}
-
 void hardwareInit() {
 	Serial.begin(115200);
 	initClock_NRF51();
@@ -71,18 +95,6 @@ void hardwareInit() {
 
 uint32 microsecs() { return (uint32) micros(); }
 uint32 millisecs() { return (uint32) millis(); }
-
-static void initRandomSeed() {
-	// Initialize the random number generator with a random seed when started (if possible).
-
-	#if defined(ESP8266)
-		randomSeed(RANDOM_REG32);
-	#elif defined(ARDUINO_ARCH_ESP32)
-		randomSeed(esp_random());
-	#else
-		// Not yet implemented for non-ESP boards: collect some random bits from analog pins
-	#endif
-}
 
 void hardwareInit() {
 	Serial.begin(115200);
