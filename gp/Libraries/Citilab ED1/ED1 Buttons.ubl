@@ -1,5 +1,5 @@
 module 'ED1 Buttons' Input
-variables _ED1_buttons_init '_capacitive threshold' '_use capacitive'
+variables _ED1_buttons_init '_capacitive threshold'
 
 	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
 	spec 'r' 'OK button' 'button OK'
