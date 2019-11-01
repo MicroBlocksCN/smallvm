@@ -207,7 +207,7 @@ void runTasksUntilDone(void);
 void interpTests1(void);
 void taskTest(void);
 
-void compact();
+void compactCodeStore();
 void outputRecordHeaders();
 
 // Platform Specific Operations

@@ -628,7 +628,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	int wordCount = (byteCount + 3) / 4;
 	int *end = (0 == current) ? end0 : end1;
 	if ((freeStart + 2 + wordCount) > end) {
-		compact();
+		compactCodeStore();
 		end = (0 == current) ? end0 : end1;
 		if ((freeStart + 2 + wordCount) > end) {
 			outputString("Not enough room even after compaction");
@@ -663,7 +663,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 	return result;
 }
 
-void compact() {
+void compactCodeStore() {
 	#ifdef RAM_CODE_STORE
 		compactRAM();
 	#else
@@ -780,7 +780,7 @@ void persistTest() {
 	for (int i = 0; i < 3000; i++) {
 		appendPersistentRecord(chunkCode, i % 100, 0, (i % 5) * 4, (uint8 *) dummyData);
 	}
-	compact();
+	compactCodeStore();
 
 	dumpWords(current, 150);
 	showRecordHeaders();

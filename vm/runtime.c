@@ -868,7 +868,7 @@ static void processShortMessage() {
 	case systemResetMsg:
 		// non-zero chunkIndex is used for debugging operations
 		if (1 == chunkIndex) { outputRecordHeaders(); break; }
-		if (2 == chunkIndex) { compact(); break; }
+		if (2 == chunkIndex) { compactCodeStore(); break; }
 		softReset(true);
 		break;
 	case pingMsg:
