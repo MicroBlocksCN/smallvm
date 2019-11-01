@@ -218,7 +218,7 @@ void restartSerial() {
 	#define BOARD_TYPE "CircuitPlayground"
 	#define DIGITAL_PINS 15
 	#define ANALOG_PINS 11
-	#define TOTAL_PINS 15
+	#define TOTAL_PINS 27
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
 	static const char digitalPin[15] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 26, 25, 13, 8};
 	#define PIN_BUTTON_A 4
@@ -231,7 +231,7 @@ void restartSerial() {
 	#define BOARD_TYPE "CircuitPlayground Bluefruit"
 	#define DIGITAL_PINS 15
 	#define ANALOG_PINS 10
-	#define TOTAL_PINS 15
+	#define TOTAL_PINS 27
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
 	static const char digitalPin[15] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 25, 26, 13, 8};
 	#define PIN_LED 13
