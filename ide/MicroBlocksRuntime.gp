@@ -469,8 +469,8 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '0.2.7' }
-method latestVmVersion SmallRuntime { return 68 }
+method ideVersion SmallRuntime { return '0.2.8' }
+method latestVmVersion SmallRuntime { return 69 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = ''
@@ -1003,6 +1003,8 @@ method handleMessage SmallRuntime msg {
 		varValueReceived (thingServer scripter) (byteAt msg 3) (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
 		versionReceived this (returnedValue this msg)
+	} (op == (msgNameToID this 'chunkCRCMsg')) {
+//		print 'chunkCRCMsg:' (byteAt msg 3) (copyFromTo (toArray msg) 6)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
