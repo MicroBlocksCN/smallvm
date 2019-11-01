@@ -47,7 +47,13 @@ static void initRandomSeed() {
 		*((int *) RNG_STOP) = true; // end random number generation
 		randomSeed(seed);
 	#else
-		// Not yet implemented: collect some random bits from analog pins
+		uint32 seed = 0;
+		int analogPinCount = obj2int(primAnalogPins(NULL));
+		for (int p = 0; p < analogPinCount; p++) {
+			pinMode(p, INPUT);
+			seed = (seed << 1) ^ analogRead(p);
+		}
+		randomSeed(seed);
 	#endif
 }
 
