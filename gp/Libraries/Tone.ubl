@@ -120,8 +120,6 @@ to 'attach buzzer to pin' pinNumber {
     comment 'Pin number not specified; use default pin for this device'
     if ((boardType) == 'Citilab ED1') {
       _tonePin = 26
-    } ((boardType) == 'CircuitPlayground') {
-      _tonePin = 12
     } ((boardType) == 'M5Stack-Core') {
       _tonePin = 25
     } else {
