@@ -5,7 +5,7 @@ variables _motionSamples _stepCount _stepThreshold _stepMotionHigh
 	spec ' ' 'startStepCounter' 'start step counter'
 	spec 'r' 'stepCount' 'step count'
 	spec ' ' 'clearStepCount' 'clear step count'
-	spec ' ' 'setStepThreshold' 'set step threshold _ (0-100)' 'auto' 10
+	spec ' ' 'setStepThreshold' 'set step threshold _ (0-50)' 'auto' 10
 	spec ' ' '_addSample' '_addSample _' 'auto' '10'
 	spec 'r' '_recentAverage' '_recentAverage'
 	spec ' ' '_stepCounterLoop' '_stepCounterLoop'
@@ -29,7 +29,7 @@ to '_recentAverage' {
 }
 
 to '_stepCounterLoop' {
-  if (_stepThreshold == 0) {_stepThreshold = 9}
+  if (_stepThreshold == 0) {_stepThreshold = 15}
   forever {
     local 'n' (motion)
     if (n > _stepThreshold) {
@@ -61,9 +61,7 @@ It goes positive momentarily when the acceleration decreases
 (e.g. because the microcontroller is dropped) and positive
 when the acceleration increases (e.g. when a falling micro-
 controller is caught).'
-  local 'current' (absoluteValue ('[sensors:tiltX]'))
-  current += (absoluteValue ('[sensors:tiltY]'))
-  current += (absoluteValue ('[sensors:tiltZ]'))
+  local 'current' (absoluteValue (maximum (absoluteValue ('[sensors:tiltX]')) (absoluteValue ('[sensors:tiltY]')) (absoluteValue ('[sensors:tiltZ]'))))
   local 'result' (current - ('_recentAverage'))
   '_addSample' current
   if ((absoluteValue result) < 3) {

@@ -13,7 +13,7 @@ to '_captureIRMessage' {
   if (_ir_pulse_times == 0) {
     _ir_pulse_times = (newArray 200)
     if (and (_ir_pin == 0) ((boardType) == 'CircuitPlayground')) {
-      _ir_pin = 26
+      _ir_pin = 11
     } (and (_ir_pin == 0) ((boardType) == 'Citilab ED1')) {
       _ir_pin = 35
     }
