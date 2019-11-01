@@ -15,47 +15,28 @@
 #include "mem.h"
 #include "interp.h"
 
-static OBJ memStart = NULL;
-static OBJ freeStart = NULL;
-static OBJ memEnd = NULL;
+#if defined(NRF51)
+  #define MEM_BYTES 2400 // max is 2616; 2400 leaves room for a 1000 words of stack during GC
+#else
+  #define MEM_BYTES 12000 // max that compiles for all boards is 16886 (17624 NodeMCU)
+#endif
 
-void memInit(int wordCount) {
+static uint8 mem[MEM_BYTES + 4];
+static OBJ memStart = NULL;
+static OBJ memEnd = NULL;
+static OBJ freeStart = NULL;
+
+void memInit() {
 	// verify 32-bit architecture
 	if (!(sizeof(int) == 4 && sizeof(int*) == 4 && sizeof(float) == 4)) {
 		vmPanic("MicroBlocks expects int, int*, and float to all be 32-bits");
 	}
 
-	// allocate memory for object heap
-	if (memStart) free(memStart); // this allows memInit() to be called more than once
-	memStart = (OBJ) malloc(wordCount * sizeof(int));
-	if (memStart == NULL) {
-		vmPanic("Insufficient memory for MicroBlocks object heap");
-	}
-
-	char *stack = (char *) &stack; // the address of this local variable approximates the current C stack pointer
-	if (stack > (char *) memStart) {
-		// On some platforms (e.g. micro:bit), the malloc() call succeeds even when there is not enough memory.
-		// This check makes sure there's enough space for both the MicroBlock object heap and the stack.
-		// This check makes sense only if the stack is immediately above the heap.
-
-		stack = stack - 1000; // reserve 1000 bytes for stack (stack grows down in memory)
-		if ((memStart + wordCount) > (OBJ) stack) {
-			vmPanic("Insufficient memory for MicroBlocks stack");
-		}
-	}
-
-	if ((unsigned) memStart <= 4) {
-		// Reserve object references 0 and 4 for object pointer constants true and false.
-		// Details: In the very unlikely case that memStart <= 4, increment it by 8
-		// and reduce wordCount by 2 words.
-		memStart = (OBJ) ((unsigned) memStart + 8);
-		wordCount -= 2;
-	}
-	freeStart = memStart;
-	memEnd = memStart + wordCount;
-
-	// initialize all global variables to zero
-	for (int i = 0; i < MAX_VARS; i++) vars[i] = int2obj(0);
+	// initialize object heap memory
+	memset(mem, 0, sizeof(mem));
+	memStart = (OBJ) mem;
+	memEnd = (OBJ) (mem + sizeof(mem));
+	memClear();
 }
 
 void memClear() {

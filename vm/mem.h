@@ -90,7 +90,7 @@ static inline int objType(OBJ obj) {
 
 // Object Memory Operations
 
-void memInit(int wordCount);
+void memInit();
 void memClear();
 OBJ newObj(int classID, int wordCount, OBJ fill);
 OBJ newStringFromBytes(uint8 *bytes, int byteCount);
