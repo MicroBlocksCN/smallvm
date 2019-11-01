@@ -107,7 +107,7 @@ OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
 	// Round up to an even number of words and pad with nulls.
 
 	int wordCount = (byteCount + 3) / 4;
-	OBJ result = newObj(StringClass, wordCount, 0);
+	OBJ result = newObj(StringType, wordCount, 0);
 	char *dst = (char *) &result[HEADER_WORDS];
 	for (int i = 0; i < byteCount; i++) *dst++ = *bytes++;
 	*dst = 0; // null terminator byte
@@ -115,7 +115,7 @@ OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
 }
 
 char* obj2str(OBJ obj) {
-	if (!IS_CLASS(obj, StringClass)) {
+	if (!IS_TYPE(obj, StringType)) {
 		fail(needsStringError);
 		return (char *) "";
 	}
@@ -132,7 +132,7 @@ void memDumpObj(OBJ obj) {
 		outputString(s);
 		return;
 	}
-	int classID = CLASS(obj);
+	int classID = TYPE(obj);
 	int wordCount = WORDS(obj);
 	sprintf(s, "%x: %d words, classID %d", (int) obj, wordCount, classID);
 	outputString(s);
