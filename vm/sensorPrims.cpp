@@ -82,7 +82,7 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
 	int deviceID = obj2int(args[0]);
 	OBJ array = args[1];
-	if (!IS_CLASS(array, ArrayClass)) return int2obj(0);
+	if (!IS_TYPE(array, ArrayType)) return int2obj(0);
 
 	if (!wireStarted) startWire();
 	int count = objWords(array);
@@ -109,7 +109,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	Wire.beginTransmission(deviceID);
 	if (isInt(data)) {
 		Wire.write(obj2int(data) & 255);
-	} else if (IS_CLASS(data, ArrayClass)) {
+	} else if (IS_TYPE(data, ArrayType)) {
 		int count = objWords(data);
 		for (int i = 0; i < count; i++) {
 			OBJ item = FIELD(data, i);

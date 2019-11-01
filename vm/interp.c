@@ -62,12 +62,12 @@ static void printObj(OBJ obj) {
 	if (isInt(obj)) snprintf(dst, n, "%d", obj2int(obj));
 	else if (obj == falseObj) snprintf(dst, n, "false");
 	else if (obj == trueObj) snprintf(dst, n, "true");
-	else if (objClass(obj) == StringClass) {
+	else if (objType(obj) == StringType) {
 		snprintf(dst, n, "%s", obj2str(obj));
-	} else if (objClass(obj) == ArrayClass) {
+	} else if (objType(obj) == ArrayType) {
 		snprintf(dst, n, "list of %d items", objWords(obj));
 	} else {
-		snprintf(dst, n, "object of class: %d", objClass(obj));
+		snprintf(dst, n, "object of class: %d", objType(obj));
 	}
 	printBufferByteCount = strlen(printBuffer);
 }
@@ -98,7 +98,7 @@ static int bytesForObject(OBJ value) {
 	int headerBytes = 6; // message header (5 bytes) + type byte
 	if (isInt(value)) { // 32-bit integer
 		return headerBytes + 4;
-	} else if (IS_CLASS(value, StringClass)) { // string
+	} else if (IS_TYPE(value, StringType)) { // string
 		return headerBytes + strlen(obj2str(value));
 	} else if ((value == trueObj) || (value == falseObj)) { // boolean
 		return headerBytes + 1;
@@ -130,7 +130,7 @@ static struct {
 OBJ primBoardType() {
 	strncpy(boardTypeObj.body, boardType(), BOARD_TYPE_SIZE - 1);
 	int wordCount = (strlen(boardTypeObj.body) + 4) / 4;
-	boardTypeObj.header = HEADER(StringClass, wordCount);
+	boardTypeObj.header = HEADER(StringType, wordCount);
 	return (OBJ) &boardTypeObj;
 }
 
@@ -565,9 +565,9 @@ static void runTask(Task *task) {
 			tmpObj = *(sp - 3);
 			if (isInt(tmpObj)) {
 				tmp = obj2int(tmpObj);
-			} else if (IS_CLASS(tmpObj, ArrayClass)) {
+			} else if (IS_TYPE(tmpObj, ArrayType)) {
 				tmp = objWords(tmpObj);
-			} else if (IS_CLASS(tmpObj, ByteArrayClass)) {
+			} else if (IS_TYPE(tmpObj, ByteArrayType)) {
 				tmp = 4 * objWords(tmpObj);
 			} else {
 				fail(badForLoopArg);
@@ -584,10 +584,10 @@ static void runTask(Task *task) {
 			if (isInt(tmpObj)) {
 				// set the index variable to the loop index
 				*(fp + arg) = int2obj(tmp + 1); // add 1 get range 1 to N
-			} else if (IS_CLASS(tmpObj, ArrayClass)) {
+			} else if (IS_TYPE(tmpObj, ArrayType)) {
 				// set the index variable to the array element at the index variable
 				*(fp + arg) = FIELD(tmpObj, tmp); // array elements
-			} else if (IS_CLASS(tmpObj, ByteArrayClass)) {
+			} else if (IS_TYPE(tmpObj, ByteArrayType)) {
 				// set the index variable to the byte at the index variable
 				*(fp + arg) = int2obj( ((uint8 *) &FIELD(tmpObj, 0))[tmp] ); // bytearray elements
 			} else {
@@ -646,7 +646,7 @@ static void runTask(Task *task) {
 			*(sp - arg) = falseObj; // boolean, not equal
 		} else if (isInt(tmpObj) && isInt(*(sp - 1))) {
 			*(sp - arg) = falseObj; // integer, not equal
-		} else if (IS_CLASS(tmpObj, StringClass) && IS_CLASS(*(sp - 1), StringClass)) {
+		} else if (IS_TYPE(tmpObj, StringType) && IS_TYPE(*(sp - 1), StringType)) {
 			*(sp - arg) = (stringsEqual(tmpObj, *(sp - 1)) ? trueObj : falseObj);
 		} else {
 			*(sp - arg) = falseObj; // not comparable, so not equal
@@ -661,7 +661,7 @@ static void runTask(Task *task) {
 			*(sp - arg) = trueObj; // boolean, not equal
 		} else if (isInt(tmpObj) && isInt(*(sp - 1))) {
 			*(sp - arg) = trueObj; // integer, not equal
-		} else if (IS_CLASS(tmpObj, StringClass) && IS_CLASS(*(sp - 1), StringClass)) {
+		} else if (IS_TYPE(tmpObj, StringType) && IS_TYPE(*(sp - 1), StringType)) {
 			*(sp - arg) = (stringsEqual(tmpObj, *(sp - 1)) ? falseObj : trueObj);
 		} else {
 			*(sp - arg) = trueObj; // not comparable, so not equal

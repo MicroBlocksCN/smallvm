@@ -14,7 +14,7 @@
 #include "interp.h"
 
 OBJ primHexToInt(int argCount, OBJ *args) {
-	if (!IS_CLASS(args[0], StringClass)) return fail(needsStringError);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
 
 	char *s = obj2str(args[0]);
 	if ('#' == *s) s++; // skip leading # if there is one

@@ -256,7 +256,7 @@ static OBJ primText(int argCount, OBJ *args) {
 	tft.setTextSize(scale);
 	tft.setTextWrap(wrap);
 
-	if (IS_CLASS(value, StringClass)) {
+	if (IS_TYPE(value, StringType)) {
 		tft.print(obj2str(value));
 	} else if (trueObj == value) {
 		tft.print("true");

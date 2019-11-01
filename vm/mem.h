@@ -31,20 +31,22 @@ typedef unsigned int uint32;
 
 typedef int * OBJ;
 
-// Class IDs
+// Type IDs
 
-#define BooleanClass 1
-#define IntegerClass 2
-#define FloatClass 3 // not yet supported
-#define StringClass 4
-#define ByteArrayClass 5 // objects with class ID's <= 5 do not contain pointers
-#define ArrayClass 6
+#define BooleanType 1
+#define IntegerType 2
+#define FloatType 3 // not yet supported
+#define StringType 4
+#define ByteArrayType 5 // objects with type ID's <= 5 do not contain pointers
+#define ArrayType 6
 
-// OBJ constants for false and true
+// Booleans
 // Note: These are constants, not pointers to objects in memory.
 
 #define falseObj ((OBJ) 0)
 #define trueObj ((OBJ) 4)
+
+#define isBoolean(obj) ((obj) <= trueObj)
 
 // Integers
 
@@ -63,7 +65,7 @@ typedef int * OBJ;
 
 #define HEADER_WORDS 1
 #define HEADER(classID, wordCount) ((wordCount << 4) | (classID & 0xF))
-#define CLASS(obj) (*((unsigned*) (obj)) & 0xF)
+#define TYPE(obj) (*((unsigned*) (obj)) & 0xF)
 #define WORDS(obj) (*((unsigned*) (obj)) >> 4)
 
 static inline int objWords(OBJ obj) {
@@ -71,20 +73,20 @@ static inline int objWords(OBJ obj) {
 	return WORDS(obj);
 }
 
-static inline int objClass(OBJ obj) {
-	if (isInt(obj)) return IntegerClass;
-	if (obj <= trueObj) return BooleanClass;
-	return CLASS(obj);
+static inline int objType(OBJ obj) {
+	if (isInt(obj)) return IntegerType;
+	if (obj <= trueObj) return BooleanType;
+	return TYPE(obj);
 }
 
 // FIELD() can be used either to get or set an object field
 
 #define FIELD(obj, i) (((OBJ *) obj)[HEADER_WORDS + (i)])
 
-// Class check for classes with memory instances
+// Type test macro for objects with instances
 // (Note: there are faster tests for small integers and booleans)
 
-#define IS_CLASS(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > trueObj) && (CLASS(obj) == classID))
+#define IS_TYPE(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > trueObj) && (TYPE(obj) == classID))
 
 // Object Memory Operations
 

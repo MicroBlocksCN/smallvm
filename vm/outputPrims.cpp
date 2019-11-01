@@ -499,7 +499,7 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 			val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
 		}
 		sendNeoPixelData(val);
-	} else if (IS_CLASS(arg, ArrayClass)) {
+	} else if (IS_TYPE(arg, ArrayType)) {
 		int count = objWords(arg);
 		for (int i = 0; i < count; i++) {
 			OBJ item = FIELD(arg, i);
@@ -559,7 +559,7 @@ OBJ primMBShapeForLetter(int argCount, OBJ *args) {
 	if (isInt(arg)) {
 		// argument is an integer
 		ascii = evalInt(arg);
-	} else if (IS_CLASS(arg, StringClass) && (objWords(arg) > 0)) {
+	} else if (IS_TYPE(arg, StringType) && (objWords(arg) > 0)) {
 		// argument is a non-empty string; use its first (and usually only) byte
 		uint8 *bytes = (uint8 *) &FIELD(arg, 0);
 		ascii = bytes[0];

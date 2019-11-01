@@ -134,7 +134,7 @@ static char * valueJSON(char *response, char *varName, int varID) {
 		sprintf(response, "{ \"%s\": %d }\r\n", varName, obj2int(value));
 	} else if ((trueObj == value) || (falseObj == value)) {
 		sprintf(response, "{ \"%s\": %s }\r\n", varName, (trueObj == value) ? "true" : "false");
-	} else if (IS_CLASS(value, StringClass)) {
+	} else if (IS_TYPE(value, StringType)) {
 		sprintf(response, "{ \"%s\": \"%s\" }\r\n", varName, obj2str(value));
 	} else {
 		sprintf(response, "{ \"%s\": \"<Unknown type>\" }\r\n", varName);
@@ -240,7 +240,7 @@ void webServerLoop() {
 
 // Macro for creating MicroBlocks string object constants
 #define STRING_OBJ_CONST(s) \
-	struct { uint32 header = HEADER(StringClass, ((sizeof(s) + 4) / 4)); char body[sizeof(s)] = s; }
+	struct { uint32 header = HEADER(StringType, ((sizeof(s) + 4) / 4)); char body[sizeof(s)] = s; }
 
 // Status strings that can be returned by WiFiStatus primitive
 
@@ -356,7 +356,7 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 		IPAddress ip = (WIFI_AP_STA == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
 	#endif
 	sprintf(ipStringObject.body, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
-	ipStringObject.header = HEADER(StringClass, (strlen(ipStringObject.body) + 4) / 4);
+	ipStringObject.header = HEADER(StringType, (strlen(ipStringObject.body) + 4) / 4);
 	return (OBJ) &ipStringObject;
 }
 
@@ -364,7 +364,7 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 
 static OBJ primThingDescription(int argCount, OBJ *args) {
 	int wordCount = (strlen(descriptionObj.body) + 4) / 4;
-	descriptionObj.header = HEADER(StringClass, wordCount);
+	descriptionObj.header = HEADER(StringType, wordCount);
 	return (OBJ) &descriptionObj;
 }
 
@@ -381,7 +381,7 @@ static void appendObjToDescription(OBJ obj) {
 	char *dst = &descriptionObj.body[currentSize];
 	int n = (DESCRIPTION_SIZE - currentSize) - 1;
 
-	if (objClass(obj) == StringClass) snprintf(dst, n, "%s", obj2str(obj));
+	if (objType(obj) == StringType) snprintf(dst, n, "%s", obj2str(obj));
 	else if (isInt(obj)) snprintf(dst, n, "%d", obj2int(obj));
 	else if (obj == trueObj) snprintf(dst, n, "true");
 	else if (obj == falseObj) snprintf(dst, n, "false");

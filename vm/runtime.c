@@ -56,8 +56,8 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 	// but are fine for slower operations (e.g. updating the micro:bit display).
 
 	if (argCount < 2) return fail(primitiveNotImplemented);
-	char *setName = IS_CLASS(args[0], StringClass) ? obj2str(args[0]) : "";
-	char *primName = IS_CLASS(args[1], StringClass) ? obj2str(args[1]) : "";
+	char *setName = IS_TYPE(args[0], StringType) ? obj2str(args[0]) : "";
+	char *primName = IS_TYPE(args[1], StringType) ? obj2str(args[1]) : "";
 
 	for (int i = 0; i < primSetCount; i++) {
 		if (0 == strcmp(primSets[i].setName, setName)) {
@@ -459,7 +459,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		data[3] = ((n >> 16) & 0xFF);
 		data[4] = ((n >> 24) & 0xFF);
 		sendMessage(msgType, chunkOrVarIndex, 5, data);
-	} else if (IS_CLASS(value, StringClass)) {
+	} else if (IS_TYPE(value, StringType)) {
 		data[0] = 2; // data type (2 is string)
 		char *s = obj2str(value);
 		int byteCount = strlen(s);
@@ -472,7 +472,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		data[0] = 3; // data type (3 is boolean)
 		data[1] = (value == trueObj) ? 1 : 0;
 		sendMessage(msgType, chunkOrVarIndex, 2, data);
-	} else if (IS_CLASS(value, ByteArrayClass)) {
+	} else if (IS_TYPE(value, ByteArrayType)) {
 		int byteCount = 4 * objWords(value);
 		data[0] = 4; // data type (4 is bytearray)
 		if (byteCount > maxBytes) byteCount = maxBytes;
@@ -481,7 +481,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 			data[i + 1] = *src++;
 		}
 		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
-	} else if (IS_CLASS(value, ArrayClass)) {
+	} else if (IS_TYPE(value, ArrayType)) {
 		// Note: xxx Incomplete! Currently only handles arrays of integers.
 		int itemCount = objWords(value);
 		if (itemCount > 100) itemCount = 100;

@@ -279,7 +279,7 @@ static int receiveMakeCodeMessage() {
 	if (stringLength > 19) stringLength = 19;
 	for (int i = 0; i < stringLength; i++) receivedString.body[i] = *src++;
 	receivedString.body[stringLength] = '\0'; // null terminator
-	receivedString.header = HEADER(StringClass, (stringLength + 4) / 4);
+	receivedString.header = HEADER(StringType, (stringLength + 4) / 4);
 
 	return true;
 }
@@ -323,7 +323,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 	// If a packet has been received, copy it into supplied 32 element list and return true.
 	// Otherwise, return false.
 
-	if ((argCount > 0) && IS_CLASS(args[0], ArrayClass) && WORDS(args[0]) >= 32) {
+	if ((argCount > 0) && IS_TYPE(args[0], ArrayType) && WORDS(args[0]) >= 32) {
 		OBJ arg0 = args[0];
 		uint8_t packet[32];
 		int gotData = receivePacket(packet);
@@ -340,7 +340,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 static OBJ primPacketSend(int argCount, OBJ *args) {
 	// Send the given 32-element list as a 32-byte packet.
 
-	if ((argCount > 0) && IS_CLASS(args[0], ArrayClass) && WORDS(args[0]) >= 32) {
+	if ((argCount > 0) && IS_TYPE(args[0], ArrayType) && WORDS(args[0]) >= 32) {
 		OBJ arg0 = args[0];
 		uint8_t packet[32];
 		for (int i = 0; i < 32; i++) {
@@ -367,7 +367,7 @@ static OBJ primSendMakeCodeInteger(int argCount, OBJ *args) {
 }
 
 static OBJ primSendMakeCodePair(int argCount, OBJ *args) {
-	if ((argCount > 1) && IS_CLASS(args[0], StringClass) && isInt(args[1])) {
+	if ((argCount > 1) && IS_TYPE(args[0], StringType) && isInt(args[1])) {
 		char *s = obj2str(args[0]);
 		int n = obj2int(args[1]);
 		int len = strlen(s);
@@ -388,7 +388,7 @@ static OBJ primSendMakeCodePair(int argCount, OBJ *args) {
 }
 
 static OBJ primSendMakeCodeString(int argCount, OBJ *args) {
-	if ((argCount > 0) && IS_CLASS(args[0], StringClass)) {
+	if ((argCount > 0) && IS_TYPE(args[0], StringType)) {
 		char *s = obj2str(args[0]);
 		int len = strlen(s);
 		if (len > 18) len = 18;
@@ -456,14 +456,14 @@ static OBJ primReceivedMessageType(int argCount, OBJ *args) {
 
 	// return non-heap string object to avoid using up heap space
 	strcpy(messageTypeString.body, s);
-	messageTypeString.header = HEADER(StringClass, (strlen(s) + 4) / 4);
+	messageTypeString.header = HEADER(StringType, (strlen(s) + 4) / 4);
 	return (OBJ) &messageTypeString;
 }
 
 static OBJ primReceivedString() {
 	if (!receivedString.header) {
 		// initialize the object header on first access
-		receivedString.header = HEADER(StringClass, 1);
+		receivedString.header = HEADER(StringType, 1);
 		receivedString.body[0] = '\0'; // null terminator
 	}
 
