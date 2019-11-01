@@ -216,10 +216,11 @@ void restartSerial() {
 	// Note: Pin count does not include pins 36-38, the USB serial pins
 
 	#define BOARD_TYPE "CircuitPlayground"
-	#define DIGITAL_PINS 27
+	#define DIGITAL_PINS 15
 	#define ANALOG_PINS 11
-	#define TOTAL_PINS 27
+	#define TOTAL_PINS 15
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
+	static const char digitalPin[15] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 26, 25, 13, 8};
 	#define PIN_BUTTON_A 4
 	#define PIN_BUTTON_B 5
 	#undef BUTTON_PRESSED
@@ -227,11 +228,12 @@ void restartSerial() {
 
 #elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
 
-	#define BOARD_TYPE "CircuitPlayground nrf52"
-	#define DIGITAL_PINS 23
+	#define BOARD_TYPE "CircuitPlayground Bluefruit"
+	#define DIGITAL_PINS 15
 	#define ANALOG_PINS 10
-	#define TOTAL_PINS 23
+	#define TOTAL_PINS 15
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
+	static const char digitalPin[15] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 25, 26, 13, 8};
 	#define PIN_LED 13
 	#define PIN_BUTTON_A 4
 	#define PIN_BUTTON_B 5
@@ -539,6 +541,12 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
+	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
+			pinNum = digitalPin[pinNum];
+		} else {
+			return falseObj;
+		}
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pinNum) && (pinNum <= 139)) {
 			pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
@@ -591,6 +599,12 @@ void primDigitalSet(int pinNum, int flag) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
+	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
+			pinNum = digitalPin[pinNum];
+		} else {
+			return;
+		}
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pinNum) && (pinNum <= 139)) {
 			pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
@@ -642,7 +656,7 @@ void primSetUserLED(OBJ *args) {
 OBJ primButtonA(OBJ *args) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		// Momentarily set button pin low before reading (simulates a pull-down resistor)
-		primDigitalSet(PIN_BUTTON_A, false);
+		primDigitalSet(8, false); // use index in digitalPins array
 	#endif
 	#ifdef PIN_BUTTON_A
 		#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
@@ -674,7 +688,7 @@ OBJ primButtonA(OBJ *args) {
 OBJ primButtonB(OBJ *args) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		// Momentarily set button pin low before reading (simulates a pull-down resistor)
-		primDigitalSet(PIN_BUTTON_B, false);
+		primDigitalSet(9, false); // use index in digitalPins array
 	#endif
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
@@ -724,6 +738,9 @@ OBJ primSetServo(int argCount, OBJ *args) {
 		if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
 		int pin = obj2int(pinArg);
 		if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
+		#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+			pin = digitalPin[pin];
+		#endif
 		int usecs = obj2int(usecsArg);
 		if (usecs > 15000) usecs = 15000; // maximum pulse width is 15000 usecs
 		if (usecs <= 0) {
@@ -788,6 +805,9 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
 	int pin = obj2int(pinArg);
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+		pin = digitalPin[pin];
+	#endif
 
 	#if HAS_TONE
 		int frequency = obj2int(freqArg);
