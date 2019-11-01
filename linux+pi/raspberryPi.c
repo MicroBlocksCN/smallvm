@@ -129,7 +129,7 @@ static void initPins(void) {
 OBJ primAnalogPins(OBJ *args) { return int2obj(ANALOG_PINS); }
 OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 
-OBJ primAnalogRead(OBJ *args) { return int2obj(0); } // no analog inputs
+OBJ primAnalogRead(int argCount, OBJ *args) { return int2obj(0); } // no analog inputs
 void primAnalogWrite(OBJ *args) { } // analog output is not supported
 
 OBJ primDigitalRead(OBJ *args) {

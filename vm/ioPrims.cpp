@@ -474,7 +474,7 @@ OBJ primAnalogPins(OBJ *args) { return int2obj(ANALOG_PINS); }
 
 OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 
-OBJ primAnalogRead(OBJ *args) {
+OBJ primAnalogRead(int argCount, OBJ *args) {
 	if (!isInt(args[0])) { fail(needsIntegerError); return int2obj(0); }
 	int pinNum = obj2int(args[0]);
 	#ifdef ARDUINO_CITILAB_ED1
@@ -498,6 +498,7 @@ OBJ primAnalogRead(OBJ *args) {
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
 	int pin = analogPin[pinNum];
 	SET_MODE(pin, INPUT);
+	if ((argCount > 1) && (trueObj == args[1])) pinMode(pin, INPUT_PULLUP);
 	return int2obj(analogRead(pin));
 }
 

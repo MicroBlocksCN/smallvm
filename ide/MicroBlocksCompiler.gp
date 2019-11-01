@@ -49,7 +49,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'boardType'			'board type')
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
-		(array 'r' 'analogReadOp'		'read analog pin _' 'num' 1)
+		(array 'r' 'analogReadOp'		'read analog pin _ : pullup _' 'num bool' 1 false)
 		'-'
 		(array ' ' 'digitalWriteOp'		'set digital pin _ to _' 'num bool' 1 true)
 		(array ' ' 'analogWriteOp'		'set pin _ to _' 'num num' 1 1023)

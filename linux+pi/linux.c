@@ -87,7 +87,7 @@ void systemReset() { } // noop on Linux
 
 OBJ primAnalogPins(OBJ *args) { return int2obj(0); }
 OBJ primDigitalPins(OBJ *args) { return int2obj(0); }
-OBJ primAnalogRead(OBJ *args) { return int2obj(0); }
+OBJ primAnalogRead(int argCount, OBJ *args) { return int2obj(0); }
 void primAnalogWrite(OBJ *args) { }
 OBJ primDigitalRead(int argCount, OBJ *args) { return int2obj(0); }
 void primDigitalWrite(OBJ *args) { }

@@ -282,7 +282,7 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 	lightReadingRequested = false;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		OBJ analogPin = int2obj(8);
-		lightLevel = obj2int(primAnalogRead(&analogPin));
+		lightLevel = obj2int(primAnalogRead(1, &analogPin));
 		lightLevel = lightLevel / 10;
 	#elif defined(ARDUINO_CITILAB_ED1)
 		lightLevel = analogRead(34) * 1000 / 4095;

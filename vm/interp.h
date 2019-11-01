@@ -246,7 +246,7 @@ OBJ primHexToInt(int argCount, OBJ *args);
 
 OBJ primAnalogPins(OBJ *args);
 OBJ primDigitalPins(OBJ *args);
-OBJ primAnalogRead(OBJ *args);
+OBJ primAnalogRead(int argCount, OBJ *args);
 void primAnalogWrite(OBJ *args);
 OBJ primDigitalRead(int argCount, OBJ *args);
 void primDigitalWrite(OBJ *args);

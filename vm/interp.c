@@ -827,7 +827,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	analogRead_op:
-		*(sp - arg) = primAnalogRead(sp - arg);
+		*(sp - arg) = primAnalogRead(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	analogWrite_op:
