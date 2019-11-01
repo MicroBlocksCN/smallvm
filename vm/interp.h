@@ -225,6 +225,7 @@ void hardwareInit(void);
 // I/O Support
 
 int pinCount();
+int mapDigitalPinNum(int userPinNum);
 void setPinMode(int pin, int newMode);
 void turnOffPins();
 void updateMicrobitDisplay();

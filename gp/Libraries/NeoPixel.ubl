@@ -3,11 +3,11 @@ variables _np_pixels
 
 	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
 	spec ' ' 'clearNeoPixels' 'clear NeoPixels'
-	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
 	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
 	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
 	spec 'r' 'colorFromRGB' 'color r _ g _ b _' 'num num num' 0 1 1
-	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ has white _' 'auto auto bool' 10 '' false
+	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num num bool' 10 '' false
 	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
 	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
 	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
@@ -48,7 +48,9 @@ to colorFromRGB r g b {
   return (((r << 16) | (g << 8)) | b)
 }
 
-to neoPixelAttach number pinNumber hasWhite {
+to neoPixelAttach number pinNumber optionalHasWhite {
+  hasWhite = false
+  if ((pushArgCount) > 2) { hasWhite = optionalHasWhite }
   if (or (_np_pixels == 0) (number != (size _np_pixels))) {_np_pixels = (newArray number)}
   fillArray _np_pixels 0
   '[display:neoPixelSetPin]' pinNumber hasWhite

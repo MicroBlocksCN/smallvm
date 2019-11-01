@@ -474,6 +474,13 @@ void turnOffPins() {
 	}
 }
 
+int mapDigitalPinNum(int userPinNum) {
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+		if ((0 <= userPinNum) && (userPinNum < DIGITAL_PINS)) return digitalPin[userPinNum];
+	#endif
+	return userPinNum;
+}
+
 // Pin IO Primitives
 
 OBJ primAnalogPins(OBJ *args) { return int2obj(ANALOG_PINS); }

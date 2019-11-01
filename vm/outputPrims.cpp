@@ -520,7 +520,7 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 OBJ primNeoPixelSetPin(int argCount, OBJ *args) {
 	int pinNum = isInt(args[0]) ? obj2int(args[0]) : -1; // -1 means "internal NeoPixel pin"
 	neoPixelBits = ((argCount > 1) && (trueObj == args[1])) ? 32 : 24;
-	initNeoPixelPin(pinNum);
+	initNeoPixelPin(mapDigitalPinNum(pinNum));
 	return falseObj;
 }
 
