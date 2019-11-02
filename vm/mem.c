@@ -16,7 +16,7 @@
 #include "interp.h"
 
 #if defined(NRF51)
-  #define MEM_BYTES 2400 // max is 2616; 2400 leaves room for a 1000 words of stack during GC
+  #define MEM_BYTES 2500 // max is 2612; 2400 leaves room for a 1000 words of stack during GC
 #else
   #define MEM_BYTES 12000 // max that compiles for all boards is 16886 (17624 NodeMCU)
 #endif
@@ -96,11 +96,11 @@ OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
 }
 
 char* obj2str(OBJ obj) {
-	if (!IS_TYPE(obj, StringType)) {
-		fail(needsStringError);
-		return (char *) "";
-	}
-	return (char *) &obj[HEADER_WORDS];
+	if (isInt(obj)) return "<Integer>";
+	if (isBoolean(obj)) return ((trueObj == obj) ? "true" : "false");
+	if (IS_TYPE(obj, StringType)) return (char *) &obj[HEADER_WORDS];
+	if (IS_TYPE(obj, ArrayType)) return "<Array>";
+	return "<Object>";
 }
 
 // Debugging
