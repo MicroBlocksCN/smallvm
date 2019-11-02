@@ -57,14 +57,14 @@ void vmPanic(char *errorMessage) {
 	while (true) processMessage(); // there's no way to recover; loop forever!
 }
 
-OBJ newObj(int classID, int wordCount, OBJ fill) {
+OBJ newObj(int typeID, int wordCount, OBJ fill) {
 	if ((freeChunk + HEADER_WORDS + wordCount) > memEnd) {
 		return fail(insufficientMemoryError);
 	}
 	OBJ obj = freeChunk;
 	freeChunk += HEADER_WORDS + wordCount;
 	for (OBJ p = obj; p < freeChunk; ) *p++ = (int) fill;
-	unsigned header = HEADER(classID, wordCount);
+	unsigned header = HEADER(typeID, wordCount);
 	obj[0] = header;
 	return obj;
 }
@@ -101,9 +101,9 @@ void memDumpObj(OBJ obj) {
 		outputString(s);
 		return;
 	}
-	int classID = TYPE(obj);
+	int typeID = TYPE(obj);
 	int wordCount = WORDS(obj);
-	sprintf(s, "%x: %d words, classID %d", (int) obj, wordCount, classID);
+	sprintf(s, "%x: %d words, typeID %d", (int) obj, wordCount, typeID);
 	outputString(s);
 
 	sprintf(s, "Header: %x", (int) obj[0]);

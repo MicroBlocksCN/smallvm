@@ -84,7 +84,7 @@ static inline int objType(OBJ obj) {
 // Type check for non-integer/boolean objects
 // (Note: Use isInt() and isBoolean() to test for integers and booleans)
 
-#define IS_TYPE(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > trueObj) && (TYPE(obj) == classID))
+#define IS_TYPE(obj, typeID) (((((int) obj) & 1) == 0) && ((obj) > trueObj) && (TYPE(obj) == typeID))
 
 // FIELD() macro can be used either to get or set an object field (zero-based)
 
@@ -95,7 +95,7 @@ static inline int objType(OBJ obj) {
 
 void memInit();
 void memClear();
-OBJ newObj(int classID, int wordCount, OBJ fill);
+OBJ newObj(int typeID, int wordCount, OBJ fill);
 OBJ newStringFromBytes(uint8 *bytes, int byteCount);
 char* obj2str(OBJ obj);
 

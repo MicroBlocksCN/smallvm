@@ -67,7 +67,7 @@ static void printObj(OBJ obj) {
 	} else if (objType(obj) == ArrayType) {
 		snprintf(dst, n, "list of %d items", objWords(obj));
 	} else {
-		snprintf(dst, n, "object of class: %d", objType(obj));
+		snprintf(dst, n, "object of type: %d", objType(obj));
 	}
 	printBufferByteCount = strlen(printBuffer);
 }

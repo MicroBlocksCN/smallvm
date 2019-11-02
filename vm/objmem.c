@@ -39,12 +39,9 @@ void setnth(OBJ obj, int index, OBJ value);
 static uint32_t objstore[OBJSTORE_WORDS];
 static uint32_t *freeChunk; // last free chunk in the object store; used for allocation
 
-#define CHUNK_INFO_MASK 0xFF000000
-#define CHUNK_WORDS_MASK 0x00FFFFFF
-
-#define CHUNK_INFO(chunkAddr) ((*(chunkAddr) >> 24) & 0xFF)
-#define CHUNK_WORDS(chunkAddr) (*(chunkAddr) & CHUNK_WORDS_MASK)
-#define CHUNK_HEADER(info, wordCount) (((info) << 24) | ((wordCount) & CHUNK_WORDS_MASK))
+// #define CHUNK_INFOX(chunkAddr) ((*(chunkAddr) >> 24) & 0xFF)
+// #define CHUNK_WORDSX(chunkAddr) (*(chunkAddr) & 0x00FFFFFF)
+// #define CHUNK_HEADERX(info, wordCount) (((info) << 24) | ((wordCount) & 0x00FFFFFF))
 #define FREE_CHUNK 0
 
 // OBJ Forwarding
@@ -57,7 +54,7 @@ void clearForwardingFields() {
 	uint32_t *next = objstore + 1;
 	while (next < end) {
 		*(next - 1) = 0; // clear forwarding field
-		next += CHUNK_WORDS(next) + 2;
+		next += WORDS(next) + 2;
 	}
 }
 
@@ -67,7 +64,7 @@ void applyForwarding() {
 	uint32_t *end = &objstore[OBJSTORE_WORDS];
 	uint32_t *next = objstore + 1;
 	while (next < end) {
-		int info = CHUNK_INFO(next);
+		int info = TYPE(next);
 		if (info && (StringType != info)) { // non-free chunk with OBJ fields (not a string)
 			for (int i = fieldCount(next); i > 0; i--) {
 				OBJ child = (OBJ) next[i];
@@ -76,7 +73,7 @@ void applyForwarding() {
 				}
 			}
 		}
-		next += CHUNK_WORDS(next) + 2;
+		next += WORDS(next) + 2;
 	}
 }
 
@@ -108,7 +105,7 @@ void mark(OBJ root) {
 
 		// process next child
 		OBJ child = (OBJ) current[i];
-		if (!isInt(child) && !isBoolean(child) && !IS_MARKED(child) && (StringType != CHUNK_INFO(child))) { // child is not an integer, String, or marked
+		if (!isInt(child) && !isBoolean(child) && !IS_MARKED(child) && (StringType != TYPE(child))) { // child is not an integer, String, or marked
 			// reverse pointers before processing child
 			current[i] = *child; // store child's header it ith field of current
 			*(current - 1) = i; // store i in forwarding field of current
@@ -128,7 +125,7 @@ void sweep() {
 	uint32_t *dst = next;
 	uint32_t *end = &objstore[OBJSTORE_WORDS];
 	while (next < end) {
-		uint32_t wordCount = CHUNK_WORDS(next);
+		uint32_t wordCount = WORDS(next);
 		if (*(next - 1)) { // surviving object
 			// set the forwarding field to dst if the object will move, zero if not
 			*(next - 1) = (dst != next) ? (uint32_t) dst : 0;
@@ -148,8 +145,8 @@ void compact() {
 	uint32_t *dst = next;
 	uint32_t *end = &objstore[OBJSTORE_WORDS];
 	while (next < end) {
-		uint32_t wordCount = CHUNK_WORDS(next);
-		if (CHUNK_INFO(next)) { // live object chunk
+		uint32_t wordCount = WORDS(next);
+		if (TYPE(next)) { // live object chunk
 			if (dst != next) memmove(dst, next, 4 * (wordCount + 1)); // move object, if necessary
 			dst += wordCount + 1;
 			*dst++ = 0; // forwarding word
@@ -157,7 +154,7 @@ void compact() {
 		next += wordCount + 2;
 	}
 	uint32_t freeWords = (end - dst) - 2;
-	*dst = CHUNK_HEADER(FREE_CHUNK, freeWords);
+	*dst = HEADER(FREE_CHUNK, freeWords);
 	freeChunk = dst;
 }
 
@@ -228,8 +225,8 @@ void dumpObjectStore() {
 	uint32_t *end = &objstore[OBJSTORE_WORDS];
 	uint32_t *next = objstore + 1;
 	while (next < end) {
-		uint32_t wordCount = CHUNK_WORDS(next);
-		int info = CHUNK_INFO(next);
+		uint32_t wordCount = WORDS(next);
+		int info = TYPE(next);
 		if (info) {
 			uint32_t *fwd = (uint32_t *) *(next - 1);
 			if (fwd) {
@@ -256,7 +253,7 @@ void initObjmem() {
 
 	// create the free chunk (prefixed by a forwarding word)
 	objstore[0] = 0; // forwarding word
-	objstore[1] = CHUNK_HEADER(FREE_CHUNK, OBJSTORE_WORDS - 2); // free chunk
+	objstore[1] = HEADER(FREE_CHUNK, OBJSTORE_WORDS - 2); // free chunk
 	freeChunk = &objstore[1];
 }
 
@@ -264,21 +261,21 @@ OBJ newObj2(int type, int wordCount, OBJ fill) {
 	// Allocate a new object of the given size.
 
 	// check available space
-	int available = CHUNK_WORDS(freeChunk);
+	int available = WORDS(freeChunk);
 	if (available < (wordCount + 2)) {
 		gc(); // not enough space available in freeChunk; collect garbage and retry
-		available = CHUNK_WORDS(freeChunk);
+		available = WORDS(freeChunk);
 		if (available < (wordCount + 2)) return falseObj; // out of memory
 	}
 
 	// allocate result and update freeChunk
 	OBJ result = freeChunk;
 	freeChunk += wordCount + 2;
-	*freeChunk = CHUNK_HEADER(FREE_CHUNK, available - (wordCount + 2));
+	*freeChunk = HEADER(FREE_CHUNK, available - (wordCount + 2));
 
 	// initialize and return the new object
 	*(result - 1) = 0; // clear its forwarding word
-	*result = CHUNK_HEADER(type, wordCount); // set header word
+	*result = HEADER(type, wordCount); // set header word
 	OBJ *ptr = (OBJ *) result + 1;
 	OBJ *end = ptr + wordCount;
 	while (ptr < end) { *ptr++ = int2obj(0); }
@@ -294,7 +291,7 @@ void resizeObj(OBJ oldObj, int wordCount) {
 	if (!type || (StringType == type)) return;
 
 	OBJ result = newObj(type, wordCount, int2obj(0));
-	int copyCount = CHUNK_WORDS(oldObj);
+	int copyCount = WORDS(oldObj);
 	if (wordCount < copyCount) copyCount = wordCount; // new size is smaller
 
 	memcpy(result + 1, oldObj + 1, 4 * copyCount); // copy from the old to the new body
@@ -302,7 +299,7 @@ void resizeObj(OBJ oldObj, int wordCount) {
 	*(oldObj - 1) = (uint32_t) result; // point forwarding field of oldObj to result
 	applyForwarding();
 	*(oldObj - 1) = 0; // clear forwarding field
-	*oldObj = *oldObj & CHUNK_WORDS_MASK; // mark old chunk free
+	*oldObj = WORDS(oldObj); // mark old chunk free
 }
 
 int fieldCount(OBJ obj) {
@@ -310,7 +307,7 @@ int fieldCount(OBJ obj) {
 
 	if (isInt(obj) || isBoolean(obj)) return 0;
 	if (IS_TYPE(obj, StringType)) return strlen(obj2str(obj));
-	return CHUNK_WORDS(obj);
+	return WORDS(obj);
 }
 
 OBJ nth(OBJ obj, int n) {
@@ -368,7 +365,7 @@ uint32_t hash(OBJ obj) {
 	if (isInt(obj)) return result + obj2int(obj);
 	if (isBoolean(obj)) return result + (int) obj;
 	uint8_t *ptr = (uint8_t *) (obj + 1);
-	uint8_t *end = (uint8_t *) (obj + 1 + CHUNK_WORDS(obj));
+	uint8_t *end = (uint8_t *) (obj + 1 + WORDS(obj));
 	while (ptr < end) {
 		result ^= ((result << 5) + (*ptr++) + (result >> 2));
 	}
