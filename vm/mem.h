@@ -60,33 +60,36 @@ typedef int * OBJ;
 
 // Memory Objects
 //
-// Even-valued object references (except nil, true, and false) point to an object in memory.
+// Even-valued object references (except true and false) point to an object in memory.
 // Memory objects start with one or more header words.
 
 #define HEADER_WORDS 1
 #define HEADER(classID, wordCount) ((wordCount << 4) | (classID & 0xF))
-#define TYPE(obj) (*((unsigned*) (obj)) & 0xF)
-#define WORDS(obj) (*((unsigned*) (obj)) >> 4)
+#define WORDS(obj) (*((uint32*) (obj)) >> 4)
+#define TYPE(obj) (*((uint32*) (obj)) & 0xF)
 
 static inline int objWords(OBJ obj) {
-	if (isInt(obj) || (obj <= trueObj)) return 0;
+	if (isInt(obj) || isBoolean(obj)) return 0;
 	return WORDS(obj);
 }
 
+// Types
+
 static inline int objType(OBJ obj) {
 	if (isInt(obj)) return IntegerType;
-	if (obj <= trueObj) return BooleanType;
+	if (isBoolean(obj)) return BooleanType;
 	return TYPE(obj);
 }
 
-// FIELD() can be used either to get or set an object field
+// Type check for non-integer/boolean objects
+// (Note: Use isInt() and isBoolean() to test for integers and booleans)
+
+#define IS_TYPE(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > trueObj) && (TYPE(obj) == classID))
+
+// FIELD() macro can be used either to get or set an object field (zero-based)
 
 #define FIELD(obj, i) (((OBJ *) obj)[HEADER_WORDS + (i)])
 
-// Type test macro for objects with instances
-// (Note: there are faster tests for small integers and booleans)
-
-#define IS_TYPE(obj, classID) (((((int) obj) & 3) == 0) && ((obj) > trueObj) && (TYPE(obj) == classID))
 
 // Object Memory Operations
 

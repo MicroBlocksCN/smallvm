@@ -16,15 +16,16 @@
 #include "interp.h"
 
 #if defined(NRF51)
-  #define MEM_BYTES 2500 // max is 2612; 2400 leaves room for a 1000 words of stack during GC
+  #define OBJSTORE_BYTES 2500 // max is 2612
 #else
-  #define MEM_BYTES 12000 // max that compiles for all boards is 16886 (17624 NodeMCU)
+  #define OBJSTORE_BYTES 14000 // max that compiles for all boards is 16886 (17624 NodeMCU)
 #endif
 
-static uint8 mem[MEM_BYTES + 4];
+#define OBJSTORE_WORDS ((OBJSTORE_BYTES / 4) + 2)
+static OBJ objstore[OBJSTORE_WORDS];
 static OBJ memStart = NULL;
 static OBJ memEnd = NULL;
-static OBJ freeStart = NULL;
+static OBJ freeChunk = NULL;
 
 void memInit() {
 	// verify 32-bit architecture
@@ -33,16 +34,16 @@ void memInit() {
 	}
 
 	// initialize object heap memory
-	memset(mem, 0, sizeof(mem));
-	memStart = (OBJ) mem;
-	memEnd = (OBJ) (mem + sizeof(mem));
+	memset(objstore, 0, sizeof(objstore));
+	memStart = (OBJ) objstore;
+	memEnd = (OBJ) (objstore + OBJSTORE_WORDS);
 	memClear();
 }
 
 void memClear() {
 	// Clear object memory and set all global variables to zero.
 
-	freeStart = memStart;
+	freeChunk = memStart;
 	for (int i = 0; i < MAX_VARS; i++) vars[i] = int2obj(0);
 }
 
@@ -57,27 +58,14 @@ void vmPanic(char *errorMessage) {
 }
 
 OBJ newObj(int classID, int wordCount, OBJ fill) {
-	if ((freeStart + HEADER_WORDS + wordCount) > memEnd) {
+	if ((freeChunk + HEADER_WORDS + wordCount) > memEnd) {
 		return fail(insufficientMemoryError);
 	}
-	OBJ obj = freeStart;
-	freeStart += HEADER_WORDS + wordCount;
-	for (OBJ p = obj; p < freeStart; ) *p++ = (int) fill;
+	OBJ obj = freeChunk;
+	freeChunk += HEADER_WORDS + wordCount;
+	for (OBJ p = obj; p < freeChunk; ) *p++ = (int) fill;
 	unsigned header = HEADER(classID, wordCount);
 	obj[0] = header;
-
-	// for checking memory management:
-// 	char *stack = (char *) &stack;
-// 	char s[100];
-// 	sprintf(s, "%d bytes available (of %d total)", 4 * (memEnd - freeStart), 4 * (memEnd - memStart));
-// 	outputString(s);
-// 	if (stack > memEnd) {
-// 		sprintf(s, "%d stack bytes\n", stack - (char *) memEnd);
-// 		outputString(s);
-// 	} else {
-// 		outputString("Unknown stack bytes\n");
-// 	}
-
 	return obj;
 }
 
