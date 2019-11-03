@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "mem.h"
+#include "interp.h"
 
 // Temporary: Function Declarations
 
@@ -18,30 +19,28 @@ void setnth(OBJ obj, int index, OBJ value);
 // Object Store
 //
 // The object store is a contiguous portion of RAM used to store objects. The object store
-// contains both object chunks and free memory chunks. Whether it is an object or free, every
-// memory chunk starts with a header word that specifies its length and type. For objects,
-// that type field is non-zero. Free chunks have a zero type field.
+// contains both object and free memory "chunks". Whether it is an object or free, every
+// memory chunk starts with a header word that specifies its length and type. Free chunks
+// have a zero type field.
 //
 // Chunks start on 32-bit word boundaries and are multiples of 32-bit words. Chunks are packed
 // contiguously, so the entire object store can be scanned by jumping from one chunk header to
 // the next. The final chunk is always a free chunk. The object allocator carves objects off the
-// free chunk until it is no longer large enough for the desired allocation. At that point, the
-// garbage collector/compactor is run, consoidating all free space into the final free chunk.
+// free chunk until it is no longer large enough for a desired allocation. At that point, the
+// garbage collector/compactor is run, consolidating all free space into the final free chunk.
 //
-// A chunk header word has the form:
+// Every chunk starts with a header word with its size and type:
 //
-//		<object info (8 bits)> <word count (24-bits)>
+//		<word count (28-bits)><type (4 bits)>
 //
-// An extra word, called the "forwarding field" is reserved for each object stored in RAM.
-// That word is used to update (forward) refences during compaction and object resizing.
+// An extra header word, called the "forwarding field" is reserved immediately before the header
+// word of each chunk. That field is used by the marking phase of the garbage collector and to
+// update (forward) references of objects that move during compaction and object resizing.
 
 #define OBJSTORE_WORDS 6
 static uint32_t objstore[OBJSTORE_WORDS];
 static uint32_t *freeChunk; // last free chunk in the object store; used for allocation
 
-// #define CHUNK_INFOX(chunkAddr) ((*(chunkAddr) >> 24) & 0xFF)
-// #define CHUNK_WORDSX(chunkAddr) (*(chunkAddr) & 0x00FFFFFF)
-// #define CHUNK_HEADERX(info, wordCount) (((info) << 24) | ((wordCount) & 0x00FFFFFF))
 #define FREE_CHUNK 0
 
 // OBJ Forwarding
@@ -66,7 +65,7 @@ void applyForwarding() {
 	while (next < end) {
 		int info = TYPE(next);
 		if (info && (StringType != info)) { // non-free chunk with OBJ fields (not a string)
-			for (int i = fieldCount(next); i > 0; i--) {
+			for (int i = fieldCount((OBJ) next); i > 0; i--) {
 				OBJ child = (OBJ) next[i];
 				if (!isInt(child) && *(child - 1)) { // child has a non-zero forwarding field
 					next[i] = *(child - 1); // update the forwarded OBJ
@@ -94,10 +93,10 @@ void mark(OBJ root) {
 		if (i == 0) { // done processing fields of the current object
 			SET_MARK(current);
 			if (current == root) return; // we're done!
-			OBJ parent = *current; // backpointer to parent was stored in header
+			OBJ parent = (OBJ) *current; // backpointer to parent was stored in header
 			i = *(parent - 1); // restore field index in parent
 			*current = parent[i]; // restore header of child
-			parent[i] = current; // restore pointer to child in parent[i]
+			parent[i] = (int) current; // restore pointer to child in parent[i]
 			current = parent;
 			i--; // process the next field of parent
 			continue;
@@ -110,7 +109,7 @@ void mark(OBJ root) {
 			current[i] = *child; // store child's header it ith field of current
 			*(current - 1) = i; // store i in forwarding field of current
 			i = fieldCount(child); // scan backwards from last field of child
-			*child = current; // backpointer to current
+			*child = (int) current; // backpointer to current
 			current = child; // process child
 		} else {
 			i--;
@@ -132,7 +131,7 @@ void sweep() {
 			dst += wordCount + 2;
 		} else { // inaccessible object or free chunk
 			// mark chunk as free by clearing its info field
-			*next = wordCount;
+			*next = HEADER(FREE_CHUNK, wordCount);
 		}
 		next += wordCount + 2;
 	}
@@ -165,7 +164,7 @@ OBJ markSweepGC(OBJ root) {
 	mark(root);
 	sweep();
 	applyForwarding();
-	OBJ newRoot = *(root - 1);
+	OBJ newRoot = (OBJ) *(root - 1);
 	compact();
 	return newRoot ? newRoot : root;
 }
@@ -269,7 +268,7 @@ OBJ newObj2(int type, int wordCount, OBJ fill) {
 	}
 
 	// allocate result and update freeChunk
-	OBJ result = freeChunk;
+	OBJ result = (OBJ) freeChunk;
 	freeChunk += wordCount + 2;
 	*freeChunk = HEADER(FREE_CHUNK, available - (wordCount + 2));
 

@@ -94,7 +94,7 @@ char* obj2str(OBJ obj) {
 // Debugging
 
 void memDumpObj(OBJ obj) {
-	char s[200];
+	char s[100];
 
 	if ((obj < memStart) || (obj >= memEnd)) {
 		sprintf(s, "bad object at %ld", (long) obj);
@@ -106,7 +106,7 @@ void memDumpObj(OBJ obj) {
 	sprintf(s, "%x: %d words, typeID %d", (int) obj, wordCount, typeID);
 	outputString(s);
 
-	sprintf(s, "Header: %x", (int) obj[0]);
+	sprintf(s, "Header: %x", obj[0]);
 	outputString(s);
 
 	for (int i = 0; i < wordCount; i++) {

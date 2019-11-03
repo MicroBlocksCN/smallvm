@@ -17,7 +17,6 @@ extern "C" {
 // Unsigned integer types
 
 typedef unsigned char uint8;
-typedef unsigned short uint16;
 typedef unsigned int uint32;
 
 // Boolean constants for readability (if not already defined)
@@ -33,12 +32,14 @@ typedef int * OBJ;
 
 // Type IDs
 
+#define FREE_CHUNK 0
 #define BooleanType 1
 #define IntegerType 2
 #define FloatType 3 // not yet supported
 #define StringType 4
-#define ByteArrayType 5 // objects with type ID's <= 5 do not contain pointers
-#define ArrayType 6
+#define ByteArrayType 5
+// types 6 and 7 reserved for future non-pointer objects
+#define ArrayType 8 // objects with type ID's < 8 do not contain pointers
 
 // Booleans
 // Note: These are constants, not pointers to objects in memory.
@@ -64,7 +65,7 @@ typedef int * OBJ;
 // Memory objects start with one or more header words.
 
 #define HEADER_WORDS 1
-#define HEADER(classID, wordCount) ((wordCount << 4) | (classID & 0xF))
+#define HEADER(typeID, wordCount) (((wordCount) << 4) | ((typeID) & 0xF))
 #define WORDS(obj) (*((uint32*) (obj)) >> 4)
 #define TYPE(obj) (*((uint32*) (obj)) & 0xF)
 
