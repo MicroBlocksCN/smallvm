@@ -96,6 +96,7 @@ void gc();
 // Object Allocation
 
 OBJ newObjOld(int typeID, int wordCount, OBJ fill) {
+	// xxx remove later...
 	if ((freeChunk + HEADER_WORDS + wordCount) > memEnd) {
 		return fail(insufficientMemoryError);
 	}
@@ -113,9 +114,9 @@ OBJ newObj(int type, int wordCount, OBJ fill) {
 	// check available space
 	int available = WORDS(freeChunk);
 	if (available < (wordCount + 2)) {
-		gc(); // not enough space available in freeChunk; collect garbage and retry
-		available = WORDS(freeChunk);
-		if (available < (wordCount + 2)) return falseObj; // out of memory
+		gc();
+		available = WORDS(freeChunk); // retry after garbage collection
+		if (available < (wordCount + 2)) return fail(insufficientMemoryError);
 	}
 
 	// allocate result and update freeChunk
@@ -160,7 +161,7 @@ OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
 
 	int wordCount = ((byteCount + 1) + 3) / 4; // leave room for terminator byte
 	OBJ result = newObj(StringType, wordCount, 0);
-	if (!result) return falseObj; // insufficient room to allocate string
+	if (!result) return result; // insufficient room to allocate string (newObj reported failure)
 
 	char *dst = (char *) &result[HEADER_WORDS];
 	for (int i = 0; i < byteCount; i++) *dst++ = *bytes++;
@@ -174,63 +175,6 @@ char* obj2str(OBJ obj) {
 	if (IS_TYPE(obj, StringType)) return (char *) &obj[HEADER_WORDS];
 	if (IS_TYPE(obj, ArrayType)) return "<Array>";
 	return "<Object>";
-}
-
-// Debugging
-
-void memDumpObj(OBJ obj) {
-	char s[100];
-
-	if ((obj < memStart) || (obj >= memEnd)) {
-		sprintf(s, "bad object at %x", (int) obj);
-		outputString(s);
-		return;
-	}
-	int typeID = TYPE(obj);
-	int wordCount = WORDS(obj);
-	sprintf(s, "%x: %d words, typeID %d", (int) obj, wordCount, typeID);
-	outputString(s);
-
-	sprintf(s, "Header: %x", obj[0]);
-	outputString(s);
-
-	for (int i = 0; i < wordCount; i++) {
-		sprintf(s, "	0x%x,", obj[HEADER_WORDS + i]);
-		outputString(s);
-	}
-}
-
-// OBJ Forwarding
-
-void clearForwardingFields() {
-	// Set all forwarding fields to zero. This may not be needed if we maintain the invariant
-	// that forward fields are zero except during garbage collection or forwarding operations.
-
-	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
-	uint32 *next = (uint32 *) objstore + 1;
-	while (next < end) {
-		*(next - 1) = 0; // clear forwarding field
-		next += WORDS(next) + 2;
-	}
-}
-
-void applyForwarding() {
-	// Update all forwarded references.
-
-	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
-	uint32 *next = (uint32 *) objstore + 1;
-	while (next < end) {
-		int info = TYPE(next);
-		if (info && (StringType != info)) { // non-free chunk with OBJ fields (not a string)
-			for (int i = WORDS(next); i > 0; i--) {
-				OBJ child = (OBJ) next[i];
-				if (!isInt(child) && *(child - 1)) { // child has a non-zero forwarding field
-					next[i] = *(child - 1); // update the forwarded OBJ
-				}
-			}
-		}
-		next += WORDS(next) + 2;
-	}
 }
 
 // Debugging Utilities
@@ -294,6 +238,61 @@ void dumpObjectStore() {
 		next = next + wordCount + 2;
 	}
 	outputString("----------");
+}
+
+void memDumpObj(OBJ obj) {
+	char s[100];
+
+	if ((obj < memStart) || (obj >= memEnd)) {
+		sprintf(s, "bad object at %x", (int) obj);
+		outputString(s);
+		return;
+	}
+	int typeID = TYPE(obj);
+	int wordCount = WORDS(obj);
+	sprintf(s, "%x: %d words, typeID %d", (int) obj, wordCount, typeID);
+	outputString(s);
+
+	sprintf(s, "Header: %x", obj[0]);
+	outputString(s);
+
+	for (int i = 0; i < wordCount; i++) {
+		sprintf(s, "	0x%x,", obj[HEADER_WORDS + i]);
+		outputString(s);
+	}
+}
+
+// OBJ Forwarding
+
+void clearForwardingFields() {
+	// Set all forwarding fields to zero. This may not be needed if we maintain the invariant
+	// that forward fields are zero except during garbage collection or forwarding operations.
+
+	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
+	uint32 *next = (uint32 *) objstore + 1;
+	while (next < end) {
+		*(next - 1) = 0; // clear forwarding field
+		next += WORDS(next) + 2;
+	}
+}
+
+void applyForwarding() {
+	// Update all forwarded references.
+
+	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
+	uint32 *next = (uint32 *) objstore + 1;
+	while (next < end) {
+		int info = TYPE(next);
+		if (info && (StringType != info)) { // non-free chunk with OBJ fields (not a string)
+			for (int i = WORDS(next); i > 0; i--) {
+				OBJ child = (OBJ) next[i];
+				if (!isInt(child) && *(child - 1)) { // child has a non-zero forwarding field
+					next[i] = *(child - 1); // update the forwarded OBJ
+				}
+			}
+		}
+		next += WORDS(next) + 2;
+	}
 }
 
 // Mark-Sweep-Compact Garbage Collector
