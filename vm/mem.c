@@ -9,7 +9,7 @@
 // John Maloney, April 2017
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "mem.h"
@@ -146,7 +146,7 @@ void resizeObj(OBJ oldObj, int wordCount) {
 
 	memcpy(result + 1, oldObj + 1, 4 * copyCount); // copy from the old to the new body
 	clearForwardingFields();
-	*(oldObj - 1) = (uint32_t) result; // point forwarding field of oldObj to result
+	*(oldObj - 1) = (uint32) result; // point forwarding field of oldObj to result
 	applyForwarding();
 	*(oldObj - 1) = 0; // clear forwarding field
 	*oldObj = WORDS(oldObj); // mark old chunk free
@@ -158,8 +158,10 @@ OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
 	// Create a new string object with the given bytes.
 	// Round up to an even number of words and pad with nulls.
 
-	int wordCount = (byteCount + 3) / 4;
+	int wordCount = ((byteCount + 1) + 3) / 4; // leave room for terminator byte
 	OBJ result = newObj(StringType, wordCount, 0);
+	if (!result) return falseObj; // insufficient room to allocate string
+
 	char *dst = (char *) &result[HEADER_WORDS];
 	for (int i = 0; i < byteCount; i++) *dst++ = *bytes++;
 	*dst = 0; // null terminator byte
@@ -180,7 +182,7 @@ void memDumpObj(OBJ obj) {
 	char s[100];
 
 	if ((obj < memStart) || (obj >= memEnd)) {
-		sprintf(s, "bad object at %ld", (long) obj);
+		sprintf(s, "bad object at %x", (int) obj);
 		outputString(s);
 		return;
 	}
@@ -204,8 +206,8 @@ void clearForwardingFields() {
 	// Set all forwarding fields to zero. This may not be needed if we maintain the invariant
 	// that forward fields are zero except during garbage collection or forwarding operations.
 
-	uint32_t *end = (uint32_t *) &objstore[OBJSTORE_WORDS];
-	uint32_t *next = (uint32_t *) objstore + 1;
+	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
+	uint32 *next = (uint32 *) objstore + 1;
 	while (next < end) {
 		*(next - 1) = 0; // clear forwarding field
 		next += WORDS(next) + 2;
@@ -215,8 +217,8 @@ void clearForwardingFields() {
 void applyForwarding() {
 	// Update all forwarded references.
 
-	uint32_t *end = (uint32_t *) &objstore[OBJSTORE_WORDS];
-	uint32_t *next = (uint32_t *) objstore + 1;
+	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
+	uint32 *next = (uint32 *) objstore + 1;
 	while (next < end) {
 		int info = TYPE(next);
 		if (info && (StringType != info)) { // non-free chunk with OBJ fields (not a string)
@@ -271,22 +273,22 @@ void dumpObjectStore() {
 	char s[100];
 
 	outputString("Object store:");
-	uint32_t *end = (uint32_t *) &objstore[OBJSTORE_WORDS];
-	uint32_t *next = (uint32_t *) objstore + 1;
-	uint32_t *base = (uint32_t *) objstore;
+	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
+	uint32 *next = (uint32 *) objstore + 1;
+	uint32 *base = (uint32 *) objstore;
 	while (next < end) {
-		uint32_t wordCount = WORDS(next);
+		int wordCount = WORDS(next);
 		int info = TYPE(next);
 		if (info) {
-			uint32_t *fwd = (uint32_t *) *(next - 1);
+			uint32 *fwd = (uint32 *) *(next - 1);
 			if (fwd) {
-				if (fwd > base) fwd = (uint32_t *) (fwd - base); // word offset in objstore
-				sprintf(s, "%d type: %d words: %ld fwd: %d", (next - base), info, wordCount, (int) fwd);
+				if (fwd > base) fwd = (uint32 *) (fwd - base); // word offset in objstore
+				sprintf(s, "%d type: %d words: %d fwd: %d", (next - base), info, wordCount, (int) fwd);
 			} else {
-				sprintf(s, "%d type: %d words: %ld", (next - base), info, wordCount);
+				sprintf(s, "%d type: %d words: %d", (next - base), info, wordCount);
 			}
 		} else {
-			sprintf(s, "%d FREE %ld", (next - base), wordCount);
+			sprintf(s, "%d FREE %d", (next - base), wordCount);
 		}
 		outputString(s);
 		next = next + wordCount + 2;
@@ -296,8 +298,8 @@ void dumpObjectStore() {
 
 // Mark-Sweep-Compact Garbage Collector
 
-#define SET_MARK(obj) ((*(((uint32_t *) (obj)) - 1)) = 1)
-#define IS_MARKED(obj) (*(((uint32_t *) (obj)) - 1))
+#define SET_MARK(obj) ((*(((uint32 *) (obj)) - 1)) = 1)
+#define IS_MARKED(obj) (*(((uint32 *) (obj)) - 1))
 
 void mark(OBJ root) {
 	// Mark all objects reachable from the given root.
@@ -338,14 +340,14 @@ void mark(OBJ root) {
 void sweep() {
 	// Scan object memory and set the forwarding fields of surviving objects that will move.
 
-	uint32_t *end = (uint32_t *) &objstore[OBJSTORE_WORDS];
-	uint32_t *next = (uint32_t *) objstore + 1;
-	uint32_t *dst = next;
+	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
+	uint32 *next = (uint32 *) objstore + 1;
+	uint32 *dst = next;
 	while (next < end) {
-		uint32_t wordCount = WORDS(next);
+		uint32 wordCount = WORDS(next);
 		if (*(next - 1)) { // surviving object
 			// set the forwarding field to dst if the object will move, zero if not
-			*(next - 1) = (dst != next) ? (uint32_t) dst : 0;
+			*(next - 1) = (dst != next) ? (uint32) dst : 0;
 			dst += wordCount + 2;
 		} else { // inaccessible object or free chunk
 			// mark chunk as free by clearing its info field
@@ -358,11 +360,11 @@ void sweep() {
 void compact() {
 	// Consolidate free space into a single free chunk.
 
-	uint32_t *next = (uint32_t *) objstore + 1;
-	uint32_t *end = (uint32_t *) &objstore[OBJSTORE_WORDS];
-	uint32_t *dst = next;
+	uint32 *next = (uint32 *) objstore + 1;
+	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
+	uint32 *dst = next;
 	while (next < end) {
-		uint32_t wordCount = WORDS(next);
+		uint32 wordCount = WORDS(next);
 		if (TYPE(next)) { // live object chunk
 			if (dst != next) memmove(dst, next, 4 * (wordCount + 1)); // move object, if necessary
 			dst += wordCount + 1;
@@ -370,7 +372,7 @@ void compact() {
 		}
 		next += wordCount + 2;
 	}
-	uint32_t freeWords = (end - dst) - 2;
+	uint32 freeWords = (end - dst) - 2;
 	*dst = HEADER(FREE_CHUNK, freeWords);
 	freeChunk = (OBJ) dst;
 }
