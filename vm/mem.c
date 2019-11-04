@@ -142,12 +142,18 @@ void resizeObj(OBJ oldObj, int wordCount) {
 
 // String Primitives
 
+OBJ newString(int byteCount) {
+	// Allocate a string that can hold len bytes.
+
+	int wordCount = ((byteCount + 1) + 3) / 4; // leave room for terminator byte
+	return newObj(StringType, wordCount, 0);
+}
+
 OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
 	// Create a new string object with the given bytes.
 	// Round up to an even number of words and pad with nulls.
 
-	int wordCount = ((byteCount + 1) + 3) / 4; // leave room for terminator byte
-	OBJ result = newObj(StringType, wordCount, 0);
+	OBJ result = newString(byteCount);
 	if (!result) return result; // insufficient room to allocate string (newObj reported failure)
 
 	char *dst = (char *) &result[HEADER_WORDS];

@@ -792,6 +792,8 @@ method errorString SmallRuntime errID {
 #define noWiFi					30	// This board does not support WiFi
 #define zeroDivide				31	// Division (or modulo) by zero is not defined
 #define argIndexOutOfRange		32	// Argument index out of range
+#define needsIndexible			33	// Need an indexable type such as a string or list
+#define joinArgsNotSameType		34	// All arguments to join must be the same type (e.g. lists)
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)

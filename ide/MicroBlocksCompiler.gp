@@ -130,13 +130,18 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Lists'
-		(array 'r' 'newArray'			'new list length _' 'num' 10)
+		(array 'r' '[data:makeList]'		'list : _ : ...' 'auto auto' 'cat' 'dog')
 		(array 'r' 'size'				'length of _' 'str' nil)
 		'-'
 		(array 'r' 'at'					'item _ of _' 'num str' 1 nil)
-		'-'
-		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
 		(array ' ' 'atPut'				'replace item _ of _ with _' 'num str auto' 1 nil 10)
+		'-'
+		(array 'r' 'newArray'			'new list length _' 'num' 10)
+		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
+		'-'
+		(array 'r' '[data:join]'			'join _ _ : _ : ...' 'str str str' 'micro' 'blocks')
+		(array 'r' '[data:copyFromTo]'		'copy _ from _ : to _' 'auto num num' nil 1 10)
+		(array 'r' '[data:findInString]'	'find _ in _ : starting at _' 'str str num' 'a' 'cat' 1)
 
 	// The following block specs allow primitives to be rendered correctly
 	// even if the primitive spec was not included in the project or library.

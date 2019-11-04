@@ -18,7 +18,7 @@
 
 // VM Version
 
-#define VM_VERSION "v069a"
+#define VM_VERSION "v069c"
 
 // Forward Reference Declarations
 
@@ -77,6 +77,7 @@ void primsInit() {
 	// Called at startup to call functions to add named primitive sets.
 	// Note: when adding a new primitive set, increase MAX_PRIM_SETS if necessary.
 
+	addDataPrims();
 	addDisplayPrims();
 	addIOPrims();
 	addMiscPrims();
