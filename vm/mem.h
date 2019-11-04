@@ -91,7 +91,6 @@ static inline int objType(OBJ obj) {
 
 #define FIELD(obj, i) (((OBJ *) obj)[HEADER_WORDS + (i)])
 
-
 // Object Memory Operations
 
 void memInit();

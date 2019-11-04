@@ -95,19 +95,6 @@ void gc();
 
 // Object Allocation
 
-OBJ newObjOld(int typeID, int wordCount, OBJ fill) {
-	// xxx remove later...
-	if ((freeChunk + HEADER_WORDS + wordCount) > memEnd) {
-		return fail(insufficientMemoryError);
-	}
-	OBJ obj = freeChunk;
-	freeChunk += HEADER_WORDS + wordCount;
-	for (OBJ p = obj; p < freeChunk; ) *p++ = (int) fill;
-	unsigned header = HEADER(typeID, wordCount);
-	obj[0] = header;
-	return obj;
-}
-
 OBJ newObj(int type, int wordCount, OBJ fill) {
 	// Allocate a new object of the given size.
 
@@ -262,7 +249,7 @@ void memDumpObj(OBJ obj) {
 	}
 }
 
-// OBJ Forwarding
+// Object Forwarding
 
 void clearForwardingFields() {
 	// Set all forwarding fields to zero. This may not be needed if we maintain the invariant
@@ -276,6 +263,28 @@ void clearForwardingFields() {
 	}
 }
 
+static inline OBJ forward(OBJ obj) {
+	if (isInt(obj)) return obj;
+	if ((obj < memStart) || (obj > memEnd)) return obj; // outside the object store
+	OBJ fwd = (OBJ) *(obj - 1);
+	return fwd ? fwd : obj; // forward if the forwarding field is not zero
+}
+
+static void forwardRoots(void) {
+	// forward global variables
+	for (int i = 0; i < MAX_VARS; i++) vars[i] = forward(vars[i]);
+
+	// mark objects on Task stacks
+	for (int i = 0; i < taskCount; i++) {
+		Task *task = &tasks[i];
+		if (task->status != unusedTask) {
+			for (int j = tasks[i].sp; j >= 0; j--) {
+				task->stack[j] = forward(task->stack[j]);
+			}
+		}
+	}
+}
+
 void applyForwarding() {
 	// Update all forwarded references.
 
@@ -286,13 +295,16 @@ void applyForwarding() {
 		if (info && (StringType != info)) { // non-free chunk with OBJ fields (not a string)
 			for (int i = WORDS(next); i > 0; i--) {
 				OBJ child = (OBJ) next[i];
-				if (!isInt(child) && *(child - 1)) { // child has a non-zero forwarding field
-					next[i] = *(child - 1); // update the forwarded OBJ
+				if (!isInt(child) && // child is not an integer
+					((memStart < child) && (child <= memEnd)) && // child is in the object store
+					*(child - 1)) { // child has a non-zero forwarding field
+						next[i] = *(child - 1); // update the forwarded OBJ
 				}
 			}
 		}
 		next += WORDS(next) + 2;
 	}
+	forwardRoots();
 }
 
 // Mark-Sweep-Compact Garbage Collector
@@ -303,7 +315,9 @@ void applyForwarding() {
 void mark(OBJ root) {
 	// Mark all objects reachable from the given root.
 
-	if (isInt(root) || isBoolean(root) || IS_MARKED(root)) return;
+	if (isInt(root)) return;
+	if ((root < memStart) || (root > memEnd)) return; // ignore objects outside the object store
+	if (IS_MARKED(root)) return; // already marked
 
 	OBJ current = root;
 	int i = WORDS(current); // scan backwards from last field
@@ -332,6 +346,21 @@ void mark(OBJ root) {
 			current = child; // process child
 		} else {
 			i--;
+		}
+	}
+}
+
+static void markRoots(void) {
+	// mark global variables
+	for (int i = 0; i < MAX_VARS; i++) mark(vars[i]);
+
+	// mark objects on Task stacks
+	for (int i = 0; i < taskCount; i++) {
+		Task *task = &tasks[i];
+		if (task->status != unusedTask) {
+			for (int j = tasks[i].sp; j >= 0; j--) {
+				mark(task->stack[j]);
+			}
 		}
 	}
 }
@@ -376,18 +405,18 @@ void compact() {
 	freeChunk = (OBJ) dst;
 }
 
-OBJ markSweepGC(OBJ root) {
-	// Simple mark-sweep-compact garbage collector.
+void gc() {
+	// Perform a garbage collection to reclaim unused objects and compact memory.
 
-//	clearForwardingFields(); // assume: forwarding pointers cleared at end of compaction
-	mark(root);
+	uint32 usecs = microsecs();
+	// assume: forwarding pointers cleared at end of compaction so no need to clear them here
+	markRoots();
 	sweep();
 	applyForwarding();
-	OBJ newRoot = (OBJ) *(root - 1);
 	compact();
-	return newRoot ? newRoot : root;
-}
+	usecs = microsecs() - usecs;
 
-void gc() {
-	// xxx to do: this must call the interpreter to mark all the roots
+	char s[100];
+	sprintf(s, "GC took %d usecs; free %d words", usecs, WORDS(freeChunk));
+	outputString(s);
 }
