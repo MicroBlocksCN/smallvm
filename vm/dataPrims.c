@@ -149,7 +149,7 @@ OBJ primCopyFromTo(int argCount, OBJ *args) {
 			memcpy(obj2str(result), obj2str(src) + startIndex - 1, resultLen);
 		}
 	} else {
-		return fail(needsIndexible);
+		return fail(needsIndexable);
 	}
 	return result;
 }
@@ -210,7 +210,7 @@ OBJ primJoin(int argCount, OBJ *args) {
 		}
 		*dst = 0; // null terminator
 	} else {
-		fail(needsIndexible);
+		fail(needsIndexable);
 	}
 	return result;
 }

@@ -95,6 +95,9 @@ static inline int objType(OBJ obj) {
 
 void memInit();
 void memClear();
+int wordsFree();
+void gc();
+
 OBJ newObj(int typeID, int wordCount, OBJ fill);
 OBJ newString(int byteCount);
 OBJ newStringFromBytes(uint8 *bytes, int byteCount);

@@ -77,6 +77,10 @@ void memClear() {
 	freeChunk = (OBJ) &objstore[1];
 }
 
+int wordsFree() {
+	return WORDS(freeChunk) - 2;
+}
+
 void vmPanic(char *errorMessage) {
 	// Called when VM encounters a fatal error. Output the given message and loop forever.
 	// NOTE: This call never returns!
