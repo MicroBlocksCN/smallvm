@@ -931,10 +931,12 @@ static void runTask(Task *task) {
 
 	// named primitives:
 	callCommandPrimitive_op:
+		task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
 		callPrimitive(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	callReporterPrimitive_op:
+		task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
 		*(sp - arg) = callPrimitive(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();

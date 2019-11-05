@@ -165,12 +165,16 @@ OBJ primFindInString(int argCount, OBJ *args) {
 	if (startOffset < 1) startOffset = 1;
 
 	if (!(IS_TYPE(arg0, StringType) && IS_TYPE(arg1, StringType))) return fail(needsStringError);
-	if (startOffset && (startOffset > stringSize(arg1))) return int2obj(-2); // xxx -1 not found
+	if (startOffset && (startOffset > stringSize(arg1))) return int2obj(-1); // not found
 
 	char *s = obj2str(arg1);
 	char *sought = obj2str(arg0);
 	char *match  = strstr(s + startOffset - 1, sought);
 	return int2obj(match ? (match - s) + 1 : -1);
+}
+
+OBJ primFreeWords(int argCount, OBJ *args) {
+	return int2obj(wordsFree());
 }
 
 OBJ primJoin(int argCount, OBJ *args) {
@@ -223,17 +227,95 @@ OBJ primMakeList(int argCount, OBJ *args) {
 	return result;
 }
 
-// Primitives
+OBJ primSplitString(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
 
-// To do:
-// joinStrings -- takes a list of strings and optional separator string
-// splitString -- takes a string to be split and a separator string
+	char *s = obj2str(args[0]);
+	int resultCount = 0;
+	if (argCount > 1) {
+		if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
+		char *separator = obj2str(args[1]);
+		char *match = s;
+		while (match) {
+			resultCount++;
+			match = strstr(match, separator);
+		}
+	} else {
+		resultCount = strlen(s); // no separator; return list of letters
+	}
+
+	OBJ result = newObj(ArrayType, argCount, int2obj(0));
+	if (!result) return result; // allocation failed
+
+	gc(); // proactive GC; a GC after this could mess obj refs in C locals
+	s = obj2str(args[0]); // update after GC
+
+	if (argCount > 1) {
+		char *separator = obj2str(args[1]);
+		int separatorLen = strlen(separator);
+		char *end, *start = s;
+		for (int i = 0; i < resultCount; i++) {
+			end = strstr(start, separator);
+			if (!end) return result; // no more matches; should not happen
+			FIELD(result, i) = newStringFromBytes((uint8 *) start, (end - start));
+			start = end + separatorLen;
+		}
+	} else {
+		for (int i = 0; i < resultCount; i++) {
+			FIELD(result, i) = newStringFromBytes((uint8 *) (s + i), 1);
+		}
+	}
+	return result;
+}
+
+OBJ primJoinStrings(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], ArrayType)) return fail(needsArrayError);
+
+	OBJ stringArray = args[0];
+	int count = WORDS(stringArray);
+	if (!count) return newString(0);
+
+	char *separator = ((argCount > 1) && IS_TYPE(args[1], StringType)) ? obj2str(args[1]) : "";
+	int separatorLen = strlen(separator);
+
+	int resultBytes = (count - 1) * separatorLen;
+	for (int i = 0; i < count; i++) {
+		char *s = obj2str(FIELD(stringArray, i));
+		resultBytes += strlen(s);
+	}
+	OBJ result = newString(resultBytes);
+	if (!result) return result; // allocation failed
+
+	// update temps after possible GC triggered by newString()
+	stringArray = args[0];
+	if (separatorLen) separator = obj2str(args[1]);
+
+	char *dst = obj2str(result);
+	for (int i = 0; i < count; i++) {
+		char *s = obj2str(FIELD(stringArray, i));
+		int n = strlen(s);
+		memcpy(dst, s, n);
+		dst += n;
+		if (separatorLen && (i < (count - 1))) {
+			memcpy(dst, separator, separatorLen);
+			dst += separatorLen;
+		}
+	}
+	return result;
+}
+
+// Primitives
 
 static PrimEntry entries[] = {
 	{"copyFromTo", primCopyFromTo},
 	{"findInString", primFindInString},
+	{"freeWords", primFreeWords},
 	{"join", primJoin},
 	{"makeList", primMakeList},
+//	{"splitString", primSplitString}, // problematic interactions with GC
+	{"joinStrings", primJoinStrings},
 };
 
 void addDataPrims() {

@@ -42,7 +42,7 @@
   #define OBJSTORE_BYTES 14000 // max that compiles for all boards is 16886 (17624 NodeMCU)
 #endif
 
-#define OBJSTORE_WORDS ((OBJSTORE_BYTES / 4) + 2)
+#define OBJSTORE_WORDS ((OBJSTORE_BYTES / 4) + 4)
 static OBJ objstore[OBJSTORE_WORDS];
 static OBJ memStart = NULL;
 static OBJ memEnd = NULL;
@@ -73,12 +73,13 @@ void memClear() {
 
 	// create the free chunk (prefixed by a forwarding word)
 	objstore[0] = (OBJ) 0; // forwarding word
-	objstore[1] = (OBJ)HEADER(FREE_CHUNK, OBJSTORE_WORDS - 2); // free chunk
+	objstore[1] = (OBJ) HEADER(FREE_CHUNK, OBJSTORE_WORDS - 2); // free chunk
 	freeChunk = (OBJ) &objstore[1];
 }
 
 int wordsFree() {
-	return WORDS(freeChunk) - 2;
+	int result = WORDS(freeChunk) - 2;
+	return (result < 0) ? 0 : result;
 }
 
 void vmPanic(char *errorMessage) {
@@ -147,7 +148,7 @@ void resizeObj(OBJ oldObj, int wordCount) {
 // String Primitives
 
 OBJ newString(int byteCount) {
-	// Allocate a string that can hold len bytes.
+	// Allocate a string that can hold byteCount bytes.
 
 	int wordCount = ((byteCount + 1) + 3) / 4; // leave room for terminator byte
 	return newObj(StringType, wordCount, 0);
@@ -288,7 +289,7 @@ static void forwardRoots(void) {
 	for (int i = 0; i < taskCount; i++) {
 		Task *task = &tasks[i];
 		if (task->status != unusedTask) {
-			for (int j = tasks[i].sp; j >= 0; j--) {
+			for (int j = tasks[i].sp - 1; j >= 0; j--) {
 				task->stack[j] = forward(task->stack[j]);
 			}
 		}
@@ -368,7 +369,7 @@ static void markRoots(void) {
 	for (int i = 0; i < taskCount; i++) {
 		Task *task = &tasks[i];
 		if (task->status != unusedTask) {
-			for (int j = tasks[i].sp; j >= 0; j--) {
+			for (int j = tasks[i].sp - 1; j >= 0; j--) {
 				mark(task->stack[j]);
 			}
 		}
@@ -410,7 +411,7 @@ void compact() {
 		}
 		next += wordCount + 2;
 	}
-	uint32 freeWords = (end - dst) - 2;
+	uint32 freeWords = (end - dst) - 1;
 	*dst = HEADER(FREE_CHUNK, freeWords);
 	freeChunk = (OBJ) dst;
 }
@@ -427,6 +428,6 @@ void gc() {
 	usecs = microsecs() - usecs;
 
 	char s[100];
-	sprintf(s, "GC took %d usecs; free %d words", usecs, WORDS(freeChunk));
+	sprintf(s, "GC took %d usecs; free %d words", usecs, WORDS(freeChunk) - 2);
 	outputString(s);
 }
