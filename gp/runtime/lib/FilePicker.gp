@@ -463,6 +463,9 @@ method fileOrFolderSelected FilePicker {
 	  showFolder this (join currentDir '/' sel) false
 	}
   }
+  if (notNil nameField) {
+    setText (contents nameField) sel
+  }
 }
 
 method fileOrFolderDoubleClicked FilePicker {
