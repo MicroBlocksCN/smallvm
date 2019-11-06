@@ -163,11 +163,11 @@ local _ _
 Lists
 Lists
 
-new list length _
-new list length _
+list : _ : ...
+list : _ : ...
 
-fill list _ with _
-fill list _ with _
+length of _
+length of _
 
 item _ of _
 item _ of _
@@ -175,8 +175,29 @@ item _ of _
 replace item _ of _ with _
 replace item _ of _ with _
 
-length of _
-length of _
+join _ _
+join _ _
+
+copy _ from _
+copy _ from _
+
+to _
+to _
+
+find _ in _
+find _ in _
+
+starting at _
+starting at _
+
+join string list _
+join string list _
+
+new list length _
+new list length _
+
+fill list _ with _
+fill list _ with _
 
 My Blocks
 My Blocks

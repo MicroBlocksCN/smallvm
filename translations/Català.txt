@@ -163,11 +163,11 @@ variable local _ _
 Lists
 Llistes
 
-new list length _
-nova llista de llargada _
+list
+llista
 
-fill list _ with _
-omple llista _ amb _
+length of _
+llargada de _
 
 item _ of _
 element _ de _
@@ -175,8 +175,29 @@ element _ de _
 replace item _ of _ with _
 canvia l'element _ de _ per _
 
-length of _
-llargada de _
+join _ _
+uneix _ _
+
+copy _ from _
+copia _ a partir de _
+
+to _
+fins a _
+
+find _ in _
+busca _ en _
+
+starting at _
+començant a _
+
+join string list _
+uneix llista de texts _
+
+new list length _
+nova llista de llargada _
+
+fill list _ with _
+omple llista _ amb _
 
 My Blocks
 Els meus blocs
