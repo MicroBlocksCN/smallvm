@@ -1,0 +1,386 @@
+module main
+variables 'ball speed' 'ball y' 'pipe height' 'pipe x' playing 'previous ball y' score 'ball radius' 'pipe width' gap 'ball acceleration'
+
+	spec ' ' 'check buttons' 'check buttons'
+	spec ' ' 'check collision' 'check collision'
+	spec ' ' 'draw ball' 'draw ball'
+	spec ' ' 'draw pipes' 'draw pipe'
+	spec ' ' 'game over' 'game over'
+	spec ' ' 'new game' 'new game'
+	spec ' ' 'step ball' 'step ball'
+	spec ' ' 'step pipe' 'step pipe'
+	spec ' ' 'welcome screen' 'welcome screen'
+	spec 'r' 'button pressed' 'button pressed'
+
+to 'button pressed' {
+  return (or (or (buttonA) (buttonB)) (or ('OK button') ('cancel button')))
+}
+
+to 'check buttons' {
+  if (and playing ('button pressed')) {
+    'ball speed' = 0
+    'ball y' += ((v 'ball acceleration') * -10)
+  }
+}
+
+to 'check collision' {
+  if (and ((v 'pipe x') <= (v 'pipe width')) (or ((((v 'ball y') / 10) + (v 'ball radius')) >= ((v 'pipe height') + gap)) ((((v 'ball y') / 10) - (v 'ball radius')) <= (v 'pipe height')))) {playing = (booleanConstant false)}
+}
+
+to 'draw ball' {
+  '[tft:circle]' (v 'ball radius') ((v 'previous ball y') / 10) (v 'ball radius') 0 true
+  '[tft:circle]' (v 'ball radius') ((v 'ball y') / 10) (v 'ball radius') 65535 true
+}
+
+to 'draw pipes' {
+  '[tft:rect]' ((v 'pipe x') + ((v 'pipe width') + 2)) 0 2 (v 'pipe height') 0 true
+  '[tft:rect]' (v 'pipe x') 0 (v 'pipe width') (v 'pipe height') 65280 true
+  '[tft:rect]' ((v 'pipe x') + ((v 'pipe width') + 2)) ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 0 true
+  '[tft:rect]' (v 'pipe x') ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 65280 true
+}
+
+to 'game over' {
+  '[display:mbDisplayOff]'
+  '[tft:text]' 'GAME' (('[tft:getWidth]') / 5) (('[tft:getHeight]') / 15) 16777215 (('[tft:getHeight]') / 30) false
+  '[tft:text]' 'OVER' (('[tft:getWidth]') / 5) (('[tft:getHeight]') / 3) 16777215 (('[tft:getHeight]') / 30) false
+  '[tft:text]' 'SCORE' (('[tft:getWidth]') / 6) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) 16777215 (('[tft:getHeight]') / 60) false
+  '[tft:text]' score (('[tft:getWidth]') - (('[tft:getWidth]') / 3)) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) 16777215 (('[tft:getHeight]') / 60) false
+}
+
+to 'new game' {
+  '[display:mbDisplayOff]'
+  score = 0
+  comment 'ball y is multiplied by 10 for precision'
+  'ball y' = ((('[tft:getHeight]') / 2) * 10)
+  playing = (booleanConstant true)
+  'ball acceleration' = (('[tft:getHeight]') / 60)
+  'ball speed' = (('[tft:getHeight]') / 60)
+  'ball radius' = (('[tft:getHeight]') / 15)
+  gap = (random ((v 'ball radius') * 4) ((v 'ball radius') * 7))
+  'pipe x' = (('[tft:getWidth]') - (('[tft:getWidth]') / 5))
+  'pipe height' = (random ((v 'ball radius') * 2) ((v 'ball radius') * 10))
+  'pipe width' = ((v 'ball radius') * 2)
+}
+
+to 'step ball' {
+  'ball speed' += (v 'ball acceleration')
+  if ((v 'ball y') < 0) {
+    'ball y' = ((v 'ball y') * (v 'ball speed'))
+  }
+  'previous ball y' = (v 'ball y')
+  'ball y' += (v 'ball speed')
+  if ((v 'ball y') > (('[tft:getHeight]') * 10)) {
+    playing = (booleanConstant false)
+  }
+  'check buttons'
+}
+
+to 'step pipe' {
+  'pipe x' += ((score / -10) - (('[tft:getWidth]') / 120))
+  if ((v 'pipe x') < (((v 'pipe width') * -1) - 2)) {
+    'pipe x' = ('[tft:getWidth]')
+    'pipe height' = (random ((v 'ball radius') * 2) ((v 'ball radius') * 10))
+    score += 1
+  }
+}
+
+to 'welcome screen' {
+  '[display:mbDisplayOff]'
+  '[tft:text]' 'JUMPY' (('[tft:getWidth]') / 12) (('[tft:getHeight]') / 15) 16000215 (('[tft:getHeight]') / 30) false
+  '[tft:text]' 'BALL' (('[tft:getWidth]') / 6) (('[tft:getHeight]') / 3) 16000215 (('[tft:getHeight]') / 30) false
+  '[tft:text]' 'Press OK' (('[tft:getWidth]') / 6) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) 16777215 (('[tft:getHeight]') / 60) false
+  '[tft:text]' 'or X' (('[tft:getWidth]') / 3) (('[tft:getHeight]') - (('[tft:getHeight]') / 6)) 16777215 (('[tft:getHeight]') / 60) false
+}
+
+script 50 50 {
+whenStarted
+'welcome screen'
+forever {
+  waitUntil ('button pressed')
+  'new game'
+  repeatUntil (not playing) {
+    'step ball'
+    'draw ball'
+    'step pipe'
+    'draw pipes'
+    'check collision'
+    waitMillis 10
+  }
+  'game over'
+  waitUntil (not ('button pressed'))
+}
+}
+
+
+module 'ED1 Buttons' Input
+variables _ED1_buttons_init '_capacitive threshold' '_use capacitive'
+
+	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
+	spec 'r' '_button pressed' '_button pressed _' 'auto any' 15
+	spec 'r' '_capacitive' '_capacitive sensor _ pressed' 'auto any' 15
+	spec 'r' 'OK button' 'button OK'
+	spec 'r' 'cancel button' 'button X'
+	spec 'r' 'up button' 'button up'
+	spec 'r' 'down button' 'button down'
+	spec 'r' 'left button' 'button left'
+	spec 'r' 'right button' 'button right'
+	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 15
+	spec ' ' 'set use capacitive to' 'set use capacitive to _' 'bool' true
+
+to 'OK button' {
+  return ('_button pressed' 15)
+}
+
+to '_ED1_buttons_init' {
+  if (_ED1_buttons_init == 0) {
+    comment 'true by default for ED1 V2 board'
+    '_use capacitive' = ((i2cGet (hexToInt '20') 1) == 0)
+    if ((v '_capacitive threshold') == 0) {
+      '_capacitive threshold' = 15
+    }
+    _ED1_buttons_init = (booleanConstant true)
+  }
+}
+
+to '_button pressed' pin {
+  '_ED1_buttons_init'
+  if (v '_use capacitive') {
+    return ('_capacitive' pin)
+  } else {
+    return (digitalReadOp pin)
+  }
+}
+
+to '_capacitive' pin {
+  if (('[sensors:touchRead]' pin) <= (v '_capacitive threshold')) {
+    waitMicros 50
+    return (('[sensors:touchRead]' pin) <= (v '_capacitive threshold'))
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to 'cancel button' {
+  return ('_button pressed' 14)
+}
+
+to 'down button' {
+  return ('_button pressed' 13)
+}
+
+to 'left button' {
+  return ('_button pressed' 2)
+}
+
+to 'right button' {
+  return ('_button pressed' 27)
+}
+
+to 'set capacitive threshold to' threshold {
+  '_capacitive threshold' = threshold
+}
+
+to 'set use capacitive to' value {
+  '_use capacitive' = value
+}
+
+to 'up button' {
+  return ('_button pressed' 4)
+}
+
+
+module TFT Output
+
+	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec 'r' '[tft:getWidth]' 'TFT width'
+	spec 'r' '[tft:getHeight]' 'TFT height'
+	spec ' ' 'set TFT pixel x' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255
+	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false
+	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false
+	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false
+	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false
+	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false
+	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680
+	spec 'r' '_tft color' '_tft color _ to number' 'color any'
+
+to '_tft color' 'color hex' {
+  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
+  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
+  local 'b' ((((v 'color hex') & 255) * 255) / 31)
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to 'set TFT pixel x' x y color {
+  '[tft:setPixel]' x y ('_tft color' color)
+}
+
+
+module Tone Output
+variables _tonePin _toneInitalized _toneLoopOverhead
+
+	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
+	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
+	spec ' ' 'playMIDIKey' 'play midi key _ for _ milliseconds' 'num num' 60 500
+	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+	spec 'r' '_baseFreqForSharpOrFlat' '_baseFreqForSharpOrFlat _' 'auto' 'c#'
+	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+	spec ' ' '_toneLoop' '_toneLoop _ for _ milliseconds' 'num num' 440000 100
+
+to '_baseFreqForNote' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  if (or (note == 'c') (note == 'C')) {
+    return 261626
+  } (or (note == 'd') (note == 'D')) {
+    return 293665
+  } (or (note == 'e') (note == 'E')) {
+    return 329628
+  } (or (note == 'f') (note == 'F')) {
+    return 349228
+  } (or (note == 'g') (note == 'G')) {
+    return 391995
+  } (or (note == 'a') (note == 'A')) {
+    return 440000
+  } (or (note == 'b') (note == 'B')) {
+    return 493883
+  }
+  return ('_baseFreqForSharpOrFlat' note)
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (0 == semitone) {
+    return 261626
+  } (1 == semitone) {
+    return 277183
+  } (2 == semitone) {
+    return 293665
+  } (3 == semitone) {
+    return 311127
+  } (4 == semitone) {
+    return 329628
+  } (5 == semitone) {
+    return 349228
+  } (6 == semitone) {
+    return 369994
+  } (7 == semitone) {
+    return 391995
+  } (8 == semitone) {
+    return 415305
+  } (9 == semitone) {
+    return 440000
+  } (10 == semitone) {
+    return 466164
+  } (11 == semitone) {
+    return 493883
+  }
+}
+
+to '_baseFreqForSharpOrFlat' note {
+  comment 'Return the frequency for the given sharp or flat note in the
+middle-C octave scaled by 1000. Only handles black keys.
+Thus, you can''t write E# to mean F.'
+  if (or (or (note == 'c#') (note == 'C#')) (or (note == 'db') (note == 'Db'))) {
+    return 277183
+  } (or (or (note == 'd#') (note == 'D#')) (or (note == 'eb') (note == 'Eb'))) {
+    return 311127
+  } (or (or (note == 'f#') (note == 'F#')) (or (note == 'gb') (note == 'Gb'))) {
+    return 369994
+  } (or (or (note == 'g#') (note == 'G#')) (or (note == 'ab') (note == 'Ab'))) {
+    return 415305
+  } (or (or (note == 'a#') (note == 'A#')) (or (note == 'bb') (note == 'Bb'))) {
+    return 466164
+  }
+  comment 'Unrecognized note names map to 0.1 Hz, which is inaudible.
+This helps users find typos in their tunes.'
+  return 100
+}
+
+to '_measureLoopOverhead' {
+  comment 'Measure the loop overhead on this device'
+  '[display:mbDisplayOff]'
+  local 'halfCycle' 100
+  local 'startT' (microsOp)
+  repeat 100 {
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+  }
+  local 'usecs' ((microsOp) - startT)
+  return ((usecs - 20000) / 200)
+}
+
+to '_toneLoop' scaledFreq ms {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {
+    '[io:playTone]' _tonePin (scaledFreq / 1000)
+    waitMillis ms
+    '[io:playTone]' _tonePin 0
+  } else {
+    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+    local 'cycles' ((ms * 500) / halfCycle)
+    repeat cycles {
+      digitalWriteOp _tonePin true
+      waitMicros halfCycle
+      digitalWriteOp _tonePin false
+      waitMicros halfCycle
+    }
+  }
+}
+
+to 'attach buzzer to pin' pinNumber {
+  if (pinNumber == '') {
+    comment 'Pin number not specified; use default pin for this device'
+    if ((boardType) == 'Citilab ED1') {
+      _tonePin = 26
+    } ((boardType) == 'CircuitPlayground') {
+      _tonePin = 12
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
+    } else {
+      _tonePin = 0
+    }
+  } else {
+    _tonePin = pinNumber
+  }
+  _toneLoopOverhead = ('_measureLoopOverhead')
+  _toneInitalized = (booleanConstant true)
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' (key % 12))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+

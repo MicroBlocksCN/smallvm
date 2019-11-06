@@ -1,5 +1,5 @@
 module main
-variables 'ball speed' 'ball y' 'pipe height' 'pipe x' playing 'previous ball y' score
+variables 'ball speed' 'ball y' 'pipe height' 'pipe x' playing 'previous ball y' score 'ball radius' 'pipe width' gap 'ball acceleration'
 
 	spec ' ' 'check buttons' 'check buttons'
 	spec ' ' 'check collision' 'check collision'
@@ -10,84 +10,93 @@ variables 'ball speed' 'ball y' 'pipe height' 'pipe x' playing 'previous ball y'
 	spec ' ' 'step ball' 'step ball'
 	spec ' ' 'step pipe' 'step pipe'
 	spec ' ' 'welcome screen' 'welcome screen'
+	spec 'r' 'button pressed' 'button pressed'
+
+to 'button pressed' {
+  return (or (or (buttonA) (buttonB)) (or ('OK button') ('cancel button')))
+}
 
 to 'check buttons' {
-  if (and playing (or ('OK button') ('cancel button'))) {
+  if (and playing ('button pressed')) {
     'ball speed' = 0
-    'ball y' += -30
+    'ball y' += ((v 'ball acceleration') * -10)
   }
 }
 
 to 'check collision' {
-  if (and ((v 'pipe x') <= 20) (or (((v 'ball y') / 10) >= ((v 'pipe height') + 40)) (((v 'ball y') / 10) <= (v 'pipe height')))) {playing = (booleanConstant false)}
+  if (and ((v 'pipe x') <= (v 'pipe width')) (or ((((v 'ball y') / 10) + (v 'ball radius')) >= ((v 'pipe height') + gap)) ((((v 'ball y') / 10) - (v 'ball radius')) <= (v 'pipe height')))) {playing = (booleanConstant false)}
 }
 
 to 'draw ball' {
-  '[tft:circle]' 5 ((v 'previous ball y') / 10) 5 0 true
-  '[tft:circle]' 5 ((v 'ball y') / 10) 5 65535 true
+  '[tft:circle]' (v 'ball radius') ((v 'previous ball y') / 10) (v 'ball radius') 0 true
+  '[tft:circle]' (v 'ball radius') ((v 'ball y') / 10) (v 'ball radius') 65535 true
 }
 
 to 'draw pipes' {
-  '[tft:rect]' ((v 'pipe x') + 22) 0 2 (v 'pipe height') 0 true
-  '[tft:rect]' (v 'pipe x') 0 20 (v 'pipe height') 65280 true
-  '[tft:rect]' ((v 'pipe x') + 22) ((v 'pipe height') + 40) 20 (126 - ((v 'pipe height') + 40)) 0 true
-  '[tft:rect]' (v 'pipe x') ((v 'pipe height') + 40) 20 (126 - ((v 'pipe height') + 40)) 65280 true
+  '[tft:rect]' ((v 'pipe x') + ((v 'pipe width') + 2)) 0 2 (v 'pipe height') 0 true
+  '[tft:rect]' (v 'pipe x') 0 (v 'pipe width') (v 'pipe height') 65280 true
+  '[tft:rect]' ((v 'pipe x') + ((v 'pipe width') + 2)) ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 0 true
+  '[tft:rect]' (v 'pipe x') ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 65280 true
 }
 
 to 'game over' {
   '[display:mbDisplayOff]'
-  '[tft:text]' 'GAME' 6 2 16777215 5 false
-  '[tft:text]' 'OVER' 6 50 16777215 5 false
-  '[tft:text]' 'SCORE' 5 100 16777215 2 false
-  '[tft:text]' score 75 100 16777215 2 false
+  '[tft:text]' 'GAME' (('[tft:getWidth]') / 5) (('[tft:getHeight]') / 15) 16777215 (('[tft:getHeight]') / 30) false
+  '[tft:text]' 'OVER' (('[tft:getWidth]') / 5) (('[tft:getHeight]') / 3) 16777215 (('[tft:getHeight]') / 30) false
+  '[tft:text]' 'SCORE' (('[tft:getWidth]') / 6) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) 16777215 (('[tft:getHeight]') / 60) false
+  '[tft:text]' score (('[tft:getWidth]') - (('[tft:getWidth]') / 3)) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) 16777215 (('[tft:getHeight]') / 60) false
 }
 
 to 'new game' {
   '[display:mbDisplayOff]'
   score = 0
-  'pipe x' = 120
-  'pipe height' = (random 10 50)
   comment 'ball y is multiplied by 10 for precision'
-  'ball y' = 630
+  'ball y' = ((('[tft:getHeight]') / 2) * 10)
   playing = (booleanConstant true)
-  'ball speed' = 2
+  'ball acceleration' = (('[tft:getHeight]') / 60)
+  'ball speed' = (('[tft:getHeight]') / 60)
+  'ball radius' = (('[tft:getHeight]') / 15)
+  gap = (random ((v 'ball radius') * 4) ((v 'ball radius') * 7))
+  'pipe x' = (('[tft:getWidth]') - (('[tft:getWidth]') / 5))
+  'pipe height' = (random ((v 'ball radius') * 2) ((v 'ball radius') * 10))
+  'pipe width' = ((v 'ball radius') * 2)
 }
 
 to 'step ball' {
-  'ball speed' += 2
+  'ball speed' += (v 'ball acceleration')
   if ((v 'ball y') < 0) {
     'ball y' = ((v 'ball y') * (v 'ball speed'))
   }
   'previous ball y' = (v 'ball y')
   'ball y' += (v 'ball speed')
-  if ((v 'ball y') > 1260) {
+  if ((v 'ball y') > (('[tft:getHeight]') * 10)) {
     playing = (booleanConstant false)
   }
   'check buttons'
 }
 
 to 'step pipe' {
-  'pipe x' += ((score / -10) - 1)
-  if ((v 'pipe x') < -22) {
-    'pipe x' = 126
-    'pipe height' = (random 10 50)
+  'pipe x' += ((score / -10) - (('[tft:getWidth]') / 120))
+  if ((v 'pipe x') < (((v 'pipe width') * -1) - 2)) {
+    'pipe x' = ('[tft:getWidth]')
+    'pipe height' = (random ((v 'ball radius') * 2) ((v 'ball radius') * 10))
     score += 1
   }
 }
 
 to 'welcome screen' {
   '[display:mbDisplayOff]'
-  '[tft:text]' 'JUMPY' 6 2 16000215 4 false
-  '[tft:text]' 'BALL' 7 40 16000215 5 false
-  '[tft:text]' 'Press OK' 15 88 16777215 2 false
-  '[tft:text]' 'or X' 40 108 16777215 2 false
+  '[tft:text]' 'JUMPY' (('[tft:getWidth]') / 12) (('[tft:getHeight]') / 15) 16000215 (('[tft:getHeight]') / 30) false
+  '[tft:text]' 'BALL' (('[tft:getWidth]') / 6) (('[tft:getHeight]') / 3) 16000215 (('[tft:getHeight]') / 30) false
+  '[tft:text]' 'Press OK' (('[tft:getWidth]') / 6) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) 16777215 (('[tft:getHeight]') / 60) false
+  '[tft:text]' 'or X' (('[tft:getWidth]') / 3) (('[tft:getHeight]') - (('[tft:getHeight]') / 6)) 16777215 (('[tft:getHeight]') / 60) false
 }
 
-script 87 54 {
+script 50 50 {
 whenStarted
 'welcome screen'
 forever {
-  waitUntil (or ('OK button') ('cancel button'))
+  waitUntil ('button pressed')
   'new game'
   repeatUntil (not playing) {
     'step ball'
@@ -98,44 +107,8 @@ forever {
     waitMillis 10
   }
   'game over'
-  waitUntil (not (or ('OK button') ('cancel button')))
+  waitUntil (not ('button pressed'))
 }
-}
-
-script 518 70 {
-to 'step pipe' {}
-}
-
-script 928 75 {
-to 'draw pipes' {}
-}
-
-script 517 345 {
-to 'step ball' {}
-}
-
-script 925 503 {
-to 'draw ball' {}
-}
-
-script 59 523 {
-to 'new game' {}
-}
-
-script 928 720 {
-to 'game over' {}
-}
-
-script 517 738 {
-to 'check buttons' {}
-}
-
-script 57 796 {
-to 'check collision' {}
-}
-
-script 517 931 {
-to 'welcome screen' {}
 }
 
 
@@ -213,6 +186,34 @@ to 'set use capacitive to' value {
 
 to 'up button' {
   return ('_button pressed' 4)
+}
+
+
+module TFT Output
+
+	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec 'r' '[tft:getWidth]' 'TFT width'
+	spec 'r' '[tft:getHeight]' 'TFT height'
+	spec ' ' 'set TFT pixel x' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255
+	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false
+	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false
+	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false
+	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false
+	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false
+	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680
+	spec 'r' '_tft color' '_tft color _ to number' 'color any'
+
+to '_tft color' 'color hex' {
+  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
+  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
+  local 'b' ((((v 'color hex') & 255) * 255) / 31)
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to 'set TFT pixel x' x y color {
+  '[tft:setPixel]' x y ('_tft color' color)
 }
 
 
