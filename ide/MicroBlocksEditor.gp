@@ -267,7 +267,16 @@ method saveProject MicroBlocksEditor fName {
   lastProjectFolder = (directoryPart fileName)
 
   updateTitle this
-  writeFile fileName (codeString (project scripter))
+  if (canWriteProject this fileName) {
+print fileName
+    writeFile fileName (codeString (project scripter))
+  }
+}
+
+method canWriteProject MicroBlocksEditor fName {
+  return (or
+   (isNil (readFile fName))
+   (confirm (global 'page') nil 'Overwrite project?'))
 }
 
 method isAbsolutePath MicroBlocksEditor fName {
