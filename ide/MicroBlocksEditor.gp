@@ -182,11 +182,13 @@ method clearProject MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
+  fp = (findFilePicker)
+  if (notNil fp) { destroy fp }
   pickFileToOpen (action 'openProjectFromFile' this) lastProjectFolder (array '.gpp' '.ubp')
 }
 
 method openProjectFromFile MicroBlocksEditor location {
-  // Open a project with the give file path or URL.
+  // Open a project with the given file path or URL.
   if (beginsWith location '//') {
     lastProjectFolder = (gpExamplesFolder)
   } else {
@@ -227,6 +229,8 @@ method openProject MicroBlocksEditor projectData projectName {
 }
 
 method saveProjectToFile MicroBlocksEditor {
+  fp = (findFilePicker)
+  if (notNil fp) { destroy fp }
   saveProject this nil
 }
 

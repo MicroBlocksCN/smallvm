@@ -165,6 +165,10 @@ to findProjectEditor {
   return nil
 }
 
+to findFilePicker {
+  return (detect (function each {return (isClass (handler each) 'FilePicker')}) (parts (morph (global 'page'))) nil)
+}
+
 to gpFolder {
   if ('iOS' == (platform)) { return '.' }
   path = (userHomePath)
@@ -834,11 +838,24 @@ method processEvent Keyboard evt {
 	  atPut currentKeys key true
 	  if (isNil focus) {
 		if (27 == key) { // escape key
-		  stopAndSyncScripts (smallRuntime)
                   if (notNil (flasher (smallRuntime))) {
                     confirmRemoveFlasher (smallRuntime)
-		  }
+		  } (notNil (findFilePicker)) {
+                    destroy (findFilePicker)
+                  } else {
+		    stopAndSyncScripts (smallRuntime)
+                  }
 		}
+		if (and (111 == (at evt 'char'))
+				(or (controlKeyDown this) (commandKeyDown this))) {
+		  // cmd-O or ctrl-O - open file dialog
+		  (openProjectMenu (findProjectEditor))
+                }
+                if (and (115 == (at evt 'char'))
+				(or (controlKeyDown this) (commandKeyDown this))) {
+		  // cmd-S or ctrl-S - save file dialog
+		  (saveProjectToFile (findProjectEditor))
+                }
 		if (and (122 == (at evt 'char'))
 				(or (controlKeyDown this) (commandKeyDown this))
 				(isNil (grabbedObject (hand (global 'page'))))) {
