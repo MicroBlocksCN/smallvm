@@ -50,6 +50,7 @@ to openMicroBlocksEditor devMode {
   launch (global 'page') (checkLatestVersion)
   pageResized editor
   developerModeChanged editor
+  applyUserPreferences editor
   startSteppingSafely page
 }
 
@@ -384,6 +385,30 @@ method justReceivedDrop MicroBlocksEditor aHandler {
   }
 }
 
+// user preferences
+method readUserPreferences MicroBlocksEditor {
+  path = (join (gpFolder) '/preferences.json')
+  file = (readFile path)
+  if (notNil file) {
+    return (jsonParse file)
+  } else {
+    return (dictionary)
+  }
+}
+
+method applyUserPreferences MicroBlocksEditor {
+  prefs = (readUserPreferences this)
+  // for now, only the locale is saved into the preferences file
+  setLanguage this (at prefs 'locale')
+}
+
+method saveToUserPreferences MicroBlocksEditor key value {
+  prefs = (readUserPreferences this)
+  atPut prefs key value
+  path = (join (gpFolder) '/preferences.json')
+  writeFile path (jsonStringify prefs)
+}
+
 // developer mode
 
 method developerModeChanged MicroBlocksEditor {
@@ -613,6 +638,7 @@ method languageMenu MicroBlocksEditor {
 }
 
 method setLanguage MicroBlocksEditor newLang {
+  saveToUserPreferences this 'locale' newLang
   setLanguage (authoringSpecs) newLang
   languageChanged this
 }
