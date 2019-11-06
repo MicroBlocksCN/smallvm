@@ -22,7 +22,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion
+defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion lastProjectFolder lastLibraryFolder
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -99,6 +99,7 @@ method initialize MicroBlocksEditor {
   thingServer = (newMicroBlocksThingServer)
   addTopBarParts this
   scripter = (initialize (new 'MicroBlocksScripter') this)
+  lastProjectFolder = (gpExamplesFolder)
   addPart morph (morph scripter)
   drawTopBar this
   clearProject this
@@ -181,11 +182,16 @@ method clearProject MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
-  pickFileToOpen (action 'openProjectFromFile' this) (gpExamplesFolder) (array '.gpp' '.ubp')
+  pickFileToOpen (action 'openProjectFromFile' this) lastProjectFolder (array '.gpp' '.ubp')
 }
 
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the give file path or URL.
+  if (beginsWith location '//') {
+    lastProjectFolder = (gpExamplesFolder)
+  } else {
+    lastProjectFolder = (directoryPart location)
+  }
 
   if (not (canReplaceCurrentProject this)) { return }
 
@@ -253,6 +259,9 @@ method saveProject MicroBlocksEditor fName {
   if (not (endsWith fName '.ubp')) { fName = (join fName '.ubp') }
 
   fileName = fName
+
+  lastProjectFolder = (directoryPart fileName)
+
   updateTitle this
   writeFile fileName (codeString (project scripter))
 }
