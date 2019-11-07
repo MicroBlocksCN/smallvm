@@ -5,13 +5,12 @@ module TFT Output
         spec 'r' '[tft:getWidth]'			'TFT width'
 	spec 'r' '[tft:getHeight]'			'TFT height'
 	spec ' ' 'set TFT pixel x' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255
-	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false
-	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false
-	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false
-	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false
-	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false
-	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680
+	spec ' ' 'tft line' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15 255
+	spec ' ' 'tft rect' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 65280 false
+	spec ' ' 'tft roundedRect' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 12255317 false
+	spec ' ' 'tft circle' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 60 100 30 65535 false
+	spec ' ' 'tft triangle' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 5592354 false
+	spec ' ' 'tft text' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num color bool' 'Hello World!' 0 80 16777215 1 false
 	spec 'r' '_tft color' '_tft color _ to number' 'color any'
 
 to 'set TFT pixel x' x y color {
@@ -22,4 +21,22 @@ to '_tft color' 'color hex' {
   local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
   local 'b' ((((v 'color hex') & 255) * 255) / 31)
   return ((r << 16) | ((g << 8) | b))
+}
+to 'tft line' x1 y1 x2 y2 color {
+    '[tft:line]' x1 y1 x2 y2 ('_tft color' color)
+}
+to 'tft rect' x y w h color filled {
+    '[tft:rect]' x y w h ('_tft color' color) filled
+}
+to 'tft roundedRect' x y w h radius color filled {
+    '[tft:roundedRect]' x y w h radius ('_tft color' color) filled
+}
+to 'tft circle' x y radius color filled {
+    '[tft:circle]' x y radius ('_tft color' color) filled
+}
+to 'tft triangle' x1 y1 x2 y2 x3 y3 color filled {
+    '[tft:triangle]' x1 y1 x2 y2 x3 y3 ('_tft color' color) filled
+}
+to 'tft text' text x y color scale wrap {
+    '[tft:rect]' text x y ('_tft color' color) scale wrap
 }
