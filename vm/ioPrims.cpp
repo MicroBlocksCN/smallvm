@@ -111,7 +111,7 @@ void hardwareInit() {
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
 		touchSetCycles(0x800, 0x800);
 	#endif
-	#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32)
+	#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C)
 		tftInit();
 	#endif
 }
@@ -367,6 +367,30 @@ void restartSerial() {
 	static const char reservedPin[TOTAL_PINS] = {
 		1, 1, 0, 1, 1, 0, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 1, 0, 0, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+		1, 1, 1, 1, 1, 0, 0, 0, 1, 1};
+
+#elif defined(ARDUINO_M5Stick_C)
+
+	#define BOARD_TYPE "M5Stick"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 37
+	#define PIN_BUTTON_B 39
+	#ifdef BUILTIN_LED
+		#define PIN_LED BUILTIN_LED
+	#else
+		#define PIN_LED 10
+	#endif
+	#define INVERT_USER_LED true
+	#ifdef KEY_BUILTIN
+		#define PIN_BUTTON_A KEY_BUILTIN
+	#endif
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 1, 0, 1, 1, 0, 1, 1, 1, 1,
+		0, 1, 1, 1, 1, 1, 0, 0, 1, 1,
 		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
 		1, 1, 1, 1, 1, 0, 0, 0, 1, 1};
 
