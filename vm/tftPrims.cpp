@@ -17,7 +17,7 @@
 int useTFT = false;
 int touchEnabled = false;
 
-#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_IOT_BUS)
+#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_IOT_BUS)
 
 	#define TFT_BLACK 0
 	#define TFT_GREEN 0x7E0
@@ -75,6 +75,30 @@ int touchEnabled = false;
 			// Turn on backlight:
 			pinMode(32, OUTPUT);
 			digitalWrite(32, HIGH);
+			useTFT = true;
+		}
+
+	#elif defined(ARDUINO_M5Stick_C)
+		// Preliminary: this is not yet working...
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7735.h"
+
+		#define TFT_CS		5
+		#define TFT_DC		23
+		#define TFT_MOSI	15
+		#define TFT_SCLK	13
+		#define TFT_RST		18
+
+		#define TFT_WIDTH	160
+		#define TFT_HEIGHT	80
+
+		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
+		void tftInit() {
+			tftClear();
+			// Turn on backlight Not working):
+			pinMode(0, OUTPUT);
+			digitalWrite(0, HIGH);
 			useTFT = true;
 		}
 
