@@ -115,9 +115,10 @@ method addTopBarParts MicroBlocksEditor {
 
   leftItems = (list)
   add leftItems (140 * scale)
-  add leftItems (addLanguageButton this)
-  add leftItems (addSettingsButton this)
+  add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu')
+  add leftItems (addIconButton this (settingsButtonIcon this) 'settingsMenu')
   add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu')
+  add leftItems (addIconButton this (graphIcon this) 'showGraph')
   add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard')
   indicator = (last leftItems)
 
@@ -690,10 +691,6 @@ method languageChanged MicroBlocksEditor {
   fixLayout this
 }
 
-method addLanguageButton MicroBlocksEditor {
-  return (addIconButton this (languageButtonIcon this) 'languageMenu')
-}
-
 // Iconic menus
 
 method settingsMenu MicroBlocksEditor {
@@ -715,10 +712,6 @@ method addIconButton MicroBlocksEditor icon selector width {
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
-}
-
-method addSettingsButton MicroBlocksEditor {
-  return (addIconButton this (settingsButtonIcon this) 'settingsMenu')
 }
 
 method projectMenu MicroBlocksEditor {
@@ -1071,6 +1064,43 @@ TU9Pz8sA5hpyvUR0O6w7Q631c0qpBTBrvBGDXmAuWrRoVRzHW2FmoAnOE9FPABxn5p8b3Tqt9Qwi+ioR
 NZ1lIrrAzGuUUgPeDw71jtrJ5XLPaK1X48qTdw3AdqXUfehn1mwMtaKOOjo6vug4zngiesIk6eHibWbe
 7DjOBKXU3UMhBwzzlt9GW1vbVel0eo3W+lYAHwMwDheTfAygG8DfmHlXOp3eViwW3xvJOP8F10V9BVup
 s+gAAAAASUVORK5CYII='
+  if (2 == (global 'scale')) { data = dataRetina }
+  return (readFrom (new 'PNGReader') (base64Decode data))
+}
+
+method graphIcon MicroBlocksEditor scale {
+  data = 'iVBORw0KGgoAAAANSUhEUgAAABgAAAAWCAYAAADafVyIAAAABHNCSVQICAgIfAhkiAAAAA
+lwSFlzAAAKkAAACpABL6VQZQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAMLSU
+RBVEiJrZVPaBxVHMc/b/bNZHtYk01MnIZYUohFTVzbxNBbCwXxYObS4sGLWFvYgydbK43R5TUmYMHutR
+baXkTIoYey7oZStM2hBD1EF3PomiZUs6FLsgfJkj+QmZ3nYXfCmiZ0W/Z7enx/v/f9Pt7vO/PE0NDQZS
+HEZ4BJY+ECSVkVd4UQfzZSXWv9BnBOUjn5bCqVeqeRBo7jzAD9xosKKKVO7MK9PDo6+nYtJxzH0cDvoV
+DolOd5++sRtyzL7Ovru10sFs/n8/lcwMdisYumaQ6VSqWT8/PzCaBfBkXP87qFEEfqMejo6DhiGEa0ub
+n586WlpesAbW1tByzLcra2tv6em5srGUblcrYN0un0FDBVj4FSagogHA6/OTg4+MD3/RlgGvAtyzqZyW
+SyjuMA8NwzUEq9DhwDsoD2fT8hhDgDHAWuKaWytf17GiilPhkfH99tJnFAABeAFPC+1vo7oNjU1PTVzu
+a9DATwheu647VkMpncB3wEPFJK/QKMVksvAV8ODw//+5RQkKJyuXxGSvkaQGdn51u2bX8N6Hw+f7FYLD
+4G6O7uPt7a2vrp6urqDwsLCz8B9Pb2XpBSRmdnZ0d839cAnuc9CoVCN9jrO4hGo+8BGsC27Y8DPhKJvA
+u4hUJhKuBWVlZuLS8v3wjEd2I7RZOTk1kgOzY29qrnef3APWDRNM3TAwMDaK3/Ag4BP05MTNzcTawWQY
+rkzoLneXFACiGuSimnXdf9QGt9mWqEDcO49izxWvzvipRSFnAWeGLbdmpkZKQghPgWOAicBh4mEokHL2
+wghDgFvCKE+D4ej7sAkUgkCfxTrV+lOpt6sZ0irfX5WCx207KsA7lc7pv19fVS0NTV1XW4vb39w1wupz
+Y3NzefJaq1/kMIcYXaf1FPT88+y7IOuq7789ra2t3aDYuLi7+Fw+EnGxsb9+s5tZSyUC6XK+uAbGlpmQ
+EumaZ5J51O/7pzUyaTma5HPMBTKVJKrQDqeUTqgXAcZ4vKk/mwkcLVJ9OUQBI4p7UeaKQBlUf/yn/9gR
+oIgZwg6gAAAABJRU5ErkJggg=='
+  dataRetina = 'iVBORw0KGgoAAAANSUhEUgAAABgAAAAWCAYAAADafVyIAAAABHNCSVQICAgIfAhk
+iAAAAAlwSFlzAAAKkAAACpABL6VQZQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA
+AAMLSURBVEiJrZVPaBxVHMc/b/bNZHtYk01MnIZYUohFTVzbxNBbCwXxYObS4sGLWFvYgydbK43R5TUm
+YMHutRbaXkTIoYey7oZStM2hBD1EF3PomiZUs6FLsgfJkj+QmZ3nYXfCmiZ0W/Z7enx/v/f9Pt7vO/PE
+0NDQZSHEZ4BJY+ECSVkVd4UQfzZSXWv9BnBOUjn5bCqVeqeRBo7jzAD9xosKKKVO7MK9PDo6+nYtJxzH
+0cDvoVDolOd5++sRtyzL7Ovru10sFs/n8/lcwMdisYumaQ6VSqWT8/PzCaBfBkXP87qFEEfqMejo6Dhi
+GEa0ubn586WlpesAbW1tByzLcra2tv6em5srGUblcrYN0un0FDBVj4FSagogHA6/OTg4+MD3/RlgGvAt
+yzqZyWSyjuMA8NwzUEq9DhwDsoD2fT8hhDgDHAWuKaWytf17GiilPhkfH99tJnFAABeAFPC+1vo7oNjU
+1PTVzua9DATwheu647VkMpncB3wEPFJK/QKMVksvAV8ODw//+5RQkKJyuXxGSvkaQGdn51u2bX8N6Hw+
+f7FYLD4G6O7uPt7a2vrp6urqDwsLCz8B9Pb2XpBSRmdnZ0d839cAnuc9CoVCN9jrO4hGo+8BGsC27Y8D
+PhKJvAu4hUJhKuBWVlZuLS8v3wjEd2I7RZOTk1kgOzY29qrnef3APWDRNM3TAwMDaK3/Ag4BP05MTNzc
+TawWQYrkzoLneXFACiGuSimnXdf9QGt9mWqEDcO49izxWvzvipRSFnAWeGLbdmpkZKQghPgWOAicBh4m
+EokHL2wghDgFvCKE+D4ej7sAkUgkCfxTrV+lOpt6sZ0irfX5WCx207KsA7lc7pv19fVS0NTV1XW4vb39
+w1wupzY3NzefJaq1/kMIcYXaf1FPT88+y7IOuq7789ra2t3aDYuLi7+Fw+EnGxsb9+s5tZSyUC6XK+uA
+bGlpmQEumaZ5J51O/7pzUyaTma5HPMBTKVJKrQDqeUTqgXAcZ4vKk/mwkcLVJ9OUQBI4p7UeaKQBlUf/
+yn/9gRoIgZwg6gAAAABJRU5ErkJggg=='
   if (2 == (global 'scale')) { data = dataRetina }
   return (readFrom (new 'PNGReader') (base64Decode data))
 }
