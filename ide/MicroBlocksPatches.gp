@@ -848,8 +848,8 @@ method processEvent Keyboard evt {
 		if (27 == key) { // escape key
                   if (notNil (flasher (smallRuntime))) {
                     confirmRemoveFlasher (smallRuntime)
-		  } (notNil (findFilePicker)) {
-                    destroy (findFilePicker)
+		  } (notNil (findMorph 'FilePicker')) {
+                    destroy (findMorph 'FilePicker')
                   } else {
 		    stopAndSyncScripts (smallRuntime)
                   }
