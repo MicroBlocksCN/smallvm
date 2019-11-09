@@ -6,11 +6,11 @@
 
 // interactively eval GP code in a morphic window
 
-defineClass MicroBlockDataGraph morph window lastDataIndex
+defineClass MicroBlocksDataGraph morph window lastDataIndex
 
-to newMicroBlockDataGraph { return (initialize (new 'MicroBlockDataGraph')) }
+to newMicroBlocksDataGraph { return (initialize (new 'MicroBlocksDataGraph')) }
 
-method initialize MicroBlockDataGraph {
+method initialize MicroBlocksDataGraph {
 	scale = (global 'scale')
 	window = (window 'Data Graph')
 	morph = (morph window)
@@ -22,20 +22,20 @@ method initialize MicroBlockDataGraph {
 	return this
 }
 
-method step MicroBlockDataGraph {
+method step MicroBlocksDataGraph {
 	if ((lastDataIndex (smallRuntime)) == lastDataIndex) { return }
 	redraw this
 	lastDataIndex = (lastDataIndex (smallRuntime))
 }
 
-method redraw MicroBlockDataGraph {
+method redraw MicroBlocksDataGraph {
 	fixLayout window
 	redraw window
 	drawData this
 	costumeChanged morph
 }
 
-method drawData MicroBlockDataGraph {
+method drawData MicroBlocksDataGraph {
 	bgColor = (gray 240)
 
 	yScale = (1 * (global 'scale'))
@@ -51,7 +51,7 @@ method drawData MicroBlockDataGraph {
 	}
 }
 
-method extractSequences MicroBlockDataGraph {
+method extractSequences MicroBlocksDataGraph {
 	loggedData = (loggedData (smallRuntime) (pointCount this))
 	sequences = (list)
 	for line loggedData {
@@ -71,7 +71,7 @@ method extractSequences MicroBlockDataGraph {
 	return sequences
 }
 
-method pointCount MicroBlockDataGraph {
+method pointCount MicroBlocksDataGraph {
 	// Return the number of data points that will fit the current window size.
 
 	scale = (global 'scale')
@@ -80,7 +80,7 @@ method pointCount MicroBlockDataGraph {
 	return (toInteger (((width (clientArea window)) - leftInset) / lineW))
 }
 
-method graphSequence MicroBlockDataGraph seq aColor yScale {
+method graphSequence MicroBlocksDataGraph seq aColor yScale {
 	if (isEmpty seq) { return }
 	scale = (global 'scale')
 	lineW = (2 * scale)
@@ -111,7 +111,7 @@ method graphSequence MicroBlockDataGraph seq aColor yScale {
 	}
 }
 
-method drawGrid MicroBlockDataGraph yScale {
+method drawGrid MicroBlocksDataGraph yScale {
 	scale = (global 'scale')
 	lineW = scale
 
@@ -135,7 +135,7 @@ method drawGrid MicroBlockDataGraph yScale {
 	}
 }
 
-method drawLabel MicroBlockDataGraph bm label left y {
+method drawLabel MicroBlocksDataGraph bm label left y {
 	scale = (global 'scale')
 	fontName = 'Arial'
 	fontSize = (13 * scale)
@@ -147,12 +147,12 @@ method drawLabel MicroBlockDataGraph bm label left y {
 
 // context menu
 
-method rightClicked MicroBlockDataGraph aHand {
+method rightClicked MicroBlocksDataGraph aHand {
 	popUpAtHand (contextMenu this) (global 'page')
 	return true
 }
 
-method contextMenu MicroBlockDataGraph {
+method contextMenu MicroBlocksDataGraph {
 	menu = (menu 'Graph' this)
 	addItem menu 'clear graph' 'clearGraph'
 	addItem menu 'export data to CSV file' 'exportData'
@@ -163,11 +163,11 @@ method contextMenu MicroBlockDataGraph {
 	return menu
 }
 
-method clearGraph MicroBlockDataGraph {
+method clearGraph MicroBlocksDataGraph {
 	clearLoggedData (smallRuntime)
 }
 
-method exportData MicroBlockDataGraph {
+method exportData MicroBlocksDataGraph {
 	fileName = (fileToWrite 'data')
 	if (isEmpty fileName) { return }
 	if (not (endsWith fileName '.csv' )) { fileName = (join fileName '.csv') }
@@ -195,11 +195,11 @@ method exportData MicroBlockDataGraph {
 	writeFile fileName (joinStrings result (newline))
 }
 
-method importData MicroBlockDataGraph {
+method importData MicroBlocksDataGraph {
 	pickFileToOpen (action 'importDataFromCSVFile' this) (gpFolder) (array '.csv' '.txt')
 }
 
-method importDataFromCSVFile MicroBlockDataGraph fileName {
+method importDataFromCSVFile MicroBlocksDataGraph fileName {
 	data = (readFile fileName)
 	if (isNil data) { return } // could not read file
 	data = (joinStrings (splitWith data ',')) // remove commas
@@ -207,12 +207,12 @@ method importDataFromCSVFile MicroBlockDataGraph fileName {
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
 }
 
-method copyDataToClipboard MicroBlockDataGraph {
+method copyDataToClipboard MicroBlocksDataGraph {
   data = (loggedData (smallRuntime))
   setClipboard (joinStrings data (newline))
 }
 
-method showRecentData MicroBlockDataGraph {
+method showRecentData MicroBlocksDataGraph {
   data = (loggedData (smallRuntime) 100) // get the most recent 100 entries
   ws = (openWorkspace (global 'page') (joinStrings data (newline)))
   setTitle ws 'Recent Data'

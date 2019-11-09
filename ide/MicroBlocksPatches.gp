@@ -155,6 +155,18 @@ method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }
 
+to findMorph handlerClassName {
+	page = (global 'page')
+	if (notNil page) {
+		for p (parts (morph page)) {
+			if (isClass (handler p) handlerClassName) {
+				return (morph (handler p))
+			}
+		}
+	}
+	return nil
+}
+
 to findProjectEditor {
   page = (global 'page')
   if (notNil page) {
@@ -163,10 +175,6 @@ to findProjectEditor {
 	}
   }
   return nil
-}
-
-to findFilePicker {
-  return (detect (function each {return (isClass (handler each) 'FilePicker')}) (parts (morph (global 'page'))) nil)
 }
 
 to gpFolder {
