@@ -159,7 +159,9 @@ to findMorph handlerClassName {
 	page = (global 'page')
 	if (notNil page) {
 		for p (parts (morph page)) {
-			if (isClass (handler p) handlerClassName) { return (morph (handler p)) }
+			if (isClass (handler p) handlerClassName) {
+				return (morph (handler p))
+			}
 		}
 	}
 	return nil
