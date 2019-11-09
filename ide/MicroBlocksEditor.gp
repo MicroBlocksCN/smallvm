@@ -183,7 +183,7 @@ method clearProject MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
-  fp = (findFilePicker)
+  fp = (findMorph 'FilePicker')
   if (notNil fp) { destroy fp }
   pickFileToOpen (action 'openProjectFromFile' this) lastProjectFolder (array '.gpp' '.ubp')
 }
@@ -230,7 +230,7 @@ method openProject MicroBlocksEditor projectData projectName {
 }
 
 method saveProjectToFile MicroBlocksEditor {
-  fp = (findFilePicker)
+  fp = (findMorph 'FilePicker')
   if (notNil fp) { destroy fp }
   saveProject this nil
 }
@@ -593,8 +593,10 @@ method contextMenu MicroBlocksEditor {
 }
 
 method showGraph MicroBlocksEditor {
+	graph = (findMorph 'MicroBlocksDataGraph')
+	if (notNil graph) { destroy graph }
 	page = (global 'page')
-	graph = (newMicroBlockDataGraph)
+	graph = (newMicroBlocksDataGraph)
 	setPosition (morph graph) (x (hand page)) (y (hand page))
 	addPart page graph
 }
