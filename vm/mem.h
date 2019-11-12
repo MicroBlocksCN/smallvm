@@ -35,11 +35,12 @@ typedef int * OBJ;
 #define FREE_CHUNK 0
 #define BooleanType 1
 #define IntegerType 2
-#define FloatType 3 // not yet supported
+#define ByteArrayType 3
 #define StringType 4
-#define ByteArrayType 5
-// types 6 and 7 reserved for future non-pointer objects
-#define ArrayType 8 // objects with type ID's < 8 do not contain pointers
+// types 5-7 reserved for future non-pointer objects
+#define BinaryObjectTypes 7 // objects with type ID's <= 7 do not contain pointers
+#define ArrayType 8
+#define ListType 9
 
 // Booleans
 // Note: These are constants, not pointers to objects in memory.
@@ -99,6 +100,7 @@ int wordsFree();
 void gc();
 
 OBJ newObj(int typeID, int wordCount, OBJ fill);
+void resizeObj(OBJ obj, int wordCount);
 OBJ newString(int byteCount);
 OBJ newStringFromBytes(uint8 *bytes, int byteCount);
 char* obj2str(OBJ obj);

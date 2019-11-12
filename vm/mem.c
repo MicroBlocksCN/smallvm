@@ -131,7 +131,7 @@ void resizeObj(OBJ oldObj, int wordCount) {
 	if (isInt(oldObj) || isBoolean(oldObj)) return;
 
 	int type = objType(oldObj);
-	if (!type || (StringType == type)) return;
+	if (type <= BinaryObjectTypes) return;
 
 	OBJ result = newObj(type, wordCount, int2obj(0));
 	int copyCount = WORDS(oldObj);
@@ -171,7 +171,7 @@ char* obj2str(OBJ obj) {
 	if (isInt(obj)) return "<Integer>";
 	if (isBoolean(obj)) return ((trueObj == obj) ? "true" : "false");
 	if (IS_TYPE(obj, StringType)) return (char *) &obj[HEADER_WORDS];
-	if (IS_TYPE(obj, ArrayType)) return "<Array>";
+	if (IS_TYPE(obj, ListType)) return "<List>";
 	return "<Object>";
 }
 
@@ -202,8 +202,8 @@ void reportObj(char *msg, OBJ obj) {
 	case BooleanType:
 		sprintf(s, "%s: %s", msg, ((trueObj == obj) ? "true" : "false"));
 		break;
-	case ArrayType:
-		sprintf(s, "%s: Array (%d fields)", msg, WORDS(obj));
+	case ListType:
+		sprintf(s, "%s: List (%d fields)", msg, obj2int(FIELD(obj, 0)));
 		break;
 	default:
 		sprintf(s, "%s: <type %d> (%d fields)", msg, type, WORDS(obj));
@@ -220,14 +220,14 @@ void dumpObjectStore() {
 	uint32 *base = (uint32 *) objstore;
 	while (next < end) {
 		int wordCount = WORDS(next);
-		int info = TYPE(next);
-		if (info) {
+		int type = TYPE(next);
+		if (type) {
 			uint32 *fwd = (uint32 *) *(next - 1);
 			if (fwd) {
 				if (fwd > base) fwd = (uint32 *) (fwd - base); // word offset in objstore
-				sprintf(s, "%d type: %d words: %d fwd: %d", (next - base), info, wordCount, (int) fwd);
+				sprintf(s, "%d type: %d words: %d fwd: %d", (next - base), type, wordCount, (int) fwd);
 			} else {
-				sprintf(s, "%d type: %d words: %d", (next - base), info, wordCount);
+				sprintf(s, "%d type: %d words: %d", (next - base), type, wordCount);
 			}
 		} else {
 			sprintf(s, "%d FREE %d", (next - base), wordCount);
@@ -302,8 +302,7 @@ void applyForwarding() {
 	uint32 *end = (uint32 *) &objstore[OBJSTORE_WORDS];
 	uint32 *next = (uint32 *) objstore + 1;
 	while (next < end) {
-		int info = TYPE(next);
-		if (info && (StringType != info)) { // non-free chunk with OBJ fields (not a string)
+		if (TYPE(next) > BinaryObjectTypes) { // non-free chunk with OBJ fields (not a string)
 			for (int i = WORDS(next); i > 0; i--) {
 				OBJ child = (OBJ) next[i];
 				if (!isInt(child) && // child is not an integer
@@ -348,13 +347,18 @@ void mark(OBJ root) {
 
 		// process next child
 		OBJ child = (OBJ) current[i];
-		if (!isInt(child) && !isBoolean(child) && !IS_MARKED(child) && (StringType != TYPE(child))) { // child is not an integer, String, or marked
-			// reverse pointers before processing child
-			current[i] = *child; // store child's header it ith field of current
-			*(current - 1) = i; // store i in forwarding field of current
-			i = WORDS(child); // scan backwards from last field of child
-			*child = (int) current; // backpointer to current
-			current = child; // process child
+		if (!isInt(child) && (memStart <= child) && (child <= memEnd) && !IS_MARKED(child)) {
+			// child an unmarked, non-integer object in the object store
+			if (TYPE(child) > BinaryObjectTypes) { // child has pointer fields to process
+				// reverse pointers before processing child
+				current[i] = *child; // store child's header it ith field of current
+				*(current - 1) = i; // store i in forwarding field of current
+				i = WORDS(child); // scan backwards from last field of child
+				*child = (int) current; // backpointer to current
+				current = child; // process child
+			} else {
+				SET_MARK(child);
+			}
 		} else {
 			i--;
 		}
@@ -389,7 +393,7 @@ void sweep() {
 			*(next - 1) = (dst != next) ? (uint32) dst : 0;
 			dst += wordCount + 2;
 		} else { // inaccessible object or free chunk
-			// mark chunk as free by clearing its info field
+			// mark chunk as free by clearing its type field
 			*next = HEADER(FREE_CHUNK, wordCount);
 		}
 		next += wordCount + 2;
