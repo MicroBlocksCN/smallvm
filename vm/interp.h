@@ -147,7 +147,7 @@ extern int extraByteDelay;
 #define badChunkIndexError		2	// Unknown chunk index
 
 #define insufficientMemoryError	10	// Insufficient memory to allocate object
-#define needsArrayError			11	// Needs a list
+#define needsListError			11	// Needs a list
 #define needsBooleanError		12	// Needs a boolean
 #define needsIntegerError		13	// Needs an integer
 #define needsStringError		14	// Needs a string
