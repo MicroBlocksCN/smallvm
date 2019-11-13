@@ -29,6 +29,17 @@ static int stringSize(OBJ obj) {
 	return byteCount;
 }
 
+static void printIntegerOrBooleanInto(OBJ obj, char *buf) {
+	// Helper for primJoin. Write a representation of obj into the given string.
+	// Assume buf has space for at least 20 characters.
+
+	*buf = 0; // null terminator
+	if (isInt(obj)) sprintf(buf, "%d", obj2int(obj));
+	else if (obj == falseObj) strcat(buf, "false");
+	else if (obj == trueObj) strcat(buf, "true");
+	else if (IS_TYPE(obj, StringType)) sprintf(buf, "%.15s...", obj2str(obj));
+}
+
 // Growable Lists:
 // First field is the item count (N). Items are stored in fields 2..N.
 // Fields N+1..end are available for adding additional items without growing.
@@ -134,6 +145,44 @@ OBJ primLength(int argCount, OBJ *args) {
 
 // Named primitives
 
+OBJ primMakeList(int argCount, OBJ *args) {
+	OBJ result = newObj(ListType, argCount + 1, falseObj);
+	if (!result) return result; // allocation failed
+
+	FIELD(result, 0) = int2obj(argCount);
+	for (int i = 0; i < argCount; i++) FIELD(result, i + 1) = args[i];
+	return result;
+}
+
+OBJ primListAddLast(int argCount, OBJ *args) {
+	// Add the given item to the end of the List. Grow if necessary.
+
+	OBJ list = args[0];
+	OBJ value = args[1];
+
+	if (!IS_TYPE(list, ListType)) return fail(needsListError);
+
+	int count = obj2int(FIELD(list, 0));
+	if (count >= (WORDS(list) - 1)) { // no more capacity; try to grow
+		int growBy = count / 2;
+		if (growBy < 4) growBy = 4;
+		if (growBy > 256) growBy = 256;
+		resizeObj(list, WORDS(list) + growBy);
+	}
+	if (count < (WORDS(list) - 1)) { // append value if there's room
+		count++;
+		FIELD(list, count) = value;
+		FIELD(list, 1) = int2obj(count);
+	}
+	return falseObj;
+}
+
+OBJ primListDelete(int argCount, OBJ *args) {
+	// Delete item(s) from the given List.
+
+	return falseObj;
+}
+
 OBJ primCopyFromTo(int argCount, OBJ *args) {
 	// Return a copy of the first argument (a string or list) between the indices give by
 	// the second and third arguments. If the optional third argument is not supplied it
@@ -171,40 +220,6 @@ OBJ primCopyFromTo(int argCount, OBJ *args) {
 		return fail(needsIndexable);
 	}
 	return result;
-}
-
-OBJ primFindInString(int argCount, OBJ *args) {
-	// Return the index of next instance the second string in the first or -1 if not found.
-	// An optional third argument can be used to specify the starting point for the search.
-
-	if (argCount < 2) return fail(notEnoughArguments);
-	OBJ arg0 = args[0];
-	OBJ arg1 = args[1];
-	int startOffset = ((argCount > 2) && isInt(args[2])) ? obj2int(args[2]) : 1;
-	if (startOffset < 1) startOffset = 1;
-
-	if (!(IS_TYPE(arg0, StringType) && IS_TYPE(arg1, StringType))) return fail(needsStringError);
-	if (startOffset && (startOffset > stringSize(arg1))) return int2obj(-1); // not found
-
-	char *s = obj2str(arg1);
-	char *sought = obj2str(arg0);
-	char *match  = strstr(s + startOffset - 1, sought);
-	return int2obj(match ? (match - s) + 1 : -1);
-}
-
-OBJ primFreeWords(int argCount, OBJ *args) {
-	return int2obj(wordsFree());
-}
-
-static void printIntegerOrBooleanInto(OBJ obj, char *buf) {
-	// Helper for primJoin. Write a representation of obj into the given string.
-	// Assume buf has space for at least 20 characters.
-
-	*buf = 0; // null terminator
-	if (isInt(obj)) sprintf(buf, "%d", obj2int(obj));
-	else if (obj == falseObj) strcat(buf, "false");
-	else if (obj == trueObj) strcat(buf, "true");
-	else if (IS_TYPE(obj, StringType)) sprintf(buf, "%.15s...", obj2str(obj));
 }
 
 OBJ primJoin(int argCount, OBJ *args) {
@@ -265,15 +280,6 @@ OBJ primJoin(int argCount, OBJ *args) {
 	return result;
 }
 
-OBJ primMakeList(int argCount, OBJ *args) {
-	OBJ result = newObj(ListType, argCount + 1, falseObj);
-	if (!result) return result; // allocation failed
-
-	FIELD(result, 0) = int2obj(argCount);
-	for (int i = 0; i < argCount; i++) FIELD(result, i + 1) = args[i];
-	return result;
-}
-
 OBJ primJoinStrings(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	if (!IS_TYPE(args[0], ListType)) return fail(needsListError);
@@ -299,7 +305,7 @@ OBJ primJoinStrings(int argCount, OBJ *args) {
 
 	char *dst = obj2str(result);
 	for (int i = 0; i < count; i++) {
-		char *s = obj2str(FIELD(stringList, i));
+		char *s = obj2str(FIELD(stringList, i + 1));
 		int n = strlen(s);
 		memcpy(dst, s, n);
 		dst += n;
@@ -311,15 +317,40 @@ OBJ primJoinStrings(int argCount, OBJ *args) {
 	return result;
 }
 
+OBJ primFindInString(int argCount, OBJ *args) {
+	// Return the index of next instance the second string in the first or -1 if not found.
+	// An optional third argument can be used to specify the starting point for the search.
+
+	if (argCount < 2) return fail(notEnoughArguments);
+	OBJ arg0 = args[0];
+	OBJ arg1 = args[1];
+	int startOffset = ((argCount > 2) && isInt(args[2])) ? obj2int(args[2]) : 1;
+	if (startOffset < 1) startOffset = 1;
+
+	if (!(IS_TYPE(arg0, StringType) && IS_TYPE(arg1, StringType))) return fail(needsStringError);
+	if (startOffset && (startOffset > stringSize(arg1))) return int2obj(-1); // not found
+
+	char *s = obj2str(arg1);
+	char *sought = obj2str(arg0);
+	char *match  = strstr(s + startOffset - 1, sought);
+	return int2obj(match ? (match - s) + 1 : -1);
+}
+
+OBJ primFreeWords(int argCount, OBJ *args) {
+	return int2obj(wordsFree());
+}
+
 // Primitives
 
 static PrimEntry entries[] = {
+	{"makeList", primMakeList},
+	{"addLast", primListAddLast},
+	{"delete", primListDelete},
+	{"join", primJoin},
 	{"copyFromTo", primCopyFromTo},
 	{"findInString", primFindInString},
-	{"freeWords", primFreeWords},
-	{"join", primJoin},
-	{"makeList", primMakeList},
 	{"joinStrings", primJoinStrings},
+	{"freeWords", primFreeWords},
 };
 
 void addDataPrims() {
