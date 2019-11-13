@@ -92,7 +92,7 @@ OBJ primArrayAt(int argCount, OBJ *args) {
 	} else if (IS_TYPE(obj, StringType)) {
 		int count = stringSize(obj);
 		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
-		return newStringFromBytes(((uint8 *) &FIELD(obj, 0)) + i, 1);
+		return newStringFromBytes(((uint8 *) &FIELD(obj, 0)) + i - 1, 1);
 	} else if (IS_TYPE(obj, ByteArrayType)) {
 		int count = 4 * WORDS(obj);
 		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);

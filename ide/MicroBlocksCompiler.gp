@@ -131,13 +131,15 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Lists'
 		(array 'r' '[data:makeList]'	'list : _ : ...' 'auto auto' 'cat' 'dog')
+		(array 'r' 'at'					'item _ of _' 'auto str' 1)
 		(array 'r' 'size'				'length of _' 'str' nil)
 		'-'
-		(array 'r' 'at'					'item _ of _' 'num str' 1 nil)
-		(array ' ' 'atPut'				'replace item _ of _ with _' 'num str auto' 1 nil 10)
+		(array ' ' 'atPut'				'replace item _ of list _ with _' 'auto str auto' 1 nil 10)
+		(array ' ' '[data:delete]'		'delete item _ of list _' 'auto str' 1)
+		(array ' ' '[data:addLast]'		'add item _ to list _' 'str auto' 'fish')
 		'-'
-		(array 'r' '[data:join]'			'join _ _ : _ : ...' 'str str str' 'micro' 'blocks')
-		(array 'r' '[data:copyFromTo]'		'copy _ from _ : to _' 'auto num num' nil 1 10)
+		(array 'r' '[data:join]'		'join _ _ : _ : ...' 'str str str' 'micro' 'blocks')
+		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' nil 1 10)
 		'-'
 		(array 'r' '[data:findInString]'	'find _ in _ : starting at _' 'str str num' 'a' 'cat' 1)
 		(array 'r' '[data:joinStrings]'		'join string list _ : separator _' 'auto str' nil ' ')
