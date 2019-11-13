@@ -427,7 +427,11 @@ method applyUserPreferences MicroBlocksEditor {
 
 method saveToUserPreferences MicroBlocksEditor key value {
   prefs = (readUserPreferences this)
-  atPut prefs key value
+  if (isNil value) {
+	remove prefs key
+  } else {
+	atPut prefs key value
+  }
   path = (join (gpFolder) '/preferences.json')
   writeFile path (jsonStringify prefs)
 }
