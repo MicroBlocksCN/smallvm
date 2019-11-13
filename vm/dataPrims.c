@@ -4,7 +4,7 @@
 
 // Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// arrayPrims.cpp - Microblocks arrau primitives
+// dataPrims.cpp - Microblocks list and string primitives
 // John Maloney, September 2017
 
 #include <stdio.h>
@@ -29,10 +29,19 @@ static int stringSize(OBJ obj) {
 	return byteCount;
 }
 
+// Growable Lists:
+// First field is the item count (N). Items are stored in fields 2..N.
+// Fields N+1..end are available for adding additional items without growing.
+
 OBJ primNewArray(int argCount, OBJ *args) {
-	OBJ n = args[0];
-	if (!isInt(n) || ((int) n < 0)) return fail(arraySizeError);
-	OBJ result = newObj(ArrayType, obj2int(n), int2obj(0)); // filled with zero integers
+	// Return a growable list. Optional argument specifies capacity.
+	// This now returns a growable List object, not a fixed-size array.
+
+	const int minCapacity = 2;
+	int capacity = ((argCount > 0) && isInt(args[0])) ? obj2int(args[0]) : minCapacity;
+	if (capacity < minCapacity) capacity = minCapacity;
+	OBJ result = newObj(ListType, capacity + 1, int2obj(0)); // filled with zeros
+	if (result) FIELD(result, 0) = int2obj(capacity);
 	return result;
 }
 
@@ -44,21 +53,24 @@ OBJ primNewByteArray(int argCount, OBJ *args) {
 }
 
 OBJ primArrayFill(int argCount, OBJ *args) {
-	OBJ array = args[0];
+	OBJ obj = args[0];
 	OBJ value = args[1];
 
-	if (IS_TYPE(array, ArrayType)) {
-		int end = objWords(array) + HEADER_WORDS;
-		for (int i = HEADER_WORDS; i < end; i++) ((OBJ *) array)[i] = value;
-	} else if (IS_TYPE(array, ByteArrayType)) {
+	if (IS_TYPE(obj, ListType)) {
+		int count = obj2int(FIELD(obj, 0));
+		if (count >= WORDS(obj))count = WORDS(obj) - 1;
+		for (int i = 0; i < count; i++) FIELD(obj, i + 1) = value;
+		int end = WORDS(obj) + HEADER_WORDS;
+		for (int i = HEADER_WORDS + 1; i < end; i++) ((OBJ *) obj)[i] = value;
+	} else if (IS_TYPE(obj, ByteArrayType)) {
 		if (!isInt(value)) return fail(byteArrayStoreError);
 		uint32 byteValue = obj2int(value);
 		if (byteValue > 255) return fail(byteArrayStoreError);
-		uint8 *dst = (uint8 *) &FIELD(array, 0);
-		uint8 *end = dst + (4 * objWords(array));
+		uint8 *dst = (uint8 *) &FIELD(obj, 0);
+		uint8 *end = dst + (4 * WORDS(obj));
 		while (dst < end) *dst++ = byteValue;
 	} else {
-		fail(needsArrayError);
+		fail(needsListError);
 	}
 	return falseObj;
 }
@@ -66,51 +78,58 @@ OBJ primArrayFill(int argCount, OBJ *args) {
 OBJ primArrayAt(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerIndexError);
 	int i = obj2int(args[0]);
-	OBJ array = args[1];
+	OBJ obj = args[1];
 
-	if (IS_TYPE(array, ArrayType)) {
-		if ((i < 1) || (i > objWords(array))) return fail(indexOutOfRangeError);
-		return FIELD(array, (i - 1));
-	} else if (IS_TYPE(array, ByteArrayType) || IS_TYPE(array, StringType)) {
-		int byteCount = 4 * objWords(array);
-		if IS_TYPE(array, StringType) byteCount = stringSize(array);
-		if ((i < 1) || (i > byteCount)) return fail(indexOutOfRangeError);
-		uint8 *bytes = (uint8 *) &FIELD(array, 0);
+	if (IS_TYPE(obj, ListType)) {
+		int count = obj2int(FIELD(obj, 0));
+		if (count >= WORDS(obj)) count = WORDS(obj) - 1;
+		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
+		return FIELD(obj, i);
+	} else if (IS_TYPE(obj, StringType)) {
+		int count = stringSize(obj);
+		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
+		return newStringFromBytes(((uint8 *) &FIELD(obj, 0)) + i, 1);
+	} else if (IS_TYPE(obj, ByteArrayType)) {
+		int count = 4 * WORDS(obj);
+		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
+		uint8 *bytes = (uint8 *) &FIELD(obj, 0);
 		return int2obj(bytes[i - 1]);
 	}
-	return fail(needsArrayError);
+	return fail(needsListError);
 }
 
 OBJ primArrayAtPut(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerIndexError);
 	int i = obj2int(args[0]);
-	OBJ array = args[1];
+	OBJ obj = args[1];
 	OBJ value = args[2];
 
-	if (IS_TYPE(array, ArrayType)) {
-		if ((i < 1) || (i > objWords(array))) return fail(indexOutOfRangeError);
-		FIELD(array, (i - 1)) = value;
-	} else if (IS_TYPE(array, ByteArrayType)) {
-		if ((i < 1) || (i > (objWords(array) * 4))) return fail(indexOutOfRangeError);
+	if (IS_TYPE(obj, ListType)) {
+		int count = obj2int(FIELD(obj, 0));
+		if (count >= WORDS(obj)) count = WORDS(obj) - 1;
+		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
+		FIELD(obj, i) = value;
+	} else if (IS_TYPE(obj, ByteArrayType)) {
+		if ((i < 1) || (i > (WORDS(obj) * 4))) return fail(indexOutOfRangeError);
 		if (!isInt(value)) return fail(byteArrayStoreError);
 		uint32 byteValue = obj2int(value);
 		if (byteValue > 255) return fail(byteArrayStoreError);
-		((uint8 *) &FIELD(array, 0))[i - 1] = byteValue;
-	} else return fail(needsArrayError);
+		((uint8 *) &FIELD(obj, 0))[i - 1] = byteValue;
+	} else return fail(needsListError);
 	return falseObj;
 }
 
 OBJ primLength(int argCount, OBJ *args) {
 	OBJ obj = args[0];
 
-	if (IS_TYPE(obj, ArrayType)) {
-		return int2obj(objWords(obj));
+	if (IS_TYPE(obj, ListType)) {
+		return FIELD(obj, 0); // actual count stored in first field
 	} else if (IS_TYPE(obj, ByteArrayType)) {
-		return int2obj(4 * objWords(obj));
+		return int2obj(4 * WORDS(obj));
 	} else if (IS_TYPE(obj, StringType)) {
 		return int2obj(stringSize(obj));
 	}
-	return fail(needsArrayError);
+	return fail(needsListError);
 }
 
 // Named primitives
@@ -128,20 +147,20 @@ OBJ primCopyFromTo(int argCount, OBJ *args) {
 	if ((argCount > 2) && !isInt(args[2])) return fail(needsIntegerError);
 
 	int srcLen = 0;
-	if (IS_TYPE(src, ArrayType)) srcLen = WORDS(src);
+	if (IS_TYPE(src, ListType)) srcLen = obj2int(FIELD(src, 0));
 	if (IS_TYPE(src, StringType)) srcLen = stringSize(src);
 	int endIndex = (argCount > 2) ? obj2int(args[2]) : srcLen;
-	if (startIndex > srcLen) startIndex = srcLen;
 	if (endIndex > srcLen) endIndex = srcLen;
 	int resultLen = (endIndex - startIndex) + 1;
 	if (resultLen < 0) resultLen = 0;
 
 	OBJ result = falseObj;
-	if (IS_TYPE(src, ArrayType)) {
-		result = newObj(ArrayType, resultLen, int2obj(0));
+	if (IS_TYPE(src, ListType)) {
+		result = newObj(ListType, resultLen + 1, int2obj(0));
 		if (result) {
-			OBJ *dst = &FIELD(src, 0);
-			for (int i = startIndex; i <= endIndex; i++) *dst++ = FIELD(src, i - 1);
+			FIELD(result, 0) = int2obj(resultLen);
+			OBJ *dst = &FIELD(result, 1);
+			for (int i = startIndex; i <= endIndex; i++) *dst++ = FIELD(src, i);
 		}
 	} else if (IS_TYPE(src, StringType)) {
 		result = newString(resultLen);
@@ -177,40 +196,67 @@ OBJ primFreeWords(int argCount, OBJ *args) {
 	return int2obj(wordsFree());
 }
 
+static void printIntegerOrBooleanInto(OBJ obj, char *buf) {
+	// Helper for primJoin. Write a representation of obj into the given string.
+	// Assume buf has space for at least 20 characters.
+
+	*buf = 0; // null terminator
+	if (isInt(obj)) sprintf(buf, "%d", obj2int(obj));
+	else if (obj == falseObj) strcat(buf, "false");
+	else if (obj == trueObj) strcat(buf, "true");
+	else if (IS_TYPE(obj, StringType)) sprintf(buf, "%.15s...", obj2str(obj));
+}
+
 OBJ primJoin(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
+	char buf[50];
 	int count, resultCount = 0;
 	OBJ arg, arg1 = args[0];
 	OBJ result = falseObj;
 
-	if (IS_TYPE(arg1, ArrayType)) {
+	if (IS_TYPE(arg1, ListType)) {
 		for (int i = 0; i < argCount; i++) {
 			arg = args[i];
-			if (!IS_TYPE(arg, ArrayType)) return fail(joinArgsNotSameType);
-			resultCount += WORDS(arg);
+			if (!IS_TYPE(arg, ListType)) return fail(joinArgsNotSameType);
+			resultCount += obj2int(FIELD(arg, 0));
 		}
-		result = newObj(ArrayType, resultCount, int2obj(0));
+		result = newObj(ListType, resultCount + 1, int2obj(0));
 		if (!result) return result; // allocation failed
-		OBJ *dst = &FIELD(result, 0);
+		FIELD(result, 0) = int2obj(resultCount);
+		OBJ *dst = &FIELD(result, 1);
 		for (int i = 0; i < argCount; i++) {
 			arg = args[i];
-			count = WORDS(arg);
-			for (int j = 0; j < count; j++) *dst++ = FIELD(arg, j);
+			count = obj2int(FIELD(arg, 0));
+			if (count >= WORDS(arg)) count = WORDS(arg) - 1;
+			for (int j = 0; j < count; j++) *dst++ = FIELD(arg, j + 1);
 		}
 	} else if (IS_TYPE(arg1, StringType)) {
 		for (int i = 0; i < argCount; i++) {
 			arg = args[i];
-			if (!IS_TYPE(arg, StringType)) return fail(joinArgsNotSameType);
-			resultCount += stringSize(arg);
+			if (IS_TYPE(arg, StringType)) {
+				resultCount += stringSize(arg);
+			} else if (isInt(arg) || isBoolean(arg)) {
+				printIntegerOrBooleanInto(arg, buf);
+				resultCount += strlen(buf);
+			} else {
+				return fail(joinArgsNotSameType);
+			}
 		}
 		result = newString(resultCount);
 		if (!result) return result; // allocation failed
 		char *dst = (char *) &FIELD(result, 0);
 		for (int i = 0; i < argCount; i++) {
 			arg = args[i];
-			count = stringSize(arg);
-			memcpy(dst, obj2str(arg), count);
-			dst += count;
+			if (IS_TYPE(arg, StringType)) {
+				count = stringSize(arg);
+				memcpy(dst, obj2str(arg), count);
+				dst += count;
+			} else if (isInt(arg) || isBoolean(arg)) {
+				printIntegerOrBooleanInto(arg, buf);
+				count = strlen(buf);
+				memcpy(dst, buf, count);
+				dst += count;
+			}
 		}
 		*dst = 0; // null terminator
 	} else {
@@ -220,81 +266,40 @@ OBJ primJoin(int argCount, OBJ *args) {
 }
 
 OBJ primMakeList(int argCount, OBJ *args) {
-	OBJ result = newObj(ArrayType, argCount, int2obj(0));
+	OBJ result = newObj(ListType, argCount + 1, falseObj);
 	if (!result) return result; // allocation failed
 
-	for (int i = 0; i < argCount; i++) FIELD(result, i) = args[i];
-	return result;
-}
-
-OBJ primSplitString(int argCount, OBJ *args) {
-	if (argCount < 1) return fail(notEnoughArguments);
-	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
-
-	char *s = obj2str(args[0]);
-	int resultCount = 0;
-	if (argCount > 1) {
-		if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
-		char *separator = obj2str(args[1]);
-		char *match = s;
-		while (match) {
-			resultCount++;
-			match = strstr(match, separator);
-		}
-	} else {
-		resultCount = strlen(s); // no separator; return list of letters
-	}
-
-	OBJ result = newObj(ArrayType, argCount, int2obj(0));
-	if (!result) return result; // allocation failed
-
-	gc(); // proactive GC; a GC after this could mess obj refs in C locals
-	s = obj2str(args[0]); // update after GC
-
-	if (argCount > 1) {
-		char *separator = obj2str(args[1]);
-		int separatorLen = strlen(separator);
-		char *end, *start = s;
-		for (int i = 0; i < resultCount; i++) {
-			end = strstr(start, separator);
-			if (!end) return result; // no more matches; should not happen
-			FIELD(result, i) = newStringFromBytes((uint8 *) start, (end - start));
-			start = end + separatorLen;
-		}
-	} else {
-		for (int i = 0; i < resultCount; i++) {
-			FIELD(result, i) = newStringFromBytes((uint8 *) (s + i), 1);
-		}
-	}
+	FIELD(result, 0) = int2obj(argCount);
+	for (int i = 0; i < argCount; i++) FIELD(result, i + 1) = args[i];
 	return result;
 }
 
 OBJ primJoinStrings(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	if (!IS_TYPE(args[0], ArrayType)) return fail(needsArrayError);
+	if (!IS_TYPE(args[0], ListType)) return fail(needsListError);
 
-	OBJ stringArray = args[0];
-	int count = WORDS(stringArray);
-	if (!count) return newString(0);
+	OBJ stringList = args[0];
+	int count = obj2int(FIELD(stringList, 0));
+	if (count <= 0) return newString(0);
 
 	char *separator = ((argCount > 1) && IS_TYPE(args[1], StringType)) ? obj2str(args[1]) : "";
 	int separatorLen = strlen(separator);
 
 	int resultBytes = (count - 1) * separatorLen;
 	for (int i = 0; i < count; i++) {
-		char *s = obj2str(FIELD(stringArray, i));
+		char *s = obj2str(FIELD(stringList, i));
 		resultBytes += strlen(s);
 	}
 	OBJ result = newString(resultBytes);
 	if (!result) return result; // allocation failed
 
 	// update temps after possible GC triggered by newString()
-	stringArray = args[0];
+	stringList = args[0];
 	if (separatorLen) separator = obj2str(args[1]);
 
 	char *dst = obj2str(result);
 	for (int i = 0; i < count; i++) {
-		char *s = obj2str(FIELD(stringArray, i));
+		char *s = obj2str(FIELD(stringList, i));
 		int n = strlen(s);
 		memcpy(dst, s, n);
 		dst += n;
@@ -314,7 +319,6 @@ static PrimEntry entries[] = {
 	{"freeWords", primFreeWords},
 	{"join", primJoin},
 	{"makeList", primMakeList},
-//	{"splitString", primSplitString}, // problematic interactions with GC
 	{"joinStrings", primJoinStrings},
 };
 
