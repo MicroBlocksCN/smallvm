@@ -297,7 +297,7 @@ method initOpcodes SmallCompiler {
 	RESERVED 58
 	RESERVED 59
 		newArray 60
-		newByteArray 61
+	RESERVED 61
 		fillArray 62
 		at 63
 		atPut 64

@@ -776,8 +776,8 @@ method errorString SmallRuntime errID {
 #define needsStringError		14	// Needs a string
 #define nonComparableError		15	// Those objects cannot be compared for equality
 #define arraySizeError			16	// List size must be a non-negative integer
-#define needsIntegerIndexError	17	// List index must be an integer
-#define indexOutOfRangeError	18	// List index out of range
+#define needsIntegerIndexError	17	// List or string index must be an integer
+#define indexOutOfRangeError	18	// List or string index out of range
 #define byteArrayStoreError		19	// A ByteArray can only store integer values between 0 and 255
 #define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
@@ -792,7 +792,7 @@ method errorString SmallRuntime errID {
 #define noWiFi					30	// This board does not support WiFi
 #define zeroDivide				31	// Division (or modulo) by zero is not defined
 #define argIndexOutOfRange		32	// Argument index out of range
-#define needsIndexible			33	// Need an indexable type such as a string or list
+#define needsIndexable			33	// Needs an indexable type such as a string or list
 #define joinArgsNotSameType		34	// All arguments to join must be the same type (e.g. lists)
 '
 	for line (lines defsFromHeaderFile) {

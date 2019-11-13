@@ -56,13 +56,6 @@ OBJ primNewArray(int argCount, OBJ *args) {
 	return result;
 }
 
-OBJ primNewByteArray(int argCount, OBJ *args) {
-	OBJ n = args[0];
-	if (!isInt(n) || ((int) n < 0)) return fail(arraySizeError);
-	OBJ result = newObj(ByteArrayType, (obj2int(n) + 3) / 4, 0); // filled with zero bytes
-	return result;
-}
-
 OBJ primArrayFill(int argCount, OBJ *args) {
 	OBJ obj = args[0];
 	OBJ value = args[1];

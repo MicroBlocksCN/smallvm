@@ -286,7 +286,7 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&newArray_op,
-		&&newByteArray_op,
+		&&RESERVED_op,
 		&&fillArray_op,
 		&&at_op,
 		&&atPut_op,
@@ -752,10 +752,6 @@ static void runTask(Task *task) {
 	// array operations:
 	newArray_op:
 		*(sp - arg) = primNewArray(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	newByteArray_op:
-		*(sp - arg) = primNewByteArray(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	fillArray_op:

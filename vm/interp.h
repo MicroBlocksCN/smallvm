@@ -153,8 +153,8 @@ extern int extraByteDelay;
 #define needsStringError		14	// Needs a string
 #define nonComparableError		15	// Those objects cannot be compared for equality
 #define arraySizeError			16	// List size must be a non-negative integer
-#define needsIntegerIndexError	17	// List index must be an integer
-#define indexOutOfRangeError	18	// List index out of range
+#define needsIntegerIndexError	17	// List or string index must be an integer
+#define indexOutOfRangeError	18	// List or string index out of range
 #define byteArrayStoreError		19	// A ByteArray can only store integer values between 0 and 255
 #define hexRangeError			20	// Hexadecimal input must between between -1FFFFFFF and 1FFFFFFF
 #define i2cDeviceIDOutOfRange	21	// I2C device ID must be between 0 and 127
@@ -239,7 +239,6 @@ void webServerLoop();
 // Primitives
 
 OBJ primNewArray(int argCount, OBJ *args);
-OBJ primNewByteArray(int argCount, OBJ *args);
 OBJ primArrayFill(int argCount, OBJ *args);
 OBJ primArrayAt(int argCount, OBJ *args);
 OBJ primArrayAtPut(int argCount, OBJ *args);
