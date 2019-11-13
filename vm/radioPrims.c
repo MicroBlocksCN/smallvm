@@ -323,14 +323,14 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 	// If a packet has been received, copy it into supplied 32 element list and return true.
 	// Otherwise, return false.
 
-	if ((argCount > 0) && IS_TYPE(args[0], ArrayType) && WORDS(args[0]) >= 32) {
+	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (FIELD(args[0], 0) >= 32)) {
 		OBJ arg0 = args[0];
 		uint8_t packet[32];
 		int gotData = receivePacket(packet);
 		if (!gotData) return falseObj; // no packet received
 		int packetLen = packet[0];
 		for (int i = 0; i < 32; i++) {
-			FIELD(arg0, i) = (i <= packetLen) ? int2obj(packet[i]) : int2obj(0);
+			FIELD(arg0, i + 1) = (i <= packetLen) ? int2obj(packet[i]) : int2obj(0);
 		}
 		return trueObj;
 	}
@@ -340,11 +340,11 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 static OBJ primPacketSend(int argCount, OBJ *args) {
 	// Send the given 32-element list as a 32-byte packet.
 
-	if ((argCount > 0) && IS_TYPE(args[0], ArrayType) && WORDS(args[0]) >= 32) {
+	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (FIELD(args[0], 0) >= 32)) {
 		OBJ arg0 = args[0];
 		uint8_t packet[32];
 		for (int i = 0; i < 32; i++) {
-			OBJ item = FIELD(arg0, i);
+			OBJ item = FIELD(arg0, i + 1);
 			packet[i] = isInt(item) ? obj2int(item) : 0;
 		}
 		sendPacket(packet);

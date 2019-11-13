@@ -499,10 +499,10 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 			val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
 		}
 		sendNeoPixelData(val);
-	} else if (IS_TYPE(arg, ArrayType)) {
-		int count = objWords(arg);
+	} else if (IS_TYPE(arg, ListType)) {
+		int count = obj2int(FIELD(arg, 0));
 		for (int i = 0; i < count; i++) {
-			OBJ item = FIELD(arg, i);
+			OBJ item = FIELD(arg, i + 1);
 			if (isInt(item)) {
 				int rgb = obj2int(item);
 				// re-order RGB -> GBR (NeoPixel order)

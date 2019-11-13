@@ -75,31 +75,32 @@ OBJ primI2cSet(OBJ *args) {
 }
 
 static OBJ primI2cRead(int argCount, OBJ *args) {
-	// Read multiple bytes from the given I2C device into the given array and return the
-	// number of bytes read. The array size determines the number of bytes to read (up to a
+	// Read multiple bytes from the given I2C device into the given list and return the
+	// number of bytes read. The list size determines the number of bytes to read (up to a
 	// max of 32). This operation is usually preceded by an I2C write to request some data.
 
 	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
 	int deviceID = obj2int(args[0]);
-	OBJ array = args[1];
-	if (!IS_TYPE(array, ArrayType)) return int2obj(0);
+	OBJ obj = args[1];
+	if (!IS_TYPE(obj, ListType)) return int2obj(0);
+
+	int count = obj2int(FIELD(obj, 0));
+	if (count > 32) count = 32; // the Arduino Wire library limits reads to a max of 32 bytes
 
 	if (!wireStarted) startWire();
-	int count = objWords(array);
-	if (count > 32) count = 32; // the Arduino Wire library limits reads to a max of 32 bytes
 	Wire.requestFrom(deviceID, count);
 	for (int i = 0; i < count; i++) {
 		while (!Wire.available()) /* wait for data */;
 		int byte = Wire.read();
-		FIELD(array, i) = int2obj(byte);
+		FIELD(obj, i + 1) = int2obj(byte);
 	}
 	return int2obj(count);
 }
 
 static OBJ primI2cWrite(int argCount, OBJ *args) {
 	// Write one or multiple bytes to the given I2C device. If the second argument is an
-	// integer, write it as a single byte. If it is an array of bytes, write those bytes.
-	// The array should contain integers in the range 0..255; anything else will be skipped.
+	// integer, write it as a single byte. If it is a list of bytes, write those bytes.
+	// The list should contain integers in the range 0..255; anything else will be skipped.
 
 	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
 	int deviceID = obj2int(args[0]);
@@ -109,10 +110,10 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	Wire.beginTransmission(deviceID);
 	if (isInt(data)) {
 		Wire.write(obj2int(data) & 255);
-	} else if (IS_TYPE(data, ArrayType)) {
-		int count = objWords(data);
+	} else if (IS_TYPE(data, ListType)) {
+		int count = obj2int(FIELD(data, 0));
 		for (int i = 0; i < count; i++) {
-			OBJ item = FIELD(data, i);
+			OBJ item = FIELD(data, i + 1);
 			if (isInt(item)) {
 				Wire.write(obj2int(item) & 255);
 			}
