@@ -446,14 +446,15 @@ static void waitForOutbufBytes(int bytesNeeded) {
 
 static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Send a value message of the given type for the given chunkOrVarIndex.
-	// Data is: <type byte><...data...>
-	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - bytearray, 5 - array
+	// Data is: <type (1 byte)><...data...>
+	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - bytearray, 6 - list
+	// Obsolete type: 5 - array,
 
-	char data[504]; // big enough for an array of 100 integers
-	int maxBytes = (int) sizeof(data) - 1; // leave room for type bytes
+	char data[504];
+	int maxBytes = (int) sizeof(data) - 1; // leave room for type byte
 
 	if (isInt(value)) { // 32-bit integer, little endian
-		data[0] = 1; // data type (1 is integer)
+		data[0] = 1;  // data type (1 is integer)
 		int n = obj2int(value);
 		data[1] = (n & 0xFF);
 		data[2] = ((n >> 8) & 0xFF);
@@ -469,39 +470,60 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 			data[i + 1] = s[i];
 		}
 		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
-	} else if ((value == trueObj) || (value == falseObj)) { // boolean
+	} else if ((value == trueObj) || (value == falseObj)) {
 		data[0] = 3; // data type (3 is boolean)
-		data[1] = (value == trueObj) ? 1 : 0;
+		data[1] = (trueObj == value) ? 1 : 0;
 		sendMessage(msgType, chunkOrVarIndex, 2, data);
 	} else if (IS_TYPE(value, ByteArrayType)) {
+		data[0] = 4; // data type (4 is byte array)
 		int byteCount = 4 * objWords(value);
-		data[0] = 4; // data type (4 is bytearray)
 		if (byteCount > maxBytes) byteCount = maxBytes;
 		char *src = (char *) (&FIELD(value, 0));
 		for (int i = 0; i < byteCount; i++) {
 			data[i + 1] = *src++;
 		}
 		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
-	} else if (IS_TYPE(value, ArrayType)) {
-		// Note: xxx Incomplete! Currently only handles arrays of integers.
-		int itemCount = objWords(value);
-		if (itemCount > 100) itemCount = 100;
-		int byteCount = 5 * itemCount; // assume ints; include a type byte for each item
-		if (byteCount > maxBytes) return; // too much data to send!
-		data[0] = 5; // data type (5 is array)
+	} else if (IS_TYPE(value, ListType)) {
+		data[0] = 6; // data type (6 is list)
+		// Note: xxx Does not handle sublists.
 		char *dst = &data[1];
-		for (int i = 0; i < itemCount; i++) {
-			OBJ item = FIELD(value, i);
-			int n = isInt(item) ? obj2int(item) : -999; // map non-integers to special value
-			*dst++ = 1; // item data type (1 is integer)
-			*dst++ = (n & 0xFF);
-			*dst++ = ((n >> 8) & 0xFF);
-			*dst++ = ((n >> 16) & 0xFF);
-			*dst++ = ((n >> 24) & 0xFF);
+		// list size (16-bit, little endian)
+		int itemCount = obj2int(FIELD(value, 0));
+		*dst++ = itemCount & 0xFF;
+		*dst++ = (itemCount >> 8) & 0xFF;
+		// number of items included
+		*dst++ = 3; // just send three items for now
+		for (int i = 0; i < 3; i++) {
+			OBJ item = FIELD(value, i + 1);
+			int type = objType(item);
+			if (IntegerType == type) { // integer (32-bit signed, little-endian)
+				*dst++ = 1; // item type (1 is integer)
+				int n = obj2int(item);
+				*dst++ = (n & 0xFF);
+				*dst++ = ((n >> 8) & 0xFF);
+				*dst++ = ((n >> 16) & 0xFF);
+				*dst++ = ((n >> 24) & 0xFF);
+			} else if (StringType == type) {
+				*dst++ = 2; // item type (2 is string)
+				char *s = obj2str(item);
+				int len = strlen(s);
+				if (len <= 12) {
+					*dst++ = len;
+					for (int i = 0; i < len; i++) *dst++ = s[i];
+				} else {
+					*dst++ = 12; // send 9 bytes plus '...'
+					for (int i = 0; i < 9; i++) *dst++ = s[i];
+					for (int i = 0; i < 3; i++) *dst++ = '.';
+				}
+			} else if (BooleanType == type) {
+				*dst++ = 3; // item type (3 is boolean)
+				*dst++ = (trueObj == item) ? 1 : 0;
+			} else {
+				*dst++ = 0; // item type (0 is unknown)
+			}
 		}
-		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
+		sendMessage(msgType, chunkOrVarIndex, (dst - data), data);
 	}
-	// xxx to do: support arrays (containing various data types including other arrays)
 }
 
 void logData(char *s) {
