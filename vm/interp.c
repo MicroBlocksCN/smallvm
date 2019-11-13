@@ -64,10 +64,10 @@ static void printObj(OBJ obj) {
 	else if (obj == trueObj) snprintf(dst, n, "true");
 	else if (objType(obj) == StringType) {
 		snprintf(dst, n, "%s", obj2str(obj));
-	} else if (objType(obj) == ArrayType) {
-		snprintf(dst, n, "list of %d items", objWords(obj));
+	} else if (objType(obj) == ListType) {
+		snprintf(dst, n, "(List, %d items)", obj2int(FIELD(obj, 0)));
 	} else {
-		snprintf(dst, n, "object of type: %d", objType(obj));
+		snprintf(dst, n, "(Object, type: %d)", objType(obj));
 	}
 	printBufferByteCount = strlen(printBuffer);
 }
@@ -565,8 +565,8 @@ static void runTask(Task *task) {
 			tmpObj = *(sp - 3);
 			if (isInt(tmpObj)) {
 				tmp = obj2int(tmpObj);
-			} else if (IS_TYPE(tmpObj, ArrayType)) {
-				tmp = objWords(tmpObj);
+			} else if (IS_TYPE(tmpObj, ListType)) {
+				tmp = obj2int(FIELD(tmpObj, 0));
 			} else if (IS_TYPE(tmpObj, ByteArrayType)) {
 				tmp = 4 * objWords(tmpObj);
 			} else {
@@ -583,12 +583,12 @@ static void runTask(Task *task) {
 			tmpObj = *(sp - 3); // set tmpObj to thing being iterated over
 			if (isInt(tmpObj)) {
 				// set the index variable to the loop index
-				*(fp + arg) = int2obj(tmp + 1); // add 1 get range 1 to N
-			} else if (IS_TYPE(tmpObj, ArrayType)) {
+				*(fp + arg) = int2obj(tmp + 1); // add 1 to get range 1..N
+			} else if (IS_TYPE(tmpObj, ListType)) {
 				// set the index variable to the array element at the index variable
-				*(fp + arg) = FIELD(tmpObj, tmp); // array elements
+				*(fp + arg) = FIELD(tmpObj, tmp + 1); // array elements (field indices 1..N)
 			} else if (IS_TYPE(tmpObj, ByteArrayType)) {
-				// set the index variable to the byte at the index variable
+				// set the index variable to the byte at the index variable (byte indices 0..N-1)
 				*(fp + arg) = int2obj( ((uint8 *) &FIELD(tmpObj, 0))[tmp] ); // bytearray elements
 			} else {
 				fail(badForLoopArg);
