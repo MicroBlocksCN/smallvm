@@ -191,7 +191,7 @@ method redraw MicroBlocksScripter {
 
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
-  catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 130)
+  catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 137)
   blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) 130)
   catHeight = (((height (morph (contents categoriesFrame))) / scale) + 4)
   columnHeaderHeight = 33
@@ -243,9 +243,9 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (new 'SmallCompiler')
-  result = (list 'Output' 'Input' 'Pins' 'Comm' 'Control' 'Math' 'Variables' 'Lists' 'My Blocks')
+  result = (list 'Output' 'Input' 'Pins' 'Comm' 'Control' 'Math' 'Variables' 'Lists & Strings' 'My Blocks')
   if (not (devMode)) {
-  	removeAll result (list 'Comm' 'Lists')
+  	removeAll result (list 'Comm')
   }
   return result
 }

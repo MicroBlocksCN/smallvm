@@ -129,14 +129,14 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
-	'Lists'
+	'Lists & Strings'
 		(array 'r' '[data:makeList]'	'list : _ : ...' 'auto auto' 'cat' 'dog')
 		(array 'r' 'at'					'item _ of _' 'auto str' 1)
 		(array 'r' 'size'				'length of _' 'str' nil)
 		'-'
 		(array ' ' 'atPut'				'replace item _ of list _ with _' 'auto str auto' 1 nil 10)
 		(array ' ' '[data:delete]'		'delete item _ of list _' 'auto str' 1)
-		(array ' ' '[data:addLast]'		'add item _ to list _' 'str auto' 'fish')
+		(array ' ' '[data:addLast]'		'add _ to list _' 'str auto' 'fish')
 		'-'
 		(array 'r' '[data:join]'		'join _ _ : _ : ...' 'str str str' 'micro' 'blocks')
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' nil 1 10)
@@ -145,9 +145,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[data:joinStrings]'		'join string list _ : separator _' 'auto str' nil ' ')
 		'-'
 		(array 'r' 'newArray'			'new list length _' 'num' 10)
-		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
+		(array 'r' '[data:freeWords]'	'free memory')
 		'-'
-		(array 'r' '[data:freeWords]'	'free memory (words)')
+		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
 
 	// The following block specs allow primitives to be rendered correctly
 	// even if the primitive spec was not included in the project or library.

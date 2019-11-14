@@ -755,7 +755,7 @@ method blockColorForCategory AuthoringSpecs cat {
   } ('Control' == cat) { return (colorHSV 36 0.70 0.87)
   } ('Math' == cat) { return (colorHSV 100 0.75 0.65)
   } ('Variables' == cat) { return (colorHSV 26 0.80 0.83)
-  } ('Lists' == cat) { return (colorHSV 345 0.60 0.77)
+  } ('Lists & Strings' == cat) { return (colorHSV 345 0.60 0.77)
   } ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
   } ('My Blocks' == cat) { return (colorHSV 205 0.83 0.90)
   } ('Library' == cat) {  return (colorHSV 165 0.80 0.60)
