@@ -150,28 +150,46 @@ OBJ primMakeList(int argCount, OBJ *args) {
 OBJ primListAddLast(int argCount, OBJ *args) {
 	// Add the given item to the end of the List. Grow if necessary.
 
-	OBJ list = args[0];
-	OBJ value = args[1];
-
+	OBJ list = args[1];
 	if (!IS_TYPE(list, ListType)) return fail(needsListError);
 
 	int count = obj2int(FIELD(list, 0));
 	if (count >= (WORDS(list) - 1)) { // no more capacity; try to grow
-		int growBy = count / 2;
-		if (growBy < 4) growBy = 4;
-		if (growBy > 256) growBy = 256;
-		resizeObj(list, WORDS(list) + growBy);
+		int growBy = count / 3;
+		if (growBy < 4) growBy = 3;
+		if (growBy > 100) growBy = 100;
+
+ 		list = resizeObj(list, WORDS(list) + growBy);
 	}
-	if (count < (WORDS(list) - 1)) { // append value if there's room
+	if (count < (WORDS(list) - 1)) { // append item if there's room
 		count++;
-		FIELD(list, count) = value;
-		FIELD(list, 1) = int2obj(count);
+		FIELD(list, count) = args[0];
+		FIELD(list, 0) = int2obj(count);
 	}
 	return falseObj;
 }
 
 OBJ primListDelete(int argCount, OBJ *args) {
 	// Delete item(s) from the given List.
+
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!isInt(args[0])) return fail(needsIntegerError);
+	if (!IS_TYPE(args[1], ListType)) return fail(needsListError);
+
+	// to do: special cases for "all" and "last"
+
+	int i = obj2int(args[0]);
+	OBJ list = args[1];
+	int count = obj2int(FIELD(list, 0));
+	if (count >= WORDS(list)) count = WORDS(list) - 1;
+	if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
+
+	while (i < count) {
+		FIELD(list, i) = FIELD(list, i + 1);
+		i++;
+	}
+	FIELD(list, count) = zeroObj; // clear final field
+	FIELD(list, 0) = int2obj(count - 1);
 
 	return falseObj;
 }
