@@ -48,6 +48,8 @@ static OBJ memStart = NULL;
 static OBJ memEnd = NULL;
 static OBJ freeChunk = NULL;
 
+static OBJ tempObj = NULL; // used during resizeObj()
+
 // Initialization
 
 void memInit() {
@@ -125,24 +127,29 @@ OBJ newObj(int type, int wordCount, OBJ fill) {
 	return result;
 }
 
-void resizeObj(OBJ oldObj, int wordCount) {
-	// Change the size of the given object to wordCount.
+OBJ resizeObj(OBJ oldObj, int wordCount) {
+	// Change the size of the given object to wordCount and return the new object.
 
-	if (isInt(oldObj) || isBoolean(oldObj)) return;
+	if (isInt(oldObj)) return oldObj;
+	if ((oldObj < memStart) || (oldObj >= memEnd)) return oldObj; // object must be in object store
 
-	int type = objType(oldObj);
-	if (type <= BinaryObjectTypes) return;
+	tempObj = oldObj; // record oldObj in case newObj() triggers GC that moves it
+	OBJ result = newObj(TYPE(oldObj), wordCount, int2obj(0));
+	oldObj = tempObj; // restore oldObj
+	tempObj = NULL;
+	if (!result) return oldObj;
 
-	OBJ result = newObj(type, wordCount, int2obj(0));
 	int copyCount = WORDS(oldObj);
 	if (wordCount < copyCount) copyCount = wordCount; // new size is smaller
-
 	memcpy(result + 1, oldObj + 1, 4 * copyCount); // copy from the old to the new body
+
 	clearForwardingFields();
 	*(oldObj - 1) = (uint32) result; // point forwarding field of oldObj to result
 	applyForwarding();
 	*(oldObj - 1) = 0; // clear forwarding field
-	*oldObj = WORDS(oldObj); // mark old chunk free
+	*oldObj = HEADER(FREE_CHUNK, WORDS(oldObj)); // mark oldObj free
+
+	return result;
 }
 
 // String Primitives
@@ -285,6 +292,8 @@ static void forwardRoots(void) {
 	// forward global variables
 	for (int i = 0; i < MAX_VARS; i++) vars[i] = forward(vars[i]);
 
+	if (tempObj) tempObj = forward(tempObj);
+
 	// mark objects on Task stacks
 	for (int i = 0; i < taskCount; i++) {
 		Task *task = &tasks[i];
@@ -368,6 +377,9 @@ void mark(OBJ root) {
 static void markRoots(void) {
 	// mark global variables
 	for (int i = 0; i < MAX_VARS; i++) mark(vars[i]);
+
+	// mark temporary object used during object resizing
+	if (tempObj) mark(tempObj);
 
 	// mark objects on Task stacks
 	for (int i = 0; i < taskCount; i++) {

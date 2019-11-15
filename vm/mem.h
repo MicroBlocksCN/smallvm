@@ -100,7 +100,7 @@ int wordsFree();
 void gc();
 
 OBJ newObj(int typeID, int wordCount, OBJ fill);
-void resizeObj(OBJ obj, int wordCount);
+OBJ resizeObj(OBJ obj, int wordCount);
 OBJ newString(int byteCount);
 OBJ newStringFromBytes(uint8 *bytes, int byteCount);
 char* obj2str(OBJ obj);
