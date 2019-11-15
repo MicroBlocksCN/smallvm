@@ -962,7 +962,7 @@ void vmLoop() {
 			#endif
 			checkButtons();
 			processMessage();
-			count = 100; // must be under 30 when building on mbed to avoid serial errors
+			count = 25; // must be under 30 when building on mbed to avoid serial errors
 		}
 		uint32 usecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {

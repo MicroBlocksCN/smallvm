@@ -52,7 +52,6 @@ int touchEnabled = false;
 		void tftInit() {
 			tft.initR(INITR_144GREENTAB);
 			tft.setRotation(0);
-//			tft._freq = 26666667; // (80MHz/3) this requires moving _freq to public in AdaFruit_SITFT.h
 			tftClear();
 			useTFT = true;
 		}
