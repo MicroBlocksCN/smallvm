@@ -126,7 +126,7 @@ method flashVM MicroBlocksFlasher wipeFlashFlag downloadLatest {
   if (boardName == 'ESP8266') {
     commands = (list
       (array
-        esptool '-b' '921600' 'write_flash' '0' (join tmpPath 'vm')))
+        esptool '-b' '115200' 'write_flash' '0' (join tmpPath 'vm')))
   }
 
   if wipeFlashFlag {

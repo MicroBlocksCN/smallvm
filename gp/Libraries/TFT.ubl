@@ -10,7 +10,7 @@ module TFT Output
 	spec ' ' 'tft roundedRect' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 12255317 false
 	spec ' ' 'tft circle' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 60 100 30 65535 false
 	spec ' ' 'tft triangle' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 5592354 false
-	spec ' ' 'tft text' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num color bool' 'Hello World!' 0 80 16777215 1 false
+	spec ' ' 'tft text' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 0 80 16777215 1 false
 	spec 'r' '_tft color' '_tft color _ to number' 'color any'
 
 to 'set TFT pixel x' x y color {
@@ -38,5 +38,5 @@ to 'tft triangle' x1 y1 x2 y2 x3 y3 color filled {
     '[tft:triangle]' x1 y1 x2 y2 x3 y3 ('_tft color' color) filled
 }
 to 'tft text' text x y color scale wrap {
-    '[tft:rect]' text x y ('_tft color' color) scale wrap
+    '[tft:text]' text x y ('_tft color' color) scale wrap
 }
