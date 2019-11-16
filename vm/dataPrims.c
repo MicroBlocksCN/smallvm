@@ -130,7 +130,16 @@ OBJ primArrayAt(int argCount, OBJ *args) {
 	if (IS_TYPE(obj, ListType)) {
 		return FIELD(obj, i);
 	} else if (IS_TYPE(obj, StringType)) {
-		return newStringFromBytes(((uint8 *) &FIELD(obj, 0)) + i - 1, 1);
+		char *start = obj2str(obj);
+		if (i > countUTF8(start)) return fail(indexOutOfRangeError);
+		while (i-- > 1) start = nextUTF8(start);
+		int startOffset = start - obj2str(obj);
+		int byteCount = nextUTF8(start) - start;
+		OBJ result = newString(byteCount);
+		if (result) {
+			memcpy(obj2str(result), obj2str(args[1]) + startOffset, byteCount);
+		}
+		return result;
 	} else if (IS_TYPE(obj, ByteArrayType)) {
 		uint8 *bytes = (uint8 *) &FIELD(obj, 0);
 		return int2obj(bytes[i - 1]);
