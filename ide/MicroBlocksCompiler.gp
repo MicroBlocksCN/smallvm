@@ -145,7 +145,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[data:joinStrings]'		'join string list _ : separator _' 'auto str' nil ' ')
 		'-'
 		(array 'r' 'newArray'			'new list length _' 'num' 10)
-		(array 'r' '[data:freeWords]'	'free memory')
+		(array 'r' '[data:freeMemory]'	'free memory')
 		'-'
 		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
 

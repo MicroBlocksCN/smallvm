@@ -441,7 +441,7 @@ OBJ primFindInString(int argCount, OBJ *args) {
 	return int2obj(match ? (match - s) + 1 : -1);
 }
 
-OBJ primFreeWords(int argCount, OBJ *args) {
+OBJ primFreeMemory(int argCount, OBJ *args) {
 	return int2obj(wordsFree());
 }
 
@@ -455,7 +455,7 @@ static PrimEntry entries[] = {
 	{"copyFromTo", primCopyFromTo},
 	{"findInString", primFindInString},
 	{"joinStrings", primJoinStrings},
-	{"freeWords", primFreeWords},
+	{"freeMemory", primFreeMemory},
 };
 
 void addDataPrims() {
