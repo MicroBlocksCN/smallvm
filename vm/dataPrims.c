@@ -40,6 +40,32 @@ static void printIntegerOrBooleanInto(OBJ obj, char *buf) {
 	else if (IS_TYPE(obj, StringType)) sprintf(buf, "%.15s...", obj2str(obj));
 }
 
+static inline int matches(const char *s, OBJ obj) {
+	// Return true if the given object is a string that matches s.
+
+	return IS_TYPE(obj, StringType) && (0 == strcmp(s, obj2str(obj)));
+}
+
+static inline char * nextUTF8(char *s) {
+	// Return a pointer to the start of the UTF8 character following the given one.
+	// If s points to a null byte (i.e. end of the string) return it unchanged.
+
+	if (!*s) return s; // end of string
+	if (*s < 128) return s + 1; // single-byte character
+	if (0xC0 == (*s & 0xC0)) s++; // start of multi-byte character
+	while (0x80 == (*s & 0xC0)) s++; // skip continuation bytes
+	return s;
+}
+
+static int countUTF8(char *s) {
+	int count = 0;
+	while (*s) {
+		s = nextUTF8(s);
+		count++;
+	}
+	return count;
+}
+
 // Growable Lists:
 // First field is the item count (N). Items are stored in fields 2..N.
 // Fields N+1..end are available for adding additional items without growing.
@@ -80,22 +106,32 @@ OBJ primArrayFill(int argCount, OBJ *args) {
 }
 
 OBJ primArrayAt(int argCount, OBJ *args) {
-	if (!isInt(args[0])) return fail(needsIntegerIndexError);
-	int i = obj2int(args[0]);
 	OBJ obj = args[1];
+	int count, i;
 
 	if (IS_TYPE(obj, ListType)) {
-		int count = obj2int(FIELD(obj, 0));
+		count = obj2int(FIELD(obj, 0));
 		if (count >= WORDS(obj)) count = WORDS(obj) - 1;
+	} else if (IS_TYPE(obj, StringType)) {
+		count = stringSize(obj);
+	} else if (IS_TYPE(obj, ByteArrayType)) {
+		count = 4 * WORDS(obj);
+	}
+	if (isInt(args[0])) {
+		i = obj2int(args[0]);
 		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
+	} else if (matches("random", args[0])) {
+		i = (rand() % count) + 1;
+	} else if (matches("last", args[0])) {
+		i = count;
+	} else {
+		return fail(needsIntegerIndexError);
+	}
+	if (IS_TYPE(obj, ListType)) {
 		return FIELD(obj, i);
 	} else if (IS_TYPE(obj, StringType)) {
-		int count = stringSize(obj);
-		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
 		return newStringFromBytes(((uint8 *) &FIELD(obj, 0)) + i - 1, 1);
 	} else if (IS_TYPE(obj, ByteArrayType)) {
-		int count = 4 * WORDS(obj);
-		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
 		uint8 *bytes = (uint8 *) &FIELD(obj, 0);
 		return int2obj(bytes[i - 1]);
 	}
@@ -103,23 +139,50 @@ OBJ primArrayAt(int argCount, OBJ *args) {
 }
 
 OBJ primArrayAtPut(int argCount, OBJ *args) {
-	if (!isInt(args[0])) return fail(needsIntegerIndexError);
-	int i = obj2int(args[0]);
 	OBJ obj = args[1];
 	OBJ value = args[2];
+	int count, i;
+	uint32 byteValue;
 
 	if (IS_TYPE(obj, ListType)) {
-		int count = obj2int(FIELD(obj, 0));
+		count = obj2int(FIELD(obj, 0));
 		if (count >= WORDS(obj)) count = WORDS(obj) - 1;
-		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
-		FIELD(obj, i) = value;
 	} else if (IS_TYPE(obj, ByteArrayType)) {
-		if ((i < 1) || (i > (WORDS(obj) * 4))) return fail(indexOutOfRangeError);
+		count = 4 * WORDS(obj);
 		if (!isInt(value)) return fail(byteArrayStoreError);
 		uint32 byteValue = obj2int(value);
 		if (byteValue > 255) return fail(byteArrayStoreError);
+	} else {
+		return fail(needsListError);
+	}
+
+	if (matches("all", args[0])) {
+		if (IS_TYPE(obj, ListType)) {
+			for (i = 1; i <= count; i++) {
+				FIELD(obj, i) = value;
+			}
+		} else if (IS_TYPE(obj, ByteArrayType)) {
+			for (i = 1; i <= count; i++) {
+				((uint8 *) &FIELD(obj, 0))[i - 1] = byteValue;
+			}
+		}
+		return falseObj;
+	}
+
+	if (isInt(args[0])) {
+		i = obj2int(args[0]);
+		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
+	} else if (matches("last", args[0])) {
+		i = count;
+	} else {
+		return fail(needsIntegerIndexError);
+	}
+
+	if (IS_TYPE(obj, ListType)) {
+		FIELD(obj, i) = value;
+	} else if (IS_TYPE(obj, ByteArrayType)) {
 		((uint8 *) &FIELD(obj, 0))[i - 1] = byteValue;
-	} else return fail(needsListError);
+	}
 	return falseObj;
 }
 
@@ -131,7 +194,7 @@ OBJ primLength(int argCount, OBJ *args) {
 	} else if (IS_TYPE(obj, ByteArrayType)) {
 		return int2obj(4 * WORDS(obj));
 	} else if (IS_TYPE(obj, StringType)) {
-		return int2obj(stringSize(obj));
+		return int2obj(countUTF8(obj2str(obj)));
 	}
 	return fail(needsListError);
 }
@@ -173,15 +236,25 @@ OBJ primListDelete(int argCount, OBJ *args) {
 	// Delete item(s) from the given List.
 
 	if (argCount < 2) return fail(notEnoughArguments);
-	if (!isInt(args[0])) return fail(needsIntegerError);
 	if (!IS_TYPE(args[1], ListType)) return fail(needsListError);
-
-	// to do: special cases for "all" and "last"
-
-	int i = obj2int(args[0]);
 	OBJ list = args[1];
 	int count = obj2int(FIELD(list, 0));
 	if (count >= WORDS(list)) count = WORDS(list) - 1;
+
+	if (matches("all", args[0])) {
+		for (int i = 0; i <= count; i++) FIELD(list, i) = zeroObj;
+		return falseObj;
+	}
+	if (matches("last", args[0])) {
+		if (count) {
+			FIELD(list, count) = zeroObj;
+			FIELD(list, 0) = int2obj(count - 1);
+		}
+		return falseObj;
+	}
+
+	if (!isInt(args[0])) return fail(needsIntegerError);
+	int i = obj2int(args[0]);
 	if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
 
 	while (i < count) {
@@ -190,47 +263,55 @@ OBJ primListDelete(int argCount, OBJ *args) {
 	}
 	FIELD(list, count) = zeroObj; // clear final field
 	FIELD(list, 0) = int2obj(count - 1);
-
 	return falseObj;
 }
 
 OBJ primCopyFromTo(int argCount, OBJ *args) {
-	// Return a copy of the first argument (a string or list) between the indices give by
-	// the second and third arguments. If the optional third argument is not supplied it
-	// is taken to be the last index.
+	// Return a copy of the first argument (a string or list) between the indices give by the
+	// second and third arguments. If the optional third argument is not supplied it is taken
+	// to be the last index.
 
 	if (argCount < 2) return fail(notEnoughArguments);
-	OBJ src = args[0];
 	if (!isInt(args[1])) return fail(needsIntegerError);
 	int startIndex = obj2int(args[1]);
 	if (startIndex < 1) startIndex = 1;
 	if ((argCount > 2) && !isInt(args[2])) return fail(needsIntegerError);
 
-	int srcLen = 0;
-	if (IS_TYPE(src, ListType)) srcLen = obj2int(FIELD(src, 0));
-	if (IS_TYPE(src, StringType)) srcLen = stringSize(src);
-	int endIndex = (argCount > 2) ? obj2int(args[2]) : srcLen;
-	if (endIndex > srcLen) endIndex = srcLen;
-	int resultLen = (endIndex - startIndex) + 1;
-	if (resultLen < 0) resultLen = 0;
-
-	OBJ result = falseObj;
+	OBJ src = args[0];
 	if (IS_TYPE(src, ListType)) {
-		result = newObj(ListType, resultLen + 1, int2obj(0));
+		int srcLen = obj2int(FIELD(src, 0));
+		int endIndex = (argCount > 2) ? obj2int(args[2]) : srcLen;
+		if (endIndex > srcLen) endIndex = srcLen;
+		int resultLen = (endIndex - startIndex) + 1;
+		if (resultLen < 0) resultLen = 0;
+		OBJ result = newObj(ListType, resultLen + 1, int2obj(0));
 		if (result) {
+			src = args[0]; // update src after possible GC
 			FIELD(result, 0) = int2obj(resultLen);
 			OBJ *dst = &FIELD(result, 1);
 			for (int i = startIndex; i <= endIndex; i++) *dst++ = FIELD(src, i);
 		}
+		return result;
 	} else if (IS_TYPE(src, StringType)) {
-		result = newString(resultLen);
+		int srcLen = countUTF8(obj2str(src));
+		int endIndex = (argCount > 2) ? obj2int(args[2]) : srcLen;
+		if (endIndex > srcLen) endIndex = srcLen;
+		if (startIndex > endIndex) return newString(0);
+
+		char *start = obj2str(src);
+		for (int i = 1; i < startIndex; i++) start = nextUTF8(start);
+		int startOffset = start - obj2str(src);
+		char *end = start;
+		for (int i = startIndex; i <= endIndex; i++) end = nextUTF8(end);
+		int byteCount = end - start;
+
+		OBJ result = newString(byteCount);
 		if (result) {
-			memcpy(obj2str(result), obj2str(src) + startIndex - 1, resultLen);
+			memcpy(obj2str(result), obj2str(args[0]) + startOffset, byteCount);
 		}
-	} else {
-		return fail(needsIndexable);
+		return result;
 	}
-	return result;
+	return fail(needsIndexable);
 }
 
 OBJ primJoin(int argCount, OBJ *args) {
@@ -301,11 +382,19 @@ OBJ primJoinStrings(int argCount, OBJ *args) {
 
 	char *separator = ((argCount > 1) && IS_TYPE(args[1], StringType)) ? obj2str(args[1]) : "";
 	int separatorLen = strlen(separator);
+	char buf[50];
 
 	int resultBytes = (count - 1) * separatorLen;
 	for (int i = 0; i < count; i++) {
-		char *s = obj2str(FIELD(stringList, i));
-		resultBytes += strlen(s);
+		OBJ item = FIELD(stringList, i + 1);
+		if (IS_TYPE(item, StringType)) {
+			resultBytes += stringSize(item);
+		} else if (isInt(item) || isBoolean(item)) {
+			printIntegerOrBooleanInto(item, buf);
+			resultBytes += strlen(buf);
+		} else {
+			resultBytes += strlen(obj2str(item));
+		}
 	}
 	OBJ result = newString(resultBytes);
 	if (!result) return result; // allocation failed
@@ -316,7 +405,12 @@ OBJ primJoinStrings(int argCount, OBJ *args) {
 
 	char *dst = obj2str(result);
 	for (int i = 0; i < count; i++) {
-		char *s = obj2str(FIELD(stringList, i + 1));
+		OBJ item = FIELD(stringList, i + 1);
+		char *s = obj2str(item);
+		if (isInt(item) || isBoolean(item)) {
+			printIntegerOrBooleanInto(item, buf);
+			s = buf;
+		}
 		int n = strlen(s);
 		memcpy(dst, s, n);
 		dst += n;
