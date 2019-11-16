@@ -107,7 +107,7 @@ OBJ primArrayFill(int argCount, OBJ *args) {
 
 OBJ primArrayAt(int argCount, OBJ *args) {
 	OBJ obj = args[1];
-	int count, i;
+	int i, count = 0;
 
 	if (IS_TYPE(obj, ListType)) {
 		count = obj2int(FIELD(obj, 0));
@@ -142,7 +142,7 @@ OBJ primArrayAtPut(int argCount, OBJ *args) {
 	OBJ obj = args[1];
 	OBJ value = args[2];
 	int count, i;
-	uint32 byteValue;
+	uint32 byteValue = 0;
 
 	if (IS_TYPE(obj, ListType)) {
 		count = obj2int(FIELD(obj, 0));
@@ -150,7 +150,7 @@ OBJ primArrayAtPut(int argCount, OBJ *args) {
 	} else if (IS_TYPE(obj, ByteArrayType)) {
 		count = 4 * WORDS(obj);
 		if (!isInt(value)) return fail(byteArrayStoreError);
-		uint32 byteValue = obj2int(value);
+		byteValue = obj2int(value);
 		if (byteValue > 255) return fail(byteArrayStoreError);
 	} else {
 		return fail(needsListError);
@@ -222,7 +222,7 @@ OBJ primListAddLast(int argCount, OBJ *args) {
 		if (growBy < 4) growBy = 3;
 		if (growBy > 100) growBy = 100;
 
- 		list = resizeObj(list, WORDS(list) + growBy);
+		list = resizeObj(list, WORDS(list) + growBy);
 	}
 	if (count < (WORDS(list) - 1)) { // append item if there's room
 		count++;
@@ -437,8 +437,69 @@ OBJ primFindInString(int argCount, OBJ *args) {
 
 	char *s = obj2str(arg1);
 	char *sought = obj2str(arg0);
-	char *match  = strstr(s + startOffset - 1, sought);
+	char *match = strstr(s + startOffset - 1, sought);
 	return int2obj(match ? (match - s) + 1 : -1);
+}
+
+OBJ primUnicodeAt(int argCount, OBJ *args) {
+	// Return the Unicode value (an integer) for the given character of a string.
+	// Return -1 if the given character is not a valid UTF-8 Unicode character.
+
+	if (argCount < 2) return fail(notEnoughArguments);
+
+	if (!isInt(args[0])) return fail(needsIntegerIndexError);
+	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
+	int i = obj2int(args[0]);
+	char *s = obj2str(args[1]);
+	if ((i < 1) || (i > countUTF8(s))) return fail(indexOutOfRangeError);
+
+	for (; i > 1; i--) s = nextUTF8(s); // find first byte of desired Unicode character
+	int result = -1;
+	int firstByte = *s;
+	if (firstByte < 128) {
+		result = firstByte; // 7-bit ASCII
+	} else if (firstByte < 0xE0) {
+		result = ((firstByte & 0x1F) << 6) | (*(s + 1) & 0x3F);
+	} else if (firstByte < 0xF0) {
+		result = ((firstByte & 0xF) << 12) | ((*(s + 1) & 0x3F) << 6) | (*(s + 2) & 0x3F);
+	} else if (firstByte < 0xF8) {
+		result = ((firstByte & 0x7) << 18) |
+			((*(s + 1) & 0x3F) << 12) |
+			((*(s + 2) & 0x3F) << 6) |
+			 (*(s + 3) & 0x3F);
+	}
+	return int2obj(result);
+}
+
+OBJ primUnicodeString(int argCount, OBJ *args) {
+	// Return a string containing the given Unicode character(s).
+
+	uint8 buf[200];
+	uint8 *s = buf;
+	uint8 *limit = buf + sizeof(buf) - 4;
+
+	for (int i = 0; i < argCount; i++) {
+		if (s > limit) break;
+		if (!isInt(args[i])) return fail(needsIntegerError);
+		int unicode = obj2int(args[i]);
+		if (unicode < 0x80) { // 7 bits, one byte
+			*s++ = unicode;
+		} else if (unicode < 0x800) { // 11 bits, two bytes
+			*s++ = 0xC0 | ((unicode >> 6) & 0x1F);
+			*s++ = 0x80 | (unicode & 0x3F);
+		} else if (unicode < 0x10000) { // 16 bits, three bytes
+			*s++ = 0xE0 | ((unicode >> 12) & 0x0F);
+			*s++ = 0x80 | ((unicode >>  6) & 0x3F);
+			*s++ = 0x80 | (unicode & 0x3F);
+		} else if (unicode < 0x11000) { // 21 bits, four bytes
+			*s++ = 0xF0 | ((unicode >> 18) & 0x07);
+			*s++ = 0x80 | ((unicode >> 12) & 0x3F);
+			*s++ = 0x80 | ((unicode >>  6) & 0x3F);
+			*s++ = 0x80 | (unicode & 0x3F);
+		}
+	}
+	int byteCount = s - buf;
+	return newStringFromBytes(buf, byteCount);
 }
 
 OBJ primFreeMemory(int argCount, OBJ *args) {
@@ -455,6 +516,8 @@ static PrimEntry entries[] = {
 	{"copyFromTo", primCopyFromTo},
 	{"findInString", primFindInString},
 	{"joinStrings", primJoinStrings},
+	{"unicodeAt", primUnicodeAt},
+	{"unicodeString", primUnicodeString},
 	{"freeMemory", primFreeMemory},
 };
 

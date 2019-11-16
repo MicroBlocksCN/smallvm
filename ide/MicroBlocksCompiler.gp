@@ -130,7 +130,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Lists & Strings'
-		(array 'r' '[data:makeList]'	'list : _ : ...' 'auto auto' 'cat' 'dog')
+		(array 'r' '[data:makeList]'	'list : _ : ...' 'auto auto auto' 'cat' 'dog' 'fish')
 		(array 'r' 'at'					'item _ of _' 'auto str' 1)
 		(array 'r' 'size'				'length of _' 'str' nil)
 		'-'
@@ -143,6 +143,9 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' '[data:findInString]'	'find _ in _ : starting at _' 'str str num' 'a' 'cat' 1)
 		(array 'r' '[data:joinStrings]'		'join string list _ : separator _' 'auto str' nil ' ')
+		'-'
+		(array 'r' '[data:unicodeAt]'		'character _ of _' 'num str' 2 'cat')
+		(array 'r' '[data:unicodeString]'	'string : _ : ...' 'num num' 65 8364 66 67 46)
 		'-'
 		(array 'r' 'newArray'			'new list length _' 'num' 10)
 		(array 'r' '[data:freeMemory]'	'free memory')
