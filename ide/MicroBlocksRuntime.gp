@@ -1078,12 +1078,56 @@ method returnedValue SmallRuntime msg {
 	} (4 == type) {
 		return (toArray (copyFromTo msg 7))
 	} (5 == type) {
-		// xxx Arrays are not yet fully handled
+		// deprecated...
 		intArraySize = (truncate (((byteCount msg) - 6) / 5))
 		return (join 'list of ' intArraySize ' items')
+	} (6 == type) {
+		total = (((byteAt msg 8) << 8) | (byteAt msg 7))
+		if (total == 0) { return '[empty list]' }
+		sentItems = (readItems this msg)
+		out = (list '[')
+		for item sentItems {
+			add out (toString item)
+			add out ', '
+		}
+		if ((count out) > 1) { removeLast out }
+		if (total > (count sentItems)) {
+			add out (join ' ... and ' (total - (count sentItems)) ' more')
+		}
+		add out ']'
+		return (joinStrings out)
 	} else {
 		return (join 'unknown type: ' type)
 	}
+}
+
+method readItems SmallRuntime msg {
+	// Read a sequence of list items from the given value message.
+
+	result = (list)
+	count = (byteAt msg 9)
+	i = 10
+	repeat count {
+		itemType = (byteAt msg i)
+		if (1 == itemType) {
+			n = (+ ((byteAt msg (i + 4)) << 24) ((byteAt msg (i + 3)) << 16)
+					((byteAt msg (i + 2)) << 8) (byteAt msg (i + 1)))
+			add result n
+			i += 5
+		} (2 == itemType) {
+			len = (byteAt msg (i + 1))
+			add result (toString (copyFromTo msg (i + 2) (+ i len 1)))
+			i += (len + 2)
+		} (3 == itemType) {
+			isTrue = ((byteAt msg (i + 1)) != 0)
+			add result isTrue
+			i += 2
+		} else {
+			print 'unknown item type in value message'
+			return result
+		}
+	}
+	return result
 }
 
 method showOutputStrings SmallRuntime {

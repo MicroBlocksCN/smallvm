@@ -487,13 +487,14 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		data[0] = 6; // data type (6 is list)
 		// Note: xxx Does not handle sublists.
 		char *dst = &data[1];
-		// list size (16-bit, little endian)
+		// total items in list (16-bit, little endian)
 		int itemCount = obj2int(FIELD(value, 0));
 		*dst++ = itemCount & 0xFF;
 		*dst++ = (itemCount >> 8) & 0xFF;
-		// number of items included
-		*dst++ = 3; // just send three items for now
-		for (int i = 0; i < 3; i++) {
+		int sendCount = 20; // send up to this many items
+		if (itemCount < sendCount) sendCount = itemCount;
+		*dst++ = sendCount;
+		for (int i = 0; i < sendCount; i++) {
 			OBJ item = FIELD(value, i + 1);
 			int type = objType(item);
 			if (IntegerType == type) { // integer (32-bit signed, little-endian)
