@@ -151,6 +151,22 @@ method hummingbirdSensorsMenu InputSlot {
   return menu
 }
 
+method itemOfMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu '1'
+  addItem menu 'last'
+  addItem menu 'random'
+  return menu
+}
+
+method replaceItemMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu '1'
+  addItem menu 'last'
+  addItem menu 'all'
+  return menu
+}
+
 method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }
