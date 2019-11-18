@@ -447,7 +447,7 @@ static void waitForOutbufBytes(int bytesNeeded) {
 static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Send a value message of the given type for the given chunkOrVarIndex.
 	// Data is: <type (1 byte)><...data...>
-	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - bytearray, 6 - list
+	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - list
 	// Obsolete type: 5 - array,
 
 	char data[504];
@@ -474,17 +474,8 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		data[0] = 3; // data type (3 is boolean)
 		data[1] = (trueObj == value) ? 1 : 0;
 		sendMessage(msgType, chunkOrVarIndex, 2, data);
-	} else if (IS_TYPE(value, ByteArrayType)) {
-		data[0] = 4; // data type (4 is byte array)
-		int byteCount = 4 * objWords(value);
-		if (byteCount > maxBytes) byteCount = maxBytes;
-		char *src = (char *) (&FIELD(value, 0));
-		for (int i = 0; i < byteCount; i++) {
-			data[i + 1] = *src++;
-		}
-		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
 	} else if (IS_TYPE(value, ListType)) {
-		data[0] = 6; // data type (6 is list)
+		data[0] = 4; // data type (4 is list)
 		// Note: xxx Does not handle sublists.
 		char *dst = &data[1];
 		// total items in list (16-bit, little endian)

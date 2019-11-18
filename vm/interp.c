@@ -285,9 +285,9 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
-		&&newArray_op,
+		&&newList_op,
 		&&RESERVED_op,
-		&&fillArray_op,
+		&&fillList_op,
 		&&at_op,
 		&&atPut_op,
 		&&length_op,
@@ -557,8 +557,8 @@ static void runTask(Task *task) {
 	forLoop_op:
 		// stack layout:
 		// *(sp - 1) the loop counter (decreases from N to 1); falseObj the very first time
-		// *(sp - 2) N, the total loop count or size of the array/bytearray argument
-		// *(sp - 3) the object being iterated over, a positive integer, array, or bytearray
+		// *(sp - 2) N, the total loop count or item count of the list argument
+		// *(sp - 3) the object being iterated over, a positive integer or list
 
 		tmpObj = *(sp - 1); // loop counter, or falseObj the very first time
 		if (falseObj == tmpObj) { // first time: compute N, the total iterations (in tmp)
@@ -567,8 +567,6 @@ static void runTask(Task *task) {
 				tmp = obj2int(tmpObj);
 			} else if (IS_TYPE(tmpObj, ListType)) {
 				tmp = obj2int(FIELD(tmpObj, 0));
-			} else if (IS_TYPE(tmpObj, ByteArrayType)) {
-				tmp = 4 * objWords(tmpObj);
 			} else {
 				fail(badForLoopArg);
 				goto error;
@@ -585,11 +583,8 @@ static void runTask(Task *task) {
 				// set the index variable to the loop index
 				*(fp + arg) = int2obj(tmp + 1); // add 1 to get range 1..N
 			} else if (IS_TYPE(tmpObj, ListType)) {
-				// set the index variable to the array element at the index variable
-				*(fp + arg) = FIELD(tmpObj, tmp + 1); // array elements (field indices 1..N)
-			} else if (IS_TYPE(tmpObj, ByteArrayType)) {
-				// set the index variable to the byte at the index variable (byte indices 0..N-1)
-				*(fp + arg) = int2obj( ((uint8 *) &FIELD(tmpObj, 0))[tmp] ); // bytearray elements
+				// set the index variable to the next list item
+				*(fp + arg) = FIELD(tmpObj, tmp + 1); // list item (list object indices 1..N)
 			} else {
 				fail(badForLoopArg);
 				goto error;
@@ -749,21 +744,21 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 
-	// array operations:
-	newArray_op:
-		*(sp - arg) = primNewArray(arg, sp - arg);
+	// list operations:
+	newList_op:
+		*(sp - arg) = primNewList(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
-	fillArray_op:
-		primArrayFill(arg, sp - arg);
+	fillList_op:
+		primFillList(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	at_op:
-		*(sp - arg) = primArrayAt(arg, sp - arg);
+		*(sp - arg) = primAt(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	atPut_op:
-		primArrayAtPut(arg, sp - arg);
+		primAtPut(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	length_op:

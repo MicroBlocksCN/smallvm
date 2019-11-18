@@ -70,9 +70,8 @@ static int countUTF8(char *s) {
 // First field is the item count (N). Items are stored in fields 2..N.
 // Fields N+1..end are available for adding additional items without growing.
 
-OBJ primNewArray(int argCount, OBJ *args) {
-	// Return a growable list. Optional argument specifies capacity.
-	// This now returns a growable List object, not a fixed-size array.
+OBJ primNewList(int argCount, OBJ *args) {
+	// Return a growable List. Optional argument specifies capacity.
 
 	const int minCapacity = 2;
 	int capacity = ((argCount > 0) && isInt(args[0])) ? obj2int(args[0]) : minCapacity;
@@ -82,7 +81,7 @@ OBJ primNewArray(int argCount, OBJ *args) {
 	return result;
 }
 
-OBJ primArrayFill(int argCount, OBJ *args) {
+OBJ primFillList(int argCount, OBJ *args) {
 	OBJ obj = args[0];
 	OBJ value = args[1];
 
@@ -105,7 +104,7 @@ OBJ primArrayFill(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primArrayAt(int argCount, OBJ *args) {
+OBJ primAt(int argCount, OBJ *args) {
 	OBJ obj = args[1];
 	int i, count = 0;
 
@@ -147,7 +146,7 @@ OBJ primArrayAt(int argCount, OBJ *args) {
 	return fail(needsListError);
 }
 
-OBJ primArrayAtPut(int argCount, OBJ *args) {
+OBJ primAtPut(int argCount, OBJ *args) {
 	OBJ obj = args[1];
 	OBJ value = args[2];
 	int count, i;

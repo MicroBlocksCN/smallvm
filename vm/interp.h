@@ -238,10 +238,10 @@ void webServerLoop();
 
 // Primitives
 
-OBJ primNewArray(int argCount, OBJ *args);
-OBJ primArrayFill(int argCount, OBJ *args);
-OBJ primArrayAt(int argCount, OBJ *args);
-OBJ primArrayAtPut(int argCount, OBJ *args);
+OBJ primNewList(int argCount, OBJ *args);
+OBJ primFillList(int argCount, OBJ *args);
+OBJ primAt(int argCount, OBJ *args);
+OBJ primAtPut(int argCount, OBJ *args);
 OBJ primLength(int argCount, OBJ *args);
 
 OBJ primHexToInt(int argCount, OBJ *args);
