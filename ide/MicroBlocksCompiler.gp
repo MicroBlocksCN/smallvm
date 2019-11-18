@@ -144,13 +144,13 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[data:findInString]'	'find _ in _ : starting at _' 'str str num' 'a' 'cat' 1)
 		(array 'r' '[data:joinStrings]'		'join string list _ : separator _' 'auto str' nil ' ')
 		'-'
-		(array 'r' '[data:unicodeAt]'		'character _ of _' 'num str' 2 'cat')
-		(array 'r' '[data:unicodeString]'	'string : _ : ...' 'num num' 65 8364 66 67 46)
+		(array 'r' '[data:unicodeAt]'		'unicode _ of _' 'num str' 2 'cat')
+		(array 'r' '[data:unicodeString]'	'string from unicode : _ : ...' 'num num' 65 8364 66 67 46)
 		'-'
-		(array 'r' 'newArray'			'new list length _' 'num' 10)
+		(array 'r' 'newList'			'new list length _' 'num' 10)
 		(array 'r' '[data:freeMemory]'	'free memory')
 		'-'
-		(array ' ' 'fillArray'			'fill list _ with _' 'str auto' nil 0)
+		(array ' ' 'fillList'			'fill list _ with _' 'str auto' nil 0)
 
 	// The following block specs allow primitives to be rendered correctly
 	// even if the primitive spec was not included in the project or library.
@@ -238,9 +238,9 @@ method initMicroBlocksSpecs SmallCompiler {
 }
 
 method initOpcodes SmallCompiler {
-	// Initialize the opcode dictionary by parsing definitions copied and pasted from interp.h
+	// Initialize the opcode dictionary. Note: This must match the opcode table in interp.c!
 
-	defsFromHeaderFile = '
+	opcodeDefinitions = '
 		halt 0
 		noop 1
 		pushImmediate 2		// true, false, and ints that fit in 24 bits
@@ -301,9 +301,9 @@ method initOpcodes SmallCompiler {
 	RESERVED 57
 	RESERVED 58
 	RESERVED 59
-		newArray 60
+		newList 60
 	RESERVED 61
-		fillArray 62
+		fillList 62
 		at 63
 		atPut 64
 		size 65
@@ -370,12 +370,16 @@ method initOpcodes SmallCompiler {
 		callCommandPrimitive 126
 		callReporterPrimitive 127'
 	opcodes = (dictionary)
-	for line (lines defsFromHeaderFile) {
+	for line (lines opcodeDefinitions) {
 		words = (words line)
 		if (and ((count words) > 1) ('RESERVED' != (first words))) {
 			atPut opcodes (at words 1) (toInteger (at words 2))
 		}
 	}
+
+	// renamed opcodes:
+	atPut opcodes 'newArray' 60
+	atPut opcodes 'fillArray' 62
 }
 
 // instruction generation: entry point
