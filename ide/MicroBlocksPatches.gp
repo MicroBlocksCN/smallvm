@@ -897,30 +897,63 @@ method processEvent Keyboard evt {
 
 // "say" block formatting
 
-method initialize SpeechBubble aString bubbleWidth dir {
+method initialize SpeechBubble someData bubbleWidth dir {
   scale = (global 'scale')
   font = 'Arial'
   fontSize = (18 * scale)
   maxLines = 30
   shadowOffset = 3 // optional; if nil, no shadow is drawn
 
-  if (isNil aString) {aString = 'hint!'}
+  if (isNil someData) {someData = 'hint!'}
   if (isNil bubbleWidth) {bubbleWidth = (175 * scale) }
   if (isNil dir) {dir = 'right'}
   direction = dir
 
   setFont font fontSize
-  lines = (toList (wordWrapped aString bubbleWidth))
-  if ((count lines) > maxLines) {
-	lines = (copyFromTo lines 1 maxLines)
-	add lines '...'
+  if (isClass someData 'Boolean') {
+    contents = (newBooleanSlot someData)
+  } else {
+    someData = (toString someData)
+    lines = (toList (wordWrapped someData bubbleWidth))
+    if ((count lines) > maxLines) {
+      lines = (copyFromTo lines 1 maxLines)
+      add lines '...'
+    }
+    contents = (newText (joinStrings lines (newline)) font fontSize (gray 0) 'center')
   }
-  contents = (newText (joinStrings lines (newline)) font fontSize (gray 0) 'center')
 
   morph = (newMorph this)
   addPart morph (morph contents)
   fixLayout this
   return this
+}
+
+// speech bubble type handling
+
+method showHint Morph hintData bubbleWidth isHint {
+  if (isNil isHint) { isHint = true }
+  if (or (isNil hintData) ('' == hintData)) {return nil}
+  if (isNil owner) {return nil} // morph deleted before hint was scheduled to appear (e.g. a menu)
+  page = (page this)
+  if (and (isNil page) (isClass (handler owner) 'Hand')) {
+	page = (page (handler owner))
+  }
+  if (isNil page) {return nil} // the morph requesting the hint has been deleted
+  vis = (visibleBounds this)
+  scale = (global 'scale')
+  overlap = (scale * 7)
+  bubble = (newBubble hintData bubbleWidth 'right')
+  rightSpace = ((right (morph page)) - (right vis))
+  setBottom (morph bubble) (vCenter vis)
+  if (rightSpace > (width (morph bubble))) {
+    setLeft (morph bubble) (- (right vis) overlap)
+  } else {
+    setField bubble 'direction' 'left'
+    fixLayout bubble
+    setRight (morph bubble) (+ (left vis) overlap)
+  }
+  showHint page bubble isHint
+  return bubble
 }
 
 // Increase font size in confirm dialogs
