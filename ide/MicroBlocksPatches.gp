@@ -928,34 +928,6 @@ method initialize SpeechBubble someData bubbleWidth dir {
   return this
 }
 
-// speech bubble type handling
-
-method showHint Morph hintData bubbleWidth isHint {
-  if (isNil isHint) { isHint = true }
-  if (or (isNil hintData) ('' == hintData)) {return nil}
-  if (isNil owner) {return nil} // morph deleted before hint was scheduled to appear (e.g. a menu)
-  page = (page this)
-  if (and (isNil page) (isClass (handler owner) 'Hand')) {
-	page = (page (handler owner))
-  }
-  if (isNil page) {return nil} // the morph requesting the hint has been deleted
-  vis = (visibleBounds this)
-  scale = (global 'scale')
-  overlap = (scale * 7)
-  bubble = (newBubble hintData bubbleWidth 'right')
-  rightSpace = ((right (morph page)) - (right vis))
-  setBottom (morph bubble) (vCenter vis)
-  if (rightSpace > (width (morph bubble))) {
-    setLeft (morph bubble) (- (right vis) overlap)
-  } else {
-    setField bubble 'direction' 'left'
-    fixLayout bubble
-    setRight (morph bubble) (+ (left vis) overlap)
-  }
-  showHint page bubble isHint
-  return bubble
-}
-
 // Increase font size in confirm dialogs
 
 method initializeForConfirm Prompter label question yesLabel noLabel anAction {

@@ -860,7 +860,6 @@ method showHint Morph hintData bubbleWidth isHint {
   }
   if (isNil page) {return nil} // the morph requesting the hint has been deleted
   vis = (visibleBounds this)
-  hintData = (toString hintData)
   scale = (global 'scale')
   overlap = (scale * 7)
   bubble = (newBubble hintData bubbleWidth 'right')
