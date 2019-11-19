@@ -160,8 +160,8 @@ change _ by _
 local _ _
 local _ _
 
-Lists
-Lists
+Lists & Strings
+Lists & Strings 
 
 list : _ : ...
 list : _ : ...
@@ -172,8 +172,14 @@ length of _
 item _ of _
 item _ of _
 
-replace item _ of _ with _
-replace item _ of _ with _
+replace item _ of list _ with _
+replace item _ of list _ with _
+
+delete item _ of list _
+delete item _ of list _
+
+add _ to list _
+add _ to list _
 
 join _ _
 join _ _
@@ -193,8 +199,17 @@ starting at _
 join string list _
 join string list _
 
+unicode _ of _
+unicode _ of _
+
+string from unicode
+string from unicode
+
 new list length _
 new list length _
+
+free memory
+free memory
 
 fill list _ with _
 fill list _ with _

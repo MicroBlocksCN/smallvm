@@ -529,8 +529,8 @@ method versionReceived SmallRuntime versionString {
 method checkVmVersion SmallRuntime {
 	if ((latestVmVersion this) > vmVersion) {
 		ok = (confirm (global 'page') nil (join
-			(localized 'The MicroBlocks in your board is not current ')
-			'(v' vmVersion ' vs. v' (latestVmVersion this) ').' (newline)
+			(localized 'The MicroBlocks in your board is not current')
+			' (v' vmVersion ' vs. v' (latestVmVersion this) ').' (newline)
 			(localized 'Try to update MicroBlocks on the board?')))
 		if ok {
 			installVM this false false // do not wipe flash, do not download VM from server
