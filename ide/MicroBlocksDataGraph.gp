@@ -168,10 +168,6 @@ method clearGraph MicroBlocksDataGraph {
 }
 
 method exportData MicroBlocksDataGraph {
-	fileName = (fileToWrite 'data')
-	if (isEmpty fileName) { return }
-	if (not (endsWith fileName '.csv' )) { fileName = (join fileName '.csv') }
-
 	// collect data as .csv entries
 	result = (list)
 	for entry (loggedData (smallRuntime)) {
@@ -192,7 +188,17 @@ method exportData MicroBlocksDataGraph {
 		}
 		add result (joinStrings csvLine)
 	}
-	writeFile fileName (joinStrings result (newline))
+	data = (joinStrings result (newline))
+
+	if (and ('Browser' == (platform)) (browserIsChromebook)) {
+		chromeWriteFile data 'data.csv'
+		return
+	}
+
+	fileName = (fileToWrite 'data')
+	if (isEmpty fileName) { return }
+	if (not (endsWith fileName '.csv' )) { fileName = (join fileName '.csv') }
+	writeFile fileName data
 }
 
 method importData MicroBlocksDataGraph {

@@ -86,6 +86,7 @@ function setGPClipboard(s) {
 	GP.clipboard.value = s;
 	GP.clipboard.focus();
 	GP.clipboard.select();
+	document.execCommand('copy');
 }
 setGPClipboard('');
 

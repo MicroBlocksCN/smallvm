@@ -269,7 +269,6 @@ method saveProject MicroBlocksEditor fName {
 
   updateTitle this
   if (canWriteProject this fileName) {
-print fileName
     writeFile fileName (codeString (project scripter))
   }
 }
@@ -394,6 +393,13 @@ method processDroppedFile MicroBlocksEditor fName data {
   if (or (endsWith fName '.ubl') (endsWith fName '.ulib')) {
 	importLibraryFromFile scripter fName data
   }
+  if (endsWith fName '.csv') {
+	if (isNil data) { return } // could not read file
+	data = (joinStrings (splitWith (toString data) ',')) // remove commas
+	clearLoggedData (smallRuntime)
+	for entry (lines data) { addLoggedData (smallRuntime) entry }
+	print 'got .csv file; read' (count (lines data)) 'entries' // xxx
+  }
 }
 
 // handle drops
@@ -426,6 +432,7 @@ method applyUserPreferences MicroBlocksEditor {
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
+  if ('Browser' == (platform)) { return } // skip writing preferences on ChromeOS for now
   prefs = (readUserPreferences this)
   if (isNil value) {
 	remove prefs key
