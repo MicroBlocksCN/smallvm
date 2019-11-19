@@ -160,8 +160,8 @@ augmenta _ en _
 local _ _
 variable local _ _
 
-Lists
-Llistes
+Lists & Strings
+Llistes i text
 
 list
 llista
@@ -172,8 +172,14 @@ llargada de _
 item _ of _
 element _ de _
 
-replace item _ of _ with _
-canvia l'element _ de _ per _
+replace item _ of list _ with _
+canvia l'element _ de la llista _ per _
+
+delete item _ of list _
+elimina l'element _ de la llista _
+
+add _ to list _
+afegeix _ a la llista _
 
 join _ _
 uneix _ _
@@ -193,8 +199,17 @@ començant a _
 join string list _
 uneix llista de texts _
 
+unicode _ of _
+unicode _ de _
+
+string from unicode
+text amb unicodes
+
 new list length _
 nova llista de llargada _
+
+free memory
+memòria disponible
 
 fill list _ with _
 omple llista _ amb _
