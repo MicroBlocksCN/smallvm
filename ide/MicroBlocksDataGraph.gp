@@ -176,9 +176,9 @@ method exportData MicroBlocksDataGraph {
 		for i (count items) {
 			val = (at items i)
 			if ('false' == val) {
-				add csvLine 0 // map false to 0 (useful for graphing digital pins)
+				add csvLine '0' // map false to 0 (useful for graphing digital pins)
 			} ('true' == val) {
-				add csvLine 100 // map true to 100 (useful for graphing digital pins)
+				add csvLine '100' // map true to 100 (useful for graphing digital pins)
 			} (representsANumber val) {
 				add csvLine (toString (toNumber val))
 			} else {
