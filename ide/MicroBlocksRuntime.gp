@@ -1076,12 +1076,6 @@ method returnedValue SmallRuntime msg {
 	} (3 == type) {
 		return (0 != (byteAt msg 7))
 	} (4 == type) {
-		return (toArray (copyFromTo msg 7))
-	} (5 == type) {
-		// deprecated...
-		intArraySize = (truncate (((byteCount msg) - 6) / 5))
-		return (join 'list of ' intArraySize ' items')
-	} (6 == type) {
 		total = (((byteAt msg 8) << 8) | (byteAt msg 7))
 		if (total == 0) { return '[empty list]' }
 		sentItems = (readItems this msg)
@@ -1096,6 +1090,10 @@ method returnedValue SmallRuntime msg {
 		}
 		add out ']'
 		return (joinStrings out)
+	} (5 == type) {
+		// deprecated...
+		intArraySize = (truncate (((byteCount msg) - 6) / 5))
+		return (join 'list of ' intArraySize ' items')
 	} else {
 		return (join 'unknown type: ' type)
 	}

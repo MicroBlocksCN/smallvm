@@ -66,6 +66,36 @@ static int countUTF8(char *s) {
 	return count;
 }
 
+static int bytesForUnicode(int unicode) {
+	if (unicode < 0x80) return 1; // 7 bits, one byte
+	if (unicode < 0x800) return 2; // 11 bits, two bytes
+	if (unicode < 0x10000) return 3; // 16 bits, three bytes
+	if (unicode < 0x11000) return 4; // 21 bits, four bytes
+	return 0; // invalid unicode value; skip
+}
+
+static uint8 * appendUTF8(uint8 *s, int unicode) {
+	// Append the UTF-8 bytes for the given Unicode character to the given string and
+	// return a pointer to the following byte.
+
+	if (unicode < 0x80) { // 7 bits, one byte
+		*s++ = unicode;
+	} else if (unicode < 0x800) { // 11 bits, two bytes
+		*s++ = 0xC0 | ((unicode >> 6) & 0x1F);
+		*s++ = 0x80 | (unicode & 0x3F);
+	} else if (unicode < 0x10000) { // 16 bits, three bytes
+		*s++ = 0xE0 | ((unicode >> 12) & 0x0F);
+		*s++ = 0x80 | ((unicode >>  6) & 0x3F);
+		*s++ = 0x80 | (unicode & 0x3F);
+	} else if (unicode < 0x11000) { // 21 bits, four bytes
+		*s++ = 0xF0 | ((unicode >> 18) & 0x07);
+		*s++ = 0x80 | ((unicode >> 12) & 0x3F);
+		*s++ = 0x80 | ((unicode >>  6) & 0x3F);
+		*s++ = 0x80 | (unicode & 0x3F);
+	}
+	return s;
+}
+
 // Growable Lists:
 // First field is the item count (N). Items are stored in fields 2..N.
 // Fields N+1..end are available for adding additional items without growing.
@@ -430,8 +460,10 @@ OBJ primJoinStrings(int argCount, OBJ *args) {
 	return result;
 }
 
-OBJ primFindInString(int argCount, OBJ *args) {
-	// Return the index of next instance the second string in the first or -1 if not found.
+OBJ primFind(int argCount, OBJ *args) {
+	// If both arguments are strings, return the index of next instance the second string
+	// in the first or -1 if not found. If the second argument is a list, return the index
+	// of the first argument in the list or -1 if not found.
 	// An optional third argument can be used to specify the starting point for the search.
 
 	if (argCount < 2) return fail(notEnoughArguments);
@@ -440,13 +472,33 @@ OBJ primFindInString(int argCount, OBJ *args) {
 	int startOffset = ((argCount > 2) && isInt(args[2])) ? obj2int(args[2]) : 1;
 	if (startOffset < 1) startOffset = 1;
 
-	if (!(IS_TYPE(arg0, StringType) && IS_TYPE(arg1, StringType))) return fail(needsStringError);
-	if (startOffset && (startOffset > stringSize(arg1))) return int2obj(-1); // not found
-
-	char *s = obj2str(arg1);
-	char *sought = obj2str(arg0);
-	char *match = strstr(s + startOffset - 1, sought);
-	return int2obj(match ? (match - s) + 1 : -1);
+	if (IS_TYPE(arg1, StringType)) { // search for substring in a string
+		if (!(IS_TYPE(arg0, StringType))) return fail(needsStringError);
+		if (startOffset && (startOffset > stringSize(arg1))) return int2obj(-1); // not found
+		char *s = obj2str(arg1);
+		char *sought = obj2str(arg0);
+		char *match = strstr(s + startOffset - 1, sought);
+		return int2obj(match ? (match - s) + 1 : -1);
+	} else if (IS_TYPE(arg1, ListType)) { // search in a list
+		int listCount = obj2int(FIELD(arg1, 0));
+		if (startOffset > listCount) return int2obj(-1); // not found
+		if (IS_TYPE(arg0, StringType)) { // search for a string in a list
+			char *sought = obj2str(arg0);
+			for (int i = 1; i <= listCount; i++) {
+				OBJ item = FIELD(arg1, i);
+				if (item == arg0) return int2obj(i); // identical
+				if (IS_TYPE(item, StringType) && (0 == strcmp(sought, obj2str(item)))) {
+					return int2obj(i); // string match
+				}
+			}
+		} else { // search for an integer, boolean, or other object in a list
+			for (int i = 1; i <= listCount; i++) {
+				if (FIELD(arg1, i) == arg0) return int2obj(i); // identical
+			}
+		}
+		return int2obj(-1);
+	}
+	return fail(needsIndexable);
 }
 
 OBJ primUnicodeAt(int argCount, OBJ *args) {
@@ -482,32 +534,34 @@ OBJ primUnicodeAt(int argCount, OBJ *args) {
 OBJ primUnicodeString(int argCount, OBJ *args) {
 	// Return a string containing the given Unicode character(s).
 
-	uint8 buf[200];
-	uint8 *s = buf;
-	uint8 *limit = buf + sizeof(buf) - 4;
+	if (argCount < 1) return fail(notEnoughArguments);
+	OBJ arg = args[0];
 
-	for (int i = 0; i < argCount; i++) {
-		if (s > limit) break;
-		if (!isInt(args[i])) return fail(needsIntegerError);
-		int unicode = obj2int(args[i]);
-		if (unicode < 0x80) { // 7 bits, one byte
-			*s++ = unicode;
-		} else if (unicode < 0x800) { // 11 bits, two bytes
-			*s++ = 0xC0 | ((unicode >> 6) & 0x1F);
-			*s++ = 0x80 | (unicode & 0x3F);
-		} else if (unicode < 0x10000) { // 16 bits, three bytes
-			*s++ = 0xE0 | ((unicode >> 12) & 0x0F);
-			*s++ = 0x80 | ((unicode >>  6) & 0x3F);
-			*s++ = 0x80 | (unicode & 0x3F);
-		} else if (unicode < 0x11000) { // 21 bits, four bytes
-			*s++ = 0xF0 | ((unicode >> 18) & 0x07);
-			*s++ = 0x80 | ((unicode >> 12) & 0x3F);
-			*s++ = 0x80 | ((unicode >>  6) & 0x3F);
-			*s++ = 0x80 | (unicode & 0x3F);
+	if (isInt(arg)) { // convert a single integer to a Unicode character
+		uint8 buf[8]; // buffer for one UTF-8 character
+		uint8 *s = appendUTF8(buf, obj2int(arg));
+		int byteCount = s - buf;
+		return newStringFromBytes(buf, byteCount);
+	} else if (IS_TYPE(arg, ListType)) { // convert list of integeter to a Unicode string
+		int listCount = obj2int(FIELD(arg, 0));
+		int utfByteCount = 0;
+		for (int i = 1; i <= listCount; i++) {
+			OBJ item = FIELD(arg, i);
+			if (!isInt(item)) return fail(needsIntegerError);
+			utfByteCount += bytesForUnicode(obj2int(item));
 		}
+		OBJ result = newString(utfByteCount);
+		if (!result) return result; // allocation failed
+		arg = args[0]; // update arg after possible GC
+		uint8 *s = (uint8 *) obj2str(result);
+		for (int i = 1; i <= listCount; i++) {
+			OBJ item = FIELD(arg, i);
+			if (!isInt(item)) return fail(needsIntegerError);
+			s = appendUTF8(s, obj2int(item));
+		}
+		return result;
 	}
-	int byteCount = s - buf;
-	return newStringFromBytes(buf, byteCount);
+	return fail(needsIndexable);
 }
 
 OBJ primFreeMemory(int argCount, OBJ *args) {
@@ -522,7 +576,7 @@ static PrimEntry entries[] = {
 	{"delete", primListDelete},
 	{"join", primJoin},
 	{"copyFromTo", primCopyFromTo},
-	{"findInString", primFindInString},
+	{"find", primFind},
 	{"joinStrings", primJoinStrings},
 	{"unicodeAt", primUnicodeAt},
 	{"unicodeString", primUnicodeString},

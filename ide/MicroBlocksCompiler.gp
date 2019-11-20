@@ -131,21 +131,22 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Lists & Strings'
 		(array 'r' '[data:makeList]'	'list : _ : ...' 'auto auto auto' 'cat' 'dog' 'fish')
-		(array 'r' 'at'					'item _ of _' 'auto.itemOfMenu str' 1)
-		(array 'r' 'size'				'length of _' 'str' nil)
+		(array 'r' 'at'					'item _ of _' 'auto.itemOfMenu str' 1 'Rosa')
+		(array 'r' 'size'				'length of _' 'str' 'Rosa')
 		'-'
 		(array ' ' 'atPut'				'replace item _ of list _ with _' 'auto.replaceItemMenu str auto' 1 nil 10)
 		(array ' ' '[data:delete]'		'delete item _ of list _' 'auto.replaceItemMenu str' 1)
 		(array ' ' '[data:addLast]'		'add _ to list _' 'str auto' 'fish')
 		'-'
 		(array 'r' '[data:join]'		'join _ _ : _ : ...' 'str str str' 'micro' 'blocks')
-		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' nil 1 10)
+		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' 'smiles' 2 5)
 		'-'
-		(array 'r' '[data:findInString]'	'find _ in _ : starting at _' 'str str num' 'a' 'cat' 1)
-		(array 'r' '[data:joinStrings]'		'join string list _ : separator _' 'auto str' nil ' ')
+		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
+	'Lists & Strings-Advanced'
+		(array 'r' '[data:joinStrings]'	'join string list _ : separator _' 'auto str' nil ' ')
 		'-'
 		(array 'r' '[data:unicodeAt]'		'unicode _ of _' 'num str' 2 'cat')
-		(array 'r' '[data:unicodeString]'	'string from unicode : _ : ...' 'num num' 65 8364 66 67 46)
+		(array 'r' '[data:unicodeString]'	'string from unicode _' 'num' 65)
 		'-'
 		(array 'r' 'newList'			'new list length _' 'num' 10)
 		(array 'r' '[data:freeMemory]'	'free memory')
