@@ -8,6 +8,7 @@
 	"clipboardRead",
 	"clipboardWrite",
 	{"fileSystem": ["write"]},
+	"fileSystem",
 	"fullscreen",
 	"serial"
   ],
@@ -15,5 +16,8 @@
   "app": {
     "background": { "scripts": ["background.js"] }
   },
-  "icons": { "16": "MicroBlocksIcon16.png", "128": "MicroBlocksIcon128.png" }
+  "icons": { "16": "MicroBlocksIcon16.png", "128": "MicroBlocksIcon128.png" },
+  "file_handlers": {
+	"microblocks_project": { "extensions": ["ubp"] }
+  }
 }

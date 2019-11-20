@@ -723,3 +723,19 @@ function GP_writeFile(data, fName) {
 		{type: 'saveFile', suggestedName: fName},
 		onFileSelected);
 }
+
+// On ChromeOS, read the file opened to launch the application, if any
+
+function GP_ChromebookLaunch(bgPage) {
+	if (bgPage.launchFileEntry) {
+		var fName = bgPage.launchFileEntry.fullPath;
+		bgPage.launchFileEntry.file(function(file) {
+			var reader = new FileReader();
+			reader.onload = function(evt) {
+				GP.droppedFiles.push({ name: fName, contents: evt.target.result });
+			};
+			reader.readAsArrayBuffer(file);
+		});
+	}
+}
+if (typeof chrome != 'undefined') chrome.runtime.getBackgroundPage(GP_ChromebookLaunch);
