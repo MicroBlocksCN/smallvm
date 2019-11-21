@@ -1107,21 +1107,29 @@ method readItems SmallRuntime msg {
 	i = 10
 	repeat count {
 		itemType = (byteAt msg i)
-		if (1 == itemType) {
+		if (1 == itemType) { // integer
 			n = (+ ((byteAt msg (i + 4)) << 24) ((byteAt msg (i + 3)) << 16)
 					((byteAt msg (i + 2)) << 8) (byteAt msg (i + 1)))
 			add result n
 			i += 5
-		} (2 == itemType) {
+		} (2 == itemType) { // string
 			len = (byteAt msg (i + 1))
 			add result (toString (copyFromTo msg (i + 2) (+ i len 1)))
 			i += (len + 2)
-		} (3 == itemType) {
+		} (3 == itemType) { // boolean
 			isTrue = ((byteAt msg (i + 1)) != 0)
 			add result isTrue
 			i += 2
+		} (4 == itemType) { // sublist
+			n = (+ ((byteAt msg (i + 2)) << 16) (byteAt msg (i + 1)))
+			if (0 != (byteAt msg (i + 3))) {
+				print 'skipping sublist with non-zero sent items'
+				return result
+			}
+			add result (join '(' n ' item list)')
+			i += 4
 		} else {
-			print 'unknown item type in value message'
+			print 'unknown item type in value message:' itemType
 			return result
 		}
 	}

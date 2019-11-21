@@ -65,9 +65,9 @@ static void printObj(OBJ obj) {
 	else if (objType(obj) == StringType) {
 		snprintf(dst, n, "%s", obj2str(obj));
 	} else if (objType(obj) == ListType) {
-		snprintf(dst, n, "(List, %d items)", obj2int(FIELD(obj, 0)));
+		snprintf(dst, n, "(%d item list)", obj2int(FIELD(obj, 0)));
 	} else {
-		snprintf(dst, n, "(Object, type: %d)", objType(obj));
+		snprintf(dst, n, "(object type: %d)", objType(obj));
 	}
 	printBufferByteCount = strlen(printBuffer);
 }

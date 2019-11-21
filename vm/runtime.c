@@ -510,6 +510,12 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 			} else if (BooleanType == type) {
 				*dst++ = 3; // item type (3 is boolean)
 				*dst++ = (trueObj == item) ? 1 : 0;
+			} else if (ListType == type) { // sublist within a list; send item count only
+				*dst++ = 4; // item type (4 is list)
+				int n = obj2int(FIELD(item, 0)); // item count of sublist
+				*dst++ = n & 0xFF;
+				*dst++ = (n >> 8) & 0xFF;
+				*dst++ = 0; // send zero items of sublists
 			} else {
 				*dst++ = 0; // item type (0 is unknown)
 			}
