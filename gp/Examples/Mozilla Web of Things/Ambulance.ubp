@@ -8,7 +8,7 @@ comment 'assumes CPX but can also connect a piezo and LED strip to another board
 script 54 95 {
 whenStarted
 comment 'modify these two blocks if not CPX'
-'attach buzzer to pin' 12
+'attach buzzer to pin' 0
 neoPixelAttach 10 '' false
 'wifi connect to' 'Network_Name' '' 3
 defineThing 'Ambulance' 'OnOffSwitch'
