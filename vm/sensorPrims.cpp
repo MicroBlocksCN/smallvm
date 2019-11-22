@@ -342,10 +342,18 @@ static int readTemperature() { return 0; }
 
 #endif // micro:bit primitve support
 
+OBJ primAcceleration(int argCount, OBJ *args) {
+	int x = readAcceleration(1);
+	int y = readAcceleration(3);
+	int z = readAcceleration(5);
+	int accel = (int) sqrt((x * x) + (y * y) + (z * z));
+	return int2obj(accel);
+}
+
+OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(readTemperature()); }
 OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(readAcceleration(1)); }
 OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(readAcceleration(3)); }
 OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(readAcceleration(5)); }
-OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(readTemperature()); }
 
 // Capacitive Touch Primitives for ESP32
 
@@ -384,6 +392,7 @@ static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
 #endif // Capacitive Touch Primitives
 
 static PrimEntry entries[] = {
+	{"acceleration", primAcceleration},
 	{"temperature", primMBTemp},
 	{"tiltX", primMBTiltX},
 	{"tiltY", primMBTiltY},

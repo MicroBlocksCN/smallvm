@@ -167,11 +167,12 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[display:neoPixelSetPin]'		'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
 		(array ' ' '[display:neoPixelSend]'		'send NeoPixel rgb _' 'num' 5)
 	'Prims-Sensing (not in palette)'
+		(array 'r' '[sensors:acceleration]'	'acceleration')
+		(array 'r' '[display:lightLevel]' 	'light level')
+		(array 'r' '[sensors:temperature]'	'temperature (°C)')
 		(array 'r' '[sensors:tiltX]'		'tilt x')
 		(array 'r' '[sensors:tiltY]'		'tilt y')
 		(array 'r' '[sensors:tiltZ]'		'tilt z')
-		(array 'r' '[display:lightLevel]' 	'light level')
-		(array 'r' '[sensors:temperature]'		'temperature (°C)')
 	'Prims-Advanced (not in palette)'
 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
 		(array ' ' 'noop'				'no op')
