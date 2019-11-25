@@ -674,6 +674,8 @@ method newPrimFor MicroBlocksModule oldPrim {
 	} ('mbTiltY' == oldPrim) { return '[sensors:tiltY]'
 	} ('mbTiltZ' == oldPrim) { return '[sensors:tiltZ]'
 	} ('mbTemp' == oldPrim) { return '[sensors:temperature]'
+	} ('newArray' == oldPrim) { return 'newList'
+	} ('fillArray' == oldPrim) { return 'fillList'
 	}
 	return nil
 }

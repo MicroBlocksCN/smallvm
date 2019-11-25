@@ -156,6 +156,8 @@ method microBlocksSpecs SmallCompiler {
 	// This allows MicroBlocks to correctly render scripts in older projects.
 
 	'Prims-Deprecated (not in palette)'
+		(array 'r' 'newArray'				'new list length _' 'num' 10)
+		(array ' ' 'fillArray'				'fill list _ with _' 'str auto' nil 0)
 		(array ' ' 'fillList'				'fill list _ with _' 'str auto' nil 0)
 	'Prims-Display (not in palette)'
 		(array ' ' '[display:mbDisplay]'	'display _' 'microbitDisplay')
@@ -177,6 +179,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
 		(array ' ' 'noop'				'no op')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
+		(array 'r' 'pushArgCount'		'arg count')
 
 		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
 
