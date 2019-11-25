@@ -101,13 +101,12 @@ static uint8 * appendUTF8(uint8 *s, int unicode) {
 // Fields N+1..end are available for adding additional items without growing.
 
 OBJ primNewList(int argCount, OBJ *args) {
-	// Return a growable List. Optional argument specifies capacity.
+	// Return a new List filled with zeros. Optional argument specifies size.
 
-	const int minCapacity = 2;
-	int capacity = ((argCount > 0) && isInt(args[0])) ? obj2int(args[0]) : minCapacity;
-	if (capacity < minCapacity) capacity = minCapacity;
-	OBJ result = newObj(ListType, capacity + 1, int2obj(0)); // filled with zeros
-	if (result) FIELD(result, 0) = int2obj(capacity);
+	int count = ((argCount > 0) && isInt(args[0])) ? obj2int(args[0]) : 0;
+	if (count < 0) count = 0;
+	OBJ result = newObj(ListType, count + 1, int2obj(0)); // filled with zeros
+	if (result) FIELD(result, 0) = int2obj(count);
 	return result;
 }
 
