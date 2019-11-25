@@ -640,6 +640,36 @@ descripció de la cosa
 clear thing description
 esborra la descripció de la cosa
 
+Motion
+Moviment
+
+motion
+moviment
+
+start step counter
+comença a comptar passes
+
+step count
+passes
+
+clear step count
+esborra el recompte de passes
+
+set step threshold _ (0-50)
+fixa el llindar de les passes a _ (0-50)
+
+Button Events
+Esdeveniments de botó
+
+button _ double pressed
+doble toc al botó _
+
+button _ long pressed
+toc llarg al botó _
+
+button _ pressed
+toc curt al botó _
+
 New
 Nou
 
