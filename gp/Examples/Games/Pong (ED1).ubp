@@ -1,22 +1,13 @@
 module main
-variables _bz_frequencies _bz_note_names _bz_pinNumber _loop_overhead 'ball radius' 'delta x' 'delta y' 'paddle 1 x' 'paddle 2 x' 'paddle width' playing 'refresh rate' speed x y
+variables 'ball radius' 'delta x' 'delta y' 'paddle 1 x' 'paddle 2 x' 'paddle width' playing 'refresh rate' speed x y
 
-	spec 'r' '_bz_index of' '_bz_index of _ in _' 'auto auto any any' '10' ''
 	spec ' ' 'bounce ball' 'bounce ball'
 	spec ' ' 'bounce on paddle' 'bounce on paddle _' 'auto' 2
 	spec ' ' 'clear ball' 'clear ball'
-	spec ' ' 'freq' 'play frequency _ on pin _ for _ ms' 'auto auto auto' 440 0 '100'
 	spec ' ' 'game over' 'player  _ wins' 'auto' 1
 	spec ' ' 'new game' 'new game'
 	spec ' ' 'plot ball' 'draw ball'
 	spec ' ' 'plot paddles' 'draw paddles'
-
-to '_bz_index of' item list {
-  for i (size list) {
-    if ((at i list) == item) {return i}
-  }
-  return 0
-}
 
 to 'bounce ball' {
   if (or (x >= (128 - ((v 'ball radius') * 2))) (x <= ((v 'ball radius') * 2))) {
@@ -60,17 +51,6 @@ to 'bounce on paddle' n {
 
 to 'clear ball' {
   '[tft:circle]' x y (v 'ball radius') 0 true
-}
-
-to freq freq pin ms {
-  local 'initial time' (millisOp)
-  local 'halfCycle' ((500000 / freq) - _loop_overhead)
-  repeatUntil (((millisOp) - (v 'initial time')) > ms) {
-    digitalWriteOp pin true
-    waitMicros halfCycle
-    digitalWriteOp pin false
-    waitMicros halfCycle
-  }
 }
 
 to 'game over' n {
@@ -223,79 +203,56 @@ to 'clear ball' {}
 
 
 module 'ED1 Buttons' Input
-variables _ED1_buttons_init '_capacitive threshold' '_use capacitive'
+variables _ED1_buttons_init '_capacitive threshold'
 
 	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-	spec 'r' '_button pressed' '_button pressed _' 'auto any' 15
-	spec 'r' '_capacitive' '_capacitive sensor _ pressed' 'auto any' 15
 	spec 'r' 'OK button' 'button OK'
 	spec 'r' 'cancel button' 'button X'
 	spec 'r' 'up button' 'button up'
 	spec 'r' 'down button' 'button down'
 	spec 'r' 'left button' 'button left'
 	spec 'r' 'right button' 'button right'
-	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 15
-	spec ' ' 'set use capacitive to' 'set use capacitive to _' 'bool' true
+	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
 
 to 'OK button' {
-  return ('_button pressed' 15)
+  '_ED1_buttons_init'
+  return (('[sensors:touchRead]' 15) < (v '_capacitive threshold'))
 }
 
 to '_ED1_buttons_init' {
   if (_ED1_buttons_init == 0) {
-    comment 'true by default for ED1 V2 board'
-    '_use capacitive' = ((i2cGet (hexToInt '20') 1) == 0)
-    if ((v '_capacitive threshold') == 0) {
-      '_capacitive threshold' = 15
-    }
+    if ((v '_capacitive threshold') == 0) {'_capacitive threshold' = 16}
     _ED1_buttons_init = (booleanConstant true)
   }
 }
 
-to '_button pressed' pin {
-  '_ED1_buttons_init'
-  if (v '_use capacitive') {
-    return ('_capacitive' pin)
-  } else {
-    return (digitalReadOp pin)
-  }
-}
-
-to '_capacitive' pin {
-  if (('[sensors:touchRead]' pin) <= (v '_capacitive threshold')) {
-    waitMicros 50
-    return (('[sensors:touchRead]' pin) <= (v '_capacitive threshold'))
-  } else {
-    return (booleanConstant false)
-  }
-}
-
 to 'cancel button' {
-  return ('_button pressed' 14)
+  '_ED1_buttons_init'
+  return (('[sensors:touchRead]' 14) < (v '_capacitive threshold'))
 }
 
 to 'down button' {
-  return ('_button pressed' 13)
+  '_ED1_buttons_init'
+  return (('[sensors:touchRead]' 13) < (v '_capacitive threshold'))
 }
 
 to 'left button' {
-  return ('_button pressed' 2)
+  '_ED1_buttons_init'
+  return (('[sensors:touchRead]' 2) < (v '_capacitive threshold'))
 }
 
 to 'right button' {
-  return ('_button pressed' 27)
+  '_ED1_buttons_init'
+  return (('[sensors:touchRead]' 27) < (v '_capacitive threshold'))
 }
 
 to 'set capacitive threshold to' threshold {
   '_capacitive threshold' = threshold
 }
 
-to 'set use capacitive to' value {
-  '_use capacitive' = value
-}
-
 to 'up button' {
-  return ('_button pressed' 4)
+  '_ED1_buttons_init'
+  return (('[sensors:touchRead]' 4) < (v '_capacitive threshold'))
 }
 
 
@@ -421,8 +378,6 @@ to 'attach buzzer to pin' pinNumber {
     comment 'Pin number not specified; use default pin for this device'
     if ((boardType) == 'Citilab ED1') {
       _tonePin = 26
-    } ((boardType) == 'CircuitPlayground') {
-      _tonePin = 12
     } ((boardType) == 'M5Stack-Core') {
       _tonePin = 25
     } else {

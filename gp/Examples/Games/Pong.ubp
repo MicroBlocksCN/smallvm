@@ -1,84 +1,22 @@
 module main
-variables _digit_shapes _digit_shapes_start_index 'delta x' 'delta y' 'paddle x' playing 'refresh rate' score x y
+variables 'delta x' 'delta y' 'paddle x' playing 'refresh rate' score x y
 
-	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num any any any' 42
-
-	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num any any any' 100
-
-	spec ' ' 'bonce on x' 'bonce on x'
-
+	spec ' ' 'bounce on x' 'bounce on x'
 	spec ' ' 'bounce ball' 'bounce ball'
-
 	spec ' ' 'bounce on y' 'bounce on y'
-
 	spec ' ' 'game over' 'game over'
-
 	spec ' ' 'new game' 'new game'
-
 	spec ' ' 'plot ball' 'plot ball'
-
 	spec ' ' 'plot paddles' 'plot paddle'
-
-	spec ' ' 'scroll_number' 'scroll number _ pausing _ ms' 'num num' 123 100
-
-	spec ' ' 'scroll_text' 'scroll text _ pausing _ ms' 'str num' 'HELLO ROSA!' 100
-
 	spec ' ' 'should bounce on paddle' 'random bounce'
-
 	spec ' ' 'speed up' 'speed up'
 
-
-to '_covert_to_shapes' n {
-  if (_digit_shapes == 0) {_digit_shapes = (newArray 12)}
-  fillArray _digit_shapes ('[display:mbShapeForLetter]' ' ')
-  local 'index' (size _digit_shapes)
-  local 'isNegative' (booleanConstant false)
-  if (n < 0) {
-    isNegative = (booleanConstant true)
-    n = (0 - n)
-  } (n == 0) {
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' '0')
-    _digit_shapes_start_index = index
-  }
-  repeatUntil (n == 0) {
-    local 'digit' (n % 10)
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' (48 + digit))
-    index += -1
-    n = (n / 10)
-  }
-  if isNegative {
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' '-')
-    index += -1
-  }
-  _digit_shapes_start_index = index
-}
-
-to '_scroll_digit_shapes' delay {
-  local 'prevShape' ('[display:mbShapeForLetter]' ' ')
-  local 'i' _digit_shapes_start_index
-  local 'end' ((size _digit_shapes) + 1)
-  repeatUntil (i > end) {
-    local 'shape' ('[display:mbShapeForLetter]' ' ')
-    if (i < end) {
-      shape = (at i _digit_shapes)
-    }
-    for j 5 {
-      local 'x' (1 - j)
-      '[display:mbDrawShape]' shape (x + 5) 1
-      '[display:mbDrawShape]' prevShape x 1
-      waitMillis delay
-    }
-    prevShape = shape
-    i += 1
-  }
-}
-
-to 'bonce on x' {
+to 'bounce on x' {
   'delta x' = ((v 'delta x') * -1)
 }
 
 to 'bounce ball' {
-  if (or (x == 5) (x == 1)) {'bonce on x'}
+  if (or (x == 5) (x == 1)) {'bounce on x'}
   if (y == 1) {
     'bounce on y'
     'speed up'
@@ -132,24 +70,8 @@ to 'plot paddles' {
   '[display:mbPlot]' (v 'paddle x') 5
 }
 
-to scroll_number n delay {
-  '_covert_to_shapes' n
-  '_scroll_digit_shapes' delay
-}
-
-to scroll_text text delay {
-  local 'length' (size text)
-  for position ((length * 6) + 5) {
-    '[display:mbDisplayOff]'
-    for i length {
-      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at i text)) (((i * 6) + 2) - position) 1
-    }
-    waitMillis delay
-  }
-}
-
 to 'should bounce on paddle' {
-  if (and (and (x > 1) (x < 5)) ((random 1 2) == 1)) {'bonce on x'}
+  if (and (and (x > 1) (x < 5)) ((random 1 2) == 1)) {'bounce on x'}
   x = (random 2 4)
 }
 
@@ -194,7 +116,7 @@ to 'plot ball' {}
 }
 
 script 694 257 {
-to 'bonce on x' {}
+to 'bounce on x' {}
 }
 
 script 695 360 {
@@ -227,5 +149,109 @@ if ((v 'paddle x') > 1) {
   'paddle x' += -1
 }
 waitUntil (not (buttonA))
+}
+
+
+module 'LED Display' Output
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+
+to displayCharacter s {
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+
+module Scrolling Output
+variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text
+
+	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+	spec ' ' 'scroll_number' 'scroll number _ : pausing _ ms' 'num num' 123 100
+	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num' 42
+	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num' 100
+	spec ' ' 'stopScrollingText' 'stop scrolling'
+
+to '_covert_to_shapes' n {
+  if (_digit_shapes == 0) {_digit_shapes = (newList 12)}
+  fillList _digit_shapes ('[display:mbShapeForLetter]' ' ')
+  local 'index' (size _digit_shapes)
+  local 'isNegative' (booleanConstant false)
+  if (n < 0) {
+    isNegative = (booleanConstant true)
+    n = (0 - n)
+  } (n == 0) {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '0')
+    _digit_shapes_start_index = index
+  }
+  repeatUntil (n == 0) {
+    local 'digit' (n % 10)
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' (48 + digit))
+    index += -1
+    n = (n / 10)
+  }
+  if isNegative {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '-')
+    index += -1
+  }
+  _digit_shapes_start_index = index
+}
+
+to '_scroll_digit_shapes' delay {
+  _stop_scrolling_text = (booleanConstant false)
+  local 'prevShape' ('[display:mbShapeForLetter]' ' ')
+  local 'i' _digit_shapes_start_index
+  local 'end' ((size _digit_shapes) + 1)
+  repeatUntil (i > end) {
+    local 'shape' ('[display:mbShapeForLetter]' ' ')
+    if (i < end) {
+      shape = (at i _digit_shapes)
+    }
+    for j 5 {
+      local 'x' (1 - j)
+      '[display:mbDrawShape]' prevShape x 1
+      '[display:mbDrawShape]' shape (x + 5) 1
+      waitMillis delay
+      if _stop_scrolling_text {
+        '[display:mbDisplayOff]'
+        return 0
+      }
+    }
+    prevShape = shape
+    i += 1
+  }
+}
+
+to scroll_number n optionalDelay {
+  delay = 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  '_covert_to_shapes' n
+  '_scroll_digit_shapes' delay
+}
+
+to scroll_text text optionalDelay {
+  delay = 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  local 'length' (size text)
+  for position ((length * 6) + 6) {
+    if _stop_scrolling_text {return 0}
+    for i length {
+      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
 }
 

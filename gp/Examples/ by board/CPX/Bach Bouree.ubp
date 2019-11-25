@@ -5,74 +5,79 @@ module main
 	spec ' ' 'part A3' 'part A2'
 
 to 'part A' {
-  'play tone' 'C' 3 250
-  'play tone' 'D' 3 250
-  'play tone' 'D#' 3 250
-  waitMillis 250
-  'play tone' 'D' 3 250
-  'play tone' 'C' 3 250
-  'play tone' 'B' 2 250
-  waitMillis 250
-  'play tone' 'C' 3 250
-  'play tone' 'D' 3 250
-  'play tone' 'G' 2 250
-  waitMillis 250
-  'play tone' 'A' 2 250
-  'play tone' 'B' 2 250
-  'play tone' 'C' 3 250
-  waitMillis 250
-  'play tone' 'A#' 2 250
-  'play tone' 'G#' 2 250
-  'play tone' 'G' 2 250
-  waitMillis 250
+  'play tone' 'C' 2 250
+  'play tone' 'D' 2 250
+  'play tone' 'D#' 2 400
+  waitMillis 100
+  'play tone' 'D' 2 250
+  'play tone' 'C' 2 250
+  'play tone' 'B' 1 400
+  waitMillis 100
+  'play tone' 'C' 2 250
+  'play tone' 'D' 2 250
+  'play tone' 'G' 1 400
+  waitMillis 100
+  'play tone' 'A' 1 250
+  'play tone' 'B' 1 250
+  'play tone' 'C' 2 400
+  waitMillis 100
+  'play tone' 'A#' 1 250
+  'play tone' 'G#' 1 250
+  'play tone' 'G' 1 400
+  waitMillis 100
 }
 
 to 'part A2' {
-  'play tone' 'F' 2 250
-  'play tone' 'D#' 2 250
-  'play tone' 'D' 2 250
-  waitMillis 250
-  'play tone' 'D#' 2 250
-  'play tone' 'F' 2 250
-  'play tone' 'G' 2 250
-  'play tone' 'F' 2 250
-  'play tone' 'D#' 2 250
-  'play tone' 'D' 2 250
-  'play tone' 'C' 2 250
+  'play tone' 'F' 1 250
+  'play tone' 'D#' 1 250
+  'play tone' 'D' 1 400
+  waitMillis 100
+  'play tone' 'D#' 1 250
+  'play tone' 'F' 1 250
+  'play tone' 'G' 1 250
+  'play tone' 'F' 1 250
+  'play tone' 'D#' 1 250
+  'play tone' 'D' 1 250
+  'play tone' 'C' 1 400
+  waitMillis 100
 }
 
 to 'part A3' {
-  'play tone' 'F' 2 250
-  'play tone' 'D#' 2 250
-  'play tone' 'D' 2 500
-  waitMillis 250
-  'play tone' 'D#' 2 250
-  repeat 10 {
-    'play tone' 'D' 2 30
-    'play tone' 'D#' 2 70
+  'play tone' 'F' 1 250
+  'play tone' 'D#' 1 250
+  'play tone' 'D' 1 350
+  waitMillis 100
+  'play tone' 'D#' 1 125
+  'play tone' 'D' 1 125
+  repeat 4 {
+    'play tone' 'D#' 1 70
+    'play tone' 'D' 1 55
   }
+  waitMillis 25
+  'play tone' 'D#' 1 200
+  waitMillis 100
+  'play tone' 'D#' 1 1000
 }
 
-script 52 55 {
+script 50 50 {
 whenStarted
 comment 'To hear the music, attach a piezo speaker between pin 0 and ground'
 comment 'On the Circuit Playground Express or ED1, it will use the built-in speaker.'
 'part A'
 'part A2'
-waitMillis 250
 'part A'
 'part A3'
 }
 
-script 701 134 {
-to 'part A2' {}
-}
-
-script 294 198 {
+script 165 184 {
 to 'part A' {}
 }
 
-script 698 512 {
+script 474 207 {
+to 'part A2' {}
+}
+
+script 479 534 {
 to 'part A3' {}
 }
 
@@ -199,8 +204,6 @@ to 'attach buzzer to pin' pinNumber {
     comment 'Pin number not specified; use default pin for this device'
     if ((boardType) == 'Citilab ED1') {
       _tonePin = 26
-    } ((boardType) == 'CircuitPlayground') {
-      _tonePin = 12
     } ((boardType) == 'M5Stack-Core') {
       _tonePin = 25
     } else {

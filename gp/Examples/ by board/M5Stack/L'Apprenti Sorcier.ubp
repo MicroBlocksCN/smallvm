@@ -8,51 +8,51 @@ comment 'On the Circuit Playground Express or ED1, it will use the built-in spea
 whole = 320
 quarter = (whole / 2)
 eighth = (whole / 8)
-'play tone' 'F' 2 whole
+'play tone' 'F' 1 whole
 waitMillis quarter
-'play tone' 'C' 3 (whole + eighth)
+'play tone' 'C' 2 (whole + eighth)
 waitMillis (quarter - eighth)
-'play tone' 'C' 2 quarter
-'play tone' 'D' 2 quarter
-'play tone' 'E' 2 quarter
+'play tone' 'C' 1 quarter
+'play tone' 'D' 1 quarter
+'play tone' 'E' 1 quarter
 forever {
   repeat 2 {
-    'play tone' 'F' 2 whole
-    'play tone' 'G#' 2 quarter
-    'play tone' 'F' 2 whole
-    'play tone' 'G#' 2 quarter
-    'play tone' 'G' 2 quarter
-    'play tone' 'F' 2 quarter
-    'play tone' 'E' 2 quarter
+    'play tone' 'F' 1 whole
+    'play tone' 'G#' 1 quarter
+    'play tone' 'F' 1 whole
+    'play tone' 'G#' 1 quarter
+    'play tone' 'G' 1 quarter
+    'play tone' 'F' 1 quarter
+    'play tone' 'E' 1 quarter
   }
-  'play tone' 'F' 2 whole
+  'play tone' 'F' 1 whole
   repeat 2 {
-    'play tone' 'G#' 2 quarter
-    'play tone' 'G' 2 (quarter - eighth)
+    'play tone' 'G#' 1 quarter
+    'play tone' 'G' 1 (quarter - eighth)
     waitMillis eighth
-    'play tone' 'G' 2 quarter
-    'play tone' 'G#' 2 quarter
-    'play tone' 'A#' 2 (quarter - eighth)
+    'play tone' 'G' 1 quarter
+    'play tone' 'G#' 1 quarter
+    'play tone' 'A#' 1 (quarter - eighth)
     waitMillis eighth
-    'play tone' 'A#' 2 quarter
-    'play tone' 'G#' 2 quarter
-    'play tone' 'G' 2 whole
-    'play tone' 'C' 3 quarter
-    'play tone' 'C' 2 whole
+    'play tone' 'A#' 1 quarter
+    'play tone' 'G#' 1 quarter
+    'play tone' 'G' 1 whole
+    'play tone' 'C' 2 quarter
+    'play tone' 'C' 1 whole
   }
-  'play tone' 'G#' 2 quarter
-  'play tone' 'G' 2 quarter
-  'play tone' 'G#' 2 quarter
-  'play tone' 'A#' 2 quarter
+  'play tone' 'G#' 1 quarter
+  'play tone' 'G' 1 quarter
+  'play tone' 'G#' 1 quarter
+  'play tone' 'A#' 1 quarter
   repeat 7 {
-    'play tone' 'C' 3 (quarter - eighth)
+    'play tone' 'C' 2 (quarter - eighth)
     waitMillis eighth
   }
-  'play tone' 'A#' 2 quarter
-  'play tone' 'G#' 2 quarter
-  'play tone' 'G' 2 quarter
-  'play tone' 'G#' 2 quarter
-  'play tone' 'G' 2 quarter
+  'play tone' 'A#' 1 quarter
+  'play tone' 'G#' 1 quarter
+  'play tone' 'G' 1 quarter
+  'play tone' 'G#' 1 quarter
+  'play tone' 'G' 1 quarter
 }
 }
 
@@ -179,8 +179,6 @@ to 'attach buzzer to pin' pinNumber {
     comment 'Pin number not specified; use default pin for this device'
     if ((boardType) == 'Citilab ED1') {
       _tonePin = 26
-    } ((boardType) == 'CircuitPlayground') {
-      _tonePin = 12
     } ((boardType) == 'M5Stack-Core') {
       _tonePin = 25
     } else {

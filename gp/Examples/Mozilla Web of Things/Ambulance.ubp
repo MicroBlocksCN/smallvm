@@ -1,15 +1,14 @@
 module main
 variables interval octave onOff
 
-script 91 50 {
+script 91 85 {
 comment 'assumes CPX but can also connect a piezo and LED strip to another board'
 }
 
-script 54 95 {
+script 54 130 {
 whenStarted
 comment 'modify these two blocks if not CPX'
-'attach buzzer to pin' 0
-neoPixelAttach 10 '' false
+neoPixelAttach 10 ''
 'wifi connect to' 'Network_Name' '' 3
 defineThing 'Ambulance' 'OnOffSwitch'
 addBooleanProperty 'Triggered' 'onOff' 'OnOffProperty'
@@ -37,7 +36,7 @@ forever {
 }
 }
 
-script 522 132 {
+script 522 167 {
 comment 'This example works out of the box on the Adafruit Circuit Playground Express.
 
 For other boards, you''ll need to attach a NeoPixel strip and a buzzer, and
@@ -49,7 +48,7 @@ waitMillis 2000
 onOff = (booleanConstant false)
 }
 
-script 439 592 ('[net:thingDescription]')
+script 439 627 ('[net:thingDescription]')
 
 
 module NeoPixel Output
@@ -57,11 +56,11 @@ variables _np_pixels
 
 	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
 	spec ' ' 'clearNeoPixels' 'clear NeoPixels'
-	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
 	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
 	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
 	spec 'r' 'colorFromRGB' 'color r _ g _ b _' 'num num num' 0 1 1
-	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ has white _' 'auto auto bool' 10 '' false
+	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num num bool' 10 false
 	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
 	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
 	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
@@ -94,7 +93,7 @@ to '_NeoPixel_update' {
 
 to clearNeoPixels {
   '_NeoPixel_ensureInitialized'
-  fillArray _np_pixels 0
+  fillList _np_pixels 0
   '_NeoPixel_update'
 }
 
@@ -102,15 +101,21 @@ to colorFromRGB r g b {
   return (((r << 16) | (g << 8)) | b)
 }
 
-to neoPixelAttach number pinNumber hasWhite {
-  if (or (_np_pixels == 0) (number != (size _np_pixels))) {_np_pixels = (newArray number)}
-  fillArray _np_pixels 0
+to neoPixelAttach number pinNumber optionalHasWhite {
+  hasWhite = false
+  if ((pushArgCount) > 2) {
+    hasWhite = optionalHasWhite
+  }
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {
+    _np_pixels = (newList number)
+  }
+  fillList _np_pixels 0
   '[display:neoPixelSetPin]' pinNumber hasWhite
 }
 
 to neoPixelSetAllToColor color {
   '_NeoPixel_ensureInitialized'
-  fillArray _np_pixels color
+  fillList _np_pixels color
   '_NeoPixel_update'
 }
 
@@ -285,8 +290,8 @@ to 'attach buzzer to pin' pinNumber {
     comment 'Pin number not specified; use default pin for this device'
     if ((boardType) == 'Citilab ED1') {
       _tonePin = 26
-    } ((boardType) == 'CircuitPlayground') {
-      _tonePin = 12
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
     } else {
       _tonePin = 0
     }
@@ -330,7 +335,7 @@ to playMIDIKey key ms {
 
 
 module 'Web of Things' Comm
-variables _useWiFi
+variables _WoT_definingEvents _useWiFi
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
@@ -379,15 +384,24 @@ to addStringProperty title var typeName {
 to defineThing name capability {
   _useWiFi = ('[net:hasWiFi]')
   if _useWiFi {
+    _WoT_definingEvents = (booleanConstant false)
     '[net:clearThingDescription]'
     if ('' == capability) {
-      '[net:appendToThingDescription]' '{ "name": "' name '",
+      '[net:appendToThingDescription]' '{ "title": "' name '",
   "@type": [ ],
-  "properties": {'
+  "links":[{
+    "rel": "events",
+    "href": "/events"
+   }],
+   "properties": {'
     } else {
-      '[net:appendToThingDescription]' '{ "name": "' name '",
+      '[net:appendToThingDescription]' '{ "title": "' name '",
   "@context": "https://iot.mozilla.org/schemas/",
   "@type": ["' capability '"],
+  "links":[{
+    "rel": "events",
+    "href": "/events"
+   }],
   "properties": {'
     }
   } else {
@@ -401,7 +415,18 @@ to getIPAddress {
 
 to registerEvent title type {
   if _useWiFi {
-    sayIt 'Not yet supported'
+    if (not _WoT_definingEvents) {
+      local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
+      if ((v 'last char') == 123) {
+        comment 'thing description ends with "{", meaning there are no properties'
+        '[net:appendToThingDescription]' '},"events":{'
+      } ((v 'last char') == 44) {
+        comment 'thing description ends with ",", meaning there''s at least one property'
+        '[net:appendToThingDescription]' '"":{}},"events":{'
+      }
+      _WoT_definingEvents = (booleanConstant true)
+    }
+    '[net:appendToThingDescription]' '    "' title '": {"description":"MicroBlocks event", "@type":"' type '"},'
   } else {
     sendBroadcast 'moz-event {"name":"' title '", "metadata":{"description":"MicroBlocks event", "@type":"' type '"}}'
   }
@@ -409,6 +434,8 @@ to registerEvent title type {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  tries += -1
+  '[net:startWiFi]' ssid password
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -431,6 +458,22 @@ to 'wifi connect to' ssid password tries {
 }
 
 to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
   '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

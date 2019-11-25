@@ -1,7 +1,7 @@
 module main
 variables humidity temperature
 
-script 50 50 {
+script 54 54 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 defineThing 'Temperature' 'TemperatureSensor'
@@ -15,7 +15,7 @@ forever {
 }
 }
 
-script 495 226 {
+script 499 230 {
 comment 'test temp'
 forever {
   sayIt (temperature_DHT11 25)
@@ -23,7 +23,7 @@ forever {
 }
 }
 
-script 489 359 {
+script 493 363 {
 comment 'test humidity'
 forever {
   sayIt (humidity_DHT11 25)
@@ -31,12 +31,12 @@ forever {
 }
 }
 
-script 88 526 {
+script 104 406 {
 comment 'add this once the VM supports it'
 '_addCustomProperty' 'unit' '"percent"'
 }
 
-script 313 583 ('[net:thingDescription]')
+script 107 476 ('[net:thingDescription]')
 
 
 module DHT Input
@@ -63,7 +63,7 @@ to '_dhtChecksumOkay' {
 to '_dhtReadData' pin {
   comment 'Create DHT data array the first time'
   if (_dhtData == 0) {
-    _dhtData = (newArray 5)
+    _dhtData = (newList 5)
   }
   comment 'Pull pin low for >18msec to request data'
   digitalWriteOp pin false
@@ -146,16 +146,16 @@ to temperature_DHT22 pin {
 
 
 module 'Web of Things' Comm
-variables _useWiFi
+variables _WoT_definingEvents _useWiFi
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
-	spec ' ' 'defineThing' 'define thing _ capability _' 'str str' 'Hello LED' 'Light'
-	spec ' ' 'registerEvent' 'register event _ type _' 'str str' 'Button Pressed' 'PressedEvent'
-	spec ' ' 'addBooleanProperty' 'add boolean property title _ variable _ @Type _' 'str menu.allVarsMenu str' '' '' 'OnOffProperty'
-	spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str' '' '' 0 100 'LevelProperty'
-	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str' '' '' 'ColorProperty'
+	spec ' ' 'defineThing' 'define thing _ capability _' 'str str.thingTypesMenu' 'Hello LED' 'Light'
+	spec ' ' 'registerEvent' 'register event _ type _' 'str str.thingEventTypesMenu' 'Button Pressed' 'PressedEvent'
+	spec ' ' 'addBooleanProperty' 'add boolean property title _ variable _ @Type _' 'str menu.allVarsMenu str.booleanPropertyTypesMenu' '' '' 'OnOffProperty'
+	spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str.numberPropertyTypesMenu' '' '' 0 100 'LevelProperty'
+	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str.stringPropertyTypesMenu' '' '' 'ColorProperty'
 	spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
 	spec 'r' '[net:thingDescription]' 'thing description'
 	spec ' ' '[net:clearThingDescription]' 'clear thing description'
@@ -195,15 +195,24 @@ to addStringProperty title var typeName {
 to defineThing name capability {
   _useWiFi = ('[net:hasWiFi]')
   if _useWiFi {
+    _WoT_definingEvents = (booleanConstant false)
     '[net:clearThingDescription]'
     if ('' == capability) {
-      '[net:appendToThingDescription]' '{ "name": "' name '",
+      '[net:appendToThingDescription]' '{ "title": "' name '",
   "@type": [ ],
-  "properties": {'
+  "links":[{
+    "rel": "events",
+    "href": "/events"
+   }],
+   "properties": {'
     } else {
-      '[net:appendToThingDescription]' '{ "name": "' name '",
+      '[net:appendToThingDescription]' '{ "title": "' name '",
   "@context": "https://iot.mozilla.org/schemas/",
   "@type": ["' capability '"],
+  "links":[{
+    "rel": "events",
+    "href": "/events"
+   }],
   "properties": {'
     }
   } else {
@@ -217,7 +226,18 @@ to getIPAddress {
 
 to registerEvent title type {
   if _useWiFi {
-    sayIt 'Not yet supported'
+    if (not _WoT_definingEvents) {
+      local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
+      if ((v 'last char') == 123) {
+        comment 'thing description ends with "{", meaning there are no properties'
+        '[net:appendToThingDescription]' '},"events":{'
+      } ((v 'last char') == 44) {
+        comment 'thing description ends with ",", meaning there''s at least one property'
+        '[net:appendToThingDescription]' '"":{}},"events":{'
+      }
+      _WoT_definingEvents = (booleanConstant true)
+    }
+    '[net:appendToThingDescription]' '    "' title '": {"description":"MicroBlocks event", "@type":"' type '"},'
   } else {
     sendBroadcast 'moz-event {"name":"' title '", "metadata":{"description":"MicroBlocks event", "@type":"' type '"}}'
   }
@@ -225,6 +245,8 @@ to registerEvent title type {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  tries += -1
+  '[net:startWiFi]' ssid password
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -247,6 +269,22 @@ to 'wifi connect to' ssid password tries {
 }
 
 to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
   '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
