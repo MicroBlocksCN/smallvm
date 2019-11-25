@@ -1,0 +1,674 @@
+display _
+экран _
+
+clear display
+очистить экран
+
+plot x _ y _
+вычертить x _ y _
+
+unplot x _ y _
+убрать черчение x _ y _
+
+set user LED _
+задать пользовательский светодиод _
+
+say _
+сказать _
+
+log data _
+записать данные _
+
+button A
+кнопка A
+
+button B
+кнопка B
+
+tilt x
+наклон x
+
+tilt y
+наклон y
+
+tilt z
+наклон z
+
+Temperature (°C)
+Температура (°C)
+
+microseconds
+микросекунд
+
+milliseconds
+миллисекунд
+
+read digital pin _
+читать цифровой контакт _
+
+read analog pin _
+читать аналоговый контакт _
+
+set digital pin _ to _
+установить цифровой контакт _ на _
+
+set pin _ to _
+установить контакт _ на _
+
+analog pins
+аналоговые контакты
+
+digital pins
+цифровые контакты
+
+when started
+когда запущено
+
+when button _ pressed
+когда кнопка _ нажата
+
+forever _
+всегда _
+
+repeat _ _
+повторить _ _
+
+if _ _
+если _ _
+
+else if _ _
+иначе, если _ _
+
+if _ _ else _
+если _ _ иначе _
+
+wait _ millisecs
+ждать _ миллисекунд
+
+wait _ microsecs
+ждать _ микросекунд
+
+stop this task
+остановить эту задачу
+
+stop all
+остановить всё
+
+comment _
+комментарий _
+
+wait until _
+ждать пока _
+
+repeat until _ _
+повторять до _ _
+
+for _ in _ _
+для _ в _ _
+
+when _
+когда _
+
+when _ received
+когда _ получен
+
+return _
+возврат _
+
+_ mod _
+_ мод _
+
+abs _
+абс _
+
+random _ to _
+случайно _ до _
+
+not _
+нет _
+
+_ and _
+_ и _
+
+and _
+и _
+
+_ or _
+_ или _
+
+or _
+или _
+
+set _ to _
+задать _ до _
+
+change _ by _
+изменить _ на _
+
+local _ _
+локальный _ _
+
+new list length _
+новая длина списка _
+
+fill list _ with _
+заполнить список _  _
+
+item _ of _
+элемент _ из _
+
+replace item _ of _ with _
+заменить элемент _ из _ элементом _
+
+length of _
+длина _
+
+board type
+тип платы
+
+broadcast _
+трансляция _
+
+i2c get device _ register _
+i2c получить устройство _ зарегистрировать_
+
+i2c set device _ register _ to _
+i2c задать устройство _ зарегистрировать _ на _
+
+spi send _
+отправка spi _
+
+spi receive
+получение spi
+
+print _
+вывод _
+
+hex _
+hex _
+
+no op
+нет ОП
+
+ignore
+игнорировать
+
+draw shape _ at x _ y _
+нарисовать фигуру _ по координатам x _ y _
+
+shape for letter _
+форма для буквы _
+
+set NeoPixel pin _ is RGBW _
+задать контакты NeoPixel _ RGBW _
+
+send NeoPixel rgb _
+послать NeoPixel rgb _
+
+has tone support
+имеет поддержку тона
+
+play tone pin _ frequency _
+воспроизвести тон на контакте _ с частотой _
+
+has servo support
+имеет сервоподдержку
+
+set servo pin _ to _ usecs
+задать контакт сервопривода _ на _ usecs
+
+has WiFi support
+имеет поддержку WiFi
+
+start WiFi _ password _
+запустить WiFi _ пароль_
+
+be hotspot _
+быть точкой доступа _
+
+stop WiFi
+остановить WiFi
+
+WiFi status
+статус WiFi
+
+my IP address
+мой IP-адрес
+
+enable TFT _
+включить TFT _
+
+set TFT pixel x _ y _ to _
+задать пиксели TFT x _ y _ на _
+
+radio send number _
+отправка номера по радио _
+
+radio send string _
+отправка строки по радио _
+
+radio send pair _ = _
+отправка пары по радио _ = _
+
+radio message received?
+радио сообщение получено?
+
+radio last number
+последний номер радио
+
+radio last string
+последняя строка радио
+
+radio last message type
+последний тип радио-сообщения
+
+radio set group _
+задать группу радио _
+
+radio set channel (0-83) _
+задать канал радио (0-83) _
+
+radio set power (0-7) _
+задать мощность радио (0-7) _
+
+radio last signal strength
+последняя мощность радио сигнала
+
+radio receive packet _
+получение радио пакета _
+
+radio send packet _
+отправка радио пакета _
+
+disable radio
+отключить радио
+
+light level
+уровень освещённости
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+задать NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+очистить NeoPixels
+
+set NeoPixel _ color _
+задать NeoPixel _ цвет _
+
+set all NeoPixels color _
+задать цвета всем NeoPixels _
+
+rotate NeoPixels by _
+повернуть NeoPixels на _
+
+color r _ g _ b _
+цвета r _ g _ b _
+
+attach _ LED NeoPixel strip to pin _ has white _
+подключить _ светодиодную ленту NeoPixel к контактам _ белый_
+
+receive IR code from device _
+получение ИК-кода с устройства _
+
+test IR
+проверка ИК
+
+scroll text _ pausing _ ms
+прокрутка текста _ пауза _ мс
+
+scroll number _ pausing _ ms
+прокрутка номера _ пауза _ мс
+
+stop scrolling
+остановить прокрутку
+
+attach buzzer to pin _
+подключить зуммер к контакту _
+
+play note _ octave _ during _ ms
+воспроизвести ноту _ октавы _ на протяжении _ мс
+
+play frequency _ on pin _ for _ ms
+воспроизвести частоту _ на контакте _ на протяжении _ мс
+
+button OK
+кнопка ОК
+
+button X
+кнопка X
+
+button up
+кнопка вверх
+
+button down
+кнопка вниз
+
+button left
+кнопка влево
+
+button right
+кнопка вправо
+
+move motor _  _ steps _
+двигать мотор на _  _ шагов_
+
+move motor 1 _ and motor 2 _ _ steps
+двигать мотор 1 _ и мотор 2 на _ _ шагов
+
+stop steppers
+остановить степперы
+
+clockwise
+по часовой стрелке
+
+counter-clockwise
+против часовой стрелки
+
+capacitive OK
+ёмкостный OK
+
+capacitive X
+ёмкостный X
+
+capacitive up
+ёмкостный вверх
+
+capacitive down
+ёмкостный вниз
+
+capacitive left
+ёмкостный влево
+
+capacitive right
+ёмкостный вправо
+
+capacitive sensor _
+ёмкостный сенсор _
+
+set TFT pixel x _ y _ to _
+задать пиксели TFT x _ y _ на _
+
+set capacitive threshold to _
+задать порог ёмкостной чувствительности на _
+
+New
+Новый
+
+Open
+Открыть
+
+Save
+Сохранить
+
+Connect
+Подключить
+
+disconnect
+отключить
+
+Serial port:
+Серийный порт:
+
+other...
+другие...
+
+none
+нет
+
+Port name?
+Название порта?
+
+Board type:
+Тип платы:
+
+Select board:
+Выберите плату:
+
+Could not read: 
+Не удаётся прочитать: 
+
+by
+по
+
+More info at http://microblocks.fun
+Подробнее: http://microblocks.fun
+
+Function "
+Функция "
+
+" is too large to send to board.
+" слишком большая для отправки на плату.
+
+Script is too large to send to board.
+Скрипт слишком большой для отправки на плату.
+
+Use "Connect" button to connect to a MicroBlocks device.
+Используйте кнопку "Подключить" для соединения с устройством MicroBlocks.
+
+No boards found; is your board plugged in?
+Плат не найдено. Вы уверены, что плата подключена?
+
+For AdaFruit boards, double-click button and try again.
+Для плат AdaFruit нажмите кнопку дважды и повторите попытку.
+
+The board is not responding.
+Плата не отвечает.
+
+Try to Install MicroBlocks on the board?
+Попробуйте установить MicroBlocks на плату.
+
+Stop
+Стоп
+
+Start
+Старт
+
+Quit MicroBlocks?
+Выйти из MicroBlocks?
+
+Discard current project?
+Отменить этот проект?
+
+clean up
+очистка
+
+arrange scripts
+расположить скрипты
+
+undo last drop
+отменить последнюю каплю
+
+copy all scripts
+скопировать все скрипты
+
+paste all scripts
+вставить все скрипты
+
+paste script
+вставить скрипт
+
+save picture of all scripts
+сохранить изображение всех скриптов
+
+about...
+о...
+
+virtual machine version
+версия виртуальной машины
+
+install MicroBlocks on board
+установить MicroBlocks на плату
+
+graph data
+данные диаграммы
+
+copy data to clipboard
+копировать данные в буфер обмена
+
+clear data
+очистить данные
+
+clear memory and variables
+очистить память и переменные
+
+show advanced blocks
+показать расширенные блоки
+
+export functions as library
+экспортировать функцию как библиотеку
+
+hide advanced blocks
+скрыть расширенные блоки
+
+Data Graph
+График данных
+
+File Open
+Открыть файл
+
+File Save
+Сохранить файл
+
+File name:
+Имя файла:
+
+show instructions
+Показать инструкции
+
+show compiled bytes
+Показать компилированные байты
+
+expand
+раскрыть
+
+collapse
+скрыть
+
+rename...
+переименовать...
+
+show definition...
+показать определение...
+
+duplicate
+дублировать
+
+just this one block
+только этот блок
+
+...all
+...все
+
+duplicate including all attached blocks
+дублировать включая присоединённые блоки
+
+save picture of script
+сохранить изображение скрипта
+
+copy script
+копировать скрипт
+
+delete
+удалить
+
+hide definition
+скрыть определение
+
+Are you sure you want to remove this block definition?
+Вы уверены, что хотите удалить это определение блока?
+
+Libraries
+Библиотеки
+
+Language:
+Языки:
+
+Add a function
+Добавить функцию
+
+Add a variable
+Добавить переменную
+
+Delete a variable
+Удалить переменную
+
+Output
+Вывод
+
+Input
+Ввод
+
+Pins
+Контакты
+
+Control
+Контроль
+
+Math
+Математика
+
+Variables
+Переменные
+
+Lists
+Списки
+
+Advanced
+Продвинутый
+
+Functions
+Функции
+
+Obsolete
+Устаревший
+
+Ok
+ОК
+
+Yes
+Да
+
+No
+Нет
+
+Cancel
+Отмена
+
+Okay
+ОК
+
+Confirm
+Подтвердить
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ âˆž
+Hummingbird позиция сервопривода _ _ âˆž
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird поворот сервопривода _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Батарея Hummingbird (мВ)
+
+Light
+Свет
+
+Distance
+Дистанция
+
+Dial
+Набор
+
+Sound
+Звук
+
+Other
+Прочее

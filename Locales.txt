@@ -640,6 +640,36 @@ thing description
 clear thing description
 clear thing description
 
+Motion
+Motion
+
+motion
+motion
+
+start step counter
+start step counter
+
+step count
+step count
+
+clear step count
+clear step count
+
+set step threshold _ (0-50)
+set step threshold _ (0-50)
+
+Button Events
+Button Events
+
+button _ double pressed
+button _ double pressed
+
+button _ long pressed
+button _ long pressed
+
+button _ pressed
+button _ pressed
+
 New
 New
 
