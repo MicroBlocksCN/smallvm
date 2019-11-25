@@ -11,7 +11,7 @@ variables _motionSamples _stepCount _stepThreshold _stepMotionHigh
 	spec ' ' '_stepCounterLoop' '_stepCounterLoop'
 
 to '_addSample' s {
-  if (0 == _motionSamples) {_motionSamples = (newArray 12)}
+  if (0 == _motionSamples) {_motionSamples = (newList 12)}
   for i ((size _motionSamples) - 1) {
     atPut i _motionSamples (at (i + 1) _motionSamples)
   }

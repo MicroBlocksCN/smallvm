@@ -1,4 +1,4 @@
-module servoLib3 Output
+module Servo Output
 variables _servoPin _servoPulseWidth _servoReversed _lastServoUpdate
 
 	spec 'r' '_servoIndex' '_servoIndex _' 'str' 'A'
@@ -11,12 +11,12 @@ variables _servoPin _servoPulseWidth _servoReversed _lastServoUpdate
 
 to '_initServos2' {
   if (_servoPin == 0) {
-    _servoPin = (newArray 4)
-    fillArray _servoPin -1
-    _servoPulseWidth = (newArray 4)
-    fillArray _servoPulseWidth 1500
-    _servoReversed = (newArray 4)
-    fillArray _servoReversed (booleanConstant false)
+    _servoPin = (newList 4)
+    fillList _servoPin -1
+    _servoPulseWidth = (newList 4)
+    fillList _servoPulseWidth 1500
+    _servoReversed = (newList 4)
+    fillList _servoReversed (booleanConstant false)
   }
   sendBroadcastSimple '_servoUpdateLoop'
 }

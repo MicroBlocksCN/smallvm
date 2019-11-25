@@ -11,14 +11,14 @@ variables _ir_pin _ir_pulse_times
 
 to '_captureIRMessage' {
   if (_ir_pulse_times == 0) {
-    _ir_pulse_times = (newArray 200)
+    _ir_pulse_times = (newList 200)
     if (and (_ir_pin == 0) ((boardType) == 'CircuitPlayground')) {
       _ir_pin = 11
     } (and (_ir_pin == 0) ((boardType) == 'Citilab ED1')) {
       _ir_pin = 35
     }
   }
-  fillArray _ir_pulse_times 0
+  fillList _ir_pulse_times 0
   local 'i' 1
   comment 'Wait for IR signal -- this is the start of a new message.
 Note: THe pin goes low when an IR signal is detected.'

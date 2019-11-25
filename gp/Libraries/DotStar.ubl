@@ -13,10 +13,10 @@ to 'DotStar attach' count dataPin clockPin {
   '_DotStar clock pin' = clockPin
   '_DotStar brightness' = 31
   if (0 == (v '_DotStar pixels')) {
-    '_DotStar pixels' = (newArray count)
+    '_DotStar pixels' = (newList count)
   }
   if (count != (size (v '_DotStar pixels'))) {
-    '_DotStar pixels' = (newArray count)
+    '_DotStar pixels' = (newList count)
   }
 }
 

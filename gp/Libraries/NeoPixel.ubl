@@ -40,7 +40,7 @@ to '_NeoPixel_update' {
 
 to clearNeoPixels {
   '_NeoPixel_ensureInitialized'
-  fillArray _np_pixels 0
+  fillList _np_pixels 0
   '_NeoPixel_update'
 }
 
@@ -51,14 +51,14 @@ to colorFromRGB r g b {
 to neoPixelAttach number pinNumber optionalHasWhite {
   hasWhite = false
   if ((pushArgCount) > 2) { hasWhite = optionalHasWhite }
-  if (or (_np_pixels == 0) (number != (size _np_pixels))) {_np_pixels = (newArray number)}
-  fillArray _np_pixels 0
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {_np_pixels = (newList number)}
+  fillList _np_pixels 0
   '[display:neoPixelSetPin]' pinNumber hasWhite
 }
 
 to neoPixelSetAllToColor color {
   '_NeoPixel_ensureInitialized'
-  fillArray _np_pixels color
+  fillList _np_pixels color
   '_NeoPixel_update'
 }
 

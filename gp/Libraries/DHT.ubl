@@ -13,7 +13,7 @@ variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime
 to '_dhtReadData' pin {
   comment 'Create DHT data array the first time'
   if (_dhtData == 0) {
-    _dhtData = (newArray 5)
+    _dhtData = (newList 5)
   }
   comment 'Pull pin low for >18msec to request data'
   digitalWriteOp pin false
