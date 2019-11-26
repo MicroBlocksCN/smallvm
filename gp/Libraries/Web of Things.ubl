@@ -80,7 +80,7 @@ to getIPAddress {
 to registerEvent title type {
   if _useWiFi {
     if (not _WoT_definingEvents) {
-      local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
+      local 'last char' ('[data:unicodeAt]' ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
       if ((v 'last char') == 123) {
         comment 'thing description ends with "{", meaning there are no properties'
         '[net:appendToThingDescription]' '},"events":{'
