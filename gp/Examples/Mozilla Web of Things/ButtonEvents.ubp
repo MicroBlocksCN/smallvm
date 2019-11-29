@@ -68,9 +68,9 @@ variables _buttons
 	spec 'r' '_button' '_button _' 'auto' 10
 
 to '_button' 'pin or name' {
-  sendBroadcastSimple '_buttonLoop'
   if (_buttons == 0) {
     _buttons = ('[data:makeList]')
+    sendBroadcastSimple '_buttonLoop'
   }
   for 'each button' _buttons {
     if ((at 1 (v 'each button')) == (v 'pin or name')) {return (v 'each button')}
