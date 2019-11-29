@@ -1,7 +1,7 @@
 module main
 variables interval octave onOff
 
-script 91 85 {
+script 89 51 {
 comment 'assumes CPX but can also connect a piezo and LED strip to another board'
 }
 
@@ -36,7 +36,7 @@ forever {
 }
 }
 
-script 522 167 {
+script 546 168 {
 comment 'This example works out of the box on the Adafruit Circuit Playground Express.
 
 For other boards, you''ll need to attach a NeoPixel strip and a buzzer, and
@@ -417,10 +417,10 @@ to registerEvent title type {
   if _useWiFi {
     if (not _WoT_definingEvents) {
       local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
-      if ((v 'last char') == 123) {
+      if ((v 'last char') == '{') {
         comment 'thing description ends with "{", meaning there are no properties'
         '[net:appendToThingDescription]' '},"events":{'
-      } ((v 'last char') == 44) {
+      } ((v 'last char') == ',') {
         comment 'thing description ends with ",", meaning there''s at least one property'
         '[net:appendToThingDescription]' '"":{}},"events":{'
       }
