@@ -274,7 +274,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 		WiFi.mode(WIFI_OFF); // Kill the current connection, if any
 
 		if (createHotSpot) {
-			WiFi.mode(WIFI_AP_STA); // access point & station mode
+			WiFi.mode(WIFI_AP); // access point & station mode
 			WiFi.softAP(networkName, password);
 		} else {
 			WiFi.mode(WIFI_STA);
@@ -309,7 +309,7 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) {
 	int status = WiFi.status();
 
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-		if (WIFI_AP_STA == WiFi.getMode()) {
+		if (WIFI_AP == WiFi.getMode()) {
 			status = WL_CONNECTED; // acting as a hotspot
 		}
 	#else
@@ -353,7 +353,7 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	#ifdef USE_WIFI101
 		IPAddress ip = WiFi.localIP();
 	#else
-		IPAddress ip = (WIFI_AP_STA == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
+		IPAddress ip = (WIFI_AP == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
 	#endif
 	sprintf(ipStringObject.body, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 	ipStringObject.header = HEADER(StringType, (strlen(ipStringObject.body) + 4) / 4);
