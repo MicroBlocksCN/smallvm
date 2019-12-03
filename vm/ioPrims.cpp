@@ -597,6 +597,13 @@ void primAnalogWrite(OBJ *args) {
 		if (value == 0) {
 			pinDetach(pinNum);
 		} else {
+			#if defined(ARDUINO_CITILAB_ED1)
+			if ((100 <= pinNum) && (pinNum <= 139)) {
+				pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
+			} else if ((1 <= pinNum) && (pinNum <= 4)) {
+				pinNum = digitalPinMappings[pinNum - 1];
+			}
+			#endif
 			if (pinAttached(pinNum) == 0) {
 				analogAttach(pinNum);
 			}
@@ -850,9 +857,11 @@ OBJ primSetServo(int argCount, OBJ *args) {
 		if (usecs > 15000) { usecs = 15000; } // maximum pulse width is 15000 usecs
 		#if defined(ESP32)
 			#if defined(ARDUINO_CITILAB_ED1)
-				if ((1 <= pin) && (pin <= 4)) {
-					pin = digitalPinMappings[pin - 1];
-				}
+			if ((100 <= pin) && (pin <= 139)) {
+				pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
+			} else if ((1 <= pin) && (pin <= 4)) {
+				pin = digitalPinMappings[pin - 1];
+			}
 			#endif
 			if (usecs <= 0) {
 				pinDetach(pin);
