@@ -74,7 +74,7 @@ static void turnDisplayOff() {
 	for (int i = 0; i < 12; i++) setPinMode(pins[i], INPUT);
 }
 
-static int updateLightLevelNEW() {
+static int updateLightLevel() {
 	// If light level reading is not in progress, start one and return false.
 	// If a light level reading is in progress and the integration time has
 	// elapsed, update the lightLevel variable and return true.
@@ -87,34 +87,41 @@ static int updateLightLevelNEW() {
 	if (lightLevelReadTime > (microsecs() + 10000)) lightLevelReadTime = 0; // clock wrap
 
 	if (0 == lightLevelReadTime) { // start a light level reading
-		// set column lines LOW
+		// set column lines low
 		for (i = 0; i < 3; i++) {
 			setPinMode(col[i], OUTPUT);
 			digitalWrite(col[i], LOW);
 		}
+// set row lines high to reverse-bias the LED's
+for (i = 0; i < 3; i++) {
+	setPinMode(row[i], OUTPUT);
+	digitalWrite(row[i], HIGH);
+}
+delayMicroseconds(100); // allow time to charge capacitance
 		// set row lines high to reverse-bias the LED's, then disconnect
 		for (i = 0; i < 3; i++) {
-			setPinMode(row[i], OUTPUT);
-			digitalWrite(row[i], HIGH);
-//xxx			delayMicroseconds(5); // allow time to charge capacitance
+// 			setPinMode(row[i], OUTPUT);
+// 			digitalWrite(row[i], HIGH);
+// 			delayMicroseconds(100); // allow time to charge capacitance
 			setPinMode(row[i], INPUT);
-			digitalWrite(row[i], LOW);
+//			digitalWrite(row[i], LOW);
 		}
-		lightLevelReadTime = microsecs() + 250;
+		lightLevelReadTime = microsecs() + 4000;
 		return false; // keep waiting
 	} else if (microsecs() >= lightLevelReadTime) { // integration complete; update level
-		lightLevel = 1055 - (analogRead(3) + analogRead(4) + analogRead(10));
-		if (lightLevel < 0) lightLevel = 0;
-		lightLevel = lightLevel / 5; // record scaled light level
+//lightLevel = (analogRead(3) + analogRead(4) + analogRead(10));
+		lightLevel = 1005 - (analogRead(3) + analogRead(4) + analogRead(10));
+//		if (lightLevel < 0) lightLevel = 0;
+// 		lightLevel = lightLevel / 5; // record scaled light level
 		lightLevelReadTime = 0;
 		lightReadingRequested = false;
-		return true; // done waiting
-	} else { // integration in progress
-		return false; // keep waiting
+		return true;
+	} else { // just keep waiting
+		return false;
 	}
 }
 
-static int updateLightLevel() {
+static int updateLightLevelOLD() {
 	// If a light level reading has been started and the integration time has elapsed,
 	// update the lightLevel variable and return true.
 	// Otherwise, if light level reading is not in progress, start one and return false.
