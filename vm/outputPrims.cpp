@@ -79,6 +79,8 @@ static int updateLightLevel() {
 	// If a light level reading is in progress and the integration time has
 	// elapsed, update the lightLevel variable and return true.
 	// If integration time has not elapsed, do nothing and return false.
+	// Note: This code is sensitive to details about ordering and timing. If you change it,
+	// be sure to test it carefully, with the LED display both on and off!
 
 	char col[] = {COL1, COL2, COL3};
 	char row[] = {3, 4, 10};
@@ -92,27 +94,23 @@ static int updateLightLevel() {
 			setPinMode(col[i], OUTPUT);
 			digitalWrite(col[i], LOW);
 		}
-// set row lines high to reverse-bias the LED's
-for (i = 0; i < 3; i++) {
-	setPinMode(row[i], OUTPUT);
-	digitalWrite(row[i], HIGH);
-}
-delayMicroseconds(100); // allow time to charge capacitance
-		// set row lines high to reverse-bias the LED's, then disconnect
+		// set row lines high to reverse-bias the LED's
 		for (i = 0; i < 3; i++) {
-// 			setPinMode(row[i], OUTPUT);
-// 			digitalWrite(row[i], HIGH);
-// 			delayMicroseconds(100); // allow time to charge capacitance
-			setPinMode(row[i], INPUT);
-//			digitalWrite(row[i], LOW);
+			setPinMode(row[i], OUTPUT);
+			digitalWrite(row[i], HIGH);
 		}
-		lightLevelReadTime = microsecs() + 4000;
+		delayMicroseconds(200); // allow time to charge capacitance (decreases interaction with LED output)
+		// switch rows to input mode to start integrating leakage current
+		for (i = 0; i < 3; i++) {
+			setPinMode(row[i], INPUT);
+		}
+		// Note: Longer integration times yield greater low-light sensitivity but makes display
+		// dimmer while light sensor is running.
+		lightLevelReadTime = microsecs() + 4000; // integration time
 		return false; // keep waiting
 	} else if (microsecs() >= lightLevelReadTime) { // integration complete; update level
-//lightLevel = (analogRead(3) + analogRead(4) + analogRead(10));
-		lightLevel = 1005 - (analogRead(3) + analogRead(4) + analogRead(10));
-//		if (lightLevel < 0) lightLevel = 0;
-// 		lightLevel = lightLevel / 5; // record scaled light level
+		lightLevel = 995 - (analogRead(3) + analogRead(4) + analogRead(10));
+		if (lightLevel < 0) lightLevel = 0;
 		lightLevelReadTime = 0;
 		lightReadingRequested = false;
 		return true;
