@@ -140,7 +140,7 @@ method tmpPath MicroBlocksFlasher {
   if (or ('Mac' == (platform)) ('Linux' == (platform))) {
     return '/tmp/'
   } else { // Windows
-    return (join (userHomePath) '\AppData\Local\Temp\')
+    return (join (userHomePath) '/AppData/Local/Temp/')
   }
 }
 
