@@ -1,4 +1,4 @@
-module Radio Comm
+module Radio
 
 	spec ' ' '[radio:sendInteger]' 'radio send number _' 'num' 123
 	spec ' ' '[radio:sendString]' 'radio send string _' 'str' 'Hello!'
@@ -11,3 +11,13 @@ module Radio Comm
 	spec ' ' '[radio:setChannel]' 'radio set channel (0-83) _' 'num' 7
 	spec ' ' '[radio:setPower]' 'radio set power (0-7) _' 'num' 4
 	spec 'r' '[radio:signalStrength]' 'radio last signal strength'
+	spec ' ' '_radio receive packet' '_radio receive packet _' 'auto'
+	spec ' ' '_radio send packet' '_radio send packet _' 'auto'
+
+to '_radio receive packet' list {
+	'[radio:packetReceive]' list
+}
+
+to '_radio send packet' packet {
+	'[radio:packetSend]' packet
+}

@@ -462,9 +462,11 @@ method fileOrFolderSelected FilePicker {
 	} else {
 	  showFolder this (join currentDir '/' sel) false
 	}
-  }
-  if (notNil nameField) {
-    setText (contents nameField) sel
+  } else {
+    // fill the file name input field with the name of the selected file
+    if (notNil nameField) {
+      setText (contents nameField) sel
+    }
   }
 }
 
