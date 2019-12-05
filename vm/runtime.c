@@ -18,7 +18,7 @@
 
 // VM Version
 
-#define VM_VERSION "v070"
+#define VM_VERSION "v070b"
 
 // Forward Reference Declarations
 
@@ -450,7 +450,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - list
 	// Obsolete type: 5 - array,
 
-	char data[504];
+	char data[804];
 	int maxBytes = (int) sizeof(data) - 1; // leave room for type byte
 
 	if (isInt(value)) { // 32-bit integer, little endian
@@ -482,7 +482,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		int itemCount = obj2int(FIELD(value, 0));
 		*dst++ = itemCount & 0xFF;
 		*dst++ = (itemCount >> 8) & 0xFF;
-		int sendCount = 20; // send up to this many items
+		int sendCount = 32; // send up to this many items
 		if (itemCount < sendCount) sendCount = itemCount;
 		*dst++ = sendCount;
 		for (int i = 0; i < sendCount; i++) {
