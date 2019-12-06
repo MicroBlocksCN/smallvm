@@ -195,11 +195,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[net:wifiStatus]'	'WiFi status')
 		(array 'r' '[net:myIPAddress]'	'my IP address')
 
-		(array 'r' '[net:thingDescription]'			'thing description')
-		(array ' ' '[net:clearThingDescription]'	'clear thing description')
-		(array ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
-		(array ' ' '[net:appendToThingProperty]'	'append to thing property _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' '')
-
 		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
 		(array ' ' '[tft:line]'			'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)

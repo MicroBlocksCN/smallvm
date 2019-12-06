@@ -76,19 +76,6 @@ void queueBroadcastAsThingEvent(char *s, int len) {
 
 static int event_id = rand(); // events need an incremental id
 
-// Primitives to build a Thing description (interim, until we have string concatenation)
-
-// Hack: Simulate a MicroBlocks string object with a C struct. Since this is not a
-// a dynamically allocated object, it could confuse the garbage collector. But
-// we'll replace this interim mechanism once we do have a garbage collector.
-
-#define DESCRIPTION_SIZE 1024
-
-struct {
-	uint32 header;
-	char body[DESCRIPTION_SIZE];
-} descriptionObj;
-
 static char connecting = false;
 
 int serverStarted = false;
@@ -161,13 +148,27 @@ static void setVariableValue(char *varName, int varID, char *jsonData) {
 }
 
 static char* getDescription() {
-	// if thing description ends with ",\n", then we need to replace that with "}}" to make it legal JSON
-	int currentSize = strlen(descriptionObj.body);
-	if ((currentSize > 2) && (descriptionObj.body[currentSize - 1] == '\n')) {
-		descriptionObj.body[currentSize - 2] = '}';
-		descriptionObj.body[currentSize - 1] = '}';
-	}
-	return descriptionObj.body;
+	// get the contents of the '_thing description' variable
+	int index = indexOfVarNamed("_thing description");
+	if (index > -1) {
+		char *description = strdup(obj2str(vars[index]));
+		int currentSize = strlen(description);
+		// fix incomplete thing descriptions
+		if ((currentSize > 2) && (description[currentSize - 1] == ',')) {
+			// close last property / event
+			description[currentSize - 1] = '}';
+			description[currentSize] = '}';
+			description[currentSize + 1] = 0;
+		} else if ((currentSize > 2) && (description[currentSize - 1] == '{')) {
+			// no properties
+			description[currentSize] = '}';
+			description[currentSize + 1] = '}';
+			description[currentSize + 2] = 0;
+		}
+		return description;
+	} else {
+		return "";
+        }
 }
 
 void webServerLoop() {
@@ -360,62 +361,6 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return (OBJ) &ipStringObject;
 }
 
-// Thing Description
-
-static OBJ primThingDescription(int argCount, OBJ *args) {
-	int wordCount = (strlen(descriptionObj.body) + 4) / 4;
-	descriptionObj.header = HEADER(StringType, wordCount);
-	return (OBJ) &descriptionObj;
-}
-
-static OBJ primClearThingDescription(int argCount, OBJ *args) {
-	descriptionObj.body[0] = 0;
-	return falseObj;
-}
-
-static void appendObjToDescription(OBJ obj) {
-	// Append a printed representation of the given object to the descriptionObj.body.
-	// Do nothing if obj is not a string, integer, or boolean.
-
-	int currentSize = strlen(descriptionObj.body);
-	char *dst = &descriptionObj.body[currentSize];
-	int n = (DESCRIPTION_SIZE - currentSize) - 1;
-
-	if (objType(obj) == StringType) snprintf(dst, n, "%s", obj2str(obj));
-	else if (isInt(obj)) snprintf(dst, n, "%d", obj2int(obj));
-	else if (obj == trueObj) snprintf(dst, n, "true");
-	else if (obj == falseObj) snprintf(dst, n, "false");
-}
-
-static OBJ primAppendToThingDescription(int argCount, OBJ *args) {
-	for (int i = 0; i < argCount; i++) {
-		appendObjToDescription(args[i]);
-	}
-	int currentSize = strlen(descriptionObj.body);
-	if (currentSize < (DESCRIPTION_SIZE - 1)) {
-		// add a newline, if there is room
-		descriptionObj.body[currentSize] = '\n';
-		descriptionObj.body[currentSize + 1] = 0;
-	}
-	return falseObj;
-}
-
-static OBJ primAppendToThingProperty(int argCount, OBJ *args) {
-	int currentSize = strlen(descriptionObj.body);
-	if ((currentSize > 3) &&
-		('}' == descriptionObj.body[currentSize - 3]) &&
-		(',' == descriptionObj.body[currentSize - 2]) &&
-		('\n' == descriptionObj.body[currentSize - 1])) {
-			descriptionObj.body[currentSize - 3] = '\0';// remove trailing "},\n"
-			strncat(descriptionObj.body, ",\n", DESCRIPTION_SIZE);
-			for (int i = 0; i < argCount; i++) {
-				appendObjToDescription(args[i]);
-			}
-			strncat(descriptionObj.body, "},\n", DESCRIPTION_SIZE);
-	}
-	return falseObj;
-}
-
 #else // not ESP8266 or ESP32
 
 void queueBroadcastAsThingEvent(char *s, int len) { } // noop
@@ -426,11 +371,6 @@ static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 
-static OBJ primThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primClearThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primAppendToThingDescription(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primAppendToThingProperty(int argCount, OBJ *args) { return fail(noWiFi); }
-
 #endif
 
 static PrimEntry entries[] = {
@@ -439,10 +379,6 @@ static PrimEntry entries[] = {
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
-	{"thingDescription", primThingDescription},
-	{"clearThingDescription", primClearThingDescription},
-	{"appendToThingDescription", primAppendToThingDescription},
-	{"appendToThingProperty", primAppendToThingProperty},
 };
 
 void addNetPrims() {
