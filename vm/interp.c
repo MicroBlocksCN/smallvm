@@ -108,21 +108,24 @@ static int bytesForObject(OBJ value) {
 
 // Broadcast
 
-OBJ lastBroadcast;
+static char lastBroadcast[PRINT_BUF_SIZE];
+static int lastBroadcastByteCount = 0;
 
 static void primSendBroadcast(int argCount, OBJ *args) {
 	// Variadic broadcast; all args are concatenated into printBuffer.
 	printArgs(argCount, args, false, false);
 	// save the last broadcasted message
-	lastBroadcast = newString(printBufferByteCount);
-	memcpy(obj2str(lastBroadcast), printBuffer, printBufferByteCount);
+	lastBroadcastByteCount = printBufferByteCount;
+	memcpy(lastBroadcast, printBuffer, printBufferByteCount);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
 	queueBroadcastAsThingEvent(printBuffer, printBufferByteCount);
 }
 
 OBJ primGetLastBroadcast(int argCount, OBJ *args) {
-	return lastBroadcast;
+	OBJ message = newString(lastBroadcastByteCount);
+	memcpy(obj2str(message), lastBroadcast, lastBroadcastByteCount);
+	return message;
 }
 
 // Board Type
