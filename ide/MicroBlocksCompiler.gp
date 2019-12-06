@@ -82,6 +82,7 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
 		(array ' ' 'sendBroadcastSimple'	'broadcast _' 'str' 'go!' '')
+		(array 'r' 'getLastBroadcast'		'last message')
 		'-'
  		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
@@ -212,7 +213,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[tft:tftTouched]'			'TFT touched')
 		(array 'r' '[tft:tftTouchX]'			'TFT touch X position')
 		(array 'r' '[tft:tftTouchY]'			'TFT touch Y position')
-		(array 'r' '[tft:tftTouchPressure]'	        'TFT touch pressure')
+		(array 'r' '[tft:tftTouchPressure]'			'TFT touch pressure')
 
 		(array ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123)
 		(array ' ' '[radio:sendString]'				'radio send string _' 'str' 'Hello!')
@@ -275,8 +276,8 @@ method initOpcodes SmallCompiler {
 		stopAll 26
 		forLoop 27
 		initLocals 28
-	    getArg 29
-	RESERVED 30
+		getArg 29
+		getLastBroadcast 30
 	RESERVED 31
 	RESERVED 32
 		minimum 33
