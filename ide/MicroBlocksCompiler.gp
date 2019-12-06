@@ -82,7 +82,6 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
 		(array ' ' 'sendBroadcastSimple'	'broadcast _' 'str' 'go!' '')
-		(array 'r' 'getLastBroadcast'		'last message')
 		'-'
  		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
@@ -90,6 +89,8 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop other tasks')
+        'Control-Advanced'
+		(array 'r' 'getLastBroadcast'		'last message')
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
