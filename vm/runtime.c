@@ -584,6 +584,17 @@ static void sendVariableValue(int varID) {
 	}
 }
 
+static void sendValueOfVariableNamed(uint8 chunkIndex, int byteCount, uint8 *data) {
+	char varName[100];
+        memcpy(varName, &data[0], byteCount);
+        varName[byteCount] = 0;
+	sendValueMessage(
+		varValueMsg,
+		chunkIndex,
+		vars[indexOfVarNamed(varName)]
+	);
+}
+
 static void setVariableValue(int varID, int byteCount, uint8 *data) {
 	if ((varID >= 0) && (varID < MAX_VARS)) {
 		int type = data[0];
@@ -927,6 +938,9 @@ static void processLongMessage() {
 		break;
 	case setVarMsg:
 		setVariableValue(rcvBuf[2], bodyBytes, &rcvBuf[5]);
+		break;
+	case getVarMsg:
+		sendValueOfVariableNamed(chunkIndex, bodyBytes, &rcvBuf[5]);
 		break;
 	case broadcastMsg:
 		startReceiversOfBroadcast((char *) &rcvBuf[5], bodyBytes);

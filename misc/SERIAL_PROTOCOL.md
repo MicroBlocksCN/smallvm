@@ -83,7 +83,10 @@ Stop all tasks and stop polling "when *condition*" hats.
 
 ### Get Variable Value (OpCode: 0x07)
 
-Request the value for the variable given by the ID field.
+As a short message, request the value for the variable given by the ID field.
+As a long message, request the value for the variable with the name given in the
+body.
+
 The value is sent to the IDE with the Variable Value message.
 
 ### Set Variable Value (OpCode: 0x08; long message)
