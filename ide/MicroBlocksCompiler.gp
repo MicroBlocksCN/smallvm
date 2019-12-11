@@ -22,15 +22,15 @@ method initialize SmallCompiler {
 }
 
 method dumpTranslationTemplate SmallCompiler {
-  result = (list)
-  for item (microBlocksSpecs this) {
-	if (isClass item 'Array') {
-	  add result (at item 3)
-	  add result (at item 3)
-	  add result ''
+	result = (list)
+	for item (microBlocksSpecs this) {
+		if (isClass item 'Array') {
+			add result (at item 3)
+			add result (at item 3)
+			add result ''
+		}
 	}
-  }
-  writeFile 'microBlocksTranlationTemplate.txt' (joinStrings result (newline))
+	writeFile 'microBlocksTranlationTemplate.txt' (joinStrings result (newline))
 }
 
 method microBlocksSpecs SmallCompiler {
@@ -78,19 +78,19 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
 		'-'
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
- 		(array ' ' 'return'				'return _' 'auto' 0)
+		(array ' ' 'return'				'return _' 'auto' 0)
 		'-'
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
 		(array ' ' 'sendBroadcastSimple'	'broadcast _' 'str' 'go!' '')
 		'-'
- 		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
+		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		'-'
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop other tasks')
-        'Control-Advanced'
-		(array 'r' 'getLastBroadcast'		'last message')
+		'Control-Advanced'
+		(array 'r' 'getLastBroadcast'	'last message')
 	'Math'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
@@ -172,7 +172,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[display:neoPixelSend]'		'send NeoPixel rgb _' 'num' 5)
 	'Prims-Sensing (not in palette)'
 		(array 'r' '[sensors:acceleration]'	'acceleration')
-		(array 'r' '[display:lightLevel]' 	'light level')
+		(array 'r' '[display:lightLevel]'	'light level')
 		(array 'r' '[sensors:temperature]'	'temperature (°C)')
 		(array 'r' '[sensors:tiltX]'		'tilt x')
 		(array 'r' '[sensors:tiltY]'		'tilt y')
@@ -204,17 +204,17 @@ method microBlocksSpecs SmallCompiler {
 
 		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
-		(array ' ' '[tft:line]'			'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)
-		(array ' ' '[tft:rect]'			'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false)
-		(array ' ' '[tft:roundedRect]'			'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false)
+		(array ' ' '[tft:line]'				'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)
+		(array ' ' '[tft:rect]'				'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false)
+		(array ' ' '[tft:roundedRect]'		'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false)
 		(array ' ' '[tft:circle]'			'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false)
 		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
-		(array ' ' '[tft:text]'			'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
+		(array ' ' '[tft:text]'				'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
 
-		(array 'r' '[tft:tftTouched]'			'TFT touched')
-		(array 'r' '[tft:tftTouchX]'			'TFT touch X position')
-		(array 'r' '[tft:tftTouchY]'			'TFT touch Y position')
-		(array 'r' '[tft:tftTouchPressure]'			'TFT touch pressure')
+		(array 'r' '[tft:tftTouched]'		'TFT touched')
+		(array 'r' '[tft:tftTouchX]'		'TFT touch X position')
+		(array 'r' '[tft:tftTouchY]'		'TFT touch Y position')
+		(array 'r' '[tft:tftTouchPressure]'	'TFT touch pressure')
 
 		(array ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123)
 		(array ' ' '[radio:sendString]'				'radio send string _' 'str' 'Hello!')
@@ -232,7 +232,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[radio:disableRadio]'			'disable radio')
 
 	'Disabled (does not work)'
- 		(array ' ' 'ifElse'				'if _ _ else _' 'bool cmd cmd')
+		(array ' ' 'ifElse'					'if _ _ else _' 'bool cmd cmd')
 	)
 }
 
