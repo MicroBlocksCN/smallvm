@@ -1,37 +1,25 @@
 module Servo Output
-variables _servoPin _servoPulseWidth _servoReversed _lastServoUpdate
+variables _servoPin _servoPulseWidth
 
-	spec 'r' '_servoIndex' '_servoIndex _' 'str' 'A'
-	spec ' ' 'attachServoToPin' 'attach servo _ to pin _ reversed _' 'menu.AtoDMenu auto bool' 'A' '1' false
-	spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'menu.AtoDMenu auto' 'A' 90
-	spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100)' 'menu.AtoDMenu auto' 'A' 50
-	spec ' ' '_initServos2' '_initServos2'
-	spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'auto auto' 0 1500
+	spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90) : reverse _' 'num num bool' 1 90 false
+	spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100) : reverse _' 'num num bool' 1 50 false
+	spec 'r' '_servoIndex' '_servoIndex _' 'num' 1
+	spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'num num' 1 1500
 	spec ' ' '_servoUpdateLoop' '_servoUpdateLoop'
 
-to '_initServos2' {
-  if (_servoPin == 0) {
-    _servoPin = (newList 4)
-    fillList _servoPin -1
-    _servoPulseWidth = (newList 4)
-    fillList _servoPulseWidth 1500
-    _servoReversed = (newList 4)
-    fillList _servoReversed (booleanConstant false)
-  }
-  sendBroadcastSimple '_servoUpdateLoop'
-}
-
 to '_servoIndex' which {
-  if ('A' == which) {
-    return 1
-  } ('B' == which) {
-    return 2
-  } ('C' == which) {
-    return 3
-  } ('D' == which) {
-    return 4
+  if (_servoPin == 0) {
+    _servoPin = ('[data:makeList]')
+    _servoPulseWidth = ('[data:makeList]')
   }
-  return 1
+  local 'i' ('[data:find]' which _servoPin)
+  if (i < 0) {
+    comment 'Add new pin'
+    '[data:addLast]' which _servoPin
+    '[data:addLast]' '1500' _servoPulseWidth
+    i = (size _servoPin)
+  }
+  return i
 }
 
 to '_servoPulse' pin usecs {
@@ -49,38 +37,40 @@ to '_servoPulse' pin usecs {
 }
 
 to '_servoUpdateLoop' {
-  '_initServos2'
   forever {
-    for i 4 {
-      local 'pin' (at i _servoPin)
-      local 'usecs' (at i _servoPulseWidth)
-      if (and (pin >= 0) (usecs != 0)) {
-        '_servoPulse' pin usecs
+    if (_servoPin != 0) {
+      comment 'If the _servoPin list is not 0, update the servos'
+      for i (size _servoPin) {
+        local 'pin' (at i _servoPin)
+        local 'usecs' (at i _servoPulseWidth)
+        if (and (pin >= 0) (usecs != 0)) {
+          '_servoPulse' pin usecs
+        }
       }
+      waitMillis 15
     }
-    waitMillis 15
   }
 }
 
-to attachServoToPin which pin reversed {
-  '_initServos2'
-  atPut ('_servoIndex' which) _servoPin pin
-  atPut ('_servoIndex' which) _servoPulseWidth 1500
-  atPut ('_servoIndex' which) _servoReversed reversed
-}
-
-to setServoAngle which degrees {
-  '_initServos2'
-  if (at ('_servoIndex' which) _servoReversed) {
+to setServoAngle which degrees optionalReverse {
+  local 'reversed' false
+  if ((pushArgCount) > 2) {
+    reversed = optionalReverse
+  }
+  if reversed {
     degrees = (0 - degrees)
   }
   local 'pulseWidth' (1500 - (7 * degrees))
   atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
+  sendBroadcastSimple '_servoUpdateLoop'
 }
 
-to setServoSpeed which speed {
-  '_initServos2'
-  if (at ('_servoIndex' which) _servoReversed) {
+to setServoSpeed which speed optionalReverse {
+  local 'reversed' false
+  if ((pushArgCount) > 2) {
+    reversed = optionalReverse
+  }
+  if reversed {
     speed = (0 - speed)
   }
   local 'pulseWidth' (1500 - (7 * speed))
@@ -88,5 +78,6 @@ to setServoSpeed which speed {
     pulseWidth = 0
   }
   atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
+  sendBroadcastSimple '_servoUpdateLoop'
 }
 
