@@ -108,24 +108,16 @@ static int bytesForObject(OBJ value) {
 
 // Broadcast
 
-static char lastBroadcast[PRINT_BUF_SIZE];
-static int lastBroadcastByteCount = 0;
+OBJ lastBroadcast = zeroObj; // Note: This variable must be processed by the garbage collector!
 
 static void primSendBroadcast(int argCount, OBJ *args) {
 	// Variadic broadcast; all args are concatenated into printBuffer.
 	printArgs(argCount, args, false, false);
 	// save the last broadcasted message
-	lastBroadcastByteCount = printBufferByteCount;
-	memcpy(lastBroadcast, printBuffer, printBufferByteCount);
+	lastBroadcast = newStringFromBytes(printBuffer, printBufferByteCount);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
 	queueBroadcastAsThingEvent(printBuffer, printBufferByteCount);
-}
-
-OBJ primGetLastBroadcast(int argCount, OBJ *args) {
-	OBJ message = newString(lastBroadcastByteCount);
-	memcpy(obj2str(message), lastBroadcast, lastBroadcastByteCount);
-	return message;
 }
 
 // Board Type
@@ -625,7 +617,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	getLastBroadcast_op:
-		*(sp - arg) = primGetLastBroadcast(arg, sp - arg);
+		*(sp - arg) = lastBroadcast;
 		POP_ARGS_REPORTER();
 		DISPATCH();
 
