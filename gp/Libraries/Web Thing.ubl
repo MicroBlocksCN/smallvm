@@ -1,4 +1,4 @@
-module 'Web of Things' Comm
+module 'Web Thing' Comm
 variables _WoT_definingEvents _useWiFi
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
