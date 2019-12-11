@@ -1,14 +1,14 @@
 module main
 variables _WoT_definingEvents _useWiFi
 
-script 297 50 {
+script 189 50 {
 comment 'Mozila Web of Things pushbutton example.
 
 To test it, either press, long-press or double-press the A button
 in your board and look at the display.'
 }
 
-script 50 130 {
+script 50 129 {
 whenButtonPressed 'A'
 local 'time' (millisOp)
 waitUntil (or (not (buttonA)) (((millisOp) - time) > 500))
@@ -24,7 +24,7 @@ if (((millisOp) - time) > 500) {
 }
 }
 
-script 553 186 {
+script 518 139 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 defineThing 'microButton' 'PushButton'
@@ -33,14 +33,21 @@ registerEvent 'Button double-pressed' 'DoublePressedEvent'
 registerEvent 'Button long-pressed' 'LongPressedEvent'
 }
 
-script 860 390 {
+script 756 298 {
+whenBroadcastReceived 'Button pressed'
+setUserLED true
+waitMillis 100
+setUserLED false
+}
+
+script 520 300 {
 whenBroadcastReceived 'Button long-pressed'
 setUserLED true
 waitMillis 500
 setUserLED false
 }
 
-script 557 410 {
+script 525 418 {
 whenBroadcastReceived 'Button double-pressed'
 setUserLED true
 waitMillis 100
@@ -51,15 +58,8 @@ waitMillis 100
 setUserLED false
 }
 
-script 865 522 {
-whenBroadcastReceived 'Button pressed'
-setUserLED true
-waitMillis 100
-setUserLED false
-}
 
-
-module 'Web of Things' Comm
+module 'Web Thing' Comm
 variables _WoT_definingEvents _useWiFi
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
@@ -142,10 +142,10 @@ to registerEvent title type {
   if _useWiFi {
     if (not _WoT_definingEvents) {
       local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
-      if ((v 'last char') == 123) {
+      if ((v 'last char') == '{') {
         comment 'thing description ends with "{", meaning there are no properties'
         '[net:appendToThingDescription]' '},"events":{'
-      } ((v 'last char') == 44) {
+      } ((v 'last char') == ',') {
         comment 'thing description ends with ",", meaning there''s at least one property'
         '[net:appendToThingDescription]' '"":{}},"events":{'
       }
@@ -159,6 +159,8 @@ to registerEvent title type {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  tries += -1
+  '[net:startWiFi]' ssid password
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -181,6 +183,22 @@ to 'wifi connect to' ssid password tries {
 }
 
 to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
   '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

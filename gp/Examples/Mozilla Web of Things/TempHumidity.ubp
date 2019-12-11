@@ -145,7 +145,7 @@ to temperature_DHT22 pin {
 }
 
 
-module 'Web of Things' Comm
+module 'Web Thing' Comm
 variables _WoT_definingEvents _useWiFi
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
@@ -228,10 +228,10 @@ to registerEvent title type {
   if _useWiFi {
     if (not _WoT_definingEvents) {
       local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
-      if ((v 'last char') == 123) {
+      if ((v 'last char') == '{') {
         comment 'thing description ends with "{", meaning there are no properties'
         '[net:appendToThingDescription]' '},"events":{'
-      } ((v 'last char') == 44) {
+      } ((v 'last char') == ',') {
         comment 'thing description ends with ",", meaning there''s at least one property'
         '[net:appendToThingDescription]' '"":{}},"events":{'
       }
