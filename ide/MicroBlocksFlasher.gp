@@ -161,7 +161,7 @@ method copyEspToolToDisk MicroBlocksFlasher {
   if (not (contains (listFiles (tmpPath this)) esptoolFileName)) {
     // Sometimes tmpPath doesn't exist in Windows. makeDirectory will create it
     // if it doesn't exist, and do nothing if it already does.
-    makeDirectory tmpPath
+    makeDirectory (tmpPath this)
     esptoolData = (readEmbeddedFile embeddedFileName isBinary)
     destination = (join (tmpPath this) esptoolFileName)
     writeFile destination esptoolData
