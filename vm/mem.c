@@ -50,6 +50,8 @@ static OBJ freeChunk = NULL;
 
 static OBJ tempObj = NULL; // used during resizeObj()
 
+extern OBJ lastBroadcast; // an additional GC root
+
 // Initialization
 
 void memInit() {
@@ -68,7 +70,8 @@ void memClear() {
 	// Clear object memory and set all global variables to zero.
 
 	// clear global variables
-	for (int i = 0; i < MAX_VARS; i++) vars[i] = int2obj(0);
+	for (int i = 0; i < MAX_VARS; i++) vars[i] = zeroObj;
+	lastBroadcast = zeroObj;
 
 	// zero objectstore memory (not essential)
 	memset(objstore, 0, sizeof(objstore));
@@ -134,7 +137,7 @@ OBJ resizeObj(OBJ oldObj, int wordCount) {
 	if ((oldObj < memStart) || (oldObj >= memEnd)) return oldObj; // object must be in object store
 
 	tempObj = oldObj; // record oldObj in case newObj() triggers GC that moves it
-	OBJ result = newObj(TYPE(oldObj), wordCount, int2obj(0));
+	OBJ result = newObj(TYPE(oldObj), wordCount, zeroObj);
 	oldObj = tempObj; // restore oldObj
 	tempObj = NULL;
 	if (!result) return oldObj;
@@ -291,6 +294,7 @@ static inline OBJ forward(OBJ obj) {
 static void forwardRoots(void) {
 	// forward global variables
 	for (int i = 0; i < MAX_VARS; i++) vars[i] = forward(vars[i]);
+	lastBroadcast = forward(lastBroadcast);
 
 	if (tempObj) tempObj = forward(tempObj);
 
@@ -377,6 +381,7 @@ void mark(OBJ root) {
 static void markRoots(void) {
 	// mark global variables
 	for (int i = 0; i < MAX_VARS; i++) mark(vars[i]);
+	mark(lastBroadcast);
 
 	// mark temporary object used during object resizing
 	if (tempObj) mark(tempObj);

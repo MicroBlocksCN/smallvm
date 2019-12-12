@@ -1,18 +1,18 @@
 module main
 variables interval octave onOff
 
-script 89 51 {
+script 89 50 {
 comment 'assumes CPX but can also connect a piezo and LED strip to another board'
 }
 
-script 54 130 {
+script 54 129 {
 whenStarted
 comment 'modify these two blocks if not CPX'
 neoPixelAttach 10 ''
 'wifi connect to' 'Network_Name' '' 3
 defineThing 'Ambulance' 'OnOffSwitch'
 addBooleanProperty 'Triggered' 'onOff' 'OnOffProperty'
-addNumProp 'octave' 'octave' -1 5 'LevelProperty'
+addNumProp 'octave' 'octave' -1 3 'LevelProperty'
 addNumProp 'interval' 'interval' 250 1000 'LevelProperty'
 onOff = (booleanConstant false)
 octave = 1
@@ -36,7 +36,7 @@ forever {
 }
 }
 
-script 546 168 {
+script 546 167 {
 comment 'This example works out of the box on the Adafruit Circuit Playground Express.
 
 For other boards, you''ll need to attach a NeoPixel strip and a buzzer, and
@@ -48,7 +48,7 @@ waitMillis 2000
 onOff = (booleanConstant false)
 }
 
-script 439 627 ('[net:thingDescription]')
+script 439 626 ('[net:thingDescription]')
 
 
 module NeoPixel Output
@@ -60,7 +60,7 @@ variables _np_pixels
 	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
 	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
 	spec 'r' 'colorFromRGB' 'color r _ g _ b _' 'num num num' 0 1 1
-	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num num bool' 10 false
+	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num num bool' 10  false
 	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
 	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
 	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
@@ -334,7 +334,7 @@ to playMIDIKey key ms {
 }
 
 
-module 'Web of Things' Comm
+module 'Web Thing' Comm
 variables _WoT_definingEvents _useWiFi
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3

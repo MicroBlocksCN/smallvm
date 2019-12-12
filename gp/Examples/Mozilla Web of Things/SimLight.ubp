@@ -64,14 +64,16 @@ to redraw_display {}
 module TFT Output
 
 	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec 'r' '[tft:getWidth]' 'TFT width'
+	spec 'r' '[tft:getHeight]' 'TFT height'
 	spec ' ' 'set TFT pixel x' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255
-	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false
-	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num num bool' 10 10 40 30 8 12255317 false
-	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false
-	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false
-	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false
-	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680
+	spec ' ' 'tft line' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+	spec ' ' 'tft rect' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil false
+	spec ' ' 'tft roundedRect' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil false
+	spec ' ' 'tft circle' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 60 100 30 nil false
+	spec ' ' 'tft triangle' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil false
+	spec ' ' 'tft text' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 0 80 nil 1 false
 	spec 'r' '_tft color' '_tft color _ to number' 'color any'
 
 to '_tft color' 'color hex' {
@@ -85,9 +87,33 @@ to 'set TFT pixel x' x y color {
   '[tft:setPixel]' x y ('_tft color' color)
 }
 
+to 'tft circle' x y radius color filled {
+  '[tft:circle]' x y radius ('_tft color' color) filled
+}
 
-module 'Web of Things' Comm
-variables _useWiFi
+to 'tft line' x1 y1 x2 y2 color {
+  '[tft:line]' x1 y1 x2 y2 ('_tft color' color)
+}
+
+to 'tft rect' x y w h color filled {
+  '[tft:rect]' x y w h ('_tft color' color) filled
+}
+
+to 'tft roundedRect' x y w h radius color filled {
+  '[tft:roundedRect]' x y w h radius ('_tft color' color) filled
+}
+
+to 'tft text' text x y color scale wrap {
+  '[tft:text]' text x y ('_tft color' color) scale wrap
+}
+
+to 'tft triangle' x1 y1 x2 y2 x3 y3 color filled {
+  '[tft:triangle]' x1 y1 x2 y2 x3 y3 ('_tft color' color) filled
+}
+
+
+module 'Web Thing' Comm
+variables _WoT_definingEvents _useWiFi
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
@@ -136,15 +162,24 @@ to addStringProperty title var typeName {
 to defineThing name capability {
   _useWiFi = ('[net:hasWiFi]')
   if _useWiFi {
+    _WoT_definingEvents = (booleanConstant false)
     '[net:clearThingDescription]'
     if ('' == capability) {
-      '[net:appendToThingDescription]' '{ "name": "' name '",
+      '[net:appendToThingDescription]' '{ "title": "' name '",
   "@type": [ ],
-  "properties": {'
+  "links":[{
+    "rel": "events",
+    "href": "/events"
+   }],
+   "properties": {'
     } else {
-      '[net:appendToThingDescription]' '{ "name": "' name '",
+      '[net:appendToThingDescription]' '{ "title": "' name '",
   "@context": "https://iot.mozilla.org/schemas/",
   "@type": ["' capability '"],
+  "links":[{
+    "rel": "events",
+    "href": "/events"
+   }],
   "properties": {'
     }
   } else {
@@ -158,7 +193,18 @@ to getIPAddress {
 
 to registerEvent title type {
   if _useWiFi {
-    sayIt 'Not yet supported'
+    if (not _WoT_definingEvents) {
+      local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
+      if ((v 'last char') == '{') {
+        comment 'thing description ends with "{", meaning there are no properties'
+        '[net:appendToThingDescription]' '},"events":{'
+      } ((v 'last char') == ',') {
+        comment 'thing description ends with ",", meaning there''s at least one property'
+        '[net:appendToThingDescription]' '"":{}},"events":{'
+      }
+      _WoT_definingEvents = (booleanConstant true)
+    }
+    '[net:appendToThingDescription]' '    "' title '": {"description":"MicroBlocks event", "@type":"' type '"},'
   } else {
     sendBroadcast 'moz-event {"name":"' title '", "metadata":{"description":"MicroBlocks event", "@type":"' type '"}}'
   }
@@ -166,6 +212,8 @@ to registerEvent title type {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  tries += -1
+  '[net:startWiFi]' ssid password
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -188,6 +236,22 @@ to 'wifi connect to' ssid password tries {
 }
 
 to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
   '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

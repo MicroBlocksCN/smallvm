@@ -1,11 +1,11 @@
 module main
 variables _useWiFi bpm interval
 
-script 81 50 {
+script 84 50 {
 comment 'This example lets you simulate a heart rate using A and B buttons and displays the rate as a beating heart on the LED matrix'
 }
 
-script 51 103 {
+script 54 103 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 defineThing 'Heart rate' 'MultiLevelSensor'
@@ -21,7 +21,7 @@ forever {
 }
 }
 
-script 552 112 {
+script 555 112 {
 comment 'To test, click this script,
 then press buttons A and B
 to change the heart rate.'
@@ -31,7 +31,7 @@ forever {
 }
 }
 
-script 444 259 {
+script 447 259 {
 whenStarted
 waitMillis 10000
 forever {
@@ -52,9 +52,15 @@ module 'LED Display' Output
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
 
-module 'Web of Things' Comm
-variables _useWiFi
+to displayCharacter s {
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+
+module 'Web Thing' Comm
+variables _WoT_definingEvents _useWiFi
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
@@ -103,15 +109,24 @@ to addStringProperty title var typeName {
 to defineThing name capability {
   _useWiFi = ('[net:hasWiFi]')
   if _useWiFi {
+    _WoT_definingEvents = (booleanConstant false)
     '[net:clearThingDescription]'
     if ('' == capability) {
-      '[net:appendToThingDescription]' '{ "name": "' name '",
+      '[net:appendToThingDescription]' '{ "title": "' name '",
   "@type": [ ],
-  "properties": {'
+  "links":[{
+    "rel": "events",
+    "href": "/events"
+   }],
+   "properties": {'
     } else {
-      '[net:appendToThingDescription]' '{ "name": "' name '",
+      '[net:appendToThingDescription]' '{ "title": "' name '",
   "@context": "https://iot.mozilla.org/schemas/",
   "@type": ["' capability '"],
+  "links":[{
+    "rel": "events",
+    "href": "/events"
+   }],
   "properties": {'
     }
   } else {
@@ -125,7 +140,18 @@ to getIPAddress {
 
 to registerEvent title type {
   if _useWiFi {
-    sayIt 'Not yet supported'
+    if (not _WoT_definingEvents) {
+      local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
+      if ((v 'last char') == '{') {
+        comment 'thing description ends with "{", meaning there are no properties'
+        '[net:appendToThingDescription]' '},"events":{'
+      } ((v 'last char') == ',') {
+        comment 'thing description ends with ",", meaning there''s at least one property'
+        '[net:appendToThingDescription]' '"":{}},"events":{'
+      }
+      _WoT_definingEvents = (booleanConstant true)
+    }
+    '[net:appendToThingDescription]' '    "' title '": {"description":"MicroBlocks event", "@type":"' type '"},'
   } else {
     sendBroadcast 'moz-event {"name":"' title '", "metadata":{"description":"MicroBlocks event", "@type":"' type '"}}'
   }
@@ -133,6 +159,8 @@ to registerEvent title type {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  tries += -1
+  '[net:startWiFi]' ssid password
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -155,6 +183,22 @@ to 'wifi connect to' ssid password tries {
 }
 
 to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
   '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

@@ -73,7 +73,7 @@ static void printObj(OBJ obj) {
 }
 
 static void printArgs(int argCount, OBJ *args, int forSay, int insertSpaces) {
-	// Print all args into printBuffer ad return the size of the resulting string.
+	// Print all args into printBuffer and return the size of the resulting string.
 
 	if (forSay) {
 		printBuffer[0] = 2; // type is string (printBuffer is used as outputValue message body)
@@ -108,10 +108,13 @@ static int bytesForObject(OBJ value) {
 
 // Broadcast
 
+OBJ lastBroadcast = zeroObj; // Note: This variable must be processed by the garbage collector!
+
 static void primSendBroadcast(int argCount, OBJ *args) {
 	// Variadic broadcast; all args are concatenated into printBuffer.
-
 	printArgs(argCount, args, false, false);
+	// save the last broadcasted message
+	lastBroadcast = newStringFromBytes(printBuffer, printBufferByteCount);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
 	queueBroadcastAsThingEvent(printBuffer, printBufferByteCount);
@@ -255,7 +258,7 @@ static void runTask(Task *task) {
 		&&forLoop_op,
 		&&initLocals_op,
 		&&getArg_op,
-		&&RESERVED_op,
+		&&getLastBroadcast_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&minimum_op,
@@ -611,6 +614,10 @@ static void runTask(Task *task) {
 		} else {
 			fail(notInFunction);
 		}
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	getLastBroadcast_op:
+		*(sp - arg) = lastBroadcast;
 		POP_ARGS_REPORTER();
 		DISPATCH();
 

@@ -15,18 +15,20 @@ to 'cpx-LEDs' {
 
 to 'microbit-LEDs' {
   if on {
+    setUserLED true
     '[display:mbDisplay]' 15728622
   } else {
+    setUserLED false
     '[display:mbDisplayOff]'
   }
   last_on = on
 }
 
-script 74 50 {
+script 53 50 {
 comment 'This script lets you control the built-in LED of a board, much like you might control a smart bulb using the Mozilla WebThings Gateway UI.'
 }
 
-script 71 100 {
+script 61 112 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 defineThing 'Hello LED' 'Light'
@@ -37,39 +39,39 @@ setUserLED false
 on = (booleanConstant false)
 last_on = (booleanConstant true)
 forever {
-  if (and ((boardType) == 'micro:bit') (on != last_on)) {
-    'microbit-LEDs'
-  } (and ((boardType) == 'CircuitPlayground') (on != last_on)) {
-    'cpx-LEDs'
-  } (on != last_on) {
-    setUserLED on
+  if (on != last_on) {
     last_on = on
+    if ((boardType) == 'CircuitPlayground') {
+      'cpx-LEDs'
+    } else {
+      'microbit-LEDs'
+    }
+    waitMillis 50
   }
-  waitMillis 50
 }
 }
 
-script 540 133 {
+script 503 121 {
 comment 'To test, click to toggle the LED.'
 on = (not on)
 }
 
-script 763 221 {
-to 'cpx-LEDs' {}
-}
-
-script 570 222 {
+script 406 250 {
 to 'microbit-LEDs' {}
 }
 
-script 373 605 {
-comment 'Click to check IP address'
-sayIt (getIPAddress)
+script 602 251 {
+to 'cpx-LEDs' {}
 }
 
-script 621 608 {
+script 579 610 {
 comment 'Check thing description'
 sayIt ('[net:thingDescription]')
+}
+
+script 322 611 {
+comment 'Click to check IP address'
+sayIt (getIPAddress)
 }
 
 
@@ -203,7 +205,7 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 }
 
 
-module 'Web of Things' Comm
+module 'Web Thing' Comm
 variables _WoT_definingEvents _useWiFi
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
@@ -286,10 +288,10 @@ to registerEvent title type {
   if _useWiFi {
     if (not _WoT_definingEvents) {
       local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
-      if ((v 'last char') == 123) {
+      if ((v 'last char') == '{') {
         comment 'thing description ends with "{", meaning there are no properties'
         '[net:appendToThingDescription]' '},"events":{'
-      } ((v 'last char') == 44) {
+      } ((v 'last char') == ',') {
         comment 'thing description ends with ",", meaning there''s at least one property'
         '[net:appendToThingDescription]' '"":{}},"events":{'
       }

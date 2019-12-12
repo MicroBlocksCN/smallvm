@@ -1,4 +1,4 @@
-module 'Button Events'
+module 'Button Events' Input
 variables _buttons
 
 	spec ' ' '_buttonLoop' '_buttonLoop'

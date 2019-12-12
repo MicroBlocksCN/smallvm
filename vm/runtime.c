@@ -18,7 +18,7 @@
 
 // VM Version
 
-#define VM_VERSION "v070b"
+#define VM_VERSION "v071"
 
 // Forward Reference Declarations
 
@@ -192,6 +192,7 @@ static int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
 
 	code++; // skip initLocals
 	char *s = obj2str((OBJ) code + ARG(*code) + 1);
+	if (strlen(s) == 0) return true; // empty parameter in the receiver means "any message"
 	if (strlen(s) != byteCount) return false;
 	for (int i = 0; i < byteCount; i++) {
 		if (s[i] != msg[i]) return false;
