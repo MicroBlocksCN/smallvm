@@ -516,7 +516,7 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	#endif
 	#ifdef ARDUINO_ARCH_ESP32
 		// use the ESP32 pin number directly (if not reserved)
-		if (RESERVED(pinNum)) { return int2obj(0); }
+		if (RESERVED(pinNum)) return int2obj(0);
 		SET_MODE(pinNum, INPUT);
 		return int2obj(analogRead(pinNum) >> 2); // convert from 12-bit to 10-bit resolution
 	#elif defined(ARDUINO_SAM_DUE)
@@ -525,7 +525,7 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return int2obj(0);
 	#endif
-	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) { return int2obj(0); }
+	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
 	int pin = analogPin[pinNum];
 	SET_MODE(pin, INPUT);
 	if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
@@ -588,9 +588,7 @@ void primAnalogWrite(OBJ *args) {
 	if (value > 1023) value = 1023;
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
 	SET_MODE(pinNum, OUTPUT);
-	#if !defined(ESP32)
-		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
-	#else
+	#if defined(ESP32)
 		if (value == 0) {
 			pinDetach(pinNum);
 		} else {
@@ -609,8 +607,9 @@ void primAnalogWrite(OBJ *args) {
 				ledcWrite(esp32Channel, value);
 			}
 		}
+	#else
+		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 	#endif
-
 }
 
 OBJ primDigitalRead(int argCount, OBJ *args) {
@@ -698,7 +697,7 @@ void primDigitalSet(int pinNum, int flag) {
 		} else if ((1 <= pinNum) && (pinNum <= 4)) {
 			pinNum = digitalPinMappings[pinNum - 1];
 		}
-		if (RESERVED(pinNum)) { return; }
+		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE)
@@ -842,9 +841,9 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	#if HAS_SERVO
 		OBJ pinArg = args[0];
 		OBJ usecsArg = args[1];
-		if (!isInt(pinArg) || !isInt(usecsArg)) { return falseObj; }
+		if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
 		int pin = obj2int(pinArg);
-		if ((pin < 0) || (pin >= DIGITAL_PINS)) { return falseObj; }
+		if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
 		#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 			pin = digitalPin[pin];
 		#endif
