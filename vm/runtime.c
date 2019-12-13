@@ -591,9 +591,8 @@ static void sendValueOfVariableNamed(uint8 chunkIndex, int byteCount, uint8 *dat
 	if (byteCount > 99) return; // variable name too long; ignore request
 	memcpy(varName, &data[0], byteCount);
 	varName[byteCount] = 0; // null terminate
-	int i = indexOfVarNamed(varName);
-	if (i < 0) return; // variable name not found; ignore
-	sendValueMessage(varValueMsg, chunkIndex, vars[indexOfVarNamed(varName)]);
+	int varID = indexOfVarNamed(varName);
+	if (varID >= 0) sendValueMessage(varValueMsg, chunkIndex, vars[varID]);
 }
 
 static void setVariableValue(int varID, int byteCount, uint8 *data) {
@@ -693,6 +692,19 @@ void sendChunkCRC(int chunkID) {
 
 // Retrieving source code and attributes
 
+static int * scanStart() {
+	// Return a pointer to the first record at which to start scanning.
+
+	int *ptr = recordAfter(NULL);
+	int *result = ptr; // default if no 'deleteAll' records found
+	while (ptr) {
+		int type = (*ptr >> 16) & 0xFF;
+		ptr = recordAfter(ptr);
+		if (deleteAll == type) result = ptr;
+	}
+	return result;
+}
+
 static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
 	if (!persistentRecord) return; // NULL persistentRecord; do nothing
 
@@ -733,7 +745,7 @@ static void sendAllCode() {
 		int *snapSource = NULL;
 		int *gpSource = NULL;
 
-		int *p = recordAfter(NULL);
+		int *p = scanStart();
 		while (p) {
 			int recID = (*p >> 8) & 0xFF;
 			if (recID == chunkID) {
@@ -758,19 +770,6 @@ static void sendAllCode() {
 
 // Variable support
 
-int * varNameRecordFor(int varID) {
-	int *result = NULL;
-	int *p = recordAfter(NULL);
-	while (p) {
-		int recType = (*p >> 16) & 0xFF;
-		int id = (*p >> 8) & 0xFF;
-		if ((recType == varName) && (id == varID)) result = p;
-		if (recType == varsClearAll) result = NULL;
-		p = recordAfter(p);
-	}
-	return result;
-}
-
 static void sendVarNameMessage(int varID, int *persistentRecord) {
 	if (!persistentRecord) return; // NULL persistentRecord; do nothing
 
@@ -792,23 +791,31 @@ static void sendVarNameMessage(int varID, int *persistentRecord) {
 static void sendVarNames() {
 	// Send the names of all variables.
 
-	for (int varID = 0; varID < MAX_VARS; varID++) {
-		int *rec = varNameRecordFor(varID);
-		if (rec) sendVarNameMessage(varID, rec);
+	int *p = scanStart();
+	while (p) {
+		int recType = (*p >> 16) & 0xFF;
+		int varID = (*p >> 8) & 0xFF;
+		if (recType == varName) sendVarNameMessage(varID, p);
+		p = recordAfter(p);
 	}
 }
 
-int indexOfVarNamed(char *varName) {
+int indexOfVarNamed(char *s) {
 	// Return the index of the given variable or -1 if not found.
 
-	for (int i = 0; i < MAX_VARS; i++) {
-		int *rec = varNameRecordFor(i);
-		if (rec) {
-			char *thisVarName = (char *) (rec + 2);
-			if (0 == strcmp(varName, thisVarName)) return i;
+	int result = -1; // default is not found
+	int *p = scanStart();
+	while (p) {
+		int recType = (*p >> 16) & 0xFF;
+		int id = (*p >> 8) & 0xFF;
+		if (recType == varName) {
+			if (0 == strcmp(s, (char *) (p + 2))) result = id;
+		} else if (recType == varsClearAll) {
+			result = -1;
 		}
+		p = recordAfter(p);
 	}
-	return -1; // not found
+	return result;
 }
 
 // Receiving Messages from IDE
