@@ -532,29 +532,26 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	return int2obj(analogRead(pin));
 }
 
-
 #if defined(ESP32)
-	#define MAX_ESP32_CHANNELS 8  // MAX 16
+	#define MAX_ESP32_CHANNELS 8 // MAX 16
 	int esp32Channels[MAX_ESP32_CHANNELS];
+
 	int pinAttached(int pin) {
-		int esp32Channel =  1; //0 Tone
-		while ((esp32Channel < MAX_ESP32_CHANNELS) and (esp32Channels[esp32Channel] != pin)) {
-			esp32Channel++;
+		// Note: channel 0 is used by Tone
+		if (!pin) return 0;
+		for (int i = 1; i < MAX_ESP32_CHANNELS; i++) {
+			if (esp32Channels[i] == pin) return i;
 		}
-		if (esp32Channel == MAX_ESP32_CHANNELS) {
-			return 0;
-		} else {
-			return esp32Channel;
-		}
+		return 0; // not attached
 	}
 
 	void analogAttach(int pin) {
 		int esp32Channel = 1;
-		while ((esp32Channel < MAX_ESP32_CHANNELS) and (esp32Channels[esp32Channel] > 0)) {
+		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0)) {
 			esp32Channel++;
 		}
 		if (esp32Channel < MAX_ESP32_CHANNELS) {
-			ledcSetup(esp32Channel, 5000, 10); // 5KHz, 1024
+			ledcSetup(esp32Channel, 5000, 10); // 5KHz, 10 bits
 			ledcAttachPin(pin, esp32Channel);
 			esp32Channels[esp32Channel] = pin;
 		}
@@ -807,10 +804,10 @@ OBJ primButtonB(OBJ *args) {
 #if defined(ESP32)
 	void servoAttach(int pin) {
 		int esp32Channel = 1;
-		while ((esp32Channel < MAX_ESP32_CHANNELS) and (esp32Channels[esp32Channel]  > 0))
+		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0))
 			esp32Channel++;
 		if (esp32Channel < MAX_ESP32_CHANNELS) {
-			ledcSetup(esp32Channel, 50, 10); // 50Hz, 1024
+			ledcSetup(esp32Channel, 50, 10); // 50Hz, 10 bits
 			ledcAttachPin(pin, esp32Channel);
 			esp32Channels[esp32Channel] = pin;
 		}
@@ -820,11 +817,11 @@ OBJ primButtonB(OBJ *args) {
 void resetServos() {
 	#if HAS_SERVO
 		for (int pin = 0; pin < DIGITAL_PINS; pin++) {
-		#if defined(ESP32)
-			if (pinAttached(pin) > 0) pinDetach(pin);
-		#else
-			if (servo[pin].attached()) servo[pin].detach();
-		#endif
+			#if defined(ESP32)
+				if (!RESERVED(pin) && pinAttached(pin)) pinDetach(pin);
+			#else
+				if (servo[pin].attached()) servo[pin].detach();
+			#endif
 		}
 	#endif
 }
@@ -836,8 +833,6 @@ OBJ primHasServo(int argCount, OBJ *args) {
 		return falseObj;
 	#endif
 }
-
-
 
 OBJ primSetServo(int argCount, OBJ *args) {
 	// setServo <pin> <usecs>
@@ -868,7 +863,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 			} else {
 				if (pinAttached(pin) == 0) {
 					servoAttach(pin);
-                                }
+			}
 				int esp32Channel = pinAttached(pin);
 				if (esp32Channel > 0) {
 					ledcWrite(esp32Channel, usecs * 1024 / 20000);
