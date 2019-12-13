@@ -20,9 +20,9 @@
 #define USE_TASKS true
 
 // RECENT is a threshold for waking up tasks waiting on timers
-// The timer can be up to this much past the wakeup time.
+// The timer can be up to this many usecs past the wakeup time.
 
-#define RECENT 100000
+#define RECENT 1000000
 
 // Interpreter State
 
