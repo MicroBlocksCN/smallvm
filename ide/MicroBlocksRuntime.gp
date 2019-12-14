@@ -688,6 +688,10 @@ method getVar SmallRuntime varID {
 	sendMsg this 'getVarMsg' varID
 }
 
+method getVarNamed SmallRuntime varName {
+	sendMsg this 'getVarMsg' 255 (toArray (toBinaryData varName))
+}
+
 method setVar SmallRuntime varID val {
 	body = nil
 	if (isClass val 'Integer') {
