@@ -516,7 +516,7 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	#endif
 	#ifdef ARDUINO_ARCH_ESP32
 		// use the ESP32 pin number directly (if not reserved)
-		if (RESERVED(pinNum)) { return int2obj(0); }
+		if (RESERVED(pinNum)) return int2obj(0);
 		SET_MODE(pinNum, INPUT);
 		return int2obj(analogRead(pinNum) >> 2); // convert from 12-bit to 10-bit resolution
 	#elif defined(ARDUINO_SAM_DUE)
@@ -525,36 +525,33 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return int2obj(0);
 	#endif
-	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) { return int2obj(0); }
+	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
 	int pin = analogPin[pinNum];
 	SET_MODE(pin, INPUT);
 	if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
 	return int2obj(analogRead(pin));
 }
 
-
 #if defined(ESP32)
-	#define MAX_ESP32_CHANNELS 8  // MAX 16
+	#define MAX_ESP32_CHANNELS 8 // MAX 16
 	int esp32Channels[MAX_ESP32_CHANNELS];
+
 	int pinAttached(int pin) {
-		int esp32Channel =  1; //0 Tone
-		while ((esp32Channel < MAX_ESP32_CHANNELS) and (esp32Channels[esp32Channel] != pin)) {
-			esp32Channel++;
+		// Note: channel 0 is used by Tone
+		if (!pin) return 0;
+		for (int i = 1; i < MAX_ESP32_CHANNELS; i++) {
+			if (esp32Channels[i] == pin) return i;
 		}
-		if (esp32Channel == MAX_ESP32_CHANNELS) {
-			return 0;
-		} else {
-			return esp32Channel;
-		}
+		return 0; // not attached
 	}
 
 	void analogAttach(int pin) {
 		int esp32Channel = 1;
-		while ((esp32Channel < MAX_ESP32_CHANNELS) and (esp32Channels[esp32Channel] > 0)) {
+		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0)) {
 			esp32Channel++;
 		}
 		if (esp32Channel < MAX_ESP32_CHANNELS) {
-			ledcSetup(esp32Channel, 5000, 10); // 5KHz, 1024
+			ledcSetup(esp32Channel, 5000, 10); // 5KHz, 10 bits
 			ledcAttachPin(pin, esp32Channel);
 			esp32Channels[esp32Channel] = pin;
 		}
@@ -591,9 +588,7 @@ void primAnalogWrite(OBJ *args) {
 	if (value > 1023) value = 1023;
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
 	SET_MODE(pinNum, OUTPUT);
-	#if !defined(ESP32)
-		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
-	#else
+	#if defined(ESP32)
 		if (value == 0) {
 			pinDetach(pinNum);
 		} else {
@@ -612,8 +607,9 @@ void primAnalogWrite(OBJ *args) {
 				ledcWrite(esp32Channel, value);
 			}
 		}
+	#else
+		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 	#endif
-
 }
 
 OBJ primDigitalRead(int argCount, OBJ *args) {
@@ -701,7 +697,7 @@ void primDigitalSet(int pinNum, int flag) {
 		} else if ((1 <= pinNum) && (pinNum <= 4)) {
 			pinNum = digitalPinMappings[pinNum - 1];
 		}
-		if (RESERVED(pinNum)) { return; }
+		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE)
@@ -807,10 +803,10 @@ OBJ primButtonB(OBJ *args) {
 #if defined(ESP32)
 	void servoAttach(int pin) {
 		int esp32Channel = 1;
-		while ((esp32Channel < MAX_ESP32_CHANNELS) and (esp32Channels[esp32Channel]  > 0))
+		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0))
 			esp32Channel++;
 		if (esp32Channel < MAX_ESP32_CHANNELS) {
-			ledcSetup(esp32Channel, 50, 10); // 50Hz, 1024
+			ledcSetup(esp32Channel, 50, 10); // 50Hz, 10 bits
 			ledcAttachPin(pin, esp32Channel);
 			esp32Channels[esp32Channel] = pin;
 		}
@@ -820,11 +816,11 @@ OBJ primButtonB(OBJ *args) {
 void resetServos() {
 	#if HAS_SERVO
 		for (int pin = 0; pin < DIGITAL_PINS; pin++) {
-		#if defined(ESP32)
-			if (pinAttached(pin) > 0) pinDetach(pin);
-		#else
-			if (servo[pin].attached()) servo[pin].detach();
-		#endif
+			#if defined(ESP32)
+				if (!RESERVED(pin) && pinAttached(pin)) pinDetach(pin);
+			#else
+				if (servo[pin].attached()) servo[pin].detach();
+			#endif
 		}
 	#endif
 }
@@ -837,8 +833,6 @@ OBJ primHasServo(int argCount, OBJ *args) {
 	#endif
 }
 
-
-
 OBJ primSetServo(int argCount, OBJ *args) {
 	// setServo <pin> <usecs>
 	// If usecs > 0, generate a servo control signal with the given pulse width
@@ -847,9 +841,9 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	#if HAS_SERVO
 		OBJ pinArg = args[0];
 		OBJ usecsArg = args[1];
-		if (!isInt(pinArg) || !isInt(usecsArg)) { return falseObj; }
+		if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
 		int pin = obj2int(pinArg);
-		if ((pin < 0) || (pin >= DIGITAL_PINS)) { return falseObj; }
+		if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
 		#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 			pin = digitalPin[pin];
 		#endif
@@ -868,7 +862,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 			} else {
 				if (pinAttached(pin) == 0) {
 					servoAttach(pin);
-                                }
+			}
 				int esp32Channel = pinAttached(pin);
 				if (esp32Channel > 0) {
 					ledcWrite(esp32Channel, usecs * 1024 / 20000);

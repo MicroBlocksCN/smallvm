@@ -469,8 +469,8 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '0.3.1' }
-method latestVmVersion SmallRuntime { return 71 }
+method ideVersion SmallRuntime { return '0.3.2' }
+method latestVmVersion SmallRuntime { return 72 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = ''
@@ -686,6 +686,10 @@ method sendBroadcastToBoard SmallRuntime msg {
 method getVar SmallRuntime varID {
 	if (isNil varID) { varID = 0 }
 	sendMsg this 'getVarMsg' varID
+}
+
+method getVarNamed SmallRuntime varName {
+	sendMsg this 'getVarMsg' 255 (toArray (toBinaryData varName))
 }
 
 method setVar SmallRuntime varID val {
