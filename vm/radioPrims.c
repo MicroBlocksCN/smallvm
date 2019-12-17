@@ -253,6 +253,8 @@ static int receiveMakeCodeMessage() {
 	double dbl;
 
 	receivedMessageType = packet[4];
+	receivedMessageSenderID = (packet[12] << 24) | (packet[11] << 16) | (packet[10] << 8) | packet[9];
+
 	if (MAKECODE_PACKET_INTEGER == receivedMessageType) { // integer
 		receivedInteger = (packet[16] << 24) | (packet[15] << 16) | (packet[14] << 8) | packet[13];
 	} else if (MAKECODE_PACKET_PAIR == receivedMessageType) { // string-integer pair
@@ -333,7 +335,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 		for (int i = 0; i < 32; i++) {
 			FIELD(arg0, i + 1) = (i <= packetLen) ? int2obj(packet[i]) : int2obj(0);
 		}
-                receivedMessageSenderID = (packet[12] << 24) | (packet[11] << 16) | (packet[10] << 8) | packet[9];
+		receivedMessageSenderID = (packet[12] << 24) | (packet[11] << 16) | (packet[10] << 8) | packet[9];
 		return trueObj;
 	}
 	return falseObj;
