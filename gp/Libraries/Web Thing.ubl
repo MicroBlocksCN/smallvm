@@ -1,4 +1,4 @@
-module 'Web of Things' Comm
+module 'Web Things' Comm
 variables _WoT_definingEvents '_thing description'
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
@@ -72,13 +72,13 @@ to getIPAddress {
 
 to registerEvent title type {
   if (not _WoT_definingEvents) {
-    local 'last char' (at ((size (v '_thing description')) - 1) (v '_thing description'))
+    local 'last char' (at (size (v '_thing description')) (v '_thing description'))
     if ((v 'last char') == '{') {
       comment 'thing description ends with "{", meaning there are no properties'
       'append to thing description' '},"events":{'
     } ((v 'last char') == ',') {
       comment 'thing description ends with ",", meaning there''s at least one property'
-      'append to thing description' '"":{}},"events":{'
+      '_thing description' = ('[data:join]' ('[data:copyFromTo]' (v '_thing description') 1 ((size (v '_thing description')) - 1)) '},"events":{')
     }
     _WoT_definingEvents = (booleanConstant true)
   }
