@@ -11,6 +11,8 @@ module Radio
 	spec ' ' '[radio:setChannel]' 'radio set channel (0-83) _' 'num' 7
 	spec ' ' '[radio:setPower]' 'radio set power (0-7) _' 'num' 4
 	spec 'r' '[radio:signalStrength]' 'radio last signal strength'
+	spec 'r' '[radio:deviceID]' 'radio device ID'
+	spec 'r' '[radio:lastMessageID]' 'radio ID of last message sender'
 	spec ' ' '_radio receive packet' '_radio receive packet _' 'auto'
 	spec ' ' '_radio send packet' '_radio send packet _' 'auto'
 

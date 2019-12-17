@@ -26,6 +26,7 @@
 // Variables
 
 static int radioSignalStrength = -999;
+static uint32 receivedMessageSenderID = 0;
 static int receivedMessageType = -1;
 static int receivedInteger = 0;
 
@@ -179,7 +180,7 @@ static void setPower(int level) {
 }
 
 static void setChannel(int channel) {
-	// Set the radio channe (center frequency). The argument (0-83) maps to frequencies
+	// Set the radio channel (center frequency). The argument (0-83) maps to frequencies
 	// 2400 to 2483 MHz in 1 MHz increments.
 
 	if ((channel < 0) || (channel > 83)) return;
@@ -202,7 +203,7 @@ static int receivePacket(uint8_t *packet) {
 }
 
 static void sendPacket(uint8_t *packet) {
-	// Transmit the given 32-byte packet. Block until transmisson is complete.
+	// Transmit the given 32-byte packet. Block until transmission is complete.
 	// Note: The radio can do only one thing at at time; we need to stop receiving to transmit.
 
 	if (packet == NULL) return;
@@ -332,6 +333,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 		for (int i = 0; i < 32; i++) {
 			FIELD(arg0, i + 1) = (i <= packetLen) ? int2obj(packet[i]) : int2obj(0);
 		}
+                receivedMessageSenderID = (packet[12] << 24) | (packet[11] << 16) | (packet[10] << 8) | packet[9];
 		return trueObj;
 	}
 	return falseObj;
@@ -477,6 +479,14 @@ static OBJ primSignalStrength(int argCount, OBJ *args) {
 	return int2obj(radioSignalStrength);
 }
 
+static OBJ primDeviceID(int argCount, OBJ *args) {
+	return int2obj(NRF_FICR->DEVICEID[1]);
+}
+
+static OBJ primMessageSenderID(int argCount, OBJ *args) {
+	return int2obj(receivedMessageSenderID);
+}
+
 static PrimEntry entries[] = {
 	{"disableRadio", primDisableRadio},
 	{"messageReceived", primMessageReceived},
@@ -492,6 +502,8 @@ static PrimEntry entries[] = {
 	{"setGroup", primSetGroup},
 	{"setPower", primSetPower},
 	{"signalStrength", primSignalStrength},
+	{"deviceID", primDeviceID},
+	{"lastMessageID", primMessageSenderID},
 };
 
 void addRadioPrims() {
