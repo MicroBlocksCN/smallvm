@@ -428,6 +428,14 @@ static OBJ primSetPower(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primDeviceID(int argCount, OBJ *args) {
+	return int2obj(NRF_FICR->DEVICEID[1]);
+}
+
+static OBJ primMessageSenderID(int argCount, OBJ *args) {
+	return int2obj(receivedMessageSenderID);
+}
+
 #else // not nrf51 or nrf52
 
 // stubs
@@ -442,6 +450,8 @@ static OBJ primSendMakeCodeString(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSetChannel(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSetGroup(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSetPower(int argCount, OBJ *args) { return falseObj; }
+static OBJ primDeviceID(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMessageSenderID(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
@@ -479,14 +489,6 @@ static OBJ primSignalStrength(int argCount, OBJ *args) {
 	// Values are negative, with higher values for stronger signals.
 
 	return int2obj(radioSignalStrength);
-}
-
-static OBJ primDeviceID(int argCount, OBJ *args) {
-	return int2obj(NRF_FICR->DEVICEID[1]);
-}
-
-static OBJ primMessageSenderID(int argCount, OBJ *args) {
-	return int2obj(receivedMessageSenderID);
 }
 
 static PrimEntry entries[] = {
