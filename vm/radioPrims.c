@@ -39,7 +39,7 @@ struct {
 	char body[20];
 } messageTypeString; // Static string OBJ containing MakeCode type of most recent message
 
-#if defined(NRF51) || defined(NRF52) || defined(NRF52_SERIES)
+#if defined(NRF51) || defined(NRF52_SERIES)
 
 #if defined(NRF51)
 	#include <nrf51.h>
@@ -323,7 +323,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 	// If a packet has been received, copy it into supplied 32 element list and return true.
 	// Otherwise, return false.
 
-	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (FIELD(args[0], 0) >= 32)) {
+	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (obj2int(FIELD(args[0], 0)) >= 32)) {
 		OBJ arg0 = args[0];
 		uint8_t packet[32];
 		int gotData = receivePacket(packet);
@@ -340,7 +340,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 static OBJ primPacketSend(int argCount, OBJ *args) {
 	// Send the given 32-element list as a 32-byte packet.
 
-	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (FIELD(args[0], 0) >= 32)) {
+	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (obj2int(FIELD(args[0], 0)) >= 32)) {
 		OBJ arg0 = args[0];
 		uint8_t packet[32];
 		for (int i = 0; i < 32; i++) {
