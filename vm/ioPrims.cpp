@@ -576,6 +576,13 @@ void primAnalogWrite(OBJ *args) {
 	#elif defined(ADAFRUIT_TRINKET_M0)
 		if (pinNum > 4) return;
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+		#if defined(ARDUINO_CITILAB_ED1)
+			if ((100 <= pinNum) && (pinNum <= 139)) {
+				pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
+			} else if ((1 <= pinNum) && (pinNum <= 4)) {
+				pinNum = digitalPinMappings[pinNum - 1];
+			}
+		#endif
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE)
 		if (pinNum < 2) return;
@@ -592,20 +599,9 @@ void primAnalogWrite(OBJ *args) {
 		if (value == 0) {
 			pinDetach(pinNum);
 		} else {
-			#if defined(ARDUINO_CITILAB_ED1)
-			if ((100 <= pinNum) && (pinNum <= 139)) {
-				pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
-			} else if ((1 <= pinNum) && (pinNum <= 4)) {
-				pinNum = digitalPinMappings[pinNum - 1];
-			}
-			#endif
-			if (pinAttached(pinNum) == 0) {
-				analogAttach(pinNum);
-			}
+			if (!pinAttached(pinNum)) analogAttach(pinNum);
 			int esp32Channel = pinAttached(pinNum);
-			if (esp32Channel > 0) {
-				ledcWrite(esp32Channel, value);
-			}
+			if (esp32Channel) ledcWrite(esp32Channel, value);
 		}
 	#else
 		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
@@ -788,137 +784,230 @@ OBJ primButtonB(OBJ *args) {
 	#endif
 }
 
-// Servo
+// Servo and Tone
 
-#define HAS_SERVO !(defined(NRF51) || defined(ARDUINO_NRF52_PRIMO))
+#if defined(NRF51) || defined(NRF52_SERIES)
 
-#if HAS_SERVO
-	#if !defined(ESP32)
-		#include <Servo.h>
-		Servo servo[DIGITAL_PINS];
-	#endif
+// NRF5 Servo State
 
-#endif
+#define MAX_SERVOS 4
 
-#if defined(ESP32)
-	void servoAttach(int pin) {
-		int esp32Channel = 1;
-		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0))
-			esp32Channel++;
-		if (esp32Channel < MAX_ESP32_CHANNELS) {
-			ledcSetup(esp32Channel, 50, 10); // 50Hz, 10 bits
-			ledcAttachPin(pin, esp32Channel);
-			esp32Channels[esp32Channel] = pin;
+static int servoIndex = 0;
+static char servoPinHigh = 0;
+static char servoPin[MAX_SERVOS] = {255, 255, 255, 255};
+static unsigned short servoPulseWidth[MAX_SERVOS] = {1500, 1500, 1500, 1500};
+
+// NRF5 Tone State
+
+static int tonePin = -1;
+static unsigned short toneHalfPeriod = 1000;
+static char tonePinState = 0;
+static char servoToneTimerStarted = 0;
+
+static void startServoToneTimer() {
+	NRF_TIMER2->TASKS_SHUTDOWN = true;
+	NRF_TIMER2->MODE = 0; // timer mode
+	NRF_TIMER2->BITMODE = 0; // 16-bits
+	NRF_TIMER2->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
+	NRF_TIMER2->INTENSET = TIMER_INTENSET_COMPARE0_Msk | TIMER_INTENSET_COMPARE1_Msk;
+	NRF_TIMER2->TASKS_START = true;
+ 	NVIC_EnableIRQ(TIMER2_IRQn);
+ 	servoToneTimerStarted = true;
+}
+
+extern "C" void TIMER2_IRQHandler() {
+	if (NRF_TIMER2->EVENTS_COMPARE[0]) { // tone waveform generator
+		int wakeTime = NRF_TIMER2->CC[0];
+		NRF_TIMER2->EVENTS_COMPARE[0] = 0; // clear interrupt
+		if (tonePin >= 0) {
+			tonePinState = !tonePinState;
+			digitalWrite(tonePin, tonePinState);
+			NRF_TIMER2->CC[0] = (wakeTime + toneHalfPeriod) & 0xFFFF; // next wake time
 		}
 	}
-#endif
 
-void resetServos() {
-	#if HAS_SERVO
-		for (int pin = 0; pin < DIGITAL_PINS; pin++) {
-			#if defined(ESP32)
-				if (!RESERVED(pin) && pinAttached(pin)) pinDetach(pin);
-			#else
-				if (servo[pin].attached()) servo[pin].detach();
-			#endif
+	if (NRF_TIMER2->EVENTS_COMPARE[1]) { // servo waveform generator
+		int wakeTime = NRF_TIMER2->CC[1] + 12;
+		NRF_TIMER2->EVENTS_COMPARE[1] = 0; // clear interrupt
+
+		if (servoPinHigh && (0 <= servoIndex) && (servoIndex < MAX_SERVOS)) {
+			digitalWrite(servoPin[servoIndex], LOW); // end current servo pulse
 		}
-	#endif
+
+		// find the next active servo
+		servoIndex = (servoIndex + 1) % MAX_SERVOS;
+		while ((servoPin[servoIndex] < 0) && (servoIndex < MAX_SERVOS)) {
+			servoIndex++;
+		}
+
+		if (servoIndex < MAX_SERVOS) { // start servo pulse for servoIndex
+			digitalWrite(servoPin[servoIndex], HIGH);
+			servoPinHigh = true;
+			NRF_TIMER2->CC[1] = (wakeTime + servoPulseWidth[servoIndex]) & 0xFFFF;
+		} else { // idle until next set of pulses
+			servoIndex = -1;
+			servoPinHigh = false;
+			NRF_TIMER2->CC[1] = (wakeTime + 50000) & 0xFFFF;
+		}
+	}
 }
 
-OBJ primHasServo(int argCount, OBJ *args) {
-	#if HAS_SERVO
-		return trueObj;
-	#else
-		return falseObj;
-	#endif
+void stopServos() {
+	memset(servoPin, 255, sizeof(servoPin));
+	memset(servoPulseWidth, 1500, sizeof(servoPulseWidth));
+	servoPinHigh = 0;
+	servoIndex = 0;
 }
 
-OBJ primSetServo(int argCount, OBJ *args) {
-	// setServo <pin> <usecs>
-	// If usecs > 0, generate a servo control signal with the given pulse width
-	// on the given pin. If usecs <= 0 stop generating the servo signal.
-	// Return true on success, false if primitive is not supported.
-	#if HAS_SERVO
-		OBJ pinArg = args[0];
-		OBJ usecsArg = args[1];
-		if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
-		int pin = obj2int(pinArg);
-		if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
-		#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
-			pin = digitalPin[pin];
-		#endif
-		int usecs = obj2int(usecsArg);
-		if (usecs > 15000) { usecs = 15000; } // maximum pulse width is 15000 usecs
-		#if defined(ESP32)
-			#if defined(ARDUINO_CITILAB_ED1)
-			if ((100 <= pin) && (pin <= 139)) {
-				pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
-			} else if ((1 <= pin) && (pin <= 4)) {
-				pin = digitalPinMappings[pin - 1];
-			}
-			#endif
-			if (usecs <= 0) {
-				pinDetach(pin);
-			} else {
-				if (pinAttached(pin) == 0) {
-					servoAttach(pin);
-			}
-				int esp32Channel = pinAttached(pin);
-				if (esp32Channel > 0) {
-					ledcWrite(esp32Channel, usecs * 1024 / 20000);
-				}
-			}
-		#else
-			if (usecs <= 0) {
-				if (servo[pin].attached()) { servo[pin].detach(); }
-			} else {
-				if (!servo[pin].attached()) { servo[pin].attach(pin); }
-				servo[pin].writeMicroseconds(usecs);
-			}
-
-		#endif
-		return trueObj;
-	#else
-		return falseObj;
-	#endif
+static void nrfDetachServo(int pin) {
+	for (int i = 0; i < MAX_SERVOS; i++) {
+		if (pin == servoPin[i]) {
+			servoPulseWidth[i] = 1500;
+			servoPin[i] = 255;
+		}
+	}
 }
+
+static void setServo(int pin, int usecs) {
+	nrfDetachServo(pin);
+	if (usecs <= 0) return;
+
+	int i = 0;
+	while ((i < MAX_SERVOS) && (servoPin[i] < 0)) i++;
+	if (i < MAX_SERVOS) {
+		servoPulseWidth[i] = usecs;
+		servoPin[i] = pin;
+	}
+	if (!servoToneTimerStarted) startServoToneTimer();
+}
+
+#elif defined(ESP32)
+
+static int attachServo(int pin) {
+	for (int i = 1; i < MAX_ESP32_CHANNELS; i++) {
+		if (0 == esp32Channels[i]) { // free channel
+			ledcSetup(i, 50, 10); // 50Hz, 10 bits
+			ledcAttachPin(pin, i);
+			esp32Channels[i] = pin;
+			return i;
+		}
+	}
+	return 0;
+}
+
+static void setServo(int pin, int usecs) {
+	if (usecs <= 0) {
+		pinDetach(pin);
+	} else {
+		int esp32Channel = pinAttached(pin);
+		if (!esp32Channel) attachServo(pin);
+		if (esp32Channel > 0) {
+			ledcWrite(esp32Channel, usecs * 1024 / 20000);
+		}
+	}
+}
+
+void stopServos() {
+	for (int i = 1; i < MAX_ESP32_CHANNELS; i++) {
+		int pin = esp32Channels[i];
+		if (pin) pinDetach(pin);
+	}
+}
+
+#else // use Arduino Servo library
+
+#include <Servo.h>
+Servo servo[DIGITAL_PINS];
+
+static void setServo(int pin, int usecs) {
+	if (usecs <= 0) {
+		if (servo[pin].attached()) servo[pin].detach();
+	} else {
+		if (!servo[pin].attached()) servo[pin].attach(pin);
+		servo[pin].writeMicroseconds(usecs);
+	}
+}
+
+void stopServos() {
+	for (int pin = 0; pin < DIGITAL_PINS; pin++) {
+		if (servo[pin].attached()) servo[pin].detach();
+	}
+}
+
+#endif // servos
 
 // Tone Generation
 
-#define HAS_TONE !(defined(NRF51) || defined(ESP32) || defined(ARDUINO_SAM_DUE))
+#if defined(NRF51) || defined(NRF52_SERIES)
+
+static void setTone(int pin, int frequency) {
+	tonePin = pin;
+	toneHalfPeriod = 500000 / frequency;
+	if (!servoToneTimerStarted) startServoToneTimer();
+}
+
+void stopTone() { tonePin = -1; }
+
+#elif defined(ESP32)
 
 int tonePin = -1;
 
-#ifdef ESP32
-	static void initESP32Tone(int pin) {
-		if (pin == tonePin) return;
-		if (tonePin < 0) {
-			ledcSetup(0, 1E5, 12); // do setup on first call
-		} else {
-			ledcWrite(0, 0); // stop current tone, if any
-			ledcDetachPin(tonePin);
-		}
+static void initESP32Tone(int pin) {
+	if ((pin == tonePin) || (pin < 0)) return;
+	if (tonePin < 0) {
 		tonePin = pin;
+		ledcSetup(0, 1E5, 12); // do setup on first call
+	} else {
+		ledcWrite(0, 0); // stop current tone, if any
+		ledcDetachPin(tonePin);
 	}
-#endif
-
-void stopTone() {
-	#if HAS_TONE
-		if (tonePin >= 0) noTone(tonePin);
-		tonePin = -1;
-	#elif defined(ESP32)
-		if (tonePin >= 0) {
-			ledcWrite(0, 0);
-			ledcDetachPin(tonePin);
-		}
-	#endif
 }
 
+static void setTone(int pin, int frequency) {
+	if (pin != tonePin) stopTone();
+	initESP32Tone(pin);
+	if (tonePin >= 0) {
+		ledcAttachPin(tonePin, 0);
+		ledcWriteTone(0, frequency);
+	}
+}
+
+void stopTone() {
+	if (tonePin >= 0) {
+		ledcWrite(0, 0);
+		ledcDetachPin(tonePin);
+	}
+}
+
+#elif !defined(ARDUINO_SAM_DUE)
+
+int tonePin = -1;
+
+static void setTone(int pin, int frequency) {
+	if (pin != tonePin) stopTone();
+	tonePin = pin;
+	tone(tonePin, frequency);
+}
+
+void stopTone() {
+	if (tonePin >= 0) noTone(tonePin);
+	tonePin = -1;
+}
+
+#else
+
+static void setTone(int pin, int frequency) { }
+void stopTone() { }
+
+#endif // tone
+
+// Primitives
+
 OBJ primHasTone(int argCount, OBJ *args) {
-	#if (HAS_TONE || defined(ESP32))
-		return trueObj;
-	#else
+	#if defined(ARDUINO_SAM_DUE)
 		return falseObj;
+	#else
+		return trueObj;
 	#endif
 }
 
@@ -935,33 +1024,55 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		pin = digitalPin[pin];
+	#elif defined(ARDUINO_CITILAB_ED1)
+		if ((100 <= pin) && (pin <= 139)) {
+			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
+		} else if ((1 <= pin) && (pin <= 4)) {
+			pin = digitalPinMappings[pin - 1];
+		}
+	#endif
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+		if (RESERVED(pin)) return falseObj;
 	#endif
 
-	#if HAS_TONE
-		int frequency = obj2int(freqArg);
-		if ((frequency > 0) && (frequency <= 500000)) {
-			if (pin != tonePin) stopTone();
-			tonePin = pin;
-			tone(tonePin, frequency);
-		} else {
-			stopTone();
+	int frequency = obj2int(freqArg);
+	if ((frequency < 16) || (frequency > 100000)) {
+		stopTone();
+	} else {
+		setTone(pin, frequency);
+	}
+	return trueObj;
+}
+
+OBJ primHasServo(int argCount, OBJ *args) { return trueObj; }
+
+OBJ primSetServo(int argCount, OBJ *args) {
+	// setServo <pin> <usecs>
+	// If usecs > 0, generate a servo control signal with the given pulse width
+	// on the given pin. If usecs <= 0 stop generating the servo signal.
+	// Return true on success, false if primitive is not supported.
+
+	OBJ pinArg = args[0];
+	OBJ usecsArg = args[1];
+	if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
+	int pin = obj2int(pinArg);
+	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+		pin = digitalPin[pin];
+	#elif defined(ARDUINO_CITILAB_ED1)
+		if ((100 <= pin) && (pin <= 139)) {
+			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
+		} else if ((1 <= pin) && (pin <= 4)) {
+			pin = digitalPinMappings[pin - 1];
 		}
-		return trueObj;
-	#elif defined(ESP32)
-		int frequency = obj2int(freqArg);
-		if ((frequency > 0) && (frequency <= 500000)) {
-			initESP32Tone(pin);
-			if (tonePin >= 0) {
-				ledcAttachPin(tonePin, 0);
-				ledcWriteTone(0, frequency);
-			}
-		} else {
-			stopTone();
-		}
-		return trueObj;
-	#else
-		return falseObj;
 	#endif
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+		if (RESERVED(pin)) return falseObj;
+	#endif
+	int usecs = obj2int(usecsArg);
+	if (usecs > 5000) { usecs = 5000; } // maximum pulse width is 5000 usecs
+	setServo(pin, usecs);
+	return trueObj;
 }
 
 static PrimEntry entries[] = {

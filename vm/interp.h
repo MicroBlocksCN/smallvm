@@ -232,7 +232,7 @@ void setPinMode(int pin, int newMode);
 void turnOffPins();
 void updateMicrobitDisplay();
 void checkButtons();
-void resetServos();
+void stopServos();
 void stopTone();
 void webServerLoop();
 

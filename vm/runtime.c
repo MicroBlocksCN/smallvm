@@ -382,7 +382,7 @@ static void softReset(int clearMemoryFlag) {
 	updateMicrobitDisplay();
 #endif
 
-	resetServos();
+	stopServos();
 	stopTone();
 	turnOffInternalNeoPixels();
 	turnOffPins();
