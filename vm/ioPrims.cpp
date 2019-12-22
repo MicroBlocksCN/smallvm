@@ -943,7 +943,12 @@ void stopServos() {
 static void setTone(int pin, int frequency) {
 	tonePin = pin;
 	toneHalfPeriod = 500000 / frequency;
-	if (!servoToneTimerStarted) startServoToneTimer();
+	if (!servoToneTimerStarted) {
+		startServoToneTimer();
+	} else {
+		NRF_TIMER2->TASKS_CLEAR = true;
+		NRF_TIMER2->CC[0] = toneHalfPeriod & 0xFFFF; // next wake time
+	}
 }
 
 void stopTone() { tonePin = -1; }
