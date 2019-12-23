@@ -1040,6 +1040,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 		if (RESERVED(pin)) return falseObj;
 	#endif
 
+	SET_MODE(pin, OUTPUT);
 	int frequency = obj2int(freqArg);
 	if ((frequency < 16) || (frequency > 100000)) {
 		stopTone();
@@ -1076,6 +1077,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	#endif
 	int usecs = obj2int(usecsArg);
 	if (usecs > 5000) { usecs = 5000; } // maximum pulse width is 5000 usecs
+	SET_MODE(pin, OUTPUT);
 	setServo(pin, usecs);
 	return trueObj;
 }
