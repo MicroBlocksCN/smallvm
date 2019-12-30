@@ -791,10 +791,11 @@ OBJ primButtonB(OBJ *args) {
 // NRF5 Servo State
 
 #define MAX_SERVOS 4
+#define UNUSED 255
 
 static int servoIndex = 0;
 static char servoPinHigh = 0;
-static char servoPin[MAX_SERVOS] = {255, 255, 255, 255};
+static char servoPin[MAX_SERVOS] = {UNUSED, UNUSED, UNUSED, UNUSED};
 static unsigned short servoPulseWidth[MAX_SERVOS] = {1500, 1500, 1500, 1500};
 
 // NRF5 Tone State
@@ -831,12 +832,12 @@ extern "C" void TIMER2_IRQHandler() {
 		NRF_TIMER2->EVENTS_COMPARE[1] = 0; // clear interrupt
 
 		if (servoPinHigh && (0 <= servoIndex) && (servoIndex < MAX_SERVOS)) {
-			digitalWrite(servoPin[servoIndex], LOW); // end current servo pulse
+			digitalWrite(servoPin[servoIndex], LOW); // end the current servo pulse
 		}
 
 		// find the next active servo
 		servoIndex = (servoIndex + 1) % MAX_SERVOS;
-		while ((servoPin[servoIndex] < 0) && (servoIndex < MAX_SERVOS)) {
+		while ((servoIndex < MAX_SERVOS) && (UNUSED == servoPin[servoIndex])) {
 			servoIndex++;
 		}
 
@@ -847,13 +848,13 @@ extern "C" void TIMER2_IRQHandler() {
 		} else { // idle until next set of pulses
 			servoIndex = -1;
 			servoPinHigh = false;
-			NRF_TIMER2->CC[1] = (wakeTime + 50000) & 0xFFFF;
+			NRF_TIMER2->CC[1] = (wakeTime + 8000) & 0xFFFF;
 		}
 	}
 }
 
 void stopServos() {
-	memset(servoPin, 255, sizeof(servoPin));
+	memset(servoPin, UNUSED, sizeof(servoPin));
 	memset(servoPulseWidth, 1500, sizeof(servoPulseWidth));
 	servoPinHigh = 0;
 	servoIndex = 0;
@@ -863,7 +864,7 @@ static void nrfDetachServo(int pin) {
 	for (int i = 0; i < MAX_SERVOS; i++) {
 		if (pin == servoPin[i]) {
 			servoPulseWidth[i] = 1500;
-			servoPin[i] = 255;
+			servoPin[i] = UNUSED;
 		}
 	}
 }
@@ -873,7 +874,7 @@ static void setServo(int pin, int usecs) {
 	if (usecs <= 0) return;
 
 	int i = 0;
-	while ((i < MAX_SERVOS) && (servoPin[i] < 0)) i++;
+	while ((i < MAX_SERVOS) && (UNUSED != servoPin[i])) i++;
 	if (i < MAX_SERVOS) {
 		servoPulseWidth[i] = usecs;
 		servoPin[i] = pin;
