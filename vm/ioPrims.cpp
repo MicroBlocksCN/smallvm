@@ -794,7 +794,7 @@ OBJ primButtonB(OBJ *args) {
 #define UNUSED 255
 
 static int servoIndex = 0;
-static char servoPinHigh = 0;
+static char servoPinHigh = false;
 static char servoPin[MAX_SERVOS] = {UNUSED, UNUSED, UNUSED, UNUSED};
 static unsigned short servoPulseWidth[MAX_SERVOS] = {1500, 1500, 1500, 1500};
 
@@ -854,9 +854,11 @@ extern "C" void TIMER2_IRQHandler() {
 }
 
 void stopServos() {
-	memset(servoPin, UNUSED, sizeof(servoPin));
-	memset(servoPulseWidth, 1500, sizeof(servoPulseWidth));
-	servoPinHigh = 0;
+	for (int i = 0; i < MAX_SERVOS; i++) {
+		servoPin[i] = UNUSED;
+		servoPulseWidth[i] = 1500;
+	}
+	servoPinHigh = false;
 	servoIndex = 0;
 }
 
@@ -870,16 +872,27 @@ static void nrfDetachServo(int pin) {
 }
 
 static void setServo(int pin, int usecs) {
-	nrfDetachServo(pin);
-	if (usecs <= 0) return;
-
-	int i = 0;
-	while ((i < MAX_SERVOS) && (UNUSED != servoPin[i])) i++;
-	if (i < MAX_SERVOS) {
-		servoPulseWidth[i] = usecs;
-		servoPin[i] = pin;
-	}
 	if (!servoToneTimerStarted) startServoToneTimer();
+
+	if (usecs <= 0) { // turn off servo
+		nrfDetachServo(pin);
+		return;
+	}
+
+	for (int i = 0; i < MAX_SERVOS; i++) {
+		if (pin == servoPin[i]) { // update the pulse width for the given pin
+			servoPulseWidth[i] = usecs;
+			return;
+		}
+	}
+
+	for (int i = 0; i < MAX_SERVOS; i++) {
+		if (UNUSED == servoPin[i]) { // found unused servo entry
+			servoPin[i] = pin;
+			servoPulseWidth[i] = usecs;
+			return;
+		}
+	}
 }
 
 #elif defined(ESP32)
