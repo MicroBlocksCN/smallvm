@@ -84,20 +84,27 @@ int touchEnabled = false;
 
 		#define TFT_CS		5
 		#define TFT_DC		23
-		#define TFT_MOSI	15
-		#define TFT_SCLK	13
 		#define TFT_RST		18
 
-		#define TFT_WIDTH	160
-		#define TFT_HEIGHT	80
+		#define TFT_WIDTH	80
+		#define TFT_HEIGHT	160
 
-		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+		// make a subclass so we can adjust the x/y offsets
+		class M5StickLCD : public Adafruit_ST7735 {
+		public:
+			M5StickLCD(int8_t cs, int8_t dc, int8_t rst) : Adafruit_ST7735(cs, dc, rst) {}
+			void setOffsets(int colOffset, int rowOffset) {
+				_xstart = _colstart = colOffset;
+				_ystart = _rowstart = rowOffset;
+			}
+		};
+		M5StickLCD tft = M5StickLCD(TFT_CS, TFT_DC, TFT_RST);
 
 		void tftInit() {
+			tft.initR(INITR_MINI160x80);
+			tft.setOffsets(26, 1);
+			tft.invertDisplay(true); // not sure why this is required...
 			tftClear();
-			// Turn on backlight Not working):
-			pinMode(0, OUTPUT);
-			digitalWrite(0, HIGH);
 			useTFT = true;
 		}
 
@@ -161,7 +168,12 @@ static int color24to16b(int color24b) {
 	int r = (color24b >> 16) & 0xFF;
 	int g = (color24b >> 8) & 0xFF;
 	int b = color24b & 0xFF;
-	return ((r << 8) & 0xF800) | ((g << 3) & 0x7E0) | ((b >> 3) & 0x1F);
+	#if defined(ARDUINO_M5Stick_C)
+		// color order is GBR
+		return ((b << 8) & 0xF800) | ((g << 3) & 0x7E0) | ((r >> 3) & 0x1F);
+	#else
+		return ((r << 8) & 0xF800) | ((g << 3) & 0x7E0) | ((b >> 3) & 0x1F);
+	#endif
 }
 
 static OBJ primGetWidth(int argCount, OBJ *args) {
