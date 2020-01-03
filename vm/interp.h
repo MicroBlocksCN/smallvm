@@ -182,7 +182,7 @@ void startReceiversOfBroadcast(char *msg, int byteCount);
 void processMessage(void);
 int hasOutputSpace(int byteCount);
 void logData(char *s);
-void outputString(char *s);
+void outputString(const char *s);
 void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
@@ -232,7 +232,7 @@ void setPinMode(int pin, int newMode);
 void turnOffPins();
 void updateMicrobitDisplay();
 void checkButtons();
-void resetServos();
+void stopServos();
 void stopTone();
 void webServerLoop();
 

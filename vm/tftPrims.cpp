@@ -84,20 +84,27 @@ int touchEnabled = false;
 
 		#define TFT_CS		5
 		#define TFT_DC		23
-		#define TFT_MOSI	15
-		#define TFT_SCLK	13
 		#define TFT_RST		18
 
-		#define TFT_WIDTH	160
-		#define TFT_HEIGHT	80
+		#define TFT_WIDTH	80
+		#define TFT_HEIGHT	160
 
-		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+		// make a subclass so we can adjust the x/y offsets
+		class M5StickLCD : public Adafruit_ST7735 {
+		public:
+			M5StickLCD(int8_t cs, int8_t dc, int8_t rst) : Adafruit_ST7735(cs, dc, rst) {}
+			void setOffsets(int colOffset, int rowOffset) {
+				_xstart = _colstart = colOffset;
+				_ystart = _rowstart = rowOffset;
+			}
+		};
+		M5StickLCD tft = M5StickLCD(TFT_CS, TFT_DC, TFT_RST);
 
 		void tftInit() {
+			tft.initR(INITR_MINI160x80);
+			tft.setOffsets(26, 1);
+			tft.invertDisplay(true); // not sure why this is required...
 			tftClear();
-			// Turn on backlight Not working):
-			pinMode(0, OUTPUT);
-			digitalWrite(0, HIGH);
 			useTFT = true;
 		}
 
@@ -161,7 +168,16 @@ static int color24to16b(int color24b) {
 	int r = (color24b >> 16) & 0xFF;
 	int g = (color24b >> 8) & 0xFF;
 	int b = color24b & 0xFF;
-	return ((r << 8) & 0xF800) | ((g << 3) & 0x7E0) | ((b >> 3) & 0x1F);
+	// range of each color channel is 0-31 (the low 5-bits of each byte)
+	r = (r > 31) ? 31 : r & 31;
+	g = (g > 31) ? 31 : g & 31;
+	b = (b > 31) ? 31 : b & 31;
+	#if defined(ARDUINO_M5Stick_C)
+		// color order is GBR
+		return ((b << 11) & 0xF800) | ((g << 6) & 0x7E0) | r;
+	#else
+		return ((r << 11) & 0xF800) | ((g << 6) & 0x7E0) | b;
+	#endif
 }
 
 static OBJ primGetWidth(int argCount, OBJ *args) {
@@ -207,7 +223,7 @@ static OBJ primRect(int argCount, OBJ *args) {
 	int height = obj2int(args[3]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[4]));
-	int fill = (argCount > 5) ? (trueObj == args[5]) : false;
+	int fill = (argCount > 5) ? (trueObj == args[5]) : true;
 	if (fill) {
 		tft.fillRect(x, y, width, height, color16b);
 	} else {
@@ -224,7 +240,7 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 	int radius = obj2int(args[4]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[5]));
-	int fill = (argCount > 6) ? (trueObj == args[6]) : false;
+	int fill = (argCount > 6) ? (trueObj == args[6]) : true;
 	if (fill) {
 		tft.fillRoundRect(x, y, width, height, radius, color16b);
 	} else {
@@ -239,7 +255,7 @@ static OBJ primCircle(int argCount, OBJ *args) {
 	int radius = obj2int(args[2]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[3]));
-	int fill = (argCount > 4) ? (trueObj == args[4]) : false;
+	int fill = (argCount > 4) ? (trueObj == args[4]) : true;
 	if (fill) {
 		tft.fillCircle(x, y, radius, color16b);
 	} else {
@@ -257,7 +273,7 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 	int y2 = obj2int(args[5]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[6]));
-	int fill = (argCount > 7) ? (trueObj == args[7]) : false;
+	int fill = (argCount > 7) ? (trueObj == args[7]) : true;
 	if (fill) {
 		tft.fillTriangle(x0, y0, x1, y1, x2, y2, color16b);
 	} else {
@@ -272,8 +288,8 @@ static OBJ primText(int argCount, OBJ *args) {
 	int y = obj2int(args[2]);
 	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[3]));
-	int scale = (argCount > 4) ? obj2int(args[4]) : 1;
-	int wrap = (argCount > 5) ? (trueObj == args[5]) : false;
+	int scale = (argCount > 4) ? obj2int(args[4]) : 2;
+	int wrap = (argCount > 5) ? (trueObj == args[5]) : true;
 	tft.setCursor(x, y);
 	tft.setTextColor(color16b);
 	tft.setTextSize(scale);

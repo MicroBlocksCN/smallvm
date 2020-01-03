@@ -187,19 +187,19 @@ char* obj2str(OBJ obj) {
 
 // Debugging Utilities
 
-void reportNum(char *msg, int n) {
+void reportNum(const char *msg, int n) {
 	char s[100];
 	sprintf(s, "%s: %d", msg, n);
 	outputString(s);
 }
 
-void reportHex(char *msg, int n) {
+void reportHex(const char *msg, int n) {
 	char s[100];
 	sprintf(s, "%s: 0x%x", msg, n);
 	outputString(s);
 }
 
-void reportObj(char *msg, OBJ obj) {
+void reportObj(const char *msg, OBJ obj) {
 	char s[100];
 	int type = objType(obj);
 	switch (type) {

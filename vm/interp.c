@@ -114,7 +114,7 @@ static void primSendBroadcast(int argCount, OBJ *args) {
 	// Variadic broadcast; all args are concatenated into printBuffer.
 	printArgs(argCount, args, false, false);
 	// save the last broadcasted message
-	lastBroadcast = newStringFromBytes(printBuffer, printBufferByteCount);
+	lastBroadcast = newStringFromBytes((uint8 *) printBuffer, printBufferByteCount);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
 	queueBroadcastAsThingEvent(printBuffer, printBufferByteCount);

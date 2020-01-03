@@ -107,9 +107,9 @@ char* obj2str(OBJ obj);
 
 // Debugging Support
 
-void reportNum(char *msg, int n);
-void reportHex(char *msg, int n);
-void reportObj(char *msg, OBJ obj);
+void reportNum(const char *msg, int n);
+void reportHex(const char *msg, int n);
+void reportObj(const char *msg, OBJ obj);
 void dumpObjectStore(void);
 void memDumpObj(OBJ obj);
 
