@@ -858,7 +858,7 @@ extern "C" void TIMER2_IRQHandler() {
 		} else { // idle until next set of pulses
 			servoIndex = -1;
 			servoPinHigh = false;
-			NRF_TIMER2->CC[1] = (wakeTime + 8000) & 0xFFFF;
+			NRF_TIMER2->CC[1] = (wakeTime + 18000) & 0xFFFF;
 		}
 	}
 }
