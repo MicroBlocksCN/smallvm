@@ -18,7 +18,7 @@
 
 // VM Version
 
-#define VM_VERSION "v072g"
+#define VM_VERSION "v072h"
 
 // Forward Reference Declarations
 
@@ -538,7 +538,7 @@ void logData(char *s) {
 	sendMessage(outputValueMsg, 254, (byteCount + 1), data);
 }
 
-void outputString(char *s) {
+void outputString(const char *s) {
 	// Sending a debug string. Use chunkID 255.
 
 	char data[200];
