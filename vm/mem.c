@@ -39,7 +39,7 @@
 #if defined(NRF51)
   #define OBJSTORE_BYTES 2500 // max is 2612
 #else
-  #define OBJSTORE_BYTES 14000 // max that compiles for all boards is 16886 (17624 NodeMCU)
+  #define OBJSTORE_BYTES 12000 // max that compiles for all boards is 16886 (17624 NodeMCU)
 #endif
 
 #define OBJSTORE_WORDS ((OBJSTORE_BYTES / 4) + 4)
@@ -187,19 +187,19 @@ char* obj2str(OBJ obj) {
 
 // Debugging Utilities
 
-void reportNum(char *msg, int n) {
+void reportNum(const char *msg, int n) {
 	char s[100];
 	sprintf(s, "%s: %d", msg, n);
 	outputString(s);
 }
 
-void reportHex(char *msg, int n) {
+void reportHex(const char *msg, int n) {
 	char s[100];
 	sprintf(s, "%s: 0x%x", msg, n);
 	outputString(s);
 }
 
-void reportObj(char *msg, OBJ obj) {
+void reportObj(const char *msg, OBJ obj) {
 	char s[100];
 	int type = objType(obj);
 	switch (type) {

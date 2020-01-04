@@ -40,7 +40,7 @@ struct {
 	char body[20];
 } messageTypeString; // Static string OBJ containing MakeCode type of most recent message
 
-#if defined(NRF51) || defined(NRF52) || defined(NRF52_SERIES)
+#if defined(NRF51) || defined(NRF52_SERIES)
 
 #if defined(NRF51)
 	#include <nrf51.h>
@@ -287,9 +287,14 @@ static int receiveMakeCodeMessage() {
 	return true;
 }
 
+static deviceID() {
+	// Return the NRF51/52 device ID truncated to 31 bits to fit into a integer object.
+	return (NRF_FICR->DEVICEID[1] << 1) >> 1;
+}
+
 static void initMakeCodePacket(uint8_t *packet, int makeCodePacketType, int packetLength) {
 	uint32 timestamp = millisecs();
-	uint32 id = NRF_FICR->DEVICEID[1];
+	uint32 id = deviceID();
 
 	packet[0] = packetLength;
 	packet[1] = 1; // protocol
@@ -326,7 +331,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 	// If a packet has been received, copy it into supplied 32 element list and return true.
 	// Otherwise, return false.
 
-	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (FIELD(args[0], 0) >= 32)) {
+	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (obj2int(FIELD(args[0], 0)) >= 32)) {
 		OBJ arg0 = args[0];
 		uint8_t packet[32];
 		int gotData = receivePacket(packet);
@@ -344,7 +349,7 @@ static OBJ primPacketReceive(int argCount, OBJ *args) {
 static OBJ primPacketSend(int argCount, OBJ *args) {
 	// Send the given 32-element list as a 32-byte packet.
 
-	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (FIELD(args[0], 0) >= 32)) {
+	if ((argCount > 0) && IS_TYPE(args[0], ListType) && (obj2int(FIELD(args[0], 0)) >= 32)) {
 		OBJ arg0 = args[0];
 		uint8_t packet[32];
 		for (int i = 0; i < 32; i++) {
@@ -428,6 +433,10 @@ static OBJ primSetPower(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primDeviceID(int argCount, OBJ *args) {
+	return int2obj(deviceID());
+}
+
 #else // not nrf51 or nrf52
 
 // stubs
@@ -442,6 +451,7 @@ static OBJ primSendMakeCodeString(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSetChannel(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSetGroup(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSetPower(int argCount, OBJ *args) { return falseObj; }
+static OBJ primDeviceID(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
@@ -479,10 +489,6 @@ static OBJ primSignalStrength(int argCount, OBJ *args) {
 	// Values are negative, with higher values for stronger signals.
 
 	return int2obj(radioSignalStrength);
-}
-
-static OBJ primDeviceID(int argCount, OBJ *args) {
-	return int2obj(NRF_FICR->DEVICEID[1]);
 }
 
 static OBJ primMessageSenderID(int argCount, OBJ *args) {
