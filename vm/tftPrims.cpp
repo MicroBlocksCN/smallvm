@@ -86,8 +86,8 @@ int touchEnabled = false;
 		#define TFT_DC		23
 		#define TFT_RST		18
 
-		#define TFT_WIDTH	80
-		#define TFT_HEIGHT	160
+		#define TFT_WIDTH	160
+		#define TFT_HEIGHT	80
 
 		// make a subclass so we can adjust the x/y offsets
 		class M5StickLCD : public Adafruit_ST7735 {
@@ -103,7 +103,8 @@ int touchEnabled = false;
 		void tftInit() {
 			tft.initR(INITR_MINI160x80);
 			tft.setOffsets(26, 1);
-			tft.invertDisplay(true); // not sure why this is required...
+			tft.setRotation(1);
+			tft.invertDisplay(true); // display must be inverted to give correct colors...
 			tftClear();
 			useTFT = true;
 		}

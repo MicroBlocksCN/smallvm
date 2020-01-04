@@ -330,7 +330,7 @@ method setProperty MicroBlocksThingWorker path body {
 	} ('false' == valueString) {
 		value = false
 	} else {
-		value = (urlDecode (substring valueString 2 ((count valueString) - 1)))
+		value = (urlDecode valueString)
 		if (and ((count value) >= 2) (beginsWith value '"') (endsWith value '"')) {
 			// string enclosed in double quotes: remove quotes
 			value = (substring value 2 ((count value) - 1))
