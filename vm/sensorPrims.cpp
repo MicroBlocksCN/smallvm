@@ -298,6 +298,89 @@ static int readTemperature() {
 	return (int) round(result);
 }
 
+#elif defined(ARDUINO_M5Stick_C)
+
+// defined(ARDUINO_M5Stack_Core_ESP32) ||
+// #ifdef ARDUINO_M5Stack_Core_ESP32
+// 	#define Wire1 Wire
+// #endif
+
+#define MPU6886_ID 0x68
+
+static int readAccelReg(int regID) {
+	Wire1.beginTransmission(MPU6886_ID);
+	Wire1.write(regID);
+	int error = Wire1.endTransmission(false);
+	if (error) return 0;
+
+	Wire1.requestFrom(MPU6886_ID, 1);
+	while (!Wire1.available());
+	return (Wire1.read());
+}
+
+static void writeAccelReg(int regID, int value) {
+	Wire1.beginTransmission(MPU6886_ID);
+	Wire1.write(regID);
+	Wire1.write(value);
+	Wire1.endTransmission();
+}
+
+static int accelStarted = false;
+
+static void startAccelerometer() {
+		Wire1.begin(); // use internal I2C bus
+
+#define MPU6886_SMPLRT_DIV        0x19 // 25 (defaults to 0)
+#define MPU6886_CONFIG            0x1A // 26 (defaults to 128)
+#define MPU6886_GYRO_CONFIG       0x1B // 27 (defaults to 0)
+#define MPU6886_ACCEL_CONFIG      0x1C // 28 (defaults to 0)
+#define MPU6886_ACCEL_CONFIG2     0x1D // 29 (defaults to 0)
+#define MPU6886_FIFO_EN           0x23 // 35 (defaults to 0)
+#define MPU6886_USER_CTRL         0x6A // 106 (defaults to 0)
+#define MPU6886_PWR_MGMT_1        0x6B // 107 (defaults to 65)
+#define MPU6886_PWR_MGMT_2        0x6C // 108 (defaults to 0)
+
+	writeAccelReg(MPU6886_PWR_MGMT_1, 0x80); // reset (must be done by itself)
+	delay(1); // required to avoid hang
+
+	writeAccelReg(MPU6886_SMPLRT_DIV, 4); // 200 samples/sec
+	writeAccelReg(MPU6886_CONFIG, 5); // 5 low-pass filtering: 0-6
+	writeAccelReg(MPU6886_PWR_MGMT_1, 1); // use best clock rate (required!)
+	writeAccelReg(MPU6886_PWR_MGMT_2, 7); // disable the gyroscope
+
+	accelStarted = true;
+}
+
+static int readAcceleration(int registerID) {
+	if (!accelStarted) startAccelerometer();
+
+	int val = 0;
+	if (1 == registerID) val = readAccelReg(61);
+	if (3 == registerID) val = readAccelReg(59);
+	if (5 == registerID) val = readAccelReg(63);
+
+// if (1 == registerID) {
+// 	for (int i = 59; i <= 72; i++) {
+// 		reportNum("  ", readAccelReg(i));
+// 	}
+// }
+
+	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = ((val * 100) / 127); // scale to range 0-100
+	return val;
+}
+
+static int readTemperature() {
+	// Return the temperature in Celcius
+
+	if (!accelStarted) startAccelerometer();
+
+	short int rawTemp = (readAccelReg(65) << 8) | readAccelReg(66);
+//reportNum("T", (int) rawTemp);
+	return (int) ((float) rawTemp / 326.8);
+}
+
 #elif defined(ARDUINO_CITILAB_ED1)
 
 #define LIS3DH_ID 25
