@@ -298,14 +298,19 @@ static int readTemperature() {
 	return (int) round(result);
 }
 
-#elif defined(ARDUINO_M5Stick_C)
+#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C)
 
 // defined(ARDUINO_M5Stack_Core_ESP32) ||
-// #ifdef ARDUINO_M5Stack_Core_ESP32
-// 	#define Wire1 Wire
-// #endif
+#ifdef ARDUINO_M5Stack_Core_ESP32
+	#define Wire1 Wire
+#endif
 
-#define MPU6886_ID 0x68
+#define MPU6886_ID			0x68
+#define MPU6886_SMPLRT_DIV	0x19
+#define MPU6886_CONFIG		0x1A
+#define MPU6886_PWR_MGMT_1	0x6B
+#define MPU6886_PWR_MGMT_2	0x6C
+#define MPU6886_WHO_AM_I	0x75
 
 static int readAccelReg(int regID) {
 	Wire1.beginTransmission(MPU6886_ID);
@@ -325,50 +330,42 @@ static void writeAccelReg(int regID, int value) {
 	Wire1.endTransmission();
 }
 
-static int accelStarted = false;
+static char accelStarted = false;
+static char is6886 = false;
 
 static void startAccelerometer() {
 		Wire1.begin(); // use internal I2C bus
-
-#define MPU6886_SMPLRT_DIV        0x19 // 25 (defaults to 0)
-#define MPU6886_CONFIG            0x1A // 26 (defaults to 128)
-#define MPU6886_GYRO_CONFIG       0x1B // 27 (defaults to 0)
-#define MPU6886_ACCEL_CONFIG      0x1C // 28 (defaults to 0)
-#define MPU6886_ACCEL_CONFIG2     0x1D // 29 (defaults to 0)
-#define MPU6886_FIFO_EN           0x23 // 35 (defaults to 0)
-#define MPU6886_USER_CTRL         0x6A // 106 (defaults to 0)
-#define MPU6886_PWR_MGMT_1        0x6B // 107 (defaults to 65)
-#define MPU6886_PWR_MGMT_2        0x6C // 108 (defaults to 0)
 
 	writeAccelReg(MPU6886_PWR_MGMT_1, 0x80); // reset (must be done by itself)
 	delay(1); // required to avoid hang
 
 	writeAccelReg(MPU6886_SMPLRT_DIV, 4); // 200 samples/sec
-	writeAccelReg(MPU6886_CONFIG, 5); // 5 low-pass filtering: 0-6
+	writeAccelReg(MPU6886_CONFIG, 5); // low-pass filtering: 0-6
 	writeAccelReg(MPU6886_PWR_MGMT_1, 1); // use best clock rate (required!)
 	writeAccelReg(MPU6886_PWR_MGMT_2, 7); // disable the gyroscope
 
+	is6886 = (25 == readAccelReg(MPU6886_WHO_AM_I));
 	accelStarted = true;
 }
 
 static int readAcceleration(int registerID) {
 	if (!accelStarted) startAccelerometer();
 
+	int sign = 1;
 	int val = 0;
-	if (1 == registerID) val = readAccelReg(61);
-	if (3 == registerID) val = readAccelReg(59);
+	#ifdef ARDUINO_M5Stick_C
+		if (1 == registerID) { sign = -1; val = readAccelReg(61); }
+		if (3 == registerID) { sign = -1; val = readAccelReg(59); }
+	#else
+		if (1 == registerID) { sign = -1; val = readAccelReg(59); }
+		if (3 == registerID) val = readAccelReg(61);
+	#endif
 	if (5 == registerID) val = readAccelReg(63);
-
-// if (1 == registerID) {
-// 	for (int i = 59; i <= 72; i++) {
-// 		reportNum("  ", readAccelReg(i));
-// 	}
-// }
 
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = ((val * 100) / 127); // scale to range 0-100
-	return val;
+	return sign * val;
 }
 
 static int readTemperature() {
@@ -376,9 +373,14 @@ static int readTemperature() {
 
 	if (!accelStarted) startAccelerometer();
 
+	int temp = 0;
 	short int rawTemp = (readAccelReg(65) << 8) | readAccelReg(66);
-//reportNum("T", (int) rawTemp);
-	return (int) ((float) rawTemp / 326.8);
+	if (is6886) {
+		temp = (int) ((float) rawTemp / 326.8) + 8;
+	} else {
+		temp = (rawTemp / 35) + 7; // approximate constants for mpu9250, empirically determined
+	}
+	return temp;
 }
 
 #elif defined(ARDUINO_CITILAB_ED1)
