@@ -359,8 +359,8 @@ void restartSerial() {
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 0, 1, 0};
+		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
@@ -822,8 +822,8 @@ static void startServoToneTimer() {
 	NRF_TIMER2->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
 	NRF_TIMER2->INTENSET = TIMER_INTENSET_COMPARE0_Msk | TIMER_INTENSET_COMPARE1_Msk;
 	NRF_TIMER2->TASKS_START = true;
- 	NVIC_EnableIRQ(TIMER2_IRQn);
- 	servoToneTimerStarted = true;
+	NVIC_EnableIRQ(TIMER2_IRQn);
+	servoToneTimerStarted = true;
 }
 
 extern "C" void TIMER2_IRQHandler() {
