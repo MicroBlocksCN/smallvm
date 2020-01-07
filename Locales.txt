@@ -1,3 +1,8 @@
+# MicroBlocks translation file
+# Last updated: January 7 2020
+
+# Blocks and categories
+
 Output
 Output
 
@@ -142,11 +147,15 @@ or _
 Variables
 Variables
 
+# Buttons on top of "Variables" category
+
 Add a variable
 Add a variable
 
 Delete a variable
 Delete a variable
+
+# New variable dialog
 
 New variable name?
 New variable name?
@@ -163,8 +172,8 @@ local _ _
 Lists & Strings
 Lists & Strings 
 
-list : _ : ...
-list : _ : ...
+list
+list
 
 length of _
 length of _
@@ -217,11 +226,15 @@ fill list _ with _
 My Blocks
 My Blocks
 
+# Buttons on top of "My Blocks" category
+
 Add a command block
 Add a command block
 
 Add a reporter block
 Add a reporter block
+
+# Make a block dialog
 
 Enter function name:
 Enter function name:
@@ -252,6 +265,8 @@ no op
 
 ignore
 ignore
+
+# Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
 draw shape _ at x _ y _
@@ -351,6 +366,23 @@ color r _ g _ b _
 
 attach _ LED NeoPixel strip to pin _ has white _
 attach _ LED NeoPixel strip to pin _ has white _
+
+# Libraries
+
+Basic Sensors
+Basic Sensors
+
+tilt x
+tilt x
+
+tilt y
+tilt y
+
+tilt z
+tilt z
+
+temperature (°C)
+temperature (°C)
 
 ED1 Stepper Motor
 ED1 Stepper Motor
@@ -670,6 +702,8 @@ button _ long pressed
 button _ pressed
 button _ pressed
 
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+
 New
 New
 
@@ -975,21 +1009,6 @@ Language
 
 Custom...
 Custom...
-
-Basic Sensors
-Basic Sensors
-
-tilt x
-tilt x
-
-tilt y
-tilt y
-
-tilt z
-tilt z
-
-temperature (°C)
-temperature (°C)
 
 Obsolete
 Obsolete

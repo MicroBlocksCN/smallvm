@@ -1,3 +1,8 @@
+# MicroBlocks translation file
+# Last updated: January 7 2020
+
+# Blocks and categories
+
 Output
 Salida
 
@@ -142,50 +147,94 @@ o _
 Variables
 Variables
 
+# Buttons on top of "Variables" category
+
 Add a variable
 Crea una variable
 
 Delete a variable
 Elimina una variable
 
+# New variable dialog
+
 New variable name?
 ¿Nombre de la variable?
 
 set _ to _
-asignar _ a _
+asigna _ a _
 
 change _ by _
-aumentar _ en _
+aumenta _ en _
 
 local _ _
 variable local _ _
 
-Lists
-Listas
+Lists & Strings
+Listas y texto
 
-new list length _
-nueva lista de tamaño _
-
-fill list _ with _
-llena lista _ con _
-
-item _ of _
-elemento _ de _
-
-replace item _ of _ with _
-cambia el elemento _ de _ por _
+list
+listas
 
 length of _
 tamaño de _
 
+item _ of _
+elemento _ de _
+
+replace item _ of list _ with _
+sustituye elemento _ de lista _ por _
+
+delete item _ of list _
+elimina elemento _ de lista _
+
+add _ to list _
+añade _ a lista _
+
+join _ _
+une _ _
+
+copy _ from _
+copia _ desde _
+
+to _
+hasta _
+
+find _ in _
+busca _ en _
+
+starting at _
+empezando por _
+
+join string list _
+une lista de textos _
+
+unicode _ of _
+unicode _ de _
+
+string from unicode
+texto a partir de unicode
+
+new list length _
+nueva lista de tamaño _
+
+free memory
+memoria libre
+
+fill list _ with _
+llena lista _ con _
+
 My Blocks
 Mis bloques
+
+# Buttons on top of "My Blocks" category
 
 Add a command block
 Crea un bloque comando
 
 Add a reporter block
 Crea un bloque reportador
+
+# Make a block dialog
 
 Enter function name:
 Nombre de la función:
@@ -216,6 +265,8 @@ no op
 
 ignore
 ignorar
+
+# Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
 dibuja forma _ en x _ y _
@@ -316,6 +367,23 @@ color r _ v _ a _
 attach _ LED NeoPixel strip to pin _ has white _
 inicializa tira de _ NeoPixels en el pin _ con blanco _
 
+# Libraries
+
+Basic Sensors
+Sensores básicos
+
+tilt x
+inclinación x
+
+tilt y
+inclinación y
+
+tilt z
+inclinación z
+
+temperature (°C)
+temperatura (°C)
+
 ED1 Stepper Motor
 Motores ED1
 
@@ -388,8 +456,8 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird LED tricolor _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ ∞
-Hummingbird Servo de posicion _ _ ∞
+Hummingbird Position Servo _ _ º
+Hummingbird Servo de Posición _ _ º
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Servo de rotacion _ _ %
@@ -603,6 +671,38 @@ descripción de la cosa
 
 clear thing description
 borra la descripción de la cosa
+
+Motion
+Movimiento
+
+motion
+movimiento
+
+start step counter
+empieza a contar pasos
+
+step count
+recuento de pasos
+
+clear step count
+borra recuento de pasos
+
+set step threshold _ (0-50)
+fija el umbral del paso en _ (0-50)
+
+Button Events
+Eventos de botón
+
+button _ double pressed
+doble pulsación en botón _
+
+button _ long pressed
+pulsación larga en botón _
+
+button _ pressed
+pulsación corta en botón _
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
 New
 Nuevo
@@ -909,21 +1009,6 @@ Idioma
 
 Custom...
 Archivo...
-
-Basic Sensors
-Sensores básicos
-
-tilt x
-inclinación x
-
-tilt y
-inclinación y
-
-tilt z
-inclinación z
-
-temperature (°C)
-temperatura (°C)
 
 Obsolete
 Obsoleto

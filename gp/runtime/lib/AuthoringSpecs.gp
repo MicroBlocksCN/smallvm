@@ -248,6 +248,10 @@ method setLanguage AuthoringSpecs newLang {
 	translationData = (readFile (join 'translations/' newLang '.txt'))
   }
   if (isNil translationData) {
+	// if still nil, we may be in the wrong dir
+	translationData = (readFile (join '../translations/' newLang '.txt'))
+  }
+  if (isNil translationData) {
 	language = 'English'
 	translationDictionary = nil
   } else {
@@ -284,32 +288,38 @@ method installTranslation AuthoringSpecs translationData langName {
   //	translated string
   //	<blank line>
   //	...
+  // Lines starting with # are treated as comments
 
   translationDictionary = (dictionary)
   lines = (toList (lines translationData))
   while ((count lines) >= 2) {
 	from = (removeFirst lines)
+	// ignore comments and blank lines
+	while (or (beginsWith from '#') (from == '')) {
+		from = (removeFirst lines)
+	}
 	to = (removeFirst lines)
 	atPut translationDictionary from to
-	while (and ((count lines) > 0) ((removeFirst lines) != '')) {
-	  // skip lines until the next blank line
-	}
   }
   if (notNil langName) { language = langName }
 }
 
 to localized aString {
+  localization = (localizedOrNil aString)
+  if (isNil localization) {
+	return aString
+  } else {
+	return localization
+  }
+}
+
+to localizedOrNil aString {
   if (isNil aString) { return nil }
   dict = (getField (authoringSpecs) 'translationDictionary')
   if (isNil dict) {
 	return aString
   } else {
-	localization = (at dict aString)
-	if (isNil localization) {
-	  return aString
-	} else {
-	  return localization
-	}
+	return (at dict aString)
   }
 }
 
