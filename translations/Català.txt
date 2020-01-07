@@ -1,3 +1,8 @@
+# MicroBlocks translation file
+# Last updated: January 7 2020
+
+# Blocks and categories
+
 Output
 Sortida
 
@@ -142,11 +147,15 @@ o _
 Variables
 Variables
 
+# Buttons on top of "Variables" category
+
 Add a variable
 Crea una variable
 
 Delete a variable
 Elimina una variable
+
+# New variable dialog
 
 New variable name?
 Nom de la variable?
@@ -217,11 +226,15 @@ omple llista _ amb _
 My Blocks
 Els meus blocs
 
+# Buttons on top of "My Blocks" category
+
 Add a command block
 Crea un bloc comanda
 
 Add a reporter block
 Crea un bloc reportador
+
+# Make a block dialog
 
 Enter function name:
 Nom de la funció:
@@ -252,6 +265,8 @@ no op
 
 ignore
 ignora
+
+# Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
 dibuixa forma _ a x _ y _
@@ -351,6 +366,23 @@ color vermell _ verd _ blau _
 
 attach _ LED NeoPixel strip to pin _ has white _
 inicialitza tira de _ NeoPixels al pin _ amb blanc _
+
+# Libraries
+
+Basic Sensors
+Sensors bàsics
+
+tilt x
+inclinació x
+
+tilt y
+inclinació y
+
+tilt z
+inclinació z
+
+temperature (°C)
+temperatura (°C)
 
 ED1 Stepper Motor
 Motors ED1
@@ -670,6 +702,8 @@ toc llarg al botó _
 button _ pressed
 toc curt al botó _
 
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+
 New
 Nou
 
@@ -975,21 +1009,6 @@ Idioma
 
 Custom...
 Arxiu...
-
-Basic Sensors
-Sensors bàsics
-
-tilt x
-inclinació x
-
-tilt y
-inclinació y
-
-tilt z
-inclinació z
-
-temperature (°C)
-temperatura (°C)
 
 Obsolete
 Obsolet
