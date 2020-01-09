@@ -378,7 +378,7 @@ static int readTemperature() {
 	if (is6886) {
 		temp = (int) ((float) rawTemp / 326.8) + 8;
 	} else {
-		temp = (rawTemp / 35) + 7; // approximate constants for mpu9250, empirically determined
+		temp = (rawTemp / 40) + 9; // approximate constants for mpu9250, empirically determined
 	}
 	return temp;
 }
