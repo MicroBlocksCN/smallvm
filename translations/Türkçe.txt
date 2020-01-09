@@ -1,14 +1,10 @@
-display _
-ekran _
+# MicroBlocks translation file
+# Last updated: January 7 2020
 
-clear display
-ekranı sil
+# Blocks and categories
 
-plot x _ y _
-yak x _ y _
-
-unplot x _ y _
-söndür x _ y _
+Output
+Çıktı
 
 set user LED _
 kullanıcı LED i _ yap
@@ -16,29 +12,29 @@ kullanıcı LED i _ yap
 say _
 söyle _
 
+graph _
+--MISSING--
+
+Input
+Girdi
+
 button A
 buton A
 
 button B
 buton B
 
-tilt x
-eğilim x
-
-tilt y
-eğilim y
-
-tilt z
-eğilim z
-
-temperature (Â°C)
-ısı (Â°C)
-
 microseconds
 mikrosaniye
 
 milliseconds
 milisaniye
+
+board type
+--MISSING--
+
+Pins
+Pinler
 
 read digital pin _
 dijital pin oku _
@@ -57,6 +53,9 @@ analog pinler
 
 digital pins
 dijital pinler
+
+Control
+Kontrol
 
 when started
 başladığında
@@ -88,6 +87,9 @@ bekle _ mikrosaniye
 stop this task
 bu betiği durdur
 
+stop other tasks
+--MISSING--
+
 stop all
 tüm betikleri durdur
 
@@ -115,6 +117,9 @@ _ gönder
 return _
 döndür _
 
+Math
+Matematik
+
 _ mod _
 _ mod _
 
@@ -139,6 +144,22 @@ _ veya _
 or _
 veya _
 
+Variables
+Değişkenler
+
+# Buttons on top of "Variables" category
+
+Add a variable
+Değişken ekle
+
+Delete a variable
+Değişken sil
+
+# New variable dialog
+
+New variable name?
+--MISSING--
+
 set _ to _
 _ değişkenini _ yap
 
@@ -148,23 +169,78 @@ _ değişkenini _ değiştir
 local _ _
 yerel değişken _ = _
 
-new array _
-yeni dizi _
+Lists & Strings
+--MISSING--
 
-new byte array _
-yeni bayt dizisi _
-
-fill array _ with _
-_ dizisini _ ile doldur
-
-array _ at _
-_ dizisinin _ öğesi
-
-set array _ at _ to _
-_ dizisi _ öğesini _ yap
+list
+--MISSING--
 
 length of _
 _ uzunluğu
+
+item _ of _
+--MISSING--
+
+replace item _ of list _ with _
+--MISSING--
+
+delete item _ of list _
+--MISSING--
+
+add _ to list _
+--MISSING--
+
+join _ _
+--MISSING--
+
+copy _ from _
+--MISSING--
+
+to _
+--MISSING--
+
+find _ in _
+--MISSING--
+
+starting at _
+--MISSING--
+
+join string list _
+--MISSING--
+
+unicode _ of _
+--MISSING--
+
+string from unicode
+--MISSING--
+
+new list length _
+--MISSING--
+
+free memory
+--MISSING--
+
+fill list _ with _
+--MISSING--
+
+My Blocks
+--MISSING--
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+--MISSING--
+
+Add a reporter block
+--MISSING--
+
+# Make a block dialog
+
+Enter function name:
+--MISSING--
+
+Comm
+--MISSING--
 
 i2c get device _ register _
 i2c modül oku _ sayaç _
@@ -190,17 +266,82 @@ işlem yok
 ignore
 aldırma
 
+# Primitives (mostly hidden from end users)
+
 draw shape _ at x _ y _
 _ şeklini çiz x _ y _ 
 
 shape for letter _
 _ harfinin şekli
 
-set NeoPixel pin _ has white _
-NeoPixel _ pinini beyaz _ yap
+set NeoPixel pin _ is RGBW _
+--MISSING--
 
 send NeoPixel rgb _
 NeoPixel rgb _ gönder
+
+has tone support
+--MISSING--
+
+play tone pin _ frequency _
+--MISSING--
+
+has WiFi support
+--MISSING--
+
+start WiFi _ password _
+--MISSING--
+
+stop WiFi
+--MISSING--
+
+WiFi status
+--MISSING--
+
+my IP address
+--MISSING--
+
+radio send number _
+--MISSING--
+
+radio send string _
+--MISSING--
+
+radio send pair _ = _
+--MISSING--
+
+radio message received?
+--MISSING--
+
+radio last number
+--MISSING--
+
+radio last string
+--MISSING--
+
+radio last message type
+--MISSING--
+
+radio set group _
+--MISSING--
+
+radio set channel (0-83) _
+--MISSING--
+
+radio set power (0-7) _
+--MISSING--
+
+radio last signal strength
+--MISSING--
+
+radio receive packet _
+--MISSING--
+
+radio send packet _
+--MISSING--
+
+disable radio
+--MISSING--
 
 light level
 ışık seviyesi
@@ -226,29 +367,43 @@ renk r _ g _ b _
 attach _ LED NeoPixel strip to pin _ has white _
 _ LED NeoPixel şeritini _ pine bağla beyaz değer _ 
 
-receive IR code from device _
-_ aygıtından IR kod oku
+# Libraries
 
-test IR
-IR testi
+Basic Sensors
+--MISSING--
 
-scroll text _ pausing _ ms
-_ metni kaydır _ ms bekleyerek
+tilt x
+eğilim x
 
-scroll number _ pausing _ ms
-_ sayı kaydır _ ms bekleyerek
+tilt y
+eğilim y
 
-stop scrolling
-kaydırmayı durdur
+tilt z
+eğilim z
 
-attach buzzer to pin _
-sesli uyarıcıyı _ pinine bağla
+temperature (°C)
+--MISSING--
 
-play note _ octave _ during _ ms
-_ notasını _ oktavda _ ms çal
+ED1 Stepper Motor
+--MISSING--
 
-play frequency _ on pin _ for _ ms
-_ frekansını _ pininde _ ms çal
+move motor _  _ steps _
+ _ motorunu _ adım yürüt _
+
+move motor 1 _ and motor 2 _ _ steps
+motor 1 _ ve motor 2 _  _ adım yürüt
+
+stop steppers
+step motorları durdur
+
+clockwise
+saat yönünde
+
+counter-clockwise
+saat yönüne ters
+
+ED1 Buttons
+--MISSING--
 
 button OK
 buton OK
@@ -267,21 +422,6 @@ buton sol
 
 button right
 buton sağ
-
-move motor _  _ steps _
- _ motorunu _ adım yürüt _
-
-move motor 1 _ and motor 2 _ _ steps
-motor 1 _ ve motor 2 _  _ adım yürüt
-
-stop steppers
-step motorları durdur
-
-clockwise
-saat yönünde
-
-counter-clockwise
-saat yönüne ters
 
 capacitive OK
 kapasitif OK
@@ -304,11 +444,265 @@ kapasitif sağ
 capacitive sensor _
 kapasitif sensör _
 
+set capacitive threshold to _
+kapasitif eşik değerini _ yap
+
+set use capacitive to _
+--MISSING--
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird 3renkli-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ º
+--MISSING--
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Sürekli Servo _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Pil (mV)
+
+Light
+Işık
+
+Distance
+Mesafe
+
+Dial
+Kadran
+
+Sound
+Ses
+
+Other
+Diğer
+
+distance (cm) trigger _ echo _
+--MISSING--
+
+IR Remote
+--MISSING--
+
+receive IR code from device _
+_ aygıtından IR kod oku
+
+test IR
+IR testi
+
+attach IR receiver to pin _
+--MISSING--
+
+Radio
+--MISSING--
+
+Scrolling
+--MISSING--
+
+scroll text _
+--MISSING--
+
+scroll number _
+--MISSING--
+
+pausing _ ms
+--MISSING--
+
+stop scrolling
+kaydırmayı durdur
+
+Servo
+--MISSING--
+
+has servo support
+--MISSING--
+
+set servo _ to _ (-100 to 100)
+--MISSING--
+
+resetServos
+--MISSING--
+
+flip servo _ _
+--MISSING--
+
+attach servos 1 to 4 to pins _ _ _ _
+--MISSING--
+
+LED Display
+--MISSING--
+
+display _
+ekran _
+
+clear display
+ekranı sil
+
+plot x _ y _
+yak x _ y _
+
+unplot x _ y _
+söndür x _ y _
+
+display character _
+--MISSING--
+
+enable TFT _
+--MISSING--
+
+TFT width
+--MISSING--
+
+TFT height
+--MISSING--
+
 set TFT pixel x _ y _ to _
 x _ y _ TFT pikselini _ yap
 
-set capacitive threshold to _
-kapasitif eşik değerini _ yap
+draw line on TFT from x _ y _ to x _ y _ color _
+--MISSING--
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+--MISSING--
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+--MISSING--
+
+draw circle on TFT at x _ y _ radius _ color _
+--MISSING--
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+--MISSING--
+
+filled _
+--MISSING--
+
+write _ on TFT at x _ y _ color _
+--MISSING--
+
+scale _ wrap _
+--MISSING--
+
+Tone
+--MISSING--
+
+attach buzzer to pin _
+sesli uyarıcıyı _ pinine bağla
+
+play note _ octave _ during _ ms
+_ notasını _ oktavda _ ms çal
+
+play frequency _ for _ milliseconds
+--MISSING--
+
+play midi key _ for _ milliseconds
+--MISSING--
+
+Turtle
+--MISSING--
+
+home
+--MISSING--
+
+move _
+--MISSING--
+
+turn _ degrees
+--MISSING--
+
+turn _ / _ of circle
+--MISSING--
+
+pen down
+--MISSING--
+
+pen up
+--MISSING--
+
+set pen color to _
+--MISSING--
+
+set pen to random color
+--MISSING--
+
+fill display with _
+--MISSING--
+
+go to x _ y _
+--MISSING--
+
+point in direction  _
+--MISSING--
+
+Web of Things
+--MISSING--
+
+wifi connect to _ password _ try _ times
+--MISSING--
+
+wifi create hotspot _ password _
+--MISSING--
+
+IP address
+--MISSING--
+
+define thing _ capability _
+--MISSING--
+
+register event _ type _
+--MISSING--
+
+add boolean property title _ variable _ @Type _
+--MISSING--
+
+add number property title _ variable _ min _ max _ @Type _
+--MISSING--
+
+add string property title _ variable _ @Type _
+--MISSING--
+
+thing description
+--MISSING--
+
+clear thing description
+--MISSING--
+
+Motion
+--MISSING--
+
+motion
+--MISSING--
+
+start step counter
+--MISSING--
+
+step count
+--MISSING--
+
+clear step count
+--MISSING--
+
+set step threshold _ (0-50)
+--MISSING--
+
+Button Events
+--MISSING--
+
+button _ double pressed
+--MISSING--
+
+button _ long pressed
+--MISSING--
+
+button _ pressed
+--MISSING--
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
 New
 Yeni
@@ -367,14 +761,20 @@ MicroBlocks cihazına balanmak için "Bağlan" düğmesini kullan.
 No boards found; is your board plugged in?
 Kart algılanmadı; kardınız bağlı mı?
 
-For AdaFruit boards, double-click button and try again.
-AdaFruit kartları için butonu çift tıklayın ve gene deneyin.
+For AdaFruit boards, double-click reset button and try again.
+--MISSING--
 
 The board is not responding.
 Kart cevap vermiyor.
 
 Try to Install MicroBlocks on the board?
 Karta Microblocks kurmayı deneyin.
+
+The MicroBlocks in your board is not current
+--MISSING--
+
+Try to update MicroBlocks on the board?
+--MISSING--
 
 Stop
 Dur
@@ -394,11 +794,11 @@ temizle
 arrange scripts
 betikleri düzenle
 
-undo last drop
-son bırak'ı geri al
+undrop  (ctrl-Z)
+--MISSING--
 
-copy all scripts
-tüm betikleri kopyala
+copy all scripts to clipboard
+--MISSING--
 
 paste all scripts
 tüm betikleri yapıştır
@@ -406,8 +806,8 @@ tüm betikleri yapıştır
 paste script
 betik yapıştır
 
-save picture of all scripts
-Tüm betiklerin resmini kaydet
+save a picture of all scripts
+--MISSING--
 
 about...
 hakkında...
@@ -415,11 +815,50 @@ hakkında...
 virtual machine version
 sanal makine sürümü
 
-install MicroBlocks on board
-MicroBlocks'u karta kur
+update firmware on board
+--MISSING--
 
-graph data
-verilerin grafiğini yap
+show data graph
+--MISSING--
+
+set serial delay
+--MISSING--
+
+firmware version
+--MISSING--
+
+start Mozilla WebThing server
+--MISSING--
+
+stop Mozilla WebThing server
+--MISSING--
+
+MicroBlocks HTTP Server listening on port 6473
+--MISSING--
+
+wipe and repartition esp32
+--MISSING--
+
+Use board type 
+--MISSING--
+
+Wiping board...
+--MISSING--
+
+(press ESC to cancel)
+--MISSING--
+
+Done!
+--MISSING--
+
+download and install latest VM
+--MISSING--
+
+Select board type:
+--MISSING--
+
+Uploading MicroBlocks to board...
+--MISSING--
 
 copy data to clipboard
 verileri panoya kopyala
@@ -441,6 +880,9 @@ gelişmiş blokları gizle
 
 Data Graph
 Veri Grafiği
+
+File
+--MISSING--
 
 File Open
 Dosya Aç
@@ -466,23 +908,59 @@ daralt
 rename...
 adını değiştir...
 
-show definition...
-tanım göster...
+show block definition...
+--MISSING--
+
+show the definition of this block
+--MISSING--
+
+delete block definition...
+--MISSING--
+
+delete the definition of this block
+--MISSING--
 
 duplicate
 çoğalt
 
+duplicate this block
+--MISSING--
+
+delete block
+--MISSING--
+
+delete this block
+--MISSING--
+
 just this one block
 yalnız bu blok
 
-...all
-tümü...
+copy to clipboard
+--MISSING--
 
-duplicate including all attached blocks
-ekteki blokların tümüyle çoğalt
+copy these blocks to the clipboard
+--MISSING--
+
+duplicate all
+--MISSING--
+
+duplicate these blocks
+--MISSING--
+
+extract block
+--MISSING--
+
+pull out this block
+--MISSING--
 
 save picture of script
 betiğin resmini kaydet
+
+save a picture of this block definition as a PNG file
+--MISSING--
+
+save a picture of these blocks as a PNG file
+--MISSING--
 
 copy script
 betiği kopyala
@@ -490,8 +968,35 @@ betiği kopyala
 delete
 sil
 
-hide definition
-tanımı gizle
+Input type:
+--MISSING--
+
+string only
+--MISSING--
+
+string or number
+--MISSING--
+
+number only
+--MISSING--
+
+define
+--MISSING--
+
+number/string
+--MISSING--
+
+editable number or string
+--MISSING--
+
+label
+--MISSING--
+
+input
+--MISSING--
+
+hide block definition
+--MISSING--
 
 Are you sure you want to remove this block definition?
 Bu bloğun tanımını sileceğinizden emin misiniz?
@@ -499,47 +1004,17 @@ Bu bloğun tanımını sileceğinizden emin misiniz?
 Libraries
 Kütüphaneler
 
-Language:
-Dil:
+Language
+--MISSING--
 
-Add a function
-Fonksiyon ekle
-
-Add a variable
-Değişken ekle
-
-Delete a variable
-Değişken sil
-
-Output
-Çıktı
-
-Input
-Girdi
-
-Pins
-Pinler
-
-Control
-Kontrol
-
-Math
-Matematik
-
-Variables
-Değişkenler
-
-Lists
-Listeler
-
-Advanced
-Gelişmiş
-
-Functions
-Fonksiyonlar
+Custom...
+--MISSING--
 
 Obsolete
 Geçersiz
+
+OK
+--MISSING--
 
 Ok
 Tamam
@@ -559,35 +1034,3 @@ Tamam
 Confirm
 Onayla
 
-Hummingbird LED _ _ %
-Hummingbird LED _ _ %
-
-Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird 3renkli-LED _ R _ % G _ % B _ %
-
-Hummingbird Position Servo _ _ âˆž
-Hummingbird Konumlu Servo _ _ âˆž
-
-Hummingbird Rotation Servo _ _ %
-Hummingbird Sürekli Servo _ _ %
-
-Hummingbird _ _
-Hummingbird _ _
-
-Hummingbird Battery (mV)
-Hummingbird Pil (mV)
-
-Light
-Işık
-
-Distance
-Mesafe
-
-Dial
-Kadran
-
-Sound
-Ses
-
-Other
-Diğer

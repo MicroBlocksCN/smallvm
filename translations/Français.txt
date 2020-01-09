@@ -1,14 +1,10 @@
-display _
-écran _
+# MicroBlocks translation file
+# Last updated: January 7 2020
 
-clear display
-effacer l'écran
+# Blocks and categories
 
-plot x _ y _
-allumer x _ y _
-
-unplot x _ y _
-éteindre x _ y _
+Output
+--MISSING--
 
 set user LED _
 allumer la LED _
@@ -16,29 +12,29 @@ allumer la LED _
 say _
 dire _
 
+graph _
+--MISSING--
+
+Input
+--MISSING--
+
 button A
 bouton A
 
 button B
 bouton B
 
-tilt x
-inclinaison x
-
-tilt y
-inclinaison y
-
-tilt z
-inclinaison z
-
-temperature (°C)
-température (°C)
-
 microseconds
 microsecondes
 
 milliseconds
 millisecondes
+
+board type
+--MISSING--
+
+Pins
+--MISSING--
 
 read digital pin _
 lire la broche numérique _
@@ -57,6 +53,9 @@ broches analogiques
 
 digital pins
 broches numériques
+
+Control
+--MISSING--
 
 when started
 au début
@@ -88,6 +87,9 @@ attendre _ microsecondes
 stop this task
 arrêter cette tâche
 
+stop other tasks
+--MISSING--
+
 stop all
 stopper tout
 
@@ -115,6 +117,9 @@ envoyer à tous _
 return _
 renvoyer _
 
+Math
+--MISSING--
+
 _ mod _
 _ modulo _
 
@@ -139,6 +144,22 @@ _ ou _
 or _
 ou _
 
+Variables
+--MISSING--
+
+# Buttons on top of "Variables" category
+
+Add a variable
+--MISSING--
+
+Delete a variable
+--MISSING--
+
+# New variable dialog
+
+New variable name?
+--MISSING--
+
 set _ to _
 mettre _ à _
 
@@ -148,23 +169,78 @@ changer _ de _
 local _ _
 variable locale _ _
 
-new array _
-nouveau tableau _
+Lists & Strings
+--MISSING--
 
-new byte array _
-nouveau tableau d'octets _
-
-fill array _ with _
-remplir le tableau _ avec _
-
-array _ at _
-tableau _ élément _
-
-set array _ at _ to _
-mettre le tableau _ à la position _ à _
+list
+--MISSING--
 
 length of _
 longueur de _
+
+item _ of _
+--MISSING--
+
+replace item _ of list _ with _
+--MISSING--
+
+delete item _ of list _
+--MISSING--
+
+add _ to list _
+--MISSING--
+
+join _ _
+--MISSING--
+
+copy _ from _
+--MISSING--
+
+to _
+--MISSING--
+
+find _ in _
+--MISSING--
+
+starting at _
+--MISSING--
+
+join string list _
+--MISSING--
+
+unicode _ of _
+--MISSING--
+
+string from unicode
+--MISSING--
+
+new list length _
+--MISSING--
+
+free memory
+--MISSING--
+
+fill list _ with _
+--MISSING--
+
+My Blocks
+--MISSING--
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+--MISSING--
+
+Add a reporter block
+--MISSING--
+
+# Make a block dialog
+
+Enter function name:
+--MISSING--
+
+Comm
+--MISSING--
 
 i2c get device _ register _
 i2c lire le périphérique _ au registre _
@@ -190,26 +266,198 @@ no op
 ignore
 ignorer
 
+# Primitives (mostly hidden from end users)
+
 draw shape _ at x _ y _
 dessiner la forme _ à x _ y _
 
 shape for letter _
 forme pour la lettre _
 
-set NeoPixel pin _ has white _
-mettre le NeoPixel à la broche _ avec la couleur blanche _
+set NeoPixel pin _ is RGBW _
+--MISSING--
 
 send NeoPixel rgb _
 envoyer RGB _ au NeoPixel
 
+has tone support
+--MISSING--
+
+play tone pin _ frequency _
+--MISSING--
+
+has WiFi support
+--MISSING--
+
+start WiFi _ password _
+--MISSING--
+
+stop WiFi
+--MISSING--
+
+WiFi status
+--MISSING--
+
+my IP address
+--MISSING--
+
+radio send number _
+--MISSING--
+
+radio send string _
+--MISSING--
+
+radio send pair _ = _
+--MISSING--
+
+radio message received?
+--MISSING--
+
+radio last number
+--MISSING--
+
+radio last string
+--MISSING--
+
+radio last message type
+--MISSING--
+
+radio set group _
+--MISSING--
+
+radio set channel (0-83) _
+--MISSING--
+
+radio set power (0-7) _
+--MISSING--
+
+radio last signal strength
+--MISSING--
+
+radio receive packet _
+--MISSING--
+
+radio send packet _
+--MISSING--
+
+disable radio
+--MISSING--
+
+light level
+--MISSING--
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+--MISSING--
+
+clear NeoPixels
+--MISSING--
+
+set NeoPixel _ color _
+--MISSING--
+
+set all NeoPixels color _
+--MISSING--
+
+rotate NeoPixels by _
+--MISSING--
+
+color r _ g _ b _
+--MISSING--
+
+attach _ LED NeoPixel strip to pin _ has white _
+--MISSING--
+
+# Libraries
+
+Basic Sensors
+--MISSING--
+
+tilt x
+inclinaison x
+
+tilt y
+inclinaison y
+
+tilt z
+inclinaison z
+
+temperature (°C)
+température (°C)
+
+ED1 Stepper Motor
+--MISSING--
+
+move motor _  _ steps _
+--MISSING--
+
+move motor 1 _ and motor 2 _ _ steps
+--MISSING--
+
+stop steppers
+--MISSING--
+
+clockwise
+--MISSING--
+
+counter-clockwise
+--MISSING--
+
+ED1 Buttons
+--MISSING--
+
+button OK
+--MISSING--
+
+button X
+--MISSING--
+
+button up
+--MISSING--
+
+button down
+--MISSING--
+
+button left
+--MISSING--
+
+button right
+--MISSING--
+
+capacitive OK
+--MISSING--
+
+capacitive X
+--MISSING--
+
+capacitive up
+--MISSING--
+
+capacitive down
+--MISSING--
+
+capacitive left
+--MISSING--
+
+capacitive right
+--MISSING--
+
+capacitive sensor _
+--MISSING--
+
+set capacitive threshold to _
+--MISSING--
+
+set use capacitive to _
+--MISSING--
+
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ ∞
-Hummingbird Position Servo _ _ ∞
+Hummingbird Position Servo _ _ º
+--MISSING--
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Rotation Servo _ _ %
@@ -234,4 +482,555 @@ Son
 
 Other
 Autre
+
+distance (cm) trigger _ echo _
+--MISSING--
+
+IR Remote
+--MISSING--
+
+receive IR code from device _
+--MISSING--
+
+test IR
+--MISSING--
+
+attach IR receiver to pin _
+--MISSING--
+
+Radio
+--MISSING--
+
+Scrolling
+--MISSING--
+
+scroll text _
+--MISSING--
+
+scroll number _
+--MISSING--
+
+pausing _ ms
+--MISSING--
+
+stop scrolling
+--MISSING--
+
+Servo
+--MISSING--
+
+has servo support
+--MISSING--
+
+set servo _ to _ (-100 to 100)
+--MISSING--
+
+resetServos
+--MISSING--
+
+flip servo _ _
+--MISSING--
+
+attach servos 1 to 4 to pins _ _ _ _
+--MISSING--
+
+LED Display
+--MISSING--
+
+display _
+écran _
+
+clear display
+effacer l'écran
+
+plot x _ y _
+allumer x _ y _
+
+unplot x _ y _
+éteindre x _ y _
+
+display character _
+--MISSING--
+
+enable TFT _
+--MISSING--
+
+TFT width
+--MISSING--
+
+TFT height
+--MISSING--
+
+set TFT pixel x _ y _ to _
+--MISSING--
+
+draw line on TFT from x _ y _ to x _ y _ color _
+--MISSING--
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+--MISSING--
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+--MISSING--
+
+draw circle on TFT at x _ y _ radius _ color _
+--MISSING--
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+--MISSING--
+
+filled _
+--MISSING--
+
+write _ on TFT at x _ y _ color _
+--MISSING--
+
+scale _ wrap _
+--MISSING--
+
+Tone
+--MISSING--
+
+attach buzzer to pin _
+--MISSING--
+
+play note _ octave _ during _ ms
+--MISSING--
+
+play frequency _ for _ milliseconds
+--MISSING--
+
+play midi key _ for _ milliseconds
+--MISSING--
+
+Turtle
+--MISSING--
+
+home
+--MISSING--
+
+move _
+--MISSING--
+
+turn _ degrees
+--MISSING--
+
+turn _ / _ of circle
+--MISSING--
+
+pen down
+--MISSING--
+
+pen up
+--MISSING--
+
+set pen color to _
+--MISSING--
+
+set pen to random color
+--MISSING--
+
+fill display with _
+--MISSING--
+
+go to x _ y _
+--MISSING--
+
+point in direction  _
+--MISSING--
+
+Web of Things
+--MISSING--
+
+wifi connect to _ password _ try _ times
+--MISSING--
+
+wifi create hotspot _ password _
+--MISSING--
+
+IP address
+--MISSING--
+
+define thing _ capability _
+--MISSING--
+
+register event _ type _
+--MISSING--
+
+add boolean property title _ variable _ @Type _
+--MISSING--
+
+add number property title _ variable _ min _ max _ @Type _
+--MISSING--
+
+add string property title _ variable _ @Type _
+--MISSING--
+
+thing description
+--MISSING--
+
+clear thing description
+--MISSING--
+
+Motion
+--MISSING--
+
+motion
+--MISSING--
+
+start step counter
+--MISSING--
+
+step count
+--MISSING--
+
+clear step count
+--MISSING--
+
+set step threshold _ (0-50)
+--MISSING--
+
+Button Events
+--MISSING--
+
+button _ double pressed
+--MISSING--
+
+button _ long pressed
+--MISSING--
+
+button _ pressed
+--MISSING--
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+
+New
+--MISSING--
+
+Open
+--MISSING--
+
+Save
+--MISSING--
+
+Connect
+--MISSING--
+
+disconnect
+--MISSING--
+
+Serial port:
+--MISSING--
+
+other...
+--MISSING--
+
+none
+--MISSING--
+
+Port name?
+--MISSING--
+
+Board type:
+--MISSING--
+
+Select board:
+--MISSING--
+
+Could not read: 
+--MISSING--
+
+by
+--MISSING--
+
+More info at http://microblocks.fun
+--MISSING--
+
+Function "
+--MISSING--
+
+" is too large to send to board.
+--MISSING--
+
+Script is too large to send to board.
+--MISSING--
+
+Use "Connect" button to connect to a MicroBlocks device.
+--MISSING--
+
+No boards found; is your board plugged in?
+--MISSING--
+
+For AdaFruit boards, double-click reset button and try again.
+--MISSING--
+
+The board is not responding.
+--MISSING--
+
+Try to Install MicroBlocks on the board?
+--MISSING--
+
+The MicroBlocks in your board is not current
+--MISSING--
+
+Try to update MicroBlocks on the board?
+--MISSING--
+
+Stop
+--MISSING--
+
+Start
+--MISSING--
+
+Quit MicroBlocks?
+--MISSING--
+
+Discard current project?
+--MISSING--
+
+clean up
+--MISSING--
+
+arrange scripts
+--MISSING--
+
+undrop  (ctrl-Z)
+--MISSING--
+
+copy all scripts to clipboard
+--MISSING--
+
+paste all scripts
+--MISSING--
+
+paste script
+--MISSING--
+
+save a picture of all scripts
+--MISSING--
+
+about...
+--MISSING--
+
+virtual machine version
+--MISSING--
+
+update firmware on board
+--MISSING--
+
+show data graph
+--MISSING--
+
+set serial delay
+--MISSING--
+
+firmware version
+--MISSING--
+
+start Mozilla WebThing server
+--MISSING--
+
+stop Mozilla WebThing server
+--MISSING--
+
+MicroBlocks HTTP Server listening on port 6473
+--MISSING--
+
+wipe and repartition esp32
+--MISSING--
+
+Use board type 
+--MISSING--
+
+Wiping board...
+--MISSING--
+
+(press ESC to cancel)
+--MISSING--
+
+Done!
+--MISSING--
+
+download and install latest VM
+--MISSING--
+
+Select board type:
+--MISSING--
+
+Uploading MicroBlocks to board...
+--MISSING--
+
+copy data to clipboard
+--MISSING--
+
+clear data
+--MISSING--
+
+clear memory and variables
+--MISSING--
+
+show advanced blocks
+--MISSING--
+
+export functions as library
+--MISSING--
+
+hide advanced blocks
+--MISSING--
+
+Data Graph
+--MISSING--
+
+File
+--MISSING--
+
+File Open
+--MISSING--
+
+File Save
+--MISSING--
+
+File name:
+--MISSING--
+
+show instructions
+--MISSING--
+
+show compiled bytes
+--MISSING--
+
+expand
+--MISSING--
+
+collapse
+--MISSING--
+
+rename...
+--MISSING--
+
+show block definition...
+--MISSING--
+
+show the definition of this block
+--MISSING--
+
+delete block definition...
+--MISSING--
+
+delete the definition of this block
+--MISSING--
+
+duplicate
+--MISSING--
+
+duplicate this block
+--MISSING--
+
+delete block
+--MISSING--
+
+delete this block
+--MISSING--
+
+just this one block
+--MISSING--
+
+copy to clipboard
+--MISSING--
+
+copy these blocks to the clipboard
+--MISSING--
+
+duplicate all
+--MISSING--
+
+duplicate these blocks
+--MISSING--
+
+extract block
+--MISSING--
+
+pull out this block
+--MISSING--
+
+save picture of script
+--MISSING--
+
+save a picture of this block definition as a PNG file
+--MISSING--
+
+save a picture of these blocks as a PNG file
+--MISSING--
+
+copy script
+--MISSING--
+
+delete
+--MISSING--
+
+Input type:
+--MISSING--
+
+string only
+--MISSING--
+
+string or number
+--MISSING--
+
+number only
+--MISSING--
+
+define
+--MISSING--
+
+number/string
+--MISSING--
+
+editable number or string
+--MISSING--
+
+label
+--MISSING--
+
+input
+--MISSING--
+
+hide block definition
+--MISSING--
+
+Are you sure you want to remove this block definition?
+--MISSING--
+
+Libraries
+--MISSING--
+
+Language
+--MISSING--
+
+Custom...
+--MISSING--
+
+Obsolete
+--MISSING--
+
+OK
+--MISSING--
+
+Ok
+--MISSING--
+
+Yes
+--MISSING--
+
+No
+--MISSING--
+
+Cancel
+--MISSING--
+
+Okay
+--MISSING--
+
+Confirm
+--MISSING--
 

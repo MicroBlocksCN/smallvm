@@ -1,14 +1,10 @@
-display _
-экран _
+# MicroBlocks translation file
+# Last updated: January 7 2020
 
-clear display
-очистить экран
+# Blocks and categories
 
-plot x _ y _
-вычертить x _ y _
-
-unplot x _ y _
-убрать черчение x _ y _
+Output
+Вывод
 
 set user LED _
 задать пользовательский светодиод _
@@ -16,8 +12,11 @@ set user LED _
 say _
 сказать _
 
-log data _
-записать данные _
+graph _
+--MISSING--
+
+Input
+Ввод
 
 button A
 кнопка A
@@ -25,23 +24,17 @@ button A
 button B
 кнопка B
 
-tilt x
-наклон x
-
-tilt y
-наклон y
-
-tilt z
-наклон z
-
-Temperature (°C)
-Температура (°C)
-
 microseconds
 микросекунд
 
 milliseconds
 миллисекунд
+
+board type
+тип платы
+
+Pins
+Контакты
 
 read digital pin _
 читать цифровой контакт _
@@ -60,6 +53,9 @@ analog pins
 
 digital pins
 цифровые контакты
+
+Control
+Контроль
 
 when started
 когда запущено
@@ -91,6 +87,9 @@ wait _ microsecs
 stop this task
 остановить эту задачу
 
+stop other tasks
+--MISSING--
+
 stop all
 остановить всё
 
@@ -112,8 +111,14 @@ when _
 when _ received
 когда _ получен
 
+broadcast _
+трансляция _
+
 return _
 возврат _
+
+Math
+Математика
 
 _ mod _
 _ мод _
@@ -139,6 +144,22 @@ _ или _
 or _
 или _
 
+Variables
+Переменные
+
+# Buttons on top of "Variables" category
+
+Add a variable
+Добавить переменную
+
+Delete a variable
+Удалить переменную
+
+# New variable dialog
+
+New variable name?
+--MISSING--
+
 set _ to _
 задать _ до _
 
@@ -148,26 +169,78 @@ change _ by _
 local _ _
 локальный _ _
 
-new list length _
-новая длина списка _
+Lists & Strings
+--MISSING--
 
-fill list _ with _
-заполнить список _  _
-
-item _ of _
-элемент _ из _
-
-replace item _ of _ with _
-заменить элемент _ из _ элементом _
+list
+--MISSING--
 
 length of _
 длина _
 
-board type
-тип платы
+item _ of _
+элемент _ из _
 
-broadcast _
-трансляция _
+replace item _ of list _ with _
+--MISSING--
+
+delete item _ of list _
+--MISSING--
+
+add _ to list _
+--MISSING--
+
+join _ _
+--MISSING--
+
+copy _ from _
+--MISSING--
+
+to _
+--MISSING--
+
+find _ in _
+--MISSING--
+
+starting at _
+--MISSING--
+
+join string list _
+--MISSING--
+
+unicode _ of _
+--MISSING--
+
+string from unicode
+--MISSING--
+
+new list length _
+новая длина списка _
+
+free memory
+--MISSING--
+
+fill list _ with _
+заполнить список _  _
+
+My Blocks
+--MISSING--
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+--MISSING--
+
+Add a reporter block
+--MISSING--
+
+# Make a block dialog
+
+Enter function name:
+--MISSING--
+
+Comm
+--MISSING--
 
 i2c get device _ register _
 i2c получить устройство _ зарегистрировать_
@@ -193,6 +266,8 @@ no op
 ignore
 игнорировать
 
+# Primitives (mostly hidden from end users)
+
 draw shape _ at x _ y _
 нарисовать фигуру _ по координатам x _ y _
 
@@ -211,20 +286,11 @@ has tone support
 play tone pin _ frequency _
 воспроизвести тон на контакте _ с частотой _
 
-has servo support
-имеет сервоподдержку
-
-set servo pin _ to _ usecs
-задать контакт сервопривода _ на _ usecs
-
 has WiFi support
 имеет поддержку WiFi
 
 start WiFi _ password _
 запустить WiFi _ пароль_
-
-be hotspot _
-быть точкой доступа _
 
 stop WiFi
 остановить WiFi
@@ -234,12 +300,6 @@ WiFi status
 
 my IP address
 мой IP-адрес
-
-enable TFT _
-включить TFT _
-
-set TFT pixel x _ y _ to _
-задать пиксели TFT x _ y _ на _
 
 radio send number _
 отправка номера по радио _
@@ -307,29 +367,43 @@ color r _ g _ b _
 attach _ LED NeoPixel strip to pin _ has white _
 подключить _ светодиодную ленту NeoPixel к контактам _ белый_
 
-receive IR code from device _
-получение ИК-кода с устройства _
+# Libraries
 
-test IR
-проверка ИК
+Basic Sensors
+--MISSING--
 
-scroll text _ pausing _ ms
-прокрутка текста _ пауза _ мс
+tilt x
+наклон x
 
-scroll number _ pausing _ ms
-прокрутка номера _ пауза _ мс
+tilt y
+наклон y
 
-stop scrolling
-остановить прокрутку
+tilt z
+наклон z
 
-attach buzzer to pin _
-подключить зуммер к контакту _
+temperature (°C)
+--MISSING--
 
-play note _ octave _ during _ ms
-воспроизвести ноту _ октавы _ на протяжении _ мс
+ED1 Stepper Motor
+--MISSING--
 
-play frequency _ on pin _ for _ ms
-воспроизвести частоту _ на контакте _ на протяжении _ мс
+move motor _  _ steps _
+двигать мотор на _  _ шагов_
+
+move motor 1 _ and motor 2 _ _ steps
+двигать мотор 1 _ и мотор 2 на _ _ шагов
+
+stop steppers
+остановить степперы
+
+clockwise
+по часовой стрелке
+
+counter-clockwise
+против часовой стрелки
+
+ED1 Buttons
+--MISSING--
 
 button OK
 кнопка ОК
@@ -348,21 +422,6 @@ button left
 
 button right
 кнопка вправо
-
-move motor _  _ steps _
-двигать мотор на _  _ шагов_
-
-move motor 1 _ and motor 2 _ _ steps
-двигать мотор 1 _ и мотор 2 на _ _ шагов
-
-stop steppers
-остановить степперы
-
-clockwise
-по часовой стрелке
-
-counter-clockwise
-против часовой стрелки
 
 capacitive OK
 ёмкостный OK
@@ -385,11 +444,265 @@ capacitive right
 capacitive sensor _
 ёмкостный сенсор _
 
+set capacitive threshold to _
+задать порог ёмкостной чувствительности на _
+
+set use capacitive to _
+--MISSING--
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ º
+--MISSING--
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird поворот сервопривода _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Батарея Hummingbird (мВ)
+
+Light
+Свет
+
+Distance
+Дистанция
+
+Dial
+Набор
+
+Sound
+Звук
+
+Other
+Прочее
+
+distance (cm) trigger _ echo _
+--MISSING--
+
+IR Remote
+--MISSING--
+
+receive IR code from device _
+получение ИК-кода с устройства _
+
+test IR
+проверка ИК
+
+attach IR receiver to pin _
+--MISSING--
+
+Radio
+--MISSING--
+
+Scrolling
+--MISSING--
+
+scroll text _
+--MISSING--
+
+scroll number _
+--MISSING--
+
+pausing _ ms
+--MISSING--
+
+stop scrolling
+остановить прокрутку
+
+Servo
+--MISSING--
+
+has servo support
+имеет сервоподдержку
+
+set servo _ to _ (-100 to 100)
+--MISSING--
+
+resetServos
+--MISSING--
+
+flip servo _ _
+--MISSING--
+
+attach servos 1 to 4 to pins _ _ _ _
+--MISSING--
+
+LED Display
+--MISSING--
+
+display _
+экран _
+
+clear display
+очистить экран
+
+plot x _ y _
+вычертить x _ y _
+
+unplot x _ y _
+убрать черчение x _ y _
+
+display character _
+--MISSING--
+
+enable TFT _
+включить TFT _
+
+TFT width
+--MISSING--
+
+TFT height
+--MISSING--
+
 set TFT pixel x _ y _ to _
 задать пиксели TFT x _ y _ на _
 
-set capacitive threshold to _
-задать порог ёмкостной чувствительности на _
+draw line on TFT from x _ y _ to x _ y _ color _
+--MISSING--
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+--MISSING--
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+--MISSING--
+
+draw circle on TFT at x _ y _ radius _ color _
+--MISSING--
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+--MISSING--
+
+filled _
+--MISSING--
+
+write _ on TFT at x _ y _ color _
+--MISSING--
+
+scale _ wrap _
+--MISSING--
+
+Tone
+--MISSING--
+
+attach buzzer to pin _
+подключить зуммер к контакту _
+
+play note _ octave _ during _ ms
+воспроизвести ноту _ октавы _ на протяжении _ мс
+
+play frequency _ for _ milliseconds
+--MISSING--
+
+play midi key _ for _ milliseconds
+--MISSING--
+
+Turtle
+--MISSING--
+
+home
+--MISSING--
+
+move _
+--MISSING--
+
+turn _ degrees
+--MISSING--
+
+turn _ / _ of circle
+--MISSING--
+
+pen down
+--MISSING--
+
+pen up
+--MISSING--
+
+set pen color to _
+--MISSING--
+
+set pen to random color
+--MISSING--
+
+fill display with _
+--MISSING--
+
+go to x _ y _
+--MISSING--
+
+point in direction  _
+--MISSING--
+
+Web of Things
+--MISSING--
+
+wifi connect to _ password _ try _ times
+--MISSING--
+
+wifi create hotspot _ password _
+--MISSING--
+
+IP address
+--MISSING--
+
+define thing _ capability _
+--MISSING--
+
+register event _ type _
+--MISSING--
+
+add boolean property title _ variable _ @Type _
+--MISSING--
+
+add number property title _ variable _ min _ max _ @Type _
+--MISSING--
+
+add string property title _ variable _ @Type _
+--MISSING--
+
+thing description
+--MISSING--
+
+clear thing description
+--MISSING--
+
+Motion
+--MISSING--
+
+motion
+--MISSING--
+
+start step counter
+--MISSING--
+
+step count
+--MISSING--
+
+clear step count
+--MISSING--
+
+set step threshold _ (0-50)
+--MISSING--
+
+Button Events
+--MISSING--
+
+button _ double pressed
+--MISSING--
+
+button _ long pressed
+--MISSING--
+
+button _ pressed
+--MISSING--
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
 New
 Новый
@@ -448,14 +761,20 @@ Use "Connect" button to connect to a MicroBlocks device.
 No boards found; is your board plugged in?
 Плат не найдено. Вы уверены, что плата подключена?
 
-For AdaFruit boards, double-click button and try again.
-Для плат AdaFruit нажмите кнопку дважды и повторите попытку.
+For AdaFruit boards, double-click reset button and try again.
+--MISSING--
 
 The board is not responding.
 Плата не отвечает.
 
 Try to Install MicroBlocks on the board?
 Попробуйте установить MicroBlocks на плату.
+
+The MicroBlocks in your board is not current
+--MISSING--
+
+Try to update MicroBlocks on the board?
+--MISSING--
 
 Stop
 Стоп
@@ -475,11 +794,11 @@ clean up
 arrange scripts
 расположить скрипты
 
-undo last drop
-отменить последнюю каплю
+undrop  (ctrl-Z)
+--MISSING--
 
-copy all scripts
-скопировать все скрипты
+copy all scripts to clipboard
+--MISSING--
 
 paste all scripts
 вставить все скрипты
@@ -487,8 +806,8 @@ paste all scripts
 paste script
 вставить скрипт
 
-save picture of all scripts
-сохранить изображение всех скриптов
+save a picture of all scripts
+--MISSING--
 
 about...
 о...
@@ -496,11 +815,50 @@ about...
 virtual machine version
 версия виртуальной машины
 
-install MicroBlocks on board
-установить MicroBlocks на плату
+update firmware on board
+--MISSING--
 
-graph data
-данные диаграммы
+show data graph
+--MISSING--
+
+set serial delay
+--MISSING--
+
+firmware version
+--MISSING--
+
+start Mozilla WebThing server
+--MISSING--
+
+stop Mozilla WebThing server
+--MISSING--
+
+MicroBlocks HTTP Server listening on port 6473
+--MISSING--
+
+wipe and repartition esp32
+--MISSING--
+
+Use board type 
+--MISSING--
+
+Wiping board...
+--MISSING--
+
+(press ESC to cancel)
+--MISSING--
+
+Done!
+--MISSING--
+
+download and install latest VM
+--MISSING--
+
+Select board type:
+--MISSING--
+
+Uploading MicroBlocks to board...
+--MISSING--
 
 copy data to clipboard
 копировать данные в буфер обмена
@@ -522,6 +880,9 @@ hide advanced blocks
 
 Data Graph
 График данных
+
+File
+--MISSING--
 
 File Open
 Открыть файл
@@ -547,23 +908,59 @@ collapse
 rename...
 переименовать...
 
-show definition...
-показать определение...
+show block definition...
+--MISSING--
+
+show the definition of this block
+--MISSING--
+
+delete block definition...
+--MISSING--
+
+delete the definition of this block
+--MISSING--
 
 duplicate
 дублировать
 
+duplicate this block
+--MISSING--
+
+delete block
+--MISSING--
+
+delete this block
+--MISSING--
+
 just this one block
 только этот блок
 
-...all
-...все
+copy to clipboard
+--MISSING--
 
-duplicate including all attached blocks
-дублировать включая присоединённые блоки
+copy these blocks to the clipboard
+--MISSING--
+
+duplicate all
+--MISSING--
+
+duplicate these blocks
+--MISSING--
+
+extract block
+--MISSING--
+
+pull out this block
+--MISSING--
 
 save picture of script
 сохранить изображение скрипта
+
+save a picture of this block definition as a PNG file
+--MISSING--
+
+save a picture of these blocks as a PNG file
+--MISSING--
 
 copy script
 копировать скрипт
@@ -571,8 +968,35 @@ copy script
 delete
 удалить
 
-hide definition
-скрыть определение
+Input type:
+--MISSING--
+
+string only
+--MISSING--
+
+string or number
+--MISSING--
+
+number only
+--MISSING--
+
+define
+--MISSING--
+
+number/string
+--MISSING--
+
+editable number or string
+--MISSING--
+
+label
+--MISSING--
+
+input
+--MISSING--
+
+hide block definition
+--MISSING--
 
 Are you sure you want to remove this block definition?
 Вы уверены, что хотите удалить это определение блока?
@@ -580,47 +1004,17 @@ Are you sure you want to remove this block definition?
 Libraries
 Библиотеки
 
-Language:
-Языки:
+Language
+--MISSING--
 
-Add a function
-Добавить функцию
-
-Add a variable
-Добавить переменную
-
-Delete a variable
-Удалить переменную
-
-Output
-Вывод
-
-Input
-Ввод
-
-Pins
-Контакты
-
-Control
-Контроль
-
-Math
-Математика
-
-Variables
-Переменные
-
-Lists
-Списки
-
-Advanced
-Продвинутый
-
-Functions
-Функции
+Custom...
+--MISSING--
 
 Obsolete
 Устаревший
+
+OK
+--MISSING--
 
 Ok
 ОК
@@ -640,35 +1034,3 @@ Okay
 Confirm
 Подтвердить
 
-Hummingbird LED _ _ %
-Hummingbird LED _ _ %
-
-Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird Tri-LED _ R _ % G _ % B _ %
-
-Hummingbird Position Servo _ _ âˆž
-Hummingbird позиция сервопривода _ _ âˆž
-
-Hummingbird Rotation Servo _ _ %
-Hummingbird поворот сервопривода _ _ %
-
-Hummingbird _ _
-Hummingbird _ _
-
-Hummingbird Battery (mV)
-Батарея Hummingbird (мВ)
-
-Light
-Свет
-
-Distance
-Дистанция
-
-Dial
-Набор
-
-Sound
-Звук
-
-Other
-Прочее
