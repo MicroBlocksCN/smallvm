@@ -145,6 +145,8 @@ unicode _ of _
 
 string from unicode
 
+string from unicode _
+
 new list length _
 
 free memory
@@ -233,7 +235,23 @@ radio send packet _
 
 disable radio
 
+# Libraries
+
+Basic Sensors
+
+tilt x
+
+tilt y
+
+tilt z
+
+acceleration
+
 light level
+
+temperature (°C)
+
+NeoPixel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 
@@ -249,17 +267,13 @@ color r _ g _ b _
 
 attach _ LED NeoPixel strip to pin _ has white _
 
-# Libraries
+attach _ LED NeoPixel strip to pin _
 
-Basic Sensors
+has white _
 
-tilt x
+PIR
 
-tilt y
-
-tilt z
-
-temperature (°C)
+PIR at pin _ detected movement
 
 ED1 Stepper Motor
 
@@ -360,6 +374,12 @@ resetServos
 flip servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
+
+set servo _ to _ degrees (-90 to 90)
+
+reverse
+
+set servo _ to speed _ (-100 to 100)
 
 LED Display
 
