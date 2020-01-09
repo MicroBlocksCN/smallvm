@@ -211,8 +211,8 @@ uneix llista de texts _
 unicode _ of _
 unicode _ de _
 
-string from unicode
-text amb unicodes
+string from unicode _
+caràcter amb unicode _
 
 new list length _
 nova llista de llargada _
@@ -343,30 +343,6 @@ envia paquet per ràdio _
 disable radio
 inhabilita ràdio
 
-light level
-nivell de llum
-
-set NeoPixels _ _ _ _ _ _ _ _ _ _
-posa NeoPixels _ _ _ _ _ _ _ _ _ _
-
-clear NeoPixels
-apaga NeoPixels
-
-set NeoPixel _ color _
-posa NeoPixel _ de color _
-
-set all NeoPixels color _
-posa tots els NeoPixels de color _
-
-rotate NeoPixels by _
-rota NeoPixels en _
-
-color r _ g _ b _
-color vermell _ verd _ blau _
-
-attach _ LED NeoPixel strip to pin _ has white _
-inicialitza tira de _ NeoPixels al pin _ amb blanc _
-
 # Libraries
 
 Basic Sensors
@@ -381,8 +357,47 @@ inclinació y
 tilt z
 inclinació z
 
+acceleration
+acceleració
+
+light level
+nivell de llum
+
 temperature (°C)
 temperatura (°C)
+
+NeoPixel
+NeoPíxels
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+posa NeoPíxels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+apaga NeoPíxels
+
+set NeoPixel _ color _
+posa NeoPíxel _ de color _
+
+set all NeoPixels color _
+posa tots els NeoPíxels de color _
+
+rotate NeoPixels by _
+rota NeoPíxels en _
+
+color r _ g _ b _
+color vermell _ verd _ blau _
+
+attach _ LED NeoPixel strip to pin _
+inicialitza tira de _ NeoPíxels al pin _
+
+has white _
+amb blanc _
+
+PIR
+Sensor de presència
+
+PIR at pin _ detected movement
+Moviment detectat pel PIR al pin _
 
 ED1 Stepper Motor
 Motors ED1
@@ -533,6 +548,15 @@ inverteix servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
 inicialitza servos 1 a 4 als pins _ _ _ _
+
+set servo _ to _ degrees (-90 to 90)
+posa el servo _ a _ graus (-90 a 90)
+
+reverse
+invertit
+
+set servo _ to speed _ (-100 to 100)
+fes girar el servo _ a velocitat _ (-100 a 100)
 
 LED Display
 Pantalla LED
@@ -1033,3 +1057,4 @@ D'acord
 
 Confirm
 Confirmació
+

@@ -211,8 +211,8 @@ une lista de textos _
 unicode _ of _
 unicode _ de _
 
-string from unicode
-texto a partir de unicode
+string from unicode _
+carácter con unicode _
 
 new list length _
 nueva lista de tamaño _
@@ -343,30 +343,6 @@ envía paquete por radio _
 disable radio
 inhabilita radio
 
-light level
-nivel de luz
-
-set NeoPixels _ _ _ _ _ _ _ _ _ _
-pon NeoPixels _ _ _ _ _ _ _ _ _ _
-
-clear NeoPixels
-apaga NeoPixels
-
-set NeoPixel _ color _
-pon NeoPixel _ de color _
-
-set all NeoPixels color _
-pon todos los NeoPixels de color _
-
-rotate NeoPixels by _
-rota NeoPixels en _
-
-color r _ g _ b _
-color r _ v _ a _
-
-attach _ LED NeoPixel strip to pin _ has white _
-inicializa tira de _ NeoPixels en el pin _ con blanco _
-
 # Libraries
 
 Basic Sensors
@@ -381,8 +357,47 @@ inclinación y
 tilt z
 inclinación z
 
+acceleration
+acceleración
+
+light level
+nivel de luz
+
 temperature (°C)
 temperatura (°C)
+
+NeoPixel
+NeoPíxeles
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+pon NeoPíxeles _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+apaga NeoPíxeles
+
+set NeoPixel _ color _
+pon NeoPíxel _ de color _
+
+set all NeoPixels color _
+pon todos los NeoPíxeles de color _
+
+rotate NeoPixels by _
+rota NeoPíxeles en _
+
+color r _ g _ b _
+color r _ v _ a _
+
+attach _ LED NeoPixel strip to pin _
+inicializa tira de _ NeoPíxeles en el pin _
+
+has white _
+con blanco _
+
+PIR
+Sensor de movimiento
+
+PIR at pin _ detected movement
+Movimiento detectado por PIR en pin _
 
 ED1 Stepper Motor
 Motores ED1
@@ -533,6 +548,15 @@ invierte servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
 inicializa servos 1 a 4 en los pines _ _ _ _
+
+set servo _ to _ degrees (-90 to 90)
+pon el servo _ a _ grados (-90 a 90)
+
+reverse
+invertido
+
+set servo _ to speed _ (-100 to 100)
+haz girar el servo _ a velocidad _ (-100 a 100)
 
 LED Display
 Pantalla LED
@@ -1033,3 +1057,4 @@ De acuerdo
 
 Confirm
 Confirmación
+

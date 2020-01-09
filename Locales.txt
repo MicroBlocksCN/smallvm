@@ -4,1032 +4,709 @@
 # Blocks and categories
 
 Output
-Output
 
-set user LED _
 set user LED _
 
 say _
-say _
 
-graph _
 graph _
 
 Input
-Input
 
-button A
 button A
 
 button B
-button B
 
-microseconds
 microseconds
 
 milliseconds
-milliseconds
 
-board type
 board type
 
 Pins
-Pins
 
-read digital pin _
 read digital pin _
 
 read analog pin _
-read analog pin _
 
-set digital pin _ to _
 set digital pin _ to _
 
 set pin _ to _
-set pin _ to _
 
-analog pins
 analog pins
 
 digital pins
-digital pins
 
-Control
 Control
 
 when started
-when started
 
-when button _ pressed
 when button _ pressed
 
 forever _
-forever _
 
-repeat _ _
 repeat _ _
 
 if _ _
-if _ _
 
-else if _ _
 else if _ _
 
 if _ _ else _
-if _ _ else _
 
-wait _ millisecs
 wait _ millisecs
 
 wait _ microsecs
-wait _ microsecs
 
-stop this task
 stop this task
 
 stop other tasks
-stop other tasks
 
-stop all
 stop all
 
 comment _
-comment _
 
-wait until _
 wait until _
 
 repeat until _ _
-repeat until _ _
 
-for _ in _ _
 for _ in _ _
 
 when _
-when _
 
-when _ received
 when _ received
 
 broadcast _
-broadcast _
 
-return _
 return _
 
 Math
-Math
 
-_ mod _
 _ mod _
 
 abs _
-abs _
 
-random _ to _
 random _ to _
 
 not _
-not _
 
-_ and _
 _ and _
 
 and _
-and _
 
-_ or _
 _ or _
 
 or _
-or _
 
-Variables
 Variables
 
 # Buttons on top of "Variables" category
 
 Add a variable
-Add a variable
 
-Delete a variable
 Delete a variable
 
 # New variable dialog
 
 New variable name?
-New variable name?
 
-set _ to _
 set _ to _
 
 change _ by _
-change _ by _
 
-local _ _
 local _ _
 
 Lists & Strings
-Lists & Strings 
 
-list
 list
 
 length of _
-length of _
 
-item _ of _
 item _ of _
 
 replace item _ of list _ with _
-replace item _ of list _ with _
 
-delete item _ of list _
 delete item _ of list _
 
 add _ to list _
-add _ to list _
 
-join _ _
 join _ _
 
 copy _ from _
-copy _ from _
 
-to _
 to _
 
 find _ in _
-find _ in _
 
-starting at _
 starting at _
 
 join string list _
-join string list _
 
 unicode _ of _
-unicode _ of _
 
-string from unicode
-string from unicode
+string from unicode _
 
-new list length _
 new list length _
 
 free memory
-free memory
 
 fill list _ with _
-fill list _ with _
 
-My Blocks
 My Blocks
 
 # Buttons on top of "My Blocks" category
 
 Add a command block
-Add a command block
 
-Add a reporter block
 Add a reporter block
 
 # Make a block dialog
 
 Enter function name:
-Enter function name:
 
-Comm
 Comm
 
 i2c get device _ register _
-i2c get device _ register _
 
-i2c set device _ register _ to _
 i2c set device _ register _ to _
 
 spi send _
-spi send _
 
-spi receive
 spi receive
 
 print _
-print _
 
-hex _
 hex _
 
 no op
-no op
 
-ignore
 ignore
 
 # Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
-draw shape _ at x _ y _
 
-shape for letter _
 shape for letter _
 
 set NeoPixel pin _ is RGBW _
-set NeoPixel pin _ is RGBW _
 
-send NeoPixel rgb _
 send NeoPixel rgb _
 
 has tone support
-has tone support
 
-play tone pin _ frequency _
 play tone pin _ frequency _
 
 has WiFi support
-has WiFi support
 
-start WiFi _ password _
 start WiFi _ password _
 
 stop WiFi
-stop WiFi
 
-WiFi status
 WiFi status
 
 my IP address
-my IP address
 
-radio send number _
 radio send number _
 
 radio send string _
-radio send string _
 
-radio send pair _ = _
 radio send pair _ = _
 
 radio message received?
-radio message received?
 
-radio last number
 radio last number
 
 radio last string
-radio last string
 
-radio last message type
 radio last message type
 
 radio set group _
-radio set group _
 
-radio set channel (0-83) _
 radio set channel (0-83) _
 
 radio set power (0-7) _
-radio set power (0-7) _
 
-radio last signal strength
 radio last signal strength
 
 radio receive packet _
-radio receive packet _
 
-radio send packet _
 radio send packet _
 
 disable radio
-disable radio
-
-light level
-light level
-
-set NeoPixels _ _ _ _ _ _ _ _ _ _
-set NeoPixels _ _ _ _ _ _ _ _ _ _
-
-clear NeoPixels
-clear NeoPixels
-
-set NeoPixel _ color _
-set NeoPixel _ color _
-
-set all NeoPixels color _
-set all NeoPixels color _
-
-rotate NeoPixels by _
-rotate NeoPixels by _
-
-color r _ g _ b _
-color r _ g _ b _
-
-attach _ LED NeoPixel strip to pin _ has white _
-attach _ LED NeoPixel strip to pin _ has white _
 
 # Libraries
 
 Basic Sensors
-Basic Sensors
 
-tilt x
 tilt x
 
 tilt y
-tilt y
 
 tilt z
-tilt z
+
+acceleration
+
+light level
 
 temperature (°C)
-temperature (°C)
 
-ED1 Stepper Motor
+NeoPixel
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+
+set NeoPixel _ color _
+
+set all NeoPixels color _
+
+rotate NeoPixels by _
+
+color r _ g _ b _
+
+attach _ LED NeoPixel strip to pin _
+
+has white _
+
+PIR
+
+PIR at pin _ detected movement
+
 ED1 Stepper Motor
 
 move motor _  _ steps _
-move motor _  _ steps _
 
-move motor 1 _ and motor 2 _ _ steps
 move motor 1 _ and motor 2 _ _ steps
 
 stop steppers
-stop steppers
 
-clockwise
 clockwise
 
 counter-clockwise
-counter-clockwise
 
-ED1 Buttons
 ED1 Buttons
 
 button OK
-button OK
 
-button X
 button X
 
 button up
-button up
 
-button down
 button down
 
 button left
-button left
 
-button right
 button right
 
 capacitive OK
-capacitive OK
 
-capacitive X
 capacitive X
 
 capacitive up
-capacitive up
 
-capacitive down
 capacitive down
 
 capacitive left
-capacitive left
 
-capacitive right
 capacitive right
 
 capacitive sensor _
-capacitive sensor _
 
-set capacitive threshold to _
 set capacitive threshold to _
 
 set use capacitive to _
-set use capacitive to _
 
-Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird Tri-LED _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ º
 Hummingbird Position Servo _ _ º
 
 Hummingbird Rotation Servo _ _ %
-Hummingbird Rotation Servo _ _ %
 
-Hummingbird _ _
 Hummingbird _ _
 
 Hummingbird Battery (mV)
-Hummingbird Battery (mV)
 
-Light
 Light
 
 Distance
-Distance
 
-Dial
 Dial
 
 Sound
-Sound
 
-Other
 Other
 
 distance (cm) trigger _ echo _
-distance (cm) trigger _ echo _
 
-IR Remote
 IR Remote
 
 receive IR code from device _
-receive IR code from device _
 
-test IR
 test IR
 
 attach IR receiver to pin _
-attach IR receiver to pin _
 
-Radio
 Radio
 
 Scrolling
-Scrolling
 
-scroll text _
 scroll text _
 
 scroll number _
-scroll number _
 
-pausing _ ms
 pausing _ ms
 
 stop scrolling
-stop scrolling
 
-Servo
 Servo
 
 has servo support
-has servo support
 
-set servo _ to _ (-100 to 100)
 set servo _ to _ (-100 to 100)
 
 resetServos
-resetServos
 
-flip servo _ _
 flip servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
-attach servos 1 to 4 to pins _ _ _ _
 
-LED Display
+set servo _ to _ degrees (-90 to 90)
+
+reverse
+
+set servo _ to speed _ (-100 to 100)
+
 LED Display
 
 display _
-display _
 
-clear display
 clear display
 
 plot x _ y _
-plot x _ y _
 
-unplot x _ y _
 unplot x _ y _
 
 display character _
-display character _
 
-enable TFT _
 enable TFT _
 
 TFT width
-TFT width
 
-TFT height
 TFT height
 
 set TFT pixel x _ y _ to _
-set TFT pixel x _ y _ to _
 
-draw line on TFT from x _ y _ to x _ y _ color _
 draw line on TFT from x _ y _ to x _ y _ color _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
-draw rectangle on TFT at x _ y _ width _ height _ color _
 
-draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
 
 draw circle on TFT at x _ y _ radius _ color _
-draw circle on TFT at x _ y _ radius _ color _
 
-draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
 
 filled _
-filled _
 
-write _ on TFT at x _ y _ color _
 write _ on TFT at x _ y _ color _
 
 scale _ wrap _
-scale _ wrap _
 
-Tone
 Tone
 
 attach buzzer to pin _
-attach buzzer to pin _
 
-play note _ octave _ during _ ms
 play note _ octave _ during _ ms
 
 play frequency _ for _ milliseconds
-play frequency _ for _ milliseconds
 
-play midi key _ for _ milliseconds
 play midi key _ for _ milliseconds
 
 Turtle
-Turtle
 
-home
 home
 
 move _
-move _
 
-turn _ degrees
 turn _ degrees
 
 turn _ / _ of circle
-turn _ / _ of circle
 
-pen down
 pen down
 
 pen up
-pen up
 
-set pen color to _
 set pen color to _
 
 set pen to random color
-set pen to random color
 
-fill display with _
 fill display with _
 
 go to x _ y _
-go to x _ y _
 
-point in direction  _
 point in direction  _
 
 Web of Things
-Web of Things
 
-wifi connect to _ password _ try _ times
 wifi connect to _ password _ try _ times
 
 wifi create hotspot _ password _
-wifi create hotspot _ password _
 
-IP address
 IP address
 
 define thing _ capability _
-define thing _ capability _
 
-register event _ type _
 register event _ type _
 
 add boolean property title _ variable _ @Type _
-add boolean property title _ variable _ @Type _
 
-add number property title _ variable _ min _ max _ @Type _
 add number property title _ variable _ min _ max _ @Type _
 
 add string property title _ variable _ @Type _
-add string property title _ variable _ @Type _
 
-thing description
 thing description
 
 clear thing description
-clear thing description
 
-Motion
 Motion
 
 motion
-motion
 
-start step counter
 start step counter
 
 step count
-step count
 
-clear step count
 clear step count
 
 set step threshold _ (0-50)
-set step threshold _ (0-50)
 
-Button Events
 Button Events
 
 button _ double pressed
-button _ double pressed
 
 button _ long pressed
-button _ long pressed
 
-button _ pressed
 button _ pressed
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
 New
-New
 
-Open
 Open
 
 Save
-Save
 
-Connect
 Connect
 
 disconnect
-disconnect
 
-Serial port:
 Serial port:
 
 other...
-other...
 
-none
 none
 
 Port name?
-Port name?
 
-Board type:
 Board type:
 
 Select board:
-Select board:
 
-Could not read: 
 Could not read: 
 
 by
-by
 
-More info at http://microblocks.fun
 More info at http://microblocks.fun
 
 Function "
-Function "
 
-" is too large to send to board.
 " is too large to send to board.
 
 Script is too large to send to board.
-Script is too large to send to board.
 
-Use "Connect" button to connect to a MicroBlocks device.
 Use "Connect" button to connect to a MicroBlocks device.
 
 No boards found; is your board plugged in?
-No boards found; is your board plugged in?
 
-For AdaFruit boards, double-click reset button and try again.
 For AdaFruit boards, double-click reset button and try again.
 
 The board is not responding.
-The board is not responding.
 
-Try to Install MicroBlocks on the board?
 Try to Install MicroBlocks on the board?
 
 The MicroBlocks in your board is not current
-The MicroBlocks in your board is not current
 
-Try to update MicroBlocks on the board?
 Try to update MicroBlocks on the board?
 
 Stop
-Stop
 
-Start
 Start
 
 Quit MicroBlocks?
-Quit MicroBlocks?
 
-Discard current project?
 Discard current project?
 
 clean up
-clean up
 
-arrange scripts
 arrange scripts
 
 undrop  (ctrl-Z)
-undrop  (ctrl-Z)
 
-copy all scripts to clipboard
 copy all scripts to clipboard
 
 paste all scripts
-paste all scripts
 
-paste script
 paste script
 
 save a picture of all scripts
-save a picture of all scripts
 
-about...
 about...
 
 virtual machine version
-virtual machine version
 
-update firmware on board
 update firmware on board
 
 show data graph
-show data graph
 
-set serial delay
 set serial delay
 
 firmware version
-firmware version
 
-start Mozilla WebThing server
 start Mozilla WebThing server
 
 stop Mozilla WebThing server
-stop Mozilla WebThing server
 
-MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Server listening on port 6473
 
 wipe and repartition esp32
-wipe and repartition esp32
 
-Use board type 
 Use board type 
 
 Wiping board...
-Wiping board...
 
-(press ESC to cancel)
 (press ESC to cancel)
 
 Done!
-Done!
 
-download and install latest VM
 download and install latest VM
 
 Select board type:
-Select board type:
 
-Uploading MicroBlocks to board...
 Uploading MicroBlocks to board...
 
 copy data to clipboard
-copy data to clipboard
 
-clear data
 clear data
 
 clear memory and variables
-clear memory and variables
 
-show advanced blocks
 show advanced blocks
 
 export functions as library
-export functions as library
 
-hide advanced blocks
 hide advanced blocks
 
 Data Graph
-Data Graph
 
-File
 File
 
 File Open
-File Open
 
-File Save
 File Save
 
 File name:
-File name:
 
-show instructions
 show instructions
 
 show compiled bytes
-show compiled bytes
 
-expand
 expand
 
 collapse
-collapse
 
-rename...
 rename...
 
 show block definition...
-show block definition...
 
-show the definition of this block
 show the definition of this block
 
 delete block definition...
-delete block definition...
 
-delete the definition of this block
 delete the definition of this block
 
 duplicate
-duplicate
 
-duplicate this block
 duplicate this block
 
 delete block
-delete block
 
-delete this block
 delete this block
 
 just this one block
-just this one block
 
-copy to clipboard
 copy to clipboard
 
 copy these blocks to the clipboard
-copy these blocks to the clipboard
 
-duplicate all
 duplicate all
 
 duplicate these blocks
-duplicate these blocks
 
-extract block
 extract block
 
 pull out this block
-pull out this block
 
-save picture of script
 save picture of script
 
 save a picture of this block definition as a PNG file
-save a picture of this block definition as a PNG file
 
-save a picture of these blocks as a PNG file
 save a picture of these blocks as a PNG file
 
 copy script
-copy script
 
-delete
 delete
 
 Input type:
-Input type:
 
-string only
 string only
 
 string or number
-string or number
 
-number only
 number only
 
 define
-define
 
-number/string
 number/string
 
 editable number or string
-editable number or string
 
-label
 label
 
 input
-input
 
-hide block definition
 hide block definition
 
 Are you sure you want to remove this block definition?
-Are you sure you want to remove this block definition?
 
-Libraries
 Libraries
 
 Language
-Language
 
-Custom...
 Custom...
 
 Obsolete
-Obsolete
 
-OK
 OK
 
 Ok
-Ok
 
-Yes
 Yes
 
 No
-No
 
-Cancel
 Cancel
 
 Okay
-Okay
 
-Confirm
 Confirm

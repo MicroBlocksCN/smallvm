@@ -1,3 +1,8 @@
+# MicroBlocks translation file
+# Last updated: January 7 2020
+
+# Blocks and categories
+
 Output
 Output
 
@@ -142,11 +147,15 @@ of _
 Variables
 Variabelen
 
+# Buttons on top of "Variables" category
+
 Add a variable
 Voeg een variabele toe
 
 Delete a variable
 Verwijder een variabele
+
+# New variable dialog
 
 New variable name?
 Nieuwe variabele naam?
@@ -160,32 +169,72 @@ verander _ met _
 local _ _
 lokale variabele _ _
 
-Lists
-Lijsten
+Lists & Strings
+--MISSING--
 
-new list length _
-nieuwe lijst lengte _
-
-fill list _ with _
-vul lijst _ met _
-
-item _ of _
-item _ van _
-
-replace item _ of _ with _
-vervang item _ van _ door _
+list
+--MISSING--
 
 length of _
 lengte van _
 
+item _ of _
+item _ van _
+
+replace item _ of list _ with _
+--MISSING--
+
+delete item _ of list _
+--MISSING--
+
+add _ to list _
+--MISSING--
+
+join _ _
+--MISSING--
+
+copy _ from _
+--MISSING--
+
+to _
+--MISSING--
+
+find _ in _
+--MISSING--
+
+starting at _
+--MISSING--
+
+join string list _
+--MISSING--
+
+unicode _ of _
+--MISSING--
+
+string from unicode _
+--MISSING--
+
+new list length _
+nieuwe lijst lengte _
+
+free memory
+--MISSING--
+
+fill list _ with _
+vul lijst _ met _
+
 My Blocks
 Mijn blokken
+
+# Buttons on top of "My Blocks" category
 
 Add a command block
 Voeg een commando blok toe
 
 Add a reporter block
 Voeg een reporter blok toe
+
+# Make a block dialog
 
 Enter function name:
 Geef functie naam:
@@ -217,14 +266,16 @@ doe niets
 ignore
 negeer
 
+# Primitives (mostly hidden from end users)
+
 draw shape _ at x _ y _
 teken vorm _ op x _ y _
 
 shape for letter _
 vorm voor letter _
 
-set NeoPixel pin _ has white _
-maak NeoPixel pin _ met wit _
+set NeoPixel pin _ is RGBW _
+--MISSING--
 
 send NeoPixel rgb _
 zend NeoPixel rgb _
@@ -292,8 +343,31 @@ radio zend pakket _
 disable radio
 zet radio uit
 
+# Libraries
+
+Basic Sensors
+Basis Sensoren
+
+tilt x
+kantel x
+
+tilt y
+kantel y
+
+tilt z
+kantel z
+
+acceleration
+--MISSING--
+
 light level
 lichtsterkte
+
+temperature (°C)
+temperatuur (°C)
+
+NeoPixel
+--MISSING--
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 maak NeoPixels _ _ _ _ _ _ _ _ _ _
@@ -313,8 +387,17 @@ draai NeoPixels met _
 color r _ g _ b _
 kleur r _ g _ b _
 
-attach _ LED NeoPixel strip to pin _ has white _
-verbind _ LED NeoPixel strip aan pin _ heeft wit _
+attach _ LED NeoPixel strip to pin _
+--MISSING--
+
+has white _
+--MISSING--
+
+PIR
+--MISSING--
+
+PIR at pin _ detected movement
+--MISSING--
 
 ED1 Stepper Motor
 ED1 Stappenmotor
@@ -388,8 +471,8 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ ∞
-Hummingbird Positie-Servo _ _ ∞
+Hummingbird Position Servo _ _ º
+--MISSING--
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Draai-Servo _ _ %
@@ -465,6 +548,15 @@ keer om servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
 verbind servo's 1 tot 4 aan pinnen _ _ _ _
+
+set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+reverse
+--MISSING--
+
+set servo _ to speed _ (-100 to 100)
+--MISSING--
 
 LED Display
 LED scherm
@@ -603,6 +695,38 @@ ding omschrijving
 
 clear thing description
 wis ding omschrijving
+
+Motion
+--MISSING--
+
+motion
+--MISSING--
+
+start step counter
+--MISSING--
+
+step count
+--MISSING--
+
+clear step count
+--MISSING--
+
+set step threshold _ (0-50)
+--MISSING--
+
+Button Events
+--MISSING--
+
+button _ double pressed
+--MISSING--
+
+button _ long pressed
+--MISSING--
+
+button _ pressed
+--MISSING--
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
 New
 Nieuw
@@ -910,21 +1034,6 @@ Taal
 Custom...
 Aangepast...
 
-Basic Sensors
-Basis Sensoren
-
-tilt x
-kantel x
-
-tilt y
-kantel y
-
-tilt z
-kantel z
-
-temperature (°C)
-temperatuur (°C)
-
 Obsolete
 Verouderd
 
@@ -948,3 +1057,4 @@ Oké
 
 Confirm
 Bevestig
+

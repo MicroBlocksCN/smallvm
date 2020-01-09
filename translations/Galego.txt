@@ -1,3 +1,8 @@
+# MicroBlocks translation file
+# Last updated: January 7 2020
+
+# Blocks and categories
+
 Output
 Saída
 
@@ -82,6 +87,9 @@ agardar _ microsegundos
 stop this task
 deter esta tarefa
 
+stop other tasks
+--MISSING--
+
 stop all
 detelo todo
 
@@ -103,8 +111,14 @@ cando _
 when _ received
 ao recibir _
 
+broadcast _
+difundir _
+
 return _
 retornar _
+
+Math
+--MISSING--
 
 _ mod _
 _ módulo _
@@ -133,11 +147,15 @@ ou _
 Variables
 Variábeis
 
+# Buttons on top of "Variables" category
+
 Add a variable
 Crear unha variábel
 
 Delete a variable
 Eliminar unha variábel
+
+# New variable dialog
 
 New variable name?
 Novo nome da variábel?
@@ -151,29 +169,64 @@ aumentar _ en _
 local _ _
 variábel local _ _
 
-Lists
-Listas
+Lists & Strings
+--MISSING--
 
-new list length _
-nova lonxitude da lista _
-
-fill list _ with _
-encher a lista _ con _
-
-item _ of _
-elemento _ de _
-
-replace item _ of _ with _
-cambiar o elemento _ de _ por _
+list
+--MISSING--
 
 length of _
 largo de _
 
-broadcast _
-difundir _
+item _ of _
+elemento _ de _
+
+replace item _ of list _ with _
+--MISSING--
+
+delete item _ of list _
+--MISSING--
+
+add _ to list _
+--MISSING--
+
+join _ _
+--MISSING--
+
+copy _ from _
+--MISSING--
+
+to _
+--MISSING--
+
+find _ in _
+--MISSING--
+
+starting at _
+--MISSING--
+
+join string list _
+--MISSING--
+
+unicode _ of _
+--MISSING--
+
+string from unicode _
+--MISSING--
+
+new list length _
+nova lonxitude da lista _
+
+free memory
+--MISSING--
+
+fill list _ with _
+encher a lista _ con _
 
 My Blocks
 Os meus bloques
+
+# Buttons on top of "My Blocks" category
 
 Add a command block
 Engadir un bloque de ordes
@@ -181,14 +234,16 @@ Engadir un bloque de ordes
 Add a reporter block
 Engadir un bloque de reportes
 
+# Make a block dialog
+
 Enter function name:
 Nome da función:
 
 Comm
 Comunicacións
 
-2c get device _ register _
-i2c ler do dispositivo _ o rexistro _
+i2c get device _ register _
+--MISSING--
 
 i2c set device _ register _ to _
 i2c escribir no dispositivo _ o rexistro _ con _
@@ -210,6 +265,8 @@ no op
 
 ignore
 ignorar
+
+# Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
 debuxar a forma _ en x _ y _
@@ -286,8 +343,31 @@ enviar paquetes por radio _
 disable radio
 desactivar a radio
 
+# Libraries
+
+Basic Sensors
+Sensores básicos
+
+tilt x
+inclinación x
+
+tilt y
+inclinación y
+
+tilt z
+inclinación z
+
+acceleration
+--MISSING--
+
 light level
 nivel de luz
+
+temperature (°C)
+temperatura (°C)
+
+NeoPixel
+--MISSING--
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 poñer NeoPixeis _ _ _ _ _ _ _ _ _ _
@@ -307,26 +387,17 @@ rotar NeoPixeis en _
 color r _ g _ b _
 cor vermello _ verde _ azul _
 
-attach _ LED NeoPixel strip to pin _ has white _
-inicializa tira de _ NeoPixeis no pin _ con branco _
+attach _ LED NeoPixel strip to pin _
+--MISSING--
 
-button OK
-botón Aceptar
+has white _
+--MISSING--
 
-button X
-botón X
+PIR
+--MISSING--
 
-button up
-botón arriba
-
-button down
-botón abaixo
-
-button left
-botón esquerda
-
-button right
-botón dereita
+PIR at pin _ detected movement
+--MISSING--
 
 ED1 Stepper Motor
 Motores ED1
@@ -348,6 +419,24 @@ sentido antihorario
 
 ED1 Buttons
 Botóns ED1
+
+button OK
+botón Aceptar
+
+button X
+botón X
+
+button up
+botón arriba
+
+button down
+botón abaixo
+
+button left
+botón esquerda
+
+button right
+botón dereita
 
 capacitive OK
 capacitivo Aceptar
@@ -436,6 +525,9 @@ animar o texto _
 scroll number _
 animar o número _
 
+pausing _ ms
+--MISSING--
+
 stop scrolling
 deter a animación
 
@@ -456,6 +548,15 @@ inverter o servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
 inicializar os servos 1 a 4 nos pins _ _ _ _
+
+set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+reverse
+--MISSING--
+
+set servo _ to speed _ (-100 to 100)
+--MISSING--
 
 LED Display
 Pantalla LED
@@ -478,23 +579,38 @@ amosar carácter _
 enable TFT _
 activar TFT _
 
+TFT width
+--MISSING--
+
+TFT height
+--MISSING--
+
 set TFT pixel x _ y _ to _
 poñer o píxel x _ y _ da cor _
 
 draw line on TFT from x _ y _ to x _ y _ color _
 debuxar liña de x _ y _ a x _ y _ cor _
 
-draw rectangle on TFT at x _ y _ width _ height _ cor _ recheo _
-debuxar rectángulo en x _ y _ largura _ altura _ cor _ ple _
+draw rectangle on TFT at x _ y _ width _ height _ color _
+--MISSING--
 
-draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ filled _
-debuxar un rectángulo arredondado en x _ y _ largura _ altura _ radio _ cor _ recheo _
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+--MISSING--
 
-draw circle on TFT at x _ y _ radius _ color _ filled _
-debuxar círculo en x _ y _ radio _ cor _ recheo _
+draw circle on TFT at x _ y _ radius _ color _
+--MISSING--
 
-write _ on TFT at x _ y _ color _ scale _ wrap _
-escribir _ en x _ y _ cor _ escala _ con saltos de liñaa _
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+--MISSING--
+
+filled _
+--MISSING--
+
+write _ on TFT at x _ y _ color _
+--MISSING--
+
+scale _ wrap _
+--MISSING--
 
 Tone
 Tons
@@ -510,6 +626,42 @@ tocar a frecuencia _ durante _ milisegundos
 
 play midi key _ for _ milliseconds
 tocar a tecla MIDI _ durante _ milisegundos
+
+Turtle
+--MISSING--
+
+home
+--MISSING--
+
+move _
+--MISSING--
+
+turn _ degrees
+--MISSING--
+
+turn _ / _ of circle
+--MISSING--
+
+pen down
+--MISSING--
+
+pen up
+--MISSING--
+
+set pen color to _
+--MISSING--
+
+set pen to random color
+--MISSING--
+
+fill display with _
+--MISSING--
+
+go to x _ y _
+--MISSING--
+
+point in direction  _
+--MISSING--
 
 Web of Things
 Web das cousas
@@ -532,8 +684,8 @@ rexistrar o evento _ do tipo _
 add boolean property title _ variable _ @Type _
 engadir a propiedade booleana co nome _ variábel _ do tipo _
 
-add number property title _ variable _ @Type _
-engadir a propiedade numérica co nome _ variábel _ do tipo _
+add number property title _ variable _ min _ max _ @Type _
+--MISSING--
 
 add string property title _ variable _ @Type _
 engadir a propiedade textual co nome _ variábel _ do tipo _
@@ -543,6 +695,38 @@ descrición da cousa
 
 clear thing description
 borrar a descrición da cousa
+
+Motion
+--MISSING--
+
+motion
+--MISSING--
+
+start step counter
+--MISSING--
+
+step count
+--MISSING--
+
+clear step count
+--MISSING--
+
+set step threshold _ (0-50)
+--MISSING--
+
+Button Events
+--MISSING--
+
+button _ double pressed
+--MISSING--
+
+button _ long pressed
+--MISSING--
+
+button _ pressed
+--MISSING--
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
 New
 Novo
@@ -601,14 +785,20 @@ Utilice o botón «Conectar» para conectarse a un dispositivo MicroBlocks.
 No boards found; is your board plugged in?
 Non se atopou ningunha placa; ten conectada a súa placa?
 
-For AdaFruit boards, double-click button and try again.
-Nas placas AdaFruit, prema o botón dúas veces rapidamente e próbeo de novo.
+For AdaFruit boards, double-click reset button and try again.
+--MISSING--
 
 The board is not responding.
 A placa non responde.
 
 Try to Install MicroBlocks on the board?
 Tentar instalar MicroBlocks na placa?
+
+The MicroBlocks in your board is not current
+--MISSING--
+
+Try to update MicroBlocks on the board?
+--MISSING--
 
 Stop
 Deter
@@ -669,6 +859,30 @@ deter o servidor de Mozilla WebThings
 
 MicroBlocks HTTP Server listening on port 6473
 o servidor HTTP de MicroBlocks esta activo no porto 6473
+
+wipe and repartition esp32
+--MISSING--
+
+Use board type 
+--MISSING--
+
+Wiping board...
+--MISSING--
+
+(press ESC to cancel)
+--MISSING--
+
+Done!
+--MISSING--
+
+download and install latest VM
+--MISSING--
+
+Select board type:
+--MISSING--
+
+Uploading MicroBlocks to board...
+--MISSING--
 
 copy data to clipboard
 copiar os datos no portapapeis
@@ -820,21 +1034,6 @@ Idioma
 Custom...
 Personalizado...
 
-Basic Sensors
-Sensores básicos
-
-tilt x
-inclinación x
-
-tilt y
-inclinación y
-
-tilt z
-inclinación z
-
-temperature (°C)
-temperatura (°C)
-
 Obsolete
 Obsoleto
 
@@ -858,3 +1057,4 @@ Aceptar
 
 Confirm
 Confirmar
+
