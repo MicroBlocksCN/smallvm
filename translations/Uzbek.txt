@@ -211,7 +211,7 @@ join string list _
 unicode _ of _
 --MISSING--
 
-string from unicode
+string from unicode _
 --MISSING--
 
 new list length _
@@ -343,8 +343,31 @@ radio paketini jo'natish _
 disable radio
 radioni o'chirib qo'yish
 
+# Libraries
+
+Basic Sensors
+--MISSING--
+
+tilt x
+burilish x
+
+tilt y
+burilish y
+
+tilt z
+burilish z
+
+acceleration
+--MISSING--
+
 light level
 yorug'lik darajasi
+
+temperature (°C)
+harorat (°C)
+
+NeoPixel
+--MISSING--
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 o'rnatish NeoPixels _ _ _ _ _ _ _ _ _ _
@@ -364,25 +387,17 @@ NeoPixels ni _ bilan almashtirish
 color r _ g _ b _
 rang r _ g _ b _
 
-attach _ LED NeoPixel strip to pin _ has white _
-qo'shing _ LED NeoPixel chiziqli pin _ uchun oq _
-
-# Libraries
-
-Basic Sensors
+attach _ LED NeoPixel strip to pin _
 --MISSING--
 
-tilt x
-burilish x
+has white _
+--MISSING--
 
-tilt y
-burilish y
+PIR
+--MISSING--
 
-tilt z
-burilish z
-
-temperature (°C)
-harorat (°C)
+PIR at pin _ detected movement
+--MISSING--
 
 ED1 Stepper Motor
 --MISSING--
@@ -532,6 +547,15 @@ flip servo _ _
 --MISSING--
 
 attach servos 1 to 4 to pins _ _ _ _
+--MISSING--
+
+set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+reverse
+--MISSING--
+
+set servo _ to speed _ (-100 to 100)
 --MISSING--
 
 LED Display

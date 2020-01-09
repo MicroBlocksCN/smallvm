@@ -214,7 +214,7 @@ join string list _
 unicode _ of _
 --MISSING--
 
-string from unicode
+string from unicode _
 --MISSING--
 
 new list length _
@@ -346,8 +346,31 @@ radio send packet _
 disable radio
 تعطيل الراديو
 
+# Libraries
+
+Basic Sensors
+--MISSING--
+
+tilt x
+الميل س
+
+tilt y
+الميل ص
+
+tilt z
+الميل ض
+
+acceleration
+--MISSING--
+
 light level
 مستوى الضوء
+
+temperature (°C)
+درجة الحرارة (درجة مئوية)
+
+NeoPixel
+--MISSING--
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 Set NeoPixels _ _ _ _ _ _ _ _ _ _
@@ -367,25 +390,17 @@ rotate NeoPixels by _
 color r _ g _ b _
 اللون أحمر _ أخضر _ أزرق _
 
-attach _ LED NeoPixel strip to pin _ has white _
-attach _ LED NeoPixel strip to pin _ has white _
-
-# Libraries
-
-Basic Sensors
+attach _ LED NeoPixel strip to pin _
 --MISSING--
 
-tilt x
-الميل س
+has white _
+--MISSING--
 
-tilt y
-الميل ص
+PIR
+--MISSING--
 
-tilt z
-الميل ض
-
-temperature (°C)
-درجة الحرارة (درجة مئوية)
+PIR at pin _ detected movement
+--MISSING--
 
 ED1 Stepper Motor
 --MISSING--
@@ -535,6 +550,15 @@ flip servo _ _
 --MISSING--
 
 attach servos 1 to 4 to pins _ _ _ _
+--MISSING--
+
+set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+reverse
+--MISSING--
+
+set servo _ to speed _ (-100 to 100)
 --MISSING--
 
 LED Display

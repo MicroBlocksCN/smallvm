@@ -211,7 +211,7 @@ join string list _
 unicode _ of _
 --MISSING--
 
-string from unicode
+string from unicode _
 --MISSING--
 
 new list length _
@@ -343,8 +343,31 @@ radio zend pakket _
 disable radio
 zet radio uit
 
+# Libraries
+
+Basic Sensors
+Basis Sensoren
+
+tilt x
+kantel x
+
+tilt y
+kantel y
+
+tilt z
+kantel z
+
+acceleration
+--MISSING--
+
 light level
 lichtsterkte
+
+temperature (°C)
+temperatuur (°C)
+
+NeoPixel
+--MISSING--
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 maak NeoPixels _ _ _ _ _ _ _ _ _ _
@@ -364,25 +387,17 @@ draai NeoPixels met _
 color r _ g _ b _
 kleur r _ g _ b _
 
-attach _ LED NeoPixel strip to pin _ has white _
-verbind _ LED NeoPixel strip aan pin _ heeft wit _
+attach _ LED NeoPixel strip to pin _
+--MISSING--
 
-# Libraries
+has white _
+--MISSING--
 
-Basic Sensors
-Basis Sensoren
+PIR
+--MISSING--
 
-tilt x
-kantel x
-
-tilt y
-kantel y
-
-tilt z
-kantel z
-
-temperature (°C)
-temperatuur (°C)
+PIR at pin _ detected movement
+--MISSING--
 
 ED1 Stepper Motor
 ED1 Stappenmotor
@@ -533,6 +548,15 @@ keer om servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
 verbind servo's 1 tot 4 aan pinnen _ _ _ _
+
+set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+reverse
+--MISSING--
+
+set servo _ to speed _ (-100 to 100)
+--MISSING--
 
 LED Display
 LED scherm

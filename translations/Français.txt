@@ -211,7 +211,7 @@ join string list _
 unicode _ of _
 --MISSING--
 
-string from unicode
+string from unicode _
 --MISSING--
 
 new list length _
@@ -343,7 +343,30 @@ radio send packet _
 disable radio
 --MISSING--
 
+# Libraries
+
+Basic Sensors
+--MISSING--
+
+tilt x
+inclinaison x
+
+tilt y
+inclinaison y
+
+tilt z
+inclinaison z
+
+acceleration
+--MISSING--
+
 light level
+--MISSING--
+
+temperature (°C)
+température (°C)
+
+NeoPixel
 --MISSING--
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
@@ -364,25 +387,17 @@ rotate NeoPixels by _
 color r _ g _ b _
 --MISSING--
 
-attach _ LED NeoPixel strip to pin _ has white _
+attach _ LED NeoPixel strip to pin _
 --MISSING--
 
-# Libraries
-
-Basic Sensors
+has white _
 --MISSING--
 
-tilt x
-inclinaison x
+PIR
+--MISSING--
 
-tilt y
-inclinaison y
-
-tilt z
-inclinaison z
-
-temperature (°C)
-température (°C)
+PIR at pin _ detected movement
+--MISSING--
 
 ED1 Stepper Motor
 --MISSING--
@@ -532,6 +547,15 @@ flip servo _ _
 --MISSING--
 
 attach servos 1 to 4 to pins _ _ _ _
+--MISSING--
+
+set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+reverse
+--MISSING--
+
+set servo _ to speed _ (-100 to 100)
 --MISSING--
 
 LED Display

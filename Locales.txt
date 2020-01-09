@@ -143,8 +143,6 @@ join string list _
 
 unicode _ of _
 
-string from unicode
-
 string from unicode _
 
 new list length _
@@ -264,8 +262,6 @@ set all NeoPixels color _
 rotate NeoPixels by _
 
 color r _ g _ b _
-
-attach _ LED NeoPixel strip to pin _ has white _
 
 attach _ LED NeoPixel strip to pin _
 
