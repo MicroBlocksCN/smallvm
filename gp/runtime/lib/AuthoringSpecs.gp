@@ -295,11 +295,15 @@ method installTranslation AuthoringSpecs translationData langName {
   while ((count lines) >= 2) {
 	from = (removeFirst lines)
 	// ignore comments and blank lines
-	while (or (beginsWith from '#') (from == '')) {
+	while (and
+			((count lines) >= 2)
+			(or (beginsWith from '#') (from == ''))) {
 		from = (removeFirst lines)
 	}
-	to = (removeFirst lines)
-	atPut translationDictionary from to
+	if ((count lines) >= 1) {
+		to = (removeFirst lines)
+		atPut translationDictionary from to
+	}
   }
   if (notNil langName) { language = langName }
 }

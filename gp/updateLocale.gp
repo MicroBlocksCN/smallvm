@@ -21,14 +21,14 @@ to startup {
 	allLocales = (readFile '../Locales.txt')
 
 	lines = (toList (lines allLocales))
-	while ((count lines) >= 2) {
+	while ((count lines) >= 1) {
 		original = (removeFirst lines)
                 if (or (beginsWith original '#') (original == '')) {
 			// Copy comments. We should be smarter about it and get
 			// them from the original file somehow.
 			updatedLocale = (join updatedLocale original (newline))
                 } else {
-			translation = (localizedOrNil (removeFirst lines))
+			translation = (localizedOrNil original)
 			if (isNil translation) { translation = '--MISSING--' }
 			updatedLocale = (join
 				updatedLocale
