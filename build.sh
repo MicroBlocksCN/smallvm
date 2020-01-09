@@ -29,11 +29,49 @@ if test -n "$help"; then
     echo "--tools                       Automatically try to install missing tools needed"
     echo "                              by the build process."
     echo "--upload=[USER]@[URL]:[PATH]  Try to upload the VMs to a remote server."
+    echo "--locale=[LANGUAGE-NAME]      Update locales for the specified language. To print"
+    echo "                              all currently available languages, run it without"
+    echo "                              an argument. If language does not exist, a new"
+    echo "                              locale file will be created for it. If it does, a"
+    echo "                              backup copy of the current locale file will be"
+    echo "                              created in your OS temporary files directory."
     echo
     exit 0
 fi
 
 systems=("linux64bit" "linux32bit" "raspberryPi" "win" "mac")
+
+currentOS=`uname -s`
+if [ "$currentOS" == "Darwin" ]; then
+    gp="gp-mac"
+elif [ "$currentOS" == "Linux" ]; then
+    gp="gp-linux64bit"
+else
+    echo "Platform $currentOS is not (yet?) supported by this build script."
+    echo "Try to find the gp executable for your platform in this folder and run:"
+    echo "cd gp; [command-to-run-GP] runtime/lib/* loadIDE.gp buildApps.gp"
+    echo "Good luck!"
+    exit 1
+fi
+
+if test -n "$locale"; then
+    if [ $locale == '--locale' ]; then
+        echo "Currently available locales:"
+        echo
+        for lang in `ls translations`; do
+            echo $lang | cut -f1 -d.
+        done
+        echo
+    else
+        echo "Updating locale file for $locale..."
+        (cd gp; ./$gp runtime/lib/* loadIDE.gp updateLocale.gp -- $locale)
+        echo "Done."
+        echo "Please edit the updated locale file at translations/$locale.txt"
+        missing=`grep "^--MISSING--" translations/$locale.txt | wc -l`
+        echo "A total of $missing missing strings have been marked with the \"--MISSING--\" tag."
+    fi
+    exit 0
+fi
 
 if test -n "$vm"; then
     (cd precompiled; ./updatePrecompiled.sh)
@@ -57,7 +95,7 @@ fi
 
 if test -n "$tools"; then
     # set the tools flag so packager scripts know we want them to auto-install missing tools
-    export tools=1;
+    export tools=1
 fi
 
 if test -n "$esptool"; then
@@ -88,18 +126,6 @@ fi
 
 # build the IDE by using the corresponding executable for our host system
 mkdir -p apps
-currentOS=`uname -s`
-if [ "$currentOS" == "Darwin" ]; then
-    gp="gp-mac"
-elif [ "$currentOS" == "Linux" ]; then
-    gp="gp-linux64bit"
-else
-    echo "Platform $currentOS is not (yet?) supported by this build script."
-    echo "Try to find the gp executable for your platform in this folder and run:"
-    echo "cd gp; [command-to-run-GP] runtime/lib/* loadIDE.gp buildApps.gp"
-    echo "Good luck!"
-    exit 1
-fi
 
 if [ -z $system ]; then
     # build for all systems
