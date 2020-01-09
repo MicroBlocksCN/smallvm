@@ -20,6 +20,12 @@ to startup {
 
 	allLocales = (readFile '../Locales.txt')
 
+	// Check whether it's an RTL language, and keep the tag if so
+	if ((localized 'RTL') == 'true') {
+		updatedLocale = (join
+			'RTL' (newline) 'true' (newline) (newline))
+	}
+
 	lines = (toList (lines allLocales))
 	while ((count lines) >= 1) {
 		original = (removeFirst lines)
