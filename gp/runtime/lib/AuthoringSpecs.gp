@@ -306,7 +306,7 @@ method installTranslation AuthoringSpecs translationData langName {
 
 to localized aString {
   localization = (localizedOrNil aString)
-  if (isNil localization) {
+  if (or (isNil localization) (localization == '--MISSING--')) {
 	return aString
   } else {
 	return localization
