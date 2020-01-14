@@ -1,11 +1,11 @@
-module Motion
+module Motion Input
 variables _motionSamples _stepCount _stepThreshold _stepMotionHigh
 
-	spec 'r' 'motion' 'motion'
 	spec ' ' 'startStepCounter' 'start step counter'
 	spec 'r' 'stepCount' 'step count'
 	spec ' ' 'clearStepCount' 'clear step count'
 	spec ' ' 'setStepThreshold' 'set step threshold _ (0-50)' 'auto' 10
+	spec 'r' 'motion' 'motion'
 	spec ' ' '_addSample' '_addSample _' 'auto' '10'
 	spec 'r' '_recentAverage' '_recentAverage'
 	spec ' ' '_stepCounterLoop' '_stepCounterLoop'
@@ -52,16 +52,13 @@ to clearStepCount {
 to motion {
   comment 'Return the change in acceleration since the last call.'
   comment 'Details: The value is the difference between the current
-total acceleration in all three axes and the average value
-of the last N samples. Since we don''t have a square root
-function, the total acceleration is computed as the sum of
-the absolute values of the acceleration in all three axes.
+acceleration and the average value of the last N samples.
 The result is zero when there are no changes of acceleration.
 It goes positive momentarily when the acceleration decreases
-(e.g. because the microcontroller is dropped) and positive
-when the acceleration increases (e.g. when a falling micro-
+(e.g. because the microcontroller is in free fall) and positive
+when the acceleration increases (e.g. when the falling micro-
 controller is caught).'
-  local 'current' (absoluteValue (maximum (absoluteValue ('[sensors:tiltX]')) (absoluteValue ('[sensors:tiltY]')) (absoluteValue ('[sensors:tiltZ]'))))
+  local 'current' '[sensors:acceleration]'
   local 'result' (current - ('_recentAverage'))
   '_addSample' current
   if ((absoluteValue result) < 3) {
