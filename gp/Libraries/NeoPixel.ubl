@@ -1,13 +1,14 @@
 module NeoPixel Output
 variables _np_pixels
 
+	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
 	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
 	spec ' ' 'clearNeoPixels' 'clear NeoPixels'
 	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
 	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
 	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
-	spec 'r' 'colorFromRGB' 'color r _ g _ b _' 'num num num' 0 1 1
-	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num num bool' 10 '' false
+	spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-31)' 'num num num' 0 1 1
+	spec 'r' 'randomColor' 'random color'
 	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
 	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
 	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
@@ -50,8 +51,12 @@ to colorFromRGB r g b {
 
 to neoPixelAttach number pinNumber optionalHasWhite {
   hasWhite = false
-  if ((pushArgCount) > 2) { hasWhite = optionalHasWhite }
-  if (or (_np_pixels == 0) (number != (size _np_pixels))) {_np_pixels = (newList number)}
+  if ((pushArgCount) > 2) {
+    hasWhite = optionalHasWhite
+  }
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {
+    _np_pixels = (newList number)
+  }
   fillList _np_pixels 0
   '[display:neoPixelSetPin]' pinNumber hasWhite
 }
@@ -60,6 +65,18 @@ to neoPixelSetAllToColor color {
   '_NeoPixel_ensureInitialized'
   fillList _np_pixels color
   '_NeoPixel_update'
+}
+
+to randomColor {
+  local 'n1' (random 0 15)
+  local 'n2' (random 5 20)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
 }
 
 to rotateNeoPixelsBy n {
