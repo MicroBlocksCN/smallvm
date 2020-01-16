@@ -22,7 +22,25 @@ method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
 	clearLoggedData this
+	checkForDisconnectKey this
 	return this
+}
+
+method checkForDisconnectKey SmallRuntime {
+	// Check for the disconnect key (space) being pressed when MicroBlocks is starting.
+	// This disables serial port scanning, avoiding a rare problem on Windows where MicroBlocks
+	// tries to open a COM port on some other serial device (e.g. a BLE dongle) and gets hung.
+	// With scanning disabled, the user can manually select the correct COM port.
+
+	endTime = ((msecsSinceStart) + 1500)
+	while ((msecsSinceStart) < endTime) {
+ 		processEvents (global 'page')
+ 		if (keyDown (global 'page') 'space') {
+ 			disconnected = true
+ 			print 'serial port scanning disabled'
+ 			return
+ 		}
+	}
 }
 
 method evalOnBoard SmallRuntime aBlock showBytes {
