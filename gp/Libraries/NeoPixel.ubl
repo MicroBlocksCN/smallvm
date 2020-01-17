@@ -18,6 +18,7 @@ to '_NeoPixel_ensureInitialized' {
 }
 
 to '_NeoPixel_rotate' left {
+  '_NeoPixel_ensureInitialized'
   local 'length' (size _np_pixels)
   if left {
     local 'first' (at 1 _np_pixels)
@@ -88,6 +89,7 @@ to rotateNeoPixelsBy n {
 }
 
 to setNeoPixelColor number color {
+  '_NeoPixel_ensureInitialized'
   atPut number _np_pixels color
   '_NeoPixel_update'
 }

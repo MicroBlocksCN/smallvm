@@ -23,7 +23,7 @@ to '_radio send packet' packet {
 }
 
 to '_receivedMessageType' {
-  '[radio:receivedMessageType]'
+  return ('[radio:receivedMessageType]')
 }
 
 to '_setChannel' channel {
@@ -31,6 +31,6 @@ to '_setChannel' channel {
 }
 
 to '_signalStrength' {
-  '[radio:signalStrength]'
+  return ('[radio:signalStrength]')
 }
 
