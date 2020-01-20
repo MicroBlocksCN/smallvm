@@ -13,7 +13,7 @@ say _
 söyle _
 
 graph _
---MISSING--
+grafiğini çiz _
 
 Input
 Girdi
@@ -31,7 +31,7 @@ milliseconds
 milisaniye
 
 board type
---MISSING--
+kart tipi
 
 Pins
 Pinler
@@ -43,10 +43,10 @@ read analog pin _
 analog pin oku _
 
 set digital pin _ to _
-dijital pin _ ayarla _
+dijital pin _ ayarını _ yap
 
 set pin _ to _
-pin _ ayarla  _
+pin _ ayarını _ yap
 
 analog pins
 analog pinler
@@ -88,7 +88,7 @@ stop this task
 bu betiği durdur
 
 stop other tasks
---MISSING--
+öteki betikleri durdur
 
 stop all
 tüm betikleri durdur
@@ -103,10 +103,10 @@ repeat until _ _
 _ _ olana kadar tekrarla
 
 for _ in _ _
-her _ için _ _ değerindeki
+her _ için _ _ kapsamında
 
 when _
-olunca _
+_ olunca
 
 when _ received
 _ mesajı geldiğinde
@@ -158,7 +158,7 @@ Değişken sil
 # New variable dialog
 
 New variable name?
---MISSING--
+Yeni değişkenin adı?
 
 set _ to _
 _ değişkenini _ yap
@@ -170,83 +170,83 @@ local _ _
 yerel değişken _ = _
 
 Lists & Strings
---MISSING--
+Listeler & Dizgiler
 
 list
---MISSING--
+liste
 
 length of _
 _ uzunluğu
 
 item _ of _
---MISSING--
+öğe#: _ liste/dizgi: _
 
 replace item _ of list _ with _
---MISSING--
+listede değiştir öğe#: _ liste: _ yeni değer _
 
 delete item _ of list _
---MISSING--
+listeden sil öğe#: _ liste: _
 
 add _ to list _
---MISSING--
+listeye ekle değer: _ liste: _
 
 join _ _
---MISSING--
+birleştir _ _
 
 copy _ from _
---MISSING--
+kopyala _ başla _
 
 to _
---MISSING--
+bitir _
 
 find _ in _
---MISSING--
+bul bunu _ bunda _
 
 starting at _
---MISSING--
+başla _
 
 join string list _
---MISSING--
+listenin öğelerini birleştir _
 
 unicode _ of _
---MISSING--
+unicode öğe# _ dizgi: _
 
 string from unicode _
---MISSING--
+unicode dan harfe _
 
 new list length _
---MISSING--
+_ öğeli yeni liste yarat 
 
 free memory
---MISSING--
+boş bellek
 
 fill list _ with _
---MISSING--
+_ lıstesini _ ile doldur
 
 My Blocks
---MISSING--
+Benim Bloklarım
 
 # Buttons on top of "My Blocks" category
 
 Add a command block
---MISSING--
+kumanda bloğu ekle
 
 Add a reporter block
---MISSING--
+Bildiren bloğu ekle
 
 # Make a block dialog
 
 Enter function name:
---MISSING--
+İşlev adını gir
 
 Comm
---MISSING--
+iletişim
 
 i2c get device _ register _
-i2c modül oku _ sayaç _
+i2c oku modül _ yazmaç _
 
 i2c set device _ register _ to _
-i2c modül yaz _ sayaç _ değer _
+i2c yaz modül _ yazmaç _ değer _
 
 spi send _
 spi gönder _
@@ -264,7 +264,7 @@ no op
 işlem yok
 
 ignore
-aldırma
+yoksay
 
 # Primitives (mostly hidden from end users)
 
@@ -275,78 +275,78 @@ shape for letter _
 _ harfinin şekli
 
 set NeoPixel pin _ is RGBW _
---MISSING--
+_ Neopiksel pinini _ yap RGBW _
 
 send NeoPixel rgb _
 NeoPixel rgb _ gönder
 
 has tone support
---MISSING--
+ton desteği var
 
 play tone pin _ frequency _
---MISSING--
+ton çal pin _ frekans _
 
 has WiFi support
---MISSING--
+WIFI desteği var
 
 start WiFi _ password _
---MISSING--
+WIFI başlat SSID _ şifre _
 
 stop WiFi
---MISSING--
+WIFI durdur
 
 WiFi status
---MISSING--
+WIFI durumu
 
 my IP address
---MISSING--
+IP adresim
 
 radio send number _
---MISSING--
+radyo sayı yolla _
 
 radio send string _
---MISSING--
+radyo dizgi yolla _
 
 radio send pair _ = _
---MISSING--
+radyo değer yolla _ = _
 
 radio message received?
---MISSING--
+radyo mesajı alındı mı?
 
 radio last number
---MISSING--
+radyo son sayı
 
 radio last string
---MISSING--
+radyo son dizgi
 
 radio last message type
---MISSING--
+radyo son mesaj tipi
 
 radio set group _
---MISSING--
+radyo grubunu ayarla _
 
 radio set channel (0-83) _
---MISSING--
+radyo kanal ayarla (0-83) _
 
 radio set power (0-7) _
---MISSING--
+radyo güç ayarla (0-7) _
 
 radio last signal strength
---MISSING--
+radyo son sinyal gücü
 
 radio receive packet _
---MISSING--
+radyo paket al _
 
 radio send packet _
---MISSING--
+radyo paket yolla _
 
 disable radio
---MISSING--
+radyoyu etkisizleştir
 
 # Libraries
 
 Basic Sensors
---MISSING--
+Temel Sensörler
 
 tilt x
 eğilim x
@@ -358,16 +358,16 @@ tilt z
 eğilim z
 
 acceleration
---MISSING--
+ivme
 
 light level
 ışık seviyesi
 
 temperature (°C)
---MISSING--
+ısı (°C)
 
 NeoPixel
---MISSING--
+Neopiksel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 NeoPixel leri _ _ _ _ _ _ _ _ _ _ yap
@@ -388,19 +388,19 @@ color r _ g _ b _
 renk r _ g _ b _
 
 attach _ LED NeoPixel strip to pin _
---MISSING--
+_ LED Neopiksel şeridini pin _ bağla
 
 has white _
---MISSING--
+beyaz var _
 
 PIR
---MISSING--
+PIR
 
 PIR at pin _ detected movement
---MISSING--
+_ pinine bağlı PIR hareket algıladı
 
 ED1 Stepper Motor
---MISSING--
+ED1 Step Motoru
 
 move motor _  _ steps _
  _ motorunu _ adım yürüt _
@@ -418,7 +418,7 @@ counter-clockwise
 saat yönüne ters
 
 ED1 Buttons
---MISSING--
+ED1 Butonları
 
 button OK
 buton OK
@@ -463,7 +463,7 @@ set capacitive threshold to _
 kapasitif eşik değerini _ yap
 
 set use capacitive to _
---MISSING--
+kapasitif kullan ayarını _ yap
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
@@ -472,7 +472,7 @@ Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird 3renkli-LED _ R _ % G _ % B _ %
 
 Hummingbird Position Servo _ _ º
---MISSING--
+Hummingbird _ Servosunu _ º ayarla
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Sürekli Servo _ _ %
@@ -499,10 +499,10 @@ Other
 Diğer
 
 distance (cm) trigger _ echo _
---MISSING--
+mesafe (cm) tetik _ eko _
 
 IR Remote
---MISSING--
+IR Uzaktan Kumanda
 
 receive IR code from device _
 _ aygıtından IR kod oku
@@ -511,58 +511,58 @@ test IR
 IR testi
 
 attach IR receiver to pin _
---MISSING--
+IR alıcısını _ pinine bağla
 
 Radio
---MISSING--
+Radyo
 
 Scrolling
---MISSING--
+Kaydırma
 
 scroll text _
---MISSING--
+_ metnini kaydır
 
 scroll number _
---MISSING--
+_ sayısını kaydır
 
 pausing _ ms
---MISSING--
+_ ms duraklatma
 
 stop scrolling
 kaydırmayı durdur
 
 Servo
---MISSING--
+Servo
 
 has servo support
---MISSING--
+servo desteği var
 
 set servo _ to _ (-100 to 100)
---MISSING--
+_ servosunu _ ayarla (-100 to 100)
 
 resetServos
---MISSING--
+servoları resetle
 
 flip servo _ _
---MISSING--
+servoyu tersle _ _
 
 attach servos 1 to 4 to pins _ _ _ _
---MISSING--
+1 - 4 servolarını _ _ _ _ pinlerine bağla
 
 set servo _ to _ degrees (-90 to 90)
---MISSING--
+_ servosunu _ dereceye ayarla (-90 to 90)
 
 reverse
---MISSING--
+tersle
 
 set servo _ to speed _ (-100 to 100)
---MISSING--
+_ servosunun hızını _ yap (-100 to 100)
 
 LED Display
---MISSING--
+LED Ekran
 
 display _
-ekran _
+LED ekran _
 
 clear display
 ekranı sil
@@ -574,46 +574,46 @@ unplot x _ y _
 söndür x _ y _
 
 display character _
---MISSING--
+_ harfini göster
 
 enable TFT _
---MISSING--
+TFT yi etkinleştir _
 
 TFT width
---MISSING--
+TFT genişliği
 
 TFT height
---MISSING--
+TFT yüksekliği
 
 set TFT pixel x _ y _ to _
-x _ y _ TFT pikselini _ yap
+TFT x _ y _ pikselini _ yap
 
 draw line on TFT from x _ y _ to x _ y _ color _
---MISSING--
+TFT çizgi başla x _ y _ son x _ y _ renk _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
---MISSING--
+TFT dikdörtgen başla x _ y _ genişlik _ yükseklik _ renk _
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
---MISSING--
+TFT yuvarlatılmış dikdörtgen başla x _ y _ genişlik _ yükseklik _ çap _ renk _
 
 draw circle on TFT at x _ y _ radius _ color _
---MISSING--
+TFT daire merkez x _ y _ çap _ renk _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
---MISSING--
+TFT üçgen x _ y _ , x _ y _ , x _ y _ renk _
 
 filled _
---MISSING--
+dolu _
 
 write _ on TFT at x _ y _ color _
---MISSING--
+TFT _ yaz konum x _ y _ renk _
 
 scale _ wrap _
---MISSING--
+ölçek _ başa sar _
 
 Tone
---MISSING--
+Ton
 
 attach buzzer to pin _
 sesli uyarıcıyı _ pinine bağla
@@ -622,109 +622,109 @@ play note _ octave _ during _ ms
 _ notasını _ oktavda _ ms çal
 
 play frequency _ for _ milliseconds
---MISSING--
+_ frekansını _ milisaniye çal
 
 play midi key _ for _ milliseconds
---MISSING--
+
 
 Turtle
---MISSING--
+Kaplumbağa
 
 home
---MISSING--
+başlangıç
 
 move _
---MISSING--
+git _
 
 turn _ degrees
---MISSING--
+_ derece dön
 
 turn _ / _ of circle
---MISSING--
+dairenin _ / _ kadar dön
 
 pen down
---MISSING--
+kalemi bastır 
 
 pen up
---MISSING--
+kalemi kaldır
 
 set pen color to _
---MISSING--
+kalem rengini _ yap
 
 set pen to random color
---MISSING--
+kalem rengini rastgele yap
 
 fill display with _
---MISSING--
+ekranı _ ile doldur
 
 go to x _ y _
---MISSING--
+x _ y _ konumuna git
 
 point in direction  _
---MISSING--
+_ yönüne dön
 
 Web of Things
---MISSING--
+Şeylerin İnterneti
 
 wifi connect to _ password _ try _ times
---MISSING--
+wifi _ SSIDye bağlan şifre _ _ kere dene
 
 wifi create hotspot _ password _
---MISSING--
+wifi erişim noktası oluştur SSID _ şifre _
 
 IP address
---MISSING--
+IP adresi
 
 define thing _ capability _
---MISSING--
+tanımla şey _ yetenek _
 
 register event _ type _
---MISSING--
+kaydet olay _ tip _
 
 add boolean property title _ variable _ @Type _
---MISSING--
+boolean özellik ekle başlık _ değişken _ @Tip _
 
 add number property title _ variable _ min _ max _ @Type _
---MISSING--
+sayı özellik ekle başlık _ değişken _ min _ max _ @Tip _
 
 add string property title _ variable _ @Type _
---MISSING--
+dizgi özellik ekle başlık _ değişken _ @Tip _
 
 thing description
---MISSING--
+şey tanımlaması
 
 clear thing description
---MISSING--
+şey tanımlamasını sil
 
 Motion
---MISSING--
+Hareket
 
 motion
---MISSING--
+hareket
 
 start step counter
---MISSING--
+adım sayıcıyı başlat
 
 step count
---MISSING--
+adım sayısı
 
 clear step count
---MISSING--
+adım sayısını sil
 
 set step threshold _ (0-50)
---MISSING--
+adım eşiğini _ (0-50) yap
 
 Button Events
---MISSING--
+Buton Olayları
 
 button _ double pressed
---MISSING--
+buton _ çift basıldı
 
 button _ long pressed
---MISSING--
+buton _ uzun basıldı
 
 button _ pressed
---MISSING--
+buton _ basıldı
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -786,19 +786,19 @@ No boards found; is your board plugged in?
 Kart algılanmadı; kardınız bağlı mı?
 
 For AdaFruit boards, double-click reset button and try again.
---MISSING--
+AdaFruit kartları için sıfırlama düğmesini çift tıklayın ve tekrar deneyin.
 
 The board is not responding.
 Kart cevap vermiyor.
 
 Try to Install MicroBlocks on the board?
-Karta Microblocks kurmayı deneyin.
+Karta Microblocks kurulsun mu?
 
 The MicroBlocks in your board is not current
---MISSING--
+Karttaki MicroBlocks güncel değil
 
 Try to update MicroBlocks on the board?
---MISSING--
+Karttaki MicroBlocks güncellensin mi?
 
 Stop
 Dur
@@ -819,10 +819,10 @@ arrange scripts
 betikleri düzenle
 
 undrop  (ctrl-Z)
---MISSING--
+geri al
 
 copy all scripts to clipboard
---MISSING--
+tüm betikleri panoya kopyala
 
 paste all scripts
 tüm betikleri yapıştır
@@ -831,7 +831,7 @@ paste script
 betik yapıştır
 
 save a picture of all scripts
---MISSING--
+tüm betiklerin resimlerini kaydet
 
 about...
 hakkında...
@@ -840,49 +840,49 @@ virtual machine version
 sanal makine sürümü
 
 update firmware on board
---MISSING--
+yerleşik bellenimi güncelle
 
 show data graph
---MISSING--
+veri grafiğini göster
 
 set serial delay
---MISSING--
+seri gecikmeyi ayarla
 
 firmware version
---MISSING--
+yerleşik bellenim sürümü
 
 start Mozilla WebThing server
---MISSING--
+Mozilla WebThing sunucusunu başlat
 
 stop Mozilla WebThing server
---MISSING--
+Mozilla WebThing sunucusunu durdur
 
 MicroBlocks HTTP Server listening on port 6473
---MISSING--
+MicroBlocks HTTP Sunucusu 6473 numaralı bağlantı noktasında dinliyor
 
 wipe and repartition esp32
---MISSING--
+esp32 yi silme ve yeniden bölümleme 
 
 Use board type 
---MISSING--
+kart tipini kullan
 
 Wiping board...
---MISSING--
+kart siliniyor...
 
 (press ESC to cancel)
---MISSING--
+(iptal etmek için ESC tuşuna basın)
 
 Done!
---MISSING--
+Bitti!
 
 download and install latest VM
---MISSING--
+en son VM'yi indirin ve yükleyin
 
 Select board type:
---MISSING--
+Kart tipini seç:
 
 Uploading MicroBlocks to board...
---MISSING--
+MicroBlocks karta yükleniyor...
 
 copy data to clipboard
 verileri panoya kopyala
@@ -906,7 +906,7 @@ Data Graph
 Veri Grafiği
 
 File
---MISSING--
+Dosya
 
 File Open
 Dosya Aç
@@ -933,58 +933,58 @@ rename...
 adını değiştir...
 
 show block definition...
---MISSING--
+blok tanımını göster...
 
 show the definition of this block
---MISSING--
+bu bloğun tanımını göster
 
 delete block definition...
---MISSING--
+blok tanımını sil...
 
 delete the definition of this block
---MISSING--
+bu bloğun tanımını sil
 
 duplicate
 çoğalt
 
 duplicate this block
---MISSING--
+bu bloğu çoğalt
 
 delete block
---MISSING--
+bloğu sil
 
 delete this block
---MISSING--
+bu bloğu sil
 
 just this one block
 yalnız bu blok
 
 copy to clipboard
---MISSING--
+panoya kopyala
 
 copy these blocks to the clipboard
---MISSING--
+bu blokları panoya kopyala
 
 duplicate all
---MISSING--
+tümünü çoğalt
 
 duplicate these blocks
---MISSING--
+bu blokları çoğalt
 
 extract block
---MISSING--
+bloğu ayırt
 
 pull out this block
---MISSING--
+bu bloğu ayırt
 
 save picture of script
 betiğin resmini kaydet
 
 save a picture of this block definition as a PNG file
---MISSING--
+bu blok tanımının resmini PNG dosyası olarak kaydet
 
 save a picture of these blocks as a PNG file
---MISSING--
+bu blokların resimlerini PNG dosyası olarak kaydet
 
 copy script
 betiği kopyala
@@ -993,52 +993,52 @@ delete
 sil
 
 Input type:
---MISSING--
+Girdi tipi:
 
 string only
---MISSING--
+yalnız dizgi 
 
 string or number
---MISSING--
+dizgi veya sayı
 
 number only
---MISSING--
+yalnız sayı
 
 define
---MISSING--
+tanımla
 
 number/string
---MISSING--
+sayı/dizgi
 
 editable number or string
---MISSING--
+düzenlenebilir sayı veya dizgi
 
 label
---MISSING--
+etiket
 
 input
---MISSING--
+girdi
 
 hide block definition
---MISSING--
+blok tanımını gizle
 
 Are you sure you want to remove this block definition?
-Bu bloğun tanımını sileceğinizden emin misiniz?
+Bu bloğun tanımını sileceğinden emin misin?
 
 Libraries
 Kütüphaneler
 
 Language
---MISSING--
+Dil
 
 Custom...
---MISSING--
+Özel...
 
 Obsolete
 Geçersiz
 
 OK
---MISSING--
+Tamam
 
 Ok
 Tamam
