@@ -647,7 +647,10 @@ method specString BlockSectionDefinition {
   for each (parts morph) {
     part = (handler each)
     if (isClass part 'Text') {
-      spec = (join spec delim (text part))
+	  // remove colons from label (colons are reserved for marking optional parameters in spec)
+	  label = (joinStrings (copyWithout (letters (text part)) ':'))
+	  if (label != (text part)) { setText part label }
+      spec = (join spec delim label)
       delim = ' '
     } (isClass part 'Block') { // input
       spec = (join spec delim '_')
