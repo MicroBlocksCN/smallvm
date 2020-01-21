@@ -215,7 +215,7 @@ string from unicode _
 unicode dan harfe _
 
 new list length _
-_ öğeli yeni liste yarat 
+_ öğeli yeni liste yarat
 
 free memory
 boş bellek
@@ -269,7 +269,7 @@ yoksay
 # Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
-_ şeklini çiz x _ y _ 
+_ şeklini çiz x _ y _
 
 shape for letter _
 _ harfinin şekli
@@ -379,13 +379,13 @@ set NeoPixel _ color _
 NeoPixel _ renk _ yap
 
 set all NeoPixels color _
-Tüm NeoPixel renklerini  _ yap
+Tüm NeoPixel renklerini _ yap
 
 rotate NeoPixels by _
 NeoPixelleri _ döndür
 
-color r _ g _ b _
-renk r _ g _ b _
+color r _ g _ b _ (0-31)
+renk r _ g _ b _ (0-31)
 
 attach _ LED NeoPixel strip to pin _
 _ LED Neopiksel şeridini pin _ bağla
@@ -402,11 +402,11 @@ _ pinine bağlı PIR hareket algıladı
 ED1 Stepper Motor
 ED1 Step Motoru
 
-move motor _  _ steps _
+move motor _ _ steps _
  _ motorunu _ adım yürüt _
 
 move motor 1 _ and motor 2 _ _ steps
-motor 1 _ ve motor 2 _  _ adım yürüt
+motor 1 _ ve motor 2 _ _ adım yürüt
 
 stop steppers
 step motorları durdur
@@ -503,6 +503,9 @@ mesafe (cm) tetik _ eko _
 
 IR Remote
 IR Uzaktan Kumanda
+
+receive IR code
+--MISSING--
 
 receive IR code from device _
 _ aygıtından IR kod oku
@@ -643,7 +646,7 @@ turn _ / _ of circle
 dairenin _ / _ kadar dön
 
 pen down
-kalemi bastır 
+kalemi bastır
 
 pen up
 kalemi kaldır
@@ -660,7 +663,7 @@ ekranı _ ile doldur
 go to x _ y _
 x _ y _ konumuna git
 
-point in direction  _
+point in direction _
 _ yönüne dön
 
 Web of Things
@@ -761,7 +764,7 @@ Kart tipi:
 Select board:
 Kart seç:
 
-Could not read: 
+Could not read:
 Okuyamadık:
 
 by
@@ -818,7 +821,7 @@ temizle
 arrange scripts
 betikleri düzenle
 
-undrop  (ctrl-Z)
+undrop (ctrl-Z)
 geri al
 
 copy all scripts to clipboard
@@ -861,9 +864,9 @@ MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Sunucusu 6473 numaralı bağlantı noktasında dinliyor
 
 wipe and repartition esp32
-esp32 yi silme ve yeniden bölümleme 
+esp32 yi silme ve yeniden bölümleme
 
-Use board type 
+Use board type
 kart tipini kullan
 
 Wiping board...
@@ -996,7 +999,7 @@ Input type:
 Girdi tipi:
 
 string only
-yalnız dizgi 
+yalnız dizgi
 
 string or number
 dizgi veya sayı
