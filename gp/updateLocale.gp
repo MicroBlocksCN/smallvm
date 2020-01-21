@@ -15,9 +15,11 @@ to startup {
 
         // Backup previous locale file before updating it
 	oldLocale = (readFile (join '../translations/' langName '.txt'))
-	(writeFile (join (tmpPath) langName '.txt') oldLocale)
-	updatedLocale = ''
+	if (notNil oldLocale) {
+		(writeFile (join (tmpPath) langName '.txt') oldLocale)
+	}
 
+        updatedLocale = ''
 	allLocales = (readFile '../Locales.txt')
 
 	// Check whether it's an RTL language, and keep the tag if so
@@ -35,7 +37,9 @@ to startup {
 			updatedLocale = (join updatedLocale original (newline))
                 } else {
 			translation = (localizedOrNil original)
-			if (isNil translation) { translation = '--MISSING--' }
+			if (or (isNil translation) (isNil oldLocale)) {
+				translation = '--MISSING--'
+			}
 			updatedLocale = (join
 				updatedLocale
 				original
