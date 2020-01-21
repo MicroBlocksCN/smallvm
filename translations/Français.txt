@@ -384,7 +384,7 @@ set all NeoPixels color _
 rotate NeoPixels by _
 --MISSING--
 
-color r _ g _ b _
+color r _ g _ b _ (0-31)
 --MISSING--
 
 attach _ LED NeoPixel strip to pin _
@@ -478,7 +478,7 @@ Hummingbird Rotation Servo _ _ %
 Hummingbird Rotation Servo _ _ %
 
 Hummingbird _ _
-Hummingbird _ _ 
+Hummingbird _ _
 
 Hummingbird Battery (mV)
 Hummingbird Batterie (mV)
@@ -502,6 +502,9 @@ distance (cm) trigger _ echo _
 --MISSING--
 
 IR Remote
+--MISSING--
+
+receive IR code
 --MISSING--
 
 receive IR code from device _
@@ -761,7 +764,7 @@ Board type:
 Select board:
 --MISSING--
 
-Could not read: 
+Could not read:
 --MISSING--
 
 by
@@ -863,7 +866,7 @@ MicroBlocks HTTP Server listening on port 6473
 wipe and repartition esp32
 --MISSING--
 
-Use board type 
+Use board type
 --MISSING--
 
 Wiping board...

@@ -504,6 +504,9 @@ distancia (cm) disparador _ eco _
 IR Remote
 Infravermellos
 
+receive IR code
+recibir código IR dende
+
 receive IR code from device _
 recibir código IR dende o dispositivo _
 
@@ -761,8 +764,8 @@ Tipo de placa:
 Select board:
 Seleccionar a placa:
 
-Could not read: 
-Non foi posíbel ler: 
+Could not read:
+Non foi posíbel ler:
 
 by
 por
@@ -863,7 +866,7 @@ o servidor HTTP de MicroBlocks esta activo no porto 6473
 wipe and repartition esp32
 --MISSING--
 
-Use board type 
+Use board type
 --MISSING--
 
 Wiping board...

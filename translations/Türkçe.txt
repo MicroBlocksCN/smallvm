@@ -269,7 +269,7 @@ aldırma
 # Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
-_ şeklini çiz x _ y _ 
+_ şeklini çiz x _ y _
 
 shape for letter _
 _ harfinin şekli
@@ -384,8 +384,8 @@ Tüm NeoPixel renklerini  _ yap
 rotate NeoPixels by _
 NeoPixelleri _ döndür
 
-color r _ g _ b _
-renk r _ g _ b _
+color r _ g _ b _ (0-31)
+renk r _ g _ b _ (0-31)
 
 attach _ LED NeoPixel strip to pin _
 --MISSING--
@@ -502,6 +502,9 @@ distance (cm) trigger _ echo _
 --MISSING--
 
 IR Remote
+--MISSING--
+
+receive IR code
 --MISSING--
 
 receive IR code from device _
@@ -761,7 +764,7 @@ Kart tipi:
 Select board:
 Kart seç:
 
-Could not read: 
+Could not read:
 Okuyamadık:
 
 by
@@ -863,7 +866,7 @@ MicroBlocks HTTP Server listening on port 6473
 wipe and repartition esp32
 --MISSING--
 
-Use board type 
+Use board type
 --MISSING--
 
 Wiping board...

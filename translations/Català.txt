@@ -384,8 +384,8 @@ posa tots els NeoPíxels de color _
 rotate NeoPixels by _
 rota NeoPíxels en _
 
-color r _ g _ b _
-color vermell _ verd _ blau _
+color r _ g _ b _ (0-31)
+color vermell _ verd _ blau _ (0-31)
 
 attach _ LED NeoPixel strip to pin _
 inicialitza tira de _ NeoPíxels al pin _
@@ -503,6 +503,9 @@ distància (cm) trigger _ echo _
 
 IR Remote
 Infraroigs
+
+receive IR code
+rep codi IR
 
 receive IR code from device _
 rep codi IR del dispositiu _
@@ -761,8 +764,8 @@ Tipus de placa:
 Select board:
 Selecciona la placa:
 
-Could not read: 
-No s'ha pogut llegir: 
+Could not read:
+No s'ha pogut llegir:
 
 by
 per
@@ -863,8 +866,8 @@ El servidor HTTP de MicroBlocks està actiu al port 6473
 wipe and repartition esp32
 esborra i reparticiona esp32
 
-Use board type 
-La placa connectada és de tipus 
+Use board type
+La placa connectada és de tipus
 
 Wiping board...
 Esborrant placa...

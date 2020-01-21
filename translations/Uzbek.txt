@@ -384,8 +384,8 @@ barcha NeoPixels ranglarini sozlash _
 rotate NeoPixels by _
 NeoPixels ni _ bilan almashtirish
 
-color r _ g _ b _
-rang r _ g _ b _
+color r _ g _ b _ (0-31)
+rang r _ g _ b _ (0-31)
 
 attach _ LED NeoPixel strip to pin _
 --MISSING--
@@ -503,6 +503,9 @@ distance (cm) trigger _ echo _
 
 IR Remote
 --MISSING--
+
+receive IR code
+qurilmadan IR kodni
 
 receive IR code from device _
 qurilmadan IR kodni olish _
@@ -761,7 +764,7 @@ Kengash turi:
 Select board:
 Kengashni tanlang:
 
-Could not read: 
+Could not read:
 --MISSING--
 
 by
@@ -863,7 +866,7 @@ MicroBlocks HTTP Server listening on port 6473
 wipe and repartition esp32
 --MISSING--
 
-Use board type 
+Use board type
 --MISSING--
 
 Wiping board...

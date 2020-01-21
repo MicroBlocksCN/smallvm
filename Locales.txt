@@ -261,7 +261,9 @@ set all NeoPixels color _
 
 rotate NeoPixels by _
 
-color r _ g _ b _
+color r _ g _ b _ (0-31)
+
+random color
 
 attach _ LED NeoPixel strip to pin _
 
@@ -273,7 +275,7 @@ PIR at pin _ detected movement
 
 ED1 Stepper Motor
 
-move motor _  _ steps _
+move motor _ _ steps _
 
 move motor 1 _ and motor 2 _ _ steps
 
@@ -341,6 +343,8 @@ distance (cm) trigger _ echo _
 
 IR Remote
 
+receive IR code
+
 receive IR code from device _
 
 test IR
@@ -361,21 +365,11 @@ stop scrolling
 
 Servo
 
-has servo support
-
-set servo _ to _ (-100 to 100)
-
-resetServos
-
-flip servo _ _
-
-attach servos 1 to 4 to pins _ _ _ _
-
 set servo _ to _ degrees (-90 to 90)
 
-reverse
-
 set servo _ to speed _ (-100 to 100)
+
+stop servo _
 
 LED Display
 
@@ -445,7 +439,7 @@ fill display with _
 
 go to x _ y _
 
-point in direction  _
+point in direction _
 
 Web of Things
 
@@ -513,7 +507,7 @@ Board type:
 
 Select board:
 
-Could not read: 
+Could not read:
 
 by
 
@@ -551,7 +545,7 @@ clean up
 
 arrange scripts
 
-undrop  (ctrl-Z)
+undrop (ctrl-Z)
 
 copy all scripts to clipboard
 
@@ -581,7 +575,7 @@ MicroBlocks HTTP Server listening on port 6473
 
 wipe and repartition esp32
 
-Use board type 
+Use board type
 
 Wiping board...
 

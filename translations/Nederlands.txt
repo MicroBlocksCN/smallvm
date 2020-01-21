@@ -384,8 +384,8 @@ maak alle NeoPixels kleur _
 rotate NeoPixels by _
 draai NeoPixels met _
 
-color r _ g _ b _
-kleur r _ g _ b _
+color r _ g _ b _ (0-31)
+kleur r _ g _ b _ (0-31)
 
 attach _ LED NeoPixel strip to pin _
 --MISSING--
@@ -503,6 +503,9 @@ afstand (cm) trigger _ echo _
 
 IR Remote
 IR afstandsbediening
+
+receive IR code
+ontvang IR code
 
 receive IR code from device _
 ontvang IR code van apparaat _
@@ -761,8 +764,8 @@ Board type:
 Select board:
 Selecteer board:
 
-Could not read: 
-Kon niet lezen: 
+Could not read:
+Kon niet lezen:
 
 by
 door
@@ -863,8 +866,8 @@ MicroBlocks HTTP Server via poort 6473
 wipe and repartition esp32
 wis en partitioneer esp32
 
-Use board type 
-Gebruik board type 
+Use board type
+Gebruik board type
 
 Wiping board...
 Board wissen ...

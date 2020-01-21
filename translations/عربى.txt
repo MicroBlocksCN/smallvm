@@ -40,13 +40,13 @@ Pins
 المنافذ
 
 read digital pin _
-قراءة المنفذ الرقمي _ 
+قراءة المنفذ الرقمي _
 
 read analog pin _
 قراءة المنفذ التناظري _
 
 set digital pin _ to _
-جعل المنفذ الرقمي _ يساوي _ 
+جعل المنفذ الرقمي _ يساوي _
 
 set pin _ to _
 جعل المنفذ _ يساوي _
@@ -287,7 +287,7 @@ has tone support
 لديه دعم نغمة
 
 play tone pin _ frequency _
-لعب نغمة منفذ _ موجة تردد _ 
+لعب نغمة منفذ _ موجة تردد _
 
 has WiFi support
 لديه دعم واي فاي
@@ -387,7 +387,7 @@ set all NeoPixels color _
 rotate NeoPixels by _
 rotate NeoPixels by _
 
-color r _ g _ b _
+color r _ g _ b _ (0-31)
 اللون أحمر _ أخضر _ أزرق _
 
 attach _ LED NeoPixel strip to pin _
@@ -505,6 +505,9 @@ distance (cm) trigger _ echo _
 --MISSING--
 
 IR Remote
+--MISSING--
+
+receive IR code
 --MISSING--
 
 receive IR code from device _
@@ -764,7 +767,7 @@ Board type:
 Select board:
 اختر الوحة:
 
-Could not read: 
+Could not read:
 --MISSING--
 
 by
@@ -837,7 +840,7 @@ save a picture of all scripts
 --MISSING--
 
 about...
-حول... 
+حول...
 
 virtual machine version
 نسخة الجهاز الظاهري
@@ -866,7 +869,7 @@ MicroBlocks HTTP Server listening on port 6473
 wipe and repartition esp32
 --MISSING--
 
-Use board type 
+Use board type
 --MISSING--
 
 Wiping board...

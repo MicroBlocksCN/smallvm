@@ -384,8 +384,8 @@ setze alle NeoPixel auf Farbe _
 rotate NeoPixels by _
 rotiere NeoPixel um _
 
-color r _ g _ b _
-Farbe R _ G _ B _
+color r _ g _ b _ (0-31)
+Farbe R _ G _ B _ (0-31)
 
 attach _ LED NeoPixel strip to pin _
 --MISSING--
@@ -460,7 +460,7 @@ capacitive sensor _
 kapazitiver Sensor _
 
 set capacitive threshold to _
-Setze kapazitiven Schwellenwert auf _ 
+Setze kapazitiven Schwellenwert auf _
 
 set use capacitive to _
 --MISSING--
@@ -503,6 +503,9 @@ distance (cm) trigger _ echo _
 
 IR Remote
 --MISSING--
+
+receive IR code
+empfange IR Code
 
 receive IR code from device _
 empfange IR Code von Gerät _
@@ -744,7 +747,7 @@ disconnect
 trennen
 
 Serial port:
-Serieller Anschluss: 
+Serieller Anschluss:
 
 other...
 sonstige...
@@ -756,13 +759,13 @@ Port name?
 Anschluss-Name?
 
 Board type:
-Board-Typ: 
+Board-Typ:
 
 Select board:
 Board auswählen:
 
-Could not read: 
-Lesen nicht möglich: 
+Could not read:
+Lesen nicht möglich:
 
 by
 von
@@ -780,7 +783,7 @@ Script is too large to send to board.
 Skript ist zu groß, um an das Board gesendet zu werden.
 
 Use "Connect" button to connect to a MicroBlocks device.
-Drücke "Verbinden", um dein MicroBlocks-Gerät zu verbinden. 
+Drücke "Verbinden", um dein MicroBlocks-Gerät zu verbinden.
 
 No boards found; is your board plugged in?
 Kein Board gefunden; ist dein Board eingesteckt?
@@ -789,7 +792,7 @@ For AdaFruit boards, double-click reset button and try again.
 --MISSING--
 
 The board is not responding.
-Das Board reagiert nicht. 
+Das Board reagiert nicht.
 
 Try to Install MicroBlocks on the board?
 MicroBlocks auf dem Board installieren?
@@ -828,7 +831,7 @@ paste all scripts
 alle Skripte einfügen
 
 paste script
-Skript einfügen 
+Skript einfügen
 
 save a picture of all scripts
 --MISSING--
@@ -863,7 +866,7 @@ MicroBlocks HTTP Server listening on port 6473
 wipe and repartition esp32
 --MISSING--
 
-Use board type 
+Use board type
 --MISSING--
 
 Wiping board...
@@ -915,7 +918,7 @@ File Save
 Datei speichern
 
 File name:
-Dateiname: 
+Dateiname:
 
 show instructions
 Op-Code anzeigen
@@ -1023,7 +1026,7 @@ hide block definition
 --MISSING--
 
 Are you sure you want to remove this block definition?
-Bist du sicher, dass du diese Blockdefinition löschen möchtest? 
+Bist du sicher, dass du diese Blockdefinition löschen möchtest?
 
 Libraries
 Module

@@ -384,8 +384,8 @@ set all NeoPixels color _
 rotate NeoPixels by _
 повернуть NeoPixels на _
 
-color r _ g _ b _
-цвета r _ g _ b _
+color r _ g _ b _ (0-31)
+цвета r _ g _ b _ (0-31)
 
 attach _ LED NeoPixel strip to pin _
 --MISSING--
@@ -503,6 +503,9 @@ distance (cm) trigger _ echo _
 
 IR Remote
 --MISSING--
+
+receive IR code
+получение ИК-кода
 
 receive IR code from device _
 получение ИК-кода с устройства _
@@ -761,8 +764,8 @@ Board type:
 Select board:
 Выберите плату:
 
-Could not read: 
-Не удаётся прочитать: 
+Could not read:
+Не удаётся прочитать:
 
 by
 по
@@ -863,7 +866,7 @@ MicroBlocks HTTP Server listening on port 6473
 wipe and repartition esp32
 --MISSING--
 
-Use board type 
+Use board type
 --MISSING--
 
 Wiping board...
