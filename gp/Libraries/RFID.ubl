@@ -1,23 +1,22 @@
 module RFID
 
-	spec 'r' '_PN532checksum' 'PN532checksum _' 'auto' 0
-	spec ' ' '_PN532sendCommand' 'PN532writeCommand _' 'auto' 0
-	spec 'r' '_PN532getFirmwareVersion' 'PN532getFirmwareVersion'
+	spec 'r' 'PN532readRFID' 'read PN532 RFID'
+	spec 'r' 'PN532getFirmwareVersion' 'get PN532 firmware version'
+	spec 'r' 'equalRFIDs' 'RFID _ = _' 'str str' '' ''
+	spec 'r' '_PN532checksum' 'PN532checksum _' 'num' 0
+	spec ' ' '_PN532sendCommand' 'PN532sendCommand _' 'auto' 0
 	spec 'r' '_PN532getResponse' 'PN532getResponse'
 	spec ' ' '_PN532readAckFrame' 'PN532readAckFrame'
-	spec 'r' 'PN532readRFID' 'read PN532 RFID'
-	spec ' ' '_PN532SAMConfig' 'PN532SAMConfig'
-	spec 'r' '_RFID' '=RFID _ _' 'auto auto' '10' '10'
 
 to _PN532checksum val {
   return ((('~' val) + 1) & 255)
 }
 
-to _PN532getFirmwareVersion {
+to PN532getFirmwareVersion {
   comment 'PN532_COMMAND_GETFIRMWAREVERSION'
-  PN532sendCommand ('[data:makeList]' 2)
-  PN532readAckFrame
-  return (PN532getResponse)
+  _PN532sendCommand ('[data:makeList]' 2)
+  _PN532readAckFrame
+  return (_PN532getResponse)
 }
 
 to _PN532getResponse {
@@ -44,9 +43,9 @@ to PN532readRFID {
   comment 'Contributed by José García Yeste from the Citilab, Cornellà (Barcelona)'
   myBlock
   comment 'PN532_COMMAND_INLISTPASSIVETARGET, 1, 0 '
-  PN532sendCommand ('[data:makeList]' (hexToInt '4A') 1 0)
-  PN532readAckFrame
-  local 'response' (PN532getResponse)
+  _PN532sendCommand ('[data:makeList]' (hexToInt '4A') 1 0)
+  _PN532readAckFrame
+  local 'response' (_PN532getResponse)
   if (response != 0) {
     return ('[data:copyFromTo]' response 7)
   } else {
@@ -56,30 +55,23 @@ to PN532readRFID {
 
 to _PN532sendCommand cmd {
   local 'checksum' (hexToInt 'D4')
-  local 'send' ('[data:makeList]' 5 0 0 (hexToInt 'FF') ((size cmd) + 1) (PN532checksum ((size cmd) + 1)))
+  local 'send' ('[data:makeList]' 5 0 0 (hexToInt 'FF') ((size cmd) + 1) (_PN532checksum ((size cmd) + 1)))
   '[data:addLast]' (hexToInt 'D4') send
   send = ('[data:join]' send cmd)
   for i (size cmd) {
     checksum += (at i cmd)
   }
-  '[data:addLast]' (PN532checksum checksum) send
+  '[data:addLast]' (_PN532checksum checksum) send
   '[data:addLast]' '0' send
   atPut 1 send (((at 1 send) + (size cmd)) + 3)
   '[sensors:i2cWrite]' (hexToInt '24') send
   waitMillis 1
 }
 
-to _RFID id1 id2 {
+to equalRFIDs id1 id2 {
   if (or (id1 == 0) (id1 == 0)) {return (booleanConstant false)}
   for i (size id1) {
     if ((at i id1) != (at i id2)) {return (booleanConstant false)}
   }
   return (booleanConstant true)
 }
-
-to _PN532SAMConfig {
-  comment 'PN532_COMMAND_SAMCONFIGURATION, 1, 0x14, 1 '
-  PN532sendCommand ('[data:makeList]' (hexToInt '14') 1 (hexToInt '14') 1)
-  PN532readAckFrame
-}
-
