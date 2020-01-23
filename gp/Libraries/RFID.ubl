@@ -26,8 +26,10 @@ to PN532getFirmwareVersion {
 
 to PN532readRFID {
   comment 'Contributed by José García Yeste from the Citilab, Cornellà (Barcelona)'
-  myBlock
-  comment 'PN532_COMMAND_INLISTPASSIVETARGET, 1, 0 '
+  comment 'PN532_COMMAND_SAMCONFIGURATION, 1, 0x14, 1'
+  PN532sendCommand ('[data:makeList]' (hexToInt '14') 1 (hexToInt '14') 1)
+  PN532readAckFrame
+  comment 'PN532_COMMAND_INLISTPASSIVETARGET, 1, 0'
   '_PN532sendCommand' ('[data:makeList]' (hexToInt '4A') 1 0)
   '_PN532readAckFrame'
   local 'response' ('_PN532getResponse')
@@ -50,7 +52,7 @@ to '_PN532getResponse' {
   for i 4 {
     if ((at i ('[data:makeList]' 1 0 0 255)) != (at i response)) {return 0}
     local 'length' ((at 5 response) - 3)
-    comment '6=length checksum, 7=213, 8=cmd+1   '
+    comment '6=length checksum, 7=213, 8=cmd+1'
     return ('[data:copyFromTo]' response 9 (9 + length))
   }
 }
