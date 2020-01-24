@@ -289,7 +289,7 @@ method getProperties MicroBlocksThingWorker path {
 		varName = (urlDecode (substring path 13))
 		if (endsWith varName '/') { varName = (substring varName 1 ((count varName) - 1)) }
 		value = (requestVarFromBoard server varName)
-		return (join '{"' varName '":' (toString value) '}')
+		return (join '{"' varName '":' (jsonStringify value) '}')
 	} else {
 		result = (list)
 		varNames = (filter
@@ -322,20 +322,7 @@ method setProperty MicroBlocksThingWorker path body {
 
 	dict = (jsonParse (toString body))
 	varName = (first (keys dict))
-	valueString = (at dict varName)
-	if (representsAnInteger valueString) {
-		value = (toInteger valueString)
-	} ('true' == valueString) {
-		value = true
-	} ('false' == valueString) {
-		value = false
-	} else {
-		value = (urlDecode valueString)
-		if (and ((count value) >= 2) (beginsWith value '"') (endsWith value '"')) {
-			// string enclosed in double quotes: remove quotes
-			value = (substring value 2 ((count value) - 1))
-		}
-	}
+	value = (at dict varName)
 	id = (variableIndex server varName)
 	if (notNil id) { setVar (smallRuntime) (id - 1) value } // VM uses zero-based index
 }
@@ -405,7 +392,7 @@ method getVar MicroBlocksThingWorker path {
 	if (endsWith varName '/') { varName = (substring varName 1 ((count varName) - 1)) }
 	if ('' == varName) { return 'error: missing var name' }
 	value = (requestVarFromBoard server varName)
-	return (toString value)
+	return (jsonStringify value)
 }
 
 method setVar MicroBlocksThingWorker path {
