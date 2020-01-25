@@ -160,6 +160,10 @@ method contextMenu MicroBlocksDataGraph {
 	if (devMode) {
 		addItem menu 'copy graph data to clipboard' 'copyDataToClipboard'
 	}
+	if (devMode) {
+		addLine menu
+		addItem menu 'set serial delay' (action 'serialDelayMenu' (smallRuntime))
+	}
 	return menu
 }
 
