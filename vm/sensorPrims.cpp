@@ -119,7 +119,8 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 			}
 		}
 	}
-	Wire.endTransmission();
+	int error = Wire.endTransmission();
+	if (error) fail(i2cWriteFailed);
 	return falseObj;
 }
 
