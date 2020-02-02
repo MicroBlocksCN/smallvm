@@ -89,6 +89,10 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 
 	if (!wireStarted) startWire();
 	Wire.requestFrom(deviceID, count);
+	if (!Wire.available()) {
+		fail(i2cTransferFailed);
+		return int2obj(count);
+	}
 	for (int i = 0; i < count; i++) {
 		while (!Wire.available()) /* wait for data */;
 		int byte = Wire.read();
@@ -120,7 +124,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 		}
 	}
 	int error = Wire.endTransmission();
-	if (error) fail(i2cWriteFailed);
+	if (error) fail(i2cTransferFailed);
 	return falseObj;
 }
 
