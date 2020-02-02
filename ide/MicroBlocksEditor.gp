@@ -416,16 +416,18 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 
 // user preferences
 method readUserPreferences MicroBlocksEditor {
+  result = (dictionary)
   path = (join (gpFolder) '/preferences.json')
   file = (readFile path)
   if (notNil file) {
-    return (jsonParse file)
-  } else {
-    return (dictionary)
+	result = (jsonParse file)
+	if (not (isClass result 'Dictionary')) { result = (dictionary) }
   }
+  return result
 }
 
 method applyUserPreferences MicroBlocksEditor {
+  if ('Mac' == (platform)) { return } // workaround for Catalina startup crash
   prefs = (readUserPreferences this)
   // for now, only the locale is saved into the preferences file
   setLanguage this (at prefs 'locale')
