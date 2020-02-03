@@ -134,3 +134,33 @@ to httpHeaders response {
 	}
 	return response // no body
 }
+
+to httpPut data host path port contentType {
+	if (isNil path) { path = '/' }
+	if (isNil port) { port = 80 }
+	if (isNil contentType) { contentType = 'text/html' }
+	socket = (openClientSocket host port)
+	if (isNil socket) { return '' }
+	nl = (string 13 10)
+	request = (join
+		'PUT ' path ' HTTP/1.1' nl
+		'Host: ' host nl
+		'Content-type: ' contentType nl
+		'Content-length: ' (toString (count data)) nl nl
+		data)
+
+	writeSocket socket request
+	waitMSecs 1000 // wait a bit
+	response = (list)
+	count = 1 // start loop
+	while (count > 0) {
+		chunk = (readSocket socket)
+		count = (byteCount chunk)
+		if (count > 0) {
+			add response chunk
+			waitMSecs 50
+		}
+	}
+	closeSocket socket
+	return (joinStrings response)
+}

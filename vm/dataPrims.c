@@ -483,7 +483,7 @@ OBJ primFind(int argCount, OBJ *args) {
 		if (startOffset > listCount) return int2obj(-1); // not found
 		if (IS_TYPE(arg0, StringType)) { // search for a string in a list
 			char *sought = obj2str(arg0);
-			for (int i = 1; i <= listCount; i++) {
+			for (int i = startOffset; i <= listCount; i++) {
 				OBJ item = FIELD(arg1, i);
 				if (item == arg0) return int2obj(i); // identical
 				if (IS_TYPE(item, StringType) && (0 == strcmp(sought, obj2str(item)))) {
@@ -491,7 +491,7 @@ OBJ primFind(int argCount, OBJ *args) {
 				}
 			}
 		} else { // search for an integer, boolean, or other object in a list
-			for (int i = 1; i <= listCount; i++) {
+			for (int i = startOffset; i <= listCount; i++) {
 				if (FIELD(arg1, i) == arg0) return int2obj(i); // identical
 			}
 		}
@@ -541,7 +541,7 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 		uint8 *s = appendUTF8(buf, obj2int(arg));
 		int byteCount = s - buf;
 		return newStringFromBytes(buf, byteCount);
-	} else if (IS_TYPE(arg, ListType)) { // convert list of integeter to a Unicode string
+	} else if (IS_TYPE(arg, ListType)) { // convert list of integers to a Unicode string
 		int listCount = obj2int(FIELD(arg, 0));
 		int utfByteCount = 0;
 		for (int i = 1; i <= listCount; i++) {

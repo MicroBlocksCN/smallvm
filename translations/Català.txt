@@ -1,3 +1,8 @@
+# MicroBlocks translation file
+# Last updated: January 7 2020
+
+# Blocks and categories
+
 Output
 Sortida
 
@@ -142,11 +147,15 @@ o _
 Variables
 Variables
 
+# Buttons on top of "Variables" category
+
 Add a variable
 Crea una variable
 
 Delete a variable
 Elimina una variable
+
+# New variable dialog
 
 New variable name?
 Nom de la variable?
@@ -202,8 +211,8 @@ uneix llista de texts _
 unicode _ of _
 unicode _ de _
 
-string from unicode
-text amb unicodes
+string from unicode _
+caràcter amb unicode _
 
 new list length _
 nova llista de llargada _
@@ -217,11 +226,15 @@ omple llista _ amb _
 My Blocks
 Els meus blocs
 
+# Buttons on top of "My Blocks" category
+
 Add a command block
 Crea un bloc comanda
 
 Add a reporter block
 Crea un bloc reportador
+
+# Make a block dialog
 
 Enter function name:
 Nom de la funció:
@@ -252,6 +265,8 @@ no op
 
 ignore
 ignora
+
+# Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
 dibuixa forma _ a x _ y _
@@ -328,29 +343,61 @@ envia paquet per ràdio _
 disable radio
 inhabilita ràdio
 
+# Libraries
+
+Basic Sensors
+Sensors bàsics
+
+tilt x
+inclinació x
+
+tilt y
+inclinació y
+
+tilt z
+inclinació z
+
+acceleration
+acceleració
+
 light level
 nivell de llum
 
+temperature (°C)
+temperatura (°C)
+
+NeoPixel
+NeoPíxels
+
 set NeoPixels _ _ _ _ _ _ _ _ _ _
-posa NeoPixels _ _ _ _ _ _ _ _ _ _
+posa NeoPíxels _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
-apaga NeoPixels
+apaga NeoPíxels
 
 set NeoPixel _ color _
-posa NeoPixel _ de color _
+posa NeoPíxel _ de color _
 
 set all NeoPixels color _
-posa tots els NeoPixels de color _
+posa tots els NeoPíxels de color _
 
 rotate NeoPixels by _
-rota NeoPixels en _
+rota NeoPíxels en _
 
-color r _ g _ b _
-color vermell _ verd _ blau _
+color r _ g _ b _ (0-31)
+color vermell _ verd _ blau _ (0-31)
 
-attach _ LED NeoPixel strip to pin _ has white _
-inicialitza tira de _ NeoPixels al pin _ amb blanc _
+attach _ LED NeoPixel strip to pin _
+inicialitza tira de _ NeoPíxels al pin _
+
+has white _
+amb blanc _
+
+PIR
+Sensor de presència
+
+PIR at pin _ detected movement
+Moviment detectat pel PIR al pin _
 
 ED1 Stepper Motor
 Motors ED1
@@ -457,6 +504,9 @@ distància (cm) trigger _ echo _
 IR Remote
 Infraroigs
 
+receive IR code
+rep codi IR
+
 receive IR code from device _
 rep codi IR del dispositiu _
 
@@ -501,6 +551,15 @@ inverteix servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
 inicialitza servos 1 a 4 als pins _ _ _ _
+
+set servo _ to _ degrees (-90 to 90)
+posa el servo _ a _ graus (-90 a 90)
+
+reverse
+invertit
+
+set servo _ to speed _ (-100 to 100)
+fes girar el servo _ a velocitat _ (-100 a 100)
 
 LED Display
 Pantalla LED
@@ -670,6 +729,8 @@ toc llarg al botó _
 button _ pressed
 toc curt al botó _
 
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+
 New
 Nou
 
@@ -703,8 +764,8 @@ Tipus de placa:
 Select board:
 Selecciona la placa:
 
-Could not read: 
-No s'ha pogut llegir: 
+Could not read:
+No s'ha pogut llegir:
 
 by
 per
@@ -805,8 +866,8 @@ El servidor HTTP de MicroBlocks està actiu al port 6473
 wipe and repartition esp32
 esborra i reparticiona esp32
 
-Use board type 
-La placa connectada és de tipus 
+Use board type
+La placa connectada és de tipus
 
 Wiping board...
 Esborrant placa...
@@ -976,21 +1037,6 @@ Idioma
 Custom...
 Arxiu...
 
-Basic Sensors
-Sensors bàsics
-
-tilt x
-inclinació x
-
-tilt y
-inclinació y
-
-tilt z
-inclinació z
-
-temperature (°C)
-temperatura (°C)
-
 Obsolete
 Obsolet
 
@@ -1014,3 +1060,4 @@ D'acord
 
 Confirm
 Confirmació
+

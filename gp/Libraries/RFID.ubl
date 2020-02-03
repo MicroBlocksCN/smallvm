@@ -1,0 +1,81 @@
+module RFID Input
+
+	spec 'r' 'PN532readRFID' 'read PN532 RFID'
+	spec 'r' 'PN532equalRFIDs' 'RFID _ = _' 'str str' '' ''
+	spec 'r' 'PN532getFirmwareVersion' 'get PN532 firmware version'
+	spec ' ' '_PN532sendCommand' '_PN532sendCommand _' 'auto' 0
+	spec ' ' '_PN532readAckFrame' '_PN532readAckFrame'
+	spec 'r' '_PN532getResponse' '_PN532getResponse'
+	spec 'r' '_PN532checksum' '_PN532checksum _' 'num' 0
+
+to PN532equalRFIDs id1 id2 {
+  if (or (id1 == 0) (id1 == 0)) {return (booleanConstant false)}
+  if ((size id1) != (size id2)) {return (booleanConstant false)}
+  for i (size id1) {
+    if ((at i id1) != (at i id2)) {return (booleanConstant false)}
+  }
+  return (booleanConstant true)
+}
+
+to PN532getFirmwareVersion {
+  comment 'PN532_COMMAND_GETFIRMWAREVERSION'
+  '_PN532sendCommand' ('[data:makeList]' 2)
+  '_PN532readAckFrame'
+  return ('_PN532getResponse')
+}
+
+to PN532readRFID {
+  comment 'Contributed by José García Yeste from the Citilab, Cornellà (Barcelona)'
+  comment 'PN532_COMMAND_SAMCONFIGURATION, 1, 0x14, 1'
+  _PN532sendCommand ('[data:makeList]' (hexToInt '14') 1 (hexToInt '14') 1)
+  _PN532readAckFrame
+  comment 'PN532_COMMAND_INLISTPASSIVETARGET, 1, 0'
+  '_PN532sendCommand' ('[data:makeList]' (hexToInt '4A') 1 0)
+  '_PN532readAckFrame'
+  local 'response' ('_PN532getResponse')
+  if (response != 0) {
+    return ('[data:copyFromTo]' response 7)
+  } else {
+    return 0
+  }
+}
+
+to '_PN532checksum' val {
+  return ((('~' val) + 1) & 255)
+}
+
+to '_PN532getResponse' {
+  local 'response' (newList 64)
+  atPut 1 response 64
+  '[sensors:i2cRead]' (hexToInt '24') response
+  waitMillis 1
+  for i 4 {
+    if ((at i ('[data:makeList]' 1 0 0 255)) != (at i response)) {return 0}
+    local 'length' ((at 5 response) - 3)
+    comment '6=length checksum, 7=213, 8=cmd+1'
+    return ('[data:copyFromTo]' response 9 (9 + length))
+  }
+}
+
+to '_PN532readAckFrame' {
+  local 'frame' (newList 7)
+  atPut 1 frame 6
+  '[sensors:i2cRead]' (hexToInt '24') frame
+  waitMillis 20
+}
+
+to '_PN532sendCommand' cmd {
+  local 'checksum' (hexToInt 'D4')
+  local 'send' ('[data:makeList]' 5 0 0 (hexToInt 'FF') ((size cmd) + 1) ('_PN532checksum' ((size cmd) + 1)))
+  '[data:addLast]' (hexToInt 'D4') send
+  send = ('[data:join]' send cmd)
+  for i (size cmd) {
+    checksum += (at i cmd)
+  }
+  '[data:addLast]' ('_PN532checksum' checksum) send
+  '[data:addLast]' '0' send
+  atPut 1 send (((at 1 send) + (size cmd)) + 3)
+  '[sensors:i2cWrite]' (hexToInt '24') send
+  waitMillis 1
+}
+

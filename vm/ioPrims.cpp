@@ -21,41 +21,7 @@
 #endif
 
 static void initPins(void); // forward reference
-
-// Random number generator seed
-
-static void initRandomSeed() {
-	// Initialize the random number generator with a random seed when started (if possible).
-
-	#if defined(ESP8266)
-		randomSeed(RANDOM_REG32);
-	#elif defined(ARDUINO_ARCH_ESP32)
-		randomSeed(esp_random());
-	#elif defined(NRF51) || defined(NRF52_SERIES)
-		#define RNG_BASE 0x4000D000
-		#define RNG_START (RNG_BASE)
-		#define RNG_STOP (RNG_BASE + 4)
-		#define RNG_VALRDY (RNG_BASE + 0x100)
-		#define RNG_VALUE (RNG_BASE + 0x508)
-		uint32 seed = 0;
-		*((int *) RNG_START) = true; // start random number generation
-		for (int i = 0; i < 4; i++) {
-			while (!*((volatile int *) RNG_VALRDY)) /* wait */;
-			seed = (seed << 8) | *((volatile int *) RNG_VALUE);
-			*((volatile int *) RNG_VALRDY) = 0;
-		}
-		*((int *) RNG_STOP) = true; // end random number generation
-		randomSeed(seed);
-	#else
-		uint32 seed = 0;
-		int analogPinCount = obj2int(primAnalogPins(NULL));
-		for (int p = 0; p < analogPinCount; p++) {
-			pinMode(p, INPUT);
-			seed = (seed << 1) ^ analogRead(p);
-		}
-		randomSeed(seed);
-	#endif
-}
+static void initRandomSeed(void); // forward reference
 
 // Timing Functions and Hardware Initialization
 
@@ -393,8 +359,8 @@ void restartSerial() {
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 0, 1, 0};
+		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
@@ -793,6 +759,41 @@ OBJ primButtonB(OBJ *args) {
 	#endif
 }
 
+// Random number generator seed
+
+static void initRandomSeed() {
+	// Initialize the random number generator with a random seed when started (if possible).
+
+	#if defined(ESP8266)
+		randomSeed(RANDOM_REG32);
+	#elif defined(ARDUINO_ARCH_ESP32)
+		randomSeed(esp_random());
+	#elif defined(NRF51) || defined(NRF52_SERIES)
+		#define RNG_BASE 0x4000D000
+		#define RNG_START (RNG_BASE)
+		#define RNG_STOP (RNG_BASE + 4)
+		#define RNG_VALRDY (RNG_BASE + 0x100)
+		#define RNG_VALUE (RNG_BASE + 0x508)
+		uint32 seed = 0;
+		*((int *) RNG_START) = true; // start random number generation
+		for (int i = 0; i < 4; i++) {
+			while (!*((volatile int *) RNG_VALRDY)) /* wait */;
+			seed = (seed << 8) | *((volatile int *) RNG_VALUE);
+			*((volatile int *) RNG_VALRDY) = 0;
+		}
+		*((int *) RNG_STOP) = true; // end random number generation
+		randomSeed(seed);
+	#else
+		uint32 seed = 0;
+		for (int i = 0; i < ANALOG_PINS; i++) {
+			int p = analogPin[i];
+			pinMode(p, INPUT);
+			seed = (seed << 1) ^ analogRead(p);
+		}
+		randomSeed(seed);
+	#endif
+}
+
 // Servo and Tone
 
 #if defined(NRF51) || defined(NRF52_SERIES)
@@ -821,8 +822,8 @@ static void startServoToneTimer() {
 	NRF_TIMER2->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
 	NRF_TIMER2->INTENSET = TIMER_INTENSET_COMPARE0_Msk | TIMER_INTENSET_COMPARE1_Msk;
 	NRF_TIMER2->TASKS_START = true;
- 	NVIC_EnableIRQ(TIMER2_IRQn);
- 	servoToneTimerStarted = true;
+	NVIC_EnableIRQ(TIMER2_IRQn);
+	servoToneTimerStarted = true;
 }
 
 extern "C" void TIMER2_IRQHandler() {
@@ -857,7 +858,7 @@ extern "C" void TIMER2_IRQHandler() {
 		} else { // idle until next set of pulses
 			servoIndex = -1;
 			servoPinHigh = false;
-			NRF_TIMER2->CC[1] = (wakeTime + 8000) & 0xFFFF;
+			NRF_TIMER2->CC[1] = (wakeTime + 18000) & 0xFFFF;
 		}
 	}
 }

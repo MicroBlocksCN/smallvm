@@ -1,3 +1,8 @@
+# MicroBlocks translation file
+# Last updated: January 7 2020
+
+# Blocks and categories
+
 Output
 Salida
 
@@ -142,50 +147,94 @@ o _
 Variables
 Variables
 
+# Buttons on top of "Variables" category
+
 Add a variable
 Crea una variable
 
 Delete a variable
 Elimina una variable
 
+# New variable dialog
+
 New variable name?
 ¿Nombre de la variable?
 
 set _ to _
-asignar _ a _
+asigna _ a _
 
 change _ by _
-aumentar _ en _
+aumenta _ en _
 
 local _ _
 variable local _ _
 
-Lists
-Listas
+Lists & Strings
+Listas y texto
 
-new list length _
-nueva lista de tamaño _
-
-fill list _ with _
-llena lista _ con _
-
-item _ of _
-elemento _ de _
-
-replace item _ of _ with _
-cambia el elemento _ de _ por _
+list
+listas
 
 length of _
 tamaño de _
 
+item _ of _
+elemento _ de _
+
+replace item _ of list _ with _
+sustituye elemento _ de lista _ por _
+
+delete item _ of list _
+elimina elemento _ de lista _
+
+add _ to list _
+añade _ a lista _
+
+join _ _
+une _ _
+
+copy _ from _
+copia _ desde _
+
+to _
+hasta _
+
+find _ in _
+busca _ en _
+
+starting at _
+empezando por _
+
+join string list _
+une lista de textos _
+
+unicode _ of _
+unicode _ de _
+
+string from unicode _
+carácter con unicode _
+
+new list length _
+nueva lista de tamaño _
+
+free memory
+memoria libre
+
+fill list _ with _
+llena lista _ con _
+
 My Blocks
 Mis bloques
+
+# Buttons on top of "My Blocks" category
 
 Add a command block
 Crea un bloque comando
 
 Add a reporter block
 Crea un bloque reportador
+
+# Make a block dialog
 
 Enter function name:
 Nombre de la función:
@@ -216,6 +265,8 @@ no op
 
 ignore
 ignorar
+
+# Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
 dibuja forma _ en x _ y _
@@ -292,29 +343,61 @@ envía paquete por radio _
 disable radio
 inhabilita radio
 
+# Libraries
+
+Basic Sensors
+Sensores básicos
+
+tilt x
+inclinación x
+
+tilt y
+inclinación y
+
+tilt z
+inclinación z
+
+acceleration
+acceleración
+
 light level
 nivel de luz
 
+temperature (°C)
+temperatura (°C)
+
+NeoPixel
+NeoPíxeles
+
 set NeoPixels _ _ _ _ _ _ _ _ _ _
-pon NeoPixels _ _ _ _ _ _ _ _ _ _
+pon NeoPíxeles _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
-apaga NeoPixels
+apaga NeoPíxeles
 
 set NeoPixel _ color _
-pon NeoPixel _ de color _
+pon NeoPíxel _ de color _
 
 set all NeoPixels color _
-pon todos los NeoPixels de color _
+pon todos los NeoPíxeles de color _
 
 rotate NeoPixels by _
-rota NeoPixels en _
+rota NeoPíxeles en _
 
-color r _ g _ b _
-color r _ v _ a _
+color r _ g _ b _ (0-31)
+color r _ v _ a _ (0-31)
 
-attach _ LED NeoPixel strip to pin _ has white _
-inicializa tira de _ NeoPixels en el pin _ con blanco _
+attach _ LED NeoPixel strip to pin _
+inicializa tira de _ NeoPíxeles en el pin _
+
+has white _
+con blanco _
+
+PIR
+Sensor de movimiento
+
+PIR at pin _ detected movement
+Movimiento detectado por PIR en pin _
 
 ED1 Stepper Motor
 Motores ED1
@@ -388,8 +471,8 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird LED tricolor _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ ∞
-Hummingbird Servo de posicion _ _ ∞
+Hummingbird Position Servo _ _ º
+Hummingbird Servo de Posición _ _ º
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Servo de rotacion _ _ %
@@ -420,6 +503,9 @@ distancia (cm) trigger _ echo _
 
 IR Remote
 Infrarrojos
+
+receive IR code
+recibe código IR
 
 receive IR code from device _
 recibe código IR del dispositivo _
@@ -465,6 +551,15 @@ invierte servo _ _
 
 attach servos 1 to 4 to pins _ _ _ _
 inicializa servos 1 a 4 en los pines _ _ _ _
+
+set servo _ to _ degrees (-90 to 90)
+pon el servo _ a _ grados (-90 a 90)
+
+reverse
+invertido
+
+set servo _ to speed _ (-100 to 100)
+haz girar el servo _ a velocidad _ (-100 a 100)
 
 LED Display
 Pantalla LED
@@ -604,6 +699,38 @@ descripción de la cosa
 clear thing description
 borra la descripción de la cosa
 
+Motion
+Movimiento
+
+motion
+movimiento
+
+start step counter
+empieza a contar pasos
+
+step count
+recuento de pasos
+
+clear step count
+borra recuento de pasos
+
+set step threshold _ (0-50)
+fija el umbral del paso en _ (0-50)
+
+Button Events
+Eventos de botón
+
+button _ double pressed
+doble pulsación en botón _
+
+button _ long pressed
+pulsación larga en botón _
+
+button _ pressed
+pulsación corta en botón _
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+
 New
 Nuevo
 
@@ -637,7 +764,7 @@ Tipo de placa:
 Select board:
 Selecciona la placa:
 
-Could not read: 
+Could not read:
 No se ha podido leer:
 
 by
@@ -739,8 +866,8 @@ El servidor HTTP de MicroBlocks está activo en el puerto 6473
 wipe and repartition esp32
 borra y reparticiona esp32
 
-Use board type 
-¿La placa conectada es de tipo 
+Use board type
+¿La placa conectada es de tipo
 
 Wiping board...
 Borrando placa...
@@ -809,13 +936,13 @@ rename...
 renombra...
 
 show block definition...
-muestra la definiciónn del bloque...
+muestra la definición del bloque...
 
 show the definition of this block
-muestra la definiciónn de este bloque
+muestra la definición de este bloque
 
 delete block definition...
-elimina la definiciónn del bloque...
+elimina la definición del bloque...
 
 delete the definition of this block
 borra la definición de este bloque
@@ -910,21 +1037,6 @@ Idioma
 Custom...
 Archivo...
 
-Basic Sensors
-Sensores básicos
-
-tilt x
-inclinación x
-
-tilt y
-inclinación y
-
-tilt z
-inclinación z
-
-temperature (°C)
-temperatura (°C)
-
 Obsolete
 Obsoleto
 
@@ -948,3 +1060,4 @@ De acuerdo
 
 Confirm
 Confirmación
+

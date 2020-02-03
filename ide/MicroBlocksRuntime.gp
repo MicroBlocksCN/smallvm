@@ -22,7 +22,25 @@ method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
 	clearLoggedData this
+	checkForDisconnectKey this
 	return this
+}
+
+method checkForDisconnectKey SmallRuntime {
+	// Check for the disconnect key (space) being pressed when MicroBlocks is starting.
+	// This disables serial port scanning, avoiding a rare problem on Windows where MicroBlocks
+	// tries to open a COM port on some other serial device (e.g. a BLE dongle) and gets hung.
+	// With scanning disabled, the user can manually select the correct COM port.
+
+	endTime = ((msecsSinceStart) + 1500)
+	while ((msecsSinceStart) < endTime) {
+ 		processEvents (global 'page')
+ 		if (keyDown (global 'page') 'space') {
+ 			disconnected = true
+ 			print 'serial port scanning disabled'
+ 			return
+ 		}
+	}
 }
 
 method evalOnBoard SmallRuntime aBlock showBytes {
@@ -469,8 +487,8 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '0.3.2' }
-method latestVmVersion SmallRuntime { return 72 }
+method ideVersion SmallRuntime { return '0.3.4' }
+method latestVmVersion SmallRuntime { return 74 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = ''
@@ -726,6 +744,18 @@ method getAllVarNames SmallRuntime {
 	sendMsg this 'getVarNamesMsg'
 }
 
+// Serial Delay
+
+method serialDelayMenu SmallRuntime {
+  menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
+  for i 20 { addItem menu i }
+  popUpAtHand menu (global 'page')
+}
+
+method setSerialDelay SmallRuntime newDelay {
+  sendMsg this 'extendedMsg' 1 (list newDelay)
+}
+
 // Message handling
 
 method msgNameToID SmallRuntime msgName {
@@ -798,6 +828,7 @@ method errorString SmallRuntime errID {
 #define argIndexOutOfRange		32	// Argument index out of range
 #define needsIndexable			33	// Needs an indexable type such as a string or list
 #define joinArgsNotSameType		34	// All arguments to join must be the same type (e.g. lists)
+#define i2cWriteFailed			35	// I2C write failed
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)

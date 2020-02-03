@@ -29,16 +29,7 @@ static int radioSignalStrength = -999;
 static uint32 receivedMessageSenderID = 0;
 static int receivedMessageType = -1;
 static int receivedInteger = 0;
-
-struct {
-	uint32 header;
-	char body[32];
-} receivedString; // static string OBJ containing string from most recent message
-
-struct {
-	uint32 header;
-	char body[20];
-} messageTypeString; // Static string OBJ containing MakeCode type of most recent message
+static char receivedString[20];
 
 #if defined(NRF51) || defined(NRF52_SERIES)
 
@@ -246,7 +237,7 @@ static int receiveMakeCodeMessage() {
 
 	// clear old received values
 	receivedInteger = 0;
-	receivedString.body[0] = '\0';
+	receivedString[0] = '\0';
 	char *src;
 	int maxStringLen = 19;
 	int stringLength = 0;
@@ -280,9 +271,8 @@ static int receiveMakeCodeMessage() {
 	// copy string into receivedString
 	if (stringLength > maxStringLen) stringLength = maxStringLen;
 	if (stringLength > 19) stringLength = 19;
-	for (int i = 0; i < stringLength; i++) receivedString.body[i] = *src++;
-	receivedString.body[stringLength] = '\0'; // null terminator
-	receivedString.header = HEADER(StringType, (stringLength + 4) / 4);
+	for (int i = 0; i < stringLength; i++) receivedString[i] = *src++;
+	receivedString[stringLength] = '\0'; // null terminator
 
 	return true;
 }
@@ -468,20 +458,11 @@ static OBJ primReceivedMessageType(int argCount, OBJ *args) {
 	if (MAKECODE_PACKET_DOUBLE == receivedMessageType) s = "number";
 	if (MAKECODE_PACKET_DOUBLE_PAIR == receivedMessageType) s = "pair";
 
-	// return non-heap string object to avoid using up heap space
-	strcpy(messageTypeString.body, s);
-	messageTypeString.header = HEADER(StringType, (strlen(s) + 4) / 4);
-	return (OBJ) &messageTypeString;
+	return newStringFromBytes(s, strlen(s));
 }
 
 static OBJ primReceivedString() {
-	if (!receivedString.header) {
-		// initialize the object header on first access
-		receivedString.header = HEADER(StringType, 1);
-		receivedString.body[0] = '\0'; // null terminator
-	}
-
-	return (OBJ) &receivedString;
+	return newStringFromBytes(receivedString, strlen(receivedString));
 }
 
 static OBJ primSignalStrength(int argCount, OBJ *args) {

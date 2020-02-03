@@ -416,16 +416,18 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 
 // user preferences
 method readUserPreferences MicroBlocksEditor {
+  result = (dictionary)
   path = (join (gpFolder) '/preferences.json')
   file = (readFile path)
   if (notNil file) {
-    return (jsonParse file)
-  } else {
-    return (dictionary)
+	result = (jsonParse file)
+	if (not (isClass result 'Dictionary')) { result = (dictionary) }
   }
+  return result
 }
 
 method applyUserPreferences MicroBlocksEditor {
+  if ('Mac' == (platform)) { return } // workaround for Catalina startup crash
   prefs = (readUserPreferences this)
   // for now, only the locale is saved into the preferences file
   setLanguage this (at prefs 'locale')
@@ -567,9 +569,6 @@ method contextMenu MicroBlocksEditor {
   menu = (menu 'MicroBlocks' this)
   addItem menu 'about...' (action 'showAboutBox' (smallRuntime))
   addLine menu
-  addItem menu 'show data graph' 'showGraph'
-  addItem menu 'clear memory and variables' (action 'softReset' (smallRuntime))
-  addLine menu
   addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
   addLine menu
 
@@ -583,20 +582,16 @@ method contextMenu MicroBlocksEditor {
   } else {
 	addItem menu 'firmware version' (action 'getVersion' (smallRuntime))
 	if ('Browser' != (platform)) {
-	  addLine menu
+		addLine menu
+		addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
+		addItem menu 'wipe and repartition esp32' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
+		addLine menu
 	  if (not (isRunning thingServer)) {
 		addItem menu 'start Mozilla WebThing server' 'startThingServer'
 	  } else {
 		addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
 	  }
 	}
-        addLine menu
-	if ('Browser' != (platform)) {
-            addItem menu 'wipe and repartition esp32' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
-	}
-        addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
-        addLine menu
-	addItem menu 'set serial delay' 'serialDelayMenu'
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
@@ -610,16 +605,6 @@ method showGraph MicroBlocksEditor {
 	graph = (newMicroBlocksDataGraph)
 	setPosition (morph graph) (x (hand page)) (y (hand page))
 	addPart page graph
-}
-
-method serialDelayMenu MicroBlocksEditor {
-  menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
-  for i 20 { addItem menu i }
-  popUpAtHand menu (global 'page')
-}
-
-method setSerialDelay MicroBlocksEditor newDelay {
-  sendMsg (smallRuntime) 'extendedMsg' 1 (list newDelay)
 }
 
 method showAdvancedBlocks MicroBlocksEditor {

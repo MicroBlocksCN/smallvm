@@ -1,17 +1,13 @@
 RTL
 true
 
-display _
-شاشة _
+# MicroBlocks translation file
+# Last updated: January 7 2020
 
-clear display
-مسح الشاشة
+# Blocks and categories
 
-plot x _ y _
-رسم س _ ص _
-
-unplot x _ y _
- محو رسم س _ ص _
+Output
+المخرجات
 
 set user LED _
 ضبط الصمام الثنائي للمستخدم _
@@ -19,8 +15,11 @@ set user LED _
 say _
 قل _
 
-log data _
-تسجيل بيان _
+graph _
+--MISSING--
+
+Input
+المدخلات
 
 button A
 زر أ
@@ -28,32 +27,26 @@ button A
 button B
 زر ب
 
-tilt x
-الميل س
-
-tilt y
-الميل ص
-
-tilt z
-الميل ض
-
-temperature (°C)
-درجة الحرارة (درجة مئوية)
-
 microseconds
 ميكروثانية
 
 milliseconds
 ميلي ثانية
 
+board type
+نوع اللوحة
+
+Pins
+المنافذ
+
 read digital pin _
-قراءة المنفذ الرقمي _ 
+قراءة المنفذ الرقمي _
 
 read analog pin _
 قراءة المنفذ التناظري _
 
 set digital pin _ to _
-جعل المنفذ الرقمي _ يساوي _ 
+جعل المنفذ الرقمي _ يساوي _
 
 set pin _ to _
 جعل المنفذ _ يساوي _
@@ -63,6 +56,9 @@ analog pins
 
 digital pins
 المنافذ الرقمية
+
+Control
+مراقبة
 
 when started
 عند البداية
@@ -94,6 +90,9 @@ wait _ microsecs
 stop this task
 وقف هذه المهمة
 
+stop other tasks
+--MISSING--
+
 stop all
 توقيف كل شيء
 
@@ -115,8 +114,14 @@ when _
 when _ received
 عند تلقي _
 
+broadcast _
+نشر _
+
 return _
 رجع _
+
+Math
+الرياضيات
 
 _ mod _
 _ mod _
@@ -142,6 +147,22 @@ _ أو _
 or _
 أو _
 
+Variables
+المتغيرات
+
+# Buttons on top of "Variables" category
+
+Add a variable
+إضافة متغير
+
+Delete a variable
+حذف متغير
+
+# New variable dialog
+
+New variable name?
+--MISSING--
+
 set _ to _
 إجعل _ بقيمة _
 
@@ -151,26 +172,78 @@ change _ by _
 local _ _
 متغير محلي _ _
 
-new list length _
-قائمة جديدة طول _
+Lists & Strings
+--MISSING--
 
-fill list _ with _
-ملء قائمة _ ب _
-
-item _ of _
-غرض _ من _
-
-replace item _ of _ with _
-إستبدل غرض _ من _ ب _
+list
+--MISSING--
 
 length of _
 طول _
 
-board type
-نوع اللوحة
+item _ of _
+غرض _ من _
 
-broadcast _
-نشر _
+replace item _ of list _ with _
+--MISSING--
+
+delete item _ of list _
+--MISSING--
+
+add _ to list _
+--MISSING--
+
+join _ _
+--MISSING--
+
+copy _ from _
+--MISSING--
+
+to _
+--MISSING--
+
+find _ in _
+--MISSING--
+
+starting at _
+--MISSING--
+
+join string list _
+--MISSING--
+
+unicode _ of _
+--MISSING--
+
+string from unicode _
+--MISSING--
+
+new list length _
+قائمة جديدة طول _
+
+free memory
+--MISSING--
+
+fill list _ with _
+ملء قائمة _ ب _
+
+My Blocks
+--MISSING--
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+--MISSING--
+
+Add a reporter block
+--MISSING--
+
+# Make a block dialog
+
+Enter function name:
+--MISSING--
+
+Comm
+--MISSING--
 
 i2c get device _ register _
 الحصول على جهاز _ سجل _ i2c
@@ -196,6 +269,8 @@ no op
 ignore
 تجاهل
 
+# Primitives (mostly hidden from end users)
+
 draw shape _ at x _ y _
 رسم شكل _ في س _ ص _
 
@@ -212,22 +287,13 @@ has tone support
 لديه دعم نغمة
 
 play tone pin _ frequency _
-لعب نغمة منفذ _ موجة تردد _ 
-
-has servo support
-لديه دعم مضاعفات
-
-set servo pin _ to _ usecs
-set servo pin _ to _ usecs
+لعب نغمة منفذ _ موجة تردد _
 
 has WiFi support
 لديه دعم واي فاي
 
 start WiFi _ password _
 ابدأ واي فاي _ كلمة المرور _
-
-be hotspot _
-كن نقطة ساخنة _
 
 stop WiFi
 وقف واي فاي
@@ -237,12 +303,6 @@ WiFi status
 
 my IP address
 عنوان IP الخاص بي
-
-enable TFT _
-مكن TFT _
-
-set TFT pixel x _ y _ to _
-set TFT pixel x _ y _ to _
 
 radio send number _
 أرسل عبر الراديو رقم _
@@ -286,8 +346,31 @@ radio send packet _
 disable radio
 تعطيل الراديو
 
+# Libraries
+
+Basic Sensors
+--MISSING--
+
+tilt x
+الميل س
+
+tilt y
+الميل ص
+
+tilt z
+الميل ض
+
+acceleration
+--MISSING--
+
 light level
 مستوى الضوء
+
+temperature (°C)
+درجة الحرارة (درجة مئوية)
+
+NeoPixel
+--MISSING--
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 Set NeoPixels _ _ _ _ _ _ _ _ _ _
@@ -304,35 +387,41 @@ set all NeoPixels color _
 rotate NeoPixels by _
 rotate NeoPixels by _
 
-color r _ g _ b _
+color r _ g _ b _ (0-31)
 اللون أحمر _ أخضر _ أزرق _
 
-attach _ LED NeoPixel strip to pin _ has white _
-attach _ LED NeoPixel strip to pin _ has white _
+attach _ LED NeoPixel strip to pin _
+--MISSING--
 
-receive IR code from device _
-تلقي رمز الأشعة تحت الحمراء من الجهاز _
+has white _
+--MISSING--
 
-test IR
-اختبار الأشعة تحت الحمراء
+PIR
+--MISSING--
 
-scroll text _ pausing _ ms
-تمرير النص _ الإيقاف المؤقت _ مللي ثانية
+PIR at pin _ detected movement
+--MISSING--
 
-scroll number _ pausing _ ms
-تمرير الرقم _ الإيقاف المؤقت _ مللي ثانية
+ED1 Stepper Motor
+--MISSING--
 
-stop scrolling
-توقف عن التمرير
+move motor _  _ steps _
+تحرك المحرك _ _ خطوات _
 
-attach buzzer to pin _
-attach buzzer to pin _
+move motor 1 _ and motor 2 _ _ steps
+تحرك المحرك 1 _ والمحرك 2 _ _ الخطوات
 
-play note _ octave _ during _ ms
-تلعب نوتا _ اوكتاف _ خلال _ مللي ثانية
+stop steppers
+وقف السائر
 
-play frequency _ on pin _ for _ ms
-لعب تردد _ على pin _ ل _ مللي ثانية
+clockwise
+بإتجاه عقارب الساعة
+
+counter-clockwise
+عكس عقارب الساعه
+
+ED1 Buttons
+--MISSING--
 
 button OK
 زر موافق
@@ -351,21 +440,6 @@ button left
 
 button right
 زر يمين
-
-move motor _  _ steps _
-تحرك المحرك _ _ خطوات _
-
-move motor 1 _ and motor 2 _ _ steps
-تحرك المحرك 1 _ والمحرك 2 _ _ الخطوات
-
-stop steppers
-وقف السائر
-
-clockwise
-بإتجاه عقارب الساعة
-
-counter-clockwise
-عكس عقارب الساعه
 
 capacitive OK
 السعة في حالة جيدة
@@ -388,11 +462,277 @@ capacitive right
 capacitive sensor _
 مستشعر سعوي ‪_‬
 
+set capacitive threshold to _
+ضبط عتبة سعوية إلى _
+
+set use capacitive to _
+--MISSING--
+
+Hummingbird LED _ _ %
+--MISSING--
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+--MISSING--
+
+Hummingbird Position Servo _ _ º
+--MISSING--
+
+Hummingbird Rotation Servo _ _ %
+--MISSING--
+
+Hummingbird _ _
+--MISSING--
+
+Hummingbird Battery (mV)
+--MISSING--
+
+Light
+--MISSING--
+
+Distance
+--MISSING--
+
+Dial
+--MISSING--
+
+Sound
+--MISSING--
+
+Other
+--MISSING--
+
+distance (cm) trigger _ echo _
+--MISSING--
+
+IR Remote
+--MISSING--
+
+receive IR code
+--MISSING--
+
+receive IR code from device _
+تلقي رمز الأشعة تحت الحمراء من الجهاز _
+
+test IR
+اختبار الأشعة تحت الحمراء
+
+attach IR receiver to pin _
+--MISSING--
+
+Radio
+--MISSING--
+
+Scrolling
+--MISSING--
+
+scroll text _
+--MISSING--
+
+scroll number _
+--MISSING--
+
+pausing _ ms
+--MISSING--
+
+stop scrolling
+توقف عن التمرير
+
+Servo
+--MISSING--
+
+has servo support
+لديه دعم مضاعفات
+
+set servo _ to _ (-100 to 100)
+--MISSING--
+
+resetServos
+--MISSING--
+
+flip servo _ _
+--MISSING--
+
+attach servos 1 to 4 to pins _ _ _ _
+--MISSING--
+
+set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+reverse
+--MISSING--
+
+set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+LED Display
+--MISSING--
+
+display _
+شاشة _
+
+clear display
+مسح الشاشة
+
+plot x _ y _
+رسم س _ ص _
+
+unplot x _ y _
+ محو رسم س _ ص _
+
+display character _
+--MISSING--
+
+enable TFT _
+مكن TFT _
+
+TFT width
+--MISSING--
+
+TFT height
+--MISSING--
+
 set TFT pixel x _ y _ to _
 set TFT pixel x _ y _ to _
 
-set capacitive threshold to _
-ضبط عتبة سعوية إلى _
+draw line on TFT from x _ y _ to x _ y _ color _
+--MISSING--
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+--MISSING--
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+--MISSING--
+
+draw circle on TFT at x _ y _ radius _ color _
+--MISSING--
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+--MISSING--
+
+filled _
+--MISSING--
+
+write _ on TFT at x _ y _ color _
+--MISSING--
+
+scale _ wrap _
+--MISSING--
+
+Tone
+--MISSING--
+
+attach buzzer to pin _
+attach buzzer to pin _
+
+play note _ octave _ during _ ms
+تلعب نوتا _ اوكتاف _ خلال _ مللي ثانية
+
+play frequency _ for _ milliseconds
+--MISSING--
+
+play midi key _ for _ milliseconds
+--MISSING--
+
+Turtle
+--MISSING--
+
+home
+--MISSING--
+
+move _
+--MISSING--
+
+turn _ degrees
+--MISSING--
+
+turn _ / _ of circle
+--MISSING--
+
+pen down
+--MISSING--
+
+pen up
+--MISSING--
+
+set pen color to _
+--MISSING--
+
+set pen to random color
+--MISSING--
+
+fill display with _
+--MISSING--
+
+go to x _ y _
+--MISSING--
+
+point in direction  _
+--MISSING--
+
+Web of Things
+--MISSING--
+
+wifi connect to _ password _ try _ times
+--MISSING--
+
+wifi create hotspot _ password _
+--MISSING--
+
+IP address
+--MISSING--
+
+define thing _ capability _
+--MISSING--
+
+register event _ type _
+--MISSING--
+
+add boolean property title _ variable _ @Type _
+--MISSING--
+
+add number property title _ variable _ min _ max _ @Type _
+--MISSING--
+
+add string property title _ variable _ @Type _
+--MISSING--
+
+thing description
+--MISSING--
+
+clear thing description
+--MISSING--
+
+Motion
+--MISSING--
+
+motion
+--MISSING--
+
+start step counter
+--MISSING--
+
+step count
+--MISSING--
+
+clear step count
+--MISSING--
+
+set step threshold _ (0-50)
+--MISSING--
+
+Button Events
+--MISSING--
+
+button _ double pressed
+--MISSING--
+
+button _ long pressed
+--MISSING--
+
+button _ pressed
+--MISSING--
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
 New
 جديد
@@ -428,7 +768,7 @@ Select board:
 اختر الوحة:
 
 Could not read:
-لا يمكن قراءة:
+--MISSING--
 
 by
 من قبل
@@ -436,8 +776,8 @@ by
 More info at http://microblocks.fun
 More info at http://microblocks.fun
 
-The function "
-الدالة "
+Function "
+--MISSING--
 
 " is too large to send to board.
 " كبيرة جدا لإرسالها إلى اللوحة
@@ -451,14 +791,20 @@ Use "Connect" button to connect to a MicroBlocks device.
 No boards found; is your board plugged in?
 لم يتم العثور على لوحات‪.‬ هل تم توصيل اللوحة الخاصة بك؟
 
-For AdaFruit boards, double-click button and try again.
-للوحات AdaFruit ، انقر نقرًا مزدوجًا فوق الزر وحاول مرة أخرى.
+For AdaFruit boards, double-click reset button and try again.
+--MISSING--
 
 The board is not responding.
 اللوحة لا تستجيب.
 
 Try to Install MicroBlocks on the board?
 محاولة تثبيت MicroBlocks على اللوحة؟
+
+The MicroBlocks in your board is not current
+--MISSING--
+
+Try to update MicroBlocks on the board?
+--MISSING--
 
 Stop
 توقف
@@ -478,11 +824,11 @@ clean up
 arrange scripts
 ترتيب البرامج النصية
 
-undo last drop
-التراجع عن الخطوة الأخيرة
+undrop  (ctrl-Z)
+--MISSING--
 
-copy all scripts
-نسخ جميع البرامج النصية
+copy all scripts to clipboard
+--MISSING--
 
 paste all scripts
 لصق جميع البرامج النصية
@@ -490,20 +836,59 @@ paste all scripts
 paste script
 لصق البرنامج النصي
 
-save picture of all scripts
-حفظ صورة لجميع البرامج النصية
+save a picture of all scripts
+--MISSING--
 
 about...
-حول... 
+حول...
 
 virtual machine version
 نسخة الجهاز الظاهري
 
-install MicroBlocks on board
-تثبيت MicroBlocks على اللوحة
+update firmware on board
+--MISSING--
 
-graph data
-رسم البيانات
+show data graph
+--MISSING--
+
+set serial delay
+--MISSING--
+
+firmware version
+--MISSING--
+
+start Mozilla WebThing server
+--MISSING--
+
+stop Mozilla WebThing server
+--MISSING--
+
+MicroBlocks HTTP Server listening on port 6473
+--MISSING--
+
+wipe and repartition esp32
+--MISSING--
+
+Use board type
+--MISSING--
+
+Wiping board...
+--MISSING--
+
+(press ESC to cancel)
+--MISSING--
+
+Done!
+--MISSING--
+
+download and install latest VM
+--MISSING--
+
+Select board type:
+--MISSING--
+
+Uploading MicroBlocks to board...
+--MISSING--
 
 copy data to clipboard
 نسخ البيانات إلى الحافظة
@@ -525,6 +910,9 @@ hide advanced blocks
 
 Data Graph
 الرسم البياني
+
+File
+--MISSING--
 
 File Open
 فتح الملف
@@ -550,23 +938,59 @@ collapse
 rename...
 إعادة تسمية ...
 
-show definition...
-عرض التعريف ...
+show block definition...
+--MISSING--
+
+show the definition of this block
+--MISSING--
+
+delete block definition...
+--MISSING--
+
+delete the definition of this block
+--MISSING--
 
 duplicate
 كرر
 
+duplicate this block
+--MISSING--
+
+delete block
+--MISSING--
+
+delete this block
+--MISSING--
+
 just this one block
 فقط هذه الكتلة
 
-...all
-...الكل
+copy to clipboard
+--MISSING--
 
-duplicate including all attached blocks
-تكرار بما في ذلك جميع الكتل المرفقة
+copy these blocks to the clipboard
+--MISSING--
+
+duplicate all
+--MISSING--
+
+duplicate these blocks
+--MISSING--
+
+extract block
+--MISSING--
+
+pull out this block
+--MISSING--
 
 save picture of script
 حفظ صورة للبرنامج النصي
+
+save a picture of this block definition as a PNG file
+--MISSING--
+
+save a picture of these blocks as a PNG file
+--MISSING--
 
 copy script
 نسخ البرنامج النصي
@@ -574,8 +998,35 @@ copy script
 delete
 حذف
 
-hide definition
-إخفاء التعريف
+Input type:
+--MISSING--
+
+string only
+--MISSING--
+
+string or number
+--MISSING--
+
+number only
+--MISSING--
+
+define
+--MISSING--
+
+number/string
+--MISSING--
+
+editable number or string
+--MISSING--
+
+label
+--MISSING--
+
+input
+--MISSING--
+
+hide block definition
+--MISSING--
 
 Are you sure you want to remove this block definition?
 هل أنت متأكد من أنك تريد إزالة تعريف الكتلة؟
@@ -583,47 +1034,17 @@ Are you sure you want to remove this block definition?
 Libraries
 المكتبات
 
-Language:
-لغة:
+Language
+--MISSING--
 
-Add a function
-إضافة دالة
-
-Add a variable
-إضافة متغير
-
-Delete a variable
-حذف متغير
-
-Output
-المخرجات
-
-Input
-المدخلات
-
-Pins
-المنافذ
-
-Control
-مراقبة
-
-Math
-الرياضيات
-
-Variables
-المتغيرات
-
-Lists
-القوائم
-
-Advanced
-المتقدمة
-
-Functions
-دوال
+Custom...
+--MISSING--
 
 Obsolete
 قديم
+
+OK
+--MISSING--
 
 Ok
 وافق
@@ -642,3 +1063,4 @@ Okay
 
 Confirm
 أكد
+

@@ -119,7 +119,8 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 			}
 		}
 	}
-	Wire.endTransmission();
+	int error = Wire.endTransmission();
+	if (error) fail(i2cWriteFailed);
 	return falseObj;
 }
 
@@ -296,6 +297,91 @@ static int readTemperature() {
 	float result = (1.0 / steinhart) - 273.15; // steinhart is 1/T; invert and convert to C
 
 	return (int) round(result);
+}
+
+#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C)
+
+// defined(ARDUINO_M5Stack_Core_ESP32) ||
+#ifdef ARDUINO_M5Stack_Core_ESP32
+	#define Wire1 Wire
+#endif
+
+#define MPU6886_ID			0x68
+#define MPU6886_SMPLRT_DIV	0x19
+#define MPU6886_CONFIG		0x1A
+#define MPU6886_PWR_MGMT_1	0x6B
+#define MPU6886_PWR_MGMT_2	0x6C
+#define MPU6886_WHO_AM_I	0x75
+
+static int readAccelReg(int regID) {
+	Wire1.beginTransmission(MPU6886_ID);
+	Wire1.write(regID);
+	int error = Wire1.endTransmission(false);
+	if (error) return 0;
+
+	Wire1.requestFrom(MPU6886_ID, 1);
+	while (!Wire1.available());
+	return (Wire1.read());
+}
+
+static void writeAccelReg(int regID, int value) {
+	Wire1.beginTransmission(MPU6886_ID);
+	Wire1.write(regID);
+	Wire1.write(value);
+	Wire1.endTransmission();
+}
+
+static char accelStarted = false;
+static char is6886 = false;
+
+static void startAccelerometer() {
+		Wire1.begin(); // use internal I2C bus
+
+	writeAccelReg(MPU6886_PWR_MGMT_1, 0x80); // reset (must be done by itself)
+	delay(1); // required to avoid hang
+
+	writeAccelReg(MPU6886_SMPLRT_DIV, 4); // 200 samples/sec
+	writeAccelReg(MPU6886_CONFIG, 5); // low-pass filtering: 0-6
+	writeAccelReg(MPU6886_PWR_MGMT_1, 1); // use best clock rate (required!)
+	writeAccelReg(MPU6886_PWR_MGMT_2, 7); // disable the gyroscope
+
+	is6886 = (25 == readAccelReg(MPU6886_WHO_AM_I));
+	accelStarted = true;
+}
+
+static int readAcceleration(int registerID) {
+	if (!accelStarted) startAccelerometer();
+
+	int sign = 1;
+	int val = 0;
+	#ifdef ARDUINO_M5Stick_C
+		if (1 == registerID) { sign = -1; val = readAccelReg(61); }
+		if (3 == registerID) { sign = -1; val = readAccelReg(59); }
+	#else
+		if (1 == registerID) { sign = -1; val = readAccelReg(59); }
+		if (3 == registerID) val = readAccelReg(61);
+	#endif
+	if (5 == registerID) val = readAccelReg(63);
+
+	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = ((val * 100) / 127); // scale to range 0-100
+	return sign * val;
+}
+
+static int readTemperature() {
+	// Return the temperature in Celcius
+
+	if (!accelStarted) startAccelerometer();
+
+	int temp = 0;
+	short int rawTemp = (readAccelReg(65) << 8) | readAccelReg(66);
+	if (is6886) {
+		temp = (int) ((float) rawTemp / 326.8) + 8;
+	} else {
+		temp = (rawTemp / 40) + 9; // approximate constants for mpu9250, empirically determined
+	}
+	return temp;
 }
 
 #elif defined(ARDUINO_CITILAB_ED1)

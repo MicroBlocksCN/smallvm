@@ -171,6 +171,7 @@ extern int extraByteDelay;
 #define argIndexOutOfRange		32	// Argument index out of range
 #define needsIndexable			33	// Needs an indexable type such as a string or list
 #define joinArgsNotSameType		34	// All arguments to join must be the same type (e.g. lists)
+#define i2cWriteFailed			35	// I2C write failed
 
 // Runtime Operations
 

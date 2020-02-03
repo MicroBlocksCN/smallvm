@@ -39,7 +39,8 @@
 #if defined(NRF51)
   #define OBJSTORE_BYTES 2500 // max is 2612
 #else
-  #define OBJSTORE_BYTES 12000 // max that compiles for all boards is 16886 (17624 NodeMCU)
+  #define OBJSTORE_BYTES 8000 // max that works on Wemos D1 mini is 9000
+  // max that compiles for all boards is 16886 (17624 NodeMCU)
 #endif
 
 #define OBJSTORE_WORDS ((OBJSTORE_BYTES / 4) + 4)

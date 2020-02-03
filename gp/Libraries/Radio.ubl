@@ -1,4 +1,4 @@
-module Radio
+module Radio Comm
 
 	spec ' ' '[radio:sendInteger]' 'radio send number _' 'num' 123
 	spec ' ' '[radio:sendString]' 'radio send string _' 'str' 'Hello!'
@@ -6,20 +6,31 @@ module Radio
 	spec 'r' '[radio:messageReceived]' 'radio message received?'
 	spec 'r' '[radio:receivedInteger]' 'radio last number'
 	spec 'r' '[radio:receivedString]' 'radio last string'
-	spec 'r' '[radio:receivedMessageType]' 'radio last message type'
 	spec ' ' '[radio:setGroup]' 'radio set group _' 'num' 0
-	spec ' ' '[radio:setChannel]' 'radio set channel (0-83) _' 'num' 7
 	spec ' ' '[radio:setPower]' 'radio set power (0-7) _' 'num' 4
-	spec 'r' '[radio:signalStrength]' 'radio last signal strength'
-	spec 'r' '[radio:deviceID]' 'radio device ID'
-	spec 'r' '[radio:lastMessageID]' 'radio ID of last message sender'
-	spec ' ' '_radio receive packet' '_radio receive packet _' 'auto'
-	spec ' ' '_radio send packet' '_radio send packet _' 'auto'
+	spec 'r' '_receivedMessageType' '_radio last message type'
+	spec ' ' '_radio receive packet' '_radio receive packet _' 'str' '32-element list'
+	spec ' ' '_radio send packet' '_radio send packet _' 'str' '32-element list'
+	spec 'r' '_signalStrength' '_radio last signal strength'
+	spec ' ' '_setChannel' '_radio set channel (0-83) _' 'num' 7
 
 to '_radio receive packet' list {
-	'[radio:packetReceive]' list
+  '[radio:packetReceive]' list
 }
 
 to '_radio send packet' packet {
-	'[radio:packetSend]' packet
+  '[radio:packetSend]' packet
 }
+
+to '_receivedMessageType' {
+  return ('[radio:receivedMessageType]')
+}
+
+to '_setChannel' channel {
+  '[radio:setChannel]' channel
+}
+
+to '_signalStrength' {
+  return ('[radio:signalStrength]')
+}
+

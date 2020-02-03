@@ -3,6 +3,7 @@ variables _servoPin _servoPulseWidth
 
 	spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90) : reverse _' 'num num bool' 1 90 false
 	spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100) : reverse _' 'num num bool' 1 50 false
+	spec ' ' 'stopServo' 'stop servo _' 'num' 1
 	spec 'r' '_servoIndex' '_servoIndex _' 'num' 1
 	spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'num num' 1 1500
 	spec ' ' '_servoUpdateLoop' '_servoUpdateLoop'
@@ -11,6 +12,7 @@ to '_servoIndex' which {
   if (_servoPin == 0) {
     _servoPin = ('[data:makeList]')
     _servoPulseWidth = ('[data:makeList]')
+    sendBroadcastSimple '_servoUpdateLoop'
   }
   local 'i' ('[data:find]' which _servoPin)
   if (i < 0) {
@@ -65,7 +67,6 @@ to setServoAngle which degrees optionalReverse {
     '[io:setServo]' which pulseWidth
   } else {
     atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
-    sendBroadcastSimple '_servoUpdateLoop'
   }
 }
 
@@ -85,7 +86,14 @@ to setServoSpeed which speed optionalReverse {
     '[io:setServo]' which pulseWidth
   } else {
     atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
-    sendBroadcastSimple '_servoUpdateLoop'
+  }
+}
+
+to stopServo which {
+  if ('[io:hasServo]') {
+    '[io:setServo]' which 0
+  } else {
+    atPut ('_servoIndex' which) _servoPulseWidth 0
   }
 }
 

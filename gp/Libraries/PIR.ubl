@@ -1,4 +1,4 @@
-module PIR
+module PIR Input
 variables _PIRs
 
 	spec 'r' 'PIR' 'PIR at pin _ detected movement' 'auto' '10'

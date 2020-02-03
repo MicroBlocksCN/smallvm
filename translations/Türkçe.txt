@@ -1,14 +1,10 @@
-display _
-ekran _
+# MicroBlocks translation file
+# Last updated: January 7 2020
 
-clear display
-ekranı sil
+# Blocks and categories
 
-plot x _ y _
-yak x _ y _
-
-unplot x _ y _
-söndür x _ y _
+Output
+Çıktı
 
 set user LED _
 kullanıcı LED i _ yap
@@ -16,29 +12,29 @@ kullanıcı LED i _ yap
 say _
 söyle _
 
+graph _
+grafiğini çiz _
+
+Input
+Girdi
+
 button A
 buton A
 
 button B
 buton B
 
-tilt x
-eğilim x
-
-tilt y
-eğilim y
-
-tilt z
-eğilim z
-
-temperature (Â°C)
-ısı (Â°C)
-
 microseconds
 mikrosaniye
 
 milliseconds
 milisaniye
+
+board type
+kart tipi
+
+Pins
+Pinler
 
 read digital pin _
 dijital pin oku _
@@ -47,16 +43,19 @@ read analog pin _
 analog pin oku _
 
 set digital pin _ to _
-dijital pin _ ayarla _
+dijital pin _ ayarını _ yap
 
 set pin _ to _
-pin _ ayarla  _
+pin _ ayarını _ yap
 
 analog pins
 analog pinler
 
 digital pins
 dijital pinler
+
+Control
+Kontrol
 
 when started
 başladığında
@@ -88,6 +87,9 @@ bekle _ mikrosaniye
 stop this task
 bu betiği durdur
 
+stop other tasks
+öteki betikleri durdur
+
 stop all
 tüm betikleri durdur
 
@@ -101,10 +103,10 @@ repeat until _ _
 _ _ olana kadar tekrarla
 
 for _ in _ _
-her _ için _ _ değerindeki
+her _ için _ _ kapsamında
 
 when _
-olunca _
+_ olunca
 
 when _ received
 _ mesajı geldiğinde
@@ -114,6 +116,9 @@ _ gönder
 
 return _
 döndür _
+
+Math
+Matematik
 
 _ mod _
 _ mod _
@@ -139,6 +144,22 @@ _ veya _
 or _
 veya _
 
+Variables
+Değişkenler
+
+# Buttons on top of "Variables" category
+
+Add a variable
+Değişken ekle
+
+Delete a variable
+Değişken sil
+
+# New variable dialog
+
+New variable name?
+Yeni değişkenin adı?
+
 set _ to _
 _ değişkenini _ yap
 
@@ -148,29 +169,84 @@ _ değişkenini _ değiştir
 local _ _
 yerel değişken _ = _
 
-new array _
-yeni dizi _
+Lists & Strings
+Listeler & Dizgiler
 
-new byte array _
-yeni bayt dizisi _
-
-fill array _ with _
-_ dizisini _ ile doldur
-
-array _ at _
-_ dizisinin _ öğesi
-
-set array _ at _ to _
-_ dizisi _ öğesini _ yap
+list
+liste
 
 length of _
 _ uzunluğu
 
+item _ of _
+öğe#: _ liste/dizgi: _
+
+replace item _ of list _ with _
+listede değiştir öğe#: _ liste: _ yeni değer _
+
+delete item _ of list _
+listeden sil öğe#: _ liste: _
+
+add _ to list _
+listeye ekle değer: _ liste: _
+
+join _ _
+birleştir _ _
+
+copy _ from _
+kopyala _ başla _
+
+to _
+bitir _
+
+find _ in _
+bul bunu _ bunda _
+
+starting at _
+başla _
+
+join string list _
+listenin öğelerini birleştir _
+
+unicode _ of _
+unicode öğe# _ dizgi: _
+
+string from unicode _
+unicode dan harfe _
+
+new list length _
+_ öğeli yeni liste yarat
+
+free memory
+boş bellek
+
+fill list _ with _
+_ lıstesini _ ile doldur
+
+My Blocks
+Benim Bloklarım
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+kumanda bloğu ekle
+
+Add a reporter block
+Bildiren bloğu ekle
+
+# Make a block dialog
+
+Enter function name:
+İşlev adını gir
+
+Comm
+iletişim
+
 i2c get device _ register _
-i2c modül oku _ sayaç _
+i2c oku modül _ yazmaç _
 
 i2c set device _ register _ to _
-i2c modül yaz _ sayaç _ değer _
+i2c yaz modül _ yazmaç _ değer _
 
 spi send _
 spi gönder _
@@ -188,22 +264,110 @@ no op
 işlem yok
 
 ignore
-aldırma
+yoksay
+
+# Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
-_ şeklini çiz x _ y _ 
+_ şeklini çiz x _ y _
 
 shape for letter _
 _ harfinin şekli
 
-set NeoPixel pin _ has white _
-NeoPixel _ pinini beyaz _ yap
+set NeoPixel pin _ is RGBW _
+_ Neopiksel pinini _ yap RGBW _
 
 send NeoPixel rgb _
 NeoPixel rgb _ gönder
 
+has tone support
+ton desteği var
+
+play tone pin _ frequency _
+ton çal pin _ frekans _
+
+has WiFi support
+WIFI desteği var
+
+start WiFi _ password _
+WIFI başlat SSID _ şifre _
+
+stop WiFi
+WIFI durdur
+
+WiFi status
+WIFI durumu
+
+my IP address
+IP adresim
+
+radio send number _
+radyo sayı yolla _
+
+radio send string _
+radyo dizgi yolla _
+
+radio send pair _ = _
+radyo değer yolla _ = _
+
+radio message received?
+radyo mesajı alındı mı?
+
+radio last number
+radyo son sayı
+
+radio last string
+radyo son dizgi
+
+radio last message type
+radyo son mesaj tipi
+
+radio set group _
+radyo grubunu ayarla _
+
+radio set channel (0-83) _
+radyo kanal ayarla (0-83) _
+
+radio set power (0-7) _
+radyo güç ayarla (0-7) _
+
+radio last signal strength
+radyo son sinyal gücü
+
+radio receive packet _
+radyo paket al _
+
+radio send packet _
+radyo paket yolla _
+
+disable radio
+radyoyu etkisizleştir
+
+# Libraries
+
+Basic Sensors
+Temel Sensörler
+
+tilt x
+eğilim x
+
+tilt y
+eğilim y
+
+tilt z
+eğilim z
+
+acceleration
+ivme
+
 light level
 ışık seviyesi
+
+temperature (°C)
+ısı (°C)
+
+NeoPixel
+Neopiksel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 NeoPixel leri _ _ _ _ _ _ _ _ _ _ yap
@@ -215,40 +379,46 @@ set NeoPixel _ color _
 NeoPixel _ renk _ yap
 
 set all NeoPixels color _
-Tüm NeoPixel renklerini  _ yap
+Tüm NeoPixel renklerini _ yap
 
 rotate NeoPixels by _
 NeoPixelleri _ döndür
 
-color r _ g _ b _
-renk r _ g _ b _
+color r _ g _ b _ (0-31)
+renk r _ g _ b _ (0-31)
 
-attach _ LED NeoPixel strip to pin _ has white _
-_ LED NeoPixel şeritini _ pine bağla beyaz değer _ 
+attach _ LED NeoPixel strip to pin _
+_ LED Neopiksel şeridini pin _ bağla
 
-receive IR code from device _
-_ aygıtından IR kod oku
+has white _
+beyaz var _
 
-test IR
-IR testi
+PIR
+PIR
 
-scroll text _ pausing _ ms
-_ metni kaydır _ ms bekleyerek
+PIR at pin _ detected movement
+_ pinine bağlı PIR hareket algıladı
 
-scroll number _ pausing _ ms
-_ sayı kaydır _ ms bekleyerek
+ED1 Stepper Motor
+ED1 Step Motoru
 
-stop scrolling
-kaydırmayı durdur
+move motor _ _ steps _
+ _ motorunu _ adım yürüt _
 
-attach buzzer to pin _
-sesli uyarıcıyı _ pinine bağla
+move motor 1 _ and motor 2 _ _ steps
+motor 1 _ ve motor 2 _ _ adım yürüt
 
-play note _ octave _ during _ ms
-_ notasını _ oktavda _ ms çal
+stop steppers
+step motorları durdur
 
-play frequency _ on pin _ for _ ms
-_ frekansını _ pininde _ ms çal
+clockwise
+saat yönünde
+
+counter-clockwise
+saat yönüne ters
+
+ED1 Buttons
+ED1 Butonları
 
 button OK
 buton OK
@@ -267,21 +437,6 @@ buton sol
 
 button right
 buton sağ
-
-move motor _  _ steps _
- _ motorunu _ adım yürüt _
-
-move motor 1 _ and motor 2 _ _ steps
-motor 1 _ ve motor 2 _  _ adım yürüt
-
-stop steppers
-step motorları durdur
-
-clockwise
-saat yönünde
-
-counter-clockwise
-saat yönüne ters
 
 capacitive OK
 kapasitif OK
@@ -304,11 +459,277 @@ kapasitif sağ
 capacitive sensor _
 kapasitif sensör _
 
-set TFT pixel x _ y _ to _
-x _ y _ TFT pikselini _ yap
-
 set capacitive threshold to _
 kapasitif eşik değerini _ yap
+
+set use capacitive to _
+kapasitif kullan ayarını _ yap
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird 3renkli-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ º
+Hummingbird _ Servosunu _ º ayarla
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Sürekli Servo _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Pil (mV)
+
+Light
+Işık
+
+Distance
+Mesafe
+
+Dial
+Kadran
+
+Sound
+Ses
+
+Other
+Diğer
+
+distance (cm) trigger _ echo _
+mesafe (cm) tetik _ eko _
+
+IR Remote
+IR Uzaktan Kumanda
+
+receive IR code
+--MISSING--
+
+receive IR code from device _
+_ aygıtından IR kod oku
+
+test IR
+IR testi
+
+attach IR receiver to pin _
+IR alıcısını _ pinine bağla
+
+Radio
+Radyo
+
+Scrolling
+Kaydırma
+
+scroll text _
+_ metnini kaydır
+
+scroll number _
+_ sayısını kaydır
+
+pausing _ ms
+_ ms duraklatma
+
+stop scrolling
+kaydırmayı durdur
+
+Servo
+Servo
+
+has servo support
+servo desteği var
+
+set servo _ to _ (-100 to 100)
+_ servosunu _ ayarla (-100 to 100)
+
+resetServos
+servoları resetle
+
+flip servo _ _
+servoyu tersle _ _
+
+attach servos 1 to 4 to pins _ _ _ _
+1 - 4 servolarını _ _ _ _ pinlerine bağla
+
+set servo _ to _ degrees (-90 to 90)
+_ servosunu _ dereceye ayarla (-90 to 90)
+
+reverse
+tersle
+
+set servo _ to speed _ (-100 to 100)
+_ servosunun hızını _ yap (-100 to 100)
+
+LED Display
+LED Ekran
+
+display _
+LED ekran _
+
+clear display
+ekranı sil
+
+plot x _ y _
+yak x _ y _
+
+unplot x _ y _
+söndür x _ y _
+
+display character _
+_ harfini göster
+
+enable TFT _
+TFT yi etkinleştir _
+
+TFT width
+TFT genişliği
+
+TFT height
+TFT yüksekliği
+
+set TFT pixel x _ y _ to _
+TFT x _ y _ pikselini _ yap
+
+draw line on TFT from x _ y _ to x _ y _ color _
+TFT çizgi başla x _ y _ son x _ y _ renk _
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+TFT dikdörtgen başla x _ y _ genişlik _ yükseklik _ renk _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+TFT yuvarlatılmış dikdörtgen başla x _ y _ genişlik _ yükseklik _ çap _ renk _
+
+draw circle on TFT at x _ y _ radius _ color _
+TFT daire merkez x _ y _ çap _ renk _
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+TFT üçgen x _ y _ , x _ y _ , x _ y _ renk _
+
+filled _
+dolu _
+
+write _ on TFT at x _ y _ color _
+TFT _ yaz konum x _ y _ renk _
+
+scale _ wrap _
+ölçek _ başa sar _
+
+Tone
+Ton
+
+attach buzzer to pin _
+sesli uyarıcıyı _ pinine bağla
+
+play note _ octave _ during _ ms
+_ notasını _ oktavda _ ms çal
+
+play frequency _ for _ milliseconds
+_ frekansını _ milisaniye çal
+
+play midi key _ for _ milliseconds
+
+
+Turtle
+Kaplumbağa
+
+home
+başlangıç
+
+move _
+git _
+
+turn _ degrees
+_ derece dön
+
+turn _ / _ of circle
+dairenin _ / _ kadar dön
+
+pen down
+kalemi bastır
+
+pen up
+kalemi kaldır
+
+set pen color to _
+kalem rengini _ yap
+
+set pen to random color
+kalem rengini rastgele yap
+
+fill display with _
+ekranı _ ile doldur
+
+go to x _ y _
+x _ y _ konumuna git
+
+point in direction _
+_ yönüne dön
+
+Web of Things
+Şeylerin İnterneti
+
+wifi connect to _ password _ try _ times
+wifi _ SSIDye bağlan şifre _ _ kere dene
+
+wifi create hotspot _ password _
+wifi erişim noktası oluştur SSID _ şifre _
+
+IP address
+IP adresi
+
+define thing _ capability _
+tanımla şey _ yetenek _
+
+register event _ type _
+kaydet olay _ tip _
+
+add boolean property title _ variable _ @Type _
+boolean özellik ekle başlık _ değişken _ @Tip _
+
+add number property title _ variable _ min _ max _ @Type _
+sayı özellik ekle başlık _ değişken _ min _ max _ @Tip _
+
+add string property title _ variable _ @Type _
+dizgi özellik ekle başlık _ değişken _ @Tip _
+
+thing description
+şey tanımlaması
+
+clear thing description
+şey tanımlamasını sil
+
+Motion
+Hareket
+
+motion
+hareket
+
+start step counter
+adım sayıcıyı başlat
+
+step count
+adım sayısı
+
+clear step count
+adım sayısını sil
+
+set step threshold _ (0-50)
+adım eşiğini _ (0-50) yap
+
+Button Events
+Buton Olayları
+
+button _ double pressed
+buton _ çift basıldı
+
+button _ long pressed
+buton _ uzun basıldı
+
+button _ pressed
+buton _ basıldı
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
 New
 Yeni
@@ -343,7 +764,7 @@ Kart tipi:
 Select board:
 Kart seç:
 
-Could not read: 
+Could not read:
 Okuyamadık:
 
 by
@@ -367,14 +788,20 @@ MicroBlocks cihazına balanmak için "Bağlan" düğmesini kullan.
 No boards found; is your board plugged in?
 Kart algılanmadı; kardınız bağlı mı?
 
-For AdaFruit boards, double-click button and try again.
-AdaFruit kartları için butonu çift tıklayın ve gene deneyin.
+For AdaFruit boards, double-click reset button and try again.
+AdaFruit kartları için sıfırlama düğmesini çift tıklayın ve tekrar deneyin.
 
 The board is not responding.
 Kart cevap vermiyor.
 
 Try to Install MicroBlocks on the board?
-Karta Microblocks kurmayı deneyin.
+Karta Microblocks kurulsun mu?
+
+The MicroBlocks in your board is not current
+Karttaki MicroBlocks güncel değil
+
+Try to update MicroBlocks on the board?
+Karttaki MicroBlocks güncellensin mi?
 
 Stop
 Dur
@@ -394,11 +821,11 @@ temizle
 arrange scripts
 betikleri düzenle
 
-undo last drop
-son bırak'ı geri al
+undrop (ctrl-Z)
+geri al
 
-copy all scripts
-tüm betikleri kopyala
+copy all scripts to clipboard
+tüm betikleri panoya kopyala
 
 paste all scripts
 tüm betikleri yapıştır
@@ -406,8 +833,8 @@ tüm betikleri yapıştır
 paste script
 betik yapıştır
 
-save picture of all scripts
-Tüm betiklerin resmini kaydet
+save a picture of all scripts
+tüm betiklerin resimlerini kaydet
 
 about...
 hakkında...
@@ -415,11 +842,50 @@ hakkında...
 virtual machine version
 sanal makine sürümü
 
-install MicroBlocks on board
-MicroBlocks'u karta kur
+update firmware on board
+yerleşik bellenimi güncelle
 
-graph data
-verilerin grafiğini yap
+show data graph
+veri grafiğini göster
+
+set serial delay
+seri gecikmeyi ayarla
+
+firmware version
+yerleşik bellenim sürümü
+
+start Mozilla WebThing server
+Mozilla WebThing sunucusunu başlat
+
+stop Mozilla WebThing server
+Mozilla WebThing sunucusunu durdur
+
+MicroBlocks HTTP Server listening on port 6473
+MicroBlocks HTTP Sunucusu 6473 numaralı bağlantı noktasında dinliyor
+
+wipe and repartition esp32
+esp32 yi silme ve yeniden bölümleme
+
+Use board type
+kart tipini kullan
+
+Wiping board...
+kart siliniyor...
+
+(press ESC to cancel)
+(iptal etmek için ESC tuşuna basın)
+
+Done!
+Bitti!
+
+download and install latest VM
+en son VM'yi indirin ve yükleyin
+
+Select board type:
+Kart tipini seç:
+
+Uploading MicroBlocks to board...
+MicroBlocks karta yükleniyor...
 
 copy data to clipboard
 verileri panoya kopyala
@@ -441,6 +907,9 @@ gelişmiş blokları gizle
 
 Data Graph
 Veri Grafiği
+
+File
+Dosya
 
 File Open
 Dosya Aç
@@ -466,23 +935,59 @@ daralt
 rename...
 adını değiştir...
 
-show definition...
-tanım göster...
+show block definition...
+blok tanımını göster...
+
+show the definition of this block
+bu bloğun tanımını göster
+
+delete block definition...
+blok tanımını sil...
+
+delete the definition of this block
+bu bloğun tanımını sil
 
 duplicate
 çoğalt
 
+duplicate this block
+bu bloğu çoğalt
+
+delete block
+bloğu sil
+
+delete this block
+bu bloğu sil
+
 just this one block
 yalnız bu blok
 
-...all
-tümü...
+copy to clipboard
+panoya kopyala
 
-duplicate including all attached blocks
-ekteki blokların tümüyle çoğalt
+copy these blocks to the clipboard
+bu blokları panoya kopyala
+
+duplicate all
+tümünü çoğalt
+
+duplicate these blocks
+bu blokları çoğalt
+
+extract block
+bloğu ayırt
+
+pull out this block
+bu bloğu ayırt
 
 save picture of script
 betiğin resmini kaydet
+
+save a picture of this block definition as a PNG file
+bu blok tanımının resmini PNG dosyası olarak kaydet
+
+save a picture of these blocks as a PNG file
+bu blokların resimlerini PNG dosyası olarak kaydet
 
 copy script
 betiği kopyala
@@ -490,56 +995,53 @@ betiği kopyala
 delete
 sil
 
-hide definition
-tanımı gizle
+Input type:
+Girdi tipi:
+
+string only
+yalnız dizgi
+
+string or number
+dizgi veya sayı
+
+number only
+yalnız sayı
+
+define
+tanımla
+
+number/string
+sayı/dizgi
+
+editable number or string
+düzenlenebilir sayı veya dizgi
+
+label
+etiket
+
+input
+girdi
+
+hide block definition
+blok tanımını gizle
 
 Are you sure you want to remove this block definition?
-Bu bloğun tanımını sileceğinizden emin misiniz?
+Bu bloğun tanımını sileceğinden emin misin?
 
 Libraries
 Kütüphaneler
 
-Language:
-Dil:
+Language
+Dil
 
-Add a function
-Fonksiyon ekle
-
-Add a variable
-Değişken ekle
-
-Delete a variable
-Değişken sil
-
-Output
-Çıktı
-
-Input
-Girdi
-
-Pins
-Pinler
-
-Control
-Kontrol
-
-Math
-Matematik
-
-Variables
-Değişkenler
-
-Lists
-Listeler
-
-Advanced
-Gelişmiş
-
-Functions
-Fonksiyonlar
+Custom...
+Özel...
 
 Obsolete
 Geçersiz
+
+OK
+Tamam
 
 Ok
 Tamam
@@ -559,35 +1061,3 @@ Tamam
 Confirm
 Onayla
 
-Hummingbird LED _ _ %
-Hummingbird LED _ _ %
-
-Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird 3renkli-LED _ R _ % G _ % B _ %
-
-Hummingbird Position Servo _ _ âˆž
-Hummingbird Konumlu Servo _ _ âˆž
-
-Hummingbird Rotation Servo _ _ %
-Hummingbird Sürekli Servo _ _ %
-
-Hummingbird _ _
-Hummingbird _ _
-
-Hummingbird Battery (mV)
-Hummingbird Pil (mV)
-
-Light
-Işık
-
-Distance
-Mesafe
-
-Dial
-Kadran
-
-Sound
-Ses
-
-Other
-Diğer
