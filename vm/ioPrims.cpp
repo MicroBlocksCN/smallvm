@@ -319,7 +319,7 @@ void restartSerial() {
 	static const char buttonsPins[6] = { 2, 4, 13, 14, 15, 27 };
 	static int buttonIndex = 0;
 	int buttonReadings[6] = {
-		CAP_THRESHOLD, CAP_THRESHOLD, CAP_THRESHOLD,
+		CAP_THRESHOLD + 1, CAP_THRESHOLD, CAP_THRESHOLD,
 		CAP_THRESHOLD, CAP_THRESHOLD, CAP_THRESHOLD };
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32)
