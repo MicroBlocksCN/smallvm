@@ -424,7 +424,6 @@ static void initNeoPixelPin(int pinNum) {
 	} else {
 		neoPixelPinMask = 0;
 	}
-        
 }
 
 static void sendNeoPixelData(int val) {
@@ -503,6 +502,9 @@ static const int whiteTable[64] = {
 OBJ primNeoPixelSend(int argCount, OBJ *args) {
 	if (!neoPixelPinMask) initNeoPixelPin(-1); // if pin not set, use the internal NeoPixel pin
 
+	#if defined(ARDUINO_ARCH_ESP32)
+		delay(1); // ensure we're not interrupted by scheduled (works for up to ~32 Neopixels)
+	#endif
 	OBJ arg = args[0];
 	if (isInt(arg)) {
 		int rgb = obj2int(arg);
