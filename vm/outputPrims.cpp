@@ -461,6 +461,7 @@ static void initNeoPixelPin(int pinNum) {
 		// must use a pin between 0-31
 		setPinMode(pinNum, OUTPUT);
 		neoPixelPinMask = 1 << pinNum;
+		GPIO.out_w1tc = neoPixelPinMask;
 	} else {
 		neoPixelPinMask = 0;
 	}
@@ -546,6 +547,9 @@ void turnOffInternalNeoPixels() {
 		count = 10;
 	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
 		count = 25;
+		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
+		for (int i = 0; i < count; i++) sendNeoPixelData(0);
+		delay(1);
 	#elif defined(ARDUINO_CALLIOPE_MINI)
 		count = 1;
 	#endif
