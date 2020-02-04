@@ -418,12 +418,13 @@ static void sendNeoPixelData(int val) { // SAMD21 (48 MHz)
 
 static void initNeoPixelPin(int pinNum) {
 	if ((0 < pinNum) && (pinNum <= 15)) {
-		// must use a pin betwee 0-15
+		// must use a pin between 0-15
 		setPinMode(pinNum, OUTPUT);
 		neoPixelPinMask = 1 << pinNum;
 	} else {
 		neoPixelPinMask = 0;
 	}
+        
 }
 
 static void sendNeoPixelData(int val) {
@@ -450,8 +451,15 @@ static void sendNeoPixelData(int val) {
 #elif defined(ARDUINO_ARCH_ESP32)
 
 static void initNeoPixelPin(int pinNum) {
+	if ((pinNum < 0) || (pinNum >= pinCount())) {
+		#ifdef ARDUINO_M5Atom_Matrix_ESP32
+			pinNum = 27; // internal NeoPixel pin
+		#else
+			pinNum = 0; // default to pin 0
+		#endif
+	}
 	if ((0 < pinNum) && (pinNum <= 31)) {
-		// must use a pin betwee 0-31
+		// must use a pin between 0-31
 		setPinMode(pinNum, OUTPUT);
 		neoPixelPinMask = 1 << pinNum;
 	} else {
@@ -534,6 +542,8 @@ void turnOffInternalNeoPixels() {
 	int count = 0;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 		count = 10;
+	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+		count = 25;
 	#elif defined(ARDUINO_CALLIOPE_MINI)
 		count = 1;
 	#endif
