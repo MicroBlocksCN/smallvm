@@ -89,12 +89,8 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 
 	if (!wireStarted) startWire();
 	Wire.requestFrom(deviceID, count);
-	if (!Wire.available()) {
-		fail(i2cTransferFailed);
-		return int2obj(count);
-	}
 	for (int i = 0; i < count; i++) {
-		while (!Wire.available()) /* wait for data */;
+		if (!Wire.available()) return int2obj(i); /* no more data */;
 		int byte = Wire.read();
 		FIELD(obj, i + 1) = int2obj(byte);
 	}
@@ -339,9 +335,9 @@ static char is6886 = false;
 
 static void startAccelerometer() {
 	#ifdef ARDUINO_M5Atom_Matrix_ESP32
-	Wire1.begin(25,21);
+		Wire1.begin(25, 21);
 	#else
-	Wire1.begin(); // use internal I2C bus
+		Wire1.begin(); // use internal I2C bus with default pins
 	#endif
 
 	writeAccelReg(MPU6886_PWR_MGMT_1, 0x80); // reset (must be done by itself)
