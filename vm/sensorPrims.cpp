@@ -358,8 +358,12 @@ static int readAcceleration(int registerID) {
 	int sign = 1;
 	int val = 0;
 	#if defined(ARDUINO_M5Stick_C)
-		if (1 == registerID) { sign = -1; val = readAccelReg(61); }
-		if (3 == registerID) { sign = -1; val = readAccelReg(59); }
+		if (1 == registerID) val = readAccelReg(61);
+		if (3 == registerID) val = readAccelReg(59);
+	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+		if (1 == registerID) val = readAccelReg(59);
+		if (3 == registerID) val = readAccelReg(61);
+		if (5 == registerID) sign = -1;
 	#else
 		if (1 == registerID) { sign = -1; val = readAccelReg(59); }
 		if (3 == registerID) val = readAccelReg(61);

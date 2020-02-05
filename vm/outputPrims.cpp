@@ -238,11 +238,15 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 3;
 }
 
+#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+
+	static void updateAtomDisplay(); // forward reference
+	void updateMicrobitDisplay() { updateAtomDisplay(); }
+
 #else
 
- // stubs for boards without 5x5 LED displays or light sensors
-
-void updateMicrobitDisplay() { }
+	// stub for boards without 5x5 LED displays or light sensors
+	void updateMicrobitDisplay() { }
 
 #endif
 
@@ -555,6 +559,24 @@ void turnOffInternalNeoPixels() {
 	#endif
 	for (int i = 0; i < count; i++) sendNeoPixelData(0);
 }
+
+// Simulate the micro:bit 5x5 LED display on M5Stack Atom Matrix
+
+#ifdef ARDUINO_M5Atom_Matrix_ESP32
+
+	void updateAtomDisplay() {
+		int oldPinMask = neoPixelPinMask;
+		initNeoPixelPin(27); // use internal NeoPixels
+		delay(1);
+		int onColor = 15 << 16; // green
+		for (int i = 0; i < 25; i++) {
+			int isOn = (microBitDisplayBits & (1 << i));
+			sendNeoPixelData(isOn ? onColor : 0);
+		}
+		neoPixelPinMask = oldPinMask; // restore the old NeoPixel pin
+	}
+
+#endif
 
 // MicroBit Font
 
