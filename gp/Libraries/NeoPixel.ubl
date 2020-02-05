@@ -14,7 +14,13 @@ variables _np_pixels
 	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
 
 to '_NeoPixel_ensureInitialized' {
-  if (_np_pixels == 0) {neoPixelAttach 10 '' false}
+  if (_np_pixels == 0) {
+    if ((boardType) == 'M5Atom-Matrix') {
+      neoPixelAttach 25 '' false
+    } else {
+        neoPixelAttach 10 '' false
+    }
+  }
 }
 
 to '_NeoPixel_rotate' left {

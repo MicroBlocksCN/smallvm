@@ -319,7 +319,7 @@ void restartSerial() {
 	static const char buttonsPins[6] = { 2, 4, 13, 14, 15, 27 };
 	static int buttonIndex = 0;
 	int buttonReadings[6] = {
-		CAP_THRESHOLD, CAP_THRESHOLD, CAP_THRESHOLD,
+		CAP_THRESHOLD + 1, CAP_THRESHOLD, CAP_THRESHOLD,
 		CAP_THRESHOLD, CAP_THRESHOLD, CAP_THRESHOLD };
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32)
@@ -361,6 +361,20 @@ void restartSerial() {
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
 		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
+
+#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+
+	#define BOARD_TYPE "M5Atom-Matrix"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 39
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 0, 1, 1, 1, 1, 1, 1, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 1, 1, 1, 1, 1, 0};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
@@ -694,6 +708,12 @@ void primSetUserLED(OBJ *args) {
 		}
 	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32)
 		tftSetHugePixel(3, 1, (trueObj == args[0]));
+	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+		// Treat the first NeoPixel as the User LED
+		OBJ pin int2obj(27);
+		OBJ color = (trueObj == args[0]) ? int2obj(15 << 16) : int2obj(0);
+		primNeoPixelSetPin(1, &pin);
+		primNeoPixelSend(1, &color);
 	#else
 		if (PIN_LED < TOTAL_PINS) {
 			SET_MODE(PIN_LED, OUTPUT);

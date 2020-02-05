@@ -238,11 +238,15 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 3;
 }
 
+#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+
+	static void updateAtomDisplay(); // forward reference
+	void updateMicrobitDisplay() { updateAtomDisplay(); }
+
 #else
 
- // stubs for boards without 5x5 LED displays or light sensors
-
-void updateMicrobitDisplay() { }
+	// stub for boards without 5x5 LED displays or light sensors
+	void updateMicrobitDisplay() { }
 
 #endif
 
@@ -418,7 +422,7 @@ static void sendNeoPixelData(int val) { // SAMD21 (48 MHz)
 
 static void initNeoPixelPin(int pinNum) {
 	if ((0 < pinNum) && (pinNum <= 15)) {
-		// must use a pin betwee 0-15
+		// must use a pin between 0-15
 		setPinMode(pinNum, OUTPUT);
 		neoPixelPinMask = 1 << pinNum;
 	} else {
@@ -450,10 +454,18 @@ static void sendNeoPixelData(int val) {
 #elif defined(ARDUINO_ARCH_ESP32)
 
 static void initNeoPixelPin(int pinNum) {
+	if ((pinNum < 0) || (pinNum >= pinCount())) {
+		#ifdef ARDUINO_M5Atom_Matrix_ESP32
+			pinNum = 27; // internal NeoPixel pin
+		#else
+			pinNum = 0; // default to pin 0
+		#endif
+	}
 	if ((0 < pinNum) && (pinNum <= 31)) {
-		// must use a pin betwee 0-31
+		// must use a pin between 0-31
 		setPinMode(pinNum, OUTPUT);
 		neoPixelPinMask = 1 << pinNum;
+		GPIO.out_w1tc = neoPixelPinMask;
 	} else {
 		neoPixelPinMask = 0;
 	}
@@ -495,6 +507,9 @@ static const int whiteTable[64] = {
 OBJ primNeoPixelSend(int argCount, OBJ *args) {
 	if (!neoPixelPinMask) initNeoPixelPin(-1); // if pin not set, use the internal NeoPixel pin
 
+	#if defined(ARDUINO_ARCH_ESP32)
+		delay(1); // ensure we're not interrupted by scheduled (works for up to ~32 Neopixels)
+	#endif
 	OBJ arg = args[0];
 	if (isInt(arg)) {
 		int rgb = obj2int(arg);
@@ -534,11 +549,34 @@ void turnOffInternalNeoPixels() {
 	int count = 0;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 		count = 10;
+	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+		count = 25;
+		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
+		for (int i = 0; i < count; i++) sendNeoPixelData(0);
+		delay(1);
 	#elif defined(ARDUINO_CALLIOPE_MINI)
 		count = 1;
 	#endif
 	for (int i = 0; i < count; i++) sendNeoPixelData(0);
 }
+
+// Simulate the micro:bit 5x5 LED display on M5Stack Atom Matrix
+
+#ifdef ARDUINO_M5Atom_Matrix_ESP32
+
+	void updateAtomDisplay() {
+		int oldPinMask = neoPixelPinMask;
+		initNeoPixelPin(27); // use internal NeoPixels
+		delay(1);
+		int onColor = 15 << 16; // green
+		for (int i = 0; i < 25; i++) {
+			int isOn = (microBitDisplayBits & (1 << i));
+			sendNeoPixelData(isOn ? onColor : 0);
+		}
+		neoPixelPinMask = oldPinMask; // restore the old NeoPixel pin
+	}
+
+#endif
 
 // MicroBit Font
 

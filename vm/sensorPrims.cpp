@@ -90,7 +90,7 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	if (!wireStarted) startWire();
 	Wire.requestFrom(deviceID, count);
 	for (int i = 0; i < count; i++) {
-		while (!Wire.available()) /* wait for data */;
+		if (!Wire.available()) return int2obj(i); /* no more data */;
 		int byte = Wire.read();
 		FIELD(obj, i + 1) = int2obj(byte);
 	}
@@ -120,7 +120,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 		}
 	}
 	int error = Wire.endTransmission();
-	if (error) fail(i2cWriteFailed);
+	if (error) fail(i2cTransferFailed);
 	return falseObj;
 }
 
@@ -299,9 +299,8 @@ static int readTemperature() {
 	return (int) round(result);
 }
 
-#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C)
+#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 
-// defined(ARDUINO_M5Stack_Core_ESP32) ||
 #ifdef ARDUINO_M5Stack_Core_ESP32
 	#define Wire1 Wire
 #endif
@@ -335,7 +334,11 @@ static char accelStarted = false;
 static char is6886 = false;
 
 static void startAccelerometer() {
-		Wire1.begin(); // use internal I2C bus
+	#ifdef ARDUINO_M5Atom_Matrix_ESP32
+		Wire1.begin(25, 21);
+	#else
+		Wire1.begin(); // use internal I2C bus with default pins
+	#endif
 
 	writeAccelReg(MPU6886_PWR_MGMT_1, 0x80); // reset (must be done by itself)
 	delay(1); // required to avoid hang
@@ -354,9 +357,13 @@ static int readAcceleration(int registerID) {
 
 	int sign = 1;
 	int val = 0;
-	#ifdef ARDUINO_M5Stick_C
-		if (1 == registerID) { sign = -1; val = readAccelReg(61); }
-		if (3 == registerID) { sign = -1; val = readAccelReg(59); }
+	#if defined(ARDUINO_M5Stick_C)
+		if (1 == registerID) val = readAccelReg(61);
+		if (3 == registerID) val = readAccelReg(59);
+	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+		if (1 == registerID) val = readAccelReg(59);
+		if (3 == registerID) val = readAccelReg(61);
+		if (5 == registerID) sign = -1;
 	#else
 		if (1 == registerID) { sign = -1; val = readAccelReg(59); }
 		if (3 == registerID) val = readAccelReg(61);
