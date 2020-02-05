@@ -10,6 +10,7 @@ module 'WiFi/IoT Primitives' Comm
 	spec ' ' '[net:stopWiFi]'				'stop WiFi'
 	spec 'r' '[net:wifiStatus]'				'WiFi status'
 	spec 'r' '[net:myIPAddress]'			'my IP address'
+	spec 'r' '[net:getURL]'			'get http܃// _' 'str' 'microblocks.fun'
 	space
 	spec 'r' '[net:thingDescription]'			'thing description'
 	spec ' ' '[net:clearThingDescription]'		'clear thing description'

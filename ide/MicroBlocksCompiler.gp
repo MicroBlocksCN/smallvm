@@ -196,6 +196,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[net:stopWiFi]'		'stop WiFi')
 		(array 'r' '[net:wifiStatus]'	'WiFi status')
 		(array 'r' '[net:myIPAddress]'	'my IP address')
+		(array 'r' '[net:getURL]'	'get http܃// _' 'str' 'microblocks.fun')
 
 		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)

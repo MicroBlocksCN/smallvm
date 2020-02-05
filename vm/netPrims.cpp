@@ -361,6 +361,31 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return (OBJ) &ipStringObject;
 }
 
+static OBJ primGetURL(int argCount, OBJ *args) {
+	char* host = obj2str(args[0]);
+	char response[1000];
+	int index = 0;
+
+	if (!client.connect(host, 80)) {
+		return falseObj;
+	} else if (client.connected()) {
+		unsigned long timeout = millis();
+		while (client.available() == 0) {
+			if (millis() - timeout > 5000) {
+				client.stop();
+				return falseObj;
+			}
+		}
+		while (client.available() || index < 1000) {
+                    char ch = static_cast<char>(client.read());
+			response[index] = ch;
+                    outputString(response);
+			index ++;
+		}
+	}
+	return (OBJ) &response;
+}
+
 #else // not ESP8266 or ESP32
 
 void queueBroadcastAsThingEvent(char *s, int len) { } // noop
@@ -370,6 +395,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetURL(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
@@ -379,6 +405,7 @@ static PrimEntry entries[] = {
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
+	{"getURL", primGetURL},
 };
 
 void addNetPrims() {
