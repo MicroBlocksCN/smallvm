@@ -744,6 +744,18 @@ method getAllVarNames SmallRuntime {
 	sendMsg this 'getVarNamesMsg'
 }
 
+// Serial Delay
+
+method serialDelayMenu SmallRuntime {
+  menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
+  for i 20 { addItem menu i }
+  popUpAtHand menu (global 'page')
+}
+
+method setSerialDelay SmallRuntime newDelay {
+  sendMsg this 'extendedMsg' 1 (list newDelay)
+}
+
 // Message handling
 
 method msgNameToID SmallRuntime msgName {
@@ -816,6 +828,7 @@ method errorString SmallRuntime errID {
 #define argIndexOutOfRange		32	// Argument index out of range
 #define needsIndexable			33	// Needs an indexable type such as a string or list
 #define joinArgsNotSameType		34	// All arguments to join must be the same type (e.g. lists)
+#define i2cTransferFailed		35	// I2C transfer failed
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)

@@ -58,7 +58,7 @@ It goes positive momentarily when the acceleration decreases
 (e.g. because the microcontroller is in free fall) and positive
 when the acceleration increases (e.g. when the falling micro-
 controller is caught).'
-  local 'current' '[sensors:acceleration]'
+  local 'current' ('[sensors:acceleration]')
   local 'result' (current - ('_recentAverage'))
   '_addSample' current
   if ((absoluteValue result) < 3) {
