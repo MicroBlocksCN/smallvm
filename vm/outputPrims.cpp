@@ -241,7 +241,14 @@ void updateMicrobitDisplay() {
 #elif defined(ARDUINO_M5Atom_Matrix_ESP32)
 
 	static void updateAtomDisplay(); // forward reference
-	void updateMicrobitDisplay() { updateAtomDisplay(); }
+
+	static int displaySnapshot = 0;
+
+	void updateMicrobitDisplay() {
+		if (microBitDisplayBits == displaySnapshot) return; // no change
+		updateAtomDisplay();
+		displaySnapshot = microBitDisplayBits;
+	}
 
 #else
 
