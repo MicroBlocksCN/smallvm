@@ -18,7 +18,7 @@
 
 // VM Version
 
-#define VM_VERSION "v074"
+#define VM_VERSION "v075"
 
 // Forward Reference Declarations
 
@@ -587,7 +587,6 @@ static void sendVariableValue(int varID) {
 
 static void sendValueOfVariableNamed(uint8 chunkIndex, int byteCount, uint8 *data) {
 	char varName[100];
-
 	if (byteCount > 99) return; // variable name too long; ignore request
 	memcpy(varName, &data[0], byteCount);
 	varName[byteCount] = 0; // null terminate
