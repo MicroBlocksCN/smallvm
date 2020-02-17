@@ -331,7 +331,7 @@ method specDefinitionString BlockSpec className {
 	  slotType = (at info 1)
 	  if (isOneOf slotType 'auto' 'menu' 'str') {
 		add defaultValues (printString (at info 2))
-	  } (isOneOf slotType 'bool' 'num') {
+	  } (isOneOf slotType 'bool' 'num' 'microbitDisplay') {
 		add defaultValues (toString (at info 2))
 	  } else {
 		add defaultValues 'nil'

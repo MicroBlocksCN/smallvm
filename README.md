@@ -75,12 +75,12 @@ line interface (CLI) tools [here](https://platformio.org/install/cli).
 
 To compile the firmware for all platforms, just enter the "smallvm" folder and run:
 
-<pre>pio run</pre>
+    pio run
 
 To compile and install the VM for a particular board (e.g. the BBC micro:bit),
 plug in the board and run:
 
-<pre>pio run -e microbit -t upload</pre>
+    pio run -e microbit -t upload
 
 ### Building with the Arduino IDE ###
 
@@ -132,7 +132,7 @@ Although MicroBlocks is currently "alpha", it is stable and has been used by hun
 many of them complete beginners. The "alpha" status is because MicroBlocks is still evolving.
 If you are writing documentation, you should to update it to track changes to the libraries, blocks, and UI.
 
-We hope to enter "beta" by late 2019 or early 2020.
+We hope to enter "beta" by early 2020.
 
 ## Contributing ##
 

@@ -279,6 +279,10 @@ move motor _ _ steps _
 
 move motor 1 _ and motor 2 _ _ steps
 
+move motor _ angle _ °
+
+move motor _ _ complete turns
+
 stop steppers
 
 clockwise

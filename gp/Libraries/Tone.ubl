@@ -84,7 +84,6 @@ This helps users find typos in their tunes.'
 
 to '_measureLoopOverhead' {
   comment 'Measure the loop overhead on this device'
-  '[display:mbDisplayOff]'
   local 'halfCycle' 100
   local 'startT' (microsOp)
   repeat 100 {
