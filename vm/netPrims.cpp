@@ -168,7 +168,7 @@ static char* getDescription() {
 		return description;
 	} else {
 		return "";
-        }
+	    }
 }
 
 void webServerLoop() {
@@ -250,6 +250,7 @@ STRING_OBJ_CONST("Trying...") statusTrying;
 STRING_OBJ_CONST("Connected") statusConnected;
 STRING_OBJ_CONST("Failed; bad password?") statusFailed;
 STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
+STRING_OBJ_CONST("Can't reach URL") statusCantReachURL;
 
 #ifdef ESP8266
 	static int firstTime = true;
@@ -361,29 +362,20 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return (OBJ) &ipStringObject;
 }
 
-static OBJ primGetURL(int argCount, OBJ *args) {
-	char* host = obj2str(args[0]);
-	char response[1000];
-	int index = 0;
-
-	if (!client.connect(host, 80)) {
-		return falseObj;
-	} else if (client.connected()) {
-		unsigned long timeout = millis();
-		while (client.available() == 0) {
-			if (millis() - timeout > 5000) {
-				client.stop();
-				return falseObj;
-			}
-		}
-		while (client.available() || index < 1000) {
-                    char ch = static_cast<char>(client.read());
-			response[index] = ch;
-                    outputString(response);
-			index ++;
-		}
-	}
-	return (OBJ) &response;
+static OBJ primHttpRequest(int argCount, OBJ *args) {
+	char* reqType = obj2str(args[0]);
+	char* host = obj2str(args[1]);
+	char* path = obj2str(args[2]);
+	if (!client.connect(host, 80)) return (OBJ) &statusCantReachURL;
+	client.print(reqType);
+	client.print(" /");
+	client.print(path);
+	client.print(" HTTP/1.1\r\nHost: ");
+	client.print(host);
+	client.print("\r\nConnection: close\r\n\r\n");
+	client.flush();
+	client.stop();
+	return falseObj;
 }
 
 #else // not ESP8266 or ESP32
@@ -405,7 +397,7 @@ static PrimEntry entries[] = {
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
-	{"getURL", primGetURL},
+	{"httpRequest", primHttpRequest},
 };
 
 void addNetPrims() {

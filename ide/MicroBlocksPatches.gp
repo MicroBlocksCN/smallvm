@@ -66,6 +66,15 @@ method directions InputSlot {
   return menu
 }
 
+method requestTypes InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'GET'
+  addItem menu 'POST'
+  addItem menu 'PUT'
+  addItem menu 'DELETE'
+  return menu
+}
+
 method thingTypesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'OnOffSwitch'

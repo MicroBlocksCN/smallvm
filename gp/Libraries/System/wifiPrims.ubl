@@ -10,9 +10,4 @@ module 'WiFi/IoT Primitives' Comm
 	spec ' ' '[net:stopWiFi]'				'stop WiFi'
 	spec 'r' '[net:wifiStatus]'				'WiFi status'
 	spec 'r' '[net:myIPAddress]'			'my IP address'
-	spec 'r' '[net:getURL]'			'get http܃// _' 'str' 'microblocks.fun'
-	space
-	spec 'r' '[net:thingDescription]'			'thing description'
-	spec ' ' '[net:clearThingDescription]'		'clear thing description'
-	spec ' ' '[net:appendToThingDescription]'	'append to thing description _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' ''
-	spec ' ' '[net:appendToThingProperty]'		'append to thing property _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' ''
+	spec ' ' '[net:httpRequest]'			'_ request http܃// _ / _' 'menu.requestTypes str str' 'GET' 'microblocks.fun' 'example.txt'
