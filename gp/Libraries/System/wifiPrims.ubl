@@ -11,3 +11,5 @@ module 'WiFi/IoT Primitives' Comm
 	spec 'r' '[net:wifiStatus]'				'WiFi status'
 	spec 'r' '[net:myIPAddress]'			'my IP address'
 	spec ' ' '[net:httpRequest]'			'_ request http܃// _ / _' 'menu.requestTypes str str' 'GET' 'microblocks.fun' 'example.txt'
+	spec 'r' '[net:httpChunkAvailable]'		'HTTP chunk available?'
+	spec 'r' '[net:nextHttpChunk]'			'next HTTP chunk'

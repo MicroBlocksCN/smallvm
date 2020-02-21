@@ -366,6 +366,8 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	char* reqType = obj2str(args[0]);
 	char* host = obj2str(args[1]);
 	char* path = obj2str(args[2]);
+	//char* body = obj2str(args[3]);
+	client.stop();
 	if (!client.connect(host, 80)) return (OBJ) &statusCantReachURL;
 	client.print(reqType);
 	client.print(" /");
@@ -373,9 +375,21 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	client.print(" HTTP/1.1\r\nHost: ");
 	client.print(host);
 	client.print("\r\nConnection: close\r\n\r\n");
-	client.flush();
-	client.stop();
 	return falseObj;
+}
+
+static OBJ primHttpChunkAvailable(int argCount, OBJ *args) {
+	return client.available() ? trueObj : falseObj;
+}
+
+static OBJ primNextHttpChunk(int argCount, OBJ *args) {
+    uint8 response[512];
+    if (client.available()) {
+        client.read(response, 512);
+        return newStringFromBytes(response, 512);
+    } else {
+        return newString(0);
+    }
 }
 
 #else // not ESP8266 or ESP32
@@ -398,6 +412,8 @@ static PrimEntry entries[] = {
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
 	{"httpRequest", primHttpRequest},
+	{"httpChunkAvailable", primHttpChunkAvailable},
+	{"nextHttpChunk", primNextHttpChunk},
 };
 
 void addNetPrims() {
