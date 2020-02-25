@@ -366,7 +366,9 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	char* reqType = obj2str(args[0]);
 	char* host = obj2str(args[1]);
 	char* path = obj2str(args[2]);
-	//char* body = obj2str(args[3]);
+	char* body = obj2str(args[3]);
+        int content_length = strlen(body);
+        char length_str[50];
 	client.stop();
 	if (!client.connect(host, 80)) return (OBJ) &statusCantReachURL;
 	client.print(reqType);
@@ -374,7 +376,15 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	client.print(path);
 	client.print(" HTTP/1.1\r\nHost: ");
 	client.print(host);
-	client.print("\r\nConnection: close\r\n\r\n");
+	client.print("\r\nConnection: close\r\n");
+        if (content_length > 0) {
+            client.print("Content-Type: text/plain\r\n");
+            sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
+            client.print(length_str);
+            client.print(body);
+        } else {
+            client.print("\r\n");
+        }
 	return falseObj;
 }
 
@@ -387,8 +397,6 @@ static OBJ primNextHttpChunk(int argCount, OBJ *args) {
     if (client.available()) {
         client.read(response, 512);
         return newStringFromBytes(response, 512);
-    } else {
-        return newString(0);
     }
 }
 
@@ -401,7 +409,9 @@ static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primGetURL(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpChunkAvailable(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primNextHttpChunk(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
