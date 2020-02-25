@@ -393,10 +393,12 @@ static OBJ primHttpChunkAvailable(int argCount, OBJ *args) {
 }
 
 static OBJ primNextHttpChunk(int argCount, OBJ *args) {
-    uint8 response[512];
+    uint8 response[64];
     if (client.available()) {
-        client.read(response, 512);
-        return newStringFromBytes(response, 512);
+        client.read(response, 64);
+        return newStringFromBytes(response, 64);
+    } else {
+        return falseObj;
     }
 }
 

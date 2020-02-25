@@ -8,6 +8,7 @@ variables response
 	spec 'r' 'body of response' 'body of response _' 'auto' ''
 	spec 'r' 'header' 'header _ of response _' 'auto auto' 'content-length' ''
 	spec 'r' 'status of response' 'status of response _' 'auto' ''
+	spec 'r' 'http܃//' 'http܃// _' 'auto' 'microblocks.fun/example.txt'
 
 to '_http_body_start' response {
   return ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response)
@@ -43,6 +44,40 @@ to header header response {
     'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) (v 'header text')) + 2))
   }
   return (booleanConstant false)
+}
+
+to 'http܃//' url {
+  if (('[net:wifiStatus]') == 'Connected') {
+    local 'response' ''
+    local 'slash position' ('[data:find]' '/' url)
+    local 'request time' (millisOp)
+    if ((v 'slash position') > 0) {
+      '[net:httpRequest]' 'GET' ('[data:copyFromTo]' url 1 ((v 'slash position') - 1)) ('[data:copyFromTo]' url ((v 'slash position') + 1))
+    } else {
+      '[net:httpRequest]' 'GET' url ''
+    }
+    waitUntil (or ('[net:httpChunkAvailable]') ((millisOp) > ((v 'request time') + 3000)))
+    if ((millisOp) > ((v 'request time') + 3000)) {
+      return 'Timeout'
+    } else {
+      local 'chunk count' 0
+      local 'chunk' ''
+      repeatUntil (or (or (not ('[net:httpChunkAvailable]')) ((millisOp) > ((v 'request time') + 8000))) ((v 'chunk count') > (('[data:freeMemory]') / 64))) {
+        chunk = ('[net:nextHttpChunk]')
+        if (chunk != (booleanConstant false)) {
+          response = ('[data:join]' response chunk)
+          'chunk count' += 1
+        }
+      }
+      if ((millisOp) > ((v 'request time') + 8000)) {
+        return 'Timeout'
+      } else {
+        return ('body of response' response)
+      }
+    }
+  } else {
+    return 'Not Connected'
+  }
 }
 
 to 'status of response' response {
