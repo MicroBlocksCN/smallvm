@@ -197,9 +197,17 @@ int indexOfVarNamed(char *varName);
 // Integer Evaluation
 
 static inline int evalInt(OBJ obj) {
-	if (isInt(obj)) return obj2int(obj);
-	fail(needsIntegerError);
-	return 0;
+	if (isInt(obj)) {
+		return obj2int(obj);
+	} else if (IS_TYPE(obj, StringType)) {
+		// try to parse an int out of a string
+		int number;
+		sscanf(obj2str(obj), "%d", &number);
+		return number;
+	} else {
+		fail(needsIntegerError);
+		return 0;
+	}
 }
 
 // Testing Support

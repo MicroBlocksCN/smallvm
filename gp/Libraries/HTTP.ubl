@@ -1,0 +1,51 @@
+module HTTP
+variables response
+
+	spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
+	spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
+	spec 'r' '_http_headers_start' '_http_headers_start _' 'auto' ''
+	spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
+	spec 'r' 'body of response' 'body of response _' 'auto' ''
+	spec 'r' 'header' 'header _ of response _' 'auto auto' 'content-length' ''
+	spec 'r' 'status of response' 'status of response _' 'auto' ''
+
+to '_http_body_start' response {
+  return ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response)
+}
+
+to '_http_header_text' response {
+  return ('[data:copyFromTo]' response ('_http_headers_start' response) (('_http_body_start' response) + 2))
+}
+
+to '_http_headers_start' response {
+  return (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response) + 2)
+}
+
+to '_http_status_text' response {
+  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response))
+}
+
+to 'body of response' response {
+  if (('status of response' response) == 200) {
+    return ('[data:copyFromTo]' response ('_http_body_start' response) (((header 'content-length' response) + ('_http_body_start' response)) + 2))
+  } else {
+    return ('_http_status_text' response)
+  }
+}
+
+to header header response {
+  local 'header text' ('_http_header_text' response)
+  repeatUntil ((size (v 'header text')) < 3) {
+    local 'key' ('[data:copyFromTo]' (v 'header text') 1 (('[data:find]' ':' (v 'header text')) - 1))
+    if (key == header) {
+      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) (v 'header text')) - 1))
+    }
+    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) (v 'header text')) + 2))
+  }
+  return (booleanConstant false)
+}
+
+to 'status of response' response {
+  return (('[data:copyFromTo]' ('_http_status_text' response) 1 4) + 0)
+}
+
