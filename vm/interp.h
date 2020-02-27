@@ -201,7 +201,7 @@ static inline int evalInt(OBJ obj) {
 		return obj2int(obj);
 	} else if (IS_TYPE(obj, StringType)) {
 		// try to parse an int out of a string
-		int number;
+		int number = 0;
 		sscanf(obj2str(obj), "%d", &number);
 		return number;
 	} else {
