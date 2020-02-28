@@ -553,7 +553,7 @@ void outputString(const char *s) {
 	sendMessage(outputValueMsg, 255, (byteCount + 1), data);
 
 	// when debugging VM crashes, it can be helpful to uncomment the following:
-	//while (outBufStart != outBufEnd) sendData(); // wait for string to be sent
+	while (outBufStart != outBufEnd) sendData(); // wait for string to be sent
 }
 
 void sendTaskDone(uint8 chunkIndex) {

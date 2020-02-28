@@ -13,3 +13,6 @@ module 'WiFi/IoT Primitives' Comm
 	spec ' ' '[net:httpRequest]'			'_ request http܃// _ / _ : body _' 'menu.requestTypes str str str' 'GET' 'microblocks.fun' 'example.txt' ''
 	spec 'r' '[net:httpChunkAvailable]'		'HTTP chunk available?'
 	spec 'r' '[net:nextHttpChunk]'			'next HTTP chunk'
+	spec ' ' '[net:httpClose]'			'close HTTP connection'
+	spec ' ' '[net:httpConnect]'			'connect to http܃// _' 'str' 'microblocks.fun'
+	spec 'r' '[net:httpConnected]'			'HTTP connected?'
