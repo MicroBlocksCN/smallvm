@@ -30,9 +30,11 @@
 
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
 
-// Buffer for HTTP requests
+// Buffers for HTTP requests and responses
 #define REQUEST_SIZE 1024
 static char request[REQUEST_SIZE];
+static char response[64];
+static char chunkAvailable = false;
 
 #define JSON_HEADER \
 "HTTP/1.1 200 OK\r\n" \
@@ -170,7 +172,7 @@ static char* getDescription() {
 		return description;
 	} else {
 		return "";
-	    }
+	}
 }
 
 void webServerLoop() {
@@ -366,9 +368,9 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 
 static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
-        if (asyncClient.connected()) asyncClient.abort();
+	if (asyncClient.connected()) asyncClient.abort();
 	asyncClient.connect(host, 80);
-        return falseObj;
+	return falseObj;
 }
 
 static OBJ primHttpConnected(int argCount, OBJ *args) {
@@ -376,7 +378,8 @@ static OBJ primHttpConnected(int argCount, OBJ *args) {
 }
 
 void dataHandler (void*, AsyncClient*, void *data, size_t len) {
-	outputString("data received");
+	strncpy(response, (char*)data, len);
+	chunkAvailable = true;
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
@@ -384,45 +387,43 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	char* host = obj2str(args[1]);
 	char* path = obj2str(args[2]);
 	char* body = obj2str(args[3]);
-        int content_length = strlen(body);
-        char length_str[50];
+	int content_length = strlen(body);
+	char length_str[50];
 	asyncClient.add(reqType, strlen(reqType));
 	asyncClient.add(" /", 2);
 	asyncClient.add(path, strlen(path));
 	asyncClient.add(" HTTP/1.1\r\nHost: ", 17);
 	asyncClient.add(host, strlen(host));
 	asyncClient.add("\r\nConnection: close\r\n", 21);
-        if (content_length > 0) {
-            asyncClient.add("Content-Type: text/plain\r\n", 26);
-            sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
-            asyncClient.add(length_str, strlen(length_str));
-            asyncClient.add(body, strlen(body));
-        } else {
-            asyncClient.add("\r\n", 2);
-        }
-        asyncClient.send();
-        asyncClient.onData(dataHandler);
+	if (content_length > 0) {
+		asyncClient.add("Content-Type: text/plain\r\n", 26);
+		sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
+		asyncClient.add(length_str, strlen(length_str));
+		asyncClient.add(body, strlen(body));
+	} else {
+		asyncClient.add("\r\n", 2);
+	}
+	asyncClient.send();
+	asyncClient.onData(dataHandler);
 	return falseObj;
 }
 
 static OBJ primHttpChunkAvailable(int argCount, OBJ *args) {
-//	return client.available() ? trueObj : falseObj;
+	return chunkAvailable ? trueObj : falseObj;
 }
 
 static OBJ primNextHttpChunk(int argCount, OBJ *args) {
-    /*
-    uint8 response[64];
-    if (client.available()) {
-        client.read(response, 64);
-        return newStringFromBytes(response, 64);
-    } else {
-        return newString(0);
-    }
-    */
+	if (chunkAvailable) {
+		chunkAvailable = false;
+                return newStringFromBytes((uint8 *) response, strlen(response));
+	} else {
+		return falseObj;
+	}
 }
 
 static OBJ primHttpClose(int argCount, OBJ *args) {
 	asyncClient.close();
+	return falseObj;
 }
 
 #else // not ESP8266 or ESP32
