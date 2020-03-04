@@ -89,15 +89,17 @@ to randomColor {
 to rotateNeoPixelsBy n {
   '_NeoPixel_ensureInitialized'
   repeat (absoluteValue n) {
-    '_NeoPixel_rotate' (n > 0) nil nil nil
+    '_NeoPixel_rotate' (n > 0)
   }
   '_NeoPixel_update'
 }
 
-to setNeoPixelColor number color {
+to setNeoPixelColor i color {
   '_NeoPixel_ensureInitialized'
-  atPut number _np_pixels color
-  '_NeoPixel_update'
+  if (and (1 <= i) (i <= (size _np_pixels))) {
+    atPut i _np_pixels color
+    '_NeoPixel_update'
+  }
 }
 
 to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
