@@ -123,7 +123,7 @@ method writeMacApp MicroBlocksAppMaker srcAppPath embeddedFS dstPath {
 	makeDirectory (join appName '/Contents/MacOS')
 	makeDirectory (join appName '/Contents/Resources')
 	writeFile (join appName '/Contents/info.plist') (macInfoFile this name)
-	writeShellScript this name (join appName '/Contents/MacOS/start.sh')
+//	writeShellScript this name (join appName '/Contents/MacOS/start.sh')
 	writeExeFile this srcAppPath embeddedFS (join appName '/Contents/MacOS/' name)
 	makeDirectory (join appName '/Contents/Resources')
 	writeFile (join appName '/Contents/Resources/MicroBlocks.icns') (readFile 'MicroBlocks.icns' true)
@@ -138,7 +138,7 @@ method macInfoFile MicroBlocksAppMaker name {
 	<key>CFBundleName</key>
 	<string>MicroBlocks</string>
 	<key>CFBundleExecutable</key>
-	<string>start.sh</string>
+	<string>MicroBlocks</string>
 	<key>CFBundleIconFile</key>
 	<string>MicroBlocks</string>
 
