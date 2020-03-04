@@ -33,8 +33,7 @@
 // Buffers for HTTP requests and responses
 #define REQUEST_SIZE 1024
 static char request[REQUEST_SIZE];
-static char response[64];
-static char chunkAvailable = false;
+static char response[REQUEST_SIZE];
 
 #define JSON_HEADER \
 "HTTP/1.1 200 OK\r\n" \
@@ -85,6 +84,7 @@ int serverStarted = false;
 WiFiServer server(80);
 WiFiClient client;
 AsyncClient asyncClient;
+char dataCallbackBound = false;
 
 // Web Server for Mozilla IoT Things
 
@@ -369,6 +369,7 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
 	if (asyncClient.connected()) asyncClient.abort();
+	response[0] = '\0';
 	asyncClient.connect(host, 80);
 	return falseObj;
 }
@@ -378,8 +379,12 @@ static OBJ primHttpConnected(int argCount, OBJ *args) {
 }
 
 void dataHandler (void*, AsyncClient*, void *data, size_t len) {
-	strncpy(response, (char*)data, len);
-	chunkAvailable = true;
+	if (strlen(response) + len > REQUEST_SIZE) {
+		strncat(response, (char*)data, REQUEST_SIZE - len);
+		response[REQUEST_SIZE - 1] = 0;
+	} else {
+		strncat(response, (char*)data, len);
+	}
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
@@ -395,6 +400,7 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	asyncClient.add(" HTTP/1.1\r\nHost: ", 17);
 	asyncClient.add(host, strlen(host));
 	asyncClient.add("\r\nConnection: close\r\n", 21);
+	asyncClient.add("User-Agent: MicroBlocks\r\n", 25);
 	if (content_length > 0) {
 		asyncClient.add("Content-Type: text/plain\r\n", 26);
 		sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
@@ -404,18 +410,17 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 		asyncClient.add("\r\n", 2);
 	}
 	asyncClient.send();
-	asyncClient.onData(dataHandler);
+	if (!dataCallbackBound) {
+		asyncClient.onData(dataHandler);
+		dataCallbackBound = true;
+	}
 	return falseObj;
 }
 
-static OBJ primHttpChunkAvailable(int argCount, OBJ *args) {
-	return chunkAvailable ? trueObj : falseObj;
-}
-
-static OBJ primNextHttpChunk(int argCount, OBJ *args) {
-	if (chunkAvailable) {
-		chunkAvailable = false;
-                return newStringFromBytes((uint8 *) response, strlen(response));
+static OBJ primHttpResponse(int argCount, OBJ *args) {
+	int length = strlen(response);
+	if (length > 0) {
+                return newStringFromBytes((uint8 *) response, length);
 	} else {
 		return falseObj;
 	}
@@ -436,8 +441,7 @@ static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primHttpChunkAvailable(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primNextHttpChunk(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpClose(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
@@ -451,8 +455,7 @@ static PrimEntry entries[] = {
 	{"httpConnect", primHttpConnect},
 	{"httpConnected", primHttpConnected},
 	{"httpRequest", primHttpRequest},
-	{"httpChunkAvailable", primHttpChunkAvailable},
-	{"nextHttpChunk", primNextHttpChunk},
+	{"httpResponse", primHttpResponse},
 	{"httpClose", primHttpClose},
 };
 

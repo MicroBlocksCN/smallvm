@@ -10,9 +10,14 @@ module 'WiFi/IoT Primitives' Comm
 	spec ' ' '[net:stopWiFi]'				'stop WiFi'
 	spec 'r' '[net:wifiStatus]'				'WiFi status'
 	spec 'r' '[net:myIPAddress]'			'my IP address'
-	spec ' ' '[net:httpRequest]'			'_ request http܃// _ / _ : body _' 'menu.requestTypes str str str' 'GET' 'microblocks.fun' 'example.txt' ''
-	spec 'r' '[net:httpChunkAvailable]'		'HTTP chunk available?'
-	spec 'r' '[net:nextHttpChunk]'			'next HTTP chunk'
-	spec ' ' '[net:httpClose]'			'close HTTP connection'
+	spec ' ' 'sendHttpRequest'				'_ request http܃// _ / _ : body _' 'menu.requestTypes str str str' 'GET' 'microblocks.fun' 'example.txt' ''
+	spec 'r' '[net:httpResponse]'			'HTTP response'
+	spec ' ' '[net:httpClose]'				'close HTTP connection'
 	spec ' ' '[net:httpConnect]'			'connect to http܃// _' 'str' 'microblocks.fun'
 	spec 'r' '[net:httpConnected]'			'HTTP connected?'
+
+	to sendHttpRequest method host path body {
+		actualBody = body;
+		if ((pushArgCount) < 4) { actualBody = '' }
+		'[net:httpRequest]' method host path actualBody
+	}

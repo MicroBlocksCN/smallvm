@@ -1,14 +1,13 @@
-module HTTP
-variables response
+module 'HTTP'
 
 	spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
 	spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
 	spec 'r' '_http_headers_start' '_http_headers_start _' 'auto' ''
 	spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
-	spec 'r' 'body of response' 'body of response _' 'auto' ''
 	spec 'r' 'header' 'header _ of response _' 'auto auto' 'content-length' ''
 	spec 'r' 'status of response' 'status of response _' 'auto' ''
 	spec 'r' 'http܃//' 'http܃// _' 'auto' 'microblocks.fun/example.txt'
+	spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
 
 to '_http_body_start' response {
   return ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response)
@@ -26,19 +25,25 @@ to '_http_status_text' response {
   return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response))
 }
 
-to 'body of response' response {
-  if (('status of response' response) == 200) {
-    return ('[data:copyFromTo]' response ('_http_body_start' response) (((header 'content-length' response) + ('_http_body_start' response)) + 2))
-  } else {
-    return ('_http_status_text' response)
+to '_lowercase' string {
+  local 'lowercased' ''
+  local 'char code' ''
+  for c (size string) {
+    'char code' = ('[data:unicodeAt]' c string)
+    if (and ((v 'char code') >= 65) ((v 'char code') <= 90)) {
+      'char code' = ((v 'char code') + 32)
+    }
+    lowercased = ('[data:join]' lowercased ('[data:unicodeString]' (v 'char code')))
   }
+  return lowercased
 }
 
 to header header response {
   local 'header text' ('_http_header_text' response)
+  header = ('_lowercase' header)
   repeatUntil ((size (v 'header text')) < 3) {
     local 'key' ('[data:copyFromTo]' (v 'header text') 1 (('[data:find]' ':' (v 'header text')) - 1))
-    if (key == header) {
+    if (('_lowercase' key) == header) {
       return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) (v 'header text')) - 1))
     }
     'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) (v 'header text')) + 2))
@@ -48,31 +53,34 @@ to header header response {
 
 to 'http܃//' url {
   if (('[net:wifiStatus]') == 'Connected') {
-    local 'response' ''
     local 'slash position' ('[data:find]' '/' url)
     local 'request time' (millisOp)
+    local 'host' ''
+    local 'path' ''
     if ((v 'slash position') > 0) {
-      '[net:httpRequest]' 'GET' ('[data:copyFromTo]' url 1 ((v 'slash position') - 1)) ('[data:copyFromTo]' url ((v 'slash position') + 1))
+      host = ('[data:copyFromTo]' url 1 ((v 'slash position') - 1))
+      path = ('[data:copyFromTo]' url ((v 'slash position') + 1))
     } else {
-      '[net:httpRequest]' 'GET' url ''
+      host = url
     }
-    waitUntil (or ('[net:httpChunkAvailable]') ((millisOp) > ((v 'request time') + 3000)))
-    if ((millisOp) > ((v 'request time') + 3000)) {
-      return 'Timeout'
+    '[net:httpConnect]' host
+    waitUntil (or ('[net:httpConnected]') ((millisOp) > ((v 'request time') + 10000)))
+    if ((millisOp) > ((v 'request time') + 10000)) {
+      '[net:httpClose]'
+      return 'Timed out while trying to connect'
     } else {
-      local 'chunk count' 0
-      local 'chunk' ''
-      repeatUntil (or (or (not ('[net:httpChunkAvailable]')) ((millisOp) > ((v 'request time') + 8000))) ((v 'chunk count') > (('[data:freeMemory]') / 64))) {
-        chunk = ('[net:nextHttpChunk]')
-        if (chunk != (booleanConstant false)) {
-          response = ('[data:join]' response chunk)
-          'chunk count' += 1
-        }
-      }
-      if ((millisOp) > ((v 'request time') + 8000)) {
-        return 'Timeout'
+      sendHttpRequest 'GET' url path
+      waitUntil (or (('[net:httpResponse]') != (booleanConstant false)) ((millisOp) > ((v 'request time') + 15000)))
+      local 'response' ('[net:httpResponse]')
+      '[net:httpClose]'
+      if ((millisOp) > ((v 'request time') + 15000)) {
+        return 'Timed out while waiting for data'
       } else {
-        return ('body of response' response)
+        if (('status of response' response) == 200) {
+          return ('[data:copyFromTo]' response ('_http_body_start' response))
+        } else {
+          return ('_http_status_text' response)
+        }
       }
     }
   } else {
