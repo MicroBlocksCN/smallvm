@@ -379,12 +379,9 @@ static OBJ primHttpConnected(int argCount, OBJ *args) {
 }
 
 void dataHandler (void*, AsyncClient*, void *data, size_t len) {
-	if (strlen(response) + len >= REQUEST_SIZE) {
-		strncat(response, (char*)data, REQUEST_SIZE - len - 1);
-		asyncClient.close();
-	} else {
-		strncat(response, (char*)data, len);
-	}
+	int spaceAvailable = REQUEST_SIZE - 1 - strlen(response);
+	if (len > spaceAvailable) len = spaceAvailable;
+	strncat(response, (char*) data, len);
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
