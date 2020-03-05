@@ -379,9 +379,9 @@ static OBJ primHttpConnected(int argCount, OBJ *args) {
 }
 
 void dataHandler (void*, AsyncClient*, void *data, size_t len) {
-	if (strlen(response) + len > REQUEST_SIZE) {
-		strncat(response, (char*)data, REQUEST_SIZE - len);
-		response[REQUEST_SIZE - 1] = 0;
+	if (strlen(response) + len >= REQUEST_SIZE) {
+		strncat(response, (char*)data, REQUEST_SIZE - len - 1);
+		asyncClient.close();
 	} else {
 		strncat(response, (char*)data, len);
 	}
@@ -401,6 +401,7 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	asyncClient.add(host, strlen(host));
 	asyncClient.add("\r\nConnection: close\r\n", 21);
 	asyncClient.add("User-Agent: MicroBlocks\r\n", 25);
+	asyncClient.add("Accept: */*\r\n", 13);
 	if (content_length > 0) {
 		asyncClient.add("Content-Type: text/plain\r\n", 26);
 		sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
