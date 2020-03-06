@@ -4,10 +4,12 @@ module 'HTTP'
 	spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
 	spec 'r' '_http_headers_start' '_http_headers_start _' 'auto' ''
 	spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
-	spec 'r' 'header' 'header _ of response _' 'auto auto' 'content-length' ''
-	spec 'r' 'status of response' 'status of response _' 'auto' ''
-	spec 'r' 'http܃//' 'http܃// _' 'auto' 'microblocks.fun/example.txt'
+	spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
+	spec 'r' '_http_status' '_status of response _' 'auto' ''
 	spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
+	spec 'r' '_request_url' '_request_url _ method _ body _' 'str str str' '' 'POST' ''
+	spec 'r' 'http܃//' 'http܃// _' 'auto' 'microblocks.fun/example.txt'
+	spec ' ' 'request' '_ data _ to http܃// _' 'menu.requestTypes str str' 'POST' '{"name":"MicroBlocks"}' 'microblocks.fun'
 
 to '_http_body_start' response {
   return ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response)
@@ -25,6 +27,10 @@ to '_http_status_text' response {
   return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response))
 }
 
+to '_http_status' response {
+  return (('[data:copyFromTo]' ('_http_status_text' response) 1 4) + 0)
+}
+
 to '_lowercase' string {
   local 'lowercased' ''
   local 'char code' ''
@@ -38,7 +44,34 @@ to '_lowercase' string {
   return lowercased
 }
 
-to header header response {
+to '_request_url' url method body {
+  if (('[net:wifiStatus]') == 'Connected') {
+    local 'slash position' ('[data:find]' '/' url)
+    local 'request time' (millisOp)
+    local 'host' ''
+    local 'path' ''
+    if ((v 'slash position') > 0) {
+      host = ('[data:copyFromTo]' url 1 ((v 'slash position') - 1))
+      path = ('[data:copyFromTo]' url ((v 'slash position') + 1))
+    } else {
+      host = url
+    }
+    '[net:httpConnect]' host
+    waitUntil (or ('[net:httpConnected]') ((millisOp) > ((v 'request time') + 15000)))
+    if ((millisOp) > ((v 'request time') + 15000)) {
+      '[net:httpClose]'
+      return 'Timed out while trying to connect'
+    } else {
+      sendHttpRequest method url path body
+      waitUntil (or (not ('[net:httpConnected]')) ((millisOp) > ((v 'request time') + 20000)))
+      return (booleanConstant true)
+    }
+  } else {
+    return 'Not Connected'
+  }
+}
+
+to '_http_header' header response {
   local 'header text' ('_http_header_text' response)
   header = ('_lowercase' header)
   repeatUntil ((size (v 'header text')) < 3) {
@@ -52,43 +85,28 @@ to header header response {
 }
 
 to 'http܃//' url {
-  if (('[net:wifiStatus]') == 'Connected') {
-    local 'slash position' ('[data:find]' '/' url)
-    local 'request time' (millisOp)
-    local 'host' ''
-    local 'path' ''
-    if ((v 'slash position') > 0) {
-      host = ('[data:copyFromTo]' url 1 ((v 'slash position') - 1))
-      path = ('[data:copyFromTo]' url ((v 'slash position') + 1))
+  local 'result' ('_request_url' url 'GET' '')
+  if (result == (booleanConstant true)) {
+    local 'response' ('[net:httpResponse]')
+    if (('_http_status' response) == 200) {
+      return ('[data:copyFromTo]' response ('_http_body_start' response))
     } else {
-      host = url
-    }
-    '[net:httpConnect]' host
-    waitUntil (or ('[net:httpConnected]') ((millisOp) > ((v 'request time') + 10000)))
-    if ((millisOp) > ((v 'request time') + 10000)) {
-      '[net:httpClose]'
-      return 'Timed out while trying to connect'
-    } else {
-      sendHttpRequest 'GET' url path
-      waitUntil (or (('[net:httpResponse]') != (booleanConstant false)) ((millisOp) > ((v 'request time') + 15000)))
-      local 'response' ('[net:httpResponse]')
-      '[net:httpClose]'
-      if ((millisOp) > ((v 'request time') + 15000)) {
-        return 'Timed out while waiting for data'
-      } else {
-        if (('status of response' response) == 200) {
-          return ('[data:copyFromTo]' response ('_http_body_start' response))
-        } else {
-          return ('_http_status_text' response)
-        }
-      }
+      return ('_http_status_text' response)
     }
   } else {
-    return 'Not Connected'
+    return result
   }
 }
 
-to 'status of response' response {
-  return (('[data:copyFromTo]' ('_http_status_text' response) 1 4) + 0)
+to request data url {
+  local 'result' ('_request_url' url 'POST' data)
+  if (result == (booleanConstant true)) {
+    local 'response' ('[net:httpResponse]')
+    if (('_http_status' response) != 200) {
+      return ('_http_status_text' response)
+    }
+  } else {
+    return result
+  }
 }
 
