@@ -17,8 +17,6 @@
 	#include <ESP8266WiFi.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
-	#include <esp_wifi.h>
-	#include <AsyncTCP.h>
 #elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
 	#define USE_WIFI101
 	#define uint32 wifi_uint32
@@ -83,8 +81,6 @@ static char connecting = false;
 int serverStarted = false;
 WiFiServer server(80);
 WiFiClient client;
-AsyncClient asyncClient;
-char dataCallbackBound = false;
 
 // Web Server for Mozilla IoT Things
 
@@ -366,6 +362,14 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return (OBJ) &ipStringObject;
 }
 
+#define USE_ASYNC_HTTP false
+
+#if USE_ASYNC_HTTP
+
+#include <AsyncTCP.h>
+AsyncClient asyncClient;
+char dataCallbackBound = false;
+
 static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
 	if (asyncClient.connected()) asyncClient.abort();
@@ -374,11 +378,11 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-static OBJ primHttpConnected(int argCount, OBJ *args) {
+static OBJ primHttpIsConnected(int argCount, OBJ *args) {
 	return asyncClient.connected() ? trueObj : falseObj;
 }
 
-void dataHandler (void*, AsyncClient*, void *data, size_t len) {
+static void dataHandler (void*, AsyncClient*, void *data, size_t len) {
 	int spaceAvailable = REQUEST_SIZE - 1 - strlen(response);
 	if (len > spaceAvailable) len = spaceAvailable;
 	strncat(response, (char*) data, len);
@@ -418,7 +422,7 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 static OBJ primHttpResponse(int argCount, OBJ *args) {
 	int length = strlen(response);
 	if (length > 0) {
-                return newStringFromBytes((uint8 *) response, length);
+		return newStringFromBytes((uint8 *) response, length);
 	} else {
 		return falseObj;
 	}
@@ -429,6 +433,67 @@ static OBJ primHttpClose(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+#else
+
+WiFiClient httpClient;
+
+static OBJ primHttpConnect(int argCount, OBJ *args) {
+	char* host = obj2str(args[0]);
+	response[0] = '\0';
+	httpClient.connect(host, 80);
+	return falseObj;
+}
+
+static OBJ primHttpIsConnected(int argCount, OBJ *args) {
+	return httpClient.connected() ? trueObj : falseObj;
+}
+
+static OBJ primHttpRequest(int argCount, OBJ *args) {
+	char* reqType = obj2str(args[0]);
+	char* host = obj2str(args[1]);
+	char* path = obj2str(args[2]);
+	httpClient.write(reqType, strlen(reqType));
+	httpClient.write(" /", 2);
+	httpClient.write(path, strlen(path));
+	httpClient.write(" HTTP/1.1\r\nHost: ", 17);
+	httpClient.write(host, strlen(host));
+	httpClient.write("\r\nConnection: close\r\n", 21);
+	httpClient.write("User-Agent: MicroBlocks\r\n", 25);
+	httpClient.write("Accept: */*\r\n", 13);
+	if (argCount > 3) {
+		char length_str[50];
+		char* body = obj2str(args[3]);
+		int content_length = strlen(body);
+		httpClient.write("Content-Type: text/plain\r\n", 26);
+		sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
+		httpClient.write(length_str, strlen(length_str));
+		httpClient.write(body, strlen(body));
+	} else {
+		httpClient.write("\r\n", 2);
+	}
+	httpClient.flush();
+	return falseObj;
+}
+
+static OBJ primHttpResponse(int argCount, OBJ *args) {
+	int byteCount = httpClient.available();
+	if (byteCount) {
+		if (byteCount > 1023) byteCount = 1023;
+		httpClient.read((uint8 *) response, byteCount);
+		response[byteCount] = '\0';
+		return newStringFromBytes((uint8 *) response, byteCount);
+	} else {
+		return falseObj;
+	}
+}
+
+static OBJ primHttpClose(int argCount, OBJ *args) {
+	httpClient.stop();
+	return falseObj;
+}
+
+#endif // HTTP primitives
+
 #else // not ESP8266 or ESP32
 
 void queueBroadcastAsThingEvent(char *s, int len) { } // noop
@@ -438,6 +503,8 @@ static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpClose(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -451,7 +518,7 @@ static PrimEntry entries[] = {
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
 	{"httpConnect", primHttpConnect},
-	{"httpConnected", primHttpConnected},
+	{"httpConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
 	{"httpClose", primHttpClose},
