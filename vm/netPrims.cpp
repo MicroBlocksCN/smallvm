@@ -388,9 +388,6 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	char* reqType = obj2str(args[0]);
 	char* host = obj2str(args[1]);
 	char* path = obj2str(args[2]);
-	char* body = obj2str(args[3]);
-	int content_length = strlen(body);
-	char length_str[50];
 	asyncClient.add(reqType, strlen(reqType));
 	asyncClient.add(" /", 2);
 	asyncClient.add(path, strlen(path));
@@ -399,7 +396,10 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	asyncClient.add("\r\nConnection: close\r\n", 21);
 	asyncClient.add("User-Agent: MicroBlocks\r\n", 25);
 	asyncClient.add("Accept: */*\r\n", 13);
-	if (content_length > 0) {
+	if (argCount > 3) {
+		char length_str[50];
+		char* body = obj2str(args[3]);
+		int content_length = strlen(body);
 		asyncClient.add("Content-Type: text/plain\r\n", 26);
 		sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
 		asyncClient.add(length_str, strlen(length_str));
