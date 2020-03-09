@@ -1,0 +1,51 @@
+module 'Wifi' Comm
+
+	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
+	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+	spec 'r' 'getIPAddress' 'IP address'
+
+to 'wifi connect to' ssid password tries {
+  if (not ('[net:hasWiFi]')) {return}
+  tries += -1
+  '[net:startWiFi]' ssid password
+  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+    '[net:startWiFi]' ssid password
+    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+      comment 'Slow blink while connecting'
+      setUserLED true
+      waitMillis 500
+      setUserLED false
+      waitMillis 500
+    }
+    tries += -1
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
