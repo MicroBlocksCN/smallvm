@@ -371,10 +371,12 @@ AsyncClient asyncClient;
 char dataCallbackBound = false;
 
 static OBJ primHttpConnect(int argCount, OBJ *args) {
+	int port = 80;
 	char* host = obj2str(args[0]);
+	if ((argCount > 1) && isInt(args[1])) port = obj2int(args[1]);
 	if (asyncClient.connected()) asyncClient.abort();
 	response[0] = '\0';
-	asyncClient.connect(host, 80);
+	asyncClient.connect(host, port);
 	return falseObj;
 }
 
@@ -420,12 +422,13 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 }
 
 static OBJ primHttpResponse(int argCount, OBJ *args) {
+	OBJ result = falseObj;
 	int length = strlen(response);
 	if (length > 0) {
-		return newStringFromBytes((uint8 *) response, length);
-	} else {
-		return falseObj;
+		result = newStringFromBytes((uint8 *) response, length);
+		response[0] = '\0';
 	}
+	return result;
 }
 
 static OBJ primHttpClose(int argCount, OBJ *args) {
@@ -438,9 +441,10 @@ static OBJ primHttpClose(int argCount, OBJ *args) {
 WiFiClient httpClient;
 
 static OBJ primHttpConnect(int argCount, OBJ *args) {
+	int port = 80;
 	char* host = obj2str(args[0]);
-	response[0] = '\0';
-	httpClient.connect(host, 80);
+	if ((argCount > 1) && isInt(args[1])) port = obj2int(args[1]);
+	httpClient.connect(host, port);
 	return falseObj;
 }
 
@@ -480,7 +484,6 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	if (byteCount) {
 		if (byteCount > 1023) byteCount = 1023;
 		httpClient.read((uint8 *) response, byteCount);
-		response[byteCount] = '\0';
 		return newStringFromBytes((uint8 *) response, byteCount);
 	} else {
 		return falseObj;
@@ -518,7 +521,7 @@ static PrimEntry entries[] = {
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
 	{"httpConnect", primHttpConnect},
-	{"httpConnected", primHttpIsConnected},
+	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
 	{"httpClose", primHttpClose},

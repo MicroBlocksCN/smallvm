@@ -1,4 +1,4 @@
-module 'WiFi/IoT Primitives' Comm
+module 'WiFi Primitives' Comm
 
 	// These primitives support WiFi and the Mozilla Web of Things IoT protocol.
 	// See https://iot.mozilla.org
@@ -10,14 +10,8 @@ module 'WiFi/IoT Primitives' Comm
 	spec ' ' '[net:stopWiFi]'				'stop WiFi'
 	spec 'r' '[net:wifiStatus]'				'WiFi status'
 	spec 'r' '[net:myIPAddress]'			'my IP address'
-	spec ' ' 'sendHttpRequest'				'_ request http܃// _ / _ : body _' 'menu.requestTypes str str str' 'GET' 'microblocks.fun' 'example.txt' ''
+	spec ' ' '[net:httpConnect]'			'connect to http܃// _ : port _' 'str num' 'microblocks.fun' 80
+	spec 'r' '[net:httpIsConnected]'		'Is HTTP connected?'
+	spec ' ' '[net:httpRequest]'			'_ request http܃// _ / _ : body _' 'menu.requestTypes str str str' 'GET' 'microblocks.fun' 'example.txt' ''
 	spec 'r' '[net:httpResponse]'			'HTTP response'
 	spec ' ' '[net:httpClose]'				'close HTTP connection'
-	spec ' ' '[net:httpConnect]'			'connect to http܃// _' 'str' 'microblocks.fun'
-	spec 'r' '[net:httpConnected]'			'HTTP connected?'
-
-	to sendHttpRequest method host path body {
-		actualBody = body;
-		if ((pushArgCount) < 4) { actualBody = '' }
-		'[net:httpRequest]' method host path actualBody
-	}
