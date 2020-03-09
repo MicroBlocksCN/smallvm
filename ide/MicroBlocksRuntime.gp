@@ -173,6 +173,10 @@ method showCompiledBytes SmallRuntime aBlock {
 	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
 }
 
+method testDecompiler SmallRuntime aBlock {
+	decompileBytecodes (chunkBytesFor this aBlock)
+}
+
 // chunk management
 
 method syncScripts SmallRuntime {
