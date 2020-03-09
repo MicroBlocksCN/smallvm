@@ -3,6 +3,7 @@ variables responses
 
 script 52 50 {
 whenStarted
+comment 'Remember to use your network name (SSID) and password below'
 'wifi connect to' 'Network_Name' '' 3
 local 'request' ''
 '[net:startHttpServer]'
@@ -18,7 +19,7 @@ forever {
 }
 }
 
-script 564 64 {
+script 586 170 {
 comment 'This is an example HTTP server written in MicroBlocks.
 
 It responds to the following URLs:
@@ -40,7 +41,7 @@ You can also extract the body of a request (when it has one) by using the
 Enjoy!'
 }
 
-script 50 673 {
+script 50 627 {
 whenStarted
 responses = ('[data:makeList]' ('[data:makeList]' '/' '<h1>Hello!</h1><p>This is the MicroBlocks HTTP server.</p><p>You can test the following URLs:</p><ul><li>/test</li><li>/foo</li><li>/bar</li></ul>') ('[data:makeList]' '/test' '<p>This is a <strong>test</strong> URL</p>') ('[data:makeList]' '/foo' '<p>Just a page that says</p><h1>FOO</h1>') ('[data:makeList]' '/bar' '<p>Just a page that says</p><h1>BAR</h1><img src="http://microblocks.fun/logo.png"/>'))
 }
@@ -71,6 +72,10 @@ module Wifi Comm
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
@@ -114,6 +119,6 @@ to wifiCreateHotspot ssid password {
     setUserLED false
     waitMillis 50
   }
-  sayIt 'My IP address is:' ('[net:myIPAddress]')
+  sayIt 'My IP address is:' (getIPAddress)
 }
 

@@ -49,3 +49,6 @@ to wifiCreateHotspot ssid password {
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
