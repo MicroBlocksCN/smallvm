@@ -959,9 +959,11 @@ void vmLoop() {
 			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 				updateMicrobitDisplay();
 			#endif
+			/*
 			#if HAS_WIFI
 				webServerLoop();
 			#endif
+			*/
 			checkButtons();
 			processMessage();
 			count = 25; // must be under 30 when building on mbed to avoid serial errors

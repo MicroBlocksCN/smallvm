@@ -11,7 +11,10 @@ module 'WiFi Primitives' Comm
 	spec 'r' '[net:wifiStatus]'				'WiFi status'
 	spec 'r' '[net:myIPAddress]'			'my IP address'
 	spec ' ' '[net:httpConnect]'			'connect to http܃// _ : port _' 'str num' 'microblocks.fun' 80
-	spec 'r' '[net:httpIsConnected]'		'Is HTTP connected?'
+	spec 'r' '[net:httpIsConnected]'		'is HTTP connected?'
 	spec ' ' '[net:httpRequest]'			'_ request http܃// _ / _ : body _' 'menu.requestTypes str str str' 'GET' 'microblocks.fun' 'example.txt' ''
 	spec 'r' '[net:httpResponse]'			'HTTP response'
 	spec ' ' '[net:httpClose]'				'close HTTP connection'
+	spec ' ' '[net:startHttpServer]'		'start HTTP server'
+	spec 'r' '[net:httpServerRunning]'		'is HTTP server running?'
+	spec 'r' '[net:httpServerGetRequest]'	'HTTP server request'

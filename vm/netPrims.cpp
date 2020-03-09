@@ -30,7 +30,7 @@
 
 // Buffers for HTTP requests and responses
 #define REQUEST_SIZE 1024
-static char request[REQUEST_SIZE];
+static uint8 request[REQUEST_SIZE];
 static char response[REQUEST_SIZE];
 
 #define JSON_HEADER \
@@ -74,7 +74,7 @@ void queueBroadcastAsThingEvent(char *s, int len) {
 	nextBroadcastBuffer = (nextBroadcastBuffer + 1) % BROADCAST_BUFFER_COUNT;
 }
 
-static int event_id = rand(); // events need an incremental id
+// static int event_id = rand(); // events need an incremental id
 
 static char connecting = false;
 
@@ -84,6 +84,7 @@ WiFiClient client;
 
 // Web Server for Mozilla IoT Things
 
+/*
 static void initWebServer() {
 	server.begin();
 	serverStarted = true;
@@ -236,6 +237,7 @@ void webServerLoop() {
 	client.flush();
 	client.stop();
 }
+*/
 
 // WiFi Connection
 
@@ -337,10 +339,12 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) {
 	#endif
 	}
 	if (WL_CONNECTED == status) {
+		/*
 		if (!serverStarted) {
 			// start the server when a connection is first established
 			initWebServer();
 		}
+		*/
 		return (OBJ) &statusConnected;
 	}
 	return int2obj(status); // should not happen
@@ -362,81 +366,28 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return (OBJ) &ipStringObject;
 }
 
-#define USE_ASYNC_HTTP false
-
-#if USE_ASYNC_HTTP
-
-#include <AsyncTCP.h>
-AsyncClient asyncClient;
-char dataCallbackBound = false;
-
-static OBJ primHttpConnect(int argCount, OBJ *args) {
-	int port = 80;
-	char* host = obj2str(args[0]);
-	if ((argCount > 1) && isInt(args[1])) port = obj2int(args[1]);
-	if (asyncClient.connected()) asyncClient.abort();
-	response[0] = '\0';
-	asyncClient.connect(host, port);
+static OBJ primStartHttpServer(int argCount, OBJ *args) {
+	server.begin();
+	serverStarted = true;
 	return falseObj;
 }
 
-static OBJ primHttpIsConnected(int argCount, OBJ *args) {
-	return asyncClient.connected() ? trueObj : falseObj;
+static OBJ primHttpServerRunning(int argCount, OBJ *args) {
+	return serverStarted ? trueObj : falseObj;
 }
 
-static void dataHandler (void*, AsyncClient*, void *data, size_t len) {
-	int spaceAvailable = REQUEST_SIZE - 1 - strlen(response);
-	if (len > spaceAvailable) len = spaceAvailable;
-	strncat(response, (char*) data, len);
-}
+static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
+	if (!client) client = server.available(); // attempt to accept a client connection
+	if (!client) return falseObj; // no client connection
 
-static OBJ primHttpRequest(int argCount, OBJ *args) {
-	char* reqType = obj2str(args[0]);
-	char* host = obj2str(args[1]);
-	char* path = obj2str(args[2]);
-	asyncClient.add(reqType, strlen(reqType));
-	asyncClient.add(" /", 2);
-	asyncClient.add(path, strlen(path));
-	asyncClient.add(" HTTP/1.1\r\nHost: ", 17);
-	asyncClient.add(host, strlen(host));
-	asyncClient.add("\r\nConnection: close\r\n", 21);
-	asyncClient.add("User-Agent: MicroBlocks\r\n", 25);
-	asyncClient.add("Accept: */*\r\n", 13);
-	if (argCount > 3) {
-		char length_str[50];
-		char* body = obj2str(args[3]);
-		int content_length = strlen(body);
-		asyncClient.add("Content-Type: text/plain\r\n", 26);
-		sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
-		asyncClient.add(length_str, strlen(length_str));
-		asyncClient.add(body, strlen(body));
-	} else {
-		asyncClient.add("\r\n", 2);
-	}
-	asyncClient.send();
-	if (!dataCallbackBound) {
-		asyncClient.onData(dataHandler);
-		dataCallbackBound = true;
-	}
-	return falseObj;
-}
+	// read an HTTP request
+	int bytesAvailable = client.available();
+	if (!bytesAvailable) return falseObj;
+	client.readBytes(request, bytesAvailable);
+	request[bytesAvailable] = 0; // null terminate
 
-static OBJ primHttpResponse(int argCount, OBJ *args) {
-	OBJ result = falseObj;
-	int length = strlen(response);
-	if (length > 0) {
-		result = newStringFromBytes((uint8 *) response, length);
-		response[0] = '\0';
-	}
-	return result;
+	return newStringFromBytes(request, bytesAvailable);
 }
-
-static OBJ primHttpClose(int argCount, OBJ *args) {
-	asyncClient.close();
-	return falseObj;
-}
-
-#else
 
 WiFiClient httpClient;
 
@@ -495,8 +446,6 @@ static OBJ primHttpClose(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-#endif // HTTP primitives
-
 #else // not ESP8266 or ESP32
 
 void queueBroadcastAsThingEvent(char *s, int len) { } // noop
@@ -520,6 +469,9 @@ static PrimEntry entries[] = {
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
+	{"startHttpServer", primStartHttpServer},
+	{"httpServerRunning", primHttpServerRunning},
+	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"httpConnect", primHttpConnect},
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
