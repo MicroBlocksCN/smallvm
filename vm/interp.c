@@ -117,7 +117,7 @@ static void primSendBroadcast(int argCount, OBJ *args) {
 	lastBroadcast = newStringFromBytes((uint8 *) printBuffer, printBufferByteCount);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
-	queueBroadcastAsThingEvent(printBuffer, printBufferByteCount);
+	// queueBroadcastAsThingEvent(printBuffer, printBufferByteCount);
 }
 
 // Board Type

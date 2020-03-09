@@ -50,6 +50,8 @@ static char response[REQUEST_SIZE];
 "Access-Control-Allow-Methods: PUT, GET, OPTIONS\r\n" \
 "Access-Control-Allow-Headers: Content-Type\r\n\r\n"
 
+/*
+
 // WoT Event Queue
 
 // On WiFi-enabled boards, we store the last few broadcasts in a circular event buffer.
@@ -74,7 +76,8 @@ void queueBroadcastAsThingEvent(char *s, int len) {
 	nextBroadcastBuffer = (nextBroadcastBuffer + 1) % BROADCAST_BUFFER_COUNT;
 }
 
-// static int event_id = rand(); // events need an incremental id
+ static int event_id = rand(); // events need an incremental id
+*/
 
 static char connecting = false;
 
@@ -389,6 +392,22 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 	return newStringFromBytes(request, bytesAvailable);
 }
 
+static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
+	if (!client) return falseObj;
+	char* status = obj2str(args[0]);
+	char* body = obj2str(args[1]);
+	char* header = obj2str(args[2]);
+	client.print("HTTP/1.1 ");
+	client.print(status);
+	client.print("\r\n");
+	client.print(header);
+	client.print("\r\n\r\n");
+	client.print(body);
+	client.flush();
+	client.stop();
+	return falseObj;
+}
+
 WiFiClient httpClient;
 
 static OBJ primHttpConnect(int argCount, OBJ *args) {
@@ -448,7 +467,7 @@ static OBJ primHttpClose(int argCount, OBJ *args) {
 
 #else // not ESP8266 or ESP32
 
-void queueBroadcastAsThingEvent(char *s, int len) { } // noop
+//void queueBroadcastAsThingEvent(char *s, int len) { } // noop
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
 static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -472,6 +491,7 @@ static PrimEntry entries[] = {
 	{"startHttpServer", primStartHttpServer},
 	{"httpServerRunning", primHttpServerRunning},
 	{"httpServerGetRequest", primHttpServerGetRequest},
+	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
