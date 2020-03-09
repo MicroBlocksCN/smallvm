@@ -76,7 +76,7 @@ void queueBroadcastAsThingEvent(char *s, int len) {
 	nextBroadcastBuffer = (nextBroadcastBuffer + 1) % BROADCAST_BUFFER_COUNT;
 }
 
- static int event_id = rand(); // events need an incremental id
+static int event_id = rand(); // events need an incremental id
 */
 
 static char connecting = false;
@@ -396,13 +396,18 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 	if (!client) return falseObj;
 	char* status = obj2str(args[0]);
 	char* body = obj2str(args[1]);
-	char* header = obj2str(args[2]);
+	char* headers = obj2str(args[2]);
 	client.print("HTTP/1.1 ");
 	client.print(status);
-	client.print("\r\n");
-	client.print(header);
+	if (argCount > 2) {
+		client.print("\r\n");
+		client.print(headers);
+	}
 	client.print("\r\n\r\n");
-	client.print(body);
+	if (argCount > 1) {
+		client.print(body);
+		client.print("\n");
+	}
 	client.flush();
 	client.stop();
 	return falseObj;

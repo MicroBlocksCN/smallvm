@@ -18,4 +18,5 @@ module 'WiFi Primitives' Comm
 	spec ' ' '[net:startHttpServer]'		'start HTTP server'
 	spec 'r' '[net:httpServerRunning]'		'is HTTP server running?'
 	spec 'r' '[net:httpServerGetRequest]'	'HTTP server request'
-	spec ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP request : body _ : header _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Access-Control-Allow-Origin: *'
+	spec ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
+Access-Control-Allow-Origin: *'

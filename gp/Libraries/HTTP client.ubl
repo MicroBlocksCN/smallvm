@@ -1,4 +1,4 @@
-module HTTP
+module 'HTTP client'
 
 	spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
 	spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
