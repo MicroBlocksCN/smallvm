@@ -371,12 +371,12 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 
 static OBJ primStartHttpServer(int argCount, OBJ *args) {
 	server.begin();
-	serverStarted = true;
 	return falseObj;
 }
 
-static OBJ primHttpServerRunning(int argCount, OBJ *args) {
-	return serverStarted ? trueObj : falseObj;
+static OBJ primStopHttpServer(int argCount, OBJ *args) {
+	server.close();
+	return falseObj;
 }
 
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
@@ -479,6 +479,10 @@ static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primStartHttpServer(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primStopHttpServer(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -494,7 +498,7 @@ static PrimEntry entries[] = {
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
 	{"startHttpServer", primStartHttpServer},
-	{"httpServerRunning", primHttpServerRunning},
+	{"stoptHttpServer", primStopHttpServer},
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
