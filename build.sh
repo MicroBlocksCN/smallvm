@@ -101,12 +101,9 @@ fi
 if test -n "$esptool"; then
     # get esptool for the requested systems
     if [ -z $system ] || [ $system == 'win' ]; then
-        wget https://dl.espressif.com/dl/esptool-2.6.1-windows.zip
-        unzip esptool-2.6.1-windows.zip
-        rm esptool-2.6.1-windows.zip
+        wget https://gpblocks.org/mb/esptool/esptool.exe
         mkdir -p gp/packagers/win32/esptool
-        mv esptool/esptool.exe gp/packagers/win32/esptool
-        rm -r esptool
+        mv esptool.exe gp/packagers/win32/esptool
     fi
     if [ -z $system ] || [ $system == 'linux64bit' ] || [ $system == 'linux32bit' ] || [ $system == 'raspberryPi' ]; then
         wget https://raw.githubusercontent.com/espressif/esptool/master/esptool.py
