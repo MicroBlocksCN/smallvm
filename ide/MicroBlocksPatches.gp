@@ -281,7 +281,7 @@ method contextMenu Block {
 	addLine menu
     addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
     addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
-    addItem menu 'test decompiler' (action 'testDecompiler' (smallRuntime) this)
+//    addItem menu 'test decompiler' (action 'testDecompiler' (smallRuntime) this)
   }
   if (notNil (functionNamed (project pe) (primName expression))) {
     addLine menu
