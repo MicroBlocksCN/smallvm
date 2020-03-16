@@ -78,9 +78,13 @@ to '_request_url' url method body {
       return 'Timed out while trying to connect'
     } else {
       '[net:httpRequest]' method host path body
+      chunk = ('[net:httpResponse]')
+      if (chunk != (booleanConstant false)) {
+        response = ('[data:join]' response chunk)
+      }
       repeatUntil (or (not ('[net:httpIsConnected]')) ((millisOp) > ((v 'request time') + 20000))) {
         chunk = ('[net:httpResponse]')
-        if (chunk != (booleanConstant false)) {
+        if (and (chunk != (booleanConstant false)) (('[data:freeMemory]') > ((size response) * 2))) {
           response = ('[data:join]' response chunk)
         }
       }
