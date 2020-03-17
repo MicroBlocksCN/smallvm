@@ -197,11 +197,11 @@ void restartSerial() {
 	// Note: Pin count does not include pins 36-38, the USB serial pins
 
 	#define BOARD_TYPE "CircuitPlayground"
-	#define DIGITAL_PINS 15
+	#define DIGITAL_PINS 16
 	#define ANALOG_PINS 11
 	#define TOTAL_PINS 27
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
-	static const char digitalPin[15] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 26, 25, 13, 8};
+	static const int analogPin[11] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
+	static const char digitalPin[16] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 26, 25, 13, 8, 11};
 	#define PIN_BUTTON_A 4
 	#define PIN_BUTTON_B 5
 	#undef BUTTON_PRESSED

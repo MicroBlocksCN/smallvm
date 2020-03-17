@@ -1,8 +1,8 @@
 module Servo Output
 variables _servoPin _servoPulseWidth
 
-	spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90) : reverse _' 'num num bool' 1 90 false
-	spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100) : reverse _' 'num num bool' 1 50 false
+	spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'num num' 1 90
+	spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100)' 'num num' 1 100
 	spec ' ' 'stopServo' 'stop servo _' 'num' 1
 	spec 'r' '_servoIndex' '_servoIndex _' 'num' 1
 	spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'num num' 1 1500
@@ -62,7 +62,7 @@ to setServoAngle which degrees optionalReverse {
   if reversed {
     degrees = (0 - degrees)
   }
-  local 'pulseWidth' (1500 - (7 * degrees))
+  local 'pulseWidth' (1500 - (10 * degrees))
   if ('[io:hasServo]') {
     '[io:setServo]' which pulseWidth
   } else {
@@ -78,8 +78,8 @@ to setServoSpeed which speed optionalReverse {
   if reversed {
     speed = (0 - speed)
   }
-  local 'pulseWidth' (1500 - (7 * speed))
-  if ((absoluteValue speed) < 5) {
+  local 'pulseWidth' (1500 - (10 * speed))
+  if ((absoluteValue speed) < 2) {
     pulseWidth = 0
   }
   if ('[io:hasServo]') {
