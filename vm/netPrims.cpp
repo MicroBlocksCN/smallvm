@@ -431,14 +431,17 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	char* reqType = obj2str(args[0]);
 	char* host = obj2str(args[1]);
 	char* path = obj2str(args[2]);
-	httpClient.write(reqType, strlen(reqType));
-	httpClient.write(" /", 2);
-	httpClient.write(path, strlen(path));
-	httpClient.write(" HTTP/1.1\r\nHost: ", 17);
-	httpClient.write(host, strlen(host));
-	httpClient.write("\r\nConnection: close\r\n", 21);
-	httpClient.write("User-Agent: MicroBlocks\r\n", 25);
-	httpClient.write("Accept: */*\r\n", 13);
+	char request[256];
+	sprintf(request,
+			"%s /%s HTTP/1.1\r\n\
+Host: %s\r\n\
+Connection: close\r\n\
+User-Agent: MicroBlocks\r\n\
+Accept: */*\r\n",
+			reqType,
+			path,
+			host);
+	httpClient.write(request, strlen(request));
 	if (argCount > 3) {
 		char length_str[50];
 		char* body = obj2str(args[3]);
