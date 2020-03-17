@@ -1,13 +1,15 @@
-module 'Wifi' Comm
+module Wifi Comm
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
 
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
-  tries += -1
-  '[net:startWiFi]' ssid password
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -49,6 +51,3 @@ to wifiCreateHotspot ssid password {
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
-to getIPAddress {
-  return ('[net:myIPAddress]')
-}
