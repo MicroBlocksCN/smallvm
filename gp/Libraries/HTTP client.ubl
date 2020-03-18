@@ -75,7 +75,7 @@ to '_request_url' url method body {
     waitUntil (or ('[net:httpIsConnected]') ((millisOp) > ((v 'request time') + 15000)))
     if ((millisOp) > ((v 'request time') + 15000)) {
       '[net:httpClose]'
-      return 'Timed out while trying to connect'
+      return ('[data:join]' '0 Timed out while trying to connect' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)))
     } else {
       '[net:httpRequest]' method host path body
       chunk = ('[net:httpResponse]')
@@ -91,7 +91,7 @@ to '_request_url' url method body {
       return response
     }
   } else {
-    return 'Not Connected'
+    return ('[data:join]' '0 Not Connected' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)))
   }
 }
 
