@@ -50,8 +50,6 @@ static char response[REQUEST_SIZE];
 "Access-Control-Allow-Methods: PUT, GET, OPTIONS\r\n" \
 "Access-Control-Allow-Headers: Content-Type\r\n\r\n"
 
-/*
-
 // WoT Event Queue
 
 // On WiFi-enabled boards, we store the last few broadcasts in a circular event buffer.
@@ -77,7 +75,6 @@ void queueBroadcastAsThingEvent(char *s, int len) {
 }
 
 static int event_id = rand(); // events need an incremental id
-*/
 
 static char connecting = false;
 
@@ -87,7 +84,6 @@ WiFiClient client;
 
 // Web Server for Mozilla IoT Things
 
-/*
 static void initWebServer() {
 	server.begin();
 	serverStarted = true;
@@ -240,7 +236,6 @@ void webServerLoop() {
 	client.flush();
 	client.stop();
 }
-*/
 
 // WiFi Connection
 
@@ -342,12 +337,10 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) {
 	#endif
 	}
 	if (WL_CONNECTED == status) {
-		/*
 		if (!serverStarted) {
 			// start the server when a connection is first established
 			initWebServer();
 		}
-		*/
 		return (OBJ) &statusConnected;
 	}
 	return int2obj(status); // should not happen
@@ -475,7 +468,7 @@ static OBJ primHttpClose(int argCount, OBJ *args) {
 
 #else // not ESP8266 or ESP32
 
-//void queueBroadcastAsThingEvent(char *s, int len) { } // noop
+void queueBroadcastAsThingEvent(char *s, int len) { } // noop
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
 static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
