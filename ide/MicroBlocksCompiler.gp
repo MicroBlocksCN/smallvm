@@ -135,6 +135,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'varExists'			'variable named _ exists?' 'str' 'var')
 		(array 'r' 'varNamed'			'value of variable named _' 'str' 'var')
 		(array ' ' 'setVarNamed'		'set variable named _ to _' 'str auto' 'var' 0)
+		(array 'r' '[data:typeOf]'		'type of _' 'auto' 'Rósza')
 	'Lists & Strings'
 		(array 'r' 'at'					'item _ of _' 'auto.itemOfMenu str' 1 'Rosa')
 		(array 'r' 'size'				'length of _' 'str' 'Rosa')

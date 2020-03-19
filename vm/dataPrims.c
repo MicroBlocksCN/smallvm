@@ -567,6 +567,10 @@ OBJ primFreeMemory(int argCount, OBJ *args) {
 	return int2obj(wordsFree());
 }
 
+OBJ primTypeOf(int argCount, OBJ *args) {
+	return int2obj(objType(args[0]));
+}
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -580,6 +584,7 @@ static PrimEntry entries[] = {
 	{"unicodeAt", primUnicodeAt},
 	{"unicodeString", primUnicodeString},
 	{"freeMemory", primFreeMemory},
+	{"typeOf", primTypeOf},
 };
 
 void addDataPrims() {
