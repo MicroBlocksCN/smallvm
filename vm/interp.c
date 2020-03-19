@@ -284,9 +284,9 @@ static void runTask(Task *task) {
 		&&bitShiftLeft_op,
 		&&bitShiftRight_op,
 		&&longMultiply_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&varExists_op,
+		&&varNamed_op,
+		&&setVarNamed_op,
 		&&newList_op,
 		&&RESERVED_op,
 		&&fillList_op,
@@ -749,7 +749,31 @@ static void runTask(Task *task) {
 		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
-
+	// introspective variable operations:
+	varExists_op:
+		*(sp - arg) = indexOfVarNamed(obj2str(*(sp - 1))) > - 1 ? trueObj : falseObj;
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	varNamed_op:
+		{
+			int index = indexOfVarNamed(obj2str(*(sp - 1)));
+			if (index > -1) {
+				*(sp - arg) = vars[index];
+			} else {
+				*(sp - arg) = int2obj(0);
+			}
+		}
+		POP_ARGS_REPORTER();
+		DISPATCH();
+	setVarNamed_op:
+		{
+			int index = indexOfVarNamed(obj2str(*(sp - 2)));
+			if (index > -1) {
+				vars[index] = *(sp - 1);
+			}
+		}
+		POP_ARGS_COMMAND();
+		DISPATCH();
 	// list operations:
 	newList_op:
 		*(sp - arg) = primNewList(arg, sp - arg);

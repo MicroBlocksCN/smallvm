@@ -282,6 +282,7 @@ method updateBlocks MicroBlocksScripter {
 	addBlocksForLibrary this (selection (contents libFrame))
   } ('Variables' == cat) {
 	addVariableBlocks this
+    addAdvancedBlocksForCategory this cat
   } ('My Blocks' == cat) {
     addMyBlocks this
   } else {
@@ -292,6 +293,10 @@ method updateBlocks MicroBlocksScripter {
 
 method addBlocksForCategory MicroBlocksScripter cat {
   addBlocksForSpecs this (specsFor (authoringSpecs) cat)
+  addAdvancedBlocksForCategory this cat
+}
+
+method addAdvancedBlocksForCategory MicroBlocksScripter cat {
   advancedSpecs = (specsFor (authoringSpecs) (join cat '-Advanced'))
   if (and (devMode) (not (isEmpty advancedSpecs))) {
 	addSectionLabel this 'Advanced:'
