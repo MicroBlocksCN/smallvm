@@ -132,10 +132,11 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Variables-Advanced'
+		(array 'r' 'allVars'			'global variables')
 		(array 'r' 'varExists'			'variable named _ exists?' 'str' 'var')
 		(array 'r' 'varNamed'			'value of variable named _' 'str' 'var')
 		(array ' ' 'setVarNamed'		'set variable named _ to _' 'str auto' 'var' 0)
-		(array 'r' '[data:typeOf]'		'type of _' 'auto' 'Rósza')
+		(array 'r' '[data:isType]'		'_ is a _' 'auto menu.typesMenu' 'Rósza' 'number')
 	'Lists & Strings'
 		(array 'r' 'at'					'item _ of _' 'auto.itemOfMenu str' 1 'Rosa')
 		(array 'r' 'size'				'length of _' 'str' 'Rosa')
@@ -310,7 +311,7 @@ method initOpcodes SmallCompiler {
 		varNamed 58
 		setVarNamed 59
 		newList 60
-	RESERVED 61
+		allVars 61
 		fillList 62
 		at 63
 		atPut 64

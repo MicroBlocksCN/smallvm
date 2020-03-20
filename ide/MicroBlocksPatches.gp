@@ -42,6 +42,15 @@ method allVarsMenu InputSlot {
   return menu
 }
 
+method typesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'boolean'
+  addItem menu 'number'
+  addItem menu 'string'
+  addItem menu 'list'
+  return menu
+}
+
 method buttonMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'A'

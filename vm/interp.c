@@ -288,7 +288,7 @@ static void runTask(Task *task) {
 		&&varNamed_op,
 		&&setVarNamed_op,
 		&&newList_op,
-		&&RESERVED_op,
+		&&varNames_op,
 		&&fillList_op,
 		&&at_op,
 		&&atPut_op,
@@ -773,6 +773,10 @@ static void runTask(Task *task) {
 			}
 		}
 		POP_ARGS_COMMAND();
+		DISPATCH();
+	varNames_op:
+		*(sp - arg) = varNames(arg, sp - arg);
+		POP_ARGS_REPORTER();
 		DISPATCH();
 	// list operations:
 	newList_op:

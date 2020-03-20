@@ -5,7 +5,6 @@ module 'HTTP server'
 	spec 'r' 'body of request'				'body of request _' 'auto' ''
 	spec 'r' 'path of request'				'path of request _' 'auto' ''
 	spec 'r' 'request method'				'method of request _' 'auto' ''
-	spec ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
 
 to 'body of request' request {
   return ('[data:copyFromTo]' request (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) request) + 4))
