@@ -791,12 +791,11 @@ OBJ varNames(int argCount, OBJ *args) {
 	OBJ allVars = newObj(ListType, 1, int2obj(0));
 	uint8 *variableName;
 	int *p = scanStart();
-	int i = 0;
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
-		if (p && (recType == varName)) {
+		int varID = (*p >> 8) & 0xFF;
+		if (recType == varName) {
 			// found a var, let's add it to the list
-			i++;
 			variableName = (uint8 *) (p + 2);
 			int count = obj2int(FIELD(allVars, 0));
 			if (count >= (WORDS(allVars) - 1)) { // no more capacity; try to grow
@@ -805,8 +804,8 @@ OBJ varNames(int argCount, OBJ *args) {
 				if (growBy > 100) growBy = 100;
 				allVars = resizeObj(allVars, WORDS(allVars) + growBy);
 			}
-			FIELD(allVars, 0) = int2obj(i);
-			FIELD(allVars, i) = newStringFromBytes(variableName, strlen(variableName));
+			FIELD(allVars, 0) = int2obj(varID + 1);
+			FIELD(allVars, varID + 1) = newStringFromBytes(variableName, strlen(variableName));
 		}
 		p = recordAfter(p);
 	}
