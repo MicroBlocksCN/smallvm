@@ -1,11 +1,13 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: ublocks
-Source: bitbucket.org/john_maloney/smallvm
+Source: http://bitbucket.org/john_maloney/smallvm
 
 Files: *
 Copyright: 2018 John Maloney, Jens Mönig, Bernat Romagosa <interest@microblocks.fun>
-License: MPL-2
-
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at http://mozilla.org/MPL/2.0/.
+License: MPL-2.0
+ This Source Code Form is subject to the terms of the Mozilla Public
+ License, v. 2.0. If a copy of the MPL was not distributed with this
+ file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ .
+ On Debian GNU systems, the complete text of Mozilla Public License
+ (MPL-2) version 2 can be found at "/usr/share/common-licenses/MPL-2.0".
