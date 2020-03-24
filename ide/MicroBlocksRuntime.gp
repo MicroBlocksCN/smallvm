@@ -22,25 +22,7 @@ method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
 	clearLoggedData this
-	checkForDisconnectKey this
 	return this
-}
-
-method checkForDisconnectKey SmallRuntime {
-	// Check for the disconnect key (space) being pressed when MicroBlocks is starting.
-	// This disables serial port scanning, avoiding a rare problem on Windows where MicroBlocks
-	// tries to open a COM port on some other serial device (e.g. a BLE dongle) and gets hung.
-	// With scanning disabled, the user can manually select the correct COM port.
-
-	endTime = ((msecsSinceStart) + 1500)
-	while ((msecsSinceStart) < endTime) {
- 		processEvents (global 'page')
- 		if (keyDown (global 'page') 'space') {
- 			disconnected = true
- 			print 'serial port scanning disabled'
- 			return
- 		}
-	}
 }
 
 method evalOnBoard SmallRuntime aBlock showBytes {
@@ -284,15 +266,20 @@ method selectPort SmallRuntime {
 	portList = (portList this)
 	menu = (menu 'Connect' (action 'setPort' this) true)
 	if (or disconnected (devMode)) {
-		for s portList { addItem menu s }
+		for s portList {
+			if (or (isNil port) (portName != s)) { addItem menu s }
+		}
 	}
 	if (devMode) {
-		addLine menu
 		addItem menu 'other...'
 	}
 	if (or (notNil port) (devMode)) {
 		addLine menu
-		addItem menu 'disconnect'
+		if (and (notNil port) (notNil portName)) {
+			addItem menu (join 'disconnect (' portName ')')
+		} else {
+			addItem menu 'disconnect'
+		}
 	}
 	popUpAtHand menu (global 'page')
 }
@@ -300,8 +287,15 @@ method selectPort SmallRuntime {
 method portList SmallRuntime {
 	portList = (list)
 	if ('Win' == (platform)) {
-		portList = (toList (listSerialPorts))
-		remove portList 'COM1'
+		portList = (list)
+		for pname (listSerialPorts) {
+			blackListed = (or
+				((containsSubString pname 'Bluetooth') > 0)
+				((containsSubString pname 'COM1') > 0))
+			if (not blackListed) {
+				add portList pname
+			}
+		}
 	} ('Browser' == (platform)) {
 		listSerialPorts // first call triggers callback
 		waitMSecs 5
@@ -331,7 +325,7 @@ method portList SmallRuntime {
 }
 
 method setPort SmallRuntime newPortName {
-	if ('disconnect' == newPortName) {
+	if (beginsWith newPortName 'disconnect') {
 		if (notNil port) {
 			stopAndSyncScripts this
 			sendStartAll this
