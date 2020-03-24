@@ -307,19 +307,19 @@ method initOpcodes SmallCompiler {
 		<< 54
 		>> 55
 		longMult 56
-		varExists 57
-		varNamed 58
-		setVarNamed 59
+	RESERVED 57
+	RESERVED 58
+	RESERVED 59
 		newList 60
-		allVars 61
+	RESERVED 61
 		fillList 62
 		at 63
 		atPut 64
 		size 65
-	RESERVED 66
-	RESERVED 67
-	RESERVED 68
-	RESERVED 69
+		varExists 66
+		varNamed 67
+		setVarNamed 68
+		allVars 69
 		millisOp 70
 		microsOp 71
 	RESERVED 72
