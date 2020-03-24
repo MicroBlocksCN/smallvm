@@ -1,8 +1,11 @@
-module 'Web of Things (HTTP server)'
+module 'Web Things'
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs
 
 	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
 	spec ' ' 'set thing capability to' 'set thing capability to _' 'str.thingTypesMenu' 'Light'
+	spec ' ' 'addBooleanProperty' 'set boolean property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.booleanPropertyTypesMenu bool' '' '' 'OnOffProperty' false
+	spec ' ' 'addNumProp' 'set number property _ title _ min _ max _ @Type _ : read only _' 'menu.allVarsMenu str num num str.numberPropertyTypesMenu bool' '' '' 0 100 'LevelProperty' false
+	spec ' ' 'addStringProperty' 'set string property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.stringPropertyTypesMenu bool' '' '' 'ColorProperty' false
 	spec ' ' 'register event' 'register event _ type _' 'auto str.thingEventTypesMenu' 'Button A pressed' 'PressedEvent'
 	spec ' ' 'start WebThing server' 'start WebThing server'
 	spec ' ' 'trigger event' 'trigger event _' 'auto' 'button pressed'
@@ -20,9 +23,6 @@ variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_d
 	spec 'r' '_trimmed' '_trimmed _' 'auto' '  hello    '
 	spec ' ' '_WoT_start_server' '_WoT_start_server'
 	spec 'r' '_type of' '_type of _' 'auto' '10'
-	spec ' ' 'addBooleanProperty' 'set boolean property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.booleanPropertyTypesMenu bool' '' '' 'OnOffProperty' false
-	spec ' ' 'addNumProp' 'set number property _ title _ min _ max _ @Type _ : read only _' 'menu.allVarsMenu str num num str.numberPropertyTypesMenu bool' '' '' 0 100 'LevelProperty' false
-	spec ' ' 'addStringProperty' 'set string property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.stringPropertyTypesMenu bool' '' '' 'ColorProperty' false
 	spec ' ' '_add or replace property' '_add or replace property _ title _ @Type _ read only _' 'menu.allVarsMenu str str str' '' '' '' ''
 
 to '_JSON value' value {
