@@ -196,7 +196,17 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[net:stopWiFi]'		'stop WiFi')
 		(array 'r' '[net:wifiStatus]'	'WiFi status')
 		(array 'r' '[net:myIPAddress]'	'my IP address')
-		(array 'r' '[net:getURL]'	'get http܃// _' 'str' 'microblocks.fun')
+
+		(array ' ' '[net:httpConnect]'			'connect to http܃// _ : port _' 'str num' 'microblocks.fun' 80)
+		(array 'r' '[net:httpIsConnected]'		'is HTTP connected?')
+		(array ' ' '[net:httpRequest]'			'_ request http܃// _ / _ : body _' 'menu.requestTypes str str str' 'GET' 'microblocks.fun' 'example.txt' '')
+		(array 'r' '[net:httpResponse]'			'HTTP response')
+		(array ' ' '[net:httpClose]'			'close HTTP connection')
+		(array ' ' '[net:startHttpServer]'		'start HTTP server')
+		(array ' ' '[net:stopHttpServer]'		'stop HTTP server')
+		(array 'r' '[net:httpServerGetRequest]'	'HTTP server request')
+		(array ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
+Access-Control-Allow-Origin: *')
 
 		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)

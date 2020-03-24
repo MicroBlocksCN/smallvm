@@ -1094,7 +1094,11 @@ method showResult SmallRuntime chunkID value {
 		h = (handler m)
 		if (and (isClass h 'Block') (chunkID == (lookupChunkID this h))) {
 			showHint m value
-			if ('' == value) { removeHint (global 'page') }
+			if ('' == value) {
+				removeHint (global 'page')
+			} else {
+				setClipboard (toString value)
+			}
 		}
 	}
 }
