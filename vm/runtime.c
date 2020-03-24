@@ -603,7 +603,7 @@ static void setVariableValue(int varID, int byteCount, uint8 *data) {
 			break;
 		case 2: // string
 			if (byteCount >= 1) {
-				vars[varID] = newStringFromBytes(&data[1], byteCount - 1);
+				vars[varID] = newStringFromBytes((char *) &data[1], byteCount - 1);
 			}
 			break;
 		case 3: // boolean
@@ -799,7 +799,7 @@ static void sendVarNames() {
 	}
 }
 
-int indexOfVarNamed(char *s) {
+int indexOfVarNamed(const char *s) {
 	// Return the index of the given variable or -1 if not found.
 
 	int result = -1; // default is not found

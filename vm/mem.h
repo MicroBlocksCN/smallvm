@@ -102,7 +102,7 @@ void gc();
 OBJ newObj(int typeID, int wordCount, OBJ fill);
 OBJ resizeObj(OBJ obj, int wordCount);
 OBJ newString(int byteCount);
-OBJ newStringFromBytes(uint8 *bytes, int byteCount);
+OBJ newStringFromBytes(const char *bytes, int byteCount);
 char* obj2str(OBJ obj);
 
 // Debugging Support

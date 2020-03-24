@@ -8,6 +8,7 @@
 // John Maloney, May 2019
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "mem.h"

@@ -192,7 +192,7 @@ void sendBroadcastToIDE(char *s, int len);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void vmPanic(char *s);
-int indexOfVarNamed(char *varName);
+int indexOfVarNamed(const char *varName);
 
 // Integer Evaluation
 

@@ -30,7 +30,7 @@
 
 // Buffers for HTTP requests and responses
 #define REQUEST_SIZE 1024
-static uint8 request[REQUEST_SIZE];
+static char request[REQUEST_SIZE];
 static char response[REQUEST_SIZE];
 
 #define JSON_HEADER \
@@ -139,7 +139,7 @@ static void setVariableValue(char *varName, int varID, char *jsonData) {
 	} else if (tjr_String == type) {
 		char s[100];
 		tjr_readStringInto(p, s, sizeof(s));
-		vars[varID] = newStringFromBytes((uint8 *) s, strlen(s));
+		vars[varID] = newStringFromBytes(s, strlen(s));
 	} else if (tjr_True == type) {
 		vars[varID] = trueObj;
 	} else if (tjr_False == type) {
@@ -368,7 +368,9 @@ static OBJ primStartHttpServer(int argCount, OBJ *args) {
 }
 
 static OBJ primStopHttpServer(int argCount, OBJ *args) {
-	server.close();
+	#ifndef USE_WIFI101
+		server.close();
+	#endif
 	return falseObj;
 }
 
@@ -455,7 +457,7 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	if (byteCount) {
 		if (byteCount > 1023) byteCount = 1023;
 		httpClient.read((uint8 *) response, byteCount);
-		return newStringFromBytes((uint8 *) response, byteCount);
+		return newStringFromBytes(response, byteCount);
 	} else {
 		return falseObj;
 	}

@@ -165,7 +165,7 @@ OBJ newString(int byteCount) {
 	return newObj(StringType, wordCount, 0);
 }
 
-OBJ newStringFromBytes(uint8 *bytes, int byteCount) {
+OBJ newStringFromBytes(const char *bytes, int byteCount) {
 	// Create a new string object with the given bytes.
 	// Round up to an even number of words and pad with nulls.
 

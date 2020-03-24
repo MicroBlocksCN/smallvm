@@ -540,7 +540,7 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 		uint8 buf[8]; // buffer for one UTF-8 character
 		uint8 *s = appendUTF8(buf, obj2int(arg));
 		int byteCount = s - buf;
-		return newStringFromBytes(buf, byteCount);
+		return newStringFromBytes((char *) buf, byteCount);
 	} else if (IS_TYPE(arg, ListType)) { // convert list of integers to a Unicode string
 		int listCount = obj2int(FIELD(arg, 0));
 		int utfByteCount = 0;
