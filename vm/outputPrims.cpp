@@ -119,53 +119,6 @@ static int updateLightLevel() {
 	}
 }
 
-static int updateLightLevelOLD() {
-	// If a light level reading has been started and the integration time has elapsed,
-	// update the lightLevel variable and return true.
-	// Otherwise, if light level reading is not in progress, start one and return false.
-	// Otherwise, integration time has not elapsed. Do nothing and return false.
-
-	char col[] = {COL1, COL2, COL3};
-	char row[] = {ROW1, ROW2, ROW3, ROW4, ROW5, ROW6, ROW7, ROW8, ROW9};
-	int i;
-
-	if (lightLevelReadTime > (millisecs() + 10000)) lightLevelReadTime = 0; // clock wrap
-
-	if (0 == lightLevelReadTime) { // start a light level reading
-		// set all row lines high to reverse-bias the LED's
-		for (i = 0; i < 9; i++) {
-			setPinMode(row[i], OUTPUT);
-			digitalWrite(row[i], HIGH);
-		}
-
-		// set all column lines LOW to discharge capacitance
-		for (i = 0; i < 3; i++) {
-			setPinMode(col[i], OUTPUT);
-			digitalWrite(col[i], LOW);
-		}
-		delayMicroseconds(800);
-
-		// use A4 as input; this pin is ROW2 on micro:bit and ROW1 on Calliope
-		setPinMode(A4, INPUT);
-
-		// make all column lines high-impedance inputs, effectively disconnecting them
-		for (i = 0; i < 3; i++) setPinMode(col[i], INPUT);
-
-		lightLevelReadTime = millisecs() + 19;
-		return false; // in progress
-	} else if (millisecs() >= lightLevelReadTime) {
-		lightLevel = analogRead(A4) - 312;
-		if (lightLevel < 0) lightLevel = 0;
-		lightLevel = lightLevel / 3; // record scaled light level
-
-		lightLevelReadTime = 0;
-		lightReadingRequested = false;
-		return true;
-	} else { // just keep waiting
-		return false;
-	}
-}
-
 void updateMicrobitDisplay() {
 	// Update the display by cycling through the three columns, turning on the rows
 	// for each column. To minimize display artifacts, the display bits are snapshot
