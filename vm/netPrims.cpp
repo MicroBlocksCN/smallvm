@@ -28,10 +28,9 @@
 
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
 
-// Buffers for HTTP requests and responses
+// Buffer for HTTP requests
 #define REQUEST_SIZE 1024
 static char request[REQUEST_SIZE];
-static char response[REQUEST_SIZE];
 
 #define JSON_HEADER \
 "HTTP/1.1 200 OK\r\n" \
@@ -113,20 +112,20 @@ static int hasPrefix(char *s, const char *requestPrefix, char *arg, int argSize)
 	return true;
 }
 
-static char * valueJSON(char *response, char *varName, int varID) {
-	// Write a object with the name and value of the given variable into response.
+static char * valueJSON(char *s, char *varName, int varID) {
+	// Write a object with the name and value of the given variable into s and return s.
 
 	OBJ value = vars[varID];
 	if (isInt(value)) {
-		sprintf(response, "{ \"%s\": %d }\r\n", varName, obj2int(value));
+		sprintf(s, "{ \"%s\": %d }\r\n", varName, obj2int(value));
 	} else if ((trueObj == value) || (falseObj == value)) {
-		sprintf(response, "{ \"%s\": %s }\r\n", varName, (trueObj == value) ? "true" : "false");
+		sprintf(s, "{ \"%s\": %s }\r\n", varName, (trueObj == value) ? "true" : "false");
 	} else if (IS_TYPE(value, StringType)) {
-		sprintf(response, "{ \"%s\": \"%s\" }\r\n", varName, obj2str(value));
+		sprintf(s, "{ \"%s\": \"%s\" }\r\n", varName, obj2str(value));
 	} else {
-		sprintf(response, "{ \"%s\": \"<Unknown type>\" }\r\n", varName);
+		sprintf(s, "{ \"%s\": \"<Unknown type>\" }\r\n", varName);
 	}
-	return response;
+	return s;
 }
 
 static void setVariableValue(char *varName, int varID, char *jsonData) {
@@ -147,11 +146,19 @@ static void setVariableValue(char *varName, int varID, char *jsonData) {
 	}
 }
 
-static char* getDescription() {
-	// get the contents of the '_thing description' variable
+static void sendDescriptionToClient() {
+	// Send the Thing description to the client.
+
+	if (!client) return; // no client connection
+
+	char description[1024];
+	description[0] = '\0';
+
 	int index = indexOfVarNamed("_thing description");
+
 	if (index > -1) {
-		char *description = strdup(obj2str(vars[index]));
+		if (StringType != objType(vars[index])) return; // _thing description is not a string
+		strncat(description, obj2str(vars[index]), sizeof(description) - 3);
 		int currentSize = strlen(description);
 		// fix incomplete thing descriptions
 		if ((currentSize > 2) && (description[currentSize - 1] == ',')) {
@@ -165,9 +172,7 @@ static char* getDescription() {
 			description[currentSize + 1] = '}';
 			description[currentSize + 2] = 0;
 		}
-		return description;
-	} else {
-		return "";
+		client.print(description);
 	}
 }
 
@@ -185,35 +190,35 @@ void webServerLoop() {
 	char *body = strstr(request, "\r\n\r\n");
 	body = body ? (body + 4) : request + strlen(request);
 
-	char response[1000];
 	char varName[100];
-	int varID = -1;
 
 	// HTTP request format: "[GET/PUT] /some/url HTTP/1.1"
 	if (hasPrefix(request, "GET / ", NULL, 0)) {
 		// Get the Thing description
 		client.print(JSON_HEADER);
-		client.print(getDescription());
+		sendDescriptionToClient();
 	} else if (hasPrefix(request, "OPTIONS", NULL, 0)) {
 		client.print(OPTIONS_HEADER);
 	} else if (hasPrefix(request, "GET /properties/", varName, sizeof(varName))) {
 		// Get variable value
-		varID = indexOfVarNamed(varName);
+		char s[1000];
+		int varID = indexOfVarNamed(varName);
 		if (varID < 0) {
 			client.print(NOT_FOUND_RESPONSE);
 		} else {
 			client.print(JSON_HEADER);
-			client.print(valueJSON(response, varName, varID));
+			client.print(valueJSON(s, varName, varID));
 		}
 	} else if (hasPrefix(request, "PUT /properties/", varName, sizeof(varName))) {
 		// Set variable value
-		varID = indexOfVarNamed(varName);
+		char s[1000];
+		int varID = indexOfVarNamed(varName);
 		if (varID < 0) {
 			client.print(NOT_FOUND_RESPONSE);
 		} else {
 			setVariableValue(varName, varID, body);
 			client.print(JSON_HEADER);
-			client.print(valueJSON(response, varName, varID));
+			client.print(valueJSON(s, varName, varID));
 		}
 	} else if (hasPrefix(request, "GET /events", NULL, 0)) {
 		client.print(JSON_HEADER);
@@ -308,6 +313,8 @@ static OBJ primStopWiFi(int argCount, OBJ *args) {
 }
 
 static OBJ primWiFiStatus(int argCount, OBJ *args) {
+	if (!connecting) return (OBJ) &statusNotConnected;
+
 	int status = WiFi.status();
 
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
@@ -455,9 +462,10 @@ Accept: */*\r\n",
 static OBJ primHttpResponse(int argCount, OBJ *args) {
 	int byteCount = httpClient.available();
 	if (byteCount) {
+		char buffer[1024];
 		if (byteCount > 1023) byteCount = 1023;
-		httpClient.read((uint8 *) response, byteCount);
-		return newStringFromBytes(response, byteCount);
+		httpClient.read((uint8 *) buffer, byteCount);
+		return newStringFromBytes(buffer, byteCount);
 	} else {
 		return falseObj;
 	}
