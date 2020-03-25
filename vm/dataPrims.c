@@ -569,7 +569,6 @@ OBJ primFreeMemory(int argCount, OBJ *args) {
 }
 
 OBJ primIsType(int argCount, OBJ *args) {
-	OBJ object = args[0];
 	char *type = obj2str(args[1]);
 	switch (objType(args[0])) {
 		case BooleanType:
