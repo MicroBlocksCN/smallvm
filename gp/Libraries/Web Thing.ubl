@@ -114,7 +114,7 @@ to 'wifi connect to' ssid password tries {
     }
     tries += -1
   }
-  repeat 8 {
+  repeat 12 {
     comment 'Quick blinks when connected'
     setUserLED true
     waitMillis 50
