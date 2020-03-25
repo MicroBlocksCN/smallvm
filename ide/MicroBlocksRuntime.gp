@@ -486,8 +486,8 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '0.3.7' }
-method latestVmVersion SmallRuntime { return 76 }
+method ideVersion SmallRuntime { return '0.3.8' }
+method latestVmVersion SmallRuntime { return 77 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = ''
@@ -1095,7 +1095,11 @@ method showResult SmallRuntime chunkID value {
 		h = (handler m)
 		if (and (isClass h 'Block') (chunkID == (lookupChunkID this h))) {
 			showHint m value
-			if ('' == value) { removeHint (global 'page') }
+			if ('' == value) {
+				removeHint (global 'page')
+			} else {
+				setClipboard (toString value)
+			}
 		}
 	}
 }

@@ -8,6 +8,7 @@
 // John Maloney, February 2019
 
 #include <math.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -277,7 +278,7 @@ static int receiveMakeCodeMessage() {
 	return true;
 }
 
-static deviceID() {
+static uint32 deviceID() {
 	// Return the NRF51/52 device ID truncated to 31 bits to fit into a integer object.
 	return (NRF_FICR->DEVICEID[1] << 1) >> 1;
 }

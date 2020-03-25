@@ -28,10 +28,9 @@
 
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
 
-// Buffers for HTTP requests and responses
+// Buffer for HTTP requests
 #define REQUEST_SIZE 1024
-static uint8 request[REQUEST_SIZE];
-static char response[REQUEST_SIZE];
+static char request[REQUEST_SIZE];
 
 #define JSON_HEADER \
 "HTTP/1.1 200 OK\r\n" \
@@ -127,6 +126,8 @@ static OBJ primStopWiFi(int argCount, OBJ *args) {
 }
 
 static OBJ primWiFiStatus(int argCount, OBJ *args) {
+	if (!connecting) return (OBJ) &statusNotConnected;
+
 	int status = WiFi.status();
 
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
@@ -183,7 +184,9 @@ static OBJ primStartHttpServer(int argCount, OBJ *args) {
 }
 
 static OBJ primStopHttpServer(int argCount, OBJ *args) {
-	server.close();
+	#ifndef USE_WIFI101
+		server.close();
+	#endif
 	return falseObj;
 }
 
@@ -268,9 +271,10 @@ Accept: */*\r\n",
 static OBJ primHttpResponse(int argCount, OBJ *args) {
 	int byteCount = httpClient.available();
 	if (byteCount) {
+		char buffer[1024];
 		if (byteCount > 1023) byteCount = 1023;
-		httpClient.read((uint8 *) response, byteCount);
-		return newStringFromBytes((uint8 *) response, byteCount);
+		httpClient.read((uint8 *) buffer, byteCount);
+		return newStringFromBytes(buffer, byteCount);
 	} else {
 		return falseObj;
 	}

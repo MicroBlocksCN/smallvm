@@ -24,7 +24,7 @@ on = (not on)
 
 script 54 58 {
 whenStarted
-'wifi connect to' 'Network_Name' '' 3
+'wifi connect to' 'JohnsNet2' 'seymourp' 3
 defineThing 'Circle Light' 'Light'
 addBooleanProperty 'Circle Light' 'on' 'OnOffProperty'
 '[tft:enableDisplay]' true
@@ -35,7 +35,7 @@ circle-x = 160
 circle-y = 120
 label-x = 115
 label-y = 180
-light-color = ('_tft color' (colorSwatch 255 255 255 255))
+light-color = (makeColor 31 31 31)
 '[tft:text]' (getIPAddress) 30 10 16777215 2 false
 '[tft:text]' 'Simulated Light' 20 40 16777215 3 false
 '[tft:circle]' circle-x circle-y 30 0 true
@@ -48,72 +48,51 @@ forever {
 }
 }
 
-script 523 146 {
+script 544 166 {
 '[tft:enableDisplay]' true
-}
-
-script 525 211 {
 '[display:mbDisplayOff]'
 }
 
-script 544 267 {
+script 550 251 {
 to redraw_display {}
 }
 
 
 module TFT Output
 
-	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+	spec 'r' 'makeColor' 'color r _ g _ b _ (0-31)' 'auto auto auto' 20 5 15
+	spec 'r' 'randomColor' 'random color'
 	spec 'r' '[tft:getWidth]' 'TFT width'
 	spec 'r' '[tft:getHeight]' 'TFT height'
-	spec ' ' 'set TFT pixel x' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec ' ' 'tft line' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
-	spec ' ' 'tft rect' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil false
-	spec ' ' 'tft roundedRect' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil false
-	spec ' ' 'tft circle' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 60 100 30 nil false
-	spec ' ' 'tft triangle' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil false
-	spec ' ' 'tft text' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 0 80 nil 1 false
-	spec 'r' '_tft color' '_tft color _ to number' 'color any'
+	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
 
-to '_tft color' 'color hex' {
-  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
-  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
-  local 'b' ((((v 'color hex') & 255) * 255) / 31)
+to makeColor r g b {
   return ((r << 16) | ((g << 8) | b))
 }
 
-to 'set TFT pixel x' x y color {
-  '[tft:setPixel]' x y ('_tft color' color)
-}
-
-to 'tft circle' x y radius color filled {
-  '[tft:circle]' x y radius ('_tft color' color) filled
-}
-
-to 'tft line' x1 y1 x2 y2 color {
-  '[tft:line]' x1 y1 x2 y2 ('_tft color' color)
-}
-
-to 'tft rect' x y w h color filled {
-  '[tft:rect]' x y w h ('_tft color' color) filled
-}
-
-to 'tft roundedRect' x y w h radius color filled {
-  '[tft:roundedRect]' x y w h radius ('_tft color' color) filled
-}
-
-to 'tft text' text x y color scale wrap {
-  '[tft:text]' text x y ('_tft color' color) scale wrap
-}
-
-to 'tft triangle' x1 y1 x2 y2 x3 y3 color filled {
-  '[tft:triangle]' x1 y1 x2 y2 x3 y3 ('_tft color' color) filled
+to randomColor {
+  local 'n1' (random 0 15)
+  local 'n2' (random 5 20)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
 }
 
 
-module 'Web Thing' Comm
-variables _WoT_definingEvents _useWiFi
+module 'Web Things' Comm
+variables _WoT_definingEvents '_thing description'
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
@@ -124,66 +103,59 @@ variables _WoT_definingEvents _useWiFi
 	spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str.numberPropertyTypesMenu' '' '' 0 100 'LevelProperty'
 	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str.stringPropertyTypesMenu' '' '' 'ColorProperty'
 	spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
-	spec 'r' '[net:thingDescription]' 'thing description'
-	spec ' ' '[net:clearThingDescription]' 'clear thing description'
+	spec ' ' 'append to thing description' 'append to thing description _' 'auto' ''
+	spec ' ' 'clear thing description' 'clear thing description'
+	spec 'r' 'thing description' 'thing description'
 
 to '_addCustomProperty' key jsonValue {
-  if _useWiFi {'[net:appendToThingProperty]' '"' key '": ' jsonValue}
+  'append to thing description' ('[data:join]' '"' key '": ' jsonValue)
 }
 
 to addBooleanProperty title var typeName {
-  if _useWiFi {
-    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"},'
-  } else {
-    sendBroadcast 'moz-property {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"}'
-  }
+  'append to thing description' ('[data:join]' '    "' var '": {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"},')
 }
 
 to addNumProp title var min max typeName {
-  if _useWiFi {
-    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"'
-    if ('TemperatureProperty' == typeName) {
-      '[net:appendToThingDescription]' ', "unit": "degree celsius"'
-    }
-    '[net:appendToThingDescription]' '},'
-  } else {
-    sendBroadcast 'moz-property {"title":"' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"}'
+  'append to thing description' ('[data:join]' '    "' var '": {"title": "' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"')
+  if ('TemperatureProperty' == typeName) {
+    'append to thing description' ', "unit": "degree celsius"'
   }
+  'append to thing description' '},'
 }
 
 to addStringProperty title var typeName {
-  if _useWiFi {
-    '[net:appendToThingDescription]' '    "' var '": {"title": "' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"},'
-  } else {
-    sendBroadcast 'moz-property {"title":"' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"}'
-  }
+  'append to thing description' ('[data:join]' '    "' var '": {"title": "' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"},')
+}
+
+to 'append to thing description' 'more JSON' {
+  if ((v '_thing description') == 0) {'clear thing description'}
+  '_thing description' = ('[data:join]' (v '_thing description') (v 'more JSON'))
+}
+
+to 'clear thing description' {
+  '_thing description' = ''
 }
 
 to defineThing name capability {
-  _useWiFi = ('[net:hasWiFi]')
-  if _useWiFi {
-    _WoT_definingEvents = (booleanConstant false)
-    '[net:clearThingDescription]'
-    if ('' == capability) {
-      '[net:appendToThingDescription]' '{ "title": "' name '",
+  _WoT_definingEvents = (booleanConstant false)
+  'clear thing description'
+  if ('' == capability) {
+    'append to thing description' ('[data:join]' '{ "title": "' name '",
   "@type": [ ],
   "links":[{
     "rel": "events",
     "href": "/events"
    }],
-   "properties": {'
-    } else {
-      '[net:appendToThingDescription]' '{ "title": "' name '",
+   "properties": {')
+  } else {
+    'append to thing description' ('[data:join]' '{ "title": "' name '",
   "@context": "https://iot.mozilla.org/schemas/",
   "@type": ["' capability '"],
   "links":[{
     "rel": "events",
     "href": "/events"
    }],
-  "properties": {'
-    }
-  } else {
-    sendBroadcast 'moz-thing { "name": "' name '","@context": "https://iot.mozilla.org/schemas/","@type": ["' capability '"]}'
+  "properties": {')
   }
 }
 
@@ -192,22 +164,32 @@ to getIPAddress {
 }
 
 to registerEvent title type {
-  if _useWiFi {
-    if (not _WoT_definingEvents) {
-      local 'last char' (at ((size ('[net:thingDescription]')) - 1) ('[net:thingDescription]'))
-      if ((v 'last char') == '{') {
-        comment 'thing description ends with "{", meaning there are no properties'
-        '[net:appendToThingDescription]' '},"events":{'
-      } ((v 'last char') == ',') {
-        comment 'thing description ends with ",", meaning there''s at least one property'
-        '[net:appendToThingDescription]' '"":{}},"events":{'
-      }
-      _WoT_definingEvents = (booleanConstant true)
+  if (not _WoT_definingEvents) {
+    local 'last char' (at (size (v '_thing description')) (v '_thing description'))
+    if ((v 'last char') == '{') {
+      comment 'thing description ends with "{", meaning there are no properties'
+      'append to thing description' '},"events":{'
+    } ((v 'last char') == ',') {
+      comment 'thing description ends with ",", meaning there''s at least one property'
+      '_thing description' = ('[data:join]' ('[data:copyFromTo]' (v '_thing description') 1 ((size (v '_thing description')) - 1)) '},"events":{')
     }
-    '[net:appendToThingDescription]' '    "' title '": {"description":"MicroBlocks event", "@type":"' type '"},'
-  } else {
-    sendBroadcast 'moz-event {"name":"' title '", "metadata":{"description":"MicroBlocks event", "@type":"' type '"}}'
+    _WoT_definingEvents = (booleanConstant true)
   }
+  'append to thing description' ('[data:join]' '    "' title '": {"description":"MicroBlocks event", "@type":"' type '"},')
+}
+
+to 'thing description' {
+  if ((v '_thing description') == 0) {return 'thing description is empty'}
+  local 'description' (v '_thing description')
+  comment 'Fix incomplete thing descriptions'
+  if ((at 'last' (v '_thing description')) == ',') {
+    comment 'close last property / event'
+    description = ('[data:join]' ('[data:copyFromTo]' (v '_thing description') 1 ((size (v '_thing description')) - 1)) '}}')
+  } ((at 'last' (v '_thing description')) == '{') {
+    comment 'no properties'
+    description = ('[data:join]' (v '_thing description') '}}')
+  }
+  return description
 }
 
 to 'wifi connect to' ssid password tries {
