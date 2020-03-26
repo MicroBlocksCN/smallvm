@@ -9,6 +9,7 @@
 // Revised by John Maloney, November 2018
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "mem.h"
 #include "tinyJSON.h"
