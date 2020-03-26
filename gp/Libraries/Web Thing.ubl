@@ -19,12 +19,11 @@ variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_d
 	spec ' ' '_process request' '_process GET request _' 'auto' ''
 	spec ' ' '_respond 404 Not Found' '_respond 404 Not Found'
 	spec 'r' '_JSON value' '_JSON value _' 'auto' '10'
-	spec ' ' '_next JSON list item index' '_next JSON list item index _' 'auto' ''
 	spec 'r' '_parse JSON value' '_parse JSON value _' 'auto' ''
 	spec 'r' '_trimmed' '_trimmed _' 'auto' '  hello    '
 	spec ' ' '_WoT_start_server' '_WoT_start_server'
 	spec 'r' '_type of' '_type of _' 'auto' '10'
-	spec ' ' '_add or replace property' '_add or replace property _ title _ @Type _ type _ read only _ min _ max _' 'menu.allVarsMenu str str str bool num num' '' '' '' ''
+	spec ' ' '_add or replace property' '_add or replace property _ attributes _' 'menu.nil str' '' ''
 
 to '_JSON value' value {
   local 'JSON value' ''
@@ -68,35 +67,15 @@ to '_WoT_start_server' {
   }
 }
 
-to '_add or replace property' varName title semanticType type readonly min max {
-  local 'readonly string' 'false'
-  if readonly {
-    'readonly string' = 'true'
-  }
-  if (_WoT_property_defs == 0) {
-    _WoT_property_defs = ('[data:makeList]')
-  }
+to '_add or replace property' varName 'attributes JSON' {
+  if (_WoT_property_defs == 0) {_WoT_property_defs = ('[data:makeList]')}
   for def _WoT_property_defs {
     if ((at 1 def) == varName) {
-      atPut 2 def title
-      atPut 3 def type
-      atPut 4 def semanticType
-      atPut 5 def (v 'readonly string')
-      if (type == 'number') {
-        atPut 6 def min
-        atPut 7 def max
-      }
+      atPut 2 def (v 'attributes JSON')
       return ''
     }
   }
-  if (type == 'number') {
-    '[data:addLast]' ('[data:makeList]' varName title type semanticType (v 'readonly string') min max) _WoT_property_defs
-  } else {
-    '[data:addLast]' ('[data:makeList]' varName title type semanticType (v 'readonly string')) _WoT_property_defs
-  }
-}
-
-to '_next JSON list item index' JSON {
+  '[data:addLast]' ('[data:makeList]' varName (v 'attributes JSON')) _WoT_property_defs
 }
 
 to '_parse JSON value' JSON {
@@ -215,7 +194,7 @@ to addBooleanProperty varName title type optionalReadOnly {
   if ((pushArgCount) > 3) {
     readonly = optionalReadOnly
   }
-  '_add or replace property' varName title type 'boolean' readonly
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"boolean","@type":"' type '",' '"readonly":' readonly)
 }
 
 to addNumProp varName title min max type optionalReadOnly {
@@ -223,7 +202,7 @@ to addNumProp varName title min max type optionalReadOnly {
   if ((pushArgCount) > 5) {
     readonly = optionalReadOnly
   }
-  '_add or replace property' varName title type 'number' readonly min max
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"number","@type":"' type '",' '"readonly":' readonly ',"minimum":' min ',"maximum":' max)
 }
 
 to addStringProperty varName title type optionalReadOnly {
@@ -231,7 +210,7 @@ to addStringProperty varName title type optionalReadOnly {
   if ((pushArgCount) > 3) {
     readonly = optionalReadOnly
   }
-  '_add or replace property' varName title type 'string' readonly
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"string","@type":"' type '",' '"readonly":' readonly)
 }
 
 to 'event definitions JSON' {
@@ -272,23 +251,14 @@ to 'properties JSON' {
     }
   } else {
     for 'property def' _WoT_property_defs {
-      '[display:mbPlot]' 1 1
       local 'varName' (at 1 (v 'property def'))
-      local 'type' (at 3 (v 'property def'))
-      local 'value' (varNamed varName)
-      '[display:mbPlot]' 2 1
-      JSON = ('[data:join]' JSON '"' varName '":{"title":"' (at 2 (v 'property def')) '","type":"' type '","links":[{"href":"/properties/' varName '"}],"@type":"' (at 4 (v 'property def')) '","readonly":' (at 5 (v 'property def')))
-      if (type == 'number') {
-        JSON = ('[data:join]' JSON ',"min":' (at 6 (v 'property def')) ',"max":' (at 7 (v 'property def')))
-      }
-      JSON = ('[data:join]' JSON '},')
+      JSON = ('[data:join]' JSON '"' varName '":{"links":[{"href":"/properties/' varName '"}],' (at 2 (v 'property def')) '},')
     }
   }
-  if ((size JSON) > 1) {
-    return ('[data:join]' ('[data:copyFromTo]' JSON 1 ((size JSON) - 1)) '}')
-  } else {
-    return '{}'
+  if ((at 'last' JSON) == ',') {
+    JSON = ('[data:copyFromTo]' JSON 1 ((size JSON) - 1))
   }
+  return ('[data:join]' JSON '}')
 }
 
 to 'register event' 'event title' 'event type' {
