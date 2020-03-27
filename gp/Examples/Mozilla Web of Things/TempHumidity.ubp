@@ -164,7 +164,7 @@ to 'request method' request {
 
 
 module 'Web Things'
-variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs
+variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
 
 	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
 	spec ' ' 'set thing capability to' 'set thing capability to _' 'str.thingTypesMenu' 'Light'
@@ -445,7 +445,11 @@ to 'start WebThing server' {
   if (_WoT_title == 0) {'set thing name to' 'MicroBlocks thing'}
   if (_WoT_capability == 0) {'set thing capability to' ''}
   if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
-  sendBroadcastSimple '_WoT_start_server'
+  if ('[net:hasWiFi]') {
+    sendBroadcastSimple '_WoT_start_server'
+  } else {
+    '_thing description' = ('thing description JSON')
+  }
 }
 
 to 'thing description JSON' {
