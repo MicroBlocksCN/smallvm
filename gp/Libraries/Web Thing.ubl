@@ -25,6 +25,7 @@ variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_d
 	spec 'r' '_type of' '_type of _' 'auto' '10'
 	spec ' ' '_add or replace property' '_add or replace property _ attributes _' 'menu.nil str' '' ''
 	spec ' ' '_clear thing description' '_clear thing description'
+	spec 'r' '_varNames' '_varNames'
 
 to '_clear thing description' {
     '_thing description' = 0
@@ -248,7 +249,7 @@ to 'events JSON' {
 to 'properties JSON' {
   local 'JSON' '{'
   if (or (_WoT_property_defs == 0) ((size _WoT_property_defs) == 0)) {
-    for varName ('[vars:varNames]') {
+    for varName (_varNames) {
       if (not ((at 1 varName) == '_')) {
         local 'value' ('[vars:varNamed]' varName)
         JSON = ('[data:join]' JSON '"' varName '":{"title":"' varName '","type":"' ('_type of' value) '","links":[{"href":"/properties/' varName '"}],"@type":""},')
@@ -301,3 +302,14 @@ to 'trigger event' 'event name' {
   '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
 }
 
+to _varNames {
+  local 'result' ('[data:makeList]')
+  local 'count' ('[vars:varNameForIndex]' -1)
+  for i count {
+    local 'varName' ('[vars:varNameForIndex]' i)
+    if (isType varName 'string') {
+      '[data:addLast]' varName result
+    }
+  }
+  return result
+}

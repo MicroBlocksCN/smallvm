@@ -123,16 +123,12 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '~'					'~ _' 'num' 1 3)
 		(array 'r' '<<'					'_ << _' 'num num' 3 2)
 		(array 'r' '>>'					'_ >> _' 'num num' -100 2)
-		'-'
-		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
-		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
 	'Variables'
 		(array 'r' 'v'					'_' 'menu.allVarsMenu' 'n')
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
 	'Variables-Advanced'
-		(array 'r' '[vars:varNames]'	'global variables')
 		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
 		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
 		(array ' ' '[vars:setVarNamed]'	'set variable named _ to _' 'str auto' 'var' 0)

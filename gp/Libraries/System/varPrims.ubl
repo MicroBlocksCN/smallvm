@@ -1,0 +1,19 @@
+module 'Variable Prims' Variables
+
+	spec 'r' 'varNames' 			'varNames'
+	spec 'r' '[vars:varExists]'		'variable named _ exists?' 'str' 'var')
+	spec 'r' '[vars:varNamed]'		'value of variable named _' 'str' 'var')
+	spec ' ' '[vars:setVarNamed]'	'set variable named _ to _' 'str auto' 'var' 0)
+	spec 'r' '[vars:varNameForIndex]' 'variable name for index _' 'num' 1
+
+to varNames {
+  local 'result' ('[data:makeList]')
+  local 'count' ('[vars:varNameForIndex]' -1)
+  for i count {
+    local 'varName' ('[vars:varNameForIndex]' i)
+    if (isType varName 'string') {
+      '[data:addLast]' varName result
+    }
+  }
+  return result
+}

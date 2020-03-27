@@ -46,6 +46,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 void clearPersistentMemory();
 int * recordAfter(int *lastRecord);
 void restoreScripts();
+int *scanStart();
 
 // File-Based Persistent Memory Operations
 

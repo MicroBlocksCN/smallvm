@@ -15,11 +15,11 @@
 #include "interp.h"
 #include "persist.h"
 
-OBJ primVarExists (int argCount, OBJ *args) {
+static OBJ primVarExists (int argCount, OBJ *args) {
 	return indexOfVarNamed(obj2str(args[0])) > - 1 ? trueObj : falseObj;
 }
 
-OBJ primVarNamed (int argCount, OBJ *args) {
+static OBJ primVarNamed (int argCount, OBJ *args) {
 	int index = indexOfVarNamed(obj2str(args[0]));
 	if (index > -1) {
 		return vars[index];
@@ -27,7 +27,7 @@ OBJ primVarNamed (int argCount, OBJ *args) {
 	return int2obj(0);
 }
 
-OBJ primSetVarNamed (int argCount, OBJ *args) {
+static OBJ primSetVarNamed (int argCount, OBJ *args) {
 	int index = indexOfVarNamed(obj2str(args[0]));
 	if (index > -1) {
 		vars[index] = args[1];
@@ -35,42 +35,39 @@ OBJ primSetVarNamed (int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primVarNames(int argCount, OBJ *args) {
-	/*
-	OBJ allVars = newObj(ListType, 1, int2obj(0));
-	uint8 *variableName;
+OBJ primVarNameForIndex(int argCount, OBJ *args) {
+	// Returns the variable name for the given (one-based) index.
+	// If a variable with that index is not found, return the highest index.
+	// Pass -1 as the index to get the number of global variables.
+
+	int varIndex = ((argCount > 0) && isInt(args[0])) ? obj2int(args[0]) - 1 : -1;
+
+	int maxVarIndex = -1;
+	char *varEntry = NULL;
 	int *p = scanStart();
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
-		int varID = (*p >> 8) & 0xFF;
+		int id = (*p >> 8) & 0xFF;
 		if (recType == varName) {
-			// found a var, let's add it to the list
-			variableName = (uint8 *) (p + 2);
-			int count = obj2int(FIELD(allVars, 0));
-			if (count >= (WORDS(allVars) - 1)) { // no more capacity; try to grow
-				int growBy = count / 3;
-				if (growBy < 4) growBy = 3;
-				if (growBy > 100) growBy = 100;
-				allVars = resizeObj(allVars, WORDS(allVars) + growBy);
-			}
-			FIELD(allVars, 0) = int2obj(varID + 1);
-			FIELD(allVars, varID + 1) =
-				newStringFromBytes(variableName, strlen(variableName));
+			if (id > maxVarIndex) maxVarIndex = id;
+			if (varIndex == id) varEntry = (char *) (p + 2);
+		} else if (recType == varsClearAll) {
+			maxVarIndex = -1;
+			varEntry = NULL;
 		}
 		p = recordAfter(p);
 	}
-	return allVars;
-	*/
-	return newObj(ListType, 1, int2obj(0));
-};
+	if (varEntry) return newStringFromBytes(varEntry, strlen(varEntry));
+	return int2obj(maxVarIndex + 1);
+}
 
 // Primitives
 
 static PrimEntry entries[] = {
 	{"varExists", primVarExists},
-	{"varNames", primVarNames},
 	{"varNamed", primVarNamed},
 	{"setVarNamed", primSetVarNamed},
+	{"varNameForIndex", primVarNameForIndex},
 };
 
 void addVarPrims() {

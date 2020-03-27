@@ -692,19 +692,6 @@ void sendChunkCRC(int chunkID) {
 
 // Retrieving source code and attributes
 
-static int * scanStart() {
-	// Return a pointer to the first record at which to start scanning.
-
-	int *ptr = recordAfter(NULL);
-	int *result = ptr; // default if no 'deleteAll' records found
-	while (ptr) {
-		int type = (*ptr >> 16) & 0xFF;
-		ptr = recordAfter(ptr);
-		if (deleteAll == type) result = ptr;
-	}
-	return result;
-}
-
 static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
 	if (!persistentRecord) return; // NULL persistentRecord; do nothing
 
