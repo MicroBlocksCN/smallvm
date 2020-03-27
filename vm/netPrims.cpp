@@ -28,30 +28,8 @@
 
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
 
-// Buffer for HTTP requests
-#define REQUEST_SIZE 1024
-static char request[REQUEST_SIZE];
-
-#define JSON_HEADER \
-"HTTP/1.1 200 OK\r\n" \
-"Access-Control-Allow-Origin: *\r\n" \
-"Content-Type: application/json\r\n\r\n"
-
-#define NOT_FOUND_RESPONSE \
-"HTTP/1.1 404 Not Found\r\n" \
-"Access-Control-Allow-Origin: *\r\n" \
-"Content-Type: application/json\r\n\r\n" \
-"{ \"error\":\"Resource not found\" }"
-
-#define OPTIONS_HEADER \
-"HTTP/1.1 200 OK\r\n" \
-"Access-Control-Allow-Origin: *\r\n" \
-"Access-Control-Allow-Methods: PUT, GET, OPTIONS\r\n" \
-"Access-Control-Allow-Headers: Content-Type\r\n\r\n"
-
 static char connecting = false;
 
-int serverStarted = false;
 WiFiServer server(80);
 WiFiClient client;
 
@@ -68,7 +46,6 @@ STRING_OBJ_CONST("Trying...") statusTrying;
 STRING_OBJ_CONST("Connected") statusConnected;
 STRING_OBJ_CONST("Failed; bad password?") statusFailed;
 STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
-STRING_OBJ_CONST("Can't reach URL") statusCantReachURL;
 
 #ifdef ESP8266
 	static int firstTime = true;
@@ -119,7 +96,6 @@ static OBJ primStopWiFi(int argCount, OBJ *args) {
 	#ifndef USE_WIFI101
 		server.stop();
 		WiFi.mode(WIFI_OFF);
-		serverStarted = false;
 	#endif
 	connecting = false;
 	return falseObj;
@@ -194,13 +170,16 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 	if (!client) client = server.available(); // attempt to accept a client connection
 	if (!client) return falseObj; // no client connection
 
+	char request[1024];
+
 	// read an HTTP request
 	int bytesAvailable = client.available();
 	if (!bytesAvailable) return falseObj;
-	client.readBytes(request, bytesAvailable);
-	request[bytesAvailable] = 0; // null terminate
+	int bytesToRead = bytesAvailable > 1024 ? 1024 : bytesAvailable;
+	client.readBytes(request, bytesToRead);
+	request[bytesToRead] = 0; // null terminate
 
-	return newStringFromBytes(request, bytesAvailable);
+	return newStringFromBytes(request, bytesToRead);
 }
 
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
