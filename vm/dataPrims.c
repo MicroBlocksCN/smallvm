@@ -568,25 +568,6 @@ OBJ primFreeMemory(int argCount, OBJ *args) {
 	return int2obj(wordsFree());
 }
 
-OBJ primIsType(int argCount, OBJ *args) {
-	char *type = obj2str(args[1]);
-	switch (objType(args[0])) {
-		case BooleanType:
-			return strcmp(type, "boolean") == 0 ? trueObj : falseObj;
-			break;
-		case IntegerType:
-			return strcmp(type, "number") == 0 ? trueObj : falseObj;
-			break;
-		case StringType:
-			return strcmp(type, "string") == 0 ? trueObj : falseObj;
-			break;
-		case ListType:
-			return strcmp(type, "list") == 0 ? trueObj : falseObj;
-			break;
-	}
-	return falseObj;
-}
-
 // Primitives
 
 static PrimEntry entries[] = {
@@ -600,7 +581,6 @@ static PrimEntry entries[] = {
 	{"unicodeAt", primUnicodeAt},
 	{"unicodeString", primUnicodeString},
 	{"freeMemory", primFreeMemory},
-	{"isType", primIsType},
 };
 
 void addDataPrims() {

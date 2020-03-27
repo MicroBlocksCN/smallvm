@@ -284,7 +284,7 @@ static void runTask(Task *task) {
 		&&bitShiftLeft_op,
 		&&bitShiftRight_op,
 		&&longMultiply_op,
-		&&RESERVED_op,
+		&&isType_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&newList_op,
@@ -293,10 +293,10 @@ static void runTask(Task *task) {
 		&&at_op,
 		&&atPut_op,
 		&&length_op,
-		&&varExists_op,
-		&&varNamed_op,
-		&&setVarNamed_op,
-		&&varNames_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
+		&&RESERVED_op,
 		&&millis_op,
 		&&micros_op,
 		&&RESERVED_op,
@@ -749,35 +749,6 @@ static void runTask(Task *task) {
 		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
-	// introspective variable operations:
-	varExists_op:
-		*(sp - arg) = indexOfVarNamed(obj2str(*(sp - 1))) > - 1 ? trueObj : falseObj;
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	varNamed_op:
-		{
-			int index = indexOfVarNamed(obj2str(*(sp - 1)));
-			if (index > -1) {
-				*(sp - arg) = vars[index];
-			} else {
-				*(sp - arg) = int2obj(0);
-			}
-		}
-		POP_ARGS_REPORTER();
-		DISPATCH();
-	setVarNamed_op:
-		{
-			int index = indexOfVarNamed(obj2str(*(sp - 2)));
-			if (index > -1) {
-				vars[index] = *(sp - 1);
-			}
-		}
-		POP_ARGS_COMMAND();
-		DISPATCH();
-	varNames_op:
-		*(sp - arg) = varNames(arg, sp - arg);
-		POP_ARGS_REPORTER();
-		DISPATCH();
 	// list operations:
 	newList_op:
 		*(sp - arg) = primNewList(arg, sp - arg);
@@ -799,8 +770,27 @@ static void runTask(Task *task) {
 		*(sp - arg) = primLength(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
-
 	// miscellaneous operations:
+	isType_op:
+		{
+			char *type = obj2str(*(sp - 1));
+			switch (objType(*(sp - 2))) {
+				case BooleanType:
+					*(sp - arg) = strcmp(type, "boolean") == 0 ? trueObj : falseObj;
+					break;
+				case IntegerType:
+					*(sp - arg) = strcmp(type, "number") == 0 ? trueObj : falseObj;
+					break;
+				case StringType:
+					*(sp - arg) = strcmp(type, "string") == 0 ? trueObj : falseObj;
+					break;
+				case ListType:
+					*(sp - arg) = strcmp(type, "list") == 0 ? trueObj : falseObj;
+					break;
+			}
+		}
+		POP_ARGS_REPORTER();
+		DISPATCH();
 	millis_op:
 		STACK_CHECK(1);
 		*sp++ = int2obj(millisecs());

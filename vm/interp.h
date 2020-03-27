@@ -192,7 +192,6 @@ void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void vmPanic(char *s);
 int indexOfVarNamed(const char *varName);
-OBJ varNames(int argCount, OBJ *args);
 
 // Integer Evaluation
 
@@ -304,6 +303,7 @@ void addNetPrims();
 void addRadioPrims();
 void addSensorPrims();
 void addTFTPrims();
+void addVarPrims();
 
 // Named Primitive Support
 

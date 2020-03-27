@@ -144,15 +144,15 @@ variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_d
 
 to '_JSON value' value {
   local 'JSON value' ''
-  if ('[data:isType]' value 'string') {
+  if (isType value 'string') {
     'JSON value' = ('[data:join]' '"' value '"')
-  } ('[data:isType]' value 'list') {
+  } (isType value 'list') {
     'JSON value' = '['
     for item value {
       'JSON value' = ('[data:join]' (v 'JSON value') ('_JSON value' item) ',')
     }
     'JSON value' = ('[data:join]' ('[data:copyFromTo]' (v 'JSON value') 1 ((size (v 'JSON value')) - 1)) ']')
-  } ('[data:isType]' value 'boolean') {
+  } (isType value 'boolean') {
     if value {
       'JSON value' = 'true'
     } else {
@@ -238,10 +238,10 @@ to '_process PUT request' req {
   local 'path' ('path of request' req)
   if (('[data:find]' '/properties/' path) > 0) {
     local 'varName' ('[data:copyFromTo]' path 13)
-    if (varExists varName) {
+    if ('[vars:varExists]' varName) {
       local 'body' ('body of request' req)
-      setVarNamed varName ('_parse JSON value' ('[data:copyFromTo]' body (('[data:find]' ':' body) + 1) (('[data:find]' '}' body) - 1)))
-      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' (varNamed varName)) '}') 'Access-Control-Allow-Origin: *
+      '[vars:setVarNamed]' varName ('_parse JSON value' ('[data:copyFromTo]' body (('[data:find]' ':' body) + 1) (('[data:find]' '}' body) - 1)))
+      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' ('[vars:varNamed]' varName)) '}') 'Access-Control-Allow-Origin: *
 Content-Type: application/json'
     } else {
       '_respond 404 Not Found'
@@ -261,8 +261,8 @@ Content-Type: application/json'
 Content-Type: application/json'
   } (('[data:find]' '/properties/' path) > 0) {
     local 'varName' ('[data:copyFromTo]' path 13)
-    if (varExists varName) {
-      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' (varNamed varName)) '}') 'Access-Control-Allow-Origin: *
+    if ('[vars:varExists]' varName) {
+      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' ('[vars:varNamed]' varName)) '}') 'Access-Control-Allow-Origin: *
 Content-Type: application/json'
     } else {
       '_respond 404 Not Found'
@@ -293,13 +293,13 @@ to '_trimmed' string {
 }
 
 to '_type of' value {
-  if ('[data:isType]' value 'number') {
+  if (isType value 'number') {
     return 'number'
-  } ('[data:isType]' value 'list') {
+  } (isType value 'list') {
     return 'array'
-  } ('[data:isType]' value 'string') {
+  } (isType value 'string') {
     return 'string'
-  } ('[data:isType]' value 'boolean') {
+  } (isType value 'boolean') {
     return 'boolean'
   }
   comment 'should never happen'
@@ -360,9 +360,9 @@ to 'events JSON' {
 to 'properties JSON' {
   local 'JSON' '{'
   if (or (_WoT_property_defs == 0) ((size _WoT_property_defs) == 0)) {
-    for varName (allVars) {
+    for varName ('[vars:varNames]') {
       if (not ((at 1 varName) == '_')) {
-        local 'value' (varNamed varName)
+        local 'value' ('[vars:varNamed]' varName)
         JSON = ('[data:join]' JSON '"' varName '":{"title":"' varName '","type":"' ('_type of' value) '","links":[{"href":"/properties/' varName '"}],"@type":""},')
       }
     }
