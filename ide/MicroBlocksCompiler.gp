@@ -558,7 +558,7 @@ method instructionsForCmd SmallCompiler cmd {
 		add result (array 'pop' (count args))
 		return result
 	} (isFunctionCall this op) {
-		return (instructionsForFunctonCall this op args true)
+		return (instructionsForFunctionCall this op args true)
 	} else {
 		return (primitive this op args true)
 	}
@@ -697,7 +697,7 @@ method instructionsForExpression SmallCompiler expr {
 	} ('or' == op) {
 		return (instructionsForOr this args)
 	} (isFunctionCall this op) {
-		return (instructionsForFunctonCall this op args false)
+		return (instructionsForFunctionCall this op args false)
 	} else {
 		return (primitive this op args false)
 	}
@@ -867,7 +867,7 @@ method isFunctionCall SmallCompiler op {
 	return (notNil (lookupChunkID (smallRuntime) op))
 }
 
-method instructionsForFunctonCall SmallCompiler op args isCmd {
+method instructionsForFunctionCall SmallCompiler op args isCmd {
 	result = (list)
 	callee = (lookupChunkID (smallRuntime) op)
 	for arg args {
