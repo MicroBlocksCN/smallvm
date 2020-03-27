@@ -141,6 +141,11 @@ variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_d
 	spec ' ' '_WoT_start_server' '_WoT_start_server'
 	spec 'r' '_type of' '_type of _' 'auto' '10'
 	spec ' ' '_add or replace property' '_add or replace property _ attributes _' 'menu.nil str' '' ''
+	spec ' ' '_clear thing description' '_clear thing description'
+
+to '_clear thing description' {
+    '_thing description' = 0
+}
 
 to '_JSON value' value {
   local 'JSON value' ''
