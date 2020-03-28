@@ -10,6 +10,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "mem.h"
 #include "interp.h"

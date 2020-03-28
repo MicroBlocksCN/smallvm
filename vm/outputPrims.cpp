@@ -9,6 +9,7 @@
 
 #include <Arduino.h>
 #include <stdio.h>
+#include <stlib.h>
 
 #include "mem.h"
 #include "interp.h"
