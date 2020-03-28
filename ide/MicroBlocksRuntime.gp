@@ -291,7 +291,7 @@ method portList SmallRuntime {
 		for pname (listSerialPorts) {
 			blackListed = (or
 				((containsSubString pname 'Bluetooth') > 0)
-				((containsSubString pname 'COM1') > 0))
+				((containsSubString pname '(COM1)') > 0))
 			if (not blackListed) {
 				add portList pname
 			}
