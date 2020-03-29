@@ -291,7 +291,7 @@ method portList SmallRuntime {
 		for pname (listSerialPorts) {
 			blackListed = (or
 				((containsSubString pname 'Bluetooth') > 0)
-				((containsSubString pname 'COM1') > 0))
+				((containsSubString pname '(COM1)') > 0))
 			if (not blackListed) {
 				add portList pname
 			}
@@ -486,7 +486,7 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '0.3.8' }
+method ideVersion SmallRuntime { return '0.3.9' }
 method latestVmVersion SmallRuntime { return 77 }
 
 method showAboutBox SmallRuntime {

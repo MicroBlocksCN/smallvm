@@ -28,10 +28,13 @@ enum {
 // JSON structure access and value extraction by path
 
 char * tjr_atPath(char *p, char *pathString);
+char * tjr_valueAt(char *p, int index);
+char * tjr_keyAt(char *p, int index, char *key, int keySize);
 
 int tjr_type(char *p);
 int tjr_readInteger(char *p);
 void tjr_readStringInto(char *p, char *dstString, int dstSize);
+char * tjr_endOfItem(char *p);
 
 // Object/Array enumeration
 

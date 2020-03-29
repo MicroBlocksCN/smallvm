@@ -47,8 +47,6 @@ Limitations:
 
 #include <stdio.h>
 #include <string.h>
-
-#include "mem.h"
 #include "tinyJSON.h"
 
 // helper functions
@@ -105,25 +103,29 @@ static char * tjr_atPropName(char *p, char *propName, int propNameLen) {
 	// Return a pointer to the value of the property with the given name or NULL if not found.
 
 	char s[100];
-	while (true) {
+	if ('{' != *p) return NULL;
+	p++; // skip '{'
+	while (1) {
 		p = tjr_nextProperty(p, s, sizeof(s));
 		if (!p) return NULL; // no more properties
 		if (0 == strncmp(s, propName, propNameLen)) return p;
+		p = tjr_skip(p); // skip value
 	}
 }
 
 // accessing the JSON structure by path or index
 
 char * tjr_atIndex(char *p, int index) {
-	// Return a pointer to the index-th element of the (zero-based) array at p.
+	// Return a pointer to the index-th element of the (one-based) array at p.
 	// Return NULL if p is not the start of an array or if index is out of range.
 
-	if (index < 0) return NULL;
-	int i = 0;
-	while (true) {
+	if ((index <= 0) || (*p != '[')) return NULL;
+	p = tjr_skipWhitespace(p + 1); // skip '['
+	int i = 1;
+	while (1) {
+		if (i == index) return p;
 		p = tjr_nextElement(p);
 		if (!p) return NULL; // no more elements
-		if (i == index) return p;
 		i++;
 	}
 }
@@ -145,6 +147,44 @@ char * tjr_atPath(char *p, char *pathString) {
 		}
 		if (!p || !nextDot) return p;
 		propName += propNameLen + 1; // advance to start of next path component
+	}
+	return p;
+}
+
+char * tjr_valueAt(char *p, int index) {
+	// Return the value at the given (one-based) index in the array or object p.
+	// Return NULL p is not an array or object or the index is out of range.
+
+	if (index < 1) return NULL;
+	int itemType = tjr_type(p);
+	if (tjr_Array == itemType) {
+		p++; // skip '['
+		for (; index > 1; index--) p = tjr_nextElement(p);
+		return p;
+	}
+	if (tjr_Object == itemType) {
+		p++; // skip '{'
+		p = tjr_nextProperty(p, NULL, 0);
+		for (; index > 1; index--) {
+			p = tjr_nextElement(p); // skip value
+			p = tjr_nextProperty(p, NULL, 0);
+		}
+		return p;
+	}
+	return NULL; // not an object or array
+}
+
+char * tjr_keyAt(char *p, int index, char *key, int keySize) {
+	// Return set the key the return the value at the given (one-based) index in the object p.
+	// Return NULL if p is not an object or if the index is out of range.
+
+	if (index < 1) return NULL;
+	if (tjr_Object != tjr_type(p)) return NULL;
+	p++; // skip '{'
+	p = tjr_nextProperty(p, key, keySize);
+	for (; index > 1; index--) {
+		p = tjr_nextElement(p); // skip value
+		p = tjr_nextProperty(p, key, keySize);
 	}
 	return p;
 }
@@ -194,7 +234,7 @@ void tjr_readStringInto(char *p, char *dstString, int dstSize) {
 	}
 	int spaceAvailable = dstSize - 1; // reserve space for null terminator
 	p++; // skip opening quote
-	while (true) {
+	while (1) {
 		int ch = *p++;
 		if (('"' == ch) || ('\0' == ch)) {
 			*dstString = '\0';
@@ -218,6 +258,14 @@ void tjr_readStringInto(char *p, char *dstString, int dstSize) {
 	}
 }
 
+char * tjr_endOfItem(char *p) {
+	// Return a pointer to the first character following the JSON item pointed to by p.
+
+	char *result = tjr_skip(p);
+	while ((result > p) && (*result <= 32)) result--; // back up over whitespace, if any
+	return result;
+}
+
 // enumeration
 
 int tjr_count(char *p) {
@@ -230,13 +278,16 @@ int tjr_count(char *p) {
 	int count = 0;
 	p = tjr_skipWhitespace(p);
 	if ('{' == *p) {
-		while (true) {
+		p++; // skip '{'
+		while (1) {
 			p = tjr_nextProperty(p, NULL, 0);
 			if (!p) return count;
+			p = tjr_skip(p); // skip value
 			count++;
 		}
 	} else if ('[' == *p) {
-		while (true) {
+		p++;  // skip '['
+		while (1) {
 			p = tjr_nextElement(p);
 			if (!p) return count;
 			count++;
@@ -246,18 +297,14 @@ int tjr_count(char *p) {
 }
 
 char * tjr_nextElement(char *p) {
-	// Skip to the next array element.
-	// Return NULL when there are no more elements.
+	// Skip to the next array or object field. Return NULL when there are no more elements.
 
-	if (!p) return NULL;
+	if (!p || !*p) return NULL;
 	p = tjr_skipWhitespace(p);
-	if ('[' == *p) { // array start
-		p = tjr_skipWhitespace(p + 1); // skip opening bracket
-	} else {
-		p = tjr_skip(p); // skip current element
-		if (',' == *p) p = tjr_skipWhitespace(p + 1); // skip comma
-	}
-	if (']' == *p) return NULL;
+	if ((']' == *p) || ('}' == *p)) return NULL;
+	p = tjr_skip(p); // skip current element
+	if (',' == *p) p++; // skip comma
+	p = tjr_skipWhitespace(p);
 	return p;
 }
 
@@ -267,18 +314,13 @@ char * tjr_nextProperty(char *p, char *propertyName, int propertyNameSize) {
 	// be written to the propertyName string (including the null terminator).
 	// Return NULL when there are no more properties.
 
-	if (!p) return NULL;
 	if (propertyName) propertyName[0] = '\0'; // clear property name
+	if (!p || !*p) return NULL;
 	p = tjr_skipWhitespace(p);
-	if ('{' == *p) { // object start
-		p = tjr_skipWhitespace(p + 1); // skip opening bracket
-	} else {
-		p = tjr_skip(p); // skip current property's value
-		if (',' == *p) p = tjr_skipWhitespace(p + 1); // skip comma
-	}
+	if (',' == *p) p = tjr_skipWhitespace(p + 1); // skip comma after last value
 	if ('}' == *p) return NULL;
-	if (propertyName) tjr_readStringInto(p, propertyName, propertyNameSize); // record prop name
-	p = tjr_skip(p); // skip prop name
-	p = tjr_skip(p); // skip colon
+	if (propertyName) tjr_readStringInto(p, propertyName, propertyNameSize); // record property name
+	p = tjr_skip(p); // skip property name
+	if (':' == *p) p = tjr_skipWhitespace(p + 1); // skip colon
 	return p;
 }
