@@ -66,7 +66,6 @@ static OBJ primJSONGet(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
 	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
-
 	char *json = obj2str(args[0]);
 	char *path = obj2str(args[1]);
 	int i = ((argCount > 2) && isInt(args[2])) ? obj2int(args[2]) : -1;
@@ -93,16 +92,11 @@ static OBJ primJSONCount(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
 	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
-
 	char *json = obj2str(args[0]);
 	char *path = obj2str(args[1]);
 
 	char *item = tjr_atPath(json, path);
-	int itemType = tjr_type(item);
-	if ((tjr_Array == itemType) || (tjr_Object == itemType)) {
-		return int2obj(tjr_count(item));
-	}
-	return zeroObj;
+	return int2obj(tjr_count(item));
 }
 
 static OBJ primJSONValueAt(int argCount, OBJ *args) {
@@ -112,29 +106,12 @@ static OBJ primJSONValueAt(int argCount, OBJ *args) {
 	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
 	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
 	if (!isInt(args[2])) return fail(needsIntegerError);
-
 	char *json = obj2str(args[0]);
 	char *path = obj2str(args[1]);
 	int i = obj2int(args[2]);
-	if (i < 1) return newString(0);
 
 	char *item = tjr_atPath(json, path);
-	int itemType = tjr_type(item);
-	if (tjr_Array == itemType) {
-		item++; // skip '['
-		for (; i > 1; i--) item = tjr_nextElement(item);
-		return jsonValue(item);
-	}
-	if (tjr_Object == itemType) {
-		item++; // skip '{'
-		item = tjr_nextProperty(item, NULL, 0);
-		for (; i > 1; i--) {
-			item = tjr_nextElement(item); // skip value
-			item = tjr_nextProperty(item, NULL, 0);
-		}
-		return jsonValue(item);
-	}
-	return newString(0); // not an object or array
+	return jsonValue(tjr_valueAt(item, i));
 }
 
 static OBJ primJSONKeyAt(int argCount, OBJ *args) {
@@ -144,25 +121,15 @@ static OBJ primJSONKeyAt(int argCount, OBJ *args) {
 	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
 	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
 	if (!isInt(args[2])) return fail(needsIntegerError);
-
 	char *json = obj2str(args[0]);
 	char *path = obj2str(args[1]);
 	int i = obj2int(args[2]);
-	if (i < 1) return newString(0);
 
 	char key[100];
 	key[0] = '\0';
 	char *item = tjr_atPath(json, path);
-	if (tjr_Object == tjr_type(item)) {
-		item++; // skip '{'
-		item = tjr_nextProperty(item, key, sizeof(key));
-		for (; i > 1; i--) {
-			item = tjr_nextElement(item); // skip value
-			item = tjr_nextProperty(item, key, sizeof(key));
-		}
-		return newStringFromBytes(key, strlen(key));
-	}
-	return newString(0); // not an object
+	tjr_keyAt(item, i, key, sizeof(key));
+	return newStringFromBytes(key, strlen(key));
 }
 
 // Primitives

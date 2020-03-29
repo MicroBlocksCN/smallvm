@@ -151,6 +151,44 @@ char * tjr_atPath(char *p, char *pathString) {
 	return p;
 }
 
+char * tjr_valueAt(char *p, int index) {
+	// Return the value at the given (one-based) index in the array or object p.
+	// Return NULL p is not an array or object or the index is out of range.
+
+	if (index < 1) return NULL;
+	int itemType = tjr_type(p);
+	if (tjr_Array == itemType) {
+		p++; // skip '['
+		for (; index > 1; index--) p = tjr_nextElement(p);
+		return p;
+	}
+	if (tjr_Object == itemType) {
+		p++; // skip '{'
+		p = tjr_nextProperty(p, NULL, 0);
+		for (; index > 1; index--) {
+			p = tjr_nextElement(p); // skip value
+			p = tjr_nextProperty(p, NULL, 0);
+		}
+		return p;
+	}
+	return NULL; // not an object or array
+}
+
+char * tjr_keyAt(char *p, int index, char *key, int keySize) {
+	// Return set the key the return the value at the given (one-based) index in the object p.
+	// Return NULL if p is not an object or if the index is out of range.
+
+	if (index < 1) return NULL;
+	if (tjr_Object != tjr_type(p)) return NULL;
+	p++; // skip '{'
+	p = tjr_nextProperty(p, key, keySize);
+	for (; index > 1; index--) {
+		p = tjr_nextElement(p); // skip value
+		p = tjr_nextProperty(p, key, keySize);
+	}
+	return p;
+}
+
 // types and values
 
 int tjr_type(char *p) {
