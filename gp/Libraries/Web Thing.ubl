@@ -27,10 +27,6 @@ variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_d
 	spec ' ' '_clear thing description' '_clear thing description'
 	spec 'r' '_varNames' '_varNames'
 
-to '_clear thing description' {
-    '_thing description' = 0
-}
-
 to '_JSON value' value {
   local 'JSON value' ''
   if (isType value 'string') {
@@ -84,18 +80,13 @@ to '_add or replace property' varName 'attributes JSON' {
   '[data:addLast]' ('[data:makeList]' varName (v 'attributes JSON')) _WoT_property_defs
 }
 
+to '_clear thing description' {
+  '_thing description' = 0
+}
+
 to '_parse JSON value' JSON {
   local 'value' ('_trimmed' JSON)
-  if ((at 1 value) == '"') {
-    comment 'Doesn''t handle \\"
-Please don''t be _that_ picky ;)'
-    value = ('[data:copyFromTo]' value 2 ((size value) - 1))
-    local 'escaped quote index' ('[data:find]' '\"' value)
-    repeatUntil ((v 'escaped quote index') == -1) {
-      value = ('[data:join]' ('[data:copyFromTo]' value 1 ((v 'escaped quote index') - 1)) ('[data:copyFromTo]' value ((v 'escaped quote index') + 2)))
-      'escaped quote index' = ('[data:find]' '\"' value)
-    }
-  } ((at 1 value) == '[') {
+  if ((at 1 value) == '[') {
     comment 'Doesn''t handle multi-dimensional lists'
     local 'list' ('[data:makeList]')
     value = ('[data:copyFromTo]' value 2 ((size value) - 1))
@@ -107,12 +98,8 @@ Please don''t be _that_ picky ;)'
     }
     '[data:addLast]' ('_parse JSON value' value) list
     value = list
-  } (value == 'true') {
-    value = (booleanConstant true)
-  } (value == 'false') {
-    value = (booleanConstant false)
   } else {
-    value = (value + 0)
+    value = ('[misc:jsonGet]' value '')
   }
   return value
 }
@@ -195,6 +182,18 @@ to '_type of' value {
   return 'null'
 }
 
+to '_varNames' {
+  local 'result' ('[data:makeList]')
+  local 'count' ('[vars:varNameForIndex]' -1)
+  for i count {
+    local 'varName' ('[vars:varNameForIndex]' i)
+    if (isType varName 'string') {
+      '[data:addLast]' varName result
+    }
+  }
+  return result
+}
+
 to addBooleanProperty varName title type optionalReadOnly {
   local 'readonly' (booleanConstant false)
   if ((pushArgCount) > 3) {
@@ -249,7 +248,7 @@ to 'events JSON' {
 to 'properties JSON' {
   local 'JSON' '{'
   if (or (_WoT_property_defs == 0) ((size _WoT_property_defs) == 0)) {
-    for varName (_varNames) {
+    for varName ('_varNames') {
       if (not ((at 1 varName) == '_')) {
         local 'value' ('[vars:varNamed]' varName)
         JSON = ('[data:join]' JSON '"' varName '":{"title":"' varName '","type":"' ('_type of' value) '","links":[{"href":"/properties/' varName '"}],"@type":""},')
@@ -302,14 +301,3 @@ to 'trigger event' 'event name' {
   '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
 }
 
-to _varNames {
-  local 'result' ('[data:makeList]')
-  local 'count' ('[vars:varNameForIndex]' -1)
-  for i count {
-    local 'varName' ('[vars:varNameForIndex]' i)
-    if (isType varName 'string') {
-      '[data:addLast]' varName result
-    }
-  }
-  return result
-}
