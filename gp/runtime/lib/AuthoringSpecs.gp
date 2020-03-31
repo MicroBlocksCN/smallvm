@@ -277,7 +277,12 @@ method needsTranslation AuthoringSpecs spec {
 
   if (isNil translationDictionary) { return false }
   for s (specs spec) {
-	if (contains translationDictionary s) { return true }
+	localization = (localizedOrNil s)
+	if (or (isNil localization) (localization == '--MISSING--')) {
+		return false
+	} else {
+		return true
+	}
   }
   return false
 }

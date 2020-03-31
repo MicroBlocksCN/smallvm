@@ -387,6 +387,9 @@ draai NeoPixels met _
 color r _ g _ b _ (0-31)
 kleur r _ g _ b _ (0-31)
 
+random color
+--MISSING--
+
 attach _ LED NeoPixel strip to pin _
 --MISSING--
 
@@ -402,11 +405,17 @@ PIR at pin _ detected movement
 ED1 Stepper Motor
 ED1 Stappenmotor
 
-move motor _  _ steps _
-beweeg motor _  _ stappen _
+move motor _ _ steps _
+--MISSING--
 
 move motor 1 _ and motor 2 _ _ steps
 beweeg motor 1 _ and motor 2 _ _ stappen
+
+move motor _ angle _ °
+--MISSING--
+
+move motor _ _ complete turns
+--MISSING--
 
 stop steppers
 stop stappenmotoren
@@ -537,28 +546,13 @@ stop met scrollen
 Servo
 Servo
 
-has servo support
-heeft servo ondersteuning
-
-set servo _ to _ (-100 to 100)
-maak servo van _ tot _ (-100 tot 100)
-
-resetServos
-reset servo's
-
-flip servo _ _
-keer om servo _ _
-
-attach servos 1 to 4 to pins _ _ _ _
-verbind servo's 1 tot 4 aan pinnen _ _ _ _
-
 set servo _ to _ degrees (-90 to 90)
 --MISSING--
 
-reverse
+set servo _ to speed _ (-100 to 100)
 --MISSING--
 
-set servo _ to speed _ (-100 to 100)
+stop servo _
 --MISSING--
 
 LED Display
@@ -663,8 +657,8 @@ vul scherm met _
 go to x _ y _
 ga naar x _ y _
 
-point in direction  _
-wijs naar richting  _
+point in direction _
+--MISSING--
 
 Web of Things
 Netwerk van dingen
@@ -821,8 +815,8 @@ opruimen
 arrange scripts
 arrangeer scripts
 
-undrop  (ctrl-Z)
-laatste blokactie ongedaan maken (ctrl-Z)
+undrop (ctrl-Z)
+--MISSING--
 
 copy all scripts to clipboard
 kopieer alle scripts naar klembord
