@@ -173,7 +173,6 @@ method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
 
 method loadFromString MicroBlocksProject s {
 	// Load project from a string in .ubp format. Keep libraries (modules) together.
-
 	initialize this
 	cmdList = (parse s)
 	loadSpecs this cmdList
@@ -194,7 +193,6 @@ method loadFromString MicroBlocksProject s {
 
 method addLibraryFromString MicroBlocksProject s fileName {
 	// Load a library from a string.
-
 	cmdList = (parse s)
 	loadSpecs this cmdList
 	cmdsByModule = (splitCmdListIntoModules this cmdList)
@@ -544,6 +542,7 @@ method needsQuotes MicroBlocksModule s {
 
 method loadFromCmds MicroBlocksModule cmdList {
 	loadModuleNameAndCategory this cmdList
+	loadDependencies this cmdList
 	loadVariables this cmdList
 	loadBlockList this cmdList
 	loadFunctions this cmdList
@@ -565,6 +564,17 @@ method loadModuleNameAndCategory MicroBlocksModule cmdList {
 				cat = (at (argList cmd) 2)
 				if (isClass cat 'Reporter') { cat = (first (argList cat)) } // unquoted var (see above)
 				moduleCategory = cat
+			}
+		}
+	}
+}
+
+method loadDependencies MicroBlocksModule cmdList {
+	scripter = (scripter (smallRuntime))
+	for cmd cmdList {
+		if ('depends' == (primName cmd)) {
+			for libName (toList (argList cmd)) {
+				importLibraryFromFile scripter (join '//Libraries/' libName '.ubl')
 			}
 		}
 	}

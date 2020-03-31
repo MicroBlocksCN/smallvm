@@ -13,6 +13,7 @@
 
 #include "mem.h"
 #include "interp.h"
+#include "persist.h"
 
 // Helper Functions
 

@@ -117,7 +117,6 @@ static void primSendBroadcast(int argCount, OBJ *args) {
 	lastBroadcast = newStringFromBytes(printBuffer, printBufferByteCount);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
-	queueBroadcastAsThingEvent(printBuffer, printBufferByteCount);
 }
 
 // Board Type
@@ -285,7 +284,7 @@ static void runTask(Task *task) {
 		&&bitShiftLeft_op,
 		&&bitShiftRight_op,
 		&&longMultiply_op,
-		&&RESERVED_op,
+		&&isType_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&newList_op,
@@ -750,7 +749,6 @@ static void runTask(Task *task) {
 		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
-
 	// list operations:
 	newList_op:
 		*(sp - arg) = primNewList(arg, sp - arg);
@@ -772,8 +770,27 @@ static void runTask(Task *task) {
 		*(sp - arg) = primLength(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
-
 	// miscellaneous operations:
+	isType_op:
+		{
+			char *type = obj2str(*(sp - 1));
+			switch (objType(*(sp - 2))) {
+				case BooleanType:
+					*(sp - arg) = strcmp(type, "boolean") == 0 ? trueObj : falseObj;
+					break;
+				case IntegerType:
+					*(sp - arg) = strcmp(type, "number") == 0 ? trueObj : falseObj;
+					break;
+				case StringType:
+					*(sp - arg) = strcmp(type, "string") == 0 ? trueObj : falseObj;
+					break;
+				case ListType:
+					*(sp - arg) = strcmp(type, "list") == 0 ? trueObj : falseObj;
+					break;
+			}
+		}
+		POP_ARGS_REPORTER();
+		DISPATCH();
 	millis_op:
 		STACK_CHECK(1);
 		*sp++ = int2obj(millisecs());
@@ -958,9 +975,6 @@ void vmLoop() {
 			// do background VM tasks once every N VM loop cycles
 			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 				updateMicrobitDisplay();
-			#endif
-			#if HAS_WIFI
-				webServerLoop();
 			#endif
 			checkButtons();
 			processMessage();

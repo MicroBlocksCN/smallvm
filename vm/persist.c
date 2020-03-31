@@ -710,6 +710,19 @@ void restoreScripts() {
 	outputString("Started");
 }
 
+int *scanStart() {
+	// Return a pointer to the first record at which to start scanning the current code.
+
+	int *ptr = recordAfter(NULL);
+	int *result = ptr; // default if no 'deleteAll' records found
+	while (ptr) {
+		int type = (*ptr >> 16) & 0xFF;
+		ptr = recordAfter(ptr);
+		if (deleteAll == type) result = ptr;
+	}
+	return result;
+}
+
 // testing
 
 static void dumpWords(int halfSpace, int count) {

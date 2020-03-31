@@ -10,10 +10,12 @@ whenStarted
 comment 'modify these two blocks if not CPX'
 neoPixelAttach 10 ''
 'wifi connect to' 'Network_Name' '' 3
-defineThing 'Ambulance' 'OnOffSwitch'
-addBooleanProperty 'Triggered' 'onOff' 'OnOffProperty'
+'set thing name to' 'Ambulance'
+'set thing capability to' 'OnOffSwitch'
+addBooleanProperty 'onOff' 'Triggered' 'OnOffProperty'
 addNumProp 'octave' 'octave' -1 3 'LevelProperty'
 addNumProp 'interval' 'interval' 250 1000 'LevelProperty'
+'start WebThing server'
 onOff = (booleanConstant false)
 octave = 1
 interval = 500
@@ -36,7 +38,7 @@ forever {
 }
 }
 
-script 546 167 {
+script 601 164 {
 comment 'This example works out of the box on the Adafruit Circuit Playground Express.
 
 For other boards, you''ll need to attach a NeoPixel strip and a buzzer, and
@@ -48,7 +50,28 @@ waitMillis 2000
 onOff = (booleanConstant false)
 }
 
-script 553 385 ('thing description')
+script 603 471 ('thing description JSON')
+
+
+module 'HTTP server'
+
+	spec ' ' '[net:startHttpServer]' 'start HTTP server'
+	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
+	spec 'r' 'body of request' 'body of request _' 'auto' ''
+	spec 'r' 'path of request' 'path of request _' 'auto' ''
+	spec 'r' 'request method' 'method of request _' 'auto' ''
+
+to 'body of request' request {
+  return ('[data:copyFromTo]' request (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) request) + 4))
+}
+
+to 'path of request' request {
+  return ('[data:copyFromTo]' request (('[data:find]' ' ' request) + 1) (('[data:find]' ' HTTP' request) - 1))
+}
+
+to 'request method' request {
+  return ('[data:copyFromTo]' request 1 (('[data:find]' ' ' request) - 1))
+}
 
 
 module NeoPixel Output
@@ -254,7 +277,6 @@ This helps users find typos in their tunes.'
 
 to '_measureLoopOverhead' {
   comment 'Measure the loop overhead on this device'
-  '[display:mbDisplayOff]'
   local 'halfCycle' 100
   local 'startT' (microsOp)
   repeat 100 {
@@ -334,111 +356,321 @@ to playMIDIKey key ms {
 }
 
 
-module 'Web Things' Comm
-variables _WoT_definingEvents '_thing description'
+module 'Web Things'
+variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
+
+	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
+	spec ' ' 'set thing capability to' 'set thing capability to _' 'str.thingTypesMenu' 'Light'
+	spec ' ' 'addBooleanProperty' 'set boolean property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.booleanPropertyTypesMenu bool' '' '' 'OnOffProperty' false
+	spec ' ' 'addStringProperty' 'set string property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.stringPropertyTypesMenu bool' '' '' 'ColorProperty' false
+	spec ' ' 'addNumProp' 'set number property _ title _ min _ max _ @Type _ : read only _' 'menu.allVarsMenu str num num str.numberPropertyTypesMenu bool' '' '' 0 100 'LevelProperty' false
+	spec ' ' 'register event' 'register event _ type _' 'auto str.thingEventTypesMenu' 'Button A pressed' 'PressedEvent'
+	spec ' ' 'start WebThing server' 'start WebThing server'
+	spec ' ' 'trigger event' 'trigger event _' 'auto' 'button pressed'
+	spec 'r' 'thing description JSON' 'thing description JSON'
+	spec 'r' 'properties JSON' 'properties JSON'
+	spec 'r' 'event definitions JSON' 'event definitions JSON'
+	spec 'r' 'events JSON' 'events JSON'
+	spec ' ' '_process OPTIONS request' '_process OPTIONS request _' 'auto' ''
+	spec ' ' '_process PUT request' '_process PUT request _' 'auto' ''
+	spec ' ' '_process request' '_process GET request _' 'auto' ''
+	spec ' ' '_respond 404 Not Found' '_respond 404 Not Found'
+	spec 'r' '_JSON value' '_JSON value _' 'auto' '10'
+	spec 'r' '_parse JSON value' '_parse JSON value _' 'auto' ''
+	spec 'r' '_trimmed' '_trimmed _' 'auto' '  hello    '
+	spec ' ' '_WoT_start_server' '_WoT_start_server'
+	spec 'r' '_type of' '_type of _' 'auto' '10'
+	spec ' ' '_add or replace property' '_add or replace property _ attributes _' 'menu.nil str' '' ''
+	spec ' ' '_clear thing description' '_clear thing description'
+	spec 'r' '_varNames' '_varNames'
+
+to '_clear thing description' {
+    '_thing description' = 0
+}
+
+to '_JSON value' value {
+  local 'JSON value' ''
+  if (isType value 'string') {
+    'JSON value' = ('[data:join]' '"' value '"')
+  } (isType value 'list') {
+    'JSON value' = '['
+    for item value {
+      'JSON value' = ('[data:join]' (v 'JSON value') ('_JSON value' item) ',')
+    }
+    'JSON value' = ('[data:join]' ('[data:copyFromTo]' (v 'JSON value') 1 ((size (v 'JSON value')) - 1)) ']')
+  } (isType value 'boolean') {
+    if value {
+      'JSON value' = 'true'
+    } else {
+      'JSON value' = 'false'
+    }
+  } else {
+    'JSON value' = value
+  }
+  return (v 'JSON value')
+}
+
+to '_WoT_start_server' {
+  '[net:startHttpServer]'
+  local 'request' ''
+  forever {
+    request = ('[net:httpServerGetRequest]')
+    if (request != (booleanConstant false)) {
+      if (('request method' request) == 'GET') {
+        '_process request' request
+      } (('request method' request) == 'PUT') {
+        '_process PUT request' request
+      } (('request method' request) == 'OPTIONS') {
+        '_process OPTIONS request' request
+      } else {
+        '_respond 404 Not Found'
+      }
+    }
+    waitMillis 50
+  }
+}
+
+to '_add or replace property' varName 'attributes JSON' {
+  if (_WoT_property_defs == 0) {_WoT_property_defs = ('[data:makeList]')}
+  for def _WoT_property_defs {
+    if ((at 1 def) == varName) {
+      atPut 2 def (v 'attributes JSON')
+      return ''
+    }
+  }
+  '[data:addLast]' ('[data:makeList]' varName (v 'attributes JSON')) _WoT_property_defs
+}
+
+to '_parse JSON value' JSON {
+  local 'value' ('_trimmed' JSON)
+  if ((at 1 value) == '[') {
+    comment 'Doesn''t handle multi-dimensional lists'
+    local 'list' ('[data:makeList]')
+    value = ('[data:copyFromTo]' value 2 ((size value) - 1))
+    local 'comma index' ('[data:find]' ',' value)
+    repeatUntil ((v 'comma index') == -1) {
+      '[data:addLast]' ('_parse JSON value' ('[data:copyFromTo]' value 1 ((v 'comma index') - 1))) list
+      value = ('[data:copyFromTo]' value ((v 'comma index') + 1))
+      'comma index' = ('[data:find]' ',' value)
+    }
+    '[data:addLast]' ('_parse JSON value' value) list
+    value = list
+  } else {
+    value = ('[misc:jsonGet]' value '')
+  }
+  return value
+}
+
+to '_process OPTIONS request' req {
+  '[net:respondToHttpRequest]' '200 OK' '' 'Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: PUT, GET, OPTIONS
+Access-Control-Allow-Headers: Content-Type'
+}
+
+to '_process PUT request' req {
+  local 'path' ('path of request' req)
+  if (('[data:find]' '/properties/' path) > 0) {
+    local 'varName' ('[data:copyFromTo]' path 13)
+    if ('[vars:varExists]' varName) {
+      local 'body' ('body of request' req)
+      '[vars:setVarNamed]' varName ('_parse JSON value' ('[data:copyFromTo]' body (('[data:find]' ':' body) + 1) (('[data:find]' '}' body) - 1)))
+      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' ('[vars:varNamed]' varName)) '}') 'Access-Control-Allow-Origin: *
+Content-Type: application/json'
+    } else {
+      '_respond 404 Not Found'
+    }
+  } else {
+    '_respond 404 Not Found'
+  }
+}
+
+to '_process request' req {
+  local 'path' ('path of request' req)
+  if (path == '/') {
+    '[net:respondToHttpRequest]' '200 OK' ('thing description JSON') 'Access-Control-Allow-Origin: *
+Content-Type: application/json'
+  } (or (path == '/properties') (path == '/properties/')) {
+    '[net:respondToHttpRequest]' '200 OK' ('properties JSON') 'Access-Control-Allow-Origin: *
+Content-Type: application/json'
+  } (('[data:find]' '/properties/' path) > 0) {
+    local 'varName' ('[data:copyFromTo]' path 13)
+    if ('[vars:varExists]' varName) {
+      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' ('[vars:varNamed]' varName)) '}') 'Access-Control-Allow-Origin: *
+Content-Type: application/json'
+    } else {
+      '_respond 404 Not Found'
+    }
+  } (or (path == '/events') (path == '/events/')) {
+    '[net:respondToHttpRequest]' '200 OK' ('events JSON') 'Access-Control-Allow-Origin: *
+Content-Type: application/json'
+    _WoT_events = ('[data:makeList]')
+  } else {
+    '_respond 404 Not Found'
+  }
+}
+
+to '_respond 404 Not Found' {
+  '[net:respondToHttpRequest]' '404 Not Found' '{ "error":"Resource not found" }' 'Access-Control-Allow-Origin: *
+Content-Type: application/json'
+}
+
+to '_trimmed' string {
+  comment 'remove surrounding spaces'
+  repeatUntil ((at 1 string) != ' ') {
+    string = ('[data:copyFromTo]' string 2)
+  }
+  repeatUntil ((at 'last' string) != ' ') {
+    string = ('[data:copyFromTo]' string 1 ((size string) - 1))
+  }
+  return string
+}
+
+to '_type of' value {
+  if (isType value 'number') {
+    return 'number'
+  } (isType value 'list') {
+    return 'array'
+  } (isType value 'string') {
+    return 'string'
+  } (isType value 'boolean') {
+    return 'boolean'
+  }
+  comment 'should never happen'
+  return 'null'
+}
+
+to addBooleanProperty varName title type optionalReadOnly {
+  local 'readonly' (booleanConstant false)
+  if ((pushArgCount) > 3) {
+    readonly = optionalReadOnly
+  }
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"boolean","@type":"' type '",' '"readonly":' readonly)
+}
+
+to addNumProp varName title min max type optionalReadOnly {
+  local 'readonly' (booleanConstant false)
+  if ((pushArgCount) > 5) {
+    readonly = optionalReadOnly
+  }
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"number","@type":"' type '",' '"readonly":' readonly ',"minimum":' min ',"maximum":' max)
+}
+
+to addStringProperty varName title type optionalReadOnly {
+  local 'readonly' (booleanConstant false)
+  if ((pushArgCount) > 3) {
+    readonly = optionalReadOnly
+  }
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"string","@type":"' type '",' '"readonly":' readonly)
+}
+
+to 'event definitions JSON' {
+  local 'JSON' '{'
+  if (_WoT_event_defs == 0) {
+    _WoT_event_defs = ('[data:makeList]')
+  }
+  for 'event def' _WoT_event_defs {
+    JSON = ('[data:join]' JSON '"' (at 1 (v 'event def')) '":{"description":"MicroBlocks event","@type":"' (at 2 (v 'event def')) '"},')
+  }
+  if ((size JSON) > 1) {
+    return ('[data:join]' ('[data:copyFromTo]' JSON 1 ((size JSON) - 1)) '}')
+  } else {
+    return '{}'
+  }
+}
+
+to 'events JSON' {
+  local 'JSON' '['
+  for event _WoT_events {
+    JSON = ('[data:join]' JSON '{"' (at 1 event) '":{"data":{"id":' (at 2 event) '}}},')
+  }
+  if ((size JSON) > 1) {
+    return ('[data:join]' ('[data:copyFromTo]' JSON 1 ((size JSON) - 1)) ']')
+  } else {
+    return '[]'
+  }
+}
+
+to 'properties JSON' {
+  local 'JSON' '{'
+  if (or (_WoT_property_defs == 0) ((size _WoT_property_defs) == 0)) {
+    for varName (_varNames) {
+      if (not ((at 1 varName) == '_')) {
+        local 'value' ('[vars:varNamed]' varName)
+        JSON = ('[data:join]' JSON '"' varName '":{"title":"' varName '","type":"' ('_type of' value) '","links":[{"href":"/properties/' varName '"}],"@type":""},')
+      }
+    }
+  } else {
+    for 'property def' _WoT_property_defs {
+      local 'varName' (at 1 (v 'property def'))
+      JSON = ('[data:join]' JSON '"' varName '":{"links":[{"href":"/properties/' varName '"}],' (at 2 (v 'property def')) '},')
+    }
+  }
+  if ((at 'last' JSON) == ',') {
+    JSON = ('[data:copyFromTo]' JSON 1 ((size JSON) - 1))
+  }
+  return ('[data:join]' JSON '}')
+}
+
+to 'register event' 'event title' 'event type' {
+  local 'event def' ('[data:makeList]' (v 'event title') (v 'event type'))
+  if (_WoT_event_defs == 0) {
+    _WoT_event_defs = ('[data:makeList]')
+  }
+  '[data:addLast]' (v 'event def') _WoT_event_defs
+}
+
+to 'set thing capability to' capability {
+  _WoT_capability = capability
+}
+
+to 'set thing name to' title {
+  _WoT_title = title
+}
+
+to 'start WebThing server' {
+  if (_WoT_title == 0) {'set thing name to' 'MicroBlocks thing'}
+  if (_WoT_capability == 0) {'set thing capability to' ''}
+  if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
+  if ('[net:hasWiFi]') {
+    sendBroadcastSimple '_WoT_start_server'
+  } else {
+    '_thing description' = ('thing description JSON')
+  }
+}
+
+to 'thing description JSON' {
+  return ('[data:join]' '{"title":"' _WoT_title '","@context":"https://iot.mozilla.org/schemas/","@type":["' _WoT_capability '"],"links":[{"rel":"events","href":"/events"},{"rel":"properties","href":"/properties"}],"properties":' ('properties JSON') ',"events":' ('event definitions JSON') '}')
+}
+
+to 'trigger event' 'event name' {
+  '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
+}
+
+to _varNames {
+  local 'result' ('[data:makeList]')
+  local 'count' ('[vars:varNameForIndex]' -1)
+  for i count {
+    local 'varName' ('[vars:varNameForIndex]' i)
+    if (isType varName 'string') {
+      '[data:addLast]' varName result
+    }
+  }
+  return result
+}
+
+
+module Wifi Comm
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
-	spec ' ' 'defineThing' 'define thing _ capability _' 'str str.thingTypesMenu' 'Hello LED' 'Light'
-	spec ' ' 'registerEvent' 'register event _ type _' 'str str.thingEventTypesMenu' 'Button Pressed' 'PressedEvent'
-	spec ' ' 'addBooleanProperty' 'add boolean property title _ variable _ @Type _' 'str menu.allVarsMenu str.booleanPropertyTypesMenu' '' '' 'OnOffProperty'
-	spec ' ' 'addNumProp' 'add number property title _ variable _ min _ max _ @Type _' 'str menu.allVarsMenu num num str.numberPropertyTypesMenu' '' '' 0 100 'LevelProperty'
-	spec ' ' 'addStringProperty' 'add string property title _ variable _ @Type _' 'str menu.allVarsMenu str.stringPropertyTypesMenu' '' '' 'ColorProperty'
-	spec ' ' '_addCustomProperty' '_add to last property key _ value _' 'str auto' '' '"json value"'
-	spec ' ' 'append to thing description' 'append to thing description _' 'auto' ''
-	spec ' ' 'clear thing description' 'clear thing description'
-	spec 'r' 'thing description' 'thing description'
-
-to '_addCustomProperty' key jsonValue {
-  'append to thing description' ('[data:join]' '"' key '": ' jsonValue)
-}
-
-to addBooleanProperty title var typeName {
-  'append to thing description' ('[data:join]' '    "' var '": {"title": "' title '", "type": "boolean", "href": "/properties/' var '", "@type": "' typeName '"},')
-}
-
-to addNumProp title var min max typeName {
-  'append to thing description' ('[data:join]' '    "' var '": {"title": "' title '", "type": "number", "minimum": ' min ', "maximum": ' max ', "href": "/properties/' var '", "@type": "' typeName '"')
-  if ('TemperatureProperty' == typeName) {
-    'append to thing description' ', "unit": "degree celsius"'
-  }
-  'append to thing description' '},'
-}
-
-to addStringProperty title var typeName {
-  'append to thing description' ('[data:join]' '    "' var '": {"title": "' title '", "type": "string", "href": "/properties/' var '", "@type": "' typeName '"},')
-}
-
-to 'append to thing description' 'more JSON' {
-  if ((v '_thing description') == 0) {'clear thing description'}
-  '_thing description' = ('[data:join]' (v '_thing description') (v 'more JSON'))
-}
-
-to 'clear thing description' {
-  '_thing description' = ''
-}
-
-to defineThing name capability {
-  _WoT_definingEvents = (booleanConstant false)
-  'clear thing description'
-  if ('' == capability) {
-    'append to thing description' ('[data:join]' '{ "title": "' name '",
-  "@type": [ ],
-  "links":[{
-    "rel": "events",
-    "href": "/events"
-   }],
-   "properties": {')
-  } else {
-    'append to thing description' ('[data:join]' '{ "title": "' name '",
-  "@context": "https://iot.mozilla.org/schemas/",
-  "@type": ["' capability '"],
-  "links":[{
-    "rel": "events",
-    "href": "/events"
-   }],
-  "properties": {')
-  }
-}
 
 to getIPAddress {
   return ('[net:myIPAddress]')
 }
 
-to registerEvent title type {
-  if (not _WoT_definingEvents) {
-    local 'last char' (at (size (v '_thing description')) (v '_thing description'))
-    if ((v 'last char') == '{') {
-      comment 'thing description ends with "{", meaning there are no properties'
-      'append to thing description' '},"events":{'
-    } ((v 'last char') == ',') {
-      comment 'thing description ends with ",", meaning there''s at least one property'
-      '_thing description' = ('[data:join]' ('[data:copyFromTo]' (v '_thing description') 1 ((size (v '_thing description')) - 1)) '},"events":{')
-    }
-    _WoT_definingEvents = (booleanConstant true)
-  }
-  'append to thing description' ('[data:join]' '    "' title '": {"description":"MicroBlocks event", "@type":"' type '"},')
-}
-
-to 'thing description' {
-  if ((v '_thing description') == 0) {return 'thing description is empty'}
-  local 'description' (v '_thing description')
-  comment 'Fix incomplete thing descriptions'
-  if ((at 'last' (v '_thing description')) == ',') {
-    comment 'close last property / event'
-    description = ('[data:join]' ('[data:copyFromTo]' (v '_thing description') 1 ((size (v '_thing description')) - 1)) '}}')
-  } ((at 'last' (v '_thing description')) == '{') {
-    comment 'no properties'
-    description = ('[data:join]' (v '_thing description') '}}')
-  }
-  return description
-}
-
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
-  tries += -1
-  '[net:startWiFi]' ssid password
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {

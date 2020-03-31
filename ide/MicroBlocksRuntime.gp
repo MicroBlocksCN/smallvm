@@ -425,6 +425,7 @@ method updateConnection SmallRuntime {
 		return 'connected'
 	} else {
 		// ping timout: close port to force reconnection
+		print 'Lost communication to the board'
 		closePort this
 		return 'not connected'
 	}

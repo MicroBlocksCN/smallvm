@@ -123,14 +123,16 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '~'					'~ _' 'num' 1 3)
 		(array 'r' '<<'					'_ << _' 'num num' 3 2)
 		(array 'r' '>>'					'_ >> _' 'num num' -100 2)
-		'-'
-		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
-		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
 	'Variables'
 		(array 'r' 'v'					'_' 'menu.allVarsMenu' 'n')
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
+	'Variables-Advanced'
+		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
+		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
+		(array ' ' '[vars:setVarNamed]'	'set variable named _ to _' 'str auto' 'var' 0)
+		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 'Rósza' 'number')
 	'Lists & Strings'
 		(array 'r' 'at'					'item _ of _' 'auto.itemOfMenu str' 1 'Rosa')
 		(array 'r' 'size'				'length of _' 'str' 'Rosa')
@@ -316,7 +318,7 @@ method initOpcodes SmallCompiler {
 		<< 54
 		>> 55
 		longMult 56
-	RESERVED 57
+		isType 57
 	RESERVED 58
 	RESERVED 59
 		newList 60
@@ -557,7 +559,7 @@ method instructionsForCmd SmallCompiler cmd {
 		add result (array 'pop' (count args))
 		return result
 	} (isFunctionCall this op) {
-		return (instructionsForFunctonCall this op args true)
+		return (instructionsForFunctionCall this op args true)
 	} else {
 		return (primitive this op args true)
 	}
@@ -696,7 +698,7 @@ method instructionsForExpression SmallCompiler expr {
 	} ('or' == op) {
 		return (instructionsForOr this args)
 	} (isFunctionCall this op) {
-		return (instructionsForFunctonCall this op args false)
+		return (instructionsForFunctionCall this op args false)
 	} else {
 		return (primitive this op args false)
 	}
@@ -866,7 +868,7 @@ method isFunctionCall SmallCompiler op {
 	return (notNil (lookupChunkID (smallRuntime) op))
 }
 
-method instructionsForFunctonCall SmallCompiler op args isCmd {
+method instructionsForFunctionCall SmallCompiler op args isCmd {
 	result = (list)
 	callee = (lookupChunkID (smallRuntime) op)
 	for arg args {

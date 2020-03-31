@@ -187,7 +187,6 @@ void outputString(const char *s);
 void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
-void queueBroadcastAsThingEvent(char *s, int len);
 void sendBroadcastToIDE(char *s, int len);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
@@ -241,7 +240,6 @@ void updateMicrobitDisplay();
 void checkButtons();
 void stopServos();
 void stopTone();
-void webServerLoop();
 
 // Primitives
 
@@ -305,6 +303,7 @@ void addNetPrims();
 void addRadioPrims();
 void addSensorPrims();
 void addTFTPrims();
+void addVarPrims();
 
 // Named Primitive Support
 

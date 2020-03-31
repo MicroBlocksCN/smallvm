@@ -35,7 +35,7 @@ cp microBlocks.menu deb/ublocks/usr/share/menu
 
 size=`du deb/ublocks | tail -n1 | cut -f1`
 cat control | sed -E "s/@AppVersion/$version/" | sed -E "s/@Arch/$arch/" | sed -E "s/@InstalledSize/$size/"> deb/ublocks/DEBIAN/control
-cp prerm postinst deb/ublocks/DEBIAN/
+cp prerm postinst copyright deb/ublocks/DEBIAN/
 
 cd deb
 fakeroot dpkg-deb --build ublocks

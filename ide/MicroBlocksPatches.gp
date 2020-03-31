@@ -42,6 +42,15 @@ method allVarsMenu InputSlot {
   return menu
 }
 
+method typesMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'boolean'
+  addItem menu 'number'
+  addItem menu 'string'
+  addItem menu 'list'
+  return menu
+}
+
 method buttonMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'A'
@@ -77,22 +86,26 @@ method requestTypes InputSlot {
 
 method thingTypesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'OnOffSwitch'
-  addItem menu 'MultiLevelSwitch'
-  addItem menu 'BinarySensor'
-  addItem menu 'MultiLevelSensor'
-  addItem menu 'ColorControl'
-  addItem menu 'EnergyMonitor'
-  addItem menu 'SmartPlug'
-  addItem menu 'Light'
-  addItem menu 'MotionSensor'
-  addItem menu 'DoorSensor'
-  addItem menu 'TemperatureSensor'
-  addItem menu 'LeakSensor'
-  addItem menu 'PushButton'
-//   addItem menu 'Camera'
-//   addItem menu 'VideoCamera'
+
   addItem menu 'Alarm'
+  addItem menu 'BinarySensor'
+//  addItem menu 'Camera'
+  addItem menu 'ColorControl'
+  addItem menu 'ColorSensor'
+  addItem menu 'DoorSensor'
+  addItem menu 'EnergyMonitor'
+  addItem menu 'LeakSensor'
+  addItem menu 'Light'
+  addItem menu 'Lock'
+  addItem menu 'MotionSensor'
+  addItem menu 'MultiLevelSensor'
+  addItem menu 'MultiLevelSwitch'
+  addItem menu 'OnOffSwitch'
+  addItem menu 'PushButton'
+  addItem menu 'SmartPlug'
+  addItem menu 'TemperatureSensor'
+  addItem menu 'Thermostat'
+//  addItem menu 'VideoCamera'
 
   return menu
 }
@@ -125,9 +138,11 @@ method numberPropertyTypesMenu InputSlot {
   addItem menu 'CurrentProperty'
   addItem menu 'VoltageProperty'
   addItem menu 'FrequencyProperty'
+  addItem menu 'TargetTemperatureProperty'
   addItem menu 'TemperatureProperty'
-//   addItem menu 'ImageProperty'
-//   addItem menu 'VideoProperty'
+//  addItem menu 'ImageProperty'
+//  addItem menu 'VideoProperty'
+//  addItem menu 'ColorTemperatureProperty'
   return menu
 }
 
@@ -147,6 +162,10 @@ method stringPropertyTypesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'ColorProperty'
   addItem menu 'TextProperty'
+  addItem menu 'HeatingCoolingProperty'
+  addItem menu 'LockedProperty'
+  addItem menu 'ThermostatModeProperty'
+//  addItem menu 'ColorModeProperty'
   return menu
 }
 
