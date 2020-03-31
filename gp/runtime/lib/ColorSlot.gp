@@ -20,6 +20,11 @@ method contents ColorSlot { return contents }
 
 method setContents ColorSlot aColor {
   if (isNil aColor) { aColor = (color 35 190 30) }
+  if (isClass aColor 'Integer') {
+  	aColor = (color ((aColor >> 16) & 255) ((aColor >> 8) & 255) (aColor & 255))
+  } (not (isClass aColor 'Color')) {
+	aColor = (color 255 0 255)
+  }
   contents = aColor
   redraw this
   raise morph 'inputChanged' this

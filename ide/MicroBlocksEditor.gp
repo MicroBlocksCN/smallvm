@@ -58,7 +58,7 @@ to checkLatestVersion {
   latestVersion = (fetchLatestVersionNumber)
   currentVersion = (splitWith (ideVersion (smallRuntime)) '.')
   for i (count latestVersion) {
-	if (> (at latestVersion i) (at currentVersion i)) {
+	if (> (toInteger (at latestVersion i)) (toInteger (at currentVersion i))) {
 	  inform (global 'page') (join
 		'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
 		(newline)

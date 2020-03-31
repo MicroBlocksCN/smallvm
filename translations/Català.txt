@@ -387,6 +387,9 @@ rota NeoPíxels en _
 color r _ g _ b _ (0-31)
 color vermell _ verd _ blau _ (0-31)
 
+random color
+color a l'atzar
+
 attach _ LED NeoPixel strip to pin _
 inicialitza tira de _ NeoPíxels al pin _
 
@@ -402,11 +405,17 @@ Moviment detectat pel PIR al pin _
 ED1 Stepper Motor
 Motors ED1
 
-move motor _  _ steps _
-mou motor _ _ passos en _
+move motor _ _ steps _
+mou motor _ _ passos _
 
 move motor 1 _ and motor 2 _ _ steps
 mou motor 1 en _ i motor 2 en _ _ passos
+
+move motor _ angle _ °
+mou motor _ angle _ °
+
+move motor _ _ complete turns
+mou motor _ _ voltes completes
 
 stop steppers
 atura motors
@@ -537,29 +546,14 @@ atura l'animació
 Servo
 Servomotors
 
-has servo support
-té suport per a servos
-
-set servo _ to _ (-100 to 100)
-posa el servo _ a _ (-100 a 100)
-
-resetServos
-re-inicialitza servos
-
-flip servo _ _
-inverteix servo _ _
-
-attach servos 1 to 4 to pins _ _ _ _
-inicialitza servos 1 a 4 als pins _ _ _ _
-
 set servo _ to _ degrees (-90 to 90)
 posa el servo _ a _ graus (-90 a 90)
 
-reverse
-invertit
-
 set servo _ to speed _ (-100 to 100)
 fes girar el servo _ a velocitat _ (-100 a 100)
+
+stop servo _
+atura servo _
 
 LED Display
 Pantalla LED
@@ -663,7 +657,7 @@ omple la pantalla de color _
 go to x _ y _
 ves a x _ y _
 
-point in direction  _
+point in direction _
 apunta en direcció _
 
 Web of Things
@@ -821,8 +815,8 @@ neteja
 arrange scripts
 organitza programes
 
-undrop  (ctrl-Z)
-desfés  (ctrl-Z)
+undrop (ctrl-Z)
+desfes l'últim moviment (ctrl-Z)
 
 copy all scripts to clipboard
 copia tots els programes al porta-retalls
