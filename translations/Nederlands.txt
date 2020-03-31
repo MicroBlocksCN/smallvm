@@ -170,10 +170,10 @@ local _ _
 lokale variabele _ _
 
 Lists & Strings
---MISSING--
+Lijsten & Tekens
 
 list
---MISSING--
+lijst
 
 length of _
 lengte van _
@@ -182,43 +182,43 @@ item _ of _
 item _ van _
 
 replace item _ of list _ with _
---MISSING--
+vervang item _ van lijst _ door
 
 delete item _ of list _
---MISSING--
+verwijder item _ van lijst _
 
 add _ to list _
---MISSING--
+voeg _ toe aan lijst _
 
 join _ _
---MISSING--
+voeg _ _ samen
 
 copy _ from _
---MISSING--
+kopieer _ van _
 
 to _
---MISSING--
+naar _
 
 find _ in _
---MISSING--
+vind _ in_
 
 starting at _
---MISSING--
+start op _
 
 join string list _
---MISSING--
+voeg tekst lijst _
 
 unicode _ of _
---MISSING--
+unicode _ van _
 
 string from unicode _
---MISSING--
+tekst van unicode _
 
 new list length _
 nieuwe lijst lengte _
 
 free memory
---MISSING--
+vrij geheugen
 
 fill list _ with _
 vul lijst _ met _
@@ -275,7 +275,7 @@ shape for letter _
 vorm voor letter _
 
 set NeoPixel pin _ is RGBW _
---MISSING--
+maak NeoPixel pin _ is RGBW _
 
 send NeoPixel rgb _
 zend NeoPixel rgb _
@@ -358,7 +358,7 @@ tilt z
 kantel z
 
 acceleration
---MISSING--
+versnelling
 
 light level
 lichtsterkte
@@ -367,7 +367,7 @@ temperature (°C)
 temperatuur (°C)
 
 NeoPixel
---MISSING--
+NeoPixel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 maak NeoPixels _ _ _ _ _ _ _ _ _ _
@@ -388,34 +388,34 @@ color r _ g _ b _ (0-31)
 kleur r _ g _ b _ (0-31)
 
 random color
---MISSING--
+willekeurige kleur
 
 attach _ LED NeoPixel strip to pin _
---MISSING--
+verbind _ LED NeoPixel strip aan pin _
 
 has white _
---MISSING--
+heeft wit_
 
 PIR
---MISSING--
+PIR
 
 PIR at pin _ detected movement
---MISSING--
+PIR op pin _ waargenomen beweging
 
 ED1 Stepper Motor
 ED1 Stappenmotor
 
 move motor _ _ steps _
---MISSING--
+beweeg motor _ _ stappen _
 
 move motor 1 _ and motor 2 _ _ steps
 beweeg motor 1 _ and motor 2 _ _ stappen
 
 move motor _ angle _ °
---MISSING--
+beweeg motor _ hoek _ °
 
 move motor _ _ complete turns
---MISSING--
+beweeg motor _ _ volledige omwentelingen
 
 stop steppers
 stop stappenmotoren
@@ -481,7 +481,7 @@ Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 
 Hummingbird Position Servo _ _ º
---MISSING--
+Hummingbird Positie Servo _ _ º
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Draai-Servo _ _ %
@@ -547,13 +547,13 @@ Servo
 Servo
 
 set servo _ to _ degrees (-90 to 90)
---MISSING--
+maak servo _  _ graden (-90 to 90)
 
 set servo _ to speed _ (-100 to 100)
---MISSING--
+maak servo _ snelheid _ (-100 to 100)
 
 stop servo _
---MISSING--
+stop servo _
 
 LED Display
 LED scherm
@@ -658,7 +658,7 @@ go to x _ y _
 ga naar x _ y _
 
 point in direction _
---MISSING--
+wijs naar richting _
 
 Web of Things
 Netwerk van dingen
@@ -694,34 +694,34 @@ clear thing description
 wis ding omschrijving
 
 Motion
---MISSING--
+Beweging
 
 motion
---MISSING--
+beweging
 
 start step counter
---MISSING--
+start stappen teller
 
 step count
---MISSING--
+aantal stappen
 
 clear step count
---MISSING--
+wis aantal stappen
 
 set step threshold _ (0-50)
---MISSING--
+maak stappen drempel _ (0-50)
 
 Button Events
---MISSING--
+Knop Gebeurtenissen
 
 button _ double pressed
---MISSING--
+knop _ dubbel ingedrukt
 
 button _ long pressed
---MISSING--
+knop _ lang ingedrukt
 
 button _ pressed
---MISSING--
+knop _ ingedrukt
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -816,7 +816,7 @@ arrange scripts
 arrangeer scripts
 
 undrop (ctrl-Z)
---MISSING--
+ongedaan (ctrl-Z)
 
 copy all scripts to clipboard
 kopieer alle scripts naar klembord
