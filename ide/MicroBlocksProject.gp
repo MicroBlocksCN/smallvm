@@ -312,7 +312,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName moduleCategory variableNames blockList functions scripts
+defineClass MicroBlocksModule moduleName moduleCategory dependencies version description tags variableNames blockList functions scripts
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -321,6 +321,10 @@ to newMicroBlocksModule modName {
 method initialize MicroBlocksModule name {
 	moduleName = name
 	moduleCategory = 'Library'
+	dependencies = (array)
+	version = (array 1 0)
+	description = ''
+	tags = (array)
 	variableNames = (array)
 	blockList = (array)
 	functions = (array)
@@ -410,6 +414,16 @@ method deleteVariable MicroBlocksModule varName {
 
 // saving
 
+method arrayToDeclaration MicroBlocksModule array title {
+	declaration = (list title)
+	for i array {
+		if (needsQuotes this i) { i = (join '''' i '''') }
+		add declaration (toString i)
+	}
+	add declaration (newline)
+	return (joinStrings declaration ' ')
+}
+
 method codeString MicroBlocksModule owningProject newLibName {
 	// Return a string containing the code for this MicroBlocksModule.
 	// If newLibName is not nil, this module is being exported as a library.
@@ -427,16 +441,28 @@ method codeString MicroBlocksModule owningProject newLibName {
 	}
 	add result (newline)
 
+	add result (arrayToDeclaration this version 'version')
+
+	// add dependency declaration
+	if ((count dependencies) > 0) {
+		add result (arrayToDeclaration this dependencies 'depends')
+	}
+
+	// add tag declaration
+	if ((count tags) > 0) {
+		add result (arrayToDeclaration this tags 'tags')
+	}
+
+	// add description
+	desc = description
+	if (needsQuotes this desc) { desc = (join '''' desc '''') }
+	add result (join 'description ' desc (newline))
+
 	// add variable declaration
 	if ((count variableNames) > 0) {
-		varDeclaration = (list 'variables')
-		for v variableNames {
-			if (needsQuotes this v) { v = (join '''' v '''') }
-			add varDeclaration v
-		}
-		add result (joinStrings varDeclaration ' ')
-		add result (newline)
+		add result (arrayToDeclaration this variableNames 'variables')
 	}
+
 	add result (newline)
 
 	projectSpecs = (blockSpecs owningProject)
@@ -527,7 +553,7 @@ method scriptString MicroBlocksModule {
 method needsQuotes MicroBlocksModule s {
 	// Return true if the given string needs to be quoted in order to be parsed as
 	// a variable or function name.
-
+	if (isNumber s) { return false }
 	letters = (letters s)
 	if (isEmpty letters) { return true }
 	firstLetter = (first letters)
@@ -542,7 +568,10 @@ method needsQuotes MicroBlocksModule s {
 
 method loadFromCmds MicroBlocksModule cmdList {
 	loadModuleNameAndCategory this cmdList
+	loadVersion this cmdList
 	loadDependencies this cmdList
+	loadTags this cmdList
+	loadDescription this cmdList
 	loadVariables this cmdList
 	loadBlockList this cmdList
 	loadFunctions this cmdList
@@ -569,13 +598,31 @@ method loadModuleNameAndCategory MicroBlocksModule cmdList {
 	}
 }
 
-method loadDependencies MicroBlocksModule cmdList {
-	scripter = (scripter (smallRuntime))
+method stringArgs MicroBlocksModule cmd {
+	args = (list)
+	for arg (argList cmd) {
+		if (isClass arg 'String') { // quoted item
+			add args arg
+		} else { // unquoted item: mapped to "(v 'varName')" block by the parser
+			add args (first (argList arg))
+		}
+	}
+	return args
+}
+
+method loadDescription MicroBlocksModule cmdList {
 	for cmd cmdList {
-		if ('depends' == (primName cmd)) {
-			for libName (toList (argList cmd)) {
-				importLibraryFromFile scripter (join '//Libraries/' libName '.ubl')
-			}
+		if ('description' == (primName cmd)) {
+			description = (first (stringArgs this cmd))
+		}
+	}
+}
+
+method loadVersion MicroBlocksModule cmdList {
+	for cmd cmdList {
+		if ('version' == (primName cmd)) {
+			atPut version 1 (at (argList cmd) 1)
+			atPut version 2 (at (argList cmd) 2)
 		}
 	}
 }
@@ -584,16 +631,39 @@ method loadVariables MicroBlocksModule cmdList {
 	varNames = (list)
 	for cmd cmdList {
 		if (isOneOf (primName cmd) 'variables' 'sharedVariables') {
-			for v (argList cmd) {
-				if (isClass v 'String') { // quoted var name
-					add varNames v
-				} else { // unquoted var: mapped to "(v 'varName')" block by the parser
-					add varNames (first (argList v))
-				}
+			for v (stringArgs this cmd) {
+				add varNames v
 			}
 		}
 	}
 	variableNames = (toArray varNames)
+}
+
+method loadDependencies MicroBlocksModule cmdList {
+	deps = (list)
+	scripter = (scripter (smallRuntime))
+	for cmd cmdList {
+		if ('depends' == (primName cmd)) {
+			for libName (stringArgs this cmd) {
+				lib = (toString libName)
+				add deps lib
+				importLibraryFromFile scripter (join '//Libraries/' lib '.ubl')
+			}
+		}
+	}
+	dependencies = (toArray deps)
+}
+
+method loadTags MicroBlocksModule cmdList {
+	t = (list)
+	for cmd cmdList {
+		if ('tags' == (primName cmd)) {
+			for tag (stringArgs this cmd) {
+				add t (toLowerCase (toString tag))
+			}
+		}
+	}
+	tags = (toArray t)
 }
 
 method loadFunctions MicroBlocksModule cmdList {
