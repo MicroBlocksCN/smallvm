@@ -990,13 +990,16 @@ method importLibraryFromFile MicroBlocksScripter fileName data {
   }
 
   libName = (withoutExtension (filePart fileName))
-  addLibraryFromString mbProject (toString data) libName
+  importLibraryFromString this (toString data) libName
+}
 
-  // update library list and select the new library
-  updateLibraryList this
-  select (contents categoriesFrame) nil
-  select (contents libFrame) libName
-  updateBlocks this
+method importLibraryFromString MicroBlocksScripter data libName {
+	addLibraryFromString mbProject (toString data) libName
+	// update library list and select the new library
+	updateLibraryList this
+	select (contents categoriesFrame) nil
+	select (contents libFrame) libName
+	updateBlocks this
 }
 
 method updateLibraryList MicroBlocksScripter {

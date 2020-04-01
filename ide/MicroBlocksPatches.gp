@@ -242,6 +242,10 @@ to gpFolder {
 	}
   }
   if (contains (listDirectories path) 'MicroBlocks') {
+    // create the Libraries subfolder, if it does not already exist
+	if (not (contains (listDirectories (join path '/MicroBlocks') 'Libraries'))) {
+		makeDirectory (join path '/MicroBlocks/Libraries')
+	}
 	path = (join path '/MicroBlocks')
   }
   return path

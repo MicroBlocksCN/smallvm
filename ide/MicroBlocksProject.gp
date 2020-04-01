@@ -641,17 +641,51 @@ method loadVariables MicroBlocksModule cmdList {
 
 method loadDependencies MicroBlocksModule cmdList {
 	deps = (list)
-	scripter = (scripter (smallRuntime))
 	for cmd cmdList {
 		if ('depends' == (primName cmd)) {
 			for libName (stringArgs this cmd) {
 				lib = (toString libName)
 				add deps lib
-				importLibraryFromFile scripter (join '//Libraries/' lib '.ubl')
+				loadDependency this lib
 			}
 		}
 	}
 	dependencies = (toArray deps)
+}
+
+method loadDependency MicroBlocksModule lib {
+	scripter = (scripter (smallRuntime))
+	// find version requirements
+	vPosition = (findLast lib '#')
+	vRequirement = ''
+	version = (array 1 0)
+	if (vPosition > 0) {
+		vPosition = (vPosition + 1)
+		vRequirement = (substring lib vPosition vPosition)
+		atPut version 1 (toInteger (substring lib (vPosition + 1) ((findLast lib '.') - 1)))
+		atPut version 2 (toInteger ((findLast lib '.') + 1))
+		lib = (substring lib 1 (vPosition - 2))
+	}
+
+	if (beginsWith lib 'http') {
+		if (beginsWith lib 'https') {
+			error 'HTTPS protocol is currently unsupported'
+		} else {
+			// fetch library from remote URL
+			url = (substring lib 8)
+			host = (substring url 1 ((findFirst url '/') - 1))
+			path = (substring url (findFirst url '/'))
+			libName = (substring path ((findLast path '/') + 1) ((findLast path '.') - 1))
+			libSource = (httpGet host path)
+			importLibraryFromString scripter libSource libName
+		}
+	} (beginsWith lib '/') {
+		// fetch library from [MicroBlocksFolder]/Library
+		importLibraryFromFile scripter (join (gpFolder) '/Libraries' lib '.ubl')
+	} else {
+		// load embedded library
+		importLibraryFromFile scripter (join '//Libraries/' lib '.ubl')
+	}
 }
 
 method loadTags MicroBlocksModule cmdList {
