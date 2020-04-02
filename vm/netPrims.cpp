@@ -7,6 +7,7 @@
 // netPrims.cpp - MicroBlocks network primitives
 // Bernat Romagosa, August 2018
 // Revised by John Maloney, November 2018
+// Revised by Bernat Romagosa & John Maloney, March 2020
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -168,19 +169,24 @@ static OBJ primStopHttpServer(int argCount, OBJ *args) {
 }
 
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
+	// Read HTTP request data and return a string containing some data or falseObj if no data
+	// is available. Fail if there isn't enough memory to allocate even a one-byte string.
+
 	if (!client) client = server.available(); // attempt to accept a client connection
 	if (!client) return falseObj; // no client connection
 
-	char request[1024];
+	int byteCount = client.available();
+	if (!byteCount) return falseObj; // no data available
 
-	// read an HTTP request
-	int bytesAvailable = client.available();
-	if (!bytesAvailable) return falseObj;
-	int bytesToRead = bytesAvailable > 1024 ? 1024 : bytesAvailable;
-	client.readBytes(request, bytesToRead);
-	request[bytesToRead] = 0; // null terminate
-
-	return newStringFromBytes(request, bytesToRead);
+	OBJ result = newString(byteCount);
+	while (falseObj == result) {
+		if (byteCount < 4) return falseObj; // out of memory
+		byteCount = byteCount / 2;
+		result = newString(byteCount); // try to allocate half the previous amount
+	}
+	fail(noError); // clear memory allocation error, if any
+	client.readBytes(obj2str(result), byteCount);
+	return result;
 }
 
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
@@ -199,7 +205,6 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 		client.print(body);
 		client.print("\n");
 	}
-	client.flush();
 	client.stop();
 	return falseObj;
 }
@@ -207,10 +212,19 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 WiFiClient httpClient;
 
 static OBJ primHttpConnect(int argCount, OBJ *args) {
-	int port = 80;
 	char* host = obj2str(args[0]);
-	if ((argCount > 1) && isInt(args[1])) port = obj2int(args[1]);
-	httpClient.connect(host, port);
+	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
+int start = microsecs();
+	#ifdef ARDUINO_ARCH_ESP32
+		httpClient.connect(host, port, 500);
+	#else
+		httpClient.setTimeout(500);
+		httpClient.connect(host, port);
+	#endif
+	int usecs = microsecs() - start;
+if (usecs > 300000) reportNum("L", usecs); // long connect time
+
+	processMessage(); // process messages now
 	return falseObj;
 }
 
@@ -233,14 +247,14 @@ Accept: */*\r\n",
 			path,
 			host);
 	httpClient.write(request, strlen(request));
-	if (argCount > 3) {
+	if ((argCount > 3) && IS_TYPE(args[3], StringType)) {
 		char length_str[50];
 		char* body = obj2str(args[3]);
 		int content_length = strlen(body);
 		httpClient.write("Content-Type: text/plain\r\n", 26);
 		sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
 		httpClient.write(length_str, strlen(length_str));
-		httpClient.write(body, strlen(body));
+		httpClient.write(body, content_length);
 	} else {
 		httpClient.write("\r\n", 2);
 	}
@@ -249,15 +263,18 @@ Accept: */*\r\n",
 }
 
 static OBJ primHttpResponse(int argCount, OBJ *args) {
+	if (!httpClient.connected()) return falseObj;
 	int byteCount = httpClient.available();
-	if (byteCount) {
-		char buffer[1024];
-		if (byteCount > 1023) byteCount = 1023;
-		httpClient.read((uint8 *) buffer, byteCount);
-		return newStringFromBytes(buffer, byteCount);
-	} else {
-		return falseObj;
+	if (!byteCount) return falseObj; // no data available
+	OBJ result = newString(byteCount);
+	while (falseObj == result) {
+		if (byteCount < 4) return falseObj; // out of memory
+		byteCount = byteCount / 2;
+		result = newString(byteCount); // try to allocate half the previous amount
 	}
+	fail(noError); // clear memory allocation error, if any
+	httpClient.read((uint8 *) obj2str(result), byteCount);
+	return result;
 }
 
 static OBJ primHttpClose(int argCount, OBJ *args) {
