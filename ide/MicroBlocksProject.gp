@@ -202,6 +202,7 @@ method addLibraryFromString MicroBlocksProject s fileName {
 			setModuleName lib fileName
 		}
 		updatePrimitives lib
+		importDependencies lib (scripter (smallRuntime))
 		addLibrary this lib
 	}
 	return this
@@ -337,6 +338,9 @@ method moduleCategory MicroBlocksModule { return moduleCategory }
 method moduleName MicroBlocksModule { return moduleName }
 method setModuleName MicroBlocksModule modName { moduleName = modName }
 method toString MicroBlocksModule { return (join 'MicroBlocksModule(''' moduleName ''')') }
+method description MicroBlocksModule { return description }
+method version MicroBlocksModule { return version }
+method tags MicroBlocksModule { return tags }
 
 // scripts
 
@@ -646,15 +650,19 @@ method loadDependencies MicroBlocksModule cmdList {
 			for libName (stringArgs this cmd) {
 				lib = (toString libName)
 				add deps lib
-				loadDependency this lib
 			}
 		}
 	}
 	dependencies = (toArray deps)
 }
 
-method loadDependency MicroBlocksModule lib {
-	scripter = (scripter (smallRuntime))
+method importDependencies MicroBlocksModule scripter {
+	for dependency dependencies {
+		importDependency this dependency scripter
+	}
+}
+
+method importDependency MicroBlocksModule lib scripter {
 	// find version requirements
 	vPosition = (findLast lib '#')
 	vRequirement = ''
@@ -666,6 +674,8 @@ method loadDependency MicroBlocksModule lib {
 		atPut version 2 (toInteger ((findLast lib '.') + 1))
 		lib = (substring lib 1 (vPosition - 2))
 	}
+
+	// TODO Make sure we comply with version requirement (ex. >2.3, =1.5)
 
 	if (beginsWith lib 'http') {
 		if (beginsWith lib 'https') {

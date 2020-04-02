@@ -1,6 +1,6 @@
 // FilePicker.gp - Dialog box for specifying files for opening or saving.
 
-defineClass FilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer
+defineClass FilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer onFileSelect
 
 to pickFileToOpen anAction defaultPath extensionList {
   // Pick an existing file to open starting at defaultPath, if provided. If anAction is not
@@ -318,6 +318,10 @@ method textButton FilePicker x y label selectorOrAction {
 
 // actions
 
+method onFileSelect FilePicker anAction {
+	onFileSelect = anAction
+}
+
 method setComputer FilePicker {
   if (and ('Browser' == (platform)) (browserIsChromebook)) {
 	isDone = true
@@ -452,22 +456,29 @@ method okay FilePicker {
 }
 
 method fileOrFolderSelected FilePicker {
-  sel = (selection (contents listPane))
-  if (beginsWith sel '[ ] ') {
-	sel = (substring sel 5)
-	if (endsWith sel ':') {
-	  showFolder this sel true
-	} ('/' == currentDir) {
-	  showFolder this (join currentDir sel) false
+	sel = (selection (contents listPane))
+	if (beginsWith sel '[ ] ') {
+		sel = (substring sel 5)
+		if (endsWith sel ':') {
+			showFolder this sel true
+		} ('/' == currentDir) {
+			showFolder this (join currentDir sel) false
+		} else {
+			showFolder this (join currentDir '/' sel) false
+		}
 	} else {
-	  showFolder this (join currentDir '/' sel) false
+		// fill the file name input field with the name of the selected file
+		if (notNil nameField) {
+			setText (contents nameField) sel
+		}
+		if (notNil onFileSelect) {
+			path = (join currentDir '/' sel)
+			if useEmbeddedFS {
+				path = (join '//' path)
+			}
+			call onFileSelect path
+		}
 	}
-  } else {
-    // fill the file name input field with the name of the selected file
-    if (notNil nameField) {
-      setText (contents nameField) sel
-    }
-  }
 }
 
 method fileOrFolderDoubleClicked FilePicker {
@@ -555,6 +566,8 @@ method fixLayout FilePicker {
   x = (x - ((width (morph cancelButton)) + space))
   setPosition (morph cancelButton) x y
 }
+
+method listPane FilePicker { return listPane }
 
 defineClass FilePickerIcons
 
