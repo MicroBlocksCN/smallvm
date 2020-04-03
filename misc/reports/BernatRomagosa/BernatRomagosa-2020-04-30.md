@@ -6,5 +6,6 @@ Funding source: MicroBlocks donation funds
 |------------|------:|------|-----|
 | 01/04/2020 | 4 | New library format. Remote, local and embedded dependencies working. | 697eafed9ef52a319bc748d089c781a440815330
 | 02/04/2020 | 4 | Started working on the new library import dialog. | b78aa4a
+| 03/04/2020 | 4 | New library import dialog finished. Export not yet done. Filled all data for all embedded libraries. | a007213
 
-| **Total**  | 8 | |
+| **Total**  | 12 | |
