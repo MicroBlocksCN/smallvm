@@ -4,22 +4,22 @@ description 'Draw with turtle geometry on boards with a TFT display, such as the
 depends TFT
 tags tft graphics draw
 
-sharedVariables '_turtleX' '_turtleY' '_turtleHeading' '_turtlePenIsDown' '_turtleColor'
+variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
 
-spec ' ' 'home' 'home' ''
-spec ' ' 'move' 'move _' 'auto' '10'
-spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
-spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
-spec ' ' 'pen down' 'pen down' ''
-spec ' ' 'pen up' 'pen up' ''
-spec ' ' 'set pen color to' 'set pen color to _' 'color'
-spec ' ' 'setPenToRandomColor' 'set pen to random color' ''
-spec ' ' '[display:mbDisplayOff]' 'clear display'
-spec ' ' 'clearDisplay' 'fill display with _' 'color'
-spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
-spec ' ' 'setHeading' 'point in direction  _' 'auto' 0
-spec ' ' '_turtleNotes' '_turtleNotes'
-spec 'r' '_tft color' '_tft color _ to number' 'color'
+    spec ' ' 'home' 'home' ''
+    spec ' ' 'move' 'move _' 'auto' '10'
+    spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
+    spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
+    spec ' ' 'pen down' 'pen down' ''
+    spec ' ' 'pen up' 'pen up' ''
+    spec ' ' 'set pen color to' 'set pen color to _' 'color'
+    spec ' ' 'setPenToRandomColor' 'set pen to random color' ''
+    spec ' ' '[display:mbDisplayOff]' 'clear display'
+    spec ' ' 'clearDisplay' 'fill display with _' 'color'
+    spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
+    spec ' ' 'setHeading' 'point in direction  _' 'auto' 0
+    spec ' ' '_turtleNotes' '_turtleNotes'
+    spec 'r' '_tft color' '_tft color _ to number' 'color'
 
 to home {
   if (0 == _turtlePenIsDown) {
