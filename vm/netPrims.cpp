@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "mem.h"
 #include "tinyJSON.h"
 
@@ -214,16 +215,12 @@ WiFiClient httpClient;
 static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
-int start = microsecs();
 	#ifdef ARDUINO_ARCH_ESP32
 		httpClient.connect(host, port, 500);
 	#else
 		httpClient.setTimeout(500);
 		httpClient.connect(host, port);
 	#endif
-	int usecs = microsecs() - start;
-if (usecs > 300000) reportNum("L", usecs); // long connect time
-
 	processMessage(); // process messages now
 	return falseObj;
 }
