@@ -282,9 +282,8 @@ method clicked Block hand {
   }
 }
 
-method devMenu Hand currentObj {
-	// disable the developer menu (comment this method out to re-enable it
-}
+// disable the developer menu (comment this method out to re-enable it
+method devMenu Hand currentObj {}
 
 method contextMenu Block {
   if (isPrototype this) {return nil}

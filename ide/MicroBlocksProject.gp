@@ -313,7 +313,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName moduleCategory dependencies version description tags variableNames blockList functions scripts
+defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags variableNames blockList functions scripts
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -324,6 +324,7 @@ method initialize MicroBlocksModule name {
 	moduleCategory = 'Library'
 	dependencies = (array)
 	version = (array 1 0)
+	author = 'unknown'
 	description = ''
 	tags = (array)
 	variableNames = (array)
@@ -339,8 +340,26 @@ method moduleName MicroBlocksModule { return moduleName }
 method setModuleName MicroBlocksModule modName { moduleName = modName }
 method toString MicroBlocksModule { return (join 'MicroBlocksModule(''' moduleName ''')') }
 method description MicroBlocksModule { return description }
-method version MicroBlocksModule { return version }
-method tags MicroBlocksModule { return tags }
+method version MicroBlocksModule { return (copy version) }
+method author MicroBlocksModule { return author }
+method tags MicroBlocksModule { return (copy tags) }
+method dependencies MicroBlocksModule { return (copy dependencies) }
+
+method dependencyNames MicroBlocksModule {
+	deps = (list)
+	for dep dependencies {
+		slashPos = (findLast dep '/')
+		if (slashPos > 0) { slashPos = (slashPos + 1) }
+		poundPos = (findLast dep '#')
+		if (poundPos > 0) {
+			poundPos = (poundPos - 1)
+		} else {
+			poundPos = (count dep)
+		}
+		add deps (withoutExtension (substring dep slashPos poundPos))
+	}
+	return deps
+}
 
 // scripts
 
@@ -444,6 +463,11 @@ method codeString MicroBlocksModule owningProject newLibName {
 		add result (join ' ' modCat)
 	}
 	add result (newline)
+
+	// add author
+	by = author
+	if (needsQuotes this author) { by = (join '''' author '''') }
+	add result (join 'author ' by (newline))
 
 	add result (arrayToDeclaration this version 'version')
 
@@ -573,6 +597,7 @@ method needsQuotes MicroBlocksModule s {
 method loadFromCmds MicroBlocksModule cmdList {
 	loadModuleNameAndCategory this cmdList
 	loadVersion this cmdList
+	loadAuthor this cmdList
 	loadDependencies this cmdList
 	loadTags this cmdList
 	loadDescription this cmdList
@@ -631,6 +656,13 @@ method loadVersion MicroBlocksModule cmdList {
 	}
 }
 
+method loadAuthor MicroBlocksModule cmdList {
+	for cmd cmdList {
+		if ('author' == (primName cmd)) {
+			author = (first (stringArgs this cmd))
+		}
+	}
+}
 method loadVariables MicroBlocksModule cmdList {
 	varNames = (list)
 	for cmd cmdList {
@@ -663,6 +695,16 @@ method importDependencies MicroBlocksModule scripter {
 }
 
 method importDependency MicroBlocksModule lib scripter {
+	// dependencies look like either:
+	// LibName						- Fetch from embedded FS
+	// /LibName						- Fetch from ~/MicroBlocks/Libraries
+	// http://url/LibName.ubp		- Fetch from server
+
+	// Additionally, one can define version requirements like this:
+	// LibName#>1.4					- Needs at least version 1.4
+	// /LibName#=2.7				- Needs exactly version 2.7
+	// http://url/LibName.ubp#>1.1	- Needs at least version 1.1
+
 	// find version requirements
 	vPosition = (findLast lib '#')
 	vRequirement = ''
