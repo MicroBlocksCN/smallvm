@@ -6,13 +6,14 @@ module 'HTTP client'
 	spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
 	spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
 	spec 'r' '_http_status' '_status of response _' 'auto' ''
+	spec 'r' '_line_end' '_line_end'
 	spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
 	spec 'r' '_request_url' '_request_url _ method _ body _' 'str str str' '' 'POST' ''
 	spec 'r' 'http܃//' 'http܃// _' 'auto' 'microblocks.fun/example.txt'
 	spec ' ' 'request' '_ data _ to http܃// _' 'menu.requestTypes str str' 'POST' 'MicroBlocks is fun' 'postman-echo.com/post'
 
 to '_http_body_start' response {
-  return ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response)
+  return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
 }
 
 to '_http_header' header response {
@@ -21,9 +22,9 @@ to '_http_header' header response {
   repeatUntil ((size (v 'header text')) < 3) {
     local 'key' ('[data:copyFromTo]' (v 'header text') 1 (('[data:find]' ':' (v 'header text')) - 1))
     if (('_lowercase' key) == header) {
-      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) (v 'header text')) - 1))
+      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('_line_end') (v 'header text')) - 1))
     }
-    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) (v 'header text')) + 2))
+    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('_line_end') (v 'header text')) + 2))
   }
   return (booleanConstant false)
 }
@@ -33,7 +34,7 @@ to '_http_header_text' response {
 }
 
 to '_http_headers_start' response {
-  return (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response) + 2)
+  return (('[data:find]' ('_line_end') response) + 2)
 }
 
 to '_http_status' response {
@@ -41,7 +42,11 @@ to '_http_status' response {
 }
 
 to '_http_status_text' response {
-  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response))
+  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('_line_end') response))
+}
+
+to '_line_end' {
+  return ('[data:unicodeString]' ('[data:makeList]' 13 10))
 }
 
 to '_lowercase' string {
@@ -58,41 +63,33 @@ to '_lowercase' string {
 }
 
 to '_request_url' url method body {
-  if (('[net:wifiStatus]') == 'Connected') {
-    local 'slash position' ('[data:find]' '/' url)
-    local 'request time' (millisOp)
-    local 'host' ''
-    local 'path' ''
-    local 'chunk' ''
-    local 'response' ''
-    if ((v 'slash position') > 0) {
-      host = ('[data:copyFromTo]' url 1 ((v 'slash position') - 1))
-      path = ('[data:copyFromTo]' url ((v 'slash position') + 1))
-    } else {
-      host = url
-    }
-    '[net:httpConnect]' host
-    waitUntil (or ('[net:httpIsConnected]') ((millisOp) > ((v 'request time') + 15000)))
-    if ((millisOp) > ((v 'request time') + 15000)) {
-      '[net:httpClose]'
-      return ('[data:join]' '0 Timed out while trying to connect' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)))
-    } else {
-      '[net:httpRequest]' method host path body
-      chunk = ('[net:httpResponse]')
-      if (chunk != (booleanConstant false)) {
-        response = ('[data:join]' response chunk)
-      }
-      repeatUntil (or (not ('[net:httpIsConnected]')) ((millisOp) > ((v 'request time') + 20000))) {
-        chunk = ('[net:httpResponse]')
-        if (and (chunk != (booleanConstant false)) (('[data:freeMemory]') > ((size response) * 2))) {
-          response = ('[data:join]' response chunk)
-        }
-      }
-      return response
-    }
+  local 'host' ''
+  local 'path' ''
+  local 'slash position' ('[data:find]' '/' url)
+  if ((v 'slash position') > 0) {
+    host = ('[data:copyFromTo]' url 1 ((v 'slash position') - 1))
+    path = ('[data:copyFromTo]' url ((v 'slash position') + 1))
   } else {
-    return ('[data:join]' '0 Not Connected' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)))
+    host = url
   }
+  if (('[net:wifiStatus]') != 'Connected') {
+    return ('[data:join]' '0 Not Connected' ('_line_end'))
+  }
+  local 'request time' (millisOp)
+  '[net:httpConnect]' host
+  if (not ('[net:httpIsConnected]')) {
+    return ('[data:join]' '0 Could not connect to server' ('_line_end'))
+  }
+  '[net:httpRequest]' method host path body
+  local 'response' ''
+  repeatUntil (or (not ('[net:httpIsConnected]')) ((millisOp) > ((v 'request time') + 20000))) {
+    local 'chunk' ('[net:httpResponse]')
+    if (((size response) + (size chunk)) <= 800) {
+      response = ('[data:join]' response chunk)
+    }
+    waitMillis 10
+  }
+  return response
 }
 
 to 'http܃//' url {

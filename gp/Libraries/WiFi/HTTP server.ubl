@@ -1,13 +1,13 @@
 module 'HTTP server'
 
-	spec ' ' '[net:startHttpServer]'		'start HTTP server'
-	spec 'r' '[net:httpServerGetRequest]'	'HTTP server request'
-	spec 'r' 'body of request'				'body of request _' 'auto' ''
-	spec 'r' 'path of request'				'path of request _' 'auto' ''
-	spec 'r' 'request method'				'method of request _' 'auto' ''
+	spec ' ' '[net:startHttpServer]' 'start HTTP server'
+	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
+	spec 'r' 'body of request' 'body of request _' 'auto' ''
+	spec 'r' 'path of request' 'path of request _' 'auto' ''
+	spec 'r' 'request method' 'method of request _' 'auto' ''
 
 to 'body of request' request {
-  return ('[data:copyFromTo]' request (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) request) + 4))
+  return ('[data:copyFromTo]' request (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request) + 4))
 }
 
 to 'path of request' request {
