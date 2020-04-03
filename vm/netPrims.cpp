@@ -49,6 +49,7 @@ STRING_OBJ_CONST("Trying...") statusTrying;
 STRING_OBJ_CONST("Connected") statusConnected;
 STRING_OBJ_CONST("Failed; bad password?") statusFailed;
 STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
+STRING_OBJ_CONST("") noData;
 
 #ifdef ESP8266
 	static int firstTime = true;
@@ -215,18 +216,30 @@ WiFiClient httpClient;
 static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
+	uint32 start = millisecs();
+	int ok;
 	#ifdef ARDUINO_ARCH_ESP32
-		httpClient.connect(host, port, 500);
+		ok = httpClient.connect(host, port, 500);
 	#else
 		httpClient.setTimeout(500);
-		httpClient.connect(host, port);
+		ok = httpClient.connect(host, port);
 	#endif
+
+	while (ok && !httpClient.connected()) { // wait for connection to be fully established
+		processMessage(); // process messages now
+		uint32 now = millisecs();
+		uint32 elapsed = (now >= start) ? (now - start) : now; // handle clock wrap
+		if (elapsed > 500) break;
+		delay(1);
+	}
 	processMessage(); // process messages now
 	return falseObj;
 }
 
 static OBJ primHttpIsConnected(int argCount, OBJ *args) {
-	return httpClient.connected() ? trueObj : falseObj;
+	// Return true if data is available even if the connection has been closed by the server.
+
+	return (httpClient.connected() || httpClient.available()) ? trueObj : falseObj;
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
@@ -260,12 +273,13 @@ Accept: */*\r\n",
 }
 
 static OBJ primHttpResponse(int argCount, OBJ *args) {
-	if (!httpClient.connected()) return falseObj;
 	int byteCount = httpClient.available();
-	if (!byteCount) return falseObj; // no data available
+	if (!byteCount) return (OBJ) &noData;
+	if (byteCount > 800) byteCount = 800; // max length string that can be reported to IDE
+
 	OBJ result = newString(byteCount);
 	while (falseObj == result) {
-		if (byteCount < 4) return falseObj; // out of memory
+		if (byteCount < 4) return (OBJ) &noData; // out of memory
 		byteCount = byteCount / 2;
 		result = newString(byteCount); // try to allocate half the previous amount
 	}
