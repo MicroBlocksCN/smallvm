@@ -1,4 +1,4 @@
-module 'Web Things'
+module 'Web Thing' Comm
 depends 'HTTP server' 'Wifi'
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
 

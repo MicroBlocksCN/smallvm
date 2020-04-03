@@ -1,4 +1,4 @@
-module 'HTTP server'
+module 'HTTP server' Comm
 
 	spec ' ' '[net:startHttpServer]' 'start HTTP server'
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
