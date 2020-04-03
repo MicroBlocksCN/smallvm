@@ -1,4 +1,8 @@
 module 'Servo Primitives' Output
+author MicroBlocks
+description 'Low level servo motor primitives. You are probably looking for the Servo library, on the folder above.'
+tags servo motor angle rotation position
+
 
 	spec 'r' '[io:hasServo]'				'has servo support'
 	spec ' ' '[io:setServo]'				'set servo pin _ to _ usecs' 'num num' 0 1500

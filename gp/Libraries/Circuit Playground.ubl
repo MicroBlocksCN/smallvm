@@ -1,4 +1,8 @@
 module 'Circuit Playground'
+author MicroBlocks
+description 'Blocks to control speaker and slide switch in Circuit Playground Express boards.'
+tags cpx slide switch speaker
+
 
 	spec ' ' 'Circuit Playground set speaker' 'Circuit Playground set speaker _' 'bool' true
 	spec 'r' 'Circuit Playground slide switch' 'Circuit Playground slide switch'

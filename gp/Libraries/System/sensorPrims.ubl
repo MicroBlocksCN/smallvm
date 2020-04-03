@@ -1,4 +1,8 @@
 module 'Sensor Primitives' Input
+author MicroBlocks
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
+tags tilt acceleration light sensor capacitive button
+
 
 	// Sensor primitives for the BBC micro:bit, Calliope mini, Citilab ED1, and AdaFruit
 	// Circuit Playground Express. These boards all have accelerometers and use various

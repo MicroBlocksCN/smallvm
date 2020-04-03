@@ -1,4 +1,8 @@
 module 'LED Display' Output
+author MicroBlocks
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+tags pixel matrix led tft
+
 
 	// Display primitives for the 5x5 LED display on the BBC micro:bit and Calliope mini
 	// These operations are simulated boards with TFT displays such as the ED1 and

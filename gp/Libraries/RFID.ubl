@@ -1,4 +1,8 @@
 module RFID Input
+author 'José García Yeste'
+description 'Read Radio Frequency Identification (RFID) data from key cards and other electronic tags with the PN532 sensor.'
+tags sensor pn532
+
 
 	spec 'r' 'PN532readRFID' 'read PN532 RFID'
 	spec 'r' 'PN532equalRFIDs' 'RFID _ = _' 'str str' '' ''

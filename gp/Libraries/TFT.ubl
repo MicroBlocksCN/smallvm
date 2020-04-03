@@ -1,4 +1,8 @@
 module TFT Output
+author MicroBlocks
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+tags tft graphics draw
+
 
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true

@@ -1,4 +1,8 @@
 module 'Tone Primitives' Output
+author MicroBlocks
+description 'Low level support for audio tone generation. You are probably looking for the Tone library, on the folder above.'
+tags tone sound music audio note speaker
+
 
 	// These primitives work on boards that support the Arduino tone library for low-level
 	// waveform generation. Using these primitives when available results in smoother music

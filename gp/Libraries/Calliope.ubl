@@ -1,4 +1,8 @@
 module Calliope
+author MicroBlocks
+description 'Blocks to control the LED and speaker in Calliope boards.'
+tags calliope led sound speaker
+
 
 	spec ' ' 'Calliope set LED' 'Calliope set LED red _ green _ blue _' 'auto auto auto' 0 0 100
 	spec ' ' 'Calliope set speaker' 'Calliope set speaker _' 'bool' true

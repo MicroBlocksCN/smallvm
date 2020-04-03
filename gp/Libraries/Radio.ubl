@@ -1,4 +1,8 @@
 module Radio Comm
+author MicroBlocks
+description 'Send and receive messages between micro:bit boards via their built-in radio system.'
+tags radio communication messaging network
+
 
 	spec ' ' '[radio:sendInteger]' 'radio send number _' 'num' 123
 	spec ' ' '[radio:sendString]' 'radio send string _' 'str' 'Hello!'

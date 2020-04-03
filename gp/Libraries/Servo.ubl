@@ -1,4 +1,8 @@
 module Servo Output
+author MicroBlocks
+description 'Control both positional (angle) and rotational servo motors.'
+tags servo motor angle rotation position
+
 variables _servoPin _servoPulseWidth
 
 	spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'num num' 1 90

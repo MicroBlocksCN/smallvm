@@ -1,4 +1,8 @@
 module Wifi Comm
+author MicroBlocks
+description 'Connect to a Wifi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.'
+tags communication network
+
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'

@@ -1,4 +1,8 @@
 module TCS34725
+author 'José García Yeste'
+description 'Support for the TCS34725 RGB color sensor.'
+tags sensor color
+
 
 	spec ' ' '_TCS34725 setup' '_TCS34725 setup'
 	spec 'r' 'TCS34725 connected' 'TCS34725 connected'

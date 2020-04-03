@@ -1,4 +1,8 @@
 module DotStar Output
+author MicroBlocks
+description 'Control Adafruit DotStar RGB LED strips.'
+tags led strip rgb string
+
 variables '_DotStar brightness' '_DotStar clock pin' '_DotStar data pin' '_DotStar pixels'
 
 	spec ' ' 'DotStar attach' 'attach  _ DotStar LEDs to data pin _ clock pin _' 'auto auto auto' 1 5 6

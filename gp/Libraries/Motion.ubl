@@ -1,4 +1,8 @@
 module Motion Input
+author MicroBlocks
+description 'Count steps and detect motion in boards with a built-in accelerometer, such as the micro:bit, the Calliope, the Citilab ED1 or the Circuit Playground Express.'
+tags acceleration steps motion accelerometer
+
 variables _motionSamples _stepCount _stepThreshold _stepMotionHigh
 
 	spec ' ' 'startStepCounter' 'start step counter'

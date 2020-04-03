@@ -1,4 +1,8 @@
 module 'Touch Screen' Input
+author MicroBlocks
+description 'Primitives to support the QVGA touch screen display the (discontinued) IoT-Bus Io system.'
+tags qvga touch tft
+
 
 	// Primitives to support the QVGA touch screen display the IoT-Bus Io system.
 	// https://www.oddwires.com/iot-bus-qvga-2-4-tft-touch-display/

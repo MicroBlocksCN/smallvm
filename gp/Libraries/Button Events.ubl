@@ -1,4 +1,8 @@
 module 'Button Events' Input
+author MicroBlocks
+description 'Provides blocks to detect press, long press and double press events on buttons.'
+tags event button double long press
+
 variables _buttons
 
 	spec ' ' '_buttonLoop' '_buttonLoop'

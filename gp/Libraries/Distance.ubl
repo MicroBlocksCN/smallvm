@@ -1,4 +1,8 @@
 module Distance Input
+author 'Joan Guillén & Josep Ferràndiz'
+description 'Support for the HC-SR04 ultrasound distance sensor.'
+tags sensor hc-sr04 distance ultrasound
+
 
 	spec 'r' 'distance (cm)' 'distance (cm) trigger _ echo _' 'auto auto' 2 4
 

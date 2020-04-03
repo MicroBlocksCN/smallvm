@@ -1,4 +1,8 @@
 module Tone Output
+author MicroBlocks
+description 'Audio tone generation. Make music with MicroBlocks!'
+tags tone sound music audio note speaker
+
 variables _tonePin _toneInitalized _toneLoopOverhead
 
 	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500

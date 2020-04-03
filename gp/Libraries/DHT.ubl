@@ -1,4 +1,8 @@
 module DHT Input
+author MicroBlocks
+description 'Support for the DHT11 and DHT22 environmental sensors. These sensors provide temperature and humidity readings.'
+tags sensor dht11 dht22 temperature humidity
+
 variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime
 
 	spec 'r' 'temperature_DHT11' 'temperature (Celsius) DHT11 pin _' 'auto' 4

@@ -1,6 +1,10 @@
 module 'WiFi Primitives' Comm
+author MicroBlocks
+description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server or Wifi libraries on the folder above.'
+tags network http server client
 
-	// These primitives support WiFi and the Mozilla Web of Things IoT protocol.
+
+	// These primitives support WiFi
 	// See https://iot.mozilla.org
 	// These primitives currently work only on ESP8266 and ESP32 boards, but may be ported
 	// to other WiFi capable boards in the future.

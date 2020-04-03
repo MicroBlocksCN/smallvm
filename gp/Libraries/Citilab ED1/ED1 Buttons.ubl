@@ -1,4 +1,8 @@
 module 'ED1 Buttons' Input
+author MicroBlocks
+description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
+tags button capacitive ed1
+
 variables _ED1_buttons_init '_capacitive threshold'
 
 	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'

@@ -1,6 +1,8 @@
 module 'Misc Primitives'
+author MicroBlocks
+description 'Miscellaneous system primitives.'
 
-	// Miscellaneous system primtives.
+
 
 	spec ' ' 'noop'				'no op'
 	spec ' ' 'ignoreArgs'		'ignore : _ : ...' 'auto' 0

@@ -1,4 +1,8 @@
 module NeoPixel Output
+author MicroBlocks
+description 'Control NeoPixel (WS2812) RGB LED strips.'
+tags led strip rgb string ws2812
+
 variables _np_pixels
 
 	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false

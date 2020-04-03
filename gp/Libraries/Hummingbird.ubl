@@ -1,4 +1,8 @@
 module Hummingbird
+author 'Tom Lauwers'
+description 'Provides blocks for the Birdbrain Technologies Hummingbird bit kit.'
+tags birdbrain hummingbird bit led servo sensor
+
 variables _spi_lock
 
 	spec ' ' 'Hummingbird LED' 'Hummingbird LED _  _ %' 'menu.range:1-3 num' 1 0

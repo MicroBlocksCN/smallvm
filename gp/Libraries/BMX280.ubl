@@ -1,4 +1,8 @@
 module BMX280
+author 'José Garcia Yeste'
+description 'Provides support for the BME280 and BMP280 barometric pressure sensors. These sensors measure temperature, pressure and humidity.'
+tags sensor pressure temperature humidity
+
 variables _bme280coefficients
 
 	spec 'r' 'bme280 connected' 'bme280 connected'

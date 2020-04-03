@@ -1,3 +1,9 @@
+module Turtle Output
+author MicroBlocks
+description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+depends TFT
+tags tft graphics draw
+
 sharedVariables '_turtleX' '_turtleY' '_turtleHeading' '_turtlePenIsDown' '_turtleColor'
 
 spec ' ' 'home' 'home' ''
