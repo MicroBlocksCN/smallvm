@@ -1098,7 +1098,9 @@ method showResult SmallRuntime chunkID value {
 			if ('' == value) {
 				removeHint (global 'page')
 			} else {
-				setClipboard (toString value)
+				if (shiftKeyDown (keyboard (global 'page'))) {
+					setClipboard (toString value)
+				}
 			}
 		}
 	}
