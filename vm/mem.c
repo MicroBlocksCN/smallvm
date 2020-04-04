@@ -40,7 +40,10 @@
 #if defined(NRF51)
   #define OBJSTORE_BYTES 2500 // max is 2612
 #else
-  #define OBJSTORE_BYTES 8000 // max that works on Wemos D1 mini is 9000
+  #define OBJSTORE_BYTES 6000
+  // max that works on Wemos D1 mini (ESP8266) is 11000
+  // however, WiFi is unreliable for 4 concurrent requestions even down to 7200
+  // 6000 seems stable for up to 10 concurrent requests
   // max that compiles for all boards is 16886 (17624 NodeMCU)
 #endif
 

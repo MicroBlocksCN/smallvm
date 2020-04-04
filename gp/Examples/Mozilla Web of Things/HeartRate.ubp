@@ -1,11 +1,11 @@
 module main
 variables _useWiFi bpm interval
 
-script 86 50 {
+script 80 55 {
 comment 'This example lets you simulate a heart rate using A and B buttons and displays the rate as a beating heart on the LED matrix'
 }
 
-script 56 103 {
+script 50 108 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 'set thing name to' 'Heart rate'
@@ -22,7 +22,7 @@ forever {
 }
 }
 
-script 557 112 {
+script 491 113 {
 comment 'To test, click this script,
 then press buttons A and B
 to change the heart rate.'
@@ -32,15 +32,18 @@ forever {
 }
 }
 
-script 549 305 {
+script 495 274 {
 whenStarted
 bpm = 60
 forever {
   local 'interval' (60000 / bpm)
+  setUserLED false
   '[display:mbDisplay]' 145728
   waitMillis (interval / 4)
+  setUserLED true
   '[display:mbDisplay]' 4685802
   waitMillis (interval / 4)
+  setUserLED false
   '[display:mbDisplayOff]'
   waitMillis (interval / 2)
 }
@@ -56,7 +59,7 @@ module 'HTTP server'
 	spec 'r' 'request method' 'method of request _' 'auto' ''
 
 to 'body of request' request {
-  return ('[data:copyFromTo]' request (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) request) + 4))
+  return ('[data:copyFromTo]' request (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request) + 4))
 }
 
 to 'path of request' request {
@@ -70,7 +73,7 @@ to 'request method' request {
 
 module 'LED Display' Output
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
@@ -108,10 +111,6 @@ variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_d
 	spec ' ' '_add or replace property' '_add or replace property _ attributes _' 'menu.nil str' '' ''
 	spec ' ' '_clear thing description' '_clear thing description'
 	spec 'r' '_varNames' '_varNames'
-
-to '_clear thing description' {
-    '_thing description' = 0
-}
 
 to '_JSON value' value {
   local 'JSON value' ''
@@ -164,6 +163,10 @@ to '_add or replace property' varName 'attributes JSON' {
     }
   }
   '[data:addLast]' ('[data:makeList]' varName (v 'attributes JSON')) _WoT_property_defs
+}
+
+to '_clear thing description' {
+  '_thing description' = 0
 }
 
 to '_parse JSON value' JSON {
@@ -264,6 +267,18 @@ to '_type of' value {
   return 'null'
 }
 
+to '_varNames' {
+  local 'result' ('[data:makeList]')
+  local 'count' ('[vars:varNameForIndex]' -1)
+  for i count {
+    local 'varName' ('[vars:varNameForIndex]' i)
+    if (isType varName 'string') {
+      '[data:addLast]' varName result
+    }
+  }
+  return result
+}
+
 to addBooleanProperty varName title type optionalReadOnly {
   local 'readonly' (booleanConstant false)
   if ((pushArgCount) > 3) {
@@ -318,7 +333,7 @@ to 'events JSON' {
 to 'properties JSON' {
   local 'JSON' '{'
   if (or (_WoT_property_defs == 0) ((size _WoT_property_defs) == 0)) {
-    for varName (_varNames) {
+    for varName ('_varNames') {
       if (not ((at 1 varName) == '_')) {
         local 'value' ('[vars:varNamed]' varName)
         JSON = ('[data:join]' JSON '"' varName '":{"title":"' varName '","type":"' ('_type of' value) '","links":[{"href":"/properties/' varName '"}],"@type":""},')
@@ -369,18 +384,6 @@ to 'thing description JSON' {
 
 to 'trigger event' 'event name' {
   '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
-}
-
-to _varNames {
-  local 'result' ('[data:makeList]')
-  local 'count' ('[vars:varNameForIndex]' -1)
-  for i count {
-    local 'varName' ('[vars:varNameForIndex]' i)
-    if (isType varName 'string') {
-      '[data:addLast]' varName result
-    }
-  }
-  return result
 }
 
 

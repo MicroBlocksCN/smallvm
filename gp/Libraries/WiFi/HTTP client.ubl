@@ -1,0 +1,116 @@
+module 'HTTP client' Comm
+
+	spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
+	spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
+	spec 'r' '_http_headers_start' '_http_headers_start _' 'auto' ''
+	spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
+	spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
+	spec 'r' '_http_status' '_status of response _' 'auto' ''
+	spec 'r' '_line_end' '_line_end'
+	spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
+	spec 'r' '_request_url' '_request_url _ method _ body _' 'str str str' '' 'POST' ''
+	spec 'r' 'http܃//' 'http܃// _' 'auto' 'microblocks.fun/example.txt'
+	spec ' ' 'request' '_ data _ to http܃// _' 'menu.requestTypes str str' 'POST' 'MicroBlocks is fun' 'postman-echo.com/post'
+
+to '_http_body_start' response {
+  return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
+}
+
+to '_http_header' header response {
+  local 'header text' ('_http_header_text' response)
+  header = ('_lowercase' header)
+  repeatUntil ((size (v 'header text')) < 3) {
+    local 'key' ('[data:copyFromTo]' (v 'header text') 1 (('[data:find]' ':' (v 'header text')) - 1))
+    if (('_lowercase' key) == header) {
+      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('_line_end') (v 'header text')) - 1))
+    }
+    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('_line_end') (v 'header text')) + 2))
+  }
+  return (booleanConstant false)
+}
+
+to '_http_header_text' response {
+  return ('[data:copyFromTo]' response ('_http_headers_start' response) (('_http_body_start' response) + 2))
+}
+
+to '_http_headers_start' response {
+  return (('[data:find]' ('_line_end') response) + 2)
+}
+
+to '_http_status' response {
+  return (('[data:copyFromTo]' ('_http_status_text' response) 1 4) + 0)
+}
+
+to '_http_status_text' response {
+  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('_line_end') response))
+}
+
+to '_line_end' {
+  return ('[data:unicodeString]' ('[data:makeList]' 13 10))
+}
+
+to '_lowercase' string {
+  local 'lowercased' ''
+  local 'char code' ''
+  for c (size string) {
+    'char code' = ('[data:unicodeAt]' c string)
+    if (and ((v 'char code') >= 65) ((v 'char code') <= 90)) {
+      'char code' = ((v 'char code') + 32)
+    }
+    lowercased = ('[data:join]' lowercased ('[data:unicodeString]' (v 'char code')))
+  }
+  return lowercased
+}
+
+to '_request_url' url method body {
+  local 'host' ''
+  local 'path' ''
+  local 'slash position' ('[data:find]' '/' url)
+  if ((v 'slash position') > 0) {
+    host = ('[data:copyFromTo]' url 1 ((v 'slash position') - 1))
+    path = ('[data:copyFromTo]' url ((v 'slash position') + 1))
+  } else {
+    host = url
+  }
+  if (('[net:wifiStatus]') != 'Connected') {
+    return ('[data:join]' '0 Not Connected' ('_line_end'))
+  }
+  local 'request time' (millisOp)
+  '[net:httpConnect]' host
+  if (not ('[net:httpIsConnected]')) {
+    return ('[data:join]' '0 Could not connect to server' ('_line_end'))
+  }
+  '[net:httpRequest]' method host path body
+  local 'response' ''
+  repeatUntil (or (not ('[net:httpIsConnected]')) ((millisOp) > ((v 'request time') + 20000))) {
+    local 'chunk' ('[net:httpResponse]')
+    if (((size response) + (size chunk)) <= 800) {
+      response = ('[data:join]' response chunk)
+    }
+    waitMillis 10
+  }
+  return response
+}
+
+to 'http܃//' url {
+  local 'response' ('_request_url' url 'GET' '')
+  if (response != '') {
+    if (('_http_status' response) == 200) {
+      return ('[data:copyFromTo]' response ('_http_body_start' response))
+    } else {
+      return ('_http_status_text' response)
+    }
+  } else {
+    return 'Failed to get response'
+  }
+}
+
+to request method data url {
+  local 'response' ('_request_url' url method data)
+  if (response != '') {
+    sayIt ('_http_status_text' response)
+  } else {
+    sayIt 'Failed to get response'
+  }
+}
+
