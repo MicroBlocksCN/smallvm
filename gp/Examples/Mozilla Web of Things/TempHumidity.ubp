@@ -17,7 +17,9 @@ forever {
 }
 }
 
-script 639 245 {
+script 396 378 ('thing description JSON')
+
+script 51 414 {
 comment 'test temp'
 forever {
   sayIt (temperature_DHT11 25)
@@ -25,15 +27,13 @@ forever {
 }
 }
 
-script 645 424 {
+script 396 417 {
 comment 'test humidity'
 forever {
   sayIt (humidity_DHT11 25)
   waitMillis 2000
 }
 }
-
-script 86 483 ('thing description JSON')
 
 
 module DHT Input
@@ -142,7 +142,7 @@ to temperature_DHT22 pin {
 }
 
 
-module 'HTTP server'
+module 'HTTP server' Comm
 
 	spec ' ' '[net:startHttpServer]' 'start HTTP server'
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
@@ -151,7 +151,7 @@ module 'HTTP server'
 	spec 'r' 'request method' 'method of request _' 'auto' ''
 
 to 'body of request' request {
-  return ('[data:copyFromTo]' request (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) request) + 4))
+  return ('[data:copyFromTo]' request (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request) + 4))
 }
 
 to 'path of request' request {
@@ -163,7 +163,7 @@ to 'request method' request {
 }
 
 
-module 'Web Things'
+module 'Web Thing' Comm
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
 
 	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
@@ -190,10 +190,6 @@ variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_d
 	spec ' ' '_add or replace property' '_add or replace property _ attributes _' 'menu.nil str' '' ''
 	spec ' ' '_clear thing description' '_clear thing description'
 	spec 'r' '_varNames' '_varNames'
-
-to '_clear thing description' {
-    '_thing description' = 0
-}
 
 to '_JSON value' value {
   local 'JSON value' ''
@@ -246,6 +242,10 @@ to '_add or replace property' varName 'attributes JSON' {
     }
   }
   '[data:addLast]' ('[data:makeList]' varName (v 'attributes JSON')) _WoT_property_defs
+}
+
+to '_clear thing description' {
+  '_thing description' = 0
 }
 
 to '_parse JSON value' JSON {
@@ -346,6 +346,18 @@ to '_type of' value {
   return 'null'
 }
 
+to '_varNames' {
+  local 'result' ('[data:makeList]')
+  local 'count' ('[vars:varNameForIndex]' -1)
+  for i count {
+    local 'varName' ('[vars:varNameForIndex]' i)
+    if (isType varName 'string') {
+      '[data:addLast]' varName result
+    }
+  }
+  return result
+}
+
 to addBooleanProperty varName title type optionalReadOnly {
   local 'readonly' (booleanConstant false)
   if ((pushArgCount) > 3) {
@@ -400,7 +412,7 @@ to 'events JSON' {
 to 'properties JSON' {
   local 'JSON' '{'
   if (or (_WoT_property_defs == 0) ((size _WoT_property_defs) == 0)) {
-    for varName (_varNames) {
+    for varName ('_varNames') {
       if (not ((at 1 varName) == '_')) {
         local 'value' ('[vars:varNamed]' varName)
         JSON = ('[data:join]' JSON '"' varName '":{"title":"' varName '","type":"' ('_type of' value) '","links":[{"href":"/properties/' varName '"}],"@type":""},')
@@ -451,18 +463,6 @@ to 'thing description JSON' {
 
 to 'trigger event' 'event name' {
   '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
-}
-
-to _varNames {
-  local 'result' ('[data:makeList]')
-  local 'count' ('[vars:varNameForIndex]' -1)
-  for i count {
-    local 'varName' ('[vars:varNameForIndex]' i)
-    if (isType varName 'string') {
-      '[data:addLast]' varName result
-    }
-  }
-  return result
 }
 
 
