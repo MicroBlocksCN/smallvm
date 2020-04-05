@@ -132,6 +132,25 @@ static OBJ primJSONKeyAt(int argCount, OBJ *args) {
 	return newStringFromBytes(key, strlen(key));
 }
 
+static OBJ primByteCount(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
+
+	return int2obj(4 * objWords(args[0]));
+}
+
+static OBJ primByteAt(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!isInt(args[0])) return fail(needsIntegerError);
+	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
+
+	int byteCount = 4 * objWords(args[1]);
+	int i = obj2int(args[0]);
+	if ((i < 1) || (i > byteCount)) return fail(indexOutOfRangeError);
+
+	return int2obj(((uint8 *) &FIELD(args[1], 0))[i - 1]);
+}
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -141,6 +160,8 @@ static PrimEntry entries[] = {
 	{"jsonCount", primJSONCount},
 	{"jsonValueAt", primJSONValueAt},
 	{"jsonKeyAt", primJSONKeyAt},
+	{"byteCount", primByteCount},
+	{"byteAt", primByteAt},
 };
 
 void addMiscPrims() {

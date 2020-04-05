@@ -159,6 +159,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[misc:jsonCount]'	'json count _ . _' 'str str' '[1, [4, 5, 6, 7], 3]' '')
 		(array 'r' '[misc:jsonValueAt]'	'json value _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2)
 		(array 'r' '[misc:jsonKeyAt]'	'json key _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' ''  2)
+		'-'
+		(array 'r' '[misc:byteCount]'	'byte count _' 'str' 'binary data')
+		(array 'r' '[misc:byteAt]'		'byte _ of _' 'num str' 1 'binary data')
 
 	// The following block specs allow primitives to be rendered correctly
 	// even if the primitive spec was not included in the project or library.
