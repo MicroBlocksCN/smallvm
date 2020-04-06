@@ -243,7 +243,7 @@ method developerModeChanged MicroBlocksScripter {
 
 method categories MicroBlocksScripter {
   initMicroBlocksSpecs (new 'SmallCompiler')
-  result = (list 'Output' 'Input' 'Pins' 'Comm' 'Control' 'Math' 'Variables' 'Lists & Strings' 'My Blocks')
+  result = (list 'Output' 'Input' 'Pins' 'Comm' 'Control' 'Math' 'Variables' 'Data' 'My Blocks')
   if (not (devMode)) {
   	removeAll result (list 'Comm')
   }
