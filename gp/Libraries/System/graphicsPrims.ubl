@@ -1,4 +1,4 @@
-module 'Graphics Prims' Output
+module 'Graphics Primitives' Output
 
 	// Graphics primitives. Currently supported screens include the IoT-Bus QVGA
 	// touch screen and the 128x128 TFT display built into the Citilab ED1 board.

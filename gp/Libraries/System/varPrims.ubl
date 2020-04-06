@@ -1,4 +1,4 @@
-module 'Variable Prims' Variables
+module 'Variable Primitives' Variables
 
 	spec 'r' 'varNames' 			'varNames'
 	spec 'r' '[vars:varExists]'		'variable named _ exists?' 'str' 'var'

@@ -1,4 +1,4 @@
-module 'Touch Screen' Input
+module 'Touch Screen Primitives' Input
 
 	// Primitives to support the QVGA touch screen display the IoT-Bus Io system.
 	// https://www.oddwires.com/iot-bus-qvga-2-4-tft-touch-display/
