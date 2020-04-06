@@ -1,5 +1,6 @@
 module DotStar Output
 author MicroBlocks
+version 1 0
 description 'Control Adafruit DotStar RGB LED strips.'
 tags led strip rgb string
 

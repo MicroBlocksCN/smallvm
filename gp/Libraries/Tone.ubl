@@ -1,5 +1,6 @@
 module Tone Output
 author MicroBlocks
+version 1 0
 description 'Audio tone generation. Make music with MicroBlocks!'
 tags tone sound music audio note speaker
 

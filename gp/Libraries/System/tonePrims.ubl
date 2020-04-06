@@ -1,5 +1,6 @@
 module 'Tone Primitives' Output
 author MicroBlocks
+version 1 0
 description 'Low level support for audio tone generation. You are probably looking for the Tone library, on the folder above.'
 tags tone sound music audio note speaker
 

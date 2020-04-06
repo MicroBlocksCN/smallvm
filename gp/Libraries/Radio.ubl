@@ -1,5 +1,6 @@
 module Radio Comm
 author MicroBlocks
+version 1 0
 description 'Send and receive messages between micro:bit boards via their built-in radio system.'
 tags radio communication messaging network
 

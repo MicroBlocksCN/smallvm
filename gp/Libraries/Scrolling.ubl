@@ -1,5 +1,6 @@
 module Scrolling Output
 author MicroBlocks
+version 1 0
 description 'Scroll text across the screen of the 5x5 LED display on the BBC micro:bit, Calliope mini or M5Atom Matrix. Also works on boards with a TFT display by simulating the 5x5 matrix with "fat pixels".'
 depends 'LED Display'
 tags animation text pixel matrix led tft

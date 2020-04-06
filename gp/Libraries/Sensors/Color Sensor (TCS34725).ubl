@@ -1,5 +1,6 @@
 module TCS34725
 author 'José García Yeste'
+version 1 0
 description 'Support for the TCS34725 RGB color sensor.'
 tags sensor color
 

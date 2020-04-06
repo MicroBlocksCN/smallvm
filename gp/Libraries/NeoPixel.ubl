@@ -1,5 +1,6 @@
 module NeoPixel Output
 author MicroBlocks
+version 1 0
 description 'Control NeoPixel (WS2812) RGB LED strips.'
 tags led strip rgb string ws2812
 

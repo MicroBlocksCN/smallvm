@@ -1,5 +1,6 @@
 module 'IR Remote' Comm
 author MicroBlocks
+version 1 0
 description 'Read signals from infrared remotes, like the ones used for TV sets or air conditioners.'
 tags ir infrared remote
 

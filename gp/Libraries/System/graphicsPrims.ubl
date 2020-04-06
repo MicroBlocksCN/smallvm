@@ -1,5 +1,6 @@
 module 'Graphics Prims' Output
 author MicroBlocks
+version 1 0
 description 'Low level graphics primitives. Currently supported screens include the ones built into the Citilab ED1, M5Stack, M5Stick and (discontinued) IoT-Bus.' 
 tags tft draw pixel
 

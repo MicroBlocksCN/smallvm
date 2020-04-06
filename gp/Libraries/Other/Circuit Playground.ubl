@@ -1,5 +1,6 @@
 module 'Circuit Playground'
 author MicroBlocks
+version 1 0
 description 'Blocks to control speaker and slide switch in Circuit Playground Express boards.'
 tags cpx slide switch speaker
 

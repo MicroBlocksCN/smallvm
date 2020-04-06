@@ -1,5 +1,6 @@
 module PIR Input
 author MicroBlocks
+version 1 0
 description 'Detect motion with a passive infrared (PIR) sensor.'
 tags sensor motion presence
 

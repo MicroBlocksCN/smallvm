@@ -1,5 +1,6 @@
 module 'Radio Prims' Comm
 author MicroBlocks
+version 1 0
 description 'Low level BBC micro:bit radio primitives. You are probably looking for the Radio library, on the folder above.'
 tags radio communication messaging network
 

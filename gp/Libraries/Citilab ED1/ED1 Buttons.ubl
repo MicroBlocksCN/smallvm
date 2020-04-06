@@ -1,5 +1,6 @@
 module 'ED1 Buttons' Input
 author MicroBlocks
+version 1 0
 description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
 tags button capacitive ed1
 
