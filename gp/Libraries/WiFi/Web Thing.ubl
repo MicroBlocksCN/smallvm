@@ -1,5 +1,5 @@
 module 'Web Thing' Comm
-depends 'HTTP server' 'Wifi'
+depends 'WiFi/HTTP server' 'WiFi/Wifi'
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
 
 	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
