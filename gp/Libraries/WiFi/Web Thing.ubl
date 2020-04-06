@@ -1,6 +1,6 @@
 module 'Web Thing' Comm
 author 'MicroBlocks'
-depends 'HTTP server' 'Wifi'
+depends 'WiFi/HTTP server' 'WiFi/Wifi'
 description 'Build Web Things as specified by the Mozilla WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Mozilla Web of Things gateway.'
 tags iot mozilla webthing wot
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
@@ -273,6 +273,12 @@ to 'register event' 'event title' 'event type' {
   local 'event def' ('[data:makeList]' (v 'event title') (v 'event type'))
   if (_WoT_event_defs == 0) {
     _WoT_event_defs = ('[data:makeList]')
+  }
+  for def _WoT_event_defs {
+    if ((at 1 def) == (v 'event title')) {
+      atPut 2 def (v 'event type')
+      return ''
+    }
   }
   '[data:addLast]' (v 'event def') _WoT_event_defs
 }

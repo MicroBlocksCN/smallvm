@@ -516,6 +516,12 @@ to 'register event' 'event title' 'event type' {
   if (_WoT_event_defs == 0) {
     _WoT_event_defs = ('[data:makeList]')
   }
+  for def _WoT_event_defs {
+    if ((at 1 def) == (v 'event title')) {
+      atPut 2 def (v 'event type')
+      return ''
+    }
+  }
   '[data:addLast]' (v 'event def') _WoT_event_defs
 }
 
