@@ -152,13 +152,13 @@ method handleListContextRequest MicroBlocksScripter anArray {
   if ((first anArray) != (contents libFrame)) { return } // not a library list entry; ignore
   libName = (data (last anArray))
   menu = (menu)
+  addItem menu 'library information' (action 'showLibraryInfo' this libName)
   if (devMode) {
 	addItem menu 'show all block definitions' (action 'showAllLibraryDefinitions' this libName)
 	addItem menu 'export this library' (action 'exportLibrary' this libName)
-	addLine menu
   }
+  addLine menu
   addItem menu 'delete library' (action 'removeLibraryNamed' this libName)
-  addItem menu 'library information' (action 'showLibraryInfo' this libName)
   popUpAtHand menu (global 'page')
 }
 
