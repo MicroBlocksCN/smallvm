@@ -108,6 +108,33 @@ method initialize MicroBlocksEditor {
   return this
 }
 
+method scaleChanged MicroBlocksEditor {
+  // Called when the window resolution changes.
+
+  scale = (global 'scale')
+  removeAllParts morph
+  addTopBarParts this
+
+  // save the state of the current scripter
+  if (2 == scale) { oldScale = 1 } else { oldScale = 2 }
+  saveScripts scripter oldScale
+  oldProject = (project scripter)
+  oldCategory = (currentCategory scripter)
+  oldLibrary = (currentLibrary scripter)
+
+  // make a new scripter and restore old scripter state
+  scripter = (initialize (new 'MicroBlocksScripter') this)
+  setProject scripter oldProject
+  updateLibraryList scripter
+  if (notNil oldCategory) { selectCategory scripter oldCategory }
+  if (notNil oldLibrary) { selectLibrary scripter oldLibrary }
+  languageChanged scripter
+
+  addPart morph (morph scripter)
+  drawTopBar this
+  fixLayout this
+}
+
 // top bar parts
 
 method addTopBarParts MicroBlocksEditor {

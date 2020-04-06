@@ -252,6 +252,7 @@ method categories MicroBlocksScripter {
 
 method selectCategory MicroBlocksScripter aCategory {
   select (contents categoriesFrame) aCategory
+  categorySelected this
 }
 
 method currentCategory MicroBlocksScripter {
@@ -261,6 +262,15 @@ method currentCategory MicroBlocksScripter {
 method categorySelected MicroBlocksScripter {
    select (contents libFrame) nil // deselect library
    updateBlocks this
+}
+
+method selectLibrary MicroBlocksScripter aLibrary {
+  select (contents libFrame) aLibrary
+  librarySelected this
+}
+
+method currentLibrary MicroBlocksScripter {
+  return (selection (contents libFrame))
 }
 
 method librarySelected MicroBlocksScripter {
@@ -452,6 +462,11 @@ method loadNewProjectFromData MicroBlocksScripter aString {
   restoreScripts this
 }
 
+method setProject MicroBlocksScripter aMicroBlocksProject {
+  mbProject = aMicroBlocksProject
+  restoreScripts this
+}
+
 // variable operations
 
 method visibleVars MicroBlocksScripter {
@@ -527,8 +542,9 @@ method step MicroBlocksScripter {
   }
 }
 
-method saveScripts MicroBlocksScripter {
+method saveScripts MicroBlocksScripter oldScale {
   scale = (global 'scale')
+  if (notNil oldScale) { scale = oldScale }
   scriptsPane = (contents scriptsFrame)
   paneX = (left (morph scriptsPane))
   paneY = (top (morph scriptsPane))

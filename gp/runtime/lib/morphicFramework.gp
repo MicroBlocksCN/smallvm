@@ -43,6 +43,7 @@ to rightClicked aHandler {
 to touchHold aHandler {return false}
 to swipe aHandler scrollX scrollY { return (dispatchEvent aHandler 'whenScrolled' scrollX scrollY) }
 to pageResized aHandler { dispatchEvent aHandler 'whenPageResized' }
+to scaleChanged aHandler { noop }
 to changed aHandler { noop }
 to okayToBeDestroyedByUser aHandler {return true}
 to destroyedMorph aHandler { noop }
@@ -789,7 +790,7 @@ method doOneCycle Page {
   step soundMixer
   // sleep for any extra time, but always sleep a little to ensure that
   // we get events (and to return control to the browser)
-  sleepTime = (max 1 (10 - (msecs t)))
+  sleepTime = (max 1 (15 - (msecs t)))
   waitMSecs sleepTime
 }
 
@@ -825,10 +826,23 @@ to getNextEvent {
   return evt
 }
 
+method updateScale Page {
+  winSize = (windowSize)
+  ratio = ((at winSize 3) / (at winSize 1))
+  if (2 == ratio) {
+	setGlobal 'scale' 2 // retina display
+  } else {
+	setGlobal 'scale' 1 // non-retina display
+  }
+}
+
 method processWindowEvent Page evt {
-  scale = (global 'scale')
   id = (at evt 'eventID')
-  if (isOneOf id 5 6) {
+  if (6 == id) {
+	oldScale = (global 'scale')
+	updateScale this
+	scale = (global 'scale')
+
 	// note: things can break if w or h is less than 1
 	w = (scale * (max 1 (at evt 'data1')))
 	h = (scale * (max 1 (at evt 'data2')))
@@ -838,8 +852,11 @@ method processWindowEvent Page evt {
 	setPosition morph 0 0
 	setExtent morph w h
 	isChanged = true
-	for each (parts morph) {pageResized (handler each) w h this}
-  } else {
+	for each (parts morph) { pageResized (handler each) w h this }
+	if (scale != oldScale) {
+	  for m (allMorphs morph) { scaleChanged (handler m) }
+	}
+  } (isOneOf id 1 3 8 9) {
 	isChanged = true
 	for each (parts morph) {pageResized (handler each) w h this}
   }
