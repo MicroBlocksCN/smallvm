@@ -708,12 +708,12 @@ method importDependency MicroBlocksModule lib scripter {
 	// find version requirements
 	vPosition = (findLast lib '#')
 	vRequirement = ''
-	version = (array 1 0)
+	reqVersion = (array 1 0)
 	if (vPosition > 0) {
 		vPosition = (vPosition + 1)
 		vRequirement = (substring lib vPosition vPosition)
-		atPut version 1 (toInteger (substring lib (vPosition + 1) ((findLast lib '.') - 1)))
-		atPut version 2 (toInteger ((findLast lib '.') + 1))
+		atPut reqVersion 1 (toInteger (substring lib (vPosition + 1) ((findLast lib '.') - 1)))
+		atPut reqVersion 2 (toInteger ((findLast lib '.') + 1))
 		lib = (substring lib 1 (vPosition - 2))
 	}
 

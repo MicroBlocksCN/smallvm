@@ -158,12 +158,18 @@ method handleListContextRequest MicroBlocksScripter anArray {
 	addLine menu
   }
   addItem menu 'delete library' (action 'removeLibraryNamed' this libName)
+  addItem menu 'library information' (action 'showLibraryInfo' this libName)
   popUpAtHand menu (global 'page')
 }
 
 method removeLibraryNamed MicroBlocksScripter libName {
   removeLibraryNamed mbProject libName
   updateLibraryList this
+}
+
+method showLibraryInfo MicroBlocksScripter libName {
+	library = (libraryNamed mbProject libName)
+	showLibraryInfo library
 }
 
 method showAllLibraryDefinitions MicroBlocksScripter libName {
