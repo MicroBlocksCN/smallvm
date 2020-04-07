@@ -1,4 +1,7 @@
 module main
+author unknown
+version 1 0
+description ''
 variables hours minutes seconds server
 
 	spec ' ' 'draw time' 'draw time'
@@ -124,7 +127,12 @@ waitUntil (seconds != 0)
 }
 
 
-module 'HTTP client'
+module 'HTTP client' Comm
+author MicroBlocks
+version 1 0
+depends 'WiFi/Wifi'
+tags http network get post put delete
+description 'Send HTTP requests and get responses back. You can use this library to fetch or store data in online servers, or to control other Wifi-enabled boards.'
 
 	spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
 	spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
@@ -132,13 +140,14 @@ module 'HTTP client'
 	spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
 	spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
 	spec 'r' '_http_status' '_status of response _' 'auto' ''
+	spec 'r' '_line_end' '_line_end'
 	spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
 	spec 'r' '_request_url' '_request_url _ method _ body _' 'str str str' '' 'POST' ''
 	spec 'r' 'http܃//' 'http܃// _' 'auto' 'microblocks.fun/example.txt'
 	spec ' ' 'request' '_ data _ to http܃// _' 'menu.requestTypes str str' 'POST' 'MicroBlocks is fun' 'postman-echo.com/post'
 
 to '_http_body_start' response {
-  return ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10) ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response)
+  return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
 }
 
 to '_http_header' header response {
@@ -147,9 +156,9 @@ to '_http_header' header response {
   repeatUntil ((size (v 'header text')) < 3) {
     local 'key' ('[data:copyFromTo]' (v 'header text') 1 (('[data:find]' ':' (v 'header text')) - 1))
     if (('_lowercase' key) == header) {
-      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) (v 'header text')) - 1))
+      return ('[data:copyFromTo]' (v 'header text') (('[data:find]' ':' (v 'header text')) + 2) (('[data:find]' ('_line_end') (v 'header text')) - 1))
     }
-    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) (v 'header text')) + 2))
+    'header text' = ('[data:copyFromTo]' (v 'header text') (('[data:find]' ('_line_end') (v 'header text')) + 2))
   }
   return (booleanConstant false)
 }
@@ -159,7 +168,7 @@ to '_http_header_text' response {
 }
 
 to '_http_headers_start' response {
-  return (('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response) + 2)
+  return (('[data:find]' ('_line_end') response) + 2)
 }
 
 to '_http_status' response {
@@ -167,7 +176,11 @@ to '_http_status' response {
 }
 
 to '_http_status_text' response {
-  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)) response))
+  return ('[data:copyFromTo]' response ('[data:find]' ' ' response) ('[data:find]' ('_line_end') response))
+}
+
+to '_line_end' {
+  return ('[data:unicodeString]' ('[data:makeList]' 13 10))
 }
 
 to '_lowercase' string {
@@ -184,41 +197,39 @@ to '_lowercase' string {
 }
 
 to '_request_url' url method body {
-  if (('[net:wifiStatus]') == 'Connected') {
-    local 'slash position' ('[data:find]' '/' url)
-    local 'request time' (millisOp)
-    local 'host' ''
-    local 'path' ''
-    local 'chunk' ''
-    local 'response' ''
-    if ((v 'slash position') > 0) {
-      host = ('[data:copyFromTo]' url 1 ((v 'slash position') - 1))
-      path = ('[data:copyFromTo]' url ((v 'slash position') + 1))
-    } else {
-      host = url
-    }
-    '[net:httpConnect]' host
-    waitUntil (or ('[net:httpIsConnected]') ((millisOp) > ((v 'request time') + 15000)))
-    if ((millisOp) > ((v 'request time') + 15000)) {
-      '[net:httpClose]'
-      return ('[data:join]' '0 Timed out while trying to connect' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)))
-    } else {
-      '[net:httpRequest]' method host path body
-      chunk = ('[net:httpResponse]')
-      if (chunk != (booleanConstant false)) {
-        response = ('[data:join]' response chunk)
-      }
-      repeatUntil (or (not ('[net:httpIsConnected]')) ((millisOp) > ((v 'request time') + 20000))) {
-        chunk = ('[net:httpResponse]')
-        if (and (chunk != (booleanConstant false)) (('[data:freeMemory]') > ((size response) * 2))) {
-          response = ('[data:join]' response chunk)
-        }
-      }
-      return response
-    }
+  local 'timeout' 20000
+  local 'host' ''
+  local 'path' ''
+  local 'slash position' ('[data:find]' '/' url)
+  if ((v 'slash position') > 0) {
+    host = ('[data:copyFromTo]' url 1 ((v 'slash position') - 1))
+    path = ('[data:copyFromTo]' url ((v 'slash position') + 1))
   } else {
-    return ('[data:join]' '0 Not Connected' ('[data:join]' ('[data:unicodeString]' 13) ('[data:unicodeString]' 10)))
+    host = url
   }
+  if (('[net:wifiStatus]') != 'Connected') {
+    return ('[data:join]' '0 Not Connected' ('_line_end'))
+  }
+  local 'request time' (millisOp)
+  comment 'Connect to the server'
+  repeatUntil ('[net:httpIsConnected]') {
+    '[net:httpConnect]' host
+    if ((millisOp) > ((v 'request time') + timeout)) {
+      return ('[data:join]' '0 Could not connect to server' ('_line_end'))
+    }
+  }
+  comment 'Send the HTTP request'
+  '[net:httpRequest]' method host path body
+  comment 'Collect the response (up to 800 bytes)'
+  local 'response' ''
+  repeatUntil (or (not ('[net:httpIsConnected]')) ((millisOp) > ((v 'request time') + timeout))) {
+    local 'chunk' ('[net:httpResponse]')
+    if (((size response) + (size chunk)) <= 800) {
+      response = ('[data:join]' response chunk)
+    }
+    waitMillis 10
+  }
+  return response
 }
 
 to 'http܃//' url {
@@ -245,6 +256,9 @@ to request method data url {
 
 
 module TFT Output
+author unknown
+version 1 0
+description ''
 
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
@@ -277,172 +291,11 @@ to randomColor {
 }
 
 
-module Tone Output
-variables _tonePin _toneInitalized _toneLoopOverhead
-
-	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
-	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
-	spec ' ' 'playMIDIKey' 'play midi key _ for _ milliseconds' 'num num' 60 500
-	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
-	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
-	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
-	spec 'r' '_baseFreqForSharpOrFlat' '_baseFreqForSharpOrFlat _' 'auto' 'c#'
-	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
-	spec ' ' '_toneLoop' '_toneLoop _ for _ milliseconds' 'num num' 440000 100
-
-to '_baseFreqForNote' note {
-  comment 'Return the frequency for the given note in the middle-C octave
-scaled by 1000. For example, return 440000 (440Hz) for A.
-Note names may be upper or lower case. Note names
-may be followed by # for a sharp or b for a flat.'
-  if (or (note == 'c') (note == 'C')) {
-    return 261626
-  } (or (note == 'd') (note == 'D')) {
-    return 293665
-  } (or (note == 'e') (note == 'E')) {
-    return 329628
-  } (or (note == 'f') (note == 'F')) {
-    return 349228
-  } (or (note == 'g') (note == 'G')) {
-    return 391995
-  } (or (note == 'a') (note == 'A')) {
-    return 440000
-  } (or (note == 'b') (note == 'B')) {
-    return 493883
-  }
-  return ('_baseFreqForSharpOrFlat' note)
-}
-
-to '_baseFreqForSemitone' semitone {
-  if (0 == semitone) {
-    return 261626
-  } (1 == semitone) {
-    return 277183
-  } (2 == semitone) {
-    return 293665
-  } (3 == semitone) {
-    return 311127
-  } (4 == semitone) {
-    return 329628
-  } (5 == semitone) {
-    return 349228
-  } (6 == semitone) {
-    return 369994
-  } (7 == semitone) {
-    return 391995
-  } (8 == semitone) {
-    return 415305
-  } (9 == semitone) {
-    return 440000
-  } (10 == semitone) {
-    return 466164
-  } (11 == semitone) {
-    return 493883
-  }
-}
-
-to '_baseFreqForSharpOrFlat' note {
-  comment 'Return the frequency for the given sharp or flat note in the
-middle-C octave scaled by 1000. Only handles black keys.
-Thus, you can''t write E# to mean F.'
-  if (or (or (note == 'c#') (note == 'C#')) (or (note == 'db') (note == 'Db'))) {
-    return 277183
-  } (or (or (note == 'd#') (note == 'D#')) (or (note == 'eb') (note == 'Eb'))) {
-    return 311127
-  } (or (or (note == 'f#') (note == 'F#')) (or (note == 'gb') (note == 'Gb'))) {
-    return 369994
-  } (or (or (note == 'g#') (note == 'G#')) (or (note == 'ab') (note == 'Ab'))) {
-    return 415305
-  } (or (or (note == 'a#') (note == 'A#')) (or (note == 'bb') (note == 'Bb'))) {
-    return 466164
-  }
-  comment 'Unrecognized note names map to 0.1 Hz, which is inaudible.
-This helps users find typos in their tunes.'
-  return 100
-}
-
-to '_measureLoopOverhead' {
-  comment 'Measure the loop overhead on this device'
-  local 'halfCycle' 100
-  local 'startT' (microsOp)
-  repeat 100 {
-    digitalWriteOp _tonePin false
-    waitMicros halfCycle
-    digitalWriteOp _tonePin false
-    waitMicros halfCycle
-  }
-  local 'usecs' ((microsOp) - startT)
-  return ((usecs - 20000) / 200)
-}
-
-to '_toneLoop' scaledFreq ms {
-  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
-  if ('[io:hasTone]') {
-    '[io:playTone]' _tonePin (scaledFreq / 1000)
-    waitMillis ms
-    '[io:playTone]' _tonePin 0
-  } else {
-    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
-    local 'cycles' ((ms * 500) / halfCycle)
-    repeat cycles {
-      digitalWriteOp _tonePin true
-      waitMicros halfCycle
-      digitalWriteOp _tonePin false
-      waitMicros halfCycle
-    }
-  }
-}
-
-to 'attach buzzer to pin' pinNumber {
-  if (pinNumber == '') {
-    comment 'Pin number not specified; use default pin for this device'
-    if ((boardType) == 'Citilab ED1') {
-      _tonePin = 26
-    } ((boardType) == 'M5Stack-Core') {
-      _tonePin = 25
-    } else {
-      _tonePin = 0
-    }
-  } else {
-    _tonePin = pinNumber
-  }
-  _toneLoopOverhead = ('_measureLoopOverhead')
-  _toneInitalized = (booleanConstant true)
-}
-
-to 'play frequency' freq ms {
-  '_toneLoop' (freq * 1000) ms
-}
-
-to 'play tone' note octave ms {
-  local 'freq' ('_baseFreqForNote' note)
-  if (octave < 0) {
-    repeat (absoluteValue octave) {
-      freq = (freq / 2)
-    }
-  }
-  repeat octave {
-    freq = (freq * 2)
-  }
-  '_toneLoop' freq ms
-}
-
-to playMIDIKey key ms {
-  local 'freq' ('_baseFreqForSemitone' (key % 12))
-  local 'octave' ((key / 12) - 5)
-  if (octave < 0) {
-    repeat (absoluteValue octave) {
-      freq = (freq / 2)
-    }
-  }
-  repeat octave {
-    freq = (freq * 2)
-  }
-  '_toneLoop' freq ms
-}
-
-
 module Wifi Comm
+author MicroBlocks
+version 1 0
+tags communication network
+description 'Connect to a Wifi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.'
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
@@ -454,8 +307,6 @@ to getIPAddress {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
-  tries += -1
-  '[net:startWiFi]' ssid password
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
