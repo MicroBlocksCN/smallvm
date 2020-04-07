@@ -63,6 +63,7 @@ to '_lowercase' string {
 }
 
 to '_request_url' url method body {
+  local 'timeout' 20000
   local 'host' ''
   local 'path' ''
   local 'slash position' ('[data:find]' '/' url)
@@ -76,13 +77,18 @@ to '_request_url' url method body {
     return ('[data:join]' '0 Not Connected' ('_line_end'))
   }
   local 'request time' (millisOp)
-  '[net:httpConnect]' host
-  if (not ('[net:httpIsConnected]')) {
-    return ('[data:join]' '0 Could not connect to server' ('_line_end'))
+  comment 'Connect to the server'
+  repeatUntil ('[net:httpIsConnected]') {
+    '[net:httpConnect]' host
+    if ((millisOp) > ((v 'request time') + timeout)) {
+      return ('[data:join]' '0 Could not connect to server' ('_line_end'))
+    }
   }
+  comment 'Send the HTTP request'
   '[net:httpRequest]' method host path body
+  comment 'Collect the response (up to 800 bytes)'
   local 'response' ''
-  repeatUntil (or (not ('[net:httpIsConnected]')) ((millisOp) > ((v 'request time') + 20000))) {
+  repeatUntil (or (not ('[net:httpIsConnected]')) ((millisOp) > ((v 'request time') + timeout))) {
     local 'chunk' ('[net:httpResponse]')
     if (((size response) + (size chunk)) <= 800) {
       response = ('[data:join]' response chunk)
