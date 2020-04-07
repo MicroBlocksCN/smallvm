@@ -89,7 +89,7 @@ method fixLayout MicroBlocksLibraryImportDialog {
 // -----------------------
 // Embeddable morph that shows a list of tags and lets you remove them or add new ones
 
-defineClass MicroBlocksTagViewer morph box frame tags editFlag
+defineClass MicroBlocksTagViewer morph box tags editFlag
 
 to newTagViewer tagList forEditing {
 	return (initialize (new 'MicroBlocksTagViewer') tagList forEditing)
@@ -97,12 +97,15 @@ to newTagViewer tagList forEditing {
 
 method initialize MicroBlocksTagViewer tagList forEditing {
 	box = (newBox nil (transparent) 0)
-	// setAlpha (morph box) 0
-	frame = (scrollFrame box (transparent) true)
 	morph = (morph box)
+	setClipping morph true
+	setAlpha morph 0
 	editFlag = (or (and (notNil forEditing) forEditing) false)
 	tags = (copy (toList tagList))
 	setTags this tagList
+
+	fixLayout this
+
 	return this
 }
 
@@ -115,8 +118,9 @@ method setTags MicroBlocksTagViewer tagList {
 }
 
 method buildListView MicroBlocksTagViewer {
+	removeAllParts morph
 	for tag tags {
-		text = (newText tag 'Arial' ((global 'scale') * 10) (gray 0) 'center' nil 0 0 5 5 'static' (gray 200))
+		text = (newText tag 'Arial' ((global 'scale') * 10) (gray 0) 'center' nil 0 0 5 3 'static' (gray 200))
 		addPart morph (morph text)
 	}
 }
@@ -125,17 +129,18 @@ method fixLayout MicroBlocksTagViewer {
 	scale = (global 'scale')
 	margin = (6 * scale)
 	left = (left morph)
-	width = 0
+	height = ((scale * 10) + (margin * 2))
 	for tagText (parts morph) {
 		setLeft tagText left
-		setTop tagText (top morph)
+		if ((right tagText) > ((left morph) + (width morph))) {
+			height = ((height + (height tagText)) + margin)
+			left = (left morph)
+			setLeft tagText left
+		}
+		setExtent morph (width morph) height
+		setBottom tagText (bottom morph)
 		left = ((left + (width tagText)) + margin)
-		width = ((width + (width tagText)) + margin)
 	}
-	setExtent morph (width + margin) (height morph)
-	print morph
-	print (width morph)
-	redraw frame
 }
 
 // Library properties frame
@@ -176,6 +181,8 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing {
 
 	if (notNil lib) { setLibrary this lib }
 
+	fixLayout this
+
 	return this
 }
 
@@ -208,17 +215,25 @@ method fixLayout MicroBlocksLibraryPropertiesFrame {
 	descriptionHeight = (height morph)
 
 	// tags
-	setExtent (morph tagViewer) (width morph) (2 * (height (morph versionAuthorText)))
+	setExtent (morph tagViewer) (width morph) 0
 	fixLayout tagViewer
 	setLeft (morph tagViewer) (left morph)
 	setBottom (morph tagViewer) (bottom morph)
 	descriptionHeight = ((descriptionHeight - (height (morph tagViewer))) - margin)
 
 	// dependencies
-	setExtent (morph depsFrame) (width morph) (height (morph tagViewer))
+	if (or (isNil library) (isEmpty (tags library))) {
+		depsHeight = ((scale * 10) + (margin * 2))
+		depsBottom = (bottom morph)
+	} else {
+		depsHeight = (height (morph tagViewer))
+		depsBottom = ((top (morph tagViewer)) - margin)
+		descriptionHeight = (descriptionHeight - margin)
+	}
+	setExtent (morph depsFrame) (width morph) depsHeight
 	setLeft (morph depsFrame) (left morph)
-	setBottom (morph depsFrame) ((top (morph tagViewer)) - margin)
-	descriptionHeight = ((descriptionHeight - (height (morph depsFrame))) - margin)
+	setBottom (morph depsFrame) depsBottom
+	descriptionHeight = (descriptionHeight - (height (morph depsFrame)))
 
 	// version and author
 	setExtent (morph versionFrame) (width morph) (height (morph versionAuthorText))
