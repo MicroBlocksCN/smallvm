@@ -128,12 +128,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
 		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
-	'Variables-Advanced'
-		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
-		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
-		(array ' ' '[vars:setVarNamed]'	'set variable named _ to _' 'str auto' 'var' 0)
-		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 'Rósza' 'number')
-	'Lists & Strings'
+	'Data'
 		(array 'r' 'at'					'item _ of _' 'auto.itemOfMenu str' 1 'Rosa')
 		(array 'r' 'size'				'length of _' 'str' 'Rosa')
 		(array 'r' '[data:join]'		'join _ _ : _ : ...' 'str str str' 'micro' 'blocks')
@@ -146,7 +141,9 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' 'smiles' 2 5)
-	'Lists & Strings-Advanced'
+		'-'
+		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 'Rósza' 'number')
+	'Data-Advanced'
 		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' nil ' ')
 		'-'
 		(array 'r' '[data:unicodeAt]'		'unicode _ of _' 'num str' 2 'cat')
@@ -154,14 +151,6 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' 'newList'			'new list length _' 'num' 10)
 		(array 'r' '[data:freeMemory]'	'free memory')
-		'-'
-		(array 'r' '[misc:jsonGet]'		'json _ . _' 'str str' '{ "x": 1,  "y": [41, 42, 43] }' 'y.2')
-		(array 'r' '[misc:jsonCount]'	'json count _ . _' 'str str' '[1, [4, 5, 6, 7], 3]' '')
-		(array 'r' '[misc:jsonValueAt]'	'json value _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2)
-		(array 'r' '[misc:jsonKeyAt]'	'json key _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' ''  2)
-		'-'
-		(array 'r' '[misc:byteCount]'	'byte count _' 'str' 'binary data')
-		(array 'r' '[misc:byteAt]'		'byte _ of _' 'num str' 1 'binary data')
 
 	// The following block specs allow primitives to be rendered correctly
 	// even if the primitive spec was not included in the project or library.
@@ -187,6 +176,18 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[sensors:tiltX]'		'tilt x')
 		(array 'r' '[sensors:tiltY]'		'tilt y')
 		(array 'r' '[sensors:tiltZ]'		'tilt z')
+	'Prims-Variables'
+		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
+		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
+		(array ' ' '[vars:setVarNamed]'	'set variable named _ to _' 'str auto' 'var' 0)
+	'Prims-JSON'
+		(array 'r' '[misc:jsonGet]'		'json _ . _' 'str str' '{ "x": 1,  "y": [41, 42, 43] }' 'y.2')
+		(array 'r' '[misc:jsonCount]'	'json count _ . _' 'str str' '[1, [4, 5, 6, 7], 3]' '')
+		(array 'r' '[misc:jsonValueAt]'	'json value _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2)
+		(array 'r' '[misc:jsonKeyAt]'	'json key _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' ''  2)
+	'Prims-Binary Data'
+		(array 'r' '[misc:byteCount]'	'byte count _' 'str' 'binary data')
+		(array 'r' '[misc:byteAt]'		'byte _ of _' 'num str' 1 'binary data')
 	'Prims-Advanced (not in palette)'
 		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
 		(array ' ' 'noop'				'no op')

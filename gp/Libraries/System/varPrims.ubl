@@ -1,9 +1,8 @@
-module 'Variable Prims' Variables
+module 'Variable Primitives' Variables
 author MicroBlocks
 version 1 0
 description 'Global variable introspection primitives to read and write variables given their name, enumerate variables and check whether a variable exists.'
 tags introspection variables
-
 
 	spec 'r' 'varNames' 			'varNames'
 	spec 'r' '[vars:varExists]'		'variable named _ exists?' 'str' 'var'

@@ -1,0 +1,10 @@
+module 'JSON Primitives' Data
+author MicroBlocks
+version 1 0
+description 'Very fast and efficient primitives to parse JSON strings.'
+tags data json network
+
+	spec 'r' '[misc:jsonGet]'		'json _ . _' 'str str' '{ "x": 1,  "y": [41, 42, 43] }' 'y.2'
+	spec 'r' '[misc:jsonCount]'	'json count _ . _' 'str str' '[1, [4, 5, 6, 7], 3]' ''
+	spec 'r' '[misc:jsonValueAt]'	'json value _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2
+	spec 'r' '[misc:jsonKeyAt]'	'json key _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' ''  2

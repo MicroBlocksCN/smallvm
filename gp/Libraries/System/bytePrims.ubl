@@ -1,0 +1,8 @@
+module 'Byte Primitives' Data
+author MicroBlocks
+version 1 0
+description 'A couple of byte manipulation primitives.'
+tags byte binary data
+
+	spec 'r' '[misc:byteCount]'	'byte count _' 'str' 'binary data'
+	spec 'r' '[misc:byteAt]'	'byte _ of _' 'num str' 1 'binary data'
