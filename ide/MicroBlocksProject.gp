@@ -351,12 +351,7 @@ method setVersion MicroBlocksModule major minor {
 	atPut version 1 major
 	atPut version 2 minor
 }
-method removeTag MicroBlocksModule tag { tags = (copyWithout tags tag) }
-method addTag MicroBlocksModule tag {
-	if (not (contains tags tag)) {
-		tags = (copyWith tags tag)
-	}
-}
+method setTags MicroBlocksModule tagList { tags = (copy (toArray tagList)) }
 
 method dependencyNames MicroBlocksModule {
 	deps = (list)

@@ -85,24 +85,25 @@ method fixLayout MicroBlocksLibraryImportDialog {
 }
 
 
-// Tag list and tag editor
-// -----------------------
+// Tag list and editor
+// -------------------
 // Embeddable morph that shows a list of tags and lets you remove them or add new ones
 
-defineClass MicroBlocksTagViewer morph box tags editFlag
+defineClass MicroBlocksTagViewer morph box library tags editFlag
 
-to newTagViewer tagList forEditing {
-	return (initialize (new 'MicroBlocksTagViewer') tagList forEditing)
+to newTagViewer lib forEditing {
+	return (initialize (new 'MicroBlocksTagViewer') lib forEditing)
 }
 
-method initialize MicroBlocksTagViewer tagList forEditing {
+method initialize MicroBlocksTagViewer lib forEditing {
 	box = (newBox nil (transparent) 0)
 	morph = (morph box)
 	setClipping morph true
 	setAlpha morph 0
 	editFlag = (or (and (notNil forEditing) forEditing) false)
-	tags = (copy (toList tagList))
-	setTags this tagList
+	if (notNil lib) {
+		setLibrary this lib
+	}
 
 	fixLayout this
 
@@ -112,9 +113,27 @@ method initialize MicroBlocksTagViewer tagList forEditing {
 method tags MicroBlocksTagViewer { return (toArray tags) }
 method morph MicroBlocksTagViewer { return morph }
 
-method setTags MicroBlocksTagViewer tagList {
-	tags = (copy (toList tagList))
+method setLibrary MicroBlocksTagViewer lib {
+	library = lib
+	tags = (copy (tags library))
 	buildListView this
+}
+
+method queryNewTag MicroBlocksTagViewer {
+	newTag = (prompt (global 'page') 'Tag name?')
+	if (notEmpty newTag) {
+		addTag this newTag
+		buildListView this
+		fixLayout this
+	}
+}
+
+method tags MicroBlocksTagViewer { return (copy tags) }
+method removeTag MicroBlocksTagViewer tag { tags = (copyWithout tags tag) }
+method addTag MicroBlocksTagViewer tag {
+	if (not (contains tags tag)) {
+		tags = (copyWith tags tag)
+	}
 }
 
 method buildListView MicroBlocksTagViewer {
@@ -122,6 +141,9 @@ method buildListView MicroBlocksTagViewer {
 	for tag tags {
 		text = (newText tag 'Arial' ((global 'scale') * 10) (gray 0) 'center' nil 0 0 5 3 'static' (gray 200))
 		addPart morph (morph text)
+	}
+	if editFlag {
+		addPart morph (morph (pushButton '+' (gray 200) (action 'queryNewTag' this)))
 	}
 }
 
@@ -176,7 +198,7 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing {
 	depsFrame = (scrollFrame depsText (gray 255))
 	addPart morph (morph depsFrame)
 
-	tagViewer = (newTagViewer (list) editFlag)
+	tagViewer = (newTagViewer lib editFlag)
 	addPart morph (morph tagViewer)
 
 	if (notNil lib) { setLibrary this lib }
@@ -195,6 +217,11 @@ method setLibrary MicroBlocksLibraryPropertiesFrame lib {
 	fixLayout this
 }
 
+method saveChanges MicroBlocksLibraryPropertiesFrame {
+	setDescription library (getDescription this)
+	setTags library (tags tagViewer)
+}
+
 method updateFields MicroBlocksLibraryPropertiesFrame {
 	setText descriptionText (description library)
 	if (isEmpty (dependencies library)) {
@@ -205,7 +232,7 @@ method updateFields MicroBlocksLibraryPropertiesFrame {
 	setText versionAuthorText (join
 		'v' (toString (at (version library) 1)) '.' (toString (at (version library) 2))
 		', by ' (author library))
-	setTags tagViewer (tags library)
+	setLibrary tagViewer library
 }
 
 method fixLayout MicroBlocksLibraryPropertiesFrame {
@@ -288,7 +315,7 @@ method initialize MicroBlocksLibraryInfoDialog lib forEditing {
 }
 
 method saveChanges MicroBlocksLibraryInfoDialog {
-	setDescription library (getDescription propertiesFrame)
+	saveChanges propertiesFrame
 	close this
 }
 
