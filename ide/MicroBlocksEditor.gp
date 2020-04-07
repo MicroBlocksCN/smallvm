@@ -112,6 +112,7 @@ method scaleChanged MicroBlocksEditor {
   // Called when the window resolution changes.
 
   scale = (global 'scale')
+  removeHint (global 'page')
   removeAllParts morph
   addTopBarParts this
 
@@ -129,7 +130,9 @@ method scaleChanged MicroBlocksEditor {
   if (notNil oldCategory) { selectCategory scripter oldCategory }
   if (notNil oldLibrary) { selectLibrary scripter oldLibrary }
   languageChanged scripter
+  initialize (smallRuntime) scripter
 
+  lastStatus = nil // force update
   addPart morph (morph scripter)
   drawTopBar this
   fixLayout this
