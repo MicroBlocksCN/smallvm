@@ -169,7 +169,7 @@ method removeLibraryNamed MicroBlocksScripter libName {
 
 method showLibraryInfo MicroBlocksScripter libName {
 	library = (libraryNamed mbProject libName)
-	showLibraryInfo library
+	showLibraryInfo library (devMode)
 }
 
 method showAllLibraryDefinitions MicroBlocksScripter libName {

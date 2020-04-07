@@ -345,6 +345,19 @@ method author MicroBlocksModule { return author }
 method tags MicroBlocksModule { return (copy tags) }
 method dependencies MicroBlocksModule { return (copy dependencies) }
 
+method setDescription MicroBlocksModule desc { description = desc }
+method setAuthor MicroBlocksModule auth { author = auth }
+method setVersion MicroBlocksModule major minor {
+	atPut version 1 major
+	atPut version 2 minor
+}
+method removeTag MicroBlocksModule tag { tags = (copyWithout tags tag) }
+method addTag MicroBlocksModule tag {
+	if (not (contains tags tag)) {
+		tags = (copyWith tags tag)
+	}
+}
+
 method dependencyNames MicroBlocksModule {
 	deps = (list)
 	for dep dependencies {
