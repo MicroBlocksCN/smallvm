@@ -33,6 +33,10 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		print '----------'
 		return
 	}
+	if ('not connected' == (updateConnection this)) {
+		showError (morph aBlock) 'Board not connected'
+		return
+	}
 	saveAllChunks this
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
 		// running a block from the palette, not included in saveAllChunks
@@ -662,7 +666,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 				(localized 'Function "') (functionName aBlockOrFunction)
 				(localized '" is too large to send to board.'))
 		} else {
-			showHint (morph aBlockOrFunction) (localized 'Script is too large to send to board.')
+			showError (morph aBlockOrFunction) (localized 'Script is too large to send to board.')
 		}
 	}
 	sendMsgSync this 'chunkCodeMsg' chunkID data
@@ -1024,7 +1028,7 @@ method handleMessage SmallRuntime msg {
 		updateRunning this chunkID false
 	} (op == (msgNameToID this 'taskErrorMsg')) {
 		chunkID = (byteAt msg 3)
-		showResult this chunkID (errorString this (byteAt msg 6))
+		showError this chunkID (errorString this (byteAt msg 6))
 		updateRunning this chunkID false
 	} (op == (msgNameToID this 'outputValueMsg')) {
 		chunkID = (byteAt msg 3)
@@ -1088,13 +1092,21 @@ method updateHighlights SmallRuntime {
 	}
 }
 
-method showResult SmallRuntime chunkID value {
+method showError SmallRuntime chunkID msg {
+	showResult this chunkID msg true
+}
+
+method showResult SmallRuntime chunkID value isError {
 	for m (join
 			(parts (morph (scriptEditor scripter)))
 			(parts (morph (blockPalette scripter)))) {
 		h = (handler m)
 		if (and (isClass h 'Block') (chunkID == (lookupChunkID this h))) {
-			showHint m value
+			if (true == isError) {
+				showError m value
+			} else {
+				showHint m value
+			}
 			if ('' == value) {
 				removeHint (global 'page')
 			} else {

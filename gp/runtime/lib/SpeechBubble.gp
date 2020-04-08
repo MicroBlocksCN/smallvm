@@ -1,12 +1,12 @@
-// morphic speech bubble handlers, used for hints and tool tips
+// morphic speech bubble handlers, used for hints, errors, and tool tips
 
-defineClass SpeechBubble morph contents direction shadowOffset clientMorph lastClientVis
+defineClass SpeechBubble morph contents direction isError shadowOffset clientMorph lastClientVis
 
-to newBubble aString bubbleWidth direction {
-  return (initialize (new 'SpeechBubble') aString bubbleWidth direction)
+to newBubble aString bubbleWidth direction isError {
+  return (initialize (new 'SpeechBubble') aString bubbleWidth direction isError)
 }
 
-method initialize SpeechBubble aString bubbleWidth dir {
+method initialize SpeechBubble aString bubbleWidth dir isErrorFlag {
   scale = (global 'scale')
   font = 'Arial'
   fontSize = (14 * scale)
@@ -17,6 +17,8 @@ method initialize SpeechBubble aString bubbleWidth dir {
   if (isNil bubbleWidth) {bubbleWidth = 200}
   if (isNil dir) {dir = 'right'}
   direction = dir
+  isError = false
+  if (true == isErrorFlag) { isError = true }
 
   setFont font fontSize
   lines = (toList (wordWrapped aString bubbleWidth))
@@ -57,7 +59,14 @@ method layoutChanged SpeechBubble {fixLayout this}
 method redraw SpeechBubble {
   scale = (global 'scale')
   bm = (newBitmap (width morph) (height morph))
-  drawSpeechBubble (newShapeMaker bm) (rect 0 0 (width bm) (height bm)) scale direction
+
+  if isError {
+	fillColor = (colorHSV 0 0.05 1.0)
+	borderColor = (colorHSV 0 1.0 0.7)
+	drawSpeechBubble (newShapeMaker bm) (rect 0 0 (width bm) (height bm)) scale direction fillColor borderColor
+  } else {
+	drawSpeechBubble (newShapeMaker bm) (rect 0 0 (width bm) (height bm)) scale direction
+  }
   setCostume morph bm
 }
 

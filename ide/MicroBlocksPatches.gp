@@ -926,7 +926,7 @@ method processEvent Keyboard evt {
 
 // "say" block formatting
 
-method initialize SpeechBubble someData bubbleWidth dir {
+method initialize SpeechBubble someData bubbleWidth dir isErrorFlag {
   scale = (global 'scale')
   font = 'Arial'
   fontSize = (18 * scale)
@@ -937,6 +937,8 @@ method initialize SpeechBubble someData bubbleWidth dir {
   if (isNil bubbleWidth) {bubbleWidth = (175 * scale) }
   if (isNil dir) {dir = 'right'}
   direction = dir
+  isError = false
+  if (true == isErrorFlag) { isError = true }
 
   setFont font fontSize
   if (isClass someData 'Boolean') {
