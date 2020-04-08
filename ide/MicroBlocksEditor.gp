@@ -130,6 +130,7 @@ method scaleChanged MicroBlocksEditor {
   if (notNil oldCategory) { selectCategory scripter oldCategory }
   if (notNil oldLibrary) { selectLibrary scripter oldLibrary }
   languageChanged scripter
+  stopAndClearChunks (smallRuntime)
   initialize (smallRuntime) scripter
 
   lastStatus = nil // force update

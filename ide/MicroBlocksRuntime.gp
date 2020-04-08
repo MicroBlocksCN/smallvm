@@ -258,6 +258,15 @@ method stopAndSyncScripts SmallRuntime {
 	saveAllChunks this
 }
 
+method stopAndClearChunks SmallRuntime {
+	// Stop any running scripts and clear chunks dictionary. Used when a screen resolution
+	// change forces all scripts to be rebuilt.
+
+	sendMsg this 'stopAllMsg'
+	chunkIDs = (dictionary)
+	chunkRunning = (newArray 256 false) // clear all running flags
+}
+
 method softReset SmallRuntime {
 	// Stop everyting, clear memory, and reset the I/O pins.
 
