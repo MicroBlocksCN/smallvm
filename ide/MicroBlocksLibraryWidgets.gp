@@ -27,7 +27,7 @@ method initialize MicroBlocksLibraryImportDialog anAction defaultPath {
 	window = (window filePicker)
 	setHandler morph this
 
-	propertiesFrame = (newLibraryPropertiesFrame)
+	propertiesFrame = (newLibraryPropertiesFrame nil false window)
 	addPart morph (morph propertiesFrame)
 
 	onFileSelect filePicker (action 'updateLibraryInfo' this)
@@ -89,15 +89,16 @@ method fixLayout MicroBlocksLibraryImportDialog {
 // -------------------
 // Embeddable morph that shows a list of tags and lets you remove them or add new ones
 
-defineClass MicroBlocksTagViewer morph box library tags editFlag
+defineClass MicroBlocksTagViewer morph box library tags editFlag window
 
-to newTagViewer lib forEditing {
-	return (initialize (new 'MicroBlocksTagViewer') lib forEditing)
+to newTagViewer lib forEditing win {
+	return (initialize (new 'MicroBlocksTagViewer') lib forEditing win)
 }
 
-method initialize MicroBlocksTagViewer lib forEditing {
+method initialize MicroBlocksTagViewer lib forEditing win {
 	box = (newBox nil (transparent) 0)
 	morph = (morph box)
+	window = win
 	setClipping morph true
 	setAlpha morph 0
 	editFlag = (or (and (notNil forEditing) forEditing) false)
@@ -111,7 +112,6 @@ method initialize MicroBlocksTagViewer lib forEditing {
 }
 
 method tags MicroBlocksTagViewer { return (toArray tags) }
-method morph MicroBlocksTagViewer { return morph }
 
 method setLibrary MicroBlocksTagViewer lib {
 	library = lib
@@ -136,14 +136,31 @@ method addTag MicroBlocksTagViewer tag {
 	}
 }
 
+method tagDropped MicroBlocksTagViewer tagMorph aHand {
+	if (or
+		((handX) < (left (morph window)))
+		((handX) > (right (morph window)))
+		((handY) < (top (morph window)))
+		((handY) > (bottom (morph window)))) {
+		// Tag was dropped outside owner window
+		removeTag this (tag tagMorph)
+		removePart morph (morph tagMorph)
+		destroy (morph tagMorph)
+		buildListView this
+		fixLayout this
+	} else {
+		animateBackToOldOwner aHand (morph tagMorph)
+	}
+}
+
 method buildListView MicroBlocksTagViewer {
+	size = ((global 'scale') * 10)
 	removeAllParts morph
 	for tag tags {
-		text = (newText tag 'Arial' ((global 'scale') * 10) (gray 0) 'center' nil 0 0 5 3 'static' (gray 200))
-		addPart morph (morph text)
+		addPart morph (morph (newTag tag this editFlag))
 	}
 	if editFlag {
-		addPart morph (morph (pushButton '+' (gray 200) (action 'queryNewTag' this)))
+		addPart morph (morph (newTag '+' this false (action 'queryNewTag' this)))
 	}
 }
 
@@ -165,21 +182,64 @@ method fixLayout MicroBlocksTagViewer {
 	}
 }
 
+// TagMorph
+// --------
+// Represents a tag
+
+defineClass MicroBlocksTagMorph text morph tag tagViewer editFlag onClick
+
+to newTag tagName tagViewr forEditing clickAction {
+	return (initialize (new 'MicroBlocksTagMorph') tagName tagViewr forEditing clickAction)
+}
+
+method initialize MicroBlocksTagMorph tagName tagViewr forEditing clickAction {
+	tag = tagName
+	tagViewer = tagViewr
+	editFlag = forEditing
+	onClick = clickAction
+
+	text = (newText tag 'Arial' size (gray 0) 'center' nil 0 0 5 3 'static' (gray 200))
+	morph = (morph text)
+	setHandler morph this
+
+	if editFlag { setGrabRule morph 'handle' }
+
+	return this
+}
+
+method tag MicroBlocksTagMorph { return tag }
+method clicked MicroBlocksTagMorph { if (notNil onClick) { call onClick } }
+method justDropped MicroBlocksTagMorph aHand { tagDropped tagViewer this aHand }
+
+method handEnter MicroBlocksTagMorph aHand {
+	if (notNil onClick) {
+		setColor text (gray 0) (gray 0) (gray 180)
+	}
+}
+
+method handLeave MicroBlocksTagMorph aHand {
+	if (notNil onClick) {
+		setColor text (gray 0) (gray 0) (gray 200)
+	}
+}
+
+
 // Library properties frame
 // ------------------------
 // Embeddable frame that displays library information
 
-defineClass MicroBlocksLibraryPropertiesFrame morph library descriptionFrame descriptionText depsText depsFrame versionAuthorText versionFrame tagViewer editFlag
+defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText depsText depsFrame versionAuthorText versionFrame tagViewer editFlag
 
-to newLibraryPropertiesFrame lib forEditing {
-	return (initialize (new 'MicroBlocksLibraryPropertiesFrame') lib forEditing)
+to newLibraryPropertiesFrame lib forEditing win {
+	return (initialize (new 'MicroBlocksLibraryPropertiesFrame') lib forEditing win)
 }
 
-method initialize MicroBlocksLibraryPropertiesFrame lib forEditing {
+method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 
 	editFlag = (or (and (notNil forEditing) forEditing) false)
 
 	morph = (morph (newBox nil (transparent) 0))
+	window = win
 
 	descriptionText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
 	if editFlag { setEditRule descriptionText 'editable' }
@@ -198,7 +258,7 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing {
 	depsFrame = (scrollFrame depsText (gray 255))
 	addPart morph (morph depsFrame)
 
-	tagViewer = (newTagViewer lib editFlag)
+	tagViewer = (newTagViewer lib editFlag window)
 	addPart morph (morph tagViewer)
 
 	if (notNil lib) { setLibrary this lib }
@@ -293,7 +353,7 @@ method initialize MicroBlocksLibraryInfoDialog lib forEditing {
 	morph = (morph window)
 	setHandler morph this
 
-	propertiesFrame = (newLibraryPropertiesFrame library forEditing)
+	propertiesFrame = (newLibraryPropertiesFrame library forEditing window)
 	frame = (scrollFrame propertiesFrame (gray 230) true)
 
 	editFlag = (isForEditing propertiesFrame)
