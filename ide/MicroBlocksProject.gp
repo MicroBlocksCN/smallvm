@@ -347,9 +347,9 @@ method dependencies MicroBlocksModule { return (copy dependencies) }
 
 method setDescription MicroBlocksModule desc { description = desc }
 method setAuthor MicroBlocksModule auth { author = auth }
-method setVersion MicroBlocksModule major minor {
-	atPut version 1 major
-	atPut version 2 minor
+method setVersion MicroBlocksModule versionArray {
+	atPut version 1 (at versionArray 1)
+	atPut version 2 (at versionArray 2)
 }
 method setTags MicroBlocksModule tagList { tags = (copy (toArray tagList)) }
 

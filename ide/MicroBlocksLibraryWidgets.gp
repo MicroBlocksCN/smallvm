@@ -85,9 +85,96 @@ method fixLayout MicroBlocksLibraryImportDialog {
 }
 
 
-// Tag list and editor
+// Library Info Dialog
 // -------------------
-// Embeddable morph that shows a list of tags and lets you remove them or add new ones
+// Inspect and edit libraries. Shows all library fields: name, author, version,
+// dependencies, tags, and description.
+
+defineClass MicroBlocksLibraryInfoDialog morph window frame library propertiesFrame editFlag saveButton cancelButton
+
+to showLibraryInfo lib forEditing {
+	page = (global 'page')
+	dialog = (initialize (new 'MicroBlocksLibraryInfoDialog') lib forEditing)
+	addPart page dialog
+	dialogM = (morph dialog)
+	setPosition dialogM (half ((width page) - (width dialogM))) (40 * (global 'scale'))
+}
+
+method initialize MicroBlocksLibraryInfoDialog lib forEditing {
+	library = lib
+	window = (window (moduleName library))
+	morph = (morph window)
+	setHandler morph this
+
+	propertiesFrame = (newLibraryPropertiesFrame library forEditing window)
+	frame = (scrollFrame propertiesFrame (gray 230) true)
+
+	editFlag = (isForEditing propertiesFrame)
+
+	addPart morph (morph frame)
+
+	if editFlag {
+		saveButton = (pushButton 'Save' (gray 130) (action 'saveChanges' this))
+		addPart morph (morph saveButton)
+		cancelButton = (pushButton 'Cancel' (gray 130) (action 'close' this))
+		addPart morph (morph cancelButton)
+	}
+
+	scale = (global 'scale')
+	setMinExtent morph (320 * scale) (240 * scale)
+	setExtent morph (420 * scale) (315 * scale)
+
+	return this
+}
+
+method saveChanges MicroBlocksLibraryInfoDialog {
+	saveChanges propertiesFrame
+	close this
+}
+
+method close MicroBlocksLibraryInfoDialog {
+	destroy morph false
+}
+
+method redraw MicroBlocksLibraryInfoDialog {
+	fixLayout this
+	redraw window
+	costumeChanged morph
+}
+
+method fixLayout MicroBlocksLibraryInfoDialog {
+	scale = (global 'scale')
+
+	fixLayout window
+
+	topInset = (30 * scale)
+	margin = (6 * scale)
+
+	if editFlag {
+		// buttons
+		setRight (morph saveButton) ((right morph) - (2 * margin))
+		setBottom (morph saveButton) ((bottom morph) - (2 * margin))
+		setRight (morph cancelButton) ((left (morph saveButton)) - margin)
+		setBottom (morph cancelButton) (bottom (morph saveButton))
+		bottomInset = ((height (morph saveButton)) + margin)
+	} else {
+		bottomInset = 0
+	}
+
+	setPosition (morph frame) ((left morph) + margin) ((top morph) + topInset)
+	setExtent (morph frame) ((width morph) - (2 * margin)) (((height morph) - topInset) - margin)
+
+	setPosition (morph propertiesFrame) ((left (morph frame)) + margin) ((top (morph frame)) + margin)
+	setExtent (morph propertiesFrame) ((width (morph frame)) - (2 * margin)) (((height (morph frame)) - (2 * margin)) - bottomInset)
+
+	fixLayout propertiesFrame
+}
+
+
+// Tag list viewer and editor
+// --------------------------
+// Embeddable morph that shows a list of tags and lets you remove them or add new ones.
+// To add new tags, click on the [ + ] button. To remove a tag, just drag it out of the container window.
 
 defineClass MicroBlocksTagViewer morph box library tags editFlag window
 
@@ -228,7 +315,7 @@ method handLeave MicroBlocksTagMorph aHand {
 // ------------------------
 // Embeddable frame that displays library information
 
-defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText depsText depsFrame versionAuthorText versionFrame tagViewer editFlag
+defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText depsText depsFrame versionText versionFrame authorText authorFrame tagViewer editFlag
 
 to newLibraryPropertiesFrame lib forEditing win {
 	return (initialize (new 'MicroBlocksLibraryPropertiesFrame') lib forEditing win)
@@ -248,11 +335,18 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 
 	addPart morph (morph descriptionFrame)
 
-	versionAuthorText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
+	versionText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
+	if editFlag { setEditRule versionText 'editable' }
 	versionFrame = (newBox nil (gray 255) 0)
-	setClipping (morph versionFrame) true
-	addPart (morph versionFrame) (morph versionAuthorText)
+	addPart (morph versionFrame) (morph versionText)
 	addPart morph (morph versionFrame)
+
+	authorText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
+	if editFlag { setEditRule authorText 'editable' }
+	authorFrame = (newBox nil (gray 255) 0)
+	setClipping (morph authorFrame) true
+	addPart (morph authorFrame) (morph authorText)
+	addPart morph (morph authorFrame)
 
 	depsText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5 0)
 	depsFrame = (scrollFrame depsText (gray 255))
@@ -270,6 +364,22 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 
 method isForEditing MicroBlocksLibraryPropertiesFrame { return editFlag }
 method getDescription MicroBlocksLibraryPropertiesFrame { return (contentsWithoutCRs descriptionText) }
+method getVersion MicroBlocksLibraryPropertiesFrame {
+	// Returns an array with the major and minor version parsed out of the string
+	versionString = ''
+	for c (letters (contentsWithoutCRs versionText)) {
+		if (or (representsAnInteger c) (c == '.')) {
+			versionString = (join versionString c)
+		}
+	}
+	major = (toInteger (at (splitWith versionString '.') 1))
+	minor = (toInteger (at (splitWith versionString '.') 2))
+	return (array major minor)
+}
+method getAuthor MicroBlocksLibraryPropertiesFrame {
+	// Returns the sanitized author name, without the trailing "by"
+	return (trim (last (splitWithString (contentsWithoutCRs authorText) 'by ')))
+}
 
 method setLibrary MicroBlocksLibraryPropertiesFrame lib {
 	library = lib
@@ -279,6 +389,8 @@ method setLibrary MicroBlocksLibraryPropertiesFrame lib {
 
 method saveChanges MicroBlocksLibraryPropertiesFrame {
 	setDescription library (getDescription this)
+	setVersion library (getVersion this)
+	setAuthor library (getAuthor this)
 	setTags library (tags tagViewer)
 }
 
@@ -289,9 +401,9 @@ method updateFields MicroBlocksLibraryPropertiesFrame {
 	} else {
 		setText depsText (join 'Depends: ' (joinStrings (dependencyNames library) ', '))
 	}
-	setText versionAuthorText (join
-		'v' (toString (at (version library) 1)) '.' (toString (at (version library) 2))
-		', by ' (author library))
+	setText versionText (join
+		'v' (toString (at (version library) 1)) '.' (toString (at (version library) 2)))
+	setText authorText (join 'by ' (author library))
 	setLibrary tagViewer library
 }
 
@@ -323,9 +435,12 @@ method fixLayout MicroBlocksLibraryPropertiesFrame {
 	descriptionHeight = (descriptionHeight - (height (morph depsFrame)))
 
 	// version and author
-	setExtent (morph versionFrame) (width morph) (height (morph versionAuthorText))
+	setExtent (morph versionFrame) ((width (morph versionText)) + margin) (height (morph versionText))
 	setLeft (morph versionFrame) (left morph)
 	setBottom (morph versionFrame) ((top (morph depsFrame)) - margin)
+	setExtent (morph authorFrame) (((width morph) - (width (morph versionFrame))) - margin) (height (morph versionText))
+	setLeft (morph authorFrame) ((right (morph versionFrame)) + margin)
+	setBottom (morph authorFrame) (bottom (morph versionFrame))
 	descriptionHeight = ((descriptionHeight - (height (morph versionFrame))) - margin)
 
 	// description
@@ -335,84 +450,4 @@ method fixLayout MicroBlocksLibraryPropertiesFrame {
 }
 
 
-// Library Info Dialog
 
-defineClass MicroBlocksLibraryInfoDialog morph window frame library propertiesFrame editFlag saveButton cancelButton
-
-to showLibraryInfo lib forEditing {
-	page = (global 'page')
-	dialog = (initialize (new 'MicroBlocksLibraryInfoDialog') lib forEditing)
-	addPart page dialog
-	dialogM = (morph dialog)
-	setPosition dialogM (half ((width page) - (width dialogM))) (40 * (global 'scale'))
-}
-
-method initialize MicroBlocksLibraryInfoDialog lib forEditing {
-	library = lib
-	window = (window (moduleName library))
-	morph = (morph window)
-	setHandler morph this
-
-	propertiesFrame = (newLibraryPropertiesFrame library forEditing window)
-	frame = (scrollFrame propertiesFrame (gray 230) true)
-
-	editFlag = (isForEditing propertiesFrame)
-
-	addPart morph (morph frame)
-
-	if editFlag {
-		saveButton = (pushButton 'Save' (gray 130) (action 'saveChanges' this))
-		addPart morph (morph saveButton)
-		cancelButton = (pushButton 'Cancel' (gray 130) (action 'close' this))
-		addPart morph (morph cancelButton)
-	}
-
-	scale = (global 'scale')
-	setMinExtent morph (320 * scale) (240 * scale)
-	setExtent morph (480 * scale) (320 * scale)
-
-	return this
-}
-
-method saveChanges MicroBlocksLibraryInfoDialog {
-	saveChanges propertiesFrame
-	close this
-}
-
-method close MicroBlocksLibraryInfoDialog {
-	destroy morph false
-}
-
-method redraw MicroBlocksLibraryInfoDialog {
-	fixLayout this
-	redraw window
-	costumeChanged morph
-}
-
-method fixLayout MicroBlocksLibraryInfoDialog {
-	scale = (global 'scale')
-
-	fixLayout window
-
-	topInset = (30 * scale)
-	margin = (6 * scale)
-
-	if editFlag {
-		// buttons
-		setRight (morph saveButton) ((right morph) - (2 * margin))
-		setBottom (morph saveButton) ((bottom morph) - (2 * margin))
-		setRight (morph cancelButton) ((left (morph saveButton)) - margin)
-		setBottom (morph cancelButton) (bottom (morph saveButton))
-		bottomInset = ((height (morph saveButton)) + margin)
-	} else {
-		bottomInset = 0
-	}
-
-	setPosition (morph frame) ((left morph) + margin) ((top morph) + topInset)
-	setExtent (morph frame) ((width morph) - (2 * margin)) (((height morph) - topInset) - margin)
-
-	setPosition (morph propertiesFrame) ((left (morph frame)) + margin) ((top (morph frame)) + margin)
-	setExtent (morph propertiesFrame) ((width (morph frame)) - (2 * margin)) (((height (morph frame)) - (2 * margin)) - bottomInset)
-
-	fixLayout propertiesFrame
-}
