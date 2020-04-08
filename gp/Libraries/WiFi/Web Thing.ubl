@@ -1,10 +1,10 @@
 module 'Web Thing' Comm
-author 'MicroBlocks'
-version 3 0
-depends 'WiFi/HTTP server' 'WiFi/Wifi'
+author MicroBlocks
+version 3 0 
+depends 'WiFi/HTTP server' 'WiFi/Wifi' 
+tags iot mozilla webthing wot 
 description 'Build Web Things as specified by the Mozilla WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Mozilla Web of Things gateway.'
-tags iot mozilla webthing wot
-variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
+variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description' 
 
 	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
 	spec ' ' 'set thing capability to' 'set thing capability to _' 'str.thingTypesMenu' 'Light'
@@ -295,8 +295,8 @@ to 'set thing name to' title {
 to 'start WebThing server' {
   if (_WoT_title == 0) {'set thing name to' 'MicroBlocks thing'}
   if (_WoT_capability == 0) {'set thing capability to' ''}
-  if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
   if ('[net:hasWiFi]') {
+    if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
     sendBroadcastSimple '_WoT_start_server'
   } else {
     '_thing description' = ('thing description JSON')
@@ -308,6 +308,10 @@ to 'thing description JSON' {
 }
 
 to 'trigger event' 'event name' {
-  '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
+  if ('[net:hasWiFi]') {
+    '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
+  } else {
+    sendBroadcastSimple (v 'event name')
+  }
 }
 
