@@ -291,8 +291,8 @@ to 'set thing name to' title {
 to 'start WebThing server' {
   if (_WoT_title == 0) {'set thing name to' 'MicroBlocks thing'}
   if (_WoT_capability == 0) {'set thing capability to' ''}
-  if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
   if ('[net:hasWiFi]') {
+    if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
     sendBroadcastSimple '_WoT_start_server'
   } else {
     '_thing description' = ('thing description JSON')
@@ -304,6 +304,10 @@ to 'thing description JSON' {
 }
 
 to 'trigger event' 'event name' {
-  '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
+  if ('[net:hasWiFi]') {
+    '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
+  } else {
+    sendBroadcastSimple (v 'event name')
+  }
 }
 
