@@ -9,5 +9,7 @@ Funding source: MicroBlocks donation funds
 | 03/04/2020 | 4 | New library import dialog finished. Export not yet done. Filled all data for all embedded libraries. | a007213
 | 06/04/2020 | 5 | Refactored import dialog, added new lib info dialog. | 6a39b2aa8843410b8129db3f0497662ac9567fb6
 | 07/04/2020 | 4 | Tag viewer widget for library dialogs shows tag list and allows adding new tags to libraries. | 8372ebd
+| 08/04/2020 | 4 | Adding and removing tags, and saving library author and version now working. | 225e752
+| 09/04/2020 | 5 | Graphically adding and removing dependencies working. | 70a291e
 
-| **Total**  | 21 | |
+| **Total**  | 30 | |
