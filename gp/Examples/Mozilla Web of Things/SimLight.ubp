@@ -313,7 +313,7 @@ to addBooleanProperty varName title type optionalReadOnly {
   if ((pushArgCount) > 3) {
     readonly = optionalReadOnly
   }
-  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"boolean","@type":"' type '",' '"readonly":' readonly)
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"boolean","@type":"' type '",' '"readOnly":' readonly)
 }
 
 to addNumProp varName title min max type optionalReadOnly {
@@ -321,7 +321,7 @@ to addNumProp varName title min max type optionalReadOnly {
   if ((pushArgCount) > 5) {
     readonly = optionalReadOnly
   }
-  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"number","@type":"' type '",' '"readonly":' readonly ',"minimum":' min ',"maximum":' max)
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"number","@type":"' type '",' '"readOnly":' readonly ',"minimum":' min ',"maximum":' max)
 }
 
 to addStringProperty varName title type optionalReadOnly {
@@ -329,7 +329,7 @@ to addStringProperty varName title type optionalReadOnly {
   if ((pushArgCount) > 3) {
     readonly = optionalReadOnly
   }
-  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"string","@type":"' type '",' '"readonly":' readonly)
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"string","@type":"' type '",' '"readOnly":' readonly)
 }
 
 to 'event definitions JSON' {
