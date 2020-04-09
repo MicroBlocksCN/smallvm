@@ -72,7 +72,7 @@ sayIt ('thing description JSON')
 }
 
 
-module 'HTTP server'
+module 'HTTP server' Comm
 
 	spec ' ' '[net:startHttpServer]' 'start HTTP server'
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
@@ -244,7 +244,7 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 }
 
 
-module 'Web Things'
+module 'Web Thing' Comm
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
 
 	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
@@ -536,8 +536,8 @@ to 'set thing name to' title {
 to 'start WebThing server' {
   if (_WoT_title == 0) {'set thing name to' 'MicroBlocks thing'}
   if (_WoT_capability == 0) {'set thing capability to' ''}
-  if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
   if ('[net:hasWiFi]') {
+    if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
     sendBroadcastSimple '_WoT_start_server'
   } else {
     '_thing description' = ('thing description JSON')
@@ -549,11 +549,15 @@ to 'thing description JSON' {
 }
 
 to 'trigger event' 'event name' {
-  '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
+  if ('[net:hasWiFi]') {
+    '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
+  } else {
+    sendBroadcastSimple (v 'event name')
+  }
 }
 
 
-module Wifi Comm
+module WiFi Comm
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
