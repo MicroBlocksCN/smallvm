@@ -338,7 +338,6 @@ method initialize MicroBlocksModule name {
 	author = 'unknown'
 	description = ''
 	tags = (array)
-	path = moduleName
 	variableNames = (array)
 	blockList = (array)
 	functions = (array)
@@ -357,7 +356,7 @@ method author MicroBlocksModule { return author }
 method tags MicroBlocksModule { return (copy tags) }
 method path MicroBlocksModule { return path }
 method dependencies MicroBlocksModule { return (copy dependencies) }
-
+method setDependencies MicroBlocksModule deps { dependencies = (toArray (copy deps)) }
 method setDescription MicroBlocksModule desc { description = desc }
 method setAuthor MicroBlocksModule auth { author = auth }
 method setVersion MicroBlocksModule versionArray {
@@ -367,34 +366,22 @@ method setVersion MicroBlocksModule versionArray {
 method setTags MicroBlocksModule tagList { tags = (copy (toArray tagList)) }
 method setPath MicroBlocksModule aPath { path = aPath }
 
-// dependencies
-
-method addDependency MicroBlocksModule aDependency {
-	depPath = (path aDependency)
-	if (and (notEmpty depPath) (not (contains dependencies depPath))) {
-		dependencies = (copyWith dependencies depPath)
+method dependencyName MicroBlocksModule dep {
+	slashPos = (findLast dep '/')
+	if (slashPos > 0) { slashPos = (slashPos + 1) }
+	poundPos = (findLast dep '#')
+	if (poundPos > 0) {
+		poundPos = (poundPos - 1)
+	} else {
+		poundPos = (count dep)
 	}
-}
-
-method removeDependency MicroBlocksModule aDependency {
-	depPath = (path aDependency)
-	if (contains dependencies depPath) {
-		dependencies = (copyWithout dependencies depPath)
-	}
+	return (withoutExtension (substring dep slashPos poundPos))
 }
 
 method dependencyNames MicroBlocksModule {
 	deps = (list)
 	for dep dependencies {
-		slashPos = (findLast dep '/')
-		if (slashPos > 0) { slashPos = (slashPos + 1) }
-		poundPos = (findLast dep '#')
-		if (poundPos > 0) {
-			poundPos = (poundPos - 1)
-		} else {
-			poundPos = (count dep)
-		}
-		add deps (withoutExtension (substring dep slashPos poundPos))
+		add deps (dependencyName this dep)
 	}
 	return deps
 }
@@ -764,10 +751,10 @@ method importDependency MicroBlocksModule lib scripter {
 			// fetch library from remote URL
 			url = (substring lib 8)
 			host = (substring url 1 ((findFirst url '/') - 1))
-			path = (substring url (findFirst url '/'))
-			libName = (substring path ((findLast path '/') + 1) ((findLast path '.') - 1))
-			libSource = (httpGet host path)
-			importLibraryFromString scripter libSource libName path
+			libPath = (substring url (findFirst url '/'))
+			libName = (substring libPath ((findLast libPath '/') + 1) ((findLast libPath '.') - 1))
+			libSource = (httpGet host libPath)
+			importLibraryFromString scripter libSource libName libPath
 		}
 	} (beginsWith lib '/') {
 		// fetch library from [MicroBlocksFolder]/Library

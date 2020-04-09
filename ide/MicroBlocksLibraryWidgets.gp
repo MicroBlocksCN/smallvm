@@ -145,8 +145,8 @@ method justReceivedDrop MicroBlocksLibraryInfoDialog aHandler {
 		libName = (data aHandler)
 		dep = (libraryNamed (project (scripter (smallRuntime))) libName)
 		if (notNil dep) {
-			addDependency library dep
-			updateFields propertiesFrame
+			addDependency propertiesFrame dep
+			fixLayout this
 		}
 	}
 	animateBackToOldOwner (hand (global 'page')) (morph aHandler)
@@ -187,121 +187,144 @@ method fixLayout MicroBlocksLibraryInfoDialog {
 }
 
 
-// Tag list viewer and editor
-// --------------------------
-// Embeddable morph that shows a list of tags and lets you remove them or add new ones.
-// To add new tags, click on the [ + ] button. To remove a tag, just drag it out of the container window.
+// Horizontal list item viewer and editor
+// --------------------------------------
+// Embeddable morph that shows a list of items and lets you remove them or add new ones.
+// When editable, remove an item by dragging it out of the container window.
+// When used for libraries, drag and drop a library from the palette to the window to add
+// it as a dependency.
+// When used for tags, click on the [ + ] button to add a new tag.
 
-defineClass MicroBlocksTagViewer morph box library tags editFlag window
+defineClass MicroBlocksListItemViewer morph box contents newItemQueryString editFlag window itemRenderer label
 
-to newTagViewer lib forEditing win {
-	return (initialize (new 'MicroBlocksTagViewer') lib forEditing win)
+to newItemViewer aList forEditing win {
+	return (initialize (new 'MicroBlocksListItemViewer') aList forEditing win)
 }
 
-method initialize MicroBlocksTagViewer lib forEditing win {
+method initialize MicroBlocksListItemViewer aList forEditing win {
 	box = (newBox nil (transparent) 0)
 	morph = (morph box)
 	window = win
 	setClipping morph true
 	setAlpha morph 0
 	editFlag = (or (and (notNil forEditing) forEditing) false)
-	if (notNil lib) {
-		setLibrary this lib
-	}
+	setContents this aList
 
 	fixLayout this
 
 	return this
 }
 
-method tags MicroBlocksTagViewer { return (toArray tags) }
+method setLabel MicroBlocksListItemViewer aLabel { label = aLabel }
 
-method setLibrary MicroBlocksTagViewer lib {
-	library = lib
-	tags = (copy (tags library))
+method contents MicroBlocksListItemViewer { return contents }
+method setContents MicroBlocksListItemViewer aList {
+	contents = (copy (toArray aList))
 	buildListView this
 }
 
-method queryNewTag MicroBlocksTagViewer {
-	newTag = (prompt (global 'page') 'Tag name?')
-	if (notEmpty newTag) {
-		addTag this newTag
+method setItemRenderer MicroBlocksListItemViewer anAction {
+	itemRenderer = anAction
+}
+
+method setNewItemQueryString MicroBlocksListItemViewer aString { newItemQueryString = aString }
+
+method queryNewItem MicroBlocksListItemViewer {
+	newItem = (prompt (global 'page') newItemQueryString)
+	if (notEmpty newItem) {
+		addItem this newItem
+	}
+}
+
+method removeItem MicroBlocksListItemViewer itemName {
+	for item contents {
+		if ((call itemRenderer item) == itemName) {
+			contents = (copyWithout contents item)
+		}
+	}
+}
+
+method addItem MicroBlocksListItemViewer item {
+	if (not (contains contents (call itemRenderer item))) {
+		contents = (copyWith contents item)
 		buildListView this
 		fixLayout this
 	}
 }
 
-method tags MicroBlocksTagViewer { return (copy tags) }
-method removeTag MicroBlocksTagViewer tag { tags = (copyWithout tags tag) }
-method addTag MicroBlocksTagViewer tag {
-	if (not (contains tags tag)) {
-		tags = (copyWith tags tag)
-	}
-}
-
-method tagDropped MicroBlocksTagViewer tagMorph aHand {
+method itemDropped MicroBlocksListItemViewer itemMorph aHand {
+	// If item is dropped outside owner window, we remove it
 	if (or
 		((handX) < (left (morph window)))
 		((handX) > (right (morph window)))
 		((handY) < (top (morph window)))
 		((handY) > (bottom (morph window)))) {
-		// Tag was dropped outside owner window
-		removeTag this (tag tagMorph)
-		removePart morph (morph tagMorph)
-		destroy (morph tagMorph)
+		removeItem this (itemName itemMorph)
+		removePart morph (morph itemMorph)
+		destroy (morph itemMorph)
 		buildListView this
 		fixLayout this
 	} else {
-		animateBackToOldOwner aHand (morph tagMorph)
+		animateBackToOldOwner aHand (morph itemMorph)
 	}
 }
 
-method buildListView MicroBlocksTagViewer {
+method buildListView MicroBlocksListItemViewer {
 	size = ((global 'scale') * 10)
 	removeAllParts morph
-	for tag tags {
-		addPart morph (morph (newTag tag this editFlag))
+	if (or (and (notNil label) (notEmpty contents)) editFlag) {
+		addPart morph (morph (newText label 'Arial' size (gray 0) 'center' nil 0 0 5 3))
+	}
+	for item contents {
+		if (notNil itemRenderer) {
+			itemText = (call itemRenderer item)
+		} else {
+			itemText = item	
+		}
+		addPart morph (morph (newLibraryItem itemText this editFlag))
 	}
 	if editFlag {
-		addPart morph (morph (newTag '+' this false (action 'queryNewTag' this)))
+		addPart morph (morph (newLibraryItem '+' this false (action 'queryNewItem' this)))
 	}
 }
 
-method fixLayout MicroBlocksTagViewer {
+method fixLayout MicroBlocksListItemViewer {
 	scale = (global 'scale')
 	margin = (6 * scale)
 	left = (left morph)
 	height = ((scale * 10) + (margin * 2))
-	for tagText (parts morph) {
-		setLeft tagText left
-		if ((right tagText) > ((left morph) + (width morph))) {
-			height = ((height + (height tagText)) + margin)
+	for text (parts morph) {
+		setLeft text left
+		if ((right text) > ((left morph) + (width morph))) {
+			height = ((height + (height text)) + margin)
 			left = (left morph)
-			setLeft tagText left
+			setLeft text left
 		}
 		setExtent morph (width morph) height
-		setBottom tagText (bottom morph)
-		left = ((left + (width tagText)) + margin)
+		setBottom text (bottom morph)
+		left = ((left + (width text)) + margin)
 	}
 }
 
-// TagMorph
-// --------
-// Represents a tag
+// LibraryItemMorph
+// ----------------
+// Represents a tag or a library, or anything else that you want to be able to
+// click and drag around.
 
-defineClass MicroBlocksTagMorph text morph tag tagViewer editFlag onClick
+defineClass MicroBlocksLibraryItemMorph text morph itemName itemViewer editFlag onClick
 
-to newTag tagName tagViewr forEditing clickAction {
-	return (initialize (new 'MicroBlocksTagMorph') tagName tagViewr forEditing clickAction)
+to newLibraryItem aName anItemViewer forEditing clickAction {
+	return (initialize (new 'MicroBlocksLibraryItemMorph') aName anItemViewer forEditing clickAction)
 }
 
-method initialize MicroBlocksTagMorph tagName tagViewr forEditing clickAction {
-	tag = tagName
-	tagViewer = tagViewr
+method initialize MicroBlocksLibraryItemMorph aName anItemViewer forEditing clickAction {
+	size = ((global 'scale') * 10)
+	itemName = aName
+	itemViewer = anItemViewer
 	editFlag = forEditing
 	onClick = clickAction
 
-	text = (newText tag 'Arial' size (gray 0) 'center' nil 0 0 5 3 'static' (gray 200))
+	text = (newText itemName 'Arial' size (gray 0) 'center' nil 0 0 5 3 'static' (gray 200))
 	morph = (morph text)
 	setHandler morph this
 
@@ -310,17 +333,17 @@ method initialize MicroBlocksTagMorph tagName tagViewr forEditing clickAction {
 	return this
 }
 
-method tag MicroBlocksTagMorph { return tag }
-method clicked MicroBlocksTagMorph { if (notNil onClick) { call onClick } }
-method justDropped MicroBlocksTagMorph aHand { tagDropped tagViewer this aHand }
+method itemName MicroBlocksLibraryItemMorph { return itemName }
+method clicked MicroBlocksLibraryItemMorph { if (notNil onClick) { call onClick } }
+method justDropped MicroBlocksLibraryItemMorph aHand { itemDropped itemViewer this aHand }
 
-method handEnter MicroBlocksTagMorph aHand {
+method handEnter MicroBlocksLibraryItemMorph aHand {
 	if (notNil onClick) {
 		setColor text (gray 0) (gray 0) (gray 180)
 	}
 }
 
-method handLeave MicroBlocksTagMorph aHand {
+method handLeave MicroBlocksLibraryItemMorph aHand {
 	if (notNil onClick) {
 		setColor text (gray 0) (gray 0) (gray 200)
 	}
@@ -331,7 +354,7 @@ method handLeave MicroBlocksTagMorph aHand {
 // ------------------------
 // Embeddable frame that displays library information
 
-defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText depsText depsFrame versionText versionFrame authorText authorFrame tagViewer editFlag
+defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText depsViewer versionText versionFrame authorText authorFrame tagViewer editFlag
 
 to newLibraryPropertiesFrame lib forEditing win {
 	return (initialize (new 'MicroBlocksLibraryPropertiesFrame') lib forEditing win)
@@ -364,11 +387,12 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 	addPart (morph authorFrame) (morph authorText)
 	addPart morph (morph authorFrame)
 
-	depsText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5 0)
-	depsFrame = (scrollFrame depsText (gray 255))
-	addPart morph (morph depsFrame)
+	depsViewer = (newItemViewer (array) editFlag window)
+	setNewItemQueryString depsViewer 'Dependency URL?'
+	addPart morph (morph depsViewer)
 
-	tagViewer = (newTagViewer lib editFlag window)
+	tagViewer = (newItemViewer (array) editFlag window)
+	setNewItemQueryString tagViewer 'Tag name?'
 	addPart morph (morph tagViewer)
 
 	if (notNil lib) { setLibrary this lib }
@@ -397,6 +421,10 @@ method getAuthor MicroBlocksLibraryPropertiesFrame {
 	return (trim (last (splitWithString (contentsWithoutCRs authorText) 'by ')))
 }
 
+method addDependency MicroBlocksLibraryPropertiesFrame dep {
+	addItem depsViewer (path dep)
+}
+
 method setLibrary MicroBlocksLibraryPropertiesFrame lib {
 	library = lib
 	updateFields this
@@ -405,22 +433,22 @@ method setLibrary MicroBlocksLibraryPropertiesFrame lib {
 
 method saveChanges MicroBlocksLibraryPropertiesFrame {
 	setDescription library (getDescription this)
+	setDependencies library (contents depsViewer)
 	setVersion library (getVersion this)
 	setAuthor library (getAuthor this)
-	setTags library (tags tagViewer)
+	setTags library (contents tagViewer)
 }
 
 method updateFields MicroBlocksLibraryPropertiesFrame {
 	setText descriptionText (description library)
-	if (isEmpty (dependencies library)) {
-		setText depsText 'No dependencies'
-	} else {
-		setText depsText (join 'Depends: ' (joinStrings (dependencyNames library) ', '))
-	}
+	setItemRenderer depsViewer (action 'dependencyName' library)
+	setLabel depsViewer 'Depends:'
+	setContents depsViewer (dependencies library)
 	setText versionText (join
 		'v' (toString (at (version library) 1)) '.' (toString (at (version library) 2)))
 	setText authorText (join 'by ' (author library))
-	setLibrary tagViewer library
+	setLabel tagViewer 'Tags:'
+	setContents tagViewer (tags library)
 }
 
 method fixLayout MicroBlocksLibraryPropertiesFrame {
@@ -430,30 +458,37 @@ method fixLayout MicroBlocksLibraryPropertiesFrame {
 	descriptionHeight = (height morph)
 
 	// tags
+
 	setExtent (morph tagViewer) (width morph) 0
 	fixLayout tagViewer
 	setLeft (morph tagViewer) (left morph)
 	setBottom (morph tagViewer) (bottom morph)
-	descriptionHeight = ((descriptionHeight - (height (morph tagViewer))) - margin)
 
 	// dependencies
-	if (or (isNil library) (isEmpty (tags library))) {
-		depsHeight = ((scale * 10) + (margin * 2))
+
+	if (and (not editFlag) (or (isNil library) (isEmpty (tags library)))) {
 		depsBottom = (bottom morph)
+		versionBottom = (bottom morph)
 	} else {
-		depsHeight = (height (morph tagViewer))
 		depsBottom = ((top (morph tagViewer)) - margin)
-		descriptionHeight = (descriptionHeight - margin)
+		descriptionHeight = ((descriptionHeight - (height (morph tagViewer))) - margin)
+		versionBottom = ((top (morph tagViewer)) - margin)
 	}
-	setExtent (morph depsFrame) (width morph) depsHeight
-	setLeft (morph depsFrame) (left morph)
-	setBottom (morph depsFrame) depsBottom
-	descriptionHeight = (descriptionHeight - (height (morph depsFrame)))
+
+	setExtent (morph depsViewer) (width morph) 0
+	fixLayout depsViewer
+	setLeft (morph depsViewer) (left morph)
+	setBottom (morph depsViewer) depsBottom
+
+	if (or editFlag (and (notNil library) (notEmpty (dependencies library)))) {
+		descriptionHeight = ((descriptionHeight - (height (morph depsViewer))) - margin)
+		versionBottom = ((top (morph depsViewer)) - margin)
+	}
 
 	// version and author
 	setExtent (morph versionFrame) ((width (morph versionText)) + margin) (height (morph versionText))
 	setLeft (morph versionFrame) (left morph)
-	setBottom (morph versionFrame) ((top (morph depsFrame)) - margin)
+	setBottom (morph versionFrame) versionBottom
 	setExtent (morph authorFrame) (((width morph) - (width (morph versionFrame))) - margin) (height (morph versionText))
 	setLeft (morph authorFrame) ((right (morph versionFrame)) + margin)
 	setBottom (morph authorFrame) (bottom (morph versionFrame))
