@@ -118,6 +118,7 @@ method initialize MicroBlocksLibraryInfoDialog lib forEditing {
 		addPart morph (morph saveButton)
 		cancelButton = (pushButton 'Cancel' (gray 130) (action 'close' this))
 		addPart morph (morph cancelButton)
+		setLibsDraggable (scripter (smallRuntime)) true
 	}
 
 	scale = (global 'scale')
@@ -133,7 +134,22 @@ method saveChanges MicroBlocksLibraryInfoDialog {
 }
 
 method close MicroBlocksLibraryInfoDialog {
+	setLibsDraggable (scripter (smallRuntime)) false
 	destroy morph false
+}
+
+method wantsDropOf MicroBlocksLibraryInfoDialog aHandler { return true }
+
+method justReceivedDrop MicroBlocksLibraryInfoDialog aHandler {
+	if (isClass aHandler 'Toggle') {
+		libName = (data aHandler)
+		dep = (libraryNamed (project (scripter (smallRuntime))) libName)
+		if (notNil dep) {
+			addDependency library dep
+			updateFields propertiesFrame
+		}
+	}
+	animateBackToOldOwner (hand (global 'page')) (morph aHandler)
 }
 
 method redraw MicroBlocksLibraryInfoDialog {

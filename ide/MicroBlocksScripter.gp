@@ -1012,11 +1012,11 @@ method importLibraryFromFile MicroBlocksScripter fileName data {
   }
 
   libName = (withoutExtension (filePart fileName))
-  importLibraryFromString this (toString data) libName
+  importLibraryFromString this (toString data) libName fileName
 }
 
-method importLibraryFromString MicroBlocksScripter data libName {
-	addLibraryFromString mbProject (toString data) libName
+method importLibraryFromString MicroBlocksScripter data libName fileName {
+	addLibraryFromString mbProject (toString data) libName fileName
 	// update library list and select the new library
 	updateLibraryList this
 	select (contents categoriesFrame) nil
@@ -1030,6 +1030,20 @@ method updateLibraryList MicroBlocksScripter {
   oldSelection = (selection (contents libFrame))
   if (not (contains libNames oldSelection)) {
 	selectCategory this 'Control'
+  }
+}
+
+method justGrabbedPart MicroBlocksScripter part {
+	print 'scripter part grabbed'
+	print part
+}
+method setLibsDraggable MicroBlocksScripter flag {
+  for libItem (parts (morph (contents libFrame))) {
+	if flag {
+		setGrabRule libItem 'handle'
+	} else {
+		setGrabRule libItem 'defer'
+	}
   }
 }
 

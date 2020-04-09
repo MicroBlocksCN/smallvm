@@ -191,7 +191,7 @@ method loadFromString MicroBlocksProject s {
 	return this
 }
 
-method addLibraryFromString MicroBlocksProject s fileName {
+method addLibraryFromString MicroBlocksProject s libName fileName {
 	// Load a library from a string.
 	cmdList = (parse s)
 	loadSpecs this cmdList
@@ -199,7 +199,18 @@ method addLibraryFromString MicroBlocksProject s fileName {
 	for cmdList cmdsByModule {
 		lib = (loadFromCmds (newMicroBlocksModule) cmdList)
 		if (isNil (moduleName lib)) {
-			setModuleName lib fileName
+			setModuleName lib libName
+		}
+		if (beginsWith fileName '//Libraries/') {
+			setPath lib (withoutExtension (substring fileName ((count '//Libraries/') + 1)))
+		} (beginsWith fileName 'http://') {
+			setPath lib fileName
+		} (beginsWith fileName (join (gpFolder) '/Libraries')) {
+			setPath lib (withoutExtension (substring fileName ((count (join (gpFolder) '/Libraries')) + 1)))
+		} else {
+			// Local files sourced from places other than the MicroBlocks folder
+			// are unsupported as dependencies.
+			setPath lib nil
 		}
 		updatePrimitives lib
 		importDependencies lib (scripter (smallRuntime))
@@ -313,7 +324,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags variableNames blockList functions scripts
+defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags path variableNames blockList functions scripts
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -327,6 +338,7 @@ method initialize MicroBlocksModule name {
 	author = 'unknown'
 	description = ''
 	tags = (array)
+	path = moduleName
 	variableNames = (array)
 	blockList = (array)
 	functions = (array)
@@ -343,6 +355,7 @@ method description MicroBlocksModule { return description }
 method version MicroBlocksModule { return (copy version) }
 method author MicroBlocksModule { return author }
 method tags MicroBlocksModule { return (copy tags) }
+method path MicroBlocksModule { return path }
 method dependencies MicroBlocksModule { return (copy dependencies) }
 
 method setDescription MicroBlocksModule desc { description = desc }
@@ -352,6 +365,23 @@ method setVersion MicroBlocksModule versionArray {
 	atPut version 2 (at versionArray 2)
 }
 method setTags MicroBlocksModule tagList { tags = (copy (toArray tagList)) }
+method setPath MicroBlocksModule aPath { path = aPath }
+
+// dependencies
+
+method addDependency MicroBlocksModule aDependency {
+	depPath = (path aDependency)
+	if (and (notEmpty depPath) (not (contains dependencies depPath))) {
+		dependencies = (copyWith dependencies depPath)
+	}
+}
+
+method removeDependency MicroBlocksModule aDependency {
+	depPath = (path aDependency)
+	if (contains dependencies depPath) {
+		dependencies = (copyWithout dependencies depPath)
+	}
+}
 
 method dependencyNames MicroBlocksModule {
 	deps = (list)
@@ -737,7 +767,7 @@ method importDependency MicroBlocksModule lib scripter {
 			path = (substring url (findFirst url '/'))
 			libName = (substring path ((findLast path '/') + 1) ((findLast path '.') - 1))
 			libSource = (httpGet host path)
-			importLibraryFromString scripter libSource libName
+			importLibraryFromString scripter libSource libName path
 		}
 	} (beginsWith lib '/') {
 		// fetch library from [MicroBlocksFolder]/Library
