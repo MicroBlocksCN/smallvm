@@ -144,7 +144,7 @@ method justReceivedDrop MicroBlocksLibraryInfoDialog aHandler {
 	if (isClass aHandler 'Toggle') {
 		libName = (data aHandler)
 		dep = (libraryNamed (project (scripter (smallRuntime))) libName)
-		if (notNil dep) {
+		if (and (notNil dep) (libName != (moduleName library))) {
 			addDependency propertiesFrame dep
 			fixLayout this
 		}
