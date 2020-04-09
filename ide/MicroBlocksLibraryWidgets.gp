@@ -148,6 +148,9 @@ method justReceivedDrop MicroBlocksLibraryInfoDialog aHandler {
 			addDependency propertiesFrame dep
 			fixLayout this
 		}
+	} (or (isAnyClass aHandler 'ColorPicker' 'Monitor') (hasField aHandler 'window')) {
+		addPart (morph (global 'page')) (morph aHandler)
+		return
 	}
 	animateBackToOldOwner (hand (global 'page')) (morph aHandler)
 }
@@ -334,6 +337,7 @@ method initialize MicroBlocksLibraryItemMorph aName anItemViewer forEditing clic
 }
 
 method itemName MicroBlocksLibraryItemMorph { return itemName }
+
 method clicked MicroBlocksLibraryItemMorph { if (notNil onClick) { call onClick } }
 method justDropped MicroBlocksLibraryItemMorph aHand { itemDropped itemViewer this aHand }
 
