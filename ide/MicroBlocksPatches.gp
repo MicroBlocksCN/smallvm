@@ -801,7 +801,7 @@ method blockColorForCategory AuthoringSpecs cat {
   } ('Pins' == cat) { return (colorHSV 195 0.45 0.60)
   } ('Comm' == cat) {  return (colorHSV 14 0.75 0.80)
   } ('Control' == cat) { return (colorHSV 36 0.70 0.87)
-  } ('Math' == cat) { return (colorHSV 100 0.75 0.65)
+  } ('Operators' == cat) { return (colorHSV 100 0.75 0.65)
   } ('Variables' == cat) { return (colorHSV 26 0.80 0.83)
   } ('Data' == cat) { return (colorHSV 345 0.60 0.77)
   } ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
@@ -929,7 +929,7 @@ method processEvent Keyboard evt {
 
 // "say" block formatting
 
-method initialize SpeechBubble someData bubbleWidth dir {
+method initialize SpeechBubble someData bubbleWidth dir isErrorFlag {
   scale = (global 'scale')
   font = 'Arial'
   fontSize = (18 * scale)
@@ -940,6 +940,8 @@ method initialize SpeechBubble someData bubbleWidth dir {
   if (isNil bubbleWidth) {bubbleWidth = (175 * scale) }
   if (isNil dir) {dir = 'right'}
   direction = dir
+  isError = false
+  if (true == isErrorFlag) { isError = true }
 
   setFont font fontSize
   if (isClass someData 'Boolean') {

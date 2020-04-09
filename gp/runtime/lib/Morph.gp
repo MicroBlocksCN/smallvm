@@ -850,7 +850,7 @@ method removeHighlight Morph {
 
 // hint/talk bubble
 
-method showHint Morph hintData bubbleWidth isHint {
+method showHint Morph hintData bubbleWidth isHint isError {
   if (isNil isHint) { isHint = true }
   if (or (isNil hintData) ('' == hintData)) {return nil}
   if (isNil owner) {return nil} // morph deleted before hint was scheduled to appear (e.g. a menu)
@@ -862,7 +862,7 @@ method showHint Morph hintData bubbleWidth isHint {
   vis = (visibleBounds this)
   scale = (global 'scale')
   overlap = (scale * 7)
-  bubble = (newBubble hintData bubbleWidth 'right')
+  bubble = (newBubble hintData bubbleWidth 'right' isError)
   rightSpace = ((right (morph page)) - (right vis))
   setBottom (morph bubble) (vCenter vis)
   if (rightSpace > (width (morph bubble))) {
@@ -874,6 +874,10 @@ method showHint Morph hintData bubbleWidth isHint {
   }
   showHint page bubble isHint
   return bubble
+}
+
+method showError Morph errorMsg {
+  showHint this errorMsg 300 true true
 }
 
 method say Morph s {

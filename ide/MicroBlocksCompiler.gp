@@ -91,7 +91,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'stopAll'			'stop other tasks')
 		'Control-Advanced'
 		(array 'r' 'getLastBroadcast'	'last message')
-	'Math'
+	'Operators'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
 		(array 'r' '*'					'_ × _' 'num num' 10 2)
@@ -114,7 +114,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'not'				'not _' 'bool' true)
 		(array 'r' 'and'				'_ and _' 'bool bool' true false)
 		(array 'r' 'or'					'_ or _ ' 'bool bool' true false)
-	'Math-Advanced'
+		'-'
+		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 'Rósza' 'string')
+	'Operators-Advanced'
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 		'-'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
@@ -141,8 +143,6 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' 'smiles' 2 5)
-		'-'
-		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 'Rósza' 'number')
 	'Data-Advanced'
 		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' nil ' ')
 		'-'
