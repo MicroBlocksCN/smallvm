@@ -176,16 +176,16 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[sensors:tiltX]'		'tilt x')
 		(array 'r' '[sensors:tiltY]'		'tilt y')
 		(array 'r' '[sensors:tiltZ]'		'tilt z')
-	'Prims-Variables'
+	'Prims-Variables (not in palette)'
 		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
 		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
 		(array ' ' '[vars:setVarNamed]'	'set variable named _ to _' 'str auto' 'var' 0)
-	'Prims-JSON'
+	'Prims-JSON (not in palette)'
 		(array 'r' '[misc:jsonGet]'		'json _ . _' 'str str' '{ "x": 1,  "y": [41, 42, 43] }' 'y.2')
 		(array 'r' '[misc:jsonCount]'	'json count _ . _' 'str str' '[1, [4, 5, 6, 7], 3]' '')
 		(array 'r' '[misc:jsonValueAt]'	'json value _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2)
 		(array 'r' '[misc:jsonKeyAt]'	'json key _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' ''  2)
-	'Prims-Binary Data'
+	'Prims-Binary Data (not in palette)'
 		(array 'r' '[misc:byteCount]'	'byte count _' 'str' 'binary data')
 		(array 'r' '[misc:byteAt]'		'byte _ of _' 'num str' 1 'binary data')
 	'Prims-Advanced (not in palette)'
@@ -247,9 +247,6 @@ Access-Control-Allow-Origin: *')
 		(array 'r' '[radio:packetReceive]'			'radio receive packet _' 'str')
 		(array ' ' '[radio:packetSend]'				'radio send packet _' 'str')
 		(array ' ' '[radio:disableRadio]'			'disable radio')
-
-	'Disabled (does not work)'
-		(array ' ' 'ifElse'					'if _ _ else _' 'bool cmd cmd')
 	)
 }
 
@@ -534,8 +531,6 @@ method instructionsForCmd SmallCompiler cmd {
 		return (instructionsForForever this args)
 	} ('if' == op) {
 		return (instructionsForIf this args)
-	} ('ifElse' == op) {
-		return (instructionsForIfElse this (toList args))
 	} ('repeat' == op) {
 		return (instructionsForRepeat this args)
 	} ('repeatUntil' == op) {
@@ -597,12 +592,6 @@ method instructionsForIf SmallCompiler args {
 		atPut jumpInstruction 2 (instructionCount - ((at jumpInstruction 2) + 1)) // fix jump offset
 	}
 	return result
-}
-
-method instructionsForIfElse SmallCompiler args {
-	if ((count args) != 3) { error 'compiler error: expected three arguments to ifElse' }
-	addAt args 3 true // insert true before 'else' case
-	return (instructionsForIf this args)
 }
 
 method instructionsForForever SmallCompiler args {
