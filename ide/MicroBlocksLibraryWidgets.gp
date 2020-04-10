@@ -23,6 +23,8 @@ to pickLibraryToOpen anAction defaultPath {
 
 method initialize MicroBlocksLibraryImportDialog anAction defaultPath {
 	filePicker = (initialize (new 'FilePicker') anAction defaultPath (array '.ubl'))
+	onSelectCloud filePicker (action 'promptLibUrl' this)
+
 	morph = (morph filePicker)
 	window = (window filePicker)
 	setHandler morph this
@@ -53,6 +55,12 @@ method updateLibraryInfo MicroBlocksLibraryImportDialog selectedPath {
 	loadFromCmds library cmdList
 
 	setLibrary propertiesFrame library
+}
+
+method promptLibUrl MicroBlocksLibraryImportDialog {
+	url = (prompt (global 'page') 'Library URL?' 'http://')
+	result = (importLibraryFromUrl (scripter (smallRuntime)) url)
+	if result { destroy morph }
 }
 
 method redraw MicroBlocksLibraryImportDialog {

@@ -1015,6 +1015,30 @@ method importLibraryFromFile MicroBlocksScripter fileName data {
   importLibraryFromString this (toString data) libName fileName
 }
 
+method importLibraryFromUrl MicroBlocksScripter fullUrl {
+	if (beginsWith fullUrl 'http://') {
+		url = (substring fullUrl 8)
+	} (beginsWith fullUrl 'https://') {
+		// HTTPS is not supported, but we'll try to fetch the lib via HTTP, just
+		// in case the remote server supports both SSL and plain HTTP
+		url = (substring fullUrl 9)
+	} else {
+		url = fullUrl
+	}
+	host = (substring url 1 ((findFirst url '/') - 1))
+	libPath = (substring url (findFirst url '/'))
+	libName = (substring libPath ((findLast libPath '/') + 1) ((findLast libPath '.') - 1))
+	libSource = (httpGet host libPath)
+
+	if (isNil libSource) {
+		error 'Could not fetch library'
+		return false
+	}
+
+	importLibraryFromString this libSource libName libPath
+	return true
+}
+
 method importLibraryFromString MicroBlocksScripter data libName fileName {
 	addLibraryFromString mbProject (toString data) libName fileName
 	// update library list and select the new library

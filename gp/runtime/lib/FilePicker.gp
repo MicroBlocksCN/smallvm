@@ -1,6 +1,6 @@
 // FilePicker.gp - Dialog box for specifying files for opening or saving.
 
-defineClass FilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer onFileSelect
+defineClass FilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer onFileSelect cloudAction
 
 to pickFileToOpen anAction defaultPath extensionList {
   // Pick an existing file to open starting at defaultPath, if provided. If anAction is not
@@ -221,7 +221,7 @@ method addShortcutButtons FilePicker {
 	(not (contains hidden 'Libraries'))
 	(not forSaving)
 	(isClass extensions 'Array')
-	(contains extensions '.ulib'))
+	(contains extensions '.ubl'))
   showDesktop = (not (contains hidden 'Desktop'))
   showDownloads = (and
 	(not (contains hidden 'Downloads'))
@@ -259,6 +259,10 @@ method addShortcutButtons FilePicker {
   }
   if (and showComputer ('Browser' == (platform)) (browserIsChromebook)) {
 	addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
+	buttonY += dy
+  }
+  if showLibraries {
+	addIconButton this buttonX buttonY 'cloudIcon' (action 'cloudAction' this) 'Cloud'
 	buttonY += dy
   }
 
@@ -317,6 +321,14 @@ method textButton FilePicker x y label selectorOrAction {
 }
 
 // actions
+
+method onSelectCloud FilePicker anAction {
+	cloudAction = anAction
+}
+
+method cloudAction FilePicker {
+	call cloudAction
+}
 
 method onFileSelect FilePicker anAction {
 	onFileSelect = anAction
@@ -779,5 +791,28 @@ gyzGE39/BlLCXZmbk9VxF+JtEriz342xOKrKGDMiBx5znnn6JGVYnm6WA+9Lr6AFLUHuilEQN/IomASh
 haEoVsGiMq6sgSdEA1Wje3vzOC7HP/+9FO7V63x/YXUtuWPsQYKcBjwWtN0ExVCDgcJeVQqC6lL/noNZ
 cmzKtKSg0CVTkpCKs9idCDKiEDmRV0qELxEIwJW3fPdW4FvAKv+7+u3Je37yc2GZhhvAEWALyO9zYwde
 A14GzgpLFgaWqx9fB/R+VgANWLw+frD1bzxSo16udU7bAAAAAElFTkSuQmCC'
+  return (readFrom (new 'PNGReader') (base64Decode data))
+}
+
+method cloudIcon FilePickerIcons {
+  data = '
+iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAO
+xAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAOLSURBVFiF7Zdd
+SFt3GMZ/OYkn5iSmakz8KFptaUdRV620nVDGWhnUXqxjFGu3MuZFYetF2dwn26D76GAM1m0Xc8IGzhXG
+1nadgyDC0Ar9SFv8mHVS6+o2nTExa03SRBOTnHN2UZQVjbZRc7M9cK6eF57f/7wv7/8c+F//dWkAgySl
+vqEXU6pUVUmZMzRCLDwTuRAKzRwHAqsGsCZNOlO5vXjvs8/sMaTotHNGTFY4ffZcuL2zx+EPTO1eNYCU
+FF34elezPs0kzTNjskxhcW00Go0dBZQVyvQDvcAQ3G2B6vrtLIKgWbC64aufwtcHRyIrFI4/EORq16BW
+luX2O4HpmiUBVkMzM1Gef/Hj6fOX+k/qAL7+tg1722XGnH8nBWBtnpXHdj4sdV745YBOFEVa7Fc49nY9
++fl5SQEYHXXy3gefEosp6RqDIVXt62ojLzc7KeGzGnO6Kd9efXcI79waQBCEpAIoioI5qxjd/RR7b7vo
+6/4Zj/sPNIKA1baOLRWPk2HJXTbIkse+2HmapsZ6ZDlG2bY9lJZXoSgyTY31XOw8haqqAEwFfbicNwkG
+vQ8EsGgLuhx2eq62crDufdLMlnu8YGCS75rfYV1RKW7X70yMD5ORmYPP6yHLlk/1viPYcoriBs+2IC5A
+aDrAFycOU/fCJ3FftW/STXPjq+ysqqV8WzWCIKAoMv29HXS0NfF03XGy89YnBtDf28GNAQf7D70V9xSL
+qb+3g26HneeOnFgUIO4MeCdd2HIKEwoHKCnbhc/nwe9bfLnFH0IVIpFQwgAajYa1BQ/R8v1HOP+68WAA
+f97so+dKK5s2P5IwAMBTB9+kYsdeTn3zLiPDffcHoCgy9h8/48na1ygoKlkWgFarpaRsF0/UvExry+co
+yvwbfR6Ae3wYvV6icMOWZYX/Wxs2ViBoBW55RpcGCAa8rEm3rlj4rNIzshccyHkAmZZcPBMjqOpKfQCB
+qip43CNkWnKWBsiyFWAyZdB9uXXFALocdszpVizW/HnegpfRvppXOPnl60zeHqe0fDepBmNCweHQFNd6
+2xkauMShwx8uWBN3E04H/TjO/8DwUDfRSDghAFFvYP3GrVQ+uh/JaL7HW3IVr7bmVrEoimG/f9X+O+LK
+7w+gF8WQNi3NuPnar4ObKnds1ZnNpqSEjzndHH3pWMjlmjgDIJlMUoPRKHkBNRmP0Sh5TSapAZD+AUvT
+gpB3s1vqAAAAAElFTkSuQmCC'
   return (readFrom (new 'PNGReader') (base64Decode data))
 }
