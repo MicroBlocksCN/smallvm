@@ -6,18 +6,15 @@ tags event button double long press
 
 variables _buttons
 
-	spec ' ' '_buttonLoop' '_buttonLoop'
-	spec 'r' '_read button' '_read button _' 'auto' 10
 	spec 'r' 'button double pressed' 'button _ double pressed' 'auto' 'A'
 	spec 'r' 'button long pressed' 'button _ long pressed' 'auto' 5
 	spec 'r' 'button pressed' 'button _ pressed' 'auto' 5
 	spec 'r' '_button' '_button _' 'auto' 10
+	spec ' ' '_updateButtons' '_updateButtons'
+	spec 'r' '_read button' '_read button _' 'auto' 10
 
 to '_button' 'pin or name' {
-  if (_buttons == 0) {
-    _buttons = ('[data:makeList]')
-    sendBroadcastSimple '_buttonLoop'
-  }
+  '_updateButtons'
   for 'each button' _buttons {
     if ((at 1 (v 'each button')) == (v 'pin or name')) {return (v 'each button')}
   }
@@ -27,43 +24,6 @@ to '_button' 'pin or name' {
   return (v 'new button')
 }
 
-to '_buttonLoop' {
-  forever {
-    for button _buttons {
-      local 'currently pressed' ('_read button' (at 1 button))
-      local 'previous state' (at 4 button)
-      if (and ((v 'previous state') == 'waiting') (v 'currently pressed')) {
-        comment 'save state change time'
-        atPut 2 button (millisOp)
-        atPut 3 button (v 'currently pressed')
-        atPut 4 button 'pressed'
-      } (and ((v 'previous state') == 'pressed') (not (v 'currently pressed'))) {
-        local 'press time' ((millisOp) - (at 2 button))
-        comment 'There''s been a press. Let''s check how long it was.'
-        if ((v 'press time') > 500) {
-          atPut 4 button 'long press'
-        } ((v 'press time') > 250) {
-          atPut 4 button 'single press'
-        } else {
-          comment 'This is an internal intermediate state.
-It could turn out to be a single press or a double press.'
-          atPut 2 button (millisOp)
-          atPut 4 button 'short press'
-        }
-      } (and ((v 'previous state') == 'short press') (v 'currently pressed')) {
-        atPut 4 button 'double press'
-      } (and (and ((v 'previous state') == 'short press') (not (v 'currently pressed'))) (((millisOp) - (at 2 button)) > 250)) {
-        atPut 4 button 'single press'
-      } (and ((v 'previous state') == 'double press handled') (not (v 'currently pressed'))) {
-        comment 'We only go back to "waiting" after a double press if the event has been handled
-and the user has released the button. Otherwise we''ll cause false "single press"
-positives.'
-        atPut 4 button 'waiting'
-      }
-    }
-  }
-}
-
 to '_read button' 'pin or name' {
   if ((v 'pin or name') == 'A') {
     return (buttonA)
@@ -71,6 +31,42 @@ to '_read button' 'pin or name' {
     return (buttonB)
   } else {
     return (digitalReadOp (v 'pin or name'))
+  }
+}
+
+to '_updateButtons' {
+  if (_buttons == 0) {_buttons = ('[data:makeList]')}
+  for button _buttons {
+    local 'currently pressed' ('_read button' (at 1 button))
+    local 'previous state' (at 4 button)
+    if (and ((v 'previous state') == 'waiting') (v 'currently pressed')) {
+      comment 'save state change time'
+      atPut 2 button (millisOp)
+      atPut 3 button (v 'currently pressed')
+      atPut 4 button 'pressed'
+    } (and ((v 'previous state') == 'pressed') (not (v 'currently pressed'))) {
+      local 'press time' ((millisOp) - (at 2 button))
+      comment 'There''s been a press. Let''s check how long it was.'
+      if ((v 'press time') > 500) {
+        atPut 4 button 'long press'
+      } ((v 'press time') > 250) {
+        atPut 4 button 'single press'
+      } else {
+        comment 'This is an internal intermediate state.
+It could turn out to be a single press or a double press.'
+        atPut 2 button (millisOp)
+        atPut 4 button 'short press'
+      }
+    } (and ((v 'previous state') == 'short press') (v 'currently pressed')) {
+      atPut 4 button 'double press'
+    } (and (and ((v 'previous state') == 'short press') (not (v 'currently pressed'))) (((millisOp) - (at 2 button)) > 250)) {
+      atPut 4 button 'single press'
+    } (and ((v 'previous state') == 'double press handled') (not (v 'currently pressed'))) {
+      comment 'We only go back to "waiting" after a double press if the event has been handled
+and the user has released the button. Otherwise we''ll cause false "single press"
+positives.'
+      atPut 4 button 'waiting'
+    }
   }
 }
 

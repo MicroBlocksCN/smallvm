@@ -313,7 +313,7 @@ to addBooleanProperty varName title type optionalReadOnly {
   if ((pushArgCount) > 3) {
     readonly = optionalReadOnly
   }
-  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"boolean","@type":"' type '",' '"readonly":' readonly)
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"boolean","@type":"' type '",' '"readOnly":' readonly)
 }
 
 to addNumProp varName title min max type optionalReadOnly {
@@ -321,7 +321,7 @@ to addNumProp varName title min max type optionalReadOnly {
   if ((pushArgCount) > 5) {
     readonly = optionalReadOnly
   }
-  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"number","@type":"' type '",' '"readonly":' readonly ',"minimum":' min ',"maximum":' max)
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"number","@type":"' type '",' '"readOnly":' readonly ',"minimum":' min ',"maximum":' max)
 }
 
 to addStringProperty varName title type optionalReadOnly {
@@ -329,7 +329,7 @@ to addStringProperty varName title type optionalReadOnly {
   if ((pushArgCount) > 3) {
     readonly = optionalReadOnly
   }
-  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"string","@type":"' type '",' '"readonly":' readonly)
+  '_add or replace property' varName ('[data:join]' '"title":"' title '","type":"string","@type":"' type '",' '"readOnly":' readonly)
 }
 
 to 'event definitions JSON' {
@@ -405,8 +405,8 @@ to 'set thing name to' title {
 to 'start WebThing server' {
   if (_WoT_title == 0) {'set thing name to' 'MicroBlocks thing'}
   if (_WoT_capability == 0) {'set thing capability to' ''}
-  if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
   if ('[net:hasWiFi]') {
+    if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
     sendBroadcastSimple '_WoT_start_server'
   } else {
     '_thing description' = ('thing description JSON')
@@ -418,11 +418,15 @@ to 'thing description JSON' {
 }
 
 to 'trigger event' 'event name' {
-  '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
+  if ('[net:hasWiFi]') {
+    '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
+  } else {
+    sendBroadcastSimple (v 'event name')
+  }
 }
 
 
-module Wifi Comm
+module WiFi Comm
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
