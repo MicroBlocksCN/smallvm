@@ -749,7 +749,7 @@ method importDependency MicroBlocksModule lib scripter {
 			error 'HTTPS protocol is currently unsupported'
 		} else {
 			// fetch library from remote URL
-			importLibraryFromUrl scripter url
+			importLibraryFromUrl scripter lib
 		}
 	} (beginsWith lib '/') {
 		// fetch library from [MicroBlocksFolder]/Library

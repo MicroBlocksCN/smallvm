@@ -249,14 +249,14 @@ method queryNewItem MicroBlocksListItemViewer {
 
 method removeItem MicroBlocksListItemViewer itemName {
 	for item contents {
-		if ((call itemRenderer item) == itemName) {
+		if ((renderedItemName this item) == itemName) {
 			contents = (copyWithout contents item)
 		}
 	}
 }
 
 method addItem MicroBlocksListItemViewer item {
-	if (not (contains contents (call itemRenderer item))) {
+	if (not (contains contents (renderedItemName this item))) {
 		contents = (copyWith contents item)
 		buildListView this
 		fixLayout this
@@ -280,6 +280,14 @@ method itemDropped MicroBlocksListItemViewer itemMorph aHand {
 	}
 }
 
+method renderedItemName MicroBlocksListItemViewer item {
+	if (notNil itemRenderer) {
+		return (call itemRenderer item)
+	} else {
+		return item
+	}
+}
+
 method buildListView MicroBlocksListItemViewer {
 	size = ((global 'scale') * 10)
 	removeAllParts morph
@@ -287,12 +295,7 @@ method buildListView MicroBlocksListItemViewer {
 		addPart morph (morph (newText label 'Arial' size (gray 0) 'center' nil 0 0 5 3))
 	}
 	for item contents {
-		if (notNil itemRenderer) {
-			itemText = (call itemRenderer item)
-		} else {
-			itemText = item	
-		}
-		addPart morph (morph (newLibraryItem itemText this editFlag))
+		addPart morph (morph (newLibraryItem (renderedItemName this item) this editFlag))
 	}
 	if editFlag {
 		addPart morph (morph (newLibraryItem '+' this false (action 'queryNewItem' this)))
