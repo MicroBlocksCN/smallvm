@@ -11,5 +11,7 @@ Funding source: MicroBlocks donation funds
 | 07/04/2020 | 4 | Tag viewer widget for library dialogs shows tag list and allows adding new tags to libraries. | 8372ebd
 | 08/04/2020 | 4 | Adding and removing tags, and saving library author and version now working. | 225e752
 | 09/04/2020 | 5 | Graphically adding and removing dependencies working. | 70a291e
+| 10/04/2020 | 4 | Added UI to fetch lib from network. | 3840665
+| 11/04/2020 | 1 | New filepicker icons | b359dca
 
 | **Total**  | 30 | |
