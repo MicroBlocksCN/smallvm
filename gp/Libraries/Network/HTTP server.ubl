@@ -7,6 +7,8 @@ tags http network
 
 	spec ' ' '[net:startHttpServer]' 'start HTTP server'
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
+	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
+Access-Control-Allow-Origin: *'
 	spec 'r' 'body of request' 'body of request _' 'auto' ''
 	spec 'r' 'path of request' 'path of request _' 'auto' ''
 	spec 'r' 'request method' 'method of request _' 'auto' ''
