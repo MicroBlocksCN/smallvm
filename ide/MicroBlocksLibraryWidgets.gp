@@ -58,8 +58,13 @@ method updateLibraryInfo MicroBlocksLibraryImportDialog selectedPath {
 }
 
 method promptLibUrl MicroBlocksLibraryImportDialog {
-	url = (prompt (global 'page') 'Library URL?' 'http://')
-	result = (importLibraryFromUrl (scripter (smallRuntime)) url)
+	page = (global 'page')
+	url = (prompt page 'Library URL?' 'http://')
+	if (and (notEmpty url) (endsWith url '.ubl') ((findLast url '/') > 10)) {
+		result = (importLibraryFromUrl (scripter (smallRuntime)) url)
+	} else {
+		inform page 'Invalid URL'
+	}
 	if result { destroy morph }
 }
 
