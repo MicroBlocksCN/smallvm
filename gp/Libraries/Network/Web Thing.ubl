@@ -1,8 +1,8 @@
 module 'Web Thing' Comm
 author MicroBlocks
-version 3 0 
-depends 'Network/HTTP server' 'Network/WiFi' 
-tags iot mozilla webthing wot 
+version 3 0
+depends 'HTTP server' 'WiFi'
+tags iot mozilla webthing wot
 description 'Build Web Things as specified by the Mozilla WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Mozilla Web of Things gateway.'
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
 

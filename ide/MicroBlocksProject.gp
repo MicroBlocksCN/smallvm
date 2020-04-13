@@ -654,7 +654,7 @@ method lookForNewerkVersion MicroBlocksModule {
 
 	// Find the embedded lib path
 	for filePath (listEmbeddedFiles) {
-		if (endsWith (withoutExtension filePath) moduleName) {
+		if (endsWith filePath (join moduleName '.ubl')) {
 
 			cmdList = (parse (readEmbeddedFile filePath))
 			candidate = (newMicroBlocksModule moduleName)
@@ -785,18 +785,19 @@ method importDependency MicroBlocksModule lib scripter {
 	// TODO Make sure we comply with version requirement (ex. >2.3, =1.5)
 
 	if (beginsWith lib 'http') {
-		if (beginsWith lib 'https') {
-			error 'HTTPS protocol is currently unsupported'
-		} else {
-			// fetch library from remote URL
-			importLibraryFromUrl scripter lib
-		}
+		// fetch library from remote URL
+		importLibraryFromUrl scripter lib
 	} (beginsWith lib '/') {
 		// fetch library from [MicroBlocksFolder]/Library
 		importLibraryFromFile scripter (join (gpFolder) '/Libraries' lib '.ubl')
 	} else {
 		// load embedded library
-		importLibraryFromFile scripter (join '//Libraries/' lib '.ubl')
+		for filePath (listEmbeddedFiles) {
+			if (endsWith filePath (join lib '.ubl')) {
+				importLibraryFromFile scripter (join '//' filePath)
+				return
+			}
+		}
 	}
 }
 

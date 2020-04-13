@@ -2,7 +2,7 @@ module 'HTTP server' Comm
 author MicroBlocks
 version 1 0
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
-depends 'Network/WiFi'
+depends 'WiFi'
 tags http network
 
 	spec ' ' '[net:startHttpServer]' 'start HTTP server'
