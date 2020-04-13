@@ -1,7 +1,7 @@
 module WiFi Comm
 author MicroBlocks
 version 1 0
-description 'Connect to a Wifi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.'
+description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.'
 tags communication network
 
 
