@@ -183,7 +183,8 @@ method loadFromString MicroBlocksProject s {
 			loadFromCmds main cmdList
 			isFirst = false
 		} else {
-			lib = (loadFromCmds (newMicroBlocksModule) cmdList)
+			// Load libraries and perform a version check for each one
+			lib = (loadFromCmds (newMicroBlocksModule) cmdList true)
 			atPut libraries (moduleName lib) lib
 		}
 	}
@@ -619,7 +620,7 @@ method needsQuotes MicroBlocksModule s {
 
 // loading
 
-method loadFromCmds MicroBlocksModule cmdList {
+method loadFromCmds MicroBlocksModule cmdList versionChecking {
 	loadModuleNameAndCategory this cmdList
 	loadVersion this cmdList
 	loadAuthor this cmdList
@@ -630,7 +631,46 @@ method loadFromCmds MicroBlocksModule cmdList {
 	loadBlockList this cmdList
 	loadFunctions this cmdList
 	loadScripts this cmdList
+	if versionChecking {
+		newerVersion = (lookForNewerkVersion this)
+		if (and
+			(notNil newerVersion)
+			(confirm (global 'page') nil
+				(join 'Found a newer version of ' moduleName (newline)
+					'Do you want me to update the one in the project?'))
+		){
+			return newerVersion
+		}
+	}
 	return this
+}
+
+method lookForNewerkVersion MicroBlocksModule {
+	// Look for an embedded library with the same name, and see if it's newer
+	// than the one we've just loaded
+	if (moduleName == 'main') {
+	  return nil
+	}
+
+	// Find the embedded lib path
+	for filePath (listEmbeddedFiles) {
+		if (endsWith (withoutExtension filePath) moduleName) {
+
+			cmdList = (parse (readEmbeddedFile filePath))
+			candidate = (newMicroBlocksModule moduleName)
+			loadFromCmds candidate cmdList false // don't version-check these!
+			v1 = version
+			v2 = (version candidate)
+
+			if (or
+				((at v2 1) > (at v1 1))
+				(and ((at v2 1) == (at v2 1)) ((at v2 2) > (at v2 2)))
+				) {
+				return candidate
+			}
+		}
+	}
+	return nil
 }
 
 method loadModuleNameAndCategory MicroBlocksModule cmdList {

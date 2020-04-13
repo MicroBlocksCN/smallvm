@@ -200,10 +200,12 @@ method fixLayout MicroBlocksLibraryInfoDialog {
 
 // Horizontal list item viewer and editor
 // --------------------------------------
-// Embeddable morph that shows a list of items and lets you remove them or add new ones.
+// Embeddable morph that shows a list of items and lets you remove them or add
+// new ones.
 // When editable, remove an item by dragging it out of the container window.
-// When used for libraries, drag and drop a library from the palette to the window to add
-// it as a dependency.
+// When used for libraries, drag and drop a library from the palette to the
+// window to add it as a dependency, or click on the [ + ] button to add it by
+// its explicit path (can be a URL).
 // When used for tags, click on the [ + ] button to add a new tag.
 
 defineClass MicroBlocksListItemViewer morph box contents newItemQueryString editFlag window itemRenderer label
