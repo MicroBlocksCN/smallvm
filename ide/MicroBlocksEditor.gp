@@ -462,10 +462,12 @@ method readUserPreferences MicroBlocksEditor {
 }
 
 method applyUserPreferences MicroBlocksEditor {
-  if ('Mac' == (platform)) { return } // workaround for Catalina startup crash
-  prefs = (readUserPreferences this)
-  // for now, only the locale is saved into the preferences file
-  setLanguage this (at prefs 'locale')
+	if ('Mac' == (platform)) { return } // workaround for Catalina startup crash
+	prefs = (readUserPreferences this)
+	// for now, only the locale is saved into the preferences file
+	if (notNil (at prefs 'locale')) {
+		setLanguage this (at prefs 'locale')
+	}
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {

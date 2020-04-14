@@ -101,7 +101,7 @@ method fixLayout MicroBlocksLibraryImportDialog {
 // Library Info Dialog
 // -------------------
 // Inspect and edit libraries. Shows all library fields: name, author, version,
-// dependencies, tags, and description.
+// dependencies, tags, source and description.
 
 defineClass MicroBlocksLibraryInfoDialog morph window frame library propertiesFrame editFlag saveButton cancelButton
 
@@ -376,7 +376,7 @@ method handLeave MicroBlocksLibraryItemMorph aHand {
 // ------------------------
 // Embeddable frame that displays library information
 
-defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText depsViewer versionText versionFrame authorText authorFrame tagViewer editFlag
+defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText sourceFrame sourceText depsViewer versionText versionFrame authorText authorFrame tagViewer editFlag
 
 to newLibraryPropertiesFrame lib forEditing win {
 	return (initialize (new 'MicroBlocksLibraryPropertiesFrame') lib forEditing win)
@@ -395,6 +395,11 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 	addPart (morph descriptionFrame) (morph descriptionText)
 
 	addPart morph (morph descriptionFrame)
+
+	sourceText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
+	sourceFrame = (newBox nil (gray 255) 0)
+	addPart (morph sourceFrame) (morph sourceText)
+	addPart morph (morph sourceFrame)
 
 	versionText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
 	if editFlag { setEditRule versionText 'editable' }
@@ -463,6 +468,21 @@ method saveChanges MicroBlocksLibraryPropertiesFrame {
 
 method updateFields MicroBlocksLibraryPropertiesFrame {
 	setText descriptionText (description library)
+
+	path = (path library)
+	if (and editFlag (notNil path)) {
+		if (beginsWith path '/') {
+			setText sourceText (join (gpFolder) '/Libraries' path '.ubl')
+		} (beginsWith path 'http://') {
+			setText sourceText path
+		} else {
+			print path
+			setText sourceText 'built-in library'
+		}
+	} else {
+		setText sourceText ''
+	}
+
 	setItemRenderer depsViewer (action 'dependencyName' library)
 	setLabel depsViewer 'Depends:'
 	setContents depsViewer (dependencies library)
@@ -515,6 +535,17 @@ method fixLayout MicroBlocksLibraryPropertiesFrame {
 	setLeft (morph authorFrame) ((right (morph versionFrame)) + margin)
 	setBottom (morph authorFrame) (bottom (morph versionFrame))
 	descriptionHeight = ((descriptionHeight - (height (morph versionFrame))) - margin)
+
+	// source
+	if editFlag {
+		setExtent (morph sourceFrame) (width morph) (height (morph sourceText))
+		setLeft (morph sourceFrame) (left morph)
+		setBottom (morph sourceFrame) ((top (morph versionFrame)) - margin)
+		descriptionHeight = ((descriptionHeight - (height (morph sourceFrame))) - margin)
+		show (morph sourceFrame)
+	} else {
+		hide (morph sourceFrame)
+	}
 
 	// description
 	setPosition (morph descriptionFrame) (left morph) (top morph)

@@ -1054,7 +1054,7 @@ method importLibraryFromUrl MicroBlocksScripter fullUrl {
 		return false
 	}
 
-	importLibraryFromString this libSource libName libPath
+	importLibraryFromString this libSource libName fullUrl
 	return true
 }
 
