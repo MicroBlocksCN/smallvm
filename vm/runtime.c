@@ -450,8 +450,7 @@ static void waitForOutbufBytes(int bytesNeeded) {
 static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Send a value message of the given type for the given chunkOrVarIndex.
 	// Data is: <type (1 byte)><...data...>
-	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - list
-	// Obsolete type: 5 - array,
+	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - list, 5 - bytearray
 
 	char data[804];
 	int maxBytes = (int) sizeof(data) - 1; // leave room for type byte
@@ -519,11 +518,31 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 				*dst++ = n & 0xFF;
 				*dst++ = (n >> 8) & 0xFF;
 				*dst++ = 0; // send zero items of sublists
+			} else if (ByteArrayType == type) { // bytearray within a list; send bytecount only
+				*dst++ = 5; // item type (5 is bytearray)
+				int n = BYTES(item); // bytecount item
+				*dst++ = n & 0xFF;
+				*dst++ = (n >> 8) & 0xFF;
+				*dst++ = 0; // send zero bytes
 			} else {
 				*dst++ = 0; // item type (0 is unknown)
 			}
 		}
 		sendMessage(msgType, chunkOrVarIndex, (dst - data), data);
+	} else if (IS_TYPE(value, ByteArrayType)) {
+		data[0] = 5; // data type (5 is bytearray)
+		char *dst = &data[1];
+		// total bytecount
+		int byteCount = BYTES(value);
+		*dst++ = byteCount & 0xFF;
+		*dst++ = (byteCount >> 8) & 0xFF;
+		uint8 *bytes = (uint8 *) &FIELD(value, 0);
+		uint8 sendCount = (byteCount < 100) ? byteCount : 100; // send up to 100 bytes
+		*dst++ = sendCount;
+		for (int i = 0; i < sendCount; i++) {
+			*dst++ = bytes[i];
+		}
+		sendMessage(msgType, chunkOrVarIndex, (byteCount + 4), data);
 	}
 }
 

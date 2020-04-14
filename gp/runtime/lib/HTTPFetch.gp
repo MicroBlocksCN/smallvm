@@ -138,7 +138,7 @@ to httpHeaders response {
 to httpPut data host path port contentType {
 	if (isNil path) { path = '/' }
 	if (isNil port) { port = 80 }
-	if (isNil contentType) { contentType = 'text/html' }
+	if (isNil contentType) { contentType = 'application/octet-stream' }
 	socket = (openClientSocket host port)
 	if (isNil socket) { return '' }
 	nl = (string 13 10)
@@ -146,16 +146,27 @@ to httpPut data host path port contentType {
 		'PUT ' path ' HTTP/1.1' nl
 		'Host: ' host nl
 		'Content-type: ' contentType nl
-		'Content-length: ' (toString (count data)) nl nl
-		data)
+		'Content-length: ' (toString (count data)) nl nl)
+	request = (join (toBinaryData request) (toBinaryData data))
 
-	writeSocket socket request
-	waitMSecs 1000 // wait a bit
+	// send the request, including body data, if any
+	while ((byteCount request) > 0) {
+		written = (writeSocket socket request)
+		if (0 == written) {
+			waitMSecs 10 // wait a bit
+		} (written < 0) {
+			request = (toBinaryData '') // socket closed
+		} else {
+			request = (copyFromTo request (written + 1))
+		}
+	}
+
 	response = (list)
 	count = 1 // start loop
 	while (count > 0) {
 		chunk = (readSocket socket)
-		count = (byteCount chunk)
+		count = 0
+		if (notNil chunk) { count = (byteCount chunk) }
 		if (count > 0) {
 			add response chunk
 			waitMSecs 50

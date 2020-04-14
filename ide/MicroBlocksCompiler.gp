@@ -149,8 +149,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[data:unicodeAt]'		'unicode _ of _' 'num str' 2 'cat')
 		(array 'r' '[data:unicodeString]'	'string from unicode _' 'num' 65)
 		'-'
-		(array 'r' 'newList'			'new list length _' 'num' 10)
-		(array 'r' '[data:freeMemory]'	'free memory')
+		(array 'r' 'newList'				'new list length _' 'num' 10)
+		(array 'r' '[data:newByteArray]'	'new byte array length _' 'num' 5)
+		(array 'r' '[data:freeMemory]'		'free memory')
 
 	// The following block specs allow primitives to be rendered correctly
 	// even if the primitive spec was not included in the project or library.
@@ -937,7 +938,7 @@ method addBytesForStringLiteral SmallCompiler s bytes {
 
 	byteCount = (byteCount s)
 	wordCount = (floor ((byteCount + 4) / 4))
-	headerWord = ((wordCount << 4) | stringClassID);
+	headerWord = ((wordCount << 6) | stringClassID);
 	repeat 4 { // add header bytes, little endian
 		add bytes (headerWord & 255)
 		headerWord = (headerWord >> 8)

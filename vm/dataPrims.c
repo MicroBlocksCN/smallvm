@@ -97,6 +97,12 @@ static uint8 * appendUTF8(uint8 *s, int unicode) {
 	return s;
 }
 
+static inline void setByteCountAdjust(OBJ obj, int byteCount) {
+	if (isInt(obj) || isBoolean(obj) || (ByteArrayType != TYPE(obj))) return;
+	int delta = 4 - (byteCount & 3); // # of bytes to subtract from 4 * WORDS(obj)
+	*obj = (((*obj) & (~0x30)) | ((delta & 3) << 4));
+}
+
 // Growable Lists:
 // First field is the item count (N). Items are stored in fields 2..N.
 // Fields N+1..end are available for adding additional items without growing.
@@ -123,8 +129,8 @@ OBJ primFillList(int argCount, OBJ *args) {
 		for (int i = HEADER_WORDS + 1; i < end; i++) ((OBJ *) obj)[i] = value;
 	} else if (IS_TYPE(obj, ByteArrayType)) {
 		if (!isInt(value)) return fail(byteArrayStoreError);
-		uint32 byteValue = obj2int(value);
-		if (byteValue > 255) return fail(byteArrayStoreError);
+		int byteValue = obj2int(value);
+		if ((byteValue < 0) || (byteValue > 255)) return fail(byteArrayStoreError);
 		uint8 *dst = (uint8 *) &FIELD(obj, 0);
 		uint8 *end = dst + (4 * WORDS(obj));
 		while (dst < end) *dst++ = byteValue;
@@ -144,7 +150,7 @@ OBJ primAt(int argCount, OBJ *args) {
 	} else if (IS_TYPE(obj, StringType)) {
 		count = stringSize(obj);
 	} else if (IS_TYPE(obj, ByteArrayType)) {
-		count = 4 * WORDS(obj);
+		count = BYTES(obj);
 	}
 	if (isInt(args[0])) {
 		i = obj2int(args[0]);
@@ -186,7 +192,7 @@ OBJ primAtPut(int argCount, OBJ *args) {
 		count = obj2int(FIELD(obj, 0));
 		if (count >= WORDS(obj)) count = WORDS(obj) - 1;
 	} else if (IS_TYPE(obj, ByteArrayType)) {
-		count = 4 * WORDS(obj);
+		count = BYTES(obj);
 		if (!isInt(value)) return fail(byteArrayStoreError);
 		byteValue = obj2int(value);
 		if (byteValue > 255) return fail(byteArrayStoreError);
@@ -230,7 +236,7 @@ OBJ primLength(int argCount, OBJ *args) {
 	if (IS_TYPE(obj, ListType)) {
 		return FIELD(obj, 0); // actual count stored in first field
 	} else if (IS_TYPE(obj, ByteArrayType)) {
-		return int2obj(4 * WORDS(obj));
+		return int2obj(BYTES(obj));
 	} else if (IS_TYPE(obj, StringType)) {
 		return int2obj(countUTF8(obj2str(obj)));
 	}
@@ -348,6 +354,21 @@ OBJ primCopyFromTo(int argCount, OBJ *args) {
 			memcpy(obj2str(result), obj2str(args[0]) + startOffset, byteCount);
 		}
 		return result;
+	} else if (IS_TYPE(src, ByteArrayType)) {
+		int srcLen = BYTES(src);
+		int endIndex = (argCount > 2) ? obj2int(args[2]) : srcLen;
+		if (endIndex > srcLen) endIndex = srcLen;
+		if (startIndex > endIndex) return newObj(ByteArrayType, 0, falseObj);
+
+		char *base = (char *) (&FIELD(src, 0));
+		int byteCount = (endIndex - startIndex) + 1;
+		int wordCount = (byteCount + 3) / 4;
+		OBJ result = newObj(ByteArrayType, wordCount, falseObj);
+		if (result) {
+			setByteCountAdjust(result, byteCount);
+			memcpy(&FIELD(result, 0), base + startIndex - 1, byteCount);
+		}
+		return result;
 	}
 	return fail(needsIndexable);
 }
@@ -383,6 +404,8 @@ OBJ primJoin(int argCount, OBJ *args) {
 			} else if (isInt(arg) || isBoolean(arg)) {
 				printIntegerOrBooleanInto(arg, buf);
 				resultCount += strlen(buf);
+			} else if (IS_TYPE(arg, ByteArrayType)) {
+				resultCount += BYTES(arg);
 			} else {
 				return fail(joinArgsNotSameType);
 			}
@@ -401,9 +424,36 @@ OBJ primJoin(int argCount, OBJ *args) {
 				count = strlen(buf);
 				memcpy(dst, buf, count);
 				dst += count;
+			} else if (IS_TYPE(arg, ByteArrayType)) {
+				count = BYTES(arg);
+				memcpy(dst, (char *) &FIELD(arg, 0), count);
+				dst += count;
 			}
 		}
 		*dst = 0; // null terminator
+	} else if (IS_TYPE(arg1, ByteArrayType)) {
+		for (int i = 0; i < argCount; i++) {
+			arg = args[i];
+			if (IS_TYPE(arg, ByteArrayType)) {
+				resultCount += BYTES(arg);
+			} else if (IS_TYPE(arg, StringType)) {
+				resultCount += stringSize(arg);
+			} else {
+				return fail(joinArgsNotSameType);
+			}
+		}
+		int wordCount = (resultCount + 3) / 4;
+		result = newObj(ByteArrayType, wordCount, falseObj);
+		if (!result) return result; // allocation failed
+		setByteCountAdjust(result, resultCount);
+
+		char *dst = (char *) &FIELD(result, 0);
+		for (int i = 0; i < argCount; i++) {
+			arg = args[i];
+			int byteCount = IS_TYPE(arg, ByteArrayType) ? BYTES(arg) : stringSize(arg);
+			char *src = (char *) &FIELD(arg, 0);
+			for (int j = 0; j < byteCount; j++) *dst++ = src[j];
+		}
 	} else {
 		fail(needsIndexable);
 	}
@@ -564,6 +614,18 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 	return fail(needsIndexable);
 }
 
+OBJ primNewByteArray(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!isInt(args[0])) return fail(needsIntegerError);
+	int byteCount = obj2int(args[0]);
+	if (byteCount < 0) byteCount = 0;
+
+	int wordCount = (byteCount + 3) /4;
+	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
+	if (result) setByteCountAdjust(result, byteCount);
+	return result;
+}
+
 OBJ primFreeMemory(int argCount, OBJ *args) {
 	return int2obj(wordsFree());
 }
@@ -580,6 +642,7 @@ static PrimEntry entries[] = {
 	{"joinStrings", primJoinStrings},
 	{"unicodeAt", primUnicodeAt},
 	{"unicodeString", primUnicodeString},
+	{"newByteArray", primNewByteArray},
 	{"freeMemory", primFreeMemory},
 };
 

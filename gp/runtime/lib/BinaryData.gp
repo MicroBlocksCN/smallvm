@@ -47,6 +47,10 @@ method toArray BinaryData {
   return result
 }
 
+method toBinaryData BinaryData {
+  return this
+}
+
 method toString BinaryData {
   return (stringFromByteRange this 1 (byteCount this))
 }

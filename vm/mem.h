@@ -66,14 +66,23 @@ typedef int * OBJ;
 // Memory objects start with one or more header words.
 
 #define HEADER_WORDS 1
-#define HEADER(typeID, wordCount) (((wordCount) << 4) | ((typeID) & 0xF))
-#define WORDS(obj) (*((uint32*) (obj)) >> 4)
+#define HEADER(typeID, wordCount) (((wordCount) << 6) | ((typeID) & 0xF))
+#define WORDS(obj) (*((uint32*) (obj)) >> 6)
 #define TYPE(obj) (*((uint32*) (obj)) & 0xF)
 
 static inline int objWords(OBJ obj) {
 	if (isInt(obj) || isBoolean(obj)) return 0;
 	return WORDS(obj);
 }
+
+// ByteArray Objects
+//
+// ByteArray objects use two bits in the object header to adjust their size in bytes so that
+// they are not limited to multiples of four bytes. To get the size in bytes, this field
+// is subtracted from 4 * WORDS(obj).
+
+#define BYTECOUNT_ADJUST(obj) ((*((uint32*) (obj)) >> 4) & 0x3)
+#define BYTES(obj) (4 * WORDS(obj) - BYTECOUNT_ADJUST(obj))
 
 // Types
 
