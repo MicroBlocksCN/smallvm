@@ -189,6 +189,7 @@ char* obj2str(OBJ obj) {
 	if (isBoolean(obj)) return ((trueObj == obj) ? "true" : "false");
 	if (IS_TYPE(obj, StringType)) return (char *) &obj[HEADER_WORDS];
 	if (IS_TYPE(obj, ListType)) return "<List>";
+	if (IS_TYPE(obj, ByteArrayType)) return "<ByteArray>";
 	return "<Object>";
 }
 
