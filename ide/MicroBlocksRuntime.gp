@@ -1128,7 +1128,7 @@ method showResult SmallRuntime chunkID value isError {
 }
 
 method returnedValue SmallRuntime msg {
-	if (byteCount msg < 7) { return nil } // incomplete msg
+	if ((byteCount msg) < 7) { return nil } // incomplete msg
 	type = (byteAt msg 6)
 	if (1 == type) {
 		return (+ ((byteAt msg 10) << 24) ((byteAt msg 9) << 16) ((byteAt msg 8) << 8) (byteAt msg 7))
@@ -1152,9 +1152,20 @@ method returnedValue SmallRuntime msg {
 		add out ']'
 		return (joinStrings out)
 	} (5 == type) {
-		// deprecated...
-		intArraySize = (truncate (((byteCount msg) - 6) / 5))
-		return (join 'list of ' intArraySize ' items')
+		total = (((byteAt msg 8) << 8) | (byteAt msg 7))
+		if (total == 0) { return '(empty byte array)' }
+		sentCount = (byteAt msg 9)
+		out = (list '(')
+		for i sentCount {
+			add out (toString (byteAt msg (8 + i)))
+			add out ', '
+		}
+		if ((count out) > 1) { removeLast out }
+		if (total > sentCount) {
+			add out (join ' ... and ' (total - sentCount) ' more bytes')
+		}
+		add out ')'
+		return (joinStrings out)
 	} else {
 		return (join 'unknown type: ' type)
 	}
@@ -1187,7 +1198,15 @@ method readItems SmallRuntime msg {
 				print 'skipping sublist with non-zero sent items'
 				return result
 			}
-			add result (join '(' n ' item list)')
+			add result (join '[' n ' item list]')
+			i += 4
+		} (5 == itemType) { // bytearray
+			n = (+ ((byteAt msg (i + 2)) << 16) (byteAt msg (i + 1)))
+			if (0 != (byteAt msg (i + 3))) {
+				print 'skipping bytearray with non-zero sent items inside a list'
+				return result
+			}
+			add result (join '(' n ' bytes)')
 			i += 4
 		} else {
 			print 'unknown item type in value message:' itemType
