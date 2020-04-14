@@ -22,7 +22,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion lastProjectFolder lastLibraryFolder
+defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion lastProjectFolder lastLibraryFolder noBoardLibAutoLoad
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -468,18 +468,30 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'locale')) {
 		setLanguage this (at prefs 'locale')
 	}
+	if (notNil (at prefs 'noBoardLibAutoLoad')) {
+		noBoardLibAutoLoad = (at prefs 'noBoardLibAutoLoad')
+	}
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
-  if ('Browser' == (platform)) { return } // skip writing preferences on ChromeOS for now
-  prefs = (readUserPreferences this)
-  if (isNil value) {
-	remove prefs key
-  } else {
-	atPut prefs key value
-  }
-  path = (join (gpFolder) '/preferences.json')
-  writeFile path (jsonStringify prefs)
+	if ('Browser' == (platform)) { return } // skip writing preferences on ChromeOS for now
+	prefs = (readUserPreferences this)
+	if (isNil value) {
+		remove prefs key
+	} else {
+		atPut prefs key value
+	}
+	path = (join (gpFolder) '/preferences.json')
+	writeFile path (jsonStringify prefs)
+}
+
+method setNoBoardLibAutoLoad MicroBlocksEditor flag {
+	noBoardLibAutoLoad = flag
+	saveToUserPreferences this 'noBoardLibAutoLoad' flag
+}
+
+method noBoardLibAutoLoad MicroBlocksEditor {
+	return (noBoardLibAutoLoad == true)
 }
 
 // developer mode
@@ -628,6 +640,12 @@ method contextMenu MicroBlocksEditor {
 	  } else {
 		addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
 	  }
+	}
+	addLine menu
+	if (noBoardLibAutoLoad this) {
+		addItem menu 'enable autoloading board libraries' (action 'setNoBoardLibAutoLoad' this false)
+	} else {
+		addItem menu 'disable autoloading board libraries' (action 'setNoBoardLibAutoLoad' this true)
 	}
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'

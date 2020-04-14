@@ -13,5 +13,6 @@ Funding source: MicroBlocks donation funds
 | 09/04/2020 | 5 | Graphically adding and removing dependencies working. | 70a291e
 | 10/04/2020 | 4 | Added UI to fetch lib from network. | 3840665
 | 11/04/2020 | 1 | New filepicker icons | b359dca
+| 13/04/2020 | 5 | Autoupdate libs in projects upon load, plus a bunch of bugfixes | c18cbf0
 
-| **Total**  | 30 | |
+| **Total**  | 40 | |

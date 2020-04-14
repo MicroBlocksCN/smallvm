@@ -792,12 +792,7 @@ method importDependency MicroBlocksModule lib scripter {
 		importLibraryFromFile scripter (join (gpFolder) '/Libraries' lib '.ubl')
 	} else {
 		// load embedded library
-		for filePath (listEmbeddedFiles) {
-			if (endsWith filePath (join lib '.ubl')) {
-				importLibraryFromFile scripter (join '//' filePath)
-				return
-			}
-		}
+		importEmbeddedLibrary scripter lib
 	}
 }
 

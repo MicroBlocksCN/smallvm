@@ -572,38 +572,38 @@ method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
 	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
+	if (noBoardLibAutoLoad (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
 
 	if ('Citilab ED1' == boardType) {
-		importLibraryFromFile scripter '//Libraries/Citilab ED1/ED1 Buttons.ubl'
-		importLibraryFromFile scripter '//Libraries/Tone.ubl'
-		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
-		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
+		importEmbeddedLibrary scripter 'ED1 Buttons'
+		importEmbeddedLibrary scripter 'Tone'
+		importEmbeddedLibrary scripter 'Basic Sensors'
+		importEmbeddedLibrary scripter 'LED Display'
 	} ('micro:bit' == boardType) {
-		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
-		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
+		importEmbeddedLibrary scripter 'Basic Sensors'
+		importEmbeddedLibrary scripter 'LED Display'
 	} ('Calliope' == boardType) {
-		importLibraryFromFile scripter '//Libraries/Calliope.ubl'
-		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
-		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
+		importEmbeddedLibrary scripter 'Calliope'
+		importEmbeddedLibrary scripter 'Basic Sensors'
+		importEmbeddedLibrary scripter 'LED Display'
 	} ('CircuitPlayground' == boardType) {
-		importLibraryFromFile scripter '//Libraries/Circuit Playground.ubl'
-		importLibraryFromFile scripter '//Libraries/Basic Sensors.ubl'
-		importLibraryFromFile scripter '//Libraries/NeoPixel.ubl'
-		importLibraryFromFile scripter '//Libraries/Tone.ubl'
+		importEmbeddedLibrary scripter 'Circuit Playground'
+		importEmbeddedLibrary scripter 'Basic Sensors'
+		importEmbeddedLibrary scripter 'NeoPixel'
+		importEmbeddedLibrary scripter 'Tone'
 	} ('M5Stack-Core' == boardType) {
-		importLibraryFromFile scripter '//Libraries/Tone.ubl'
-		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
-		importLibraryFromFile scripter '//Libraries/TFT.ubl'
-		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+		importEmbeddedLibrary scripter 'Tone'
+		importEmbeddedLibrary scripter 'LED Display'
+		importEmbeddedLibrary scripter 'TFT'
+		importEmbeddedLibrary scripter 'HTTP client'
 	} ('ESP8266' == boardType) {
-		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+		importEmbeddedLibrary scripter 'HTTP client'
 	} ('IOT-BUS' == boardType) {
-		importLibraryFromFile scripter '//Libraries/LED Display.ubl'
-		importLibraryFromFile scripter '//Libraries/TFT.ubl'
-		importLibraryFromFile scripter '//Libraries/TFT.ubl'
-		importLibraryFromFile scripter '//Libraries/System/touchScreenPrims.ubl'
+		importEmbeddedLibrary scripter 'LED Display'
+		importEmbeddedLibrary scripter 'TFT'
+		importEmbeddedLibrary scripter 'touchScreenPrims'
 	} ('ESP32' == boardType) {
-		importLibraryFromFile scripter '//Libraries/Web of Things.ubl'
+		importEmbeddedLibrary scripter 'HTTP client'
 	}
 }
 

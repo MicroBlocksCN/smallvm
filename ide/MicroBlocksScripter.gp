@@ -998,6 +998,15 @@ method importLibrary MicroBlocksScripter {
   pickLibraryToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ubl')
 }
 
+method importEmbeddedLibrary MicroBlocksScripter libName {
+	for filePath (listEmbeddedFiles) {
+		if (endsWith filePath (join libName '.ubl')) {
+			importLibraryFromFile this (join '//' filePath)
+			return
+		}
+	}
+}
+
 method importLibraryFromFile MicroBlocksScripter fileName data {
   // Import a library with the give file path. If data is not nil, it came from
   // a browser upload or file drop. Use it rather than attempting to read the file.
