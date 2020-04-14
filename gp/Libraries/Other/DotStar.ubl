@@ -6,7 +6,7 @@ tags led strip rgb string
 
 variables '_DotStar brightness' '_DotStar clock pin' '_DotStar data pin' '_DotStar pixels'
 
-	spec ' ' 'DotStar attach' 'attach  _ DotStar LEDs to data pin _ clock pin _' 'auto auto auto' 1 5 6
+	spec ' ' 'DotStar attach' 'attach _ DotStar LEDs to data pin _ clock pin _' 'auto auto auto' 1 5 6
 	spec ' ' 'set all DotStars' 'set all DotStar LEDs to r _ g _ b _' 'auto auto auto' 0 0 0
 	spec ' ' 'set DotStar LED' 'set DotStar LED _ to r _ g _ b _' 'auto auto auto auto' 1 60 0 255
 	spec ' ' 'set DotStar brightness' 'set DotStar brightness _' 'auto' 31

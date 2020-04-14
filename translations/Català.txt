@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: January 7 2020
+# Last updated: April 14 2020
 
 # Blocks and categories
 
@@ -69,6 +69,9 @@ per sempre _
 repeat _ _
 repeteix _ vegades _
 
+wait _ millisecs
+espera _ mil·lisegons
+
 if _ _
 si _ _
 
@@ -78,11 +81,32 @@ si no, si _ _
 if _ _ else _
 si _ _ si no _
 
-wait _ millisecs
-espera _ mil·lisegons
+when _
+quan _
+
+wait until _
+espera fins que _
 
 wait _ microsecs
 espera _ microsegons
+
+return _
+retorna _
+
+when _ received
+quan rebi _
+
+broadcast _
+envia _
+
+comment _
+comentari _
+
+for _ in _ _
+per cada _ en _ _
+
+repeat until _ _
+repeteix fins que _ _
 
 stop this task
 atura aquesta tasca
@@ -93,32 +117,11 @@ atura les altres tasques
 stop all
 atura-ho tot
 
-comment _
-comentari _
+last message
+últim missatge
 
-wait until _
-espera fins que _
-
-repeat until _ _
-repeteix fins que _ _
-
-for _ in _ _
-per cada _ en _ _
-
-when _
-quan _
-
-when _ received
-quan rebi _
-
-broadcast _
-envia _
-
-return _
-retorna _
-
-Math
-Operacions
+Operators
+Operadors
 
 _ mod _
 _ mòdul _
@@ -143,6 +146,24 @@ _ o _
 
 or _
 o _
+
+_ is a _
+_ és un _
+
+boolean
+booleà
+
+number
+nombre
+
+string
+text
+
+list
+llista
+
+hex _
+hexadecimal _
 
 Variables
 Variables
@@ -169,8 +190,8 @@ augmenta _ en _
 local _ _
 variable local _ _
 
-Lists & Strings
-Llistes i text
+Data
+Dades
 
 list
 llista
@@ -205,8 +226,11 @@ busca _ en _
 starting at _
 començant a _
 
-join string list _
-uneix llista de texts _
+join items of list _
+uneix elements de la llista _
+
+separator _
+amb separador _
 
 unicode _ of _
 unicode _ de _
@@ -216,6 +240,9 @@ caràcter amb unicode _
 
 new list length _
 nova llista de llargada _
+
+new byte array length _
+nou vector de bytes de llargada _
 
 free memory
 memòria disponible
@@ -243,10 +270,16 @@ Comm
 Comunicacions
 
 i2c get device _ register _
-i2c llegeix del dispositiu _ el registre _
+llegeix del dispositiu i2c _ el registre _
 
 i2c set device _ register _ to _
-i2c escriu al dispositiu _ el registre _ amb _
+escriu al dispositiu i2c _ el registre _ amb _
+
+i2c device _ read list _
+llegeix del dispositiu i2c _ a llista _
+
+i2c device _ write list _
+escriu al dispositiu i2c _ el contingut de la llista _
 
 spi send _
 spi envia _
@@ -256,9 +289,6 @@ spi llegeix
 
 print _
 escriu _
-
-hex _
-hexadecimal _
 
 no op
 no op
@@ -480,8 +510,8 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird Tri-LED _ Vermell _ % Verd _ % Blau _ %
 
-Hummingbird Position Servo _ _ º
-Hummingbird Servo Posicional _ _ º
+Hummingbird Position Servo _ _ °
+Hummingbird Servo Posicional _ _ °
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Servo Rotacional _ _ %
@@ -495,8 +525,8 @@ Hummingbird Bateria (mV)
 Light
 Llum
 
-Distance
-Distància
+Distance (cm)
+Distància (cm)
 
 Dial
 Rodeta
@@ -660,8 +690,8 @@ ves a x _ y _
 point in direction _
 apunta en direcció _
 
-Web of Things
-Web de les coses
+WiFi
+WiFi
 
 wifi connect to _ password _ try _ times
 connecta't a la wifi _ amb contrasenya _ amb _ intents
@@ -671,27 +701,6 @@ crea punt d'accés wifi _ amb contrasenya _
 
 IP address
 adreça IP
-
-define thing _ capability _
-defineix cosa _ amb capacitat de _
-
-register event _ type _
-registra l'esdeveniment _ de tipus _
-
-add boolean property title _ variable _ @Type _
-afegeix propietat booleana amb nom _ variable _ de tipus _
-
-add number property title _ variable _ min _ max _ @Type _
-afegeix propietat numèrica amb nom _ variable _ min _ max _ de tipus _
-
-add string property title _ variable _ @Type _
-afegeix propietat textual amb nom _ variable _ de tipus _
-
-thing description
-descripció de la cosa
-
-clear thing description
-esborra la descripció de la cosa
 
 Motion
 Moviment
@@ -722,6 +731,156 @@ toc llarg al botó _
 
 button _ pressed
 toc curt al botó _
+
+Calliope set LED red _ green _ blue _
+posa el LED de la Calliope a vermell _ verd _ blau _
+
+Calliope set speaker _
+posa l'altaveu de la Calliope a _
+
+Calliope loudness
+nivell de soroll de la Calliope
+
+Circuit Playground set speaker _
+posa l'altaveu de la Circuit Playground a _
+
+Circuit Playground slide switch
+interruptor de la Circuit Playground
+
+attach _ DotStar LEDs to data pin _ clock pin _
+inicialitza tira de _ LEDs DotStar al pin de dades _ i pin de rellotge _
+
+set all DotStar LEDs to r _ g _ b _
+posa tots els LEDs DotStar a vermell _ verd _ blau _
+
+set DotStar LED _ to r _ g _ b _
+posa el LEDs DotStar _ a vermell _ verd _ blau _
+
+set DotStar brightness _
+fixa la brillantor dels DotStar a _
+
+bme280 connected
+bme280 connectat
+
+bmp280 connected
+bmp280 connectat
+
+bmx280 temperature
+temperatura del bmx280
+
+bmx280 pressure
+pressió del bmx280
+
+bme280 humidity
+humitat del bme280
+
+TCS34725 connected
+TCS34725 connectat
+
+TCS34725 rgb
+color RGB del TCS34725
+
+color _ name
+nom del color _
+
+temperature (Celsius) DHT11 pin _
+temperatura (°C) del DHT11 al pin _
+
+humidity DHT11 pin _
+humitat del DHT11 al pin _
+
+temperature (Celsius) DHT22 pin _
+temperatura (°C) del DHT22 al pin _
+
+humidity DHT22 pin _
+humitat del DHT22 al pin _
+
+read PN532 RFID
+llegeix RFID PN532
+
+RFID _ = _
+RFID _ = _
+
+get PN532 firmware version
+versió del firmware del PN532
+
+HTTP client
+Client HTTP
+
+_ data _ to http܃// _
+sol·licitud _ amb contingut _ a http:// _
+
+HTTP server
+Servidor HTTP
+
+start HTTP server
+inicia el servidor HTTP
+
+HTTP server request
+sol·licitud HTTP al servidor
+
+respond _ to HTTP request
+respon _ a la sol·licitud HTTP
+
+with body _
+amb contingut _
+
+and headers _
+i capçaleres _
+
+body of request _
+cos de la sol·licitud _
+
+path of request _
+camí de la sol·licitud _
+
+method of request _
+mètode de la sol·licitud _
+
+Web Thing
+Web Thing
+
+set thing name to _
+fixa el nom de la cosa a _
+
+set thing capability to _
+fixa la capacitat de la cosa a _
+
+set boolean property _ title _ @Type _
+posa a la propietat booleana _ el títol _ i @Type _
+
+set string property _ title _ @Type _
+posa a la propietat textual _ el títol _ i @Type _
+
+set number property _ title _ @Type _
+posa a la propietat numèrica _ el títol _ i @Type _
+
+set number property _ title _ min _ max _ @Type _
+posa a la propietat numèrica _ el títol _ màxim _ mínim _ i @Type _
+
+read only _
+només lectura _
+
+register event _ type _
+registra l'esdeveniment _ de tipus _
+
+start WebThing server
+inicia el servidor WebThing
+
+trigger event _
+dispara esdeveniment _
+
+thing description JSON
+JSON de la cosa
+
+properties JSON
+JSON de les propietats
+
+event definitions JSON
+JSON de la definició d'esdeveniments
+
+events JSON
+JSON dels esdeveniments
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -763,6 +922,9 @@ No s'ha pogut llegir:
 
 by
 per
+
+Created with GP
+Creat amb GP
 
 More info at http://microblocks.fun
 Més informació a http://microblocks.fun
@@ -857,6 +1019,12 @@ atura el servidor de Mozilla WebThings
 MicroBlocks HTTP Server listening on port 6473
 El servidor HTTP de MicroBlocks està actiu al port 6473
 
+disable autoloading board libraries
+no carreguis llibreries de placa automàticament
+
+enable autoloading board libraries
+carrega llibreries de placa automàticament
+
 wipe and repartition esp32
 esborra i reparticiona esp32
 
@@ -901,18 +1069,6 @@ amaga els blocs avançats
 
 Data Graph
 Gràfica de dades
-
-File
-Arxiu
-
-File Open
-Obre arxiu
-
-File Save
-Desa arxiu
-
-File name:
-Nom d'arxiu:
 
 show instructions
 mostra instruccions
@@ -1022,9 +1178,6 @@ amaga la definició d'aquest bloc
 Are you sure you want to remove this block definition?
 Segur que vols esborrar la definició d'aquest bloc?
 
-Libraries
-Llibreries
-
 Language
 Idioma
 
@@ -1054,4 +1207,75 @@ D'acord
 
 Confirm
 Confirmació
+
+# File picker and library dialogs
+
+Libraries
+Llibreries
+
+Examples
+Exemples
+
+Desktop
+Escriptori
+
+Computer
+Ordinador
+
+Cloud
+Núvol
+
+File
+Arxiu
+
+File Open
+Obre arxiu
+
+File Save
+Desa arxiu
+
+File name:
+Nom d'arxiu:
+
+New Folder
+Nou directori
+
+by
+per
+
+Depends:
+Depèn de:
+
+Tags:
+Etiquetes:
+
+Path, name or URL for library?
+Camí, nom o URL de la llibreria?
+
+Invalid URL
+URL invàlida
+
+Could not fetch library.
+No s'ha pogut obtenir la llibreria.
+
+Host does not exist or is currently down.
+El servidor no existeix, o està fora de servei.
+
+File not found in server.
+No s'ha trobat l'arxiu al servidor.
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+El servidor requereix HTTPS, però MicroBlocks no en suporta.
+
+library information
+informació de la llibreria
+
+built-in library
+llibreria integrada
+
+Dependency path, name or URL?
+Camí, nom o URL de la dependència?
+
+Tag name?
+Nom de l'etiqueta?
 

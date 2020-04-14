@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: January 7 2020
+# Last updated: April 14 2020
 
 # Blocks and categories
 
@@ -69,6 +69,9 @@ doimiy _
 repeat _ _
 takrorlash _ _
 
+wait _ millisecs
+kutish _ millisekundlar
+
 if _ _
 agar _ _
 
@@ -78,11 +81,32 @@ yana boshqa, agar _ _
 if _ _ else _
 agar _ _ yana boshqa _
 
-wait _ millisecs
-kutish _ millisekundlar
+when _
+qachon _
+
+wait until _
+kutish _ gacha
 
 wait _ microsecs
 kutish _ microsekundlar
+
+return _
+qaytish _
+
+when _ received
+qachon _ qabul qilinganda
+
+broadcast _
+broadcast _
+
+comment _
+izoh _
+
+for _ in _ _
+uchun _ da _ _
+
+repeat until _ _
+takrorlash _ _ gacha
 
 stop this task
 bu vazifani to'xtatish
@@ -93,32 +117,11 @@ stop other tasks
 stop all
 hammasini to'htatish
 
-comment _
-izoh _
+last message
+--MISSING--
 
-wait until _
-kutish _ gacha
-
-repeat until _ _
-takrorlash _ _ gacha
-
-for _ in _ _
-uchun _ da _ _
-
-when _
-qachon _
-
-when _ received
-qachon _ qabul qilinganda
-
-broadcast _
-broadcast _
-
-return _
-qaytish _
-
-Math
-Mutanosiblik
+Operators
+--MISSING--
 
 _ mod _
 _ rejim _
@@ -143,6 +146,24 @@ _ yoki _
 
 or _
 yoki _
+
+_ is a _
+--MISSING--
+
+boolean
+--MISSING--
+
+number
+--MISSING--
+
+string
+--MISSING--
+
+list
+--MISSING--
+
+hex _
+hex _
 
 Variables
 O'zgaruvchan
@@ -169,7 +190,7 @@ _ tomonidan _ o'zgartirish
 local _ _
 mahalliy _ _
 
-Lists & Strings
+Data
 --MISSING--
 
 list
@@ -205,7 +226,10 @@ find _ in _
 starting at _
 --MISSING--
 
-join string list _
+join items of list _
+--MISSING--
+
+separator _
 --MISSING--
 
 unicode _ of _
@@ -216,6 +240,9 @@ string from unicode _
 
 new list length _
 yangi ro'yxatning uzunligi _
+
+new byte array length _
+--MISSING--
 
 free memory
 --MISSING--
@@ -248,6 +275,12 @@ i2c qurilmani olish _ ro'yxatga olish _
 i2c set device _ register _ to _
 i2c sozlamalari qurilma _ ro'yxatga olish _ ga _
 
+i2c device _ read list _
+--MISSING--
+
+i2c device _ write list _
+--MISSING--
+
 spi send _
 spi yuboring _
 
@@ -256,9 +289,6 @@ spi olish
 
 print _
 chop etish _
-
-hex _
-hex _
 
 no op
 op yo'q
@@ -387,6 +417,9 @@ NeoPixels ni _ bilan almashtirish
 color r _ g _ b _ (0-31)
 rang r _ g _ b _ (0-31)
 
+random color
+--MISSING--
+
 attach _ LED NeoPixel strip to pin _
 --MISSING--
 
@@ -402,11 +435,17 @@ PIR at pin _ detected movement
 ED1 Stepper Motor
 --MISSING--
 
-move motor _  _ steps _
+move motor _ _ steps _
 --MISSING--
 
 move motor 1 _ and motor 2 _ _ steps
 motor 1 _ va motor 2 _ _ qadamlarini harakatlantiring
+
+move motor _ angle _ °
+--MISSING--
+
+move motor _ _ complete turns
+--MISSING--
 
 stop steppers
 qadamlarni to'xtating
@@ -471,7 +510,7 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 --MISSING--
 
-Hummingbird Position Servo _ _ º
+Hummingbird Position Servo _ _ °
 --MISSING--
 
 Hummingbird Rotation Servo _ _ %
@@ -486,7 +525,7 @@ Hummingbird Battery (mV)
 Light
 --MISSING--
 
-Distance
+Distance (cm)
 --MISSING--
 
 Dial
@@ -537,28 +576,13 @@ o'tishni to'xtatish
 Servo
 --MISSING--
 
-has servo support
-servo qo'llab-quvvatlashi bor
-
-set servo _ to _ (-100 to 100)
---MISSING--
-
-resetServos
---MISSING--
-
-flip servo _ _
---MISSING--
-
-attach servos 1 to 4 to pins _ _ _ _
---MISSING--
-
 set servo _ to _ degrees (-90 to 90)
 --MISSING--
 
-reverse
+set servo _ to speed _ (-100 to 100)
 --MISSING--
 
-set servo _ to speed _ (-100 to 100)
+stop servo _
 --MISSING--
 
 LED Display
@@ -663,10 +687,10 @@ fill display with _
 go to x _ y _
 --MISSING--
 
-point in direction  _
+point in direction _
 --MISSING--
 
-Web of Things
+WiFi
 --MISSING--
 
 wifi connect to _ password _ try _ times
@@ -676,27 +700,6 @@ wifi create hotspot _ password _
 --MISSING--
 
 IP address
---MISSING--
-
-define thing _ capability _
---MISSING--
-
-register event _ type _
---MISSING--
-
-add boolean property title _ variable _ @Type _
---MISSING--
-
-add number property title _ variable _ min _ max _ @Type _
---MISSING--
-
-add string property title _ variable _ @Type _
---MISSING--
-
-thing description
---MISSING--
-
-clear thing description
 --MISSING--
 
 Motion
@@ -727,6 +730,156 @@ button _ long pressed
 --MISSING--
 
 button _ pressed
+--MISSING--
+
+Calliope set LED red _ green _ blue _
+--MISSING--
+
+Calliope set speaker _
+--MISSING--
+
+Calliope loudness
+--MISSING--
+
+Circuit Playground set speaker _
+--MISSING--
+
+Circuit Playground slide switch
+--MISSING--
+
+attach _ DotStar LEDs to data pin _ clock pin _
+--MISSING--
+
+set all DotStar LEDs to r _ g _ b _
+--MISSING--
+
+set DotStar LED _ to r _ g _ b _
+--MISSING--
+
+set DotStar brightness _
+--MISSING--
+
+bme280 connected
+--MISSING--
+
+bmp280 connected
+--MISSING--
+
+bmx280 temperature
+--MISSING--
+
+bmx280 pressure
+--MISSING--
+
+bme280 humidity
+--MISSING--
+
+TCS34725 connected
+--MISSING--
+
+TCS34725 rgb
+--MISSING--
+
+color _ name
+--MISSING--
+
+temperature (Celsius) DHT11 pin _
+--MISSING--
+
+humidity DHT11 pin _
+--MISSING--
+
+temperature (Celsius) DHT22 pin _
+--MISSING--
+
+humidity DHT22 pin _
+--MISSING--
+
+read PN532 RFID
+--MISSING--
+
+RFID _ = _
+--MISSING--
+
+get PN532 firmware version
+--MISSING--
+
+HTTP client
+--MISSING--
+
+_ data _ to http܃// _
+--MISSING--
+
+HTTP server
+--MISSING--
+
+start HTTP server
+--MISSING--
+
+HTTP server request
+--MISSING--
+
+respond _ to HTTP request
+--MISSING--
+
+with body _
+--MISSING--
+
+and headers _
+--MISSING--
+
+body of request _
+--MISSING--
+
+path of request _
+--MISSING--
+
+method of request _
+--MISSING--
+
+Web Thing
+--MISSING--
+
+set thing name to _
+--MISSING--
+
+set thing capability to _
+--MISSING--
+
+set boolean property _ title _ @Type _
+--MISSING--
+
+set string property _ title _ @Type _
+--MISSING--
+
+set number property _ title _ @Type _
+--MISSING--
+
+set number property _ title _ min _ max _ @Type _
+--MISSING--
+
+read only _
+--MISSING--
+
+register event _ type _
+--MISSING--
+
+start WebThing server
+--MISSING--
+
+trigger event _
+--MISSING--
+
+thing description JSON
+--MISSING--
+
+properties JSON
+--MISSING--
+
+event definitions JSON
+--MISSING--
+
+events JSON
 --MISSING--
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
@@ -769,6 +922,9 @@ Could not read:
 
 by
 tomonidan
+
+Created with GP
+--MISSING--
 
 More info at http://microblocks.fun
 Qo'shimcha ma'lumot: http://microblocks.fun
@@ -821,7 +977,7 @@ tozalamoq
 arrange scripts
 skriptlarni tashkil qilish
 
-undrop  (ctrl-Z)
+undrop (ctrl-Z)
 --MISSING--
 
 copy all scripts to clipboard
@@ -861,6 +1017,12 @@ stop Mozilla WebThing server
 --MISSING--
 
 MicroBlocks HTTP Server listening on port 6473
+--MISSING--
+
+disable autoloading board libraries
+--MISSING--
+
+enable autoloading board libraries
 --MISSING--
 
 wipe and repartition esp32
@@ -907,18 +1069,6 @@ rivojlangan bloklarni yashirish
 
 Data Graph
 Ma'lumotlar grafigi
-
-File
---MISSING--
-
-File Open
-Faylni ochish
-
-File Save
-Faylni saqlash
-
-File name:
-Fayl nomi:
 
 show instructions
 yo'riqnomalarni ko'rsatish
@@ -1028,9 +1178,6 @@ hide block definition
 Are you sure you want to remove this block definition?
 Ushbu blok ta'rifini olib tashlashga ishonchingiz komilmi?
 
-Libraries
-Kutubxonalar
-
 Language
 --MISSING--
 
@@ -1060,4 +1207,75 @@ Hop
 
 Confirm
 Tasdiqlash
+
+# File picker and library dialogs
+
+Libraries
+Kutubxonalar
+
+Examples
+--MISSING--
+
+Desktop
+--MISSING--
+
+Computer
+--MISSING--
+
+Cloud
+--MISSING--
+
+File
+--MISSING--
+
+File Open
+Faylni ochish
+
+File Save
+Faylni saqlash
+
+File name:
+Fayl nomi:
+
+New Folder
+--MISSING--
+
+by
+tomonidan
+
+Depends:
+--MISSING--
+
+Tags:
+--MISSING--
+
+Path, name or URL for library?
+--MISSING--
+
+Invalid URL
+--MISSING--
+
+Could not fetch library.
+--MISSING--
+
+Host does not exist or is currently down.
+--MISSING--
+
+File not found in server.
+--MISSING--
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+--MISSING--
+
+library information
+--MISSING--
+
+built-in library
+--MISSING--
+
+Dependency path, name or URL?
+--MISSING--
+
+Tag name?
+--MISSING--
 

@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: January 7 2020
+# Last updated: April 14 2020
 
 # Blocks and categories
 
@@ -69,6 +69,9 @@ devamlı tekrarla _
 repeat _ _
 tekrarla _ kere _
 
+wait _ millisecs
+bekle _ milisaniye
+
 if _ _
 eğer _ yap _
 
@@ -78,11 +81,32 @@ yoksa eğer _ _
 if _ _ else _
 eğer _ yap _ değilse _
 
-wait _ millisecs
-bekle _ milisaniye
+when _
+_ olunca
+
+wait until _
+_ olana kadar bekle
 
 wait _ microsecs
 bekle _ mikrosaniye
+
+return _
+döndür _
+
+when _ received
+_ mesajı geldiğinde
+
+broadcast _
+_ gönder
+
+comment _
+yorum _
+
+for _ in _ _
+her _ için _ _ kapsamında
+
+repeat until _ _
+_ _ olana kadar tekrarla
 
 stop this task
 bu betiği durdur
@@ -93,32 +117,11 @@ stop other tasks
 stop all
 tüm betikleri durdur
 
-comment _
-yorum _
+last message
+--MISSING--
 
-wait until _
-_ olana kadar bekle
-
-repeat until _ _
-_ _ olana kadar tekrarla
-
-for _ in _ _
-her _ için _ _ kapsamında
-
-when _
-_ olunca
-
-when _ received
-_ mesajı geldiğinde
-
-broadcast _
-_ gönder
-
-return _
-döndür _
-
-Math
-Matematik
+Operators
+--MISSING--
 
 _ mod _
 _ mod _
@@ -143,6 +146,24 @@ _ veya _
 
 or _
 veya _
+
+_ is a _
+--MISSING--
+
+boolean
+--MISSING--
+
+number
+--MISSING--
+
+string
+--MISSING--
+
+list
+liste
+
+hex _
+hex _
 
 Variables
 Değişkenler
@@ -169,8 +190,8 @@ _ değişkenini _ değiştir
 local _ _
 yerel değişken _ = _
 
-Lists & Strings
-Listeler & Dizgiler
+Data
+--MISSING--
 
 list
 liste
@@ -205,8 +226,11 @@ bul bunu _ bunda _
 starting at _
 başla _
 
-join string list _
-listenin öğelerini birleştir _
+join items of list _
+--MISSING--
+
+separator _
+--MISSING--
 
 unicode _ of _
 unicode öğe# _ dizgi: _
@@ -216,6 +240,9 @@ unicode dan harfe _
 
 new list length _
 _ öğeli yeni liste yarat
+
+new byte array length _
+--MISSING--
 
 free memory
 boş bellek
@@ -248,6 +275,12 @@ i2c oku modül _ yazmaç _
 i2c set device _ register _ to _
 i2c yaz modül _ yazmaç _ değer _
 
+i2c device _ read list _
+--MISSING--
+
+i2c device _ write list _
+--MISSING--
+
 spi send _
 spi gönder _
 
@@ -256,9 +289,6 @@ spi oku
 
 print _
 yaz _
-
-hex _
-hex _
 
 no op
 işlem yok
@@ -387,6 +417,9 @@ NeoPixelleri _ döndür
 color r _ g _ b _ (0-31)
 renk r _ g _ b _ (0-31)
 
+random color
+--MISSING--
+
 attach _ LED NeoPixel strip to pin _
 _ LED Neopiksel şeridini pin _ bağla
 
@@ -407,6 +440,12 @@ move motor _ _ steps _
 
 move motor 1 _ and motor 2 _ _ steps
 motor 1 _ ve motor 2 _ _ adım yürüt
+
+move motor _ angle _ °
+--MISSING--
+
+move motor _ _ complete turns
+--MISSING--
 
 stop steppers
 step motorları durdur
@@ -471,8 +510,8 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird 3renkli-LED _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ º
-Hummingbird _ Servosunu _ º ayarla
+Hummingbird Position Servo _ _ °
+--MISSING--
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Sürekli Servo _ _ %
@@ -486,8 +525,8 @@ Hummingbird Pil (mV)
 Light
 Işık
 
-Distance
-Mesafe
+Distance (cm)
+Mesafe (cm)
 
 Dial
 Kadran
@@ -537,29 +576,14 @@ kaydırmayı durdur
 Servo
 Servo
 
-has servo support
-servo desteği var
-
-set servo _ to _ (-100 to 100)
-_ servosunu _ ayarla (-100 to 100)
-
-resetServos
-servoları resetle
-
-flip servo _ _
-servoyu tersle _ _
-
-attach servos 1 to 4 to pins _ _ _ _
-1 - 4 servolarını _ _ _ _ pinlerine bağla
-
 set servo _ to _ degrees (-90 to 90)
 _ servosunu _ dereceye ayarla (-90 to 90)
 
-reverse
-tersle
-
 set servo _ to speed _ (-100 to 100)
 _ servosunun hızını _ yap (-100 to 100)
+
+stop servo _
+--MISSING--
 
 LED Display
 LED Ekran
@@ -666,8 +690,8 @@ x _ y _ konumuna git
 point in direction _
 _ yönüne dön
 
-Web of Things
-Şeylerin İnterneti
+WiFi
+--MISSING--
 
 wifi connect to _ password _ try _ times
 wifi _ SSIDye bağlan şifre _ _ kere dene
@@ -677,27 +701,6 @@ wifi erişim noktası oluştur SSID _ şifre _
 
 IP address
 IP adresi
-
-define thing _ capability _
-tanımla şey _ yetenek _
-
-register event _ type _
-kaydet olay _ tip _
-
-add boolean property title _ variable _ @Type _
-boolean özellik ekle başlık _ değişken _ @Tip _
-
-add number property title _ variable _ min _ max _ @Type _
-sayı özellik ekle başlık _ değişken _ min _ max _ @Tip _
-
-add string property title _ variable _ @Type _
-dizgi özellik ekle başlık _ değişken _ @Tip _
-
-thing description
-şey tanımlaması
-
-clear thing description
-şey tanımlamasını sil
 
 Motion
 Hareket
@@ -728,6 +731,156 @@ buton _ uzun basıldı
 
 button _ pressed
 buton _ basıldı
+
+Calliope set LED red _ green _ blue _
+--MISSING--
+
+Calliope set speaker _
+--MISSING--
+
+Calliope loudness
+--MISSING--
+
+Circuit Playground set speaker _
+--MISSING--
+
+Circuit Playground slide switch
+--MISSING--
+
+attach _ DotStar LEDs to data pin _ clock pin _
+--MISSING--
+
+set all DotStar LEDs to r _ g _ b _
+--MISSING--
+
+set DotStar LED _ to r _ g _ b _
+--MISSING--
+
+set DotStar brightness _
+--MISSING--
+
+bme280 connected
+--MISSING--
+
+bmp280 connected
+--MISSING--
+
+bmx280 temperature
+--MISSING--
+
+bmx280 pressure
+--MISSING--
+
+bme280 humidity
+--MISSING--
+
+TCS34725 connected
+--MISSING--
+
+TCS34725 rgb
+--MISSING--
+
+color _ name
+--MISSING--
+
+temperature (Celsius) DHT11 pin _
+--MISSING--
+
+humidity DHT11 pin _
+--MISSING--
+
+temperature (Celsius) DHT22 pin _
+--MISSING--
+
+humidity DHT22 pin _
+--MISSING--
+
+read PN532 RFID
+--MISSING--
+
+RFID _ = _
+--MISSING--
+
+get PN532 firmware version
+--MISSING--
+
+HTTP client
+--MISSING--
+
+_ data _ to http܃// _
+--MISSING--
+
+HTTP server
+--MISSING--
+
+start HTTP server
+--MISSING--
+
+HTTP server request
+--MISSING--
+
+respond _ to HTTP request
+--MISSING--
+
+with body _
+--MISSING--
+
+and headers _
+--MISSING--
+
+body of request _
+--MISSING--
+
+path of request _
+--MISSING--
+
+method of request _
+--MISSING--
+
+Web Thing
+--MISSING--
+
+set thing name to _
+--MISSING--
+
+set thing capability to _
+--MISSING--
+
+set boolean property _ title _ @Type _
+--MISSING--
+
+set string property _ title _ @Type _
+--MISSING--
+
+set number property _ title _ @Type _
+--MISSING--
+
+set number property _ title _ min _ max _ @Type _
+--MISSING--
+
+read only _
+--MISSING--
+
+register event _ type _
+kaydet olay _ tip _
+
+start WebThing server
+--MISSING--
+
+trigger event _
+--MISSING--
+
+thing description JSON
+--MISSING--
+
+properties JSON
+--MISSING--
+
+event definitions JSON
+--MISSING--
+
+events JSON
+--MISSING--
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -769,6 +922,9 @@ Okuyamadık:
 
 by
 tarafından
+
+Created with GP
+--MISSING--
 
 More info at http://microblocks.fun
 Daha fazla bilgi için: http://microblocks.fun
@@ -863,6 +1019,12 @@ Mozilla WebThing sunucusunu durdur
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Sunucusu 6473 numaralı bağlantı noktasında dinliyor
 
+disable autoloading board libraries
+--MISSING--
+
+enable autoloading board libraries
+--MISSING--
+
 wipe and repartition esp32
 esp32 yi silme ve yeniden bölümleme
 
@@ -907,18 +1069,6 @@ gelişmiş blokları gizle
 
 Data Graph
 Veri Grafiği
-
-File
-Dosya
-
-File Open
-Dosya Aç
-
-File Save
-Dosya Kaydet
-
-File name:
-Dosya adı:
 
 show instructions
 yönergeleri göster
@@ -1028,9 +1178,6 @@ blok tanımını gizle
 Are you sure you want to remove this block definition?
 Bu bloğun tanımını sileceğinden emin misin?
 
-Libraries
-Kütüphaneler
-
 Language
 Dil
 
@@ -1060,4 +1207,75 @@ Tamam
 
 Confirm
 Onayla
+
+# File picker and library dialogs
+
+Libraries
+Kütüphaneler
+
+Examples
+--MISSING--
+
+Desktop
+--MISSING--
+
+Computer
+--MISSING--
+
+Cloud
+--MISSING--
+
+File
+Dosya
+
+File Open
+Dosya Aç
+
+File Save
+Dosya Kaydet
+
+File name:
+Dosya adı:
+
+New Folder
+--MISSING--
+
+by
+tarafından
+
+Depends:
+--MISSING--
+
+Tags:
+--MISSING--
+
+Path, name or URL for library?
+--MISSING--
+
+Invalid URL
+--MISSING--
+
+Could not fetch library.
+--MISSING--
+
+Host does not exist or is currently down.
+--MISSING--
+
+File not found in server.
+--MISSING--
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+--MISSING--
+
+library information
+--MISSING--
+
+built-in library
+--MISSING--
+
+Dependency path, name or URL?
+--MISSING--
+
+Tag name?
+--MISSING--
 

@@ -181,7 +181,7 @@ to buttonBitmap label color w h isInset corner border hasFrame flat {
     if ('Linux' == (platform)) {
         fontName =  'Liberation Sans Bold'
     }
-    lbm = (stringImage label fontName fontSize (gray 255) 'center' (darker color) (off * -1) nil nil nil nil nil nil flat)
+    lbm = (stringImage (localized label) fontName fontSize (gray 255) 'center' (darker color) (off * -1) nil nil nil nil nil nil flat)
   } else {
     lbm = nil
   }

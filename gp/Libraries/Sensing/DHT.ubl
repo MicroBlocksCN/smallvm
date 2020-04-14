@@ -8,7 +8,7 @@ variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime
 
 	spec 'r' 'temperature_DHT11' 'temperature (Celsius) DHT11 pin _' 'auto' 4
 	spec 'r' 'humidity_DHT11' 'humidity DHT11 pin _' 'auto' 4
-	spec 'r' 'temperature_DHT22' 'temperature (Celsius) DHT22 _' 'auto' 4
+	spec 'r' 'temperature_DHT22' 'temperature (Celsius) DHT22 pin _' 'auto' 4
 	spec 'r' 'humidity_DHT22' 'humidity DHT22 pin _' 'auto' 4
 	spec ' ' '_dhtReadData' '_dhtReadData pin _' 'auto any' '10'
 	spec 'r' '_dhtChecksumOkay' '_dhtChecksumOkay' 'any'

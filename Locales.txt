@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: January 7 2020
+# Last updated: April 14 2020
 
 # Blocks and categories
 
@@ -47,15 +47,31 @@ forever _
 
 repeat _ _
 
+wait _ millisecs
+
 if _ _
 
 else if _ _
 
 if _ _ else _
 
-wait _ millisecs
+when _
+
+wait until _
 
 wait _ microsecs
+
+return _
+
+when _ received
+
+broadcast _
+
+comment _
+
+for _ in _ _
+
+repeat until _ _
 
 stop this task
 
@@ -63,23 +79,9 @@ stop other tasks
 
 stop all
 
-comment _
+last message
 
-wait until _
-
-repeat until _ _
-
-for _ in _ _
-
-when _
-
-when _ received
-
-broadcast _
-
-return _
-
-Math
+Operators
 
 _ mod _
 
@@ -96,6 +98,18 @@ and _
 _ or _
 
 or _
+
+_ is a _
+
+boolean
+
+number
+
+string
+
+list
+
+hex _
 
 Variables
 
@@ -115,7 +129,7 @@ change _ by _
 
 local _ _
 
-Lists & Strings
+Data
 
 list
 
@@ -139,13 +153,17 @@ find _ in _
 
 starting at _
 
-join string list _
+join items of list _
+
+separator _
 
 unicode _ of _
 
 string from unicode _
 
 new list length _
+
+new byte array length _
 
 free memory
 
@@ -169,13 +187,15 @@ i2c get device _ register _
 
 i2c set device _ register _ to _
 
+i2c device _ read list _
+
+i2c device _ write list _
+
 spi send _
 
 spi receive
 
 print _
-
-hex _
 
 no op
 
@@ -325,7 +345,7 @@ Hummingbird LED _ _ %
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ º
+Hummingbird Position Servo _ _ °
 
 Hummingbird Rotation Servo _ _ %
 
@@ -335,7 +355,7 @@ Hummingbird Battery (mV)
 
 Light
 
-Distance
+Distance (cm)
 
 Dial
 
@@ -445,27 +465,13 @@ go to x _ y _
 
 point in direction _
 
-Web of Things
+WiFi
 
 wifi connect to _ password _ try _ times
 
 wifi create hotspot _ password _
 
 IP address
-
-define thing _ capability _
-
-register event _ type _
-
-add boolean property title _ variable _ @Type _
-
-add number property title _ variable _ min _ max _ @Type _
-
-add string property title _ variable _ @Type _
-
-thing description
-
-clear thing description
 
 Motion
 
@@ -486,6 +492,106 @@ button _ double pressed
 button _ long pressed
 
 button _ pressed
+
+Calliope set LED red _ green _ blue _
+
+Calliope set speaker _
+
+Calliope loudness
+
+Circuit Playground set speaker _
+
+Circuit Playground slide switch
+
+attach _ DotStar LEDs to data pin _ clock pin _
+
+set all DotStar LEDs to r _ g _ b _
+
+set DotStar LED _ to r _ g _ b _
+
+set DotStar brightness _
+
+bme280 connected
+
+bmp280 connected
+
+bmx280 temperature
+
+bmx280 pressure
+
+bme280 humidity
+
+TCS34725 connected
+
+TCS34725 rgb
+
+color _ name
+
+temperature (Celsius) DHT11 pin _
+
+humidity DHT11 pin _
+
+temperature (Celsius) DHT22 pin _
+
+humidity DHT22 pin _
+
+read PN532 RFID
+
+RFID _ = _
+
+get PN532 firmware version
+
+HTTP client
+
+_ data _ to http܃// _
+
+HTTP server
+
+start HTTP server
+
+HTTP server request
+
+respond _ to HTTP request
+
+with body _
+
+and headers _
+
+body of request _
+
+path of request _
+
+method of request _
+
+Web Thing
+
+set thing name to _
+
+set thing capability to _
+
+set boolean property _ title _ @Type _
+
+set string property _ title _ @Type _
+
+set number property _ title _ @Type _
+
+set number property _ title _ min _ max _ @Type _
+
+read only _
+
+register event _ type _
+
+start WebThing server
+
+trigger event _
+
+thing description JSON
+
+properties JSON
+
+event definitions JSON
+
+events JSON
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -514,6 +620,8 @@ Select board:
 Could not read:
 
 by
+
+Created with GP
 
 More info at http://microblocks.fun
 
@@ -577,6 +685,10 @@ stop Mozilla WebThing server
 
 MicroBlocks HTTP Server listening on port 6473
 
+disable autoloading board libraries
+
+enable autoloading board libraries
+
 wipe and repartition esp32
 
 Use board type
@@ -606,14 +718,6 @@ export functions as library
 hide advanced blocks
 
 Data Graph
-
-File
-
-File Open
-
-File Save
-
-File name:
 
 show instructions
 
@@ -687,8 +791,6 @@ hide block definition
 
 Are you sure you want to remove this block definition?
 
-Libraries
-
 Language
 
 Custom...
@@ -708,3 +810,51 @@ Cancel
 Okay
 
 Confirm
+
+# File picker and library dialogs
+
+Libraries
+
+Examples
+
+Desktop
+
+Computer
+
+Cloud
+
+File
+
+File Open
+
+File Save
+
+File name:
+
+New Folder
+
+by
+
+Depends:
+
+Tags:
+
+Path, name or URL for library?
+
+Invalid URL
+
+Could not fetch library.
+
+Host does not exist or is currently down.
+
+File not found in server.
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+
+library information
+
+built-in library
+
+Dependency path, name or URL?
+
+Tag name?

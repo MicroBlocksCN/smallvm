@@ -511,8 +511,8 @@ method showAboutBox SmallRuntime {
 		'MicroBlocks v' (ideVersion this) (newline)
 		vmVersionReport
 		(localized 'by') (newline)
-		'John Maloney, Bernat Romagosa, and Jens Mönig' (newline)
-		'Created with GP (gpblocks.org)' (newline)
+		'John Maloney, Bernat Romagosa, & Jens Mönig' (newline)
+		(localized 'Created with GP') '(gpblocks.org)' (newline)
 		(localized 'More info at http://microblocks.fun'))
 }
 

@@ -18,7 +18,7 @@ variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
     spec ' ' '[display:mbDisplayOff]' 'clear display'
     spec ' ' 'clearDisplay' 'fill display with _' 'color'
     spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
-    spec ' ' 'setHeading' 'point in direction  _' 'auto' 0
+    spec ' ' 'setHeading' 'point in direction _' 'auto' 0
     spec ' ' '_turtleNotes' '_turtleNotes'
     spec 'r' '_tft color' '_tft color _ to number' 'color'
 

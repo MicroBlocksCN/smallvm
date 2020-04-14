@@ -59,7 +59,7 @@ method updateLibraryInfo MicroBlocksLibraryImportDialog selectedPath {
 
 method promptLibUrl MicroBlocksLibraryImportDialog {
 	page = (global 'page')
-	url = (prompt page 'Library URL?' 'http://')
+	url = (prompt page 'Path, name or URL for library?' 'http://')
 	if (and (notEmpty url) (endsWith url '.ubl') ((findLast url '/') > 10)) {
 		result = (importLibraryFromUrl (scripter (smallRuntime)) url)
 	} else {
@@ -415,7 +415,7 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 	addPart morph (morph authorFrame)
 
 	depsViewer = (newItemViewer (array) editFlag window)
-	setNewItemQueryString depsViewer 'Dependency URL?'
+	setNewItemQueryString depsViewer 'Dependency path, name or URL?'
 	addPart morph (morph depsViewer)
 
 	tagViewer = (newItemViewer (array) editFlag window)
@@ -445,7 +445,7 @@ method getVersion MicroBlocksLibraryPropertiesFrame {
 }
 method getAuthor MicroBlocksLibraryPropertiesFrame {
 	// Returns the sanitized author name, without the trailing "by"
-	return (trim (last (splitWithString (contentsWithoutCRs authorText) 'by ')))
+	return (trim (last (splitWithString (contentsWithoutCRs authorText) (join (localized 'by') ' '))))
 }
 
 method addDependency MicroBlocksLibraryPropertiesFrame dep {
@@ -476,20 +476,19 @@ method updateFields MicroBlocksLibraryPropertiesFrame {
 		} (beginsWith path 'http://') {
 			setText sourceText path
 		} else {
-			print path
-			setText sourceText 'built-in library'
+			setText sourceText (localized 'built-in library')
 		}
 	} else {
 		setText sourceText ''
 	}
 
 	setItemRenderer depsViewer (action 'dependencyName' library)
-	setLabel depsViewer 'Depends:'
+	setLabel depsViewer (localized 'Depends:')
 	setContents depsViewer (dependencies library)
 	setText versionText (join
 		'v' (toString (at (version library) 1)) '.' (toString (at (version library) 2)))
-	setText authorText (join 'by ' (author library))
-	setLabel tagViewer 'Tags:'
+	setText authorText (join (localized 'by') ' ' (author library))
+	setLabel tagViewer (localized 'Tags:')
 	setContents tagViewer (tags library)
 }
 

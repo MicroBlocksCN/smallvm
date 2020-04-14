@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: January 7 2020
+# Last updated: April 14 2020
 
 # Blocks and categories
 
@@ -69,6 +69,9 @@ répéter indéfiniment _
 repeat _ _
 répéter _ fois _
 
+wait _ millisecs
+attendre _ millisecondes
+
 if _ _
 si _ _
 
@@ -78,11 +81,32 @@ sinon, si _ _
 if _ _ else _
 si _ _ sinon _
 
-wait _ millisecs
-attendre _ millisecondes
+when _
+quand _
+
+wait until _
+attendre jusqu'à _
 
 wait _ microsecs
 attendre _ microsecondes
+
+return _
+renvoyer _
+
+when _ received
+quand _ est reçu
+
+broadcast _
+envoyer à tous _
+
+comment _
+commentaire _
+
+for _ in _ _
+pour chaque _ de _ _
+
+repeat until _ _
+répéter jusqu'à _ _
 
 stop this task
 arrêter cette tâche
@@ -93,31 +117,10 @@ stop other tasks
 stop all
 stopper tout
 
-comment _
-commentaire _
+last message
+--MISSING--
 
-wait until _
-attendre jusqu'à _
-
-repeat until _ _
-répéter jusqu'à _ _
-
-for _ in _ _
-pour chaque _ de _ _
-
-when _
-quand _
-
-when _ received
-quand _ est reçu
-
-broadcast _
-envoyer à tous _
-
-return _
-renvoyer _
-
-Math
+Operators
 --MISSING--
 
 _ mod _
@@ -144,6 +147,24 @@ _ ou _
 or _
 ou _
 
+_ is a _
+--MISSING--
+
+boolean
+--MISSING--
+
+number
+--MISSING--
+
+string
+--MISSING--
+
+list
+--MISSING--
+
+hex _
+hexadécimal _
+
 Variables
 --MISSING--
 
@@ -169,7 +190,7 @@ changer _ de _
 local _ _
 variable locale _ _
 
-Lists & Strings
+Data
 --MISSING--
 
 list
@@ -205,7 +226,10 @@ find _ in _
 starting at _
 --MISSING--
 
-join string list _
+join items of list _
+--MISSING--
+
+separator _
 --MISSING--
 
 unicode _ of _
@@ -215,6 +239,9 @@ string from unicode _
 --MISSING--
 
 new list length _
+--MISSING--
+
+new byte array length _
 --MISSING--
 
 free memory
@@ -248,6 +275,12 @@ i2c lire le périphérique _ au registre _
 i2c set device _ register _ to _
 i2c mettre le périphérique _ au registre _ à _
 
+i2c device _ read list _
+--MISSING--
+
+i2c device _ write list _
+--MISSING--
+
 spi send _
 spi envoyer _
 
@@ -256,9 +289,6 @@ spi lire
 
 print _
 afficher _
-
-hex _
-hexadécimal _
 
 no op
 no op
@@ -387,6 +417,9 @@ rotate NeoPixels by _
 color r _ g _ b _ (0-31)
 --MISSING--
 
+random color
+--MISSING--
+
 attach _ LED NeoPixel strip to pin _
 --MISSING--
 
@@ -402,10 +435,16 @@ PIR at pin _ detected movement
 ED1 Stepper Motor
 --MISSING--
 
-move motor _  _ steps _
+move motor _ _ steps _
 --MISSING--
 
 move motor 1 _ and motor 2 _ _ steps
+--MISSING--
+
+move motor _ angle _ °
+--MISSING--
+
+move motor _ _ complete turns
 --MISSING--
 
 stop steppers
@@ -471,7 +510,7 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ º
+Hummingbird Position Servo _ _ °
 --MISSING--
 
 Hummingbird Rotation Servo _ _ %
@@ -486,8 +525,8 @@ Hummingbird Batterie (mV)
 Light
 LumiËre
 
-Distance
-Distance
+Distance (cm)
+Distance (cm)
 
 Dial
 Cadran
@@ -537,28 +576,13 @@ stop scrolling
 Servo
 --MISSING--
 
-has servo support
---MISSING--
-
-set servo _ to _ (-100 to 100)
---MISSING--
-
-resetServos
---MISSING--
-
-flip servo _ _
---MISSING--
-
-attach servos 1 to 4 to pins _ _ _ _
---MISSING--
-
 set servo _ to _ degrees (-90 to 90)
 --MISSING--
 
-reverse
+set servo _ to speed _ (-100 to 100)
 --MISSING--
 
-set servo _ to speed _ (-100 to 100)
+stop servo _
 --MISSING--
 
 LED Display
@@ -663,10 +687,10 @@ fill display with _
 go to x _ y _
 --MISSING--
 
-point in direction  _
+point in direction _
 --MISSING--
 
-Web of Things
+WiFi
 --MISSING--
 
 wifi connect to _ password _ try _ times
@@ -676,27 +700,6 @@ wifi create hotspot _ password _
 --MISSING--
 
 IP address
---MISSING--
-
-define thing _ capability _
---MISSING--
-
-register event _ type _
---MISSING--
-
-add boolean property title _ variable _ @Type _
---MISSING--
-
-add number property title _ variable _ min _ max _ @Type _
---MISSING--
-
-add string property title _ variable _ @Type _
---MISSING--
-
-thing description
---MISSING--
-
-clear thing description
 --MISSING--
 
 Motion
@@ -727,6 +730,156 @@ button _ long pressed
 --MISSING--
 
 button _ pressed
+--MISSING--
+
+Calliope set LED red _ green _ blue _
+--MISSING--
+
+Calliope set speaker _
+--MISSING--
+
+Calliope loudness
+--MISSING--
+
+Circuit Playground set speaker _
+--MISSING--
+
+Circuit Playground slide switch
+--MISSING--
+
+attach _ DotStar LEDs to data pin _ clock pin _
+--MISSING--
+
+set all DotStar LEDs to r _ g _ b _
+--MISSING--
+
+set DotStar LED _ to r _ g _ b _
+--MISSING--
+
+set DotStar brightness _
+--MISSING--
+
+bme280 connected
+--MISSING--
+
+bmp280 connected
+--MISSING--
+
+bmx280 temperature
+--MISSING--
+
+bmx280 pressure
+--MISSING--
+
+bme280 humidity
+--MISSING--
+
+TCS34725 connected
+--MISSING--
+
+TCS34725 rgb
+--MISSING--
+
+color _ name
+--MISSING--
+
+temperature (Celsius) DHT11 pin _
+--MISSING--
+
+humidity DHT11 pin _
+--MISSING--
+
+temperature (Celsius) DHT22 pin _
+--MISSING--
+
+humidity DHT22 pin _
+--MISSING--
+
+read PN532 RFID
+--MISSING--
+
+RFID _ = _
+--MISSING--
+
+get PN532 firmware version
+--MISSING--
+
+HTTP client
+--MISSING--
+
+_ data _ to http܃// _
+--MISSING--
+
+HTTP server
+--MISSING--
+
+start HTTP server
+--MISSING--
+
+HTTP server request
+--MISSING--
+
+respond _ to HTTP request
+--MISSING--
+
+with body _
+--MISSING--
+
+and headers _
+--MISSING--
+
+body of request _
+--MISSING--
+
+path of request _
+--MISSING--
+
+method of request _
+--MISSING--
+
+Web Thing
+--MISSING--
+
+set thing name to _
+--MISSING--
+
+set thing capability to _
+--MISSING--
+
+set boolean property _ title _ @Type _
+--MISSING--
+
+set string property _ title _ @Type _
+--MISSING--
+
+set number property _ title _ @Type _
+--MISSING--
+
+set number property _ title _ min _ max _ @Type _
+--MISSING--
+
+read only _
+--MISSING--
+
+register event _ type _
+--MISSING--
+
+start WebThing server
+--MISSING--
+
+trigger event _
+--MISSING--
+
+thing description JSON
+--MISSING--
+
+properties JSON
+--MISSING--
+
+event definitions JSON
+--MISSING--
+
+events JSON
 --MISSING--
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
@@ -768,6 +921,9 @@ Could not read:
 --MISSING--
 
 by
+--MISSING--
+
+Created with GP
 --MISSING--
 
 More info at http://microblocks.fun
@@ -821,7 +977,7 @@ clean up
 arrange scripts
 --MISSING--
 
-undrop  (ctrl-Z)
+undrop (ctrl-Z)
 --MISSING--
 
 copy all scripts to clipboard
@@ -861,6 +1017,12 @@ stop Mozilla WebThing server
 --MISSING--
 
 MicroBlocks HTTP Server listening on port 6473
+--MISSING--
+
+disable autoloading board libraries
+--MISSING--
+
+enable autoloading board libraries
 --MISSING--
 
 wipe and repartition esp32
@@ -906,18 +1068,6 @@ hide advanced blocks
 --MISSING--
 
 Data Graph
---MISSING--
-
-File
---MISSING--
-
-File Open
---MISSING--
-
-File Save
---MISSING--
-
-File name:
 --MISSING--
 
 show instructions
@@ -1028,9 +1178,6 @@ hide block definition
 Are you sure you want to remove this block definition?
 --MISSING--
 
-Libraries
---MISSING--
-
 Language
 --MISSING--
 
@@ -1059,5 +1206,76 @@ Okay
 --MISSING--
 
 Confirm
+--MISSING--
+
+# File picker and library dialogs
+
+Libraries
+--MISSING--
+
+Examples
+--MISSING--
+
+Desktop
+--MISSING--
+
+Computer
+--MISSING--
+
+Cloud
+--MISSING--
+
+File
+--MISSING--
+
+File Open
+--MISSING--
+
+File Save
+--MISSING--
+
+File name:
+--MISSING--
+
+New Folder
+--MISSING--
+
+by
+--MISSING--
+
+Depends:
+--MISSING--
+
+Tags:
+--MISSING--
+
+Path, name or URL for library?
+--MISSING--
+
+Invalid URL
+--MISSING--
+
+Could not fetch library.
+--MISSING--
+
+Host does not exist or is currently down.
+--MISSING--
+
+File not found in server.
+--MISSING--
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+--MISSING--
+
+library information
+--MISSING--
+
+built-in library
+--MISSING--
+
+Dependency path, name or URL?
+--MISSING--
+
+Tag name?
 --MISSING--
 

@@ -6,7 +6,7 @@ tags '28byj-48' stepper motor fantastic ed1
 
 variables _ED1_stepper_init _ED1_CW1 _ED1_CW2 _ED1_CCW1 _ED1_CCW2 _ED1_motor_running _ED1_exp_register
 
-	spec ' ' 'motor step' 'move motor _  _ steps _' 'auto auto menu.directions' 1 '128' 'clockwise'
+	spec ' ' 'motor step' 'move motor _ _ steps _' 'auto auto menu.directions' 1 '128' 'clockwise'
 	spec ' ' 'move motor ' 'move motor 1 _ and motor 2 _ _ steps' 'menu.directions menu.directions auto' 'clockwise' 'counter-clockwise' '64'
 	spec ' ' 'motor angle' 'move motor _ angle _ °' 'auto auto' '1' '-90'
 	spec ' ' 'motor turns' 'move motor _ _ complete turns' 'auto auto' '1' '3'

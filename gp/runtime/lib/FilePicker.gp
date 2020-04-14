@@ -187,7 +187,7 @@ method addFileNameField FilePicker defaultName {
   }
 
   // name label
-  nameLabel = (newText 'File name:')
+  nameLabel = (newText (localized 'File name:'))
   setFont nameLabel (join fontName ' Bold') fontSize
   setGrabRule (morph nameLabel) 'ignore'
   addPart morph (morph nameLabel)
@@ -289,9 +289,9 @@ method addIconButton FilePicker x y iconName anAction label {
   if ('Browser' == (platform)) {
 	setFont 'Helvetica' (13 * scale)
   }
-  labelX = (half ((width bm) - (stringWidth label)))
+  labelX = (half ((width bm) - (stringWidth (localized label))))
   labelY = ((height bm) - (fontHeight))
-  drawString bm label (gray 0) labelX labelY
+  drawString bm (localized label) (gray 0) labelX labelY
 
   button = (newButton '' anAction)
   setLabel button bm (gray 225) (gray 245)
@@ -386,7 +386,7 @@ method parentFolder FilePicker {
 method showFolder FilePicker path isTop {
   currentDir = path
   if isTop { topDir = path }
-  setText folderReadout (filePart path)
+  setText folderReadout (localized (filePart path))
   updateParentAndNewFolderButtons this
   setCollection (contents listPane) (folderContents this)
 }

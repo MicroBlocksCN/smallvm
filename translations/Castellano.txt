@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: January 7 2020
+# Last updated: April 14 2020
 
 # Blocks and categories
 
@@ -69,6 +69,9 @@ por siempre _
 repeat _ _
 repetir _ veces _
 
+wait _ millisecs
+esperar _ milisegundos
+
 if _ _
 si _ _
 
@@ -78,11 +81,32 @@ si no, si _ _
 if _ _ else _
 si _ _ si no _
 
-wait _ millisecs
-esperar _ milisegundos
+when _
+cuando _
+
+wait until _
+esperar hasta que _
 
 wait _ microsecs
 esperar _ microsegundos
+
+return _
+retornar _
+
+when _ received
+al recibir _
+
+broadcast _
+envíar _
+
+comment _
+comentario _
+
+for _ in _ _
+por cada _ en _ _
+
+repeat until _ _
+repetir hasta que _ _
 
 stop this task
 detener esta tarea
@@ -93,32 +117,11 @@ detener las otras tareas
 stop all
 detenerlo todo
 
-comment _
-comentario _
+last message
+último mensaje
 
-wait until _
-esperar hasta que _
-
-repeat until _ _
-repetir hasta que _ _
-
-for _ in _ _
-por cada _ en _ _
-
-when _
-cuando _
-
-when _ received
-al recibir _
-
-broadcast _
-envíar _
-
-return _
-retornar _
-
-Math
-Operaciones
+Operators
+Operadores
 
 _ mod _
 _ módulo _
@@ -143,6 +146,24 @@ _ o _
 
 or _
 o _
+
+_ is a _
+_ es un _
+
+boolean
+booleano
+
+number
+número
+
+string
+texto
+
+list
+listas
+
+hex _
+hexadecimal _
 
 Variables
 Variables
@@ -169,8 +190,8 @@ aumenta _ en _
 local _ _
 variable local _ _
 
-Lists & Strings
-Listas y texto
+Data
+Datos
 
 list
 listas
@@ -205,8 +226,11 @@ busca _ en _
 starting at _
 empezando por _
 
-join string list _
-une lista de textos _
+join items of list _
+une elementos de la lista _
+
+separator _
+usando separador _
 
 unicode _ of _
 unicode _ de _
@@ -216,6 +240,9 @@ carácter con unicode _
 
 new list length _
 nueva lista de tamaño _
+
+new byte array length _
+nuevo vector de bytes de largada _
 
 free memory
 memoria libre
@@ -243,10 +270,16 @@ Comm
 Comunicaciones
 
 i2c get device _ register _
-i2c leer del dispositivo _ el registro _
+lee del dispositivo i2c _ el registro _
 
 i2c set device _ register _ to _
-i2c escribir al dispositivo _ el registro _ con _
+escribe al dispositivo i2c _ el registro _ con _
+
+i2c device _ read list _
+lee el dispositivo i2c _ a la lista
+
+i2c device _ write list _
+escribe al dispositivo i2c _ el contenido de la lista _
 
 spi send _
 spi envíar _
@@ -256,9 +289,6 @@ spi leer
 
 print _
 escribir _
-
-hex _
-hexadecimal _
 
 no op
 no op
@@ -480,8 +510,8 @@ Hummingbird LED _ _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird LED tricolor _ R _ % G _ % B _ %
 
-Hummingbird Position Servo _ _ º
-Hummingbird Servo de Posición _ _ º
+Hummingbird Position Servo _ _ °
+Hummingbird Servo Posicional _ _ °
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Servo de rotacion _ _ %
@@ -495,8 +525,8 @@ Hummingbird Bateria (mV)
 Light
 Luz
 
-Distance
-Distancia
+Distance (cm)
+Distancia (cm)
 
 Dial
 Dial
@@ -660,8 +690,8 @@ ve a x _ y _
 point in direction _
 apunta en dirección _
 
-Web of Things
-Web de las cosas
+WiFi
+WiFi
 
 wifi connect to _ password _ try _ times
 connéctate a la wifi _ con contraseña _ en _ intentos
@@ -671,27 +701,6 @@ crea punto de acceso wifi _ con contraseña _
 
 IP address
 dirección IP
-
-define thing _ capability _
-define cosa _ con capacidad de _
-
-register event _ type _
-registra el evento _ de tipo _
-
-add boolean property title _ variable _ @Type _
-añade propiedad booleana con nombe _ variable _ de tipo _
-
-add number property title _ variable _ min _ max _ @Type _
-añade propiedad numérica con nombre _ variable _ min _ max _ de tipo _
-
-add string property title _ variable _ @Type _
-añade propiedad textual con nombre _ variable _ de tipo _
-
-thing description
-descripción de la cosa
-
-clear thing description
-borra la descripción de la cosa
 
 Motion
 Movimiento
@@ -722,6 +731,156 @@ pulsación larga en botón _
 
 button _ pressed
 pulsación corta en botón _
+
+Calliope set LED red _ green _ blue _
+pon el LED de la Calliope a rojo _ verde _ azul _
+
+Calliope set speaker _
+pon el altavoz de la Calliope a _
+
+Calliope loudness
+nivel de ruido de la Calliope
+
+Circuit Playground set speaker _
+pon el altavoz de la Circuit Playground a _
+
+Circuit Playground slide switch
+interruptor de la Circuit Playground
+
+attach _ DotStar LEDs to data pin _ clock pin _
+inicializa tira de _ LEDs DotStar al pin de datos _ y pin de reloj _
+
+set all DotStar LEDs to r _ g _ b _
+pon todos los LEDs DotStar a rojo _ verde _ azul _
+
+set DotStar LED _ to r _ g _ b _
+pon el LED DotStar _ a rojo _ verde _ azul _
+
+set DotStar brightness _
+fija el brillo de DotStar a _
+
+bme280 connected
+bme280 conectado
+
+bmp280 connected
+bmp280 conectado
+
+bmx280 temperature
+temperatura del bmx280
+
+bmx280 pressure
+presión del bmx280
+
+bme280 humidity
+humedad del bme280
+
+TCS34725 connected
+TCS34725 conectado
+
+TCS34725 rgb
+color RGB del TCS34725
+
+color _ name
+nombre del color _
+
+temperature (Celsius) DHT11 pin _
+temperatura (ºC) del DHT11 en pin _
+
+humidity DHT11 pin _
+humedad del DHT11 en pin _
+
+temperature (Celsius) DHT22 pin _
+temperatura (ºC) del DHT22 en pin _
+
+humidity DHT22 pin _
+humedad del DHT22 en pin _
+
+read PN532 RFID
+lee RFID PN532
+
+RFID _ = _
+RFID _ = _
+
+get PN532 firmware version
+versión del firmware del PN532
+
+HTTP client
+Cliente HTTP
+
+_ data _ to http܃// _
+petición _ con contenido _ a http:// _
+
+HTTP server
+Servidor HTTP
+
+start HTTP server
+inicia servidor HTTP
+
+HTTP server request
+petición HTTP al servidor
+
+respond _ to HTTP request
+responde _ a la petición HTTP
+
+with body _
+con contenido _
+
+and headers _
+y cabeceras _
+
+body of request _
+cuerpo de la petición _
+
+path of request _
+ruta de la petición _
+
+method of request _
+método de la petición _
+
+Web Thing
+Web Thing
+
+set thing name to _
+fija el nombre de la cosa a _
+
+set thing capability to _
+fija la capacidad de la cosa a _
+
+set boolean property _ title _ @Type _
+pon a la propiedad booleana _ el título _ y @Type _
+
+set string property _ title _ @Type _
+pon a la propiedad textual _ el título _ y @Type _
+
+set number property _ title _ @Type _
+pon a la propiedad numérica _ el título _ y @Type _
+
+set number property _ title _ min _ max _ @Type _
+pon a la propiedad numérica _ el título _ mínimo _ máximo _ y @Type _
+
+read only _
+sólo lectura _
+
+register event _ type _
+registra el evento _ de tipo _
+
+start WebThing server
+inicia servidor WebThing
+
+trigger event _
+dispara evento _
+
+thing description JSON
+JSON de la cosa
+
+properties JSON
+JSON de las propiedades
+
+event definitions JSON
+JSON de las definiciones de eventos
+
+events JSON
+JSON de los eventos
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -763,6 +922,9 @@ No se ha podido leer:
 
 by
 por
+
+Created with GP
+Creado con GP
 
 More info at http://microblocks.fun
 Más información en http://microblocks.fun
@@ -857,6 +1019,12 @@ detén el servidor de Mozilla WebThings
 MicroBlocks HTTP Server listening on port 6473
 El servidor HTTP de MicroBlocks está activo en el puerto 6473
 
+disable autoloading board libraries
+desactivar autocarga de librerías de placa
+
+enable autoloading board libraries
+activar autocarga de librerías de placa
+
 wipe and repartition esp32
 borra y reparticiona esp32
 
@@ -901,18 +1069,6 @@ oculta los bloques avanzados
 
 Data Graph
 Gráfico de datos
-
-File
-Fichero
-
-File Open
-Abre fichero
-
-File Save
-Guarda fichero
-
-File name:
-Nombre del fichero:
 
 show instructions
 muestra instrucciones
@@ -1022,9 +1178,6 @@ oculta la definición de este bloque
 Are you sure you want to remove this block definition?
 ¿Seguro que quieres borrar la definición de este bloque?
 
-Libraries
-Librerías
-
 Language
 Idioma
 
@@ -1054,4 +1207,75 @@ De acuerdo
 
 Confirm
 Confirmación
+
+# File picker and library dialogs
+
+Libraries
+Librerías
+
+Examples
+Ejemplos
+
+Desktop
+Escritorio
+
+Computer
+Ordenador
+
+Cloud
+Nube
+
+File
+Fichero
+
+File Open
+Abre fichero
+
+File Save
+Guarda fichero
+
+File name:
+Nombre del fichero:
+
+New Folder
+Nueva carpeta
+
+by
+por
+
+Depends:
+Depende de:
+
+Tags:
+Etiquetas:
+
+Path, name or URL for library?
+¿Ruta, nombre o URL de la librería?
+
+Invalid URL
+URL inválida
+
+Could not fetch library.
+No se ha podido obtener la librería.
+
+Host does not exist or is currently down.
+El servidor no existe o está fuera de servicio.
+
+File not found in server.
+No se ha encontrado el archivo en el servidor.
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+El servidor requiere HTTPS, y MicroBlocks no lo soporta.
+
+library information
+información de la librería
+
+built-in library
+librería integrada
+
+Dependency path, name or URL?
+¿Ruta, nombre o URL de la dependencia?
+
+Tag name?
+¿Nombre de la etiqueta?
 
