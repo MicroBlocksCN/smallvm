@@ -95,11 +95,14 @@ void primDigitalSet(int pinNum, int flag) { };
 OBJ primButtonA(OBJ *args) { return falseObj; }
 OBJ primButtonB(OBJ *args) { return falseObj; }
 void primSetUserLED(OBJ *args) { }
+void stopServos() { }
 
 OBJ primI2cGet(OBJ *args) { return int2obj(0); }
 OBJ primI2cSet(OBJ *args) { return int2obj(0); }
 OBJ primSPISend(OBJ *args) { return int2obj(0); }
 OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
+OBJ primI2cRead(OBJ *args) { return int2obj(0); }
+OBJ primI2cWrite(OBJ *args) { return int2obj(0); }
 
 // Bogus micro:bit primitives
 
@@ -130,9 +133,8 @@ void addIOPrims() {}
 void addNetPrims() {}
 void primWifiConnect(OBJ *args) {}
 int wifiStatus() { return 0; }
-OBJ primMakeWebThing(int argCount, OBJ *args) { return falseObj; }
+OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
 OBJ primGetIP(int argCount, OBJ *args) { return falseObj; }
-void queueBroadcastAsThingEvent(char *s, int len) { }
 
 // Persistence support
 
@@ -176,7 +178,7 @@ int main() {
 	printf("Starting Linux MicroBlocks... Connect on %s\n", (char*) ptsname(pty));
 	initTimers();
 	memInit(10000); // 10k words = 40k bytes
-	initTasks();
+	primsInit();
 	outputString("Welcome to uBlocks for Linux!");
 	restoreScripts();
 	startAll();

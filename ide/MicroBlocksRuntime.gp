@@ -491,7 +491,6 @@ method tryToConnect SmallRuntime {
 
 method openPortAndSendPing SmallRuntime {
 	// Open port and send ping request
-
 	closePort this // ensure port is closed
 	connectionStartTime = (msecsSinceStart)
 	ensurePortOpen this // attempt to reopen the port
@@ -924,7 +923,9 @@ method waitForResponse SmallRuntime {
 
 method ensurePortOpen SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
-		if (and (notNil portName) (contains (portList this) portName)) {
+		if (and (notNil portName)
+				(or (contains (portList this) portName)
+				(beginsWith portName '/dev/pts/'))) { // support for GnuBlocks
 			port = (safelyRun (action 'openSerialPort' portName 115200))
 			if (not (isClass port 'Integer')) { port = nil } // failed
 			disconnected = false
