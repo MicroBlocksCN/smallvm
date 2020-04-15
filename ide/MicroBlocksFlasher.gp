@@ -127,6 +127,10 @@ method flashVM MicroBlocksFlasher wipeFlashFlag downloadLatest {
     commands = (list
       (array
         esptool '-b' '115200' 'write_flash' '0' (join tmpPath 'vm')))
+  } (boardName == 'M5Atom-Matrix') {
+		atPut (first commands) 3 '115200'
+  } (boardName == 'M5StickC') {
+		atPut (first commands) 3 '1500000'
   }
 
   if wipeFlashFlag {
@@ -176,6 +180,8 @@ method vmNameForCurrentBoard MicroBlocksFlasher {
   atPut d 'ESP32' 'vm.ino.esp32.bin'
   atPut d 'Citilab ED1' 'vm.ino.citilab-ed1.bin'
   atPut d 'M5Stack-Core' 'vm.ino.m5stack.bin'
+  atPut d 'M5StickC' 'vm.ino.m5stick.bin'
+  atPut d 'M5Atom-Matrix' 'vm.ino.m5atom.bin'
   return (at d boardName)
 }
 
