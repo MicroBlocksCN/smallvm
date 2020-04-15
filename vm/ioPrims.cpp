@@ -945,7 +945,7 @@ static void setServo(int pin, int usecs) {
 		pinDetach(pin);
 	} else {
 		int esp32Channel = pinAttached(pin);
-		if (!esp32Channel) attachServo(pin);
+		if (!esp32Channel) esp32Channel = attachServo(pin);
 		if (esp32Channel > 0) {
 			ledcWrite(esp32Channel, usecs * 1024 / 20000);
 		}
