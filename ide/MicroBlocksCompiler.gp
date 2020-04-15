@@ -259,6 +259,8 @@ method initMicroBlocksSpecs SmallCompiler {
 	}
 }
 
+method opcodes SmallCompiler { return opcodes }
+
 method initOpcodes SmallCompiler {
 	// Initialize the opcode dictionary. Note: This must match the opcode table in interp.c!
 
