@@ -273,8 +273,19 @@ method softReset SmallRuntime {
 	sendMsg this 'systemResetMsg' // send the reset message
 }
 
+method isWebSerial SmallRuntime {
+	return (and ('Browser' == (platform)) (not (browserIsChromebook)))
+}
+
 method selectPort SmallRuntime {
 	if (isNil disconnected) { disconnected = false }
+
+	if (isWebSerial this) {
+		portName = 'webserial'
+		port = (openSerialPort portName 115200)
+		disconnected = false
+		return
+	}
 
 	portList = (portList this)
 	menu = (menu 'Connect' (action 'setPort' this) true)
@@ -446,6 +457,10 @@ method updateConnection SmallRuntime {
 
 method tryToConnect SmallRuntime {
 	// Called when there is no connection or the board does not respond.
+
+	if (isWebSerial this) {
+		return (and (notNil port) (isOpenSerialPort port))
+	}
 
 	connectionAttemptTimeout = 5000 // milliseconds
 
@@ -1381,7 +1396,7 @@ method downloadEmbeddedVMFile SmallRuntime boardName {
 		'To install MicroBlocks, drag "' vmFileName '" from your Downloads' (newline)
 		'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
 		'to copy the file, then the USB drive for your board will dismount.' (newline)
-		'When it remounts, MicroBLocks should reconnect to the board.')
+		'When it remounts, MicroBlocks should reconnect to the board.')
 }
 
 method adaFruitMessage SmallRuntime {
