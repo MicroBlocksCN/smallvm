@@ -446,7 +446,6 @@ function adjustButtonVisibility() {
 		document.getElementById('SeeInsideButton').style.display = 'inline';
 		document.getElementById('PresentButton').style.display = 'none';
 	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks.html'))) {
-//		document.getElementById('controls').style.display = 'none';
 		document.getElementById('FullscreenButton').style.display = 'none';
 		document.getElementById('UploadButton').style.display = 'none';
 		document.getElementById('SeeInsideButton').style.display = 'none';
@@ -653,8 +652,6 @@ async function webSerialConnect() {
 		GP_webSerialReader = null;
 		return null;
 	}
-console.log('WebSerial connected'); // xxx
-//	setTimeout(webSerialReadData, 5); // xxx
 	webSerialReadLoop();
 }
 
@@ -663,31 +660,9 @@ async function webSerialDisconnect() {
 		if (GP_webSerialReader) await GP_webSerialReader.cancel();
 		await GP_webSerialPort.close();
 		GP_webSerialReader = null;
-console.log('WebSeria lDisconnected'); // xxx
 	}
 	GP_webSerialPort = null;
 }
-
-// function webSerialReadData() {
-// 	if (!GP_webSerialReader) return;
-// 	GP_webSerialReader.read()
-// 	.then (({value, done}) => {
-// 		if (value) {
-// 			GP_serialInputBuffers.push(value);
-// 			setTimeout(webSerialReadData, 20);
-// 		}
-// 		if (done) {
-// 			GP_webSerialReader.releaseLock();
-// 			return;
-// 		}
-// 	})
-// 	.catch ((e) => {
-// console.log('webSerialReadData error', e); // xxx
-// 		GP_webSerialPort.close()
-// 		GP_webSerialPort = null;
-// 		GP_webSerialReader = null;
-// 	});
-// }
 
 async function webSerialReadLoop() {
 	try {
@@ -702,8 +677,6 @@ async function webSerialReadLoop() {
 			}
 		}
 	} catch (e) {
-//		try { await GP_webSerialPort.close(); } catch (e) { }
-console.log('webSerialReadData error', e); // xxx
 		GP_webSerialPort = null;
 		GP_webSerialReader = null;
 	}

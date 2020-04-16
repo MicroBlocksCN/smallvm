@@ -894,7 +894,6 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		byteCount = (min 1000 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
-// print 'GP sent' bytesSent 'of' (byteCount dataToSend) // xxx
 		if (not (isOpenSerialPort port)) {
 			closePort this
 			return
@@ -971,7 +970,6 @@ method processNextMessage SmallRuntime {
 
 	// Read any available bytes and append to recvBuf
 	s = (readSerialPort port true)
-// if (notNil s) { print 'GP got' (byteCount s) 'bytes' } // xxx
 	if (notNil s) { recvBuf = (join recvBuf s) }
 	if ((byteCount recvBuf) < 3) { return false } // not enough bytes for even a short message
 
