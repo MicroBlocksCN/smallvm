@@ -1032,7 +1032,7 @@ method removeHint Page {
 
 // prompting and confirming
 
-method prompt Page question default editRule callback {
+method prompt Page question default editRule callback details {
   // prompt can be used either as a reporter or as a command
   // if a callback is passed prompt is used as a command, when
   // the user accepts the prompter, the callback is called with
@@ -1048,7 +1048,7 @@ method prompt Page question default editRule callback {
   // to use in scripts
   if (isNil editRule) { editRule = 'line' }
   p = (new 'Prompter')
-  initialize p (localized question) (localized default) editRule callback
+  initialize p (localized question) (localized default) editRule callback details
   fixLayout p
   setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
   addPart morph (morph p)

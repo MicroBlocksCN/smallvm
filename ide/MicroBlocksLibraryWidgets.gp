@@ -59,10 +59,26 @@ method updateLibraryInfo MicroBlocksLibraryImportDialog selectedPath {
 
 method promptLibUrl MicroBlocksLibraryImportDialog {
 	page = (global 'page')
-	url = (prompt page 'Path, name or URL for library?' 'http://')
+	url = (prompt
+		page
+		'Path, name or URL for library?'
+		'http://'
+		'line'
+		nil
+		(join
+			'If you are adding a library that''s built-in into MicroBlocks, you'
+			(newline)
+			'can just enter its name.'
+			(newline)
+			'If your library is in the Libraries folder in your local MicroBlocks'
+			(newline)
+			'MicroBlocks project folder, you need to prefix it with a slash (/).'
+			(newline)
+			'If the library is hosted online, please input its full URL.'
+		))
 	if (and (notEmpty url) (endsWith url '.ubl') ((findLast url '/') > 10)) {
 		result = (importLibraryFromUrl (scripter (smallRuntime)) url)
-	} else {
+	} (notEmpty url) {
 		inform page 'Invalid URL'
 	}
 	if result { destroy morph }

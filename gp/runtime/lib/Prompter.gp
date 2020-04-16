@@ -1,12 +1,12 @@
 // Prompter.gp - request text or yes/no input from the user
 
-defineClass Prompter morph window textBox textFrame buttons slider answer isDone callback
+defineClass Prompter morph window textBox textFrame buttons slider answer isDone callback detailsText detailsFrame
 
 method textBox Prompter {return textBox}
 method answer Prompter {return answer}
 method isDone Prompter {return isDone}
 
-method initialize Prompter label default editRule anAction {
+method initialize Prompter label default editRule anAction details {
   scale = (global 'scale')
   answer = ''
   isDone = false
@@ -20,17 +20,37 @@ method initialize Prompter label default editRule anAction {
   border = (border window)
   morph = (morph window)
   setHandler morph this
+  minW = (titleBarWidth window)
+
+  if (notNil details) {
+	  detailsText = (newText default)
+	  setText detailsText details
+	  setEditRule detailsText 'static'
+	  setGrabRule (morph detailsText) 'ignore'
+	  detailsFrame = (scrollFrame detailsText (transparent) true)
+	  setExtent (morph detailsFrame) (width (morph detailsText)) (height (morph detailsText))
+	  addPart morph (morph detailsFrame)
+	  minW = ((width (morph detailsFrame)) + (border * 8))
+  }
 
   textBox = (newText default)
   setBorders textBox border border true
-  minW = ((width (morph textBox)) + (60 * scale))
+  minW = (max minW ((width (morph textBox)) + (60 * scale)))
   setEditRule textBox editRule
   setGrabRule (morph textBox) 'ignore'
   textFrame = (scrollFrame textBox clr (== editRule 'line'))
   addPart morph (morph textFrame)
+
   createButtons this
-  minW = (clamp minW (scale * 250) (scale * 400))
-  setExtent morph minW (scale * 100)
+
+  if (notNil details) {
+	  minH = (+ (scale * 100) (height (morph detailsFrame)) border)
+  } else {
+	  minW = (clamp minW (scale * 250) (scale * 400))
+  	  minH = (scale * 100)
+  }
+
+  setExtent morph minW minH
   setMinExtent morph (width morph) (height morph)
 }
 
@@ -142,22 +162,32 @@ method fixLayout Prompter {
   clientArea = (clientArea window)
   border = (border window)
   buttonHeight = (height (bounds buttons))
+  inputTop = (top clientArea)
+  hPadding = (3 * border)
+
+  if (notNil detailsFrame) {
+  	setLeft (morph detailsFrame) ((left clientArea) + hPadding)
+	setTop (morph detailsFrame) (top clientArea) 
+	inputTop = (inputTop + (height (morph detailsFrame)))
+  }
 
   if (notNil slider) {
 	setXCenter (morph slider) (hCenter clientArea)
   } (isNil textBox) { // confirmation dialog
-    setTop (morph textFrame) ((top clientArea) + (2 * border))
+    setTop (morph textFrame) (inputTop + (2 * border))
     setXCenter (morph textFrame) (hCenter clientArea)
   } else { // prompter dialog
-    if (== 'line' (editRule textBox)) {
+    if (notNil detailsText) {
       textHeight = (height (extent textBox))
-      vPadding = (((height clientArea) - (+ textHeight buttonHeight border)) / 2)
-    } (== 'editable' (editRule textBox)) {
+      vPadding = (border * 2)
+	} (== 'editable' (editRule textBox)) {
       textHeight = ((height clientArea) - (+ buttonHeight (border * 2)))
       vPadding = border
+    } (== 'line' (editRule textBox)) {
+      textHeight = (height (extent textBox))
+      vPadding = (((height clientArea) - (+ textHeight buttonHeight border)) / 2)
     }
-    hPadding = (3 * border)
-    setPosition (morph textFrame) ((left clientArea) + hPadding) ((top clientArea) + vPadding)
+    setPosition (morph textFrame) ((left clientArea) + hPadding) (inputTop + vPadding)
     setExtent (morph textFrame) ((width clientArea) - (2 * hPadding)) textHeight
   }
   setXCenter buttons (hCenter clientArea)
