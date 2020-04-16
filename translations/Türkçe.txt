@@ -227,7 +227,7 @@ starting at _
 başla _
 
 join items of list _
-_ lıstesinin öğelerini birleştir
+_ listesinin öğelerini birleştir
 
 separator _
 ayırıcı
@@ -436,7 +436,7 @@ ED1 Stepper Motor
 ED1 Step Motoru
 
 move motor _ _ steps _
- _ motorunu _ adım yürüt _
+_ motorunu _ adım yürüt _
 
 move motor 1 _ and motor 2 _ _ steps
 motor 1 _ ve motor 2 _ _ adım yürüt
@@ -511,10 +511,10 @@ Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird 3renkli-LED _ R _ % G _ % B _ %
 
 Hummingbird Position Servo _ _ °
---MISSING--
+Hummingbird _ Servosunu _ ° yap
 
 Hummingbird Rotation Servo _ _ %
-Hummingbird Sürekli Servo _ _ %
+Hummingbird _ Servosunu _ % döndür
 
 Hummingbird _ _
 Hummingbird _ _
@@ -583,7 +583,7 @@ set servo _ to speed _ (-100 to 100)
 _ servosunun hızını _ yap (-100 to 100)
 
 stop servo _
---MISSING--
+servoyu durdur
 
 LED Display
 LED Ekran
@@ -652,7 +652,7 @@ play frequency _ for _ milliseconds
 _ frekansını _ milisaniye çal
 
 play midi key _ for _ milliseconds
-
+mıdı çal nota _ süre _ milisaniye
 
 Turtle
 Kaplumbağa
@@ -859,7 +859,7 @@ set number property _ title _ min _ max _ @Type _
 numara özellik _ ad _ min _ max _ @Tip _ 
 
 read only _
-salt okunur
+salt okunur _
 
 register event _ type _
 kaydet olay _ tip _
