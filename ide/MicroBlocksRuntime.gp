@@ -280,12 +280,7 @@ method isWebSerial SmallRuntime {
 method selectPort SmallRuntime {
 	if (isNil disconnected) { disconnected = false }
 
-	if (isWebSerial this) {
-// 		portName = 'webserial'
-// 		port = 1
-// 		disconnected = false
-		return
-	}
+	if (isWebSerial this) { return } // do nothing; port must be opened from DOM
 
 	portList = (portList this)
 	menu = (menu 'Connect' (action 'setPort' this) true)
@@ -899,7 +894,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		byteCount = (min 1000 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
-print 'GP sent' bytesSent 'of' (byteCount dataToSend) // xxx
+// print 'GP sent' bytesSent 'of' (byteCount dataToSend) // xxx
 		if (not (isOpenSerialPort port)) {
 			closePort this
 			return
@@ -976,7 +971,7 @@ method processNextMessage SmallRuntime {
 
 	// Read any available bytes and append to recvBuf
 	s = (readSerialPort port true)
-if (notNil s) { print 'GP got' (byteCount s) 'bytes' } // xxx
+// if (notNil s) { print 'GP got' (byteCount s) 'bytes' } // xxx
 	if (notNil s) { recvBuf = (join recvBuf s) }
 	if ((byteCount recvBuf) < 3) { return false } // not enough bytes for even a short message
 
