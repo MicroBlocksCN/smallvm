@@ -30,6 +30,8 @@ function addGPHandlers() {
 	var presentButton = document.getElementById('PresentButton');
 	var goButton = document.getElementById('GoButton');
 	var stopButton = document.getElementById('StopButton');
+	var connectButton = document.getElementById('ConnectButton');
+	var disconnectButton = document.getElementById('DisconnectButton');
 	var fileUploader = document.getElementById('FileUploader');
 	var canvas = document.getElementById('canvas');
 
@@ -42,6 +44,8 @@ function addGPHandlers() {
 	presentButton.onclick = function(evt) { queueGPMessage('present'); };
 	goButton.onclick = function(evt) { queueGPMessage('go'); };
 	stopButton.onclick = function(evt) { queueGPMessage('stop'); };
+	connectButton.onclick = function(evt) { webSerialConnect(); };
+	disconnectButton.onclick = function(evt) { webSerialDisconnect(); };
 	fileUploader.onchange = function(evt) { uploadFiles(fileUploader.files); };
 	canvas.oncontextmenu = function(evt) { evt.preventDefault(); }
 }
@@ -442,7 +446,13 @@ function adjustButtonVisibility() {
 		document.getElementById('SeeInsideButton').style.display = 'inline';
 		document.getElementById('PresentButton').style.display = 'none';
 	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks.html'))) {
-		document.getElementById('controls').style.display = 'none';
+//		document.getElementById('controls').style.display = 'none';
+		document.getElementById('FullscreenButton').style.display = 'none';
+		document.getElementById('UploadButton').style.display = 'none';
+		document.getElementById('SeeInsideButton').style.display = 'none';
+		document.getElementById('PresentButton').style.display = 'none';
+		document.getElementById('GoButton').style.display = 'none';
+		document.getElementById('StopButton').style.display = 'none';
 	} else {
 		document.getElementById('SeeInsideButton').style.display = 'none';
 		document.getElementById('PresentButton').style.display = 'inline';
@@ -639,8 +649,8 @@ async function webSerialConnect() {
 		GP_webSerialReader = null;
 		return null;
 	}
-//	webSerialReadLoop();
-	setInterval(webSerialReadData, 500);
+	webSerialReadLoop();
+//	setInterval(webSerialReadData, 500);
 }
 
 async function webSerialDisconnect() {
@@ -673,26 +683,24 @@ async function webSerialReadLoop() {
 	return null;
 }
 
-function webSerialReadData() {
-console.log('webSerialReadData', GP_webSerialPort, GP_webSerialReader);
-	if (!GP_webSerialReader) return;
-	GP_webSerialReader.read()
-	.then ((value, done) => {
-		if (value) {
-			GP_serialInputBuffers.push(value);
-		}
-		if (done) {
-			GP_webSerialReader.releaseLock();
-			return;
-		}
-	})
-	.catch ((e) => {
-console.log('error in readLoop', e, GP_webSerialPort, GP_webSerialReader);
-		GP_webSerialPort.close()
-		GP_webSerialPort = null;
-		GP_webSerialReader = null;
-	});
-}
+// function webSerialReadData() {
+// 	if (!GP_webSerialReader) return;
+// 	GP_webSerialReader.read()
+// 	.then ((value, done) => {
+// 		if (value) {
+// 			GP_serialInputBuffers.push(value);
+// 		}
+// 		if (done) {
+// 			GP_webSerialReader.releaseLock();
+// 			return;
+// 		}
+// 	})
+// 	.catch ((e) => {
+// 		GP_webSerialPort.close()
+// 		GP_webSerialPort = null;
+// 		GP_webSerialReader = null;
+// 	});
+// }
 
 function webSerialWrite(data) {
 	if (!GP_webSerialPort || !GP_webSerialPort.writable) return 0;  // port not open
@@ -751,7 +759,7 @@ function GP_openSerialPort(id, path, baud) {
 		}
 	}
 	if (hasWebSerial()) {
-		webSerialConnect();
+//		webSerialConnect();
 	} else if (isChromeApp()) {
 		if (GP_serialPortID >= 0) return 1; // already open (not an error)
 		chrome.serial.connect(path, {persistent: true, bitrate: baud}, portOpened)
