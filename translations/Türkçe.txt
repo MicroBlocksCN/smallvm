@@ -118,10 +118,10 @@ stop all
 tüm betikleri durdur
 
 last message
---MISSING--
+son mesaj
 
 Operators
---MISSING--
+İşlemler
 
 _ mod _
 _ mod _
@@ -148,16 +148,16 @@ or _
 veya _
 
 _ is a _
---MISSING--
+_ bir _ dir
 
 boolean
---MISSING--
+boole
 
 number
---MISSING--
+numara
 
 string
---MISSING--
+dizgi
 
 list
 liste
@@ -191,7 +191,7 @@ local _ _
 yerel değişken _ = _
 
 Data
---MISSING--
+Veri
 
 list
 liste
@@ -227,10 +227,10 @@ starting at _
 başla _
 
 join items of list _
---MISSING--
+_ lıstesinin öğelerini birleştir
 
 separator _
---MISSING--
+ayırıcı
 
 unicode _ of _
 unicode öğe# _ dizgi: _
@@ -242,7 +242,7 @@ new list length _
 _ öğeli yeni liste yarat
 
 new byte array length _
---MISSING--
+_ uzunluğunda yeni bayt dizi
 
 free memory
 boş bellek
@@ -276,10 +276,10 @@ i2c set device _ register _ to _
 i2c yaz modül _ yazmaç _ değer _
 
 i2c device _ read list _
---MISSING--
+i2c araç _ liste oku _
 
 i2c device _ write list _
---MISSING--
+i2c araç _ liste yaz _
 
 spi send _
 spi gönder _
@@ -418,7 +418,7 @@ color r _ g _ b _ (0-31)
 renk r _ g _ b _ (0-31)
 
 random color
---MISSING--
+rastgele renk
 
 attach _ LED NeoPixel strip to pin _
 _ LED Neopiksel şeridini pin _ bağla
@@ -442,10 +442,10 @@ move motor 1 _ and motor 2 _ _ steps
 motor 1 _ ve motor 2 _ _ adım yürüt
 
 move motor _ angle _ °
---MISSING--
+_ motorunu  _ ° döndür
 
 move motor _ _ complete turns
---MISSING--
+_ motorunu _ kere tam döndür
 
 stop steppers
 step motorları durdur
@@ -544,7 +544,7 @@ IR Remote
 IR Uzaktan Kumanda
 
 receive IR code
---MISSING--
+IR kod oku
 
 receive IR code from device _
 _ aygıtından IR kod oku
@@ -691,7 +691,7 @@ point in direction _
 _ yönüne dön
 
 WiFi
---MISSING--
+WiFi
 
 wifi connect to _ password _ try _ times
 wifi _ SSIDye bağlan şifre _ _ kere dene
@@ -733,154 +733,154 @@ button _ pressed
 buton _ basıldı
 
 Calliope set LED red _ green _ blue _
---MISSING--
+Calliope LED ayarla kırmızı _ yeşil _ mavi _
 
 Calliope set speaker _
---MISSING--
+Calliope hoparlörü _ yap
 
 Calliope loudness
---MISSING--
+Calliope ses yüksekliği
 
 Circuit Playground set speaker _
---MISSING--
+Circuit Playground hoparlörü _ yap
 
 Circuit Playground slide switch
---MISSING--
+Circuit Playground sürgülü anahtar
 
 attach _ DotStar LEDs to data pin _ clock pin _
---MISSING--
+_ DotStar LED"lerini veri pin _ saat pin _ bağla
 
 set all DotStar LEDs to r _ g _ b _
---MISSING--
+Tüm DotStar LED"lerini k _ y _ m _ yap
 
 set DotStar LED _ to r _ g _ b _
---MISSING--
+DotStar LED _ yi k _ y _ m _ yap
 
 set DotStar brightness _
---MISSING--
+DotStar parlaklığını _ yap
 
 bme280 connected
---MISSING--
+bme280 bağlandı
 
 bmp280 connected
---MISSING--
+bmp280 bağlandı
 
 bmx280 temperature
---MISSING--
+bmx280 ısısı
 
 bmx280 pressure
---MISSING--
+bmx280 basınç
 
 bme280 humidity
---MISSING--
+bme280 nemi
 
 TCS34725 connected
---MISSING--
+TCS34725 bağlandı
 
 TCS34725 rgb
---MISSING--
+TCS34725 kym
 
 color _ name
---MISSING--
+_ renginin adı
 
 temperature (Celsius) DHT11 pin _
---MISSING--
+ısı(Celsius) DHT11 pin _ 
 
 humidity DHT11 pin _
---MISSING--
+nem DHT11 pin _
 
 temperature (Celsius) DHT22 pin _
---MISSING--
+ısı(Celsius) DHT22 pin _
 
 humidity DHT22 pin _
---MISSING--
+nem DHT22 pin _
 
 read PN532 RFID
---MISSING--
+PN532 RFID oku
 
 RFID _ = _
---MISSING--
+RFID _ = _
 
 get PN532 firmware version
---MISSING--
+PN532 bellenim sürümü
 
 HTTP client
---MISSING--
+HTTP istemcisi
 
 _ data _ to http܃// _
---MISSING--
+_ veri _ http܃// _
 
 HTTP server
---MISSING--
+HTTP sunucusu
 
 start HTTP server
---MISSING--
+HTTP sunucusunu başlat
 
 HTTP server request
---MISSING--
+HTTP sunucu isteği
 
 respond _ to HTTP request
---MISSING--
+HTTP isteğini _ yanıtla
 
 with body _
---MISSING--
+gövde _
 
 and headers _
---MISSING--
+ve üstbilgiler _
 
 body of request _
---MISSING--
+istek gövdesi _
 
 path of request _
---MISSING--
+istek yolu _
 
 method of request _
---MISSING--
+istek metodu _
 
 Web Thing
---MISSING--
+Web Nesneleri
 
 set thing name to _
---MISSING--
+nesne adını _ yap
 
 set thing capability to _
---MISSING--
+nesne yeteneğini _ yap
 
 set boolean property _ title _ @Type _
---MISSING--
+boole özellik _ ad _ @Tip _ 
 
 set string property _ title _ @Type _
---MISSING--
+dizgi özellik _ ad _ @Tip _ 
 
 set number property _ title _ @Type _
---MISSING--
+numara özellik _ ad _ @Tip _ 
 
 set number property _ title _ min _ max _ @Type _
---MISSING--
+numara özellik _ ad _ min _ max _ @Tip _ 
 
 read only _
---MISSING--
+salt okunur
 
 register event _ type _
 kaydet olay _ tip _
 
 start WebThing server
---MISSING--
+WebThing sunucusunu başlat
 
 trigger event _
---MISSING--
+_ olayını tetikle
 
 thing description JSON
---MISSING--
+nesnenin tanımı JSON 
 
 properties JSON
---MISSING--
+özellikler JSON
 
 event definitions JSON
---MISSING--
+olayların tanımı JSON
 
 events JSON
---MISSING--
+olaylar JSON
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -924,7 +924,7 @@ by
 tarafından
 
 Created with GP
---MISSING--
+GP ile yaratıldı
 
 More info at http://microblocks.fun
 Daha fazla bilgi için: http://microblocks.fun
@@ -1020,10 +1020,10 @@ MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Sunucusu 6473 numaralı bağlantı noktasında dinliyor
 
 disable autoloading board libraries
---MISSING--
+kitaplıklarının otomatik yüklemesini devre dışı bırak
 
 enable autoloading board libraries
---MISSING--
+kitaplıklarının otomatik yüklemesini etkinleştir
 
 wipe and repartition esp32
 esp32 yi silme ve yeniden bölümleme
@@ -1214,16 +1214,16 @@ Libraries
 Kütüphaneler
 
 Examples
---MISSING--
+Örnekler
 
 Desktop
---MISSING--
+Masaüstü
 
 Computer
---MISSING--
+Bilgisayar
 
 Cloud
---MISSING--
+Bulut
 
 File
 Dosya
@@ -1238,44 +1238,44 @@ File name:
 Dosya adı:
 
 New Folder
---MISSING--
+Yeni Klasör
 
 by
 tarafından
 
 Depends:
---MISSING--
+Bağlı:
 
 Tags:
---MISSING--
+Tegler:
 
 Path, name or URL for library?
---MISSING--
+Kütüphanenin Yol, ad veya URL'si?
 
 Invalid URL
---MISSING--
+geçersiz URL
 
 Could not fetch library.
---MISSING--
+Kütüphane alınamadı.
 
 Host does not exist or is currently down.
---MISSING--
+Ana makine mevcut değil veya şu anda kapalı.
 
 File not found in server.
---MISSING--
+Dosya sunucuda bulunamadı.
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
---MISSING--
+Sunucu HTTPS bekliyor ve MicroBlocks şu anda desteklemiyor.
 
 library information
---MISSING--
+kütüphane bilgileri
 
 built-in library
---MISSING--
+yerleşik kütüphane
 
 Dependency path, name or URL?
---MISSING--
+Bağımlılık yol, ad veya URl'si
 
 Tag name?
---MISSING--
+Teg adı?
 
