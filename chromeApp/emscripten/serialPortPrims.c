@@ -376,6 +376,13 @@ OBJ primIsOpenSerialPort(int nargs, OBJ args[]) {
 	if (!isInt(args[0])) return badPortIDFailure();
 	int portID = obj2int(args[0]);
 
+	#ifdef EMSCRIPTEN
+		int isOpen = EM_ASM_INT({
+			return GP_isOpenSerialPort();
+		});
+		return isOpen ? trueObj : falseObj;
+	#endif
+
 	return (CLOSED != getPortHandle(portID)) ? trueObj : falseObj;
 }
 
@@ -399,8 +406,13 @@ OBJ primReadSerialPort(int nargs, OBJ args[]) {
 
 	int isBinary = (nargs > 1) && (args[1] == trueObj);
 
-	PortHandle h = getPortHandle(portID);
-	if (h == CLOSED) return nilObj;
+	PortHandle h;
+	#ifdef EMSCRIPTEN
+		h = 1;
+	#else
+		h = getPortHandle(portID);
+		if (h == CLOSED) return nilObj;
+	#endif
 
 	char buf[READ_BUF_SIZE];
 	int n = readPort(h, buf, READ_BUF_SIZE);
@@ -430,8 +442,13 @@ OBJ primWriteSerialPort(int nargs, OBJ args[]) {
 	if (!isInt(args[0])) return badPortIDFailure();
 	int portID = obj2int(args[0]);
 
-	PortHandle h = getPortHandle(portID);
-	if (h == CLOSED) return -1; // same as int2obj(-1)
+	PortHandle h;
+	#ifdef EMSCRIPTEN
+		h = 1;
+	#else
+		h = getPortHandle(portID);
+		if (h == CLOSED) return int2obj(0);
+	#endif
 
 	OBJ data = args[1];
 	if (!(IS_CLASS(data, BinaryDataClass) || IS_CLASS(data, StringClass))) {
@@ -445,7 +462,7 @@ OBJ primWriteSerialPort(int nargs, OBJ args[]) {
 		printf("Write error, serial port %d\n", portID);
 		closePort(portID, h);
 		portHandle[portID] = CLOSED;
-		return -1; // same as int2obj(-1)
+		return int2obj(0);
 	}
 	return int2obj(n); // return bytes written
 }

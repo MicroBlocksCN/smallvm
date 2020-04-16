@@ -281,9 +281,9 @@ method selectPort SmallRuntime {
 	if (isNil disconnected) { disconnected = false }
 
 	if (isWebSerial this) {
-		portName = 'webserial'
-		port = (openSerialPort portName 115200)
-		disconnected = false
+// 		portName = 'webserial'
+// 		port = 1
+// 		disconnected = false
 		return
 	}
 
@@ -459,7 +459,16 @@ method tryToConnect SmallRuntime {
 	// Called when there is no connection or the board does not respond.
 
 	if (isWebSerial this) {
-		return (and (notNil port) (isOpenSerialPort port))
+		if (isOpenSerialPort 1) {
+			connectionStartTime = (msecsSinceStart)
+			portName = 'webserial'
+			port = 1
+			return 'connected'
+		} else {
+			portName = nil
+			port = nil
+			return 'not connected'
+		}
 	}
 
 	connectionAttemptTimeout = 5000 // milliseconds
@@ -890,6 +899,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		byteCount = (min 1000 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
+print 'GP sent' bytesSent 'of' (byteCount dataToSend) // xxx
 		if (not (isOpenSerialPort port)) {
 			closePort this
 			return
@@ -938,6 +948,7 @@ method waitForResponse SmallRuntime {
 }
 
 method ensurePortOpen SmallRuntime {
+	if (isWebSerial this) { return }
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		if (and (notNil portName) (contains (portList this) portName)) {
 			port = (safelyRun (action 'openSerialPort' portName 115200))
@@ -965,6 +976,7 @@ method processNextMessage SmallRuntime {
 
 	// Read any available bytes and append to recvBuf
 	s = (readSerialPort port true)
+if (notNil s) { print 'GP got' (byteCount s) 'bytes' } // xxx
 	if (notNil s) { recvBuf = (join recvBuf s) }
 	if ((byteCount recvBuf) < 3) { return false } // not enough bytes for even a short message
 

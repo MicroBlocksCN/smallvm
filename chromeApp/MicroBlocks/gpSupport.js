@@ -654,7 +654,8 @@ async function webSerialConnect() {
 		return null;
 	}
 console.log('webSerialConnected!'); // xxx
-	setTimeout(webSerialReadData, 5);
+//	setTimeout(webSerialReadData, 5);
+	webSerialReadLoop();
 }
 
 async function webSerialDisconnect() {
@@ -668,35 +669,13 @@ console.log('webSerialDisconnect -- done'); // xxx
 	GP_webSerialPort = null;
 }
 
-// async function webSerialReadLoop() {
-// 	try {
-// 		while (true) {
-// 			var { value, done } = await GP_webSerialReader.read();
-// 			if (value) {
-// console.log('got', value);
-// 				GP_serialInputBuffers.push(value);
-// 			}
-// 			if (done) {
-// 				await GP_webSerialReader.releaseLock();
-// 				return null;
-// 			}
-// 		}
-// 	} catch (e) {
-// console.log('webSerialReadLoop error', e); // xxx
-// 		GP_webSerialPort = null;
-// 		GP_webSerialReader = null;
-// 	}
-// 	return null;
-// }
-
 function webSerialReadData() {
 	if (!GP_webSerialReader) return;
 	GP_webSerialReader.read()
 	.then (({value, done}) => {
 		if (value) {
-console.log('webSerialReadData got', value.length, 'bytes'); // xxx
 			GP_serialInputBuffers.push(value);
-			setTimeout(webSerialReadData, 5);
+			setTimeout(webSerialReadData, 20);
 		}
 		if (done) {
 			GP_webSerialReader.releaseLock();
@@ -709,6 +688,27 @@ console.log('webSerialReadData error', e); // xxx
 		GP_webSerialPort = null;
 		GP_webSerialReader = null;
 	});
+}
+
+async function webSerialReadLoop() {
+	try {
+		while (true) {
+			var { value, done } = await GP_webSerialReader.read();
+			if (value) {
+				GP_serialInputBuffers.push(value);
+			}
+			if (done) {
+				await GP_webSerialReader.releaseLock();
+				return null;
+			}
+		}
+	} catch (e) {
+//		try { await GP_webSerialPort.close(); } catch (e) { }
+console.log('webSerialReadData error', e); // xxx
+		GP_webSerialPort = null;
+		GP_webSerialReader = null;
+	}
+	return null;
 }
 
 function webSerialWrite(data) {
@@ -767,9 +767,7 @@ function GP_openSerialPort(id, path, baud) {
 			GP_serialPortListenersAdded = true;
 		}
 	}
-	if (hasWebSerial()) {
-//		webSerialConnect();
-	} else if (isChromeApp()) {
+	if (isChromeApp()) {
 		if (GP_serialPortID >= 0) return 1; // already open (not an error)
 		chrome.serial.connect(path, {persistent: true, bitrate: baud}, portOpened)
 	}
