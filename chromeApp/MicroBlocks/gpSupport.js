@@ -642,6 +642,9 @@ function webSerialIsConnected() {
 }
 
 async function webSerialConnect() {
+	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
+	// the Emscripten UI thread.
+
 	if (GP_webSerialPort) webSerialDisconnect();
 	try {
 		GP_webSerialPort = await navigator.serial.requestPort();
@@ -656,6 +659,9 @@ async function webSerialConnect() {
 }
 
 async function webSerialDisconnect() {
+	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
+	// the Emscripten UI thread.
+
 	if (GP_webSerialPort) {
 		if (GP_webSerialReader) await GP_webSerialReader.cancel();
 		await GP_webSerialPort.close();
@@ -665,6 +671,8 @@ async function webSerialDisconnect() {
 }
 
 async function webSerialReadLoop() {
+	// Called from webSerialConnect(), which is invoked via a DOM button.
+
 	try {
 		while (true) {
 			var { value, done } = await GP_webSerialReader.read();
