@@ -148,7 +148,7 @@ or _
 veya _
 
 _ is a _
-_ bir _ dir
+_ bir _ 
 
 boolean
 boole
@@ -221,7 +221,7 @@ to _
 bitir _
 
 find _ in _
-bul bunu _ bunda _
+_ bul _ içinde
 
 starting at _
 başla _
@@ -230,10 +230,10 @@ join items of list _
 _ listesinin öğelerini birleştir
 
 separator _
-ayırıcı
+ayırıcı _
 
 unicode _ of _
-unicode öğe# _ dizgi: _
+unicode harf# _ dizgi: _
 
 string from unicode _
 unicode dan harfe _
