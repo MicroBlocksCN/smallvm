@@ -638,8 +638,12 @@ function hasWebSerial() {
 GP_webSerialPort = null;
 GP_webSerialReader = null;
 
+function webSerialIsConnected() {
+	return !(!GP_webSerialPort || !GP_webSerialReader);
+}
+
 async function webSerialConnect() {
-// 	if (GP_webSerialPort) await webSerialDisconnect();
+	if (GP_webSerialPort) webSerialDisconnect();
 	try {
 		GP_webSerialPort = await navigator.serial.requestPort();
 		await GP_webSerialPort.open({ baudrate: 115200 });
@@ -649,58 +653,63 @@ async function webSerialConnect() {
 		GP_webSerialReader = null;
 		return null;
 	}
-	webSerialReadLoop();
-//	setInterval(webSerialReadData, 500);
+console.log('webSerialConnected!'); // xxx
+	setTimeout(webSerialReadData, 5);
 }
 
 async function webSerialDisconnect() {
 console.log('webSerialDisconnect', GP_webSerialPort); // xxx
 	if (GP_webSerialPort) {
-		await GP_webSerialReader.cancel();
+		if (GP_webSerialReader) await GP_webSerialReader.cancel();
 		await GP_webSerialPort.close();
 		GP_webSerialReader = null;
+console.log('webSerialDisconnect -- done'); // xxx
 	}
 	GP_webSerialPort = null;
 }
 
-async function webSerialReadLoop() {
-	try {
-		while (true) {
-			var { value, done } = await GP_webSerialReader.read();
-			if (value) {
-				GP_serialInputBuffers.push(value);
-			}
-			if (done) {
-				await GP_webSerialReader.releaseLock();
-				return null;
-			}
-		}
-	} catch (e) {
-//		try { await GP_webSerialPort.close(); } catch (e) { }
-		GP_webSerialPort = null;
-		GP_webSerialReader = null;
-	}
-	return null;
-}
-
-// function webSerialReadData() {
-// 	if (!GP_webSerialReader) return;
-// 	GP_webSerialReader.read()
-// 	.then ((value, done) => {
-// 		if (value) {
-// 			GP_serialInputBuffers.push(value);
+// async function webSerialReadLoop() {
+// 	try {
+// 		while (true) {
+// 			var { value, done } = await GP_webSerialReader.read();
+// 			if (value) {
+// console.log('got', value);
+// 				GP_serialInputBuffers.push(value);
+// 			}
+// 			if (done) {
+// 				await GP_webSerialReader.releaseLock();
+// 				return null;
+// 			}
 // 		}
-// 		if (done) {
-// 			GP_webSerialReader.releaseLock();
-// 			return;
-// 		}
-// 	})
-// 	.catch ((e) => {
-// 		GP_webSerialPort.close()
+// 	} catch (e) {
+// console.log('webSerialReadLoop error', e); // xxx
 // 		GP_webSerialPort = null;
 // 		GP_webSerialReader = null;
-// 	});
+// 	}
+// 	return null;
 // }
+
+function webSerialReadData() {
+	if (!GP_webSerialReader) return;
+	GP_webSerialReader.read()
+	.then (({value, done}) => {
+		if (value) {
+console.log('webSerialReadData got', value.length, 'bytes'); // xxx
+			GP_serialInputBuffers.push(value);
+			setTimeout(webSerialReadData, 5);
+		}
+		if (done) {
+			GP_webSerialReader.releaseLock();
+			return;
+		}
+	})
+	.catch ((e) => {
+console.log('webSerialReadData error', e); // xxx
+		GP_webSerialPort.close()
+		GP_webSerialPort = null;
+		GP_webSerialReader = null;
+	});
+}
 
 function webSerialWrite(data) {
 	if (!GP_webSerialPort || !GP_webSerialPort.writable) return 0;  // port not open
@@ -765,6 +774,12 @@ function GP_openSerialPort(id, path, baud) {
 		chrome.serial.connect(path, {persistent: true, bitrate: baud}, portOpened)
 	}
 	return 1; // connect is asynchronous, but assume it will succeed
+}
+
+function GP_isOpenSerialPort() {
+	if (hasWebSerial()) return webSerialIsConnected();
+	if (isChromeApp()) return (GP_serialPortID >= 0);
+	return false;
 }
 
 function GP_closeSerialPort() {
