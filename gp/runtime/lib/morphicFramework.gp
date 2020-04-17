@@ -995,14 +995,6 @@ method showMenu Page aMenu x y {
 
 to inform msg { inform (global 'page') msg }
 
-method inform Page msg {
-  m = (menu msg)
-  addItem m (localized 'Ok') 'nop'
-  buildMorph m this (y hand)
-  setGrabRule (morph m) 'handle'
-  showMenu this m ((x hand) - (half (width (morph m)))) ((y hand) - (half (height (morph m))))
-}
-
 method closeUnclickedMenu Page aHandler {
   removeHint this
   if (isNil activeMenu) {return}
@@ -1074,6 +1066,17 @@ method confirm Page title question yesLabel noLabel callback {
     destroy (morph p)
     return (answer p)
   }
+}
+
+method inform Page details title yesLabel {
+  p = (new 'Prompter')
+  if (isNil yesLabel) { yesLabel = 'Ok' }
+  initializeForInform p title details yesLabel
+  setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
+  addPart morph (morph p)
+  setField hand 'lastTouchTime' nil
+  while (not (isDone p)) {doOneCycle this}
+  destroy (morph p)
 }
 
 // events

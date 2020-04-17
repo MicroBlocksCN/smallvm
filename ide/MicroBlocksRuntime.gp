@@ -502,16 +502,14 @@ method ideVersion SmallRuntime { return '0.4.0' }
 method latestVmVersion SmallRuntime { return 79 }
 
 method showAboutBox SmallRuntime {
-	vmVersionReport = ''
+	vmVersionReport = (newline)
 	if (notNil vmVersion) {
-		vmVersionReport = (join '(Firmware v' vmVersion ')' (newline))
+		vmVersionReport = (join ' (Firmware v' vmVersion ')' (newline))
 	}
 	inform (global 'page') (join
-		'MicroBlocks v' (ideVersion this) (newline)
-		vmVersionReport
-		(localized 'by') (newline)
-		'John Maloney, Bernat Romagosa, & Jens Mönig' (newline)
-		(localized 'Created with GP') '(gpblocks.org)' (newline)
+		'MicroBlocks v' (ideVersion this) vmVersionReport (newline)
+		(localized 'by') ' John Maloney, Bernat Romagosa, & Jens Mönig.' (newline)
+		(localized 'Created with GP') ' (gpblocks.org)' (newline) (newline)
 		(localized 'More info at http://microblocks.fun'))
 }
 
@@ -551,7 +549,7 @@ method versionReceived SmallRuntime versionString {
 		checkVmVersion this
 		installBoardSpecificBlocks this
 	} else { // not first time: show the version number
-		inform (global 'page') (join 'MicroBlocks Virtual Machine' (newline) versionString)
+		inform (global 'page') (join 'MicroBlocks Virtual Machine ' versionString)
 	}
 }
 

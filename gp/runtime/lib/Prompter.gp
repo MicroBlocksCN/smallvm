@@ -23,8 +23,7 @@ method initialize Prompter label default editRule anAction details {
   minW = (titleBarWidth window)
 
   if (notNil details) {
-	  detailsText = (newText default)
-	  setText detailsText details
+	  detailsText = (newText details)
 	  setEditRule detailsText 'static'
 	  setGrabRule (morph detailsText) 'ignore'
 	  detailsFrame = (scrollFrame detailsText (transparent) true)
@@ -46,6 +45,7 @@ method initialize Prompter label default editRule anAction details {
   createButtons this
 
   if (notNil details) {
+	  minH = (+ (height buttons) (height (morph textFrame)) (height (morph detailsFrame)) (border * 4))
 	  minH = (+ (scale * 100) (height (morph detailsFrame)) border)
   } else {
 	  minW = (clamp minW (scale * 250) (scale * 400))
@@ -82,6 +82,34 @@ method initializeForConfirm Prompter label question yesLabel noLabel anAction {
   xBtnWidth = (width (morph (getField window 'closeBtn')))
   w = (max textWidth buttonWidth labelWidth)
   setExtent morph (+ w xBtnWidth (4 * border)) (+ (height (morph lbl)) (height (morph textFrame)) (height (bounds buttons)) (8 * border))
+  setMinExtent morph (width morph) (height morph)
+}
+
+method initializeForInform Prompter label details yesLabel {
+  isDone = false
+
+  if (isNil label) {label = 'Information'}
+  if (isNil yesLabel) {yesLabel = 'Yes'}
+
+  scale = (global 'scale')
+  window = (window (localized label))
+  border = (border window)
+  morph = (morph window)
+  setHandler morph this
+  minW = (max (titleBarWidth window) 360)
+  lbl = (getField window 'label')
+
+  detailsText = (newText (localized details) (fontName lbl) (fontSize lbl) (gray 0))
+  detailsFrame = (scrollFrame detailsText (transparent) true)
+  setExtent (morph detailsFrame) minW 0
+  wrapLinesToWidth detailsText (width (morph detailsFrame))
+  setExtent (morph detailsFrame) minW (height (morph detailsText))
+  addPart morph (morph detailsFrame)
+  minW = ((width (morph detailsFrame)) + (border * 8))
+
+  createButtons this (localized yesLabel)
+  minH = (+ (height (morph lbl)) (height (morph detailsFrame)) (height (bounds buttons)) (3 * border))
+  setExtent morph minW minH
   setMinExtent morph (width morph) (height morph)
 }
 
@@ -164,7 +192,6 @@ method fixLayout Prompter {
   clientArea = (clientArea window)
   border = (border window)
   buttonHeight = (height (bounds buttons))
-  inputTop = (top clientArea)
   hPadding = (3 * border)
 
   setXCenter buttons (hCenter clientArea)
@@ -173,29 +200,35 @@ method fixLayout Prompter {
   if (notNil detailsFrame) {
   	setLeft (morph detailsFrame) ((left clientArea) + hPadding)
 	setTop (morph detailsFrame) (top clientArea) 
-	setExtent (morph detailsFrame) ((width clientArea) - (2 * hPadding)) ((((height clientArea) - (height buttons)) - (height (morph textBox))) - (border * 4))
+	detailsHeight = (((height clientArea) - (height buttons)) - (border * 3))
+	if (notNil textBox) {
+		detailsHeight = ((detailsHeight - ((height (morph textBox)))) - border)
+	}
+	setExtent (morph detailsFrame) ((width clientArea) - (2 * hPadding)) detailsHeight
 	wrapLinesToWidth detailsText (width (morph detailsFrame))
   }
 
-  if (notNil slider) {
-	setXCenter (morph slider) (hCenter clientArea)
-  } (isNil textBox) { // confirmation dialog
-    setBottom (morph textFrame) ((top buttons) + (2 * border))
-    setXCenter (morph textFrame) (hCenter clientArea)
-  } else { // prompter dialog
-    if (notNil detailsText) {
-      textHeight = (height (extent textBox))
-      vPadding = (border * 2)
-	} (== 'editable' (editRule textBox)) {
-      textHeight = ((height clientArea) - (+ buttonHeight (border * 2)))
-      vPadding = border
-    } (== 'line' (editRule textBox)) {
-      textHeight = (height (extent textBox))
-      vPadding = (((height clientArea) - (+ textHeight buttonHeight border)) / 2)
-    }
-    setLeft (morph textFrame) ((left clientArea) + hPadding)
-	setBottom (morph textFrame) ((top buttons) - vPadding)
-    setExtent (morph textFrame) ((width clientArea) - (2 * hPadding)) textHeight
+  if (notNil textFrame) {
+	if (notNil slider) {
+		setXCenter (morph slider) (hCenter clientArea)
+	} (isNil textBox) { // confirmation dialog
+		setBottom (morph textFrame) ((top buttons) - (2 * border))
+		setXCenter (morph textFrame) (hCenter clientArea)
+	} else { // prompter dialog
+		if (notNil detailsText) {
+		  textHeight = (height (extent textBox))
+		  vPadding = (border * 2)
+		} (== 'editable' (editRule textBox)) {
+		  textHeight = ((height clientArea) - (+ buttonHeight (border * 2)))
+		  vPadding = border
+		} (== 'line' (editRule textBox)) {
+		  textHeight = (height (extent textBox))
+		  vPadding = (((height clientArea) - (+ textHeight buttonHeight border)) / 2)
+		}
+		setLeft (morph textFrame) ((left clientArea) + hPadding)
+		setBottom (morph textFrame) ((top buttons) - vPadding)
+		setExtent (morph textFrame) ((width clientArea) - (2 * hPadding)) textHeight
+	}
   }
 }
 
