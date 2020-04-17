@@ -14,5 +14,8 @@ Funding source: MicroBlocks donation funds
 | 10/04/2020 | 4 | Added UI to fetch lib from network. | 3840665
 | 11/04/2020 | 1 | New filepicker icons | b359dca
 | 13/04/2020 | 5 | Autoupdate libs in projects upon load, plus a bunch of bugfixes | c18cbf0
+| 14/04/2020 | 5 | Update localization files, plus Catalan and Spanish translations, to include all latest strings | a6e14d2
+| 15/04/2020 | 4 | Web version debugging session with John, plus GnuBlocks VM fixes and support to install M5Atom-Matrix and M5Stick VMs from the IDE |
+| 16/04/2020 | 2 | Added information box to Prompter | 091893c
 
-| **Total**  | 40 | |
+| **Total**  | 51 | |
