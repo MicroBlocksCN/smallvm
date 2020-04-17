@@ -1255,8 +1255,8 @@ Path, name or URL for library?
 Invalid URL
 URL inválida
 
-Could not fetch library.
-No se ha podido obtener la librería.
+Could not fetch library
+No se ha podido obtener la librería
 
 Host does not exist or is currently down.
 El servidor no existe o está fuera de servicio.

@@ -1255,8 +1255,8 @@ Camí, nom o URL de la llibreria?
 Invalid URL
 URL invàlida
 
-Could not fetch library.
-No s'ha pogut obtenir la llibreria.
+Could not fetch library
+No s'ha pogut obtenir la llibreria
 
 Host does not exist or is currently down.
 El servidor no existeix, o està fora de servei.

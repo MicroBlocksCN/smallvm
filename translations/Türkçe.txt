@@ -1255,8 +1255,8 @@ Kütüphanenin Yol, ad veya URL'si?
 Invalid URL
 geçersiz URL
 
-Could not fetch library.
-Kütüphane alınamadı.
+Could not fetch library
+Kütüphane alınamadı
 
 Host does not exist or is currently down.
 Ana makine mevcut değil veya şu anda kapalı.
