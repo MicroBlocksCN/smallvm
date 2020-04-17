@@ -506,11 +506,11 @@ method showAboutBox SmallRuntime {
 	if (notNil vmVersion) {
 		vmVersionReport = (join ' (Firmware v' vmVersion ')' (newline))
 	}
-	inform (global 'page') (join
+	(inform (global 'page') (join
 		'MicroBlocks v' (ideVersion this) vmVersionReport (newline)
 		(localized 'by') ' John Maloney, Bernat Romagosa, & Jens Mönig.' (newline)
 		(localized 'Created with GP') ' (gpblocks.org)' (newline) (newline)
-		(localized 'More info at http://microblocks.fun'))
+		(localized 'More info at http://microblocks.fun')) 'About MicroBlocks')
 }
 
 method getVersion SmallRuntime {
@@ -549,7 +549,7 @@ method versionReceived SmallRuntime versionString {
 		checkVmVersion this
 		installBoardSpecificBlocks this
 	} else { // not first time: show the version number
-		inform (global 'page') (join 'MicroBlocks Virtual Machine ' versionString)
+		inform (global 'page') (join 'MicroBlocks Virtual Machine ' versionString) 'Firmware version'
 	}
 }
 
@@ -1268,9 +1268,10 @@ method installVM SmallRuntime wipeFlashFlag downloadLatest {
 			popUpAtHand menu (global 'page')
 		}
 	} else {
-		inform (join
+		(inform (join
 			(localized 'No boards found; is your board plugged in?') (newline)
 			(localized 'For AdaFruit boards, double-click reset button and try again.'))
+			'No boards found')
 	}
 }
 

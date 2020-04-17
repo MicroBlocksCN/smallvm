@@ -1070,7 +1070,6 @@ method confirm Page title question yesLabel noLabel callback {
 
 method inform Page details title yesLabel {
   p = (new 'Prompter')
-  if (isNil yesLabel) { yesLabel = 'Ok' }
   initializeForInform p title details yesLabel
   setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
   addPart morph (morph p)

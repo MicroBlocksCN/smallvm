@@ -1041,25 +1041,22 @@ method importLibraryFromUrl MicroBlocksScripter fullUrl {
 
 	// Check if response is valid
 	if (isEmpty libSource) {
-		inform (global 'page') (join
-			(localized 'Could not fetch library.')
-			(newline)
-			(localized 'Host does not exist or is currently down.'))
+		(inform (global 'page')
+			(localized 'Host does not exist or is currently down.')
+			'Could not fetch library')
 		return false
 	} ((findSubstring '404' (first (lines libSource))) > 0) {
 		// 404 not found. Host seems okay, but file can't be fetched.
-		inform (global 'page') (join
-			(localized 'Could not fetch library.')
-			(newline)
-			(localized 'File not found in server.'))
+		(inform (global 'page')
+			(localized 'File not found in server.')
+			'Could not fetch library')
 		return false
 	} ((findSubstring '301' (first (lines libSource))) > 0) {
 		// Moved permanently. Normally returned when we try to access a URL by
 		// HTTP and are redirected to the HTTPS equivalent
-		inform (global 'page') (join
-			(localized 'Could not fetch library.')
-			(newline)
-			(localized 'Server expects HTTPS, and MicroBlocks doesn''t currently support it.'))
+		(inform (global 'page') 
+			(localized 'Server expects HTTPS, and MicroBlocks doesn''t currently support it.')
+			'Could not fetch library')
 		return false
 	}
 

@@ -41,7 +41,7 @@ method updateScale Window {
 method fixLayout Window {
   labelSize = (+ (height (morph label)) border)
   clientArea = (rect (+ (left morph) border) (+ (top morph) labelSize border) (- (width morph) (border * 2)) ((height morph) - (+ labelSize (border * 2))))
-  setPosition (morph label) (+ (left morph) (((- (width morph) (width (morph label))) - (width (morph closeBtn))) / 2)) (+ (top morph) border)
+  setPosition (morph label) (+ (left morph) ((- (width morph) (width (morph label))) / 2)) (+ (top morph) border)
   setTop (morph closeBtn) (+ (top morph) border)
   setRight (morph closeBtn) ((right morph) - border)
   setRight (morph resizer) (right clientArea)

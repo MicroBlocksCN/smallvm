@@ -61,10 +61,11 @@ to checkLatestVersion {
 	latest = (toInteger (at latestVersion i))
 	current = (toInteger (at currentVersion i))
 	if (latest > current) {
-	  inform (global 'page') (join
+	  (inform (global 'page') (join
 		'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
 		(newline)
 		'Get it now at http://microblocks.fun')
+		'New version available')
 	} (current > latest) {
 	  return
 	}
@@ -674,11 +675,12 @@ method hideAdvancedBlocks MicroBlocksEditor {
 
 method startThingServer MicroBlocksEditor {
   if (start thingServer) {
-	inform 'MicroBlocks HTTP Server listening on port 6473'
+	(inform 'MicroBlocks HTTP Server listening on port 6473' 'Mozilla WebThings server')
   } else {
-	inform (join
+	(inform (join
 		'Failed to start Mozilla WebThings server.' (newline)
 		'Please make sure that no other service is running at port 6473.')
+		'Mozilla WebThings server')
   }
 }
 

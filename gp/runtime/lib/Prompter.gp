@@ -85,21 +85,23 @@ method initializeForConfirm Prompter label question yesLabel noLabel anAction {
   setMinExtent morph (width morph) (height morph)
 }
 
-method initializeForInform Prompter label details yesLabel {
+method initializeForInform Prompter label details okLabel {
   isDone = false
 
   if (isNil label) {label = 'Information'}
-  if (isNil yesLabel) {yesLabel = 'Yes'}
+  if (isNil okLabel) {okLabel = 'Ok'}
 
   scale = (global 'scale')
   window = (window (localized label))
   border = (border window)
   morph = (morph window)
   setHandler morph this
-  minW = (max (titleBarWidth window) 360)
+  minW = (titleBarWidth window)
   lbl = (getField window 'label')
 
-  detailsText = (newText (localized details) (fontName lbl) (fontSize lbl) (gray 0))
+  if ((count (lines details)) == 1) { align = 'center' } else { align = 'left' }
+
+  detailsText = (newText (localized details) (fontName lbl) (fontSize lbl) (gray 0) align)
   detailsFrame = (scrollFrame detailsText (transparent) true)
   setExtent (morph detailsFrame) minW 0
   wrapLinesToWidth detailsText (width (morph detailsFrame))
@@ -107,7 +109,7 @@ method initializeForInform Prompter label details yesLabel {
   addPart morph (morph detailsFrame)
   minW = ((width (morph detailsFrame)) + (border * 8))
 
-  createButtons this (localized yesLabel)
+  createButtons this (localized okLabel) nil true // single button
   minH = (+ (height (morph lbl)) (height (morph detailsFrame)) (height (bounds buttons)) (3 * border))
   setExtent morph minW minH
   setMinExtent morph (width morph) (height morph)
@@ -155,15 +157,20 @@ method initializeForSlider Prompter title anAction minValue maxValue currentValu
   setMinExtent morph (width morph) (height morph)
 }
 
-method createButtons Prompter okLabel cancelLabel {
+method createButtons Prompter okLabel cancelLabel singleButton {
+  if (isNil singleButton) { singleButton = false }
   if (isNil okLabel) {okLabel = 'OK'}
-  if (isNil cancelLabel) {cancelLabel = 'Cancel'}
   buttons = (newMorph)
   okButton = (pushButton okLabel (gray 130) (action 'accept' this))
   addPart buttons (morph okButton)
-  cancelButton = (pushButton cancelLabel (gray 130) (action 'cancel' this))
-  addPart buttons (morph cancelButton)
-  setPosition (morph cancelButton) (+ (right (morph okButton)) (border window)) (top (morph okButton))
+
+  if (not singleButton) {
+	  if (isNil cancelLabel) {cancelLabel = 'Cancel'}
+	  cancelButton = (pushButton cancelLabel (gray 130) (action 'cancel' this))
+	  addPart buttons (morph cancelButton)
+	  setPosition (morph cancelButton) (+ (right (morph okButton)) (border window)) (top (morph okButton))
+  }
+
   setBounds buttons (fullBounds buttons)
   addPart morph buttons
 }
@@ -204,8 +211,13 @@ method fixLayout Prompter {
 	if (notNil textBox) {
 		detailsHeight = ((detailsHeight - ((height (morph textBox)))) - border)
 	}
-	setExtent (morph detailsFrame) ((width clientArea) - (2 * hPadding)) detailsHeight
-	wrapLinesToWidth detailsText (width (morph detailsFrame))
+	if ((alignment detailsText) == 'center') {
+		setExtent (morph detailsFrame) (width (extent detailsText))
+		setCenter (morph detailsFrame) (hCenter clientArea) ((vCenter clientArea) - border)
+	} else {
+		setExtent (morph detailsFrame) ((width clientArea) - (2 * hPadding)) detailsHeight
+		wrapLinesToWidth detailsText (width (morph detailsFrame))
+	}
   }
 
   if (notNil textFrame) {
