@@ -28,7 +28,9 @@ method initialize Prompter label default editRule anAction details {
 	  setEditRule detailsText 'static'
 	  setGrabRule (morph detailsText) 'ignore'
 	  detailsFrame = (scrollFrame detailsText (transparent) true)
-	  setExtent (morph detailsFrame) (width (morph detailsText)) (height (morph detailsText))
+	  setExtent (morph detailsFrame) minW 0
+	  wrapLinesToWidth detailsText (width (morph detailsFrame))
+	  setExtent (morph detailsFrame) minW (height (morph detailsText))
 	  addPart morph (morph detailsFrame)
 	  minW = ((width (morph detailsFrame)) + (border * 8))
   }
@@ -165,16 +167,20 @@ method fixLayout Prompter {
   inputTop = (top clientArea)
   hPadding = (3 * border)
 
+  setXCenter buttons (hCenter clientArea)
+  setBottom buttons ((bottom clientArea) - border)
+
   if (notNil detailsFrame) {
   	setLeft (morph detailsFrame) ((left clientArea) + hPadding)
 	setTop (morph detailsFrame) (top clientArea) 
-	inputTop = (inputTop + (height (morph detailsFrame)))
+	setExtent (morph detailsFrame) ((width clientArea) - (2 * hPadding)) ((((height clientArea) - (height buttons)) - (height (morph textBox))) - (border * 4))
+	wrapLinesToWidth detailsText (width (morph detailsFrame))
   }
 
   if (notNil slider) {
 	setXCenter (morph slider) (hCenter clientArea)
   } (isNil textBox) { // confirmation dialog
-    setTop (morph textFrame) (inputTop + (2 * border))
+    setBottom (morph textFrame) ((top buttons) + (2 * border))
     setXCenter (morph textFrame) (hCenter clientArea)
   } else { // prompter dialog
     if (notNil detailsText) {
@@ -187,11 +193,10 @@ method fixLayout Prompter {
       textHeight = (height (extent textBox))
       vPadding = (((height clientArea) - (+ textHeight buttonHeight border)) / 2)
     }
-    setPosition (morph textFrame) ((left clientArea) + hPadding) (inputTop + vPadding)
+    setLeft (morph textFrame) ((left clientArea) + hPadding)
+	setBottom (morph textFrame) ((top buttons) - vPadding)
     setExtent (morph textFrame) ((width clientArea) - (2 * hPadding)) textHeight
   }
-  setXCenter buttons (hCenter clientArea)
-  setBottom buttons ((bottom clientArea) - border)
 }
 
 method accept Prompter {
