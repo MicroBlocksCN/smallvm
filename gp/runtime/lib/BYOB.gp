@@ -623,6 +623,10 @@ method labelText BlockSectionDefinition aString {
   scale = (global 'scale')
   fontName =  'Verdana Bold'
   fontSize = (11 * scale)
+  if (or ('Linux' == (platform)) ('Browser' == (platform))) {
+	fontName = 'Arial Bold'
+	fontSize = (13 * scale)
+  }
   off = (scale / 2)
   if (global 'stealthBlocks') {
     labelColor = (gray (stealthLevel 255 0))
