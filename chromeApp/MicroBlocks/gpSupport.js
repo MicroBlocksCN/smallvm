@@ -484,7 +484,8 @@ function GP_audioContext() {
 
 // iOS hack -- create the audio context at startup so a touch event
 // can unsuspend the audio context before we actually need it:
-GP_audioContext();
+// Still needed? Commented out for now... (April, 2020)
+//GP_audioContext();
 
 function GP_startAudioInput(inputSampleCount, sampleRate) {
 	if (GP.audioInCapture && GP.audioInSource) return; // already open
@@ -839,4 +840,6 @@ function GP_ChromebookLaunch(bgPage) {
 	}
 }
 
-if (isChromeApp()) chrome.runtime.getBackgroundPage(GP_ChromebookLaunch);
+if ((typeof chrome != 'undefined') && (typeof chrome.runtime.getBackgroundPage != 'undefined')) {
+	chrome.runtime.getBackgroundPage(GP_ChromebookLaunch);
+}
