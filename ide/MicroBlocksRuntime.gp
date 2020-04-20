@@ -277,10 +277,32 @@ method isWebSerial SmallRuntime {
 	return (and ('Browser' == (platform)) (not (browserIsChromebook)))
 }
 
+method webSerialConnect SmallRuntime action {
+	if ('disconnect' == action) {
+		closeSerialPort 1
+		portName = nil
+		port = nil
+	} else {
+		openSerialPort 'webserial' 115200
+		connectionStartTime = (msecsSinceStart)
+		portName = 'webserial'
+		port = 1
+	}
+}
+
 method selectPort SmallRuntime {
 	if (isNil disconnected) { disconnected = false }
 
-	if (isWebSerial this) { return } // do nothing; port must be opened from DOM
+	if (isWebSerial this) {
+		menu = (menu 'Connect' (action 'webSerialConnect' this) true)
+		if (isOpenSerialPort 1) {
+			addItem menu 'disconnect'
+		} else {
+			addItem menu 'connect'
+		}
+		popUpAtHand menu (global 'page')
+		return
+	}
 
 	portList = (portList this)
 	menu = (menu 'Connect' (action 'setPort' this) true)

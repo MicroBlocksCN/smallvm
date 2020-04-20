@@ -446,12 +446,13 @@ function adjustButtonVisibility() {
 		document.getElementById('SeeInsideButton').style.display = 'inline';
 		document.getElementById('PresentButton').style.display = 'none';
 	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks.html'))) {
-		document.getElementById('FullscreenButton').style.display = 'none';
-		document.getElementById('UploadButton').style.display = 'none';
-		document.getElementById('SeeInsideButton').style.display = 'none';
-		document.getElementById('PresentButton').style.display = 'none';
-		document.getElementById('GoButton').style.display = 'none';
-		document.getElementById('StopButton').style.display = 'none';
+		document.getElementById('controls').style.display = 'none';
+// 		document.getElementById('FullscreenButton').style.display = 'none';
+// 		document.getElementById('UploadButton').style.display = 'none';
+// 		document.getElementById('SeeInsideButton').style.display = 'none';
+// 		document.getElementById('PresentButton').style.display = 'none';
+// 		document.getElementById('GoButton').style.display = 'none';
+// 		document.getElementById('StopButton').style.display = 'none';
 	} else {
 		document.getElementById('SeeInsideButton').style.display = 'none';
 		document.getElementById('PresentButton').style.display = 'inline';
@@ -646,16 +647,11 @@ async function webSerialConnect() {
 	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
 	// the Emscripten UI thread.
 
-	if (GP_webSerialPort) webSerialDisconnect();
-	try {
-		GP_webSerialPort = await navigator.serial.requestPort();
-		await GP_webSerialPort.open({ baudrate: 115200 });
-		GP_webSerialReader = await GP_webSerialPort.readable.getReader();
-	} catch (e) {
-		GP_webSerialPort = null;
-		GP_webSerialReader = null;
-		return null;
-	}
+	webSerialDisconnect();
+	GP_webSerialPort = await navigator.serial.requestPort().catch(() => {});
+	if (!GP_webSerialPort) return; // no serial port selected
+	await GP_webSerialPort.open({ baudrate: 115200 });
+	GP_webSerialReader = await GP_webSerialPort.readable.getReader();
 	webSerialReadLoop();
 }
 
@@ -663,11 +659,9 @@ async function webSerialDisconnect() {
 	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
 	// the Emscripten UI thread.
 
-	if (GP_webSerialPort) {
-		if (GP_webSerialReader) await GP_webSerialReader.cancel();
-		await GP_webSerialPort.close();
-		GP_webSerialReader = null;
-	}
+	if (GP_webSerialReader) await GP_webSerialReader.cancel();
+	if (GP_webSerialPort) await GP_webSerialPort.close().catch(() => {});
+	GP_webSerialReader = null;
 	GP_webSerialPort = null;
 }
 
@@ -680,16 +674,18 @@ async function webSerialReadLoop() {
 			if (value) {
 				GP_serialInputBuffers.push(value);
 			}
-			if (done) {
-				await GP_webSerialReader.releaseLock();
-				return null;
+			if (done) { // happens when GP_webSerialReader.cancel() is called by disconnect
+				GP_webSerialReader.releaseLock();
+				return;
 			}
 		}
-	} catch (e) {
+	} catch (e) { // happens when board is unplugged
+		console.log(e);
+		await GP_webSerialPort.close();
 		GP_webSerialPort = null;
 		GP_webSerialReader = null;
+		console.log('Connection closed.');
 	}
-	return null;
 }
 
 function webSerialWrite(data) {
@@ -751,6 +747,8 @@ function GP_openSerialPort(id, path, baud) {
 	if (isChromeApp()) {
 		if (GP_serialPortID >= 0) return 1; // already open (not an error)
 		chrome.serial.connect(path, {persistent: true, bitrate: baud}, portOpened)
+	} else if (hasWebSerial()) {
+		webSerialConnect();
 	}
 	return 1; // connect is asynchronous, but assume it will succeed
 }
@@ -763,9 +761,10 @@ function GP_isOpenSerialPort() {
 
 function GP_closeSerialPort() {
 	function portClosed(ignored) { }
-	if (hasWebSerial()) return; // do nothing
 	if (GP_serialPortID > 0) {
 		chrome.serial.disconnect(GP_serialPortID, portClosed);
+	} else if (hasWebSerial()) {
+		webSerialDisconnect();
 	}
 	GP_serialPortID = -1;
 	GP_serialInputBuffers = [];
