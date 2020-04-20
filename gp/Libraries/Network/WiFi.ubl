@@ -1,9 +1,9 @@
 module WiFi Comm
 author MicroBlocks
-version 1 0
-description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.'
-tags communication network
-
+version 1 1 
+tags communication network 
+description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
@@ -15,6 +15,7 @@ to getIPAddress {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -38,6 +39,7 @@ to 'wifi connect to' ssid password tries {
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
   '[net:startWiFi]' ssid password true
   repeatUntil ('Connected' == ('[net:wifiStatus]')) {
     comment 'Slow blink while connecting'
