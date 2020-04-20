@@ -208,6 +208,7 @@ method slotInfoForIndex BlockSpec slotIndex {
   if (repeatedSlotCount == 0) { error 'The repeated slot spec must have at least one input slot' }
   firstRepeatedSlot = ((((count slotInfo) - repeatedSlotCount)) + 1)
   i = (firstRepeatedSlot + ((slotIndex - firstRepeatedSlot) % repeatedSlotCount))
+  if (i < 1) { return (array 'auto' '' nil nil) } // default if no slot info
   return (at slotInfo i)
 }
 
