@@ -158,8 +158,16 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return (OBJ) &ipStringObject;
 }
 
+static int isConnectedToWiFi() {
+	if (!connecting) return false;
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+		if (WIFI_AP == WiFi.getMode()) return true; // acting as a hotspot
+	#endif
+	return WL_CONNECTED == WiFi.status();
+}
+
 static OBJ primStartHttpServer(int argCount, OBJ *args) {
-	server.begin();
+	if (isConnectedToWiFi()) server.begin(); // do nothing if not connected
 	return falseObj;
 }
 
