@@ -30,8 +30,6 @@ function addGPHandlers() {
 	var presentButton = document.getElementById('PresentButton');
 	var goButton = document.getElementById('GoButton');
 	var stopButton = document.getElementById('StopButton');
-	var connectButton = document.getElementById('ConnectButton');
-	var disconnectButton = document.getElementById('DisconnectButton');
 	var fileUploader = document.getElementById('FileUploader');
 	var canvas = document.getElementById('canvas');
 
@@ -44,8 +42,6 @@ function addGPHandlers() {
 	presentButton.onclick = function(evt) { queueGPMessage('present'); };
 	goButton.onclick = function(evt) { queueGPMessage('go'); };
 	stopButton.onclick = function(evt) { queueGPMessage('stop'); };
-	connectButton.onclick = function(evt) { webSerialConnect(); };
-	disconnectButton.onclick = function(evt) { webSerialDisconnect(); };
 	fileUploader.onchange = function(evt) { uploadFiles(fileUploader.files); };
 	canvas.oncontextmenu = function(evt) { evt.preventDefault(); }
 }
@@ -447,12 +443,6 @@ function adjustButtonVisibility() {
 		document.getElementById('PresentButton').style.display = 'none';
 	} else if ((typeof window !== 'undefined') && (window.location.href.includes('microblocks.html'))) {
 		document.getElementById('controls').style.display = 'none';
-// 		document.getElementById('FullscreenButton').style.display = 'none';
-// 		document.getElementById('UploadButton').style.display = 'none';
-// 		document.getElementById('SeeInsideButton').style.display = 'none';
-// 		document.getElementById('PresentButton').style.display = 'none';
-// 		document.getElementById('GoButton').style.display = 'none';
-// 		document.getElementById('StopButton').style.display = 'none';
 	} else {
 		document.getElementById('SeeInsideButton').style.display = 'none';
 		document.getElementById('PresentButton').style.display = 'inline';
