@@ -584,8 +584,25 @@ void primAnalogWrite(OBJ *args) {
 	if (value < 0) value = 0;
 	if (value > 1023) value = 1023;
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
-	SET_MODE(pinNum, OUTPUT);
+	#if defined(ARDUINO_ARCH_SAMD) && defined(PIN_DAC0)
+		#if defined(ADAFRUIT_GEMMA_M0)
+			if (1 == pinNum) pinNum = PIN_DAC0; // pin 1 is DAC on Gemma M0
+		#else
+			if (0 == pinNum) pinNum = PIN_DAC0; // pin 0 is DAC on most SAMD boards
+		#endif
+		if (PIN_DAC0 == pinNum) {
+			SET_MODE(pinNum, INPUT);
+		} else {
+			SET_MODE(pinNum, OUTPUT);
+		}
+	#else
+		SET_MODE(pinNum, OUTPUT);
+	#endif
 	#if defined(ESP32)
+		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 DAC pins
+			dacWrite(pinNum, value);
+			return;
+		}
 		if (value == 0) {
 			pinDetach(pinNum);
 		} else {
