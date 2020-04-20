@@ -454,24 +454,23 @@ method wordWrappedLine String width {
   if (isNil width) { width = 150 }
   width = (width * (global 'scale'))
   result = (list)
-  line = (list)
-  for w (words this) {
-	add line w
-	lineWidth = (stringWidth (joinStrings line ' '))
-	if (lineWidth > width) {
-	  if ((count line) > 1) {
-		removeLast line
-		add result (joinStrings line ' ')
-		line = (list w)
-	  } else {
-		add result (joinStrings line ' ')
-		line = (list)
-	  }
-    }
+  startIndex = 1
+  endIndex = 0
+  separators = (array ' ' ',' ';' ':' '.')
+  charCount = (count this)
+
+  for c (letters this) {
+    endIndex = (endIndex + 1)
+	stringSoFar = (substring this startIndex endIndex)
+	lineWidth = (stringWidth stringSoFar)
+	if (and (contains separators c) (lineWidth > width)) {
+		add result stringSoFar
+		startIndex = (endIndex + 1)
+	} (endIndex == charCount) {
+		add result stringSoFar
+	}
   }
-  if ((count line) > 0) {
-	add result (joinStrings line ' ')
-  }
+
   return result
 }
 
