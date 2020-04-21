@@ -829,6 +829,8 @@ function GP_ChromebookLaunch(bgPage) {
 	}
 }
 
-if ((typeof chrome != 'undefined') && (typeof chrome.runtime.getBackgroundPage != 'undefined')) {
-	chrome.runtime.getBackgroundPage(GP_ChromebookLaunch);
+if ((typeof chrome != 'undefined') &&
+	(typeof chrome.runtime != 'undefined') &&
+	(typeof chrome.runtime.getBackgroundPage != 'undefined')) {
+		chrome.runtime.getBackgroundPage(GP_ChromebookLaunch);
 }
