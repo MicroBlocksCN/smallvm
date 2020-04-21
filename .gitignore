@@ -16,3 +16,5 @@ BUILD
 *.swo
 *.exe
 *.deb
+*.pem
+
