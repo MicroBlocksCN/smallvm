@@ -632,36 +632,33 @@ method loadFromCmds MicroBlocksModule cmdList versionChecking {
 	loadFunctions this cmdList
 	loadScripts this cmdList
 	if versionChecking {
-		newerVersion = (lookForNewerkVersion this)
+		newerVersion = (lookForNewerVersion this)
 		if (and
 			(notNil newerVersion)
 			(confirm (global 'page') nil
 				(join 'Found a newer version of ' moduleName (newline)
 					'Do you want me to update the one in the project?'))
 		){
+			resolveMismatches this newerVersion
+			print (functions newerVersion)
 			return newerVersion
 		}
 	}
 	return this
 }
 
-method lookForNewerkVersion MicroBlocksModule {
+method lookForNewerVersion MicroBlocksModule {
 	// Look for an embedded library with the same name, and see if it's newer
 	// than the one we've just loaded
-	if (moduleName == 'main') {
-	  return nil
-	}
-
+	if (moduleName == 'main') { return nil }
 	// Find the embedded lib path
 	for filePath (listEmbeddedFiles) {
 		if (endsWith filePath (join moduleName '.ubl')) {
-
 			cmdList = (parse (readEmbeddedFile filePath))
 			candidate = (newMicroBlocksModule moduleName)
 			loadFromCmds candidate cmdList false // don't version-check these!
 			v1 = version
 			v2 = (version candidate)
-
 			if (or
 				((at v2 1) > (at v1 1))
 				(and ((at v2 1) == (at v2 1)) ((at v2 2) > (at v2 2)))
@@ -671,6 +668,27 @@ method lookForNewerkVersion MicroBlocksModule {
 		}
 	}
 	return nil
+}
+
+method resolveMismatches MicroBlocksModule newerModule {
+	for oldFunction (functions this) {
+		oldOp = (functionName oldFunction)
+		match = false
+		for newFunction (functions newerModule) {
+			if ((functionName newFunction) == oldOp) {
+				match = true
+			}
+		}
+		if (not match) {
+			// mark function as obsolete and append to module
+			setField oldFunction 'functionName' (join 'obsolete ' oldOp)
+			inspect oldFunction
+			(setField newerModule 'functions'
+				(appendFunction newerModule (functions newerModule) oldFunction))
+			add (blockList newerModule) (join 'obsolete ' oldOp)
+			// Need to add it to project blockSpecs
+		}
+	}
 }
 
 method loadModuleNameAndCategory MicroBlocksModule cmdList {
