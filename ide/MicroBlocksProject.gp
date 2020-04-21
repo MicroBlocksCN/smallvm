@@ -220,7 +220,8 @@ method addLibraryFromString MicroBlocksProject s libName fileName {
 	return this
 }
 
-method loadSpecs MicroBlocksProject cmdList {
+method parsedSpecs MicroBlocksProject cmdList {
+	specs = (dictionary)
 	for cmd cmdList {
 		if ('spec' == (primName cmd)) {
 			args = (argList cmd)
@@ -232,8 +233,16 @@ method loadSpecs MicroBlocksProject cmdList {
 			slotDefaults = (array)
 			if ((count args) > 4) { slotDefaults = (copyArray args ((count args) - 4) 5) }
 			spec = (blockSpecFromStrings op blockType specString slotTypes slotDefaults)
-			atPut blockSpecs op spec
+			atPut specs op spec
 		}
+	}
+	return specs
+}
+
+method loadSpecs MicroBlocksProject cmdList {
+	specs = (parsedSpecs this cmdList)
+	for k (keys specs) {
+		atPut blockSpecs k (at specs k)
 	}
 }
 
@@ -325,7 +334,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags path variableNames blockList functions scripts
+defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags path variableNames blockList functions scripts blockSpecs
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -341,12 +350,14 @@ method initialize MicroBlocksModule name {
 	tags = (array)
 	variableNames = (array)
 	blockList = (array)
+	blockSpecs = (dictionary)
 	functions = (array)
 	scripts = (array)
 	return this
 }
 
 method blockList MicroBlocksModule { return blockList }
+method blockSpecs MicroBlocksModule { return blockSpecs }
 method moduleCategory MicroBlocksModule { return moduleCategory }
 method moduleName MicroBlocksModule { return moduleName }
 method setModuleName MicroBlocksModule modName { moduleName = modName }
@@ -629,6 +640,7 @@ method loadFromCmds MicroBlocksModule cmdList versionChecking {
 	loadDescription this cmdList
 	loadVariables this cmdList
 	loadBlockList this cmdList
+	loadSpecs this cmdList
 	loadFunctions this cmdList
 	loadScripts this cmdList
 	if versionChecking {
@@ -640,7 +652,6 @@ method loadFromCmds MicroBlocksModule cmdList versionChecking {
 					'Do you want me to update the one in the project?'))
 		){
 			resolveMismatches this newerVersion
-			print (functions newerVersion)
 			return newerVersion
 		}
 	}
@@ -671,22 +682,20 @@ method lookForNewerVersion MicroBlocksModule {
 }
 
 method resolveMismatches MicroBlocksModule newerModule {
-	for oldFunction (functions this) {
-		oldOp = (functionName oldFunction)
+	for oldSpec (values (blockSpecs this)) {
+		oldOp = (blockOp oldSpec)
 		match = false
-		for newFunction (functions newerModule) {
-			if ((functionName newFunction) == oldOp) {
+		for newSpec (values (blockSpecs newerModule)) {
+			if ((blockOp newSpec) == oldOp) {
 				match = true
 			}
 		}
 		if (not match) {
 			// mark function as obsolete and append to module
-			setField oldFunction 'functionName' (join 'obsolete ' oldOp)
-			inspect oldFunction
-			(setField newerModule 'functions'
-				(appendFunction newerModule (functions newerModule) oldFunction))
-			add (blockList newerModule) (join 'obsolete ' oldOp)
-			// Need to add it to project blockSpecs
+			obsoleteOp = (join 'obsolete ' (first (specs oldSpec)))
+			setField oldSpec 'specs' (array obsoleteOp)
+			atPut (blockSpecs (project (findProjectEditor))) obsoleteOp oldSpec
+			add (blockList newerModule) obsoleteOp
 		}
 	}
 }
@@ -878,6 +887,10 @@ method loadBlockList MicroBlocksModule cmdList {
 			add blockList (at (argList cmd) 2)
 		}
 	}
+}
+
+method loadSpecs MicroBlocksModule cmdList {
+	blockSpecs = (parsedSpecs (project (findProjectEditor)) cmdList)
 }
 
 // Updating primitives
