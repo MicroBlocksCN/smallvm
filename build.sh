@@ -35,10 +35,11 @@ if test -n "$help"; then
     echo "                              locale file will be created for it. If it does, a"
     echo "                              backup copy of the current locale file will be"
     echo "                              created in your OS temporary files directory."
-    echo "--dev                         Launch on a REPL console in dev mode. Press"
-	echo "                              Control+C on the console to pause the Morphic"
-	echo "                              loop and gain access to the REPL. Then issue the"
-	echo "                              'go' command to give control back to Morphic."
+    echo "--dev                         Build for the current system, and launch in dev mode"
+	echo "                              with a REPL console. Press Control+C on the console"
+	echo "                              to pause the Morphic loop and gain access to the"
+	echo "                              REPL. Then issue the 'go' command to give control"
+	echo "                              back to the Morphic loop."
     echo
     exit 0
 fi
@@ -56,12 +57,6 @@ else
     echo "cd gp; [command-to-run-GP] runtime/lib/* loadIDE.gp buildApps.gp"
     echo "Good luck!"
     exit 1
-fi
-
-if test -n "$dev"; then
-	# Launch MicroBlocks in a REPL console
-    (cd gp; ./$gp runtime/lib/* loadIDE.gp -)
-	exit 0
 fi
 
 if test -n "$locale"; then
@@ -134,6 +129,15 @@ fi
 # build the IDE by using the corresponding executable for our host system
 mkdir -p apps
 
+if test -n "$dev"; then
+	# If launching in dev mode, build for current system
+	if [ "$currentOS" == "Darwin" ]; then
+		system="mac"
+	elif [ "$currentOS" == "Linux" ]; then
+		system="linux64bit"
+	fi
+fi
+
 if [ -z $system ]; then
     # build for all systems
     for sys in ${systems[@]}; do
@@ -179,3 +183,7 @@ fi
 echo
 echo "Done building $version"
 
+if test -n "$dev"; then
+	# Launch MicroBlocks in a REPL console
+    (cd gp; ../apps/ublocks-$system runtime/lib/* loadIDE.gp -)
+fi
