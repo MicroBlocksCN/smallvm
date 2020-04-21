@@ -158,8 +158,16 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return (OBJ) &ipStringObject;
 }
 
+static int isConnectedToWiFi() {
+	if (!connecting) return false;
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+		if (WIFI_AP == WiFi.getMode()) return true; // acting as a hotspot
+	#endif
+	return WL_CONNECTED == WiFi.status();
+}
+
 static OBJ primStartHttpServer(int argCount, OBJ *args) {
-	server.begin();
+	if (isConnectedToWiFi()) server.begin(); // do nothing if not connected
 	return falseObj;
 }
 
@@ -196,7 +204,7 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 	char* status = obj2str(args[0]);
 	char* body = obj2str(args[1]);
 	char* headers = obj2str(args[2]);
-	client.print("HTTP/1.1 ");
+	client.print("HTTP/1.0 ");
 	client.print(status);
 	if (argCount > 2) {
 		client.print("\r\n");
@@ -248,7 +256,7 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	char* path = obj2str(args[2]);
 	char request[256];
 	sprintf(request,
-			"%s /%s HTTP/1.1\r\n\
+			"%s /%s HTTP/1.0\r\n\
 Host: %s\r\n\
 Connection: close\r\n\
 User-Agent: MicroBlocks\r\n\
