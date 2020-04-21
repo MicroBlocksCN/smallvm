@@ -35,6 +35,10 @@ if test -n "$help"; then
     echo "                              locale file will be created for it. If it does, a"
     echo "                              backup copy of the current locale file will be"
     echo "                              created in your OS temporary files directory."
+    echo "--dev                         Launch on a REPL console in dev mode. Press"
+	echo "                              Control+C on the console to pause the Morphic"
+	echo "                              loop and gain access to the REPL. Then issue the"
+	echo "                              'go' command to give control back to Morphic."
     echo
     exit 0
 fi
@@ -52,6 +56,12 @@ else
     echo "cd gp; [command-to-run-GP] runtime/lib/* loadIDE.gp buildApps.gp"
     echo "Good luck!"
     exit 1
+fi
+
+if test -n "$dev"; then
+	# Launch MicroBlocks in a REPL console
+    (cd gp; ./$gp runtime/lib/* loadIDE.gp -)
+	exit 0
 fi
 
 if test -n "$locale"; then
@@ -168,3 +178,4 @@ fi
 
 echo
 echo "Done building $version"
+
