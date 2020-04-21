@@ -185,5 +185,12 @@ echo "Done building $version"
 
 if test -n "$dev"; then
 	# Launch MicroBlocks in a REPL console
-    (cd gp; ../apps/ublocks-$system runtime/lib/* loadIDE.gp -)
+	if [[ `command -v rlwrap` ]]; then
+		launcher='rlwrap ../apps/ublocks-'$system
+	else
+		echo "rlwrap not found. Consider installing it to get command history and keyboard"
+		echo "navigation in the MicroBlocks REPL."
+		launcher='../apps/ublocks-'$system
+	fi
+    (cd gp; $launcher runtime/lib/* loadIDE.gp -)
 fi
