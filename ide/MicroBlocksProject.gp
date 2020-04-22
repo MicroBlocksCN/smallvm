@@ -652,6 +652,7 @@ method loadFromCmds MicroBlocksModule cmdList versionChecking {
 					'Do you want me to update the one in the project?'))
 		){
 			resolveMismatches this newerVersion
+			importDependencies newerVersion (scripter (smallRuntime))
 			return newerVersion
 		}
 	}
