@@ -475,7 +475,8 @@ function GP_audioContext() {
 
 // iOS hack -- create the audio context at startup so a touch event
 // can unsuspend the audio context before we actually need it:
-GP_audioContext();
+// Still needed? Commented out for now... (April, 2020)
+//GP_audioContext();
 
 function GP_startAudioInput(inputSampleCount, sampleRate) {
 	if (GP.audioInCapture && GP.audioInSource) return; // already open
@@ -612,13 +613,87 @@ function GP_toggleFullscreen() {
   }
 }
 
-// Serial Ports (Chrome App Only)
-// For now, only one serial port can be open at a time.
+// Serial Ports (Chrome App and Chrome Browser Only)
+// Only one serial port can be open at a time.
+
+function isChromeApp() {
+	return ((typeof chrome != 'undefined') && (typeof chrome.serial != 'undefined'))
+}
+
+function hasWebSerial() {
+	return (typeof navigator.serial != 'undefined')
+}
+
+// WebSerial support for Chrome browser (navigator.serial API)
+
+GP_webSerialPort = null;
+GP_webSerialReader = null;
+
+function webSerialIsConnected() {
+	return !(!GP_webSerialPort || !GP_webSerialReader);
+}
+
+async function webSerialConnect() {
+	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
+	// the Emscripten UI thread.
+
+	webSerialDisconnect();
+	GP_webSerialPort = await navigator.serial.requestPort().catch(() => {});
+	if (!GP_webSerialPort) return; // no serial port selected
+	await GP_webSerialPort.open({ baudrate: 115200 });
+	GP_webSerialReader = await GP_webSerialPort.readable.getReader();
+	webSerialReadLoop();
+}
+
+async function webSerialDisconnect() {
+	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
+	// the Emscripten UI thread.
+
+	if (GP_webSerialReader) await GP_webSerialReader.cancel();
+	if (GP_webSerialPort) await GP_webSerialPort.close().catch(() => {});
+	GP_webSerialReader = null;
+	GP_webSerialPort = null;
+}
+
+async function webSerialReadLoop() {
+	// Called from webSerialConnect(), which is invoked via a DOM button.
+
+	try {
+		while (true) {
+			var { value, done } = await GP_webSerialReader.read();
+			if (value) {
+				GP_serialInputBuffers.push(value);
+			}
+			if (done) { // happens when GP_webSerialReader.cancel() is called by disconnect
+				GP_webSerialReader.releaseLock();
+				return;
+			}
+		}
+	} catch (e) { // happens when board is unplugged
+		console.log(e);
+		await GP_webSerialPort.close();
+		GP_webSerialPort = null;
+		GP_webSerialReader = null;
+		console.log('Connection closed.');
+	}
+}
+
+function webSerialWrite(data) {
+	if (!GP_webSerialPort || !GP_webSerialPort.writable) return 0;  // port not open
+	const w = GP_webSerialPort.writable.getWriter();
+	w.write(data.buffer);
+	w.releaseLock();
+	return data.buffer.byteLength;
+}
+
+// Variables used by Chromebook App Serial (chrome.serial API)
 
 GP_serialPortNames = [];
 GP_serialPortID = -1;
 GP_serialInputBuffers = [];
 GP_serialPortListenersAdded = false;
+
+// Serial support for both WebSerial and Chromebook App
 
 function GP_getSerialPorts() {
 	// Request an update to the serial port list, GP_serialPortNames. Since this call
@@ -631,8 +706,7 @@ function GP_getSerialPorts() {
 			GP_serialPortNames.push(toUTF8Array(ports[i].path));
 		}
 	}
-	if ((typeof chrome == 'undefined') || !chrome.serial) return; // serial port API not available; do nothing
-	chrome.serial.getDevices(listPorts);
+	if (isChromeApp()) chrome.serial.getDevices(listPorts);
 }
 
 function GP_openSerialPort(id, path, baud) {
@@ -660,24 +734,35 @@ function GP_openSerialPort(id, path, baud) {
 			GP_serialPortListenersAdded = true;
 		}
 	}
-	if (!chrome.serial) return 0; // serial port API not available; do nothing
-	if (GP_serialPortID >= 0) return 1; // already open (not an error)
-	chrome.serial.connect(path, {persistent: true, bitrate: baud}, portOpened)
+	if (isChromeApp()) {
+		if (GP_serialPortID >= 0) return 1; // already open (not an error)
+		chrome.serial.connect(path, {persistent: true, bitrate: baud}, portOpened)
+	} else if (hasWebSerial()) {
+		webSerialConnect();
+	}
 	return 1; // connect is asynchronous, but assume it will succeed
+}
+
+function GP_isOpenSerialPort() {
+	if (hasWebSerial()) return webSerialIsConnected();
+	if (isChromeApp()) return (GP_serialPortID >= 0);
+	return false;
 }
 
 function GP_closeSerialPort() {
 	function portClosed(ignored) { }
 	if (GP_serialPortID > 0) {
 		chrome.serial.disconnect(GP_serialPortID, portClosed);
+	} else if (hasWebSerial()) {
+		webSerialDisconnect();
 	}
 	GP_serialPortID = -1;
 	GP_serialInputBuffers = [];
 }
 
 function GP_readSerialPort() {
-	if (GP_serialPortID < 0) {
-		return new Uint8Array(new ArrayBuffer(0)); // port not open
+	if (GP_serialInputBuffers.length == 0) {
+		return new Uint8Array(new ArrayBuffer(0)); // no data available
 	}
 	var count = 0;
 	for (var i = 0; i < GP_serialInputBuffers.length; i++) {
@@ -696,6 +781,9 @@ function GP_readSerialPort() {
 
 function GP_writeSerialPort(data) {
 	function dataSent(ignored) { }
+	if (hasWebSerial()) {
+		return webSerialWrite(data);
+	}
 	if (GP_serialPortID < 0) return -1; // port not open
 	chrome.serial.send(GP_serialPortID, data.buffer, dataSent);
 	return data.buffer.byteLength;
@@ -710,6 +798,8 @@ function GP_setSerialPortRTS(flag) {
 	if (GP_serialPortID < 0) return; // port not open
 	chrome.serial.setControlSignals(GP_serialPortID, { rts: flag });
 }
+
+// ChromeOS file writing
 
 function GP_writeFile(data, fName) {
 	function writeToFile(writer) { writer.write(new Blob([data], {type: 'text/plain'})); }
@@ -738,4 +828,9 @@ function GP_ChromebookLaunch(bgPage) {
 		});
 	}
 }
-if (typeof chrome != 'undefined') chrome.runtime.getBackgroundPage(GP_ChromebookLaunch);
+
+if ((typeof chrome != 'undefined') &&
+	(typeof chrome.runtime != 'undefined') &&
+	(typeof chrome.runtime.getBackgroundPage != 'undefined')) {
+		chrome.runtime.getBackgroundPage(GP_ChromebookLaunch);
+}

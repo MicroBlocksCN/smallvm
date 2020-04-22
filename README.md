@@ -51,20 +51,25 @@ Built-in data types include integers, booleans, strings, and lists.
 
 ## How do I build the MicroBlocks firmware? ##
 
-First of all, you may not need to. The firmware for many boards, including BBC micro:bit,
+First of all, you may not need to. The firmware for many boards, including the BBC micro:bit,
 Calliope mini, AdaFruit Circuit Playground Express, Citilab ED1, M5Stack, NodeMCU,
 and ESP32 Dev board is can be installed using the "update firmware on board" menu
-command in the interactive development environment (IDE). For other AdaFruit boards,
-such as the ItsyBitsy, Trinket, and Gemma, you can drop the appropriate .uf2 file onto
-the virtual disk for your board to install it.
+command in the interactive development environment (IDE).
 
 However, if you have one of the other
 [supported boards](https://bitbucket.org/john_maloney/smallvm/wiki/Devices),
 or if you just want to build the firmware yourself, read on.
 
 The MicroBlocks firmware, also called the **virtual machine**, is written in C and C++.
-The current version is built on the Arduino platform and uses Arduino libraries for
+It is built on the Arduino platform and uses additional Arduino libraries for
 features such as graphics and WiFi (on boards that support those features).
+
+The source code repository is [here](https://bitbucket.org/john_maloney/smallvm/src/master/). To get the source code, you can either clone it:
+
+    git clone https://john_maloney@bitbucket.org/john_maloney/smallvm.git
+
+or download a snapshot of it by selecting "download repository" from the "..." menu to the right
+of the "Clone" button on the repository home page.
 
 ### Building with PlatformIO ###
 
