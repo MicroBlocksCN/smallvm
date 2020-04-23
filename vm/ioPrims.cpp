@@ -66,11 +66,6 @@ void hardwareInit() {
 		#define Serial SERIAL_PORT_USBVIRTUAL
 	#endif
 
-	#ifdef ARDUINO_M5Stick_C
-		#include "AXP192.h"
-		AXP192 Axp = AXP192();
-	#endif
-
 uint32 microsecs() { return (uint32) micros(); }
 uint32 millisecs() { return (uint32) millis(); }
 
@@ -82,10 +77,6 @@ void hardwareInit() {
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
 		touchSetCycles(0x800, 0x800);
-	#endif
-	#ifdef ARDUINO_M5Stick_C
-		Axp.begin(); // power up!
-		Axp.ScreenBreath(10); // brightness (range 7-12)
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C)
 		tftInit();

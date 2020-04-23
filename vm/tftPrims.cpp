@@ -9,6 +9,7 @@
 
 #include <Arduino.h>
 #include <SPI.h>
+#include <Wire.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -101,12 +102,35 @@ int touchEnabled = false;
 		};
 		M5StickLCD tft = M5StickLCD(TFT_CS, TFT_DC, TFT_RST);
 
+		int readAXP(int reg) {
+			Wire1.beginTransmission(0x34);
+			Wire1.write(reg);
+			Wire1.endTransmission();
+			Wire1.requestFrom(0x34, 1);
+			return Wire1.available() ?  Wire1.read() : 0;
+		}
+
+		void writeAXP(int reg, int value) {
+			Wire1.beginTransmission(0x34);
+			Wire1.write(reg);
+			Wire1.write(value);
+			Wire1.endTransmission();
+		}
+
 		void tftInit() {
 			tft.initR(INITR_MINI160x80);
 			tft.setOffsets(26, 1);
 			tft.setRotation(1);
 			tft.invertDisplay(true); // display must be inverted to give correct colors...
 			tftClear();
+
+			Wire1.begin(21, 22, 400000);
+			int n = readAXP(0x12);
+			writeAXP(0x12, n | 0x0C); // turn on LCD power pins (LD02 and LD03)
+			int brightness = 12; // useful range: 7-12 (12 is max)
+			n = readAXP(0x28);
+			writeAXP(0x28, (brightness << 4) | (n & 0x0f)); // set brightness
+
 			useTFT = true;
 		}
 
