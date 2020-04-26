@@ -1,0 +1,14 @@
+[ ] check ufw setting (Bernat)
+[ ] check nginx configuration (Bernat)
+[ ] add Snippets subgit to /microadmin/microblocks-site (Bernat)
+[ ] verify that new website is working
+[ ] create shell script to deploy/publish changes to the website (i.e. copy files from git to /var/www)
+[ ] test the deploy script
+[ ] make event publishing system work on new server (Bernat)
+[ ] create shell script to do a release on the new server (Bernat)
+[ ] pull any final changes from github site repository
+[ ] change microblocks.fun domain to point to the new server
+--- new site is live! ---
+[ ] switch to the new server as our git origin repository for the website
+[ ] set up HTTPS with LetsEncrypt
+[ ] add Chrome browser IDE to the website
