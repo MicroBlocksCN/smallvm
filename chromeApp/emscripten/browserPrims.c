@@ -341,7 +341,10 @@ static OBJ primBrowserIsMobile(int nargs, OBJ args[]) {
 
 static OBJ primBrowserIsChromebook(int nargs, OBJ args[]) {
 	int isChromebook = EM_ASM_INT({
-		return (/X11; CrOS/i.test(navigator.userAgent));
+		return ((/X11; CrOS/i.test(navigator.userAgent)) &&
+			(typeof chrome != 'undefined') &&
+			(typeof chrome.runtime != 'undefined') &&
+			(typeof chrome.runtime.getBackgroundPage != 'undefined'));
 	}, NULL);
 	return isChromebook ? trueObj : falseObj;
 }
