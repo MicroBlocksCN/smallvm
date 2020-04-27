@@ -18,5 +18,7 @@ Funding source: MicroBlocks donation funds
 | 15/04/2020 | 4 | Web version debugging session with John, plus GnuBlocks VM fixes and support to install M5Atom-Matrix and M5Stick VMs from the IDE |
 | 16/04/2020 | 2 | Added information box to Prompter | 091893c
 | 17/04/2020 | 4 | Inform dialog is now a real window, plus other tweaks to Prompter | 0d1315c
+| 20/04/2020 | 3 | Fix word-wrap for long strings in speech bubbles, | df9bae7
+| 21/04/2020 | 5 | Block mismatch resolution on updating a library in existing project | 52c56b3 , a8ff489
 
-| **Total**  | 55 | |
+| **Total**  | 63 | |
