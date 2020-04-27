@@ -257,7 +257,7 @@ method addShortcutButtons FilePicker {
 	  buttonY += dy
 	}
   }
-  if (and showComputer ('Browser' == (platform)) (browserIsChromebook)) {
+  if (and showComputer ('Browser' == (platform)) (browserHasFileAPI)) {
 	addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
 	buttonY += dy
   }
@@ -319,14 +319,14 @@ method textButton FilePicker x y label selectorOrAction {
 // actions
 
 method setComputer FilePicker {
-  if (and ('Browser' == (platform)) (browserIsChromebook)) {
+  if (and ('Browser' == (platform)) (browserHasFileAPI)) {
 	isDone = true
 	removeFromOwner morph
 	repeat 3 { // hack: need several cycles to remove FilePicker when file is double-clicked
 		doOneCycle (global 'page')
 		waitMSecs 10 // refresh screen
 	}
-	chromeReadFile
+	browserReadFile
 	return
   }
   useEmbeddedFS = false

@@ -357,41 +357,24 @@ window.addEventListener("message", handleMessage, false);
 // file upload support
 
 function GP_UploadFiles(evt) {
+	// Upload using "Upload" button
 	var inp = document.getElementById('FileUploader'); // use the hidden file input element
 	if (inp) inp.click();
 }
 
-function importFile() {
-	// obsolete; not used
-	function cleanup() {
-		document.body.onfocus = null;
-		if (inp && inp.parentNode) inp.parentNode.removeChild(inp);
-	}
-	var inp;
-	var inputs = document.getElementsByTagName('input');
-	if (inputs.length > 1) { // reuse existing file input button
-		inp = inputs[1];
-	} else { // create a new file input button
-		inp = document.createElement('input');
-		inp.type = 'file';
-		inp.multiple = true;
-		inp.style.marginLeft = '7px';
-		inp.style.marginTop = '6px';
-		var status = document.getElementById('status');
-		if (status) {
-			status.parentNode.insertBefore(inp, status);
-		} else {
-			document.body.appendChild(inp);
-		}
-	}
-	inp.onchange = function() {
-		uploadFiles(inp.files);
-		cleanup();
-	}
-	document.body.onfocus = cleanup; // cleanup if file dialog is cancelled
+async function GP_ReadFile(evt) {
+	// Upload using Native File API
+
+	const fileHandle = await window.chooseFileSystemEntries().catch(() => {});
+	if (!fileHandle) return; // no file selected
+	const file = await fileHandle.getFile();
+	const contents = await file.arrayBuffer();
+	GP.droppedFiles.push({ name: file.name, contents: contents });
 }
 
 function uploadFiles(files) {
+	// Upload file. Initiated from either file chooser or drag-and-drop.
+
 	function recordFile(f) {
 		reader = new FileReader();
 		reader.onloadend = function() {
@@ -634,11 +617,20 @@ function webSerialIsConnected() {
 }
 
 async function webSerialConnect() {
-	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
-	// the Emscripten UI thread.
+	// Prompt user to choose a serial port and open the one selected.
 
+	var vendorIDs = [
+		{ usbVendorId: 0x0403},		// FTDI
+		{ usbVendorId: 0x0d28},		// micro:bit, Calliope
+		{ usbVendorId: 0x10c4},		// Silicon Laboratories, Inc. (CP210x)
+		{ usbVendorId: 0x1a86},		// CH340
+		{ usbVendorId: 0x239a},		// AdaFruit
+		{ usbVendorId: 0x2a03},		// Arduino
+		{ usbVendorId: 0x2341},		// Arduino MKR Zero
+		{ usbVendorId: 0x03eb},		// Atmel Corporation
+	];
 	webSerialDisconnect();
-	GP_webSerialPort = await navigator.serial.requestPort().catch(() => {});
+	GP_webSerialPort = await navigator.serial.requestPort({filters: vendorIDs}).catch(() => {});
 	if (!GP_webSerialPort) return; // no serial port selected
 	await GP_webSerialPort.open({ baudrate: 115200 });
 	GP_webSerialReader = await GP_webSerialPort.readable.getReader();
@@ -646,9 +638,6 @@ async function webSerialConnect() {
 }
 
 async function webSerialDisconnect() {
-	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
-	// the Emscripten UI thread.
-
 	if (GP_webSerialReader) await GP_webSerialReader.cancel();
 	if (GP_webSerialPort) await GP_webSerialPort.close().catch(() => {});
 	GP_webSerialReader = null;
@@ -656,8 +645,6 @@ async function webSerialDisconnect() {
 }
 
 async function webSerialReadLoop() {
-	// Called from webSerialConnect(), which is invoked via a DOM button.
-
 	try {
 		while (true) {
 			var { value, done } = await GP_webSerialReader.read();
@@ -671,7 +658,7 @@ async function webSerialReadLoop() {
 		}
 	} catch (e) { // happens when board is unplugged
 		console.log(e);
-		await GP_webSerialPort.close();
+		await GP_webSerialPort.close().catch(() => {});
 		GP_webSerialPort = null;
 		GP_webSerialReader = null;
 		console.log('Connection closed.');
@@ -801,17 +788,27 @@ function GP_setSerialPortRTS(flag) {
 
 // ChromeOS file writing
 
-function GP_writeFile(data, fName) {
+async function GP_writeFile(data, fName) {
 	function writeToFile(writer) { writer.write(new Blob([data], {type: 'text/plain'})); }
 	function onFileSelected(entry) {
 		void chrome.runtime.lastError;
 		if (entry) entry.createWriter(writeToFile);
 	}
 
-	if (typeof chrome == 'undefined') { console.log('not chrome'); return; } // not running in Chrome
-	chrome.fileSystem.chooseEntry(
-		{type: 'saveFile', suggestedName: fName},
-		onFileSelected);
+	if (/(CrOS)/.test(navigator.userAgent)) { // Chrome OS fileSystem API
+		chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: fName}, onFileSelected);
+	} else if (typeof window.chooseFileSystemEntries != 'undefined') { // Native filesystem API in browser
+		const options = {
+			type: 'save-file',
+			suggestedName: fName,
+			accepts: [{ description: 'MicroBlocks Project', extensions: ['ubp'] }],
+		};
+		const fileHandle = await window.chooseFileSystemEntries(options).catch(() => {});
+		if (!fileHandle) return; // no file selected
+		const writable = await fileHandle.createWritable();
+		await writable.write(new Blob([data], {type: 'text/plain'}));
+		await writable.close();
+	}
 }
 
 // On ChromeOS, read the file opened to launch the application, if any

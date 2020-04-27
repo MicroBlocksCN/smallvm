@@ -281,10 +281,10 @@ method saveProject MicroBlocksEditor fName {
 	}
   }
 
-  if (and ('Browser' == (platform)) (browserIsChromebook)) {
+  if (and ('Browser' == (platform)) (browserHasFileAPI)) {
 	if (or (isNil fName) ('' == fName)) { fName = 'Untitled' }
 	if (not (endsWith fName '.ubp')) { fName = (join fName '.ubp') }
-	chromeWriteFile (codeString (project scripter)) fName
+	browserWriteFile (codeString (project scripter)) fName
 	return
   }
 
@@ -422,6 +422,7 @@ method processDroppedFiles MicroBlocksEditor {
 method processDroppedFile MicroBlocksEditor fName data {
   if (or (endsWith fName '.ubp') (endsWith fName '.gpp')) {
 	if (not (canReplaceCurrentProject this)) { return }
+	pair = true
 	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
 	openProject this data fName
   }
