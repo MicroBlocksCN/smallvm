@@ -59,21 +59,7 @@ method updateLibraryInfo MicroBlocksLibraryImportDialog selectedPath {
 
 method promptLibUrl MicroBlocksLibraryImportDialog {
 	page = (global 'page')
-	url = (prompt
-		page
-		'Path, name or URL for library?'
-		'http://'
-		'line'
-		nil
-		(join
-			'If you are adding a library that''s built-in into MicroBlocks, you '
-			'can just enter its name.'
-			(newline)
-			'If your library is in the Libraries folder in your local '
-			'MicroBlocks project folder, you need to prefix it with a slash (/).'
-			(newline)
-			'If the library is hosted online, please input its full URL.'
-		))
+	url = (prompt page 'Library URL?' 'http://')
 	if (and (notEmpty url) (endsWith url '.ubl') ((findLast url '/') > 10)) {
 		result = (importLibraryFromUrl (scripter (smallRuntime)) url)
 	} (notEmpty url) {
@@ -227,7 +213,7 @@ method fixLayout MicroBlocksLibraryInfoDialog {
 // its explicit path (can be a URL).
 // When used for tags, click on the [ + ] button to add a new tag.
 
-defineClass MicroBlocksListItemViewer morph box contents newItemQueryString editFlag window itemRenderer label
+defineClass MicroBlocksListItemViewer morph box contents newItemQueryString newItemQueryHint editFlag window itemRenderer label
 
 to newItemViewer aList forEditing win {
 	return (initialize (new 'MicroBlocksListItemViewer') aList forEditing win)
@@ -260,9 +246,10 @@ method setItemRenderer MicroBlocksListItemViewer anAction {
 }
 
 method setNewItemQueryString MicroBlocksListItemViewer aString { newItemQueryString = aString }
+method setNewItemQueryHint MicroBlocksListItemViewer aString { newItemQueryHint = aString }
 
 method queryNewItem MicroBlocksListItemViewer {
-	newItem = (prompt (global 'page') newItemQueryString)
+	newItem = (prompt (global 'page') newItemQueryString '' 'line' nil newItemQueryHint)
 	if (notEmpty newItem) {
 		addItem this newItem
 	}
@@ -430,10 +417,12 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 
 	depsViewer = (newItemViewer (array) editFlag window)
 	setNewItemQueryString depsViewer 'Dependency path, name or URL?'
+	setNewItemQueryHint depsViewer (libraryImportHint this)
 	addPart morph (morph depsViewer)
 
 	tagViewer = (newItemViewer (array) editFlag window)
 	setNewItemQueryString tagViewer 'Tag name?'
+	setNewItemQueryHint tagViewer
 	addPart morph (morph tagViewer)
 
 	if (notNil lib) { setLibrary this lib }
@@ -441,6 +430,18 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 	fixLayout this
 
 	return this
+}
+
+method libraryImportHint MicroBlocksLibraryPropertiesFrame {
+	return (localized (join
+			'If you are adding a library that''s built-in into MicroBlocks, you '
+			'can just enter its name.'
+			(newline)
+			'If your library is in the Libraries folder in your local '
+			'MicroBlocks project folder, you need to prefix it with a slash (/).'
+			(newline)
+			'If the library is hosted online, please input its full URL.'
+		))
 }
 
 method isForEditing MicroBlocksLibraryPropertiesFrame { return editFlag }
