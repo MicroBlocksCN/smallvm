@@ -940,7 +940,7 @@ method addBytesForStringLiteral SmallCompiler s bytes {
 
 	byteCount = (byteCount s)
 	wordCount = (floor ((byteCount + 4) / 4))
-	headerWord = ((wordCount << 6) | stringClassID);
+	headerWord = ((wordCount << 4) | stringClassID);
 	repeat 4 { // add header bytes, little endian
 		add bytes (headerWord & 255)
 		headerWord = (headerWord >> 8)
