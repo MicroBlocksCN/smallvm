@@ -362,18 +362,8 @@ function GP_UploadFiles(evt) {
 	if (inp) inp.click();
 }
 
-async function GP_ReadFile(evt) {
-	// Upload using Native File API
-
-	const fileHandle = await window.chooseFileSystemEntries().catch(() => {});
-	if (!fileHandle) return; // no file selected
-	const file = await fileHandle.getFile();
-	const contents = await file.arrayBuffer();
-	GP.droppedFiles.push({ name: file.name, contents: contents });
-}
-
 function uploadFiles(files) {
-	// Upload file. Initiated from either file chooser or drag-and-drop.
+	// Upload files. Initiated from either FileUploader click or drag-and-drop.
 
 	function recordFile(f) {
 		reader = new FileReader();
@@ -604,6 +594,7 @@ function isChromeApp() {
 }
 
 function hasWebSerial() {
+	if (/(CrOS)/.test(navigator.userAgent)) return false; // Chrome OS has a different serial API
 	return (typeof navigator.serial != 'undefined')
 }
 
@@ -786,28 +777,84 @@ function GP_setSerialPortRTS(flag) {
 	chrome.serial.setControlSignals(GP_serialPortID, { rts: flag });
 }
 
-// ChromeOS file writing
+// File read/write
 
-async function GP_writeFile(data, fName) {
-	function writeToFile(writer) { writer.write(new Blob([data], {type: 'text/plain'})); }
+async function GP_ReadFile(ext) {
+	// Upload using Native File API.
+
 	function onFileSelected(entry) {
-		void chrome.runtime.lastError;
-		if (entry) entry.createWriter(writeToFile);
+		if (!entry) return; // no file selected
+		entry.file(function(file) {
+			var reader = new FileReader();
+			reader.onload = function(evt) {
+				GP.droppedFiles.push({ name: file.name, contents: evt.target.result });
+			};
+			reader.readAsArrayBuffer(file);
+		});
 	}
 
-	if (/(CrOS)/.test(navigator.userAgent)) { // Chrome OS fileSystem API
-		chrome.fileSystem.chooseEntry({type: 'saveFile', suggestedName: fName}, onFileSelected);
-	} else if (typeof window.chooseFileSystemEntries != 'undefined') { // Native filesystem API in browser
-		const options = {
-			type: 'save-file',
-			suggestedName: fName,
-			accepts: [{ description: 'MicroBlocks Project', extensions: ['ubp'] }],
-		};
+	var options = { type: 'open-file' };
+	if ('' != ext) {
+		options.accepts = [{ description: 'MicroBlocks', extensions: [ext] }];
+	};
+
+	if (/(CrOS)/.test(navigator.userAgent)) { // Chrome OS fileSystem
+		options.type = 'openFile';
+		chrome.fileSystem.chooseEntry(options, onFileSelected);
+	} else if (typeof window.chooseFileSystemEntries != 'undefined') { // Native Filesystem API
+		const fileHandle = await window.chooseFileSystemEntries(options).catch(() => {});
+		if (!fileHandle) return; // no file selected
+		const file = await fileHandle.getFile();
+		const contents = await file.arrayBuffer();
+		GP.droppedFiles.push({ name: file.name, contents: contents });
+	} else {
+		GP_UploadFiles();
+		return;
+	}
+
+}
+
+function download(filename, text) {
+	// from https://stackoverflow.com/questions/2897619/using-html5-javascript-to-generate-and-save-a-file
+
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    } else {
+        pom.click();
+    }
+}
+
+async function GP_writeFile(data, fName, ext) {
+	function onFileSelected(entry) {
+		if (entry) entry.createWriter(function(writer) {
+			writer.write(new Blob([data], {type: 'text/plain'})); });
+	}
+
+	// Note: suggestedName is supported by the chrome.fileSystem API but not (yet) by the
+	// Native File System API in the browser. With luck, support for it will be added later.
+	var options = { type: 'save-file', suggestedName: fName };
+	if ('' != ext) {
+		options.accepts = [{ description: 'MicroBlocks', extensions: [ext] }];
+	};
+
+	if (/(CrOS)/.test(navigator.userAgent)) { // Chrome OS fileSystem
+		options.type = 'saveFile';
+		options.suggestedName = fName + '.' + ext;
+		chrome.fileSystem.chooseEntry(options, onFileSelected);
+	} else if (typeof window.chooseFileSystemEntries != 'undefined') { // Native Filesystem API
 		const fileHandle = await window.chooseFileSystemEntries(options).catch(() => {});
 		if (!fileHandle) return; // no file selected
 		const writable = await fileHandle.createWritable();
 		await writable.write(new Blob([data], {type: 'text/plain'}));
 		await writable.close();
+	} else {
+		download(fName + '.' + ext, data);
 	}
 }
 

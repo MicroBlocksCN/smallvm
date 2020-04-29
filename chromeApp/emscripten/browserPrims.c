@@ -334,19 +334,9 @@ static OBJ primBrowserIsMobile(int nargs, OBJ args[]) {
 	return isMobile ? trueObj : falseObj;
 }
 
-static OBJ primBrowserHasFileAPI(int nargs, OBJ args[]) {
-	int hasFileAPI = EM_ASM_INT({
-		if (typeof window.chooseFileSystemEntries != 'undefined') return true; // Native FileSystem API
-		return ((typeof chrome != 'undefined') &&
-				(typeof chrome.fileSystem != 'undefined') &&
-				(typeof chrome.fileSystem.chooseEntry != 'undefined')); // Chrome OS fileSystem API
-	}, NULL);
-	return hasFileAPI ? trueObj : falseObj;
-}
-
 static OBJ primBrowserHasWebSerial(int nargs, OBJ args[]) {
 	int hasWebSerial = EM_ASM_INT({
-		return (typeof navigator.serial != 'undefined');
+		return hasWebSerial();
 	}, NULL);
 	return hasWebSerial ? trueObj : falseObj;
 }
@@ -354,19 +344,25 @@ static OBJ primBrowserHasWebSerial(int nargs, OBJ args[]) {
 // ***** Browser File Operations *****
 
 static OBJ primBrowserReadFile(int nargs, OBJ args[]) {
-	EM_ASM({ GP_ReadFile(); }, 0);
+	char *extension = "";
+	if ((nargs > 0) && (IS_CLASS(args[0], StringClass))) extension = obj2str(args[0]);
+	EM_ASM_({
+		GP_ReadFile(UTF8ToString($0));
+	}, extension);
 	return nilObj;
 }
 
 static OBJ primBrowserWriteFile(int nargs, OBJ args[]) {
+	char *suggestedFileName = "";
+	char *extension = "";
 	if (nargs < 1) return notEnoughArgsFailure();
 	if (NOT_CLASS(args[0], StringClass)) return primFailed("Argument must be a string");
-	char *suggestedFileName = "";
 	if ((nargs > 1) && (IS_CLASS(args[1], StringClass))) suggestedFileName = obj2str(args[1]);
+	if ((nargs > 2) && (IS_CLASS(args[2], StringClass))) extension = obj2str(args[2]);
 
 	EM_ASM_({
-		GP_writeFile(UTF8ToString($0), UTF8ToString($1));
-	}, obj2str(args[0]), suggestedFileName);
+		GP_writeFile(UTF8ToString($0), UTF8ToString($1), UTF8ToString($2));
+	}, obj2str(args[0]), suggestedFileName, extension);
 	return nilObj;
 }
 
@@ -1013,10 +1009,9 @@ static PrimEntry browserPrimList[] = {
 	{"browserGetMessage",		primBrowserGetMessage,		"Get the next message from the browser, or nil if there isn't any."},
 	{"browserPostMessage",		primBrowserPostMessage,		"Post a message to the browser using the 'postMessage' function."},
 	{"browserIsMobile",			primBrowserIsMobile,		"Return true if running in a mobile browser."},
-	{"browserHasFileAPI",		primBrowserHasFileAPI,		"Return true the browser supports file read/write."},
 	{"browserHasWebSerial",		primBrowserHasWebSerial,	"Return true the browser supports the Web Serial API."},
-	{"browserReadFile",			primBrowserReadFile,		"Select and read a file in the browser."},
-	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [extesion, suggestedFileName]"},
+	{"browserReadFile",			primBrowserReadFile,		"Select and read a file in the browser. Args: [extension]"},
+	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [extension, suggestedFileName]"},
 };
 
 static PrimEntry graphicsPrimList[] = {

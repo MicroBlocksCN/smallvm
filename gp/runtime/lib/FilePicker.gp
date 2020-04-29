@@ -84,6 +84,7 @@ method answer FilePicker { return answer }
 method initialize FilePicker anAction defaultPath extensionList saveFlag {
   if (isNil defaultPath) { defaultPath = (absolutePath '.') }
   if (isNil saveFlag) { saveFlag = false }
+  if (isClass extensionList 'String') { extensionList = (list extensionList) }
   scale = (global 'scale')
   useEmbeddedFS = false
 
@@ -257,7 +258,7 @@ method addShortcutButtons FilePicker {
 	  buttonY += dy
 	}
   }
-  if (and showComputer ('Browser' == (platform)) (browserHasFileAPI)) {
+  if (and showComputer ('Browser' == (platform))) {
 	addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
 	buttonY += dy
   }
@@ -319,14 +320,17 @@ method textButton FilePicker x y label selectorOrAction {
 // actions
 
 method setComputer FilePicker {
-  if (and ('Browser' == (platform)) (browserHasFileAPI)) {
+  if ('Browser' == (platform)) {
 	isDone = true
 	removeFromOwner morph
-	repeat 3 { // hack: need several cycles to remove FilePicker when file is double-clicked
+	repeat 10 { // hack: need several cycles to remove FilePicker when file is double-clicked
 		doOneCycle (global 'page')
 		waitMSecs 10 // refresh screen
 	}
-	browserReadFile
+	ext = ''
+	if (notNil extensions) { ext = (first extensions) }
+	if (beginsWith ext '.') { ext = (substring ext 2) }
+	browserReadFile ext
 	return
   }
   useEmbeddedFS = false

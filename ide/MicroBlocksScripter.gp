@@ -989,7 +989,7 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 // Library import/export
 
 method importLibrary MicroBlocksScripter {
-  pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ulib' '.ubl')
+  pickFileToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ubl' '.ulib')
 }
 
 method importLibraryFromFile MicroBlocksScripter fileName data {
