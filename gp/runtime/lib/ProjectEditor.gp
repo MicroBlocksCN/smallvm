@@ -482,7 +482,7 @@ method checkForBrowserResize ProjectEditor {
 
 method importMediaFile ProjectEditor type {
   if ('Browser' == (platform)) {
-	browserFileImport
+	browserReadFile
   } else {
 	if ('image' == type) {
 	  if (isNil imagesFolder) { imagesFolder = (gpFolder) }

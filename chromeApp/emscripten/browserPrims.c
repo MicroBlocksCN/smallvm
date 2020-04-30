@@ -3,7 +3,7 @@
 // John Maloney, Jan 2015
 
 // To do:
-//	 [ ] remove flip parameter from showTexture (and fix calls in lib)
+//	[ ] remove flip parameter from showTexture (and fix calls in lib)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -221,11 +221,6 @@ static OBJ primSetFillBrowser(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
-static OBJ primBrowserFileImport(int nargs, OBJ args[]) {
-	EM_ASM({ importFile(); }, 0);
-	return nilObj;
-}
-
 static OBJ primBrowserGetDroppedFile(int nargs, OBJ args[]) {
 	int dropCount = EM_ASM_INT({ return GP.droppedFiles.length; }, NULL);
 	if (!dropCount) return nilObj; // no files
@@ -330,7 +325,7 @@ OBJ primBrowserPostMessage(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
-// ***** Mobile Browser and Chromebook Detection *****
+// ***** Mobile Browser and Browser API Detection *****
 
 static OBJ primBrowserIsMobile(int nargs, OBJ args[]) {
 	int isMobile = EM_ASM_INT({
@@ -339,32 +334,35 @@ static OBJ primBrowserIsMobile(int nargs, OBJ args[]) {
 	return isMobile ? trueObj : falseObj;
 }
 
-static OBJ primBrowserIsChromebook(int nargs, OBJ args[]) {
-	int isChromebook = EM_ASM_INT({
-		return ((/X11; CrOS/i.test(navigator.userAgent)) &&
-			(typeof chrome != 'undefined') &&
-			(typeof chrome.runtime != 'undefined') &&
-			(typeof chrome.runtime.getBackgroundPage != 'undefined'));
+static OBJ primBrowserHasWebSerial(int nargs, OBJ args[]) {
+	int hasWebSerial = EM_ASM_INT({
+		return hasWebSerial();
 	}, NULL);
-	return isChromebook ? trueObj : falseObj;
+	return hasWebSerial ? trueObj : falseObj;
 }
 
-// ***** Chromebook File Operations *****
+// ***** Browser File Operations *****
 
-static OBJ primChromeUploadFile(int nargs, OBJ args[]) {
-	EM_ASM({ GP_UploadFiles(); }, 0);
+static OBJ primBrowserReadFile(int nargs, OBJ args[]) {
+	char *extension = "";
+	if ((nargs > 0) && (IS_CLASS(args[0], StringClass))) extension = obj2str(args[0]);
+	EM_ASM_({
+		GP_ReadFile(UTF8ToString($0));
+	}, extension);
 	return nilObj;
 }
 
-static OBJ primChromeWriteFile(int nargs, OBJ args[]) {
+static OBJ primBrowserWriteFile(int nargs, OBJ args[]) {
+	char *suggestedFileName = "";
+	char *extension = "";
 	if (nargs < 1) return notEnoughArgsFailure();
 	if (NOT_CLASS(args[0], StringClass)) return primFailed("Argument must be a string");
-	char *suggestedFileName = "";
 	if ((nargs > 1) && (IS_CLASS(args[1], StringClass))) suggestedFileName = obj2str(args[1]);
+	if ((nargs > 2) && (IS_CLASS(args[2], StringClass))) extension = obj2str(args[2]);
 
 	EM_ASM_({
-		GP_writeFile(UTF8ToString($0), UTF8ToString($1));
-	}, obj2str(args[0]), suggestedFileName);
+		GP_writeFile(UTF8ToString($0), UTF8ToString($1), UTF8ToString($2));
+	}, obj2str(args[0]), suggestedFileName, extension);
 	return nilObj;
 }
 
@@ -537,12 +535,12 @@ static OBJ primCreateTexture(int nargs, OBJ args[]) {
 		ctx.fillRect(0, 0, w, h);
 
 		if (!GP.canvasCache) GP.canvasCache = [];
- 		for (var i = 0; i < GP.canvasCache.length; i++) { // use an empty slot, if possible
+		for (var i = 0; i < GP.canvasCache.length; i++) { // use an empty slot, if possible
 			if (GP.canvasCache[i] == null) {
 				GP.canvasCache[i] = newCnv;
 				return i + 1;
 			}
- 		}
+		}
 		GP.canvasCache.push(newCnv);
 		return GP.canvasCache.length; // index + 1; never zero
 	}, w, h, r, g, b, a);
@@ -575,13 +573,13 @@ static OBJ primShowTexture(int nargs, OBJ args[]) {
 	double rotation = floatArg(7, 0.0, nargs, args);
 	if (rotation != 0.0) rotation = (rotation * M_PI) / -180.0; // convert to radians; rotate counter clockwise
 	// flip is never used
-// 	int flip = intArg(8, 0, nargs, args); // 0 - none, 1 - horizontal, 2 - vertical
+//	int flip = intArg(8, 0, nargs, args); // 0 - none, 1 - horizontal, 2 - vertical
 	int blendFlag = intArg(9, 1, nargs, args); // 0 - overwrite destination, 1 - alpha blend (default)
 
 	OBJ clipRectObj = (nargs > 10) ? args[10] : nilObj;
 
 	int dstID = 0;
-	if (dst != nilObj) {  // if dst not nil, draw onto it; otherwise draw onto the display
+	if (dst != nilObj) { // if dst not nil, draw onto it; otherwise draw onto the display
 		dstID = canvasID(dst);
 		if (dstID < 0) return primFailed("Bad texture");
 	}
@@ -780,8 +778,8 @@ static OBJ primFillRect(int nargs, OBJ args[]) {
 		fillRectBitmap(dst, x, y, w, h, color, blendFlag);
 	} else {
 		fillRectCanvas(dst, x, y, w, h, color, blendFlag);
- 	}
- 	return nilObj;
+	}
+	return nilObj;
 }
 
 static OBJ primDrawBitmap(int nargs, OBJ args[]) {
@@ -1005,16 +1003,15 @@ static PrimEntry browserPrimList[] = {
 	{"fetchResult",				primFetchResult,		"Return the result of the fetch operation with the given id: a BinaryData object (success), false (failure), or nil if in progress. Argument: id"},
 	{"browserSize",				primBrowserSize,		"Return the inner width and height of the browser window."},
 	{"browserScreenSize",		primBrowserScreenSize,	"Return the width and height of the entire screen containing the browser."},
-	{"setFillBrowser",			primSetFillBrowser, 	"Set 'fill browser' mode. If true, the GP canvas is resized to fill the entire browser window."},
-	{"browserFileImport",		primBrowserFileImport,	"Show a file input button that the user can click to import a file."},
+	{"setFillBrowser",			primSetFillBrowser,		"Set 'fill browser' mode. If true, the GP canvas is resized to fill the entire browser window."},
 	{"browserGetDroppedFile",	primBrowserGetDroppedFile,	"Get the next dropped file record array (fileName, binaryData), or nil if there isn't one."},
 	{"browserGetDroppedText",	primBrowserGetDroppedText,	"Get last dropped or pasted text, or nil if there isn't any."},
 	{"browserGetMessage",		primBrowserGetMessage,		"Get the next message from the browser, or nil if there isn't any."},
 	{"browserPostMessage",		primBrowserPostMessage,		"Post a message to the browser using the 'postMessage' function."},
 	{"browserIsMobile",			primBrowserIsMobile,		"Return true if running in a mobile browser."},
-	{"browserIsChromebook",		primBrowserIsChromebook,	"Return true if running on a Chromebook."},
-	{"chromeReadFile",			primChromeUploadFile,		"Select and upload a file on Chromebook."},
-	{"chromeWriteFile",			primChromeWriteFile,		"Write a file on a Chromebook. Args: data [suggestedFileName]"},
+	{"browserHasWebSerial",		primBrowserHasWebSerial,	"Return true the browser supports the Web Serial API."},
+	{"browserReadFile",			primBrowserReadFile,		"Select and read a file in the browser. Args: [extension]"},
+	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [extension, suggestedFileName]"},
 };
 
 static PrimEntry graphicsPrimList[] = {

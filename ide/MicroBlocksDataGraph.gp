@@ -194,8 +194,8 @@ method exportData MicroBlocksDataGraph {
 	}
 	data = (joinStrings result (newline))
 
-	if (and ('Browser' == (platform)) (browserIsChromebook)) {
-		chromeWriteFile data 'data.csv'
+	if ('Browser' == (platform)) {
+		browserWriteFile data 'data' 'csv'
 		return
 	}
 

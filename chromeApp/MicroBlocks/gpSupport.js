@@ -357,41 +357,14 @@ window.addEventListener("message", handleMessage, false);
 // file upload support
 
 function GP_UploadFiles(evt) {
+	// Upload using "Upload" button
 	var inp = document.getElementById('FileUploader'); // use the hidden file input element
 	if (inp) inp.click();
 }
 
-function importFile() {
-	// obsolete; not used
-	function cleanup() {
-		document.body.onfocus = null;
-		if (inp && inp.parentNode) inp.parentNode.removeChild(inp);
-	}
-	var inp;
-	var inputs = document.getElementsByTagName('input');
-	if (inputs.length > 1) { // reuse existing file input button
-		inp = inputs[1];
-	} else { // create a new file input button
-		inp = document.createElement('input');
-		inp.type = 'file';
-		inp.multiple = true;
-		inp.style.marginLeft = '7px';
-		inp.style.marginTop = '6px';
-		var status = document.getElementById('status');
-		if (status) {
-			status.parentNode.insertBefore(inp, status);
-		} else {
-			document.body.appendChild(inp);
-		}
-	}
-	inp.onchange = function() {
-		uploadFiles(inp.files);
-		cleanup();
-	}
-	document.body.onfocus = cleanup; // cleanup if file dialog is cancelled
-}
-
 function uploadFiles(files) {
+	// Upload files. Initiated from either FileUploader click or drag-and-drop.
+
 	function recordFile(f) {
 		reader = new FileReader();
 		reader.onloadend = function() {
@@ -621,6 +594,7 @@ function isChromeApp() {
 }
 
 function hasWebSerial() {
+	if (/(CrOS)/.test(navigator.userAgent)) return false; // Chrome OS has a different serial API
 	return (typeof navigator.serial != 'undefined')
 }
 
@@ -634,11 +608,20 @@ function webSerialIsConnected() {
 }
 
 async function webSerialConnect() {
-	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
-	// the Emscripten UI thread.
+	// Prompt user to choose a serial port and open the one selected.
 
+	var vendorIDs = [
+		{ usbVendorId: 0x0403},		// FTDI
+		{ usbVendorId: 0x0d28},		// micro:bit, Calliope
+		{ usbVendorId: 0x10c4},		// Silicon Laboratories, Inc. (CP210x)
+		{ usbVendorId: 0x1a86},		// CH340
+		{ usbVendorId: 0x239a},		// AdaFruit
+		{ usbVendorId: 0x2a03},		// Arduino
+		{ usbVendorId: 0x2341},		// Arduino MKR Zero
+		{ usbVendorId: 0x03eb},		// Atmel Corporation
+	];
 	webSerialDisconnect();
-	GP_webSerialPort = await navigator.serial.requestPort().catch(() => {});
+	GP_webSerialPort = await navigator.serial.requestPort({filters: vendorIDs}).catch(() => {});
 	if (!GP_webSerialPort) return; // no serial port selected
 	await GP_webSerialPort.open({ baudrate: 115200 });
 	GP_webSerialReader = await GP_webSerialPort.readable.getReader();
@@ -646,9 +629,6 @@ async function webSerialConnect() {
 }
 
 async function webSerialDisconnect() {
-	// NOTE: Invoke this only from a DOM button otherwise any exceptions will terminate
-	// the Emscripten UI thread.
-
 	if (GP_webSerialReader) await GP_webSerialReader.cancel();
 	if (GP_webSerialPort) await GP_webSerialPort.close().catch(() => {});
 	GP_webSerialReader = null;
@@ -656,8 +636,6 @@ async function webSerialDisconnect() {
 }
 
 async function webSerialReadLoop() {
-	// Called from webSerialConnect(), which is invoked via a DOM button.
-
 	try {
 		while (true) {
 			var { value, done } = await GP_webSerialReader.read();
@@ -671,7 +649,7 @@ async function webSerialReadLoop() {
 		}
 	} catch (e) { // happens when board is unplugged
 		console.log(e);
-		await GP_webSerialPort.close();
+		await GP_webSerialPort.close().catch(() => {});
 		GP_webSerialPort = null;
 		GP_webSerialReader = null;
 		console.log('Connection closed.');
@@ -799,19 +777,85 @@ function GP_setSerialPortRTS(flag) {
 	chrome.serial.setControlSignals(GP_serialPortID, { rts: flag });
 }
 
-// ChromeOS file writing
+// File read/write
 
-function GP_writeFile(data, fName) {
-	function writeToFile(writer) { writer.write(new Blob([data], {type: 'text/plain'})); }
+async function GP_ReadFile(ext) {
+	// Upload using Native File API.
+
 	function onFileSelected(entry) {
-		void chrome.runtime.lastError;
-		if (entry) entry.createWriter(writeToFile);
+		if (!entry) return; // no file selected
+		entry.file(function(file) {
+			var reader = new FileReader();
+			reader.onload = function(evt) {
+				GP.droppedFiles.push({ name: file.name, contents: evt.target.result });
+			};
+			reader.readAsArrayBuffer(file);
+		});
 	}
 
-	if (typeof chrome == 'undefined') { console.log('not chrome'); return; } // not running in Chrome
-	chrome.fileSystem.chooseEntry(
-		{type: 'saveFile', suggestedName: fName},
-		onFileSelected);
+	var options = { type: 'open-file' };
+	if ('' != ext) {
+		options.accepts = [{ description: 'MicroBlocks', extensions: [ext] }];
+	};
+
+	if (/(CrOS)/.test(navigator.userAgent)) { // Chrome OS fileSystem
+		options.type = 'openFile';
+		chrome.fileSystem.chooseEntry(options, onFileSelected);
+	} else if (typeof window.chooseFileSystemEntries != 'undefined') { // Native Filesystem API
+		const fileHandle = await window.chooseFileSystemEntries(options).catch(() => {});
+		if (!fileHandle) return; // no file selected
+		const file = await fileHandle.getFile();
+		const contents = await file.arrayBuffer();
+		GP.droppedFiles.push({ name: file.name, contents: contents });
+	} else {
+		GP_UploadFiles();
+		return;
+	}
+
+}
+
+function download(filename, text) {
+	// from https://stackoverflow.com/questions/2897619/using-html5-javascript-to-generate-and-save-a-file
+
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    } else {
+        pom.click();
+    }
+}
+
+async function GP_writeFile(data, fName, ext) {
+	function onFileSelected(entry) {
+		if (entry) entry.createWriter(function(writer) {
+			writer.write(new Blob([data], {type: 'text/plain'})); });
+	}
+
+	// Note: suggestedName is supported by the chrome.fileSystem API but not (yet) by the
+	// Native File System API in the browser. With luck, support for it will be added later.
+	var options = { type: 'save-file', suggestedName: fName };
+	if ('' != ext) {
+		options.accepts = [{ description: 'MicroBlocks', extensions: [ext] }];
+	};
+
+	if (/(CrOS)/.test(navigator.userAgent)) { // Chrome OS fileSystem
+		options.type = 'saveFile';
+		options.suggestedName = fName + '.' + ext;
+		chrome.fileSystem.chooseEntry(options, onFileSelected);
+	} else if (typeof window.chooseFileSystemEntries != 'undefined') { // Native Filesystem API
+		const fileHandle = await window.chooseFileSystemEntries(options).catch(() => {});
+		if (!fileHandle) return; // no file selected
+		const writable = await fileHandle.createWritable();
+		await writable.write(new Blob([data], {type: 'text/plain'}));
+		await writable.close();
+	} else {
+		download(fName + '.' + ext, data);
+	}
 }
 
 // On ChromeOS, read the file opened to launch the application, if any

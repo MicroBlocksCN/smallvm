@@ -274,7 +274,7 @@ method softReset SmallRuntime {
 }
 
 method isWebSerial SmallRuntime {
-	return (and ('Browser' == (platform)) (not (browserIsChromebook)))
+	return (and ('Browser' == (platform)) (browserHasWebSerial))
 }
 
 method webSerialConnect SmallRuntime action {

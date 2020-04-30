@@ -221,7 +221,7 @@ method clearProject MicroBlocksEditor {
 method openProjectMenu MicroBlocksEditor {
   fp = (findMorph 'FilePicker')
   if (notNil fp) { destroy fp }
-  pickFileToOpen (action 'openProjectFromFile' this) lastProjectFolder (array '.gpp' '.ubp')
+  pickFileToOpen (action 'openProjectFromFile' this) lastProjectFolder (array '.ubp' '.gpp')
 }
 
 method openProjectFromFile MicroBlocksEditor location {
@@ -282,10 +282,10 @@ method saveProject MicroBlocksEditor fName {
 	}
   }
 
-  if (and ('Browser' == (platform)) (browserIsChromebook)) {
+  if ('Browser' == (platform)) {
 	if (or (isNil fName) ('' == fName)) { fName = 'Untitled' }
-	if (not (endsWith fName '.ubp')) { fName = (join fName '.ubp') }
-	chromeWriteFile (codeString (project scripter)) fName
+	if (endsWith fName '.ubp') { fName = (substring fName 1 ((count fName) - 4)) }
+	browserWriteFile (codeString (project scripter)) fName 'ubp'
 	return
   }
 
@@ -423,6 +423,7 @@ method processDroppedFiles MicroBlocksEditor {
 method processDroppedFile MicroBlocksEditor fName data {
   if (or (endsWith fName '.ubp') (endsWith fName '.gpp')) {
 	if (not (canReplaceCurrentProject this)) { return }
+	pair = true
 	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
 	openProject this data fName
   }
