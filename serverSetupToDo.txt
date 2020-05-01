@@ -1,4 +1,4 @@
 [x] set up HTTPS with LetsEncrypt (John)
 [x] make event publishing system work on new server (Bernat)
-[ ] create a shell script to do a release on the new server (Bernat)
+[x] create a shell script to do a release on the new server (Bernat)
 [ ] add Chrome browser IDE to the website (John)
