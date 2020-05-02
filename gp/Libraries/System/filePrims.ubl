@@ -1,0 +1,18 @@
+module 'File Primitives'
+
+	// File system primtives.
+
+	spec ' ' '[file:open]'			'open file _' 'str'
+	spec ' ' '[file:close]'			'close file _' 'str'
+	spec ' ' '[file:delete]'		'delete file _' 'str'
+
+	spec 'r' '[file:endOfFile]'		'end of file _' 'str'
+	spec 'r' '[file:readLine]'		'next line of file _' 'str'
+	spec 'r' '[file:readBytes]'		'next _ bytes of file _' 'num str' 100
+
+	spec ' ' '[file:appendLine]'	'append line _ to file _' 'str str'
+	spec ' ' '[file:appendBytes]'	'append bytes _ to file _' 'str str'
+
+	spec ' ' '[file:startList]'		'start file list'
+	spec 'r' '[file:nextInList]'	'next file in list'
+	spec 'r' '[file:systemInfo]'	'file system info'

@@ -297,6 +297,7 @@ void tftSetHugePixelBits(int bits);
 
 void addDataPrims();
 void addDisplayPrims();
+void addFilePrims();
 void addIOPrims();
 void addMiscPrims();
 void addNetPrims();
