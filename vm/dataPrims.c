@@ -105,12 +105,6 @@ static uint8 * appendUTF8(uint8 *s, int unicode) {
 	return s;
 }
 
-static inline void setByteCountAdjust(OBJ obj, int byteCount) {
-	if (isInt(obj) || isBoolean(obj) || (ByteArrayType != TYPE(obj))) return;
-	int delta = 4 - (byteCount & 3); // # of bytes to subtract from 4 * WORDS(obj)
-	*obj = (((*obj) & (~0x30)) | ((delta & 3) << 4));
-}
-
 // Growable Lists:
 // First field is the item count (N). Items are stored in fields 2..N.
 // Fields N+1..end are available for adding additional items without growing.
