@@ -39,10 +39,10 @@ to pickFile anAction defaultPath extensionList saveFlag {
 
   if (and saveFlag (isNil anAction)) {
 	// modal version -- waits until done and returns result or nil
-    setField (hand page) 'lastTouchTime' nil
-    while (not (isDone picker)) { doOneCycle page }
-    destroy pickerM
-    return (answer picker)
+	setField (hand page) 'lastTouchTime' nil
+	while (not (isDone picker)) { doOneCycle page }
+	destroy pickerM
+	return (answer picker)
   }
 }
 
@@ -125,8 +125,8 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   okayButton = (textButton this 0 0 'Okay' 'okay')
   cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
-  setMinExtent morph (460 * scale) (366 * scale)
-  setExtent morph (460 * scale) (366 * scale)
+  setMinExtent morph (460 * scale) (390 * scale)
+  setExtent morph (460 * scale) (390 * scale)
 
   if forSaving {
 	defaultPath = (directoryPart defaultPath)

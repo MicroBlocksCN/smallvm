@@ -763,7 +763,8 @@ method findLineBreak Text s wrapWidth {
   if (w < wrapWidth) { return len }
 
   avgLetterWidth = (w / len)
-  i = (wordEndAfter this s (truncate (wrapWidth / avgLetterWidth))) // initial guess
+  initializeGuess = (max (truncate (wrapWidth / avgLetterWidth)) 1)
+  i = (wordEndAfter this s initializeGuess)
 
   // find the end of the first word beyond wrapWidth
   while (and (i < len) ((stringWidth (substring s 1 i)) < wrapWidth)) {
