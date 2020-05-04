@@ -541,6 +541,34 @@ OBJ primFind(int argCount, OBJ *args) {
 			}
 		}
 		return int2obj(-1);
+	} else if (IS_TYPE(arg1, ByteArrayType)) { // search in a ByteArray
+		uint8 *target = (uint8 *) &FIELD(arg1, 0);
+		int targetSize = BYTES(arg1);
+		uint8 *sought;
+		int soughtSize;
+		if (IS_TYPE(arg0, ByteArrayType)) {
+			sought = (uint8 *) &FIELD(arg0, 0);
+			soughtSize = BYTES(arg0);
+		} else if (IS_TYPE(arg0, StringType)) {
+			sought = (uint8 *) obj2str(arg0);
+			soughtSize = stringSize(arg0);
+		} else {
+			// a ByteArray can be searched for a String or ByteArray
+			return fail(nonComparableError);
+		}
+		int lastPotenialMatch = targetSize - soughtSize;
+		uint8 *soughtEnd = sought + soughtSize;
+		for (int i = 0; i <= lastPotenialMatch; i++) {
+			uint8 *p1 = target + i;
+			uint8 *p2 = sought;
+			while (p2 < soughtEnd) {
+				if (*p1 != *p2) break;
+				p1++;
+				p2++;
+			}
+			if (p2 == soughtEnd) return int2obj(i + 1); // found a match!
+		}
+		return int2obj(-1);
 	}
 	return fail(needsIndexable);
 }
