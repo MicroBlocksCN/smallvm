@@ -55,6 +55,7 @@ to openMicroBlocksEditor devMode {
 }
 
 to checkLatestVersion {
+  if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
   latestVersion = (fetchLatestVersionNumber)
   currentVersion = (splitWith (ideVersion (smallRuntime)) '.')
   for i (count latestVersion) {
@@ -421,8 +422,6 @@ method processDroppedFiles MicroBlocksEditor {
 method processDroppedFile MicroBlocksEditor fName data {
   if (or (endsWith fName '.ubp') (endsWith fName '.gpp')) {
 	if (not (canReplaceCurrentProject this)) { return }
-	pair = true
-	while (notNil pair) { pair = (browserGetDroppedFile) } // clear dropped files
 	openProject this data fName
   }
   if (or (endsWith fName '.ubl') (endsWith fName '.ulib')) {

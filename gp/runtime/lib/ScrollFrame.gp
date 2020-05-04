@@ -220,6 +220,7 @@ method rightClicked ScrollFrame {
 
 method swipe ScrollFrame x y {
   factor = (4.0 * (global 'scale'))
+  if ('Browser' == (platform)) { factor = 1 }
   if (isVisible (morph hSlider)) {
     moveBy (morph (grip hSlider)) ((0 - x) * factor) 0
     trigger (grip hSlider)

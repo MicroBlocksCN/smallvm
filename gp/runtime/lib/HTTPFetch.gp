@@ -56,6 +56,9 @@ to httpGet host path port {
 
 to httpGetInBrowser url timeout {
 	if (isNil timeout) { timeout = 1000 }
+	if (and (beginsWith (browserURL) 'https:') (beginsWith url 'http:')) { // switch to 'https'
+		url = (join 'https://' (substring url 8))
+	}
 	requestID = (startFetch url)
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {

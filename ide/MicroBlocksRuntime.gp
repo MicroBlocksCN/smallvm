@@ -1198,7 +1198,7 @@ method returnedValue SmallRuntime msg {
 		sentCount = (byteAt msg 9)
 		out = (list '(')
 		for i sentCount {
-			add out (toString (byteAt msg (8 + i)))
+			add out (toString (byteAt msg (9 + i)))
 			add out ', '
 		}
 		if ((count out) > 1) { removeLast out }

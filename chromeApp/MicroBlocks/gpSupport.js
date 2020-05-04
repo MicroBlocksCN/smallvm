@@ -267,6 +267,12 @@ function initGPEventHandlers() {
 		if (evt.char && (evt.char.length == 1)) charCode = evt.char.charCodeAt(0);
 		GP.events.push([TEXTINPUT, charCode]);
 	}
+	canvas.onwheel = function(evt) {
+		var dx = Math.sign(evt.wheelDeltaX);
+		var dy = Math.sign(evt.wheelDeltaY);
+		GP.events.push([MOUSE_WHEEL, dx, dy]);
+		evt.preventDefault();
+	}
 	canvas.ontouchstart = function(evt) {
 		var touch = evt.touches[evt.touches.length - 1];
 		if (touch) {
