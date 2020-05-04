@@ -1,7 +1,7 @@
 module 'Radio Primitives' Comm
 author MicroBlocks
 version 1 0
-description 'Low level BBC micro:bit radio primitives. You are probably looking for the Radio library, on the folder above.'
+description 'Low level BBC micro:bit radio primitives. You are probably looking for the Radio library in the folder above.'
 tags radio communication messaging network
 
 	// BBC micro:bit radio primitives. The messages to send and receive strings, numbers,

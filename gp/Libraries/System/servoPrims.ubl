@@ -1,7 +1,7 @@
 module 'Servo Primitives' Output
 author MicroBlocks
 version 1 0
-description 'Low level servo motor primitives. You are probably looking for the Servo library, on the folder above.'
+description 'Low level servo motor primitives. You are probably looking for the Servo library in the folder above.'
 tags servo motor angle rotation position
 
 

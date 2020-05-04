@@ -1,7 +1,7 @@
 module 'WiFi Primitives' Comm
 author MicroBlocks
 version 1 0
-description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server or Wifi libraries on the folder above.'
+description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server or Wifi libraries in the folder above.'
 tags network http server client
 
 
