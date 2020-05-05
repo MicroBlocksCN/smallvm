@@ -7,7 +7,7 @@
 #
 # Prereq for 64-bit Linux systems: libc6-dev-i386
 
-gcc -m32 -std=c99 -Wall -O3 \
-	-D GNUBLOCKS -I ../vm linux.c ../vm/*.c \
+gcc -m32 -std=c99 -Wall -O3 -Wno-shift-negative-value \
+	-D GNUBLOCKS -I ../vm linux.c linuxFilePrims.c ../vm/*.c \
 	-lm \
 	-o GnuBlocks

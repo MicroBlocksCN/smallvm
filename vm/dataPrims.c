@@ -52,7 +52,7 @@ static inline char * nextUTF8(char *s) {
 	// If s points to a null byte (i.e. end of the string) return it unchanged.
 
 	if (!*s) return s; // end of string
-	if (*s < 128) return s + 1; // single-byte character
+	if ((uint8) *s < 128) return s + 1; // single-byte character
 	if (0xC0 == (*s & 0xC0)) s++; // start of multi-byte character
 	while (0x80 == (*s & 0xC0)) s++; // skip continuation bytes
 	return s;
@@ -639,7 +639,7 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 OBJ primNewByteArray(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	OBJ arg = args[0];
-	OBJ result;
+	OBJ result = falseObj;
 	int byteCount;
 
 	if (isInt(arg)) {
@@ -659,7 +659,7 @@ OBJ primNewByteArray(int argCount, OBJ *args) {
 		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
 		if (result) {
 			setByteCountAdjust(result, byteCount);
-			uint8 *bytes = &FIELD(result, 0);
+			uint8 *bytes = (uint8 *) &FIELD(result, 0);
 			for (int i = 0; i < byteCount; i++) {
 				OBJ item = FIELD(arg, i + 1);
 				if (isInt(item)) {
