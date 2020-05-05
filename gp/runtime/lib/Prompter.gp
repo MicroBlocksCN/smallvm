@@ -95,7 +95,7 @@ method initializeForInform Prompter label details okLabel {
   isDone = false
 
   if (isNil label) {label = 'Information'}
-  if (isNil okLabel) {okLabel = 'Ok'}
+  if (isNil okLabel) {okLabel = 'OK'}
 
   scale = (global 'scale')
   window = (window (localized label))
@@ -159,7 +159,7 @@ method initializeForSlider Prompter title anAction minValue maxValue currentValu
   slider = (slider 'horizontal' (150 * scale) callback (10 * scale) minValue maxValue currentValue)
   setPosition (morph slider) (20 * scale) (35 * scale)
   addPart morph (morph slider)
-  createButtons this 'ok' 'cancel'
+  createButtons this 'OK' 'Cancel'
 
   w = ((width (morph slider)) + (20 * scale))
   setExtent morph (+ w (4 * border)) (+ (height (morph slider)) (height (bounds buttons)) (60 * scale))

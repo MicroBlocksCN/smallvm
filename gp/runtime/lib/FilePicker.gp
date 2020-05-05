@@ -119,7 +119,7 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
   if forSaving { addFileNameField this (filePart defaultPath) }
   okayLabel = 'Open'
   if forSaving { okayLabel = 'Save' }
-  okayButton = (textButton this 0 0 okayLabel 'okay')
+  okayButton = (textButton this 0 0 okayLabel 'OK')
   cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
   setMinExtent morph (460 * scale) (390 * scale)
