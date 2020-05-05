@@ -1,6 +1,6 @@
 // FilePicker.gp - Dialog box for specifying files for opening or saving.
 
-defineClass FilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer onFileSelect cloudAction
+defineClass FilePicker morph window folderReadout listPane parentButton newFolderButton nameLabel nameField cancelButton okayButton topDir currentDir useEmbeddedFS action forSaving extensions isDone answer onFileSelect onFolderSelect cloudAction
 
 to pickFileToOpen anAction defaultPath extensionList {
   // Pick an existing file to open starting at defaultPath, if provided. If anAction is not
@@ -326,6 +326,10 @@ method onFileSelect FilePicker anAction {
 	onFileSelect = anAction
 }
 
+method onFolderSelect FilePicker anAction {
+	onFolderSelect = anAction
+}
+
 method setComputer FilePicker {
   if ('Browser' == (platform)) {
 	isDone = true
@@ -384,6 +388,9 @@ method showFolder FilePicker path isTop {
   setText folderReadout (localized (filePart path))
   updateParentAndNewFolderButtons this
   setCollection (contents listPane) (folderContents this)
+  if (notNil onFolderSelect) {
+	call onFolderSelect (join path)
+  }
 }
 
 method folderContents FilePicker {
