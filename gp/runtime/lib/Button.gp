@@ -52,7 +52,7 @@ method makeCostume Button label color minWidth minHeight fontName fontSize fontC
   // Draw a button with the given label and color. The label can be a String or a Bitmap.
   scale = (global 'scale')
   if (isNil label) { label = 'Click!' }
-  if (isNil color) { color = (gray 120) }
+  if (isNil color) { color = (gray 130) }
   if (isNil minWidth) { minWidth = 10 }
   if (isNil minHeight) { minHeight = 10 }
   if (isNil fontName) { fontName = 'Arial Bold' }

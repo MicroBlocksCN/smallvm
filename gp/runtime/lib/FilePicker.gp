@@ -108,8 +108,8 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
 
   lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) clr)
   onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
-  setFont lbox 'Arial' (16 * scale)
-  if ('Linux' == (platform)) { setFont lbox 'Arial' (12 * scale) }
+  setFont lbox 'Arial' 16
+  if ('Linux' == (platform)) { setFont lbox 'Arial' 12 }
   listPane = (scrollFrame lbox clr)
   addPart morph (morph listPane)
   setGrabRule (morph listPane) 'ignore'

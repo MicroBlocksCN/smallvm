@@ -21,9 +21,12 @@ method initialize Prompter label default editRule anAction details {
   morph = (morph window)
   setHandler morph this
   minW = (titleBarWidth window)
+  fontName = 'Arial'
+  fontSize = (14 * (global 'scale'))
+  if ('Linux' == (platform)) { fontSize = (11 * (global 'scale')) }
 
   if (notNil details) {
-	  detailsText = (newText details)
+	  detailsText = (newText details fontName fontSize)
 	  setEditRule detailsText 'static'
 	  setGrabRule (morph detailsText) 'ignore'
 	  detailsFrame = (scrollFrame detailsText (transparent) true)
@@ -34,7 +37,7 @@ method initialize Prompter label default editRule anAction details {
 	  minW = ((width (morph detailsFrame)) + (border * 8))
   }
 
-  textBox = (newText default)
+  textBox = (newText default fontName fontSize)
   setBorders textBox border border true
   minW = (max minW ((width (morph textBox)) + (60 * scale)))
   setEditRule textBox editRule
@@ -70,9 +73,12 @@ method initializeForConfirm Prompter label question yesLabel noLabel anAction {
   border = (border window)
   morph = (morph window)
   setHandler morph this
+  fontName = 'Arial Bold'
+  fontSize = (14 * (global 'scale'))
+  if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
 
   lbl = (getField window 'label')
-  textFrame = (newText (localized question) (fontName lbl) (fontSize lbl) (gray 0) 'center')
+  textFrame = (newText (localized question) fontName fontSize (gray 0) 'center')
   addPart morph (morph textFrame)
   createButtons this (localized yesLabel) (localized noLabel)
 
@@ -98,10 +104,13 @@ method initializeForInform Prompter label details okLabel {
   setHandler morph this
   minW = (titleBarWidth window)
   lbl = (getField window 'label')
+  fontName = 'Arial Bold'
+  fontSize = (14 * (global 'scale'))
+  if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
 
   if ((count (lines details)) == 1) { align = 'center' } else { align = 'left' }
 
-  detailsText = (newText (localized details) (fontName lbl) (fontSize lbl) (gray 0) align)
+  detailsText = (newText (localized details) fontName fontSize (gray 0) align)
   detailsFrame = (scrollFrame detailsText (transparent) true)
   setExtent (morph detailsFrame) minW 0
   wrapLinesToWidth detailsText (width (morph detailsFrame))
@@ -185,7 +194,8 @@ method redraw Prompter {
 method drawInside Prompter {
   scale = (global 'scale')
   cornerRadius = (4 * scale)
-  fillColor = (gray 220)
+  fillColor = (gray 230)
+
   inset = (5 * scale)
   topInset = (24 * scale)
   w = ((width morph) - (2 * inset))
@@ -206,7 +216,7 @@ method fixLayout Prompter {
 
   if (notNil detailsFrame) {
   	setLeft (morph detailsFrame) ((left clientArea) + hPadding)
-	setTop (morph detailsFrame) (top clientArea) 
+	setTop (morph detailsFrame) (top clientArea)
 	detailsHeight = (((height clientArea) - (height buttons)) - (border * 3))
 	if (notNil textBox) {
 		detailsHeight = ((detailsHeight - ((height (morph textBox)))) - border)
