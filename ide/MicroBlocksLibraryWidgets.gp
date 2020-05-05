@@ -33,6 +33,7 @@ method initialize MicroBlocksLibraryImportDialog anAction defaultPath {
 	addPart morph (morph propertiesFrame)
 
 	onFileSelect filePicker (action 'updateLibraryInfo' this)
+	onFolderSelect filePicker (action 'clearLibraryInfo' this)
 
 	scale = (global 'scale')
 	setMinExtent morph (600 * scale) (466 * scale)
@@ -55,6 +56,10 @@ method updateLibraryInfo MicroBlocksLibraryImportDialog selectedPath {
 	loadFromCmds library cmdList
 
 	setLibrary propertiesFrame library
+}
+
+method clearLibraryInfo MicroBlocksLibraryImportDialog {
+	clearFields propertiesFrame
 }
 
 method promptLibUrl MicroBlocksLibraryImportDialog {
@@ -488,6 +493,15 @@ method saveChanges MicroBlocksLibraryPropertiesFrame {
 	setVersion library (getVersion this)
 	setAuthor library (getAuthor this)
 	setTags library (contents tagViewer)
+}
+
+method clearFields MicroBlocksLibraryPropertiesFrame {
+	setText descriptionText ''
+	setText sourceText ''
+	setContents depsViewer (array)
+	setText versionText ''
+	setText authorText ''
+	setContents tagViewer (array)
 }
 
 method updateFields MicroBlocksLibraryPropertiesFrame {
