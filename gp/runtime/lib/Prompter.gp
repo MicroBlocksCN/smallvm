@@ -195,7 +195,6 @@ method drawInside Prompter {
   scale = (global 'scale')
   cornerRadius = (4 * scale)
   fillColor = (gray 230)
-
   inset = (5 * scale)
   topInset = (24 * scale)
   w = ((width morph) - (2 * inset))
