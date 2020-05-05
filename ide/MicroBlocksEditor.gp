@@ -167,9 +167,7 @@ method textButton MicroBlocksEditor label selector {
   label = (localized label)
   scale = (global 'scale')
   setFont 'Arial Bold' (16 * scale)
-  if ('Linux' == (platform)) {
-	setFont 'Liberation Sans Bold' (13 * scale)
-  }
+  if ('Linux' == (platform)) { setFont 'Arial Bold' (13 * scale) }
   w = ((stringWidth label) + (10 * scale))
   h = (41 * scale)
   labelY = (12 * scale)

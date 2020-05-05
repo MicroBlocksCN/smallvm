@@ -108,13 +108,8 @@ method initialize FilePicker anAction defaultPath extensionList saveFlag {
 
   lbox = (listBox (array) nil (action 'fileOrFolderSelected' this) clr)
   onDoubleClick lbox (action 'fileOrFolderDoubleClicked' this)
-  setFont lbox 'Arial' 16
-  if ('Linux' == (platform)) {
-	setFont lbox 'Liberation Sans' (12 * scale)
-  }
-  if ('Browser' == (platform)) {
-	setFont lbox 'Arial' (16 * scale)
-  }
+  setFont lbox 'Arial' (16 * scale)
+  if ('Linux' == (platform)) { setFont lbox 'Arial' (12 * scale) }
   listPane = (scrollFrame lbox clr)
   addPart morph (morph listPane)
   setGrabRule (morph listPane) 'ignore'
@@ -150,10 +145,7 @@ method addFolderReadoutAndParentButton FilePicker {
   y = (32 * scale)
   fontName = 'Arial Bold'
   fontSize = (16 * scale)
-  if ('Linux' == (platform)) {
-	fontName = 'Liberation Sans Bold'
-	fontSize = (12 * scale)
-  }
+  if ('Linux' == (platform)) { fontSize = (12 * scale) }
   if ('Browser' == (platform)) {
 	fontName = 'Arial'
 	fontSize = (16 * scale)
@@ -178,10 +170,7 @@ method addFileNameField FilePicker defaultName {
   y = (32 * scale)
   fontName = 'Arial Bold'
   fontSize = (15 * scale)
-  if ('Linux' == (platform)) {
-	fontName = 'Liberation Sans'
-	fontSize = (12 * scale)
-  }
+  if ('Linux' == (platform)) { fontSize = (12 * scale) }
   if ('Browser' == (platform)) {
 	fontName = 'Arial'
 	fontSize = (15 * scale)

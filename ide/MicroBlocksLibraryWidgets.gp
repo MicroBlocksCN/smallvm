@@ -46,9 +46,9 @@ method initialize MicroBlocksLibraryImportDialog anAction defaultPath {
 method updateLibraryInfo MicroBlocksLibraryImportDialog selectedPath {
 	libName = (withoutExtension (substring selectedPath ((findLast selectedPath '/') + 1)))
 	if (beginsWith selectedPath '//') {
-	  data = (readEmbeddedFile (substring selectedPath 3))
+		data = (readEmbeddedFile (substring selectedPath 3))
 	} else {
-	  data = (readFile selectedPath)
+		data = (readFile selectedPath)
 	}
 	cmdList = (parse data)
 	library = (newMicroBlocksModule libName)
@@ -297,10 +297,14 @@ method renderedItemName MicroBlocksListItemViewer item {
 }
 
 method buildListView MicroBlocksListItemViewer {
-	size = ((global 'scale') * 10)
+	fontName = 'Arial'
+	labelFontName = 'Arial Bold'
+	fontSize = (14 * (global 'scale'))
+	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
+
 	removeAllParts morph
 	if (or (and (notNil label) (notEmpty contents)) editFlag) {
-		addPart morph (morph (newText label 'Arial' size (gray 0) 'center' nil 0 0 5 3))
+		addPart morph (morph (newText label labelFontName fontSize (gray 0) 'center' nil 0 0 5 3))
 	}
 	for item contents {
 		addPart morph (morph (newLibraryItem (renderedItemName this item) this editFlag))
@@ -340,13 +344,16 @@ to newLibraryItem aName anItemViewer forEditing clickAction {
 }
 
 method initialize MicroBlocksLibraryItemMorph aName anItemViewer forEditing clickAction {
-	size = ((global 'scale') * 10)
+	fontName = 'Arial'
+	fontSize = (14 * (global 'scale'))
+	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
+
 	itemName = aName
 	itemViewer = anItemViewer
 	editFlag = forEditing
 	onClick = clickAction
 
-	text = (newText itemName 'Arial' size (gray 0) 'center' nil 0 0 5 3 'static' (gray 200))
+	text = (newText itemName fontName fontSize (gray 0) 'center' nil 0 0 5 3 'static' (gray 200))
 	morph = (morph text)
 	setHandler morph this
 
@@ -384,31 +391,33 @@ to newLibraryPropertiesFrame lib forEditing win {
 }
 
 method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
+	fontName = 'Arial'
+	fontSize = (16 * (global 'scale'))
+	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
 
 	editFlag = (or (and (notNil forEditing) forEditing) false)
-
 	morph = (morph (newBox nil (transparent) 0))
 	window = win
 
-	descriptionText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
+	descriptionText = (newText '' fontName fontSize (gray 0) 'left' nil 0 0 5)
 	if editFlag { setEditRule descriptionText 'editable' }
 	descriptionFrame = (scrollFrame descriptionText (gray 255))
 	addPart (morph descriptionFrame) (morph descriptionText)
 
 	addPart morph (morph descriptionFrame)
 
-	sourceText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
+	sourceText = (newText '' fontName fontSize (gray 0) 'left' nil 0 0 5)
 	sourceFrame = (newBox nil (gray 255) 0)
 	addPart (morph sourceFrame) (morph sourceText)
 	addPart morph (morph sourceFrame)
 
-	versionText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
+	versionText = (newText '' fontName fontSize (gray 0) 'left' nil 0 0 5)
 	if editFlag { setEditRule versionText 'editable' }
 	versionFrame = (newBox nil (gray 255) 0)
 	addPart (morph versionFrame) (morph versionText)
 	addPart morph (morph versionFrame)
 
-	authorText = (newText '' 'Arial' ((global 'scale') * 12) (gray 0) 'left' nil 0 0 5)
+	authorText = (newText '' fontName fontSize (gray 0) 'left' nil 0 0 5)
 	if editFlag { setEditRule authorText 'editable' }
 	authorFrame = (newBox nil (gray 255) 0)
 	setClipping (morph authorFrame) true

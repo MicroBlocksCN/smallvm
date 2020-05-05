@@ -57,6 +57,7 @@ method makeCostume Button label color minWidth minHeight fontName fontSize fontC
   if (isNil minHeight) { minHeight = 10 }
   if (isNil fontName) { fontName = 'Arial Bold' }
   if (isNil fontSize) { fontSize = (scale * 13) }
+  if ('Linux' == (platform)) { fontSize = (scale * 11) }
   if (isNil fontColor) { fontColor = (gray 255) }
 
   borderColor = (gray 80)

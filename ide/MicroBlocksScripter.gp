@@ -1054,7 +1054,7 @@ method importLibraryFromUrl MicroBlocksScripter fullUrl {
 	} ((findSubstring '301' (first (lines libSource))) > 0) {
 		// Moved permanently. Normally returned when we try to access a URL by
 		// HTTP and are redirected to the HTTPS equivalent
-		(inform (global 'page') 
+		(inform (global 'page')
 			(localized 'Server expects HTTPS, and MicroBlocks doesn''t currently support it.')
 			'Could not fetch library')
 		return false
