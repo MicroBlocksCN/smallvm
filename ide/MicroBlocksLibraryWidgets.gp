@@ -84,7 +84,7 @@ method fixLayout MicroBlocksLibraryImportDialog {
 	topInset = (55 * scale)
 	bottomInset = (40 * scale)
 	leftInset = (110 * scale)
-	rightInset = ((((width morph) / 2) - 20) * scale)
+	rightInset = (((width morph) / 2) - (20 * scale))
 	setPosition listPaneM ((left morph) + leftInset) ((top morph) + topInset)
 	setExtent listPaneM ((width morph) - (leftInset + rightInset)) ((height morph) - (topInset + bottomInset))
 
@@ -317,7 +317,7 @@ method buildListView MicroBlocksListItemViewer {
 method fixLayout MicroBlocksListItemViewer {
 	scale = (global 'scale')
 	margin = (6 * scale)
-	left = (left morph)
+	left = ((left morph) - (4 * scale))
 	height = ((scale * 10) + (margin * 2))
 	for text (parts morph) {
 		setLeft text left
@@ -573,8 +573,5 @@ method fixLayout MicroBlocksLibraryPropertiesFrame {
 	// description
 	setPosition (morph descriptionFrame) (left morph) (top morph)
 	setExtent (morph descriptionFrame) (width morph) descriptionHeight
-	wrapLinesToWidth descriptionText (width morph)
+	wrapLinesToWidth descriptionText ((width morph) - (18 * scale))
 }
-
-
-

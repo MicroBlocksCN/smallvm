@@ -33,7 +33,7 @@ method setOn Button bool {
 }
 
 method setLabel Button label offColor onColor minWidth minHeight fontName fontSize fontColor {
-  if (isNil offColor) { offColor = (gray 150) }
+  if (isNil offColor) { offColor = (gray 140) }
   if (isNil onColor) { onColor = (lighter offColor 15) }
   offBM = (makeCostume this label offColor minWidth minHeight fontName fontSize fontColor)
   onBM = (makeCostume this label onColor minWidth minHeight fontName fontSize fontColor)
@@ -68,7 +68,7 @@ method makeCostume Button label color minWidth minHeight fontName fontSize fontC
 
   if (isClass label 'String') {
 	setFont fontName fontSize
-	labelBitmap = (newBitmap (stringWidth label) (fontHeight))
+	labelBitmap = (newBitmap (stringWidth label) (fontHeight) (gray 255 0))
 	drawString labelBitmap label fontColor
   } else {
 	labelBitmap = label

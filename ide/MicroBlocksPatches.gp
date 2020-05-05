@@ -933,6 +933,7 @@ method initialize SpeechBubble someData bubbleWidth dir isErrorFlag {
   scale = (global 'scale')
   font = 'Arial'
   fontSize = (18 * scale)
+  if ('Linux' == (platform)) { fontSize = (13 * scale) }
   maxLines = 30
   shadowOffset = 3 // optional; if nil, no shadow is drawn
 
