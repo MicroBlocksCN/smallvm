@@ -1,5 +1,8 @@
 module main
-variables 'delta x' 'delta y' 'paddle x' playing 'refresh rate' score x y
+author unknown
+version 1 0 
+description ''
+variables 'delta x' 'delta y' 'paddle x' playing 'refresh rate' score x y 
 
 	spec ' ' 'bounce on x' 'bounce on x'
 	spec ' ' 'bounce ball' 'bounce ball'
@@ -10,10 +13,6 @@ variables 'delta x' 'delta y' 'paddle x' playing 'refresh rate' score x y
 	spec ' ' 'plot paddles' 'plot paddle'
 	spec ' ' 'should bounce on paddle' 'random bounce'
 	spec ' ' 'speed up' 'speed up'
-
-to 'bounce on x' {
-  'delta x' = ((v 'delta x') * -1)
-}
 
 to 'bounce ball' {
   if (or (x == 5) (x == 1)) {'bounce on x'}
@@ -30,6 +29,10 @@ to 'bounce ball' {
   }
   x += (v 'delta x')
   y += (v 'delta y')
+}
+
+to 'bounce on x' {
+  'delta x' = ((v 'delta x') * -1)
 }
 
 to 'bounce on y' {
@@ -153,8 +156,12 @@ waitUntil (not (buttonA))
 
 
 module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
@@ -166,7 +173,12 @@ to displayCharacter s {
 
 
 module Scrolling Output
-variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text
+author MicroBlocks
+version 1 0 
+depends 'LED Display' 
+tags animation text pixel matrix led tft 
+description 'Scroll text across the screen of the 5x5 LED display on the BBC micro:bit, Calliope mini or M5Atom Matrix. Also works on boards with a TFT display by simulating the 5x5 matrix with "fat pixels".'
+variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text 
 
 	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
 	spec ' ' 'scroll_number' 'scroll number _ : pausing _ ms' 'num num' 123 100

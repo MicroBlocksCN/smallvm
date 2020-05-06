@@ -1,5 +1,8 @@
 module main
-variables _bz_frequencies _bz_note_names _bz_pinNumber _digit_shapes _digit_shapes_start_index _loop_overhead _np_first_rotated _np_length _np_pixels 'current index' sequence
+author unknown
+version 1 0 
+description ''
+variables _bz_frequencies _bz_note_names _bz_pinNumber _digit_shapes _digit_shapes_start_index _loop_overhead _np_first_rotated _np_length _np_pixels 'current index' sequence 
 
 	spec 'r' '_bz_index of' '_bz_index of _ in _' 'auto auto any any' '10' ''
 	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num any any any' 42
@@ -271,24 +274,34 @@ to 'play note at' {}
 
 
 module NeoPixel Output
-variables _np_pixels
+author MicroBlocks
+version 1 0 
+tags led strip rgb string ws2812 
+description 'Control NeoPixel (WS2812) RGB LED strips.'
+variables _np_pixels 
 
+	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
 	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
 	spec ' ' 'clearNeoPixels' 'clear NeoPixels'
 	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
 	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
 	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
-	spec 'r' 'colorFromRGB' 'color r _ g _ b _' 'num num num' 0 1 1
-	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num num bool' 10  false
+	spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-31)' 'num num num' 0 1 1
+	spec 'r' 'randomColor' 'random color'
 	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
 	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
 	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
 
 to '_NeoPixel_ensureInitialized' {
-  if (_np_pixels == 0) {neoPixelAttach 10 '' false}
+  if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
+    neoPixelAttach 25 '' false
+  } else {
+    neoPixelAttach 10 '' false
+  }}
 }
 
 to '_NeoPixel_rotate' left {
+  '_NeoPixel_ensureInitialized'
   local 'length' (size _np_pixels)
   if left {
     local 'first' (at 1 _np_pixels)
@@ -338,17 +351,32 @@ to neoPixelSetAllToColor color {
   '_NeoPixel_update'
 }
 
+to randomColor {
+  local 'n1' (random 0 15)
+  local 'n2' (random 5 20)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
 to rotateNeoPixelsBy n {
   '_NeoPixel_ensureInitialized'
   repeat (absoluteValue n) {
-    '_NeoPixel_rotate' (n > 0) nil nil nil
+    '_NeoPixel_rotate' (n > 0)
   }
   '_NeoPixel_update'
 }
 
-to setNeoPixelColor number color {
-  atPut number _np_pixels color
-  '_NeoPixel_update'
+to setNeoPixelColor i color {
+  '_NeoPixel_ensureInitialized'
+  if (and (1 <= i) (i <= (size _np_pixels))) {
+    atPut i _np_pixels color
+    '_NeoPixel_update'
+  }
 }
 
 to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
@@ -388,7 +416,11 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 
 
 module Tone Output
-variables _tonePin _toneInitalized _toneLoopOverhead
+author MicroBlocks
+version 1 0 
+tags tone sound music audio note speaker 
+description 'Audio tone generation. Make music with MicroBlocks!'
+variables _tonePin _toneInitalized _toneLoopOverhead 
 
 	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
 	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
@@ -473,7 +505,6 @@ This helps users find typos in their tunes.'
 
 to '_measureLoopOverhead' {
   comment 'Measure the loop overhead on this device'
-  '[display:mbDisplayOff]'
   local 'halfCycle' 100
   local 'startT' (microsOp)
   repeat 100 {

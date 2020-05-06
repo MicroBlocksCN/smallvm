@@ -1,5 +1,8 @@
 module main
-variables 'reaction time' remark 'start time'
+author unknown
+version 1 0 
+description ''
+variables 'reaction time' remark 'start time' 
 
 script 50 50 {
 whenButtonPressed 'A'
@@ -21,5 +24,22 @@ if ((v 'reaction time') < 150) {
 sayIt (v 'reaction time') 'msecs' remark
 waitUntil (not (buttonB))
 '[display:mbDisplayOff]'
+}
+
+
+module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+
+to displayCharacter s {
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 

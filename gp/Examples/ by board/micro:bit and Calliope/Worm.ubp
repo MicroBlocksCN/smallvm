@@ -1,5 +1,8 @@
 module main
-variables worm direction apple
+author unknown
+version 1 0 
+description ''
+variables worm direction apple 
 
 	spec ' ' 'draw worm' 'draw worm'
 	spec ' ' 'move worm' 'move worm'
@@ -142,6 +145,10 @@ whenButtonPressed 'B'
 
 
 module 'Basic Sensors' Input
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light sensor 
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
 	spec 'r' '[sensors:tiltX]' 'tilt x'
 	spec 'r' '[sensors:tiltY]' 'tilt y'
@@ -151,8 +158,12 @@ module 'Basic Sensors' Input
 	spec 'r' '[sensors:temperature]' 'temperature (°C)'
 
 module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3

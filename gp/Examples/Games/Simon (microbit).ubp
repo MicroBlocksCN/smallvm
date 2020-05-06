@@ -1,9 +1,16 @@
 module main
-variables 'current index' letters
+author unknown
+version 1 0 
+description ''
+variables 'current index' letters 
 
 	spec ' ' 'initialize letters' 'initialize letters'
 	spec 'r' 'correct guess' 'correct guess at _' 'auto' '10'
 	spec 'r' 'wrong guess' 'wrong guess at _' 'auto' '10'
+
+to 'correct guess' index {
+  return (or (and (buttonA) ((at index letters) == 'A')) (and (buttonB) ((at index letters) == 'B')))
+}
 
 to 'initialize letters' {
   if (letters == 0) {letters = (newList 20)}
@@ -14,10 +21,6 @@ to 'initialize letters' {
       atPut i letters 'B'
     }
   }
-}
-
-to 'correct guess' index {
-  return (or (and (buttonA) ((at index letters) == 'A')) (and (buttonB) ((at index letters) == 'B')))
 }
 
 to 'wrong guess' index {
@@ -78,8 +81,30 @@ if ((v 'current index') > 20) {
 }
 
 
+module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+
+to displayCharacter s {
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+
 module Scrolling Output
-variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text
+author MicroBlocks
+version 1 0 
+depends 'LED Display' 
+tags animation text pixel matrix led tft 
+description 'Scroll text across the screen of the 5x5 LED display on the BBC micro:bit, Calliope mini or M5Atom Matrix. Also works on boards with a TFT display by simulating the 5x5 matrix with "fat pixels".'
+variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text 
 
 	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
 	spec ' ' 'scroll_number' 'scroll number _ : pausing _ ms' 'num num' 123 100
@@ -170,7 +195,11 @@ to stopScrollingText {
 
 
 module Tone Output
-variables _tonePin _toneInitalized _toneLoopOverhead
+author MicroBlocks
+version 1 0 
+tags tone sound music audio note speaker 
+description 'Audio tone generation. Make music with MicroBlocks!'
+variables _tonePin _toneInitalized _toneLoopOverhead 
 
 	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
 	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
@@ -255,7 +284,6 @@ This helps users find typos in their tunes.'
 
 to '_measureLoopOverhead' {
   comment 'Measure the loop overhead on this device'
-  '[display:mbDisplayOff]'
   local 'halfCycle' 100
   local 'startT' (microsOp)
   repeat 100 {

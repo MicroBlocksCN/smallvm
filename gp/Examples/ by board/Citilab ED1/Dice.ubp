@@ -1,4 +1,7 @@
 module main
+author unknown
+version 1 0 
+description ''
 
 	spec ' ' 'dice' 'draw die _' 'auto' 6
 	spec ' ' 'draw dot x' 'draw dot x _ y _' 'auto auto' 10 '10'
@@ -67,6 +70,10 @@ shake it to roll a die.'
 
 
 module 'Basic Sensors' Input
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light sensor 
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
 	spec 'r' '[sensors:tiltX]' 'tilt x'
 	spec 'r' '[sensors:tiltY]' 'tilt y'
@@ -76,7 +83,11 @@ module 'Basic Sensors' Input
 	spec 'r' '[sensors:temperature]' 'temperature (°C)'
 
 module 'ED1 Buttons' Input
-variables _ED1_buttons_init '_capacitive threshold'
+author MicroBlocks
+version 1 0 
+tags button capacitive ed1 
+description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
+variables _ED1_buttons_init '_capacitive threshold' 
 
 	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
 	spec 'r' 'OK button' 'button OK'
@@ -130,8 +141,12 @@ to 'up button' {
 
 
 module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
@@ -143,6 +158,9 @@ to displayCharacter s {
 
 
 module 'Misc Primitives'
+author MicroBlocks
+version 1 0 
+description 'Miscellaneous system primitives.'
 
 	spec ' ' 'noop' 'no op'
 	spec ' ' 'ignoreArgs' 'ignore : _ : ...' 'auto' 0
@@ -152,14 +170,18 @@ module 'Misc Primitives'
 	spec 'r' 'longMult' '( _ * _ ) >> _' 'num num num' 1024 2048 10
 	spec 'r' '[misc:sin]' 'fixed sine _' 'num' 9000
 
-module Motion
-variables _motionSamples _stepCount _stepThreshold _stepMotionHigh
+module Motion Input
+author MicroBlocks
+version 1 0 
+tags acceleration steps motion accelerometer 
+description 'Count steps and detect motion in boards with a built-in accelerometer, such as the micro:bit, the Calliope, the Citilab ED1 or the Circuit Playground Express.'
+variables _motionSamples _stepCount _stepThreshold _stepMotionHigh 
 
-	spec 'r' 'motion' 'motion'
 	spec ' ' 'startStepCounter' 'start step counter'
 	spec 'r' 'stepCount' 'step count'
 	spec ' ' 'clearStepCount' 'clear step count'
 	spec ' ' 'setStepThreshold' 'set step threshold _ (0-50)' 'auto' 10
+	spec 'r' 'motion' 'motion'
 	spec ' ' '_addSample' '_addSample _' 'auto' '10'
 	spec 'r' '_recentAverage' '_recentAverage'
 	spec ' ' '_stepCounterLoop' '_stepCounterLoop'
@@ -206,16 +228,13 @@ to clearStepCount {
 to motion {
   comment 'Return the change in acceleration since the last call.'
   comment 'Details: The value is the difference between the current
-total acceleration in all three axes and the average value
-of the last N samples. Since we don''t have a square root
-function, the total acceleration is computed as the sum of
-the absolute values of the acceleration in all three axes.
+acceleration and the average value of the last N samples.
 The result is zero when there are no changes of acceleration.
 It goes positive momentarily when the acceleration decreases
-(e.g. because the microcontroller is dropped) and positive
-when the acceleration increases (e.g. when a falling micro-
+(e.g. because the microcontroller is in free fall) and positive
+when the acceleration increases (e.g. when the falling micro-
 controller is caught).'
-  local 'current' (absoluteValue (maximum (absoluteValue ('[sensors:tiltX]')) (absoluteValue ('[sensors:tiltY]')) (absoluteValue ('[sensors:tiltZ]'))))
+  local 'current' ('[sensors:acceleration]')
   local 'result' (current - ('_recentAverage'))
   '_addSample' current
   if ((absoluteValue result) < 3) {
@@ -245,58 +264,48 @@ to stepCount {
 
 
 module TFT Output
+author MicroBlocks
+version 1 0 
+tags tft graphics draw 
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+	spec 'r' 'makeColor' 'color r _ g _ b _ (0-31)' 'auto auto auto' 20 5 15
+	spec 'r' 'randomColor' 'random color'
 	spec 'r' '[tft:getWidth]' 'TFT width'
 	spec 'r' '[tft:getHeight]' 'TFT height'
-	spec ' ' 'set TFT pixel x' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec ' ' 'tft line' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
-	spec ' ' 'tft rect' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil false
-	spec ' ' 'tft roundedRect' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil false
-	spec ' ' 'tft circle' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 60 100 30 nil false
-	spec ' ' 'tft triangle' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil false
-	spec ' ' 'tft text' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 0 80 nil 1 false
-	spec 'r' '_tft color' '_tft color _ to number' 'color any'
+	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
 
-to '_tft color' 'color hex' {
-  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
-  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
-  local 'b' ((((v 'color hex') & 255) * 255) / 31)
+to makeColor r g b {
   return ((r << 16) | ((g << 8) | b))
 }
 
-to 'set TFT pixel x' x y color {
-  '[tft:setPixel]' x y ('_tft color' color)
-}
-
-to 'tft circle' x y radius color filled {
-  '[tft:circle]' x y radius ('_tft color' color) filled
-}
-
-to 'tft line' x1 y1 x2 y2 color {
-  '[tft:line]' x1 y1 x2 y2 ('_tft color' color)
-}
-
-to 'tft rect' x y w h color filled {
-  '[tft:rect]' x y w h ('_tft color' color) filled
-}
-
-to 'tft roundedRect' x y w h radius color filled {
-  '[tft:roundedRect]' x y w h radius ('_tft color' color) filled
-}
-
-to 'tft text' text x y color scale wrap {
-  '[tft:text]' text x y ('_tft color' color) scale wrap
-}
-
-to 'tft triangle' x1 y1 x2 y2 x3 y3 color filled {
-  '[tft:triangle]' x1 y1 x2 y2 x3 y3 ('_tft color' color) filled
+to randomColor {
+  local 'n1' (random 0 15)
+  local 'n2' (random 5 20)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
 }
 
 
 module Tone Output
-variables _tonePin _toneInitalized _toneLoopOverhead
+author MicroBlocks
+version 1 0 
+tags tone sound music audio note speaker 
+description 'Audio tone generation. Make music with MicroBlocks!'
+variables _tonePin _toneInitalized _toneLoopOverhead 
 
 	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
 	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
@@ -381,7 +390,6 @@ This helps users find typos in their tunes.'
 
 to '_measureLoopOverhead' {
   comment 'Measure the loop overhead on this device'
-  '[display:mbDisplayOff]'
   local 'halfCycle' 100
   local 'startT' (microsOp)
   repeat 100 {

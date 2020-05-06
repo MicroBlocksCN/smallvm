@@ -1,5 +1,8 @@
 module main
-variables screen obstacles obsOK prevObs heliX heliY gameOver toggleOn
+author unknown
+version 1 0 
+description ''
+variables screen obstacles obsOK prevObs heliX heliY gameOver toggleOn 
 
 	spec ' ' 'clearC5' 'clearC5'
 	spec ' ' 'dispScreen' 'dispLEDs'
@@ -162,7 +165,7 @@ to toggleHeli {
   }
 }
 
-script 1050 50 {
+script 1060 50 {
 comment 'Game contributed by Turgut Guneysu
 ============================
 
@@ -180,10 +183,10 @@ That''s it !
 Have Fun.'
 }
 
-script 70 140 {
+script 50 119 {
 whenStarted
-screen = (newArray 25)
-fillArray screen (booleanConstant false)
+screen = (newList 25)
+fillList screen (booleanConstant false)
 prevObs = 0
 heliX = 2
 heliY = 3
@@ -201,39 +204,43 @@ repeatUntil gameOver {
 }
 }
 
-script 302 140 {
+script 312 140 {
 to genObstacle {}
 }
 
-script 679 146 {
+script 689 146 {
 to shiftScreen {}
 }
 
-script 680 413 {
+script 690 413 {
 to clearC5 {}
 }
 
-script 72 574 {
+script 82 574 {
 whenStarted
 toggleHeli
 }
 
-script 681 634 {
+script 691 634 {
 to dispScreen {}
 }
 
-script 63 652 {
+script 73 652 {
 to toggleHeli {}
 }
 
-script 306 898 {
+script 316 898 {
 to crashHeli {}
 }
 
 
 module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay'
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
@@ -245,6 +252,9 @@ to displayCharacter s {
 
 
 module 'Misc Primitives'
+author MicroBlocks
+version 1 0 
+description 'Miscellaneous system primitives.'
 
 	spec ' ' 'noop' 'no op'
 	spec ' ' 'ignoreArgs' 'ignore : _ : ...' 'auto' 0
@@ -255,7 +265,10 @@ module 'Misc Primitives'
 	spec 'r' '[misc:sin]' 'fixed sine _' 'num' 9000
 
 module Scrolling Output
-variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text
+author unknown
+version 1 0 
+description ''
+variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text 
 
 	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
 	spec ' ' 'scroll_number' 'scroll number _ : pausing _ ms' 'num num' 123 100
@@ -264,8 +277,8 @@ variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text
 	spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to '_covert_to_shapes' n {
-  if (_digit_shapes == 0) {_digit_shapes = (newArray 12)}
-  fillArray _digit_shapes ('[display:mbShapeForLetter]' ' ')
+  if (_digit_shapes == 0) {_digit_shapes = (newList 12)}
+  fillList _digit_shapes ('[display:mbShapeForLetter]' ' ')
   local 'index' (size _digit_shapes)
   local 'isNegative' (booleanConstant false)
   if (n < 0) {

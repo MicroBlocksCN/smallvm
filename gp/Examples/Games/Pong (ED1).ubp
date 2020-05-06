@@ -1,5 +1,8 @@
 module main
-variables 'ball radius' 'delta x' 'delta y' 'paddle 1 x' 'paddle 2 x' 'paddle width' playing 'refresh rate' speed x y
+author unknown
+version 1 0 
+description ''
+variables 'ball radius' 'delta x' 'delta y' 'paddle 1 x' 'paddle 2 x' 'paddle width' playing 'refresh rate' speed x y 
 
 	spec ' ' 'bounce ball' 'bounce ball'
 	spec ' ' 'bounce on paddle' 'bounce on paddle _' 'auto' 2
@@ -203,7 +206,11 @@ to 'clear ball' {}
 
 
 module 'ED1 Buttons' Input
-variables _ED1_buttons_init '_capacitive threshold'
+author MicroBlocks
+version 1 0 
+tags button capacitive ed1 
+description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
+variables _ED1_buttons_init '_capacitive threshold' 
 
 	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
 	spec 'r' 'OK button' 'button OK'
@@ -257,7 +264,11 @@ to 'up button' {
 
 
 module Tone Output
-variables _tonePin _toneInitalized _toneLoopOverhead
+author MicroBlocks
+version 1 0 
+tags tone sound music audio note speaker 
+description 'Audio tone generation. Make music with MicroBlocks!'
+variables _tonePin _toneInitalized _toneLoopOverhead 
 
 	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
 	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
@@ -342,7 +353,6 @@ This helps users find typos in their tunes.'
 
 to '_measureLoopOverhead' {
   comment 'Measure the loop overhead on this device'
-  '[display:mbDisplayOff]'
   local 'halfCycle' 100
   local 'startT' (microsOp)
   repeat 100 {
