@@ -1,0 +1,140 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables responses 
+
+script 52 50 {
+whenStarted
+comment 'Remember to use your network name (SSID) and password below'
+'wifi connect to' 'Network_Name' '' 3
+local 'request' ''
+'[net:startHttpServer]'
+forever {
+  request = ('[net:httpServerGetRequest]')
+  if (request != (booleanConstant false)) {
+    for response responses {
+      if (('path of request' request) == (at 1 response)) {'[net:respondToHttpRequest]' '200 OK' (at 2 response)}
+    }
+    '[net:respondToHttpRequest]' '404 Not Found' '<h1>404 Not Found</h1><p>I''m sorry, this page does not exist :(</p>'
+  }
+  waitMillis 10
+}
+}
+
+script 586 170 {
+comment 'This is an example HTTP server written in MicroBlocks.
+
+It responds to the following URLs:
+
+  /
+  /test
+  /foo
+  /bar
+
+You can also try a random URL and get back a 404 page.
+
+The server responds to all request methods in the same way, but you can
+easily add checks for other methods (like POST) by using the
+( method of request [ ] ) block.
+
+You can also extract the body of a request (when it has one) by using the
+( body of request [ ] ) block.
+
+Enjoy!'
+}
+
+script 50 627 {
+whenStarted
+responses = ('[data:makeList]' ('[data:makeList]' '/' '<h1>Hello!</h1><p>This is the MicroBlocks HTTP server.</p><p>You can test the following URLs:</p><ul><li>/test</li><li>/foo</li><li>/bar</li></ul>') ('[data:makeList]' '/test' '<p>This is a <strong>test</strong> URL</p>') ('[data:makeList]' '/foo' '<p>Just a page that says</p><h1>FOO</h1>') ('[data:makeList]' '/bar' '<p>Just a page that says</p><h1>BAR</h1><img src="http://microblocks.fun/logo.png"/>'))
+}
+
+
+module 'HTTP server' Comm
+author MicroBlocks
+version 1 0 
+depends WiFi 
+tags http network 
+description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
+
+	spec ' ' '[net:startHttpServer]' 'start HTTP server'
+	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
+	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
+Access-Control-Allow-Origin: *'
+	spec 'r' 'body of request' 'body of request _' 'auto' ''
+	spec 'r' 'path of request' 'path of request _' 'auto' ''
+	spec 'r' 'request method' 'method of request _' 'auto' ''
+
+to 'body of request' request {
+  return ('[data:copyFromTo]' request (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request) + 4))
+}
+
+to 'path of request' request {
+  return ('[data:copyFromTo]' request (('[data:find]' ' ' request) + 1) (('[data:find]' ' HTTP' request) - 1))
+}
+
+to 'request method' request {
+  return ('[data:copyFromTo]' request 1 (('[data:find]' ' ' request) - 1))
+}
+
+
+module WiFi Comm
+author MicroBlocks
+version 1 1 
+tags communication network 
+description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
+
+	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
+	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+	spec 'r' 'getIPAddress' 'IP address'
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to 'wifi connect to' ssid password tries {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
+  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+    '[net:startWiFi]' ssid password
+    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+      comment 'Slow blink while connecting'
+      setUserLED true
+      waitMillis 500
+      setUserLED false
+      waitMillis 500
+    }
+    tries += -1
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
+  '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+

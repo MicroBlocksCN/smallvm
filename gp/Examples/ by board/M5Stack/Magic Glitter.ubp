@@ -1,0 +1,37 @@
+module main
+author unknown
+version 1 0 
+description ''
+
+script 54 50 {
+comment 'Start the project, then shake your BBC micro:bit for some magic glitter!'
+}
+
+script 55 124 {
+whenCondition (('[sensors:tiltX]') > 30)
+'[display:mbPlot]' (random 1 5) (random 1 5)
+'[display:mbUnplot]' (random 1 5) (random 1 5)
+}
+
+script 57 273 {
+whenCondition (('[sensors:tiltX]') < 30)
+'[display:mbUnplot]' (random 1 5) (random 1 5)
+}
+
+
+module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+
+to displayCharacter s {
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
