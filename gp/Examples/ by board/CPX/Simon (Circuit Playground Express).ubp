@@ -113,7 +113,6 @@ to freq freq pin ms {
 
 to 'initialize board' {
   attach 10 '' false
-  'attach buzzer to pin' 12
 }
 
 to 'initialize letters' {
