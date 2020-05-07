@@ -32,6 +32,7 @@
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
 
 static char connecting = false;
+static char serverStarted = false;
 
 WiFiServer server(80);
 WiFiClient client;
@@ -65,6 +66,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 
 	char *networkName = obj2str(args[0]);
 	char *password = obj2str(args[1]);
+	serverStarted = false;
 
 	#ifdef USE_WIFI101
 		WiFi.begin(networkName, password);
@@ -98,7 +100,6 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 
 static OBJ primStopWiFi(int argCount, OBJ *args) {
 	#ifndef USE_WIFI101
-		server.stop();
 		WiFi.mode(WIFI_OFF);
 	#endif
 	connecting = false;
@@ -167,20 +168,24 @@ static int isConnectedToWiFi() {
 }
 
 static OBJ primStartHttpServer(int argCount, OBJ *args) {
-	if (isConnectedToWiFi()) server.begin(); // do nothing if not connected
-	return falseObj;
-}
+	// Deprecated. Server is now started automatically when first used.
 
-static OBJ primStopHttpServer(int argCount, OBJ *args) {
-	#ifndef USE_WIFI101
-		server.close();
-	#endif
-	return falseObj;
+ 	return falseObj;
 }
 
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 	// Read HTTP request data and return a string containing some data or falseObj if no data
 	// is available. Fail if there isn't enough memory to allocate even a one-byte string.
+
+	if (!isConnectedToWiFi()) return falseObj;
+
+	if (!serverStarted) {
+		// Start the server the first time and *never* stop/close it. If the server is stopped
+		// on the ESP32 then all future connections are refused until the board is reset.
+		// It is fine for the server to continue running even if the WiFi is restarted.
+		server.begin();
+		serverStarted = true;
+	}
 
 	if (!client) client = server.available(); // attempt to accept a client connection
 	if (!client) return falseObj; // no client connection
@@ -276,7 +281,7 @@ Accept: */*\r\n",
 	} else {
 		httpClient.write("\r\n", 2);
 	}
-	httpClient.flush();
+	httpClient.stop();
 	return falseObj;
 }
 
@@ -309,7 +314,6 @@ static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStartHttpServer(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primStopHttpServer(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -327,7 +331,6 @@ static PrimEntry entries[] = {
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
 	{"startHttpServer", primStartHttpServer},
-	{"stoptHttpServer", primStopHttpServer},
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},

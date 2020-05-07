@@ -1,6 +1,6 @@
 module 'WiFi Primitives' Comm
 author MicroBlocks
-version 1 0
+version 1 1
 description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server or Wifi libraries in the folder above.'
 tags network http server client
 
@@ -19,8 +19,6 @@ tags network http server client
 	spec ' ' '[net:httpRequest]'			'_ request http܃// _ / _ : body _' 'menu.requestTypes str str str' 'GET' 'microblocks.fun' 'example.txt' ''
 	spec 'r' '[net:httpResponse]'			'HTTP response'
 	spec ' ' '[net:httpClose]'				'close HTTP connection'
-	spec ' ' '[net:startHttpServer]'		'start HTTP server'
-	spec ' ' '[net:stopHttpServer]'			'stop HTTP server'
 	spec 'r' '[net:httpServerGetRequest]'	'HTTP server request'
 	spec ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
 Access-Control-Allow-Origin: *'
