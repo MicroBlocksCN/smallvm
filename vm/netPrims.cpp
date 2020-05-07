@@ -167,14 +167,16 @@ static int isConnectedToWiFi() {
 	return WL_CONNECTED == WiFi.status();
 }
 
+// HTTP Server
+
 static OBJ primStartHttpServer(int argCount, OBJ *args) {
-	// Deprecated. Server is now started automatically when first used.
+	// Deprecated. The server is now started automatically by primHttpServerGetRequest.
 
  	return falseObj;
 }
 
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
-	// Read HTTP request data and return a string containing some data or falseObj if no data
+	// An HTTP request and return a string containing some data or falseObj if no data
 	// is available. Fail if there isn't enough memory to allocate even a one-byte string.
 
 	if (!isConnectedToWiFi()) return falseObj;
@@ -205,6 +207,8 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 }
 
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
+	// Send a response to the client with the status plus optional headers and optional body.
+
 	if (!client) return falseObj;
 	char* status = obj2str(args[0]);
 	char* body = obj2str(args[1]);
@@ -224,9 +228,13 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+// HTTP Client
+
 WiFiClient httpClient;
 
 static OBJ primHttpConnect(int argCount, OBJ *args) {
+	// Connect to an HTTP server and port.
+
 	char* host = obj2str(args[0]);
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
 	uint32 start = millisecs();
@@ -250,12 +258,15 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 }
 
 static OBJ primHttpIsConnected(int argCount, OBJ *args) {
-	// Return true if data is available even if the connection has been closed by the server.
+	// Return true when connected to an HTTP server. Continue to return true if more data
+	// is available even if the connection has been closed by the server.
 
 	return (httpClient.connected() || httpClient.available()) ? trueObj : falseObj;
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
+	// Send an HTTP request. Must have first connected to the server.
+
 	char* reqType = obj2str(args[0]);
 	char* host = obj2str(args[1]);
 	char* path = obj2str(args[2]);
@@ -285,6 +296,8 @@ Accept: */*\r\n",
 }
 
 static OBJ primHttpResponse(int argCount, OBJ *args) {
+	// Read some HTTP request data, if any is available, otherwise return the empty string.
+
 	int byteCount = httpClient.available();
 	if (!byteCount) return (OBJ) &noData;
 	if (byteCount > 800) byteCount = 800; // max length string that can be reported to IDE
