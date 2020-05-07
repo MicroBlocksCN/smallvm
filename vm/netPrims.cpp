@@ -281,7 +281,6 @@ Accept: */*\r\n",
 	} else {
 		httpClient.write("\r\n", 2);
 	}
-	httpClient.stop();
 	return falseObj;
 }
 
@@ -301,11 +300,6 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	return result;
 }
 
-static OBJ primHttpClose(int argCount, OBJ *args) {
-	httpClient.stop();
-	return falseObj;
-}
-
 #else // not ESP8266 or ESP32
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
@@ -320,7 +314,6 @@ static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primHttpClose(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
@@ -337,7 +330,6 @@ static PrimEntry entries[] = {
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
-	{"httpClose", primHttpClose},
 };
 
 void addNetPrims() {
