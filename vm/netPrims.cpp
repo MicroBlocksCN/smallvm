@@ -169,40 +169,74 @@ static int isConnectedToWiFi() {
 
 // HTTP Server
 
+static void startHttpServer() {
+	// Start the server the first time and *never* stop/close it. If the server is stopped
+	// on the ESP32 then all future connections are refused until the board is reset.
+	// It is fine for the server to continue running even if the WiFi is restarted.
+
+	if (!serverStarted) {
+		server.begin();
+		serverStarted = true;
+	}
+}
+
 static OBJ primStartHttpServer(int argCount, OBJ *args) {
 	// Deprecated. The server is now started automatically by primHttpServerGetRequest.
 
+	startHttpServer();
  	return falseObj;
 }
 
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
-	// An HTTP request and return a string containing some data or falseObj if no data
-	// is available. Fail if there isn't enough memory to allocate even a one-byte string.
+	// An HTTP request and return a string containing some data the empty string if no data
+	// is available. Fail if there isn't enough memory to allocate the result.
 
-	if (!isConnectedToWiFi()) return falseObj;
-
-	if (!serverStarted) {
-		// Start the server the first time and *never* stop/close it. If the server is stopped
-		// on the ESP32 then all future connections are refused until the board is reset.
-		// It is fine for the server to continue running even if the WiFi is restarted.
-		server.begin();
-		serverStarted = true;
-	}
+	if (!isConnectedToWiFi()) return (OBJ) &noData;
+	if (!serverStarted) startHttpServer();
 
 	if (!client) client = server.available(); // attempt to accept a client connection
-	if (!client) return falseObj; // no client connection
+	if (!client) return (OBJ) &noData; // no client connection
 
 	int byteCount = client.available();
-	if (!byteCount) return falseObj; // no data available
+	if (!byteCount) return (OBJ) &noData;
+	if (byteCount > 800) byteCount = 800; // limit to 800 bytes per chunk
 
 	OBJ result = newString(byteCount);
 	while (falseObj == result) {
-		if (byteCount < 4) return falseObj; // out of memory
+		if (byteCount < 4) return (OBJ) &noData; // out of memory
 		byteCount = byteCount / 2;
 		result = newString(byteCount); // try to allocate half the previous amount
 	}
+
 	fail(noError); // clear memory allocation error, if any
-	client.readBytes(obj2str(result), byteCount);
+	client.readBytes((uint8 *) &FIELD(result, 0), byteCount);
+	return result;
+}
+
+static OBJ primHttpServerGetRequestBytes(int argCount, OBJ *args) {
+	// An HTTP request and return a string containing some data the empty string if no data
+	// is available. Fail if there isn't enough memory to allocate the result.
+
+	if (!isConnectedToWiFi()) return (OBJ) &noData;
+	if (!serverStarted) startHttpServer();
+
+	if (!client) client = server.available(); // attempt to accept a client connection
+	if (!client) return (OBJ) &noData; // no client connection
+
+	int byteCount = client.available();
+	if (!byteCount) return (OBJ) &noData;
+	if (byteCount > 800) byteCount = 800; // limit to 800 bytes per chunk
+
+	OBJ result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+	while (falseObj == result) {
+		if (byteCount < 4) return (OBJ) &noData; // out of memory
+		byteCount = byteCount / 2;
+		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj); // try to allocate half the previous amount
+	}
+	if (IS_TYPE(result, ByteArrayType)) setByteCountAdjust(result, byteCount);
+
+	fail(noError); // clear memory allocation error, if any
+	client.readBytes((uint8 *) &FIELD(result, 0), byteCount);
 	return result;
 }
 
@@ -309,7 +343,7 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 		result = newString(byteCount); // try to allocate half the previous amount
 	}
 	fail(noError); // clear memory allocation error, if any
-	httpClient.read((uint8 *) obj2str(result), byteCount);
+	httpClient.readBytes((uint8 *) obj2str(result), byteCount);
 	return result;
 }
 
@@ -322,6 +356,7 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStartHttpServer(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpServerGetRequestBytes(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -338,6 +373,7 @@ static PrimEntry entries[] = {
 	{"myIPAddress", primGetIP},
 	{"startHttpServer", primStartHttpServer},
 	{"httpServerGetRequest", primHttpServerGetRequest},
+	{"httpServerGetRequestBytes", primHttpServerGetRequestBytes},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
 	{"httpIsConnected", primHttpIsConnected},

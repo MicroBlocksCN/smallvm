@@ -23,4 +23,3 @@ to 'path of request' request {
 to 'request method' request {
   return ('[data:copyFromTo]' request 1 (('[data:find]' ' ' request) - 1))
 }
-
