@@ -113,7 +113,9 @@ if test -n "$esptool"; then
     if [ -z $system ] || [ $system == 'linux64bit' ] || [ $system == 'linux32bit' ] || [ $system == 'raspberryPi' ]; then
         wget https://raw.githubusercontent.com/espressif/esptool/master/esptool.py
         mkdir -p gp/packagers/linux/esptool
-        mv esptool.py gp/packagers/linux/esptool
+        # change python to python3 in the shebang
+        sed 's:#!/usr/bin/env python:&3:g' esptool.py > gp/packagers/linux/esptool/esptool.py
+        rm esptool.py
     fi
     if [ -z $system ] || [ $system == 'mac' ]; then
         wget https://dl.espressif.com/dl/esptool-2.6.1-macos.tar.gz
