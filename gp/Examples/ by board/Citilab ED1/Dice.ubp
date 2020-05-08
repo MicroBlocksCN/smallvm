@@ -29,22 +29,32 @@ to 'draw dot x' x y {
   '[tft:circle]' x y 10 0 true
 }
 
-script 160 54 {
+script 252 50 {
+comment '    By José García Yeste - Citilab
+===========================
+Motion and TFT library demo.
+
+Wait for the ED1 to say "Shake!", then
+shake it to roll a die.'
+}
+
+script 54 54 {
 whenStarted
 repeat 12 {
   ignoreArgs (motion)
 }
-local 'tilt' 0
 forever {
+  '[display:mbDisplayOff]'
   dice 0
   '[tft:text]' 'Shake!' 32 56 0 2 false
-  tilt = 0
+  waitUntil ((motion) > 12)
+  local 'tilt' 0
   repeat 10 {
     tilt = (maximum tilt (absoluteValue (motion)))
-    waitMillis 100
+    waitMillis 30
   }
-  tilt = (minimum 60 tilt)
-  if (tilt > 10) {
+  tilt = (minimum 60 (tilt / 2))
+  if (tilt > 5) {
     repeatUntil (tilt <= 0) {
       local 'delay' (('[misc:sin]' (100 * (60 - tilt))) / 100)
       dice (random 1 6)
@@ -55,17 +65,8 @@ forever {
   } else {
     dice 0
   }
-  waitMillis 3000
+  waitMillis 2000
 }
-}
-
-script 615 85 {
-comment '    By José García Yeste - Citilab
-===========================
-Motion and TFT library demo.
-
-Wait for the ED1 to say "Shake!", then
-shake it to roll a die.'
 }
 
 
