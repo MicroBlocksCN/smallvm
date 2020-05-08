@@ -966,6 +966,15 @@ method fixedCmd MicroBlocksScripter oldCmd minArgs argTypes argDefaults isReport
 method updateCallsInScriptingArea MicroBlocksScripter op {
   // Update scripts in the scripting pane that contain calls to the give op.
 
+  // Workaround for recursive structure crash bug:
+  offsetX = (left (morph (contents scriptsFrame)))
+  offsetY = (top (morph (contents scriptsFrame)))
+  restoreScripts this
+  setLeft (morph (contents scriptsFrame)) offsetX
+  setTop (morph (contents scriptsFrame)) offsetY
+  return
+
+// Caution: the following code can create recursive structure that crash!
   scriptsPane = (contents scriptsFrame)
   affected = (list)
   for m (parts (morph scriptsPane)) {
