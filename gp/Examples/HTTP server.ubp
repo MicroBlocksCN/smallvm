@@ -31,7 +31,7 @@ comment 'Remember to use your network name (SSID) and password below'
 local 'request' ''
 forever {
   request = ('[net:httpServerGetRequest]')
-  if (request != (booleanConstant false)) {
+  if (request != '') {
     for response responses {
       if (('path of request' request) == (at 1 response)) {'[net:respondToHttpRequest]' '200 OK' (at 2 response)}
     }
