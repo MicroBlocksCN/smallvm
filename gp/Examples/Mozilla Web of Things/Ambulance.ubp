@@ -4,14 +4,14 @@ version 1 0
 description ''
 variables interval octave onOff 
 
-script 89 50 {
-comment 'assumes CPX but can also connect a piezo and LED strip to another board'
-}
-
-script 54 129 {
+script 50 50 {
 whenStarted
-comment 'modify these two blocks if not CPX'
+comment 'Works out of the box on the Adafruit Circuit Playground Express.
+
+For other boards, you''ll need to attach a NeoPixel strip and a buzzer, and
+set their pin configurations in the following two blocks:'
 neoPixelAttach 10 ''
+'attach buzzer to pin' ''
 'wifi connect to' 'Network_Name' '' 3
 'set thing name to' 'Ambulance'
 'set thing capability to' 'OnOffSwitch'
@@ -41,13 +41,8 @@ forever {
 }
 }
 
-script 601 164 {
-comment 'This example works out of the box on the Adafruit Circuit Playground Express.
-
-For other boards, you''ll need to attach a NeoPixel strip and a buzzer, and
-change their pin configurations.
-
-Click on this script to test.'
+script 337 453 {
+comment 'Click on this script to test.'
 onOff = (booleanConstant true)
 waitMillis 2000
 onOff = (booleanConstant false)
@@ -56,12 +51,11 @@ onOff = (booleanConstant false)
 
 module 'HTTP server' Comm
 author MicroBlocks
-version 1 0 
+version 1 1 
 depends WiFi 
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
-	spec ' ' '[net:startHttpServer]' 'start HTTP server'
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
 	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
 Access-Control-Allow-Origin: *'
@@ -395,7 +389,7 @@ to playMIDIKey key ms {
 
 module 'Web Thing' Comm
 author MicroBlocks
-version 3 0 
+version 3 1 
 depends 'HTTP server' WiFi 
 tags iot mozilla webthing wot 
 description 'Build Web Things as specified by the Mozilla WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Mozilla Web of Things gateway.'
@@ -449,7 +443,6 @@ to '_JSON value' value {
 }
 
 to '_WoT_start_server' {
-  '[net:startHttpServer]'
   local 'request' ''
   forever {
     request = ('[net:httpServerGetRequest]')

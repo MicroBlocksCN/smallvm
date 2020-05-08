@@ -2,161 +2,60 @@ module main
 author unknown
 version 1 0 
 description ''
-variables humidity temperature 
+variables temperature lightLevel 
 
 script 54 54 {
 whenStarted
+comment 'Set your WiFi network name and password here:'
 'wifi connect to' 'Network_Name' '' 3
-'set thing name to' 'Temperature'
+'set thing name to' 'Temperature and Light'
 'set thing capability to' 'TemperatureSensor'
-addNumProp 'temperature' 'Temperature' -40 100 'LevelProperty' true
-addNumProp 'humidity' 'Humidity' 0 100 'LevelProperty' true
+addNumProp 'temperature' 'Temperature' 15 35 'TemperatureProperty' true
+addNumProp 'lightLevel' 'Light' 0 1000 'LevelProperty' true
 'start WebThing server'
 forever {
-  temperature = (temperature_DHT11 25)
-  waitMillis 2000
-  humidity = (humidity_DHT11 25)
-  waitMillis 2000
+  temperature = ('[sensors:temperature]')
+  lightLevel = ('[display:lightLevel]')
+  waitMillis 1000
 }
 }
 
-script 396 378 ('thing description JSON')
-
-script 51 414 {
-comment 'test temp'
-forever {
-  sayIt (temperature_DHT11 25)
-  waitMillis 2000
-}
+script 308 353 {
+comment 'View the thing description'
+sayIt ('thing description JSON')
 }
 
-script 396 417 {
-comment 'test humidity'
-forever {
-  sayIt (humidity_DHT11 25)
-  waitMillis 2000
+script 54 424 {
+whenButtonPressed 'A'
+scroll_number temperature
 }
+
+script 312 425 {
+whenButtonPressed 'B'
+scroll_number lightLevel
 }
 
 
-module DHT Input
+module 'Basic Sensors' Input
 author MicroBlocks
 version 1 0 
-tags sensor dht11 dht22 temperature humidity 
-description 'Support for the DHT11 and DHT22 environmental sensors. These sensors provide temperature and humidity readings.'
-variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime 
+tags tilt acceleration light sensor 
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
-	spec 'r' 'temperature_DHT11' 'temperature (Celsius) DHT11 pin _' 'auto' 4
-	spec 'r' 'humidity_DHT11' 'humidity DHT11 pin _' 'auto' 4
-	spec 'r' 'temperature_DHT22' 'temperature (Celsius) DHT22 pin _' 'auto' 4
-	spec 'r' 'humidity_DHT22' 'humidity DHT22 pin _' 'auto' 4
-	spec ' ' '_dhtReadData' '_dhtReadData pin _' 'auto any' '10'
-	spec 'r' '_dhtChecksumOkay' '_dhtChecksumOkay' 'any'
-	spec ' ' '_dhtUpdate' '_dhtUpdate _ isDHT11 _' 'auto bool any' 4 true
-	spec 'r' '_dhtReady' '_dhtReady' 'any'
-
-to '_dhtChecksumOkay' {
-  local 'checksum' 0
-  for i 4 {
-    checksum += (at i _dhtData)
-  }
-  checksum = (checksum & 255)
-  return (checksum == (at 5 _dhtData))
-}
-
-to '_dhtReadData' pin {
-  comment 'Create DHT data array the first time'
-  if (_dhtData == 0) {
-    _dhtData = (newList 5)
-  }
-  comment 'Pull pin low for >18msec to request data'
-  digitalWriteOp pin false
-  waitMillis 20
-  comment 'Read DHT start pulses (H L H L)'
-  waitUntil (digitalReadOp pin)
-  waitUntil (not (digitalReadOp pin))
-  waitUntil (digitalReadOp pin)
-  waitUntil (not (digitalReadOp pin))
-  local 'i' 1
-  local 'byte' 0
-  local 'bit' 1
-  comment 'Read 40 bits (5 bytes)'
-  repeat 40 {
-    waitUntil (digitalReadOp pin)
-    local 'start' (microsOp)
-    waitUntil (not (digitalReadOp pin))
-    if (((microsOp) - start) > 40) {
-      comment 'Long pulse - append a "1" bit'
-      byte += 1
-    }
-    if (bit == 8) {
-      atPut i _dhtData byte
-      i += 1
-      byte = 0
-      bit = 1
-    } else {
-      byte = (byte << 1)
-      bit += 1
-    }
-    waitUntil (not (digitalReadOp pin))
-  }
-}
-
-to '_dhtReady' {
-  local 'elapsed' ((millisOp) - _dhtLastReadTime)
-  return (or (elapsed < 0) (elapsed > 2000))
-}
-
-to '_dhtUpdate' pin isDHT11 {
-  if ('_dhtReady') {
-    '_dhtReadData' pin
-    _dhtLastReadTime = (millisOp)
-  }
-  if ('_dhtChecksumOkay') {
-    if isDHT11 {
-      _dht_temperature = (at 3 _dhtData)
-      _dht_humidity = (at 1 _dhtData)
-    } else {
-      local 'n' (((at 1 _dhtData) * 256) + (at 2 _dhtData))
-      _dht_humidity = ((n + 5) / 10)
-      n = ((((at 3 _dhtData) & 127) * 256) + (at 4 _dhtData))
-      if (((at 3 _dhtData) & 128) != 0) {
-        n = (0 - n)
-      }
-      _dht_temperature = ((n + 5) / 10)
-    }
-  }
-}
-
-to humidity_DHT11 pin {
-  '_dhtUpdate' pin true
-  return _dht_humidity
-}
-
-to humidity_DHT22 pin {
-  '_dhtUpdate' pin false
-  return _dht_humidity
-}
-
-to temperature_DHT11 pin {
-  '_dhtUpdate' pin true
-  return _dht_temperature
-}
-
-to temperature_DHT22 pin {
-  '_dhtUpdate' pin false
-  return _dht_temperature
-}
-
+	spec 'r' '[sensors:tiltX]' 'tilt x'
+	spec 'r' '[sensors:tiltY]' 'tilt y'
+	spec 'r' '[sensors:tiltZ]' 'tilt z'
+	spec 'r' '[sensors:acceleration]' 'acceleration'
+	spec 'r' '[display:lightLevel]' 'light level'
+	spec 'r' '[sensors:temperature]' 'temperature (°C)'
 
 module 'HTTP server' Comm
 author MicroBlocks
-version 1 0 
+version 1 1 
 depends WiFi 
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
-	spec ' ' '[net:startHttpServer]' 'start HTTP server'
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
 	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
 Access-Control-Allow-Origin: *'
@@ -177,9 +76,122 @@ to 'request method' request {
 }
 
 
+module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+
+to displayCharacter s {
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+
+module Scrolling Output
+author MicroBlocks
+version 1 0 
+depends 'LED Display' 
+tags animation text pixel matrix led tft 
+description 'Scroll text across the screen of the 5x5 LED display on the BBC micro:bit, Calliope mini or M5Atom Matrix. Also works on boards with a TFT display by simulating the 5x5 matrix with "fat pixels".'
+variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text 
+
+	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+	spec ' ' 'scroll_number' 'scroll number _ : pausing _ ms' 'num num' 123 100
+	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num' 42
+	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num' 100
+	spec ' ' 'stopScrollingText' 'stop scrolling'
+
+to '_covert_to_shapes' n {
+  if (_digit_shapes == 0) {_digit_shapes = (newList 12)}
+  fillList _digit_shapes ('[display:mbShapeForLetter]' ' ')
+  local 'index' (size _digit_shapes)
+  local 'isNegative' (booleanConstant false)
+  if (n < 0) {
+    isNegative = (booleanConstant true)
+    n = (0 - n)
+  } (n == 0) {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '0')
+    _digit_shapes_start_index = index
+  }
+  repeatUntil (n == 0) {
+    local 'digit' (n % 10)
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' (48 + digit))
+    index += -1
+    n = (n / 10)
+  }
+  if isNegative {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '-')
+    index += -1
+  }
+  _digit_shapes_start_index = index
+}
+
+to '_scroll_digit_shapes' delay {
+  _stop_scrolling_text = (booleanConstant false)
+  local 'prevShape' ('[display:mbShapeForLetter]' ' ')
+  local 'i' _digit_shapes_start_index
+  local 'end' ((size _digit_shapes) + 1)
+  repeatUntil (i > end) {
+    local 'shape' ('[display:mbShapeForLetter]' ' ')
+    if (i < end) {
+      shape = (at i _digit_shapes)
+    }
+    for j 5 {
+      local 'x' (1 - j)
+      '[display:mbDrawShape]' prevShape x 1
+      '[display:mbDrawShape]' shape (x + 5) 1
+      waitMillis delay
+      if _stop_scrolling_text {
+        '[display:mbDisplayOff]'
+        return 0
+      }
+    }
+    prevShape = shape
+    i += 1
+  }
+}
+
+to scroll_number n optionalDelay {
+  delay = 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  '_covert_to_shapes' n
+  '_scroll_digit_shapes' delay
+}
+
+to scroll_text text optionalDelay {
+  delay = 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  local 'length' (size text)
+  for position ((length * 6) + 6) {
+    if _stop_scrolling_text {return 0}
+    for i length {
+      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
+}
+
+
 module 'Web Thing' Comm
 author MicroBlocks
-version 3 0 
+version 3 1 
 depends 'HTTP server' WiFi 
 tags iot mozilla webthing wot 
 description 'Build Web Things as specified by the Mozilla WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Mozilla Web of Things gateway.'
@@ -233,7 +245,6 @@ to '_JSON value' value {
 }
 
 to '_WoT_start_server' {
-  '[net:startHttpServer]'
   local 'request' ''
   forever {
     request = ('[net:httpServerGetRequest]')
@@ -496,9 +507,11 @@ to 'trigger event' 'event name' {
 
 
 module WiFi Comm
-author unknown
-version 1 0 
-description ''
+author MicroBlocks
+version 1 1 
+tags communication network 
+description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
@@ -510,6 +523,7 @@ to getIPAddress {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -533,6 +547,7 @@ to 'wifi connect to' ssid password tries {
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
   '[net:startWiFi]' ssid password true
   repeatUntil ('Connected' == ('[net:wifiStatus]')) {
     comment 'Slow blink while connecting'

@@ -25,11 +25,12 @@ to 'microbit-LEDs' {
   }
 }
 
-script 60 50 {
-comment 'This script lets you control the built-in LED of a board, much like you might control a smart bulb using the Mozilla WebThings Gateway UI.'
+script 50 50 {
+comment 'This example lets you control the built-in LEDs of a board, much as you
+might control a smart bulb using the Mozilla WebThings Gateway UI.'
 }
 
-script 51 114 {
+script 53 129 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 'set thing name to' 'Hello LED'
@@ -50,26 +51,26 @@ forever {
 }
 }
 
-script 446 135 {
+script 448 150 {
 whenButtonPressed 'A'
 comment 'To test, click to toggle the LED.'
 on = (not on)
 }
 
-script 554 282 {
+script 556 297 {
 to 'cpx-LEDs' {}
 }
 
-script 363 285 {
+script 365 300 {
 to 'microbit-LEDs' {}
 }
 
-script 50 546 {
+script 52 561 {
 comment 'Click to check IP address'
 sayIt (getIPAddress)
 }
 
-script 235 605 {
+script 237 620 {
 comment 'Check thing description'
 sayIt ('thing description JSON')
 }
@@ -77,12 +78,11 @@ sayIt ('thing description JSON')
 
 module 'HTTP server' Comm
 author MicroBlocks
-version 1 0 
+version 1 1 
 depends WiFi 
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
-	spec ' ' '[net:startHttpServer]' 'start HTTP server'
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
 	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
 Access-Control-Allow-Origin: *'
@@ -264,7 +264,7 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 
 module 'Web Thing' Comm
 author MicroBlocks
-version 3 0 
+version 3 1 
 depends 'HTTP server' WiFi 
 tags iot mozilla webthing wot 
 description 'Build Web Things as specified by the Mozilla WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Mozilla Web of Things gateway.'
@@ -318,7 +318,6 @@ to '_JSON value' value {
 }
 
 to '_WoT_start_server' {
-  '[net:startHttpServer]'
   local 'request' ''
   forever {
     request = ('[net:httpServerGetRequest]')
@@ -581,9 +580,11 @@ to 'trigger event' 'event name' {
 
 
 module WiFi Comm
-author unknown
-version 1 0 
-description ''
+author MicroBlocks
+version 1 1 
+tags communication network 
+description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
@@ -595,6 +596,7 @@ to getIPAddress {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -618,6 +620,7 @@ to 'wifi connect to' ssid password tries {
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
   '[net:startWiFi]' ssid password true
   repeatUntil ('Connected' == ('[net:wifiStatus]')) {
     comment 'Slow blink while connecting'

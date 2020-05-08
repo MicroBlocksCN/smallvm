@@ -4,12 +4,31 @@ version 1 0
 description ''
 variables responses 
 
-script 52 50 {
+script 55 50 {
+comment 'This is an example HTTP server written in MicroBlocks.
+It responds to the following URLs:
+  /
+  /test
+  /foo
+  /bar
+
+You can also try a random URL and get back a 404 page.
+
+The server responds to all request methods in the same way,
+but you can easily add checks for other methods (like POST)
+by using the ( method of request [ ] ) block.
+
+You can also extract the body of a request (when it has one)
+by using the ( body of request [ ] ) block.
+
+Enjoy!'
+}
+
+script 57 347 {
 whenStarted
 comment 'Remember to use your network name (SSID) and password below'
-'wifi connect to' 'Network_Name' '' 3
+'wifi connect to' 'Network_Name' 'Network_Password' 3
 local 'request' ''
-'[net:startHttpServer]'
 forever {
   request = ('[net:httpServerGetRequest]')
   if (request != (booleanConstant false)) {
@@ -22,42 +41,29 @@ forever {
 }
 }
 
-script 586 170 {
-comment 'This is an example HTTP server written in MicroBlocks.
-
-It responds to the following URLs:
-
-  /
-  /test
-  /foo
-  /bar
-
-You can also try a random URL and get back a 404 page.
-
-The server responds to all request methods in the same way, but you can
-easily add checks for other methods (like POST) by using the
-( method of request [ ] ) block.
-
-You can also extract the body of a request (when it has one) by using the
-( body of request [ ] ) block.
-
-Enjoy!'
-}
-
-script 50 627 {
+script 574 354 {
 whenStarted
-responses = ('[data:makeList]' ('[data:makeList]' '/' '<h1>Hello!</h1><p>This is the MicroBlocks HTTP server.</p><p>You can test the following URLs:</p><ul><li>/test</li><li>/foo</li><li>/bar</li></ul>') ('[data:makeList]' '/test' '<p>This is a <strong>test</strong> URL</p>') ('[data:makeList]' '/foo' '<p>Just a page that says</p><h1>FOO</h1>') ('[data:makeList]' '/bar' '<p>Just a page that says</p><h1>BAR</h1><img src="http://microblocks.fun/logo.png"/>'))
+responses = ('[data:makeList]' ('[data:makeList]' '/' '<h1>Hello!</h1>
+<p>This is the MicroBlocks HTTP server.</p>
+<p>You can test the following URLs:</p>
+<ul>
+<li>/test</li>
+<li>/foo</li>
+<li>/bar</li>
+</ul>') ('[data:makeList]' '/test' '<p>This is a <strong>test</strong> URL</p>') ('[data:makeList]' '/foo' '<p>Just a page that says</p>
+<h1>FOO</h1>') ('[data:makeList]' '/bar' '<p>Just a page that says</p>
+<h1>BAR</h1>
+<img src="http://microblocks.fun/logo.png"/>'))
 }
 
 
 module 'HTTP server' Comm
 author MicroBlocks
-version 1 0 
+version 1 1 
 depends WiFi 
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
-	spec ' ' '[net:startHttpServer]' 'start HTTP server'
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
 	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
 Access-Control-Allow-Origin: *'

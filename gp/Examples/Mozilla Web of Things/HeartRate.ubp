@@ -4,11 +4,12 @@ version 1 0
 description ''
 variables _useWiFi bpm interval 
 
-script 80 55 {
-comment 'This example lets you simulate a heart rate using A and B buttons and displays the rate as a beating heart on the LED matrix'
+script 51 50 {
+comment 'This example lets you simulate a heart rate using A and B buttons
+and displays the rate as a beating heart on the LED matrix'
 }
 
-script 50 108 {
+script 52 108 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 'set thing name to' 'Heart rate'
@@ -21,21 +22,11 @@ forever {
   } (and (buttonA) (bpm > 40)) {
     bpm += -5
   }
-  waitMillis 200
+  waitMillis 150
 }
 }
 
-script 491 113 {
-comment 'To test, click this script,
-then press buttons A and B
-to change the heart rate.'
-forever {
-  sayIt bpm
-  waitMillis 100
-}
-}
-
-script 495 274 {
+script 485 110 {
 whenStarted
 bpm = 60
 forever {
@@ -52,15 +43,23 @@ forever {
 }
 }
 
+script 50 500 {
+comment 'To test, click this script, then press buttons
+A and B to adjust the heart rate.'
+forever {
+  sayIt bpm
+  waitMillis 100
+}
+}
+
 
 module 'HTTP server' Comm
 author MicroBlocks
-version 1 0 
+version 1 1 
 depends WiFi 
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
-	spec ' ' '[net:startHttpServer]' 'start HTTP server'
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
 	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
 Access-Control-Allow-Origin: *'
@@ -82,9 +81,10 @@ to 'request method' request {
 
 
 module 'LED Display' Output
-author unknown
+author MicroBlocks
 version 1 0 
-description ''
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
 	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
@@ -99,7 +99,7 @@ to displayCharacter s {
 
 module 'Web Thing' Comm
 author MicroBlocks
-version 3 0 
+version 3 1 
 depends 'HTTP server' WiFi 
 tags iot mozilla webthing wot 
 description 'Build Web Things as specified by the Mozilla WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Mozilla Web of Things gateway.'
@@ -153,7 +153,6 @@ to '_JSON value' value {
 }
 
 to '_WoT_start_server' {
-  '[net:startHttpServer]'
   local 'request' ''
   forever {
     request = ('[net:httpServerGetRequest]')
@@ -416,9 +415,11 @@ to 'trigger event' 'event name' {
 
 
 module WiFi Comm
-author unknown
-version 1 0 
-description ''
+author MicroBlocks
+version 1 1 
+tags communication network 
+description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
 
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
@@ -430,6 +431,7 @@ to getIPAddress {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -453,6 +455,7 @@ to 'wifi connect to' ssid password tries {
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
   '[net:startWiFi]' ssid password true
   repeatUntil ('Connected' == ('[net:wifiStatus]')) {
     comment 'Slow blink while connecting'
