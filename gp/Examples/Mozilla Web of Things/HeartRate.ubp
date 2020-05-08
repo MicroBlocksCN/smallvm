@@ -99,7 +99,7 @@ to displayCharacter s {
 
 module 'Web Thing' Comm
 author MicroBlocks
-version 3 1 
+version 3 2 
 depends 'HTTP server' WiFi 
 tags iot mozilla webthing wot 
 description 'Build Web Things as specified by the Mozilla WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Mozilla Web of Things gateway.'
@@ -156,7 +156,7 @@ to '_WoT_start_server' {
   local 'request' ''
   forever {
     request = ('[net:httpServerGetRequest]')
-    if (request != (booleanConstant false)) {
+    if (request != '') {
       if (('request method' request) == 'GET') {
         '_process request' request
       } (('request method' request) == 'PUT') {
@@ -416,7 +416,7 @@ to 'trigger event' 'event name' {
 
 module WiFi Comm
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags communication network 
 description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
@@ -431,7 +431,6 @@ to getIPAddress {
 
 to 'wifi connect to' ssid password tries {
   if (not ('[net:hasWiFi]')) {return}
-  '[net:stopWiFi]'
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
     '[net:startWiFi]' ssid password
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
@@ -455,7 +454,6 @@ to 'wifi connect to' ssid password tries {
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
-  '[net:stopWiFi]'
   '[net:startWiFi]' ssid password true
   repeatUntil ('Connected' == ('[net:wifiStatus]')) {
     comment 'Slow blink while connecting'
