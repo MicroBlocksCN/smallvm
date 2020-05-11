@@ -106,7 +106,7 @@ fi
 if test -n "$esptool"; then
     # get esptool for the requested systems
     if [ -z $system ] || [ $system == 'win' ]; then
-        wget https://gpblocks.org/mb/esptool/esptool.exe
+        wget https://microblocks.fun/util/esptool.exe
         mkdir -p gp/packagers/win32/esptool
         mv esptool.exe gp/packagers/win32/esptool
     fi
