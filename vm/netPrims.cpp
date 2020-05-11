@@ -52,6 +52,9 @@ STRING_OBJ_CONST("Failed; bad password?") statusFailed;
 STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
 STRING_OBJ_CONST("") noData;
 
+// Empty byte array constant
+uint32 emptyByteArray = HEADER(ByteArrayType, 0);
+
 #ifdef ESP8266
 	static int firstTime = true;
 #endif
@@ -180,6 +183,19 @@ static void startHttpServer() {
 	}
 }
 
+static int serverHasClient() {
+	// Return true when the HTTP server has a client and the client is connected.
+	// Continue to return true if any data is available from the client even if the client
+	// has closed the connection. Start the HTTP server the first time this is called.
+
+	if (!isConnectedToWiFi()) return false;
+	if (!serverStarted) startHttpServer();
+
+	if (!client) client = server.available(); // attempt to accept a client connection
+	if (!client) return false; // no client connection
+	return (client.connected() || client.available());
+}
+
 static OBJ primStartHttpServer(int argCount, OBJ *args) {
 	// Deprecated. The server is now started automatically by primHttpServerGetRequest.
 
@@ -191,11 +207,7 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 	// An HTTP request and return a string containing some data the empty string if no data
 	// is available. Fail if there isn't enough memory to allocate the result.
 
-	if (!isConnectedToWiFi()) return (OBJ) &noData;
-	if (!serverStarted) startHttpServer();
-
-	if (!client) client = server.available(); // attempt to accept a client connection
-	if (!client) return (OBJ) &noData; // no client connection
+	if (!serverHasClient()) return (OBJ) &noData; // no client connection
 
 	int byteCount = client.available();
 	if (!byteCount) return (OBJ) &noData;
@@ -203,7 +215,7 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 
 	OBJ result = newString(byteCount);
 	while (falseObj == result) {
-		if (byteCount < 4) return (OBJ) &noData; // out of memory
+		if (byteCount < 4) return falseObj; // out of memory
 		byteCount = byteCount / 2;
 		result = newString(byteCount); // try to allocate half the previous amount
 	}
@@ -214,22 +226,19 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 }
 
 static OBJ primHttpServerGetRequestBytes(int argCount, OBJ *args) {
-	// An HTTP request and return a string containing some data the empty string if no data
-	// is available. Fail if there isn't enough memory to allocate the result.
+	// An HTTP request and return a string containing some data or the empty string
+	// if no data is available. Return false if there is no client connection.
+	//  Fail if there isn't enough memory to allocate the result.
 
-	if (!isConnectedToWiFi()) return (OBJ) &noData;
-	if (!serverStarted) startHttpServer();
-
-	if (!client) client = server.available(); // attempt to accept a client connection
-	if (!client) return (OBJ) &noData; // no client connection
+	if (!serverHasClient()) return (OBJ) &emptyByteArray; // no client connection
 
 	int byteCount = client.available();
-	if (!byteCount) return (OBJ) &noData;
+	if (!byteCount) return (OBJ) &emptyByteArray;
 	if (byteCount > 800) byteCount = 800; // limit to 800 bytes per chunk
 
 	OBJ result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
 	while (falseObj == result) {
-		if (byteCount < 4) return (OBJ) &noData; // out of memory
+		if (byteCount < 4) return falseObj; // out of memory
 		byteCount = byteCount / 2;
 		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj); // try to allocate half the previous amount
 	}
@@ -241,24 +250,35 @@ static OBJ primHttpServerGetRequestBytes(int argCount, OBJ *args) {
 }
 
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
-	// Send a response to the client with the status plus optional headers and optional body.
+	// Send a response to the client with the status. optional extra headers, and optional body.
 
 	if (!client) return falseObj;
-	char* status = obj2str(args[0]);
-	char* body = obj2str(args[1]);
-	char* headers = obj2str(args[2]);
+
+	// send headers
+	char *status = ((argCount > 0) && IS_TYPE(args[0], StringType)) ?
+		obj2str(args[0]) : (char *) "200 OK";
 	client.print("HTTP/1.0 ");
-	client.print(status);
-	if (argCount > 2) {
-		client.print("\r\n");
+	client.println(status);
+	client.println("Access-Control-Allow-Origin: *");
+	if ((argCount > 2) && IS_TYPE(args[2], StringType)) {
+		char *headers = obj2str(args[2]);
 		client.print(headers);
 	}
-	client.print("\r\n\r\n");
+	client.print("\r\n\r\n"); // end of headers
+
+	// send body, if any
 	if (argCount > 1) {
-		client.print(body);
-		client.print("\n");
+		if (IS_TYPE(args[1], StringType)) {
+			char *body = obj2str(args[1]);
+			client.write(body, strlen(body));
+			client.println();
+		} else if (IS_TYPE(args[1], ByteArrayType)) {
+			uint8 *body = (uint8 *) &FIELD(args[1], 0);
+			client.write(body, BYTES(args[1]));
+		}
 	}
-	client.stop();
+
+	client.stop(); // close the connection
 	return falseObj;
 }
 

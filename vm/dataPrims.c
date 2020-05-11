@@ -518,7 +518,7 @@ OBJ primFind(int argCount, OBJ *args) {
 
 	if (IS_TYPE(arg1, StringType)) { // search for substring in a string
 		if (!(IS_TYPE(arg0, StringType))) return fail(needsStringError);
-		if (startOffset && (startOffset > stringSize(arg1))) return int2obj(-1); // not found
+		if (startOffset > stringSize(arg1)) return int2obj(-1); // not found
 		char *s = obj2str(arg1);
 		char *sought = obj2str(arg0);
 		char *match = strstr(s + startOffset - 1, sought);
@@ -544,6 +544,7 @@ OBJ primFind(int argCount, OBJ *args) {
 	} else if (IS_TYPE(arg1, ByteArrayType)) { // search in a ByteArray
 		uint8 *target = (uint8 *) &FIELD(arg1, 0);
 		int targetSize = BYTES(arg1);
+		if (startOffset > targetSize) return int2obj(-1); // not found
 		uint8 *sought;
 		int soughtSize;
 		if (IS_TYPE(arg0, ByteArrayType)) {
@@ -558,7 +559,7 @@ OBJ primFind(int argCount, OBJ *args) {
 		}
 		int lastPotenialMatch = targetSize - soughtSize;
 		uint8 *soughtEnd = sought + soughtSize;
-		for (int i = 0; i <= lastPotenialMatch; i++) {
+		for (int i = startOffset - 1; i <= lastPotenialMatch; i++) {
 			uint8 *p1 = target + i;
 			uint8 *p2 = sought;
 			while (p2 < soughtEnd) {
