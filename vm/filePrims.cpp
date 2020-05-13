@@ -53,6 +53,7 @@ static char *extractFilename(OBJ obj) {
 	fullPath[0] = '\0';
 	if (IS_TYPE(obj, StringType)) {
 		char *fileName = obj2str(obj);
+		if (strcmp(fileName, "ublockscode") == 0) return fullPath;
 		if ('/' == fileName[0]) return fileName; // fileName already had a leading "/"
 		snprintf(fullPath, 31, "/%s", fileName);
 	} else {
@@ -274,6 +275,7 @@ static OBJ primNextFileInList(int argCount, OBJ *args) {
 	#endif
 	char *s = fileName;
 	if ('/' == s[0]) s++; // skip leading slash
+	if (strcmp(s, "ublockscode") == 0) { s[0] = '\0'; }
 	return newStringFromBytes(s, strlen(s));
 }
 
