@@ -120,8 +120,7 @@ to '_process PUT request' req {
     if ('[vars:varExists]' varName) {
       local 'body' ('body of request' req)
       '[vars:setVarNamed]' varName ('_parse JSON value' ('[data:copyFromTo]' body (('[data:find]' ':' body) + 1) (('[data:find]' '}' body) - 1)))
-      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' ('[vars:varNamed]' varName)) '}') 'Access-Control-Allow-Origin: *
-Content-Type: application/json'
+      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' ('[vars:varNamed]' varName)) '}') 'Content-Type: application/json'
     } else {
       '_respond 404 Not Found'
     }
@@ -133,22 +132,18 @@ Content-Type: application/json'
 to '_process request' req {
   local 'path' ('path of request' req)
   if (path == '/') {
-    '[net:respondToHttpRequest]' '200 OK' ('thing description JSON') 'Access-Control-Allow-Origin: *
-Content-Type: application/json'
+    '[net:respondToHttpRequest]' '200 OK' ('thing description JSON') 'Content-Type: application/json'
   } (or (path == '/properties') (path == '/properties/')) {
-    '[net:respondToHttpRequest]' '200 OK' ('properties JSON') 'Access-Control-Allow-Origin: *
-Content-Type: application/json'
+    '[net:respondToHttpRequest]' '200 OK' ('properties JSON') 'Content-Type: application/json'
   } (('[data:find]' '/properties/' path) > 0) {
     local 'varName' ('[data:copyFromTo]' path 13)
     if ('[vars:varExists]' varName) {
-      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' ('[vars:varNamed]' varName)) '}') 'Access-Control-Allow-Origin: *
-Content-Type: application/json'
+      '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"' varName '":' ('_JSON value' ('[vars:varNamed]' varName)) '}') 'Content-Type: application/json'
     } else {
       '_respond 404 Not Found'
     }
   } (or (path == '/events') (path == '/events/')) {
-    '[net:respondToHttpRequest]' '200 OK' ('events JSON') 'Access-Control-Allow-Origin: *
-Content-Type: application/json'
+    '[net:respondToHttpRequest]' '200 OK' ('events JSON') 'Content-Type: application/json'
     _WoT_events = ('[data:makeList]')
   } else {
     '_respond 404 Not Found'
@@ -156,8 +151,7 @@ Content-Type: application/json'
 }
 
 to '_respond 404 Not Found' {
-  '[net:respondToHttpRequest]' '404 Not Found' '{ "error":"Resource not found" }' 'Access-Control-Allow-Origin: *
-Content-Type: application/json'
+  '[net:respondToHttpRequest]' '404 Not Found' '{ "error":"Resource not found" }' 'Content-Type: application/json'
 }
 
 to '_trimmed' string {
