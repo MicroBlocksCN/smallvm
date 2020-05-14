@@ -50,7 +50,7 @@ STRING_OBJ_CONST("Trying...") statusTrying;
 STRING_OBJ_CONST("Connected") statusConnected;
 STRING_OBJ_CONST("Failed; bad password?") statusFailed;
 STRING_OBJ_CONST("Unknown network") statusUnknownNetwork;
-STRING_OBJ_CONST("") noData;
+STRING_OBJ_CONST("") noDataString;
 
 // Empty byte array constant
 uint32 emptyByteArray = HEADER(ByteArrayType, 0);
@@ -204,45 +204,38 @@ static OBJ primStartHttpServer(int argCount, OBJ *args) {
 }
 
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
-	// An HTTP request and return a string containing some data the empty string if no data
-	// is available. Fail if there isn't enough memory to allocate the result.
+	// Return some data from the current HTTP request. Return the empty string if no
+	// data is available. If there isn't currently a client connection, and a client
+	// is waiting, accept the new connection. If the optional first argument is true,
+	// return a ByteArray (binary data) instead of a string.
+	// Fail if there isn't enough memory to allocate the result object.
 
-	if (!serverHasClient()) return (OBJ) &noData; // no client connection
+	int useBinary = ((argCount > 0) && (trueObj == args[0]));
+	OBJ noData = useBinary ? (OBJ) &emptyByteArray : (OBJ) &noDataString;
 
-	int byteCount = client.available();
-	if (!byteCount) return (OBJ) &noData;
-	if (byteCount > 800) byteCount = 800; // limit to 800 bytes per chunk
-
-	OBJ result = newString(byteCount);
-	while (falseObj == result) {
-		if (byteCount < 4) return falseObj; // out of memory
-		byteCount = byteCount / 2;
-		result = newString(byteCount); // try to allocate half the previous amount
-	}
-
-	fail(noError); // clear memory allocation error, if any
-	client.readBytes((uint8 *) &FIELD(result, 0), byteCount);
-	return result;
-}
-
-static OBJ primHttpServerGetRequestBytes(int argCount, OBJ *args) {
-	// An HTTP request and return a string containing some data or the empty string
-	// if no data is available. Return false if there is no client connection.
-	//  Fail if there isn't enough memory to allocate the result.
-
-	if (!serverHasClient()) return (OBJ) &emptyByteArray; // no client connection
+	if (!serverHasClient()) return noData; // no client connection
 
 	int byteCount = client.available();
-	if (!byteCount) return (OBJ) &emptyByteArray;
+	if (!byteCount) return noData;
 	if (byteCount > 800) byteCount = 800; // limit to 800 bytes per chunk
 
-	OBJ result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
-	while (falseObj == result) {
-		if (byteCount < 4) return falseObj; // out of memory
-		byteCount = byteCount / 2;
-		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj); // try to allocate half the previous amount
+	OBJ result;
+	if (useBinary) {
+		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+		while (falseObj == result) {
+			if (byteCount < 4) return falseObj; // out of memory
+			byteCount = byteCount / 2;
+			result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj); // try to allocate half the previous amount
+		}
+		if (IS_TYPE(result, ByteArrayType)) setByteCountAdjust(result, byteCount);
+	} else {
+		result = newString(byteCount);
+		while (falseObj == result) {
+			if (byteCount < 4) return falseObj; // out of memory
+			byteCount = byteCount / 2;
+			result = newString(byteCount); // try to allocate half the previous amount
+		}
 	}
-	if (IS_TYPE(result, ByteArrayType)) setByteCountAdjust(result, byteCount);
 
 	fail(noError); // clear memory allocation error, if any
 	client.readBytes((uint8 *) &FIELD(result, 0), byteCount);
@@ -353,12 +346,12 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	// Read some HTTP request data, if any is available, otherwise return the empty string.
 
 	int byteCount = httpClient.available();
-	if (!byteCount) return (OBJ) &noData;
+	if (!byteCount) return (OBJ) &noDataString;
 	if (byteCount > 800) byteCount = 800; // max length string that can be reported to IDE
 
 	OBJ result = newString(byteCount);
 	while (falseObj == result) {
-		if (byteCount < 4) return (OBJ) &noData; // out of memory
+		if (byteCount < 4) return (OBJ) &noDataString; // out of memory
 		byteCount = byteCount / 2;
 		result = newString(byteCount); // try to allocate half the previous amount
 	}
@@ -376,7 +369,6 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStartHttpServer(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primHttpServerGetRequestBytes(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -391,9 +383,8 @@ static PrimEntry entries[] = {
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
-	{"startHttpServer", primStartHttpServer},
+	{"startHttpServer", primStartHttpServer}, // deprecated
 	{"httpServerGetRequest", primHttpServerGetRequest},
-	{"httpServerGetRequestBytes", primHttpServerGetRequestBytes},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
 	{"httpIsConnected", primHttpIsConnected},
