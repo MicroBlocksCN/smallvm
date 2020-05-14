@@ -38,6 +38,7 @@ to openMicroBlocksEditor devMode {
 	page = (newPage 1120 700)
   }
   setDevMode page devMode
+  toggleMorphicMenu (hand page) (contains (commandLine) '--allowMorphMenu')
   setGlobal 'page' page
   tryRetina = true
   open page tryRetina 'MicroBlocks'

@@ -36,10 +36,10 @@ if test -n "$help"; then
     echo "                              backup copy of the current locale file will be"
     echo "                              created in your OS temporary files directory."
     echo "--dev                         Build for the current system, and launch in dev mode"
-	echo "                              with a REPL console. Press Control+C on the console"
-	echo "                              to pause the Morphic loop and gain access to the"
-	echo "                              REPL. Then issue the 'go' command to give control"
-	echo "                              back to the Morphic loop."
+    echo "                              with a REPL console. Press Control+C on the console"
+    echo "                              to pause the Morphic loop and gain access to the"
+    echo "                              REPL. Then issue the 'go' command to give control"
+    echo "                              back to the Morphic loop."
     echo
     exit 0
 fi
@@ -194,5 +194,5 @@ if test -n "$dev"; then
 		echo "navigation in the MicroBlocks REPL."
 		launcher='../apps/ublocks-'$system
 	fi
-    (cd gp; $launcher runtime/lib/* loadIDE.gp -)
+    (cd gp; $launcher runtime/lib/* loadIDE.gp - --allowMorphMenu)
 fi

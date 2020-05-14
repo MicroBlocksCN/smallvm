@@ -85,7 +85,7 @@ to postSerialize aHandler {}
 
 // Hand
 
-defineClass Hand morph page isDown x y currentMorphs lastTouched lastClicked lastClickTime lastTouchTime oldOwner oldX oldY focus
+defineClass Hand morph page isDown x y currentMorphs lastTouched lastClicked lastClickTime lastTouchTime oldOwner oldX oldY focus morphicMenuDisabled
 
 to newHand {
   hand = (new 'Hand' nil nil false 0 0 (list) nil nil (newTimer) nil nil nil)
@@ -431,7 +431,11 @@ method stopEditingUnfocusedText Hand currentObj {
 
 // menus
 
+method toggleMorphicMenu Hand flag { morphicMenuDisabled = (not flag) }
+
 method devMenu Hand currentObj {
+  if morphicMenuDisabled { return }
+
   if (isNil currentObj) {currentObj = (currentObject this)}
   se = (ownerThatIsA (morph currentObj) 'ScriptEditor')
   if (notNil se) {
