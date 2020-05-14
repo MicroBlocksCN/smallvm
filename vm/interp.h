@@ -201,6 +201,9 @@ static inline int evalInt(OBJ obj) {
 	} else if (IS_TYPE(obj, StringType)) {
 		// try to parse an int out of a string
 		return strtol(obj2str(obj), NULL, 10); // returns 0 if string is not a number
+	} else if (IS_TYPE(obj, ByteArrayType)) {
+		// try to parse an int out of a byte array (treating it as a string)
+		return strtol((char *) &FIELD(obj, 0), NULL, 10); // returns 0 if string is not a number
 	} else {
 		fail(needsIntegerError);
 		return 0;

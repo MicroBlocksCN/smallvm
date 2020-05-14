@@ -71,6 +71,9 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 			}
 		}
 	}
+	char s[200];
+	snprintf(s, sizeof(s), "Unknown primitive [%s:%s]", setName, primName);
+	outputString(s);
 	return fail(primitiveNotImplemented);
 }
 
