@@ -1163,6 +1163,9 @@ OBJ directoryContents(char *dirName, int listDirectories) {
 				if ((strcmp(ep->d_name, ".") == 0) || (strcmp(ep->d_name, "..") == 0)) {
 					continue; // don't include "." and ".." in results
 				}
+				if (strcmp(ep->d_name, ".DS_Store") == 0) {
+					continue; // don't include ".DS_Store" in results
+				}
 				if ((DT_DIR == ep->d_type) && !listDirectories) {
 					continue; // don't include directories when listing files
 				}
@@ -1275,6 +1278,13 @@ OBJ primUserHomePath(int nargs, OBJ args[]) {
 }
 
 OBJ primListEmbeddedFiles(int nargs, OBJ args[]) {
+	#ifdef EMSCRIPTEN
+		// Optional args: directoryToList, listDirsFlag
+		char *path = ((nargs > 0) && IS_CLASS(args[0], StringClass)) ? obj2str(args[0]) : "";
+		int dirsFlag = ((nargs > 1) && (trueObj == args[1]));
+		return directoryContents(path, dirsFlag);
+	#endif
+
 	FILE *f = openAppFile();
 	if (!f) return nilObj;
 
@@ -1288,9 +1298,9 @@ OBJ primReadEmbeddedFile(int nargs, OBJ args[]) {
 	if (NOT_CLASS(args[0], StringClass)) return firstArgMustBeString();
 	int isBinary = (nargs > 1) && (args[1] == trueObj);
 
-#ifdef EMSCRIPTEN
-	return primReadFile(nargs, args);
-#endif
+	#ifdef EMSCRIPTEN
+		return primReadFile(nargs, args);
+	#endif
 
 	FILE *f = openAppFile();
 	if (!f) return nilObj;

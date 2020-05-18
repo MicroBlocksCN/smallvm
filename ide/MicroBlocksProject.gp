@@ -661,12 +661,35 @@ method loadFromCmds MicroBlocksModule cmdList versionChecking {
 	return this
 }
 
+method browserEmbeddedLibs MicroBlocksModule {
+	result = (list)
+	todo = (list 'Libraries')
+	while (notEmpty todo) {
+		libpath = (removeFirst todo)
+		for dirName (listEmbeddedFiles libpath true) {
+			add todo (join libpath '/' dirName)
+		}
+		for fName (listEmbeddedFiles libpath false) {
+			if (endsWith fName '.ubl') {
+				add result (join libpath '/' fName)
+			}
+		}
+	}
+	return result
+}
+
 method lookForNewerVersion MicroBlocksModule {
 	// Look for an embedded library with the same name, and see if it's newer
 	// than the one we've just loaded
 	if (moduleName == 'main') { return nil }
+
+	embeddedFiles = (listEmbeddedFiles)
+	if ('Browser' == (platform)) {
+		embeddedFiles = (browserEmbeddedLibs this)
+	}
+
 	// Find the embedded lib path
-	for filePath (listEmbeddedFiles) {
+	for filePath embeddedFiles {
 		if (endsWith filePath (join moduleName '.ubl')) {
 			cmdList = (parse (readEmbeddedFile filePath))
 			candidate = (newMicroBlocksModule moduleName)
