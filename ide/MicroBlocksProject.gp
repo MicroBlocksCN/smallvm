@@ -109,6 +109,8 @@ method removeLibraryNamed MicroBlocksProject libName {
 method categoryForOp MicroBlocksProject op {
 	// Return the category for the give op if it is in one of my libraries.
 
+	if ('-' == op) { return nil } // ignore dash used as a spacer in library block lists
+
 	for lib (values libraries) {
 		if (contains (blockList lib) op) { return (moduleCategory lib) }
 	}
