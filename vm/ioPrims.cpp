@@ -1059,6 +1059,115 @@ void stopTone() { }
 
 #endif // tone
 
+// DAC (digital to analog converter) Support
+
+#if defined(ESP32)
+
+// DAC ring buffer. Size must be a power of 2.
+#define DAC_BUF_SIZE 128
+#define DAC_BUF_MASK (DAC_BUF_SIZE - 1)
+static uint8 ringBuf[DAC_BUF_SIZE];
+
+static volatile uint8 readPtr = 0;
+static volatile uint8 writePtr = 0;
+static volatile uint8 dacPin = 255;
+static volatile uint8 lastValue = 0;
+
+static hw_timer_t *timer = NULL;
+static portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+
+// Copy of __dacWrite from esp32-hal-dac.c without the call to pinMode():
+#include "soc/sens_reg.h"
+
+static void IRAM_ATTR __dacWrite(uint8_t pin, uint8_t value) {
+    if(pin < 25 || pin > 26) return;//not dac pin
+//    pinMode(pin, ANALOG); // this call causes a crash when __dacWrite is called from the ISR
+
+    //Disable Tone
+    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
+
+    uint8_t channel = pin - 25;
+    if (channel) {
+        //Disable Channel Tone
+        CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN2_M);
+        //Set the Dac value
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_DAC, value, RTC_IO_PDAC2_DAC_S);   //dac_output
+        //Channel output enable
+        SET_PERI_REG_MASK(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_XPD_DAC | RTC_IO_PDAC2_DAC_XPD_FORCE);
+    } else {
+        //Disable Channel Tone
+        CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
+        //Set the Dac value
+        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, value, RTC_IO_PDAC1_DAC_S);   //dac_output
+        //Channel output enable
+        SET_PERI_REG_MASK(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_XPD_DAC | RTC_IO_PDAC1_DAC_XPD_FORCE);
+    }
+}
+
+static void IRAM_ATTR onTimer() {
+	int value;
+	portENTER_CRITICAL_ISR(&timerMux);
+		if (readPtr != writePtr) {
+			value = ringBuf[readPtr++];
+			readPtr &= DAC_BUF_MASK;
+		} else {
+			// if no data use last sample value to avoid a click
+			value = lastValue;
+		}
+	portEXIT_CRITICAL_ISR(&timerMux);
+//value = lastValue ? 0 : 80; // xxx
+	if (dacPin != 255) __dacWrite(dacPin, value);
+	lastValue = value;
+}
+
+static void initDAC(int pin, int sampleRate) {
+	// Set the DAC pin and sample rate.
+
+	const int fineTune = -2;
+	#if defined(ARDUINO_CITILAB_ED1)
+		// On ED1 board pins 2 and 4 are aliases for ESP32 pins 25 and 26
+		if (2 == pin) pin = 25;
+		if (4 == pin) pin = 26;
+	#endif
+	if ((25 == pin) || (26 == pin)) {
+		pinMode(pin, ANALOG);
+		dacPin = pin;
+	} else { // disable DAC output if pin is not a DAC pin (i.e. pin 25 or 26)
+ 		if (timer) timerEnd(timer);
+		dacPin = 255;
+		return;
+	}
+	if (sampleRate <= 0) sampleRate = 1;
+	if (sampleRate > 100000) sampleRate = 100000;
+	timer = timerBegin(0, 1, true);
+	timerAttachInterrupt(timer, &onTimer, true);
+	timerAlarmWrite(timer, (40000000 / sampleRate) + fineTune, true);
+	timerAlarmEnable(timer);
+}
+
+static inline int writeDAC(int sample) {
+	// If there's room, add the given sample to the DAC ring buffer and return 1.
+	// Otherwise return 0.
+
+	if (255 == dacPin) return 0; // DAC not initialized
+	if (((writePtr + 1) & DAC_BUF_MASK) == readPtr) return 0; // buffer is full
+
+	if (sample < 0) sample = 0;
+	if (sample > 255) sample = 255;
+	portENTER_CRITICAL(&timerMux);
+		ringBuf[writePtr++] = sample;
+		writePtr &= DAC_BUF_MASK;
+	portEXIT_CRITICAL(&timerMux);
+	return 1;
+}
+
+#else
+
+static void initDAC(int pin, int sampleRate) { }
+static int writeDAC(int sample) { return 0; }
+
+#endif
+
 // Primitives
 
 OBJ primHasTone(int argCount, OBJ *args) {
@@ -1135,11 +1244,51 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	return trueObj;
 }
 
+OBJ primDACInit(int argCount, OBJ *args) {
+	// Initialize the DAC pin and (optional) sample rate. If the pin is not a DAC pin (pins
+	// 25 or 26 on an ESP32) then disable the DAC. The sample rate defaults to 11025.
+
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!isInt(args[0])) return fail(needsIntegerError);
+	int pin = obj2int(args[0]);
+	int sampleRate = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 11025;
+
+	initDAC(pin, sampleRate);
+	return falseObj;
+}
+
+OBJ primDACWrite(int argCount, OBJ *args) {
+	// Write sound samples to the DAC output buffer and return the number of samples written.
+	// The argument may be an integer representing a single sample or a ByteArray of samples
+	// plus an optional starting index withing that buffer.
+
+	if (argCount < 1) return fail(notEnoughArguments);
+	OBJ arg0 = args[0];
+
+	int count = 0;
+	if (isInt(arg0)) {
+		count = writeDAC(obj2int(arg0));
+	} else if (IS_TYPE(arg0, ByteArrayType)) {
+		uint8 *buf = (uint8 *) &FIELD(arg0, 0);
+		int bufSize = BYTES(arg0);
+		int startIndex = ((argCount > 1) && isInt(args[1])) ?  obj2int(args[1]) : 1;
+		if (startIndex < 1) startIndex = 1;
+		if (startIndex > bufSize) startIndex = bufSize;
+		for (int i = startIndex - 1; i < bufSize; i++) {
+			if (!writeDAC(buf[i])) break;
+			count++;
+		}
+	}
+	return int2obj(count);
+}
+
 static PrimEntry entries[] = {
 	{"hasTone", primHasTone},
 	{"playTone", primPlayTone},
 	{"hasServo", primHasServo},
 	{"setServo", primSetServo},
+	{"dacInit", primDACInit},
+	{"dacWrite", primDACWrite},
 };
 
 void addIOPrims() {
