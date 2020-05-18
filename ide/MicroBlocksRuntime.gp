@@ -1234,7 +1234,7 @@ method readItems SmallRuntime msg {
 			add result isTrue
 			i += 2
 		} (4 == itemType) { // sublist
-			n = (+ ((byteAt msg (i + 2)) << 16) (byteAt msg (i + 1)))
+			n = (+ ((byteAt msg (i + 2)) << 8) (byteAt msg (i + 1)))
 			if (0 != (byteAt msg (i + 3))) {
 				print 'skipping sublist with non-zero sent items'
 				return result
@@ -1242,7 +1242,7 @@ method readItems SmallRuntime msg {
 			add result (join '[' n ' item list]')
 			i += 4
 		} (5 == itemType) { // bytearray
-			n = (+ ((byteAt msg (i + 2)) << 16) (byteAt msg (i + 1)))
+			n = (+ ((byteAt msg (i + 2)) << 8) (byteAt msg (i + 1)))
 			if (0 != (byteAt msg (i + 3))) {
 				print 'skipping bytearray with non-zero sent items inside a list'
 				return result
