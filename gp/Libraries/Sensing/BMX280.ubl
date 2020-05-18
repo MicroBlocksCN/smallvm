@@ -1,4 +1,4 @@
-module BMX280
+module BMX280 Input
 author 'José Garcia Yeste'
 version 1 0
 description 'Provides support for the BME280 and BMP280 barometric pressure sensors. These sensors measure temperature, pressure and humidity.'
