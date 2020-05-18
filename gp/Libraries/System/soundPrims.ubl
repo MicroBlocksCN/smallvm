@@ -1,0 +1,10 @@
+module 'Sound Primitives' Output
+author MicroBlocks
+version 1 0
+description 'Low level support for tone generation and DAC audio output on selected boards. You are probably looking for the Tone library in the folder above. The tone primitives use the Arduino tone library to provide smoother music output. The DAC primitives are currently supported only on ESP32 boards.'
+tags tone sound music audio note speaker
+
+	spec 'r' '[io:hasTone]'				'has tone support'
+	spec ' ' '[io:playTone]'				'play tone pin _ frequency _' 'num num' 0 440
+	spec ' ' '[io:dacInit]'					'init DAC pin _ sample rate _' 'num num' 25 11025
+	spec 'r' '[io:dacWrite]'				'DAC write _ : starting at _' 'num num' 128 1
