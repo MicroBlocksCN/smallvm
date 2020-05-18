@@ -675,7 +675,7 @@ method lookForNewerVersion MicroBlocksModule {
 			v2 = (version candidate)
 			if (or
 				((at v2 1) > (at v1 1))
-				(and ((at v2 1) == (at v2 1)) ((at v2 2) > (at v2 2)))
+				(and ((at v1 1) == (at v2 1)) ((at v2 2) > (at v1 2)))
 				) {
 				return candidate
 			}

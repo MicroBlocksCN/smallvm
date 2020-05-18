@@ -1,0 +1,295 @@
+module PAJ7620 Input
+author 'José García'
+version 1 0 
+tags sensor gesture 
+description 'Support for PAJ7620 gesture sensor.
+The "read" block returns the name of the detected gesture.
+Based on github.com/Seeed-Studio/Gesture_PAJ7620'
+
+variables '_paj7620 initialized' 
+
+	spec 'r' 'paj7620 read' 'paj7620 read'
+	spec ' ' '_paj7620 setup' '_paj7620 setup'
+	spec 'r' 'paj7620 connected' 'paj7620 connected'
+	spec ' ' '_paj7620 setup bank0' '_paj7620 setup bank0'
+	spec ' ' '_paj7620 setup bank1' '_paj7620 setup bank1'
+
+to '_paj7620 setup' {
+  if ('paj7620 connected') {
+    '_paj7620 setup bank0'
+    '_paj7620 setup bank1'
+    i2cSet (hexToInt '73') (hexToInt '65') (hexToInt '12')
+    i2cSet (hexToInt '73') (hexToInt 'EF') 0
+    '_paj7620 initialized' = 1
+  }
+}
+
+to '_paj7620 setup bank0' {
+  i2cSet (hexToInt '73') (hexToInt 'EF') 0
+  local 'i' 1
+  local 'list' '3229
+3301
+3400
+3501
+3600
+3707
+3817
+3906
+3A12
+3F00
+4002
+41FF
+4201
+462D
+470F
+483C
+4900
+4A1E
+4B00
+4C20
+4D00
+4E1A
+4F14
+5000
+5110
+5200
+5C02
+5D00
+5E10
+5F3F
+6027
+6128
+6200
+6303
+64F7
+6503
+66D9
+6703
+6801
+69C8
+6A40
+6D04
+6E00
+6F00
+7080
+7100
+7200
+7300
+74F0
+7500
+8042
+8144
+8204
+8320
+8420
+8500
+8610
+8700
+8805
+8918
+8A10
+8B01
+8C37
+8D00
+8EF0
+8F81
+9006
+9106
+921E
+930D
+940A
+950A
+960C
+9705
+980A
+9941
+9A14
+9B0A
+9C3F
+9D33
+9EAE
+9FF9
+A048
+A113
+A210
+A308
+A430
+A519
+A610
+A708
+A824
+A904
+AA1E
+AB1E
+CC19
+CD0B
+CE13
+CF64
+D021
+D10F
+D288
+E001
+E104
+E241
+E3D6
+E400
+E50C
+E60A
+E700
+E800
+E900
+EE07'
+  repeatUntil (i > (size list)) {
+    local 'reg' ('[data:copyFromTo]' list i (i + 1))
+    local 'val' ('[data:copyFromTo]' list (i + 2) (i + 4))
+    i2cSet (hexToInt '73') (hexToInt reg) (hexToInt val)
+    i += 5
+    waitMicros 10
+  }
+}
+
+to '_paj7620 setup bank1' {
+  i2cSet (hexToInt '73') (hexToInt 'EF') 1
+  local 'i' 1
+  local 'list' '001E
+011E
+020F
+0310
+0402
+0500
+06B0
+0704
+080D
+090E
+0A9C
+0B04
+0C05
+0D0F
+0E02
+0F12
+1002
+1102
+1200
+1301
+1405
+1507
+1605
+1707
+1801
+1904
+1A05
+1B0C
+1C2A
+1D01
+1E00
+2100
+2200
+2300
+2501
+2600
+2739
+287F
+2908
+3003
+3100
+321A
+331A
+3407
+3507
+3601
+37FF
+3836
+3907
+3A00
+3EFF
+3F00
+4077
+4140
+4200
+4330
+44A0
+455C
+4600
+4700
+4858
+4A1E
+4B1E
+4C00
+4D00
+4EA0
+4F80
+5000
+5100
+5200
+5300
+5400
+5780
+5910
+5A08
+5B94
+5CE8
+5D08
+5E3D
+5F99
+6045
+6140
+632D
+6402
+6596
+6600
+6797
+6801
+69CD
+6A01
+6BB0
+6C04
+6D2C
+6E01
+6F32
+7100
+7201
+7335
+7400
+7533
+7631
+7701
+7C84
+7D03
+7E01'
+  repeatUntil (i > (size list)) {
+    local 'reg' ('[data:copyFromTo]' list i (i + 1))
+    local 'val' ('[data:copyFromTo]' list (i + 2) (i + 4))
+    i2cSet (hexToInt '73') (hexToInt reg) (hexToInt val)
+    i += 5
+    waitMicros 10
+  }
+}
+
+to 'paj7620 connected' {
+  return (and ((i2cGet (hexToInt '73') 0) == 32) ((i2cGet (hexToInt '73') 1) == 118))
+}
+
+to 'paj7620 read' {
+  if ((v '_paj7620 initialized') == 0) {'_paj7620 setup'}
+  local 'msg' '?'
+  local 'g' (i2cGet (hexToInt '73') (hexToInt '43'))
+  if ((g & 1) != 0) {
+    msg = 'right'
+  } ((g & 2) != 0) {
+    msg = 'left'
+  } ((g & 4) != 0) {
+    msg = 'up'
+  } ((g & 8) != 0) {
+    msg = 'down'
+  } ((g & 16) != 0) {
+    msg = 'fordward'
+  } ((g & 32) != 0) {
+    msg = 'backward'
+  } ((g & 64) != 0) {
+    msg = 'clockwise'
+  } ((g & 128) != 0) {
+    msg = 'anti-clockwise'
+  }
+  return msg
+}
+

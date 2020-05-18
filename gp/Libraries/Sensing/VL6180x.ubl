@@ -1,0 +1,82 @@
+module VL6180x Input
+author 'José García Yeste'
+version 1 0 
+tags sensor distance 
+description 'Support for VL6180x distance sensor.
+
+Based on:
+https://github.com/adafruit/Adafruit_VL6180X'
+
+variables '_vl6180x initalized' 
+
+	spec 'r' 'vl6180x connected' 'vl8161 connected'
+	spec 'r' 'vl6180x read mm' 'vl6180x read (mm)'
+	spec 'r' 'vl6180x status' 'vl6180x status'
+	spec ' ' '_vl6180x setup' '_vl6180x setup'
+	spec ' ' '_vl6180x setup1' '_vl6180x setup1'
+	spec ' ' '_vl6180x setup2' '_vl6180x setup2'
+	spec 'r' '_vl6180x read register' '_vl6180x read register _' 'auto' 0
+	spec ' ' '_vl6180x write byte' '_vl6180x write register _ to _' 'auto auto' 0 0
+
+
+to 'vl6180x status' {
+  return (('_vl6180x read register' (hexToInt '4D')) >> 4)
+}
+
+to '_vl6180x read register' reg {
+  i2cSet (hexToInt '29') (reg >> 8) reg
+  local 'value' ('[data:makeList]' 0)
+  '[sensors:i2cRead]' (hexToInt '29') value
+  return (at 1 value)
+}
+
+to '_vl6180x setup' {
+  if ((v '_vl6180x initalized') == 0) {if ('vl6180x connected') {
+    '_vl6180x setup1'
+    '_vl6180x setup2'
+    '_vl6180x write byte' (hexToInt '16') 0
+    '_vl6180x initalized' = 0
+  }}
+}
+
+to '_vl6180x setup1' {
+  local 'regs' ('[data:makeList]' (hexToInt '207') (hexToInt '208') (hexToInt '96') (hexToInt '97') (hexToInt 'E3') (hexToInt 'E4') (hexToInt 'E5') (hexToInt 'E6') (hexToInt 'E7') (hexToInt 'F5') (hexToInt 'D9') (hexToInt 'DB') (hexToInt 'DC') (hexToInt 'DD') (hexToInt '9F') (hexToInt 'A3') (hexToInt 'B7') (hexToInt 'BB') (hexToInt 'B2') (hexToInt 'CA') (hexToInt '198') (hexToInt '1B0') (hexToInt '1AD') (hexToInt 'FF') (hexToInt '100') (hexToInt '199') (hexToInt '1A6') (hexToInt '1AC') (hexToInt '1A7') (hexToInt '30'))
+  local 'values' ('[data:makeList]' 1 1 0 (hexToInt 'FD') 0 4 2 1 3 2 5 (hexToInt 'CE') 3 (hexToInt 'F8') 0 (hexToInt '3C') 0 (hexToInt '3C') 9 9 1 (hexToInt '17') 0 5 5 5 (hexToInt '1B') (hexToInt '3E') (hexToInt '1F') 0)
+  for i (size regs) {
+    '_vl6180x write byte' (at i regs) (at i values)
+  }
+}
+
+to '_vl6180x setup2' {
+  '_vl6180x write byte' (hexToInt '11') (hexToInt '10')
+  '_vl6180x write byte' (hexToInt '10A') (hexToInt '30')
+  '_vl6180x write byte' (hexToInt '3F') (hexToInt '46')
+  '_vl6180x write byte' (hexToInt '31') (hexToInt 'FF')
+  '_vl6180x write byte' (hexToInt '40') (hexToInt '63')
+  '_vl6180x write byte' (hexToInt '2E') (hexToInt '1')
+  '_vl6180x write byte' (hexToInt '1B') (hexToInt '9')
+  '_vl6180x write byte' (hexToInt '3E') (hexToInt '31')
+  '_vl6180x write byte' (hexToInt '14') (hexToInt '24')
+}
+
+to '_vl6180x write byte' reg value {
+  '[sensors:i2cWrite]' (hexToInt '29') ('[data:makeList]' (reg >> 8) reg value)
+  waitMicros 10
+}
+
+to 'vl6180x read mm' {
+  if ((v '_vl6180x initalized') == 0) {'_vl6180x setup'}
+  if ('vl6180x connected') {
+    waitUntil ((('_vl6180x read register' (hexToInt '4D')) & 1) != 0)
+    '_vl6180x write byte' (hexToInt '18') 1
+    waitUntil ((('_vl6180x read register' (hexToInt '4F')) & 4) != 0)
+    local 'result' ('_vl6180x read register' (hexToInt '62'))
+    '_vl6180x write byte' (hexToInt '15') 7
+    return result
+  }
+}
+
+to 'vl6180x connected' {
+  return (('_vl6180x read register' 0) == 180)
+}
+
