@@ -12,11 +12,12 @@ tags data esp
 
 	spec 'r' '[file:endOfFile]'		'end of file _' 'str'
 	spec 'r' '[file:readLine]'		'next line of file _' 'str'
-	spec 'r' '[file:readBytes]'		'next _ bytes of file _' 'num str' 100
+	spec 'r' '[file:readBytes]'		'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
 
 	spec ' ' '[file:appendLine]'	'append line _ to file _' 'str str'
 	spec ' ' '[file:appendBytes]'	'append bytes _ to file _' 'str str'
 
+	spec 'r' '[file:fileSize]'		'size of file _' 'str'
 	spec ' ' '[file:startList]'		'start file list'
 	spec 'r' '[file:nextInList]'	'next file in list'
 	spec 'r' '[file:systemInfo]'	'file system info'

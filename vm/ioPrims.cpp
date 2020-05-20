@@ -1064,7 +1064,7 @@ void stopTone() { }
 #if defined(ESP32)
 
 // DAC ring buffer. Size must be a power of 2.
-#define DAC_BUF_SIZE 128
+#define DAC_BUF_SIZE 32
 #define DAC_BUF_MASK (DAC_BUF_SIZE - 1)
 static uint8 ringBuf[DAC_BUF_SIZE];
 
@@ -1115,7 +1115,6 @@ static void IRAM_ATTR onTimer() {
 			value = lastValue;
 		}
 	portEXIT_CRITICAL_ISR(&timerMux);
-//value = lastValue ? 0 : 80; // xxx
 	if (dacPin != 255) __dacWrite(dacPin, value);
 	lastValue = value;
 }

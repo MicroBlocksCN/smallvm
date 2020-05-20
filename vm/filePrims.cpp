@@ -180,11 +180,13 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerError);
 	uint32 byteCount = obj2int(args[0]);
 	char *fileName = extractFilename(args[1]);
+	int startPos = ((argCount > 2) && isInt(args[2])) ? obj2int(args[2]) : 0;
 
 	int i = entryFor(fileName);
 	if (i >= 0) {
 		uint8 buf[800];
 		if (byteCount > sizeof(buf)) byteCount = sizeof(buf);
+		if (startPos) fileEntry[i].file.seek(startPos, SeekSet);
 		byteCount = fileEntry[i].file.read(buf, byteCount);
 		int wordCount = (byteCount + 3) / 4;
 		OBJ result = newObj(ByteArrayType, wordCount, falseObj);
@@ -225,7 +227,6 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 	OBJ data = args[0];
 	char *fileName = extractFilename(args[1]);
-	if (!fileName[0]) return falseObj;
 
 	int i = entryFor(fileName);
 	if (i < 0) return falseObj;
@@ -249,6 +250,19 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 	File rootDir;
 #endif
 
+static OBJ primFileSize(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	char *fileName = extractFilename(args[0]);
+	if (!fileName[0]) return int2obj(0);
+
+	File file = SPIFFS.open(fileName, "r");
+	if (!file) return int2obj(0);
+	file.seek(0, SeekEnd); // seek to end
+	int size = file.position();
+	file.close();
+	return int2obj(size);
+}
+
 static OBJ primStartFileList(int argCount, OBJ *args) {
 	initSPIFFS();
 	#if defined(ESP8266)
@@ -265,17 +279,19 @@ static OBJ primNextFileInList(int argCount, OBJ *args) {
 
 	#if defined(ESP8266)
  		if (rootDir.next()) {
- 			strncat(fileName, rootDir.fileName().c_str(), 31);
+			if ((strcmp("/ublockscode", rootDir.fileName().c_str()) != 0) || rootDir.next()) {
+ 				strncat(fileName, rootDir.fileName().c_str(), 31);
+ 			}
 		}
 	#elif defined(ESP32)
 		if (rootDir) {
 			File file = rootDir.openNextFile();
+			if (file && (strcmp("/ublockscode", file.name()) == 0)) file = rootDir.openNextFile();
 			if (file) strncat(fileName, file.name(), 31);
 		}
 	#endif
 	char *s = fileName;
 	if ('/' == s[0]) s++; // skip leading slash
-	if (strcmp(s, "ublockscode") == 0) { s[0] = '\0'; }
 	return newStringFromBytes(s, strlen(s));
 }
 
@@ -305,17 +321,14 @@ static OBJ primSystemInfo(int argCount, OBJ *args) {
 static OBJ primOpen(int argCount, OBJ *args) { return falseObj; }
 static OBJ primClose(int argCount, OBJ *args) { return falseObj; }
 static OBJ primDelete(int argCount, OBJ *args) { return falseObj; }
-
 static OBJ primEndOfFile(int argCount, OBJ *args) { return falseObj; }
 static OBJ primReadLine(int argCount, OBJ *args) { return falseObj; }
 static OBJ primReadBytes(int argCount, OBJ *args) { return falseObj; }
-
 static OBJ primAppendLine(int argCount, OBJ *args) { return falseObj; }
 static OBJ primAppendBytes(int argCount, OBJ *args) { return falseObj; }
-
+static OBJ primFileSize(int argCount, OBJ *args) { return falseObj; };
 static OBJ primStartFileList(int argCount, OBJ *args) { return falseObj; }
 static OBJ primNextFileInList(int argCount, OBJ *args) { return falseObj; }
-
 static OBJ primSystemInfo(int argCount, OBJ *args) { return falseObj; }
 
 #endif
@@ -326,17 +339,14 @@ static PrimEntry entries[] = {
 	{"open", primOpen},
 	{"close", primClose},
 	{"delete", primDelete},
-
 	{"endOfFile", primEndOfFile},
 	{"readLine", primReadLine},
 	{"readBytes", primReadBytes},
-
 	{"appendLine", primAppendLine},
 	{"appendBytes", primAppendBytes},
-
+	{"fileSize", primFileSize},
 	{"startList", primStartFileList},
 	{"nextInList", primNextFileInList},
-
 	{"systemInfo", primSystemInfo},
 };
 
