@@ -196,13 +196,6 @@ static int serverHasClient() {
 	return (client.connected() || client.available());
 }
 
-static OBJ primStartHttpServer(int argCount, OBJ *args) {
-	// Deprecated. The server is now started automatically by primHttpServerGetRequest.
-
-	startHttpServer();
- 	return falseObj;
-}
-
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 	// Return some data from the current HTTP request. Return the empty string if no
 	// data is available. If there isn't currently a client connection, and a client
@@ -367,7 +360,6 @@ static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primStartHttpServer(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -383,7 +375,6 @@ static PrimEntry entries[] = {
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
-	{"startHttpServer", primStartHttpServer}, // deprecated
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
