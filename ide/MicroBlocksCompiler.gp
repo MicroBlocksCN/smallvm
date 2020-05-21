@@ -199,6 +199,8 @@ method microBlocksSpecs SmallCompiler {
 
 		(array 'r' '[io:hasTone]'		'has tone support')
 		(array ' ' '[io:playTone]'		'play tone pin _ frequency _' 'num num' 0 440)
+		(array ' ' '[io:dacInit]'		'init DAC pin _ sample rate _' 'num num' 25 11025)
+		(array 'r' '[io:dacWrite]'		'DAC write _ : starting at _' 'num num' 128 1)
 
 		(array 'r' '[io:hasServo]'		'has servo support')
 		(array ' ' '[io:setServo]'		'set servo pin _ to _ usecs' 'num num' 0 1500)
@@ -217,8 +219,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[net:startHttpServer]'		'start HTTP server')
 		(array ' ' '[net:stopHttpServer]'		'stop HTTP server')
 		(array 'r' '[net:httpServerGetRequest]'	'HTTP server request')
-		(array ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
-Access-Control-Allow-Origin: *')
+		(array ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain')
 
 		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
@@ -233,6 +234,19 @@ Access-Control-Allow-Origin: *')
 		(array 'r' '[tft:tftTouchX]'		'TFT touch X position')
 		(array 'r' '[tft:tftTouchY]'		'TFT touch Y position')
 		(array 'r' '[tft:tftTouchPressure]'	'TFT touch pressure')
+
+		(array ' ' '[file:open]'			'open file _' 'str')
+		(array ' ' '[file:close]'			'close file _' 'str')
+		(array ' ' '[file:delete]'			'delete file _' 'str')
+		(array 'r' '[file:endOfFile]'		'end of file _' 'str')
+		(array 'r' '[file:readLine]'		'next line of file _' 'str')
+		(array 'r' '[file:readBytes]'		'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0)
+		(array ' ' '[file:appendLine]'		'append line _ to file _' 'str str')
+		(array ' ' '[file:appendBytes]'		'append bytes _ to file _' 'str str')
+		(array 'r' '[file:fileSize]'		'size of file _' 'str')
+		(array ' ' '[file:startList]'		'start file list')
+		(array 'r' '[file:nextInList]'		'next file in list')
+		(array 'r' '[file:systemInfo]'		'file system info')
 
 		(array ' ' '[radio:sendInteger]'			'radio send number _' 'num' 123)
 		(array ' ' '[radio:sendString]'				'radio send string _' 'str' 'Hello!')

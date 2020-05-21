@@ -1,0 +1,31 @@
+module Files Data
+author MicroBlocks
+version 1 0
+description 'Flash file system operations. Currently supports the SPIFFS file system on ESP8266 and ESP32 boards.'
+tags data esp
+
+	spec ' ' '[file:open]'			'open file _' 'str'
+	spec ' ' '[file:close]'			'close file _' 'str'
+	spec ' ' '[file:delete]'		'delete file _' 'str'
+	space
+	spec ' ' '[file:appendLine]'	'append line _ to file _' 'str str'
+	spec ' ' '[file:appendBytes]'	'append bytes _ to file _' 'str str'
+	space
+	spec 'r' '[file:endOfFile]'		'end of file _' 'str'
+	spec 'r' '[file:readLine]'		'next line of file _' 'str'
+	spec 'r' '[file:readBytes]'		'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+	space
+	spec 'r' 'file names'			'file names'
+	spec 'r' '[file:fileSize]'		'size of file _' 'str'
+	spec 'r' '[file:systemInfo]'	'file system info'
+
+to 'file names' {
+  '[file:startList]'
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[file:nextInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[file:nextInList]')
+  }
+  return result
+}
