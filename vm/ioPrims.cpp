@@ -1064,7 +1064,7 @@ void stopTone() { }
 #if defined(ESP32)
 
 // DAC ring buffer. Size must be a power of 2.
-#define DAC_BUF_SIZE 32
+#define DAC_BUF_SIZE 128
 #define DAC_BUF_MASK (DAC_BUF_SIZE - 1)
 static uint8 ringBuf[DAC_BUF_SIZE];
 
@@ -1080,28 +1080,28 @@ static portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 #include "soc/sens_reg.h"
 
 static void IRAM_ATTR __dacWrite(uint8_t pin, uint8_t value) {
-    if(pin < 25 || pin > 26) return;//not dac pin
-//    pinMode(pin, ANALOG); // this call causes a crash when __dacWrite is called from the ISR
+	if(pin < 25 || pin > 26) return;//not dac pin
+//	pinMode(pin, ANALOG); // this call causes a crash when __dacWrite is called from the ISR
 
-    //Disable Tone
-    CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
+	//Disable Tone
+	CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
 
-    uint8_t channel = pin - 25;
-    if (channel) {
-        //Disable Channel Tone
-        CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN2_M);
-        //Set the Dac value
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_DAC, value, RTC_IO_PDAC2_DAC_S);   //dac_output
-        //Channel output enable
-        SET_PERI_REG_MASK(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_XPD_DAC | RTC_IO_PDAC2_DAC_XPD_FORCE);
-    } else {
-        //Disable Channel Tone
-        CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
-        //Set the Dac value
-        SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, value, RTC_IO_PDAC1_DAC_S);   //dac_output
-        //Channel output enable
-        SET_PERI_REG_MASK(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_XPD_DAC | RTC_IO_PDAC1_DAC_XPD_FORCE);
-    }
+	uint8_t channel = pin - 25;
+	if (channel) {
+		//Disable Channel Tone
+		CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN2_M);
+		//Set the Dac value
+		SET_PERI_REG_BITS(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_DAC, value, RTC_IO_PDAC2_DAC_S); //dac_output
+		//Channel output enable
+		SET_PERI_REG_MASK(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_XPD_DAC | RTC_IO_PDAC2_DAC_XPD_FORCE);
+	} else {
+		//Disable Channel Tone
+		CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
+		//Set the Dac value
+		SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, value, RTC_IO_PDAC1_DAC_S); //dac_output
+		//Channel output enable
+		SET_PERI_REG_MASK(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_XPD_DAC | RTC_IO_PDAC1_DAC_XPD_FORCE);
+	}
 }
 
 static void IRAM_ATTR onTimer() {
@@ -1270,10 +1270,10 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 	} else if (IS_TYPE(arg0, ByteArrayType)) {
 		uint8 *buf = (uint8 *) &FIELD(arg0, 0);
 		int bufSize = BYTES(arg0);
-		int startIndex = ((argCount > 1) && isInt(args[1])) ?  obj2int(args[1]) : 1;
-		if (startIndex < 1) startIndex = 1;
+		int startIndex = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) - 1 : 0;
+		if (startIndex < 0) startIndex = 0;
 		if (startIndex > bufSize) startIndex = bufSize;
-		for (int i = startIndex - 1; i < bufSize; i++) {
+		for (int i = startIndex; i < bufSize; i++) {
 			if (!writeDAC(buf[i])) break;
 			count++;
 		}

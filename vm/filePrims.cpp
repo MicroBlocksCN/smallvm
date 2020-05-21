@@ -180,14 +180,22 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerError);
 	uint32 byteCount = obj2int(args[0]);
 	char *fileName = extractFilename(args[1]);
-	int startPos = ((argCount > 2) && isInt(args[2])) ? obj2int(args[2]) : 0;
 
 	int i = entryFor(fileName);
 	if (i >= 0) {
 		uint8 buf[800];
 		if (byteCount > sizeof(buf)) byteCount = sizeof(buf);
-		if (startPos) fileEntry[i].file.seek(startPos, SeekSet);
+		if ((argCount > 2) && isInt(args[2])) {
+			fileEntry[i].file.seek(obj2int(args[2]), SeekSet);
+		}
 		byteCount = fileEntry[i].file.read(buf, byteCount);
+		if (!byteCount && fileEntry[i].file.available()) {
+			// workaround for rare read error -- skip to the next block
+			int pos = fileEntry[i].file.position();
+			reportNum("skipping bad file block at", pos);
+			fileEntry[i].file.seek(pos + 256, SeekSet);
+			byteCount = fileEntry[i].file.read(buf, byteCount);
+		}
 		int wordCount = (byteCount + 3) / 4;
 		OBJ result = newObj(ByteArrayType, wordCount, falseObj);
 		if (result) {
