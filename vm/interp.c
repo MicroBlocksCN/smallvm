@@ -789,6 +789,9 @@ static void runTask(Task *task) {
 				case ListType:
 					*(sp - arg) = strcmp(type, "list") == 0 ? trueObj : falseObj;
 					break;
+				case ByteArrayType:
+					*(sp - arg) = strcmp(type, "byte array") == 0 ? trueObj : falseObj;
+					break;
 			}
 		}
 		POP_ARGS_REPORTER();

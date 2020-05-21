@@ -48,6 +48,7 @@ method typesMenu InputSlot {
   addItem menu 'number'
   addItem menu 'string'
   addItem menu 'list'
+  addItem menu 'byte array'
   return menu
 }
 
