@@ -167,8 +167,6 @@ new byte array length _
 
 free memory
 
-fill list _ with _
-
 My Blocks
 
 # Buttons on top of "My Blocks" category
@@ -206,8 +204,6 @@ ignore
 draw shape _ at x _ y _
 
 shape for letter _
-
-set NeoPixel pin _ is RGBW _
 
 send NeoPixel rgb _
 
@@ -323,23 +319,9 @@ button left
 
 button right
 
-capacitive OK
-
-capacitive X
-
-capacitive up
-
-capacitive down
-
-capacitive left
-
-capacitive right
-
 capacitive sensor _
 
 set capacitive threshold to _
-
-set use capacitive to _
 
 Hummingbird LED _ _ %
 
