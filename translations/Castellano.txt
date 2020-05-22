@@ -247,9 +247,6 @@ nuevo vector de bytes de largada _
 free memory
 memoria libre
 
-fill list _ with _
-llena lista _ con _
-
 My Blocks
 Mis bloques
 
@@ -303,9 +300,6 @@ dibuja forma _ en x _ y _
 
 shape for letter _
 forma para letra _
-
-set NeoPixel pin _ is RGBW _
-configurar un NeoPixel en el pin _ tipo RGBW _
 
 send NeoPixel rgb _
 envíar RGB _ al NeoPixel
@@ -477,32 +471,11 @@ botón izquierda
 button right
 botón derecha
 
-capacitive OK
-capacitivo OK
-
-capacitive X
-capacitivo X
-
-capacitive up
-capacitivo arriba
-
-capacitive down
-capacitivo abajo
-
-capacitive left
-capacitivo izquierda
-
-capacitive right
-capacitivo derecha
-
 capacitive sensor _
 sensor capacitivo _
 
 set capacitive threshold to _
 fija umbral capacitivo en _
-
-set use capacitive to _
-utiliza botones capacitivos _
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
@@ -1255,8 +1228,8 @@ Path, name or URL for library?
 Invalid URL
 URL inválida
 
-Could not fetch library
-No se ha podido obtener la librería
+Could not fetch library.
+No se pudo obtener la librería.
 
 Host does not exist or is currently down.
 El servidor no existe o está fuera de servicio.

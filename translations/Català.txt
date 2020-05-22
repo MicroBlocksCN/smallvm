@@ -247,9 +247,6 @@ nou vector de bytes de llargada _
 free memory
 memòria disponible
 
-fill list _ with _
-omple llista _ amb _
-
 My Blocks
 Els meus blocs
 
@@ -303,9 +300,6 @@ dibuixa forma _ a x _ y _
 
 shape for letter _
 forma de la lletra _
-
-set NeoPixel pin _ is RGBW _
-configura un NeoPixel al pin _ tipus RGBW _
 
 send NeoPixel rgb _
 envia RGB _ al NeoPixel
@@ -477,32 +471,11 @@ botó esquerra
 button right
 botó dreta
 
-capacitive OK
-capacitiu OK
-
-capacitive X
-capacitiu X
-
-capacitive up
-capacitiu amunt
-
-capacitive down
-capacitiu avall
-
-capacitive left
-capacitiu esquerra
-
-capacitive right
-capacitiu dreta
-
 capacitive sensor _
 sensor capacitiu _
 
 set capacitive threshold to _
 fixa llindar capacitiu a _
-
-set use capacitive to _
-utilitza botons capacitius _
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
@@ -1255,8 +1228,8 @@ Camí, nom o URL de la llibreria?
 Invalid URL
 URL invàlida
 
-Could not fetch library
-No s'ha pogut obtenir la llibreria
+Could not fetch library.
+No s'ha pogut obtenir la llibreria.
 
 Host does not exist or is currently down.
 El servidor no existeix, o està fora de servei.
