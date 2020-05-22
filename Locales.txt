@@ -447,6 +447,32 @@ go to x _ y _
 
 point in direction _
 
+Files
+
+open file _
+
+close file _
+
+delete file _
+
+append line _ to file _
+
+append bytes _ to file _
+
+end of file _
+
+next line of file _
+
+next _ bytes of file _
+
+starting at _
+
+file names
+
+size of file _
+
+file system info
+
 WiFi
 
 wifi connect to _ password _ try _ times

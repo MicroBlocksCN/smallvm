@@ -663,6 +663,45 @@ ve a x _ y _
 point in direction _
 apunta en dirección _
 
+Files
+Archivos
+
+open file _
+abre archivo _
+
+close file _
+cierra archivo _
+
+delete file _
+borra archivo _
+
+append line _ to file _
+añade línea _ al archivo _
+
+append bytes _ to file _
+añade bytes _ al archivo _
+
+end of file _
+fin del archivo _
+
+next line of file _
+siguiente línea del archivo _
+
+next _ bytes of file _
+siguientes _ bytes del archivo _
+
+starting at _
+empezando desde _
+
+file names
+nombres de archivos
+
+size of file _
+tamaño del archivo _
+
+file system info
+detalles del sistema de archivos
+
 WiFi
 WiFi
 
