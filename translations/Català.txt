@@ -247,9 +247,6 @@ nou vector de bytes de llargada _
 free memory
 memòria disponible
 
-fill list _ with _
-omple llista _ amb _
-
 My Blocks
 Els meus blocs
 
@@ -303,9 +300,6 @@ dibuixa forma _ a x _ y _
 
 shape for letter _
 forma de la lletra _
-
-set NeoPixel pin _ is RGBW _
-configura un NeoPixel al pin _ tipus RGBW _
 
 send NeoPixel rgb _
 envia RGB _ al NeoPixel
@@ -477,32 +471,11 @@ botó esquerra
 button right
 botó dreta
 
-capacitive OK
-capacitiu OK
-
-capacitive X
-capacitiu X
-
-capacitive up
-capacitiu amunt
-
-capacitive down
-capacitiu avall
-
-capacitive left
-capacitiu esquerra
-
-capacitive right
-capacitiu dreta
-
 capacitive sensor _
 sensor capacitiu _
 
 set capacitive threshold to _
 fixa llindar capacitiu a _
-
-set use capacitive to _
-utilitza botons capacitius _
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
@@ -689,6 +662,45 @@ ves a x _ y _
 
 point in direction _
 apunta en direcció _
+
+Files
+Arxius
+
+open file _
+obre l'arxiu _
+
+close file _
+tanca l'arxiu _
+
+delete file _
+elimina l'arxiu _
+
+append line _ to file _
+afegeix línia _ a l'arxiu _
+
+append bytes _ to file _
+afegeix bytes _ a l'arxiu _
+
+end of file _
+final de l'arxiu _
+
+next line of file _
+següent línia de l'arxiu _
+
+next _ bytes of file _
+següents _ bytes de l'arxiu _
+
+starting at _
+començant des de _
+
+file names
+noms d'arxius
+
+size of file _
+mida de l'arxiu _
+
+file system info
+dades del sistema de fitxers
 
 WiFi
 WiFi
@@ -1255,8 +1267,8 @@ Camí, nom o URL de la llibreria?
 Invalid URL
 URL invàlida
 
-Could not fetch library
-No s'ha pogut obtenir la llibreria
+Could not fetch library.
+No s'ha pogut obtenir la llibreria.
 
 Host does not exist or is currently down.
 El servidor no existeix, o està fora de servei.
