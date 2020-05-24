@@ -390,7 +390,30 @@ OBJ primJoin(int argCount, OBJ *args) {
 			if (count >= WORDS(arg)) count = WORDS(arg) - 1;
 			for (int j = 0; j < count; j++) *dst++ = FIELD(arg, j + 1);
 		}
-	} else if (IS_TYPE(arg1, StringType)) {
+	} else if (IS_TYPE(arg1, ByteArrayType)) {
+		for (int i = 0; i < argCount; i++) {
+			arg = args[i];
+			if (IS_TYPE(arg, ByteArrayType)) {
+				resultCount += BYTES(arg);
+			} else if (IS_TYPE(arg, StringType)) {
+				resultCount += stringSize(arg);
+			} else {
+				return fail(joinArgsNotSameType);
+			}
+		}
+		int wordCount = (resultCount + 3) / 4;
+		result = newObj(ByteArrayType, wordCount, falseObj);
+		if (!result) return result; // allocation failed
+		setByteCountAdjust(result, resultCount);
+
+		char *dst = (char *) &FIELD(result, 0);
+		for (int i = 0; i < argCount; i++) {
+			arg = args[i];
+			int byteCount = IS_TYPE(arg, ByteArrayType) ? BYTES(arg) : stringSize(arg);
+			char *src = (char *) &FIELD(arg, 0);
+			for (int j = 0; j < byteCount; j++) *dst++ = src[j];
+		}
+	} else {
 		for (int i = 0; i < argCount; i++) {
 			arg = args[i];
 			if (IS_TYPE(arg, StringType)) {
@@ -425,31 +448,6 @@ OBJ primJoin(int argCount, OBJ *args) {
 			}
 		}
 		*dst = 0; // null terminator
-	} else if (IS_TYPE(arg1, ByteArrayType)) {
-		for (int i = 0; i < argCount; i++) {
-			arg = args[i];
-			if (IS_TYPE(arg, ByteArrayType)) {
-				resultCount += BYTES(arg);
-			} else if (IS_TYPE(arg, StringType)) {
-				resultCount += stringSize(arg);
-			} else {
-				return fail(joinArgsNotSameType);
-			}
-		}
-		int wordCount = (resultCount + 3) / 4;
-		result = newObj(ByteArrayType, wordCount, falseObj);
-		if (!result) return result; // allocation failed
-		setByteCountAdjust(result, resultCount);
-
-		char *dst = (char *) &FIELD(result, 0);
-		for (int i = 0; i < argCount; i++) {
-			arg = args[i];
-			int byteCount = IS_TYPE(arg, ByteArrayType) ? BYTES(arg) : stringSize(arg);
-			char *src = (char *) &FIELD(arg, 0);
-			for (int j = 0; j < byteCount; j++) *dst++ = src[j];
-		}
-	} else {
-		fail(needsIndexable);
 	}
 	return result;
 }

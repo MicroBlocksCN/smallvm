@@ -213,8 +213,9 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 	// Append a String to a file followed by a newline.
 
 	if (argCount < 2) return fail(notEnoughArguments);
-	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
+	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
 	char *fileName = extractFilename(args[1]);
+	OBJ arg = args[0];
 
 	int i = entryFor(fileName);
 	if (i >= 0) {
@@ -222,7 +223,27 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 		int oldPos = file.position();
 		int oldSize = file.size();
 		if (oldPos != oldSize) file.seek(0, SeekEnd); // seek to current end
-		fileEntry[i].file.print(obj2str(args[0]));
+		if (IS_TYPE(arg, StringType)) {
+			fileEntry[i].file.print(obj2str(arg));
+		} else if (isInt(arg)) {
+			fileEntry[i].file.print(obj2int(arg));
+		} else if (isBoolean(arg)) {
+			fileEntry[i].file.print((trueObj == arg) ? "true" : "false");
+		} else if (IS_TYPE(arg, ListType)) {
+			// print list items separated by spaces
+			int count = obj2int(FIELD(arg, 0));
+			for (int j = 1; j <= count; j++) {
+				OBJ item = FIELD(arg, j);
+				if (IS_TYPE(item, StringType)) {
+					fileEntry[i].file.print(obj2str(item));
+				} else if (isInt(item)) {
+					fileEntry[i].file.print(obj2int(item));
+				} else if (isBoolean(item)) {
+					fileEntry[i].file.print((trueObj == item) ? "true" : "false");
+				}
+				if (j < count) fileEntry[i].file.write(32); // space
+			}
+		}
 		fileEntry[i].file.write(10); // newline
 		if (oldPos != oldSize) file.seek(oldPos, SeekSet); // reset position for reading
 	}
