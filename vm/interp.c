@@ -466,9 +466,9 @@ static void runTask(Task *task) {
 #endif
 		DISPATCH();
 	jmpFalse_op:
-		if (trueObj != (*--sp)) ip += arg; // treat any value by true as false
+		if (trueObj != (*--sp)) ip += arg; // treat any value but true as false
 #if USE_TASKS
-		if ((arg < 0) && (falseObj == *sp)) goto suspend;
+		if ((arg < 0) && (trueObj != *sp)) goto suspend;
 #endif
 		DISPATCH();
 	 decrementAndJmp_op:
