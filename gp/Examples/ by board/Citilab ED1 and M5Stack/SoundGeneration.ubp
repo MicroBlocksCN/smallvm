@@ -1,0 +1,174 @@
+module main
+author MicroBlocks
+version 1 0 
+description ''
+variables x lastY lastX draw 
+
+	spec ' ' 'output sound sample' 'output sound sample _' 'auto' '10'
+	spec ' ' 'displayWave' 'displayWave _' 'auto' '10'
+	spec 'r' 'sineScaled' 'sine _ scale _' 'auto auto' 0 '10'
+	spec ' ' 'start wave' 'draw wave'
+
+to displayWave n {
+  local 'x' (lastX + 2)
+  local 'y' ((('[tft:getHeight]') - (5 * n)) - 10)
+  '[tft:line]' lastX lastY x y (colorSwatch 255 255 255 255)
+  if (x > ('[tft:getWidth]')) {
+    draw = (booleanConstant false)
+  } else {
+    lastX = x
+    lastY = y
+  }
+}
+
+to 'output sound sample' n {
+  if draw {
+    displayWave n
+  } else {
+    waitUntil (('[io:dacWrite]' n) != 0)
+  }
+}
+
+to sineScaled angle scale {
+  local 'n' ((scale * ('[misc:sin]' (100 * angle))) >> 14)
+  return (scale + n)
+}
+
+to 'start wave' {
+  '[display:mbDisplayOff]'
+  draw = (booleanConstant true)
+  lastX = 0
+  lastY = (('[tft:getHeight]') - 10)
+}
+
+script 50 50 {
+whenStarted
+comment 'Set the pin for your speaker (25 or 26).'
+'[io:dacInit]' 26 10000
+}
+
+script 52 161 {
+comment 'Click the start button, then click on each example
+to hear how it sounds. The waveform will shown
+on the display. Can work on an ESP32 boards
+without displays or speakers if you connect one
+of the DAC pins (pin 25 or 26) to a piezo buzzer
+or through a 4.7k to 10k resistor to a self-amplified
+speaker. The DAC can''t drive a magnetic speaker
+directly.'
+}
+
+script 53 333 {
+comment 'Square Wave'
+'start wave'
+forever {
+  repeat 10 {
+    'output sound sample' 0
+  }
+  repeat 10 {
+    'output sound sample' 20
+  }
+}
+}
+
+script 322 336 {
+comment 'Triangle Wave'
+'start wave'
+forever {
+  for i 10 {
+    'output sound sample' (2 * i)
+  }
+  for i 10 {
+    'output sound sample' (2 * (10 - i))
+  }
+}
+}
+
+script 53 557 {
+comment 'Sawtooth Wave'
+'start wave'
+forever {
+  for i 20 {
+    'output sound sample' i
+  }
+}
+}
+
+script 323 600 {
+comment 'Sine Wave'
+'start wave'
+forever {
+  for i 20 {
+    local 'n' (sineScaled (18 * i) 10)
+    'output sound sample' n
+  }
+}
+}
+
+script 55 745 {
+comment 'Pulse Train'
+'start wave'
+forever {
+  'output sound sample' 20
+  repeat 19 {
+    'output sound sample' 0
+  }
+}
+}
+
+script 324 823 {
+comment 'Noise (Hiss)'
+'start wave'
+forever {
+  'output sound sample' (random 1 20)
+}
+}
+
+
+module 'Sound Primitives' Output
+author MicroBlocks
+version 1 0 
+tags tone sound music audio note speaker 
+description 'Low level support for tone generation and DAC audio output on selected boards. You are probably looking for the Tone library in the folder above. The tone primitives use the Arduino tone library to provide smoother music output. The DAC primitives are currently supported only on ESP32 boards.'
+
+	spec 'r' '[io:hasTone]' 'has tone support'
+	spec ' ' '[io:playTone]' 'play tone pin _ frequency _' 'num num' 0 440
+	spec ' ' '[io:dacInit]' 'init DAC pin _ sample rate _' 'num num' 25 11025
+	spec 'r' '[io:dacWrite]' 'DAC write _ : starting at _' 'num num' 128 1
+
+module TFT Output
+author MicroBlocks
+version 1 0 
+tags tft graphics draw 
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+	spec 'r' 'makeColor' 'color r _ g _ b _ (0-31)' 'auto auto auto' 20 5 15
+	spec 'r' 'randomColor' 'random color'
+	spec 'r' '[tft:getWidth]' 'TFT width'
+	spec 'r' '[tft:getHeight]' 'TFT height'
+	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+
+to makeColor r g b {
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to randomColor {
+  local 'n1' (random 0 15)
+  local 'n2' (random 5 20)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
