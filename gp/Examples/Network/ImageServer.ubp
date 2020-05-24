@@ -1,0 +1,282 @@
+module main
+author MicroBlocks
+version 1 0 
+description 'Stream and image over the network and display it on a TFT display.'
+variables x y imageWidth imageHeight data bytesReceived 
+
+	spec ' ' 'drawPixels' 'drawPixels'
+	spec ' ' 'readHeader' 'readHeader _' 'auto' '100 100 pixel data...'
+	spec 'r' 'parseInteger' 'parseInteger _' 'auto' ''
+	spec ' ' 'waitForHeaders' 'waitForHeaders'
+	spec 'r' 'noMoreData' 'noMoreData'
+
+to drawPixels {
+  comment 'Draw the next chunk of pixel data to the TFT display.
+Each pixel is three characters (R, G, and B values).
+Each character  encodes a 5-bit number (0..31) as
+a character between 0 (zero) and the letter "O".
+The x and y values are incremented as each pixel
+is drawn on the TFT display.'
+  if (isType data 'string') {
+    data = ('[data:join]' ('[data:newByteArray]' 0) data)
+  }
+  local 'i' 1
+  local 'pixelCount' ((size data) / 3)
+  repeat pixelCount {
+    local 'r' (((at i data) - 48) & 31)
+    local 'g' (((at (i + 1) data) - 48) & 31)
+    local 'b' (((at (i + 2) data) - 48) & 31)
+    local 'pixel' ((r << 16) | ((g << 8) | b))
+    '[tft:setPixel]' x y pixel
+    x += 1
+    if (x >= imageWidth) {
+      x = 0
+      y += 1
+    }
+    i += 3
+  }
+  data = ('[data:copyFromTo]' data i)
+}
+
+to noMoreData {
+  comment 'Attempt to read data from the HTTP connection.
+If data is received, append it to the "data" variable
+and return false. If the operation times out without
+getting any data, return true.'
+  local 'timeout' 2000
+  local 'rcvStartTime' (millisOp)
+  repeatUntil (((millisOp) - rcvStartTime) > timeout) {
+    local 'buf' ('[net:httpServerGetRequest]' true)
+    if ((size buf) > 0) {
+      bytesReceived += (size buf)
+      data = ('[data:join]' data buf)
+      return (booleanConstant false)
+    }
+  }
+  return (booleanConstant true)
+}
+
+to parseInteger aByteArray {
+  comment 'Convert the given byte array to a string
+and covert it to an integer.'
+  return (('[data:join]' '' aByteArray) + 0)
+}
+
+to readHeader buf {
+  comment 'Skip the HTTP header, read the image width and height, and set data
+to the start of the actual image data. Assume that buf includes the
+entire HTTP header and the image width and height fields. Format is:
+<HTTP Headers> <width> <space> <height> <space>'
+  comment 'Find end of HTTP headers, end of width, and end of height (i, j, k)'
+  local 'i' ('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) buf)
+  local 'j' ('[data:find]' ' ' buf i)
+  local 'k' ('[data:find]' ' ' buf (j + 1))
+  comment 'Attempt to read the width and height fields and
+convert them to numbers. (Zero indicates failure.)'
+  imageWidth = (parseInteger ('[data:copyFromTo]' buf (i + 4) (j - 1)))
+  imageHeight = (parseInteger ('[data:copyFromTo]' buf (j + 1) (k - 1)))
+  if (or (imageWidth == 0) (imageHeight == 0)) {
+    comment 'Parsing the image width & height failed; use defaults.'
+    imageWidth = 100
+    imageHeight = 100
+  }
+  x = 0
+  y = 0
+  data = ('[data:copyFromTo]' buf (k + 1))
+}
+
+to waitForHeaders {
+  comment 'Wait for enough data to arrive to include the HTTP
+headers and the image width and height. Assume
+that 1000 bytes is sufficient.'
+  data = ('[data:newByteArray]' 0)
+  repeatUntil ((size data) > 1000) {
+    data = ('[data:join]' data ('[net:httpServerGetRequest]' true))
+    waitMillis 50
+  }
+  bytesReceived = (size data)
+}
+
+script 50 50 {
+whenStarted
+comment 'Fill in your WiFi network name and password:'
+'wifi connect to' 'Network_Name' '' 3
+forever {
+  waitForHeaders
+  readHeader data
+  '[display:mbDisplayOff]'
+  repeatUntil (or (y >= imageHeight) (noMoreData)) {
+    drawPixels
+  }
+  '[net:respondToHttpRequest]' '200 OK'
+  sayIt bytesReceived 'bytes received'
+}
+}
+
+
+module 'HTTP server' Comm
+author MicroBlocks
+version 1 2 
+depends WiFi 
+tags http network 
+description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
+
+	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _' 'bool' false
+	spec 'r' 'request method' 'method of request _' 'str' ''
+	spec 'r' 'path of request' 'path of request _' 'str' ''
+	spec 'r' 'headers of request' 'headers of request _' 'str' ''
+	spec 'r' 'body of request' 'body of request _' 'str' ''
+	spec 'r' 'content length of request' 'content length of request _' 'str' ''
+	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain'
+	spec 'r' '_endOfHeaders' '_end of headers _' 'str'
+	spec 'r' '_toString' '_toString _' 'auto' 'abc'
+
+to '_endOfHeaders' request {
+  return ('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request)
+}
+
+to '_toString' aStringOrByteArray {
+  comment 'If argument is a byte array, convert it to a string. '
+  if (not (isType aStringOrByteArray 'string')) {
+    aStringOrByteArray = ('[data:join]' '' aStringOrByteArray)
+  }
+  return aStringOrByteArray
+}
+
+to 'body of request' request {
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('[data:copyFromTo]' request (i + 4))
+}
+
+to 'content length of request' request {
+  local 'i' ('_endOfHeaders' request)
+  if (i < 0) {
+    return 0
+  }
+  local 'j' ('[data:find]' 'Content-Length: ' request)
+  if (j < 0) {
+    comment 'Try alternate capitalization'
+    j = ('[data:find]' 'Content-length: ' request)
+  }
+  if (or (j < 0) (j > i)) {
+    return 0
+  }
+  j += 16
+  local 'k' ('[data:find]' ('[data:unicodeString]' 13) request j)
+  return (('[data:copyFromTo]' request j (k - 1)) + 0)
+}
+
+to 'headers of request' request {
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('_toString' ('[data:copyFromTo]' request 1 (i - 1)))
+}
+
+to 'path of request' request {
+  return ('_toString' ('[data:copyFromTo]' request (('[data:find]' ' ' request) + 1) (('[data:find]' ' HTTP' request) - 1)))
+}
+
+to 'request method' request {
+  return ('_toString' ('[data:copyFromTo]' request 1 (('[data:find]' ' ' request) - 1)))
+}
+
+
+module TFT Output
+author unknown
+version 1 0 
+description ''
+
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+	spec 'r' 'makeColor' 'color r _ g _ b _ (0-31)' 'auto auto auto' 20 5 15
+	spec 'r' 'randomColor' 'random color'
+	spec 'r' '[tft:getWidth]' 'TFT width'
+	spec 'r' '[tft:getHeight]' 'TFT height'
+	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+
+to makeColor r g b {
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to randomColor {
+  local 'n1' (random 0 15)
+  local 'n2' (random 5 20)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+
+module WiFi Comm
+author MicroBlocks
+version 1 2 
+tags communication network 
+description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
+
+	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
+	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+	spec 'r' 'getIPAddress' 'IP address'
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to 'wifi connect to' ssid password tries {
+  if (not ('[net:hasWiFi]')) {return}
+  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+    '[net:startWiFi]' ssid password
+    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+      comment 'Slow blink while connecting'
+      setUserLED true
+      waitMillis 500
+      setUserLED false
+      waitMillis 500
+    }
+    tries += -1
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
