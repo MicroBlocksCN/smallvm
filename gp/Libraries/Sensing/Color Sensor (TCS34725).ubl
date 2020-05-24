@@ -1,29 +1,54 @@
 module TCS34725 Input
 author 'José García Yeste'
-version 1 0
-description 'Support for the TCS34725 RGB color sensor.'
-tags sensor color
+version 1 2 
+tags sensor color 
+description 'Support for the TCS34725 RGB color sensor.
+'
+variables '_TCS34725 initalized' 
 
-
-	spec ' ' '_TCS34725 setup' '_TCS34725 setup'
 	spec 'r' 'TCS34725 connected' 'TCS34725 connected'
-	spec 'r' '_TCS34725 raw' '_TCS34725 raw'
 	spec 'r' 'TCS34725 rgb' 'TCS34725 rgb'
+	spec 'r' 'TCS34725 luminance' 'TCS34725 luminance'
 	spec 'r' 'color' 'color _ name' 'color'
+	spec ' ' '_TCS34725 setup' '_TCS34725 setup'
+	spec 'r' '_TCS34725 raw' '_TCS34725 raw'
 	spec 'r' '_makeColor' '_color r _ g _ b _ (0-31)' 'auto auto auto' 20 5 15
 
 to 'TCS34725 connected' {
   return ((i2cGet (hexToInt '29') (hexToInt '92')) == (hexToInt '44'))
 }
 
+to 'TCS34725 luminance' {
+  local 'crgb' ('_TCS34725 raw')
+  local 'r' (at 2 crgb)
+  local 'g' (at 3 crgb)
+  local 'b' (at 4 crgb)
+  comment '(-0.32466 * r) + (1.57837 * g) + (-0.73191 * b);'
+  return (maximum 0 ((((r * -3246) + (g * 15784)) + (b * -7319)) / 10000))
+}
+
+to 'TCS34725 rgb' {
+  local 'raw' ('_TCS34725 raw')
+  local 'rgb' (newList 3)
+  local 'c' (at 1 raw)
+  if (c > 0) {
+    for i 3 {
+      atPut i rgb (((at (i + 1) raw) * 32) / c)
+    }
+    return ('_makeColor' (at 1 rgb) (at 2 rgb) (at 3 rgb))
+  } else {
+    return 0
+  }
+}
+
 to '_TCS34725 raw' {
+  '_TCS34725 setup'
   comment 'read 8 bytes c,r,g,b'
-  local 'crgb' (newList 32)
-  if ((i2cGet (hexToInt '29') 0) >= 0) {
+  local 'crgb' (newList 8)
+  if ('TCS34725 connected') {
     '[sensors:i2cWrite]' (hexToInt '29') (hexToInt '94')
-    atPut 1 crgb 8
     '[sensors:i2cRead]' (hexToInt '29') crgb
-    waitMillis 10
+    waitMillis 1
     atPut 1 crgb (((at 2 crgb) << 8) | (at 1 crgb))
     atPut 2 crgb (((at 4 crgb) << 8) | (at 3 crgb))
     atPut 3 crgb (((at 6 crgb) << 8) | (at 5 crgb))
@@ -32,36 +57,28 @@ to '_TCS34725 raw' {
   return crgb
 }
 
-to 'TCS34725 rgb' {
-  '_TCS34725 setup'
-  local 'raw' ('_TCS34725 raw')
-  local 'rgb' (newList 3)
-  local 'c' (at 1 raw)
-  if (c > 0) {
-    for i 3 {
-      atPut i rgb (((at (i + 1) raw) * 32) / c)
-    }
-    return (_makeColor (at 1 rgb) (at 2 rgb) (at 3 rgb))
-  } else {
-    return 0
+to '_TCS34725 setup' {
+  if ((v '_TCS34725 initialized') == 0) {
+    comment 'https://github.com/ControlEverythingCommunity/TCS34725/blob/master/C/TCS34725.c
+// Select enable register(0x80)
+// Power ON, crgbC enable, wait time disable(0x03)'
+    i2cSet (hexToInt '29') (hexToInt '80') 3
+    comment '// Select ALS time register(0x81)
+// Atime = 700 ms(0x00)'
+    i2cSet (hexToInt '29') (hexToInt '81') 0
+    comment '// Select Wait Time register(0x83)
+// WTIME : 0.154ms(0xC0)'
+    i2cSet (hexToInt '29') (hexToInt '83') (hexToInt 'C0')
+    comment '// Select control register(0x8F)
+// AGAIN = 1x(0x00)'
+    i2cSet (hexToInt '29') (hexToInt '8F') 0
+    waitMillis 200
+    '_TCS34725 initialized' = 1
   }
 }
 
-to '_TCS34725 setup' {
-  comment 'https://github.com/ControlEverythingCommunity/TCS34725/blob/master/C/TCS34725.c
-// Select enable register(0x80)
-// Power ON, crgbC enable, wait time disable(0x03)'
-  i2cSet (hexToInt '29') (hexToInt '80') 3
-  comment '// Select ALS time register(0x81)
-// Atime = 700 ms(0x00)'
-  i2cSet (hexToInt '29') (hexToInt '81') 0
-  comment '// Select Wait Time register(0x83)
-// WTIME : 0.154ms(0xC0)'
-  i2cSet (hexToInt '29') (hexToInt '83') (hexToInt 'C0')
-  comment '// Select control register(0x8F)
-// AGAIN = 1x(0x00)'
-  i2cSet (hexToInt '29') (hexToInt '8F') 0
-  waitMillis 200
+to '_makeColor' r g b {
+  return ((r << 16) | ((g << 8) | b))
 }
 
 to color color {
@@ -89,6 +106,3 @@ to color color {
   return ''
 }
 
-to _makeColor r g b {
-  return ((r << 16) | ((g << 8) | b))
-}
