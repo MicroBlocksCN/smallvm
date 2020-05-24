@@ -1,67 +1,36 @@
 module main
-author unknown
+author MicroBlocks
 version 1 0 
 description ''
 variables responses 
 
-	spec ' ' 'initializeResponses' 'initializeResponses'
-
-to initializeResponses {
-  responses = ('[data:makeList]' ('[data:makeList]' '/' '<h1>Hello!</h1>
-<p>This is the MicroBlocks HTTP server.</p>
-<p>You can test the following URLs:</p>
-<ul>
-<li>/test</li>
-<li>/foo</li>
-<li>/bar</li>
-</ul>') ('[data:makeList]' '/test' '<p>This is a <strong>test</strong> URL</p>') ('[data:makeList]' '/foo' '<p>Just a page that says</p>
-<h1>FOO</h1>') ('[data:makeList]' '/bar' '<p>Just a page that says</p>
-<h1>BAR</h1>
-<img src="http://microblocks.fun/logo.png"/>'))
-}
-
-script 55 50 {
-comment 'This is an example HTTP server written in MicroBlocks.
-It responds to the following URLs:
-  /
-  /test
-  /foo
-  /bar
-
-You can also try a random URL and get back a 404 page.
-
-The server responds to all request methods in the same way,
-but you can easily add checks for other methods (like POST)
-by using the ( method of request [ ] ) block.
-
-You can also extract the body of a request (when it has one)
-by using the ( body of request [ ] ) block.
-
-Enjoy!'
-}
-
-script 57 347 {
+script 50 50 {
 whenStarted
+comment 'This server responds to any request with a JSON object
+containing the tilt x, y, and z values.'
 comment 'Remember to use your network name (SSID) and password below'
 'wifi connect to' 'Network_Name' '' 3
-initializeResponses
-local 'request' ''
 forever {
-  request = ('[net:httpServerGetRequest]')
-  if (request != '') {
-    for response responses {
-      if (('path of request' request) == (at 1 response)) {'[net:respondToHttpRequest]' '200 OK' (at 2 response)}
-    }
-    '[net:respondToHttpRequest]' '404 Not Found' '<h1>404 Not Found</h1><p>I''m sorry, this page does not exist :(</p>'
+  repeatUntil (('[net:httpServerGetRequest]') != '') {
+    waitMillis 10
   }
-  waitMillis 10
+  '[net:respondToHttpRequest]' '200 OK' ('[data:join]' '{"x": ' ('[sensors:tiltX]') ', "y": ' ('[sensors:tiltY]') ', "z": ' ('[sensors:tiltZ]') '}')
 }
 }
 
-script 559 350 {
-to initializeResponses {}
-}
 
+module 'Basic Sensors' Input
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light sensor 
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
+
+	spec 'r' '[sensors:tiltX]' 'tilt x'
+	spec 'r' '[sensors:tiltY]' 'tilt y'
+	spec 'r' '[sensors:tiltZ]' 'tilt z'
+	spec 'r' '[sensors:acceleration]' 'acceleration'
+	spec 'r' '[display:lightLevel]' 'light level'
+	spec 'r' '[sensors:temperature]' 'temperature (°C)'
 
 module 'HTTP server' Comm
 author MicroBlocks

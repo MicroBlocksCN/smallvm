@@ -10,7 +10,7 @@ variables data bytesReceived contentsBytes
 	spec ' ' 'playSoundBuffer' 'playSoundBuffer _' 'auto' '10'
 
 to playFromFile fileName {
-  '[io:dacInit]' 25 11025
+  '[io:dacInit]' 26 11025
   '[file:open]' fileName
   repeatUntil ('[file:endOfFile]' fileName) {
     playSoundBuffer ('[file:readBytes]' 800 fileName)
@@ -58,7 +58,7 @@ forever {
     '[file:open]' fileName
     sayIt 'Storing sound in file' fileName
   } else {
-    '[io:dacInit]' 25 11025
+    '[io:dacInit]' 26 11025
     sayIt 'Playing sound...'
   }
   contentsBytes = ('content length of request' data)
