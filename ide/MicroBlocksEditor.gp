@@ -77,7 +77,7 @@ to checkLatestVersion {
 to fetchLatestVersionNumber {
   versionText = (httpGet 'microblocks.fun' '/downloads/latest/VERSION.txt')
   if (isNil versionText) { return (array 0 0 0) }
-  return (splitWith (substring (first (lines (httpBody versionText))) 2) '.')
+  return (splitWith (substring (first (lines (httpBody versionText))) 1) '.')
 }
 
 to getLatestVersion {
