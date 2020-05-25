@@ -44,10 +44,13 @@ to 'start wave' {
 script 50 50 {
 whenStarted
 comment 'Set the pin for your speaker (25 or 26).'
-'[io:dacInit]' 26 10000
+if ((boardType) == 'Citilab ED1') {
+  pin = 26
+}
+'[io:dacInit]' 25 10000
 }
 
-script 52 161 {
+script 51 247 {
 comment 'Click the start button, then click on each example
 to hear how it sounds. The waveform will shown
 on the display. Can work on an ESP32 boards
@@ -58,7 +61,7 @@ speaker. The DAC can''t drive a magnetic speaker
 directly.'
 }
 
-script 53 333 {
+script 61 467 {
 comment 'Square Wave'
 'start wave'
 forever {
@@ -71,7 +74,7 @@ forever {
 }
 }
 
-script 322 336 {
+script 336 473 {
 comment 'Triangle Wave'
 'start wave'
 forever {
@@ -84,7 +87,7 @@ forever {
 }
 }
 
-script 53 557 {
+script 63 704 {
 comment 'Sawtooth Wave'
 'start wave'
 forever {
@@ -94,7 +97,7 @@ forever {
 }
 }
 
-script 323 600 {
+script 335 746 {
 comment 'Sine Wave'
 'start wave'
 forever {
@@ -105,7 +108,7 @@ forever {
 }
 }
 
-script 55 745 {
+script 66 915 {
 comment 'Pulse Train'
 'start wave'
 forever {
@@ -116,7 +119,7 @@ forever {
 }
 }
 
-script 324 823 {
+script 334 966 {
 comment 'Noise (Hiss)'
 'start wave'
 forever {
