@@ -1030,7 +1030,10 @@ static void setTone(int pin, int frequency) {
 	}
 }
 
+static void initDAC(int pin, int sampleRate); // forward reference
+
 void stopTone() {
+	initDAC(255, 0); // disable buffered DAC output
 	if (tonePin >= 0) {
 		ledcWrite(0, 0);
 		ledcDetachPin(tonePin);
