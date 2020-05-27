@@ -8,6 +8,10 @@ whenBroadcastReceived 'go!'
 '[display:mbDisplayOff]'
 local 'bufSize' 128
 local 'buf' (newList bufSize)
+local 'pin' 25
+if ((boardType) == 'Citilab ED1') {
+  pin = 26
+}
 for i bufSize {
   atPut i buf (128 + (random -127 127))
 }
@@ -17,7 +21,7 @@ repeat 350 {
     '[tft:setPixel]' i ((at i buf) / 2) (colorSwatch 0 0 0 255)
     atPut i buf sample
     '[tft:setPixel]' i (sample / 2) (colorSwatch 255 255 255 255)
-    analogWriteOp 25 sample
+    analogWriteOp pin sample
     waitMicros 50
   }
   atPut bufSize buf (at 1 buf)
