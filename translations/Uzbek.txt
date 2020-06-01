@@ -645,7 +645,7 @@ Tone
 attach buzzer to pin _
 biriktirish buzzerni pinga _
 
-play note _ octave _ during _ ms
+play note _ octave _ for _ milliseconds
 eslatmani ijro etish _ octave _ vaqt davomida _ ms
 
 play frequency _ for _ milliseconds

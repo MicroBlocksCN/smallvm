@@ -645,7 +645,7 @@ Toon
 attach buzzer to pin _
 verbind buzzer aan pin _
 
-play note _ octave _ during _ ms
+play note _ octave _ for _ milliseconds
 speel noot _ octaaf  _ gedurende _ ms
 
 play frequency _ for _ milliseconds

@@ -618,8 +618,8 @@ Tonos
 attach buzzer to pin _
 inicializa zumbador en el pin _
 
-play note _ octave _ during _ ms
-toca la nota _ en la octava _ durante _ ms
+play note _ octave _ for _ milliseconds
+toca la nota _ en la octava _ durante _ milisegundos
 
 play frequency _ for _ milliseconds
 toca la frecuencia _ durante _ milisegundos

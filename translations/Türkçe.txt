@@ -148,7 +148,7 @@ or _
 veya _
 
 _ is a _
-_ bir _ 
+_ bir _
 
 boolean
 boole
@@ -645,8 +645,8 @@ Ton
 attach buzzer to pin _
 sesli uyarıcıyı _ pinine bağla
 
-play note _ octave _ during _ ms
-_ notasını _ oktavda _ ms çal
+play note _ octave _ for _ milliseconds
+_ notasını _ oktavda _ milisaniye çal
 
 play frequency _ for _ milliseconds
 _ frekansını _ milisaniye çal
@@ -784,7 +784,7 @@ color _ name
 _ renginin adı
 
 temperature (Celsius) DHT11 pin _
-ısı(Celsius) DHT11 pin _ 
+ısı(Celsius) DHT11 pin _
 
 humidity DHT11 pin _
 nem DHT11 pin _
@@ -847,16 +847,16 @@ set thing capability to _
 nesne yeteneğini _ yap
 
 set boolean property _ title _ @Type _
-boole özellik _ ad _ @Tip _ 
+boole özellik _ ad _ @Tip _
 
 set string property _ title _ @Type _
-dizgi özellik _ ad _ @Tip _ 
+dizgi özellik _ ad _ @Tip _
 
 set number property _ title _ @Type _
-numara özellik _ ad _ @Tip _ 
+numara özellik _ ad _ @Tip _
 
 set number property _ title _ min _ max _ @Type _
-numara özellik _ ad _ min _ max _ @Tip _ 
+numara özellik _ ad _ min _ max _ @Tip _
 
 read only _
 salt okunur _
@@ -871,7 +871,7 @@ trigger event _
 _ olayını tetikle
 
 thing description JSON
-nesnenin tanımı JSON 
+nesnenin tanımı JSON
 
 properties JSON
 özellikler JSON
