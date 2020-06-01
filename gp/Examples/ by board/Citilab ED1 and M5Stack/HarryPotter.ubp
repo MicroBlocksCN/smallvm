@@ -87,10 +87,11 @@ to part4 {
   'play tone' 'E' 1 h.
 }
 
-script 51 50 {
+script 50 50 {
 whenStarted
-comment 'To hear the music, attach a piezo speaker between pin 0 and ground'
-comment 'On the Circuit Playground Express or ED1, it will use the built-in speaker.'
+comment 'On a micro:bit, attach a piezo speaker between pin 0 and ground'
+comment 'This will use the built-in speaker on boards that have one
+such as the Circuit Playground Express, ED1, or M5Stack.'
 e = 150
 q = (2 * e)
 q. = (3 * e)
@@ -103,39 +104,29 @@ part3
 part4
 }
 
-script 270 153 {
-to part {}
-}
-
-script 583 153 {
-to part2 {}
-}
-
-script 273 647 {
-to part4 {}
-}
-
-script 585 704 {
-to part3 {}
+script 279 199 {
+comment 'To see what each "part" block does, right click
+on it and select "show block definition..."'
+part
 }
 
 
 module Tone Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags tone sound music audio note speaker 
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead 
 
-	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
-	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
-	spec ' ' 'playMIDIKey' 'play midi key _ for _ milliseconds' 'num num' 60 500
+	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
 	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
 	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
 	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
 	spec 'r' '_baseFreqForSharpOrFlat' '_baseFreqForSharpOrFlat _' 'auto' 'c#'
 	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
-	spec ' ' '_toneLoop' '_toneLoop _ for _ milliseconds' 'num num' 440000 100
+	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave

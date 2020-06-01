@@ -41,7 +41,7 @@ shake it to roll a die.'
 script 54 54 {
 whenStarted
 repeat 12 {
-  ignoreArgs (motion)
+  local 'ignore' (motion)
 }
 forever {
   '[display:mbDisplayOff]'
@@ -69,107 +69,6 @@ forever {
 }
 }
 
-
-module 'Basic Sensors' Input
-author MicroBlocks
-version 1 0 
-tags tilt acceleration light sensor 
-description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
-
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[sensors:acceleration]' 'acceleration'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
-
-module 'ED1 Buttons' Input
-author MicroBlocks
-version 1 0 
-tags button capacitive ed1 
-description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
-variables _ED1_buttons_init '_capacitive threshold' 
-
-	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-	spec 'r' 'OK button' 'button OK'
-	spec 'r' 'cancel button' 'button X'
-	spec 'r' 'up button' 'button up'
-	spec 'r' 'down button' 'button down'
-	spec 'r' 'left button' 'button left'
-	spec 'r' 'right button' 'button right'
-	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
-
-to 'OK button' {
-  '_ED1_buttons_init'
-  return (('[sensors:touchRead]' 15) < (v '_capacitive threshold'))
-}
-
-to '_ED1_buttons_init' {
-  if (_ED1_buttons_init == 0) {
-    if ((v '_capacitive threshold') == 0) {'_capacitive threshold' = 16}
-    _ED1_buttons_init = (booleanConstant true)
-  }
-}
-
-to 'cancel button' {
-  '_ED1_buttons_init'
-  return (('[sensors:touchRead]' 14) < (v '_capacitive threshold'))
-}
-
-to 'down button' {
-  '_ED1_buttons_init'
-  return (('[sensors:touchRead]' 13) < (v '_capacitive threshold'))
-}
-
-to 'left button' {
-  '_ED1_buttons_init'
-  return (('[sensors:touchRead]' 2) < (v '_capacitive threshold'))
-}
-
-to 'right button' {
-  '_ED1_buttons_init'
-  return (('[sensors:touchRead]' 27) < (v '_capacitive threshold'))
-}
-
-to 'set capacitive threshold to' threshold {
-  '_capacitive threshold' = threshold
-}
-
-to 'up button' {
-  '_ED1_buttons_init'
-  return (('[sensors:touchRead]' 4) < (v '_capacitive threshold'))
-}
-
-
-module 'LED Display' Output
-author MicroBlocks
-version 1 0 
-tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
-
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-
-to displayCharacter s {
-  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
-}
-
-
-module 'Misc Primitives'
-author MicroBlocks
-version 1 0 
-description 'Miscellaneous system primitives.'
-
-	spec ' ' 'noop' 'no op'
-	spec ' ' 'ignoreArgs' 'ignore : _ : ...' 'auto' 0
-	spec 'r' 'pushArgCount' 'arg count'
-	spec 'r' 'getArg' 'arg _' 'num' 0
-	spec 'r' 'hexToInt' 'hex _' 'str' '3F'
-	spec 'r' 'longMult' '( _ * _ ) >> _' 'num num num' 1024 2048 10
-	spec 'r' '[misc:sin]' 'fixed sine _' 'num' 9000
 
 module Motion Input
 author MicroBlocks
@@ -303,20 +202,20 @@ to randomColor {
 
 module Tone Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags tone sound music audio note speaker 
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead 
 
-	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
-	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
-	spec ' ' 'playMIDIKey' 'play midi key _ for _ milliseconds' 'num num' 60 500
+	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
 	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
 	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
 	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
 	spec 'r' '_baseFreqForSharpOrFlat' '_baseFreqForSharpOrFlat _' 'auto' 'c#'
 	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
-	spec ' ' '_toneLoop' '_toneLoop _ for _ milliseconds' 'num num' 440000 100
+	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
