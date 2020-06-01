@@ -417,11 +417,11 @@ Tone
 
 attach buzzer to pin _
 
-play note _ octave _ for _ milliseconds
+play note _ octave _ for _ ms
 
-play frequency _ for _ milliseconds
+play frequency _ for _ ms
 
-play midi key _ for _ milliseconds
+play midi key _ for _ ms
 
 Turtle
 

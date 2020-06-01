@@ -645,13 +645,13 @@ Ton
 attach buzzer to pin _
 sesli uyarıcıyı _ pinine bağla
 
-play note _ octave _ for _ milliseconds
+play note _ octave _ for _ ms
 _ notasını _ oktavda _ milisaniye çal
 
-play frequency _ for _ milliseconds
+play frequency _ for _ ms
 _ frekansını _ milisaniye çal
 
-play midi key _ for _ milliseconds
+play midi key _ for _ ms
 mıdı çal nota _ süre _ milisaniye
 
 Turtle

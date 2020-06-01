@@ -645,13 +645,13 @@ Tone
 attach buzzer to pin _
 biriktirish buzzerni pinga _
 
-play note _ octave _ for _ milliseconds
+play note _ octave _ for _ ms
 eslatmani ijro etish _ octave _ vaqt davomida _ ms
 
-play frequency _ for _ milliseconds
+play frequency _ for _ ms
 --MISSING--
 
-play midi key _ for _ milliseconds
+play midi key _ for _ ms
 --MISSING--
 
 Turtle

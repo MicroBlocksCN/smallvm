@@ -645,13 +645,13 @@ Toon
 attach buzzer to pin _
 verbind buzzer aan pin _
 
-play note _ octave _ for _ milliseconds
+play note _ octave _ for _ ms
 speel noot _ octaaf  _ gedurende _ ms
 
-play frequency _ for _ milliseconds
+play frequency _ for _ ms
 speel frequentie _ gedurende _ ms
 
-play midi key _ for _ milliseconds
+play midi key _ for _ ms
 speel midi toon _ gedurende _ ms
 
 Turtle

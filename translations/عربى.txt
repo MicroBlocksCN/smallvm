@@ -648,13 +648,13 @@ Tone
 attach buzzer to pin _
 attach buzzer to pin _
 
-play note _ octave _ for _ milliseconds
+play note _ octave _ for _ ms
 تلعب نوتا _ اوكتاف _ خلال _ مللي ثانية
 
-play frequency _ for _ milliseconds
+play frequency _ for _ ms
 --MISSING--
 
-play midi key _ for _ milliseconds
+play midi key _ for _ ms
 --MISSING--
 
 Turtle

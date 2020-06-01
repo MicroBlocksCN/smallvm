@@ -618,14 +618,14 @@ Tons
 attach buzzer to pin _
 inicialitza brunzidor al pin _
 
-play note _ octave _ for _ milliseconds
-toca la nota _ a l'octava _ durant _ mil·lisegons
+play note _ octave _ for _ ms
+toca la nota _ a l'octava _ durant _ ms
 
-play frequency _ for _ milliseconds
-toca la freqüència _ durant _ mil·lisegons
+play frequency _ for _ ms
+toca la freqüència _ durant _ ms
 
-play midi key _ for _ milliseconds
-toca la tecla MIDI _ durant _ mil·lisegons
+play midi key _ for _ ms
+toca la tecla MIDI _ durant _ ms
 
 Turtle
 Tortuga

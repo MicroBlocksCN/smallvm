@@ -645,13 +645,13 @@ Tone
 attach buzzer to pin _
 подключить зуммер к контакту _
 
-play note _ octave _ for _ milliseconds
+play note _ octave _ for _ ms
 воспроизвести ноту _ октавы _ на протяжении _ мс
 
-play frequency _ for _ milliseconds
+play frequency _ for _ ms
 --MISSING--
 
-play midi key _ for _ milliseconds
+play midi key _ for _ ms
 --MISSING--
 
 Turtle
