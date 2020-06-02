@@ -1,0 +1,346 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables sing pixels 
+
+	spec ' ' 'happy-birthday' 'happy-birthday'
+	spec ' ' 'many-more' 'many-more'
+	spec ' ' 'and-many-more' 'and-many-more'
+
+to 'and-many-more' {
+  local 'third' 266
+  local 'whole' (3 * third)
+  'play tone' 'D' 1 third
+  'play tone' 'E' 1 third
+  'play tone' 'D' 1 third
+  'play tone' 'F' 1 whole
+}
+
+to 'happy-birthday' {
+  local 'eigth' 200
+  local 'quarter' (2 * eigth)
+  local 'half' (2 * quarter)
+  comment 'happy birthday part 1'
+  'play tone' 'D' 1 eigth
+  'play tone' 'D' 1 eigth
+  'play tone' 'E' 1 quarter
+  'play tone' 'D' 1 quarter
+  'play tone' 'G' 1 quarter
+  'play tone' 'F#' 1 half
+  comment 'happy birthday part 2'
+  'play tone' 'D' 1 eigth
+  'play tone' 'D' 1 eigth
+  'play tone' 'E' 1 quarter
+  'play tone' 'D' 1 quarter
+  'play tone' 'A' 1 quarter
+  'play tone' 'G' 1 half
+  comment 'happy birthday part 3'
+  'play tone' 'D' 1 eigth
+  'play tone' 'D' 1 eigth
+  'play tone' 'D' 2 quarter
+  'play tone' 'B' 1 quarter
+  'play tone' 'G' 1 quarter
+  'play tone' 'F#' 1 quarter
+  'play tone' 'E' 1 quarter
+  comment 'happy birthday part 4'
+  'play tone' 'C' 2 eigth
+  'play tone' 'C' 2 eigth
+  'play tone' 'B' 1 quarter
+  'play tone' 'G' 1 quarter
+  'play tone' 'A' 1 quarter
+  'play tone' 'G' 1 half
+  waitMillis half
+}
+
+to 'many-more' {
+  comment 'and-many-more'
+}
+
+script 50 50 {
+whenButtonPressed 'A'
+comment 'On a micro:bit, attach a piezo speaker between pin 0 and ground'
+comment 'This will use the built-in speaker on boards that have one
+such as the Circuit Playground Express, ED1, or M5Stack.'
+sendBroadcastSimple 'show message'
+'happy-birthday'
+'and-many-more'
+}
+
+script 294 230 {
+comment 'To see what each of these block does, right click
+on it and select "show block definition..."'
+'happy-birthday'
+'and-many-more'
+}
+
+script 50 256 {
+whenBroadcastReceived 'show message'
+scroll_text 'HAPPY BIRTHDAY!'
+}
+
+
+module Scrolling Output
+author MicroBlocks
+version 1 0 
+depends 'LED Display' 
+tags animation text pixel matrix led tft 
+description 'Scroll text across the screen of the 5x5 LED display on the BBC micro:bit, Calliope mini or M5Atom Matrix. Also works on boards with a TFT display by simulating the 5x5 matrix with "fat pixels".'
+variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text 
+
+	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+	spec ' ' 'scroll_number' 'scroll number _ : pausing _ ms' 'num num' 123 100
+	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num' 42
+	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num' 100
+	spec ' ' 'stopScrollingText' 'stop scrolling'
+
+to '_covert_to_shapes' n {
+  if (_digit_shapes == 0) {_digit_shapes = (newList 12)}
+  fillList _digit_shapes ('[display:mbShapeForLetter]' ' ')
+  local 'index' (size _digit_shapes)
+  local 'isNegative' (booleanConstant false)
+  if (n < 0) {
+    isNegative = (booleanConstant true)
+    n = (0 - n)
+  } (n == 0) {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '0')
+    _digit_shapes_start_index = index
+  }
+  repeatUntil (n == 0) {
+    local 'digit' (n % 10)
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' (48 + digit))
+    index += -1
+    n = (n / 10)
+  }
+  if isNegative {
+    atPut index _digit_shapes ('[display:mbShapeForLetter]' '-')
+    index += -1
+  }
+  _digit_shapes_start_index = index
+}
+
+to '_scroll_digit_shapes' delay {
+  _stop_scrolling_text = (booleanConstant false)
+  local 'prevShape' ('[display:mbShapeForLetter]' ' ')
+  local 'i' _digit_shapes_start_index
+  local 'end' ((size _digit_shapes) + 1)
+  repeatUntil (i > end) {
+    local 'shape' ('[display:mbShapeForLetter]' ' ')
+    if (i < end) {
+      shape = (at i _digit_shapes)
+    }
+    for j 5 {
+      local 'x' (1 - j)
+      '[display:mbDrawShape]' prevShape x 1
+      '[display:mbDrawShape]' shape (x + 5) 1
+      waitMillis delay
+      if _stop_scrolling_text {
+        '[display:mbDisplayOff]'
+        return 0
+      }
+    }
+    prevShape = shape
+    i += 1
+  }
+}
+
+to scroll_number n optionalDelay {
+  delay = 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  '_covert_to_shapes' n
+  '_scroll_digit_shapes' delay
+}
+
+to scroll_text text optionalDelay {
+  delay = 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  local 'length' (size text)
+  for position ((length * 6) + 6) {
+    if _stop_scrolling_text {return 0}
+    for i length {
+      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
+}
+
+
+module Tone Output
+author MicroBlocks
+version 1 1 
+tags tone sound music audio note speaker 
+description 'Audio tone generation. Make music with MicroBlocks!'
+variables _tonePin _toneInitalized _toneLoopOverhead 
+
+	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
+	spec ' ' 'playMIDIKey' 'play midi key _ for _ milliseconds' 'num num' 60 500
+	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
+	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+	spec 'r' '_baseFreqForSharpOrFlat' '_baseFreqForSharpOrFlat _' 'auto' 'c#'
+	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+	spec ' ' '_toneLoop' '_toneLoop _ for _ milliseconds' 'num num' 440000 100
+
+to '_baseFreqForNote' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  if (or (note == 'c') (note == 'C')) {
+    return 261626
+  } (or (note == 'd') (note == 'D')) {
+    return 293665
+  } (or (note == 'e') (note == 'E')) {
+    return 329628
+  } (or (note == 'f') (note == 'F')) {
+    return 349228
+  } (or (note == 'g') (note == 'G')) {
+    return 391995
+  } (or (note == 'a') (note == 'A')) {
+    return 440000
+  } (or (note == 'b') (note == 'B')) {
+    return 493883
+  }
+  return ('_baseFreqForSharpOrFlat' note)
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (0 == semitone) {
+    return 261626
+  } (1 == semitone) {
+    return 277183
+  } (2 == semitone) {
+    return 293665
+  } (3 == semitone) {
+    return 311127
+  } (4 == semitone) {
+    return 329628
+  } (5 == semitone) {
+    return 349228
+  } (6 == semitone) {
+    return 369994
+  } (7 == semitone) {
+    return 391995
+  } (8 == semitone) {
+    return 415305
+  } (9 == semitone) {
+    return 440000
+  } (10 == semitone) {
+    return 466164
+  } (11 == semitone) {
+    return 493883
+  }
+}
+
+to '_baseFreqForSharpOrFlat' note {
+  comment 'Return the frequency for the given sharp or flat note in the
+middle-C octave scaled by 1000. Only handles black keys.
+Thus, you can''t write E# to mean F.'
+  if (or (or (note == 'c#') (note == 'C#')) (or (note == 'db') (note == 'Db'))) {
+    return 277183
+  } (or (or (note == 'd#') (note == 'D#')) (or (note == 'eb') (note == 'Eb'))) {
+    return 311127
+  } (or (or (note == 'f#') (note == 'F#')) (or (note == 'gb') (note == 'Gb'))) {
+    return 369994
+  } (or (or (note == 'g#') (note == 'G#')) (or (note == 'ab') (note == 'Ab'))) {
+    return 415305
+  } (or (or (note == 'a#') (note == 'A#')) (or (note == 'bb') (note == 'Bb'))) {
+    return 466164
+  }
+  comment 'Unrecognized note names map to 0.1 Hz, which is inaudible.
+This helps users find typos in their tunes.'
+  return 100
+}
+
+to '_measureLoopOverhead' {
+  comment 'Measure the loop overhead on this device'
+  local 'halfCycle' 100
+  local 'startT' (microsOp)
+  repeat 100 {
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+  }
+  local 'usecs' ((microsOp) - startT)
+  return ((usecs - 20000) / 200)
+}
+
+to '_toneLoop' scaledFreq ms {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {
+    '[io:playTone]' _tonePin (scaledFreq / 1000)
+    waitMillis ms
+    '[io:playTone]' _tonePin 0
+  } else {
+    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+    local 'cycles' ((ms * 500) / halfCycle)
+    repeat cycles {
+      digitalWriteOp _tonePin true
+      waitMicros halfCycle
+      digitalWriteOp _tonePin false
+      waitMicros halfCycle
+    }
+  }
+}
+
+to 'attach buzzer to pin' pinNumber {
+  if (pinNumber == '') {
+    comment 'Pin number not specified; use default pin for this device'
+    if ((boardType) == 'Citilab ED1') {
+      _tonePin = 26
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
+    } else {
+      _tonePin = 0
+    }
+  } else {
+    _tonePin = pinNumber
+  }
+  _toneLoopOverhead = ('_measureLoopOverhead')
+  _toneInitalized = (booleanConstant true)
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' (key % 12))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
