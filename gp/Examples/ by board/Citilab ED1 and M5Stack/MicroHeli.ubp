@@ -165,7 +165,7 @@ to toggleHeli {
   }
 }
 
-script 1060 50 {
+script 50 50 {
 comment 'Game contributed by Turgut Guneysu
 ============================
 
@@ -183,7 +183,7 @@ That''s it !
 Have Fun.'
 }
 
-script 50 119 {
+script 53 318 {
 whenStarted
 screen = (newList 25)
 fillList screen (booleanConstant false)
@@ -204,33 +204,9 @@ repeatUntil gameOver {
 }
 }
 
-script 312 140 {
-to genObstacle {}
-}
-
-script 689 146 {
-to shiftScreen {}
-}
-
-script 690 413 {
-to clearC5 {}
-}
-
-script 82 574 {
+script 360 318 {
 whenStarted
 toggleHeli
-}
-
-script 691 634 {
-to dispScreen {}
-}
-
-script 73 652 {
-to toggleHeli {}
-}
-
-script 316 898 {
-to crashHeli {}
 }
 
 

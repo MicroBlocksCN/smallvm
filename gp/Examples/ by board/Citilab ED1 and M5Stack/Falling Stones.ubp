@@ -4,39 +4,7 @@ version 1 0
 description ''
 variables 'player x' 'player y' playing 'stone x' 'stone y' 
 
-	spec ' ' 'scroll' 'scroll _ pausing _ ms' 'str auto' 'HELLO ROSA' '150'
-
-to scroll text delay {
-  local 'length' (size text)
-  for position ((length * 6) + 5) {
-    '[display:mbDisplayOff]'
-    for i length {
-      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at i text)) (((i * 6) + 2) - position) 1
-    }
-    waitMillis delay
-  }
-}
-
-script 55 50 {
-comment 'Game written by David Sánchez Marín
-============================
-
-Use the two buttons in the micro:bit to
-try to avoid the falling stones.
-
-Have fun!'
-}
-
-script 792 62 {
-whenCondition (and ((v 'player x') == (v 'stone x')) ((v 'player y') == (v 'stone y')))
-playing = (booleanConstant false)
-scroll 'GAME OVER' 100
-'[display:mbDisplayOff]'
-waitMillis 1000
-playing = (booleanConstant true)
-}
-
-script 375 205 {
+script 417 50 {
 whenStarted
 'player x' = 3
 'player y' = 5
@@ -52,7 +20,17 @@ forever {
 }
 }
 
-script 54 213 {
+script 50 65 {
+comment 'Game written by David Sánchez Marín
+============================
+
+Use the two buttons in the micro:bit to
+try to avoid the falling stones.
+
+Have fun!'
+}
+
+script 52 218 {
 whenStarted
 playing = (booleanConstant true)
 'stone x' = (random 5)
@@ -67,6 +45,15 @@ forever {
     'stone y' = 0
   }
 }
+}
+
+script 56 586 {
+whenCondition (and ((v 'player x') == (v 'stone x')) ((v 'player y') == (v 'stone y')))
+playing = (booleanConstant false)
+scroll_text 'GAME OVER'
+'[display:mbDisplayOff]'
+waitMillis 1000
+playing = (booleanConstant true)
 }
 
 

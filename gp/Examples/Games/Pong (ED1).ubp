@@ -118,11 +118,7 @@ to 'plot paddles' {
   '[tft:roundedRect]' (v 'paddle 1 x') 120 (v 'paddle width') 8 4 (hexToInt 'FFFF00') true
 }
 
-script 1165 50 {
-to 'bounce ball' {}
-}
-
-script 246 55 {
+script 50 50 {
 comment 'A rendition to one of the first videogames ever.
 This one fits in your pocket!
 
@@ -130,11 +126,7 @@ Player 1 uses keys OK and X.
 Player 2 uses ← and →.'
 }
 
-script 649 70 {
-to 'new game' {}
-}
-
-script 66 122 {
+script 56 158 {
 whenStarted
 'refresh rate' = 40
 'ball radius' = 4
@@ -152,7 +144,7 @@ forever {
 }
 }
 
-script 374 171 {
+script 380 167 {
 whenCondition ('OK button')
 if ((v 'paddle 1 x') >= 4) {
   'paddle 1 x' += -2
@@ -160,15 +152,7 @@ if ((v 'paddle 1 x') >= 4) {
 'plot paddles'
 }
 
-script 384 363 {
-whenCondition ('left button')
-if ((v 'paddle 2 x') >= 4) {
-  'paddle 2 x' += -2
-}
-'plot paddles'
-}
-
-script 54 587 {
+script 382 364 {
 whenCondition ('cancel button')
 if ((v 'paddle 1 x') <= (126 - (v 'paddle width'))) {
   'paddle 1 x' += 2
@@ -176,7 +160,7 @@ if ((v 'paddle 1 x') <= (126 - (v 'paddle width'))) {
 'plot paddles'
 }
 
-script 60 772 {
+script 389 565 {
 whenCondition ('right button')
 if ((v 'paddle 2 x') <= (126 - (v 'paddle width'))) {
   'paddle 2 x' += 2
@@ -184,24 +168,12 @@ if ((v 'paddle 2 x') <= (126 - (v 'paddle width'))) {
 'plot paddles'
 }
 
-script 1168 881 {
-to 'bounce on paddle' {}
+script 61 571 {
+whenCondition ('left button')
+if ((v 'paddle 2 x') >= 4) {
+  'paddle 2 x' += -2
 }
-
-script 643 922 {
-to 'plot ball' {}
-}
-
-script 62 951 {
-to 'game over' {}
-}
-
-script 642 1061 {
-to 'plot paddles' {}
-}
-
-script 631 1400 {
-to 'clear ball' {}
+'plot paddles'
 }
 
 

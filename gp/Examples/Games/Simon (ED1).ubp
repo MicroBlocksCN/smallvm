@@ -62,7 +62,12 @@ comment 'This is the Simon memory game for the
 Citilab ED1 board'
 }
 
-script 254 121 {
+script 52 123 {
+whenStarted
+sendBroadcastSimple 'go!'
+}
+
+script 383 126 {
 whenBroadcastReceived 'player turn'
 local 'index' 1
 repeatUntil (index > (v 'current index')) {
@@ -85,12 +90,15 @@ waitMillis 500
 sendBroadcastSimple 'play sequence'
 }
 
-script 52 123 {
-whenStarted
-sendBroadcastSimple 'go!'
+script 52 224 {
+whenBroadcastReceived 'go!'
+'current index' = 1
+'initialize letters'
+waitMillis 1500
+sendBroadcastSimple 'play sequence'
 }
 
-script 1122 182 {
+script 50 389 {
 whenBroadcastReceived 'play sequence'
 if ((v 'current index') > 20) {
   'play tone' 'C' 3 100
@@ -108,14 +116,6 @@ if ((v 'current index') > 20) {
   }
   sendBroadcastSimple 'player turn'
 }
-}
-
-script 52 224 {
-whenBroadcastReceived 'go!'
-'current index' = 1
-'initialize letters'
-waitMillis 1500
-sendBroadcastSimple 'play sequence'
 }
 
 

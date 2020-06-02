@@ -267,10 +267,6 @@ repeat 10 {
 neoPixelSetAllToColor (colorSwatch 0 0 0 255)
 }
 
-script 314 625 {
-to 'play note at' {}
-}
-
 
 module NeoPixel Output
 author MicroBlocks

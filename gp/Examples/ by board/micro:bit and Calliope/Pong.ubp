@@ -82,15 +82,21 @@ to 'speed up' {
   if ((v 'refresh rate') > 200) {'refresh rate' += -15}
 }
 
-script 1033 50 {
-to 'bounce ball' {}
+script 50 50 {
+comment 'A rendition to one of the first videogames ever.
+It may have worse resolution than the original,
+but this one fits in your pocket!'
 }
 
-script 691 58 {
-to 'plot paddles' {}
+script 315 137 {
+whenCondition (buttonA)
+if ((v 'paddle x') > 1) {
+  'paddle x' += -1
+}
+waitUntil (not (buttonA))
 }
 
-script 56 68 {
+script 54 152 {
 whenStarted
 'new game'
 forever {
@@ -104,54 +110,12 @@ forever {
 }
 }
 
-script 255 70 {
-comment 'A rendition to one of the first videogames ever.
-It may have worse resolution than the original,
-but this one fits in your pocket!'
-}
-
-script 405 153 {
-to 'new game' {}
-}
-
-script 692 162 {
-to 'plot ball' {}
-}
-
-script 694 257 {
-to 'bounce on x' {}
-}
-
-script 695 360 {
-to 'bounce on y' {}
-}
-
-script 50 381 {
-to 'game over' {}
-}
-
-script 693 489 {
-to 'should bounce on paddle' {}
-}
-
-script 1038 620 {
-to 'speed up' {}
-}
-
-script 407 628 {
+script 318 330 {
 whenCondition (buttonB)
 if ((v 'paddle x') < 5) {
   'paddle x' += 1
 }
 waitUntil (not (buttonB))
-}
-
-script 96 629 {
-whenCondition (buttonA)
-if ((v 'paddle x') > 1) {
-  'paddle x' += -1
-}
-waitUntil (not (buttonA))
 }
 
 
