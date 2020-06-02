@@ -176,7 +176,6 @@ method copyEspToolToDisk MicroBlocksFlasher {
 method vmNameForCurrentBoard MicroBlocksFlasher {
   d = (dictionary)
   atPut d 'ESP8266' 'vm.ino.nodemcu.bin'
-  atPut d 'IOT-BUS' 'vm.ino.iot-bus.bin'
   atPut d 'ESP32' 'vm.ino.esp32.bin'
   atPut d 'Citilab ED1' 'vm.ino.citilab-ed1.bin'
   atPut d 'M5Stack-Core' 'vm.ino.m5stack.bin'

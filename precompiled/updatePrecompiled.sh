@@ -15,8 +15,6 @@ pio run -e m5stick
 cp .pio/build/m5stick/firmware.bin precompiled/vm.ino.m5stick.bin
 pio run -e m5atom
 cp .pio/build/m5atom/firmware.bin precompiled/vm.ino.m5atom.bin
-pio run -e iot-bus
-cp .pio/build/iot-bus/firmware.bin precompiled/vm.ino.iot-bus.bin
 pio run -e esp32
 cp .pio/build/esp32/firmware.bin precompiled/vm.ino.esp32.bin
 pio run -e cpx
