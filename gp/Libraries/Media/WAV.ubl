@@ -1,51 +1,28 @@
 module WAV Output
 author 'José García Yeste'
-version 1 0 
+version 1 1 
 description 'Play WAV sound files. Requires a board with a DAC.
 
 Files can be uploaded to the board using a variety of tools, including esptool, the Arduino IDE or PlatformIO. Search the web for "SPIFFS file upload" for details.
 
 If you want to stay 100% inside MicroBlocks, you can even set up a web server in MicroBlocks itself and, for example, send the file to the board with a multipart POST request.
 
-Note: This library cannot play files larger than 65535 bytes.'
+Note: This library cannot play files larger than 65535 bytes.
+'
 
 	spec 'r' '_readChunkID' '_readChunkID _' 'auto' ''
 	spec 'r' '_readChunkSize' '_readChunkSize _' 'auto' ''
 	spec ' ' '_playSoundBuffer' '_playSoundBuffer _' 'auto' ''
 	spec ' ' 'playWAVFile' 'play WAV file _' 'auto' ''
 
-to _playSoundBuffer buffer {
+to '_playSoundBuffer' buffer {
   local 'i' 1
   repeatUntil (i > (size buffer)) {
     i += ('[io:dacWrite]' buffer i)
   }
 }
 
-to playWAVFile filename {
-  '[file:open]' filename
-  if ((_readChunkID filename) == 'RIFF') {
-    local 'size' (_readChunkSize filename)
-    if ((_readChunkID filename) == 'WAVE') {
-      if ((_readChunkID filename) == 'fmt ') {
-        size = (_readChunkSize filename)
-        local 'data' ('[file:readBytes]' size filename)
-        local 'sampleRate' ((at 5 data) | ((at 6 data) << 8))
-        if ((_readChunkID filename) == 'data') {
-          size = (_readChunkSize filename)
-          '[io:dacInit]' 26 sampleRate
-          data = ('[file:readBytes]' 1024 filename)
-          repeatUntil ((size data) == 0) {
-            _playSoundBuffer data
-            data = ('[file:readBytes]' 1024 filename)
-          }
-        }
-      }
-    }
-  }
-  '[file:close]' filename
-}
-
-to _readChunkID filename {
+to '_readChunkID' filename {
   local 'result' ''
   local 'data' ('[file:readBytes]' 4 filename)
   for i (size data) {
@@ -54,10 +31,38 @@ to _readChunkID filename {
   return result
 }
 
-to _readChunkSize filename {
+to '_readChunkSize' filename {
   comment 'to do:  files larger than 65535'
   local 'result' 0
   local 'data' ('[file:readBytes]' 4 filename)
   return ((at 1 data) | ((at 2 data) << 8))
+}
+
+to playWAVFile filename {
+  local 'pin' 25
+  if ((boardType) == 'Citilab ED1') {
+    pin = 26
+  }
+  '[file:open]' filename
+  if (('_readChunkID' filename) == 'RIFF') {
+    local 'size' ('_readChunkSize' filename)
+    if (('_readChunkID' filename) == 'WAVE') {
+      if (('_readChunkID' filename) == 'fmt ') {
+        size = ('_readChunkSize' filename)
+        local 'data' ('[file:readBytes]' size filename)
+        local 'sampleRate' ((at 5 data) | ((at 6 data) << 8))
+        if (('_readChunkID' filename) == 'data') {
+          size = ('_readChunkSize' filename)
+          '[io:dacInit]' pin sampleRate
+          data = ('[file:readBytes]' 1024 filename)
+          repeatUntil ((size data) == 0) {
+            '_playSoundBuffer' data
+            data = ('[file:readBytes]' 1024 filename)
+          }
+        }
+      }
+    }
+  }
+  '[file:close]' filename
 }
 
