@@ -1,14 +1,15 @@
 module BMP Output
 author 'José García Yeste'
-version 1 0
-depends TFT
+version 1 1 
+depends TFT 
 description 'Display BMP files on a TFT screen.
 
 Files can be uploaded to the board using a variety of tools, including esptool, the Arduino IDE or PlatformIO. Search the web for "SPIFFS file upload" for details.
 
 If you want to stay 100% inside MicroBlocks, you can even set up a web server in MicroBlocks itself and, for example, send the file to the board with a multipart POST request.
 
-Note: This library works with 24 bpp and 32 bpp BMP files, but does not yet support 16 bpp files.'
+This library works with 16, 24 and 32 bpp BMP files
+'
 
 	spec ' ' 'drawBMPfile' 'display BMP file _' 'auto' ''
 	spec 'r' '_checkBMP' '_check BMP signature of file _' 'auto' ''
@@ -18,7 +19,7 @@ Note: This library works with 24 bpp and 32 bpp BMP files, but does not yet supp
 	spec 'r' '_read int16 of BMP file' '_read int16 of file _' 'auto' ''
 	spec 'r' '_read int32 of BMP file' '_read int32 of file _' 'auto' ''
 
-to _checkBMP filename {
+to '_checkBMP' filename {
   local 'signature' ''
   local 'data' ('[file:readBytes]' 2 filename)
   for i (size data) {
@@ -28,33 +29,17 @@ to _checkBMP filename {
 }
 
 to '_drawBMP from' filename width height bpp {
-  local 'y' height
-  repeatUntil (y == 0) {
-    local 'line' (_readLineBMP filename width bpp)
+  local 'y' (height - 1)
+  repeatUntil (y < 0) {
+    local 'line' ('_readLineBMP' filename width bpp)
     for x (size line) {
-      '[tft:setPixel]' x y (at x line)
+      '[tft:setPixel]' (x - 1) y (at x line)
     }
     y += -1
   }
 }
 
-to drawBMPfile filename {
-  '[file:open]' filename
-  if (_checkBMP filename) {
-    _ignoreBMP 8 filename
-    local 'start' ('_read int32 of BMP file' filename)
-    _ignoreBMP 4 filename
-    local 'width' ('_read int32 of BMP file' filename)
-    local 'height' ('_read int32 of BMP file' filename)
-    _ignoreBMP 2 filename
-    local 'bpp' ('_read int16 of BMP file' filename)
-    _ignoreBMP (start - 22) filename
-    '_drawBMP from' filename width height bpp
-  }
-  '[file:close]' filename
-}
-
-to _ignoreBMP bytes filename {
+to '_ignoreBMP' bytes filename {
   local 'buf' 0
   repeatUntil (bytes == 0) {
     if (bytes > 800) {
@@ -78,22 +63,38 @@ to '_read int32 of BMP file' filename {
   return ((((at 4 data) << 24) | ((at 3 data) << 16)) | (((at 2 data) << 8) | (at 1 data)))
 }
 
-to _readLineBMP filename width bpp {
+to '_readLineBMP' filename width bpp {
   local 'result' ('[data:makeList]')
   local 'i' 1
   local 'data' ('[file:readBytes]' (width * (bpp / 8)) filename)
   repeatUntil (i >= (size data)) {
     if (bpp == 16) {
-      '[data:addLast]' (makeColor ((at (i + 1) data) >> 3) ((((at (i + 1) data) & 7) >> 1) | (((at (i + 0) data) >> 6) << 3)) ((at (i + 0) data) & 31)) result
+      '[data:addLast]' (((((at (i + 1) data) >> 3) << 16) | (((((at (i + 1) data) & 7) << 2) | ((at i data) >> 6)) << 8)) | ((at i data) & 31)) result
     } else {
-      '[data:addLast]' (((((at (i + 0) data) >> 3) << 16) | (((at (i + 2) data) >> 3) << 8)) | ((at (i + 1) data) >> 3)) result
+      '[data:addLast]' (((((at (i + 2) data) >> 3) << 16) | (((at (i + 1) data) >> 3) << 8)) | ((at (i + 0) data) >> 3)) result
     }
     i += (bpp / 8)
   }
   local 'mod4' ((size data) % 4)
   if (mod4 != 0) {
-    _ignoreBMP (4 - mod4) filename
+    '_ignoreBMP' (4 - mod4) filename
   }
   return result
+}
+
+to drawBMPfile filename {
+  '[file:open]' filename
+  if ('_checkBMP' filename) {
+    '_ignoreBMP' 8 filename
+    local 'start' ('_read int32 of BMP file' filename)
+    '_ignoreBMP' 4 filename
+    local 'width' ('_read int32 of BMP file' filename)
+    local 'height' ('_read int32 of BMP file' filename)
+    '_ignoreBMP' 2 filename
+    local 'bpp' ('_read int16 of BMP file' filename)
+    '_ignoreBMP' (start - 30) filename
+    '_drawBMP from' filename width height bpp
+  }
+  '[file:close]' filename
 }
 
