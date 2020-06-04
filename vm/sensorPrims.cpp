@@ -37,9 +37,11 @@ static int readI2CReg(int deviceID, int reg) {
 	#endif
 	if (error) return -error; // error; bad device ID?
 
+	noInterrupts();
 	Wire.requestFrom(deviceID, 1);
-	while (!Wire.available());
-	return Wire.read();
+	interrupts();
+
+	return Wire.available() ? Wire.read() : 0;
 }
 
 static void writeI2CReg(int deviceID, int reg, int value) {
