@@ -37,9 +37,13 @@ static int readI2CReg(int deviceID, int reg) {
 	#endif
 	if (error) return -error; // error; bad device ID?
 
-	noInterrupts();
-	Wire.requestFrom(deviceID, 1);
-	interrupts();
+	#if defined(NRF51)
+		noInterrupts();
+		Wire.requestFrom(deviceID, 1);
+		interrupts();
+	#else
+		Wire.requestFrom(deviceID, 1);
+	#endif
 
 	return Wire.available() ? Wire.read() : 0;
 }
@@ -91,7 +95,14 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	if (count > 32) count = 32; // the Arduino Wire library limits reads to a max of 32 bytes
 
 	if (!wireStarted) startWire();
-	Wire.requestFrom(deviceID, count);
+	#if defined(NRF51)
+		noInterrupts();
+		Wire.requestFrom(deviceID, count);
+		interrupts();
+	#else
+		Wire.requestFrom(deviceID, count);
+	#endif
+
 	for (int i = 0; i < count; i++) {
 		if (!Wire.available()) return int2obj(i); /* no more data */;
 		int byte = Wire.read();
@@ -152,6 +163,10 @@ OBJ primSPIRecv(OBJ *args) {
 	return int2obj(result);
 }
 
+// Accelerometer and Temperature
+
+int accelStarted = false;
+
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT)
 
 typedef enum {
@@ -168,7 +183,7 @@ static AccelerometerType_t accelType = accel_unknown;
 #define LSM303_ID 25
 #define FXOS8700_ID 30
 
-static void detectAccelerometer() {
+static void startAccelerometer() {
 	if (0x5A == readI2CReg(MMA8653_ID, 0x0D)) {
 		accelType = accel_MMA8653;
 		writeI2CReg(MMA8653_ID, 0x2A, 1);
@@ -182,10 +197,11 @@ static void detectAccelerometer() {
 	} else {
 		accelType = accel_none;
 	}
+	accelStarted = true;
 }
 
 static int readAcceleration(int registerID) {
-	if (accel_unknown == accelType) detectAccelerometer();
+	if (!accelStarted) startAccelerometer();
 	int sign = -1;
 	int val = 0;
 	switch (accelType) {
@@ -222,11 +238,13 @@ static int readTemperature() {
 
 #elif defined(ARDUINO_CALLIOPE_MINI)
 
+#define BMX055 24
+
 static int readAcceleration(int registerID) {
 	int val = 0;
-	if (1 == registerID) val = readI2CReg(ACCEL_ID, 5); // x-axis
-	if (3 == registerID) val = readI2CReg(ACCEL_ID, 3); // y-axis
-	if (5 == registerID) val = readI2CReg(ACCEL_ID, 7); // z-axis
+	if (1 == registerID) val = readI2CReg(BMX055, 5); // x-axis
+	if (3 == registerID) val = readI2CReg(BMX055, 3); // y-axis
+	if (5 == registerID) val = readI2CReg(BMX055, 7); // z-axis
 
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
@@ -237,7 +255,7 @@ static int readAcceleration(int registerID) {
 
 static int readTemperature() {
 	int fudgeFactor = 2;
-	return (readI2CReg(ACCEL_ID, 8) / 2) + 23 - fudgeFactor;
+	return (readI2CReg(BMX055, 8) / 2) + 23 - fudgeFactor;
 }
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
@@ -248,11 +266,11 @@ static int readTemperature() {
 
 #define LIS3DH_ID 25
 
-static int accelStarted = false;
-
 static int readAcceleration(int registerID) {
 	if (!accelStarted) {
 		Wire1.begin(); // use internal I2C bus
+		Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
+
 		// turn on the accelerometer
 		Wire1.beginTransmission(LIS3DH_ID);
 		Wire1.write(0x20);
@@ -333,14 +351,15 @@ static void writeAccelReg(int regID, int value) {
 	Wire1.endTransmission();
 }
 
-static char accelStarted = false;
 static char is6886 = false;
 
 static void startAccelerometer() {
 	#ifdef ARDUINO_M5Atom_Matrix_ESP32
 		Wire1.begin(25, 21);
+		Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 	#else
 		Wire1.begin(); // use internal I2C bus with default pins
+		Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 	#endif
 
 	writeAccelReg(MPU6886_PWR_MGMT_1, 0x80); // reset (must be done by itself)
@@ -398,8 +417,6 @@ static int readTemperature() {
 
 #define LIS3DH_ID 25
 
-static int accelStarted = false;
-
 static int readAcceleration(int registerID) {
 	if (!accelStarted) {
 		writeI2CReg(LIS3DH_ID, 0x20, 0x7F); // turn on accelerometer, 400 Hz update, 8-bit
@@ -438,10 +455,100 @@ static int readTemperature() { return 0; }
 
 #endif // micro:bit primitve support
 
+static void i2cReadBytes(int deviceID, int reg, int *buf, int bufSize) {
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
+		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+		defined(ARDUINO_M5Stack_Core_ESP32) || \
+		defined(ARDUINO_M5Stick_C) || \
+		defined(ARDUINO_M5Atom_Matrix_ESP32)
+
+		// Use Wire1, the internal i2c bus
+		Wire1.beginTransmission(deviceID);
+		Wire1.write(reg);
+		int error = Wire1.endTransmission();
+		if (error) return;
+		Wire1.requestFrom(deviceID, bufSize);
+		for (int i = 0; i < bufSize; i++) {
+			buf[i] = Wire1.available() ? Wire1.read() : 0;
+		}
+	#else
+		// Use Wire, the primary/external i2c bus
+		Wire.beginTransmission(deviceID);
+		Wire.write(reg);
+		int error = Wire.endTransmission((bool) false);
+		if (error) return;
+
+		#if defined(NRF51)
+			noInterrupts();
+			Wire.requestFrom(deviceID, bufSize);
+			interrupts();
+		#else
+			Wire.requestFrom(deviceID, bufSize);
+		#endif
+
+		for (int i = 0; i < bufSize; i++) {
+			buf[i] = Wire.available() ? Wire.read() : 0;
+		}
+	#endif
+}
+
 OBJ primAcceleration(int argCount, OBJ *args) {
-	int x = readAcceleration(1);
-	int y = readAcceleration(3);
-	int z = readAcceleration(5);
+	// Return the magnitude of the acceleration vector, regardless of device orientation.
+
+	int deviceID = -1, reg;
+
+	if (!accelStarted) readAcceleration(1); // initialize the accelerometer
+
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT)
+		if (accel_unknown == accelType) startAccelerometer();
+		switch (accelType) {
+		case accel_MMA8653:
+			deviceID = MMA8653_ID;
+			reg = 1;
+			break;
+		case accel_LSM303:
+			deviceID = LSM303_ID;
+			reg = 0x29 | 0x80; // address + auto-increment flag
+			break;
+		case accel_FXOS8700:
+			deviceID = FXOS8700_ID;
+			reg = 1;
+			break;
+		default:
+			break;
+		}
+	#elif defined(ARDUINO_CALLIOPE_MINI)
+		deviceID = BMX055;
+		reg = 3;
+	#elif defined(ARDUINO_CITILAB_ED1)
+		deviceID = LIS3DH_ID;
+		reg = 0x29 | 0x80; // address + auto-increment flag
+	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+		deviceID = LIS3DH_ID;
+		reg = 0x29 | 0x80; // address + auto-increment flag
+	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+		deviceID = MPU6886_ID;
+		reg = 0x3B;
+	#endif
+
+	int x, y, z;
+	if (deviceID < 0) { // read x, y, and z as independent calls
+		x = readAcceleration(1);
+		y = readAcceleration(3);
+		z = readAcceleration(5);
+	} else { // use bulk read using the primary i2c bus (Wire)
+		const int bufSize = 5;
+		int buf[bufSize] = {0, 0, 0, 0, 0};
+		i2cReadBytes(deviceID, reg, buf, bufSize);
+		// convert to signed values in range -128 to 127
+		x = buf[0] > 127 ? buf[0] - 256 : buf[0];
+		y = buf[2] > 127 ? buf[2] - 256 : buf[2];
+		z = buf[4] > 127 ? buf[4] - 256 : buf[4];
+		// scale to range -100 to 100
+		x = ((x * 100) >> 7);
+		y = ((y * 100) >> 7);
+		z = ((z * 100) >> 7);
+	}
 	int accel = (int) sqrt((x * x) + (y * y) + (z * z));
 	return int2obj(accel);
 }
