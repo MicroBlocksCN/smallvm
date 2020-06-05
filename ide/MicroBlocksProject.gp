@@ -636,6 +636,20 @@ method needsQuotes MicroBlocksModule s {
 method loadFromCmds MicroBlocksModule cmdList versionChecking {
 	loadModuleNameAndCategory this cmdList
 	loadVersion this cmdList
+	if versionChecking {
+		newerVersion = (lookForNewerVersion this)
+		if (and
+			(notNil newerVersion)
+			(confirm (global 'page') nil
+				(join 'Found a newer version of ' moduleName (newline)
+					'Do you want me to update the one in the project?'))
+		){
+			// Resolve mismatches and update project blockSpecs
+			updateSpecs this cmdList newerVersion
+			importDependencies newerVersion (scripter (smallRuntime))
+			return newerVersion
+		}
+	}
 	loadAuthor this cmdList
 	loadDependencies this cmdList
 	loadTags this cmdList
@@ -645,19 +659,6 @@ method loadFromCmds MicroBlocksModule cmdList versionChecking {
 	loadSpecs this cmdList
 	loadFunctions this cmdList
 	loadScripts this cmdList
-	if versionChecking {
-		newerVersion = (lookForNewerVersion this)
-		if (and
-			(notNil newerVersion)
-			(confirm (global 'page') nil
-				(join 'Found a newer version of ' moduleName (newline)
-					'Do you want me to update the one in the project?'))
-		){
-			resolveMismatches this newerVersion
-			importDependencies newerVersion (scripter (smallRuntime))
-			return newerVersion
-		}
-	}
 	return this
 }
 
@@ -707,20 +708,23 @@ method lookForNewerVersion MicroBlocksModule {
 	return nil
 }
 
-method resolveMismatches MicroBlocksModule newerModule {
-	for oldSpec (values (blockSpecs this)) {
+method updateSpecs MicroBlocksModule cmdList newerModule {
+	oldSpecs = (blockSpecs (project (findProjectEditor)))
+	for oldSpec (values oldSpecs) {
 		oldOp = (blockOp oldSpec)
 		match = false
 		for newSpec (values (blockSpecs newerModule)) {
 			if ((blockOp newSpec) == oldOp) {
 				match = true
+				// Update old spec
+				atPut oldSpecs oldOp newSpec
 			}
 		}
 		if (not match) {
 			// mark function as obsolete and append to module
 			obsoleteOp = (join 'obsolete ' (first (specs oldSpec)))
 			setField oldSpec 'specs' (array obsoleteOp)
-			atPut (blockSpecs (project (findProjectEditor))) obsoleteOp oldSpec
+			atPut oldSpecs obsoleteOp oldSpec
 			add (blockList newerModule) obsoleteOp
 		}
 	}
