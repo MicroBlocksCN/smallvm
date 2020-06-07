@@ -4,7 +4,7 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// SmallCompiler.gp - A blocks compiler for SmallVM
+// MicroBlocksRuntime.gp - Runtime support for MicroBlocks
 // John Maloney, April, 2017
 
 to smallRuntime aScripter {
@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcTable
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher
 
 method scripter SmallRuntime { return scripter }
 
@@ -653,13 +653,13 @@ method clearBoardIfConnected SmallRuntime doReset {
 		sendMsgSync this 'deleteAllCodeMsg' // delete all code from board
 		waitMSecs 300 // this can be slow; give the board a chance to process it
 	}
-	allStopped this
+	clearRunningHighlights this
 	chunkIDs = (dictionary)
 }
 
 method sendStopAll SmallRuntime {
 	sendMsg this 'stopAllMsg'
-	allStopped this
+	clearRunningHighlights this
 }
 
 method sendStartAll SmallRuntime {
@@ -685,8 +685,24 @@ method saveAllChunks SmallRuntime {
 	}
 }
 
+method crcForChunk SmallRuntime aBlockOrFunctionName {
+	// Return the CRC for the compiled code for the given script or function name.
+
+	if (isClass aBlockOrFunctionName 'String') { // function name
+		code = (functionNamed (project scripter) aBlockOrFunctionName)
+	} else { // top block of a script
+		code = aBlockOrFunctionName
+	}
+	crc = (crc (toBinaryData (toArray (chunkBytesFor this code))))
+
+	// convert crc to a 4-byte array
+	result = (newArray 4)
+	for i 4 { atPut result i (digitAt crc i) }
+	return result
+}
+
 method saveChunk SmallRuntime aBlockOrFunction {
-	// Save the script starting with the given block or function as an executable code "chunk".
+	// Save the given script or function as an executable code "chunk".
 	// Also save the source code (in GP format) and the script position.
 
 	if (isClass aBlockOrFunction 'Function') {
@@ -1037,33 +1053,34 @@ method skipMessage SmallRuntime {
 	recvBuf = (newBinaryData 0) // no message start found; discard entire buffer
 }
 
-method buildCRCTable SmallRuntime {
-	coefficients = (largeInteger (hex 'ed') (hex 'b8') (hex '83') (hex '20'))
-	crcTable = (newArray 256)
-	for i 256 {
-		rem = (largeInteger (i - 1))
-		repeat 8 {
-			if ((rem & 1) != 0) { // rem is odd
-				rem = (rem >> 1)
-				rem = ((toLargeInteger rem) ^ coefficients)
-			} else { // rem is even
-				rem = (rem >> 1)
-			}
-		}
-		atPut crcTable i (toLargeInteger rem)
+method getCRCs SmallRuntime {
+	// Testing. Get the CRC for all chunks. Board will only respond for chunks in use.
+
+	for entry (values chunkIDs) {
+		sendMsg this 'getChunkCRCMsg' (first entry)
 	}
 }
 
-method crc SmallRuntime data {
-	// Compute the CRC-32 of the given data, assumed to be a String or BinaryData.
+method crcForChunkID SmallRuntime chunkID {
+	// Testing. Get the CRC for all chunks. Board will only respond for chunks in use.
 
-	if (isNil crcTable) { buildCRCTable this }
-	crc = (largeInteger 255 255 255 255)
-	if (isClass data 'String') { data = (toBinaryData data) }
-	for byte (toArray data) {
-		crc = (((toLargeInteger (crc >> 8)) ^ (at crcTable ((crc & 255) + 1))) ^ byte)
+	for pair (sortedPairs chunkIDs) {
+		entry = (first pair)
+		if ((first entry) == chunkID) {
+			return (crcForChunk this (last pair))
+		}
 	}
-	return ((largeInteger 255 255 255 255) ^ crc)
+	return 'chunk not found'
+}
+
+method gotCRC SmallRuntime chunkID chunkCRC {
+	if (chunkID == 1) {
+		print ((msecsSinceStart) - (global 'start')) 'msecs'
+	}
+
+	status = 'ok'
+	if (chunkCRC != (crcForChunkID this chunkID)) { status = 'BAD CRC!' }
+	print chunkID status
 }
 
 method handleMessage SmallRuntime msg {
@@ -1094,13 +1111,13 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'versionMsg')) {
 		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'chunkCRCMsg')) {
-//		print 'chunkCRCMsg:' (byteAt msg 3) (copyFromTo (toArray msg) 6)
+		gotCRC this (byteAt msg 3) (copyFromTo (toArray msg) 6)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
 		broadcastReceived (thingServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
-		print 'chunkCodeMsg:' (byteCount msg) 'bytes'
+		print 'chunkCodeMsg:' (byteCount msg) 'bytes' (toArray (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {
 		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'varNameMsg')) {
@@ -1124,7 +1141,7 @@ method isRunning SmallRuntime aBlock {
 	return (at chunkRunning (chunkID + 1))
 }
 
-method allStopped SmallRuntime {
+method clearRunningHighlights SmallRuntime {
 	chunkRunning = (newArray 256 false) // clear all running flags
 	updateHighlights this
 }
