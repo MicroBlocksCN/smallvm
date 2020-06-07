@@ -706,18 +706,18 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	// Also save the source code (in GP format) and the script position.
 
 	if (isClass aBlockOrFunction 'Function') {
-		chunkID = (lookupChunkID this (functionName aBlockOrFunction))
-		entry = (at chunkIDs (functionName aBlockOrFunction))
-		newCode = (cmdList aBlockOrFunction)
+		functionName = (functionName aBlockOrFunction)
+		chunkID = (lookupChunkID this functionName)
+		entry = (at chunkIDs functionName)
+		newCRC = (crcForChunk this functionName)
 	} else {
 		chunkID = (ensureChunkIdFor this aBlockOrFunction)
 		entry = (at chunkIDs aBlockOrFunction)
-		newCode = (expression aBlockOrFunction)
+		newCRC = (crcForChunk this aBlockOrFunction)
 	}
 
-	if (newCode == (at entry 2)) { return } // code hasn't changed
-	if (notNil newCode) { newCode = (copy newCode) }
-	atPut entry 2 newCode // remember the code we're about to save
+	if (newCRC == (at entry 2)) { return } // code hasn't changed
+	atPut entry 2 newCRC // remember the CRC of the code we're about to save
 
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
