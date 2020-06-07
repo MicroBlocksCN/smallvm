@@ -441,6 +441,8 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 		if (isNil cmdOrReporter) { // a function hat without any blocks
 			cmdOrReporter = (newCommand 'noop')
 		}
+	} (or (isClass aBlockOrFunction 'Command') (isClass aBlockOrFunction 'Reporter')) {
+		cmdOrReporter = aBlockOrFunction
 	} else {
 		cmdOrReporter = (expression aBlockOrFunction)
 	}

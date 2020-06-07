@@ -701,17 +701,17 @@ uint32_t crc32(uint8_t *buf, int byteCount) {
 }
 
 void sendChunkCRC(int chunkID) {
-	// Send the 4-byte CRC-32 for the given chunk.
+	// Send the 4-byte CRC-32 for the given chunk. Do nothing if the chunk is not in use.
 
-	uint32_t crc = 0;
+	if ((chunkID < 0) || (chunkID >= MAX_CHUNKS)) return;
 	OBJ code = chunks[chunkID].code;
 	if (code) {
 		int wordCount = *(code + 1); // size is the second word in the persistent store record
 		uint8_t *chunkData = (uint8_t *) (code + PERSISTENT_HEADER_WORDS);
-		crc = crc32(chunkData, (4 * wordCount));
+		uint32_t crc = crc32(chunkData, (4 * wordCount));
+		waitForOutbufBytes(9);
+		sendMessage(chunkCRCMsg, chunkID, 4, (char *) &crc);
 	}
-	waitForOutbufBytes(9);
-	sendMessage(chunkCRCMsg, chunkID, 4, (char *) &crc);
 }
 
 // Retrieving source code and attributes
