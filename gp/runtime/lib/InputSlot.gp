@@ -16,6 +16,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
   	fontName = 'Verdana'
   	fontSize = 12
   }
+  if ('Linux' == (platform)) { fontSize = 9 }
   scale = (global 'scale')
   morph = (newMorph this)
   text = (newText (toString default) fontName (scale * fontSize))
@@ -91,8 +92,10 @@ method setContents InputSlot data {
 method fixLayout InputSlot {
   h = (height (morph text))
   w = (width (morph text))
+  if ('Linux' == (platform)) { h = (h + scale) }
   if (notNil menuSelector) {w += (fontSize text)} // leave room for down-arrow
   setPosition (morph text) (left morph) (top morph)
+  if ('Linux' == (platform)) { setPosition (morph text) (left morph) ((top morph) + scale) }
   setExtent morph w h
   raise morph 'layoutChanged' this
 }
