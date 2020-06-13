@@ -675,7 +675,7 @@ method pasteScripts MicroBlocksScripter scriptString {
     x = (x hand)
     y = ((y hand) - (40 * scale)) // adjust for menu offset
     for entry scripts {
-      if ('script' == (primName entry)) {
+      if (and ('script' == (primName entry)) (notNil (last (argList entry)))) {
 		script = (last (argList entry))
 		if ('to' == (primName script)) {
 		  cmd = (copyFunction this script nil)
