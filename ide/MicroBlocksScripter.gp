@@ -164,6 +164,7 @@ method handleListContextRequest MicroBlocksScripter anArray {
 
 method removeLibraryNamed MicroBlocksScripter libName {
   removeLibraryNamed mbProject libName
+  variablesChanged (smallRuntime)
   updateLibraryList this
 }
 
@@ -492,7 +493,7 @@ method createVariable MicroBlocksScripter {
   varName = (prompt (global 'page') 'New variable name?' '')
   if (varName != '') {
 	addVariable (main mbProject) (uniqueVarName this varName)
-	saveVariableNames (smallRuntime)
+	variablesChanged (smallRuntime)
 	updateBlocks this
   }
 }
@@ -527,7 +528,7 @@ method deleteVariableMenu MicroBlocksScripter {
 
 method deleteVariable MicroBlocksScripter varName {
   deleteVariable (main mbProject) varName
-  clearVariableNames (smallRuntime)
+  variablesChanged (smallRuntime)
   updateBlocks this
 }
 
@@ -1075,6 +1076,8 @@ method importLibraryFromUrl MicroBlocksScripter fullUrl {
 
 method importLibraryFromString MicroBlocksScripter data libName fileName {
 	addLibraryFromString mbProject (toString data) libName fileName
+	variablesChanged (smallRuntime)
+
 	// update library list and select the new library
 	updateLibraryList this
 	select (contents categoriesFrame) nil

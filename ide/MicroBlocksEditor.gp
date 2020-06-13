@@ -260,7 +260,7 @@ method openProject MicroBlocksEditor projectData projectName {
   }
   updateLibraryList scripter
   developerModeChanged scripter
-  stopAndSyncScripts (smallRuntime)
+  saveAllChunks (smallRuntime)
 }
 
 method saveProjectToFile MicroBlocksEditor {

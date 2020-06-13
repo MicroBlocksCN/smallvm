@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict crcRcvMSecs
 
 method scripter SmallRuntime { return scripter }
 
@@ -66,6 +66,10 @@ method chunkTypeFor SmallRuntime aBlockOrFunction {
 }
 
 method chunkBytesFor SmallRuntime aBlockOrFunction {
+	if (isClass aBlockOrFunction 'String') { // look up function by name
+		aBlockOrFunction = (functionNamed (project scripter) aBlockOrFunction)
+		if (isNil aBlockOrFunction) { return (list) } // unknown function
+	}
 	compiler = (initialize (new 'SmallCompiler'))
 	code = (instructionsFor compiler aBlockOrFunction)
 	bytes = (list)
@@ -183,7 +187,6 @@ method removeObsoleteChunks SmallRuntime {
 	// a script so they are no longer a stand-alone chunk.
 
 	for k (keys chunkIDs) {
-		entry = (at chunkIDs k)
 		if (isClass k 'Block') {
 			owner = (owner (morph k))
 			isObsolete = (or
@@ -191,7 +194,6 @@ method removeObsoleteChunks SmallRuntime {
 				(isNil (handler owner))
 				(not (isAnyClass (handler owner) 'Hand' 'ScriptEditor' 'BlocksPalette')))
 			if isObsolete {
-				id = (first entry)
 				deleteChunkForBlock this k
 			}
 		}
@@ -219,7 +221,7 @@ method ensureChunkIdFor SmallRuntime aBlock {
 	entry = (at chunkIDs aBlock nil)
 	if (isNil entry) {
 		id = (unusedChunkID this)
-		entry = (array id aBlock) // block -> <id> <last expression>
+		entry = (array id nil) // block -> (<id>, <crc>)
 		atPut chunkIDs aBlock entry
 	}
 	return (first entry)
@@ -232,7 +234,7 @@ method assignFunctionIDs SmallRuntime {
 	for func (allFunctions (project scripter)) {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
-			atPut chunkIDs fName (array (unusedChunkID this) 'New Function!') // forces function save
+			atPut chunkIDs fName (array (unusedChunkID this) nil) // fName -> (<id>, <crc>)
 		}
 	}
 }
@@ -685,22 +687,6 @@ method saveAllChunks SmallRuntime {
 	}
 }
 
-method crcForChunk SmallRuntime aBlockOrFunctionName {
-	// Return the CRC for the compiled code for the given script or function name.
-
-	if (isClass aBlockOrFunctionName 'String') { // function name
-		code = (functionNamed (project scripter) aBlockOrFunctionName)
-	} else { // top block of a script
-		code = aBlockOrFunctionName
-	}
-	crc = (crc (toBinaryData (toArray (chunkBytesFor this code))))
-
-	// convert crc to a 4-byte array
-	result = (newArray 4)
-	for i 4 { atPut result i (digitAt crc i) }
-	return result
-}
-
 method saveChunk SmallRuntime aBlockOrFunction {
 	// Save the given script or function as an executable code "chunk".
 	// Also save the source code (in GP format) and the script position.
@@ -741,14 +727,75 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	}
 }
 
+method crcForChunk SmallRuntime aBlockOrFunctionName {
+	// Return the CRC for the compiled code for the given script or function name.
+
+	crc = (crc (toBinaryData (toArray (chunkBytesFor this aBlockOrFunctionName))))
+
+	// convert crc to a 4-byte array
+	result = (newArray 4)
+	for i 4 { atPut result i (digitAt crc i) }
+	return result
+}
+
+method verifyCRCs SmallRuntime {
+	// Check that the CRCs of the chunks on the board match the ones in the IDE.
+	// Resend the code of any chunks whose CRC's do not match and delete obsolete chunks.
+
+	// collect CRCs from the board
+	crcDict = (dictionary)
+	for entry (values chunkIDs) {
+		sendMsg this 'getChunkCRCMsg' (first entry)
+	}
+	timeout = 50
+	crcRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - crcRcvMSecs) < timeout) {
+		processMessages this
+	}
+print 'got' (count crcDict) 'CRCs'
+
+	// build a dictionary mapping chunkID -> block or functionName
+	ideChunks = (dictionary)
+	for pair (sortedPairs chunkIDs) {
+		id = (first (first pair))
+		atPut ideChunks id (last pair)
+	}
+
+	// process CRCs
+	for chunkID (range 0 255) {
+		if (contains ideChunks chunkID) {
+			sourceItem = (at ideChunks chunkID)
+			if ((at crcDict chunkID) == (crcForChunk this sourceItem)) {
+				print chunkID 'ok'
+			} else {
+				print chunkID 'BAD!'
+				saveChunk this sourceItem
+			}
+		} else {
+			sendMsg this 'deleteChunkMsg' chunkID
+		}
+	}
+
+	// xxx to do: sync variable names
+	print 'done!'
+}
+
+method crcReceived SmallRuntime chunkID chunkCRC {
+	// Record the CRC for the given chunkID as reported by the board.
+
+	crcRcvMSecs = (msecsSinceStart)
+	atPut crcDict chunkID chunkCRC
+}
+
 method saveVariableNames SmallRuntime {
 	newVarNames = (allVariableNames (project scripter))
 	if (oldVarNames == newVarNames) { return }
 
+	clearVariableNames this
 	varID = 0
 	for varName newVarNames {
 		if (notNil port) {
-			sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
+			sendMsg this 'varNameMsg' varID (toArray (toBinaryData varName))
 		}
 		varID += 1
 	}
@@ -799,11 +846,16 @@ method setVar SmallRuntime varID val {
 	if (notNil body) { sendMsg this 'setVarMsg' varID body }
 }
 
+method variablesChanged SmallRuntime {
+	// Called by scripter when variables are added or removed.
+	sendStopAll this
+	clearVariableNames this
+	saveAllChunks this
+}
+
 method clearVariableNames SmallRuntime {
+	if (notNil port) { sendMsgSync this 'clearVarsMsg' }
 	oldVarNames = nil
-	if (notNil port) {
-		sendMsgSync this 'clearVarsMsg'
-	}
 }
 
 method getAllVarNames SmallRuntime {
@@ -1053,35 +1105,7 @@ method skipMessage SmallRuntime {
 	recvBuf = (newBinaryData 0) // no message start found; discard entire buffer
 }
 
-method getCRCs SmallRuntime {
-	// Testing. Get the CRC for all chunks. Board will only respond for chunks in use.
-
-	for entry (values chunkIDs) {
-		sendMsg this 'getChunkCRCMsg' (first entry)
-	}
-}
-
-method crcForChunkID SmallRuntime chunkID {
-	// Testing. Get the CRC for all chunks. Board will only respond for chunks in use.
-
-	for pair (sortedPairs chunkIDs) {
-		entry = (first pair)
-		if ((first entry) == chunkID) {
-			return (crcForChunk this (last pair))
-		}
-	}
-	return 'chunk not found'
-}
-
-method gotCRC SmallRuntime chunkID chunkCRC {
-	if (chunkID == 1) {
-		print ((msecsSinceStart) - (global 'start')) 'msecs'
-	}
-
-	status = 'ok'
-	if (chunkCRC != (crcForChunkID this chunkID)) { status = 'BAD CRC!' }
-	print chunkID status
-}
+// Message handling
 
 method handleMessage SmallRuntime msg {
 	op = (byteAt msg 2)
@@ -1111,7 +1135,7 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'versionMsg')) {
 		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'chunkCRCMsg')) {
-		gotCRC this (byteAt msg 3) (copyFromTo (toArray msg) 6)
+		crcReceived this (byteAt msg 3) (copyFromTo (toArray msg) 6)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
