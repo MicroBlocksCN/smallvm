@@ -222,7 +222,7 @@ static int readAcceleration(int registerID) {
 	}
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
-	val = sign * ((val * 100) / 127); // scale to range 0-100 and multiply by sign
+	val = sign * ((val * 200) / 127); // scale to range 0-200 and multiply by sign
 	return val;
 }
 
@@ -248,7 +248,7 @@ static int readAcceleration(int registerID) {
 
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
-	val = -((val * 100) / 127); // invert sign and scale to range 0-100
+	val = -((val * 200) / 127); // invert sign and scale to range 0-200
 	if (5 == registerID) val = -val; // invert z-axis
 	return val;
 }
@@ -289,7 +289,7 @@ static int readAcceleration(int registerID) {
 
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
-	val = ((val * 100) / 127); // scale to range 0-100
+	val = ((val * 200) / 127); // scale to range 0-200
 	if (1 == registerID) val = -val; // invert sign for x axis
 	return val;
 }
@@ -394,7 +394,7 @@ static int readAcceleration(int registerID) {
 
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
-	val = ((val * 100) / 127); // scale to range 0-100
+	val = ((val * 200) / 127); // scale to range 0-200
 	return sign * val;
 }
 
@@ -426,7 +426,7 @@ static int readAcceleration(int registerID) {
 	int val = readI2CReg(LIS3DH_ID, 0x28 + registerID);
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
-	val = ((val * 100) / 127); // scale to range 0-100
+	val = ((val * 200) / 127); // scale to range 0-200
 	val = -val; // invert sign for all axes
 	return val;
 }
@@ -544,10 +544,9 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 		x = buf[0] > 127 ? buf[0] - 256 : buf[0];
 		y = buf[2] > 127 ? buf[2] - 256 : buf[2];
 		z = buf[4] > 127 ? buf[4] - 256 : buf[4];
-		// scale to range -100 to 100
-		x = ((x * 100) >> 7);
-		y = ((y * 100) >> 7);
-		z = ((z * 100) >> 7);
+		x = ((x * 200) >> 7);
+		y = ((y * 200) >> 7);
+		z = ((z * 200) >> 7);
 	}
 	int accel = (int) sqrt((x * x) + (y * y) + (z * z));
 	return int2obj(accel);
