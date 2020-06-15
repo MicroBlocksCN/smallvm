@@ -258,7 +258,7 @@ method deleteChunkForBlock SmallRuntime aBlock {
 }
 
 method stopAndSyncScripts SmallRuntime {
-	// Stop everything and verify scripts with the board using CRC's.
+	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
 
 	if (notNil port) {
 		sendStopAll this
@@ -442,7 +442,7 @@ method tryToInstallVM SmallRuntime {
 
 method updateConnection SmallRuntime {
 	pingSendInterval = 2000 // msecs between pings
-	pingTimeout = 3000
+	pingTimeout = 5000
 	if (isNil pingSentMSecs) { pingSentMSecs = 0 }
 	if (isNil lastPingRecvMSecs) { lastPingRecvMSecs = 0 }
 	if (isNil disconnected) { disconnected = false }
@@ -678,6 +678,8 @@ method sendStartAll SmallRuntime {
 	saveAllChunks this
 	sendMsg this 'startAllMsg'
 }
+
+// Saving and verifying
 
 method saveAllChunks SmallRuntime {
 	// Save the code for all scripts and user-defined functions.
