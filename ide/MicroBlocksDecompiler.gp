@@ -7,14 +7,22 @@
 // MicroBlocksDecompiler.gp - Decompiles bytecodes back to blocks
 // John Maloney, March, 2020
 
+// To do:
+// [ ] decode "or" and "and"
+// [ ] decode "if"
+// [ ] decode "when" hats
+// [ ] handle function calls
+// [ ] store local names
+// [ ] store function spec and parameter names
+
 to decompileBytecodes bytecodes {
 	return (decompile (new 'MicroBlocksDecompiler') bytecodes)
 }
 
-defineClass MicroBlocksDecompiler reporters opcodes sequence stack code
+defineClass MicroBlocksDecompiler reporters opcodes stack code
 
 method decompile MicroBlocksDecompiler bytecodes {
-	collectReporters this
+	buildReporterDictionary this
 
 	opcodes = (list)
 	for i (range 1 (count bytecodes) 4) {
@@ -39,15 +47,17 @@ method decompile MicroBlocksDecompiler bytecodes {
 // debug: print sequence
 //	printSequence this sequence
 
- 	findLoops this
+ 	sequence = (replaceLoops this sequence)
 	print '----'
 	printSequence this sequence
 	print '----'
-	printCode this
+	printCode this sequence
 }
 
-method collectReporters MicroBlocksDecompiler {
+method buildReporterDictionary MicroBlocksDecompiler {
 	reporters = (dictionary)
+	add reporters 'pushArgCount'
+	add reporters 'getArg'
 	add reporters 'callReporterPrimitive'
 	for spec (microBlocksSpecs (new 'SmallCompiler')) {
 		if (and (isClass spec 'Array') ('r' == (first spec))) {
@@ -55,7 +65,6 @@ method collectReporters MicroBlocksDecompiler {
 			if (not (beginsWith op '[')) { add reporters (at spec 2) }
 		}
 	}
-	print 'got' (count reporters) 'reporters'
 }
 
 method printSequence MicroBlocksDecompiler seq indent {
@@ -79,7 +88,7 @@ method cmdArg MicroBlocksDecompiler cmd { return (at cmd 3) }
 method cmdSubsequence MicroBlocksDecompiler cmd { return (at cmd 3) }
 method cmdIsControl MicroBlocksDecompiler cmd {
 	return (isOneOf (at cmd 2)
-		'_sequence_' 'forever' 'repeat' 'if' 'for' 'repeatUntil'
+		'forever' 'repeat' 'if' 'for' 'repeatUntil'
 		'whenStarted' 'whenButtonPressed' 'whenCondition')
 }
 
@@ -160,14 +169,16 @@ method decodeImmediates MicroBlocksDecompiler lastInstruction {
 	}
 }
 
-method findLoops MicroBlocksDecompiler {
+method replaceLoops MicroBlocksDecompiler seq {
+	// Replace loops in the given sequence and return the result.
+
 	i = 1
-	while (i <= (count sequence)) {
-		cmd = (at sequence i)
+	while (i <= (count seq)) {
+		cmd = (at seq i)
 		if (and
 			(isOneOf (cmdOp this cmd) 'jmp' 'jmpFalse' 'decrementAndJmp')
 			((cmdArg this cmd) < 0)) {
-				loopType = (loopTypeAt this i)
+				loopType = (loopTypeAt this i seq)
 				bodyStart = (+ (cmdIndex this cmd) (cmdArg this cmd) 1)
 				bodyEnd = (i - 1)
 				loopStart = bodyStart
@@ -179,47 +190,61 @@ method findLoops MicroBlocksDecompiler {
 				} (isOneOf loopType 'repeat' 'repeatUntil') {
 					loopStart = (bodyStart - 1)
 				}
-				loopStart = (indexOfCmd this loopStart)
-				newCmd = (array loopStart loopType (copyFromTo sequence bodyStart bodyEnd))
-				sequence = (join
-					(copyFromTo sequence 1 (loopStart - 1))
+				loopStart = (indexOfCmd this loopStart seq)
+				loopEnd = (indexOfCmd this loopEnd seq)
+				newCmd = (array 0 loopType (copyFromTo seq bodyStart bodyEnd))
+				if ('repeatUntil' == loopType) {
+					conditionStart = (+ loopStart (cmdArg this (at seq loopStart)) 1)
+					newCmd = (copyWith newCmd conditionStart)
+				}
+				seq = (join
+					(copyFromTo seq 1 (loopStart - 1))
 					(array newCmd)
-					(copyFromTo sequence (loopEnd + 1) (count sequence)))
+					(copyFromTo seq (loopEnd + 1) (count seq)))
 				i = loopStart
 		} else {
 			i += 1
 		}
 	}
+	return seq
 }
 
-method indexOfCmd MicroBlocksDecompiler originalIndex {
+method indexOfCmdIn MicroBlocksDecompiler originalIndex seq {
 	// Return the current index of the command with the given original index in sequence.
 
-	for i (count sequence) {
-		cmd = (at sequence i)
+	for i (count seq) {
+		cmd = (at seq i)
 		if (originalIndex == (cmdIndex this cmd)) { return i }
 	}
 	error 'command index not found'
 }
 
-method loopTypeAt MicroBlocksDecompiler i {
-	jmpCmd = (cmdOp this (at sequence i))
+method loopTypeAt MicroBlocksDecompiler i seq {
+	jmpCmd = (cmdOp this (at seq i))
 	if ('jmp' == jmpCmd) {
-		if ('forLoop' == (cmdOp this (at sequence (i - 1)))) {
+		if ('forLoop' == (cmdOp this (at seq (i - 1)))) {
 			return 'for'
 		} else {
 			return 'forever'
 		}
 	}
-	if ('jmpFalse' == jmpCmd) { return 'repeatUntil' }
+	if ('jmpFalse' == jmpCmd) {
+		loopStart = (i + (cmdArg this (at seq i)))
+		if ('jmp' == (cmdOp this (at seq loopStart))) {
+			return 'repeatUntil'
+		} else {
+			return 'waitUntil'
+		}
+	}
 	if ('decrementAndJmp' == jmpCmd) { return 'repeat' }
 	return 'unknown loop type'
 }
 
-method printCode MicroBlocksDecompiler {
+
+method printCode MicroBlocksDecompiler seq {
 	code = (list)
 	stack = (list)
-	for cmd sequence {
+	for cmd seq {
 		processCmd this cmd
 	}
 	for cmd code {
@@ -230,7 +255,9 @@ method printCode MicroBlocksDecompiler {
 method processCmd MicroBlocksDecompiler cmd {
 	op = (cmdOp this cmd)
 	cmdArg = (cmdArg this cmd)
-	if (isOneOf op 'pushImmediate' 'pushBigImmediate' 'pushLiteral') {
+	if ('halt' == op) {
+		add code (newCommand 'stopTask')
+	} (isOneOf op 'pushImmediate' 'pushBigImmediate' 'pushLiteral') {
 		add stack cmdArg
 	} ('pushVar' == op) {
 		add stack (newReporter 'v' (join 'V' cmdArg))
@@ -256,8 +283,25 @@ method processCmd MicroBlocksDecompiler cmd {
 		// do nothing
 	} ('returnResult' == op) {
 		add code (makeCommand this op 1)
+	// loops
 	} ('forever' == op) {
-		// xxx do nothing for now
+		// xxx placeholder
+		add code (newCommand (join op '_placeholder'))
+	} ('repeat' == op) {
+		// xxx placeholder
+		add code (newCommand (join op '_placeholder'))
+	} ('for' == op) {
+		// xxx placeholder
+		add code (newCommand (join op '_placeholder'))
+	} ('repeatUntil' == op) {
+		// xxx placeholder
+		add code (newCommand (join op '_placeholder'))
+	} ('waitUntil' == op) {
+		// xxx placeholder
+		add code (newCommand (join op '_placeholder'))
+	} ('callFunction' == op) {
+		// xxx placeholder
+		add code (newCommand (join op '_placeholder'))
 	} (contains reporters op) {
 		add stack (makeReporter this op cmdArg)
 	} else {
