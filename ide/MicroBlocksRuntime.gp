@@ -807,7 +807,7 @@ method saveVariableNames SmallRuntime {
 	varID = 0
 	for varName newVarNames {
 		if (notNil port) {
-			sendMsg this 'varNameMsg' varID (toArray (toBinaryData varName))
+			sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
 		}
 		varID += 1
 	}
