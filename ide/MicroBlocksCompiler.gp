@@ -194,6 +194,9 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'noop'				'no op')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
 		(array 'r' 'pushArgCount'		'arg count')
+		(array 'r' 'getArg'				'arg _' 'num' 0)
+		(array 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10)
+		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
 
 		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
 
