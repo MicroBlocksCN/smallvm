@@ -517,6 +517,7 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 		default:
 			break;
 		}
+		deviceID = -1; // xxx disable this optimization on micro:bit for now
 	#elif defined(ARDUINO_CALLIOPE_MINI)
 		deviceID = BMX055;
 		reg = 3;
