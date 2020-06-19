@@ -350,14 +350,14 @@ static OBJ primSystemInfo(int argCount, OBJ *args) {
 static OBJ primOpen(int argCount, OBJ *args) { return falseObj; }
 static OBJ primClose(int argCount, OBJ *args) { return falseObj; }
 static OBJ primDelete(int argCount, OBJ *args) { return falseObj; }
-static OBJ primEndOfFile(int argCount, OBJ *args) { return falseObj; }
+static OBJ primEndOfFile(int argCount, OBJ *args) { return trueObj; }
 static OBJ primReadLine(int argCount, OBJ *args) { return falseObj; }
 static OBJ primReadBytes(int argCount, OBJ *args) { return falseObj; }
 static OBJ primAppendLine(int argCount, OBJ *args) { return falseObj; }
 static OBJ primAppendBytes(int argCount, OBJ *args) { return falseObj; }
-static OBJ primFileSize(int argCount, OBJ *args) { return falseObj; };
+static OBJ primFileSize(int argCount, OBJ *args) { return zeroObj; };
 static OBJ primStartFileList(int argCount, OBJ *args) { return falseObj; }
-static OBJ primNextFileInList(int argCount, OBJ *args) { return falseObj; }
+static OBJ primNextFileInList(int argCount, OBJ *args) { return newString(0); }
 static OBJ primSystemInfo(int argCount, OBJ *args) { return falseObj; }
 
 #endif
