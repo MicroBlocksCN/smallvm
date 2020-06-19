@@ -13,7 +13,7 @@ say _
 sage _
 
 graph _
---MISSING--
+Diagramm _
 
 Input
 Eingabe
@@ -31,7 +31,7 @@ milliseconds
 Millisekunden
 
 board type
---MISSING--
+Board-Typ
 
 Pins
 Pins
@@ -112,16 +112,16 @@ stop this task
 stoppe dieses Skript
 
 stop other tasks
---MISSING--
+stoppe andere Skripte
 
 stop all
 stoppe alles
 
 last message
---MISSING--
+letzte Nachricht
 
 Operators
---MISSING--
+Operatoren
 
 _ mod _
 _ modulo _
@@ -148,19 +148,19 @@ or _
 oder _
 
 _ is a _
---MISSING--
+_ ist ein(e)_
 
 boolean
---MISSING--
+Boole
 
 number
---MISSING--
+Zahl
 
 string
---MISSING--
+Zeichenkette
 
 list
---MISSING--
+Liste
 
 hex _
 hex _
@@ -179,7 +179,7 @@ Variable löschen
 # New variable dialog
 
 New variable name?
---MISSING--
+Neuer Variablenname?
 
 set _ to _
 setze _ auf _
@@ -191,83 +191,80 @@ local _ _
 lokale Variable _ _
 
 Data
---MISSING--
+Daten
 
 list
---MISSING--
+Liste
 
 length of _
 Länge von _
 
 item _ of _
---MISSING--
+Element _ von _ 
 
 replace item _ of list _ with _
---MISSING--
+ersetze Element _ in Liste _ durch _ 
 
 delete item _ of list _
---MISSING--
+entferne Element aus Liste _
 
 add _ to list _
---MISSING--
+füge _ zu Liste _ hinzu
 
 join _ _
---MISSING--
+verbinde _ _
 
 copy _ from _
---MISSING--
+kopiere _ beginnend bei _ 
 
 to _
---MISSING--
+bis _ 
 
 find _ in _
---MISSING--
+finde _ in _ 
 
 starting at _
---MISSING--
+beginnend bei _
 
 join items of list _
---MISSING--
+verbinde Elemente von Liste _
 
 separator _
---MISSING--
+Separator _
 
 unicode _ of _
---MISSING--
+Unicode _ von _ 
 
 string from unicode _
---MISSING--
+Zeichenkette aus Unicode _ 
 
 new list length _
---MISSING--
+neue Liste Länge _ 
 
 new byte array length _
---MISSING--
+neues Byte Array Länge _ 
 
 free memory
---MISSING--
-
-fill list _ with _
---MISSING--
+freier Speicher
 
 My Blocks
---MISSING--
+Meine Blöcke
 
 # Buttons on top of "My Blocks" category
 
 Add a command block
---MISSING--
+Füge Befehlsblock hinzu
 
 Add a reporter block
---MISSING--
+Füge Reporterblock hinzu
 
 # Make a block dialog
 
 Enter function name:
---MISSING--
+Gib einen Namen für die Funktion ein:
 
 Comm
---MISSING--
+Kommunikation
 
 i2c get device _ register _
 i2c lies Gerät _ an Register _
@@ -276,10 +273,10 @@ i2c set device _ register _ to _
 i2c setze Gerät _ an Register _ auf _
 
 i2c device _ read list _
---MISSING--
+i2c Gerät _ lies list _ 
 
 i2c device _ write list _
---MISSING--
+i2c Gerät _ schreibe list _
 
 spi send _
 sende mit SPI _
@@ -304,79 +301,76 @@ zeichne Form _ bei x _ y _
 shape for letter _
 Form für Buchstabe _
 
-set NeoPixel pin _ is RGBW _
---MISSING--
-
 send NeoPixel rgb _
 sende NeoPixel RGB _
 
 has tone support
---MISSING--
+unterstützt Klänge
 
 play tone pin _ frequency _
---MISSING--
+spiele Ton Pin _ Frequenz _ 
 
 has WiFi support
---MISSING--
+unterstützt WiFi
 
 start WiFi _ password _
---MISSING--
+starte WiFi _ Passwort _ 
 
 stop WiFi
---MISSING--
+stoppe WiFi
 
 WiFi status
---MISSING--
+WiFi status
 
 my IP address
---MISSING--
+meine IP Adresse
 
 radio send number _
---MISSING--
+Radio sende Zahl _
 
 radio send string _
---MISSING--
+Radio sende Zeichenkette _
 
 radio send pair _ = _
---MISSING--
+Radio sende Paar _ = _ 
 
 radio message received?
---MISSING--
+Radio Nachricht erhalten?
 
 radio last number
---MISSING--
+Radio letzte Zahl
 
 radio last string
---MISSING--
+Radio letzte Zeichenkette
 
 radio last message type
---MISSING--
+Radio Typ der letzten Nachricht
 
 radio set group _
---MISSING--
+Radio setze Gruppe _
 
 radio set channel (0-83) _
---MISSING--
+Radio setze Kanal (0-83) _
 
 radio set power (0-7) _
---MISSING--
+Radio setze Stärke (0-7) _ 
 
 radio last signal strength
---MISSING--
+Radio letzte Signalstärke
 
 radio receive packet _
---MISSING--
+Radio empfange Paket _
 
 radio send packet _
---MISSING--
+Radio sende Paket _
 
 disable radio
---MISSING--
+deaktiviere Radio
 
 # Libraries
 
 Basic Sensors
---MISSING--
+Einfache Sensoren
 
 tilt x
 Neigung x
@@ -388,7 +382,7 @@ tilt z
 Neigung z
 
 acceleration
---MISSING--
+Beschleunigung
 
 light level
 Lichtstärke
@@ -397,7 +391,7 @@ temperature (°C)
 Temperatur (°C)
 
 NeoPixel
---MISSING--
+NeoPixel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 setze NeoPixel _ _ _ _ _ _ _ _ _ _
@@ -418,37 +412,37 @@ color r _ g _ b _ (0-31)
 Farbe R _ G _ B _ (0-31)
 
 random color
---MISSING--
+zufällige Farbe
 
 attach _ LED NeoPixel strip to pin _
---MISSING--
+verbinde _ LED NeoPixel Streifen mit Pin _ 
 
 has white _
---MISSING--
+mit Weiß _
 
 PIR
---MISSING--
+PIR
 
 PIR at pin _ detected movement
---MISSING--
+PIR an PIN _ erkennt Bewegung
 
 ED1 Stepper Motor
---MISSING--
+ED1 Schrittmotor
 
 move motor _ _ steps _
---MISSING--
+bewege Motor _ _ Schritte _
 
 move motor 1 _ and motor 2 _ _ steps
 bewege Motor 1 _ und Motor 2 _ _ Schritte
 
 move motor _ angle _ °
---MISSING--
+bewege Motor _ Winkel _ °
 
 move motor _ _ complete turns
---MISSING--
+bewege Motor _ _ komplette Runden
 
 stop steppers
-Stoppe Schrittmotoren
+stoppe Schrittmotoren
 
 clockwise
 im Uhrzeigersinn
@@ -457,7 +451,7 @@ counter-clockwise
 gegen Uhrzeigersinn
 
 ED1 Buttons
---MISSING--
+ED1 Knöpfe
 
 button OK
 Knopf OK
@@ -477,32 +471,11 @@ Knopf Pfeil nach links
 button right
 Knopf Pfeil nach rechts
 
-capacitive OK
---MISSING--
-
-capacitive X
---MISSING--
-
-capacitive up
---MISSING--
-
-capacitive down
---MISSING--
-
-capacitive left
---MISSING--
-
-capacitive right
---MISSING--
-
 capacitive sensor _
 kapazitiver Sensor _
 
 set capacitive threshold to _
-Setze kapazitiven Schwellenwert auf _
-
-set use capacitive to _
---MISSING--
+setze kapazitiven Schwellenwert auf _
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
@@ -511,7 +484,7 @@ Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird Dreifarben-LED _ R _ % G _ % B _ %
 
 Hummingbird Position Servo _ _ °
---MISSING--
+Hummingbird Position Servo _ _ °
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird Drehung Servo _ _ %
@@ -538,10 +511,10 @@ Other
 Sonstige
 
 distance (cm) trigger _ echo _
---MISSING--
+Entfernung (cm) Auslöser _ Echo _ 
 
 IR Remote
---MISSING--
+IR Fernzugriff
 
 receive IR code
 empfange IR Code
@@ -553,40 +526,40 @@ test IR
 teste IR
 
 attach IR receiver to pin _
---MISSING--
+schließe IR Empfänger an Pin _ an
 
 Radio
---MISSING--
+Radio
 
 Scrolling
---MISSING--
+Scrollen
 
 scroll text _
---MISSING--
+scrolle Text _
 
 scroll number _
---MISSING--
+scrolle Zahl _
 
 pausing _ ms
---MISSING--
+pausiere _ ms
 
 stop scrolling
 stoppe Scrollen
 
 Servo
---MISSING--
+Servo
 
 set servo _ to _ degrees (-90 to 90)
---MISSING--
+setze Servo _ auf _ Grad (-90 bis 90)
 
 set servo _ to speed _ (-100 to 100)
---MISSING--
+setze Servo _ auf _ Geschwindigkeit (-100 bis 100)
 
 stop servo _
---MISSING--
+Stoppe Servo
 
 LED Display
---MISSING--
+LED Anzeige
 
 display _
 Display _
@@ -601,46 +574,46 @@ unplot x _ y _
 lösche x _ y _
 
 display character _
---MISSING--
+zeige Buchstaben
 
 enable TFT _
---MISSING--
+aktiviere TFT
 
 TFT width
---MISSING--
+TFT Breite
 
 TFT height
---MISSING--
+TFT Höhe
 
 set TFT pixel x _ y _ to _
 setze TFT-Pixel x _ y _ auf _
 
 draw line on TFT from x _ y _ to x _ y _ color _
---MISSING--
+zeichne Linie auf TFT von x _ y _ nach x _ y _ Farbe _ 
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
---MISSING--
+zeichne Rechteck auf TFT bei x _ y _ Breite _ Höhe _ Farbe _
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
---MISSING--
+zeichne abgerundetes Rechteck auf TFT bei x _ y _ Breite _ Höhe _ Radius _ Farbe _
 
 draw circle on TFT at x _ y _ radius _ color _
---MISSING--
+zeichne Kreis auf TFT bei x _ y _ Radius _ Farbe _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
---MISSING--
+zeichne Dreieck auf TFT bei x _ y_ , x _ y, x _ y _ Farbe _ 
 
 filled _
---MISSING--
+ausgefüllt _
 
 write _ on TFT at x _ y _ color _
---MISSING--
+Schreibe _ auf TFT bei x _ y _ Farbe _
 
 scale _ wrap _
---MISSING--
+Größe _ Zeilenumbruch _ 
 
 Tone
---MISSING--
+Klang
 
 attach buzzer to pin _
 verbinde Summer mit Pin _
@@ -649,238 +622,277 @@ play note _ octave _ for _ ms
 spiele Note _ Oktave _ für _ ms
 
 play frequency _ for _ ms
---MISSING--
+spiele Frequenz _ für _ Millisekunden
 
 play midi key _ for _ ms
---MISSING--
+spiele MIDI Tonart _ für _ Millisekunden
 
 Turtle
---MISSING--
+Turtle
 
 home
---MISSING--
+Ursprung
 
 move _
---MISSING--
+gehe _
 
 turn _ degrees
---MISSING--
+drehe _ Grad
 
 turn _ / _ of circle
---MISSING--
+drehe _/ _ eines Kreises
 
 pen down
---MISSING--
+Stift runter
 
 pen up
---MISSING--
+Stift hoch
 
 set pen color to _
---MISSING--
+setze Stiftfarbe auf _
 
 set pen to random color
---MISSING--
+setze zufällige Stiftfarbe
 
 fill display with _
---MISSING--
+fülle Display mit _ 
 
 go to x _ y _
---MISSING--
+gehe zu x _ y _ 
 
 point in direction _
---MISSING--
+zeige Richtung _ 
+
+Files
+Dateien
+
+open file _
+Datei öffnen
+
+close file _
+Datei schließen
+
+delete file _
+Datei löschen
+
+append line _ to file _
+füge Zeile _ zu Datei _ hinzu
+
+append bytes _ to file _
+füge Bytes _ zu Datei _ hinzu
+
+end of file _
+Ende von Datei _
+
+next line of file _
+nächste Zeile von Datei _
+
+next _ bytes of file _
+nächste _ Bytes von Datei _
+
+starting at _
+beginnend bei _
+
+file names
+Dateiname
+
+size of file _
+Dateigröße
+
+file system info
+Dateisystem-Information
 
 WiFi
---MISSING--
+WiFi
 
 wifi connect to _ password _ try _ times
---MISSING--
+WiFi verbinde mit _ Passwort _ Versuche _
 
 wifi create hotspot _ password _
---MISSING--
+WiFi öffne Hotspot _ Passwort _ 
 
 IP address
---MISSING--
+IP Addresse
 
 Motion
---MISSING--
+Bewegung
 
 motion
---MISSING--
+Bewegung
 
 start step counter
---MISSING--
+Starte Schrittzähler
 
 step count
---MISSING--
+Schrittzahl
 
 clear step count
---MISSING--
+lösche Schrittzahl
 
 set step threshold _ (0-50)
---MISSING--
+setze Schritt-Schwellenwert _ (0-50)
 
 Button Events
---MISSING--
+Knopf Ereignisse
 
 button _ double pressed
---MISSING--
+Knopf _ doppelt gedrückt
 
 button _ long pressed
---MISSING--
+Knopf _ lange gedrückt
 
 button _ pressed
---MISSING--
+Knopf _ gedrückt
 
 Calliope set LED red _ green _ blue _
---MISSING--
+Calliope setze LED rot _ grün _ blau _ 
 
 Calliope set speaker _
---MISSING--
+Calliope setze Lautsprecher _ 
 
 Calliope loudness
---MISSING--
+Calliope Lautstärke
 
 Circuit Playground set speaker _
---MISSING--
+Circuit Playground setze Lautsprecher _ 
 
 Circuit Playground slide switch
---MISSING--
+Circuit Playground Schiebeschalter
 
 attach _ DotStar LEDs to data pin _ clock pin _
---MISSING--
+schließe _ DotStar LEDs an Daten-Pin _ Uhr-Pin _ an
 
 set all DotStar LEDs to r _ g _ b _
---MISSING--
+setze alle DotStar LEDs auf r _ g _ b _
 
 set DotStar LED _ to r _ g _ b _
---MISSING--
+setze DotStar LED _ auf r _ g _ b _
 
 set DotStar brightness _
---MISSING--
+setze DotStar Helligkeit _
 
 bme280 connected
---MISSING--
+bme280 verbunden
 
 bmp280 connected
---MISSING--
+bmp280 verbunden
 
 bmx280 temperature
---MISSING--
+bmx280 Temperatur
 
 bmx280 pressure
---MISSING--
+bmx280 Luftdruck
 
 bme280 humidity
---MISSING--
+bme280 Luftfeuchtigkeit
 
 TCS34725 connected
---MISSING--
+TCS34725 verbunden
 
 TCS34725 rgb
---MISSING--
+TCS34725 RGB
 
 color _ name
---MISSING--
+Farbe _ Name
 
 temperature (Celsius) DHT11 pin _
---MISSING--
+Temperatur (Celsius) DHT11 Pin _ 
 
 humidity DHT11 pin _
---MISSING--
+Luftfeuchtigkeit DHT11 Pin _
 
 temperature (Celsius) DHT22 pin _
---MISSING--
+Temperatur (Celsius) DHT22 Pin _
 
 humidity DHT22 pin _
---MISSING--
+Luftfeuchtigkeit DHT22 Pin _
 
 read PN532 RFID
---MISSING--
+lies PN532 RFID
 
 RFID _ = _
---MISSING--
+RFID _ = _
 
 get PN532 firmware version
---MISSING--
+PN532 firmware version
 
 HTTP client
---MISSING--
+HTTP Client
 
 _ data _ to http܃// _
---MISSING--
+_ Daten _ URL http:// _
 
 HTTP server
---MISSING--
+HTTP Server
 
 start HTTP server
---MISSING--
+starte HTTP Server
 
 HTTP server request
---MISSING--
+HTTP Server Anfrage
 
 respond _ to HTTP request
---MISSING--
+antworte _ auf HTTP Anfrage
 
 with body _
---MISSING--
+mit Body _ 
 
 and headers _
---MISSING--
+und Header _ 
 
 body of request _
---MISSING--
+Body der Anfrage _
 
 path of request _
---MISSING--
+Pfad der Anfrage _ 
 
 method of request _
---MISSING--
+Methode der Anfrage _ 
 
 Web Thing
---MISSING--
+Web Thing
 
 set thing name to _
---MISSING--
+setze Thing Namen auf _
 
 set thing capability to _
---MISSING--
+setze Thing Fähigkeit auf _
 
 set boolean property _ title _ @Type _
---MISSING--
+setze Boole Eigenschaft _ Name _ @Typ _
 
 set string property _ title _ @Type _
---MISSING--
+setze Zeichenkette Eigenschaft _ Name _ @Typ _
 
 set number property _ title _ @Type _
---MISSING--
+setze Zahl Eigenschaft _ Name _ @Typ _
 
 set number property _ title _ min _ max _ @Type _
---MISSING--
+setze Zahl Eigenschaft _ Name _ Min _ Max _ @Typ _
 
 read only _
---MISSING--
+schreibgeschützt
 
 register event _ type _
---MISSING--
+registriere Ereignis _ Typ _
 
 start WebThing server
---MISSING--
+starte WebThing Server
 
 trigger event _
---MISSING--
+löse Ereignis _ aus
 
 thing description JSON
---MISSING--
+Thing Beschreibung JSON
 
 properties JSON
---MISSING--
+Eigenschaften JSON
 
 event definitions JSON
---MISSING--
+Ereignis-Definitionen JSON
 
 events JSON
---MISSING--
+Ereignisse JSON
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -924,7 +936,7 @@ by
 von
 
 Created with GP
---MISSING--
+Mit GP erstellt
 
 More info at http://microblocks.fun
 Mehr Informationen unter http://microblocks.fun
@@ -945,7 +957,7 @@ No boards found; is your board plugged in?
 Kein Board gefunden; ist dein Board eingesteckt?
 
 For AdaFruit boards, double-click reset button and try again.
---MISSING--
+Für AdaFruit Boards den Reset Knopf drücken und erneut versuchen
 
 The board is not responding.
 Das Board reagiert nicht.
@@ -954,10 +966,10 @@ Try to Install MicroBlocks on the board?
 MicroBlocks auf dem Board installieren?
 
 The MicroBlocks in your board is not current
---MISSING--
+Die MicroBlocks-Version auf deinem Board ist nicht aktuell
 
 Try to update MicroBlocks on the board?
---MISSING--
+MicroBlocks auf dem Board updaten?
 
 Stop
 Stop
@@ -978,10 +990,10 @@ arrange scripts
 Skripte in einer Reihe anordnen
 
 undrop (ctrl-Z)
---MISSING--
+zurücknehmen (Strg-Z)
 
 copy all scripts to clipboard
---MISSING--
+alle Skripte in die Zwischenablage kopieren
 
 paste all scripts
 alle Skripte einfügen
@@ -990,7 +1002,7 @@ paste script
 Skript einfügen
 
 save a picture of all scripts
---MISSING--
+Bild aller Skripte speichern
 
 about...
 über...
@@ -999,55 +1011,55 @@ virtual machine version
 Virtual Machine Version
 
 update firmware on board
---MISSING--
+Firmware auf dem Board updaten
 
 show data graph
---MISSING--
+Daten als Diagramm anzeigen
 
 set serial delay
---MISSING--
+setze serielle Verzögerung
 
 firmware version
---MISSING--
+Firmware Version
 
 start Mozilla WebThing server
---MISSING--
+starte Mozilla WebThing Server starten
 
 stop Mozilla WebThing server
---MISSING--
+stoppe Mozilla WebThing Server
 
 MicroBlocks HTTP Server listening on port 6473
---MISSING--
+MicroBlocks HTTP Server lauscht an Port 6473
 
 disable autoloading board libraries
---MISSING--
+deaktiviere automatisches Laden von Board-Modulen
 
 enable autoloading board libraries
---MISSING--
+aktiviere automatisches Laden von Board-Modulen
 
 wipe and repartition esp32
---MISSING--
+lösche und repartitioniere ESP32
 
 Use board type
---MISSING--
+Verwende Board-Typ
 
 Wiping board...
---MISSING--
+Board löschen...
 
 (press ESC to cancel)
---MISSING--
+(Drücke ESC um abzubrechen)
 
 Done!
---MISSING--
+Fertig!
 
 download and install latest VM
---MISSING--
+aktuelle VM herunterladen und installieren
 
 Select board type:
---MISSING--
+Board-Typ auswählen: 
 
 Uploading MicroBlocks to board...
---MISSING--
+MicroBlocks wird auf das Board geladen...
 
 copy data to clipboard
 Daten in der Ablage speichern
@@ -1086,58 +1098,58 @@ rename...
 umbenennen...
 
 show block definition...
---MISSING--
+Blockdefinition anzeigen...
 
 show the definition of this block
---MISSING--
+Blockdefinition für diesen Block anzeigen
 
 delete block definition...
---MISSING--
+Blockdefinition löschen...
 
 delete the definition of this block
---MISSING--
+Blockdefinition für diesen Block löschen
 
 duplicate
 duplizieren
 
 duplicate this block
---MISSING--
+Diesen Block duplizieren
 
 delete block
---MISSING--
+Block löschen
 
 delete this block
---MISSING--
+diesen Block löschen
 
 just this one block
 nur diesen Block
 
 copy to clipboard
---MISSING--
+in Zwischenablage kopieren
 
 copy these blocks to the clipboard
---MISSING--
+diese Blöcke in die Zwischenablage kopieren
 
 duplicate all
---MISSING--
+alles duplizieren
 
 duplicate these blocks
---MISSING--
+diese Blöcke duplizieren
 
 extract block
---MISSING--
+Block extrahieren
 
 pull out this block
---MISSING--
+diesen Block herausziehen
 
 save picture of script
 Skriptbild speichern
 
 save a picture of this block definition as a PNG file
---MISSING--
+Bild dieser Blockdefinition als PNG-Datei speichern
 
 save a picture of these blocks as a PNG file
---MISSING--
+Bild dieser Blöcke als PNG-Datei speichern
 
 copy script
 Skript duplizieren
@@ -1146,49 +1158,49 @@ delete
 löschen
 
 Input type:
---MISSING--
+Eingabetyp:
 
 string only
---MISSING--
+nur Zeichenketten
 
 string or number
---MISSING--
+Zeichenkette oder Zahl
 
 number only
---MISSING--
+nur Zahlen
 
 define
---MISSING--
+definiere
 
 number/string
---MISSING--
+Zahl/Zeichenkette
 
 editable number or string
---MISSING--
+editierbare Zahl oder Zeichenkette
 
 label
---MISSING--
+Beschriftung
 
 input
---MISSING--
+Eingabe
 
 hide block definition
---MISSING--
+Blockdefinition verstecken
 
 Are you sure you want to remove this block definition?
 Bist du sicher, dass du diese Blockdefinition löschen möchtest?
 
 Language
---MISSING--
+Sprache
 
 Custom...
---MISSING--
+Benutzerdefiniert...
 
 Obsolete
 obsolet
 
 OK
---MISSING--
+OK
 
 Ok
 Ok
@@ -1214,19 +1226,19 @@ Libraries
 Module
 
 Examples
---MISSING--
+Beispiele
 
 Desktop
---MISSING--
+Desktop
 
 Computer
---MISSING--
+Computer
 
 Cloud
---MISSING--
+Cloud
 
 File
---MISSING--
+Datei
 
 File Open
 Datei öffnen
@@ -1238,44 +1250,44 @@ File name:
 Dateiname:
 
 New Folder
---MISSING--
+Neuer Ordner
 
 by
 von
 
 Depends:
---MISSING--
+Abhängig von: 
 
 Tags:
---MISSING--
+Schlagworte:
 
 Path, name or URL for library?
---MISSING--
+Pfad, Name oder URL des Moduls?
 
 Invalid URL
---MISSING--
+Ungültige URL
 
 Could not fetch library.
---MISSING--
+Modul konnte nicht geladen werden.
 
 Host does not exist or is currently down.
---MISSING--
+Host existiert nicht oder ist momentan nicht erreichbar.
 
 File not found in server.
---MISSING--
+Datei konnte auf dem Server nicht gefunden werden. 
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
---MISSING--
+Server erwartet HTTPS, was von MicroBlocks momentan nicht unterstützt wird. 
 
 library information
---MISSING--
+Modulinformation
 
 built-in library
---MISSING--
+Integriertes Modul
 
 Dependency path, name or URL?
---MISSING--
+Abhängigkeit Pfad, Name oder URL?
 
 Tag name?
---MISSING--
+Schlagwort?
 
