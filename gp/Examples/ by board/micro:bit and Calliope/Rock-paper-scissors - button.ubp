@@ -2,7 +2,6 @@ module main
 author unknown
 version 1 0 
 description ''
-variables t tilt 
 
 script 50 50 {
 whenButtonPressed 'A'

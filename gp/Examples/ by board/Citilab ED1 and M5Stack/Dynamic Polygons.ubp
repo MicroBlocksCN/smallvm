@@ -33,7 +33,7 @@ to polygon sides size xoffset {
   'pen up'
 }
 
-script 52 50 {
+script 50 50 {
 comment '    By José García Yeste - Citilab
 ===========================
 A cool Turtle library demo!
@@ -45,26 +45,26 @@ node styles. Press the OK button to
 change the polygon color.'
 }
 
-script 442 57 {
-whenCondition (('[sensors:tiltZ]') < -70)
+script 440 57 {
+whenCondition (('[sensors:tiltZ]') < -140)
 deco += 1
 deco = (deco % 4)
 waitMillis 200
 }
 
-script 444 215 {
+script 442 215 {
 whenCondition ('OK button')
 setPenToRandomColor
 }
 
-script 52 228 {
+script 50 228 {
 whenStarted
 deco = 1
 'set pen color to' (colorSwatch 195 188 254 255)
 forever {
-  local 'sides' (maximum 3 ((('[sensors:tiltY]') / 10) + 6))
+  local 'sides' (maximum 3 ((('[sensors:tiltY]') / 5) + 6))
   local 'side length' (('[tft:getWidth]') / 2)
-  local 'xOffset' ((('[sensors:tiltX]') * ('[tft:getWidth]')) / 100)
+  local 'xOffset' ((('[sensors:tiltX]') * ('[tft:getWidth]')) / 50)
   polygon sides (v 'side length') xOffset
   waitMillis 40
   '[display:mbDisplayOff]'
@@ -72,7 +72,7 @@ forever {
 }
 }
 
-script 446 310 {
+script 444 310 {
 whenButtonPressed 'A'
 setPenToRandomColor
 }

@@ -1,6 +1,6 @@
 module main
 author 'José García Yeste'
-version 1 0
+version 1 0 
 description ''
 
 	spec ' ' 'draw color' 'write color info _' 'auto' 0
@@ -23,11 +23,7 @@ to 'draw color' color {
   '[tft:text]' color (64 - ((size color) * 6)) 79 (colorSwatch 251 140 69 255)
 }
 
-script 562 50 {
-to 'TCS34725 rgb' {}
-}
-
-script 57 54 {
+script 50 54 {
 whenStarted
 forever {
   local 'color' ('TCS34725 rgb')
@@ -41,29 +37,14 @@ forever {
 }
 }
 
-script 66 421 {
-to 'TCS34725 luminance' {}
-}
-
-
-module 'Basic Sensors' Input
-author unknown
-version 1 0
-description ''
-
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
 
 module TCS34725 Input
 author 'José García Yeste'
-version 1 1
-tags sensor color
+version 1 1 
+tags sensor color 
 description 'Support for the TCS34725 RGB color sensor.
 '
-variables '_TCS34725 initalized'
+variables '_TCS34725 initalized' 
 
 	spec 'r' 'TCS34725 connected' 'TCS34725 connected'
 	spec 'r' 'TCS34725 rgb' 'TCS34725 rgb'
@@ -167,9 +148,10 @@ to color color {
 
 
 module TFT Output
-author unknown
-version 1 0
-description ''
+author MicroBlocks
+version 1 0 
+tags tft graphics draw 
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true

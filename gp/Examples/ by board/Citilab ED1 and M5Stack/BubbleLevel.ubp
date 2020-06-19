@@ -1,15 +1,15 @@
 module main
 author 'Victor Casado'
-version 1 0
+version 1 0 
 description ''
-variables coordX coordY
+variables coordX coordY 
 
 script 50 50 {
 whenStarted
 '[display:mbDisplayOff]'
 forever {
-  coordX = (((('[sensors:tiltX]') + 50) * ('[tft:getWidth]')) / 100)
-  coordY = (((('[sensors:tiltY]') + 50) * ('[tft:getHeight]')) / 100)
+  coordX = (((('[sensors:tiltX]') + 100) * ('[tft:getWidth]')) / 200)
+  coordY = (((('[sensors:tiltY]') + 100) * ('[tft:getHeight]')) / 200)
   '[tft:circle]' coordX coordY 5 (colorSwatch 255 255 255 255)
   waitMillis 20
   '[tft:circle]' coordX coordY 5 (colorSwatch 0 0 0 255)
@@ -19,8 +19,8 @@ forever {
 
 module 'Basic Sensors' Input
 author MicroBlocks
-version 1 0
-tags tilt acceleration light sensor
+version 1 0 
+tags tilt acceleration light sensor 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
 	spec 'r' '[sensors:tiltX]' 'tilt x'
@@ -32,8 +32,8 @@ description 'Provides blocks to read tilt in the three axes, acceleration, tempe
 
 module TFT Output
 author MicroBlocks
-version 1 0
-tags tft graphics draw
+version 1 0 
+tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
 	spec ' ' '[display:mbDisplayOff]' 'clear display'

@@ -2,7 +2,6 @@ module main
 author unknown
 version 1 0 
 description ''
-variables t tilt 
 
 script 331 52 {
 whenButtonPressed 'B'
@@ -10,7 +9,7 @@ whenButtonPressed 'B'
 }
 
 script 71 54 {
-whenCondition (('[sensors:tiltZ]') > 85)
+whenCondition (('[sensors:acceleration]') > 140)
 '[display:mbDisplayOff]'
 waitMillis 500
 local 'which' (random 1 3)
@@ -26,6 +25,19 @@ if (which == 3) {
 waitMillis 500
 }
 
+
+module 'Basic Sensors' Input
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light sensor 
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
+
+	spec 'r' '[sensors:tiltX]' 'tilt x'
+	spec 'r' '[sensors:tiltY]' 'tilt y'
+	spec 'r' '[sensors:tiltZ]' 'tilt z'
+	spec 'r' '[sensors:acceleration]' 'acceleration'
+	spec 'r' '[display:lightLevel]' 'light level'
+	spec 'r' '[sensors:temperature]' 'temperature (°C)'
 
 module 'LED Display' Output
 author MicroBlocks

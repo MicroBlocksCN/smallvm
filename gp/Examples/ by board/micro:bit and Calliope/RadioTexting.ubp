@@ -28,11 +28,11 @@ to letters {
   alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ.!?:()&#+-*/=0123456789'
 }
 
-script 828 50 {
+script 856 89 {
 to flash {}
 }
 
-script 460 58 {
+script 488 97 {
 whenStarted
 comment 'set to same 
 number as the
@@ -42,24 +42,24 @@ messages with'
 '[radio:setGroup]' 0
 }
 
-script 661 60 {
+script 689 99 {
 to blink {}
 }
 
-script 199 61 {
+script 227 100 {
 whenCondition ('[radio:messageReceived]')
 '[display:mbDisplayOff]'
 comment 'blink = msg received
 tilt face down a little to
 display it on LEDs'
-repeatUntil (('[sensors:tiltZ]') < -10) {
+repeatUntil (('[sensors:tiltZ]') < -20) {
   blink
 }
 flash
 scroll_text ('[radio:receivedString]')
 }
 
-script 50 66 {
+script 78 105 {
 whenStarted
 msg2send = ''
 letter = 1
@@ -67,7 +67,7 @@ letters
 '[display:mbDisplay]' 4291652
 }
 
-script 444 234 {
+script 472 273 {
 whenCondition ('button pressed' 'B')
 comment 'Add selected letter to message '
 if (not sending-flag) {
@@ -78,7 +78,7 @@ if (not sending-flag) {
 }
 }
 
-script 55 291 {
+script 83 330 {
 whenButtonPressed 'A'
 comment 'Keep pushing until desired letter shown'
 displayCharacter (at letter alphabet)
@@ -86,11 +86,11 @@ repeatUntil (not (buttonA)) {
   comment 'tilt left (-x) for backward selection'
   if (('[sensors:tiltX]') < 0) {
     comment 'tilt more to scroll letters faster'
-    waitMillis (500 - ((absoluteValue ('[sensors:tiltX]')) * 10))
+    waitMillis (500 - ((absoluteValue ('[sensors:tiltX]')) * 5))
     letter += -1
   } else {
     comment 'tilt right (+x) for forward selection'
-    waitMillis (500 - ((absoluteValue ('[sensors:tiltX]')) * 10))
+    waitMillis (500 - ((absoluteValue ('[sensors:tiltX]')) * 5))
     letter += 1
   }
   if (letter < 1) {
@@ -102,7 +102,7 @@ repeatUntil (not (buttonA)) {
 }
 }
 
-script 449 509 {
+script 477 548 {
 whenCondition ('button double pressed' 'B')
 comment 'Add a space'
 msg2send = ('[data:join]' msg2send ' ')
@@ -111,7 +111,7 @@ waitMillis 500
 displayCharacter (at letter alphabet)
 }
 
-script 450 722 {
+script 478 761 {
 whenCondition ('button long pressed' 'B')
 '[display:mbDisplayOff]'
 comment 'Preview message'
@@ -120,19 +120,19 @@ waitMillis 500
 displayCharacter (at letter alphabet)
 }
 
-script 544 927 {
-whenCondition (('[sensors:acceleration]') > 160)
+script 572 966 {
+whenCondition (('[sensors:acceleration]') > 280)
 comment 'Shake hard to clear 
 message to send'
 msg2send = ''
 '[display:mbDisplay]' 4291652
 }
 
-script 56 939 {
+script 84 978 {
 to letters {}
 }
 
-script 252 1038 {
+script 280 1077 {
 whenButtonPressed 'A+B'
 sending-flag = (booleanConstant true)
 '[display:mbDisplayOff]'

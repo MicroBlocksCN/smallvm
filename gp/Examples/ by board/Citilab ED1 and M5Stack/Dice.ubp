@@ -29,7 +29,7 @@ to 'draw dot x' x y {
   '[tft:circle]' x y 10 0 true
 }
 
-script 252 50 {
+script 248 50 {
 comment '    By José García Yeste - Citilab
 ===========================
 Motion and TFT library demo.
@@ -38,7 +38,7 @@ Wait for the ED1 to say "Shake!", then
 shake it to roll a die.'
 }
 
-script 54 54 {
+script 50 54 {
 whenStarted
 repeat 12 {
   local 'ignore' (motion)
