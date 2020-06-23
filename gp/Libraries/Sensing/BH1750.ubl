@@ -2,7 +2,7 @@ module BH1750
 author MicroBlocks
 version 1 0 
 tags light d1mini 
-description 'Basic GH1750 ambient light sensor library.
+description 'Basic BH1750 ambient light sensor library.
 This is the sensor used by the LOLIN D1 mini ambient light shield.'
 variables write read 
 
