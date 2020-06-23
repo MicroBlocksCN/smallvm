@@ -1,10 +1,10 @@
 module NeoPixel Output
 author MicroBlocks
-version 1 0
-description 'Control NeoPixel (WS2812) RGB LED strips.'
-tags led strip rgb string ws2812
-
-variables _np_pixels
+version 1 1 
+tags led strip rgb string ws2812 
+description 'Control NeoPixel (WS2812) RGB LED strips.
+'
+variables _np_pixels 
 
 	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
 	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
@@ -19,13 +19,14 @@ variables _np_pixels
 	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
 
 to '_NeoPixel_ensureInitialized' {
-  if (_np_pixels == 0) {
-    if ((boardType) == 'M5Atom-Matrix') {
-      neoPixelAttach 25 '' false
-    } else {
-        neoPixelAttach 10 '' false
-    }
-  }
+  if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
+    neoPixelAttach 25 '' false
+  } ((boardType) == 'D1-Mini') {
+    comment 'D1 mini kit'
+    neoPixelAttach 7 15 false
+  } else {
+    neoPixelAttach 10 '' false
+  }}
 }
 
 to '_NeoPixel_rotate' left {
