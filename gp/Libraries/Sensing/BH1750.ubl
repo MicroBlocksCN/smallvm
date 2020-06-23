@@ -1,0 +1,17 @@
+module BH1750
+author MicroBlocks
+version 1 0 
+tags light d1mini 
+description 'Basic GH1750 ambient light sensor library.
+This is the sensor used by the LOLIN D1 mini ambient light shield.'
+variables write read 
+
+	spec 'r' 'BH1750 ambient light' 'BH1750 ambient light'
+
+to 'BH1750 ambient light' {
+  i2cSet (hexToInt '23') 23 (hexToInt '21')
+  read = (newList 2)
+  '[sensors:i2cRead]' (hexToInt '23') read
+  return (((at 1 read) << 8) | (at 2 read))
+}
+
