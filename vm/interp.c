@@ -260,8 +260,8 @@ static void runTask(Task *task) {
 		&&initLocals_op,
 		&&getArg_op,
 		&&getLastBroadcast_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&jmpOr_op,
+		&&jmpAnd_op,
 		&&minimum_op,
 		&&maximum_op,
 		&&lessThan_op,
@@ -620,6 +620,17 @@ static void runTask(Task *task) {
 	getLastBroadcast_op:
 		*(sp - arg) = lastBroadcast;
 		POP_ARGS_REPORTER();
+		DISPATCH();
+	jmpOr_op:
+		// if true, jump leaving true (result of "or" expression) on stack, otherwise pop
+		if (trueObj == *(sp - 1)) { ip += arg; } else { sp--; }
+		DISPATCH();
+	jmpAnd_op:
+		// if not true, push false (result of "and" expression) on stack and jump
+		if (trueObj != (*--sp)) { // treat any value but true as false
+			*sp++ = falseObj;
+			ip += arg;
+		}
 		DISPATCH();
 
 	// For the primitive ops below, arg is the number of arguments (any primitive can be variadic).
