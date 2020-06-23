@@ -1,0 +1,88 @@
+module 'LED Dot Matrix' output
+author MicroBlocks
+version 1 0 
+tags display d1mini 
+description 'Support for the WEMOS 8x8 LED Dot Matrix D1 Mini shield.'
+variables '_MLED data pin' '_MLED clock pin' '_MLED buffer' '_MLED intensity' 
+
+	spec ' ' '_MLED display' '_MLED display'
+	spec ' ' '_MLED init' '_MLED init'
+	spec ' ' '_MLED send' '_MLED send byte _' 'auto' '10'
+	spec ' ' '_MLED send command' '_MLED send command _' 'auto' '10'
+	spec ' ' '_MLED send data' '_MLED send data _ to address _' 'auto auto' '10' '10'
+	spec ' ' 'set dot' 'set dot x _ y _ to _' 'auto auto bool' 3 4 true
+	spec ' ' '_MLED stealth set dot x' '_MLED stealth set dot x _ y _ to _' 'auto auto bool' '10' '10' true
+	spec ' ' 'clear LED matrix' 'clear LED matrix'
+	spec ' ' 'set LED matrix intensity to' 'set LED matrix intensity to _ (1-8)' 'auto' 5
+
+to '_MLED display' {
+  for byte 8 {
+    '_MLED send data' (at byte (v '_MLED buffer')) (byte - 1)
+    digitalWriteOp (v '_MLED data pin') false
+    digitalWriteOp (v '_MLED clock pin') false
+    digitalWriteOp (v '_MLED clock pin') true
+    digitalWriteOp (v '_MLED data pin') true
+  }
+  '_MLED send command' ((hexToInt '88') | (v '_MLED intensity'))
+}
+
+to '_MLED init' {
+  '_MLED clock pin' = 14
+  '_MLED data pin' = 13
+  '_MLED intensity' = 7
+  '_MLED buffer' = ('[data:newByteArray]' 8)
+  digitalWriteOp (v '_MLED clock pin') true
+  digitalWriteOp (v '_MLED data pin') true
+}
+
+to '_MLED send' data {
+  local 'data' data
+  for bit 8 {
+    digitalWriteOp (v '_MLED clock pin') false
+    digitalWriteOp (v '_MLED data pin') ((data & 1) == 1)
+    data = (data >> 1)
+    digitalWriteOp (v '_MLED clock pin') true
+  }
+}
+
+to '_MLED send command' command {
+  digitalWriteOp (v '_MLED data pin') false
+  '_MLED send' command
+  digitalWriteOp (v '_MLED data pin') true
+}
+
+to '_MLED send data' data address {
+  '_MLED send command' (hexToInt '44')
+  digitalWriteOp (v '_MLED data pin') false
+  '_MLED send' ((hexToInt 'C0') | address)
+  '_MLED send' data
+  digitalWriteOp (v '_MLED data pin') true
+}
+
+to '_MLED stealth set dot x' x y draw {
+  local 'x' (((x - 1) % 8) + 1)
+  local 'y' (((y - 1) % 8) + 1)
+  if ((v '_MLED buffer') == 0) {
+    '_MLED init'
+  }
+  if draw {
+    atPut y (v '_MLED buffer') ((at y (v '_MLED buffer')) | (1 << (x - 1)))
+  } else {
+    atPut y (v '_MLED buffer') (('~' (1 << (x - 1))) & (at y (v '_MLED buffer')))
+  }
+}
+
+to 'clear LED matrix' {
+  '_MLED buffer' = ('[data:newByteArray]' 8)
+  '_MLED display'
+}
+
+to 'set LED matrix intensity to' intensity {
+  '_MLED intensity' = (maximum 0 (minimum (intensity - 1) 7))
+}
+
+to 'set dot' x y draw {
+  '_MLED stealth set dot x' x y draw
+  '_MLED display'
+}
+
