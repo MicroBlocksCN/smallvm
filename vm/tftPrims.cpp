@@ -19,7 +19,7 @@
 int useTFT = false;
 int touchEnabled = false;
 
-#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_IOT_BUS)
+#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_IOT_BUS) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 
 	#define TFT_BLACK 0
 	#define TFT_GREEN 0x7E0
@@ -54,6 +54,24 @@ int touchEnabled = false;
 		void tftInit() {
 			tft.initR(INITR_144GREENTAB);
 			tft.setRotation(0);
+			tftClear();
+			useTFT = true;
+		}
+
+	#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7735.h"
+
+		#define TFT_CS	D4
+		#define TFT_DC	D3
+		#define TFT_RST	-1
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 128
+		Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+
+		void tftInit() {
+			tft.initR(INITR_144GREENTAB);
+			tft.setRotation(1);
 			tftClear();
 			useTFT = true;
 		}

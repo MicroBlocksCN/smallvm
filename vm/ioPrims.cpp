@@ -78,7 +78,7 @@ void hardwareInit() {
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
 		touchSetCycles(0x800, 0x800);
 	#endif
-	#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C)
+	#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 		tftInit();
 	#endif
 }
@@ -275,6 +275,20 @@ void restartSerial() {
 	#define ANALOG_PINS 6
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+
+#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
+
+	#define BOARD_TYPE "D1-Mini"
+	#define DIGITAL_PINS 17
+	#define ANALOG_PINS 1
+	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	static const int analogPin[] = {A0};
+	#define PIN_LED LED_BUILTIN
+	#define PIN_BUTTON_A 0
+	#define INVERT_USER_LED true
+	static const char reservedPin[TOTAL_PINS] = {
+		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1};
 
 #elif defined(ESP8266)
 
