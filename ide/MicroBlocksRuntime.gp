@@ -164,7 +164,7 @@ method showCompiledBytes SmallRuntime aBlock {
 }
 
 method testDecompiler SmallRuntime aBlock {
-	decompileBytecodes (chunkBytesFor this aBlock)
+	decompileBytecodes (chunkBytesFor this aBlock) (chunkTypeFor this aBlock)
 }
 
 // chunk management
