@@ -85,6 +85,8 @@ method requestTypes InputSlot {
   return menu
 }
 
+// Web Thing Menus
+
 method thingTypesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
 
@@ -170,6 +172,8 @@ method stringPropertyTypesMenu InputSlot {
   return menu
 }
 
+// Birdbrain Technologies Menus (Hummingbird:bit and Finch)
+
 method hummingbirdSensorsMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'Light'
@@ -179,6 +183,53 @@ method hummingbirdSensorsMenu InputSlot {
   addItem menu 'Other'
   return menu
 }
+
+method finchTailMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu '1'
+  addItem menu '2'
+  addItem menu '3'
+  addItem menu '4'
+  addItem menu 'All'
+  return menu
+}
+
+method finchMoveMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'Forward'
+  addItem menu 'Backward'
+  return menu
+}
+
+method finchTurnMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'Right'
+  addItem menu 'Left'
+  return menu
+}
+
+method finchOrientationMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'Beak Up'
+  addItem menu 'Beak Down'
+  addItem menu 'Tilt Left'
+  addItem menu 'Tilt Right'
+  addItem menu 'Level'
+  addItem menu 'Upside Down'
+  addItem menu 'Shake'
+  return menu
+}
+
+method finchAxisMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'x'
+  addItem menu 'y'
+  addItem menu 'z'
+  addItem menu 'strength'
+  return menu
+}
+
+// List Menus
 
 method itemOfMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
