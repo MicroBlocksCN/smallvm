@@ -10,10 +10,12 @@
 // To do:
 // [x] decode "or" and "and"
 // [x] decode "if"
-// [ ] decode "when" hats
-// [ ] use chunkType to generate hat blocks
-// [ ] store local names
-// [ ] make test method that clear current scripts then fetched and decompiles code from board
+// [x] decode "when" hats
+// [x] use chunkType to generate hat blocks
+// [x] generate code for loops
+// [ ] make compiler store local names
+// [ ] use local names
+// [ ] make test method that clears current scripts then fetched and decompiles code from board
 // [ ] handle function calls
 // [ ] store function spec and parameter names
 
@@ -30,7 +32,6 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	//	2. find and replace if's (recursively)
 	//	3. walk the entire tree and generate code
 
-print 'chunkType' chunkType
 	decoder = (new 'MicroBlocksSequenceDecoder')
 	opcodes = (list)
 	for i (range 1 (count bytecodes) 4) {
@@ -50,10 +51,15 @@ print 'chunkType' chunkType
 
  	sequence = (replaceLoops this sequence)
 	sequence = (replaceIfs this sequence)
+
 	print '----'
 	printSequence this sequence
 	print '----'
-	print (prettyPrint this (codeForSequence sequence))
+
+	if (cmdIs this (last sequence) 'halt' 0) { removeLast sequence }
+	code = (addHatBlock this chunkType (codeForSequence sequence))
+
+	print (prettyPrint this code)
 }
 
 // Command tuple operations
@@ -101,9 +107,14 @@ method printSequence MicroBlocksDecompiler seq indent {
 		} (isOneOf op 'forever' 'repeat' 'for' 'repeatUntil') {
 			print (join spaces op)
 			printSequence this (cmdArg this cmd) (indent + 4)
-		} (isOneOf op 'whenStarted' 'whenButtonPressed' 'whenCondition') {
+		} (isOneOf op 'whenStarted' 'whenButtonPressed' 'whenBroadcastReceived') {
 			print (join spaces op)
 			printSequence this (cmdArg this cmd) (indent + 4)
+		} ('whenCondition' == op) {
+			print 'when:'
+			printSequence this (at cmd 3) (indent + 4)
+			print 'then:'
+			printSequence this (at cmd 4) (indent + 4)
 		} else {
 			print (join spaces op ' ' (cmdArg this cmd))
 		}
@@ -178,9 +189,13 @@ method getOpNames MicroBlocksDecompiler lastInstruction {
 		atPut opcodeToName ((first p) + 1) (last p)
 	}
 	for i lastInstruction {
-		instr = (at opcodes i)
-		op = (at opcodeToName ((at instr 2) + 1))
-		atPut instr 2 op
+		op = nil
+		if ('pushBigImmediate' != lastOp) {
+			instr = (at opcodes i)
+			op = (at opcodeToName ((at instr 2) + 1))
+			atPut instr 2 op
+		}
+		lastOp = op
 	}
 }
 
@@ -204,27 +219,27 @@ method decodeImmediates MicroBlocksDecompiler lastInstruction {
 	}
 }
 
-method topBlockForChunkType MicroBlocksDecompiler chunkType {
-	if (isNil chunkType) {
-		return nil
-	} (chunkType <= 2) { // plain command or reporter
-		return nil
-	} (3 == chunkType) {
-		return 'function'
-	} (4 == chunkType) {
-		return 'whenStarted'
-	} (5 == chunkType) {
-		return 'whenCondition'
+method addHatBlock MicroBlocksDecompiler chunkType code {
+	result = code
+	if (4 == chunkType) {
+		result = (newCommand 'whenStarted')
+		setField result 'nextBlock' code
 	} (6 == chunkType) {
-		return 'whenBroadcastReceived'
+		if ('recvBroadcast' == (primName code)) {
+			result = (newCommand 'whenBroadcastReceived' (first (argList code)))
+			setField result 'nextBlock' (nextBlock code)
+		}
 	} (7 == chunkType) {
-		return 'whenButtonPressed A'
+		result = (newCommand 'whenButtonPressed' 'A')
+		setField result 'nextBlock' code
 	} (8 == chunkType) {
-		return 'whenButtonPressed B'
+		result = (newCommand 'whenButtonPressed' 'B')
+		setField result 'nextBlock' code
 	} (9 == chunkType) {
-		return 'whenButtonPressed A+B'
+		result = (newCommand 'whenButtonPressed' 'A+B')
+		setField result 'nextBlock' code
 	}
-	return nil
+	return result
 }
 
 // Loops
@@ -239,29 +254,63 @@ method replaceLoops MicroBlocksDecompiler seq {
 			(isOneOf (cmdOp this cmd) 'jmp' 'jmpFalse' 'decrementAndJmp')
 			((cmdArg this cmd) < 0)) {
 				loopType = (loopTypeAt this i seq)
-				bodyStart = (jumpTarget this cmd)
-				bodyEnd = (i - 1)
-				loopStart = bodyStart
-				loopEnd = i
-				if ('for' == loopType) {
-					loopStart = (bodyStart - 3)
-					bodyEnd = (i - 2)
-					loopEnd = (i + 1)
-				} (isOneOf loopType 'repeat' 'repeatUntil') {
+				if ('whenCondition' == loopType) {
+					condition = (copyFromTo seq 4 (i - 1))
+					bodyStart = (i + 1)
+					bodyEnd = ((count seq) - 1)
+					body = (replaceIfs this (copyFromTo seq bodyStart bodyEnd))
+					whenHat = (array 1 'whenCondition' condition body)
+					seq = (array whenHat)
+					i = ((count seq) + 1)
+				} ('repeatUntil' == loopType) {
+					bodyStart = (jumpTarget this cmd)
 					loopStart = (bodyStart - 1)
+					conditionStart = (jumpTarget this (cmdAt this seq loopStart))
+					conditionEnd = (i - 1)
+					bodyEnd = (conditionStart - 1)
+					loopEnd = i
+
+					bodyStart = (indexOf seq (cmdAt this seq bodyStart))
+					bodyEnd = (indexOf seq (cmdAt this seq bodyEnd))
+					body = (replaceIfs this (copyFromTo seq bodyStart bodyEnd))
+
+					conditionStart = (indexOf seq (cmdAt this seq conditionStart))
+					conditionEnd = (indexOf seq (cmdAt this seq conditionEnd))
+					condition = (replaceIfs this (copyFromTo seq conditionStart conditionEnd))
+
+					newCmd = (array 0 'repeatUntil' condition body)
+
+					seq = (join
+						(copyFromTo seq 1 (loopStart - 1))
+						(array newCmd)
+						(copyFromTo seq (loopEnd + 1) (count seq)))
+					i = loopStart
+				} else {
+					bodyStart = (jumpTarget this cmd)
+					bodyEnd = (i - 1)
+					loopStart = bodyStart
+					loopEnd = i
+					if ('for' == loopType) {
+						forIndexVar = (cmdArg this (at seq (i - 1)))
+						loopStart = (bodyStart - 3)
+						bodyEnd = (i - 2)
+						loopEnd = (i + 1)
+					} ('repeat' == loopType) {
+						loopStart = (bodyStart - 1)
+					}
+					loopStart = (indexOf seq (cmdAt this seq loopStart))
+					loopEnd = (indexOf seq (cmdAt this seq loopEnd))
+					body = (replaceIfs this (copyFromTo seq bodyStart bodyEnd))
+					newCmd = (array 0 loopType body)
+					if ('for' == loopType) {
+						newCmd = (copyWith newCmd forIndexVar)
+					}
+					seq = (join
+						(copyFromTo seq 1 (loopStart - 1))
+						(array newCmd)
+						(copyFromTo seq (loopEnd + 1) (count seq)))
+					i = loopStart
 				}
-				loopStart = (indexOf seq (cmdAt this seq loopStart))
-				loopEnd = (indexOf seq (cmdAt this seq loopEnd))
-				newCmd = (array 0 loopType (copyFromTo seq bodyStart bodyEnd))
-				if ('repeatUntil' == loopType) {
-					conditionStart = (+ loopStart (cmdArg this (at seq loopStart)) 1)
-					newCmd = (copyWith newCmd conditionStart)
-				}
-				seq = (join
-					(copyFromTo seq 1 (loopStart - 1))
-					(array newCmd)
-					(copyFromTo seq (loopEnd + 1) (count seq)))
-				i = loopStart
 		} else {
 			i += 1
 		}
@@ -270,17 +319,23 @@ method replaceLoops MicroBlocksDecompiler seq {
 }
 
 method loopTypeAt MicroBlocksDecompiler i seq {
-	cmd = (cmdOp this (at seq i))
-	if ('decrementAndJmp' == cmd) { return 'repeat' }
-	if ('jmp' == cmd) {
+	cmd = (at seq i)
+	op = (cmdOp this cmd)
+	if ('decrementAndJmp' == op) { return 'repeat' }
+	if ('jmp' == op) {
 		if ('forLoop' == (cmdOp this (at seq (i - 1)))) {
 			return 'for'
 		} else {
 			return 'forever'
 		}
 	}
-	if ('jmpFalse' == cmd) {
-		loopStart = (i + (cmdArg this (at seq i)))
+	if ('jmpFalse' == op) {
+		loopStart = (i + (cmdArg this cmd))
+		if (and (1 == loopStart)
+				('jmp' == (cmdOp this (last seq)))
+				(2 == (jumpTarget this (last seq)))) {
+					return 'whenCondition'
+		}
 		if ('jmp' == (cmdOp this (at seq loopStart))) {
 			return 'repeatUntil'
 		} else {
@@ -374,6 +429,10 @@ method decode MicroBlocksSequenceDecoder seq {
 			i = (decodeOldANDorORreporter this op seq i)
 		} (isOneOf op 'jmpAnd' 'jmpOr') { // new style "and" or "or" reporter
 			i = (decodeNewANDorORreporter this op seq i)
+		} ('pushBigImmediate' == op) {
+			next = (at seq (i + 1))
+			add stack (((at next 3) << 8) | (at next 2))
+			i += 2
 		} else {
 			decodeCmd this (at seq i)
 			i += 1
@@ -422,7 +481,7 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 	cmdArg = (cmdArg this cmd)
 	if ('halt' == op) {
 		add code (newCommand 'stopTask')
-	} (isOneOf op 'pushImmediate' 'pushBigImmediate' 'pushLiteral') {
+	} (isOneOf op 'pushImmediate' 'pushLiteral') {
 		add stack cmdArg
 	} ('pushVar' == op) {
 		add stack (newReporter 'v' (join 'V' cmdArg))
@@ -468,24 +527,27 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 				(removeLast stack)
 				(codeForSequence (at cmd 3)))
 		}
+	} ('whenCondition' == op) {
+		whenHat = (newCommand 'whenCondition' (codeForSequence (at cmd 3)))
+		if (not (isEmpty (at cmd 4))) {
+			setField whenHat 'nextBlock' (codeForSequence (at cmd 4))
+		}
+		add code whenHat
 	// loops
 	} ('forever' == op) {
-		// xxx placeholder
-		add code (newCommand (join op '_placeholder'))
+		add code (newCommand 'forever' (codeForSequence cmdArg))
 	} ('repeat' == op) {
-		// xxx placeholder
-		add code (newCommand (join op '_placeholder'))
+		add code (newCommand 'repeat' (removeLast stack) (codeForSequence cmdArg))
 	} ('for' == op) {
-		// xxx placeholder
-		add code (newCommand (join op '_placeholder'))
+		indexVarName = (join 'L' (at cmd 4)) // xxx look up actual local name
+		add code (newCommand 'for' indexVarName (removeLast stack) (codeForSequence cmdArg))
 	} ('repeatUntil' == op) {
-		// xxx placeholder
-		add code (newCommand (join op '_placeholder'))
+		add code (newCommand 'repeatUntil' (codeForSequence cmdArg) (codeForSequence (at cmd 4)))
 	} ('waitUntil' == op) {
-		// xxx placeholder
-		add code (newCommand (join op '_placeholder'))
+		add code (newCommand 'waitUntil' (codeForSequence cmdArg))
 	} ('callFunction' == op) {
 		// xxx placeholder
+print cmd
 		add code (newCommand (join op '_placeholder'))
 	} (contains reporters op) {
 		add stack (makeReporter this op cmdArg)
@@ -496,9 +558,12 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 
 method makeCommand MicroBlocksSequenceDecoder op argCount {
 	if ('callCommandPrimitive' == op) {
-		primName = (removeLast stack)
-		primSet = (removeLast stack)
+		argsStart = ((count stack) - (argCount - 1))
+		primName = (at stack argsStart)
+		primSet = (at stack (argsStart + 1))
 		op = (join '[' primSet ':' primName ']')
+		removeAt stack argsStart
+		removeAt stack argsStart
 		argCount += -2
 	}
 
@@ -517,9 +582,12 @@ method makeCommand MicroBlocksSequenceDecoder op argCount {
 
 method makeReporter MicroBlocksSequenceDecoder op argCount {
 	if ('callReporterPrimitive' == op) {
-		primName = (removeLast stack)
-		primSet = (removeLast stack)
+		argsStart = ((count stack) - (argCount - 1))
+		primName = (at stack argsStart)
+		primSet = (at stack (argsStart + 1))
 		op = (join '[' primSet ':' primName ']')
+		removeAt stack argsStart
+		removeAt stack argsStart
 		argCount += -2
 	}
 
