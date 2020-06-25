@@ -598,7 +598,7 @@ static void runTask(Task *task) {
 		}
 		DISPATCH();
 	initLocals_op:
-		// Reserve stack space for 'arg' locals initialized to false
+		// Reserve stack space for 'arg' locals initialized to zero
 		STACK_CHECK(arg);
 		while (arg-- > 0) *sp++ = zeroObj;
 		DISPATCH();
