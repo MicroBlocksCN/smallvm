@@ -1083,6 +1083,8 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 	select (contents categoriesFrame) nil
 	select (contents libFrame) libName
 	updateBlocks this
+	saveScripts this
+	restoreScripts this
 }
 
 method updateLibraryList MicroBlocksScripter {

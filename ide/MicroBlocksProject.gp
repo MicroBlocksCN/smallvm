@@ -85,6 +85,10 @@ method libraryNamed MicroBlocksProject name { return (at libraries name) }
 
 method addLibrary MicroBlocksProject aMicroBlocksModule {
 	libName = (moduleName aMicroBlocksModule)
+	oldLib = (at libraries libName)
+	if (notNil oldLib) {
+		updatingLibrary oldLib aMicroBlocksModule
+	}
 	remove libraries libName
 	atPut libraries libName aMicroBlocksModule
 
@@ -636,20 +640,6 @@ method needsQuotes MicroBlocksModule s {
 method loadFromCmds MicroBlocksModule cmdList versionChecking {
 	loadModuleNameAndCategory this cmdList
 	loadVersion this cmdList
-	if versionChecking {
-		newerVersion = (lookForNewerVersion this)
-		if (and
-			(notNil newerVersion)
-			(confirm (global 'page') nil
-				(join 'Found a newer version of ' moduleName (newline)
-					'Do you want me to update the one in the project?'))
-		){
-			// Resolve mismatches and update project blockSpecs
-			updateSpecs this cmdList newerVersion
-			importDependencies newerVersion (scripter (smallRuntime))
-			return newerVersion
-		}
-	}
 	loadAuthor this cmdList
 	loadDependencies this cmdList
 	loadTags this cmdList
@@ -659,6 +649,20 @@ method loadFromCmds MicroBlocksModule cmdList versionChecking {
 	loadSpecs this cmdList
 	loadFunctions this cmdList
 	loadScripts this cmdList
+	if versionChecking {
+		newerVersion = (lookForNewerVersion this)
+		if (and
+			(notNil newerVersion)
+			(confirm (global 'page') nil
+				(join 'Found a newer version of ' moduleName (newline)
+					'Do you want me to update the one in the project?'))
+		) {
+			// Resolve mismatches and update project blockSpecs
+			updatingLibrary this newerVersion
+			importDependencies newerVersion (scripter (smallRuntime))
+			return newerVersion
+		}
+	}
 	return this
 }
 
@@ -708,7 +712,8 @@ method lookForNewerVersion MicroBlocksModule {
 	return nil
 }
 
-method updateSpecs MicroBlocksModule cmdList newerModule {
+method updateSpecsOLD MicroBlocksModule cmdList newerModule {
+	// xxx remove this later...
 	oldSpecs = (blockSpecs (project (findProjectEditor)))
 	for oldSpec (values oldSpecs) {
 		oldOp = (blockOp oldSpec)
@@ -726,6 +731,30 @@ method updateSpecs MicroBlocksModule cmdList newerModule {
 			setField oldSpec 'specs' (array obsoleteOp)
 			atPut oldSpecs obsoleteOp oldSpec
 			add (blockList newerModule) obsoleteOp
+		}
+	}
+}
+
+method updatingLibrary MicroBlocksModule newerModule {
+	// Called when updating an existing library (the receiver) to a newer version.
+	// Update the block specs of existing functions that are being updated.
+	// Retain the block specs for any functions that are being removed
+	// and add "obsolete" to their labels to allow them to be identified
+	// in any scripts in which they appear.
+
+	newSpecs = (blockSpecs newerModule)
+	projectSpecs = (blockSpecs (project (findProjectEditor)))
+	for oldSpec (values (blockSpecs this)) { // for each spec in this module
+		op = (blockOp oldSpec)
+		if (contains newSpecs op) {
+			// update exising spec for op
+			atPut projectSpecs op (at newSpecs op)
+		} else {
+			// mark old function as obsolete and append to module
+			obsoletedLabel = (join 'obsolete ' (first (specs oldSpec)))
+			atPut (specs oldSpec) 1 obsoletedLabel
+			atPut projectSpecs op oldSpec
+			add (blockList newerModule) op
 		}
 	}
 }
