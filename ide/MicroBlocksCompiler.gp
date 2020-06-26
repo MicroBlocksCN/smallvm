@@ -313,8 +313,8 @@ method initOpcodes SmallCompiler {
 		initLocals 28
 		getArg 29
 		getLastBroadcast 30
-	RESERVED 31
-	RESERVED 32
+		jmpOr 31
+		jmpAnd 32
 		minimum 33
 		maximum 34
 		< 35
@@ -495,6 +495,7 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			removeLast result // remove the final halt
 	}
 	appendLiterals this result
+//	appendLocalNames this result // xxx not yet!
 	return result
 }
 
@@ -724,6 +725,46 @@ method scaledRGB SmallCompiler aColor {
 	return (pixelRGB color)
 }
 
+method instructionsForAndNEW SmallCompiler args {
+	tests = (list)
+	totalInstrCount = 0
+	for expr args {
+		instrList = (instructionsForExpression this expr)
+		add tests instrList
+		totalInstrCount += ((count instrList) + 1)
+	}
+	totalInstrCount += -1 // no jump required after final arg
+
+	result = (list)
+	for i (count tests) {
+		addAll result (at tests i)
+		if (i < (count tests)) {
+			add result (array 'jmpAnd' (totalInstrCount - ((count result) + 1)))
+		}
+	}
+	return result
+}
+
+method instructionsForOrNEW SmallCompiler args {
+	tests = (list)
+	totalInstrCount = 0
+	for expr args {
+		instrList = (instructionsForExpression this expr)
+		add tests instrList
+		totalInstrCount += ((count instrList) + 1)
+	}
+	totalInstrCount += -1 // no jump required after final arg
+
+	result = (list)
+	for i (count tests) {
+		addAll result (at tests i)
+		if (i < (count tests)) {
+			add result (array 'jmpOr' (totalInstrCount - ((count result) + 1)))
+		}
+	}
+	return result
+}
+
 method instructionsForAnd SmallCompiler args {
 	tests = (list)
 	totalInstrCount = 3 // final three instructions
@@ -732,7 +773,6 @@ method instructionsForAnd SmallCompiler args {
 		add tests instrList
 		totalInstrCount += ((count instrList) + 1)
 	}
-	instrCount = 0
 	result = (list)
 	for t tests {
 		addAll result t
@@ -752,7 +792,6 @@ method instructionsForOr SmallCompiler args {
 		add tests instrList
 		totalInstrCount += ((count instrList) + 1)
 	}
-	instrCount = 0
 	result = (list)
 	for t tests {
 		addAll result t
@@ -924,6 +963,17 @@ method wordsForLiteral SmallCompiler literal {
 		return (headerWords + (floor (((byteCount literal) + 4) / 4)))
 	}
 	error 'Illegal literal type:' literal
+}
+
+// local variable names
+
+method appendLocalNames SmallCompiler instructionList {
+	// Append the local variable names, in order, to the instruction. The local variable names
+	// follow the last literal. Local variable names, if available, are used by the decompiler.
+
+	for pair (sortedPairs localVars) {
+		add instructionList (last pair)
+	}
 }
 
 // binary code generation
