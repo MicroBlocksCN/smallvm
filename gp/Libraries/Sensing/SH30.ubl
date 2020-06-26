@@ -1,0 +1,37 @@
+module SH30 Input
+author MicroBlocks
+version 1 1 
+tags environmental temperature humidity d1mini 
+description 'Support for the SH30 environmental sensor.
+
+Reads relative humidity (%) and temperature (°C).
+
+This sensor is included as a shield for the WEMOS D1Mini.'
+variables '_SH30 data' 
+
+	spec 'r' 'SH30 humidity' 'SH30 humidity'
+	spec 'r' 'SH30 temperature' 'SH30 temperature'
+	spec ' ' '_SH30 read data' '_SH30 read data'
+
+to 'SH30 humidity' {
+  '_SH30 read data'
+  return (((((at 4 (v '_SH30 data')) * 256) + (at 5 (v '_SH30 data'))) * 100) / 65535)
+}
+
+to 'SH30 temperature' {
+  '_SH30 read data'
+  return ((((((at 1 (v '_SH30 data')) * 256) + (at 2 (v '_SH30 data'))) * 175) / 65535) - 45)
+}
+
+to '_SH30 read data' {
+  if ((v '_SH30 data') == 0) {
+    comment '0x2220: 2 readings per second, medium repeatability.
+0xE000: Start continuous read mode.'
+    '[sensors:i2cWrite]' (hexToInt '45') ('[data:makeList]' (hexToInt '22') (hexToInt '20') (hexToInt 'E0') (hexToInt '00'))
+    '_SH30 data' = (newList 6)
+    waitMillis 250
+  }
+  comment 'Read all data into _SH30 data'
+  '[sensors:i2cRead]' (hexToInt '45') (v '_SH30 data')
+}
+

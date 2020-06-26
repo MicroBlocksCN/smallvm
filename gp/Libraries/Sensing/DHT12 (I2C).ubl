@@ -1,0 +1,47 @@
+module 'DHT12 (I2C)' Input
+author MicroBlocks
+version 1 0 
+tags environmental temperature humidity d1mini 
+description 'Support for the DHT12 sensor, I2C version.
+
+This is the one that comes as a shield for the WEMOS D1 Mini.
+
+Reads temperature in °C and humidity as a percentage.
+
+Both values are returned as a list with the first item as the integer part and the second item as the fractional part.
+For instance, a temperature of 33.12°C will be returned as a list with 33 as the first item and 12 as the second item.
+'
+variables '_DHT data' 
+
+	spec 'r' 'DHT humidity' 'DHT humidity'
+	spec 'r' 'DHT temperature' 'DHT temperature'
+	spec 'r' '_DHT checksum' '_DHT checksum'
+	spec ' ' '_DHT read data' '_DHT read data'
+
+to 'DHT humidity' {
+  '_DHT read data'
+  if ('_DHT checksum') {
+    return ('[data:makeList]' (at 1 (v '_DHT data')) (at 2 (v '_DHT data')))
+  }
+}
+
+to 'DHT temperature' {
+  '_DHT read data'
+  if ('_DHT checksum') {
+    return ('[data:makeList]' (at 3 (v '_DHT data')) (at 4 (v '_DHT data')))
+  }
+}
+
+to '_DHT checksum' {
+  return ((at 5 (v '_DHT data')) == ((((at 1 (v '_DHT data')) + (at 2 (v '_DHT data'))) + ((at 3 (v '_DHT data')) + (at 4 (v '_DHT data')))) % 255))
+}
+
+to '_DHT read data' {
+  if ((v '_DHT data') == 0) {'_DHT data' = (newList 5)}
+  comment 'Init reading'
+  '[sensors:i2cWrite]' (hexToInt '5C') ('[data:makeList]' 0)
+  waitMillis 50
+  comment 'Read all data into list'
+  '[sensors:i2cRead]' (hexToInt '5C') (v '_DHT data')
+}
+
