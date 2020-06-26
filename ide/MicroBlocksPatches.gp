@@ -216,7 +216,6 @@ method finchOrientationMenu InputSlot {
   addItem menu 'Tilt Right'
   addItem menu 'Level'
   addItem menu 'Upside Down'
-  addItem menu 'Shake'
   return menu
 }
 
