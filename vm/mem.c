@@ -43,14 +43,11 @@
   #define OBJSTORE_BYTES 16000
 #elif defined(ARDUINO_ARCH_ESP32)
   #define OBJSTORE_BYTES 48000 // max that compiles is 56000
-#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
-  #define OBJSTORE_BYTES 5900
-  // The D1 mini TFT shield needs just a tiny bit more memory to work
 #else
-  #define OBJSTORE_BYTES 6000
+  #define OBJSTORE_BYTES 5000
   // max that works on Wemos D1 mini (ESP8266) is 11000
   // however, WiFi is unreliable for 4 concurrent requestions even down to 7200
-  // 6000 seems stable for up to 10 concurrent requests
+  // 5000 seems stable for up to 10 concurrent requests
   // max that compiles for all boards is 16886 (17624 NodeMCU)
 #endif
 
