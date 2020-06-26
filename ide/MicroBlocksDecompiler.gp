@@ -8,15 +8,11 @@
 // John Maloney, March, 2020
 
 // To do:
-// [x] decode "or" and "and"
-// [x] decode "if"
-// [x] decode "when" hats
-// [x] use chunkType to generate hat blocks
-// [x] generate code for loops
+// [ ] handle function calls
+// [ ] make testDecompiler generate blocks
+// [ ] make test method that clears current scripts then fetched and decompiles code from board
 // [ ] make compiler store local names
 // [ ] use local names
-// [ ] make test method that clears current scripts then fetched and decompiles code from board
-// [ ] handle function calls
 // [ ] store function spec and parameter names
 
 to decompileBytecodes bytecodes chunkType {
@@ -76,6 +72,8 @@ method jumpTarget MicroBlocksDecompiler jmpCmd {
 
 method cmdAt MicroBlocksDecompiler seq origIndex {
 	// Return the command with the given original index in the given sequence.
+	// Since the sequence may have been modified, this requires scanning the opcodes
+	// to find the one tagged with origIndex.
 
 	for cmd seq {
 		if (origIndex == (cmdIndex this cmd)) { return cmd }
@@ -92,6 +90,8 @@ method cmdIs MicroBlocksDecompiler cmd op arg {
 // Debugging
 
 method printSequence MicroBlocksDecompiler seq indent {
+	// Used during debugging to print a partially decoded opcode sequence with indentation.
+
 	if (isNil indent) { indent = 0 }
 	spaces = (joinStrings (newArray indent ' '))
 	for cmd seq {
@@ -122,6 +122,8 @@ method printSequence MicroBlocksDecompiler seq indent {
 }
 
 method prettyPrint MicroBlocksDecompiler expression {
+	// Used during debugging to print the GP code output of the decompiler.
+
 	pp = (new 'PrettyPrinter')
 	if (isClass expression 'Reporter') {
 		if (isOneOf (primName expression) 'v') {
@@ -139,8 +141,8 @@ method prettyPrint MicroBlocksDecompiler expression {
 
 method findLastInstruction MicroBlocksDecompiler {
 	// Find the index of the last instruction in opcodes. The last instruction
-	// may be followed by literal values such as strings.
-	// Replace string literal offsets with the referenced string.
+	// may be followed by literal values such as strings. Replace the offsets
+	// in 'pushLiteral' instructions with the referenced literal string.
 
 	pushLiteralOpcode = 4
 	result = (count opcodes)
@@ -159,6 +161,8 @@ method findLastInstruction MicroBlocksDecompiler {
 }
 
 method readLiteral MicroBlocksDecompiler literalIndex {
+	// Return the literal string starting at the given index in the opcode list.
+
 	header = (at opcodes literalIndex)
 	lowByte = (at header 2)
 	if (4 != (lowByte & 15)) {
@@ -183,6 +187,10 @@ method readLiteral MicroBlocksDecompiler literalIndex {
 }
 
 method getOpNames MicroBlocksDecompiler lastInstruction {
+	// Replace the numerical opcode of each opcode entry with its name except
+	// for entries immediately following a pushBigImmediate instruction, which
+	// are inline integer constants.
+
 	opcodeDefs = (opcodes (initialize (new 'SmallCompiler')))
 	opcodeToName = (range 0 255)
 	for p (sortedPairs opcodeDefs false) {
@@ -200,6 +208,8 @@ method getOpNames MicroBlocksDecompiler lastInstruction {
 }
 
 method decodeImmediates MicroBlocksDecompiler lastInstruction {
+	// Decode values encoded in pushImmediate instructions (true, false, or small integer.)
+
 	for i lastInstruction {
 		instr = (at opcodes i)
 		if ('pushImmediate' == (cmdOp this instr)) {
@@ -220,6 +230,8 @@ method decodeImmediates MicroBlocksDecompiler lastInstruction {
 }
 
 method addHatBlock MicroBlocksDecompiler chunkType code {
+	// Prefix given code with a hat block based on chunkType and return the result.
+
 	result = code
 	if (4 == chunkType) {
 		result = (newCommand 'whenStarted')
@@ -278,11 +290,11 @@ method replaceLoops MicroBlocksDecompiler seq {
 					conditionEnd = (indexOf seq (cmdAt this seq conditionEnd))
 					condition = (replaceIfs this (copyFromTo seq conditionStart conditionEnd))
 
-					newCmd = (array 0 'repeatUntil' condition body)
+					loopCmd = (array 0 'repeatUntil' condition body)
 
 					seq = (join
 						(copyFromTo seq 1 (loopStart - 1))
-						(array newCmd)
+						(array loopCmd)
 						(copyFromTo seq (loopEnd + 1) (count seq)))
 					i = loopStart
 				} else {
@@ -301,13 +313,13 @@ method replaceLoops MicroBlocksDecompiler seq {
 					loopStart = (indexOf seq (cmdAt this seq loopStart))
 					loopEnd = (indexOf seq (cmdAt this seq loopEnd))
 					body = (replaceIfs this (copyFromTo seq bodyStart bodyEnd))
-					newCmd = (array 0 loopType body)
+					loopCmd = (array 0 loopType body)
 					if ('for' == loopType) {
-						newCmd = (copyWith newCmd forIndexVar)
+						loopCmd = (copyWith loopCmd forIndexVar)
 					}
 					seq = (join
 						(copyFromTo seq 1 (loopStart - 1))
-						(array newCmd)
+						(array loopCmd)
 						(copyFromTo seq (loopEnd + 1) (count seq)))
 					i = loopStart
 				}
@@ -319,6 +331,8 @@ method replaceLoops MicroBlocksDecompiler seq {
 }
 
 method loopTypeAt MicroBlocksDecompiler i seq {
+	// Return the loop type based on the pattern of jumps starting at i in the given sequence.
+
 	cmd = (at seq i)
 	op = (cmdOp this cmd)
 	if ('decrementAndJmp' == op) { return 'repeat' }
@@ -348,7 +362,7 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 // Conditionals
 
 method replaceIfs MicroBlocksDecompiler seq {
-	// Replace "if" statements in the given sequence and return the result.
+	// Replace "if" and "if-else" statements in the given sequence and return the result.
 
 	i = 1
 	while (i <= (count seq)) {
@@ -370,10 +384,10 @@ method replaceIfs MicroBlocksDecompiler seq {
 				falseCase = nil
 				ifEnd = (indexOf seq (cmdAt this seq trueEnd))
 			}
-			ifCmd = (array 0 'if' trueCase falseCase)
+			conditionalCmd = (array 0 'if' trueCase falseCase)
 			seq = (join
 				(copyFromTo seq 1 (i - 1))
-				(array ifCmd)
+				(array conditionalCmd)
 				(copyFromTo seq (ifEnd + 1) (count seq)))
 			i = (ifEnd + 1)
 		} else {
@@ -415,9 +429,9 @@ to codeForSequence seq {
 
 method decode MicroBlocksSequenceDecoder seq {
 	// Decode the given sequence of opecodes and return a GP Reporter (if it is an expression)
-	// or a list of GP Commands (if it is a command or sequence of commands).
-	// Assume the sequence is complete (i.e. it doesn't end leaving something on the stack)
-	// and that it does not contain any control structures (loops or if statements).
+	// Commands (if it is a command or sequence of commands). The opcode sequence must be
+	// complete and well-formed (e.g. if it encodes a command sequence it should leave the
+	// stack empty) and does not contain any control structures (loops or if statements).
 
 	if (isNil reporters)  { buildReporterDictionary this }
 	code = (list)
@@ -491,6 +505,8 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 		add code (newCommand 'stopTask')
 	} (isOneOf op 'pushImmediate' 'pushLiteral') {
 		add stack cmdArg
+
+	// Variables
 	} ('pushVar' == op) {
 		add stack (newReporter 'v' (join 'V' cmdArg))
 	} ('storeVar' == op) {
@@ -511,8 +527,9 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 		add code (newCommand '=' (join 'L' cmdArg) (removeLast stack))
 	} ('incrementLocal' == op) {
 		add code (newCommand '+=' (join 'L' cmdArg) (removeLast stack))
+
 	} ('initLocals' == op) {
-		// do nothing
+		// skip
 	} ('returnResult' == op) {
 		add code (makeCommand this op 1)
 	} ('if' == op) {
@@ -541,6 +558,7 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 			setField whenHat 'nextBlock' (codeForSequence (at cmd 4))
 		}
 		add code whenHat
+
 	// loops
 	} ('forever' == op) {
 		add code (newCommand 'forever' (codeForSequence cmdArg))
@@ -553,6 +571,8 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 		add code (newCommand 'repeatUntil' (codeForSequence cmdArg) (codeForSequence (at cmd 4)))
 	} ('waitUntil' == op) {
 		add code (newCommand 'waitUntil' (codeForSequence cmdArg))
+
+	// everything else
 	} (contains reporters op) {
 		add stack (makeCommand this op cmdArg)
 	} else {
@@ -561,6 +581,8 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 }
 
 method makeCommand MicroBlocksSequenceDecoder op argCount {
+	// Return a GP Command or Reporter for the given op taking argCount items from the stack.
+
 	if (or ('callCommandPrimitive' == op) ('callReporterPrimitive' == op)) {
 		argsStart = ((count stack) - (argCount - 1))
 		primName = (at stack argsStart)
