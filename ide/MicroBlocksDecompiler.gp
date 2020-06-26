@@ -9,7 +9,7 @@
 
 // To do:
 // [ ] handle function calls
-// [ ] make testDecompiler generate blocks
+// [x] make testDecompiler generate blocks
 // [ ] make test method that clears current scripts then fetched and decompiles code from board
 // [ ] make compiler store local names
 // [ ] use local names
@@ -44,8 +44,11 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	getOpNames this lastInstruction
 	decodeImmediates this lastInstruction
 	sequence = (copyFromTo opcodes 1 lastInstruction)
+printSequence this sequence
+print '----'
+return
 
- 	sequence = (replaceLoops this sequence)
+	sequence = (replaceLoops this sequence)
 	sequence = (replaceIfs this sequence)
 
 	print '----'
@@ -54,8 +57,14 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 
 	if (cmdIs this (last sequence) 'halt' 0) { removeLast sequence }
 	code = (addHatBlock this chunkType (codeForSequence sequence))
-
 	print (prettyPrint this code)
+	showCodeInHand this code
+}
+
+method showCodeInHand MicroBlocksDecompiler code {
+	block = (toBlock code)
+	grab (hand (global 'page')) block
+	fixBlockColor block
 }
 
 // Command tuple operations
@@ -84,7 +93,7 @@ method cmdAt MicroBlocksDecompiler seq origIndex {
 method cmdIs MicroBlocksDecompiler cmd op arg {
 	// Return true of the given command has the given op and argument.
 
-	return (and (op == (at cmd 2)) (arg == (at cmd 3)))
+	return (and (notNil cmd) (op == (at cmd 2)) (arg == (at cmd 3)))
 }
 
 // Debugging
@@ -215,7 +224,7 @@ method decodeImmediates MicroBlocksDecompiler lastInstruction {
 		if ('pushImmediate' == (cmdOp this instr)) {
 			val = (last instr)
 			decoded = val
-			if (1 == (val % 2)) {
+			if (1 == (val & 1)) {
 				decoded = (floor (val / 2)) // small integer
 			} (0 == val) {
 				decoded = false
@@ -424,6 +433,7 @@ defineClass MicroBlocksSequenceDecoder reporters code stack
 to codeForSequence seq {
 	// Return a GP Reporter or list GP Commands for the given expression.
 
+	if (isEmpty seq) { return nil }
 	return (decode (new 'MicroBlocksSequenceDecoder') seq)
 }
 
@@ -433,7 +443,7 @@ method decode MicroBlocksSequenceDecoder seq {
 	// complete and well-formed (e.g. if it encodes a command sequence it should leave the
 	// stack empty) and does not contain any control structures (loops or if statements).
 
-	if (isNil reporters)  { buildReporterDictionary this }
+	if (isNil reporters) { buildReporterDictionary this }
 	code = (list)
 	stack = (list)
 	i = 1
@@ -531,7 +541,7 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 	} ('initLocals' == op) {
 		// skip
 	} ('returnResult' == op) {
-		add code (makeCommand this op 1)
+		add code (makeCommand this 'return' 1)
 	} ('if' == op) {
 		if (notNil (at cmd 4)) { // if-else
 			elsePart = (codeForSequence (at cmd 4))
@@ -583,17 +593,18 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 method makeCommand MicroBlocksSequenceDecoder op argCount {
 	// Return a GP Command or Reporter for the given op taking argCount items from the stack.
 
+	isReporter = (contains reporters op)
 	if (or ('callCommandPrimitive' == op) ('callReporterPrimitive' == op)) {
 		argsStart = ((count stack) - (argCount - 1))
 		primName = (at stack argsStart)
 		primSet = (at stack (argsStart + 1))
-		op = (join '[' primSet ':' primName ']')
+		op = (join '[' primName ':' primSet ']')
 		removeAt stack argsStart
 		removeAt stack argsStart
 		argCount += -2
 	}
 
-	if (contains reporters op) {
+	if isReporter {
 		result = (newIndexable 'Reporter' argCount)
 	} else {
 		result = (newIndexable 'Command' argCount)
