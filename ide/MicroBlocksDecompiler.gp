@@ -433,6 +433,14 @@ method decode MicroBlocksSequenceDecoder seq {
 			next = (at seq (i + 1))
 			add stack (((at next 3) << 8) | (at next 2))
 			i += 2
+		} ('callFunction' == op) {
+			// xxx need to get actual function name
+			// xxx need to distinguish between commands and reporters
+			cmdArg = (cmdArg this (at seq i))
+			argCount = (cmdArg & 255)
+			fName = (join 'f' ((cmdArg >> 8) & 255))
+			add code (makeCommand this fName argCount)
+			i += 2
 		} else {
 			decodeCmd this (at seq i)
 			i += 1
@@ -545,19 +553,15 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 		add code (newCommand 'repeatUntil' (codeForSequence cmdArg) (codeForSequence (at cmd 4)))
 	} ('waitUntil' == op) {
 		add code (newCommand 'waitUntil' (codeForSequence cmdArg))
-	} ('callFunction' == op) {
-		// xxx placeholder
-print cmd
-		add code (newCommand (join op '_placeholder'))
 	} (contains reporters op) {
-		add stack (makeReporter this op cmdArg)
+		add stack (makeCommand this op cmdArg)
 	} else {
 		add code (makeCommand this op cmdArg)
 	}
 }
 
 method makeCommand MicroBlocksSequenceDecoder op argCount {
-	if ('callCommandPrimitive' == op) {
+	if (or ('callCommandPrimitive' == op) ('callReporterPrimitive' == op)) {
 		argsStart = ((count stack) - (argCount - 1))
 		primName = (at stack argsStart)
 		primSet = (at stack (argsStart + 1))
@@ -567,31 +571,11 @@ method makeCommand MicroBlocksSequenceDecoder op argCount {
 		argCount += -2
 	}
 
-	result = (newIndexable 'Command' argCount)
-	setField result 'primName' op
-	setField result 'lineno' 1
-	setField result 'fileName' ''
-
-	j = (count result) // index of last arg
-	repeat argCount {
-		setField result j (removeLast stack)
-		j += -1
+	if (contains reporters op) {
+		result = (newIndexable 'Reporter' argCount)
+	} else {
+		result = (newIndexable 'Command' argCount)
 	}
-	return result
-}
-
-method makeReporter MicroBlocksSequenceDecoder op argCount {
-	if ('callReporterPrimitive' == op) {
-		argsStart = ((count stack) - (argCount - 1))
-		primName = (at stack argsStart)
-		primSet = (at stack (argsStart + 1))
-		op = (join '[' primSet ':' primName ']')
-		removeAt stack argsStart
-		removeAt stack argsStart
-		argCount += -2
-	}
-
-	result = (newIndexable 'Reporter' argCount)
 	setField result 'primName' op
 	setField result 'lineno' 1
 	setField result 'fileName' ''
