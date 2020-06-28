@@ -19,7 +19,7 @@ to decompileBytecodes bytecodes chunkType {
 	return (decompile (new 'MicroBlocksDecompiler') bytecodes chunkType)
 }
 
-defineClass MicroBlocksDecompiler decoder opcodes
+defineClass MicroBlocksDecompiler decoder opcodes controlStructures
 
 method decompile MicroBlocksDecompiler bytecodes chunkType {
 	// Approach:
@@ -41,19 +41,19 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 		add opcodes (array addr op arg)
 	}
 	lastInstruction = (findLastInstruction this)
+	controlStructures = (newArray lastInstruction)
 	getOpNames this lastInstruction
 	decodeImmediates this lastInstruction
 	sequence = (copyFromTo opcodes 1 lastInstruction)
-printSequence this sequence
-print '----'
+	findLoops this
+	findIfs this
+
+	print '----'
+	printSequence2 this
+	print '----'
+	printSequence3 this 1 (count sequence) 0
+	print '----'
 return
-
-	sequence = (replaceLoops this sequence)
-	sequence = (replaceIfs this sequence)
-
-	print '----'
-	printSequence this sequence
-	print '----'
 
 	if (cmdIs this (last sequence) 'halt' 0) { removeLast sequence }
 	code = (addHatBlock this chunkType (codeForSequence sequence))
@@ -97,6 +97,58 @@ method cmdIs MicroBlocksDecompiler cmd op arg {
 }
 
 // Debugging
+
+method printSequence2 MicroBlocksDecompiler {
+	for i (count controlStructures) {
+		cmd = (at opcodes i)
+		line = (join '' i ': ' (cmdOp this cmd) ' ' (cmdArg this cmd))
+		cntr = (at controlStructures i)
+		if (notNil cntr) { line = (join line ' ' cntr) }
+		print line
+	}
+}
+
+method printSequence3 MicroBlocksDecompiler start end indent {
+	spaces = (joinStrings (newArray indent ' '))
+	i = start
+	while (i <= end) {
+		ctrl = (at controlStructures i)
+		atPut controlStructures i nil // avoid infinite recursion on 'forever'
+		if (notNil ctrl) {
+			op = (first ctrl)
+			if ('if' == op) {
+				print (join spaces op)
+				printSequence3 this (at ctrl 3) (at ctrl 4) (indent + 4)
+			} ('if-else' == op) {
+				print (join spaces op)
+				printSequence3 this (at ctrl 3) (at ctrl 4) (indent + 4)
+				print (join spaces 'else')
+				printSequence3 this (at ctrl 5) (at ctrl 6) (indent + 4)
+			} (isOneOf op 'for' 'forever' 'repeat') {
+				print (join spaces op)
+				printSequence3 this (at ctrl 3) (at ctrl 4) (indent + 4)
+			} ('repeatUntil' == op) {
+				print (join spaces 'until')
+				printSequence3 this (at ctrl 3) (at ctrl 4) (indent + 4)
+				print (join spaces 'do')
+				printSequence3 this (at ctrl 5) (at ctrl 6) (indent + 4)
+			} ('whenCondition' == op) {
+				print 'when:'
+				printSequence3 this (at ctrl 3) (at ctrl 4) (indent + 4)
+				print 'then:'
+				printSequence3 this (at ctrl 5) (at ctrl 6) (indent + 4)
+ 			} else {
+ 				print (join spaces op)
+			}
+			atPut controlStructures i ctrl // restore ctrl to controlStructure
+			i = ((at ctrl 2) + 1)
+		} else {
+			cmd = (at opcodes i)
+			print (join spaces (cmdOp this cmd) ' ' (cmdArg this cmd))
+			i += 1
+		}
+	}
+}
 
 method printSequence MicroBlocksDecompiler seq indent {
 	// Used during debugging to print a partially decoded opcode sequence with indentation.
@@ -339,6 +391,57 @@ method replaceLoops MicroBlocksDecompiler seq {
 	return seq
 }
 
+method findLoops MicroBlocksDecompiler {
+	// Create entries for all loop constructs in the opcode sequence.
+
+	i = 1
+	while (i <= (count opcodes)) {
+		cmd = (at opcodes i)
+		if (and (isOneOf (cmdOp this cmd) 'jmp' 'jmpFalse' 'decrementAndJmp') ((cmdArg this cmd) < 0)) {
+			// a jump instruction with a negative offset marks the end of a loop
+			loopType = (loopTypeAt this i opcodes)
+			if ('whenCondition' == loopType) {
+				loopStart = 2
+				loopEnd = (count opcodes)
+				conditionStart = 4
+				conditionEnd = (i - 1)
+				bodyStart = (i + 1)
+				bodyEnd = ((count opcodes) - 1)
+				loopRec = (array 'whenCondition' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
+			} ('repeatUntil' == loopType) {
+				bodyStart = (jumpTarget this cmd)
+				loopStart = (bodyStart - 1)
+				conditionStart = (jumpTarget this (at opcodes loopStart))
+				conditionEnd = (i - 1)
+				bodyEnd = (conditionStart - 1)
+				loopEnd = i
+				loopRec = (array 'repeatUntil' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
+			} else {
+				bodyStart = (jumpTarget this cmd)
+				bodyEnd = (i - 1)
+				loopStart = bodyStart
+				loopEnd = i
+				if ('for' == loopType) {
+					loopStart = (bodyStart - 3)
+					bodyEnd = (i - 2)
+					loopEnd = (i + 1)
+				} ('repeat' == loopType) {
+					loopStart = (bodyStart - 1)
+				}
+				loopRec = (array loopType loopEnd bodyStart bodyEnd)
+				if ('for' == loopType) {
+					forIndexVar = (cmdArg this (at opcodes (i - 1)))
+					loopRec = (copyWith loopRec forIndexVar)
+				}
+			}
+			atPut controlStructures loopStart loopRec
+			i = (loopEnd + 1)
+		} else {
+			i += 1
+		}
+	}
+}
+
 method loopTypeAt MicroBlocksDecompiler i seq {
 	// Return the loop type based on the pattern of jumps starting at i in the given sequence.
 
@@ -412,6 +515,27 @@ method copySeqFromTo MicroBlocksDecompiler seq from to {
 	startIndex = (indexOf seq (cmdAt this seq from))
 	endIndex = (indexOf seq (cmdAt this seq to))
 	return (copyFromTo seq startIndex endIndex)
+}
+
+method findIfs MicroBlocksDecompiler {
+	// Create entries for all "if" and "if-else" constructs in the opcode sequence.
+
+	for i (count opcodes) {
+		cmd = (at opcodes i)
+		if (and ('jmpFalse' == (cmdOp this cmd)) ((cmdArg this cmd) >= 0) (not (isOr this opcodes cmd))) {
+			trueStart = (i + 1)
+			trueEnd = ((jumpTarget this cmd) - 1)
+			lastCmdOfTrue = (at opcodes trueEnd)
+			if ('jmp' == (cmdOp this lastCmdOfTrue)) {
+				falseStart = (trueEnd + 1)
+				falseEnd = ((jumpTarget this lastCmdOfTrue) - 1)
+				conditionalRec = (array 'if-else' falseEnd trueStart (trueEnd - 1) falseStart falseEnd)
+			} else {
+				conditionalRec = (array 'if' trueEnd trueStart trueEnd)
+			}
+			atPut controlStructures i conditionalRec
+		}
+	}
 }
 
 method isOr MicroBlocksDecompiler seq cmd {
