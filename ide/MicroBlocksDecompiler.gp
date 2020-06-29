@@ -19,7 +19,7 @@ to decompileBytecodes bytecodes chunkType {
 	return (decompile (new 'MicroBlocksDecompiler') bytecodes chunkType)
 }
 
-defineClass MicroBlocksDecompiler decoder opcodes controlStructures
+defineClass MicroBlocksDecompiler reporters opcodes controlStructures code stack
 
 method decompile MicroBlocksDecompiler bytecodes chunkType {
 	// Approach:
@@ -28,7 +28,6 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	//	2. find and replace if's (recursively)
 	//	3. walk the entire tree and generate code
 
-	decoder = (new 'MicroBlocksSequenceDecoder')
 	opcodes = (list)
 	for i (range 1 (count bytecodes) 4) {
 		op = (at bytecodes i)
@@ -41,28 +40,27 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 		add opcodes (array addr op arg)
 	}
 	lastInstruction = (findLastInstruction this)
-	controlStructures = (newArray lastInstruction)
 	getOpNames this lastInstruction
 	decodeImmediates this lastInstruction
-	sequence = (copyFromTo opcodes 1 lastInstruction)
+	opcodes = (copyFromTo opcodes 1 lastInstruction)
+	controlStructures = (newArray (count opcodes))
 	findLoops this
 	findIfs this
 
 	print '----'
 	printSequence2 this
 	print '----'
-	printSequence3 this 1 (count sequence) 0
+	printSequence3 this 1 (count opcodes) 0
 	print '----'
-return
 
-	if (cmdIs this (last sequence) 'halt' 0) { removeLast sequence }
-	code = (addHatBlock this chunkType (codeForSequence sequence))
-	print (prettyPrint this code)
-	showCodeInHand this code
+	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes }
+	gpCode = (addHatBlock this chunkType (codeForSequence this 1 (count opcodes)))
+	print (prettyPrint this gpCode)
+	showCodeInHand this gpCode
 }
 
-method showCodeInHand MicroBlocksDecompiler code {
-	block = (toBlock code)
+method showCodeInHand MicroBlocksDecompiler gpCode {
+	block = (toBlock gpCode)
 	grab (hand (global 'page')) block
 	fixBlockColor block
 }
@@ -290,27 +288,27 @@ method decodeImmediates MicroBlocksDecompiler lastInstruction {
 	}
 }
 
-method addHatBlock MicroBlocksDecompiler chunkType code {
+method addHatBlock MicroBlocksDecompiler chunkType gpCode {
 	// Prefix given code with a hat block based on chunkType and return the result.
 
-	result = code
+	result = gpCode
 	if (4 == chunkType) {
 		result = (newCommand 'whenStarted')
-		setField result 'nextBlock' code
+		setField result 'nextBlock' gpCode
 	} (6 == chunkType) {
-		if ('recvBroadcast' == (primName code)) {
-			result = (newCommand 'whenBroadcastReceived' (first (argList code)))
-			setField result 'nextBlock' (nextBlock code)
+		if ('recvBroadcast' == (primName gpCode)) {
+			result = (newCommand 'whenBroadcastReceived' (first (argList gpCode)))
+			setField result 'nextBlock' (nextBlock gpCode)
 		}
 	} (7 == chunkType) {
 		result = (newCommand 'whenButtonPressed' 'A')
-		setField result 'nextBlock' code
+		setField result 'nextBlock' gpCode
 	} (8 == chunkType) {
 		result = (newCommand 'whenButtonPressed' 'B')
-		setField result 'nextBlock' code
+		setField result 'nextBlock' gpCode
 	} (9 == chunkType) {
 		result = (newCommand 'whenButtonPressed' 'A+B')
-		setField result 'nextBlock' code
+		setField result 'nextBlock' gpCode
 	}
 	return result
 }
@@ -550,91 +548,112 @@ method isOr MicroBlocksDecompiler seq cmd {
 		(cmdIs this endCmd 'pushImmediate' false))
 }
 
-// A MicroBlocksSequenceDecoder translates an opcode sequence into GP code representing blocks.
+// Decoding
 
-defineClass MicroBlocksSequenceDecoder reporters code stack
-
-to codeForSequence seq {
-	// Return a GP Reporter or list GP Commands for the given expression.
-
-	if (isEmpty seq) { return nil }
-	return (decode (new 'MicroBlocksSequenceDecoder') seq)
-}
-
-method decode MicroBlocksSequenceDecoder seq {
+method codeForSequence MicroBlocksDecompiler start end {
 	// Decode the given sequence of opecodes and return a GP Reporter (if it is an expression)
-	// Commands (if it is a command or sequence of commands). The opcode sequence must be
-	// complete and well-formed (e.g. if it encodes a command sequence it should leave the
+	// or a GP Command (if it is a command or sequence of commands). The opcode sequence must
+	// be complete and well-formed (e.g. if it encodes a command sequence it should leave the
 	// stack empty) and does not contain any control structures (loops or if statements).
 
 	if (isNil reporters) { buildReporterDictionary this }
+
+	// save state so it can be restored after a recursive call
+	oldCode = code
+	oldStack = stack
+
 	code = (list)
 	stack = (list)
-	i = 1
-	while (i <= (count seq)) {
-		op = (cmdOp this (at seq i))
+	i = start
+	while (i <= end) {
+		op = (cmdOp this (at opcodes i))
+		next = (i + 1)
+		if (notNil (at controlStructures i)) {
+			ctrl = (at controlStructures i)
+			op = (first ctrl)
+			next = ((at ctrl 2) + 1)
+		}
 		if (isOneOf op 'jmpFalse' 'jmpTrue') { // old style "and" or "or" reporter
-			i = (decodeOldANDorORreporter this op seq i)
+			i = (decodeOldANDorORreporter this op i)
 		} (isOneOf op 'jmpAnd' 'jmpOr') { // new style "and" or "or" reporter
-			i = (decodeNewANDorORreporter this op seq i)
+			i = (decodeNewANDorORreporter this op i)
 		} ('pushBigImmediate' == op) {
-			next = (at seq (i + 1))
-			add stack (((at next 3) << 8) | (at next 2))
+			nextCmd = (at opcodes (i + 1))
+			add stack ((((at nextCmd 3) << 8) | (at nextCmd 2)) >> 1) // convert obj to int
 			i += 2
 		} ('callFunction' == op) {
 			// xxx need to get actual function name
 			// xxx need to distinguish between commands and reporters
-			cmdArg = (cmdArg this (at seq i))
+			cmdArg = (cmdArg this (at opcodes i))
 			argCount = (cmdArg & 255)
 			fName = (join 'f' ((cmdArg >> 8) & 255))
 			add code (makeCommand this fName argCount)
 			i += 2
 		} else {
-			decodeCmd this (at seq i)
-			i += 1
+			decodeCmd this i
+			i = next
 		}
 	}
+
+	result = nil
 	if (and (isEmpty code) ((count stack) == 1)) {
-		return (first stack) // result is a single reporter
-	}
-	if (not (isEmpty stack)) { error 'incomplete sequence?' }
-	for cmd code {
-		if (notNil lastCmd) {
-			setField lastCmd 'nextBlock' cmd
+		result = (first stack) // result is a single reporter
+	} else {
+		if (not (isEmpty stack)) { error 'incomplete sequence?' }
+		if (notEmpty code) {
+			for cmd code {
+				if (notNil lastCmd) {
+					setField lastCmd 'nextBlock' cmd
+				}
+				lastCmd = cmd
+			}
+			result = (first code)
 		}
-		lastCmd = cmd
 	}
-	return (first code)
+
+	// restore state and return the result
+	code = oldCode
+	stack = oldStack
+	return result
 }
 
-method decodeOldANDorORreporter MicroBlocksSequenceDecoder op seq i {
+method decodeOldANDorORreporter MicroBlocksDecompiler op i {
 	// Decode an old-style AND or OR reporter (before jmpAnd/jmpOr).
 
 	if ('jmpFalse' == op) { gpOp = 'and' } else { gpOp = 'or' }
 	i += 1
 	start = i
-	while (op != (cmdOp this (at seq i))) { i += 1 }
+	while (op != (cmdOp this (at opcodes i))) { i += 1 }
+	end = (i - 1)
 	arg1 = (removeLast stack)
-	arg2 = (codeForSequence (copyFromTo seq start (i - 1)))
+	arg2 = (codeForSequence this start end)
 	add stack (newReporter gpOp arg1 arg2)
 	return (i + 4)
 }
 
-method decodeNewANDorORreporter MicroBlocksSequenceDecoder op seq i {
+method decodeNewANDorORreporter MicroBlocksDecompiler op seq i {
 	// Decode an new AND or OR reporter (using jmpAnd/jmpOr).
 
 	if ('jmpAnd' == op) { gpOp = 'and' } else { gpOp = 'or' }
 	start = (i + 1)
-	end = (i + (cmdArg this (at seq i)))
+	end = (i + (cmdArg this (at opcodes i)))
 	arg1 = (removeLast stack)
-	arg2 = (codeForSequence (copyFromTo seq start end))
+	arg2 = (codeForSequence this start end)
 	add stack (newReporter gpOp arg1 arg2)
 	return (end + 1)
 }
 
-method decodeCmd MicroBlocksSequenceDecoder cmd {
-	op = (cmdOp this cmd)
+method decodeCmd MicroBlocksDecompiler i {
+	cmd = (at opcodes i)
 	cmdArg = (cmdArg this cmd)
+	op = (cmdOp this cmd)
+	if (notNil (at controlStructures i)) {
+		ctrl = (at controlStructures i)
+		cmd = ctrl
+		op = (first cmd)
+		atPut controlStructures i nil // avoid infinite recursion on 'forever' and 'waitUntil'
+	}
+
 	if ('halt' == op) {
 		add code (newCommand 'stopTask')
 	} (isOneOf op 'pushImmediate' 'pushLiteral') {
@@ -666,45 +685,64 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 		// skip
 	} ('returnResult' == op) {
 		add code (makeCommand this 'return' 1)
+
 	} ('if' == op) {
-		if (notNil (at cmd 4)) { // if-else
-			elsePart = (codeForSequence (at cmd 4))
-			if ('if' == (primName elsePart)) {
-				// combine nested if's
-				argList = (list 'if' (removeLast stack) (codeForSequence (at cmd 3)))
-				addAll argList (argList elsePart)
-				add code (callWith 'newCommand' (toArray argList))
-			} else {
-				add code (newCommand 'if'
-					(removeLast stack)
-					(codeForSequence (at cmd 3))
-					true
-					(codeForSequence (at cmd 4)))
-			}
-		} else { // if without else
-			add code (newCommand 'if'
-				(removeLast stack)
-				(codeForSequence (at cmd 3)))
-		}
+		add code (newCommand 'if'
+			(removeLast stack)
+			(codeForSequence this (at cmd 3) (at cmd 4)))
+	} ('if-else' == op) {
+		add code (newCommand 'if'
+			(removeLast stack)
+			(codeForSequence this (at cmd 3) (at cmd 4))
+			true
+			(codeForSequence this (at cmd 5) (at cmd 6)))
+	} ('for' == op) {
+		body = (codeForSequence this (at cmd 3) (at cmd 4))
+		indexVarName = (join 'L' (at cmd 5)) // xxx look up actual local name
+		add code (newCommand 'for' indexVarName (removeLast stack) body)
+	} ('forever' == op) {
+		body = (codeForSequence this (at cmd 3) (at cmd 4))
+		add code (newCommand 'forever' body)
+	} ('repeat' == op) {
+		body = (codeForSequence this (at cmd 3) (at cmd 4))
+		add code (newCommand 'repeat' (removeLast stack) body)
+	} ('repeatUntil' == op) {
+		condition = (codeForSequence this (at cmd 3) (at cmd 4))
+		body = (codeForSequence this (at cmd 5) (at cmd 6))
+		add code (newCommand 'repeatUntil' condition body)
+	} ('waitUntil' == op) {
+		condition = (codeForSequence this (at cmd 3) (at cmd 4))
+		add code (newCommand 'waitUntil' condition)
 	} ('whenCondition' == op) {
-		whenHat = (newCommand 'whenCondition' (codeForSequence (at cmd 3)))
-		if (not (isEmpty (at cmd 4))) {
-			setField whenHat 'nextBlock' (codeForSequence (at cmd 4))
+		condition = (codeForSequence this (at cmd 3) (at cmd 4))
+		body = (codeForSequence this (at cmd 5) (at cmd 6))
+		whenHat = (newCommand 'whenCondition' condition)
+		if (notNil body) {
+			setField whenHat 'nextBlock' body
 		}
 		add code whenHat
 
-	// loops
-	} ('forever' == op) {
-		add code (newCommand 'forever' (codeForSequence cmdArg))
-	} ('repeat' == op) {
-		add code (newCommand 'repeat' (removeLast stack) (codeForSequence cmdArg))
-	} ('for' == op) {
-		indexVarName = (join 'L' (at cmd 4)) // xxx look up actual local name
-		add code (newCommand 'for' indexVarName (removeLast stack) (codeForSequence cmdArg))
-	} ('repeatUntil' == op) {
-		add code (newCommand 'repeatUntil' (codeForSequence cmdArg) (codeForSequence (at cmd 4)))
-	} ('waitUntil' == op) {
-		add code (newCommand 'waitUntil' (codeForSequence cmdArg))
+// old code for if (including handling of multiple cases)
+// 	} ('if' == op) {
+// 		if (notNil (at cmd 4)) { // if-else
+// 			elsePart = (codeForSequence (at cmd 4))
+// 			if ('if' == (primName elsePart)) {
+// 				// combine nested if's
+// 				argList = (list 'if' (removeLast stack) (codeForSequence (at cmd 3)))
+// 				addAll argList (argList elsePart)
+// 				add code (callWith 'newCommand' (toArray argList))
+// 			} else {
+// 				add code (newCommand 'if'
+// 					(removeLast stack)
+// 					(codeForSequence (at cmd 3))
+// 					true
+// 					(codeForSequence (at cmd 4)))
+// 			}
+// 		} else { // if without else
+// 			add code (newCommand 'if'
+// 				(removeLast stack)
+// 				(codeForSequence (at cmd 3)))
+// 		}
 
 	// everything else
 	} (contains reporters op) {
@@ -712,9 +750,10 @@ method decodeCmd MicroBlocksSequenceDecoder cmd {
 	} else {
 		add code (makeCommand this op cmdArg)
 	}
+	if (notNil ctrl) { atPut controlStructures i ctrl }
 }
 
-method makeCommand MicroBlocksSequenceDecoder op argCount {
+method makeCommand MicroBlocksDecompiler op argCount {
 	// Return a GP Command or Reporter for the given op taking argCount items from the stack.
 
 	isReporter = (contains reporters op)
@@ -747,10 +786,7 @@ method makeCommand MicroBlocksSequenceDecoder op argCount {
 
 // Helper Methods
 
-method cmdOp MicroBlocksSequenceDecoder cmd { return (at cmd 2) }
-method cmdArg MicroBlocksSequenceDecoder cmd { return (at cmd 3) }
-
-method buildReporterDictionary MicroBlocksSequenceDecoder {
+method buildReporterDictionary MicroBlocksDecompiler {
 	// Build a dictionary of the MicroBlocks built-in reporters. This is used to
 	// decide whether a given opcode is a reporter or a command.
 
