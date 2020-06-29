@@ -8,8 +8,11 @@
 // John Maloney, March, 2020
 
 // To do:
-// [ ] handle function calls
+// [x] handle function calls
 // [x] make testDecompiler generate blocks
+// [ ] bug: repeat until inside forever fails
+// [ ] bug: color constants require rescaling (need block spec)
+// [ ] bug: multibranch condition statement rendered as nested ifs
 // [ ] make test method that clears current scripts then fetched and decompiles code from board
 // [ ] make compiler store local names
 // [ ] use local names

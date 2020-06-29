@@ -244,6 +244,15 @@ method assignFunctionIDs SmallRuntime {
 	}
 }
 
+method functionNameForID SmallRuntime chunkID {
+	assignFunctionIDs this
+	for pair (sortedPairs chunkIDs) {
+		id = (first (first pair))
+		if (id == chunkID) { return (last pair) } // return function name
+	}
+	return (join 'f' chunkID)
+}
+
 method deleteChunkForBlock SmallRuntime aBlock {
 	key = aBlock
 	if (isPrototypeHat aBlock) {
