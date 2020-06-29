@@ -1,10 +1,10 @@
 module 'IR Remote' Comm
 author MicroBlocks
-version 1 0
-description 'Read signals from infrared remotes, like the ones used for TV sets or air conditioners.'
-tags ir infrared remote
-
-variables _ir_pin _ir_pulse_times
+version 1 1 
+tags ir infrared remote 
+description 'Read signals from infrared remotes, like the ones used for TV sets or air conditioners.
+'
+variables _ir_pin _ir_pulse_times 
 
 	spec 'r' 'receiveIR' 'receive IR code'
 	spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 0
@@ -22,6 +22,8 @@ to '_captureIRMessage' {
       _ir_pin = 11
     } (and (_ir_pin == 0) ((boardType) == 'Citilab ED1')) {
       _ir_pin = 35
+    } (and (_ir_pin == 0) ((boardType) == 'D1-Mini')) {
+      _ir_pin = 2
     }
   }
   fillList _ir_pulse_times 0
