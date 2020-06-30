@@ -271,7 +271,7 @@ method stopAndSyncScripts SmallRuntime {
 
 	if (notNil port) {
 		sendStopAll this
-		if doReset { softReset this }
+		softReset this
 	}
 	clearRunningHighlights this
 	saveAllChunks this
