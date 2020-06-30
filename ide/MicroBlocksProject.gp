@@ -988,6 +988,7 @@ method newPrimFor MicroBlocksModule oldPrim {
 	} ('mbTemp' == oldPrim) { return '[sensors:temperature]'
 	} ('newArray' == oldPrim) { return 'newList'
 	} ('fillArray' == oldPrim) { return 'fillList'
+	} ('sendBroadcastSimple' == oldPrim) { return 'sendBroadcast'
 	}
 	return nil
 }

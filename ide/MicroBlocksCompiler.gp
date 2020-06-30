@@ -81,7 +81,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'return'				'return _' 'auto' 0)
 		'-'
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
-		(array ' ' 'sendBroadcastSimple'	'broadcast _' 'str' 'go!' '')
+		(array ' ' 'sendBroadcast'		'broadcast _' 'str' 'go!' '')
 		'-'
 		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
@@ -190,7 +190,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[misc:byteCount]'	'byte count _' 'str' 'binary data')
 		(array 'r' '[misc:byteAt]'		'byte _ of _' 'num str' 1 'binary data')
 	'Prims-Advanced (not in palette)'
-		(array ' ' 'sendBroadcast'		'broadcast _ : _ : ...' 'auto auto auto auto auto auto auto auto auto auto' 'go!' '')
 		(array ' ' 'noop'				'no op')
 		(array ' ' 'ignoreArgs'			'ignore : _ : ...' 'auto' 0)
 		(array 'r' 'pushArgCount'		'arg count')
