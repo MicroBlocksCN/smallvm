@@ -70,11 +70,15 @@ method step MicroBlocksFlasher {
   processStatus = (execStatus currentCommandPID)
   if (notNil processStatus) {
     if (processStatus == 1) {
-      setText label (localized 'An error occurred!')
+      setText label (localized (at (first commands) 'errorMessage'))
       setColor label (color 255 50 50)
       removePart morph (morph sublabel)
-      destroyAtMs = ((msecsSinceStart) + 3000)
-      print (join 'Command ' (joinStrings (first commands) ' ') ' failed')
+      destroyAtMs = ((msecsSinceStart) +
+        ((count (at (first commands) 'errorMessage')) * 50))
+      print (join
+        'Command '
+        (joinStrings (at (first commands) 'command') ' ')
+        ' failed')
     } else {
       removeFirst commands
       if (isEmpty commands) {
@@ -83,7 +87,7 @@ method step MicroBlocksFlasher {
         removePart morph (morph sublabel)
         destroyAtMs = ((msecsSinceStart) + 1000)
       } else {
-        currentCommandPID = (callWith 'exec' (first commands))
+        currentCommandPID = (callWith 'exec' (at (first commands) 'command'))
       }
     }
   }
@@ -115,29 +119,56 @@ method flashVM MicroBlocksFlasher wipeFlashFlag downloadLatest {
   esptool = (join (tmpPath this) (esptoolCommandName this))
   tmpPath = (tmpPath this)
 
-  commands = (list
-    (array
-      esptool '-b' '921600' 'write_flash'
-        '0x1000' (join tmpPath 'bootloader_dio_40m.bin')
-        '0x8000' (join tmpPath 'partitions.bin')
-        '0xe000' (join tmpPath 'boot_app0.bin')
-        '0x10000' (join tmpPath 'vm')))
+  commands = (list)
+  dict = (dictionary)
+  atPut dict 'command' (array
+    esptool '-b' '921600' 'write_flash'
+      '0x1000' (join tmpPath 'bootloader_dio_40m.bin')
+      '0x8000' (join tmpPath 'partitions.bin')
+      '0xe000' (join tmpPath 'boot_app0.bin')
+      '0x10000' (join tmpPath 'vm'))
 
   if (boardName == 'ESP8266') {
-    commands = (list
-      (array
-        esptool '-b' '115200' 'write_flash' '0' (join tmpPath 'vm')))
+	atPut dict 'command' (array
+      esptool '-b' '115200' 'write_flash' '0' (join tmpPath 'vm'))
   } (boardName == 'M5Atom-Matrix') {
-		atPut (first commands) 3 '115200'
+		atPut (at dict 'command') 3 '115200'
   } (boardName == 'M5StickC') {
-		atPut (first commands) 3 '1500000'
+		atPut (at dict 'command') 3 '1500000'
   }
+
+  atPut dict 'errorMessage' 'An error occurred while trying to upload MicroBlocks to the board.'
+
+  add commands dict
 
   if wipeFlashFlag {
-    addFirst commands (array esptool 'erase_flash')
+	dict = (dictionary)
+    atPut dict 'command' (array esptool 'erase_flash')
+	atPut dict 'errorMessage' 'An error occurred while trying to wipe board.'
+    addFirst commands dict
   }
 
-  currentCommandPID = (callWith 'exec' (first commands))
+  if ('Linux' == (platform)) {
+	// check whether Python3 is installed
+	dict = (dictionary)
+	atPut dict 'command' (array 'which' 'python3')
+	errorMessage = (join
+      'Please make sure both python3 and python3-serial are' (newline)
+      'installed in your system.' (newline) (newline)
+      'Under Ubuntu/Debian, run:' (newline) (newline)
+      '  sudo apt-get install python3 python3-serial' (newline)
+	)
+	atPut dict 'errorMessage' errorMessage
+    addFirst commands dict
+
+	// check whether Python3-serial is installed
+	dict = (dictionary)
+	atPut dict 'command' (array 'python3' '-c' 'import serial')
+	atPut dict 'errorMessage' errorMessage
+    addFirst commands dict
+  }
+
+  currentCommandPID = (callWith 'exec' (at (first commands) 'command'))
 }
 
 method tmpPath MicroBlocksFlasher {
