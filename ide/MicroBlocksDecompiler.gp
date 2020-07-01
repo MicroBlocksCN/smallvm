@@ -58,6 +58,11 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 
 	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes }
 	gpCode = (addHatBlock this chunkType (codeForSequence this 1 (count opcodes)))
+	if (isNil gpCode) {
+		inform (global 'page') 'No decompiled code'
+		return
+	}
+	fixBooleanAndColorArgs this gpCode
 	print (prettyPrint this gpCode)
 	showCodeInHand this gpCode
 }
@@ -279,6 +284,8 @@ method decodeImmediates MicroBlocksDecompiler lastInstruction {
 	}
 }
 
+// GPCode transformations
+
 method addHatBlock MicroBlocksDecompiler chunkType gpCode {
 	// Prefix given code with a hat block based on chunkType and return the result.
 
@@ -302,6 +309,31 @@ method addHatBlock MicroBlocksDecompiler chunkType gpCode {
 		setField result 'nextBlock' gpCode
 	}
 	return result
+}
+
+method fixBooleanAndColorArgs MicroBlocksDecompiler gpCode {
+	for block (allBlocks gpCode) {
+		spec = (specForOp (authoringSpecs) (primName block))
+		args = (argList block)
+		for i (min (slotCount spec) (count args)) {
+			slotType = (first (slotInfoForIndex spec i))
+			val = (at args i)
+			if (and ('color' == slotType) (isClass val 'Integer')) {
+				// This is an approximation to the original color since
+				// information is lost in the encoding.
+				scaledC = (color ((val >> 16) & 255)  ((val >> 8) & 255) (val & 255))
+				h = (hue scaledC)
+				s = (0.91 * (saturation scaledC))
+				v = (20 * (brightness scaledC)) // approximation
+				c = (colorHSV h s v)
+				setArg block i c
+			} (and ('bool' != slotType) (isClass val 'Boolean') ) {
+				print 'boolean in' (primName block)
+				setArg block i (newReporter 'booleanConstant' val)
+			}
+			info = (slotInfoForIndex spec i)
+		}
+	}
 }
 
 // Loops
