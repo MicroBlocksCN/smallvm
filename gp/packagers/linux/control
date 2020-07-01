@@ -10,4 +10,3 @@ Description: MicroBlocks IDE
  MicroBlocks is a graphical and dynamic blocks language for 32 bit
  microcontroller boards such as the BBC micro:bit, the Adafruit
  Circuit Playground Express, the NodeMCU and many Arduinos.
-Depends: python3, python3-serial
