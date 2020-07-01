@@ -49,6 +49,7 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	controlStructures = (newArray (count opcodes))
 	findLoops this
 	findIfs this
+	fixLocals this
 
 	print '----'
 	printSequence2 this
@@ -453,6 +454,23 @@ method isAnd MicroBlocksDecompiler seq cmd {
 		(cmdIs this endCmd 'pushImmediate' false))
 }
 
+// Locals
+
+method fixLocals MicroBlocksDecompiler {
+	// Replace the first "set" of a local variable with "declareLocal".
+
+	declared = (dictionary)
+	for cmd opcodes {
+		if ('storeLocal' == (cmdOp this cmd)) {
+			varIndex = (cmdArg this cmd)
+			if (not (contains declared varIndex)) {
+				atPut cmd 2 'declareLocal'
+				add declared varIndex
+			}
+		}
+	}
+}
+
 // Decoding
 
 method codeForSequence MicroBlocksDecompiler start end {
@@ -599,6 +617,8 @@ method decodeCmd MicroBlocksDecompiler i {
 		add code (newCommand '=' (join 'L' cmdArg) (removeLast stack))
 	} ('incrementLocal' == op) {
 		add code (newCommand '+=' (join 'L' cmdArg) (removeLast stack))
+	} ('declareLocal' == op) {
+		add code (newCommand 'local' (join 'L' cmdArg) (removeLast stack))
 
 	} ('initLocals' == op) {
 		// skip
