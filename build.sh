@@ -28,7 +28,6 @@ if test -n "$help"; then
     echo "                              will be embedded into the IDE."
     echo "--tools                       Automatically try to install missing tools needed"
     echo "                              by the build process."
-    echo "--upload=[USER]@[URL]:[PATH]  Try to upload the VMs to a remote server."
     echo "--locale=[LANGUAGE-NAME]      Update locales for the specified language. To print"
     echo "                              all currently available languages, run it without"
     echo "                              an argument. If language does not exist, a new"
@@ -84,18 +83,6 @@ fi
 
 if [ -z $version ]; then
     version=`cat ide/MicroBlocksRuntime.gp | sed -n -E "s/^method ideVersion.*'(.*)'.*/\1/p"`
-fi
-
-if test -n "$upload"; then
-    if [ $upload == '--upload' ]; then
-        echo "usage: --upload=[user]@[url]:[path]"
-        exit 0
-    else
-        mkdir /tmp/$version
-        cp precompiled/vm.* /tmp/$version
-        scp -r /tmp/$version $upload
-        rm -r /tmp/$version
-    fi
 fi
 
 if test -n "$tools"; then
