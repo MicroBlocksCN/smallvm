@@ -1,7 +1,9 @@
 # MicroBlocks translation file
-# Last updated: April 14 2020
+# Last updated: July 07 2020
 
-# Blocks and categories
+#########################
+# Blocks and categories #
+#########################
 
 Output
 Sortida
@@ -224,7 +226,7 @@ find _ in _
 busca _ en _
 
 starting at _
-començant a _
+començant des de _
 
 join items of list _
 uneix elements de la llista _
@@ -293,7 +295,11 @@ no op
 ignore
 ignora
 
-# Primitives (mostly hidden from end users)
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
 
 draw shape _ at x _ y _
 dibuixa forma _ a x _ y _
@@ -367,7 +373,9 @@ envia paquet per ràdio _
 disable radio
 inhabilita ràdio
 
-# Libraries
+#############
+# Libraries #
+#############
 
 Basic Sensors
 Sensors bàsics
@@ -389,6 +397,9 @@ nivell de llum
 
 temperature (°C)
 temperatura (°C)
+
+####
+# NeoPixel library
 
 NeoPixel
 NeoPíxels
@@ -425,6 +436,9 @@ Sensor de presència
 
 PIR at pin _ detected movement
 Moviment detectat pel PIR al pin _
+
+####
+# Citilab ED1 board libraries
 
 ED1 Stepper Motor
 Motors ED1
@@ -477,6 +491,9 @@ sensor capacitiu _
 set capacitive threshold to _
 fixa llindar capacitiu a _
 
+####
+# BirdBrain Technologies libraries
+
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
@@ -510,8 +527,53 @@ So
 Other
 Altres
 
+Finch Beak Red _ Green _ Blue _
+Encén el bec de color R _ % G _ % B _ %
+
+Finch Tail _ Red _ Green _ Blue _
+Encén la cua de color R _ % G _ % B _ %
+
+Finch Move _ _ cm at _ %
+Mou-te cap _ _ cm a velocitat _ %
+
+Finch Turn _ _ ° at _ %
+Gira cap a la _ _ ° a velocitat _ %
+
+Finch Wheels L _ % R _ %
+Posa les rodes a velocitat E _ % D _ %
+
+Finch Stop
+Atura el Finch
+
+Finch Distance (cm)
+Distància (cm)
+
+Finch _ Light
+Llum _
+
+Finch _ Line
+Línia _
+
+Finch Reset Encoders
+Reinicialitza els comptadors de voltes
+
+Finch _ Encoder
+Recompte de voltes _
+
+Finch Accelerometer _
+Acceleròmetre _
+
+Finch Battery
+Nivell de bateria
+
+####
+# Ultrasound distance library
+
 distance (cm) trigger _ echo _
 distància (cm) trigger _ echo _
+
+####
+# Infrared remote libraryh 
 
 IR Remote
 Infraroigs
@@ -528,8 +590,17 @@ prova IR
 attach IR receiver to pin _
 inicialitza receptor IR al pin _
 
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
 Radio
 Ràdio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
 Text animat
@@ -546,6 +617,9 @@ pausant _ ms
 stop scrolling
 atura l'animació
 
+####
+# Servo motor library
+
 Servo
 Servomotors
 
@@ -557,6 +631,11 @@ fes girar el servo _ a velocitat _ (-100 a 100)
 
 stop servo _
 atura servo _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
 Pantalla LED
@@ -575,6 +654,9 @@ apaga x _ y _
 
 display character _
 mostra caràcter _
+
+####
+# TFT display library
 
 enable TFT _
 activa TFT _
@@ -612,6 +694,10 @@ escriu _ a x _ y _ color _
 scale _ wrap _
 escala _ amb salts de línia _
 
+####
+# Tone library
+# Generates music tones on buzzers
+
 Tone
 Tons
 
@@ -626,6 +712,9 @@ toca la freqüència _ durant _ ms
 
 play midi key _ for _ ms
 toca la tecla MIDI _ durant _ ms
+
+####
+# Turtle geometry library
 
 Turtle
 Tortuga
@@ -662,6 +751,9 @@ ves a x _ y _
 
 point in direction _
 apunta en direcció _
+
+####
+# File system library
 
 Files
 Arxius
@@ -702,6 +794,9 @@ mida de l'arxiu _
 file system info
 dades del sistema de fitxers
 
+####
+# WiFi library
+
 WiFi
 WiFi
 
@@ -713,6 +808,10 @@ crea punt d'accés wifi _ amb contrasenya _
 
 IP address
 adreça IP
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
 
 Motion
 Moviment
@@ -732,6 +831,9 @@ esborra el recompte de passes
 set step threshold _ (0-50)
 fixa el llindar de les passes a _ (0-50)
 
+####
+# Button Events library
+
 Button Events
 Esdeveniments de botó
 
@@ -744,6 +846,9 @@ toc llarg al botó _
 button _ pressed
 toc curt al botó _
 
+####
+# Calliope board library
+
 Calliope set LED red _ green _ blue _
 posa el LED de la Calliope a vermell _ verd _ blau _
 
@@ -753,11 +858,17 @@ posa l'altaveu de la Calliope a _
 Calliope loudness
 nivell de soroll de la Calliope
 
+####
+# Circuit Playground Express board library
+
 Circuit Playground set speaker _
 posa l'altaveu de la Circuit Playground a _
 
 Circuit Playground slide switch
 interruptor de la Circuit Playground
+
+####
+# DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
 inicialitza tira de _ LEDs DotStar al pin de dades _ i pin de rellotge _
@@ -770,6 +881,9 @@ posa el LEDs DotStar _ a vermell _ verd _ blau _
 
 set DotStar brightness _
 fixa la brillantor dels DotStar a _
+
+####
+# BME280 environmental sensor
 
 bme280 connected
 bme280 connectat
@@ -786,6 +900,9 @@ pressió del bmx280
 bme280 humidity
 humitat del bme280
 
+####
+# TCS34725 color sensor
+
 TCS34725 connected
 TCS34725 connectat
 
@@ -794,6 +911,9 @@ color RGB del TCS34725
 
 color _ name
 nom del color _
+
+####
+# DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
 temperatura (°C) del DHT11 al pin _
@@ -807,6 +927,9 @@ temperatura (°C) del DHT22 al pin _
 humidity DHT22 pin _
 humitat del DHT22 al pin _
 
+####
+# PN532 RFID reader
+
 read PN532 RFID
 llegeix RFID PN532
 
@@ -815,6 +938,9 @@ RFID _ = _
 
 get PN532 firmware version
 versió del firmware del PN532
+
+####
+# HTTP libraries
 
 HTTP client
 Client HTTP
@@ -848,6 +974,9 @@ camí de la sol·licitud _
 
 method of request _
 mètode de la sol·licitud _
+
+####
+# Mozilla Web Things library
 
 Web Thing
 Web Thing
@@ -894,7 +1023,11 @@ JSON de la definició d'esdeveniments
 events JSON
 JSON dels esdeveniments
 
-# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
 
 New
 Nou

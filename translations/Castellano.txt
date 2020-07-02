@@ -1,7 +1,9 @@
 # MicroBlocks translation file
-# Last updated: April 14 2020
+# Last updated: July 07 2020
 
-# Blocks and categories
+#########################
+# Blocks and categories #
+#########################
 
 Output
 Salida
@@ -224,7 +226,7 @@ find _ in _
 busca _ en _
 
 starting at _
-empezando por _
+empezando desde _
 
 join items of list _
 une elementos de la lista _
@@ -293,7 +295,11 @@ no op
 ignore
 ignorar
 
-# Primitives (mostly hidden from end users)
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
 
 draw shape _ at x _ y _
 dibuja forma _ en x _ y _
@@ -367,7 +373,9 @@ envía paquete por radio _
 disable radio
 inhabilita radio
 
-# Libraries
+#############
+# Libraries #
+#############
 
 Basic Sensors
 Sensores básicos
@@ -389,6 +397,9 @@ nivel de luz
 
 temperature (°C)
 temperatura (°C)
+
+####
+# NeoPixel library
 
 NeoPixel
 NeoPíxeles
@@ -425,6 +436,9 @@ Sensor de movimiento
 
 PIR at pin _ detected movement
 Movimiento detectado por PIR en pin _
+
+####
+# Citilab ED1 board libraries
 
 ED1 Stepper Motor
 Motores ED1
@@ -477,6 +491,9 @@ sensor capacitivo _
 set capacitive threshold to _
 fija umbral capacitivo en _
 
+####
+# BirdBrain Technologies libraries
+
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
@@ -510,8 +527,53 @@ Sonido
 Other
 Otro
 
+Finch Beak Red _ Green _ Blue _
+Encender el pico de color R _ % V _ % A _ %
+
+Finch Tail _ Red _ Green _ Blue _
+Encender la cola de color R _ % V _ % A _ %
+
+Finch Move _ _ cm at _ %
+Mover hacia _ _ cm  a velocidad _ %
+
+Finch Turn _ _ ° at _ %
+Girar hacia la _ _ ° a velocidad _ %
+
+Finch Wheels L _ % R _ %
+Poner las ruedas a velocidad I _ % D _ %
+
+Finch Stop
+Detener el Finch
+
+Finch Distance (cm)
+Distancia (cm)
+
+Finch _ Light
+Luz _
+
+Finch _ Line
+Línea _
+
+Finch Reset Encoders
+Reinicializar los contadores de vueltas
+
+Finch _ Encoder
+Recuento de vueltas _
+
+Finch Accelerometer _
+Acelerómetro
+
+Finch Battery
+Nivel de batería
+
+####
+# Ultrasound distance library
+
 distance (cm) trigger _ echo _
 distancia (cm) trigger _ echo _
+
+####
+# Infrared remote libraryh 
 
 IR Remote
 Infrarrojos
@@ -528,8 +590,17 @@ prueba IR
 attach IR receiver to pin _
 inicializa receptor IR en el pin _
 
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
 Radio
 Radio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
 Texto animado
@@ -546,6 +617,9 @@ pausando _ ms
 stop scrolling
 detén la animación
 
+####
+# Servo motor library
+
 Servo
 Servomotores
 
@@ -557,6 +631,11 @@ haz girar el servo _ a velocidad _ (-100 a 100)
 
 stop servo _
 detén servo _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
 Pantalla LED
@@ -575,6 +654,9 @@ apagar x _ y _
 
 display character _
 muestra carácter _
+
+####
+# TFT display library
 
 enable TFT _
 activa TFT _
@@ -612,6 +694,10 @@ escribe _ en x _ y _ color _
 scale _ wrap _
 escala _ con saltos de línea _
 
+####
+# Tone library
+# Generates music tones on buzzers
+
 Tone
 Tonos
 
@@ -626,6 +712,9 @@ toca la frecuencia _ durante _ ms
 
 play midi key _ for _ ms
 toca la tecla MIDI _ durante _ ms
+
+####
+# Turtle geometry library
 
 Turtle
 Tortuga
@@ -662,6 +751,9 @@ ve a x _ y _
 
 point in direction _
 apunta en dirección _
+
+####
+# File system library
 
 Files
 Archivos
@@ -702,6 +794,9 @@ tamaño del archivo _
 file system info
 detalles del sistema de archivos
 
+####
+# WiFi library
+
 WiFi
 WiFi
 
@@ -713,6 +808,10 @@ crea punto de acceso wifi _ con contraseña _
 
 IP address
 dirección IP
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
 
 Motion
 Movimiento
@@ -732,6 +831,9 @@ borra recuento de pasos
 set step threshold _ (0-50)
 fija el umbral del paso en _ (0-50)
 
+####
+# Button Events library
+
 Button Events
 Eventos de botón
 
@@ -744,6 +846,9 @@ pulsación larga en botón _
 button _ pressed
 pulsación corta en botón _
 
+####
+# Calliope board library
+
 Calliope set LED red _ green _ blue _
 pon el LED de la Calliope a rojo _ verde _ azul _
 
@@ -753,11 +858,17 @@ pon el altavoz de la Calliope a _
 Calliope loudness
 nivel de ruido de la Calliope
 
+####
+# Circuit Playground Express board library
+
 Circuit Playground set speaker _
 pon el altavoz de la Circuit Playground a _
 
 Circuit Playground slide switch
 interruptor de la Circuit Playground
+
+####
+# DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
 inicializa tira de _ LEDs DotStar al pin de datos _ y pin de reloj _
@@ -770,6 +881,9 @@ pon el LED DotStar _ a rojo _ verde _ azul _
 
 set DotStar brightness _
 fija el brillo de DotStar a _
+
+####
+# BME280 environmental sensor
 
 bme280 connected
 bme280 conectado
@@ -786,6 +900,9 @@ presión del bmx280
 bme280 humidity
 humedad del bme280
 
+####
+# TCS34725 color sensor
+
 TCS34725 connected
 TCS34725 conectado
 
@@ -794,6 +911,9 @@ color RGB del TCS34725
 
 color _ name
 nombre del color _
+
+####
+# DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
 temperatura (ºC) del DHT11 en pin _
@@ -807,6 +927,9 @@ temperatura (ºC) del DHT22 en pin _
 humidity DHT22 pin _
 humedad del DHT22 en pin _
 
+####
+# PN532 RFID reader
+
 read PN532 RFID
 lee RFID PN532
 
@@ -815,6 +938,9 @@ RFID _ = _
 
 get PN532 firmware version
 versión del firmware del PN532
+
+####
+# HTTP libraries
 
 HTTP client
 Cliente HTTP
@@ -848,6 +974,9 @@ ruta de la petición _
 
 method of request _
 método de la petición _
+
+####
+# Mozilla Web Things library
 
 Web Thing
 Web Thing
@@ -894,7 +1023,11 @@ JSON de las definiciones de eventos
 events JSON
 JSON de los eventos
 
-# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
 
 New
 Nuevo

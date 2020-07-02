@@ -1,7 +1,9 @@
 # MicroBlocks translation file
-# Last updated: April 14 2020
+# Last updated: July 07 2020
 
-# Blocks and categories
+#########################
+# Blocks and categories #
+#########################
 
 Output
 
@@ -199,7 +201,11 @@ no op
 
 ignore
 
-# Primitives (mostly hidden from end users)
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
 
 draw shape _ at x _ y _
 
@@ -249,7 +255,9 @@ radio send packet _
 
 disable radio
 
-# Libraries
+#############
+# Libraries #
+#############
 
 Basic Sensors
 
@@ -264,6 +272,9 @@ acceleration
 light level
 
 temperature (°C)
+
+####
+# NeoPixel library
 
 NeoPixel
 
@@ -288,6 +299,9 @@ has white _
 PIR
 
 PIR at pin _ detected movement
+
+####
+# Citilab ED1 board libraries
 
 ED1 Stepper Motor
 
@@ -323,6 +337,9 @@ capacitive sensor _
 
 set capacitive threshold to _
 
+####
+# BirdBrain Technologies libraries
+
 Hummingbird LED _ _ %
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
@@ -345,7 +362,39 @@ Sound
 
 Other
 
+Finch Beak Red _ Green _ Blue _
+
+Finch Tail _ Red _ Green _ Blue _
+
+Finch Move _ _ cm at _ %
+
+Finch Turn _ _ ° at _ %
+
+Finch Wheels L _ % R _ %
+
+Finch Stop
+
+Finch Distance (cm)
+
+Finch _ Light
+
+Finch _ Line
+
+Finch Reset Encoders
+
+Finch _ Encoder
+
+Finch Accelerometer _
+
+Finch Battery
+
+####
+# Ultrasound distance library
+
 distance (cm) trigger _ echo _
+
+####
+# Infrared remote libraryh 
 
 IR Remote
 
@@ -357,7 +406,16 @@ test IR
 
 attach IR receiver to pin _
 
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
 Radio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
 
@@ -369,6 +427,9 @@ pausing _ ms
 
 stop scrolling
 
+####
+# Servo motor library
+
 Servo
 
 set servo _ to _ degrees (-90 to 90)
@@ -376,6 +437,11 @@ set servo _ to _ degrees (-90 to 90)
 set servo _ to speed _ (-100 to 100)
 
 stop servo _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
 
@@ -388,6 +454,9 @@ plot x _ y _
 unplot x _ y _
 
 display character _
+
+####
+# TFT display library
 
 enable TFT _
 
@@ -413,6 +482,10 @@ write _ on TFT at x _ y _ color _
 
 scale _ wrap _
 
+####
+# Tone library
+# Generates music tones on buzzers
+
 Tone
 
 attach buzzer to pin _
@@ -422,6 +495,9 @@ play note _ octave _ for _ ms
 play frequency _ for _ ms
 
 play midi key _ for _ ms
+
+####
+# Turtle geometry library
 
 Turtle
 
@@ -446,6 +522,9 @@ fill display with _
 go to x _ y _
 
 point in direction _
+
+####
+# File system library
 
 Files
 
@@ -473,6 +552,9 @@ size of file _
 
 file system info
 
+####
+# WiFi library
+
 WiFi
 
 wifi connect to _ password _ try _ times
@@ -480,6 +562,10 @@ wifi connect to _ password _ try _ times
 wifi create hotspot _ password _
 
 IP address
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
 
 Motion
 
@@ -493,6 +579,9 @@ clear step count
 
 set step threshold _ (0-50)
 
+####
+# Button Events library
+
 Button Events
 
 button _ double pressed
@@ -501,15 +590,24 @@ button _ long pressed
 
 button _ pressed
 
+####
+# Calliope board library
+
 Calliope set LED red _ green _ blue _
 
 Calliope set speaker _
 
 Calliope loudness
 
+####
+# Circuit Playground Express board library
+
 Circuit Playground set speaker _
 
 Circuit Playground slide switch
+
+####
+# DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
 
@@ -518,6 +616,9 @@ set all DotStar LEDs to r _ g _ b _
 set DotStar LED _ to r _ g _ b _
 
 set DotStar brightness _
+
+####
+# BME280 environmental sensor
 
 bme280 connected
 
@@ -529,11 +630,17 @@ bmx280 pressure
 
 bme280 humidity
 
+####
+# TCS34725 color sensor
+
 TCS34725 connected
 
 TCS34725 rgb
 
 color _ name
+
+####
+# DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
 
@@ -543,11 +650,17 @@ temperature (Celsius) DHT22 pin _
 
 humidity DHT22 pin _
 
+####
+# PN532 RFID reader
+
 read PN532 RFID
 
 RFID _ = _
 
 get PN532 firmware version
+
+####
+# HTTP libraries
 
 HTTP client
 
@@ -570,6 +683,9 @@ body of request _
 path of request _
 
 method of request _
+
+####
+# Mozilla Web Things library
 
 Web Thing
 
@@ -601,7 +717,11 @@ event definitions JSON
 
 events JSON
 
-# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
 
 New
 

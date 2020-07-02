@@ -1,0 +1,311 @@
+module FinchLibrary6_25_20
+author 'Tom Lauwers'
+version 1 0 
+description 'Provides support for the BirdBrain Technologies Finch 2 robot.'
+tags birdbrain robot
+variables _finch_spi_lock _all_sensors _finch_started _all_leds _motor_cmds _blank_list 
+
+	spec ' ' 'Finch Beak Red' 'Finch Beak Red _ Green _ Blue _' 'auto auto auto' 0 0 0
+	spec ' ' 'Finch Tail' 'Finch Tail _ Red _ Green _ Blue _' 'menu.finchTailMenu auto auto auto' 'All' 0 0 0
+	spec ' ' 'setMove' 'Finch Move _ _ cm at _ %' 'menu.finchMoveMenu auto auto' 'Forward' 10 50
+	spec ' ' 'Finch Turn' 'Finch Turn _ _ ° at _ %' 'menu.finchTurnMenu auto auto' 'Right' 90 50
+	spec ' ' 'Finch Wheels L' 'Finch Wheels L _ % R _ %' 'auto auto' 0 0
+	spec ' ' 'Finch2 Stop' 'Finch Stop'
+	spec 'r' 'Finch Distance (cm)' 'Finch Distance (cm)'
+	spec 'r' 'Finch Light' 'Finch _ Light' 'menu.finchTurnMenu' 'Right'
+	spec 'r' 'Finch' 'Finch _ Line' 'menu.finchTurnMenu' 'Right'
+	spec ' ' 'Finch2 Reset Encoders' 'Finch Reset Encoders'
+	spec 'r' 'Finch2 Encoder' 'Finch _ Encoder' 'menu.finchTurnMenu' 'Right'
+	spec 'r' 'Finch2 Accelerometer' 'Finch Accelerometer _' 'menu.finchAxisMenu' 'X'
+	spec 'r' 'Finch2 Battery' 'Finch Battery'
+	spec 'r' '_within' 'bound _ low _ high _' 'auto auto auto' 0 0 100
+	spec 'r' '_getPositionControlFlag' 'getPositionControlFlag'
+	spec ' ' '_sendMotor' 'sendMotor _ _ _ _' 'auto auto auto auto' '10' '10' '10' '10'
+	spec ' ' '_Finch Lock' 'Finch Lock'
+	spec ' ' '_Finch SPI Command' 'Finch SPI Command _' 'auto' '10'
+	spec ' ' '_Finch Unlock' 'Finch Unlock'
+	spec ' ' '_Start Finch' 'Start Finch'
+	spec ' ' '_getAllSensors' 'getAllSensors'
+    spec ' ' '_updateSensorTask' 'updateSensorTask'
+
+to Finch side {
+  '_Start Finch'
+  local 'return_val' 0
+  if (side == 'Right') {
+    return_val = ((at 8 _all_sensors) & (hexToInt '7F'))
+  } else {
+    return_val = ((at 7 _all_sensors) & (hexToInt '7F'))
+  }
+  return (100 - (((return_val - 6) * 100) / 121))
+}
+
+to 'Finch Beak Red' Red Green Blue {
+  '_Start Finch'
+  atPut 2 _all_leds (((_within Red 0 100) * 255) / 100)
+  atPut 3 _all_leds (((_within Green 0 100) * 255) / 100)
+  atPut 4 _all_leds (((_within Blue 0 100) * 255) / 100)
+  'Finch SPI Command' _all_leds
+}
+
+to 'Finch Distance (cm)' {
+  '_Start Finch'
+  local 'return_val' 0
+  return_val = (((at 3 _all_sensors) << 8) | (at 4 _all_sensors))
+  return_val = ((return_val * 919) / 10000)
+  return return_val
+}
+
+to 'Finch Light' side {
+  '_Start Finch'
+  if (side == 'Right') {
+    return (((at 6 _all_sensors) * 100) / 255)
+  } else {
+    return (((at 5 _all_sensors) * 100) / 255)
+  }
+}
+
+to '_Finch Lock' {
+  if (_finch_spi_lock == 0) {_finch_spi_lock = (booleanConstant false)}
+  local 'time_out' 0
+  repeatUntil (or (not _finch_spi_lock) (time_out > 100)) {
+    time_out += 1
+    waitMicros 100
+  }
+  if (not _finch_spi_lock) {
+    _finch_spi_lock = (booleanConstant true)
+  }
+}
+
+to 'Finch SPI Command' commands {
+  '_Finch Lock'
+  if _finch_spi_lock {
+    waitMicros 500
+    digitalWriteOp 16 false
+    waitMicros 100
+    for i 16 {
+      spiSend (at i commands)
+      waitMicros 5
+    }
+    '_Finch Unlock'
+  }
+}
+
+to 'Finch Tail' port Red Green Blue {
+  '_Start Finch'
+  if (port == 'All') {
+    for i 4 {
+      atPut ((i * 3) + 2) _all_leds (((_within Red 0 100) * 255) / 100)
+      atPut ((i * 3) + 3) _all_leds (((_within Green 0 100) * 255) / 100)
+      atPut ((i * 3) + 4) _all_leds (((_within Blue 0 100) * 255) / 100)
+    }
+  } else {
+    atPut ((port * 3) + 2) _all_leds (((_within Red 0 100) * 255) / 100)
+    atPut ((port * 3) + 3) _all_leds (((_within Green 0 100) * 255) / 100)
+    atPut ((port * 3) + 4) _all_leds (((_within Blue 0 100) * 255) / 100)
+  }
+  'Finch SPI Command' _all_leds
+}
+
+to 'Finch Turn' dir degrees speed {
+  '_Start Finch'
+  local 'l_velocity' 0
+  local 'r_velocity' 0
+  local 'tick_distance' 0
+  local 'positionControlFlag' (booleanConstant false)
+  if (degrees != 0) {
+    speed = (((_within speed -100 100) * 36) / 100)
+    tick_distance = (((_within degrees 0 360000) * 4335) / 1000)
+    if (dir == 'Right') {
+      l_velocity = (speed | 128)
+      r_velocity = (speed & 127)
+    } else {
+      r_velocity = (speed | 128)
+      l_velocity = (speed & 127)
+    }
+    _sendMotor l_velocity tick_distance r_velocity tick_distance
+    waitMillis 50
+    repeatUntil (not (_getPositionControlFlag)) {
+      waitMillis 30
+    }
+  }
+}
+
+to '_Finch Unlock' {
+  waitMicros 100
+  digitalWriteOp 16 true
+  _finch_spi_lock = (booleanConstant false)
+}
+
+to 'Finch Wheels L' l_velocity r_velocity {
+  '_Start Finch'
+  l_velocity = (((_within l_velocity -100 100) * 36) / 100)
+  r_velocity = (((_within r_velocity -100 100) * 36) / 100)
+  if (l_velocity >= 0) {
+    l_velocity = (l_velocity | 128)
+  } else {
+    l_velocity = (l_velocity & 127)
+  }
+  if (r_velocity >= 0) {
+    r_velocity = (r_velocity | 128)
+  } else {
+    r_velocity = (r_velocity & 127)
+  }
+  _sendMotor l_velocity 0 r_velocity 0
+}
+
+to 'Finch2 Accelerometer' axis {
+  if (axis == 'X') {
+    return (0 - ('[sensors:tiltX]'))
+  } else {
+    local 'return_val' 0
+    if (axis == 'Y') {
+      return_val = (((('[sensors:tiltY]') * 766) / 1000) - ((('[sensors:tiltZ]') * 643) / 1000))
+      return return_val
+    } (axis == 'Z') {
+      return_val = (((('[sensors:tiltY]') * 643) / 1000) + ((('[sensors:tiltZ]') * 766) / 1000))
+      return return_val
+    }
+    return ('[sensors:acceleration]')
+  }
+}
+
+to 'Finch2 Battery' {
+  '_Start Finch'
+  return ((((at 9 _all_sensors) + 320) * 937) / 100)
+}
+
+to 'Finch2 Encoder' side {
+  '_Start Finch'
+  local 'return_val' 0
+  if (side == 'Right') {
+    return_val = ((((at 13 _all_sensors) << 16) | ((at 14 _all_sensors) << 8)) | (at 15 _all_sensors))
+  } else {
+    return_val = ((((at 10 _all_sensors) << 16) | ((at 11 _all_sensors) << 8)) | (at 12 _all_sensors))
+  }
+  if (return_val >= (hexToInt '800000')) {
+    return_val = (return_val - (hexToInt 'FFFFFF'))
+  }
+  return_val = ((1000 * return_val) / 792)
+  return return_val
+}
+
+to 'Finch2 Reset Encoders' {
+  '_Start Finch'
+  atPut 1 _blank_list (hexToInt 'D5')
+  'Finch SPI Command' _blank_list
+}
+
+to 'Finch2 Stop' {
+  'Finch Wheels L' 0 0
+}
+
+to SensorLoop {
+}
+
+to '_Start Finch' {
+  if (_finch_started == 0) {
+    '[display:mbDisplay]' 23036234
+    analogWriteOp 0 0
+    digitalWriteOp 2 true
+    waitMillis 100
+    digitalWriteOp 2 false
+    waitMillis 1900
+    '_Finch Unlock'
+    _all_sensors = (newList 16)
+    _all_leds = (newList 16)
+    _motor_cmds = (newList 16)
+    _blank_list = (newList 16)
+    atPut 1 _all_leds (hexToInt 'D0')
+    atPut 1 _motor_cmds (hexToInt 'D2')
+    atPut 2 _motor_cmds (hexToInt 'FF')
+    sendBroadcastSimple '_updateSensorTask'
+    _finch_started = (booleanConstant true)
+    '[display:mbDisplay]' 15237450
+    sendBroadcastSimple 'sensor_loop'
+  }
+}
+
+to _getAllSensors {
+  '_Finch Lock'
+  if _finch_spi_lock {
+    waitMicros 500
+    digitalWriteOp 16 false
+    waitMicros 100
+    for i 16 {
+      if (i == 0) {
+        spiSend (hexToInt 'D4')
+      } else {
+        atPut i _all_sensors (spiRecv)
+      }
+      waitMicros 5
+    }
+    '_Finch Unlock'
+    return (booleanConstant true)
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to _updateSensorTask {
+  forever {
+    '_getAllSensors'
+    waitMillis 20
+  }
+}
+
+to _getPositionControlFlag {
+  '_Start Finch'
+  if ((((at 7 _all_sensors) & 128) >> 7) == 1) {
+    return (booleanConstant true)
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to _sendMotor l_velocity l_distance r_velocity r_distance {
+  atPut 3 _motor_cmds l_velocity
+  atPut 4 _motor_cmds ((l_distance & (hexToInt 'FF0000')) >> 16)
+  atPut 5 _motor_cmds ((l_distance & (hexToInt '00FF00')) >> 8)
+  atPut 6 _motor_cmds (l_distance & (hexToInt '0000FF'))
+  atPut 7 _motor_cmds r_velocity
+  atPut 8 _motor_cmds ((r_distance & (hexToInt 'FF0000')) >> 16)
+  atPut 9 _motor_cmds ((r_distance & (hexToInt '00FF00')) >> 8)
+  atPut 10 _motor_cmds (r_distance & (hexToInt '0000FF'))
+  for i 6 {
+    atPut (i + 10) _motor_cmds (hexToInt 'FF')
+  }
+  'Finch SPI Command' _motor_cmds
+}
+
+to setMove dir distance speed {
+  '_Start Finch'
+  local 'velocity' 0
+  local 'tick_distance' 0
+  local 'positionControlFlag' (booleanConstant false)
+  if (distance != 0) {
+    velocity = (((_within speed -100 100) * 36) / 100)
+    tick_distance = (((_within distance 0 10000) * 497) / 10)
+    if (dir == 'Forward') {
+      velocity = (velocity | 128)
+    } else {
+      velocity = (velocity & 127)
+    }
+    _sendMotor velocity tick_distance velocity tick_distance
+    waitMillis 50
+    repeatUntil (not (_getPositionControlFlag)) {
+      waitMillis 30
+    }
+  }
+}
+
+to _within number low high {
+  comment 'Contributed by Tom Lauwers'
+  if (number < low) {
+    return low
+  }
+  if (number > high) {
+    return high
+  }
+  return number
+}
+
