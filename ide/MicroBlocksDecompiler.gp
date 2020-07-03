@@ -10,9 +10,10 @@
 // To do:
 // [x] handle function calls
 // [x] make testDecompiler generate blocks
-// [ ] bug: repeat until inside forever fails
-// [ ] bug: color constants require rescaling (need block spec)
+// [x] bug: repeat until inside forever fails
+// [x] bug: color constants require rescaling (need block spec)
 // [ ] bug: multibranch condition statement rendered as nested ifs
+// [ ] make test method that compiles and decompiles all code in a project and checks result
 // [ ] make test method that clears current scripts then fetched and decompiles code from board
 // [ ] make compiler store local names
 // [ ] use local names
@@ -556,10 +557,10 @@ method codeForSequence MicroBlocksDecompiler start end {
 			fName = (functionNameForID (smallRuntime) chunkID)
 			isReporter = (not (cmdIs this (at opcodes (i + 1)) 'pop' 1))
 			if isReporter {
-				add stack (makeCommand this fName argCount true)
+				add stack (buildCmdOrReporter this fName argCount true)
 				i += 1
 			} else {
-				add code (makeCommand this fName argCount)
+				add code (buildCmdOrReporter this fName argCount false)
 				i += 2
 			}
 		} ('multiple' == op) {
@@ -684,7 +685,7 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('incrementVar' == op) {
 		add code (newCommand '+=' (join 'V' cmdArg) (removeLast stack))
 	} ('pushArgCount' == op) {
-		add stack (newCommand 'pushArgCount')
+		add stack (newReporter 'pushArgCount')
 	} ('pushArg' == op) {
 		add stack (newReporter 'v' (join 'A' cmdArg))
 	} ('storeArg' == op) {
@@ -702,8 +703,14 @@ method decodeCmd MicroBlocksDecompiler i {
 
 	} ('initLocals' == op) {
 		// skip
+	} ('pop' == op) {
+		add code (buildCmdOrReporter this 'ignoreArgs' cmdArg false)
 	} ('returnResult' == op) {
-		add code (makeCommand this 'return' 1)
+		add code (buildCmdOrReporter this 'return' 1 false)
+	} ('digitalSet' == op) {
+		add code (newCommand 'digitalWriteOp' cmdArg true)
+	} ('digitalClear' == op) {
+		add code (newCommand 'digitalWriteOp' cmdArg false)
 
 	} ('if' == op) {
 		add code (newCommand 'if'
@@ -765,20 +772,17 @@ method decodeCmd MicroBlocksDecompiler i {
 
 	// everything else
 	} (contains reporters op) {
-		add stack (makeCommand this op cmdArg)
+		add stack (buildCmdOrReporter this op cmdArg true)
 	} else {
-		add code (makeCommand this op cmdArg)
+		add code (buildCmdOrReporter this op cmdArg false)
 	}
 	if (notNil ctrl) { atPut controlStructures i ctrl } // restore ctrl to controlStructure
 }
 
-method makeCommand MicroBlocksDecompiler op argCount isReporter {
+method buildCmdOrReporter MicroBlocksDecompiler op argCount isReporter {
 	// Return a GP Command or Reporter for the given op taking argCount items from the stack.
 	// If optional isReporter arg is not supplied, look up the op in the reporters dictionary.
 
-	if (isNil isReporter) {
-		isReporter = (contains reporters op)
-	}
 	if (or ('callCommandPrimitive' == op) ('callReporterPrimitive' == op)) {
 		argsStart = ((count stack) - (argCount - 1))
 		primName = (at stack argsStart)
