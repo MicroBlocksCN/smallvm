@@ -595,10 +595,12 @@ method instructionsForIf SmallCompiler args {
 		finalCase = ((i + 2) >= (count args)) // true if this is the final case in the if statement
 		test = (at args i)
 		body = (instructionsForCmdList this (at args (i + 1)))
-		addAll result (instructionsForExpression this test)
-		offset = (count body)
-		if (not finalCase) { offset += 1 }
-		add result (array 'jmpFalse' offset)
+		if (or (true != test) (not finalCase) (i == 1)) {
+			addAll result (instructionsForExpression this test)
+			offset = (count body)
+			if (not finalCase) { offset += 1 }
+			add result (array 'jmpFalse' offset)
+		}
 		addAll result body
 		if (not finalCase) {
 			jumpToEnd = (array 'jmp' (count result)) // jump offset to be fixed later

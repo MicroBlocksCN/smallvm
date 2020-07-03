@@ -717,11 +717,16 @@ method decodeCmd MicroBlocksDecompiler i {
 			(removeLast stack)
 			(codeForSequence this (at cmd 3) (at cmd 4)))
 	} ('if-else' == op) {
-		add code (newCommand 'if'
-			(removeLast stack)
-			(codeForSequence this (at cmd 3) (at cmd 4))
-			true
-			(codeForSequence this (at cmd 5) (at cmd 6)))
+		ifPart = (codeForSequence this (at cmd 3) (at cmd 4))
+		elsePart = (codeForSequence this (at cmd 5) (at cmd 6))
+		if ('if' == (primName elsePart)) {
+			// combine nested if's
+			argList = (list 'if' (removeLast stack) ifPart)
+			addAll argList (argList elsePart)
+			add code (callWith 'newCommand' (toArray argList))
+		} else {
+			add code (newCommand 'if' (removeLast stack) ifPart true elsePart)
+		}
 	} ('for' == op) {
 		body = (codeForSequence this (at cmd 3) (at cmd 4))
 		indexVarName = (join 'L' (at cmd 5)) // xxx look up actual local name
@@ -747,28 +752,6 @@ method decodeCmd MicroBlocksDecompiler i {
 			setField whenHat 'nextBlock' body
 		}
 		add code whenHat
-
-// old code for if (including handling of multiple cases)
-// 	} ('if' == op) {
-// 		if (notNil (at cmd 4)) { // if-else
-// 			elsePart = (codeForSequence (at cmd 4))
-// 			if ('if' == (primName elsePart)) {
-// 				// combine nested if's
-// 				argList = (list 'if' (removeLast stack) (codeForSequence (at cmd 3)))
-// 				addAll argList (argList elsePart)
-// 				add code (callWith 'newCommand' (toArray argList))
-// 			} else {
-// 				add code (newCommand 'if'
-// 					(removeLast stack)
-// 					(codeForSequence (at cmd 3))
-// 					true
-// 					(codeForSequence (at cmd 4)))
-// 			}
-// 		} else { // if without else
-// 			add code (newCommand 'if'
-// 				(removeLast stack)
-// 				(codeForSequence (at cmd 3)))
-// 		}
 
 	// everything else
 	} (contains reporters op) {
