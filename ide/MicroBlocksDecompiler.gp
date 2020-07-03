@@ -108,7 +108,7 @@ method printSequence3 MicroBlocksDecompiler start end indent {
 	i = start
 	while (i <= end) {
 		ctrl = (at controlStructures i)
-		atPut controlStructures i nil // avoid infinite recursion on 'forever'
+		atPut controlStructures i nil // avoid infinite recursion on 'forever' and 'waitUntil'
 		if (notNil ctrl) {
 			op = (first ctrl)
 			if ('if' == op) {
@@ -127,6 +127,9 @@ method printSequence3 MicroBlocksDecompiler start end indent {
 				printSequence3 this (at ctrl 3) (at ctrl 4) (indent + 4)
 				print (join spaces 'do')
 				printSequence3 this (at ctrl 5) (at ctrl 6) (indent + 4)
+			} ('waitUntil' == op) {
+				print (join spaces 'wait until')
+				printSequence3 this (at ctrl 3) (at ctrl 4) (indent + 4)
 			} ('whenCondition' == op) {
 				print 'when:'
 				printSequence3 this (at ctrl 3) (at ctrl 4) (indent + 4)
@@ -285,6 +288,28 @@ method decodeImmediates MicroBlocksDecompiler lastInstruction {
 	}
 }
 
+method recordControlStructure MicroBlocksDecompiler i newRec {
+	// Record a control structure record for the given index.
+	// When multiple control structures share the same starting index
+	// (e.g. nested 'forever' loops), collect them in a 'multiple' record.
+
+	existing = (at controlStructures i)
+	if (isNil existing) { // most common case
+		atPut controlStructures i newRec
+		return
+	}
+	// handle multiple control structures with the same starting index
+	newEnd = (max (at existing 2) (at newRec 2))
+	if ('multiple' == (first existing)) {
+		// append to existing 'multiple' record
+		add existing newRec
+		atPut existing 2 newEnd
+	} else {
+		// convert to a 'multiple' record listing both existing and new records
+		atPut controlStructures i (list 'multiple' newEnd existing newRec)
+	}
+}
+
 // GPCode transformations
 
 method addHatBlock MicroBlocksDecompiler chunkType gpCode {
@@ -348,14 +373,17 @@ method findLoops MicroBlocksDecompiler {
 		if (and (isOneOf (cmdOp this cmd) 'jmp' 'jmpFalse' 'decrementAndJmp') ((cmdArg this cmd) < 0)) {
 			// a jump instruction with a negative offset marks the end of a loop
 			loopType = (loopTypeAt this i opcodes)
-			if ('whenCondition' == loopType) {
+			if ('ignore' == loopType) {
+				loopRec = nil
+				loopEnd = i
+			} ('whenCondition' == loopType) {
 				loopStart = 2
-				loopEnd = (count opcodes)
+				loopEnd = i
 				conditionStart = 4
 				conditionEnd = (i - 1)
 				bodyStart = (i + 1)
 				bodyEnd = ((count opcodes) - 1)
-				loopRec = (array 'whenCondition' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
+				loopRec = (array 'whenCondition' (count opcodes) conditionStart conditionEnd bodyStart bodyEnd)
 			} ('repeatUntil' == loopType) {
 				bodyStart = (jumpTarget this cmd)
 				loopStart = (bodyStart - 1)
@@ -364,6 +392,12 @@ method findLoops MicroBlocksDecompiler {
 				bodyEnd = (conditionStart - 1)
 				loopEnd = i
 				loopRec = (array 'repeatUntil' loopEnd conditionStart conditionEnd bodyStart bodyEnd)
+			} ('waitUntil' == loopType) {
+				loopStart = (jumpTarget this cmd)
+				loopEnd = i
+				conditionStart = loopStart
+				conditionEnd = (i - 1)
+				loopRec = (array 'waitUntil' loopEnd conditionStart conditionEnd)
 			} else {
 				bodyStart = (jumpTarget this cmd)
 				bodyEnd = (i - 1)
@@ -373,6 +407,14 @@ method findLoops MicroBlocksDecompiler {
 					loopStart = (bodyStart - 3)
 					bodyEnd = (i - 2)
 					loopEnd = (i + 1)
+					if (notNil (at controlStructures (bodyStart - 1))) {
+						cmd2 = (at controlStructures (bodyStart - 1))
+						if ('repeatUntil' == (first cmd2)) {
+							rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
+							recordControlStructure this bodyStart rec
+							atPut controlStructures (bodyStart - 1) nil
+						}
+					}
 				} ('repeat' == loopType) {
 					loopStart = (bodyStart - 1)
 				}
@@ -382,7 +424,7 @@ method findLoops MicroBlocksDecompiler {
 					loopRec = (copyWith loopRec forIndexVar)
 				}
 			}
-			atPut controlStructures loopStart loopRec
+			if (notNil loopRec) { recordControlStructure this loopStart loopRec }
 			i = (loopEnd + 1)
 		} else {
 			i += 1
@@ -399,6 +441,8 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 	if ('jmp' == op) {
 		if ('forLoop' == (cmdOp this (at seq (i - 1)))) {
 			return 'for'
+		} (and (i == (count opcodes)) (2 == (jumpTarget this cmd))) {
+			return 'ignore' // ignore the final jump of a 'whenCondition'
 		} else {
 			return 'forever'
 		}
@@ -437,7 +481,7 @@ method findIfs MicroBlocksDecompiler {
 			} else {
 				conditionalRec = (array 'if' trueEnd trueStart trueEnd)
 			}
-			atPut controlStructures i conditionalRec
+			recordControlStructure this i conditionalRec
 		}
 	}
 }
@@ -518,6 +562,42 @@ method codeForSequence MicroBlocksDecompiler start end {
 				add code (makeCommand this fName argCount)
 				i += 2
 			}
+		} ('multiple' == op) {
+			// Remove and process the outer-most control structure (the last one in the list).
+			// This does  a recursive call to codeForSequence, but with one fewer control
+			// structures in the 'multiple' list. Recursion terminates when there are no more
+			// control structures.
+			if ((count ctrl) < 3) { return nil }
+			cmd = (removeLast ctrl)
+			if ((count ctrl) < 3) { atPut controlStructures i nil }
+			op = (first cmd)
+			if ('forever' == op) {
+				body = (codeForSequence this (at cmd 3) (at cmd 4))
+				add code (newCommand 'forever' body)
+			} ('repeat' == op) {
+				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
+					// fix waitUntil inside a repeat
+					cmd2 = (removeLast ctrl)
+					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
+					recordControlStructure this (i + 1) rec
+				}
+				body = (codeForSequence this (at cmd 3) (at cmd 4))
+				add code (newCommand 'repeat' (removeLast stack) body)
+			} ('repeatUntil' == op) {
+				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
+					// fix waitUntil inside a repeat
+					cmd2 = (removeLast ctrl)
+					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
+					recordControlStructure this (i + 1) rec
+				}
+				condition = (codeForSequence this (at cmd 3) (at cmd 4))
+				body = (codeForSequence this (at cmd 5) (at cmd 6))
+				add code (newCommand 'repeatUntil' condition body)
+			} ('waitUntil' == op) {
+				condition = (codeForSequence this (at cmd 3) (at cmd 4))
+				add code (newCommand 'waitUntil' condition)
+			}
+			i = next
 		} else {
 			decodeCmd this i
 			i = next
@@ -689,7 +769,7 @@ method decodeCmd MicroBlocksDecompiler i {
 	} else {
 		add code (makeCommand this op cmdArg)
 	}
-	if (notNil ctrl) { atPut controlStructures i ctrl }
+	if (notNil ctrl) { atPut controlStructures i ctrl } // restore ctrl to controlStructure
 }
 
 method makeCommand MicroBlocksDecompiler op argCount isReporter {
