@@ -12,7 +12,8 @@
 // [x] make testDecompiler generate blocks
 // [x] bug: repeat until inside forever fails
 // [x] bug: color constants require rescaling (need block spec)
-// [ ] bug: multibranch condition statement rendered as nested ifs
+// [x] bug: multibranch condition statement rendered as nested ifs
+// [x] save comments (implmented but not yet enabled)
 // [ ] make test method that compiles and decompiles all code in a project and checks result
 // [ ] make test method that clears current scripts then fetched and decompiles code from board
 // [ ] make compiler store local names
@@ -371,7 +372,8 @@ method findLoops MicroBlocksDecompiler {
 	i = 1
 	while (i <= (count opcodes)) {
 		cmd = (at opcodes i)
-		if (and (isOneOf (cmdOp this cmd) 'jmp' 'jmpFalse' 'decrementAndJmp') ((cmdArg this cmd) < 0)) {
+		if (and (isOneOf (cmdOp this cmd) 'jmp' 'jmpFalse' 'decrementAndJmp' 'waitUntil')
+				((cmdArg this cmd) < 0)) {
 			// a jump instruction with a negative offset marks the end of a loop
 			loopType = (loopTypeAt this i opcodes)
 			if ('ignore' == loopType) {
@@ -411,6 +413,7 @@ method findLoops MicroBlocksDecompiler {
 					if (notNil (at controlStructures (bodyStart - 1))) {
 						cmd2 = (at controlStructures (bodyStart - 1))
 						if ('repeatUntil' == (first cmd2)) {
+							// fix waitUntil (xxx can be removed eventually)
 							rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
 							recordControlStructure this bodyStart rec
 							atPut controlStructures (bodyStart - 1) nil
@@ -439,6 +442,7 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 	cmd = (at seq i)
 	op = (cmdOp this cmd)
 	if ('decrementAndJmp' == op) { return 'repeat' }
+	if ('waitUntil' == op) { return 'waitUntil' }
 	if ('jmp' == op) {
 		if ('forLoop' == (cmdOp this (at seq (i - 1)))) {
 			return 'for'
@@ -456,6 +460,7 @@ method loopTypeAt MicroBlocksDecompiler i seq {
 					return 'whenCondition'
 		}
 		if ('jmp' == (cmdOp this (at seq loopStart))) {
+			// xxx remove this test once compiler generates 'waitUntil' opcodes
 			return 'repeatUntil'
 		} else {
 			return 'waitUntil'
@@ -577,7 +582,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 				add code (newCommand 'forever' body)
 			} ('repeat' == op) {
 				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
-					// fix waitUntil inside a repeat
+					// fix waitUntil inside a repeat (xxx can remove eventually)
 					cmd2 = (removeLast ctrl)
 					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
 					recordControlStructure this (i + 1) rec
@@ -586,7 +591,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 				add code (newCommand 'repeat' (removeLast stack) body)
 			} ('repeatUntil' == op) {
 				if (and ((count ctrl) > 2) ('repeatUntil' == (first (last ctrl)))) {
-					// fix waitUntil inside a repeat
+					// fix waitUntil inside a repeat (xxx can remove eventually)
 					cmd2 = (removeLast ctrl)
 					rec = (array 'waitUntil' (at cmd2 6) (at cmd2 5) ((at cmd2 6) - 1))
 					recordControlStructure this (i + 1) rec
@@ -679,27 +684,27 @@ method decodeCmd MicroBlocksDecompiler i {
 
 	// Variables
 	} ('pushVar' == op) {
-		add stack (newReporter 'v' (join 'V' cmdArg))
+		add stack (newReporter 'v' (globalVarName this cmdArg))
 	} ('storeVar' == op) {
-		add code (newCommand '=' (join 'V' cmdArg) (removeLast stack))
+		add code (newCommand '=' (globalVarName this cmdArg) (removeLast stack))
 	} ('incrementVar' == op) {
-		add code (newCommand '+=' (join 'V' cmdArg) (removeLast stack))
+		add code (newCommand '+=' (globalVarName this cmdArg) (removeLast stack))
 	} ('pushArgCount' == op) {
 		add stack (newReporter 'pushArgCount')
 	} ('pushArg' == op) {
-		add stack (newReporter 'v' (join 'A' cmdArg))
+		add stack (newReporter 'v' (argName this cmdArg))
 	} ('storeArg' == op) {
-		add code (newCommand '=' (join 'A' cmdArg) (removeLast stack))
+		add code (newCommand '=' (argName this cmdArg) (removeLast stack))
 	} ('incrementArg' == op) {
-		add code (newCommand '+=' (join 'A' cmdArg) (removeLast stack))
+		add code (newCommand '+=' (argName this cmdArg) (removeLast stack))
 	} ('pushLocal' == op) {
-		add stack (newReporter 'v' (join 'L' cmdArg))
+		add stack (newReporter 'v' (localVarName this cmdArg))
 	} ('storeLocal' == op) {
-		add code (newCommand '=' (join 'L' cmdArg) (removeLast stack))
+		add code (newCommand '=' (localVarName this cmdArg) (removeLast stack))
 	} ('incrementLocal' == op) {
-		add code (newCommand '+=' (join 'L' cmdArg) (removeLast stack))
+		add code (newCommand '+=' (localVarName this cmdArg) (removeLast stack))
 	} ('declareLocal' == op) {
-		add code (newCommand 'local' (join 'L' cmdArg) (removeLast stack))
+		add code (newCommand 'local' (localVarName this cmdArg) (removeLast stack))
 
 	} ('initLocals' == op) {
 		// skip
@@ -791,6 +796,22 @@ method buildCmdOrReporter MicroBlocksDecompiler op argCount isReporter {
 		j += -1
 	}
 	return result
+}
+
+method globalVarName MicroBlocksDecompiler varIndex {
+	varNames = (allVariableNames (project (scripter (smallRuntime))))
+	if (and (0 <= varIndex) (varIndex < (count varNames))) {
+		return (at varNames (varIndex + 1))
+	}
+	return (join 'v' varIndex)
+}
+
+method localVarName MicroBlocksDecompiler varIndex {
+	return (join 'l' varIndex)
+}
+
+method argName MicroBlocksDecompiler varIndex {
+	return (join 'arg' varIndex)
 }
 
 // Helper Methods
