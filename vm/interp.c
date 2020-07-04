@@ -287,7 +287,7 @@ static void runTask(Task *task) {
 		&&bitShiftRight_op,
 		&&longMultiply_op,
 		&&isType_op,
-		&&RESERVED_op,
+		&&jmpFalse_op, // this is the waitUntil opcode, an alias for jmpFalse_op
 		&&RESERVED_op,
 		&&newList_op,
 		&&RESERVED_op,
@@ -306,7 +306,7 @@ static void runTask(Task *task) {
 		&&sayIt_op,
 		&&logData_op,
 		&&boardType_op,
-		&&RESERVED_op,
+		&&comment_op,
 		&&RESERVED_op,
 		&&RESERVED_op,
 		&&analogPins_op,
@@ -846,6 +846,9 @@ static void runTask(Task *task) {
 	boardType_op:
 		*(sp - arg) = primBoardType();
 		POP_ARGS_REPORTER();
+		DISPATCH();
+	comment_op:
+		POP_ARGS_COMMAND();
 		DISPATCH();
 
 	// I/O operations:

@@ -339,7 +339,7 @@ method initOpcodes SmallCompiler {
 		>> 55
 		longMult 56
 		isType 57
-	RESERVED 58
+		waitUntil 58
 	RESERVED 59
 		newList 60
 	RESERVED 61
@@ -358,7 +358,7 @@ method initOpcodes SmallCompiler {
 		sayIt 74
 		printIt 75
 		boardType 76
-	RESERVED 77
+		comment 77
 	RESERVED 78
 	RESERVED 79
 		analogPins 80
