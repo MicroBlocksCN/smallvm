@@ -182,10 +182,10 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
 		(array ' ' '[vars:setVarNamed]'	'set variable named _ to _' 'str auto' 'var' 0)
 	'Prims-JSON (not in palette)'
-		(array 'r' '[misc:jsonGet]'		'json _ . _' 'str str' '{ "x": 1,  "y": [41, 42, 43] }' 'y.2')
+		(array 'r' '[misc:jsonGet]'		'json _ . _' 'str str' '{ "x": 1, "y": [41, 42, 43] }' 'y.2')
 		(array 'r' '[misc:jsonCount]'	'json count _ . _' 'str str' '[1, [4, 5, 6, 7], 3]' '')
-		(array 'r' '[misc:jsonValueAt]'	'json value _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2)
-		(array 'r' '[misc:jsonKeyAt]'	'json key _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' ''  2)
+		(array 'r' '[misc:jsonValueAt]'	'json value _ . _ at _' 'str str num' '{ "x": 1, "y": 42 }' '' 2)
+		(array 'r' '[misc:jsonKeyAt]'	'json key _ . _ at _' 'str str num' '{ "x": 1, "y": 42 }' '' 2)
 	'Prims-Binary Data (not in palette)'
 		(array 'r' '[misc:byteCount]'	'byte count _' 'str' 'binary data')
 		(array 'r' '[misc:byteAt]'		'byte _ of _' 'num str' 1 'binary data')
@@ -572,7 +572,8 @@ method instructionsForCmd SmallCompiler cmd {
 	} ('sendBroadcastSimple' == op) {
 		return (primitive this 'sendBroadcast' args true)
 	} ('comment' == op) {
-		// comments do not generate any code
+		// skip comments; do not generate any code
+		// xxx remove this case later to store comments (once the VM supports them)
 	} ('ignoreArgs' == op) {
 		for arg args {
 			addAll result (instructionsForExpression this arg)
@@ -647,6 +648,7 @@ method instructionsForWaitUntil SmallCompiler args {
 	conditionTest = (instructionsForExpression this (at args 1))
 	addAll result conditionTest
 	add result (array 'jmpFalse' (0 - (+ (count conditionTest) 1)))
+//	add result (array 'waitUntil' (0 - (+ (count conditionTest) 1))) // xxx enable later
 	return result
 }
 
@@ -724,7 +726,7 @@ method scaledRGB SmallCompiler aColor {
 	return (pixelRGB color)
 }
 
-method instructionsForAndNEW SmallCompiler args {
+method instructionsForAndNEW SmallCompiler args { // xxx enable later
 	tests = (list)
 	totalInstrCount = 0
 	for expr args {
@@ -744,7 +746,7 @@ method instructionsForAndNEW SmallCompiler args {
 	return result
 }
 
-method instructionsForOrNEW SmallCompiler args {
+method instructionsForOrNEW SmallCompiler args { // xxx enable later
 	tests = (list)
 	totalInstrCount = 0
 	for expr args {
@@ -807,9 +809,7 @@ method instructionsForOr SmallCompiler args {
 method primitive SmallCompiler op args isCommand {
 	result = (list)
 	if ('print' == op) { op = 'printIt' }
-	if ('comment' == op) {
-		// ignore comments
-	} (contains opcodes op) {
+	if (contains opcodes op) {
 		for arg args {
 			addAll result (instructionsForExpression this arg)
 		}
