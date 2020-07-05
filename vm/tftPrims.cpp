@@ -19,7 +19,9 @@
 int useTFT = false;
 int touchEnabled = false;
 
-#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_IOT_BUS) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
+#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
+	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
+	defined(NRF52840_CLUEXXX) || defined(ARDUINO_IOT_BUS)
 
 	#define TFT_BLACK 0
 	#define TFT_GREEN 0x7E0
@@ -151,6 +153,47 @@ int touchEnabled = false;
 
 			useTFT = true;
 		}
+
+	#elif defined(NRF52840_CLUE)
+		// xxx (disabled above) does not yet work and enabling it causes a crash at startup
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7789.h"
+
+		#define TFT_CS		31
+		#define TFT_DC		32
+		#define TFT_RST		33
+		#define TFT_WIDTH	240
+		#define TFT_HEIGHT	240
+		Adafruit_ST7789 tft = Adafruit_ST7789(&SPI1, TFT_CS, TFT_DC, TFT_RST);
+
+		void tftInit() {
+			// Turn on TFT chip select
+			pinMode(TFT_CS, OUTPUT);
+			digitalWrite(TFT_CS, HIGH);
+
+			tft.init(240, 240);
+			tft.setRotation(1);
+			tft.fillScreen(0);
+			uint8_t rtna = 0x01; // Screen refresh rate control (datasheet 9.2.18, FRCTRL2)
+			tft.sendCommand(0xC6, &rtna, 1);
+
+			// Turn on backlight
+			pinMode(34, OUTPUT);
+			digitalWrite(34, HIGH);
+
+			useTFT = false; // xxx true
+		}
+
+//   void displayBegin(void) {
+//     Adafruit_ST7789 *tft = new Adafruit_ST7789(&ARCADA_TFT_SPI, ARCADA_TFT_CS,
+//                                                ARCADA_TFT_DC, ARCADA_TFT_RST);
+//     tft->init(240, 240);
+//     tft->setRotation(ARCADA_TFT_ROTATION); // 1
+//     tft->fillScreen(ARCADA_TFT_DEFAULTFILL); // 0
+//     uint8_t rtna = 0x01; // Screen refresh rate control (datasheet 9.2.18, FRCTRL2)
+//     tft->sendCommand(0xC6, &rtna, 1);
+//     display = tft;
+//   }
 
 	#elif defined(ARDUINO_IOT_BUS)
 		#include "Adafruit_GFX.h"

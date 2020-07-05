@@ -213,6 +213,17 @@ void restartSerial() {
 	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
 
+#elif defined(NRF52840_CLUE)
+
+	#define BOARD_TYPE "Clue"
+	#define DIGITAL_PINS 29
+	#define ANALOG_PINS 8
+	#define TOTAL_PINS 48
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7};
+	#define PIN_LED 17
+	#define PIN_BUTTON_A 5
+	#define PIN_BUTTON_B 11
+
 #elif defined(ADAFRUIT_GEMMA_M0)
 
 	#define BOARD_TYPE "Gemma M0"
@@ -776,6 +787,8 @@ OBJ primButtonA(OBJ *args) {
 			}
 			buttonIndex = (buttonIndex + 1) % 6;
 			return (buttonReadings[4] < CAP_THRESHOLD) ? trueObj : falseObj;
+		#elif defined(NRF52840_CLUE)
+			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_A, INPUT);
 		#endif
@@ -793,6 +806,8 @@ OBJ primButtonB(OBJ *args) {
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
 			return (buttonReadings[3] < CAP_THRESHOLD) ? trueObj : falseObj;
+		#elif defined(NRF52840_CLUE)
+			SET_MODE(PIN_BUTTON_B, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_B, INPUT);
 		#endif
