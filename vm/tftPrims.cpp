@@ -21,7 +21,7 @@ int touchEnabled = false;
 
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
-	defined(NRF52840_CLUE) || defined(ARDUINO_IOT_BUS)
+	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS)
 
 	#define TFT_BLACK 0
 	#define TFT_GREEN 0x7E0
@@ -154,7 +154,7 @@ int touchEnabled = false;
 			useTFT = true;
 		}
 
-	#elif defined(NRF52840_CLUE)
+	#elif defined(ARDUINO_NRF52840_CLUE)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7789.h"
 
@@ -166,13 +166,17 @@ int touchEnabled = false;
 		Adafruit_ST7789 tft = Adafruit_ST7789(&SPI1, TFT_CS, TFT_DC, TFT_RST);
 
 		void tftInit() {
+			// Turn on TFT chip select (xxx needed?)
+			pinMode(TFT_CS, OUTPUT);
+			digitalWrite(TFT_CS, HIGH);
+
 			tft.init(240, 240);
 			tft.setRotation(1);
 			tft.fillScreen(0);
 			uint8_t rtna = 0x01; // Screen refresh rate control (datasheet 9.2.18, FRCTRL2)
 			tft.sendCommand(0xC6, &rtna, 1);
 
-			// Turn on backlight
+			// Turn on backlight (xxx needed?)
 			pinMode(34, OUTPUT);
 			digitalWrite(34, HIGH);
 

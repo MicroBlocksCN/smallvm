@@ -306,7 +306,7 @@ static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#if defined(ARDUINO_CALLIOPE_MINI)
 			pinNum = 26; // internal NeoPixel pin on Calliope
-		#elif defined(NRF52840_CLUE)
+		#elif defined(ARDUINO_NRF52840_CLUE)
 			pinNum = 18; // internal NeoPixel pin on Clue
 		#else
 			pinNum = 0; // use left external pad on micro:bit and sino:bit

@@ -80,7 +80,7 @@ void hardwareInit() {
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1) || \
 		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
-		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(NRF52840_CLUE)
+		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_NRF52840_CLUE)
 			tftInit();
 	#endif
 }
@@ -215,7 +215,7 @@ void restartSerial() {
 	#undef BUTTON_PRESSED
 	#define BUTTON_PRESSED HIGH
 
-#elif defined(NRF52840_CLUE)
+#elif defined(ARDUINO_NRF52840_CLUE)
 
 	#define BOARD_TYPE "Clue"
 	#define DIGITAL_PINS 23
@@ -518,7 +518,7 @@ void turnOffPins() {
 int mapDigitalPinNum(int userPinNum) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(NRF52840_CLUE)
+		defined(ARDUINO_NRF52840_CLUE)
 			if ((0 <= userPinNum) && (userPinNum < DIGITAL_PINS)) return digitalPin[userPinNum];
 	#endif
 	return userPinNum;
@@ -668,7 +668,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-			defined(NRF52840_CLUE)
+			defined(ARDUINO_NRF52840_CLUE)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -728,7 +728,7 @@ void primDigitalSet(int pinNum, int flag) {
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-			defined(NRF52840_CLUE)
+			defined(ARDUINO_NRF52840_CLUE)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -811,7 +811,7 @@ OBJ primButtonA(OBJ *args) {
 			}
 			buttonIndex = (buttonIndex + 1) % 6;
 			return (buttonReadings[4] < CAP_THRESHOLD) ? trueObj : falseObj;
-		#elif defined(NRF52840_CLUE)
+		#elif defined(ARDUINO_NRF52840_CLUE)
 			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_A, INPUT);
@@ -830,7 +830,7 @@ OBJ primButtonB(OBJ *args) {
 	#ifdef PIN_BUTTON_B
 		#if defined(ARDUINO_CITILAB_ED1)
 			return (buttonReadings[3] < CAP_THRESHOLD) ? trueObj : falseObj;
-		#elif defined(NRF52840_CLUE)
+		#elif defined(ARDUINO_NRF52840_CLUE)
 			SET_MODE(PIN_BUTTON_B, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_B, INPUT);
@@ -1246,7 +1246,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(NRF52840_CLUE)
+		defined(ARDUINO_NRF52840_CLUE)
 			pin = digitalPin[pin];
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {
@@ -1284,7 +1284,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(NRF52840_CLUE)
+		defined(ARDUINO_NRF52840_CLUE)
 			pin = digitalPin[pin];
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {
