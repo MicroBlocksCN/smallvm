@@ -253,7 +253,7 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		OBJ analogPin = int2obj(8);
 		lightLevel = obj2int(primAnalogRead(1, &analogPin));
-		lightLevel = lightLevel / 10;
+		lightLevel = lightLevel;
 	#elif defined(ARDUINO_CITILAB_ED1)
 		lightLevel = analogRead(34) * 1000 / 4095;
 	#else
@@ -306,6 +306,8 @@ static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#if defined(ARDUINO_CALLIOPE_MINI)
 			pinNum = 26; // internal NeoPixel pin on Calliope
+		#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+			pinNum = 8; // internal NeoPixel pin on Circuit Playground (Bluefruit)
 		#elif defined(ARDUINO_NRF52840_CLUE)
 			pinNum = 18; // internal NeoPixel pin on Clue
 		#else

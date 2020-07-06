@@ -195,7 +195,19 @@ void restartSerial() {
 	#define ANALOG_PINS 11
 	#define TOTAL_PINS 27
 	static const int analogPin[11] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10};
+		// A0-A7 Pads on board
+		// A8 - light sensor
+		// A9 - temperature sensor
 	static const char digitalPin[16] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 26, 25, 13, 8, 11};
+		// Pins 0-7 Pads on board
+		// Pin 8 - button A
+		// Pin 9 - button B
+		// Pin 10 - slide switch
+		// Pin 11 - IR receiver
+		// Pin 12 - IR transmitter
+		// Pin 13 - red LED
+		// Pin 14 - neopixels
+		// Pin 15 - speaker disable
 	#define PIN_BUTTON_A 4
 	#define PIN_BUTTON_B 5
 	#undef BUTTON_PRESSED
@@ -204,11 +216,20 @@ void restartSerial() {
 #elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
 
 	#define BOARD_TYPE "CircuitPlayground Bluefruit"
-	#define DIGITAL_PINS 15
+	#define DIGITAL_PINS 13
 	#define ANALOG_PINS 10
-	#define TOTAL_PINS 27
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
-	static const char digitalPin[15] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 25, 26, 13, 8};
+	#define TOTAL_PINS 13
+	static const int analogPin[10] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
+		// A0-A7 Pads on board
+		// A8 - light sensor
+		// A9 - temperature sensor
+	static const char digitalPin[13] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 8, 13};
+		// Pins 0-7 Pads on board
+		// Pin 8 - button A
+		// Pin 9 - button B
+		// Pin 10 - slide switch
+		// Pin 11 - neopixels
+		// Pin 12 - red LED
 	#define PIN_LED 13
 	#define PIN_BUTTON_A 4
 	#define PIN_BUTTON_B 5
@@ -1243,11 +1264,13 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	OBJ freqArg = args[1];
 	if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
 	int pin = obj2int(pinArg);
-	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE)
-			pin = digitalPin[pin];
+		defined(ARDUINO_NRF52840_CIRCUITPLAY)
+			if ((pin < 0) || (pin >= DIGITAL_PINS)) pin = 0;
+			pin = digitalPin[0];
+	#elif defined(ARDUINO_NRF52840_CLUE)
+			if ((pin < 0) || (pin >= DIGITAL_PINS)) pin = 21;
+			pin = digitalPin[0];
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {
 			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
@@ -1255,6 +1278,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 			pin = digitalPinMappings[pin - 1];
 		}
 	#endif
+	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
 	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pin)) return falseObj;
 	#endif
