@@ -260,10 +260,6 @@ static int readTemperature() {
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 
-#ifdef ARDUINO_NRF52840_CIRCUITPLAY
-	#define Wire1 Wire
-#endif
-
 #define LIS3DH_ID 25
 
 static int readAcceleration(int registerID) {
