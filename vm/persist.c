@@ -44,9 +44,9 @@
 		#define START (168 * 1024)
 		#define HALF_SPACE (160 * 1024)
 	#elif defined(NRF52_SERIES)
-		// nrf52832: SoftDevice + app: 0-256k; Persistent Mem: 256-436k; User data: 436k-464k; Boot: 464k-512k
-		#define START (256 * 1024)
-		#define HALF_SPACE (90 * 1024)
+		// nrf52832: SoftDevice + app: 0-300k; Persistent Mem: 300-436k; User data: 436k-464k; Boot: 464k-512k
+		#define START (300 * 1024)
+		#define HALF_SPACE (60 * 1024)
 	#endif
 
 	static void flashErase(int *startAddr, int *endAddr) {
