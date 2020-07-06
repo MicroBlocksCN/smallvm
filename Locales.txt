@@ -388,13 +388,43 @@ Finch Accelerometer _
 
 Finch Battery
 
+All
+
+Forward
+
+Backward
+
+Right
+
+Left
+
+Beak Up
+
+Beak Down
+
+Tilt Left
+
+Tilt Right
+
+Level
+
+Upside Down
+
+x
+
+y
+
+z
+
+strength
+
 ####
 # Ultrasound distance library
 
 distance (cm) trigger _ echo _
 
 ####
-# Infrared remote libraryh 
+# Infrared remote libraryh
 
 IR Remote
 
