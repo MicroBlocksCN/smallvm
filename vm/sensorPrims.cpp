@@ -320,6 +320,35 @@ static int readTemperature() {
 	return (int) round(result);
 }
 
+#elif defined(NRF52840_CLUE)
+
+#define LSM6DS 106
+
+static void startAccelerometer() {
+	writeI2CReg(LSM6DS, 0x10, 0x40); // enable accelerometer,  104 Hz sample rate
+	accelStarted = true;
+}
+
+static int readAcceleration(int registerID) {
+	if (!accelStarted) startAccelerometer();
+	int val = 0;
+	if (1 == registerID) val = readI2CReg(LSM6DS, 0x29); // x-axis
+	if (3 == registerID) val = readI2CReg(LSM6DS, 0x2B); // y-axis
+	if (5 == registerID) val = readI2CReg(LSM6DS, 0x2D); // z-axis
+
+	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = ((val * 200) / 127); // invert sign and scale to range 0-200
+	if (5 == registerID) val = -val; // invert z-axis
+	return val;
+}
+
+static int readTemperature() {
+	int temp = readI2CReg(LSM6DS, 0x21);
+	if (temp >= 128) temp = temp - 256; // negative
+	return 23 + temp;
+}
+
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 
 #ifdef ARDUINO_M5Stack_Core_ESP32

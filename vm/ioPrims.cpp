@@ -78,8 +78,10 @@ void hardwareInit() {
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
 		touchSetCycles(0x800, 0x800);
 	#endif
-	#if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
-		tftInit();
+	#if defined(ARDUINO_CITILAB_ED1) || \
+		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
+		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(NRF52840_CLUE)
+			tftInit();
 	#endif
 }
 
@@ -216,13 +218,29 @@ void restartSerial() {
 #elif defined(NRF52840_CLUE)
 
 	#define BOARD_TYPE "Clue"
-	#define DIGITAL_PINS 29
+	#define DIGITAL_PINS 23
 	#define ANALOG_PINS 8
-	#define TOTAL_PINS 48
+	#define TOTAL_PINS 23
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7};
+	static const char digitalPin[24] = {
+		// Pins 0-20 Edge connector pins (except 17 & 18)
+		// Pin 17 - red LED
+		// Pin 18 - NeoPixel
+		// Pin 21 - speaker (internal pin 46)
+		// Pin 22 - white LED (internal pin 43)
+		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+		11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+		46, 43};
 	#define PIN_LED 17
 	#define PIN_BUTTON_A 5
 	#define PIN_BUTTON_B 11
+
+	// Clue i2c sensors:
+	// 28 - LIS3MDL magnetometer
+	// 57 - APDS9960 light & gesture
+	// 68 - SHT31-D temp & humidity
+	// 106 - LSM6DS accelerometer & gyroscope
+	// 119 - BMP280 remperature & air pressure
 
 #elif defined(ADAFRUIT_GEMMA_M0)
 
@@ -498,8 +516,10 @@ void turnOffPins() {
 }
 
 int mapDigitalPinNum(int userPinNum) {
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
-		if ((0 <= userPinNum) && (userPinNum < DIGITAL_PINS)) return digitalPin[userPinNum];
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
+		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+		defined(NRF52840_CLUE)
+			if ((0 <= userPinNum) && (userPinNum < DIGITAL_PINS)) return digitalPin[userPinNum];
 	#endif
 	return userPinNum;
 }
@@ -646,7 +666,9 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
-	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
+			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+			defined(NRF52840_CLUE)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -704,7 +726,9 @@ void primDigitalSet(int pinNum, int flag) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
-	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
+			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+			defined(NRF52840_CLUE)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -1220,8 +1244,10 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
 	int pin = obj2int(pinArg);
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
-		pin = digitalPin[pin];
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
+		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+		defined(NRF52840_CLUE)
+			pin = digitalPin[pin];
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {
 			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
@@ -1256,8 +1282,10 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	if (!isInt(pinArg) || !isInt(usecsArg)) return falseObj;
 	int pin = obj2int(pinArg);
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
-		pin = digitalPin[pin];
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
+		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+		defined(NRF52840_CLUE)
+			pin = digitalPin[pin];
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {
 			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
