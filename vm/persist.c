@@ -51,13 +51,11 @@
 
 	static void flashErase(int *startAddr, int *endAddr) {
 		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Een; // enable Flash erase
-		while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
-
 		while (startAddr < endAddr) {
+			while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
 			NRF_NVMC->ERASEPAGE = (int) startAddr;
 			startAddr += 256; // page size is 256 words (1024 bytes)
 		}
-
 		NRF_NVMC->CONFIG = 0; // disable Flash erase
 	}
 
@@ -70,12 +68,12 @@
 
 	void flashWriteData(int *dst, int wordCount, uint8 *src) {
 		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen; // enable Flash write
-		while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
 		for ( ; wordCount > 0; wordCount--) {
 			int n = *src++;
 			n |= *src++ << 8;
 			n |= *src++ << 16;
 			n |= *src++ << 24;
+			while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
 			*dst++ = n;
 		}
 		NRF_NVMC->CONFIG = 0; // disable Flash write
@@ -368,6 +366,18 @@ void outputRecordHeaders() {
 	sprintf(s, "%d bytes used (%d%%) of %d",
 		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
 	outputString(s);
+}
+
+void dumpHex() {
+	int *start = (0 == current) ? start0 : start1;
+	int *end = freeStart + 10;
+	for (int *p = start; p <= end; ) {
+		char s[200];
+		sprintf(s, "%d: %x %x %x %x %x %x %x %x %x %x",
+			(p - start), p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
+		outputString(s);
+		p += 10;
+	}
 }
 
 static int * compactionStartRecord() {
