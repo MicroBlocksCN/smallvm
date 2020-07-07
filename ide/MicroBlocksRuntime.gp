@@ -561,7 +561,7 @@ method openPortAndSendPing SmallRuntime {
 }
 
 method ideVersion SmallRuntime { return '0.5.4' }
-method latestVmVersion SmallRuntime { return 86 }
+method latestVmVersion SmallRuntime { return 87 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = (newline)
