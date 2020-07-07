@@ -478,6 +478,20 @@ static void sendNeoPixelData(int val) { }
 
 #endif // NeoPixel Support
 
+static inline int gamma(int val) {
+	// This function computes the n^3 gamma curve, where n is a brightness in the range 0.0..1.0,
+	// with the result scaled to the integer range 0..neoMax, but it uses only integer arithmetic.
+	// The input is assumed to be an integer in the range 0..255, and what's computed is the
+	// neoMax * ((val / 255) ^ 3). Since (val / 255) has the range 0.0 and 1.0, ((val / 255) ^ 3)
+	// will also be in the range 0.0..1.0, and that is scaled to 0..neoMax.
+	// neoMax determines the max brightness (and power draw!) of each NeoPixel color channel,
+	// which is about (neoMax / 255) * 20 mA per color channel.
+
+	const int neoMax = 35;
+	const int divisor = (255 * 255 * 255) / neoMax;
+	return ((val * val * val) / divisor) & 0xFF;
+}
+
 static const int whiteTable[64] = {
 	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32,
 	35, 38, 41, 44, 47, 50, 54, 58, 62, 66, 70, 75, 80, 85, 90, 97, 104, 111, 118, 125, 132,
@@ -492,8 +506,10 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 	OBJ arg = args[0];
 	if (isInt(arg)) {
 		int rgb = obj2int(arg);
-		// re-order RGB -> GBR (NeoPixel order)
-		int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
+		int r = gamma((rgb >> 16) & 0xFF);
+		int g = gamma((rgb >> 8) & 0xFF);
+		int b = gamma(rgb & 0xFF);
+		int val = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
 		if (32 == neoPixelBits) { // send white as the final byte of four
 			val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
 		}
@@ -504,8 +520,10 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 			OBJ item = FIELD(arg, i + 1);
 			if (isInt(item)) {
 				int rgb = obj2int(item);
-				// re-order RGB -> GBR (NeoPixel order)
-				int val = ((rgb & 0xFF00) << 8) | ((rgb & 0xFF0000) >> 8) | (rgb & 0xFF);
+				int r = gamma((rgb >> 16) & 0xFF);
+				int g = gamma((rgb >> 8) & 0xFF);
+				int b = gamma(rgb & 0xFF);
+				int val = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
 				if (32 == neoPixelBits) { // send white as the final byte of four
 					val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
 				}

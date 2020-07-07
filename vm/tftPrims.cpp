@@ -4,7 +4,7 @@
 
 // Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// tftPrims.cpp - Microblocks TFT screen primitives for the Citilab ED1 board
+// tftPrims.cpp - Microblocks TFT screen primitives and touch screen input
 // Bernat Romagosa, November 2018
 
 #include <Arduino.h>
@@ -127,7 +127,7 @@ int touchEnabled = false;
 			Wire1.write(reg);
 			Wire1.endTransmission();
 			Wire1.requestFrom(0x34, 1);
-			return Wire1.available() ?  Wire1.read() : 0;
+			return Wire1.available() ? Wire1.read() : 0;
 		}
 
 		void writeAXP(int reg, int value) {
@@ -239,19 +239,15 @@ OBJ primEnableDisplay(int argCount, OBJ *args) {
 }
 
 static int color24to16b(int color24b) {
-	// converts 24-bit RGB888 format to 16-bit RGB565
-	int r = (color24b >> 16) & 0xFF;
-	int g = (color24b >> 8) & 0xFF;
-	int b = color24b & 0xFF;
-	// range of each color channel is 0-31 (the low 5-bits of each byte)
-	r = (r > 31) ? 31 : r & 31;
-	g = (g > 31) ? 31 : g & 31;
-	b = (b > 31) ? 31 : b & 31;
+	// Convert 24-bit RGB888 format to the TFT's color format (e.g. 16-bit RGB565).
+
+	int r = (color24b >> 19) & 0x1F; // 5 bits
+	int g = (color24b >> 10) & 0x3F; // 6 bits
+	int b = (color24b >> 3) & 0x1F; // 5 bits
 	#if defined(ARDUINO_M5Stick_C)
-		// color order is GBR
-		return ((b << 11) & 0xF800) | ((g << 6) & 0x7E0) | r;
+		return (b << 11) | (g << 5) | r; // color order: BGR
 	#else
-		return ((r << 11) & 0xF800) | ((g << 6) & 0x7E0) | b;
+		return (r << 11) | (g << 5) | b; // color order: RGB
 	#endif
 }
 
@@ -274,7 +270,6 @@ static OBJ primGetHeight(int argCount, OBJ *args) {
 static OBJ primSetPixel(int argCount, OBJ *args) {
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
-	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[2]));
 	tft.drawPixel(x, y, color16b);
 	return falseObj;
@@ -285,7 +280,6 @@ static OBJ primLine(int argCount, OBJ *args) {
 	int y0 = obj2int(args[1]);
 	int x1 = obj2int(args[2]);
 	int y1 = obj2int(args[3]);
-	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[4]));
 	tft.drawLine(x0, y0, x1, y1, color16b);
 	return falseObj;
@@ -296,7 +290,6 @@ static OBJ primRect(int argCount, OBJ *args) {
 	int y = obj2int(args[1]);
 	int width = obj2int(args[2]);
 	int height = obj2int(args[3]);
-	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[4]));
 	int fill = (argCount > 5) ? (trueObj == args[5]) : true;
 	if (fill) {
@@ -313,7 +306,6 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 	int width = obj2int(args[2]);
 	int height = obj2int(args[3]);
 	int radius = obj2int(args[4]);
-	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[5]));
 	int fill = (argCount > 6) ? (trueObj == args[6]) : true;
 	if (fill) {
@@ -328,7 +320,6 @@ static OBJ primCircle(int argCount, OBJ *args) {
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
 	int radius = obj2int(args[2]);
-	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[3]));
 	int fill = (argCount > 4) ? (trueObj == args[4]) : true;
 	if (fill) {
@@ -346,7 +337,6 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 	int y1 = obj2int(args[3]);
 	int x2 = obj2int(args[4]);
 	int y2 = obj2int(args[5]);
-	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[6]));
 	int fill = (argCount > 7) ? (trueObj == args[7]) : true;
 	if (fill) {
@@ -361,7 +351,6 @@ static OBJ primText(int argCount, OBJ *args) {
 	OBJ value = args[0];
 	int x = obj2int(args[1]);
 	int y = obj2int(args[2]);
-	// Re-encode color from 24 bits into 16 bits
 	int color16b = color24to16b(obj2int(args[3]));
 	int scale = (argCount > 4) ? obj2int(args[4]) : 2;
 	int wrap = (argCount > 5) ? (trueObj == args[5]) : true;

@@ -347,13 +347,7 @@ method fixBooleanAndColorArgs MicroBlocksDecompiler gpCode {
 			slotType = (first (slotInfoForIndex spec i))
 			val = (at args i)
 			if (and ('color' == slotType) (isClass val 'Integer')) {
-				// This is an approximation to the original color since
-				// information is lost in the encoding.
-				scaledC = (color ((val >> 16) & 255)  ((val >> 8) & 255) (val & 255))
-				h = (hue scaledC)
-				s = (0.91 * (saturation scaledC))
-				v = (20 * (brightness scaledC)) // approximation
-				c = (colorHSV h s v)
+				c = (color ((val >> 16) & 255)  ((val >> 8) & 255) (val & 255))
 				setArg block i c
 			} (and ('bool' != slotType) (isClass val 'Boolean') ) {
 				print 'boolean in' (primName block)

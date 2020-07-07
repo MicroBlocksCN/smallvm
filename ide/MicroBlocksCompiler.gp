@@ -691,7 +691,7 @@ method instructionsForExpression SmallCompiler expr {
 	} (isClass expr 'Float') {
 		error 'Floats are not yet supported'
 	} (isClass expr 'Color') {
-		return (instructionsForExpression this (scaledRGB this expr))
+		return (instructionsForExpression this (pixelRGB expr))
 	}
 
 	// expressions
@@ -707,7 +707,7 @@ method instructionsForExpression SmallCompiler expr {
 		}
 	} ('colorSwatch' == op) {
 		c = (color (at args 1) (at args 2) (at args 3))
-		return (instructionsForExpression this (scaledRGB this c))
+		return (instructionsForExpression this (pixelRGB c))
 	} ('and' == op) {
 		return (instructionsForAnd this args)
 	} ('or' == op) {
@@ -717,13 +717,6 @@ method instructionsForExpression SmallCompiler expr {
 	} else {
 		return (primitive this op args false)
 	}
-}
-
-method scaledRGB SmallCompiler aColor {
-	brightness = (((raise 2 (5 * (brightness aColor))) - 1) / 31) // range: 0-1
-	saturation = (2 * (saturation aColor)) // increase saturation
-	color = (colorHSV (hue aColor) saturation (0.125 * brightness)) // RGB components all 0-31
-	return (pixelRGB color)
 }
 
 method instructionsForAndNEW SmallCompiler args { // xxx enable later

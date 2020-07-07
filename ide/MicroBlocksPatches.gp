@@ -810,18 +810,6 @@ to newColorPicker action initialColor {
 method addTransparentButton ColorPicker x y { } // don't add a transparent button
 method setAction ColorPicker anAction { action = anAction }
 
-method updateRGBReadouts ColorPicker c {
-  // Adjust color for NeoPixels (see SmallCompiler instructionsForExpression)
-
-  brightness = (((raise 2 (5 * (brightness c))) - 1) / 31) // range: 0-1
-  saturation = (2 * (saturation c)) // increase saturation
-  c = (colorHSV (hue c) saturation (0.125 * brightness))
-
-  setText rText (join 'R ' (leftPadded (toString (red c)) 2 '0'))
-  setText gText (join 'G ' (leftPadded (toString (green c)) 2 '0'))
-  setText bText (join 'B ' (leftPadded (toString (blue c)) 2 '0'))
-}
-
 // Block colors
 
 method blockColorForOp AuthoringSpecs op {
