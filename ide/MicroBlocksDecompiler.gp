@@ -567,10 +567,10 @@ method codeForSequence MicroBlocksDecompiler start end {
 			// This does  a recursive call to codeForSequence, but with one fewer control
 			// structures in the 'multiple' list. Recursion terminates when there are no more
 			// control structures.
-			if ((count ctrl) < 3) { return nil }
 			cmd = (removeLast ctrl)
 			if ((count ctrl) < 3) { atPut controlStructures i nil }
 			op = (first cmd)
+			next = ((at cmd 2) + 1)
 			if ('forever' == op) {
 				body = (codeForSequence this (at cmd 3) (at cmd 4))
 				add code (newCommand 'forever' body)
