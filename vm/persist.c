@@ -50,11 +50,12 @@
 	#endif
 
 	static void flashErase(int *startAddr, int *endAddr) {
+		uint32 pageSize = NRF_FICR->CODEPAGESIZE / 4; // page size in words
 		NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Een; // enable Flash erase
 		while (startAddr < endAddr) {
 			while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
 			NRF_NVMC->ERASEPAGE = (int) startAddr;
-			startAddr += 256; // page size is 256 words (1024 bytes)
+			startAddr += pageSize;
 		}
 		NRF_NVMC->CONFIG = 0; // disable Flash erase
 	}
@@ -368,9 +369,24 @@ void outputRecordHeaders() {
 	outputString(s);
 }
 
+void eraseCheck() {
+	int badCount = 0;
+	int *start = (0 == current) ? start1 : start0; // inactive half space
+	int *end = (0 == current) ? end1 : end0;
+	for (int *p = start; p < end; p++) {
+		if (*p != 0xFFFFFFFF) badCount++;
+		if (*p != 0xFFFFFFFF) {
+			char s[200];
+			sprintf(s, "bad %d: %x", (p - start), *p);
+			outputString(s);
+		}
+	}
+	reportNum("Non-erased words:", badCount);
+}
+
 void dumpHex() {
 	int *start = (0 == current) ? start0 : start1;
-	int *end = freeStart + 10;
+	int *end = freeStart + 5000;
 	for (int *p = start; p <= end; ) {
 		char s[200];
 		sprintf(s, "%d: %x %x %x %x %x %x %x %x %x %x",
