@@ -121,6 +121,29 @@ static void primSendBroadcast(int argCount, OBJ *args) {
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
 }
 
+// Timer
+
+static uint32 timerStart = 0;
+
+static void resetTimer() { timerStart = millisecs(); }
+
+static int timer() {
+	// Return the number of milliseconds since the timer was last reset.
+	// Note: The millisecond clock is the 32-bit microsecond clock divided by 1000,
+	// so it wraps around to zero when the microsecond clock wraps, which occurs
+	// about every 72 minutes and 35 seconds. That's the maximum duration that can
+	// be measured with this simple timer implementation.
+
+	const uint32 msecWrap = 4294967; // 2^32 / 1000, value at which the millisecond clock wraps
+
+	uint32 now = millisecs();
+	if (now < timerStart) { // clock wrapped
+		return (msecWrap - timerStart) + now; // time to wrap + time since wrap
+	}
+	return now - timerStart;
+}
+
+
 // Board Type
 
 #define BOARD_TYPE_SIZE 32
@@ -301,8 +324,8 @@ static void runTask(Task *task) {
 		&&RESERVED_op,
 		&&millis_op,
 		&&micros_op,
-		&&RESERVED_op,
-		&&RESERVED_op,
+		&&timer_op,
+		&&resetTimer_op,
 		&&sayIt_op,
 		&&logData_op,
 		&&boardType_op,
@@ -814,6 +837,14 @@ static void runTask(Task *task) {
 	micros_op:
 		STACK_CHECK(1);
 		*sp++ = int2obj(microsecs() & 0x3FFFFFFF); // low 30-bits so result is positive
+		DISPATCH();
+	timer_op:
+		STACK_CHECK(1);
+		*sp++ = int2obj(timer());
+		DISPATCH();
+	resetTimer_op:
+		resetTimer();
+		POP_ARGS_COMMAND();
 		DISPATCH();
 	sayIt_op:
 		printArgs(arg, sp - arg, true, true);

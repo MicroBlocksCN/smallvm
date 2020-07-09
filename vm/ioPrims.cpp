@@ -26,21 +26,23 @@ static void initRandomSeed(void); // forward reference
 
 // Timing Functions and Hardware Initialization
 
-#ifdef NRF51
+#if defined(NRF51) || defined(NRF52_SERIES)
 
-static char *clock_base = (char *) 0x40008000;
+#define USE_NRF5x_CLOCK true
 
-void initClock_NRF51() {
-	*((int *) (clock_base + 0x010)) = 1; // shutdown & clear
-	*((int *) (clock_base + 0x504)) = 0; // timer mode
-	*((int *) (clock_base + 0x508)) = 3; // 32-bit
-	*((int *) (clock_base + 0x510)) = 4; // prescale - divides 16MHz by 2^N
-	*((int *) (clock_base + 0x0)) = 1; // start
+static char *timer0_base = (char *) 0x40008000;
+
+static void initClock_NRF5x() {
+	*((int *) (timer0_base + 0x010)) = 1; // shutdown & clear
+	*((int *) (timer0_base + 0x504)) = 0; // timer mode
+	*((int *) (timer0_base + 0x508)) = 3; // 32-bit
+	*((int *) (timer0_base + 0x510)) = 4; // prescale - divides 16MHz by 2^N
+	*((int *) (timer0_base + 0x0)) = 1; // start
 }
 
 uint32 microsecs() {
-	*((int *) (clock_base + 0x40)) = 1; // capture into cc1
-	return *((uint32 *) (clock_base + 0x540)); // return contents of cc1
+	*((int *) (timer0_base + 0x40)) = 1; // capture into cc1
+	return *((uint32 *) (timer0_base + 0x540)); // return contents of cc1
 }
 
 uint32 millisecs() {
@@ -51,26 +53,25 @@ uint32 millisecs() {
 	return microsecs() / 1000;
 }
 
-void hardwareInit() {
-	Serial.begin(115200);
-	initClock_NRF51();
-	initPins();
-	initRandomSeed();
-	turnOffInternalNeoPixels();
-}
+#else // not NRF5x
 
-#else // not NRF51
+uint32 microsecs() { return (uint32) micros(); }
+uint32 millisecs() { return (uint32) millis(); }
+
+#endif
+
+// Hardware Initialization
 
 	#if (defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_SAM_ZERO)) && defined(SERIAL_PORT_USBVIRTUAL)
 		#undef Serial
 		#define Serial SERIAL_PORT_USBVIRTUAL
 	#endif
 
-uint32 microsecs() { return (uint32) micros(); }
-uint32 millisecs() { return (uint32) millis(); }
-
 void hardwareInit() {
 	Serial.begin(115200);
+	#ifdef USE_NRF5x_CLOCK
+		initClock_NRF5x();
+	#endif
 	initPins();
 	initRandomSeed();
 	turnOffInternalNeoPixels();
@@ -84,8 +85,6 @@ void hardwareInit() {
 			tftInit();
 	#endif
 }
-
-#endif
 
 // Communication Functions
 

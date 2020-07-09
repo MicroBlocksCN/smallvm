@@ -43,6 +43,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'buttonA'			'button A')
 		(array 'r' 'buttonB'			'button B')
 		'-'
+		(array 'r' 'timer'				'timer')
+		(array ' ' 'resetTimer'			'reset timer')
+		'-'
 		(array 'r' 'millisOp'			'milliseconds')
 		(array 'r' 'microsOp'			'microseconds')
 		'-'
@@ -353,8 +356,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 69
 		millisOp 70
 		microsOp 71
-	RESERVED 72
-	RESERVED 73
+		timer 72
+		resetTimer 73
 		sayIt 74
 		printIt 75
 		boardType 76
