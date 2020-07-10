@@ -132,7 +132,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'v'					'_' 'menu.allVarsMenu' 'n')
 		(array ' ' '='					'set _ to _' 'menu.allVarsMenu auto' 'n' 0)
 		(array ' ' '+='					'change _ by _' 'menu.allVarsMenu num' 'n' 1)
-		(array ' ' 'local'				'local _ _' 'var auto' 'var' 0)
+		(array ' ' 'local'				'initialize local _ to _' 'var auto' 'var' 0)
 	'Data'
 		(array 'r' 'at'					'item _ of _' 'auto.itemOfMenu str' 1 'Rosa')
 		(array 'r' 'size'				'length of _' 'str' 'Rosa')

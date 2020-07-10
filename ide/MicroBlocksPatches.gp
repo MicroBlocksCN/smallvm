@@ -333,6 +333,35 @@ method clicked Block hand {
   }
 }
 
+method alternateOperators Block {
+  opGroups = (array
+	(array 'analogReadOp' 'digitalReadOp')
+	(array 'analogWriteOp' 'digitalWriteOp')
+	(array 'analogPins' 'digitalPins')
+	(array 'and' 'or')
+	(array '+' '-' '*' '/' '%')
+	(array 'buttonA' 'buttonB')
+	(array '<' '<=' '==' '!=' '>=' '>')
+	(array 'maximum' 'minimum')
+	(array 'millisOp' 'microsOp')
+	(array '=' '+=')
+	(array '&' '|' '^' '<<' '>>')
+  )
+  op = (primName expression)
+  for group opGroups {
+	if (contains group op) { return group }
+  }
+  return nil
+}
+
+method changeOperator Block newOp {
+  setField expression 'primName' newOp
+  // update the block (inefficient, but works):
+  scripter = (scripter (findProjectEditor))
+  saveScripts scripter
+  restoreScripts scripter
+}
+
 method contextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
@@ -372,6 +401,18 @@ method contextMenu Block {
 	if isInPalette {
 	  addLine menu
 	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
+	}
+  }
+  alternativeOps = (alternateOperators this)
+  if (and (not isInPalette) (notNil alternativeOps)) {
+	addLine menu
+	for op alternativeOps {
+	  // create and display block morph (with translated spec)
+	  spec = (specForOp (authoringSpecs) op)
+	  if (notNil spec) {
+		b = (blockForSpec spec)
+		addItem menu (fullCostume (morph b)) (action 'changeOperator' this op)
+	  }
 	}
   }
   return menu

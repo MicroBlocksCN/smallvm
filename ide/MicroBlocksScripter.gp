@@ -373,9 +373,12 @@ method addVariableBlocks MicroBlocksScripter {
   }
 
   nextY += (10 * scale)
-  addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
   addBlock this (toBlock (newCommand '=' 'var' 0)) nil false
   addBlock this (toBlock (newCommand '+=' 'var' 1)) nil false
+  if (devMode) {
+	nextY += (10 * scale)
+	addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
+  }
 }
 
 method addMyBlocks MicroBlocksScripter {
