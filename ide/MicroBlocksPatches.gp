@@ -406,10 +406,11 @@ method contextMenu Block {
   alternativeOps = (alternateOperators this)
   if (and (not isInPalette) (notNil alternativeOps)) {
 	addLine menu
+	myOp = (primName expression)
 	for op alternativeOps {
 	  // create and display block morph (with translated spec)
 	  spec = (specForOp (authoringSpecs) op)
-	  if (notNil spec) {
+	  if (and (notNil spec) (op != myOp)) {
 		b = (blockForSpec spec)
 		addItem menu (fullCostume (morph b)) (action 'changeOperator' this op)
 	  }
