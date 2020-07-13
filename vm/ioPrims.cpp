@@ -157,6 +157,7 @@ void restartSerial() {
 	#define ANALOG_PINS 6
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+	#define DEFAULT_TONE_PIN 25
 
 	// See variant.cpp in variants/Calliope folder for a detailed pin map.
 	// Pins 0-19 are for the large pads and 26 pin connector
@@ -240,12 +241,12 @@ void restartSerial() {
 	#define BOARD_TYPE "Clue"
 	#define DIGITAL_PINS 23
 	#define ANALOG_PINS 8
-	#define TOTAL_PINS 23
+	#define TOTAL_PINS 48
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7};
-	static const char digitalPin[24] = {
+	static const char digitalPin[23] = {
 		// Pins 0-20 Edge connector pins (except 17 & 18)
-		// Pin 17 - red LED
-		// Pin 18 - NeoPixel
+		// Pin 17 - red LED (internal; not on edge connector)
+		// Pin 18 - NeoPixel (internal; not on edge connector)
 		// Pin 21 - speaker (internal pin 46)
 		// Pin 22 - white LED (internal pin 43)
 		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -254,6 +255,7 @@ void restartSerial() {
 	#define PIN_LED 17
 	#define PIN_BUTTON_A 5
 	#define PIN_BUTTON_B 11
+	#define DEFAULT_TONE_PIN 21
 
 	// Clue i2c sensors:
 	// 28 - LIS3MDL magnetometer
@@ -368,6 +370,7 @@ void restartSerial() {
 	#define PIN_LED 0
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 14
+	#define DEFAULT_TONE_PIN 26
 	static const char analogPinMappings[4] = { 36, 37, 38, 39 };
 	static const char digitalPinMappings[4] = { 12, 25, 32, 26 };
 	#define CAP_THRESHOLD 16
@@ -386,6 +389,7 @@ void restartSerial() {
 	static const int analogPin[] = {};
 	#define PIN_BUTTON_A 39
 	#define PIN_BUTTON_B 38
+	#define DEFAULT_TONE_PIN 25
 	#ifdef BUILTIN_LED
 		#define PIN_LED BUILTIN_LED
 	#else
@@ -409,6 +413,7 @@ void restartSerial() {
 	static const int analogPin[] = {};
 	#define PIN_BUTTON_A 37
 	#define PIN_BUTTON_B 39
+	#define DEFAULT_TONE_PIN 26
 	#define PIN_LED 10
 	#define INVERT_USER_LED true
 	static const char reservedPin[TOTAL_PINS] = {
@@ -1208,7 +1213,7 @@ static void initDAC(int pin, int sampleRate) {
 		pinMode(pin, ANALOG);
 		dacPin = pin;
 	} else { // disable DAC output if pin is not a DAC pin (i.e. pin 25 or 26)
- 		if (timer) timerEnd(timer);
+		if (timer) timerEnd(timer);
 		dacPin = 255;
 		return;
 	}
@@ -1243,7 +1248,11 @@ static int writeDAC(int sample) { return 0; }
 
 #endif
 
-// Primitives
+// Tone Primitives
+
+#ifndef DEFAULT_TONE_PIN
+	#define DEFAULT_TONE_PIN 0
+#endif
 
 OBJ primHasTone(int argCount, OBJ *args) {
 	#if defined(ARDUINO_SAM_DUE)
@@ -1263,21 +1272,24 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	OBJ freqArg = args[1];
 	if (!isInt(pinArg) || !isInt(freqArg)) return falseObj;
 	int pin = obj2int(pinArg);
-	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY)
-			if ((pin < 0) || (pin >= DIGITAL_PINS)) pin = 0;
-			pin = digitalPin[0];
-	#elif defined(ARDUINO_NRF52840_CLUE)
-			if ((pin < 0) || (pin >= DIGITAL_PINS)) pin = 21;
-			pin = digitalPin[0];
-	#elif defined(ARDUINO_CITILAB_ED1)
+	#if defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {
 			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
 		} else if ((1 <= pin) && (pin <= 4)) {
 			pin = digitalPinMappings[pin - 1];
+		} else {
+			pin = DEFAULT_TONE_PIN;
 		}
+	#else
+		if ((pin < 0) || (pin >= DIGITAL_PINS)) pin = DEFAULT_TONE_PIN;
 	#endif
-	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
+
+	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
+		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+		defined(ARDUINO_NRF52840_CLUE)
+			pin = digitalPin[pin];
+	#endif
+
 	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pin)) return falseObj;
 	#endif
