@@ -299,10 +299,13 @@ method isWebSerial SmallRuntime {
 
 method webSerialConnect SmallRuntime action {
 	if ('disconnect' == action) {
+		stopAndSyncScripts this
+		sendStartAll this
 		closeSerialPort 1
 		portName = nil
 		port = nil
 	} else {
+		stopAndClearChunks this
 		openSerialPort 'webserial' 115200
 		connectionStartTime = (msecsSinceStart)
 		portName = 'webserial'
@@ -464,6 +467,7 @@ method updateConnection SmallRuntime {
 	// if port is not open, try to reconnect or find a different board
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		closePort this
+		if (isWebSerial this) { return 'not connected' } // user must initiate connection attempt
 		return (tryToConnect this)
 	}
 
@@ -493,13 +497,18 @@ method updateConnection SmallRuntime {
 }
 
 method tryToConnect SmallRuntime {
-	// Called when there is no connection or the board does not respond.
+	// Called when connectionStartTime is not nil, indicating that we are trying
+	// to establish a connection to a board the current serial port.
 
 	if (isWebSerial this) {
 		if (isOpenSerialPort 1) {
-			connectionStartTime = (msecsSinceStart)
 			portName = 'webserial'
 			port = 1
+			connectionStartTime = nil // stop calling tryToConnect
+			vmVersion = nil
+			sendMsg this 'getVersionMsg'
+			clearBoardIfConnected this false
+			stopAndSyncScripts this
 			return 'connected'
 		} else {
 			portName = nil
