@@ -317,13 +317,13 @@ method selectPort SmallRuntime {
 	if (isNil disconnected) { disconnected = false }
 
 	if (isWebSerial this) {
-		menu = (menu 'Connect' (action 'webSerialConnect' this) true)
-		if (isOpenSerialPort 1) {
-			addItem menu 'disconnect'
+		if (not (isOpenSerialPort 1)) {
+			webSerialConnect this 'connect'
 		} else {
-			addItem menu 'connect'
+			menu = (menu 'Connect' (action 'webSerialConnect' this) true)
+			addItem menu 'disconnect'
+			popUpAtHand menu (global 'page')
 		}
-		popUpAtHand menu (global 'page')
 		return
 	}
 
