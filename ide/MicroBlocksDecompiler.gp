@@ -8,11 +8,6 @@
 // John Maloney, March, 2020
 
 // To do:
-// [x] handle function calls
-// [x] make testDecompiler generate blocks
-// [x] bug: repeat until inside forever fails
-// [x] bug: color constants require rescaling (need block spec)
-// [x] bug: multibranch condition statement rendered as nested ifs
 // [x] save comments (implmented but not yet enabled)
 // [ ] make test method that compiles and decompiles all code in a project and checks result
 // [ ] make test method that clears current scripts then fetched and decompiles code from board
@@ -24,7 +19,7 @@ to decompileBytecodes bytecodes chunkType {
 	return (decompile (new 'MicroBlocksDecompiler') bytecodes chunkType)
 }
 
-defineClass MicroBlocksDecompiler reporters opcodes controlStructures code stack
+defineClass MicroBlocksDecompiler reporters opcodes controlStructures code stack argNames
 
 method decompile MicroBlocksDecompiler bytecodes chunkType {
 	// Approach:
@@ -49,15 +44,19 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	decodeImmediates this lastInstruction
 	opcodes = (copyFromTo opcodes 1 lastInstruction)
 	controlStructures = (newArray (count opcodes))
+	findArgs this
 	findLoops this
 	findIfs this
 	fixLocals this
 
-	print '----'
-	printSequence2 this
-	print '----'
-	printSequence3 this 1 (count opcodes) 0
-	print '----'
+	debug = true
+	if debug {
+		print '----'
+		printSequence2 this
+		print '----'
+		printSequence3 this 1 (count opcodes) 0
+		print '----'
+	}
 
 	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes }
 	gpCode = (addHatBlock this chunkType (codeForSequence this 1 (count opcodes)))
@@ -66,14 +65,8 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 		return
 	}
 	fixBooleanAndColorArgs this gpCode
-	print (prettyPrint this gpCode)
-	showCodeInHand this gpCode
-}
-
-method showCodeInHand MicroBlocksDecompiler gpCode {
-	block = (toBlock gpCode)
-	grab (hand (global 'page')) block
-	fixBlockColor block
+	if debug { print (prettyPrint this gpCode) }
+	return gpCode
 }
 
 // Command tuple operations
@@ -199,6 +192,20 @@ method prettyPrint MicroBlocksDecompiler expression {
 }
 
 // Helper methods
+
+method findArgs MicroBlocksDecompiler {
+	maxArgIndex = -1
+	for cmd opcodes {
+		if (isOneOf (cmdOp this cmd) 'pushArg' 'storeArg' 'incrementArg') {
+			argIndex = (cmdArg this cmd)
+			if (argIndex > maxArgIndex) { maxArgIndex = argIndex }
+		}
+	}
+	argNames = (list)
+	for i (range 0 maxArgIndex) {
+		add argNames (join 'arg' (i + 1))
+	}
+}
 
 method findLastInstruction MicroBlocksDecompiler {
 	// Find the index of the last instruction in opcodes. The last instruction
@@ -718,7 +725,7 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('if-else' == op) {
 		ifPart = (codeForSequence this (at cmd 3) (at cmd 4))
 		elsePart = (codeForSequence this (at cmd 5) (at cmd 6))
-		if ('if' == (primName elsePart)) {
+		if (and (notNil elsePart) ('if' == (primName elsePart))) {
 			// combine nested if's
 			argList = (list 'if' (removeLast stack) ifPart)
 			addAll argList (argList elsePart)
@@ -805,6 +812,9 @@ method localVarName MicroBlocksDecompiler varIndex {
 }
 
 method argName MicroBlocksDecompiler varIndex {
+	if (and (0 <= varIndex) (varIndex < (count argNames))) {
+		return (at argNames (varIndex + 1))
+	}
 	return (join 'arg' varIndex)
 }
 

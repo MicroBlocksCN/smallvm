@@ -623,6 +623,11 @@ method contextMenu MicroBlocksEditor {
 // addItem menu 'compact persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
 // addLine menu
 
+if (contains (commandLine) '--allowMorphMenu') {
+	addItem menu 'decompile all' (action 'decompileAll' (smallRuntime))
+	addLine menu
+}
+
   if (not (devMode)) {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {

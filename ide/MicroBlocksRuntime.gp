@@ -163,8 +163,37 @@ method showCompiledBytes SmallRuntime aBlock {
 	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
 }
 
+// Decompiler tests
+
+method showCodeInHand SmallRuntime gpCode {
+	block = (toBlock gpCode)
+	grab (hand (global 'page')) block
+	fixBlockColor block
+}
+
 method testDecompiler SmallRuntime aBlock {
-	decompileBytecodes (chunkBytesFor this aBlock) (chunkTypeFor this aBlock)
+	topBlock = (topBlock aBlock)
+	gpCode = (decompileBytecodes (chunkBytesFor this topBlock) (chunkTypeFor this topBlock))
+	showCodeInHand this gpCode
+}
+
+method compileAndDecompile SmallRuntime aBlockOrFunction {
+	chunkType = (chunkTypeFor this aBlockOrFunction)
+	bytecodes1 = (chunkBytesFor this aBlockOrFunction)
+	gpCode = (decompileBytecodes bytecodes1 chunkType)
+	bytecodes2 = (chunkBytesFor this gpCode)
+print (count bytecodes1) (count bytecodes1) (bytecodes1 == bytecodes2)
+}
+
+method decompileAll SmallRuntime {
+	for aFunction (allFunctions (project scripter)) {
+		compileAndDecompile this aFunction
+	}
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (not (isPrototypeHat aBlock)) { // functions are handled above
+			compileAndDecompile this aBlock
+		}
+	}
 }
 
 // chunk management
