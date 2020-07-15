@@ -520,7 +520,7 @@ method updateConnection SmallRuntime {
 	} else {
 		// ping timout: close port to force reconnection
 		print 'Lost communication to the board'
-		closePort this
+		if (not (isWebSerial this)) { closePort this }
 		return 'not connected'
 	}
 }
@@ -538,6 +538,8 @@ method tryToConnect SmallRuntime {
 			sendMsg this 'getVersionMsg'
 			clearBoardIfConnected this false
 			stopAndSyncScripts this
+			sendMsg this 'pingMsg'
+			pingSentMSecs = (msecsSinceStart)
 			return 'connected'
 		} else {
 			portName = nil
