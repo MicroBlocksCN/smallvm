@@ -44,14 +44,14 @@ method createEmbeddedFS MicroBlocksAppMaker system {
 	addFolderToEmbeddedFS this '../gp/Libraries' 'Libraries' zip
 	addFolderToEmbeddedFS this '../precompiled' 'precompiled' zip
 	addFolderToEmbeddedFS this '../translations' 'translations' zip
-        addFolderToEmbeddedFS this '../esp32' 'esp32' zip
-        if (isOneOf system 'linux32bit' 'linux64bit' 'raspberryPi') {
-            addFolderToEmbeddedFS this '../gp/packagers/linux/esptool' 'esptool' zip
-        } (system == 'win') {
-            addFolderToEmbeddedFS this '../gp/packagers/win32/esptool' 'esptool' zip
-        } (system == 'mac') {
-            addFolderToEmbeddedFS this '../gp/packagers/darwin/esptool' 'esptool' zip
-        }
+	addFolderToEmbeddedFS this '../esp32' 'esp32' zip
+	if (isOneOf system 'linux32bit' 'linux64bit' 'raspberryPi') {
+		addFolderToEmbeddedFS this '../gp/packagers/linux/esptool' 'esptool' zip
+	} (system == 'win') {
+		addFolderToEmbeddedFS this '../gp/packagers/win32/esptool' 'esptool' zip
+	} (system == 'mac') {
+		addFolderToEmbeddedFS this '../gp/packagers/darwin/esptool' 'esptool' zip
+	}
 	return zip
 }
 
@@ -123,7 +123,6 @@ method writeMacApp MicroBlocksAppMaker srcAppPath embeddedFS dstPath {
 	makeDirectory (join appName '/Contents/MacOS')
 	makeDirectory (join appName '/Contents/Resources')
 	writeFile (join appName '/Contents/info.plist') (macInfoFile this name)
-//	writeShellScript this name (join appName '/Contents/MacOS/start.sh')
 	writeExeFile this srcAppPath embeddedFS (join appName '/Contents/MacOS/' name)
 	makeDirectory (join appName '/Contents/Resources')
 	writeFile (join appName '/Contents/Resources/MicroBlocks.icns') (readFile 'MicroBlocks.icns' true)
@@ -204,18 +203,4 @@ method macInfoFile MicroBlocksAppMaker name {
 </dict>
 </plist>
 '
-}
-
-method writeShellScript MicroBlocksAppMaker name fileName {
-	shellScript = (join '#!/bin/sh
-# This shell script starts GP with the appropriate top-level directory.
-# Add >>app.log 2>&1 to redirect stdout and stderr to app.log for debugging.
-
-DIR=`dirname "$0"`
-cd "$DIR"
-cd ../../..
-"$DIR"/"' name '"
-')
-	writeFile fileName shellScript
-	setFileMode fileName (+ (7 << 6) (5 << 3) 5) // set executable bits
 }
