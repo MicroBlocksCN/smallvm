@@ -178,6 +178,13 @@ void stopAllTasksButThis(Task *thisTask) {
 	}
 }
 
+void resetAndRestart() {
+		stopAllTasks();
+		softReset(true);
+		outputString("Restarting");
+		startAll();
+}
+
 // Selected Opcodes (see MicroBlocksCompiler.gp for complete set)
 
 #define pushLiteral 4
@@ -374,7 +381,7 @@ static void processExtendedMessage(uint8 msgID, int byteCount, uint8 *data) {
 
 // Soft Reset
 
-static void softReset(int clearMemoryFlag) {
+void softReset(int clearMemoryFlag) {
 	// Reset the hardware and, optionally, clear memory.
 	// Do not reload scripts from persistent memory.
 	// This is not a full hardware reset/reboot, but close.
