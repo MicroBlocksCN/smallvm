@@ -957,6 +957,7 @@ OBJ primNextEvent(int nargs, OBJ args[]) {
 
 OBJ primGetClipboard(int nargs, OBJ args[]) {
 	int len = EM_ASM_INT({
+		readGPClipboard();
 		return GP.clipboardBytes.length;
 	}, NULL);
 

@@ -830,6 +830,17 @@ to getNextEvent {
   return evt
 }
 
+to readClipboard {
+  // Return the contents of the clipboard.
+
+  if ('Browser' == (platform)) {
+	// On browsers, read the clipboard twice, with a short wait in between.
+	getClipboard
+	waitMSecs 1
+  }
+  return (getClipboard)
+}
+
 method updateScale Page {
   winSize = (windowSize)
   ratio = ((at winSize 3) / (at winSize 1))

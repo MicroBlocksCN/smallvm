@@ -274,7 +274,7 @@ method contextMenu ScriptEditor {
   addLine menu
   addItem menu 'save picture of all scripts' 'saveScriptsImage'
   addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
-  clip = (getClipboard)
+  clip = (readClipboard)
   if (beginsWith clip 'GP Scripts') {
 	addItem menu 'paste scripts' 'pasteScripts'
   } (beginsWith clip 'GP Script') {
@@ -494,7 +494,7 @@ method pasteScripts ScriptEditor {
   scripter = (ownerThatIsA morph 'Scripter')
   if (isNil scripter) { scripter = (ownerThatIsA morph 'MicroBlocksScripter') }
   if (isNil scripter) { return }
-  s = (getClipboard)
+  s = (readClipboard)
   i = (find (letters s) (newline))
   s = (substring s i)
   pasteScripts (handler scripter) s

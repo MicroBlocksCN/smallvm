@@ -380,7 +380,7 @@ method contextMenu Text {
     addItem menu 'cut' (action 'copyToClipboard' caret true)
     addItem menu 'copy' (action 'copyToClipboard' caret false)
   }
-  txt = (getClipboard)
+  txt = (readClipboard)
   if (txt != '') {
     edits = true
     addItem menu 'paste' (action 'insertRight' caret txt)

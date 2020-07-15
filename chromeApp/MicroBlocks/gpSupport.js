@@ -72,7 +72,10 @@ var GP = {
 // Add the following to the meta tags in the header to suppress scaling of the GP canvas
 // <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-// clipboard support
+// Clipboard Support
+//	Chrome: works on HTTPS pages
+//	Firefox: does not support clipboard.readText except in extensions
+//	Safari: navigator.clipboard exists since 13.1 but is blocked for security reasons
 
 GP.clipboard = document.createElement('textarea');
 GP.clipboard.style.position = 'absolute';
@@ -82,54 +85,24 @@ document.body.appendChild(GP.clipboard);
 
 function setGPClipboard(s) {
 	// Called by GP's setClipboard primitive
+
 	GP.clipboardBytes = toUTF8Array(s);
 	GP.clipboard.value = s;
-	GP.clipboard.focus();
-	GP.clipboard.select();
-	document.execCommand('copy');
+	if (navigator.clipboard.writeText) {
+		navigator.clipboard.writeText(s).catch(() => {});
+	}
 }
-setGPClipboard('');
 
-document.addEventListener(
-	 // Support for the ctrl-C shortcut for 'copy'.
-	 // Copy via ctrl-C is blocked on Safari; use menu command after doing GP copy operation.
-	 // Paste via ctrl-V is blocked on most or all browsers.
-	 // The  preventDefault() call makes all control keys available to GP.
-	'keydown',
-	function(evt) {
-		if (evt.ctrlKey || evt.metaKey) {
-			if (67 == evt.keyCode) document.execCommand('copy'); // ctrl-c keydown
-			if (86 == evt.keyCode) document.execCommand('paste'); // ctrl-v keydown
-			evt.preventDefault();
-        }
-	}
-);
-
-document.addEventListener(
-	// Support for the ctrl-C shortcut for 'copy'.
-	// This does a second copy operation *after* GP has updated GP.clipboard.
-	'keyup',
-	function(evt) {
-		// Handle copy and paste keyboard shortcuts.
-		if (evt.ctrlKey || evt.metaKey) {
-			if (67 == evt.keyCode) document.execCommand('copy'); // ctrl-c keyup
-			evt.preventDefault();
-        }
-	}
-);
-
-GP.clipboard.addEventListener(
-	// In some browsers, copy and paste to the system clipboard only work from the browser menu.
-	// Dropping a text clipping can be also used to paste text.
-	'paste',
-	function(evt) {
-		s = evt.clipboardData.getData('text/plain');
+async function readGPClipboard(s) {
+	if (navigator.clipboard.readText) {
+		var s = await navigator.clipboard.readText().catch(() => { return ''});
 		if (s) {
-			setGPClipboard(s);
-			GP.droppedTextBytes = GP.clipboardBytes;
+			GP.clipboard.value = s;
+			GP.clipboardBytes = toUTF8Array(s);
 		}
 	}
-);
+	return GP.clipboardBytes.length;
+}
 
 function toUTF8Array(str) {
 	// Convert a Javascript string into an array of UTF8 bytes that can be read by GP.
@@ -216,7 +189,7 @@ function initGPEventHandlers() {
 
 		var modifiers = ( // SDL modifier flags (for left-side versions of those keys)
 			(evt.shiftKey ? 1 : 0) |
-			(evt.ctrKey ? 2 : 0) |
+			(evt.ctrlKey ? 2 : 0) |
 			(evt.altKey ? 4 : 0) |
 			(evt.metaKey ? 8 : 0));
 
@@ -258,6 +231,10 @@ function initGPEventHandlers() {
 		if (8 == key) evt.preventDefault(); // delete
 		if ((37 <= evt.which) && (evt.which <= 40)) evt.preventDefault(); // arrow keys
 		if ((112 <= evt.which) && (evt.which <= 123)) evt.preventDefault(); // function keys
+		if (evt.ctrlKey || evt.metaKey) {
+			// disable browser's handling of ctrl/cmd-C and ctrl/cmd-V
+			if ((67 == evt.keyCode) || (86 == evt.keyCode)) evt.preventDefault();
+        }
 	}
 	document.onkeyup = function(evt) {
 		GP.events.push(keyEvent(KEY_UP, evt));

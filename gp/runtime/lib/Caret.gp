@@ -282,7 +282,7 @@ method copyToClipboard Caret cutFlag {
 }
 
 method pasteFromClipboard Caret {
-  s = (getClipboard)
+  s = (readClipboard)
   if (s != '') { insertRight this s }
 }
 

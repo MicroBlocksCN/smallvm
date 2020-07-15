@@ -588,7 +588,7 @@ method contextMenu ScriptEditor {
   }
   addLine menu
   addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
-  clip = (getClipboard)
+  clip = (readClipboard)
   if (beginsWith clip 'GP Scripts') {
 	addItem menu 'paste all scripts from clipboard' 'pasteScripts'
   } (beginsWith clip 'GP Script') {
