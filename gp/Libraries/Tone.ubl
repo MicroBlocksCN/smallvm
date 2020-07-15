@@ -135,7 +135,7 @@ to 'attach buzzer to pin' pinNumber {
     } ((boardType) == 'D1-Mini') {
       _tonePin = 12
     } else {
-      _tonePin = 0
+      _tonePin = -1
     }
   } else {
     _tonePin = pinNumber

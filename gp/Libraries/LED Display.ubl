@@ -9,12 +9,13 @@ tags pixel matrix led tft
 	// These operations are simulated boards with TFT displays such as the ED1 and
 	// the IoT-Bus Io with a QVGA display.
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
 	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
 
 to displayCharacter s {
+	s = ('[data:join]' '' s)
 	'[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
