@@ -1,0 +1,1292 @@
+# MicroBlocks translation file
+# Last updated: July 2 2020
+
+# Blocks and categories
+
+Output
+输出
+
+set user LED _
+设置用户LED _
+
+say _
+说 _
+
+graph _
+绘图 _
+
+Input
+输入
+
+button A
+按键 A
+
+button B
+按键 B
+
+microseconds
+微秒
+
+milliseconds
+毫秒
+
+board type
+主板类型
+
+Pins
+引脚
+
+read digital pin _
+读取数字引脚 _
+
+read analog pin _
+读取模拟引脚 _
+
+set digital pin _ to _
+设置数字引脚 _ 为 _
+
+set pin _ to _
+设置引脚 _ 为 _
+
+analog pins
+模拟引脚
+
+digital pins
+数字引脚
+
+Control
+控制
+
+when started
+当启动时
+
+when button _ pressed
+当按键 _ 被按下
+
+forever _
+重复执行 _
+
+repeat _ _
+重复 _ 次 _
+
+wait _ millisecs
+等待 _ 毫秒
+
+if _ _
+如果 _ _
+
+else if _ _
+否则,如果 _ _
+
+if _ _ else _
+如果 _ _ 否则 _
+
+when _
+当 _
+
+wait until _
+直到 _ 前都等待
+
+wait _ microsecs
+等待 _ 微秒
+
+return _
+返回 _
+
+when _ received
+当接收到 _
+
+broadcast _
+广播 _
+
+comment _
+注释 _
+
+for _ in _ _
+重复执行 变化因子 _ 范围 _ _
+
+repeat until _ _
+重复执行 直到 _ _
+
+stop this task
+停止当前任务
+
+stop other tasks
+停止其他任务
+
+stop all
+停止全部
+
+last message
+最新消息
+
+Operators
+运算
+
+_ mod _
+_ 除以 _ 的余数
+
+abs _
+绝对值 _
+
+random _ to _
+在 _ 到 _ 间选取随机数
+
+not _
+_ 不成立
+
+_ and _
+_ 且 _
+
+and _
+且 _
+
+_ or _
+_ 或 _
+
+or _
+或 _
+
+_ is a _
+_ 的类型是 _
+
+boolean
+布尔
+
+number
+数字
+
+string
+字符串
+
+list
+列表
+
+hex _
+十六进制 _
+
+Variables
+变量
+
+# Buttons on top of "Variables" category
+
+Add a variable
+新建一个变量
+
+Delete a variable
+删除一个变量
+
+# New variable dialog
+
+New variable name?
+请输入新变量的名字：
+
+set _ to _
+把 _ 设定为 _
+
+change _ by _
+把 _ 增加 _
+
+local _ _
+局部变量 _ _
+
+Data
+数据
+
+list
+列表
+
+length of _
+_ 的长度
+
+item _ of _
+第 _ 项 _ 
+
+replace item _ of list _ with _
+把第 _ 项 _ 替换为 _ 
+
+delete item _ of list _
+删除第 _ 项 _ 
+
+add _ to list _
+添加 _ 至列表 _
+
+join _ _
+连接 _ _
+
+copy _ from _
+复制字符 _ 从 _
+
+to _
+到 _ 
+
+find _ in _
+寻找 _ 在 _ 中   
+
+starting at _
+起始位置 _
+
+join items of list _
+连接列表中的项目 _
+
+separator _
+分隔符 _
+
+unicode _ of _
+Unicode 第 _ 个字符来自 _ 
+
+string from unicode _
+unicode为 _ 的字符 
+
+new list length _
+新建长度为 _ 的列表 
+
+new byte array length _
+新建长度为 _ 的字节数组
+
+free memory
+释放内存
+
+My Blocks
+我的积木
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+新建命令积木
+
+Add a reporter block
+新建报告积木
+
+# Make a block dialog
+
+Enter function name:
+输入功能名称:
+
+Comm
+通信
+
+i2c get device _ register _
+i2c 读取设备 _ 寄存器 _
+
+i2c set device _ register _ to _
+i2c 设置设备 _ 寄存器 _ 为 _
+
+i2c device _ read list _
+i2c 设备 _ 读取列表 _ 
+
+i2c device _ write list _
+i2c 设备 _ 写入列表 _
+
+spi send _
+spi 发送 _
+
+spi receive
+spi 接收
+
+print _
+打印 _
+
+no op
+no op
+
+ignore
+忽略
+
+# Primitives (mostly hidden from end users)
+
+draw shape _ at x _ y _
+绘制形状 _ 于 x _ y _
+
+shape for letter _
+Form für Buchstabe _
+
+send NeoPixel rgb _
+向新光像素发送 RGB _
+
+has tone support
+具有音调支持
+
+play tone pin _ frequency _
+播放音调于引脚 _ 频率 _ 
+
+has WiFi support
+具有WiFi支持
+
+start WiFi _ password _
+开启 WiFi _ 密码 _ 
+
+stop WiFi
+停止WiFi
+
+WiFi status
+WiFi状态
+
+my IP address
+我的IP地址
+
+radio send number _
+广播发送数字 _
+
+radio send string _
+广播发送字符串 _
+
+radio send pair _ = _
+广播发送配对信息 _ = _ 
+
+radio message received?
+广播消息已收到?
+
+radio last number
+最后广播的数字
+
+radio last string
+最后广播的字符串
+
+radio last message type
+最后广播的消息类型
+
+radio set group _
+设置广播分组 _
+
+radio set channel (0-83) _
+设置广播频道 (0-83) _
+
+radio set power (0-7) _
+设置广播信号强度 (0-7) _ 
+
+radio last signal strength
+最后广播的信号强度
+
+radio receive packet _
+广播接收包 _
+
+radio send packet _
+广播发送包 _
+
+disable radio
+禁止广播
+
+# Libraries
+
+Basic Sensors
+基础传感器
+
+tilt x
+倾角 x
+
+tilt y
+倾角 y
+
+tilt z
+倾角 z
+
+acceleration
+加速度
+
+light level
+光线强度
+
+temperature (°C)
+温度 (°C)
+
+NeoPixel
+新光像素
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+设置 新光像素 _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+关闭新光像素
+
+set NeoPixel _ color _
+设置新光像素 _ 颜色 _
+
+set all NeoPixels color _
+设置所有新光像素的颜色为 _
+
+rotate NeoPixels by _
+轮转新光像素 间距 _
+
+color r _ g _ b _ (0-31)
+颜色 R _ G _ B _ (0-31)
+
+random color
+随机颜色
+
+attach _ LED NeoPixel strip to pin _
+将 _ 个LED的新光像素灯带 连接至引脚 _ 
+
+has white _
+具有白光 _
+
+PIR
+人体红外传感器
+
+PIR at pin _ detected movement
+位于引脚 _ 的人体红外传感器探测到运动
+
+ED1 Stepper Motor
+ED1步进电机
+
+move motor _ _ steps _
+马达运动 _ _ 步 _
+
+move motor 1 _ and motor 2 _ _ steps
+马达1运动 _ 步,同时马达2运动 _ _ 步
+
+move motor _ angle _ °
+转动马达 _ 角度 _ °
+
+move motor _ _ complete turns
+转动马达_ _ 整圈
+
+stop steppers
+停止步进电机
+
+clockwise
+顺时针
+
+counter-clockwise
+逆时针
+
+ED1 Buttons
+ED1按键
+
+button OK
+OK按键
+
+button X
+X按键
+
+button up
+向上键
+
+button down
+向下键
+
+button left
+向左键
+
+button right
+向右键
+
+capacitive sensor _
+电容式传感器 _
+
+set capacitive threshold to _
+将电容门限值设为 _
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird 彩色LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ °
+Hummingbird 位置伺服 _ _ °
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird 旋转伺服 _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird电池 (mV)
+
+Light
+亮度
+
+Distance (cm)
+距离 (cm)
+
+Dial
+Dial
+
+Sound
+声音
+
+Other
+其他
+
+distance (cm) trigger _ echo _
+距离 (cm) 触发 _ 回声 _ 
+
+IR Remote
+远距IR
+
+receive IR code
+接收IR编码
+
+receive IR code from device _
+接收 IR 编码从设备 _
+
+test IR
+测试 IR
+
+attach IR receiver to pin _
+连接IR接收器至引脚 _
+
+Radio
+广播
+
+Scrolling
+滚动显示
+
+scroll text _
+滚动显示文字 _
+
+scroll number _
+滚动显示数字 _
+
+pausing _ ms
+暂停 _ 毫秒
+
+stop scrolling
+停止滚动
+
+Servo
+伺服控制器
+
+set servo _ to _ degrees (-90 to 90)
+设置伺服控制器 _ 的角度为 _ Grad (-90 到 90)
+
+set servo _ to speed _ (-100 to 100)
+设置伺服控制器 _ 的速度为 _ (-100 到 100)
+
+stop servo _
+停止伺服控制器 _
+
+LED Display
+LED显示
+
+display _
+显示 _
+
+clear display
+清除显示
+
+plot x _ y _
+点亮 x _ y _
+
+unplot x _ y _
+熄灭 x _ y _
+
+display character _
+显示字符 _
+
+enable TFT _
+启用 TFT
+
+TFT width
+TFT宽度
+
+TFT height
+TFT高度
+
+set TFT pixel x _ y _ to _
+设置 TFT-像素 x _ y _ 为 _
+
+draw line on TFT from x _ y _ to x _ y _ color _
+在TFT上绘制直线从 x _ y _ 至 x _ y _ 颜色 _ 
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+在TFT上绘制长方形,位置 x _ y _ 宽度 _ 高度 _ 颜色 _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+在TFT上绘制圆角长方形, 位置 x _ y _ 宽度 _ 高度 _ 半径 _ 颜色 _
+
+draw circle on TFT at x _ y _ radius _ color _
+在TFT上绘制圆形, 位置 x _ y _ 半径 _ 颜色 _
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+在TFT上绘制三角形, 位置 x _ y_ , x _ y, x _ y _ 颜色 _ 
+
+filled _
+填充 _
+
+write _ on TFT at x _ y _ color _
+在TFT上写 _ 位置 x _ y _ 颜色 _
+
+scale _ wrap _
+scale _ wrap _
+
+Tone
+音调
+
+attach buzzer to pin _
+连接蜂鸣器至引脚 _
+
+play note _ octave _ for _ ms
+spiele Note _ Oktave _ für _ ms
+
+play frequency _ for _ ms
+弹奏频率 _ 持续 _ 毫秒
+
+play midi key _ for _ ms
+弹奏midi键 _ 持续 _ 毫秒
+
+Turtle
+海龟
+
+home
+回到起点
+
+move _
+前进 _
+
+turn _ degrees
+旋转 _ 度
+
+turn _ / _ of circle
+旋转 _/ _ 个圈
+
+pen down
+落笔
+
+pen up
+抬笔
+
+set pen color to _
+将画笔颜色设置为 _
+
+set pen to random color
+将画笔设置为随机颜色
+
+fill display with _
+用 _ 填充视区 
+
+go to x _ y _
+移动到 x _ y _ 
+
+point in direction _
+面向 _ 
+
+Files
+文件
+
+open file _
+打开文件 _
+
+close file _
+关闭文件 _
+
+delete file _
+删除文件 _
+
+append line _ to file _
+将行 _ 添加至文件 _
+
+append bytes _ to file _
+füge Bytes _ zu Datei _ hinzu
+
+end of file _
+文件 _ 结束 
+
+next line of file _
+文件 _ 的下一行
+
+next _ bytes of file _
+接下来的 _ 字节 从文件 _
+
+starting at _
+开始于 _
+
+file names
+文件名
+
+size of file _
+文件 _ 的大小
+
+file system info
+文件系统信息
+
+WiFi
+WiFi
+
+wifi connect to _ password _ try _ times
+连接WiFi至 _ 密码 _ 尝试 _ 次
+
+wifi create hotspot _ password _
+创建WiFi热点 _ 密码 _ 
+
+IP address
+IP地址
+
+Motion
+运动
+
+motion
+运动
+
+start step counter
+启动计步器
+
+step count
+步数
+
+clear step count
+清除步数
+
+set step threshold _ (0-50)
+设置计步阈值 _ (0-50)
+
+Button Events
+按键事件
+
+button _ double pressed
+按键 _ 被双击
+
+button _ long pressed
+按键 _ 被长按
+
+button _ pressed
+按键 _ 被点击
+
+Calliope set LED red _ green _ blue _
+Calliope 设置 LED 红 _ 绿 _ 蓝 _ 
+
+Calliope set speaker _
+Calliope 设置扬声器 _ 
+
+Calliope loudness
+Calliope 响度
+
+Circuit Playground set speaker _
+Circuit Playground 设置扬声器 _ 
+
+Circuit Playground slide switch
+Circuit Playground 滑动开关
+
+attach _ DotStar LEDs to data pin _ clock pin _
+连接 _ DotStar LEDs 至数据引脚 _ 时钟引脚 _
+
+set all DotStar LEDs to r _ g _ b _
+设置所有 DotStar LEDs 为 r _ g _ b _
+
+set DotStar LED _ to r _ g _ b _
+设置 DotStar LED _ 为 r _ g _ b _
+
+set DotStar brightness _
+设置 DotStar 亮度 _
+
+bme280 connected
+bme280已连接
+
+bmp280 connected
+bmp280已连接
+
+bmx280 temperature
+bmx280温度
+
+bmx280 pressure
+bmx280压力
+
+bme280 humidity
+bme280湿度
+
+TCS34725 connected
+TCS34725已连接
+
+TCS34725 rgb
+TCS34725 RGB
+
+color _ name
+颜色 _ 名字
+
+temperature (Celsius) DHT11 pin _
+温度 (Celsius) DHT11 引脚 _ 
+
+humidity DHT11 pin _
+湿度 DHT11 引脚 _
+
+temperature (Celsius) DHT22 pin _
+温度 (Celsius) DHT22 引脚 _
+
+humidity DHT22 pin _
+湿度 DHT22 引脚 _
+
+read PN532 RFID
+读取 PN532 RFID
+
+RFID _ = _
+RFID _ = _
+
+get PN532 firmware version
+PN532固件版本
+
+HTTP client
+HTTP客户端
+
+_ data _ to http?// _
+_ 数据 _ 至 http:// _
+
+HTTP server
+HTTP服务器
+
+start HTTP server
+启动HTTP服务器
+
+HTTP server request
+HTTP服务器请求
+
+respond _ to HTTP request
+回应 _ 至HTTP请求 
+
+with body _
+with body _
+
+and headers _
+and headers _
+
+body of request _
+body of request _
+
+path of request _
+path of request _
+
+method of request _
+method of request _
+
+Web Thing
+Web Thing
+
+set thing name to _
+设置Thing的名字为 _
+
+set thing capability to _
+设置thing的能力为 _
+
+set boolean property _ title _ @Type _
+设置逻辑属性 _ 名字 _ @类型 _
+
+set string property _ title _ @Type _
+设置字符串属性 _ 名字 _ @类型 _
+
+set number property _ title _ @Type _
+设置数字属性 _ 名字 _ @类型 _
+
+set number property _ title _ min _ max _ @Type _
+设置数字属性 _ 名字 _ 最小 _ 最大 _ @类型 _
+
+read only _
+只读 _
+
+register event _ type _
+注册事件 _ 类型 _
+
+start WebThing server
+启动WebThing服务器
+
+trigger event _
+触发事件 _ 
+
+thing description JSON
+Thing的JSON描述
+
+properties JSON
+属性 JSON
+
+event definitions JSON
+事件定义 JSON
+
+events JSON
+事件 JSON
+
+# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+
+New
+新建
+
+Open
+打开
+
+Save
+保存
+
+Connect
+连接
+
+disconnect
+断开连接
+
+Serial port:
+串口:
+
+other...
+其他...
+
+none
+无
+
+Port name?
+端口名?
+
+Board type:
+控制板类型:
+
+Select board:
+选择控制板:
+
+Could not read:
+无法读取:
+
+by
+由
+
+Created with GP
+使用GP开发
+
+More info at http://microblocks.fun
+访问 http://microblocks.fun 获取更多信息
+
+Function "
+函数 "
+
+" is too large to send to board.
+" 因为太大而无法发送至主板.
+
+Script is too large to send to board.
+脚本太大，无法发送至主板.
+
+Use "Connect" button to connect to a MicroBlocks device.
+使用"连接"按钮连接至一个MicroBlocks设备.
+
+No boards found; is your board plugged in?
+无法找到控制板，您的控制板已经连接好了么?
+
+For AdaFruit boards, double-click reset button and try again.
+如果是AdaFruit控制板，双击reset键并再次尝试.
+
+The board is not responding.
+控制板未响应.
+
+Try to Install MicroBlocks on the board?
+将MicroBlocks安装到这块控制板上么?
+
+The MicroBlocks in your board is not current
+控制板中的MicroBlocks并非最新版本
+
+Try to update MicroBlocks on the board?
+将MicroBlocks上传至控制板么?
+
+Stop
+停止
+
+Start
+开始
+
+Quit MicroBlocks?
+退出MicroBlocks?
+
+Discard current project?
+放弃当前项目?
+
+clean up
+清除
+
+arrange scripts
+排列脚本
+
+undrop (ctrl-Z)
+恢复 (ctrl-Z)
+
+copy all scripts to clipboard
+将所有脚本复制到剪贴板
+
+paste all scripts
+粘贴所有脚本
+
+paste script
+粘贴脚本
+
+save a picture of all scripts
+将所有脚本保存为图片
+
+about...
+关于...
+
+virtual machine version
+虚拟机版本
+
+update firmware on board
+升级主板固件
+
+show data graph
+显示数据图表
+
+set serial delay
+设置串口延迟
+
+firmware version
+固件版本
+
+start Mozilla WebThing server
+启动Mozilla WebThing服务器
+
+stop Mozilla WebThing server
+停止Mozilla WebThing服务器
+
+MicroBlocks HTTP Server listening on port 6473
+MicroBlocks HTTP服务器正在监听端口 6473
+
+disable autoloading board libraries
+禁止自动加载和控制板相关的积木库
+
+enable autoloading board libraries
+允许自动加载和控制板相关的积木库
+
+wipe and repartition esp32
+擦除信息并重新分区ESP32
+
+Use board type
+使用控制板类信息
+
+Wiping board...
+擦除主板上的信息...
+
+(press ESC to cancel)
+(按下ESC键取消)
+
+Done!
+完成!
+
+download and install latest VM
+下载并且安装最新版的虚拟机
+
+Select board type:
+选择主板类型: 
+
+Uploading MicroBlocks to board...
+将MicroBlocks上传至主板...
+
+copy data to clipboard
+将数据复制至剪贴板
+
+clear data
+清除数据
+
+clear memory and variables
+清除内存和变量
+
+show advanced blocks
+显示高级积木
+
+export functions as library
+将积木导出为库
+
+hide advanced blocks
+隐藏高级积木
+
+Data Graph
+数据图表
+
+show instructions
+显示指令
+
+show compiled bytes
+显示字节代码
+
+expand
+扩展
+
+collapse
+collapse
+
+rename...
+重命名...
+
+show block definition...
+显示积木定义...
+
+show the definition of this block
+显示积木定义
+
+delete block definition...
+删除积木定义...
+
+delete the definition of this block
+删除对这块积木的定义
+
+duplicate
+复制
+
+duplicate this block
+复制这块积木
+
+delete block
+删除积木
+
+delete this block
+删除这块积木
+
+just this one block
+仅这块积木
+
+copy to clipboard
+复制至剪贴板
+
+copy these blocks to the clipboard
+将这些积木复制至剪贴板
+
+duplicate all
+复制全部
+
+duplicate these blocks
+复制这些积木
+
+extract block
+取出积木
+
+pull out this block
+撤出积木
+
+save picture of script
+保存脚本图片
+
+save a picture of this block definition as a PNG file
+将这块积木的定义保存为一个PNG文件
+
+save a picture of these blocks as a PNG file
+将这些积木的图片保存为一个PNG文件
+
+copy script
+复制脚本
+
+delete
+删除
+
+Input type:
+输入类型:
+
+string only
+仅字符串
+
+string or number
+字符串或数字
+
+number only
+仅数字
+
+define
+定义
+
+number/string
+数字/字符串
+
+editable number or string
+可编辑的数字或字符串
+
+label
+标签
+
+input
+输入
+
+hide block definition
+隐藏积木定义
+
+Are you sure you want to remove this block definition?
+您确定要删除这个积木定义么?
+
+Language
+语言
+
+Custom...
+定制...
+
+Obsolete
+obsolet
+
+OK
+确定
+
+Ok
+确定
+
+Yes
+是
+
+No
+否
+
+Cancel
+取消
+
+Okay
+确定
+
+Confirm
+确认
+
+# File picker and library dialogs
+
+Libraries
+积木库
+
+Examples
+示例
+
+Desktop
+桌面
+
+Computer
+计算机
+
+Cloud
+云
+
+File
+文件
+
+File Open
+文件 打开 
+
+File Save
+文件 保存
+
+File name:
+文件名称:
+
+New Folder
+新建文件夹
+
+by
+由
+
+Depends:
+依赖于: 
+
+Tags:
+标签:
+
+Path, name or URL for library?
+积木库的路径,名称或URL地址?
+
+Invalid URL
+无效的链接地址
+
+Could not fetch library.
+无法读取积木库.
+
+Host does not exist or is currently down.
+主机不存在或处于关闭状态.
+
+File not found in server.
+无法在服务器上找到该文件. 
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+服务器请求HTTPS协议，但MicroBlocks目前还不支持. 
+
+library information
+积木库信息
+
+built-in library
+内置积木库
+
+Dependency path, name or URL?
+依赖的路径,名字或URL?
+
+Tag name?
+标签名称?
