@@ -102,7 +102,7 @@ method initializeForInform Prompter label details okLabel {
   border = (border window)
   morph = (morph window)
   setHandler morph this
-  minW = (titleBarWidth window)
+  minW = (max (titleBarWidth window) (350 * scale))
   lbl = (getField window 'label')
   fontName = 'Arial Bold'
   fontSize = (14 * (global 'scale'))
