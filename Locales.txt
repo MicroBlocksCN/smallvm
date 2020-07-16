@@ -424,7 +424,7 @@ strength
 distance (cm) trigger _ echo _
 
 ####
-# Infrared remote libraryh
+# Infrared remote library
 
 IR Remote
 
