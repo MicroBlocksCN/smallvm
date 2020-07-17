@@ -1,6 +1,6 @@
 module Turtle Output
 author MicroBlocks
-version 1 0
+version 1 1
 description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 depends 'TFT'
 tags tft graphics draw
@@ -20,7 +20,6 @@ variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
     spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
     spec ' ' 'setHeading' 'point in direction _' 'auto' 0
     spec ' ' '_turtleNotes' '_turtleNotes'
-    spec 'r' '_tft color' '_tft color _ to number' 'color'
 
 to home {
   if (0 == _turtlePenIsDown) {
@@ -69,7 +68,7 @@ to 'pen up' {
 }
 
 to 'set pen color to' color {
-  _turtleColor = ('_tft color' color)
+  _turtleColor = color
 }
 
 to 'go to x' x y {
@@ -99,7 +98,7 @@ to setPenToRandomColor {
 }
 
 to clearDisplay color {
-  '[tft:rect]' 0 0 ('[tft:getWidth]') ('[tft:getHeight]') ('_tft color' color) true
+  '[tft:rect]' 0 0 ('[tft:getWidth]') ('[tft:getHeight]') color true
   comment 'Give the display controller time to finish this operation'
   waitMillis 1
 }
@@ -112,11 +111,4 @@ to '_turtleNotes' {
 The sine function takes an angle in hundreds of a degree and returns a
 number scaled by 16384. _turtleX and _turtleY are also scaled by 16384.
 Those numbers are shifted right by 14 bits to get pixel locations.'
-}
-
-to '_tft color' 'color hex' {
-  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
-  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
-  local 'b' ((((v 'color hex') & 255) * 255) / 31)
-  return ((r << 16) | ((g << 8) | b))
 }
