@@ -167,9 +167,10 @@ to displayCharacter s {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 0 
+version 1 2 
 tags led strip rgb string ws2812 
-description 'Control NeoPixel (WS2812) RGB LED strips.'
+description 'Control NeoPixel (WS2812) RGB LED strips.
+'
 variables _np_pixels 
 
 	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
@@ -178,7 +179,7 @@ variables _np_pixels
 	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
 	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
 	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
-	spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-31)' 'num num num' 0 1 1
+	spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
 	spec 'r' 'randomColor' 'random color'
 	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
 	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
@@ -187,6 +188,9 @@ variables _np_pixels
 to '_NeoPixel_ensureInitialized' {
   if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
     neoPixelAttach 25 '' false
+  } ((boardType) == 'D1-Mini') {
+    comment 'D1 mini kit'
+    neoPixelAttach 7 15 false
   } else {
     neoPixelAttach 10 '' false
   }}
@@ -222,6 +226,9 @@ to clearNeoPixels {
 }
 
 to colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
   return (((r << 16) | (g << 8)) | b)
 }
 
@@ -244,8 +251,8 @@ to neoPixelSetAllToColor color {
 }
 
 to randomColor {
-  local 'n1' (random 0 15)
-  local 'n2' (random 5 20)
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
   if (1 == (random 1 3)) {
     return ((n1 << 16) | (n2 << 8))
   } (1 == (random 1 2)) {
@@ -599,7 +606,7 @@ to 'start WebThing server' {
   if (_WoT_capability == 0) {'set thing capability to' ''}
   if ('[net:hasWiFi]') {
     if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
-    sendBroadcastSimple '_WoT_start_server'
+    sendBroadcast '_WoT_start_server'
   } else {
     '_thing description' = ('thing description JSON')
   }
@@ -613,7 +620,7 @@ to 'trigger event' 'event name' {
   if ('[net:hasWiFi]') {
     '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
   } else {
-    sendBroadcastSimple (v 'event name')
+    sendBroadcast (v 'event name')
   }
 }
 

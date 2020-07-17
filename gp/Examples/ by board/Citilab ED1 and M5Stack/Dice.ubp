@@ -112,7 +112,7 @@ to '_stepCounterLoop' {
       if (not _stepMotionHigh) {
         _stepMotionHigh = (booleanConstant true)
         _stepCount += 1
-        sendBroadcastSimple 'step'
+        sendBroadcast 'step'
       }
     } (n < -3) {
       _stepMotionHigh = (booleanConstant false)
@@ -155,7 +155,7 @@ to startStepCounter {
   comment 'Reset the step count to zero and start the
 step counter loop.'
   _stepCount = 0
-  sendBroadcastSimple '_stepCounterLoop'
+  sendBroadcast '_stepCounterLoop'
 }
 
 to stepCount {
@@ -165,7 +165,7 @@ to stepCount {
 
 module TFT Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
@@ -177,19 +177,22 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
 	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
 	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
 	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec 'r' 'makeColor' 'color r _ g _ b _ (0-31)' 'auto auto auto' 20 5 15
+	spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
 	spec 'r' 'randomColor' 'random color'
 	spec 'r' '[tft:getWidth]' 'TFT width'
 	spec 'r' '[tft:getHeight]' 'TFT height'
 	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
 
 to makeColor r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
   return ((r << 16) | ((g << 8) | b))
 }
 
 to randomColor {
-  local 'n1' (random 0 15)
-  local 'n2' (random 5 20)
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
   if (1 == (random 1 3)) {
     return ((n1 << 16) | (n2 << 8))
   } (1 == (random 1 2)) {
@@ -202,9 +205,10 @@ to randomColor {
 
 module Tone Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tone sound music audio note speaker 
-description 'Audio tone generation. Make music with MicroBlocks!'
+description 'Audio tone generation. Make music with MicroBlocks!
+'
 variables _tonePin _toneInitalized _toneLoopOverhead 
 
 	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
@@ -327,8 +331,16 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 26
     } ((boardType) == 'M5Stack-Core') {
       _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'D1-Mini') {
+      _tonePin = 12
     } else {
-      _tonePin = 0
+      _tonePin = -1
     }
   } else {
     _tonePin = pinNumber
