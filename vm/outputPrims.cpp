@@ -487,9 +487,9 @@ static inline int gamma(int val) {
 	// neoMax determines the max brightness (and power draw!) of each NeoPixel color channel,
 	// which is about (neoMax / 255) * 20 mA per color channel.
 
-	const int neoMax = 35;
-	const int divisor = (255 * 255 * 255) / neoMax;
-	return ((val * val * val) / divisor) & 0xFF;
+	const int neoMax = 40;
+	const int divisor = (255 * 255) / neoMax;
+	return ((val * val) / divisor) & 0xFF;
 }
 
 static const int whiteTable[64] = {
