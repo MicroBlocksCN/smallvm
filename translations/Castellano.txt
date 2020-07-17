@@ -566,6 +566,51 @@ Acelerómetro
 Finch Battery
 Nivel de batería
 
+All
+Todos
+
+Forward
+Adelante
+
+Backward
+Atrás
+
+Right
+Derecha
+
+Left
+Izquierda
+
+Beak Up
+Pico hacia arriba
+
+Beak Down
+Pico hacia abajo
+
+Tilt Left
+Inclinado haciaa la izquierda
+
+Tilt Right
+Inclinado hacia la derecha
+
+Level
+Plano
+
+Upside Down
+Cabeza abajo
+
+x
+x
+
+y
+y
+
+z
+z
+
+strength
+potencia
+
 ####
 # Ultrasound distance library
 
@@ -573,7 +618,7 @@ distance (cm) trigger _ echo _
 distancia (cm) trigger _ echo _
 
 ####
-# Infrared remote libraryh 
+# Infrared remote library
 
 IR Remote
 Infrarrojos
