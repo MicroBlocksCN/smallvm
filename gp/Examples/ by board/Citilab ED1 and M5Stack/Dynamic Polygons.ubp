@@ -168,7 +168,7 @@ to displayCharacter s {
 
 module TFT Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
@@ -180,19 +180,22 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
 	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
 	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
 	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec 'r' 'makeColor' 'color r _ g _ b _ (0-31)' 'auto auto auto' 20 5 15
+	spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
 	spec 'r' 'randomColor' 'random color'
 	spec 'r' '[tft:getWidth]' 'TFT width'
 	spec 'r' '[tft:getHeight]' 'TFT height'
 	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
 
 to makeColor r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
   return ((r << 16) | ((g << 8) | b))
 }
 
 to randomColor {
-  local 'n1' (random 0 15)
-  local 'n2' (random 5 20)
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
   if (1 == (random 1 3)) {
     return ((n1 << 16) | (n2 << 8))
   } (1 == (random 1 2)) {
@@ -205,68 +208,33 @@ to randomColor {
 
 module Turtle Output
 author MicroBlocks
-version 1 0 
-depends TFT 
-tags tft graphics draw 
+version 1 1
 description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
-variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
+depends 'TFT'
+tags tft graphics draw
 
-	spec ' ' 'home' 'home'
-	spec ' ' 'move' 'move _' 'auto' '10'
-	spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
-	spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
-	spec ' ' 'pen down' 'pen down'
-	spec ' ' 'pen up' 'pen up'
-	spec ' ' 'set pen color to' 'set pen color to _' 'color'
-	spec ' ' 'setPenToRandomColor' 'set pen to random color'
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' 'clearDisplay' 'fill display with _' 'color'
-	spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
-	spec ' ' 'setHeading' 'point in direction _' 'auto' 0
-	spec ' ' '_turtleNotes' '_turtleNotes'
-	spec 'r' '_tft color' '_tft color _ to number' 'color'
+variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
 
-to '_tft color' 'color hex' {
-  local 'r' (((((v 'color hex') >> 16) & 255) * 255) / 31)
-  local 'g' (((((v 'color hex') >> 8) & 255) * 255) / 31)
-  local 'b' ((((v 'color hex') & 255) * 255) / 31)
-  return ((r << 16) | ((g << 8) | b))
-}
-
-to '_turtleNotes' {
-  comment 'Representation:
-  _turtleHeading is in hundreths of a degree  (e.g. 4500 means 45 degrees)
-  _turtleX and _turtleY are scaled by 16384 (2^14)
-
-The sine function takes an angle in hundreds of a degree and returns a
-number scaled by 16384. _turtleX and _turtleY are also scaled by 16384.
-Those numbers are shifted right by 14 bits to get pixel locations.'
-}
-
-to clearDisplay color {
-  '[tft:rect]' 0 0 ('[tft:getWidth]') ('[tft:getHeight]') ('_tft color' color) true
-  comment 'Give the display controller time to finish this operation'
-  waitMillis 1
-}
-
-to 'go to x' x y {
-  local 'startX' (_turtleX >> 14)
-  local 'startY' (_turtleY >> 14)
-  _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
-  _turtleY = (((('[tft:getHeight]') / 2) + y) << 14)
-  local 'endX' (_turtleX >> 14)
-  local 'endY' (_turtleY >> 14)
-  if _turtlePenIsDown {
-    '[tft:line]' startX startY endX endY _turtleColor
-  }
-}
+    spec ' ' 'home' 'home' ''
+    spec ' ' 'move' 'move _' 'auto' '10'
+    spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
+    spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
+    spec ' ' 'pen down' 'pen down' ''
+    spec ' ' 'pen up' 'pen up' ''
+    spec ' ' 'set pen color to' 'set pen color to _' 'color'
+    spec ' ' 'setPenToRandomColor' 'set pen to random color' ''
+    spec ' ' '[display:mbDisplayOff]' 'clear display'
+    spec ' ' 'clearDisplay' 'fill display with _' 'color'
+    spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
+    spec ' ' 'setHeading' 'point in direction _' 'auto' 0
+    spec ' ' '_turtleNotes' '_turtleNotes'
 
 to home {
   if (0 == _turtlePenIsDown) {
-    '[tft:enableDisplay]' true
-    'set pen color to' (colorSwatch 7 255 1 255)
-    '[display:mbDisplayOff]'
-    'pen up'
+	'[tft:enableDisplay]' true
+	'set pen color to' (colorSwatch 7 255 1 255)
+	'[display:mbDisplayOff]'
+	'pen up'
   }
   'go to x' 0 0
   setHeading 0
@@ -285,6 +253,20 @@ to move n {
   }
 }
 
+to turnBy a {
+  _turtleHeading += (a * 100)
+  _turtleHeading = (_turtleHeading % 36000)
+}
+
+to turnFraction num denom {
+  _turtleHeading += ((num * 36000) / denom)
+  _turtleHeading = (_turtleHeading % 36000)
+}
+
+to setHeading a {
+  _turtleHeading = ((a * 100) % 36000)
+}
+
 to 'pen down' {
   _turtlePenIsDown = (booleanConstant true)
 }
@@ -294,11 +276,19 @@ to 'pen up' {
 }
 
 to 'set pen color to' color {
-  _turtleColor = ('_tft color' color)
+  _turtleColor = color
 }
 
-to setHeading a {
-  _turtleHeading = ((a * 100) % 36000)
+to 'go to x' x y {
+  local 'startX' (_turtleX >> 14)
+  local 'startY' (_turtleY >> 14)
+  _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
+  _turtleY = (((('[tft:getHeight]') / 2) + y) << 14)
+  local 'endX' (_turtleX >> 14)
+  local 'endY' (_turtleY >> 14)
+  if _turtlePenIsDown {
+    '[tft:line]' startX startY endX endY _turtleColor
+  }
 }
 
 to setPenToRandomColor {
@@ -315,13 +305,18 @@ to setPenToRandomColor {
   }
 }
 
-to turnBy a {
-  _turtleHeading += (a * 100)
-  _turtleHeading = (_turtleHeading % 36000)
+to clearDisplay color {
+  '[tft:rect]' 0 0 ('[tft:getWidth]') ('[tft:getHeight]') color true
+  comment 'Give the display controller time to finish this operation'
+  waitMillis 1
 }
 
-to turnFraction num denom {
-  _turtleHeading += ((num * 36000) / denom)
-  _turtleHeading = (_turtleHeading % 36000)
-}
+to '_turtleNotes' {
+  comment 'Representation:
+  _turtleHeading is in hundreths of a degree  (e.g. 4500 means 45 degrees)
+  _turtleX and _turtleY are scaled by 16384 (2^14)
 
+The sine function takes an angle in hundreds of a degree and returns a
+number scaled by 16384. _turtleX and _turtleY are also scaled by 16384.
+Those numbers are shifted right by 14 bits to get pixel locations.'
+}
