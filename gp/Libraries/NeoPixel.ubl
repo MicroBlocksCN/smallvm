@@ -59,9 +59,9 @@ to clearNeoPixels {
 }
 
 to colorFromRGB r g b {
-  r = (minimum r 255)
-  g = (minimum g 255)
-  b = (minimum b 255)
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
   return (((r << 16) | (g << 8)) | b)
 }
 
