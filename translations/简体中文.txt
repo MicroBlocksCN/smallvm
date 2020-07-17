@@ -1,7 +1,9 @@
 # MicroBlocks translation file
-# Last updated: July 2 2020
+# Last updated: July 07 2020
 
-# Blocks and categories
+#########################
+# Blocks and categories #
+#########################
 
 Output
 输出
@@ -224,7 +226,7 @@ find _ in _
 寻找 _ 在 _ 中   
 
 starting at _
-起始位置 _
+开始于 _
 
 join items of list _
 连接列表中的项目 _
@@ -242,7 +244,7 @@ new list length _
 新建长度为 _ 的列表 
 
 new byte array length _
-新建长度为 _ 的字节数组
+--MISSING--
 
 free memory
 释放内存
@@ -293,7 +295,11 @@ no op
 ignore
 忽略
 
-# Primitives (mostly hidden from end users)
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
 
 draw shape _ at x _ y _
 绘制形状 _ 于 x _ y _
@@ -367,7 +373,9 @@ radio send packet _
 disable radio
 禁止广播
 
-# Libraries
+#############
+# Libraries #
+#############
 
 Basic Sensors
 基础传感器
@@ -389,6 +397,9 @@ light level
 
 temperature (°C)
 温度 (°C)
+
+####
+# NeoPixel library
 
 NeoPixel
 新光像素
@@ -425,6 +436,9 @@ PIR
 
 PIR at pin _ detected movement
 位于引脚 _ 的人体红外传感器探测到运动
+
+####
+# Citilab ED1 board libraries
 
 ED1 Stepper Motor
 ED1步进电机
@@ -477,6 +491,9 @@ capacitive sensor _
 set capacitive threshold to _
 将电容门限值设为 _
 
+####
+# BirdBrain Technologies libraries
+
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
@@ -510,8 +527,98 @@ Sound
 Other
 其他
 
+Finch Beak Red _ Green _ Blue _
+Finch喙部 红 _ 绿 _ 蓝 _
+
+Finch Tail _ Red _ Green _ Blue _
+Finch尾部 红 _ 绿 _ 蓝 _
+
+Finch Move _ _ cm at _ %
+Finch移动 _ _ 厘米 位于 _ %
+
+Finch Turn _ _ ° at _ %
+Finch旋转 _ _ ° 位于 _ %
+
+Finch Wheels L _ % R _ %
+Finch轮子 左 _ % 右 _ %
+
+Finch Stop
+停止Finch
+
+Finch Distance (cm)
+Finch 距离 (厘米)
+
+Finch _ Light
+Finch _ 光线
+
+Finch _ Line
+Finch _ 画线
+
+Finch Reset Encoders
+Finch重置编码器
+
+Finch _ Encoder
+Finch _ 编码器
+
+Finch Accelerometer _
+Finch加速度 _
+
+Finch Battery
+Finch电池量
+
+All
+全部
+
+Forward
+前进
+
+Backward
+后退
+
+Right
+右转
+
+Left
+左转
+
+Beak Up
+喙部上方
+
+Beak Down
+喙部下方
+
+Tilt Left
+左侧倾角
+
+Tilt Right
+右侧倾角
+
+Level
+级别
+
+Upside Down
+颠倒
+
+x
+x
+
+y
+y
+
+z
+z
+
+strength
+强度
+
+####
+# Ultrasound distance library
+
 distance (cm) trigger _ echo _
 距离 (cm) 触发 _ 回声 _ 
+
+####
+# Infrared remote library
 
 IR Remote
 远距IR
@@ -528,8 +635,17 @@ test IR
 attach IR receiver to pin _
 连接IR接收器至引脚 _
 
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
 Radio
 广播
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
 滚动显示
@@ -546,6 +662,9 @@ pausing _ ms
 stop scrolling
 停止滚动
 
+####
+# Servo motor library
+
 Servo
 伺服控制器
 
@@ -557,6 +676,11 @@ set servo _ to speed _ (-100 to 100)
 
 stop servo _
 停止伺服控制器 _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
 LED显示
@@ -575,6 +699,9 @@ unplot x _ y _
 
 display character _
 显示字符 _
+
+####
+# TFT display library
 
 enable TFT _
 启用 TFT
@@ -612,6 +739,10 @@ write _ on TFT at x _ y _ color _
 scale _ wrap _
 scale _ wrap _
 
+####
+# Tone library
+# Generates music tones on buzzers
+
 Tone
 音调
 
@@ -619,13 +750,16 @@ attach buzzer to pin _
 连接蜂鸣器至引脚 _
 
 play note _ octave _ for _ ms
-spiele Note _ Oktave _ für _ ms
+弹奏音符 _ 音阶 _ 持续 _ 毫秒
 
 play frequency _ for _ ms
 弹奏频率 _ 持续 _ 毫秒
 
 play midi key _ for _ ms
 弹奏midi键 _ 持续 _ 毫秒
+
+####
+# Turtle geometry library
 
 Turtle
 海龟
@@ -640,7 +774,7 @@ turn _ degrees
 旋转 _ 度
 
 turn _ / _ of circle
-旋转 _/ _ 个圈
+旋转 _ / _ 个圈
 
 pen down
 落笔
@@ -662,6 +796,9 @@ go to x _ y _
 
 point in direction _
 面向 _ 
+
+####
+# File system library
 
 Files
 文件
@@ -702,6 +839,9 @@ size of file _
 file system info
 文件系统信息
 
+####
+# WiFi library
+
 WiFi
 WiFi
 
@@ -713,6 +853,10 @@ wifi create hotspot _ password _
 
 IP address
 IP地址
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
 
 Motion
 运动
@@ -732,6 +876,9 @@ clear step count
 set step threshold _ (0-50)
 设置计步阈值 _ (0-50)
 
+####
+# Button Events library
+
 Button Events
 按键事件
 
@@ -744,6 +891,9 @@ button _ long pressed
 button _ pressed
 按键 _ 被点击
 
+####
+# Calliope board library
+
 Calliope set LED red _ green _ blue _
 Calliope 设置 LED 红 _ 绿 _ 蓝 _ 
 
@@ -753,11 +903,17 @@ Calliope 设置扬声器 _
 Calliope loudness
 Calliope 响度
 
+####
+# Circuit Playground Express board library
+
 Circuit Playground set speaker _
 Circuit Playground 设置扬声器 _ 
 
 Circuit Playground slide switch
 Circuit Playground 滑动开关
+
+####
+# DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
 连接 _ DotStar LEDs 至数据引脚 _ 时钟引脚 _
@@ -770,6 +926,9 @@ set DotStar LED _ to r _ g _ b _
 
 set DotStar brightness _
 设置 DotStar 亮度 _
+
+####
+# BME280 environmental sensor
 
 bme280 connected
 bme280已连接
@@ -786,6 +945,9 @@ bmx280压力
 bme280 humidity
 bme280湿度
 
+####
+# TCS34725 color sensor
+
 TCS34725 connected
 TCS34725已连接
 
@@ -794,6 +956,9 @@ TCS34725 RGB
 
 color _ name
 颜色 _ 名字
+
+####
+# DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
 温度 (Celsius) DHT11 引脚 _ 
@@ -807,6 +972,9 @@ temperature (Celsius) DHT22 pin _
 humidity DHT22 pin _
 湿度 DHT22 引脚 _
 
+####
+# PN532 RFID reader
+
 read PN532 RFID
 读取 PN532 RFID
 
@@ -816,11 +984,14 @@ RFID _ = _
 get PN532 firmware version
 PN532固件版本
 
+####
+# HTTP libraries
+
 HTTP client
 HTTP客户端
 
-_ data _ to http?// _
-_ 数据 _ 至 http:// _
+_ data _ to http܃// _
+_ 数据 _ 至 http// _
 
 HTTP server
 HTTP服务器
@@ -848,6 +1019,9 @@ path of request _
 
 method of request _
 method of request _
+
+####
+# Mozilla Web Things library
 
 Web Thing
 Web Thing
@@ -894,7 +1068,11 @@ event definitions JSON
 events JSON
 事件 JSON
 
-# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
 
 New
 新建
@@ -1290,3 +1468,4 @@ Dependency path, name or URL?
 
 Tag name?
 标签名称?
+
