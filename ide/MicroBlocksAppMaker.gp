@@ -78,7 +78,11 @@ method writeExeFile MicroBlocksAppMaker srcAppPath embeddedFS dstPath {
 
 	print 'Writing' dstPath '...'
 	appData = (readFile srcAppPath true)
-	writeFile dstPath (executableWithData this appData (contents embeddedFS))
+	if (notNil embeddedFS) {
+		writeFile dstPath (executableWithData this appData (contents embeddedFS))
+	} else {
+		writeFile dstPath appData
+	}
 	setFileMode dstPath (+ (7 << 6) (5 << 3) 5) // set executable bits
 }
 
@@ -123,8 +127,8 @@ method writeMacApp MicroBlocksAppMaker srcAppPath embeddedFS dstPath {
 	makeDirectory (join appName '/Contents/MacOS')
 	makeDirectory (join appName '/Contents/Resources')
 	writeFile (join appName '/Contents/info.plist') (macInfoFile this name)
-	writeExeFile this srcAppPath embeddedFS (join appName '/Contents/MacOS/' name)
-	makeDirectory (join appName '/Contents/Resources')
+	writeExeFile this srcAppPath nil (join appName '/Contents/MacOS/' name)
+	writeFile (join appName '/Contents/Resources/fs.data') (contents embeddedFS)
 	writeFile (join appName '/Contents/Resources/MicroBlocks.icns') (readFile 'MicroBlocks.icns' true)
 }
 
