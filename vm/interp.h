@@ -184,7 +184,6 @@ void processMessage(void);
 int hasOutputSpace(int byteCount);
 void logData(char *s);
 void outputString(const char *s);
-void resetAndRestart(void);
 void sendTaskDone(uint8 chunkIndex);
 void sendTaskError(uint8 chunkIndex, uint8 errorCode, int where);
 void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);

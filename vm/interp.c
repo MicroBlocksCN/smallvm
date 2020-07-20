@@ -330,7 +330,7 @@ static void runTask(Task *task) {
 		&&logData_op,
 		&&boardType_op,
 		&&comment_op,
-		&&resetAndRestart_op,
+		&&RESERVED_op,
 		&&RESERVED_op,
 		&&analogPins_op,
 		&&digitalPins_op,
@@ -881,9 +881,6 @@ static void runTask(Task *task) {
 	comment_op:
 		POP_ARGS_COMMAND();
 		DISPATCH();
-	resetAndRestart_op:
-		resetAndRestart();
-		return;
 
 	// I/O operations:
 	analogPins_op:

@@ -93,7 +93,6 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop other tasks')
 		'Control-Advanced'
-		(array ' ' 'resetAndRestart'	'reset and restart')
 		(array 'r' 'getLastBroadcast'	'last message')
 	'Operators'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
@@ -363,7 +362,7 @@ method initOpcodes SmallCompiler {
 		printIt 75
 		boardType 76
 		comment 77
-		resetAndRestart 78
+	RESERVED 78
 	RESERVED 79
 		analogPins 80
 		digitalPins 81

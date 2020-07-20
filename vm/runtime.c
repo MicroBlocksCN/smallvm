@@ -178,13 +178,6 @@ void stopAllTasksButThis(Task *thisTask) {
 	}
 }
 
-void resetAndRestart() {
-		stopAllTasks();
-		softReset(true);
-		outputString("Restarting");
-		startAll();
-}
-
 // Selected Opcodes (see MicroBlocksCompiler.gp for complete set)
 
 #define pushLiteral 4
