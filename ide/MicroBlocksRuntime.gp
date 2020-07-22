@@ -196,6 +196,21 @@ method decompileAll SmallRuntime {
 	}
 }
 
+method requestCodeFromBoard SmallRuntime {
+	print 'fetching code from board'
+	sendMsg this 'getAllCodeMsg'
+}
+
+method receivedChunk SmallRuntime bytecodes {
+	print 'chunkCodeMsg:' (count bytecodes) 'bytes' bytecodes
+	chunk = (decompileBytecodes bytecodes)
+	block = (toBlock chunk)
+	scripts = (scriptEditor scripter)
+	addPart (morph scripts) (morph block)
+	fixBlockColor block
+	cleanUp scripts
+}
+
 // chunk management
 
 method syncScripts SmallRuntime {
@@ -565,6 +580,10 @@ method tryToConnect SmallRuntime {
 			connectionStartTime = nil
 			vmVersion = nil
 			sendMsg this 'getVersionMsg'
+			if (and (devMode) (not (hasUserCode (project (findProjectEditor))))) {
+				// Project is empty. Try to decompile what's on the board
+				requestCodeFromBoard this
+			}
 			clearBoardIfConnected this false
 			stopAndSyncScripts this
 			return 'connected'
@@ -1203,7 +1222,7 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'broadcastMsg')) {
 		broadcastReceived (thingServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
-		print 'chunkCodeMsg:' (byteCount msg) 'bytes' (toArray (copyFromTo msg 6))
+		receivedChunk this (toArray (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {
 		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'varNameMsg')) {
