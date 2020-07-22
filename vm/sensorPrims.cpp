@@ -322,7 +322,6 @@ static int readTemperature() {
 
 static void startAccelerometer() {
 	writeI2CReg(LSM6DS, 0x10, 0x40); // enable accelerometer,  104 Hz sample rate
-//	writeI2CReg(LSM6DS, 0x13, 0x10); // enable temperature xxx needed?
 	accelStarted = true;
 }
 
@@ -343,9 +342,8 @@ static int readAcceleration(int registerID) {
 static int readTemperature() {
 	if (!accelStarted) startAccelerometer();
 	int temp = (readI2CReg(LSM6DS, 0x21) << 8) | readI2CReg(LSM6DS, 0x20);
-return temp;
-	if (temp >= 128) temp = temp - 256; // negative
-	return 25 + temp;
+	if (temp >= 32768) temp = temp - 65536; // negative
+	return 25 + (temp / 16);
 }
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Atom_Matrix_ESP32)
