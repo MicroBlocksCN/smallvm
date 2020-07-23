@@ -739,6 +739,21 @@ static void sendAttributeMessage(int chunkIndex, int attributeID, int *persisten
 	}
 }
 
+static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chunkData) {
+	int msgSize = 1 + chunkBytes;
+	waitForOutbufBytes(5 + msgSize);
+	queueByte(251);
+	queueByte(chunkCodeMsg);
+	queueByte(chunkID);
+	queueByte(msgSize & 0xFF); // low byte of size
+	queueByte((msgSize >> 8) & 0xFF); // high byte of size
+	queueByte(chunkType); // first byte of msg body is the chunk type
+	char *end = chunkData + chunkBytes;
+	for (char *p = chunkData; p < end; p++) {
+		queueByte(*p);
+	}
+}
+
 static void sendAllCode() {
 	// Send the code and attributes for all chunks to the IDE.
 
@@ -746,36 +761,10 @@ static void sendAllCode() {
 		OBJ code = chunks[chunkID].code;
 		if (NULL == code) continue; // skip unused chunk entry
 
-		// send the binary code
-		int words = *(code + 1); // size is the second word in the persistent store record
-		int *data = code + PERSISTENT_HEADER_WORDS;
-		waitForOutbufBytes(5 + (4 * words));
-		sendMessage(chunkCodeMsg, chunkID, (4 * words), (char *) data);
-
-		int *position = NULL;
-		int *snapSource = NULL;
-		int *gpSource = NULL;
-
-		int *p = scanStart();
-		while (p) {
-			int recID = (*p >> 8) & 0xFF;
-			if (recID == chunkID) {
-				int recType = (*p >> 16) & 0xFF;
-				if (chunkAttribute == recType) {
-					int attrType = *p & 0xFF;
-					if (sourcePosition == attrType) position = p;
-					if (snapSourceString == attrType) snapSource = p;
-					if (gpSourceString == attrType) gpSource = p;
-				}
-				if (chunkDeleted == recType) {
-					position = snapSource = gpSource = NULL;
-				}
-			}
-			p = recordAfter(p);
-		}
-		if (snapSource) sendAttributeMessage(chunkID, snapSourceString, snapSource);
-		if (gpSource) sendAttributeMessage(chunkID, gpSourceString, gpSource);
-		if (position) sendAttributeMessage(chunkID, sourcePosition, position);
+		int chunkType = chunks[chunkID].chunkType;
+		int chunkWords = *(code + 1); // chunk word count is second word of persistent store record
+		char *chunkData = (char *) (code + PERSISTENT_HEADER_WORDS);
+		sendCodeChunk(chunkID, chunkType, (4 * chunkWords), chunkData);
 	}
 }
 
