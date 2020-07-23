@@ -179,6 +179,16 @@ method tmpPath MicroBlocksFlasher {
   }
 }
 
+method readEspToolFromMacApp MicroBlocksFlasher {
+	// To allow app signing, the esptool is stored in the MacOS folder in the Mac app bundle.
+
+	path = (appPath)
+	i = (lastIndexOf (letters path) '/')
+	if (isNil i) { return nil }
+	path = (join (substring path 1 i) 'esptool')
+	return (readFile path true)
+}
+
 method copyEspToolToDisk MicroBlocksFlasher {
   if ('Mac' == (platform)) {
     embeddedFileName = 'esptool/esptool'
@@ -198,6 +208,10 @@ method copyEspToolToDisk MicroBlocksFlasher {
     // if it doesn't exist, and do nothing if it already does.
     makeDirectory (tmpPath this)
     esptoolData = (readEmbeddedFile embeddedFileName isBinary)
+    if (and (isNil esptoolData) ('Mac' == (platform))) {
+		esptoolData = (readEspToolFromMacApp this)
+    	if (isNil esptoolData) { return }
+    }
     destination = (join (tmpPath this) esptoolFileName)
     writeFile destination esptoolData
     setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
