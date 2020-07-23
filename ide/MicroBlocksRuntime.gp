@@ -201,9 +201,8 @@ method requestCodeFromBoard SmallRuntime {
 	sendMsg this 'getAllCodeMsg'
 }
 
-method receivedChunk SmallRuntime bytecodes {
-	print 'chunkCodeMsg:' (count bytecodes) 'bytes' bytecodes
-	chunk = (decompileBytecodes bytecodes)
+method receivedChunk SmallRuntime bytecodes chunkType {
+	chunk = (decompileBytecodes bytecodes chunkType)
 	block = (toBlock chunk)
 	scripts = (scriptEditor scripter)
 	addPart (morph scripts) (morph block)
@@ -1222,7 +1221,7 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'broadcastMsg')) {
 		broadcastReceived (thingServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
-		receivedChunk this (toArray (copyFromTo msg 6))
+		receivedChunk this (toArray (copyFromTo msg 7)) (byteAt msg 6)
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {
 		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'varNameMsg')) {
