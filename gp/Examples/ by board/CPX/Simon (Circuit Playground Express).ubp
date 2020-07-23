@@ -1,182 +1,47 @@
 module main
-author unknown
-version 1 0 
+author Bernat
+version 1 1 
 description ''
-variables _bz_frequencies _bz_note_names _bz_pinNumber _digit_shapes _digit_shapes_start_index _loop_overhead _np_first_rotated _np_length _np_pixels 'current index' sequence 
+variables 'current index' sequence 
 
-	spec 'r' '_bz_index of' '_bz_index of _ in _' 'auto auto any any' '10' ''
-	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num any any any' 42
-	spec ' ' '_np_rotate' '_np_rotate_dir _' 'bool any any any' true
-	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num any any any' 100
-	spec ' ' 'attach' 'attach _ LED NeoPixel strip to pin _ has white _' 'auto auto bool' 16 '' false
 	spec 'r' 'correct guess' 'correct guess at _' 'auto' '10'
-	spec ' ' 'freq' 'play frequency _ on pin _ for _ ms' 'auto auto auto' 440 0 '100'
-	spec ' ' 'initialize board' 'initialize board'
-	spec ' ' 'initialize letters' 'initialize sequence'
 	spec ' ' 'play note at' 'play note at _' 'auto' '10'
-	spec ' ' 'rotate NeoPixels by' 'rotate NeoPixels by _' 'auto' -1
-	spec ' ' 'scroll_number' 'scroll number _ pausing _ ms' 'num num' 123 100
-	spec ' ' 'scroll_text' 'scroll text _ pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'set NeoPixel LED' 'set NeoPixel LED _ to r _ g _ b _' 'auto auto auto auto' 1 0 0 100
-	spec ' ' 'set all NeoPixels r' 'set all NeoPixels r _ g _ b _' 'auto auto auto' 0 0 0
 	spec 'r' 'wrong guess' 'wrong guess at _' 'auto' '10'
-
-to '_bz_index of' item list {
-  for i (size list) {
-    if ((at i list) == item) {return i}
-  }
-  return 0
-}
-
-to '_covert_to_shapes' n {
-  if (_digit_shapes == 0) {_digit_shapes = (newList 12)}
-  fillList _digit_shapes ('[display:mbShapeForLetter]' ' ')
-  local 'index' (size _digit_shapes)
-  local 'isNegative' (booleanConstant false)
-  if (n < 0) {
-    isNegative = (booleanConstant true)
-    n = (0 - n)
-  } (n == 0) {
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' '0')
-    _digit_shapes_start_index = index
-  }
-  repeatUntil (n == 0) {
-    local 'digit' (n % 10)
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' (48 + digit))
-    index += -1
-    n = (n / 10)
-  }
-  if isNegative {
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' '-')
-    index += -1
-  }
-  _digit_shapes_start_index = index
-}
-
-to '_np_rotate' left {
-  if left {
-    _np_first_rotated = (at 1 _np_pixels)
-    for i (_np_length - 1) {
-      atPut i _np_pixels (at (i + 1) _np_pixels)
-    }
-    atPut _np_length _np_pixels _np_first_rotated
-  } else {
-    _np_first_rotated = (at _np_length _np_pixels)
-    for i ((size _np_pixels) - 1) {
-      atPut ((_np_length - i) + 1) _np_pixels (at (_np_length - i) _np_pixels)
-    }
-    atPut 1 _np_pixels _np_first_rotated
-  }
-}
-
-to '_scroll_digit_shapes' delay {
-  local 'prevShape' ('[display:mbShapeForLetter]' ' ')
-  local 'i' _digit_shapes_start_index
-  local 'end' ((size _digit_shapes) + 1)
-  repeatUntil (i > end) {
-    local 'shape' ('[display:mbShapeForLetter]' ' ')
-    if (i < end) {
-      shape = (at i _digit_shapes)
-    }
-    for j 5 {
-      local 'x' (1 - j)
-      '[display:mbDrawShape]' shape (x + 5) 1
-      '[display:mbDrawShape]' prevShape x 1
-      waitMillis delay
-    }
-    prevShape = shape
-    i += 1
-  }
-}
-
-to attach number pinNumber hasWhite {
-  if (_np_pixels == 0) {_np_pixels = (newList number)}
-  _np_length = number
-  fillList _np_pixels 0
-  '[display:neoPixelSetPin]' pinNumber hasWhite
-}
+	spec ' ' 'setup' 'setup'
 
 to 'correct guess' index {
   return (or (and (buttonA) ((at index sequence) == 0)) (and (buttonB) ((at index sequence) == 1)))
 }
 
-to freq freq pin ms {
-  local 'initial time' (millisOp)
-  local 'halfCycle' ((500000 / freq) - _loop_overhead)
-  repeatUntil (((millisOp) - (v 'initial time')) > ms) {
-    digitalWriteOp pin true
-    waitMicros halfCycle
-    digitalWriteOp pin false
-    waitMicros halfCycle
+to 'play note at' index {
+  local 'half_pixel_count' ((size _np_pixels) / 2)
+  clearNeoPixels
+  if ((at index sequence) == 0) {
+    for i half_pixel_count {
+      setNeoPixelColor i (colorSwatch 0 83 83 255)
+    }
+    'play tone' 'D' 2 200
+  } else {
+    for i half_pixel_count {
+      setNeoPixelColor (i + half_pixel_count) (colorSwatch 101 103 1 255)
+    }
+    'play tone' 'G' 2 200
   }
+  clearNeoPixels
 }
 
-to 'initialize board' {
-  attach 10 '' false
-}
-
-to 'initialize letters' {
+to setup {
+  'play tone' 'C' 1 100
+  'play tone' 'E' 1 100
+  'play tone' 'G' 1 100
   'play tone' 'C' 2 100
-  'play tone' 'E' 2 100
-  'play tone' 'G' 2 100
-  'play tone' 'C' 3 100
   if (sequence == 0) {
     sequence = (newList 20)
   }
   for i (size sequence) {
     atPut i sequence (random 0 1)
   }
-}
-
-to 'play note at' index {
-  neoPixelSetAllToColor (colorSwatch 0 0 0 255)
-  if ((at index sequence) == 0) {
-    for i 5 {
-      setNeoPixelColor i (colorFromRGB 0 10 10)
-    }
-    'play tone' 'D' 2 200
-  } else {
-    for i 5 {
-      setNeoPixelColor (i + 5) (colorFromRGB 10 10 0)
-    }
-    'play tone' 'G' 2 200
-  }
-  neoPixelSetAllToColor (colorSwatch 0 0 0 255)
-}
-
-to 'rotate NeoPixels by' n {
-  repeat (absoluteValue n) {
-    '_np_rotate' (n > 0) nil nil nil
-  }
-  '[display:neoPixelSend]' _np_pixels
-}
-
-to scroll_number n delay {
-  '_covert_to_shapes' n
-  '_scroll_digit_shapes' delay
-}
-
-to scroll_text text delay {
-  local 'length' (size text)
-  for position ((length * 6) + 5) {
-    '[display:mbDisplayOff]'
-    for i length {
-      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at i text)) (((i * 6) + 2) - position) 1
-    }
-    waitMillis delay
-  }
-}
-
-to 'set NeoPixel LED' number r g b {
-  atPut number _np_pixels (((r << 16) | (g << 8)) | b)
-  '[display:neoPixelSend]' _np_pixels
-  waitMicros 100
-}
-
-to 'set all NeoPixels r' r g b {
-  for i (size _np_pixels) {
-    'set NeoPixel LED' i r g b
-  }
+  'current index' = 1
 }
 
 to 'wrong guess' index {
@@ -188,55 +53,24 @@ comment 'This is the "Simon" memory game for the
 Adafruit Circuit Playground Express.'
 }
 
-script 516 65 {
-whenBroadcastReceived 'player turn'
-local 'index' 1
-repeatUntil (index > (v 'current index')) {
-  if ('correct guess' index) {
-    'play note at' index
-    index += 1
-    waitUntil (and (not (buttonA)) (not (buttonB)))
-  } ('wrong guess' index) {
-    neoPixelSetAllToColor (colorSwatch 177 36 37 255)
-    'play tone' 'G' 2 250
-    'play tone' 'F#' 2 250
-    'play tone' 'F' 2 250
-    'play tone' 'E' 2 250
-    waitMillis 500
-    neoPixelSetAllToColor (colorSwatch 0 0 0 255)
-    sendBroadcast 'go!'
-    stopTask
-  }
-}
-waitMillis 500
-'current index' += 1
-sendBroadcast 'play sequence'
-}
-
-script 56 125 {
-whenStarted
-'initialize board'
-sendBroadcast 'go!'
-}
-
-script 1112 140 {
+script 749 123 {
 whenBroadcastReceived 'play sequence'
-if ((v 'current index') > 20) {
-  'set all NeoPixels r' 0 0 0
+if ((v 'current index') > 10) {
+  clearNeoPixels
   for i 6 {
-    'set NeoPixel LED' (i + 2) 10 0 0
+    setNeoPixelColor (i + 2) (colorSwatch 198 0 1 255)
   }
-  'set NeoPixel LED' 1 0 10 5
-  'set NeoPixel LED' 10 0 10 5
-  'play tone' 'C' 3 100
-  'play tone' 'E' 2 100
-  'play tone' 'C' 3 100
-  'play tone' 'E' 2 100
+  setNeoPixelColor 1 (colorSwatch 6 191 107 255)
+  setNeoPixelColor 10 (colorSwatch 6 191 107 255)
   'play tone' 'C' 2 100
-  'play tone' 'G' 2 100
-  'play tone' 'C' 3 200
-  waitMillis 500
-  'set all NeoPixels r' 0 0 0
+  'play tone' 'E' 1 100
+  'play tone' 'C' 2 100
+  'play tone' 'E' 1 100
+  'play tone' 'C' 1 100
+  'play tone' 'G' 1 100
+  'play tone' 'C' 2 200
+  waitMillis 1000
+  clearNeoPixels
   sendBroadcast 'go!'
 } else {
   for i (v 'current index') {
@@ -246,19 +80,49 @@ if ((v 'current index') > 20) {
 }
 }
 
-script 58 242 {
-whenBroadcastReceived 'go!'
-'current index' = 1
-'initialize letters'
-waitMillis 1500
+script 344 127 {
+whenBroadcastReceived 'player turn'
+local 'index' 1
+repeatUntil (index > (v 'current index')) {
+  if ('correct guess' index) {
+    'play note at' index
+    index += 1
+    waitUntil (and (not (buttonA)) (not (buttonB)))
+  } ('wrong guess' index) {
+    neoPixelSetAllToColor (colorSwatch 177 36 37 255)
+    'play tone' 'G' 1 250
+    'play tone' 'F#' 1 250
+    'play tone' 'F' 1 250
+    'play tone' 'E' 1 250
+    waitMillis 500
+    clearNeoPixels
+    sendBroadcast 'go!'
+    stopTask
+  }
+}
+waitMillis 500
+'current index' += 1
 sendBroadcast 'play sequence'
 }
 
-script 59 412 {
+script 50 129 {
+whenStarted
+neoPixelAttach 10 ''
+sendBroadcast 'go!'
+}
+
+script 51 233 {
+whenBroadcastReceived 'go!'
+setup
+waitMillis 1000
+sendBroadcast 'play sequence'
+}
+
+script 52 361 {
 whenBroadcastReceived 'go!'
 neoPixelSetAllToColor (colorSwatch 0 0 0 255)
 for i 5 {
-  setNeoPixelColor i (colorFromRGB 0 0 (i * 10))
+  setNeoPixelColor i (colorSwatch 3 0 150 255)
 }
 repeat 10 {
   rotateNeoPixelsBy -1

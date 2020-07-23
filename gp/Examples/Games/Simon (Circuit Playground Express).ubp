@@ -1,5 +1,5 @@
 module main
-author Bernat Romagosa
+author Bernat
 version 1 1 
 description ''
 variables 'current index' sequence 
@@ -14,15 +14,16 @@ to 'correct guess' index {
 }
 
 to 'play note at' index {
+  local 'half_pixel_count' ((size _np_pixels) / 2)
   clearNeoPixels
   if ((at index sequence) == 0) {
-    for i 5 {
+    for i half_pixel_count {
       setNeoPixelColor i (colorSwatch 0 83 83 255)
     }
     'play tone' 'D' 2 200
   } else {
-    for i 5 {
-      setNeoPixelColor (i + 5) (colorSwatch 101 103 1 255)
+    for i half_pixel_count {
+      setNeoPixelColor (i + half_pixel_count) (colorSwatch 101 103 1 255)
     }
     'play tone' 'G' 2 200
   }
@@ -52,39 +53,9 @@ comment 'This is the "Simon" memory game for the
 Adafruit Circuit Playground Express.'
 }
 
-script 50 129 {
-whenStarted
-sendBroadcast 'go!'
-}
-
-script 299 134 {
-whenBroadcastReceived 'player turn'
-local 'index' 1
-repeatUntil (index > (v 'current index')) {
-  if ('correct guess' index) {
-    'play note at' index
-    index += 1
-    waitUntil (and (not (buttonA)) (not (buttonB)))
-  } ('wrong guess' index) {
-    neoPixelSetAllToColor (colorSwatch 177 36 37 255)
-    'play tone' 'G' 1 250
-    'play tone' 'F#' 1 250
-    'play tone' 'F' 1 250
-    'play tone' 'E' 1 250
-    waitMillis 500
-    clearNeoPixels
-    sendBroadcast 'go!'
-    stopTask
-  }
-}
-waitMillis 500
-'current index' += 1
-sendBroadcast 'play sequence'
-}
-
-script 720 135 {
+script 749 123 {
 whenBroadcastReceived 'play sequence'
-if ((v 'current index') > 20) {
+if ((v 'current index') > 10) {
   clearNeoPixels
   for i 6 {
     setNeoPixelColor (i + 2) (colorSwatch 198 0 1 255)
@@ -109,14 +80,45 @@ if ((v 'current index') > 20) {
 }
 }
 
-script 51 224 {
+script 344 127 {
+whenBroadcastReceived 'player turn'
+local 'index' 1
+repeatUntil (index > (v 'current index')) {
+  if ('correct guess' index) {
+    'play note at' index
+    index += 1
+    waitUntil (and (not (buttonA)) (not (buttonB)))
+  } ('wrong guess' index) {
+    neoPixelSetAllToColor (colorSwatch 177 36 37 255)
+    'play tone' 'G' 1 250
+    'play tone' 'F#' 1 250
+    'play tone' 'F' 1 250
+    'play tone' 'E' 1 250
+    waitMillis 500
+    clearNeoPixels
+    sendBroadcast 'go!'
+    stopTask
+  }
+}
+waitMillis 500
+'current index' += 1
+sendBroadcast 'play sequence'
+}
+
+script 50 129 {
+whenStarted
+neoPixelAttach 10 ''
+sendBroadcast 'go!'
+}
+
+script 51 233 {
 whenBroadcastReceived 'go!'
 setup
 waitMillis 1000
 sendBroadcast 'play sequence'
 }
 
-script 52 365 {
+script 52 361 {
 whenBroadcastReceived 'go!'
 neoPixelSetAllToColor (colorSwatch 0 0 0 255)
 for i 5 {
