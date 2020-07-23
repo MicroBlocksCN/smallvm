@@ -574,9 +574,6 @@ method instructionsForCmd SmallCompiler cmd {
 		return result
 	} ('sendBroadcastSimple' == op) {
 		return (primitive this 'sendBroadcast' args true)
-	} ('comment' == op) {
-		// skip comments; do not generate any code
-		// xxx remove this case later to store comments (once the VM supports them)
 	} ('ignoreArgs' == op) {
 		for arg args {
 			addAll result (instructionsForExpression this arg)
@@ -650,8 +647,7 @@ method instructionsForWaitUntil SmallCompiler args {
 	result = (list)
 	conditionTest = (instructionsForExpression this (at args 1))
 	addAll result conditionTest
-	add result (array 'jmpFalse' (0 - (+ (count conditionTest) 1)))
-//	add result (array 'waitUntil' (0 - (+ (count conditionTest) 1))) // xxx enable later
+	add result (array 'waitUntil' (0 - (+ (count conditionTest) 1)))
 	return result
 }
 
@@ -722,7 +718,7 @@ method instructionsForExpression SmallCompiler expr {
 	}
 }
 
-method instructionsForAndNEW SmallCompiler args { // xxx enable later
+method instructionsForAnd SmallCompiler args {
 	tests = (list)
 	totalInstrCount = 0
 	for expr args {
@@ -742,7 +738,7 @@ method instructionsForAndNEW SmallCompiler args { // xxx enable later
 	return result
 }
 
-method instructionsForOrNEW SmallCompiler args { // xxx enable later
+method instructionsForOr SmallCompiler args {
 	tests = (list)
 	totalInstrCount = 0
 	for expr args {
@@ -759,44 +755,6 @@ method instructionsForOrNEW SmallCompiler args { // xxx enable later
 			add result (array 'jmpOr' (totalInstrCount - ((count result) + 1)))
 		}
 	}
-	return result
-}
-
-method instructionsForAnd SmallCompiler args {
-	tests = (list)
-	totalInstrCount = 3 // final three instructions
-	for expr args {
-		instrList = (instructionsForExpression this expr)
-		add tests instrList
-		totalInstrCount += ((count instrList) + 1)
-	}
-	result = (list)
-	for t tests {
-		addAll result t
-		add result (array 'jmpFalse' (totalInstrCount - ((count result) + 2)))
-	}
-	add result (array 'pushImmediate' trueObj) // all conditions were true: push result
-	add result (array 'jmp' 1) // skip over false case
-	add result (array 'pushImmediate' falseObj) // some condition was false: push result
-	return result
-}
-
-method instructionsForOr SmallCompiler args {
-	tests = (list)
-	totalInstrCount = 3 // final three instructions
-	for expr args {
-		instrList = (instructionsForExpression this expr)
-		add tests instrList
-		totalInstrCount += ((count instrList) + 1)
-	}
-	result = (list)
-	for t tests {
-		addAll result t
-		add result (array 'jmpTrue' (totalInstrCount - ((count result) + 2)))
-	}
-	add result (array 'pushImmediate' falseObj) // all conditions were false: push result
-	add result (array 'jmp' 1) // skip over true case
-	add result (array 'pushImmediate' trueObj) // some condition was true: push result
 	return result
 }
 
