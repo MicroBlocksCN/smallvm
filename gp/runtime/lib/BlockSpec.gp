@@ -62,7 +62,7 @@ to blockSpecFromStrings blockOp blockType specString typeString defaults {
     atPut specs i (trim (at specs i))
   }
   repeatLastSpec = false
-  if ('...' == (last specs)) {
+  if (and ((count specs) > 0) ('...' == (last specs))) {
 	repeatLastSpec = true
     specs = (copyArray specs ((count specs) - 1))
   }
