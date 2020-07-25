@@ -356,13 +356,21 @@ static OBJ primBrowserWriteFile(int nargs, OBJ args[]) {
 	char *suggestedFileName = "";
 	char *extension = "";
 	if (nargs < 1) return notEnoughArgsFailure();
-	if (NOT_CLASS(args[0], StringClass)) return primFailed("Argument must be a string");
 	if ((nargs > 1) && (IS_CLASS(args[1], StringClass))) suggestedFileName = obj2str(args[1]);
 	if ((nargs > 2) && (IS_CLASS(args[2], StringClass))) extension = obj2str(args[2]);
 
-	EM_ASM_({
-		GP_writeFile(UTF8ToString($0), UTF8ToString($1), UTF8ToString($2));
-	}, obj2str(args[0]), suggestedFileName, extension);
+	if (IS_CLASS(args[0], StringClass)) {
+		EM_ASM_({
+			GP_writeFile(UTF8ToString($0), UTF8ToString($1), UTF8ToString($2));
+		}, obj2str(args[0]), suggestedFileName, extension);
+	} else if (IS_CLASS(args[0], BinaryDataClass)) {
+		EM_ASM_({
+			let buf = new Uint8Array(HEAPU8.buffer, $0, $1);
+			GP_writeFile(buf, UTF8ToString($2), UTF8ToString($3));
+		}, &FIELD(args[0], 0), objBytes(args[0]), suggestedFileName, extension);
+	} else {
+		return primFailed("Argument must be a string");
+	}
 	return nilObj;
 }
 
@@ -1012,7 +1020,7 @@ static PrimEntry browserPrimList[] = {
 	{"browserIsMobile",			primBrowserIsMobile,		"Return true if running in a mobile browser."},
 	{"browserHasWebSerial",		primBrowserHasWebSerial,	"Return true the browser supports the Web Serial API."},
 	{"browserReadFile",			primBrowserReadFile,		"Select and read a file in the browser. Args: [extension]"},
-	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [extension, suggestedFileName]"},
+	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [suggestedFileName, extension]"},
 };
 
 static PrimEntry graphicsPrimList[] = {
