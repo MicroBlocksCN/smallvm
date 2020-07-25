@@ -1008,7 +1008,9 @@ method showMenu Page aMenu x y {
   activeMenu = aMenu
 }
 
-to inform msg { inform (global 'page') msg }
+to inform details title yesLabel {
+	return (inform (global 'page') details title yesLabel)
+}
 
 method closeUnclickedMenu Page aHandler {
   removeHint this
@@ -1091,6 +1093,7 @@ method inform Page details title yesLabel {
   setField hand 'lastTouchTime' nil
   while (not (isDone p)) {doOneCycle this}
   destroy (morph p)
+  return (answer p)
 }
 
 // events
