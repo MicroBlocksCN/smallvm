@@ -569,10 +569,10 @@ function GP_toggleFullscreen() {
   }
 }
 
-// Serial Ports (Chrome App and Chrome Browser Only)
+// Serial Ports (supported in Chrome OS and Chromium-based browsers only)
 // Only one serial port can be open at a time.
 
-function isChromeApp() {
+function hasChromeSerial() {
 	return ((typeof chrome != 'undefined') && (typeof chrome.serial != 'undefined'))
 }
 
@@ -667,7 +667,7 @@ function GP_getSerialPorts() {
 			GP_serialPortNames.push(toUTF8Array(ports[i].path));
 		}
 	}
-	if (isChromeApp()) chrome.serial.getDevices(listPorts);
+	if (hasChromeSerial()) chrome.serial.getDevices(listPorts);
 }
 
 function GP_openSerialPort(id, path, baud) {
@@ -695,7 +695,7 @@ function GP_openSerialPort(id, path, baud) {
 			GP_serialPortListenersAdded = true;
 		}
 	}
-	if (isChromeApp()) {
+	if (hasChromeSerial()) {
 		if (GP_serialPortID >= 0) return 1; // already open (not an error)
 		chrome.serial.connect(path, {persistent: true, bitrate: baud}, portOpened)
 	} else if (hasWebSerial()) {
@@ -706,7 +706,7 @@ function GP_openSerialPort(id, path, baud) {
 
 function GP_isOpenSerialPort() {
 	if (hasWebSerial()) return webSerialIsConnected();
-	if (isChromeApp()) return (GP_serialPortID >= 0);
+	if (hasChromeSerial()) return (GP_serialPortID >= 0);
 	return false;
 }
 
@@ -762,10 +762,15 @@ function GP_setSerialPortRTS(flag) {
 
 // File read/write
 
+function hasChromeFilesystem() {
+	return ((typeof chrome != 'undefined') && (typeof chrome.fileSystem != 'undefined'))
+}
+
 async function GP_ReadFile(ext) {
 	// Upload using Native File API.
 
 	function onFileSelected(entry) {
+		void chrome.runtime.lastError; // suppress error message
 		if (!entry) return; // no file selected
 		entry.file(function(file) {
 			var reader = new FileReader();
@@ -781,7 +786,7 @@ async function GP_ReadFile(ext) {
 		options.accepts = [{ description: 'MicroBlocks', extensions: [ext] }];
 	};
 
-	if (/(CrOS)/.test(navigator.userAgent)) { // Chrome OS fileSystem
+	if (hasChromeFilesystem()) {
 		options.type = 'openFile';
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
 	} else if (typeof window.chooseFileSystemEntries != 'undefined') { // Native Filesystem API
@@ -815,6 +820,7 @@ function download(filename, text) {
 
 async function GP_writeFile(data, fName, ext) {
 	function onFileSelected(entry) {
+		void chrome.runtime.lastError; // suppress error message
 		if (entry) entry.createWriter(function(writer) {
 			writer.write(new Blob([data], {type: 'text/plain'})); });
 	}
@@ -826,7 +832,7 @@ async function GP_writeFile(data, fName, ext) {
 		options.accepts = [{ description: 'MicroBlocks', extensions: [ext] }];
 	};
 
-	if (/(CrOS)/.test(navigator.userAgent)) { // Chrome OS fileSystem
+	if (hasChromeFilesystem()) {
 		options.type = 'saveFile';
 		options.suggestedName = fName + '.' + ext;
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
