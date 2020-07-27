@@ -468,16 +468,23 @@ method scriptChanged ScriptEditor {
 // saving script image
 
 method saveScriptsImage ScriptEditor {
-  fName = (uniqueNameNotIn (listFiles (gpFolder)) 'scriptsImage' '.png')
-  fName = (fileToWrite fName '.png')
-  if ('' == fName) { return }
-  if (not (endsWith fName '.png')) { fName = (join fName '.png') }
+  if ('Browser' != (platform)) {
+	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'allScripts' '.png')
+	fName = (fileToWrite fName '.png')
+	if ('' == fName) { return }
+	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
+  }
   gc
   bnds = (bounds morph)
   bm = (newBitmap (width bnds) (height bnds))
   draw2 morph bm (- (left bnds)) (- (top bnds))
   pixelsPerInch = (72 * (global 'scale'))
-  writeFile fName (encodePNG bm pixelsPerInch)
+  pngData = (encodePNG bm pixelsPerInch)
+  if ('Browser' == (platform)) {
+	browserWriteFile pngData 'allScripts' 'png'
+  } else {
+	writeFile fName pngData
+  }
 }
 
 // script copy/paste via clipboard

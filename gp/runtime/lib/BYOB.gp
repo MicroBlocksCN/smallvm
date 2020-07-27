@@ -291,16 +291,23 @@ method exportAsImage BlockDefinition {
   blockM = (ownerThatIsA morph 'Block')
   if (notNil blockM) { blockM = (owner blockM) } // get the prototype hat block
   if (or (isNil blockM) (not (isPrototypeHat (handler blockM)))) { return }
-  fName = (uniqueNameNotIn (listFiles (gpFolder)) 'scriptImage' '.png')
-  fName = (fileToWrite fName '.png')
-  if ('' == fName) { return }
-  if (not (endsWith fName '.png')) { fName = (join fName '.png') }
+  if ('Browser' != (platform)) {
+	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'scriptImage' '.png')
+	fName = (fileToWrite fName '.png')
+	if ('' == fName) { return }
+	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
+  }
   gc
   bnds = (fullBounds blockM)
   bm = (newBitmap (width bnds) (height bnds))
   draw2 blockM bm (- (left bnds)) (- (top bnds))
   pixelsPerInch = (72 * (global 'scale'))
-  writeFile fName (encodePNG bm pixelsPerInch)
+  pngData = (encodePNG bm pixelsPerInch)
+  if ('Browser' == (platform)) {
+	browserWriteFile pngData 'scriptImage' 'png'
+  } else {
+	writeFile fName pngData
+  }
 }
 
 method hideDefinition BlockDefinition {

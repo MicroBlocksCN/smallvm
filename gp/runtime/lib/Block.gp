@@ -891,17 +891,24 @@ method copyToClipboard Block {
 }
 
 method exportAsImage Block {
-  fName = (uniqueNameNotIn (listFiles (gpFolder)) 'scriptImage' '.png')
-  fName = (fileToWrite fName '.png')
-  if ('' == fName) { return }
-  if (not (endsWith fName '.png')) { fName = (join fName '.png') }
+  if ('Browser' != (platform)) {
+	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'scriptImage' '.png')
+	fName = (fileToWrite fName '.png')
+	if ('' == fName) { return }
+	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
+  }
   gc
   pixelsPerInch = 144
   scaledScript = (scaledScript this (pixelsPerInch / 72))
   bnds = (fullBounds (morph scaledScript))
   bm = (newBitmap (width bnds) (height bnds))
   draw2 (morph scaledScript) bm (- (left bnds)) (- (top bnds))
-  writeFile fName (encodePNG bm pixelsPerInch)
+  pngData = (encodePNG bm pixelsPerInch)
+  if ('Browser' == (platform)) {
+	browserWriteFile pngData 'scriptImage' 'png'
+  } else {
+	writeFile fName pngData
+  }
 }
 
 method scaledScript Block scriptScale {
