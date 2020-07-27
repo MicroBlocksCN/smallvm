@@ -51,7 +51,7 @@ OBJ fail(uint8 errCode) {
 static char printBuffer[PRINT_BUF_SIZE];
 static int printBufferByteCount = 0;
 
-int extraByteDelay = 1600; // default of 1600 usecs assumes serial throughput of 625 bytes/sec
+int extraByteDelay = 2000; // default of 2000 usecs assumes serial throughput of 500 bytes/sec
 
 static void printObj(OBJ obj) {
 	// Append a printed representation of the given object to printBuffer.
