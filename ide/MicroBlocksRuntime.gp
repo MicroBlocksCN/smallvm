@@ -1446,6 +1446,10 @@ method niceBoardName SmallRuntime board {
 		return 'Calliope mini'
 	} (beginsWith name 'CPLAYBOOT') {
 		return 'Circuit Playground Express'
+	} (beginsWith name 'CPLAYBTBOOT') {
+		return 'Circuit Playground Bluefruit'
+	} (beginsWith name 'CLUE') {
+		return 'Clue'
 	}
 	return name
 }
@@ -1455,7 +1459,7 @@ method collectBoardDrives SmallRuntime {
 	if ('Mac' == (platform)) {
 		for v (listDirectories '/Volumes') {
 			path = (join '/Volumes/' v '/')
-			boardName = (getBoardName this path)
+			boardName = (getBoardDriveName this path)
 			if (notNil boardName) { add result (list boardName path) }
 		}
 	} ('Linux' == (platform)) {
@@ -1463,27 +1467,29 @@ method collectBoardDrives SmallRuntime {
 			prefix = (join '/media/' dir)
 			for v (listDirectories prefix) {
 				path = (join prefix '/' v '/')
-				boardName = (getBoardName this path)
+				boardName = (getBoardDriveName this path)
 				if (notNil boardName) { add result (list boardName path) }
 			}
 		}
 	} ('Win' == (platform)) {
 		for letter (range 65 90) {
 			drive = (join (string letter) ':')
-			boardName = (getBoardName this drive)
+			boardName = (getBoardDriveName this drive)
 			if (notNil boardName) { add result (list boardName drive) }
 		}
 	}
 	return result
 }
 
-method getBoardName SmallRuntime path {
+method getBoardDriveName SmallRuntime path {
 	for fn (listFiles path) {
 		if ('MICROBIT.HTM' == fn) { return 'MICROBIT' }
 		if ('MINI.HTM' == fn) { return 'MINI' }
 		if ('INFO_UF2.TXT' == fn) {
 			contents = (readFile (join path fn))
 			if (notNil (nextMatchIn 'CPlay Express' contents)) { return 'CPLAYBOOT' }
+			if (notNil (nextMatchIn 'Circuit Playground nRF52840' contents)) { return 'CPLAYBTBOOT' }
+			if (notNil (nextMatchIn 'Adafruit Clue' contents)) { return 'CLUEBOOT' }
 		}
 	}
 	return nil
@@ -1523,28 +1529,84 @@ method copyVMToBoard SmallRuntime boardName boardPath downloadLatest {
 }
 
 method installVMInBrowser SmallRuntime {
-	menu = (menu 'Board type:' (action 'downloadEmbeddedVMFile' this) true)
-	addItem menu 'BBC micro:bit'
-	addItem menu 'Calliope mini'
-	addItem menu 'Circuit Playground Express'
-	popUpAtHand menu (global 'page')
+	if ('micro:bit' == boardType) {
+		downloadEmbeddedVMFile this 'BBC micro:bit'
+	} ('Calliope' == boardType) {
+		downloadEmbeddedVMFile this 'Calliope mini'
+	} ('CircuitPlayground' == boardType) {
+		downloadEmbeddedVMFile this 'Circuit Playground Express'
+	} ('CircuitPlayground Bluefruit' == boardType) {
+		downloadEmbeddedVMFile this 'Circuit Playground Bluefruit'
+	} ('Clue' == boardType) {
+		downloadEmbeddedVMFile this 'Clue'
+	} else {
+		menu = (menu 'Board type:' (action 'downloadEmbeddedVMFile' this) true)
+		addItem menu 'BBC micro:bit'
+		addItem menu 'Calliope mini'
+		addItem menu 'Circuit Playground Express'
+		addItem menu 'Circuit Playground Bluefruit'
+//		addItem menu 'Clue'
+		popUpAtHand menu (global 'page')
+	}
 }
 
 method downloadEmbeddedVMFile SmallRuntime boardName {
 	if ('BBC micro:bit' == boardName) {
 		vmFileName = 'vm.ino.BBCmicrobit.hex'
+		driveName = 'MICROBIT'
 	} ('Calliope mini' == boardName) {
 		vmFileName = 'vm.ino.Calliope.hex'
+		driveName = 'MINI'
 	} ('Circuit Playground Express' == boardName) {
 		vmFileName = 'vm.circuitplay.uf2'
+		driveName = 'CPLAYBOOT'
+	} ('Circuit Playground Bluefruit' == boardName) {
+		vmFileName = 'vm.cplay52.uf2'
+		driveName = 'CPLAYBTBOOT'
+	} ('Clue' == boardName) {
+		vmFileName = 'vm.clue.uf2'
+		driveName = 'CLUEBOOT'
 	}
+
+	prefix = ''
+	if (isNil boardType) {
+		prefix = (join
+			(localized 'Connect the board to your computer.')
+			(newline) (newline))
+	}
+	if (endsWith vmFileName '.uf2') {
+		// Extra instruction for Adafruit boards
+		prefix = (join
+			prefix
+			(localized 'Press the reset button on the board twice before proceeding. The NeoPixels should turn green.')
+			(newline) (newline))
+	}
+	msg = (join
+		prefix
+		(localized 'Click OK, then select')
+		' ' driveName ' '
+		(localized 'in the file dialog.'))
+	response = (inform msg (localized 'Firmware Install'))
+	if (isNil response) { return }
+
 	vmData = (readFile (join 'precompiled/' vmFileName) true)
-	writeFile vmFileName vmData
+	if (isNil vmData) { return } // could not read file
+
+	closePort this
+	updateIndicator (findMicroBlocksEditor)
+	browserWriteFile vmData vmFileName
+
+	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
+	if (endsWith vmFileName '.uf2') {
+		prefix = (localized 'When the NeoPixels turn off')
+	} else {
+		prefix = (localized 'When the LED stops flashing')
+	}
 	inform (join
-		'To install MicroBlocks, drag "' vmFileName '" from your Downloads' (newline)
-		'folder onto the USB drive for your board. It may take 15-30 seconds' (newline)
-		'to copy the file, then the USB drive for your board will dismount.' (newline)
-		'When it remounts, MicroBlocks should reconnect to the board.')
+		prefix ', '
+		(localized 'reconnect to the board by clicking the "Connect" button (USB icon).')
+		' '
+		(localized 'Chromebook users may need to unplug and replug the USB cable.'))
 }
 
 method adaFruitMessage SmallRuntime {
