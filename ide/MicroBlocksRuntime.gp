@@ -350,6 +350,7 @@ method webSerialConnect SmallRuntime action {
 	} else {
 		stopAndClearChunks this
 		openSerialPort 'webserial' 115200
+		disconnected = false
 		connectionStartTime = (msecsSinceStart)
 		portName = 'webserial'
 		port = 1
@@ -377,12 +378,12 @@ method selectPort SmallRuntime {
 			if (or (isNil port) (portName != s)) { addItem menu s }
 		}
 	}
-	if (devMode) {
+	if (and (devMode) ('Browser' != (platform))) {
 		addItem menu 'other...'
 	}
-	if (or (notNil port) (devMode)) {
+	if (notNil port) {
 		addLine menu
-		if (and (notNil port) (notNil portName)) {
+		if (notNil portName) {
 			addItem menu (join 'disconnect (' portName ')')
 		} else {
 			addItem menu 'disconnect'
@@ -437,8 +438,8 @@ method setPort SmallRuntime newPortName {
 			stopAndSyncScripts this
 			sendStartAll this
 		}
-		closePort this
 		disconnected = true
+		closePort this
 		updateIndicator (findMicroBlocksEditor)
 		return
 	}
@@ -848,7 +849,7 @@ method verifyCRCs SmallRuntime {
 		}
 	}
 
-	// 	process CRCs
+	// process CRCs
 	for chunkID (keys crcDict) {
 		sourceItem = (at ideChunks chunkID)
 		if (and (notNil sourceItem) ((at crcDict chunkID) != (crcForChunk this sourceItem))) {
@@ -945,7 +946,7 @@ method getAllVarNames SmallRuntime {
 
 method serialDelayMenu SmallRuntime {
 	menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
-	for i 20 { addItem menu i }
+	for i 25 { addItem menu i }
 	popUpAtHand menu (global 'page')
 }
 
@@ -1592,10 +1593,12 @@ method downloadEmbeddedVMFile SmallRuntime boardName {
 	vmData = (readFile (join 'precompiled/' vmFileName) true)
 	if (isNil vmData) { return } // could not read file
 
+	// disconnect before updating VM; avoids micro:bit autoconnect issue on Chromebooks
+	disconnected = true
 	closePort this
 	updateIndicator (findMicroBlocksEditor)
-	browserWriteFile vmData vmFileName
 
+	browserWriteFile vmData vmFileName
 	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
 	if (endsWith vmFileName '.uf2') {
 		prefix = (localized 'When the NeoPixels turn off')
