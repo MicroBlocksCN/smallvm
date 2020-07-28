@@ -944,13 +944,13 @@ method getAllVarNames SmallRuntime {
 // Serial Delay
 
 method serialDelayMenu SmallRuntime {
-  menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
-  for i 20 { addItem menu i }
-  popUpAtHand menu (global 'page')
+	menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
+	for i 20 { addItem menu i }
+	popUpAtHand menu (global 'page')
 }
 
 method setSerialDelay SmallRuntime newDelay {
-  sendMsg this 'extendedMsg' 1 (list newDelay)
+	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
 
 // Message handling
