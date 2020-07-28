@@ -184,10 +184,17 @@ method showAllLibraryDefinitions MicroBlocksScripter libName {
 method exportLibrary MicroBlocksScripter libName {
   lib = (libraryNamed mbProject libName)
   if (isNil lib) { return }
-  fName = (fileToWrite (moduleName lib) (array '.ubl'))
-  if ('' == fName) { return false }
-  if (not (endsWith fName '.ubl' )) { fName = (join fName '.ubl') }
-  writeFile fName (codeString lib mbProject)
+  if ('Browser' != (platform)) {
+	fName = (fileToWrite (moduleName lib) (array '.ubl'))
+	if ('' == fName) { return false }
+	if (not (endsWith fName '.ubl' )) { fName = (join fName '.ubl') }
+  }
+
+  if ('Browser' == (platform)) {
+	browserWriteFile (codeString lib mbProject) libName 'ubl'
+  } else {
+	writeFile fName (codeString lib mbProject)
+  }
 }
 
 // layout
@@ -1103,6 +1110,7 @@ method justGrabbedPart MicroBlocksScripter part {
 	print 'scripter part grabbed'
 	print part
 }
+
 method setLibsDraggable MicroBlocksScripter flag {
   for libItem (parts (morph (contents libFrame))) {
 	if flag {
@@ -1114,10 +1122,17 @@ method setLibsDraggable MicroBlocksScripter flag {
 }
 
 method exportAsLibrary MicroBlocksScripter defaultFileName {
-  fileName = (fileToWrite (withoutExtension defaultFileName) '.ubl')
-  if (isEmpty fileName) { return }
-  if (not (endsWith fileName '.ubl' )) { fileName = (join fileName '.ubl') }
-
-  libName = (withoutExtension (filePart fileName))
-  writeFile fileName (codeString (main mbProject) mbProject libName)
+  if ('Browser' != (platform)) {
+	fileName = (fileToWrite (withoutExtension defaultFileName) '.ubl')
+	if (isEmpty fileName) { return }
+	if (not (endsWith fileName '.ubl' )) { fileName = (join fileName '.ubl') }
+  }
+  libData = (codeString (main mbProject) mbProject libName)
+  if ('Browser' == (platform)) {
+	libName = (prompt (global 'page') (localized 'Library name?') (localized 'my library'))
+	browserWriteFile libData libName 'ubl'
+  } else {
+	libName = (withoutExtension (filePart fileName))
+	writeFile fileName (codeString (main mbProject) mbProject libName)
+  }
 }
