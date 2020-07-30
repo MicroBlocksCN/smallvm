@@ -591,7 +591,8 @@ method tryToConnect SmallRuntime {
 			sendMsg this 'getVersionMsg'
 			if (and (devMode) (not (hasUserCode (project (findProjectEditor))))) {
 				// Project is empty. Try to decompile what's on the board
-				requestCodeFromBoard this
+				testDecompiler = false
+				if testDecompiler { requestCodeFromBoard this }
 			}
 			clearBoardIfConnected this false
 			stopAndSyncScripts this
