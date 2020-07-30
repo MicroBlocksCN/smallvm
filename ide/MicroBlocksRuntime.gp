@@ -47,6 +47,11 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 
 method chunkTypeFor SmallRuntime aBlockOrFunction {
 	if (isClass aBlockOrFunction 'Function') { return 3 }
+	if (and
+		(isClass aBlockOrFunction 'Block')
+		(isPrototypeHat aBlockOrFunction)) {
+			return 3
+	}
 
 	expr = (expression aBlockOrFunction)
 	op = (primName expr)
@@ -166,7 +171,11 @@ method showCompiledBytes SmallRuntime aBlock {
 // Decompiler tests
 
 method showCodeInHand SmallRuntime gpCode {
-	block = (toBlock gpCode)
+	if (isClass gpCode 'Function') {
+		block = (scriptForFunction gpCode)
+	} else {
+		block = (toBlock gpCode)
+	}
 	grab (hand (global 'page')) block
 	fixBlockColor block
 }

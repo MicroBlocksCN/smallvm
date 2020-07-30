@@ -9,6 +9,8 @@
 
 // To do:
 // [x] save comments (implmented but not yet enabled)
+// [x] remove the final "return false" of reporter functions
+// [x] remove recvBroadcast from functions
 // [ ] make test method that compiles and decompiles all code in a project and checks result
 // [ ] make test method that clears current scripts then fetched and decompiles code from board
 // [ ] make compiler store local names
@@ -19,7 +21,7 @@ to decompileBytecodes bytecodes chunkType {
 	return (decompile (new 'MicroBlocksDecompiler') bytecodes chunkType)
 }
 
-defineClass MicroBlocksDecompiler reporters opcodes controlStructures code stack argNames
+defineClass MicroBlocksDecompiler reporters opcodes controlStructures endOfLiterals code stack msgName argNames
 
 method decompile MicroBlocksDecompiler bytecodes chunkType {
 	// Approach:
@@ -40,9 +42,10 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 		add opcodes (array addr op arg)
 	}
 	lastInstruction = (findLastInstruction this)
+	if (0 == endOfLiterals) { endOfLiterals = ((count opcodes) + 1) }
 	getOpNames this lastInstruction
 	decodeImmediates this lastInstruction
-	opcodes = (copyFromTo opcodes 1 lastInstruction)
+	opcodes = (bodyOpcodes this lastInstruction chunkType)
 	controlStructures = (newArray (count opcodes))
 	findArgs this
 	findLoops this
@@ -67,6 +70,34 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	fixBooleanAndColorArgs this gpCode
 	if debug { print (prettyPrint this gpCode) }
 	return gpCode
+}
+
+method bodyOpcodes MicroBlocksDecompiler lastInstruction chunkType {
+	// Return the range of opcodes for the body of the script.
+	// Omit the initial initLocals and the final halt instructions for normal scripts
+	// and the prefix and postfix of functions.
+
+	msgName = '' // default message name
+	start = 1
+	end = lastInstruction
+	if ('initLocals' == (cmdOp this (at opcodes 1))) { start += 1 }
+	if (3 == chunkType) {
+		if ('recvBroadcast' == (cmdOp this (at opcodes 3))) { // when received or user-defined block
+			msgName = (cmdArg this (at opcodes 2))
+			start = 4
+		}
+		// remove final 'return false'
+		if (and
+			('returnResult' == (cmdOp this (at opcodes end)))
+			(cmdIs this (at opcodes (end - 1)) 'pushImmediate' false)) {
+				end += -2
+		}
+	} else {
+		if ('halt' == (cmdOp this (at opcodes end))) {
+			end += -1
+		}
+	}
+	return (copyFromTo opcodes start end)
 }
 
 // Command tuple operations
@@ -185,6 +216,8 @@ method prettyPrint MicroBlocksDecompiler expression {
 		} else {
 			return (join '(' (prettyPrint pp expression) ')')
 		}
+	} (isClass expression 'Function') {
+		return (prettyPrintFunction pp expression)
 	} else {
 		return (prettyPrintList pp expression)
 	}
@@ -202,7 +235,8 @@ method findArgs MicroBlocksDecompiler {
 		}
 	}
 	argNames = (list)
-	for i (range 0 maxArgIndex) {
+	i = 0
+	while (i <= maxArgIndex) {
 		add argNames (join 'arg' (i + 1))
 	}
 }
@@ -212,6 +246,7 @@ method findLastInstruction MicroBlocksDecompiler {
 	// may be followed by literal values such as strings. Replace the offsets
 	// in 'pushLiteral' instructions with the referenced literal string.
 
+	endOfLiterals = 0
 	pushLiteralOpcode = 4
 	result = (count opcodes)
 	for i (count opcodes) {
@@ -222,7 +257,9 @@ method findLastInstruction MicroBlocksDecompiler {
 			if (literalIndex <= result) {
 				result = (literalIndex - 1)
 			}
-			atPut instr 3 (readLiteral this literalIndex) // insert the literal into instruction
+			literalString = (readLiteral this literalIndex)
+			atPut instr 3 literalString // insert the literal into instruction
+			litWords = (floor (((byteCount literalString) + 3) / 4))
 		}
 	}
 	return result
@@ -239,6 +276,8 @@ method readLiteral MicroBlocksDecompiler literalIndex {
 	}
 	highBytes = (at header 3)
 	wordCount = ((highBytes << 4) | (lowByte >> 4))
+	endOfLit = (+ literalIndex wordCount 1)
+	if (endOfLit > endOfLiterals) { endOfLiterals = endOfLit }
 	bytes = (list)
 	for i (range (literalIndex + 1) (literalIndex + wordCount)) {
 		instr = (at opcodes i)
@@ -325,14 +364,22 @@ method addHatBlock MicroBlocksDecompiler chunkType gpCode {
 	// Prefix given code with a hat block based on chunkType and return the result.
 
 	result = gpCode
-	if (4 == chunkType) {
+	// chunk types 1 and 2 are command and reporter blocks without a hat
+	if (3 == chunkType) {
+		// Note: result is Function object
+		project = (project (scripter (smallRuntime)))
+		module = (main project)
+		funcName = msgName
+		if (isNil funcName) { funcName = 'anonymous' }
+		result = (newFunction funcName argNames gpCode module)
+	} (4 == chunkType) {
 		result = (newCommand 'whenStarted')
 		setField result 'nextBlock' gpCode
+	} (5 == chunkType) {
+		// whenCondition hat; already added
 	} (6 == chunkType) {
-		if ('recvBroadcast' == (primName gpCode)) {
-			result = (newCommand 'whenBroadcastReceived' (first (argList gpCode)))
-			setField result 'nextBlock' (nextBlock gpCode)
-		}
+		result = (newCommand 'whenBroadcastReceived' msgName)
+		setField result 'nextBlock' gpCode
 	} (7 == chunkType) {
 		result = (newCommand 'whenButtonPressed' 'A')
 		setField result 'nextBlock' gpCode
@@ -349,6 +396,10 @@ method addHatBlock MicroBlocksDecompiler chunkType gpCode {
 method fixBooleanAndColorArgs MicroBlocksDecompiler gpCode {
 	for block (allBlocks gpCode) {
 		spec = (specForOp (authoringSpecs) (primName block))
+		if (isNil spec) {
+			// make up a default spec
+			spec = (blockSpecFromStrings (primName block) '' '' '' (array))
+		}
 		args = (argList block)
 		for i (min (slotCount spec) (count args)) {
 			slotType = (first (slotInfoForIndex spec i))
@@ -357,7 +408,6 @@ method fixBooleanAndColorArgs MicroBlocksDecompiler gpCode {
 				c = (color ((val >> 16) & 255)  ((val >> 8) & 255) (val & 255))
 				setArg block i c
 			} (and ('bool' != slotType) (isClass val 'Boolean') ) {
-				print 'boolean in' (primName block)
 				setArg block i (newReporter 'booleanConstant' val)
 			}
 			info = (slotInfoForIndex spec i)
@@ -707,8 +757,6 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('declareLocal' == op) {
 		add code (newCommand 'local' (localVarName this cmdArg) (removeLast stack))
 
-	} ('initLocals' == op) {
-		// skip
 	} ('pop' == op) {
 		add code (buildCmdOrReporter this 'ignoreArgs' cmdArg false)
 	} ('returnResult' == op) {
@@ -735,7 +783,7 @@ method decodeCmd MicroBlocksDecompiler i {
 		}
 	} ('for' == op) {
 		body = (codeForSequence this (at cmd 3) (at cmd 4))
-		indexVarName = (join 'L' (at cmd 5)) // xxx look up actual local name
+		indexVarName = (localVarName this (at cmd 5))
 		add code (newCommand 'for' indexVarName (removeLast stack) body)
 	} ('forever' == op) {
 		body = (codeForSequence this (at cmd 3) (at cmd 4))
