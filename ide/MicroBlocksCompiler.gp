@@ -647,7 +647,8 @@ method instructionsForWaitUntil SmallCompiler args {
 	result = (list)
 	conditionTest = (instructionsForExpression this (at args 1))
 	addAll result conditionTest
-	add result (array 'waitUntil' (0 - (+ (count conditionTest) 1)))
+	add result (array 'jmpFalse' (0 - (+ (count conditionTest) 1)))
+//	add result (array 'waitUntil' (0 - (+ (count conditionTest) 1))) // xxx enable later
 	return result
 }
 
@@ -718,7 +719,7 @@ method instructionsForExpression SmallCompiler expr {
 	}
 }
 
-method instructionsForAnd SmallCompiler args {
+method instructionsForAndNEW SmallCompiler args {
 	tests = (list)
 	totalInstrCount = 0
 	for expr args {
@@ -738,7 +739,7 @@ method instructionsForAnd SmallCompiler args {
 	return result
 }
 
-method instructionsForOr SmallCompiler args {
+method instructionsForOrNEW SmallCompiler args {
 	tests = (list)
 	totalInstrCount = 0
 	for expr args {
@@ -755,6 +756,44 @@ method instructionsForOr SmallCompiler args {
 			add result (array 'jmpOr' (totalInstrCount - ((count result) + 1)))
 		}
 	}
+	return result
+}
+
+method instructionsForAnd SmallCompiler args {
+	tests = (list)
+	totalInstrCount = 3 // final three instructions
+	for expr args {
+		instrList = (instructionsForExpression this expr)
+		add tests instrList
+		totalInstrCount += ((count instrList) + 1)
+	}
+	result = (list)
+	for t tests {
+		addAll result t
+		add result (array 'jmpFalse' (totalInstrCount - ((count result) + 2)))
+	}
+	add result (array 'pushImmediate' trueObj) // all conditions were true: push result
+	add result (array 'jmp' 1) // skip over false case
+	add result (array 'pushImmediate' falseObj) // some condition was false: push result
+	return result
+}
+
+method instructionsForOr SmallCompiler args {
+	tests = (list)
+	totalInstrCount = 3 // final three instructions
+	for expr args {
+		instrList = (instructionsForExpression this expr)
+		add tests instrList
+		totalInstrCount += ((count instrList) + 1)
+	}
+	result = (list)
+	for t tests {
+		addAll result t
+		add result (array 'jmpTrue' (totalInstrCount - ((count result) + 2)))
+	}
+	add result (array 'pushImmediate' falseObj) // all conditions were false: push result
+	add result (array 'jmp' 1) // skip over true case
+	add result (array 'pushImmediate' trueObj) // some condition was true: push result
 	return result
 }
 
