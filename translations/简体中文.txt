@@ -26,6 +26,12 @@ button A
 button B
 按键 B
 
+timer
+计时器
+
+reset timer
+计时器归零
+
 microseconds
 微秒
 
@@ -244,7 +250,7 @@ new list length _
 新建长度为 _ 的列表 
 
 new byte array length _
---MISSING--
+新建长度为 _ 的字节数组
 
 free memory
 释放内存
@@ -349,25 +355,25 @@ radio last number
 radio last string
 最后广播的字符串
 
-radio last message type
+_radio last message type
 最后广播的消息类型
 
 radio set group _
 设置广播分组 _
 
-radio set channel (0-83) _
+_radio set channel (0-83) _
 设置广播频道 (0-83) _
 
 radio set power (0-7) _
 设置广播信号强度 (0-7) _ 
 
-radio last signal strength
+_radio last signal strength
 最后广播的信号强度
 
-radio receive packet _
+_radio receive packet _
 广播接收包 _
 
-radio send packet _
+_radio send packet _
 广播发送包 _
 
 disable radio
@@ -430,6 +436,15 @@ attach _ LED NeoPixel strip to pin _
 
 has white _
 具有白光 _
+
+_NeoPixel_rotate_left _
+新光像素向左轮转 _
+
+_NeoPixel_update
+刷新新光像素
+
+_NeoPixel_ensureInitialized
+确定新光像素已经初始化
 
 PIR
 人体红外传感器
@@ -728,7 +743,7 @@ draw circle on TFT at x _ y _ radius _ color _
 在TFT上绘制圆形, 位置 x _ y _ 半径 _ 颜色 _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
-在TFT上绘制三角形, 位置 x _ y_ , x _ y, x _ y _ 颜色 _ 
+在TFT上绘制三角形, 位置 x _ y _ , x _ y _ , x _ y _ 颜色 _ 
 
 filled _
 填充 _
@@ -816,7 +831,7 @@ append line _ to file _
 将行 _ 添加至文件 _
 
 append bytes _ to file _
-füge Bytes _ zu Datei _ hinzu
+将字节 _ 添加至文件 _
 
 end of file _
 文件 _ 结束 
