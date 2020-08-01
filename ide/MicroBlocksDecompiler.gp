@@ -43,10 +43,10 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	}
 	lastInstruction = (findLastInstruction this)
 	if (0 == endOfLiterals) { endOfLiterals = ((count opcodes) + 1) }
+	// todo: extract function info strings here
 	getOpNames this lastInstruction
 	decodeImmediates this lastInstruction
-//	opcodes = (bodyOpcodes this lastInstruction chunkType) // xxx this cause a crash!
-	opcodes = (copyFromTo opcodes 1 lastInstruction)
+	opcodes = (bodyOpcodes this lastInstruction chunkType)
 	controlStructures = (newArray (count opcodes))
 	findArgs this
 	findLoops this
@@ -98,7 +98,15 @@ method bodyOpcodes MicroBlocksDecompiler lastInstruction chunkType {
 			end += -1
 		}
 	}
-	return (copyFromTo opcodes start end)
+	result = (copyFromTo opcodes start end)
+
+	// renumber the opcodes
+	i = 1
+	for cmd result {
+		atPut cmd 1 i
+		i += 1
+	}
+	return result
 }
 
 // Command tuple operations
@@ -239,6 +247,7 @@ method findArgs MicroBlocksDecompiler {
 	i = 0
 	while (i <= maxArgIndex) {
 		add argNames (join 'arg' (i + 1))
+		i += 1
 	}
 }
 
