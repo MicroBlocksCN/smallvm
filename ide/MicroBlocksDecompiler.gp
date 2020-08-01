@@ -45,7 +45,8 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	if (0 == endOfLiterals) { endOfLiterals = ((count opcodes) + 1) }
 	getOpNames this lastInstruction
 	decodeImmediates this lastInstruction
-	opcodes = (bodyOpcodes this lastInstruction chunkType)
+//	opcodes = (bodyOpcodes this lastInstruction chunkType) // xxx this cause a crash!
+	opcodes = (copyFromTo opcodes 1 lastInstruction)
 	controlStructures = (newArray (count opcodes))
 	findArgs this
 	findLoops this
@@ -65,7 +66,7 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	gpCode = (addHatBlock this chunkType (codeForSequence this 1 (count opcodes)))
 	if (isNil gpCode) {
 		inform (global 'page') 'No decompiled code'
-		return
+		return nil
 	}
 	fixBooleanAndColorArgs this gpCode
 	if debug { print (prettyPrint this gpCode) }
@@ -757,6 +758,8 @@ method decodeCmd MicroBlocksDecompiler i {
 	} ('declareLocal' == op) {
 		add code (newCommand 'local' (localVarName this cmdArg) (removeLast stack))
 
+	} ('initLocals' == op) {
+		// skip
 	} ('pop' == op) {
 		add code (buildCmdOrReporter this 'ignoreArgs' cmdArg false)
 	} ('returnResult' == op) {

@@ -173,8 +173,11 @@ method showCompiledBytes SmallRuntime aBlock {
 method showCodeInHand SmallRuntime gpCode {
 	if (isClass gpCode 'Function') {
 		block = (scriptForFunction gpCode)
-	} else {
+	} (or (isClass gpCode 'Command') (isClass gpCode 'Reporter')) {
 		block = (toBlock gpCode)
+	} else {
+		// xxx decompiler didn't return something that can be represented as blocks
+		return
 	}
 	grab (hand (global 'page')) block
 	fixBlockColor block
