@@ -13,7 +13,7 @@ say _
 aytmoq _
 
 graph _
---MISSING--
+grafik _
 
 Input
 Kiritish
@@ -43,10 +43,10 @@ read analog pin _
 analog pinni o'qish _
 
 set digital pin _ to _
-raqamli pinni o'rnatish _ ga _
+raqamli pinni _ ga o’rnatish
 
 set pin _ to _
-pin o'rnatish _ ga _
+pinni _ ga  o'rnatish
 
 analog pins
 pin analoglari
@@ -70,8 +70,7 @@ repeat _ _
 takrorlash _ _
 
 wait _ millisecs
-kutish _ millisekundlar
-
+_ millisekundlar kutish
 if _ _
 agar _ _
 
@@ -85,10 +84,10 @@ when _
 qachon _
 
 wait until _
-kutish _ gacha
+_ gacha kutish
 
 wait _ microsecs
-kutish _ microsekundlar
+_ microsekundlar kutish
 
 return _
 qaytish _
@@ -106,22 +105,22 @@ for _ in _ _
 uchun _ da _ _
 
 repeat until _ _
-takrorlash _ _ gacha
+_ _ gacha takrorlash
 
 stop this task
 bu vazifani to'xtatish
 
 stop other tasks
---MISSING--
+boshqa vazifalarni to'xtatish
 
 stop all
-hammasini to'htatish
+hammasini to'xtatish
 
 last message
---MISSING--
+oxirgi xabar
 
 Operators
---MISSING--
+Operatorlar
 
 _ mod _
 _ rejim _
@@ -148,19 +147,19 @@ or _
 yoki _
 
 _ is a _
---MISSING--
+_ - bu _
 
 boolean
---MISSING--
+mantiqiy
 
 number
---MISSING--
+raqam
 
 string
---MISSING--
+qator
 
 list
---MISSING--
+ro'yxat
 
 hex _
 hex _
@@ -179,10 +178,10 @@ O'zgaruvchini o'chirish
 # New variable dialog
 
 New variable name?
---MISSING--
+Yangi o'zgaruvchi nom?
 
 set _ to _
-o'rnatish _ ga _
+_ ga _ o'rnatish
 
 change _ by _
 _ tomonidan _ o'zgartirish
@@ -191,10 +190,10 @@ local _ _
 mahalliy _ _
 
 Data
---MISSING--
+Ma'lumotlar
 
 list
---MISSING--
+ro'yxat
 
 length of _
 uzunligi _
@@ -203,83 +202,80 @@ item _ of _
 element _ ning _
 
 replace item _ of list _ with _
---MISSING--
+_ ro'yxatidagi _ bandini _ bilan almashtiring
 
 delete item _ of list _
---MISSING--
+_ ro'yxatidan _ elementini o'chirish
 
 add _ to list _
---MISSING--
+_ ro'yxatiga _ qo'shish
 
 join _ _
---MISSING--
+bog'lamoq
 
 copy _ from _
---MISSING--
+_ dan _ nusxalash
 
 to _
---MISSING--
+uchun _
 
 find _ in _
---MISSING--
+_ ichidan topish
 
 starting at _
---MISSING--
+_ dan boshlab
 
 join items of list _
---MISSING--
+_ ro'yxat elementlariga qo'shilish
 
 separator _
---MISSING--
+ajratuvchi _
 
 unicode _ of _
---MISSING--
+_unikodi
 
 string from unicode _
---MISSING--
+unikoddan olingan satr _
 
 new list length _
 yangi ro'yxatning uzunligi _
 
 new byte array length _
---MISSING--
+yangi bayt qator uzunligi _
 
 free memory
---MISSING--
-
-fill list _ with _
-ro'yxatni to'ldirish _ bilan _
+bo'sh xotira
 
 My Blocks
---MISSING--
+Mening Bloklarim
 
 # Buttons on top of "My Blocks" category
 
 Add a command block
---MISSING--
+Buyruq blokini qo'shing
 
 Add a reporter block
---MISSING--
+Uzatuvchi blokni qo'shish
 
 # Make a block dialog
 
 Enter function name:
---MISSING--
+Funksiya nomini kiriting:
 
 Comm
---MISSING--
+Aloqa
 
 i2c get device _ register _
-i2c qurilmani olish _ ro'yxatga olish _
+i2c qurilmani _ ro'yxatiga olish
 
 i2c set device _ register _ to _
-i2c sozlamalari qurilma _ ro'yxatga olish _ ga _
+i2c qurilmasini _ ga _ ro'yxatiga olish
 
 i2c device _ read list _
---MISSING--
+i2c qurilmasi _ o'qish ro'yxati _
 
 i2c device _ write list _
---MISSING--
+i2c qurilmasi _ yozish ro'yxati _
 
 spi send _
 spi yuboring _
@@ -299,13 +295,10 @@ e'tibor bermaslik
 # Primitives (mostly hidden from end users)
 
 draw shape _ at x _ y _
-ning shaklini chizish _ x _ y _
+_shaklini _ x _ y _ ga chizish
 
 shape for letter _
 xatning shakli _
-
-set NeoPixel pin _ is RGBW _
-o'rnatilgan NeoPixel pin _ RGBW _
 
 send NeoPixel rgb _
 NeoPixel rgb ni yuborish
@@ -317,10 +310,10 @@ play tone pin _ frequency _
 ohang tezligini _ ijro etish _
 
 has WiFi support
-Wi-Fi qo'llab-quvvatlashi bor
+Wi-Fi bor
 
 start WiFi _ password _
-Wi-Fi-ni boshlash _ parol _
+Wi-Fi ni _ parol bilan ishga tushirish
 
 stop WiFi
 Wi-Fi-ni to'xtatish
@@ -332,13 +325,13 @@ my IP address
 mening IP manzilim
 
 radio send number _
-radiosi raqamini yuborish _
+radio raqamini yuborish _
 
 radio send string _
-radio yuborish string _
+radio yuborish satr _
 
 radio send pair _ = _
-radio yuborish jufti _ = _
+radio juftligini _ = _ yuborish
 
 radio message received?
 radio xabar olinganmi?
@@ -356,7 +349,7 @@ radio set group _
 radio seti guruhi _
 
 radio set channel (0-83) _
-radiokanali kanal (0-83) _
+radio kanali kanal (0-83) _
 
 radio set power (0-7) _
 radio rostlagich kuchi (0-7) _
@@ -376,7 +369,7 @@ radioni o'chirib qo'yish
 # Libraries
 
 Basic Sensors
---MISSING--
+Asosiy sensorlar
 
 tilt x
 burilish x
@@ -388,7 +381,7 @@ tilt z
 burilish z
 
 acceleration
---MISSING--
+tezlashtirish
 
 light level
 yorug'lik darajasi
@@ -397,7 +390,7 @@ temperature (°C)
 harorat (°C)
 
 NeoPixel
---MISSING--
+NeoPixel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 o'rnatish NeoPixels _ _ _ _ _ _ _ _ _ _
@@ -406,7 +399,8 @@ clear NeoPixels
 NeoPixelsni tozalash
 
 set NeoPixel _ color _
-o'rnatish NeoPixel _ rang _
+NeoPixel _ rangga _ belgilash
+
 
 set all NeoPixels color _
 barcha NeoPixels ranglarini sozlash _
@@ -418,34 +412,34 @@ color r _ g _ b _ (0-31)
 rang r _ g _ b _ (0-31)
 
 random color
---MISSING--
+tasodifiy rang
 
 attach _ LED NeoPixel strip to pin _
---MISSING--
+_ LED NeoPixel chizig'ini piniga bog'lash _
 
 has white _
---MISSING--
+oq _
 
 PIR
---MISSING--
+PIR
 
 PIR at pin _ detected movement
---MISSING--
+PIR da aniqlangan harakat
 
 ED1 Stepper Motor
---MISSING--
+ED1 Stepper Motori
 
 move motor _ _ steps _
---MISSING--
+harakatlanuvchi motor _ _ qadamlar _
 
 move motor 1 _ and motor 2 _ _ steps
 motor 1 _ va motor 2 _ _ qadamlarini harakatlantiring
 
 move motor _ angle _ °
---MISSING--
+dvigatelni _ gradusga _ ° harakatga keltirish
 
 move motor _ _ complete turns
---MISSING--
+motorli mdvigatel _ to'liq buriladi
 
 stop steppers
 qadamlarni to'xtating
@@ -457,7 +451,7 @@ counter-clockwise
 soat yo'nalishi bo'yicha-hisoblash
 
 ED1 Buttons
---MISSING--
+ED1 tugmachalari
 
 button OK
 OK tugmasi
@@ -477,74 +471,53 @@ chapga tugmasi
 button right
 o'ngga tugmasi
 
-capacitive OK
-sig'imi OK
-
-capacitive X
-sig'imi X
-
-capacitive up
-sig'imi tepaga
-
-capacitive down
-sig'imi pastga
-
-capacitive left
-sig'imi chapga
-
-capacitive right
-sig'imi o'ngga
-
 capacitive sensor _
-sig'imi sesor _
+sig'imi sensor _
 
 set capacitive threshold to _
 threshold sig'imini o'rnatish _
 
-set use capacitive to _
---MISSING--
-
 Hummingbird LED _ _ %
---MISSING--
+Hummingbird LED _ _%
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
---MISSING--
+Hummingbird Tri-LED _ R _ % G _ % B _ %
 
 Hummingbird Position Servo _ _ °
---MISSING--
+Hummingbird joylashuvi Servo _ _ °
 
 Hummingbird Rotation Servo _ _ %
---MISSING--
+Hummingbird aylantirish servo _ _%
 
 Hummingbird _ _
---MISSING--
+Hummingbird _ _
 
 Hummingbird Battery (mV)
---MISSING--
+Hummingbird batareyasi (mV)
 
 Light
---MISSING--
+Yorug'lik
 
 Distance (cm)
---MISSING--
+Masofa (sm)
 
 Dial
---MISSING--
+Nomer termoq
 
 Sound
---MISSING--
+Ovoz
 
 Other
---MISSING--
+Boshqalar
 
 distance (cm) trigger _ echo _
---MISSING--
+masofa (sm) trigger _ echo _
 
 IR Remote
---MISSING--
+IR masofadan boshqarish pulti
 
 receive IR code
-qurilmadan IR kodni
+qurilmadan IR kodni qabul qilish
 
 receive IR code from device _
 qurilmadan IR kodni olish _
@@ -553,40 +526,40 @@ test IR
 IR ni sinash
 
 attach IR receiver to pin _
---MISSING--
+IR qabul qilgichini _ pinga ulang-
 
 Radio
---MISSING--
+Radio
 
 Scrolling
---MISSING--
+Aylantirish
 
 scroll text _
---MISSING--
+matnni aylantirish _
 
 scroll number _
---MISSING--
+_ raqamni aylantirish
 
 pausing _ ms
---MISSING--
+ps pauza qilmoq
 
 stop scrolling
 o'tishni to'xtatish
 
 Servo
---MISSING--
+Servo
 
 set servo _ to _ degrees (-90 to 90)
---MISSING--
+servo -ni _ darajasiga o'rnatish (-90 dan 90 gacha)
 
 set servo _ to speed _ (-100 to 100)
---MISSING--
+servo _ tezligini _ ga sozlang (-100 dan 100 gacha)
 
 stop servo _
---MISSING--
+servoni to'xtatish _
 
 LED Display
---MISSING--
+LED displey
 
 display _
 namoyish qilish (displey) _
@@ -601,286 +574,325 @@ unplot x _ y _
 chiqarish x _ y _
 
 display character _
---MISSING--
+belgini ko'rsatish _
 
 enable TFT _
 yoqish TFT _
 
 TFT width
---MISSING--
+TFT kengligi
 
 TFT height
---MISSING--
+TFT balandligi
 
 set TFT pixel x _ y _ to _
-o'rnatish TFT piksel x _ y _ ga _
+x _ y _ ga _ TFT piksel o'rnatish
 
-draw line on TFT from x _ y _ to x _ y _ color _
---MISSING--
+draw line on TFT from x _ y _ to x _ y _ color _	
+TFT ga x _ y _ dan x _ y _ color _gacha  chiziq chizish
+
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
---MISSING--
+To’rtburchakni TFT ga x _ y _ kenglik _ balandlik _ rangda chizing
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
---MISSING--
+Yumaloq to’rtburchakni TFT ga x_ y_ kenglik _ balandlik _ radius _ rangda chizing
 
 draw circle on TFT at x _ y _ radius _ color _
---MISSING--
+doirani TFT ga _ radiusda _ rangda chizish
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
---MISSING--
+uchburchakni TFT ustiga x _ y _, x _ y _, x _ y _ rangda chizish
 
 filled _
---MISSING--
+to'ldirilgan _
 
 write _ on TFT at x _ y _ color _
---MISSING--
+TFT ustiga _ x _ y rangida _ yozish
 
 scale _ wrap _
---MISSING--
+o'lchov _
 
 Tone
---MISSING--
+Ohang
 
 attach buzzer to pin _
-biriktirish buzzerni pinga _
+qo’ng’iroqni pinga biriktirish
 
 play note _ octave _ for _ ms
-eslatmani ijro etish _ octave _ vaqt davomida _ ms
+eslatmani _ octave _ ms davomida ijro etish
 
 play frequency _ for _ ms
---MISSING--
+chastotasini _ ms davomida ijro etish
 
 play midi key _ for _ ms
---MISSING--
+midi tugmachasini _ ms ijro etish
 
 Turtle
---MISSING--
+Toshbaqa
 
 home
---MISSING--
+uy
 
 move _
---MISSING--
+ko'chirish _
 
 turn _ degrees
---MISSING--
+_ darajaga burish
 
 turn _ / _ of circle
---MISSING--
+aylanadan _ / _ buriling
 
 pen down
---MISSING--
+qalam pastga
 
 pen up
---MISSING--
+qalam yuqoriga
 
 set pen color to _
---MISSING--
+qalam rangini _ ga belgilash
 
 set pen to random color
---MISSING--
+qalamni tasodifiy rangga qo'ying
 
 fill display with _
---MISSING--
+displeyni _ bilan to'ldiring
 
 go to x _ y _
---MISSING--
+x _ y _ ga o'tish
 
 point in direction _
---MISSING--
+yo'nalish bo'yicha nuqta _
+
+Files
+Fayllar
+
+open file _
+faylni ochish
+
+close file _
+faylni yopish
+
+delete file _
+faylni o'chirish _
+
+append line _ to file _
+_ fayliga _ qatorini qo'shish
+
+append bytes _ to file _
+_ fayliga baytni qo'shish
+
+end of file _
+faylning oxiri _
+
+next line of file _
+faylning keyingi qatori _
+
+next _ bytes of file _
+keyingi _ bayt fayl _
+
+starting at _
+_ dan boshlab
+
+file names
+fayl nomlari
+
+size of file _
+fayl hajmi _
+
+file system info
+fayl tizimi haqida ma'lumot
 
 WiFi
---MISSING--
+WiFi
 
 wifi connect to _ password _ try _ times
---MISSING--
+wifi parolini _ uslash _ marta harak qildi
 
 wifi create hotspot _ password _
---MISSING--
+wifi hotspot yaratish _ parol _
 
 IP address
---MISSING--
+IP address
 
 Motion
---MISSING--
+Harakat
 
 motion
---MISSING--
+harakat
 
 start step counter
---MISSING--
+qadamlar sonini hisoblagich
 
 step count
---MISSING--
+qadamlar soni
 
 clear step count
---MISSING--
+qadamlar sonini o'chirish
 
 set step threshold _ (0-50)
---MISSING--
+qadam chegarasini belgilash _ (0-50)
 
 Button Events
---MISSING--
+Tugma hodisalr
 
 button _ double pressed
---MISSING--
+_ tugmasi ikki marta bosildi
 
 button _ long pressed
---MISSING--
+_ tugmasi uzoq bosildi
 
 button _ pressed
---MISSING--
+ _ tugmasi bosildi
 
 Calliope set LED red _ green _ blue _
---MISSING--
+Calliope diodli qizil _ yashil _ ko'k _ belgilash
 
 Calliope set speaker _
---MISSING--
+Calliope karnayni _ belgilash
 
 Calliope loudness
---MISSING--
+Kalliopa balandligi
 
 Circuit Playground set speaker _
---MISSING--
+Circuit Playground dinamikni o'rnatish _
 
 Circuit Playground slide switch
---MISSING--
+Circuit Playground slaydni almashtirish
 
 attach _ DotStar LEDs to data pin _ clock pin _
---MISSING--
+_ DotStar diodlarini LED-ga ulang
 
 set all DotStar LEDs to r _ g _ b _
---MISSING--
+barcha DotStar LEDlarni r _ g _ b _ ga belgilash
 
 set DotStar LED _ to r _ g _ b _
---MISSING--
+DotStar LED _ r _ g _ b _ ga belgilash
 
 set DotStar brightness _
---MISSING--
+DotStar yorqinligini o'rnatish _
 
 bme280 connected
---MISSING--
+bme280 ulangan
 
 bmp280 connected
---MISSING--
+bmp280 ulangan
 
 bmx280 temperature
---MISSING--
+bmx280 harorati
 
 bmx280 pressure
---MISSING--
+bmx280 bosimi
 
 bme280 humidity
---MISSING--
+bme280 namlik
 
 TCS34725 connected
---MISSING--
+TCS34725 ulangan
 
 TCS34725 rgb
---MISSING--
+TCS34725 rgb
 
 color _ name
---MISSING--
+rang _ nomi
 
 temperature (Celsius) DHT11 pin _
---MISSING--
+harorat (C) DHT11 pin _
 
 humidity DHT11 pin _
---MISSING--
+namlik DHT11 pin _
 
 temperature (Celsius) DHT22 pin _
---MISSING--
+harorat (C) DHT22 pin _
 
 humidity DHT22 pin _
---MISSING--
+namlik DHT22 pin _
 
 read PN532 RFID
---MISSING--
+PN532 RFID o'qish
 
 RFID _ = _
---MISSING--
+RFID _ = _
 
 get PN532 firmware version
---MISSING--
+PN532 mikrodastur versiyasini olish
 
 HTTP client
---MISSING--
+HTTP mijoz
 
-_ data _ to http܃// _
---MISSING--
+_ data _ to http // _
+_ http ܃ // _ ga  _ ma'lumotlar
 
 HTTP server
---MISSING--
+HTTP server
 
 start HTTP server
---MISSING--
+HTTP serverni ishga tushirish
 
 HTTP server request
---MISSING--
+HTTP server so'rovi
 
 respond _ to HTTP request
---MISSING--
+_ HTTP so'roviga javob berish
 
 with body _
---MISSING--
+tana bilan _
 
 and headers _
---MISSING--
+va sarlavhalar _
 
 body of request _
---MISSING--
+talabnoma qismi _
 
 path of request _
---MISSING--
+so'rov yo'li _
 
 method of request _
---MISSING--
+so'rov usuli _
 
 Web Thing
---MISSING--
+Web Thing
 
 set thing name to _
---MISSING--
+narsa nomini _ ga sozlash
 
 set thing capability to _
---MISSING--
+narsa imkoniyatini _ belgilash
 
 set boolean property _ title _ @Type _
---MISSING--
+boolean xususiyatini o'rnatish _ sarlavha _ @Turi _
 
 set string property _ title _ @Type _
---MISSING--
+satr xususiyatini belgilash _ sarlavha _ @Turi _
 
 set number property _ title _ @Type _
---MISSING--
-
+raqam xususiyatini _ belgilash _ @Turi
 set number property _ title _ min _ max _ @Type _
---MISSING--
+raqam xususiyatini belgilash _ sarlavha _ min _ maksimal _ @Turi _
 
 read only _
---MISSING--
+faqat o'qish _
 
 register event _ type _
---MISSING--
+voqeani ro'yxatdan o'tkazish _ turi _
 
 start WebThing server
---MISSING--
+WebThing serverini ishga tushirish
 
 trigger event _
---MISSING--
+voqeani boshlash
 
 thing description JSON
---MISSING--
+narsa tavsifi JSON
 
 properties JSON
---MISSING--
+JSON xususiyatlari
 
 event definitions JSON
---MISSING--
+voqea ta'riflari JSON
 
 events JSON
---MISSING--
+voqealar JSON
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -906,7 +918,7 @@ other...
 boshqa...
 
 none
-xech qaysi
+hech qaysi
 
 Port name?
 Port nomi?
@@ -918,22 +930,22 @@ Select board:
 Kengashni tanlang:
 
 Could not read:
---MISSING--
+O‘qib bo‘lmadi:
 
 by
 tomonidan
 
 Created with GP
---MISSING--
+GP bilan yaratilgan
 
 More info at http://microblocks.fun
 Qo'shimcha ma'lumot: http://microblocks.fun
 
 Function "
-Funktsiya "
+Funksiya "
 
 " is too large to send to board.
-" Kengashga yuborish juda katta.
+" plataga yuborishga juda katta hajm.
 
 Script is too large to send to board.
 Skript buyurtma berish uchun juda katta.
@@ -942,25 +954,25 @@ Use "Connect" button to connect to a MicroBlocks device.
 MicroBlocks qurilmasiga ulanish uchun "Connect" tugmasini bosing.
 
 No boards found; is your board plugged in?
-Hech qanday plitalar topilmadi; sizning kengashingizga ulanganmi?
+Hech qanday platalar topilmadi; sizning platangiz ulanganmi?
 
 For AdaFruit boards, double-click reset button and try again.
---MISSING--
+AdaFruit platalari uchun tiklash tugmachasini ikki marta bosing va qaytadan urinib ko'ring.
 
 The board is not responding.
-Kengash javob bermayapti.
+Plata javob bermayapti.
 
 Try to Install MicroBlocks on the board?
-Kengashda MicroBlockni o'rnatishga harakat qilib ko'ring.
+Plataga MicroBlockni o'rnatishga harakat qilib ko'ring.
 
 The MicroBlocks in your board is not current
---MISSING--
+Platangizdagi MickroBlocks versiyasi oxirgisi emas
 
 Try to update MicroBlocks on the board?
---MISSING--
+MicroBlocksni yangilab ko'rdingizmi?
 
 Stop
-To'xta
+To'xtatish
 
 Start
 Boshlang
@@ -969,7 +981,7 @@ Quit MicroBlocks?
 MicroBlocks dan chiqasizmi?
 
 Discard current project?
-Joriy loyihani bekor qilinsinmi?
+Joriy loyiha bekor qilinsinmi?
 
 clean up
 tozalamoq
@@ -978,10 +990,10 @@ arrange scripts
 skriptlarni tashkil qilish
 
 undrop (ctrl-Z)
---MISSING--
+o'chirish (ctrl-Z)
 
 copy all scripts to clipboard
---MISSING--
+barcha skriptlarni clipboardga nusxalash
 
 paste all scripts
 barcha skriptlarni joylashtirish
@@ -990,7 +1002,7 @@ paste script
 skriptni joylashtirish
 
 save a picture of all scripts
---MISSING--
+barcha skriptlarning rasmini saqlash
 
 about...
 haqida...
@@ -999,55 +1011,55 @@ virtual machine version
 virtual mashina versiyasi
 
 update firmware on board
---MISSING--
+plata mikrodastur yangilash
 
 show data graph
---MISSING--
+ma'lumotlar grafigini ko'rsatish
 
 set serial delay
---MISSING--
+ketma-ket kechikishni o'rnating
 
 firmware version
---MISSING--
+mikrodastur versiyasi
 
 start Mozilla WebThing server
---MISSING--
+Mozilla WebThing serverini ishga tushiring
 
 stop Mozilla WebThing server
---MISSING--
+Mozilla WebThing serverini to'xtatish
 
 MicroBlocks HTTP Server listening on port 6473
---MISSING--
+6473 portida MicroBlocks HTTP Serverni tinglayapti
 
 disable autoloading board libraries
---MISSING--
+plata kutibxonalarini avtomatik yuklashni o'chirib qo'yish
 
 enable autoloading board libraries
---MISSING--
+avtomatik yuklash paneli kutubxonalarini yoqish
 
 wipe and repartition esp32
---MISSING--
+esp32 tozalash va qaytarish
 
 Use board type
---MISSING--
+Plata turi
 
 Wiping board...
---MISSING--
+Platani tozalash...
 
 (press ESC to cancel)
---MISSING--
+(bekor qilish uchun ESC tugmasini bosing)
 
 Done!
---MISSING--
+Bajarildi!
 
 download and install latest VM
---MISSING--
+so'nggi VM-ni yuklab oling va o'rnating
 
 Select board type:
---MISSING--
+Plata turini tanlang:
 
 Uploading MicroBlocks to board...
---MISSING--
+MicroBlocks yuklanmoqda ...
 
 copy data to clipboard
 ma'lumotni clipboardga ko'chirish
@@ -1056,13 +1068,13 @@ clear data
 ma'lumotlarni tozalash
 
 clear memory and variables
-hotirani va o'zgaruvchini tozalash
+xotirani va o'zgaruvchini tozalash
 
 show advanced blocks
-rivojlangan bloklarni ko'rsatish
+yetakchi bloklarni ko'rsatish
 
 export functions as library
-funktsiyalarni kutubhona sifatida eksport qilish
+funktsiyalarni kutubxona sifatida eksport qilish
 
 hide advanced blocks
 rivojlangan bloklarni yashirish
@@ -1086,58 +1098,58 @@ rename...
 qayta nomlash ...
 
 show block definition...
---MISSING--
+blok ta'rifini ko'rsatish ...
 
 show the definition of this block
---MISSING--
+ushbu blokning ta'rifini ko'rsating
 
 delete block definition...
---MISSING--
+blok ta'rifini o'chirish ...
 
 delete the definition of this block
---MISSING--
+ushbu blokning ta'rifini o'chirib tashlang
 
 duplicate
 nusxa ko'chirish
 
 duplicate this block
---MISSING--
+ushbu blokni nusxalash
 
 delete block
---MISSING--
+blokni o'chirish
 
 delete this block
---MISSING--
+ushbu blokni o'chirish
 
 just this one block
 faqat shu bitta blok
 
 copy to clipboard
---MISSING--
+clipboardga nusxalash
 
 copy these blocks to the clipboard
---MISSING--
+ushbu bloklarni clipboardga nusxalash
 
 duplicate all
---MISSING--
+hammasini nusxalash
 
 duplicate these blocks
---MISSING--
+ushbu bloklarni nusxalash
 
 extract block
---MISSING--
+blokni tortib olish
 
 pull out this block
---MISSING--
+bu blokni tortib oling
 
 save picture of script
 skript rasmini saqlash
 
 save a picture of this block definition as a PNG file
---MISSING--
+ushbu blok ta'rifining rasmini PNG fayli sifatida saqlang
 
 save a picture of these blocks as a PNG file
---MISSING--
+ushbu bloklarning rasmini PNG fayli sifatida saqlang
 
 copy script
 skriptdan nusxa olish
@@ -1146,49 +1158,49 @@ delete
 o'chirish
 
 Input type:
---MISSING--
+Kiritish turi:
 
 string only
---MISSING--
+faqat satr
 
 string or number
---MISSING--
+satr yoki raqam
 
 number only
---MISSING--
+faqat raqam
 
 define
---MISSING--
+belgilang
 
 number/string
---MISSING--
+raqam / satr
 
 editable number or string
---MISSING--
+tahrirlanadigan raqam yoki satr
 
 label
---MISSING--
+belgi
 
 input
---MISSING--
+kiritish
 
 hide block definition
---MISSING--
+blok ta'rifini yashirish
 
 Are you sure you want to remove this block definition?
 Ushbu blok ta'rifini olib tashlashga ishonchingiz komilmi?
 
 Language
---MISSING--
+Til
 
 Custom...
---MISSING--
+Boshqa ...
 
 Obsolete
 iste'moldan chiqqan
 
 OK
---MISSING--
+OK
 
 Ok
 ok
@@ -1203,7 +1215,7 @@ Cancel
 bekor qilish
 
 Okay
-Hop
+Ok
 
 Confirm
 Tasdiqlash
@@ -1214,19 +1226,19 @@ Libraries
 Kutubxonalar
 
 Examples
---MISSING--
+Namunalar
 
 Desktop
---MISSING--
+Ish stoli
 
 Computer
---MISSING--
+Kompyuter
 
 Cloud
---MISSING--
+Cloud
 
 File
---MISSING--
+Fayl
 
 File Open
 Faylni ochish
@@ -1238,44 +1250,43 @@ File name:
 Fayl nomi:
 
 New Folder
---MISSING--
+Yangi papka
 
 by
 tomonidan
 
 Depends:
---MISSING--
+Bog‘liq:
 
 Tags:
---MISSING--
+Teglar:
 
 Path, name or URL for library?
---MISSING--
+Kutubxona adresi, nomi yoki URL manzili?
 
 Invalid URL
---MISSING--
+Noto‘g‘ri URL
 
 Could not fetch library.
---MISSING--
+Kutubxonani tortib olib bo'lmadi.
 
 Host does not exist or is currently down.
---MISSING--
+Xost mavjud emas yoki hozirda ishlamayapti.
 
 File not found in server.
---MISSING--
+Fayl serverda topilmadi.
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
---MISSING--
+Server HTTPS talab qiladi va MicroBlocks hozirda uni qo'llab-quvvatlamaydi.
 
 library information
---MISSING--
+kutubxona haqida ma'lumot
 
 built-in library
---MISSING--
+o'rnatilgan kutubxona
 
 Dependency path, name or URL?
---MISSING--
+Bog‘lanish yo‘li, nomi yoki URL manzili?
 
 Tag name?
---MISSING--
-
+Teg nomi?
