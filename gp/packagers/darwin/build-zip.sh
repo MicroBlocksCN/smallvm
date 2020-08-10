@@ -18,7 +18,7 @@ if [ -z "$version" ]; then version="unknown"; fi
 
 echo "Packaging MacOS version..."
 cp -r $exepath .
-zip -r MicroBlocks.app.zip MicroBlocks.app
+zip -r MicroBlocksUnsigned.app.zip MicroBlocks.app
 rm -R MicroBlocks.app
 
-mv MicroBlocks.app.zip $destdir
+mv MicroBlocksUnsigned.app.zip $destdir

@@ -165,7 +165,7 @@ if test -n "$pack"; then
     fi
     # build zip package for Mac
     if [ -z $system ] || [ $system == 'mac' ]; then
-        (cd gp/packagers/darwin/; ./build-zip.sh ../../../apps/MicroBlocks.app ../../../apps/packages $version)
+        (cd gp/packagers/darwin/; ./build-zip.sh ../../../apps/MicroBlocks.app ../../../apps/standalone $version)
     fi
 fi
 
