@@ -13,7 +13,7 @@ say _
 сказать _
 
 graph _
---MISSING--
+график
 
 Input
 Ввод
@@ -112,16 +112,16 @@ stop this task
 остановить эту задачу
 
 stop other tasks
---MISSING--
+остановить другие задачи
 
 stop all
 остановить всё
 
 last message
---MISSING--
+последнее сообщение
 
 Operators
---MISSING--
+Операторы
 
 _ mod _
 _ мод _
@@ -148,19 +148,19 @@ or _
 или _
 
 _ is a _
---MISSING--
+_ это _
 
 boolean
---MISSING--
+булево
 
 number
---MISSING--
+число
 
 string
---MISSING--
+строка
 
 list
---MISSING--
+список
 
 hex _
 hex _
@@ -179,7 +179,7 @@ Delete a variable
 # New variable dialog
 
 New variable name?
---MISSING--
+Новое название переменной?
 
 set _ to _
 задать _ до _
@@ -191,10 +191,10 @@ local _ _
 локальный _ _
 
 Data
---MISSING--
+Данные
 
 list
---MISSING--
+список
 
 length of _
 длина _
@@ -203,71 +203,68 @@ item _ of _
 элемент _ из _
 
 replace item _ of list _ with _
---MISSING--
+заменить элемент _ списка _ на _
 
 delete item _ of list _
---MISSING--
+удалить элемент _ из списка _
 
 add _ to list _
---MISSING--
+добавить _ в список _
 
 join _ _
---MISSING--
+соединить _ _
 
 copy _ from _
---MISSING--
+скопировать _ из _
 
 to _
---MISSING--
+в _
 
 find _ in _
---MISSING--
+найти _ в _ 
 
 starting at _
---MISSING--
+начинается с _
 
 join items of list _
---MISSING--
+соединить элементы из списка _ 
 
 separator _
---MISSING--
+разделитель _
 
 unicode _ of _
---MISSING--
+юникод _ из
 
 string from unicode _
---MISSING--
+строка из юникода _
 
 new list length _
 новая длина списка _
 
 new byte array length _
---MISSING--
+длина нового байтового массива _
 
 free memory
---MISSING--
-
-fill list _ with _
-заполнить список _  _
+свободная память
 
 My Blocks
---MISSING--
+Мои Блоки 
 
 # Buttons on top of "My Blocks" category
 
 Add a command block
---MISSING--
+Добавить блок команд
 
 Add a reporter block
---MISSING--
+Добавить блок докладчик
 
 # Make a block dialog
 
 Enter function name:
---MISSING--
+Введите название функции:
 
 Comm
---MISSING--
+Связь
 
 i2c get device _ register _
 i2c получить устройство _ зарегистрировать_
@@ -276,10 +273,10 @@ i2c set device _ register _ to _
 i2c задать устройство _ зарегистрировать _ на _
 
 i2c device _ read list _
---MISSING--
+i2c устройство _ список чтения _
 
 i2c device _ write list _
---MISSING--
+i2c device _ список записи _
 
 spi send _
 отправка spi _
@@ -303,9 +300,6 @@ draw shape _ at x _ y _
 
 shape for letter _
 форма для буквы _
-
-set NeoPixel pin _ is RGBW _
-задать контакты NeoPixel _ RGBW _
 
 send NeoPixel rgb _
 послать NeoPixel rgb _
@@ -376,7 +370,7 @@ disable radio
 # Libraries
 
 Basic Sensors
---MISSING--
+Базовые Сенсоры
 
 tilt x
 наклон x
@@ -388,16 +382,16 @@ tilt z
 наклон z
 
 acceleration
---MISSING--
+аккселератов 
 
 light level
 уровень освещённости
 
 temperature (°C)
---MISSING--
+температура (°C)
 
 NeoPixel
---MISSING--
+NeoPixel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
 задать NeoPixels _ _ _ _ _ _ _ _ _ _
@@ -418,25 +412,25 @@ color r _ g _ b _ (0-31)
 цвета r _ g _ b _ (0-31)
 
 random color
---MISSING--
+случайный цвет
 
 attach _ LED NeoPixel strip to pin _
---MISSING--
+прикрепить _ светодиодную полосу NeoPixel к контакту _
 
 has white _
---MISSING--
+имеет белый _
 
 PIR
---MISSING--
+PIR
 
 PIR at pin _ detected movement
---MISSING--
+PIR 
 
 ED1 Stepper Motor
---MISSING--
+ED1 Шагомер 
 
 move motor _ _ steps _
---MISSING--
+двигать двигатель _ _ шаги _
 
 move motor 1 _ and motor 2 _ _ steps
 двигать мотор 1 _ и мотор 2 на _ _ шагов
@@ -457,7 +451,7 @@ counter-clockwise
 против часовой стрелки
 
 ED1 Buttons
---MISSING--
+ED1 Кнопки
 
 button OK
 кнопка ОК
@@ -477,32 +471,11 @@ button left
 button right
 кнопка вправо
 
-capacitive OK
-ёмкостный OK
-
-capacitive X
-ёмкостный X
-
-capacitive up
-ёмкостный вверх
-
-capacitive down
-ёмкостный вниз
-
-capacitive left
-ёмкостный влево
-
-capacitive right
-ёмкостный вправо
-
 capacitive sensor _
 ёмкостный сенсор _
 
 set capacitive threshold to _
 задать порог ёмкостной чувствительности на _
-
-set use capacitive to _
---MISSING--
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
@@ -511,7 +484,7 @@ Hummingbird Tri-LED _ R _ % G _ % B _ %
 Hummingbird Tri-LED _ R _ % G _ % B _ %
 
 Hummingbird Position Servo _ _ °
---MISSING--
+Сервопривод положения колибри _ _ °
 
 Hummingbird Rotation Servo _ _ %
 Hummingbird поворот сервопривода _ _ %
@@ -538,10 +511,10 @@ Other
 Прочее
 
 distance (cm) trigger _ echo _
---MISSING--
+расстояние (см) триггера _ эхо _
 
 IR Remote
---MISSING--
+ИК-пульт
 
 receive IR code
 получение ИК-кода
@@ -553,40 +526,40 @@ test IR
 проверка ИК
 
 attach IR receiver to pin _
---MISSING--
+подключите ИК-приемник к контакту _
 
 Radio
---MISSING--
+Радио
 
 Scrolling
---MISSING--
+Скроллинг
 
 scroll text _
---MISSING--
+прокрутка текста _
 
 scroll number _
---MISSING--
+прокрутка чисел _
 
 pausing _ ms
---MISSING--
+приостановка _ млс
 
 stop scrolling
 остановить прокрутку
 
 Servo
---MISSING--
+Cервопривод
 
 set servo _ to _ degrees (-90 to 90)
---MISSING--
+установить серво _ на _ градусов (от -90 до 90)
 
 set servo _ to speed _ (-100 to 100)
---MISSING--
+установить серво _ на скорость _ (от -100 до 100)
 
 stop servo _
---MISSING--
+остановить сервопривод
 
 LED Display
---MISSING--
+Светодиодный дисплей
 
 display _
 экран _
@@ -601,46 +574,46 @@ unplot x _ y _
 убрать черчение x _ y _
 
 display character _
---MISSING--
+отображать символ _
 
 enable TFT _
 включить TFT _
 
 TFT width
---MISSING--
+Ширина TFT
 
 TFT height
---MISSING--
+Высота TFT
 
 set TFT pixel x _ y _ to _
 задать пиксели TFT x _ y _ на _
 
 draw line on TFT from x _ y _ to x _ y _ color _
---MISSING--
+нарисовать линию на TFT от x _ y _ до x _ y _ color _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
---MISSING--
+нарисовать прямоугольник на TFT при x _ y _ ширина _ высота _ цвет _
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
---MISSING--
+нарисjdfnm прямоугольник с закругленными углами на TFT при x _ y _ ширина _ высота _ радиус _ цвет _
 
 draw circle on TFT at x _ y _ radius _ color _
---MISSING--
+нарисовать круг на TFT в x _ y _ радиус _ цвет _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
---MISSING--
+нарисовать треугольник на TFT в x _ y _, x _ y _, x _ y _ color _
 
 filled _
---MISSING--
+заполнено _
 
 write _ on TFT at x _ y _ color _
---MISSING--
+записать _ на TFT в х _ у _ цвет _
 
 scale _ wrap _
---MISSING--
+масштаб _ обернуть _
 
 Tone
---MISSING--
+Тон
 
 attach buzzer to pin _
 подключить зуммер к контакту _
@@ -649,238 +622,277 @@ play note _ octave _ for _ ms
 воспроизвести ноту _ октавы _ на протяжении _ мс
 
 play frequency _ for _ ms
---MISSING--
+частота воспроизведения _ в течение _ мс
 
 play midi key _ for _ ms
---MISSING--
+играть средний ключ _ в течение _ мс
 
 Turtle
---MISSING--
+Черепаха
 
 home
---MISSING--
+домашняя страница
 
 move _
---MISSING--
+двигать
 
 turn _ degrees
---MISSING--
+поворот _ градусов
 
 turn _ / _ of circle
---MISSING--
+поворот _ / _ круг
 
 pen down
---MISSING--
+перо опустить 
 
 pen up
---MISSING--
+перо поднять
 
 set pen color to _
---MISSING--
+установить цвет пера на _
 
 set pen to random color
---MISSING--
+установить цвет пера на случайный 
 
 fill display with _
---MISSING--
+заполнить дисплей с _
 
 go to x _ y _
---MISSING--
+перейти к х _ у _
 
 point in direction _
---MISSING--
+указать в направлении _
+
+Files
+Файлы
+
+open file _
+открыть файл _ 
+
+close file _
+закрыть файл _ 
+
+delete file _
+удалить файл _ 
+
+append line _ to file _
+добавить строку _ в файл _
+
+append bytes _ to file _
+добавить байты _ в файл _
+
+end of file _
+конец файла _ 
+
+next line of file _
+следующая строка файла _
+
+next _ bytes of file _
+следующие _ байты файла _
+
+starting at _
+начинается с _
+
+file names
+имена файлов
+
+size of file _
+размер файла _
+
+file system info
+информация о файловой системе
 
 WiFi
---MISSING--
+WiFi
 
 wifi connect to _ password _ try _ times
---MISSING--
+WiFi подключиться к _ паролю _ попробовать _ раз
 
 wifi create hotspot _ password _
---MISSING--
+Wi-Fi создать точку доступа _ пароль _
 
 IP address
---MISSING--
+IP адресс
 
 Motion
---MISSING--
+Движение
 
 motion
---MISSING--
+движение
 
 start step counter
---MISSING--
+запуск счестик шагомера
 
 step count
---MISSING--
+количество шагов
 
 clear step count
---MISSING--
+очистить счетчик шагов
 
 set step threshold _ (0-50)
---MISSING--
+установить пороговое значение шага _ (0-50)
 
 Button Events
---MISSING--
+События кнопки
 
 button _ double pressed
---MISSING--
+кнопка _ дважды нажата
 
 button _ long pressed
---MISSING--
+длинное нажатие кнопки
 
 button _ pressed
---MISSING--
+кнопка _ нажата
 
 Calliope set LED red _ green _ blue _
---MISSING--
+Установить каллиопа LED красный _ зеленый _ синий _
 
 Calliope set speaker _
---MISSING--
+Каллиопа
 
 Calliope loudness
---MISSING--
+Громкость Каллиопа 
 
 Circuit Playground set speaker _
---MISSING--
+Схема игровой площадки комплект динамиков _
 
 Circuit Playground slide switch
---MISSING--
+Слайд-переключатель Circuit Playground
 
 attach _ DotStar LEDs to data pin _ clock pin _
---MISSING--
+подключить _ светодиоды DotStar к контакту данных _ контакту синхронизации _
 
 set all DotStar LEDs to r _ g _ b _
---MISSING--
+установить все светодиоды DotStar на r _ g _ b _
 
 set DotStar LED _ to r _ g _ b _
---MISSING--
+установите DotStar LED _ на r _ g _ b _
 
 set DotStar brightness _
---MISSING--
+установить яркость DotStar _
 
 bme280 connected
---MISSING--
+bme280 подключен
 
 bmp280 connected
---MISSING--
+bmp280 подключен
 
 bmx280 temperature
---MISSING--
+bmx280 температура
 
 bmx280 pressure
---MISSING--
+давление BMX 280
 
 bme280 humidity
---MISSING--
+влажность bme280
 
 TCS34725 connected
---MISSING--
+TCS34725 подключен
 
 TCS34725 rgb
---MISSING--
+TCS34725 rgb
 
 color _ name
---MISSING--
+цвет _ название
 
 temperature (Celsius) DHT11 pin _
---MISSING--
+температура (С) DHT11 pin _
 
 humidity DHT11 pin _
---MISSING--
+влажность DHT11 pin _
 
 temperature (Celsius) DHT22 pin _
---MISSING--
+температура (С) DHT22 pin _
 
 humidity DHT22 pin _
---MISSING--
+влажность DHT22 pin _
 
 read PN532 RFID
---MISSING--
+читать PN532 RFID
 
 RFID _ = _
---MISSING--
+RFID _ = _
 
 get PN532 firmware version
---MISSING--
+получить версию прошивки PN532
 
 HTTP client
---MISSING--
+HTTP-клиент
 
 _ data _ to http܃// _
---MISSING--
+_ данные _ к http ܃ // _
 
 HTTP server
---MISSING--
+HTTP сервер
 
 start HTTP server
---MISSING--
+запустить HTTP-сервер
 
 HTTP server request
---MISSING--
+HTTP-запрос сервера
 
 respond _ to HTTP request
---MISSING--
+ответить _ на запрос HTTP
 
 with body _
---MISSING--
+с телом _
 
 and headers _
---MISSING--
+и заголовки
 
 body of request _
---MISSING--
+тело запроса _
 
 path of request _
---MISSING--
+путь запроса _
 
 method of request _
---MISSING--
+метод запроса _
 
 Web Thing
---MISSING--
+Web Thing
 
 set thing name to _
---MISSING--
+установить имя вещи на _
 
 set thing capability to _
---MISSING--
+установить возможность вещи на _
 
 set boolean property _ title _ @Type _
---MISSING--
+установить логическое свойство _ title _ @Type _
 
 set string property _ title _ @Type _
---MISSING--
+установить строковое свойство _ title _ @Type _
 
 set number property _ title _ @Type _
---MISSING--
+установить номер свойства _ title _ @Type _
 
 set number property _ title _ min _ max _ @Type _
---MISSING--
+установить номер свойства _ title _ min _ max _ @Type _
 
 read only _
---MISSING--
+только для чтения _
 
 register event _ type _
---MISSING--
+зарегистрировать событие _ тип _
 
 start WebThing server
---MISSING--
+запуск сервер WebThing
 
 trigger event _
---MISSING--
+вызвать событие _
 
 thing description JSON
---MISSING--
+описание вещи JSON
 
 properties JSON
---MISSING--
+свойства JSON
 
 event definitions JSON
---MISSING--
+определения событий JSON
 
 events JSON
---MISSING--
+события JSON
 
 # MicroBlocks UI buttons, error & info messages, dialog boxes, etc
 
@@ -924,7 +936,7 @@ by
 по
 
 Created with GP
---MISSING--
+Создано с помощью GP
 
 More info at http://microblocks.fun
 Подробнее: http://microblocks.fun
@@ -945,7 +957,7 @@ No boards found; is your board plugged in?
 Плат не найдено. Вы уверены, что плата подключена?
 
 For AdaFruit boards, double-click reset button and try again.
---MISSING--
+Для плат AdaFruit, попробуйте дважды нажать кнопку сброса и попробовать снова.
 
 The board is not responding.
 Плата не отвечает.
@@ -954,10 +966,10 @@ Try to Install MicroBlocks on the board?
 Попробуйте установить MicroBlocks на плату.
 
 The MicroBlocks in your board is not current
---MISSING--
+MicroBlocks на вашей плате устаревшая
 
 Try to update MicroBlocks on the board?
---MISSING--
+Попробуйте обновить MicroBlocks на плате?
 
 Stop
 Стоп
@@ -978,10 +990,10 @@ arrange scripts
 расположить скрипты
 
 undrop (ctrl-Z)
---MISSING--
+отменить (Ctrl-Z)
 
 copy all scripts to clipboard
---MISSING--
+скопировать все скрипты в буфер обмена
 
 paste all scripts
 вставить все скрипты
@@ -990,7 +1002,7 @@ paste script
 вставить скрипт
 
 save a picture of all scripts
---MISSING--
+сохранить картинку всех скриптов
 
 about...
 о...
@@ -999,55 +1011,55 @@ virtual machine version
 версия виртуальной машины
 
 update firmware on board
---MISSING--
+обновить прошивку платы
 
 show data graph
---MISSING--
+показать график данных
 
 set serial delay
---MISSING--
+установить серийную задержку
 
 firmware version
---MISSING--
+версия прошивки
 
 start Mozilla WebThing server
---MISSING--
+запустить сервер Mozilla WebThing
 
 stop Mozilla WebThing server
---MISSING--
+остановить сервер Mozilla WebThing
 
 MicroBlocks HTTP Server listening on port 6473
---MISSING--
+HTTP-сервер MicroBlocks прослушивает порт 6473
 
 disable autoloading board libraries
---MISSING--
+отключить автозагрузку библиотек платы
 
 enable autoloading board libraries
---MISSING--
+включить автозагрузку библиотек платы
 
 wipe and repartition esp32
---MISSING--
+стереть и переделить esp32
 
 Use board type
---MISSING--
+Использовать тип платы
 
 Wiping board...
---MISSING--
+Старание платы...
 
 (press ESC to cancel)
---MISSING--
+(нажмите ESC для отмены)
 
 Done!
---MISSING--
+Готово!
 
 download and install latest VM
---MISSING--
+скачать и установить последнюю версию виртуальной машины
 
 Select board type:
---MISSING--
+Выберите тип платы:
 
 Uploading MicroBlocks to board...
---MISSING--
+MicroBlocks загружается на плату...
 
 copy data to clipboard
 копировать данные в буфер обмена
@@ -1086,58 +1098,58 @@ rename...
 переименовать...
 
 show block definition...
---MISSING--
+показать определение блока ...
 
 show the definition of this block
---MISSING--
+показать определение данного блока
 
 delete block definition...
---MISSING--
+удалить определение блока
 
 delete the definition of this block
---MISSING--
+удалить определение данного блока 
 
 duplicate
 дублировать
 
 duplicate this block
---MISSING--
+дублировать данный блок 
 
 delete block
---MISSING--
+удалить блок
 
 delete this block
---MISSING--
+удалить данный блок 
 
 just this one block
 только этот блок
 
 copy to clipboard
---MISSING--
+скопировать в буфер обмена
 
 copy these blocks to the clipboard
---MISSING--
+скопировать эти блоки в буфер обмена
 
 duplicate all
---MISSING--
+дублировать все 
 
 duplicate these blocks
---MISSING--
+дублировать эти блоки
 
 extract block
---MISSING--
+извлечь блок
 
 pull out this block
---MISSING--
+pull out this block
 
 save picture of script
 сохранить изображение скрипта
 
 save a picture of this block definition as a PNG file
---MISSING--
+сохранить изображение этого определения блока в виде файла PNG
 
 save a picture of these blocks as a PNG file
---MISSING--
+сохранить изображение этих блоков в виде файла PNG
 
 copy script
 копировать скрипт
@@ -1146,49 +1158,49 @@ delete
 удалить
 
 Input type:
---MISSING--
+Тип ввода:
 
 string only
---MISSING--
+только строка
 
 string or number
---MISSING--
+строка или число
 
 number only
---MISSING--
+только числа
 
 define
---MISSING--
+определить
 
 number/string
---MISSING--
+число/строка
 
 editable number or string
---MISSING--
+редактируемый номер или строка
 
 label
---MISSING--
+метка
 
 input
---MISSING--
+ввод
 
 hide block definition
---MISSING--
+скрыть значение блока 
 
 Are you sure you want to remove this block definition?
 Вы уверены, что хотите удалить это определение блока?
 
 Language
---MISSING--
+Язык
 
 Custom...
---MISSING--
+Пользовательские ...
 
 Obsolete
 Устаревший
 
 OK
---MISSING--
+ОК
 
 Ok
 ОК
@@ -1214,19 +1226,19 @@ Libraries
 Библиотеки
 
 Examples
---MISSING--
+Примеры
 
 Desktop
---MISSING--
+Рабочий стол
 
 Computer
---MISSING--
+Компьютер
 
 Cloud
---MISSING--
+Облако
 
 File
---MISSING--
+Файл
 
 File Open
 Открыть файл
@@ -1238,44 +1250,44 @@ File name:
 Имя файла:
 
 New Folder
---MISSING--
+Новая Папка
 
 by
 по
 
 Depends:
---MISSING--
+Зависит:
 
 Tags:
---MISSING--
+Метки
 
 Path, name or URL for library?
---MISSING--
+Путь, имя или URL для библиотеки?
 
 Invalid URL
---MISSING--
+Неверная ссылка
 
 Could not fetch library.
---MISSING--
+Не удалось вызвать библиотеку.
 
 Host does not exist or is currently down.
---MISSING--
+Хост не существует или в данный момент не работает.
 
 File not found in server.
---MISSING--
+Файл не найден на сервере.
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
---MISSING--
+Сервер ожидает HTTPS запрос, а MicroBlocks в настоящее время не поддерживает его.
 
 library information
---MISSING--
+информация о библиотеке
 
 built-in library
---MISSING--
+встроенная библиотека
 
 Dependency path, name or URL?
---MISSING--
+Путь зависимости, имя или URL?
 
 Tag name?
---MISSING--
+Название метки?
 

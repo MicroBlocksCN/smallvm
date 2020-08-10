@@ -1,0 +1,109 @@
+module VL53L1x input
+author 'José García Yeste'
+version 1 0 
+tags sensor distance 
+description 'Support for VL53L1x distance sensor.
+Long distance ranging Time-of-Flight sensor.
+Emitter: 940 nm invisible laser (Class1).
+
+Based on https://github.com/pololu/vl53l1x-arduino
+'
+variables '_VL53L1x initialized' 
+
+	spec 'r' 'VL53L1x connected' 'VL53L1x connected'
+	spec 'r' 'VL53L1x distance (mm)' 'VL53L1x distance (mm)'
+	spec ' ' 'VL53L1x set distance mode long' 'VL53L1x set distance mode long'
+	spec ' ' 'VL53L1x set distance mode medium' 'VL53L1x set distance mode medium'
+	spec ' ' 'VL53L1x set distance mode short' 'VL53L1x set distance mode short'
+	spec ' ' '_VL53L1x setup' '_VL53L1x setup'
+	spec ' ' '_VL53L1x write reg' '_VL53L1x write reg _ byte _' 'auto auto' 0 0
+	spec ' ' '_VL53L1x write reg 32' '_VL53L1x write reg _ int32 _' 'auto auto' 0 0
+	spec 'r' '_VL53L1x read reg' '_VL53L1x read 16bit reg _' 'auto' 0
+
+to 'VL53L1x connected' {
+  return (('_VL53L1x read reg' (hexToInt '010F')) == (hexToInt 'EACC'))
+}
+
+to 'VL53L1x distance (mm)' {
+  '_VL53L1x setup'
+  i2cSet 41 0 (hexToInt '89')
+  local 'data' (newList 17)
+  '[sensors:i2cRead]' 41 data
+  local 'status' (at 1 data)
+  if (status == 9) {
+    local 'range' (((at 14 data) << 8) | (at 15 data))
+    range = (((range * 2011) + 1024) >> 11)
+    return range
+  } else {
+    return (0 - status)
+  }
+}
+
+to 'VL53L1x set distance mode long' {
+  '_VL53L1x write reg' (hexToInt '0060') 15
+  '_VL53L1x write reg' (hexToInt '0063') 13
+  '_VL53L1x write reg' (hexToInt '0069') (hexToInt 'B8')
+  '_VL53L1x write reg' (hexToInt '0078') 15
+  '_VL53L1x write reg' (hexToInt '0079') 13
+  '_VL53L1x write reg' (hexToInt '007A') 14
+  '_VL53L1x write reg' (hexToInt '007B') 14
+}
+
+to 'VL53L1x set distance mode medium' {
+  '_VL53L1x write reg' (hexToInt '0060') 11
+  '_VL53L1x write reg' (hexToInt '0063') 9
+  '_VL53L1x write reg' (hexToInt '0069') (hexToInt '78')
+  '_VL53L1x write reg' (hexToInt '0078') 11
+  '_VL53L1x write reg' (hexToInt '0079') 9
+  '_VL53L1x write reg' (hexToInt '007A') 10
+  '_VL53L1x write reg' (hexToInt '007B') 10
+}
+
+to 'VL53L1x set distance mode short' {
+  '_VL53L1x write reg' (hexToInt '0060') 7
+  '_VL53L1x write reg' (hexToInt '0063') 5
+  '_VL53L1x write reg' (hexToInt '0069') (hexToInt '38')
+  '_VL53L1x write reg' (hexToInt '0078') 7
+  '_VL53L1x write reg' (hexToInt '0079') 5
+  '_VL53L1x write reg' (hexToInt '007A') 6
+  '_VL53L1x write reg' (hexToInt '007B') 6
+}
+
+to '_VL53L1x read reg' reg {
+  local 'reg' reg
+  i2cSet 41 (reg >> 8) (reg & 255)
+  local 'data' (newList 2)
+  '[sensors:i2cRead]' 41 data
+  return (((at 1 data) << 8) | (at 2 data))
+}
+
+to '_VL53L1x setup' {
+  if ((v 'VL53L1x initialized') == 0) {
+    'VL53L1x set distance mode long'
+    comment 'read every 50 ms'
+    '_VL53L1x write reg 32' (hexToInt '006C') (50 * ('_VL53L1x read reg' (hexToInt '00DE')))
+    '_VL53L1x write reg' (hexToInt '0086') 1
+    '_VL53L1x write reg' (hexToInt '0087') (hexToInt '40')
+    '_VL53L1x initialized' = 1
+  }
+}
+
+to '_VL53L1x write reg' reg byte {
+  local 'data' (newList 3)
+  atPut 1 data (reg >> 8)
+  atPut 2 data (reg & 255)
+  atPut 3 data byte
+  '[sensors:i2cWrite]' 41 data
+}
+
+to '_VL53L1x write reg 32' reg value {
+  local 'data' (newList 6)
+  atPut 1 data (reg >> 8)
+  atPut 2 data (reg & 255)
+  atPut 3 data (value >> 24)
+  atPut 4 data (value >> 16)
+  atPut 5 data (value >> 8)
+  atPut 6 data (value & 255)
+  '[sensors:i2cWrite]' 41 data
+}
+
