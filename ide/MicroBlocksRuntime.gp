@@ -215,6 +215,10 @@ method requestCodeFromBoard SmallRuntime {
 
 method receivedChunk SmallRuntime bytecodes chunkType {
 	chunk = (decompileBytecodes bytecodes chunkType)
+	if (isClass chunk 'Function') {
+		print 'functions not yet handled'
+		return
+	}
 	block = (toBlock chunk)
 	scripts = (scriptEditor scripter)
 	addPart (morph scripts) (morph block)
