@@ -264,6 +264,18 @@ void restartSerial() {
 	// 106 - LSM6DS accelerometer & gyroscope
 	// 119 - BMP280 remperature & air pressure
 
+#elif defined(ARDUINO_TEENSY31)
+	#define BOARD_TYPE "Teensy 3.1"
+	#define DIGITAL_PINS 24
+	#define ANALOG_PINS 10
+	#define TOTAL_PINS 34
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
+	static const char digitalPin[] = {
+		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+		13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23
+	};
+	#define PIN_LED 13
+
 #elif defined(ADAFRUIT_GEMMA_M0)
 
 	#define BOARD_TYPE "Gemma M0"

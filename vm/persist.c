@@ -621,10 +621,12 @@ static void compactRAM() {
 	memset(freeStart, 0, (4 * (end0 - freeStart))); // clear everything following freeStart
 
 	// re-write the code file
+#ifndef ARDUINO_TEENSY31
 	setCycleCount(current, cycleCount(current) + 1);
 	clearCodeFile(cycleCount(current));
 	int *codeStart = ((0 == current) ? start0 : start1) + 1; // skip half-space header
 	writeCodeFile((uint8 *) codeStart, 4 * (freeStart - codeStart));
+#endif
 
 	char s[100];
 	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
