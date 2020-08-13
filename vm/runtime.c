@@ -236,6 +236,18 @@ static void startButtonHats(int hatType) {
 	}
 }
 
+static int hasButtonHat() {
+	// Return true if there is at least one "when button _ pressed" script.
+
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		int hatType = chunks[i].chunkType;
+		if ((buttonAHat <= hatType) && (hatType <= buttonsAandBHat)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void checkButtons() {
 	// If button A, button B, or both are pressed, start tasks for all of the relevant
 	// hat blocks (if they are not already running). This check is done at most once
@@ -245,6 +257,8 @@ void checkButtons() {
 	if (now < lastCheck) lastCheck = 0; // clock wrap
 	if ((now - lastCheck) < BUTTON_CHECK_INTERVAL) return; // not time yet
 	lastCheck = now;
+
+	if (!hasButtonHat()) return; // no need to check buttons (allows button pins to be usef for output)
 
 	now = millisecs(); // use milliseconds for button timeouts
 	if (!now) now = 1; // the value is reserved to mean button is not down
