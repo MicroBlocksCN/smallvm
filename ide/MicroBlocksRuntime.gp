@@ -194,7 +194,11 @@ method compileAndDecompile SmallRuntime aBlockOrFunction {
 	bytecodes1 = (chunkBytesFor this aBlockOrFunction)
 	gpCode = (decompileBytecodes bytecodes1 chunkType)
 	bytecodes2 = (chunkBytesFor this gpCode)
-print (count bytecodes1) (count bytecodes1) (bytecodes1 == bytecodes2)
+	if (bytecodes1 == bytecodes2) {
+		print 'ok chunkType:' chunkType 'bytes:' (count bytecodes1)
+	} else {
+		print 'FAILED! chunkType:' chunkType 'bytes in:' (count bytecodes1) 'bytes out' (count bytecodes2)
+	}
 }
 
 method decompileAll SmallRuntime {

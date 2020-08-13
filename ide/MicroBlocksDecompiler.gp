@@ -8,13 +8,10 @@
 // John Maloney, March, 2020
 
 // To do:
-// [x] save comments (implmented but not yet enabled)
-// [x] remove the final "return false" of reporter functions
-// [x] remove recvBroadcast from functions
 // [ ] make test method that compiles and decompiles all code in a project and checks result
 // [ ] make test method that clears current scripts then fetched and decompiles code from board
-// [ ] make compiler store local names
-// [ ] use local names
+// [ ] make the compiler store local variable names
+// [ ] make decompiler read and use local names
 // [ ] store function spec and parameter names
 
 to decompileBytecodes bytecodes chunkType {
@@ -53,7 +50,7 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	findIfs this
 	fixLocals this
 
-	debug = true
+	debug = false
 	if debug {
 		print '----'
 		printSequence2 this
@@ -558,6 +555,7 @@ method isAnd MicroBlocksDecompiler seq cmd {
 
 	if ('jmpFalse' != (cmdOp this cmd)) { return false }
 	i = (jumpTarget this cmd)
+	if (i > (count seq)) { return false }
 	cmdBeforeEnd = (at seq (i - 1))
 	endCmd = (at seq i)
 	return (and
