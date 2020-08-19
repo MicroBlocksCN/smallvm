@@ -48,7 +48,7 @@ method resetChip ESPTool {
 	setSerialPortDTR port false		// IO0 = high
 }
 
-method hardResetChip ESPTool {
+method restartUserCode ESPTool {
 	setSerialPortRTS port true		// EN = low (chip in reset)
 	waitMSecs 100
 	setSerialPortRTS port false		// EN = high (exit reset)
@@ -61,11 +61,12 @@ method hardResetChip ESPTool {
 // SLIP Message Receiving
 
 method waitForMsg ESPTool {
-	timeout = 1000
+	timeout = 10000
 	startTime = (msecsSinceStart)
 	while (((msecsSinceStart) - startTime) < timeout) {
 		msg = (nextSLIPMsg this)
 		if (notNil msg) { return msg }
+		waitMSecs 10
 	}
 	return nil
 }
@@ -77,7 +78,8 @@ method nextSLIPMsg ESPTool {
 	if (isNil port) { return nil }
 	data = (readSerialPort port true)
 	if (notNil data) {
-		recvBuf = (join recvBuf data) }
+		recvBuf = (join recvBuf data)
+	}
 	startIndex = (nextFrameByte this 1)
 	if (isNil startIndex) {
 		recvBuf = (newBinaryData 0) // no message start found; discard entire buffer
@@ -213,7 +215,7 @@ method attachSPI ESPTool {
 
 	clearReceiveBuffer this
 	sendCmd this (hex '0d') (array 0 0 0 0)
-	msg = (waitForMsg this)
+	waitForMsg this
 }
 
 method hexToBytes ESPTool s {
@@ -281,6 +283,67 @@ method connect ESPTool portName baudRate {
 
 // Writing to Flash
 
+method errorResponse ESPTool {
+	// Return true if we got an error or no response.
+
+	msg = (waitForMsg this)
+	if (isNil msg) {
+		print 'no resonse from board'
+		return true
+	}
+	if ((count msg) < 10) {
+		print 'response too short'
+		return true
+	}
+	if (0 != (at msg 9)) {
+		error 'board reported error:' (at msg 10)
+		return true
+	}
+	return false // all good!
+}
+
+method uploadToFlash ESPTool startAddr flashData {
+	// Upload the given binary data to Flash at the given address.
+
+	totalBytes = (byteCount flashData)
+	packetSize = 800
+	packetCount = (ceiling (totalBytes / packetSize))
+
+//	attachSPI this
+
+	args = (list)
+	add32Int this args (get_erase_size this startAddr totalBytes)
+	add32Int this args packetCount
+	add32Int this args packetSize
+	add32Int this args startAddr
+print (get_erase_size this startAddr totalBytes) packetCount packetSize startAddr
+	sendCmd this 2 args
+	if (errorResponse this) { return }
+
+	sent = 0
+	seqNum = 0
+	while (sent < totalBytes) {
+		bytesToSend = (min packetSize (totalBytes - sent))
+		args = (list)
+		add32Int this args bytesToSend
+		add32Int this args seqNum
+		repeat 8 { add args 0 }
+//print 'seqNum:' seqNum 'bytes:' bytesToSend 'sent:' sent
+		checksum = (hex 'EF')
+		for i bytesToSend {
+			byte = (byteAt flashData (sent + i))
+			checksum = (checksum ^ byte)
+			add args byte
+		}
+		sendCmd this 3 args checksum
+		if (errorResponse this) { return }
+		sent += bytesToSend
+print 'ok' sent
+		seqNum += 1
+	}
+print 'All data sent'
+}
+
 method beginFlashWrite ESPTool totalBytes startAddr {
 	packetSize = 800
 	packetCount = (ceiling (totalBytes / packetSize))
@@ -301,9 +364,7 @@ method writeFlashData ESPTool packet seqNum {
 	add32Int this data 0
 	add32Int this data 0
 	addAll data packet
-//	for i (count packet) { add data (at packet i) }
 	sendCmd this 3 data (computeChecksum this packet)
-//print 'checksum' (computeChecksum this packet)
 }
 
 method get_erase_size ESPTool offset size {
@@ -362,13 +423,17 @@ method esp8266VM ESPTool {
 
 method writeFlashTest ESPTool {
 //	ok = (connect this '/dev/cu.SLAB_USBtoUART')
-	ok = (connect this '/dev/cu.usbserial-1420')
+	ok = (connect this '/dev/cu.usbserial-1420' (8 * 115200))
 
 	if (not ok) { return }
 
-	flashData = (newArray 100)
-	for i (count flashData) { atPut flashData i (i & 63) }
-fillArray flashData 4
+	flashData = (newArray 362544)
+	for i (count flashData) { atPut flashData i (i & 255) }
+fillArray flashData 85
+	flashData = (esp8266VM this)
+
+	uploadToFlash this 0 (toBinaryData flashData)
+return
 
 	attachSPI this
 	beginFlashWrite this (count flashData) 0
