@@ -183,6 +183,202 @@
 		*EFC1_CMD = KEY | (((int) dst - 4) & 0xFFFF00) | WRITE_PAGE; // write the final page
 		while (!(*EFC1_STATUS & READY_BIT)){} // wait for operation to complete
 	}
+#elif defined(__MK20DX256__)
+
+#include <kinetis.h>
+
+// Teensy 3.2 - 32K Data Flash, 2K FlexRAM, 1K sectors, 32 bit word size
+#define START (0x10000000)
+#define HALF_SPACE (16 * 1024)
+
+static void flashErase(int *startAddr, int *endAddr) {
+	uint32_t addr = (uint32_t)startAddr & 0xFFFFFC00;
+	uint16_t cmd[] = {0x2380, 0x7003, 0x7803, 0xb25b, 0x2b00, 0xdafb, 0x4770};
+	if (!(FTFL_FCNFG & FTFL_FCNFG_RAMRDY)) return;
+	while (addr < (uint32_t)endAddr) {
+		__disable_irq();
+		*(uint32_t *)&FTFL_FCCOB3 = 0x09800000 | (addr & 0x007FFFFC);
+		FTFL_FSTAT = 0x70;
+		(*((void (*)(volatile uint8_t *))((uint32_t)cmd | 1)))(&FTFL_FSTAT);
+		__enable_irq();
+		addr = addr + 1024;
+	}
+}
+
+void flashWriteData(int *dst, int wordCount, uint8_t *src) {
+	uint32_t addr = (uint32_t)dst & 0xFFFFFFFC;
+	uint16_t cmd[] = {0x2380, 0x7003, 0x7803, 0xb25b, 0x2b00, 0xdafb, 0x4770};
+	if (!(FTFL_FCNFG & FTFL_FCNFG_RAMRDY)) return;
+	while (wordCount > 0) {
+		uint32_t n = wordCount;
+		if (n > 256) n = 256;
+		memcpy((void *)0x14000000, src, n * 4);
+		__disable_irq();
+		*(uint32_t *)&FTFL_FCCOB3 = 0x0B800000 | (addr & 0x007FFFFC);
+		*(uint32_t *)&FTFL_FCCOB7 = n << 16;
+		FTFL_FSTAT = 0x70;
+		(*((void (*)(volatile uint8_t *))((uint32_t)cmd | 1)))(&FTFL_FSTAT);
+		__enable_irq();
+		addr = addr + n * 4;
+		wordCount -= n;
+	}
+}
+
+void flashWriteWord(int *addr, int value) {
+	flashWriteData(addr, 1, (uint8_t *)&value);
+}
+
+#elif defined(__MK64DX512__)
+// Teensy 3.5 - 128K Data Flash, 4K FlexRAM, 4K sectors, 64 bit word size
+#define START (0x10000000)
+#define HALF_SPACE (64 * 1024)
+
+#elif defined(__MK66FX1M0__)
+// Teensy 3.6 - 256K Data Flash, 4K FlexRAM, 4K sectors, 64 bit word size, can't write in HSRUN mode
+#define START (0x10000000)
+#define HALF_SPACE (128 * 1024)
+
+#elif defined(__IMXRT1062__)
+
+#if defined(ARDUINO_TEENSY40)
+// Teensy 4.0 - 60K Data Flash, 4K sectors, 256 byte pages
+#define START (0x601F0000)
+#define HALF_SPACE (30 * 1024)
+
+#elif defined(ARDUINO_TEENSY41)
+// Teensy 4.1 - 252K Data Flash, 4K sectors, 256 byte pages
+#define START (0x607F0000)
+#define HALF_SPACE (124 * 1024)
+#endif // Teensy 4.x
+
+#define LUT0(opcode, pads, operand) (FLEXSPI_LUT_INSTRUCTION((opcode), (pads), (operand)))
+#define LUT1(opcode, pads, operand) (FLEXSPI_LUT_INSTRUCTION((opcode), (pads), (operand)) << 16)
+#define CMD_SDR         FLEXSPI_LUT_OPCODE_CMD_SDR
+#define ADDR_SDR        FLEXSPI_LUT_OPCODE_RADDR_SDR
+#define READ_SDR        FLEXSPI_LUT_OPCODE_READ_SDR
+#define WRITE_SDR       FLEXSPI_LUT_OPCODE_WRITE_SDR
+#define PINS1           FLEXSPI_LUT_NUM_PADS_1
+#define PINS4           FLEXSPI_LUT_NUM_PADS_4
+
+static void teensy4_flash_wait()
+{
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x05) | LUT1(READ_SDR, PINS1, 1); // 05 = read status
+	FLEXSPI_LUT61 = 0;
+	uint8_t status;
+	do {
+		FLEXSPI_IPRXFCR = FLEXSPI_IPRXFCR_CLRIPRXF; // clear rx fifo
+		FLEXSPI_IPCR0 = 0;
+		FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15) | FLEXSPI_IPCR1_IDATSZ(1);
+		FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+		while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) {
+			asm("nop");
+		}
+		FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+		status = *(uint8_t *)&FLEXSPI_RFDR0;
+	} while (status & 1);
+	FLEXSPI_MCR0 |= FLEXSPI_MCR0_SWRESET; // purge stale data from FlexSPI's AHB FIFO
+	while (FLEXSPI_MCR0 & FLEXSPI_MCR0_SWRESET) ; // wait
+	__enable_irq();
+}
+
+// write bytes into flash memory (which is already erased to 0xFF)
+static void teensy4_flash_write(void *addr, const void *data, uint32_t len)
+{
+	__disable_irq();
+	FLEXSPI_LUTKEY = FLEXSPI_LUTKEY_VALUE;
+	FLEXSPI_LUTCR = FLEXSPI_LUTCR_UNLOCK;
+	FLEXSPI_IPCR0 = 0;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x06); // 06 = write enable
+	FLEXSPI_LUT61 = 0;
+	FLEXSPI_LUT62 = 0;
+	FLEXSPI_LUT63 = 0;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	arm_dcache_delete(addr, len); // purge old data from ARM's cache
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x32) | LUT1(ADDR_SDR, PINS1, 24); // 32 = quad write
+	FLEXSPI_LUT61 = LUT0(WRITE_SDR, PINS4, 1);
+	FLEXSPI_IPTXFCR = FLEXSPI_IPTXFCR_CLRIPTXF; // clear tx fifo
+	FLEXSPI_IPCR0 = (uint32_t)addr & 0x007FFFFF;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15) | FLEXSPI_IPCR1_IDATSZ(len);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	const uint8_t *src = (const uint8_t *)data;
+	uint32_t n;
+	while (!((n = FLEXSPI_INTR) & FLEXSPI_INTR_IPCMDDONE)) {
+		if (n & FLEXSPI_INTR_IPTXWE) {
+			uint32_t wrlen = len;
+			if (wrlen > 8) wrlen = 8;
+			if (wrlen > 0) {
+				memcpy((void *)&FLEXSPI_TFDR0, src, wrlen);
+				src += wrlen;
+				len -= wrlen;
+			}
+			FLEXSPI_INTR = FLEXSPI_INTR_IPTXWE;
+		}
+	}
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE | FLEXSPI_INTR_IPTXWE;
+	teensy4_flash_wait();
+}
+
+// erase a 4K sector
+static void teensy4_flash_erase_sector(void *addr)
+{
+	__disable_irq();
+	FLEXSPI_LUTKEY = FLEXSPI_LUTKEY_VALUE;
+	FLEXSPI_LUTCR = FLEXSPI_LUTCR_UNLOCK;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x06); // 06 = write enable
+	FLEXSPI_LUT61 = 0;
+	FLEXSPI_LUT62 = 0;
+	FLEXSPI_LUT63 = 0;
+	FLEXSPI_IPCR0 = 0;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	arm_dcache_delete((void *)((uint32_t)addr & 0xFFFFF000), 4096); // purge data from cache
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x20) | LUT1(ADDR_SDR, PINS1, 24); // 20 = sector erase
+	FLEXSPI_IPCR0 = (uint32_t)addr & 0x007FF000;
+	FLEXSPI_IPCR1 = FLEXSPI_IPCR1_ISEQID(15);
+	FLEXSPI_IPCMD = FLEXSPI_IPCMD_TRG;
+	while (!(FLEXSPI_INTR & FLEXSPI_INTR_IPCMDDONE)) ; // wait
+	FLEXSPI_INTR = FLEXSPI_INTR_IPCMDDONE;
+	teensy4_flash_wait();
+}
+
+static void flashErase(int *startAddr, int *endAddr) {
+	uint32_t addr = (uint32_t)startAddr & 0xFFFFF000;
+	while (addr < (uint32_t)endAddr) {
+		teensy4_flash_erase_sector((void *)addr);
+		addr = addr + 4096;
+	}
+}
+
+void flashWriteData(int *dst, int wordCount, uint8_t *src) {
+	uint32_t n, count, addr = (uint32_t)dst;
+
+	if (wordCount < 1) return;
+	count = wordCount * 4;
+	if ((addr & 0xFF) > 0) {
+		n = 256 - (addr & 0xFF);
+		if (n > count) n = count;
+		teensy4_flash_write(addr, src, n);
+		addr += n;
+		count -= n;
+	}
+	while (count > 0) {
+		n = count;
+		if (n > 256) n = 256;
+		teensy4_flash_write(addr, src, n);
+		addr += n;
+		count -= n;
+	}
+}
+
+void flashWriteWord(int *addr, int value) {
+	flashWriteData(addr, 1, (uint8_t *)&value);
+}
+
 
 #else
 	// Simulate Flash operations using a RAM code store; allows MicroBlocks to run in RAM
