@@ -270,10 +270,6 @@ void restartSerial() {
 	#define ANALOG_PINS 10
 	#define TOTAL_PINS 34
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
-	static const char digitalPin[] = {
-		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-		13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23
-	};
 	#define PIN_LED 13
 
 #elif defined(ADAFRUIT_GEMMA_M0)
@@ -342,30 +338,26 @@ void restartSerial() {
 #elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 
 	#define BOARD_TYPE "D1-Mini"
-	#define DIGITAL_PINS 17
+	#define DIGITAL_PINS 9
 	#define ANALOG_PINS 1
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0};
+	static const char digitalPin[9] = {16, 5, 4, 0, 2, 14, 12, 13, 15};
 	#define PIN_LED LED_BUILTIN
 	#define PIN_BUTTON_A 0
 	#define INVERT_USER_LED true
-	static const char reservedPin[TOTAL_PINS] = {
-		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 1};
 
 #elif defined(ESP8266)
 
 	#define BOARD_TYPE "ESP8266"
-	#define DIGITAL_PINS 17
+	#define DIGITAL_PINS 9
 	#define ANALOG_PINS 1
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0};
+	static const char digitalPin[9] = {16, 5, 4, 0, 2, 14, 12, 13, 15};
 	#define PIN_LED LED_BUILTIN
 	#define PIN_BUTTON_A 0
 	#define INVERT_USER_LED true
-	static const char reservedPin[TOTAL_PINS] = {
-		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 1};
 
 #elif defined(ARDUINO_CITILAB_ED1)
 
@@ -555,7 +547,7 @@ void turnOffPins() {
 int mapDigitalPinNum(int userPinNum) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE)
+		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
 			if ((0 <= userPinNum) && (userPinNum < DIGITAL_PINS)) return digitalPin[userPinNum];
 	#endif
 	return userPinNum;
@@ -590,8 +582,10 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	#endif
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
 	int pin = analogPin[pinNum];
-	SET_MODE(pin, INPUT);
-	if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
+	#if !defined(ESP8266)
+		SET_MODE(pin, INPUT);
+		if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
+	#endif
 	return int2obj(analogRead(pin));
 }
 
@@ -638,7 +632,7 @@ void primAnalogWrite(OBJ *args) {
 		if (pinNum > 25) return;
 	#elif defined(ADAFRUIT_TRINKET_M0)
 		if (pinNum > 4) return;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		#if defined(ARDUINO_CITILAB_ED1)
 			if ((100 <= pinNum) && (pinNum <= 139)) {
 				pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
@@ -705,7 +699,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-			defined(ARDUINO_NRF52840_CLUE)
+			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -724,7 +718,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 			return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
 		}
 		if (RESERVED(pinNum)) return falseObj;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return falseObj;
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
@@ -765,7 +759,7 @@ void primDigitalSet(int pinNum, int flag) {
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-			defined(ARDUINO_NRF52840_CLUE)
+			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -778,7 +772,7 @@ void primDigitalSet(int pinNum, int flag) {
 			pinNum = digitalPinMappings[pinNum - 1];
 		}
 		if (RESERVED(pinNum)) return;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE)
 		if (pinNum < 2) return;
@@ -1298,11 +1292,11 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE)
+		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
 			pin = digitalPin[pin];
 	#endif
 
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pin)) return falseObj;
 	#endif
 
@@ -1331,7 +1325,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE)
+		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
 			pin = digitalPin[pin];
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {
@@ -1340,7 +1334,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 			pin = digitalPinMappings[pin - 1];
 		}
 	#endif
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ESP8266) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pin)) return falseObj;
 	#endif
 	int usecs = obj2int(usecsArg);
