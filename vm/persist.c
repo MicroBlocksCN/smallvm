@@ -183,6 +183,7 @@
 		*EFC1_CMD = KEY | (((int) dst - 4) & 0xFFFF00) | WRITE_PAGE; // write the final page
 		while (!(*EFC1_STATUS & READY_BIT)){} // wait for operation to complete
 	}
+
 #elif defined(__MK20DX256__)
 
 #include <kinetis.h>
@@ -260,8 +261,7 @@ void flashWriteWord(int *addr, int value) {
 #define PINS1           FLEXSPI_LUT_NUM_PADS_1
 #define PINS4           FLEXSPI_LUT_NUM_PADS_4
 
-static void teensy4_flash_wait()
-{
+static void teensy4_flash_wait() {
 	FLEXSPI_LUT60 = LUT0(CMD_SDR, PINS1, 0x05) | LUT1(READ_SDR, PINS1, 1); // 05 = read status
 	FLEXSPI_LUT61 = 0;
 	uint8_t status;
@@ -282,8 +282,7 @@ static void teensy4_flash_wait()
 }
 
 // write bytes into flash memory (which is already erased to 0xFF)
-static void teensy4_flash_write(void *addr, const void *data, uint32_t len)
-{
+static void teensy4_flash_write(void *addr, const void *data, uint32_t len) {
 	__disable_irq();
 	FLEXSPI_LUTKEY = FLEXSPI_LUTKEY_VALUE;
 	FLEXSPI_LUTCR = FLEXSPI_LUTCR_UNLOCK;
@@ -322,8 +321,7 @@ static void teensy4_flash_write(void *addr, const void *data, uint32_t len)
 }
 
 // erase a 4K sector
-static void teensy4_flash_erase_sector(void *addr)
-{
+static void teensy4_flash_erase_sector(void *addr) {
 	__disable_irq();
 	FLEXSPI_LUTKEY = FLEXSPI_LUTKEY_VALUE;
 	FLEXSPI_LUTCR = FLEXSPI_LUTCR_UNLOCK;
@@ -378,7 +376,6 @@ void flashWriteData(int *dst, int wordCount, uint8_t *src) {
 void flashWriteWord(int *addr, int value) {
 	flashWriteData(addr, 1, (uint8_t *)&value);
 }
-
 
 #else
 	// Simulate Flash operations using a RAM code store; allows MicroBlocks to run in RAM
@@ -817,12 +814,12 @@ static void compactRAM() {
 	memset(freeStart, 0, (4 * (end0 - freeStart))); // clear everything following freeStart
 
 	// re-write the code file
-#ifndef ARDUINO_TEENSY31
-	setCycleCount(current, cycleCount(current) + 1);
-	clearCodeFile(cycleCount(current));
-	int *codeStart = ((0 == current) ? start0 : start1) + 1; // skip half-space header
-	writeCodeFile((uint8 *) codeStart, 4 * (freeStart - codeStart));
-#endif
+	#if USE_CODE_FILE
+		setCycleCount(current, cycleCount(current) + 1);
+		clearCodeFile(cycleCount(current));
+		int *codeStart = ((0 == current) ? start0 : start1) + 1; // skip half-space header
+		writeCodeFile((uint8 *) codeStart, 4 * (freeStart - codeStart));
+	#endif
 
 	char s[100];
 	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
