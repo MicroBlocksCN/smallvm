@@ -216,9 +216,50 @@ method add32Int ESPTool msg n {
 	}
 }
 
+// Connecting
+
+method openAndConnect ESPTool portName baudRate {
+	if (isNil baudRate) { baudRate = 115200 }
+
+	print 'Connecting to' portName 'at' baudRate 'baud'
+	openPort this portName baudRate
+	if (isNil port) { return false }
+	return (connect this)
+}
+
+method connect ESPTool {
+	// Enter boot mode and connect to the ROM boot loader.
+
+	repeat 20 {
+		enterBootMode this
+		waitMSecs 10
+		recvBuf = (newBinaryData)
+		repeat 3 {
+			sendSyncMsg this
+			waitMSecs 20
+			msg = (nextSLIPMsg this)
+			if (notNil msg) {
+				clearReceiveBuffer this
+				print 'Connected'
+				return true
+			}
+		}
+	}
+	print 'Could not connect. Board did not respond.'
+	return false
+}
+
+method sendSyncMsg ESPTool {
+	// Send an ESPTool SYNC message to allow ESP board to detect the baud rate.
+
+	data = (list 7 7 18 32) // four bytes: 0x07 0x07 0x12 0x20
+	repeat 32 { add data (hex '55') } // 32 x 0x55 (to allow ESP to detect baud rate)
+	sendCmd this 8 data
+}
+
 // Utilities
 
-method attachSPI ESPTool {
+method attachSPI ESPTool { // xxx not needed?
 	// Send an SPI_ATTACH message to an ESP32.
 	// Neither needed nor supported on the ESP8266 but can be sent anyhow.
 
@@ -265,47 +306,6 @@ method bytesAsHex ESPTool bytes {
 	return (joinStrings out '')
 }
 
-// Synchronization
-
-method openAndConnect ESPTool portName baudRate {
-	if (isNil baudRate) { baudRate = 115200 }
-
-	print 'Connecting to' portName 'at' baudRate 'baud'
-	openPort this portName baudRate
-	if (isNil port) { return false }
-	return (connect this)
-}
-
-method connect ESPTool {
-	// Enter boot mode and connect to the ROM boot loader.
-
-	repeat 20 {
-		enterBootMode this
-		waitMSecs 10
-		recvBuf = (newBinaryData)
-		repeat 3 {
-			sendSyncMsg this
-			waitMSecs 20
-			msg = (nextSLIPMsg this)
-			if (notNil msg) {
-				clearReceiveBuffer this
-				print 'Connected'
-				return true
-			}
-		}
-	}
-	print 'Could not connect. Board did not respond.'
-	return false
-}
-
-method sendSyncMsg ESPTool {
-	// Send an ESPTool SYNC message to allow ESP board to detect the baud rate.
-
-	data = (list 7 7 18 32) // four bytes: 0x07 0x07 0x12 0x20
-	repeat 32 { add data (hex '55') } // 32 x 0x55 (to allow ESP to detect baud rate)
-	sendCmd this 8 data
-}
-
 // Writing to Flash
 
 method errorResponse ESPTool {
@@ -337,7 +337,7 @@ start = (msecsSinceStart)
 	eraseSize = totalBytes
 
 	if ('ESP8266' == (chipType this)) {
-		eraseSize = (get_erase_size this startAddr totalBytes)
+		eraseSize = (adjustedEraseSize this startAddr totalBytes)
 	}
 
 	print ''
@@ -373,45 +373,9 @@ start = (msecsSinceStart)
 print ((msecsSinceStart) - start) 'msecs'
 }
 
-method uploadToRAM ESPTool hexStartAddr ramData {
-	// Upload the given binary data to RAM at the given address.
-
-	totalBytes = (byteCount ramData)
-	packetSize = 800 // must be well under 1024 to allow for header and SLIP escaping
-	packetCount = (ceiling (totalBytes / packetSize))
-
-	args = (list)
-	add32Int this args totalBytes
-	add32Int this args packetCount
-	add32Int this args packetSize
-	addAll args (hexToBytes this hexStartAddr)
-	sendCmd this 5 args
-	if (errorResponse this) { return }
-
-	sent = 0
-	seqNum = 0
-	while (sent < totalBytes) {
-		bytesToSend = (min packetSize (totalBytes - sent))
-		args = (list)
-		add32Int this args bytesToSend
-		add32Int this args seqNum
-		repeat 8 { add args 0 }
-		checksum = (hex 'EF')
-		for i bytesToSend {
-			byte = (byteAt ramData (sent + i))
-			checksum = (checksum ^ byte)
-			add args byte
-		}
-		sendCmd this 7 args checksum
-		if (errorResponse this) { return }
-		sent += bytesToSend
-		seqNum += 1
-	}
-}
-
-method get_erase_size ESPTool offset size {
+method adjustedEraseSize ESPTool offset size {
 	// Calculate an erase size given a specific size in bytes.
-	// Workaround for the ESP ROM bootloader erase bug.
+	// Workaround for a bug in the the ESP8266 ROM bootloader.
 	// Follows get_erase_size function in esptool.py.
 
 	sectors_per_block = 16
@@ -430,62 +394,6 @@ method get_erase_size ESPTool offset size {
 	}
 }
 
-// Tests
-
-method registerTest ESPTool {
-	// Read some registers. Assume connected and sync-ed...
-
-	print '60000078' '->' (readRegister this '60000078') // differentiates ESP8266 vs ESP32*
-	print '3f400074' '->' (readRegister this '3f400074') // differentiates ESP32-S2 vs others
-
-	print '3ff0005c' '->' (readRegister this '3ff0005c')
-	print '3ff00058' '->' (readRegister this '3ff00058')
-	print '3ff00054' '->' (readRegister this '3ff00054')
-	print '3ff00050' '->' (readRegister this '3ff00050')
-}
-
-method esp8266VM ESPTool {
-	return (readEmbeddedFile (join 'precompiled/vm.ino.nodemcu.bin') true)
-}
-
-method atomVM ESPTool {
-	return (readEmbeddedFile (join 'precompiled/vm.ino.m5atom.bin') true)
-}
-
-// esp = (newESPTool)
-// openAndConnect esp '/dev/cu.SLAB_USBtoUART'
-// openAndConnect esp '/dev/cu.usbserial-1420'
-// openAndConnect esp '/dev/cu.usbserial-1956965AB4' (2 * 115200)
-// openAndConnect esp '/dev/cu.SLAB_USBtoUART' (2 * 115200)
-// openAndConnect esp '/dev/cu.usbserial-7152380AB6' (2 * 115200)
-
-method writeFlashTest ESPTool {
-	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART')
-//	ok = (openAndConnect this '/dev/cu.usbserial-1420' (8 * 115200))
-//	ok = (openAndConnect this '/dev/cu.usbserial-7152380AB6' (8 * 115200))
-
-	if (not ok) { return }
-
-	flashData = (newArray 2000)
-	for i (count flashData) { atPut flashData i (i & 255) }
-fillArray flashData 123
-//	flashData = (esp8266VM this)
-
-	uploadToFlash this 0 (toBinaryData flashData)
-	exitBootMode this
-}
-
-method atomTest ESPTool {
-//	ok = (openAndConnect this '/dev/cu.usbserial-1956965AB4' 115200)
-	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART')
-	if (not ok) { return }
-
-	flashData = (atomVM this)
-print (chipType this) 'vm size:' (byteCount flashData)
-	uploadToFlash this (hex '10000') (toBinaryData flashData)
-	exitBootMode this
-}
-
 method setFlashParameters ESPTool {
 	// Assumes Flash if 4 MB for now. (Later, detect actual size.)
 	// Other parameters are fixed.
@@ -501,10 +409,69 @@ method setFlashParameters ESPTool {
 	return (not (errorResponse this))
 }
 
+// Board tests
+
+// esp = (newESPTool)
+// esp8266Test esp
+
+method nodeMCUTest ESPTool {
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART')
+	if (not ok) { return }
+
+// 	flashData = (newArray 2000)
+// 	for i (count flashData) { atPut flashData i (i & 255) }
+// fillArray flashData 123
+// 	flashData = (readEmbeddedFile (join 'precompiled/vm.ino.nodemcu.bin') true)
+//	uploadToFlash this 0 (toBinaryData flashData)
+	uploadESP8266VM this (readEmbeddedFile (join 'precompiled/vm.ino.nodemcu.bin') true)
+}
+
+method d1MiniTest ESPTool {
+	ok = (openAndConnect this '/dev/cu.usbserial-1420')
+	if (not ok) { return }
+
+	uploadESP8266VM this (readEmbeddedFile (join 'precompiled/vm.d1mini.bin') true)
+}
+
+method espTest ESPTool {
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (8 * 115200))
+	if (not ok) { return }
+	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.esp32.bin') true)
+}
+
+method ed1Test ESPTool {
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (8 * 115200))
+	if (not ok) { return }
+	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.citilab-ed1.bin') true)
+}
+
 method m5AtomTest ESPTool {
 	ok = (openAndConnect this '/dev/cu.usbserial-7152380AB6')
 	if (not ok) { return }
+	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.m5atom.bin') true)
+}
 
+method m5StackTest ESPTool {
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (4 * 115200))
+	if (not ok) { return }
+	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.m5stack.bin') true)
+}
+
+method m5StickTest ESPTool {
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (4 * 115200))
+	if (not ok) { return }
+	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.m5stick.bin') true)
+}
+
+// Uploading
+
+method uploadESP8266VM ESPTool vmData {
+	uploadToFlash this 0 vmData
+	exitBootMode this
+	closePort this
+}
+
+method uploadESP32VM ESPTool vmData {
 	ok = (uploadStub this)
 	if (not ok) { return }
 
@@ -512,55 +479,31 @@ method m5AtomTest ESPTool {
 	if (not ok) { return }
 
 	data = (readEmbeddedFile (join 'esp32/bootloader_dio_40m.bin') true)
+	print 'Uploading bootloader_dio_40m.bin' (byteCount data)
 	uploadToFlash this (hex '1000') data
-print 'bootloader_dio_40m.bin' (byteCount data)
 
 	data = (readEmbeddedFile (join 'esp32/partitions.bin') true)
+	print 'Uploading partitions.bin' (byteCount data)
 	uploadToFlash this (hex '8000') data
-print 'partitions.bin' (byteCount data)
 
 	data = (readEmbeddedFile (join 'esp32/boot_app0.bin') true)
+	print 'Uploading boot_app0.bin' (byteCount data)
 	uploadToFlash this (hex 'e000') data
-print 'boot_app0.bin' (byteCount data)
 
-	data = (readEmbeddedFile (join 'precompiled/vm.ino.m5atom.bin') true)
+	data = vmData
+	print 'Uploading MicroBlocks VM' (byteCount data)
 	uploadToFlash this (hex '10000') data
-print 'vm.ino.m5atom.bin' (byteCount data)
 
 	exitBootMode this
 	closePort this
 }
 
-method writeZeroFile ESPTool {
-	flashData = (newArray 1024)
-	fillArray flashData 0
-	writeFile 'zeros.dat' (toBinaryData flashData)
-}
-
-method writeTestFile ESPTool {
-	flashData = (newArray 1024)
-	for i (count flashData) { atPut flashData i (i & 127) }
-	writeFile 'test.dat' (toBinaryData flashData)
-}
-
-// Stubs
-
-method startStub ESPTool hexStartAddr {
-	print 'Starting stub...'
-	args = (list 0 0 0 0)
-	addAll args (hexToBytes this hexStartAddr)
-	sendCmd this 6 args
-	waitForMsg this // okay if this times out
-	msg = (waitForMsg this)
-	if (or (isNil msg) (msg != (list 79 72 65 73))) {
-		print 'Stub did not repsond'
-		return false
-	}
-	print 'Stub started'
-	return true
-}
+// Stub uploading
 
 method uploadStub ESPTool {
+	// Upload and start the RAM bootloader stub. This bootloader includes more features
+	// such as compressed data uploading and the ability to erase all of Flash memory.
+
 	type = (chipType this)
 	print 'Chip type:' type
 
@@ -571,7 +514,7 @@ method uploadStub ESPTool {
 	} ('ESP32-S2' == type) {
 		stub = (esp32_S2_stub this)
 	} else {
-		print 'unknown chip type'
+		print 'Error: Unknown chip type'
 		return
 	}
 	uploadToRAM this (at stub 'text_start') (at stub 'text')
@@ -579,6 +522,58 @@ method uploadStub ESPTool {
 	ok = (startStub this (at stub 'entry'))
 	return ok
 }
+
+method uploadToRAM ESPTool hexStartAddr ramData {
+	// Upload the given binary data to RAM at the given address.
+
+	totalBytes = (byteCount ramData)
+	packetSize = 900 // must be well under 1024 to allow for header and SLIP escaping
+	packetCount = (ceiling (totalBytes / packetSize))
+
+	args = (list)
+	add32Int this args totalBytes
+	add32Int this args packetCount
+	add32Int this args packetSize
+	addAll args (hexToBytes this hexStartAddr)
+	sendCmd this 5 args // start RAM upload
+	if (errorResponse this) { return }
+
+	sent = 0
+	seqNum = 0
+	while (sent < totalBytes) {
+		bytesToSend = (min packetSize (totalBytes - sent))
+		args = (list)
+		add32Int this args bytesToSend
+		add32Int this args seqNum
+		repeat 8 { add args 0 }
+		checksum = (hex 'EF')
+		for i bytesToSend {
+			byte = (byteAt ramData (sent + i))
+			checksum = (checksum ^ byte)
+			add args byte
+		}
+		sendCmd this 7 args checksum // send RAM data
+		if (errorResponse this) { return }
+		sent += bytesToSend
+		seqNum += 1
+	}
+}
+
+method startStub ESPTool hexStartAddr {
+	args = (list 0 0 0 0)
+	addAll args (hexToBytes this hexStartAddr)
+	sendCmd this 6 args
+	waitForMsg this // wait for and discard response to start command
+	msg = (waitForMsg this) // wait for four byte stub startup message: 'OHAI'
+	if (or (isNil msg) (msg != (list 79 72 65 73))) {
+		print 'Error: Stub did not repsond'
+		return false
+	}
+	print 'Stub started'
+	return true
+}
+
+// Stub code
 
 method esp8266_stub ESPTool {
 	result = (dictionary)
