@@ -5,18 +5,23 @@
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
 // ESPTool.gp - Uploader for ESP8266 and ESP32
+// See https://github.com/espressif/esptool/wiki/Serial-Protocol#reading-flash
 // John Maloney, September, 2019
 
-defineClass ESPTool port recvBuf boardType
+defineClass ESPTool port recvBuf status percentDone
 
 to newESPTool { return (initialize (new 'ESPTool')) }
 
 method initialize ESPTool {
-	boardType = ''
+	status = ''
+	percentDone = 0
 	port = nil
 	recvBuf = (newBinaryData)
 	return this
 }
+
+method status ESPTool { return status }
+method percentDone ESPTool { return percentDone }
 
 // Serial Port
 
@@ -183,12 +188,6 @@ method sendCmd ESPTool cmd data checksum {
 	sendSLIPMsg this msg
 }
 
-method computeChecksum ESPTool data {
-	result = (hex 'EF')
-	for n data { result = (result ^ n) }
-	return result
-}
-
 method sendSLIPMsg ESPTool msg {
 	escaped = (list)
 	add escaped 192 // SLIP start byte
@@ -204,6 +203,14 @@ method sendSLIPMsg ESPTool msg {
 		}
 	}
 	add escaped 192 // SLIP end byte
+
+// xxx testing
+n = (count escaped)
+if (or (isNil (global 'maxPacket')) (n > (global 'maxPacket'))) {
+	setGlobal 'maxPacket' n
+}
+if ((count escaped) > 1024) { print 'escaped packet size' (count escaped) }
+
 	writeSerialPort port (toBinaryData (toArray escaped))
 }
 
@@ -321,6 +328,7 @@ method errorResponse ESPTool {
 		return true
 	}
 	if (0 != (at msg 9)) {
+print 'error:' msg
 		print 'Board reported error:' (at msg 10)
 		return true
 	}
@@ -373,6 +381,52 @@ start = (msecsSinceStart)
 print ((msecsSinceStart) - start) 'msecs'
 }
 
+method uploadCompressed ESPTool startAddr data {
+	// Upload the given binary data to Flash at the given address with deflate compression.
+
+setGlobal 'maxPacket' 0
+start = (msecsSinceStart)
+	packetSize = 980 // 800 is good; 900 works; 984 fails
+	compressedData = (zlibEncode data)
+	compressedBytecount = (byteCount compressedData)
+	packetCount = (ceiling (compressedBytecount / packetSize))
+
+	print ''
+	args = (list)
+	add32Int this args (byteCount data) // uncompressed size
+	add32Int this args packetCount
+	add32Int this args packetSize
+	add32Int this args startAddr
+print 'sending compressed:' compressedBytecount packetCount packetSize startAddr
+	sendCmd this (hex '10') args
+	if (errorResponse this) { return }
+print ''
+
+	sent = 0
+	seqNum = 0
+	while (sent < compressedBytecount) {
+		bytesToSend = (min packetSize (compressedBytecount - sent))
+		args = (list)
+		add32Int this args bytesToSend
+		add32Int this args seqNum
+		repeat 8 { add args 0 }
+		checksum = (hex 'EF')
+		for i bytesToSend {
+			byte = (byteAt compressedData (sent + i))
+			checksum = (checksum ^ byte)
+			add args byte
+		}
+		sendCmd this (hex '11') args checksum
+		if (errorResponse this) { return }
+		sent += bytesToSend
+		percent = (round ((100 * sent) / compressedBytecount))
+		print (join (string 27) '[1A' (string 27) '[K' sent ' (' percent '%)')
+		seqNum += 1
+	}
+print ((msecsSinceStart) - start) 'msecs'
+print 'max packet:' (global 'maxPacket')
+}
+
 method adjustedEraseSize ESPTool offset size {
 	// Calculate an erase size given a specific size in bytes.
 	// Workaround for a bug in the the ESP8266 ROM bootloader.
@@ -395,7 +449,8 @@ method adjustedEraseSize ESPTool offset size {
 }
 
 method setFlashParameters ESPTool {
-	// Assumes Flash if 4 MB for now. (Later, detect actual size.)
+	// Assumes Flash if 4 MB for now. (Later, could detect actual size.)
+	// Of John's boards, all are 4 MB except M5Stack (16 MB).
 	// Other parameters are fixed.
 
 	args = (list)
@@ -414,6 +469,56 @@ method setFlashParameters ESPTool {
 // esp = (newESPTool)
 // esp8266Test esp
 
+// Maximum baud rates (d1MiniTest secs)
+// d1mini - 921600 (10.2; 8.4 compressed)
+// nodeMCU - 230400 (26.2; 14.8 compressed) connects, but not reliable at 460800
+// esp32-32s - 460800 (18.2; 11.3 compressed)
+// m5stack - 460800 (18.2; 11.8 compressed)
+// m5stick - 230400 (26.1; 15.3 compressed) does not connect reliably at 460800
+// ed1 - 230400 (26.4; 17.0 compressed) does not connect reliably at 460800
+// m5atom - 115200 (42.5; 28.3 compressed) connects, but not reliable at 230400
+
+// openAndConnect esp '/dev/cu.usbserial-1956965AB4' (4 * 115200)
+
+method compressedTest ESPTool {
+	// Used to measure upload speed...
+
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (2 * 115200))
+	if (not ok) { return }
+
+	ok = (uploadStub this)
+	if (not ok) { return }
+
+	ok = (setFlashParameters this)
+	if (not ok) { return }
+
+	vmData = (readEmbeddedFile (join 'precompiled/vm.ino.nodemcu.bin') true)
+	uploadCompressed this 0 vmData
+//	uploadToFlash this 0 vmData
+//	exitBootMode this
+	closePort this
+}
+
+
+method compressedTestD1mini ESPTool {
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (8 * 115200))
+	if (not ok) { return }
+
+	ok = (uploadStub this)
+	if (not ok) { return }
+
+	ok = (setFlashParameters this)
+	if (not ok) { return }
+
+	data = (readEmbeddedFile (join 'precompiled/vm.d1mini.bin') true)
+	print 'Uploading compressed VM' (byteCount data)
+	uploadCompressed this (hex '0') data
+
+	exitBootMode this
+	closePort this
+}
+
+
 method nodeMCUTest ESPTool {
 	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART')
 	if (not ok) { return }
@@ -427,14 +532,14 @@ method nodeMCUTest ESPTool {
 }
 
 method d1MiniTest ESPTool {
-	ok = (openAndConnect this '/dev/cu.usbserial-1420')
+	ok = (openAndConnect this '/dev/cu.usbserial-1420' (8 * 115200))
 	if (not ok) { return }
 
 	uploadESP8266VM this (readEmbeddedFile (join 'precompiled/vm.d1mini.bin') true)
 }
 
 method espTest ESPTool {
-	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (8 * 115200))
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (4 * 115200))
 	if (not ok) { return }
 	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.esp32.bin') true)
 }
@@ -458,7 +563,7 @@ method m5StackTest ESPTool {
 }
 
 method m5StickTest ESPTool {
-	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (4 * 115200))
+	ok = (openAndConnect this '/dev/cu.usbserial-1956965AB4' (4 * 115200))
 	if (not ok) { return }
 	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.m5stick.bin') true)
 }
@@ -515,7 +620,7 @@ method uploadStub ESPTool {
 		stub = (esp32_S2_stub this)
 	} else {
 		print 'Error: Unknown chip type'
-		return
+		return false
 	}
 	uploadToRAM this (at stub 'text_start') (at stub 'text')
 	uploadToRAM this (at stub 'data_start') (at stub 'data')
