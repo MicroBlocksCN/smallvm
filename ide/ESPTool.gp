@@ -34,6 +34,7 @@ method openPort ESPTool portName baudRate {
 }
 
 method setPort ESPTool portID {
+	// Use an existing (open) serial port. Used when invoked from the browser or Chromebook.
 	initialize this
 	port = portID
 }
@@ -41,6 +42,47 @@ method setPort ESPTool portID {
 method closePort ESPTool {
 	if (notNil port) { closeSerialPort port }
 	initialize this
+}
+
+// Connecting
+
+method openAndConnect ESPTool portName baudRate {
+	if (isNil baudRate) { baudRate = 115200 }
+
+	print 'Connecting to' portName 'at' baudRate 'baud'
+	openPort this portName baudRate
+	if (isNil port) { return false }
+	return (connect this)
+}
+
+method connect ESPTool {
+	// Enter boot mode and connect to the ROM boot loader.
+
+	repeat 20 {
+		enterBootMode this
+		waitMSecs 10
+		recvBuf = (newBinaryData)
+		repeat 3 {
+			sendSyncMsg this
+			waitMSecs 20
+			msg = (nextSLIPMsg this)
+			if (notNil msg) {
+				clearReceiveBuffer this
+				print 'Connected'
+				return true
+			}
+		}
+	}
+	print 'Could not connect. Board did not respond.'
+	return false
+}
+
+method sendSyncMsg ESPTool {
+	// Send an ESPTool SYNC message to allow ESP board to detect the baud rate.
+
+	data = (list 7 7 18 32) // four bytes: 0x07 0x07 0x12 0x20
+	repeat 32 { add data (hex '55') } // 32 x 0x55 (to allow ESP to detect baud rate)
+	sendCmd this 8 data
 }
 
 // Chip Control
@@ -69,25 +111,14 @@ method exitBootMode ESPTool {
 	setSerialPortRTS port false		// EN = high (exit reset)
 }
 
-method chipType ESPTool {
-	dateReg1 = (readRegister this '60000078')
-	if ('0x00062000' == dateReg1) { return 'ESP8266' }
-	if ('0x15122500' == dateReg1) { return 'ESP32' }
-	if ('0x00000500' == dateReg1) {
-		dateReg2 = (readRegister this '3f400074')
-		if ('0x19031400' == dateReg2) { return 'ESP32-S2' }
-	}
-	return nil // unrecognized chip
-}
-
 // About SLIP:
 // Each SLIP packet begins and ends with 0xC0 (192). Within the packet, all occurrences of
 // 0xC0 and 0xDB are replaced with 0xDB 0xDC (219 220) and 0xDB 0xDD (219 221), respectively.
 
 // SLIP Message Receiving
 
-method waitForMsg ESPTool {
-	timeout = 10000
+method waitForMsg ESPTool timeout {
+	if (isNil timeout) { timeout = 10000 }
 	startTime = (msecsSinceStart)
 	while (((msecsSinceStart) - startTime) < timeout) {
 		msg = (nextSLIPMsg this)
@@ -168,6 +199,26 @@ method clearReceiveBuffer ESPTool {
 	recvBuf = (newBinaryData)
 }
 
+method errorResponse ESPTool {
+	// Return true if we got an error or timed out.
+
+	msg = (waitForMsg this)
+	if (isNil msg) {
+		print 'No response from board'
+		return true
+	}
+	if ((count msg) < 10) {
+		print 'Incomplete response from board'
+		return true
+	}
+	if (0 != (at msg 9)) {
+print 'error:' msg
+		print 'Board reported error:' (at msg 10)
+		return true
+	}
+	return false // all good!
+}
+
 // SLIP Message Sending
 
 method sendCmd ESPTool cmd data checksum {
@@ -203,14 +254,6 @@ method sendSLIPMsg ESPTool msg {
 		}
 	}
 	add escaped 192 // SLIP end byte
-
-// xxx testing
-n = (count escaped)
-if (or (isNil (global 'maxPacket')) (n > (global 'maxPacket'))) {
-	setGlobal 'maxPacket' n
-}
-if ((count escaped) > 1024) { print 'escaped packet size' (count escaped) }
-
 	writeSerialPort port (toBinaryData (toArray escaped))
 }
 
@@ -223,56 +266,27 @@ method add32Int ESPTool msg n {
 	}
 }
 
-// Connecting
-
-method openAndConnect ESPTool portName baudRate {
-	if (isNil baudRate) { baudRate = 115200 }
-
-	print 'Connecting to' portName 'at' baudRate 'baud'
-	openPort this portName baudRate
-	if (isNil port) { return false }
-	return (connect this)
-}
-
-method connect ESPTool {
-	// Enter boot mode and connect to the ROM boot loader.
-
-	repeat 20 {
-		enterBootMode this
-		waitMSecs 10
-		recvBuf = (newBinaryData)
-		repeat 3 {
-			sendSyncMsg this
-			waitMSecs 20
-			msg = (nextSLIPMsg this)
-			if (notNil msg) {
-				clearReceiveBuffer this
-				print 'Connected'
-				return true
-			}
-		}
-	}
-	print 'Could not connect. Board did not respond.'
-	return false
-}
-
-method sendSyncMsg ESPTool {
-	// Send an ESPTool SYNC message to allow ESP board to detect the baud rate.
-
-	data = (list 7 7 18 32) // four bytes: 0x07 0x07 0x12 0x20
-	repeat 32 { add data (hex '55') } // 32 x 0x55 (to allow ESP to detect baud rate)
-	sendCmd this 8 data
-}
-
 // Utilities
 
-method attachSPI ESPTool { // xxx not needed?
-	// Send an SPI_ATTACH message to an ESP32.
-	// Neither needed nor supported on the ESP8266 but can be sent anyhow.
+method chipType ESPTool {
+	dateReg1 = (readRegister this '60000078')
+	if ('0x00062000' == dateReg1) { return 'ESP8266' }
+	if ('0x15122500' == dateReg1) { return 'ESP32' }
+	if ('0x00000500' == dateReg1) {
+		dateReg2 = (readRegister this '3f400074')
+		if ('0x19031400' == dateReg2) { return 'ESP32-S2' }
+	}
+	return nil // unrecognized chip
+}
 
+method eraseFlash ESPTool {
+	print 'Erasing flash...'
 	clearReceiveBuffer this
-	sendCmd this (hex '0d') (newArray 8 0)
-	return (waitForMsg this)
+	sendCmd this (hex 'd0')
+	msg = (waitForMsg this 30000) // long timeout because erasing Flash takes time
+	ok = (and (notNil msg) ((count msg) > 9) (0 == (at msg 9)))
+	if ok { print 'Done' }
+	return ok
 }
 
 method readRegister ESPTool hexAddr {
@@ -313,40 +327,59 @@ method bytesAsHex ESPTool bytes {
 	return (joinStrings out '')
 }
 
-// Writing to Flash
+// Uploading
 
-method errorResponse ESPTool {
-	// Return true if we got an error or no response.
+method uploadESP8266VM ESPTool vmData eraseFlag {
+	if (isNil eraseFlag) { eraseFlag = false }
 
-	msg = (waitForMsg this)
-	if (isNil msg) {
-		print 'No response from board'
-		return true
-	}
-	if ((count msg) < 10) {
-		print 'Incomplete response from board'
-		return true
-	}
-	if (0 != (at msg 9)) {
-print 'error:' msg
-		print 'Board reported error:' (at msg 10)
-		return true
-	}
-	return false // all good!
+	ok = (uploadStub this)
+	if (not ok) { return }
+
+	if eraseFlag { eraseFlash this }
+
+	uploadCompressed this 0 vmData
+
+	waitMSecs 100 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
+	exitBootMode this
+	closePort this
+}
+
+method uploadESP32VM ESPTool vmData eraseFlag {
+	if (isNil eraseFlag) { eraseFlag = false }
+
+	ok = (uploadStub this)
+	if (not ok) { return }
+
+	ok = (setFlashParameters this)
+	if (not ok) { return }
+
+	if eraseFlag { eraseFlash this }
+
+	data = (readEmbeddedFile (join 'esp32/bootloader_dio_40m.bin') true)
+	uploadCompressed this (hex '1000') data
+
+	data = (readEmbeddedFile (join 'esp32/boot_app0.bin') true)
+	uploadCompressed this (hex 'e000') data
+
+	data = (readEmbeddedFile (join 'esp32/partitions.bin') true)
+	uploadCompressed this (hex '8000') data
+
+	uploadCompressed this (hex '10000') vmData
+
+	waitMSecs 100 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
+	exitBootMode this
+	closePort this
 }
 
 method uploadToFlash ESPTool startAddr flashData {
 	// Upload the given binary data to Flash at the given address.
+	// Used for testing only.
 
 start = (msecsSinceStart)
 	totalBytes = (byteCount flashData)
 	packetSize = 512
 	packetCount = (ceiling (totalBytes / packetSize))
 	eraseSize = totalBytes
-
-	if ('ESP8266' == (chipType this)) {
-		eraseSize = (adjustedEraseSize this startAddr totalBytes)
-	}
 
 	print ''
 	args = (list)
@@ -356,6 +389,9 @@ start = (msecsSinceStart)
 	add32Int this args startAddr
 	sendCmd this 2 args
 	if (errorResponse this) { return }
+
+	status = 'Uploading...'
+	percentDone = 0
 
 	sent = 0
 	seqNum = 0
@@ -374,8 +410,8 @@ start = (msecsSinceStart)
 		sendCmd this 3 args checksum
 		if (errorResponse this) { return }
 		sent += bytesToSend
-		percent = (round ((100 * sent) / totalBytes))
-		print (join (string 27) '[1A' (string 27) '[K' sent ' (' percent '%)')
+		percentDone = (round ((100 * sent) / totalBytes))
+print (join (string 27) '[1A' (string 27) '[K' sent ' (' percentDone '%)')
 		seqNum += 1
 	}
 print ((msecsSinceStart) - start) 'msecs'
@@ -383,10 +419,14 @@ print ((msecsSinceStart) - start) 'msecs'
 
 method uploadCompressed ESPTool startAddr data {
 	// Upload the given binary data to Flash at the given address with deflate compression.
+	// Note: The total packet size after SLIP escaping cannot exceed 1024 bytes.
+	// The number of extra bytes for escape sequences depends on the the contents.
+	// The packet size 800 was chosen based on testing with all the current VM's
+	// and leaves a reasonable margin for data that requires more escape sequences
+	// while minimizing the total number of packets sent to minimize upload time.
 
-setGlobal 'maxPacket' 0
 start = (msecsSinceStart)
-	packetSize = 980 // 800 is good; 900 works; 984 fails
+	packetSize = 800 // 800 is good; 900 works; 984 fails
 	compressedData = (zlibEncode data)
 	compressedBytecount = (byteCount compressedData)
 	packetCount = (ceiling (compressedBytecount / packetSize))
@@ -397,10 +437,12 @@ start = (msecsSinceStart)
 	add32Int this args packetCount
 	add32Int this args packetSize
 	add32Int this args startAddr
-print 'sending compressed:' compressedBytecount packetCount packetSize startAddr
 	sendCmd this (hex '10') args
 	if (errorResponse this) { return }
 print ''
+
+	status = 'Uploading...'
+	percentDone = 0
 
 	sent = 0
 	seqNum = 0
@@ -419,33 +461,11 @@ print ''
 		sendCmd this (hex '11') args checksum
 		if (errorResponse this) { return }
 		sent += bytesToSend
-		percent = (round ((100 * sent) / compressedBytecount))
-		print (join (string 27) '[1A' (string 27) '[K' sent ' (' percent '%)')
+		percentDone = (round ((100 * sent) / compressedBytecount))
+		print (join (string 27) '[1A' (string 27) '[K' sent ' (' percentDone '%)')
 		seqNum += 1
 	}
 print ((msecsSinceStart) - start) 'msecs'
-print 'max packet:' (global 'maxPacket')
-}
-
-method adjustedEraseSize ESPTool offset size {
-	// Calculate an erase size given a specific size in bytes.
-	// Workaround for a bug in the the ESP8266 ROM bootloader.
-	// Follows get_erase_size function in esptool.py.
-
-	sectors_per_block = 16
-	sector_size = 4096 // minimum unit of erase
-
-	num_sectors = (floor (((size + sector_size) - 1) / sector_size))
-	start_sector = (floor (offset / sector_size))
-
-	head_sectors = (sectors_per_block - (start_sector % sectors_per_block))
-	if (num_sectors < head_sectors) { head_sectors = num_sectors }
-
-	if (num_sectors < (2 * head_sectors)) {
-		return (sector_size * (floor ((num_sectors + 1) / 2)))
-	} else {
-		return (sector_size * ((num_sectors - head_sectors)))
-	}
 }
 
 method setFlashParameters ESPTool {
@@ -464,7 +484,7 @@ method setFlashParameters ESPTool {
 	return (not (errorResponse this))
 }
 
-// Board tests
+// Tests
 
 // esp = (newESPTool)
 // esp8266Test esp
@@ -480,7 +500,7 @@ method setFlashParameters ESPTool {
 
 // openAndConnect esp '/dev/cu.usbserial-1956965AB4' (4 * 115200)
 
-method compressedTest ESPTool {
+method eraseTest ESPTool {
 	// Used to measure upload speed...
 
 	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (2 * 115200))
@@ -489,63 +509,35 @@ method compressedTest ESPTool {
 	ok = (uploadStub this)
 	if (not ok) { return }
 
-	ok = (setFlashParameters this)
+// 	ok = (setFlashParameters this)
+// 	if (not ok) { return }
+
+	ok = (eraseFlash this)
 	if (not ok) { return }
 
-	vmData = (readEmbeddedFile (join 'precompiled/vm.ino.nodemcu.bin') true)
-	uploadCompressed this 0 vmData
-//	uploadToFlash this 0 vmData
-//	exitBootMode this
-	closePort this
+	print 'Flash erased!'
 }
-
-
-method compressedTestD1mini ESPTool {
-	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (8 * 115200))
-	if (not ok) { return }
-
-	ok = (uploadStub this)
-	if (not ok) { return }
-
-	ok = (setFlashParameters this)
-	if (not ok) { return }
-
-	data = (readEmbeddedFile (join 'precompiled/vm.d1mini.bin') true)
-	print 'Uploading compressed VM' (byteCount data)
-	uploadCompressed this (hex '0') data
-
-	exitBootMode this
-	closePort this
-}
-
 
 method nodeMCUTest ESPTool {
-	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART')
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART'  (2 * 115200))
 	if (not ok) { return }
-
-// 	flashData = (newArray 2000)
-// 	for i (count flashData) { atPut flashData i (i & 255) }
-// fillArray flashData 123
-// 	flashData = (readEmbeddedFile (join 'precompiled/vm.ino.nodemcu.bin') true)
-//	uploadToFlash this 0 (toBinaryData flashData)
 	uploadESP8266VM this (readEmbeddedFile (join 'precompiled/vm.ino.nodemcu.bin') true)
 }
 
 method d1MiniTest ESPTool {
 	ok = (openAndConnect this '/dev/cu.usbserial-1420' (8 * 115200))
 	if (not ok) { return }
-
 	uploadESP8266VM this (readEmbeddedFile (join 'precompiled/vm.d1mini.bin') true)
 }
 
 method espTest ESPTool {
-	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (4 * 115200))
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (2 * 115200))
 	if (not ok) { return }
 	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.esp32.bin') true)
 }
 
 method ed1Test ESPTool {
-	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (8 * 115200))
+	ok = (openAndConnect this '/dev/cu.SLAB_USBtoUART' (2 * 115200))
 	if (not ok) { return }
 	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.citilab-ed1.bin') true)
 }
@@ -566,41 +558,6 @@ method m5StickTest ESPTool {
 	ok = (openAndConnect this '/dev/cu.usbserial-1956965AB4' (4 * 115200))
 	if (not ok) { return }
 	uploadESP32VM this (readEmbeddedFile (join 'precompiled/vm.ino.m5stick.bin') true)
-}
-
-// Uploading
-
-method uploadESP8266VM ESPTool vmData {
-	uploadToFlash this 0 vmData
-	exitBootMode this
-	closePort this
-}
-
-method uploadESP32VM ESPTool vmData {
-	ok = (uploadStub this)
-	if (not ok) { return }
-
-	ok = (setFlashParameters this)
-	if (not ok) { return }
-
-	data = (readEmbeddedFile (join 'esp32/bootloader_dio_40m.bin') true)
-	print 'Uploading bootloader_dio_40m.bin' (byteCount data)
-	uploadToFlash this (hex '1000') data
-
-	data = (readEmbeddedFile (join 'esp32/partitions.bin') true)
-	print 'Uploading partitions.bin' (byteCount data)
-	uploadToFlash this (hex '8000') data
-
-	data = (readEmbeddedFile (join 'esp32/boot_app0.bin') true)
-	print 'Uploading boot_app0.bin' (byteCount data)
-	uploadToFlash this (hex 'e000') data
-
-	data = vmData
-	print 'Uploading MicroBlocks VM' (byteCount data)
-	uploadToFlash this (hex '10000') data
-
-	exitBootMode this
-	closePort this
 }
 
 // Stub uploading
