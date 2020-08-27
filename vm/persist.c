@@ -241,6 +241,8 @@ void flashWriteWord(int *addr, int value) {
 
 #elif defined(__IMXRT1062__)
 
+#include <imxrt.h>
+
 #if defined(ARDUINO_TEENSY40)
 // Teensy 4.0 - 60K Data Flash, 4K sectors, 256 byte pages
 #define START (0x601F0000)

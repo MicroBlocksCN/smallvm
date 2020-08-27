@@ -276,8 +276,8 @@ inline uint32 saveIRQState(void) {
 	uint32 pmask = 0;
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 		__asm__ volatile ("rsil %0, 15" : "=a" (pmask));
-	#elif defined(ARDUINO_TEENSY31)
-		__asm volatile ("MSR primask, %0" : : "r" (pmask) : "memory");
+	#elif defined(CORE_TEENSY)
+		__disable_irq();
 	#else
 		pmask = __get_PRIMASK() & 1;
 		__set_PRIMASK(1);
@@ -288,8 +288,8 @@ inline uint32 saveIRQState(void) {
 inline void restoreIRQState(uint32 pmask) {
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 		__asm__ volatile ("wsr %0, ps; rsync" :: "a" (pmask));
-	#elif defined(ARDUINO_TEENSY31)
-		__asm volatile ("MSR primask, %0" : : "r" (pmask) : "memory");
+	#elif defined(CORE_TEENSY)
+		__enable_irq();
 	#else
 		__set_PRIMASK(pmask);
 	#endif
