@@ -176,7 +176,7 @@ method showCodeInHand SmallRuntime gpCode {
 	} (or (isClass gpCode 'Command') (isClass gpCode 'Reporter')) {
 		block = (toBlock gpCode)
 	} else {
-		// xxx decompiler didn't return something that can be represented as blocks
+		// decompiler didn't return something that can be represented as blocks
 		return
 	}
 	grab (hand (global 'page')) block
@@ -489,6 +489,8 @@ method closePort SmallRuntime {
 	boardType = nil
 }
 
+method enableAutoConnect SmallRuntime { disconnected = false }
+
 method tryToInstallVM SmallRuntime {
 	// Invite the user to install VM if we see a new board drive and are not able to connect to
 	// it withing a few seconds. Remember the last set of boardDrives so we don't keep asking.
@@ -502,7 +504,7 @@ method tryToInstallVM SmallRuntime {
 		ok = (confirm (global 'page') nil (join
 			(localized 'The board is not responding.') (newline)
 			(localized 'Try to Install MicroBlocks on the board?')))
-		if ok { installVM this false false } // do not wipe flash, do not download VM from server
+		if ok { installVM this }
 		return
 	}
 
@@ -701,9 +703,7 @@ method checkVmVersion SmallRuntime {
 			(localized 'The MicroBlocks in your board is not current')
 			' (v' vmVersion ' vs. v' (latestVmVersion this) ').' (newline)
 			(localized 'Try to update MicroBlocks on the board?')))
-		if ok {
-			installVM this false false // do not wipe flash, do not download VM from server
-		}
+		if ok { installVM this }
 	}
 }
 
@@ -1419,12 +1419,7 @@ method showOutputStrings SmallRuntime {
 
 // Virtual Machine Installer
 
-method installVM SmallRuntime wipeFlashFlag downloadLatest {
-//	if ((getCurrentVersion (findMicroBlocksEditor)) ==
-//		(getLatestVersion (findMicroBlocksEditor))) {
-//			downloadLatest = false
-//	}
-
+method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 	if ('Browser' == (platform)) {
 		installVMInBrowser this
 		return
@@ -1432,21 +1427,21 @@ method installVM SmallRuntime wipeFlashFlag downloadLatest {
 	boards = (collectBoardDrives this)
 	if ((count boards) == 1) {
 		b = (first boards)
-		copyVMToBoard this (first b) (last b) downloadLatest
+		copyVMToBoard this (first b) (last b)
 	} ((count boards) > 1) {
 		menu = (menu 'Select board:' this)
 		for b boards {
-			addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b) downloadLatest)
+			addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
 		}
 		popUpAtHand menu (global 'page')
 	} ((count (portList this)) > 0) {
-		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix') boardType)
+		if (and (contains (array 'ESP8266' 'D1-Mini' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
-			flashVM this boardType wipeFlashFlag downloadLatest
+			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} else {
 			menu = (menu 'Select board type:' this)
-			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix') {
-				addItem menu boardName (action 'flashVM' this boardName wipeFlashFlag downloadLatest)
+			for boardName (array 'ESP8266' 'D1-Mini' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix') {
+				addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
 			}
 			addLine menu
 			addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
@@ -1517,29 +1512,21 @@ method getBoardDriveName SmallRuntime path {
 	return nil
 }
 
-method latestReleasePath SmallRuntime {
-	return '/mbvm/latest/'
-}
-
-method copyVMToBoard SmallRuntime boardName boardPath downloadLatest {
+method copyVMToBoard SmallRuntime boardName boardPath {
 	// disable auto-connect and close the serial port
 	disconnected = true
 	closePort this
 
 	if (beginsWith boardName 'MICROBIT') {
-		vmFileName = 'vm.ino.BBCmicrobit.hex'
+		vmFileName = 'vm.microbit.hex'
 	} (beginsWith boardName 'MINI') {
-		vmFileName = 'vm.ino.Calliope.hex'
+		vmFileName = 'vm.calliope.hex'
 	} (beginsWith boardName 'CPLAYBOOT') {
 		vmFileName = 'vm.circuitplay.uf2'
+	} else {
+		vmFileName = 'UNKNOWN'
 	}
-	if (notNil vmFileName) {
-		if downloadLatest {
-			vmData = (httpGetBinary 'gpblocks.org' (join (latestReleasePath this) vmFileName))
-		} else {
-			vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
-		}
-	}
+	vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
 	if (isNil vmData) {
 		error (join (localized 'Could not read: ') (join 'precompiled/' vmFileName))
 	}
@@ -1567,17 +1554,17 @@ method installVMInBrowser SmallRuntime {
 		addItem menu 'Calliope mini'
 		addItem menu 'Circuit Playground Express'
 		addItem menu 'Circuit Playground Bluefruit'
-//		addItem menu 'Clue'
+		addItem menu 'Clue'
 		popUpAtHand menu (global 'page')
 	}
 }
 
 method downloadEmbeddedVMFile SmallRuntime boardName {
 	if ('BBC micro:bit' == boardName) {
-		vmFileName = 'vm.ino.BBCmicrobit.hex'
+		vmFileName = 'vm.microbit.hex'
 		driveName = 'MICROBIT'
 	} ('Calliope mini' == boardName) {
-		vmFileName = 'vm.ino.Calliope.hex'
+		vmFileName = 'vm.calliope.hex'
 		driveName = 'MINI'
 	} ('Circuit Playground Express' == boardName) {
 		vmFileName = 'vm.circuitplay.uf2'
@@ -1639,11 +1626,9 @@ method adaFruitMessage SmallRuntime {
 
 // espressif board flashing
 
-method flasher SmallRuntime {
-	return flasher
-}
+method flasher SmallRuntime { return flasher }
 
-method confirmRemoveFlasher SmallRuntime {
+method confirmRemoveFlasher SmallRuntime { // xxx needed?
 	ok = (confirm
 		(global 'page')
 		nil
@@ -1654,17 +1639,15 @@ method confirmRemoveFlasher SmallRuntime {
 method removeFlasher SmallRuntime {
 	destroy flasher
 	flasher = nil
-	tryToConnect this
 }
 
-method flashVM SmallRuntime boardName wipeFlashFlag downloadLatest {
+method flashVM SmallRuntime boardName eraseFlashFlag downloadLatestFlag {
 	stopAndSyncScripts this
-	setPort this 'disconnect'
+  	setPort this 'disconnect'
 
-	flasher = (newFlasher 'flashVM' (array wipeFlashFlag downloadLatest) boardName)
+	flasher = (newFlasher boardName portName eraseFlashFlag downloadLatestFlag)
 	addPart (global 'page') (morph flasher)
-
-	start flasher
+	startFlasher flasher
 }
 
 // data logging
