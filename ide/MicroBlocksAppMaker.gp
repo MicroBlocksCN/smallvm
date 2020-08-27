@@ -45,11 +45,6 @@ method createEmbeddedFS MicroBlocksAppMaker system {
 	addFolderToEmbeddedFS this '../precompiled' 'precompiled' zip
 	addFolderToEmbeddedFS this '../translations' 'translations' zip
 	addFolderToEmbeddedFS this '../esp32' 'esp32' zip
-	if (isOneOf system 'linux32bit' 'linux64bit' 'raspberryPi') {
-		addFolderToEmbeddedFS this '../gp/packagers/linux/esptool' 'esptool' zip
-	} (system == 'win') {
-		addFolderToEmbeddedFS this '../gp/packagers/win32/esptool' 'esptool' zip
-	}
 	return zip
 }
 
@@ -126,7 +121,6 @@ method writeMacApp MicroBlocksAppMaker srcAppPath embeddedFS dstPath {
 	makeDirectory (join appName '/Contents/Resources')
 	writeFile (join appName '/Contents/info.plist') (macInfoFile this name)
 	writeExeFile this srcAppPath nil (join appName '/Contents/MacOS/' name)
-	writeFile (join appName '/Contents/MacOS/esptool') (readFile '../gp/packagers/darwin/esptool/esptool' true)
 	writeFile (join appName '/Contents/Resources/fs.data') (contents embeddedFS)
 	writeFile (join appName '/Contents/Resources/MicroBlocks.icns') (readFile 'MicroBlocks.icns' true)
 }
