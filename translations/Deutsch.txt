@@ -1,7 +1,9 @@
 # MicroBlocks translation file
-# Last updated: April 14 2020
+# Last updated: July 07 2020
 
-# Blocks and categories
+#########################
+# Blocks and categories #
+#########################
 
 Output
 Ausgabe
@@ -293,7 +295,11 @@ no op
 ignore
 ignoriere
 
-# Primitives (mostly hidden from end users)
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
 
 draw shape _ at x _ y _
 zeichne Form _ bei x _ y _
@@ -367,7 +373,9 @@ Radio sende Paket _
 disable radio
 deaktiviere Radio
 
-# Libraries
+#############
+# Libraries #
+#############
 
 Basic Sensors
 Einfache Sensoren
@@ -389,6 +397,9 @@ Lichtstärke
 
 temperature (°C)
 Temperatur (°C)
+
+####
+# NeoPixel library
 
 NeoPixel
 NeoPixel
@@ -425,6 +436,9 @@ PIR
 
 PIR at pin _ detected movement
 PIR an PIN _ erkennt Bewegung
+
+####
+# Citilab ED1 board libraries
 
 ED1 Stepper Motor
 ED1 Schrittmotor
@@ -477,6 +491,9 @@ kapazitiver Sensor _
 set capacitive threshold to _
 setze kapazitiven Schwellenwert auf _
 
+####
+# BirdBrain Technologies libraries
+
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
@@ -510,8 +527,53 @@ Klang
 Other
 Sonstige
 
+Finch Beak R _ % G _ % B _ %
+Finch Schnabel R _ % G _ % B _ %
+
+Finch Tail _ R _ % G _ % B _ %
+Finch Schwanz _ R _ % G _ % B _ %
+
+Finch Move _ _ cm at _ %
+Finch Gehe _ _ cm mit _ %
+
+Finch Turn _ _ ° at _ %
+Finch Drehe _ _ ° mit _ %
+
+Finch Wheels L _ % R _ %
+Finch Räder L _ % R _ %
+
+Finch Stop
+Finch Stoppen
+
+Finch Distance (cm)
+Finch Entfernung (cm)
+
+Finch _ Light
+Finch _ Licht
+
+Finch _ Line
+Finch _ Linie
+
+Finch Reset Encoders
+Finch Kodierer Zurücksetzen
+
+Finch _ Encoder
+Finch _ Kodierer
+
+Finch Accelerometer _
+Finch Beschleunigungssensor _
+
+Finch Battery
+Finch Batterie
+
+####
+# Ultrasound distance library
+
 distance (cm) trigger _ echo _
 Entfernung (cm) Auslöser _ Echo _ 
+
+####
+# Infrared remote libraryh 
 
 IR Remote
 IR Fernzugriff
@@ -528,8 +590,17 @@ teste IR
 attach IR receiver to pin _
 schließe IR Empfänger an Pin _ an
 
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
 Radio
 Radio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
 Scrollen
@@ -546,6 +617,9 @@ pausiere _ ms
 stop scrolling
 stoppe Scrollen
 
+####
+# Servo motor library
+
 Servo
 Servo
 
@@ -557,6 +631,11 @@ setze Servo _ auf _ Geschwindigkeit (-100 bis 100)
 
 stop servo _
 Stoppe Servo
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
 LED Anzeige
@@ -575,6 +654,9 @@ lösche x _ y _
 
 display character _
 zeige Buchstaben
+
+####
+# TFT display library
 
 enable TFT _
 aktiviere TFT
@@ -612,6 +694,10 @@ Schreibe _ auf TFT bei x _ y _ Farbe _
 scale _ wrap _
 Größe _ Zeilenumbruch _ 
 
+####
+# Tone library
+# Generates music tones on buzzers
+
 Tone
 Klang
 
@@ -626,6 +712,9 @@ spiele Frequenz _ für _ Millisekunden
 
 play midi key _ for _ ms
 spiele MIDI Tonart _ für _ Millisekunden
+
+####
+# Turtle geometry library
 
 Turtle
 Turtle
@@ -662,6 +751,9 @@ gehe zu x _ y _
 
 point in direction _
 zeige Richtung _ 
+
+####
+# File system library
 
 Files
 Dateien
@@ -702,6 +794,9 @@ Dateigröße
 file system info
 Dateisystem-Information
 
+####
+# WiFi library
+
 WiFi
 WiFi
 
@@ -713,6 +808,10 @@ WiFi öffne Hotspot _ Passwort _
 
 IP address
 IP Addresse
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
 
 Motion
 Bewegung
@@ -732,6 +831,9 @@ lösche Schrittzahl
 set step threshold _ (0-50)
 setze Schritt-Schwellenwert _ (0-50)
 
+####
+# Button Events library
+
 Button Events
 Knopf Ereignisse
 
@@ -744,6 +846,9 @@ Knopf _ lange gedrückt
 button _ pressed
 Knopf _ gedrückt
 
+####
+# Calliope board library
+
 Calliope set LED red _ green _ blue _
 Calliope setze LED rot _ grün _ blau _ 
 
@@ -753,11 +858,17 @@ Calliope setze Lautsprecher _
 Calliope loudness
 Calliope Lautstärke
 
+####
+# Circuit Playground Express board library
+
 Circuit Playground set speaker _
 Circuit Playground setze Lautsprecher _ 
 
 Circuit Playground slide switch
 Circuit Playground Schiebeschalter
+
+####
+# DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
 schließe _ DotStar LEDs an Daten-Pin _ Uhr-Pin _ an
@@ -770,6 +881,9 @@ setze DotStar LED _ auf r _ g _ b _
 
 set DotStar brightness _
 setze DotStar Helligkeit _
+
+####
+# BME280 environmental sensor
 
 bme280 connected
 bme280 verbunden
@@ -786,6 +900,9 @@ bmx280 Luftdruck
 bme280 humidity
 bme280 Luftfeuchtigkeit
 
+####
+# TCS34725 color sensor
+
 TCS34725 connected
 TCS34725 verbunden
 
@@ -794,6 +911,9 @@ TCS34725 RGB
 
 color _ name
 Farbe _ Name
+
+####
+# DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
 Temperatur (Celsius) DHT11 Pin _ 
@@ -807,6 +927,9 @@ Temperatur (Celsius) DHT22 Pin _
 humidity DHT22 pin _
 Luftfeuchtigkeit DHT22 Pin _
 
+####
+# PN532 RFID reader
+
 read PN532 RFID
 lies PN532 RFID
 
@@ -815,6 +938,9 @@ RFID _ = _
 
 get PN532 firmware version
 PN532 firmware version
+
+####
+# HTTP libraries
 
 HTTP client
 HTTP Client
@@ -848,6 +974,9 @@ Pfad der Anfrage _
 
 method of request _
 Methode der Anfrage _ 
+
+####
+# Mozilla Web Things library
 
 Web Thing
 Web Thing
@@ -894,7 +1023,11 @@ Ereignis-Definitionen JSON
 events JSON
 Ereignisse JSON
 
-# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
 
 New
 Neu
