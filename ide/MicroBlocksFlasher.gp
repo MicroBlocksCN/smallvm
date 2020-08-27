@@ -4,261 +4,81 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// MicroBlocksFlasher.gp - An interface to esptool to flash Espressif boards
+// MicroBlocksFlasher.gp - An interface to internal ESPTool to flash Espressif boards
 // Bernat Romagosa, September 2019
 
-defineClass MicroBlocksFlasher overlay morph paddle1 paddle2 rotation commands currentCommandPID label sublabel destroyAtMs selector arguments boardName
+defineClass MicroBlocksFlasher morph label sublabel paddle1 rotation boardName portName eraseFlag downloadFlag espTool espTask
 
-to newFlasher actionSelector args board {
-  return (initialize (new 'MicroBlocksFlasher') actionSelector args board)
+to newFlasher board serialPortName eraseFlashFlag downloadLatestFlag {
+	return (initialize (new 'MicroBlocksFlasher') board serialPortName eraseFlashFlag downloadLatestFlag)
 }
 
-method initialize MicroBlocksFlasher actionSelector args board {
-  selector = actionSelector
-  arguments = args
-  boardName = board
-  overlay = (newBox nil (gray 100))
-  morph = (morph overlay)
-  setTransparency (morph overlay) 30
+method initialize MicroBlocksFlasher board serialPortName eraseFlashFlag downloadLatestFlag {
+	boardName = board
+	portName = serialPortName
+	eraseFlag = eraseFlashFlag
+	downloadFlag = downloadLatestFlag
 
-  paddle1 = (newBox nil (gray 200) 10)
-  paddle2 = (newBox nil (gray 200) 10)
-  rotation = 0
+	morph = (newMorph this)
+	setCostume morph (gray 0 80)
 
-  scale = (global 'scale')
-  label = (newText (localized 'Uploading...') 'Arial' (18 * scale) (gray 200))
-  addPart morph (morph label)
+	paddle1 = (newBox nil (gray 255) 10)
+	paddle2 = (newBox nil (gray 255) 10)
+	setExtent (morph paddle1) 100 20
+	setExtent (morph paddle2) 20 100
+	addPart (morph paddle1) (morph paddle2)
+	gotoCenterOf (morph paddle2) (morph paddle1)
+	addPart morph (morph paddle1)
+	rotation = 0
 
-  sublabel = (newText (localized '(press ESC to cancel)') 'Arial' (12 * scale) (gray 170))
-  addPart morph (morph sublabel)
+	scale = (global 'scale')
+	label = (newText '' 'Arial' (24 * scale) (gray 255))
+	addPart morph (morph label)
 
-  addPart morph (morph paddle1)
-  addPart (morph paddle1) (morph paddle2)
+	sublabel = (newText (localized '(press ESC to cancel)') 'Arial' (18 * scale) (gray 255))
+	addPart morph (morph sublabel)
 
-  redraw this
-
-  return this
+	pageM = (morph (global 'page'))
+	setExtent morph (width (bounds pageM)) (height (bounds pageM))
+	return this
 }
 
 method redraw MicroBlocksFlasher {
-  setExtent (morph overlay) (width (bounds (morph (global 'page')))) (height (bounds (morph (global 'page'))))
-  gotoCenterOf (morph overlay) (morph (global 'page'))
-  setExtent (morph paddle1) 100 20
-  setExtent (morph paddle2) 20 100
-  gotoCenterOf (morph paddle1) (morph (global 'page'))
-  gotoCenterOf (morph paddle2) (morph (global 'page'))
-  gotoCenterOf (morph label) (morph (global 'page'))
-  gotoCenterOf (morph sublabel) (morph (global 'page'))
-  moveBy (morph label) 0 80
-  moveBy (morph sublabel) 0 110
-  redraw overlay
-  redraw paddle1
+	pageM = (morph (global 'page'))
+	gotoCenterOf morph pageM
+	gotoCenterOf (morph paddle1) pageM
+	gotoCenterOf (morph label) pageM
+	gotoCenterOf (morph sublabel) pageM
+	moveBy (morph label) 0 105
+	moveBy (morph sublabel) 0 170
 }
 
 method step MicroBlocksFlasher {
-  if (notNil destroyAtMs) {
-    setTransparency (morph paddle1) ((transparency (morph paddle1)) + 5)
-    setTransparency (morph paddle2) ((transparency (morph paddle2)) + 5)
-    setTransparency (morph overlay) ((transparency (morph overlay)) + 5)
-    if ((msecsSinceStart) > destroyAtMs) {
-      removeFlasher (smallRuntime)
-    }
-  }
-  rotation = (rotation - 1)
-  rotateAndScale (morph paddle1) rotation
-  redraw this
-  processStatus = (execStatus currentCommandPID)
-  if (notNil processStatus) {
-    if (processStatus == 1) {
-      setText label (localized (at (first commands) 'errorMessage'))
-      setColor label (color 255 50 50)
-      removePart morph (morph sublabel)
-      destroyAtMs = ((msecsSinceStart) +
-        ((count (at (first commands) 'errorMessage')) * 50))
-      print (join
-        'Command '
-        (joinStrings (at (first commands) 'command') ' ')
-        ' failed')
-    } else {
-      removeFirst commands
-      if (isEmpty commands) {
-        setText label (localized 'Done!')
-        setColor label (gray 50)
-        removePart morph (morph sublabel)
-        destroyAtMs = ((msecsSinceStart) + 1000)
-      } else {
-        currentCommandPID = (callWith 'exec' (at (first commands) 'command'))
-      }
-    }
-  }
+	rotation = (rotation - 1)
+	rotateAndScale (morph paddle1) rotation
+	redraw this
+	if (notNil espTool) { setText label (status espTool) }
+	if (or (isNil espTask) (isTerminated espTask)) { destroy this }
 }
 
 method destroy MicroBlocksFlasher {
-  destroy morph
+	destroy morph
+	if (notNil espTask) {
+		stopTask espTask
+		espTask = nil
+	}
+	enableAutoConnect (smallRuntime)
 }
 
-method start MicroBlocksFlasher {
-  callWith selector (join (array this) arguments)
-}
-
-method flashVM MicroBlocksFlasher wipeFlashFlag downloadLatest {
-  if wipeFlashFlag {
-    setText label (localized 'Wiping board...')
-  } else {
-    setText label (localized 'Uploading MicroBlocks to board...')
-  }
-
-  copyEspToolToDisk this
-  copyEspFilesToDisk this
-  if downloadLatest {
-    downloadVMtoDisk this
-  } else {
-    copyVMtoDisk this
-  }
-
-  esptool = (join (tmpPath this) (esptoolCommandName this))
-  tmpPath = (tmpPath this)
-
-  commands = (list)
-  dict = (dictionary)
-  atPut dict 'command' (array
-    esptool '-b' '921600' 'write_flash'
-      '0x1000' (join tmpPath 'bootloader_dio_40m.bin')
-      '0x8000' (join tmpPath 'partitions.bin')
-      '0xe000' (join tmpPath 'boot_app0.bin')
-      '0x10000' (join tmpPath 'vm'))
-
-  if (boardName == 'ESP8266') {
-	atPut dict 'command' (array
-      esptool '-b' '115200' 'write_flash' '0' (join tmpPath 'vm'))
-  } (boardName == 'M5Atom-Matrix') {
-		atPut (at dict 'command') 3 '115200'
-  } (boardName == 'M5StickC') {
-		atPut (at dict 'command') 3 '1500000'
-  }
-
-  atPut dict 'errorMessage' 'An error occurred while trying to upload MicroBlocks to the board.'
-
-  add commands dict
-
-  if wipeFlashFlag {
-	dict = (dictionary)
-    atPut dict 'command' (array esptool 'erase_flash')
-	atPut dict 'errorMessage' 'An error occurred while trying to wipe board.'
-    addFirst commands dict
-  }
-
-  if ('Linux' == (platform)) {
-	// check whether Python3 is installed
-	dict = (dictionary)
-	atPut dict 'command' (array 'which' 'python3')
-	errorMessage = (join
-      'Please make sure both python3 and python3-serial are' (newline)
-      'installed in your system.' (newline) (newline)
-      'Under Ubuntu/Debian, run:' (newline) (newline)
-      '  sudo apt-get install python3 python3-serial' (newline)
-	)
-	atPut dict 'errorMessage' errorMessage
-    addFirst commands dict
-
-	// check whether Python3-serial is installed
-	dict = (dictionary)
-	atPut dict 'command' (array 'python3' '-c' 'import serial')
-	atPut dict 'errorMessage' errorMessage
-    addFirst commands dict
-  }
-
-  currentCommandPID = (callWith 'exec' (at (first commands) 'command'))
-}
-
-method tmpPath MicroBlocksFlasher {
-  if (or ('Mac' == (platform)) ('Linux' == (platform))) {
-    return '/tmp/'
-  } else { // Windows
-    return (join (userHomePath) '/AppData/Local/Temp/')
-  }
-}
-
-method readEspToolFromMacApp MicroBlocksFlasher {
-	// To allow app signing, the esptool is stored in the MacOS folder in the Mac app bundle.
-
-	path = (appPath)
-	i = (lastIndexOf (letters path) '/')
-	if (isNil i) { return nil }
-	path = (join (substring path 1 i) 'esptool')
-	return (readFile path true)
-}
-
-method copyEspToolToDisk MicroBlocksFlasher {
-  if ('Mac' == (platform)) {
-    embeddedFileName = 'esptool/esptool'
-    esptoolFileName = 'esptool'
-    isBinary = true
-  } ('Linux' == (platform)) {
-    embeddedFileName = 'esptool/esptool.py'
-    esptoolFileName = 'esptool.py'
-    isBinary = false
-  } ('Win' == (platform)) {
-    embeddedFileName = 'esptool/esptool.exe'
-    esptoolFileName = 'esptool.exe'
-    isBinary = true
-  }
-  if (not (contains (listFiles (tmpPath this)) esptoolFileName)) {
-    // Sometimes tmpPath doesn't exist in Windows. makeDirectory will create it
-    // if it doesn't exist, and do nothing if it already does.
-    makeDirectory (tmpPath this)
-    esptoolData = (readEmbeddedFile embeddedFileName isBinary)
-    if (and (isNil esptoolData) ('Mac' == (platform))) {
-		esptoolData = (readEspToolFromMacApp this)
-    	if (isNil esptoolData) { return }
-    }
-    destination = (join (tmpPath this) esptoolFileName)
-    writeFile destination esptoolData
-    setFileMode destination (+ (7 << 6) (5 << 3) 5) // set executable bits
-  }
-}
-
-method vmNameForCurrentBoard MicroBlocksFlasher {
-  d = (dictionary)
-  atPut d 'ESP8266' 'vm.ino.nodemcu.bin'
-  atPut d 'ESP32' 'vm.ino.esp32.bin'
-  atPut d 'Citilab ED1' 'vm.ino.citilab-ed1.bin'
-  atPut d 'M5Stack-Core' 'vm.ino.m5stack.bin'
-  atPut d 'M5StickC' 'vm.ino.m5stick.bin'
-  atPut d 'M5Atom-Matrix' 'vm.ino.m5atom.bin'
-  return (at d boardName)
-}
-
-method copyVMtoDisk MicroBlocksFlasher {
-  vmData = (readEmbeddedFile (join 'precompiled/' (vmNameForCurrentBoard this)) true)
-  writeFile (join (tmpPath this) 'vm') vmData
-}
-
-method downloadVMtoDisk MicroBlocksFlasher {
-  runtime = (smallRuntime)
-  vmPath = (join (latestReleasePath runtime) (vmNameForCurrentBoard this))
-  (writeFile
-    (join (tmpPath this) 'vm')
-    (httpGetBinary 'gpblocks.org' vmPath))
-}
-
-method copyEspFilesToDisk MicroBlocksFlasher {
-  tmpFiles = (listFiles (tmpPath this))
-  for fn (array 'boot_app0.bin' 'bootloader_dio_40m.bin' 'partitions.bin') {
-    if (not (contains tmpFiles fn)) {
-      fileData = (readEmbeddedFile (join 'esp32/' fn) true)
-      writeFile (join (tmpPath this) fn) fileData
-    }
-  }
-}
-
-method esptoolCommandName MicroBlocksFlasher {
-  if ('Mac' == (platform)) {
-    return 'esptool'
-  } ('Linux' == (platform)) {
-    return 'esptool.py'
-  } ('Win' == (platform)) {
-    return 'esptool.exe'
-  }
-  return ''
+method startFlasher MicroBlocksFlasher {
+	espTool = (newESPTool)
+	ok = (openPort espTool portName boardName)
+	if (not ok) {
+		destroy this
+		inform 'Could not open serial port'
+		return
+	}
+	espTask = (launch
+		(global 'page')
+		(action 'installFirmware' espTool boardName eraseFlag downloadFlag))
 }
