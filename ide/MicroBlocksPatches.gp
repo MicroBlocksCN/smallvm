@@ -665,13 +665,13 @@ method fixLayout Block {
 			lineArgCount = 10; // force a line break after first item of block
 		  }
 		  if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
-            add lines currentLine
-            add lineHeights h
-            currentLine = (list)
-            h = 0
-            x = (+ left indentation)
-            w = ((width (fullBounds (morph each))) + (space * scale))
-            lineArgCount = 0
+			add lines currentLine
+			add lineHeights h
+			currentLine = (list)
+			h = 0
+			x = (+ left indentation)
+			w = ((width (fullBounds (morph each))) + (space * scale))
+			lineArgCount = 0
           }
           add currentLine each
           h = (max h (height (morph each)))
@@ -976,30 +976,28 @@ method processEvent Keyboard evt {
 	  atPut currentKeys key true
 	  if (isNil focus) {
 		if (27 == key) { // escape key
-                  if (notNil (flasher (smallRuntime))) {
-                    confirmRemoveFlasher (smallRuntime)
-		  } (notNil (findMorph 'FilePicker')) {
-                    destroy (findMorph 'FilePicker')
-                  } else {
-		    stopAndSyncScripts (smallRuntime)
-                  }
+			if (notNil (flasher (smallRuntime))) {
+				confirmRemoveFlasher (smallRuntime)
+			} (notNil (findMorph 'FilePicker')) {
+				destroy (findMorph 'FilePicker')
+			} else {
+				stopAndSyncScripts (smallRuntime)
+			}
 		}
-		if (and (111 == (at evt 'char'))
-				(or (controlKeyDown this) (commandKeyDown this))) {
-		  // cmd-O or ctrl-O - open file dialog
-		  (openProjectMenu (findProjectEditor))
-                }
-                if (and (115 == (at evt 'char'))
-				(or (controlKeyDown this) (commandKeyDown this))) {
-		  // cmd-S or ctrl-S - save file dialog
-		  (saveProjectToFile (findProjectEditor))
-                }
+		if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
+			// cmd-O or ctrl-O - open file dialog
+			(openProjectMenu (findProjectEditor))
+		}
+		if (and (115 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
+			// cmd-S or ctrl-S - save file dialog
+			(saveProjectToFile (findProjectEditor))
+		}
 		if (and (122 == (at evt 'char'))
-				(or (controlKeyDown this) (commandKeyDown this))
-				(isNil (grabbedObject (hand (global 'page'))))) {
-		  // cmd-Z or ctrl-Z - undo last drop
-		  pe = (findProjectEditor)
-		  if (notNil pe) { undrop (scriptEditor (scripter pe)) }
+			(or (controlKeyDown this) (commandKeyDown this))
+			(isNil (grabbedObject (hand (global 'page'))))) {
+				// cmd-Z or ctrl-Z - undo last drop
+				pe = (findProjectEditor)
+				if (notNil pe) { undrop (scriptEditor (scripter pe)) }
 		}
 	  }
 	}
