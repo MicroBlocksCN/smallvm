@@ -1476,23 +1476,23 @@ method collectBoardDrives SmallRuntime {
 	if ('Mac' == (platform)) {
 		for v (listDirectories '/Volumes') {
 			path = (join '/Volumes/' v '/')
-			boardName = (getBoardDriveName this path)
-			if (notNil boardName) { add result (list boardName path) }
+			driveName = (getBoardDriveName this path)
+			if (notNil driveName) { add result (list driveName path) }
 		}
 	} ('Linux' == (platform)) {
 		for dir (listDirectories '/media') {
 			prefix = (join '/media/' dir)
 			for v (listDirectories prefix) {
 				path = (join prefix '/' v '/')
-				boardName = (getBoardDriveName this path)
-				if (notNil boardName) { add result (list boardName path) }
+				driveName = (getBoardDriveName this path)
+				if (notNil driveName) { add result (list driveName path) }
 			}
 		}
 	} ('Win' == (platform)) {
 		for letter (range 65 90) {
 			drive = (join (string letter) ':')
-			boardName = (getBoardDriveName this drive)
-			if (notNil boardName) { add result (list boardName drive) }
+			driveName = (getBoardDriveName this drive)
+			if (notNil driveName) { add result (list driveName drive) }
 		}
 	}
 	return result
@@ -1512,17 +1512,21 @@ method getBoardDriveName SmallRuntime path {
 	return nil
 }
 
-method copyVMToBoard SmallRuntime boardName boardPath {
+method copyVMToBoard SmallRuntime driveName boardPath {
 	// disable auto-connect and close the serial port
 	disconnected = true
 	closePort this
 
-	if (beginsWith boardName 'MICROBIT') {
+	if ('MICROBIT' == driveName) {
 		vmFileName = 'vm.microbit.hex'
-	} (beginsWith boardName 'MINI') {
+	} ('MINI' == driveName) {
 		vmFileName = 'vm.calliope.hex'
-	} (beginsWith boardName 'CPLAYBOOT') {
+	} ('CPLAYBOOT' == driveName) {
 		vmFileName = 'vm.circuitplay.uf2'
+	} ('CPLAYBTBOOT' == driveName) {
+		vmFileName = 'vm.cplay52.uf2'
+	} ('CLUEBOOT' == driveName) {
+		vmFileName = 'vm.clue.uf2'
 	} else {
 		vmFileName = 'UNKNOWN'
 	}
@@ -1533,7 +1537,7 @@ method copyVMToBoard SmallRuntime boardName boardPath {
 	writeFile (join boardPath vmFileName) vmData
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
 	waitMSecs 2000
-	if (or (beginsWith boardName 'MICROBIT') (beginsWith boardName 'MINI')) { waitMSecs 4000 }
+	if (isOneOf driveName 'MICROBIT' 'MINI') { waitMSecs 4000 }
 	disconnected = false // re-enable auto-connect
 }
 
