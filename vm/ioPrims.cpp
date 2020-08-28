@@ -335,19 +335,7 @@ void restartSerial() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 
-#elif defined(ARDUINO_ESP8266_WEMOS_D1MINI)
-
-	#define BOARD_TYPE "D1-Mini"
-	#define DIGITAL_PINS 9
-	#define ANALOG_PINS 1
-	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
-	static const int analogPin[] = {A0};
-	static const char digitalPin[9] = {16, 5, 4, 0, 2, 14, 12, 13, 15};
-	#define PIN_LED LED_BUILTIN
-	#define PIN_BUTTON_A 0
-	#define INVERT_USER_LED true
-
-#elif defined(ESP8266)
+#elif defined(ESP8266) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 
 	#define BOARD_TYPE "ESP8266"
 	#define DIGITAL_PINS 9
