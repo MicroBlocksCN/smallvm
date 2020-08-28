@@ -32,6 +32,15 @@ method openPort ESPTool portName boardName {
 	return (notNil port)
 }
 
+// Maximum reliable baud rates & upload test results:
+// esp8266 - 230400 (26.2; 14.8 compressed) connects, but not reliable at 460800
+// d1mini - 921600 (10.2; 8.4 compressed)
+// esp32 - 460800 (18.2; 11.3 compressed)
+// ed1 - 230400 (26.4; 17.0 compressed) does not connect reliably at 460800
+// m5stack - 460800 (18.2; 11.8 compressed)
+// m5stick - 230400 (26.1; 15.3 compressed) does not connect reliably at 460800
+// m5atom - 115200 (42.5; 28.3 compressed) connects, but not reliable at 230400
+
 method baudForBoard ESPTool boardName {
 	if ('ESP8266' == boardName) { return 230400
 	} ('D1-Mini' == boardName) { return 921600
@@ -377,7 +386,7 @@ method readVMData ESPTool boardName downloadFlag {
 
 method vmNameForBoard ESPTool boardName {
 	if ('ESP8266' == boardName) { return 'vm.nodemcu.bin'
-	} ('D1-Mini' == boardName) { return 'vm.d1mini.bin'
+	} ('D1-Mini' == boardName) { return 'vm.nodemcu.bin'
 	} ('ESP32' == boardName) { return 'vm.esp32.bin'
 	} ('Citilab ED1' == boardName) { return 'vm.citilab-ed1.bin'
 	} ('M5Stack-Core' == boardName) { return 'vm.m5stack.bin'
@@ -539,68 +548,6 @@ method setFlashParameters ESPTool {
 	add32Int this args (hex 'ffff') // status mask
 	sendCmd this (hex '0b') args
 	return (not (errorResponse this))
-}
-
-// Tests
-
-// Maximum baud rates
-// esp8266 - 230400 (26.2; 14.8 compressed) connects, but not reliable at 460800
-// d1mini - 921600 (10.2; 8.4 compressed)
-// esp32 - 460800 (18.2; 11.3 compressed)
-// ed1 - 230400 (26.4; 17.0 compressed) does not connect reliably at 460800
-// m5stack - 460800 (18.2; 11.8 compressed)
-// m5stick - 230400 (26.1; 15.3 compressed) does not connect reliably at 460800
-// m5atom - 115200 (42.5; 28.3 compressed) connects, but not reliable at 230400
-
-// esp = (newESPTool)
-
-method nodeMCUTest ESPTool {
-	brd = 'ESP8266'
-	ok = (openPort this '/dev/cu.SLAB_USBtoUART' brd)
-	if (not ok) { return }
-	installFirmware this brd
-}
-
-method d1MiniTest ESPTool {
-	brd = 'D1-Mini'
-	ok = (openPort this '/dev/cu.usbserial-1420' brd)
-	if (not ok) { return }
-	installFirmware this brd
-}
-
-method espTest ESPTool {
-	brd = 'ESP32'
-	ok = (openPort this '/dev/cu.SLAB_USBtoUART' brd)
-	if (not ok) { return }
-	installFirmware this brd
-}
-
-method ed1Test ESPTool {
-	brd = 'Citilab ED1'
-	ok = (openPort this '/dev/cu.SLAB_USBtoUART' brd)
-	if (not ok) { return }
-	installFirmware this brd
-}
-
-method m5AtomTest ESPTool {
-	brd = 'M5Atom-Matrix'
-	ok = (openPort this '/dev/cu.usbserial-7152380AB6' brd)
-	if (not ok) { return }
-	installFirmware this brd
-}
-
-method m5StackTest ESPTool {
-	brd = 'M5Stack-Core'
-	ok = (openPort this '/dev/cu.SLAB_USBtoUART' brd)
-	if (not ok) { return }
-	installFirmware this brd
-}
-
-method m5StickTest ESPTool {
-	brd = 'M5StickC'
-	ok = (openPort this '/dev/cu.usbserial-1956965AB4' brd)
-	if (not ok) { return }
-	installFirmware this brd
 }
 
 // Stub uploading
