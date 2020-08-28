@@ -163,10 +163,6 @@ if test -n "$pack"; then
         (cd apps; zip ublocks-raspberryPi.zip ublocks-raspberryPi; mv ublocks-raspberryPi.zip standalone)
         (cd gp/packagers/linux/; ./build-deb.sh ../../../apps/ublocks-raspberryPi ../../../apps/packages $version armhf)
     fi
-    # build zip package for Mac
-    if [ -z $system ] || [ $system == 'mac' ]; then
-        (cd gp/packagers/darwin/; ./build-zip.sh ../../../apps/MicroBlocks.app ../../../apps/standalone $version)
-    fi
 fi
 
 echo
