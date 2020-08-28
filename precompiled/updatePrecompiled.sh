@@ -1,5 +1,6 @@
 #!/bin/bash
 # Rebuild and update the precompiled binaries.
+rm *.hex *.bin *.uf2
 cd ..
 pio run -e microbit
 cp .pio/build/microbit/firmware.hex precompiled/vm.microbit.hex
