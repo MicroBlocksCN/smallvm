@@ -389,6 +389,11 @@ method selectPort SmallRuntime {
 			popUpAtHand menu (global 'page')
 		}
 		return
+	} ('Browser' == (platform)) { // running in a browser w/o WebSerial (or it is not enabled)
+		inform (join
+			(localized 'Only recent Chrome and Edge browsers support WebSerial.') ' '
+			(localized 'Enable "Experimental Web Platform features" on the "chrome://flags" page.'))
+		return
 	}
 
 	portList = (portList this)
