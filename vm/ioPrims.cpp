@@ -340,7 +340,7 @@ void restartSerial() {
 	#define BOARD_TYPE "ESP8266"
 	#define DIGITAL_PINS 9
 	#define ANALOG_PINS 1
-	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	#define TOTAL_PINS 18 // A0 is pin 17
 	static const int analogPin[] = {A0};
 	static const char digitalPin[9] = {16, 5, 4, 0, 2, 14, 12, 13, 15};
 	#define PIN_LED LED_BUILTIN
