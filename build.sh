@@ -22,8 +22,6 @@ if test -n "$help"; then
     echo "                              platform."
     echo "--version=[VERSION-NUMBER]    Specify a version number, i.e. 0.1.16rc3. If not set,"
     echo "                              it will try to parse it from the GP source files."
-    echo "--esptool                     Download esptool in order to embed it into the IDE so"
-    echo "                              it can install the VM into espressif boards."
     echo "--vm                          Build VMs for all officially supported boards. These"
     echo "                              will be embedded into the IDE."
     echo "--tools                       Automatically try to install missing tools needed"
@@ -88,31 +86,6 @@ fi
 if test -n "$tools"; then
     # set the tools flag so packager scripts know we want them to auto-install missing tools
     export tools=1
-fi
-
-if test -n "$esptool"; then
-    # get esptool for the requested systems
-    if [ -z $system ] || [ $system == 'win' ]; then
-        wget https://microblocks.fun/util/esptool.exe
-        mkdir -p gp/packagers/win32/esptool
-        mv esptool.exe gp/packagers/win32/esptool
-    fi
-    if [ -z $system ] || [ $system == 'linux64bit' ] || [ $system == 'linux32bit' ] || [ $system == 'raspberryPi' ]; then
-        wget https://raw.githubusercontent.com/espressif/esptool/master/esptool.py
-        mkdir -p gp/packagers/linux/esptool
-        # change python to python3 in the shebang
-        sed 's:#!/usr/bin/env python:&3:g' esptool.py > gp/packagers/linux/esptool/esptool.py
-        rm esptool.py
-    fi
-    if [ -z $system ] || [ $system == 'mac' ]; then
-        wget https://dl.espressif.com/dl/esptool-2.6.1-macos.tar.gz
-        tar -xf esptool-2.6.1-macos.tar.gz
-        rm esptool-2.6.1-macos.tar.gz
-        mkdir -p gp/packagers/darwin/esptool
-        mv esptool/esptool gp/packagers/darwin/esptool
-        rm -r esptool
-    fi
-    exit 0
 fi
 
 # build the IDE by using the corresponding executable for our host system
