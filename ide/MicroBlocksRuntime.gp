@@ -1440,7 +1440,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		}
 		popUpAtHand menu (global 'page')
 	} ((count (portList this)) > 0) {
-		if (and (contains (array 'ESP8266' 'D1-Mini' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix') boardType)
+		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} else {
