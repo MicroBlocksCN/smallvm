@@ -650,8 +650,7 @@ method instructionsForWaitUntil SmallCompiler args {
 	result = (list)
 	conditionTest = (instructionsForExpression this (at args 1))
 	addAll result conditionTest
-	add result (array 'jmpFalse' (0 - (+ (count conditionTest) 1)))
-//	add result (array 'waitUntil' (0 - (+ (count conditionTest) 1))) // xxx enable later
+	add result (array 'waitUntil' (0 - (+ (count conditionTest) 1)))
 	return result
 }
 
@@ -722,7 +721,7 @@ method instructionsForExpression SmallCompiler expr {
 	}
 }
 
-method instructionsForAndNEW SmallCompiler args {
+method instructionsForAnd SmallCompiler args {
 	tests = (list)
 	totalInstrCount = 0
 	for expr args {
@@ -742,7 +741,7 @@ method instructionsForAndNEW SmallCompiler args {
 	return result
 }
 
-method instructionsForOrNEW SmallCompiler args {
+method instructionsForOr SmallCompiler args {
 	tests = (list)
 	totalInstrCount = 0
 	for expr args {
@@ -762,7 +761,7 @@ method instructionsForOrNEW SmallCompiler args {
 	return result
 }
 
-method instructionsForAnd SmallCompiler args {
+method instructionsForAndOLD SmallCompiler args { // xxx remove later
 	tests = (list)
 	totalInstrCount = 3 // final three instructions
 	for expr args {
@@ -781,7 +780,7 @@ method instructionsForAnd SmallCompiler args {
 	return result
 }
 
-method instructionsForOr SmallCompiler args {
+method instructionsForOrOLD SmallCompiler args { // xxx remove later
 	tests = (list)
 	totalInstrCount = 3 // final three instructions
 	for expr args {
