@@ -43,7 +43,7 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	// todo: extract function info strings here
 	getOpNames this lastInstruction
 	decodeImmediates this lastInstruction
-	opcodes = (bodyOpcodes this lastInstruction chunkType)
+	opcodes = (copyFromTo opcodes 1 lastInstruction)
 	controlStructures = (newArray (count opcodes))
 	findArgs this
 	findLoops this
@@ -59,51 +59,51 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 		print '----'
 	}
 
-	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes }
-	gpCode = (addHatBlock this chunkType (codeForSequence this 1 (count opcodes)))
+	if (cmdIs this (last opcodes) 'halt' 0) { removeLast opcodes }  // remove final halt
+	gpCode = (codeForSequence this 1 (count opcodes))
+	gpCode = (removePrefix this gpCode)
+	if (3 == chunkType) { gpCode = (removeFinalReturn this gpCode) }
+	gpCode = (addHatBlock this chunkType gpCode)
 	if (isNil gpCode) {
-		inform (global 'page') 'No decompiled code'
-		return nil
+		print 'Stand-alone comment'
+		return (newCommand 'comment' 'Stand-alone comment')
 	}
 	fixBooleanAndColorArgs this gpCode
 	if debug { print (prettyPrint this gpCode) }
 	return gpCode
 }
 
-method bodyOpcodes MicroBlocksDecompiler lastInstruction chunkType {
-	// Return the range of opcodes for the body of the script.
-	// Omit the initial initLocals and the final halt instructions for normal scripts
-	// and the prefix and postfix of functions.
+method removePrefix MicroBlocksDecompiler gpCode {
+	// Remove possible recvBroadcast prefix from parameterless functions and broadcast hats.
 
-	msgName = '' // default message name
-	start = 1
-	end = lastInstruction
-	if ('initLocals' == (cmdOp this (at opcodes 1))) { start += 1 }
-	if (3 == chunkType) {
-		if ('recvBroadcast' == (cmdOp this (at opcodes 3))) { // when received or user-defined block
-			msgName = (cmdArg this (at opcodes 2))
-			start = 4
-		}
-		// remove final 'return false'
-		if (and
-			('returnResult' == (cmdOp this (at opcodes end)))
-			(cmdIs this (at opcodes (end - 1)) 'pushImmediate' false)) {
-				end += -2
-		}
-	} else {
-		if ('halt' == (cmdOp this (at opcodes end))) {
-			end += -1
-		}
-	}
-	result = (copyFromTo opcodes start end)
+	if (isNil gpCode) { return }
 
-	// renumber the opcodes
-	i = 1
-	for cmd result {
-		atPut cmd 1 i
-		i += 1
+	if ('recvBroadcast' == (primName gpCode)) {
+		// remove 'recvBroadcast' from a parameterless function
+		msgName = (first (argList gpCode)) // record the message name
+		gpCode = (nextBlock gpCode)
 	}
-	return result
+	return gpCode
+}
+
+method removeFinalReturn MicroBlocksDecompiler gpCode {
+	// Return possible final 'return false' from the code for a function.
+
+	if (isNil gpCode) { return nil }
+
+	// find the last two commands:
+	lastCmd = gpCode
+	while (notNil (nextBlock lastCmd)) {
+		nextToLastCmd = lastCmd
+		lastCmd = (nextBlock lastCmd)
+	}
+
+	// if the last command is a 'return false', remove it
+	if (and ('return' == (primName lastCmd)) (false == (first (argList lastCmd)))) {
+		if (gpCode == lastCmd) { return nil } // the return was the only command
+		setField nextToLastCmd 'nextBlock' nil
+	}
+	return gpCode
 }
 
 // Command tuple operations
@@ -713,7 +713,7 @@ method decodeOldANDorORreporter MicroBlocksDecompiler op i {
 	return (i + 4)
 }
 
-method decodeNewANDorORreporter MicroBlocksDecompiler op seq i {
+method decodeNewANDorORreporter MicroBlocksDecompiler op i {
 	// Decode an new AND or OR reporter (using jmpAnd/jmpOr).
 
 	if ('jmpAnd' == op) { gpOp = 'and' } else { gpOp = 'or' }
