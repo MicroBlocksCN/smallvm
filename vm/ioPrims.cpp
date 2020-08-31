@@ -634,6 +634,14 @@ void primAnalogWrite(OBJ *args) {
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return;
+	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
+			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
+		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
+			pinNum = digitalPin[pinNum];
+		} else {
+			return;
+		}
 	#endif
 	int value = obj2int(args[1]);
 	if (value < 0) value = 0;
@@ -1042,7 +1050,7 @@ void stopServos() {
 #else // use Arduino Servo library
 
 #include <Servo.h>
-Servo servo[DIGITAL_PINS];
+Servo servo[TOTAL_PINS];
 
 static void setServo(int pin, int usecs) {
 	if (usecs <= 0) {
@@ -1054,7 +1062,7 @@ static void setServo(int pin, int usecs) {
 }
 
 void stopServos() {
-	for (int pin = 0; pin < DIGITAL_PINS; pin++) {
+	for (int pin = 0; pin < TOTAL_PINS; pin++) {
 		if (servo[pin].attached()) servo[pin].detach();
 	}
 }
