@@ -4,7 +4,7 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// MicroBlocksThingServer.gp - An HTTP server implementing the Mozilla Web of THings REST
+// MicroBlocksThingServer.gp - An HTTP server implementing the Web of THings REST
 // protocol. This server allows a Snap! and other tools running in the browser to communicate
 // with a board tethered via a USB cable to the MicroBlocks IDE.
 //
