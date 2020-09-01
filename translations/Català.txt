@@ -1021,7 +1021,7 @@ method of request _
 mètode de la sol·licitud _
 
 ####
-# Mozilla Web Things library
+# Web Things library
 
 Web Thing
 Web Thing
@@ -1200,11 +1200,11 @@ ajusta la latència del port sèrie
 firmware version
 versió del firmware
 
-start Mozilla WebThing server
-inicia el servidor de Mozilla WebThings
+start WebThing server
+inicia el servidor de WebThings
 
-stop Mozilla WebThing server
-atura el servidor de Mozilla WebThings
+stop WebThing server
+atura el servidor de WebThings
 
 MicroBlocks HTTP Server listening on port 6473
 El servidor HTTP de MicroBlocks està actiu al port 6473

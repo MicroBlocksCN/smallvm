@@ -588,7 +588,7 @@ TFT balandligi
 set TFT pixel x _ y _ to _
 x _ y _ ga _ TFT piksel o'rnatish
 
-draw line on TFT from x _ y _ to x _ y _ color _	
+draw line on TFT from x _ y _ to x _ y _ color _
 TFT ga x _ y _ dan x _ y _ color _gacha  chiziq chizish
 
 
@@ -1022,11 +1022,11 @@ ketma-ket kechikishni o'rnating
 firmware version
 mikrodastur versiyasi
 
-start Mozilla WebThing server
-Mozilla WebThing serverini ishga tushiring
+start WebThing server
+WebThing serverini ishga tushiring
 
-stop Mozilla WebThing server
-Mozilla WebThing serverini to'xtatish
+stop WebThing server
+WebThing serverini to'xtatish
 
 MicroBlocks HTTP Server listening on port 6473
 6473 portida MicroBlocks HTTP Serverni tinglayapti

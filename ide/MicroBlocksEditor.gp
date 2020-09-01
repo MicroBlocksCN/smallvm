@@ -635,9 +635,9 @@ if (contains (commandLine) '--allowMorphMenu') {
 		addItem menu 'wipe and repartition esp32' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 		addLine menu
 	  if (not (isRunning thingServer)) {
-		addItem menu 'start Mozilla WebThing server' 'startThingServer'
+		addItem menu 'start WebThing server' 'startThingServer'
 	  } else {
-		addItem menu 'stop Mozilla WebThing server' 'stopThingServer'
+		addItem menu 'stop WebThing server' 'stopThingServer'
 	  }
 	}
 	addLine menu
@@ -673,12 +673,12 @@ method hideAdvancedBlocks MicroBlocksEditor {
 
 method startThingServer MicroBlocksEditor {
   if (start thingServer) {
-	(inform 'MicroBlocks HTTP Server listening on port 6473' 'Mozilla WebThings server')
+	(inform 'MicroBlocks HTTP Server listening on port 6473' 'WebThing Server')
   } else {
 	(inform (join
-		'Failed to start Mozilla WebThings server.' (newline)
+		'Failed to start WebThing server.' (newline)
 		'Please make sure that no other service is running at port 6473.')
-		'Mozilla WebThings server')
+		'WebThing Server')
   }
 }
 

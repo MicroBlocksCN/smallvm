@@ -244,7 +244,7 @@ new list length _
 nieuwe lijst lengte _
 
 new byte array length _
-nieuwe byte-array lengte _ 
+nieuwe byte-array lengte _
 
 free memory
 vrij geheugen
@@ -573,7 +573,7 @@ distance (cm) trigger _ echo _
 afstand (cm) trigger _ echo _
 
 ####
-# Infrared remote libraryh 
+# Infrared remote libraryh
 
 IR Remote
 IR afstandsbediening
@@ -853,7 +853,7 @@ Calliope set LED red _ green _ blue _
 Calliope zet LED op rood _ groen _ blauw _
 
 Calliope set speaker _
-Calliope zet luidspreker op _ 
+Calliope zet luidspreker op _
 
 Calliope loudness
 Calliope luidheid
@@ -976,7 +976,7 @@ method of request _
 methode van verzoek _
 
 ####
-# Mozilla Web Things library
+# Web Things library
 
 Web Thing
 WebThing
@@ -1021,7 +1021,7 @@ event definitions JSON
 gebeurtenis definities JSON
 
 events JSON
-gebeurtenissen 
+gebeurtenissen
 
 ##################
 # MicroBlocks UI #
@@ -1155,11 +1155,11 @@ maak seriële vertraging
 firmware version
 firmware versie
 
-start Mozilla WebThing server
-start Mozilla WebThing server
+start WebThing server
+start WebThing server
 
-stop Mozilla WebThing server
-stop Mozilla WebThing server
+stop WebThing server
+stop WebThing server
 
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Server via poort 6473
@@ -1365,7 +1365,7 @@ Desktop
 Bureaublad
 
 Computer
-Computer 
+Computer
 
 Cloud
 Cloud

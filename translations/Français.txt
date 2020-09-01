@@ -1010,10 +1010,10 @@ set serial delay
 firmware version
 --MISSING--
 
-start Mozilla WebThing server
+start WebThing server
 --MISSING--
 
-stop Mozilla WebThing server
+stop WebThing server
 --MISSING--
 
 MicroBlocks HTTP Server listening on port 6473

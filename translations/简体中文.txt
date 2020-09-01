@@ -208,13 +208,13 @@ length of _
 _ 的长度
 
 item _ of _
-第 _ 项 _ 
+第 _ 项 _
 
 replace item _ of list _ with _
-把第 _ 项 _ 替换为 _ 
+把第 _ 项 _ 替换为 _
 
 delete item _ of list _
-删除第 _ 项 _ 
+删除第 _ 项 _
 
 add _ to list _
 添加 _ 至列表 _
@@ -226,10 +226,10 @@ copy _ from _
 复制字符 _ 从 _
 
 to _
-到 _ 
+到 _
 
 find _ in _
-寻找 _ 在 _ 中   
+寻找 _ 在 _ 中
 
 starting at _
 开始于 _
@@ -241,13 +241,13 @@ separator _
 分隔符 _
 
 unicode _ of _
-Unicode 第 _ 个字符来自 _ 
+Unicode 第 _ 个字符来自 _
 
 string from unicode _
-unicode为 _ 的字符 
+unicode为 _ 的字符
 
 new list length _
-新建长度为 _ 的列表 
+新建长度为 _ 的列表
 
 new byte array length _
 新建长度为 _ 的字节数组
@@ -281,7 +281,7 @@ i2c set device _ register _ to _
 i2c 设置设备 _ 寄存器 _ 为 _
 
 i2c device _ read list _
-i2c 设备 _ 读取列表 _ 
+i2c 设备 _ 读取列表 _
 
 i2c device _ write list _
 i2c 设备 _ 写入列表 _
@@ -320,13 +320,13 @@ has tone support
 具有音调支持
 
 play tone pin _ frequency _
-播放音调于引脚 _ 频率 _ 
+播放音调于引脚 _ 频率 _
 
 has WiFi support
 具有WiFi支持
 
 start WiFi _ password _
-开启 WiFi _ 密码 _ 
+开启 WiFi _ 密码 _
 
 stop WiFi
 停止WiFi
@@ -344,7 +344,7 @@ radio send string _
 广播发送字符串 _
 
 radio send pair _ = _
-广播发送配对信息 _ = _ 
+广播发送配对信息 _ = _
 
 radio message received?
 广播消息已收到?
@@ -365,7 +365,7 @@ _radio set channel (0-83) _
 设置广播频道 (0-83) _
 
 radio set power (0-7) _
-设置广播信号强度 (0-7) _ 
+设置广播信号强度 (0-7) _
 
 _radio last signal strength
 最后广播的信号强度
@@ -432,7 +432,7 @@ random color
 随机颜色
 
 attach _ LED NeoPixel strip to pin _
-将 _ 个LED的新光像素灯带 连接至引脚 _ 
+将 _ 个LED的新光像素灯带 连接至引脚 _
 
 has white _
 具有白光 _
@@ -630,7 +630,7 @@ strength
 # Ultrasound distance library
 
 distance (cm) trigger _ echo _
-距离 (cm) 触发 _ 回声 _ 
+距离 (cm) 触发 _ 回声 _
 
 ####
 # Infrared remote library
@@ -731,7 +731,7 @@ set TFT pixel x _ y _ to _
 设置 TFT-像素 x _ y _ 为 _
 
 draw line on TFT from x _ y _ to x _ y _ color _
-在TFT上绘制直线从 x _ y _ 至 x _ y _ 颜色 _ 
+在TFT上绘制直线从 x _ y _ 至 x _ y _ 颜色 _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
 在TFT上绘制长方形,位置 x _ y _ 宽度 _ 高度 _ 颜色 _
@@ -743,7 +743,7 @@ draw circle on TFT at x _ y _ radius _ color _
 在TFT上绘制圆形, 位置 x _ y _ 半径 _ 颜色 _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
-在TFT上绘制三角形, 位置 x _ y _ , x _ y _ , x _ y _ 颜色 _ 
+在TFT上绘制三角形, 位置 x _ y _ , x _ y _ , x _ y _ 颜色 _
 
 filled _
 填充 _
@@ -804,13 +804,13 @@ set pen to random color
 将画笔设置为随机颜色
 
 fill display with _
-用 _ 填充视区 
+用 _ 填充视区
 
 go to x _ y _
-移动到 x _ y _ 
+移动到 x _ y _
 
 point in direction _
-面向 _ 
+面向 _
 
 ####
 # File system library
@@ -834,7 +834,7 @@ append bytes _ to file _
 将字节 _ 添加至文件 _
 
 end of file _
-文件 _ 结束 
+文件 _ 结束
 
 next line of file _
 文件 _ 的下一行
@@ -864,7 +864,7 @@ wifi connect to _ password _ try _ times
 连接WiFi至 _ 密码 _ 尝试 _ 次
 
 wifi create hotspot _ password _
-创建WiFi热点 _ 密码 _ 
+创建WiFi热点 _ 密码 _
 
 IP address
 IP地址
@@ -910,10 +910,10 @@ button _ pressed
 # Calliope board library
 
 Calliope set LED red _ green _ blue _
-Calliope 设置 LED 红 _ 绿 _ 蓝 _ 
+Calliope 设置 LED 红 _ 绿 _ 蓝 _
 
 Calliope set speaker _
-Calliope 设置扬声器 _ 
+Calliope 设置扬声器 _
 
 Calliope loudness
 Calliope 响度
@@ -922,7 +922,7 @@ Calliope 响度
 # Circuit Playground Express board library
 
 Circuit Playground set speaker _
-Circuit Playground 设置扬声器 _ 
+Circuit Playground 设置扬声器 _
 
 Circuit Playground slide switch
 Circuit Playground 滑动开关
@@ -976,7 +976,7 @@ color _ name
 # DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
-温度 (Celsius) DHT11 引脚 _ 
+温度 (Celsius) DHT11 引脚 _
 
 humidity DHT11 pin _
 湿度 DHT11 引脚 _
@@ -1018,7 +1018,7 @@ HTTP server request
 HTTP服务器请求
 
 respond _ to HTTP request
-回应 _ 至HTTP请求 
+回应 _ 至HTTP请求
 
 with body _
 with body _
@@ -1036,7 +1036,7 @@ method of request _
 method of request _
 
 ####
-# Mozilla Web Things library
+# Web Things library
 
 Web Thing
 Web Thing
@@ -1069,7 +1069,7 @@ start WebThing server
 启动WebThing服务器
 
 trigger event _
-触发事件 _ 
+触发事件 _
 
 thing description JSON
 Thing的JSON描述
@@ -1215,11 +1215,11 @@ set serial delay
 firmware version
 固件版本
 
-start Mozilla WebThing server
-启动Mozilla WebThing服务器
+start WebThing server
+启动WebThing服务器
 
-stop Mozilla WebThing server
-停止Mozilla WebThing服务器
+stop WebThing server
+停止WebThing服务器
 
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP服务器正在监听端口 6473
@@ -1249,7 +1249,7 @@ download and install latest VM
 下载并且安装最新版的虚拟机
 
 Select board type:
-选择主板类型: 
+选择主板类型:
 
 Uploading MicroBlocks to board...
 将MicroBlocks上传至主板...
@@ -1434,7 +1434,7 @@ File
 文件
 
 File Open
-文件 打开 
+文件 打开
 
 File Save
 文件 保存
@@ -1449,7 +1449,7 @@ by
 由
 
 Depends:
-依赖于: 
+依赖于:
 
 Tags:
 标签:
@@ -1467,10 +1467,10 @@ Host does not exist or is currently down.
 主机不存在或处于关闭状态.
 
 File not found in server.
-无法在服务器上找到该文件. 
+无法在服务器上找到该文件.
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
-服务器请求HTTPS协议，但MicroBlocks目前还不支持. 
+服务器请求HTTPS协议，但MicroBlocks目前还不支持.
 
 library information
 积木库信息

@@ -202,10 +202,10 @@ length of _
 Länge von _
 
 item _ of _
-Element _ von _ 
+Element _ von _
 
 replace item _ of list _ with _
-ersetze Element _ in Liste _ durch _ 
+ersetze Element _ in Liste _ durch _
 
 delete item _ of list _
 entferne Element aus Liste _
@@ -217,13 +217,13 @@ join _ _
 verbinde _ _
 
 copy _ from _
-kopiere _ beginnend bei _ 
+kopiere _ beginnend bei _
 
 to _
-bis _ 
+bis _
 
 find _ in _
-finde _ in _ 
+finde _ in _
 
 starting at _
 beginnend bei _
@@ -235,16 +235,16 @@ separator _
 Separator _
 
 unicode _ of _
-Unicode _ von _ 
+Unicode _ von _
 
 string from unicode _
-Zeichenkette aus Unicode _ 
+Zeichenkette aus Unicode _
 
 new list length _
-neue Liste Länge _ 
+neue Liste Länge _
 
 new byte array length _
-neues Byte Array Länge _ 
+neues Byte Array Länge _
 
 free memory
 freier Speicher
@@ -275,7 +275,7 @@ i2c set device _ register _ to _
 i2c setze Gerät _ an Register _ auf _
 
 i2c device _ read list _
-i2c Gerät _ lies list _ 
+i2c Gerät _ lies list _
 
 i2c device _ write list _
 i2c Gerät _ schreibe list _
@@ -314,13 +314,13 @@ has tone support
 unterstützt Klänge
 
 play tone pin _ frequency _
-spiele Ton Pin _ Frequenz _ 
+spiele Ton Pin _ Frequenz _
 
 has WiFi support
 unterstützt WiFi
 
 start WiFi _ password _
-starte WiFi _ Passwort _ 
+starte WiFi _ Passwort _
 
 stop WiFi
 stoppe WiFi
@@ -338,7 +338,7 @@ radio send string _
 Radio sende Zeichenkette _
 
 radio send pair _ = _
-Radio sende Paar _ = _ 
+Radio sende Paar _ = _
 
 radio message received?
 Radio Nachricht erhalten?
@@ -359,7 +359,7 @@ radio set channel (0-83) _
 Radio setze Kanal (0-83) _
 
 radio set power (0-7) _
-Radio setze Stärke (0-7) _ 
+Radio setze Stärke (0-7) _
 
 radio last signal strength
 Radio letzte Signalstärke
@@ -426,7 +426,7 @@ random color
 zufällige Farbe
 
 attach _ LED NeoPixel strip to pin _
-verbinde _ LED NeoPixel Streifen mit Pin _ 
+verbinde _ LED NeoPixel Streifen mit Pin _
 
 has white _
 mit Weiß _
@@ -570,10 +570,10 @@ Finch Batterie
 # Ultrasound distance library
 
 distance (cm) trigger _ echo _
-Entfernung (cm) Auslöser _ Echo _ 
+Entfernung (cm) Auslöser _ Echo _
 
 ####
-# Infrared remote libraryh 
+# Infrared remote libraryh
 
 IR Remote
 IR Fernzugriff
@@ -671,7 +671,7 @@ set TFT pixel x _ y _ to _
 setze TFT-Pixel x _ y _ auf _
 
 draw line on TFT from x _ y _ to x _ y _ color _
-zeichne Linie auf TFT von x _ y _ nach x _ y _ Farbe _ 
+zeichne Linie auf TFT von x _ y _ nach x _ y _ Farbe _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
 zeichne Rechteck auf TFT bei x _ y _ Breite _ Höhe _ Farbe _
@@ -683,7 +683,7 @@ draw circle on TFT at x _ y _ radius _ color _
 zeichne Kreis auf TFT bei x _ y _ Radius _ Farbe _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
-zeichne Dreieck auf TFT bei x _ y_ , x _ y, x _ y _ Farbe _ 
+zeichne Dreieck auf TFT bei x _ y_ , x _ y, x _ y _ Farbe _
 
 filled _
 ausgefüllt _
@@ -692,7 +692,7 @@ write _ on TFT at x _ y _ color _
 Schreibe _ auf TFT bei x _ y _ Farbe _
 
 scale _ wrap _
-Größe _ Zeilenumbruch _ 
+Größe _ Zeilenumbruch _
 
 ####
 # Tone library
@@ -744,13 +744,13 @@ set pen to random color
 setze zufällige Stiftfarbe
 
 fill display with _
-fülle Display mit _ 
+fülle Display mit _
 
 go to x _ y _
-gehe zu x _ y _ 
+gehe zu x _ y _
 
 point in direction _
-zeige Richtung _ 
+zeige Richtung _
 
 ####
 # File system library
@@ -804,7 +804,7 @@ wifi connect to _ password _ try _ times
 WiFi verbinde mit _ Passwort _ Versuche _
 
 wifi create hotspot _ password _
-WiFi öffne Hotspot _ Passwort _ 
+WiFi öffne Hotspot _ Passwort _
 
 IP address
 IP Addresse
@@ -850,10 +850,10 @@ Knopf _ gedrückt
 # Calliope board library
 
 Calliope set LED red _ green _ blue _
-Calliope setze LED rot _ grün _ blau _ 
+Calliope setze LED rot _ grün _ blau _
 
 Calliope set speaker _
-Calliope setze Lautsprecher _ 
+Calliope setze Lautsprecher _
 
 Calliope loudness
 Calliope Lautstärke
@@ -862,7 +862,7 @@ Calliope Lautstärke
 # Circuit Playground Express board library
 
 Circuit Playground set speaker _
-Circuit Playground setze Lautsprecher _ 
+Circuit Playground setze Lautsprecher _
 
 Circuit Playground slide switch
 Circuit Playground Schiebeschalter
@@ -916,7 +916,7 @@ Farbe _ Name
 # DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
-Temperatur (Celsius) DHT11 Pin _ 
+Temperatur (Celsius) DHT11 Pin _
 
 humidity DHT11 pin _
 Luftfeuchtigkeit DHT11 Pin _
@@ -961,22 +961,22 @@ respond _ to HTTP request
 antworte _ auf HTTP Anfrage
 
 with body _
-mit Body _ 
+mit Body _
 
 and headers _
-und Header _ 
+und Header _
 
 body of request _
 Body der Anfrage _
 
 path of request _
-Pfad der Anfrage _ 
+Pfad der Anfrage _
 
 method of request _
-Methode der Anfrage _ 
+Methode der Anfrage _
 
 ####
-# Mozilla Web Things library
+# Web Things library
 
 Web Thing
 Web Thing
@@ -1155,11 +1155,11 @@ setze serielle Verzögerung
 firmware version
 Firmware Version
 
-start Mozilla WebThing server
-starte Mozilla WebThing Server starten
+start WebThing server
+starte WebThing Server starten
 
-stop Mozilla WebThing server
-stoppe Mozilla WebThing Server
+stop WebThing server
+stoppe WebThing Server
 
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Server lauscht an Port 6473
@@ -1189,7 +1189,7 @@ download and install latest VM
 aktuelle VM herunterladen und installieren
 
 Select board type:
-Board-Typ auswählen: 
+Board-Typ auswählen:
 
 Uploading MicroBlocks to board...
 MicroBlocks wird auf das Board geladen...
@@ -1389,7 +1389,7 @@ by
 von
 
 Depends:
-Abhängig von: 
+Abhängig von:
 
 Tags:
 Schlagworte:
@@ -1407,10 +1407,10 @@ Host does not exist or is currently down.
 Host existiert nicht oder ist momentan nicht erreichbar.
 
 File not found in server.
-Datei konnte auf dem Server nicht gefunden werden. 
+Datei konnte auf dem Server nicht gefunden werden.
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
-Server erwartet HTTPS, was von MicroBlocks momentan nicht unterstützt wird. 
+Server erwartet HTTPS, was von MicroBlocks momentan nicht unterstützt wird.
 
 library information
 Modulinformation

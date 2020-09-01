@@ -1010,11 +1010,11 @@ axustar a latencia do porto serie
 firmware version
 versión do firmware
 
-start Mozilla WebThing server
-iniciar o servidor de Mozilla WebThings
+start WebThing server
+iniciar o servidor de WebThings
 
-stop Mozilla WebThing server
-deter o servidor de Mozilla WebThings
+stop WebThing server
+deter o servidor de WebThings
 
 MicroBlocks HTTP Server listening on port 6473
 o servidor HTTP de MicroBlocks esta activo no porto 6473

@@ -221,13 +221,13 @@ to _
 в _
 
 find _ in _
-найти _ в _ 
+найти _ в _
 
 starting at _
 начинается с _
 
 join items of list _
-соединить элементы из списка _ 
+соединить элементы из списка _
 
 separator _
 разделитель _
@@ -248,7 +248,7 @@ free memory
 свободная память
 
 My Blocks
-Мои Блоки 
+Мои Блоки
 
 # Buttons on top of "My Blocks" category
 
@@ -382,7 +382,7 @@ tilt z
 наклон z
 
 acceleration
-аккселератов 
+аккселератов
 
 light level
 уровень освещённости
@@ -424,10 +424,10 @@ PIR
 PIR
 
 PIR at pin _ detected movement
-PIR 
+PIR
 
 ED1 Stepper Motor
-ED1 Шагомер 
+ED1 Шагомер
 
 move motor _ _ steps _
 двигать двигатель _ _ шаги _
@@ -643,7 +643,7 @@ turn _ / _ of circle
 поворот _ / _ круг
 
 pen down
-перо опустить 
+перо опустить
 
 pen up
 перо поднять
@@ -652,7 +652,7 @@ set pen color to _
 установить цвет пера на _
 
 set pen to random color
-установить цвет пера на случайный 
+установить цвет пера на случайный
 
 fill display with _
 заполнить дисплей с _
@@ -667,13 +667,13 @@ Files
 Файлы
 
 open file _
-открыть файл _ 
+открыть файл _
 
 close file _
-закрыть файл _ 
+закрыть файл _
 
 delete file _
-удалить файл _ 
+удалить файл _
 
 append line _ to file _
 добавить строку _ в файл _
@@ -682,7 +682,7 @@ append bytes _ to file _
 добавить байты _ в файл _
 
 end of file _
-конец файла _ 
+конец файла _
 
 next line of file _
 следующая строка файла _
@@ -751,7 +751,7 @@ Calliope set speaker _
 Каллиопа
 
 Calliope loudness
-Громкость Каллиопа 
+Громкость Каллиопа
 
 Circuit Playground set speaker _
 Схема игровой площадки комплект динамиков _
@@ -1022,11 +1022,11 @@ set serial delay
 firmware version
 версия прошивки
 
-start Mozilla WebThing server
-запустить сервер Mozilla WebThing
+start WebThing server
+запустить сервер WebThing
 
-stop Mozilla WebThing server
-остановить сервер Mozilla WebThing
+stop WebThing server
+остановить сервер WebThing
 
 MicroBlocks HTTP Server listening on port 6473
 HTTP-сервер MicroBlocks прослушивает порт 6473
@@ -1107,19 +1107,19 @@ delete block definition...
 удалить определение блока
 
 delete the definition of this block
-удалить определение данного блока 
+удалить определение данного блока
 
 duplicate
 дублировать
 
 duplicate this block
-дублировать данный блок 
+дублировать данный блок
 
 delete block
 удалить блок
 
 delete this block
-удалить данный блок 
+удалить данный блок
 
 just this one block
 только этот блок
@@ -1131,7 +1131,7 @@ copy these blocks to the clipboard
 скопировать эти блоки в буфер обмена
 
 duplicate all
-дублировать все 
+дублировать все
 
 duplicate these blocks
 дублировать эти блоки
@@ -1185,7 +1185,7 @@ input
 ввод
 
 hide block definition
-скрыть значение блока 
+скрыть значение блока
 
 Are you sure you want to remove this block definition?
 Вы уверены, что хотите удалить это определение блока?

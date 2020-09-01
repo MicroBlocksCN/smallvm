@@ -715,7 +715,7 @@ path of request _
 method of request _
 
 ####
-# Mozilla Web Things library
+# Web Things library
 
 Web Thing
 
@@ -837,9 +837,9 @@ set serial delay
 
 firmware version
 
-start Mozilla WebThing server
+start WebThing server
 
-stop Mozilla WebThing server
+stop WebThing server
 
 MicroBlocks HTTP Server listening on port 6473
 
