@@ -57,17 +57,17 @@ to 'wrong guess' index {
   return (or (or (and ('up button') ((at index sequence) != 1)) (and ('down button') ((at index sequence) != 2))) (or (and ('left button') ((at index sequence) != 3)) (and ('right button') ((at index sequence) != 4))))
 }
 
-script 51 50 {
+script 51 55 {
 comment 'This is the Simon memory game for the
 Citilab ED1 board'
 }
 
-script 52 123 {
+script 52 128 {
 whenStarted
-sendBroadcastSimple 'go!'
+sendBroadcast 'go!'
 }
 
-script 383 126 {
+script 383 131 {
 whenBroadcastReceived 'player turn'
 local 'index' 1
 repeatUntil (index > (v 'current index')) {
@@ -81,24 +81,24 @@ repeatUntil (index > (v 'current index')) {
     'play tone' 'F' 1 250
     'play tone' 'E' 1 250
     waitMillis 500
-    sendBroadcastSimple 'go!'
+    sendBroadcast 'go!'
     stopTask
   }
 }
 waitMillis 500
 'current index' += 1
-sendBroadcastSimple 'play sequence'
+sendBroadcast 'play sequence'
 }
 
-script 52 224 {
+script 52 229 {
 whenBroadcastReceived 'go!'
 'current index' = 1
 'initialize letters'
 waitMillis 1500
-sendBroadcastSimple 'play sequence'
+sendBroadcast 'play sequence'
 }
 
-script 50 389 {
+script 50 394 {
 whenBroadcastReceived 'play sequence'
 if ((v 'current index') > 20) {
   'play tone' 'C' 3 100
@@ -109,12 +109,12 @@ if ((v 'current index') > 20) {
   'play tone' 'G' 2 100
   'play tone' 'C' 3 200
   waitMillis 500
-  sendBroadcastSimple 'go!'
+  sendBroadcast 'go!'
 } else {
   for i (v 'current index') {
     'play note at' i
   }
-  sendBroadcastSimple 'player turn'
+  sendBroadcast 'player turn'
 }
 }
 
@@ -179,9 +179,10 @@ to 'up button' {
 
 module Tone Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tone sound music audio note speaker 
-description 'Audio tone generation. Make music with MicroBlocks!'
+description 'Audio tone generation. Make music with MicroBlocks!
+'
 variables _tonePin _toneInitalized _toneLoopOverhead 
 
 	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
@@ -304,8 +305,16 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 26
     } ((boardType) == 'M5Stack-Core') {
       _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'D1-Mini') {
+      _tonePin = 12
     } else {
-      _tonePin = 0
+      _tonePin = -1
     }
   } else {
     _tonePin = pinNumber

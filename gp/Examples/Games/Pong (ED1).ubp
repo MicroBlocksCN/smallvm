@@ -118,7 +118,7 @@ to 'plot paddles' {
   '[tft:roundedRect]' (v 'paddle 1 x') 120 (v 'paddle width') 8 4 (hexToInt 'FFFF00') true
 }
 
-script 50 50 {
+script 50 55 {
 comment 'A rendition to one of the first videogames ever.
 This one fits in your pocket!
 
@@ -126,7 +126,7 @@ Player 1 uses keys OK and X.
 Player 2 uses ← and →.'
 }
 
-script 56 158 {
+script 56 163 {
 whenStarted
 'refresh rate' = 40
 'ball radius' = 4
@@ -144,7 +144,7 @@ forever {
 }
 }
 
-script 380 167 {
+script 380 172 {
 whenCondition ('OK button')
 if ((v 'paddle 1 x') >= 4) {
   'paddle 1 x' += -2
@@ -152,7 +152,7 @@ if ((v 'paddle 1 x') >= 4) {
 'plot paddles'
 }
 
-script 382 364 {
+script 382 369 {
 whenCondition ('cancel button')
 if ((v 'paddle 1 x') <= (126 - (v 'paddle width'))) {
   'paddle 1 x' += 2
@@ -160,7 +160,7 @@ if ((v 'paddle 1 x') <= (126 - (v 'paddle width'))) {
 'plot paddles'
 }
 
-script 389 565 {
+script 389 570 {
 whenCondition ('right button')
 if ((v 'paddle 2 x') <= (126 - (v 'paddle width'))) {
   'paddle 2 x' += 2
@@ -168,7 +168,7 @@ if ((v 'paddle 2 x') <= (126 - (v 'paddle width'))) {
 'plot paddles'
 }
 
-script 61 571 {
+script 61 576 {
 whenCondition ('left button')
 if ((v 'paddle 2 x') >= 4) {
   'paddle 2 x' += -2
@@ -237,9 +237,10 @@ to 'up button' {
 
 module Tone Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tone sound music audio note speaker 
-description 'Audio tone generation. Make music with MicroBlocks!'
+description 'Audio tone generation. Make music with MicroBlocks!
+'
 variables _tonePin _toneInitalized _toneLoopOverhead 
 
 	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
@@ -362,8 +363,16 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 26
     } ((boardType) == 'M5Stack-Core') {
       _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'D1-Mini') {
+      _tonePin = 12
     } else {
-      _tonePin = 0
+      _tonePin = -1
     }
   } else {
     _tonePin = pinNumber
