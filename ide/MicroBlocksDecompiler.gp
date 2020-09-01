@@ -65,7 +65,6 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	if (3 == chunkType) { gpCode = (removeFinalReturn this gpCode) }
 	gpCode = (addHatBlock this chunkType gpCode)
 	if (isNil gpCode) {
-		print 'Stand-alone comment'
 		return (newCommand 'comment' 'Stand-alone comment')
 	}
 	fixBooleanAndColorArgs this gpCode
