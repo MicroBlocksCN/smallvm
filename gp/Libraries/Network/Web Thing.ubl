@@ -1,9 +1,9 @@
 module 'Web Thing' Comm
 author MicroBlocks
-version 3 2
+version 3 3
 depends 'HTTP server' 'WiFi'
-tags iot mozilla webthing wot
-description 'Build Web Things as specified by the Mozilla WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Mozilla Web of Things gateway.'
+tags iot webthing wot
+description 'Build Web Things as specified by the WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Web of Things gateway.'
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
 
 	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
@@ -108,6 +108,7 @@ to '_parse JSON value' JSON {
 }
 
 to '_process OPTIONS request' req {
+  local 'path' ('path of request' req)
   '[net:respondToHttpRequest]' '200 OK' '' 'Access-Control-Allow-Origin: *
 Access-Control-Allow-Methods: PUT, GET, OPTIONS
 Access-Control-Allow-Headers: Content-Type'
