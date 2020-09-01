@@ -113,9 +113,10 @@ part
 
 module Tone Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tone sound music audio note speaker 
-description 'Audio tone generation. Make music with MicroBlocks!'
+description 'Audio tone generation. Make music with MicroBlocks!
+'
 variables _tonePin _toneInitalized _toneLoopOverhead 
 
 	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
@@ -238,8 +239,16 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 26
     } ((boardType) == 'M5Stack-Core') {
       _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'D1-Mini') {
+      _tonePin = 12
     } else {
-      _tonePin = 0
+      _tonePin = -1
     }
   } else {
     _tonePin = pinNumber
