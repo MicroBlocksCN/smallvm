@@ -352,15 +352,16 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 	if (isNil vmData) { return }
 
 	if (isOneOf boardName 'ESP8266' 'D1-Mini') {
-		uploadESP8266VM this vmData eraseFlag
+		ok = (uploadESP8266VM this vmData eraseFlag)
 	} else {
-		uploadESP32VM this vmData eraseFlag
+		ok = (uploadESP32VM this vmData eraseFlag)
 	}
 
-	status = (localized 'Done')
+	if ok { status = (localized 'Done') } else { status = (localized 'Failed') }
+
 	waitMSecs 100 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
 	exitBootMode this
-	waitMSecs 1000
+	waitMSecs 1500
 	closePort this
 }
 
@@ -402,27 +403,28 @@ method uploadESP8266VM ESPTool vmData eraseFlag {
 	if (isNil eraseFlag) { eraseFlag = false }
 
 	ok = (connect this)
-	if (not ok) { return }
+	if (not ok) { return false }
 
 	ok = (uploadStub this)
-	if (not ok) { return }
+	if (not ok) { return false }
 
 	if eraseFlag { eraseFlash this }
 
 	uploadCompressed this 0 vmData
+	return true
 }
 
 method uploadESP32VM ESPTool vmData eraseFlag {
 	if (isNil eraseFlag) { eraseFlag = false }
 
 	ok = (connect this)
-	if (not ok) { return }
+	if (not ok) { return false }
 
 	ok = (uploadStub this)
-	if (not ok) { return }
+	if (not ok) { return false }
 
 	ok = (setFlashParameters this)
-	if (not ok) { return }
+	if (not ok) { return false }
 
 	if eraseFlag { eraseFlash this }
 
@@ -436,6 +438,7 @@ method uploadESP32VM ESPTool vmData eraseFlag {
 	uploadCompressed this (hex '8000') data
 
 	uploadCompressed this (hex '10000') vmData
+	return true
 }
 
 method uploadCompressed ESPTool startAddr data {
@@ -446,7 +449,8 @@ method uploadCompressed ESPTool startAddr data {
 	// and leaves a reasonable margin for data that requires more escape sequences
 	// while minimizing the total number of packets sent to minimize upload time.
 
-start = (msecsSinceStart)
+	start = (msecsSinceStart)
+
 	packetSize = 800 // 800 is good; 900 works; 984 fails
 	compressedData = (zlibEncode data)
 	compressedBytecount = (byteCount compressedData)
@@ -460,7 +464,6 @@ start = (msecsSinceStart)
 	sendCmd this (hex '10') args
 	if (errorResponse this) { return }
 
-print ''
 	status = ''
 	percentDone = 0
 
@@ -483,16 +486,14 @@ print ''
 		sent += bytesToSend
 		percentDone = (round ((100 * sent) / compressedBytecount))
 		status = (join '' percentDone '%')
-print (join (string 27) '[1A' (string 27) '[K' sent ' (' percentDone '%)')
 		seqNum += 1
 	}
-print ((msecsSinceStart) - start) 'msecs'
+	print ((msecsSinceStart) - start) 'msecs'
 }
 
 method uploadUncompressed ESPTool startAddr flashData {
 	// Upload the uncompressed binary data to Flash at the given address.
 
-start = (msecsSinceStart)
 	totalBytes = (byteCount flashData)
 	packetSize = 512
 	packetCount = (ceiling (totalBytes / packetSize))
@@ -527,11 +528,9 @@ start = (msecsSinceStart)
 		if (errorResponse this) { return }
 		sent += bytesToSend
 		percentDone = (round ((100 * sent) / totalBytes))
-		status= (join '' percentDone '%')
-print (join (string 27) '[1A' (string 27) '[K' sent ' (' percentDone '%)')
+		status = (join '' percentDone '%')
 		seqNum += 1
 	}
-print ((msecsSinceStart) - start) 'msecs'
 }
 
 method setFlashParameters ESPTool {
