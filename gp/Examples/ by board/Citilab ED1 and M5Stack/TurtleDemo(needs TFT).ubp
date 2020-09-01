@@ -88,6 +88,7 @@ to '_turtleNotes' {
 The sine function takes an angle in hundreds of a degree and returns a
 number scaled by 16384. _turtleX and _turtleY are also scaled by 16384.
 Those numbers are shifted right by 14 bits to get pixel locations.'
+  local 'ignore' 0
 }
 
 to clearDisplay color {

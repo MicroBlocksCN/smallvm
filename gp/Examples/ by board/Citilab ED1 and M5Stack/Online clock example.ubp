@@ -6,7 +6,6 @@ variables hours minutes seconds server
 
 	spec ' ' 'draw time' 'draw time'
 	spec ' ' 'fetch current time from server' 'fetch current time from server _' 'auto' 'microblocks.fun'
-	spec 'r' 'one second after' 'one second after h _ m _ s _' 'auto auto auto' '10' '10' '10'
 	spec 'r' 'online time' 'online time from server _' 'auto' 'microblocks.fun'
 	spec ' ' 'tick' 'tick'
 
@@ -51,10 +50,6 @@ to 'fetch current time from server' url {
     '[tft:circle]' (('[tft:getWidth]') / 2) (('[tft:getHeight]') / 5) 5 (colorSwatch 0 0 0 255) true
     waitMillis 25
   }
-}
-
-to 'one second after' h m s {
-  var += 1
 }
 
 to 'online time' url {

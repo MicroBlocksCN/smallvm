@@ -5,7 +5,6 @@ description ''
 variables sing pixels 
 
 	spec ' ' 'happy-birthday' 'happy-birthday'
-	spec ' ' 'many-more' 'many-more'
 	spec ' ' 'and-many-more' 'and-many-more'
 
 to 'and-many-more' {
@@ -53,16 +52,12 @@ to 'happy-birthday' {
   waitMillis half
 }
 
-to 'many-more' {
-  comment 'and-many-more'
-}
-
 script 50 50 {
 whenButtonPressed 'A'
 comment 'On a micro:bit, attach a piezo speaker between pin 0 and ground'
 comment 'This will use the built-in speaker on boards that have one
 such as the Circuit Playground Express, ED1, or M5Stack.'
-sendBroadcastSimple 'show message'
+sendBroadcast 'show message'
 'happy-birthday'
 'and-many-more'
 }
@@ -178,20 +173,21 @@ to stopScrollingText {
 
 module Tone Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tone sound music audio note speaker 
-description 'Audio tone generation. Make music with MicroBlocks!'
+description 'Audio tone generation. Make music with MicroBlocks!
+'
 variables _tonePin _toneInitalized _toneLoopOverhead 
 
-	spec ' ' 'play tone' 'play note _ octave _ during _ ms' 'auto num num' 'C' 0 500
-	spec ' ' 'playMIDIKey' 'play midi key _ for _ milliseconds' 'num num' 60 500
-	spec ' ' 'play frequency' 'play frequency _ for _ milliseconds' 'num num' 261 500
+	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
 	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
 	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
 	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
 	spec 'r' '_baseFreqForSharpOrFlat' '_baseFreqForSharpOrFlat _' 'auto' 'c#'
 	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
-	spec ' ' '_toneLoop' '_toneLoop _ for _ milliseconds' 'num num' 440000 100
+	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
@@ -303,8 +299,16 @@ to 'attach buzzer to pin' pinNumber {
       _tonePin = 26
     } ((boardType) == 'M5Stack-Core') {
       _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'D1-Mini') {
+      _tonePin = 12
     } else {
-      _tonePin = 0
+      _tonePin = -1
     }
   } else {
     _tonePin = pinNumber
