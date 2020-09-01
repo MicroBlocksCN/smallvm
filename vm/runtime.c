@@ -236,8 +236,13 @@ static void startButtonHats(int hatType) {
 	}
 }
 
-static int hasButtonHat() {
+static int mustPollButtons() {
 	// Return true if there is at least one "when button _ pressed" script.
+	// Always return true on ED1 because we need to poll the touch sensor buttons.
+
+	#ifdef ARDUINO_CITILAB_ED1
+		return true;
+	#endif
 
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		int hatType = chunks[i].chunkType;
@@ -258,7 +263,7 @@ void checkButtons() {
 	if ((now - lastCheck) < BUTTON_CHECK_INTERVAL) return; // not time yet
 	lastCheck = now;
 
-	if (!hasButtonHat()) return; // no need to check buttons (allows button pins to be usef for output)
+	if (!mustPollButtons()) return; // no need to poll buttons (allows button pins to be used for output)
 
 	now = millisecs(); // use milliseconds for button timeouts
 	if (!now) now = 1; // the value is reserved to mean button is not down
