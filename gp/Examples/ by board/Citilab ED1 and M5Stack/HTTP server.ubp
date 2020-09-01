@@ -4,6 +4,22 @@ version 1 0
 description ''
 variables responses 
 
+	spec ' ' 'initializeResponses' 'initializeResponses'
+
+to initializeResponses {
+  responses = ('[data:makeList]' ('[data:makeList]' '/' '<h1>Hello!</h1>
+<p>This is the MicroBlocks HTTP server.</p>
+<p>You can test the following URLs:</p>
+<ul>
+<li>/test</li>
+<li>/foo</li>
+<li>/bar</li>
+</ul>') ('[data:makeList]' '/test' '<p>This is a <strong>test</strong> URL</p>') ('[data:makeList]' '/foo' '<p>Just a page that says</p>
+<h1>FOO</h1>') ('[data:makeList]' '/bar' '<p>Just a page that says</p>
+<h1>BAR</h1>
+<img src="http://microblocks.fun/logo.png"/>'))
+}
+
 script 55 50 {
 comment 'This is an example HTTP server written in MicroBlocks.
 It responds to the following URLs:
@@ -27,7 +43,8 @@ Enjoy!'
 script 57 347 {
 whenStarted
 comment 'Remember to use your network name (SSID) and password below'
-'wifi connect to' 'Network_Name' 'Network_Password' 3
+'wifi connect to' 'Network_Name' '' 3
+initializeResponses
 local 'request' ''
 forever {
   request = ('[net:httpServerGetRequest]')
@@ -41,46 +58,77 @@ forever {
 }
 }
 
-script 574 354 {
-whenStarted
-responses = ('[data:makeList]' ('[data:makeList]' '/' '<h1>Hello!</h1>
-<p>This is the MicroBlocks HTTP server.</p>
-<p>You can test the following URLs:</p>
-<ul>
-<li>/test</li>
-<li>/foo</li>
-<li>/bar</li>
-</ul>') ('[data:makeList]' '/test' '<p>This is a <strong>test</strong> URL</p>') ('[data:makeList]' '/foo' '<p>Just a page that says</p>
-<h1>FOO</h1>') ('[data:makeList]' '/bar' '<p>Just a page that says</p>
-<h1>BAR</h1>
-<img src="http://microblocks.fun/logo.png"/>'))
+script 559 350 {
+to initializeResponses {}
 }
 
 
 module 'HTTP server' Comm
 author MicroBlocks
-version 1 1 
+version 1 2 
 depends WiFi 
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
 	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request'
+	spec 'r' 'request method' 'method of request _' 'auto' ''
+	spec 'r' 'path of request' 'path of request _' 'auto' ''
+	spec 'r' 'body of request' 'body of request _' 'auto' ''
 	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain
 Access-Control-Allow-Origin: *'
-	spec 'r' 'body of request' 'body of request _' 'auto' ''
-	spec 'r' 'path of request' 'path of request _' 'auto' ''
-	spec 'r' 'request method' 'method of request _' 'auto' ''
+
+to '_endOfHeaders' request {
+  return ('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request)
+}
+
+to '_toString' aStringOrByteArray {
+  comment 'If argument is a byte array, convert it to a string. '
+  if (not (isType aStringOrByteArray 'string')) {
+    aStringOrByteArray = ('[data:join]' '' aStringOrByteArray)
+  }
+  return aStringOrByteArray
+}
 
 to 'body of request' request {
-  return ('[data:copyFromTo]' request (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request) + 4))
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('[data:copyFromTo]' request (i + 4))
+}
+
+to 'content length of request' request {
+  local 'i' ('_endOfHeaders' request)
+  if (i < 0) {
+    return 0
+  }
+  local 'j' ('[data:find]' 'Content-Length: ' request)
+  if (j < 0) {
+    comment 'Try alternate capitalization'
+    j = ('[data:find]' 'Content-length: ' request)
+  }
+  if (or (j < 0) (j > i)) {
+    return 0
+  }
+  j += 16
+  local 'k' ('[data:find]' ('[data:unicodeString]' 13) request j)
+  return (('[data:copyFromTo]' request j (k - 1)) + 0)
+}
+
+to 'headers of request' request {
+  i = ('_endOfHeaders' request)
+  if (i < 0) {
+    return ''
+  }
+  return ('_toString' ('[data:copyFromTo]' request 1 (i - 1)))
 }
 
 to 'path of request' request {
-  return ('[data:copyFromTo]' request (('[data:find]' ' ' request) + 1) (('[data:find]' ' HTTP' request) - 1))
+  return ('_toString' ('[data:copyFromTo]' request (('[data:find]' ' ' request) + 1) (('[data:find]' ' HTTP' request) - 1)))
 }
 
 to 'request method' request {
-  return ('[data:copyFromTo]' request 1 (('[data:find]' ' ' request) - 1))
+  return ('_toString' ('[data:copyFromTo]' request 1 (('[data:find]' ' ' request) - 1)))
 }
 
 
