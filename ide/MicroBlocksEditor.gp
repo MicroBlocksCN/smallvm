@@ -22,7 +22,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion lastProjectFolder lastLibraryFolder noBoardLibAutoLoad
+defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled decompilerDisabled
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -458,12 +458,14 @@ method readUserPreferences MicroBlocksEditor {
 
 method applyUserPreferences MicroBlocksEditor {
 	prefs = (readUserPreferences this)
-	// for now, only the locale is saved into the preferences file
 	if (notNil (at prefs 'locale')) {
 		setLanguage this (at prefs 'locale')
 	}
-	if (notNil (at prefs 'noBoardLibAutoLoad')) {
-		noBoardLibAutoLoad = (at prefs 'noBoardLibAutoLoad')
+	if (notNil (at prefs 'boardLibAutoLoadDisabled')) {
+		boardLibAutoLoadDisabled = (at prefs 'boardLibAutoLoadDisabled')
+	}
+	if (notNil (at prefs 'decompilerDisabled')) {
+		decompilerDisabled = (at prefs 'decompilerDisabled')
 	}
 }
 
@@ -479,13 +481,22 @@ method saveToUserPreferences MicroBlocksEditor key value {
 	writeFile path (jsonStringify prefs)
 }
 
-method setNoBoardLibAutoLoad MicroBlocksEditor flag {
-	noBoardLibAutoLoad = flag
-	saveToUserPreferences this 'noBoardLibAutoLoad' flag
+method toggleBoardLibAutoLoad MicroBlocksEditor flag {
+	boardLibAutoLoadDisabled = (not flag)
+	saveToUserPreferences this 'boardLibAutoLoadDisabled' boardLibAutoLoadDisabled
 }
 
-method noBoardLibAutoLoad MicroBlocksEditor {
-	return (noBoardLibAutoLoad == true)
+method boardLibAutoLoadDisabled MicroBlocksEditor {
+	return (boardLibAutoLoadDisabled == true)
+}
+
+method toggleDecompiler MicroBlocksEditor flag {
+	decompilerDisabled = (not flag)
+	saveToUserPreferences this 'decompilerDisabled' decompilerDisabled
+}
+
+method decompilerEnabled MicroBlocksEditor {
+	return (decompilerDisabled == false)
 }
 
 // developer mode
@@ -641,10 +652,15 @@ if (contains (commandLine) '--allowMorphMenu') {
 	  }
 	}
 	addLine menu
-	if (noBoardLibAutoLoad this) {
-		addItem menu 'enable autoloading board libraries' (action 'setNoBoardLibAutoLoad' this false)
+	if (boardLibAutoLoadDisabled this) {
+		addItem menu 'enable autoloading board libraries' (action 'toggleBoardLibAutoLoad' this true)
 	} else {
-		addItem menu 'disable autoloading board libraries' (action 'setNoBoardLibAutoLoad' this true)
+		addItem menu 'disable autoloading board libraries' (action 'toggleBoardLibAutoLoad' this false)
+	}
+	if (decompilerEnabled this) {
+		addItem menu 'disable fetching code from board on connection' (action 'toggleDecompiler' this false)
+	} else {
+		addItem menu 'enable fetching code from board on connection' (action 'toggleDecompiler' this true)
 	}
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'

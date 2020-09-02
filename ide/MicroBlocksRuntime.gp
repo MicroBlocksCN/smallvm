@@ -609,8 +609,7 @@ method tryToConnect SmallRuntime {
 			sendMsg this 'getVersionMsg'
 			if (and (devMode) (not (hasUserCode (project (findProjectEditor))))) {
 				// Project is empty. Try to decompile what's on the board
-				testDecompiler = false
-				if testDecompiler { requestCodeFromBoard this }
+				if (decompilerEnabled (findMicroBlocksEditor)) { requestCodeFromBoard this }
 			}
 			clearBoardIfConnected this false
 			stopAndSyncScripts this
@@ -716,7 +715,7 @@ method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
 	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
-	if (noBoardLibAutoLoad (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
+	if (boardLibAutoLoadDisabled (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
 
 	if ('Citilab ED1' == boardType) {
 		importEmbeddedLibrary scripter 'ED1 Buttons'
