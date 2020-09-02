@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict crcRcvMSecs
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs decompiler
 
 method scripter SmallRuntime { return scripter }
 
@@ -170,6 +170,12 @@ method showCompiledBytes SmallRuntime aBlock {
 
 // Decompiler tests
 
+method testDecompiler SmallRuntime aBlock {
+	topBlock = (topBlock aBlock)
+	gpCode = (decompileBytecodes -1 (chunkTypeFor this topBlock) (chunkBytesFor this topBlock))
+	showCodeInHand this gpCode
+}
+
 method showCodeInHand SmallRuntime gpCode {
 	if (isClass gpCode 'Function') {
 		block = (scriptForFunction gpCode)
@@ -183,21 +189,28 @@ method showCodeInHand SmallRuntime gpCode {
 	fixBlockColor block
 }
 
-method testDecompiler SmallRuntime aBlock {
-	topBlock = (topBlock aBlock)
-	gpCode = (decompileBytecodes (chunkBytesFor this topBlock) (chunkTypeFor this topBlock))
-	showCodeInHand this gpCode
-}
-
 method compileAndDecompile SmallRuntime aBlockOrFunction {
+	if (isClass aBlockOrFunction 'Function') {
+		chunkID = (first (at chunkIDs (functionName aBlockOrFunction)))
+	}
 	chunkType = (chunkTypeFor this aBlockOrFunction)
 	bytecodes1 = (chunkBytesFor this aBlockOrFunction)
-	gpCode = (decompileBytecodes bytecodes1 chunkType)
+	gpCode = (decompileBytecodes chunkID chunkType bytecodes1)
 	bytecodes2 = (chunkBytesFor this gpCode)
 	if (bytecodes1 == bytecodes2) {
 		print 'ok chunkType:' chunkType 'bytes:' (count bytecodes1)
 	} else {
 		print 'FAILED! chunkType:' chunkType 'bytes in:' (count bytecodes1) 'bytes out' (count bytecodes2)
+	}
+}
+
+method decompileAllExamples SmallRuntime {
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Examples') {
+			print fn
+			openProjectFromFile (findMicroBlocksEditor) (join '//' fn)
+			decompileAllInProject this
+		}
 	}
 }
 
@@ -212,22 +225,33 @@ method decompileAll SmallRuntime {
 	}
 }
 
+// Decompiling
+
 method requestCodeFromBoard SmallRuntime {
-	print 'fetching code from board'
+	decompiler = (newDecompiler)
 	sendMsg this 'getAllCodeMsg'
+	sendMsg this 'getVarNamesMsg'
+
+	timeout = 500
+	lastRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
+		processMessages this
+	}
+	decompileProject decompiler
 }
 
-method receivedChunk SmallRuntime bytecodes chunkType {
-	chunk = (decompileBytecodes bytecodes chunkType)
-	if (isClass chunk 'Function') {
-		print 'functions not yet handled'
-		return
+method receivedChunk SmallRuntime chunkID chunkType bytecodes {
+	lastRcvMSecs = (msecsSinceStart)
+	if (notNil decompiler) {
+		addChunk decompiler chunkID chunkType bytecodes
 	}
-	block = (toBlock chunk)
-	scripts = (scriptEditor scripter)
-	addPart (morph scripts) (morph block)
-	fixBlockColor block
-	cleanUp scripts
+}
+
+method receivedVarName SmallRuntime varID varName byteCount {
+	lastRcvMSecs = (msecsSinceStart)
+	if (notNil decompiler) {
+		addVar decompiler varID varName
+	}
 }
 
 // chunk management
@@ -856,8 +880,8 @@ method verifyCRCs SmallRuntime {
 		sendMsg this 'getChunkCRCMsg' (first entry)
 	}
 	timeout = 50
-	crcRcvMSecs = (msecsSinceStart)
-	while (((msecsSinceStart) - crcRcvMSecs) < timeout) {
+	lastRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		processMessages this
 	}
 	if (isEmpty crcDict) { return }
@@ -888,7 +912,7 @@ method verifyCRCs SmallRuntime {
 method crcReceived SmallRuntime chunkID chunkCRC {
 	// Record the CRC for the given chunkID as reported by the board.
 
-	crcRcvMSecs = (msecsSinceStart)
+	lastRcvMSecs = (msecsSinceStart)
 	atPut crcDict chunkID chunkCRC
 }
 
@@ -1247,11 +1271,11 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'broadcastMsg')) {
 		broadcastReceived (thingServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
-		receivedChunk this (toArray (copyFromTo msg 7)) (byteAt msg 6)
+		receivedChunk this (byteAt msg 3) (byteAt msg 6) (toArray (copyFromTo msg 7))
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {
 		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'varNameMsg')) {
-		print 'varNameMsg:' (byteAt msg 3) (toString (copyFromTo msg 6)) ((byteCount msg) - 5) 'bytes'
+		receivedVarName this (byteAt msg 3) (toString (copyFromTo msg 6)) ((byteCount msg) - 5)
 	} else {
 		print 'msg:' (toArray msg)
 	}

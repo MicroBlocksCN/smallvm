@@ -4,7 +4,7 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// MicroBlocksDecompiler.gp - Decompiles bytecodes back to blocks
+// MicroBlocksDecompiler.gp - Decompiles bytecodes back to scripts and functions
 // John Maloney, March, 2020
 
 // To do:
@@ -14,36 +14,125 @@
 // [ ] make decompiler read and use local names
 // [ ] store function spec and parameter names
 
-to decompileBytecodes bytecodes chunkType {
-	return (decompile (new 'MicroBlocksDecompiler') bytecodes chunkType)
+to decompileBytecodes chunkID chunkType chunkData {
+	// For testing...
+	decompiler = (newDecompiler)
+	addNamesFromRuntime decompiler
+	return (decompile decompiler chunkID chunkType chunkData)
 }
 
-defineClass MicroBlocksDecompiler reporters opcodes controlStructures endOfLiterals code stack msgName argNames
+to newDecompiler { return (initialize (new 'MicroBlocksDecompiler')) }
 
-method decompile MicroBlocksDecompiler bytecodes chunkType {
+defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures endOfLiterals code stack msgName argNames
+
+method initialize MicroBlocksDecompiler {
+	chunks = (list) // list of (chunkID, chunkType, chunkData)
+	vars = (dictionary) // global var ID -> name
+	funcs = (dictionary) // chunk ID -> function name
+	return this
+}
+
+method addNamesFromRuntime MicroBlocksDecompiler {
+	// For testing. Add var and fuction names from current project.
+
+	initialize this
+	runtime = (smallRuntime)
+
+	allVars = (allVariableNames (project (scripter runtime)))
+	for i (count allVars) {
+// print (i - 1) (at allVars i)
+		atPut vars (i - 1) (at allVars i)
+	}
+	assignFunctionIDs runtime
+	for pair (sortedPairs (getField runtime 'chunkIDs')) {
+		fName = (last pair)
+		if (isClass fName 'String') {
+			chunkID = (first (first pair))
+// print chunkID ':' fName
+			atPut funcs chunkID fName
+		}
+	}
+}
+
+// Collecting vars and chunks
+
+method addChunk MicroBlocksDecompiler chunkID chunkType chunkData {
+	print 'c' chunkID chunkType (count chunkData) 'bytes'
+	add chunks (array chunkID chunkType chunkData)
+}
+
+method addVar MicroBlocksDecompiler varID varName {
+	print 'v' varID varName
+	atPut vars varID varName
+}
+
+method decompileProject MicroBlocksDecompiler {
+	// Called after collecting chunks and var names from the board.
+
+	newProj = (newMicroBlocksProject)
+	module = (main newProj)
+	for varName (values vars) { addVariable module varName }
+
+	// pass 1: assign function names
+	for chunk chunks {
+		chunkID = (at chunk 1)
+		chunkType = (at chunk 2)
+		chunkData = (at chunk 3)
+		if (3 == chunkType) {
+			atPut funcs chunkID (nameForFunction this chunkID chunkData)
+		}
+	}
+
+	// pass 2: generate code and add functions and scripts in new project module
+	scripts = (list)
+	for chunk chunks {
+		chunkID = (at chunk 1)
+		chunkType = (at chunk 2)
+		chunkData = (at chunk 3)
+		gpCode = (decompile this chunkID chunkType chunkData)
+		if (isClass gpCode 'Function') {
+			setField gpCode 'functionName' (at funcs chunkID)
+			addFunction module gpCode
+		} else {
+			add scripts (array (rand 50 400) (rand 50 300) gpCode)
+		}
+	}
+	setScripts module scripts
+
+	// install the new project
+	setProject (scripter (smallRuntime)) newProj
+print 'installed new project3'
+}
+
+method nameForFunction MicroBlocksDecompiler chunkID chunkData {
+	// If the function has a recvBroadcast opcode (i.e. it has no arguments)
+	// then use that as the function name. Otherwise, generate a name based on chunkID.
+
+	fName = (extractFunctionName this chunkData)
+	if (isNil fName) { fName = (join 'func' chunkID) }
+	return fName
+}
+
+method extractFunctionName MicroBlocksDecompiler chunkData {
+	extractOpcodes this chunkData
+	if (and ((count opcodes) >= 3)
+			('recvBroadcast' == (cmdOp this (at opcodes 3)))
+			('pushLiteral' == (cmdOp this (at opcodes 2)))) {
+				return (cmdArg this (at opcodes 2))
+	}
+	return nil
+}
+
+// Decompiling
+
+method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 	// Approach:
-	//	0. Convert bytecodes into sequence of opcode tuples
+	//	0. Convert chunkData into sequence of opcode tuples
 	//	1. find and replace loops
 	//	2. find and replace if's (recursively)
 	//	3. walk the entire tree and generate code
 
-	opcodes = (list)
-	for i (range 1 (count bytecodes) 4) {
-		op = (at bytecodes i)
-		arg = (+
-			((at bytecodes (i + 3)) << 16)
-			((at bytecodes (i + 2)) << 8)
-			 (at bytecodes (i + 1)))
-		arg = ((arg << 7) >> 7) // shift to sign-extend arg
-		addr = (floor ((i + 3) / 4))
-		add opcodes (array addr op arg)
-	}
-	lastInstruction = (findLastInstruction this)
-	if (0 == endOfLiterals) { endOfLiterals = ((count opcodes) + 1) }
-	// todo: extract function info strings here
-	getOpNames this lastInstruction
-	decodeImmediates this lastInstruction
-	opcodes = (copyFromTo opcodes 1 lastInstruction)
+	extractOpcodes this chunkData
 	controlStructures = (newArray (count opcodes))
 	findArgs this
 	findLoops this
@@ -63,13 +152,34 @@ method decompile MicroBlocksDecompiler bytecodes chunkType {
 	gpCode = (codeForSequence this 1 (count opcodes))
 	gpCode = (removePrefix this gpCode)
 	if (3 == chunkType) { gpCode = (removeFinalReturn this gpCode) }
-	gpCode = (addHatBlock this chunkType gpCode)
+	gpCode = (addHatBlock this chunkID chunkType gpCode)
 	if (isNil gpCode) {
 		return (newCommand 'comment' 'Stand-alone comment')
 	}
 	fixBooleanAndColorArgs this gpCode
 	if debug { print (prettyPrint this gpCode) }
 	return gpCode
+}
+
+method extractOpcodes MicroBlocksDecompiler chunkData {
+	opcodes = (list)
+	msgName = nil
+	for i (range 1 (count chunkData) 4) {
+		op = (at chunkData i)
+		arg = (+
+			((at chunkData (i + 3)) << 16)
+			((at chunkData (i + 2)) << 8)
+			 (at chunkData (i + 1)))
+		arg = ((arg << 7) >> 7) // shift to sign-extend arg
+		addr = (floor ((i + 3) / 4))
+		add opcodes (array addr op arg)
+	}
+	lastInstruction = (findLastInstruction this)
+	if (0 == endOfLiterals) { endOfLiterals = ((count opcodes) + 1) }
+	// todo: extract function info strings here
+	opcodes = (copyFromTo opcodes 1 lastInstruction)
+	getOpNames this
+	decodeImmediates this
 }
 
 method removePrefix MicroBlocksDecompiler gpCode {
@@ -299,7 +409,7 @@ method readLiteral MicroBlocksDecompiler literalIndex {
 	return (callWith 'string' (toArray bytes))
 }
 
-method getOpNames MicroBlocksDecompiler lastInstruction {
+method getOpNames MicroBlocksDecompiler {
 	// Replace the numerical opcode of each opcode entry with its name except
 	// for entries immediately following a pushBigImmediate instruction, which
 	// are inline integer constants.
@@ -309,7 +419,7 @@ method getOpNames MicroBlocksDecompiler lastInstruction {
 	for p (sortedPairs opcodeDefs false) {
 		atPut opcodeToName ((first p) + 1) (last p)
 	}
-	for i lastInstruction {
+	for i (count opcodes) {
 		op = nil
 		if ('pushBigImmediate' != lastOp) {
 			instr = (at opcodes i)
@@ -320,10 +430,10 @@ method getOpNames MicroBlocksDecompiler lastInstruction {
 	}
 }
 
-method decodeImmediates MicroBlocksDecompiler lastInstruction {
+method decodeImmediates MicroBlocksDecompiler {
 	// Decode values encoded in pushImmediate instructions (true, false, or small integer.)
 
-	for i lastInstruction {
+	for i (count opcodes) {
 		instr = (at opcodes i)
 		if ('pushImmediate' == (cmdOp this instr)) {
 			val = (last instr)
@@ -366,18 +476,15 @@ method recordControlStructure MicroBlocksDecompiler i newRec {
 
 // GPCode transformations
 
-method addHatBlock MicroBlocksDecompiler chunkType gpCode {
+method addHatBlock MicroBlocksDecompiler chunkID chunkType gpCode {
 	// Prefix given code with a hat block based on chunkType and return the result.
 
 	result = gpCode
 	// chunk types 1 and 2 are command and reporter blocks without a hat
 	if (3 == chunkType) {
 		// Note: result is Function object
-		project = (project (scripter (smallRuntime)))
-		module = (main project)
-		funcName = msgName
-		if (isNil funcName) { funcName = 'anonymous' }
-		result = (newFunction funcName argNames gpCode module)
+		fName = (at funcs chunkID 'unknown function') // should never see "unknown function"
+		result = (newFunction fName argNames gpCode module)
 	} (4 == chunkType) {
 		result = (newCommand 'whenStarted')
 		setField result 'nextBlock' gpCode
@@ -617,7 +724,7 @@ method codeForSequence MicroBlocksDecompiler start end {
 			cmdArg = (cmdArg this cmd)
 			argCount = (cmdArg & 255)
 			chunkID = ((cmdArg >> 8) & 255)
-			fName = (functionNameForID (smallRuntime) chunkID)
+			fName = (at funcs chunkID 'unknown function') // should never see "unknown function"
 			isReporter = (not (cmdIs this (at opcodes (i + 1)) 'pop' 1))
 			if isReporter {
 				add stack (buildCmdOrReporter this fName argCount true)
@@ -857,10 +964,7 @@ method buildCmdOrReporter MicroBlocksDecompiler op argCount isReporter {
 }
 
 method globalVarName MicroBlocksDecompiler varIndex {
-	varNames = (allVariableNames (project (scripter (smallRuntime))))
-	if (and (0 <= varIndex) (varIndex < (count varNames))) {
-		return (at varNames (varIndex + 1))
-	}
+	if (contains vars varIndex) { return (at vars varIndex) }
 	return (join 'v' varIndex)
 }
 
