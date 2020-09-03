@@ -88,7 +88,7 @@ int touchEnabled = false;
 		#define TFT_HEIGHT 240
 		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 		void tftInit() {
-			tft.begin(40000000); // Run SPI at 80MHz/2
+			tft.begin(20000000); // run SPI at 80MHz/4; higher speeds made artifacts in JumpyBall
 			tft.setRotation(1);
 			uint8_t m = 0x08 | 0x04; // RGB pixel order, refresh LCD right to left
 			tft.sendCommand(ILI9341_MADCTL, &m, 1);
