@@ -215,6 +215,7 @@ method decompileAllExamples SmallRuntime {
 }
 
 method decompileAll SmallRuntime {
+	assignFunctionIDs this
 	for aFunction (allFunctions (project scripter)) {
 		compileAndDecompile this aFunction
 	}

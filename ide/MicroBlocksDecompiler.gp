@@ -36,19 +36,16 @@ method addNamesFromRuntime MicroBlocksDecompiler {
 	// For testing. Add var and fuction names from current project.
 
 	initialize this
-	runtime = (smallRuntime)
 
-	allVars = (allVariableNames (project (scripter runtime)))
+	allVars = (allVariableNames (project (scripter (smallRuntime))))
 	for i (count allVars) {
-// print (i - 1) (at allVars i)
 		atPut vars (i - 1) (at allVars i)
 	}
-	assignFunctionIDs runtime
-	for pair (sortedPairs (getField runtime 'chunkIDs')) {
+
+	for pair (sortedPairs (getField (smallRuntime) 'chunkIDs')) {
 		fName = (last pair)
 		if (isClass fName 'String') {
 			chunkID = (first (first pair))
-// print chunkID ':' fName
 			atPut funcs chunkID fName
 		}
 	}
