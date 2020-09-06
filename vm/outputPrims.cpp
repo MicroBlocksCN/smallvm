@@ -310,12 +310,14 @@ static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#if defined(ARDUINO_CALLIOPE_MINI)
 			pinNum = 26; // internal NeoPixel pin on Calliope
-		#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
+		#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+			pinNum = 8; // internal NeoPixel pin on Circuit Playground Express
+		#elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
 			pinNum = 8; // internal NeoPixel pin on Circuit Playground (Bluefruit)
 		#elif defined(ARDUINO_NRF52840_CLUE)
 			pinNum = 18; // internal NeoPixel pin on Clue
 		#else
-			pinNum = 0; // use left external pad on micro:bit and sino:bit
+			pinNum = 0; // use pin 0 on others
 		#endif
 	}
 	neoPixelPinMask = 1 << g_ADigitalPinMap[pinNum];
@@ -555,7 +557,7 @@ void turnOffInternalNeoPixels() {
 		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
 		for (int i = 0; i < count; i++) sendNeoPixelData(0);
 		delay(1);
-	#elif defined(ARDUINO_CALLIOPE_MINI)
+	#elif defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_NRF52840_CLUE)
 		count = 1;
 	#endif
 	for (int i = 0; i < count; i++) sendNeoPixelData(0);

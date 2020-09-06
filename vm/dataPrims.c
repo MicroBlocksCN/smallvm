@@ -569,7 +569,7 @@ OBJ primFind(int argCount, OBJ *args) {
 		}
 		return int2obj(-1);
 	}
-	return fail(needsIndexable);
+	return int2obj(-1);
 }
 
 OBJ primUnicodeAt(int argCount, OBJ *args) {
