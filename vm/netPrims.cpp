@@ -151,23 +151,29 @@ struct {
 	char body[16];
 } ipStringObject;
 
-static OBJ primGetIP(int argCount, OBJ *args) {
-	#ifdef USE_WIFI101
-		IPAddress ip = WiFi.localIP();
-	#else
-		IPAddress ip = (WIFI_AP == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
-	#endif
-	sprintf(ipStringObject.body, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
-	ipStringObject.header = HEADER(StringType, (strlen(ipStringObject.body) + 4) / 4);
-	return (OBJ) &ipStringObject;
-}
-
 static int isConnectedToWiFi() {
 	if (!connecting) return false;
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 		if (WIFI_AP == WiFi.getMode()) return true; // acting as a hotspot
 	#endif
 	return WL_CONNECTED == WiFi.status();
+}
+
+static OBJ primGetIP(int argCount, OBJ *args) {
+	#ifdef USE_WIFI101
+		IPAddress ip = WiFi.localIP();
+	#else
+		IPAddress ip = (WIFI_AP == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
+	#endif
+
+	// Clear IP address if not connected
+	if (!isConnectedToWiFi()) {
+		ip[0] = ip[1] = ip[2] = ip[3] = 0;
+	}
+
+	sprintf(ipStringObject.body, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+	ipStringObject.header = HEADER(StringType, (strlen(ipStringObject.body) + 4) / 4);
+	return (OBJ) &ipStringObject;
 }
 
 // HTTP Server
