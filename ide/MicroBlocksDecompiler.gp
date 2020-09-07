@@ -8,11 +8,11 @@
 // John Maloney, March, 2020
 
 // To do:
-// [ ] make test method that compiles and decompiles all code in a project and checks result
-// [ ] make test method that clears current scripts then fetched and decompiles code from board
-// [ ] make the compiler store local variable names
+// [ ] make compiler store local variable names
 // [ ] make decompiler read and use local names
-// [ ] store function spec and parameter names
+// [ ] make compiler store function spec and parameter names
+// [ ] make decompiler read and use spec and parameter names
+// [ ] store comments (separately from scripts)
 
 to decompileBytecodes chunkID chunkType chunkData {
 	// For testing...
@@ -54,12 +54,12 @@ method addNamesFromRuntime MicroBlocksDecompiler {
 // Collecting vars and chunks
 
 method addChunk MicroBlocksDecompiler chunkID chunkType chunkData {
-	print 'c' chunkID chunkType (count chunkData) 'bytes'
+//	print 'c' chunkID chunkType (count chunkData) 'bytes'
 	add chunks (array chunkID chunkType chunkData)
 }
 
 method addVar MicroBlocksDecompiler varID varName {
-	print 'v' varID varName
+//	print 'v' varID varName
 	atPut vars varID varName
 }
 
@@ -98,7 +98,7 @@ method decompileProject MicroBlocksDecompiler {
 
 	// install the new project
 	setProject (scripter (smallRuntime)) newProj
-print 'installed new project3'
+	cleanUp (scriptEditor (scripter (smallRuntime)))
 }
 
 method nameForFunction MicroBlocksDecompiler chunkID chunkData {

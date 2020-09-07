@@ -642,7 +642,8 @@ if (contains (commandLine) '--allowMorphMenu') {
 	addItem menu 'firmware version' (action 'getVersion' (smallRuntime))
 	if ('Browser' != (platform)) {
 		addLine menu
-		addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
+// Commented out for now since precompiled VM's are already included in IDE
+//		addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
 		addItem menu 'wipe and repartition esp32' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 		addLine menu
 	  if (not (isRunning thingServer)) {
