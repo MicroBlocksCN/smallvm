@@ -1,0 +1,81 @@
+module main
+author unknown
+version 1 0 
+description ''
+
+script 388 50 {
+comment 'NOTE: Requires an ESP-based board with a built-in
+accelerometer, like the M5Stick, the M5Stack Core Grey
+(not the M5Stack Core Basic) or the Citilab ED1.
+
+1) Unplug your board
+2) Press the on-board button, launch the board into the air,
+and catch it.
+3) Plug the board back into your computer.
+4) Open the graph window (graph icon in the top bar).
+5) Click on the "graph" script to plot the change in
+acceleration throughout the launch.'
+}
+
+script 50 111 {
+whenButtonPressed 'A'
+'[file:delete]' 'launch data'
+'[file:open]' 'launch data'
+repeat 1000 {
+  '[file:appendLine]' ('[sensors:acceleration]') 'launch data'
+}
+'[file:close]' 'launch data'
+}
+
+script 408 323 {
+comment 'graph script'
+'[file:open]' 'launch data'
+repeat 1000 {
+  printIt ('[file:readLine]' 'launch data')
+}
+'[file:close]' 'launch data'
+}
+
+
+module 'Basic Sensors' Input
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light sensor 
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
+
+	spec 'r' '[sensors:tiltX]' 'tilt x'
+	spec 'r' '[sensors:tiltY]' 'tilt y'
+	spec 'r' '[sensors:tiltZ]' 'tilt z'
+	spec 'r' '[sensors:acceleration]' 'acceleration'
+	spec 'r' '[display:lightLevel]' 'light level'
+	spec 'r' '[sensors:temperature]' 'temperature (°C)'
+
+module Files Data
+author MicroBlocks
+version 1 0 
+tags data esp 
+description 'Flash file system operations. Currently supports the SPIFFS file system on ESP8266 and ESP32 boards.'
+
+	spec ' ' '[file:open]' 'open file _' 'str'
+	spec ' ' '[file:close]' 'close file _' 'str'
+	spec ' ' '[file:delete]' 'delete file _' 'str'
+	spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
+	spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
+	spec 'r' '[file:endOfFile]' 'end of file _' 'str'
+	spec 'r' '[file:readLine]' 'next line of file _' 'str'
+	spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+	spec 'r' 'file names' 'file names'
+	spec 'r' '[file:fileSize]' 'size of file _' 'str'
+	spec 'r' '[file:systemInfo]' 'file system info'
+
+to 'file names' {
+  '[file:startList]'
+  local 'result' ('[data:makeList]')
+  local 'fileName' ('[file:nextInList]')
+  repeatUntil (fileName == '') {
+    '[data:addLast]' fileName result
+    fileName = ('[file:nextInList]')
+  }
+  return result
+}
+
