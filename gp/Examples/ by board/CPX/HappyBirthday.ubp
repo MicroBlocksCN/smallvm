@@ -2,7 +2,6 @@ module main
 author unknown
 version 1 0 
 description ''
-variables sing pixels 
 
 	spec ' ' 'happy-birthday' 'happy-birthday'
 	spec ' ' 'and-many-more' 'and-many-more'

@@ -4,12 +4,6 @@ version 1 0
 description ''
 variables 'reaction time' remark 'start time' 
 
-
-to func2 arg1 {
-  arg1 = ('[data:join]' '' arg1)
-  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 arg1))
-}
-
 script 152 50 {
 whenButtonPressed 'A'
 sayIt ''
