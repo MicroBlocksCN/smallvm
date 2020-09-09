@@ -422,6 +422,7 @@ void restartSerial() {
 	#define TOTAL_PINS 40
 	static const int analogPin[] = {};
 	#define PIN_BUTTON_A 39
+	#define PIN_LED 0
 	static const char reservedPin[TOTAL_PINS] = {
 		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 0, 1, 1, 1, 1, 1, 1, 0,
@@ -783,7 +784,7 @@ void primDigitalSet(int pinNum, int flag) {
 // User LED
 
 void primSetUserLED(OBJ *args) {
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI)
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 		// Special case: Plot or unplot one LED in the LED matrix.
 		OBJ coords[2] = { int2obj(3), int2obj(1) };
 		if (trueObj == args[0]) {
@@ -793,12 +794,6 @@ void primSetUserLED(OBJ *args) {
 		}
 	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32)
 		tftSetHugePixel(3, 1, (trueObj == args[0]));
-	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
-		// Treat the first NeoPixel as the User LED
-		OBJ pin int2obj(27);
-		OBJ color = (trueObj == args[0]) ? int2obj(15 << 16) : int2obj(0);
-		primNeoPixelSetPin(1, &pin);
-		primNeoPixelSend(1, &color);
 	#else
 		if (PIN_LED < TOTAL_PINS) {
 			SET_MODE(PIN_LED, OUTPUT);
