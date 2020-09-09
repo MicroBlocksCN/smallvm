@@ -422,7 +422,6 @@ void restartSerial() {
 	#define TOTAL_PINS 40
 	static const int analogPin[] = {};
 	#define PIN_BUTTON_A 39
-	#define PIN_LED 0
 	static const char reservedPin[TOTAL_PINS] = {
 		1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 0, 1, 1, 1, 1, 1, 1, 0,
