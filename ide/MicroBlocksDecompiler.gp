@@ -8,28 +8,33 @@
 // John Maloney, March, 2020
 
 // To do:
-// [ ] make compiler store local variable names
-// [ ] make decompiler read and use local names
-// [ ] make compiler store function spec and parameter names
-// [ ] make decompiler read and use spec and parameter names
+// [x] make compiler store local variable names
+// [x] make compiler store function spec and parameter names
+// [x] make decompiler read and use local names
+// [x] make decompiler read and use parameter names
+// [ ] make decompiler use function spec
 // [ ] store comments (separately from scripts)
 
-to decompileBytecodes chunkID chunkType chunkData {
-	// For testing...
-	decompiler = (newDecompiler)
-	addNamesFromRuntime decompiler
-	return (decompile decompiler chunkID chunkType chunkData)
+defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures code stack msgName localNames argNames functionInfo
+
+to newDecompiler {
+	return (initialize (new 'MicroBlocksDecompiler'))
 }
-
-to newDecompiler { return (initialize (new 'MicroBlocksDecompiler')) }
-
-defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures endOfLiterals code stack msgName argNames
 
 method initialize MicroBlocksDecompiler {
 	chunks = (list) // list of (chunkID, chunkType, chunkData)
 	vars = (dictionary) // global var ID -> name
 	funcs = (dictionary) // chunk ID -> function name
 	return this
+}
+
+// Testing
+
+to decompileBytecodes chunkID chunkType chunkData {
+	// For testing...
+	decompiler = (newDecompiler)
+	addNamesFromRuntime decompiler chunkID chunkType chunkData
+	return (decompile decompiler chunkID chunkType chunkData)
 }
 
 method addNamesFromRuntime MicroBlocksDecompiler {
@@ -41,7 +46,6 @@ method addNamesFromRuntime MicroBlocksDecompiler {
 	for i (count allVars) {
 		atPut vars (i - 1) (at allVars i)
 	}
-
 	for pair (sortedPairs (getField (smallRuntime) 'chunkIDs')) {
 		fName = (last pair)
 		if (isClass fName 'String') {
@@ -54,12 +58,10 @@ method addNamesFromRuntime MicroBlocksDecompiler {
 // Collecting vars and chunks
 
 method addChunk MicroBlocksDecompiler chunkID chunkType chunkData {
-//	print 'c' chunkID chunkType (count chunkData) 'bytes'
 	add chunks (array chunkID chunkType chunkData)
 }
 
 method addVar MicroBlocksDecompiler varID varName {
-//	print 'v' varID varName
 	atPut vars varID varName
 }
 
@@ -131,7 +133,6 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 
 	extractOpcodes this chunkData
 	controlStructures = (newArray (count opcodes))
-	findArgs this
 	findLoops this
 	findIfs this
 	fixLocals this
@@ -171,12 +172,12 @@ method extractOpcodes MicroBlocksDecompiler chunkData {
 		addr = (floor ((i + 3) / 4))
 		add opcodes (array addr op arg)
 	}
-	lastInstruction = (findLastInstruction this)
-	if (0 == endOfLiterals) { endOfLiterals = ((count opcodes) + 1) }
-	// todo: extract function info strings here
+	lastInstruction = (readLiteralStrings this)
+	hasMetadata = (readDecompilerMetadata this lastInstruction)
 	opcodes = (copyFromTo opcodes 1 lastInstruction)
 	getOpNames this
 	decodeImmediates this
+	if (not hasMetadata) { findArgs this } // no metadata; generate argument names if needed
 }
 
 method removePrefix MicroBlocksDecompiler gpCode {
@@ -286,38 +287,6 @@ method printSequence3 MicroBlocksDecompiler start end indent {
 	}
 }
 
-method printSequence MicroBlocksDecompiler seq indent {
-	// Used during debugging to print a partially decoded opcode sequence with indentation.
-
-	if (isNil indent) { indent = 0 }
-	spaces = (joinStrings (newArray indent ' '))
-	for cmd seq {
-		op = (cmdOp this cmd)
-		if ('if' == op) {
-			print (join spaces op)
-			printSequence this (at cmd 3) (indent + 4)
-			elsePart = (at cmd 4)
-			if (notNil elsePart) {
-				print (join spaces 'else')
-				printSequence this elsePart (indent + 4)
-			}
-		} (isOneOf op 'forever' 'repeat' 'for' 'repeatUntil') {
-			print (join spaces op)
-			printSequence this (cmdArg this cmd) (indent + 4)
-		} (isOneOf op 'whenStarted' 'whenButtonPressed' 'whenBroadcastReceived') {
-			print (join spaces op)
-			printSequence this (cmdArg this cmd) (indent + 4)
-		} ('whenCondition' == op) {
-			print 'when:'
-			printSequence this (at cmd 3) (indent + 4)
-			print 'then:'
-			printSequence this (at cmd 4) (indent + 4)
-		} else {
-			print (join spaces op ' ' (cmdArg this cmd))
-		}
-	}
-}
-
 method prettyPrint MicroBlocksDecompiler expression {
 	// Used during debugging to print the GP code output of the decompiler.
 
@@ -338,34 +307,16 @@ method prettyPrint MicroBlocksDecompiler expression {
 
 // Helper methods
 
-method findArgs MicroBlocksDecompiler {
-	maxArgIndex = -1
-	for cmd opcodes {
-		if (isOneOf (cmdOp this cmd) 'pushArg' 'storeArg' 'incrementArg') {
-			argIndex = (cmdArg this cmd)
-			if (argIndex > maxArgIndex) { maxArgIndex = argIndex }
-		}
-	}
-	argNames = (list)
-	i = 0
-	while (i <= maxArgIndex) {
-		add argNames (join 'arg' (i + 1))
-		i += 1
-	}
-}
+method readLiteralStrings MicroBlocksDecompiler {
+	// Replace offsets in 'pushLiteral' instructions with the actual literal strings.
+	// Return the index of the last instruction in opcodes.
 
-method findLastInstruction MicroBlocksDecompiler {
-	// Find the index of the last instruction in opcodes. The last instruction
-	// may be followed by literal values such as strings. Replace the offsets
-	// in 'pushLiteral' instructions with the referenced literal string.
-
-	endOfLiterals = 0
-	pushLiteralOpcode = 4
 	result = (count opcodes)
 	for i (count opcodes) {
 		if (i > result) { return result }
 		instr = (at opcodes i)
-		if (pushLiteralOpcode == (cmdOp this instr)) {
+		if (240 == (cmdOp this instr)) { return (i - 1) } // pseudo opcode that marks start of metadata
+		if (4 == (cmdOp this instr)) { // pushLiteralOpcode
 			literalIndex = (+ i (cmdArg this instr) 1)
 			if (literalIndex <= result) {
 				result = (literalIndex - 1)
@@ -389,8 +340,6 @@ method readLiteral MicroBlocksDecompiler literalIndex {
 	}
 	highBytes = (at header 3)
 	wordCount = ((highBytes << 4) | (lowByte >> 4))
-	endOfLit = (+ literalIndex wordCount 1)
-	if (endOfLit > endOfLiterals) { endOfLiterals = endOfLit }
 	bytes = (list)
 	for i (range (literalIndex + 1) (literalIndex + wordCount)) {
 		instr = (at opcodes i)
@@ -404,6 +353,54 @@ method readLiteral MicroBlocksDecompiler literalIndex {
 		removeLast bytes // remove trailing zero bytes
 	}
 	return (callWith 'string' (toArray bytes))
+}
+
+method readDecompilerMetadata MicroBlocksDecompiler lastInstruction {
+	// Read decompiler metadata, if any, and return true if found.
+
+	localNames = (array)
+	argNames = (array)
+	functionInfo = (array)
+
+	end = (count opcodes)
+	i = lastInstruction
+	while (240 != (cmdOp this (at opcodes i))) {
+		i += 1
+		if (i > end) { return false } // no meta information
+	}
+	i += 1 // skip the meta info marker (opcode 240)
+	if (i < end) {
+		s = (readLiteral this i)
+		localNames = (splitWith s (string 9))
+		i += ((floor ((byteCount s) / 4)) + 2)
+	}
+	if (i < end) {
+		s = (readLiteral this i)
+		functionInfo = (splitWith s (string 9))
+		i += ((floor ((byteCount s) / 4)) + 2)
+	}
+	if (i < end) {
+		s = (readLiteral this i)
+		argNames = (splitWith s (string 9))
+		i += ((floor ((byteCount s) / 4)) + 2)
+	}
+	return true
+}
+
+method findArgs MicroBlocksDecompiler {
+	maxArgIndex = -1
+	for cmd opcodes {
+		if (isOneOf (cmdOp this cmd) 'pushArg' 'storeArg' 'incrementArg') {
+			argIndex = (cmdArg this cmd)
+			if (argIndex > maxArgIndex) { maxArgIndex = argIndex }
+		}
+	}
+	argNames = (list)
+	i = 0
+	while (i <= maxArgIndex) {
+		add argNames (join 'A' (i + 1))
+		i += 1
+	}
 }
 
 method getOpNames MicroBlocksDecompiler {
@@ -480,6 +477,12 @@ method addHatBlock MicroBlocksDecompiler chunkID chunkType gpCode {
 	// chunk types 1 and 2 are command and reporter blocks without a hat
 	if (3 == chunkType) {
 		// Note: result is Function object
+		if (not (contains funcs chunkID)) {
+			// this happens during testing when decompiling a single function
+			if ((count functionInfo) > 2) {
+				atPut funcs chunkID (at functionInfo 3)
+			}
+		}
 		fName = (at funcs chunkID 'unknown function') // should never see "unknown function"
 		result = (newFunction fName argNames gpCode module)
 	} (4 == chunkType) {
@@ -674,10 +677,10 @@ method fixLocals MicroBlocksDecompiler {
 	declared = (dictionary)
 	for cmd opcodes {
 		if ('storeLocal' == (cmdOp this cmd)) {
-			varIndex = (cmdArg this cmd)
-			if (not (contains declared varIndex)) {
+			vIndex = (cmdArg this cmd)
+			if (not (contains declared vIndex)) {
 				atPut cmd 2 'declareLocal'
-				add declared varIndex
+				add declared vIndex
 			}
 		}
 	}
@@ -960,20 +963,23 @@ method buildCmdOrReporter MicroBlocksDecompiler op argCount isReporter {
 	return result
 }
 
-method globalVarName MicroBlocksDecompiler varIndex {
-	if (contains vars varIndex) { return (at vars varIndex) }
-	return (join 'v' varIndex)
+method globalVarName MicroBlocksDecompiler vIndex {
+	if (contains vars vIndex) { return (at vars vIndex) }
+	return (join 'V' vIndex)
 }
 
-method localVarName MicroBlocksDecompiler varIndex {
-	return (join 'l' varIndex)
-}
-
-method argName MicroBlocksDecompiler varIndex {
-	if (and (0 <= varIndex) (varIndex < (count argNames))) {
-		return (at argNames (varIndex + 1))
+method localVarName MicroBlocksDecompiler vIndex {
+	if (and (0 <= vIndex) (vIndex < (count localNames))) {
+		return (at localNames (vIndex + 1))
 	}
-	return (join 'arg' varIndex)
+	return (join 'L' vIndex)
+}
+
+method argName MicroBlocksDecompiler vIndex {
+	if (and (0 <= vIndex) (vIndex < (count argNames))) {
+		return (at argNames (vIndex + 1))
+	}
+	return (join 'A' vIndex)
 }
 
 // Helper Methods

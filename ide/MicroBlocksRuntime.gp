@@ -198,10 +198,18 @@ method compileAndDecompile SmallRuntime aBlockOrFunction {
 	gpCode = (decompileBytecodes chunkID chunkType bytecodes1)
 	bytecodes2 = (chunkBytesFor this gpCode)
 	if (bytecodes1 == bytecodes2) {
-		print 'ok chunkType:' chunkType 'bytes:' (count bytecodes1)
+		if ((count bytecodes1) > 750) {
+			print 'ok chunkType:' chunkType 'bytes:' (count bytecodes1)
+		}
 	} else {
 		print 'FAILED! chunkType:' chunkType 'bytes in:' (count bytecodes1) 'bytes out' (count bytecodes2)
 	}
+}
+
+method decompileAll SmallRuntime {
+	// Called by dev menu 'decompile all' for testing.
+
+	decompileAllExamples this
 }
 
 method decompileAllExamples SmallRuntime {
@@ -214,7 +222,7 @@ method decompileAllExamples SmallRuntime {
 	}
 }
 
-method decompileAll SmallRuntime {
+method decompileAllInProject SmallRuntime {
 	assignFunctionIDs this
 	for aFunction (allFunctions (project scripter)) {
 		compileAndDecompile this aFunction
@@ -224,6 +232,35 @@ method decompileAll SmallRuntime {
 			compileAndDecompile this aBlock
 		}
 	}
+}
+
+method analyzeAllExamples SmallRuntime {
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Examples') {
+			print fn
+			openProjectFromFile (findMicroBlocksEditor) (join '//' fn)
+			analyzeProject this
+		}
+	}
+}
+
+method analyzeProject SmallRuntime {
+	totalBytes = 0
+	assignFunctionIDs this
+	for aFunction (allFunctions (project scripter)) {
+		byteCount = (count (chunkBytesFor this aFunction))
+		if (byteCount > 700) { print ' ' (functionName aFunction) byteCount }
+		totalBytes += byteCount
+	}
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (not (isPrototypeHat aBlock)) { // functions are handled above
+			byteCount = (count (chunkBytesFor this aBlock))
+			if (byteCount > 700) { print '     script' byteCount }
+			totalBytes += byteCount
+		}
+	}
+	print '  Total:' totalBytes
+	print '-----------'
 }
 
 // Decompiling

@@ -149,7 +149,16 @@ method metaInfoForFunction MicroBlocksProject aFunc {
 
 	funcName = (functionName aFunc)
 	spec = (at blockSpecs funcName)
-	if (isNil spec) { return '' } // no spec; shouldn't happen
+	if (isNil spec) { // no spec, so create one
+		specString = funcName
+		typeString = ''
+		defaults = (list)
+		for argName (argNames aFunc) {
+			specString = (join specString ' _')
+			typeString = (join typeString ' auto')
+		}
+		spec = (blockSpecFromStrings funcName ' ' specString typeString defaults)
+	}
 
 	parts = (argList (first (parse (specDefinitionString spec))))
 	if ((count parts) < 4) {
