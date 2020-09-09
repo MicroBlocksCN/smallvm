@@ -90,6 +90,8 @@ int touchEnabled = false;
 		void tftInit() {
 			tft.begin(40000000); // Run SPI at 80MHz/2
 			tft.setRotation(1);
+                        // On newer boards, the display needs to be inverted
+			if (ESP.getChipRevision() > 1) tft.invertDisplay(true);
 			uint8_t m = 0x08 | 0x04; // RGB pixel order, refresh LCD right to left
 			tft.sendCommand(ILI9341_MADCTL, &m, 1);
 			tftClear();
