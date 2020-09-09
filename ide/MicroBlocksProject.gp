@@ -142,6 +142,32 @@ method functionNamed MicroBlocksProject functionName {
 	return nil
 }
 
+method metaInfoForFunction MicroBlocksProject aFunc {
+	// Return a tab-delimited string with meta information about the given function:
+	//	libraryName blockType funcName specString argTypes
+	// Return the empty string if the function doesn't have a block spec (shouldn't happen).
+
+	funcName = (functionName aFunc)
+	spec = (at blockSpecs funcName)
+	if (isNil spec) { return '' } // no spec; shouldn't happen
+
+	parts = (argList (first (parse (specDefinitionString spec))))
+	if ((count parts) < 4) {
+		parts = (copyWith parts '') // add empty arg types string for a parmeterless function
+	} else {
+		parts = (copyFromTo parts 1 4) // remove default arg values
+	}
+
+	libName = ''
+	for pair (sortedPairs libraries) {
+		lib = (first pair)
+		if (notNil (functionNamed lib funcName)) { libName = (last pair) }
+	}
+	addFirst (toList parts) libName
+
+	return (joinStrings parts (string 9)) // join fields with tab delimiter
+}
+
 // Variables
 
 method allVariableNames MicroBlocksProject {

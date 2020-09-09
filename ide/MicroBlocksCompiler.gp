@@ -497,7 +497,7 @@ method instructionsFor SmallCompiler aBlockOrFunction {
 			removeLast result // remove the final halt
 	}
 	appendLiterals this result
-//	appendLocalNames this result // xxx not yet!
+	appendDecompilerMetadata this aBlockOrFunction result
 	return result
 }
 
@@ -959,14 +959,26 @@ method wordsForLiteral SmallCompiler literal {
 	error 'Illegal literal type:' literal
 }
 
-// local variable names
+// metadata for the deompiler
 
-method appendLocalNames SmallCompiler instructionList {
-	// Append the local variable names, in order, to the instruction. The local variable names
-	// follow the last literal. Local variable names, if available, are used by the decompiler.
+method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
+	// Append a tab-delimited list of local variables to instructionList.
+	// This string is part of the optional metadata used by the decompiler.
 
-	for pair (sortedPairs localVars) {
-		add instructionList (last pair)
+	add instructionList 240 // mark the start of the decompiler meta data
+
+	// add local variable names
+	varNames = (list)
+	for pair (sortedPairs localVars) { add varNames (last pair) }
+	add instructionList (joinStrings varNames (string 9)) // tab delimited string
+
+	// add function info
+	if (isClass aBlockOrFunction 'Function') {
+		add instructionList (metaInfoForFunction (project (scripter (smallRuntime))) aBlockOrFunction)
+		argNames = (argNames aBlockOrFunction)
+		if (notEmpty argNames) {
+			add instructionList (joinStrings argNames (string 9)) // tab delimited string
+		}
 	}
 }
 
