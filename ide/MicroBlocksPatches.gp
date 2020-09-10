@@ -374,18 +374,19 @@ method contextMenu Block {
   }
   addItem menu 'duplicate' 'grabDuplicate' 'duplicate this block'
   if (and ('reporter' != type) (notNil (next this))) {
-    addItem menu 'duplicate all' 'grabDuplicateAll' 'duplicate these blocks'
+    addItem menu 'duplicate all' 'grabDuplicateAll' 'duplicate this block and all blocks below it'
   }
   addLine menu
   if (and (not isInPalette) (notNil (next this))) {
     addItem menu 'extract block' 'pickUp' 'pull out this block'
   }
   addLine menu
+  addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this) 'copy these blocks to the clipboard')
+  addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
+  addLine menu
   addItem menu 'delete block' 'delete' 'delete this block'
+
   if (devMode) {
-    addLine menu
-	addItem menu 'copy to clipboard' 'copyToClipboard' 'copy these blocks to the clipboard'
-	addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
 	addLine menu
     addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
     addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
