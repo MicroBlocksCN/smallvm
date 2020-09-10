@@ -12,7 +12,7 @@
 // [x] make compiler store function spec and parameter names
 // [x] make decompiler read and use local names
 // [x] make decompiler read and use parameter names
-// [ ] make decompiler use function spec
+// [x] make decompiler use function spec
 // [ ] store comments (separately from scripts)
 
 defineClass MicroBlocksDecompiler chunks vars funcs module reporters opcodes controlStructures code stack msgName localNames argNames functionInfo
@@ -68,8 +68,8 @@ method addVar MicroBlocksDecompiler varID varName {
 method decompileProject MicroBlocksDecompiler {
 	// Called after collecting chunks and var names from the board.
 
-	newProj = (newMicroBlocksProject)
-	module = (main newProj)
+	project = (newMicroBlocksProject)
+	module = (main project)
 	for varName (values vars) { addVariable module varName }
 
 	// pass 1: assign function names
@@ -90,8 +90,9 @@ method decompileProject MicroBlocksDecompiler {
 		chunkData = (at chunk 3)
 		gpCode = (decompile this chunkID chunkType chunkData)
 		if (isClass gpCode 'Function') {
-			setField gpCode 'functionName' (at funcs chunkID)
-			addFunction module gpCode
+			addFunctionToProject this gpCode chunkID project
+		} ('comment' == (primName gpCode)) {
+			// ignore stand-alone comments
 		} else {
 			add scripts (array (rand 50 400) (rand 50 300) gpCode)
 		}
@@ -99,8 +100,52 @@ method decompileProject MicroBlocksDecompiler {
 	setScripts module scripts
 
 	// install the new project
-	setProject (scripter (smallRuntime)) newProj
-	cleanUp (scriptEditor (scripter (smallRuntime)))
+	scripter = (scripter (smallRuntime))
+	setProject scripter project
+	updateLibraryList scripter
+	cleanUp (scriptEditor scripter)
+	saveAllChunks (smallRuntime)
+}
+
+method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {
+	funcName = (functionName aFunc)
+	targetLib = module
+
+	if ((count functionInfo) >= 6) { // use function info if available
+		// set the target library for this function
+		libName = (at functionInfo 1)
+		libCat = (at functionInfo 2)
+		if (libName != '') {
+			if (isNil (libraryNamed project libName)) { // create library module
+				targetLib = (newMicroBlocksModule libName)
+				setField targetLib 'moduleCategory' libCat
+				setVersion targetLib (array 0 0) // unknown version
+				addLibrary project targetLib
+			}
+			targetLib = (libraryNamed project libName)
+		}
+
+		 // create blockspec from function info
+		blockType = (at functionInfo 3)
+		specString = (at functionInfo 5)
+		typeString = (at functionInfo 6)
+		defaults = (list)
+		spec = (blockSpecFromStrings funcName blockType specString typeString defaults)
+	} else { // no function info, so generate a blockspec
+		specString = funcName
+		typeString = ''
+		defaults = (list)
+		for argName (argNames aFunc) {
+			specString = (join specString ' _')
+			typeString = (join typeString ' auto')
+		}
+		spec = (blockSpecFromStrings funcName ' ' specString typeString defaults)
+	}
+
+	// add the function and its blockspec
+	addFunction targetLib aFunc
+	add (blockList targetLib) funcName
+	recordBlockSpec project funcName spec
 }
 
 method nameForFunction MicroBlocksDecompiler chunkID chunkData {
@@ -119,6 +164,7 @@ method extractFunctionName MicroBlocksDecompiler chunkData {
 			('pushLiteral' == (cmdOp this (at opcodes 2)))) {
 				return (cmdArg this (at opcodes 2))
 	}
+	if ((count functionInfo) > 3) { return (at functionInfo 4) }
 	return nil
 }
 
@@ -479,8 +525,8 @@ method addHatBlock MicroBlocksDecompiler chunkID chunkType gpCode {
 		// Note: result is Function object
 		if (not (contains funcs chunkID)) {
 			// this happens during testing when decompiling a single function
-			if ((count functionInfo) > 2) {
-				atPut funcs chunkID (at functionInfo 3)
+			if ((count functionInfo) > 3) {
+				atPut funcs chunkID (at functionInfo 4)
 			}
 		}
 		fName = (at funcs chunkID 'unknown function') // should never see "unknown function"

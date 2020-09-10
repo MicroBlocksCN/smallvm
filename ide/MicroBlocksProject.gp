@@ -160,20 +160,23 @@ method metaInfoForFunction MicroBlocksProject aFunc {
 		spec = (blockSpecFromStrings funcName ' ' specString typeString defaults)
 	}
 
-	parts = (argList (first (parse (specDefinitionString spec))))
+	parts = (toList (argList (first (parse (specDefinitionString spec)))))
 	if ((count parts) < 4) {
-		parts = (copyWith parts '') // add empty arg types string for a parmeterless function
+		add parts '' // add empty arg types string for a parmeterless function
 	} else {
 		parts = (copyFromTo parts 1 4) // remove default arg values
 	}
 
 	libName = ''
+	libCat = ''
 	for pair (sortedPairs libraries) {
 		lib = (first pair)
-		if (notNil (functionNamed lib funcName)) { libName = (last pair) }
+		if (notNil (functionNamed lib funcName)) {
+			libName = (last pair)
+			libCat = (moduleCategory lib)
+		}
 	}
-	addFirst (toList parts) libName
-
+	parts = (join (list libName libCat) parts)
 	return (joinStrings parts (string 9)) // join fields with tab delimiter
 }
 
@@ -296,7 +299,7 @@ method splitCmdListIntoModules MicroBlocksProject cmdList {
 	for cmd cmdList {
 		if ('module' == (primName cmd)) {
 			if (not (isEmpty m)) { add result m }
-			m = (list cmd)
+			m = (list)
 		}
 		add m cmd
 	}
@@ -390,7 +393,7 @@ method initialize MicroBlocksModule name {
 	description = ''
 	tags = (array)
 	variableNames = (array)
-	blockList = (array)
+	blockList = (list)
 	blockSpecs = (dictionary)
 	functions = (array)
 	scripts = (array)
@@ -492,7 +495,6 @@ method removeSupercededFunctions MicroBlocksModule superceded {
 	for op blockList {
 		if (not (contains superceded op)) { add newBlockList op }
 	}
-	blockList = (toArray newBlockList)
 }
 
 // variables
