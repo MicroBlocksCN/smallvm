@@ -669,11 +669,16 @@ method tryToConnect SmallRuntime {
 			connectionStartTime = nil
 			vmVersion = nil
 			sendMsg this 'getVersionMsg'
-			if (and (devMode) (not (hasUserCode (project (findProjectEditor))))) {
+			if (and
+				(devMode)
+				(not (hasUserCode (project (findProjectEditor))))
+				(decompilerEnabled (findMicroBlocksEditor))
+			) {
 				// Project is empty. Try to decompile what's on the board
-				if (decompilerEnabled (findMicroBlocksEditor)) { requestCodeFromBoard this }
+				requestCodeFromBoard this
+			} else {
+				clearBoardIfConnected this false
 			}
-			clearBoardIfConnected this false
 			stopAndSyncScripts this
 			return 'connected'
 		}
