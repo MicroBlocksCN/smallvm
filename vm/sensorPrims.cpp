@@ -362,7 +362,7 @@ static int readTemperature() {
 static int readAccelReg(int regID) {
 	Wire1.beginTransmission(MPU6886_ID);
 	Wire1.write(regID);
-	int error = Wire1.endTransmission(false);
+	int error = Wire1.endTransmission();
 	if (error) return 0;
 
 	Wire1.requestFrom(MPU6886_ID, 1);
@@ -434,6 +434,7 @@ static int readTemperature() {
 	if (is6886) {
 		temp = (int) ((float) rawTemp / 326.8) + 8;
 	} else {
+		if ((0 == rawTemp) && (0 == readAccelReg(MPU6886_WHO_AM_I))) return 0; // no accelerometer
 		temp = (rawTemp / 40) + 9; // approximate constants for mpu9250, empirically determined
 	}
 	return temp;
