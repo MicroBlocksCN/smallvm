@@ -202,17 +202,20 @@ method newProject MicroBlocksEditor {
 method clearProject MicroBlocksEditor {
   // Remove old project morphs and classes and reset global state.
 
-  page = (global 'page')
-  stopAll page
-  for p (copy (parts (morph page))) {
-	// remove explorers, table views -- everything but the MicroBlocksEditor
-	if (p != morph) { removePart (morph page) p }
-  }
+  closeAllDialogs this
   fileName = ''
   createEmptyProject scripter
   clearBoardIfConnected (smallRuntime) true
   if (isRunning thingServer) {
 	clearVars thingServer
+  }
+}
+
+method closeAllDialogs MicroBlocksEditor {
+  pageM = (morph (global 'page'))
+  for p (copy (parts pageM)) {
+	// remove explorers, table views -- everything but the MicroBlocksEditor
+	if (p != morph) { removePart pageM p }
   }
 }
 
@@ -261,6 +264,13 @@ method openProject MicroBlocksEditor projectData projectName {
   updateLibraryList scripter
   developerModeChanged scripter
   saveAllChunks (smallRuntime)
+}
+
+method openFromBoard MicroBlocksEditor {
+  if (not (canReplaceCurrentProject this)) { return }
+  clearProject this
+  readCodeFromNextBoardConnected (smallRuntime)
+  inform 'Plug in the board.'
 }
 
 method saveProjectToFile MicroBlocksEditor {
@@ -788,6 +798,9 @@ method projectMenu MicroBlocksEditor {
   menu = (menu 'File' this)
   addItem menu 'New' 'newProject'
   addItem menu 'Open' 'openProjectMenu'
+  if ('connected' != (updateConnection (smallRuntime))) {
+	addItem menu 'Open from board' 'openFromBoard'
+  }
   addItem menu 'Save' 'saveProjectToFile'
   if (devMode) {
 	addLine menu

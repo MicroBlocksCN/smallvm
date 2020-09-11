@@ -14,13 +14,14 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs decompiler
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler
 
 method scripter SmallRuntime { return scripter }
 
 method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
+	readFromBoard = false
 	clearLoggedData this
 	return this
 }
@@ -265,6 +266,11 @@ method analyzeProject SmallRuntime {
 
 // Decompiling
 
+method readCodeFromNextBoardConnected SmallRuntime {
+	readFromBoard = true
+	disconnected = false
+}
+
 method requestCodeFromBoard SmallRuntime {
 	decompiler = (newDecompiler)
 	sendMsg this 'getAllCodeMsg'
@@ -276,6 +282,8 @@ method requestCodeFromBoard SmallRuntime {
 		processMessages this
 	}
 	decompileProject decompiler
+	readFromBoard = false
+	closeAllDialogs (findMicroBlocksEditor)
 }
 
 method receivedChunk SmallRuntime chunkID chunkType bytecodes {
@@ -669,12 +677,7 @@ method tryToConnect SmallRuntime {
 			connectionStartTime = nil
 			vmVersion = nil
 			sendMsg this 'getVersionMsg'
-			if (and
-				(devMode)
-				(not (hasUserCode (project (findProjectEditor))))
-				(decompilerEnabled (findMicroBlocksEditor))
-			) {
-				// Project is empty. Try to decompile what's on the board
+			if readFromBoard {
 				requestCodeFromBoard this
 			} else {
 				clearBoardIfConnected this false
