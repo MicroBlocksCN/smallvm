@@ -88,10 +88,17 @@ int touchEnabled = false;
 		#define TFT_HEIGHT 240
 		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 		void tftInit() {
+			// test TFT_RST to see if we need to invert the display
+			// (from https://github.com/m5stack/M5Stack/blob/master/src/utility/In_eSPI.cpp)
+			pinMode(TFT_RST, INPUT_PULLDOWN);
+			delay(1);
+			bool invertFlag = digitalRead(TFT_RST);
+			pinMode(TFT_RST, OUTPUT);
+
 			tft.begin(40000000); // Run SPI at 80MHz/2
 			tft.setRotation(1);
-                        // On newer boards, the display needs to be inverted
-			if (ESP.getChipRevision() > 1) tft.invertDisplay(true);
+			tft.invertDisplay(invertFlag);
+
 			uint8_t m = 0x08 | 0x04; // RGB pixel order, refresh LCD right to left
 			tft.sendCommand(ILI9341_MADCTL, &m, 1);
 			tftClear();
