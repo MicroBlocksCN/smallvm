@@ -99,6 +99,12 @@ method addLibrary MicroBlocksProject aMicroBlocksModule {
 	for lib (values libraries) {
 		if (lib != aMicroBlocksModule) { removeSupercededFunctions lib newFunctionNames }
 	}
+
+	// update block specs
+	newSpecs = (blockSpecs aMicroBlocksModule)
+	for k (keys newSpecs) {
+		atPut blockSpecs k (at newSpecs k)
+	}
 }
 
 method removeLibraryNamed MicroBlocksProject libName {
@@ -119,6 +125,20 @@ method categoryForOp MicroBlocksProject op {
 		if (contains (blockList lib) op) { return (moduleCategory lib) }
 	}
 	return nil
+}
+
+method checkForNewerLibraryVersions MicroBlocksProject {
+	for libName (keys libraries) {
+		newVersion = (getNewerVersion (at libraries libName))
+		if (notNil newVersion) {
+			if (confirm (global 'page') nil (join
+				'Found a newer version of ' libName (newline)
+				'Do you want me to update the one in the project?')
+			) {
+				addLibrary this newVersion
+			}
+		}
+	}
 }
 
 // Functions
@@ -223,15 +243,15 @@ method loadFromString MicroBlocksProject s {
 	cmdsByModule = (splitCmdListIntoModules this cmdList)
 	isFirst = true
 	for cmdList cmdsByModule {
-		if isFirst {
+		if isFirst { // main module
 			loadFromCmds main cmdList
 			isFirst = false
-		} else {
-			// Load libraries and perform a version check for each one
+		} else { // library
 			lib = (loadFromCmds (newMicroBlocksModule) cmdList true)
 			atPut libraries (moduleName lib) lib
 		}
 	}
+	checkForNewerLibraryVersions this
 	updatePrimitives this
 	return this
 }
@@ -674,7 +694,7 @@ method needsQuotes MicroBlocksModule s {
 
 // loading
 
-method loadFromCmds MicroBlocksModule cmdList versionChecking {
+method loadFromCmds MicroBlocksModule cmdList {
 	loadModuleNameAndCategory this cmdList
 	loadVersion this cmdList
 	loadAuthor this cmdList
@@ -686,20 +706,6 @@ method loadFromCmds MicroBlocksModule cmdList versionChecking {
 	loadSpecs this cmdList
 	loadFunctions this cmdList
 	loadScripts this cmdList
-	if versionChecking {
-		newerVersion = (lookForNewerVersion this)
-		if (and
-			(notNil newerVersion)
-			(confirm (global 'page') nil
-				(join 'Found a newer version of ' moduleName (newline)
-					'Do you want me to update the one in the project?'))
-		) {
-			// Resolve mismatches and update project blockSpecs
-			updatingLibrary this newerVersion
-			importDependencies newerVersion (scripter (smallRuntime))
-			return newerVersion
-		}
-	}
 	return this
 }
 
@@ -720,9 +726,9 @@ method browserEmbeddedLibs MicroBlocksModule {
 	return result
 }
 
-method lookForNewerVersion MicroBlocksModule {
-	// Look for an embedded library with the same name, and see if it's newer
-	// than the one we've just loaded
+method getNewerVersion MicroBlocksModule {
+	// Return the embedded library with the same name and a newer version or nil if none found.
+
 	if (moduleName == 'main') { return nil }
 
 	embeddedFiles = (listEmbeddedFiles)
@@ -731,17 +737,17 @@ method lookForNewerVersion MicroBlocksModule {
 	}
 
 	// Find the embedded lib path
+	v1 = version // current version
 	for filePath embeddedFiles {
 		if (endsWith filePath (join moduleName '.ubl')) {
 			cmdList = (parse (readEmbeddedFile filePath))
 			candidate = (newMicroBlocksModule moduleName)
-			loadFromCmds candidate cmdList false // don't version-check these!
-			v1 = version
+			loadFromCmds candidate cmdList
 			v2 = (version candidate)
 			if (or
 				((at v2 1) > (at v1 1))
 				(and ((at v1 1) == (at v2 1)) ((at v2 2) > (at v1 2)))
-				) {
+			) {
 				return candidate
 			}
 		}
