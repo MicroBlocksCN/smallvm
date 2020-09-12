@@ -564,7 +564,10 @@ method closePort SmallRuntime {
 	boardType = nil
 }
 
-method enableAutoConnect SmallRuntime { disconnected = false }
+method enableAutoConnect SmallRuntime {
+	disconnected = false
+	if ('Browser' == (platform)) { port = 1 }
+}
 
 method tryToInstallVM SmallRuntime {
 	// Invite the user to install VM if we see a new board drive and are not able to connect to

@@ -8,7 +8,7 @@
 // See https://github.com/espressif/esptool/wiki/Serial-Protocol#reading-flash
 // John Maloney, September, 2019
 
-defineClass ESPTool port recvBuf status
+defineClass ESPTool port recvBuf closeWhenDone status
 
 to newESPTool { return (initialize (new 'ESPTool')) }
 
@@ -16,6 +16,7 @@ method initialize ESPTool {
 	status = ''
 	port = nil
 	recvBuf = (newBinaryData)
+	closeWhenDone = true
 	return this
 }
 
@@ -57,6 +58,7 @@ method setPort ESPTool portID {
 	// Use an existing (open) serial port. Used when invoked from the browser or Chromebook.
 	initialize this
 	port = portID
+	closeWhenDone = false
 }
 
 method closePort ESPTool {
@@ -362,7 +364,7 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 	waitMSecs 100 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
 	exitBootMode this
 	waitMSecs 1500
-	closePort this
+	if closeWhenDone { closePort this }
 }
 
 method readVMData ESPTool boardName downloadFlag {

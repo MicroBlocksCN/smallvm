@@ -70,9 +70,14 @@ method destroy MicroBlocksFlasher {
 	enableAutoConnect (smallRuntime)
 }
 
-method startFlasher MicroBlocksFlasher {
+method startFlasher MicroBlocksFlasher serialPortID {
 	espTool = (newESPTool)
-	ok = (openPort espTool portName boardName)
+	if (notNil serialPortID) {
+		setPort espTool serialPortID
+		ok = true
+	} else {
+		ok = (openPort espTool portName boardName)
+	}
 	if (not ok) {
 		destroy this
 		inform 'Could not open serial port'
