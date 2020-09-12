@@ -626,26 +626,24 @@ method contextMenu MicroBlocksEditor {
   addItem menu 'update firmware on board' (action 'installVM' (smallRuntime) false false) // do not wipe flash, do not download VM from server
   addLine menu
 
-// xxx testing (used by John)
+if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
+	addItem menu 'decompile all' (action 'decompileAll' (smallRuntime))
+	addLine menu
 // addItem menu 'dump persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 1 nil)
 // addItem menu 'compact persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
 // addLine menu
-
-if (contains (commandLine) '--allowMorphMenu') {
-	addItem menu 'decompile all' (action 'decompileAll' (smallRuntime))
-	addLine menu
 }
 
   if (not (devMode)) {
 	addItem menu 'show advanced blocks' 'showAdvancedBlocks'
   } else {
 	addItem menu 'firmware version' (action 'getVersion' (smallRuntime))
+	addLine menu
+// Commented out for now since all precompiled VM's are already included in IDE
+//	addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
+	addItem menu 'wipe and repartition esp32' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 	if ('Browser' != (platform)) {
-		addLine menu
-// Commented out for now since precompiled VM's are already included in IDE
-//		addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
-		addItem menu 'wipe and repartition esp32' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
-		addLine menu
+	  addLine menu
 	  if (not (isRunning thingServer)) {
 		addItem menu 'start WebThing server' 'startThingServer'
 	  } else {
