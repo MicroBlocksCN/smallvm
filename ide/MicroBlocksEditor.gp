@@ -269,6 +269,8 @@ method openProject MicroBlocksEditor projectData projectName {
 method openFromBoard MicroBlocksEditor {
   if (not (canReplaceCurrentProject this)) { return }
   clearProject this
+  fileName = ''
+  updateTitle this
   readCodeFromNextBoardConnected (smallRuntime)
   inform 'Plug in the board.'
 }

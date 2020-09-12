@@ -100,11 +100,13 @@ method decompileProject MicroBlocksDecompiler {
 	setScripts module scripts
 
 	// install the new project
+	updatePrimitives project
 	scripter = (scripter (smallRuntime))
 	setProject scripter project
 	updateLibraryList scripter
+	checkForNewerLibraryVersions (project scripter)
+	restoreScripts scripter // fix block colors
 	cleanUp (scriptEditor scripter)
-	saveAllChunks (smallRuntime)
 }
 
 method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {

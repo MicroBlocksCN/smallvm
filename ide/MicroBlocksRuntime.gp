@@ -272,6 +272,7 @@ method readCodeFromNextBoardConnected SmallRuntime {
 }
 
 method requestCodeFromBoard SmallRuntime {
+	closeAllDialogs (findMicroBlocksEditor)
 	decompiler = (newDecompiler)
 	sendMsg this 'getAllCodeMsg'
 	sendMsg this 'getVarNamesMsg'
@@ -283,7 +284,6 @@ method requestCodeFromBoard SmallRuntime {
 	}
 	decompileProject decompiler
 	readFromBoard = false
-	closeAllDialogs (findMicroBlocksEditor)
 }
 
 method receivedChunk SmallRuntime chunkID chunkType bytecodes {
