@@ -750,14 +750,20 @@ function GP_writeSerialPort(data) {
 	return data.buffer.byteLength;
 }
 
-function GP_setSerialPortDTR(flag) {
-	if (GP_serialPortID < 0) return; // port not open
-	chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag });
+async function GP_setSerialPortDTR(flag) {
+	if (hasChromeSerial()) {
+		chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag });
+	} else if (hasWebSerial()) {
+		await GP_webSerialPort.setSignals({ dtr: flag }).catch(() => {});
+	}
 }
 
-function GP_setSerialPortRTS(flag) {
-	if (GP_serialPortID < 0) return; // port not open
-	chrome.serial.setControlSignals(GP_serialPortID, { rts: flag });
+async function GP_setSerialPortRTS(flag) {
+	if (hasChromeSerial()) {
+		chrome.serial.setControlSignals(GP_serialPortID, { rts: flag });
+	} else if (hasWebSerial()) {
+		await GP_webSerialPort.setSignals({ rts: flag }).catch(() => {});
+	}
 }
 
 // File read/write
