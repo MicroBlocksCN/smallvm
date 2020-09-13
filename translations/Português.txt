@@ -1,0 +1,1485 @@
+# MicroBlocks translation file
+# Last updated: September 10 2020
+
+#########################
+# Blocks and categories #
+#########################
+
+Output
+Saída
+
+set user LED _
+acender LED integrado _
+
+say _
+mostrar _
+
+graph _
+gráfico _
+
+Input
+Entrada
+
+button A
+botão A
+
+button B
+botão B
+
+timer
+temporizador
+
+reset timer
+reinicializar temporizador
+
+new byte array _
+nova matriz de bytes _
+
+microseconds
+microsegundos
+
+milliseconds
+milisegundos
+
+board type
+tipo de placa
+
+Pins
+Pins
+
+read digital pin _
+leitura digital _
+
+read analog pin _
+leitura analógica _
+
+set digital pin _ to _
+colocar pin digital _ a _
+
+set pin _ to _
+colocar pin _ a _
+
+analog pins
+pins analógicos
+
+digital pins
+pins digitais
+
+Control
+Control
+
+when started
+no arranque
+
+when button _ pressed
+quando se prime o botão _
+
+forever _
+para sempre _
+
+repeat _ _
+repetir _ vezes _
+
+wait _ millisecs
+esperar _ milisegundos
+
+if _ _
+se _ _
+
+else if _ _
+então, se _ _
+
+if _ _ else _
+se _ _ então _
+
+when _
+quando _
+
+wait until _
+esperar até que _
+
+wait _ microsecs
+esperar _ microsegundos
+
+return _
+retornar _
+
+when _ received
+ao receber _
+
+broadcast _
+enviar _
+
+comment _
+comentário _
+
+for _ in _ _
+por cada _ em _ _
+
+repeat until _ _
+repetir até que _ _
+
+stop this task
+parar esta tarefa
+
+stop other tasks
+parar as outras tarefas
+
+stop all
+parar tudo
+
+last message
+última mensagem
+
+Operators
+Operadores
+
+_ mod _
+_ módulo _
+
+abs _
+valor absoluto de _
+
+random _ to _
+número aleatório entre _ e _
+
+not _
+não _
+
+_ and _
+_ e _
+
+and _
+e _
+
+_ or _
+_ ou _
+
+or _
+ou _
+
+_ is a _
+_ é um _
+
+boolean
+boleano
+
+number
+número
+
+string
+texto
+
+list
+lista
+
+hex _
+hexadecimal _
+
+Variables
+Variáveis
+
+# Buttons on top of "Variables" category
+
+Add a variable
+Cria uma variável
+
+Delete a variable
+Apaga uma variável
+
+# New variable dialog
+
+New variable name?
+Nome da variável?
+
+set _ to _
+coloca _ em _
+
+change _ by _
+altera _ em _
+
+local _ _
+variável local _ _
+
+Data
+Dados
+
+list
+lista
+
+length of _
+tamanho de _
+
+item _ of _
+elemento _ de _
+
+replace item _ of list _ with _
+substitui elemento _ da lista _ por _
+
+delete item _ of list _
+apaga elemento _ da lista _
+
+add _ to list _
+adiciona _ à lista _
+
+join _ _
+une _ _
+
+copy _ from _
+copia _ desde _
+
+to _
+até _
+
+find _ in _
+encontra _ em _
+
+starting at _
+começando em _
+
+join items of list _
+une elementos da lista _
+
+separator _
+usando separador _
+
+unicode _ of _
+unicode _ de _
+
+string from unicode _
+texto com unicode _
+
+new list length _
+nova lista de tamanho _
+
+new byte array length _
+nova matriz de bytes de comprimento _
+
+free memory
+memória livre
+
+My Blocks
+Meus blocos
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+Cria um bloco de comandos
+
+Add a reporter block
+Cria um bloco repórter
+
+# Make a block dialog
+
+Enter function name:
+Nome da função:
+
+Comm
+Comunicações
+
+i2c get device _ register _
+ler do dispositivo i2c _ o registo _
+
+i2c set device _ register _ to _
+escreve no dispositivo i2c _ o registo _ com _
+
+i2c device _ read list _
+ler o dispositivo i2c _ para a lista _
+
+i2c device _ write list _
+escreve no dispositivo i2c _ o conteúdo da lista _
+
+spi send _
+spi a envíar _
+
+spi receive
+spi a receber
+
+print _
+escrever _
+
+no op
+não op
+
+ignore
+ignorar
+
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
+
+draw shape _ at x _ y _
+desenhar forma _ em x _ y _
+
+shape for letter _
+forma para letra _
+
+send NeoPixel rgb _
+envíar RGB _ ao NeoPixel
+
+has tone support
+tem suporte para tons
+
+play tone pin _ frequency _
+toca um tom no pin _ com a frequência _
+
+has WiFi support
+tem suporte para WiFi
+
+start WiFi _ password _
+inicia WiFi _ com a password _
+
+stop WiFi
+terminar WiFi
+
+WiFi status
+estado do WiFi
+
+my IP address
+meu endereço IP
+
+radio send number _
+envía número _ por rádio
+
+radio send string _
+envía texto _ por rádio
+
+radio send pair _ = _
+envía associação _ = _ por rádio
+
+radio message received?
+mensagem de rádio recebida?
+
+radio last number
+último número recebido por rádio
+
+radio last string
+último texto recebido por rádio
+
+radio last message type
+tipo da última mensagem recebida por rádio
+
+radio set group _
+fixar grupo de rádio a _
+
+radio set channel (0-83) _
+fixar canal de rádio a (0-83) _
+
+radio set power (0-7) _
+fixar potência de rádio a (0-7) _
+
+radio last signal strength
+intensidade do último sinal de rádio
+
+radio receive packet _
+recebe pacote por rádio _
+
+radio send packet _
+envía pacote por radio _
+
+disable radio
+desabilita rádio
+
+#############
+# Libraries #
+#############
+
+Basic Sensors
+Sensores básicos
+
+tilt x
+inclinação x
+
+tilt y
+inclinação y
+
+tilt z
+inclinação z
+
+acceleration
+acelaração
+
+light level
+nível de luz
+
+temperature (°C)
+temperatura (°C)
+
+####
+# NeoPixel library
+
+NeoPixel
+NeoPixel
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+define NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+apaga NeoPixels
+
+set NeoPixel _ color _
+define NeoPíxel _ de cor _
+
+set all NeoPixels color _
+define todos os NeoPixels de color _
+
+rotate NeoPixels by _
+roda NeoPixels em _
+
+color r _ g _ b _ (0-31)
+cor r _ g _ b _ (0-31)
+
+random color
+cor aleatória
+
+attach _ LED NeoPixel strip to pin _
+inicializa a tira de _ NeoPixel no pin _
+
+has white _
+com branco _
+
+PIR
+Sensor de movimento
+
+PIR at pin _ detected movement
+Movimento detectado por PIR no pin _
+
+####
+# Citilab ED1 board libraries
+
+ED1 Stepper Motor
+Motores ED1
+
+move motor _ _ steps _
+move motor _ _ passos _
+
+move motor 1 _ and motor 2 _ _ steps
+move motor 1 _ e motor 2 _ _ passos
+
+move motor _ angle _ °
+move motor _ ângulo _ °
+
+move motor _ _ complete turns
+move motor _ _ voltas completas
+
+stop steppers
+pára os motores
+
+clockwise
+sentido horário
+
+counter-clockwise
+sentido anti-horário
+
+ED1 Buttons
+Botões ED1
+
+button OK
+botão OK
+
+button X
+botão X
+
+button up
+botão cima
+
+button down
+botão baixo
+
+button left
+botão esquerda
+
+button right
+botão direita
+
+capacitive sensor _
+sensor capacitivo _
+
+set capacitive threshold to _
+fixa limite capacitivo em _
+
+####
+# BirdBrain Technologies libraries
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird LED tricolor _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ °
+Hummingbird Servo Posicional _ _ °
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Servo de Rotação _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Bateria (mV)
+
+Light
+Luz
+
+Distance (cm)
+Distância (cm)
+
+Dial
+Dial
+
+Sound
+Som
+
+Other
+Outro
+
+Finch Beak Red _ Green _ Blue _
+Pico de color do Finch R _ % G _ % B _ %
+
+Finch Tail _ Red _ Green _ Blue _
+Cauda de color do Finch R _ % G _ % B _ %
+
+Finch Move _ _ cm at _ %
+Mover  o Finch _ _ cm  à velocidade _ %
+
+Finch Turn _ _ ° at _ %
+Girar o Finch _ _ ° à velocidade _ %
+
+Finch Wheels L _ % R _ %
+Rodas do Finch à velocidad E _ % D _ %
+
+Finch Stop
+Para o Finch
+
+Finch Distance (cm)
+Distancia do Finch (cm)
+
+Finch _ Light
+Luz _ do Finch
+
+Finch _ Line
+Línha _  do Finch
+
+Finch Reset Encoders
+Reinicializar os contadores de voltas do Finch
+
+Finch _ Encoder
+Contador de voltas _
+
+Finch Accelerometer _
+Acelerómetro do Finch _
+
+Finch Battery
+Nível de batería do Finch
+
+All
+Todos
+
+Forward
+Frente
+
+Backward
+Atrás
+
+Right
+Direita
+
+Left
+Esquerda
+
+Beak Up
+Pico até cima
+
+Beak Down
+Pico até a baixo
+
+Tilt Left
+Inclinação à esquerda
+
+Tilt Right
+Inclinação à direita
+
+Level
+Plano
+
+Upside Down
+Cabeça para baixo
+
+x
+x
+
+y
+y
+
+z
+z
+
+strength
+potência
+
+####
+# Ultrasound distance library
+
+distance (cm) trigger _ echo _
+distância (cm) trigger _ echo _
+
+####
+# Infrared remote library
+
+IR Remote
+Infravermelhos
+
+receive IR code
+recebe código IR
+
+receive IR code from device _
+recebe código IR do dispositivo _
+
+test IR
+teste IR
+
+attach IR receiver to pin _
+inicializa receptor IR no pin _
+
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
+Radio
+Rádio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
+
+Scrolling
+Texto animado
+
+scroll text _
+anima o texto _
+
+scroll number _
+anima o número _
+
+pausing _ ms
+pausar _ ms
+
+stop scrolling
+para a animação
+
+####
+# Servo motor library
+
+Servo
+Servomotores
+
+set servo _ to _ degrees (-90 to 90)
+fixa o servo _ a _ graus (-90 a 90)
+
+set servo _ to speed _ (-100 to 100)
+faz girar o servo _ à velocidade _ (-100 a 100)
+
+stop servo _
+para o servo _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
+
+LED Display
+Display LED
+
+display _
+display _
+
+clear display
+limpar display
+
+plot x _ y _
+ligar x _ y _
+
+unplot x _ y _
+apagar x _ y _
+
+display character _
+mostra caracter _
+
+####
+# TFT display library
+
+enable TFT _
+activa TFT _
+
+TFT width
+largura do TFT
+
+TFT height
+altura do TFT
+
+set TFT pixel x _ y _ to _
+pinta o píxel x _ y _ de color _
+
+draw line on TFT from x _ y _ to x _ y _ color _
+desenha línha de x _ y _ a x _ y _ cor _
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+desenha retângulo em x _ y _ largura _ altura _ cor _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+desenha retângulo arredondado em x _ y _ largura _ altura _ raio _ cor _
+
+draw circle on TFT at x _ y _ radius _ color _
+desenha círculo em x _ y _ raio _ cor _
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+desenha triângulo em x _ y _ , x _ y _ , x _ y _ cor _
+
+filled _
+preenchido _
+
+write _ on TFT at x _ y _ color _
+escreve _ em x _ y _ cor _
+
+scale _ wrap _
+escala _ com saltos de línha _
+
+####
+# Tone library
+# Generates music tones on buzzers
+
+Tone
+Tons
+
+attach buzzer to pin _
+inicializa campainha no pin _
+
+play note _ octave _ for _ ms
+toca a nota _ na oitava _ durante _ ms
+
+play frequency _ for _ ms
+toca a frequência _ durante _ ms
+
+play midi key _ for _ ms
+toca a tecla MIDI _ durante _ ms
+
+####
+# Turtle geometry library
+
+Turtle
+Tartaruga
+
+home
+volta para casa
+
+move _
+move _ pasos
+
+turn _ degrees
+gira _ graus
+
+turn _ / _ of circle
+gira _ / _ de volta
+
+pen down
+baixa o lápis
+
+pen up
+sobe o lápis
+
+set pen color to _
+fixa a color do lápis a _
+
+set pen to random color
+fixa uma cor aleatória para o lápis
+
+fill display with _
+preenche o ecran com a cor _
+
+go to x _ y _
+ir para x _ y _
+
+point in direction _
+aponta na direção _
+
+####
+# File system library
+
+Files
+Arquivos
+
+open file _
+abre arquivo _
+
+close file _
+fecha arquivo _
+
+delete file _
+apaga arquivo _
+
+append line _ to file _
+adiciona linha _ no arquivo _
+
+append bytes _ to file _
+adiciona bytes _ no arquivo _
+
+end of file _
+fim do arquivo _
+
+next line of file _
+linha seguinte do arquivo _
+
+next _ bytes of file _
+seguintes _ bytes do arquivo _
+
+starting at _
+começar desde _
+
+file names
+nomes de arquivo
+
+size of file _
+tamanho do arquivo _
+
+file system info
+detalhes do sistema de arquivo
+
+####
+# WiFi library
+
+WiFi
+WiFi
+
+wifi connect to _ password _ try _ times
+ligar à rede wifi _ com a senha _ em _ tentativas
+
+wifi create hotspot _ password _
+criar um ponto de acesso wifi _ com a senha _
+
+IP address
+endereço IP
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
+
+Motion
+Moviemento
+
+motion
+movimento
+
+start step counter
+começar a contar passos
+
+step count
+contagem de passos
+
+clear step count
+apanha contagem de passos
+
+set step threshold _ (0-50)
+fixa o limite de passos em _ (0-50)
+
+####
+# Button Events library
+
+Button Events
+Eventos de botão
+
+button _ double pressed
+duplo click no botão _
+
+button _ long pressed
+longo click no botão _
+
+button _ pressed
+click no botão  _
+
+####
+# Calliope board library
+
+Calliope set LED red _ green _ blue _
+fixa o LED do Calliope a vermelho _ verde _ azul _
+
+Calliope set speaker _
+fixa o alto falante do Calliope em _
+
+Calliope loudness
+Volume sonoro do Calliope
+
+####
+# Circuit Playground Express board library
+
+Circuit Playground set speaker _
+fixa o alto falante do Circuit Playground em _
+
+Circuit Playground slide switch
+interruptor do Circuit Playground
+
+####
+# DotStar LED library
+
+attach _ DotStar LEDs to data pin _ clock pin _
+inicializa tira de _ LEDs DotStar no pin de dados _ e pin de relógio _
+
+set all DotStar LEDs to r _ g _ b _
+fixa todos os LEDs DotStar a vermelho _ verde _ azul _
+
+set DotStar LED _ to r _ g _ b _
+fixa o LED DotStar _ a vermelho _ verde _ azul _
+
+set DotStar brightness _
+fixa o brilho do DotStar a _
+
+####
+# BME280 environmental sensor
+
+bme280 connected
+bme280 conectado
+
+bmp280 connected
+bmp280 conectado
+
+bmx280 temperature
+temperatura do bmx280
+
+bmx280 pressure
+pressão do bmx280
+
+bme280 humidity
+humidade do bme280
+
+####
+# TCS34725 color sensor
+
+TCS34725 connected
+TCS34725 conectado
+
+TCS34725 rgb
+cor RGB do TCS34725
+
+color _ name
+nome da cor _
+
+####
+# DHT11 environmental sensor
+
+temperature (Celsius) DHT11 pin _
+temperatura (ºC) do DHT11 no pin _
+
+humidity DHT11 pin _
+humidade do DHT11 no pin _
+
+temperature (Celsius) DHT22 pin _
+temperatura (ºC) do DHT22 no pin _
+
+humidity DHT22 pin _
+humidade do DHT22 no pin _
+
+####
+# PN532 RFID reader
+
+read PN532 RFID
+ler RFID PN532
+
+RFID _ = _
+RFID _ = _
+
+get PN532 firmware version
+versão de firmware do PN532
+
+####
+# HTTP libraries
+
+HTTP client
+Cliente HTTP
+
+_ data _ to http܃// _
+pedido _ com o conteúdo _ a http:// _
+
+HTTP server
+Servidor HTTP
+
+start HTTP server
+inicia o servidor HTTP
+
+HTTP server request
+pedido HTTP ao servidor
+
+respond _ to HTTP request
+responde _ ao pedido HTTP
+
+with body _
+com o conteúdo _
+
+and headers _
+e cabeçalho _
+
+body of request _
+corpo do pedido _
+
+path of request _
+caminho do pedido _
+
+method of request _
+método do pedido _
+
+####
+# Web Things library
+
+Web Thing
+Web Thing
+
+set thing name to _
+fixa o nome da coisa em _
+
+set thing capability to _
+fixa a aptidão da coisa em  _
+
+set boolean property _ title _ @Type _
+fixa a propriedade booleana _ com o título _ e @Type _
+
+set string property _ title _ @Type _
+fixa a propriedade texto _ com o título _ e @Type _
+
+set number property _ title _ @Type _
+fixa a propriedade numérica _ com o título _ e @Type _
+
+set number property _ title _ min _ max _ @Type _
+fixa a propriedade numérica _ com o título _ mínimo _ máximo _ e @Type _
+
+read only _
+apenas leitura _
+
+register event _ type _
+registra o evento _ do tipo _
+
+start WebThing server
+inicia o servidor WebThing
+
+trigger event _
+dispara evento _
+
+thing description JSON
+descrição JSON da coisa
+
+properties JSON
+propriedades JSON
+
+event definitions JSON
+JSON das definições de eventos
+
+events JSON
+JSON dos eventos
+
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
+
+New
+Novo
+
+Open
+Abrir
+
+Save
+Guardar
+
+Connect
+Conecta
+
+disconnect
+desconecta
+
+Serial port:
+Porta serie:
+
+other...
+outro...
+
+none
+nenhum
+
+Port name?
+Nome do porto?
+
+Board type:
+Tipo de placa:
+
+Select board:
+Seleciona a placa:
+
+Could not read:
+Não é possível ler:
+
+by
+por
+
+Created with GP
+Criado com GP
+
+More info at http://microblocks.fun
+Mais informações em http://microblocks.fun
+
+Function "
+Função "
+
+" is too large to send to board.
+" é demasiado grande para enviar para a placa.
+
+Script is too large to send to board.
+O programa é demasiado grande para enviar para a placa.
+
+Use "Connect" button to connect to a MicroBlocks device.
+Use o botão "Conectar" para conectar a um dispositivo MicroBlocks.
+
+No boards found; is your board plugged in?
+Nenhuma placa encontrada, ligaste a tua placa?
+
+For AdaFruit boards, double-click reset button and try again.
+Nas placas AdaFruit, aperta o botão de reset duas vezes rapidamente e volta a tentar.
+
+The board is not responding.
+A placa não está a responder.
+
+Try to Install MicroBlocks on the board?
+Tenta instalar o MicroBlocks na placa?
+
+The MicroBlocks in your board is not current
+O MicroBlocks instalado na placa não está actualizado
+
+Try to update MicroBlocks on the board?
+Tenta actualizar o MicroBlocks na placa?
+
+Stop
+Para
+
+Start
+Inicia
+
+Quit MicroBlocks?
+Sair do MicroBlocks?
+
+Discard current project?
+Queres descartar o projecto actual?
+
+clean up
+limpa
+
+arrange scripts
+organiza programas
+
+undrop (ctrl-Z)
+desfaz o último movimento (ctrl-Z)
+
+copy all scripts to clipboard
+copia todos os programas para o clipboard
+
+paste all scripts
+cola todos os programas
+
+paste script
+cola o programa
+
+save a picture of all scripts
+guarda uma imagem de todos os programas
+
+about...
+sobre...
+
+virtual machine version
+versão da máquina virtual
+
+update firmware on board
+atualiza o firmware da placa
+
+show data graph
+mostra o gráfico de dados
+
+set serial delay
+ajusta a latência da porta série
+
+firmware version
+versão de firmware
+
+start WebThing server
+inicia o servidor de WebThings
+
+stop WebThing server
+para o servidor de WebThings
+
+MicroBlocks HTTP Server listening on port 6473
+O servidor HTTP de MicroBlocks está activo no porto 6473
+
+disable autoloading board libraries
+desativar o auto carregamento das bibliotecas de placas
+
+enable autoloading board libraries
+activar o auto carregamento das bibliotecas de placas
+
+wipe and repartition esp32
+apaga e reparticiona esp32
+
+Use board type
+Define o tipo de placa
+
+Wiping board...
+Apagando a placa...
+
+(press ESC to cancel)
+(carrega em ESC para cancelar)
+
+Done!
+Feito!
+
+download and install latest VM
+descarga e instala a última máquina virtual
+
+Select board type:
+Selecciona a tua placa:
+
+Uploading MicroBlocks to board...
+Instalando MicroBlocks na placa...
+
+copy data to clipboard
+copia os dados para o clipboard
+
+clear data
+apagar os dados
+
+clear memory and variables
+limpar a memória e variáveis
+
+show advanced blocks
+mostra os blocos avançados
+
+export functions as library
+exporta funções como biblioteca
+
+enable fetching code from board on connection
+habilita o carregamento do código da placa ao conectar 
+
+hide advanced blocks
+oculta os blocos avançados
+
+Data Graph
+Gráfico de dados
+
+show instructions
+mostra instruções
+
+show compiled bytes
+mostra os bytes compilados
+
+expand
+expandir
+
+collapse
+colapsar
+
+rename...
+renomear...
+
+show block definition...
+mostra a definição do bloco...
+
+show the definition of this block
+muestra a definição deste bloco
+
+delete block definition...
+apaga a definição do bloco...
+
+delete the definition of this block
+apaga a definição deste bloco
+
+duplicate
+duplica
+
+duplicate this block
+duplica este bloco
+
+delete block
+elimina o bloco
+
+delete this block
+elimina este bloco
+
+just this one block
+apenas este bloco
+
+copy to clipboard
+copia para o clipboard
+
+copy these blocks to the clipboard
+copia estes blocos para o clipboard
+
+duplicate all
+duplica tudo abaixo
+
+duplicate these blocks
+duplica este bloco e todos os que se seguem
+
+extract block
+extrair bloco
+
+pull out this block
+retirar este bloco
+
+save picture of script
+guarda a imagem do programa
+
+save a picture of this block definition as a PNG file
+guarda uma imagem da definición deste bloco em formato PNG
+
+save a picture of these blocks as a PNG file
+guarda uma imagem destes blocos em formato PNG
+
+copy script
+copia ol programa
+
+delete
+elimina
+
+Input type:
+Tipo de entrada:
+
+string only
+apenas texto
+
+string or number
+texto ou número
+
+number only
+apenas número
+
+define
+define
+
+number/string
+número/texto
+
+editable number or string
+número ou texto editável
+
+label
+etiqueta
+
+input
+entrada
+
+hide block definition
+oculta a definição deste bloco
+
+Are you sure you want to remove this block definition?
+Confirmas que queres eliminar a definição deste bloco?
+
+Language
+Idioma
+
+Custom...
+Personalizado...
+
+Obsolete
+Obsoleto
+
+OK
+OK
+
+Ok
+Ok
+
+Yes
+Sim
+
+No
+Não
+
+Cancel
+Cancelar
+
+Okay
+De acordo
+
+Confirm
+Confirmação
+
+# File picker and library dialogs
+
+Libraries
+Bibliotecas
+
+Examples
+Exemplos
+
+Desktop
+Desktop
+
+Computer
+Computador
+
+Cloud
+Nuvem
+
+File
+Arquivo
+
+File Open
+Abrir arquivo
+
+File Save
+Guardar arquivo
+
+File name:
+Nome do arquivo:
+
+New Folder
+Nova Pasta
+
+by
+por
+
+Depends:
+Depende de:
+
+Tags:
+Etiquetas:
+
+Path, name or URL for library?
+Caminho, nome ou URL da biblioteca?
+
+Invalid URL
+URL inválido
+
+Could not fetch library.
+Não é possível obter a biblioteca.
+
+Host does not exist or is currently down.
+O servidor não existe ou está fora de serviço.
+
+File not found in server.
+Não foi encontrado o arquivo no servidor.
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+O servidor requer HTTPS, que não é suportado atualmente pelo MicroBlocks.
+
+library information
+detalhes da biblioteca
+
+built-in library
+biblioteca integrada
+
+Dependency path, name or URL?
+Caminho, nome ou URL da dependência?
+
+Tag name?
+Nome da etiqueta?
+
+
+
