@@ -14,6 +14,8 @@ mkdir precompiled
 cp -r ../../precompiled/*.hex precompiled
 cp -r ../../precompiled/*.uf2 precompiled
 cp -r ../../precompiled/*.bin precompiled
+mkdir esp32
+cp -r ../../esp32/*.bin esp32
 cp -r ../../gp/runtime .
 cp ../../ide/* runtime/lib
 mv runtime/lib/MicroBlocksPatches.gp runtime/lib/zzzMicroBlocksPatches.gp # makes patches load last
@@ -35,6 +37,7 @@ oop.c parse.c prims.c serialPortPrims.c sha1.c sha2.c soundPrims.c textAndFontPr
 --preload-file Examples \
 --preload-file Libraries \
 --preload-file precompiled \
+--preload-file esp32 \
 --preload-file runtime \
 --preload-file translations \
 -o gp_wasm.html
@@ -49,5 +52,6 @@ rm gp_wasm.html
 rm -r Examples
 rm -r Libraries
 rm -r precompiled
+rm -r esp32
 rm -r runtime
 rm -r translations
