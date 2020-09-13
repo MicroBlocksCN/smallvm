@@ -73,7 +73,7 @@ method connect ESPTool {
 	// Enter boot mode and connect to the ROM boot loader.
 
 	status = 'Connecting...'
-	repeat 20 {
+	repeat 30 {
 		enterBootMode this
 		waitMSecs 10
 		recvBuf = (newBinaryData)
@@ -490,7 +490,7 @@ method uploadCompressed ESPTool startAddr data {
 		status = (join '' percentDone '%')
 		seqNum += 1
 	}
-	print ((msecsSinceStart) - start) 'msecs'
+//	print ((msecsSinceStart) - start) 'msecs'
 }
 
 method uploadUncompressed ESPTool startAddr flashData {

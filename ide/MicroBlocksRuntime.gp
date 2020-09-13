@@ -633,7 +633,7 @@ method updateConnection SmallRuntime {
 		// got a ping recently: we're connected
 		return 'connected'
 	} else {
-		// ping timout: close port to force reconnection
+		// ping timeout: close port to force reconnection
 		print 'Lost communication to the board'
 		if (not (isWebSerial this)) { closePort this }
 		return 'not connected'
@@ -1498,7 +1498,7 @@ method showOutputStrings SmallRuntime {
 
 method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 	if ('Browser' == (platform)) {
-		installVMInBrowser this
+		installVMInBrowser this eraseFlashFlag downloadLatestFlag
 		return
 	}
 	boards = (collectBoardDrives this)
@@ -1618,29 +1618,64 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	disconnected = false // re-enable auto-connect
 }
 
-method installVMInBrowser SmallRuntime {
+// Browser Virtual Machine Intaller
+
+method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	if ('micro:bit' == boardType) {
-		downloadEmbeddedVMFile this 'BBC micro:bit'
+		copyVMToBoardInBrowser this 'BBC micro:bit'
 	} ('Calliope' == boardType) {
-		downloadEmbeddedVMFile this 'Calliope mini'
+		copyVMToBoardInBrowser this 'Calliope mini'
 	} ('CircuitPlayground' == boardType) {
-		downloadEmbeddedVMFile this 'Circuit Playground Express'
+		copyVMToBoardInBrowser this 'Circuit Playground Express'
 	} ('CircuitPlayground Bluefruit' == boardType) {
-		downloadEmbeddedVMFile this 'Circuit Playground Bluefruit'
+		copyVMToBoardInBrowser this 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
-		downloadEmbeddedVMFile this 'Clue'
+		copyVMToBoardInBrowser this 'Clue'
+	} (and
+		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
+		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
+			flashVM this boardType eraseFlashFlag downloadLatestFlag
 	} else {
-		menu = (menu 'Board type:' (action 'downloadEmbeddedVMFile' this) true)
+		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this) true)
 		addItem menu 'BBC micro:bit'
 		addItem menu 'Calliope mini'
 		addItem menu 'Circuit Playground Express'
 		addItem menu 'Circuit Playground Bluefruit'
 		addItem menu 'Clue'
+		addItem menu 'Citilab ED1'
+		addItem menu 'M5Stack-Core'
+		addItem menu 'M5StickC'
+		addItem menu 'M5Atom-Matrix'
+		addItem menu 'ESP32'
+		addItem menu 'ESP8266'
 		popUpAtHand menu (global 'page')
 	}
 }
 
-method downloadEmbeddedVMFile SmallRuntime boardName {
+method flashVMInBrowser SmallRuntime boardName {
+	if (isNil port) {
+		// prompt user to open the serial port
+		selectPort this
+		timeout = 10000 // ten seconds
+		start = (msecsSinceStart)
+		while (and (not (isOpenSerialPort 1)) (((msecsSinceStart) - start) < timeout)) {
+			// do UI cycles until serial port is opened or timeout
+			doOneCycle (global 'page')
+			waitMSecs 10 // refresh screen
+		}
+	}
+	if (isOpenSerialPort 1) {
+		port = 1
+		flashVM this boardName false false
+	}
+}
+
+method copyVMToBoardInBrowser SmallRuntime boardName {
+	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266') {
+		flashVMInBrowser this boardName
+		return
+	}
+
 	if ('BBC micro:bit' == boardName) {
 		vmFileName = 'vm.microbit.hex'
 		driveName = 'MICROBIT'
@@ -1724,11 +1759,17 @@ method removeFlasher SmallRuntime {
 
 method flashVM SmallRuntime boardName eraseFlashFlag downloadLatestFlag {
 	stopAndSyncScripts this
-  	setPort this 'disconnect'
-
+	if ('Browser' == (platform)) {
+		disconnected = true
+		flasherPort = port
+		port = nil
+	} else {
+		setPort this 'disconnect'
+		flasherPort = nil
+	}
 	flasher = (newFlasher boardName portName eraseFlashFlag downloadLatestFlag)
 	addPart (global 'page') (morph flasher)
-	startFlasher flasher
+	startFlasher flasher flasherPort
 }
 
 // data logging
