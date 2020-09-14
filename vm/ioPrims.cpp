@@ -1087,12 +1087,12 @@ int tonePin = -1;
 static void initESP32Tone(int pin) {
 	if ((pin == tonePin) || (pin < 0)) return;
 	if (tonePin < 0) {
-		tonePin = pin;
 		ledcSetup(0, 1E5, 12); // do setup on first call
 	} else {
 		ledcWrite(0, 0); // stop current tone, if any
 		ledcDetachPin(tonePin);
 	}
+	tonePin = pin;
 }
 
 static void setTone(int pin, int frequency) {
