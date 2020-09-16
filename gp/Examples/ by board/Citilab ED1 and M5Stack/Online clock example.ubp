@@ -95,12 +95,7 @@ forever {
 }
 }
 
-script 568 260 {
-whenButtonPressed 'A'
-'fetch current time from server' server
-}
-
-script 54 310 {
+script 56 238 {
 whenStarted
 server = 'microblocks.fun'
 if ((getIPAddress) == '0.0.0.0') {
@@ -115,6 +110,11 @@ if ((getIPAddress) == '0.0.0.0') {
 sendBroadcast 'time received'
 }
 
+script 568 260 {
+whenButtonPressed 'A'
+'fetch current time from server' server
+}
+
 script 572 365 {
 whenCondition (and ((getIPAddress) != '0.0.0.0') (seconds == 0))
 'fetch current time from server' server
@@ -124,7 +124,7 @@ waitUntil (seconds != 0)
 
 module 'HTTP client' Comm
 author MicroBlocks
-version 1 1 
+version 1 2 
 depends WiFi 
 tags http network get post put delete 
 description 'Send HTTP requests and get responses back. You can use this library to fetch or store data in online servers, or to control other Wifi-enabled boards.
@@ -132,15 +132,16 @@ description 'Send HTTP requests and get responses back. You can use this library
 
 	spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
 	spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
-	spec 'r' '_http_headers_start' '_http_headers_start _' 'auto' ''
 	spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
 	spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
 	spec 'r' '_http_status' '_status of response _' 'auto' ''
 	spec 'r' '_line_end' '_line_end'
 	spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
-	spec 'r' '_request_url' '_request_url _ method _ body _' 'str str str' '' 'POST' ''
+	spec 'r' '_request_url' '_request_url _ method _ body _' 'str menu.requestTypes str' '' 'GET' ''
+	spec 'r' '_readHTTPResponse' '_readHTTPResponse'
 	spec 'r' 'http܃//' 'http܃// _' 'auto' 'microblocks.fun/example.txt'
 	spec ' ' 'request' '_ data _ to http܃// _' 'menu.requestTypes str str' 'POST' 'MicroBlocks is fun' 'microblocks.fun'
+	spec 'r' '_http_headers_start' 'obsolete _http_headers_start _' 'auto' ''
 
 to '_http_body_start' response {
   return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
@@ -160,11 +161,8 @@ to '_http_header' header response {
 }
 
 to '_http_header_text' response {
-  return ('[data:copyFromTo]' response ('_http_headers_start' response) (('_http_body_start' response) + 2))
-}
-
-to '_http_headers_start' response {
-  return (('[data:find]' ('_line_end') response) + 2)
+  local 'headersStart' (('[data:find]' ('_line_end') response) + 2)
+  return ('[data:copyFromTo]' response headersStart (('_http_body_start' response) + 2))
 }
 
 to '_http_status' response {
@@ -192,40 +190,41 @@ to '_lowercase' string {
   return lowercased
 }
 
+to '_readHTTPResponse' {
+  local 'response' ''
+  local 'lastChunkTime' (millisOp)
+  repeatUntil (not ('[net:httpIsConnected]')) {
+    local 'chunk' ('[net:httpResponse]')
+    if ((size chunk) > 0) {
+      response = ('[data:join]' response chunk)
+      lastChunkTime = (millisOp)
+    } (((millisOp) - lastChunkTime) > 10000) {
+      return response
+    }
+    waitMillis 20
+  }
+  return response
+}
+
 to '_request_url' url method body {
-  local 'timeout' 20000
   local 'host' ''
   local 'path' ''
-  local 'slash position' ('[data:find]' '/' url)
-  if ((v 'slash position') > 0) {
-    host = ('[data:copyFromTo]' url 1 ((v 'slash position') - 1))
-    path = ('[data:copyFromTo]' url ((v 'slash position') + 1))
+  local 'slashPosition' ('[data:find]' '/' url)
+  if (slashPosition > 0) {
+    host = ('[data:copyFromTo]' url 1 (slashPosition - 1))
+    path = ('[data:copyFromTo]' url (slashPosition + 1))
   } else {
     host = url
   }
   if (('[net:wifiStatus]') != 'Connected') {
     return ('[data:join]' '0 Not Connected' ('_line_end'))
   }
-  local 'request time' (millisOp)
-  comment 'Connect to the server'
-  repeatUntil ('[net:httpIsConnected]') {
-    '[net:httpConnect]' host
-    if ((millisOp) > ((v 'request time') + timeout)) {
-      return ('[data:join]' '0 Could not connect to server' ('_line_end'))
-    }
+  '[net:httpConnect]' host
+  if (not ('[net:httpIsConnected]')) {
+    return ('[data:join]' '0 Could not connect to server' ('_line_end'))
   }
-  comment 'Send the HTTP request'
-  '[net:httpRequest]' method host path body
-  comment 'Collect the response (up to 800 bytes)'
-  local 'response' ''
-  repeatUntil (or (not ('[net:httpIsConnected]')) ((millisOp) > ((v 'request time') + timeout))) {
-    local 'chunk' ('[net:httpResponse]')
-    if (((size response) + (size chunk)) <= 800) {
-      response = ('[data:join]' response chunk)
-    }
-    waitMillis 10
-  }
-  return response
+  '[net:httpRequest]' method host path
+  return ('_readHTTPResponse')
 }
 
 to 'http܃//' url {
