@@ -270,6 +270,7 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 		}
 	}
 
+	delay(20); // allow time for data to get sent
 	client.stop(); // close the connection
 	return falseObj;
 }
@@ -355,7 +356,7 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 		result = newString(byteCount); // try to allocate half the previous amount
 	}
 	fail(noError); // clear memory allocation error, if any
-	httpClient.readBytes((uint8 *) obj2str(result), byteCount);
+	httpClient.read((uint8 *) obj2str(result), byteCount);
 	return result;
 }
 
