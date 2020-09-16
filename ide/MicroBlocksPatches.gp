@@ -981,8 +981,14 @@ method processEvent Keyboard evt {
 				confirmRemoveFlasher (smallRuntime)
 			} (notNil (findMorph 'FilePicker')) {
 				destroy (findMorph 'FilePicker')
+			} (notNil (findMorph 'Prompter')) {
+				cancel (handler (findMorph 'Prompter'))
 			} else {
 				stopAndSyncScripts (smallRuntime)
+			}
+		} (13 == key) { // enter key
+			if (notNil (findMorph 'Prompter')) {
+				accept (handler (findMorph 'Prompter'))
 			}
 		}
 		if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
