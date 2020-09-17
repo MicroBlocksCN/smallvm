@@ -271,29 +271,47 @@ method readCodeFromNextBoardConnected SmallRuntime {
 	disconnected = false
 }
 
-method requestCodeFromBoard SmallRuntime {
+method readCodeFromBoard SmallRuntime {
 	closeAllDialogs (findMicroBlocksEditor)
 	decompiler = (newDecompiler)
-	sendMsg this 'getAllCodeMsg'
+	timeout = 1000
 	sendMsg this 'getVarNamesMsg'
+	sendMsg this 'getAllCodeMsg'
 
-	timeout = 500
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		processMessages this
 	}
-	decompileProject decompiler
-	readFromBoard = false
+// print (count (getField decompiler 'vars')) 'vars'
+// print (count (getField decompiler 'chunks')) 'chunks'
+
+	proj = (decompileProject decompiler)
+	installDecompiledProject this proj
+}
+
+method installDecompiledProject SmallRuntime proj {
+	clearBoardIfConnected this true
+	setProject scripter proj
+	updateLibraryList scripter
+	checkForNewerLibraryVersions (project scripter) (not (devMode))
+	restoreScripts scripter // fix block colors
+	cleanUp (scriptEditor scripter)
 }
 
 method receivedChunk SmallRuntime chunkID chunkType bytecodes {
+//xxx print 'receivedChunk' chunkID
 	lastRcvMSecs = (msecsSinceStart)
+	if (isEmpty bytecodes) {
+		print 'truncated chunk!' chunkID chunkType (count bytecodes) // shouldn't happen
+		return
+	}
 	if (notNil decompiler) {
 		addChunk decompiler chunkID chunkType bytecodes
 	}
 }
 
 method receivedVarName SmallRuntime varID varName byteCount {
+//xxx print 'receivedVar' varID
 	lastRcvMSecs = (msecsSinceStart)
 	if (notNil decompiler) {
 		addVar decompiler varID varName
@@ -610,6 +628,7 @@ method updateConnection SmallRuntime {
 
 	// if port is not open, try to reconnect or find a different board
 	if (or (isNil port) (not (isOpenSerialPort port))) {
+		clearRunningHighlights this
 		closePort this
 		if (isWebSerial this) { return 'not connected' } // user must initiate connection attempt
 		return (tryToConnect this)
@@ -635,6 +654,7 @@ method updateConnection SmallRuntime {
 	} else {
 		// ping timeout: close port to force reconnection
 		print 'Lost communication to the board'
+		clearRunningHighlights this
 		if (not (isWebSerial this)) { closePort this }
 		return 'not connected'
 	}
@@ -679,13 +699,16 @@ method tryToConnect SmallRuntime {
 			print 'Connected to' portName
 			connectionStartTime = nil
 			vmVersion = nil
+			clearRunningHighlights this
 			sendMsg this 'getVersionMsg'
 			if readFromBoard {
-				requestCodeFromBoard this
+				readFromBoard = false
+				sendStopAll this
+				readCodeFromBoard this
 			} else {
 				clearBoardIfConnected this false
+				stopAndSyncScripts this
 			}
-			stopAndSyncScripts this
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
@@ -1034,10 +1057,6 @@ method variablesChanged SmallRuntime {
 method clearVariableNames SmallRuntime {
 	if (notNil port) { sendMsgSync this 'clearVarsMsg' }
 	oldVarNames = nil
-}
-
-method getAllVarNames SmallRuntime {
-	sendMsg this 'getVarNamesMsg'
 }
 
 // Serial Delay

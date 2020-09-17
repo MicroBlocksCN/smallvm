@@ -66,6 +66,7 @@ method addVar MicroBlocksDecompiler varID varName {
 }
 
 method decompileProject MicroBlocksDecompiler {
+	// Return the decompiled project.
 	// Called after collecting chunks and var names from the board.
 
 	project = (newMicroBlocksProject)
@@ -99,14 +100,8 @@ method decompileProject MicroBlocksDecompiler {
 	}
 	setScripts module scripts
 
-	// install the new project
 	updatePrimitives project
-	scripter = (scripter (smallRuntime))
-	setProject scripter project
-	updateLibraryList scripter
-	checkForNewerLibraryVersions (project scripter) (not (devMode))
-	restoreScripts scripter // fix block colors
-	cleanUp (scriptEditor scripter)
+	return project
 }
 
 method addFunctionToProject MicroBlocksDecompiler aFunc chunkID project {
