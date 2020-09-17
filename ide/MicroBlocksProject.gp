@@ -127,13 +127,21 @@ method categoryForOp MicroBlocksProject op {
 	return nil
 }
 
-method checkForNewerLibraryVersions MicroBlocksProject {
+method checkForNewerLibraryVersions MicroBlocksProject autoConfirm {
+	// Check for newer versions of libraries used in this project.
+	// If true is passed to the optional autoConfirm parameter, update old
+	// libraries without asking. Otherwise ask the user for confirmation.
+
+	if (isNil autoConfirm) { autoConfirm = false }
+
 	for libName (keys libraries) {
 		newVersion = (getNewerVersion (at libraries libName))
 		if (notNil newVersion) {
-			if (confirm (global 'page') nil (join
-				'Found a newer version of ' libName (newline)
-				'Do you want me to update the one in the project?')
+			if (or
+				autoConfirm
+				(confirm (global 'page') nil (join
+					'Found a newer version of ' libName (newline)
+					'Do you want me to update the one in the project?'))
 			) {
 				addLibrary this newVersion
 			}

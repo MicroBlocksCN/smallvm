@@ -104,7 +104,7 @@ method decompileProject MicroBlocksDecompiler {
 	scripter = (scripter (smallRuntime))
 	setProject scripter project
 	updateLibraryList scripter
-	checkForNewerLibraryVersions (project scripter)
+	checkForNewerLibraryVersions (project scripter) (not (devMode))
 	restoreScripts scripter // fix block colors
 	cleanUp (scriptEditor scripter)
 }
