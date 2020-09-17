@@ -55,10 +55,6 @@ STRING_OBJ_CONST("") noDataString;
 // Empty byte array constant
 uint32 emptyByteArray = HEADER(ByteArrayType, 0);
 
-#ifdef ESP8266
-	static int firstTime = true;
-#endif
-
 static OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
 
 static OBJ primStartWiFi(int argCount, OBJ *args) {
@@ -88,15 +84,6 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 		}
 	#endif
 
-	#ifdef ESP8266
-		// workaround for an apparent ESP8266 WiFi startup bug: calling WiFi.status() during
-		// the first few seconds after starting WiFi for the first time results in strange
-		// behavior (task just stops without either error or completion; memory corruption?)
-		if (firstTime) {
-			delay(3000); // 3000 works, 2500 does not
-			firstTime = false;
-		}
-	#endif
 	connecting = true;
 	return falseObj;
 }
