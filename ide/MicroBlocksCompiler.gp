@@ -343,7 +343,7 @@ method initOpcodes SmallCompiler {
 		longMult 56
 		isType 57
 		waitUntil 58
-	RESERVED 59
+		ignoreArgs 59
 		newList 60
 	RESERVED 61
 		fillList 62
@@ -581,7 +581,7 @@ method instructionsForCmd SmallCompiler cmd {
 		for arg args {
 			addAll result (instructionsForExpression this arg)
 		}
-		add result (array 'pop' (count args))
+		add result (array 'ignoreArgs' (count args))
 		return result
 	} (isFunctionCall this op) {
 		return (instructionsForFunctionCall this op args true)

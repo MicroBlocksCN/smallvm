@@ -311,7 +311,7 @@ static void runTask(Task *task) {
 		&&longMultiply_op,
 		&&isType_op,
 		&&jmpFalse_op, // this is the waitUntil opcode, an alias for jmpFalse_op
-		&&RESERVED_op,
+		&&pop_op,  // this is the ignoreArgs opcode, an alias for pop_op
 		&&newList_op,
 		&&RESERVED_op,
 		&&fillList_op,
