@@ -21,6 +21,9 @@ forever {
     bpm += 5
   } (and (buttonA) (bpm > 40)) {
     bpm += -5
+  } (and (buttonA) (bpm == 40)) {
+    comment 'In case the board only has button A'
+    bpm = 200
   }
   waitMillis 150
 }
@@ -43,7 +46,7 @@ forever {
 }
 }
 
-script 50 500 {
+script 54 599 {
 comment 'To test, click this script, then press buttons
 A and B to adjust the heart rate.'
 forever {
@@ -146,7 +149,7 @@ module 'Web Thing' Comm
 author MicroBlocks
 version 3 3 
 depends 'HTTP server' WiFi 
-tags iot webthing wot
+tags iot webthing wot 
 description 'Build Web Things as specified by the WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Web of Things gateway.'
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description' 
 

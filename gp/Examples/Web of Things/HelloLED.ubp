@@ -25,24 +25,28 @@ to 'microbit-LEDs' {
   }
 }
 
-script 50 50 {
+script 51 50 {
 comment 'This example lets you control the built-in LEDs of a board, much as you
 might control a smart bulb using the WebThings Gateway UI.'
 }
 
-script 53 129 {
+script 535 74 {
+to 'microbit-LEDs' {}
+}
+
+script 54 129 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 'set thing name to' 'Hello LED'
 'set thing capability to' 'Light'
-addBooleanProperty 'on' 'Lit' 'OnOffProperty'
+addBooleanProperty 'on' 'On' 'OnOffProperty'
 'start WebThing server'
 setUserLED true
 waitMillis 500
 setUserLED false
 on = (booleanConstant false)
 forever {
-  if ((boardType) == 'CircuitPlayground') {
+  if (or ((boardType) == 'CircuitPlayground') ((boardType) == 'CircuitPlayground Bluefruit')) {
     'cpx-LEDs'
   } else {
     'microbit-LEDs'
@@ -51,28 +55,24 @@ forever {
 }
 }
 
-script 448 150 {
+script 247 265 {
 whenButtonPressed 'A'
 comment 'To test, click to toggle the LED.'
 on = (not on)
 }
 
-script 556 297 {
+script 424 366 {
 to 'cpx-LEDs' {}
 }
 
-script 365 300 {
-to 'microbit-LEDs' {}
-}
-
-script 52 561 {
-comment 'Click to check IP address'
-sayIt (getIPAddress)
-}
-
-script 237 620 {
+script 346 609 {
 comment 'Check thing description'
 sayIt ('thing description JSON')
+}
+
+script 71 611 {
+comment 'Click to check IP address'
+sayIt (getIPAddress)
 }
 
 
@@ -318,7 +318,7 @@ module 'Web Thing' Comm
 author MicroBlocks
 version 3 3 
 depends 'HTTP server' WiFi 
-tags iot webthing wot
+tags iot webthing wot 
 description 'Build Web Things as specified by the WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Web of Things gateway.'
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description' 
 

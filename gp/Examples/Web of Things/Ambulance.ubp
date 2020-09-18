@@ -29,8 +29,10 @@ forever {
       setNeoPixelColor (i + 5) (colorSwatch 191 0 14 255)
     }
     repeatUntil (not onOff) {
+      setUserLED true
       'play tone' 'F' octave interval
       rotateNeoPixelsBy 5
+      setUserLED false
       'play tone' 'A#' octave interval
       rotateNeoPixelsBy 5
     }
@@ -41,7 +43,12 @@ forever {
 }
 }
 
-script 337 453 {
+script 337 415 {
+whenButtonPressed 'A'
+onOff = (not onOff)
+}
+
+script 432 540 {
 comment 'Click on this script to test.'
 onOff = (booleanConstant true)
 waitMillis 2000
@@ -452,7 +459,7 @@ module 'Web Thing' Comm
 author MicroBlocks
 version 3 3 
 depends 'HTTP server' WiFi 
-tags iot webthing wot
+tags iot webthing wot 
 description 'Build Web Things as specified by the WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Web of Things gateway.'
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description' 
 
