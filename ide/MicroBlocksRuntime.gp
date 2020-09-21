@@ -1597,7 +1597,7 @@ method collectBoardDrives SmallRuntime {
 method getBoardDriveName SmallRuntime path {
 	for fn (listFiles path) {
 		if ('MICROBIT.HTM' == fn) { return 'MICROBIT' }
-		if ('MINI.HTM' == fn) { return 'MINI' }
+		if (or ('MINI.HTM' == fn) ('Calliope.html' == fn)) { return 'MINI' }
 		if ('INFO_UF2.TXT' == fn) {
 			contents = (readFile (join path fn))
 			if (notNil (nextMatchIn 'CPlay Express' contents)) { return 'CPLAYBOOT' }
