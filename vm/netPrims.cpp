@@ -272,11 +272,12 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
 	uint32 start = millisecs();
+	const int timeout = 800;
 	int ok;
 	#ifdef ARDUINO_ARCH_ESP32
-		ok = httpClient.connect(host, port, 500);
+		ok = httpClient.connect(host, port, timeout);
 	#else
-		httpClient.setTimeout(500);
+		httpClient.setTimeout(timeout);
 		ok = httpClient.connect(host, port);
 	#endif
 
@@ -284,7 +285,7 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 		processMessage(); // process messages now
 		uint32 now = millisecs();
 		uint32 elapsed = (now >= start) ? (now - start) : now; // handle clock wrap
-		if (elapsed > 500) break;
+		if (elapsed > timeout) break;
 		delay(1);
 	}
 	processMessage(); // process messages now
