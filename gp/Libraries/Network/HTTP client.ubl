@@ -13,10 +13,10 @@ description 'Send HTTP requests and get responses back. You can use this library
 	spec 'r' '_http_status' '_status of response _' 'auto' ''
 	spec 'r' '_line_end' '_line_end'
 	spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
-	spec 'r' '_request_url' '_request_url _ method _ body _' 'str menu.requestTypes str' '' 'GET' ''
+	spec 'r' '_request_url' '_request_url _ method _ body _ :port _' 'str menu.requestTypes str num' '' 'GET' '' 80
 	spec 'r' '_readHTTPResponse' '_readHTTPResponse'
-	spec 'r' 'http܃//' 'http܃// _' 'auto' 'microblocks.fun/example.txt'
-	spec ' ' 'request' '_ data _ to http܃// _' 'menu.requestTypes str str' 'POST' 'MicroBlocks is fun' 'microblocks.fun'
+	spec 'r' 'http܃//' 'http܃// _ :port _' 'auto num' 'microblocks.fun/example.txt' 80
+	spec ' ' 'request' '_ data _ to http܃// _ :port _' 'menu.requestTypes str str num' 'POST' 'MicroBlocks is fun' 'microblocks.fun' 80
 
 to '_http_body_start' response {
   return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
@@ -82,7 +82,11 @@ to '_readHTTPResponse' {
   return response
 }
 
-to '_request_url' url method body {
+to '_request_url' url method body optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 3) {
+    port = optionalPort
+  }
   local 'host' ''
   local 'path' ''
   local 'slashPosition' ('[data:find]' '/' url)
@@ -95,7 +99,7 @@ to '_request_url' url method body {
   if (('[net:wifiStatus]') != 'Connected') {
     return ('[data:join]' '0 Not Connected' ('_line_end'))
   }
-  '[net:httpConnect]' host
+  '[net:httpConnect]' host port
   if (not ('[net:httpIsConnected]')) {
     return ('[data:join]' '0 Could not connect to server' ('_line_end'))
   }
@@ -103,8 +107,12 @@ to '_request_url' url method body {
   return ('_readHTTPResponse')
 }
 
-to 'http܃//' url {
-  local 'response' ('_request_url' url 'GET' '')
+to 'http܃//' url optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 1) {
+    port = optionalPort
+  }
+  local 'response' ('_request_url' url 'GET' '' port)
   if (response != '') {
     if (('_http_status' response) == 200) {
       return ('[data:copyFromTo]' response ('_http_body_start' response))
@@ -116,8 +124,12 @@ to 'http܃//' url {
   }
 }
 
-to request method data url {
-  local 'response' ('_request_url' url method data)
+to request method data url optionalPort {
+  local 'port' 80
+  if ((pushArgCount) > 3) {
+    port = optionalPort
+  }
+  local 'response' ('_request_url' url method data port)
   if (response != '') {
     local 'status' ('_http_status' response)
     local 'body start' ('_http_body_start' response)
