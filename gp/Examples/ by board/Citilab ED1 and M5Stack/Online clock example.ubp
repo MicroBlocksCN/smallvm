@@ -52,7 +52,8 @@ to 'fetch current time from server' url {
   }
 }
 
-to 'online time' url {
+to 'online time' server {
+  local 'url' ('[data:join]' server '/nonExistentPage')
   local 'response' ('_request_url' url 'GET' '')
   local 'header' ('_http_header_text' response)
   return ('[data:copyFromTo]' header (('[data:find]' 'GMT' header) - 9) (('[data:find]' 'GMT' header) - 2))
@@ -73,7 +74,7 @@ to tick {
   }
 }
 
-script 54 50 {
+script 50 50 {
 comment 'This project fetches the current time (GMT) from
 the microblocks.fun server. It does so by parsing
 the headers of the HTTP response. After that, it
@@ -86,7 +87,7 @@ Remember to enter your Wifi network name and
 password.'
 }
 
-script 568 80 {
+script 564 80 {
 whenBroadcastReceived 'time received'
 forever {
   'draw time'
@@ -95,7 +96,7 @@ forever {
 }
 }
 
-script 56 238 {
+script 52 238 {
 whenStarted
 server = 'microblocks.fun'
 if ((getIPAddress) == '0.0.0.0') {
@@ -110,12 +111,12 @@ if ((getIPAddress) == '0.0.0.0') {
 sendBroadcast 'time received'
 }
 
-script 568 260 {
+script 564 260 {
 whenButtonPressed 'A'
 'fetch current time from server' server
 }
 
-script 572 365 {
+script 568 365 {
 whenCondition (and ((getIPAddress) != '0.0.0.0') (seconds == 0))
 'fetch current time from server' server
 waitUntil (seconds != 0)
