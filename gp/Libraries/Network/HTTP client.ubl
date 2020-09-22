@@ -1,6 +1,6 @@
 module 'HTTP client' Comm
 author MicroBlocks
-version 1 3 
+version 1 4 
 depends WiFi 
 tags http network get post put delete 
 description 'Send HTTP requests and get responses back. You can use this library to fetch or store data in online servers, or to control other Wifi-enabled boards.
