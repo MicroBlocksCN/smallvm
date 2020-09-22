@@ -1727,9 +1727,9 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	}
 	msg = (join
 		prefix
-		(localized 'Click OK, then select')
+		(localized 'You will be asked to save an untitled file. Select')
 		' ' driveName ' '
-		(localized 'in the file dialog.'))
+		(localized 'as the destination drive, then click Save.'))
 	response = (inform msg (localized 'Firmware Install'))
 	if (isNil response) { return }
 
