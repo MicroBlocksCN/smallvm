@@ -908,6 +908,15 @@ method saveAllChunks SmallRuntime {
 	}
 }
 
+method forceSaveChunk SmallRuntime aBlockOrFunction {
+	// Save the chunk for the given block or function even if it was previously saved.
+
+	if (contains chunkIDs aBlockOrFunction) {
+		atPut (at chunkIDs aBlockOrFunction) 2 nil // clear the old CRC to force re-save
+	}
+	saveChunk this aBlockOrFunction
+}
+
 method saveChunk SmallRuntime aBlockOrFunction {
 	// Save the given script or function as an executable code "chunk".
 	// Also save the source code (in GP format) and the script position.
@@ -972,12 +981,11 @@ method verifyCRCs SmallRuntime {
 	for entry (values chunkIDs) {
 		sendMsg this 'getChunkCRCMsg' (first entry)
 	}
-	timeout = 50
+	timeout = 100
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		processMessages this
 	}
-	if (isEmpty crcDict) { return }
 
 	// build a dictionary mapping chunkID -> block or functionName
 	ideChunks = (dictionary)
@@ -996,8 +1004,16 @@ method verifyCRCs SmallRuntime {
 		sourceItem = (at ideChunks chunkID)
 		if (and (notNil sourceItem) ((at crcDict chunkID) != (crcForChunk this sourceItem))) {
 			print 'CRC mismatch; resaving chunk:' chunkID
-			atPut (at chunkIDs sourceItem) 2 nil // clear the old CRC to force re-save
-			saveChunk this sourceItem
+			forceSaveChunk this sourceItem
+		}
+	}
+
+	// check for missing chunks
+	for chunkID (keys ideChunks) {
+		if (not (contains crcDict chunkID)) {
+			print 'Resaving missing chunk:' chunkID
+			sourceItem = (at ideChunks chunkID)
+			forceSaveChunk this sourceItem
 		}
 	}
 }
