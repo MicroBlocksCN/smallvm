@@ -272,7 +272,11 @@ method openFromBoard MicroBlocksEditor {
   fileName = ''
   updateTitle this
   readCodeFromNextBoardConnected (smallRuntime)
-  inform 'Plug in the board.'
+  if ('Browser' == (platform)) {
+	inform 'Plug in the board and click the USB icon to connect.'
+  } else {
+    inform 'Plug in the board.'
+  }
 }
 
 method saveProjectToFile MicroBlocksEditor {

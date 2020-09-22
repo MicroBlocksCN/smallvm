@@ -278,15 +278,30 @@ method readCodeFromBoard SmallRuntime {
 	sendMsg this 'getVarNamesMsg'
 	sendMsg this 'getAllCodeMsg'
 
+	waitForPing this
+
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		processMessages this
+		waitMSecs 10
 	}
-// print (count (getField decompiler 'vars')) 'vars'
-// print (count (getField decompiler 'chunks')) 'chunks'
-
+	print 'decompiler read' (count (getField decompiler 'vars')) 'vars' (count (getField decompiler 'chunks')) 'chunks'
 	proj = (decompileProject decompiler)
 	installDecompiledProject this proj
+}
+
+method waitForPing SmallRuntime {
+	// Wait for up to timeout to get a ping back from the board.
+	// Used to ensure that the board is responding before fetching code to decompile.
+
+	timeout = 1000
+	lastPingRecvMSecs = 0
+	while (0 == lastPingRecvMSecs) {
+		count += 1
+		sendMsg this 'pingMsg'
+		waitMSecs 50
+		processMessages this
+	}
 }
 
 method installDecompiledProject SmallRuntime proj {
@@ -670,11 +685,17 @@ method tryToConnect SmallRuntime {
 			port = 1
 			connectionStartTime = nil // stop calling tryToConnect
 			vmVersion = nil
-			sendMsg this 'getVersionMsg'
-			clearBoardIfConnected this false
-			stopAndSyncScripts this
 			sendMsg this 'pingMsg'
 			pingSentMSecs = (msecsSinceStart)
+			sendMsg this 'getVersionMsg'
+			if readFromBoard {
+				readFromBoard = false
+				sendStopAll this
+				readCodeFromBoard this
+			} else {
+				clearBoardIfConnected this false
+				stopAndSyncScripts this
+			}
 			return 'connected'
 		} else {
 			portName = nil
