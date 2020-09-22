@@ -459,7 +459,7 @@ to 'trigger event' 'event name' {
 
 module WiFi Comm
 author MicroBlocks
-version 1 2 
+version 1 3 
 tags communication network 
 description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
@@ -492,6 +492,7 @@ to 'wifi connect to' ssid password tries {
     setUserLED false
     waitMillis 50
   }
+  waitMillis 1000
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
@@ -512,6 +513,7 @@ to wifiCreateHotspot ssid password {
     setUserLED false
     waitMillis 50
   }
+  waitMillis 1000
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
