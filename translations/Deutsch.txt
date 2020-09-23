@@ -1170,8 +1170,8 @@ deaktiviere automatisches Laden von Board-Modulen
 enable autoloading board libraries
 aktiviere automatisches Laden von Board-Modulen
 
-wipe and repartition esp32
-lösche und repartitioniere ESP32
+erase flash and update firmware on ESP board
+lösche und repartitioniere ESP
 
 Use board type
 Verwende Board-Typ

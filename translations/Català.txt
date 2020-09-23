@@ -1215,8 +1215,8 @@ no carreguis llibreries de placa automàticament
 enable autoloading board libraries
 carrega llibreries de placa automàticament
 
-wipe and repartition esp32
-esborra i reparticiona esp32
+erase flash and update firmware on ESP board
+esborra i reparticiona esp
 
 Use board type
 La placa connectada és de tipus

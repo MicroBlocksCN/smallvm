@@ -1037,8 +1037,8 @@ disable autoloading board libraries
 enable autoloading board libraries
 включить автозагрузку библиотек платы
 
-wipe and repartition esp32
-стереть и переделить esp32
+erase flash and update firmware on ESP board
+стереть и переделить esp
 
 Use board type
 Использовать тип платы

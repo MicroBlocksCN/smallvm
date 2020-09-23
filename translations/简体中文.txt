@@ -1230,8 +1230,8 @@ disable autoloading board libraries
 enable autoloading board libraries
 允许自动加载和控制板相关的积木库
 
-wipe and repartition esp32
-擦除信息并重新分区ESP32
+erase flash and update firmware on ESP board
+擦除信息并重新分区ESP
 
 Use board type
 使用控制板类信息

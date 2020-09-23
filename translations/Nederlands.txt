@@ -1170,8 +1170,8 @@ schakel autoloading board bibliotheken uit
 enable autoloading board libraries
 schakel autoloading board bibliotheken in
 
-wipe and repartition esp32
-wis en partitioneer esp32
+erase flash and update firmware on ESP board
+wis en partitioneer esp
 
 Use board type
 Gebruik board type

@@ -1037,8 +1037,8 @@ plata kutibxonalarini avtomatik yuklashni o'chirib qo'yish
 enable autoloading board libraries
 avtomatik yuklash paneli kutubxonalarini yoqish
 
-wipe and repartition esp32
-esp32 tozalash va qaytarish
+erase flash and update firmware on ESP board
+esp tozalash va qaytarish
 
 Use board type
 Plata turi

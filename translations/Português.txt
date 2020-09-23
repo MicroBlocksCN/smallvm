@@ -1224,8 +1224,8 @@ desativar o auto carregamento das bibliotecas de placas
 enable autoloading board libraries
 activar o auto carregamento das bibliotecas de placas
 
-wipe and repartition esp32
-apaga e reparticiona esp32
+erase flash and update firmware on ESP board
+apaga e reparticiona esp
 
 Use board type
 Define o tipo de placa
@@ -1264,7 +1264,7 @@ export functions as library
 exporta funções como biblioteca
 
 enable fetching code from board on connection
-habilita o carregamento do código da placa ao conectar 
+habilita o carregamento do código da placa ao conectar
 
 hide advanced blocks
 oculta os blocos avançados

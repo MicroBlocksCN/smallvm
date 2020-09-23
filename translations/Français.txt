@@ -1025,7 +1025,7 @@ disable autoloading board libraries
 enable autoloading board libraries
 --MISSING--
 
-wipe and repartition esp32
+erase flash and update firmware on ESP board
 --MISSING--
 
 Use board type
