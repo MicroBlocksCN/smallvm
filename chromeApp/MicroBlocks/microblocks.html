@@ -95,6 +95,10 @@
     </style>
   </head>
   <body>
+	<script>
+		// Force HTTPS. Otherwise WebSerial can't be accessed.
+		if (location.protocol === 'http:') { location.protocol = 'https:'; }
+	</script>
 	<span id='controls'>
 	  <input type="button" value="Keyboard" id="KeyboardButton">
 	  <input type="button" value="Backspace" id="BackspaceButton">
