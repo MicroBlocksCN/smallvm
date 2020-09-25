@@ -334,6 +334,13 @@ static OBJ primBrowserIsMobile(int nargs, OBJ args[]) {
 	return isMobile ? trueObj : falseObj;
 }
 
+static OBJ primBrowserIsChromeOS(int nargs, OBJ args[]) {
+	int isChromeOS = EM_ASM_INT({
+		return (/(CrOS)/.test(navigator.userAgent));
+	}, NULL);
+	return isChromeOS ? trueObj : falseObj;
+}
+
 static OBJ primBrowserHasWebSerial(int nargs, OBJ args[]) {
 	int hasWebSerial = EM_ASM_INT({
 		return hasWebSerial();
@@ -1018,6 +1025,7 @@ static PrimEntry browserPrimList[] = {
 	{"browserGetMessage",		primBrowserGetMessage,		"Get the next message from the browser, or nil if there isn't any."},
 	{"browserPostMessage",		primBrowserPostMessage,		"Post a message to the browser using the 'postMessage' function."},
 	{"browserIsMobile",			primBrowserIsMobile,		"Return true if running in a mobile browser."},
+	{"browserIsChromeOS",		primBrowserIsChromeOS,		"Return true if running as a Chromebook app."},
 	{"browserHasWebSerial",		primBrowserHasWebSerial,	"Return true the browser supports the Web Serial API."},
 	{"browserReadFile",			primBrowserReadFile,		"Select and read a file in the browser. Args: [extension]"},
 	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [suggestedFileName, extension]"},
