@@ -604,7 +604,7 @@ async function webSerialConnect() {
 		{ usbVendorId: 0x03eb},		// Atmel Corporation
 	];
 	webSerialDisconnect();
-	GP_webSerialPort = await navigator.serial.requestPort({filters: vendorIDs}).catch(() => {});
+	GP_webSerialPort = await navigator.serial.requestPort({filters: vendorIDs}).catch((e) => { console.log(e); });
 	if (!GP_webSerialPort) return; // no serial port selected
 	await GP_webSerialPort.open({ baudrate: 115200 });
 	GP_webSerialReader = await GP_webSerialPort.readable.getReader();
@@ -751,16 +751,20 @@ function GP_writeSerialPort(data) {
 }
 
 async function GP_setSerialPortDTR(flag) {
+	function ignore(result) {}
 	if (hasChromeSerial()) {
-		chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag });
+		flag = (flag) ? true : false;
+		chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag }, ignore);
 	} else if (hasWebSerial()) {
 		await GP_webSerialPort.setSignals({ dtr: flag }).catch(() => {});
 	}
 }
 
 async function GP_setSerialPortRTS(flag) {
+	function ignore(result) {}
 	if (hasChromeSerial()) {
-		chrome.serial.setControlSignals(GP_serialPortID, { rts: flag });
+		flag = (flag) ? true : false;
+		chrome.serial.setControlSignals(GP_serialPortID, { rts: flag }, ignore);
 	} else if (hasWebSerial()) {
 		await GP_webSerialPort.setSignals({ rts: flag }).catch(() => {});
 	}
