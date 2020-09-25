@@ -1,0 +1,1486 @@
+# MicroBlocks translation file
+# Last updated: September 25 2020
+
+#########################
+# Blocks and categories #
+#########################
+
+Output
+出力
+
+set user LED _
+LED設定 _
+
+say _
+話す _
+
+graph _
+グラフ _
+
+Input
+入力
+
+button A
+ボタン A
+
+button B
+ボタン B
+
+timer
+タイマー
+
+reset timer
+タイマーリセット
+
+microseconds
+マイクロ秒
+
+milliseconds
+ミリ秒
+
+board type
+ボードタイプ
+
+Pins
+ピン
+
+read digital pin _
+デジタルピンを読む _
+
+read analog pin _
+アナログピンを読む _
+
+set digital pin _ to _
+デジタルピン設定 _ を _
+
+set pin _ to _
+ピン設定 _ を _
+
+analog pins
+アナログピン
+
+digital pins
+デジタルピン
+
+Control
+操作
+
+when started
+スタートしたら
+
+when button _ pressed
+ボタン _ が押されたら 
+
+forever _
+ずっと _
+
+repeat _ _
+繰り返す _ 回 _
+
+wait _ millisecs
+待つ _ ミリ秒
+
+if _ _
+もし _ _
+
+else if _ _
+でなければ,もし _ _
+
+if _ _ else _
+もし _ _ でなければ _
+
+when _
+とき _
+
+wait until _
+待つ _ まで
+
+wait _ microsecs
+待つ _ ミリ秒
+
+return _
+返す _
+
+when _ received
+受信したとき _
+
+broadcast _
+広く送信する _
+
+comment _
+コメント _
+
+for _ in _ _
+繰り返し 変数 _ 以内 _ _
+
+repeat until _ _
+まで 繰り返す _ _
+
+stop this task
+この処理を止める
+
+stop other tasks
+他の処理を止める
+
+stop all
+すべて停止
+
+last message
+最新のメッセージ
+
+Operators
+演算
+
+_ mod _
+_ 割る _ の余り
+
+abs _
+絶対値 _
+
+random _ to _
+から _ まで _ ランダムの値
+
+not _
+_ でなければ
+
+_ and _
+_ かつ _
+
+and _
+かつ _
+
+_ or _
+_ または _
+
+or _
+または _
+
+_ is a _
+_ は _ である
+
+boolean
+ブール
+
+number
+数字
+
+string
+文字列
+
+list
+リスト
+
+hex _
+16進数 _
+
+Variables
+変数
+
+# Buttons on top of "Variables" category
+
+Add a variable
+変数追加
+
+Delete a variable
+変数削除
+
+# New variable dialog
+
+New variable name?
+新しい変数の名前は?：
+
+set _ to _
+設定 _ に _ を
+
+change _ by _
+変更 _ を _ に
+
+local _ _
+ローカル _ _
+
+Data
+データ
+
+list
+リスト
+
+length of _
+_ の長さ
+
+item _ of _
+アイテム _  _ の
+
+replace item _ of list _ with _
+置換 アイテム _ リスト _ 値 _
+
+delete item _ of list _
+削除 アイテム _ リスト _
+
+add _ to list _
+追加 _ をリスト _ に
+
+join _ _
+連結 _ _
+
+copy _ from _
+コピー _ を _ から
+
+to _
+に _
+
+find _ in _
+検索 _ を _ の中
+
+starting at _
+から始める _
+
+join items of list _
+リストのアイテムを連結 _
+
+separator _
+分割子 _
+
+unicode _ of _
+Unicode _ の _
+
+string from unicode _
+Unicode _ の文字列
+
+new list length _
+新しいリストの長さ _
+
+new byte array length _
+新しいバイト列の長さ _
+
+free memory
+メモリ解放
+
+My Blocks
+私のブロック
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+コマンドブロックを追加
+
+Add a reporter block
+リポーターブロックを追加
+
+# Make a block dialog
+
+Enter function name:
+機能名を入力:
+
+Comm
+通信
+
+i2c get device _ register _
+i2c デバイス取得 _ アドレス _
+
+i2c set device _ register _ to _
+i2c デバイス設定 _ アドレス _ まで _
+
+i2c device _ read list _
+i2c デバイス _ リスト読み込み _
+
+i2c device _ write list _
+i2c デバイス _ リスト書き込み _
+
+spi send _
+spi 送信 _
+
+spi receive
+spi 受信
+
+print _
+表示する _
+
+no op
+何もしない
+
+ignore
+無視する
+
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
+
+draw shape _ at x _ y _
+形を描く _ 位置 x _ y _
+
+shape for letter _
+文字の形 _
+
+send NeoPixel rgb _
+送信 NeoPixel RGB _
+
+has tone support
+音をサポート
+
+play tone pin _ frequency _
+音再生ピン _ 周波数 _
+
+has WiFi support
+WiFiをサポート
+
+start WiFi _ password _
+WiFiの開始 _ パスワード _
+
+stop WiFi
+WiFiの停止
+
+WiFi status
+WiFiの状態
+
+my IP address
+私のIPアドレス
+
+radio send number _
+送信された数字 _
+
+radio send string _
+送信された文字列 _
+
+radio send pair _ = _
+送信されたペア _ = _
+
+radio message received?
+送信メッセージを受信したか?
+
+radio last number
+送信された最新の数字
+
+radio last string
+送信された最新の文字列
+
+_radio last message type
+送信された最新文字列の種類
+
+radio set group _
+送信された設定グループ _
+
+_radio set channel (0-83) _
+送信された設定チャンネル (0-83) _
+
+radio set power (0-7) _
+送信された設定強度 (0-7) _
+
+_radio last signal strength
+送信された最新の信号強度
+
+_radio receive packet _
+送信された受信パケット _
+
+_radio send packet _
+送信された送信パケット _
+
+disable radio
+送信を無効化
+
+#############
+# Libraries #
+#############
+
+Basic Sensors
+基本のセンサー
+
+tilt x
+仰角 x
+
+tilt y
+仰角 y
+
+tilt z
+仰角 z
+
+acceleration
+加速度
+
+light level
+光強度
+
+temperature (°C)
+温度 (°C)
+
+####
+# NeoPixel library
+
+NeoPixel
+ネオピクセル
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+ネオピクセルを設定 _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+ネオピクセルをクリア
+
+set NeoPixel _ color _
+ネオピクセルを設定 _ 色 _
+
+set all NeoPixels color _
+すべてのネオピクセルを設定 色 _
+
+rotate NeoPixels by _
+ネオピクセルを回転 角度 _
+
+color r _ g _ b _ (0-31)
+色 R _ G _ B _ (0-31)
+
+random color
+ランダムの色
+
+attach _ LED NeoPixel strip to pin _
+付ける _ LED個数 ネオピクセル ピン _
+
+has white _
+白色 _
+
+_NeoPixel_rotate_left _
+ネオピクセルを左に回転 _
+
+_NeoPixel_update
+ネオピクセルを更新
+
+_NeoPixel_ensureInitialized
+确定新光像素已经初始化
+
+PIR
+人感赤外線センサー
+
+PIR at pin _ detected movement
+人感赤外線センサー ピン _ 動きを検知
+
+####
+# Citilab ED1 board libraries
+
+ED1 Stepper Motor
+ED1ステップモーター
+
+move motor _ _ steps _
+モーターを動かす _ _ ステップ _
+
+move motor 1 _ and motor 2 _ _ steps
+モーター1を動かす _ ステップ,モーター2 _ _ ステップ
+
+move motor _ angle _ °
+モーターを動かす _ 角度 _ °
+
+move motor _ _ complete turns
+モーターを動かす _ _ 回転
+
+stop steppers
+ステップを停止する
+
+clockwise
+時計回り
+
+counter-clockwise
+逆時計回り
+
+ED1 Buttons
+ED1ボタン
+
+button OK
+OKボタン
+
+button X
+Xボタン
+
+button up
+上ボタン
+
+button down
+下ボタン
+
+button left
+左ボタン
+
+button right
+右ボタン
+
+capacitive sensor _
+静電容量センサー _
+
+set capacitive threshold to _
+静電容量センサーを設定する 閾値 _ 
+
+####
+# BirdBrain Technologies libraries
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird 三色LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ °
+Hummingbird 位置サーボ _ _ °
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird 回転サーボ _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird 電池容量 (mV)
+
+Light
+光量
+
+Distance (cm)
+距離 (cm)
+
+Dial
+目盛り
+
+Sound
+音量
+
+Other
+その他
+
+Finch Beak Red _ Green _ Blue _
+Finch くちばし 赤 _ 緑 _ 青 _
+
+Finch Tail _ Red _ Green _ Blue _
+Finch しっぽ 赤 _ 緑 _ 青 _
+
+Finch Move _ _ cm at _ %
+Finch 移動 _ _ cm 位置 _ %
+
+Finch Turn _ _ ° at _ %
+Finch 回転 _ _ ° 位置 _ %
+
+Finch Wheels L _ % R _ %
+Finch ホイール 左 _ % 右 _ %
+
+Finch Stop
+Finch 停止
+
+Finch Distance (cm)
+Finch 距離 (cm)
+
+Finch _ Light
+Finch _ 光量
+
+Finch _ Line
+Finch _ 線
+
+Finch Reset Encoders
+Finch エンコーダをリセット
+
+Finch _ Encoder
+Finch _ エンコーダ
+
+Finch Accelerometer _
+Finch 加速度 _
+
+Finch Battery
+Finch 電池容量
+
+All
+全部
+
+Forward
+前進
+
+Backward
+後退
+
+Right
+右折
+
+Left
+左折
+
+Beak Up
+くちばしを上げる
+
+Beak Down
+くちばしを下げる
+
+Tilt Left
+左へ向く
+
+Tilt Right
+右へ向く
+
+Level
+レベル
+
+Upside Down
+逆さま
+
+x
+x
+
+y
+y
+
+z
+z
+
+strength
+強度
+
+####
+# Ultrasound distance library
+
+distance (cm) trigger _ echo _
+距離 (cm) トリガー _ エコー _
+
+####
+# Infrared remote library
+
+IR Remote
+IR 距離
+
+receive IR code
+IR コード受信
+
+receive IR code from device _
+IR コード受信 デバイス _
+
+test IR
+IR テスト
+
+attach IR receiver to pin _
+IR 受信機を接続 ピン _
+
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
+Radio
+電波
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
+
+Scrolling
+スクロール表示
+
+scroll text _
+スクロール文字 _
+
+scroll number _
+スクロール数字 _
+
+pausing _ ms
+一時停止 _ ミリ秒
+
+stop scrolling
+スクロール停止
+
+####
+# Servo motor library
+
+Servo
+サーボ
+
+set servo _ to _ degrees (-90 to 90)
+サーボ設定 _ を _ 度 (-90 - 90)
+
+set servo _ to speed _ (-100 to 100)
+サーボ設定 _ の速度 _ (-100 - 100)
+
+stop servo _
+サーボ停止 _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
+
+LED Display
+LED表示
+
+display _
+表示 _
+
+clear display
+表示クリア
+
+plot x _ y _
+プロットする x _ y _
+
+unplot x _ y _
+プロットを消す x _ y _
+
+display character _
+文字を表示 _
+
+####
+# TFT display library
+
+enable TFT _
+TFT 有効化
+
+TFT width
+TFT 幅
+
+TFT height
+TFT 高さ
+
+set TFT pixel x _ y _ to _
+TFT 画素設定 x _ y _ に _ を
+
+draw line on TFT from x _ y _ to x _ y _ color _
+TFT上に線を描く 位置 x _ y _ から x _ y _ まで 色 _
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+TFT上に四角形を描く 位置 x _ y _ 幅 _ 高さ _ 色 _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+TFT上に丸角四角形を描く 位置 x _ y _ 幅 _ 高さ _ 半径 _ 色 _
+
+draw circle on TFT at x _ y _ radius _ color _
+TFT上に円を描く, 位置 x _ y _ 半径 _ 色 _
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+TFT上に三角形を描く 位置 x _ y _ , x _ y _ , x _ y _ 色 _
+
+filled _
+埋める _
+
+write _ on TFT at x _ y _ color _
+TFT上に描く _ 位置 x _ y _ 色 _
+
+scale _ wrap _
+拡大 _ ラップ _
+
+####
+# Tone library
+# Generates music tones on buzzers
+
+Tone
+音
+
+attach buzzer to pin _
+ブザーをつける ピン _
+
+play note _ octave _ for _ ms
+音符を再生 _ 音階 _ 長さ _ ミリ秒
+
+play frequency _ for _ ms
+周波数を再生 _ 長さ _ ミリ秒
+
+play midi key _ for _ ms
+midiキーを再生 _ 長さ _ ミリ秒
+
+####
+# Turtle geometry library
+
+Turtle
+ウミガメ
+
+home
+ホーム
+
+move _
+移動 _
+
+turn _ degrees
+回る _ 度
+
+turn _ / _ of circle
+回る _ / _ 円
+
+pen down
+ペンを下ろす
+
+pen up
+ペンを上げる
+
+set pen color to _
+ペンの色を設定 _
+
+set pen to random color
+ペンの色をランダムに設定
+
+fill display with _
+表示を埋める _
+
+go to x _ y _
+移動する x _ y _
+
+point in direction _
+点の方向 _
+
+####
+# File system library
+
+Files
+ファイル
+
+open file _
+ファイルを開く _
+
+close file _
+ファイルを閉じる _
+
+delete file _
+ファイルを削除 _
+
+append line _ to file _
+行を追加 _ ファイル _
+
+append bytes _ to file _
+バイト列を追加 _ ファイル _
+
+end of file _
+ファイルの最後 _
+
+next line of file _
+次の行 ファイル _
+
+next _ bytes of file _
+次のバイト列 _ ファイル _
+
+starting at _
+スタート位置 _
+
+file names
+ファイル名
+
+size of file _
+ファイルサイズ _
+
+file system info
+ファイルシステムの情報
+
+####
+# WiFi library
+
+WiFi
+WiFi
+
+wifi connect to _ password _ try _ times
+WiFiに接続 _ パスワード _ 繰り返し _ 回
+
+wifi create hotspot _ password _
+WiFiスポットを作成 _ パスワード _
+
+IP address
+IPアドレス
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
+
+Motion
+モーション
+
+motion
+モーション
+
+start step counter
+ステップカウンターを始める
+
+step count
+ステップカウント
+
+clear step count
+ステップカウントをクリア
+
+set step threshold _ (0-50)
+ステップ閾値を設定 _ (0-50)
+
+####
+# Button Events library
+
+Button Events
+ボタンイベント
+
+button _ double pressed
+ボタン _ 2回押す
+
+button _ long pressed
+ボタン _ 長く押す
+
+button _ pressed
+ボタン _ 押す
+
+####
+# Calliope board library
+
+Calliope set LED red _ green _ blue _
+Calliope LEDの設定 赤 _ 緑 _ 青 _
+
+Calliope set speaker _
+Calliope スピーカの設定 _
+
+Calliope loudness
+Calliope 音の大きさ
+
+####
+# Circuit Playground Express board library
+
+Circuit Playground set speaker _
+Circuit Playground スピーカの設定 _
+
+Circuit Playground slide switch
+Circuit Playground スライドスイッチ
+
+####
+# DotStar LED library
+
+attach _ DotStar LEDs to data pin _ clock pin _
+接続 _ DotStar LEDs データピン _ クロックピン _
+
+set all DotStar LEDs to r _ g _ b _
+設定 すべてのDotStar LEDs を r _ g _ b _
+
+set DotStar LED _ to r _ g _ b _
+設定 DotStar LED _ を r _ g _ b _
+
+set DotStar brightness _
+設定 DotStar 輝度 _
+
+####
+# BME280 environmental sensor
+
+bme280 connected
+bme280 接続された
+
+bmp280 connected
+bmp280 接続された
+
+bmx280 temperature
+bmx280 温度
+
+bmx280 pressure
+bmx280 気圧
+
+bme280 humidity
+bme280 湿度
+
+####
+# TCS34725 color sensor
+
+TCS34725 connected
+TCS34725 接続された
+
+TCS34725 rgb
+TCS34725 RGB
+
+color _ name
+色 _ 名前
+
+####
+# DHT11 environmental sensor
+
+temperature (Celsius) DHT11 pin _
+温度 (Celsius) DHT11 ピン _
+
+humidity DHT11 pin _
+湿度 DHT11 ピン _
+
+temperature (Celsius) DHT22 pin _
+温度 (Celsius) DHT22 ピン _
+
+humidity DHT22 pin _
+湿度 DHT22 ピン _
+
+####
+# PN532 RFID reader
+
+read PN532 RFID
+読み取り PN532 RFID
+
+RFID _ = _
+RFID _ = _
+
+get PN532 firmware version
+PN532 ファームウェアバージョン取得
+
+####
+# HTTP libraries
+
+HTTP client
+HTTPクライアント
+
+_ data _ to http܃// _
+_ データを _ へ http// _
+
+HTTP server
+HTTPサーバー
+
+start HTTP server
+HTTPサーバーを開始
+
+HTTP server request
+HTTPサーバーの要求
+
+respond _ to HTTP request
+HTTPリクエストの応答 _
+
+with body _
+with ボディ _
+
+and headers _
+and ヘッダー _
+
+body of request _
+リクエストのボディ _
+
+path of request _
+リクエストのパス _
+
+method of request _
+リクエストのメソッド _
+
+####
+# Web Things library
+
+Web Thing
+Web Thing
+
+set thing name to _
+Thing の名前を設定 _
+
+set thing capability to _
+Thing のケーパビリティを設定 _
+
+set boolean property _ title _ @Type _
+ブール属性を設定 _ タイトル _ @タイプ _
+
+set string property _ title _ @Type _
+文字列属性を設定 _ タイトル _ @タイプ _
+
+set number property _ title _ @Type _
+数値属性を設定 _ タイトル _ @タイプ _
+
+set number property _ title _ min _ max _ @Type _
+数値属性を設定 _ タイトル _ 最小 _ 最大 _ @タイプ _
+
+read only _
+読み出し専用 _
+
+register event _ type _
+登録イベント _ タイプ _
+
+start WebThing server
+WebThing サーバーを開始
+
+trigger event _
+トリガーイベント _
+
+thing description JSON
+Thing の説明 JSON
+
+properties JSON
+JSON 属性
+
+event definitions JSON
+イベント定義 JSON
+
+events JSON
+イベント JSON
+
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
+
+New
+新規
+
+Open
+開く
+
+Save
+保存
+
+Connect
+接続
+
+disconnect
+切断
+
+Serial port:
+シリアルポート:
+
+other...
+その他...
+
+none
+なし
+
+Port name?
+ポート名?
+
+Board type:
+ボードタイプ:
+
+Select board:
+ボード選択:
+
+Could not read:
+読めなかった:
+
+by
+まで
+
+Created with GP
+GPによって作成
+
+More info at http://microblocks.fun
+より多くの情報は http://microblocks.fun
+
+Function "
+関数 "
+
+" is too large to send to board.
+" ボードに送信するには大き過ぎます.
+
+Script is too large to send to board.
+ボードに送信するにはスクリプトが大き過ぎます.
+
+Use "Connect" button to connect to a MicroBlocks device.
+MicroBlocksデバイスに接続するには,"接続"ボタンを使用してください.
+
+No boards found; is your board plugged in?
+ボードが見つかりません，ボードが接続されていますか?
+
+For AdaFruit boards, double-click reset button and try again.
+AdaFruitボードの場合，resetボタンをダブルクリックして再度実施してください.
+
+The board is not responding.
+ボードが応答していません.
+
+Try to Install MicroBlocks on the board?
+ボードへMicroBlocksのインストールを試してくれますか?
+
+The MicroBlocks in your board is not current
+ボードのMicroBlocksが最新ではありません
+
+Try to update MicroBlocks on the board?
+ボードのMicroBlocksの更新を試してくれますか?
+
+Stop
+停止
+
+Start
+開始
+
+Quit MicroBlocks?
+MicroBlocksを止めますか?
+
+Discard current project?
+現在のプロジェクトを破棄しますか?
+
+clean up
+クリアする
+
+arrange scripts
+スクリプトを編集する
+
+undrop (ctrl-Z)
+前に戻す (ctrl-Z)
+
+copy all scripts to clipboard
+すべてのスクリプトをクリップボードへコピーする
+
+paste all scripts
+すべてのスクリプトを貼り付ける
+
+paste script
+スクリプトを貼り付ける
+
+save a picture of all scripts
+すぺてのスクリプトの画面を保存する
+
+about...
+...について
+
+virtual machine version
+仮想マシンのバージョン
+
+update firmware on board
+ボード上のファームウェアを更新
+
+show data graph
+グラフを表示
+
+set serial delay
+シリアル速度を設定
+
+firmware version
+ファームウェアバージョン
+
+start WebThing server
+WebThingサーバーを開始
+
+stop WebThing server
+WebThingサーバーを停止
+
+MicroBlocks HTTP Server listening on port 6473
+MicroBlocks HTTPサーバーのポート番号 6473
+
+disable autoloading board libraries
+ボードライブラリの自動読み込みを無効化
+
+enable autoloading board libraries
+ボードライブラリの自動読み込みを有効化
+
+erase flash and update firmware on ESP board
+ESPボード上のファームウェアを消去して更新
+
+Use board type
+使用するボードタイプ
+
+Wiping board...
+ボードを消去中...
+
+(press ESC to cancel)
+(ESCを押して取消)
+
+Done!
+完成!
+
+download and install latest VM
+最新のVMをダウンロードしてインストール
+
+Select board type:
+ボードタイプを選択:
+
+Uploading MicroBlocks to board...
+ボードへMicroBlocksをアップロード中...
+
+copy data to clipboard
+データをクリップボードへコピー
+
+clear data
+データをクリア
+
+clear memory and variables
+メモリーと変数をクリア
+
+show advanced blocks
+高度なブロックを表示
+
+export functions as library
+関数をライブラリとして出力
+
+hide advanced blocks
+高度なブロックを隠す
+
+Data Graph
+データグラフ
+
+show instructions
+手順を表示
+
+show compiled bytes
+コンパイルされたバイトを表示
+
+expand
+展開
+
+collapse
+縮小
+
+rename...
+名前を変更...
+
+show block definition...
+ブロック定義を表示...
+
+show the definition of this block
+このブロックの定義を表示
+
+delete block definition...
+ブロック定義を削除...
+
+delete the definition of this block
+このブロックの定義を削除
+
+duplicate
+複製
+
+duplicate this block
+このブロックを複製
+
+delete block
+ブロックを削除
+
+delete this block
+このブロックを削除
+
+just this one block
+この1つのブロック
+
+copy to clipboard
+クリップボードにコピー
+
+copy these blocks to the clipboard
+これらのブロップをクリップボードにコピー
+
+duplicate all
+すべてを複製
+
+duplicate these blocks
+これらのブロックを複製
+
+extract block
+ブロックを展開
+
+pull out this block
+このブロックを折りたたむ
+
+save picture of script
+スクリプトの画面を保存
+
+save a picture of this block definition as a PNG file
+このブロック定義の画面をPNGファイルで保存
+
+save a picture of these blocks as a PNG file
+これらのブロックの画面をPNGファイルで保存
+
+copy script
+スクリプトをコピー
+
+delete
+削除
+
+Input type:
+入力タイプ:
+
+string only
+文字列のみ
+
+string or number
+文字列または数字
+
+number only
+数字のみ
+
+define
+定義
+
+number/string
+数字/文字列
+
+editable number or string
+編集可能な数字または文字列
+
+label
+ラベル
+
+input
+入力
+
+hide block definition
+ブロック定義を隠す
+
+Are you sure you want to remove this block definition?
+このブロック定義を削除してもいいですか?
+
+Language
+言語
+
+Custom...
+カスタム...
+
+Obsolete
+廃止
+
+OK
+確定
+
+Ok
+確定
+
+Yes
+はい
+
+No
+いいえ
+
+Cancel
+取消
+
+Okay
+確定
+
+Confirm
+確認
+
+# File picker and library dialogs
+
+Libraries
+ライブラリ
+
+Examples
+例
+
+Desktop
+デスクトップ
+
+Computer
+コンピュータ
+
+Cloud
+クラウド
+
+File
+ファイル
+
+File Open
+ファイルを開く
+
+File Save
+ファイル保存
+
+File name:
+ファイル名:
+
+New Folder
+新しいフォルダ
+
+by
+まで
+
+Depends:
+依存:
+
+Tags:
+タグ:
+
+Path, name or URL for library?
+ライブラリの場所,名前またはURLは?
+
+Invalid URL
+間違ったURL
+
+Could not fetch library.
+ライブラリを取得できなかった.
+
+Host does not exist or is currently down.
+ホストが存在しない,または現在ダウンしている.
+
+File not found in server.
+サーバにファイルが見つからない.
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+サーバーはHTTPSを期待しているが，MicroBlocksは現在サポートされていない.
+
+library information
+ライブラリの情報
+
+built-in library
+組み込みライブラリ
+
+Dependency path, name or URL?
+依存する場所,名前またはURLは?
+
+Tag name?
+タグの名前は?
+
