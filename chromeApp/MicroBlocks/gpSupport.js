@@ -602,6 +602,8 @@ async function webSerialConnect() {
 		{ usbVendorId: 0x2a03},		// Arduino
 		{ usbVendorId: 0x2341},		// Arduino MKR Zero
 		{ usbVendorId: 0x03eb},		// Atmel Corporation
+		{ usbVendorId: 0x1366},		// SEGGER Calliope mini
+		{ usbVendorId: 0x16c0},		// Teensy
 	];
 	webSerialDisconnect();
 	GP_webSerialPort = await navigator.serial.requestPort({filters: vendorIDs}).catch((e) => { console.log(e); });
