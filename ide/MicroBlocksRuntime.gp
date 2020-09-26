@@ -275,10 +275,10 @@ method readCodeFromBoard SmallRuntime {
 	closeAllDialogs (findMicroBlocksEditor)
 	decompiler = (newDecompiler)
 	timeout = 1000
-	sendMsg this 'getVarNamesMsg'
-	sendMsg this 'getAllCodeMsg'
 
 	waitForPing this
+	sendMsg this 'getVarNamesMsg'
+	sendMsg this 'getAllCodeMsg'
 
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
@@ -297,10 +297,9 @@ method waitForPing SmallRuntime {
 	timeout = 1000
 	lastPingRecvMSecs = 0
 	while (0 == lastPingRecvMSecs) {
-		count += 1
 		sendMsg this 'pingMsg'
-		waitMSecs 50
 		processMessages this
+		waitMSecs 10
 	}
 }
 
@@ -311,6 +310,7 @@ method installDecompiledProject SmallRuntime proj {
 	checkForNewerLibraryVersions (project scripter) (not (devMode))
 	restoreScripts scripter // fix block colors
 	cleanUp (scriptEditor scripter)
+	saveAllChunks this
 }
 
 method receivedChunk SmallRuntime chunkID chunkType bytecodes {
@@ -492,7 +492,7 @@ method selectPort SmallRuntime {
 			popUpAtHand menu (global 'page')
 		}
 		return
-	} ('Browser' == (platform)) { // running in a browser w/o WebSerial (or it is not enabled)
+	} (and ('Browser' == (platform)) (not (browserIsChromeOS))) { // running in a browser w/o WebSerial (or it is not enabled)
 		inform (join
 			(localized 'Only recent Chrome and Edge browsers support WebSerial.') ' '
 			(localized 'Enable "Experimental Web Platform features" on the "chrome://flags" page.'))
@@ -980,11 +980,14 @@ method verifyCRCs SmallRuntime {
 	crcDict = (dictionary)
 	for entry (values chunkIDs) {
 		sendMsg this 'getChunkCRCMsg' (first entry)
+		processMessages this
+		waitMSecs 10
 	}
 	timeout = 100
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		processMessages this
+		waitMSecs 10
 	}
 
 	// build a dictionary mapping chunkID -> block or functionName
@@ -1229,12 +1232,11 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 
 	readAvailableSerialData this
 	sendMsg this msgName chunkID byteList
-	sendMsg this 'pingMsg'
 	waitForResponse this
 }
 
 method readAvailableSerialData SmallRuntime {
-	// Read any available data into recvBuf so that waitForResponse well await fresh data.
+	// Read any available data into recvBuf so that waitForResponse will await fresh data.
 
 	if (isNil port) { return }
 	waitMSecs 20 // leave some time for queued data to arrive
