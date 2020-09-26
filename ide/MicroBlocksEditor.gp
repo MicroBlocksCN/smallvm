@@ -272,7 +272,7 @@ method openFromBoard MicroBlocksEditor {
   fileName = ''
   updateTitle this
   readCodeFromNextBoardConnected (smallRuntime)
-  if ('Browser' == (platform)) {
+  if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
 	inform 'Plug in the board and click the USB icon to connect.'
   } else {
     inform 'Plug in the board.'
