@@ -20,7 +20,7 @@
 
 // VM Version
 
-#define VM_VERSION "v097"
+#define VM_VERSION "v098"
 
 // Forward Reference Declarations
 
