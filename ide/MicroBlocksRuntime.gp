@@ -274,7 +274,7 @@ method readCodeFromNextBoardConnected SmallRuntime {
 method readCodeFromBoard SmallRuntime {
 	closeAllDialogs (findMicroBlocksEditor)
 	decompiler = (newDecompiler)
-	timeout = 1000
+	timeout = 500
 
 	waitForPing this
 	sendMsg this 'getVarNamesMsg'
@@ -283,7 +283,7 @@ method readCodeFromBoard SmallRuntime {
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		processMessages this
-		waitMSecs 10
+		waitMSecs 1
 	}
 	print 'decompiler read' (count (getField decompiler 'vars')) 'vars' (count (getField decompiler 'chunks')) 'chunks'
 	proj = (decompileProject decompiler)
@@ -600,6 +600,7 @@ method closePort SmallRuntime {
 method enableAutoConnect SmallRuntime {
 	disconnected = false
 	if ('Browser' == (platform)) { port = 1 }
+	stopAndSyncScripts this
 }
 
 method tryToInstallVM SmallRuntime {
@@ -975,6 +976,8 @@ method crcForChunk SmallRuntime aBlockOrFunctionName {
 method verifyCRCs SmallRuntime {
 	// Check that the CRCs of the chunks on the board match the ones in the IDE.
 	// Resend the code of any chunks whose CRC's do not match.
+
+	if (isNil port) { return }
 
 	// collect CRCs from the board
 	crcDict = (dictionary)
