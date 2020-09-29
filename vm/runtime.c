@@ -20,7 +20,7 @@
 
 // VM Version
 
-#define VM_VERSION "v098"
+#define VM_VERSION "v099"
 
 // Forward Reference Declarations
 
@@ -785,7 +785,9 @@ static void sendAllCode() {
 		int chunkWords = *(code + 1); // chunk word count is second word of persistent store record
 		char *chunkData = (char *) (code + PERSISTENT_HEADER_WORDS);
 		sendCodeChunk(chunkID, chunkType, (4 * chunkWords), chunkData);
-		delay(20); // 10 is unreliable for WebApp talking to an ESP32
+		sendData();
+		delay(4 * chunkWords); // 2 fails on Johns Chromebook; 3 works; 4 is conservative
+		sendData();
 	}
 }
 
