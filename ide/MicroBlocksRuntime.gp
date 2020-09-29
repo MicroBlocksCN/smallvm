@@ -603,11 +603,15 @@ method closePort SmallRuntime {
 	boardType = nil
 }
 
-method enableAutoConnect SmallRuntime {
+method enableAutoConnect SmallRuntime syncScriptsFlag {
+	// Pass false as the optional syncScriptsFlag to prevent script synching on ChromeOS.
+
 	disconnected = false
 	if ('Browser' == (platform)) { port = 1 }
 	closeAllDialogs (findMicroBlocksEditor)
-	stopAndSyncScripts this
+	if (false != syncScriptsFlag)) {
+		stopAndSyncScripts this
+	}
 }
 
 method tryToInstallVM SmallRuntime {
@@ -1794,7 +1798,7 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 
 	browserWriteFile vmData vmFileName
 	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
-	enableAutoConnect this
+	enableAutoConnect this false
 	if (endsWith vmFileName '.uf2') {
 		msg = (localized 'When the NeoPixels turn off')
 	} else {
