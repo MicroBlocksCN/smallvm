@@ -786,7 +786,7 @@ static void sendAllCode() {
 		char *chunkData = (char *) (code + PERSISTENT_HEADER_WORDS);
 		sendCodeChunk(chunkID, chunkType, (4 * chunkWords), chunkData);
 		sendData();
-		delay(4 * chunkWords); // 2 fails on Johns Chromebook; 3 works; 4 is conservative
+		delay(5 * chunkWords); // 2 fails on Johns Chromebook; 3 works; 5 is conservative
 		sendData();
 	}
 }
