@@ -274,16 +274,22 @@ method readCodeFromNextBoardConnected SmallRuntime {
 method readCodeFromBoard SmallRuntime {
 	closeAllDialogs (findMicroBlocksEditor)
 	decompiler = (newDecompiler)
-	timeout = 500
+	timeout = 2500
 
 	waitForPing this
-	sendMsg this 'getVarNamesMsg'
-	sendMsg this 'getAllCodeMsg'
 
+	sendMsg this 'getVarNamesMsg'
+	lastRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - lastRcvMSecs) < 100) {
+		processMessages this
+		waitMSecs 10
+	}
+
+	sendMsg this 'getAllCodeMsg'
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		processMessages this
-		waitMSecs 1
+		waitMSecs 10
 	}
 	print 'decompiler read' (count (getField decompiler 'vars')) 'vars' (count (getField decompiler 'chunks')) 'chunks'
 	proj = (decompileProject decompiler)
@@ -600,6 +606,7 @@ method closePort SmallRuntime {
 method enableAutoConnect SmallRuntime {
 	disconnected = false
 	if ('Browser' == (platform)) { port = 1 }
+	closeAllDialogs (findMicroBlocksEditor)
 	stopAndSyncScripts this
 }
 
@@ -1787,16 +1794,19 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 
 	browserWriteFile vmData vmFileName
 	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
+	enableAutoConnect this
 	if (endsWith vmFileName '.uf2') {
-		prefix = (localized 'When the NeoPixels turn off')
+		msg = (localized 'When the NeoPixels turn off')
 	} else {
-		prefix = (localized 'When the LED stops flashing')
+		msg = (localized 'When the LED stops flashing')
 	}
-	inform (join
-		prefix ', '
-		(localized 'reconnect to the board by clicking the "Connect" button (USB icon).')
-		' '
-		(localized 'Chromebook users may need to unplug and replug the USB cable.'))
+	if (and ('Browser' == (platform)) (browserIsChromeOS)) {
+		waitMSecs 5000
+		msg = (join msg  ', ' (localized 'the board should reconnect. If it does not, unplug and replug the USB cable.'))
+	} else {
+		msg = (join msg  ', ' (localized 'reconnect to the board by clicking the "Connect" button (USB icon).'))
+	}
+	inform msg
 }
 
 method adaFruitMessage SmallRuntime {

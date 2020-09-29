@@ -217,6 +217,7 @@ method closeAllDialogs MicroBlocksEditor {
 	// remove explorers, table views -- everything but the MicroBlocksEditor
 	if (p != morph) { removePart pageM p }
   }
+  doOneCycle (global 'page') // force redisplay
 }
 
 method openProjectMenu MicroBlocksEditor {
