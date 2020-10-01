@@ -690,6 +690,12 @@ method updateConnection SmallRuntime {
 method tryToConnect SmallRuntime {
 	// Called when connectionStartTime is not nil, indicating that we are trying
 	// to establish a connection to a board the current serial port.
+	if (and
+		(not (hasUserCode (project (findProjectEditor))))
+		(autoDecompileEnabled (findMicroBlocksEditor))
+	) {
+		readFromBoard = true
+	}
 
 	if (isWebSerial this) {
 		if (isOpenSerialPort 1) {

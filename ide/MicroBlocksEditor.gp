@@ -22,7 +22,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled
+defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -481,6 +481,9 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'boardLibAutoLoadDisabled')) {
 		boardLibAutoLoadDisabled = (at prefs 'boardLibAutoLoadDisabled')
 	}
+	if (notNil (at prefs 'autoDecompile')) {
+		autoDecompile = (at prefs 'autoDecompile')
+	}
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
@@ -502,6 +505,15 @@ method toggleBoardLibAutoLoad MicroBlocksEditor flag {
 
 method boardLibAutoLoadDisabled MicroBlocksEditor {
 	return (boardLibAutoLoadDisabled == true)
+}
+
+method toggleAutoDecompile MicroBlocksEditor flag {
+	autoDecompile = flag
+	saveToUserPreferences this 'autoDecompile' autoDecompile
+}
+
+method autoDecompileEnabled MicroBlocksEditor {
+	return autoDecompile
 }
 
 // developer mode
@@ -661,6 +673,13 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 	} else {
 		addItem menu 'disable autoloading board libraries' (action 'toggleBoardLibAutoLoad' this false)
 	}
+
+	if (autoDecompileEnabled this) {
+		addItem menu 'disable PlugShare when project empty' (action 'toggleAutoDecompile' this false) 'when plugging a board, do not automatically read its contents into the IDE even if the current project is empty'
+	} else {
+		addItem menu 'enable PlugShare when project empty' (action 'toggleAutoDecompile' this true) 'when plugging a board, automatically read its contents into the IDE if the current project is empty'
+	}
+
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
