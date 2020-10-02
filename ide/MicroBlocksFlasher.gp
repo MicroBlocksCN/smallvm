@@ -7,7 +7,7 @@
 // MicroBlocksFlasher.gp - An interface to internal ESPTool to flash Espressif boards
 // Bernat Romagosa, September 2019
 
-defineClass MicroBlocksFlasher morph label sublabel paddle1 rotation boardName portName eraseFlag downloadFlag espTool espTask
+defineClass MicroBlocksFlasher spinner boardName portName eraseFlag downloadFlag espTool espTask
 
 to newFlasher board serialPortName eraseFlashFlag downloadLatestFlag {
 	return (initialize (new 'MicroBlocksFlasher') board serialPortName eraseFlashFlag downloadLatestFlag)
@@ -19,50 +19,25 @@ method initialize MicroBlocksFlasher board serialPortName eraseFlashFlag downloa
 	eraseFlag = eraseFlashFlag
 	downloadFlag = downloadLatestFlag
 
-	morph = (newMorph this)
-	setCostume morph (gray 0 80)
+	spinner = (newSpinner (action 'fetchStatus' this) (action 'isDone' this))
 
-	paddle1 = (newBox nil (gray 255) 10)
-	paddle2 = (newBox nil (gray 255) 10)
-	setExtent (morph paddle1) 100 20
-	setExtent (morph paddle2) 20 100
-	addPart (morph paddle1) (morph paddle2)
-	gotoCenterOf (morph paddle2) (morph paddle1)
-	addPart morph (morph paddle1)
-	rotation = 0
-
-	scale = (global 'scale')
-	label = (newText '' 'Arial' (24 * scale) (gray 255))
-	addPart morph (morph label)
-
-	sublabel = (newText (localized '(press ESC to cancel)') 'Arial' (18 * scale) (gray 255))
-	addPart morph (morph sublabel)
-
-	pageM = (morph (global 'page'))
-	setExtent morph (width (bounds pageM)) (height (bounds pageM))
 	return this
 }
 
-method redraw MicroBlocksFlasher {
-	pageM = (morph (global 'page'))
-	gotoCenterOf morph pageM
-	gotoCenterOf (morph paddle1) pageM
-	gotoCenterOf (morph label) pageM
-	gotoCenterOf (morph sublabel) pageM
-	moveBy (morph label) 0 105
-	moveBy (morph sublabel) 0 170
+method spinner MicroBlocksFlasher {
+	return spinner
 }
 
-method step MicroBlocksFlasher {
-	rotation = (rotation - 1)
-	rotateAndScale (morph paddle1) rotation
-	redraw this
-	if (notNil espTool) { setText label (status espTool) }
-	if (or (isNil espTask) (isTerminated espTask)) { destroy this }
+method fetchStatus MicroBlocksFlasher {
+	if (notNil espTool) { return (status espTool) }
+}
+
+method isDone MicroBlocksFlasher {
+	return (or (isNil espTask) (isTerminated espTask))
 }
 
 method destroy MicroBlocksFlasher {
-	destroy morph
+	destroy spinner
 	if (notNil espTask) {
 		stopTask espTask
 		espTask = nil

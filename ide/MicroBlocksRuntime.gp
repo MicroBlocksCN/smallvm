@@ -1851,7 +1851,7 @@ method flashVM SmallRuntime boardName eraseFlashFlag downloadLatestFlag {
 		flasherPort = nil
 	}
 	flasher = (newFlasher boardName portName eraseFlashFlag downloadLatestFlag)
-	addPart (global 'page') (morph flasher)
+	addPart (global 'page') (spinner flasher)
 	startFlasher flasher flasherPort
 }
 
