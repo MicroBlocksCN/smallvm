@@ -7,7 +7,7 @@
 // MicroBlocksFlasher.gp - An interface to internal ESPTool to flash Espressif boards
 // Bernat Romagosa, September 2019
 
-defineClass MicroBlocksFlasher spinner boardName portName eraseFlag downloadFlag espTool espTask
+defineClass MicroBlocksFlasher spinner boardName portName eraseFlag downloadFlag espTool
 
 to newFlasher board serialPortName eraseFlashFlag downloadLatestFlag {
 	return (initialize (new 'MicroBlocksFlasher') board serialPortName eraseFlashFlag downloadLatestFlag)
@@ -33,16 +33,12 @@ method fetchStatus MicroBlocksFlasher {
 }
 
 method isDone MicroBlocksFlasher {
-	return (or (isNil espTask) (isTerminated espTask))
+	return (or (isNil (task spinner)) (isTerminated (task spinner)))
 }
 
 method destroy MicroBlocksFlasher {
 	destroy spinner
-	if (notNil espTask) {
-		stopTask espTask
-		espTask = nil
-	}
-	enableAutoConnect (smallRuntime)
+    enableAutoConnect (smallRuntime)
 }
 
 method startFlasher MicroBlocksFlasher serialPortID {
@@ -58,7 +54,7 @@ method startFlasher MicroBlocksFlasher serialPortID {
 		inform 'Could not open serial port'
 		return
 	}
-	espTask = (launch
+	setTask spinner (launch
 		(global 'page')
 		(action 'installFirmware' espTool boardName eraseFlag downloadFlag))
 }

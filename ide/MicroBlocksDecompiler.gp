@@ -101,6 +101,7 @@ method decompileProject MicroBlocksDecompiler {
 	setScripts module scripts
 
 	updatePrimitives project
+
 	return project
 }
 

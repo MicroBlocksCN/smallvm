@@ -7,7 +7,7 @@
 // MicroBlocksSpinner.gp - A modal spinner animation
 // Bernat Romagosa, October 2020
 
-defineClass MicroBlocksSpinner morph label sublabel paddle1 rotation labelGetter doneGetter
+defineClass MicroBlocksSpinner morph label sublabel paddle1 rotation labelGetter doneGetter task
 
 to newSpinner labelReporter doneReporter {
 	return (initialize (new 'MicroBlocksSpinner') labelReporter doneReporter)
@@ -42,6 +42,9 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 	return this
 }
 
+method task MicroBlocksSpinner { return task }
+method setTask MicroBlocksSpinner aTask { task = aTask }
+
 method redraw MicroBlocksSpinner {
 	pageM = (morph (global 'page'))
 	gotoCenterOf morph pageM
@@ -53,6 +56,9 @@ method redraw MicroBlocksSpinner {
 }
 
 method destroy MicroBlocksSpinner {
+	if (notNil task) {
+		stopTask task
+	}
 	destroy morph
 }
 

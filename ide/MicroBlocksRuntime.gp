@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus
 
 method scripter SmallRuntime { return scripter }
 
@@ -22,6 +22,7 @@ method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
 	readFromBoard = false
+	decompilerStatus = ''
 	clearLoggedData this
 	return this
 }
@@ -272,8 +273,17 @@ method readCodeFromNextBoardConnected SmallRuntime {
 }
 
 method readCodeFromBoard SmallRuntime {
+	decompilerStatus = 'Reading project from board...'
 	closeAllDialogs (findMicroBlocksEditor)
 	decompiler = (newDecompiler)
+	spinner = (newSpinner (action 'decompilerStatus' this) (action 'decompilerDone' this))
+	addPart (global 'page') spinner
+	setTask spinner (launch
+		(global 'page')
+		(action 'startReadingCode' this))
+}
+
+method startReadingCode SmallRuntime {
 	timeout = 2500
 
 	waitForPing this
@@ -293,8 +303,12 @@ method readCodeFromBoard SmallRuntime {
 	}
 	print 'decompiler read' (count (getField decompiler 'vars')) 'vars' (count (getField decompiler 'chunks')) 'chunks'
 	proj = (decompileProject decompiler)
+	decompilerStatus = 'Loading project...'
 	installDecompiledProject this proj
 }
+
+method decompilerDone SmallRuntime { return (decompilerStatus == '') }
+method decompilerStatus SmallRuntime { return decompilerStatus }
 
 method waitForPing SmallRuntime {
 	// Wait for up to timeout to get a ping back from the board.
@@ -313,10 +327,13 @@ method installDecompiledProject SmallRuntime proj {
 	clearBoardIfConnected this true
 	setProject scripter proj
 	updateLibraryList scripter
+	decompilerStatus = ''
 	checkForNewerLibraryVersions (project scripter) (not (devMode))
 	restoreScripts scripter // fix block colors
 	cleanUp (scriptEditor scripter)
 	saveAllChunks this
+	vmVersion = nil
+	getVersion this
 }
 
 method receivedChunk SmallRuntime chunkID chunkType bytecodes {
@@ -837,6 +854,8 @@ method versionReceived SmallRuntime versionString {
 }
 
 method checkVmVersion SmallRuntime {
+	// prevent version check from running while the decompiler is working
+	if (decompilerStatus != '') { return }
 	if ((latestVmVersion this) > vmVersion) {
 		ok = (confirm (global 'page') nil (join
 			(localized 'The MicroBlocks in your board is not current')
@@ -849,6 +868,7 @@ method checkVmVersion SmallRuntime {
 method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
+	if (decompilerStatus != '') { return } // don't load libraries while decompiling
 	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
 	if (boardLibAutoLoadDisabled (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
 
