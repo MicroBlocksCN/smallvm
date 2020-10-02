@@ -513,7 +513,7 @@ method toggleAutoDecompile MicroBlocksEditor flag {
 }
 
 method autoDecompileEnabled MicroBlocksEditor {
-	return autoDecompile
+	return (autoDecompile == true)
 }
 
 // developer mode
