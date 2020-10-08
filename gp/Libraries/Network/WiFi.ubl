@@ -5,7 +5,7 @@ tags communication network
 description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
-	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
+	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times : IP _ gateway _ subnet _' 'str str num str str str' 'Network_Name' '' 3 '192.168.1.42' '192.168.1.1' '255.255.255.0'
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
 
@@ -13,10 +13,21 @@ to getIPAddress {
   return ('[net:myIPAddress]')
 }
 
-to 'wifi connect to' ssid password tries {
-  if (not ('[net:hasWiFi]')) {return}
+to 'wifi connect to' ssid password tries fixedIP gatewayIP subnetIP {
+  local 'ip' fixedIP
+  local 'gateway' gatewayIP
+  local 'subnet' subnetIP
+  if (not ('[net:hasWiFi]')) {
+    return
+  }
+  if ((pushArgCount) < 3) {
+    ip = ''
+	gateway = ''
+	subnet = ''
+  }
+  '[net:stopWiFi]'
   repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
-    '[net:startWiFi]' ssid password
+    '[net:startWiFi]' ssid password false ip gateway subnet
     repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
       comment 'Slow blink while connecting'
       setUserLED true

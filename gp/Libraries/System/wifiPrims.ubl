@@ -1,8 +1,8 @@
 module 'WiFi Primitives' Comm
 author MicroBlocks
-version 1 2
+version 1 3
 tags network http server client
-description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server or Wifi libraries in the folder above.'
+description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server or Wifi libraries in the Network folder.'
 
 
 	// These primitives support WiFi
@@ -10,7 +10,7 @@ description 'Low level network primitives. You are probably looking for either t
 	// to other WiFi capable boards in the future.
 
 	spec 'r' '[net:hasWiFi]'				'has WiFi support'
-	spec ' ' '[net:startWiFi]'				'start WiFi _ password _ : be hotspot _' 'str str bool' 'SSID' 'MyPassword' true
+	spec ' ' '[net:startWiFi]'				'start WiFi _ password _ : be hotspot _ : IP _ gateway _ subnet _' 'str str bool str str str' 'SSID' 'MyPassword' true '192.168.1.42' '192.168.1.1' '255.255.255.0'
 	spec ' ' '[net:stopWiFi]'				'stop WiFi'
 	spec 'r' '[net:wifiStatus]'				'WiFi status'
 	spec 'r' '[net:myIPAddress]'			'my IP address'

@@ -65,7 +65,18 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 
 	char *networkName = obj2str(args[0]);
 	char *password = obj2str(args[1]);
+
 	serverStarted = false;
+
+	if (argCount > 3) { // static IP
+		IPAddress ip;
+		IPAddress gateway;
+		IPAddress subnet;
+		ip.fromString(obj2str(args[3]));
+		gateway.fromString(obj2str(args[4]));
+		subnet.fromString(obj2str(args[5]));
+		WiFi.config(ip, gateway, subnet);
+	}
 
 	#ifdef USE_WIFI101
 		WiFi.begin(networkName, password);
@@ -74,7 +85,6 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 
 		WiFi.persistent(false); // don't save network info to Flash
 		WiFi.mode(WIFI_OFF); // Kill the current connection, if any
-
 		if (createHotSpot) {
 			WiFi.mode(WIFI_AP); // access point & station mode
 			WiFi.softAP(networkName, password);
