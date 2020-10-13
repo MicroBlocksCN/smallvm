@@ -48,6 +48,20 @@
 #define COL2 14
 #define COL3 15
 
+#elif defined(V2)
+
+#define ROW1 21
+#define ROW2 22
+#define ROW3 23
+#define ROW4 24
+#define ROW5 25
+
+#define COL1 4
+#define COL2 7
+#define COL3 3
+#define COL4 6
+#define COL5 10
+
 #endif
 
 static int microBitDisplayBits = 0;
@@ -190,6 +204,138 @@ void updateMicrobitDisplay() {
 		break;
 	}
 	displayCycle = (displayCycle + 1) % 3;
+}
+
+#elif defined(V2)
+
+static int lightLevelPhase = 0;
+static uint32 lightLevelStartTime = 0;
+
+static int displaySnapshot = 0;
+static int displayCycle = 0;
+static int rowPins[5] = {ROW1, ROW2, ROW3, ROW4, ROW5};
+static int columnPins[5] = {COL1, COL3, COL5, COL2, COL4};
+static int columnOffsets[5] = {0, 2, 4, 1, 3};
+
+#define DISPLAY_BIT(n) (((displaySnapshot >> (n - 1)) & 1) ? LOW : HIGH)
+
+static void turnDisplayOn() {
+	for (int i = 0; i < 5; i++) {
+		setPinMode(columnPins[i], INPUT);
+		setPinMode(rowPins[i], OUTPUT);
+	}
+}
+
+static void turnDisplayOff() {
+	for (int i = 0; i < 5; i++) {
+		setPinMode(columnPins[i], INPUT);
+		setPinMode(rowPins[i], INPUT);
+	}
+}
+
+static int microsSince(uint32 startMicros) {
+	uint32 now = microsecs();
+	if (now < startMicros) return now; // clock wrap; measure from zero (rare)
+	return now - startMicros;
+}
+
+static int updateLightLevel() {
+	// Start or continue a light level reading.
+	// Return false while reading is in progress, true when complete.
+	// NOTE: This code is sensitive to ordering and timing details. If you change it, please
+	// test it carefully in various lightings, with the LED display both on and off.
+
+	char col[3] = {COL1, COL3, COL5}; // these are analog input pins 4, 3, 10
+
+	// During phase 1, the LED's are reverse-biased and the stray capacitances in the LED
+	// circuits are charged up. How long that takes depends on the state of the LED's during
+	// the last display cycle. The charge time needs to be long enough to fully charge all the
+	// capacitances even if they were fully discharged in the last display cycle.
+	const uint32 chargeTime = 200;
+
+	// During phase 2, charge leaks through the reverse-biased LED junctions.
+	// It leaks faster in bright light, slower in dim light, so longer discharge times
+	// yield greater low-light sensitivity. There is a tradeoff, however, since longer
+	// discharge times result in more display flicker when using the display and light
+	// sensor at the same time.
+	const uint32 dischargeTime = 4000; // over about 5000 causes noticeable flicker
+
+	if (0 == lightLevelPhase) { // start a light level reading
+		turnDisplayOff(); // put all rows and columns into input mode
+		// set row lines low
+		for (int i = 0; i < 5; i++) {
+			setPinMode(rowPins[i], OUTPUT);
+			digitalWrite(rowPins[i], LOW);
+		}
+		// set column lines high to reverse-bias the LED's
+		for (int i = 0; i < 3; i++) {
+			setPinMode(col[i], OUTPUT);
+			digitalWrite(col[i], HIGH);
+		}
+		lightLevelStartTime = microsecs();
+		lightLevelPhase = 1;
+		return false; // wait for next phase
+	} else if (1 == lightLevelPhase) {
+		if (microsSince(lightLevelStartTime) < chargeTime) return false; // keep waiting
+
+		// charging complete; switch colums to input mode to start discharge cycle
+		for (int i = 0; i < 3; i++) {
+			setPinMode(col[i], INPUT);
+		}
+		lightLevelStartTime = microsecs();
+		lightLevelPhase = 2;
+		return false; // wait for next phase
+	} else if (2 == lightLevelPhase) {
+		if (microsSince(lightLevelStartTime) < dischargeTime) return false; // keep waiting
+
+		int c1 = analogRead(COL1);
+		int c3 = analogRead(COL3);
+		int c5 = analogRead(COL5);
+		lightLevel = (3069 - (c1 + c3 + c5)) / 3;
+
+		// xxx not sure why this is needed:
+		analogRead(1); // read from another analog pin to free the last column read for output
+	}
+
+	// done!
+	lightLevelPhase = 0;
+	lightReadingRequested = false;
+	return true;
+}
+
+void updateMicrobitDisplay() {
+	// Update the display by cycling through the three columns, turning on the rows
+	// for each column. To minimize display artifacts, the display bits are snapshot
+	// at the start of each cycle and the snapshot is not changed during the cycle.
+
+	if (!microBitDisplayBits && !displaySnapshot) { // display is off
+		if (lightReadingRequested) updateLightLevel();
+		return;
+	}
+
+	if (0 == displayCycle) { // starting a new cycle
+		if (lightReadingRequested && !updateLightLevel()) return; // reading light level
+
+		if (displaySnapshot && !microBitDisplayBits) { // display just became off
+			displaySnapshot = 0;
+			turnDisplayOff();
+			return;
+		}
+
+		// take a snapshot of the display bits for the next cycle
+		displaySnapshot = microBitDisplayBits;
+		turnDisplayOn();
+	}
+	int previousColumn = (displayCycle > 0) ? (displayCycle - 1) : 4;
+	setPinMode(columnPins[previousColumn], INPUT); // turn off previous column
+
+	int offset = columnOffsets[displayCycle];
+	for (int i = 0; i < 5; i++) {
+		digitalWrite(rowPins[i], !DISPLAY_BIT(offset + (5 * i) + 1));
+	}
+	setPinMode(columnPins[displayCycle], OUTPUT);
+	digitalWrite(columnPins[displayCycle], LOW);
+	displayCycle = (displayCycle + 1) % 5;
 }
 
 #elif defined(ARDUINO_M5Atom_Matrix_ESP32)
@@ -337,7 +483,8 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 	uint32 oldIRQ = saveIRQState();
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
-			#if defined(NRF52_SERIES)
+			#if defined(V2)
+			#elif defined(NRF52_SERIES)
 				*neoPixelPinSet = neoPixelPinMask;
 				DELAY_CYCLES(50);
 				*neoPixelPinClr = neoPixelPinMask;
@@ -349,7 +496,8 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 			#endif
 		} else { // zero bit; timing goal: high 350 nsecs, low 800 nsecs
 			// This addressing mode gave the shortest pulse width.
-			#if defined(NRF52_SERIES)
+			#if defined(V2)
+			#elif defined(NRF52_SERIES)
 				*((int *) GPIO_SET) = neoPixelPinMask;
 				DELAY_CYCLES(18);
 				*((int *) GPIO_CLR) = neoPixelPinMask;
