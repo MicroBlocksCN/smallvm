@@ -68,7 +68,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 
 	serverStarted = false;
 
-	if (argCount > 3) { // static IP
+	if (argCount > 5) { // static IP
 		IPAddress ip;
 		IPAddress gateway;
 		IPAddress subnet;
@@ -243,15 +243,42 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 
 	if (!client) return falseObj;
 
+	// status
+	char *status = (char *) "200 OK";
+	if ((argCount > 0) && IS_TYPE(args[0], StringType)) status = obj2str(args[0]);
+
+	// body
+	int contentLength = -1; // no body
+	if (argCount > 1) {
+		if (IS_TYPE(args[1], StringType)) {
+			contentLength = strlen(obj2str(args[1]));
+		} else if (IS_TYPE(args[1], ByteArrayType)) {
+			contentLength = BYTES(args[1]);
+		}
+	}
+
+	// additional headers
+	char *extraHeaders = NULL;
+	if ((argCount > 2) && IS_TYPE(args[2], StringType)) {
+		extraHeaders = obj2str(args[2]);
+	}
+
+	// keep alive flag
+	int keepAlive = ((argCount > 3) && (trueObj == args[3]));
+keepAlive = true; // xxx
+
 	// send headers
-	char *status = ((argCount > 0) && IS_TYPE(args[0], StringType)) ?
-		obj2str(args[0]) : (char *) "200 OK";
 	client.print("HTTP/1.0 ");
 	client.println(status);
 	client.println("Access-Control-Allow-Origin: *");
-	if ((argCount > 2) && IS_TYPE(args[2], StringType)) {
-		char *headers = obj2str(args[2]);
-		client.print(headers);
+	if (keepAlive) client.println("Connection: keep-alive");
+	if (extraHeaders) {
+		client.print(extraHeaders);
+		if (10 != extraHeaders[strlen(extraHeaders) - 1]) client.println();
+	}
+	if (contentLength >= 0) {
+		client.print("Content-Length: ");
+		client.print(contentLength);
 	}
 	client.print("\r\n\r\n"); // end of headers
 
@@ -260,15 +287,18 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 		if (IS_TYPE(args[1], StringType)) {
 			char *body = obj2str(args[1]);
 			client.write(body, strlen(body));
-			client.println();
 		} else if (IS_TYPE(args[1], ByteArrayType)) {
 			uint8 *body = (uint8 *) &FIELD(args[1], 0);
 			client.write(body, BYTES(args[1]));
 		}
 	}
 
-	delay(20); // allow time for data to get sent
-	client.stop(); // close the connection
+	#if defined(ESP8266)
+		client.flush(20);
+	#else
+		delay(20); // write flush() not supported on ESP32; allow time for data to get sent
+	#endif
+	if (!keepAlive) client.stop(); // close the connection
 	return falseObj;
 }
 
