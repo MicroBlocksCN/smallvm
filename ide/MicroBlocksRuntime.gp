@@ -1253,7 +1253,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 	}
 	dataToSend = (toBinaryData (toArray msg))
 	while ((byteCount dataToSend) > 0) {
-		// Note: AdaFruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
+		// Note: Adafruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
 		// written in one call to writeSerialPort, so send smaller chunks
 		byteCount = (min 1000 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
@@ -1619,13 +1619,13 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 				addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
 			}
 			addLine menu
-			addItem menu 'AdaFruit Board' (action 'adaFruitMessage' this)
+			addItem menu 'Adafruit Board' (action 'adaFruitMessage' this)
 			popUpAtHand menu (global 'page')
 		}
 	} else {
 		(inform (join
 			(localized 'No boards found; is your board plugged in?') (newline)
-			(localized 'For AdaFruit boards, double-click reset button and try again.'))
+			(localized 'For Adafruit boards, double-click reset button and try again.'))
 			'No boards found')
 	}
 }
@@ -1840,7 +1840,7 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 }
 
 method adaFruitMessage SmallRuntime {
-	inform (localized 'For AdaFruit boards, double-click reset button and try again.')
+	inform (localized 'For Adafruit boards, double-click reset button and try again.')
 }
 
 // espressif board flashing

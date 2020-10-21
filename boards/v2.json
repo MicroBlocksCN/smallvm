@@ -1,0 +1,39 @@
+{
+  "build": {
+    "arduino":{
+      "ldscript": "nrf52_xxaa.ld"
+    },
+    "core": "nRF5",
+    "cpu": "cortex-m4",
+    "extra_flags": "-DV2 -DNRF52_SERIES",
+    "f_cpu": "64000000L",
+    "mcu": "nrf52832",
+    "variant": "v2"
+  },
+  "connectivity": [
+    "bluetooth"
+  ],
+  "debug": {
+    "onboard_tools": [
+      "cmsis-dap"
+    ],
+    "jlink_device": "nRF52832_xxAA",
+    "svd_path": "nrf52.svd"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "name": "V2",
+  "upload": {
+    "maximum_ram_size": 65536,
+    "maximum_size": 524288,
+    "protocol": "cmsis-dap",
+    "protocols": [
+      "cmsis-dap",
+      "mbed",
+      "jlink"
+    ]
+  },
+  "url": "https://unknown/",
+  "vendor": "Unknown"
+}

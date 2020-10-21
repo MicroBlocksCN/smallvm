@@ -236,6 +236,114 @@ static int readTemperature() {
 	return (*tempReg / 4) - 6; // callibrated at 26 degrees C using average of 3 micro:bits
 }
 
+#elif defined(V2)
+
+static int internalWireStarted = false;
+
+static void startInternalWire() {
+	Wire1.begin();
+	Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
+	internalWireStarted = true;
+}
+
+static int readInternalI2CReg(int deviceID, int reg) {
+	if (!internalWireStarted) startInternalWire();
+	Wire1.beginTransmission(deviceID);
+	Wire1.write(reg);
+	#if defined(ARDUINO_ARCH_ESP32)
+		int error = Wire1.endTransmission();
+	#else
+		int error = Wire1.endTransmission();
+//		int error = Wire1.endTransmission((bool) false);
+	#endif
+	if (error) return -error; // error; bad device ID?
+
+	#if defined(NRF51)
+		noInterrupts();
+		Wire1.requestFrom(deviceID, 1);
+		interrupts();
+	#else
+		Wire1.requestFrom(deviceID, 1);
+	#endif
+
+	return Wire1.available() ? Wire1.read() : 0;
+}
+
+static void writeInternalI2CReg(int deviceID, int reg, int value) {
+	if (!internalWireStarted) startInternalWire();
+	Wire1.beginTransmission(deviceID);
+	Wire1.write(reg);
+	Wire1.write(value);
+	Wire1.endTransmission();
+}
+
+typedef enum {
+	accel_unknown = -1,
+	accel_none = 0,
+	accel_MMA8653 = 1,
+	accel_LSM303 = 2,
+	accel_FXOS8700 = 3,
+} AccelerometerType_t;
+
+static AccelerometerType_t accelType = accel_unknown;
+
+#define MMA8653_ID 29
+#define LSM303_ID 25
+#define FXOS8700_ID 30
+
+static void startAccelerometer() {
+	if (0x5A == readInternalI2CReg(MMA8653_ID, 0x0D)) {
+		accelType = accel_MMA8653;
+		writeInternalI2CReg(MMA8653_ID, 0x2A, 1);
+	} else if (0x33 == readInternalI2CReg(LSM303_ID, 0x0F)) {
+		accelType = accel_LSM303;
+		writeInternalI2CReg(LSM303_ID, 0x20, 0x5F); // 100 Hz sample rate, low power, all axes
+	} else if (0xC7 == readInternalI2CReg(FXOS8700_ID, 0x0D)) {
+		accelType = accel_FXOS8700;
+		writeInternalI2CReg(FXOS8700_ID, 0x2A, 0); // turn off chip before configuring
+		writeInternalI2CReg(FXOS8700_ID, 0x2A, 0x1B); // 100 Hz sample rate, fast read, turn on
+	} else {
+		accelType = accel_none;
+	}
+	accelStarted = true;
+}
+
+static int readAcceleration(int registerID) {
+	if (!accelStarted) startAccelerometer();
+	int sign = -1;
+	int val = 0;
+	switch (accelType) {
+	case accel_MMA8653:
+		val = readInternalI2CReg(MMA8653_ID, registerID);
+		break;
+	case accel_LSM303:
+		if (1 == registerID) { val = readInternalI2CReg(LSM303_ID, 0x29); sign = 1; } // x-axis
+		if (3 == registerID) val = readInternalI2CReg(LSM303_ID, 0x2B); // y-axis
+		if (5 == registerID) val = readInternalI2CReg(LSM303_ID, 0x2D); // z-axis
+		break;
+	case accel_FXOS8700:
+		val = readInternalI2CReg(FXOS8700_ID, registerID);
+		break;
+	default:
+		val = 0;
+		break;
+	}
+	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
+	if (val < -127) val = -127; // keep in range -127 to 127
+	val = sign * ((val * 200) / 127); // scale to range 0-200 and multiply by sign
+	return val;
+}
+
+static int readTemperature() {
+	volatile int *startReg = (int *) 0x4000C000;
+	volatile int *readyReg = (int *) 0x4000C100;
+	volatile int *tempReg = (int *) 0x4000C508;
+
+	*startReg = 1;
+	while (!(*readyReg)) { /* busy wait */ }
+	return (*tempReg / 4) - 6; // callibrated at 26 degrees C using average of 3 micro:bits
+}
+
 #elif defined(ARDUINO_CALLIOPE_MINI)
 
 #define BMX055 24

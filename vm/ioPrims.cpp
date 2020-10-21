@@ -454,6 +454,15 @@ void restartSerial() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
+#elif defined(V2)
+
+	#define BOARD_TYPE "v2"
+	#define DIGITAL_PINS 41
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS DIGITAL_PINS
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+	#define PIN_LED 0 // xxx temporary
+
 #else // unknown board
 
 	#define BOARD_TYPE "Unknown Board"
