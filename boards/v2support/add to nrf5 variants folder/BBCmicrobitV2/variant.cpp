@@ -1,14 +1,12 @@
-/* Placeholder for V2
- * John Maloney
-*/
+/* Pins for micro:bit V2 */
 
 #include "variant.h"
 
 const uint32_t g_ADigitalPinMap[] = {
   // 0 - 4
-  2,  // A0 - left pad
-  3,  // A1 - middle pad
-  4,  // A2 - right pad
+  2,  // A0, LEFT PAD
+  3,  // A1, MIDDLE PAD
+  4,  // A2, RIGHT PAD
   31, // A3, COL3
   28, // A4, COL1
 
@@ -43,14 +41,17 @@ const uint32_t g_ADigitalPinMap[] = {
   24, // ROW4
   19, // ROW5
 
-  // 26 - 30
+  // 26 - 29
+  36, // LOGO (touch sensor)
+  0,  // SPEAKER (Note: Must use synthesized LF clock to make this pin available)
   20, // RUN_MIC
-  5,  // MIC_IN
-  0,  // KL27_DAC
+  5,  // A6, MIC_IN
+
+  // 30 - 31
   16, // I2C_INT_SDA
   8,  // I2C_INT_SCL
 
-  // 31 - 33
+  // 32 - 34
   25, // COMBINED_SENSOR_INT
   6,  // RX
   40, // TX, P1.08
