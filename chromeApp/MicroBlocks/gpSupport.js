@@ -795,18 +795,17 @@ async function GP_ReadFile(ext) {
 		});
 	}
 
-	var options = { type: 'open-file' };
-	if ('' != ext) {
-		options.accepts = [{ description: 'MicroBlocks', extensions: [ext] }];
-	};
-
 	if (hasChromeFilesystem()) {
-		options.type = 'openFile';
+		const options = {
+			type: 'openFile',
+			accepts: [{ description: 'MicroBlocks', extensions: [ext] }]
+		};
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
 	} else if (typeof window.showOpenFilePicker != 'undefined') { // Native Filesystem API
-		const fileHandle = await window.showOpenFilePicker(options).catch((e) => { console.log(e); });
-		if (!fileHandle || !fileHandle.getFile) return; // no file selected
-		const file = await fileHandle.getFile();
+		const options = { types: [{ description: 'MicroBlocks', accept: { 'text/plain': ['.' + ext] }}] };
+		const files = await window.showOpenFilePicker(options).catch((e) => { console.log(e); });
+		if (!files || (files.length == 0) || !files[0].getFile) return; // no file selected
+		const file = await files[0].getFile();
 		const contents = await file.arrayBuffer();
 		GP.droppedFiles.push({ name: file.name, contents: contents });
 	} else {
@@ -840,14 +839,12 @@ async function GP_writeFile(data, fName, ext) {
 
 	// Note: suggestedName is supported by the chrome.fileSystem API but not (yet) by the
 	// Native File System API in the browser. With luck, support for it will be added later.
-	var options = { type: 'save-file', suggestedName: fName };
-	if ('' != ext) {
-		options.accepts = [{ description: 'MicroBlocks', extensions: [ext] }];
-	};
-
 	if (hasChromeFilesystem()) {
-		options.type = 'saveFile';
-		options.suggestedName = fName + '.' + ext;
+		const options = {
+			type: 'saveFile',
+			suggestedName: fName + '.' + ext,
+			accepts: [{ description: 'MicroBlocks', extensions: [ext] }]
+		};
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
 	} else if (typeof window.showSaveFilePicker != 'undefined') { // Native Filesystem API
 		if (('' == ext) && (fName.lastIndexOf('.') > 0)) {
