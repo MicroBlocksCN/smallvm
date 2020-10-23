@@ -608,7 +608,7 @@ async function webSerialConnect() {
 	webSerialDisconnect();
 	GP_webSerialPort = await navigator.serial.requestPort({filters: vendorIDs}).catch((e) => { console.log(e); });
 	if (!GP_webSerialPort) return; // no serial port selected
-	await GP_webSerialPort.open({ baudrate: 115200 });
+	await GP_webSerialPort.open({ baudRate: 115200 });
 	GP_webSerialReader = await GP_webSerialPort.readable.getReader();
 	webSerialReadLoop();
 }
@@ -758,6 +758,7 @@ async function GP_setSerialPortDTR(flag) {
 		flag = (flag) ? true : false;
 		chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag }, ignore);
 	} else if (hasWebSerial()) {
+		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ dtr: flag }).catch(() => {});
 	}
 }
@@ -768,6 +769,7 @@ async function GP_setSerialPortRTS(flag) {
 		flag = (flag) ? true : false;
 		chrome.serial.setControlSignals(GP_serialPortID, { rts: flag }, ignore);
 	} else if (hasWebSerial()) {
+		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ rts: flag }).catch(() => {});
 	}
 }
@@ -801,9 +803,9 @@ async function GP_ReadFile(ext) {
 	if (hasChromeFilesystem()) {
 		options.type = 'openFile';
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
-	} else if (typeof window.chooseFileSystemEntries != 'undefined') { // Native Filesystem API
-		const fileHandle = await window.chooseFileSystemEntries(options).catch(() => {});
-		if (!fileHandle) return; // no file selected
+	} else if (typeof window.showOpenFilePicker != 'undefined') { // Native Filesystem API
+		const fileHandle = await window.showOpenFilePicker(options).catch((e) => { console.log(e); });
+		if (!fileHandle || !fileHandle.getFile) return; // no file selected
 		const file = await fileHandle.getFile();
 		const contents = await file.arrayBuffer();
 		GP.droppedFiles.push({ name: file.name, contents: contents });
@@ -811,7 +813,6 @@ async function GP_ReadFile(ext) {
 		GP_UploadFiles();
 		return;
 	}
-
 }
 
 function download(filename, text) {
@@ -848,11 +849,25 @@ async function GP_writeFile(data, fName, ext) {
 		options.type = 'saveFile';
 		options.suggestedName = fName + '.' + ext;
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
-	} else if (typeof window.chooseFileSystemEntries != 'undefined') { // Native Filesystem API
-		const fileHandle = await window.chooseFileSystemEntries(options).catch(() => {});
+	} else if (typeof window.showSaveFilePicker != 'undefined') { // Native Filesystem API
+		if (('' == ext) && (fName.lastIndexOf('.') > 0)) {
+			// extract extension from fName if not provided
+			ext = fName.substr(fName.lastIndexOf('.'));
+		}
+		options = {};
+		if ('' != ext) {
+			if ('.' != ext[0]) ext = '.' + ext;
+			if (('.hex' == ext) || ('.uf2' == ext)) {
+				options = { fileName: fName, types: [{ accept: { 'application/octet-stream': [ext] } }] };
+
+			} else {
+				options = { fileName: fName, types: [{ accept: { 'text/plain': [ext] } }] };
+			}
+		}
+		const fileHandle = await window.showSaveFilePicker(options).catch((e) => { console.log(e); });
 		if (!fileHandle) return; // no file selected
 		const writable = await fileHandle.createWritable();
-		await writable.write(new Blob([data], {type: 'text/plain'}));
+		await writable.write(new Blob([data]));
 		await writable.close();
 	} else {
 		download(fName + '.' + ext, data);
