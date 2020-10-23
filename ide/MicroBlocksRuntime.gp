@@ -877,7 +877,7 @@ method installBoardSpecificBlocks SmallRuntime {
 		importEmbeddedLibrary scripter 'Tone'
 		importEmbeddedLibrary scripter 'Basic Sensors'
 		importEmbeddedLibrary scripter 'LED Display'
-	} ('micro:bit' == boardType) {
+	} (or ('micro:bit' == boardType) ('micro:bit v2' == boardType)) {
 		importEmbeddedLibrary scripter 'Basic Sensors'
 		importEmbeddedLibrary scripter 'LED Display'
 	} ('Calliope' == boardType) {

@@ -1019,6 +1019,15 @@ method importLibrary MicroBlocksScripter {
 }
 
 method importEmbeddedLibrary MicroBlocksScripter libName {
+	if ('Browser' == (platform)) {
+		for filePath (listFiles 'Libraries') {
+			if (endsWith filePath (join libName '.ubl')) {
+				importLibraryFromFile this (join 'Libraries/' filePath)
+				return
+			}
+		}
+		return
+	}
 	for filePath (listEmbeddedFiles) {
 		if (endsWith filePath (join libName '.ubl')) {
 			importLibraryFromFile this (join '//' filePath)
@@ -1127,10 +1136,9 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 	if (isEmpty fileName) { return }
 	if (not (endsWith fileName '.ubl' )) { fileName = (join fileName '.ubl') }
   }
-  libData = (codeString (main mbProject) mbProject libName)
   if ('Browser' == (platform)) {
 	libName = (prompt (global 'page') (localized 'Library name?') (localized 'my library'))
-	browserWriteFile libData libName 'ubl'
+	browserWriteFile (codeString (main mbProject) mbProject libName) libName 'ubl'
   } else {
 	libName = (withoutExtension (filePart fileName))
 	writeFile fileName (codeString (main mbProject) mbProject libName)
