@@ -1023,8 +1023,9 @@ void vmLoop() {
 	while (true) {
 		if (count-- < 0) {
 			// do background VM tasks once every N VM loop cycles
-			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(V2)
-				updateMicrobitDisplay();
+			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
+				defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+					updateMicrobitDisplay();
 			#endif
 			checkButtons();
 			processMessage();

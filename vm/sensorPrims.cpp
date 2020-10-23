@@ -236,7 +236,7 @@ static int readTemperature() {
 	return (*tempReg / 4) - 6; // callibrated at 26 degrees C using average of 3 micro:bits
 }
 
-#elif defined(V2)
+#elif defined(ARDUINO_BBC_MICROBIT_V2)
 
 static int internalWireStarted = false;
 

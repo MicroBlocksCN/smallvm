@@ -48,7 +48,7 @@
 #define COL2 14
 #define COL3 15
 
-#elif defined(V2)
+#elif defined(ARDUINO_BBC_MICROBIT_V2)
 
 #define ROW1 21
 #define ROW2 22
@@ -206,7 +206,7 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 3;
 }
 
-#elif defined(V2)
+#elif defined(ARDUINO_BBC_MICROBIT_V2)
 
 static int lightLevelPhase = 0;
 static uint32 lightLevelStartTime = 0;
@@ -218,6 +218,14 @@ static int columnPins[5] = {COL1, COL3, COL5, COL2, COL4};
 static int columnOffsets[5] = {0, 2, 4, 1, 3};
 
 #define DISPLAY_BIT(n) (((displaySnapshot >> (n - 1)) & 1) ? LOW : HIGH)
+
+static void setHighDrive(int pin) {
+	// xxx experimental; remove if not used
+	if ((pin < 0) || (pin >= PINS_COUNT)) return;
+	pin = g_ADigitalPinMap[pin];
+	NRF_GPIO_Type* port = (NRF_GPIO_Type*) ((pin < 32) ? 0x50000000 : 0x50000300);
+	port->PIN_CNF[pin & 0x1F] |= (3 << 8); // high drive 1 and 0
+}
 
 static void turnDisplayOn() {
 	for (int i = 0; i < 5; i++) {
@@ -483,7 +491,7 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 	uint32 oldIRQ = saveIRQState();
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
-			#if defined(V2)
+			#if defined(ARDUINO_BBC_MICROBIT_V2)
 			#elif defined(NRF52_SERIES)
 				*neoPixelPinSet = neoPixelPinMask;
 				DELAY_CYCLES(50);
@@ -496,7 +504,7 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 			#endif
 		} else { // zero bit; timing goal: high 350 nsecs, low 800 nsecs
 			// This addressing mode gave the shortest pulse width.
-			#if defined(V2)
+			#if defined(ARDUINO_BBC_MICROBIT_V2)
 			#elif defined(NRF52_SERIES)
 				*((int *) GPIO_SET) = neoPixelPinMask;
 				DELAY_CYCLES(18);

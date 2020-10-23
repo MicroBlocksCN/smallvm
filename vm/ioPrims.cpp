@@ -72,6 +72,11 @@ void hardwareInit() {
 	#ifdef USE_NRF5x_CLOCK
 		initClock_NRF5x();
 	#endif
+	#if defined(ARDUINO_BBC_MICROBIT_V2)
+		// Use synthesized LF clock to free up pin P0.00, the speaker pin
+		NRF_CLOCK->LFCLKSRC = CLOCK_LFCLKSRC_SRC_Synth;
+		NRF_CLOCK->TASKS_LFCLKSTART = 1;
+	#endif
 	initPins();
 	initRandomSeed();
 	turnOffInternalNeoPixels();
@@ -149,6 +154,15 @@ void restartSerial() {
 	// Button B: pin 11
 	// Analog pins: The micro:bit does not have dedicated analog input pins;
 	// the analog pins are aliases for digital pins 0-4 and 10.
+
+#elif defined(ARDUINO_BBC_MICROBIT_V2)
+
+	#define BOARD_TYPE "micro:bit v2"
+	#define DIGITAL_PINS 30
+	#define ANALOG_PINS 7
+	#define TOTAL_PINS DIGITAL_PINS
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
+	#define DEFAULT_TONE_PIN 27
 
 #elif defined(ARDUINO_CALLIOPE_MINI)
 
@@ -453,15 +467,6 @@ void restartSerial() {
 		1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
-
-#elif defined(V2)
-
-	#define BOARD_TYPE "v2"
-	#define DIGITAL_PINS 41
-	#define ANALOG_PINS 6
-	#define TOTAL_PINS DIGITAL_PINS
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
-	#define PIN_LED 0 // xxx temporary
 
 #else // unknown board
 
@@ -792,7 +797,8 @@ void primDigitalSet(int pinNum, int flag) {
 // User LED
 
 void primSetUserLED(OBJ *args) {
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
+		defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_BBC_MICROBIT_V2)
 		// Special case: Plot or unplot one LED in the LED matrix.
 		OBJ coords[2] = { int2obj(3), int2obj(1) };
 		if (trueObj == args[0]) {
