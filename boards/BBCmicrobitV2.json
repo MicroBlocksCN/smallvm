@@ -1,14 +1,14 @@
 {
   "build": {
     "arduino":{
-      "ldscript": "nrf52_xxaa.ld"
+      "ldscript": "nrf52833_xxaa.ld"
     },
     "core": "nRF5",
     "cpu": "cortex-m4",
-    "extra_flags": "-DV2 -DNRF52_SERIES",
+    "extra_flags": "-DARDUINO_BBC_MICROBIT_V2 -DNRF52_SERIES",
     "f_cpu": "64000000L",
     "mcu": "nrf52832",
-    "variant": "v2"
+    "variant": "BBCmicrobitV2"
   },
   "connectivity": [
     "bluetooth"
@@ -23,9 +23,9 @@
   "frameworks": [
     "arduino"
   ],
-  "name": "V2",
+  "name": "BBCmicrobitV2",
   "upload": {
-    "maximum_ram_size": 65536,
+    "maximum_ram_size": 131072,
     "maximum_size": 524288,
     "protocol": "cmsis-dap",
     "protocols": [
