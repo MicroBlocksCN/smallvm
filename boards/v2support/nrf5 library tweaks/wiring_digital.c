@@ -24,14 +24,15 @@
 extern "C" {
 #endif
 
-#define NRF_P1		((NRF_GPIO_Type*) 0x50000300UL)
+#define GPIO_PORT0 ((NRF_GPIO_Type*) 0x50000000UL)
+#define GPIO_PORT1 ((NRF_GPIO_Type*) 0x50000300UL)
 
 static inline NRF_GPIO_Type * decodePin(uint32_t *pin) {
     if (*pin < 32) {
-        return NRF_P0;
+        return GPIO_PORT0;
     } else {
         *pin = *pin & 0x1F; // pin number is 5 lowest bits
-        return NRF_P1;
+        return GPIO_PORT1;
     }
 }
 

@@ -29,13 +29,14 @@ extern "C" {
 
 #include "Wire.h"
 
-#define NRF_P1 ((NRF_GPIO_Type*) 0x50000300UL)
+#define GPIO_PORT0 ((NRF_GPIO_Type*) 0x50000000UL)
+#define GPIO_PORT1 ((NRF_GPIO_Type*) 0x50000300UL)
 
 static volatile uint32_t* pincfg_reg(uint32_t pin) {
     if (pin < 32) {
-        return &NRF_P0->PIN_CNF[pin];
+        return &GPIO_PORT0->PIN_CNF[pin];
     } else {
-		return &NRF_P1->PIN_CNF[pin & 0x1F];
+		return &GPIO_PORT1->PIN_CNF[pin & 0x1F];
     }
 }
 
