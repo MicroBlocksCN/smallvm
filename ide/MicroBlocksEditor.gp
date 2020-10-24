@@ -807,6 +807,8 @@ method projectMenu MicroBlocksEditor {
   addItem menu 'Open' 'openProjectMenu'
   if ('connected' != (updateConnection (smallRuntime))) {
 	addItem menu 'Open from board' 'openFromBoard'
+  } else {
+  	checkBoardType (smallRuntime)
   }
   addItem menu 'Save' 'saveProjectToFile'
   if (devMode) {

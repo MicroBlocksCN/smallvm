@@ -813,6 +813,13 @@ method showAboutBox SmallRuntime {
 		(localized 'More info at http://microblocks.fun')) 'About MicroBlocks')
 }
 
+method checkBoardType SmallRuntime {
+	if (and (isNil boardType) (notNil port)) {
+		vmVersion = nil
+		getVersion this
+	}
+}
+
 method getVersion SmallRuntime {
 	sendMsg this 'getVersionMsg'
 }
