@@ -40,8 +40,8 @@
 #if defined(NRF51)
   #define OBJSTORE_BYTES 2500 // max is 2612
 #elif defined(ARDUINO_BBC_MICROBIT_V2)
-  #define OBJSTORE_BYTES 96000
-#elif defined(NRF52_SERIES)
+  #define OBJSTORE_BYTES 92000
+#elif defined(NRF52)
   #define OBJSTORE_BYTES 160000 // max is 219000
 #elif defined(ARDUINO_ARCH_SAMD)
   #define OBJSTORE_BYTES 16000

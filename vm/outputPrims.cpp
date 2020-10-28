@@ -454,7 +454,8 @@ static int neoPixelPinMask = 0;
 static volatile int *neoPixelPinSet = NULL;
 static volatile int *neoPixelPinClr = NULL;
 
-#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(NRF51) || defined(NRF52_SERIES)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
+	defined(NRF51) || defined(NRF52)
 
 #define GPIO_SET 0x50000508
 #define GPIO_CLR 0x5000050C
@@ -464,8 +465,6 @@ static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#if defined(ARDUINO_CALLIOPE_MINI)
 			pinNum = 26; // internal NeoPixel pin on Calliope
-		#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
-			pinNum = 8; // internal NeoPixel pin on Circuit Playground Express
 		#elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
 			pinNum = 8; // internal NeoPixel pin on Circuit Playground (Bluefruit)
 		#elif defined(ARDUINO_NRF52840_CLUE)
@@ -492,7 +491,7 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
 			#if defined(ARDUINO_BBC_MICROBIT_V2)
-			#elif defined(NRF52_SERIES)
+			#elif defined(NRF52)
 				*neoPixelPinSet = neoPixelPinMask;
 				DELAY_CYCLES(50);
 				*neoPixelPinClr = neoPixelPinMask;
@@ -505,7 +504,7 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 		} else { // zero bit; timing goal: high 350 nsecs, low 800 nsecs
 			// This addressing mode gave the shortest pulse width.
 			#if defined(ARDUINO_BBC_MICROBIT_V2)
-			#elif defined(NRF52_SERIES)
+			#elif defined(NRF52)
 				*((int *) GPIO_SET) = neoPixelPinMask;
 				DELAY_CYCLES(18);
 				*((int *) GPIO_CLR) = neoPixelPinMask;

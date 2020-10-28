@@ -10,6 +10,11 @@
 #ifndef _MEM_H_
 #define _MEM_H_
 
+// Unify Arduino IDE and PlatformIO
+#if defined(NRF52_SERIES) && !defined(NRF52)
+  #define NRF52 1
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

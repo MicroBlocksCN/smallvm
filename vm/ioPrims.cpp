@@ -26,7 +26,7 @@ static void initRandomSeed(void); // forward reference
 
 // Timing Functions and Hardware Initialization
 
-#if defined(NRF51) || defined(NRF52_SERIES)
+#if defined(NRF51) || defined(NRF52)
 
 #define USE_NRF5x_CLOCK true
 
@@ -886,7 +886,7 @@ static void initRandomSeed() {
 		randomSeed(RANDOM_REG32);
 	#elif defined(ARDUINO_ARCH_ESP32)
 		randomSeed(esp_random());
-	#elif defined(NRF51) || defined(NRF52_SERIES)
+	#elif defined(NRF51) || defined(NRF52)
 		#define RNG_BASE 0x4000D000
 		#define RNG_START (RNG_BASE)
 		#define RNG_STOP (RNG_BASE + 4)
@@ -914,7 +914,7 @@ static void initRandomSeed() {
 
 // Servo and Tone
 
-#if defined(NRF51) || defined(NRF52_SERIES)
+#if defined(NRF51) || defined(NRF52)
 
 // NRF5 Servo State
 
@@ -1080,7 +1080,7 @@ void stopServos() {
 
 // Tone Generation
 
-#if defined(NRF51) || defined(NRF52_SERIES)
+#if defined(NRF51) || defined(NRF52)
 
 static void setTone(int pin, int frequency) {
 	tonePin = pin;

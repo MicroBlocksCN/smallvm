@@ -32,7 +32,7 @@
 
 // flash operations for supported platforms
 
-#if defined(NRF51) || defined(NRF52_SERIES) || defined(ARDUINO_NRF52_PRIMO)
+#if defined(NRF51) || defined(NRF52) || defined(ARDUINO_NRF52_PRIMO)
 	#include "nrf.h" // nRF51 and nRF52
 
 	#if defined(NRF51)
@@ -43,7 +43,7 @@
 		// Primo: SoftDevice: 0-112k; App: 112k-168k; Persistent Mem: 168k-488k; Boot: 488k-512k
 		#define START (168 * 1024)
 		#define HALF_SPACE (160 * 1024)
-	#elif defined(NRF52_SERIES)
+	#elif defined(NRF52)
 		// nrf52832: SoftDevice + app: 0-300k; Persistent Mem: 300-436k; User data: 436k-464k; Boot: 464k-512k
 		#define START (300 * 1024)
 		#define HALF_SPACE (60 * 1024)
