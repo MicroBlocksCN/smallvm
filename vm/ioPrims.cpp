@@ -158,7 +158,7 @@ void restartSerial() {
 #elif defined(ARDUINO_BBC_MICROBIT_V2)
 
 	#define BOARD_TYPE "micro:bit v2"
-	#define DIGITAL_PINS 30
+	#define DIGITAL_PINS 29
 	#define ANALOG_PINS 7
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
@@ -555,6 +555,60 @@ int mapDigitalPinNum(int userPinNum) {
 	return userPinNum;
 }
 
+#if defined(ARDUINO_BBC_MICROBIT_V2)
+
+static int readMicrophone() {
+	const int micPin = SAADC_CH_PSELP_PSELP_AnalogInput3;
+	const int gain = SAADC_CH_CONFIG_GAIN_Gain4;
+	volatile int16_t value = 0;
+
+	NRF_SAADC->RESOLUTION = SAADC_RESOLUTION_VAL_10bit;
+	NRF_SAADC->ENABLE = 1;
+
+	for (int i = 0; i < 8; i++) {
+		NRF_SAADC->CH[i].PSELN = SAADC_CH_PSELP_PSELP_NC;
+		NRF_SAADC->CH[i].PSELP = SAADC_CH_PSELP_PSELP_NC;
+	}
+	NRF_SAADC->CH[0].CONFIG = ((SAADC_CH_CONFIG_RESP_Bypass     << SAADC_CH_CONFIG_RESP_Pos)   & SAADC_CH_CONFIG_RESP_Msk)
+							| ((SAADC_CH_CONFIG_RESP_Bypass     << SAADC_CH_CONFIG_RESN_Pos)   & SAADC_CH_CONFIG_RESN_Msk)
+							| ((gain                            << SAADC_CH_CONFIG_GAIN_Pos)   & SAADC_CH_CONFIG_GAIN_Msk)
+							| ((SAADC_CH_CONFIG_REFSEL_Internal << SAADC_CH_CONFIG_REFSEL_Pos) & SAADC_CH_CONFIG_REFSEL_Msk)
+							| ((SAADC_CH_CONFIG_TACQ_3us        << SAADC_CH_CONFIG_TACQ_Pos)   & SAADC_CH_CONFIG_TACQ_Msk)
+							| ((SAADC_CH_CONFIG_MODE_SE         << SAADC_CH_CONFIG_MODE_Pos)   & SAADC_CH_CONFIG_MODE_Msk);
+
+	NRF_SAADC->CH[0].PSELN = micPin;
+	NRF_SAADC->CH[0].PSELP = micPin;
+
+	NRF_SAADC->RESULT.PTR = (uint32_t) &value;
+	NRF_SAADC->RESULT.MAXCNT = 1; // read a single sample
+
+	NRF_SAADC->TASKS_START = 1;
+	while (!NRF_SAADC->EVENTS_STARTED);
+	NRF_SAADC->EVENTS_STARTED = 0;
+
+	NRF_SAADC->TASKS_SAMPLE = 1;
+	while (!NRF_SAADC->EVENTS_END);
+	NRF_SAADC->EVENTS_END = 0;
+
+	NRF_SAADC->TASKS_STOP = 1;
+	while (!NRF_SAADC->EVENTS_STOPPED);
+	NRF_SAADC->EVENTS_STOPPED = 0;
+
+	NRF_SAADC->ENABLE = 0;
+
+	if (value < 0) value = 0;
+	return value;
+}
+
+static void setHighDrive(int pin) {
+	if ((pin < 0) || (pin >= PINS_COUNT)) return;
+	pin = g_ADigitalPinMap[pin];
+	NRF_GPIO_Type* port = (NRF_GPIO_Type*) ((pin < 32) ? 0x50000000 : 0x50000300);
+	port->PIN_CNF[pin & 0x1F] |= (3 << 8); // high drive 1 and 0
+}
+
+#endif
+
 // Pin IO Primitives
 
 OBJ primAnalogPins(OBJ *args) { return int2obj(ANALOG_PINS); }
@@ -564,6 +618,10 @@ OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 OBJ primAnalogRead(int argCount, OBJ *args) {
 	if (!isInt(args[0])) { fail(needsIntegerError); return int2obj(0); }
 	int pinNum = obj2int(args[0]);
+
+	#if defined(ARDUINO_BBC_MICROBIT_V2)
+		if (6 == pinNum) return int2obj(readMicrophone());
+	#endif
 	#ifdef ARDUINO_CITILAB_ED1
 		if ((100 <= pinNum) && (pinNum <= 139)) {
 			pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
@@ -791,6 +849,11 @@ void primDigitalSet(int pinNum, int flag) {
 			((18 <= pinNum) && (pinNum <= 23))) return;
 	#endif
 	SET_MODE(pinNum, OUTPUT);
+
+	#if defined(ARDUINO_BBC_MICROBIT_V2)
+		if (28 == pinNum) setHighDrive(pinNum); // use high drive for microphone
+	#endif
+
 	digitalWrite(pinNum, (flag ? HIGH : LOW));
 }
 
