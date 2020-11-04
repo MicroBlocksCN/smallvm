@@ -176,11 +176,14 @@ void restartSerial() {
 	// See variant.cpp in variants/Calliope folder for a detailed pin map.
 	// Pins 0-19 are for the large pads and 26 pin connector
 	// Button A: pin 20
-	// Microphone: pin 21
 	// Button B: pin 22
 	// Motor/Speaker: pins 23-25
-	// Analog pins: The Calliope does not have dedicated analog input pins;
-	// the analog pins are aliases for digital pins 6, 1, 2, 21 (microphone), 4, 5.
+	// NeoPixel: pin 26
+	// Analog pins:
+	//	A0 - microphone
+	//	A1, A2 - pads 1 and 2
+	//	A3, A4, A5 - connector pins 4, 5, and 6
+	//	A6, A7 - connector pins 17, 18 and Grove connector 2
 
 #elif defined(ARDUINO_SINOBIT)
 
