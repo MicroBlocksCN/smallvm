@@ -167,10 +167,10 @@ void restartSerial() {
 #elif defined(ARDUINO_CALLIOPE_MINI)
 
 	#define BOARD_TYPE "Calliope"
-	#define DIGITAL_PINS 26
-	#define ANALOG_PINS 6
+	#define DIGITAL_PINS 27
+	#define ANALOG_PINS 8
 	#define TOTAL_PINS DIGITAL_PINS
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7};
 	#define DEFAULT_TONE_PIN 25
 
 	// See variant.cpp in variants/Calliope folder for a detailed pin map.
