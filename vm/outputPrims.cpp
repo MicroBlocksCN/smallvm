@@ -418,13 +418,47 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 
 // NeoPixel Support
 
-#define DELAY_CYCLES(n) { \
-	__asm__ __volatile__ ( \
-		".rept " #n " \n\t" \
-		"nop \n\t" \
-		".endr \n\t" \
-	); \
+#if defined(ARDUINO_NRF52_PRIMO)
+
+static inline __attribute__((always_inline)) void DELAY_CYCLES(uint32_t cnt) {
+	asm volatile (
+			"MOVS r1, %[ucnt]\n"
+		"1:\n"
+			"SUBS r1, #1\n"
+			"BGT 1b\n"
+		:
+		: [ucnt] "l" (cnt)
+		: "r1"
+	);
 }
+
+#elif defined(NRF52)
+
+static inline __attribute__((always_inline)) void DELAY_CYCLES(uint32_t cnt) {
+	asm volatile (
+		".syntax unified\n"
+			"MOVS r1, %[ucnt]\n"
+		"1:\n"
+			"SUBS r1, #1\n"
+			"BGT 1b\n"
+		".syntax divided\n"
+		:
+		: [ucnt] "l" (cnt)
+		: "r1"
+	);
+}
+
+#else
+
+	#define DELAY_CYCLES(n) { \
+		__asm__ __volatile__ ( \
+			".rept " #n " \n\t" \
+			"nop \n\t" \
+			".endr \n\t" \
+		); \
+	}
+
+#endif
 
 inline uint32 saveIRQState(void) {
 	uint32 pmask = 0;
@@ -473,7 +507,11 @@ static void initNeoPixelPin(int pinNum) {
 			pinNum = 0; // use pin 0 on others
 		#endif
 	}
-	neoPixelPinMask = 1 << g_ADigitalPinMap[pinNum];
+	#if defined(ARDUINO_NRF52_PRIMO)
+		neoPixelPinMask = digitalPinToBitMask(pinNum);
+	#else
+		neoPixelPinMask = 1 << g_ADigitalPinMap[pinNum];
+	#endif
 	neoPixelPinSet = (int *) GPIO_SET;
 	neoPixelPinClr = (int *) GPIO_CLR;
 
@@ -490,12 +528,11 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 	uint32 oldIRQ = saveIRQState();
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
-			#if defined(ARDUINO_BBC_MICROBIT_V2)
-			#elif defined(NRF52)
-				*neoPixelPinSet = neoPixelPinMask;
-				DELAY_CYCLES(50);
-				*neoPixelPinClr = neoPixelPinMask;
-				DELAY_CYCLES(16);
+			#if defined(NRF52)
+				*((int *) GPIO_SET) = neoPixelPinMask;
+				DELAY_CYCLES(11);
+				*((int *) GPIO_CLR) = neoPixelPinMask;
+				DELAY_CYCLES(3);
 			#else
 				*neoPixelPinSet = neoPixelPinMask;
 				DELAY_CYCLES(8);
@@ -503,12 +540,11 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 			#endif
 		} else { // zero bit; timing goal: high 350 nsecs, low 800 nsecs
 			// This addressing mode gave the shortest pulse width.
-			#if defined(ARDUINO_BBC_MICROBIT_V2)
-			#elif defined(NRF52)
+			#if defined(NRF52)
 				*((int *) GPIO_SET) = neoPixelPinMask;
-				DELAY_CYCLES(18);
+				DELAY_CYCLES(3);
 				*((int *) GPIO_CLR) = neoPixelPinMask;
-				DELAY_CYCLES(42);
+				DELAY_CYCLES(14);
 			#else
 				*((int *) GPIO_SET) = neoPixelPinMask;
 				*((int *) GPIO_CLR) = neoPixelPinMask;
