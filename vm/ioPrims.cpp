@@ -610,6 +610,12 @@ static void setHighDrive(int pin) {
 	port->PIN_CNF[pin & 0x1F] |= (3 << 8); // high drive 1 and 0
 }
 
+static void stopPWM() {
+	NRF_PWM0->TASKS_STOP = 1;
+	NRF_PWM1->TASKS_STOP = 1;
+	NRF_PWM2->TASKS_STOP = 1;
+};
+
 #endif
 
 // Pin IO Primitives
@@ -734,8 +740,13 @@ void primAnalogWrite(OBJ *args) {
 			SET_MODE(pinNum, OUTPUT);
 		}
 	#else
+		int modeChanged = (OUTPUT != currentMode[pinNum]);
 		SET_MODE(pinNum, OUTPUT);
+		#if defined(ARDUINO_BBC_MICROBIT_V2)
+			if ((27 == pinNum) && modeChanged) setHighDrive(pinNum); // use high drive for speaker
+		#endif
 	#endif
+
 	#if defined(ESP32)
 		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 DAC pins
 			dacWrite(pinNum, value);
@@ -854,7 +865,10 @@ void primDigitalSet(int pinNum, int flag) {
 	SET_MODE(pinNum, OUTPUT);
 
 	#if defined(ARDUINO_BBC_MICROBIT_V2)
-		if (28 == pinNum) setHighDrive(pinNum); // use high drive for microphone
+		if (28 == pinNum) {
+			stopPWM();
+			setHighDrive(pinNum); // use high drive for microphone
+		}
 	#endif
 
 	digitalWrite(pinNum, (flag ? HIGH : LOW));
