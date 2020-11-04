@@ -40,9 +40,9 @@
 		#define START (96 * 1024)
 		#define HALF_SPACE (80 * 1024)
 	#elif defined(ARDUINO_NRF52_PRIMO)
-		// Primo: SoftDevice: 0-112k; App: 112k-168k; Persistent Mem: 168k-488k; Boot: 488k-512k
-		#define START (168 * 1024)
-		#define HALF_SPACE (160 * 1024)
+		// Primo: SoftDevice: 0-112k; App: 112k-210k; Persistent Mem: 210k-488k; Boot: 488k-512k
+		#define START (210 * 1024)
+		#define HALF_SPACE (100 * 1024)
 	#elif defined(NRF52)
 		// nrf52832: SoftDevice + app: 0-300k; Persistent Mem: 300-436k; User data: 436k-464k; Boot: 464k-512k
 		#define START (300 * 1024)
