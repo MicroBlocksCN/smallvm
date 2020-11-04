@@ -254,7 +254,6 @@ static int readInternalI2CReg(int deviceID, int reg) {
 		int error = Wire1.endTransmission();
 	#else
 		int error = Wire1.endTransmission();
-//		int error = Wire1.endTransmission((bool) false);
 	#endif
 	if (error) return -error; // error; bad device ID?
 
