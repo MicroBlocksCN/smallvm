@@ -261,11 +261,11 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 	char *extraHeaders = NULL;
 	if ((argCount > 2) && IS_TYPE(args[2], StringType)) {
 		extraHeaders = obj2str(args[2]);
+		if (0 == strlen(extraHeaders)) extraHeaders = NULL; // empty string
 	}
 
 	// keep alive flag
 	int keepAlive = ((argCount > 3) && (trueObj == args[3]));
-keepAlive = true; // xxx
 
 	// send headers
 	client.print("HTTP/1.0 ");
