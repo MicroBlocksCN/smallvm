@@ -1,10 +1,9 @@
 module DHT Input
 author MicroBlocks
-version 1 0
+version 1 1 
+tags sensor dht11 dht22 temperature humidity 
 description 'Support for the DHT11 and DHT22 environmental sensors. These sensors provide temperature and humidity readings.'
-tags sensor dht11 dht22 temperature humidity
-
-variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime
+variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime 
 
 	spec 'r' 'temperature_DHT11' 'temperature (Celsius) DHT11 pin _' 'auto' 4
 	spec 'r' 'humidity_DHT11' 'humidity DHT11 pin _' 'auto' 4
@@ -14,6 +13,15 @@ variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime
 	spec 'r' '_dhtChecksumOkay' '_dhtChecksumOkay' 'any'
 	spec ' ' '_dhtUpdate' '_dhtUpdate _ isDHT11 _' 'auto bool any' 4 true
 	spec 'r' '_dhtReady' '_dhtReady' 'any'
+
+to '_dhtChecksumOkay' {
+  local 'checksum' 0
+  for i 4 {
+    checksum += (at i _dhtData)
+  }
+  checksum = (checksum & 255)
+  return (checksum == (at 5 _dhtData))
+}
 
 to '_dhtReadData' pin {
   comment 'Create DHT data array the first time'
@@ -61,13 +69,9 @@ to '_dhtReadData' pin {
   }
 }
 
-to '_dhtChecksumOkay' {
-  local 'checksum' 0
-  for i 4 {
-    checksum += (at i _dhtData)
-  }
-  checksum = (checksum & 255)
-  return (checksum == (at 5 _dhtData))
+to '_dhtReady' {
+  local 'elapsed' ((millisOp) - _dhtLastReadTime)
+  return (or (elapsed < 0) (elapsed > 2000))
 }
 
 to '_dhtUpdate' pin isDHT11 {
@@ -91,9 +95,14 @@ to '_dhtUpdate' pin isDHT11 {
   }
 }
 
-to '_dhtReady' {
-  local 'elapsed' ((millisOp) - _dhtLastReadTime)
-  return (or (elapsed < 0) (elapsed > 2000))
+to humidity_DHT11 pin {
+  '_dhtUpdate' pin true
+  return _dht_humidity
+}
+
+to humidity_DHT22 pin {
+  '_dhtUpdate' pin false
+  return _dht_humidity
 }
 
 to temperature_DHT11 pin {
@@ -101,17 +110,8 @@ to temperature_DHT11 pin {
   return _dht_temperature
 }
 
-to 'humidity_DHT11' pin {
-  '_dhtUpdate' pin true
-  return _dht_humidity
-}
-
 to temperature_DHT22 pin {
   '_dhtUpdate' pin false
   return _dht_temperature
 }
 
-to humidity_DHT22 pin {
-  '_dhtUpdate' pin false
-  return _dht_humidity
-}
