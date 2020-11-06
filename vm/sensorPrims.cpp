@@ -728,6 +728,49 @@ static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
 
 #endif // Capacitive Touch Primitives
 
+// DHT Humidity/Temperature Sensor
+
+static uint8_t dhtData[5];
+
+static int readDHTData(int pin) {
+	// Read DHT data into dhtData. Return true if successful, false if timeout.
+
+	// read the start pulse
+	setPinMode(pin, INPUT);
+	int pulseWidth = pulseIn(pin, HIGH, 2000);
+	if (!pulseWidth) return false; // timeout
+
+	for (int i = 0; i < 5; i++) {
+		int byte = 0;
+		for (int shift = 7; shift >= 0; shift--) {
+			pulseWidth = pulseIn(pin, HIGH, 1000);
+			if (!pulseWidth) return false; // timeout
+			if (pulseWidth > 40) byte |= (1 << shift);
+		}
+		dhtData[i] = byte;
+	}
+	return true;
+}
+
+static OBJ primReadDHT(int argCount, OBJ *args) {
+	// Read DHT data into dhtData. Assume the the 18 msec LOW start pulse has been sent.
+	// Return a five-byte ByteArray if successful, false on failure (e.g. no or partial data).
+
+	if (!isInt(args[0])) return fail(needsIntegerError);
+	int pin = obj2int(args[0]);
+	if ((pin < 0) || (pin > pinCount())) return falseObj;
+	if (!readDHTData(pin)) return falseObj;
+
+	OBJ result = newObj(ListType, 6, zeroObj); // list size + five items, all zeros
+	if (falseObj != result) {
+		FIELD(result, 0) = int2obj(5); // list size
+		for (int i = 0; i < 5; i++) {
+			FIELD(result, i + 1) = int2obj(dhtData[i]);
+		}
+	}
+	return result;
+}
+
 static PrimEntry entries[] = {
 	{"acceleration", primAcceleration},
 	{"temperature", primMBTemp},
@@ -737,6 +780,7 @@ static PrimEntry entries[] = {
 	{"touchRead", primTouchRead},
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
+	{"readDHT", primReadDHT},
 };
 
 void addSensorPrims() {

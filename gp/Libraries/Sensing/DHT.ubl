@@ -10,7 +10,7 @@ variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime
 	spec 'r' 'humidity_DHT11' 'humidity DHT11 pin _' 'auto' 4
 	spec 'r' 'temperature_DHT22' 'temperature (Celsius) DHT22 pin _' 'auto' 4
 	spec 'r' 'humidity_DHT22' 'humidity DHT22 pin _' 'auto' 4
-	spec ' ' '_dhtReadData' '_dhtReadData pin _' 'auto any' '10'
+	spec ' ' '_dhtReadData' '_dhtReadData pin _' 'auto any' 4
 	spec 'r' '_dhtChecksumOkay' '_dhtChecksumOkay' 'any'
 	spec ' ' '_dhtUpdate' '_dhtUpdate _ isDHT11 _' 'auto bool any' 4 true
 	spec 'r' '_dhtReady' '_dhtReady' 'any'
@@ -23,6 +23,14 @@ to '_dhtReadData' pin {
   comment 'Pull pin low for >18msec to request data'
   digitalWriteOp pin false
   waitMillis 20
+  local 'useDHTPrimitive' (booleanConstant true)
+  if useDHTPrimitive {
+    result = ('[sensors:readDHT]' pin)
+    if ((booleanConstant false) != result) {
+      _dhtData = result
+    }
+    return 0
+  }
   comment 'Read DHT start pulses (H L H L)'
   waitUntil (digitalReadOp pin)
   waitUntil (not (digitalReadOp pin))

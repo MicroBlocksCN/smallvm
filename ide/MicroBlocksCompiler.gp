@@ -201,6 +201,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[misc:sin]'			'fixed sine _' 'num' 9000)
 
 		(array 'r' '[sensors:touchRead]' 'capacitive sensor _' 'num' 1)
+		(array ' ' '[sensors:readDHT]'	'read DHT data pin _' 'num' 1)
 
 		(array 'r' '[io:hasTone]'		'has tone support')
 		(array ' ' '[io:playTone]'		'play tone pin _ frequency _' 'num num' 0 440)
