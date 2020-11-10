@@ -415,8 +415,8 @@ method ensureChunkIdFor SmallRuntime aBlock {
 	entry = (at chunkIDs aBlock nil)
 	if (isNil entry) {
 		id = (unusedChunkID this)
-		entry = (array id nil) // block -> (<id>, <crc>)
-		atPut chunkIDs aBlock entry
+		entry = (array id nil (chunkTypeFor this aBlock))
+		atPut chunkIDs aBlock entry // block -> (<id>, <crc>, <chunkType>)
 	}
 	return (first entry)
 }
@@ -428,7 +428,9 @@ method assignFunctionIDs SmallRuntime {
 	for func (allFunctions (project scripter)) {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
-			atPut chunkIDs fName (array (unusedChunkID this) nil) // fName -> (<id>, <crc>)
+			id = (unusedChunkID this)
+			entry = (array id nil (chunkTypeFor this func))
+			atPut chunkIDs fName entry  // fName -> (<id>, <crc>, <chunkType>)
 		}
 	}
 }
@@ -979,6 +981,11 @@ method saveChunk SmallRuntime aBlockOrFunction {
 		chunkID = (ensureChunkIdFor this aBlockOrFunction)
 		entry = (at chunkIDs aBlockOrFunction)
 		newCRC = (crcForChunk this aBlockOrFunction)
+		if ((at entry 3) != (chunkTypeFor this aBlockOrFunction)) {
+			// user changed A/B/A+B button hat type with menu
+			atPut entry 3 (chunkTypeFor this aBlockOrFunction)
+			atPut entry 2 nil // clear CRC to force save
+		}
 	}
 
 	if (newCRC == (at entry 2)) { return } // code hasn't changed
