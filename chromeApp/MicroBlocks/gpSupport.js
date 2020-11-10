@@ -577,8 +577,8 @@ function hasChromeSerial() {
 }
 
 function hasWebSerial() {
-	if (/(CrOS)/.test(navigator.userAgent)) return false; // Chrome OS has a different serial API
-	return (typeof navigator.serial != 'undefined')
+	if (hasChromeSerial()) return false; // Chrome OS has a different serial API
+	return (typeof navigator.serial != 'undefined');
 }
 
 // WebSerial support for Chrome browser (navigator.serial API)
