@@ -281,6 +281,16 @@ void restartSerial() {
 	// 106 - LSM6DS accelerometer & gyroscope
 	// 119 - BMP280 remperature & air pressure
 
+#elif defined(ARDUINO_NRF52840_FEATHER)
+	#define BOARD_TYPE "Feather nRF52840 Express"
+	#define DIGITAL_PINS 20
+	#define ANALOG_PINS 6
+	#define TOTAL_PINS 20
+	#define PIN_LED 3
+	#define DEFAULT_TONE_PIN 2
+	static const int analogPin[6] = {A0, A1, A2, A3, A4, A5};
+	// Note: pins 0 and 1 are reserved for primary UART
+
 #elif defined(ARDUINO_TEENSY31)
 	#define BOARD_TYPE "Teensy 3.1"
 	#define DIGITAL_PINS 24
@@ -643,8 +653,6 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		if (RESERVED(pinNum)) return int2obj(0);
 		SET_MODE(pinNum, INPUT);
 		return int2obj(analogRead(pinNum) >> 2); // convert from 12-bit to 10-bit resolution
-	#elif defined(ARDUINO_SAM_DUE)
-		if (pinNum < 2) return int2obj(0);
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return int2obj(0);
@@ -710,7 +718,7 @@ void primAnalogWrite(OBJ *args) {
 			}
 		#endif
 		if (RESERVED(pinNum)) return;
-	#elif defined(ARDUINO_SAM_DUE)
+	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pinNum < 2) return;
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
@@ -774,7 +782,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_NRF52_PRIMO)
 		if (22 == pinNum) return (LOW == digitalRead(USER1_BUTTON)) ? trueObj : falseObj;
 		if (23 == pinNum) return falseObj;
-	#elif defined(ARDUINO_SAM_DUE)
+	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pinNum < 2) return falseObj;
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
@@ -856,7 +864,7 @@ void primDigitalSet(int pinNum, int flag) {
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pinNum)) return;
-	#elif defined(ARDUINO_SAM_DUE)
+	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pinNum < 2) return;
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
@@ -1383,6 +1391,8 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 
 	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
 		if (RESERVED(pin)) return falseObj;
+	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
+		if (pin < 2) return falseObj;
 	#endif
 
 	SET_MODE(pin, OUTPUT);
