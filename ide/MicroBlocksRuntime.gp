@@ -1647,7 +1647,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 method niceBoardName SmallRuntime board {
 	name = (first board)
 	if (beginsWith name 'MICROBIT') {
-		return 'BBC micro:bit'
+		return 'micro:bit'
 	} (beginsWith name 'MINI') {
 		return 'Calliope mini'
 	} (beginsWith name 'CPLAYBOOT') {
@@ -1689,7 +1689,9 @@ method collectBoardDrives SmallRuntime {
 
 method getBoardDriveName SmallRuntime path {
 	for fn (listFiles path) {
-		if ('MICROBIT.HTM' == fn) { return 'MICROBIT' }
+		if ('MICROBIT.HTM' == fn) {
+			contents = (readFile (join path fn))
+			return 'MICROBIT' }
 		if (or ('MINI.HTM' == fn) ('Calliope.html' == fn)) { return 'MINI' }
 		if ('INFO_UF2.TXT' == fn) {
 			contents = (readFile (join path fn))
@@ -1707,8 +1709,12 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	closePort this
 
 	if ('MICROBIT' == driveName) {
+ 		contents = (readFile (join '/Volumes/' driveName '/MICROBIT.HTM'))
 		vmFileName = 'vm.microbit.hex'
-	} ('MINI' == driveName) {
+		if (notNil (nextMatchIn 'id=9904' contents)) {
+			vmFileName = 'vm.microbitV2.hex'
+		}
+ 	} ('MINI' == driveName) {
 		vmFileName = 'vm.calliope.hex'
 	} ('CPLAYBOOT' == driveName) {
 		vmFileName = 'vm.circuitplay.uf2'
@@ -1734,7 +1740,9 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 
 method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	if ('micro:bit' == boardType) {
-		copyVMToBoardInBrowser this 'BBC micro:bit'
+		copyVMToBoardInBrowser this 'micro:bit'
+	} ('micro:bit v2' == boardType) {
+		copyVMToBoardInBrowser this 'micro:bit v2'
 	} ('Calliope' == boardType) {
 		copyVMToBoardInBrowser this 'Calliope mini'
 	} ('CircuitPlayground' == boardType) {
@@ -1749,7 +1757,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 	} else {
 		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this) true)
-		addItem menu 'BBC micro:bit'
+		addItem menu 'micro:bit'
+		addItem menu 'micro:bit v2'
 		addItem menu 'Calliope mini'
 		addItem menu 'Circuit Playground Express'
 		addItem menu 'Circuit Playground Bluefruit'
@@ -1788,8 +1797,11 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 		return
 	}
 
-	if ('BBC micro:bit' == boardName) {
+	if ('micro:bit' == boardName) {
 		vmFileName = 'vm.microbit.hex'
+		driveName = 'MICROBIT'
+	} ('micro:bit v2' == boardName) {
+		vmFileName = 'vm.microbitV2.hex'
 		driveName = 'MICROBIT'
 	} ('Calliope mini' == boardName) {
 		vmFileName = 'vm.calliope.hex'
