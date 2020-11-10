@@ -80,7 +80,6 @@ method microBlocksSpecs SmallCompiler {
 		(array 'h' 'whenCondition'		'when _' 'bool')
 		(array ' ' 'waitUntil'			'wait until _' 'bool')
 		'-'
-		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 10000)
 		(array ' ' 'return'				'return _' 'auto' 0)
 		'-'
 		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
@@ -92,7 +91,9 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array ' ' 'stopTask'			'stop this task')
 		(array ' ' 'stopAll'			'stop other tasks')
-		'Control-Advanced'
+	'Control-Advanced'
+		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 1000)
+		'-'
 		(array 'r' 'getLastBroadcast'	'last message')
 	'Operators'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
@@ -265,8 +266,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[radio:setChannel]'				'radio set channel (0-83) _' 'num' 7)
 		(array ' ' '[radio:setPower]'				'radio set power (0-7) _' 'num' 4)
 		(array 'r' '[radio:signalStrength]'			'radio last signal strength')
-		(array 'r' '[radio:packetReceive]'			'radio receive packet _' 'str')
-		(array ' ' '[radio:packetSend]'				'radio send packet _' 'str')
+		(array 'r' '[radio:packetReceive]'			'radio receive packet _' 'str' '32-element list')
+		(array ' ' '[radio:packetSend]'				'radio send packet _' 'str' '32-element list')
 		(array ' ' '[radio:disableRadio]'			'disable radio')
 	)
 }
