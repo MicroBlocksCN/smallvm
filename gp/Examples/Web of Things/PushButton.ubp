@@ -158,7 +158,7 @@ to 'button pressed' 'pin or name' {
 
 module 'HTTP server' Comm
 author MicroBlocks
-version 1 2 
+version 1 3 
 depends WiFi 
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
@@ -169,7 +169,7 @@ description 'Create an HTTP server in MicroBlocks. You can use this library to a
 	spec 'r' 'headers of request' 'headers of request _' 'str' ''
 	spec 'r' 'body of request' 'body of request _' 'str' ''
 	spec 'r' 'content length of request' 'content length of request _' 'str' ''
-	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain'
+	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _ : keepAlive _' 'str str str bool' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain' false
 	spec 'r' '_endOfHeaders' '_end of headers _' 'str'
 	spec 'r' '_toString' '_toString _' 'auto' 'abc'
 
