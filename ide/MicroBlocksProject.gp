@@ -763,29 +763,6 @@ method getNewerVersion MicroBlocksModule {
 	return nil
 }
 
-method updateSpecsOLD MicroBlocksModule cmdList newerModule {
-	// xxx remove this later...
-	oldSpecs = (blockSpecs (project (findProjectEditor)))
-	for oldSpec (values oldSpecs) {
-		oldOp = (blockOp oldSpec)
-		match = false
-		for newSpec (values (blockSpecs newerModule)) {
-			if ((blockOp newSpec) == oldOp) {
-				match = true
-				// Update old spec
-				atPut oldSpecs oldOp newSpec
-			}
-		}
-		if (not match) {
-			// mark function as obsolete and append to module
-			obsoleteOp = (join 'obsolete ' (first (specs oldSpec)))
-			setField oldSpec 'specs' (array obsoleteOp)
-			atPut oldSpecs obsoleteOp oldSpec
-			add (blockList newerModule) obsoleteOp
-		}
-	}
-}
-
 method updatingLibrary MicroBlocksModule newerModule {
 	// Called when updating an existing library (the receiver) to a newer version.
 	// Update the block specs of existing functions that are being updated.

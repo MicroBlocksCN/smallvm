@@ -985,6 +985,8 @@ method processEvent Keyboard evt {
 		if (27 == key) { // escape key
 			if (notNil (flasher (smallRuntime))) {
 				confirmRemoveFlasher (smallRuntime)
+			} (not (decompilerDone (smallRuntime))) {
+				stopDecompilation (smallRuntime)
 			} (notNil (findMorph 'FilePicker')) {
 				destroy (findMorph 'FilePicker')
 			} (notNil (findMorph 'Prompter')) {

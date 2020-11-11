@@ -301,6 +301,8 @@ method startReadingCode SmallRuntime {
 		processMessages this
 		waitMSecs 10
 	}
+	if (isNil decompiler) { return } // decompilation was aborted
+
 	print 'decompiler read' (count (getField decompiler 'vars')) 'vars' (count (getField decompiler 'chunks')) 'chunks'
 	proj = (decompileProject decompiler)
 	decompilerStatus = 'Loading project...'
@@ -309,6 +311,17 @@ method startReadingCode SmallRuntime {
 
 method decompilerDone SmallRuntime { return (decompilerStatus == '') }
 method decompilerStatus SmallRuntime { return decompilerStatus }
+
+method stopDecompilation SmallRuntime {
+	if (notNil decompiler) {
+		spinner = (findMorph 'MicroBlocksSpinner')
+		if (notNil spinner) { destroy (handler spinner) }
+		decompilerStatus = ''
+		decompiler = nil
+		clearBoardIfConnected this true
+		stopAndSyncScripts this
+	}
+}
 
 method waitForPing SmallRuntime {
 	// Wait for up to timeout to get a ping back from the board.
