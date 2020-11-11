@@ -40,7 +40,7 @@ repeat 2 {
 
 module Tone Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 tags tone sound music audio note speaker 
 description 'Audio tone generation. Make music with MicroBlocks!
 '
