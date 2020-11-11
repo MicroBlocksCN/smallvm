@@ -15,7 +15,7 @@
 // John Maloney, January, 2018
 
 method allVarsMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
+  menu = (menu)
 
   // shared vars
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
@@ -24,7 +24,7 @@ method allVarsMenu InputSlot {
 	for varName varNames {
           // hide vars that start with underscore, used for libraries
           if (or ((at varName 1) != '_') (devMode)) {
-            addItem menu varName varName
+            addItem menu varName (action 'setContents' this varName)
           }
 	}
 	if ((count varNames) > 0) { addLine menu }
@@ -33,12 +33,18 @@ method allVarsMenu InputSlot {
   // local vars
   myBlock = (handler (ownerThatIsA morph 'Block'))
   localVars = (collectLocals (expression (topBlock myBlock)))
+  remove localVars ''
+  for v varNames { remove localVars v }
   if (notEmpty localVars) {
 	localVars = (sorted (keys localVars))
 	for varName localVars {
-	  addItem menu varName varName
+	  addItem menu varName (action 'setContents' this varName)
 	}
+	addLine menu
   }
+
+  addItem menu (localized 'Add a variable') (action 'createVariable' (handler scripter) this)
+  scripter = (scripter (findProjectEditor))
   return menu
 }
 

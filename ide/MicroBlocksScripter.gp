@@ -379,9 +379,12 @@ method addVariableBlocks MicroBlocksScripter {
 	nextY += (5 * scale)
   }
 
+  defaultVarName = ''
+  if (notEmpty visibleVars) { defaultVarName = (first visibleVars) }
+
   nextY += (10 * scale)
-  addBlock this (toBlock (newCommand '=' 'var' 0)) nil false
-  addBlock this (toBlock (newCommand '+=' 'var' 1)) nil false
+  addBlock this (toBlock (newCommand '=' defaultVarName 0)) nil false
+  addBlock this (toBlock (newCommand '+=' defaultVarName 1)) nil false
   if (devMode) {
 	nextY += (10 * scale)
 	addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
@@ -499,12 +502,15 @@ method visibleVars MicroBlocksScripter {
   }
 }
 
-method createVariable MicroBlocksScripter {
+method createVariable MicroBlocksScripter srcObj {
   varName = (prompt (global 'page') 'New variable name?' '')
   if (varName != '') {
 	addVariable (main mbProject) (uniqueVarName this varName)
 	variablesChanged (smallRuntime)
 	updateBlocks this
+	if (isClass srcObj 'InputSlot') {
+	  setContents srcObj varName
+	}
   }
 }
 
@@ -518,7 +524,7 @@ method uniqueVarName MicroBlocksScripter varName forScriptVar {
   if (and (notNil scripts) (not forScriptVar)) {
 	for entry scripts {
 	  for b (allBlocks (at entry 3)) {
-		if (isOneOf (primName b) 'v' '=' '+=' 'local' 'for') {
+		if (isOneOf (primName b) 'local' 'for') {
 		  add existingVars (first (argList b))
 		}
 	  }
@@ -687,6 +693,7 @@ method pasteScripts MicroBlocksScripter scriptString {
     for entry scripts {
       if (and ('script' == (primName entry)) (notNil (last (argList entry)))) {
 		script = (last (argList entry))
+		addGlobalsFor this script
 		if ('to' == (primName script)) {
 		  cmd = (copyFunction this script nil)
 		  block = (scriptForFunction (functionNamed mbProject (first (argList cmd))))
@@ -703,6 +710,25 @@ method pasteScripts MicroBlocksScripter scriptString {
   }
   updateSliders scriptsFrame
   updateBlocks this
+}
+
+method addGlobalsFor MicroBlocksScripter script {
+  globalVars = (toList (allVariableNames mbProject))
+  varRefs = (list)
+  localVars = (list)
+  for b (allBlocks script) {
+	varName = (first (argList b))
+	if (isOneOf (primName b) 'v' '=' '+=') { add varRefs varName }
+	if (isOneOf (primName b) 'local' 'for') { add localVars varName }
+  }
+  for v varRefs {
+	if (and (not (contains globalVars v)) (not (contains localVars v))) {
+	  // add new global variable
+	  addVariable (main mbProject) (uniqueVarName this v)
+	  variablesChanged (smallRuntime)
+	  updateBlocks this
+	}
+  }
 }
 
 // hide/show block definition
