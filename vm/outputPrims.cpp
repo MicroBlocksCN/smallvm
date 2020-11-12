@@ -517,13 +517,6 @@ static void initNeoPixelPin(int pinNum) {
 
 	volatile int *neoPixelPinSetDir = (int *) GPIO_SET_DIR;
 	*neoPixelPinSetDir = neoPixelPinMask;
-
-	// xxx testing highdrive for Bernat
-#if defined(ARDUINO_NRF52840_CIRCUITPLAY)
-	int internalPin = g_ADigitalPinMap[pinNum];
-	NRF_GPIO_Type* port = (NRF_GPIO_Type*) ((internalPin < 32) ? 0x50000000 : 0x50000300);
-	port->PIN_CNF[internalPin & 0x1F] |= (3 << 8); // high drive 1 and 0
-#endif
 }
 
 static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
