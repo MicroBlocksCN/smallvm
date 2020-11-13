@@ -531,9 +531,7 @@ method selectPort SmallRuntime {
 		}
 		return
 	} (and ('Browser' == (platform)) (not (browserIsChromeOS))) { // running in a browser w/o WebSerial (or it is not enabled)
-		inform (join
-			(localized 'Only recent Chrome and Edge browsers support WebSerial.') ' '
-			(localized 'Enable "Experimental Web Platform features" on the "chrome://flags" page.'))
+		inform (localized 'Only recent Chrome and Edge browsers support WebSerial.')
 		return
 	}
 
@@ -1746,7 +1744,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
 	waitMSecs 2000
 	if (isOneOf driveName 'MICROBIT' 'MINI') { waitMSecs 4000 }
-	disconnected = false // re-enable auto-connect
+//	disconnected = false // re-enable auto-connect (this fails on Chromebooks)
 }
 
 // Browser Virtual Machine Intaller
@@ -1863,13 +1861,13 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 
 	browserWriteFile vmData vmFileName
 	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
-	enableAutoConnect this false
 	if (endsWith vmFileName '.uf2') {
 		msg = (localized 'When the NeoPixels turn off')
 	} else {
 		msg = (localized 'When the LED stops flashing')
 	}
-	if (and ('Browser' == (platform)) (browserIsChromeOS)) {
+//	if (and ('Browser' == (platform)) (browserIsChromeOS)) {
+	if false {  // always use manual reconnect, even on Chromebooks
 		waitMSecs 5000
 		msg = (join msg  ', ' (localized 'the board should reconnect. If it does not, unplug and replug the USB cable.'))
 	} else {
