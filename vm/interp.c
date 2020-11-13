@@ -495,7 +495,7 @@ static void runTask(Task *task) {
 #endif
 		DISPATCH();
 	 decrementAndJmp_op:
-		tmp = obj2int(*(sp - 1)) - 1; // decrement loop counter
+		tmp = obj2int(evalInt(*(sp - 1))) - 1; // decrement loop counter
 		if (tmp >= 0) {
 			ip += arg; // loop counter >= 0, so branch
 			*(sp - 1) = int2obj(tmp); // update loop counter
