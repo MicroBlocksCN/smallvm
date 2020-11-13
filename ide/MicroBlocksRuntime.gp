@@ -811,8 +811,8 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '1.0.0' }
-method latestVmVersion SmallRuntime { return 100 }
+method ideVersion SmallRuntime { return '1.0.1' }
+method latestVmVersion SmallRuntime { return 101 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = (newline)
