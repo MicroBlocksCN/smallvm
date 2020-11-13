@@ -1744,7 +1744,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	print 'Installed' (join boardPath vmFileName) (join '(' (byteCount vmData) ' bytes)')
 	waitMSecs 2000
 	if (isOneOf driveName 'MICROBIT' 'MINI') { waitMSecs 4000 }
-//	disconnected = false // re-enable auto-connect (this fails on Chromebooks)
+	disconnected = false
 }
 
 // Browser Virtual Machine Intaller
