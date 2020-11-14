@@ -1720,7 +1720,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	closePort this
 
 	if ('MICROBIT' == driveName) {
- 		contents = (readFile (join '/Volumes/' driveName '/MICROBIT.HTM'))
+ 		contents = (readFile (join boardPath '/MICROBIT.HTM'))
 		vmFileName = 'vm.microbit.hex'
 		if (notNil (nextMatchIn 'id=9904' contents)) {
 			vmFileName = 'vm.microbitV2.hex'
