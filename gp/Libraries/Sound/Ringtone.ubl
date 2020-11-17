@@ -1,0 +1,106 @@
+module Ringtone
+author MicroBlocks
+version 1 0 
+depends Tone 
+description 'Plays tunes in RTTTL (Ringtone Text Transfer Language) a language developed by Nokia to store ringtones.
+Also known as Nokring.'
+variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name'
+
+	spec 'r' '_RTTTL parse control from' '_RTTTL parse control from _' 'auto' ''
+	spec ' ' 'play ringtone' 'play ringtone _' 'auto' 'Pacman:d=16,o=6,b=140:b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b'
+	spec 'r' 'current song name' 'current song name' '' ''
+	spec ' ' '_RTTTL play note' '_RTTTL play note _' 'auto' '8c#'
+
+to '_RTTTL parse control from' 'control section' {
+  comment 'Extract control section'
+  local 'd' 4
+  local 'o' 6
+  local 'b' 63
+  repeatUntil ((size (v 'control section')) == 0) {
+    local 'next separator' ('[data:find]' ',' (v 'control section'))
+    if ((v 'next separator') == -1) {
+      'next separator' = (size (v 'control section'))
+    }
+    local 'to process' ('[data:copyFromTo]' (v 'control section') 1 (v 'next separator'))
+    'control section' = ('[data:copyFromTo]' (v 'control section') ((v 'next separator') + 1))
+    'next separator' = ('[data:find]' ',' (v 'to process'))
+    if ((v 'next separator') == -1) {
+      'next separator' = ((size (v 'to process')) + 1)
+    }
+    if (('[data:find]' 'd' (v 'to process')) > 0) {
+      d = ('[data:copyFromTo]' (v 'to process') (('[data:find]' '=' (v 'to process')) + 1) ((v 'next separator') - 1))
+    } (('[data:find]' 'b' (v 'to process')) > 0) {
+      b = ('[data:copyFromTo]' (v 'to process') (('[data:find]' '=' (v 'to process')) + 1) ((v 'next separator') - 1))
+    } (('[data:find]' 'o' (v 'to process')) > 0) {
+      o = ('[data:copyFromTo]' (v 'to process') (('[data:find]' '=' (v 'to process')) + 1) ((v 'next separator') - 1))
+    }
+  }
+  return ('[data:makeList]' d o b)
+}
+
+to '_RTTTL play note' note {
+  local 'dotted' (('[data:find]' '.' note) > -1)
+  local 'duration' ''
+  local 'note name' ''
+  local 'octave' (v '_RTTTL default octave')
+  local 'ms / whole note' (240000 / (v '_RTTTL bpm'))
+  comment 'remove leading and trailing spaces'
+  repeatUntil ((at 1 note) != ' ') {
+    note = ('[data:copyFromTo]' note 2)
+  }
+  repeatUntil ((at 'last' note) != ' ') {
+    note = ('[data:copyFromTo]' note 1 ((size note) - 1))
+  }
+  comment 'parse duration value, if there is one'
+  repeatUntil (or (('[data:unicodeAt]' 1 note) < 48) (('[data:unicodeAt]' 1 note) > 57)) {
+    duration = ('[data:join]' duration (at 1 note))
+    note = ('[data:copyFromTo]' note 2)
+  }
+  if (duration == '') {
+    duration = (v '_RTTTL default duration')
+  }
+  comment 'parse note name'
+  if (('[data:find]' '#' note) > -1) {
+    'note name' = ('[data:copyFromTo]' note 1 2)
+  } else {
+    'note name' = (at 1 note)
+  }
+  note = ('[data:copyFromTo]' note ((size (v 'note name')) + 1))
+  comment 'deal with dotted notes'
+  if dotted {
+    note = ('[data:copyFromTo]' note 2)
+    duration = ((((v 'ms / whole note') / duration) * 15) / 10)
+  } else {
+    duration = ((v 'ms / whole note') / duration)
+  }
+  comment 'parse octave, if there is one'
+  if (note != '') {
+    octave = (at 1 note)
+  }
+  'play tone' (v 'note name') (octave - 4) duration
+}
+
+to 'play ringtone' RTTTL {
+  comment 'Remove song name'
+  '_RTTTL song name' = ('[data:copyFromTo]' RTTTL 1 (('[data:find]' ':' RTTTL) - 1))
+  RTTTL = ('[data:copyFromTo]' RTTTL ((size (v '_RTTTL song name')) + 2))
+  local 'control' ('_RTTTL parse control from' ('[data:copyFromTo]' RTTTL 1 (('[data:find]' ':' RTTTL) - 1)))
+  '_RTTTL default duration' = (at 1 control)
+  '_RTTTL default octave' = (at 2 control)
+  '_RTTTL bpm' = (at 3 control)
+  RTTTL = ('[data:copyFromTo]' RTTTL (('[data:find]' ':' RTTTL) + 1))
+  repeatUntil ((size RTTTL) == 0) {
+    local 'next separator' ('[data:find]' ',' RTTTL)
+    if ((v 'next separator') == -1) {
+      'next separator' = ((size RTTTL) + 1)
+    }
+    local 'next note' ('[data:copyFromTo]' RTTTL 1 ((v 'next separator') - 1))
+    RTTTL = ('[data:copyFromTo]' RTTTL ((v 'next separator') + 1))
+    '_RTTTL play note' (v 'next note')
+  }
+  '_RTTTL song name' = ''
+}
+
+to 'current song name' {
+  return (v '_RTTTL song name')
+}
