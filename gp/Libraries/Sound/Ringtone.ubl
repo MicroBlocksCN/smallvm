@@ -4,12 +4,12 @@ version 1 0
 depends Tone 
 description 'Plays tunes in RTTTL (Ringtone Text Transfer Language) a language developed by Nokia to store ringtones.
 Also known as Nokring.'
-variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name'
+variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name' 
 
 	spec 'r' '_RTTTL parse control from' '_RTTTL parse control from _' 'auto' ''
-	spec ' ' 'play ringtone' 'play ringtone _' 'auto' 'Pacman:d=16,o=6,b=140:b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b'
-	spec 'r' 'current song name' 'current song name' '' ''
-	spec ' ' '_RTTTL play note' '_RTTTL play note _' 'auto' '8c#'
+	spec ' ' 'play ringtone' 'play ringtone _ : voice _' 'auto num' 'Pacman:d=16,o=6,b=140:b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b' 1
+	spec 'r' 'current song name' 'current song name' 'any'
+	spec ' ' '_RTTTL play note' '_RTTTL play note _ : voice _' 'auto num' '8c#' 1
 
 to '_RTTTL parse control from' 'control section' {
   comment 'Extract control section'
@@ -38,15 +38,19 @@ to '_RTTTL parse control from' 'control section' {
   return ('[data:makeList]' d o b)
 }
 
-to '_RTTTL play note' note {
+to '_RTTTL play note' note voice {
   local 'dotted' (('[data:find]' '.' note) > -1)
   local 'duration' ''
   local 'note name' ''
   local 'octave' (v '_RTTTL default octave')
   local 'ms / whole note' (240000 / (v '_RTTTL bpm'))
   comment 'remove leading and trailing spaces'
-  repeatUntil ((at 1 note) != ' ') {
+  repeatUntil (or (note == '') ((at 1 note) != ' ')) {
     note = ('[data:copyFromTo]' note 2)
+  }
+  if (note == '') {
+    comment 'empty note string; skip'
+    return 0
   }
   repeatUntil ((at 'last' note) != ' ') {
     note = ('[data:copyFromTo]' note 1 ((size note) - 1))
@@ -77,10 +81,14 @@ to '_RTTTL play note' note {
   if (note != '') {
     octave = (at 1 note)
   }
-  'play tone' (v 'note name') (octave - 4) duration
+  'play tone' (v 'note name') (octave - 4) duration voice
 }
 
-to 'play ringtone' RTTTL {
+to 'current song name' {
+  return (v '_RTTTL song name')
+}
+
+to 'play ringtone' RTTTL voice {
   comment 'Remove song name'
   '_RTTTL song name' = ('[data:copyFromTo]' RTTTL 1 (('[data:find]' ':' RTTTL) - 1))
   RTTTL = ('[data:copyFromTo]' RTTTL ((size (v '_RTTTL song name')) + 2))
@@ -96,11 +104,8 @@ to 'play ringtone' RTTTL {
     }
     local 'next note' ('[data:copyFromTo]' RTTTL 1 ((v 'next separator') - 1))
     RTTTL = ('[data:copyFromTo]' RTTTL ((v 'next separator') + 1))
-    '_RTTTL play note' (v 'next note')
+    '_RTTTL play note' (v 'next note') voice
   }
   '_RTTTL song name' = ''
 }
 
-to 'current song name' {
-  return (v '_RTTTL song name')
-}
