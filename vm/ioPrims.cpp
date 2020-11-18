@@ -723,9 +723,15 @@ void primAnalogWrite(OBJ *args) {
 	#elif defined(ARDUINO_SAM_ZERO) // M0
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return;
-	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
+	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+		if (0 == pinNum) {
+			pinNum = PIN_DAC0;
+		} else if ((1 <= pinNum) && (pinNum < DIGITAL_PINS)) {
+			pinNum = digitalPin[pinNum];
+		} else {
+			return;
+		}
+	#elif defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
