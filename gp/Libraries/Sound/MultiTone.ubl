@@ -1,0 +1,124 @@
+module MultiTone
+author unknown
+version 1 0
+description ''
+variables _multiTonePin _v1 _v2 _v3 _v4 _v1Step _v2Step _v3Step _v4Step
+
+	spec ' ' 'play tone' 'play note _ octave _ for _ ms voice _' 'auto num num num' 'C' 2 500 1
+	spec 'r' '_baseFreqForNoteMulti' '_baseFreqForNoteMulti _' 'auto' 'c'
+	spec 'r' '_baseFreqForSharpOrFlatMulti' '_baseFreqForSharpOrFlatMulti _' 'auto' 'c#'
+	spec ' ' '_multiToneLoop' '_multiToneLoop'
+	spec 'r' '_nextSample' '_nextSample'
+	spec 'r' '_stepForNote' '_stepForNote _ octave _' 'auto num' 'C' 2
+
+to '_baseFreqForNoteMulti' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  if (or (note == 'c') (note == 'C')) {
+    return 261626
+  } (or (note == 'd') (note == 'D')) {
+    return 293665
+  } (or (note == 'e') (note == 'E')) {
+    return 329628
+  } (or (note == 'f') (note == 'F')) {
+    return 349228
+  } (or (note == 'g') (note == 'G')) {
+    return 391995
+  } (or (note == 'a') (note == 'A')) {
+    return 440000
+  } (or (note == 'b') (note == 'B')) {
+    return 493883
+  }
+  return ('_baseFreqForSharpOrFlatMulti' note)
+}
+
+to '_baseFreqForSharpOrFlatMulti' note {
+  comment 'Return the frequency for the given sharp or flat note in the
+middle-C octave scaled by 1000. Only handles black keys.
+Thus, you can''t write E# to mean F.'
+  if (or (or (note == 'c#') (note == 'C#')) (or (note == 'db') (note == 'Db'))) {
+    return 277183
+  } (or (or (note == 'd#') (note == 'D#')) (or (note == 'eb') (note == 'Eb'))) {
+    return 311127
+  } (or (or (note == 'f#') (note == 'F#')) (or (note == 'gb') (note == 'Gb'))) {
+    return 369994
+  } (or (or (note == 'g#') (note == 'G#')) (or (note == 'ab') (note == 'Ab'))) {
+    return 415305
+  } (or (or (note == 'a#') (note == 'A#')) (or (note == 'bb') (note == 'Bb'))) {
+    return 466164
+  }
+  comment 'Unrecognized note names map to 0.1 Hz, which is inaudible.
+This helps users find typos in their tunes.'
+  return 100
+}
+
+to '_multiToneLoop' {
+  forever {
+	analogWriteOp _multiTonePin ('_nextSample')
+  }
+}
+
+to '_nextSample' {
+  local 'out' 4
+  _v1 = ((_v1 + _v1Step) & 262143)
+  _v2 = ((_v2 + _v2Step) & 262143)
+  _v3 = ((_v3 + _v3Step) & 262143)
+  _v4 = ((_v4 + _v4Step) & 262143)
+  if (_v1 < 131072) {
+    out += ((0 + _v1) >> 9)
+  } else {
+    out += ((262143 - _v1) >> 9)
+  }
+  if (_v2 < 131072) {
+    out += ((0 + _v2) >> 9)
+  } else {
+    out += ((262143 - _v2) >> 9)
+  }
+  if (_v3 < 131072) {
+    out += ((0 + _v3) >> 9)
+  } else {
+    out += ((262143 - _v3) >> 9)
+  }
+  if (_v4 < 131072) {
+    out += ((0 + _v4) >> 9)
+  } else {
+    out += ((262143 - _v4) >> 9)
+  }
+  return out
+}
+
+to '_stepForNote' note octave {
+  local 'freq' ('_baseFreqForNoteMulti' note)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  return ((freq * 347) >> 14)
+}
+
+to 'play tone' note octave ms voice {
+  sendBroadcast '_multiToneLoop'
+  if (1 == voice) {
+    _v1Step = ('_stepForNote' note octave)
+    waitMillis ms
+    _v1Step = 0
+  } (2 == voice) {
+    _v2Step = ('_stepForNote' note octave)
+    waitMillis ms
+    _v2Step = 0
+  } (3 == voice) {
+    _v3Step = ('_stepForNote' note octave)
+    waitMillis ms
+    _v3Step = 0
+  } (4 == voice) {
+    _v4Step = ('_stepForNote' note octave)
+    waitMillis ms
+    _v4Step = 0
+  }
+}
