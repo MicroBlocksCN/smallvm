@@ -1,0 +1,72 @@
+module 'String utilities' Data
+author MicroBlocks
+version 1 0 
+description 'Commonly needed string operations.'
+
+	spec 'r' '_is lowercase' '_is lowercase _' 'auto' 'A'
+	spec 'r' '_is uppercase' '_is uppercase _' 'auto' 'E'
+	spec 'r' 'split' 'split _ by _' 'auto auto' 'hello world' ' '
+	spec 'r' 'contains' '_ contains _' 'auto auto' 'nasty' 'ast'
+	spec 'r' 'lowercase' 'lowercase _' 'auto' 'THIS is a String! :)'
+	spec 'r' 'uppercase' 'uppercase _' 'auto' 'Hello, world!'
+
+to '_is lowercase' char {
+  local 'unicode' ('[data:unicodeAt]' 1 char)
+  return (and (unicode >= 97) (unicode <= 122))
+}
+
+to '_is uppercase' char {
+  local 'unicode' ('[data:unicodeAt]' 1 char)
+  return (and (unicode >= 65) (unicode <= 90))
+}
+
+to contains string substring {
+  return (('[data:find]' substring string) > 0)
+}
+
+to lowercase string {
+  local 'new string' ''
+  for i (size string) {
+    if ('_is uppercase' (at i string)) {
+      'new string' = ('[data:join]' (v 'new string') ('[data:unicodeString]' (('[data:unicodeAt]' i string) + 32)))
+    } else {
+      'new string' = ('[data:join]' (v 'new string') (at i string))
+    }
+  }
+  return (v 'new string')
+}
+
+to split string separator {
+  local 'list' ('[data:makeList]')
+  if (separator == '') {
+    for i (size string) {
+      '[data:addLast]' (at i string) list
+    }
+  } else {
+    local 'previous' 0
+    repeatUntil (previous < 0) {
+      local 'next' ('[data:find]' separator string previous)
+      if (next > 0) {
+        '[data:addLast]' ('[data:copyFromTo]' string previous (next - 1)) list
+        previous = (next + (size separator))
+      } else {
+        '[data:addLast]' ('[data:copyFromTo]' string previous) list
+        previous = -1
+      }
+    }
+  }
+  return list
+}
+
+to uppercase string {
+  local 'new string' ''
+  for i (size string) {
+    if ('_is lowercase' (at i string)) {
+      'new string' = ('[data:join]' (v 'new string') ('[data:unicodeString]' (('[data:unicodeAt]' i string) - 32)))
+    } else {
+      'new string' = ('[data:join]' (v 'new string') (at i string))
+    }
+  }
+  return (v 'new string')
+}
+
