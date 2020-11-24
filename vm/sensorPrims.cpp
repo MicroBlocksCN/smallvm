@@ -771,6 +771,123 @@ static OBJ primReadDHT(int argCount, OBJ *args) {
 	return result;
 }
 
+// Microphone Support
+
+#if defined(ARDUINO_NRF52840_CIRCUITPLAY)
+
+#define USE_PDM_MICROPHONE 1
+
+static NRF_PDM_Type *nrf_pdm = NRF_PDM;
+static int mic_initialized = false;
+
+static int16_t mic_sample;
+
+void initPDM(int clock_pin, int data_pin) {
+	if (mic_initialized) return;
+	mic_initialized = true;
+
+	pinMode(clock_pin, OUTPUT);
+	digitalWrite(clock_pin, LOW);
+	pinMode(data_pin, INPUT);
+
+	nrf_pdm->PSEL.CLK = digitalPinToPinName(clock_pin);
+	nrf_pdm->PSEL.DIN = digitalPinToPinName(data_pin);
+
+	// Use the fastest possible sampling rate since we block waiting for the next sample
+	// Sampling rate = 1.333 MHz / 64 = 20828 samples/sec (~48 usec/sample)
+	nrf_pdm->PDMCLKCTRL = 0x0A800000; // (32 MHz / 24) = 1.333 MHz
+	nrf_pdm->RATIO = PDM_RATIO_RATIO_Ratio64;
+
+	nrf_pdm->GAINL = PDM_GAINL_GAINL_DefaultGain;
+	nrf_pdm->GAINR = PDM_GAINR_GAINR_DefaultGain;
+	nrf_pdm->MODE = PDM_MODE_OPERATION_Mono;
+
+	nrf_pdm->SAMPLE.PTR = (uintptr_t) &mic_sample;
+	nrf_pdm->SAMPLE.MAXCNT = 1;
+
+	nrf_pdm->ENABLE = 1;
+	nrf_pdm->TASKS_START = 1;
+}
+
+static int readMicrophonePDM() {
+	if (!mic_initialized) initPDM(25, 24);
+	nrf_pdm->EVENTS_END = 0;
+	while (!nrf_pdm->EVENTS_END) /* wait for next sample */;
+	return ((int) mic_sample) >> 3; // scale result
+}
+
+#elif defined(ARDUINO_BBC_MICROBIT_V2)
+
+static int readMicrophoneAnalog() {
+	const int micPin = SAADC_CH_PSELP_PSELP_AnalogInput3;
+	const int gain = SAADC_CH_CONFIG_GAIN_Gain4;
+	volatile int16_t value = 0;
+
+	NRF_SAADC->RESOLUTION = SAADC_RESOLUTION_VAL_10bit;
+	NRF_SAADC->ENABLE = 1;
+
+	for (int i = 0; i < 8; i++) {
+		NRF_SAADC->CH[i].PSELN = SAADC_CH_PSELP_PSELP_NC;
+		NRF_SAADC->CH[i].PSELP = SAADC_CH_PSELP_PSELP_NC;
+	}
+	NRF_SAADC->CH[0].CONFIG = ((SAADC_CH_CONFIG_RESP_Bypass     << SAADC_CH_CONFIG_RESP_Pos)   & SAADC_CH_CONFIG_RESP_Msk)
+							| ((SAADC_CH_CONFIG_RESP_Bypass     << SAADC_CH_CONFIG_RESN_Pos)   & SAADC_CH_CONFIG_RESN_Msk)
+							| ((gain                            << SAADC_CH_CONFIG_GAIN_Pos)   & SAADC_CH_CONFIG_GAIN_Msk)
+							| ((SAADC_CH_CONFIG_REFSEL_Internal << SAADC_CH_CONFIG_REFSEL_Pos) & SAADC_CH_CONFIG_REFSEL_Msk)
+							| ((SAADC_CH_CONFIG_TACQ_3us        << SAADC_CH_CONFIG_TACQ_Pos)   & SAADC_CH_CONFIG_TACQ_Msk)
+							| ((SAADC_CH_CONFIG_MODE_SE         << SAADC_CH_CONFIG_MODE_Pos)   & SAADC_CH_CONFIG_MODE_Msk);
+
+	NRF_SAADC->CH[0].PSELN = micPin;
+	NRF_SAADC->CH[0].PSELP = micPin;
+
+	NRF_SAADC->RESULT.PTR = (uint32_t) &value;
+	NRF_SAADC->RESULT.MAXCNT = 1; // read a single sample
+
+	NRF_SAADC->TASKS_START = 1;
+	while (!NRF_SAADC->EVENTS_STARTED);
+	NRF_SAADC->EVENTS_STARTED = 0;
+
+	NRF_SAADC->TASKS_SAMPLE = 1;
+	while (!NRF_SAADC->EVENTS_END);
+	NRF_SAADC->EVENTS_END = 0;
+
+	NRF_SAADC->TASKS_STOP = 1;
+	while (!NRF_SAADC->EVENTS_STOPPED);
+	NRF_SAADC->EVENTS_STOPPED = 0;
+
+	NRF_SAADC->ENABLE = 0;
+
+	if (value < 0) value = 0;
+	return value;
+}
+
+#elif defined(ARDUINO_CALLIOPE_MINI)
+
+	static int readMicrophoneAnalog() {
+		setPinMode(A0, INPUT);
+		return analogRead(A0);
+	}
+
+#else
+
+	static int readMicrophoneAnalog() { return 0; } // no microphone
+
+#endif // Microphone Support
+
+static OBJ primReadMicrophone(int argCount, OBJ *args) {
+	// Read a sound sample from the microphone. Return 0 if board has no built-in microphone.
+
+	int result = 0;
+
+	#if defined(USE_PDM_MICROPHONE)
+		result = readMicrophonePDM();
+	#else
+		result = readMicrophoneAnalog();
+	#endif
+
+	return int2obj(result);
+}
+
 static PrimEntry entries[] = {
 	{"acceleration", primAcceleration},
 	{"temperature", primMBTemp},
@@ -781,6 +898,7 @@ static PrimEntry entries[] = {
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
 	{"readDHT", primReadDHT},
+	{"readMicrophone", primReadMicrophone},
 };
 
 void addSensorPrims() {
