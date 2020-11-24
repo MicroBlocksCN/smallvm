@@ -1,4 +1,4 @@
-module 'String utilities' Data
+module 'Strings' Data
 author MicroBlocks
 version 1 0 
 description 'Commonly needed string operations.'
