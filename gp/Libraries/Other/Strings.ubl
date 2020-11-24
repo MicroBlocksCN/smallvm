@@ -1,33 +1,67 @@
-module 'Strings' Data
+module Strings Data
 author MicroBlocks
 version 1 0 
-description 'Commonly needed string operations.'
+description 'String operations.'
 
-	spec 'r' '_is lowercase' '_is lowercase _' 'auto' 'A'
-	spec 'r' '_is uppercase' '_is uppercase _' 'auto' 'E'
-	spec 'r' 'split' 'split _ by _' 'auto auto' 'hello world' ' '
-	spec 'r' 'contains' '_ contains _' 'auto auto' 'nasty' 'ast'
-	spec 'r' 'lowercase' 'lowercase _' 'auto' 'THIS is a String! :)'
-	spec 'r' 'uppercase' 'uppercase _' 'auto' 'Hello, world!'
+	spec 'r' 'isDigit' 'is digit _' 'str' '5'
+	spec 'r' 'isLowercase' 'is lowercase _' 'str' 'A'
+	spec 'r' 'isUppercase' 'is uppercase _' 'str' 'E'
+	'space'
+	spec 'r' 'beginsWith' '_ beginsWith _' 'str str' 'prefix' 'pre'
+	spec 'r' 'endsWith' '_ endsWith _' 'str str' 'suffix' 'fix'
+	spec 'r' 'contains' '_ contains _' 'str str' 'smiles' 'mile'
+	'space'
+	spec 'r' 'lowercase' 'lowercase _' 'str' 'THIS is a String! :)'
+	spec 'r' 'uppercase' 'uppercase _' 'str' 'Hello, world!'
+	spec 'r' 'withoutWhiteSpace' 'withoutWhiteSpace _' 'auto' '1, 2,	3,
+4'
+	'space'
+	spec 'r' 'split' 'split _ by _' 'str str' 'hello world' ' '
+	spec 'r' 'joinWith' 'join string list _ separator _' 'auto str' '' ' '
 
-to '_is lowercase' char {
-  local 'unicode' ('[data:unicodeAt]' 1 char)
-  return (and (unicode >= 97) (unicode <= 122))
-}
-
-to '_is uppercase' char {
-  local 'unicode' ('[data:unicodeAt]' 1 char)
-  return (and (unicode >= 65) (unicode <= 90))
+to beginsWith string substring {
+  return (('[data:find]' substring string) == 1)
 }
 
 to contains string substring {
   return (('[data:find]' substring string) > 0)
 }
 
+to endsWith string substring {
+  return (('[data:find]' substring string) > ((size string) - (size substring)))
+}
+
+to isDigit char {
+  local 'unicode' ('[data:unicodeAt]' 1 char)
+  return (and (unicode >= 48) (unicode <= 57))
+}
+
+to isLowercase char {
+  local 'unicode' ('[data:unicodeAt]' 1 char)
+  return (and (unicode >= 97) (unicode <= 122))
+}
+
+to isUppercase char {
+  local 'unicode' ('[data:unicodeAt]' 1 char)
+  return (and (unicode >= 65) (unicode <= 90))
+}
+
+to joinWith stringList separator {
+  if (or ((pushArgCount) == 1) (separator == '')) {return ('[data:joinStrings]' stringList)}
+  local 'result' (newList (2 * (size stringList)))
+  '[data:delete]' 'all' result
+  for s stringList {
+    '[data:addLast]' s result
+    '[data:addLast]' separator result
+  }
+  '[data:delete]' 'last' result
+  return ('[data:joinStrings]' result)
+}
+
 to lowercase string {
   local 'new string' ''
   for i (size string) {
-    if ('_is uppercase' (at i string)) {
+    if (isUppercase (at i string)) {
       'new string' = ('[data:join]' (v 'new string') ('[data:unicodeString]' (('[data:unicodeAt]' i string) + 32)))
     } else {
       'new string' = ('[data:join]' (v 'new string') (at i string))
@@ -61,12 +95,24 @@ to split string separator {
 to uppercase string {
   local 'new string' ''
   for i (size string) {
-    if ('_is lowercase' (at i string)) {
+    if (isLowercase (at i string)) {
       'new string' = ('[data:join]' (v 'new string') ('[data:unicodeString]' (('[data:unicodeAt]' i string) - 32)))
     } else {
       'new string' = ('[data:join]' (v 'new string') (at i string))
     }
   }
   return (v 'new string')
+}
+
+to withoutWhiteSpace aString {
+  local 'result' (newList (size aString))
+  '[data:delete]' 'all' result
+  for i (size aString) {
+    local 'ch' ('[data:unicodeAt]' i aString)
+    if (ch > 32) {
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
 }
 
