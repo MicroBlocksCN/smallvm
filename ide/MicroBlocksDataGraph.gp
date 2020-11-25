@@ -6,7 +6,7 @@
 
 // interactively eval GP code in a morphic window
 
-defineClass MicroBlocksDataGraph morph window lastDataIndex
+defineClass MicroBlocksDataGraph morph window lastDataIndex zeroAtBottom
 
 to newMicroBlocksDataGraph { return (initialize (new 'MicroBlocksDataGraph')) }
 
@@ -18,6 +18,7 @@ method initialize MicroBlocksDataGraph {
 	setMinExtent morph (scale * 140) (scale * 50)
 	setExtent morph (scale * 200) (scale * 120)
 	lastDataIndex = 0
+	zeroAtBottom = false;
 	setFPS morph 60
 	return this
 }
@@ -90,7 +91,11 @@ method graphSequence MicroBlocksDataGraph seq aColor yScale {
 	right = (right graphBnds)
 	top = (top graphBnds)
 	bottom = (bottom graphBnds)
-	yOrigin = (top + (half (height graphBnds)))
+	if zeroAtBottom {
+		yOrigin = (((top graphBnds) + (height graphBnds)) - (9 * scale))
+	} else {
+		yOrigin = ((top + (half (height graphBnds))) + 1)
+	}
 
 	pen = (newPen (costumeData morph))
 	setLineWidth pen lineW
@@ -119,19 +124,31 @@ method drawGrid MicroBlocksDataGraph yScale {
 	graphBnds = (insetBy graphBnds (half lineW))
 	left = ((left graphBnds) + (38 * scale))
 	right = (right graphBnds)
-	yOrigin = ((top graphBnds) + (half (height graphBnds)))
-
 	bm = (costumeData morph)
-	max = (((half (height graphBnds)) - 10) / yScale)
-	for offset (range 0 max 25) {
-		c = (gray 220)
-		if ((offset % 100) == 0) { c = (gray 190) } // darker lines for multiples of 100
-		y = (yOrigin - (offset * yScale))
-		fillRect bm c left y (right - left) lineW
-		drawLabel this bm (toString offset) left y
-		y = (yOrigin + (offset * yScale))
-		fillRect bm c left y (right - left) lineW
-		drawLabel this bm (toString (- offset)) left y
+
+	if zeroAtBottom {
+		yOrigin = (((top graphBnds) + (height graphBnds)) - (10 * scale))
+		max = (((height graphBnds) - (16 * scale)) / yScale)
+		for offset (range 0 max 25) {
+			c = (gray 220)
+			if ((offset % 100) == 0) { c = (gray 190) } // darker lines for multiples of 100
+			y = (yOrigin - (offset * yScale))
+			fillRect bm c left y (right - left) lineW
+			drawLabel this bm (toString offset) left y
+		}
+	} else {
+		yOrigin = ((top graphBnds) + (half (height graphBnds)))
+		max = (((half (height graphBnds)) - 10) / yScale)
+		for offset (range 0 max 25) {
+			c = (gray 220)
+			if ((offset % 100) == 0) { c = (gray 190) } // darker lines for multiples of 100
+			y = (yOrigin - (offset * yScale))
+			fillRect bm c left y (right - left) lineW
+			drawLabel this bm (toString offset) left y
+			y = (yOrigin + (offset * yScale))
+			fillRect bm c left y (right - left) lineW
+			drawLabel this bm (toString (- offset)) left y
+		}
 	}
 }
 
@@ -155,12 +172,17 @@ method rightClicked MicroBlocksDataGraph aHand {
 method contextMenu MicroBlocksDataGraph {
 	menu = (menu 'Graph' this)
 	addItem menu 'clear graph' 'clearGraph'
+	addLine menu
+	if zeroAtBottom {
+		addItem menu 'zero in middle' 'toggleZeroAtBottom'
+	} else {
+		addItem menu 'zero at bottom' 'toggleZeroAtBottom'
+	}
+	addLine menu
 	addItem menu 'export data to CSV file' 'exportData'
 	addItem menu 'import data from CSV file' 'importData'
 	if (devMode) {
 		addItem menu 'copy graph data to clipboard' 'copyDataToClipboard'
-	}
-	if (devMode) {
 		addLine menu
 		addItem menu 'set serial delay' (action 'serialDelayMenu' (smallRuntime))
 	}
@@ -169,6 +191,11 @@ method contextMenu MicroBlocksDataGraph {
 
 method clearGraph MicroBlocksDataGraph {
 	clearLoggedData (smallRuntime)
+}
+
+method toggleZeroAtBottom MicroBlocksDataGraph {
+	zeroAtBottom = (not zeroAtBottom)
+	redraw this
 }
 
 method exportData MicroBlocksDataGraph {
