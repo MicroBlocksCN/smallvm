@@ -809,7 +809,7 @@ void initPDM(int clock_pin, int data_pin) {
 	nrf_pdm->TASKS_START = 1;
 }
 
-static int readMicrophonePDM() {
+static int readPDMMicrophone() {
 	if (!mic_initialized) initPDM(25, 24);
 	nrf_pdm->EVENTS_END = 0;
 	while (!nrf_pdm->EVENTS_END) /* wait for next sample */;
@@ -818,7 +818,7 @@ static int readMicrophonePDM() {
 
 #elif defined(ARDUINO_BBC_MICROBIT_V2)
 
-static int readMicrophoneAnalog() {
+int readAnalogMicrophone() {
 	const int micPin = SAADC_CH_PSELP_PSELP_AnalogInput3;
 	const int gain = SAADC_CH_CONFIG_GAIN_Gain4;
 	volatile int16_t value = 0;
@@ -858,31 +858,31 @@ static int readMicrophoneAnalog() {
 	NRF_SAADC->ENABLE = 0;
 
 	if (value < 0) value = 0;
-	return value;
+	return value - 557; // adjust so silence is zero
 }
 
 #elif defined(ARDUINO_CALLIOPE_MINI)
 
-	static int readMicrophoneAnalog() {
-		setPinMode(A0, INPUT);
-		return analogRead(A0);
-	}
+int readAnalogMicrophone() {
+	setPinMode(A0, INPUT);
+	return analogRead(A0) - 519; // adjust so silence is zero
+}
 
 #else
 
-	static int readMicrophoneAnalog() { return 0; } // no microphone
+int readAnalogMicrophone() { return 0; } // no microphone
 
 #endif // Microphone Support
 
-static OBJ primReadMicrophone(int argCount, OBJ *args) {
+static OBJ primMicrophone(int argCount, OBJ *args) {
 	// Read a sound sample from the microphone. Return 0 if board has no built-in microphone.
 
 	int result = 0;
 
 	#if defined(USE_PDM_MICROPHONE)
-		result = readMicrophonePDM();
+		result = readPDMMicrophone();
 	#else
-		result = readMicrophoneAnalog();
+		result = readAnalogMicrophone();
 	#endif
 
 	return int2obj(result);
@@ -898,7 +898,7 @@ static PrimEntry entries[] = {
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
 	{"readDHT", primReadDHT},
-	{"readMicrophone", primReadMicrophone},
+	{"microphone", primMicrophone},
 };
 
 void addSensorPrims() {
