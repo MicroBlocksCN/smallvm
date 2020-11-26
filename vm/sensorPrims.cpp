@@ -816,6 +816,64 @@ static int readPDMMicrophone() {
 	return ((int) mic_sample) >> 3; // scale result
 }
 
+#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
+
+#define USE_PDM_MICROPHONE 1
+
+// Note: Portions of the following code are from the pdm_analogout.cpp example
+// adapted from the AdaFruit ZeroPDM library.
+
+#include "Adafruit_ZeroPDM.h"
+
+#define SAMPLERATE_HZ 44100
+#define DECIMATION    64
+
+Adafruit_ZeroPDM pdm = Adafruit_ZeroPDM(34, 35);
+
+// a windowed sinc filter for 44 khz, 64 samples
+uint16_t sincfilter[DECIMATION] = {0, 2, 9, 21, 39, 63, 94, 132, 179, 236, 302, 379, 467, 565, 674, 792, 920, 1055, 1196, 1341, 1487, 1633, 1776, 1913, 2042, 2159, 2263, 2352, 2422, 2474, 2506, 2516, 2506, 2474, 2422, 2352, 2263, 2159, 2042, 1913, 1776, 1633, 1487, 1341, 1196, 1055, 920, 792, 674, 565, 467, 379, 302, 236, 179, 132, 94, 63, 39, 21, 9, 2, 0, 0};
+
+// a manual loop-unroller!
+#define ADAPDM_REPEAT_LOOP_16(X) X X X X X X X X X X X X X X X X
+
+static int mic_initialized = false;
+
+void initSAMDPDM() {
+	pdm.begin();
+	if (!pdm.configure(SAMPLERATE_HZ * DECIMATION / 16, true)) {
+		outputString("Failed to configure SAMD PDM");
+	}
+	mic_initialized = true;
+}
+
+static int readPDMMicrophone() {
+	if (!mic_initialized) initSAMDPDM();
+
+	uint16_t runningsum = 0;
+	uint16_t *sinc_ptr = sincfilter;
+	uint16_t sample;
+
+	for (int i = 0; i < (DECIMATION / 16); i++) {
+		sample = pdm.read() & 0xFFFF; // read a sample; use the low 16 bits
+
+		ADAPDM_REPEAT_LOOP_16({ // manually unroll loop: for (int8_t b=0; b<16; b++)
+			// start at the LSB which is the 'first' bit to come down the line, chronologically
+			// (Note we had to set I2S_SERCTRL_BITREV to get this to work, but saves us time!)
+			if (sample & 0x1) {
+				runningsum += *sinc_ptr;     // do the convolution
+			}
+			sinc_ptr++;
+			sample >>= 1;
+		})
+	}
+
+	int result = (((int) runningsum) >> 5) - 1024; // signed sample, scaled to 11-bits
+	// limit to signed 10-bit value range
+	if (result < -512) result = -512;
+	if (result > 511) result = 511;
+	return result;
+}
+
 #elif defined(ARDUINO_BBC_MICROBIT_V2)
 
 int readAnalogMicrophone() {
