@@ -825,7 +825,7 @@ static int readPDMMicrophone() {
 
 #include "Adafruit_ZeroPDM.h"
 
-#define SAMPLERATE_HZ 44100
+#define SAMPLERATE_HZ 22000
 #define DECIMATION    64
 
 Adafruit_ZeroPDM pdm = Adafruit_ZeroPDM(34, 35);
@@ -867,7 +867,7 @@ static int readPDMMicrophone() {
 		})
 	}
 
-	int result = (((int) runningsum) >> 5) - 1024; // signed sample, scaled to 11-bits
+	int result = (((int) runningsum) >> 5) - 1027; // signed sample, scaled to 11-bits
 	// limit to signed 10-bit value range
 	if (result < -512) result = -512;
 	if (result > 511) result = 511;
@@ -915,8 +915,9 @@ int readAnalogMicrophone() {
 
 	NRF_SAADC->ENABLE = 0;
 
-	if (value < 0) value = 0;
-	return value - 557; // adjust so silence is zero
+	int result = value;
+	result = (result <= 0) ? 0 : result - 556; // if microphone is on, adjust so silence is zero
+	return result << 1; // double result to give a range similar to other boards
 }
 
 #elif defined(ARDUINO_CALLIOPE_MINI)
