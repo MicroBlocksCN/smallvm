@@ -773,7 +773,7 @@ static OBJ primReadDHT(int argCount, OBJ *args) {
 
 // Microphone Support
 
-#if defined(ARDUINO_NRF52840_CIRCUITPLAY)
+#if defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE)
 
 #define USE_PDM_MICROPHONE 1
 
@@ -782,16 +782,16 @@ static int mic_initialized = false;
 
 static int16_t mic_sample;
 
-void initPDM(int clock_pin, int data_pin) {
+void initPDM() {
 	if (mic_initialized) return;
 	mic_initialized = true;
 
-	pinMode(clock_pin, OUTPUT);
-	digitalWrite(clock_pin, LOW);
-	pinMode(data_pin, INPUT);
+	pinMode(PIN_PDM_CLK, OUTPUT);
+	digitalWrite(PIN_PDM_CLK, LOW);
+	pinMode(PIN_PDM_DIN, INPUT);
 
-	nrf_pdm->PSEL.CLK = digitalPinToPinName(clock_pin);
-	nrf_pdm->PSEL.DIN = digitalPinToPinName(data_pin);
+	nrf_pdm->PSEL.CLK = digitalPinToPinName(PIN_PDM_CLK);
+	nrf_pdm->PSEL.DIN = digitalPinToPinName(PIN_PDM_DIN);
 
 	// Use the fastest possible sampling rate since we block waiting for the next sample
 	// Sampling rate = 1.333 MHz / 64 = 20828 samples/sec (~48 usec/sample)
@@ -810,7 +810,7 @@ void initPDM(int clock_pin, int data_pin) {
 }
 
 static int readPDMMicrophone() {
-	if (!mic_initialized) initPDM(25, 24);
+	if (!mic_initialized) initPDM();
 	nrf_pdm->EVENTS_END = 0;
 	while (!nrf_pdm->EVENTS_END) /* wait for next sample */;
 	return ((int) mic_sample) >> 3; // scale result
