@@ -175,17 +175,13 @@ int touchEnabled = false;
 		Adafruit_ST7789 tft = Adafruit_ST7789(&SPI1, TFT_CS, TFT_DC, TFT_RST);
 
 		void tftInit() {
-			// Turn on TFT chip select (xxx needed?)
-			pinMode(TFT_CS, OUTPUT);
-			digitalWrite(TFT_CS, HIGH);
-
 			tft.init(240, 240);
 			tft.setRotation(1);
 			tft.fillScreen(0);
 			uint8_t rtna = 0x01; // Screen refresh rate control (datasheet 9.2.18, FRCTRL2)
 			tft.sendCommand(0xC6, &rtna, 1);
 
-			// Turn on backlight (xxx needed?)
+			// Turn on backlight
 			pinMode(34, OUTPUT);
 			digitalWrite(34, HIGH);
 
@@ -255,6 +251,12 @@ static int color24to16b(int color24b) {
 	int b = (color24b >> 3) & 0x1F; // 5 bits
 	#if defined(ARDUINO_M5Stick_C)
 		return (b << 11) | (g << 5) | r; // color order: BGR
+	#elif defined(ARDUINO_NRF52840_CLUE)
+		// xxx workaround for strange color issue; only seems to support ~3-levels per color
+		r = (r > 7) ? 7 : r;
+		g = (g > 7) ? 7 : g;
+		b = (b > 7) ? 7 : b;
+		return (r << 11) | (g << 6) | b; // color order: RGB
 	#else
 		return (r << 11) | (g << 5) | b; // color order: RGB
 	#endif
