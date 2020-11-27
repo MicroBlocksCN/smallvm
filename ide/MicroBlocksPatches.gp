@@ -979,8 +979,25 @@ method processEvent Keyboard evt {
 	if (type == 'keyUp') {
 	  atPut currentKeys key false
 	} (type == 'keyDown') {
+		// Arrow key navigation in scrollable morph under mouse pointer
+	  if (and (key >= 37) (key <= 40)) {
+		morph = (ownerThatIsA (morph (objectAt (hand (global 'page')))) 'ScrollFrame')
+		if (notNil morph) {
+			if (37 === key) { // left arrow
+				swipe (handler morph) 1 0
+			} (38 === key) { // up arrow
+				swipe (handler morph) 0 1
+			} (39 === key) { // right arrow
+				swipe (handler morph) -1 0
+			} (40 === key) { // down arrow
+				swipe (handler morph) 0 -1
+			}
+		}
+	  }
+
 	  if (at currentKeys key) { return } // suppress duplicated keyDown events on Gnome and some other Linux desktops
 	  atPut currentKeys key true
+
 	  if (isNil focus) {
 		if (27 == key) { // escape key
 			if (notNil (flasher (smallRuntime))) {
