@@ -153,8 +153,9 @@ method addWithLineNum SmallRuntime aList instruction items {
 method showCompiledBytes SmallRuntime aBlock {
 	// Display the instruction bytes for the given stack.
 
-	bytes = (chunkBytesFor this aBlock)
+	bytes = (chunkBytesFor this (topBlock aBlock))
 	result = (list)
+	add result (join '[' (count bytes) ' bytes]' (newline))
 	for i (count bytes) {
 		add result (toString (at bytes i))
 		if (0 == (i % 4)) {

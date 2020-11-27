@@ -243,6 +243,7 @@ void updateMicrobitDisplay();
 void checkButtons();
 void stopServos();
 void stopTone();
+int readAnalogMicrophone();
 
 // Primitives
 

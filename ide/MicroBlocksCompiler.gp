@@ -172,7 +172,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[display:mbUnplot]'		'unplot x _ y _' 'num num' 3 3)
 		(array ' ' '[display:mbDrawShape]'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
 		(array 'r' '[display:mbShapeForLetter]'	'shape for letter _' 'str' 'A')
-		(array ' ' '[display:neoPixelSetPin]'		'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
+		(array ' ' '[display:neoPixelSetPin]'	'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
 		(array ' ' '[display:neoPixelSend]'		'send NeoPixel rgb _' 'num' 5)
 	'Prims-Sensing (not in palette)'
 		(array 'r' '[sensors:acceleration]'	'acceleration')
@@ -181,6 +181,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[sensors:tiltX]'		'tilt x')
 		(array 'r' '[sensors:tiltY]'		'tilt y')
 		(array 'r' '[sensors:tiltZ]'		'tilt z')
+		(array 'r' '[sensors:microphone]'	'microphone')
 	'Prims-Variables (not in palette)'
 		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
 		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
