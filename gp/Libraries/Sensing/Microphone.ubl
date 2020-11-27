@@ -1,10 +1,7 @@
 module Microphone Input
 author MicroBlocks
 version 1 0 
-description 'Microphone and loudness support for boards with built in microphones.
-The microphone block usually reports values between -512 and 511, with zero for silence.
-However, very loud sounds may exceed that range on some boards.
-The microphone must be turned on before use on the micro:bit v2.'
+description 'Microphone and loudness support for boards with built in microphones. The microphone block usually reports values between -512 and 511, with zero for silence. However, very loud sounds may exceed that range on some boards. On the micro:bit v2, the microphone must be turned on before use.'
 variables _loudnessSamples 
 
 	spec 'r' '[sensors:microphone]' 'microphone'
