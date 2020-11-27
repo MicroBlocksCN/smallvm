@@ -1,0 +1,44 @@
+module Microphone Input
+author MicroBlocks
+version 1 0 
+description 'Microphone and loudness support for boards with built in microphones.
+The microphone block usually reports values between -512 and 511, with zero for silence.
+However, very loud sounds may exceed that range on some boards.
+The microphone must be turned on before use on the micro:bit v2.'
+variables _loudnessSamples 
+
+	spec 'r' '[sensors:microphone]' 'microphone'
+	spec ' ' 'turnOnMicrophone' 'turnOnMicrophone'
+	spec 'r' 'loudness' 'loudness'
+	spec ' ' '_loudnessLoop' '_loudnessLoop'
+
+to '_loudnessLoop' {
+  comment 'Sample microphone at ~2000 samples/sec, keeping the most recent N samples.'
+  turnOnMicrophone
+  local 'i' 1
+  _loudnessSamples = (newList 50)
+  forever {
+    atPut i _loudnessSamples ('[sensors:microphone]')
+    i = ((i % (size _loudnessSamples)) + 1)
+    waitMicros 500
+  }
+}
+
+to loudness {
+  sendBroadcast '_loudnessLoop'
+  local 'low' 10000
+  local 'high' -10000
+  for n _loudnessSamples {
+    low = (minimum low n)
+    high = (maximum high n)
+  }
+  return (high - low)
+}
+
+to turnOnMicrophone {
+  if ('micro:bit v2' == (boardType)) {
+    comment 'Turn on the microphone'
+    digitalWriteOp 28 true
+  }
+}
+
