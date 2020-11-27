@@ -980,7 +980,7 @@ method processEvent Keyboard evt {
 	  atPut currentKeys key false
 	} (type == 'keyDown') {
 		// Arrow key navigation in scrollable morph under mouse pointer
-	  if (and (key >= 37) (key <= 40)) {
+	  if (and (key >= 37) (key <= 40) (isNil focus)) {
 		morph = (ownerThatIsA (morph (objectAt (hand (global 'page')))) 'ScrollFrame')
 		if (notNil morph) {
 			if (37 === key) { // left arrow
