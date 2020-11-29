@@ -1,6 +1,6 @@
 module Strings Data
 author MicroBlocks
-version 1 0 
+version 1 1 
 description 'String operations.'
 
 	spec 'r' 'isDigit' 'is digit _' 'str' '5'
@@ -13,11 +13,11 @@ description 'String operations.'
 	'space'
 	spec 'r' 'lowercase' 'lowercase _' 'str' 'THIS is a String! :)'
 	spec 'r' 'uppercase' 'uppercase _' 'str' 'Hello, world!'
-	spec 'r' 'withoutWhiteSpace' 'withoutWhiteSpace _' 'auto' '1, 2,	3,
+	spec 'r' 'withoutWhiteSpace' 'withoutWhiteSpace _' 'str' '1, 2,	3,
 4'
 	'space'
 	spec 'r' 'split' 'split _ by _' 'str str' 'hello world' ' '
-	spec 'r' 'joinWith' 'join string list _ separator _' 'auto str' '' ' '
+	spec 'r' 'joinWith' 'join string list _ separator _' 'auto str' ' ' ' '
 
 to beginsWith string substring {
   return (('[data:find]' substring string) == 1)
@@ -47,6 +47,7 @@ to isUppercase char {
 }
 
 to joinWith stringList separator {
+  if (not (isType stringList 'list')) {return ('[data:join]' '' stringList)}
   if (or ((pushArgCount) == 1) (separator == '')) {return ('[data:joinStrings]' stringList)}
   local 'result' (newList (2 * (size stringList)))
   '[data:delete]' 'all' result
