@@ -209,6 +209,7 @@ method clearProject MicroBlocksEditor {
   if (isRunning thingServer) {
 	clearVars thingServer
   }
+  clearLoggedData (smallRuntime)
 }
 
 method closeAllDialogs MicroBlocksEditor {

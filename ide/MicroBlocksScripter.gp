@@ -717,9 +717,12 @@ method addGlobalsFor MicroBlocksScripter script {
   varRefs = (list)
   localVars = (list)
   for b (allBlocks script) {
-	varName = (first (argList b))
-	if (isOneOf (primName b) 'v' '=' '+=') { add varRefs varName }
-	if (isOneOf (primName b) 'local' 'for') { add localVars varName }
+	args = (argList b)
+	if (notEmpty args) {
+	  varName = (first args)
+	  if (isOneOf (primName b) 'v' '=' '+=') { add varRefs varName }
+	  if (isOneOf (primName b) 'local' 'for') { add localVars varName }
+	}
   }
   for v varRefs {
 	if (and (not (contains globalVars v)) (not (contains localVars v))) {
