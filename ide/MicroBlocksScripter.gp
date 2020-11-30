@@ -994,6 +994,7 @@ method fixedCmd MicroBlocksScripter oldCmd minArgs argTypes argDefaults isReport
 	result = (newIndexable 'Reporter' (count args))
   } else {
 	result = (newIndexable 'Command' (count args))
+	setField result 'nextBlock' (nextBlock oldCmd)
   }
   fixedFields = (fieldNameCount (classOf result))
   setField result 'primName' (primName oldCmd)
