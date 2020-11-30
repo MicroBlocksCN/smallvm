@@ -648,6 +648,7 @@ method fixLayout Block {
   }
 
   // arrange label parts horizontally and break up into lines
+  breakLineBeforeFirstArg = ((count (argList expression)) >= 5)
   currentLine = (list)
   for group labelParts {
     for each group {
@@ -665,11 +666,12 @@ method fixLayout Block {
           x = (+ left indentation w)
           w += (width (fullBounds (morph each)))
           w += (space * scale)
+          if (and breakLineBeforeFirstArg (not (isClass each 'Text'))) {
+			breakLineBeforeFirstArg = false // only do this once
+ 			lineArgCount = 10 // force a line break before first arg for blocks with >=5 args
+         }
 		  if (and ('[display:mbDisplay]' == (primName expression)) (each == (first group))) {
-			lineArgCount = 10; // force a line break after first item of block
-		  }
-		  if (and ('setNeoPixelColors10' == (primName expression)) (each == (at group 3))) {
-			lineArgCount = 10; // force a line break after first item of block
+			lineArgCount = 10 // force a line break after first item of block
 		  }
 		  if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
 			add lines currentLine
