@@ -1,15 +1,16 @@
 module Ringtone
 author MicroBlocks
-version 1 0 
+version 1 1 
 depends Tone 
 description 'Plays tunes in RTTTL (Ringtone Text Transfer Language) a language developed by Nokia to store ringtones.
 Also known as Nokring.'
-variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name'
+variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name' 
 
-	spec 'r' '_RTTTL parse control from' '_RTTTL parse control from _' 'auto' ''
+	spec 'r' '_RTTTL parse control from' '_RTTTL parse control from _' 'str' ''
 	spec ' ' 'play ringtone' 'play ringtone _' 'auto' 'Pacman:d=16,o=6,b=140:b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b'
-	spec 'r' 'current song name' 'current song name' '' ''
-	spec ' ' '_RTTTL play note' '_RTTTL play note _' 'auto' '8c#'
+	spec 'r' 'current song name' 'current song name'
+	spec ' ' '_RTTTL play note' '_RTTTL play note _' 'str' '8c#'
+	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A b C'
 
 to '_RTTTL parse control from' 'control section' {
   comment 'Extract control section'
@@ -39,21 +40,14 @@ to '_RTTTL parse control from' 'control section' {
 }
 
 to '_RTTTL play note' note {
-  local 'dotted' (('[data:find]' '.' note) > -1)
   local 'duration' ''
   local 'note name' ''
   local 'octave' (v '_RTTTL default octave')
   local 'ms / whole note' (240000 / (v '_RTTTL bpm'))
-  comment 'remove leading and trailing spaces'
-  repeatUntil (or (note == '') ((at 1 note) != ' ')) {
-    note = ('[data:copyFromTo]' note 2)
-  }
+  note = ('_trimmedLowercase' note)
   if (note == '') {
     comment 'empty note string; skip'
     return 0
-  }
-  repeatUntil ((at 'last' note) != ' ') {
-    note = ('[data:copyFromTo]' note 1 ((size note) - 1))
   }
   comment 'parse duration value, if there is one'
   repeatUntil (or (('[data:unicodeAt]' 1 note) < 48) (('[data:unicodeAt]' 1 note) > 57)) {
@@ -71,8 +65,8 @@ to '_RTTTL play note' note {
   }
   note = ('[data:copyFromTo]' note ((size (v 'note name')) + 1))
   comment 'deal with dotted notes'
-  if dotted {
-    note = ('[data:copyFromTo]' note 2)
+  if (('[data:find]' '.' note) > -1) {
+    note = ('[data:copyFromTo]' note 1 ((size note) - 1))
     duration = ((((v 'ms / whole note') / duration) * 15) / 10)
   } else {
     duration = ((v 'ms / whole note') / duration)
@@ -82,6 +76,25 @@ to '_RTTTL play note' note {
     octave = (at 1 note)
   }
   'play tone' (v 'note name') (octave - 4) duration
+}
+
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+and all lower'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (ch > 32) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
+to 'current song name' {
+  return (v '_RTTTL song name')
 }
 
 to 'play ringtone' RTTTL {
@@ -105,6 +118,3 @@ to 'play ringtone' RTTTL {
   '_RTTTL song name' = ''
 }
 
-to 'current song name' {
-  return (v '_RTTTL song name')
-}
