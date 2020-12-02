@@ -130,7 +130,7 @@ to 'play tone' note octave ms {
 }
 
 to playMIDIKey key ms {
-  local 'freq' ('_baseFreqForSemitone' (key % 12))
+  local 'freq' ('_baseFreqForSemitone' ((key % 12) + 1))
   local 'octave' ((key / 12) - 5)
   if (octave < 0) {
     repeat (absoluteValue octave) {
