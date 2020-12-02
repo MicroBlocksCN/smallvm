@@ -1,4 +1,4 @@
-module Ringtone
+module Ringtone Output
 author MicroBlocks
 version 1 2 
 depends Tone 
