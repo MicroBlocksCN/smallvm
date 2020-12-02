@@ -1,6 +1,6 @@
 module Tone Output
 author MicroBlocks
-version 1 4
+version 1 5 
 tags tone sound music audio note speaker 
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneFrequencies 
@@ -13,7 +13,7 @@ variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneFrequen
 	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
 	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
 	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
-	spec 'r' '_lowercase' '_lowercase _' 'str' 'C'
+	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
@@ -21,22 +21,18 @@ scaled by 1000. For example, return 440000 (440Hz) for A.
 Note names may be upper or lower case. Note names
 may be followed by # for a sharp or b for a flat.'
   if (_toneNoteNames == 0) {
-    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b')
+    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
   }
-  return ('_baseFreqForSemitone' (('[data:find]' ('_lowercase' note) _toneNoteNames) - 1))
+  return ('_baseFreqForSemitone' ('[data:find]' ('_trimmedLowercase' note) _toneNoteNames))
 }
 
 to '_baseFreqForSemitone' semitone {
-  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883)}
-  return (at (semitone + 1) _toneFrequencies)
-}
-
-to '_lowercase' char {
-  local 'unicode' ('[data:unicodeAt]' 1 char)
-  if (and (unicode >= 65) (unicode <= 90)) {
-    return ('[data:unicodeString]' (('[data:unicodeAt]' 1 char) + 32))
+  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883 246942 277183 277183 311127 311127 349228 329628 369994 369994 415305 415305 466164 466164 523252)}
+  if (and (1 <= semitone) (semitone <= (size _toneFrequencies))) {
+    return (at semitone _toneFrequencies)
   } else {
-    return char
+    comment 'Bad note name; return 10 Hz'
+    return 10000
   }
 }
 
@@ -72,6 +68,21 @@ to '_toneLoop' scaledFreq ms {
   }
 }
 
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+or periods and all lowercase.'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (and (ch > 32) (ch != 46)) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
 to 'attach buzzer to pin' pinNumber {
   if (pinNumber == '') {
     comment 'Pin number not specified; use default pin for this device'
@@ -103,6 +114,10 @@ to 'play frequency' freq ms {
 
 to 'play tone' note octave ms {
   local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    waitMillis ms
+    return 0
+  }
   if (octave < 0) {
     repeat (absoluteValue octave) {
       freq = (freq / 2)

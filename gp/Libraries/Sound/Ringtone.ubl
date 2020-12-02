@@ -1,6 +1,6 @@
 module Ringtone
 author MicroBlocks
-version 1 1 
+version 1 2 
 depends Tone 
 description 'Plays tunes in RTTTL (Ringtone Text Transfer Language) a language developed by Nokia to store ringtones.
 Also known as Nokring.'
@@ -10,7 +10,6 @@ variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL
 	spec ' ' 'play ringtone' 'play ringtone _' 'auto' 'Pacman:d=16,o=6,b=140:b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b'
 	spec 'r' 'current song name' 'current song name'
 	spec ' ' '_RTTTL play note' '_RTTTL play note _' 'str' '8c#'
-	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A b C'
 
 to '_RTTTL parse control from' 'control section' {
   comment 'Extract control section'
@@ -44,6 +43,7 @@ to '_RTTTL play note' note {
   local 'note name' ''
   local 'octave' (v '_RTTTL default octave')
   local 'ms / whole note' (240000 / (v '_RTTTL bpm'))
+  local 'isDotted' (('[data:find]' '.' note) > -1)
   note = ('_trimmedLowercase' note)
   if (note == '') {
     comment 'empty note string; skip'
@@ -58,15 +58,14 @@ to '_RTTTL play note' note {
     duration = (v '_RTTTL default duration')
   }
   comment 'parse note name'
-  if (('[data:find]' '#' note) > -1) {
+  if (or (('[data:find]' '#' note) > -1) (('[data:find]' '_' note) > -1)) {
     'note name' = ('[data:copyFromTo]' note 1 2)
   } else {
     'note name' = (at 1 note)
   }
   note = ('[data:copyFromTo]' note ((size (v 'note name')) + 1))
   comment 'deal with dotted notes'
-  if (('[data:find]' '.' note) > -1) {
-    note = ('[data:copyFromTo]' note 1 ((size note) - 1))
+  if isDotted {
     duration = ((((v 'ms / whole note') / duration) * 15) / 10)
   } else {
     duration = ((v 'ms / whole note') / duration)
@@ -78,26 +77,13 @@ to '_RTTTL play note' note {
   'play tone' (v 'note name') (octave - 4) duration
 }
 
-to '_trimmedLowercase' s {
-  comment 'Return a copy of the given string without whitespace
-and all lower'
-  local 'result' (newList (size s))
-  '[data:delete]' 'all' result
-  for i (size s) {
-    local 'ch' ('[data:unicodeAt]' i s)
-    if (ch > 32) {
-      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
-      '[data:addLast]' ch result
-    }
-  }
-  return ('[data:unicodeString]' result)
-}
-
 to 'current song name' {
   return (v '_RTTTL song name')
 }
 
 to 'play ringtone' RTTTL {
+  comment 'Initialize frequency map.'
+  ignoreArgs ('_baseFreqForNote' 'c')
   comment 'Remove song name'
   '_RTTTL song name' = ('[data:copyFromTo]' RTTTL 1 (('[data:find]' ':' RTTTL) - 1))
   RTTTL = ('[data:copyFromTo]' RTTTL ((size (v '_RTTTL song name')) + 2))
