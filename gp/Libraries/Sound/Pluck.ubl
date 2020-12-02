@@ -7,10 +7,10 @@ description 'Uses a simple algorithm to synthesize a plucked-string sound simila
 Note: This library does NOT work on the original micro:bit or Calliope mini!
 
 To output the generated waveform, the board must have a DAC (e.g. SAMD21 and ESP32 boards) or fast enough pulse-width modulation (PWM) hardware to simulate a DAC (e.g. nRF52xxx boards). To tune the output to standard A=440 pitch on boards with different clock speeds, change the tuningConstant variable in _pitchToBufferLength.'
-variables pitchList pluckPin
+variables _pluckPin
 
-	spec ' ' 'pluckNote' 'pluckNote _ octave _ for _ ms' 'str num num' 'C' 0 3000
-	spec ' ' 'pluckMidiKey' 'pluckMidiKey _ for _ msecs' 'num num' 60 3000
+	spec ' ' 'pluckNote' 'pluck note _ octave _ for _ ms' 'str num num' 'C' 0 3000
+	spec ' ' 'pluckMidiKey' 'pluck MIDI key _ for _ msecs' 'num num' 60 3000
 	spec 'r' '_pitchToBufferLength' '_pitchToBufferLength _' 'num' 440
 	spec 'r' '_midiKeyToPitch' '_midiKeyToPitch _' 'num' 60
 	spec ' ' '_playPluck' '_playPluck _ for _ msecs' 'num num' 80 3000
@@ -46,7 +46,7 @@ to '_playPluck' bufSize msecs {
     for i (bufSize - 1) {
       local 'sample' (((at i buf) + (at (i + 1) buf)) / 2)
       atPut i buf sample
-      analogWriteOp pluckPin sample
+      analogWriteOp _pluckPin sample
       waitMicros 20
     }
     atPut bufSize buf (at 1 buf)
