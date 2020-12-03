@@ -1,0 +1,180 @@
+module MultiTone Output
+author MicroBlocks
+version 1 0 
+description 'On boards that support it, play up to four simultaneous voices of music through a single speaker. The best sound quality is obtained by playing through through an amplified external speaker, but you can hear it through the built-in speakers on the micro:bit V2, Circuit Playground Express and Bluefruit, and M5 Stack/Core.
+
+Note: This library does NOT work on the original micro:bit or Calliope mini!
+
+To output the audio waveform, the board must have a DAC (e.g. SAMD21 and ESP32 boards) or fast enough pulse-width modulation (PWM) hardware to simulate a DAC (e.g. nRF52 boards). To tune the output to standard A=440 pitch on boards with different clock speeds, change the tuningConstant variable in _stepForNote.'
+variables _multiTonePin _multiToneInitialized _v1 _v2 _v3 _v4 _v1Step _v2Step _v3Step _v4Step 
+
+	spec ' ' 'playNoteOnVoice' 'play note _ octave _ for _ ms voice _' 'auto num num num' 'A' 0 500 1
+	spec 'r' '_baseFreqForNoteMulti' '_baseFreqForNoteMulti _' 'auto' 'A'
+	spec ' ' '_multiToneLoop' '_multiToneLoop'
+	spec 'r' '_nextSample' '_nextSample'
+	spec 'r' '_stepForNote' '_stepForNote _ octave _' 'str num' 'A' 0
+	spec 'r' '_uppercaseNote' '_uppercaseNote _' 'auto' ' a '
+
+to '_baseFreqForNoteMulti' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case and may be followed
+by # for a sharp or _ for a flat.'
+  note = ('_uppercaseNote' note)
+  if (note == 'C') {
+    return 261626
+  } (note == 'D') {
+    return 293665
+  } (note == 'E') {
+    return 329628
+  } (note == 'F') {
+    return 349228
+  } (note == 'G') {
+    return 391995
+  } (note == 'A') {
+    return 440000
+  } (note == 'B') {
+    return 493883
+  }
+  if (or (note == 'C#') (note == 'D_')) {
+    return 277183
+  } (or (note == 'D#') (note == 'E_')) {
+    return 311127
+  } (or (note == 'F#') (note == 'G_')) {
+    return 369994
+  } (or (note == 'G#') (note == 'A_')) {
+    return 415305
+  } (or (note == 'A#') (note == 'B_')) {
+    return 466164
+  }
+  comment 'Unrecognized note names map to 0.1 Hz, which is inaudible.
+This helps users find typos in their tunes.'
+  return 100
+}
+
+to '_initMultiTone' {
+  if ((boardType) == 'micro:bit v2') {
+    _multiTonePin = 27
+  } ((boardType) == 'Clue') {
+    _multiTonePin = 21
+  } (or ((boardType) == 'Citilab ED1') ((boardType) == 'M5StickC')) {
+    _multiTonePin = 26
+  } ((boardType) == 'M5Stack-Core') {
+    _multiTonePin = 25
+  } else {
+    _multiTonePin = 0
+  }
+  _multiToneInitialized = true
+}
+
+to '_multiToneLoop' {
+  comment 'Set initial sample values to virtual zero (the middle of their range).'
+  _v1 = 65536
+  _v2 = 65536
+  _v3 = 65536
+  _v4 = 65536
+  comment 'Generate and output sound samples. The DAC on the ESP32
+is only 8-bits. Other boards have 10-bit DAC or PWM output.'
+  if (or ((boardType) == 'Citilab ED1') ((boardType) == 'M5Stack-Core')) {
+    forever {
+      analogWriteOp _multiTonePin ((('_nextSample') >> 3) + 128)
+    }
+  } else {
+    forever {
+      analogWriteOp _multiTonePin (('_nextSample') + 512)
+    }
+  }
+}
+
+to '_nextSample' {
+  comment 'Generate up to four triangle waves. v1-v4 hold the current state of
+each voice. These numbers range from 0-262143 and are increased by _v1Step-v4Step
+each time this function is called. When the state rises above 131072, the output
+value begins to decreases back to zero, so the output value for each voice ranges
+from 0-131072 with the middle (65536) being "zero". This code has been optimized
+to all four voices to be generated fast enough to play in real time on micro:bit v2.'
+  _v1 = ((_v1 + _v1Step) & 262143)
+  _v2 = ((_v2 + _v2Step) & 262143)
+  _v3 = ((_v3 + _v3Step) & 262143)
+  _v4 = ((_v4 + _v4Step) & 262143)
+  local 'out' 0
+  if (_v1 < 131072) {
+    out += (_v1 - 65536)
+  } else {
+    out += (196608 - _v1)
+  }
+  if (_v2 < 131072) {
+    out += (_v2 - 65536)
+  } else {
+    out += (196608 - _v2)
+  }
+  if (_v3 < 131072) {
+    out += (_v3 - 65536)
+  } else {
+    out += (196608 - _v3)
+  }
+  if (_v4 < 131072) {
+    out += (_v4 - 65536)
+  } else {
+    out += (196608 - _v4)
+  }
+  return (out >> 9)
+}
+
+to '_stepForNote' note octave {
+  comment 'Return the step size required to generate the given note name in the given octave.
+To make the pitches match other instruments, adjust tuningConstant so that an A
+in octave zero generates a pitch as close as possible to 440Hz.'
+  local 'tuningConstant' 329
+  local 'freq' ('_baseFreqForNoteMulti' note)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  return ((freq * tuningConstant) >> 14)
+}
+
+to '_uppercaseNote' aString {
+  local 'result' (newList (size aString))
+  '[data:delete]' 'all' result
+  for i (size aString) {
+    local 'ch' ('[data:unicodeAt]' i aString)
+    if (ch > 32) {
+      if (and (97 <= ch) (ch <= 122)) {
+        '[data:addLast]' (ch - 32) result
+      } else {
+        '[data:addLast]' ch result
+      }
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
+to playNoteOnVoice note octave ms voice {
+  comment 'Make sure _multiToneLoop is running. Set the step size for the given
+voice to start playing the note, wait ms miliseconds, then set step size
+to zero to to stop the note.'
+  sendBroadcast '_multiToneLoop'
+  if (1 == voice) {
+    _v1Step = ('_stepForNote' note octave)
+    waitMillis ms
+    _v1Step = 0
+  } (2 == voice) {
+    _v2Step = ('_stepForNote' note octave)
+    waitMillis ms
+    _v2Step = 0
+  } (3 == voice) {
+    _v3Step = ('_stepForNote' note octave)
+    waitMillis ms
+    _v3Step = 0
+  } (4 == voice) {
+    _v4Step = ('_stepForNote' note octave)
+    waitMillis ms
+    _v4Step = 0
+  }
+}
+
