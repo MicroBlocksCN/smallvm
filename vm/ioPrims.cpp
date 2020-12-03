@@ -571,6 +571,7 @@ static void initPins(void) {
 void turnOffPins() {
 	for (int pin = 0; pin < TOTAL_PINS; pin++) {
 		if (OUTPUT == currentMode[pin]) {
+			digitalWrite(pin, LOW);
 			pinMode(pin, INPUT);
 			currentMode[pin] = INPUT;
 		}
@@ -594,12 +595,6 @@ static void setHighDrive(int pin) {
 	NRF_GPIO_Type* port = (NRF_GPIO_Type*) ((pin < 32) ? 0x50000000 : 0x50000300);
 	port->PIN_CNF[pin & 0x1F] |= (3 << 8); // high drive 1 and 0
 }
-
-static void stopPWM() {
-	NRF_PWM0->TASKS_STOP = 1;
-	NRF_PWM1->TASKS_STOP = 1;
-	NRF_PWM2->TASKS_STOP = 1;
-};
 
 #endif
 
@@ -981,6 +976,25 @@ static void initRandomSeed() {
 			seed = (seed << 1) ^ analogRead(p);
 		}
 		randomSeed(seed);
+	#endif
+}
+
+// Stop PWM
+
+void stopPWM() {
+	// Stop hardware PWM. Only implemented on nRF52 boards for now.
+	// Unfortunately, the Arduino API doesn't include a way to stop PWM on a pin once it has
+	// been started so we'd need to modify the Arduino library code or implement our own
+	// version of analogWrite() to reset their internal PWM data structures. Instead, this
+	// function simply turns off the PWM hardare on nRF52 boards.
+
+	#if defined(NRF52)
+		NRF_PWM0->TASKS_STOP = 1;
+		NRF_PWM1->TASKS_STOP = 1;
+		NRF_PWM2->TASKS_STOP = 1;
+		NRF_PWM0->ENABLE = 0;
+		NRF_PWM1->ENABLE = 0;
+		NRF_PWM2->ENABLE = 0;
 	#endif
 }
 

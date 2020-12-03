@@ -208,6 +208,13 @@ void updateMicrobitDisplay() {
 
 #elif defined(ARDUINO_BBC_MICROBIT_V2)
 
+static void setHighDrive(int pin) {
+	if ((pin < 0) || (pin >= PINS_COUNT)) return;
+	pin = g_ADigitalPinMap[pin];
+	NRF_GPIO_Type* port = (NRF_GPIO_Type*) ((pin < 32) ? 0x50000000 : 0x50000300);
+	port->PIN_CNF[pin & 0x1F] |= (3 << 8); // high drive 1 and 0
+}
+
 static int lightLevelPhase = 0;
 static uint32 lightLevelStartTime = 0;
 
@@ -223,6 +230,7 @@ static void turnDisplayOn() {
 	for (int i = 0; i < 5; i++) {
 		setPinMode(columnPins[i], INPUT);
 		setPinMode(rowPins[i], OUTPUT);
+		setHighDrive(rowPins[i]);
 	}
 }
 

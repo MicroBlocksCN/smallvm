@@ -241,6 +241,7 @@ void setPinMode(int pin, int newMode);
 void turnOffPins();
 void updateMicrobitDisplay();
 void checkButtons();
+void stopPWM();
 void stopServos();
 void stopTone();
 int readAnalogMicrophone();
