@@ -68,6 +68,7 @@ to '_initMultiTone' {
 }
 
 to '_multiToneLoop' {
+  _initMultiTone
   comment 'Set initial sample values to virtual zero (the middle of their range).'
   _v1 = 65536
   _v2 = 65536
