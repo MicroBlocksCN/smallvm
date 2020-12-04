@@ -1,0 +1,118 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables clapsPerMinute lastClapTime 
+
+script 50 50 {
+comment 'Click start and then clap at a steady rate.
+This program will show the tempo in
+beats per minute (bpm).'
+}
+
+script 53 125 {
+whenCondition ((loudness) > 80)
+local 'now' (millisOp)
+clapsPerMinute = (60000 / (now - lastClapTime))
+lastClapTime = now
+sayIt clapsPerMinute
+waitUntil ((loudness) < 50)
+}
+
+script 53 367 {
+whenStarted
+comment 'Open the graph to see how steady your beat is.
+If you keep it very steady the graph will be almost flat.'
+forever {
+  printIt clapsPerMinute
+  waitMillis 25
+}
+}
+
+
+module Microphone Input
+author MicroBlocks
+version 1 1 
+description 'Microphone, loudness, and clap counting support for boards with built in microphones. The microphone block usually reports values between -512 and 511, with zero for silence. However, very loud sounds may exceed that range on some boards. On the micro:bit v2, the microphone must be turned on before use.'
+variables _clapThreshold _loudnessSamples 
+
+	spec 'r' '[sensors:microphone]' 'microphone'
+	spec ' ' 'turnOnMicrophone' 'turnOnMicrophone'
+	spec 'r' 'loudness' 'loudness'
+	spec 'r' 'clapCount' 'clap count'
+	spec ' ' 'setClapThreshold' 'set clap threshold _' 'auto' 200
+	spec 'r' 'guessClapThreshold' 'estimate clap threshold'
+	spec ' ' '_loudnessLoop' '_loudnessLoop'
+
+to '_loudnessLoop' {
+  comment 'Sample microphone at ~2000 samples/sec, keeping the most recent N samples.'
+  turnOnMicrophone
+  waitMillis 20
+  forever {
+    for i (size _loudnessSamples) {
+      atPut i _loudnessSamples ('[sensors:microphone]')
+      waitMicros 500
+    }
+  }
+}
+
+to clapCount {
+  comment 'Count the number of claps in a sequence.'
+  if (_clapThreshold == 0) {
+    _clapThreshold = 150
+  }
+  waitUntil ((loudness) > _clapThreshold)
+  local 'count' 1
+  forever {
+    waitUntil ((loudness) < _clapThreshold)
+    resetTimer
+    repeatUntil ((loudness) > _clapThreshold) {
+      comment 'This loop awaits either the next clap or for a pause, indicating that the claps have ended.'
+      if ((timer) > 700) {
+        comment 'No clap for a while, return the count.'
+        return count
+      }
+    }
+    count += 1
+  }
+}
+
+to guessClapThreshold {
+  comment 'Sample the loudness for three seconds and set
+_clapThreshold to 130% of the maxium.'
+  local 'maxLoudness' 0
+  resetTimer
+  repeatUntil ((timer) > 3000) {
+    maxLoudness = (maximum maxLoudness (loudness))
+  }
+  return ((13 * maxLoudness) / 10)
+}
+
+to loudness {
+  if (_loudnessSamples == 0) {
+    comment 'Initialize _loudnessSamples and start sampling.'
+    _loudnessSamples = (newList 50)
+    sendBroadcast '_loudnessLoop'
+  }
+  local 'low' 10000
+  local 'high' -10000
+  for n _loudnessSamples {
+    low = (minimum low n)
+    high = (maximum high n)
+  }
+  return (high - low)
+}
+
+to setClapThreshold n {
+  _clapThreshold = n
+}
+
+to turnOnMicrophone {
+  if ('micro:bit v2' == (boardType)) {
+    comment 'Turn on the microphone and
+wait for it to settle down.'
+    digitalWriteOp 28 true
+    waitMillis 50
+  }
+}
+
