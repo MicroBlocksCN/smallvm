@@ -779,6 +779,9 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this
 			}
+			if ('Mac' == (platform)) {
+				setSerialDelay this 8
+			}
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
