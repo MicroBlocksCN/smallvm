@@ -7,7 +7,8 @@ Also known as Nokring.'
 variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name' 
 
 	spec 'r' '_RTTTL parse control from' '_RTTTL parse control from _' 'str' ''
-	spec ' ' 'play ringtone' 'play ringtone _' 'auto' 'Pacman:d=16,o=6,b=140:b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b'
+	spec ' ' 'play ringtone' 'play ringtone _' 'str' 'Pacman:d=16,o=6,b=140:
+b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b'
 	spec 'r' 'current song name' 'current song name'
 	spec ' ' '_RTTTL play note' '_RTTTL play note _' 'str' '8c#'
 
