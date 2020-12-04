@@ -77,8 +77,10 @@ to setClapThreshold n {
 
 to turnOnMicrophone {
   if ('micro:bit v2' == (boardType)) {
-    comment 'Turn on the microphone'
+    comment 'Turn on the microphone and
+wait for it to settle down.'
     digitalWriteOp 28 true
+    waitMillis 50
   }
 }
 
