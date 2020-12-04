@@ -215,11 +215,10 @@ to stopScrollingText {
 
 module Tone Output
 author MicroBlocks
-version 1 3 
+version 1 5 
 tags tone sound music audio note speaker 
-description 'Audio tone generation. Make music with MicroBlocks!
-'
-variables _tonePin _toneInitalized _toneLoopOverhead 
+description 'Audio tone generation. Make music with MicroBlocks!'
+variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneFrequencies 
 
 	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
 	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
@@ -227,79 +226,30 @@ variables _tonePin _toneInitalized _toneLoopOverhead
 	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
 	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
 	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
-	spec 'r' '_baseFreqForSharpOrFlat' '_baseFreqForSharpOrFlat _' 'auto' 'c#'
 	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
 	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+	spec 'r' '_baseFreqForSharpOrFlat' 'obsolete _baseFreqForSharpOrFlat _' 'auto' 'c#'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
 scaled by 1000. For example, return 440000 (440Hz) for A.
 Note names may be upper or lower case. Note names
 may be followed by # for a sharp or b for a flat.'
-  if (or (note == 'c') (note == 'C')) {
-    return 261626
-  } (or (note == 'd') (note == 'D')) {
-    return 293665
-  } (or (note == 'e') (note == 'E')) {
-    return 329628
-  } (or (note == 'f') (note == 'F')) {
-    return 349228
-  } (or (note == 'g') (note == 'G')) {
-    return 391995
-  } (or (note == 'a') (note == 'A')) {
-    return 440000
-  } (or (note == 'b') (note == 'B')) {
-    return 493883
+  if (_toneNoteNames == 0) {
+    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
   }
-  return ('_baseFreqForSharpOrFlat' note)
+  return ('_baseFreqForSemitone' ('[data:find]' ('_trimmedLowercase' note) _toneNoteNames))
 }
 
 to '_baseFreqForSemitone' semitone {
-  if (0 == semitone) {
-    return 261626
-  } (1 == semitone) {
-    return 277183
-  } (2 == semitone) {
-    return 293665
-  } (3 == semitone) {
-    return 311127
-  } (4 == semitone) {
-    return 329628
-  } (5 == semitone) {
-    return 349228
-  } (6 == semitone) {
-    return 369994
-  } (7 == semitone) {
-    return 391995
-  } (8 == semitone) {
-    return 415305
-  } (9 == semitone) {
-    return 440000
-  } (10 == semitone) {
-    return 466164
-  } (11 == semitone) {
-    return 493883
+  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883 246942 277183 277183 311127 311127 349228 329628 369994 369994 415305 415305 466164 466164 523252)}
+  if (and (1 <= semitone) (semitone <= (size _toneFrequencies))) {
+    return (at semitone _toneFrequencies)
+  } else {
+    comment 'Bad note name; return 10 Hz'
+    return 10000
   }
-}
-
-to '_baseFreqForSharpOrFlat' note {
-  comment 'Return the frequency for the given sharp or flat note in the
-middle-C octave scaled by 1000. Only handles black keys.
-Thus, you can''t write E# to mean F.'
-  if (or (or (note == 'c#') (note == 'C#')) (or (note == 'db') (note == 'Db'))) {
-    return 277183
-  } (or (or (note == 'd#') (note == 'D#')) (or (note == 'eb') (note == 'Eb'))) {
-    return 311127
-  } (or (or (note == 'f#') (note == 'F#')) (or (note == 'gb') (note == 'Gb'))) {
-    return 369994
-  } (or (or (note == 'g#') (note == 'G#')) (or (note == 'ab') (note == 'Ab'))) {
-    return 415305
-  } (or (or (note == 'a#') (note == 'A#')) (or (note == 'bb') (note == 'Bb'))) {
-    return 466164
-  }
-  comment 'Unrecognized note names map to 0.1 Hz, which is inaudible.
-This helps users find typos in their tunes.'
-  return 100
 }
 
 to '_measureLoopOverhead' {
@@ -334,6 +284,21 @@ to '_toneLoop' scaledFreq ms {
   }
 }
 
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+or periods and all lowercase.'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (and (ch > 32) (ch != 46)) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
 to 'attach buzzer to pin' pinNumber {
   if (pinNumber == '') {
     comment 'Pin number not specified; use default pin for this device'
@@ -365,6 +330,10 @@ to 'play frequency' freq ms {
 
 to 'play tone' note octave ms {
   local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    waitMillis ms
+    return 0
+  }
   if (octave < 0) {
     repeat (absoluteValue octave) {
       freq = (freq / 2)
@@ -377,7 +346,7 @@ to 'play tone' note octave ms {
 }
 
 to playMIDIKey key ms {
-  local 'freq' ('_baseFreqForSemitone' (key % 12))
+  local 'freq' ('_baseFreqForSemitone' ((key % 12) + 1))
   local 'octave' ((key / 12) - 5)
   if (octave < 0) {
     repeat (absoluteValue octave) {
