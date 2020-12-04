@@ -1,0 +1,308 @@
+module main
+author unknown
+version 1 0 
+description ''
+
+script 56 50 {
+comment 'Loudness meter for boards
+that have a microphone.'
+}
+
+script 60 111 {
+whenStarted
+comment 'Display loudness on a micro:bit style display.'
+forever {
+  local 'sound level' (loudness)
+  if ((v 'sound level') > 120) {
+    '[display:mbDisplay]' 33554431
+  } ((v 'sound level') > 50) {
+    '[display:mbDisplay]' 473536
+  } ((v 'sound level') > 35) {
+    '[display:mbDisplay]' 14336
+  } ((v 'sound level') > 25) {
+    '[display:mbDisplay]' 4096
+  } else {
+    '[display:mbDisplayOff]'
+  }
+  waitMillis 10
+}
+}
+
+script 433 111 {
+whenStarted
+comment 'Display loudness on the NeoPixels of a
+Circuit Playground Express or Bluefruit.'
+neoPixelAttach 10 ''
+forever {
+  local 'sound level' (loudness)
+  if ((v 'sound level') > 300) {
+    setNeoPixelColors10 (colorSwatch 18 103 16 255) (colorSwatch 18 103 16 255) (colorSwatch 112 133 2 255) (colorSwatch 99 67 4 255) (colorSwatch 91 15 0 255) (colorSwatch 91 15 0 255) (colorSwatch 99 67 4 255) (colorSwatch 112 133 2 255) (colorSwatch 18 103 16 255) (colorSwatch 18 103 16 255)
+  } ((v 'sound level') > 150) {
+    setNeoPixelColors10 (colorSwatch 18 103 16 255) (colorSwatch 18 103 16 255) (colorSwatch 112 133 2 255) (colorSwatch 99 67 4 255) (colorSwatch 0 0 0 255) (colorSwatch 3 3 3 255) (colorSwatch 99 67 4 255) (colorSwatch 112 133 2 255) (colorSwatch 18 103 16 255) (colorSwatch 18 103 16 255)
+  } ((v 'sound level') > 100) {
+    setNeoPixelColors10 (colorSwatch 18 103 16 255) (colorSwatch 18 103 16 255) (colorSwatch 112 133 2 255) (colorSwatch 0 0 0 255) (colorSwatch 0 0 0 255) (colorSwatch 3 3 3 255) (colorSwatch 0 0 0 255) (colorSwatch 112 133 2 255) (colorSwatch 18 103 16 255) (colorSwatch 18 103 16 255)
+  } ((v 'sound level') > 70) {
+    setNeoPixelColors10 (colorSwatch 18 103 16 255) (colorSwatch 18 103 16 255) (colorSwatch 2 2 2 255) (colorSwatch 0 0 0 255) (colorSwatch 0 0 0 255) (colorSwatch 3 3 3 255) (colorSwatch 0 0 0 255) (colorSwatch 0 0 0 255) (colorSwatch 18 103 16 255) (colorSwatch 18 103 16 255)
+  } ((v 'sound level') > 30) {
+    setNeoPixelColors10 (colorSwatch 18 103 16 255) (colorSwatch 7 7 7 255) (colorSwatch 2 2 2 255) (colorSwatch 0 0 0 255) (colorSwatch 0 0 0 255) (colorSwatch 3 3 3 255) (colorSwatch 0 0 0 255) (colorSwatch 0 0 0 255) (colorSwatch 0 0 0 255) (colorSwatch 18 103 16 255)
+  } else {
+    clearNeoPixels
+  }
+  waitMillis 10
+}
+}
+
+
+module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+
+to displayCharacter s {
+  s = ('[data:join]' '' s)
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+
+module Microphone Input
+author MicroBlocks
+version 1 1 
+description 'Microphone, loudness, and clap counting support for boards with built in microphones. The microphone block usually reports values between -512 and 511, with zero for silence. However, very loud sounds may exceed that range on some boards. On the micro:bit v2, the microphone must be turned on before use.'
+variables _clapThreshold _loudnessSamples 
+
+	spec 'r' '[sensors:microphone]' 'microphone'
+	spec ' ' 'turnOnMicrophone' 'turnOnMicrophone'
+	spec 'r' 'loudness' 'loudness'
+	spec 'r' 'clapCount' 'clap count'
+	spec ' ' 'setClapThreshold' 'set clap threshold _' 'auto' 200
+	spec 'r' 'guessClapThreshold' 'estimate clap threshold'
+	spec ' ' '_loudnessLoop' '_loudnessLoop'
+
+to '_loudnessLoop' {
+  comment 'Sample microphone at ~2000 samples/sec, keeping the most recent N samples.'
+  turnOnMicrophone
+  waitMillis 20
+  forever {
+    for i (size _loudnessSamples) {
+      atPut i _loudnessSamples ('[sensors:microphone]')
+      waitMicros 500
+    }
+  }
+}
+
+to clapCount {
+  comment 'Count the number of claps in a sequence.'
+  if (_clapThreshold == 0) {
+    _clapThreshold = 150
+  }
+  waitUntil ((loudness) > _clapThreshold)
+  local 'count' 1
+  forever {
+    waitUntil ((loudness) < _clapThreshold)
+    resetTimer
+    repeatUntil ((loudness) > _clapThreshold) {
+      comment 'This loop awaits either the next clap or for a pause, indicating that the claps have ended.'
+      if ((timer) > 700) {
+        comment 'No clap for a while, return the count.'
+        return count
+      }
+    }
+    count += 1
+  }
+}
+
+to guessClapThreshold {
+  comment 'Sample the loudness for three seconds and set
+_clapThreshold to 130% of the maxium.'
+  local 'maxLoudness' 0
+  resetTimer
+  repeatUntil ((timer) > 3000) {
+    maxLoudness = (maximum maxLoudness (loudness))
+  }
+  return ((13 * maxLoudness) / 10)
+}
+
+to loudness {
+  if (_loudnessSamples == 0) {
+    comment 'Initialize _loudnessSamples and start sampling.'
+    _loudnessSamples = (newList 50)
+    sendBroadcast '_loudnessLoop'
+  }
+  local 'low' 10000
+  local 'high' -10000
+  for n _loudnessSamples {
+    low = (minimum low n)
+    high = (maximum high n)
+  }
+  return (high - low)
+}
+
+to setClapThreshold n {
+  _clapThreshold = n
+}
+
+to turnOnMicrophone {
+  if ('micro:bit v2' == (boardType)) {
+    comment 'Turn on the microphone and
+wait for it to settle down.'
+    digitalWriteOp 28 true
+    waitMillis 50
+  }
+}
+
+
+module NeoPixel Output
+author MicroBlocks
+version 1 2 
+tags led strip rgb string ws2812 
+description 'Control NeoPixel (WS2812) RGB LED strips.
+'
+variables _np_pixels 
+
+	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
+	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+	spec ' ' 'clearNeoPixels' 'clear NeoPixels'
+	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
+	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+	spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+	spec 'r' 'randomColor' 'random color'
+	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
+	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
+	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+
+to '_NeoPixel_ensureInitialized' {
+  if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
+    neoPixelAttach 25 '' false
+  } ((boardType) == 'D1-Mini') {
+    comment 'D1 mini kit'
+    neoPixelAttach 7 15 false
+  } else {
+    neoPixelAttach 10 '' false
+  }}
+}
+
+to '_NeoPixel_rotate' left {
+  '_NeoPixel_ensureInitialized'
+  local 'length' (size _np_pixels)
+  if left {
+    local 'first' (at 1 _np_pixels)
+    for i (length - 1) {
+      atPut i _np_pixels (at (i + 1) _np_pixels)
+    }
+    atPut length _np_pixels first
+  } else {
+    local 'last' (at length _np_pixels)
+    for i (length - 1) {
+      atPut ((length - i) + 1) _np_pixels (at (length - i) _np_pixels)
+    }
+    atPut 1 _np_pixels last
+  }
+}
+
+to '_NeoPixel_update' {
+  '[display:neoPixelSend]' _np_pixels
+  waitMicros 100
+}
+
+to clearNeoPixels {
+  '_NeoPixel_ensureInitialized'
+  fillList _np_pixels 0
+  '_NeoPixel_update'
+}
+
+to colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to neoPixelAttach number pinNumber optionalHasWhite {
+  hasWhite = false
+  if ((pushArgCount) > 2) {
+    hasWhite = optionalHasWhite
+  }
+  if (or (_np_pixels == 0) (number != (size _np_pixels))) {
+    _np_pixels = (newList number)
+  }
+  fillList _np_pixels 0
+  '[display:neoPixelSetPin]' pinNumber hasWhite
+}
+
+to neoPixelSetAllToColor color {
+  '_NeoPixel_ensureInitialized'
+  fillList _np_pixels color
+  '_NeoPixel_update'
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to rotateNeoPixelsBy n {
+  '_NeoPixel_ensureInitialized'
+  repeat (absoluteValue n) {
+    '_NeoPixel_rotate' (n > 0)
+  }
+  '_NeoPixel_update'
+}
+
+to setNeoPixelColor i color {
+  '_NeoPixel_ensureInitialized'
+  if (and (1 <= i) (i <= (size _np_pixels))) {
+    atPut i _np_pixels color
+    '_NeoPixel_update'
+  }
+}
+
+to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
+  '_NeoPixel_ensureInitialized'
+  if ((size _np_pixels) >= 1) {
+    atPut 1 _np_pixels c1
+  }
+  if ((size _np_pixels) >= 2) {
+    atPut 2 _np_pixels c2
+  }
+  if ((size _np_pixels) >= 3) {
+    atPut 3 _np_pixels c3
+  }
+  if ((size _np_pixels) >= 4) {
+    atPut 4 _np_pixels c4
+  }
+  if ((size _np_pixels) >= 5) {
+    atPut 5 _np_pixels c5
+  }
+  if ((size _np_pixels) >= 6) {
+    atPut 6 _np_pixels c6
+  }
+  if ((size _np_pixels) >= 7) {
+    atPut 7 _np_pixels c7
+  }
+  if ((size _np_pixels) >= 8) {
+    atPut 8 _np_pixels c8
+  }
+  if ((size _np_pixels) >= 9) {
+    atPut 9 _np_pixels c9
+  }
+  if ((size _np_pixels) >= 10) {
+    atPut 10 _np_pixels c10
+  }
+  '_NeoPixel_update'
+}
+
