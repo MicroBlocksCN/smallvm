@@ -4,13 +4,12 @@ version 1 0
 description ''
 variables half quarter eighth dottedQuarter verseTime 
 
-script 50 50 {
+script 54 74 {
 whenStarted
 comment 'This demonstrate three part harmony on
 a Circuit Playground, micro:bit v2, or other
 nRF52-based board. Sounds best through
 an amplified speaker connected to pin 0.'
-_multiTonePin = 0
 eighth = 200
 quarter = (2 * eighth)
 dottedQuarter = (3 * eighth)
@@ -26,7 +25,7 @@ waitMillis verseTime
 playNoteOnVoice 'C' 0 (2 * half) 1
 }
 
-script 445 52 {
+script 449 76 {
 whenBroadcastReceived 'part1'
 playNoteOnVoice 'C' 0 half 1
 playNoteOnVoice 'B' -1 half 1
@@ -36,7 +35,7 @@ playNoteOnVoice 'C' 0 eighth 1
 playNoteOnVoice 'G' -1 half 1
 }
 
-script 447 278 {
+script 451 302 {
 whenBroadcastReceived 'part2'
 playNoteOnVoice 'C' 0 quarter 2
 playNoteOnVoice 'C' 0 quarter 2
@@ -48,21 +47,7 @@ playNoteOnVoice 'D#' 0 eighth 2
 playNoteOnVoice 'D' 0 half 2
 }
 
-script 449 561 {
-whenBroadcastReceived 'part3'
-playNoteOnVoice 'G' 0 dottedQuarter 3
-playNoteOnVoice 'F' 0 eighth 3
-playNoteOnVoice 'G' 0 dottedQuarter 3
-playNoteOnVoice 'F' 0 eighth 3
-playNoteOnVoice 'G' 0 dottedQuarter 3
-playNoteOnVoice 'F' 0 eighth 3
-playNoteOnVoice 'G' 0 eighth 3
-playNoteOnVoice 'F' 0 eighth 3
-playNoteOnVoice 'D#' 0 eighth 3
-playNoteOnVoice 'D' 0 eighth 3
-}
-
-script 53 571 {
+script 52 576 {
 comment 'Play it like a round.'
 sendBroadcast 'part1'
 waitMillis verseTime
@@ -79,6 +64,20 @@ waitMillis verseTime
 sendBroadcast 'part3'
 waitMillis verseTime
 playNoteOnVoice 'C' 0 (2 * half) 1
+}
+
+script 453 585 {
+whenBroadcastReceived 'part3'
+playNoteOnVoice 'G' 0 dottedQuarter 3
+playNoteOnVoice 'F' 0 eighth 3
+playNoteOnVoice 'G' 0 dottedQuarter 3
+playNoteOnVoice 'F' 0 eighth 3
+playNoteOnVoice 'G' 0 dottedQuarter 3
+playNoteOnVoice 'F' 0 eighth 3
+playNoteOnVoice 'G' 0 eighth 3
+playNoteOnVoice 'F' 0 eighth 3
+playNoteOnVoice 'D#' 0 eighth 3
+playNoteOnVoice 'D' 0 eighth 3
 }
 
 
@@ -152,6 +151,7 @@ to '_initMultiTone' {
 }
 
 to '_multiToneLoop' {
+  '_initMultiTone'
   comment 'Set initial sample values to virtual zero (the middle of their range).'
   _v1 = 65536
   _v2 = 65536
