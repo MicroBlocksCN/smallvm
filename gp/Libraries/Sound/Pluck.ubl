@@ -1,6 +1,6 @@
 module Pluck Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 depends Tone 
 description 'Uses a simple algorithm to synthesize a plucked-string sound similar to an acoustic guitar (see https://en.wikipedia.org/wiki/Karplus–Strong_string_synthesis).
 
@@ -11,6 +11,7 @@ variables _pluckInitialized _pluckPin _pluckShift _pluckOffset
 
 	spec ' ' 'pluckNote' 'pluck note _ octave _ for _ ms' 'str num num' 'C' 0 3000
 	spec ' ' 'pluckMidiKey' 'pluck MIDI key _ for _ msecs' 'num num' 60 3000
+	spec ' ' 'setPluckPin' 'set pluck pin _' 'auto' ''
 	spec ' ' '_initPluck' '_initPluck'
 	spec ' ' '_playPluck' '_playPluck _ for _ msecs' 'num num' 80 3000
 	spec 'r' '_pitchToBufferLength' '_pitchToBufferLength _' 'num' 440
@@ -98,5 +99,16 @@ to pluckNote note octave ms {
     freq = (freq * 2)
   }
   '_playPluck' ('_pitchToBufferLength' (freq / 1000)) ms
+}
+
+to setPluckPin pin {
+  if (pin == '') {
+    _pluckInitialized = false
+    return 0
+  }
+  _pluckPin = pin
+  _pluckShift = 0
+  _pluckOffset = 512
+  _pluckInitialized = true
 }
 

@@ -4,12 +4,19 @@ version 1 0
 description ''
 variables half quarter eighth dottedQuarter verseTime 
 
-script 54 74 {
+script 54 88 {
 whenStarted
-comment 'This demonstrate three part harmony on
-a Circuit Playground, micro:bit v2, or other
-nRF52-based board. Sounds best through
-an amplified speaker connected to pin 0.'
+comment 'This demonstrate three part harmony
+on a micro:bit v2, Circuit Playground, CIrcuit
+Playground Bluefruit, Clue, or M5 Stack. It
+requires either a DAC or fast PWM hardware,
+so it works on ESP32, nRF52, or SAMD21
+processors. Sorry, it does not work on the
+original micro:bit or Calliope mini.
+
+It sounds best when played through an
+amplified external speaker.'
+setMultitonePin ''
 eighth = 200
 quarter = (2 * eighth)
 dottedQuarter = (3 * eighth)
@@ -22,32 +29,6 @@ sendBroadcast 'part2'
 waitMillis verseTime
 sendBroadcast 'part3'
 waitMillis verseTime
-playNoteOnVoice 'C' 0 (2 * half) 1
-}
-
-script 449 76 {
-whenBroadcastReceived 'part1'
-playNoteOnVoice 'C' 0 half 1
-playNoteOnVoice 'B' -1 half 1
-playNoteOnVoice 'C' 0 quarter 1
-playNoteOnVoice 'C' 0 eighth 1
-playNoteOnVoice 'C' 0 eighth 1
-playNoteOnVoice 'G' -1 half 1
-}
-
-script 451 302 {
-whenBroadcastReceived 'part2'
-playNoteOnVoice 'C' 0 quarter 2
-playNoteOnVoice 'C' 0 quarter 2
-playNoteOnVoice 'D' 0 quarter 2
-playNoteOnVoice 'D' 0 quarter 2
-playNoteOnVoice 'D#' 0 quarter 2
-playNoteOnVoice 'F' 0 eighth 2
-playNoteOnVoice 'D#' 0 eighth 2
-playNoteOnVoice 'D' 0 half 2
-}
-
-script 52 576 {
 comment 'Play it like a round.'
 sendBroadcast 'part1'
 waitMillis verseTime
@@ -66,7 +47,29 @@ waitMillis verseTime
 playNoteOnVoice 'C' 0 (2 * half) 1
 }
 
-script 453 585 {
+script 449 90 {
+whenBroadcastReceived 'part1'
+playNoteOnVoice 'C' 0 half 1
+playNoteOnVoice 'B' -1 half 1
+playNoteOnVoice 'C' 0 quarter 1
+playNoteOnVoice 'C' 0 eighth 1
+playNoteOnVoice 'C' 0 eighth 1
+playNoteOnVoice 'G' -1 half 1
+}
+
+script 451 316 {
+whenBroadcastReceived 'part2'
+playNoteOnVoice 'C' 0 quarter 2
+playNoteOnVoice 'C' 0 quarter 2
+playNoteOnVoice 'D' 0 quarter 2
+playNoteOnVoice 'D' 0 quarter 2
+playNoteOnVoice 'D#' 0 quarter 2
+playNoteOnVoice 'F' 0 eighth 2
+playNoteOnVoice 'D#' 0 eighth 2
+playNoteOnVoice 'D' 0 half 2
+}
+
+script 451 604 {
 whenBroadcastReceived 'part3'
 playNoteOnVoice 'G' 0 dottedQuarter 3
 playNoteOnVoice 'F' 0 eighth 3
@@ -83,7 +86,7 @@ playNoteOnVoice 'D' 0 eighth 3
 
 module MultiTone Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 description 'On boards that support it, play up to four simultaneous voices of music through a single speaker. The best sound quality is obtained by playing through through an amplified external speaker, but you can hear it through the built-in speakers on the micro:bit V2, Circuit Playground Express and Bluefruit, and M5 Stack/Core.
 
 Note: This library does NOT work on the original micro:bit or Calliope mini!
@@ -92,7 +95,9 @@ To output the audio waveform, the board must have a DAC (e.g. SAMD21 and ESP32 b
 variables _multiTonePin _multiToneInitialized _v1 _v2 _v3 _v4 _v1Step _v2Step _v3Step _v4Step 
 
 	spec ' ' 'playNoteOnVoice' 'play note _ octave _ for _ ms voice _' 'auto num num num' 'A' 0 500 1
+	spec ' ' 'setMultitonePin' 'set multitone pin _' 'auto' ''
 	spec 'r' '_baseFreqForNoteMulti' '_baseFreqForNoteMulti _' 'auto' 'A'
+	spec ' ' '_initMultiTone' '_initMultiTone'
 	spec ' ' '_multiToneLoop' '_multiToneLoop'
 	spec 'r' '_nextSample' '_nextSample'
 	spec 'r' '_stepForNote' '_stepForNote _ octave _' 'str num' 'A' 0
@@ -151,7 +156,7 @@ to '_initMultiTone' {
 }
 
 to '_multiToneLoop' {
-  '_initMultiTone'
+  if (not _multiToneInitialized) {'_initMultiTone'}
   comment 'Set initial sample values to virtual zero (the middle of their range).'
   _v1 = 65536
   _v2 = 65536
@@ -260,5 +265,14 @@ to zero to to stop the note.'
     waitMillis ms
     _v4Step = 0
   }
+}
+
+to setMultitonePin pin {
+  if (pin == '') {
+    _multiToneInitialized = false
+    return 0
+  }
+  _multiTonePin = pin
+  _multiToneInitialized = true
 }
 

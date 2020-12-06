@@ -1,0 +1,284 @@
+module main
+author unknown
+version 1 0 
+description ''
+
+script 50 50 {
+whenStarted
+comment 'This demonstrates plucked string synthesis
+on a micro:bit v2, Circuit Playground, CIrcuit
+Playground Bluefruit, Clue, or M5 Stack. It
+requires either a DAC or fast PWM hardware,
+so it works on ESP32, nRF52, or SAMD21
+processors. Sorry, it does not work on the
+original micro:bit or Calliope mini.
+
+It sounds best when played through an
+amplified external speaker.'
+setPluckPin ''
+for i 37 {
+  pluckMidiKey (40 + i) 300
+}
+}
+
+
+module Pluck Output
+author MicroBlocks
+version 1 1 
+depends Tone 
+description 'Uses a simple algorithm to synthesize a plucked-string sound similar to an acoustic guitar (see https://en.wikipedia.org/wiki/Karplus–Strong_string_synthesis).
+
+Note: This library does NOT work on the original micro:bit or Calliope mini!
+
+To output the generated waveform, the board must have a DAC (e.g. SAMD21 and ESP32 boards) or fast enough pulse-width modulation (PWM) hardware to simulate a DAC (e.g. nRF52xxx boards). To tune the output to standard A=440 pitch on boards with different clock speeds, change the tuningConstant variable in _pitchToBufferLength.'
+variables _pluckInitialized _pluckPin _pluckShift _pluckOffset 
+
+	spec ' ' 'pluckNote' 'pluck note _ octave _ for _ ms' 'str num num' 'C' 0 3000
+	spec ' ' 'pluckMidiKey' 'pluck MIDI key _ for _ msecs' 'num num' 60 3000
+	spec ' ' 'setPluckPin' 'set pluck pin _' 'auto' ''
+	spec ' ' '_initPluck' '_initPluck'
+	spec ' ' '_playPluck' '_playPluck _ for _ msecs' 'num num' 80 3000
+	spec 'r' '_pitchToBufferLength' '_pitchToBufferLength _' 'num' 440
+	spec 'r' '_midiKeyToPitch' '_midiKeyToPitch _' 'num' 60
+
+to '_initPluck' {
+  _pluckShift = 0
+  _pluckOffset = 512
+  if ((boardType) == 'micro:bit v2') {
+    _pluckPin = 27
+  } ((boardType) == 'Clue') {
+    _pluckPin = 21
+  } (or ((boardType) == 'Citilab ED1') ((boardType) == 'M5StickC')) {
+    _pluckShift = 3
+    _pluckOffset = 128
+    _pluckPin = 26
+  } ((boardType) == 'M5Stack-Core') {
+    _pluckShift = 3
+    _pluckOffset = 128
+    _pluckPin = 25
+  } else {
+    _pluckPin = 0
+  }
+  _pluckInitialized = true
+}
+
+to '_midiKeyToPitch' key {
+  local 'freq' (at ((key % 12) + 1) ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  return (freq / 1000)
+}
+
+to '_pitchToBufferLength' pitch {
+  comment 'Adjust the tuning constant so that pluck pitch is correct.
+(Compare with a piano or other instrument.)'
+  local 'tuningConstant' 21000
+  return (maximum 3 (tuningConstant / pitch))
+}
+
+to '_playPluck' bufSize msecs {
+  if (not _pluckInitialized) {'_initPluck'}
+  local 'buf' (newList bufSize)
+  for i (bufSize / 5) {
+    atPut i buf (random -400 400)
+  }
+  local 'endTime' ((millisOp) + msecs)
+  repeatUntil ((millisOp) > endTime) {
+    for i (bufSize - 1) {
+      local 'sample' (((at i buf) + (at (i + 1) buf)) / 2)
+      atPut i buf sample
+      sample = ((sample >> _pluckShift) + _pluckOffset)
+      analogWriteOp _pluckPin sample
+      waitMicros 20
+    }
+    atPut bufSize buf (at 1 buf)
+  }
+}
+
+to pluckMidiKey key msecs {
+  local 'pitch' ('_midiKeyToPitch' key)
+  '_playPluck' ('_pitchToBufferLength' pitch) msecs
+}
+
+to pluckNote note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    comment 'Rest or unrecognized note'
+    waitMillis ms
+    return 0
+  }
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_playPluck' ('_pitchToBufferLength' (freq / 1000)) ms
+}
+
+to setPluckPin pin {
+  if (pin == '') {
+    _pluckInitialized = false
+    return 0
+  }
+  _pluckPin = pin
+  _pluckShift = 0
+  _pluckOffset = 512
+  _pluckInitialized = true
+}
+
+
+module Tone Output
+author MicroBlocks
+version 1 5 
+tags tone sound music audio note speaker 
+description 'Audio tone generation. Make music with MicroBlocks!'
+variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneFrequencies 
+
+	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+
+to '_baseFreqForNote' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  if (_toneNoteNames == 0) {
+    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
+  }
+  return ('_baseFreqForSemitone' ('[data:find]' ('_trimmedLowercase' note) _toneNoteNames))
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883 246942 277183 277183 311127 311127 349228 329628 369994 369994 415305 415305 466164 466164 523252)}
+  if (and (1 <= semitone) (semitone <= (size _toneFrequencies))) {
+    return (at semitone _toneFrequencies)
+  } else {
+    comment 'Bad note name; return 10 Hz'
+    return 10000
+  }
+}
+
+to '_measureLoopOverhead' {
+  comment 'Measure the loop overhead on this device'
+  local 'halfCycle' 100
+  local 'startT' (microsOp)
+  repeat 100 {
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+  }
+  local 'usecs' ((microsOp) - startT)
+  return ((usecs - 20000) / 200)
+}
+
+to '_toneLoop' scaledFreq ms {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {
+    '[io:playTone]' _tonePin (scaledFreq / 1000)
+    waitMillis ms
+    '[io:playTone]' _tonePin 0
+  } else {
+    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+    local 'cycles' ((ms * 500) / halfCycle)
+    repeat cycles {
+      digitalWriteOp _tonePin true
+      waitMicros halfCycle
+      digitalWriteOp _tonePin false
+      waitMicros halfCycle
+    }
+  }
+}
+
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+or periods and all lowercase.'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (and (ch > 32) (ch != 46)) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
+to 'attach buzzer to pin' pinNumber {
+  if (pinNumber == '') {
+    comment 'Pin number not specified; use default pin for this device'
+    if ((boardType) == 'Citilab ED1') {
+      _tonePin = 26
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'D1-Mini') {
+      _tonePin = 12
+    } else {
+      _tonePin = -1
+    }
+  } else {
+    _tonePin = pinNumber
+  }
+  _toneLoopOverhead = ('_measureLoopOverhead')
+  _toneInitalized = (booleanConstant true)
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    waitMillis ms
+    return 0
+  }
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' ((key % 12) + 1))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
