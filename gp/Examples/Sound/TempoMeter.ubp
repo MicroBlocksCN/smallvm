@@ -1,5 +1,5 @@
 module main
-author unknown
+author MicroBlocks
 version 1 0 
 description ''
 variables clapsPerMinute lastClapTime 
