@@ -60,7 +60,7 @@ to randomColor {
 
 module Turtle Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 depends TFT 
 tags tft graphics draw 
 description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
@@ -88,7 +88,6 @@ to '_turtleNotes' {
 The sine function takes an angle in hundreds of a degree and returns a
 number scaled by 16384. _turtleX and _turtleY are also scaled by 16384.
 Those numbers are shifted right by 14 bits to get pixel locations.'
-  local 'ignore' 0
 }
 
 to clearDisplay color {
@@ -101,7 +100,7 @@ to 'go to x' x y {
   local 'startX' (_turtleX >> 14)
   local 'startY' (_turtleY >> 14)
   _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
-  _turtleY = (((('[tft:getHeight]') / 2) + y) << 14)
+  _turtleY = (((('[tft:getHeight]') / 2) - y) << 14)
   local 'endX' (_turtleX >> 14)
   local 'endY' (_turtleY >> 14)
   if _turtlePenIsDown {

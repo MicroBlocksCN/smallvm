@@ -1,6 +1,6 @@
 module Turtle Output
 author MicroBlocks
-version 1 1
+version 1 2
 description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 depends 'TFT'
 tags tft graphics draw
@@ -75,7 +75,7 @@ to 'go to x' x y {
   local 'startX' (_turtleX >> 14)
   local 'startY' (_turtleY >> 14)
   _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
-  _turtleY = (((('[tft:getHeight]') / 2) + y) << 14)
+  _turtleY = (((('[tft:getHeight]') / 2) - y) << 14)
   local 'endX' (_turtleX >> 14)
   local 'endY' (_turtleY >> 14)
   if _turtlePenIsDown {
