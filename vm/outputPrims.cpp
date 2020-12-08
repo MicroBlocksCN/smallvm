@@ -97,8 +97,13 @@ static int updateLightLevel() {
 	// Note: This code is sensitive to details about ordering and timing. If you change it,
 	// be sure to test it carefully, with the LED display both on and off!
 
+	#if defined(ARDUINO_BBC_MICROBIT)
+		char row[] = {3, 4, 10};
+	#else
+		char row[] = {4, 5, 6};
+	#endif
+
 	char col[] = {COL1, COL2, COL3};
-	char row[] = {3, 4, 10};
 	int i;
 
 	if (lightLevelReadTime > (microsecs() + 10000)) lightLevelReadTime = 0; // clock wrap
@@ -124,7 +129,12 @@ static int updateLightLevel() {
 		lightLevelReadTime = microsecs() + 4000; // integration time
 		return false; // keep waiting
 	} else if (microsecs() >= lightLevelReadTime) { // integration complete; update level
-		lightLevel = 995 - (analogRead(3) + analogRead(4) + analogRead(10));
+		#if defined(ARDUINO_BBC_MICROBIT)
+			lightLevel = 995 - (analogRead(3) + analogRead(4) + analogRead(10));
+		#else
+			lightLevel = 835 - (analogRead(4) + analogRead(5) + analogRead(6));
+		#endif
+
 		if (lightLevel < 0) lightLevel = 0;
 		lightLevelReadTime = 0;
 		lightReadingRequested = false;
