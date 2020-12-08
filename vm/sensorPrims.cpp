@@ -782,7 +782,7 @@ static int mic_initialized = false;
 
 static int16_t mic_sample;
 
-void initPDM() {
+static void initPDM() {
 	if (mic_initialized) return;
 	mic_initialized = true;
 
@@ -828,17 +828,17 @@ static int readPDMMicrophone() {
 #define SAMPLERATE_HZ 22000
 #define DECIMATION    64
 
-Adafruit_ZeroPDM pdm = Adafruit_ZeroPDM(34, 35);
+static Adafruit_ZeroPDM pdm = Adafruit_ZeroPDM(34, 35);
 
 // a windowed sinc filter for 44 khz, 64 samples
-uint16_t sincfilter[DECIMATION] = {0, 2, 9, 21, 39, 63, 94, 132, 179, 236, 302, 379, 467, 565, 674, 792, 920, 1055, 1196, 1341, 1487, 1633, 1776, 1913, 2042, 2159, 2263, 2352, 2422, 2474, 2506, 2516, 2506, 2474, 2422, 2352, 2263, 2159, 2042, 1913, 1776, 1633, 1487, 1341, 1196, 1055, 920, 792, 674, 565, 467, 379, 302, 236, 179, 132, 94, 63, 39, 21, 9, 2, 0, 0};
+static uint16_t sincfilter[DECIMATION] = {0, 2, 9, 21, 39, 63, 94, 132, 179, 236, 302, 379, 467, 565, 674, 792, 920, 1055, 1196, 1341, 1487, 1633, 1776, 1913, 2042, 2159, 2263, 2352, 2422, 2474, 2506, 2516, 2506, 2474, 2422, 2352, 2263, 2159, 2042, 1913, 1776, 1633, 1487, 1341, 1196, 1055, 920, 792, 674, 565, 467, 379, 302, 236, 179, 132, 94, 63, 39, 21, 9, 2, 0, 0};
 
 // a manual loop-unroller!
 #define ADAPDM_REPEAT_LOOP_16(X) X X X X X X X X X X X X X X X X
 
 static int mic_initialized = false;
 
-void initSAMDPDM() {
+static void initSAMDPDM() {
 	pdm.begin();
 	if (!pdm.configure(SAMPLERATE_HZ * DECIMATION / 16, true)) {
 		outputString("Failed to configure SAMD PDM");
@@ -923,8 +923,29 @@ int readAnalogMicrophone() {
 #elif defined(ARDUINO_CALLIOPE_MINI)
 
 int readAnalogMicrophone() {
-	setPinMode(A0, INPUT);
-	return analogRead(A0) - 519; // adjust so silence is zero
+	const int adcReference = ADC_CONFIG_REFSEL_SupplyOneThirdPrescaling;
+	const int adcPrescaling = ADC_CONFIG_INPSEL_AnalogInputOneThirdPrescaling;
+	const int adcResolution = ADC_CONFIG_RES_10bit;
+	const int adcPin = ADC_CONFIG_PSEL_AnalogInput4;
+
+	NRF_ADC->ENABLE = 1;
+
+	NRF_ADC->CONFIG =
+		(adcPin << ADC_CONFIG_PSEL_Pos) |
+		(adcReference << ADC_CONFIG_REFSEL_Pos) |
+		(adcPrescaling << ADC_CONFIG_INPSEL_Pos) |
+		(adcResolution << ADC_CONFIG_RES_Pos);
+
+	NRF_ADC->TASKS_START = 1;
+	while(!NRF_ADC->EVENTS_END);
+	NRF_ADC->EVENTS_END = 0;
+
+	int value = NRF_ADC->RESULT;
+
+	NRF_ADC->TASKS_STOP = 1;
+	NRF_ADC->ENABLE = 0;
+
+	return value -= 517; // adjust so silence is zero
 }
 
 #else
