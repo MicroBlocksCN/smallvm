@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: December 09 2020
 
 #########################
 # Blocks and categories #
@@ -653,7 +653,7 @@ unplot x _ y _
 lösche x _ y _
 
 display character _
-zeige Buchstaben
+zeige Buchstaben _
 
 ####
 # TFT display library
