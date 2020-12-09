@@ -362,6 +362,14 @@ void restartSerial() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
 
+#elif defined(ADAFRUIT_METRO_M0_EXPRESS)
+
+	#define BOARD_TYPE "Metro M0"
+	#define DIGITAL_PINS 25
+	#define ANALOG_PINS 12
+	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
+
 #elif defined(ESP8266) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 
 	#define BOARD_TYPE "ESP8266"

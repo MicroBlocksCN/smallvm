@@ -570,8 +570,11 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
-		#ifdef ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS
+		// use internal NeoPixel pin if there is one
+		#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 			pinNum = 8; // internal NeoPixel pin
+		#elif defined(ADAFRUIT_METRO_M0_EXPRESS)
+			pinNum = 40;
 		#else
 			pinNum = 0; // default to pin 0
 		#endif
