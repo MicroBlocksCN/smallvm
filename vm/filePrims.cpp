@@ -15,17 +15,30 @@
 #include "interp.h"
 
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-// File system operations for Espressif boards (SPIFFS file system)
+// File system operations for Espressif boards
 
 #include <FS.h>
-#ifdef ARDUINO_ARCH_ESP32
-	#include <SPIFFS.h>
-	#include <esp_spiffs.h>
+
+// Select file system (Note: LittleFS is often much slower than SPIFFS)
+#define useLittleFS false
+#if useLittleFS
+	#ifdef ARDUINO_ARCH_ESP32
+		#include <LITTLEFS.h>
+		#define myFS LITTLEFS
+	#else
+		#include <LittleFS.h>
+		#define myFS LittleFS
+	#endif
+#else
+	#ifdef ARDUINO_ARCH_ESP32
+		#include <SPIFFS.h>
+	#endif
+	#define myFS SPIFFS
 #endif
 
 // Variables
 
-static int spiffsStarted = false;
+static int fsInitialized = false;
 static char fullPath[32]; // used to prefix "/" to file names
 
 typedef struct {
@@ -38,15 +51,17 @@ static FileEntry fileEntry[FILE_ENTRIES]; // records open files
 
 // Helper functions
 
-static void initSPIFFS() {
-	if (spiffsStarted) return;
+static void initFS() {
+	if (fsInitialized) return;
 
 	#ifdef ESP8266
-		SPIFFS.begin();
+		myFS.begin();
+		myFS.gc();
 	#else
-		SPIFFS.begin(true);
+		myFS.begin(true);
 	#endif
-	spiffsStarted = true;
+
+	fsInitialized = true;
 }
 
 static char *extractFilename(OBJ obj) {
@@ -89,11 +104,11 @@ static OBJ primOpen(int argCount, OBJ *args) {
 	char *fileName = extractFilename(args[0]);
 	if (!fileName[0]) return falseObj;
 
-	initSPIFFS();
+	initFS();
 	int i = entryFor(fileName);
 	if (i >= 0) { // found an existing entry; close and reopen
 		fileEntry[i].file.close();
-		fileEntry[i].file = SPIFFS.open(fileName, "a+");
+		fileEntry[i].file = myFS.open(fileName, "a+");
 		fileEntry[i].file.seek(0, SeekSet); // read from start of file
 		return falseObj;
 	}
@@ -102,7 +117,7 @@ static OBJ primOpen(int argCount, OBJ *args) {
 	if (i >= 0) { // initialize new entry
 		fileEntry[i].fileName[0] = '\0';
 		strncat(fileEntry[i].fileName, fileName, 31);
-		fileEntry[i].file = SPIFFS.open(fileName, "a+");
+		fileEntry[i].file = myFS.open(fileName, "a+");
 		fileEntry[i].file.seek(0, SeekSet); // read from start of file
 	}
 	return falseObj;
@@ -112,7 +127,7 @@ static OBJ primClose(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char *fileName = extractFilename(args[0]);
 
-	initSPIFFS();
+	initFS();
 	int i = entryFor(fileName);
 	if (i >= 0) {
 		fileEntry[i].fileName[0] = '\0';
@@ -127,13 +142,13 @@ static OBJ primDelete(int argCount, OBJ *args) {
 	char *fileName = extractFilename(args[0]);
 	if (!fileName[0]) return falseObj;
 
-	initSPIFFS();
-	if (SPIFFS.exists(fileName)) SPIFFS.remove(fileName);
+	initFS();
 	int i = entryFor(fileName);
 	if (i >= 0) {
 		fileEntry[i].fileName[0] = '\0';
 		fileEntry[i].file.close();
 	}
+	if (myFS.exists(fileName)) myFS.remove(fileName);
 	return falseObj;
 }
 
@@ -247,6 +262,7 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 		fileEntry[i].file.write(10); // newline
 		if (oldPos != oldSize) file.seek(oldPos, SeekSet); // reset position for reading
 	}
+	processMessage();
 	return falseObj;
 }
 
@@ -267,6 +283,7 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 		char *s = obj2str(data);
 		f.write((uint8 *) s, strlen(s));
 	}
+	processMessage();
 	return falseObj;
 }
 
@@ -284,7 +301,7 @@ static OBJ primFileSize(int argCount, OBJ *args) {
 	char *fileName = extractFilename(args[0]);
 	if (!fileName[0]) return int2obj(0);
 
-	File file = SPIFFS.open(fileName, "r");
+	File file = myFS.open(fileName, "r");
 	if (!file) return int2obj(0);
 	file.seek(0, SeekEnd); // seek to end
 	int size = file.position();
@@ -293,32 +310,36 @@ static OBJ primFileSize(int argCount, OBJ *args) {
 }
 
 static OBJ primStartFileList(int argCount, OBJ *args) {
-	initSPIFFS();
+	initFS();
 	#if defined(ESP8266)
-		rootDir = SPIFFS.openDir("/");
+		rootDir = myFS.openDir("/");
 	#elif defined(ESP32)
-		rootDir = SPIFFS.open("/");
+		rootDir = myFS.open("/");
 	#endif
 	return falseObj;
 }
 
-static OBJ primNextFileInList(int argCount, OBJ *args) {
-	char fileName[32];
-	fileName[0] = '\0';
+static void nextFileName(char *fileName) {
+	// Copy the next file name into the argument. Set argument to empty string when done.
+	// Argument must have room for at least 32 bytes.
 
+	fileName[0] = '\0'; // clear string
 	#if defined(ESP8266)
- 		if (rootDir.next()) {
-			if ((strcmp("/ublockscode", rootDir.fileName().c_str()) != 0) || rootDir.next()) {
- 				strncat(fileName, rootDir.fileName().c_str(), 31);
- 			}
-		}
+ 		if (rootDir.next()) strncat(fileName, rootDir.fileName().c_str(), 31);
 	#elif defined(ESP32)
 		if (rootDir) {
 			File file = rootDir.openNextFile();
-			if (file && (strcmp("/ublockscode", file.name()) == 0)) file = rootDir.openNextFile();
 			if (file) strncat(fileName, file.name(), 31);
 		}
 	#endif
+}
+
+static OBJ primNextFileInList(int argCount, OBJ *args) {
+	char fileName[100];
+	nextFileName(fileName);
+	if ((strcmp(fileName, "ublockscode") == 0) || (strcmp(fileName, "/ublockscode") == 0)) {
+		nextFileName(fileName); // skip code file
+	}
 	char *s = fileName;
 	if ('/' == s[0]) s++; // skip leading slash
 	return newStringFromBytes(s, strlen(s));
@@ -327,17 +348,18 @@ static OBJ primNextFileInList(int argCount, OBJ *args) {
 // System info
 
 static OBJ primSystemInfo(int argCount, OBJ *args) {
-	initSPIFFS();
+	initFS();
 	size_t totalBytes = 0;
 	size_t usedBytes = 0;
 
 	#if defined(ESP8266)
 		FSInfo info;
-		SPIFFS.info(info);
+		myFS.info(info);
 		totalBytes = info.totalBytes;
 		usedBytes = info.usedBytes;
 	#elif defined(ESP32)
-		esp_spiffs_info(NULL, &totalBytes, &usedBytes);
+		totalBytes = myFS.totalBytes();
+		usedBytes = myFS.usedBytes();
 	#endif
 
 	char result[100];
