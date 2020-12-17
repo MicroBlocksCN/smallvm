@@ -13,11 +13,25 @@
 #include "persist.h"
 
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-// Persistent file operations for Espressif boards (SPIFFS file system)
+// Persistent file operations for Espressif boards
 
 #include <FS.h>
-#ifdef ARDUINO_ARCH_ESP32
-	#include <SPIFFS.h>
+
+// Select file system (Note: LittleFS is often much slower than SPIFFS)
+#define useLittleFS false
+#if useLittleFS
+	#ifdef ARDUINO_ARCH_ESP32
+		#include <LITTLEFS.h>
+		#define myFS LITTLEFS
+	#else
+		#include <LittleFS.h>
+		#define myFS LittleFS
+	#endif
+#else
+	#ifdef ARDUINO_ARCH_ESP32
+		#include <SPIFFS.h>
+	#endif
+	#define myFS SPIFFS
 #endif
 
 #define FILE_NAME "/ublockscode"
@@ -26,16 +40,16 @@ static File codeFile;
 
 static void closeAndOpenCodeFile() {
 	if (codeFile) codeFile.close();
-	codeFile = SPIFFS.open(FILE_NAME, "a");
+	codeFile = myFS.open(FILE_NAME, "a");
 }
 
 extern "C" void initCodeFile(uint8 *flash, int flashByteCount) {
 	#ifdef ESP8266
-		SPIFFS.begin();
+		myFS.begin();
 	#else
-		SPIFFS.begin(true);
+		myFS.begin(true);
 	#endif
-	codeFile = SPIFFS.open(FILE_NAME, "r");
+	codeFile = myFS.open(FILE_NAME, "r");
 	// read code file into simulated Flash:
 	if (codeFile) codeFile.readBytes((char*) flash, flashByteCount);
 	closeAndOpenCodeFile();
@@ -52,7 +66,7 @@ extern "C" void writeCodeFileWord(int word) {
 
 extern "C" void clearCodeFile(int cycleCount) {
 	if (codeFile) codeFile.close();
-	codeFile = SPIFFS.open(FILE_NAME, "w"); // truncate file to zero length
+	codeFile = myFS.open(FILE_NAME, "w"); // truncate file to zero length
 	int headerWord = ('S' << 24) | cycleCount; // Header record, version 1
 	writeCodeFileWord(headerWord);
 	closeAndOpenCodeFile();
