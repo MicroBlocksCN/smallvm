@@ -1213,6 +1213,12 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'chunkAttributeMsg' 28
 		atPut msgDict 'varNameMsg' 29
 		atPut msgDict 'extendedMsg' 30
+		atPut msgDict 'deleteFile' 200
+		atPut msgDict 'listFiles' 201
+		atPut msgDict 'fileInfo' 202
+		atPut msgDict 'startReadingFile' 203
+		atPut msgDict 'startWritingFile' 204
+		atPut msgDict 'fileChunk' 205
 	}
 	msgType = (at msgDict msgName)
 	if (isNil msgType) { error 'Unknown message:' msgName }

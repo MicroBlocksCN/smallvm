@@ -227,3 +227,36 @@ The ID specifies the extended message type. The format depends on the message ty
   * 1: set the per-byte delay for 'say' and 'graph' blocks. Body is one-byte value in the range 1-50.
 
 ### *Reserved* (OpCode: 0x1F, long message)
+
+
+## File Transfer Messages (OpCode: 200 to 205)
+
+### Delete File (OpCode: 200, long message) (IDE → Board)
+
+Delete a file. Message body is the file name.
+
+### List Files (OpCode: 201) (IDE → Board)
+
+Send a sequence of File Info messages for the files on the board.
+
+### File Info (OpCode: 202, long message) (Board → IDE)
+
+File info List Files. Body contains the file size (4-byte int) followed by the file name.
+
+### Start Reading File from Board (OpCode: 203, long message) (IDE → Board)
+
+Tell the board to send a file.
+Body contains the a randomly chosen transfer ID (4-byte int) followed by the file name.
+File contents are sent to the board as a sequence of file chunks
+
+### Start Writing File to Board (OpCode: 204, long message) (IDE → Board)
+
+Tell the board to prepare to receive a file.
+Body contains the a randomly chosen trasfer ID (4-byte int) followed by the file name.
+File contents are sent to the board as a sequence of file chunks
+
+### File Chunk (OpCode: 205, long message) (bidirectional)
+
+One chunk of a file.
+Body contains: transfer ID (4-byte int), byte offset (4-byte int), followed by the data bytes.
+The final chunk in the sequence contains no data bytes, indicating the end of the file.
