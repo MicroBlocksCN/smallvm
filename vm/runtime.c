@@ -472,6 +472,13 @@ static void waitForOutbufBytes(int bytesNeeded) {
 	}
 }
 
+void waitAndSendMessage(int msgType, int chunkIndex, int dataSize, char *data) {
+	// Wait for space, then send the given message.
+
+	waitForOutbufBytes(dataSize + 5);
+	sendMessage(msgType, chunkIndex, dataSize, data);
+}
+
 static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Send a value message of the given type for the given chunkOrVarIndex.
 	// Data is: <type (1 byte)><...data...>
@@ -941,6 +948,10 @@ static void processShortMessage() {
 	case pingMsg:
 		sendMessage(pingMsg, chunkIndex, 0, NULL);
 		break;
+	default:
+		if ((200 <= cmd) && (cmd <= 205)) {
+			processFileMessage(cmd, 0, NULL);
+		}
 	}
 	skipToStartByteAfter(3);
 }
@@ -986,6 +997,10 @@ static void processLongMessage() {
 	case extendedMsg:
 		processExtendedMessage(chunkIndex, bodyBytes, &rcvBuf[5]);
 		break;
+	default:
+		if ((200 <= cmd) && (cmd <= 205)) {
+			processFileMessage(cmd, bodyBytes, (char *) &rcvBuf[5]);
+		}
 	}
 	skipToStartByteAfter(5 + msgLength);
 }

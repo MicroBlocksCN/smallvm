@@ -192,6 +192,8 @@ void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void vmPanic(char *s);
 int indexOfVarNamed(const char *varName);
+void processFileMessage(int msgType, int dataSize, char *data);
+void waitAndSendMessage(int msgType, int chunkIndex, int dataSize, char *data);
 
 // Integer Evaluation
 
