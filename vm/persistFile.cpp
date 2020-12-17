@@ -15,24 +15,7 @@
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 // Persistent file operations for Espressif boards
 
-#include <FS.h>
-
-// Select file system (Note: LittleFS is often much slower than SPIFFS)
-#define useLittleFS false
-#if useLittleFS
-	#ifdef ARDUINO_ARCH_ESP32
-		#include <LITTLEFS.h>
-		#define myFS LITTLEFS
-	#else
-		#include <LittleFS.h>
-		#define myFS LittleFS
-	#endif
-#else
-	#ifdef ARDUINO_ARCH_ESP32
-		#include <SPIFFS.h>
-	#endif
-	#define myFS SPIFFS
-#endif
+#include "fileSys.h"
 
 #define FILE_NAME "/ublockscode"
 

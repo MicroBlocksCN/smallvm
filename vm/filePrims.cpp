@@ -17,24 +17,7 @@
 #if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 // File system operations for Espressif boards
 
-#include <FS.h>
-
-// Select file system (Note: LittleFS is often much slower than SPIFFS)
-#define useLittleFS false
-#if useLittleFS
-	#ifdef ARDUINO_ARCH_ESP32
-		#include <LITTLEFS.h>
-		#define myFS LITTLEFS
-	#else
-		#include <LittleFS.h>
-		#define myFS LittleFS
-	#endif
-#else
-	#ifdef ARDUINO_ARCH_ESP32
-		#include <SPIFFS.h>
-	#endif
-	#define myFS SPIFFS
-#endif
+#include "fileSys.h"
 
 // Variables
 
@@ -337,8 +320,8 @@ static void nextFileName(char *fileName) {
 static OBJ primNextFileInList(int argCount, OBJ *args) {
 	char fileName[100];
 	nextFileName(fileName);
-	if ((strcmp(fileName, "ublockscode") == 0) || (strcmp(fileName, "/ublockscode") == 0)) {
-		nextFileName(fileName); // skip code file
+	while ((strcmp(fileName, "/") == 0) || (strcmp(fileName, "/ublockscode") == 0)) {
+		nextFileName(fileName); // skip root directory and code file
 	}
 	char *s = fileName;
 	if ('/' == s[0]) s++; // skip leading slash
