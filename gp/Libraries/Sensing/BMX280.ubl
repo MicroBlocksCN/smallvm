@@ -1,7 +1,7 @@
 module BMX280 Input
 author 'José Garcia Yeste'
-version 1 0
-description 'Provides support for the BME280 and BMP280 barometric pressure sensors. These sensors measure temperature, pressure and humidity.'
+version 1 1
+description 'Provides support for the BME280 and BMP280 barometric pressure sensors. These sensors measure temperature, pressure and, in the case of BME280, also humidity.'
 tags sensor pressure temperature humidity
 
 variables _bme280coefficients
@@ -11,11 +11,24 @@ variables _bme280coefficients
 	spec 'r' 'bmx280 temperature' 'bmx280 temperature'
 	spec 'r' 'bmx280 pressure' 'bmx280 pressure'
 	spec ' ' '_bmx280 setup' '_bmx280 setup'
+	spec ' ' '_bme280 read humidity coefficients' '_bme280 read humidity coefficients'
 	spec 'r' '_bmx280 temperature' '_bmx280 temperature'
 	spec 'r' 'bme280 humidity' 'bme280 humidity'
 
+to '_bme280 read humidity coefficients' {
+  if ('bme280 connected') {
+    i2cSet (hexToInt '76') (hexToInt 'F2') (0 | 7)
+    comment 'Read humidity coefficients'
+    atPut 13 _bme280coefficients (i2cGet (hexToInt '76') (hexToInt 'A1'))
+    atPut 14 _bme280coefficients (((i2cGet (hexToInt '76') (hexToInt 'E2')) << 8) | (i2cGet (hexToInt '76') (hexToInt 'E1')))
+    atPut 15 _bme280coefficients (i2cGet (hexToInt '76') (hexToInt 'E3'))
+    atPut 16 _bme280coefficients (((i2cGet (hexToInt '76') (hexToInt 'E4')) << 4) | ((i2cGet (hexToInt '76') (hexToInt 'E5')) & 15))
+    atPut 17 _bme280coefficients (((i2cGet (hexToInt '76') (hexToInt 'E6')) << 4) | (((i2cGet (hexToInt '76') (hexToInt 'E5')) >> 4) & 15))
+    atPut 18 _bme280coefficients (i2cGet (hexToInt '76') (hexToInt 'E7'))
+  }
+}
+
 to '_bmx280 setup' {
-  comment 'By José Garcia Yeste'
   _bme280coefficients = (newList 18)
   comment 'Read temperature coefficients'
   local 'reg' (hexToInt '88')
@@ -29,16 +42,7 @@ to '_bmx280 setup' {
     atPut (i + 3) _bme280coefficients (((i2cGet (hexToInt '76') (reg + 1)) << 8) | (i2cGet (hexToInt '76') reg))
     reg += 2
   }
-  if ('bme280 connected') {
-    i2cSet (hexToInt '76') (hexToInt 'F2') (0 | 7)
-    comment 'Read humidity coefficients'
-    atPut 13 _bme280coefficients (i2cGet (hexToInt '76') (hexToInt 'A1'))
-    atPut 14 _bme280coefficients (((i2cGet (hexToInt '76') (hexToInt 'E2')) << 8) | (i2cGet (hexToInt '76') (hexToInt 'E1')))
-    atPut 15 _bme280coefficients (i2cGet (hexToInt '76') (hexToInt 'E3'))
-    atPut 16 _bme280coefficients (((i2cGet (hexToInt '76') (hexToInt 'E4')) << 4) | ((i2cGet (hexToInt '76') (hexToInt 'E5')) & 15))
-    atPut 17 _bme280coefficients (((i2cGet (hexToInt '76') (hexToInt 'E6')) << 4) | (((i2cGet (hexToInt '76') (hexToInt 'E5')) >> 4) & 15))
-    atPut 18 _bme280coefficients (i2cGet (hexToInt '76') (hexToInt 'E7'))
-  }
+  '_bme280 read humidity coefficients'
   comment 'Most are signed coefs'
   for i 18 {
     if (and ((at i _bme280coefficients) > 32768) (('[data:find]' i ('[data:makeList]' 1 4 13 15)) < 0)) {atPut i _bme280coefficients ((at i _bme280coefficients) - 65536)}
@@ -46,6 +50,7 @@ to '_bmx280 setup' {
   comment 'Cfg: temp << 5 & pres << 2 & sensor mode  '
   i2cSet (hexToInt '76') (hexToInt 'F4') (((5 << 5) | (5 << 2)) | 3)
 }
+
 
 to '_bmx280 temperature' {
   if (_bme280coefficients == 0) {'_bmx280 setup'}
