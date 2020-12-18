@@ -1,0 +1,130 @@
+module CCS811 Input
+author 'Víctor Casado'
+version 1 0 
+description 'Support for the Adafruit CCS811 indoor air quality sensor. Gives out VOC and eCO2 readings.'
+variables _ccs811_wakePin _ccs811_driveMode _ccs811_deviceId _ccs811_CO2 _ccs811_TVOC 
+tags voc co2 air envirnomental
+
+	spec 'r' '_ccs811_checkError' '_ccs811_checkError'
+	spec 'r' '_ccs811_configure' '_ccs811_configure'
+	spec ' ' '_ccs811_setDriveMode' '_ccs811_setDriveMode'
+	spec ' ' '_ccs_811_wakeUp' '_ccs811_wakeUp'
+	spec ' ' 'inicialitzar sensor pin' 'initialize CCS811 wake pin _ mode _' 'auto auto' 1 1
+	spec ' ' '_ccs811_sleep' '_ccs811_sleep'
+	spec ' ' '_ccs811_reset' '_ccs811_reset'
+	spec 'r' '_ccs811_baseLine' '_ccs811_baseLine'
+	spec 'r' 'update data' 'check and update data'
+	spec 'r' '_ccs811_getError' '_ccs811_getError'
+	spec 'r' 'CO2' 'CO2'
+	spec 'r' 'TVOC' 'TVOC'
+	spec ' ' '_ccs811_startApp' '_ccs811_startApp'
+
+to CO2 {
+  return _ccs811_CO2
+}
+
+to TVOC {
+  return _ccs811_TVOC
+}
+
+to '_ccs811_baseLine' {
+  '[sensors:i2cWrite]' _ccs811_deviceId ('[data:makeList]' (hexToInt '11'))
+  local 'bytes' (newList 2)
+  '[sensors:i2cRead]' _ccs811_deviceId bytes
+  return (((at 1 bytes) << 8) | (at 2 bytes))
+}
+
+to '_ccs811_checkError' {
+  return (((i2cGet _ccs811_deviceId 0) & 1) == 1)
+}
+
+to '_ccs811_configure' {
+  '_ccs811_reset'
+  if ((i2cGet _ccs811_deviceId (hexToInt '20')) != (hexToInt '81')) {
+    return 'CCS811 not found, please check wiring'
+  }
+  if ('_ccs811_checkError') {
+    return ('[data:join]' 'Error at startup: ' ('_ccs811_getError'))
+  }
+  if ((i2cGet _ccs811_deviceId 0) != (hexToInt '10')) {
+    return 'App not valid'
+  }
+  '_ccs811_startApp'
+  if ('_ccs811_checkError') {
+    return ('[data:join]' 'Error starting app: ' ('_ccs811_getError'))
+  }
+  '_ccs811_setDriveMode'
+  if ('_ccs811_checkError') {
+    return ('[data:join]' 'Error setting drive mode: ' ('_ccs811_getError'))
+  }
+  return 0
+}
+
+to '_ccs811_getError' {
+  local 'error' ((i2cGet _ccs811_deviceId (hexToInt 'E0')) & 1)
+  if (error == 1) {
+    return 'WRITE_REG_INVALID'
+  } ((error << 1) == 1) {
+    return 'READ_REG_INVALID'
+  } ((error << 2) == 1) {
+    return 'MEASMODE_INVALID'
+  } ((error << 3) == 1) {
+    return 'MAX_RESISTANCE'
+  } ((error << 4) == 1) {
+    return 'HEATER_FAULT'
+  } ((error << 5) == 1) {
+    return 'HEATER_SUPPLY'
+  }
+}
+
+to '_ccs811_reset' {
+  '[sensors:i2cWrite]' _ccs811_deviceId ('[data:makeList]' (hexToInt 'FF') (hexToInt '11') (hexToInt 'E5') (hexToInt '72') (hexToInt '8A'))
+  waitMillis 2
+}
+
+to '_ccs811_setDriveMode' {
+  if (_ccs811_driveMode > 4) {_ccs811_driveMode = 4}
+  local 'setting' (i2cGet _ccs811_deviceId 1)
+  setting = (setting & -113)
+  setting = (setting | (_ccs811_driveMode << 4))
+  '[sensors:i2cWrite]' _ccs811_deviceId ('[data:makeList]' 1 setting)
+}
+
+to '_ccs811_sleep' {
+  digitalWriteOp _ccs811_wakePin true
+}
+
+to '_ccs811_startApp' {
+  '[sensors:i2cWrite]' _ccs811_deviceId ('[data:makeList]' (hexToInt 'F4'))
+}
+
+to '_ccs_811_wakeUp' {
+  digitalWriteOp _ccs811_wakePin false
+  waitMillis 1
+}
+
+to 'inicialitzar sensor pin' wakePin mode {
+  _ccs811_deviceId = (hexToInt '5A')
+  _ccs811_wakePin = wakePin
+  _ccs811_driveMode = mode
+  '_ccs_811_wakeUp'
+  local 'configResult' ('_ccs811_configure')
+  if (configResult != 0) {
+    sayIt ('[data:join]' 'Error while configuring:' configResult)
+  } else {
+    sayIt ('[data:join]' 'Baseline: ' ('_ccs811_baseLine'))
+  }
+}
+
+to 'update data' {
+  if ((i2cGet _ccs811_deviceId 0) == (hexToInt '98')) {
+    '[sensors:i2cWrite]' _ccs811_deviceId ('[data:makeList]' 2)
+    local 'bytes' (newList 4)
+    '[sensors:i2cRead]' _ccs811_deviceId bytes
+    _ccs811_CO2 = (((at 1 bytes) << 8) | (at 2 bytes))
+    _ccs811_TVOC = (((at 3 bytes) << 8) | (at 4 bytes))
+    return (booleanConstant true)
+  }
+  return (booleanConstant false)
+}
+
