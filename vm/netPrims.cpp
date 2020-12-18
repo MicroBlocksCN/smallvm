@@ -20,6 +20,7 @@
 	#include <ESP8266WiFi.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
+	#include <WebSocketsServer.h>
 #elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
 	#define USE_WIFI101
 	#define uint32 wifi_uint32
@@ -36,6 +37,11 @@ static char serverStarted = false;
 
 WiFiServer server(80);
 WiFiClient client;
+
+#if defined(ARDUINO_ARCH_ESP32)
+WebSocketsServer webSocket = WebSocketsServer(81);
+OBJ lastWebSocketEvent;
+#endif
 
 // WiFi Connection
 
@@ -388,6 +394,45 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	return result;
 }
 
+#ifdef ARDUINO_ARCH_ESP32
+// Websocket support for ESP32
+
+void webSocketEventCallback(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+	FIELD(lastWebSocketEvent, 0) = int2obj(3);
+	FIELD(lastWebSocketEvent, 1) = int2obj(type);
+	FIELD(lastWebSocketEvent, 2) = int2obj(num);
+	OBJ message = newString(length);
+	memcpy(obj2str(message), payload, length);
+	FIELD(lastWebSocketEvent, 3) = message;
+}
+
+static OBJ primWebSocketStart(int argCount, OBJ *args) {
+	lastWebSocketEvent = newObj(ListType, 4, zeroObj);
+	webSocket.begin();
+	webSocket.onEvent(webSocketEventCallback);
+	return falseObj;
+}
+
+static OBJ primWebSocketLastEvent(int argCount, OBJ *args) {
+	OBJ event = newObj(ListType, 4, zeroObj);
+	FIELD(event, 0) = FIELD(lastWebSocketEvent, 0);
+	FIELD(event, 1) = FIELD(lastWebSocketEvent, 1);
+	FIELD(event, 2) = FIELD(lastWebSocketEvent, 2);
+	lastWebSocketEvent = newObj(ListType, 4, zeroObj);
+	webSocket.loop();
+	return event;
+}
+
+static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
+	char *message = obj2str(args[0]);
+	int client = obj2int(args[1]);
+	int length = strlen(message);
+	webSocket.sendTXT(client, message, length);
+	return falseObj;
+}
+
+#endif
+
 #else // not ESP8266 or ESP32
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
@@ -401,6 +446,11 @@ static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
+#ifndef ARDUINO_ARCH_ESP32
+static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWiFi); }
+#endif
 
 #endif
 
@@ -416,6 +466,9 @@ static PrimEntry entries[] = {
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
+	{"webSocketStart", primWebSocketStart},
+	{"webSocketLastEvent", primWebSocketLastEvent},
+	{"webSocketSendToClient", primWebSocketSendToClient},
 };
 
 void addNetPrims() {
