@@ -1,18 +1,18 @@
 module 'HSV Colors'
 author MicroBlocks
 version 1 0 
+depends Fractions 
+tags hsv rgb 
 description 'HSV to RGB color conversion.'
-tags hsv rgb
-depends Fractions
 
-    spec 'r' 'HSV_hsv_rgb' 'RGB of hue _ saturation _ brightness _ (0-100)' 'auto auto auto' 1 100 50
+	spec 'r' 'HSV_hsv_rgb' 'RGB of hue _ saturation _ brightness _ (0-100)' 'auto auto auto' 1 100 50
 
 to HSV_hsv_rgb h s v {
   comment 'return a list representing the corresponding RGB values for the given HSV color
 ranges hsv from 0 to 100, rgb from 0 to 255'
-  h = (FRACT_divide h 100)
-  s = (FRACT_divide s 100)
-  v = (FRACT_divide v 100)
+  h = (FRACT h 360)
+  s = (FRACT s 100)
+  v = (FRACT v 100)
   local 'i' (FRACT_integer (FRACT_multiply h 6))
   local 'fract' (FRACT_subtract (FRACT_multiply h 6) i)
   local 'p' (FRACT_multiply v (FRACT_subtract 1 s))
@@ -49,3 +49,4 @@ ranges hsv from 0 to 100, rgb from 0 to 255'
   }
   return ('[data:makeList]' (FRACT_integer (FRACT_multiply r 255)) (FRACT_integer (FRACT_multiply g 255)) (FRACT_integer (FRACT_multiply b 255)))
 }
+

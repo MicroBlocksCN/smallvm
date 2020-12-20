@@ -1,14 +1,13 @@
 module Fractions Operators
-author 'MicroBlocks'
+author MicroBlocks
 version 1 0 
 tags numbers fractions precision float 
-description 'Rational numbers. If you really need floats but only have integers.'
+description 'Rational number arithmetic.'
 
-	spec 'r' 'FRACT' 'fraction _ / _' 'auto auto' 3 4
+	spec 'r' 'FRACT' 'fract _ / _' 'auto auto' 3 4
 	spec 'r' 'FRACT_add' 'fract _ + _' 'auto auto' 3 4
-	spec 'r' 'FRACT_subtract' 'fract _ - _' 'auto auto' 4 3
+	spec 'r' 'FRACT_subtract' 'fract _ − _' 'auto auto' 4 3
 	spec 'r' 'FRACT_multiply' 'fract _ × _' 'auto auto' 3 4
-	spec 'r' 'FRACT_divide' 'fract _ ÷ _' 'auto auto' 3 4
 	spec 'r' 'FRACT_less' 'fract _ < _' 'auto auto' 3 4
 	spec 'r' 'FRACT_greater' 'fract _ > _' 'auto auto' 3 4
 	spec 'r' 'FRACT_simplify' 'simplify fraction _' 'auto' 5
@@ -18,15 +17,15 @@ description 'Rational numbers. If you really need floats but only have integers.
 	spec 'r' 'FRACT_gcd' 'gcd _ _' 'auto auto' 9 12
 	spec 'r' 'FRACT_lcm' 'lcm _ _' 'auto auto' 4 6
 
-to FRACT numerator denominator {
-  if (or (isType numerator 'list') (isType denominator 'list')) {return (FRACT_divide numerator denominator)}
-  return ('[data:makeList]' numerator denominator)
+to FRACT a b {
+  if (and (isType a 'number') (isType b 'number')) {return ('[data:makeList]' a b)}
+  if (isType a 'number') {return (FRACT_simplify ('[data:makeList]' (a * (FRACT_denominator b)) (FRACT_numerator b)))}
+  if (isType b 'number') {return (FRACT_simplify ('[data:makeList]' (FRACT_numerator a) (b * (FRACT_denominator a))))}
+  return (FRACT_simplify ('[data:makeList]' ((FRACT_numerator a) * (FRACT_denominator b)) ((FRACT_denominator a) * (FRACT_numerator b))))
 }
 
 to FRACT_add a b {
-  if (isType a 'number') {a = (FRACT a 1)}
-  if (isType b 'number') {b = (FRACT b 1)}
-  local 'lcd' ((FRACT_denominator a) * (FRACT_denominator b))
+  local 'lcd' (FRACT_lcm (FRACT_denominator a) (FRACT_denominator b))
   return (FRACT_simplify (FRACT (((FRACT_numerator a) * (lcd / (FRACT_denominator a))) + ((FRACT_numerator b) * (lcd / (FRACT_denominator b)))) lcd))
 }
 
@@ -35,22 +34,18 @@ to FRACT_denominator fraction {
   return (at 2 fraction)
 }
 
-to FRACT_divide a b {
-  if (isType a 'number') {a = (FRACT a 1)}
-  if (isType b 'number') {b = (FRACT b 1)}
-  return (FRACT_simplify (FRACT_multiply a (FRACT (FRACT_denominator b) (FRACT_numerator b))))
-}
-
 to FRACT_gcd a b {
+  a = (absoluteValue a)
+  b = (absoluteValue b)
   repeatUntil (a == b) {
     if (a == 0) {
       return b
     } (b == 0) {
       return a
     } (a > b) {
-      a += (b * -1)
+      a = (a - b)
     } else {
-      b += (a * -1)
+      b = (b - a)
     }
   }
   return a
@@ -79,8 +74,6 @@ to FRACT_less a b {
 }
 
 to FRACT_multiply a b {
-  if (isType a 'number') {a = (FRACT a 1)}
-  if (isType b 'number') {b = (FRACT b 1)}
   return (FRACT_simplify (FRACT ((FRACT_numerator a) * (FRACT_numerator b)) ((FRACT_denominator a) * (FRACT_denominator b))))
 }
 
@@ -100,9 +93,7 @@ to FRACT_simplify fraction {
 }
 
 to FRACT_subtract a b {
-  if (isType a 'number') {a = (FRACT a 1)}
-  if (isType b 'number') {b = (FRACT b 1)}
-  local 'lcd' ((FRACT_denominator a) * (FRACT_denominator b))
+  local 'lcd' (FRACT_lcm (FRACT_denominator a) (FRACT_denominator b))
   return (FRACT_simplify (FRACT (((FRACT_numerator a) * (lcd / (FRACT_denominator a))) - ((FRACT_numerator b) * (lcd / (FRACT_denominator b)))) lcd))
 }
 
