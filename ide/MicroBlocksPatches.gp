@@ -252,6 +252,18 @@ method replaceItemMenu InputSlot {
   return menu
 }
 
+// Disallow reporter blocks in hat block input slots
+// (does apply to BooleanSlots in "when <boolean>" hat blocks)
+
+method isReplaceableByReporter InputSlot {
+	owner = (handler (owner morph))
+	if (and (isClass owner 'Block') ('hat' == (type owner))) {
+		// Don't allow dropping reporters into hat block input slots.
+		return false
+	}
+	return (not isStatic)
+}
+
 method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }
