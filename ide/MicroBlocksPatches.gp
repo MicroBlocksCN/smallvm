@@ -401,6 +401,9 @@ method contextMenu Block {
   addLine menu
   addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this) 'copy these blocks to the clipboard')
   addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
+  if (not (isPrototypeHat (topBlock this))) {
+	addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
+  }
   addLine menu
   addItem menu 'delete block' 'delete' 'delete this block'
 
@@ -458,6 +461,13 @@ method pickUp Block {
     }
   }
   grabCentered morph this
+}
+
+method exportAsImage Block { exportScriptAsImage (smallRuntime) (topBlock this) }
+method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
+
+method exportAsImage BlockDefinition {
+  exportScriptAsImage (smallRuntime) (handler (ownerThatIsA morph 'Block'))
 }
 
 // Block definition operations
