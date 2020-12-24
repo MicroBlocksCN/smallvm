@@ -13,11 +13,6 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-// File system operations for Espressif boards
-
-#include "fileSys.h"
-
 // File Messages
 
 #define DeleteFileMsg 200
@@ -26,6 +21,11 @@
 #define StartReadingFileMsg 203
 #define StartWritingFileMsg 204
 #define FileChunkMsg 205
+
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+// File system operations for Espressif boards
+
+#include "fileSys.h"
 
 // Variables
 
@@ -76,18 +76,15 @@ static void receiveChunk(int msgByteCount, char *msg) {
 		clearFileRecieveState();
 		return;
 	} else {
-reportNum("chunk, offset", offset);
 	}
 
 	if (chunkSize > 0) { // append chunk to the temporary file
-if (chunkSize != 960) reportNum("  chunkSize", chunkSize);
 		tempFile.write((uint8_t *) chunkData, chunkSize);
 		receivedBytes += chunkSize;
 	} else { // tranfer complete
-outputString("receive done");
 		// close and rename file
 		tempFile.close();
-		myFS.remove(receivedFileName); // delete old file of that name, if any
+		if (myFS.exists(receivedFileName)) myFS.remove(receivedFileName); // delete old file, if any
 		myFS.rename(tempFileName, receivedFileName);
 		clearFileRecieveState();
 	}
@@ -96,7 +93,7 @@ outputString("receive done");
 // File Operations
 
 static void deleteFile(char *fileName) {
-	myFS.remove(fileName);
+	if (myFS.exists(fileName)) myFS.remove(fileName);
 }
 
 static void receiveFile(int id, char *fileName) {
@@ -106,21 +103,12 @@ static void receiveFile(int id, char *fileName) {
 	}
 	strncpy(receivedFileName, fileName, 31);
 
-// debug xxx
-outputString("receiving file:");
-outputString(receivedFileName);
-
 	receiveID = id;
 	receivedBytes = 0;
 	tempFile = myFS.open(tempFileName, "w");
 }
 
 static void sendFile(int id, char *fileName) {
-// debug xxx
-outputString("sendFile:");
-reportNum("id", id);
-outputString(fileName);
-
 	const int chunkSize = 960;
 	int byteIndex = 0;
 	char buf[1024];
@@ -151,9 +139,8 @@ static void sendFileInfo(char *fileName, int fileSize, int entryIndex) {
 
 	writeInt(entryIndex, &buf[0]);
 	writeInt(fileSize, &buf[4]);
-	buf[8] = len; // one byte file name length
-	memcpy(&buf[9], fileName, len);
-	waitAndSendMessage(FileInfoMsg, 0, len + 9, buf);
+	memcpy(&buf[8], fileName, len);
+	waitAndSendMessage(FileInfoMsg, 0, len + 8, buf);
 }
 
 static void sendFileList() {
@@ -227,7 +214,7 @@ void processFileMessage(int msgType, int dataSize, char *data) {
 }
 
 #else
-// File system operation messages simply ignored on Espressif boards
+// File system messages are just ignored on non-Espressif boards
 
 void processFileMessage(int msgType, int dataSize, char *data) { }
 
