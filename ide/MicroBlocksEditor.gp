@@ -446,7 +446,6 @@ method processDroppedFile MicroBlocksEditor fName data {
 	data = (joinStrings (splitWith (toString data) ',')) // remove commas
 	clearLoggedData (smallRuntime)
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
-	print 'got .csv file; read' (count (lines data)) 'entries' // xxx
   }
 }
 
@@ -645,8 +644,8 @@ method contextMenu MicroBlocksEditor {
   addLine menu
 
 if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
-	addItem menu 'decompile all' (action 'decompileAll' (smallRuntime))
-	addLine menu
+// addItem menu 'decompile all' (action 'decompileAll' (smallRuntime))
+// addLine menu
 // addItem menu 'dump persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 1 nil)
 // addItem menu 'compact persistent memory' (action 'sendMsg' (smallRuntime) 'systemResetMsg' 2 nil)
 // addLine menu
@@ -815,6 +814,11 @@ method projectMenu MicroBlocksEditor {
   if (devMode) {
 	addLine menu
 	addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
+	if (boardHasFileSystem (smallRuntime)) {
+		addLine menu
+		addItem menu 'put file on board' (action 'putFileOnBoard' (smallRuntime))
+		addItem menu 'get file from board' (action 'getFileFromBoard' (smallRuntime))
+	}
   }
   popUpAtHand menu (global 'page')
 }

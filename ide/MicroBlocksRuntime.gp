@@ -1183,6 +1183,7 @@ method setSerialDelay SmallRuntime newDelay {
 // Message handling
 
 method msgNameToID SmallRuntime msgName {
+	if (isClass msgName 'Integer') { return msgName }
 	if (isNil msgDict) {
 		msgDict = (dictionary)
 		atPut msgDict 'chunkCodeMsg' 1
@@ -1382,8 +1383,8 @@ method processNextMessage SmallRuntime {
 	} (251 == firstByte) { // long message
 		if ((byteCount recvBuf) < 5) { return false } // incomplete length field
 		byteTwo = (byteAt recvBuf 2)
-		if (or (byteTwo < 1) (byteTwo > 32)) {
-			print 'Bad message type; should be 1-31 but is:' (byteAt recvBuf 2)
+		if (or (byteTwo < 1) (byteTwo >= 250)) {
+			print 'Bad message type; should be 1-249 but is:' (byteAt recvBuf 2)
 			skipMessage this // discard unrecognized message
 			return true
 		}
@@ -1458,6 +1459,10 @@ method handleMessage SmallRuntime msg {
 		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'varNameMsg')) {
 		receivedVarName this (byteAt msg 3) (toString (copyFromTo msg 6)) ((byteCount msg) - 5)
+	} (op == (msgNameToID this 'fileInfo')) {
+		recordFileTransferMsg this (copyFromTo msg 6)
+	} (op == (msgNameToID this 'fileChunk')) {
+		recordFileTransferMsg this (copyFromTo msg 6)
 	} else {
 		print 'msg:' (toArray msg)
 	}
@@ -1476,6 +1481,155 @@ method isRunning SmallRuntime aBlock {
 	if (or (isNil chunkRunning) (isNil chunkID)) { return false }
 	return (at chunkRunning (chunkID + 1))
 }
+
+// File Transfer Support
+
+method boardHasFileSystem SmallRuntime {
+	if (isNil boardType) { getVersion this }
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
+}
+
+method deleteFileOnBoard SmallRuntime fileName {
+	msg = (toArray (toBinaryData fileName))
+	sendMsg this 'deleteFile' 0 msg
+}
+
+method getFileListFromBoard SmallRuntime {
+	sendMsg this 'listFiles'
+	collectFileTransferResponses this
+
+	result = (list)
+	for msg fileTransferMsgs {
+		fileNum = (readInt32 this msg 1)
+		fileSize = (readInt32 this msg 5)
+		fileName = (toString (copyFromTo msg 9))
+		add result fileName
+	}
+	return result
+}
+
+method getFileFromBoard SmallRuntime {
+	menu = (menu 'File to read from board:' (action 'getAndSaveFile' this) true)
+	for fn (sorted (getFileListFromBoard this)) {
+		addItem menu fn
+	}
+	popUpAtHand menu (global 'page')
+}
+
+method getAndSaveFile SmallRuntime remoteFileName {
+	data = (readFileFromBoard this remoteFileName)
+	if ('Browser' == (platform)) {
+		browserWriteFile data remoteFileName
+	} else {
+		fName = (fileToWrite remoteFileName)
+		if ('' != fName) { writeFile fName data }
+	}
+}
+
+method readFileFromBoard SmallRuntime remoteFileName {
+	msg = (list)
+	id = (rand ((1 << 24) - 1))
+	appendInt32 this msg id
+	addAll msg (toArray (toBinaryData remoteFileName))
+	sendMsg this 'startReadingFile' 0 msg
+	collectFileTransferResponses this
+
+	totalBytes = 0
+	for msg fileTransferMsgs {
+		// format: <transfer ID (4 byte int)><byte offset (4 byte int)><data...>
+		transferID = (readInt32 this msg 1)
+		offset = (readInt32 this msg 5)
+		byteCount = ((byteCount msg) - 8)
+		totalBytes += byteCount
+	}
+
+	result = (newBinaryData totalBytes)
+	startIndex = 1
+	for msg fileTransferMsgs {
+		byteCount = ((byteCount msg) - 8)
+		endIndex = ((startIndex + byteCount) - 1)
+		if (byteCount > 0) { replaceByteRange result startIndex endIndex msg 9 }
+		startIndex += byteCount
+	}
+	return result
+}
+
+method putFileOnBoard SmallRuntime {
+	pickFileToOpen (action 'writeFileToBoard' this)
+}
+
+method writeFileToBoard SmallRuntime srcFileName {
+	fileContents = (readFile srcFileName true)
+	totalBytes = (byteCount fileContents)
+	if (isNil fileContents) { return }
+
+	targetFileName = (filePart srcFileName)
+	if ((count targetFileName) > 30) {
+		targetFileName = (substring targetFileName 1 30)
+	}
+	id = (rand ((1 << 24) - 1))
+	bytesSent = 0
+
+	msg = (list)
+	appendInt32 this msg id
+	addAll msg (toArray (toBinaryData targetFileName))
+	sendMsgSync this 'startWritingFile' 0 msg
+
+	// send data as a sequence of chunks
+	while (bytesSent < totalBytes) {
+		msg = (list)
+		appendInt32 this msg id
+		appendInt32 this msg bytesSent
+		chunkByteCount = (min 960 (totalBytes - bytesSent))
+		repeat chunkByteCount {
+			bytesSent += 1
+			add msg (byteAt fileContents bytesSent)
+		}
+		sendMsgSync this 'fileChunk' 0 msg
+		processMessages this
+	}
+
+	// final (empty) chunk
+	msg = (list)
+	appendInt32 this msg id
+	appendInt32 this msg bytesSent
+	sendMsgSync this 'fileChunk' 0 msg
+}
+
+method appendInt32 SmallRuntime msg n {
+	add msg (n & 255)
+	add msg ((n >> 8) & 255)
+	add msg ((n >> 16) & 255)
+	add msg ((n >> 24) & 255)
+}
+
+method readInt32 SmallRuntime msg i {
+	result = (byteAt msg i)
+	result += ((byteAt msg (i + 1)) << 8)
+	result += ((byteAt msg (i + 2)) << 16)
+	result += ((byteAt msg (i + 3)) << 24)
+	return result
+}
+
+method collectFileTransferResponses SmallRuntime {
+	fileTransferMsgs = (list)
+	timeout = 1000
+	lastRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
+		if (notEmpty fileTransferMsgs) { timeout = 500 } // decrease timeout after first response
+		processMessages this
+		waitMSecs 10
+	}
+}
+
+method recordFileTransferMsg SmallRuntime msg {
+	// Record a file transfer message sent by board.
+
+	if (notNil fileTransferMsgs) { add fileTransferMsgs msg }
+	lastRcvMSecs = (msecsSinceStart)
+}
+
+// Script Highlighting
 
 method clearRunningHighlights SmallRuntime {
 	chunkRunning = (newArray 256 false) // clear all running flags
