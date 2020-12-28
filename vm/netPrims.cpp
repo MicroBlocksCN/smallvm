@@ -418,6 +418,7 @@ static OBJ primWebSocketLastEvent(int argCount, OBJ *args) {
 	FIELD(event, 0) = FIELD(lastWebSocketEvent, 0);
 	FIELD(event, 1) = FIELD(lastWebSocketEvent, 1);
 	FIELD(event, 2) = FIELD(lastWebSocketEvent, 2);
+	FIELD(event, 3) = FIELD(lastWebSocketEvent, 3);
 	lastWebSocketEvent = newObj(ListType, 4, zeroObj);
 	webSocket.loop();
 	return event;
