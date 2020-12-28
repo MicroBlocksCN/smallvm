@@ -33,6 +33,17 @@ method switch BooleanSlot {
   setContents this (not contents)
 }
 
+// replacement rule
+
+method isReplaceableByReporter BooleanSlot {
+	owner = (handler (owner morph))
+	if (and (isClass owner 'Block') ('booleanConstant' == (primName (expression owner)))) {
+		// Don't allow replacing the boolean slot in a boolean constant reporter
+		return false
+	}
+	return true
+}
+
 // events
 
 method handDownOn BooleanSlot aHand {return (handDownOn toggle aHand)}

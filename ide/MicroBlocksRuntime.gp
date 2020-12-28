@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus
+defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs
 
 method scripter SmallRuntime { return scripter }
 
@@ -815,8 +815,8 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '1.0.8' }
-method latestVmVersion SmallRuntime { return 105 }
+method ideVersion SmallRuntime { return '1.0.9' }
+method latestVmVersion SmallRuntime { return 106 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = (newline)
@@ -1183,6 +1183,7 @@ method setSerialDelay SmallRuntime newDelay {
 // Message handling
 
 method msgNameToID SmallRuntime msgName {
+	if (isClass msgName 'Integer') { return msgName }
 	if (isNil msgDict) {
 		msgDict = (dictionary)
 		atPut msgDict 'chunkCodeMsg' 1
@@ -1382,8 +1383,8 @@ method processNextMessage SmallRuntime {
 	} (251 == firstByte) { // long message
 		if ((byteCount recvBuf) < 5) { return false } // incomplete length field
 		byteTwo = (byteAt recvBuf 2)
-		if (or (byteTwo < 1) (byteTwo > 32)) {
-			print 'Bad message type; should be 1-31 but is:' (byteAt recvBuf 2)
+		if (or (byteTwo < 1) (byteTwo >= 250)) {
+			print 'Bad message type; should be 1-249 but is:' (byteAt recvBuf 2)
 			skipMessage this // discard unrecognized message
 			return true
 		}
@@ -1427,7 +1428,7 @@ method handleMessage SmallRuntime msg {
 		updateRunning this (byteAt msg 3) false
 	} (op == (msgNameToID this 'taskReturnedValueMsg')) {
 		chunkID = (byteAt msg 3)
-		showResult this chunkID (returnedValue this msg)
+		showResult this chunkID (returnedValue this msg) false true
 		updateRunning this chunkID false
 	} (op == (msgNameToID this 'taskErrorMsg')) {
 		chunkID = (byteAt msg 3)
@@ -1458,6 +1459,10 @@ method handleMessage SmallRuntime msg {
 		print 'chunkAttributeMsg:' (byteCount msg) 'bytes'
 	} (op == (msgNameToID this 'varNameMsg')) {
 		receivedVarName this (byteAt msg 3) (toString (copyFromTo msg 6)) ((byteCount msg) - 5)
+	} (op == (msgNameToID this 'fileInfo')) {
+		recordFileTransferMsg this (copyFromTo msg 6)
+	} (op == (msgNameToID this 'fileChunk')) {
+		recordFileTransferMsg this (copyFromTo msg 6)
 	} else {
 		print 'msg:' (toArray msg)
 	}
@@ -1476,6 +1481,155 @@ method isRunning SmallRuntime aBlock {
 	if (or (isNil chunkRunning) (isNil chunkID)) { return false }
 	return (at chunkRunning (chunkID + 1))
 }
+
+// File Transfer Support
+
+method boardHasFileSystem SmallRuntime {
+	if (isNil boardType) { getVersion this }
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
+}
+
+method deleteFileOnBoard SmallRuntime fileName {
+	msg = (toArray (toBinaryData fileName))
+	sendMsg this 'deleteFile' 0 msg
+}
+
+method getFileListFromBoard SmallRuntime {
+	sendMsg this 'listFiles'
+	collectFileTransferResponses this
+
+	result = (list)
+	for msg fileTransferMsgs {
+		fileNum = (readInt32 this msg 1)
+		fileSize = (readInt32 this msg 5)
+		fileName = (toString (copyFromTo msg 9))
+		add result fileName
+	}
+	return result
+}
+
+method getFileFromBoard SmallRuntime {
+	menu = (menu 'File to read from board:' (action 'getAndSaveFile' this) true)
+	for fn (sorted (getFileListFromBoard this)) {
+		addItem menu fn
+	}
+	popUpAtHand menu (global 'page')
+}
+
+method getAndSaveFile SmallRuntime remoteFileName {
+	data = (readFileFromBoard this remoteFileName)
+	if ('Browser' == (platform)) {
+		browserWriteFile data remoteFileName
+	} else {
+		fName = (fileToWrite remoteFileName)
+		if ('' != fName) { writeFile fName data }
+	}
+}
+
+method readFileFromBoard SmallRuntime remoteFileName {
+	msg = (list)
+	id = (rand ((1 << 24) - 1))
+	appendInt32 this msg id
+	addAll msg (toArray (toBinaryData remoteFileName))
+	sendMsg this 'startReadingFile' 0 msg
+	collectFileTransferResponses this
+
+	totalBytes = 0
+	for msg fileTransferMsgs {
+		// format: <transfer ID (4 byte int)><byte offset (4 byte int)><data...>
+		transferID = (readInt32 this msg 1)
+		offset = (readInt32 this msg 5)
+		byteCount = ((byteCount msg) - 8)
+		totalBytes += byteCount
+	}
+
+	result = (newBinaryData totalBytes)
+	startIndex = 1
+	for msg fileTransferMsgs {
+		byteCount = ((byteCount msg) - 8)
+		endIndex = ((startIndex + byteCount) - 1)
+		if (byteCount > 0) { replaceByteRange result startIndex endIndex msg 9 }
+		startIndex += byteCount
+	}
+	return result
+}
+
+method putFileOnBoard SmallRuntime {
+	pickFileToOpen (action 'writeFileToBoard' this)
+}
+
+method writeFileToBoard SmallRuntime srcFileName {
+	fileContents = (readFile srcFileName true)
+	totalBytes = (byteCount fileContents)
+	if (isNil fileContents) { return }
+
+	targetFileName = (filePart srcFileName)
+	if ((count targetFileName) > 30) {
+		targetFileName = (substring targetFileName 1 30)
+	}
+	id = (rand ((1 << 24) - 1))
+	bytesSent = 0
+
+	msg = (list)
+	appendInt32 this msg id
+	addAll msg (toArray (toBinaryData targetFileName))
+	sendMsgSync this 'startWritingFile' 0 msg
+
+	// send data as a sequence of chunks
+	while (bytesSent < totalBytes) {
+		msg = (list)
+		appendInt32 this msg id
+		appendInt32 this msg bytesSent
+		chunkByteCount = (min 960 (totalBytes - bytesSent))
+		repeat chunkByteCount {
+			bytesSent += 1
+			add msg (byteAt fileContents bytesSent)
+		}
+		sendMsgSync this 'fileChunk' 0 msg
+		processMessages this
+	}
+
+	// final (empty) chunk
+	msg = (list)
+	appendInt32 this msg id
+	appendInt32 this msg bytesSent
+	sendMsgSync this 'fileChunk' 0 msg
+}
+
+method appendInt32 SmallRuntime msg n {
+	add msg (n & 255)
+	add msg ((n >> 8) & 255)
+	add msg ((n >> 16) & 255)
+	add msg ((n >> 24) & 255)
+}
+
+method readInt32 SmallRuntime msg i {
+	result = (byteAt msg i)
+	result += ((byteAt msg (i + 1)) << 8)
+	result += ((byteAt msg (i + 2)) << 16)
+	result += ((byteAt msg (i + 3)) << 24)
+	return result
+}
+
+method collectFileTransferResponses SmallRuntime {
+	fileTransferMsgs = (list)
+	timeout = 1000
+	lastRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
+		if (notEmpty fileTransferMsgs) { timeout = 500 } // decrease timeout after first response
+		processMessages this
+		waitMSecs 10
+	}
+}
+
+method recordFileTransferMsg SmallRuntime msg {
+	// Record a file transfer message sent by board.
+
+	if (notNil fileTransferMsgs) { add fileTransferMsgs msg }
+	lastRcvMSecs = (msecsSinceStart)
+}
+
+// Script Highlighting
 
 method clearRunningHighlights SmallRuntime {
 	chunkRunning = (newArray 256 false) // clear all running flags
@@ -1499,7 +1653,7 @@ method showError SmallRuntime chunkID msg {
 	showResult this chunkID msg true
 }
 
-method showResult SmallRuntime chunkID value isError {
+method showResult SmallRuntime chunkID value isError isResult {
 	for m (join
 			(parts (morph (scriptEditor scripter)))
 			(parts (morph (blockPalette scripter)))) {
@@ -1517,9 +1671,106 @@ method showResult SmallRuntime chunkID value isError {
 					setClipboard (toString value)
 				}
 			}
+			if (and (true == isResult) (h == blockForResultImage)) {
+				doOneCycle (global 'page')
+				waitMSecs 500 // show result bubble briefly before showing menu
+				exportScriptAsImage this h value
+				blockForResultImage = nil
+			}
 		}
 	}
 }
+
+// Script Image Saving
+
+method exportScriptAsImage SmallRuntime aBlock result {
+  if (not (devMode)) {
+	exportAsImageScaled this aBlock 1.0 result
+	return
+  }
+  menu = (menu 'Scale?' this)
+  addItem menu '50%' (action 'exportAsImageScaled' this aBlock 0.50 result)
+  addItem menu '55%' (action 'exportAsImageScaled' this aBlock 0.55 result)
+  addItem menu '60%' (action 'exportAsImageScaled' this aBlock 0.60 result)
+  addItem menu '65%' (action 'exportAsImageScaled' this aBlock 0.65 result)
+  addItem menu '70%' (action 'exportAsImageScaled' this aBlock 0.70 result)
+  addItem menu '75%' (action 'exportAsImageScaled' this aBlock 0.75 result)
+  addItem menu '80%' (action 'exportAsImageScaled' this aBlock 0.80 result)
+  addItem menu '90%' (action 'exportAsImageScaled' this aBlock 0.90 result)
+  addItem menu '100%' (action 'exportAsImageScaled' this aBlock 1.0 result)
+  popUpAtHand menu (global 'page')
+}
+
+method exportAsImageScaled SmallRuntime aBlock scale result {
+  // Save a PNG picture of the given script at the given scale (1.0 = 144 dpi).
+  // If result is not nil, include a speech bubble showing the result.
+
+  // if block is a function definition hat use its prototype block
+  if (isPrototypeHat aBlock) {
+	proto = (editedPrototype aBlock)
+	if (notNil proto) { aBlock = proto }
+  }
+
+  // draw script and bubble at high resolution
+  gc
+  oldScale = (global 'scale')
+  setGlobal 'scale' 2 // change global scale temporarily
+  if (notNil (function aBlock)) {
+	scaledScript = (scriptForFunction (function aBlock))
+  } else {
+    scaledScript = (toBlock (expression aBlock))
+  }
+  scriptW = (width (fullBounds (morph scaledScript)))
+  scriptH = (height (fullBounds (morph scaledScript)))
+  if (notNil result) {
+	scaledBubble = (newBubble result 200 'right')
+	bubbleW = (width (fullBounds (morph scaledBubble)))
+	bubbleH = (height (fullBounds (morph scaledBubble)))
+	inset = 14
+  } else {
+	bubbleW = 0
+	bubbleH = 0
+	inset = 0
+  }
+  setGlobal 'scale' oldScale // revert to old scale
+
+  // draw the morph and result bubble, if any
+  bm = (newBitmap (+ scriptW bubbleW (- inset)) (+ scriptH bubbleH (- inset)))
+  draw2 (morph scaledScript) bm 0 (bubbleH - inset)
+  if (notNil scaledBubble) {
+	topMorphWidth = (width (morph scaledScript))
+	draw2 (morph scaledBubble) bm (topMorphWidth - inset) 0
+  }
+
+  // scale the result bitmap
+  if ('Browser' == (platform)) {
+	scaleBM = (scaleAndRotate bm scale)
+  } else {
+	scaleBM = (newBitmap (ceiling (scale * (width bm))) (ceiling (scale * (height bm))))
+	warpBitmap scaleBM bm 0 0 scale scale
+  }
+
+  // save result as a PNG file
+  pngData = (encodePNG scaleBM (round (scale * 144)))
+  if ('Browser' == (platform)) {
+	browserWriteFile pngData 'scriptImage' 'png'
+  } else {
+	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'scriptImage' '.png')
+	writeFile (join (gpFolder) '/' fName) pngData
+    inform (join 'Image saved in ' (gpFolder))
+  }
+}
+
+method exportScriptImageWithResult SmallRuntime aBlock {
+  topBlock = (topBlock aBlock)
+  if (isPrototypeHat topBlock) { return }
+  blockForResultImage = topBlock
+  if (not (isRunning this topBlock)) {
+	evalOnBoard this topBlock
+  }
+}
+
+// Return values
 
 method returnedValue SmallRuntime msg {
 	if ((byteCount msg) < 7) { return nil } // incomplete msg

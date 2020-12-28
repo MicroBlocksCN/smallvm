@@ -1,10 +1,13 @@
 module 'IR Remote' Comm
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags ir infrared remote 
-description 'Read signals from infrared remotes, like the ones used for TV sets or air conditioners.
-'
-variables _ir_pin _ir_pulse_times 
+description 'Sends and receives infrared remote control messages like the ones used for TV sets or air conditioners. Currently supports only the NEC protocol, which is quite common but not the only IR protocol in use. An NEC message consists of a one byte device number and a one byte command. 
+
+Note: Transmitting IR does not work on ESP8266 boards.
+
+Receiving requires an IR receiver module, such as those built into the Circuit Playground Express and ED1 boards. Transmitting requires an IR transmitter LED, such as those built into the Circuit Playground Express and several M5 Stack products. Inexpensive IR LED transmitter and receivers are available for use with other boards.'
+variables _ir_pin _ir_pulse_times _ir_transmit_pin 
 
 	spec 'r' 'receiveIR' 'receive IR code'
 	spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 0
@@ -14,6 +17,50 @@ variables _ir_pin _ir_pulse_times
 	spec ' ' '_dumpIR' '_dumpIR' 'any'
 	spec 'r' '_getIRByte' '_getIRByte _' 'auto any' 4
 	spec 'r' '_got32Bits' '_got32Bits' 'any'
+	spec ' ' 'IR_Transmit' 'IR transmit device _ command _' 'num num' 48896 1
+	spec ' ' '_IR_SendByte' '_IR_SendByte _' 'auto' '10'
+
+to IR_Transmit device command {
+  if (_ir_transmit_pin == 0) {
+    if (or ((boardType) == 'CircuitPlayground') ((boardType) == 'M5Atom-Matrix')) {
+      _ir_transmit_pin = 12
+    } ((boardType) == 'M5StickC') {
+      _ir_transmit_pin = 9
+    }
+  }
+  comment 'Message start pulse and space'
+  '[io:playTone]' _ir_transmit_pin 38000
+  waitMicros 9000
+  '[io:playTone]' _ir_transmit_pin 0
+  waitMicros 4500
+  comment 'Send device and command and their inverses'
+  '_IR_SendByte' (device & 255)
+  '_IR_SendByte' ((device >> 8) & 255)
+  '_IR_SendByte' command
+  '_IR_SendByte' ('~' command)
+  comment 'Send stop bit'
+  '[io:playTone]' _ir_transmit_pin 38000
+  waitMicros 562
+  '[io:playTone]' _ir_transmit_pin 0
+}
+
+to '_IR_SendByte' byte {
+  local 'bit' 1
+  repeat 8 {
+    if (0 == (byte & bit)) {
+      '[io:playTone]' _ir_transmit_pin 38000
+      waitMicros 530
+      '[io:playTone]' _ir_transmit_pin 0
+      waitMicros 530
+    } else {
+      '[io:playTone]' _ir_transmit_pin 38000
+      waitMicros 530
+      '[io:playTone]' _ir_transmit_pin 0
+      waitMicros 1630
+    }
+    bit = (bit << 1)
+  }
+}
 
 to '_captureIRMessage' {
   if (_ir_pulse_times == 0) {
@@ -73,12 +120,10 @@ Can be used to analyze new protocols.'
 to '_getIRByte' position {
   local 'result' 0
   local 'i' position
+  local 'bit' 1
   repeat 8 {
-    if ((at i _ir_pulse_times) < 1000) {
-      result = ((result << 1) | 0)
-    } else {
-      result = ((result << 1) | 1)
-    }
+    if ((at i _ir_pulse_times) > 1000) {result = (result | bit)}
+    bit = (bit << 1)
     i += 2
   }
   return result
@@ -104,11 +149,13 @@ to '_testIR' {
   forever {
     '_captureIRMessage'
     if ('_got32Bits') {
+      comment 'Four byte message format:
+<device low byte><device high byte><command><command, bit-inverted>'
       local 'b1' ('_getIRByte' 4 nil)
       local 'b2' ('_getIRByte' 20 nil)
       local 'b3' ('_getIRByte' 36 nil)
       local 'b4' ('_getIRByte' 52 nil)
-      sayIt 'Device:' b2 'code:' b3
+      sayIt 'Device:' ((b2 << 8) | b1) 'code:' b3
     }
   }
 }

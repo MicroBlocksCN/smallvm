@@ -7,17 +7,11 @@
 // fileTransfer.c - File tranfer support.
 // John Maloney, December 2021
 
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "mem.h"
 #include "interp.h"
-
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-// File system operations for Espressif boards
-
-#include "fileSys.h"
 
 // File Messages
 
@@ -28,13 +22,19 @@
 #define StartWritingFileMsg 204
 #define FileChunkMsg 205
 
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+// File system operations for Espressif boards
+
+#include "fileSys.h"
+
 // Variables
 
 char receivedFileName[32];
-int receiveFileName = false;
 int receiveID = 0;
 int receivedBytes = 0;
 File tempFile;
+
+const char tempFileName[] = "/_TMP_incoming_TMP_";
 
 // Helper Functions
 
@@ -53,68 +53,62 @@ static void writeInt(int n, char *dst) {
 	*dst++ = ((n >> 24) & 0xFF);
 }
 
-static void endFileReceive(int saveFile) {
-	if (!receiveFileName) return;
-	if (saveFile && !tempFile) { // rename the file
-		myFS.remove(receivedFileName); // delete old file, if any
-		myFS.rename(tempFile.name(), receivedFileName);
-	}
-	// clear file receive state
+static void clearFileRecieveState() {
 	receivedFileName[0] = 0;
-	receiveFileName = false;
 	receiveID = 0;
 	receivedBytes = 0;
-	tempFile.close();
+	if (!tempFile) tempFile.close();
 }
 
-static void receiveChunk(int byteCount, char *msg) {
-	//
-	if (!receiveFileName) return;
-	// check the receiveID and abort if it doesn't match
-	// check the offset and do something it doesn't match (abort? write zeros? print error msg?)
-	if (!tempFile) {
-		// TBD append chunk data
-		// tempFile.write(buf, bufSize);
-		// receivedBytes += bufSize;
+static void receiveChunk(int msgByteCount, char *msg) {
+	// Append the incoming chunk to the file being received.
+
+	if (!tempFile) return; // not receiving a file; ignore
+
+	int transferID = readInt(&msg[0]);
+	int offset = readInt(&msg[4]);
+	char *chunkData = &msg[8];
+	int chunkSize = msgByteCount - 8;
+
+	if ((transferID != receiveID) || (offset != receivedBytes)) {
+		// Unexpected transferID or offset; abort file transfer.
+		outputString("Communication error; file transfer cancelled");
+		clearFileRecieveState();
+		return;
+	} else {
 	}
-	// clear file receive state
-	receivedFileName[0] = 0;
-	receiveFileName = false;
-	receivedBytes = 0;
-	tempFile.close();
+
+	if (chunkSize > 0) { // append chunk to the temporary file
+		tempFile.write((uint8_t *) chunkData, chunkSize);
+		receivedBytes += chunkSize;
+	} else { // tranfer complete
+		// close and rename file
+		tempFile.close();
+		if (myFS.exists(receivedFileName)) myFS.remove(receivedFileName); // delete old file, if any
+		myFS.rename(tempFileName, receivedFileName);
+		clearFileRecieveState();
+	}
 }
 
 // File Operations
 
 static void deleteFile(char *fileName) {
-	outputString("delete:");
-	outputString(fileName);
-	myFS.remove(fileName);
+	if (myFS.exists(fileName)) myFS.remove(fileName);
 }
 
 static void receiveFile(int id, char *fileName) {
-
-// debug xxx
-outputString("receiveFile:");
-reportNum("id", id);
-outputString(fileName);
-return;
-
-	receiveFileName = true;
+	if (strlen(fileName) <= 1) {
+		outputString("Empty file name; ignoring.");
+		return;
+	}
 	strncpy(receivedFileName, fileName, 31);
+
 	receiveID = id;
 	receivedBytes = 0;
-	tempFile = myFS.open("_TMP_incoming_TMP_", "w");
-
-	// TBD loop waiting for file to arrive or timeout
+	tempFile = myFS.open(tempFileName, "w");
 }
 
 static void sendFile(int id, char *fileName) {
-// debug xxx
-outputString("sendFile:");
-reportNum("id", id);
-outputString(fileName);
-
 	const int chunkSize = 960;
 	int byteIndex = 0;
 	char buf[1024];
@@ -123,24 +117,16 @@ outputString(fileName);
 	if (!file) return; // could not open file
 	while (file.available()) { // send file chunks
 		int byteCount = file.read((uint8_t *) &buf[8], chunkSize);
-// xxx
-// reportNum("id", id);
-// reportNum("byteIndex", byteIndex);
-// reportNum("byteCount", byteCount);
-// outputString("----");
-
 		// format: <transfer ID (4 byte int)><byte offset (4 byte int)><data...>
 		writeInt(id, &buf[0]);
 		writeInt(byteIndex, &buf[4]);
 		waitAndSendMessage(FileChunkMsg, 0, byteCount + 8, buf);
-
 		byteIndex += byteCount;
-		if (!byteCount) break;
 	}
 
 	// send a final, empty chunk to indicate end of file
 	writeInt(id, &buf[0]);
-	writeInt(0, &buf[4]);
+	writeInt(byteIndex, &buf[4]);
 	waitAndSendMessage(FileChunkMsg, 0, 8, buf);
 	file.close();
 }
@@ -153,12 +139,8 @@ static void sendFileInfo(char *fileName, int fileSize, int entryIndex) {
 
 	writeInt(entryIndex, &buf[0]);
 	writeInt(fileSize, &buf[4]);
-	buf[8] = len; // one byte file name length
-	char *dst = &buf[9];
-	for (int i = 0; i < len; i++) {
-		*dst++ = fileName[i];
-	}
-	waitAndSendMessage(FileInfoMsg, 0, len + 9, buf);
+	memcpy(&buf[8], fileName, len);
+	waitAndSendMessage(FileInfoMsg, 0, len + 8, buf);
 }
 
 static void sendFileList() {
@@ -168,6 +150,7 @@ static void sendFileList() {
 	#if defined(ESP8266)
 		Dir rootDir = myFS.openDir("/");
 		while (rootDir.next()) {
+			memset(fileName, 0, sizeof(fileName));
 			strncpy(fileName, rootDir.fileName().c_str(), 31);
 			if ((strcmp(fileName, "/") != 0) && (strcmp(fileName, "/ublockscode") != 0)) {
 				sendFileInfo(fileName, rootDir.fileSize(), fileIndex);
@@ -179,6 +162,7 @@ static void sendFileList() {
 		while (true) {
 			File file = rootDir.openNextFile();
 			if (!file) break;
+			memset(fileName, 0, sizeof(fileName));
 			strncpy(fileName, file.name(), 31);
 			if ((strcmp(fileName, "/") != 0) && (strcmp(fileName, "/ublockscode") != 0)) {
 				sendFileInfo(fileName, file.size(), fileIndex);
@@ -192,16 +176,15 @@ void processFileMessage(int msgType, int dataSize, char *data) {
 	// Process a file message (msgType [200..205]).
 
 	int id = 0;
-	char fileName[32];
+	char fileName[32]; // max of 30 characters after the leading "/"
 	strcpy(fileName, "/"); // add the leading slash
 
 	switch (msgType) {
 	case DeleteFileMsg:
 		// format: <file name>
-		if (dataSize < 32) {
-			strncat(fileName, data, dataSize);
-			deleteFile(fileName);
-		}
+		if (dataSize > 30) dataSize = 30;
+		strncat(fileName, data, dataSize);
+		deleteFile(fileName);
 		break;
 	case ListFilesMsg:
 		// format: no data (short message)
@@ -211,19 +194,17 @@ void processFileMessage(int msgType, int dataSize, char *data) {
 		// format: <transfer ID (4 byte int)><file name>
 		id = readInt(data);
 		dataSize -= 4;
-		if (dataSize < 32) {
-			strncat(fileName, &data[4], dataSize);
-			sendFile(id, fileName);
-		}
+		if (dataSize > 30) dataSize = 30;
+		strncat(fileName, &data[4], dataSize);
+		sendFile(id, fileName);
 		break;
 	case StartWritingFileMsg:
 		// format: <transfer ID (4 byte int)><file name>
 		id = readInt(data);
 		dataSize -= 4;
-		if (dataSize < 32) {
-			strncat(fileName, &data[4], dataSize);
-			receiveFile(id, fileName);
-		}
+		if (dataSize > 30) dataSize = 30;
+		strncat(fileName, &data[4], dataSize);
+		receiveFile(id, fileName);
 		break;
 	case FileChunkMsg:
 		// format: <transfer ID (4 byte int)><byte offset (4 byte int)><data...>
@@ -233,7 +214,7 @@ void processFileMessage(int msgType, int dataSize, char *data) {
 }
 
 #else
-// File system operation messages simply ignored on Espressif boards
+// File system messages are just ignored on non-Espressif boards
 
 void processFileMessage(int msgType, int dataSize, char *data) { }
 

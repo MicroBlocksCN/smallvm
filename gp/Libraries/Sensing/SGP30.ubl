@@ -1,0 +1,47 @@
+module SGP30 Input
+author 'José García Yeste'
+version 1 0 
+tags sensor co2 
+description 'Support for Sensirion SGP30 Air Quality Sensor.
+Returns the CO2 in ppm and TVOC in ppb.'
+
+variables '_SGP30 inizialized' 
+
+	spec 'r' 'SGP30 connected' 'SGP30 connected'
+	spec 'r' 'SGP30 read' 'SGP30 read air quality'
+	spec ' ' 'SGP30 setup' 'SGP30 setup'
+
+to 'SGP30 connected' {
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '2F'))
+  local 'response' (newList 3)
+  local 'featureset' 0
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 10
+  '[sensors:i2cRead]' (hexToInt '58') response
+  featureset = (((at 1 response) << 8) | (at 2 response))
+  return ((featureset & (hexToInt 'F0')) == (hexToInt '20'))
+}
+
+to 'SGP30 read' {
+  'SGP30 setup'
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '08'))
+  local 'response' (newList 6)
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 12
+  local 'aq' (newList 2)
+  '[sensors:i2cRead]' (hexToInt '58') response
+  atPut 1 aq (((at 1 response) << 8) | (at 2 response))
+  atPut 2 aq (((at 4 response) << 8) | (at 5 response))
+  return aq
+}
+
+to 'SGP30 setup' {
+  if ((v '_SGP30 inizialized') == 0) {
+    '_SGP30 inizialized' = 1
+    local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '03'))
+    local 'response' (newList 6)
+    '[sensors:i2cWrite]' (hexToInt '58') cmd
+    waitMillis 10
+  }
+}
+
