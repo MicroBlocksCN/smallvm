@@ -179,6 +179,18 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return (OBJ) &ipStringObject;
 }
 
+static OBJ primStartSSIDscan(int argCount, OBJ *args) {
+        return int2obj(WiFi.scanNetworks());
+}
+
+static OBJ primGetSSID(int argCount, OBJ *args) {
+	char ssid[100];
+	ssid[0] = '\0'; // clear string
+	char *s = ssid;
+        strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1).c_str(), 31);
+	return newStringFromBytes(s, strlen(s));
+}
+
 // HTTP Server
 
 static void startHttpServer() {
@@ -441,6 +453,8 @@ static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primStartSSIDscan(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetSSID(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -461,6 +475,8 @@ static PrimEntry entries[] = {
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
+        {"startSSIDscan", primStartSSIDscan},
+        {"getSSID", primGetSSID},
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
