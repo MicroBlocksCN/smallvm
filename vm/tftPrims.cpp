@@ -19,12 +19,14 @@
 int useTFT = false;
 int touchEnabled = false;
 
+// Redefine this macro for displays that must explicitly push offscreen changes to the display
+#define UPDATE_DISPLAY()
+
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
-	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS)
+	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL)
 
-	#define TFT_BLACK 0
-	#define TFT_GREEN 0x7E0
+	#define BLACK 0
 
 	// Optional TFT_ESPI code was added by John to study performance differences
 	#define USE_TFT_ESPI false // true to use TFT_eSPI library, false to use AdaFruit GFX library
@@ -42,6 +44,7 @@ int touchEnabled = false;
 			digitalWrite(33, HIGH);
 			useTFT = true;
 		}
+
 	#elif defined(ARDUINO_CITILAB_ED1)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7735.h"
@@ -232,10 +235,31 @@ int touchEnabled = false;
 			ts.setRotation(1);
 			touchEnabled = true;
 		}
+
+	#elif defined(SCOUT_MAKES_AZUL)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_SSD1306.h"
+
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 32
+		#define IS_MONCHROME true
+
+		Adafruit_SSD1306 tft = Adafruit_SSD1306(128, 32); // xxx may need params
+
+		#undef UPDATE_DISPLAY
+		#define UPDATE_DISPLAY() (tft.display())
+
+		void tftInit() {
+			int ok = tft.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+			tftClear();
+			useTFT = true;
+		}
+
 	#endif
 
 void tftClear() {
-	tft.fillScreen(TFT_BLACK);
+	tft.fillScreen(BLACK);
+	UPDATE_DISPLAY();
 }
 
 OBJ primEnableDisplay(int argCount, OBJ *args) {
@@ -250,6 +274,9 @@ OBJ primEnableDisplay(int argCount, OBJ *args) {
 static int color24to16b(int color24b) {
 	// Convert 24-bit RGB888 format to the TFT's color format (e.g. 16-bit RGB565).
 
+	#ifdef IS_MONCHROME
+		return color24b ? 1 : 0;
+	#endif
 	int r = (color24b >> 19) & 0x1F; // 5 bits
 	int g = (color24b >> 10) & 0x3F; // 6 bits
 	int b = (color24b >> 3) & 0x1F; // 5 bits
@@ -281,6 +308,7 @@ static OBJ primSetPixel(int argCount, OBJ *args) {
 	int y = obj2int(args[1]);
 	int color16b = color24to16b(obj2int(args[2]));
 	tft.drawPixel(x, y, color16b);
+	UPDATE_DISPLAY();
 	return falseObj;
 }
 
@@ -291,6 +319,7 @@ static OBJ primLine(int argCount, OBJ *args) {
 	int y1 = obj2int(args[3]);
 	int color16b = color24to16b(obj2int(args[4]));
 	tft.drawLine(x0, y0, x1, y1, color16b);
+	UPDATE_DISPLAY();
 	return falseObj;
 }
 
@@ -306,6 +335,7 @@ static OBJ primRect(int argCount, OBJ *args) {
 	} else {
 		tft.drawRect(x, y, width, height, color16b);
 	}
+	UPDATE_DISPLAY();
 	return falseObj;
 }
 
@@ -322,6 +352,7 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 	} else {
 		tft.drawRoundRect(x, y, width, height, radius, color16b);
 	}
+	UPDATE_DISPLAY();
 	return falseObj;
 }
 
@@ -336,6 +367,7 @@ static OBJ primCircle(int argCount, OBJ *args) {
 	} else {
 		tft.drawCircle(x, y, radius, color16b);
 	}
+	UPDATE_DISPLAY();
 	return falseObj;
 }
 
@@ -353,6 +385,7 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 	} else {
 		tft.drawTriangle(x0, y0, x1, y1, x2, y2, color16b);
 	}
+	UPDATE_DISPLAY();
 	return falseObj;
 }
 
@@ -379,6 +412,7 @@ static OBJ primText(int argCount, OBJ *args) {
 		sprintf(s, "%d", obj2int(value));
 		tft.print(s);
 	}
+	UPDATE_DISPLAY();
 	return falseObj;
 }
 
@@ -392,13 +426,14 @@ void tftSetHugePixel(int x, int y, int state) {
 		minDimension = tft.width();
 		yInset = (tft.height() - tft.width()) / 2;
 	}
-	int lineWidth = 3;
+	int lineWidth = (minDimension > 60) ? 3 : 1;
 	int squareSize = (minDimension - (6 * lineWidth)) / 5;
 	tft.fillRect(
 		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
 		yInset + ((y - 1) * squareSize) + (y * lineWidth), // y
 		squareSize, squareSize,
-		state ? TFT_GREEN : TFT_BLACK);
+		color24to16b(state ? 0x00FF00 : BLACK));
+	UPDATE_DISPLAY();
 }
 
 void tftSetHugePixelBits(int bits) {
@@ -411,6 +446,7 @@ void tftSetHugePixelBits(int bits) {
 			}
 		}
 	}
+	UPDATE_DISPLAY();
 }
 
 static OBJ primTftTouched(int argCount, OBJ *args) {
