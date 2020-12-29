@@ -40,7 +40,9 @@ WiFiClient client;
 
 #if defined(ARDUINO_ARCH_ESP32)
 WebSocketsServer webSocket = WebSocketsServer(81);
-OBJ lastWebSocketEvent;
+static int lastWebSocketType;
+static int lastWebSocketClientId;
+char lastWebSocketPayload[1000];
 #endif
 
 // WiFi Connection
@@ -409,31 +411,33 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 #ifdef ARDUINO_ARCH_ESP32
 // Websocket support for ESP32
 
-void webSocketEventCallback(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
-	FIELD(lastWebSocketEvent, 0) = int2obj(3);
-	FIELD(lastWebSocketEvent, 1) = int2obj(type);
-	FIELD(lastWebSocketEvent, 2) = int2obj(num);
-	OBJ message = newString(length);
-	memcpy(obj2str(message), payload, length);
-	FIELD(lastWebSocketEvent, 3) = message;
+void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t * payload, size_t length) {
+	lastWebSocketType = type;
+	lastWebSocketClientId = client_id;
+        length = length >= 1000 ? 999 : length;
+	memcpy(lastWebSocketPayload, payload, length);
+        lastWebSocketPayload[length] = '\0';
 }
 
 static OBJ primWebSocketStart(int argCount, OBJ *args) {
-	lastWebSocketEvent = newObj(ListType, 4, zeroObj);
 	webSocket.begin();
 	webSocket.onEvent(webSocketEventCallback);
 	return falseObj;
 }
 
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) {
-	OBJ event = newObj(ListType, 4, zeroObj);
-	FIELD(event, 0) = FIELD(lastWebSocketEvent, 0);
-	FIELD(event, 1) = FIELD(lastWebSocketEvent, 1);
-	FIELD(event, 2) = FIELD(lastWebSocketEvent, 2);
-	FIELD(event, 3) = FIELD(lastWebSocketEvent, 3);
-	lastWebSocketEvent = newObj(ListType, 4, zeroObj);
 	webSocket.loop();
-	return event;
+        if (lastWebSocketType > -1) {
+            OBJ event = newObj(ListType, 4, zeroObj);
+            FIELD(event, 0) = int2obj(3);
+            FIELD(event, 1) = int2obj(lastWebSocketType);
+            FIELD(event, 2) = int2obj(lastWebSocketClientId);
+            FIELD(event, 3) = newStringFromBytes(lastWebSocketPayload, strlen(lastWebSocketPayload));
+            lastWebSocketType = -1;
+            return event;
+        } else {
+            return falseObj;
+        }
 }
 
 static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
