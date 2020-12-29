@@ -520,7 +520,14 @@ OBJ primFind(int argCount, OBJ *args) {
 		char *s = obj2str(arg1);
 		char *sought = obj2str(arg0);
 		char *match = strstr(s + startOffset - 1, sought);
-		return int2obj(match ? (match - s) + 1 : -1);
+		if (!match) return int2obj(-1);
+		// count the Unicode characters up to match
+		int charIndex = 1;
+		while (*s && (s < match)) {
+			s = nextUTF8(s);
+			charIndex++;
+		}
+		return int2obj(charIndex);
 	} else if (IS_TYPE(arg1, ListType)) { // search in a list
 		int listCount = obj2int(FIELD(arg1, 0));
 		if (startOffset > listCount) return int2obj(-1); // not found
