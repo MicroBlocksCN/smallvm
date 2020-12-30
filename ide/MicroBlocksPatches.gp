@@ -402,7 +402,9 @@ method contextMenu Block {
   addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this) 'copy these blocks to the clipboard')
   addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
   if (not (isPrototypeHat (topBlock this))) {
-	addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
+	if (or ('reporter' == (type (topBlock this))) (devMode)) {
+	  addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
+	}
   }
   addLine menu
   addItem menu 'delete block' 'delete' 'delete this block'

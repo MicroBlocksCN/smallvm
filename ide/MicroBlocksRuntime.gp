@@ -1441,7 +1441,7 @@ method handleMessage SmallRuntime msg {
 		} (chunkID == 254) {
 			addLoggedData this (toString (returnedValue this msg))
 		} else {
-			showResult this chunkID (returnedValue this msg)
+			showResult this chunkID (returnedValue this msg) false true
 		}
 	} (op == (msgNameToID this 'varValueMsg')) {
 		varValueReceived (thingServer scripter) (byteAt msg 3) (returnedValue this msg)

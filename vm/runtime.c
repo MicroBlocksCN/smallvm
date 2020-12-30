@@ -574,7 +574,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		for (int i = 0; i < sendCount; i++) {
 			*dst++ = bytes[i];
 		}
-		sendMessage(msgType, chunkOrVarIndex, (byteCount + 4), data);
+		sendMessage(msgType, chunkOrVarIndex, (sendCount + 4), data);
 	}
 }
 
