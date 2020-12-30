@@ -101,7 +101,9 @@ static int bytesForObject(OBJ value) {
 	if (isInt(value)) { // 32-bit integer
 		return headerBytes + 4;
 	} else if (IS_TYPE(value, StringType)) { // string
-		return headerBytes + strlen(obj2str(value));
+		int len = strlen(obj2str(value));
+		if (len > 800) len = 800;
+		return headerBytes + len;
 	} else if ((value == trueObj) || (value == falseObj)) { // boolean
 		return headerBytes + 1;
 	}
