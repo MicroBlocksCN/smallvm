@@ -647,7 +647,7 @@ method enableAutoConnect SmallRuntime syncScriptsFlag {
 
 method tryToInstallVM SmallRuntime {
 	// Invite the user to install VM if we see a new board drive and are not able to connect to
-	// it withing a few seconds. Remember the last set of boardDrives so we don't keep asking.
+	// it within a few seconds. Remember the last set of boardDrives so we don't keep asking.
 	// Details: On Mac OS (at least), 3-4 seconds elapse between when the board drive appears
 	// and when the USB-serial port appears. Thus, the IDE waits a bit to see if it can connect
 	// to the board before prompting the user to install the VM to avoid spurious prompts.
@@ -1444,7 +1444,7 @@ method handleMessage SmallRuntime msg {
 			showResult this chunkID (returnedValue this msg) false true
 		}
 	} (op == (msgNameToID this 'varValueMsg')) {
-		varValueReceived (thingServer scripter) (byteAt msg 3) (returnedValue this msg)
+		varValueReceived (httpServer scripter) (byteAt msg 3) (returnedValue this msg)
 	} (op == (msgNameToID this 'versionMsg')) {
 		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'chunkCRCMsg')) {
@@ -1452,7 +1452,7 @@ method handleMessage SmallRuntime msg {
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
-		broadcastReceived (thingServer scripter) (toString (copyFromTo msg 6))
+		broadcastReceived (httpServer scripter) (toString (copyFromTo msg 6))
 	} (op == (msgNameToID this 'chunkCodeMsg')) {
 		receivedChunk this (byteAt msg 3) (byteAt msg 6) (toArray (copyFromTo msg 7))
 	} (op == (msgNameToID this 'chunkAttributeMsg')) {

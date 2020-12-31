@@ -22,12 +22,12 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus thingServer latestVersion currentVersion lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile
+defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus httpServer latestVersion currentVersion lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
 method scripter MicroBlocksEditor { return scripter }
-method thingServer MicroBlocksEditor { return thingServer }
+method httpServer MicroBlocksEditor { return httpServer }
 
 to openMicroBlocksEditor devMode {
   if (isNil devMode) { devMode = false }
@@ -101,7 +101,7 @@ to findMicroBlocksEditor {
 method initialize MicroBlocksEditor {
   scale = (global 'scale')
   morph = (newMorph this)
-  thingServer = (newMicroBlocksThingServer)
+  httpServer = (newMicroBlocksHTTPServer)
   addTopBarParts this
   scripter = (initialize (new 'MicroBlocksScripter') this)
   lastProjectFolder = (gpExamplesFolder)
@@ -206,8 +206,8 @@ method clearProject MicroBlocksEditor {
   fileName = ''
   createEmptyProject scripter
   clearBoardIfConnected (smallRuntime) true
-  if (isRunning thingServer) {
-	clearVars thingServer
+  if (isRunning httpServer) {
+	clearVars httpServer
   }
   clearLoggedData (smallRuntime)
 }
@@ -365,8 +365,8 @@ method step MicroBlocksEditor {
   processDroppedFiles this
   updateIndicator this
   processMessages (smallRuntime)
-  if (isRunning thingServer) {
-	step thingServer
+  if (isRunning httpServer) {
+	step httpServer
   }
 }
 
@@ -661,10 +661,10 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 	addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
 	if ('Browser' != (platform)) {
 	  addLine menu
-	  if (not (isRunning thingServer)) {
-		addItem menu 'start WebThing server' 'startThingServer'
+	  if (not (isRunning httpServer)) {
+		addItem menu 'start HTTP server' 'startHTTPServer'
 	  } else {
-		addItem menu 'stop WebThing server' 'stopThingServer'
+		addItem menu 'stop HTTP server' 'stopHTTPServer'
 	  }
 	}
 	addLine menu
@@ -705,19 +705,19 @@ method hideAdvancedBlocks MicroBlocksEditor {
   developerModeChanged this
 }
 
-method startThingServer MicroBlocksEditor {
-  if (start thingServer) {
-	(inform 'MicroBlocks HTTP Server listening on port 6473' 'WebThing Server')
+method startHTTPServer MicroBlocksEditor {
+  if (start httpServer) {
+	(inform 'MicroBlocks HTTP Server listening on port 6473' 'HTTP Server')
   } else {
 	(inform (join
-		'Failed to start WebThing server.' (newline)
+		'Failed to start HTTP server.' (newline)
 		'Please make sure that no other service is running at port 6473.')
-		'WebThing Server')
+		'HTTP Server')
   }
 }
 
-method stopThingServer MicroBlocksEditor {
-  stop thingServer
+method stopHTTPServer MicroBlocksEditor {
+  stop httpServer
 }
 
 // Language Button
