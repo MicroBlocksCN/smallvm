@@ -759,7 +759,7 @@ async function GP_setSerialPortDTR(flag) {
 		chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag }, ignore);
 	} else if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
-		await GP_webSerialPort.setSignals({ dtr: flag }).catch(() => {});
+		await GP_webSerialPort.setSignals({ dtr: flag, dataTerminalReady: flag }).catch(() => {});
 	}
 }
 
@@ -770,7 +770,7 @@ async function GP_setSerialPortRTS(flag) {
 		chrome.serial.setControlSignals(GP_serialPortID, { rts: flag }, ignore);
 	} else if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
-		await GP_webSerialPort.setSignals({ rts: flag }).catch(() => {});
+		await GP_webSerialPort.setSignals({ rts: flag, requestToSend: flag }).catch(() => {});
 	}
 }
 
