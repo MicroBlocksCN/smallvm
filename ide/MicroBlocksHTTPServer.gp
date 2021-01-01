@@ -26,7 +26,11 @@ method initialize MicroBlocksHTTPServer {
 method start MicroBlocksHTTPServer {
 	stop this
 	serverSocket = (openServerSocket 6473)
-	print 'MicroBlocks HTTP Server listening on port 6473'
+	if (notNil serverSocket) {
+		print 'MicroBlocks HTTP Server listening on port 6473'
+	} else {
+		print 'Could not create HTTP Server socket'
+	}
 	return (isRunning this)
 }
 
