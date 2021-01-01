@@ -1755,9 +1755,9 @@ method exportAsImageScaled SmallRuntime aBlock scale result {
   if ('Browser' == (platform)) {
 	browserWriteFile pngData 'scriptImage' 'png'
   } else {
-	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'scriptImage' '.png')
-	writeFile (join (gpFolder) '/' fName) pngData
-    inform (join 'Image saved in ' (gpFolder))
+	fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
+	if ('' == fName) { return false }
+	writeFile fName pngData
   }
 }
 
