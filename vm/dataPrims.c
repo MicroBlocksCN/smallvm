@@ -469,6 +469,8 @@ OBJ primJoinStrings(int argCount, OBJ *args) {
 		OBJ item = FIELD(stringList, i + 1);
 		if (IS_TYPE(item, StringType)) {
 			resultBytes += stringSize(item);
+		} else if (IS_TYPE(item, ByteArrayType)) {
+			resultBytes += BYTES(item);
 		} else if (isInt(item) || isBoolean(item)) {
 			printIntegerOrBooleanInto(item, buf);
 			resultBytes += strlen(buf);
@@ -492,6 +494,10 @@ OBJ primJoinStrings(int argCount, OBJ *args) {
 			s = buf;
 		}
 		int n = strlen(s);
+		if (IS_TYPE(item, ByteArrayType)) {
+			s = (char *) &FIELD(item, 0);
+			n = BYTES(item);
+		}
 		memcpy(dst, s, n);
 		dst += n;
 		if (separatorLen && (i < (count - 1))) {
