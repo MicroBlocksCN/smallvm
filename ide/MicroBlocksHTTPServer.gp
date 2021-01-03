@@ -259,12 +259,14 @@ method helpString MicroBlocksHTTPWorker {
 	add result 'MicroBlocks HTTP Server'
 	add result ''
 	add result '/ - this help text'
-	add result '/getBroadcasts - get broadcasts from board, (URL-encoded strings, one per line)'
-	add result '/broadcast/URL_encoded_message - broadcast message to board'
 	add result '/getVar/URL_encoded_var_name - get variable value'
 	add result '/setVar/URL_encoded_var_name/value - set variable value'
-	add result '  (value is: true, false, an integer, or a url_encoded_string (up to 800 bytes))'
-	add result '  (use double-quotes for string values that would otherwise be treated as a boolean or integer such as "true", "false", or "12345")'
+	add result '  (value is: true, false, an integer, or a URL-encoded string (up to 800 bytes))'
+	add result '  (double-quote strings that would otherwise be treated as a boolean or integer such as "true", "false", or "12345")'
+	add result '/broadcast/URL_encoded_message - broadcast message to board'
+	add result '/getBroadcasts - get broadcasts from board, (URL-encoded strings, one per line)'
+	add result ''
+	add result 'Lists and byte arrays are not supported, although getVar reports them as they would be shown by the "say" block'
 	return (joinStrings result (newline))
 }
 
