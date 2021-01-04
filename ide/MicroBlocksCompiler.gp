@@ -119,7 +119,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'and'				'_ and _' 'bool bool' true false)
 		(array 'r' 'or'					'_ or _ ' 'bool bool' true false)
 		'-'
-		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 'Rósza' 'string')
+		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 123 'number')
 	'Operators-Advanced'
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 		'-'

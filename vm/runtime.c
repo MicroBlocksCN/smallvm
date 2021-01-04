@@ -20,7 +20,7 @@
 
 // VM Version
 
-#define VM_VERSION "v106"
+#define VM_VERSION "v107"
 
 // Forward Reference Declarations
 
@@ -484,8 +484,8 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Data is: <type (1 byte)><...data...>
 	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - list, 5 - bytearray
 
-	char data[804];
-	int maxBytes = (int) sizeof(data) - 1; // leave room for type byte
+	char data[801];
+	int maxBytes = (int) sizeof(data) - 1; // leave room for the type byte
 
 	if (isInt(value)) { // 32-bit integer, little endian
 		data[0] = 1;  // data type (1 is integer)
@@ -498,12 +498,15 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	} else if (IS_TYPE(value, StringType)) {
 		data[0] = 2; // data type (2 is string)
 		char *s = obj2str(value);
-		int byteCount = strlen(s);
-		if (byteCount > maxBytes) byteCount = maxBytes;
-		for (int i = 0; i < byteCount; i++) {
+		int len = strlen(s);
+		int sendCount = (len > 800) ? 800 : len;
+		for (int i = 0; i < sendCount; i++) {
 			data[i + 1] = s[i];
 		}
-		sendMessage(msgType, chunkOrVarIndex, (byteCount + 1), data);
+		if (len > 800) {
+			memcpy(&data[798], "...", 3); // string was truncated; add ellipses
+		}
+		sendMessage(msgType, chunkOrVarIndex, (sendCount + 1), data);
 	} else if ((value == trueObj) || (value == falseObj)) {
 		data[0] = 3; // data type (3 is boolean)
 		data[1] = (trueObj == value) ? 1 : 0;
@@ -569,7 +572,7 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 		*dst++ = byteCount & 0xFF;
 		*dst++ = (byteCount >> 8) & 0xFF;
 		uint8 *bytes = (uint8 *) &FIELD(value, 0);
-		uint8 sendCount = (byteCount < 100) ? byteCount : 100; // send up to 100 bytes
+		int sendCount = (byteCount < 100) ? byteCount : 100; // send up to 100 bytes
 		*dst++ = sendCount;
 		for (int i = 0; i < sendCount; i++) {
 			*dst++ = bytes[i];

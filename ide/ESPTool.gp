@@ -77,7 +77,7 @@ method connect ESPTool {
 		enterBootMode this
 		waitMSecs 10
 		recvBuf = (newBinaryData)
-		repeat 3 {
+		repeat 5 {
 			sendSyncMsg this
 			waitMSecs 20
 			msg = (nextSLIPMsg this)
@@ -361,10 +361,11 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 
 	if ok { status = (localized 'Done') } else { status = (localized 'Failed') }
 
-	waitMSecs 100 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
+	waitMSecs 200 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
 	exitBootMode this
 	waitMSecs 1500
 	if closeWhenDone { closePort this }
+	enableAutoConnect (smallRuntime)
 }
 
 method readVMData ESPTool boardName downloadFlag {
