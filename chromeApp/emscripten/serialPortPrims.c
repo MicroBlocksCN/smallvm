@@ -90,33 +90,72 @@ static void setRTS(PortHandle port, int flag) {
 
 #elif defined(_WIN32)
 
+#include <ctype.h>
 #include <windows.h>
+#include <initguid.h>
+#include <devguid.h>
+#include <setupapi.h>
 
 typedef HANDLE PortHandle;
 #define CLOSED NULL
 
-static OBJ serialPortList() {
-	char buf[400]; // result of QueryDosDevice; ignored, since we only care if query succeeds
-	char portName[10];
+// static OBJ serialPortListOld() {
+// 	char buf[400]; // result of QueryDosDevice; ignored, since we only care if query succeeds
+// 	char portName[10];
+//
+// 	OBJ portList = newArray(255);
+// 	int count = 0;
+// 	for (int i = 0; i < 256; i++) {
+// 		sprintf(portName, "COM%d", i);
+// 		if (QueryDosDevice(portName, (void *) &buf, sizeof(buf) / 2)) {
+// 			FIELD(portList, count++) = newString(portName);
+// 		}
+// 	}
+// 	return copyObj(portList, count, 1);
+// }
 
-	OBJ portList = newArray(255);
+static OBJ serialPortList() {
+	OBJ portList = newArray(256);
 	int count = 0;
-	for (int i = 0; i < 256; i++) {
-		sprintf(portName, "COM%d", i);
-		if (QueryDosDevice(portName, (void *) &buf, sizeof(buf) / 2)) {
-			FIELD(portList, count++) = newString(portName);
+	SP_DEVINFO_DATA devInfoData = {};
+	devInfoData.cbSize = sizeof(devInfoData);
+	char friendlyName[256];
+
+	// get device info for the available COM ports
+	HDEVINFO hDeviceInfo = SetupDiGetClassDevs(&GUID_DEVCLASS_PORTS, NULL, NULL, DIGCF_PRESENT);
+	if (hDeviceInfo == INVALID_HANDLE_VALUE) copyObj(portList, 0, 1);
+
+	// iterate over COM ports
+	int deviceIndex = 0;
+	while (SetupDiEnumDeviceInfo(hDeviceInfo, deviceIndex++, &devInfoData)) {
+		if (SetupDiGetDeviceRegistryProperty(
+			hDeviceInfo, &devInfoData, SPDRP_FRIENDLYNAME, NULL,
+			(BYTE *) friendlyName, sizeof(friendlyName), NULL))
+		{
+			FIELD(portList, count++) = newString(friendlyName);
 		}
 	}
+	SetupDiDestroyDeviceInfoList(hDeviceInfo);
 	return copyObj(portList, count, 1);
 }
 
 static PortHandle openPort(int portID, char *portName, int baudRate) {
-	TCHAR name[40];
+	char comPort[8];
+	TCHAR name[20];
 	HANDLE portPtr;
 	COMMTIMEOUTS timeouts;
 	DCB dcb;
 
-	wsprintf(name, TEXT("\\\\.\\%s"), portName);
+	char *start = strstr(portName, "COM");
+	if (!start) return CLOSED;
+	char *end = start + 3; // end of "COM"
+	if (!isdigit(*end)) return CLOSED; else end++; // need at list one digit
+	if (isdigit(*end)) end++; // two digit COM port
+	if (isdigit(*end)) end++; // three digit COM port
+	comPort[0] = '\0';
+	strncat(comPort, start, (end - start));
+
+	wsprintf(name, TEXT("\\\\.\\%s"), comPort);
 	// MessageBox(NULL, name, "Debug: port name", 0);
 	portPtr = CreateFile(
 		name,

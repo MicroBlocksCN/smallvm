@@ -10,7 +10,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/wait.h>
 #include <time.h>
 #include <zlib.h>
 
@@ -38,6 +37,8 @@
 #include <direct.h>		// used by makeDirectory (for _wmkdir)
 #include <Shlobj.h>		// used by userHomePath (for SHGetFolderPathW)
 #include <process.h>
+#else
+#include <sys/wait.h>
 #endif
 
 // ***** Version Date and Time *****
