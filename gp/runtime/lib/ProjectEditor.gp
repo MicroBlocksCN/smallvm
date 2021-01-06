@@ -31,7 +31,7 @@ to startProjectEditorFromMorphic {
 
 to o tryRetina devMode { openProjectEditor tryRetina devMode } // shortcut, because Jens needs it so often :-)
 
-to openProjectEditor tryRetina devMode presentFlag {
+to openProjectEditor tryRetina devMode {
   if (isNil tryRetina) { tryRetina = true }
   if (isNil devMode) { devMode = true }
   if (isNil (global 'alanMode')) { setGlobal 'alanMode' false }
@@ -46,16 +46,22 @@ to openProjectEditor tryRetina devMode presentFlag {
   open page tryRetina
   editor = (initialize (new 'ProjectEditor') (emptyProject))
   addPart page editor
+  projName = 'new project'
   if (notNil (global 'initialProject')) {
 	dataAndURL = (global 'initialProject')
+    projName = (filePart (last dataAndURL))
   	openProject editor (first dataAndURL) (last dataAndURL)
+  }
+  goFlag = false
+  if ('Browser' == (platform)) {
+	if ('go.html' == (extractCommand (browserURL))) { goFlag = true }
+	hide (morph (first (getField editor 'rightItems'))) // hide the 'Present' button in browser
+	browserPostMessage (join projName ' loaded') true
   }
   pageResized editor
   developerModeChanged editor
-  if presentFlag {
-	enterPresentation editor
-  }
-  startSteppingSafely page presentFlag
+  if goFlag { enterPresentation editor }
+  startSteppingSafely page goFlag
 }
 
 to findProjectEditor {
@@ -73,7 +79,7 @@ method initialize ProjectEditor aProject {
   morph = (newMorph this)
   project = aProject
   viewerWidth = ((width (global 'page')) - (800 * scale))
-  viewerWidth = (max viewerWidth (235 * scale))
+  viewerWidth = (max viewerWidth (400 * scale))
   addTopBarParts this
   scripter = (initialize (new 'Scripter') this)
   addPart morph (morph scripter)
@@ -478,6 +484,26 @@ method checkForBrowserResize ProjectEditor {
   for each (parts pageM) { pageResized (handler each) w h this }
 }
 
+method processBrowserMessages ProjectEditor {
+  while true {
+	msg = (browserGetMessage)
+	if (isNil msg) { return }
+	if ('go' == msg) {
+	  broadcastGo (global 'page')
+	} ('stop' == msg) {
+	  stopAll (global 'page')
+	} ('seeInside' == msg) {
+	   exitPresentation this
+	   browserPostMessage 'hideButton SeeInsideButton'
+	   browserPostMessage 'showButton PresentButton'
+	} ('present' == msg) {
+	   enterPresentation this
+	   browserPostMessage 'showButton SeeInsideButton'
+	   browserPostMessage 'hideButton PresentButton'
+	}
+  }
+}
+
 // media management
 
 method importMediaFile ProjectEditor type {
@@ -616,6 +642,7 @@ method step ProjectEditor {
   if ('Browser' == (platform)) {
   	processImportedFiles this
   	checkForBrowserResize this
+  	processBrowserMessages this
   }
   processDroppedFiles this
   if (isNil fpsReadout) { return }
@@ -668,6 +695,49 @@ method normalStageSize ProjectEditor {
   fixStageLayout this
 }
 
+method rebuild ProjectEditor {
+  scale = (global 'scale')
+
+  saveScripts scripter
+  oldProject = project
+  oldCategory = (currentCategory scripter)
+  oldTargetObj = (targetObj scripter)
+  oldTab = (selection tabs)
+  oldPage = (first (pages project))
+  unloadPage stage oldPage
+
+  removeAllParts morph
+  viewerWidth = ((width (global 'page')) - (800 * scale))
+  viewerWidth = (max viewerWidth (400 * scale))
+  addTopBarParts this
+  scripter = (initialize (new 'Scripter') this)
+  addPart morph (morph scripter)
+  stage = (newStage 16 10)
+  addPart morph (morph stage)
+  library = (initialize (new 'SpriteLibrary') scripter)
+  addPart morph (morph library)
+  setStageMorph scripter (morph stage)
+  tabs = (tabBar (list 'Scripts' 'Images' 'Sounds' 'Notes') nil (action 'showTab' this) (transparent) 12)
+  setBGColors tabs (gray 240) (gray 150) (gray 100) // match tab colors to Scripter border and class pane colors
+  addPart morph (morph tabs)
+
+  loadPage stage (first (pages project))
+  select tabs 'Scripts'
+  selectCategory scripter oldCategory
+  loadPage stage oldPage
+  setTargetObj scripter oldTargetObj
+  select tabs oldTab
+  developerModeChanged scripter
+
+  drawTopBar this
+  fixLayout this
+  return this
+}
+
+method scaleChanged ProjectEditor {
+  rebuild this
+}
+
 method pageResized ProjectEditor {
   scale = (global 'scale')
   page = (global 'page')
@@ -679,7 +749,7 @@ method pageResized ProjectEditor {
 	viewerWidth = (560 * scale)
 	setExtent (morph viewer) viewerWidth nil
   }
-  viewerWidth = (max viewerWidth (235 * (global 'scale')))
+  viewerWidth = (max viewerWidth (400 * (global 'scale')))
   if (not (isVisible morph)) { // presentation mode
 	scaleToFit stage (width page) (height page)
 	gotoCenterOf (morph stage) (morph page)
