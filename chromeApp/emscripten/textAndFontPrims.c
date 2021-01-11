@@ -202,7 +202,8 @@ static FontRef openFont(char *fontName, int fontSize) {
 
 	FontRef result = pango_font_description_new();
 	pango_font_description_set_family(result, familyName);
-	pango_font_description_set_size(result, fontSize * PANGO_SCALE);
+	int fudgeFactor = (pango_version() > 14403) ? 1 : 0;
+	pango_font_description_set_size(result, (fontSize - fudgeFactor) * PANGO_SCALE);
 	if (boldIndex) pango_font_description_set_weight(result, 700);
 	if (italicIndex) pango_font_description_set_style(result, PANGO_STYLE_ITALIC);
 
@@ -218,7 +219,8 @@ static int ascent(FontRef font) {
 	pango_layout_set_font_description(cachedLayout, font);
 	PangoContext *context = pango_layout_get_context(cachedLayout);
 	PangoFontMetrics *metrics = pango_context_get_metrics(context, font, NULL);
- 	return pango_font_metrics_get_ascent(metrics) / PANGO_SCALE;
+	int fudgeFactor = (pango_version() > 14403) ? 1 : 0;
+ 	return (pango_font_metrics_get_ascent(metrics) / PANGO_SCALE) + fudgeFactor;
 }
 
 static int descent(FontRef font) {
@@ -226,7 +228,8 @@ static int descent(FontRef font) {
 	pango_layout_set_font_description(cachedLayout, font);
 	PangoContext *context = pango_layout_get_context(cachedLayout);
 	PangoFontMetrics *metrics = pango_context_get_metrics(context, font, NULL);
- 	return pango_font_metrics_get_descent(metrics) / PANGO_SCALE;
+	int fudgeFactor = (pango_version() > 14403) ? 1 : 0;
+ 	return (pango_font_metrics_get_descent(metrics) / PANGO_SCALE) + fudgeFactor;
 }
 
 static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {

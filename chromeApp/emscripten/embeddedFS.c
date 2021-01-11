@@ -82,12 +82,22 @@ static long findDataStart(FILE *f) {
 	// Return NO_EMBEDDED_FS (-1) if this byte sequence is not found.
 	// To avoid repeatedly scanning the GP application file, the result
 	// of the scan is cached in the variable dataStart.
+	// If the file is a raw Zip file (i.e. it starts with 0x50, 0x4b, 0x03, 0x04),
+	// then it does not need to be prefixed with the marker string 'GPFS'.
 
 	if (dataStart > UNINITIALIZED) return dataStart;
 
 	#define ADVANCE 10000
 	#define BUF_SIZE (ADVANCE + 10)
 	char buf[BUF_SIZE];
+
+	// first check for a raw Zip file
+	fseek(f, 0, SEEK_SET);
+	int bytesRead = fread(buf, 1, 4, f);
+	if ((4 == bytesRead) &&
+		(0x50 == buf[0]) && (0x4b == buf[1]) && (3 == buf[2]) && (4 == buf[3])) {
+			return 0; // the entire Zip file is the embedded file system
+	}
 
 	long bufStart = 0;
 	while (true) {
@@ -382,5 +392,21 @@ gp_boolean importLibrary() {
 FILE * openAppFile() {
     char path[APP_PATH_SIZE];
 	int ok = getAppPath(path, sizeof(path));
-	return ok ? fopen(path, "rb") : NULL;
+	if (!ok) return NULL; // should not happen
+
+	#ifdef MAC
+		// If running in a Mac app bundle, file system is in /Contents/Resources/fs.data
+		char *macAppPrefix = strstr(path, ".app/Contents/MacOS/");
+		if (macAppPrefix) {
+			*(macAppPrefix + 14) = 0; // truncate after ".app/Contents/"
+			strncat(path, "Resources/fs.data", APP_PATH_SIZE);
+		}
+		FILE *f = fopen(path, "rb");
+		if (f) {
+			return f;
+		} else {
+			getAppPath(path, sizeof(path)); // could not open fs.data; use app itself
+		}
+	#endif
+	return fopen(path, "rb");
 }

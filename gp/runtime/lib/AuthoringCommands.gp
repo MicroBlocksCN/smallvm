@@ -822,29 +822,6 @@ to points n {
   return (n * (global 'scale'))
 }
 
-to httpGetOld host path port {
-  if (isNil path) { path = '/' }
-  if (not (beginsWith path '/')) { path = (join '/' path) }
-  if (isNil port) { port = 80 }
-  socket = (openClientSocket host port)
-  if (isNil socket) { return '' }
-  crlf = (string 13 10)
-  request = (join
-    'GET ' (urlEncode path) ' HTTP/1.1' crlf
-    'Host: ' host crlf crlf)
-  writeSocket socket request
-  waitMSecs 1000 // wait a bit
-  response = (list)
-  count = 1 // start loop
-  while (count > 0) {
-	chunk = (readSocket socket)
-	count = (byteCount chunk)
-	if (count > 0) { add response chunk }
-  }
-  closeSocket socket
-  return (joinStrings response)
-}
-
 to showText s {
   if (not (isClass s 'String')) { s = (toString s) }
   openWorkspace (global 'page') s

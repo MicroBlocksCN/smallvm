@@ -221,6 +221,11 @@ static OBJ primSetFillBrowser(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+static OBJ primBrowserFileImport(int nargs, OBJ args[]) {
+	EM_ASM({ importFile(); }, 0);
+	return nilObj;
+}
+
 static OBJ primBrowserGetDroppedFile(int nargs, OBJ args[]) {
 	int dropCount = EM_ASM_INT({ return GP.droppedFiles.length; }, NULL);
 	if (!dropCount) return nilObj; // no files
@@ -1020,6 +1025,7 @@ static PrimEntry browserPrimList[] = {
 	{"browserSize",				primBrowserSize,		"Return the inner width and height of the browser window."},
 	{"browserScreenSize",		primBrowserScreenSize,	"Return the width and height of the entire screen containing the browser."},
 	{"setFillBrowser",			primSetFillBrowser,		"Set 'fill browser' mode. If true, the GP canvas is resized to fill the entire browser window."},
+	{"browserFileImport",		primBrowserFileImport,	"Show a file input button that the user can click to import a file."},
 	{"browserGetDroppedFile",	primBrowserGetDroppedFile,	"Get the next dropped file record array (fileName, binaryData), or nil if there isn't one."},
 	{"browserGetDroppedText",	primBrowserGetDroppedText,	"Get last dropped or pasted text, or nil if there isn't any."},
 	{"browserGetMessage",		primBrowserGetMessage,		"Get the next message from the browser, or nil if there isn't any."},
