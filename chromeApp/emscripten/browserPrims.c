@@ -410,7 +410,7 @@ static void finalizeTexture(OBJ obj) {
 	}
 	EM_ASM_({
 		var cnvID = $0 - 1;
-		if ((cnvID >= 0) || (cnvID < GP.canvasCache.length)) {
+		if ((cnvID >= 0) && (cnvID < GP.canvasCache.length)) {
 			GP.canvasCache[cnvID] = null;
 		}
 	}, (int) a[0]);
