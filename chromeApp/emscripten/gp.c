@@ -283,7 +283,7 @@ static gp_boolean processCommandLine(int argc, char *argv[], char *prefix) {
 		// read library if no arguments or just "-"
 		#if !defined(EMSCRIPTEN)
 			gp_boolean hasEmbeddedLibrary = importLibrary();
-			if (!hasEmbeddedLibrary) readLibraryFromFileSystem(!interactiveFlag);
+			if (!hasEmbeddedLibrary) readLibraryFromFileSystem(true);
 		#endif
 	}
 	for (int i = 1; i < argc; i++) {
