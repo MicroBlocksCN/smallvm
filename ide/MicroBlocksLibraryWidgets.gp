@@ -22,7 +22,7 @@ to pickLibraryToOpen anAction defaultPath {
 }
 
 method initialize MicroBlocksLibraryImportDialog anAction defaultPath {
-	filePicker = (initialize (new 'FilePicker') anAction defaultPath (array '.ubl'))
+	filePicker = (initialize (new 'MicroBlocksFilePicker') anAction defaultPath (array '.ubl'))
 	onSelectCloud filePicker (action 'promptLibUrl' this)
 
 	morph = (morph filePicker)
