@@ -182,15 +182,19 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 }
 
 static OBJ primStartSSIDscan(int argCount, OBJ *args) {
-        return int2obj(WiFi.scanNetworks());
+	return int2obj(WiFi.scanNetworks());
 }
 
 static OBJ primGetSSID(int argCount, OBJ *args) {
 	char ssid[100];
 	ssid[0] = '\0'; // clear string
 	char *s = ssid;
-        strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1).c_str(), 31);
+	strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1).c_str(), 31);
 	return newStringFromBytes(s, strlen(s));
+}
+
+static OBJ primGetMyMAC(int argCount, OBJ *args) {
+	return newStringFromBytes(WiFi.macAddress().c_str(), 18);
 }
 
 // HTTP Server
@@ -414,9 +418,9 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t * payload, size_t length) {
 	lastWebSocketType = type;
 	lastWebSocketClientId = client_id;
-        length = length >= 1000 ? 999 : length;
+	length = length >= 1000 ? 999 : length;
 	memcpy(lastWebSocketPayload, payload, length);
-        lastWebSocketPayload[length] = '\0';
+	lastWebSocketPayload[length] = '\0';
 }
 
 static OBJ primWebSocketStart(int argCount, OBJ *args) {
@@ -427,17 +431,17 @@ static OBJ primWebSocketStart(int argCount, OBJ *args) {
 
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) {
 	webSocket.loop();
-        if (lastWebSocketType > -1) {
-            OBJ event = newObj(ListType, 4, zeroObj);
-            FIELD(event, 0) = int2obj(3);
-            FIELD(event, 1) = int2obj(lastWebSocketType);
-            FIELD(event, 2) = int2obj(lastWebSocketClientId);
-            FIELD(event, 3) = newStringFromBytes(lastWebSocketPayload, strlen(lastWebSocketPayload));
-            lastWebSocketType = -1;
-            return event;
-        } else {
-            return falseObj;
-        }
+	if (lastWebSocketType > -1) {
+		OBJ event = newObj(ListType, 4, zeroObj);
+		FIELD(event, 0) = int2obj(3);
+		FIELD(event, 1) = int2obj(lastWebSocketType);
+		FIELD(event, 2) = int2obj(lastWebSocketClientId);
+		FIELD(event, 3) = newStringFromBytes(lastWebSocketPayload, strlen(lastWebSocketPayload));
+		lastWebSocketType = -1;
+		return event;
+	} else {
+		return falseObj;
+	}
 }
 
 static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
@@ -479,8 +483,9 @@ static PrimEntry entries[] = {
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
-        {"startSSIDscan", primStartSSIDscan},
-        {"getSSID", primGetSSID},
+	{"startSSIDscan", primStartSSIDscan},
+	{"getSSID", primGetSSID},
+	{"myMAC", primGetMyMAC},
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
