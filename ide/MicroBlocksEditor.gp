@@ -222,7 +222,7 @@ method closeAllDialogs MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
-  fp = (findMorph 'FilePicker')
+  fp = (findMorph 'MicroBlocksFilePicker')
   if (notNil fp) { destroy fp }
   pickFileToOpen (action 'openProjectFromFile' this) lastProjectFolder (array '.ubp' '.gpp')
 }
@@ -282,7 +282,7 @@ method openFromBoard MicroBlocksEditor {
 }
 
 method saveProjectToFile MicroBlocksEditor {
-  fp = (findMorph 'FilePicker')
+  fp = (findMorph 'MicroBlocksFilePicker')
   if (notNil fp) { destroy fp }
   saveProject this nil
 }
