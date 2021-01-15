@@ -193,7 +193,7 @@ static OBJ primGetSSID(int argCount, OBJ *args) {
 	return newStringFromBytes(s, strlen(s));
 }
 
-static OBJ primGetMyMAC(int argCount, OBJ *args) {
+static OBJ primGetMAC(int argCount, OBJ *args) {
 	return newStringFromBytes(WiFi.macAddress().c_str(), 18);
 }
 
@@ -463,18 +463,18 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStartSSIDscan(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetSSID(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetMAC(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
+#endif
 #ifndef ARDUINO_ARCH_ESP32
 static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWiFi); }
-#endif
-
 #endif
 
 static PrimEntry entries[] = {
@@ -485,7 +485,7 @@ static PrimEntry entries[] = {
 	{"myIPAddress", primGetIP},
 	{"startSSIDscan", primStartSSIDscan},
 	{"getSSID", primGetSSID},
-	{"myMAC", primGetMyMAC},
+	{"myMAC", primGetMAC},
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
