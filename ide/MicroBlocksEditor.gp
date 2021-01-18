@@ -707,7 +707,9 @@ method hideAdvancedBlocks MicroBlocksEditor {
 
 method startHTTPServer MicroBlocksEditor {
   if (start httpServer) {
-	(inform 'MicroBlocks HTTP Server listening on port 6473' 'HTTP Server')
+	(inform (join 'MicroBlocks HTTP Server listening on port ' (port httpServer)) 'HTTP Server')
+  } ('' == (port httpServer)) {
+	return // user did not supply a port number
   } else {
 	(inform (join
 		'Failed to start HTTP server.' (newline)
