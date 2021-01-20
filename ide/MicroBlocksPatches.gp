@@ -1030,8 +1030,8 @@ method processEvent Keyboard evt {
 				confirmRemoveFlasher (smallRuntime)
 			} (not (decompilerDone (smallRuntime))) {
 				stopDecompilation (smallRuntime)
-			} (notNil (findMorph 'FilePicker')) {
-				destroy (findMorph 'FilePicker')
+			} (notNil (findMorph 'MicroBlocksFilePicker')) {
+				destroy (findMorph 'MicroBlocksFilePicker')
 			} (notNil (findMorph 'Prompter')) {
 				cancel (handler (findMorph 'Prompter'))
 			} else {

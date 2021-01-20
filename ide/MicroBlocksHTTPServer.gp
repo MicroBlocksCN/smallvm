@@ -9,12 +9,14 @@
 //
 // John Maloney and Bernat Romagosa, May, 2019
 
-defineClass MicroBlocksHTTPServer serverSocket vars workers
+defineClass MicroBlocksHTTPServer port serverSocket vars workers
 
 to newMicroBlocksHTTPServer {
 	result = (initialize (new 'MicroBlocksHTTPServer'))
 	return result
 }
+
+method port MicroBlocksHTTPServer { return port }
 
 method initialize MicroBlocksHTTPServer {
 	serverSocket = nil
@@ -25,9 +27,12 @@ method initialize MicroBlocksHTTPServer {
 
 method start MicroBlocksHTTPServer {
 	stop this
-	serverSocket = (openServerSocket 6473)
+	port = (prompt (global 'page') 'Server port?' '6473')
+	if ('' == port) { return false }
+	port = (toInteger port)
+	serverSocket = (openServerSocket port)
 	if (notNil serverSocket) {
-		print 'MicroBlocks HTTP Server listening on port 6473'
+		print 'MicroBlocks HTTP Server listening on port' port
 	} else {
 		print 'Could not create HTTP Server socket'
 	}
