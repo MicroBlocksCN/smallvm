@@ -1,24 +1,29 @@
 module SGP30 Input
 author 'José García Yeste'
-version 1 0 
+version 1 1 
 tags sensor co2 
 description 'Support for Sensirion SGP30 Air Quality Sensor.
-Returns the CO2 in ppm and TVOC in ppb.'
+Returns the CO2 in ppm and TVOC in ppb.
+
+Based on: https://github.com/adafruit/Adafruit_SGP30/blob/master/Adafruit_SGP30.cpp'
 
 variables '_SGP30 inizialized' 
 
 	spec 'r' 'SGP30 connected' 'SGP30 connected'
 	spec 'r' 'SGP30 read' 'SGP30 read air quality'
+	spec 'r' 'SGP30 read raw' 'SGP30 read raw'
 	spec ' ' 'SGP30 setup' 'SGP30 setup'
+	spec 'r' 'SGP30 get baseline' 'SGP30 get baseline'
+	spec ' ' 'SGP30 set baseline' 'SGP30 set baseline co2 _ tvoc _' 'auto auto' 36885 36209
+	spec 'r' '_SGP30 generate CRC' '_SGP30 generate CRC _' 'auto' 400
 
 to 'SGP30 connected' {
   local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '2F'))
   local 'response' (newList 3)
-  local 'featureset' 0
   '[sensors:i2cWrite]' (hexToInt '58') cmd
   waitMillis 10
   '[sensors:i2cRead]' (hexToInt '58') response
-  featureset = (((at 1 response) << 8) | (at 2 response))
+  local 'featureset' (((at 1 response) << 8) | (at 2 response))
   return ((featureset & (hexToInt 'F0')) == (hexToInt '20'))
 }
 
@@ -39,9 +44,64 @@ to 'SGP30 setup' {
   if ((v '_SGP30 inizialized') == 0) {
     '_SGP30 inizialized' = 1
     local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '03'))
-    local 'response' (newList 6)
     '[sensors:i2cWrite]' (hexToInt '58') cmd
     waitMillis 10
   }
 }
+
+to 'SGP30 read raw' {
+  'SGP30 setup'
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '50'))
+  local 'response' (newList 6)
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 25
+  local 'raw' (newList 2)
+  '[sensors:i2cRead]' (hexToInt '58') response
+  atPut 1 raw (((at 1 response) << 8) | (at 2 response))
+  atPut 2 raw (((at 4 response) << 8) | (at 5 response))
+  return raw
+}
+
+
+to 'SGP30 get baseline' {
+  'SGP30 setup'
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '15'))
+  local 'response' (newList 6)
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 10
+  local 'baseline' (newList 2)
+  '[sensors:i2cRead]' (hexToInt '58') response
+  atPut 1 baseline (((at 1 response) << 8) | (at 2 response))
+  atPut 2 baseline (((at 4 response) << 8) | (at 5 response))
+  return baseline
+}
+
+to 'SGP30 set baseline' co2 tvoc {
+  'SGP30 setup'
+  local 'cmd' ('[data:makeList]' (hexToInt '20') (hexToInt '1E') (tvoc >> 8) (tvoc & 255) ('_SGP30 generate CRC' tvoc) (co2 >> 8) (co2 & 255) ('_SGP30 generate CRC' co2))
+  '[sensors:i2cWrite]' (hexToInt '58') cmd
+  waitMillis 10
+}
+
+to '_SGP30 generate CRC' value {
+  local 'buf' ('[data:makeList]' (value >> 8) (value & 255))
+  local 'crc' (hexToInt 'FF')
+  for i (size buf) {
+    crc = (crc ^ (at i buf))
+    for i 8 {
+      if ((crc & (hexToInt '80')) != 0) {
+        crc = ((crc << 1) ^ (hexToInt '31'))
+      } else {
+        crc = (crc << 1)
+      }
+    }
+  }
+  return (crc & 255)
+}
+
+script 642 50 {
+to 'SGP30 set baseline' {}
+}
+
+
 

@@ -1,0 +1,28 @@
+module VL53L0X
+author 'José García Yeste'
+version 1 0 
+tags sensor distance 
+description 'Support for VL53L0X distance sensor.
+TOF laser based.
+Range 0-200mm.'
+
+	spec 'r' 'VL53L0X connected' 'VL53L0X connected'
+	spec 'r' 'VL53L0X distance (mm)' 'VL53L0X distance (mm)'
+
+to 'VL53L0X connected' {
+  return ((i2cGet 41 (hexToInt 'C0')) == (hexToInt 'EE'))
+}
+
+to 'VL53L0X distance (mm)' {
+  i2cSet 41 0 1
+  waitMillis 70
+  if (((i2cGet 41 (hexToInt '14')) & 1) == 1) {
+    '[sensors:i2cWrite]' 41 ('[data:makeList]' (hexToInt '14'))
+    local 'buf' (newList 12)
+    '[sensors:i2cRead]' 41 buf
+    return (((at 11 buf) << 8) | (at 12 buf))
+  } else {
+    return -1
+  }
+}
+
