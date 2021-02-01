@@ -48,6 +48,11 @@ uint32 millisecs() {
 	return (1000 * (now.tv_sec - startSecs)) + (now.tv_usec / 1000);
 }
 
+void delay(int ms) {
+    clock_t start = millisecs();
+    while (millisecs() < start + ms);
+}
+
 // Communication/System Functions
 
 static int pty; // pseudo terminal used for communication with the IDE
@@ -135,6 +140,8 @@ void primWifiConnect(OBJ *args) {}
 int wifiStatus() { return 0; }
 OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
 OBJ primGetIP(int argCount, OBJ *args) { return falseObj; }
+void stopPWM() {}
+void processFileMessage(int msgType, int dataSize, char *data) { }
 
 // Persistence support
 
