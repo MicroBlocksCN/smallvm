@@ -28,6 +28,23 @@ static char *extractFilename(OBJ obj) {
 	}
 }
 
+char ensureOpen (char *fileName) {
+	if (strcmp(currentFileName, fileName) != 0) {
+		// currently open file is different from requested one
+		if (currentFilePointer != NULL) {
+			// and there was a currently open file, so we close it first
+			fclose(currentFilePointer);
+		}
+		memcpy(currentFileName, fileName, strlen(fileName));
+		currentFileName = extractFilename(fileName);
+		currentFilePointer = fopen(currentFileName, "a+");
+	} else if (fileName[0] && currentFilePointer == NULL) {
+		// current file was closed, so we reopen it
+		currentFilePointer = fopen(currentFileName, "a+");
+	}
+	return currentFilePointer != NULL;
+}
+
 static OBJ primOpen(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	currentFileName = extractFilename(args[0]);
@@ -48,20 +65,7 @@ static OBJ primEndOfFile(int argCount, OBJ *args) { return falseObj; }
 static OBJ primReadLine(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char *fileName = extractFilename(args[0]);
-	if (!fileName[0]) return newString(0);
-
-	if (strcmp(currentFileName, fileName) != 0) {
-		// open file is different from requested one
-		if (currentFilePointer != NULL) {
-			// and there was a currently open file
-			fclose(currentFilePointer);
-		}
-		currentFileName = extractFilename(args[0]);
-		currentFilePointer = fopen(currentFileName, "a+");
-	} else if (currentFilePointer == NULL) {
-		// current file was closed
-		currentFilePointer = fopen(currentFileName, "a+");
-	}
+	if (!fileName[0] || !ensureOpen(fileName)) return newString(0);
 
 	char buf[800];
 	uint32 byteCount = 0;
@@ -79,7 +83,40 @@ static OBJ primReadLine(int argCount, OBJ *args) {
 
 static OBJ primReadBytes(int argCount, OBJ *args) { return falseObj; }
 
-static OBJ primAppendLine(int argCount, OBJ *args) { return falseObj; }
+static OBJ primAppendLine(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
+	char *fileName = extractFilename(args[1]);
+	OBJ arg = args[0];
+
+	if (!fileName[0] || !ensureOpen(fileName)) return newString(0);
+
+	if (IS_TYPE(arg, StringType)) {
+		fprintf(currentFilePointer, "%s", obj2str(arg));
+	} else if (isInt(arg)) {
+		fprintf(currentFilePointer, "%i", obj2int(arg));
+	} else if (isBoolean(arg)) {
+		fprintf(currentFilePointer, "%s", (trueObj == arg) ? "true" : "false");
+	} else if (IS_TYPE(arg, ListType)) {
+		// print list items separated by spaces
+		int count = obj2int(FIELD(arg, 0));
+		for (int j = 1; j <= count; j++) {
+			OBJ item = FIELD(arg, j);
+			if (IS_TYPE(item, StringType)) {
+				fprintf(currentFilePointer, "%s", obj2str(item));
+			} else if (isInt(item)) {
+				fprintf(currentFilePointer, "%i", obj2int(item));
+			} else if (isBoolean(item)) {
+				fprintf(currentFilePointer, "%s", (trueObj == item) ? "true" : "false");
+			}
+			if (j < count) fprintf(currentFilePointer, " ");
+		}
+	}
+	fprintf(currentFilePointer, "\n");
+	processMessage();
+	return falseObj;
+}
+
 static OBJ primAppendBytes(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primStartFileList(int argCount, OBJ *args) { return falseObj; }
