@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -19,13 +20,14 @@ FILE *currentFilePointer;
 char *currentFileName;
 
 static char *extractFilename(OBJ obj) {
+	char *fileName = "\0";
 	if (IS_TYPE(obj, StringType)) {
-		char *fileName = obj2str(obj);
+		fileName = obj2str(obj);
 		if (strcmp(fileName, "ublockscode") == 0) return "\0";
-		return fileName;
 	} else {
 		fail(needsStringError);
 	}
+	return fileName;
 }
 
 char ensureOpen (char *fileName) {
@@ -36,7 +38,6 @@ char ensureOpen (char *fileName) {
 			fclose(currentFilePointer);
 		}
 		memcpy(currentFileName, fileName, strlen(fileName));
-		currentFileName = extractFilename(fileName);
 		currentFilePointer = fopen(currentFileName, "a+");
 	} else if (fileName[0] && currentFilePointer == NULL) {
 		// current file was closed, so we reopen it
@@ -50,17 +51,29 @@ static OBJ primOpen(int argCount, OBJ *args) {
 	currentFileName = extractFilename(args[0]);
 	if (!currentFileName[0]) return falseObj;
 	currentFilePointer = fopen(currentFileName, "a+");
+	return falseObj;
 }
 
 static OBJ primClose(int argCount, OBJ *args) {
-	if (currentFilePointer != NULL) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	char *fileName = extractFilename(args[0]);
+	if (strcmp(currentFileName, fileName) == 0 &&
+			currentFilePointer != NULL) {
 		fclose(currentFilePointer);
+		currentFilePointer = NULL;
 	}
+	return falseObj;
 }
 
 static OBJ primDelete(int argCount, OBJ *args) { return falseObj; }
 
-static OBJ primEndOfFile(int argCount, OBJ *args) { return falseObj; }
+static OBJ primEndOfFile(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	char *fileName = extractFilename(args[0]);
+	if (!fileName[0] || !ensureOpen(fileName)) return trueObj;
+
+	return feof(currentFilePointer) ? trueObj : falseObj;
+}
 
 static OBJ primReadLine(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
@@ -119,9 +132,17 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 
 static OBJ primAppendBytes(int argCount, OBJ *args) { return falseObj; }
 
+static OBJ primFileSize(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	char *fileName = extractFilename(args[0]);
+	if (!fileName[0] || !ensureOpen(fileName)) return int2obj(0);
+	struct stat st;
+	stat(fileName, &st);
+	return int2obj(st.st_size);
+}
+
 static OBJ primStartFileList(int argCount, OBJ *args) { return falseObj; }
 static OBJ primNextFileInList(int argCount, OBJ *args) { return falseObj; }
-
 static OBJ primSystemInfo(int argCount, OBJ *args) { return falseObj; }
 
 // Primitives
@@ -138,6 +159,7 @@ static PrimEntry entries[] = {
 	{"appendLine", primAppendLine},
 	{"appendBytes", primAppendBytes},
 
+	{"fileSize", primFileSize},
 	{"startList", primStartFileList},
 	{"nextInList", primNextFileInList},
 
