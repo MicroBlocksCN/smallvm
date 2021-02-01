@@ -16,7 +16,7 @@
 #ifndef GNUBLOCKS
 #include <Arduino.h>
 #else
-#include "../linux/linux.h"
+#include "../linux+pi/linux.h"
 #endif
 #include "mem.h"
 #include "interp.h"

@@ -10,18 +10,73 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mem.h"
 #include "interp.h"
 
-// TBD. These are just stubs for now.
+FILE *currentFilePointer;
+char *currentFileName;
 
-static OBJ primOpen(int argCount, OBJ *args) { return falseObj; }
-static OBJ primClose(int argCount, OBJ *args) { return falseObj; }
+static char *extractFilename(OBJ obj) {
+	if (IS_TYPE(obj, StringType)) {
+		char *fileName = obj2str(obj);
+		if (strcmp(fileName, "ublockscode") == 0) return "\0";
+		return fileName;
+	} else {
+		fail(needsStringError);
+	}
+}
+
+static OBJ primOpen(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	currentFileName = extractFilename(args[0]);
+	if (!currentFileName[0]) return falseObj;
+	currentFilePointer = fopen(currentFileName, "a+");
+}
+
+static OBJ primClose(int argCount, OBJ *args) {
+	if (currentFilePointer != NULL) {
+		fclose(currentFilePointer);
+	}
+}
+
 static OBJ primDelete(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primEndOfFile(int argCount, OBJ *args) { return falseObj; }
-static OBJ primReadLine(int argCount, OBJ *args) { return falseObj; }
+
+static OBJ primReadLine(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	char *fileName = extractFilename(args[0]);
+	if (!fileName[0]) return newString(0);
+
+	if (strcmp(currentFileName, fileName) != 0) {
+		// open file is different from requested one
+		if (currentFilePointer != NULL) {
+			// and there was a currently open file
+			fclose(currentFilePointer);
+		}
+		currentFileName = extractFilename(args[0]);
+		currentFilePointer = fopen(currentFileName, "a+");
+	} else if (currentFilePointer == NULL) {
+		// current file was closed
+		currentFilePointer = fopen(currentFileName, "a+");
+	}
+
+	char buf[800];
+	uint32 byteCount = 0;
+
+	if (fgets(buf, 800, currentFilePointer) != NULL) {
+		byteCount = strlen(buf);
+		OBJ result = newString(byteCount);
+		if (result) {
+			memcpy(obj2str(result), buf, byteCount);
+			return result;
+		}
+	}
+	return newString(0);
+}
+
 static OBJ primReadBytes(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primAppendLine(int argCount, OBJ *args) { return falseObj; }
