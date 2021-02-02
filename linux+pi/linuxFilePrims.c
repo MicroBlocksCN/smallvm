@@ -12,12 +12,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <dirent.h>
 
 #include "mem.h"
 #include "interp.h"
 
 FILE *currentFilePointer;
 char *currentFileName;
+DIR *directory;
+struct dirent *nextDirEntry;
+struct stat fileStat;
 
 static char *extractFilename(OBJ obj) {
 	char *fileName = "\0";
@@ -130,7 +134,21 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-static OBJ primAppendBytes(int argCount, OBJ *args) { return falseObj; }
+static OBJ primAppendBytes(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	OBJ data = args[0];
+	char *fileName = extractFilename(args[1]);
+	if (fileName[0] && ensureOpen(fileName)) {
+		if (IS_TYPE(data, ByteArrayType)) {
+			fwrite((uint8 *) &FIELD(data, 0), 8, BYTES(data), currentFilePointer);
+		} else if (IS_TYPE(data, StringType)) {
+			char *s = obj2str(data);
+			fwrite((uint8 *) s, 8, strlen(s), currentFilePointer);
+		}
+	}
+	processMessage();
+	return falseObj;
+}
 
 static OBJ primFileSize(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
@@ -141,8 +159,32 @@ static OBJ primFileSize(int argCount, OBJ *args) {
 	return int2obj(st.st_size);
 }
 
-static OBJ primStartFileList(int argCount, OBJ *args) { return falseObj; }
-static OBJ primNextFileInList(int argCount, OBJ *args) { return falseObj; }
+static OBJ primStartFileList(int argCount, OBJ *args) {
+	directory = opendir(".");
+	return falseObj;
+}
+
+static OBJ primNextFileInList(int argCount, OBJ *args) {
+	char fileName[100];
+	if (directory) {
+		if ((nextDirEntry = readdir(directory)) != NULL) {
+			// check entry type
+			stat(nextDirEntry->d_name, &fileStat);
+			if (S_ISREG(fileStat.st_mode)) {
+				// it's a regular file, we're okay
+				strncat(fileName, nextDirEntry->d_name, 99);
+			} else {
+				// it's not a regular file, let's recurse into the next entry
+				return primNextFileInList(argCount, args);
+			}
+		} else {
+			closedir(directory);
+			directory = NULL;
+		}
+	}
+	return newStringFromBytes(fileName, strlen(fileName));
+}
+
 static OBJ primSystemInfo(int argCount, OBJ *args) { return falseObj; }
 
 // Primitives
