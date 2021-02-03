@@ -8,6 +8,6 @@
 # Prereq for 64-bit Linux systems: libc6-dev-i386
 
 gcc -m32 -std=c99 -Wall -O3 \
-	-D GNUBLOCKS -I ../vm linux.c linux.h linuxFilePrims.c ../vm/*.c \
+	-D GNUBLOCKS -I ../vm linux.c linux.h linuxFilePrims.c linuxNetPrims.c ../vm/*.c \
 	-lm \
 	-o GnuBlocks
