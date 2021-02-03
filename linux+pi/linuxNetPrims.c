@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "mem.h"
 #include "tinyJSON.h"
@@ -26,7 +27,6 @@
 
 //#include <netinet/in.h>
 //#include <netdb.h>
-//#include <unistd.h>
 
 // These primitives make no sense in a Linux system, since the connection is
 // handled at the operating system level, but we're simulating them to ensure
@@ -92,12 +92,13 @@ int clientSocket = 0;
 static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
-	uint32 start = millisecs();
-	const int timeout = 800;
 
-	if (clientSocket) shutdown(clientSocket, 2);
+	if (clientSocket) {
+		shutdown(clientSocket, 2);
+	}
 
-	clientSocket = socket(AF_INET, SOCK_STREAM, 0);	
+	clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+
 	struct sockaddr_in remoteAddress;
 
 	memset(&remoteAddress, '0', sizeof(remoteAddress));
@@ -113,9 +114,9 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	}
 
 	int connectResult = connect(
-			clientSocket,
-			(struct sockaddr *)&remoteAddress,
-			sizeof(remoteAddress));
+				clientSocket,
+				(struct sockaddr *)&remoteAddress,
+				sizeof(remoteAddress) < 0);
 
 	if (connectResult < 0) {
 		shutdown(clientSocket, 2);
@@ -126,16 +127,72 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-static OBJ primHttpIsConnected(int argCount, OBJ *args) {
+static char socketIsConnected() {
 	int error = 0;
 	socklen_t len = sizeof (error);
 	int retval = getsockopt (clientSocket, SOL_SOCKET, SO_ERROR, &error, &len);
-	return ((clientSocket <= 0) || (retval != 0) || (error != 0)) ?
-		falseObj : trueObj;
+	return ((clientSocket > 0) && (retval == 0) && (error == 0));
 }
 
-static OBJ primHttpRequest(int argCount, OBJ *args) { return falseObj; }
-static OBJ primHttpResponse(int argCount, OBJ *args) { return falseObj; }
+static OBJ primHttpIsConnected(int argCount, OBJ *args) {
+	return socketIsConnected() ? trueObj : falseObj;
+}
+
+static OBJ primHttpRequest(int argCount, OBJ *args) {
+	// Send an HTTP request. Must have first connected to the server.
+
+	if (!socketIsConnected()) return falseObj;
+
+	char* reqType = obj2str(args[0]);
+	char* host = obj2str(args[1]);
+	char* path = obj2str(args[2]);
+	char request[256];
+	sprintf(request,
+			"%s /%s HTTP/1.0\r\n\
+Host: %s\r\n\
+Connection: close\r\n\
+User-Agent: MicroBlocks\r\n\
+Accept: */*\r\n",
+			reqType,
+			path,
+			host);
+
+	write(clientSocket, request, strlen(request));
+
+	if ((argCount > 3) && IS_TYPE(args[3], StringType)) {
+		char length_str[50];
+		char* body = obj2str(args[3]);
+		int content_length = strlen(body);
+		write(clientSocket, "Content-Type: text/plain\r\n", 26);
+		sprintf(length_str, "Content-Length: %i\r\n\r\n", content_length);
+		write(clientSocket, length_str, strlen(length_str));
+		write(clientSocket, body, content_length);
+	} else {
+		write(clientSocket, "\r\n", 2);
+	}
+
+	return falseObj;
+}
+
+static OBJ primHttpResponse(int argCount, OBJ *args) {
+    /// Read the response
+	/*
+	while ((n = read(sockfd, recvline, MAXLINE)) > 0) {
+		recvline[n] = '\0';
+
+		if (fputs(recvline, stdout) == EOF) {
+			printf("fputs() error\n");
+		}
+
+		/// Remove the trailing chars
+		ptr = strstr(recvline, "\r\n\r\n");
+
+		// check len for OutResponse here ?
+		snprintf(OutResponse, MAXRESPONSE,"%s", ptr);
+	}
+	*/
+	return falseObj;
+}
 
 static PrimEntry entries[] = {
 	{"hasWiFi", primHasWiFi},
