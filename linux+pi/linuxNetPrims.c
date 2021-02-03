@@ -76,9 +76,9 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 				break;
 			}
 		}
+		freeifaddrs(address);
 	}
 
-    freeifaddrs(address);
 	return result;
 }
 
@@ -93,12 +93,9 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
 
-	if (clientSocket) {
-		shutdown(clientSocket, 2);
-	}
+	if (clientSocket) shutdown(clientSocket, 2);
 
-	clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-
+	clientSocket = socket(AF_INET, SOCK_STREAM, 0);	
 	struct sockaddr_in remoteAddress;
 
 	memset(&remoteAddress, '0', sizeof(remoteAddress));
@@ -114,9 +111,9 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	}
 
 	int connectResult = connect(
-				clientSocket,
-				(struct sockaddr *)&remoteAddress,
-				sizeof(remoteAddress) < 0);
+			clientSocket,
+			(struct sockaddr *)&remoteAddress,
+			sizeof(remoteAddress));
 
 	if (connectResult < 0) {
 		shutdown(clientSocket, 2);
@@ -127,32 +124,33 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-static char socketIsConnected() {
+char httpClientConnected() {
+	// TODO we're not detecting when the server closes the connection
 	int error = 0;
 	socklen_t len = sizeof (error);
-	int retval = getsockopt (clientSocket, SOL_SOCKET, SO_ERROR, &error, &len);
+	int retval = getsockopt(clientSocket, SOL_SOCKET, SO_ERROR, &error, &len);
 	return ((clientSocket > 0) && (retval == 0) && (error == 0));
 }
 
 static OBJ primHttpIsConnected(int argCount, OBJ *args) {
-	return socketIsConnected() ? trueObj : falseObj;
+	return httpClientConnected() ? trueObj : falseObj;
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
 	// Send an HTTP request. Must have first connected to the server.
 
-	if (!socketIsConnected()) return falseObj;
+	if (!httpClientConnected()) return falseObj;
 
 	char* reqType = obj2str(args[0]);
 	char* host = obj2str(args[1]);
 	char* path = obj2str(args[2]);
-	char request[256];
+	char request[1024];
 	sprintf(request,
 			"%s /%s HTTP/1.0\r\n\
-Host: %s\r\n\
-Connection: close\r\n\
-User-Agent: MicroBlocks\r\n\
-Accept: */*\r\n",
+			Host: %s\r\n\
+			Connection: close\r\n\
+			User-Agent: MicroBlocks\r\n\
+			Accept: */*\r\n",
 			reqType,
 			path,
 			host);
@@ -175,23 +173,19 @@ Accept: */*\r\n",
 }
 
 static OBJ primHttpResponse(int argCount, OBJ *args) {
-    /// Read the response
-	/*
-	while ((n = read(sockfd, recvline, MAXLINE)) > 0) {
-		recvline[n] = '\0';
+	// Read some HTTP request data, if any is available, otherwise return the empty string.
+	OBJ response;
+	char buffer[800];
+	int n, byteCount = 0;
 
-		if (fputs(recvline, stdout) == EOF) {
-			printf("fputs() error\n");
-		}
-
-		/// Remove the trailing chars
-		ptr = strstr(recvline, "\r\n\r\n");
-
-		// check len for OutResponse here ?
-		snprintf(OutResponse, MAXRESPONSE,"%s", ptr);
+	while ((n = (read(clientSocket, buffer, 64))) > 0 && byteCount <= 800) {
+		buffer[n] = '\0';
+		byteCount += n;
+		processMessage(); // process messages now
 	}
-	*/
-	return falseObj;
+	response = newString(byteCount);
+	memcpy(obj2str(response), buffer, byteCount > 800 ? 800 : byteCount);
+	return response;
 }
 
 static PrimEntry entries[] = {
