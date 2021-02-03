@@ -20,6 +20,13 @@
 
 #include <ifaddrs.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
+
+//#include <sys/types.h>
+
+//#include <netinet/in.h>
+//#include <netdb.h>
+//#include <unistd.h>
 
 // These primitives make no sense in a Linux system, since the connection is
 // handled at the operating system level, but we're simulating them to ensure
@@ -77,8 +84,47 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return falseObj; }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return falseObj; }
-static OBJ primHttpConnect(int argCount, OBJ *args) { return falseObj; }
-static OBJ primHttpIsConnected(int argCount, OBJ *args) { return falseObj; }
+
+// HTTP Client
+
+int clientSocket = 0;
+
+static OBJ primHttpConnect(int argCount, OBJ *args) {
+	char* host = obj2str(args[0]);
+	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
+	uint32 start = millisecs();
+	const int timeout = 800;
+	int ok;
+
+	if (clientSocket) shutdown(clientSocket, 2);
+
+	clientSocket = socket(AF_INET, SOCK_STREAM, 0);	
+	struct sockaddr_in remoteAddress;
+
+	memset(&remoteAddress, '0', sizeof(remoteAddress));
+
+	remoteAddress.sin_family = AF_INET;
+	remoteAddress.sin_port = htons(port);
+
+	if (inet_pton(AF_INET, host, &remoteAddress.sin_addr) <= 0) {
+		return falseObj;
+	}
+
+	int connectResult = connect(
+			clientSocket,
+			(struct sockaddr *)&remoteAddress,
+			sizeof(remoteAddress));
+
+	if (connectResult < 0) return falseObj;
+
+	processMessage(); // process messages now
+	return falseObj;
+}
+
+static OBJ primHttpIsConnected(int argCount, OBJ *args) {
+	return clientSocket > 0 ? trueObj : falseObj;
+}
+
 static OBJ primHttpRequest(int argCount, OBJ *args) { return falseObj; }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return falseObj; }
 
