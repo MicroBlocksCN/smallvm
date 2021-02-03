@@ -12,7 +12,9 @@
 // Bernat Romagosa, February 2018
 
 #define _XOPEN_SOURCE 600
+#define __USE_MISC
 
+#include <termios.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h> // still needed?
@@ -56,7 +58,7 @@ void delay(int ms) {
 // Communication/System Functions
 
 static int pty; // pseudo terminal used for communication with the IDE
-char termReady = 0;
+//char termReady = 0;
 
 static void openPseudoTerminal() {
 	pty = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -64,6 +66,12 @@ static void openPseudoTerminal() {
 		perror("Error opening pseudo terminal\n");
 		exit(-1);
 	}
+
+	struct termios settings;
+	tcgetattr(pty, &settings);
+	cfmakeraw(&settings);
+	tcsetattr(pty, TCSANOW, &settings);
+
  	grantpt(pty);
  	unlockpt(pty);
 }
@@ -71,7 +79,7 @@ static void openPseudoTerminal() {
 int recvBytes(uint8 *buf, int count) {
 	int readCount = read(pty, buf, count);
 	if (readCount < 0) readCount = 0;
-	termReady = 1;
+//	termReady = 1;
 	return readCount;
 }
 
@@ -82,11 +90,11 @@ int canReadByte() {
 }
 
 int sendByte(char aByte) {
-	if (termReady) {
+//	if (termReady) {
 		return write(pty, &aByte, 1);
-	} else {
-		return 1;
-	}
+//	} else {
+//		return 1;
+//	}
 }
 
 // System Functions
