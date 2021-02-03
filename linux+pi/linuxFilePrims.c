@@ -6,6 +6,7 @@
 
 // filePrims.c - File system primitives for Linux boards.
 // John Maloney, April 2020
+// Adapted to Linux VM by Bernat Romagosa, February 2021
 
 #include <math.h>
 #include <stdio.h>

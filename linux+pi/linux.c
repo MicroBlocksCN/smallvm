@@ -56,6 +56,7 @@ void delay(int ms) {
 // Communication/System Functions
 
 static int pty; // pseudo terminal used for communication with the IDE
+char termReady = 0;
 
 static void openPseudoTerminal() {
 	pty = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -70,6 +71,7 @@ static void openPseudoTerminal() {
 int recvBytes(uint8 *buf, int count) {
 	int readCount = read(pty, buf, count);
 	if (readCount < 0) readCount = 0;
+	termReady = 1;
 	return readCount;
 }
 
@@ -80,7 +82,11 @@ int canReadByte() {
 }
 
 int sendByte(char aByte) {
-	return write(pty, &aByte, 1);
+	if (termReady) {
+		return write(pty, &aByte, 1);
+	} else {
+		return 1;
+	}
 }
 
 // System Functions
@@ -135,11 +141,6 @@ void addDisplayPrims() {}
 void addSensorPrims() {}
 void addTFTPrims() {}
 void addIOPrims() {}
-void addNetPrims() {}
-void primWifiConnect(OBJ *args) {}
-int wifiStatus() { return 0; }
-OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
-OBJ primGetIP(int argCount, OBJ *args) { return falseObj; }
 void stopPWM() {}
 void processFileMessage(int msgType, int dataSize, char *data) { }
 
