@@ -94,7 +94,6 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
 	uint32 start = millisecs();
 	const int timeout = 800;
-	int ok;
 
 	if (clientSocket) shutdown(clientSocket, 2);
 
@@ -105,8 +104,11 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 
 	remoteAddress.sin_family = AF_INET;
 	remoteAddress.sin_port = htons(port);
+	remoteAddress.sin_addr.s_addr = inet_addr(host);
 
 	if (inet_pton(AF_INET, host, &remoteAddress.sin_addr) <= 0) {
+		shutdown(clientSocket, 2);
+		clientSocket = 0;
 		return falseObj;
 	}
 
@@ -115,14 +117,21 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 			(struct sockaddr *)&remoteAddress,
 			sizeof(remoteAddress));
 
-	if (connectResult < 0) return falseObj;
+	if (connectResult < 0) {
+		shutdown(clientSocket, 2);
+		clientSocket = 0;
+	}
 
 	processMessage(); // process messages now
 	return falseObj;
 }
 
 static OBJ primHttpIsConnected(int argCount, OBJ *args) {
-	return clientSocket > 0 ? trueObj : falseObj;
+	int error = 0;
+	socklen_t len = sizeof (error);
+	int retval = getsockopt (clientSocket, SOL_SOCKET, SO_ERROR, &error, &len);
+	return ((clientSocket <= 0) || (retval != 0) || (error != 0)) ?
+		falseObj : trueObj;
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) { return falseObj; }
