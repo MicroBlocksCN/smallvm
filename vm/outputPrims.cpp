@@ -7,7 +7,9 @@
 // displayPrims.c - 5x5 LED display and NeoPixel primitives
 // John Maloney, May 2018
 
+#ifndef GNUBLOCKS
 #include <Arduino.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -368,7 +370,7 @@ void updateMicrobitDisplay() {
 		displaySnapshot = microBitDisplayBits;
 	}
 
-#else
+#elif not defined(GNUBLOCKS)
 
 	// stub for boards without 5x5 LED displays or light sensors
 	void updateMicrobitDisplay() { }
@@ -470,6 +472,8 @@ static inline __attribute__((always_inline)) void DELAY_CYCLES(uint32_t cnt) {
 
 #endif
 
+#ifndef GNUBLOCKS
+
 inline uint32 saveIRQState(void) {
 	uint32 pmask = 0;
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
@@ -492,6 +496,8 @@ inline void restoreIRQState(uint32 pmask) {
 		__set_PRIMASK(pmask);
 	#endif
 }
+
+#endif
 
 static int neoPixelBits = 24;
 static int neoPixelPinMask = 0;
@@ -745,10 +751,12 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 }
 
 OBJ primNeoPixelSetPin(int argCount, OBJ *args) {
+#ifndef GNUBLOCKS
 	int pinNum = isInt(args[0]) ? obj2int(args[0]) : -1; // -1 means "internal NeoPixel pin"
 	neoPixelBits = ((argCount > 1) && (trueObj == args[1])) ? 32 : 24;
 	initNeoPixelPin(mapDigitalPinNum(pinNum));
 	return falseObj;
+#endif
 }
 
 void turnOffInternalNeoPixels() {

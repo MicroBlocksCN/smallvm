@@ -4,7 +4,7 @@
 
 // Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// netPrims.cpp - MicroBlocks network primitives
+// linuxNetPrims.c - MicroBlocks network primitives
 // Bernat Romagosa, August 2018
 // Revised by John Maloney, November 2018
 // Revised by Bernat Romagosa & John Maloney, March 2020
@@ -22,11 +22,6 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-
-//#include <sys/types.h>
-
-//#include <netinet/in.h>
-//#include <netdb.h>
 
 // These primitives make no sense in a Linux system, since the connection is
 // handled at the operating system level, but we're simulating them to ensure
