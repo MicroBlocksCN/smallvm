@@ -7,8 +7,8 @@
 #
 # Prereq for 64-bit Linux systems: libc6-dev-i386 gcc-multilib g++-multilib libsdl2-dev:i386
 
-gcc -m32 -std=c99 -Wall -O3 linuxIOPrims.cpp -lSDL2 -lm \
+gcc -m32 -std=c99 -Wall -O3 linuxIOPrims.cpp linuxTftPrims.cpp -lSDL2 -lm \
 	-D GNUBLOCKS -I ../vm linux.c linux.h \
-	linuxFilePrims.c linuxNetPrims.c ../vm/*.c \
+	linuxFilePrims.c linuxNetPrims.c ../vm/*.c ../vm/outputPrims.cpp \
 	-lm \
 	-o GnuBlocks

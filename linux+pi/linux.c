@@ -119,28 +119,16 @@ OBJ primI2cWrite(OBJ *args) { return int2obj(0); }
 
 // Bogus micro:bit primitives
 
-OBJ primMBDisplay(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBDisplayOff(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBPlot(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBUnplot(int argCount, OBJ *args) { return falseObj; }
 OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
 
-OBJ primNeoPixelSend(int argCount, OBJ *args) { return falseObj; }
-OBJ primNeoPixelSetPin(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBDrawShape(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBShapeForLetter(int argCount, OBJ *args) { return int2obj(0); }
-
 // Other bogus primitives
 
 void resetServos() {}
-void turnOffInternalNeoPixels() {}
 void turnOffPins() {}
-void addDisplayPrims() {}
 void addSensorPrims() {}
-void addTFTPrims() {}
 void stopPWM() {}
 void processFileMessage(int msgType, int dataSize, char *data) { }
 

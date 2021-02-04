@@ -58,10 +58,10 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primHasServo(int argCount, OBJ *args) { return trueObj; }
-OBJ primSetServo(int argCount, OBJ *args) { return trueObj; }
-OBJ primDACInit(int argCount, OBJ *args) { return trueObj; }
-OBJ primDACWrite(int argCount, OBJ *args) { return trueObj; }
+OBJ primHasServo(int argCount, OBJ *args) { return falseObj; }
+OBJ primSetServo(int argCount, OBJ *args) { return falseObj; }
+OBJ primDACInit(int argCount, OBJ *args) { return falseObj; }
+OBJ primDACWrite(int argCount, OBJ *args) { return falseObj; }
 
 static PrimEntry entries[] = {
 	{"hasTone", primHasTone},
