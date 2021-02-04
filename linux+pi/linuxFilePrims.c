@@ -4,7 +4,7 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// filePrims.c - File system primitives for Linux boards.
+// linuxFilePrims.c - File system primitives for Linux boards.
 // John Maloney, April 2020
 // Adapted to Linux VM by Bernat Romagosa, February 2021
 
