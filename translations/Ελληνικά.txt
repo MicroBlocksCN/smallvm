@@ -1,0 +1,1471 @@
+# MicroBlocks translation file
+# Last updated: July 07 2020
+
+#########################
+# Blocks and categories #
+#########################
+
+Output
+Εξόδοι
+
+set user LED _
+θέσε το LED χρήστη _
+
+say _
+πες _
+
+graph _
+σχεδίασε _
+
+Input
+Εισόδοι
+
+button A
+κομβίον Α
+
+button B
+κομβίον Β
+
+microseconds
+εκατομμυριοστά δευτερολέπτου
+
+milliseconds
+χιλιοστά δευτερολέπτου
+
+board type
+είδος κάρτας
+
+Pins
+Ακροδέκτες
+
+read digital pin _
+διάβασε το ψηφιακό ακροδέκτη _
+
+read analog pin _
+διάβασε τον αναλογικό ακροδέκτη _
+
+set digital pin _ to _
+θέσε το ψηφιακό ακροδέκτη _ σε _
+
+set pin _ to _
+θέσε τον ακροδέκτη _ σε _
+
+analog pins
+αναλογικοί ακροδέκτες
+
+digital pins
+ψηφιακοί ακροδέκτες 
+
+Control
+Έλεγχος Ροής
+
+when started
+όταν ξεκινά
+
+when button _ pressed
+όταν το κομβίον _ πατηθεί
+
+forever _
+Για πάντα επανάλαβε _
+
+repeat _ _
+επανάλαβε _ _
+
+wait _ millisecs
+περίμενε _ χιλιοστά δευτερολέπτου
+
+if _ _
+Αν _ _
+
+else if _ _
+διαφορετικά αν _ _
+
+if _ _ else _
+αν _ _ διαφορετικά _
+
+when _
+όταν _
+
+wait until _
+περίμενε μέχρι _
+
+wait _ microsecs
+περίμενε _ εκατομμυριοστά δευτερολέπτου
+
+return _
+επιστροφή _
+
+when _ received
+όταν _ ληφθεί
+
+broadcast _
+μετάδωσε _
+
+comment _
+σχόλιο _
+
+for _ in _ _
+για _ σε _ _
+
+repeat until _ _
+επανάλαβε μέχρι _ _
+
+stop this task
+σταμάτα αυτό το σενάριο
+
+stop other tasks
+σταμάτα τα άλλα σενάρια
+
+stop all
+σταμάτα όλα τα σενάρια
+
+last message
+--MISSING--
+
+Operators
+--MISSING--
+
+_ mod _
+ακέραιο υπόλοιπο_ διά _
+
+abs _
+απόλυτο _
+
+random _ to _
+επέλεξε τυχαίο από  _ ως _
+
+not _
+αντίθετο _
+
+_ and _
+_ και _
+
+and _
+και _
+
+_ or _
+_ ή _
+
+or _
+ή _
+
+_ is a _
+--MISSING--
+
+boolean
+--MISSING--
+
+number
+--MISSING--
+
+string
+--MISSING--
+
+list
+--MISSING--
+
+hex _
+hex _
+
+Variables
+Μεταβλητές
+
+# Buttons on top of "Variables" category
+
+Add a variable
+Δημιούργησε μια μεταβλητή
+
+Delete a variable
+Διάγραψε μια μεταβλητή
+
+# New variable dialog
+
+New variable name?
+Όνομα νέας μεταβλητής?
+
+set _ to _
+θέσε _ σε _
+
+change _ by _
+άλλαξε _ ανά _
+
+local _ _
+τοπική _ _
+
+Data
+--MISSING--
+
+list
+--MISSING--
+
+length of _
+μήκος του _
+
+item _ of _
+στοιχείο _ του _
+
+replace item _ of list _ with _
+αντικατάστησε στοιχείο _ του καταλόγου _ με _
+
+delete item _ of list _
+διάγραψε το στοιχείο _ του καταλόγου _
+
+add _ to list _
+πρόσθεσε _ στο κατάλογο _
+
+join _ _
+ένωσε _ _
+
+copy _ from _
+αντίγραψε _ από _
+
+to _
+προς _
+
+find _ in _
+βρες _ μέσα _
+
+starting at _
+ξεκινά από _
+
+join items of list _
+--MISSING--
+
+separator _
+--MISSING--
+
+unicode _ of _
+unicode _ του _
+
+string from unicode _
+--MISSING--
+
+new list length _
+μήκος νέου καταλόγου _
+
+new byte array length _
+--MISSING--
+
+free memory
+ελευθέρωσε μνήμη
+
+My Blocks
+Τα μπλοκ μου
+
+# Buttons on top of "My Blocks" category
+
+Add a command block
+Πρόσθεσε μπλοκ εντολής
+
+Add a reporter block
+Πρόσθεσε μπλοκ αναφοράς
+
+# Make a block dialog
+
+Enter function name:
+Συμπλήρωσε το όνομα της Λειτουργίας:
+
+Comm
+Comm
+
+i2c get device _ register _
+i2c get device _ register _
+
+i2c set device _ register _ to _
+i2c set device _ register _ to _
+
+i2c device _ read list _
+--MISSING--
+
+i2c device _ write list _
+--MISSING--
+
+spi send _
+spi send _
+
+spi receive
+spi receive
+
+print _
+print _
+
+no op
+no op
+
+ignore
+ignore
+
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
+
+draw shape _ at x _ y _
+draw shape _ at x _ y _
+
+shape for letter _
+shape for letter _
+
+send NeoPixel rgb _
+send NeoPixel rgb _
+
+has tone support
+has tone support
+
+play tone pin _ frequency _
+play tone pin _ frequency _
+
+has WiFi support
+has WiFi support
+
+start WiFi _ password _
+start WiFi _ password _
+
+stop WiFi
+stop WiFi
+
+WiFi status
+WiFi status
+
+my IP address
+my IP address
+
+radio send number _
+radio send number _
+
+radio send string _
+radio send string _
+
+radio send pair _ = _
+radio send pair _ = _
+
+radio message received?
+radio message received?
+
+radio last number
+radio last number
+
+radio last string
+radio last string
+
+radio last message type
+radio last message type
+
+radio set group _
+radio set group _
+
+radio set channel (0-83) _
+radio set channel (0-83) _
+
+radio set power (0-7) _
+radio set power (0-7) _
+
+radio last signal strength
+radio last signal strength
+
+radio receive packet _
+radio receive packet _
+
+radio send packet _
+radio send packet _
+
+disable radio
+disable radio
+
+#############
+# Libraries #
+#############
+
+Basic Sensors
+Basic Sensors
+
+tilt x
+tilt x
+
+tilt y
+tilt y
+
+tilt z
+tilt z
+
+acceleration
+--MISSING--
+
+light level
+light level
+
+temperature (°C)
+temperature (°C)
+
+####
+# NeoPixel library
+
+NeoPixel
+--MISSING--
+
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+set NeoPixels _ _ _ _ _ _ _ _ _ _
+
+clear NeoPixels
+clear NeoPixels
+
+set NeoPixel _ color _
+set NeoPixel _ color _
+
+set all NeoPixels color _
+set all NeoPixels color _
+
+rotate NeoPixels by _
+rotate NeoPixels by _
+
+color r _ g _ b _ (0-31)
+--MISSING--
+
+random color
+--MISSING--
+
+attach _ LED NeoPixel strip to pin _
+--MISSING--
+
+has white _
+--MISSING--
+
+PIR
+--MISSING--
+
+PIR at pin _ detected movement
+--MISSING--
+
+####
+# Citilab ED1 board libraries
+
+ED1 Stepper Motor
+ED1 Stepper Motor
+
+move motor _ _ steps _
+--MISSING--
+
+move motor 1 _ and motor 2 _ _ steps
+move motor 1 _ and motor 2 _ _ steps
+
+move motor _ angle _ °
+--MISSING--
+
+move motor _ _ complete turns
+--MISSING--
+
+stop steppers
+stop steppers
+
+clockwise
+clockwise
+
+counter-clockwise
+counter-clockwise
+
+ED1 Buttons
+ED1 Buttons
+
+button OK
+button OK
+
+button X
+button X
+
+button up
+button up
+
+button down
+button down
+
+button left
+button left
+
+button right
+button right
+
+capacitive sensor _
+capacitive sensor _
+
+set capacitive threshold to _
+set capacitive threshold to _
+
+####
+# BirdBrain Technologies libraries
+
+Hummingbird LED _ _ %
+Hummingbird LED _ _ %
+
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird Tri-LED _ R _ % G _ % B _ %
+
+Hummingbird Position Servo _ _ °
+--MISSING--
+
+Hummingbird Rotation Servo _ _ %
+Hummingbird Rotation Servo _ _ %
+
+Hummingbird _ _
+Hummingbird _ _
+
+Hummingbird Battery (mV)
+Hummingbird Battery (mV)
+
+Light
+Light
+
+Distance (cm)
+--MISSING--
+
+Dial
+Dial
+
+Sound
+Sound
+
+Other
+Other
+
+Finch Beak Red _ Green _ Blue _
+--MISSING--
+
+Finch Tail _ Red _ Green _ Blue _
+--MISSING--
+
+Finch Move _ _ cm at _ %
+--MISSING--
+
+Finch Turn _ _ ° at _ %
+--MISSING--
+
+Finch Wheels L _ % R _ %
+--MISSING--
+
+Finch Stop
+--MISSING--
+
+Finch Distance (cm)
+--MISSING--
+
+Finch _ Light
+--MISSING--
+
+Finch _ Line
+--MISSING--
+
+Finch Reset Encoders
+--MISSING--
+
+Finch _ Encoder
+--MISSING--
+
+Finch Accelerometer _
+--MISSING--
+
+Finch Battery
+--MISSING--
+
+All
+--MISSING--
+
+Forward
+--MISSING--
+
+Backward
+--MISSING--
+
+Right
+--MISSING--
+
+Left
+--MISSING--
+
+Beak Up
+--MISSING--
+
+Beak Down
+--MISSING--
+
+Tilt Left
+--MISSING--
+
+Tilt Right
+--MISSING--
+
+Level
+--MISSING--
+
+Upside Down
+--MISSING--
+
+x
+--MISSING--
+
+y
+--MISSING--
+
+z
+--MISSING--
+
+strength
+--MISSING--
+
+####
+# Ultrasound distance library
+
+distance (cm) trigger _ echo _
+distance (cm) trigger _ echo _
+
+####
+# Infrared remote library
+
+IR Remote
+IR Remote
+
+receive IR code
+--MISSING--
+
+receive IR code from device _
+receive IR code from device _
+
+test IR
+test IR
+
+attach IR receiver to pin _
+attach IR receiver to pin _
+
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
+Radio
+Radio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
+
+Scrolling
+Scrolling
+
+scroll text _
+scroll text _
+
+scroll number _
+scroll number _
+
+pausing _ ms
+pausing _ ms
+
+stop scrolling
+stop scrolling
+
+####
+# Servo motor library
+
+Servo
+Servo
+
+set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+stop servo _
+--MISSING--
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
+
+LED Display
+LED Display
+
+display _
+display _
+
+clear display
+clear display
+
+plot x _ y _
+plot x _ y _
+
+unplot x _ y _
+unplot x _ y _
+
+display character _
+display character _
+
+####
+# TFT display library
+
+enable TFT _
+enable TFT _
+
+TFT width
+TFT width
+
+TFT height
+TFT height
+
+set TFT pixel x _ y _ to _
+set TFT pixel x _ y _ to _
+
+draw line on TFT from x _ y _ to x _ y _ color _
+draw line on TFT from x _ y _ to x _ y _ color _
+
+draw rectangle on TFT at x _ y _ width _ height _ color _
+draw rectangle on TFT at x _ y _ width _ height _ color _
+
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+
+draw circle on TFT at x _ y _ radius _ color _
+draw circle on TFT at x _ y _ radius _ color _
+
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+
+filled _
+filled _
+
+write _ on TFT at x _ y _ color _
+write _ on TFT at x _ y _ color _
+
+scale _ wrap _
+scale _ wrap _
+
+####
+# Tone library
+# Generates music tones on buzzers
+
+Tone
+Tone
+
+attach buzzer to pin _
+attach buzzer to pin _
+
+play note _ octave _ for _ ms
+--MISSING--
+
+play frequency _ for _ ms
+--MISSING--
+
+play midi key _ for _ ms
+--MISSING--
+
+####
+# Turtle geometry library
+
+Turtle
+Turtle
+
+home
+home
+
+move _
+move _
+
+turn _ degrees
+turn _ degrees
+
+turn _ / _ of circle
+turn _ / _ of circle
+
+pen down
+pen down
+
+pen up
+pen up
+
+set pen color to _
+set pen color to _
+
+set pen to random color
+set pen to random color
+
+fill display with _
+fill display with _
+
+go to x _ y _
+go to x _ y _
+
+point in direction _
+--MISSING--
+
+####
+# File system library
+
+Files
+--MISSING--
+
+open file _
+--MISSING--
+
+close file _
+--MISSING--
+
+delete file _
+--MISSING--
+
+append line _ to file _
+--MISSING--
+
+append bytes _ to file _
+--MISSING--
+
+end of file _
+--MISSING--
+
+next line of file _
+--MISSING--
+
+next _ bytes of file _
+--MISSING--
+
+starting at _
+ξεκινά από _
+
+file names
+--MISSING--
+
+size of file _
+--MISSING--
+
+file system info
+--MISSING--
+
+####
+# WiFi library
+
+WiFi
+--MISSING--
+
+wifi connect to _ password _ try _ times
+wifi connect to _ password _ try _ times
+
+wifi create hotspot _ password _
+wifi create hotspot _ password _
+
+IP address
+IP address
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
+
+Motion
+Motion
+
+motion
+motion
+
+start step counter
+start step counter
+
+step count
+step count
+
+clear step count
+clear step count
+
+set step threshold _ (0-50)
+set step threshold _ (0-50)
+
+####
+# Button Events library
+
+Button Events
+Button Events
+
+button _ double pressed
+button _ double pressed
+
+button _ long pressed
+button _ long pressed
+
+button _ pressed
+button _ pressed
+
+####
+# Calliope board library
+
+Calliope set LED red _ green _ blue _
+--MISSING--
+
+Calliope set speaker _
+--MISSING--
+
+Calliope loudness
+--MISSING--
+
+####
+# Circuit Playground Express board library
+
+Circuit Playground set speaker _
+--MISSING--
+
+Circuit Playground slide switch
+--MISSING--
+
+####
+# DotStar LED library
+
+attach _ DotStar LEDs to data pin _ clock pin _
+--MISSING--
+
+set all DotStar LEDs to r _ g _ b _
+--MISSING--
+
+set DotStar LED _ to r _ g _ b _
+--MISSING--
+
+set DotStar brightness _
+--MISSING--
+
+####
+# BME280 environmental sensor
+
+bme280 connected
+--MISSING--
+
+bmp280 connected
+--MISSING--
+
+bmx280 temperature
+--MISSING--
+
+bmx280 pressure
+--MISSING--
+
+bme280 humidity
+--MISSING--
+
+####
+# TCS34725 color sensor
+
+TCS34725 connected
+--MISSING--
+
+TCS34725 rgb
+--MISSING--
+
+color _ name
+--MISSING--
+
+####
+# DHT11 environmental sensor
+
+temperature (Celsius) DHT11 pin _
+--MISSING--
+
+humidity DHT11 pin _
+--MISSING--
+
+temperature (Celsius) DHT22 pin _
+--MISSING--
+
+humidity DHT22 pin _
+--MISSING--
+
+####
+# PN532 RFID reader
+
+read PN532 RFID
+--MISSING--
+
+RFID _ = _
+--MISSING--
+
+get PN532 firmware version
+--MISSING--
+
+####
+# HTTP libraries
+
+HTTP client
+--MISSING--
+
+_ data _ to http܃// _
+--MISSING--
+
+HTTP server
+--MISSING--
+
+start HTTP server
+--MISSING--
+
+HTTP server request
+--MISSING--
+
+respond _ to HTTP request
+--MISSING--
+
+with body _
+--MISSING--
+
+and headers _
+--MISSING--
+
+body of request _
+--MISSING--
+
+path of request _
+--MISSING--
+
+method of request _
+--MISSING--
+
+####
+# Web Things library
+
+Web Thing
+--MISSING--
+
+set thing name to _
+--MISSING--
+
+set thing capability to _
+--MISSING--
+
+set boolean property _ title _ @Type _
+--MISSING--
+
+set string property _ title _ @Type _
+--MISSING--
+
+set number property _ title _ @Type _
+--MISSING--
+
+set number property _ title _ min _ max _ @Type _
+--MISSING--
+
+read only _
+--MISSING--
+
+register event _ type _
+register event _ type _
+
+start WebThing server
+--MISSING--
+
+trigger event _
+--MISSING--
+
+thing description JSON
+--MISSING--
+
+properties JSON
+--MISSING--
+
+event definitions JSON
+--MISSING--
+
+events JSON
+--MISSING--
+
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
+
+New
+New
+
+Open
+Open
+
+Save
+Save
+
+Connect
+Connect
+
+disconnect
+disconnect
+
+Serial port:
+Serial port:
+
+other...
+other...
+
+none
+none
+
+Port name?
+Port name?
+
+Board type:
+Board type:
+
+Select board:
+Select board:
+
+Could not read:
+--MISSING--
+
+by
+by
+
+Created with GP
+--MISSING--
+
+More info at http://microblocks.fun
+More info at http://microblocks.fun
+
+Function "
+Function "
+
+" is too large to send to board.
+" is too large to send to board.
+
+Script is too large to send to board.
+Script is too large to send to board.
+
+Use "Connect" button to connect to a MicroBlocks device.
+Use "Connect" button to connect to a MicroBlocks device.
+
+No boards found; is your board plugged in?
+No boards found; is your board plugged in?
+
+For AdaFruit boards, double-click reset button and try again.
+For AdaFruit boards, double-click reset button and try again.
+
+The board is not responding.
+The board is not responding.
+
+Try to Install MicroBlocks on the board?
+Try to Install MicroBlocks on the board?
+
+The MicroBlocks in your board is not current
+The MicroBlocks in your board is not current
+
+Try to update MicroBlocks on the board?
+Try to update MicroBlocks on the board?
+
+Stop
+Stop
+
+Start
+Start
+
+Quit MicroBlocks?
+Quit MicroBlocks?
+
+Discard current project?
+Discard current project?
+
+clean up
+clean up
+
+arrange scripts
+arrange scripts
+
+undrop (ctrl-Z)
+--MISSING--
+
+copy all scripts to clipboard
+copy all scripts to clipboard
+
+paste all scripts
+paste all scripts
+
+paste script
+paste script
+
+save a picture of all scripts
+save a picture of all scripts
+
+about...
+about...
+
+virtual machine version
+virtual machine version
+
+update firmware on board
+update firmware on board
+
+show data graph
+show data graph
+
+set serial delay
+set serial delay
+
+firmware version
+firmware version
+
+start WebThing server
+--MISSING--
+
+stop WebThing server
+--MISSING--
+
+MicroBlocks HTTP Server listening on port 6473
+MicroBlocks HTTP Server listening on port 6473
+
+disable autoloading board libraries
+--MISSING--
+
+enable autoloading board libraries
+--MISSING--
+
+erase flash and update firmware on ESP board
+--MISSING--
+
+Use board type
+--MISSING--
+
+Wiping board...
+Wiping board...
+
+(press ESC to cancel)
+(press ESC to cancel)
+
+Done!
+Done!
+
+download and install latest VM
+download and install latest VM
+
+Select board type:
+Select board type:
+
+Uploading MicroBlocks to board...
+Uploading MicroBlocks to board...
+
+copy data to clipboard
+copy data to clipboard
+
+clear data
+clear data
+
+clear memory and variables
+clear memory and variables
+
+show advanced blocks
+show advanced blocks
+
+export functions as library
+export functions as library
+
+hide advanced blocks
+hide advanced blocks
+
+Data Graph
+Data Graph
+
+show instructions
+show instructions
+
+show compiled bytes
+show compiled bytes
+
+expand
+expand
+
+collapse
+collapse
+
+rename...
+rename...
+
+show block definition...
+show block definition...
+
+show the definition of this block
+show the definition of this block
+
+delete block definition...
+delete block definition...
+
+delete the definition of this block
+delete the definition of this block
+
+duplicate
+duplicate
+
+duplicate this block
+duplicate this block
+
+delete block
+delete block
+
+delete this block
+delete this block
+
+just this one block
+just this one block
+
+copy to clipboard
+copy to clipboard
+
+copy these blocks to the clipboard
+copy these blocks to the clipboard
+
+duplicate all
+duplicate all
+
+duplicate these blocks
+duplicate these blocks
+
+extract block
+extract block
+
+pull out this block
+pull out this block
+
+save picture of script
+save picture of script
+
+save a picture of this block definition as a PNG file
+save a picture of this block definition as a PNG file
+
+save a picture of these blocks as a PNG file
+save a picture of these blocks as a PNG file
+
+copy script
+copy script
+
+delete
+delete
+
+Input type:
+Input type:
+
+string only
+string only
+
+string or number
+string or number
+
+number only
+number only
+
+define
+define
+
+number/string
+number/string
+
+editable number or string
+editable number or string
+
+label
+label
+
+input
+input
+
+hide block definition
+hide block definition
+
+Are you sure you want to remove this block definition?
+Are you sure you want to remove this block definition?
+
+Language
+Language
+
+Custom...
+Custom...
+
+Obsolete
+Obsolete
+
+OK
+OK
+
+Ok
+Ok
+
+Yes
+Yes
+
+No
+No
+
+Cancel
+Cancel
+
+Okay
+Okay
+
+Confirm
+Confirm
+
+# File picker and library dialogs
+
+Libraries
+Libraries
+
+Examples
+--MISSING--
+
+Desktop
+--MISSING--
+
+Computer
+--MISSING--
+
+Cloud
+--MISSING--
+
+File
+File
+
+File Open
+File Open
+
+File Save
+File Save
+
+File name:
+File name:
+
+New Folder
+--MISSING--
+
+by
+by
+
+Depends:
+--MISSING--
+
+Tags:
+--MISSING--
+
+Path, name or URL for library?
+--MISSING--
+
+Invalid URL
+--MISSING--
+
+Could not fetch library.
+--MISSING--
+
+Host does not exist or is currently down.
+--MISSING--
+
+File not found in server.
+--MISSING--
+
+Server expects HTTPS, and MicroBlocks doesn't currently support it.
+--MISSING--
+
+library information
+--MISSING--
+
+built-in library
+--MISSING--
+
+Dependency path, name or URL?
+--MISSING--
+
+Tag name?
+--MISSING--
+
