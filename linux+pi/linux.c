@@ -58,7 +58,6 @@ void delay(int ms) {
 // Communication/System Functions
 
 static int pty; // pseudo terminal used for communication with the IDE
-//char termReady = 0;
 
 static void openPseudoTerminal() {
 	pty = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -79,7 +78,6 @@ static void openPseudoTerminal() {
 int recvBytes(uint8 *buf, int count) {
 	int readCount = read(pty, buf, count);
 	if (readCount < 0) readCount = 0;
-//	termReady = 1;
 	return readCount;
 }
 
@@ -90,11 +88,7 @@ int canReadByte() {
 }
 
 int sendByte(char aByte) {
-//	if (termReady) {
-		return write(pty, &aByte, 1);
-//	} else {
-//		return 1;
-//	}
+	return write(pty, &aByte, 1);
 }
 
 // System Functions
@@ -142,13 +136,11 @@ OBJ primMBShapeForLetter(int argCount, OBJ *args) { return int2obj(0); }
 // Other bogus primitives
 
 void resetServos() {}
-void stopTone() {}
 void turnOffInternalNeoPixels() {}
 void turnOffPins() {}
 void addDisplayPrims() {}
 void addSensorPrims() {}
 void addTFTPrims() {}
-void addIOPrims() {}
 void stopPWM() {}
 void processFileMessage(int msgType, int dataSize, char *data) { }
 
@@ -191,7 +183,9 @@ void clearCodeFile(int ignore) {
 
 int main() {
 	openPseudoTerminal();
-	printf("Starting Linux MicroBlocks... Connect on %s\n", (char*) ptsname(pty));
+	printf(
+			"Starting Linux MicroBlocks... Connect on %s\n",
+			(char*) ptsname(pty));
 	initTimers();
 	memInit(10000); // 10k words = 40k bytes
 	primsInit();
