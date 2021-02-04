@@ -1,10 +1,11 @@
-module 'Web Thing' Comm
+module 'WebThings' Comm
 author MicroBlocks
-version 3 3
-depends 'HTTP server' 'WiFi'
-tags iot webthing wot
-description 'Build Web Things as specified by the WebThing protocol. If your board is Wifi enabled, you can serve its WebThing description right away. Otherwise, you can use the MicroBlocks connector for the Web of Things gateway.'
-variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description'
+version 3 4 
+depends 'HTTP server' WiFi 
+tags iot webthing wot 
+description 'Create WebThings as specified by the WebThings schema and protocol. If your board is WiFi enabled, you can serve its thing description directly via HTTP. Otherwise, you can enable the MicroBlocks add-on in the WebThings Gateway.
+'
+variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description' 
 
 	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
 	spec ' ' 'set thing capability to' 'set thing capability to _' 'str.thingTypesMenu' 'Light'
@@ -291,21 +292,21 @@ to 'start WebThing server' {
   if (_WoT_capability == 0) {'set thing capability to' ''}
   if ('[net:hasWiFi]') {
     if (_WoT_events == 0) {_WoT_events = ('[data:makeList]')}
-    sendBroadcastSimple '_WoT_start_server'
+    sendBroadcast '_WoT_start_server'
   } else {
     '_thing description' = ('thing description JSON')
   }
 }
 
 to 'thing description JSON' {
-  return ('[data:join]' '{"title":"' _WoT_title '","@context":"https://iot.mozilla.org/schemas/","@type":["' _WoT_capability '"],"links":[{"rel":"events","href":"/events"},{"rel":"properties","href":"/properties"}],"properties":' ('properties JSON') ',"events":' ('event definitions JSON') '}')
+  return ('[data:join]' '{"title":"' _WoT_title '","@context":"https://webthings.io/schemas/","@type":["' _WoT_capability '"],"links":[{"rel":"events","href":"/events"},{"rel":"properties","href":"/properties"}],"properties":' ('properties JSON') ',"events":' ('event definitions JSON') '}')
 }
 
 to 'trigger event' 'event name' {
   if ('[net:hasWiFi]') {
     '[data:addLast]' ('[data:makeList]' (v 'event name') (millisOp)) _WoT_events
   } else {
-    sendBroadcastSimple (v 'event name')
+    sendBroadcast (v 'event name')
   }
 }
 
