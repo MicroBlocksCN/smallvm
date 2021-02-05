@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: December 09 2020
+# Last updated: July 07 2020
 
 #########################
 # Blocks and categories #
@@ -164,6 +164,9 @@ Zeichenkette
 list
 Liste
 
+Advanced:
+--MISSING--
+
 hex _
 hex _
 
@@ -189,8 +192,8 @@ setze _ auf _
 change _ by _
 ändere _ um _
 
-local _ _
-lokale Variable _ _
+initialize local _ to _
+--MISSING--
 
 Data
 Daten
@@ -243,8 +246,8 @@ Zeichenkette aus Unicode _
 new list length _
 neue Liste Länge _
 
-new byte array length _
-neues Byte Array Länge _
+new byte array _
+--MISSING--
 
 free memory
 freier Speicher
@@ -527,11 +530,11 @@ Klang
 Other
 Sonstige
 
-Finch Beak R _ % G _ % B _ %
-Finch Schnabel R _ % G _ % B _ %
+Finch Beak Red _ Green _ Blue _
+--MISSING--
 
-Finch Tail _ R _ % G _ % B _ %
-Finch Schwanz _ R _ % G _ % B _ %
+Finch Tail _ Red _ Green _ Blue _
+--MISSING--
 
 Finch Move _ _ cm at _ %
 Finch Gehe _ _ cm mit _ %
@@ -566,6 +569,51 @@ Finch Beschleunigungssensor _
 Finch Battery
 Finch Batterie
 
+All
+--MISSING--
+
+Forward
+--MISSING--
+
+Backward
+--MISSING--
+
+Right
+--MISSING--
+
+Left
+--MISSING--
+
+Beak Up
+--MISSING--
+
+Beak Down
+--MISSING--
+
+Tilt Left
+--MISSING--
+
+Tilt Right
+--MISSING--
+
+Level
+--MISSING--
+
+Upside Down
+--MISSING--
+
+x
+--MISSING--
+
+y
+--MISSING--
+
+z
+--MISSING--
+
+strength
+--MISSING--
+
 ####
 # Ultrasound distance library
 
@@ -573,7 +621,7 @@ distance (cm) trigger _ echo _
 Entfernung (cm) Auslöser _ Echo _
 
 ####
-# Infrared remote libraryh
+# Infrared remote library
 
 IR Remote
 IR Fernzugriff
@@ -1006,7 +1054,7 @@ register event _ type _
 registriere Ereignis _ Typ _
 
 start WebThing server
-starte WebThing Server
+starte WebThing Server starten
 
 trigger event _
 löse Ereignis _ aus
@@ -1034,6 +1082,27 @@ Neu
 
 Open
 Öffnen
+
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
 
 Save
 Speichern
@@ -1161,6 +1230,9 @@ starte WebThing Server starten
 stop WebThing server
 stoppe WebThing Server
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Server lauscht an Port 6473
 
@@ -1169,6 +1241,12 @@ deaktiviere automatisches Laden von Board-Modulen
 
 enable autoloading board libraries
 aktiviere automatisches Laden von Board-Modulen
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
+--MISSING--
 
 erase flash and update firmware on ESP board
 lösche und repartitioniere ESP

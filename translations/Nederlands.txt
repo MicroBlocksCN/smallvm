@@ -164,6 +164,9 @@ tekst
 list
 lijst
 
+Advanced:
+--MISSING--
+
 hex _
 hex _
 
@@ -189,8 +192,8 @@ maak _  _
 change _ by _
 verander _ met _
 
-local _ _
-lokale variabele _ _
+initialize local _ to _
+--MISSING--
 
 Data
 Data
@@ -243,8 +246,8 @@ tekst van unicode _
 new list length _
 nieuwe lijst lengte _
 
-new byte array length _
-nieuwe byte-array lengte _
+new byte array _
+--MISSING--
 
 free memory
 vrij geheugen
@@ -527,11 +530,11 @@ Geluid
 Other
 Ander
 
-Finch Beak R _ % G _ % B _ %
-Finch Bek R _ % G _ % B _ %
+Finch Beak Red _ Green _ Blue _
+--MISSING--
 
-Finch Tail _ R _ % G _ % B _ %
-Finch Staart _ R _ % G _ % B _ %
+Finch Tail _ Red _ Green _ Blue _
+--MISSING--
 
 Finch Move _ _ cm at _ %
 Finch Beweeg _ _ cm op _ %
@@ -566,6 +569,51 @@ Finch Accelerometer _
 Finch Battery
 Finch Batterij
 
+All
+--MISSING--
+
+Forward
+--MISSING--
+
+Backward
+--MISSING--
+
+Right
+--MISSING--
+
+Left
+--MISSING--
+
+Beak Up
+--MISSING--
+
+Beak Down
+--MISSING--
+
+Tilt Left
+--MISSING--
+
+Tilt Right
+--MISSING--
+
+Level
+--MISSING--
+
+Upside Down
+--MISSING--
+
+x
+--MISSING--
+
+y
+--MISSING--
+
+z
+--MISSING--
+
+strength
+--MISSING--
+
 ####
 # Ultrasound distance library
 
@@ -573,7 +621,7 @@ distance (cm) trigger _ echo _
 afstand (cm) trigger _ echo _
 
 ####
-# Infrared remote libraryh
+# Infrared remote library
 
 IR Remote
 IR afstandsbediening
@@ -1006,7 +1054,7 @@ register event _ type _
 registreer gebeurtenis _ type _
 
 start WebThing server
-WebThing server starten
+start WebThing server
 
 trigger event _
 trigger-gebeurtenis _
@@ -1034,6 +1082,27 @@ Nieuw
 
 Open
 Open
+
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
 
 Save
 Bewaar
@@ -1161,6 +1230,9 @@ start WebThing server
 stop WebThing server
 stop WebThing server
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Server via poort 6473
 
@@ -1169,6 +1241,12 @@ schakel autoloading board bibliotheken uit
 
 enable autoloading board libraries
 schakel autoloading board bibliotheken in
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
+--MISSING--
 
 erase flash and update firmware on ESP board
 wis en partitioneer esp

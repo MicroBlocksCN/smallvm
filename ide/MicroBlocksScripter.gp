@@ -323,7 +323,7 @@ method addBlocksForCategory MicroBlocksScripter cat {
 method addAdvancedBlocksForCategory MicroBlocksScripter cat {
   advancedSpecs = (specsFor (authoringSpecs) (join cat '-Advanced'))
   if (and (devMode) (not (isEmpty advancedSpecs))) {
-	addSectionLabel this 'Advanced:'
+	addSectionLabel this (localized 'Advanced:')
 	addBlocksForSpecs this advancedSpecs
   }
 }

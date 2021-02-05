@@ -274,7 +274,7 @@ method readCodeFromNextBoardConnected SmallRuntime {
 }
 
 method readCodeFromBoard SmallRuntime {
-	decompilerStatus = 'Reading project from board...'
+	decompilerStatus = (localized 'Reading project from board...')
 	closeAllDialogs (findMicroBlocksEditor)
 	decompiler = (newDecompiler)
 	spinner = (newSpinner (action 'decompilerStatus' this) (action 'decompilerDone' this))
@@ -306,7 +306,7 @@ method startReadingCode SmallRuntime {
 
 	print 'decompiler read' (count (getField decompiler 'vars')) 'vars' (count (getField decompiler 'chunks')) 'chunks'
 	proj = (decompileProject decompiler)
-	decompilerStatus = 'Loading project...'
+	decompilerStatus = (localized 'Loading project...')
 	installDecompiledProject this proj
 }
 

@@ -26,12 +26,6 @@ button A
 button B
 按键 B
 
-timer
-计时器
-
-reset timer
-计时器归零
-
 microseconds
 微秒
 
@@ -170,6 +164,9 @@ string
 list
 列表
 
+Advanced:
+--MISSING--
+
 hex _
 十六进制 _
 
@@ -195,8 +192,8 @@ set _ to _
 change _ by _
 把 _ 增加 _
 
-local _ _
-局部变量 _ _
+initialize local _ to _
+--MISSING--
 
 Data
 数据
@@ -249,8 +246,8 @@ unicode为 _ 的字符
 new list length _
 新建长度为 _ 的列表
 
-new byte array length _
-新建长度为 _ 的字节数组
+new byte array _
+--MISSING--
 
 free memory
 释放内存
@@ -355,26 +352,26 @@ radio last number
 radio last string
 最后广播的字符串
 
-_radio last message type
-最后广播的消息类型
+radio last message type
+--MISSING--
 
 radio set group _
 设置广播分组 _
 
-_radio set channel (0-83) _
-设置广播频道 (0-83) _
+radio set channel (0-83) _
+--MISSING--
 
 radio set power (0-7) _
 设置广播信号强度 (0-7) _
 
-_radio last signal strength
-最后广播的信号强度
+radio last signal strength
+--MISSING--
 
-_radio receive packet _
-广播接收包 _
+radio receive packet _
+--MISSING--
 
-_radio send packet _
-广播发送包 _
+radio send packet _
+--MISSING--
 
 disable radio
 禁止广播
@@ -436,15 +433,6 @@ attach _ LED NeoPixel strip to pin _
 
 has white _
 具有白光 _
-
-_NeoPixel_rotate_left _
-新光像素向左轮转 _
-
-_NeoPixel_update
-刷新新光像素
-
-_NeoPixel_ensureInitialized
-确定新光像素已经初始化
 
 PIR
 人体红外传感器
@@ -1095,6 +1083,27 @@ New
 Open
 打开
 
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
+
 Save
 保存
 
@@ -1221,6 +1230,9 @@ start WebThing server
 stop WebThing server
 停止WebThing服务器
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP服务器正在监听端口 6473
 
@@ -1229,6 +1241,12 @@ disable autoloading board libraries
 
 enable autoloading board libraries
 允许自动加载和控制板相关的积木库
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
+--MISSING--
 
 erase flash and update firmware on ESP board
 擦除信息并重新分区ESP

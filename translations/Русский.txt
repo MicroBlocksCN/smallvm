@@ -1,7 +1,9 @@
 # MicroBlocks translation file
-# Last updated: April 14 2020
+# Last updated: July 07 2020
 
-# Blocks and categories
+#########################
+# Blocks and categories #
+#########################
 
 Output
 Вывод
@@ -162,6 +164,9 @@ string
 list
 список
 
+Advanced:
+--MISSING--
+
 hex _
 hex _
 
@@ -187,8 +192,8 @@ set _ to _
 change _ by _
 изменить _ на _
 
-local _ _
-локальный _ _
+initialize local _ to _
+--MISSING--
 
 Data
 Данные
@@ -241,8 +246,8 @@ string from unicode _
 new list length _
 новая длина списка _
 
-new byte array length _
-длина нового байтового массива _
+new byte array _
+--MISSING--
 
 free memory
 свободная память
@@ -293,7 +298,11 @@ no op
 ignore
 игнорировать
 
-# Primitives (mostly hidden from end users)
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
 
 draw shape _ at x _ y _
 нарисовать фигуру _ по координатам x _ y _
@@ -367,7 +376,9 @@ radio send packet _
 disable radio
 отключить радио
 
-# Libraries
+#############
+# Libraries #
+#############
 
 Basic Sensors
 Базовые Сенсоры
@@ -389,6 +400,9 @@ light level
 
 temperature (°C)
 температура (°C)
+
+####
+# NeoPixel library
 
 NeoPixel
 NeoPixel
@@ -425,6 +439,9 @@ PIR
 
 PIR at pin _ detected movement
 PIR
+
+####
+# Citilab ED1 board libraries
 
 ED1 Stepper Motor
 ED1 Шагомер
@@ -477,6 +494,9 @@ capacitive sensor _
 set capacitive threshold to _
 задать порог ёмкостной чувствительности на _
 
+####
+# BirdBrain Technologies libraries
+
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
@@ -510,8 +530,98 @@ Sound
 Other
 Прочее
 
+Finch Beak Red _ Green _ Blue _
+--MISSING--
+
+Finch Tail _ Red _ Green _ Blue _
+--MISSING--
+
+Finch Move _ _ cm at _ %
+--MISSING--
+
+Finch Turn _ _ ° at _ %
+--MISSING--
+
+Finch Wheels L _ % R _ %
+--MISSING--
+
+Finch Stop
+--MISSING--
+
+Finch Distance (cm)
+--MISSING--
+
+Finch _ Light
+--MISSING--
+
+Finch _ Line
+--MISSING--
+
+Finch Reset Encoders
+--MISSING--
+
+Finch _ Encoder
+--MISSING--
+
+Finch Accelerometer _
+--MISSING--
+
+Finch Battery
+--MISSING--
+
+All
+--MISSING--
+
+Forward
+--MISSING--
+
+Backward
+--MISSING--
+
+Right
+--MISSING--
+
+Left
+--MISSING--
+
+Beak Up
+--MISSING--
+
+Beak Down
+--MISSING--
+
+Tilt Left
+--MISSING--
+
+Tilt Right
+--MISSING--
+
+Level
+--MISSING--
+
+Upside Down
+--MISSING--
+
+x
+--MISSING--
+
+y
+--MISSING--
+
+z
+--MISSING--
+
+strength
+--MISSING--
+
+####
+# Ultrasound distance library
+
 distance (cm) trigger _ echo _
 расстояние (см) триггера _ эхо _
+
+####
+# Infrared remote library
 
 IR Remote
 ИК-пульт
@@ -528,8 +638,17 @@ test IR
 attach IR receiver to pin _
 подключите ИК-приемник к контакту _
 
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
 Radio
 Радио
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
 Скроллинг
@@ -546,6 +665,9 @@ pausing _ ms
 stop scrolling
 остановить прокрутку
 
+####
+# Servo motor library
+
 Servo
 Cервопривод
 
@@ -557,6 +679,11 @@ set servo _ to speed _ (-100 to 100)
 
 stop servo _
 остановить сервопривод
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
 Светодиодный дисплей
@@ -575,6 +702,9 @@ unplot x _ y _
 
 display character _
 отображать символ _
+
+####
+# TFT display library
 
 enable TFT _
 включить TFT _
@@ -612,6 +742,10 @@ write _ on TFT at x _ y _ color _
 scale _ wrap _
 масштаб _ обернуть _
 
+####
+# Tone library
+# Generates music tones on buzzers
+
 Tone
 Тон
 
@@ -626,6 +760,9 @@ play frequency _ for _ ms
 
 play midi key _ for _ ms
 играть средний ключ _ в течение _ мс
+
+####
+# Turtle geometry library
 
 Turtle
 Черепаха
@@ -662,6 +799,9 @@ go to x _ y _
 
 point in direction _
 указать в направлении _
+
+####
+# File system library
 
 Files
 Файлы
@@ -702,6 +842,9 @@ size of file _
 file system info
 информация о файловой системе
 
+####
+# WiFi library
+
 WiFi
 WiFi
 
@@ -713,6 +856,10 @@ Wi-Fi создать точку доступа _ пароль _
 
 IP address
 IP адресс
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
 
 Motion
 Движение
@@ -732,6 +879,9 @@ clear step count
 set step threshold _ (0-50)
 установить пороговое значение шага _ (0-50)
 
+####
+# Button Events library
+
 Button Events
 События кнопки
 
@@ -744,6 +894,9 @@ button _ long pressed
 button _ pressed
 кнопка _ нажата
 
+####
+# Calliope board library
+
 Calliope set LED red _ green _ blue _
 Установить каллиопа LED красный _ зеленый _ синий _
 
@@ -753,11 +906,17 @@ Calliope set speaker _
 Calliope loudness
 Громкость Каллиопа
 
+####
+# Circuit Playground Express board library
+
 Circuit Playground set speaker _
 Схема игровой площадки комплект динамиков _
 
 Circuit Playground slide switch
 Слайд-переключатель Circuit Playground
+
+####
+# DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
 подключить _ светодиоды DotStar к контакту данных _ контакту синхронизации _
@@ -770,6 +929,9 @@ set DotStar LED _ to r _ g _ b _
 
 set DotStar brightness _
 установить яркость DotStar _
+
+####
+# BME280 environmental sensor
 
 bme280 connected
 bme280 подключен
@@ -786,6 +948,9 @@ bmx280 pressure
 bme280 humidity
 влажность bme280
 
+####
+# TCS34725 color sensor
+
 TCS34725 connected
 TCS34725 подключен
 
@@ -794,6 +959,9 @@ TCS34725 rgb
 
 color _ name
 цвет _ название
+
+####
+# DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
 температура (С) DHT11 pin _
@@ -807,6 +975,9 @@ temperature (Celsius) DHT22 pin _
 humidity DHT22 pin _
 влажность DHT22 pin _
 
+####
+# PN532 RFID reader
+
 read PN532 RFID
 читать PN532 RFID
 
@@ -815,6 +986,9 @@ RFID _ = _
 
 get PN532 firmware version
 получить версию прошивки PN532
+
+####
+# HTTP libraries
 
 HTTP client
 HTTP-клиент
@@ -849,6 +1023,9 @@ path of request _
 method of request _
 метод запроса _
 
+####
+# Web Things library
+
 Web Thing
 Web Thing
 
@@ -877,7 +1054,7 @@ register event _ type _
 зарегистрировать событие _ тип _
 
 start WebThing server
-запуск сервер WebThing
+запустить сервер WebThing
 
 trigger event _
 вызвать событие _
@@ -894,13 +1071,38 @@ event definitions JSON
 events JSON
 события JSON
 
-# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
 
 New
 Новый
 
 Open
 Открыть
+
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
 
 Save
 Сохранить
@@ -1028,6 +1230,9 @@ start WebThing server
 stop WebThing server
 остановить сервер WebThing
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 HTTP-сервер MicroBlocks прослушивает порт 6473
 
@@ -1036,6 +1241,12 @@ disable autoloading board libraries
 
 enable autoloading board libraries
 включить автозагрузку библиотек платы
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
+--MISSING--
 
 erase flash and update firmware on ESP board
 стереть и переделить esp

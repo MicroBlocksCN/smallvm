@@ -1,7 +1,9 @@
 # MicroBlocks translation file
-# Last updated: April 14 2020
+# Last updated: July 07 2020
 
-# Blocks and categories
+#########################
+# Blocks and categories #
+#########################
 
 Output
 Chiqarish
@@ -71,6 +73,7 @@ takrorlash _ _
 
 wait _ millisecs
 _ millisekundlar kutish
+
 if _ _
 agar _ _
 
@@ -161,6 +164,9 @@ qator
 list
 ro'yxat
 
+Advanced:
+--MISSING--
+
 hex _
 hex _
 
@@ -186,8 +192,8 @@ _ ga _ o'rnatish
 change _ by _
 _ tomonidan _ o'zgartirish
 
-local _ _
-mahalliy _ _
+initialize local _ to _
+--MISSING--
 
 Data
 Ma'lumotlar
@@ -240,8 +246,8 @@ unikoddan olingan satr _
 new list length _
 yangi ro'yxatning uzunligi _
 
-new byte array length _
-yangi bayt qator uzunligi _
+new byte array _
+--MISSING--
 
 free memory
 bo'sh xotira
@@ -292,7 +298,11 @@ op yo'q
 ignore
 e'tibor bermaslik
 
-# Primitives (mostly hidden from end users)
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
 
 draw shape _ at x _ y _
 _shaklini _ x _ y _ ga chizish
@@ -366,7 +376,9 @@ radio paketini jo'natish _
 disable radio
 radioni o'chirib qo'yish
 
-# Libraries
+#############
+# Libraries #
+#############
 
 Basic Sensors
 Asosiy sensorlar
@@ -389,6 +401,9 @@ yorug'lik darajasi
 temperature (°C)
 harorat (°C)
 
+####
+# NeoPixel library
+
 NeoPixel
 NeoPixel
 
@@ -400,7 +415,6 @@ NeoPixelsni tozalash
 
 set NeoPixel _ color _
 NeoPixel _ rangga _ belgilash
-
 
 set all NeoPixels color _
 barcha NeoPixels ranglarini sozlash _
@@ -425,6 +439,9 @@ PIR
 
 PIR at pin _ detected movement
 PIR da aniqlangan harakat
+
+####
+# Citilab ED1 board libraries
 
 ED1 Stepper Motor
 ED1 Stepper Motori
@@ -477,6 +494,9 @@ sig'imi sensor _
 set capacitive threshold to _
 threshold sig'imini o'rnatish _
 
+####
+# BirdBrain Technologies libraries
+
 Hummingbird LED _ _ %
 Hummingbird LED _ _%
 
@@ -510,8 +530,98 @@ Ovoz
 Other
 Boshqalar
 
+Finch Beak Red _ Green _ Blue _
+--MISSING--
+
+Finch Tail _ Red _ Green _ Blue _
+--MISSING--
+
+Finch Move _ _ cm at _ %
+--MISSING--
+
+Finch Turn _ _ ° at _ %
+--MISSING--
+
+Finch Wheels L _ % R _ %
+--MISSING--
+
+Finch Stop
+--MISSING--
+
+Finch Distance (cm)
+--MISSING--
+
+Finch _ Light
+--MISSING--
+
+Finch _ Line
+--MISSING--
+
+Finch Reset Encoders
+--MISSING--
+
+Finch _ Encoder
+--MISSING--
+
+Finch Accelerometer _
+--MISSING--
+
+Finch Battery
+--MISSING--
+
+All
+--MISSING--
+
+Forward
+--MISSING--
+
+Backward
+--MISSING--
+
+Right
+--MISSING--
+
+Left
+--MISSING--
+
+Beak Up
+--MISSING--
+
+Beak Down
+--MISSING--
+
+Tilt Left
+--MISSING--
+
+Tilt Right
+--MISSING--
+
+Level
+--MISSING--
+
+Upside Down
+--MISSING--
+
+x
+--MISSING--
+
+y
+--MISSING--
+
+z
+--MISSING--
+
+strength
+--MISSING--
+
+####
+# Ultrasound distance library
+
 distance (cm) trigger _ echo _
 masofa (sm) trigger _ echo _
+
+####
+# Infrared remote library
 
 IR Remote
 IR masofadan boshqarish pulti
@@ -528,8 +638,17 @@ IR ni sinash
 attach IR receiver to pin _
 IR qabul qilgichini _ pinga ulang-
 
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
 Radio
 Radio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
 Aylantirish
@@ -546,6 +665,9 @@ ps pauza qilmoq
 stop scrolling
 o'tishni to'xtatish
 
+####
+# Servo motor library
+
 Servo
 Servo
 
@@ -557,6 +679,11 @@ servo _ tezligini _ ga sozlang (-100 dan 100 gacha)
 
 stop servo _
 servoni to'xtatish _
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
 LED displey
@@ -576,6 +703,9 @@ chiqarish x _ y _
 display character _
 belgini ko'rsatish _
 
+####
+# TFT display library
+
 enable TFT _
 yoqish TFT _
 
@@ -590,7 +720,6 @@ x _ y _ ga _ TFT piksel o'rnatish
 
 draw line on TFT from x _ y _ to x _ y _ color _
 TFT ga x _ y _ dan x _ y _ color _gacha  chiziq chizish
-
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
 To’rtburchakni TFT ga x _ y _ kenglik _ balandlik _ rangda chizing
@@ -613,6 +742,10 @@ TFT ustiga _ x _ y rangida _ yozish
 scale _ wrap _
 o'lchov _
 
+####
+# Tone library
+# Generates music tones on buzzers
+
 Tone
 Ohang
 
@@ -627,6 +760,9 @@ chastotasini _ ms davomida ijro etish
 
 play midi key _ for _ ms
 midi tugmachasini _ ms ijro etish
+
+####
+# Turtle geometry library
 
 Turtle
 Toshbaqa
@@ -663,6 +799,9 @@ x _ y _ ga o'tish
 
 point in direction _
 yo'nalish bo'yicha nuqta _
+
+####
+# File system library
 
 Files
 Fayllar
@@ -703,6 +842,9 @@ fayl hajmi _
 file system info
 fayl tizimi haqida ma'lumot
 
+####
+# WiFi library
+
 WiFi
 WiFi
 
@@ -714,6 +856,10 @@ wifi hotspot yaratish _ parol _
 
 IP address
 IP address
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
 
 Motion
 Harakat
@@ -733,6 +879,9 @@ qadamlar sonini o'chirish
 set step threshold _ (0-50)
 qadam chegarasini belgilash _ (0-50)
 
+####
+# Button Events library
+
 Button Events
 Tugma hodisalr
 
@@ -745,6 +894,9 @@ _ tugmasi uzoq bosildi
 button _ pressed
  _ tugmasi bosildi
 
+####
+# Calliope board library
+
 Calliope set LED red _ green _ blue _
 Calliope diodli qizil _ yashil _ ko'k _ belgilash
 
@@ -754,11 +906,17 @@ Calliope karnayni _ belgilash
 Calliope loudness
 Kalliopa balandligi
 
+####
+# Circuit Playground Express board library
+
 Circuit Playground set speaker _
 Circuit Playground dinamikni o'rnatish _
 
 Circuit Playground slide switch
 Circuit Playground slaydni almashtirish
+
+####
+# DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
 _ DotStar diodlarini LED-ga ulang
@@ -771,6 +929,9 @@ DotStar LED _ r _ g _ b _ ga belgilash
 
 set DotStar brightness _
 DotStar yorqinligini o'rnatish _
+
+####
+# BME280 environmental sensor
 
 bme280 connected
 bme280 ulangan
@@ -787,6 +948,9 @@ bmx280 bosimi
 bme280 humidity
 bme280 namlik
 
+####
+# TCS34725 color sensor
+
 TCS34725 connected
 TCS34725 ulangan
 
@@ -795,6 +959,9 @@ TCS34725 rgb
 
 color _ name
 rang _ nomi
+
+####
+# DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
 harorat (C) DHT11 pin _
@@ -808,6 +975,9 @@ harorat (C) DHT22 pin _
 humidity DHT22 pin _
 namlik DHT22 pin _
 
+####
+# PN532 RFID reader
+
 read PN532 RFID
 PN532 RFID o'qish
 
@@ -817,11 +987,14 @@ RFID _ = _
 get PN532 firmware version
 PN532 mikrodastur versiyasini olish
 
+####
+# HTTP libraries
+
 HTTP client
 HTTP mijoz
 
-_ data _ to http // _
-_ http ܃ // _ ga  _ ma'lumotlar
+_ data _ to http܃// _
+--MISSING--
 
 HTTP server
 HTTP server
@@ -850,6 +1023,9 @@ so'rov yo'li _
 method of request _
 so'rov usuli _
 
+####
+# Web Things library
+
 Web Thing
 Web Thing
 
@@ -867,6 +1043,7 @@ satr xususiyatini belgilash _ sarlavha _ @Turi _
 
 set number property _ title _ @Type _
 raqam xususiyatini _ belgilash _ @Turi
+
 set number property _ title _ min _ max _ @Type _
 raqam xususiyatini belgilash _ sarlavha _ min _ maksimal _ @Turi _
 
@@ -877,7 +1054,7 @@ register event _ type _
 voqeani ro'yxatdan o'tkazish _ turi _
 
 start WebThing server
-WebThing serverini ishga tushirish
+WebThing serverini ishga tushiring
 
 trigger event _
 voqeani boshlash
@@ -894,13 +1071,38 @@ voqea ta'riflari JSON
 events JSON
 voqealar JSON
 
-# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
 
 New
 Yangi
 
 Open
 Ochiq
+
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
 
 Save
 Saqlash
@@ -1028,6 +1230,9 @@ WebThing serverini ishga tushiring
 stop WebThing server
 WebThing serverini to'xtatish
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 6473 portida MicroBlocks HTTP Serverni tinglayapti
 
@@ -1036,6 +1241,12 @@ plata kutibxonalarini avtomatik yuklashni o'chirib qo'yish
 
 enable autoloading board libraries
 avtomatik yuklash paneli kutubxonalarini yoqish
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
+--MISSING--
 
 erase flash and update firmware on ESP board
 esp tozalash va qaytarish
@@ -1290,3 +1501,4 @@ Bog‘lanish yo‘li, nomi yoki URL manzili?
 
 Tag name?
 Teg nomi?
+

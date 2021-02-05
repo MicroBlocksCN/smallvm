@@ -164,6 +164,9 @@ string
 list
 λίστα
 
+Advanced:
+--MISSING--
+
 hex _
 δεκαεξαδικό _
 
@@ -189,8 +192,8 @@ set _ to _
 change _ by _
 άλλαξε _ ανά _
 
-local _ _
-τοπική _ _
+initialize local _ to _
+--MISSING--
 
 Data
 Δεδομένα
@@ -243,8 +246,8 @@ string from unicode _
 new list length _
 μήκος νέου καταλόγου _
 
-new byte array length _
-μήκος νεου πίνακα byte _
+new byte array _
+--MISSING--
 
 free memory
 ελευθέρωσε μνήμη
@@ -1080,6 +1083,27 @@ New
 Open
 Άνοιξε
 
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
+
 Save
 Αποθήκευσε
 
@@ -1206,6 +1230,9 @@ start WebThing server
 stop WebThing server
 --MISSING--
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 --MISSING--
 
@@ -1213,6 +1240,12 @@ disable autoloading board libraries
 --MISSING--
 
 enable autoloading board libraries
+--MISSING--
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
 --MISSING--
 
 erase flash and update firmware on ESP board
