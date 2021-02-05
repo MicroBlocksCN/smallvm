@@ -1,7 +1,9 @@
 # MicroBlocks translation file
-# Last updated: April 14 2020
+# Last updated: July 07 2020
 
-# Blocks and categories
+#########################
+# Blocks and categories #
+#########################
 
 Output
 Çıktı
@@ -162,6 +164,9 @@ dizgi
 list
 liste
 
+Advanced:
+--MISSING--
+
 hex _
 hex _
 
@@ -187,8 +192,8 @@ _ değişkenini _ yap
 change _ by _
 _ değişkenini _ değiştir
 
-local _ _
-yerel değişken _ = _
+initialize local _ to _
+--MISSING--
 
 Data
 Veri
@@ -241,14 +246,11 @@ unicode dan harfe _
 new list length _
 _ öğeli yeni liste yarat
 
-new byte array length _
-_ uzunluğunda yeni bayt dizi
+new byte array _
+--MISSING--
 
 free memory
 boş bellek
-
-fill list _ with _
-_ lıstesini _ ile doldur
 
 My Blocks
 Benim Bloklarım
@@ -296,16 +298,17 @@ işlem yok
 ignore
 yoksay
 
-# Primitives (mostly hidden from end users)
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
 
 draw shape _ at x _ y _
 _ şeklini çiz x _ y _
 
 shape for letter _
 _ harfinin şekli
-
-set NeoPixel pin _ is RGBW _
-_ Neopiksel pinini _ yap RGBW _
 
 send NeoPixel rgb _
 NeoPixel rgb _ gönder
@@ -373,7 +376,9 @@ radyo paket yolla _
 disable radio
 radyoyu etkisizleştir
 
-# Libraries
+#############
+# Libraries #
+#############
 
 Basic Sensors
 Temel Sensörler
@@ -395,6 +400,9 @@ light level
 
 temperature (°C)
 ısı (°C)
+
+####
+# NeoPixel library
 
 NeoPixel
 Neopiksel
@@ -431,6 +439,9 @@ PIR
 
 PIR at pin _ detected movement
 _ pinine bağlı PIR hareket algıladı
+
+####
+# Citilab ED1 board libraries
 
 ED1 Stepper Motor
 ED1 Step Motoru
@@ -477,32 +488,14 @@ buton sol
 button right
 buton sağ
 
-capacitive OK
-kapasitif OK
-
-capacitive X
-kapasitif X
-
-capacitive up
-kapasitif yukarı
-
-capacitive down
-kapasitif aşağı
-
-capacitive left
-kapasitif sol
-
-capacitive right
-kapasitif sağ
-
 capacitive sensor _
 kapasitif sensör _
 
 set capacitive threshold to _
 kapasitif eşik değerini _ yap
 
-set use capacitive to _
-kapasitif kullan ayarını _ yap
+####
+# BirdBrain Technologies libraries
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
@@ -537,8 +530,98 @@ Ses
 Other
 Diğer
 
+Finch Beak Red _ Green _ Blue _
+--MISSING--
+
+Finch Tail _ Red _ Green _ Blue _
+--MISSING--
+
+Finch Move _ _ cm at _ %
+--MISSING--
+
+Finch Turn _ _ ° at _ %
+--MISSING--
+
+Finch Wheels L _ % R _ %
+--MISSING--
+
+Finch Stop
+--MISSING--
+
+Finch Distance (cm)
+--MISSING--
+
+Finch _ Light
+--MISSING--
+
+Finch _ Line
+--MISSING--
+
+Finch Reset Encoders
+--MISSING--
+
+Finch _ Encoder
+--MISSING--
+
+Finch Accelerometer _
+--MISSING--
+
+Finch Battery
+--MISSING--
+
+All
+--MISSING--
+
+Forward
+--MISSING--
+
+Backward
+--MISSING--
+
+Right
+--MISSING--
+
+Left
+--MISSING--
+
+Beak Up
+--MISSING--
+
+Beak Down
+--MISSING--
+
+Tilt Left
+--MISSING--
+
+Tilt Right
+--MISSING--
+
+Level
+--MISSING--
+
+Upside Down
+--MISSING--
+
+x
+--MISSING--
+
+y
+--MISSING--
+
+z
+--MISSING--
+
+strength
+--MISSING--
+
+####
+# Ultrasound distance library
+
 distance (cm) trigger _ echo _
 mesafe (cm) tetik _ eko _
+
+####
+# Infrared remote library
 
 IR Remote
 IR Uzaktan Kumanda
@@ -555,8 +638,17 @@ IR testi
 attach IR receiver to pin _
 IR alıcısını _ pinine bağla
 
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
 Radio
 Radyo
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
 Kaydırma
@@ -573,6 +665,9 @@ _ ms duraklatma
 stop scrolling
 kaydırmayı durdur
 
+####
+# Servo motor library
+
 Servo
 Servo
 
@@ -584,6 +679,11 @@ _ servosunun hızını _ yap (-100 to 100)
 
 stop servo _
 servoyu durdur
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
 LED Ekran
@@ -602,6 +702,9 @@ söndür x _ y _
 
 display character _
 _ harfini göster
+
+####
+# TFT display library
 
 enable TFT _
 TFT yi etkinleştir _
@@ -639,6 +742,10 @@ TFT _ yaz konum x _ y _ renk _
 scale _ wrap _
 ölçek _ başa sar _
 
+####
+# Tone library
+# Generates music tones on buzzers
+
 Tone
 Ton
 
@@ -653,6 +760,9 @@ _ frekansını _ milisaniye çal
 
 play midi key _ for _ ms
 mıdı çal nota _ süre _ milisaniye
+
+####
+# Turtle geometry library
 
 Turtle
 Kaplumbağa
@@ -690,6 +800,51 @@ x _ y _ konumuna git
 point in direction _
 _ yönüne dön
 
+####
+# File system library
+
+Files
+--MISSING--
+
+open file _
+--MISSING--
+
+close file _
+--MISSING--
+
+delete file _
+--MISSING--
+
+append line _ to file _
+--MISSING--
+
+append bytes _ to file _
+--MISSING--
+
+end of file _
+--MISSING--
+
+next line of file _
+--MISSING--
+
+next _ bytes of file _
+--MISSING--
+
+starting at _
+başla _
+
+file names
+--MISSING--
+
+size of file _
+--MISSING--
+
+file system info
+--MISSING--
+
+####
+# WiFi library
+
 WiFi
 WiFi
 
@@ -701,6 +856,10 @@ wifi erişim noktası oluştur SSID _ şifre _
 
 IP address
 IP adresi
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
 
 Motion
 Hareket
@@ -720,6 +879,9 @@ adım sayısını sil
 set step threshold _ (0-50)
 adım eşiğini _ (0-50) yap
 
+####
+# Button Events library
+
 Button Events
 Buton Olayları
 
@@ -732,6 +894,9 @@ buton _ uzun basıldı
 button _ pressed
 buton _ basıldı
 
+####
+# Calliope board library
+
 Calliope set LED red _ green _ blue _
 Calliope LED ayarla kırmızı _ yeşil _ mavi _
 
@@ -741,11 +906,17 @@ Calliope hoparlörü _ yap
 Calliope loudness
 Calliope ses yüksekliği
 
+####
+# Circuit Playground Express board library
+
 Circuit Playground set speaker _
 Circuit Playground hoparlörü _ yap
 
 Circuit Playground slide switch
 Circuit Playground sürgülü anahtar
+
+####
+# DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
 _ DotStar LED"lerini veri pin _ saat pin _ bağla
@@ -758,6 +929,9 @@ DotStar LED _ yi k _ y _ m _ yap
 
 set DotStar brightness _
 DotStar parlaklığını _ yap
+
+####
+# BME280 environmental sensor
 
 bme280 connected
 bme280 bağlandı
@@ -774,6 +948,9 @@ bmx280 basınç
 bme280 humidity
 bme280 nemi
 
+####
+# TCS34725 color sensor
+
 TCS34725 connected
 TCS34725 bağlandı
 
@@ -782,6 +959,9 @@ TCS34725 kym
 
 color _ name
 _ renginin adı
+
+####
+# DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
 ısı(Celsius) DHT11 pin _
@@ -795,6 +975,9 @@ temperature (Celsius) DHT22 pin _
 humidity DHT22 pin _
 nem DHT22 pin _
 
+####
+# PN532 RFID reader
+
 read PN532 RFID
 PN532 RFID oku
 
@@ -803,6 +986,9 @@ RFID _ = _
 
 get PN532 firmware version
 PN532 bellenim sürümü
+
+####
+# HTTP libraries
 
 HTTP client
 HTTP istemcisi
@@ -836,6 +1022,9 @@ istek yolu _
 
 method of request _
 istek metodu _
+
+####
+# Web Things library
 
 Web Thing
 Web Nesneleri
@@ -882,13 +1071,38 @@ olayların tanımı JSON
 events JSON
 olaylar JSON
 
-# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
 
 New
 Yeni
 
 Open
 Aç
+
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
 
 Save
 Kaydet
@@ -1016,6 +1230,9 @@ WebThing sunucusunu başlat
 stop WebThing server
 WebThing sunucusunu durdur
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Sunucusu 6473 numaralı bağlantı noktasında dinliyor
 
@@ -1024,6 +1241,12 @@ kitaplıklarının otomatik yüklemesini devre dışı bırak
 
 enable autoloading board libraries
 kitaplıklarının otomatik yüklemesini etkinleştir
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
+--MISSING--
 
 erase flash and update firmware on ESP board
 esp yi silme ve yeniden bölümleme
@@ -1255,8 +1478,8 @@ Kütüphanenin Yol, ad veya URL'si?
 Invalid URL
 geçersiz URL
 
-Could not fetch library
-Kütüphane alınamadı
+Could not fetch library.
+--MISSING--
 
 Host does not exist or is currently down.
 Ana makine mevcut değil veya şu anda kapalı.

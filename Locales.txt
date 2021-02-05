@@ -111,6 +111,8 @@ string
 
 list
 
+Advanced:
+
 hex _
 
 Variables
@@ -129,7 +131,7 @@ set _ to _
 
 change _ by _
 
-local _ _
+initialize local _ to _
 
 Data
 
@@ -165,7 +167,7 @@ string from unicode _
 
 new list length _
 
-new byte array length _
+new byte array _
 
 free memory
 
@@ -757,6 +759,20 @@ New
 
 Open
 
+Open from board
+
+Information
+
+Plug in the board.
+
+Reading project from board...
+
+Loading project...
+
+Found a newer version of
+
+Do you want me to update the one in the project?
+
 Save
 
 Connect
@@ -841,11 +857,17 @@ start WebThing server
 
 stop WebThing server
 
+HTTP Server
+
 MicroBlocks HTTP Server listening on port 6473
 
 disable autoloading board libraries
 
 enable autoloading board libraries
+
+enable PlugShare when project empty
+
+disable PlugShare when project empty
 
 erase flash and update firmware on ESP board
 

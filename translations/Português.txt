@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: September 10 2020
+# Last updated: July 07 2020
 
 #########################
 # Blocks and categories #
@@ -25,15 +25,6 @@ botão A
 
 button B
 botão B
-
-timer
-temporizador
-
-reset timer
-reinicializar temporizador
-
-new byte array _
-nova matriz de bytes _
 
 microseconds
 microsegundos
@@ -173,6 +164,9 @@ texto
 list
 lista
 
+Advanced:
+--MISSING--
+
 hex _
 hexadecimal _
 
@@ -198,8 +192,8 @@ coloca _ em _
 change _ by _
 altera _ em _
 
-local _ _
-variável local _ _
+initialize local _ to _
+--MISSING--
 
 Data
 Dados
@@ -235,7 +229,7 @@ find _ in _
 encontra _ em _
 
 starting at _
-começando em _
+começar desde _
 
 join items of list _
 une elementos da lista _
@@ -252,8 +246,8 @@ texto com unicode _
 new list length _
 nova lista de tamanho _
 
-new byte array length _
-nova matriz de bytes de comprimento _
+new byte array _
+nova matriz de bytes _
 
 free memory
 memória livre
@@ -1060,7 +1054,7 @@ register event _ type _
 registra o evento _ do tipo _
 
 start WebThing server
-inicia o servidor WebThing
+inicia o servidor de WebThings
 
 trigger event _
 dispara evento _
@@ -1088,6 +1082,27 @@ Novo
 
 Open
 Abrir
+
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
 
 Save
 Guardar
@@ -1215,6 +1230,9 @@ inicia o servidor de WebThings
 stop WebThing server
 para o servidor de WebThings
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 O servidor HTTP de MicroBlocks está activo no porto 6473
 
@@ -1223,6 +1241,12 @@ desativar o auto carregamento das bibliotecas de placas
 
 enable autoloading board libraries
 activar o auto carregamento das bibliotecas de placas
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
+--MISSING--
 
 erase flash and update firmware on ESP board
 apaga e reparticiona esp
@@ -1262,9 +1286,6 @@ mostra os blocos avançados
 
 export functions as library
 exporta funções como biblioteca
-
-enable fetching code from board on connection
-habilita o carregamento do código da placa ao conectar
 
 hide advanced blocks
 oculta os blocos avançados
@@ -1480,6 +1501,4 @@ Caminho, nome ou URL da dependência?
 
 Tag name?
 Nome da etiqueta?
-
-
 
