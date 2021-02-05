@@ -120,13 +120,13 @@ stop all
 σταμάτα όλα τα σενάρια
 
 last message
---MISSING--
+τελευταίο μήνυμα
 
 Operators
---MISSING--
+Τελεστές
 
 _ mod _
-ακέραιο υπόλοιπο_ διά _
+_ ακέραιο υπόλοιπο _
 
 abs _
 απόλυτο _
@@ -150,22 +150,22 @@ or _
 ή _
 
 _ is a _
---MISSING--
+_ είναι ένα _
 
 boolean
---MISSING--
+δυαδικό
 
 number
---MISSING--
+αριθμός
 
 string
---MISSING--
+συμβολοσειρά
 
 list
---MISSING--
+λίστα
 
 hex _
-hex _
+δεκαεξαδικό _
 
 Variables
 Μεταβλητές
@@ -193,10 +193,10 @@ local _ _
 τοπική _ _
 
 Data
---MISSING--
+Δεδομένα
 
 list
---MISSING--
+λίστα
 
 length of _
 μήκος του _
@@ -205,13 +205,13 @@ item _ of _
 στοιχείο _ του _
 
 replace item _ of list _ with _
-αντικατάστησε στοιχείο _ του καταλόγου _ με _
+αντικατάστησε στοιχείο _ της λίστας _ με _
 
 delete item _ of list _
-διάγραψε το στοιχείο _ του καταλόγου _
+διάγραψε το στοιχείο _ της λίστας _
 
 add _ to list _
-πρόσθεσε _ στο κατάλογο _
+πρόσθεσε _ στην λίστα _
 
 join _ _
 ένωσε _ _
@@ -229,22 +229,22 @@ starting at _
 ξεκινά από _
 
 join items of list _
---MISSING--
+ένωσε τα στοιχεία της λίστας
 
 separator _
---MISSING--
+διαχωριστικό _
 
 unicode _ of _
 unicode _ του _
 
 string from unicode _
---MISSING--
+συμβολοσείρα από unicode _
 
 new list length _
 μήκος νέου καταλόγου _
 
 new byte array length _
---MISSING--
+μήκος νεου πίνακα byte _
 
 free memory
 ελευθέρωσε μνήμη
@@ -266,34 +266,34 @@ Enter function name:
 Συμπλήρωσε το όνομα της Λειτουργίας:
 
 Comm
-Comm
+Επικοινωνία 
 
 i2c get device _ register _
-i2c get device _ register _
+i2c πάρε από συσκευή _ καταχωρητή _
 
 i2c set device _ register _ to _
-i2c set device _ register _ to _
+i2c όρισε στην συσκευή _ καταχωρητή _ σε _
 
 i2c device _ read list _
---MISSING--
+i2c συσκευή _ διάβασε λίστα _
 
 i2c device _ write list _
 --MISSING--
 
 spi send _
-spi send _
+spi στείλε _
 
 spi receive
-spi receive
+spi λάβε
 
 print _
-print _
+τύπωσε _
 
 no op
-no op
+--MISSING--
 
 ignore
-ignore
+αγνόησε 
 
 ##############
 # Primitives #
@@ -302,101 +302,101 @@ ignore
 # These are all mostly hidden from end users
 
 draw shape _ at x _ y _
-draw shape _ at x _ y _
+--MISSING--
 
 shape for letter _
-shape for letter _
+--MISSING--
 
 send NeoPixel rgb _
-send NeoPixel rgb _
+--MISSING--
 
 has tone support
-has tone support
+--MISSING--
 
 play tone pin _ frequency _
-play tone pin _ frequency _
+--MISSING--
 
 has WiFi support
-has WiFi support
+--MISSING--
 
 start WiFi _ password _
-start WiFi _ password _
+--MISSING--
 
 stop WiFi
-stop WiFi
+--MISSING--
 
 WiFi status
-WiFi status
+--MISSING--
 
 my IP address
-my IP address
+--MISSING--
 
 radio send number _
-radio send number _
+--MISSING--
 
 radio send string _
-radio send string _
+--MISSING--
 
 radio send pair _ = _
-radio send pair _ = _
+--MISSING--
 
 radio message received?
-radio message received?
+--MISSING--
 
 radio last number
-radio last number
+--MISSING--
 
 radio last string
-radio last string
+--MISSING--
 
 radio last message type
-radio last message type
+--MISSING--
 
 radio set group _
-radio set group _
+--MISSING--
 
 radio set channel (0-83) _
-radio set channel (0-83) _
+--MISSING--
 
 radio set power (0-7) _
-radio set power (0-7) _
+--MISSING--
 
 radio last signal strength
-radio last signal strength
+--MISSING--
 
 radio receive packet _
-radio receive packet _
+--MISSING--
 
 radio send packet _
-radio send packet _
+--MISSING--
 
 disable radio
-disable radio
+--MISSING--
 
 #############
 # Libraries #
 #############
 
 Basic Sensors
-Basic Sensors
-
-tilt x
-tilt x
-
-tilt y
-tilt y
-
-tilt z
-tilt z
-
-acceleration
 --MISSING--
 
+tilt x
+--MISSING--
+
+tilt y
+--MISSING--
+
+tilt z
+--MISSING--
+
+acceleration
+επιτάχυνση
+
 light level
-light level
+--MISSING--
 
 temperature (°C)
-temperature (°C)
+--MISSING--
 
 ####
 # NeoPixel library
@@ -405,127 +405,127 @@ NeoPixel
 --MISSING--
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
-set NeoPixels _ _ _ _ _ _ _ _ _ _
+όρισε NeoPixels _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
-clear NeoPixels
+καθάρισε NeoPixels
 
 set NeoPixel _ color _
-set NeoPixel _ color _
+όρισε NeoPixel _ χρώμα _
 
 set all NeoPixels color _
-set all NeoPixels color _
+όρισε όλα τα NeoPixels σε χρώμα _
 
 rotate NeoPixels by _
-rotate NeoPixels by _
+στρίψε τα NeoPixels κατά _
 
 color r _ g _ b _ (0-31)
---MISSING--
+χρώμα κ _ π _ μ _ (0-31)
 
 random color
---MISSING--
+τυχαίο χρώμα
 
 attach _ LED NeoPixel strip to pin _
---MISSING--
+σύνδεσε _ LED NeoPixel strip στον ακροδέκτη _
 
 has white _
---MISSING--
+έχει άσπρο _
 
 PIR
---MISSING--
+PIR
 
 PIR at pin _ detected movement
---MISSING--
+PIR στον ακροδέκτη _ ανίχνευσε κίνηση
 
 ####
 # Citilab ED1 board libraries
 
 ED1 Stepper Motor
-ED1 Stepper Motor
+ED1 Μότερ Βήμάτος
 
 move motor _ _ steps _
---MISSING--
+μοτερ βήματος _ _ βήματα _
 
 move motor 1 _ and motor 2 _ _ steps
-move motor 1 _ and motor 2 _ _ steps
+μοτερ 1 κινήθου _ και μοτερ 2 κινήθου _ _ βήματα
 
 move motor _ angle _ °
---MISSING--
+μοτέρ _ στρίψε γωνία _ °
 
 move motor _ _ complete turns
---MISSING--
+μοτέρ στρίψε _ _ στροφές
 
 stop steppers
-stop steppers
+σταμάτα τα βηματικά μοτέρ 
 
 clockwise
-clockwise
+δεξιόστροφα
 
 counter-clockwise
-counter-clockwise
+αριστερόστροφα
 
 ED1 Buttons
-ED1 Buttons
+ED1 Κομβία
 
 button OK
-button OK
+κομβίο OK
 
 button X
-button X
+κομβίο X
 
 button up
-button up
+κομβίο πάνω
 
 button down
-button down
+κομβίο κάτω
 
 button left
-button left
+κομβίο αριστερά
 
 button right
-button right
+κομβίο δεξιά
 
 capacitive sensor _
-capacitive sensor _
+χωρητικός αισθητήρας _
 
 set capacitive threshold to _
-set capacitive threshold to _
+ορίστε το χωρητικό όριο σε_
 
 ####
 # BirdBrain Technologies libraries
 
 Hummingbird LED _ _ %
-Hummingbird LED _ _ %
+--MISSING--
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird Tri-LED _ R _ % G _ % B _ %
+--MISSING--
 
 Hummingbird Position Servo _ _ °
 --MISSING--
 
 Hummingbird Rotation Servo _ _ %
-Hummingbird Rotation Servo _ _ %
+--MISSING--
 
 Hummingbird _ _
-Hummingbird _ _
+--MISSING--
 
 Hummingbird Battery (mV)
-Hummingbird Battery (mV)
+--MISSING--
 
 Light
-Light
+--MISSING--
 
 Distance (cm)
 --MISSING--
 
 Dial
-Dial
+--MISSING--
 
 Sound
-Sound
+--MISSING--
 
 Other
-Other
+--MISSING--
 
 Finch Beak Red _ Green _ Blue _
 --MISSING--
@@ -615,25 +615,25 @@ strength
 # Ultrasound distance library
 
 distance (cm) trigger _ echo _
-distance (cm) trigger _ echo _
+απόσταση (εκ) σκανδάλη _ ηχώ _
 
 ####
 # Infrared remote library
 
 IR Remote
-IR Remote
+IR Τηλεχειριστήριο
 
 receive IR code
---MISSING--
+λάβετε τον κωδικό IR
 
 receive IR code from device _
-receive IR code from device _
+λήψη κωδικού IR από τη συσκευή _
 
 test IR
-test IR
+δοκιμή IR
 
 attach IR receiver to pin _
-attach IR receiver to pin _
+επισυνάψτε δέκτη IR στον ακροδέκτη _
 
 ####
 # Radio comm library
@@ -641,41 +641,41 @@ attach IR receiver to pin _
 # All of its blocks are primitive (see "Primitives" section)
 
 Radio
-Radio
+--MISSING--
 
 ####
 # Text scrolling library
 # Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
-Scrolling
+--MISSING--
 
 scroll text _
-scroll text _
+--MISSING--
 
 scroll number _
-scroll number _
+--MISSING--
 
 pausing _ ms
-pausing _ ms
+--MISSING--
 
 stop scrolling
-stop scrolling
+--MISSING--
 
 ####
 # Servo motor library
 
 Servo
-Servo
+Σέρβο μοτέρ
 
 set servo _ to _ degrees (-90 to 90)
---MISSING--
+ορίστε servo από _ έως _ μοίρες (-90 έως 90)
 
 set servo _ to speed _ (-100 to 100)
---MISSING--
+ορίστε το servo _ στην ταχύτητα _ (-100 έως 100)
 
 stop servo _
---MISSING--
+σταματήστε το σερβο _
 
 ####
 # 5x5 LED display library
@@ -683,119 +683,119 @@ stop servo _
 # with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
-LED Display
+--MISSING--
 
 display _
-display _
+--MISSING--
 
 clear display
-clear display
+--MISSING--
 
 plot x _ y _
-plot x _ y _
+--MISSING--
 
 unplot x _ y _
-unplot x _ y _
+--MISSING--
 
 display character _
-display character _
+--MISSING--
 
 ####
 # TFT display library
 
 enable TFT _
-enable TFT _
+--MISSING--
 
 TFT width
-TFT width
+--MISSING--
 
 TFT height
-TFT height
+--MISSING--
 
 set TFT pixel x _ y _ to _
-set TFT pixel x _ y _ to _
+--MISSING--
 
 draw line on TFT from x _ y _ to x _ y _ color _
-draw line on TFT from x _ y _ to x _ y _ color _
+--MISSING--
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
-draw rectangle on TFT at x _ y _ width _ height _ color _
+--MISSING--
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
-draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
+--MISSING--
 
 draw circle on TFT at x _ y _ radius _ color _
-draw circle on TFT at x _ y _ radius _ color _
+--MISSING--
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
-draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
+--MISSING--
 
 filled _
-filled _
+--MISSING--
 
 write _ on TFT at x _ y _ color _
-write _ on TFT at x _ y _ color _
+--MISSING--
 
 scale _ wrap _
-scale _ wrap _
+--MISSING--
 
 ####
 # Tone library
 # Generates music tones on buzzers
 
 Tone
-Tone
+Τόνος
 
 attach buzzer to pin _
-attach buzzer to pin _
+επισυνάψτε το βομβητή στον ακροδέκτη _
 
 play note _ octave _ for _ ms
---MISSING--
+παίξτε νότα _ οκτάβα _ για _ χδ
 
 play frequency _ for _ ms
---MISSING--
+παίξτε συχνότητα _ για _ χδ
 
 play midi key _ for _ ms
---MISSING--
+παίξτε πλήκτρο midi _ για _ ms
 
 ####
 # Turtle geometry library
 
 Turtle
-Turtle
+Χελώνα 
 
 home
-home
+Σπίτι
 
 move _
-move _
+κινήθου _
 
 turn _ degrees
-turn _ degrees
+στροφή _ μοίρες
 
 turn _ / _ of circle
-turn _ / _ of circle
+στρίψε _ / _ του κύκλου
 
 pen down
-pen down
+πέννα κάτω
 
 pen up
-pen up
+πέννα πάνω
 
 set pen color to _
-set pen color to _
+όρισε την πέννα στο χρώμα _
 
 set pen to random color
-set pen to random color
+όρισε την πέννα σε τυχαίο χρώμα
 
 fill display with _
-fill display with _
+γέμισε την οθόνη με _
 
 go to x _ y _
-go to x _ y _
+προχώρα στο x _ y _
 
 point in direction _
---MISSING--
+σημείο στην κατεύθυνση _
 
 ####
 # File system library
@@ -846,50 +846,50 @@ WiFi
 --MISSING--
 
 wifi connect to _ password _ try _ times
-wifi connect to _ password _ try _ times
+--MISSING--
 
 wifi create hotspot _ password _
-wifi create hotspot _ password _
+--MISSING--
 
 IP address
-IP address
+--MISSING--
 
 ####
 # Motion library
 # Counts steps and detects motion via the internal accelerometer
 
 Motion
-Motion
+--MISSING--
 
 motion
-motion
+--MISSING--
 
 start step counter
-start step counter
+--MISSING--
 
 step count
-step count
+--MISSING--
 
 clear step count
-clear step count
+--MISSING--
 
 set step threshold _ (0-50)
-set step threshold _ (0-50)
+--MISSING--
 
 ####
 # Button Events library
 
 Button Events
-Button Events
+Κομβίον Συμβάντα
 
 button _ double pressed
-button _ double pressed
+κομβίο _ διπλό πάτημα
 
 button _ long pressed
-button _ long pressed
+κομβίο _ μακρύ πάτημα
 
 button _ pressed
-button _ pressed
+κομβίο _ πατήθηκε
 
 ####
 # Calliope board library
@@ -949,34 +949,34 @@ bme280 humidity
 # TCS34725 color sensor
 
 TCS34725 connected
---MISSING--
+TCS34725 συνδέθηκε
 
 TCS34725 rgb
---MISSING--
+TCS34725 κπμ
 
 color _ name
---MISSING--
+χρώμα _ όνομα
 
 ####
 # DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
---MISSING--
+θερμοκρασία (Κελσίου) DHT11 ακροδέκτης _
 
 humidity DHT11 pin _
---MISSING--
+υγρασία DHT11 ακροδέκτης _ 
 
 temperature (Celsius) DHT22 pin _
---MISSING--
+θερμοκρασία (Κελσίου) DHT22 ακροδέκτης _
 
 humidity DHT22 pin _
---MISSING--
+υγρασία DHT22 ακροδέκτης _ 
 
 ####
 # PN532 RFID reader
 
 read PN532 RFID
---MISSING--
+διάβασε PN532 RFID
 
 RFID _ = _
 --MISSING--
@@ -1048,7 +1048,7 @@ read only _
 --MISSING--
 
 register event _ type _
-register event _ type _
+--MISSING--
 
 start WebThing server
 --MISSING--
@@ -1075,130 +1075,130 @@ events JSON
 # buttons, error & info messages, dialog boxes, etc
 
 New
-New
+Νέο
 
 Open
-Open
+Άνοιξε
 
 Save
-Save
+Αποθήκευσε
 
 Connect
-Connect
+Συνδέσου
 
 disconnect
-disconnect
+Αποσυνδέσου
 
 Serial port:
-Serial port:
-
-other...
-other...
-
-none
-none
-
-Port name?
-Port name?
-
-Board type:
-Board type:
-
-Select board:
-Select board:
-
-Could not read:
 --MISSING--
 
+other...
+--MISSING--
+
+none
+--MISSING--
+
+Port name?
+--MISSING--
+
+Board type:
+--MISSING--
+
+Select board:
+--MISSING--
+
+Could not read:
+Δεν μπορεί να διαβάσει
+
 by
-by
+--MISSING--
 
 Created with GP
 --MISSING--
 
 More info at http://microblocks.fun
-More info at http://microblocks.fun
+--MISSING--
 
 Function "
-Function "
+--MISSING--
 
 " is too large to send to board.
-" is too large to send to board.
+--MISSING--
 
 Script is too large to send to board.
-Script is too large to send to board.
+--MISSING--
 
 Use "Connect" button to connect to a MicroBlocks device.
-Use "Connect" button to connect to a MicroBlocks device.
+--MISSING--
 
 No boards found; is your board plugged in?
-No boards found; is your board plugged in?
+--MISSING--
 
 For AdaFruit boards, double-click reset button and try again.
-For AdaFruit boards, double-click reset button and try again.
+--MISSING--
 
 The board is not responding.
-The board is not responding.
+--MISSING--
 
 Try to Install MicroBlocks on the board?
-Try to Install MicroBlocks on the board?
+--MISSING--
 
 The MicroBlocks in your board is not current
-The MicroBlocks in your board is not current
+--MISSING--
 
 Try to update MicroBlocks on the board?
-Try to update MicroBlocks on the board?
+--MISSING--
 
 Stop
-Stop
+--MISSING--
 
 Start
-Start
+--MISSING--
 
 Quit MicroBlocks?
-Quit MicroBlocks?
+--MISSING--
 
 Discard current project?
-Discard current project?
+--MISSING--
 
 clean up
-clean up
+--MISSING--
 
 arrange scripts
-arrange scripts
+--MISSING--
 
 undrop (ctrl-Z)
 --MISSING--
 
 copy all scripts to clipboard
-copy all scripts to clipboard
+--MISSING--
 
 paste all scripts
-paste all scripts
+--MISSING--
 
 paste script
-paste script
+--MISSING--
 
 save a picture of all scripts
-save a picture of all scripts
+--MISSING--
 
 about...
-about...
+--MISSING--
 
 virtual machine version
-virtual machine version
+--MISSING--
 
 update firmware on board
-update firmware on board
+--MISSING--
 
 show data graph
-show data graph
+--MISSING--
 
 set serial delay
-set serial delay
+--MISSING--
 
 firmware version
-firmware version
+--MISSING--
 
 start WebThing server
 --MISSING--
@@ -1207,7 +1207,7 @@ stop WebThing server
 --MISSING--
 
 MicroBlocks HTTP Server listening on port 6473
-MicroBlocks HTTP Server listening on port 6473
+--MISSING--
 
 disable autoloading board libraries
 --MISSING--
@@ -1222,216 +1222,216 @@ Use board type
 --MISSING--
 
 Wiping board...
-Wiping board...
+--MISSING--
 
 (press ESC to cancel)
-(press ESC to cancel)
+--MISSING--
 
 Done!
-Done!
+--MISSING--
 
 download and install latest VM
-download and install latest VM
+--MISSING--
 
 Select board type:
-Select board type:
+--MISSING--
 
 Uploading MicroBlocks to board...
-Uploading MicroBlocks to board...
+--MISSING--
 
 copy data to clipboard
-copy data to clipboard
+--MISSING--
 
 clear data
-clear data
+--MISSING--
 
 clear memory and variables
-clear memory and variables
+--MISSING--
 
 show advanced blocks
-show advanced blocks
+--MISSING--
 
 export functions as library
-export functions as library
+--MISSING--
 
 hide advanced blocks
-hide advanced blocks
+--MISSING--
 
 Data Graph
-Data Graph
+--MISSING--
 
 show instructions
-show instructions
+--MISSING--
 
 show compiled bytes
-show compiled bytes
+--MISSING--
 
 expand
-expand
+--MISSING--
 
 collapse
-collapse
+--MISSING--
 
 rename...
-rename...
+--MISSING--
 
 show block definition...
-show block definition...
+--MISSING--
 
 show the definition of this block
-show the definition of this block
+--MISSING--
 
 delete block definition...
-delete block definition...
+--MISSING--
 
 delete the definition of this block
-delete the definition of this block
+--MISSING--
 
 duplicate
-duplicate
+--MISSING--
 
 duplicate this block
-duplicate this block
+--MISSING--
 
 delete block
-delete block
+--MISSING--
 
 delete this block
-delete this block
+--MISSING--
 
 just this one block
-just this one block
+--MISSING--
 
 copy to clipboard
-copy to clipboard
+--MISSING--
 
 copy these blocks to the clipboard
-copy these blocks to the clipboard
+--MISSING--
 
 duplicate all
-duplicate all
+--MISSING--
 
 duplicate these blocks
-duplicate these blocks
+--MISSING--
 
 extract block
-extract block
+--MISSING--
 
 pull out this block
-pull out this block
+--MISSING--
 
 save picture of script
-save picture of script
+--MISSING--
 
 save a picture of this block definition as a PNG file
-save a picture of this block definition as a PNG file
+--MISSING--
 
 save a picture of these blocks as a PNG file
-save a picture of these blocks as a PNG file
+--MISSING--
 
 copy script
-copy script
+--MISSING--
 
 delete
-delete
+--MISSING--
 
 Input type:
-Input type:
+--MISSING--
 
 string only
-string only
+--MISSING--
 
 string or number
-string or number
+--MISSING--
 
 number only
-number only
+--MISSING--
 
 define
-define
+--MISSING--
 
 number/string
-number/string
+--MISSING--
 
 editable number or string
-editable number or string
+--MISSING--
 
 label
-label
+--MISSING--
 
 input
-input
+--MISSING--
 
 hide block definition
-hide block definition
+--MISSING--
 
 Are you sure you want to remove this block definition?
-Are you sure you want to remove this block definition?
+--MISSING--
 
 Language
-Language
+--MISSING--
 
 Custom...
-Custom...
+--MISSING--
 
 Obsolete
-Obsolete
+--MISSING--
 
 OK
-OK
+--MISSING--
 
 Ok
-Ok
+--MISSING--
 
 Yes
-Yes
+--MISSING--
 
 No
-No
+--MISSING--
 
 Cancel
-Cancel
+--MISSING--
 
 Okay
-Okay
+--MISSING--
 
 Confirm
-Confirm
+--MISSING--
 
 # File picker and library dialogs
 
 Libraries
-Libraries
+--MISSING--
 
 Examples
---MISSING--
+Παραδείγματα
 
 Desktop
---MISSING--
+Οθόνη
 
 Computer
---MISSING--
+Υποολογιστής
 
 Cloud
+Νέφος
+
+File
 --MISSING--
 
-File
-File
-
 File Open
-File Open
+--MISSING--
 
 File Save
-File Save
+--MISSING--
 
 File name:
-File name:
+--MISSING--
 
 New Folder
---MISSING--
+Νέος Φάκελος
 
 by
-by
+--MISSING--
 
 Depends:
 --MISSING--
