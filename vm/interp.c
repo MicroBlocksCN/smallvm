@@ -237,6 +237,44 @@ static OBJ primMaximum(int argCount, OBJ *args) {
 	return int2obj(result);
 }
 
+static inline int compareObjects(OBJ obj1, OBJ obj2) {
+	// Compare two objects with the given operator and return one of:
+	//	-1 (<), 0 (==), 1 (>)
+	// For mixed string-int comparison, try to convert the string to an integer.
+	// Set nonComparableError flag if the objects are not comparable.
+
+	int n1, n2;
+	if (IS_TYPE(obj1, StringType) && IS_TYPE(obj2, StringType)) {
+		return strcmp(obj2str(obj1), obj2str(obj2));
+	} else if (IS_TYPE(obj1, StringType) && isInt(obj2)) {
+		n1 = strtol(obj2str(obj1), NULL, 10);
+		n2 = obj2int(obj2);
+	} else if (isInt(obj1) && IS_TYPE(obj2, StringType)) {
+		n1 = obj2int(obj1);
+		n2 = strtol(obj2str(obj2), NULL, 10);
+	} else if (isInt(obj1) && isInt(obj2)) {
+		// Note: For efficiency, caller should handle this special case
+		n1 = obj2int(obj1);
+		n2 = obj2int(obj2);
+	} else {
+		fail(nonComparableError);
+	}
+	if (n1 < n2) return -1;
+	if (n1 > n2) return 1;
+	return 0;
+}
+
+static OBJ primCompare(int op, OBJ obj1, OBJ obj2) {
+	// Compare objects with the given operator:
+	//	-2 (<), -1 (<=), 0 (==), 1 (>=), 2 (>)
+	// Return a boolean. Set nonComparableError error if objects are not comparable.
+
+	int result = compareObjects(obj1, obj2);
+	if (result < 0) return (op < 0) ? trueObj : falseObj;
+	if (result > 0) return (op > 0) ? trueObj : falseObj;
+	return ((-1 <= op) && (op <= 1)) ? trueObj : falseObj;
+}
+
 static int stringsEqual(OBJ obj1, OBJ obj2) {
 	// Return true if the given strings have the same length and contents.
 	// Assume s1 and s2 are of Strings.
@@ -719,11 +757,21 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	lessThan_op:
-		*(sp - arg) = ((evalInt(*(sp - 2)) < evalInt(*(sp - 1))) ? trueObj : falseObj);
+		tmpObj = *(sp - 2);
+		if (isInt(tmpObj) && isInt(*(sp - 1))) { // special case for integers:
+			*(sp - arg) = (obj2int(tmpObj) < obj2int(*(sp - 1))) ? trueObj : falseObj;
+		} else {
+			*(sp - arg) = primCompare(-2, tmpObj, *(sp - 1));
+		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	lessOrEq_op:
-		*(sp - arg) = ((evalInt(*(sp - 2)) <= evalInt(*(sp - 1))) ? trueObj : falseObj);
+		tmpObj = *(sp - 2);
+		if (isInt(tmpObj) && isInt(*(sp - 1))) { // special case for integers:
+			*(sp - arg) = (obj2int(tmpObj) <= obj2int(*(sp - 1))) ? trueObj : falseObj;
+		} else {
+			*(sp - arg) = primCompare(-1, tmpObj, *(sp - 1));
+		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	equal_op:
@@ -757,11 +805,21 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	greaterOrEq_op:
-		*(sp - arg) = ((evalInt(*(sp - 2)) >= evalInt(*(sp - 1))) ? trueObj : falseObj);
+		tmpObj = *(sp - 2);
+		if (isInt(tmpObj) && isInt(*(sp - 1))) { // special case for integers:
+			*(sp - arg) = (obj2int(tmpObj) >= obj2int(*(sp - 1))) ? trueObj : falseObj;
+		} else {
+			*(sp - arg) = primCompare(1, tmpObj, *(sp - 1));
+		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	greaterThan_op:
-		*(sp - arg) = ((evalInt(*(sp - 2)) > evalInt(*(sp - 1))) ? trueObj : falseObj);
+		tmpObj = *(sp - 2);
+		if (isInt(tmpObj) && isInt(*(sp - 1))) { // special case for integers:
+			*(sp - arg) = (obj2int(tmpObj) > obj2int(*(sp - 1))) ? trueObj : falseObj;
+		} else {
+			*(sp - arg) = primCompare(2, tmpObj, *(sp - 1));
+		}
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	not_op:
