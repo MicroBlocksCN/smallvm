@@ -164,6 +164,9 @@ texto
 list
 listas
 
+Advanced:
+Avanzado:
+
 hex _
 hexadecimal _
 
@@ -189,8 +192,8 @@ asigna _ a _
 change _ by _
 aumenta _ en _
 
-local _ _
-variable local _ _
+initialize local _ to _
+inicializa variable local _ a _
 
 Data
 Datos
@@ -243,8 +246,8 @@ carácter con unicode _
 new list length _
 nueva lista de tamaño _
 
-new byte array length _
-nuevo vector de bytes de largada _
+new byte array _
+nueva lista de bytes de tamaño _
 
 free memory
 memoria libre
@@ -1051,7 +1054,7 @@ register event _ type _
 registra el evento _ de tipo _
 
 start WebThing server
-inicia servidor WebThing
+inicia el servidor de WebThings
 
 trigger event _
 dispara evento _
@@ -1079,6 +1082,27 @@ Nuevo
 
 Open
 Abre
+
+Open from board
+Recupera proyecto de la placa
+
+Information
+Información
+
+Plug in the board.
+Conecta la placa.
+
+Reading project from board...
+Leyendo proyecto de la placa...
+
+Loading project...
+Cargando proyecto...
+
+Found a newer version of
+Existe una versión más nueva de
+
+Do you want me to update the one in the project?
+¿Quieres actualizar a esta nueva versión en el proyecto?
 
 Save
 Guarda
@@ -1206,6 +1230,9 @@ inicia el servidor de WebThings
 stop WebThing server
 detén el servidor de WebThings
 
+HTTP Server
+Servidor HTTP
+
 MicroBlocks HTTP Server listening on port 6473
 El servidor HTTP de MicroBlocks está activo en el puerto 6473
 
@@ -1214,6 +1241,12 @@ desactivar autocarga de librerías de placa
 
 enable autoloading board libraries
 activar autocarga de librerías de placa
+
+enable PlugShare when project empty
+activar PlugShare en proyecto en blanco
+
+disable PlugShare when project empty
+desactivar PlugShare en proyecto en blanco
 
 erase flash and update firmware on ESP board
 borra y reparticiona esp

@@ -6,142 +6,142 @@
 #########################
 
 Output
---MISSING--
+Saída
 
 set user LED _
-allumer la LED _
+coloque o LED integrado em _
 
 say _
-dire _
+mostre _
 
 graph _
---MISSING--
+mostre no gráfico _
 
 Input
---MISSING--
+Entrada
 
 button A
-bouton A
+botão A
 
 button B
-bouton B
+botão B
 
 microseconds
-microsecondes
+microsegundos
 
 milliseconds
-millisecondes
+milisegundos
 
 board type
---MISSING--
+tipo de placa
 
 Pins
---MISSING--
+Pinos
 
 read digital pin _
-lire la broche numérique _
+leitura digital _
 
 read analog pin _
-lire la broche analogique _
+leitura analógica _
 
 set digital pin _ to _
-mettre la broche numérique _ à _
+coloque pino digital _ em _
 
 set pin _ to _
-mettre la broche _ à _
+mude o valor do pino _ para _
 
 analog pins
-broches analogiques
+pinos analógicos
 
 digital pins
-broches numériques
+pinos digitais
 
 Control
---MISSING--
+Controle
 
 when started
-au début
+quando iniciar
 
 when button _ pressed
-quand le bouton _ est pressé
+quando pressionar o botão _
 
 forever _
-répéter indéfiniment _
+para sempre _
 
 repeat _ _
-répéter _ fois _
+repita _ vezes _
 
 wait _ millisecs
-attendre _ millisecondes
+espere _ milisegundos
 
 if _ _
-si _ _
+se _ _
 
 else if _ _
-sinon, si _ _
+então, se _ _
 
 if _ _ else _
-si _ _ sinon _
+se _ _ então _
 
 when _
-quand _
+quando _
 
 wait until _
-attendre jusqu'à _
+espere até que _
 
 wait _ microsecs
-attendre _ microsecondes
+espere _ microsegundos
 
 return _
-renvoyer _
+retorne _
 
 when _ received
-quand _ est reçu
+ao receber _
 
 broadcast _
-envoyer à tous _
+envie _
 
 comment _
-commentaire _
+comentário _
 
 for _ in _ _
-pour chaque _ de _ _
+para cada _ em _ _
 
 repeat until _ _
-répéter jusqu'à _ _
+repita até que _ _
 
 stop this task
-arrêter cette tâche
+pare esta tarefa
 
 stop other tasks
---MISSING--
+pare as outras tarefas
 
 stop all
-stopper tout
+pare tudo
 
 last message
---MISSING--
+última mensagem
 
 Operators
---MISSING--
+Operadores
 
 _ mod _
-_ modulo _
+_ módulo _
 
 abs _
-valeur absolue de _
+valor absoluto de _
 
 random _ to _
-nombre aléatoire entre _ et _
+número aleatório entre _ e _
 
 not _
-non _
+não _
 
 _ and _
-_ et _
+_ e _
 
 and _
-et _
+e _
 
 _ or _
 _ ou _
@@ -150,153 +150,153 @@ or _
 ou _
 
 _ is a _
---MISSING--
+_ é um _
 
 boolean
---MISSING--
+booleano
 
 number
---MISSING--
+número
 
 string
---MISSING--
+texto
 
 list
---MISSING--
+lista
 
 Advanced:
 --MISSING--
 
 hex _
-hexadécimal _
+hexadecimal _
 
 Variables
---MISSING--
+Variáveis
 
 # Buttons on top of "Variables" category
 
 Add a variable
---MISSING--
+Criar uma variável
 
 Delete a variable
---MISSING--
+Apagar uma variável
 
 # New variable dialog
 
 New variable name?
---MISSING--
+Nome da variável?
 
 set _ to _
-mettre _ à _
+mude _ para _
 
 change _ by _
-changer _ de _
+altere _ em _
 
 initialize local _ to _
 --MISSING--
 
 Data
---MISSING--
+Dados
 
 list
---MISSING--
+lista
 
 length of _
-longueur de _
+tamanho de _
 
 item _ of _
---MISSING--
+elemento _ de _
 
 replace item _ of list _ with _
---MISSING--
+substitua elemento _ da lista _ por _
 
 delete item _ of list _
---MISSING--
+apague elemento _ da lista _
 
 add _ to list _
---MISSING--
+adicione _ à lista _
 
 join _ _
---MISSING--
+una _ _
 
 copy _ from _
---MISSING--
+copie _ desde _
 
 to _
---MISSING--
+até _
 
 find _ in _
---MISSING--
+encontre _ em _
 
 starting at _
---MISSING--
+comece a partir de _
 
 join items of list _
---MISSING--
+una elementos da lista _
 
 separator _
---MISSING--
+usando separador _
 
 unicode _ of _
---MISSING--
+unicode _ de _
 
 string from unicode _
---MISSING--
+texto com unicode _
 
 new list length _
---MISSING--
+nova lista de tamanho _
 
 new byte array _
 --MISSING--
 
 free memory
---MISSING--
+memória livre
 
 My Blocks
---MISSING--
+Meus blocos
 
 # Buttons on top of "My Blocks" category
 
 Add a command block
---MISSING--
+Criar um bloco de comandos
 
 Add a reporter block
---MISSING--
+Criar um bloco repórter
 
 # Make a block dialog
 
 Enter function name:
---MISSING--
+Nome da função:
 
 Comm
---MISSING--
+Comunicações
 
 i2c get device _ register _
-i2c lire le périphérique _ au registre _
+leia do dispositivo i2c _ o registrador _
 
 i2c set device _ register _ to _
-i2c mettre le périphérique _ au registre _ à _
+escreva no dispositivo i2c _ o registrador _ com _
 
 i2c device _ read list _
---MISSING--
+leia o dispositivo i2c _ para a lista _
 
 i2c device _ write list _
---MISSING--
+escreva no dispositivo i2c _ o conteúdo da lista _
 
 spi send _
-spi envoyer _
+spi a enviar _
 
 spi receive
-spi lire
+spi a receber
 
 print _
-afficher _
+escreva _
 
 no op
-no op
+não op
 
 ignore
-ignorer
+ignore
 
 ##############
 # Primitives #
@@ -305,194 +305,194 @@ ignorer
 # These are all mostly hidden from end users
 
 draw shape _ at x _ y _
-dessiner la forme _ à x _ y _
+desenhe forma _ em x _ y _
 
 shape for letter _
-forme pour la lettre _
+forma para letra _
 
 send NeoPixel rgb _
-envoyer RGB _ au NeoPixel
+envie RGB _ ao NeoPixel
 
 has tone support
---MISSING--
+tem suporte para tons
 
 play tone pin _ frequency _
---MISSING--
+toque um tom no pino _ com a frequência _
 
 has WiFi support
---MISSING--
+tem suporte para WiFi
 
 start WiFi _ password _
---MISSING--
+inicie WiFi _ com a senha _
 
 stop WiFi
---MISSING--
+termine WiFi
 
 WiFi status
---MISSING--
+estado do WiFi
 
 my IP address
---MISSING--
+meu endereço IP
 
 radio send number _
---MISSING--
+envie número _ por rádio
 
 radio send string _
---MISSING--
+envie texto _ por rádio
 
 radio send pair _ = _
---MISSING--
+envie associação _ = _ por rádio
 
 radio message received?
---MISSING--
+mensagem de rádio recebida?
 
 radio last number
---MISSING--
+último número recebido por rádio
 
 radio last string
---MISSING--
+último texto recebido por rádio
 
 radio last message type
---MISSING--
+tipo da última mensagem recebida por rádio
 
 radio set group _
---MISSING--
+fixe grupo de rádio a _
 
 radio set channel (0-83) _
---MISSING--
+fixe canal de rádio a (0-83) _
 
 radio set power (0-7) _
---MISSING--
+fixe potência de rádio a (0-7) _
 
 radio last signal strength
---MISSING--
+intensidade do último sinal de rádio
 
 radio receive packet _
---MISSING--
+receba pacote por rádio _
 
 radio send packet _
---MISSING--
+envie pacote por radio _
 
 disable radio
---MISSING--
+desabilite rádio
 
 #############
 # Libraries #
 #############
 
 Basic Sensors
---MISSING--
+Sensores básicos
 
 tilt x
-inclinaison x
+inclinação x
 
 tilt y
-inclinaison y
+inclinação y
 
 tilt z
-inclinaison z
+inclinação z
 
 acceleration
---MISSING--
+aceleração
 
 light level
---MISSING--
+nível de luz
 
 temperature (°C)
-température (°C)
+temperatura (°C)
 
 ####
 # NeoPixel library
 
 NeoPixel
---MISSING--
+NeoPixel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
---MISSING--
+defina NeoPixels _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
---MISSING--
+apague NeoPixels
 
 set NeoPixel _ color _
---MISSING--
+defina NeoPixel _ de cor _
 
 set all NeoPixels color _
---MISSING--
+defina todos os NeoPixels de cor _
 
 rotate NeoPixels by _
---MISSING--
+gire NeoPixels em _
 
 color r _ g _ b _ (0-31)
---MISSING--
+cor r _ g _ b _ (0-31)
 
 random color
---MISSING--
+cor aleatória
 
 attach _ LED NeoPixel strip to pin _
---MISSING--
+inicialize a fita _ de NeoPixel no pino _
 
 has white _
---MISSING--
+com branco _
 
 PIR
---MISSING--
+Sensor de movimento
 
 PIR at pin _ detected movement
---MISSING--
+Movimento detectado por PIR no pino _
 
 ####
 # Citilab ED1 board libraries
 
 ED1 Stepper Motor
---MISSING--
+Motores ED1
 
 move motor _ _ steps _
---MISSING--
+mova motor _ _ passos _
 
 move motor 1 _ and motor 2 _ _ steps
---MISSING--
+mova motor 1 _ e motor 2 _ _ passos
 
 move motor _ angle _ °
---MISSING--
+mova motor _ ângulo _ °
 
 move motor _ _ complete turns
---MISSING--
+mova motor _ _ voltas completas
 
 stop steppers
---MISSING--
+pare os motores
 
 clockwise
---MISSING--
+sentido horário
 
 counter-clockwise
---MISSING--
+sentido anti-horário
 
 ED1 Buttons
---MISSING--
+Botões ED1
 
 button OK
---MISSING--
+botão OK
 
 button X
---MISSING--
+botão X
 
 button up
---MISSING--
+botão cima
 
 button down
---MISSING--
+botão baixo
 
 button left
---MISSING--
+botão esquerda
 
 button right
---MISSING--
+botão direita
 
 capacitive sensor _
---MISSING--
+sensor capacitivo _
 
 set capacitive threshold to _
---MISSING--
+fixe limite capacitivo em _
 
 ####
 # BirdBrain Technologies libraries
@@ -501,142 +501,142 @@ Hummingbird LED _ _ %
 Hummingbird LED _ _ %
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird Tri-LED _ R _ % G _ % B _ %
+Hummingbird LED tricolor _ R _ % G _ % B _ %
 
 Hummingbird Position Servo _ _ °
---MISSING--
+Hummingbird Servo Posicional _ _ °
 
 Hummingbird Rotation Servo _ _ %
-Hummingbird Rotation Servo _ _ %
+Hummingbird Servo de Rotação _ _ %
 
 Hummingbird _ _
 Hummingbird _ _
 
 Hummingbird Battery (mV)
-Hummingbird Batterie (mV)
+Hummingbird Bateria (mV)
 
 Light
-LumiËre
+Luz
 
 Distance (cm)
-Distance (cm)
+Distância (cm)
 
 Dial
-Cadran
+Dial
 
 Sound
-Son
+Som
 
 Other
-Autre
+Outro
 
 Finch Beak Red _ Green _ Blue _
---MISSING--
+Cor do Bico do Finch R _ % G _ % B _ %
 
 Finch Tail _ Red _ Green _ Blue _
---MISSING--
+Cor da Cauda do Finch R _ % G _ % B _ %
 
 Finch Move _ _ cm at _ %
---MISSING--
+Mover o Finch _ _ cm  à velocidade de _ %
 
 Finch Turn _ _ ° at _ %
---MISSING--
+Girar o Finch _ _ ° à velocidade de _ %
 
 Finch Wheels L _ % R _ %
---MISSING--
+Rodas do Finch à velocidade E _ % D _ %
 
 Finch Stop
---MISSING--
+Para o Finch
 
 Finch Distance (cm)
---MISSING--
+Distância do Finch (cm)
 
 Finch _ Light
---MISSING--
+Luz _ do Finch
 
 Finch _ Line
---MISSING--
+Linha _  do Finch
 
 Finch Reset Encoders
---MISSING--
+Reinicia os contadores de voltas do Finch
 
 Finch _ Encoder
---MISSING--
+Contador de voltas _
 
 Finch Accelerometer _
---MISSING--
+Acelerômetro do Finch _
 
 Finch Battery
---MISSING--
+Nível de bateria do Finch
 
 All
---MISSING--
+Todos
 
 Forward
---MISSING--
+Frente
 
 Backward
---MISSING--
+Atrás
 
 Right
---MISSING--
+Direita
 
 Left
---MISSING--
+Esquerda
 
 Beak Up
---MISSING--
+Bico para cima
 
 Beak Down
---MISSING--
+Bico para baixo
 
 Tilt Left
---MISSING--
+Inclinação à esquerda
 
 Tilt Right
---MISSING--
+Inclinação à direita
 
 Level
---MISSING--
+Plano
 
 Upside Down
---MISSING--
+Cabeça para baixo
 
 x
---MISSING--
+x
 
 y
---MISSING--
+y
 
 z
---MISSING--
+z
 
 strength
---MISSING--
+potência
 
 ####
 # Ultrasound distance library
 
 distance (cm) trigger _ echo _
---MISSING--
+distância (cm) trigger _ echo _
 
 ####
 # Infrared remote library
 
 IR Remote
---MISSING--
+Infravermelho
 
 receive IR code
---MISSING--
+receba código IR
 
 receive IR code from device _
---MISSING--
+receba código IR do dispositivo _
 
 test IR
---MISSING--
+teste IR
 
 attach IR receiver to pin _
---MISSING--
+inicializa receptor IR no pin _
 
 ####
 # Radio comm library
@@ -644,41 +644,41 @@ attach IR receiver to pin _
 # All of its blocks are primitive (see "Primitives" section)
 
 Radio
---MISSING--
+Rádio
 
 ####
 # Text scrolling library
 # Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
---MISSING--
+Texto animado
 
 scroll text _
---MISSING--
+anime o texto _
 
 scroll number _
---MISSING--
+anime o número _
 
 pausing _ ms
---MISSING--
+pause por _ ms
 
 stop scrolling
---MISSING--
+pare a animação
 
 ####
 # Servo motor library
 
 Servo
---MISSING--
+Servomotores
 
 set servo _ to _ degrees (-90 to 90)
---MISSING--
+fixe o servo _ a _ graus (-90 a 90)
 
 set servo _ to speed _ (-100 to 100)
---MISSING--
+gire o servo _ à velocidade de _ (-100 a 100)
 
 stop servo _
---MISSING--
+pare o servo _
 
 ####
 # 5x5 LED display library
@@ -686,390 +686,390 @@ stop servo _
 # with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
---MISSING--
+Display LED
 
 display _
-écran _
+display _
 
 clear display
-effacer l'écran
+apague display
 
 plot x _ y _
-allumer x _ y _
+acenda x _ y _
 
 unplot x _ y _
-éteindre x _ y _
+apague x _ y _
 
 display character _
---MISSING--
+mostre caractere _
 
 ####
 # TFT display library
 
 enable TFT _
---MISSING--
+ative TFT _
 
 TFT width
---MISSING--
+largura do TFT
 
 TFT height
---MISSING--
+altura do TFT
 
 set TFT pixel x _ y _ to _
---MISSING--
+pinte o píxel x _ y _ com a cor _
 
 draw line on TFT from x _ y _ to x _ y _ color _
---MISSING--
+desenhe linha de x _ y _ a x _ y _ com cor _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
---MISSING--
+desenhe retângulo em x _ y _ largura _ altura _ com cor _
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
---MISSING--
+desenhe retângulo arredondado em x _ y _ largura _ altura _ raio _ com cor _
 
 draw circle on TFT at x _ y _ radius _ color _
---MISSING--
+desenhe círculo em x _ y _ raio _ com cor _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
---MISSING--
+desenhe triângulo em x _ y _ , x _ y _ , x _ y _ com cor _
 
 filled _
---MISSING--
+preenchido _
 
 write _ on TFT at x _ y _ color _
---MISSING--
+escreva _ em x _ y _ com cor _
 
 scale _ wrap _
---MISSING--
+escale _ com saltos de linha _
 
 ####
 # Tone library
 # Generates music tones on buzzers
 
 Tone
---MISSING--
+Tons
 
 attach buzzer to pin _
---MISSING--
+inicialize campainha no pino _
 
 play note _ octave _ for _ ms
---MISSING--
+toque a nota _ na oitava _ por _ ms
 
 play frequency _ for _ ms
---MISSING--
+toque a frequência _ por _ ms
 
 play midi key _ for _ ms
---MISSING--
+toque a tecla MIDI _ por _ ms
 
 ####
 # Turtle geometry library
 
 Turtle
---MISSING--
+Tartaruga
 
 home
---MISSING--
+volte para casa
 
 move _
---MISSING--
+mova _ passos
 
 turn _ degrees
---MISSING--
+gire _ graus
 
 turn _ / _ of circle
---MISSING--
+gire _ / _ de volta
 
 pen down
---MISSING--
+baixe o lápis
 
 pen up
---MISSING--
+suba o lápis
 
 set pen color to _
---MISSING--
+fixe a color do lápis em _
 
 set pen to random color
---MISSING--
+fixe uma cor aleatória para o lápis
 
 fill display with _
---MISSING--
+preencha a tela com a cor _
 
 go to x _ y _
---MISSING--
+vá para x _ y _
 
 point in direction _
---MISSING--
+aponte na direção _
 
 ####
 # File system library
 
 Files
---MISSING--
+Arquivos
 
 open file _
---MISSING--
+abra arquivo _
 
 close file _
---MISSING--
+feche arquivo _
 
 delete file _
---MISSING--
+apague arquivo _
 
 append line _ to file _
---MISSING--
+adicione linha _ no arquivo _
 
 append bytes _ to file _
---MISSING--
+adicione bytes _ no arquivo _
 
 end of file _
---MISSING--
+fim do arquivo _
 
 next line of file _
---MISSING--
+linha seguinte do arquivo _
 
 next _ bytes of file _
---MISSING--
+próximos _ bytes do arquivo _
 
 starting at _
---MISSING--
+comece a partir de _
 
 file names
---MISSING--
+nomes de arquivos
 
 size of file _
---MISSING--
+tamanho do arquivo _
 
 file system info
---MISSING--
+detalhes do sistema de arquivos
 
 ####
 # WiFi library
 
 WiFi
---MISSING--
+WiFi
 
 wifi connect to _ password _ try _ times
---MISSING--
+ligue à rede wifi _ com a senha _ em _ tentativas
 
 wifi create hotspot _ password _
---MISSING--
+crie um ponto de acesso wifi _ com a senha _
 
 IP address
---MISSING--
+endereço IP
 
 ####
 # Motion library
 # Counts steps and detects motion via the internal accelerometer
 
 Motion
---MISSING--
+Movimento
 
 motion
---MISSING--
+movimento
 
 start step counter
---MISSING--
+comece a contar passos
 
 step count
---MISSING--
+contagem de passos
 
 clear step count
---MISSING--
+apague contagem de passos
 
 set step threshold _ (0-50)
---MISSING--
+fixe o limite de passos em _ (0-50)
 
 ####
 # Button Events library
 
 Button Events
---MISSING--
+Eventos de botão
 
 button _ double pressed
---MISSING--
+duplo clique no botão _
 
 button _ long pressed
---MISSING--
+clique longo no botão _
 
 button _ pressed
---MISSING--
+clique no botão  _
 
 ####
 # Calliope board library
 
 Calliope set LED red _ green _ blue _
---MISSING--
+fixe o LED do Calliope em vermelho _ verde _ azul _
 
 Calliope set speaker _
---MISSING--
+fixe o alto-falante do Calliope em _
 
 Calliope loudness
---MISSING--
+Volume sonoro do Calliope
 
 ####
 # Circuit Playground Express board library
 
 Circuit Playground set speaker _
---MISSING--
+fixe o alto-falante do Circuit Playground em _
 
 Circuit Playground slide switch
---MISSING--
+interruptor do Circuit Playground
 
 ####
 # DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
---MISSING--
+inicialize fita de _ LEDs DotStar no pino de dados _ e pino de relógio _
 
 set all DotStar LEDs to r _ g _ b _
---MISSING--
+fixe todos os LEDs DotStar em vermelho _ verde _ azul _
 
 set DotStar LED _ to r _ g _ b _
---MISSING--
+fixe o LED DotStar _ em vermelho _ verde _ azul _
 
 set DotStar brightness _
---MISSING--
+fixe o brilho do DotStar a _
 
 ####
 # BME280 environmental sensor
 
 bme280 connected
---MISSING--
+bme280 conectado
 
 bmp280 connected
---MISSING--
+bmp280 conectado
 
 bmx280 temperature
---MISSING--
+temperatura do bmx280
 
 bmx280 pressure
---MISSING--
+pressão do bmx280
 
 bme280 humidity
---MISSING--
+umidade do bme280
 
 ####
 # TCS34725 color sensor
 
 TCS34725 connected
---MISSING--
+TCS34725 conectado
 
 TCS34725 rgb
---MISSING--
+cor RGB do TCS34725
 
 color _ name
---MISSING--
+nome da cor _
 
 ####
 # DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
---MISSING--
+temperatura (°C) do DHT11 no pino _
 
 humidity DHT11 pin _
---MISSING--
+umidade do DHT11 no pino _
 
 temperature (Celsius) DHT22 pin _
---MISSING--
+temperatura (°C) do DHT22 no pino _
 
 humidity DHT22 pin _
---MISSING--
+umidade do DHT22 no pino _
 
 ####
 # PN532 RFID reader
 
 read PN532 RFID
---MISSING--
+leia RFID PN532
 
 RFID _ = _
---MISSING--
+RFID _ = _
 
 get PN532 firmware version
---MISSING--
+versão de firmware do PN532
 
 ####
 # HTTP libraries
 
 HTTP client
---MISSING--
+Cliente HTTP
 
 _ data _ to http܃// _
---MISSING--
+pedido _ com o conteúdo _ a http:// _
 
 HTTP server
---MISSING--
+Servidor HTTP
 
 start HTTP server
---MISSING--
+inicie o servidor HTTP
 
 HTTP server request
---MISSING--
+pedido HTTP ao servidor
 
 respond _ to HTTP request
---MISSING--
+responda _ ao pedido HTTP
 
 with body _
---MISSING--
+com o conteúdo _
 
 and headers _
---MISSING--
+e cabeçalho _
 
 body of request _
---MISSING--
+corpo do pedido _
 
 path of request _
---MISSING--
+caminho do pedido _
 
 method of request _
---MISSING--
+método do pedido _
 
 ####
 # Web Things library
 
 Web Thing
---MISSING--
+Web Thing
 
 set thing name to _
---MISSING--
+fixe o nome da coisa em _
 
 set thing capability to _
---MISSING--
+fixe a aptidão da coisa em  _
 
 set boolean property _ title _ @Type _
---MISSING--
+fixe a propriedade booleana _ com o título _ e @Type _
 
 set string property _ title _ @Type _
---MISSING--
+fixe a propriedade texto _ com o título _ e @Type _
 
 set number property _ title _ @Type _
---MISSING--
+fixe a propriedade numérica _ com o título _ e @Type _
 
 set number property _ title _ min _ max _ @Type _
---MISSING--
+fixe a propriedade numérica _ com o título _ mínimo _ máximo _ e @Type _
 
 read only _
---MISSING--
+somente leitura _
 
 register event _ type _
---MISSING--
+registre o evento _ do tipo _
 
 start WebThing server
---MISSING--
+inicia o servidor WebThings
 
 trigger event _
---MISSING--
+dispare evento _
 
 thing description JSON
---MISSING--
+descrição JSON da coisa
 
 properties JSON
---MISSING--
+propriedades JSON
 
 event definitions JSON
---MISSING--
+JSON das definições de eventos
 
 events JSON
---MISSING--
+JSON dos eventos
 
 ##################
 # MicroBlocks UI #
@@ -1078,10 +1078,10 @@ events JSON
 # buttons, error & info messages, dialog boxes, etc
 
 New
---MISSING--
+Novo
 
 Open
---MISSING--
+Abrir
 
 Open from board
 --MISSING--
@@ -1105,142 +1105,142 @@ Do you want me to update the one in the project?
 --MISSING--
 
 Save
---MISSING--
+Salvar
 
 Connect
---MISSING--
+Conectar
 
 disconnect
---MISSING--
+desconecta
 
 Serial port:
---MISSING--
+Porta serial:
 
 other...
---MISSING--
+outro...
 
 none
---MISSING--
+nenhum
 
 Port name?
---MISSING--
+Nome da porta?
 
 Board type:
---MISSING--
+Tipo de placa:
 
 Select board:
---MISSING--
+Seleciona a placa:
 
 Could not read:
---MISSING--
+Não é possível ler:
 
 by
---MISSING--
+por
 
 Created with GP
---MISSING--
+Criado com GP
 
 More info at http://microblocks.fun
---MISSING--
+Mais informações em http://microblocks.fun
 
 Function "
---MISSING--
+Função "
 
 " is too large to send to board.
---MISSING--
+" é muito grande para enviar para a placa.
 
 Script is too large to send to board.
---MISSING--
+O programa é muito grande para enviar para a placa.
 
 Use "Connect" button to connect to a MicroBlocks device.
---MISSING--
+Use o botão "Conectar" para conectar a um dispositivo MicroBlocks.
 
 No boards found; is your board plugged in?
---MISSING--
+Nenhuma placa encontrada, sua placa está conectada?
 
 For AdaFruit boards, double-click reset button and try again.
---MISSING--
+Nas placas AdaFruit, aperta o botão de reset duas vezes rapidamente e tente de novo.
 
 The board is not responding.
---MISSING--
+A placa não responde.
 
 Try to Install MicroBlocks on the board?
---MISSING--
+Tentar instalar o MicroBlocks na placa?
 
 The MicroBlocks in your board is not current
---MISSING--
+O MicroBlocks instalado na placa não está atualizado
 
 Try to update MicroBlocks on the board?
---MISSING--
+Tentar atualizar o MicroBlocks na placa?
 
 Stop
---MISSING--
+Para
 
 Start
---MISSING--
+Inicia
 
 Quit MicroBlocks?
---MISSING--
+Sair do MicroBlocks?
 
 Discard current project?
---MISSING--
+Descartar o projeto atual?
 
 clean up
---MISSING--
+limpa
 
 arrange scripts
---MISSING--
+organiza programas
 
 undrop (ctrl-Z)
---MISSING--
+desfaz o último movimento (ctrl-Z)
 
 copy all scripts to clipboard
---MISSING--
+copia todos os programas para a área de transferência
 
 paste all scripts
---MISSING--
+cola todos os programas
 
 paste script
---MISSING--
+cola o programa
 
 save a picture of all scripts
---MISSING--
+guarda uma imagem de todos os programas
 
 about...
---MISSING--
+sobre...
 
 virtual machine version
---MISSING--
+versão da máquina virtual
 
 update firmware on board
---MISSING--
+atualiza o firmware da placa
 
 show data graph
---MISSING--
+mostra o gráfico de dados
 
 set serial delay
---MISSING--
+ajusta a latência da porta serial
 
 firmware version
---MISSING--
+versão de firmware
 
 start WebThing server
---MISSING--
+inicia o servidor WebThings
 
 stop WebThing server
---MISSING--
+para o servidor WebThings
 
 HTTP Server
 --MISSING--
 
 MicroBlocks HTTP Server listening on port 6473
---MISSING--
+O servidor HTTP do MicroBlocks está ativo na porta 6473
 
 disable autoloading board libraries
---MISSING--
+desativa o autocarregamento das bibliotecas de placas
 
 enable autoloading board libraries
---MISSING--
+ativa o autocarregamento das bibliotecas de placas
 
 enable PlugShare when project empty
 --MISSING--
@@ -1249,256 +1249,256 @@ disable PlugShare when project empty
 --MISSING--
 
 erase flash and update firmware on ESP board
---MISSING--
+apaga a flash e atualiza firmware na placa ESP
 
 Use board type
---MISSING--
+Define o tipo de placa
 
 Wiping board...
---MISSING--
+Apagando a placa...
 
 (press ESC to cancel)
---MISSING--
+(pressione ESC para cancelar)
 
 Done!
---MISSING--
+Feito!
 
 download and install latest VM
---MISSING--
+baixa e instala a última máquina virtual
 
 Select board type:
---MISSING--
+Seleciona o tipo de placa:
 
 Uploading MicroBlocks to board...
---MISSING--
+Instalando MicroBlocks na placa...
 
 copy data to clipboard
---MISSING--
+copia os dados para a área de transferência
 
 clear data
---MISSING--
+apaga os dados
 
 clear memory and variables
---MISSING--
+limpa a memória e variáveis
 
 show advanced blocks
---MISSING--
+mostra os blocos avançados
 
 export functions as library
---MISSING--
+exporta funções como biblioteca
 
 hide advanced blocks
---MISSING--
+oculta os blocos avançados
 
 Data Graph
---MISSING--
+Gráfico de dados
 
 show instructions
---MISSING--
+mostra instruções
 
 show compiled bytes
---MISSING--
+mostra os bytes compilados
 
 expand
---MISSING--
+expandir
 
 collapse
---MISSING--
+colapsar
 
 rename...
---MISSING--
+renomear...
 
 show block definition...
---MISSING--
+mostra a definição do bloco...
 
 show the definition of this block
---MISSING--
+mostra a definição deste bloco
 
 delete block definition...
---MISSING--
+apaga a definição do bloco...
 
 delete the definition of this block
---MISSING--
+apaga a definição deste bloco
 
 duplicate
---MISSING--
+duplica
 
 duplicate this block
---MISSING--
+duplica este bloco
 
 delete block
---MISSING--
+elimina o bloco
 
 delete this block
---MISSING--
+elimina este bloco
 
 just this one block
---MISSING--
+apenas este bloco
 
 copy to clipboard
---MISSING--
+copia para a área de transferência
 
 copy these blocks to the clipboard
---MISSING--
+copia estes blocos para a área de transferência
 
 duplicate all
---MISSING--
+duplica tudo
 
 duplicate these blocks
---MISSING--
+duplica este bloco e todos os que se seguem
 
 extract block
---MISSING--
+extrai bloco
 
 pull out this block
---MISSING--
+retira este bloco
 
 save picture of script
---MISSING--
+guarda uma imagem do programa
 
 save a picture of this block definition as a PNG file
---MISSING--
+guarda uma imagem da definição deste bloco em formato PNG
 
 save a picture of these blocks as a PNG file
---MISSING--
+guarda uma imagem destes blocos em formato PNG
 
 copy script
---MISSING--
+copia o programa
 
 delete
---MISSING--
+apaga
 
 Input type:
---MISSING--
+Tipo de entrada:
 
 string only
---MISSING--
+somente texto
 
 string or number
---MISSING--
+texto ou número
 
 number only
---MISSING--
+somente número
 
 define
---MISSING--
+define
 
 number/string
---MISSING--
+número/texto
 
 editable number or string
---MISSING--
+número ou texto editável
 
 label
---MISSING--
+etiqueta
 
 input
---MISSING--
+entrada
 
 hide block definition
---MISSING--
+oculta a definição deste bloco
 
 Are you sure you want to remove this block definition?
---MISSING--
+Tem certeza que quer remover a definição deste bloco?
 
 Language
---MISSING--
+Idioma
 
 Custom...
---MISSING--
+Personalizado...
 
 Obsolete
---MISSING--
+Obsoleto
 
 OK
---MISSING--
+OK
 
 Ok
---MISSING--
+Ok
 
 Yes
---MISSING--
+Sim
 
 No
---MISSING--
+Não
 
 Cancel
---MISSING--
+Cancelar
 
 Okay
---MISSING--
+De acordo
 
 Confirm
---MISSING--
+Confirmação
 
 # File picker and library dialogs
 
 Libraries
---MISSING--
+Bibliotecas
 
 Examples
---MISSING--
+Exemplos
 
 Desktop
---MISSING--
+Desktop
 
 Computer
---MISSING--
+Computador
 
 Cloud
---MISSING--
+Nuvem
 
 File
---MISSING--
+Arquivo
 
 File Open
---MISSING--
+Abrir arquivo
 
 File Save
---MISSING--
+Salvar arquivo
 
 File name:
---MISSING--
+Nome do arquivo:
 
 New Folder
---MISSING--
+Nova Pasta
 
 by
---MISSING--
+por
 
 Depends:
---MISSING--
+Depende de:
 
 Tags:
---MISSING--
+Etiquetas:
 
 Path, name or URL for library?
---MISSING--
+Caminho, nome ou URL da biblioteca?
 
 Invalid URL
---MISSING--
+URL inválido
 
 Could not fetch library.
---MISSING--
+Não é possível obter a biblioteca.
 
 Host does not exist or is currently down.
---MISSING--
+O servidor não existe ou não está funcionando.
 
 File not found in server.
---MISSING--
+Não foi encontrado o arquivo no servidor.
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
---MISSING--
+O servidor requer HTTPS, que não é suportado atualmente pelo MicroBlocks.
 
 library information
---MISSING--
+detalhes da biblioteca
 
 built-in library
---MISSING--
+biblioteca integrada
 
 Dependency path, name or URL?
---MISSING--
+Caminho, nome ou URL da dependência?
 
 Tag name?
---MISSING--
+Nome da etiqueta?
 

@@ -1,7 +1,9 @@
 # MicroBlocks translation file
-# Last updated: April 14 2020
+# Last updated: July 07 2020
 
-# Blocks and categories
+#########################
+# Blocks and categories #
+#########################
 
 Output
 Saída
@@ -162,6 +164,9 @@ string
 list
 --MISSING--
 
+Advanced:
+--MISSING--
+
 hex _
 hexadecimal _
 
@@ -187,8 +192,8 @@ asignar _ a _
 change _ by _
 aumentar _ en _
 
-local _ _
-variábel local _ _
+initialize local _ to _
+--MISSING--
 
 Data
 --MISSING--
@@ -241,14 +246,11 @@ string from unicode _
 new list length _
 nova lonxitude da lista _
 
-new byte array length _
+new byte array _
 --MISSING--
 
 free memory
 --MISSING--
-
-fill list _ with _
-encher a lista _ con _
 
 My Blocks
 Os meus bloques
@@ -296,16 +298,17 @@ no op
 ignore
 ignorar
 
-# Primitives (mostly hidden from end users)
+##############
+# Primitives #
+##############
+
+# These are all mostly hidden from end users
 
 draw shape _ at x _ y _
 debuxar a forma _ en x _ y _
 
 shape for letter _
 forma para a letra _
-
-set NeoPixel pin _ is RGBW _
-poñer un NeoPixel no pin _ tipo RGBW _
 
 send NeoPixel rgb _
 enviar RGB _ ao NeoPixel
@@ -373,7 +376,9 @@ enviar paquetes por radio _
 disable radio
 desactivar a radio
 
-# Libraries
+#############
+# Libraries #
+#############
 
 Basic Sensors
 Sensores básicos
@@ -395,6 +400,9 @@ nivel de luz
 
 temperature (°C)
 temperatura (°C)
+
+####
+# NeoPixel library
 
 NeoPixel
 --MISSING--
@@ -431,6 +439,9 @@ PIR
 
 PIR at pin _ detected movement
 --MISSING--
+
+####
+# Citilab ED1 board libraries
 
 ED1 Stepper Motor
 Motores ED1
@@ -477,32 +488,14 @@ botón esquerda
 button right
 botón dereita
 
-capacitive OK
-capacitivo Aceptar
-
-capacitive X
-capacitivo X
-
-capacitive up
-capacitivo arriba
-
-capacitive down
-capacitivo abaixo
-
-capacitive left
-capacitivo esquerda
-
-capacitive right
-capacitivo dereita
-
 capacitive sensor _
 sensor capacitivo _
 
 set capacitive threshold to _
 poñer o limiar capacitivo a _
 
-set use capacitive to _
-utilizar botóns capacitivos _
+####
+# BirdBrain Technologies libraries
 
 Hummingbird LED _ _ %
 Hummingbird LED _ _ %
@@ -537,8 +530,98 @@ Son
 Other
 Outros
 
+Finch Beak Red _ Green _ Blue _
+--MISSING--
+
+Finch Tail _ Red _ Green _ Blue _
+--MISSING--
+
+Finch Move _ _ cm at _ %
+--MISSING--
+
+Finch Turn _ _ ° at _ %
+--MISSING--
+
+Finch Wheels L _ % R _ %
+--MISSING--
+
+Finch Stop
+--MISSING--
+
+Finch Distance (cm)
+--MISSING--
+
+Finch _ Light
+--MISSING--
+
+Finch _ Line
+--MISSING--
+
+Finch Reset Encoders
+--MISSING--
+
+Finch _ Encoder
+--MISSING--
+
+Finch Accelerometer _
+--MISSING--
+
+Finch Battery
+--MISSING--
+
+All
+--MISSING--
+
+Forward
+--MISSING--
+
+Backward
+--MISSING--
+
+Right
+--MISSING--
+
+Left
+--MISSING--
+
+Beak Up
+--MISSING--
+
+Beak Down
+--MISSING--
+
+Tilt Left
+--MISSING--
+
+Tilt Right
+--MISSING--
+
+Level
+--MISSING--
+
+Upside Down
+--MISSING--
+
+x
+--MISSING--
+
+y
+--MISSING--
+
+z
+--MISSING--
+
+strength
+--MISSING--
+
+####
+# Ultrasound distance library
+
 distance (cm) trigger _ echo _
 distancia (cm) disparador _ eco _
+
+####
+# Infrared remote library
 
 IR Remote
 Infravermellos
@@ -555,8 +638,17 @@ probar IR
 attach IR receiver to pin _
 inicializar o receptor IR no pin _
 
+####
+# Radio comm library
+# Allows micro:bit boards to exchange messages
+# All of its blocks are primitive (see "Primitives" section)
+
 Radio
 Radio
+
+####
+# Text scrolling library
+# Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
 Texto animado
@@ -573,6 +665,9 @@ pausing _ ms
 stop scrolling
 deter a animación
 
+####
+# Servo motor library
+
 Servo
 Servomotores
 
@@ -584,6 +679,11 @@ set servo _ to speed _ (-100 to 100)
 
 stop servo _
 --MISSING--
+
+####
+# 5x5 LED display library
+# Supports the micro:bit display, but also simulated 5x5 displays on boards
+# with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
 Pantalla LED
@@ -602,6 +702,9 @@ apagar x _ y _
 
 display character _
 amosar carácter _
+
+####
+# TFT display library
 
 enable TFT _
 activar TFT _
@@ -639,6 +742,10 @@ write _ on TFT at x _ y _ color _
 scale _ wrap _
 --MISSING--
 
+####
+# Tone library
+# Generates music tones on buzzers
+
 Tone
 Tons
 
@@ -653,6 +760,9 @@ tocar a frecuencia _ durante _ ms
 
 play midi key _ for _ ms
 tocar a tecla MIDI _ durante _ ms
+
+####
+# Turtle geometry library
 
 Turtle
 --MISSING--
@@ -690,6 +800,51 @@ go to x _ y _
 point in direction _
 --MISSING--
 
+####
+# File system library
+
+Files
+--MISSING--
+
+open file _
+--MISSING--
+
+close file _
+--MISSING--
+
+delete file _
+--MISSING--
+
+append line _ to file _
+--MISSING--
+
+append bytes _ to file _
+--MISSING--
+
+end of file _
+--MISSING--
+
+next line of file _
+--MISSING--
+
+next _ bytes of file _
+--MISSING--
+
+starting at _
+--MISSING--
+
+file names
+--MISSING--
+
+size of file _
+--MISSING--
+
+file system info
+--MISSING--
+
+####
+# WiFi library
+
 WiFi
 --MISSING--
 
@@ -701,6 +856,10 @@ crear punto de acceso WiFi _ co contrasinal _
 
 IP address
 enderezo IP
+
+####
+# Motion library
+# Counts steps and detects motion via the internal accelerometer
 
 Motion
 --MISSING--
@@ -720,6 +879,9 @@ clear step count
 set step threshold _ (0-50)
 --MISSING--
 
+####
+# Button Events library
+
 Button Events
 --MISSING--
 
@@ -732,6 +894,9 @@ button _ long pressed
 button _ pressed
 --MISSING--
 
+####
+# Calliope board library
+
 Calliope set LED red _ green _ blue _
 --MISSING--
 
@@ -741,11 +906,17 @@ Calliope set speaker _
 Calliope loudness
 --MISSING--
 
+####
+# Circuit Playground Express board library
+
 Circuit Playground set speaker _
 --MISSING--
 
 Circuit Playground slide switch
 --MISSING--
+
+####
+# DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
 --MISSING--
@@ -758,6 +929,9 @@ set DotStar LED _ to r _ g _ b _
 
 set DotStar brightness _
 --MISSING--
+
+####
+# BME280 environmental sensor
 
 bme280 connected
 --MISSING--
@@ -774,6 +948,9 @@ bmx280 pressure
 bme280 humidity
 --MISSING--
 
+####
+# TCS34725 color sensor
+
 TCS34725 connected
 --MISSING--
 
@@ -782,6 +959,9 @@ TCS34725 rgb
 
 color _ name
 --MISSING--
+
+####
+# DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
 --MISSING--
@@ -795,6 +975,9 @@ temperature (Celsius) DHT22 pin _
 humidity DHT22 pin _
 --MISSING--
 
+####
+# PN532 RFID reader
+
 read PN532 RFID
 --MISSING--
 
@@ -803,6 +986,9 @@ RFID _ = _
 
 get PN532 firmware version
 --MISSING--
+
+####
+# HTTP libraries
 
 HTTP client
 --MISSING--
@@ -837,6 +1023,9 @@ path of request _
 method of request _
 --MISSING--
 
+####
+# Web Things library
+
 Web Thing
 --MISSING--
 
@@ -865,7 +1054,7 @@ register event _ type _
 rexistrar o evento _ do tipo _
 
 start WebThing server
---MISSING--
+iniciar o servidor de WebThings
 
 trigger event _
 --MISSING--
@@ -882,13 +1071,38 @@ event definitions JSON
 events JSON
 --MISSING--
 
-# MicroBlocks UI buttons, error & info messages, dialog boxes, etc
+##################
+# MicroBlocks UI #
+##################
+
+# buttons, error & info messages, dialog boxes, etc
 
 New
 Novo
 
 Open
 Abrir
+
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
 
 Save
 Gardar
@@ -1016,6 +1230,9 @@ iniciar o servidor de WebThings
 stop WebThing server
 deter o servidor de WebThings
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 o servidor HTTP de MicroBlocks esta activo no porto 6473
 
@@ -1023,6 +1240,12 @@ disable autoloading board libraries
 --MISSING--
 
 enable autoloading board libraries
+--MISSING--
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
 --MISSING--
 
 erase flash and update firmware on ESP board

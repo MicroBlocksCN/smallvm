@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: September 25 2020
+# Last updated: July 07 2020
 
 #########################
 # Blocks and categories #
@@ -25,12 +25,6 @@ button A
 
 button B
 ボタン B
-
-timer
-タイマー
-
-reset timer
-タイマーリセット
 
 microseconds
 マイクロ秒
@@ -170,6 +164,9 @@ string
 list
 リスト
 
+Advanced:
+--MISSING--
+
 hex _
 16進数 _
 
@@ -195,8 +192,8 @@ set _ to _
 change _ by _
 変更 _ を _ に
 
-local _ _
-ローカル _ _
+initialize local _ to _
+--MISSING--
 
 Data
 データ
@@ -232,7 +229,7 @@ find _ in _
 検索 _ を _ の中
 
 starting at _
-から始める _
+スタート位置 _
 
 join items of list _
 リストのアイテムを連結 _
@@ -249,8 +246,8 @@ Unicode _ の文字列
 new list length _
 新しいリストの長さ _
 
-new byte array length _
-新しいバイト列の長さ _
+new byte array _
+--MISSING--
 
 free memory
 メモリ解放
@@ -355,26 +352,26 @@ radio last number
 radio last string
 送信された最新の文字列
 
-_radio last message type
-送信された最新文字列の種類
+radio last message type
+--MISSING--
 
 radio set group _
 送信された設定グループ _
 
-_radio set channel (0-83) _
-送信された設定チャンネル (0-83) _
+radio set channel (0-83) _
+--MISSING--
 
 radio set power (0-7) _
 送信された設定強度 (0-7) _
 
-_radio last signal strength
-送信された最新の信号強度
+radio last signal strength
+--MISSING--
 
-_radio receive packet _
-送信された受信パケット _
+radio receive packet _
+--MISSING--
 
-_radio send packet _
-送信された送信パケット _
+radio send packet _
+--MISSING--
 
 disable radio
 送信を無効化
@@ -436,15 +433,6 @@ attach _ LED NeoPixel strip to pin _
 
 has white _
 白色 _
-
-_NeoPixel_rotate_left _
-ネオピクセルを左に回転 _
-
-_NeoPixel_update
-ネオピクセルを更新
-
-_NeoPixel_ensureInitialized
-确定新光像素已经初始化
 
 PIR
 人感赤外線センサー
@@ -1066,7 +1054,7 @@ register event _ type _
 登録イベント _ タイプ _
 
 start WebThing server
-WebThing サーバーを開始
+WebThingサーバーを開始
 
 trigger event _
 トリガーイベント _
@@ -1094,6 +1082,27 @@ New
 
 Open
 開く
+
+Open from board
+--MISSING--
+
+Information
+--MISSING--
+
+Plug in the board.
+--MISSING--
+
+Reading project from board...
+--MISSING--
+
+Loading project...
+--MISSING--
+
+Found a newer version of
+--MISSING--
+
+Do you want me to update the one in the project?
+--MISSING--
 
 Save
 保存
@@ -1221,6 +1230,9 @@ WebThingサーバーを開始
 stop WebThing server
 WebThingサーバーを停止
 
+HTTP Server
+--MISSING--
+
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTPサーバーのポート番号 6473
 
@@ -1229,6 +1241,12 @@ disable autoloading board libraries
 
 enable autoloading board libraries
 ボードライブラリの自動読み込みを有効化
+
+enable PlugShare when project empty
+--MISSING--
+
+disable PlugShare when project empty
+--MISSING--
 
 erase flash and update firmware on ESP board
 ESPボード上のファームウェアを消去して更新
