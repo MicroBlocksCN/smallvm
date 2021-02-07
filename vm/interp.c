@@ -145,6 +145,41 @@ static int timer() {
 	return now - timerStart;
 }
 
+// String Access
+
+static inline char * nextUTF8(char *s) {
+	// Return a pointer to the start of the UTF8 character following the given one.
+	// If s points to a null byte (i.e. end of the string) return it unchanged.
+
+	if (!*s) return s; // end of string
+	if ((uint8) *s < 128) return s + 1; // single-byte character
+	if (0xC0 == (*s & 0xC0)) s++; // start of multi-byte character
+	while (0x80 == (*s & 0xC0)) s++; // skip continuation bytes
+	return s;
+}
+
+static int countUTF8(char *s) {
+	int count = 0;
+	while (*s) {
+		s = nextUTF8(s);
+		count++;
+	}
+	return count;
+}
+
+static OBJ charAt(OBJ stringObj, int i) {
+	char *start = obj2str(stringObj);
+	while (i-- > 1) { // find start of the ith Unicode character
+		if (!*start) return fail(indexOutOfRangeError); // end of string
+		start = nextUTF8(start);
+	}
+	int byteCount = nextUTF8(start) - start;
+	OBJ result = newString(byteCount);
+	if (result) {
+		memcpy(obj2str(result), start, byteCount);
+	}
+	return result;
+}
 
 // Board Type
 
@@ -590,8 +625,8 @@ static void runTask(Task *task) {
 	forLoop_op:
 		// stack layout:
 		// *(sp - 1) the loop counter (decreases from N to 1); falseObj the very first time
-		// *(sp - 2) N, the total loop count or item count of the list argument
-		// *(sp - 3) the object being iterated over, a positive integer or list
+		// *(sp - 2) N, the total loop count or item count of a list, string or byte array
+		// *(sp - 3) the object being iterated over: an integer, list, string, or byte array
 
 		tmpObj = *(sp - 1); // loop counter, or falseObj the very first time
 		if (falseObj == tmpObj) { // first time: compute N, the total iterations (in tmp)
@@ -600,6 +635,10 @@ static void runTask(Task *task) {
 				tmp = obj2int(tmpObj);
 			} else if (IS_TYPE(tmpObj, ListType)) {
 				tmp = obj2int(FIELD(tmpObj, 0));
+			} else if (IS_TYPE(tmpObj, StringType)) {
+				tmp = countUTF8(obj2str(tmpObj));
+			} else if (IS_TYPE(tmpObj, ByteArrayType)) {
+				tmp = BYTES(tmpObj);
 			} else {
 				fail(badForLoopArg);
 				goto error;
@@ -617,7 +656,13 @@ static void runTask(Task *task) {
 				*(fp + arg) = int2obj(tmp + 1); // add 1 to get range 1..N
 			} else if (IS_TYPE(tmpObj, ListType)) {
 				// set the index variable to the next list item
-				*(fp + arg) = FIELD(tmpObj, tmp + 1); // list item (list object indices 1..N)
+				*(fp + arg) = FIELD(tmpObj, tmp + 1); // skip count field
+			} else if (IS_TYPE(tmpObj, StringType)) {
+				// set the index variable to the next character of a string
+				*(fp + arg) = charAt(tmpObj, tmp + 1);
+			} else if (IS_TYPE(tmpObj, ByteArrayType)) {
+				// set the index variable to the next byte of a byte array
+				*(fp + arg) = int2obj(((uint8 *) &FIELD(tmpObj, 0))[tmp]);
 			} else {
 				fail(badForLoopArg);
 				goto error;
