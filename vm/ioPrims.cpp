@@ -102,7 +102,10 @@ int recvBytes(uint8 *buf, int count) {
 	return bytesRead;
 }
 
-int sendByte(char aByte) { return Serial.write(aByte); }
+int sendByte(char aByte) {
+	if (!Serial) return 1; // if USB serial is not open, just discard the byte
+	return Serial.write(aByte);
+}
 
 void restartSerial() {
 	Serial.end();
