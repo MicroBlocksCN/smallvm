@@ -5,7 +5,7 @@ description ''
 variables _WoT_definingEvents _useWiFi 
 
 script 50 50 {
-comment 'Mozila Web of Things pushbutton example.
+comment 'Web of Things pushbutton example.
 
 To test it, either press, long-press or double-press the A button
 in your board and look at the display.'
