@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: February 05 2021
 
 #########################
 # Blocks and categories #
@@ -165,7 +165,7 @@ list
 lista
 
 Advanced:
---MISSING--
+Avançado:
 
 hex _
 hexadecimal _
@@ -193,7 +193,7 @@ change _ by _
 altere _ em _
 
 initialize local _ to _
---MISSING--
+inicialize variável local _ em _
 
 Data
 Dados
@@ -247,7 +247,7 @@ new list length _
 nova lista de tamanho _
 
 new byte array _
---MISSING--
+novo vetor de bytes _
 
 free memory
 memória livre
@@ -1054,7 +1054,7 @@ register event _ type _
 registre o evento _ do tipo _
 
 start WebThing server
-inicia o servidor WebThings
+inicie o servidor WebThings
 
 trigger event _
 dispare evento _
@@ -1084,25 +1084,25 @@ Open
 Abrir
 
 Open from board
---MISSING--
+Abrir da placa
 
 Information
---MISSING--
+Informação
 
 Plug in the board.
---MISSING--
+Conecta a placa. 
 
 Reading project from board...
---MISSING--
+Lendo projeto da placa...
 
 Loading project...
---MISSING--
+Carregando projeto...
 
 Found a newer version of
---MISSING--
+Encontrada uma versão mais nova de
 
 Do you want me to update the one in the project?
---MISSING--
+Você quer que eu atualize no projeto?
 
 Save
 Salvar
@@ -1231,7 +1231,7 @@ stop WebThing server
 para o servidor WebThings
 
 HTTP Server
---MISSING--
+Servidor HTTP
 
 MicroBlocks HTTP Server listening on port 6473
 O servidor HTTP do MicroBlocks está ativo na porta 6473
@@ -1243,10 +1243,10 @@ enable autoloading board libraries
 ativa o autocarregamento das bibliotecas de placas
 
 enable PlugShare when project empty
---MISSING--
+ativa PlugShare quando o projeto está vazio
 
 disable PlugShare when project empty
---MISSING--
+desativa PlugShare quando o projeto está vazio
 
 erase flash and update firmware on ESP board
 apaga a flash e atualiza firmware na placa ESP
