@@ -28,6 +28,12 @@
 #include <netdb.h>
 #include <netinet/tcp.h>
 
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <time.h>
+
 // These primitives make no sense in a Linux system, since the connection is
 // handled at the operating system level, but we're simulating them to ensure
 // compatibility with microcontrollers
@@ -87,7 +93,6 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return falseObj; 
 
 // HTTP Client
 
-/*
 static int lookupHost(char *hostName, struct sockaddr_in *result) {
 	// Convert the given host name (or ip address) to a socket address. Return zero if successful.
 	struct addrinfo *info;
@@ -98,7 +103,6 @@ static int lookupHost(char *hostName, struct sockaddr_in *result) {
 	}
 	return err;
 }
-*/
 
 int clientSocket = 0;
 
@@ -108,20 +112,19 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 
 	if (clientSocket) shutdown(clientSocket, 2);
 
-	clientSocket = socket(AF_INET, SOCK_STREAM, 0);	
 	struct sockaddr_in remoteAddress;
 
 	memset(&remoteAddress, '0', sizeof(remoteAddress));
 
-	remoteAddress.sin_family = AF_INET;
-	remoteAddress.sin_port = htons(port);
-	remoteAddress.sin_addr.s_addr = inet_addr(host);
-
-	if (inet_pton(AF_INET, host, &remoteAddress.sin_addr) <= 0) {
+	if (lookupHost(host, &remoteAddress) != 0) {
 		shutdown(clientSocket, 2);
 		clientSocket = 0;
 		return falseObj;
 	}
+
+	remoteAddress.sin_port = htons(port);
+	
+	clientSocket = socket(AF_INET, SOCK_STREAM, 0);	
 
 	int connectResult = connect(
 			clientSocket,
@@ -132,6 +135,12 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 		shutdown(clientSocket, 2);
 		clientSocket = 0;
 	}
+
+	sigignore(SIGPIPE); // prevent program from terminating when attempting to write to a closed socket
+	fcntl(clientSocket, F_SETFL, SOCK_NONBLOCK); // make non-blocking
+
+	int flag = 1;
+	setsockopt(clientSocket, IPPROTO_TCP, TCP_NODELAY, (void *) &flag, sizeof(flag));
 
 	processMessage(); // process messages now
 	return falseObj;
