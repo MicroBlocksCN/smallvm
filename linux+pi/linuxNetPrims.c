@@ -10,6 +10,9 @@
 // Revised by Bernat Romagosa & John Maloney, March 2020
 // Adapted to Linux VM by Bernat Romagosa, February 2021
 
+#define _XOPEN_SOURCE 500
+#define _POSIX_C_SOURCE 200112L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +25,8 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/tcp.h>
 
 // These primitives make no sense in a Linux system, since the connection is
 // handled at the operating system level, but we're simulating them to ensure
@@ -81,6 +86,19 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return falseObj; 
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return falseObj; }
 
 // HTTP Client
+
+/*
+static int lookupHost(char *hostName, struct sockaddr_in *result) {
+	// Convert the given host name (or ip address) to a socket address. Return zero if successful.
+	struct addrinfo *info;
+	int err = getaddrinfo(hostName, NULL, NULL, &info);
+	if (!err) {
+		*result = *((struct sockaddr_in *) info->ai_addr);
+		freeaddrinfo(info);
+	}
+	return err;
+}
+*/
 
 int clientSocket = 0;
 
