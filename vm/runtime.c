@@ -489,7 +489,6 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - list, 5 - bytearray
 
 	char data[801];
-	int maxBytes = (int) sizeof(data) - 1; // leave room for the type byte
 
 	if (isInt(value)) { // 32-bit integer, little endian
 		data[0] = 1;  // data type (1 is integer)
