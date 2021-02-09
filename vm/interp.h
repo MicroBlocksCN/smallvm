@@ -228,6 +228,7 @@ void outputRecordHeaders();
 uint32 microsecs(void);
 uint32 millisecs(void);
 
+int serialConnected();
 int recvBytes(uint8 *buf, int count);
 int sendByte(char aByte);
 void restartSerial();

@@ -681,6 +681,8 @@ static void sendVersionString() {
 }
 
 void sendBroadcastToIDE(char *s, int len) {
+	if (!serialConnected()) return; // serial port not open; do nothing
+
 	waitForOutbufBytes(len + 50); // leave a little room for other messages
 	sendMessage(broadcastMsg, 0, len, s);
 }

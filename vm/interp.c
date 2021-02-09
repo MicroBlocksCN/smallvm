@@ -243,7 +243,7 @@ static inline int compareObjects(OBJ obj1, OBJ obj2) {
 	// For mixed string-int comparison, try to convert the string to an integer.
 	// Set nonComparableError flag if the objects are not comparable.
 
-	int n1, n2;
+	int n1 = 0, n2 = 0;
 	if (IS_TYPE(obj1, StringType) && IS_TYPE(obj2, StringType)) {
 		return strcmp(obj2str(obj1), obj2str(obj2));
 	} else if (IS_TYPE(obj1, StringType) && isInt(obj2)) {
@@ -956,6 +956,10 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	sayIt_op:
+		if (!serialConnected()) {
+			POP_ARGS_COMMAND(); // serial port not open; do nothing
+			DISPATCH();
+		}
 		printArgs(arg, sp - arg, true, true);
 		if (!hasOutputSpace(printBufferByteCount + 100)) { // leave room for other messages
 			ip--; // retry when task is resumed
@@ -968,6 +972,10 @@ static void runTask(Task *task) {
 		task->wakeTime = microsecs() + (extraByteDelay * (printBufferByteCount + 6));
 		goto suspend;
 	logData_op:
+		if (!serialConnected()) {
+			POP_ARGS_COMMAND(); // serial port not open; do nothing
+			DISPATCH();
+		}
 		printArgs(arg, sp - arg, false, true);
 		if (!hasOutputSpace(printBufferByteCount + 100)) { // leave room for other messages
 			ip--; // retry when task is resumed
