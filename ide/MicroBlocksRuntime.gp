@@ -632,6 +632,10 @@ method closePort SmallRuntime {
 	port = nil
 	vmVersion = nil
 	boardType = nil
+
+	// remove talk bubble and running highlights when disconnected
+	removeHint (global 'page')
+	clearRunningHighlights this
 }
 
 method enableAutoConnect SmallRuntime syncScriptsFlag {
@@ -1171,12 +1175,17 @@ method clearVariableNames SmallRuntime {
 // Serial Delay
 
 method serialDelayMenu SmallRuntime {
-	menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
-	for i 25 { addItem menu i }
+	menu = (menu (join 'Serial delay' (newline) '(smaller is faster, but may fail if computer cannot keep up)') (action 'setSerialDelay' this) true)
+	for i (range 8 20 2)  { addItem menu i }
+	addItem menu 25
+	addItem menu 30
+	addLine menu
+	addItem menu 'reset to default'
 	popUpAtHand menu (global 'page')
 }
 
 method setSerialDelay SmallRuntime newDelay {
+	if ('reset to default' == newDelay) { newDelay = 20 }
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
 
