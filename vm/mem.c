@@ -49,6 +49,8 @@
   #define OBJSTORE_BYTES 16000
 #elif defined(ARDUINO_ARCH_ESP32)
   #define OBJSTORE_BYTES 32000 // 48000 // max that compiles is 56000
+#elif defined(GNUBLOCKS)
+  #define OBJSTORE_BYTES 320000 // A somewhat conservative 300Mb for Linux VM
 #else
   #define OBJSTORE_BYTES 5000
   // max that works on Wemos D1 mini (ESP8266) is 11000

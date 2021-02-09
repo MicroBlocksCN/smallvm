@@ -585,6 +585,14 @@ method portList SmallRuntime {
 				add portList (join '/dev/' fn)
 			}
 		}
+		if (devMode) {
+			if ('Linux' == (platform)) {
+				// add pseudoterminals
+				for fn (listFiles '/dev/pts') {
+					add portList (join '/dev/pts/' fn)
+				}
+			}
+		}
 		// Mac OS lists a port as both cu.<name> and tty.<name>
 		for s (copy portList) {
 			if (beginsWith s '/dev/tty.') {

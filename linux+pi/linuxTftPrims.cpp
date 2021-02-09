@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -26,7 +27,10 @@ int touchEnabled = false;
 SDL_Window *window;
 SDL_Renderer* renderer;
 
+int ticks = 0;
+
 void updateMicrobitDisplay() {
+	ticks = (ticks + 1) % 100;
 	SDL_Event e;
 	while (SDL_PollEvent(&e) > 0) {
         switch(e.type) {
@@ -37,7 +41,7 @@ void updateMicrobitDisplay() {
 				break;
 		}
 	}
-	if (tftEnabled) {
+	if (tftEnabled && (ticks == 0)) {
 		SDL_RenderPresent(renderer);
 	}
 }
@@ -61,8 +65,8 @@ void setRenderColor(int color24b) {
 	SDL_SetRenderDrawColor(
 			renderer,
 			color24b >> 16,
-			color24b >> 8,
-			color24b && 255,
+			(color24b >> 8) & 255,
+			color24b & 255,
 			255);
 }
 
@@ -137,7 +141,49 @@ static OBJ primRect(int argCount, OBJ *args) {
 static OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
 static OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
-static OBJ primText(int argCount, OBJ *args) { return falseObj; }
+
+static OBJ primText(int argCount, OBJ *args) {
+	OBJ value = args[0];
+	char text[256];
+	int x = obj2int(args[1]);
+	int y = obj2int(args[2]);
+	int color24b = obj2int(args[3]);
+	int scale = (argCount > 4) ? obj2int(args[4]) : 2;
+	// TODO wrap is ignored for now
+	int wrap = (argCount > 5) ? (trueObj == args[5]) : true;
+	int width, height;
+
+	TTF_Init();
+	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", scale * 10);
+	SDL_Color color = {
+		color24b >> 16,
+		(color24b >> 8) & 255,
+		color24b & 255
+	};
+
+	if (IS_TYPE(value, StringType)) {
+		sprintf(text, "%s", obj2str(value));
+	} else if (trueObj == value) {
+		sprintf(text, "true");
+	} else if (falseObj == value) {
+		sprintf(text, "false");
+	} else if (isInt(value)) {
+		sprintf(text, "%d", obj2int(value));
+	}
+
+	SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
+	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
+
+	TTF_SizeText(font, text, &width, &height);
+
+	SDL_Rect rect = { x, y, width, height };
+
+	SDL_RenderCopy(renderer, message, NULL, &rect);
+	SDL_FreeSurface(surface);
+	SDL_DestroyTexture(message);
+	TTF_CloseFont(font);
+	return falseObj;
+}
 
 // TODO We could implement some of these via mouse events
 static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
