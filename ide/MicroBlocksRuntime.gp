@@ -325,12 +325,12 @@ method stopDecompilation SmallRuntime {
 }
 
 method waitForPing SmallRuntime {
-	// Wait for up to timeout to get a ping back from the board.
-	// Used to ensure that the board is responding before fetching code to decompile.
+	// Try to get a ping back from the board. Used to ensure that the board is responding.
 
-	timeout = 1000
+	endMSecs = ((msecsSinceStart) + 1000)
 	lastPingRecvMSecs = 0
 	while (0 == lastPingRecvMSecs) {
+		if ((msecsSinceStart) > endMSecs) { return } // no response within the timeout
 		sendMsg this 'pingMsg'
 		processMessages this
 		waitMSecs 10
@@ -974,10 +974,12 @@ method saveAllChunks SmallRuntime {
 	removeObsoleteChunks this
 	for aFunction (allFunctions (project scripter)) {
 		saveChunk this aFunction
+		if (isNil port) { return } // connection closed
 	}
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
 			saveChunk this aBlock
+			if (isNil port) { return } // connection closed
 		}
 	}
 }
@@ -1325,7 +1327,13 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 
 	readAvailableSerialData this
 	sendMsg this msgName chunkID byteList
-	waitForResponse this
+	ok = (waitForResponse this)
+	if (not ok) {
+		print 'Lost communication to the board in sendMsgSync'
+		closePort this
+		return false
+	}
+	return true
 }
 
 method readAvailableSerialData SmallRuntime {
@@ -1340,21 +1348,22 @@ method readAvailableSerialData SmallRuntime {
 
 method waitForResponse SmallRuntime {
 	// Wait for some data to arrive from the board. This is taken to mean that the
-	// previous operation has completed.
+	// previous operation has completed. Return true if a response was received.
 
 	sendMsg this 'pingMsg'
 	timeout = 2000
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
-		if (isNil port) { return }
+		if (isNil port) { return false }
 		s = (readSerialPort port true)
 		if (notNil s) {
 			recvBuf = (join recvBuf s)
-			return
+			return true
 		}
 		sendMsg this 'pingMsg'
 		waitMSecs 25
 	}
+	return false
 }
 
 method ensurePortOpen SmallRuntime {
