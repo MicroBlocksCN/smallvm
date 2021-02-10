@@ -88,6 +88,8 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return result;
 }
 
+// HTTP Server
+
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return falseObj; }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return falseObj; }
 

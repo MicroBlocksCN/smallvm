@@ -59,6 +59,10 @@ void delay(int ms) {
 
 static int pty; // pseudo terminal used for communication with the IDE
 
+int serialConnected() {
+	return pty > -1;
+}
+
 static void openPseudoTerminal() {
 	pty = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (-1 == pty) {
