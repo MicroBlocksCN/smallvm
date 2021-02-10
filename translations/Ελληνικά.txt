@@ -381,25 +381,25 @@ disable radio
 #############
 
 Basic Sensors
---MISSING--
+Βασικοί Αισθητήρες
 
 tilt x
---MISSING--
+κλίση Χ
 
 tilt y
---MISSING--
+κλίση y
 
 tilt z
---MISSING--
+κλίση z-
 
 acceleration
 επιτάχυνση
 
 light level
---MISSING--
+Μέτρηση φωτός
 
 temperature (°C)
---MISSING--
+Θερμοκρασία (°C)
 
 ####
 # NeoPixel library
@@ -686,22 +686,22 @@ stop servo _
 # with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
---MISSING--
+Οθόνη LED
 
 display _
---MISSING--
+εμφάνισε _
 
 clear display
---MISSING--
+καθάρισμα Οθόνης
 
 plot x _ y _
---MISSING--
+σχεδιάσε x _ y _
 
 unplot x _ y _
---MISSING--
+καθάρισε x _ y _
 
 display character _
---MISSING--
+εμφάνισε χαρακτήρα _
 
 ####
 # TFT display library
