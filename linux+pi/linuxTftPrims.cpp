@@ -138,8 +138,52 @@ static OBJ primRect(int argCount, OBJ *args) {
 
 // TODO We're missing SDL primitives for these.
 // I guess I'll have to implement them myself :)
+
+void drawOctaves(int x, int y, int originX, int originY, int fill) {
+	// when filling we also want to render the contour, otherwise there are
+	// artifacts in the pixels next to the borders
+	SDL_RenderDrawPoint(renderer, originX + x, originY + y);
+	SDL_RenderDrawPoint(renderer, originX + x, originY - y);
+	SDL_RenderDrawPoint(renderer, originX - x, originY + y);
+	SDL_RenderDrawPoint(renderer, originX - x, originY - y);
+	SDL_RenderDrawPoint(renderer, originX + y, originY + x);
+	SDL_RenderDrawPoint(renderer, originX + y, originY - x);
+	SDL_RenderDrawPoint(renderer, originX - y, originY + x);
+	SDL_RenderDrawPoint(renderer, originX - y, originY - x);
+	if (fill) {
+		SDL_RenderDrawLine(renderer, originX - x, originY + y, originX + x, originY + y);
+		SDL_RenderDrawLine(renderer, originX - x, originY - y, originX + x, originY - y);
+		SDL_RenderDrawLine(renderer, originX - y, originY + x, originX + y, originY + x);
+		SDL_RenderDrawLine(renderer, originX - y, originY - x, originX + y, originY - x);
+	}
+}
+
+static OBJ primCircle(int argCount, OBJ *args) {
+	tftInit();
+	int originX = obj2int(args[0]);
+	int originY = obj2int(args[1]);
+	int radius = obj2int(args[2]);
+	setRenderColor(obj2int(args[3]));
+	int fill = (argCount > 4) ? (trueObj == args[4]) : true;
+	// Bresenham's circle algorithm
+	int x = 0;
+	int y = radius;
+	int decision = 3 - 2 * radius;
+	drawOctaves(x, y, originX, originY, fill);
+	while (x < y) {
+		x++;
+		if (decision > 0) {
+			y--;
+			decision = decision + 4 * (x - y) + 10;
+		} else {
+			decision = decision + 4 * x + 6;
+		}
+		drawOctaves(x, y, originX, originY, fill);
+	}
+	return falseObj;
+}
+
 static OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
-static OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primText(int argCount, OBJ *args) {
