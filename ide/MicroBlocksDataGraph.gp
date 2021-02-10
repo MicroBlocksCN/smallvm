@@ -97,6 +97,34 @@ method graphSequence MicroBlocksDataGraph seq aColor yScale {
 		yOrigin = ((top + (half (height graphBnds))) + 1)
 	}
 
+  useVectorPen = true
+  if useVectorPen {
+	// use vector graphics primitives
+	lineW = scale
+	pen = (newVectorPen (costumeData morph))
+	x = ((left graphBnds) + (38 * scale))
+	pointCount = (pointCount this)
+	i = (max 1 ((count seq) - pointCount))
+	isFirstPoint = true
+	while (i < (count seq)) {
+		n = (at seq i)
+		y = (yOrigin - (n * yScale))
+		if (y < top) { y = top }
+		if (y > bottom) { y = bottom }
+		if isFirstPoint {
+			beginPath pen x y
+			isFirstPoint = false
+		} else {
+			goto pen x y
+		}
+		x += scale
+		if (x > right) { return }
+		i += 1
+	}
+	stroke pen aColor lineW
+
+  } else {
+	// use simulated pen (Bressenham)
 	pen = (newPen (costumeData morph))
 	setLineWidth pen lineW
 	setColor pen aColor
@@ -114,6 +142,7 @@ method graphSequence MicroBlocksDataGraph seq aColor yScale {
 		if (x > right) { return }
 		i += 1
 	}
+  }
 }
 
 method drawGrid MicroBlocksDataGraph yScale {
