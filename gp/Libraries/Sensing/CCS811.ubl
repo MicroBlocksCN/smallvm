@@ -1,23 +1,24 @@
 module CCS811 Input
 author 'Víctor Casado'
-version 1 0 
+version 1 1 
+tags voc co2 air environmental 
 description 'Support for the Adafruit CCS811 indoor air quality sensor. Gives out VOC and eCO2 readings.'
 variables _ccs811_wakePin _ccs811_driveMode _ccs811_deviceId _ccs811_CO2 _ccs811_TVOC 
-tags voc co2 air envirnomental
 
-	spec 'r' '_ccs811_checkError' '_ccs811_checkError'
-	spec 'r' '_ccs811_configure' '_ccs811_configure'
-	spec ' ' '_ccs811_setDriveMode' '_ccs811_setDriveMode'
-	spec ' ' '_ccs_811_wakeUp' '_ccs811_wakeUp'
 	spec ' ' 'inicialitzar sensor pin' 'initialize CCS811 wake pin _ mode _' 'auto auto' 1 1
-	spec ' ' '_ccs811_sleep' '_ccs811_sleep'
-	spec ' ' '_ccs811_reset' '_ccs811_reset'
-	spec 'r' '_ccs811_baseLine' '_ccs811_baseLine'
 	spec 'r' 'update data' 'check and update data'
-	spec 'r' '_ccs811_getError' '_ccs811_getError'
 	spec 'r' 'CO2' 'CO2'
 	spec 'r' 'TVOC' 'TVOC'
+	spec 'r' '_ccs811_checkError' '_ccs811_checkError'
+	spec 'r' '_ccs811_configure' '_ccs811_configure'
+	spec 'r' '_ccs811_getBaseline' '_ccs811_getBaseline'
+	spec 'r' '_ccs811_getError' '_ccs811_getError'
+	spec ' ' '_ccs811_reset' '_ccs811_reset'
+	spec 'r' '_ccs811_setBaseline' '_ccs811_setBaseline _' 'auto' ''
+	spec ' ' '_ccs811_setDriveMode' '_ccs811_setDriveMode'
+	spec ' ' '_ccs811_sleep' '_ccs811_sleep'
 	spec ' ' '_ccs811_startApp' '_ccs811_startApp'
+	spec ' ' '_ccs811_wakeUp' '_ccs811_wakeUp'
 
 to CO2 {
   return _ccs811_CO2
@@ -25,13 +26,6 @@ to CO2 {
 
 to TVOC {
   return _ccs811_TVOC
-}
-
-to '_ccs811_baseLine' {
-  '[sensors:i2cWrite]' _ccs811_deviceId ('[data:makeList]' (hexToInt '11'))
-  local 'bytes' (newList 2)
-  '[sensors:i2cRead]' _ccs811_deviceId bytes
-  return (((at 1 bytes) << 8) | (at 2 bytes))
 }
 
 to '_ccs811_checkError' {
@@ -60,6 +54,13 @@ to '_ccs811_configure' {
   return 0
 }
 
+to '_ccs811_getBaseline' {
+  '[sensors:i2cWrite]' _ccs811_deviceId ('[data:makeList]' (hexToInt '11'))
+  local 'bytes' (newList 2)
+  '[sensors:i2cRead]' _ccs811_deviceId bytes
+  return (((at 1 bytes) << 8) | (at 2 bytes))
+}
+
 to '_ccs811_getError' {
   local 'error' ((i2cGet _ccs811_deviceId (hexToInt 'E0')) & 1)
   if (error == 1) {
@@ -82,6 +83,12 @@ to '_ccs811_reset' {
   waitMillis 2
 }
 
+to '_ccs811_setBaseline' baseline {
+  local 'highByte' (baseline >> 8)
+  local 'lowByte' (baseline & 255)
+  '[sensors:i2cWrite]' _ccs811_deviceId ('[data:makeList]' (hexToInt '11') highByte lowByte)
+}
+
 to '_ccs811_setDriveMode' {
   if (_ccs811_driveMode > 4) {_ccs811_driveMode = 4}
   local 'setting' (i2cGet _ccs811_deviceId 1)
@@ -98,7 +105,7 @@ to '_ccs811_startApp' {
   '[sensors:i2cWrite]' _ccs811_deviceId ('[data:makeList]' (hexToInt 'F4'))
 }
 
-to '_ccs_811_wakeUp' {
+to '_ccs811_wakeUp' {
   digitalWriteOp _ccs811_wakePin false
   waitMillis 1
 }
@@ -107,12 +114,12 @@ to 'inicialitzar sensor pin' wakePin mode {
   _ccs811_deviceId = (hexToInt '5A')
   _ccs811_wakePin = wakePin
   _ccs811_driveMode = mode
-  '_ccs_811_wakeUp'
+  '_ccs811_wakeUp'
   local 'configResult' ('_ccs811_configure')
   if (configResult != 0) {
     sayIt ('[data:join]' 'Error while configuring:' configResult)
   } else {
-    sayIt ('[data:join]' 'Baseline: ' ('_ccs811_baseLine'))
+    sayIt ('[data:join]' 'Baseline: ' ('_ccs811_getBaseline'))
   }
 }
 
