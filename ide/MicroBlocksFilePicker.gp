@@ -48,25 +48,22 @@ to pickFile anAction defaultPath extensionList saveFlag {
   }
 }
 
-// function to return the user's GP folder
+// function to return the user's MicroBlocks folder
 
-to gpFolder {
+to microblocksFolder {
   if ('iOS' == (platform)) { return '.' }
   path = (userHomePath)
-
-  hidden = (global 'hideFolderShortcuts')
-  if (and (notNil hidden) (contains hidden 'GP')) { return '/' } // if GP hidden, use computer
 
   // Look for <home>/Documents
   if (contains (listDirectories path) 'Documents') {
 	path = (join path '/Documents')
   }
-  if (not (contains (listDirectories path) 'GP')) {
-	// create the GP folder if it does not already exist
-	makeDirectory (join path '/GP')
+  if (not (contains (listDirectories path) 'MicroBlocks')) {
+	// create the MicroBlocks folder if it does not already exist
+	makeDirectory (join path '/MicroBlocks')
   }
-  if (contains (listDirectories path) 'GP') {
-	path = (join path '/GP')
+  if (contains (listDirectories path) 'MicroBlocks') {
+	path = (join path '/MicroBlocks')
   }
   return path
 }
@@ -129,7 +126,7 @@ method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveF
 
   if forSaving {
 	defaultPath = (directoryPart defaultPath)
-	if (isEmpty defaultPath) { defaultPath = (gpFolder) }
+	if (isEmpty defaultPath) { defaultPath = (microblocksFolder) }
 	if ('Browser' == (platform)) { defaultPath = 'Downloads' }
   }
   if (and ((count defaultPath) > 1) (endsWith defaultPath '/')) {
@@ -200,11 +197,10 @@ method addFileNameField MicroBlocksFilePicker defaultName {
 
 method addShortcutButtons MicroBlocksFilePicker {
   scale = (global 'scale')
-  hidden = (global 'hideFolderShortcuts')
-  if (isNil hidden) { hidden = (array) }
+  hidden = (array 'Cloud') // this can be used to hide selected shortcuts
 
-  showGP = (and
-	(not (contains hidden 'GP'))
+  showMicroBlocks = (and
+	(not (contains hidden 'MicroBlocks'))
 	('Browser' != (platform)))
   showExamples = (and
 	(not (contains hidden 'Examples'))
@@ -233,8 +229,8 @@ method addShortcutButtons MicroBlocksFilePicker {
 	addIconButton this buttonX buttonY 'libsIcon' (action 'setLibraries' this) 'Libraries'
 	buttonY += dy
   }
-  if showGP {
-	addIconButton this buttonX buttonY 'gpFolderIcon' (action 'setGPFolder' this) (filePart (gpFolder))
+  if showMicroBlocks {
+	addIconButton this buttonX buttonY 'microblocksFolderIcon' (action 'setMicroBlocksFolder' this) (filePart (microblocksFolder))
 	buttonY += dy
   }
   if (not (isOneOf (platform) 'Browser' 'iOS')) {
@@ -255,7 +251,7 @@ method addShortcutButtons MicroBlocksFilePicker {
 	addIconButton this buttonX buttonY 'computerIcon' (action 'setComputer' this)
 	buttonY += dy
   }
-  if showLibraries {
+  if (and showLibraries (not (contains hidden 'Cloud'))) {
 	addIconButton this buttonX buttonY 'cloudIcon' (action 'cloudAction' this) 'Cloud'
 	buttonY += dy
   }
@@ -372,9 +368,9 @@ method setLibraries MicroBlocksFilePicker {
   showFolder this 'Libraries' true
 }
 
-method setGPFolder MicroBlocksFilePicker {
+method setMicroBlocksFolder MicroBlocksFilePicker {
   useEmbeddedFS = false
-  showFolder this (gpFolder) true
+  showFolder this (microblocksFolder) true
 }
 
 method parentFolder MicroBlocksFilePicker {
@@ -832,7 +828,7 @@ tJIAAAAASUVORK5CYII='
   return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
-method gpFolderIcon MicroBlocksFilePickerIcons {
+method microblocksFolderIcon MicroBlocksFilePickerIcons {
   data = '
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAO
 xAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAATzSURBVFiF7ZVp
