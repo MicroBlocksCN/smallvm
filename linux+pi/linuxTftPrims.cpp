@@ -22,7 +22,11 @@
 
 int useTFT = true;
 int tftEnabled = false;
-int touchEnabled = false;
+int touchEnabled = true;
+int mouseDown = false;
+int mouseX = -1;
+int mouseY = -1;
+int mouseDownTime = 0;
 
 SDL_Window *window;
 SDL_Renderer* renderer;
@@ -39,6 +43,15 @@ void updateMicrobitDisplay() {
 				SDL_Quit();
 				tftEnabled = false;
 				break;
+			case SDL_MOUSEBUTTONDOWN:
+				mouseDownTime = millisecs();
+                mouseDown = true;
+                break;
+			case SDL_MOUSEBUTTONUP:
+                mouseDown = false;
+				mouseX = -1;
+				mouseY = -1;
+                break;
 		}
 	}
 	if (tftEnabled && (ticks == 0)) {
@@ -136,9 +149,6 @@ static OBJ primRect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-// TODO We're missing SDL primitives for these.
-// I guess I'll have to implement them myself :)
-
 void drawOctaves(int x, int y, int originX, int originY, int fill) {
 	// when filling we also want to render the contour, otherwise there are
 	// artifacts in the pixels next to the borders
@@ -183,10 +193,179 @@ static OBJ primCircle(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-static OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
-static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
+static OBJ primRoundedRect(int argCount, OBJ *args) {
+	tftInit();
+	int x = obj2int(args[0]);
+	int y = obj2int(args[1]);
+	int width = obj2int(args[2]);
+	int height = obj2int(args[3]);
+	int radius = obj2int(args[4]);
+	setRenderColor(obj2int(args[5]));
+	int fill = (argCount > 6) ? (trueObj == args[6]) : true;
+	//TODO
+	return falseObj;
+}
+
+int triangleArea2x(int x[], int y[]) {
+	return (x[0] * (y[1] - y[2]) +
+			x[1] * (y[2] - y[0]) +
+			x[2] * (y[0] - y[1]));
+}
+
+void debugTriangle(int x[], int y[], int increment) {
+	// DEBUG show vertex names
+	char txt[100];
+	int width, height;
+	SDL_Color color = {255,255,255};
+	TTF_Init();
+	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10);
+
+	sprintf(txt, "v0(%d,%d)", x[0],y[0]);
+	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, txt, color);
+	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
+	TTF_SizeText(font, txt, &width, &height);
+	SDL_Rect rect = { x[0], y[0], width, height };
+	SDL_RenderCopy(renderer, message, NULL, &rect);
+
+	sprintf(txt, "v1(%d,%d)%s", x[1],y[1], increment == 1 ? "->" : "<-");
+	surface = TTF_RenderUTF8_Solid(font, txt, color);
+	message = SDL_CreateTextureFromSurface(renderer, surface);
+	TTF_SizeText(font, txt, &width, &height);
+	rect = { x[1], y[1], width, height };
+	SDL_RenderCopy(renderer, message, NULL, &rect);
+
+	sprintf(txt, "v2(%d,%d)", x[2],y[2]);
+	surface = TTF_RenderUTF8_Solid(font, txt, color);
+	message = SDL_CreateTextureFromSurface(renderer, surface);
+	TTF_SizeText(font, txt, &width, &height);
+	rect = { x[2], y[2], width, height };
+	SDL_RenderCopy(renderer, message, NULL, &rect);
+
+	sprintf(txt, "area: %d", abs(triangleArea2x(x,y)));
+	surface = TTF_RenderUTF8_Solid(font, txt, color);
+	message = SDL_CreateTextureFromSurface(renderer, surface);
+	TTF_SizeText(font, txt, &width, &height);
+	rect = { 10, 20, width, height };
+	setRenderColor(0);
+	SDL_RenderFillRect(renderer, &rect);
+	SDL_RenderCopy(renderer, message, NULL, &rect);
+
+	SDL_FreeSurface(surface);
+	SDL_DestroyTexture(message);
+	TTF_CloseFont(font);
+}
+
+void sortVertices(int x[], int y[], int x0, int y0, int x1, int y1, int x2, int y2) {
+	// TODO this can be
+	// Special case: two vertices share the same y
+	if (y0 == y1) {
+		if (y0 > y2) {
+			x[0] = x2; y[0] = y2;
+			x[1] = x1; y[1] = y1;
+			x[2] = x0; y[2] = y0;
+		} else {
+			x[0] = x0; y[0] = y0;
+			x[1] = x1; y[1] = y1;
+			x[2] = x2; y[2] = y2;
+		}
+		return;
+	} else if (y0 == y2) {
+		if (y0 > y1) {
+			x[0] = x1; y[0] = y1;
+			x[1] = x0; y[1] = y0;
+			x[2] = x2; y[2] = y2;
+		} else {
+			x[0] = x0; y[0] = y0;
+			x[1] = x2; y[1] = y2;
+			x[2] = x1; y[2] = y1;
+		}
+		return;
+	} else if (y1 == y2) {
+		if (y1 > y0) {
+			x[0] = x0; y[0] = y0;
+			x[1] = x1; y[1] = y1;
+			x[2] = x2; y[2] = y2;
+		} else {
+			x[0] = x2; y[0] = y2;
+			x[1] = x1; y[1] = y1;
+			x[2] = x0; y[2] = y0;
+		}
+		return;
+	}
+
+	// Find the topmost vertex
+	if ((y0 < y1) && (y0 < y2)) {
+		x[0] = x0; y[0] = y0;
+	} else if ((y1 < y0) && (y1 < y2)) {
+		x[0] = x1; y[0] = y1;
+	} else {
+		x[0] = x2; y[0] = y2;
+	}
+	// Find the middle vertex
+	if (((y0 > y2) && (y0 < y1)) || ((y0 < y2) && (y0 > y1))) {
+		x[1] = x0; y[1] = y0;
+	} else if (((y1 > y0) && (y1 < y2)) || ((y1 < y0) && (y1 > y2))) {
+		x[1] = x1; y[1] = y1;
+	} else {
+		x[1] = x2; y[1] = y2;
+	}
+	// Find the bottommost vertex
+	if ((y0 > y1) && (y0 > y2)) {
+		x[2] = x0; y[2] = y0;
+	} else if ((y1 > y0) && (y1 > y2)) {
+		x[2] = x1; y[2] = y1;
+	} else {
+		x[2] = x2; y[2] = y2;
+	}
+}
+
+static OBJ primTriangle(int argCount, OBJ *args) {
+	tftInit();
+	setRenderColor(obj2int(args[6]));
+
+	int x[3];
+	int y[3];
+
+	// Sort the vertices so that x[0],y[0] is the topmost one and x[2],y[2] is
+	// the bottommost one
+	sortVertices(
+			x,
+			y,
+			obj2int(args[0]),
+			obj2int(args[1]),
+			obj2int(args[2]),
+			obj2int(args[3]),
+			obj2int(args[4]),
+			obj2int(args[5]));
+
+	// Just draw three lines
+	SDL_RenderDrawLine(renderer, x[0], y[0], x[1], y[1]);
+	SDL_RenderDrawLine(renderer, x[1], y[1], x[2], y[2]);
+	SDL_RenderDrawLine(renderer, x[2], y[2], x[0], y[0]);
+
+	if (y[0] == y[1] && y[1] == y[2]) return falseObj;
+	if (x[0] == x[1] && x[1] == x[2]) return falseObj;
+
+	int area = triangleArea2x(x, y);
+	int increment = (area < 0) ? 1 : -1;
+	int fill = (argCount > 7) ? (trueObj == args[7]) : true;
+	if (fill) {
+		while ((abs(x[1]) < TFT_WIDTH) && // This should never happen
+				(increment != area/abs(area))) {
+			SDL_RenderDrawLine(renderer, x[1], y[1], x[0], y[0]);
+			SDL_RenderDrawLine(renderer, x[1], y[1], x[2], y[2]);
+			x[1] += increment;
+			area = triangleArea2x(x,y);
+		}
+	} else {
+		//debugTriangle(x, y, increment);
+	}
+
+	return falseObj;
+}
 
 static OBJ primText(int argCount, OBJ *args) {
+	tftInit();
 	OBJ value = args[0];
 	char text[256];
 	int x = obj2int(args[1]);
@@ -197,8 +376,6 @@ static OBJ primText(int argCount, OBJ *args) {
 	int wrap = (argCount > 5) ? (trueObj == args[5]) : true;
 	int width, height;
 
-	TTF_Init();
-	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", scale * 10);
 	SDL_Color color = {
 		color24b >> 16,
 		(color24b >> 8) & 255,
@@ -215,7 +392,10 @@ static OBJ primText(int argCount, OBJ *args) {
 		sprintf(text, "%d", obj2int(value));
 	}
 
-	SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
+	TTF_Init();
+	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10);
+
+	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text, color);
 	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
 
 	TTF_SizeText(font, text, &width, &height);
@@ -229,11 +409,30 @@ static OBJ primText(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-// TODO We could implement some of these via mouse events
-static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
-static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
-static OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
-static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
+static OBJ primTftTouched(int argCount, OBJ *args) {
+	return mouseDown ? trueObj : falseObj;
+}
+
+static OBJ primTftTouchX(int argCount, OBJ *args) {
+	SDL_GetMouseState(&mouseX, &mouseY);
+	return int2obj(mouseDown ? mouseX : -1);
+}
+
+static OBJ primTftTouchY(int argCount, OBJ *args) {
+	SDL_GetMouseState(&mouseX, &mouseY);
+	return int2obj(mouseDown ? mouseY : -1);
+}
+
+static OBJ primTftTouchPressure(int argCount, OBJ *args) {
+	int mousePressure;
+	if (mouseDown) {
+		mousePressure = (millisecs() - mouseDownTime);
+		if (mousePressure > 4095) mousePressure = 4095;
+	} else {
+		mousePressure = -1;
+	}
+	return int2obj(mousePressure);
+}
 
 void tftSetHugePixel(int x, int y, int state) {
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
