@@ -13,11 +13,10 @@
 #include <string.h>
 #include <string.h>
 
-#ifndef GNUBLOCKS
-#include <Arduino.h>
-#else
+#ifdef GNUBLOCKS
 #include "../linux+pi/linux.h"
 #endif
+
 #include "mem.h"
 #include "interp.h"
 #include "persist.h"

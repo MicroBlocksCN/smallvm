@@ -80,9 +80,9 @@ typedef enum {
 } MicroBlocksTaskStatus_t;
 
 #ifdef GNUBLOCKS
-#define STACK_LIMIT 10000 // Task size is 6 + STACK_LIMIT words
+	#define STACK_LIMIT 10000 // Task size is 6 + STACK_LIMIT words
 #else
-#define STACK_LIMIT 54 // Task size is 6 + STACK_LIMIT words
+	#define STACK_LIMIT 54 // Task size is 6 + STACK_LIMIT words
 #endif
 
 typedef struct {
