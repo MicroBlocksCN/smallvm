@@ -30,11 +30,11 @@ SDL_AudioSpec have;
 void audio_callback(void *user_data, Uint8 *raw_buffer, int bytes) {
     Sint16 *buffer = (Sint16*)raw_buffer;
     int length = bytes / 2; // 2 bytes per sample for AUDIO_S16SYS
-    int &sample_nr(*(int*)user_data);
 
+	const double twoPi = 6.28318530718;
     for(int i = 0; i < length; i++, sample_nr++) {
         double time = (double)sample_nr / (double)SAMPLE_RATE;
-        buffer[i] = (Sint16)(AMPLITUDE * sin(2.0f * M_PI * frequency * time));
+        buffer[i] = (Sint16)(AMPLITUDE * sin(twoPi * frequency * time));
     }
 }
 
@@ -51,7 +51,6 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	want.channels = 1; // only one channel
 	want.samples = 2048; // buffer-size
 	want.callback = audio_callback; // function SDL calls periodically to refill the buffer
-	want.userdata = &sample_nr; // counter, keeping track of current sample number
     SDL_OpenAudio(&want, &have);
 	frequency = obj2int(args[1]);
     SDL_PauseAudio(0); // start playing sound
