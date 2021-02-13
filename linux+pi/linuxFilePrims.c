@@ -20,7 +20,7 @@
 #include "interp.h"
 
 typedef struct {
-	char fileName[32];
+	char fileName[100];
 	FILE *file;
 } FileEntry;
 
@@ -80,7 +80,8 @@ static OBJ primOpen(int argCount, OBJ *args) {
 	i = freeEntry();
 	if (i >= 0) { // initialize new entry
 		fileEntry[i].fileName[0] = '\0';
-		strncat(fileEntry[i].fileName, fileName, 31);
+		strncpy(fileEntry[i].fileName, fileName, 99);
+		fileEntry[i].fileName[99] = '\0'; // ensure null termination
 		fileEntry[i].file = fopen(fileName, "a+");
 		fseek(fileEntry[i].file, 0, SEEK_SET); // read from start of file
 	}
@@ -254,7 +255,8 @@ static OBJ primNextFileInList(int argCount, OBJ *args) {
 			stat(nextDirEntry->d_name, &fileStat);
 			if (S_ISREG(fileStat.st_mode)) {
 				// it's a regular file, we're okay
-				strncat(fileName, nextDirEntry->d_name, 99);
+				strncpy(fileName, nextDirEntry->d_name, 99);
+				fileName[99] = '\0'; // ensure null termination
 			} else {
 				// it's not a regular file, let's recurse into the next entry
 				return primNextFileInList(argCount, args);
