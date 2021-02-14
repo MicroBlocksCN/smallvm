@@ -14,9 +14,9 @@
 #include "interp.h"
 
 int microBitDisplayBits = 0;
-int useTFT = true;
+static int useTFT = true;
 
-// Display Primitives for micro:bit/Calliope (noops on other boards)
+// Primitives for Simulated 5x5 LED Display
 
 OBJ primMBDisplay(int argCount, OBJ *args) {
 	OBJ arg = args[0];
