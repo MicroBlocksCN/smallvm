@@ -12,14 +12,14 @@
 // Bernat Romagosa, February 2018
 
 #define _XOPEN_SOURCE 600
-#define __USE_MISC
+#define _DEFAULT_SOURCE
 
-#include <termios.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h> // still needed?
 #include <sys/ioctl.h>
 #include <sys/time.h> // still needed?
+#include <termios.h>
 #include <unistd.h>
 
 #include "mem.h"
@@ -51,8 +51,8 @@ uint32 millisecs() {
 }
 
 void delay(int ms) {
-    clock_t start = millisecs();
-    while (millisecs() < start + ms);
+	clock_t start = millisecs();
+	while (millisecs() < start + ms);
 }
 
 // Communication/System Functions
@@ -98,7 +98,6 @@ int sendByte(char aByte) {
 // System Functions
 
 const char * boardType() { return "Linux"; }
-void systemReset() { } // noop on Linux
 
 // Stubs for IO primitives
 
@@ -121,20 +120,21 @@ OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
 OBJ primI2cRead(OBJ *args) { return int2obj(0); }
 OBJ primI2cWrite(OBJ *args) { return int2obj(0); }
 
-// Bogus micro:bit primitives
+// Stubs for sensing primitives
 
 OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
 
-// Other bogus primitives
+// Stubs for other functions not used on Linux
 
-void resetServos() {}
-void turnOffPins() {}
 void addSensorPrims() {}
+void processFileMessage(int msgType, int dataSize, char *data) {}
+void resetServos() {}
 void stopPWM() {}
-void processFileMessage(int msgType, int dataSize, char *data) { }
+void systemReset() {}
+void turnOffPins() {}
 
 // Persistence support
 
@@ -176,8 +176,8 @@ void clearCodeFile(int ignore) {
 int main() {
 	openPseudoTerminal();
 	printf(
-			"Starting Linux MicroBlocks... Connect on %s\n",
-			(char*) ptsname(pty));
+		"Starting Linux MicroBlocks... Connect on %s\n",
+		(char*) ptsname(pty));
 	initTimers();
 	memInit(10000); // 10k words = 40k bytes
 	primsInit();
