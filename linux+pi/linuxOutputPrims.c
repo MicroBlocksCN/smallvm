@@ -14,7 +14,7 @@
 #include "interp.h"
 
 int microBitDisplayBits = 0;
-static int useTFT = true;
+int useTFT = true;
 
 // Primitives for Simulated 5x5 LED Display
 
