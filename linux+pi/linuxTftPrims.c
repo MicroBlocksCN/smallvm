@@ -73,6 +73,7 @@ void updateMicrobitDisplay() {
                 SDL_DestroyWindow(window);
 				SDL_Quit();
 				tftEnabled = false;
+				exit(0); // quit from GnuBlocks
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				mouseDownTime = millisecs();
