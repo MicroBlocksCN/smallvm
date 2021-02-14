@@ -751,28 +751,28 @@ void sendChunkCRC(int chunkID) {
 
 // Retrieving source code and attributes
 
-static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
-	if (!persistentRecord) return; // NULL persistentRecord; do nothing
-
-	int wordCount = *(persistentRecord + 1);
-	int bodyBytes = 1 + (4 * wordCount);
-	waitForOutbufBytes(5 + bodyBytes);
-
-	queueByte(251);
-	queueByte(chunkAttributeMsg);
-	queueByte(chunkIndex);
-	queueByte(bodyBytes & 0xFF); // low byte of size
-	queueByte((bodyBytes >> 8) & 0xFF); // high byte of size
-	queueByte(attributeID);
-	int *src = persistentRecord + 2;
-	for (int i = 0; i < wordCount; i++) {
-		int w = *src++;
-		queueByte(w & 0xFF);
-		queueByte((w >> 8) & 0xFF);
-		queueByte((w >> 16) & 0xFF);
-		queueByte((w >> 24) & 0xFF);
-	}
-}
+// static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
+// 	if (!persistentRecord) return; // NULL persistentRecord; do nothing
+//
+// 	int wordCount = *(persistentRecord + 1);
+// 	int bodyBytes = 1 + (4 * wordCount);
+// 	waitForOutbufBytes(5 + bodyBytes);
+//
+// 	queueByte(251);
+// 	queueByte(chunkAttributeMsg);
+// 	queueByte(chunkIndex);
+// 	queueByte(bodyBytes & 0xFF); // low byte of size
+// 	queueByte((bodyBytes >> 8) & 0xFF); // high byte of size
+// 	queueByte(attributeID);
+// 	int *src = persistentRecord + 2;
+// 	for (int i = 0; i < wordCount; i++) {
+// 		int w = *src++;
+// 		queueByte(w & 0xFF);
+// 		queueByte((w >> 8) & 0xFF);
+// 		queueByte((w >> 16) & 0xFF);
+// 		queueByte((w >> 24) & 0xFF);
+// 	}
+// }
 
 static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chunkData) {
 	int msgSize = 1 + chunkBytes;
