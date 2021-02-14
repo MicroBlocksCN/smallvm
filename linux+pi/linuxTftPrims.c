@@ -17,21 +17,52 @@
 #include "mem.h"
 #include "interp.h"
 
+// Debug: Uncommenting the above causes openSDLWindow to fail with a segmentation fault
+// on John's Ubuntu 20.04.
+// void notCalled() { TTF_Init(); }
+
+// Define this to disable SDL_ttf and avoids segmentation fault on John's Ubuntu 20.04
+// #define DISABLE_TRUE_TYPE
+
 #define TFT_WIDTH 800
 #define TFT_HEIGHT 600
 
-int useTFT = true;
-int tftEnabled = false;
-int touchEnabled = true;
-int mouseDown = false;
-int mouseX = -1;
-int mouseY = -1;
-int mouseDownTime = 0;
+int microBitDisplayBits;
 
-SDL_Window *window;
-SDL_Renderer* renderer;
+static int mouseDown = false;
+static int mouseX = -1;
+static int mouseY = -1;
+static int mouseDownTime = 0;
 
-int ticks = 0;
+static int tftEnabled = false;
+static SDL_Window *window;
+static SDL_Renderer* renderer;
+static int ticks = 0;
+
+// Helper Functions
+
+static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFlag) {
+	// Draw the given string with the given position, color, scale and wrapFlag
+	// TODO wrap is ignored for now
+
+	SDL_Color color = { color24b >> 16, (color24b >> 8) & 255, color24b & 255 };
+
+#ifndef DISABLE_TRUE_TYPE
+	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10);
+	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, s, color);
+
+	int width, height;
+	TTF_SizeText(font, s, &width, &height);
+	SDL_Rect rect = { x, y, width, height };
+
+	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_RenderCopy(renderer, message, NULL, &rect);
+
+	SDL_FreeSurface(surface);
+	SDL_DestroyTexture(message);
+	TTF_CloseFont(font);
+#endif
+}
 
 void updateMicrobitDisplay() {
 	ticks = (ticks + 1) % 100;
@@ -61,7 +92,7 @@ void updateMicrobitDisplay() {
 
 void tftInit() {
 	if (!tftEnabled) {
-		SDL_Init(SDL_INIT_VIDEO);
+		SDL_Init(SDL_INIT_EVERYTHING);
 		window = SDL_CreateWindow("MicroBlocks for Linux",
 				SDL_WINDOWPOS_UNDEFINED,
 				SDL_WINDOWPOS_UNDEFINED,
@@ -70,11 +101,15 @@ void tftInit() {
 				0);
 		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 		SDL_RenderClear(renderer);
+
+#ifndef DISABLE_TRUE_TYPE
+		TTF_Init();
+#endif
 		tftEnabled = true;
 	}
 }
 
-void setRenderColor(int color24b) {
+static void setRenderColor(int color24b) {
 	SDL_SetRenderDrawColor(
 			renderer,
 			color24b >> 16,
@@ -88,6 +123,8 @@ void tftClear() {
 	setRenderColor(0);
 	SDL_RenderClear(renderer);
 }
+
+// TFT Primitives
 
 static OBJ primEnableDisplay(int argCount, OBJ *args) {
 	if (trueObj == args[0]) {
@@ -149,7 +186,7 @@ static OBJ primRect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-void drawOctaves(int x, int y, int originX, int originY, int fill) {
+static void drawOctaves(int x, int y, int originX, int originY, int fill) {
 	// when filling we also want to render the contour, otherwise there are
 	// artifacts in the pixels next to the borders
 	SDL_RenderDrawPoint(renderer, originX + x, originY + y);
@@ -206,56 +243,58 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-int triangleArea2x(int x[], int y[]) {
+static int triangleArea2x(int x[], int y[]) {
 	return (x[0] * (y[1] - y[2]) +
 			x[1] * (y[2] - y[0]) +
 			x[2] * (y[0] - y[1]));
 }
 
-void debugTriangle(int x[], int y[], int increment) {
+static void debugTriangle(int x[], int y[], int increment) {
 	// DEBUG show vertex names
 	char txt[100];
 	int width, height;
 	SDL_Color color = {255,255,255};
-	TTF_Init();
-	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10);
 
 	sprintf(txt, "v0(%d,%d)", x[0],y[0]);
-	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, txt, color);
-	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
-	TTF_SizeText(font, txt, &width, &height);
-	SDL_Rect rect = { x[0], y[0], width, height };
-	SDL_RenderCopy(renderer, message, NULL, &rect);
+	drawText(txt, x[0], y[0], 0xFFFFFF, 1, true);
+// 	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, txt, color);
+// 	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
+// 	TTF_SizeText(font, txt, &width, &height);
+// 	SDL_Rect rect = { x[0], y[0], width, height };
+// 	SDL_RenderCopy(renderer, message, NULL, &rect);
 
 	sprintf(txt, "v1(%d,%d)%s", x[1],y[1], increment == 1 ? "->" : "<-");
-	surface = TTF_RenderUTF8_Solid(font, txt, color);
-	message = SDL_CreateTextureFromSurface(renderer, surface);
-	TTF_SizeText(font, txt, &width, &height);
-	rect = { x[1], y[1], width, height };
-	SDL_RenderCopy(renderer, message, NULL, &rect);
+	drawText(txt, x[1], y[1], 0xFFFFFF, 1, true);
+// 	surface = TTF_RenderUTF8_Solid(font, txt, color);
+// 	message = SDL_CreateTextureFromSurface(renderer, surface);
+// 	TTF_SizeText(font, txt, &width, &height);
+// 	SDL_Rect r1 = { x[1], y[1], width, height };
+// 	SDL_RenderCopy(renderer, message, NULL, &r1);
 
 	sprintf(txt, "v2(%d,%d)", x[2],y[2]);
-	surface = TTF_RenderUTF8_Solid(font, txt, color);
-	message = SDL_CreateTextureFromSurface(renderer, surface);
-	TTF_SizeText(font, txt, &width, &height);
-	rect = { x[2], y[2], width, height };
-	SDL_RenderCopy(renderer, message, NULL, &rect);
+	drawText(txt, x[2], y[2], 0xFFFFFF, 1, true);
+// 	surface = TTF_RenderUTF8_Solid(font, txt, color);
+// 	message = SDL_CreateTextureFromSurface(renderer, surface);
+// 	TTF_SizeText(font, txt, &width, &height);
+// 	SDL_Rect r2 = { x[2], y[2], width, height };
+// 	SDL_RenderCopy(renderer, message, NULL, &r2);
 
 	sprintf(txt, "area: %d", abs(triangleArea2x(x,y)));
-	surface = TTF_RenderUTF8_Solid(font, txt, color);
-	message = SDL_CreateTextureFromSurface(renderer, surface);
-	TTF_SizeText(font, txt, &width, &height);
-	rect = { 10, 20, width, height };
-	setRenderColor(0);
-	SDL_RenderFillRect(renderer, &rect);
-	SDL_RenderCopy(renderer, message, NULL, &rect);
-
-	SDL_FreeSurface(surface);
-	SDL_DestroyTexture(message);
-	TTF_CloseFont(font);
+	drawText(txt, 10, 20, 0xFFFFFF, 1, true);
+// 	surface = TTF_RenderUTF8_Solid(font, txt, color);
+// 	message = SDL_CreateTextureFromSurface(renderer, surface);
+// 	TTF_SizeText(font, txt, &width, &height);
+// 	SDL_Rect r3 = { 10, 20, width, height };
+// 	setRenderColor(0);
+// 	SDL_RenderFillRect(renderer, &r3);
+// 	SDL_RenderCopy(renderer, message, NULL, &r3);
+//
+// 	SDL_FreeSurface(surface);
+// 	SDL_DestroyTexture(message);
+// 	TTF_CloseFont(font);
 }
 
-void sortVertices(int x[], int y[], int x0, int y0, int x1, int y1, int x2, int y2) {
+static void sortVertices(int x[], int y[], int x0, int y0, int x1, int y1, int x2, int y2) {
 	// TODO this can be
 	// Special case: two vertices share the same y
 	if (y0 == y1) {
@@ -372,15 +411,7 @@ static OBJ primText(int argCount, OBJ *args) {
 	int y = obj2int(args[2]);
 	int color24b = obj2int(args[3]);
 	int scale = (argCount > 4) ? obj2int(args[4]) : 2;
-	// TODO wrap is ignored for now
 	int wrap = (argCount > 5) ? (trueObj == args[5]) : true;
-	int width, height;
-
-	SDL_Color color = {
-		color24b >> 16,
-		(color24b >> 8) & 255,
-		color24b & 255
-	};
 
 	if (IS_TYPE(value, StringType)) {
 		sprintf(text, "%s", obj2str(value));
@@ -392,47 +423,11 @@ static OBJ primText(int argCount, OBJ *args) {
 		sprintf(text, "%d", obj2int(value));
 	}
 
-	TTF_Init();
-	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10);
-
-	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text, color);
-	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
-
-	TTF_SizeText(font, text, &width, &height);
-
-	SDL_Rect rect = { x, y, width, height };
-
-	SDL_RenderCopy(renderer, message, NULL, &rect);
-	SDL_FreeSurface(surface);
-	SDL_DestroyTexture(message);
-	TTF_CloseFont(font);
+	drawText(text, x, y, color24b, scale, wrap);
 	return falseObj;
 }
 
-static OBJ primTftTouched(int argCount, OBJ *args) {
-	return mouseDown ? trueObj : falseObj;
-}
-
-static OBJ primTftTouchX(int argCount, OBJ *args) {
-	SDL_GetMouseState(&mouseX, &mouseY);
-	return int2obj(mouseDown ? mouseX : -1);
-}
-
-static OBJ primTftTouchY(int argCount, OBJ *args) {
-	SDL_GetMouseState(&mouseX, &mouseY);
-	return int2obj(mouseDown ? mouseY : -1);
-}
-
-static OBJ primTftTouchPressure(int argCount, OBJ *args) {
-	int mousePressure;
-	if (mouseDown) {
-		mousePressure = (millisecs() - mouseDownTime);
-		if (mousePressure > 4095) mousePressure = 4095;
-	} else {
-		mousePressure = -1;
-	}
-	return int2obj(mousePressure);
-}
+// Simulating a 5x5 LED Matrix
 
 void tftSetHugePixel(int x, int y, int state) {
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
@@ -472,6 +467,33 @@ void tftSetHugePixelBits(int bits) {
 	}
 }
 
+// TFT Touch Primitives
+
+static OBJ primTftTouched(int argCount, OBJ *args) {
+	return mouseDown ? trueObj : falseObj;
+}
+
+static OBJ primTftTouchX(int argCount, OBJ *args) {
+	SDL_GetMouseState(&mouseX, &mouseY);
+	return int2obj(mouseDown ? mouseX : -1);
+}
+
+static OBJ primTftTouchY(int argCount, OBJ *args) {
+	SDL_GetMouseState(&mouseX, &mouseY);
+	return int2obj(mouseDown ? mouseY : -1);
+}
+
+static OBJ primTftTouchPressure(int argCount, OBJ *args) {
+	int mousePressure;
+	if (mouseDown) {
+		mousePressure = (millisecs() - mouseDownTime);
+		if (mousePressure > 4095) mousePressure = 4095;
+	} else {
+		mousePressure = -1;
+	}
+	return int2obj(mousePressure);
+}
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -494,4 +516,3 @@ static PrimEntry entries[] = {
 void addTFTPrims() {
 	addPrimitiveSet("tft", sizeof(entries) / sizeof(PrimEntry), entries);
 }
-
