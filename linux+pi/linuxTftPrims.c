@@ -27,8 +27,6 @@
 #define TFT_WIDTH 800
 #define TFT_HEIGHT 600
 
-int microBitDisplayBits;
-
 static int mouseDown = false;
 static int mouseX = -1;
 static int mouseY = -1;
@@ -168,6 +166,15 @@ static OBJ primLine(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static void drawRect(int x, int y, int width, int height, int fill) {
+	SDL_Rect rect = { x, y, width, height };
+	if (fill) {
+		SDL_RenderFillRect(renderer, &rect);
+	} else {
+		SDL_RenderDrawRect(renderer, &rect);
+	}
+}
+
 static OBJ primRect(int argCount, OBJ *args) {
 	tftInit();
 	int x = obj2int(args[0]);
@@ -176,33 +183,56 @@ static OBJ primRect(int argCount, OBJ *args) {
 	int height = obj2int(args[3]);
 	int fill = (argCount > 5) ? (trueObj == args[5]) : true;
 	setRenderColor(obj2int(args[4]));
-	SDL_Rect rect = { x, y, width, height };
-
-	if (fill) {
-		SDL_RenderFillRect(renderer, &rect);
-	} else {
-		SDL_RenderDrawRect(renderer, &rect);
-	}
-
+	drawRect(x, y, width, height, fill);
 	return falseObj;
 }
 
-static void drawOctaves(int x, int y, int originX, int originY, int fill) {
+static void drawOctaves(int x, int y, int originX, int originY, int fill, int quadrant) {
 	// when filling we also want to render the contour, otherwise there are
 	// artifacts in the pixels next to the borders
-	SDL_RenderDrawPoint(renderer, originX + x, originY + y);
-	SDL_RenderDrawPoint(renderer, originX + x, originY - y);
-	SDL_RenderDrawPoint(renderer, originX - x, originY + y);
-	SDL_RenderDrawPoint(renderer, originX - x, originY - y);
-	SDL_RenderDrawPoint(renderer, originX + y, originY + x);
-	SDL_RenderDrawPoint(renderer, originX + y, originY - x);
-	SDL_RenderDrawPoint(renderer, originX - y, originY + x);
-	SDL_RenderDrawPoint(renderer, originX - y, originY - x);
+	// top left quarter
+	if (!quadrant || quadrant == 1) {
+		SDL_RenderDrawPoint(renderer, originX - x, originY - y);
+		SDL_RenderDrawPoint(renderer, originX - y, originY - x);
+	}
+	// top right quarter
+	if (!quadrant || quadrant == 2) {
+		SDL_RenderDrawPoint(renderer, originX + x, originY - y);
+		SDL_RenderDrawPoint(renderer, originX + y, originY - x);
+	}
+	// bottom right quarter
+	if (!quadrant || quadrant == 3) {
+		SDL_RenderDrawPoint(renderer, originX + x, originY + y);
+		SDL_RenderDrawPoint(renderer, originX + y, originY + x);
+	}
+	// bottom left quarter
+	if (!quadrant || quadrant == 4) {
+		SDL_RenderDrawPoint(renderer, originX - x, originY + y);
+		SDL_RenderDrawPoint(renderer, originX - y, originY + x);
+	}
 	if (fill) {
 		SDL_RenderDrawLine(renderer, originX - x, originY + y, originX + x, originY + y);
 		SDL_RenderDrawLine(renderer, originX - x, originY - y, originX + x, originY - y);
 		SDL_RenderDrawLine(renderer, originX - y, originY + x, originX + y, originY + x);
 		SDL_RenderDrawLine(renderer, originX - y, originY - x, originX + y, originY - x);
+	}
+}
+
+static void drawCircle(int originX, int originY, int radius, int fill, int quadrant) {
+	// Bresenham's circle algorithm
+	int x = 0;
+	int y = radius;
+	int decision = 3 - 2 * radius;
+	drawOctaves(x, y, originX, originY, fill, quadrant);
+	while (x < y) {
+		x++;
+		if (decision > 0) {
+			y--;
+			decision = decision + 4 * (x - y) + 10;
+		} else {
+			decision = decision + 4 * x + 6;
+		}
+		drawOctaves(x, y, originX, originY, fill, quadrant);
 	}
 }
 
@@ -213,21 +243,7 @@ static OBJ primCircle(int argCount, OBJ *args) {
 	int radius = obj2int(args[2]);
 	setRenderColor(obj2int(args[3]));
 	int fill = (argCount > 4) ? (trueObj == args[4]) : true;
-	// Bresenham's circle algorithm
-	int x = 0;
-	int y = radius;
-	int decision = 3 - 2 * radius;
-	drawOctaves(x, y, originX, originY, fill);
-	while (x < y) {
-		x++;
-		if (decision > 0) {
-			y--;
-			decision = decision + 4 * (x - y) + 10;
-		} else {
-			decision = decision + 4 * x + 6;
-		}
-		drawOctaves(x, y, originX, originY, fill);
-	}
+	drawCircle(originX, originY, radius, fill, 0);
 	return falseObj;
 }
 
@@ -238,9 +254,33 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 	int width = obj2int(args[2]);
 	int height = obj2int(args[3]);
 	int radius = obj2int(args[4]);
+
+	if (2 * radius >= height) {
+		radius = height / 2 - 1;
+	}
+	if (2 * radius >= width) {
+		radius = width / 2 - 1;
+	}
+
 	setRenderColor(obj2int(args[5]));
 	int fill = (argCount > 6) ? (trueObj == args[6]) : true;
-	//TODO
+	if (fill) {
+		drawRect(x, y + radius, width, height - 2 * radius, fill);
+		drawRect(x + radius, y, width - 2 * radius, height, fill);
+		drawCircle(x + radius, y + radius + 1, radius, fill, 0);
+		drawCircle(x + width - radius - 1, y + radius + 1, radius, fill, 0);
+		drawCircle(x + radius, y + height - radius - 1, radius, fill, 0);
+		drawCircle(x + width - radius - 1, y + height - radius - 1, radius, fill, 0);
+	} else {
+		SDL_RenderDrawLine(renderer, x + radius, y, x + width - radius, y);
+		SDL_RenderDrawLine(renderer, x + radius, y + height, x + width - radius, y + height);
+		SDL_RenderDrawLine(renderer, x, y + radius, x, y + height - radius);
+		SDL_RenderDrawLine(renderer, x + width, y + radius, x + width, y + height - radius);
+		drawCircle(x + radius, y + radius + 1, radius, 0, 1);
+		drawCircle(x + width - radius, y + radius, radius, 0, 2);
+		drawCircle(x + width - radius - 1, y + height - radius - 1, radius, 0, 3);
+		drawCircle(x + radius, y + height - radius - 1, radius, 0, 4);
+	}
 	return falseObj;
 }
 
@@ -258,45 +298,19 @@ static void debugTriangle(int x[], int y[], int increment) {
 
 	sprintf(txt, "v0(%d,%d)", x[0],y[0]);
 	drawText(txt, x[0], y[0], 0xFFFFFF, 1, true);
-// 	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, txt, color);
-// 	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
-// 	TTF_SizeText(font, txt, &width, &height);
-// 	SDL_Rect rect = { x[0], y[0], width, height };
-// 	SDL_RenderCopy(renderer, message, NULL, &rect);
 
 	sprintf(txt, "v1(%d,%d)%s", x[1],y[1], increment == 1 ? "->" : "<-");
 	drawText(txt, x[1], y[1], 0xFFFFFF, 1, true);
-// 	surface = TTF_RenderUTF8_Solid(font, txt, color);
-// 	message = SDL_CreateTextureFromSurface(renderer, surface);
-// 	TTF_SizeText(font, txt, &width, &height);
-// 	SDL_Rect r1 = { x[1], y[1], width, height };
-// 	SDL_RenderCopy(renderer, message, NULL, &r1);
 
 	sprintf(txt, "v2(%d,%d)", x[2],y[2]);
 	drawText(txt, x[2], y[2], 0xFFFFFF, 1, true);
-// 	surface = TTF_RenderUTF8_Solid(font, txt, color);
-// 	message = SDL_CreateTextureFromSurface(renderer, surface);
-// 	TTF_SizeText(font, txt, &width, &height);
-// 	SDL_Rect r2 = { x[2], y[2], width, height };
-// 	SDL_RenderCopy(renderer, message, NULL, &r2);
 
 	sprintf(txt, "area: %d", abs(triangleArea2x(x,y)));
 	drawText(txt, 10, 20, 0xFFFFFF, 1, true);
-// 	surface = TTF_RenderUTF8_Solid(font, txt, color);
-// 	message = SDL_CreateTextureFromSurface(renderer, surface);
-// 	TTF_SizeText(font, txt, &width, &height);
-// 	SDL_Rect r3 = { 10, 20, width, height };
-// 	setRenderColor(0);
-// 	SDL_RenderFillRect(renderer, &r3);
-// 	SDL_RenderCopy(renderer, message, NULL, &r3);
-//
-// 	SDL_FreeSurface(surface);
-// 	SDL_DestroyTexture(message);
-// 	TTF_CloseFont(font);
 }
 
 static void sortVertices(int x[], int y[], int x0, int y0, int x1, int y1, int x2, int y2) {
-	// TODO this can be
+	// TODO this can be simplified
 	// Special case: two vertices share the same y
 	if (y0 == y1) {
 		if (y0 > y2) {

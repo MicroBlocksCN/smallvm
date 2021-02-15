@@ -16,6 +16,10 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 
+void primSetUserLED(OBJ *args) {
+	tftSetHugePixel(3, 1, (trueObj == args[0]));
+}
+
 // sound
 
 const int AMPLITUDE = 28000;

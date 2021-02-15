@@ -110,7 +110,6 @@ void primDigitalWrite(OBJ *args) { }
 void primDigitalSet(int pinNum, int flag) { };
 OBJ primButtonA(OBJ *args) { return falseObj; }
 OBJ primButtonB(OBJ *args) { return falseObj; }
-void primSetUserLED(OBJ *args) { }
 void stopServos() { }
 
 OBJ primI2cGet(OBJ *args) { return int2obj(0); }
