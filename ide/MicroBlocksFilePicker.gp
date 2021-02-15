@@ -68,10 +68,6 @@ to microblocksFolder {
   return path
 }
 
-to gpExamplesFolder {
-  return (join (absolutePath '.') '/Examples')
-}
-
 // support for synchronous ("modal") calls
 
 method destroyedMorph MicroBlocksFilePicker { isDone = true }
@@ -81,7 +77,7 @@ method answer MicroBlocksFilePicker { return answer }
 // initialization
 
 method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveFlag {
-  if (isNil defaultPath) { defaultPath = (absolutePath '.') }
+  if (isNil defaultPath) { defaultPath = (microblocksFolder) }
   if (isNil saveFlag) { saveFlag = false }
   if (isClass extensionList 'String') { extensionList = (list extensionList) }
   scale = (global 'scale')

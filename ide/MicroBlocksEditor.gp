@@ -104,7 +104,7 @@ method initialize MicroBlocksEditor {
   httpServer = (newMicroBlocksHTTPServer)
   addTopBarParts this
   scripter = (initialize (new 'MicroBlocksScripter') this)
-  lastProjectFolder = (gpExamplesFolder)
+  lastProjectFolder = 'Examples'
   addPart morph (morph scripter)
   drawTopBar this
   clearProject this
@@ -234,7 +234,7 @@ method openProjectMenu MicroBlocksEditor {
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the given file path or URL.
   if (beginsWith location '//') {
-    lastProjectFolder = (gpExamplesFolder)
+    lastProjectFolder = 'Examples'
   } else {
     lastProjectFolder = (directoryPart location)
   }
