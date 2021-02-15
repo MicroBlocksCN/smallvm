@@ -187,17 +187,29 @@ static OBJ primRect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-static void drawOctaves(int x, int y, int originX, int originY, int fill) {
+static void drawOctaves(int x, int y, int originX, int originY, int fill, int quadrant) {
 	// when filling we also want to render the contour, otherwise there are
 	// artifacts in the pixels next to the borders
-	SDL_RenderDrawPoint(renderer, originX + x, originY + y);
-	SDL_RenderDrawPoint(renderer, originX + x, originY - y);
-	SDL_RenderDrawPoint(renderer, originX - x, originY + y);
-	SDL_RenderDrawPoint(renderer, originX - x, originY - y);
-	SDL_RenderDrawPoint(renderer, originX + y, originY + x);
-	SDL_RenderDrawPoint(renderer, originX + y, originY - x);
-	SDL_RenderDrawPoint(renderer, originX - y, originY + x);
-	SDL_RenderDrawPoint(renderer, originX - y, originY - x);
+	// top left quarter
+	if (!quadrant || quadrant == 1) {
+		SDL_RenderDrawPoint(renderer, originX - x, originY - y);
+		SDL_RenderDrawPoint(renderer, originX - y, originY - x);
+	}
+	// top right quarter
+	if (!quadrant || quadrant == 2) {
+		SDL_RenderDrawPoint(renderer, originX + x, originY - y);
+		SDL_RenderDrawPoint(renderer, originX + y, originY - x);
+	}
+	// bottom right quarter
+	if (!quadrant || quadrant == 3) {
+		SDL_RenderDrawPoint(renderer, originX + x, originY + y);
+		SDL_RenderDrawPoint(renderer, originX + y, originY + x);
+	}
+	// bottom left quarter
+	if (!quadrant || quadrant == 4) {
+		SDL_RenderDrawPoint(renderer, originX - x, originY + y);
+		SDL_RenderDrawPoint(renderer, originX - y, originY + x);
+	}
 	if (fill) {
 		SDL_RenderDrawLine(renderer, originX - x, originY + y, originX + x, originY + y);
 		SDL_RenderDrawLine(renderer, originX - x, originY - y, originX + x, originY - y);
@@ -206,12 +218,12 @@ static void drawOctaves(int x, int y, int originX, int originY, int fill) {
 	}
 }
 
-static void drawCircle(int originX, int originY, int radius, int fill) {
+static void drawCircle(int originX, int originY, int radius, int fill, int quadrant) {
 	// Bresenham's circle algorithm
 	int x = 0;
 	int y = radius;
 	int decision = 3 - 2 * radius;
-	drawOctaves(x, y, originX, originY, fill);
+	drawOctaves(x, y, originX, originY, fill, quadrant);
 	while (x < y) {
 		x++;
 		if (decision > 0) {
@@ -220,7 +232,7 @@ static void drawCircle(int originX, int originY, int radius, int fill) {
 		} else {
 			decision = decision + 4 * x + 6;
 		}
-		drawOctaves(x, y, originX, originY, fill);
+		drawOctaves(x, y, originX, originY, fill, quadrant);
 	}
 }
 
@@ -231,7 +243,7 @@ static OBJ primCircle(int argCount, OBJ *args) {
 	int radius = obj2int(args[2]);
 	setRenderColor(obj2int(args[3]));
 	int fill = (argCount > 4) ? (trueObj == args[4]) : true;
-	drawCircle(originX, originY, radius, fill);
+	drawCircle(originX, originY, radius, fill, 0);
 	return falseObj;
 }
 
@@ -255,10 +267,19 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 	if (fill) {
 		drawRect(x, y + radius, width, height - 2 * radius, fill);
 		drawRect(x + radius, y, width - 2 * radius, height, fill);
-		drawCircle(x + radius, y + radius + 1, radius, fill);
-		drawCircle(x + width - radius - 1, y + radius + 1, radius, fill);
-		drawCircle(x + radius, y + height - radius - 1, radius, fill);
-		drawCircle(x + width - radius - 1, y + height - radius - 1, radius, fill);
+		drawCircle(x + radius, y + radius + 1, radius, fill, 0);
+		drawCircle(x + width - radius - 1, y + radius + 1, radius, fill, 0);
+		drawCircle(x + radius, y + height - radius - 1, radius, fill, 0);
+		drawCircle(x + width - radius - 1, y + height - radius - 1, radius, fill, 0);
+	} else {
+		SDL_RenderDrawLine(renderer, x + radius, y, x + width - radius, y);
+		SDL_RenderDrawLine(renderer, x + radius, y + height, x + width - radius, y + height);
+		SDL_RenderDrawLine(renderer, x, y + radius, x, y + height - radius);
+		SDL_RenderDrawLine(renderer, x + width, y + radius, x + width, y + height - radius);
+		drawCircle(x + radius, y + radius + 1, radius, 0, 1);
+		drawCircle(x + width - radius, y + radius, radius, 0, 2);
+		drawCircle(x + width - radius - 1, y + height - radius - 1, radius, 0, 3);
+		drawCircle(x + radius, y + height - radius - 1, radius, 0, 4);
 	}
 	return falseObj;
 }
