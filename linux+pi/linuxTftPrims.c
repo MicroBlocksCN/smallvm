@@ -27,8 +27,6 @@
 #define TFT_WIDTH 800
 #define TFT_HEIGHT 600
 
-int microBitDisplayBits;
-
 static int mouseDown = false;
 static int mouseX = -1;
 static int mouseY = -1;
@@ -296,7 +294,7 @@ static void debugTriangle(int x[], int y[], int increment) {
 }
 
 static void sortVertices(int x[], int y[], int x0, int y0, int x1, int y1, int x2, int y2) {
-	// TODO this can be
+	// TODO this can be simplified
 	// Special case: two vertices share the same y
 	if (y0 == y1) {
 		if (y0 > y2) {
