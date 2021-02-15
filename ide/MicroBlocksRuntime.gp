@@ -792,7 +792,7 @@ method tryToConnect SmallRuntime {
 				stopAndSyncScripts this
 			}
 			if ('Mac' == (platform)) {
-				setSerialDelay this 6
+				setSerialDelay this 4
 			}
 			return 'connected'
 		}
@@ -1186,8 +1186,8 @@ method clearVariableNames SmallRuntime {
 
 method serialDelayMenu SmallRuntime {
 	menu = (menu (join 'Serial delay' (newline) '(smaller is faster, but may fail if computer cannot keep up)') (action 'setSerialDelay' this) true)
-	for i (range 4 7)  { addItem menu i }
-	for i (range 8 20 2)  { addItem menu i }
+	for i (range 1 5)  { addItem menu i }
+	for i (range 6 20 2)  { addItem menu i }
 	addItem menu 25
 	addItem menu 30
 	addLine menu
@@ -1385,7 +1385,7 @@ method processMessages SmallRuntime {
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
 	processingMessages = true
 	count = 0
-	while (and processingMessages (count < 10)) {
+	while (and processingMessages (count < 50)) {
 		processingMessages = (processNextMessage this)
 		count += 1
 	}

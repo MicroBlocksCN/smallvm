@@ -339,4 +339,5 @@ method setVar MicroBlocksHTTPWorker path {
 	}
 	id = (variableIndex server varName)
 	if (notNil id) { setVar (smallRuntime) (id - 1) value } // VM uses zero-based index
+	return valueString
 }
