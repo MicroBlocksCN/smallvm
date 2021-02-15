@@ -19,7 +19,7 @@ method initialize MicroBlocksDataGraph {
 	setExtent morph (scale * 200) (scale * 120)
 	lastDataIndex = 0
 	zeroAtBottom = false;
-	setFPS morph 60
+	setFPS morph 20
 	return this
 }
 
