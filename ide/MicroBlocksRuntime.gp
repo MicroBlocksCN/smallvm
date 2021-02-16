@@ -829,7 +829,7 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '1.0.12' }
+method ideVersion SmallRuntime { return '1.0.13' }
 method latestVmVersion SmallRuntime { return 108 }
 
 method showAboutBox SmallRuntime {
