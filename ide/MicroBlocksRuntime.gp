@@ -757,6 +757,7 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this
 			}
+			setSerialDelay this 5
 			return 'connected'
 		} else {
 			portName = nil
