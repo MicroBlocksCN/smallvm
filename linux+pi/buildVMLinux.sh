@@ -10,7 +10,8 @@ gcc -m32 -std=c99 -Wall -Wno-unused-variable -Wno-unused-result -O3 \
 	-I/usr/local/include/SDL2 \
 	-I ../vm \
 	linux.c ../vm/*.c \
-	linuxFilePrims.c linuxIOPrims.c linuxNetPrims.c linuxOutputPrims.c linuxTftPrims.c \
+	linuxSensorPrims.c linuxFilePrims.c linuxIOPrims.c linuxNetPrims.c \
+	linuxOutputPrims.c linuxTftPrims.c \
 	-lSDL2 -lSDL2_ttf \
 	-ldl -lm -lpthread -lsndio -lz \
 	-o GnuBlocks
