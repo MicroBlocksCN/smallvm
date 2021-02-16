@@ -792,7 +792,9 @@ method tryToConnect SmallRuntime {
 				stopAndSyncScripts this
 			}
 			if ('Mac' == (platform)) {
-				setSerialDelay this 4
+				setSerialDelay this 2
+			} else {
+				setSerialDelay this 10
 			}
 			return 'connected'
 		}
@@ -1188,15 +1190,13 @@ method serialDelayMenu SmallRuntime {
 	menu = (menu (join 'Serial delay' (newline) '(smaller is faster, but may fail if computer cannot keep up)') (action 'setSerialDelay' this) true)
 	for i (range 1 5)  { addItem menu i }
 	for i (range 6 20 2)  { addItem menu i }
-	addItem menu 25
-	addItem menu 30
 	addLine menu
 	addItem menu 'reset to default'
 	popUpAtHand menu (global 'page')
 }
 
 method setSerialDelay SmallRuntime newDelay {
-	if ('reset to default' == newDelay) { newDelay = 20 }
+	if ('reset to default' == newDelay) { newDelay = 10 }
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
 
@@ -1383,11 +1383,8 @@ method ensurePortOpen SmallRuntime {
 
 method processMessages SmallRuntime {
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
-	processingMessages = true
-	count = 0
-	while (and processingMessages (count < 50)) {
-		processingMessages = (processNextMessage this)
-		count += 1
+	repeat 100 { // process up to N messages
+		if (not (processNextMessage this)) { return } // done!
 	}
 }
 
