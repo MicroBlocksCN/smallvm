@@ -26,6 +26,9 @@
 #include "interp.h"
 #include "persist.h"
 
+// Keyboard
+int KEY_SCANCODE[255];
+
 // Timing Functions
 
 static int startSecs = 0;
@@ -108,27 +111,10 @@ void primAnalogWrite(OBJ *args) { }
 OBJ primDigitalRead(int argCount, OBJ *args) { return int2obj(0); }
 void primDigitalWrite(OBJ *args) { }
 void primDigitalSet(int pinNum, int flag) { };
-OBJ primButtonA(OBJ *args) { return falseObj; }
-OBJ primButtonB(OBJ *args) { return falseObj; }
 void stopServos() { }
-
-OBJ primI2cGet(OBJ *args) { return int2obj(0); }
-OBJ primI2cSet(OBJ *args) { return int2obj(0); }
-OBJ primSPISend(OBJ *args) { return int2obj(0); }
-OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
-OBJ primI2cRead(OBJ *args) { return int2obj(0); }
-OBJ primI2cWrite(OBJ *args) { return int2obj(0); }
-
-// Stubs for sensing primitives
-
-OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
 
 // Stubs for other functions not used on Linux
 
-void addSensorPrims() {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
 void resetServos() {}
 void stopPWM() {}

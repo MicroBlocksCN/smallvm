@@ -37,6 +37,8 @@ static SDL_Window *window;
 static SDL_Renderer* renderer;
 static int ticks = 0;
 
+extern int KEY_SCANCODE[];
+
 // Helper Functions
 
 static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFlag) {
@@ -46,7 +48,7 @@ static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFla
 	SDL_Color color = { color24b >> 16, (color24b >> 8) & 255, color24b & 255 };
 
 #ifndef DISABLE_TRUE_TYPE
-	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10);
+	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10 * scale);
 	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, s, color);
 
 	int width, height;
@@ -60,6 +62,12 @@ static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFla
 	SDL_DestroyTexture(message);
 	TTF_CloseFont(font);
 #endif
+}
+
+void initKeys() {
+	for (int i = 0; i < 255; i++) {
+		KEY_SCANCODE[i] = false;
+	}
 }
 
 void updateMicrobitDisplay() {
@@ -82,6 +90,18 @@ void updateMicrobitDisplay() {
 				mouseX = -1;
 				mouseY = -1;
                 break;
+			case SDL_KEYDOWN:
+				// Using keysyms detects keys by their name, not position,
+				// but gives huge values for keys that aren't characters, like
+				// the arrow keys, numpad keys or modifiers. Scancodes will be
+				// different for different keyboard layouts.
+				KEY_SCANCODE[e.key.keysym.scancode] = 1;
+                break;
+            case SDL_KEYUP:
+				KEY_SCANCODE[e.key.keysym.scancode] = 0;
+				break;
+			default:
+				break;
 		}
 	}
 	if (tftEnabled && (ticks == 0)) {
@@ -105,6 +125,7 @@ void tftInit() {
 		TTF_Init();
 #endif
 		tftEnabled = true;
+		initKeys();
 	}
 }
 

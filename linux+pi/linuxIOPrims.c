@@ -20,6 +20,20 @@ void primSetUserLED(OBJ *args) {
 	tftSetHugePixel(3, 1, (trueObj == args[0]));
 }
 
+// Button simulation, and keyboard input
+
+extern int KEY_SCANCODE[];
+
+OBJ primButtonA(OBJ *args) {
+	// simulate button A with the left arrow key
+	return KEY_SCANCODE[80] ? trueObj : falseObj;
+}
+
+OBJ primButtonB(OBJ *args) {
+	// simulate button B with the right arrow key
+	return KEY_SCANCODE[79] ? trueObj : falseObj;
+}
+
 // sound
 
 const int AMPLITUDE = 28000;
