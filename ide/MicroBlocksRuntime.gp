@@ -585,7 +585,7 @@ method portList SmallRuntime {
 				add portList (join '/dev/' fn)
 			}
 		}
-		if (devMode) {
+		if false { //(devMode) {
 			if ('Linux' == (platform)) {
 				// add pseudoterminals
 				for fn (listFiles '/dev/pts') {
