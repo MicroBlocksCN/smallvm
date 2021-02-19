@@ -433,8 +433,24 @@ void restartSerial() {
 		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
 		1, 1, 1, 1, 1, 0, 0, 0, 1, 1};
 
-#elif defined(ARDUINO_M5Stick_C)
+#elif defined(ARDUINO_M5Stick_Plus)
+	#define BOARD_TYPE "M5StickC+"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_BUTTON_A 37
+	#define PIN_BUTTON_B 39
+	#define DEFAULT_TONE_PIN 2
+	#define PIN_LED 10
+	#define INVERT_USER_LED true
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
+		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
+		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
 
+#elif defined(ARDUINO_M5Stick_C)
 	#define BOARD_TYPE "M5StickC"
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
@@ -452,7 +468,6 @@ void restartSerial() {
 		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
 
 #elif defined(ARDUINO_M5CoreInk)
-
 	#define BOARD_TYPE "M5CoreInk"
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
