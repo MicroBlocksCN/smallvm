@@ -20,6 +20,7 @@
 	#include <ESP8266WiFi.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
+	#include <WebSocketsServer.h>
 #elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
 	#define USE_WIFI101
 	#define uint32 wifi_uint32
@@ -36,6 +37,13 @@ static char serverStarted = false;
 
 WiFiServer server(80);
 WiFiClient client;
+
+#if defined(ARDUINO_ARCH_ESP32)
+WebSocketsServer webSocket = WebSocketsServer(81);
+static int lastWebSocketType;
+static int lastWebSocketClientId;
+char lastWebSocketPayload[1000];
+#endif
 
 // WiFi Connection
 
@@ -171,6 +179,22 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	sprintf(ipStringObject.body, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 	ipStringObject.header = HEADER(StringType, (strlen(ipStringObject.body) + 4) / 4);
 	return (OBJ) &ipStringObject;
+}
+
+static OBJ primStartSSIDscan(int argCount, OBJ *args) {
+	return int2obj(WiFi.scanNetworks());
+}
+
+static OBJ primGetSSID(int argCount, OBJ *args) {
+	char ssid[100];
+	ssid[0] = '\0'; // clear string
+	char *s = ssid;
+	strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1).c_str(), 31);
+	return newStringFromBytes(s, strlen(s));
+}
+
+static OBJ primGetMAC(int argCount, OBJ *args) {
+	return newStringFromBytes(WiFi.macAddress().c_str(), 18);
 }
 
 // HTTP Server
@@ -388,6 +412,48 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	return result;
 }
 
+#ifdef ARDUINO_ARCH_ESP32
+// Websocket support for ESP32
+
+void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t * payload, size_t length) {
+	lastWebSocketType = type;
+	lastWebSocketClientId = client_id;
+	length = length >= 1000 ? 999 : length;
+	memcpy(lastWebSocketPayload, payload, length);
+	lastWebSocketPayload[length] = '\0';
+}
+
+static OBJ primWebSocketStart(int argCount, OBJ *args) {
+	webSocket.begin();
+	webSocket.onEvent(webSocketEventCallback);
+	return falseObj;
+}
+
+static OBJ primWebSocketLastEvent(int argCount, OBJ *args) {
+	webSocket.loop();
+	if (lastWebSocketType > -1) {
+		OBJ event = newObj(ListType, 4, zeroObj);
+		FIELD(event, 0) = int2obj(3);
+		FIELD(event, 1) = int2obj(lastWebSocketType);
+		FIELD(event, 2) = int2obj(lastWebSocketClientId);
+		FIELD(event, 3) = newStringFromBytes(lastWebSocketPayload, strlen(lastWebSocketPayload));
+		lastWebSocketType = -1;
+		return event;
+	} else {
+		return falseObj;
+	}
+}
+
+static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
+	char *message = obj2str(args[0]);
+	int client = obj2int(args[1]);
+	int length = strlen(message);
+	webSocket.sendTXT(client, message, length);
+	return falseObj;
+}
+
+#endif
+
 #else // not ESP8266 or ESP32
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
@@ -395,13 +461,20 @@ static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primStartSSIDscan(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetSSID(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetMAC(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
-
+#endif
+#ifndef ARDUINO_ARCH_ESP32
+static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWiFi); }
 #endif
 
 static PrimEntry entries[] = {
@@ -410,12 +483,18 @@ static PrimEntry entries[] = {
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
+	{"startSSIDscan", primStartSSIDscan},
+	{"getSSID", primGetSSID},
+	{"myMAC", primGetMAC},
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
+	{"webSocketStart", primWebSocketStart},
+	{"webSocketLastEvent", primWebSocketLastEvent},
+	{"webSocketSendToClient", primWebSocketSendToClient},
 };
 
 void addNetPrims() {

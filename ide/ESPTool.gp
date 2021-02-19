@@ -49,6 +49,7 @@ method baudForBoard ESPTool boardName {
 	} ('Citilab ED1' == boardName) { return 230400
 	} ('M5Stack-Core' == boardName) { return 230400
 	} ('M5StickC' == boardName) { return 230400
+	} ('M5StickC+' == boardName) { return 230400
 	} ('M5Atom-Matrix' == boardName) { return 115200
 	}
 	return 115200
@@ -395,6 +396,7 @@ method vmNameForBoard ESPTool boardName {
 	} ('Citilab ED1' == boardName) { return 'vm.citilab-ed1.bin'
 	} ('M5Stack-Core' == boardName) { return 'vm.m5stack.bin'
 	} ('M5StickC' == boardName) { return 'vm.m5stick.bin'
+	} ('M5StickC+' == boardName) { return 'vm.m5stick+.bin'
 	} ('M5Atom-Matrix' == boardName) { return 'vm.m5atom.bin'
 	}
 	return nil

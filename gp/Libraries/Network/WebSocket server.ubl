@@ -1,0 +1,37 @@
+module 'WebSocket server' Comm
+author MicroBlocks
+version 1 0 
+tags websockets network 
+description 'Blocks to build your own (very) simple websockets server.'
+
+	spec ' ' '[net:webSocketStart]' 'start WebSocket server'
+	spec 'r' '[net:webSocketLastEvent]' 'last WebSocket event'
+	spec 'r' 'ws client id' 'client ID for WebSocket event _' 'str' ''
+	spec 'r' 'ws event payload' 'payload for WebSocket event _' 'str' ''
+	spec 'r' 'ws event type' 'type of WebSocket event _' 'str' ''
+	spec ' ' '[net:webSocketSendToClient]' 'send _ to WebSocket client _' 'str num' 'Hello, Client!' 0
+
+to 'ws client id' event {
+  if (and (isType event 'list') ((size event) > 1)) {
+    return (at 2 event)
+  } else {
+    return ''
+  }
+}
+
+to 'ws event payload' event {
+  if (and (isType event 'list') ((size event) > 2)) {
+    return (at 3 event)
+  } else {
+    return ''
+  }
+}
+
+to 'ws event type' event {
+  if (and (isType event 'list') ((size event) > 0)) {
+    return (at ((at 1 event) + 1) ('[data:makeList]' 'error' 'disconnected' 'connected' 'text message' 'binary message' 'text fragment start' 'binary fragment start' 'fragment' 'fragment end' 'ping' 'pong' 'waiting'))
+  } else {
+    return ''
+  }
+}
+

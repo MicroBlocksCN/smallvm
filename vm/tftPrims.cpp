@@ -114,15 +114,24 @@ int touchEnabled = false;
 	#elif defined(ARDUINO_M5Stick_C)
 		// Preliminary: this is not yet working...
 		#include "Adafruit_GFX.h"
-		#include "Adafruit_ST7735.h"
 
 		#define TFT_CS		5
 		#define TFT_DC		23
 		#define TFT_RST		18
 
+                #ifdef ARDUINO_M5Stick_Plus
+		#include "Adafruit_ST7789.h"
+		#define TFT_WIDTH	240
+		#define TFT_HEIGHT	135
+                #else
+		#include "Adafruit_ST7735.h"
 		#define TFT_WIDTH	160
 		#define TFT_HEIGHT	80
+                #endif
 
+                #ifdef ARDUINO_M5Stick_Plus
+                Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+                #else
 		// make a subclass so we can adjust the x/y offsets
 		class M5StickLCD : public Adafruit_ST7735 {
 		public:
@@ -133,6 +142,7 @@ int touchEnabled = false;
 			}
 		};
 		M5StickLCD tft = M5StickLCD(TFT_CS, TFT_DC, TFT_RST);
+                #endif
 
 		int readAXP(int reg) {
 			Wire1.beginTransmission(0x34);
@@ -150,8 +160,12 @@ int touchEnabled = false;
 		}
 
 		void tftInit() {
+                        #ifdef ARDUINO_M5Stick_Plus
+			tft.init(TFT_HEIGHT, TFT_WIDTH);
+                        #else
 			tft.initR(INITR_MINI160x80);
 			tft.setOffsets(26, 1);
+                        #endif
 			tft.setRotation(1);
 			tft.invertDisplay(true); // display must be inverted to give correct colors...
 			tftClear();
