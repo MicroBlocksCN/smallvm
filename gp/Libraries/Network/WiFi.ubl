@@ -8,6 +8,7 @@ description 'Connect to a WiFi network. To be used in conjunction with other net
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times : IP _ gateway _ subnet _' 'str str num str str str' 'Network_Name' '' 3 '192.168.1.42' '192.168.1.1' '255.255.255.0'
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
+	spec 'r' '[net:myMAC]' 'MAC address'
 
 to getIPAddress {
   return ('[net:myIPAddress]')
