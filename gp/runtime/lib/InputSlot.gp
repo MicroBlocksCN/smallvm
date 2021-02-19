@@ -86,6 +86,9 @@ method setContents InputSlot data {
   }
   setText text (toString data)
   textChanged this
+  if (and (isClass data 'String') ('' != data) ('editable' != (editRule text)) (representsANumber data)) {
+	switchType this 'editable' // old value was a string; covert to string-only
+  }
   raise morph 'inputContentsChanged' this // experimental for script editor focus
 }
 

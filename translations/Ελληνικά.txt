@@ -6,297 +6,297 @@
 #########################
 
 Output
---MISSING--
+Εξόδοι
 
 set user LED _
-allumer la LED _
+θέσε το LED χρήστη _
 
 say _
-dire _
+πες _
 
 graph _
---MISSING--
+σχεδίασε _
 
 Input
---MISSING--
+Εισόδοι
 
 button A
-bouton A
+κομβίον Α
 
 button B
-bouton B
+κομβίον Β
 
 microseconds
-microsecondes
+εκατομμυριοστά δευτερολέπτου
 
 milliseconds
-millisecondes
+χιλιοστά δευτερολέπτου
 
 board type
---MISSING--
+είδος κάρτας
 
 Pins
---MISSING--
+Ακροδέκτες
 
 read digital pin _
-lire la broche numérique _
+διάβασε το ψηφιακό ακροδέκτη _
 
 read analog pin _
-lire la broche analogique _
+διάβασε τον αναλογικό ακροδέκτη _
 
 set digital pin _ to _
-mettre la broche numérique _ à _
+θέσε το ψηφιακό ακροδέκτη _ σε _
 
 set pin _ to _
-mettre la broche _ à _
+θέσε τον ακροδέκτη _ σε _
 
 analog pins
-broches analogiques
+αναλογικοί ακροδέκτες
 
 digital pins
-broches numériques
+ψηφιακοί ακροδέκτες 
 
 Control
---MISSING--
+Έλεγχος Ροής
 
 when started
-au début
+όταν ξεκινά
 
 when button _ pressed
-quand le bouton _ est pressé
+όταν το κομβίον _ πατηθεί
 
 forever _
-répéter indéfiniment _
+Για πάντα επανάλαβε _
 
 repeat _ _
-répéter _ fois _
+επανάλαβε _ _
 
 wait _ millisecs
-attendre _ millisecondes
+περίμενε _ χιλιοστά δευτερολέπτου
 
 if _ _
-si _ _
+Αν _ _
 
 else if _ _
-sinon, si _ _
+διαφορετικά αν _ _
 
 if _ _ else _
-si _ _ sinon _
+αν _ _ διαφορετικά _
 
 when _
-quand _
+όταν _
 
 wait until _
-attendre jusqu'à _
+περίμενε μέχρι _
 
 wait _ microsecs
-attendre _ microsecondes
+περίμενε _ εκατομμυριοστά δευτερολέπτου
 
 return _
-renvoyer _
+επιστροφή _
 
 when _ received
-quand _ est reçu
+όταν _ ληφθεί
 
 broadcast _
-envoyer à tous _
+μετάδωσε _
 
 comment _
-commentaire _
+σχόλιο _
 
 for _ in _ _
-pour chaque _ de _ _
+για _ σε _ _
 
 repeat until _ _
-répéter jusqu'à _ _
+επανάλαβε μέχρι _ _
 
 stop this task
-arrêter cette tâche
+σταμάτα αυτό το σενάριο
 
 stop other tasks
---MISSING--
+σταμάτα τα άλλα σενάρια
 
 stop all
-stopper tout
+σταμάτα όλα τα σενάρια
 
 last message
---MISSING--
+τελευταίο μήνυμα
 
 Operators
---MISSING--
+Τελεστές
 
 _ mod _
-_ modulo _
+_ ακέραιο υπόλοιπο _
 
 abs _
-valeur absolue de _
+απόλυτο _
 
 random _ to _
-nombre aléatoire entre _ et _
+επέλεξε τυχαίο από  _ ως _
 
 not _
-non _
+αντίθετο _
 
 _ and _
-_ et _
+_ και _
 
 and _
-et _
+και _
 
 _ or _
-_ ou _
+_ ή _
 
 or _
-ou _
+ή _
 
 _ is a _
---MISSING--
+_ είναι ένα _
 
 boolean
---MISSING--
+δυαδικό
 
 number
---MISSING--
+αριθμός
 
 string
---MISSING--
+συμβολοσειρά
 
 list
---MISSING--
+λίστα
 
 Advanced:
 --MISSING--
 
 hex _
-hexadécimal _
+δεκαεξαδικό _
 
 Variables
---MISSING--
+Μεταβλητές
 
 # Buttons on top of "Variables" category
 
 Add a variable
---MISSING--
+Δημιούργησε μια μεταβλητή
 
 Delete a variable
---MISSING--
+Διάγραψε μια μεταβλητή
 
 # New variable dialog
 
 New variable name?
---MISSING--
+Όνομα νέας μεταβλητής?
 
 set _ to _
-mettre _ à _
+θέσε _ σε _
 
 change _ by _
-changer _ de _
+άλλαξε _ ανά _
 
 initialize local _ to _
 --MISSING--
 
 Data
---MISSING--
+Δεδομένα
 
 list
---MISSING--
+λίστα
 
 length of _
-longueur de _
+μήκος του _
 
 item _ of _
---MISSING--
+στοιχείο _ του _
 
 replace item _ of list _ with _
---MISSING--
+αντικατάστησε στοιχείο _ της λίστας _ με _
 
 delete item _ of list _
---MISSING--
+διάγραψε το στοιχείο _ της λίστας _
 
 add _ to list _
---MISSING--
+πρόσθεσε _ στην λίστα _
 
 join _ _
---MISSING--
+ένωσε _ _
 
 copy _ from _
---MISSING--
+αντίγραψε _ από _
 
 to _
---MISSING--
+προς _
 
 find _ in _
---MISSING--
+βρες _ μέσα _
 
 starting at _
---MISSING--
+ξεκινά από _
 
 join items of list _
---MISSING--
+ένωσε τα στοιχεία της λίστας
 
 separator _
---MISSING--
+διαχωριστικό _
 
 unicode _ of _
---MISSING--
+unicode _ του _
 
 string from unicode _
---MISSING--
+συμβολοσείρα από unicode _
 
 new list length _
---MISSING--
+μήκος νέου καταλόγου _
 
 new byte array _
 --MISSING--
 
 free memory
---MISSING--
+ελευθέρωσε μνήμη
 
 My Blocks
---MISSING--
+Τα μπλοκ μου
 
 # Buttons on top of "My Blocks" category
 
 Add a command block
---MISSING--
+Πρόσθεσε μπλοκ εντολής
 
 Add a reporter block
---MISSING--
+Πρόσθεσε μπλοκ αναφοράς
 
 # Make a block dialog
 
 Enter function name:
---MISSING--
+Συμπλήρωσε το όνομα της Λειτουργίας:
 
 Comm
---MISSING--
+Επικοινωνία 
 
 i2c get device _ register _
-i2c lire le périphérique _ au registre _
+i2c πάρε από συσκευή _ καταχωρητή _
 
 i2c set device _ register _ to _
-i2c mettre le périphérique _ au registre _ à _
+i2c όρισε στην συσκευή _ καταχωρητή _ σε _
 
 i2c device _ read list _
---MISSING--
+i2c συσκευή _ διάβασε λίστα _
 
 i2c device _ write list _
 --MISSING--
 
 spi send _
-spi envoyer _
+spi στείλε _
 
 spi receive
-spi lire
+spi λάβε
 
 print _
-afficher _
+τύπωσε _
 
 no op
-no op
+--MISSING--
 
 ignore
-ignorer
+αγνόησε 
 
 ##############
 # Primitives #
@@ -305,13 +305,13 @@ ignorer
 # These are all mostly hidden from end users
 
 draw shape _ at x _ y _
-dessiner la forme _ à x _ y _
+--MISSING--
 
 shape for letter _
-forme pour la lettre _
+--MISSING--
 
 send NeoPixel rgb _
-envoyer RGB _ au NeoPixel
+--MISSING--
 
 has tone support
 --MISSING--
@@ -381,25 +381,25 @@ disable radio
 #############
 
 Basic Sensors
---MISSING--
+Βασικοί Αισθητήρες
 
 tilt x
-inclinaison x
+κλίση Χ
 
 tilt y
-inclinaison y
+κλίση y
 
 tilt z
-inclinaison z
+κλίση z-
 
 acceleration
---MISSING--
+επιτάχυνση
 
 light level
---MISSING--
+Μέτρηση φωτός
 
 temperature (°C)
-température (°C)
+Θερμοκρασία (°C)
 
 ####
 # NeoPixel library
@@ -408,127 +408,127 @@ NeoPixel
 --MISSING--
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
---MISSING--
+όρισε NeoPixels _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
---MISSING--
+καθάρισε NeoPixels
 
 set NeoPixel _ color _
---MISSING--
+όρισε NeoPixel _ χρώμα _
 
 set all NeoPixels color _
---MISSING--
+όρισε όλα τα NeoPixels σε χρώμα _
 
 rotate NeoPixels by _
---MISSING--
+στρίψε τα NeoPixels κατά _
 
 color r _ g _ b _ (0-31)
---MISSING--
+χρώμα κ _ π _ μ _ (0-31)
 
 random color
---MISSING--
+τυχαίο χρώμα
 
 attach _ LED NeoPixel strip to pin _
---MISSING--
+σύνδεσε _ LED NeoPixel strip στον ακροδέκτη _
 
 has white _
---MISSING--
+έχει άσπρο _
 
 PIR
---MISSING--
+PIR
 
 PIR at pin _ detected movement
---MISSING--
+PIR στον ακροδέκτη _ ανίχνευσε κίνηση
 
 ####
 # Citilab ED1 board libraries
 
 ED1 Stepper Motor
---MISSING--
+ED1 Μότερ Βήμάτος
 
 move motor _ _ steps _
---MISSING--
+μοτερ βήματος _ _ βήματα _
 
 move motor 1 _ and motor 2 _ _ steps
---MISSING--
+μοτερ 1 κινήθου _ και μοτερ 2 κινήθου _ _ βήματα
 
 move motor _ angle _ °
---MISSING--
+μοτέρ _ στρίψε γωνία _ °
 
 move motor _ _ complete turns
---MISSING--
+μοτέρ στρίψε _ _ στροφές
 
 stop steppers
---MISSING--
+σταμάτα τα βηματικά μοτέρ 
 
 clockwise
---MISSING--
+δεξιόστροφα
 
 counter-clockwise
---MISSING--
+αριστερόστροφα
 
 ED1 Buttons
---MISSING--
+ED1 Κομβία
 
 button OK
---MISSING--
+κομβίο OK
 
 button X
---MISSING--
+κομβίο X
 
 button up
---MISSING--
+κομβίο πάνω
 
 button down
---MISSING--
+κομβίο κάτω
 
 button left
---MISSING--
+κομβίο αριστερά
 
 button right
---MISSING--
+κομβίο δεξιά
 
 capacitive sensor _
---MISSING--
+χωρητικός αισθητήρας _
 
 set capacitive threshold to _
---MISSING--
+ορίστε το χωρητικό όριο σε_
 
 ####
 # BirdBrain Technologies libraries
 
 Hummingbird LED _ _ %
-Hummingbird LED _ _ %
+--MISSING--
 
 Hummingbird Tri-LED _ R _ % G _ % B _ %
-Hummingbird Tri-LED _ R _ % G _ % B _ %
+--MISSING--
 
 Hummingbird Position Servo _ _ °
 --MISSING--
 
 Hummingbird Rotation Servo _ _ %
-Hummingbird Rotation Servo _ _ %
+--MISSING--
 
 Hummingbird _ _
-Hummingbird _ _
+--MISSING--
 
 Hummingbird Battery (mV)
-Hummingbird Batterie (mV)
+--MISSING--
 
 Light
-LumiËre
+--MISSING--
 
 Distance (cm)
-Distance (cm)
+--MISSING--
 
 Dial
-Cadran
+--MISSING--
 
 Sound
-Son
+--MISSING--
 
 Other
-Autre
+--MISSING--
 
 Finch Beak Red _ Green _ Blue _
 --MISSING--
@@ -618,25 +618,25 @@ strength
 # Ultrasound distance library
 
 distance (cm) trigger _ echo _
---MISSING--
+απόσταση (εκ) σκανδάλη _ ηχώ _
 
 ####
 # Infrared remote library
 
 IR Remote
---MISSING--
+IR Τηλεχειριστήριο
 
 receive IR code
---MISSING--
+λάβετε τον κωδικό IR
 
 receive IR code from device _
---MISSING--
+λήψη κωδικού IR από τη συσκευή _
 
 test IR
---MISSING--
+δοκιμή IR
 
 attach IR receiver to pin _
---MISSING--
+επισυνάψτε δέκτη IR στον ακροδέκτη _
 
 ####
 # Radio comm library
@@ -669,16 +669,16 @@ stop scrolling
 # Servo motor library
 
 Servo
---MISSING--
+Σέρβο μοτέρ
 
 set servo _ to _ degrees (-90 to 90)
---MISSING--
+ορίστε servo από _ έως _ μοίρες (-90 έως 90)
 
 set servo _ to speed _ (-100 to 100)
---MISSING--
+ορίστε το servo _ στην ταχύτητα _ (-100 έως 100)
 
 stop servo _
---MISSING--
+σταματήστε το σερβο _
 
 ####
 # 5x5 LED display library
@@ -686,22 +686,22 @@ stop servo _
 # with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
---MISSING--
+Οθόνη LED
 
 display _
-écran _
+εμφάνισε _
 
 clear display
-effacer l'écran
+καθάρισμα Οθόνης
 
 plot x _ y _
-allumer x _ y _
+σχεδιάσε x _ y _
 
 unplot x _ y _
-éteindre x _ y _
+καθάρισε x _ y _
 
 display character _
---MISSING--
+εμφάνισε χαρακτήρα _
 
 ####
 # TFT display library
@@ -747,58 +747,58 @@ scale _ wrap _
 # Generates music tones on buzzers
 
 Tone
---MISSING--
+Τόνος
 
 attach buzzer to pin _
---MISSING--
+επισυνάψτε το βομβητή στον ακροδέκτη _
 
 play note _ octave _ for _ ms
---MISSING--
+παίξτε νότα _ οκτάβα _ για _ χδ
 
 play frequency _ for _ ms
---MISSING--
+παίξτε συχνότητα _ για _ χδ
 
 play midi key _ for _ ms
---MISSING--
+παίξτε πλήκτρο midi _ για _ ms
 
 ####
 # Turtle geometry library
 
 Turtle
---MISSING--
+Χελώνα 
 
 home
---MISSING--
+Σπίτι
 
 move _
---MISSING--
+κινήθου _
 
 turn _ degrees
---MISSING--
+στροφή _ μοίρες
 
 turn _ / _ of circle
---MISSING--
+στρίψε _ / _ του κύκλου
 
 pen down
---MISSING--
+πέννα κάτω
 
 pen up
---MISSING--
+πέννα πάνω
 
 set pen color to _
---MISSING--
+όρισε την πέννα στο χρώμα _
 
 set pen to random color
---MISSING--
+όρισε την πέννα σε τυχαίο χρώμα
 
 fill display with _
---MISSING--
+γέμισε την οθόνη με _
 
 go to x _ y _
---MISSING--
+προχώρα στο x _ y _
 
 point in direction _
---MISSING--
+σημείο στην κατεύθυνση _
 
 ####
 # File system library
@@ -831,7 +831,7 @@ next _ bytes of file _
 --MISSING--
 
 starting at _
---MISSING--
+ξεκινά από _
 
 file names
 --MISSING--
@@ -883,16 +883,16 @@ set step threshold _ (0-50)
 # Button Events library
 
 Button Events
---MISSING--
+Κομβίον Συμβάντα
 
 button _ double pressed
---MISSING--
+κομβίο _ διπλό πάτημα
 
 button _ long pressed
---MISSING--
+κομβίο _ μακρύ πάτημα
 
 button _ pressed
---MISSING--
+κομβίο _ πατήθηκε
 
 ####
 # Calliope board library
@@ -952,34 +952,34 @@ bme280 humidity
 # TCS34725 color sensor
 
 TCS34725 connected
---MISSING--
+TCS34725 συνδέθηκε
 
 TCS34725 rgb
---MISSING--
+TCS34725 κπμ
 
 color _ name
---MISSING--
+χρώμα _ όνομα
 
 ####
 # DHT11 environmental sensor
 
 temperature (Celsius) DHT11 pin _
---MISSING--
+θερμοκρασία (Κελσίου) DHT11 ακροδέκτης _
 
 humidity DHT11 pin _
---MISSING--
+υγρασία DHT11 ακροδέκτης _ 
 
 temperature (Celsius) DHT22 pin _
---MISSING--
+θερμοκρασία (Κελσίου) DHT22 ακροδέκτης _
 
 humidity DHT22 pin _
---MISSING--
+υγρασία DHT22 ακροδέκτης _ 
 
 ####
 # PN532 RFID reader
 
 read PN532 RFID
---MISSING--
+διάβασε PN532 RFID
 
 RFID _ = _
 --MISSING--
@@ -1078,10 +1078,10 @@ events JSON
 # buttons, error & info messages, dialog boxes, etc
 
 New
---MISSING--
+Νέο
 
 Open
---MISSING--
+Άνοιξε
 
 Open from board
 --MISSING--
@@ -1105,13 +1105,13 @@ Do you want me to update the one in the project?
 --MISSING--
 
 Save
---MISSING--
+Αποθήκευσε
 
 Connect
---MISSING--
+Συνδέσου
 
 disconnect
---MISSING--
+Αποσυνδέσου
 
 Serial port:
 --MISSING--
@@ -1132,7 +1132,7 @@ Select board:
 --MISSING--
 
 Could not read:
---MISSING--
+Δεν μπορεί να διαβάσει
 
 by
 --MISSING--
@@ -1437,16 +1437,16 @@ Libraries
 --MISSING--
 
 Examples
---MISSING--
+Παραδείγματα
 
 Desktop
---MISSING--
+Οθόνη
 
 Computer
---MISSING--
+Υποολογιστής
 
 Cloud
---MISSING--
+Νέφος
 
 File
 --MISSING--
@@ -1461,7 +1461,7 @@ File name:
 --MISSING--
 
 New Folder
---MISSING--
+Νέος Φάκελος
 
 by
 --MISSING--

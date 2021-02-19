@@ -1,0 +1,123 @@
+module RC522 Input
+author 'José García Yeste'
+version 1 0 
+tags sensor RFID 
+description 'Support for RFID 522 sensor.
+
+Based on: https://github.com/m5stack/UIFlow-Code/blob/master/units/_rfid.py
+
+Tested with: https://m5stack.com/products/rfid-sensor-unit'
+
+variables '_RC522 initialized' 
+
+	spec 'r' 'RC522 connected' 'RC522 connected'
+	spec ' ' 'RC522 setup' 'RC522 setup'
+	spec 'r' 'RC522 card present' 'RC522 is card present'
+	spec 'r' 'RC522 read uid' 'RC522 read RFID'
+	spec 'r' 'RFID' 'RFID _ = _' 'auto auto' '' ''
+	spec ' ' '_RC522 set register' '_RC522 set register _ mask _' 'auto auto' 0 128
+	spec ' ' '_RC522 clear register' '_RC522 clear register _ mask _' 'auto auto' 0 128
+	spec 'r' '_RC522 send to card' '_RC522 send to card _ _' 'auto auto' 0 'list'
+	spec 'r' '_RC522 request' '_RC522 request'
+	spec ' ' '_RC522 antenna on' '_RC522 antenna on'
+
+to 'RC522 card present' {
+  'RC522 setup'
+  local 'res' ('_RC522 request')
+  if ((at 1 res) == 0) {
+    if ((size res) == 3) {
+      return (booleanConstant true)
+    } else {
+      waitMillis 5
+      res = ('_RC522 request')
+      return ((size res) == 3)
+    }
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to 'RC522 connected' {
+  'RC522 setup'
+  local 'version' (i2cGet 40 (hexToInt '37'))
+  return (and (version >= (hexToInt '90')) (version <= (hexToInt '92')))
+}
+
+to 'RC522 read uid' {
+  if ('RC522 card present') {
+    i2cSet 40 (hexToInt '0D') 0
+    local 'res' ('_RC522 send to card' (hexToInt '0C') ('[data:makeList]' (hexToInt '93') (hexToInt '20')))
+    '[data:delete]' 1 res
+    '[data:delete]' 'last' res
+    return res
+  } else {
+    return ('[data:makeList]')
+  }
+}
+
+to 'RC522 setup' {
+  if ((v '_RC522 initialized') == 0) {
+    '_RC522 initialized' = 1
+    i2cSet 40 1 (hexToInt 'F')
+    waitMillis 1
+    i2cSet 40 (hexToInt '2A') (hexToInt '80')
+    i2cSet 40 (hexToInt '2B') (hexToInt 'A9')
+    i2cSet 40 (hexToInt '2C') (hexToInt '03')
+    i2cSet 40 (hexToInt '2D') (hexToInt 'E8')
+    i2cSet 40 (hexToInt '15') (hexToInt '40')
+    i2cSet 40 (hexToInt '11') (hexToInt '3D')
+    '_RC522 antenna on'
+  }
+}
+
+to RFID id1 id2 {
+  if (or (id1 == 0) (id1 == 0)) {return (booleanConstant false)}
+  if ((size id1) != (size id2)) {return (booleanConstant false)}
+  for i (size id1) {
+    if ((at i id1) != (at i id2)) {return (booleanConstant false)}
+  }
+  return (booleanConstant true)
+}
+
+to '_RC522 antenna on' {
+  local 'value' (i2cGet 40 (hexToInt '14'))
+  if ((value & 3) != 3) {
+    i2cSet 40 (hexToInt '14') (value | 3)
+  }
+}
+
+to '_RC522 clear register' reg mask {
+  i2cSet 40 reg ((i2cGet 40 reg) & ('~' mask))
+}
+
+to '_RC522 request' {
+  i2cSet 40 (hexToInt '0D') 7
+  return ('_RC522 send to card' (hexToInt '0C') ('[data:makeList]' (hexToInt '26')))
+}
+
+to '_RC522 send to card' cmd send {
+  i2cSet 40 2 ((hexToInt '77') | (hexToInt '80'))
+  '_RC522 clear register' (hexToInt '04') (hexToInt '80')
+  '_RC522 set register' (hexToInt '0A') (hexToInt '80')
+  for i (size send) {
+    i2cSet 40 9 (at i send)
+  }
+  i2cSet 40 1 cmd
+  '_RC522 set register' (hexToInt '0D') (hexToInt '80')
+  waitMillis 10
+  '_RC522 clear register' (hexToInt '0D') (hexToInt '80')
+  local 'response' (newList 1)
+  atPut 1 response ((i2cGet 40 6) & (hexToInt '1B'))
+  if ((at 1 response) == 0) {
+    local 'n' (i2cGet 40 (hexToInt '0A'))
+    for i n {
+      '[data:addLast]' (i2cGet 40 9) response
+    }
+  }
+  return response
+}
+
+to '_RC522 set register' reg mask {
+  i2cSet 40 reg ((i2cGet 40 reg) | mask)
+}
+

@@ -274,7 +274,7 @@ method readCodeFromNextBoardConnected SmallRuntime {
 }
 
 method readCodeFromBoard SmallRuntime {
-	decompilerStatus = 'Reading project from board...'
+	decompilerStatus = (localized 'Reading project from board...')
 	closeAllDialogs (findMicroBlocksEditor)
 	decompiler = (newDecompiler)
 	spinner = (newSpinner (action 'decompilerStatus' this) (action 'decompilerDone' this))
@@ -306,7 +306,7 @@ method startReadingCode SmallRuntime {
 
 	print 'decompiler read' (count (getField decompiler 'vars')) 'vars' (count (getField decompiler 'chunks')) 'chunks'
 	proj = (decompileProject decompiler)
-	decompilerStatus = 'Loading project...'
+	decompilerStatus = (localized 'Loading project...')
 	installDecompiledProject this proj
 }
 
@@ -325,12 +325,12 @@ method stopDecompilation SmallRuntime {
 }
 
 method waitForPing SmallRuntime {
-	// Wait for up to timeout to get a ping back from the board.
-	// Used to ensure that the board is responding before fetching code to decompile.
+	// Try to get a ping back from the board. Used to ensure that the board is responding.
 
-	timeout = 1000
+	endMSecs = ((msecsSinceStart) + 1000)
 	lastPingRecvMSecs = 0
 	while (0 == lastPingRecvMSecs) {
+		if ((msecsSinceStart) > endMSecs) { return } // no response within the timeout
 		sendMsg this 'pingMsg'
 		processMessages this
 		waitMSecs 10
@@ -585,6 +585,14 @@ method portList SmallRuntime {
 				add portList (join '/dev/' fn)
 			}
 		}
+		if false { //(devMode) {
+			if ('Linux' == (platform)) {
+				// add pseudoterminals
+				for fn (listFiles '/dev/pts') {
+					add portList (join '/dev/pts/' fn)
+				}
+			}
+		}
 		// Mac OS lists a port as both cu.<name> and tty.<name>
 		for s (copy portList) {
 			if (beginsWith s '/dev/tty.') {
@@ -632,6 +640,10 @@ method closePort SmallRuntime {
 	port = nil
 	vmVersion = nil
 	boardType = nil
+
+	// remove talk bubble and running highlights when disconnected
+	removeHint (global 'page')
+	clearRunningHighlights this
 }
 
 method enableAutoConnect SmallRuntime syncScriptsFlag {
@@ -745,6 +757,7 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this
 			}
+			setSerialDelay this 5
 			return 'connected'
 		} else {
 			portName = nil
@@ -780,7 +793,9 @@ method tryToConnect SmallRuntime {
 				stopAndSyncScripts this
 			}
 			if ('Mac' == (platform)) {
-				setSerialDelay this 8
+				setSerialDelay this 2
+			} else {
+				setSerialDelay this 10
 			}
 			return 'connected'
 		}
@@ -815,8 +830,8 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '1.0.10' }
-method latestVmVersion SmallRuntime { return 107 }
+method ideVersion SmallRuntime { return '1.0.13' }
+method latestVmVersion SmallRuntime { return 108 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = (newline)
@@ -962,10 +977,12 @@ method saveAllChunks SmallRuntime {
 	removeObsoleteChunks this
 	for aFunction (allFunctions (project scripter)) {
 		saveChunk this aFunction
+		if (isNil port) { return } // connection closed
 	}
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
 			saveChunk this aBlock
+			if (isNil port) { return } // connection closed
 		}
 	}
 }
@@ -1171,12 +1188,16 @@ method clearVariableNames SmallRuntime {
 // Serial Delay
 
 method serialDelayMenu SmallRuntime {
-	menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
-	for i 25 { addItem menu i }
+	menu = (menu (join 'Serial delay' (newline) '(smaller is faster, but may fail if computer cannot keep up)') (action 'setSerialDelay' this) true)
+	for i (range 1 5)  { addItem menu i }
+	for i (range 6 20 2)  { addItem menu i }
+	addLine menu
+	addItem menu 'reset to default'
 	popUpAtHand menu (global 'page')
 }
 
 method setSerialDelay SmallRuntime newDelay {
+	if ('reset to default' == newDelay) { newDelay = 10 }
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
 
@@ -1308,7 +1329,13 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 
 	readAvailableSerialData this
 	sendMsg this msgName chunkID byteList
-	waitForResponse this
+	ok = (waitForResponse this)
+	if (not ok) {
+		print 'Lost communication to the board in sendMsgSync'
+		closePort this
+		return false
+	}
+	return true
 }
 
 method readAvailableSerialData SmallRuntime {
@@ -1323,21 +1350,22 @@ method readAvailableSerialData SmallRuntime {
 
 method waitForResponse SmallRuntime {
 	// Wait for some data to arrive from the board. This is taken to mean that the
-	// previous operation has completed.
+	// previous operation has completed. Return true if a response was received.
 
 	sendMsg this 'pingMsg'
 	timeout = 2000
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
-		if (isNil port) { return }
+		if (isNil port) { return false }
 		s = (readSerialPort port true)
 		if (notNil s) {
 			recvBuf = (join recvBuf s)
-			return
+			return true
 		}
 		sendMsg this 'pingMsg'
 		waitMSecs 25
 	}
+	return false
 }
 
 method ensurePortOpen SmallRuntime {
@@ -1356,11 +1384,8 @@ method ensurePortOpen SmallRuntime {
 
 method processMessages SmallRuntime {
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
-	processingMessages = true
-	count = 0
-	while (and processingMessages (count < 10)) {
-		processingMessages = (processNextMessage this)
-		count += 1
+	repeat 100 { // process up to N messages
+		if (not (processNextMessage this)) { return } // done!
 	}
 }
 

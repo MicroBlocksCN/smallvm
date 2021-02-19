@@ -12,17 +12,22 @@
 // Bernat Romagosa, February 2018
 
 #define _XOPEN_SOURCE 600
+#define _DEFAULT_SOURCE
 
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h> // still needed?
 #include <sys/ioctl.h>
 #include <sys/time.h> // still needed?
+#include <termios.h>
 #include <unistd.h>
 
 #include "mem.h"
 #include "interp.h"
 #include "persist.h"
+
+// Keyboard
+int KEY_SCANCODE[255];
 
 // Timing Functions
 
@@ -48,9 +53,18 @@ uint32 millisecs() {
 	return (1000 * (now.tv_sec - startSecs)) + (now.tv_usec / 1000);
 }
 
+void delay(int ms) {
+	clock_t start = millisecs();
+	while (millisecs() < start + ms);
+}
+
 // Communication/System Functions
 
 static int pty; // pseudo terminal used for communication with the IDE
+
+int serialConnected() {
+	return pty > -1;
+}
 
 static void openPseudoTerminal() {
 	pty = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -58,6 +72,12 @@ static void openPseudoTerminal() {
 		perror("Error opening pseudo terminal\n");
 		exit(-1);
 	}
+
+	struct termios settings;
+	tcgetattr(pty, &settings);
+	cfmakeraw(&settings);
+	tcsetattr(pty, TCSANOW, &settings);
+
  	grantpt(pty);
  	unlockpt(pty);
 }
@@ -81,7 +101,6 @@ int sendByte(char aByte) {
 // System Functions
 
 const char * boardType() { return "Linux"; }
-void systemReset() { } // noop on Linux
 
 // Stubs for IO primitives
 
@@ -92,49 +111,15 @@ void primAnalogWrite(OBJ *args) { }
 OBJ primDigitalRead(int argCount, OBJ *args) { return int2obj(0); }
 void primDigitalWrite(OBJ *args) { }
 void primDigitalSet(int pinNum, int flag) { };
-OBJ primButtonA(OBJ *args) { return falseObj; }
-OBJ primButtonB(OBJ *args) { return falseObj; }
-void primSetUserLED(OBJ *args) { }
 void stopServos() { }
 
-OBJ primI2cGet(OBJ *args) { return int2obj(0); }
-OBJ primI2cSet(OBJ *args) { return int2obj(0); }
-OBJ primSPISend(OBJ *args) { return int2obj(0); }
-OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
-OBJ primI2cRead(OBJ *args) { return int2obj(0); }
-OBJ primI2cWrite(OBJ *args) { return int2obj(0); }
+// Stubs for other functions not used on Linux
 
-// Bogus micro:bit primitives
-
-OBJ primMBDisplay(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBDisplayOff(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBPlot(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBUnplot(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
-
-OBJ primNeoPixelSend(int argCount, OBJ *args) { return falseObj; }
-OBJ primNeoPixelSetPin(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBDrawShape(int argCount, OBJ *args) { return falseObj; }
-OBJ primMBShapeForLetter(int argCount, OBJ *args) { return int2obj(0); }
-
-// Other bogus primitives
-
+void processFileMessage(int msgType, int dataSize, char *data) {}
 void resetServos() {}
-void stopTone() {}
-void turnOffInternalNeoPixels() {}
+void stopPWM() {}
+void systemReset() {}
 void turnOffPins() {}
-void addDisplayPrims() {}
-void addSensorPrims() {}
-void addTFTPrims() {}
-void addIOPrims() {}
-void addNetPrims() {}
-void primWifiConnect(OBJ *args) {}
-int wifiStatus() { return 0; }
-OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
-OBJ primGetIP(int argCount, OBJ *args) { return falseObj; }
 
 // Persistence support
 
@@ -175,7 +160,9 @@ void clearCodeFile(int ignore) {
 
 int main() {
 	openPseudoTerminal();
-	printf("Starting Linux MicroBlocks... Connect on %s\n", (char*) ptsname(pty));
+	printf(
+		"Starting Linux MicroBlocks... Connect on %s\n",
+		(char*) ptsname(pty));
 	initTimers();
 	memInit(10000); // 10k words = 40k bytes
 	primsInit();

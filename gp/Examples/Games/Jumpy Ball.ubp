@@ -36,9 +36,9 @@ to 'draw ball' {
 }
 
 to 'draw pipes' {
-  '[tft:rect]' ((v 'pipe x') + ((v 'pipe width') + 2)) 0 2 (v 'pipe height') 0 true
+  '[tft:rect]' ((v 'pipe x') + (v 'pipe width')) 0 (v 'pipe width') (v 'pipe height') 0 true
   '[tft:rect]' (v 'pipe x') 0 (v 'pipe width') (v 'pipe height') 65280 true
-  '[tft:rect]' ((v 'pipe x') + ((v 'pipe width') + 2)) ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 0 true
+  '[tft:rect]' ((v 'pipe x') + (v 'pipe width')) ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 0 true
   '[tft:rect]' (v 'pipe x') ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 65280 true
 }
 
@@ -95,7 +95,7 @@ to 'welcome screen' {
   '[tft:text]' 'or X' (('[tft:getWidth]') / 3) (('[tft:getHeight]') - (('[tft:getHeight]') / 6)) 16777215 (('[tft:getHeight]') / 60) false
 }
 
-script 50 50 {
+script 54 54 {
 whenStarted
 'welcome screen'
 forever {

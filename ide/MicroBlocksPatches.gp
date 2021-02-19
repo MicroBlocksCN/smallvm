@@ -320,8 +320,6 @@ to gpFolder {
   return path
 }
 
-to gpExamplesFolder { return 'Examples' }
-
 method clicked Block hand {
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
     userRenameVariable this
