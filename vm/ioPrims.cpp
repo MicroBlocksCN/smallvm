@@ -447,8 +447,8 @@ void restartSerial() {
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
-		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
+		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
+		1, 1, 0, 0, 1, 1, 0, 0, 1, 0};
 
 #elif defined(ARDUINO_M5Stick_C)
 	#define BOARD_TYPE "M5StickC"
@@ -465,7 +465,7 @@ void restartSerial() {
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1, 1, 0, 1, 1, 1,
-		1, 1, 0, 0, 0, 1, 0, 0, 1, 0};
+		1, 1, 0, 0, 1, 1, 0, 0, 1, 0};
 
 #elif defined(ARDUINO_M5CoreInk)
 	#define BOARD_TYPE "M5CoreInk"

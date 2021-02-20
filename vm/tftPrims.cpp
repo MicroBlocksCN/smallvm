@@ -171,8 +171,12 @@ int touchEnabled = false;
 			tftClear();
 
 			Wire1.begin(21, 22, 400000);
+
+			// turn on LCD power pins (LD02 and LD03) = 0x0C
+			// and for C+, turn on Ext (0x40) for the buzzer and DCDC1 (0x01) since M5Stack's init code does that
 			int n = readAXP(0x12);
-			writeAXP(0x12, n | 0x0C); // turn on LCD power pins (LD02 and LD03)
+			writeAXP(0x12, n | 0x4D);
+
 			int brightness = 12; // useful range: 7-12 (12 is max)
 			n = readAXP(0x28);
 			writeAXP(0x28, (brightness << 4) | (n & 0x0f)); // set brightness
