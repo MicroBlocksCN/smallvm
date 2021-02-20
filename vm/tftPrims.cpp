@@ -289,6 +289,28 @@ OBJ primEnableDisplay(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+OBJ primSetBacklight(int argCount, OBJ *args) {
+	if ((argCount < 1) || !isInt(args[0])) return falseObj;
+	int brightness = obj2int(args[0]);
+
+	#if defined(ARDUINO_IOT_BUS)
+		pinMode(33, OUTPUT);
+		digitalWrite(33, (brightness > 0) ? HIGH : LOW);
+	#elif defined(ARDUINO_M5Stack_Core_ESP32)
+		pinMode(32, OUTPUT);
+		digitalWrite(32, (brightness > 0) ? HIGH : LOW);
+	#elif defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_Plus)
+		brightness = (brightness <= 0) ? 0 : brightness + 7; // 8 is lowest setting that turns on backlight
+		if (brightness > 15) brightness = 15;
+		int n = readAXP(0x28);
+		writeAXP(0x28, (brightness << 4) | (n & 0x0f)); // set brightness (high 4 bits of reg 0x28)
+	#elif defined(ARDUINO_NRF52840_CLUE)
+		pinMode(34, OUTPUT);
+		digitalWrite(34,  (brightness > 0) ? HIGH : LOW);
+	#endif
+	return falseObj;
+}
+
 static int color24to16b(int color24b) {
 	// Convert 24-bit RGB888 format to the TFT's color format (e.g. 16-bit RGB565).
 
@@ -536,6 +558,7 @@ static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 
 static PrimEntry entries[] = {
 	{"enableDisplay", primEnableDisplay},
+	{"setBacklight", primSetBacklight},
 	{"getWidth", primGetWidth},
 	{"getHeight", primGetHeight},
 	{"setPixel", primSetPixel},
