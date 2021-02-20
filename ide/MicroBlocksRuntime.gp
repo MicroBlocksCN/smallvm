@@ -1353,7 +1353,7 @@ method waitForResponse SmallRuntime {
 	// previous operation has completed. Return true if a response was received.
 
 	sendMsg this 'pingMsg'
-	timeout = 2000
+	timeout = 60000 // enough time for a long Flash compaction
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
 		if (isNil port) { return false }
@@ -1369,6 +1369,7 @@ method waitForResponse SmallRuntime {
 }
 
 method ensurePortOpen SmallRuntime {
+	if (true == disconnected) { return }
 	if (isWebSerial this) { return }
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		if (and (notNil portName)
