@@ -188,13 +188,27 @@ static OBJ primStartSSIDscan(int argCount, OBJ *args) {
 static OBJ primGetSSID(int argCount, OBJ *args) {
 	char ssid[100];
 	ssid[0] = '\0'; // clear string
-	char *s = ssid;
-	strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1).c_str(), 31);
-	return newStringFromBytes(s, strlen(s));
+	#ifdef USE_WIFI101
+		strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1), 31);
+	#else
+		strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1).c_str(), 31);
+	#endif
+	return newStringFromBytes(ssid, strlen(ssid));
 }
 
 static OBJ primGetMAC(int argCount, OBJ *args) {
-	return newStringFromBytes(WiFi.macAddress().c_str(), 18);
+	#ifdef USE_WIFI101
+		unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
+		// Note: WiFi.macAddress() returns incorrect MAC address before first connection.
+		// Make it return all zeros rather than random garbage.
+		if (isConnectedToWiFi()) WiFi.macAddress(mac);
+		char s[32];
+		sprintf(s, "%.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
+			mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+		return newStringFromBytes(s, strlen(s));
+	#else
+		return newStringFromBytes(WiFi.macAddress().c_str(), 18);
+	#endif
 }
 
 // HTTP Server
