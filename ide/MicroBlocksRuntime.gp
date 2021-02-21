@@ -370,6 +370,25 @@ method receivedVarName SmallRuntime varID varName byteCount {
 	}
 }
 
+// HTTP server support
+
+method readVarsFromBoard SmallRuntime client {
+	if (notNil decompiler) { return }
+
+	// pretend to be a decompiler to collect variable names
+	decompiler = client
+	waitForPing this
+	sendMsg this 'getVarNamesMsg'
+	lastRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - lastRcvMSecs) < 50) {
+		processMessages this
+		waitMSecs 10
+	}
+	// clear decompiler
+	decompiler = nil
+}
+
+
 // chunk management
 
 method syncScripts SmallRuntime {
@@ -850,6 +869,7 @@ method checkBoardType SmallRuntime {
 		vmVersion = nil
 		getVersion this
 	}
+	return boardType
 }
 
 method getVersion SmallRuntime {
