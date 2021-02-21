@@ -538,6 +538,7 @@ void tftSetHugePixel(int x, int y, int state) { }
 void tftSetHugePixelBits(int bits) { }
 
 static OBJ primEnableDisplay(int argCount, OBJ *args) { return falseObj; }
+static OBJ primSetBacklight(int argCount, OBJ *args) { return falseObj; }
 static OBJ primGetWidth(int argCount, OBJ *args) { return int2obj(0); }
 static OBJ primGetHeight(int argCount, OBJ *args) { return int2obj(0); }
 static OBJ primSetPixel(int argCount, OBJ *args) { return falseObj; }
