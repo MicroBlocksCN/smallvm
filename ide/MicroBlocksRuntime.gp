@@ -1946,8 +1946,11 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} else {
+			disconnected = true
+			closePort this
 			menu = (menu 'Select board type:' this)
 			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') {
+				eraseFlashFlag = true
 				addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
 			}
 			addLine menu

@@ -367,7 +367,7 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 	waitMSecs 1500
 	if eraseFlag {
 		status = 'Initializing file system; this takes a while...'
-		waitMSecs 60000
+		waitMSecs 75000
 	}
 	if closeWhenDone { closePort this }
 	enableAutoConnect (smallRuntime)
