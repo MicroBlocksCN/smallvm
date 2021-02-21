@@ -1,6 +1,6 @@
 module Strings Data
 author MicroBlocks
-version 1 1 
+version 1 2 
 description 'String operations.'
 
 	spec 'r' 'isDigit' 'is digit _' 'str' '5'
@@ -73,6 +73,7 @@ to lowercase string {
 
 to split string separator {
   local 'list' ('[data:makeList]')
+  if (string == '') { return list }
   if (separator == '') {
     for i (size string) {
       '[data:addLast]' (at i string) list
