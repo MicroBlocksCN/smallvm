@@ -129,7 +129,7 @@ method varValueReceived MicroBlocksHTTPServer varID value {
 	}
 }
 
-defineClass MicroBlocksHTTPWorker server sock inBuf outBuf broadcastsFromBoard
+defineClass MicroBlocksHTTPWorker server sock inBuf outBuf broadcastsFromBoard varNames
 
 to newMicroBlocksHTTPWorker aMicroBlocksHTTPServer aSocket {
 	return (initialize (new 'MicroBlocksHTTPWorker') aMicroBlocksHTTPServer aSocket)
@@ -242,6 +242,12 @@ method handleRequest MicroBlocksHTTPWorker header body {
 			responseBody = (getVar this path)
 		} (beginsWith path '/setVar') {
 			responseBody = (setVar this path)
+		} ('/varNames' == path) {
+			responseBody = (fetchVarNamesFromBoard this)
+		} ('/board' == path) {
+			boardType = (checkBoardType (smallRuntime))
+			if (or (isNil boardType) ('' == boardType)) { boardType = 'none' }
+			responseBody = boardType
 		} else {
 			responseBody = 'Unrecognized request'
 		}
@@ -270,6 +276,8 @@ method helpString MicroBlocksHTTPWorker {
 	add result '  (double-quote strings that would otherwise be treated as a boolean or integer such as "true", "false", or "12345")'
 	add result '/broadcast/URL_encoded_message - broadcast message to board'
 	add result '/getBroadcasts - get broadcasts from board, (URL-encoded strings, one per line)'
+	add result '/varNames - get all variable names, one per line'
+	add result '/board - get the board type; return "none" if no board is connected'
 	add result ''
 	add result 'Lists and byte arrays are not supported, although getVar reports them as they would be shown by the "say" block'
 	return (joinStrings result (newline))
@@ -324,7 +332,7 @@ method setVar MicroBlocksHTTPWorker path {
 	if (isNil i) { return 'error: unexpected URL format' }
 	varName = (urlDecode (substring path 9 (i - 1)))
 	valueString = (substring path (i + 1))
-	if (representsAnInteger valueString)  {
+	if (representsAnInteger valueString) {
 		value = (toInteger valueString)
 	} ('true' == valueString) {
 		value = true
@@ -340,4 +348,18 @@ method setVar MicroBlocksHTTPWorker path {
 	id = (variableIndex server varName)
 	if (notNil id) { setVar (smallRuntime) (id - 1) value } // VM uses zero-based index
 	return valueString
+}
+
+// fetching variable names
+
+method fetchVarNamesFromBoard MicroBlocksHTTPWorker {
+	varNames = (dictionary)
+	readVarsFromBoard (smallRuntime) this
+	return (joinStrings (sorted (keys varNames)) (newline))
+}
+
+method addVar MicroBlocksHTTPWorker varID varName {
+	// Called by MicroBlocksRuntime when variable name message received.
+
+	add varNames varName
 }
