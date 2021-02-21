@@ -826,10 +826,22 @@ static void sendVarNameMessage(int varID, int *persistentRecord) {
 	}
 }
 
+static int* varsStart() {
+	int *p = scanStart();
+
+	// find the last varsClearAll record
+	int *result = p;
+	while (p) {
+		if (varsClearAll == ((*p >> 16) & 0xFF)) result = p;
+		p = recordAfter(p);
+	}
+	return result;
+}
+
 static void sendVarNames() {
 	// Send the names of all variables.
 
-	int *p = scanStart();
+	int *p = varsStart();
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
 		int varID = (*p >> 8) & 0xFF;
@@ -842,7 +854,7 @@ int indexOfVarNamed(const char *s) {
 	// Return the index of the given variable or -1 if not found.
 
 	int result = -1; // default is not found
-	int *p = scanStart();
+	int *p = varsStart();
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
 		int id = (*p >> 8) & 0xFF;
