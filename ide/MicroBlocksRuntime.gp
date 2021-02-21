@@ -776,7 +776,7 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this
 			}
-			setSerialDelay this 5
+			setDefaultSerialDelay this
 			return 'connected'
 		} else {
 			portName = nil
@@ -811,11 +811,7 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this
 			}
-			if ('Mac' == (platform)) {
-				setSerialDelay this 2
-			} else {
-				setSerialDelay this 10
-			}
+			setDefaultSerialDelay this
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
@@ -1216,8 +1212,12 @@ method serialDelayMenu SmallRuntime {
 	popUpAtHand menu (global 'page')
 }
 
+method setDefaultSerialDelay SmallRuntime {
+	setSerialDelay this 'reset to default'
+}
+
 method setSerialDelay SmallRuntime newDelay {
-	if ('reset to default' == newDelay) { newDelay = 10 }
+	if ('reset to default' == newDelay) { newDelay = 5 }
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
 
