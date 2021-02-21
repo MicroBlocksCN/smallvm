@@ -789,6 +789,8 @@ static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chun
 	}
 }
 
+void delay(int); // Arduino delay function
+
 static void sendAllCode() {
 	// Send the code and attributes for all chunks to the IDE.
 
