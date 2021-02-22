@@ -414,7 +414,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 124
 	RESERVED 125
 		callCommandPrimitive 126
-		callReporterPrimitive 127'
+		callReporterPrimitive 127
+		metadata 240'
 	opcodes = (dictionary)
 	for line (lines opcodeDefinitions) {
 		words = (words line)
@@ -967,7 +968,8 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 	// Append a tab-delimited list of local variables to instructionList.
 	// This string is part of the optional metadata used by the decompiler.
 
-	add instructionList 240 // mark the start of the decompiler meta data
+	// the 'metadata' pseudo instruction marks the start of the decompiler meta data
+	add instructionList (array 'metadata' 0)
 
 	// add local variable names
 	varNames = (list)

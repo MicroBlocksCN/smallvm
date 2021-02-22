@@ -114,15 +114,24 @@ int touchEnabled = false;
 	#elif defined(ARDUINO_M5Stick_C)
 		// Preliminary: this is not yet working...
 		#include "Adafruit_GFX.h"
-		#include "Adafruit_ST7735.h"
 
 		#define TFT_CS		5
 		#define TFT_DC		23
 		#define TFT_RST		18
 
+                #ifdef ARDUINO_M5Stick_Plus
+		#include "Adafruit_ST7789.h"
+		#define TFT_WIDTH	240
+		#define TFT_HEIGHT	135
+                #else
+		#include "Adafruit_ST7735.h"
 		#define TFT_WIDTH	160
 		#define TFT_HEIGHT	80
+                #endif
 
+                #ifdef ARDUINO_M5Stick_Plus
+                Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+                #else
 		// make a subclass so we can adjust the x/y offsets
 		class M5StickLCD : public Adafruit_ST7735 {
 		public:
@@ -133,6 +142,7 @@ int touchEnabled = false;
 			}
 		};
 		M5StickLCD tft = M5StickLCD(TFT_CS, TFT_DC, TFT_RST);
+                #endif
 
 		int readAXP(int reg) {
 			Wire1.beginTransmission(0x34);
@@ -150,15 +160,23 @@ int touchEnabled = false;
 		}
 
 		void tftInit() {
+                        #ifdef ARDUINO_M5Stick_Plus
+			tft.init(TFT_HEIGHT, TFT_WIDTH);
+                        #else
 			tft.initR(INITR_MINI160x80);
 			tft.setOffsets(26, 1);
+                        #endif
 			tft.setRotation(1);
 			tft.invertDisplay(true); // display must be inverted to give correct colors...
 			tftClear();
 
 			Wire1.begin(21, 22, 400000);
+
+			// turn on LCD power pins (LD02 and LD03) = 0x0C
+			// and for C+, turn on Ext (0x40) for the buzzer and DCDC1 (0x01) since M5Stack's init code does that
 			int n = readAXP(0x12);
-			writeAXP(0x12, n | 0x0C); // turn on LCD power pins (LD02 and LD03)
+			writeAXP(0x12, n | 0x4D);
+
 			int brightness = 12; // useful range: 7-12 (12 is max)
 			n = readAXP(0x28);
 			writeAXP(0x28, (brightness << 4) | (n & 0x0f)); // set brightness
@@ -268,6 +286,28 @@ OBJ primEnableDisplay(int argCount, OBJ *args) {
 	} else {
 		useTFT = false;
 	}
+	return falseObj;
+}
+
+OBJ primSetBacklight(int argCount, OBJ *args) {
+	if ((argCount < 1) || !isInt(args[0])) return falseObj;
+	int brightness = obj2int(args[0]);
+
+	#if defined(ARDUINO_IOT_BUS)
+		pinMode(33, OUTPUT);
+		digitalWrite(33, (brightness > 0) ? HIGH : LOW);
+	#elif defined(ARDUINO_M5Stack_Core_ESP32)
+		pinMode(32, OUTPUT);
+		digitalWrite(32, (brightness > 0) ? HIGH : LOW);
+	#elif defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Stick_Plus)
+		brightness = (brightness <= 0) ? 0 : brightness + 7; // 8 is lowest setting that turns on backlight
+		if (brightness > 15) brightness = 15;
+		int n = readAXP(0x28);
+		writeAXP(0x28, (brightness << 4) | (n & 0x0f)); // set brightness (high 4 bits of reg 0x28)
+	#elif defined(ARDUINO_NRF52840_CLUE)
+		pinMode(34, OUTPUT);
+		digitalWrite(34,  (brightness > 0) ? HIGH : LOW);
+	#endif
 	return falseObj;
 }
 
@@ -518,6 +558,7 @@ static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 
 static PrimEntry entries[] = {
 	{"enableDisplay", primEnableDisplay},
+	{"setBacklight", primSetBacklight},
 	{"getWidth", primGetWidth},
 	{"getHeight", primGetHeight},
 	{"setPixel", primSetPixel},

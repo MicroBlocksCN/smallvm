@@ -49,6 +49,7 @@ method baudForBoard ESPTool boardName {
 	} ('Citilab ED1' == boardName) { return 230400
 	} ('M5Stack-Core' == boardName) { return 230400
 	} ('M5StickC' == boardName) { return 230400
+	} ('M5StickC+' == boardName) { return 230400
 	} ('M5Atom-Matrix' == boardName) { return 115200
 	}
 	return 115200
@@ -364,6 +365,10 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 	waitMSecs 200 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
 	exitBootMode this
 	waitMSecs 1500
+	if eraseFlag {
+		status = 'Initializing file system; this takes a while...'
+		waitMSecs 60000
+	}
 	if closeWhenDone { closePort this }
 	enableAutoConnect (smallRuntime)
 }
@@ -395,6 +400,7 @@ method vmNameForBoard ESPTool boardName {
 	} ('Citilab ED1' == boardName) { return 'vm.citilab-ed1.bin'
 	} ('M5Stack-Core' == boardName) { return 'vm.m5stack.bin'
 	} ('M5StickC' == boardName) { return 'vm.m5stick.bin'
+	} ('M5StickC+' == boardName) { return 'vm.m5stick+.bin'
 	} ('M5Atom-Matrix' == boardName) { return 'vm.m5atom.bin'
 	}
 	return nil

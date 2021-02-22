@@ -16,6 +16,8 @@ pio run -e m5stack
 cp .pio/build/m5stack/firmware.bin precompiled/vm.m5stack.bin
 pio run -e m5stick
 cp .pio/build/m5stick/firmware.bin precompiled/vm.m5stick.bin
+pio run -e m5stick+
+cp .pio/build/m5stick+/firmware.bin precompiled/vm.m5stick+.bin
 pio run -e m5atom
 cp .pio/build/m5atom/firmware.bin precompiled/vm.m5atom.bin
 pio run -e esp32
