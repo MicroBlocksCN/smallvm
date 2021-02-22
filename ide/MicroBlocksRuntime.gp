@@ -1373,7 +1373,7 @@ method waitForResponse SmallRuntime {
 	// previous operation has completed. Return true if a response was received.
 
 	sendMsg this 'pingMsg'
-	timeout = 60000 // enough time for a long Flash compaction
+	timeout = 10000 // enough time for a long Flash compaction
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
 		if (isNil port) { return false }
