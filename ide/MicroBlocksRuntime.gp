@@ -1394,7 +1394,7 @@ method ensurePortOpen SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		if (and (notNil portName)
 				(or (contains (portList this) portName)
-				(beginsWith portName '/dev/pts/'))) { // support for GnuBlocks
+				(notNil (findSubstring 'pts' portName)))) { // support for GnuBlocks
 			port = (safelyRun (action 'openSerialPort' portName 115200))
 			if (not (isClass port 'Integer')) { port = nil } // failed
 			disconnected = false
