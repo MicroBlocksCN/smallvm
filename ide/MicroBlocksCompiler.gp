@@ -95,6 +95,9 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 1000)
 		'-'
 		(array 'r' 'getLastBroadcast'	'last message')
+		'-'
+		(array ' ' 'callCustomCommand'	'run command _ : with parameters _' 'str auto' 'foo' 'list')
+		(array 'r' 'callCustomReporter'	'call reporter _ : with parameters _' 'str auto' 'foo' 'list')
 	'Operators'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)
@@ -411,8 +414,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 121
 	RESERVED 122
 	RESERVED 123
-	RESERVED 124
-	RESERVED 125
+		callCustomCommand 124
+		callCustomReporter 125
 		callCommandPrimitive 126
 		callReporterPrimitive 127
 		metadata 240'
