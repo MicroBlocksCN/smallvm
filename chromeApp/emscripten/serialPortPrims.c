@@ -302,7 +302,7 @@ static int readPort(PortHandle port, char *buf, int bufSize) {
 	int bytesRead = EM_ASM_INT({
 		var dst = $0;
 		var bufSize = $1;
-		var data = GP_readSerialPort();
+		var data = GP_readSerialPort(bufSize);
 		var count = data.length;
 		if (count > bufSize) count = bufSize;
 		for (var i = 0; i < count; i++) {
