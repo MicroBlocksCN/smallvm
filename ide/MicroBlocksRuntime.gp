@@ -1217,7 +1217,10 @@ method setDefaultSerialDelay SmallRuntime {
 }
 
 method setSerialDelay SmallRuntime newDelay {
-	if ('reset to default' == newDelay) { newDelay = 5 }
+	if ('reset to default' == newDelay) {
+		newDelay = 5
+		if ('Browser' == (platform)) { newDelay = 20 }
+	}
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
 
