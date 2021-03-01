@@ -759,7 +759,7 @@ play frequency _ for _ ms
 spiele Frequenz _ für _ Millisekunden
 
 play midi key _ for _ ms
-spiele MIDI Tonart _ für _ Millisekunden
+spiele MIDI Note _ für _ Millisekunden
 
 ####
 # Turtle geometry library
@@ -1084,7 +1084,7 @@ Open
 Öffnen
 
 Open from board
---MISSING--
+Vom Board öffnen
 
 Information
 --MISSING--
