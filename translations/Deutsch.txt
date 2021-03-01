@@ -165,7 +165,7 @@ list
 Liste
 
 Advanced:
---MISSING--
+Fortgeschrittene Blöcke:
 
 hex _
 hex _
@@ -193,7 +193,7 @@ change _ by _
 ändere _ um _
 
 initialize local _ to _
---MISSING--
+initialisiere lokale _ mit _
 
 Data
 Daten
@@ -247,7 +247,7 @@ new list length _
 neue Liste Länge _
 
 new byte array _
---MISSING--
+neues Byte-Array _
 
 free memory
 freier Speicher
@@ -531,10 +531,10 @@ Other
 Sonstige
 
 Finch Beak Red _ Green _ Blue _
---MISSING--
+Finch Schnabel Rot _ Grün _ Blau _
 
 Finch Tail _ Red _ Green _ Blue _
---MISSING--
+Finch Schwanz _ Rot _ Grün _ Blau _ 
 
 Finch Move _ _ cm at _ %
 Finch Gehe _ _ cm mit _ %
@@ -570,49 +570,49 @@ Finch Battery
 Finch Batterie
 
 All
---MISSING--
+Alle
 
 Forward
---MISSING--
+Vorwärts
 
 Backward
---MISSING--
+Rückwärts
 
 Right
---MISSING--
+Rechts
 
 Left
---MISSING--
+Links
 
 Beak Up
---MISSING--
+Schnabel oben
 
 Beak Down
---MISSING--
+Schnabel unten
 
 Tilt Left
---MISSING--
+Neigung Links
 
 Tilt Right
---MISSING--
+Neigung Rechts
 
 Level
---MISSING--
+Eben
 
 Upside Down
---MISSING--
+Umgedreht
 
 x
---MISSING--
+x
 
 y
---MISSING--
+y
 
 z
---MISSING--
+z
 
 strength
---MISSING--
+Stärke
 
 ####
 # Ultrasound distance library
@@ -1087,22 +1087,22 @@ Open from board
 Vom Board öffnen
 
 Information
---MISSING--
+Information
 
 Plug in the board.
---MISSING--
+Schließe das Board an.
 
 Reading project from board...
---MISSING--
+Projekt wird vom Board gelesen...
 
 Loading project...
---MISSING--
+Projekt wird geladen...
 
 Found a newer version of
---MISSING--
+Neuere Version gefunden von
 
 Do you want me to update the one in the project?
---MISSING--
+Möchtest du sie im Projekt updaten?
 
 Save
 Speichern
@@ -1231,7 +1231,7 @@ stop WebThing server
 stoppe WebThing Server
 
 HTTP Server
---MISSING--
+HTTP Server
 
 MicroBlocks HTTP Server listening on port 6473
 MicroBlocks HTTP Server lauscht an Port 6473
@@ -1243,10 +1243,10 @@ enable autoloading board libraries
 aktiviere automatisches Laden von Board-Modulen
 
 enable PlugShare when project empty
---MISSING--
+aktiviere PlugShare, wenn Projekt leer ist
 
 disable PlugShare when project empty
---MISSING--
+deaktiviere PlugShare, wenn Projekt leer ist
 
 erase flash and update firmware on ESP board
 lösche und repartitioniere ESP
