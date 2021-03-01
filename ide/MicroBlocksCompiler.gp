@@ -96,8 +96,8 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' 'getLastBroadcast'	'last message')
 		'-'
-		(array ' ' 'callCustomCommand'	'run command _ : with parameters _' 'str auto' 'foo' 'list')
-		(array 'r' 'callCustomReporter'	'call reporter _ : with parameters _' 'str auto' 'foo' 'list')
+		(array ' ' 'callCustomCommand'	'run command _ with parameters _' 'str auto' 'foo' 'list')
+		(array 'r' 'callCustomReporter'	'call reporter _ with parameters _' 'str auto' 'foo' 'list')
 	'Operators'
 		(array 'r' '+'					'_ + _' 'num num' 10 2)
 		(array 'r' '-'					'_ − _' 'num num' 10 2)

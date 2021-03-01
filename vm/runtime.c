@@ -188,7 +188,7 @@ void stopAllTasksButThis(Task *thisTask) {
 #define recvBroadcast 25
 #define initLocals 28
 
-static int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
+int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
 	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
 	// First three instructions of a broadcast hat should be:
 	//	initLocals
