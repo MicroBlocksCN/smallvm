@@ -15,6 +15,11 @@
 #include "mem.h"
 #include "interp.h"
 
+#ifdef ARDUINO_RASPBERRY_PI
+#include <wiringPi.h>
+#include <wiringPiI2C.h>
+#endif
+
 extern int KEY_SCANCODE[];
 
 OBJ primAcceleration(int argCount, OBJ *args) { return int2obj(0); }
@@ -29,8 +34,43 @@ OBJ primTouchRead(int argCount, OBJ *args) {
 	return int2obj(KEY_SCANCODE[code] ? 0 : 255);
 }
 
+#ifdef ARDUINO_RASPBERRY_PI
+
+OBJ primI2cGet(OBJ *args) {
+	if (!isInt(args[0]) || !isInt(args[1])) return fail(needsIntegerError);
+	int deviceID = obj2int(args[0]);
+	int registerID = obj2int(args[1]);
+	if ((deviceID < 0) || (deviceID > 128)) return fail(i2cDeviceIDOutOfRange);
+	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
+
+	int fd = wiringPiI2CSetup(deviceID);
+	int result = wiringPiI2CReadReg8 (fd, registerID);
+	close(fd);
+	return int2obj(result);
+}
+
+OBJ primI2cSet(OBJ *args) {
+	if (!isInt(args[0]) || !isInt(args[1]) || !isInt(args[2])) return fail(needsIntegerError);
+	int deviceID = obj2int(args[0]);
+	int registerID = obj2int(args[1]);
+	int value = obj2int(args[2]);
+	if ((deviceID < 0) || (deviceID > 128)) return fail(i2cDeviceIDOutOfRange);
+	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
+	if ((value < 0) || (value > 255)) return fail(i2cValueOutOfRange);
+
+	int fd = wiringPiI2CSetup(deviceID);
+	wiringPiI2CWriteReg8(fd, registerID, value);
+	close(fd);
+	return falseObj;
+}
+
+#else
+
 OBJ primI2cGet(OBJ *args) { return int2obj(0); }
 OBJ primI2cSet(OBJ *args) { return int2obj(0); }
+
+#endif
+
 OBJ primSPISend(OBJ *args) { return int2obj(0); }
 OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
 OBJ primI2cRead(OBJ *args) { return int2obj(0); }
