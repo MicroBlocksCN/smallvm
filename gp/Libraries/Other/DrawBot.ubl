@@ -1,0 +1,71 @@
+module DrawBot
+author MicroBlocks
+version 1 0 
+depends Servo 
+tags cnc protoneer drawbot plotter 
+description 'Control CoreXY DrawBots that use the Protoneer CNC shield.'
+variables _plotterDelay 
+
+	spec ' ' '_plotter init' '_plotter init'
+	spec ' ' '_plotter move steppers' '_plotter move steppers _' 'auto' '10'
+	spec ' ' 'plotter move X' 'plotter move X _ mm' 'auto' 10
+	spec ' ' 'plotter move Y' 'plotter move Y _ mm' 'auto' 10
+	spec ' ' 'plotter pen down' 'plotter pen down'
+	spec ' ' 'plotter pen up' 'plotter pen up'
+	spec ' ' 'plotter stop' 'plotter stop'
+	spec ' ' 'set plotter speed to' 'set plotter speed to _ %' 'auto' 10
+
+to '_plotter init' {
+  if (_plotterDelay == 0) {'set plotter speed to' 10}
+  comment 'enable steppers'
+  digitalWriteOp 8 false
+}
+
+to '_plotter move steppers' mm {
+  '_plotter init'
+  repeat ((absoluteValue mm) * 99) {
+    digitalWriteOp 2 true
+    waitMicros _plotterDelay
+    digitalWriteOp 2 false
+    digitalWriteOp 3 true
+    waitMicros _plotterDelay
+    digitalWriteOp 3 false
+    waitMicros _plotterDelay
+  }
+}
+
+to 'plotter move X' mm {
+  '_plotter init'
+  local 'direction' (mm < 0)
+  digitalWriteOp 6 direction
+  digitalWriteOp 5 direction
+  '_plotter move steppers' mm
+}
+
+to 'plotter move Y' mm {
+  '_plotter init'
+  digitalWriteOp 6 (mm > 0)
+  digitalWriteOp 5 (mm < 0)
+  '_plotter move steppers' mm
+}
+
+to 'plotter pen down' {
+  setServoAngle 11 0
+  waitMillis 250
+}
+
+to 'plotter pen up' {
+  setServoAngle 11 -90
+}
+
+to 'plotter stop' {
+  stopAll
+  comment 'disable steppers'
+  digitalWriteOp 8 true
+  'plotter pen up'
+}
+
+to 'set plotter speed to' speed {
+  _plotterDelay = ((950 / (maximum 1 (minimum 100 speed))) + 41)
+}
+
