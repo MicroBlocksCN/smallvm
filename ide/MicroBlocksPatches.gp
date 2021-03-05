@@ -207,6 +207,15 @@ method finchMoveMenu InputSlot {
   return menu
 }
 
+method robotDirections InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  addItem menu 'Forward'
+  addItem menu 'Backward'
+  addItem menu 'Right'
+  addItem menu 'Left'
+  return menu
+}
+
 method finchTurnMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'Right'
