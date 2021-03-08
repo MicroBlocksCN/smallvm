@@ -4,7 +4,6 @@ version 1 0
 depends Servo 
 tags cnc protoneer drawbot plotter 
 description 'Control CoreXY DrawBots that use the Protoneer CNC shield.'
-
 variables _plotterDelay 
 
 	spec ' ' '_plotter init' '_plotter init'
@@ -52,13 +51,13 @@ to 'plotter move' x y {
   digitalWriteOp 5 (or ((v 'delta A') < 0) (and ((v 'delta A') <= 0) ((v 'delta B') <= 0)))
   digitalWriteOp 6 (or ((v 'delta B') < 0) (and ((v 'delta A') <= 0) ((v 'delta B') <= 0)))
   comment 'Invert motors if Y >= X, or -same case- if ΔA <= 0'
-  local 'invert' ((v 'delta A') <= 0)
+  local 'invert' (and ((v 'delta A') <= 0) (not ((v 'delta B') == 0)))
   local 'min' ((minimum (absoluteValue (v 'delta A')) (absoluteValue (v 'delta B'))) * 100)
   local 'max' ((maximum (absoluteValue (v 'delta A')) (absoluteValue (v 'delta B'))) * 100)
   if (min == 0) {
     local 'relation' (max + 1)
   } else {
-    local 'relation' (max / min)
+    local 'relation' ((max * 100) / min)
   }
   for step max {
     if invert {
@@ -66,7 +65,7 @@ to 'plotter move' x y {
     } else {
       '_plotter step A'
     }
-    if ((step % relation) == 0) {
+    if (((step * 100) % relation) == 0) {
       if invert {
         '_plotter step A'
       } else {
