@@ -261,6 +261,35 @@ method replaceItemMenu InputSlot {
   return menu
 }
 
+// Translatable dropdown selections
+method redraw Text {
+  owner = (owner morph)
+  if (notNil owner) {
+	ownerHandler = (handler owner)
+  }
+  finalText = text
+  if (and
+		(notNil ownerHandler)
+		(isClass ownerHandler 'InputSlot')
+		(notNil (getField ownerHandler 'menuSelector'))
+		((getField ownerHandler 'menuSelector') != 'allVarsMenu')
+		) {
+	//TODO Investigate why owner is nil for texts in template blocks
+	finalText = (localized text)
+  }
+  bm = (stringImage finalText fontName fontSize color alignment shadowColor shadowOffsetX shadowOffsetY borderX borderY bgColor minWidth minHeight isFlat)
+  renderMarkedOn this bm
+  setCostume morph bm true // keep former dimensions to enable editing inside scrolling panes
+  if (and (notNil owner) (isClass (handler owner) 'ScrollFrame'))  {
+    updateSliders (handler owner)
+  } else {
+    setWidth (bounds morph) (width bm)
+    setHeight (bounds morph) (height bm)
+  }
+  if (notNil caret) {adjustSize caret}
+  raise morph 'layoutChanged' this
+}
+
 // Disallow reporter blocks in hat block input slots
 // (does apply to BooleanSlots in "when <boolean>" hat blocks)
 
