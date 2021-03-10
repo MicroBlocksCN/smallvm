@@ -1,6 +1,7 @@
 module 'WiFi Primitives' Comm
 author MicroBlocks
 version 1 4
+choices requestTypes GET POST PUT DELETE
 tags network http server client
 description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server or Wifi libraries in the Network folder.'
 

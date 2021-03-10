@@ -40,7 +40,7 @@ to newProjTest fileName {
 
 // MicroBlocksProject Class
 
-defineClass MicroBlocksProject main libraries blockSpecs
+defineClass MicroBlocksProject main libraries blockSpecs choices
 
 to newMicroBlocksProject {
 	return (initialize (new 'MicroBlocksProject'))
@@ -50,10 +50,23 @@ method initialize MicroBlocksProject {
 	main = (newMicroBlocksModule 'main')
 	libraries = (dictionary)
 	blockSpecs = (dictionary)
+	choices = (dictionary)
 	return this
 }
 
 // Support
+
+method setChoices MicroBlocksProject someChoices {
+	choices = someChoices
+}
+
+method choices MicroBlocksProject {
+	return choices
+}
+
+method choicesFor MicroBlocksProject selector {
+	return (at choices selector)
+}
 
 method extraCategories MicroBlocksProject { return (array) } // called by AuthoringSpecs>specsFor
 
@@ -286,6 +299,7 @@ method addLibraryFromString MicroBlocksProject s libName fileName {
 			setPath lib nil
 		}
 		updatePrimitives lib
+		installChoices lib project
 		importDependencies lib (scripter (smallRuntime))
 		addLibrary this lib
 	}
@@ -406,7 +420,7 @@ method equal MicroBlocksProject proj {
 
 // MicroBlocksModule Class
 
-defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags path variableNames blockList functions scripts blockSpecs
+defineClass MicroBlocksModule moduleName moduleCategory dependencies version author description tags path variableNames blockList functions scripts blockSpecs choices
 
 to newMicroBlocksModule modName {
 	return (initialize (new 'MicroBlocksModule') modName)
@@ -420,6 +434,7 @@ method initialize MicroBlocksModule name {
 	author = 'unknown'
 	description = ''
 	tags = (array)
+	choices = (dictionary)
 	variableNames = (array)
 	blockList = (list)
 	blockSpecs = (dictionary)
@@ -449,6 +464,12 @@ method setVersion MicroBlocksModule versionArray {
 }
 method setTags MicroBlocksModule tagList { tags = (copy (toArray tagList)) }
 method setPath MicroBlocksModule aPath { path = aPath }
+method setChoices MicroBlocksModule choiceDict {
+	choices = (dictionary)
+	for selector (keys choiceDict) {
+		atPut choices selector (copy (at choiceDict selector))
+	}
+}
 
 method dependencyName MicroBlocksModule dep {
 	slashPos = (findLast dep '/')
@@ -589,6 +610,15 @@ method codeString MicroBlocksModule owningProject newLibName {
 		add result (arrayToDeclaration this tags 'tags')
 	}
 
+	// add choice lists
+	if ((count (keys choices)) > 0) {
+		for key (keys choices) {
+			choice = (list key)
+			addAll choice (at choices key)
+			add result (arrayToDeclaration this choice 'choices')
+		}
+	}
+
 	// add description
 	desc = description
 	if (needsQuotes this desc) { desc = (join '''' desc '''') }
@@ -709,6 +739,7 @@ method loadFromCmds MicroBlocksModule cmdList {
 	loadDependencies this cmdList
 	loadTags this cmdList
 	loadDescription this cmdList
+	loadChoices this cmdList
 	loadVariables this cmdList
 	loadBlockList this cmdList
 	loadSpecs this cmdList
@@ -826,6 +857,18 @@ method loadDescription MicroBlocksModule cmdList {
 	}
 }
 
+method loadChoices MicroBlocksModule cmdList {
+	for cmd cmdList {
+		if ('choices' == (primName cmd)) {
+			i = (list)
+			for input (stringArgs this cmd) {
+				add i (toString input)
+			}
+			atPut choices (first (stringArgs this cmd)) (copyFromTo i 2)
+		}
+	}
+}
+
 method loadVersion MicroBlocksModule cmdList {
 	for cmd cmdList {
 		if ('version' == (primName cmd)) {
@@ -910,6 +953,8 @@ method importDependency MicroBlocksModule lib scripter {
 	}
 }
 
+
+
 method loadTags MicroBlocksModule cmdList {
 	t = (list)
 	for cmd cmdList {
@@ -978,6 +1023,14 @@ method loadBlockList MicroBlocksModule cmdList {
 
 method loadSpecs MicroBlocksModule cmdList {
 	blockSpecs = (parsedSpecs (project (findProjectEditor)) cmdList)
+}
+
+// Input slot options
+
+method installChoices MicroBlocksModule {
+	for selector (keys choices) {
+		atPut (choices (project (findProjectEditor))) selector (copy (at choices selector))
+	}
 }
 
 // Updating primitives
