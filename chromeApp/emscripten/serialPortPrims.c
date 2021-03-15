@@ -3,7 +3,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#define READ_BUF_SIZE 10000
+#define READ_BUF_SIZE 20000
 #define PORT_COUNT 33
 #define NOT_IMPLEMENTED -2
 
