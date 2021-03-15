@@ -257,7 +257,8 @@ static OBJ primNextFileInList(int argCount, OBJ *args) {
 			if (S_ISREG(fileStat.st_mode)) {
 				// it's a regular file, we're okay
 				length = strlen(nextDirEntry->d_name);
-				strncpy(fileName, nextDirEntry->d_name, length > 99 ? 99 : length);
+				if (length > 99) length = 99;
+				strncpy(fileName, nextDirEntry->d_name, length);
 				fileName[length] = '\0'; // ensure null termination
 			} else {
 				// it's not a regular file, let's recurse into the next entry
