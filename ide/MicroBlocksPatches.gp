@@ -48,6 +48,33 @@ method allVarsMenu InputSlot {
   return menu
 }
 
+// Input slot menu options
+
+method clicked InputSlot aHand {
+  if (notNil menuSelector) {
+    if (or ((x aHand) >= ((right morph) - (fontSize text))) isStatic) {
+	  if (contains (methodNames (class 'InputSlot')) menuSelector) {
+		menu = (call menuSelector this)
+		if (notNil menu) {
+		  popUpAtHand menu (page aHand)
+		}
+		return true
+	  } else {
+		project = (project (findProjectEditor))
+		choices = (choicesFor project menuSelector)
+		if (notNil choices) {
+		  menu = (menu nil (action 'setContents' this) true)
+		  for choice choices {
+			addItem menu choice
+		  }
+		  popUpAtHand menu (page aHand)
+		}
+	  }
+    }
+  }
+  return false
+}
+
 method typesMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
   addItem menu 'boolean'
@@ -75,165 +102,6 @@ method AtoDMenu InputSlot {
   return menu
 }
 
-method directions InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'clockwise'
-  addItem menu 'counter-clockwise'
-  return menu
-}
-
-method requestTypes InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'GET'
-  addItem menu 'POST'
-  addItem menu 'PUT'
-  addItem menu 'DELETE'
-  return menu
-}
-
-// Web Thing Menus
-
-method thingTypesMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-
-  addItem menu 'Alarm'
-  addItem menu 'BinarySensor'
-//  addItem menu 'Camera'
-  addItem menu 'ColorControl'
-  addItem menu 'ColorSensor'
-  addItem menu 'DoorSensor'
-  addItem menu 'EnergyMonitor'
-  addItem menu 'LeakSensor'
-  addItem menu 'Light'
-  addItem menu 'Lock'
-  addItem menu 'MotionSensor'
-  addItem menu 'MultiLevelSensor'
-  addItem menu 'MultiLevelSwitch'
-  addItem menu 'OnOffSwitch'
-  addItem menu 'PushButton'
-  addItem menu 'SmartPlug'
-  addItem menu 'TemperatureSensor'
-  addItem menu 'Thermostat'
-//  addItem menu 'VideoCamera'
-
-  return menu
-}
-
-method thingEventTypesMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'OverheatedEvent'
-  addItem menu 'PressedEvent'
-  addItem menu 'DoublePressedEvent'
-  addItem menu 'LongPressedEvent'
-  addItem menu 'AlarmEvent'
-
-  return menu
-}
-
-method varTypesMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'boolean'
-  addItem menu 'number'
-  addItem menu 'string'
-  return menu
-}
-
-method numberPropertyTypesMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'LevelProperty'
-  addItem menu 'BrightnessProperty'
-  addItem menu 'ColorTemperatureProperty'
-  addItem menu 'InstantaneousPowerProperty'
-  addItem menu 'CurrentProperty'
-  addItem menu 'VoltageProperty'
-  addItem menu 'FrequencyProperty'
-  addItem menu 'TargetTemperatureProperty'
-  addItem menu 'TemperatureProperty'
-//  addItem menu 'ImageProperty'
-//  addItem menu 'VideoProperty'
-//  addItem menu 'ColorTemperatureProperty'
-  return menu
-}
-
-method booleanPropertyTypesMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'BooleanProperty'
-  addItem menu 'OnOffProperty'
-  addItem menu 'MotionProperty'
-  addItem menu 'OpenProperty'
-  addItem menu 'LeakProperty'
-  addItem menu 'PushedProperty'
-  addItem menu 'AlarmProperty'
-  return menu
-}
-
-method stringPropertyTypesMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'ColorProperty'
-  addItem menu 'TextProperty'
-  addItem menu 'HeatingCoolingProperty'
-  addItem menu 'LockedProperty'
-  addItem menu 'ThermostatModeProperty'
-//  addItem menu 'ColorModeProperty'
-  return menu
-}
-
-// Birdbrain Technologies Menus (Hummingbird:bit and Finch)
-
-method hummingbirdSensorsMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'Light'
-  addItem menu 'Dial'
-  addItem menu 'Distance (cm)'
-  addItem menu 'Sound'
-  addItem menu 'Other'
-  return menu
-}
-
-method finchTailMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu '1'
-  addItem menu '2'
-  addItem menu '3'
-  addItem menu '4'
-  addItem menu 'All'
-  return menu
-}
-
-method finchMoveMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'Forward'
-  addItem menu 'Backward'
-  return menu
-}
-
-method finchTurnMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'Right'
-  addItem menu 'Left'
-  return menu
-}
-
-method finchOrientationMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'Beak Up'
-  addItem menu 'Beak Down'
-  addItem menu 'Tilt Left'
-  addItem menu 'Tilt Right'
-  addItem menu 'Level'
-  addItem menu 'Upside Down'
-  return menu
-}
-
-method finchAxisMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'x'
-  addItem menu 'y'
-  addItem menu 'z'
-  addItem menu 'strength'
-  return menu
-}
-
 // List Menus
 
 method itemOfMenu InputSlot {
@@ -250,6 +118,34 @@ method replaceItemMenu InputSlot {
   addItem menu 'last'
   addItem menu 'all'
   return menu
+}
+
+// Translatable dropdown selections
+method redraw Text {
+  owner = (owner morph)
+  if (notNil owner) {
+	ownerHandler = (handler owner)
+  }
+  finalText = text
+  if (and
+		(notNil ownerHandler)
+		(isClass ownerHandler 'InputSlot')
+		(notNil (getField ownerHandler 'menuSelector'))
+		((getField ownerHandler 'menuSelector') != 'allVarsMenu')
+  ) {
+	finalText = (localized text)
+  }
+  bm = (stringImage finalText fontName fontSize color alignment shadowColor shadowOffsetX shadowOffsetY borderX borderY bgColor minWidth minHeight isFlat)
+  renderMarkedOn this bm
+  setCostume morph bm true // keep former dimensions to enable editing inside scrolling panes
+  if (and (notNil owner) (isClass (handler owner) 'ScrollFrame'))  {
+    updateSliders (handler owner)
+  } else {
+    setWidth (bounds morph) (width bm)
+    setHeight (bounds morph) (height bm)
+  }
+  if (notNil caret) {adjustSize caret}
+  raise morph 'layoutChanged' this
 }
 
 // Disallow reporter blocks in hat block input slots

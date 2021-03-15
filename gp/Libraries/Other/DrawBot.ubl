@@ -1,0 +1,97 @@
+module DrawBot
+author MicroBlocks
+version 1 0 
+depends Servo 
+tags cnc protoneer drawbot plotter 
+description 'Control CoreXY DrawBots that use the Protoneer CNC shield.'
+variables _plotterDelay 
+
+	spec ' ' '_plotter init' '_plotter init'
+	spec ' ' '_plotter step A' '_plotter step A'
+	spec ' ' '_plotter step B' '_plotter step B'
+	spec ' ' 'plotter move' 'plotter move X _ Y _' 'auto auto' 10 10
+	spec ' ' 'plotter pen down' 'plotter pen down'
+	spec ' ' 'plotter pen up' 'plotter pen up'
+	spec ' ' 'plotter stop' 'plotter stop'
+	spec ' ' 'set plotter speed to' 'set plotter speed to _ %' 'auto' 10
+
+to '_plotter init' {
+  if (_plotterDelay == 0) {'set plotter speed to' 10}
+  comment 'enable steppers'
+  digitalWriteOp 8 false
+}
+
+to '_plotter step A' {
+  digitalWriteOp 2 true
+  waitMicros _plotterDelay
+  digitalWriteOp 2 false
+}
+
+to '_plotter step B' {
+  digitalWriteOp 3 true
+  waitMicros _plotterDelay
+  digitalWriteOp 3 false
+}
+
+to 'plotter move' x y {
+  '_plotter init'
+  local 'delta A' (x + y)
+  local 'delta B' (x - y)
+  comment 'Values of pins 5 and 6 defined by this truth table:
+
+ΔA=0	ΔB=0	ΔA>0	ΔB>0	5	6
+0		0		0		0		1	1
+0		0		0		1		1	0
+0		0		1		0		0	1
+0		0		1		1		0	0
+0		1		0		0		1	1
+0		1		1		0		0	0
+1		0		0		0		1	1
+1		0		0		1		0	0'
+  digitalWriteOp 5 (or ((v 'delta A') < 0) (and ((v 'delta A') <= 0) ((v 'delta B') <= 0)))
+  digitalWriteOp 6 (or ((v 'delta B') < 0) (and ((v 'delta A') <= 0) ((v 'delta B') <= 0)))
+  comment 'Invert motors if Y >= X, or -same case- if ΔA <= 0'
+  local 'invert' (and ((v 'delta A') <= 0) (not ((v 'delta B') == 0)))
+  local 'min' ((minimum (absoluteValue (v 'delta A')) (absoluteValue (v 'delta B'))) * 100)
+  local 'max' ((maximum (absoluteValue (v 'delta A')) (absoluteValue (v 'delta B'))) * 100)
+  if (min == 0) {
+    local 'relation' (max + 1)
+  } else {
+    local 'relation' ((max * 100) / min)
+  }
+  for step max {
+    if invert {
+      '_plotter step B'
+    } else {
+      '_plotter step A'
+    }
+    if (((step * 100) % relation) == 0) {
+      if invert {
+        '_plotter step A'
+      } else {
+        '_plotter step B'
+      }
+    }
+  }
+}
+
+to 'plotter pen down' {
+  setServoAngle 11 0
+  waitMillis 250
+}
+
+to 'plotter pen up' {
+  setServoAngle 11 -90
+}
+
+to 'plotter stop' {
+  stopAll
+  comment 'disable steppers'
+  digitalWriteOp 8 true
+  'plotter pen up'
+}
+
+to 'set plotter speed to' speed {
+  _plotterDelay = ((950 / (maximum 1 (minimum 100 speed))) + 41)
+}
+

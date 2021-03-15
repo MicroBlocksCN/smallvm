@@ -2,6 +2,7 @@ module Hummingbird
 author 'Tom Lauwers'
 version 1 0
 description 'Provides blocks for the Birdbrain Technologies Hummingbird bit kit.'
+choices hummingbirdSensorsMenu Light Dial 'Distance (cm)' Sound Other
 tags birdbrain hummingbird bit led servo sensor
 
 variables _spi_lock
