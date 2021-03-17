@@ -65,11 +65,12 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) {
 }
 
 static OBJ primGetIP(int argCount, OBJ *args) {
-	OBJ result = newString(16);
+	OBJ result = newString(0);
 	char ip[16];
     struct ifaddrs *address, *each;
 
 	if (!connected || getifaddrs(&address) == -1) {
+		result = newString(7);
 		memcpy(obj2str(result), "0.0.0.0", 7);
 	} else {
 		for (each = address; each != NULL; each = each->ifa_next) {
@@ -78,6 +79,7 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 					(strcmp(each->ifa_name, "lo") != 0) &&
 					(each->ifa_addr->sa_family == AF_INET)) {
 				sprintf(ip, "%s", inet_ntoa(((struct sockaddr_in *)each->ifa_addr)->sin_addr));
+				result = newString(strlen(ip));
 				memcpy(obj2str(result), ip, strlen(ip));
 				break;
 			}
@@ -149,11 +151,9 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 }
 
 char httpClientConnected() {
-	// TODO we're not detecting when the server closes the connection
-	int error = 0;
-	socklen_t len = sizeof (error);
-	int retval = getsockopt(clientSocket, SOL_SOCKET, SO_ERROR, &error, &len);
-	return ((clientSocket > 0) && (retval == 0) && (error == 0));
+	char buf[1];
+	int n = recv(clientSocket, (void *) buf, 1, MSG_PEEK);
+	return (n > 0) || ((n < 0) && (errno == EWOULDBLOCK));
 }
 
 static OBJ primHttpIsConnected(int argCount, OBJ *args) {
@@ -171,10 +171,10 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	char request[1024];
 	sprintf(request,
 			"%s /%s HTTP/1.0\r\n\
-			Host: %s\r\n\
-			Connection: close\r\n\
-			User-Agent: MicroBlocks\r\n\
-			Accept: */*\r\n",
+Host: %s\r\n\
+Connection: close\r\n\
+User-Agent: MicroBlocks\r\n\
+Accept: */*\r\n",
 			reqType,
 			path,
 			host);
@@ -202,13 +202,13 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	char buffer[800];
 	int n, byteCount = 0;
 
-	while ((n = (read(clientSocket, buffer, 64))) > 0 && byteCount <= 800) {
-		buffer[n] = '\0';
+	while ((byteCount < (799 - 64)) && (n = (read(clientSocket, &buffer[byteCount], 64))) > 0) {
 		byteCount += n;
 		processMessage(); // process messages now
 	}
+	buffer[byteCount] = '\0';
 	response = newString(byteCount);
-	memcpy(obj2str(response), buffer, byteCount > 800 ? 800 : byteCount);
+	memcpy(obj2str(response), buffer, byteCount);
 	return response;
 }
 
