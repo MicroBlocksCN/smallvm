@@ -723,7 +723,7 @@ function GP_closeSerialPort() {
 	GP_serialInputBuffers = [];
 }
 
-function GP_readSerialPort() {
+function GP_readSerialPort(maxBytes) {
 	if (GP_serialInputBuffers.length == 0) {
 		return new Uint8Array(new ArrayBuffer(0)); // no data available
 	}
@@ -738,7 +738,12 @@ function GP_readSerialPort() {
 		result.set(GP_serialInputBuffers[i], dst);
 		dst += GP_serialInputBuffers[i].byteLength;
 	}
-	GP_serialInputBuffers = [];
+	if (result.byteLength <= maxBytes) {
+		GP_serialInputBuffers = [];
+	} else {
+		GP_serialInputBuffers = [result.slice(maxBytes)];
+		result = result.slice(0, maxBytes);
+	}
 	return result;
 }
 

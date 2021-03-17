@@ -119,7 +119,7 @@ void tftInit() {
 				TFT_WIDTH,
 				TFT_HEIGHT,
 				0);
-		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 		SDL_RenderClear(renderer);
 
 #ifndef DISABLE_TRUE_TYPE

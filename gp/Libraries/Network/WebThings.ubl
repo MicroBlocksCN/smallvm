@@ -5,6 +5,11 @@ depends 'HTTP server' WiFi
 tags iot webthing wot 
 description 'Create WebThings as specified by the WebThings schema and protocol. If your board is WiFi enabled, you can serve its thing description directly via HTTP. Otherwise, you can enable the MicroBlocks add-on in the WebThings Gateway.
 '
+choices thingTypesMenu Alarm BinarySensor ColorControl ColorSensor DoorSensor EnergyMonitor LeakSensor Light Lock MotionSensor MultiLevelSensor MultiLevelSwitch OnOffSwitch PushButton SmartPlug TemperatureSensor Thermostat
+choices thingEventTypesMenu OverheatedEvent PressedEvent DoublePressedEvent LongPressedEvent AlarmEvent
+choices numberPropertyTypesMenu LevelProperty BrightnessProperty ColorTemperatureProperty InstantaneousPowerProperty CurrentProperty VoltageProperty FrequencyProperty TargetTemperatureProperty TemperatureProperty
+choices booleanPropertyTypesMenu BooleanProperty OnOffProperty MotionProperty OpenProperty LeakProperty PushedProperty AlarmProperty
+choices stringPropertyTypesMenu ColorProperty TextProperty HeatingCoolingProperty LockedProperty ThermostatModeProperty
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description' 
 
 	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'

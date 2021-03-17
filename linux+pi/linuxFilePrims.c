@@ -249,14 +249,17 @@ static OBJ primStartFileList(int argCount, OBJ *args) {
 
 static OBJ primNextFileInList(int argCount, OBJ *args) {
 	char fileName[100];
+	int length = 0;
 	if (directory) {
 		if ((nextDirEntry = readdir(directory)) != NULL) {
 			// check entry type
 			stat(nextDirEntry->d_name, &fileStat);
 			if (S_ISREG(fileStat.st_mode)) {
 				// it's a regular file, we're okay
-				strncpy(fileName, nextDirEntry->d_name, 99);
-				fileName[99] = '\0'; // ensure null termination
+				length = strlen(nextDirEntry->d_name);
+				if (length > 99) length = 99;
+				strncpy(fileName, nextDirEntry->d_name, length);
+				fileName[length] = '\0'; // ensure null termination
 			} else {
 				// it's not a regular file, let's recurse into the next entry
 				return primNextFileInList(argCount, args);
@@ -266,7 +269,7 @@ static OBJ primNextFileInList(int argCount, OBJ *args) {
 			directory = NULL;
 		}
 	}
-	return newStringFromBytes(fileName, strlen(fileName));
+	return newStringFromBytes(fileName, length);
 }
 
 static OBJ primSystemInfo(int argCount, OBJ *args) {

@@ -845,7 +845,7 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime {  return '1.0.14' }
+method ideVersion SmallRuntime {  return '1.0.15' }
 method latestVmVersion SmallRuntime { return 109 }
 
 method showAboutBox SmallRuntime {
@@ -1217,7 +1217,10 @@ method setDefaultSerialDelay SmallRuntime {
 }
 
 method setSerialDelay SmallRuntime newDelay {
-	if ('reset to default' == newDelay) { newDelay = 5 }
+	if ('reset to default' == newDelay) {
+		newDelay = 5
+		if ('Browser' == (platform)) { newDelay = 20 }
+	}
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
 
