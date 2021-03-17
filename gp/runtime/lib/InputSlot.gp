@@ -88,10 +88,10 @@ method setContents InputSlot data {
   if ((or (true == contents) (false == contents))) {
     menuSelector = 'boolMenu'
   }
-  if (isVarSlot this) {
-	setText text (toString data)
-  } else {
+  if (and (notNil menuSelector) (not (isVarSlot this))) {
 	setText text (localized (toString data))
+  } else {
+	setText text (toString data)
   }
   textChanged this
   if (and (isClass data 'String') ('' != data) ('editable' != (editRule text)) (representsANumber data)) {
