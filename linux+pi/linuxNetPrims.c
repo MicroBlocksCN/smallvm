@@ -246,6 +246,7 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 	// send headers
 	sprintf(response, "HTTP/1.0 %s\r\n", status);
 	strcat(response, "Access-Control-Allow-Origin: *\r\n");
+	strcat(response, "Access-Control-Allow-Methods: *\r\n");
 	if (keepAlive) strcat(response, "Connection: keep-alive\r\n");
 	if (extraHeaders) {
 		strcat(response, extraHeaders);
