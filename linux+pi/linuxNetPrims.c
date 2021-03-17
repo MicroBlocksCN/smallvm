@@ -39,6 +39,11 @@
 // compatibility with microcontrollers
 
 char connected = 0;
+static char serverStarted = false;
+
+int clientSocket = -1;
+int serverSocket = -1;
+int serverRequestSocket = -1; // Client currently connected to the server
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
 
@@ -90,10 +95,196 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return result;
 }
 
+static OBJ primGetMAC(int argCount, OBJ *args) {
+	OBJ result = newString(17);
+	memcpy(obj2str(result), "00:00:00:00:00:00", 17);
+	return result;
+}
+
+// Socket utils
+
+static void setNonBlocking(int socket) {
+	sigignore(SIGPIPE); // prevent program from terminating when attempting to write to a closed socket
+	fcntl(socket, F_SETFL, SOCK_NONBLOCK); // make non-blocking
+}
+
+char socketConnected(int socket) {
+	char buf[1];
+	int n = recv(socket, (void *) buf, 1, MSG_PEEK);
+	return (n > 0) || ((n < 0) && (errno == EWOULDBLOCK));
+}
+
 // HTTP Server
 
-static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return falseObj; }
-static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return falseObj; }
+static int openServerSocket(int portNum) {
+	// Return a non-blocking server socket on the given port, or -1 if failed.
+
+	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (serverSocket < 0) { return -1; }
+
+	setNonBlocking(serverSocket);
+
+	// allow the server to reuse the port immediately if this program is restarted, even
+	// though the old server socket stays around in a timeout state for about four minutes
+	int flag = 1;
+	setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, (void *) &flag, sizeof(flag));
+
+	// bind the server socket to our port
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET; // IPv4
+	addr.sin_port = htons(portNum);
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (bind(serverSocket, (struct sockaddr*) &addr, sizeof(addr)) >= 0) {
+		listen(serverSocket, 10); // queue length = 10 (probably overkill)
+	} else {
+		shutdown(serverSocket, SHUT_RDWR);
+		close(serverSocket);
+		serverSocket = -1;
+	}
+	return serverSocket;
+}
+
+static void startHttpServer() {
+	// Start the server the first time and *never* stop/close it.
+
+	if (!serverStarted) {
+		// Start the server
+		serverSocket = openServerSocket(8080);
+		serverStarted = (serverSocket > -1);
+	}
+}
+
+static void acceptConnection() {
+	// Attempt to accept an incoming connection on the given server socket.
+	// If successful, return the socket for the new connect, otherwise return -1.
+
+	if (serverSocket > -1) {
+		struct sockaddr_in clientAddr;
+		socklen_t size = sizeof(clientAddr);
+
+		serverRequestSocket = accept(serverSocket, (void *) &clientAddr, &size);
+		if (serverRequestSocket >= 0) {
+			setNonBlocking(serverRequestSocket);
+			// transmit data immediately (i.e. don't use the Nagle algorithm)
+			int flag = 1;
+			setsockopt(serverRequestSocket, IPPROTO_TCP, TCP_NODELAY, (void *) &flag, sizeof(flag));
+		}
+	}
+}
+
+static int serverHasClient() {
+	// Return true when the HTTP server has a client and the client is connected.
+	// Continue to return true if any data is available from the client even if the client
+	// has closed the connection. Start the HTTP server the first time this is called.
+
+	if (!serverStarted) startHttpServer();
+	if (-1 == serverRequestSocket) acceptConnection();
+
+	return (serverRequestSocket > -1);
+}
+
+static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
+	// Return some data from the current HTTP request. Return the empty string if no
+	// data is available. If there isn't currently a client connection, and a client
+	// is waiting, accept the new connection. If the optional first argument is true,
+	// return a ByteArray (binary data) instead of a string.
+	// Fail if there isn't enough memory to allocate the result object.
+
+	int useBinary = ((argCount > 0) && (trueObj == args[0]));
+	OBJ result = useBinary ? newObj(ByteArrayType, 0, falseObj) : newString(0);
+
+	if (serverHasClient() && socketConnected(serverRequestSocket)) {
+		char buf[800];
+		int byteCount = recv(serverRequestSocket, buf, 800, 0);
+		if (byteCount > 0) {
+			if (useBinary) {
+				result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+				memcpy(&FIELD(result, 0), buf, byteCount);
+			} else {
+				result = newString(byteCount);
+				memcpy(obj2str(result), buf, byteCount);
+			}
+		}
+	}
+
+	return result;
+}
+
+static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
+	// Send a response to the client with the status. optional extra headers, and optional body.
+	char response[8096];
+
+	if (serverRequestSocket < 0) return falseObj;
+
+	// status
+	char *status = (char *) "200 OK";
+	if ((argCount > 0) && IS_TYPE(args[0], StringType)) status = obj2str(args[0]);
+
+	// body
+	int contentLength = -1; // no body
+	if (argCount > 1) {
+		if (IS_TYPE(args[1], StringType)) {
+			contentLength = strlen(obj2str(args[1]));
+		} else if (IS_TYPE(args[1], ByteArrayType)) {
+			contentLength = BYTES(args[1]);
+		}
+	}
+
+	// additional headers
+	char *extraHeaders = NULL;
+	if ((argCount > 2) && IS_TYPE(args[2], StringType)) {
+		extraHeaders = obj2str(args[2]);
+		if (0 == strlen(extraHeaders)) extraHeaders = NULL; // empty string
+	}
+
+	// keep alive flag
+	int keepAlive = ((argCount > 3) && (trueObj == args[3]));
+
+	// send headers
+	sprintf(response, "HTTP/1.0 %s\r\n", status);
+	strcat(response, "Access-Control-Allow-Origin: *\r\n");
+	strcat(response, "Access-Control-Allow-Methods: *\r\n");
+	if (keepAlive) strcat(response, "Connection: keep-alive\r\n");
+	if (extraHeaders) {
+		strcat(response, extraHeaders);
+		if (10 != extraHeaders[strlen(extraHeaders) - 1]) {
+			strcat(response, "\r\n");
+		}
+	}
+	if (contentLength >= 0) {
+		char contentLenghtHeader[100];
+		sprintf(contentLenghtHeader, "Content-Length: %d", contentLength);
+		strcat(response, contentLenghtHeader);
+	}
+	strcat(response, "\r\n\r\n"); // end of headers
+
+	int byteCount = strlen(response);
+
+	// send body, if any
+	if (argCount > 1) {
+		if (IS_TYPE(args[1], StringType)) {
+			char *body = obj2str(args[1]);
+			strcat(response, body);
+			byteCount += strlen(body);
+		} else if (IS_TYPE(args[1], ByteArrayType)) {
+			uint8 *body = (uint8 *) &FIELD(args[1], 0);
+			memcpy(&response[strlen(response)], body, BYTES(args[1]));
+			byteCount += BYTES(args[1]);
+		}
+	}
+
+	send(serverRequestSocket, response, byteCount, 0);
+
+	if (!keepAlive) {
+		close(serverRequestSocket);
+		serverRequestSocket = -1;
+	}
+
+	return falseObj;
+}
 
 // HTTP Client
 
@@ -108,13 +299,11 @@ static int lookupHost(char *hostName, struct sockaddr_in *result) {
 	return err;
 }
 
-int clientSocket = 0;
-
 static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
 
-	if (clientSocket) shutdown(clientSocket, 2);
+	if (clientSocket > -1) shutdown(clientSocket, 2);
 
 	struct sockaddr_in remoteAddress;
 
@@ -122,13 +311,13 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 
 	if (lookupHost(host, &remoteAddress) != 0) {
 		shutdown(clientSocket, 2);
-		clientSocket = 0;
+		clientSocket = -1;
 		return falseObj;
 	}
 
 	remoteAddress.sin_port = htons(port);
-	
-	clientSocket = socket(AF_INET, SOCK_STREAM, 0);	
+
+	clientSocket = socket(AF_INET, SOCK_STREAM, 0);
 
 	int connectResult = connect(
 			clientSocket,
@@ -140,8 +329,7 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 		clientSocket = 0;
 	}
 
-	sigignore(SIGPIPE); // prevent program from terminating when attempting to write to a closed socket
-	fcntl(clientSocket, F_SETFL, SOCK_NONBLOCK); // make non-blocking
+	setNonBlocking(clientSocket);
 
 	int flag = 1;
 	setsockopt(clientSocket, IPPROTO_TCP, TCP_NODELAY, (void *) &flag, sizeof(flag));
@@ -150,20 +338,15 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-char httpClientConnected() {
-	char buf[1];
-	int n = recv(clientSocket, (void *) buf, 1, MSG_PEEK);
-	return (n > 0) || ((n < 0) && (errno == EWOULDBLOCK));
-}
 
 static OBJ primHttpIsConnected(int argCount, OBJ *args) {
-	return httpClientConnected() ? trueObj : falseObj;
+	return socketConnected(clientSocket) ? trueObj : falseObj;
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
 	// Send an HTTP request. Must have first connected to the server.
 
-	if (!httpClientConnected()) return falseObj;
+	if (clientSocket < 0) return falseObj;
 
 	char* reqType = obj2str(args[0]);
 	char* host = obj2str(args[1]);
@@ -212,18 +395,32 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	return response;
 }
 
+// Not yet implemented
+
+static OBJ primStartSSIDscan(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetSSID(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWiFi); }
+
 static PrimEntry entries[] = {
 	{"hasWiFi", primHasWiFi},
 	{"startWiFi", primStartWiFi},
 	{"stopWiFi", primStopWiFi},
 	{"wifiStatus", primWiFiStatus},
 	{"myIPAddress", primGetIP},
+	{"startSSIDscan", primStartSSIDscan},
+	{"getSSID", primGetSSID},
+	{"myMAC", primGetMAC},
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
 	{"httpConnect", primHttpConnect},
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
+	{"webSocketStart", primWebSocketStart},
+	{"webSocketLastEvent", primWebSocketLastEvent},
+	{"webSocketSendToClient", primWebSocketSendToClient},
 };
 
 void addNetPrims() {

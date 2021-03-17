@@ -66,15 +66,31 @@ static int freeEntry() {
 	return -1; // no free entry
 }
 
+static void tryToOpen(int entryIndex, char* fileName) {
+	if (entryIndex >= 0) {
+		if (fileEntry[entryIndex].file) fclose(fileEntry[entryIndex].file);
+
+		fileEntry[entryIndex].file = fopen(fileName, "a+");
+
+		if (!fileEntry[entryIndex].file) {
+			fileEntry[entryIndex].file = fopen(fileName, "r");
+		}
+
+		if (fileEntry[entryIndex].file) {
+			fseek(fileEntry[entryIndex].file, 0, SEEK_SET); // read from start of file
+		} else {
+			fileEntry[entryIndex].fileName[0] = '\0';
+		}
+	}
+}
+
 static OBJ primOpen(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char fileName[100];
 	extractFilename(args[0], fileName);
 	int i = entryFor(fileName);
 	if (i >= 0) { // found an existing entry; close and reopen
-		fclose(fileEntry[i].file);
-		fileEntry[i].file = fopen(fileName, "a+");
-		fseek(fileEntry[i].file, 0, SEEK_SET); // read from start of file
+		tryToOpen(i, fileName);
 		return falseObj;
 	}
 	i = freeEntry();
@@ -82,8 +98,7 @@ static OBJ primOpen(int argCount, OBJ *args) {
 		fileEntry[i].fileName[0] = '\0';
 		strncpy(fileEntry[i].fileName, fileName, 99);
 		fileEntry[i].fileName[99] = '\0'; // ensure null termination
-		fileEntry[i].file = fopen(fileName, "a+");
-		fseek(fileEntry[i].file, 0, SEEK_SET); // read from start of file
+		tryToOpen(i, fileName);
 	}
 	return falseObj;
 }
