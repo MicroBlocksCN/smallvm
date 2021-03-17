@@ -35,7 +35,8 @@ static int mouseDownTime = 0;
 static int tftEnabled = false;
 static SDL_Window *window;
 static SDL_Renderer* renderer;
-static int ticks = 0;
+static int refreshMillisecs = 15; // every how many ms do we refresh the screen
+static int lastRefreshTime = 0;
 
 extern int KEY_SCANCODE[];
 
@@ -71,7 +72,6 @@ void initKeys() {
 }
 
 void updateMicrobitDisplay() {
-	ticks = (ticks + 1) % 100;
 	SDL_Event e;
 	while (SDL_PollEvent(&e) > 0) {
         switch(e.type) {
@@ -104,13 +104,14 @@ void updateMicrobitDisplay() {
 				break;
 		}
 	}
-	if (tftEnabled && (ticks == 0)) {
+	if (tftEnabled && (millisecs() - lastRefreshTime > refreshMillisecs)) {
 		SDL_RenderPresent(renderer);
 	}
 }
 
 void tftInit() {
 	if (!tftEnabled) {
+		lastRefreshTime = millisecs();
 		SDL_Init(SDL_INIT_EVERYTHING);
 		window = SDL_CreateWindow("MicroBlocks for Linux",
 				SDL_WINDOWPOS_UNDEFINED,

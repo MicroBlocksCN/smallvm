@@ -22,6 +22,11 @@
 #include <termios.h>
 #include <unistd.h>
 
+#ifdef ARDUINO_RASPBERRY_PI
+#include <wiringPi.h>
+#include <wiringSerial.h>
+#endif
+
 #include "mem.h"
 #include "interp.h"
 #include "persist.h"
@@ -53,10 +58,13 @@ uint32 millisecs() {
 	return (1000 * (now.tv_sec - startSecs)) + (now.tv_usec / 1000);
 }
 
+#ifndef ARDUINO_RASPBERRY_PI
 void delay(int ms) {
 	clock_t start = millisecs();
 	while (millisecs() < start + ms);
 }
+#endif
+
 
 // Communication/System Functions
 
@@ -100,7 +108,73 @@ int sendByte(char aByte) {
 
 // System Functions
 
-const char * boardType() { return "Linux"; }
+const char * boardType() {
+#ifdef ARDUINO_RASPBERRY_PI
+	return "Raspberry Pi";
+#else
+	return "Linux";
+#endif
+}
+
+#ifdef ARDUINO_RASPBERRY_PI
+// General Purpose I/O Pins
+
+#define DIGITAL_PINS 32
+#define ANALOG_PINS 0
+#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+#define PIN_LED 0
+
+// Pin Modes
+
+// To speed up pin I/O, the current pin input/output mode is recorded in the currentMode[]
+// array to avoid calling pinMode() unless the pin mode has actually changed.
+
+static char currentMode[TOTAL_PINS];
+
+#define MODE_NOT_SET (-1)
+
+#define SET_MODE(pin, newMode) { \
+	if ((newMode) != currentMode[pin]) { \
+		pinMode((pin), newMode); \
+		currentMode[pin] = newMode; \
+	} \
+}
+
+static void initPins(void) {
+	// Initialize currentMode to MODE_NOT_SET (neigher INPUT nor OUTPUT)
+	// to force the pin's mode to be set on first use.
+
+	for (int i = 0; i < TOTAL_PINS; i++) currentMode[i] = MODE_NOT_SET;
+}
+
+// Pin IO Primitives
+
+OBJ primAnalogPins(OBJ *args) { return int2obj(ANALOG_PINS); }
+OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
+
+OBJ primAnalogRead(int argCount, OBJ *args) { return int2obj(0); } // no analog inputs
+void primAnalogWrite(OBJ *args) { } // analog output is not supported
+
+OBJ primDigitalRead(int argCount, OBJ *args) {
+	int pinNum = obj2int(args[0]);
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
+	SET_MODE(pinNum, INPUT);
+	return (HIGH == digitalRead(pinNum)) ? trueObj : falseObj;
+}
+
+void primDigitalWrite(OBJ *args) {
+	int pinNum = obj2int(args[0]);
+	int value = (args[1] == trueObj) ? HIGH : LOW;
+	primDigitalSet(pinNum, value);
+}
+
+void primDigitalSet(int pinNum, int flag) {
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return;
+	SET_MODE(pinNum, OUTPUT);
+	digitalWrite(pinNum, flag);
+};
+
+#else // Regular Linux system (not a Raspberry Pi)
 
 // Stubs for IO primitives
 
@@ -111,7 +185,7 @@ void primAnalogWrite(OBJ *args) { }
 OBJ primDigitalRead(int argCount, OBJ *args) { return int2obj(0); }
 void primDigitalWrite(OBJ *args) { }
 void primDigitalSet(int pinNum, int flag) { };
-void stopServos() { }
+#endif
 
 // Stubs for other functions not used on Linux
 
@@ -120,6 +194,8 @@ void resetServos() {}
 void stopPWM() {}
 void systemReset() {}
 void turnOffPins() {}
+void stopServos() { }
+
 
 // Persistence support
 
@@ -163,6 +239,10 @@ int main() {
 	printf(
 		"Starting Linux MicroBlocks... Connect on %s\n",
 		(char*) ptsname(pty));
+#ifdef ARDUINO_RASPBERRY_PI
+	wiringPiSetup();
+	initPins();
+#endif
 	initTimers();
 	memInit(10000); // 10k words = 40k bytes
 	primsInit();
