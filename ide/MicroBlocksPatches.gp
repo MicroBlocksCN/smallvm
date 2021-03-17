@@ -24,7 +24,7 @@ method allVarsMenu InputSlot {
 	for varName varNames {
           // hide vars that start with underscore, used for libraries
           if (or ((at varName 1) != '_') (devMode)) {
-            addItem menu varName (action 'setContents' this varName)
+            addItemNonlocalized menu varName (action 'setContents' this varName)
           }
 	}
 	if ((count varNames) > 0) { addLine menu }
@@ -38,7 +38,7 @@ method allVarsMenu InputSlot {
   if (notEmpty localVars) {
 	localVars = (sorted (keys localVars))
 	for varName localVars {
-	  addItem menu varName (action 'setContents' this varName)
+	  addItemNonlocalized menu varName (action 'setContents' this varName)
 	}
 	addLine menu
   }
