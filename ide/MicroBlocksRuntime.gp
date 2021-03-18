@@ -604,12 +604,11 @@ method portList SmallRuntime {
 				add portList (join '/dev/' fn)
 			}
 		}
-		if false { //(devMode) {
-			if ('Linux' == (platform)) {
-				// add pseudoterminals
-				for fn (listFiles '/dev/pts') {
-					add portList (join '/dev/pts/' fn)
-				}
+		if ('Linux' == (platform)) {
+			// add pseudoterminal
+			ptyName = (readFile '/tmp/ublocksptyname')
+			if (notNil ptyName) {
+				add portList ptyName
 			}
 		}
 		// Mac OS lists a port as both cu.<name> and tty.<name>

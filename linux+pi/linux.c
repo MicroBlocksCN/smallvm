@@ -21,6 +21,7 @@
 #include <sys/time.h> // still needed?
 #include <termios.h>
 #include <unistd.h>
+#include <signal.h>
 
 #ifdef ARDUINO_RASPBERRY_PI
 #include <wiringPi.h>
@@ -74,6 +75,19 @@ int serialConnected() {
 	return pty > -1;
 }
 
+static void makePtyFile() {
+	FILE *file = fopen("/tmp/ublocksptyname", "w");
+	if (file) {
+		fprintf(file, "%s", (char*) ptsname(pty));
+		fclose(file);
+	}
+}
+
+static void exitGracefully() {
+	remove("/tmp/ublocksptyname");
+	exit(0);
+}
+
 static void openPseudoTerminal() {
 	pty = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (-1 == pty) {
@@ -88,6 +102,8 @@ static void openPseudoTerminal() {
 
  	grantpt(pty);
  	unlockpt(pty);
+
+	makePtyFile();
 }
 
 int recvBytes(uint8 *buf, int count) {
@@ -235,6 +251,8 @@ void clearCodeFile(int ignore) {
 // Linux Main
 
 int main() {
+	signal(SIGINT, exit);
+	atexit(exitGracefully);
 	openPseudoTerminal();
 	printf(
 		"Starting Linux MicroBlocks... Connect on %s\n",
