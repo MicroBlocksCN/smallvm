@@ -4,9 +4,9 @@
 
 // Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// sensorPrims.c - Microblocks adaptation of sensor primitives for Linux. Most
-// of them will just be always studs. Others can be implemented for the Raspberry
-// pi. Microphone can be implemented for regular Linux.
+// sensorPrims.c - Microblocks adaptation of sensor primitives for Linux.
+// Most are just stubs. Others can be implemented for the Raspberry Pi.
+// Microphone could be implemented for regular Linux.
 // Bernat Romagosa, February 2021
 
 #include <stdio.h>
@@ -16,23 +16,12 @@
 #include "interp.h"
 
 #ifdef ARDUINO_RASPBERRY_PI
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
+	#include <wiringPi.h>
+	#include <wiringPiI2C.h>
+	#include <wiringPiSPI.h>
 #endif
 
-extern int KEY_SCANCODE[];
-
-OBJ primAcceleration(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
-
-OBJ primTouchRead(int argCount, OBJ *args) {
-	// instead of pins, we use key scancodes
-	int code = obj2int(args[0]);
-	return int2obj(KEY_SCANCODE[code] ? 0 : 255);
-}
+// I2C and SPI Prims
 
 #ifdef ARDUINO_RASPBERRY_PI
 
@@ -64,19 +53,64 @@ OBJ primI2cSet(OBJ *args) {
 	return falseObj;
 }
 
-#else
+#define SPI_CHANNEL 0
+#define SPI_CLOCK_SPEED 1000000 // 1 MHz clock
+
+static int spiDevice = -1;
+
+OBJ primSPISend(OBJ *args) {
+	if (!isInt(args[0])) return fail(needsIntegerError);
+	unsigned data = obj2int(args[0]);
+	if (data > 255) return fail(i2cValueOutOfRange);
+
+	if (spiDevice < 0) {
+		spiDevice = wiringPiSPISetup (SPI_CHANNEL, SPI_CLOCK_SPEED);
+		if (spiDevice < 0) return zeroObj; // initialization failed
+	}
+	wiringPiSPIDataRW(0, data, 1); // send data byte
+	return falseObj;
+}
+
+OBJ primSPIRecv(OBJ *args) {
+	if (spiDevice < 0) {
+		spiDevice = wiringPiSPISetup (SPI_CHANNEL, SPI_CLOCK_SPEED);
+		if (spiDevice < 0) return zeroObj; // initialization failed
+	}
+
+	int result = wiringPiSPIDataRW(0, 0, 1); // send zero, get result byte
+	return int2obj(result);
+}
+
+#else // not Raspberry PI; use stubs
 
 OBJ primI2cGet(OBJ *args) { return int2obj(0); }
 OBJ primI2cSet(OBJ *args) { return int2obj(0); }
+OBJ primSPISend(OBJ *args) { return int2obj(0); }
+OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
 
 #endif
 
-OBJ primSPISend(OBJ *args) { return int2obj(0); }
-OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
-OBJ primI2cRead(OBJ *args) { return int2obj(0); }
-OBJ primI2cWrite(OBJ *args) { return int2obj(0); }
-OBJ primReadDHT(OBJ *args) { return int2obj(0); }
-OBJ primMicrophone(OBJ *args) { return int2obj(0); }
+// Touch Read (use key scancodes)
+
+extern int KEY_SCANCODE[];
+
+static OBJ primTouchRead(int argCount, OBJ *args) {
+	// instead of pins, we use key scancodes
+	int code = obj2int(args[0]);
+	return int2obj(KEY_SCANCODE[code] ? 0 : 255);
+}
+
+// Stubs
+
+static OBJ primAcceleration(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primI2cRead(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primI2cWrite(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primReadDHT(int argCount, OBJ *args) { return int2obj(0); }
+static OBJ primMicrophone(int argCount, OBJ *args) { return int2obj(0); }
 
 static PrimEntry entries[] = {
 	{"acceleration", primAcceleration},
