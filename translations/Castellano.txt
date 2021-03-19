@@ -1071,6 +1071,66 @@ JSON de las definiciones de eventos
 events JSON
 JSON de los eventos
 
+####
+# MiKe Robot library
+
+MiKe front obstacle (cm)
+MiKe obstáculo frontal (cm)
+
+MiKe _ obstacle ?
+MiKe obstáculo _ ?
+
+MiKe black line on _ ?
+MiKe línea negra a la _ ?
+
+MiKe back light
+MiKe luz trasera
+
+MiKe IR
+MiKe IR
+
+MiKe digital D8 sensor
+MiKe sensor digital D8
+
+MiKe stop motors
+Mike parar motores
+
+MiKe Robot go _ at _ %
+MiKe Robot ir _ a _ %
+
+MiKe Robot speed _ %
+MiKe Robot velocidad _ %
+
+MiKe Robot direction _
+MiKe Robot dirección _
+
+MiKe turn _ motor _
+MiKe mover motor _ en _
+
+MiKe speed _ motor at _ %
+MiKe velocidad de motor _ a _ %
+
+MiKe front lights off
+MiKe apagar luces delanteras
+
+MiKe front lights to _
+MiKe luces delanteras a _
+
+MiKe circle lights off
+MiKe apagar círculo de luces
+
+MiKe circle ligths to _
+MiKe círculo de luces a _
+
+MiKe circle light _ (1-18) to _
+MiKe luz _ del círculo(1-18) a _
+
+MiKe rotate lights by _
+MiKe girar luces en _
+
+MiKe digital D8 to _
+Mike fijar actuador D8 a _
+
 ##################
 # MicroBlocks UI #
 ##################
