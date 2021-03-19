@@ -58,7 +58,6 @@ method clicked InputSlot aHand {
 		if (notNil menu) {
 		  popUpAtHand menu (page aHand)
 		}
-		return true
 	  } else {
 		project = (project (findProjectEditor))
 		choices = (choicesFor project menuSelector)
@@ -71,6 +70,7 @@ method clicked InputSlot aHand {
 		}
 	  }
     }
+	return true
   }
   return false
 }
