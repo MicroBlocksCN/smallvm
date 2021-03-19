@@ -2,13 +2,15 @@ module 'MiKe Robot'
 author 'Robolot team'
 version 1 0 
 tags keyestudio robot car 
-description 'Provides Sensor, Light and Motion blocks for the Micro:bit Mini Smart Robot Car v2.
-'
+description 'Provides sensor, light and motion blocks for the Keyestudio micro:bit Mini Smart Robot Car v2.'
 variables _MiKe_circlePixels _MiKe_i2c_on 
+choices directions clockwise 'counter-clockwise'
+choices sideMenu Right Left
+choices robotDirections Forward Backward Right Left
 
 	spec 'r' 'MiKe front obstacle (cm)' 'MiKe front obstacle (cm)'
-	spec 'r' 'MiKe obstacle ?' 'MiKe _ obstacle ?' 'menu.finchTurnMenu' 'Right'
-	spec 'r' 'MiKe black line on ?' 'MiKe black line on _ ?' 'menu.finchTurnMenu' 'Right'
+	spec 'r' 'MiKe obstacle ?' 'MiKe _ obstacle ?' 'menu.sideMenu' 'Right'
+	spec 'r' 'MiKe black line on ?' 'MiKe black line on _ ?' 'menu.sideMenu' 'Right'
 	spec 'r' 'MiKe back light' 'MiKe back light'
 	spec 'r' 'MiKe IR' 'MiKe IR'
 	spec 'r' 'MiKe digital D8 sensor' 'MiKe digital D8 sensor'
@@ -16,8 +18,8 @@ variables _MiKe_circlePixels _MiKe_i2c_on
 	spec ' ' 'MiKe Robot go' 'MiKe Robot go _ at _ %' 'menu.robotDirections num' 'Forward' 25
 	spec ' ' 'MiKe Robot speed' 'MiKe Robot speed _ %' 'num' 25
 	spec ' ' 'MiKe Robot direction' 'MiKe Robot direction _' 'menu.robotDirections' 'Forward'
-	spec ' ' 'MiKe turn motor' 'MiKe turn _ motor _' 'menu.finchTurnMenu menu.directions' 'Right' 'clockwise'
-	spec ' ' 'MiKe speed motor' 'MiKe speed _ motor at _ %' 'menu.finchTurnMenu num' 'Right' 25
+	spec ' ' 'MiKe turn motor' 'MiKe turn _ motor _' 'menu.sideMenu menu.directions' 'Right' 'clockwise'
+	spec ' ' 'MiKe speed motor' 'MiKe speed _ motor at _ %' 'menu.sideMenu num' 'Right' 25
 	spec ' ' 'MiKe front lights off' 'MiKe front lights off'
 	spec ' ' 'MiKe front lights' 'MiKe front lights to _' 'color'
 	spec ' ' 'MiKe circle lights off' 'MiKe circle lights off'
