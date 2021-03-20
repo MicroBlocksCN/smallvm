@@ -8,13 +8,15 @@
 gcc -m32 -std=c99 -Wall -Wno-unused-variable -Wno-unused-result -O3 \
 	-D GNUBLOCKS \
 	-I/usr/local/include/SDL2 \
+	`pkg-config --cflags pangocairo` \
 	-I ../vm \
 	linux.c ../vm/*.c \
 	linuxSensorPrims.c linuxFilePrims.c linuxIOPrims.c linuxNetPrims.c \
 	linuxOutputPrims.c linuxTftPrims.c \
-	-lSDL2 -lSDL2_ttf \
-	-ldl -lm -lpthread -lsndio -lz \
+	-lSDL2 \
+	`pkg-config --libs pangocairo` \
+	-ldl -lm -lpthread -lasound -lz \
 	-o GnuBlocks
 
-# For static linking replace -lSDL2 -lSDL2_ttf with:
-#	/usr/local/lib/libSDL2.a /usr/local/lib/libSDL2_ttf.a /usr/local/lib/libfreetype.a \
+# For static linking replace -lSDL2 with /usr/local/lib/libSDL2.a \
+# -lsndio

@@ -2,30 +2,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
+// Copyright 2020 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// linuxTftPrims.cpp - Microblocks TFT screen primitives simulated on an SDL
-//                     window
+// linuxTftPrims.cpp - Microblocks TFT screen primitives simulated on an SDL window
 // Bernat Romagosa, February 2021
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <pango/pangocairo.h>
 
 #include "mem.h"
 #include "interp.h"
 
-// Debug: Uncommenting the above causes openSDLWindow to fail with a segmentation fault
-// on John's Ubuntu 20.04.
-// void notCalled() { TTF_Init(); }
-
-// Define this to disable SDL_ttf and avoids segmentation fault on John's Ubuntu 20.04
-// #define DISABLE_TRUE_TYPE
-
-#define TFT_WIDTH 800
-#define TFT_HEIGHT 600
+#define DEFAULT_WIDTH 320
+#define DEFAULT_HEIGHT 240
+#define REFRESH_MSECS 16 // screen refresh interval (~60 frames/sec)
 
 static int mouseDown = false;
 static int mouseX = -1;
@@ -35,43 +28,105 @@ static int mouseDownTime = 0;
 static int tftEnabled = false;
 static SDL_Window *window;
 static SDL_Renderer* renderer;
-static int refreshMillisecs = 15; // every how many ms do we refresh the screen
 static int lastRefreshTime = 0;
 
 extern int KEY_SCANCODE[];
 
 // Helper Functions
 
+static void setRenderColor(int color24b) {
+	SDL_SetRenderDrawColor(
+		renderer, (color24b >> 16) & 255, (color24b >> 8) & 255, color24b & 255, 255);
+}
+
+void tftClear() {
+	tftInit();
+	setRenderColor(0);
+	SDL_RenderClear(renderer);
+}
+
+// Text Rendering with PangoCairo
+
+int onePixel;
+PangoFontDescription *pangoFont = NULL;
+cairo_surface_t *textMeasureSurface = NULL;
+
+static void setFont(char *fontName, int fontSize, int isBold, int isItalic) {
+	if (!pangoFont) pangoFont = pango_font_description_new();
+	pango_font_description_set_family(pangoFont, fontName);
+	int fudgeFactor = (pango_version() > 14403) ? 1 : 0;
+	pango_font_description_set_size(pangoFont, (fontSize - fudgeFactor) * PANGO_SCALE);
+	if (isBold) pango_font_description_set_weight(pangoFont, 700);
+	if (isItalic) pango_font_description_set_style(pangoFont, PANGO_STYLE_ITALIC);
+}
+
+static void measureText(char *s, int *width, int *height) {
+	if (!textMeasureSurface) {
+		cairo_surface_t *cairoSurface = cairo_image_surface_create_for_data(
+			(void *) &onePixel, CAIRO_FORMAT_ARGB32, 1, 1, 4);
+	}
+	cairo_t *cr = cairo_create(textMeasureSurface);
+	PangoLayout *layout = pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(layout, pangoFont);
+	pango_layout_set_text(layout, s, strlen(s));
+	pango_layout_get_pixel_size(layout, width, height); // get rendered text size
+
+	// cleanup layout and context
+	g_object_unref(layout);
+	cairo_destroy(cr);
+}
+
 static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFlag) {
 	// Draw the given string with the given position, color, scale and wrapFlag
 	// TODO wrap is ignored for now
 
 	SDL_Color color = { color24b >> 16, (color24b >> 8) & 255, color24b & 255 };
+	int textW, textH;
+	int fontSize = 6 * scale;
+	setFont("Arial", fontSize, true, false);
+	measureText(s, &textW, &textH);
 
-#ifndef DISABLE_TRUE_TYPE
-	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10 * scale);
-	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, s, color);
+	// Create surface for text rendering (could be cached if slow)
+	SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, textW, textH, 32, SDL_PIXELFORMAT_ARGB8888);
 
-	int width, height;
-	TTF_SizeText(font, s, &width, &height);
-	SDL_Rect rect = { x, y, width, height };
+	// PangoCairo setup
+	cairo_surface_t *cairoSurface = cairo_image_surface_create_for_data(
+		surface->pixels, CAIRO_FORMAT_ARGB32, surface->w, surface->h, (4 * surface->w));
+	cairo_t *cr = cairo_create(cairoSurface);
+	PangoLayout *layout = pango_cairo_create_layout(cr);
+	pango_layout_set_font_description(layout, pangoFont);
+	pango_layout_set_text(layout, s, strlen(s));
 
-	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
-	SDL_RenderCopy(renderer, message, NULL, &rect);
+	// Render the text onto surface
+	cairo_set_source_rgba(cr,
+		((color24b >> 16) & 255) / 255.0,
+		((color24b >> 8) & 255) / 255.0,
+		(color24b & 255) / 255.0,
+		1.0);
+	pango_cairo_show_layout(cr, layout);
 
+	// PangoCairo clean up
+	g_object_unref(layout);
+	cairo_destroy(cr);
+	cairo_surface_destroy(cairoSurface);
+
+	// Copy rendered text to the display
+	SDL_Rect rect = {x, y, surface->w, surface->h};
+	SDL_Texture* tempTexture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_RenderCopy(renderer, tempTexture, NULL, &rect);
+	SDL_DestroyTexture(tempTexture);
 	SDL_FreeSurface(surface);
-	SDL_DestroyTexture(message);
-	TTF_CloseFont(font);
-#endif
 }
 
-void initKeys() {
+// Events and SDL Window Support
+
+static void initKeys() {
 	for (int i = 0; i < 255; i++) {
 		KEY_SCANCODE[i] = false;
 	}
 }
 
-void updateMicrobitDisplay() {
+static void processEvents() {
 	SDL_Event e;
 	while (SDL_PollEvent(&e) > 0) {
         switch(e.type) {
@@ -104,9 +159,6 @@ void updateMicrobitDisplay() {
 				break;
 		}
 	}
-	if (tftEnabled && (millisecs() - lastRefreshTime > refreshMillisecs)) {
-		SDL_RenderPresent(renderer);
-	}
 }
 
 void tftInit() {
@@ -116,33 +168,27 @@ void tftInit() {
 		window = SDL_CreateWindow("MicroBlocks for Linux",
 				SDL_WINDOWPOS_UNDEFINED,
 				SDL_WINDOWPOS_UNDEFINED,
-				TFT_WIDTH,
-				TFT_HEIGHT,
-				0);
+				DEFAULT_WIDTH,
+				DEFAULT_HEIGHT,
+				SDL_WINDOW_RESIZABLE);
+
 		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 		SDL_RenderClear(renderer);
-
-#ifndef DISABLE_TRUE_TYPE
-		TTF_Init();
-#endif
-		tftEnabled = true;
 		initKeys();
+		tftEnabled = true;
 	}
 }
 
-static void setRenderColor(int color24b) {
-	SDL_SetRenderDrawColor(
-			renderer,
-			color24b >> 16,
-			(color24b >> 8) & 255,
-			color24b & 255,
-			255);
-}
-
-void tftClear() {
-	tftInit();
-	setRenderColor(0);
-	SDL_RenderClear(renderer);
+void updateMicrobitDisplay() {
+	processEvents();
+	if (tftEnabled) {
+		uint32_t now = millisecs();
+		if (now < lastRefreshTime) lastRefreshTime = 0; // clock wrap
+		if ((now - lastRefreshTime > REFRESH_MSECS)) {
+			SDL_RenderPresent(renderer);
+			lastRefreshTime = now;
+		}
+	}
 }
 
 // TFT Primitives
@@ -161,11 +207,17 @@ static OBJ primEnableDisplay(int argCount, OBJ *args) {
 }
 
 static OBJ primGetWidth(int argCount, OBJ *args) {
-	return int2obj(TFT_WIDTH);
+	if (!window) return zeroObj;
+	int w, h;
+	SDL_GetWindowSize(window, &w, &h);
+	return int2obj(w);
 }
 
 static OBJ primGetHeight(int argCount, OBJ *args) {
-	return int2obj(TFT_HEIGHT);
+	if (!window) return zeroObj;
+	int w, h;
+	SDL_GetWindowSize(window, &w, &h);
+	return int2obj(h);
 }
 
 static OBJ primSetPixel(int argCount, OBJ *args) {
@@ -426,7 +478,7 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 	int increment = (area < 0) ? 1 : -1;
 	int fill = (argCount > 7) ? (trueObj == args[7]) : true;
 	if (fill) {
-		while ((abs(x[1]) < TFT_WIDTH) && // This should never happen
+		while ((abs(x[1]) < DEFAULT_WIDTH) && // This should never happen
 				(increment != area/abs(area))) {
 			SDL_RenderDrawLine(renderer, x[1], y[1], x[0], y[0]);
 			SDL_RenderDrawLine(renderer, x[1], y[1], x[2], y[2]);
@@ -469,13 +521,18 @@ static OBJ primText(int argCount, OBJ *args) {
 void tftSetHugePixel(int x, int y, int state) {
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
 	tftInit();
+	if (!window) return;
+
+	int width, height;
+	SDL_GetWindowSize(window, &width, &height);
+
 	int minDimension, xInset = 0, yInset = 0;
-	if (TFT_WIDTH > TFT_HEIGHT) {
-		minDimension = TFT_HEIGHT;
-		xInset = (TFT_WIDTH - TFT_HEIGHT) / 2;
+	if (width > height) {
+		minDimension = height;
+		xInset = (width - height) / 2;
 	} else {
-		minDimension = TFT_WIDTH;
-		yInset = (TFT_HEIGHT - TFT_WIDTH) / 2;
+		minDimension = width;
+		yInset = (height - width) / 2;
 	}
 	int lineWidth = (minDimension > 60) ? 3 : 1;
 	int squareSize = (minDimension - (6 * lineWidth)) / 5;
