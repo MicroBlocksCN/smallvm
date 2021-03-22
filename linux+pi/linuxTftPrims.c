@@ -11,7 +11,6 @@
 #include <stdlib.h>
 
 #include <SDL2/SDL.h>
-#include <pango/pangocairo.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -46,6 +45,10 @@ void tftClear() {
 }
 
 // Text Rendering with PangoCairo
+
+#ifdef USE_PANGO
+
+#include <pango/pangocairo.h>
 
 int onePixel;
 PangoFontDescription *pangoFont = NULL;
@@ -118,6 +121,40 @@ static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFla
 	SDL_FreeSurface(surface);
 }
 
+#else
+
+#include <SDL2/SDL_ttf.h>
+
+static int ttfInitialized = false;
+
+static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFlag) {
+	// Draw the given string with the given position, color, scale and wrapFlag
+	// TODO wrap is ignored for now
+
+	if (!ttfInitialized) { // initialize TTF before first use
+		TTF_Init();
+		ttfInitialized = true;
+	}
+
+	SDL_Color color = { color24b >> 16, (color24b >> 8) & 255, color24b & 255 };
+
+	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10 * scale);
+	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, s, color);
+
+	int width, height;
+	TTF_SizeText(font, s, &width, &height);
+	SDL_Rect rect = { x, y, width, height };
+
+	SDL_Texture* message = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_RenderCopy(renderer, message, NULL, &rect);
+
+	SDL_FreeSurface(surface);
+	SDL_DestroyTexture(message);
+	TTF_CloseFont(font);
+}
+
+#endif
+
 // Events and SDL Window Support
 
 static void initKeys() {
@@ -164,7 +201,12 @@ static void processEvents() {
 void tftInit() {
 	if (!tftEnabled) {
 		lastRefreshTime = millisecs();
-		SDL_Init(SDL_INIT_EVERYTHING);
+//		SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
+    // Unrecoverable error, exit here.
+    printf("SDL_Init failed: %s\n", SDL_GetError());
+    return;
+}
 		window = SDL_CreateWindow("MicroBlocks for Linux",
 				SDL_WINDOWPOS_UNDEFINED,
 				SDL_WINDOWPOS_UNDEFINED,
