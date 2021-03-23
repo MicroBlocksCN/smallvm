@@ -1,2 +1,9 @@
 #!/bin/sh
 if test -x /usr/bin/update-menus; then update-menus; fi
+# add user to dialout group
+groupadd plugdev
+groupadd dialout
+usermod -a -G dialout `logname`
+usermod -a -G tty `logname`
+usermod -a -G uucp `logname`
+usermod -a -G plugdev `logname`

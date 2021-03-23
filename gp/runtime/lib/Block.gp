@@ -940,7 +940,11 @@ method delete Block {
     }
   }
   aboutToBeGrabbed this
-  destroy morph
+
+  // Allow recovery of deleted morph with undrop
+  pe = (findProjectEditor)
+  recordDrop (scriptEditor (scripter pe)) this
+  if (notNil (owner morph)) { removePart (owner morph) morph }
 }
 
 method editAsText Block {

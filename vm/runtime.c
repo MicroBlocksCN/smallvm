@@ -13,14 +13,17 @@
 #include <string.h>
 #include <string.h>
 
-#include <Arduino.h>
+#ifdef GNUBLOCKS
+#include "../linux+pi/linux.h"
+#endif
+
 #include "mem.h"
 #include "interp.h"
 #include "persist.h"
 
 // VM Version
 
-#define VM_VERSION "v107"
+#define VM_VERSION "v109"
 
 // Forward Reference Declarations
 
@@ -485,7 +488,6 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 	// Types: 1 - integer, 2 - string, 3 - boolean, 4 - list, 5 - bytearray
 
 	char data[801];
-	int maxBytes = (int) sizeof(data) - 1; // leave room for the type byte
 
 	if (isInt(value)) { // 32-bit integer, little endian
 		data[0] = 1;  // data type (1 is integer)
@@ -677,6 +679,8 @@ static void sendVersionString() {
 }
 
 void sendBroadcastToIDE(char *s, int len) {
+	if (!serialConnected()) return; // serial port not open; do nothing
+
 	waitForOutbufBytes(len + 50); // leave a little room for other messages
 	sendMessage(broadcastMsg, 0, len, s);
 }
@@ -747,28 +751,28 @@ void sendChunkCRC(int chunkID) {
 
 // Retrieving source code and attributes
 
-static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
-	if (!persistentRecord) return; // NULL persistentRecord; do nothing
-
-	int wordCount = *(persistentRecord + 1);
-	int bodyBytes = 1 + (4 * wordCount);
-	waitForOutbufBytes(5 + bodyBytes);
-
-	queueByte(251);
-	queueByte(chunkAttributeMsg);
-	queueByte(chunkIndex);
-	queueByte(bodyBytes & 0xFF); // low byte of size
-	queueByte((bodyBytes >> 8) & 0xFF); // high byte of size
-	queueByte(attributeID);
-	int *src = persistentRecord + 2;
-	for (int i = 0; i < wordCount; i++) {
-		int w = *src++;
-		queueByte(w & 0xFF);
-		queueByte((w >> 8) & 0xFF);
-		queueByte((w >> 16) & 0xFF);
-		queueByte((w >> 24) & 0xFF);
-	}
-}
+// static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
+// 	if (!persistentRecord) return; // NULL persistentRecord; do nothing
+//
+// 	int wordCount = *(persistentRecord + 1);
+// 	int bodyBytes = 1 + (4 * wordCount);
+// 	waitForOutbufBytes(5 + bodyBytes);
+//
+// 	queueByte(251);
+// 	queueByte(chunkAttributeMsg);
+// 	queueByte(chunkIndex);
+// 	queueByte(bodyBytes & 0xFF); // low byte of size
+// 	queueByte((bodyBytes >> 8) & 0xFF); // high byte of size
+// 	queueByte(attributeID);
+// 	int *src = persistentRecord + 2;
+// 	for (int i = 0; i < wordCount; i++) {
+// 		int w = *src++;
+// 		queueByte(w & 0xFF);
+// 		queueByte((w >> 8) & 0xFF);
+// 		queueByte((w >> 16) & 0xFF);
+// 		queueByte((w >> 24) & 0xFF);
+// 	}
+// }
 
 static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chunkData) {
 	int msgSize = 1 + chunkBytes;
@@ -784,6 +788,8 @@ static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chun
 		queueByte(*p);
 	}
 }
+
+void delay(int); // Arduino delay function
 
 static void sendAllCode() {
 	// Send the code and attributes for all chunks to the IDE.
@@ -822,10 +828,22 @@ static void sendVarNameMessage(int varID, int *persistentRecord) {
 	}
 }
 
+static int* varsStart() {
+	int *p = scanStart();
+
+	// find the last varsClearAll record
+	int *result = p;
+	while (p) {
+		if (varsClearAll == ((*p >> 16) & 0xFF)) result = p;
+		p = recordAfter(p);
+	}
+	return result;
+}
+
 static void sendVarNames() {
 	// Send the names of all variables.
 
-	int *p = scanStart();
+	int *p = varsStart();
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
 		int varID = (*p >> 8) & 0xFF;
@@ -838,7 +856,7 @@ int indexOfVarNamed(const char *s) {
 	// Return the index of the given variable or -1 if not found.
 
 	int result = -1; // default is not found
-	int *p = scanStart();
+	int *p = varsStart();
 	while (p) {
 		int recType = (*p >> 16) & 0xFF;
 		int id = (*p >> 8) & 0xFF;

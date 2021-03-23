@@ -1,6 +1,6 @@
 module 'WiFi Primitives' Comm
 author MicroBlocks
-version 1 3
+version 1 4
 tags network http server client
 description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server or Wifi libraries in the Network folder.'
 
@@ -13,6 +13,9 @@ description 'Low level network primitives. You are probably looking for either t
 	spec ' ' '[net:startWiFi]'				'start WiFi _ password _ : be hotspot _ : IP _ gateway _ subnet _' 'str str bool str str str' 'SSID' 'MyPassword' true '192.168.1.42' '192.168.1.1' '255.255.255.0'
 	spec ' ' '[net:stopWiFi]'				'stop WiFi'
 	spec 'r' '[net:wifiStatus]'				'WiFi status'
+	spec 'r' '[net:startSSIDscan]'				'scan SSID list'
+	spec 'r' '[net:getSSID]'				'get SSID number _' 'num' 1
+	spec 'r' '[net:myMAC]'					'my MAC address'
 	spec 'r' '[net:myIPAddress]'			'my IP address'
 	spec ' ' '[net:httpConnect]'			'connect to http꞉// _ : port _' 'str num' 'microblocks.fun' 80
 	spec 'r' '[net:httpIsConnected]'		'is HTTP connected?'

@@ -299,6 +299,15 @@ static int htmlKeycode(int keycode) {
 	return keycode & 0xFF;
 }
 
+extern SDL_Window *window; // from graphicsPrims
+
+static void updateMouseScale() {
+	int logicalW, logicalH, actualW, actualH;
+	SDL_GetWindowSize(window, &logicalW, &logicalH);
+	SDL_GL_GetDrawableSize(window, &actualW, &actualH);
+	mouseScale = (actualW == (2 * logicalW)) ? 2 : 1;
+}
+
 OBJ getEvent() {
 
 	if (!initialized) {
@@ -401,6 +410,7 @@ OBJ getEvent() {
 			}
 			if (6 == event.window.event) {
 				// SDL_WINDOWEVENT_SIZE_CHANGED: record new size
+				updateMouseScale();
 				windowWidth = event.window.data1 * mouseScale;
 				windowHeight = event.window.data2 * mouseScale;
 			}

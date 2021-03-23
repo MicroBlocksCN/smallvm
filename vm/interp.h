@@ -79,7 +79,11 @@ typedef enum {
 	running = 2,
 } MicroBlocksTaskStatus_t;
 
-#define STACK_LIMIT 54 // Task size is 6 + STACK_LIMIT words
+#ifdef GNUBLOCKS
+	#define STACK_LIMIT 10000 // Task size is 6 + STACK_LIMIT words
+#else
+	#define STACK_LIMIT 54 // Task size is 6 + STACK_LIMIT words
+#endif
 
 typedef struct {
 	uint8 status; // MicroBlocksTaskStatus_t, stored as a byte
@@ -228,6 +232,7 @@ void outputRecordHeaders();
 uint32 microsecs(void);
 uint32 millisecs(void);
 
+int serialConnected();
 int recvBytes(uint8 *buf, int count);
 int sendByte(char aByte);
 void restartSerial();

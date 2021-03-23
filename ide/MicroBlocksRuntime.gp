@@ -325,12 +325,12 @@ method stopDecompilation SmallRuntime {
 }
 
 method waitForPing SmallRuntime {
-	// Wait for up to timeout to get a ping back from the board.
-	// Used to ensure that the board is responding before fetching code to decompile.
+	// Try to get a ping back from the board. Used to ensure that the board is responding.
 
-	timeout = 1000
+	endMSecs = ((msecsSinceStart) + 1000)
 	lastPingRecvMSecs = 0
 	while (0 == lastPingRecvMSecs) {
+		if ((msecsSinceStart) > endMSecs) { return } // no response within the timeout
 		sendMsg this 'pingMsg'
 		processMessages this
 		waitMSecs 10
@@ -369,6 +369,25 @@ method receivedVarName SmallRuntime varID varName byteCount {
 		addVar decompiler varID varName
 	}
 }
+
+// HTTP server support
+
+method readVarsFromBoard SmallRuntime client {
+	if (notNil decompiler) { return }
+
+	// pretend to be a decompiler to collect variable names
+	decompiler = client
+	waitForPing this
+	sendMsg this 'getVarNamesMsg'
+	lastRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - lastRcvMSecs) < 50) {
+		processMessages this
+		waitMSecs 10
+	}
+	// clear decompiler
+	decompiler = nil
+}
+
 
 // chunk management
 
@@ -585,6 +604,14 @@ method portList SmallRuntime {
 				add portList (join '/dev/' fn)
 			}
 		}
+		if false { //(devMode) {
+			if ('Linux' == (platform)) {
+				// add pseudoterminals
+				for fn (listFiles '/dev/pts') {
+					add portList (join '/dev/pts/' fn)
+				}
+			}
+		}
 		// Mac OS lists a port as both cu.<name> and tty.<name>
 		for s (copy portList) {
 			if (beginsWith s '/dev/tty.') {
@@ -632,6 +659,10 @@ method closePort SmallRuntime {
 	port = nil
 	vmVersion = nil
 	boardType = nil
+
+	// remove talk bubble and running highlights when disconnected
+	removeHint (global 'page')
+	clearRunningHighlights this
 }
 
 method enableAutoConnect SmallRuntime syncScriptsFlag {
@@ -745,6 +776,7 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this
 			}
+			setDefaultSerialDelay this
 			return 'connected'
 		} else {
 			portName = nil
@@ -779,9 +811,7 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this
 			}
-			if ('Mac' == (platform)) {
-				setSerialDelay this 8
-			}
+			setDefaultSerialDelay this
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
@@ -815,8 +845,8 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime { return '1.0.10' }
-method latestVmVersion SmallRuntime { return 107 }
+method ideVersion SmallRuntime {  return '1.0.14' }
+method latestVmVersion SmallRuntime { return 109 }
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = (newline)
@@ -835,6 +865,7 @@ method checkBoardType SmallRuntime {
 		vmVersion = nil
 		getVersion this
 	}
+	return boardType
 }
 
 method getVersion SmallRuntime {
@@ -962,10 +993,12 @@ method saveAllChunks SmallRuntime {
 	removeObsoleteChunks this
 	for aFunction (allFunctions (project scripter)) {
 		saveChunk this aFunction
+		if (isNil port) { return } // connection closed
 	}
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
 			saveChunk this aBlock
+			if (isNil port) { return } // connection closed
 		}
 	}
 }
@@ -1171,12 +1204,20 @@ method clearVariableNames SmallRuntime {
 // Serial Delay
 
 method serialDelayMenu SmallRuntime {
-	menu = (menu (join 'Serial delay' (newline) '(smaller is faster)') (action 'setSerialDelay' this) true)
-	for i 25 { addItem menu i }
+	menu = (menu (join 'Serial delay' (newline) '(smaller is faster, but may fail if computer cannot keep up)') (action 'setSerialDelay' this) true)
+	for i (range 1 5)  { addItem menu i }
+	for i (range 6 20 2)  { addItem menu i }
+	addLine menu
+	addItem menu 'reset to default'
 	popUpAtHand menu (global 'page')
 }
 
+method setDefaultSerialDelay SmallRuntime {
+	setSerialDelay this 'reset to default'
+}
+
 method setSerialDelay SmallRuntime newDelay {
+	if ('reset to default' == newDelay) { newDelay = 5 }
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
 
@@ -1308,7 +1349,13 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 
 	readAvailableSerialData this
 	sendMsg this msgName chunkID byteList
-	waitForResponse this
+	ok = (waitForResponse this)
+	if (not ok) {
+		print 'Lost communication to the board in sendMsgSync'
+		closePort this
+		return false
+	}
+	return true
 }
 
 method readAvailableSerialData SmallRuntime {
@@ -1323,29 +1370,31 @@ method readAvailableSerialData SmallRuntime {
 
 method waitForResponse SmallRuntime {
 	// Wait for some data to arrive from the board. This is taken to mean that the
-	// previous operation has completed.
+	// previous operation has completed. Return true if a response was received.
 
 	sendMsg this 'pingMsg'
-	timeout = 2000
+	timeout = 10000 // enough time for a long Flash compaction
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
-		if (isNil port) { return }
+		if (isNil port) { return false }
 		s = (readSerialPort port true)
 		if (notNil s) {
 			recvBuf = (join recvBuf s)
-			return
+			return true
 		}
 		sendMsg this 'pingMsg'
 		waitMSecs 25
 	}
+	return false
 }
 
 method ensurePortOpen SmallRuntime {
+	if (true == disconnected) { return }
 	if (isWebSerial this) { return }
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		if (and (notNil portName)
 				(or (contains (portList this) portName)
-				(beginsWith portName '/dev/pts/'))) { // support for GnuBlocks
+				(notNil (findSubstring 'pts' portName)))) { // support for GnuBlocks
 			port = (safelyRun (action 'openSerialPort' portName 115200))
 			if (not (isClass port 'Integer')) { port = nil } // failed
 			disconnected = false
@@ -1356,11 +1405,8 @@ method ensurePortOpen SmallRuntime {
 
 method processMessages SmallRuntime {
 	if (isNil recvBuf) { recvBuf = (newBinaryData 0) }
-	processingMessages = true
-	count = 0
-	while (and processingMessages (count < 10)) {
-		processingMessages = (processNextMessage this)
-		count += 1
+	repeat 100 { // process up to N messages
+		if (not (processNextMessage this)) { return } // done!
 	}
 }
 
@@ -1486,7 +1532,7 @@ method isRunning SmallRuntime aBlock {
 
 method boardHasFileSystem SmallRuntime {
 	if (isNil boardType) { getVersion this }
-	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
 }
 
 method deleteFileOnBoard SmallRuntime fileName {
@@ -1896,12 +1942,15 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		}
 		popUpAtHand menu (global 'page')
 	} ((count (portList this)) > 0) {
-		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix') boardType)
+		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} else {
+			disconnected = true
+			closePort this
 			menu = (menu 'Select board type:' this)
-			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix') {
+			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') {
+				eraseFlashFlag = true
 				addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
 			}
 			addLine menu
@@ -2024,7 +2073,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	} ('Clue' == boardType) {
 		copyVMToBoardInBrowser this 'Clue'
 	} (and
-		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
+		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
 		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 	} else {
@@ -2038,6 +2087,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		addItem menu 'Citilab ED1'
 		addItem menu 'M5Stack-Core'
 		addItem menu 'M5StickC'
+		addItem menu 'M5StickC+'
 		addItem menu 'M5Atom-Matrix'
 		addItem menu 'ESP32'
 		addItem menu 'ESP8266'
@@ -2064,7 +2114,7 @@ method flashVMInBrowser SmallRuntime boardName {
 }
 
 method copyVMToBoardInBrowser SmallRuntime boardName {
-	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266') {
+	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266') {
 		flashVMInBrowser this boardName
 		return
 	}

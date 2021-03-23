@@ -144,7 +144,7 @@ to color color {
 
 module TFT Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
@@ -161,6 +161,7 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
 	spec 'r' '[tft:getWidth]' 'TFT width'
 	spec 'r' '[tft:getHeight]' 'TFT height'
 	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+	spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))

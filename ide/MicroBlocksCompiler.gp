@@ -290,7 +290,7 @@ method initOpcodes SmallCompiler {
 		halt 0
 		noop 1
 		pushImmediate 2		// true, false, and ints that fit in 24 bits
-		pushBigImmediate 3	// ints that do not fit in 24 bits (and later, floats)
+		pushBigImmediate 3	// ints that do not fit in 24 bits
 		pushLiteral 4		// string or array constant from literals frame
 		pushVar 5
 		storeVar 6
@@ -414,7 +414,8 @@ method initOpcodes SmallCompiler {
 	RESERVED 124
 	RESERVED 125
 		callCommandPrimitive 126
-		callReporterPrimitive 127'
+		callReporterPrimitive 127
+		metadata 240'
 	opcodes = (dictionary)
 	for line (lines opcodeDefinitions) {
 		words = (words line)
@@ -687,14 +688,13 @@ method instructionsForExpression SmallCompiler expr {
 		if (and (-4194304 <= expr) (expr <= 4194303)) { // 23-bit encoded as 24 bit int object
 			return (list (array 'pushImmediate' (((expr << 1) | 1) & (hex 'FFFFFF')) ))
 		} else {
-			return (list
-				(array 'pushBigImmediate' 0)
-				((expr << 1) | 1)) // 32-bit integer objects follows pushBigImmediate instruction
+			// pushBigImmediate instruction followed by a 4-byte integer object
+			return (list (array 'pushBigImmediate' 0) expr)
 		}
 	} (isClass expr 'String') {
 		return (list (array 'pushLiteral' expr))
 	} (isClass expr 'Float') {
-		error 'Floats are not yet supported'
+		error 'Floats are not supported'
 	} (isClass expr 'Color') {
 		return (instructionsForExpression this (pixelRGB expr))
 	}
@@ -968,7 +968,8 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 	// Append a tab-delimited list of local variables to instructionList.
 	// This string is part of the optional metadata used by the decompiler.
 
-	add instructionList 240 // mark the start of the decompiler meta data
+	// the 'metadata' pseudo instruction marks the start of the decompiler meta data
+	add instructionList (array 'metadata' 0)
 
 	// add local variable names
 	varNames = (list)
@@ -1004,11 +1005,12 @@ method addBytesForInstructionTo SmallCompiler instr bytes {
 
 method addBytesForIntegerLiteralTo SmallCompiler n bytes {
 	// Append the bytes for the given integer to bytes (little endian).
+	// Note: n is converted to a integer object, the equivalent of ((n << 1) | 1)
 
-	add bytes (n & 255)
-	add bytes ((n >> 8) & 255)
-	add bytes ((n >> 16) & 255)
-	add bytes ((n >> 24) & 255)
+	add bytes (((n << 1) | 1) & 255)
+	add bytes ((n >> 7) & 255)
+	add bytes ((n >> 15) & 255)
+	add bytes ((n >> 23) & 255)
 }
 
 method addBytesForStringLiteral SmallCompiler s bytes {

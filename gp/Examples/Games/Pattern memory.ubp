@@ -1,0 +1,158 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables pattern guess difficulty 
+
+	spec ' ' 'guess pattern' 'guess pattern'
+	spec ' ' 'new pattern' 'new pattern'
+	spec 'r' 'pattern contains' 'pattern contains _ , _' 'auto auto' 1 3
+	spec ' ' 'show pattern' 'show pattern _' 'auto' '10'
+
+to 'guess pattern' {
+  guess = ('[data:makeList]')
+  local 'x' 1
+  local 'y' 1
+  repeatUntil (y > 5) {
+    'show pattern' guess
+    '[display:mbPlot]' x y
+    if (buttonA) {
+      waitUntil (not (buttonA))
+      x += 1
+      if (x > 5) {
+        x = 1
+        y += 1
+      }
+    } (buttonB) {
+      waitUntil (not (buttonB))
+      '[data:addLast]' ('[data:makeList]' x y) guess
+      if (not ('pattern contains' x y)) {
+        sendBroadcast 'fail'
+        stopTask
+      }
+    }
+    waitMillis 100
+  }
+}
+
+to 'new pattern' {
+  pattern = ('[data:makeList]')
+  repeat difficulty {
+    '[data:addLast]' ('[data:makeList]' (random 1 5) (random 1 5)) pattern
+  }
+}
+
+to 'pattern contains' x y {
+  for led pattern {
+    if (and (x == (at 1 led)) (y == (at 2 led))) {return (booleanConstant true)}
+  }
+  return (booleanConstant false)
+}
+
+to 'show pattern' pattern {
+  '[display:mbDisplayOff]'
+  for led pattern {
+    '[display:mbPlot]' (at 1 led) (at 2 led)
+  }
+}
+
+script 74 60 {
+comment '         HOW TO PLAY
+         ============
+
+When the game begins,
+you''re presented with a
+pattern that you have to
+memorize.
+
+Now it''s your turn to enter
+that pattern back.
+Use the A button to move
+the cursor one step, and
+the B button to input the
+current position.
+
+Keep going until you
+reach the end of the
+screen.
+
+If you fail, you''ll be shown
+where you went wrong,
+and if you win you''ll be
+presented with a harder
+pattern.
+
+Good luck! :)'
+}
+
+script 380 60 {
+whenStarted
+difficulty = 3
+sendBroadcast 'go!'
+}
+
+script 597 72 {
+to 'new pattern' {}
+}
+
+script 381 177 {
+whenBroadcastReceived 'go!'
+forever {
+  'new pattern'
+  'show pattern' pattern
+  waitMillis 1000
+  'guess pattern'
+  '[display:mbDisplay]' 15237440
+  difficulty += 1
+  waitMillis 1000
+}
+}
+
+script 596 253 {
+to 'guess pattern' {}
+}
+
+script 383 513 {
+whenBroadcastReceived 'fail'
+repeat 5 {
+  'show pattern' guess
+  waitMillis 250
+  'show pattern' pattern
+  waitMillis 250
+}
+waitMillis 1000
+difficulty = 3
+sendBroadcast 'go!'
+}
+
+
+module 'Basic Sensors' Input
+author MicroBlocks
+version 1 0 
+tags tilt acceleration light sensor 
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
+
+	spec 'r' '[sensors:tiltX]' 'tilt x'
+	spec 'r' '[sensors:tiltY]' 'tilt y'
+	spec 'r' '[sensors:tiltZ]' 'tilt z'
+	spec 'r' '[sensors:acceleration]' 'acceleration'
+	spec 'r' '[display:lightLevel]' 'light level'
+	spec 'r' '[sensors:temperature]' 'temperature (°C)'
+
+module 'LED Display' Output
+author MicroBlocks
+version 1 0 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+
+to displayCharacter s {
+  s = ('[data:join]' '' s)
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+

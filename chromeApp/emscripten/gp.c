@@ -275,12 +275,15 @@ static gp_boolean processCommandLine(int argc, char *argv[], char *prefix) {
 	}
 
 	int interactiveFlag = (argc == 2) && (strcmp(argv[1], "-") == 0);
+#ifdef _WIN32
+	if (!interactiveFlag) ShowWindow(GetConsoleWindow(), SW_MINIMIZE);
+#endif
 
 	if ((argc == 1) || interactiveFlag) {
 		// read library if no arguments or just "-"
 		#if !defined(EMSCRIPTEN)
 			gp_boolean hasEmbeddedLibrary = importLibrary();
-			if (!hasEmbeddedLibrary) readLibraryFromFileSystem(!interactiveFlag);
+			if (!hasEmbeddedLibrary) readLibraryFromFileSystem(true);
 		#endif
 	}
 	for (int i = 1; i < argc; i++) {

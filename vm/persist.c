@@ -731,8 +731,8 @@ static void compactFlash() {
 	current = !current;
 	freeStart = dst;
 
-	#ifdef NRF51
-		// Not sure why, but compaction messes up the serial port on the micro:bit
+	#if defined(NRF51) || defined(ARDUINO_BBC_MICROBIT_V2)
+		// Compaction messes up the serial port on the micro:bit v1 and v2 and Calliope
 		restartSerial();
 	#endif
 

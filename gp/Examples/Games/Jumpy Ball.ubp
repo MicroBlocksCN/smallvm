@@ -36,9 +36,9 @@ to 'draw ball' {
 }
 
 to 'draw pipes' {
-  '[tft:rect]' ((v 'pipe x') + ((v 'pipe width') + 2)) 0 2 (v 'pipe height') 0 true
+  '[tft:rect]' ((v 'pipe x') + (v 'pipe width')) 0 (v 'pipe width') (v 'pipe height') 0 true
   '[tft:rect]' (v 'pipe x') 0 (v 'pipe width') (v 'pipe height') 65280 true
-  '[tft:rect]' ((v 'pipe x') + ((v 'pipe width') + 2)) ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 0 true
+  '[tft:rect]' ((v 'pipe x') + (v 'pipe width')) ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 0 true
   '[tft:rect]' (v 'pipe x') ((v 'pipe height') + gap) (v 'pipe width') (('[tft:getHeight]') - ((v 'pipe height') + gap)) 65280 true
 }
 
@@ -95,7 +95,7 @@ to 'welcome screen' {
   '[tft:text]' 'or X' (('[tft:getWidth]') / 3) (('[tft:getHeight]') - (('[tft:getHeight]') / 6)) 16777215 (('[tft:getHeight]') / 60) false
 }
 
-script 50 50 {
+script 54 54 {
 whenStarted
 'welcome screen'
 forever {
@@ -175,7 +175,7 @@ to 'up button' {
 
 module TFT Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
@@ -192,6 +192,7 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
 	spec 'r' '[tft:getWidth]' 'TFT width'
 	spec 'r' '[tft:getHeight]' 'TFT height'
 	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+	spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))

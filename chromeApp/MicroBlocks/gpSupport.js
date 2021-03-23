@@ -837,6 +837,11 @@ async function GP_writeFile(data, fName, ext) {
 			writer.write(new Blob([data], {type: 'text/plain'})); });
 	}
 
+	// extract extension from fName if not provided
+	if (('' == ext) && (fName.lastIndexOf('.') > 0)) {
+		ext = fName.substr(fName.lastIndexOf('.'));
+	}
+
 	// Note: suggestedName is supported by the chrome.fileSystem API but not (yet) by the
 	// Native File System API in the browser. With luck, support for it will be added later.
 	if (hasChromeFilesystem()) {
@@ -847,10 +852,6 @@ async function GP_writeFile(data, fName, ext) {
 		};
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
 	} else if (typeof window.showSaveFilePicker != 'undefined') { // Native Filesystem API
-		if (('' == ext) && (fName.lastIndexOf('.') > 0)) {
-			// extract extension from fName if not provided
-			ext = fName.substr(fName.lastIndexOf('.'));
-		}
 		options = {};
 		if ('' != ext) {
 			if ('.' != ext[0]) ext = '.' + ext;
@@ -867,7 +868,7 @@ async function GP_writeFile(data, fName, ext) {
 		await writable.write(new Blob([data]));
 		await writable.close();
 	} else {
-		download(fName + '.' + ext, data);
+		saveAs(new Blob([data]), fName);
 	}
 }
 

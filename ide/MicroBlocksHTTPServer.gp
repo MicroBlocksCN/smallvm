@@ -9,12 +9,14 @@
 //
 // John Maloney and Bernat Romagosa, May, 2019
 
-defineClass MicroBlocksHTTPServer serverSocket vars workers
+defineClass MicroBlocksHTTPServer port serverSocket vars workers
 
 to newMicroBlocksHTTPServer {
 	result = (initialize (new 'MicroBlocksHTTPServer'))
 	return result
 }
+
+method port MicroBlocksHTTPServer { return port }
 
 method initialize MicroBlocksHTTPServer {
 	serverSocket = nil
@@ -25,9 +27,12 @@ method initialize MicroBlocksHTTPServer {
 
 method start MicroBlocksHTTPServer {
 	stop this
-	serverSocket = (openServerSocket 6473)
+	port = (prompt (global 'page') 'Server port?' '6473')
+	if ('' == port) { return false }
+	port = (toInteger port)
+	serverSocket = (openServerSocket port)
 	if (notNil serverSocket) {
-		print 'MicroBlocks HTTP Server listening on port 6473'
+		print 'MicroBlocks HTTP Server listening on port' port
 	} else {
 		print 'Could not create HTTP Server socket'
 	}
@@ -124,7 +129,7 @@ method varValueReceived MicroBlocksHTTPServer varID value {
 	}
 }
 
-defineClass MicroBlocksHTTPWorker server sock inBuf outBuf broadcastsFromBoard
+defineClass MicroBlocksHTTPWorker server sock inBuf outBuf broadcastsFromBoard varNames
 
 to newMicroBlocksHTTPWorker aMicroBlocksHTTPServer aSocket {
 	return (initialize (new 'MicroBlocksHTTPWorker') aMicroBlocksHTTPServer aSocket)
@@ -237,6 +242,12 @@ method handleRequest MicroBlocksHTTPWorker header body {
 			responseBody = (getVar this path)
 		} (beginsWith path '/setVar') {
 			responseBody = (setVar this path)
+		} ('/varNames' == path) {
+			responseBody = (fetchVarNamesFromBoard this)
+		} ('/board' == path) {
+			boardType = (checkBoardType (smallRuntime))
+			if (or (isNil boardType) ('' == boardType)) { boardType = 'none' }
+			responseBody = boardType
 		} else {
 			responseBody = 'Unrecognized request'
 		}
@@ -259,12 +270,16 @@ method helpString MicroBlocksHTTPWorker {
 	add result 'MicroBlocks HTTP Server'
 	add result ''
 	add result '/ - this help text'
-	add result '/getBroadcasts - get broadcasts from board, (URL-encoded strings, one per line)'
-	add result '/broadcast/URL_encoded_message - broadcast message to board'
 	add result '/getVar/URL_encoded_var_name - get variable value'
 	add result '/setVar/URL_encoded_var_name/value - set variable value'
-	add result '  (value is: true, false, an integer, or a url_encoded_string (up to 800 bytes))'
-	add result '  (use double-quotes for string values that would otherwise be treated as a boolean or integer such as "true", "false", or "12345")'
+	add result '  (value is: true, false, an integer, or a URL-encoded string (up to 800 bytes))'
+	add result '  (double-quote strings that would otherwise be treated as a boolean or integer such as "true", "false", or "12345")'
+	add result '/broadcast/URL_encoded_message - broadcast message to board'
+	add result '/getBroadcasts - get broadcasts from board, (URL-encoded strings, one per line)'
+	add result '/varNames - get all variable names, one per line'
+	add result '/board - get the board type; return "none" if no board is connected'
+	add result ''
+	add result 'Lists and byte arrays are not supported, although getVar reports them as they would be shown by the "say" block'
 	return (joinStrings result (newline))
 }
 
@@ -317,7 +332,7 @@ method setVar MicroBlocksHTTPWorker path {
 	if (isNil i) { return 'error: unexpected URL format' }
 	varName = (urlDecode (substring path 9 (i - 1)))
 	valueString = (substring path (i + 1))
-	if (representsAnInteger valueString)  {
+	if (representsAnInteger valueString) {
 		value = (toInteger valueString)
 	} ('true' == valueString) {
 		value = true
@@ -332,4 +347,19 @@ method setVar MicroBlocksHTTPWorker path {
 	}
 	id = (variableIndex server varName)
 	if (notNil id) { setVar (smallRuntime) (id - 1) value } // VM uses zero-based index
+	return valueString
+}
+
+// fetching variable names
+
+method fetchVarNamesFromBoard MicroBlocksHTTPWorker {
+	varNames = (dictionary)
+	readVarsFromBoard (smallRuntime) this
+	return (joinStrings (sorted (keys varNames)) (newline))
+}
+
+method addVar MicroBlocksHTTPWorker varID varName {
+	// Called by MicroBlocksRuntime when variable name message received.
+
+	add varNames varName
 }

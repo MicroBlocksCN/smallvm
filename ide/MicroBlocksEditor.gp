@@ -22,7 +22,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems rightItems indicator lastStatus httpServer latestVersion currentVersion lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems indicator lastStatus httpServer latestVersion currentVersion lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -104,7 +104,7 @@ method initialize MicroBlocksEditor {
   httpServer = (newMicroBlocksHTTPServer)
   addTopBarParts this
   scripter = (initialize (new 'MicroBlocksScripter') this)
-  lastProjectFolder = (gpExamplesFolder)
+  lastProjectFolder = 'Examples'
   addPart morph (morph scripter)
   drawTopBar this
   clearProject this
@@ -158,6 +158,9 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard')
   indicator = (last leftItems)
 
+  title = (newText '' 'Arial' (17 * scale))
+  addPart morph (morph title)
+
   rightItems = (list)
   add rightItems (addIconButton this (startButtonIcon this) 'startAll' 36)
   add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 36)
@@ -203,6 +206,7 @@ method clearProject MicroBlocksEditor {
   // Remove old project morphs and classes and reset global state.
 
   closeAllDialogs this
+  setText title ''
   fileName = ''
   createEmptyProject scripter
   clearBoardIfConnected (smallRuntime) true
@@ -222,7 +226,7 @@ method closeAllDialogs MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
-  fp = (findMorph 'FilePicker')
+  fp = (findMorph 'MicroBlocksFilePicker')
   if (notNil fp) { destroy fp }
   pickFileToOpen (action 'openProjectFromFile' this) lastProjectFolder (array '.ubp' '.gpp')
 }
@@ -230,7 +234,7 @@ method openProjectMenu MicroBlocksEditor {
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the given file path or URL.
   if (beginsWith location '//') {
-    lastProjectFolder = (gpExamplesFolder)
+    lastProjectFolder = 'Examples'
   } else {
     lastProjectFolder = (directoryPart location)
   }
@@ -282,7 +286,7 @@ method openFromBoard MicroBlocksEditor {
 }
 
 method saveProjectToFile MicroBlocksEditor {
-  fp = (findMorph 'FilePicker')
+  fp = (findMorph 'MicroBlocksFilePicker')
   if (notNil fp) { destroy fp }
   saveProject this nil
 }
@@ -352,7 +356,24 @@ method startAll MicroBlocksEditor { sendStartAll (smallRuntime) }
 
 method updateTitle MicroBlocksEditor {
   projName = (withoutExtension (filePart fileName))
-  setWindowTitle projName
+  setText title projName
+  redraw title
+  centerTitle this
+}
+
+method centerTitle MicroBlocksEditor {
+  scale = (global 'scale')
+  left = (right (morph (last leftItems)))
+  right = (left (morph (first rightItems)))
+  titleM = (morph title)
+  setCenter titleM (half (left + right)) (21 * scale)
+
+  // hide title if insufficient space
+  if (((width titleM) + (8 * scale)) > (right - left)) {
+	hide titleM
+  } else {
+	show titleM
+  }
 }
 
 // stepping
@@ -566,6 +587,7 @@ method fixTopBarLayout MicroBlocksEditor {
   scale = (global 'scale')
   space = 0
   centerY = (20 * scale)
+  centerTitle this
 
   x = 0
   for item leftItems {
@@ -707,7 +729,9 @@ method hideAdvancedBlocks MicroBlocksEditor {
 
 method startHTTPServer MicroBlocksEditor {
   if (start httpServer) {
-	(inform 'MicroBlocks HTTP Server listening on port 6473' 'HTTP Server')
+	(inform (join 'MicroBlocks HTTP Server listening on port ' (port httpServer)) 'HTTP Server')
+  } ('' == (port httpServer)) {
+	return // user did not supply a port number
   } else {
 	(inform (join
 		'Failed to start HTTP server.' (newline)

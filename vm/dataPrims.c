@@ -160,13 +160,14 @@ OBJ primAt(int argCount, OBJ *args) {
 		return FIELD(obj, i);
 	} else if (IS_TYPE(obj, StringType)) {
 		char *start = obj2str(obj);
-		if (i > countUTF8(start)) return fail(indexOutOfRangeError);
-		while (i-- > 1) start = nextUTF8(start);
-		int startOffset = start - obj2str(obj);
+		while (i-- > 1) { // find start of the ith Unicode character
+			if (!*start) return fail(indexOutOfRangeError); // end of string
+			start = nextUTF8(start);
+		}
 		int byteCount = nextUTF8(start) - start;
 		OBJ result = newString(byteCount);
 		if (result) {
-			memcpy(obj2str(result), obj2str(args[1]) + startOffset, byteCount);
+			memcpy(obj2str(result), start, byteCount);
 		}
 		return result;
 	} else if (IS_TYPE(obj, ByteArrayType)) {
@@ -234,7 +235,7 @@ OBJ primLength(int argCount, OBJ *args) {
 	} else if (IS_TYPE(obj, StringType)) {
 		return int2obj(countUTF8(obj2str(obj)));
 	}
-	return fail(needsListError);
+	return zeroObj;
 }
 
 // Named primitives
