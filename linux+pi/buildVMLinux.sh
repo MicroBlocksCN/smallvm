@@ -12,8 +12,8 @@ gcc -m32 -std=c99 -Wall -Wno-unused-variable -Wno-unused-result -O3 \
 	-I/usr/local/include/SDL2 \
 	-I ../vm \
 	linux.c ../vm/*.c \
-	linuxSensorPrims.c linuxFilePrims.c linuxIOPrims.c linuxNetPrims.c \
-	linuxOutputPrims.c linuxTftPrims.c \
+	linuxFilePrims.c linuxFont.c linuxIOPrims.c linuxNetPrims.c \
+	linuxOutputPrims.c linuxSensorPrims.c linuxTftPrims.c \
 	/usr/local/lib/libSDL2.a \
 	/usr/local/lib/libSDL2_ttf.a \
 	/usr/local/lib/libfreetype.a \

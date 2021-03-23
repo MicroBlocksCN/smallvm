@@ -126,19 +126,40 @@ static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFla
 #include <SDL2/SDL_ttf.h>
 
 static int ttfInitialized = false;
+extern char fontLiberationMonoRegular[];
+
+static void base64decode(uint8_t *data, int len, uint8_t *out, int *outLen); // forward reference
+
+static TTF_Font* openTTFFont(int pointSize) {
+	unsigned char fontFile[108200];
+	int fontFileLen = sizeof(fontFile);
+
+	char *base64Data = fontLiberationMonoRegular;
+	base64decode((uint8_t *) base64Data, strlen(base64Data), fontFile, &fontFileLen);
+
+	TTF_Font *result = TTF_OpenFontRW(SDL_RWFromConstMem(fontFile, fontFileLen), true, pointSize);
+	if (!result) printf("Font open error: %s\n", TTF_GetError());
+	return result;
+}
 
 static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFlag) {
 	// Draw the given string with the given position, color, scale and wrapFlag
 	// TODO wrap is ignored for now
 
 	if (!ttfInitialized) { // initialize TTF before first use
-		TTF_Init();
+		int err = TTF_Init();
+		if (err) {
+			printf("TTF_Init error: %s\n", TTF_GetError());
+			return;
+		}
 		ttfInitialized = true;
 	}
 
 	SDL_Color color = { color24b >> 16, (color24b >> 8) & 255, color24b & 255 };
 
-	TTF_Font* font = TTF_OpenFont("LiberationMono-Regular.ttf", 10 * scale);
+	TTF_Font* font = openTTFFont(10 * scale);
+	if (!font) return;
+
 	SDL_Surface* surface = TTF_RenderUTF8_Solid(font, s, color);
 
 	int width, height;
@@ -151,6 +172,50 @@ static void drawText(char *s, int x, int y, int color24b, int scale, int wrapFla
 	SDL_FreeSurface(surface);
 	SDL_DestroyTexture(message);
 	TTF_CloseFont(font);
+}
+
+// A fast base 64 decoder adapted from polfosol's answer in this thread:
+// https://stackoverflow.com/questions/180947/base64-decode-snippet-in-c
+
+static int b64[256] = {
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  62, 63, 62, 62, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0,  0,  0,  0,  0,  0,
+    0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0,  0,  0,  0,  63,
+    0,  26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
+};
+
+static void base64decode(uint8_t *data, int len, uint8_t *out, int *outLen) {
+	int bytesNeeded = 3 * (len / 4);
+	if (*outLen < bytesNeeded) {
+		printf("base64decode ouput buffer is too small; %d bytes needed\n", bytesNeeded);
+		return;
+	}
+
+	uint8_t *p = data;
+	int pad1 = (len % 4) || p[len - 1] == '=';
+	int pad2 = pad1 && (((len % 4) > 2) || (p[len - 2] != '='));
+	int last = (len - pad1) / 4 << 2; // number of 4-byte groups
+
+	int j = 0;
+	for (int i = 0; i < last; i += 4) {
+		int n = b64[p[i]] << 18 | b64[p[i + 1]] << 12 | b64[p[i + 2]] << 6 | b64[p[i + 3]];
+		out[j++] = (n >> 16) & 0xFF;
+		out[j++] = (n >> 8) & 0xFF;
+		out[j++] = n & 0xFF;
+	}
+	if (pad1) {
+		int n = (b64[p[last]] << 18) | (b64[p[last + 1]] << 12);
+		out[j++] = n >> 16;
+		if (pad2) {
+			n |= b64[p[last + 2]] << 6;
+			out[j++] = (n >> 8) & 0xFF;
+		}
+	}
+	*outLen = j;
 }
 
 #endif
