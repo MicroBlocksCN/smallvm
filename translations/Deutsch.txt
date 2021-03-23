@@ -150,7 +150,7 @@ or _
 oder _
 
 _ is a _
-_ ist ein(e)_
+_ ist ein(e) _
 
 boolean
 Boole
