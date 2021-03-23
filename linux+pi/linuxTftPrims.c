@@ -586,6 +586,7 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 	int fill = (argCount > 7) ? (trueObj == args[7]) : true;
 	if (fill) {
 		while ((abs(x[1]) < DEFAULT_WIDTH) && // This should never happen
+				(area != 0) &&
 				(increment != area/abs(area))) {
 			SDL_RenderDrawLine(renderer, x[1], y[1], x[0], y[0]);
 			SDL_RenderDrawLine(renderer, x[1], y[1], x[2], y[2]);
