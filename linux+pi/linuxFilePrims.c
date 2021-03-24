@@ -258,7 +258,11 @@ static OBJ primFileSize(int argCount, OBJ *args) {
 }
 
 static OBJ primStartFileList(int argCount, OBJ *args) {
-	directory = opendir(".");
+	char *dirPath = ".";
+	if ((argCount > 0) && (IS_TYPE(args[0], StringType))) {
+		dirPath = obj2str(args[0]);
+	}
+	directory = opendir(dirPath);
 	return falseObj;
 }
 
