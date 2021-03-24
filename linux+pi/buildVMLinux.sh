@@ -3,7 +3,7 @@
 # Connect to it via pseudo terminal
 #
 # Prereqs for 64-bit Linux systems:
-#	libc6-dev-i386 gcc-multilib g++-multilib libpng-dev:i386
+#	libc6-dev-i386 gcc-multilib g++-multilib libpng-dev:i386 zlib1g-dev:i386
 # Might also need (need to check on clean Ubuntu):
 #	libgl1-mesa-glx:i386 libasound2:i386
 
