@@ -331,10 +331,6 @@ void addPrimitiveSet(const char *setName, int entryCount, PrimEntry *entries);
 OBJ callPrimitive(int argCount, OBJ *args);
 void primsInit();
 
-#ifdef GNUBLOCKS
-extern int usleep (__useconds_t __useconds);
-#endif
-
 #ifdef __cplusplus
 }
 #endif
