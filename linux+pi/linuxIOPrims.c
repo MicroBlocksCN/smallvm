@@ -34,46 +34,75 @@ OBJ primButtonB(OBJ *args) {
 	return KEY_SCANCODE[79] ? trueObj : falseObj;
 }
 
-// sound
+// Tone generation
 
-const int AMPLITUDE = 28000;
-const int SAMPLE_RATE = 44100;
+const int AMPLITUDE = 16000;
+const int DESIRED_SAMPLING_RATE = 22050;
+const double TWOPI = 6.28318530718; // the number of radians per cycle
 
-int frequency;
-int sample_nr = 0;
+static int samplingRate = 0; // 0 means audio is not started; -1 means error when starting
 
-SDL_AudioSpec want;
-SDL_AudioSpec have;
+static int isPlaying = false;
+static double phase = 0.0; // phase angle of sine wave (radians)
+static double phaseIncrement = 0.0; // phase increment per sample (radians)
 
 void audio_callback(void *user_data, Uint8 *raw_buffer, int bytes) {
-    Sint16 *buffer = (Sint16*)raw_buffer;
-    int length = bytes / 2; // 2 bytes per sample for AUDIO_S16SYS
+	Sint16 *buffer = (Sint16 *) raw_buffer;
+	int length = bytes / 2; // 2 bytes per sample for AUDIO_S16SYS
 
-	const double twoPi = 6.28318530718;
-    for(int i = 0; i < length; i++, sample_nr++) {
-        double time = (double)sample_nr / (double)SAMPLE_RATE;
-        buffer[i] = (Sint16)(AMPLITUDE * sin(twoPi * frequency * time));
-    }
+	for (int i = 0; i < length; i++) {
+		buffer[i] = (Sint16) (AMPLITUDE * sin(phase));
+		phase += phaseIncrement;
+		if (phase > TWOPI) {
+			if (isPlaying) {
+				phase -= TWOPI; // wrap around and keep playing
+			} else {
+				// start playing silence (because sin(0) is 0)
+				// Note: transition to silence at zero-crossing to avoid clicks
+				phase = 0.0;
+				phaseIncrement = 0.0;
+			}
+		}
+	}
 }
 
-void stopTone() {
-    SDL_PauseAudio(1); // stop playing sound
-    SDL_CloseAudio();
+static void initAudio() {
+	SDL_AudioSpec want, have;
+	want.freq = DESIRED_SAMPLING_RATE; // number of samples per second
+	want.format = AUDIO_S16SYS; // sample type (here: signed short i.e. 16 bit)
+	want.channels = 1; // only one channel
+	want.samples = 64; // buffer-size
+	want.callback = audio_callback; // function SDL calls periodically to refill the buffer
+	int err = SDL_OpenAudio(&want, &have);
+	if (err) {
+		printf("Could not start SDL Audio: %s\n", SDL_GetError());
+		samplingRate = -1; // don't try again
+	} else {
+		samplingRate = have.freq;
+	}
+	SDL_PauseAudio(false); // start audio callbacks
+	SDL_Delay(100); // leave some time for ALSA to get going
 }
+
+void stopTone() { isPlaying = false; }
 
 OBJ primHasTone(int argCount, OBJ *args) { return trueObj; }
 
 OBJ primPlayTone(int argCount, OBJ *args) {
-	want.freq = SAMPLE_RATE; // number of samples per second
-	want.format = AUDIO_S16SYS; // sample type (here: signed short i.e. 16 bit)
-	want.channels = 1; // only one channel
-	want.samples = 2048; // buffer-size
-	want.callback = audio_callback; // function SDL calls periodically to refill the buffer
-    SDL_OpenAudio(&want, &have);
-	frequency = obj2int(args[1]);
-    SDL_PauseAudio(0); // start playing sound
+	if ((argCount < 2) || !isInt(args[1])) return falseObj;
+	int frequency = obj2int(args[1]);
+
+	if (!samplingRate) initAudio();
+	if ((frequency < 16) || (frequency > 11025)) {
+		isPlaying = false;
+	} else {
+		phaseIncrement = (TWOPI * frequency) / samplingRate;
+		isPlaying = true;
+	}
 	return falseObj;
 }
+
+// Other primitives (stubs for now)
 
 OBJ primHasServo(int argCount, OBJ *args) { return falseObj; }
 OBJ primSetServo(int argCount, OBJ *args) { return falseObj; }
