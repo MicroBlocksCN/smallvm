@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h> // still needed?
 #include <sys/ioctl.h>
+#include <sys/types.h>
 #include <sys/time.h> // still needed?
 #include <termios.h>
 #include <unistd.h>
@@ -248,9 +249,20 @@ void clearCodeFile(int ignore) {
 	fwrite((uint8 *) &cycleCount, 1, 4, codeFile);
 }
 
+// Debug
+
+void segfault() {
+	printf("-- VM crashed --\n");
+	pid_t myPid = getpid();
+    char pstackCommand[7+7+1];
+    sprintf(pstackCommand, "pstack %d", (int)myPid);
+    system(pstackCommand);
+}
+
 // Linux Main
 
 int main() {
+	signal(SIGSEGV, segfault);
 	signal(SIGINT, exit);
 	atexit(exitGracefully);
 	openPseudoTerminal();
