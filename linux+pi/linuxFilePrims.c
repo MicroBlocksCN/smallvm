@@ -111,6 +111,7 @@ static OBJ primClose(int argCount, OBJ *args) {
 	if (i >= 0) {
 		fileEntry[i].fileName[0] = '\0';
 		fclose(fileEntry[i].file);
+		fileEntry[i].file = NULL;
 		return falseObj;
 	}
 	return falseObj;
