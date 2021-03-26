@@ -43,7 +43,8 @@ static char serverStarted = false;
 
 int clientSocket = -1;
 int serverSocket = -1;
-int serverRequestSocket = -1; // Client currently connected to the server
+int serverRequestSocket = -1; // Client currently connected to the server.
+int serverPort = 8080; // Default port. Can be changed on a request basis.
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
 
@@ -116,7 +117,14 @@ char socketConnected(int socket) {
 
 // HTTP Server
 
-static int openServerSocket(int portNum) {
+static void closeServerSocket() {
+	shutdown(serverSocket, SHUT_RDWR);
+	close(serverSocket);
+	serverSocket = -1;
+	serverStarted = false;
+}
+
+static int openServerSocket() {
 	// Return a non-blocking server socket on the given port, or -1 if failed.
 
 	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -134,25 +142,23 @@ static int openServerSocket(int portNum) {
 	struct sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET; // IPv4
-	addr.sin_port = htons(portNum);
+	addr.sin_port = htons(serverPort);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(serverSocket, (struct sockaddr*) &addr, sizeof(addr)) >= 0) {
 		listen(serverSocket, 10); // queue length = 10 (probably overkill)
 	} else {
-		shutdown(serverSocket, SHUT_RDWR);
-		close(serverSocket);
-		serverSocket = -1;
+		closeServerSocket();
 	}
 	return serverSocket;
 }
 
 static void startHttpServer() {
-	// Start the server the first time and *never* stop/close it.
-
+	// Start the server the first time and *never* stop/close it, unless the
+	// port changes
 	if (!serverStarted) {
 		// Start the server
-		serverSocket = openServerSocket(8080);
+		serverSocket = openServerSocket();
 		serverStarted = (serverSocket > -1);
 	}
 }
@@ -190,10 +196,21 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 	// Return some data from the current HTTP request. Return the empty string if no
 	// data is available. If there isn't currently a client connection, and a client
 	// is waiting, accept the new connection. If the optional first argument is true,
-	// return a ByteArray (binary data) instead of a string.
+	// return a ByteArray (binary data) instead of a string. The optional second arg
+	// can specify a port. Changing ports stops and restarts the server.
 	// Fail if there isn't enough memory to allocate the result object.
 
 	int useBinary = ((argCount > 0) && (trueObj == args[0]));
+	if (argCount > 1) {
+		int port = obj2int(args[1]);
+		// If we're changing port, stop the server. It will be restarted further
+		// down by serverHasClient()
+		if (port != serverPort) {
+			serverPort = port;
+			if (serverSocket > -1) closeServerSocket();
+		}
+	}
+
 	OBJ result = useBinary ? newObj(ByteArrayType, 0, falseObj) : newString(0);
 
 	if (serverHasClient() && socketConnected(serverRequestSocket)) {
