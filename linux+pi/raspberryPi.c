@@ -132,7 +132,7 @@ OBJ primDigitalPins(OBJ *args) { return int2obj(DIGITAL_PINS); }
 OBJ primAnalogRead(int argCount, OBJ *args) { return int2obj(0); } // no analog inputs
 void primAnalogWrite(OBJ *args) { } // analog output is not supported
 
-OBJ primDigitalRead(OBJ *args) {
+OBJ primDigitalRead(int argCount, OBJ *args) {
 	int pinNum = obj2int(args[0]);
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, INPUT);
@@ -194,21 +194,21 @@ OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
 
 // Stubs for micro:bit/Calliope primitives
 
-void primMBDisplay(OBJ *args) { }
-void primMBDisplayOff(OBJ *args) { }
-void primMBPlot(OBJ *args) { }
-void primMBUnplot(OBJ *args) { }
-OBJ primMBTiltX(OBJ *args) { return int2obj(0); }
-OBJ primMBTiltY(OBJ *args) { return int2obj(0); }
-OBJ primMBTiltZ(OBJ *args) { return int2obj(0); }
-OBJ primMBTemp(OBJ *args) { return int2obj(0); }
+OBJ primMBDisplay(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBDisplayOff(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBPlot(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBUnplot(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
+OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primButtonA(OBJ *args) { return falseObj; }
 OBJ primButtonB(OBJ *args) { return falseObj; }
 
-void primNeoPixelSend(OBJ *args) { }
-void primNeoPixelSetPin(int argCount, OBJ *args) { }
-void primMBDrawShape(int argCount, OBJ *args) { }
-OBJ primMBShapeForLetter(OBJ *args) { return int2obj(0); }
+OBJ primNeoPixelSend(int argCount, OBJ *args) { return falseObj; }
+OBJ primNeoPixelSetPin(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBDrawShape(int argCount, OBJ *args) { return falseObj; }
+OBJ primMBShapeForLetter(int argCount, OBJ *args) { return int2obj(0); }
 
 // Other bogus primitives
 

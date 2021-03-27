@@ -60,14 +60,14 @@ static int spiDevice = -1;
 
 OBJ primSPISend(OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerError);
-	unsigned data = obj2int(args[0]);
+	unsigned char data = obj2int(args[0]);
 	if (data > 255) return fail(i2cValueOutOfRange);
 
 	if (spiDevice < 0) {
 		spiDevice = wiringPiSPISetup (SPI_CHANNEL, SPI_CLOCK_SPEED);
 		if (spiDevice < 0) return zeroObj; // initialization failed
 	}
-	wiringPiSPIDataRW(0, data, 1); // send data byte
+	wiringPiSPIDataRW(0, &data, 1); // send data byte
 	return falseObj;
 }
 
@@ -77,8 +77,9 @@ OBJ primSPIRecv(OBJ *args) {
 		if (spiDevice < 0) return zeroObj; // initialization failed
 	}
 
-	int result = wiringPiSPIDataRW(0, 0, 1); // send zero, get result byte
-	return int2obj(result);
+	unsigned char data = 0;
+	wiringPiSPIDataRW(0, &data, 1); // send zero, get result byte
+	return int2obj(data);
 }
 
 #else // not Raspberry PI; use stubs

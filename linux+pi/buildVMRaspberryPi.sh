@@ -2,7 +2,9 @@
 # Build uBlocks on the Raspberry Pi
 #
 # Prereqs for raspbian systems:
-#	wiringpi libc6-dev gcc g++ libsdl2-dev libsdl2-ttf-dev
+#	libsdl2-dev libsdl2-ttf-dev
+# John did not need to install these (on newly installed Raspberrian "Buster"):
+#	wiringpi libc6-dev gcc g++
 
 gcc -std=c99 -O3 -Wall -Wno-unused-variable -Wno-unused-result \
 	-D GNUBLOCKS \
