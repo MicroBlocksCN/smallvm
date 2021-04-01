@@ -66,15 +66,31 @@ static int freeEntry() {
 	return -1; // no free entry
 }
 
+static void tryToOpen(int entryIndex, char* fileName) {
+	if (entryIndex >= 0) {
+		if (fileEntry[entryIndex].file) fclose(fileEntry[entryIndex].file);
+
+		fileEntry[entryIndex].file = fopen(fileName, "a+");
+
+		if (!fileEntry[entryIndex].file) {
+			fileEntry[entryIndex].file = fopen(fileName, "r");
+		}
+
+		if (fileEntry[entryIndex].file) {
+			fseek(fileEntry[entryIndex].file, 0, SEEK_SET); // read from start of file
+		} else {
+			fileEntry[entryIndex].fileName[0] = '\0';
+		}
+	}
+}
+
 static OBJ primOpen(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char fileName[100];
 	extractFilename(args[0], fileName);
 	int i = entryFor(fileName);
 	if (i >= 0) { // found an existing entry; close and reopen
-		fclose(fileEntry[i].file);
-		fileEntry[i].file = fopen(fileName, "a+");
-		fseek(fileEntry[i].file, 0, SEEK_SET); // read from start of file
+		tryToOpen(i, fileName);
 		return falseObj;
 	}
 	i = freeEntry();
@@ -82,8 +98,7 @@ static OBJ primOpen(int argCount, OBJ *args) {
 		fileEntry[i].fileName[0] = '\0';
 		strncpy(fileEntry[i].fileName, fileName, 99);
 		fileEntry[i].fileName[99] = '\0'; // ensure null termination
-		fileEntry[i].file = fopen(fileName, "a+");
-		fseek(fileEntry[i].file, 0, SEEK_SET); // read from start of file
+		tryToOpen(i, fileName);
 	}
 	return falseObj;
 }
@@ -96,6 +111,7 @@ static OBJ primClose(int argCount, OBJ *args) {
 	if (i >= 0) {
 		fileEntry[i].fileName[0] = '\0';
 		fclose(fileEntry[i].file);
+		fileEntry[i].file = NULL;
 		return falseObj;
 	}
 	return falseObj;
@@ -243,20 +259,27 @@ static OBJ primFileSize(int argCount, OBJ *args) {
 }
 
 static OBJ primStartFileList(int argCount, OBJ *args) {
-	directory = opendir(".");
+	char *dirPath = ".";
+	if ((argCount > 0) && (IS_TYPE(args[0], StringType))) {
+		dirPath = obj2str(args[0]);
+	}
+	directory = opendir(dirPath);
 	return falseObj;
 }
 
 static OBJ primNextFileInList(int argCount, OBJ *args) {
 	char fileName[100];
+	int length = 0;
 	if (directory) {
 		if ((nextDirEntry = readdir(directory)) != NULL) {
 			// check entry type
 			stat(nextDirEntry->d_name, &fileStat);
 			if (S_ISREG(fileStat.st_mode)) {
 				// it's a regular file, we're okay
-				strncpy(fileName, nextDirEntry->d_name, 99);
-				fileName[99] = '\0'; // ensure null termination
+				length = strlen(nextDirEntry->d_name);
+				if (length > 99) length = 99;
+				strncpy(fileName, nextDirEntry->d_name, length);
+				fileName[length] = '\0'; // ensure null termination
 			} else {
 				// it's not a regular file, let's recurse into the next entry
 				return primNextFileInList(argCount, args);
@@ -266,7 +289,7 @@ static OBJ primNextFileInList(int argCount, OBJ *args) {
 			directory = NULL;
 		}
 	}
-	return newStringFromBytes(fileName, strlen(fileName));
+	return newStringFromBytes(fileName, length);
 }
 
 static OBJ primSystemInfo(int argCount, OBJ *args) {

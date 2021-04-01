@@ -35,7 +35,8 @@
 static char connecting = false;
 static char serverStarted = false;
 
-WiFiServer server(80);
+int serverPort = 80;
+WiFiServer server(serverPort);
 WiFiClient client;
 
 #if defined(ARDUINO_ARCH_ESP32)
@@ -219,7 +220,7 @@ static void startHttpServer() {
 	// It is fine for the server to continue running even if the WiFi is restarted.
 
 	if (!serverStarted) {
-		server.begin();
+		server.begin(serverPort);
 		serverStarted = true;
 	}
 }
@@ -241,11 +242,25 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 	// Return some data from the current HTTP request. Return the empty string if no
 	// data is available. If there isn't currently a client connection, and a client
 	// is waiting, accept the new connection. If the optional first argument is true,
-	// return a ByteArray (binary data) instead of a string.
+	// return a ByteArray (binary data) instead of a string. The optional second arg
+	// can specify a port. Changing ports stops and restarts the server.
 	// Fail if there isn't enough memory to allocate the result object.
 
 	int useBinary = ((argCount > 0) && (trueObj == args[0]));
 	OBJ noData = useBinary ? (OBJ) &emptyByteArray : (OBJ) &noDataString;
+
+	if (argCount > 1) {
+		int port = obj2int(args[1]);
+		// If we're changing port, stop and restart the server
+		if (port != serverPort) {
+			char s[100];
+			sprintf(s, "changing port from %d to %d", serverPort, port);
+			outputString(s);
+			serverPort = port;
+			server.stop();
+			server.begin(serverPort);
+		}
+	}
 
 	if (!serverHasClient()) return noData; // no client connection
 

@@ -262,7 +262,7 @@ char * tjr_endOfItem(char *p) {
 	// Return a pointer to the first character following the JSON item pointed to by p.
 
 	char *result = tjr_skip(p);
-	while ((result > p) && (*result <= 32)) result--; // back up over whitespace, if any
+	while ((result > p) && (*result <= 32) && (*result != 0)) result--; // back up over whitespace, if any
 	return result;
 }
 

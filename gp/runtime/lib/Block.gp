@@ -1606,6 +1606,9 @@ method addAllLabelParts Block silently {
     for p allParts {
       if (isAnyClass p 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block' 'MicroBitDisplaySlot') {
         inputChanged this p
+		if (hasField p 'menuSelector') {
+			redraw (getField p 'text')
+		}
       }
     }
   }

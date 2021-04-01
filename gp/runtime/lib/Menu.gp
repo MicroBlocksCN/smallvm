@@ -7,13 +7,18 @@ to menu label target reverseCall returnFocus {
   return (new 'Menu' nil (localized label) target (list) reverseCall)
 }
 
-method addItem Menu itemLabel itemAction itemHint itemThumb {
+method addItemNonlocalized Menu itemLabel itemAction itemHint itemThumb {
+  addItem this itemLabel itemAction itemHint itemThumb false
+}
+
+method addItem Menu itemLabel itemAction itemHint itemThumb localizeFlag {
   if (isNil itemAction) { itemAction = itemLabel }
+  if (isNil localizeFlag) { localizeFlag = true }
   if (not (isAnyClass itemLabel 'Bitmap' 'String')) {
 	itemLabel = (toString itemLabel)
   }
   if (isClass itemLabel 'String') {
-        itemLabel = (localized itemLabel)
+	if localizeFlag { itemLabel = (localized itemLabel) }
   }
   add items (array itemLabel itemAction itemHint itemThumb)
 }

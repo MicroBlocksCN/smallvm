@@ -5,7 +5,7 @@ depends WiFi
 tags http network
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
-	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _' 'bool' false
+	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _ : port _' 'bool num' false 8080
 	spec 'r' 'request method' 'method of request _' 'str' ''
 	spec 'r' 'path of request' 'path of request _' 'str' ''
 	spec 'r' 'headers of request' 'headers of request _' 'str' ''

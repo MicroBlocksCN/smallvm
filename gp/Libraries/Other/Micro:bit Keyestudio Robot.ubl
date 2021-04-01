@@ -1,0 +1,291 @@
+module 'MiKe Robot'
+author 'Robolot team'
+version 1 0 
+tags keyestudio robot car 
+description 'Provides sensor, light and motion blocks for the Keyestudio micro:bit Mini Smart Robot Car v2.'
+variables _MiKe_circlePixels _MiKe_i2c_on 
+choices directions clockwise 'counter-clockwise'
+choices sideMenu Right Left
+choices robotDirections Forward Backward Right Left
+
+	spec 'r' 'MiKe front obstacle (cm)' 'MiKe front obstacle (cm)'
+	spec 'r' 'MiKe obstacle ?' 'MiKe _ obstacle ?' 'menu.sideMenu' 'Right'
+	spec 'r' 'MiKe black line on ?' 'MiKe black line on _ ?' 'menu.sideMenu' 'Right'
+	spec 'r' 'MiKe back light' 'MiKe back light'
+	spec 'r' 'MiKe IR' 'MiKe IR'
+	spec 'r' 'MiKe digital D8 sensor' 'MiKe digital D8 sensor'
+	space
+	spec ' ' 'MiKe stop motors' 'MiKe stop motors'
+	spec ' ' 'MiKe Robot go' 'MiKe Robot go _ at _ %' 'menu.robotDirections num' 'Forward' 25
+	spec ' ' 'MiKe Robot speed' 'MiKe Robot speed _ %' 'num' 25
+	spec ' ' 'MiKe Robot direction' 'MiKe Robot direction _' 'menu.robotDirections' 'Forward'
+	spec ' ' 'MiKe turn motor' 'MiKe turn _ motor _' 'menu.sideMenu menu.directions' 'Right' 'clockwise'
+	spec ' ' 'MiKe speed motor' 'MiKe speed _ motor at _ %' 'menu.sideMenu num' 'Right' 25
+	space
+	spec ' ' 'MiKe front lights off' 'MiKe front lights off'
+	spec ' ' 'MiKe front lights' 'MiKe front lights to _' 'color'
+	spec ' ' 'MiKe circle lights off' 'MiKe circle lights off'
+	spec ' ' 'MiKe circle ligths to' 'MiKe circle ligths to _' 'color'
+	spec ' ' 'MiKe circle light to' 'MiKe circle light _ (1-18) to _' 'num color' 1
+	spec ' ' 'MiKe rotate lights by' 'MiKe rotate lights by _' 'num' 1
+	spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+	spec 'r' 'randomColor' 'random color'
+	space
+	spec ' ' 'MiKe digital D8 to' 'MiKe digital D8 to _' 'bool' false
+	spec ' ' '_MiKe_i2c_ensureInitialized' '_MiKe_i2c_ensureInitialized'
+	spec ' ' '_MiKe_circlePixels_ensureInitialized' '_MiKe_circlePixels_ensureInitialized'
+	spec ' ' '_MiKe_circlePixels_update' '_MiKe_circlePixels_update'
+
+to 'MiKe IR' {
+  local 'ir_pin' 16
+  forever {
+    local 'ir_pulse_times' (newList 200)
+    fillList ir_pulse_times 0
+    local 'i' 1
+    waitUntil (not (digitalReadOp ir_pin))
+    local 'start' (microsOp)
+    local 'exit' 0
+    repeatUntil (exit > 0) {
+      waitUntil (digitalReadOp ir_pin)
+      local 'end' (microsOp)
+      atPut i ir_pulse_times (end - start)
+      i += 1
+      start = end
+      repeatUntil (or (not (digitalReadOp ir_pin)) (exit > 0)) {
+        if (((microsOp) - start) > 5000) {exit = 1}
+      }
+      if (exit == 0) {
+        local 'end' (microsOp)
+        atPut i ir_pulse_times (end - start)
+        i += 1
+        start = end
+      }
+    }
+    if (and ((at 67 ir_pulse_times) != 0) ((at 68 ir_pulse_times) == 0)) {
+      local 'result' 0
+      local 'i' 36
+      local 'bit' 1
+      repeat 8 {
+        if ((at i ir_pulse_times) > 1000) {result = (result | bit)}
+        bit = (bit << 1)
+        i += 2
+      }
+      return result
+    }
+  }
+}
+
+to 'MiKe Robot direction' direction {
+  if (direction == 'Backward') {
+    'MiKe turn motor' 'Right' 'counter-clockwise'
+    'MiKe turn motor' 'Left' 'clockwise'
+  } (direction == 'Left') {
+    'MiKe turn motor' 'Right' 'clockwise'
+    'MiKe turn motor' 'Left' 'clockwise'
+  } (direction == 'Right') {
+    'MiKe turn motor' 'Right' 'counter-clockwise'
+    'MiKe turn motor' 'Left' 'counter-clockwise'
+  } else {
+    'MiKe turn motor' 'Right' 'clockwise'
+    'MiKe turn motor' 'Left' 'counter-clockwise'
+  }
+}
+
+to 'MiKe Robot go' direction speed {
+  'MiKe Robot speed' speed
+  'MiKe Robot direction' direction
+}
+
+to 'MiKe Robot speed' speed {
+  'MiKe speed motor' 'Right' speed
+  'MiKe speed motor' 'Left' speed
+}
+
+to 'MiKe back light' {
+  return (analogReadOp 1)
+}
+
+to 'MiKe black line on ?' side {
+  local 'pin' 12
+  if (side == 'Left') {
+    pin = 13
+  }
+  return (digitalReadOp pin)
+}
+
+to 'MiKe circle light to' i color {
+  '_MiKe_circlePixels_ensureInitialized'
+  if (and (1 <= i) (i <= 18)) {
+    if (i != 10) {
+      i = ((28 - i) % 18)
+    } else {
+      i = 18
+    }
+    atPut i _MiKe_circlePixels color
+    '_MiKe_circlePixels_update'
+  }
+}
+
+to 'MiKe circle lights off' {
+  '_MiKe_circlePixels_ensureInitialized'
+  fillList _MiKe_circlePixels 0
+  '_MiKe_circlePixels_update'
+}
+
+to 'MiKe circle ligths to' color {
+  '_MiKe_circlePixels_ensureInitialized'
+  fillList _MiKe_circlePixels color
+  '_MiKe_circlePixels_update'
+}
+
+to 'MiKe digital D8 sensor' {
+  return (digitalReadOp 8)
+}
+
+to 'MiKe digital D8 to' value {
+  digitalWriteOp 8 value
+}
+
+to 'MiKe front lights' color {
+  local 'i2cAdd' 67
+  '_MiKe_i2c_ensureInitialized'
+  local 'red' (absoluteValue (4095 - (((color >> 16) * 4095) / 255)))
+  local 'green' (absoluteValue (4095 - ((((color >> 8) & 255) * 4095) / 255)))
+  local 'blue' (absoluteValue (4095 - (((color & 255) * 4095) / 255)))
+  '[sensors:i2cWrite]' i2cAdd ('[data:makeList]' (6 + (4 * 6)) (0 & 255) ((0 >> 8) & 255) (red & 255) ((red >> 8) & 255))
+  '[sensors:i2cWrite]' i2cAdd ('[data:makeList]' (6 + (4 * 5)) (0 & 255) ((0 >> 8) & 255) (green & 255) ((green >> 8) & 255))
+  '[sensors:i2cWrite]' i2cAdd ('[data:makeList]' (6 + (4 * 4)) (0 & 255) ((0 >> 8) & 255) (blue & 255) ((blue >> 8) & 255))
+}
+
+to 'MiKe front lights off' {
+  '_MiKe_i2c_ensureInitialized'
+  'MiKe front lights' 0
+}
+
+to 'MiKe front obstacle (cm)' {
+  digitalWriteOp 14 false
+  waitMicros 2
+  digitalWriteOp 14 true
+  waitMicros 50
+  digitalWriteOp 14 false
+  local 'start' (microsOp)
+  waitUntil (or (not (digitalReadOp 15)) (((microsOp) - start) > 23320))
+  waitUntil (or (digitalReadOp 15) (((microsOp) - start) > 23320))
+  local 'init' (microsOp)
+  waitUntil (or (not (digitalReadOp 15)) (((microsOp) - init) > 23320))
+  local 'end' (microsOp)
+  return ((10 * (end - init)) / 583)
+}
+
+to 'MiKe obstacle ?' side {
+  local 'pin' 11
+  if (side == 'Left') {
+    pin = 2
+  }
+  return (not (digitalReadOp pin))
+}
+
+to 'MiKe rotate lights by' n {
+  '_MiKe_circlePixels_ensureInitialized'
+  repeat (absoluteValue n) {
+    local 'isClockwise' (n > 0)
+    local 'length' (size _MiKe_circlePixels)
+    if isClockwise {
+      local 'first' (at 1 _MiKe_circlePixels)
+      for i (length - 1) {
+        atPut i _MiKe_circlePixels (at (i + 1) _MiKe_circlePixels)
+      }
+      atPut length _MiKe_circlePixels first
+    } else {
+      local 'last' (at length _MiKe_circlePixels)
+      for i (length - 1) {
+        atPut ((length - i) + 1) _MiKe_circlePixels (at (length - i) _MiKe_circlePixels)
+      }
+      atPut 1 _MiKe_circlePixels last
+    }
+  }
+  '_MiKe_circlePixels_update'
+}
+
+to 'MiKe speed motor' motor speed {
+  '_MiKe_i2c_ensureInitialized'
+  local 'i2cAdd' 67
+  speed = ((speed * 4095) / 100)
+  local 'pin' 3
+  if (motor == 'Left') {
+    pin = 1
+  }
+  '[sensors:i2cWrite]' i2cAdd ('[data:makeList]' (6 + (4 * pin)) (0 & 255) ((0 >> 8) & 255) (speed & 255) ((speed >> 8) & 255))
+}
+
+to 'MiKe stop motors' {
+  'MiKe speed motor' 'Right' 0
+  'MiKe speed motor' 'Left' 0
+}
+
+to 'MiKe turn motor' motor direction {
+  '_MiKe_i2c_ensureInitialized'
+  local 'i2cAdd' 67
+  local 'pin' 2
+  local 'directionValue' 0
+  if (motor == 'Left') {
+    pin = 0
+    if (direction == 'clockwise') {
+      directionValue = 4095
+    }
+  } else {
+    if (direction == 'counter-clockwise') {directionValue = 4095}
+  }
+  '[sensors:i2cWrite]' i2cAdd ('[data:makeList]' (6 + (4 * pin)) (0 & 255) ((0 >> 8) & 255) (directionValue & 255) ((directionValue >> 8) & 255))
+}
+
+to '_MiKe_circlePixels_ensureInitialized' {
+  if (_MiKe_circlePixels == 0) {
+    _MiKe_circlePixels = (newList 18)
+    fillList _MiKe_circlePixels 0
+    '[display:neoPixelSetPin]' 5 false
+  }
+}
+
+to '_MiKe_circlePixels_update' {
+  '[display:neoPixelSend]' _MiKe_circlePixels
+  waitMicros 100
+}
+
+to '_MiKe_i2c_ensureInitialized' {
+  if (_MiKe_i2c_on == 0) {
+    local 'i2cAdd' 67
+    local 'oldmode' 0
+    i2cSet i2cAdd 0 0
+    oldmode = (i2cGet i2cAdd 0)
+    i2cSet i2cAdd 0 ((oldmode & 127) | 16)
+    i2cSet i2cAdd 254 121
+    i2cSet i2cAdd 0 oldmode
+    waitMillis 5
+    i2cSet i2cAdd 0 (oldmode | 161)
+    for i 16 {
+      '[sensors:i2cWrite]' i2cAdd ('[data:makeList]' (6 + (4 * (i - 1))) (0 & 255) ((0 >> 8) & 255) (0 & 255) ((0 >> 8) & 255))
+    }
+    _MiKe_i2c_on = 1
+  }
+}
+
+to colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+

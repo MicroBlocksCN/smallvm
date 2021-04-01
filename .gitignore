@@ -10,6 +10,7 @@ gp/packagers/linux/esptool
 gp/packagers/win32/esptool
 linux+pi/ublockscode
 linux+pi/GnuBlocks
+linux+pi/GnuBlocks-pi
 precompiled/vm.*
 data/*
 BUILD

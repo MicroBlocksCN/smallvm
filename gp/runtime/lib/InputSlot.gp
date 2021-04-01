@@ -19,8 +19,12 @@ method initialize InputSlot default editRule blockColor slotMenu {
   if ('Linux' == (platform)) { fontSize = 9 }
   scale = (global 'scale')
   morph = (newMorph this)
-  text = (newText (toString default) fontName (scale * fontSize))
+
+  s = (toString default)
+  if ('allVarsMenu' != slotMenu) { s = (localized s) }
+  text = (newText s fontName (scale * fontSize))
   addPart morph (morph text)
+
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
 	editRule = 'line'
@@ -84,12 +88,23 @@ method setContents InputSlot data {
   if ((or (true == contents) (false == contents))) {
     menuSelector = 'boolMenu'
   }
-  setText text (toString data)
+  if (and (notNil menuSelector) (not (isVarSlot this))) {
+	setText text (localized (toString data))
+  } else {
+	setText text (toString data)
+  }
   textChanged this
   if (and (isClass data 'String') ('' != data) ('editable' != (editRule text)) (representsANumber data)) {
 	switchType this 'editable' // old value was a string; covert to string-only
   }
   raise morph 'inputContentsChanged' this // experimental for script editor focus
+}
+
+method isVarSlot InputSlot {
+  if (isNil (owner morph)) { return false }
+  owner = (handler (owner morph))
+  if (or (not (isClass owner 'Block')) (isNil (expression owner))) { return false }
+  return (isOneOf (primName (expression owner)) '=' '+=')
 }
 
 method fixLayout InputSlot {

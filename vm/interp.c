@@ -7,9 +7,12 @@
 // interp.c - Simple interpreter based on 32-bit opcodes
 // John Maloney, April 2017
 
+#define _DEFAULT_SOURCE // enable usleep() declaration from unistd.h
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -1191,6 +1194,7 @@ void vmLoop() {
 			processMessage();
 			count = 25; // must be under 30 when building on mbed to avoid serial errors
 		}
+		int runCount = 0;
 		uint32 usecs = 0; // compute times only the first time they are needed
 		for (int t = 0; t < taskCount; t++) {
 			currentTaskIndex++;
@@ -1200,6 +1204,7 @@ void vmLoop() {
 				continue;
 			} else if (running == task->status) {
 				runTask(task);
+				runCount++;
 				break;
 			} else if (waiting_micros == task->status) {
 				if (!usecs) usecs = microsecs(); // get usecs
@@ -1207,9 +1212,26 @@ void vmLoop() {
 			}
 			if (running == task->status) {
 				runTask(task);
+				runCount++;
 				break;
 			}
 		}
+#ifdef GNUBLOCKS
+		if (!runCount) { // no active tasks; consider taking a nap
+			if (!usecs) usecs = microsecs(); // get usecs
+			int sleepUSecs = 500;
+			for (int i = 0; i < taskCount; i++) {
+				Task *task = &tasks[i];
+				if (waiting_micros == task->status) {
+					int usecsUntilWake = (task->wakeTime - usecs) - 5; // leave 5 extra usecs
+					if ((usecsUntilWake > 0) && (usecsUntilWake < sleepUSecs)) {
+						sleepUSecs = usecsUntilWake;
+					}
+				}
+			}
+			if (sleepUSecs > 5) usleep(sleepUSecs); // nap a while to relinquish the CPU
+		}
+#endif
 	}
 }
 
