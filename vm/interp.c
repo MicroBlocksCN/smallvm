@@ -1126,27 +1126,15 @@ static void runTask(Task *task) {
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	callCustomCommand_op:
-		STACK_CHECK(3);
-		// arg → int argCount
-		// sp - arg →  OBJ *args
-		// check that there are two arguments
 		if (arg == 2) {
 			char *functionName = obj2str(*(sp - 2));
 			OBJ params = *(sp - 1);
-			int chunkIndex = calleesChunkIndex(functionName);
-			// make sure the function exists and the second parameter is a list
-			if (chunkIndex >= 0 && IS_TYPE(params, ListType)) {
-				// push parameters from list onto stack
-				// push arg count
-				*sp++ = int2obj(arg & 0xFF); // # of arguments (low byte of arg)
-				*sp++ = int2obj(((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
-				*sp++ = int2obj(fp - task->stack); // old fp
-				fp = sp;
-				// figure out callee's address
-				// abort if callee not found
-				task->currentChunkIndex = chunkIndex; // callee's chunk index (middle byte of arg)
-				task->code = chunks[task->currentChunkIndex].code;
-				ip = task->code + PERSISTENT_HEADER_WORDS; // first instruction in callee
+			if (IS_TYPE(params, ListType)) {
+				int chunkIndex = calleesChunkIndex(functionName);
+				int functionArgCount = (obj2int(FIELD(params, 0)) & 0xFF);
+				POP_ARGS_COMMAND();
+				arg = (chunkIndex << 8) | functionArgCount;
+				goto callFunction_op;
 			}
 		}
 		POP_ARGS_COMMAND();
