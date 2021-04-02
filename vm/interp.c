@@ -294,13 +294,33 @@ static int stringsEqual(OBJ obj1, OBJ obj2) {
 	return true;
 }
 
-int calleesChunkIndex(char *functionName) {
-	outputString("checking callee's chunk index");
+static int functionNameMatches(int chunkIndex, char *functionName) {
+	// todo: check the meta data for a function name match (that would be slow)
+	// optionally, have compiler encode function name similar to how broadcast names are encoded
+
+	return false; // placeholder: always return false
+
+	const uint32 META_FLAG = 240;
+	uint32 wordCount = ((uint32 *) chunks[chunkIndex].code)[1];
+	uint32 *code = (uint32 *) chunks[chunkIndex].code + PERSISTENT_HEADER_WORDS;
+	int metaStart = -1;
+	for (int i = 0; i < wordCount; i++) {
+		if (META_FLAG == code[i]) {
+			metaStart = i;
+			break;
+		}
+	}
+	if (metaStart < 0) return false;
+	// todo: extract the function name from the meta data and check for match
+	return false;
+}
+
+static int calleesChunkIndex(char *functionName) {
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		int chunkType = chunks[i].chunkType;
-		if ((functionHat == chunkType) &&
-				(broadcastMatches(i, functionName, strlen(functionName)))) {
-			return i;
+		if (functionHat == chunkType) {
+			if (broadcastMatches(i, functionName, strlen(functionName))) return i;
+			if (functionNameMatches(i, functionName)) return i;
 		}
 	}
 	return -1;
@@ -330,6 +350,13 @@ int calleesChunkIndex(char *functionName) {
 	arg = ARG(op); \
 /*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */ \
 	goto *jumpTable[CMD(op)]; \
+}
+
+// Macro for debugging stack errors
+#define SHOW_SP(s) { \
+	outputString(s); \
+	reportNum("sp", sp - task->stack); \
+	reportNum("fp", fp - task->stack); \
 }
 
 static void runTask(Task *task) {
@@ -1125,23 +1152,27 @@ static void runTask(Task *task) {
 		primNeoPixelSetPin(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
+
+	// call a function using the function name and parameter list:
 	callCustomCommand_op:
-		if (arg == 2) {
-			char *functionName = obj2str(*(sp - 2));
+	callCustomReporter_op:
+		if ((arg == 2) && (IS_TYPE(*(sp - 2), StringType))) {
+			int calleeChunkIndex = calleesChunkIndex(obj2str(*(sp - 2)));
 			OBJ params = *(sp - 1);
-			if (IS_TYPE(params, ListType)) {
-				int chunkIndex = calleesChunkIndex(functionName);
-				int functionArgCount = (obj2int(FIELD(params, 0)) & 0xFF);
+			if ((calleeChunkIndex >= 0) && IS_TYPE(params, ListType)) {
+				int argCount = (obj2int(FIELD(params, 0)) & 0xFF);
 				POP_ARGS_COMMAND();
-				arg = (chunkIndex << 8) | functionArgCount;
+				for (int i = 1; i <= argCount; i++) {
+					*sp++ = FIELD(params, i);
+				}
+				arg = (calleeChunkIndex << 8) | argCount;
 				goto callFunction_op;
 			}
 		}
+		// failed: bad arguments to callCustomCommand/Reporter
+		// todo: report an error?
 		POP_ARGS_COMMAND();
-		DISPATCH();
-	callCustomReporter_op:
-		*(sp - arg) = int2obj(42);
-		POP_ARGS_REPORTER();
+		*sp++ = falseObj; // push a dummy function return value
 		DISPATCH();
 
 	// named primitives:

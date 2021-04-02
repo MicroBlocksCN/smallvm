@@ -590,6 +590,15 @@ method instructionsForCmd SmallCompiler cmd {
 		}
 		add result (array 'ignoreArgs' (count args))
 		return result
+	} (isOneOf op 'callCustomCommand' 'callCustomReporter') {
+		for arg args {
+			addAll result (instructionsForExpression this arg)
+		}
+		add result (array op (count args))
+		if ('callCustomCommand' == op) {
+			add result (array 'pop' 1) // discard the return value
+		}
+		return result
 	} (isFunctionCall this op) {
 		return (instructionsForFunctionCall this op args true)
 	} else {
