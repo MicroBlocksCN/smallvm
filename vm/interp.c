@@ -295,10 +295,8 @@ static int stringsEqual(OBJ obj1, OBJ obj2) {
 }
 
 static int functionNameMatches(int chunkIndex, char *functionName) {
-	// todo: check the meta data for a function name match (that would be slow)
-	// optionally, have compiler encode function name similar to how broadcast names are encoded
-
-	return false; // placeholder: always return false
+	// Return true if given chunk is the function with the given function name.
+	// by checking the function name in the function's metadata.
 
 	const uint32 META_FLAG = 240;
 	uint32 wordCount = ((uint32 *) chunks[chunkIndex].code)[1];
@@ -310,9 +308,26 @@ static int functionNameMatches(int chunkIndex, char *functionName) {
 			break;
 		}
 	}
-	if (metaStart < 0) return false;
-	// todo: extract the function name from the meta data and check for match
-	return false;
+	if (metaStart < 0) return false; // no metadata
+
+	OBJ meta = (OBJ) &code[metaStart + 1];
+	if (!IS_TYPE(meta, StringType)) return false; // bad metadata; should not happen
+	meta += HEADER_WORDS + WORDS(meta); // skip var names string
+	if (!IS_TYPE(meta, StringType)) return false; // bad metadata; should not happen
+
+	// s is a tab-delimited string with meta information about the function:
+	//	libraryName libraryCategory blockType funcName specString argTypes
+	char *s = obj2str(meta);
+
+	// skip the first three tab-delimited fields (libraryName libraryCategory blockType)
+	for (int i = 0; i < 3; i++) {
+		s = strchr(s, '\t'); // find next tab
+		if (!s) return false; // tab not found; should not happen
+		s += 1;
+	}
+
+	// return true if s begins with the given function name
+	return (strstr(s, functionName) == s);
 }
 
 static int calleesChunkIndex(char *functionName) {

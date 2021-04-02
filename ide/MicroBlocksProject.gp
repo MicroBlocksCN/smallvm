@@ -185,7 +185,7 @@ method functionNamed MicroBlocksProject functionName {
 
 method metaInfoForFunction MicroBlocksProject aFunc {
 	// Return a tab-delimited string with meta information about the given function:
-	//	libraryName blockType funcName specString argTypes
+	//	libraryName libraryCategory blockType funcName specString argTypes
 	// Return the empty string if the function doesn't have a block spec (shouldn't happen).
 
 	funcName = (functionName aFunc)
