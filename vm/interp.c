@@ -1171,22 +1171,34 @@ static void runTask(Task *task) {
 	// call a function using the function name and parameter list:
 	callCustomCommand_op:
 	callCustomReporter_op:
-		if ((arg == 2) && (IS_TYPE(*(sp - 2), StringType))) {
-			int calleeChunkIndex = calleesChunkIndex(obj2str(*(sp - 2)));
+		if (arg > 0) {
 			OBJ params = *(sp - 1);
-			if ((calleeChunkIndex >= 0) && IS_TYPE(params, ListType)) {
-				int argCount = (obj2int(FIELD(params, 0)) & 0xFF);
-				POP_ARGS_COMMAND();
-				for (int i = 1; i <= argCount; i++) {
-					*sp++ = FIELD(params, i);
+			int calleeChunkIndex = -1;
+			if ((arg == 1) && (IS_TYPE(*(sp - 1), StringType))) {
+				calleeChunkIndex = calleesChunkIndex(obj2str(*(sp - 1)));
+			} else if ((arg == 2) && (IS_TYPE(*(sp - 2), StringType))) {
+				calleeChunkIndex = calleesChunkIndex(obj2str(*(sp - 2)));
+			}
+			POP_ARGS_COMMAND();
+			if (calleeChunkIndex >= 0) {
+				int paramCount = 0;
+				if (arg == 2) { // has parameters
+					if (IS_TYPE(params, ListType)) { // list: push list contents onto stack
+						paramCount = (obj2int(FIELD(params, 0)) & 0xFF);
+						for (int i = 1; i <= paramCount; i++) {
+							*sp++ = FIELD(params, i);
+						}
+					} else { // non-list: push the single parameter onto stack
+						paramCount = 1;
+						*sp++ = params;
+					}
 				}
-				arg = (calleeChunkIndex << 8) | argCount;
+				// call the function
+				arg = (calleeChunkIndex << 8) | paramCount;
 				goto callFunction_op;
 			}
 		}
-		// failed: bad arguments to callCustomCommand/Reporter
-		// todo: report an error?
-		POP_ARGS_COMMAND();
+		// failed: bad arguments
 		*sp++ = falseObj; // push a dummy function return value
 		DISPATCH();
 
