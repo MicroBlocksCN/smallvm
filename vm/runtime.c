@@ -20,10 +20,7 @@
 #include "mem.h"
 #include "interp.h"
 #include "persist.h"
-
-// VM Version
-
-#define VM_VERSION "v109"
+#include "version.h"
 
 // Forward Reference Declarations
 
