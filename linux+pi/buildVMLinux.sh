@@ -3,7 +3,9 @@
 # Connect to it via pseudo terminal
 #
 # Prerequisites to run on 64-bit Linux (tested on Ubuntu 20.04):
-#	sudo apt install gcc-multilib libgl1-mesa-glx:i386 libasound2:i386
+#	sudo apt install gcc-multilib libgl1-mesa-glx:i386
+#
+# Might be needed: libasound2:i386
 #
 # Additional prerequisites to build GnuBlocks on a 64-bit Linux system:
 #	sudo apt install libsdl2-dev:i386 libsdl2-ttf-dev:i386 libpng-dev:i386
@@ -23,5 +25,5 @@ gcc -m32 -std=c99 -Wall -Wno-unused-variable -Wno-unused-result -O3 \
 	libs/libfreetype.a \
 	/usr/lib/i386-linux-gnu/libpng.a \
 	/usr/lib/i386-linux-gnu/libz.a \
-	-ldl -lm -lpthread \
+	-ldl -lm -lpthread -lasound \
 	-o GnuBlocks
