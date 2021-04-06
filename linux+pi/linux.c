@@ -253,10 +253,7 @@ void clearCodeFile(int ignore) {
 
 void segfault() {
 	printf("-- VM crashed --\n");
-	pid_t myPid = getpid();
-    char pstackCommand[7+7+1];
-    sprintf(pstackCommand, "pstack %d", (int)myPid);
-    system(pstackCommand);
+	exitGracefully();
 }
 
 // Linux Main

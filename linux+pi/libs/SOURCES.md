@@ -20,4 +20,5 @@ Sources: https://www.libsdl.org/projects/SDL_ttf/
 The libraries were built on Ubuntu 16.04 LTS (32-bit).
 
 SDL2 was configured:
-  ./configure --disable-video-opengl --disable-video-vulkan --disable-dbus
+  ./configure --disable-video-vulkan --disable-video-opengles --disable-alsa
+
