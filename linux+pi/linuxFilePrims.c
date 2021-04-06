@@ -8,6 +8,8 @@
 // John Maloney, April 2020
 // Adapted to Linux VM by Bernat Romagosa, February 2021
 
+#define _DEFAULT_SOURCE
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -270,24 +272,19 @@ static OBJ primStartFileList(int argCount, OBJ *args) {
 static OBJ primNextFileInList(int argCount, OBJ *args) {
 	char fileName[100];
 	int length = 0;
-	if (directory) {
-		if ((nextDirEntry = readdir(directory)) != NULL) {
-			// check entry type
-			stat(nextDirEntry->d_name, &fileStat);
-			if (S_ISREG(fileStat.st_mode)) {
-				// it's a regular file, we're okay
-				length = strlen(nextDirEntry->d_name);
-				if (length > 99) length = 99;
-				strncpy(fileName, nextDirEntry->d_name, length);
-				fileName[length] = '\0'; // ensure null termination
-			} else {
-				// it's not a regular file, let's recurse into the next entry
-				return primNextFileInList(argCount, args);
-			}
-		} else {
-			closedir(directory);
-			directory = NULL;
+	while (directory && ((nextDirEntry = readdir(directory)) != NULL)) {
+		if (nextDirEntry->d_type == DT_REG) {
+			// regular file, return its name
+			length = strlen(nextDirEntry->d_name);
+			if (length > 99) length = 99;
+			strncpy(fileName, nextDirEntry->d_name, length);
+			fileName[length] = '\0'; // ensure null termination
+			break;
 		}
+	}
+	if (!nextDirEntry && directory) { // no more entries
+		closedir(directory);
+		directory = NULL;
 	}
 	return newStringFromBytes(fileName, length);
 }
