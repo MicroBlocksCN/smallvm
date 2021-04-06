@@ -800,6 +800,7 @@ async function GP_ReadFile(ext) {
 		});
 	}
 
+	if ('' == ext) ext = 'txt';
 	if (hasChromeFilesystem()) {
 		const options = {
 			type: 'openFile',
