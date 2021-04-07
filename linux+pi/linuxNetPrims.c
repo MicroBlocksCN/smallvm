@@ -12,6 +12,7 @@
 
 #define _XOPEN_SOURCE 500
 #define _POSIX_C_SOURCE 200112L
+#define _DEFAULT_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +24,7 @@
 #include "interp.h"
 
 #include <ifaddrs.h>
+#include <net/if.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -32,7 +34,10 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/errno.h>
 #include <time.h>
+
 
 // These primitives make no sense in a Linux system, since the connection is
 // handled at the operating system level, but we're simulating them to ensure
@@ -96,9 +101,49 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 	return result;
 }
 
+static void macAddressForInterface(const char* interfaceName, unsigned char* macAddr) {
+	struct ifreq ifinfo;
+	memset(macAddr, 0, 6); // clear result
+
+	int sd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sd < 0) return; // failed to create socket
+
+	// use ioctl on the socket to get the MAC address of the given interface
+	strcpy(ifinfo.ifr_name, interfaceName);
+	int err = ioctl(sd, SIOCGIFHWADDR, &ifinfo);
+	if (err) printf("ioctl error: %s\n", strerror(errno));
+	close(sd);
+
+	// if successful, copy the MAC address into the result
+	if (!err && (ifinfo.ifr_hwaddr.sa_family == 1)) {
+		memcpy(macAddr, ifinfo.ifr_hwaddr.sa_data, IFHWADDRLEN);
+	}
+}
+
 static OBJ primGetMAC(int argCount, OBJ *args) {
 	OBJ result = newString(17);
-	memcpy(obj2str(result), "00:00:00:00:00:00", 17);
+	char addressString[18] = "00:00:00:00:00:00\0";
+	unsigned char macAddr[IFHWADDRLEN] = {0,0,0,0,0,0};
+
+	struct ifaddrs *ifaddrList;
+
+	if (!getifaddrs(&ifaddrList)) {
+		for (struct ifaddrs *ifa = ifaddrList; ifa != NULL; ifa = ifa->ifa_next) {
+			if (ifa->ifa_addr == NULL) continue;
+
+			int family = ifa->ifa_addr->sa_family;
+			int isLoopback = (strstr(ifa->ifa_name, "lo") != NULL);
+			if ((family == AF_INET) && !isLoopback) {
+				macAddressForInterface(ifa->ifa_name, macAddr);
+				sprintf(addressString, "%X:%X:%X:%X:%X:%X",
+						macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
+				break;
+			}
+		}
+		freeifaddrs(ifaddrList);
+	}
+
+	memcpy(obj2str(result), addressString, 17);
 	return result;
 }
 
