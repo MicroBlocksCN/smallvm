@@ -1,5 +1,5 @@
-**Marc Campreciós Ester**<br/>
-March 31, 2021<br/>
+**Marc Campreciós Ester**  
+March 31, 2021  
 Funding source: MicroBlocks donation funds
 
 | Date       | Hours | What | Relevant Commits |
