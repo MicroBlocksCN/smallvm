@@ -476,6 +476,8 @@ inline uint32 saveIRQState(void) {
 		__asm__ volatile ("rsil %0, 15" : "=a" (pmask));
 	#elif defined(CORE_TEENSY)
 		__disable_irq();
+	#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+		// todo
 	#else
 		pmask = __get_PRIMASK() & 1;
 		__set_PRIMASK(1);
@@ -488,6 +490,8 @@ inline void restoreIRQState(uint32 pmask) {
 		__asm__ volatile ("wsr %0, ps; rsync" :: "a" (pmask));
 	#elif defined(CORE_TEENSY)
 		__enable_irq();
+	#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+		// todo
 	#else
 		__set_PRIMASK(pmask);
 	#endif

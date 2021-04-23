@@ -104,7 +104,16 @@ int recvBytes(uint8 *buf, int count) {
 	return bytesRead;
 }
 
-int sendByte(char aByte) { return Serial.write(aByte); }
+int sendByte(char aByte) {
+	#ifdef ARDUINO_RASPBERRY_PI_PICO
+		// Workaround for Pico Arduino library bug:
+		// Serial.write() should return 1 if byte is written but always returns 0 on Pico
+		Serial.write(aByte);
+		return 1; // assume byte was actually written
+	#else
+		return Serial.write(aByte);
+	#endif
+}
 
 void restartSerial() {
 	Serial.end();
@@ -524,6 +533,14 @@ void restartSerial() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
+#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+
+	#define BOARD_TYPE "RP2040"
+	#define DIGITAL_PINS 23
+	#define ANALOG_PINS 3
+	#define TOTAL_PINS DIGITAL_PINS
+	static const int analogPin[] = {A0, A1, A2};
+
 #else // unknown board
 
 	#define BOARD_TYPE "Unknown Board"
@@ -569,7 +586,7 @@ static void initPins(void) {
 	// Initialize currentMode to MODE_NOT_SET (neither INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
-	#if !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32)
+	#if !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_RASPBERRY_PI_PICO)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 
@@ -1167,6 +1184,11 @@ void stopServos() {
 	}
 }
 
+#elif ARDUINO_RASPBERRY_PI_PICO
+
+static void setServo(int pin, int usecs) { }
+void stopServos() { }
+
 #else // use Arduino Servo library
 
 #include <Servo.h>
@@ -1428,6 +1450,8 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	return trueObj;
 }
 
+#ifndef ARDUINO_RASPBERRY_PI_PICO
+
 OBJ primHasServo(int argCount, OBJ *args) { return trueObj; }
 
 OBJ primSetServo(int argCount, OBJ *args) {
@@ -1461,6 +1485,14 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	setServo(pin, usecs);
 	return trueObj;
 }
+
+#else
+
+OBJ primHasServo(int argCount, OBJ *args) { return falseObj; }
+OBJ primSetServo(int argCount, OBJ *args) { return falseObj; }
+
+#endif
+
 
 OBJ primDACInit(int argCount, OBJ *args) {
 	// Initialize the DAC pin and (optional) sample rate. If the pin is not a DAC pin (pins
