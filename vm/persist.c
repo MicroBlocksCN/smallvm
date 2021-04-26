@@ -394,7 +394,7 @@ void flashWriteWord(int *addr, int value) {
 	#endif
 
 	#define START (&flash[0])
-	static uint8 flash[HALF_SPACE]; // simulated Flash memory
+	static uint8 flash[HALF_SPACE] __attribute__ ((aligned (32))); // simulated Flash memory
 
 	static void flashErase(int *startAddr, int *endAddr) {
 		int *dst = (int *) startAddr;
