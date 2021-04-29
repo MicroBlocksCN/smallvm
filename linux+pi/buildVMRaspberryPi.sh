@@ -17,7 +17,7 @@ gcc -std=c99 -O3 -Wall -Wno-unused-variable -Wno-unused-result \
 	-lSDL2 -lSDL2_ttf \
 	-l wiringPi \
 	-ldl -lm -lpthread -lsndio -lz \
-	-o GnuBlocks-pi
+	-o vm.linux.rpi
 
 # For static linking replace -lSDL2 -lSDL2_ttf with:
 #	/usr/local/lib/libSDL2.a /usr/local/lib/libSDL2_ttf.a /usr/local/lib/libfreetype.a \
