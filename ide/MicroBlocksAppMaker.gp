@@ -37,6 +37,7 @@ method createEmbeddedFS MicroBlocksAppMaker system {
 	// Return a ZipFile object containing the embedded file system.
 
 	zip = (create (new 'ZipFile'))
+	addVersionFileToEmbeddedFS this zip
 	libDir = (join (directoryPart (appPath)) 'runtime/lib')
 	addFolderToEmbeddedFS this libDir 'lib' zip
 	addFolderToEmbeddedFS this '../ide' 'lib' zip // note: must add MicroBlocks ide after GP lib
@@ -46,6 +47,14 @@ method createEmbeddedFS MicroBlocksAppMaker system {
 	addFolderToEmbeddedFS this '../translations' 'translations' zip
 	addFolderToEmbeddedFS this '../esp32' 'esp32' zip
 	return zip
+}
+
+method addVersionFileToEmbeddedFS MicroBlocksAppMaker zip {
+	fileName = 'versions'
+	data = (readFile (join (directoryPart (appPath)) 'runtime/' fileName) true)
+	if (notNil data) {
+		addFile zip fileName data true
+	}
 }
 
 method addFolderToEmbeddedFS MicroBlocksAppMaker srcFolder dstFolder zip {

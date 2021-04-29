@@ -48,6 +48,7 @@ to openMicroBlocksEditor devMode {
 	dataAndURL = (global 'initialProject')
 	openProject editor (first dataAndURL) (last dataAndURL)
   }
+  readVersionFile (smallRuntime)
   launch (global 'page') (checkLatestVersion)
   pageResized editor
   developerModeChanged editor

@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs
 
 method scripter SmallRuntime { return scripter }
 
@@ -844,8 +844,22 @@ method openPortAndSendPing SmallRuntime {
 	sendMsg this 'pingMsg'
 }
 
-method ideVersion SmallRuntime {  return '1.0.15' }
-method latestVmVersion SmallRuntime { return 109 }
+method ideVersion SmallRuntime { return ideVersion }
+method latestVmVersion SmallRuntime { return latestVmVersion }
+
+method readVersionFile SmallRuntime {
+	// defaults in case version file is missing (which shouldn't happen)
+	ideVersion = '0.0.0'
+	latestVmVersion = 0
+
+	data = (readEmbeddedFile 'versions')
+	if (notNil data) {
+		for s (lines data) {
+			if (beginsWith s 'IDE ') { ideVersion = (substring s 5) }
+			if (beginsWith s 'VM ') { latestVmVersion = (toNumber (substring s 4)) }
+		}
+	}
+}
 
 method showAboutBox SmallRuntime {
 	vmVersionReport = (newline)
