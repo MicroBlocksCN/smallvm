@@ -59,7 +59,7 @@ to openMicroBlocksEditor devMode {
 to checkLatestVersion {
   if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
   latestVersion = (fetchLatestVersionNumber)
-  currentVersion = (splitWith (ideVersion (smallRuntime)) '.')
+  currentVersion = (splitWith (ideVersionNumber (smallRuntime)) '.')
   for i (count latestVersion) {
 	latest = (toInteger (at latestVersion i))
 	current = (toInteger (at currentVersion i))
