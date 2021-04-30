@@ -10,6 +10,7 @@ gp/packagers/linux/esptool
 gp/packagers/win32/esptool
 linux+pi/ublockscode
 linux+pi/vm.*
+linux+pi/ubuntu16.04.img
 precompiled/vm.*
 data/*
 BUILD
