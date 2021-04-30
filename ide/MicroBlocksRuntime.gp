@@ -847,6 +847,18 @@ method openPortAndSendPing SmallRuntime {
 method ideVersion SmallRuntime { return ideVersion }
 method latestVmVersion SmallRuntime { return latestVmVersion }
 
+method ideVersionNumber SmallRuntime {
+	// Return the version number portion of the version string (i.e. just digits and periods).
+
+	for i (count ideVersion) {
+		ch = (at ideVersion i)
+		if (not (or (isDigit ch) ('.' == ch))) {
+			return (substring ideVersion 1 (i - 1))
+		}
+	}
+	return ideVersion
+}
+
 method readVersionFile SmallRuntime {
 	// defaults in case version file is missing (which shouldn't happen)
 	ideVersion = '0.0.0'

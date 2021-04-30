@@ -7,13 +7,10 @@
 // fileSys.c - File system selection.
 // John Maloney, December 2021
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-// File system selection for Espressif boards
-
 #include <FS.h>
 
 // Select file system (Note: LittleFS is often much slower than SPIFFS)
-#define useLittleFS false
+#define useLittleFS defined(ARDUINO_RASPBERRY_PI_PICO)
 #if useLittleFS
 	#ifdef ARDUINO_ARCH_ESP32
 		#include <LITTLEFS.h>
@@ -28,5 +25,3 @@
 	#endif
 	#define myFS SPIFFS
 #endif
-
-#endif // ESP boards

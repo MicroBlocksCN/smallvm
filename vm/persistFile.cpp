@@ -12,7 +12,7 @@
 #include "mem.h"
 #include "persist.h"
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || (defined(ARDUINO_RASPBERRY_PI_PICO) && !defined(NO_FILESYSTEM))
 // Persistent file operations for Espressif boards
 
 #include "fileSys.h"
@@ -24,17 +24,22 @@ static File codeFile;
 static void closeAndOpenCodeFile() {
 	if (codeFile) codeFile.close();
 	codeFile = myFS.open(FILE_NAME, "a");
+	codeFile.seek(0, SeekEnd);
 }
 
 extern "C" void initCodeFile(uint8 *flash, int flashByteCount) {
-	#ifdef ESP8266
-		myFS.begin();
-	#else
+	#if defined(ARDUINO_ARCH_ESP32)
 		myFS.begin(true);
+	#else
+		myFS.begin();
 	#endif
 	codeFile = myFS.open(FILE_NAME, "r");
-	// read code file into simulated Flash:
-	if (codeFile) codeFile.readBytes((char*) flash, flashByteCount);
+	if (codeFile) {
+		// read code file into simulated Flash:
+		codeFile.readBytes((char*) flash, flashByteCount);
+	} else {
+		clearCodeFile(0);
+	}
 	closeAndOpenCodeFile();
 }
 
