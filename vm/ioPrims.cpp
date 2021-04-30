@@ -537,9 +537,9 @@ void restartSerial() {
 
 	#define BOARD_TYPE "RP2040"
 	#define DIGITAL_PINS 23
-	#define ANALOG_PINS 3
+	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
-	static const int analogPin[] = {A0, A1, A2};
+	static const int analogPin[] = {A0, A1, A2, A3};
 
 #else // unknown board
 
