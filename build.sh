@@ -76,11 +76,12 @@ if test -n "$locale"; then
 fi
 
 if test -n "$vm"; then
+    (cd linux+pi; ./buildVMQemu.sh)
     (cd precompiled; ./updatePrecompiled.sh)
 fi
 
 if [ -z $version ]; then
-    version=`cat ide/MicroBlocksRuntime.gp | sed -n -E "s/^method ideVersion.*'(.*)'.*/\1/p"`
+    version=`head -n1 gp/runtime/versions | sed -E "s/^IDE //"`
 fi
 
 if test -n "$tools"; then
