@@ -76,6 +76,7 @@ if test -n "$locale"; then
 fi
 
 if test -n "$vm"; then
+    (cd linux+pi; ./buildVMQemu.sh)
     (cd precompiled; ./updatePrecompiled.sh)
 fi
 
