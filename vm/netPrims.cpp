@@ -14,7 +14,6 @@
 #include <string.h>
 
 #include "mem.h"
-#include "tinyJSON.h"
 
 #if defined(ESP8266)
 	#include <ESP8266WiFi.h>
@@ -220,7 +219,11 @@ static void startHttpServer() {
 	// It is fine for the server to continue running even if the WiFi is restarted.
 
 	if (!serverStarted) {
-		server.begin(serverPort);
+		#ifdef USE_WIFI101
+			server.begin(); // setting server port in begin() not supported by WiFi101 library
+		#else
+			server.begin(serverPort);
+		#endif
 		serverStarted = true;
 	}
 }
@@ -249,16 +252,20 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 	int useBinary = ((argCount > 0) && (trueObj == args[0]));
 	OBJ noData = useBinary ? (OBJ) &emptyByteArray : (OBJ) &noDataString;
 
-	if (argCount > 1) {
+	if ((argCount > 1) && isInt(args[1])) {
 		int port = obj2int(args[1]);
 		// If we're changing port, stop and restart the server
 		if (port != serverPort) {
-			char s[100];
-			sprintf(s, "changing port from %d to %d", serverPort, port);
-			outputString(s);
+			#ifdef USE_WIFI101
+				outputString("WiFi101 does not support changing the server port");
+			#else
+				char s[100];
+				sprintf(s, "Changing server port from %d to %d", serverPort, port);
+				outputString(s);
+				server.stop();
+				server.begin(port);
+			#endif
 			serverPort = port;
-			server.stop();
-			server.begin(serverPort);
 		}
 	}
 
@@ -483,7 +490,7 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
 
 #endif
 
-#else // not ESP8266 or ESP32
+#else // WiFi is not supported
 
 static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
 static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -500,6 +507,7 @@ static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
 #endif
+
 #ifndef ARDUINO_ARCH_ESP32
 static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
