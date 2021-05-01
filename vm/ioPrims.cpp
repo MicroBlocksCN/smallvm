@@ -1030,6 +1030,11 @@ void stopPWM() {
 	// version of analogWrite() to reset their internal PWM data structures. Instead, this
 	// function simply turns off the PWM hardare on nRF52 boards.
 
+	#if defined(NRF51) || defined(NRF52)
+		// Stop squareWave generation, too.
+		NRF_PPI->CHEN = 0;
+		NRF_GPIOTE->CONFIG[0] = 0;
+	#endif
 	#if defined(NRF52)
 		NRF_PWM0->TASKS_STOP = 1;
 		NRF_PWM1->TASKS_STOP = 1;
@@ -1062,30 +1067,30 @@ static char tonePinState = 0;
 static char servoToneTimerStarted = 0;
 
 static void startServoToneTimer() {
-	NRF_TIMER2->TASKS_SHUTDOWN = true;
-	NRF_TIMER2->MODE = 0; // timer mode
-	NRF_TIMER2->BITMODE = 0; // 16-bits
-	NRF_TIMER2->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
-	NRF_TIMER2->INTENSET = TIMER_INTENSET_COMPARE0_Msk | TIMER_INTENSET_COMPARE1_Msk;
-	NRF_TIMER2->TASKS_START = true;
-	NVIC_EnableIRQ(TIMER2_IRQn);
+	NRF_TIMER0->TASKS_SHUTDOWN = true;
+//	NRF_TIMER0->MODE = 0; // timer mode
+//	NRF_TIMER0->BITMODE = 0; // 16-bits
+//	NRF_TIMER0->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
+	NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE2_Msk | TIMER_INTENSET_COMPARE3_Msk;
+	NRF_TIMER0->TASKS_START = true;
+	NVIC_EnableIRQ(TIMER0_IRQn);
 	servoToneTimerStarted = true;
 }
 
-extern "C" void TIMER2_IRQHandler() {
-	if (NRF_TIMER2->EVENTS_COMPARE[0]) { // tone waveform generator
-		int wakeTime = NRF_TIMER2->CC[0];
-		NRF_TIMER2->EVENTS_COMPARE[0] = 0; // clear interrupt
+extern "C" void TIMER0_IRQHandler() {
+	if (NRF_TIMER0->EVENTS_COMPARE[2]) { // tone waveform generator
+		uint32_t wakeTime = NRF_TIMER0->CC[2];
+		NRF_TIMER0->EVENTS_COMPARE[2] = 0; // clear interrupt
 		if (tonePin >= 0) {
 			tonePinState = !tonePinState;
 			digitalWrite(tonePin, tonePinState);
-			NRF_TIMER2->CC[0] = (wakeTime + toneHalfPeriod) & 0xFFFF; // next wake time
+			NRF_TIMER0->CC[2] = (wakeTime + toneHalfPeriod); // & 0xFFFF; // next wake time
 		}
 	}
 
-	if (NRF_TIMER2->EVENTS_COMPARE[1]) { // servo waveform generator
-		int wakeTime = NRF_TIMER2->CC[1] + 12;
-		NRF_TIMER2->EVENTS_COMPARE[1] = 0; // clear interrupt
+	if (NRF_TIMER0->EVENTS_COMPARE[3]) { // servo waveform generator
+		int wakeTime = NRF_TIMER0->CC[3] + 12;
+		NRF_TIMER0->EVENTS_COMPARE[3] = 0; // clear interrupt
 
 		if (servoPinHigh && (0 <= servoIndex) && (servoIndex < MAX_SERVOS)) {
 			digitalWrite(servoPin[servoIndex], LOW); // end the current servo pulse
@@ -1100,11 +1105,11 @@ extern "C" void TIMER2_IRQHandler() {
 		if (servoIndex < MAX_SERVOS) { // start servo pulse for servoIndex
 			digitalWrite(servoPin[servoIndex], HIGH);
 			servoPinHigh = true;
-			NRF_TIMER2->CC[1] = (wakeTime + servoPulseWidth[servoIndex]) & 0xFFFF;
+			NRF_TIMER0->CC[3] = (wakeTime + servoPulseWidth[servoIndex]); // & 0xFFFF;
 		} else { // idle until next set of pulses
 			servoIndex = -1;
 			servoPinHigh = false;
-			NRF_TIMER2->CC[1] = (wakeTime + 18000) & 0xFFFF;
+			NRF_TIMER0->CC[3] = (wakeTime + 18000); // & 0xFFFF;
 		}
 	}
 }
@@ -1220,10 +1225,10 @@ static void setTone(int pin, int frequency) {
 	toneHalfPeriod = 500000 / frequency;
 	if (!servoToneTimerStarted) {
 		startServoToneTimer();
-	} else {
-		NRF_TIMER2->TASKS_CAPTURE[2] = true;
-		NRF_TIMER2->CC[0] = (NRF_TIMER2->CC[2] + toneHalfPeriod) & 0xFFFF; // update
-	}
+	} // else {
+		NRF_TIMER0->TASKS_CAPTURE[2] = true;
+		NRF_TIMER0->CC[2] = (NRF_TIMER0->CC[2] + toneHalfPeriod); // & 0xFFFF; // update
+//	}
 }
 
 void stopTone() { tonePin = -1; }
@@ -1532,6 +1537,125 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 	return int2obj(count);
 }
 
+// Experimental RF Square Wave Generator (nRF51 and nRF52 only)
+
+#if defined(NRF51) || defined(NRF52)
+
+static int squareWavePin = 2; // xxx temporary nrf52 pin 2 = micro:bit v2 P0
+
+static void startRF(int count) {
+	pinMode(squareWavePin, OUTPUT);
+
+	// use GPIOTE to toggle pin 2 (micro:bit v2 P0)
+	NRF_GPIOTE->CONFIG[0] =
+		GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos |
+		GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos |
+		squareWavePin << GPIOTE_CONFIG_PSEL_Pos |
+		GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos;
+
+	// configure PPI
+	NRF_PPI->CH[0].EEP = (uint32_t) &NRF_TIMER2->EVENTS_COMPARE[0];
+	NRF_PPI->CH[0].TEP = (uint32_t) &NRF_GPIOTE->TASKS_OUT[0];
+	NRF_PPI->CHENSET = PPI_CHENSET_CH0_Msk;
+
+	// configure and start the timer
+	NRF_TIMER2->TASKS_STOP;
+	NRF_TIMER2->PRESCALER = 0;
+	NRF_TIMER2->CC[0] = count; // CC[0] determines the output frequency
+	NRF_TIMER2->SHORTS = TIMER_SHORTS_COMPARE0_CLEAR_Msk;
+	NRF_TIMER2->TASKS_START = 1;
+}
+
+static OBJ primSquareWave(int argCount, OBJ *args) {
+	// If freq > 0, generate a 50% duty cycle square wave of the given frequency
+	// on the given pin. If freq <= 0 stop generating the square wave.
+	// Return true on success, false if primitive is not supported.
+
+	OBJ freqArg = args[0];
+	OBJ pinArg = (argCount > 1) ? args[1] : zeroObj; // default to pin 0
+	if (!isInt(freqArg) || !isInt(pinArg)) return falseObj;
+	int pin = obj2int(pinArg);
+
+	int frequency = obj2int(freqArg);
+	if (frequency > 0) {
+		int count = round(8000000.0 / frequency);
+		if (count > 65535) count = 65535;
+		startRF(count);
+	} else {
+		NRF_PPI->CHENCLR = PPI_CHENSET_CH0_Msk;
+	}
+	return trueObj;
+}
+
+#else
+
+OBJ primSquareWave(int argCount, OBJ *args) { return falseObj; }
+
+#endif
+
+// Experimental RF Modulation Primitive (NRF52 only)
+
+#if defined(NRF52)
+
+static int modulatorInitialized = false;
+
+extern "C" void TIMER3_IRQHandler() {
+	if (NRF_TIMER3->EVENTS_COMPARE[0]) {
+		int gpioteConfig =
+			GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos |
+			GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos |
+			squareWavePin << GPIOTE_CONFIG_PSEL_Pos |
+			GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos;
+		NRF_GPIOTE->CONFIG[0] = gpioteConfig; // turn on square wave
+		NRF_TIMER3->EVENTS_COMPARE[0] = 0; // clear interrupt
+	}
+	if (NRF_TIMER3->EVENTS_COMPARE[1]) {
+		NRF_GPIOTE->CONFIG[0] = 0; // turn off square wave
+		NRF_TIMER3->EVENTS_COMPARE[1] = 0; // clear interrupt
+	}
+}
+
+static void setModulation(int level) {
+	if (!modulatorInitialized) {
+		NVIC_EnableIRQ(TIMER3_IRQn);
+
+		// Use 8-bit timer mode running at 4 MHz (prescaler=3, 16 MHz / 2^2 = 4 MHz)
+		// The 8-bit counter wraps around ~16000 times/second. That is the sampling rate.
+		NRF_TIMER3->MODE = TIMER_MODE_MODE_Timer;
+		NRF_TIMER3->BITMODE = TIMER_BITMODE_BITMODE_08Bit;
+		NRF_TIMER3->PRESCALER = 2;
+
+		// The CC[0]=0 event turns on the radio on clock wrap.
+		// The CC[1] event turns off the radio when the pulse width is reached.
+		// If CC[1] >= 256 then the CC[1] event never happens and the radio stay on continuously.
+		NRF_TIMER3->CC[0] = 0;
+		NRF_TIMER3->CC[1] = 250; // xxx 256 // default to 100% duty cycle
+		NRF_TIMER3->INTENSET = TIMER_INTENSET_COMPARE0_Msk | TIMER_INTENSET_COMPARE1_Msk;
+		NRF_TIMER3->TASKS_START = true;
+
+		modulatorInitialized = true;
+	}
+
+	// Note: level >= 253 does not leave enough time between CC[1] and CC[0] interrupts
+	level = (level < 0) ? 0 : level;
+	level = (level <= 250) ? level : 250;
+	NRF_TIMER3->CC[1] = level;
+}
+
+OBJ primSquareWaveModulation(int argCount, OBJ *args) {
+	if (!argCount || !isInt(args[0])) return falseObj;
+	int level = obj2int(args[0]); // range 0-1023
+
+	setModulation(level); // xxx modulation is 8-bits
+	return trueObj;
+}
+
+#else
+
+OBJ primSquareWaveModulation(int argCount, OBJ *args) { return falseObj; }
+
+#endif
+
 static PrimEntry entries[] = {
 	{"hasTone", primHasTone},
 	{"playTone", primPlayTone},
@@ -1539,6 +1663,8 @@ static PrimEntry entries[] = {
 	{"setServo", primSetServo},
 	{"dacInit", primDACInit},
 	{"dacWrite", primDACWrite},
+	{"squareWave", primSquareWave},
+	{"squareWaveModulation", primSquareWaveModulation},
 };
 
 void addIOPrims() {
