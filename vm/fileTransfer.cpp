@@ -22,7 +22,7 @@
 #define StartWritingFileMsg 204
 #define FileChunkMsg 205
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || (defined(ARDUINO_RASPBERRY_PI_PICO) && !defined(NO_FILESYSTEM))
 // File system operations for Espressif boards
 
 #include "fileSys.h"

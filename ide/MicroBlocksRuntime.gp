@@ -1560,7 +1560,7 @@ method isRunning SmallRuntime aBlock {
 
 method boardHasFileSystem SmallRuntime {
 	if (isNil boardType) { getVersion this }
-	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040')
 }
 
 method deleteFileOnBoard SmallRuntime fileName {

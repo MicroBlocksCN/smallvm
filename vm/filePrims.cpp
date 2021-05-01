@@ -4,7 +4,7 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// filePrims.c - File system primitives for ESP boards.
+// filePrims.c - File system primitives.
 // John Maloney, April 2020
 
 #include <math.h>
@@ -14,14 +14,14 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
-// File system operations for Espressif boards
+#if defined(ESP8266) || defined(ESP32) || (defined(ARDUINO_RASPBERRY_PI_PICO) && !defined(NO_FILESYSTEM))
+
+// This operations assume that the file system was mounted by restoreScripts() at startup.
 
 #include "fileSys.h"
 
 // Variables
 
-static int fsInitialized = false;
 static char fullPath[32]; // used to prefix "/" to file names
 
 typedef struct {
@@ -30,22 +30,9 @@ typedef struct {
 } FileEntry;
 
 #define FILE_ENTRIES 8
-static FileEntry fileEntry[FILE_ENTRIES]; // records open files
+static FileEntry fileEntry[FILE_ENTRIES]; // fileEntry[] records open files
 
 // Helper functions
-
-static void initFS() {
-	if (fsInitialized) return;
-
-	#ifdef ESP8266
-		myFS.begin();
-		myFS.gc();
-	#else
-		myFS.begin(true);
-	#endif
-
-	fsInitialized = true;
-}
 
 static char *extractFilename(OBJ obj) {
 	fullPath[0] = '\0';
@@ -87,7 +74,6 @@ static OBJ primOpen(int argCount, OBJ *args) {
 	char *fileName = extractFilename(args[0]);
 	if (!fileName[0]) return falseObj;
 
-	initFS();
 	int i = entryFor(fileName);
 	if (i >= 0) { // found an existing entry; close and reopen
 		fileEntry[i].file.close();
@@ -110,7 +96,6 @@ static OBJ primClose(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char *fileName = extractFilename(args[0]);
 
-	initFS();
 	int i = entryFor(fileName);
 	if (i >= 0) {
 		fileEntry[i].fileName[0] = '\0';
@@ -125,7 +110,6 @@ static OBJ primDelete(int argCount, OBJ *args) {
 	char *fileName = extractFilename(args[0]);
 	if (!fileName[0]) return falseObj;
 
-	initFS();
 	int i = entryFor(fileName);
 	if (i >= 0) {
 		fileEntry[i].fileName[0] = '\0';
@@ -273,10 +257,10 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 // File list
 
 // Root directory used for listing files
-#if defined(ESP8266)
-	Dir rootDir;
-#elif defined(ESP32)
+#if defined(ESP32)
 	File rootDir;
+#else
+	Dir rootDir;
 #endif
 
 static OBJ primFileSize(int argCount, OBJ *args) {
@@ -293,11 +277,10 @@ static OBJ primFileSize(int argCount, OBJ *args) {
 }
 
 static OBJ primStartFileList(int argCount, OBJ *args) {
-	initFS();
-	#if defined(ESP8266)
-		rootDir = myFS.openDir("/");
-	#elif defined(ESP32)
+	#if defined(ESP32)
 		rootDir = myFS.open("/");
+	#else
+		rootDir = myFS.openDir("/");
 	#endif
 	return falseObj;
 }
@@ -307,20 +290,20 @@ static void nextFileName(char *fileName) {
 	// Argument must have room for at least 32 bytes.
 
 	fileName[0] = '\0'; // clear string
-	#if defined(ESP8266)
- 		if (rootDir.next()) strncat(fileName, rootDir.fileName().c_str(), 31);
-	#elif defined(ESP32)
+	#if defined(ESP32)
 		if (rootDir) {
 			File file = rootDir.openNextFile();
 			if (file) strncat(fileName, file.name(), 31);
 		}
+	#else
+ 		if (rootDir.next()) strncat(fileName, rootDir.fileName().c_str(), 31);
 	#endif
 }
 
 static OBJ primNextFileInList(int argCount, OBJ *args) {
 	char fileName[100];
 	nextFileName(fileName);
-	while ((strcmp(fileName, "/") == 0) || (strcmp(fileName, "/ublockscode") == 0)) {
+	while ((strcmp(fileName, "/") == 0) || strstr(fileName, "ublockscode")) {
 		nextFileName(fileName); // skip root directory and code file
 	}
 	char *s = fileName;
@@ -331,18 +314,17 @@ static OBJ primNextFileInList(int argCount, OBJ *args) {
 // System info
 
 static OBJ primSystemInfo(int argCount, OBJ *args) {
-	initFS();
 	size_t totalBytes = 0;
 	size_t usedBytes = 0;
 
-	#if defined(ESP8266)
+	#if defined(ESP32)
+		totalBytes = myFS.totalBytes();
+		usedBytes = myFS.usedBytes();
+	#else
 		FSInfo info;
 		myFS.info(info);
 		totalBytes = info.totalBytes;
 		usedBytes = info.usedBytes;
-	#elif defined(ESP32)
-		totalBytes = myFS.totalBytes();
-		usedBytes = myFS.usedBytes();
 	#endif
 
 	char result[100];
