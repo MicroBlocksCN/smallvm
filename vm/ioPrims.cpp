@@ -30,19 +30,17 @@ static void initRandomSeed(void); // forward reference
 
 #define USE_NRF5x_CLOCK true
 
-static char *timer0_base = (char *) 0x40008000;
-
 static void initClock_NRF5x() {
-	*((int *) (timer0_base + 0x010)) = 1; // shutdown & clear
-	*((int *) (timer0_base + 0x504)) = 0; // timer mode
-	*((int *) (timer0_base + 0x508)) = 3; // 32-bit
-	*((int *) (timer0_base + 0x510)) = 4; // prescale - divides 16MHz by 2^N
-	*((int *) (timer0_base + 0x0)) = 1; // start
+	NRF_TIMER0->TASKS_SHUTDOWN = true;
+	NRF_TIMER0->MODE = 0; // timer (not counter) mode
+	NRF_TIMER0->BITMODE = 3; // 32-bit
+	NRF_TIMER0->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
+	NRF_TIMER0->TASKS_START = true;
 }
 
 uint32 microsecs() {
-	*((int *) (timer0_base + 0x40)) = 1; // capture into cc1
-	return *((uint32 *) (timer0_base + 0x540)); // return contents of cc1
+	NRF_TIMER0->TASKS_CAPTURE[0] = true;
+	return NRF_TIMER0->CC[0];
 }
 
 uint32 millisecs() {
@@ -1593,69 +1591,6 @@ OBJ primSquareWave(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
-// Experimental RF Modulation Primitive (NRF52 only)
-
-#if defined(NRF52)
-
-static int modulatorInitialized = false;
-
-extern "C" void TIMER3_IRQHandler() {
-	if (NRF_TIMER3->EVENTS_COMPARE[0]) {
-		int gpioteConfig =
-			GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos |
-			GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos |
-			squareWavePin << GPIOTE_CONFIG_PSEL_Pos |
-			GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos;
-		NRF_GPIOTE->CONFIG[0] = gpioteConfig; // turn on square wave
-		NRF_TIMER3->EVENTS_COMPARE[0] = 0; // clear interrupt
-	}
-	if (NRF_TIMER3->EVENTS_COMPARE[1]) {
-		NRF_GPIOTE->CONFIG[0] = 0; // turn off square wave
-		NRF_TIMER3->EVENTS_COMPARE[1] = 0; // clear interrupt
-	}
-}
-
-static void setModulation(int level) {
-	if (!modulatorInitialized) {
-		NVIC_EnableIRQ(TIMER3_IRQn);
-
-		// Use 8-bit timer mode running at 4 MHz (prescaler=3, 16 MHz / 2^2 = 4 MHz)
-		// The 8-bit counter wraps around ~16000 times/second. That is the sampling rate.
-		NRF_TIMER3->MODE = TIMER_MODE_MODE_Timer;
-		NRF_TIMER3->BITMODE = TIMER_BITMODE_BITMODE_08Bit;
-		NRF_TIMER3->PRESCALER = 2;
-
-		// The CC[0]=0 event turns on the radio on clock wrap.
-		// The CC[1] event turns off the radio when the pulse width is reached.
-		// If CC[1] >= 256 then the CC[1] event never happens and the radio stay on continuously.
-		NRF_TIMER3->CC[0] = 0;
-		NRF_TIMER3->CC[1] = 250; // xxx 256 // default to 100% duty cycle
-		NRF_TIMER3->INTENSET = TIMER_INTENSET_COMPARE0_Msk | TIMER_INTENSET_COMPARE1_Msk;
-		NRF_TIMER3->TASKS_START = true;
-
-		modulatorInitialized = true;
-	}
-
-	// Note: level >= 253 does not leave enough time between CC[1] and CC[0] interrupts
-	level = (level < 0) ? 0 : level;
-	level = (level <= 250) ? level : 250;
-	NRF_TIMER3->CC[1] = level;
-}
-
-OBJ primSquareWaveModulation(int argCount, OBJ *args) {
-	if (!argCount || !isInt(args[0])) return falseObj;
-	int level = obj2int(args[0]); // range 0-1023
-
-	setModulation(level); // xxx modulation is 8-bits
-	return trueObj;
-}
-
-#else
-
-OBJ primSquareWaveModulation(int argCount, OBJ *args) { return falseObj; }
-
-#endif
-
 static PrimEntry entries[] = {
 	{"hasTone", primHasTone},
 	{"playTone", primPlayTone},
@@ -1664,7 +1599,6 @@ static PrimEntry entries[] = {
 	{"dacInit", primDACInit},
 	{"dacWrite", primDACWrite},
 	{"squareWave", primSquareWave},
-	{"squareWaveModulation", primSquareWaveModulation},
 };
 
 void addIOPrims() {
