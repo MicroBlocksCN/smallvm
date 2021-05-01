@@ -1236,9 +1236,7 @@ void vmLoop() {
 				defined(GNUBLOCKS)
 					updateMicrobitDisplay();
 			#endif
-			#ifndef ARDUINO_RASPBERRY_PI_PICO
-				checkButtons(); // todo: figure out why this fails on PICO
-			#endif
+			checkButtons();
 			processMessage();
 			count = 25; // must be under 30 when building on mbed to avoid serial errors
 		}
