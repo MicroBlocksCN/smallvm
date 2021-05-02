@@ -1065,29 +1065,36 @@ static char tonePinState = 0;
 static char servoToneTimerStarted = 0;
 
 static void startServoToneTimer() {
-	NRF_TIMER0->TASKS_SHUTDOWN = true;
-//	NRF_TIMER0->MODE = 0; // timer mode
-//	NRF_TIMER0->BITMODE = 0; // 16-bits
-//	NRF_TIMER0->PRESCALER = 4; // 1 MHz (16 MHz / 2^4)
-	NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE2_Msk | TIMER_INTENSET_COMPARE3_Msk;
-	NRF_TIMER0->TASKS_START = true;
+	// enable timer interrupts
 	NVIC_EnableIRQ(TIMER0_IRQn);
+
+	// get current timer value
+ 	NRF_TIMER0->TASKS_CAPTURE[0] = true;
+ 	uint32_t wakeTime = NRF_TIMER0->CC[0];
+
+	// set initial wake times a few (at least 2) usecs in the future to kick things off
+	NRF_TIMER0->CC[2] = wakeTime + 5;
+	NRF_TIMER0->CC[3] = wakeTime + 5;
+
+	// enable interrrupts on CC[2] and CC[3]
+	NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE2_Msk | TIMER_INTENSET_COMPARE3_Msk;
+
 	servoToneTimerStarted = true;
 }
 
 extern "C" void TIMER0_IRQHandler() {
-	if (NRF_TIMER0->EVENTS_COMPARE[2]) { // tone waveform generator
+	if (NRF_TIMER0->EVENTS_COMPARE[2]) { // tone waveform generator (CC[2])
 		uint32_t wakeTime = NRF_TIMER0->CC[2];
 		NRF_TIMER0->EVENTS_COMPARE[2] = 0; // clear interrupt
 		if (tonePin >= 0) {
 			tonePinState = !tonePinState;
 			digitalWrite(tonePin, tonePinState);
-			NRF_TIMER0->CC[2] = (wakeTime + toneHalfPeriod); // & 0xFFFF; // next wake time
+			NRF_TIMER0->CC[2] = (wakeTime + toneHalfPeriod); // next wake time
 		}
 	}
 
-	if (NRF_TIMER0->EVENTS_COMPARE[3]) { // servo waveform generator
-		int wakeTime = NRF_TIMER0->CC[3] + 12;
+	if (NRF_TIMER0->EVENTS_COMPARE[3]) { // servo waveform generator (CC[3])
+		uint32_t wakeTime = NRF_TIMER0->CC[3] + 12;
 		NRF_TIMER0->EVENTS_COMPARE[3] = 0; // clear interrupt
 
 		if (servoPinHigh && (0 <= servoIndex) && (servoIndex < MAX_SERVOS)) {
@@ -1103,11 +1110,11 @@ extern "C" void TIMER0_IRQHandler() {
 		if (servoIndex < MAX_SERVOS) { // start servo pulse for servoIndex
 			digitalWrite(servoPin[servoIndex], HIGH);
 			servoPinHigh = true;
-			NRF_TIMER0->CC[3] = (wakeTime + servoPulseWidth[servoIndex]); // & 0xFFFF;
+			NRF_TIMER0->CC[3] = (wakeTime + servoPulseWidth[servoIndex]);
 		} else { // idle until next set of pulses
 			servoIndex = -1;
 			servoPinHigh = false;
-			NRF_TIMER0->CC[3] = (wakeTime + 18000); // & 0xFFFF;
+			NRF_TIMER0->CC[3] = (wakeTime + 18000);
 		}
 	}
 }
@@ -1223,10 +1230,9 @@ static void setTone(int pin, int frequency) {
 	toneHalfPeriod = 500000 / frequency;
 	if (!servoToneTimerStarted) {
 		startServoToneTimer();
-	} // else {
-		NRF_TIMER0->TASKS_CAPTURE[2] = true;
-		NRF_TIMER0->CC[2] = (NRF_TIMER0->CC[2] + toneHalfPeriod); // & 0xFFFF; // update
-//	}
+	}
+	NRF_TIMER0->TASKS_CAPTURE[2] = true;
+	NRF_TIMER0->CC[2] = (NRF_TIMER0->CC[2] + toneHalfPeriod); // set next wakeup time
 }
 
 void stopTone() { tonePin = -1; }
@@ -1539,16 +1545,14 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 
 #if defined(NRF51) || defined(NRF52)
 
-static int squareWavePin = 2; // xxx temporary nrf52 pin 2 = micro:bit v2 P0
-
-static void startRF(int count) {
-	pinMode(squareWavePin, OUTPUT);
+static void startRF(int pin, int count) {
+	int nRFPin = digitalPinToPin(pin); // get internal pin number
 
 	// use GPIOTE to toggle pin 2 (micro:bit v2 P0)
 	NRF_GPIOTE->CONFIG[0] =
 		GPIOTE_CONFIG_MODE_Task << GPIOTE_CONFIG_MODE_Pos |
 		GPIOTE_CONFIG_POLARITY_Toggle << GPIOTE_CONFIG_POLARITY_Pos |
-		squareWavePin << GPIOTE_CONFIG_PSEL_Pos |
+		nRFPin << GPIOTE_CONFIG_PSEL_Pos |
 		GPIOTE_CONFIG_OUTINIT_Low << GPIOTE_CONFIG_OUTINIT_Pos;
 
 	// configure PPI
@@ -1574,11 +1578,14 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 	if (!isInt(freqArg) || !isInt(pinArg)) return falseObj;
 	int pin = obj2int(pinArg);
 
+	if ((pin < 0) || (pin >= TOTAL_PINS)) return falseObj;
+	SET_MODE(pin, OUTPUT);
+
 	int frequency = obj2int(freqArg);
 	if (frequency > 0) {
 		int count = round(8000000.0 / frequency);
 		if (count > 65535) count = 65535;
-		startRF(count);
+		startRF(pin, count);
 	} else {
 		NRF_PPI->CHENCLR = PPI_CHENSET_CH0_Msk;
 	}
