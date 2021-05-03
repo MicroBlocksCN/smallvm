@@ -15,5 +15,5 @@ Funding source: MicroBlocks donation funds
 | 25/04/2021 | 1 | Color Scheme | https://www.figma.com/file/vD9oHj4VToLboKn2UMiLDD/MicroBlocks-Design-v01?node-id=118%3A51
 | 26/04/2021 | 4 | Mobile Design + Backgrounds + Components Guide | https://www.figma.com/file/vD9oHj4VToLboKn2UMiLDD/MicroBlocks-Design-v01?node-id=83%3A52
 | 27/04/2021 | 5 | Mobile Design + Refactor Design with Components | https://www.figma.com/file/vD9oHj4VToLboKn2UMiLDD/MicroBlocks-Design-v01?node-id=83%3A52
-| 27/04/2021 | 5 | Refactor Design + Presentation | https://www.figma.com/file/vD9oHj4VToLboKn2UMiLDD/MicroBlocks-Design-v01?node-id=83%3A52
+| 28/04/2021 | 5 | Refactor Design + Presentation | https://www.figma.com/file/vD9oHj4VToLboKn2UMiLDD/MicroBlocks-Design-v01?node-id=83%3A52
 | **Total**  | 51 | |
