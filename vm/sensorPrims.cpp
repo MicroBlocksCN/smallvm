@@ -191,7 +191,7 @@ static void startAccelerometer() {
 		writeI2CReg(MMA8653_ID, 0x2A, 1);
 	} else if (0x33 == readI2CReg(LSM303_ID, 0x0F)) {
 		accelType = accel_LSM303;
-		writeI2CReg(LSM303_ID, 0x20, 0x5F); // 100 Hz sample rate, low power, all axes
+		writeI2CReg(LSM303_ID, 0x20, 0x8F); // 1620 Hz sample rate, low power, all axes
 	} else if (0xC7 == readI2CReg(FXOS8700_ID, 0x0D)) {
 		accelType = accel_FXOS8700;
 		writeI2CReg(FXOS8700_ID, 0x2A, 0); // turn off chip before configuring
@@ -226,6 +226,11 @@ static int readAcceleration(int registerID) {
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = sign * ((val * 200) / 127); // scale to range 0-200 and multiply by sign
 	return val;
+}
+
+static int setAccelRange(int range) {
+	// xxx work in progress...
+	writeI2CReg(LSM303_ID, 0x23, 0x30); // +/- 16G
 }
 
 static int readTemperature() {
@@ -298,7 +303,7 @@ static void startAccelerometer() {
 		writeInternalI2CReg(MMA8653_ID, 0x2A, 1);
 	} else if (0x33 == readInternalI2CReg(LSM303_ID, 0x0F)) {
 		accelType = accel_LSM303;
-		writeInternalI2CReg(LSM303_ID, 0x20, 0x5F); // 100 Hz sample rate, low power, all axes
+		writeInternalI2CReg(LSM303_ID, 0x20, 0x8F); // 1620 Hz sample rate, low power, all axes
 	} else if (0xC7 == readInternalI2CReg(FXOS8700_ID, 0x0D)) {
 		accelType = accel_FXOS8700;
 		writeInternalI2CReg(FXOS8700_ID, 0x2A, 0); // turn off chip before configuring
@@ -333,6 +338,11 @@ static int readAcceleration(int registerID) {
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = sign * ((val * 200) / 127); // scale to range 0-200 and multiply by sign
 	return val;
+}
+
+static int setAccelRange(int range) {
+	// xxx work in progress...
+	writeInternalI2CReg(LSM303_ID, 0x23, 0x30); // +/- 16G
 }
 
 static int readTemperature() {
@@ -689,6 +699,21 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 	return int2obj(accel);
 }
 
+OBJ primSetAccelerometerRange(int argCount, OBJ *args) {
+	// xxx this is a work in progress; not yet used in libraries
+
+	if ((argCount < 1) || !isInt(args[0])) return falseObj;
+	int range = obj2int(args[0]);
+
+	if (!accelStarted) startAccelerometer(); // initialize the accelerometer
+
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
+		setAccelRange(range);
+	#endif
+
+	return falseObj;
+}
+
 OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(readTemperature()); }
 OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(readAcceleration(1)); }
 OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(readAcceleration(3)); }
@@ -995,6 +1020,7 @@ static PrimEntry entries[] = {
 	{"tiltX", primMBTiltX},
 	{"tiltY", primMBTiltY},
 	{"tiltZ", primMBTiltZ},
+	{"setAccelerometerRange", primSetAccelerometerRange},
 	{"touchRead", primTouchRead},
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
