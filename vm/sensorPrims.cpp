@@ -705,8 +705,6 @@ OBJ primSetAccelerometerRange(int argCount, OBJ *args) {
 	if ((argCount < 1) || !isInt(args[0])) return falseObj;
 	int range = obj2int(args[0]);
 
-	if (!accelStarted) startAccelerometer(); // initialize the accelerometer
-
 	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
 		setAccelRange(range);
 	#endif
