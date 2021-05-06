@@ -1543,7 +1543,8 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 
 // Experimental RF Square Wave Generator (nRF51 and nRF52 only)
 
-#if defined(NRF51) || defined(NRF52)
+#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
+//#if defined(NRF51) || defined(NRF52) // xxx need alternative to digitalPinToPin for Adafruit boards
 
 static void startRF(int pin, int count) {
 	int nRFPin = digitalPinToPin(pin); // get internal pin number
