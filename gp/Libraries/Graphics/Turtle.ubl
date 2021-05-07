@@ -1,32 +1,59 @@
 module Turtle Output
 author MicroBlocks
-version 1 2
-description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
-depends 'TFT'
-tags tft graphics draw
+version 1 3 
+depends TFT 
+tags tft graphics draw 
+description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.
+'
+variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
 
-variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor
+	spec ' ' 'home' 'home'
+	spec ' ' 'move' 'move _' 'auto' '10'
+	spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
+	spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
+	spec ' ' 'pen down' 'pen down'
+	spec ' ' 'pen up' 'pen up'
+	spec ' ' 'set pen color to' 'set pen color to _' 'color'
+	spec ' ' 'setPenToRandomColor' 'set pen to random color'
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' 'clearDisplay' 'fill display with _' 'color'
+	spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
+	spec ' ' 'setHeading' 'point in direction _' 'auto' 0
+	spec ' ' '_turtleNotes' '_turtleNotes'
 
-    spec ' ' 'home' 'home' ''
-    spec ' ' 'move' 'move _' 'auto' '10'
-    spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
-    spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
-    spec ' ' 'pen down' 'pen down' ''
-    spec ' ' 'pen up' 'pen up' ''
-    spec ' ' 'set pen color to' 'set pen color to _' 'color'
-    spec ' ' 'setPenToRandomColor' 'set pen to random color' ''
-    spec ' ' '[display:mbDisplayOff]' 'clear display'
-    spec ' ' 'clearDisplay' 'fill display with _' 'color'
-    spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
-    spec ' ' 'setHeading' 'point in direction _' 'auto' 0
-    spec ' ' '_turtleNotes' '_turtleNotes'
+to '_turtleNotes' {
+  comment 'Representation:
+  _turtleHeading is in hundreths of a degree  (e.g. 4500 means 45 degrees)
+  _turtleX and _turtleY are scaled by 16384 (2^14)
+
+The sine function takes an angle in hundreds of a degree and returns a
+number scaled by 16384. _turtleX and _turtleY are also scaled by 16384.
+Those numbers are shifted right by 14 bits to get pixel locations.'
+}
+
+to clearDisplay color {
+  '[tft:rect]' 0 0 ('[tft:getWidth]') ('[tft:getHeight]') color true
+  comment 'Give the display controller time to finish this operation'
+  waitMillis 1
+}
+
+to 'go to x' x y {
+  local 'startX' (_turtleX >> 14)
+  local 'startY' (_turtleY >> 14)
+  _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
+  _turtleY = (((('[tft:getHeight]') / 2) - y) << 14)
+  local 'endX' (_turtleX >> 14)
+  local 'endY' (_turtleY >> 14)
+  if _turtlePenIsDown {
+    '[tft:line]' startX startY endX endY _turtleColor
+  }
+}
 
 to home {
   if (0 == _turtlePenIsDown) {
-	'[tft:enableDisplay]' true
-	'set pen color to' (colorSwatch 7 255 1 255)
-	'[display:mbDisplayOff]'
-	'pen up'
+    'set pen color to' (colorSwatch 7 255 1 255)
+    '[display:mbDisplayOff]'
+    'pen up'
   }
   'go to x' 0 0
   setHeading 0
@@ -45,20 +72,6 @@ to move n {
   }
 }
 
-to turnBy a {
-  _turtleHeading += (a * 100)
-  _turtleHeading = (_turtleHeading % 36000)
-}
-
-to turnFraction num denom {
-  _turtleHeading += ((num * 36000) / denom)
-  _turtleHeading = (_turtleHeading % 36000)
-}
-
-to setHeading a {
-  _turtleHeading = ((a * 100) % 36000)
-}
-
 to 'pen down' {
   _turtlePenIsDown = (booleanConstant true)
 }
@@ -71,16 +84,8 @@ to 'set pen color to' color {
   _turtleColor = color
 }
 
-to 'go to x' x y {
-  local 'startX' (_turtleX >> 14)
-  local 'startY' (_turtleY >> 14)
-  _turtleX = (((('[tft:getWidth]') / 2) + x) << 14)
-  _turtleY = (((('[tft:getHeight]') / 2) - y) << 14)
-  local 'endX' (_turtleX >> 14)
-  local 'endY' (_turtleY >> 14)
-  if _turtlePenIsDown {
-    '[tft:line]' startX startY endX endY _turtleColor
-  }
+to setHeading a {
+  _turtleHeading = ((a * 100) % 36000)
 }
 
 to setPenToRandomColor {
@@ -97,18 +102,13 @@ to setPenToRandomColor {
   }
 }
 
-to clearDisplay color {
-  '[tft:rect]' 0 0 ('[tft:getWidth]') ('[tft:getHeight]') color true
-  comment 'Give the display controller time to finish this operation'
-  waitMillis 1
+to turnBy a {
+  _turtleHeading += (a * 100)
+  _turtleHeading = (_turtleHeading % 36000)
 }
 
-to '_turtleNotes' {
-  comment 'Representation:
-  _turtleHeading is in hundreths of a degree  (e.g. 4500 means 45 degrees)
-  _turtleX and _turtleY are scaled by 16384 (2^14)
-
-The sine function takes an angle in hundreds of a degree and returns a
-number scaled by 16384. _turtleX and _turtleY are also scaled by 16384.
-Those numbers are shifted right by 14 bits to get pixel locations.'
+to turnFraction num denom {
+  _turtleHeading += ((num * 36000) / denom)
+  _turtleHeading = (_turtleHeading % 36000)
 }
+
