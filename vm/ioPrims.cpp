@@ -1545,7 +1545,18 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 
 #if defined(NRF51) || defined(NRF52)
 
-static void startRF(int pin, int count) {
+static void stopRF() {
+	NRF_PPI->CHENCLR = PPI_CHENSET_CH0_Msk;
+}
+
+static int startRF(int pin, int frequency) {
+	if (frequency < 1) {
+		stopRF();
+		return true;
+	}
+ 	int count = ((80000000 / frequency) + 5) / 10; // rounded
+ 	if (count > 65535) count = 65535;
+
 	int nRFPin = g_ADigitalPinMap[pin]; // get internal pin number
 
 	// use GPIOTE to toggle pin 2 (micro:bit v2 P0)
@@ -1561,12 +1572,57 @@ static void startRF(int pin, int count) {
 	NRF_PPI->CHENSET = PPI_CHENSET_CH0_Msk;
 
 	// configure and start the timer
-	NRF_TIMER2->TASKS_STOP;
+	NRF_TIMER2->TASKS_SHUTDOWN;
 	NRF_TIMER2->PRESCALER = 0;
 	NRF_TIMER2->CC[0] = count; // CC[0] determines the output frequency
 	NRF_TIMER2->SHORTS = TIMER_SHORTS_COMPARE0_CLEAR_Msk;
 	NRF_TIMER2->TASKS_START = 1;
+	return true;
 }
+
+#elif defined(ESP32)
+
+#include "driver/ledc.h"
+
+#define SQUARE_WAVE_CHANNEL LEDC_CHANNEL_7
+
+int squareWave_pin = -1;
+ledc_timer_config_t squareWave_timer;
+ledc_channel_config_t squareWave_channel;
+
+static int startRF(int pin, int frequency) {
+	if (frequency < 1) {
+		if (squareWave_pin >= 0) { // stop squarewave
+			ledc_stop(LEDC_HIGH_SPEED_MODE, SQUARE_WAVE_CHANNEL, 0);
+			squareWave_pin = -1;
+		}
+		return true;
+	}
+
+	// setup timer
+	squareWave_timer.speed_mode			= LEDC_HIGH_SPEED_MODE;
+	squareWave_timer.duty_resolution	= LEDC_TIMER_1_BIT;
+	squareWave_timer.timer_num			= LEDC_TIMER_3;
+	squareWave_timer.freq_hz			= frequency;
+	ledc_timer_config(&squareWave_timer);
+
+	// setup channel
+	squareWave_channel.channel		= SQUARE_WAVE_CHANNEL;
+	squareWave_channel.duty			= 1;
+	squareWave_channel.gpio_num		= pin;
+	squareWave_channel.speed_mode	= LEDC_HIGH_SPEED_MODE;
+	squareWave_channel.timer_sel	= LEDC_TIMER_3;
+	ledc_channel_config(&squareWave_channel);
+
+	squareWave_pin = pin;
+	return true;
+}
+
+#else
+
+static int startRF(int pin, int frequency) { return false; }
+
+#endif
 
 static OBJ primSquareWave(int argCount, OBJ *args) {
 	// If freq > 0, generate a 50% duty cycle square wave of the given frequency
@@ -1576,27 +1632,15 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 	OBJ freqArg = args[0];
 	OBJ pinArg = (argCount > 1) ? args[1] : zeroObj; // default to pin 0
 	if (!isInt(freqArg) || !isInt(pinArg)) return falseObj;
-	int pin = obj2int(pinArg);
 
+	int pin = obj2int(pinArg);
 	if ((pin < 0) || (pin >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pin, OUTPUT);
 
-	int frequency = obj2int(freqArg);
-	if (frequency > 0) {
-		int count = round(8000000.0 / frequency);
-		if (count > 65535) count = 65535;
-		startRF(pin, count);
-	} else {
-		NRF_PPI->CHENCLR = PPI_CHENSET_CH0_Msk;
-	}
-	return trueObj;
+	int isSupported = startRF(pin, obj2int(freqArg));
+	return isSupported ? trueObj : falseObj;
 }
 
-#else
-
-OBJ primSquareWave(int argCount, OBJ *args) { return falseObj; }
-
-#endif
 
 static PrimEntry entries[] = {
 	{"hasTone", primHasTone},
