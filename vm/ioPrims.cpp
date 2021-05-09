@@ -23,6 +23,7 @@
 
 static void initPins(void); // forward reference
 static void initRandomSeed(void); // forward reference
+static void stopRF(); // forward reference
 
 // Timing Functions and Hardware Initialization
 
@@ -1028,11 +1029,9 @@ void stopPWM() {
 	// version of analogWrite() to reset their internal PWM data structures. Instead, this
 	// function simply turns off the PWM hardare on nRF52 boards.
 
-	#if defined(NRF51) || defined(NRF52)
-		// Stop squareWave generation, too.
-		NRF_PPI->CHEN = 0;
-		NRF_GPIOTE->CONFIG[0] = 0;
-	#endif
+	// Stop squareWave generation, too.
+	stopRF();
+
 	#if defined(NRF52)
 		NRF_PWM0->TASKS_STOP = 1;
 		NRF_PWM1->TASKS_STOP = 1;
@@ -1546,12 +1545,13 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 #if defined(NRF51) || defined(NRF52)
 
 static void stopRF() {
-	NRF_PPI->CHENCLR = PPI_CHENSET_CH0_Msk;
+	NRF_PPI->CHEN = 0;
+	NRF_GPIOTE->CONFIG[0] = 0;
 }
 
 static int startRF(int pin, int frequency) {
 	if (frequency < 1) {
-		stopRF();
+		NRF_PPI->CHENCLR = PPI_CHENSET_CH0_Msk; // pause RF output
 		return true;
 	}
  	int count = ((80000000 / frequency) + 5) / 10; // rounded
@@ -1585,42 +1585,59 @@ static int startRF(int pin, int frequency) {
 #include "driver/ledc.h"
 
 #define SQUARE_WAVE_CHANNEL LEDC_CHANNEL_7
+#define SQUARE_WAVE_TIMER LEDC_TIMER_3
 
-int squareWave_pin = -1;
+int squareWavePin = -1;
 ledc_timer_config_t squareWave_timer;
 ledc_channel_config_t squareWave_channel;
 
+static void stopRF() {
+	// Stop RF output on current pin, if any,
+
+	if (squareWavePin > 0) {
+		ledc_timer_pause(LEDC_HIGH_SPEED_MODE, SQUARE_WAVE_TIMER);
+		ledcDetachPin(squareWavePin);
+		SET_MODE(squareWavePin, INPUT);
+	}
+}
+
 static int startRF(int pin, int frequency) {
 	if (frequency < 1) {
-		if (squareWave_pin >= 0) { // stop squarewave
-			ledc_stop(LEDC_HIGH_SPEED_MODE, SQUARE_WAVE_CHANNEL, 0);
-			squareWave_pin = -1;
+		if (squareWavePin >= 0) {
+			ledc_timer_pause(LEDC_HIGH_SPEED_MODE, SQUARE_WAVE_TIMER);
 		}
 		return true;
 	}
+	if (frequency < 500) frequency = 500; // ESP32 crashes if freq < 500
 
-	// setup timer
-	squareWave_timer.speed_mode			= LEDC_HIGH_SPEED_MODE;
-	squareWave_timer.duty_resolution	= LEDC_TIMER_1_BIT;
-	squareWave_timer.timer_num			= LEDC_TIMER_3;
-	squareWave_timer.freq_hz			= frequency;
-	ledc_timer_config(&squareWave_timer);
+	if (pin != squareWavePin) {
+		stopRF();
 
-	// setup channel
-	squareWave_channel.channel		= SQUARE_WAVE_CHANNEL;
-	squareWave_channel.duty			= 1;
-	squareWave_channel.gpio_num		= pin;
-	squareWave_channel.speed_mode	= LEDC_HIGH_SPEED_MODE;
-	squareWave_channel.timer_sel	= LEDC_TIMER_3;
-	ledc_channel_config(&squareWave_channel);
+		// setup timer
+		squareWave_timer.speed_mode			= LEDC_HIGH_SPEED_MODE;
+		squareWave_timer.duty_resolution	= LEDC_TIMER_1_BIT;
+		squareWave_timer.timer_num			= SQUARE_WAVE_TIMER;
+		squareWave_timer.freq_hz			= frequency;
+		ledc_timer_config(&squareWave_timer);
 
-	squareWave_pin = pin;
+		// setup channel
+		squareWave_channel.channel		= SQUARE_WAVE_CHANNEL;
+		squareWave_channel.duty			= 1;
+		squareWave_channel.gpio_num		= pin;
+		squareWave_channel.speed_mode	= LEDC_HIGH_SPEED_MODE;
+		squareWave_channel.timer_sel	= SQUARE_WAVE_TIMER;
+		ledc_channel_config(&squareWave_channel);
+		squareWavePin = pin;
+	}
+	ledc_set_freq(LEDC_HIGH_SPEED_MODE, SQUARE_WAVE_TIMER, frequency);
+	ledc_timer_resume(LEDC_HIGH_SPEED_MODE, SQUARE_WAVE_TIMER);
 	return true;
 }
 
 #else
 
 static int startRF(int pin, int frequency) { return false; }
+static void stopRF() {}
 
 #endif
 
@@ -1633,11 +1650,28 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 	OBJ pinArg = (argCount > 1) ? args[1] : zeroObj; // default to pin 0
 	if (!isInt(freqArg) || !isInt(pinArg)) return falseObj;
 
-	int pin = obj2int(pinArg);
-	if ((pin < 0) || (pin >= TOTAL_PINS)) return falseObj;
-	SET_MODE(pin, OUTPUT);
+	int frequency = obj2int(freqArg);
+	if (frequency <= 0) {
+		startRF(0, 0); // pause RF, ignoring pin number
+		return falseObj;
+	}
 
-	int isSupported = startRF(pin, obj2int(freqArg));
+	int pinNum = obj2int(pinArg);
+	#if defined(ARDUINO_ARCH_ESP32)
+		#if defined(ARDUINO_CITILAB_ED1)
+			if ((100 <= pinNum) && (pinNum <= 139)) {
+				pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
+			} else if ((1 <= pinNum) && (pinNum <= 4)) {
+				pinNum = digitalPinMappings[pinNum - 1];
+			}
+		#endif
+		if (RESERVED(pinNum)) return falseObj;
+	#endif
+
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
+	SET_MODE(pinNum, OUTPUT);
+
+	int isSupported = startRF(pinNum, frequency);
 	return isSupported ? trueObj : falseObj;
 }
 
