@@ -1,0 +1,156 @@
+module AMRadioTone Output
+author MicroBlocks
+version 1 0 
+depends SquareWave 
+tags tone sound music audio note speaker 
+description 'Tone library extended to broadcast the tone to a nearby AM radio, as well as playing it through a speaker.
+
+Import this library into any project that uses the normal Tone library to add AM radio broadcasting. Requires a board based an nRF5x processors (such as a micro:bit v1 or v2) or on an ESP32 processor.'
+variables _AMToneAntennaPin _AMToneRadioFrequency _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneFrequencies 
+
+	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+	spec ' ' 'attachAMAntenna' 'attach AM antenna pin _ radio frequency _' 'num num' 1 533000
+	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+
+to '_baseFreqForNote' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  if (_toneNoteNames == 0) {
+    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
+  }
+  return ('_baseFreqForSemitone' ('[data:find]' ('_trimmedLowercase' note) _toneNoteNames))
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883 246942 277183 277183 311127 311127 349228 329628 369994 369994 415305 415305 466164 466164 523252)}
+  if (and (1 <= semitone) (semitone <= (size _toneFrequencies))) {
+    return (at semitone _toneFrequencies)
+  } else {
+    comment 'Bad note name; return 10 Hz'
+    return 10000
+  }
+}
+
+to '_measureLoopOverhead' {
+  comment 'Measure the loop overhead on this device'
+  local 'halfCycle' 100
+  local 'startT' (microsOp)
+  repeat 1000 {
+    digitalWriteOp _tonePin false
+    '[io:squareWave]' 100000 _AMToneAntennaPin
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    '[io:squareWave]' 0 _AMToneAntennaPin
+    waitMicros halfCycle
+  }
+  local 'usecs' ((microsOp) - startT)
+  return ((usecs - 200000) / 2000)
+}
+
+to '_toneLoop' scaledFreq ms {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+  local 'cycles' ((ms * 500) / halfCycle)
+  repeat cycles {
+    digitalWriteOp _tonePin true
+    '[io:squareWave]' 0 _AMToneAntennaPin
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    '[io:squareWave]' _AMToneRadioFrequency _AMToneAntennaPin
+    waitMicros halfCycle
+  }
+}
+
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+or periods and all lowercase.'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (and (ch > 32) (ch != 46)) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
+to 'attach buzzer to pin' pinNumber {
+  if (pinNumber == '') {
+    comment 'Pin number not specified; use default pin for this device'
+    if ((boardType) == 'Citilab ED1') {
+      _tonePin = 26
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'micro:bit') {
+      _tonePin = 0
+    } ((boardType) == 'micro:bit v2') {
+      _tonePin = 27
+    } ((boardType) == 'Clue') {
+      _tonePin = 21
+    } else {
+      _tonePin = 0
+    }
+  } else {
+    _tonePin = pinNumber
+  }
+  _toneLoopOverhead = ('_measureLoopOverhead')
+  _toneInitalized = (booleanConstant true)
+}
+
+to attachAMAntenna pin rfFreq {
+  _AMToneAntennaPin = pin
+  _AMToneRadioFrequency = rfFreq
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    waitMillis ms
+    return 0
+  }
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' ((key % 12) + 1))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+

@@ -1,0 +1,18 @@
+module SquareWave Output
+author MicroBlocks
+version 1 0 
+description 'Generate a high frequency square wave on a micro:bit (v1 or v2), other nRF5x board, or ESP32 board pin.
+
+On nRF5x boards, frequencies in the AM radio band (in kHz) are:
+   533 571 615 727 800 889 1000 1143 1333 1600
+ESP32 boards support finer-grained frequency selection in the AM band.
+
+Frequency range is 122 Hz to 8 MHz (nRF5x boards) or 500 Hz to 20 MHz (ESP32 boards).'
+
+	spec ' ' '[io:squareWave]' 'set square wave frequency _ pin _' 'num num' 1000000 0
+	spec ' ' 'squareWaveOff' 'stop square wave'
+
+to squareWaveOff {
+  '[io:squareWave]' 0 0
+}
+
