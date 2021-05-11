@@ -4,12 +4,16 @@ version 1 1
 depends Servo 
 tags cnc protoneer drawbot plotter 
 description 'Control CoreXY DrawBots that use the Protoneer CNC shield.'
-variables _plotterDelay 
+variables _plotterDelay _plotterHeading
 
 	spec ' ' '_plotter init' '_plotter init'
 	spec ' ' '_plotter step A' '_plotter step A'
 	spec ' ' '_plotter step B' '_plotter step B'
 	spec ' ' 'plotter move' 'plotter move X _ Y _' 'auto auto' 10 10
+	spec ' ' 'ploturtle move' 'plotter move _ steps' 'auto' '10'
+	spec ' ' 'ploturtle turnBy' 'plotter turn _ degrees' 'auto' 90
+	spec ' ' 'ploturtle turnFraction' 'plotter turn _ / _ of circle' 'auto auto' 1 4
+	spec ' ' 'ploturtle setHeading' 'plotter point in direction _' 'auto' 0
 	spec ' ' 'plotter pen down' 'plotter pen down'
 	spec ' ' 'plotter pen up' 'plotter pen up'
 	spec ' ' 'plotter stop' 'plotter stop'
@@ -102,5 +106,23 @@ to 'plotter stop' {
 
 to 'set plotter speed to' speed {
   _plotterDelay = ((950 / (maximum 1 (minimum 100 speed))) + 41)
+}
+
+to 'ploturtle move' n {
+  'plotter move' ((n * ('[misc:sin]' (_plotterHeading + 9000))) >> 14) ((n * ('[misc:sin]' _plotterHeading)) >> 14)
+}
+
+to 'ploturtle setHeading' a {
+  _plotterHeading = ((a * 100) % 36000)
+}
+
+to 'ploturtle turnBy' a {
+  _plotterHeading += (a * 100)
+  _plotterHeading = (_plotterHeading % 36000)
+}
+
+to 'ploturtle turnFraction' num denom {
+  _plotterHeading += ((num * 36000) / denom)
+  _plotterHeading = (_plotterHeading % 36000)
 }
 

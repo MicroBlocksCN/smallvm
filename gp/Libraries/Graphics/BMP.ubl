@@ -1,6 +1,6 @@
 module BMP Output
 author 'José García Yeste'
-version 1 2 
+version 1 3 
 depends TFT 
 description 'Display BMP files on a TFT screen.
 
@@ -52,21 +52,24 @@ to '_ignoreBMP' bytes filename {
 }
 
 to '_read int16 of BMP file' filename {
-  local 'result' 0
   local 'data' ('[file:readBytes]' 2 filename)
   return (((at 2 data) << 8) | (at 1 data))
 }
 
 to '_read int32 of BMP file' filename {
-  local 'result' 0
   local 'data' ('[file:readBytes]' 4 filename)
   return ((((at 4 data) << 24) | ((at 3 data) << 16)) | (((at 2 data) << 8) | (at 1 data)))
 }
 
 to '_readLineBMP' filename width bpp {
   local 'result' ('[data:makeList]')
-  local 'i' 1
-  local 'data' ('[file:readBytes]' (width * (bpp / 8)) filename)
+  local 'i' (width * (bpp / 8))
+  local 'data' ('[data:newByteArray]' 0)
+  repeatUntil (i <= 0) {
+    data = ('[data:join]' data ('[file:readBytes]' (minimum 768 i) filename))
+    i += (0 - (minimum 768 i))
+  }
+  i = 1
   repeatUntil (i >= (size data)) {
     if (bpp == 16) {
       '[data:addLast]' (((((at (i + 1) data) & 124) << 17) | (((((at (i + 1) data) & 3) << 3) | ((at i data) >> 5)) << 11)) | (((at i data) & 31) << 3)) result
