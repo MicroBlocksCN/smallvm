@@ -1668,6 +1668,8 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 		if (RESERVED(pinNum)) return falseObj;
 	#endif
 
+	pinNum = mapDigitalPinNum(pinNum);
+
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, OUTPUT);
 
