@@ -213,13 +213,13 @@ void systemReset() {}
 void turnOffPins() {}
 void stopServos() { }
 
-
 // Persistence support
 
+char *codeFileName = "ublockscode";
 FILE *codeFile;
 
 void initCodeFile(uint8 *flash, int flashByteCount) {
-	codeFile = fopen("ublockscode", "ab+");
+	codeFile = fopen(codeFileName, "ab+");
 	fseek(codeFile, 0 , SEEK_END);
 	long fileSize = ftell(codeFile);
 
@@ -243,8 +243,8 @@ void writeCodeFileWord(int word) {
 
 void clearCodeFile(int ignore) {
 	fclose(codeFile);
-	remove("ublockscode");
-	codeFile = fopen("ublockscode", "ab+");
+	remove(codeFileName);
+	codeFile = fopen(codeFileName, "ab+");
 	uint32 cycleCount = ('S' << 24) | 1; // Header record, version 1
 	fwrite((uint8 *) &cycleCount, 1, 4, codeFile);
 }
@@ -258,7 +258,13 @@ void segfault() {
 
 // Linux Main
 
-int main() {
+int main(int argc, char *argv[]) {
+	codeFileName = "ublockscode"; // to do: allow code file name from command line
+
+	if (argc > 1) {
+		codeFileName = argv[1];
+		printf("codeFileName: %s\n", codeFileName);
+	}
 	signal(SIGSEGV, segfault);
 	signal(SIGINT, exit);
 	atexit(exitGracefully);
