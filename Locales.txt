@@ -790,6 +790,28 @@ MiKe rotate lights by _
 
 MiKe digital D8 to _
 
+####
+# DrawBot Library
+# A CoreXY plotter library that supports turtle geometry
+
+plotter move X _ Y _
+
+plotter move _ steps
+
+plotter turn _ degrees
+
+plotter turn _ / _ of circle
+
+plotter point in direction _
+
+plotter pen down
+
+plotter pen up
+
+plotter stop
+
+set plotter speed to _ %
+
 ##################
 # MicroBlocks UI #
 ##################

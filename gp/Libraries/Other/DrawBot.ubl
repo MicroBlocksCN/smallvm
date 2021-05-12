@@ -9,8 +9,8 @@ variables _plotterDelay _plotterHeading
 	spec ' ' '_plotter init' '_plotter init'
 	spec ' ' '_plotter step A' '_plotter step A'
 	spec ' ' '_plotter step B' '_plotter step B'
-	spec ' ' 'plotter move' 'plotter move X _ Y _' 'auto auto' 10 10
-	spec ' ' 'ploturtle move' 'plotter move _ steps' 'auto' '10'
+	spec ' ' 'plotter move' 'plotter move X _ Y _' 'auto auto' 1000 2000
+	spec ' ' 'ploturtle move' 'plotter move _ steps' 'auto' '1000'
 	spec ' ' 'ploturtle turnBy' 'plotter turn _ degrees' 'auto' 90
 	spec ' ' 'ploturtle turnFraction' 'plotter turn _ / _ of circle' 'auto auto' 1 4
 	spec ' ' 'ploturtle setHeading' 'plotter point in direction _' 'auto' 0

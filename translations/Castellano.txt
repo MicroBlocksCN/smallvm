@@ -1131,6 +1131,37 @@ MiKe girar luces en _
 MiKe digital D8 to _
 Mike fijar actuador D8 a _
 
+####
+# DrawBot Library
+# A CoreXY plotter library that supports turtle geometry
+
+plotter move X _ Y _
+mover plotter en X _ e Y _
+
+plotter move _ steps
+mover plotter _ pasos
+
+plotter turn _ degrees
+rotar rumbo del plotter en _ °
+
+plotter turn _ / _ of circle
+rotar rumbo del plotter en _ / _ de vuelta
+
+plotter point in direction _
+fijar rumbo del plotter a _ °
+
+plotter pen down
+bajar lápiz del plotter
+
+plotter pen up
+subir lápiz del plotter
+
+plotter stop
+detener plotter
+
+set plotter speed to _ %
+fijar velocidad del plotter a _ %
+
 ##################
 # MicroBlocks UI #
 ##################
