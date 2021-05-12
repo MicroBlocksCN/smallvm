@@ -119,6 +119,10 @@ if test -n "$pack"; then
     echo "Packaging microBlocks version $version..."
     mkdir -p apps/packages
     mkdir -p apps/standalone
+    # zip Mac app
+    if [ -z $system ] || [ $system == 'mac' ]; then
+        (cd apps; zip -r MicroBlocks.app.zip MicroBlocks.app; mv MicroBlocks.app.zip packages)
+    fi
     # build Win32 installer
     if [ -z $system ] || [ $system == 'win' ]; then
         (cd apps; zip ublocks-win.zip ublocks-win.exe; mv ublocks-win.zip standalone)
