@@ -1,7 +1,10 @@
 module '16x2 DFRobot LCD (1602 I2C)'
 author MicroBlocks
-version 1 0 
-description 'Basic library for 16x2 displays with an I2C "backpack" like the ones commercialized by DFRobot, SunFounder and others.'
+version 1 1 
+description 'Basic library for 16x2 displays with an I2C "backpack" like the ones commercialized by DFRobot, SunFounder and others.
+
+Note that these displays need a 5v input, so you'll need an external power source for 3.3v boards like the micro:bit.
+'
 variables '_LCD1602 ADDR' '_LCD1602 WIDTH' '_LCD1602 LINE 1' '_LCD1602 LINE 2' '_LCD1602 BACKLIGHT' '_LCD1602 ENABLE' '_LCD1602 initialized' 
 
 	spec ' ' '_LCD1602 init' '_LCD1602 init'
@@ -29,6 +32,7 @@ to '_LCD1602 init' {
   '_LCD1602 send command' (hexToInt '28')
   '_LCD1602 send command' (hexToInt '01')
   '_LCD1602 initialized' = (booleanConstant true)
+  waitMillis 250
 }
 
 to '_LCD1602 send' bits mode {
