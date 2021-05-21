@@ -3,8 +3,8 @@ author MicroBlocks
 version 1 1 
 description 'Basic library for 16x2 displays with an I2C "backpack" like the ones commercialized by DFRobot, SunFounder and others.
 
-Note that these displays need a 5v input, so you'll need an external power source for 3.3v boards like the micro:bit.
-'
+Note that these displays need a 5v input, so you will need an external power source for 3.3v boards like the micro:bit.'
+
 variables '_LCD1602 ADDR' '_LCD1602 WIDTH' '_LCD1602 LINE 1' '_LCD1602 LINE 2' '_LCD1602 BACKLIGHT' '_LCD1602 ENABLE' '_LCD1602 initialized' 
 
 	spec ' ' '_LCD1602 init' '_LCD1602 init'
