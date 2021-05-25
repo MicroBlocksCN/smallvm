@@ -20,7 +20,7 @@ cp libs/* /tmp/host/linux+pi/libs
 cp -r ../vm /tmp/host
 
 # Create build scripts
-echo "cd /host/linux+pi; ./buildVMRaspberryPi.sh; sudo shutdown -h now" > /tmp/host/raspi-script.sh
+echo "cd /host/linux+pi; sudo ./buildVMRaspberryPi.sh; sudo shutdown -h now" > /tmp/host/raspi-script.sh
 echo "cd /host/linux+pi; ./buildVMLinux.sh; shutdown -h now" > /tmp/host/linux-script.sh
 chmod +x /tmp/host/raspi-script.sh
 chmod +x /tmp/host/linux-script.sh
