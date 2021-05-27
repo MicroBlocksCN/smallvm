@@ -33,7 +33,7 @@ OBJ primI2cGet(OBJ *args) {
 	if ((registerID < 0) || (registerID > 255)) return fail(i2cRegisterIDOutOfRange);
 
 	int fd = wiringPiI2CSetup(deviceID);
-	int result = wiringPiI2CReadReg8 (fd, registerID);
+	int result = wiringPiI2CReadReg8(fd, registerID);
 	close(fd);
 	return int2obj(result);
 }
@@ -53,8 +53,8 @@ OBJ primI2cSet(OBJ *args) {
 	return falseObj;
 }
 
-#define SPI_CHANNEL 0
-#define SPI_CLOCK_SPEED 1000000 // 1 MHz clock
+#define SPI_CHANNEL 0 // use GPIO 8 (CE0) for chip enable
+#define DEFAULT_SPI_CLOCK_SPEED 1000000 // 1 MHz default
 
 static int spiDevice = -1;
 
@@ -64,22 +64,51 @@ OBJ primSPISend(OBJ *args) {
 	if (data > 255) return fail(i2cValueOutOfRange);
 
 	if (spiDevice < 0) {
-		spiDevice = wiringPiSPISetup (SPI_CHANNEL, SPI_CLOCK_SPEED);
+		spiDevice = wiringPiSPISetup(SPI_CHANNEL, DEFAULT_SPI_CLOCK_SPEED);
 		if (spiDevice < 0) return zeroObj; // initialization failed
 	}
-	wiringPiSPIDataRW(0, &data, 1); // send data byte
+	wiringPiSPIDataRW(SPI_CHANNEL, &data, 1); // send data byte
 	return falseObj;
 }
 
 OBJ primSPIRecv(OBJ *args) {
 	if (spiDevice < 0) {
-		spiDevice = wiringPiSPISetup (SPI_CHANNEL, SPI_CLOCK_SPEED);
+		spiDevice = wiringPiSPISetup(SPI_CHANNEL, DEFAULT_SPI_CLOCK_SPEED);
 		if (spiDevice < 0) return zeroObj; // initialization failed
 	}
-
 	unsigned char data = 0;
-	wiringPiSPIDataRW(0, &data, 1); // send zero, get result byte
+	wiringPiSPIDataRW(SPI_CHANNEL, &data, 1); // send zero, get result byte
 	return int2obj(data);
+}
+
+OBJ primSPIExchange(int argCount, OBJ *args) {
+	if ((argCount < 1) || (objType(args[0]) != ByteArrayType)) return falseObj;
+
+	if (spiDevice < 0) {
+		spiDevice = wiringPiSPISetup(SPI_CHANNEL, DEFAULT_SPI_CLOCK_SPEED);
+		if (spiDevice < 0) return zeroObj; // initialization failed
+	}
+	unsigned char *data = (unsigned char *) &FIELD(args[0], 0);
+	int byteCount = BYTES(args[0]);
+	wiringPiSPIDataRW(SPI_CHANNEL, data, byteCount);
+	return trueObj;
+}
+
+OBJ primSPISetup(int argCount, OBJ *args) {
+	// Set SPI speed, mode, and channel (i.e. chip enable pin).
+	// Both channels use the same SPI pins (GPIO 9-11) but channel 0 uses CE0 (GPIO8)
+	// as the chip enable line while channel 1 uses CE1 (GPIO7).
+
+	if ((argCount < 1) || !isInt(args[0])) { return trueObj; }
+	int speed = obj2int(args[0]);
+	int mode = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 0;
+	if ((mode < 0) || (mode > 3)) mode = 0; // use mode 0 if out of range
+	int spiChannel = ((argCount > 2) && isInt(args[2])) ? obj2int(args[2]) : 0;
+	if ((spiChannel < 0) || (spiChannel > 1)) spiChannel = 0; // use channel 0 if out of range
+
+	if (spiDevice < 0) close(spiDevice);
+	spiDevice = wiringPiSPISetupMode(spiChannel, speed, mode);
+	return (spiDevice >= 0) ? trueObj : falseObj;
 }
 
 #else // not Raspberry PI; use stubs
@@ -88,6 +117,8 @@ OBJ primI2cGet(OBJ *args) { return int2obj(0); }
 OBJ primI2cSet(OBJ *args) { return int2obj(0); }
 OBJ primSPISend(OBJ *args) { return int2obj(0); }
 OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
+OBJ primSPIExchange(int argCount, OBJ *args) { return falseObj; }
+OBJ primSPISetup(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
@@ -122,6 +153,8 @@ static PrimEntry entries[] = {
 	{"touchRead", primTouchRead},
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
+	{"spiExchange", primSPIExchange},
+	{"spiSetup", primSPISetup},
 	{"readDHT", primReadDHT},
 	{"microphone", primMicrophone},
 };

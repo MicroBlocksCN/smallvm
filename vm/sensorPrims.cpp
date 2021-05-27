@@ -140,14 +140,20 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 
 // SPI prims
 
+static int spiSpeed = 1000000;
+static int spiMode = SPI_MODE0;
+
 static void initSPI() {
-	setPinMode(13, OUTPUT);
-	setPinMode(14, OUTPUT);
-	setPinMode(15, INPUT);
-	SPI.begin();
-	#ifndef ARDUINO_RASPBERRY_PI_PICO
-		SPI.setClockDivider(SPI_CLOCK_DIV16);
+	#if defined(ARDUINO_ARCH_ESP32)
+		setPinMode(MISO, INPUT);
+		setPinMode(MOSI, OUTPUT);
+		setPinMode(SCK, OUTPUT);
+	#else
+		setPinMode(PIN_SPI_MISO, INPUT);
+		setPinMode(PIN_SPI_MOSI, OUTPUT);
+		setPinMode(PIN_SPI_SCK, OUTPUT);
 	#endif
+	SPI.beginTransaction(SPISettings(spiSpeed, MSBFIRST, spiMode));
 }
 
 OBJ primSPISend(OBJ *args) {
@@ -156,13 +162,47 @@ OBJ primSPISend(OBJ *args) {
 	if (data > 255) return fail(i2cValueOutOfRange);
 	initSPI();
 	SPI.transfer(data); // send data byte to the slave
+	SPI.endTransaction();
 	return falseObj;
 }
 
 OBJ primSPIRecv(OBJ *args) {
 	initSPI();
 	int result = SPI.transfer(0); // send a zero byte while receiving a data byte from slave
+	SPI.endTransaction();
 	return int2obj(result);
+}
+
+OBJ primSPISetup(int argCount, OBJ *args) {
+	// Set SPI speed, mode, and "channel" (i.e. chip enable pin).
+	// The mode parameter is optional and defaults to Mode 0.
+	// The channel parameter is used only on Linux-based systems.
+	// Bit order is always MSBFIRST.
+
+	if ((argCount < 1) || !isInt(args[0])) { return falseObj; }
+	spiSpeed = obj2int(args[0]);
+	int mode = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 0;
+	switch (mode) {
+		case 0: spiMode = SPI_MODE0; break;
+		case 1: spiMode = SPI_MODE1; break;
+		case 2: spiMode = SPI_MODE2; break;
+		case 3: spiMode = SPI_MODE3; break;
+		default: spiMode = SPI_MODE0;
+	}
+	return falseObj;
+}
+
+OBJ primSPIExchange(int argCount, OBJ *args) {
+	if ((argCount < 1) || (objType(args[0]) != ByteArrayType)) return falseObj;
+
+	SPI.beginTransaction(SPISettings(1000, MSBFIRST, 0));
+	unsigned char *data = (unsigned char *) &FIELD(args[0], 0);
+	int byteCount = BYTES(args[0]);
+	for (int i = 0; i < byteCount; i++) {
+		data[i] = SPI.transfer(data[i]);
+	}
+	SPI.endTransaction();
+	return falseObj;
 }
 
 // Accelerometer and Temperature
@@ -228,7 +268,7 @@ static int readAcceleration(int registerID) {
 	return val;
 }
 
-static int setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// xxx work in progress...
 	writeI2CReg(LSM303_ID, 0x23, 0x30); // +/- 16G
 }
@@ -1022,6 +1062,8 @@ static PrimEntry entries[] = {
 	{"touchRead", primTouchRead},
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
+	{"spiExchange", primSPIExchange},
+	{"spiSetup", primSPISetup},
 	{"readDHT", primReadDHT},
 	{"microphone", primMicrophone},
 };
