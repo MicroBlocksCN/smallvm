@@ -76,6 +76,8 @@ method answer MicroBlocksFilePicker { return answer }
 
 // initialization
 
+method window MicroBlocksFilePicker { return window }
+
 method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveFlag {
   if (isNil defaultPath) { defaultPath = (microblocksFolder) }
   if (isNil saveFlag) { saveFlag = false }
