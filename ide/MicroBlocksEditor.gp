@@ -22,7 +22,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems indicator lastStatus httpServer latestVersion currentVersion lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -31,12 +31,8 @@ method httpServer MicroBlocksEditor { return httpServer }
 
 to openMicroBlocksEditor devMode {
   if (isNil devMode) { devMode = false }
-  if (isNil (global 'alanMode')) { setGlobal 'alanMode' false }
-  if (and ('Browser' == (platform)) (browserIsMobile)) {
-	page = (newPage 1024 640)
-  } else {
-	page = (newPage 1120 700)
-  }
+  setGlobal 'alanMode' false
+  page = (newPage 1000 600)
   setDevMode page devMode
   toggleMorphicMenu (hand page) (contains (commandLine) '--allowMorphMenu')
   setGlobal 'page' page
@@ -79,14 +75,6 @@ to fetchLatestVersionNumber {
   versionText = (httpGet 'microblocks.fun' '/downloads/latest/VERSION.txt')
   if (isNil versionText) { return (array 0 0 0) }
   return (splitWith (substring (first (lines (httpBody versionText))) 1) '.')
-}
-
-to getLatestVersion {
-  return latestVersion
-}
-
-to getCurrentVersion {
-  return currentVersion
 }
 
 to findMicroBlocksEditor {
@@ -431,9 +419,11 @@ method checkForBrowserResize MicroBlocksEditor {
   h = (last browserSize)
   winSize = (windowSize)
   if (and (w == (at winSize 1)) (h == (at winSize 2))) { return }
-  openWindow w h
+
+  openWindow w h true
+  scale = (global 'scale')
   pageM = (morph (global 'page'))
-  setExtent pageM w h
+  setExtent pageM (w * scale) (h * scale)
   for each (parts pageM) { pageResized (handler each) w h this }
 }
 
