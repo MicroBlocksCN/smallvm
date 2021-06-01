@@ -3,7 +3,9 @@ if test -x /usr/bin/update-menus; then update-menus; fi
 # add user to dialout group
 groupadd plugdev
 groupadd dialout
-usermod -a -G dialout `logname`
-usermod -a -G tty `logname`
-usermod -a -G uucp `logname`
-usermod -a -G plugdev `logname`
+xuser=`xhost | tail -n1 | cut -f3 -d:`
+usermod -a -G dialout $xuser
+usermod -a -G tty $xuser
+usermod -a -G uucp $xuser
+usermod -a -G plugdev $xuser
+exit 0
