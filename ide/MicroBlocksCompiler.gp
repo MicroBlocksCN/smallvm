@@ -63,11 +63,13 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'i2cGet'				'i2c get device _ register _' 'num num')
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 		'-'
-		(array ' ' 'spiSend'			'spi send _' 'num' 0)
-		(array 'r' 'spiRecv'			'spi receive')
-		'-'
 		(array ' ' '[sensors:i2cRead]'	'i2c device _ read list _' 'num auto')
 		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _' 'num auto')
+		'-'
+		(array ' ' 'spiSend'				'spi send _' 'num' 0)
+		(array 'r' 'spiRecv'				'spi receive')
+		(array ' ' '[sensors:spiSetup]'		'spi setup speed _ : mode _ : rpi channel _' 'num num num' 1000000 0 0)
+		(array ' ' '[sensors:spiExchange]'	'spi exchange bytes _' 'auto' 'aByteArray')
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'menu.buttonMenu' 'A')

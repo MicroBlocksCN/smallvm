@@ -865,6 +865,7 @@ method readVersionFile SmallRuntime {
 	latestVmVersion = 0
 
 	data = (readEmbeddedFile 'versions')
+	if (isNil data) { data = (readFile 'runtime/versions') }
 	if (notNil data) {
 		for s (lines data) {
 			if (beginsWith s 'IDE ') { ideVersion = (substring s 5) }

@@ -222,6 +222,7 @@ method fixLayout MicroBlocksScripter {
 
   fixResizerLayout this
   fixLibraryHeaderLayout this
+  updateSliders scriptsFrame
 
   if (notNil projectEditor) { fixLayout projectEditor true }
 }
@@ -433,6 +434,7 @@ method addBlock MicroBlocksScripter b spec isVarReporter {
 	  }
 	}
   }
+  fixLayout b
   setGrabRule (morph b) 'template'
   setPosition (morph b) nextX nextY
   if isVarReporter { setLeft (morph b) (nextX + (135 * scale)) }
