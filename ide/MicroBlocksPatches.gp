@@ -106,7 +106,7 @@ method AtoDMenu InputSlot {
 
 method itemOfMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
-  addItem menu '1'
+  addItem menu 1
   addItem menu 'last'
   addItem menu 'random'
   return menu
@@ -114,7 +114,7 @@ method itemOfMenu InputSlot {
 
 method replaceItemMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
-  addItem menu '1'
+  addItem menu 1
   addItem menu 'last'
   addItem menu 'all'
   return menu
