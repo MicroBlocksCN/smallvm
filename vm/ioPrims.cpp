@@ -72,9 +72,18 @@ void hardwareInit() {
 		initClock_NRF5x();
 	#endif
 	#if defined(ARDUINO_BBC_MICROBIT_V2)
-		// Use synthesized LF clock to free up pin P0.00, the speaker pin
+		// Use synthesized LF clock to free up pin the speaker pin (P0.00)
 		NRF_CLOCK->LFCLKSRC = CLOCK_LFCLKSRC_SRC_Synth;
 		NRF_CLOCK->TASKS_LFCLKSTART = 1;
+
+		// On micro:bit v2, disable NFC by writing NRF_UICR->NFCPINS to free up pin 8 (P0.10)
+		// (this change does not take effect until the next hard reset)
+		if (NRF_UICR->NFCPINS & 1) {
+			NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen; // enable Flash write
+			while (NRF_NVMC->READY == NVMC_READY_READY_Busy) {}
+			NRF_UICR->NFCPINS = 0xFFFFFFFE;
+			NRF_NVMC->CONFIG = 0; // disable Flash write
+		}
 	#endif
 	initPins();
 	initRandomSeed();
