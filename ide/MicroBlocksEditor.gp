@@ -476,10 +476,14 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 // user preferences
 method readUserPreferences MicroBlocksEditor {
   result = (dictionary)
-  path = (join (gpFolder) '/preferences.json')
-  file = (readFile path)
-  if (notNil file) {
-	result = (jsonParse file)
+  if ('Browser' == (platform)) {
+    jsonString = (browserReadPrefs)
+  } else {
+    path = (join (gpFolder) '/preferences.json')
+    jsonString = (readFile path)
+  }
+  if (notNil jsonString) {
+	result = (jsonParse jsonString)
 	if (not (isClass result 'Dictionary')) { result = (dictionary) }
   }
   return result
@@ -499,15 +503,18 @@ method applyUserPreferences MicroBlocksEditor {
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
-	if ('Browser' == (platform)) { return } // skip writing preferences on ChromeOS for now
 	prefs = (readUserPreferences this)
 	if (isNil value) {
 		remove prefs key
 	} else {
 		atPut prefs key value
 	}
-	path = (join (gpFolder) '/preferences.json')
-	writeFile path (jsonStringify prefs)
+	if ('Browser' == (platform)) {
+		browserWritePrefs (jsonStringify prefs)
+	} else {
+		path = (join (gpFolder) '/preferences.json')
+		writeFile path (jsonStringify prefs)
+	}
 }
 
 method toggleBoardLibAutoLoad MicroBlocksEditor flag {

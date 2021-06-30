@@ -386,6 +386,40 @@ static OBJ primBrowserWriteFile(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+// ***** Browser User Preferences *****
+
+static OBJ primBrowserWritePrefs(int nargs, OBJ args[]) {
+	char *jsonData = "";
+	if ((nargs > 0) && (IS_CLASS(args[0], StringClass))) jsonData = obj2str(args[0]);
+	EM_ASM_({
+		localStorage.setItem('user-prefs', UTF8ToString($0));
+	}, jsonData);
+	return nilObj;
+}
+
+static OBJ primBrowserReadPrefs(int nargs, OBJ args[]) {
+	int len = EM_ASM_INT({
+		return (new TextEncoder()).encode(
+			localStorage.getItem('user-prefs')).length;
+	});
+
+	if (!len) return nilObj;
+
+	if (!canAllocate(len / 4)) return nilObj;
+	OBJ result = allocateString(len);
+	EM_ASM_({
+		var dst = $0;
+		var len = $1;
+		var prefs =
+			(new TextEncoder()).encode(localStorage.getItem('user-prefs'));
+		for (var i = 0; i < len; i++) {
+			Module.HEAPU8[dst++] = prefs[i];
+		}
+	}, &FIELD(result, 0), len);
+
+	return result;
+}
+
 // ***** Graphics Helper Functions *****
 
 static inline uint32 alphaBlend(uint32 dstPix, uint32 srcPix, int srcAlpha) {
@@ -1035,6 +1069,8 @@ static PrimEntry browserPrimList[] = {
 	{"browserHasWebSerial",		primBrowserHasWebSerial,	"Return true the browser supports the Web Serial API."},
 	{"browserReadFile",			primBrowserReadFile,		"Select and read a file in the browser. Args: [extension]"},
 	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [suggestedFileName, extension]"},
+	{"browserReadPrefs",		primBrowserReadPrefs,		"Read user preferences from localStorage."},
+	{"browserWritePrefs",		primBrowserWritePrefs,		"Write user preferences to localStorage. Args: jsonString"},
 };
 
 static PrimEntry graphicsPrimList[] = {
