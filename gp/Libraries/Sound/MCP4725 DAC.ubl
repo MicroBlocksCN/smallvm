@@ -1,0 +1,20 @@
+module 'DAC MCP4725'
+author 'Luis Mateos - @proyectonoise'
+version 1 0 
+tags DAC MCP4725 
+description 'MCP 4725
+Digital to Analog Converter 12 bits
+'
+
+	spec ' ' 'ADC di' 'DAC MCP4725 - address _ value _ write EEPROM _' 'auto auto bool' 96 1236 false
+
+to 'ADC di' direccion valor eeprom {
+  local 'orden' (booleanConstant false)
+  if (eeprom == (booleanConstant true)) {
+    orden = (hexToInt '60')
+  } else {
+    orden = (hexToInt '40')
+  }
+  '[sensors:i2cWrite]' direccion ('[data:makeList]' orden (valor >> 4) ((valor << 4) & (hexToInt 'F0')))
+}
+

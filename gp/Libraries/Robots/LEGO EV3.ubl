@@ -1,0 +1,120 @@
+module 'LEGO EV3'
+author 'Julia Reiter'
+version 1 0 
+description 'Control the LEGO MINDSTORMS Education EV3 robot. Some of the functionalities are not yet available.'
+tags lego robot
+
+	spec ' ' 'get manufacturer' 'get manufacturer'
+	spec 'r' 'get touch sensor' 'get touch sensor _ _' 'auto auto' '1' '13'
+	spec ' ' 'set address' 'set address _' 'auto' '1'
+	spec ' ' 'set motor power' 'set motor power _ _' 'auto auto' '1' '0'
+	spec ' ' 'set sensortype' 'set sensortype _ _ _' 'auto auto auto' '1' '0' '1'
+	spec 'r' 'get color sensor' 'get color sensor _  _' 'auto auto' '1' '13'
+	spec 'r' '_get ultrasonic sensor' '_get ultrasonic sensor _ _ _' 'auto auto auto' '1' '1' '0'
+
+to 'get color sensor' address messagetype {
+  comment 'gets back the value of the color sensor'
+  comment 'messagetype defines on which port the sensor is'
+  comment 'port1 = 13 port2 = 14 port3 = 15 port4 = 16'
+  local 'msg' ('[data:newByteArray]' 7)
+  atPut 1 msg address
+  atPut 2 msg messagetype
+  atPut 3 msg 0
+  atPut 4 msg 0
+  atPut 5 msg 0
+  atPut 6 msg 0
+  atPut 7 msg 0
+  '[sensors:spiExchange]' msg
+  return (at 7 msg)
+}
+
+to 'get manufacturer' {
+  comment 'Read the manufacturer name'
+  local 'msg' ('[data:newByteArray]' 24)
+  atPut 1 msg 1
+  atPut 2 msg 1
+  '[sensors:spiExchange]' msg
+  sayIt ('[data:join]' 'Status byte (decimal):' (at 4 msg))
+  waitMillis 2000
+  sayIt ('[data:join]' '' ('[data:copyFromTo]' msg 5))
+  return ('[data:join]' '' ('[data:copyFromTo]' msg 5))
+}
+
+to 'get touch sensor' address messagetype {
+  comment 'gets the sensor value of a touch sensor on a specific port'
+  comment 'the port is selected with messagetype port1 = 13 port2 = 14 port3 = 15 port4 = 16'
+  local 'msg' ('[data:newByteArray]' 7)
+  atPut 1 msg address
+  atPut 2 msg messagetype
+  atPut 3 msg 0
+  atPut 4 msg 0
+  atPut 5 msg 0
+  atPut 6 msg 0
+  atPut 7 msg 0
+  '[sensors:spiExchange]' msg
+  return (at 7 msg)
+}
+
+to '_get ultrasonic sensor' address messagetype sensortype {
+  comment 'gets the value of the ultrasonic sensor (still faulty)'
+  comment 'messagetype sets the port'
+  comment 'port1 = 13 port2 = 14 port3 = 15 port4 = 16'
+  comment 'sensortype: cm = 23 inches = 24 listen = 25'
+  local 'msg' ('[data:newByteArray]' 8)
+  if (sensortype == 25) {
+    atPut 1 msg address
+    atPut 2 msg messagetype
+    atPut 3 msg 0
+    atPut 4 msg 0
+    atPut 5 msg 0
+    atPut 6 msg 0
+    atPut 7 msg 0
+    '[sensors:spiExchange]' msg
+    return (at 7 msg)
+  } (or (sensortype == 23) (sensortype == 24)) {
+    atPut 1 msg address
+    atPut 2 msg messagetype
+    atPut 3 msg 0
+    atPut 4 msg 0
+    atPut 5 msg 0
+    atPut 6 msg 0
+    atPut 7 msg 0
+    atPut 8 msg 0
+    '[sensors:spiExchange]' msg
+    local 'value' ((((at 7 msg) << 8) | (at 8 msg)) / 10)
+    return value
+  }
+}
+
+to 'set address' address {
+  comment 'Setting the SPI address'
+  local 'addr' ('[data:newByteArray]' 3)
+  atPut 1 addr 0
+  atPut 2 addr 11
+  atPut 3 addr address
+  '[sensors:spiExchange]' addr
+}
+
+to 'set motor power' port percentage {
+  comment 'setting the motor power on a specific port per percentage'
+  local 'msg' ('[data:newByteArray]' 4)
+  atPut 1 msg 1
+  atPut 2 msg 21
+  atPut 3 msg port
+  atPut 4 msg percentage
+  '[sensors:spiExchange]' msg
+}
+
+to 'set sensortype' port type address {
+  comment 'Setting the sensortype on a specific port'
+  comment 'Currently only EV3 sensors supported'
+  comment 'supported types:'
+  comment 'EV3-TOUCH=6, EV3-color=20, EV3-ultrasonic=23,24,25'
+  local 'msg' ('[data:newByteArray]' 4)
+  atPut 1 msg address
+  atPut 2 msg 12
+  atPut 3 msg port
+  atPut 4 msg type
+  '[sensors:spiExchange]' msg
+}
+
