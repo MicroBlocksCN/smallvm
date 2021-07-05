@@ -42,6 +42,6 @@ qemu-system-x86_64 -m 512 -hda qemu/ubuntu16.04.img -k es -hdb qemu/host.img -no
 # Mount the virtual disk image again
 fuseext2 -o rw+ qemu/host.img /tmp/host
 # Copy the compiled MicroBlocks VMs out of the virtual disk image
-cp /tmp/host/linux+pi/vm.linux.* .
+cp /tmp/host/linux+pi/vm_linux_* .
 # Unmount the virtual disk again
 fusermount -u /tmp/host
