@@ -53,8 +53,8 @@ to openMicroBlocksEditor devMode {
 }
 
 to checkLatestVersion {
+  latestVersion = (fetchLatestVersionNumber) // fetch version, even in browser, to log useage
   if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
-  latestVersion = (fetchLatestVersionNumber)
   currentVersion = (splitWith (ideVersionNumber (smallRuntime)) '.')
   for i (count latestVersion) {
 	latest = (toInteger (at latestVersion i))
@@ -72,7 +72,24 @@ to checkLatestVersion {
 }
 
 to fetchLatestVersionNumber {
-  versionText = (httpGet 'microblocks.fun' '/downloads/latest/VERSION.txt')
+  platform = (platform)
+  if ('Browser' == platform) {
+    if (browserIsChromeOS) {
+      suffix = '?C='
+    } else {
+      suffix = '?B='
+    }
+  } ('Mac' == (platform)) {
+    suffix = '?M='
+  } ('Linux' == (platform)) {
+    suffix = '?L='
+  } ('Win' == (platform)) {
+    suffix = '?W='
+  } else {
+    suffix = '?R='
+  }
+  url = (join '/downloads/latest/VERSION.txt' suffix (rand 100000 999999))
+  versionText = (httpGet 'microblocks.fun' url)
   if (isNil versionText) { return (array 0 0 0) }
   return (splitWith (substring (first (lines (httpBody versionText))) 1) '.')
 }
