@@ -2060,18 +2060,18 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 
 	if ('MICROBIT' == driveName) {
  		contents = (readFile (join boardPath '/MICROBIT.HTM'))
-		vmFileName = 'vm.microbit.hex'
+		vmFileName = 'vm_microbit.hex'
 		if (notNil (nextMatchIn 'id=9904' contents)) {
-			vmFileName = 'vm.microbitV2.hex'
+			vmFileName = 'vm_microbitV2.hex'
 		}
  	} ('MINI' == driveName) {
-		vmFileName = 'vm.calliope.hex'
+		vmFileName = 'vm_calliope.hex'
 	} ('CPLAYBOOT' == driveName) {
-		vmFileName = 'vm.circuitplay.uf2'
+		vmFileName = 'vm_circuitplay.uf2'
 	} ('CPLAYBTBOOT' == driveName) {
-		vmFileName = 'vm.cplay52.uf2'
+		vmFileName = 'vm_cplay52.uf2'
 	} ('CLUEBOOT' == driveName) {
-		vmFileName = 'vm.clue.uf2'
+		vmFileName = 'vm_clue.uf2'
 	} else {
 		vmFileName = 'UNKNOWN'
 	}
@@ -2149,22 +2149,22 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	}
 
 	if ('micro:bit' == boardName) {
-		vmFileName = 'vm.microbit.hex'
+		vmFileName = 'vm_microbit.hex'
 		driveName = 'MICROBIT'
 	} ('micro:bit v2' == boardName) {
-		vmFileName = 'vm.microbitV2.hex'
+		vmFileName = 'vm_microbitV2.hex'
 		driveName = 'MICROBIT'
 	} ('Calliope mini' == boardName) {
-		vmFileName = 'vm.calliope.hex'
+		vmFileName = 'vm_calliope.hex'
 		driveName = 'MINI'
 	} ('Circuit Playground Express' == boardName) {
-		vmFileName = 'vm.circuitplay.uf2'
+		vmFileName = 'vm_circuitplay.uf2'
 		driveName = 'CPLAYBOOT'
 	} ('Circuit Playground Bluefruit' == boardName) {
-		vmFileName = 'vm.cplay52.uf2'
+		vmFileName = 'vm_cplay52.uf2'
 		driveName = 'CPLAYBTBOOT'
 	} ('Clue' == boardName) {
-		vmFileName = 'vm.clue.uf2'
+		vmFileName = 'vm_clue.uf2'
 		driveName = 'CLUEBOOT'
 	}
 

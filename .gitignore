@@ -10,8 +10,10 @@ gp/packagers/linux/esptool
 gp/packagers/win32/esptool
 linux+pi/ublockscode
 linux+pi/vm.*
+linux+pi/vm_*
 linux+pi/qemu
 precompiled/vm.*
+precompiled/vm_*
 data/*
 BUILD
 *.swp
