@@ -92,14 +92,14 @@ method mixed Color percent otherColor {
 
 method lighter Color percent {
   // Return an rgb-interpolated lighter copy of this color.
-  if (isNil percent) { percent = 30 }
-  return (mixed this (100 - percent) (color 255 255 255))
+  if (isNil percent) { percent = 20 }
+  return (mixed this (100 - percent) (gray 255))
 }
 
 method darker Color percent {
   // Return an rgb-interpolated lighter copy of this color.
   if (isNil percent) { percent = 30 }
-  return (mixed this (100 - percent) (color))
+  return (mixed this (100 - percent) (gray 0))
 }
 
 to colorHSV h s v alpha {

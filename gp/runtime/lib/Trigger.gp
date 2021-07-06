@@ -51,6 +51,7 @@ method press Trigger {
 }
 
 method handEnter Trigger aHand {
+  setCursor 11
   highlight this
   if (notNil hint) {
 	addSchedule (global 'page') (schedule (action 'showHint' morph hint) 300)
@@ -58,6 +59,11 @@ method handEnter Trigger aHand {
 }
 
 method handLeave Trigger aHand {
+  setCursor 0
+  // handEnter happens before handLeave, so cursor wouldn't go back to finger
+  // when you move between two buttons without any space in between. A temporary
+  // solution is to re-trigger handEnter on the new morph under the hand.
+  handEnter (objectAt aHand) aHand
   normal this
   if (notNil hint) {removeHint (page aHand)}
   removeSchedulesFor (global 'page') 'showHint' morph
@@ -107,6 +113,9 @@ method rightClicked Trigger {
 }
 
 method replaceCostumes Trigger normalBM highlightBM pressedBM {
+  if (notNil normalBM) {
+	setExtent morph (width normalBM) (height normalBM)
+  }
   normalCostume = normalBM
   highlightCostume = highlightBM
   pressedCostume = pressedBM
@@ -137,31 +146,6 @@ to pushButton label color action minWidth minHeight {
   return btn
 }
 
-to downArrowButton color action {
-  btn = (new 'Trigger' (newMorph) action)
-  setTransparentTouch (morph btn) true
-  setHandler (morph btn) btn
-  drawDownArrowCostumes btn color
-  return btn
-}
-
-method drawDownArrowCostumes Trigger color {
-  if (isNil color) {color = (color)}
-
-  scale = (global 'scale')
-  size = (scale * 10)
-  unit = (size / 2)
-  space = (size / 3)
-
-  bm = (newBitmap (+ size space 1) size)
-  fillArrow (newShapeMaker bm) (rect 0 unit size unit) 'down' color
-
-  normalCostume = bm
-  highlightCostume = bm
-  pressedCostume = bm
-  setCostume morph normalCostume
-}
-
 method drawLabelCostumes Trigger label color minWidth minHeight {
   if (isNil minWidth) {minWidth = 0}
   if (isNil minHeight) {minHeight = 0}
@@ -172,7 +156,7 @@ method drawLabelCostumes Trigger label color minWidth minHeight {
 }
 
 to buttonBitmap label color w h isInset corner border hasFrame flat {
-  if (isNil flat) {flat = (global 'flat')}
+  if (isNil flat) {flat = true}
   if (isClass label 'String') {
     scale = (global 'scale')
     off = (max (scale / 2) 1)
@@ -201,7 +185,7 @@ to buttonImage labelBitmap color corner border isInset hasFrame width height fla
   if (isNil hasFrame) {hasFrame = true}
   if (isNil width) {width = (+ corner corner border border)}
   if (isNil height) {height = (+ border border)}
-  if (isNil flat) {flat = (global 'flat')}
+  if (isNil flat) {flat = true}
 
   lblWidth = 0
   if (isClass labelBitmap 'Bitmap') {lblWidth = (width labelBitmap)}
@@ -220,6 +204,7 @@ to buttonImage labelBitmap color corner border isInset hasFrame width height fla
     if isInset {off = (max (border / 2) 1)}
     drawBitmap bm labelBitmap (((w - (width labelBitmap)) / 2) + off) (((h - (height labelBitmap)) / 2) + off)
   }
+  if ('Browser' != (platform)) { unmultiplyAlpha bm }
   return bm
 }
 

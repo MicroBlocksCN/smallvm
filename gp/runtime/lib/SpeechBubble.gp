@@ -6,27 +6,33 @@ to newBubble aString bubbleWidth direction isError {
   return (initialize (new 'SpeechBubble') aString bubbleWidth direction isError)
 }
 
-method initialize SpeechBubble aString bubbleWidth dir isErrorFlag {
+method initialize SpeechBubble someData bubbleWidth dir isErrorFlag {
   scale = (global 'scale')
   font = 'Arial'
-  fontSize = (14 * scale)
+  fontSize = (18 * scale)
+  if ('Linux' == (platform)) { fontSize = (13 * scale) }
   maxLines = 30
   shadowOffset = 3 // optional; if nil, no shadow is drawn
 
-  if (isNil aString) {aString = 'hint!'}
-  if (isNil bubbleWidth) {bubbleWidth = 200}
+  if (isNil someData) {someData = 'hint!'}
+  if (isNil bubbleWidth) {bubbleWidth = (175 * scale) }
   if (isNil dir) {dir = 'right'}
   direction = dir
   isError = false
   if (true == isErrorFlag) { isError = true }
 
   setFont font fontSize
-  lines = (toList (wordWrapped aString bubbleWidth))
-  if ((count lines) > maxLines) {
-	lines = (copyFromTo lines 1 maxLines)
-	add lines '...'
+  if (isClass someData 'Boolean') {
+    contents = (newBooleanSlot someData)
+  } else {
+    someData = (toString someData)
+    lines = (toList (wordWrapped someData bubbleWidth))
+    if ((count lines) > maxLines) {
+      lines = (copyFromTo lines 1 maxLines)
+      add lines '...'
+    }
+    contents = (newText (joinStrings lines (newline)) font fontSize (gray 0) 'center')
   }
-  contents = (newText (joinStrings lines (newline)) font fontSize (gray 0) 'center')
 
   morph = (newMorph this)
   addPart morph (morph contents)
@@ -52,6 +58,7 @@ method fixLayout SpeechBubble {
   if (notNil shadowOffset) {
     addPart morph (shadowPart morph 100 (shadowOffset * scale))
   }
+  rerender morph
 }
 
 method layoutChanged SpeechBubble {fixLayout this}

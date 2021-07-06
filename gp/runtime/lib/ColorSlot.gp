@@ -12,7 +12,8 @@ method initialize ColorSlot {
   setGrabRule morph 'defer'
   setTransparentTouch morph true
   contents = (color 35 190 30)
-  redraw this
+  size = (16 * (blockScale))
+  setExtent morph size size
   return this
 }
 
@@ -26,29 +27,32 @@ method setContents ColorSlot aColor {
 	aColor = (color 255 0 255)
   }
   contents = aColor
-  redraw this
+  changed morph
   raise morph 'inputChanged' this
 }
 
-method redraw ColorSlot {
-  scale = (global 'scale')
-  border = (1 * scale)
-  size = (13 * scale)
-  bm = (costume morph)
-  bm = nil
-  if (isNil bm) { bm = (newBitmap size size (gray 80)) }
-  fillRect bm contents border border (size - (2 * border)) (size - (2 * border))
-  setCostume morph bm
+method drawOnSquare ColorSlot ctx {
+	borderWidth = (blockScale)
+	r = (bounds morph)
+	sm = (getShapeMaker ctx)
+ 	fillRectangle sm r contents
+ 	outlineRectangle sm r borderWidth (gray 80)
+}
+
+method drawOn ColorSlot ctx {
+	borderWidth = (blockScale)
+	r = (bounds morph)
+	radius = (half (width r))
+	drawCircle (getShapeMaker ctx) (hCenter r) (vCenter r) radius contents borderWidth (gray 0)
 }
 
 // events
 
 method clicked ColorSlot aHand {
   if (notNil (ownerThatIsA morph 'InputDeclaration')) { return }
-  scale = (global 'scale')
   page = (global 'page')
   cp = (newColorPicker (action 'setContents' this) contents)
-  setPosition (morph cp) (left morph) ((bottom morph) + (2 * scale))
+  setPosition (morph cp) (left morph) ((bottom morph) + (2 * (global 'scale')))
   keepWithin (morph cp) (bounds (morph page))
   addPart page cp
   return true

@@ -92,7 +92,7 @@ method createEmbeddedFS AppMaker project {
 method startupFile AppMaker {
   return '
 to startup {
-  setGlobal ''vectorTrails'' false
+  setGlobal ''vectorTrails'' true
   openPage true
   openProjectFromFile (newStage) ''project.gpp''
   gc

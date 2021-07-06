@@ -6,7 +6,7 @@
 // or line cap and joint styles. It may also omit future features of GP vector graphics
 // primitives such as gradients.
 
-defineClass VectorPen penX penY heading bitmap owner path usePrimitives pathWidth halfWidth color
+defineClass VectorPen offsetX offsetY penX penY heading bitmap clipRect owner path usePrimitives pathWidth halfWidth color
 
 method examples VectorPen {
   showImage (drawCircle (newVectorPen))
@@ -25,6 +25,10 @@ method examples VectorPen {
   showImage (drawRoundedRect (newVectorPen nil nil true))
 }
 
+to newVectorPenOnScreen {
+  return (intialize (new 'VectorPen'))
+}
+
 to newVectorPen bitmap owningMorph noPrimitives {
   if (isNil bitmap) {
 	bitmap = (newBitmap 200 200)
@@ -32,11 +36,16 @@ to newVectorPen bitmap owningMorph noPrimitives {
   return (intialize (new 'VectorPen') bitmap owningMorph noPrimitives)
 }
 
+method x VectorPen { return (penX - offsetX) }
+method y VectorPen { return (penY - offsetY) }
 method bitmap VectorPen { return bitmap }
 method setColor VectorPen c { noop } // for compatability with pen; ignore
+method setClipRect VectorPen aRect { clipRect = aRect }
 method setHeading VectorPen degrees { heading = degrees }
 
 method intialize VectorPen aBitmap aMorph noPrimitives {
+  offsetX = 0
+  offsetY = 0
   penX = 100
   penY = 100
   heading = 0
@@ -49,13 +58,22 @@ if (true == (global 'fakeVectors')) { usePrimitives = false } // xxx for testing
   return this
 }
 
+method setOffset VectorPen x y {
+  offsetX = x
+  offsetY = y
+}
+
 method beginPath VectorPen x y {
   if (isNil x) { x = 100 }
   if (isNil y) { y = 100 }
-  penX = x
-  penY = y
+  penX = (x + offsetX)
+  penY = (y + offsetY)
   heading = 0
-  path = (list 'M' x y)
+  path = (list 'M' penX penY)
+}
+
+method beginPathFromCurrentPostion VectorPen {
+  path = (list 'M' penX penY)
 }
 
 method goto VectorPen dstX dstY {
@@ -66,17 +84,17 @@ method goto VectorPen dstX dstY {
 method lineTo VectorPen dstX dstY {
   startX = penX
   startY = penY
-  penX = dstX
-  penY = dstY
+  penX = (dstX + offsetX)
+  penY = (dstY + offsetY)
   addSegment this startX startY penX penY
 }
 
 method curveTo VectorPen dstX dstY cx cy {
   startX = penX
   startY = penY
-  penX = dstX
-  penY = dstY
-  addAll path (array 'C' dstX dstY cx cy)
+  penX = (dstX + offsetX)
+  penY = (dstY + offsetY)
+  addAll path (array 'C' dstX dstY (cx + offsetX) (cy + offsetY))
 }
 
 method cubicCurveTo VectorPen c1X c1Y c2X c2Y dstX dstY {
@@ -85,10 +103,17 @@ method cubicCurveTo VectorPen c1X c1Y c2X c2Y dstX dstY {
   // uses a simplified version of the midpoint algorithm by Helen Triolo.
   // http://www.timotheegroleau.com/Flash/articles/cubic_bezier_in_flash.htm
 
+  c1X += offsetX
+  c1Y += offsetY
+  c2X += offsetX
+  c2Y += offsetY
+  dstX += offsetX
+  dstY += offsetY
+
   startX = penX
   startY = penY
-  penX = dstX
-  penY = dstY
+  penX = (dstX + offsetX)
+  penY = (dstY + offsetY)
 
   // points used to calculate the control points pc2 and pc3
   paX = (interpolate startX c1X 0.75)
@@ -191,7 +216,7 @@ method stroke VectorPen borderColor width joint cap {
   if (isNil cap) { cap = 0 }
 
   if usePrimitives {
-	vectorStrokePath bitmap (toArray path) borderColor width joint cap
+	vectorStrokePath bitmap (toArray path) borderColor width joint cap clipRect
   } else {
 	// Simulate vector primitives. Cap and joint are ignored.
 	color = borderColor
@@ -205,7 +230,7 @@ method fill VectorPen fillColor {
   if usePrimitives {
 	closedPath = (copy path)
 	add closedPath 'Z'
-	vectorFillPath bitmap (toArray closedPath) fillColor
+	vectorFillPath bitmap (toArray closedPath) fillColor clipRect
   } else {
 	if (fillColor == (gray 0)) { fillColor = (gray 1) } // avoid black/transparent confusion
 	oldPath = path

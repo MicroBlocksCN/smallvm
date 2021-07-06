@@ -1,8 +1,20 @@
 defineClass ColorPicker morph action paletteBM lastColor grayPalette colorPalette slider swatch rText gText bText
 
 to newColorPicker action initialColor {
+  // If there is already a ColorPicker on the screen, return it.
+  // Otherwise, create and return a new one.
+
+  for m (parts (morph (global 'page'))) {
+	if (isClass (handler m) 'ColorPicker') {
+	  setAction (handler m) action
+	  changed m
+	  return (handler m)
+	}
+  }
   return (initialize (new 'ColorPicker') action initialColor)
 }
+
+method setAction ColorPicker anAction { action = anAction }
 
 method initialize ColorPicker anAction initialColor {
   morph = (newMorph this)
@@ -21,6 +33,17 @@ method initialize ColorPicker anAction initialColor {
 	selectColor this initialColor true
   }
   return this
+}
+
+method drawOn ColorPicker ctx {
+  r = (bounds morph)
+  drawBitmap ctx (costumeData morph) (left r) (top r) // frame
+
+  r = (bounds colorPalette)
+  drawBitmap ctx (costumeData colorPalette) (left r) (top r)
+
+  r = (bounds grayPalette)
+  drawBitmap ctx (costumeData grayPalette) (left r) (top r)
 }
 
 method drawFrame ColorPicker w h {
@@ -83,6 +106,7 @@ method addSlider ColorPicker x y w h {
   slider = (slider 'vertical' h (action 'setBrightness' this) w 0 100 50)
   setPosition (morph slider) x y
   addPart morph (morph slider)
+  slider changed
 }
 
 method addSwatch ColorPicker x y w h {
@@ -175,6 +199,7 @@ method selectColor ColorPicker c updateSlider {
   updateRGBReadouts this c
   if updateSlider { setValue slider (100.0 * (sqrt (1.0 - (brightness c)))) }
   if (notNil action) { call action c }
+  changed morph
 }
 
 method updateRGBReadouts ColorPicker c {
@@ -188,7 +213,6 @@ method drawColorPalette ColorPicker bm brightness {
   h = (height bm)
   pixels = (getField bm 'pixelData')
   for x w {
-    gcIfNeeded // this method generates a LOT of float objects, so may need to GC
     for y h {
 	  hue = ((toFloat (360 * x)) / w)
 	  sat = ((toFloat y) / h)

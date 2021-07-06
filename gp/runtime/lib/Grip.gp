@@ -26,7 +26,7 @@ to newGrip orientation width height {
   grip = (new 'Grip' m bt orientation 0)
   setHandler m grip
   setRenderer bt grip
-  redraw grip
+  replaceCostumes grip
   return grip
 }
 
@@ -83,12 +83,6 @@ method trigger Grip {
   trigger trigger
 }
 
-method redraw Grip {
-  // adjust to a change of bounds
-  // by creating a new set of canvasses
-  replaceCostumes this
-}
-
 method replaceCostumes Grip normalCostume highlightCostume pressedCostume {
   replaceCostumes trigger normalCostume highlightCostume pressedCostume
 }
@@ -98,6 +92,12 @@ method removeCostume Grip costumeName {removeCostume trigger costumeName}
 method normalCostume Grip {return (newBitmap (width morph) (height morph) (color 200 200 255))}
 method highlightCostume Grip {return (newBitmap (width morph) (height morph) (color 200 255 200))}
 method pressedCostume Grip {return (newBitmap (width morph) (height morph) (color 255 200 200))}
+
+method updateCostumes Grip {
+  clearCostumes trigger
+  highlight trigger
+  normal trigger
+}
 
 to resizeHandle target orientation {
   if (isNil orientation) {orientation = 'free'}

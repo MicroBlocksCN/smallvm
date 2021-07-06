@@ -9,20 +9,26 @@ method setProject Stage p { project = p }
 
 method setBackgroundImage Stage bm {
   backgroundImage = bm
-  setColor this color // redraws background
+  setColor this color // draw background on costume
 }
 
 method setColor Stage aColor {
   if (isNil aColor) { aColor = (gray 240) }
   color = aColor
-  costume = (costumeData morph)
-  fill costume color
   if (notNil backgroundImage) {
-	x = (half ((width costume) - (width backgroundImage)))
-	y = (half ((height costume) - (height backgroundImage)))
-	drawBitmap costume backgroundImage x y
+	costumeData = (costumeData morph)
+	if (not (isClass costumeData 'Bitmap')) {
+	  costumeData = (newBitmap 800 500)
+	  setCostume morph costumeData
+	}
+	fill costumeData color
+	x = (half ((width costumeData) - (width backgroundImage)))
+	y = (half ((height costumeData) - (height backgroundImage)))
+	drawBitmap costumeData backgroundImage x y
+	updateCostume morph
+  } else {
+	setCostume morph color
   }
-  updateCostume morph
 }
 
 to newStage w h {
@@ -33,8 +39,8 @@ method initialize Stage w h {
   morph = (newMorph this)
   setClipping morph true
   setTransparentTouch morph true
-  color = (gray 240)
-  setAspectRatio this w h
+  setColor this (gray 240)
+  setExtent morph 800 500
   return this
 }
 
@@ -66,7 +72,11 @@ method setAspectRatio Stage w h {
 
 method scaleToFit Stage w h {
   bm = (costumeData morph)
-  newScale = (min (w / (width bm)) (h / (height bm)))
+  if (isClass bm 'Bitmap') {
+	newScale = (min (w / (width bm)) (h / (height bm)))
+  } else {
+	newScale = (min (w / 800) (h / 500))
+  }
   if (or (newScale != (scaleX morph)) (newScale != (scaleY morph))) {
     setScale morph newScale
   }
@@ -159,11 +169,6 @@ method pageResized Stage {
   page = (global 'page')
   scaleToFit this (width page) (height page)
   gotoCenterOf morph (morph page)
-  if ('Win' == (platform)) {
-	// workaround for a Windows graphics issue: when resizing a window it seems to clear
-	// some or all textures. this forces them to be updated from the underlying bitmap.
-	for m (allMorphs (morph page)) { costumeChanged m }
-  }
   if (and ('iOS' == (platform)) ((height page) > (width page)) (isPresenting this)) {
 	setTop morph (100 * (global 'scale'))
 	showKeyboard true

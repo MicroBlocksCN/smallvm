@@ -1,23 +1,20 @@
-defineClass BlockDrawer morph target size orientation
+defineClass BlockDrawer morph target orientation
 
-to newBlockDrawer aBlock size orientation {
-  if (isNil orientation) {orientation = 'horizontal'}
-  bd = (new 'BlockDrawer' nil aBlock size orientation)
-  initialize bd
-  return bd
+to newBlockDrawer aBlock horizontalOrVertical {
+  return (initialize (new 'BlockDrawer') aBlock horizontalOrVertical)
 }
 
-method initialize BlockDrawer {
-  if (isNil size) {
-    scale = (global 'scale')
-    size = (scale * 10)
-  }
+method initialize BlockDrawer aBlock horizontalOrVertical {
   morph = (newMorph this)
-  setTransparentTouch morph true // optimization
-  redraw this
+  target = aBlock
+  orientation = horizontalOrVertical
+  if (isNil orientation) { orientation = 'horizontal' }
+  setTransparentTouch morph true // allow clicks anywhere in bounds rectangle
+  fixLayout this
+  return this
 }
 
-method redraw BlockDrawer {
+method fixLayout BlockDrawer {
   if (notNil target) {
     hasMore = (canExpand target)
     hasLess = (canCollapse target)
@@ -25,41 +22,50 @@ method redraw BlockDrawer {
     hasMore = true
     hasLess = true
   }
-  unit = (size / 2)
-  space = (size / 3)
-  if (and hasLess hasMore) {
-    w = (+ size space 1)
-  } else {
-    w = (+ unit 1)
-  }
+  size = (13 * (blockScale))
+  unit = (half size)
+  extra = 0
   if (orientation == 'horizontal') {
-    bm = (newBitmap w size)
-  } else { // 'vertical'
-    bm = (newBitmap size w)
+	if (and hasMore hasLess) { extra = (unit + (floor (size / 3))) }
+	setExtent morph (+ unit extra) size
+  } else {
+	if (and hasMore hasLess) { extra = (unit + (floor (size / 5))) }
+	setExtent morph size (+ unit extra)
   }
+}
 
-  pen = (newShapeMaker bm)
-  clr = (gray 0)
-  if (global 'stealthBlocks') {
-    clr = (gray (stealthLevel 0 180))
+method drawOn BlockDrawer ctx {
+  if (notNil target) {
+    hasMore = (canExpand target)
+    hasLess = (canCollapse target)
+  } else {
+    hasMore = true
+    hasLess = true
   }
-  x = 0
+  size = (13 * (blockScale))
+  unit = (half size)
+  clr = (gray 0 220)
+
+  pen = (getShapeMaker ctx)
+  x = (left morph)
+  y = (top morph)
+  offset = 0
   if hasLess { // draw left arrow
 	if (orientation == 'horizontal') {
-	  fillArrow pen (rect 0 0 unit size) 'left' clr
+	  fillArrow pen (rect x y unit size) 'left' clr
+	  offset = (unit + (floor (size / 3)))
 	} else {
-	  fillArrow pen (rect 0 0 size unit) 'up' clr
+	  fillArrow pen (rect x y size unit) 'up' clr
+	  offset = (unit + (floor (size / 5)))
 	}
-    x = (unit + space)
   }
   if hasMore { // draw right arrow
 	if (orientation == 'horizontal') {
-	  fillArrow pen (rect x 0 unit size) 'right' clr
+	  fillArrow pen (rect (x + offset) y unit size) 'right' clr
 	} else {
-	  fillArrow pen (rect 0 x size unit) 'down' clr
+	  fillArrow pen (rect x (y + offset) size unit) 'down' clr
 	}
   }
-  setCostume morph bm
 }
 
 method clicked BlockDrawer aHand {
@@ -80,8 +86,8 @@ method clicked BlockDrawer aHand {
         collapse target
       }
     }
-  } else {
-    if hasLess { // left arrow only
+  } else { // single arrow
+    if hasLess {
       collapse target
     } else {
       expand target
@@ -105,4 +111,3 @@ method collapse BlockDrawer {
   if (isNil target) {return}
   if (canCollapse target) {collapse target}
 }
-

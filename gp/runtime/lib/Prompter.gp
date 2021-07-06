@@ -73,12 +73,11 @@ method initializeForConfirm Prompter label question yesLabel noLabel anAction {
   border = (border window)
   morph = (morph window)
   setHandler morph this
-  fontName = 'Arial Bold'
-  fontSize = (14 * (global 'scale'))
-  if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
 
   lbl = (getField window 'label')
-  textFrame = (newText (localized question) fontName fontSize (gray 0) 'center')
+  fontSize = (16 * (global 'scale'))
+  if ('Linux' == (platform)) { fontSize = (13 * (global 'scale')) }
+  textFrame = (newText (localized question) (fontName lbl) fontSize (gray 0) 'center')
   addPart morph (morph textFrame)
   createButtons this (localized yesLabel) (localized noLabel)
 
