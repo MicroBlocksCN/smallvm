@@ -16,6 +16,8 @@ to uload fileName {
   if (not (endsWith fileName '.gp')) { fileName = (join fileName '.gp') }
   if (contains (listFiles '../ide') fileName) {
 	fileName = (join '../ide/' fileName)
+  } (contains (listFiles 'ide') fileName) {
+	fileName = (join 'ide/' fileName)
   } else {
 	fileName = (join '../gp/runtime/lib/' fileName)
   }
@@ -491,6 +493,7 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 }
 
 // user preferences
+
 method readUserPreferences MicroBlocksEditor {
   result = (dictionary)
   if ('Browser' == (platform)) {
