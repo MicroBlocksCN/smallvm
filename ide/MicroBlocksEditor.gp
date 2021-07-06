@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -33,7 +33,6 @@ method httpServer MicroBlocksEditor { return httpServer }
 
 to openMicroBlocksEditor devMode {
   if (isNil devMode) { devMode = false }
-  setGlobal 'alanMode' false
   page = (newPage 1000 600)
   setDevMode page devMode
   toggleMorphicMenu (hand page) (contains (commandLine) '--allowMorphMenu')
@@ -46,6 +45,7 @@ to openMicroBlocksEditor devMode {
 	dataAndURL = (global 'initialProject')
 	openProject editor (first dataAndURL) (last dataAndURL)
   }
+  redrawAll (global 'page')
   readVersionFile (smallRuntime)
   launch (global 'page') (checkLatestVersion)
   pageResized editor
@@ -114,7 +114,6 @@ method initialize MicroBlocksEditor {
   scripter = (initialize (new 'MicroBlocksScripter') this)
   lastProjectFolder = 'Examples'
   addPart morph (morph scripter)
-  drawTopBar this
   clearProject this
   fixLayout this
   setFPS morph 200
@@ -148,7 +147,6 @@ method scaleChanged MicroBlocksEditor {
 
   lastStatus = nil // force update
   addPart morph (morph scripter)
-  drawTopBar this
   fixLayout this
 }
 
@@ -156,6 +154,8 @@ method scaleChanged MicroBlocksEditor {
 
 method addTopBarParts MicroBlocksEditor {
   scale = (global 'scale')
+
+  addLogo this
 
   leftItems = (list)
   add leftItems (140 * scale)
@@ -166,13 +166,32 @@ method addTopBarParts MicroBlocksEditor {
   add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard')
   indicator = (last leftItems)
 
-  title = (newText '' 'Arial' (17 * scale))
-  addPart morph (morph title)
+  if (isNil title) {
+    // only add the first time
+    title = (newText '' 'Arial' (17 * scale))
+    addPart morph (morph title)
+  }
 
   rightItems = (list)
+
+  addFrameRate = (contains (commandLine) '--allowMorphMenu')
+  if addFrameRate {
+	frameRate = (newText '0 fps' 'Arial' (14 * scale))
+	addPart morph (morph frameRate)
+	add rightItems frameRate
+	add rightItems (10 * scale)
+  }
+
   add rightItems (addIconButton this (startButtonIcon this) 'startAll' 36)
   add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 36)
   add rightItems (7 * scale)
+}
+
+method addLogo MicroBlocksEditor {
+  logoM = (newMorph)
+  setCostume logoM (logoAndText this)
+  setPosition logoM 0 0
+  addPart morph logoM
 }
 
 method textButton MicroBlocksEditor label selector {
@@ -312,8 +331,10 @@ method saveProject MicroBlocksEditor fName {
 
   if ('Browser' == (platform)) {
 	if (or (isNil fName) ('' == fName)) { fName = 'Untitled' }
-	if (endsWith fName '.ubp') { fName = (substring fName 1 ((count fName) - 4)) }
-	browserWriteFile (codeString (project scripter)) fName 'ubp'
+	i = (findLast fName '/')
+	if (notNil i) { fName = (substring fName (i + 1)) }
+	if (not (endsWith fName '.ubp')) { fName = (join fName '.ubp') }
+	browserWriteFile (codeString (project scripter)) fName 'project'
 	return
   }
 
@@ -397,6 +418,24 @@ method step MicroBlocksEditor {
   if (isRunning httpServer) {
 	step httpServer
   }
+  if (notNil frameRate) {
+	updateFPS this
+  }
+}
+
+method updateFPS MicroBlocksEditor {
+	if (isNil lastFrameTime) { lastFrameTime = 0 }
+	if (isNil frameCount) { frameCount = 0 }
+	if (frameCount > 5) {
+		now = (msecsSinceStart)
+		frameMSecs = (now - lastFrameTime)
+		msecsPerFrame = (round ((frameCount * 1000) / frameMSecs))
+		setText frameRate (join '' msecsPerFrame ' fps')
+		frameCount = 1
+		lastFrameTime = now
+	} else {
+		frameCount += 1
+	}
 }
 
 method updateIndicator MicroBlocksEditor forcefully {
@@ -437,13 +476,24 @@ method checkForBrowserResize MicroBlocksEditor {
   w = (first browserSize)
   h = (last browserSize)
   winSize = (windowSize)
-  if (and (w == (at winSize 1)) (h == (at winSize 2))) { return }
+  if (and
+  	((abs ((at winSize 1) - w)) < 10)
+  	((abs ((at winSize 2) - h)) < 10)) {
+  		// size may be off by a few pixels due to rounding
+  		return
+  }
 
   openWindow w h true
+  page = (global 'page')
+  oldScale = (global 'scale')
+  updateScale page
   scale = (global 'scale')
-  pageM = (morph (global 'page'))
+  pageM = (morph page)
   setExtent pageM (w * scale) (h * scale)
   for each (parts pageM) { pageResized (handler each) w h this }
+  if (scale != oldScale) {
+	for m (allMorphs pageM) { scaleChanged (handler m) }
+  }
 }
 
 method processBrowserDroppedFile MicroBlocksEditor {
@@ -567,7 +617,6 @@ method developerModeChanged MicroBlocksEditor {
 method pageResized MicroBlocksEditor {
   scale = (global 'scale')
   page = (global 'page')
-  drawTopBar this
   fixLayout this
   if ('Win' == (platform)) {
 	// workaround for a Windows graphics issue: when resizing a window it seems to clear
@@ -576,27 +625,28 @@ method pageResized MicroBlocksEditor {
   }
 }
 
+// top bar drawing
+
 method topBarBlue MicroBlocksEditor { return (colorHSV 180 0.045 1.0) }
 method topBarBlueHighlight MicroBlocksEditor { return (colorHSV 180 0.17 1.0) }
-method topBarHeight MicroBlocksEditor { return (45 * (global 'scale')) }
+method topBarHeight MicroBlocksEditor { return (46 * (global 'scale')) }
 
-method drawTopBar MicroBlocksEditor {
+method drawOn MicroBlocksEditor aContext {
   scale = (global 'scale')
-  w = (width (morph (global 'page')))
-  h = (topBarHeight this)
-  oldC = (costume morph)
-  if (or (isNil oldC) (w != (width oldC)) (h != (height oldC))) {
-	setCostume morph (newBitmap w h (gray 200))
-  }
-  bm = (costumeData morph)
-  fill bm (topBarBlue this)
-  grassHeight = (4 * scale)
-  fillRect bm (color 137 169 31) 0 ((height bm) - grassHeight) (width bm) grassHeight
-  drawBitmap bm (logoAndText this)
-  costumeChanged morph
+  x = (left morph)
+  y = (top morph)
+  w = (width morph)
+  topBarH = (topBarHeight this)
+  fillRect aContext (topBarBlue this) x y w topBarH
+  grassColor = (color 137 169 31)
+  grassH = (5 * scale)
+  fillRect aContext grassColor x ((y + topBarH) - grassH) w grassH
 }
 
+// layout
+
 method fixLayout MicroBlocksEditor fromScripter {
+  setExtent morph (width (morph (global 'page'))) (height (morph (global 'page')))
   fixTopBarLayout this
   if (true != fromScripter) { fixScripterLayout this }
 }
@@ -604,6 +654,10 @@ method fixLayout MicroBlocksEditor fromScripter {
 method fixTopBarLayout MicroBlocksEditor {
   scale = (global 'scale')
   space = 0
+
+  // Optimization: report one damage rectangle for the entire top bar
+  reportDamage morph (rect (left morph) (top morph) (width morph) (topBarHeight this))
+
   centerY = (20 * scale)
   centerTitle this
 
@@ -639,6 +693,7 @@ method fixScripterLayout MicroBlocksEditor {
   w = (width (morph (global 'page')))
   h = (max 1 ((height (morph (global 'page'))) - (top m)))
   setExtent m w h
+  fixLayout scripter
 }
 
 method drawIcon MicroBlocksEditor {
@@ -830,7 +885,7 @@ method addIconButton MicroBlocksEditor icon selector width {
   scale = (global 'scale')
   w = (43 * scale)
   if (notNil width) { w = (width * scale) }
-  h = (41 * scale)
+  h = (42 * scale)
   x = (half (w - (width icon)))
   y = (11 * scale)
   bm1 = (newBitmap w h (topBarBlue this))

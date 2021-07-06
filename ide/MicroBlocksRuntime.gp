@@ -134,6 +134,7 @@ method showInstructions SmallRuntime aBlock {
 	setTitle ws 'Instructions'
 	setFont ws 'Arial' (16 * (global 'scale'))
 	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
+	fixLayout ws
 }
 
 method addWithLineNum SmallRuntime aList instruction items {
@@ -169,6 +170,7 @@ method showCompiledBytes SmallRuntime aBlock {
 	setTitle ws 'Instruction Bytes'
 	setFont ws 'Arial' (16 * (global 'scale'))
 	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
+	fixLayout ws
 }
 
 // Decompiler tests
@@ -1594,7 +1596,7 @@ method getFileFromBoard SmallRuntime {
 method getAndSaveFile SmallRuntime remoteFileName {
 	data = (readFileFromBoard this remoteFileName)
 	if ('Browser' == (platform)) {
-		browserWriteFile data remoteFileName
+		browserWriteFile data remoteFileName 'fileFromBoard'
 	} else {
 		fName = (fileToWrite remoteFileName)
 		if ('' != fName) { writeFile fName data }
@@ -1716,7 +1718,7 @@ method updateHighlights SmallRuntime {
 	for m (parts (morph (scriptEditor scripter))) {
 		if (isClass (handler m) 'Block') {
 			if (isRunning this (handler m)) {
-				addHighlight m (4 * scale)
+				addHighlight m
 			} else {
 				removeHighlight m
 			}
@@ -1749,91 +1751,11 @@ method showResult SmallRuntime chunkID value isError isResult {
 			if (and (true == isResult) (h == blockForResultImage)) {
 				doOneCycle (global 'page')
 				waitMSecs 500 // show result bubble briefly before showing menu
-				exportScriptAsImage this h value
+				exportAsImageScaled h 2 value
 				blockForResultImage = nil
 			}
 		}
 	}
-}
-
-// Script Image Saving
-
-method exportScriptAsImage SmallRuntime aBlock result {
-  if (not (devMode)) {
-	exportAsImageScaled this aBlock 1.0 result
-	return
-  }
-  menu = (menu 'Scale?' this)
-  addItem menu '50%' (action 'exportAsImageScaled' this aBlock 0.50 result)
-  addItem menu '55%' (action 'exportAsImageScaled' this aBlock 0.55 result)
-  addItem menu '60%' (action 'exportAsImageScaled' this aBlock 0.60 result)
-  addItem menu '65%' (action 'exportAsImageScaled' this aBlock 0.65 result)
-  addItem menu '70%' (action 'exportAsImageScaled' this aBlock 0.70 result)
-  addItem menu '75%' (action 'exportAsImageScaled' this aBlock 0.75 result)
-  addItem menu '80%' (action 'exportAsImageScaled' this aBlock 0.80 result)
-  addItem menu '90%' (action 'exportAsImageScaled' this aBlock 0.90 result)
-  addItem menu '100%' (action 'exportAsImageScaled' this aBlock 1.0 result)
-  popUpAtHand menu (global 'page')
-}
-
-method exportAsImageScaled SmallRuntime aBlock scale result {
-  // Save a PNG picture of the given script at the given scale (1.0 = 144 dpi).
-  // If result is not nil, include a speech bubble showing the result.
-
-  // if block is a function definition hat use its prototype block
-  if (isPrototypeHat aBlock) {
-	proto = (editedPrototype aBlock)
-	if (notNil proto) { aBlock = proto }
-  }
-
-  // draw script and bubble at high resolution
-  gc
-  oldScale = (global 'scale')
-  setGlobal 'scale' 2 // change global scale temporarily
-  if (notNil (function aBlock)) {
-	scaledScript = (scriptForFunction (function aBlock))
-  } else {
-    scaledScript = (toBlock (expression aBlock))
-  }
-  scriptW = (width (fullBounds (morph scaledScript)))
-  scriptH = (height (fullBounds (morph scaledScript)))
-  if (notNil result) {
-	scaledBubble = (newBubble result 200 'right')
-	bubbleW = (width (fullBounds (morph scaledBubble)))
-	bubbleH = (height (fullBounds (morph scaledBubble)))
-	inset = 14
-  } else {
-	bubbleW = 0
-	bubbleH = 0
-	inset = 0
-  }
-  setGlobal 'scale' oldScale // revert to old scale
-
-  // draw the morph and result bubble, if any
-  bm = (newBitmap (+ scriptW bubbleW (- inset)) (+ scriptH bubbleH (- inset)))
-  draw2 (morph scaledScript) bm 0 (bubbleH - inset)
-  if (notNil scaledBubble) {
-	topMorphWidth = (width (morph scaledScript))
-	draw2 (morph scaledBubble) bm (topMorphWidth - inset) 0
-  }
-
-  // scale the result bitmap
-  if ('Browser' == (platform)) {
-	scaleBM = (scaleAndRotate bm scale)
-  } else {
-	scaleBM = (newBitmap (ceiling (scale * (width bm))) (ceiling (scale * (height bm))))
-	warpBitmap scaleBM bm 0 0 scale scale
-  }
-
-  // save result as a PNG file
-  pngData = (encodePNG scaleBM (round (scale * 144)))
-  if ('Browser' == (platform)) {
-	browserWriteFile pngData 'scriptImage' 'png'
-  } else {
-	fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
-	if ('' == fName) { return false }
-	writeFile fName pngData
-  }
 }
 
 method exportScriptImageWithResult SmallRuntime aBlock {
@@ -2183,7 +2105,7 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	}
 	msg = (join
 		prefix
-		(localized 'You will be asked to save an untitled file.')
+		(localized 'You will be asked to save the firmware file.')
 		(newline)
 		(localized 'Select')
 		' ' driveName ' '
@@ -2199,7 +2121,7 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	closePort this
 	updateIndicator (findMicroBlocksEditor)
 
-	browserWriteFile vmData vmFileName
+	browserWriteFile vmData vmFileName 'vmInstall'
 	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
 	if (endsWith vmFileName '.uf2') {
 		msg = (localized 'When the NeoPixels turn off')
