@@ -12,7 +12,44 @@
 #include "interp.h"
 #include "dict.h"
 
-OBJ badUTF8String() { return primFailed("Invalid UTF8 string"); }
+#ifndef EMSCRIPTEN
+	#include <SDL.h>
+	extern SDL_Surface *screenBitmap;
+#endif
+
+// ***** Helpers *****
+
+static OBJ failedNoFont() { return primFailed("No font"); }
+static OBJ badUTF8String() { return primFailed("Invalid UTF8 string"); }
+
+static inline int intValue(OBJ obj) {
+	// Return the value of an Integer or Float object.
+	if (isInt(obj)) return obj2int(obj);
+	if (IS_CLASS(obj, FloatClass)) return (int) round(evalFloat(obj));
+	return 0;
+}
+
+static int isBitmap(OBJ bitmap) {
+	if ((objWords(bitmap) < 3) ||
+		!isInt(FIELD(bitmap, 0)) ||
+		!isInt(FIELD(bitmap, 1)) ||
+		!IS_CLASS(FIELD(bitmap, 2), BinaryDataClass))
+			return false;
+
+	int w = obj2int(FIELD(bitmap, 0));
+	int h = obj2int(FIELD(bitmap, 1));
+	OBJ data = FIELD(bitmap, 2);
+	return (objWords(data) == (w * h));
+}
+
+static int isRectangle(OBJ rect) {
+	return
+		(objWords(rect) >= 4) &&
+		(isInt(FIELD(rect, 0)) || IS_CLASS(FIELD(rect, 0), FloatClass)) &&
+		(isInt(FIELD(rect, 1)) || IS_CLASS(FIELD(rect, 1), FloatClass)) &&
+		(isInt(FIELD(rect, 2)) || IS_CLASS(FIELD(rect, 2), FloatClass)) &&
+		(isInt(FIELD(rect, 3)) || IS_CLASS(FIELD(rect, 3), FloatClass));
+}
 
 // ***** Platform Dependent Operations *****
 
@@ -53,21 +90,51 @@ static int descent(FontRef font) { return (int) ceil(CTFontGetDescent(font)); }
 static CGColorSpaceRef colorSpace = NULL; // initialized first time needed
 
 static CGContextRef bitmap2context(OBJ bitmap) {
+	if (!colorSpace) colorSpace = CGColorSpaceCreateDeviceRGB();
+
+	if (nilObj == bitmap) {
+		SDL_Surface *screen = screenBitmap;
+		if (!screen) return NULL;
+		return CGBitmapContextCreate(
+			screen->pixels, screen->w, screen->h, 8, (4 * screen->w),
+			colorSpace, kCGImageAlphaPremultipliedLast);
+	}
+
+	if (!isBitmap(bitmap)) return NULL;
 	int w = obj2int(FIELD(bitmap, 0));
 	int h = obj2int(FIELD(bitmap, 1));
 	OBJ data = FIELD(bitmap, 2);
 	if (objWords(data) != (w * h)) return NULL;
 
-	if (!colorSpace) colorSpace = CGColorSpaceCreateDeviceRGB();
 	return CGBitmapContextCreate(&FIELD(data, 0), w, h, 8, (4 * w), colorSpace, kCGImageAlphaPremultipliedLast);
 }
 
-static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
+static void setCGClipRect(CGContextRef ctx, OBJ clipRect, int bmHeight) {
+	if (!isRectangle(clipRect)) return;
+
+	int x = intValue(FIELD(clipRect, 0));
+	int y = intValue(FIELD(clipRect, 1));
+	int w = intValue(FIELD(clipRect, 2));
+	int h = intValue(FIELD(clipRect, 3));
+	y = bmHeight - (y + h); // y origin is at bottom of bitmap in Quartz
+	CGRect r = CGRectMake(x, y, w, h);
+	CGContextClipToRect(ctx, r);
+}
+
+static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, OBJ clipRect) {
 	CGContextRef context = bitmap2context(bm);
 	if (!context) {
-		primFailed("Could not create graphic context for bitmap");
+		printf("drawString target must be a bitmap (Mac)\n");
 		return;
 	}
+	int bmHeight;
+	if (nilObj == bm) {
+		bmHeight = screenBitmap->h;
+	} else {
+		bmHeight = obj2int(FIELD(bm, 1));
+	}
+	CGContextSaveGState(context);
+	setCGClipRect(context, clipRect, bmHeight);
 
 	// default color is black
 	int r = 0;
@@ -103,10 +170,11 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
 	CTLineRef line = CTLineCreateWithAttributedString(attrString);
 
 	// Set text position and draw the line into the graphics context
-	y = (obj2int(FIELD(bm, 1)) - ascent(font) - y); // flip y
+	y = bmHeight - ascent(font) - y; // flip y
 	CGContextSetTextPosition(context, (float) x, (float) y);
 	CTLineDraw(line, context);
 
+	CGContextRestoreGState(context);
 	CFRelease(line);
 	CFRelease(attrString);
 	CFRelease(attributes);
@@ -178,7 +246,7 @@ static OBJ fontNames() {
 
 typedef PangoFontDescription *FontRef;
 
-PangoLayout *cachedLayout = NULL;  // used for measuring
+PangoLayout *cachedLayout = NULL; // used for measuring
 
 static void initCachedLayout() {
 	cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_A8, 1, 1);
@@ -220,7 +288,7 @@ static int ascent(FontRef font) {
 	PangoContext *context = pango_layout_get_context(cachedLayout);
 	PangoFontMetrics *metrics = pango_context_get_metrics(context, font, NULL);
 	int fudgeFactor = (pango_version() > 14403) ? 1 : 0;
- 	return (pango_font_metrics_get_ascent(metrics) / PANGO_SCALE) + fudgeFactor;
+	return (pango_font_metrics_get_ascent(metrics) / PANGO_SCALE) + fudgeFactor;
 }
 
 static int descent(FontRef font) {
@@ -229,21 +297,41 @@ static int descent(FontRef font) {
 	PangoContext *context = pango_layout_get_context(cachedLayout);
 	PangoFontMetrics *metrics = pango_context_get_metrics(context, font, NULL);
 	int fudgeFactor = (pango_version() > 14403) ? 1 : 0;
- 	return (pango_font_metrics_get_descent(metrics) / PANGO_SCALE) + fudgeFactor;
+	return (pango_font_metrics_get_descent(metrics) / PANGO_SCALE) + fudgeFactor;
 }
 
-static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
-	int w = obj2int(FIELD(bm, 0));
-	int h = obj2int(FIELD(bm, 1));
-	OBJ data = FIELD(bm, 2);
-	if (HAS_OBJECTS(data) || ((w * h) <= 0) || (objWords(data) != (w * h))) {
-		primFailed("Could not create graphic context for bitmap");
+static void setCairoClipRect(cairo_t *ctx, OBJ clipRect) {
+	if (!isRectangle(clipRect)) return;
+
+	int x = intValue(FIELD(clipRect, 0));
+	int y = intValue(FIELD(clipRect, 1));
+	int w = intValue(FIELD(clipRect, 2));
+	int h = intValue(FIELD(clipRect, 3));
+	cairo_rectangle(ctx, x, y, w, h);
+	cairo_clip(ctx);
+	cairo_new_path(ctx); // clear path
+}
+
+static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, OBJ clipRect) {
+	cairo_surface_t *surface = NULL;
+	SDL_Surface *screen = screenBitmap;
+	if ((nilObj == bm) && screen) {
+		surface = cairo_image_surface_create_for_data(
+			screen->pixels, CAIRO_FORMAT_ARGB32, screen->w, screen->h, (4 * screen->w));
+	} else if (isBitmap(bm)) {
+		int w = obj2int(FIELD(bm, 0));
+		int h = obj2int(FIELD(bm, 1));
+		OBJ data = FIELD(bm, 2);
+
+		surface = cairo_image_surface_create_for_data(
+			(unsigned char *) &FIELD(data, 0), CAIRO_FORMAT_ARGB32, w, h, (4 * w));
+	} else {
+		printf("drawString target must be a bitmap (Linux)\n");
 		return;
 	}
 
-	cairo_surface_t *surface = cairo_image_surface_create_for_data(
-		(unsigned char *) &FIELD(data, 0), CAIRO_FORMAT_ARGB32, w, h, (4 * w));
 	cairo_t *cr = cairo_create(surface);
+	setCairoClipRect(cr, clipRect);
 	PangoLayout *layout = pango_cairo_create_layout(cr);
 
 	pango_layout_set_font_description(layout, font);
@@ -307,11 +395,11 @@ static OBJ fontNames() {
 
 #endif // linux
 
-// Windows (just stubs for now)
+// Windows
 
 #if defined(_WIN32)
 
-#define UNICODE 1  // use WCHAR API's
+#define UNICODE 1 // use WCHAR API's
 
 #include <string.h>
 #include <windows.h>
@@ -343,7 +431,7 @@ static int ascent(FontRef font) {
 	int ok = GetTextMetrics(hdc, &metrics);
 	DeleteDC(hdc);
 
- 	return (ok ? metrics.tmAscent : 0);
+	return (ok ? metrics.tmAscent : 0);
 }
 
 static int descent(FontRef font) {
@@ -355,13 +443,13 @@ static int descent(FontRef font) {
 	int ok = GetTextMetrics(hdc, &metrics);
 	DeleteDC(hdc);
 
- 	return (ok ? metrics.tmDescent : 0);
+	return (ok ? metrics.tmDescent : 0);
 }
 
 static SCRIPT_STRING_ANALYSIS analyze(HDC hdc, char *s) {
 	WCHAR wStr[MAX_STRING];
 	SCRIPT_STRING_ANALYSIS ssa = NULL;
- 	SCRIPT_CONTROL scriptControl = {0};
+	SCRIPT_CONTROL scriptControl = {0};
 	SCRIPT_STATE scriptState = {0};
 
 	int length = strlen(s);
@@ -374,7 +462,7 @@ static SCRIPT_STRING_ANALYSIS analyze(HDC hdc, char *s) {
 	ScriptStringAnalyse(
 		hdc,
 		wStr, wLength, (2 * wLength) + 16,
-		-1,  // Unicode string
+		-1, // Unicode string
 		SSA_GLYPHS | SSA_FALLBACK,
 		0, // no clipping
 		&scriptControl, &scriptState,
@@ -383,19 +471,38 @@ static SCRIPT_STRING_ANALYSIS analyze(HDC hdc, char *s) {
 	return ssa;
 }
 
-static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
+static void setWinClipRect(HDC hdc, int x, int y, OBJ clipRect) {
+	if (!isRectangle(clipRect)) return;
+
+	int clipX = intValue(FIELD(clipRect, 0)) - x;
+	int clipY = intValue(FIELD(clipRect, 1)) - y;
+	int clipR = clipX + intValue(FIELD(clipRect, 2)); // right
+	int clipB = clipY + intValue(FIELD(clipRect, 3)); // bottom
+	IntersectClipRect(hdc, clipX, clipY, clipR, clipB);
+}
+
+static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, OBJ clipRect) {
 	HDC hdc = NULL;
 	SCRIPT_STRING_ANALYSIS ssa = NULL;
 	HBITMAP hBitmap = NULL;
 	BITMAPINFO bi;
-	unsigned int	*dibBits;
-	HGDIOBJ			oldObj;
+	unsigned int *dibBits;
+	HGDIOBJ oldObj;
 
-	int w = obj2int(FIELD(bm, 0));
-	int h = obj2int(FIELD(bm, 1));
-	OBJ data = FIELD(bm, 2);
-	if (HAS_OBJECTS(data) || (w < 1) || (h < 1) || (objWords(data) != (w * h))) {
-		primFailed("Bad bitmap");
+	int w = 0;
+	int h = 0;
+	unsigned char *pixelData = NULL;
+	SDL_Surface *screen = screenBitmap;
+	if ((nilObj == bm) && screen) {
+		w = screen->w;
+		h = screen->h;
+		pixelData = screen->pixels;
+	} else if (isBitmap(bm)) {
+		w = obj2int(FIELD(bm, 0));
+		h = obj2int(FIELD(bm, 1));
+		pixelData = (unsigned char *) &FIELD(FIELD(bm, 2), 0);
+	} else {
+		printf("drawString target must be a bitmap (Win)\n");
 		return;
 	}
 
@@ -431,22 +538,23 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
 	unsigned int textRGB = ((r << 16) | (g << 8) | b);
 
 	// create a device independent bitmap
-	bi.bmiHeader.biSize          = sizeof(BITMAPINFOHEADER);
-	bi.bmiHeader.biWidth         = textW;
-	bi.bmiHeader.biHeight        = -textH;  // negative indicates top-down bitmap
-	bi.bmiHeader.biPlanes        = 1;
-	bi.bmiHeader.biBitCount      = 32;
-	bi.bmiHeader.biCompression   = BI_RGB;
-	bi.bmiHeader.biSizeImage     = 0;
+	bi.bmiHeader.biSize			= sizeof(BITMAPINFOHEADER);
+	bi.bmiHeader.biWidth		= textW;
+	bi.bmiHeader.biHeight		= -textH; // negative indicates top-down bitmap
+	bi.bmiHeader.biPlanes		= 1;
+	bi.bmiHeader.biBitCount		= 32;
+	bi.bmiHeader.biCompression	= BI_RGB;
+	bi.bmiHeader.biSizeImage	= 0;
 	bi.bmiHeader.biXPelsPerMeter = 0;
 	bi.bmiHeader.biYPelsPerMeter = 0;
-	bi.bmiHeader.biClrUsed       = 0;
-	bi.bmiHeader.biClrImportant  = 0;
+	bi.bmiHeader.biClrUsed		= 0;
+	bi.bmiHeader.biClrImportant	= 0;
 	hBitmap = CreateDIBSection(hdc, &bi, DIB_RGB_COLORS, (void *) &dibBits, NULL, 0);
 	if (hBitmap == NULL) goto cleanup;
 
 	oldObj = SelectObject(hdc, hBitmap);
 	if (oldObj != NULL) {
+		setWinClipRect(hdc, x, y, clipRect);
 		// set fg and bg colors and render the string
 		SetBkMode(hdc, TRANSPARENT);
 		SetBkColor(hdc, RGB(0, 0, 0));
@@ -454,7 +562,7 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
 		ScriptStringOut(ssa, 0, 0, 0, NULL, 0, 0, FALSE);
 
 		unsigned int *src = dibBits;
-		unsigned int *dst = (unsigned int *) &FIELD(data, 0);
+		unsigned int *dst = (unsigned int *) pixelData;
 		int endX = x + textW;
 		int endY = y + textH;
 
@@ -503,7 +611,7 @@ static int CALLBACK fontEnumCallback(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpn
 	if (fontType != TRUETYPE_FONTTYPE) return true;
 
 	char *s = (char *) lpelfe->elfFullName;
-	if ('@' == s[0]) s = &s[1];  // skip first character if it is '@'
+	if ('@' == s[0]) s = &s[1]; // skip first character if it is '@'
 	OBJ fontName = newString(s);
 
 	if (dictHasKey(g_fontDict, fontName)) return true; // duplicate
@@ -572,6 +680,9 @@ static OBJ fontNames() {
 
 #include <emscripten.h>
 
+// imported from vectorPrims.c:
+int setTargetCanvas(OBJ obj, OBJ clipRect);
+
 typedef char *FontRef;
 
 char fullFontName[1000];
@@ -610,7 +721,7 @@ static void closeFont(FontRef font) {
 
 static int ascent(FontRef font) {
 	// approximate; HTML5 Canvas does not support real font metrics
- 	return lastFontSize;
+	return (int) (0.95 * lastFontSize);
 }
 
 static int descent(FontRef font) {
@@ -618,7 +729,50 @@ static int descent(FontRef font) {
 	return (int) (0.3 * lastFontSize);
 }
 
-static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
+static void toColorString(OBJ colorObj, char *result, int resultSize) {
+	// Write a Javascript color string for the given color into the result.
+
+	int words = objWords(colorObj);
+	result[0] = 0;
+	if (words < 3) {
+		snprintf(result, resultSize, "rgba(0, 0, 0, 1)"); // black
+		return;
+	}
+	int r = clip(obj2int(FIELD(colorObj, 0)), 0, 255);
+	int g = clip(obj2int(FIELD(colorObj, 1)), 0, 255);
+	int b = clip(obj2int(FIELD(colorObj, 2)), 0, 255);
+	int a = (words <= 3) ? 255 : clip(obj2int(FIELD(colorObj, 3)), 0, 255);
+	snprintf(result, resultSize, "rgba(%d, %d, %d, %f)", r, g, b, a / 255.0);
+}
+
+static void drawStringOnTexture(char *s, FontRef font, OBJ texture, OBJ color, int x, int y, OBJ clipRect) {
+	int ok = setTargetCanvas(texture, clipRect);
+	if (!ok) return;
+
+	char colorString[1000];
+	toColorString(color, colorString, sizeof(colorString));
+
+	y -= lastFontSize / 10; // adjust y offset to match other platforms
+	EM_ASM_({
+		var s = UTF8ToString($0);
+		var fontName = UTF8ToString($1);
+		var colorString = UTF8ToString($2);
+		var x = $3;
+		var y = $4;
+
+		GP.ctx.font = fontName;
+		GP.ctx.fillStyle = colorString;
+		GP.ctx.fillText(s, x, y);
+		GP.ctx.restore();
+	}, s, font, colorString, x, (y + lastFontSize));
+}
+
+static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, OBJ clipRect) {
+	if (!isBitmap(bm)) {
+		drawStringOnTexture(s, font, bm, color, x, y, clipRect);
+		return;
+	}
+
 	// extract bitmap fields
 	int bmWidth = obj2int(FIELD(bm, 0));
 	int bmHeight = obj2int(FIELD(bm, 1));
@@ -641,6 +795,7 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
 		if (isInt(n)) a = clip(obj2int(n), 0, 255);
 	}
 
+	y -= lastFontSize / 10; // adjust y offset to match other platforms
 	EM_ASM_({
 		var s = UTF8ToString($0);
 		var fontName = UTF8ToString($1);
@@ -658,8 +813,8 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
 		var cnv = document.createElement('canvas');
 		var ctx = cnv.getContext('2d');
 		ctx.font = fontName;
- 		cnv.width = Math.ceil(ctx.measureText(s).width);
- 		cnv.height = bmHeight;
+		cnv.width = Math.ceil(ctx.measureText(s).width);
+		cnv.height = bmHeight;
 		ctx.font = fontName; // font gets cleared by changing canvas size (in Chrome, at least)
 		ctx.fillStyle = '#000';
 		ctx.fillRect(0, 0, cnv.width, cnv.height); // fill w/ black
@@ -672,25 +827,38 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y) {
 		var dstXCount = Math.min(cnv.width, (bmWidth - dstStartX));
 
 		var srcIndex = 4 * srcStartX;
- 		for (var dstY = y; dstY < bmHeight; dstY++) {
+		for (var dstY = y; dstY < bmHeight; dstY++) {
 			if (dstY >= 0) {
 				var dstIndex = bmData + (4 * ((dstY * bmWidth) + dstStartX));
 				for (var i = 0; i < dstXCount; i++) {
 					var j = srcIndex + (4 * i);
 					// due to subpixel sampling, R/G/B channels may be different; alpha is average
 					var alpha = (cnvData[j] + cnvData[j+1] + cnvData[j+2]) / 3;
-					if (alpha > 0) {
-						Module.HEAPU8[dstIndex++] = b;
-						Module.HEAPU8[dstIndex++] = g;
-						Module.HEAPU8[dstIndex++] = r;
-						Module.HEAPU8[dstIndex++] = alpha;
-					} else {
+					if (alpha < 20) {
+						// transparent pixels
 						dstIndex += 4;
+					} else if (alpha > 250) {
+						// opaque pixels
+						Module.HEAPU8[dstIndex++] = r;
+						Module.HEAPU8[dstIndex++] = g;
+						Module.HEAPU8[dstIndex++] = b;
+						Module.HEAPU8[dstIndex++] = 255;
+					} else {
+						// do alpha blending
+						var invAlpha = 255 - alpha;
+						var rOut = Math.round(((invAlpha * Module.HEAPU8[dstIndex]) + (alpha * r)) / 255);
+						var gOut = Math.round(((invAlpha * Module.HEAPU8[dstIndex + 1]) + (alpha * g)) / 255);
+						var bOut = Math.round(((invAlpha * Module.HEAPU8[dstIndex + 2]) + (alpha * b)) / 255);
+						var aOut = Math.max(alpha, Module.HEAPU8[dstIndex + 3]);
+						Module.HEAPU8[dstIndex++] = rOut;
+						Module.HEAPU8[dstIndex++] = gOut;
+						Module.HEAPU8[dstIndex++] = bOut;
+						Module.HEAPU8[dstIndex++] = aOut;
 					}
 				}
 			}
-  			srcIndex += (4 * cnv.width);
- 		}
+			srcIndex += (4 * cnv.width);
+		}
 	}, s, font, lastFontSize, &FIELD(bmData, 0), bmWidth, bmHeight, r, g, b, a, x, y);
 }
 
@@ -706,7 +874,9 @@ static int stringWidth(char *s, FontRef font) {
 }
 
 static OBJ fontNames() {
-	// HTML5 does not support font enumeration
+	// Returns empty array because HTML5 does not support font enumeration.
+	(void) isRectangle; // suppress compiler warning that isRectangle is unused by Emscripten
+	(void) intValue; // suppress compiler warning that intValue is unused by Emscripten
 	return newArray(0);
 }
 
@@ -764,17 +934,6 @@ static void fontCacheAdd(char *fontName, int fontSize, FontRef font) {
 	entry->font = font;
 }
 
-// ***** Helpers *****
-
-static OBJ failedNoFont() { return primFailed("No font"); }
-
-static int isBitmap(OBJ bitmap) {
-	return
-		(objWords(bitmap) >= 3) &&
-		isInt(FIELD(bitmap, 0)) && isInt(FIELD(bitmap, 1)) &&
-		IS_CLASS(FIELD(bitmap, 2), BinaryDataClass);
-}
-
 // ***** Primitives *****
 
 static OBJ primDrawString(int nargs, OBJ args[]) {
@@ -786,16 +945,16 @@ static OBJ primDrawString(int nargs, OBJ args[]) {
 	OBJ color = (nargs > 2) ? args[2] : nilObj;
 	int x = intOrFloatArg(3, 0, nargs, args);
 	int y = intOrFloatArg(4, 0, nargs, args);
+	OBJ clipRect = (nargs > 5) ? args[5] : nilObj;
 
 	if (isBadUTF8(s)) {
 		printf("drawString: invalid UTF8 string (%d bytes)\n", (int) strlen(s));
 		return nilObj;
 	}
-	if (!isBitmap(bm)) return primFailed("Bad bitmap");
 	if (NOT_CLASS(args[1], StringClass)) return primFailed("Second argument must be a String");
 	if (!*s) return nilObj; // empty string; do nothing
 
-	drawString(s, currentFont, bm, color, x, y);
+	drawString(s, currentFont, bm, color, x, y, clipRect);
 	return nilObj;
 }
 
