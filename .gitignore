@@ -5,14 +5,9 @@ chromeApp/MicroBlocks/gp_wasm.data
 chromeApp/MicroBlocks/gp_wasm.js
 chromeApp/MicroBlocks/gp_wasm.wasm
 chromeApp/MicroBlocks.zip
-gp/packagers/darwin/esptool
-gp/packagers/linux/esptool
-gp/packagers/win32/esptool
 linux+pi/ublockscode
-linux+pi/vm.*
 linux+pi/vm_*
 linux+pi/qemu
-precompiled/vm.*
 precompiled/vm_*
 data/*
 BUILD
