@@ -56,7 +56,7 @@ method setContents MicroBitDisplaySlot anInteger {
 }
 
 method redraw MicroBitDisplaySlot {
-	scale = (global 'scale')
+	scale = (blockScale)
 	bgColor = (colorHSV 235 0.62 0.80)
 	offColor = (colorHSV 235 0.62 0.40)
 	onColor = (colorHSV 0 1.0 0.9)
@@ -107,7 +107,7 @@ method ledIndex MicroBitDisplaySlot aHand {
 	// Return an array with the x,y pair of the LED under the hand.
 	// Return nil if hand is not over any LED.
 
-	scale = (global 'scale')
+	scale = (blockScale)
 	normalizedX = ((((x aHand) - (left morph)) / scale) - inset)
 	normalizedY = ((((y aHand) - (top morph)) / scale) - inset)
 	if (or (normalizedX < 0) (normalizedY < 0)) { return nil }
