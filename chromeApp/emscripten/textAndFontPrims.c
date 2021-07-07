@@ -535,7 +535,7 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, O
 		n = FIELD(color, 2);
 		if (isInt(n)) b = clip(obj2int(n), 0, 255);
 	}
-	unsigned int textRGB = ((r << 16) | (g << 8) | b);
+	unsigned int textRGB = (255 << 24)| (r << 16) | (g << 8) | b; // opaque text color
 
 	// create a device independent bitmap
 	bi.bmiHeader.biSize			= sizeof(BITMAPINFOHEADER);
@@ -571,8 +571,23 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, O
 				unsigned int pix = *src++;
 				if (pix != 0) { // if not transparent
 					if ((0 <= dstX) && (dstX < w) && (0 <= dstY) && (dstY < h)) {
-						int alpha = (((pix >> 16) & 225) + ((pix >> 8) & 225) + (pix & 255)) / 3;
-						dst[(dstY * w) + dstX] = (alpha << 24) | textRGB;
+						// must average R, G, and B due to subpixel rendering
+						int alpha = (((pix >> 16) & 255) + ((pix >> 8) & 255) + (pix & 255)) / 3;
+						if (alpha < 20) { // transparent
+							continue;
+						} else if (alpha > 250) { // opaque
+							pix = textRGB;
+						} else { // do alpha blending
+							int dstPix = dst[(dstY * w) + dstX];
+							int dstAlpha = (dstPix >> 24) & 255;
+							int invAlpha = 255 - alpha;
+							int rOut = (((invAlpha * ((dstPix >> 16) & 255)) + (alpha * r)) / 255);
+							int gOut = (((invAlpha * ((dstPix >> 8) & 255)) + (alpha * g)) / 255);
+							int bOut = (((invAlpha * (dstPix & 255)) + (alpha * b)) / 255);
+							int aOut = (alpha > dstAlpha) ? alpha : dstAlpha;
+							pix = (aOut << 24) | (rOut << 16) | (gOut << 8) | bOut;
+						}
+						dst[(dstY * w) + dstX] = pix;
 					}
 				}
 			}
