@@ -1036,9 +1036,17 @@ int cursorIndex (char* cursorName) {
 	return 0;
 };
 
+static SDL_Cursor* currentCursor = NULL;
+
 OBJ primSetCursor(int nargs, OBJ args[]) {
-	SDL_Cursor* cursor = SDL_CreateSystemCursor(nargs > 0 ? cursorIndex(obj2str(args[0])) : 0);
-	SDL_SetCursor(cursor);
+	if ((nargs < 1) || !IS_CLASS(args[0], StringClass)) return nilObj;
+
+	if (currentCursor) {
+		SDL_FreeCursor(currentCursor);
+		currentCursor = NULL;
+	}
+	currentCursor = SDL_CreateSystemCursor(cursorIndex(obj2str(args[0])));
+	SDL_SetCursor(currentCursor);
 	return nilObj;
 }
 
