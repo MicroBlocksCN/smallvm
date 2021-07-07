@@ -1024,9 +1024,9 @@ OBJ primShowKeyboard(int nargs, OBJ args[]) {
 
 int cursorIndex (char* cursorName) {
 	const char* lookup_table[] = {
-		"default", "text", "wait", "crosshair",
-		"", "move", "", "ew-resize", "ns-resize",
-		"", "not-allowed", "pointer"
+		"default", "text", "wait", "crosshair", "", // 0-4
+		"nwse-resize", "nesw-resize", "ew-resize", "ns-resize", // 5-8
+		"move", "not-allowed", "pointer" // 9-11
 	};
 	for (int i = 0; i < 12; i++) {
 		if (strcmp(lookup_table[i], cursorName) == 0) {
