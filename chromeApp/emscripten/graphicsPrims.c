@@ -1022,22 +1022,22 @@ OBJ primShowKeyboard(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+int cursorIndex (char* cursorName) {
+	const char* lookup_table[] = {
+		"default", "text", "wait", "crosshair",
+		"", "move", "", "ew-resize", "ns-resize",
+		"", "not-allowed", "pointer"
+	};
+	for (int i = 0; i < 12; i++) {
+		if (strcmp(lookup_table[i], cursorName) == 0) {
+			return i;
+		}
+	}
+	return 0;
+};
+
 OBJ primSetCursor(int nargs, OBJ args[]) {
-	/* Cursor value reference:
-	 * 0: Arrow
-	 * 1: I-beam
-	 * 2: Wait
-	 * 3: Crosshair
-	 * 4: Wait arrow
-	 * 5: Hand
-	 * 6: Hand
-	 * 7: Resize horizontally
-	 * 8: Resize vertically
-	 * 9: Hand
-	 * 10: Forbidden
-	 * 11: Finger
-	 */
-	SDL_Cursor* cursor = SDL_CreateSystemCursor(nargs > 0 ? obj2int(args[0]) : 0);
+	SDL_Cursor* cursor = SDL_CreateSystemCursor(nargs > 0 ? cursorIndex(obj2str(args[0])) : 0);
 	SDL_SetCursor(cursor);
 	return nilObj;
 }

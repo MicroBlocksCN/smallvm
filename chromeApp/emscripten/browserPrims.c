@@ -1275,8 +1275,10 @@ OBJ primShowKeyboard(int nargs, OBJ args[]) {
 }
 
 OBJ primSetCursor(int nargs, OBJ args[]) {
-	// xxx not yet implemented
-
+	// xxx untested!
+	EM_ASM_({
+		document.body.style.setProperty('cursor', $0);
+	}, obj2str(args[0]));
 	return nilObj;
 }
 
