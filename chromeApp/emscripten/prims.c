@@ -43,7 +43,7 @@
 
 // ***** Version Date and Time *****
 
-static char *versionNum = "v266";
+static char *versionNum = "v267";
 static char *versionDate = __DATE__;
 static char *versionTime = __TIME__;
 
