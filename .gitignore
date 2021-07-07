@@ -1,9 +1,9 @@
 .pio
 .piolibdeps
 apps
-chromeApp/MicroBlocks/gp_wasm.data
-chromeApp/MicroBlocks/gp_wasm.js
-chromeApp/MicroBlocks/gp_wasm.wasm
+chromeApp/*/gp_wasm.data
+chromeApp/*/gp_wasm.js
+chromeApp/*/gp_wasm.wasm
 chromeApp/MicroBlocks.zip
 linux+pi/ublockscode
 linux+pi/vm_*
