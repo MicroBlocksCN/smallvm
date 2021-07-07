@@ -1,13 +1,13 @@
 var cacheName = 'MicroBlocks';
 var filesToCache = [
-  '/mbtest/',
-  '/mbtest/microblocks.html',
-  '/mbtest/emModule.js',
-  '/mbtest/gpSupport.js',
-  '/mbtest/FileSaver.js',
-  '/mbtest/gp_wasm.js',
-  '/mbtest/gp_wasm.wasm',
-  '/mbtest/gp_wasm.data',
+  '/run/',
+  '/run/microblocks.html',
+  '/run/emModule.js',
+  '/run/gpSupport.js',
+  '/run/FileSaver.js',
+  '/run/gp_wasm.js',
+  '/run/gp_wasm.wasm',
+  '/run/gp_wasm.data',
 ];
 
 /* Start the service worker and cache all of the app's content */
