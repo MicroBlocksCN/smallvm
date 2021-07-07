@@ -42,7 +42,12 @@ oop.c parse.c prims.c serialPortPrims.c sha1.c sha2.c soundPrims.c textAndFontPr
 --preload-file translations \
 -o gp_wasm.html
 
-# copy the compiler output files into the MicroBlocks folder and remove unused gp_wasm.html
+# copy the compiler output files to the webapp folder
+cp gp_wasm.js ../webapp
+cp gp_wasm.wasm ../webapp
+cp gp_wasm.data ../webapp
+
+# move the compiler output files into the MicroBlocks folder and remove unused gp_wasm.html
 mv gp_wasm.js ../MicroBlocks
 mv gp_wasm.wasm ../MicroBlocks
 mv gp_wasm.data ../MicroBlocks
