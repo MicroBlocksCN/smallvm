@@ -316,6 +316,7 @@ method setBlockScalePercent ScriptEditor percent {
   if (notNil pe) {
 	setGlobal 'blockScale' (percent / 100)
 	languageChanged pe
+	saveToUserPreferences pe 'blockSizePercent' percent
   }
 }
 

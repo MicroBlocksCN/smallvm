@@ -48,9 +48,9 @@ to openMicroBlocksEditor devMode {
   redrawAll (global 'page')
   readVersionFile (smallRuntime)
   launch (global 'page') (checkLatestVersion)
+  applyUserPreferences editor
   pageResized editor
   developerModeChanged editor
-  applyUserPreferences editor
   startSteppingSafely page
 }
 
@@ -570,6 +570,10 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'autoDecompile')) {
 		autoDecompile = (at prefs 'autoDecompile')
 	}
+	if (notNil (at prefs 'blockSizePercent')) {
+		percent = (at prefs 'blockSizePercent')
+		setGlobal 'blockScale' ((clamp percent 25 500) / 100)
+	}
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
@@ -775,10 +779,30 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 		addItem menu 'enable PlugShare when project empty' (action 'toggleAutoDecompile' this true) 'when plugging a board, automatically read its contents into the IDE if the current project is empty'
 	}
 
+//addItem menu 'cursorTest' cursorTest
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
   return menu
+}
+
+method cursorTest MicroBlocksEditor {
+  menu = (menu 'Cursor Test' this)
+  addItem menu 'default'		(action 'setCursor' 'default')
+  addItem menu 'text'			(action 'setCursor' 'text')
+  addItem menu 'wait'			(action 'setCursor' 'wait')
+  addItem menu 'crosshair'		(action 'setCursor' 'crosshair')
+
+  addItem menu 'nwse-resize'	(action 'setCursor' 'nwse-resize')
+  addItem menu 'nesw-resize'	(action 'setCursor' 'nesw-resize')
+  addItem menu 'ew-resize'		(action 'setCursor' 'ew-resize')
+  addItem menu 'ns-resize'		(action 'setCursor' 'ns-resize')
+
+  addItem menu 'move'			(action 'setCursor' 'move')
+  addItem menu 'not-allowed'	(action 'setCursor' 'not-allowed')
+  addItem menu 'pointer'		(action 'setCursor' 'pointer')
+
+  popUpAtHand menu (global 'page')
 }
 
 method showGraph MicroBlocksEditor {
