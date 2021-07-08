@@ -159,11 +159,11 @@ method addTopBarParts MicroBlocksEditor {
 
   leftItems = (list)
   add leftItems (140 * scale)
-  add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu')
-  add leftItems (addIconButton this (settingsButtonIcon this) 'settingsMenu')
-  add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu')
-  add leftItems (addIconButton this (graphIcon this) 'showGraph')
-  add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard')
+  add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu' 'Language')
+  add leftItems (addIconButton this (settingsButtonIcon this) 'settingsMenu' 'MicroBlocks')
+  add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu' 'File')
+  add leftItems (addIconButton this (graphIcon this) 'showGraph' 'Graph')
+  add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard' 'Connect')
   indicator = (last leftItems)
 
   if (isNil title) {
@@ -182,8 +182,8 @@ method addTopBarParts MicroBlocksEditor {
 	add rightItems (10 * scale)
   }
 
-  add rightItems (addIconButton this (startButtonIcon this) 'startAll' 36)
-  add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 36)
+  add rightItems (addIconButton this (startButtonIcon this) 'startAll' 'Start' 36)
+  add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 'Stop' 36)
   add rightItems (7 * scale)
 }
 
@@ -906,7 +906,7 @@ method settingsMenu MicroBlocksEditor {
   popUpAtHand (contextMenu this) (global 'page')
 }
 
-method addIconButton MicroBlocksEditor icon selector width {
+method addIconButton MicroBlocksEditor icon selector hint width {
   scale = (global 'scale')
   w = (43 * scale)
   if (notNil width) { w = (width * scale) }
@@ -918,6 +918,7 @@ method addIconButton MicroBlocksEditor icon selector width {
   bm2 = (newBitmap w h (topBarBlueHighlight this))
   drawBitmap bm2 icon x y
   button = (newButton '' (action selector this))
+  if (notNil hint) { setHint button (localized hint) }
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
