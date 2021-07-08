@@ -286,7 +286,12 @@ method step Hand {
 method processEvent Hand evt {
   type  = (at evt 'type')
   if (type == 'mousewheel') {
-    processSwipe this (at evt 'x') (at evt 'y')
+	wheelScale = (5 * (global 'scale'))
+	if ('Linux' == (platform)) {
+		// Linux only reports +/- 1 for mousewheel events so scale them up
+		wheelScale = (50 * (global 'scale'))
+	}
+    processSwipe this (wheelScale * (at evt 'x')) (wheelScale * (at evt 'y'))
     return
   }
   x = (at evt 'x')
@@ -963,7 +968,10 @@ method processEvents Page {
         processEvent hand evt
       }
     } (type == 'mousewheel') {
-      processEvent hand evt
+      // optimization: skip all but the final mousewheel event in a burst of mousewheel events
+      if (not (and (type == 'mousewheel') (notNil nxt) ((at nxt 'type') == 'mousewheel'))) {
+        processEvent hand evt
+      }
     } (or (type == 'keyDown') (type == 'keyUp') (type == 'textinput')) {
       processEvent keyboard evt
     } (type == 'window') {
