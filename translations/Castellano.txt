@@ -1299,6 +1299,9 @@ Discard current project?
 set block size...
 tamaño de los bloques...
 
+make blocks bigger or smaller
+aumentar o reducir el tamaño de los bloques
+
 clean up
 limpia
 

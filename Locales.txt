@@ -906,6 +906,8 @@ Discard current project?
 
 set block size...
 
+make blocks bigger or smaller
+
 clean up
 
 arrange scripts

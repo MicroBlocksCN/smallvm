@@ -1299,6 +1299,9 @@ Vols descartar el projecte actual?
 set block size...
 mida dels blocs...
 
+make blocks bigger or smaller
+augmenta o redueix la mida dels blocs
+
 clean up
 neteja
 

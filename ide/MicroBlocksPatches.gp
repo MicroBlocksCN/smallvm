@@ -462,7 +462,7 @@ return // xxx suppress the ability to make variadic user-defined blocks
 
 method contextMenu ScriptEditor {
   menu = (menu nil this)
-  addItem menu 'set block size...' 'setBlockSize' 'make blocks smaller'
+  addItem menu 'set block size...' 'setBlockSize' 'make blocks bigger or smaller'
   addLine menu
   if (notNil lastDrop) {
     addItem menu 'undrop  (ctrl-Z)' 'undrop' 'undo the last block drop'
