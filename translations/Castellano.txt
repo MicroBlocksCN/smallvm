@@ -122,6 +122,12 @@ detenerlo todo
 last message
 último mensaje
 
+call _
+llama _
+
+with _
+con parámetro(s) _
+
 Operators
 Operadores
 
@@ -288,6 +294,18 @@ spi envíar _
 
 spi receive
 spi leer
+
+spi setup speed _
+velocidad de spi _
+
+mode _
+modo _
+
+rpi channel _
+canal de rpi _
+
+spi exchange bytes _
+bytes de intercambio de spi _
 
 print _
 escribir _
@@ -1276,6 +1294,11 @@ Quit MicroBlocks?
 Discard current project?
 ¿Quieres descartar el proyecto actual?
 
+# Scripting area right-click context menu
+
+set block size...
+tamaño de los bloques...
+
 clean up
 limpia
 
@@ -1299,6 +1322,9 @@ guarda la imagen de todos los programas
 
 about...
 sobre...
+
+About MicroBlocks
+Acerca de MicroBlocks
 
 virtual machine version
 versión de la máquina virtual
@@ -1345,6 +1371,9 @@ borra y reparticiona esp
 Use board type
 ¿La placa conectada es de tipo
 
+Plug in the board.
+Conecta la placa.
+
 Wiping board...
 Borrando placa...
 
@@ -1381,8 +1410,32 @@ exporta funciones como librería
 hide advanced blocks
 oculta los bloques avanzados
 
+put file on board
+subir archivo a la placa
+
+get file from board
+bajar archivo de la placa
+
 Data Graph
 Gráfico de datos
+
+Graph
+Gráfico
+
+clear graph
+limpiar gráfico
+
+zero at bottom
+cero abajo
+
+export data to CSV file
+exportar datos a archivo CSV
+
+import data from CSV file
+importar datos de archivo CSV
+
+copy graph data to clipboard
+copiar datos del gráfico al portapapeles
 
 show instructions
 muestra instrucciones
@@ -1446,6 +1499,9 @@ agarra este bloque
 
 save picture of script
 guarda la imagen del programa
+
+save picture of script with result
+guarda la imagen del programa con su resultado
 
 save a picture of this block definition as a PNG file
 guarda una imagen de la definición de este bloque en formato PNG

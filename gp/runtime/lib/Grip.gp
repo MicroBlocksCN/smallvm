@@ -30,7 +30,16 @@ to newGrip orientation width height {
   return grip
 }
 
-method handEnter Grip aHand {handEnter trigger aHand}
+method handEnter Grip aHand {
+	handEnter trigger aHand
+	if (orientation == 'vertical') {
+		setCursor 'ns-resize'
+	} (orientation == 'horizontal') {
+		setCursor 'ew-resize'
+	} else {
+		setCursor 'nwse-resize'
+	}
+}
 method handLeave Grip aHand {handLeave trigger aHand}
 method clicked Grip {return true}
 method rightClicked Grip {return true}

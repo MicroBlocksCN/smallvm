@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs
 
 method scripter SmallRuntime { return scripter }
 
@@ -22,7 +22,7 @@ method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
 	readFromBoard = false
-	decompilerStatus = ''
+	initializeDecompilerStatus this
 	clearLoggedData this
 	return this
 }
@@ -270,9 +270,22 @@ method analyzeProject SmallRuntime {
 
 // Decompiling
 
+method initializeDecompilerStatus SmallRuntime {
+	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+		decompilerStatus = 'Plug in the board and click the USB icon to connect.'
+	} else {
+		decompilerStatus = 'Plug in the board.'
+	}
+}
+
 method readCodeFromNextBoardConnected SmallRuntime {
 	readFromBoard = true
 	disconnected = false
+}
+
+method cancelReadCodeFromNextBoardConnected SmallRuntime {
+	readFromBoard = false
+	initializeDecompilerStatus this
 }
 
 method readCodeFromBoard SmallRuntime {
@@ -316,14 +329,21 @@ method decompilerDone SmallRuntime { return (decompilerStatus == '') }
 method decompilerStatus SmallRuntime { return decompilerStatus }
 
 method stopDecompilation SmallRuntime {
+	stopSpinner this
 	if (notNil decompiler) {
-		spinner = (findMorph 'MicroBlocksSpinner')
-		if (notNil spinner) { destroy (handler spinner) }
 		decompilerStatus = ''
 		decompiler = nil
 		clearBoardIfConnected this true
 		stopAndSyncScripts this
 	}
+	initializeDecompilerStatus this
+}
+
+// Spinner modal window
+
+method stopSpinner SmallRuntime {
+	spinner = (findMorph 'MicroBlocksSpinner')
+	if (notNil spinner) { destroy (handler spinner) }
 }
 
 method waitForPing SmallRuntime {
@@ -494,6 +514,7 @@ method deleteChunkForBlock SmallRuntime aBlock {
 
 method stopAndSyncScripts SmallRuntime {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
+	setCursor 'wait'
 
 	if (notNil port) {
 		sendStopAll this
@@ -502,6 +523,8 @@ method stopAndSyncScripts SmallRuntime {
 	clearRunningHighlights this
 	saveAllChunks this
 	verifyCRCs this
+
+	setCursor 'default'
 }
 
 method stopAndClearChunks SmallRuntime {
@@ -1604,6 +1627,7 @@ method getAndSaveFile SmallRuntime remoteFileName {
 }
 
 method readFileFromBoard SmallRuntime remoteFileName {
+	setCursor 'wait'
 	msg = (list)
 	id = (rand ((1 << 24) - 1))
 	appendInt32 this msg id
@@ -1628,6 +1652,7 @@ method readFileFromBoard SmallRuntime remoteFileName {
 		if (byteCount > 0) { replaceByteRange result startIndex endIndex msg 9 }
 		startIndex += byteCount
 	}
+	setCursor 'default'
 	return result
 }
 
@@ -1636,6 +1661,7 @@ method putFileOnBoard SmallRuntime {
 }
 
 method writeFileToBoard SmallRuntime srcFileName {
+	setCursor 'wait'
 	fileContents = (readFile srcFileName true)
 	totalBytes = (byteCount fileContents)
 	if (isNil fileContents) { return }
@@ -1671,6 +1697,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 	appendInt32 this msg id
 	appendInt32 this msg bytesSent
 	sendMsgSync this 'fileChunk' 0 msg
+	setCursor 'default'
 }
 
 method appendInt32 SmallRuntime msg n {

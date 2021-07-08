@@ -418,6 +418,22 @@ method rightClicked Text hand {
   return false
 }
 
+method handEnter Text aHand {
+  if (editRule != 'static') {
+	setCursor 'text'
+  }
+}
+
+method handLeave Text aHand {
+  // handEnter happens before handLeave, so cursor wouldn't go back to finger
+  // when you move between two buttons without any space in between. A temporary
+  // solution is to re-trigger handEnter on the new morph under the hand.
+  if (isNil caret) {
+	setCursor 'default'
+	handEnter (objectAt aHand) aHand
+  }
+}
+
 // context menu
 
 method contextMenu Text {
@@ -462,12 +478,14 @@ method contextMenu Text {
 method edit Text hand keepFocus {
   root = (handler (root morph))
   if (isClass root 'Page') {edit (keyboard root) this (slotAt this (x hand) (y hand)) keepFocus}
+  setCursor 'text'
 }
 
 method stopEditing Text {
   unmark this
   root = (handler (root morph))
   if (isClass root 'Page') {stopEditing (keyboard root) this}
+  setCursor 'default'
 }
 
 // measuring

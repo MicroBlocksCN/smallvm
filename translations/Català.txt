@@ -122,6 +122,12 @@ atura-ho tot
 last message
 últim missatge
 
+call _
+crida _
+
+with _
+amb paràmetre(s) _
+
 Operators
 Operadors
 
@@ -288,6 +294,18 @@ spi envia _
 
 spi receive
 spi llegeix
+
+spi setup speed _
+velocitat de spi _
+
+mode _
+mode _
+
+rpi channel _
+canal rpi _
+
+spi exchange bytes _
+bytes d'intercanvi spi _
 
 print _
 escriu _
@@ -1276,6 +1294,11 @@ Sortir de MicroBlocks?
 Discard current project?
 Vols descartar el projecte actual?
 
+# Scripting area right-click context menu
+
+set block size...
+mida dels blocs...
+
 clean up
 neteja
 
@@ -1299,6 +1322,9 @@ desa la imatge de tots els programes
 
 about...
 sobre...
+
+About MicroBlocks
+Sobre MicroBlocks
 
 virtual machine version
 versió de la màquina virtual
@@ -1345,6 +1371,9 @@ esborra i reparticiona esp
 Use board type
 La placa connectada és de tipus
 
+Plug in the board.
+Connecta la placa.
+
 Wiping board...
 Esborrant placa...
 
@@ -1381,8 +1410,32 @@ exporta funcions com a llibreria
 hide advanced blocks
 amaga els blocs avançats
 
+put file on board
+carrega arxiu a la placa
+
+get file from board
+descarrega arxiu de la placa
+
 Data Graph
 Gràfica de dades
+
+Graph
+Gràfica
+
+clear graph
+neteja gràfica
+
+zero at bottom
+zero a baix
+
+export data to CSV file
+exporta dades a arxiu CSV
+
+import data from CSV file
+importa dades d'arxiu CSV
+
+copy graph data to clipboard
+copia dades de la gràfica al portapapers
 
 show instructions
 mostra instruccions
@@ -1446,6 +1499,9 @@ agafa aquest bloc
 
 save picture of script
 desa la imatge del programa
+
+save picture of script with result
+desa la imatge del programa amb el resultat
 
 save a picture of this block definition as a PNG file
 desa una imatge de la definició d'aquest bloc en format PNG

@@ -51,7 +51,7 @@ method press Trigger {
 }
 
 method handEnter Trigger aHand {
-  setCursor 'ew-resize'
+  setCursor 'pointer'
   highlight this
   if (notNil hint) {
 	addSchedule (global 'page') (schedule (action 'showHint' morph hint) 300)

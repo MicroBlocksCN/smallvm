@@ -68,6 +68,18 @@ method drawOn BlockDrawer ctx {
   }
 }
 
+method handEnter BlockDrawer aHand {
+  setCursor 'pointer'
+}
+
+method handLeave BlockDrawer aHand {
+  setCursor 'default'
+  // handEnter happens before handLeave, so cursor wouldn't go back to finger
+  // when you move between two buttons without any space in between. A temporary
+  // solution is to re-trigger handEnter on the new morph under the hand.
+  handEnter (objectAt aHand) aHand
+}
+
 method clicked BlockDrawer aHand {
   if (isNil target) {return false}
   hasMore = (canExpand target)

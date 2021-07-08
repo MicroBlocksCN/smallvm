@@ -7,7 +7,7 @@
 // MicroBlocksSpinner.gp - A modal spinner animation
 // Bernat Romagosa, October 2020
 
-defineClass MicroBlocksSpinner morph label sublabel rotation labelGetter doneGetter task
+defineClass MicroBlocksSpinner morph label sublabel rotation labelGetter doneGetter task stopAction
 
 to newSpinner labelReporter doneReporter {
 	return (initialize (new 'MicroBlocksSpinner') labelReporter doneReporter)
@@ -22,7 +22,7 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 	rotation = 0
 
 	scale = (global 'scale')
-	label = (newText (call labelGetter) 'Arial' (24 * scale) (gray 255))
+	label = (newText (localized (call labelGetter)) 'Arial' (24 * scale) (gray 255))
 	addPart morph (morph label)
 
 	sublabel = (newText (localized '(press ESC to cancel)') 'Arial' (18 * scale) (gray 255))
@@ -63,17 +63,28 @@ method drawOn MicroBlocksSpinner ctx {
 method task MicroBlocksSpinner { return task }
 method setTask MicroBlocksSpinner aTask { task = aTask }
 
+method setStopAction MicroBlocksSpinner anAction { stopAction = anAction }
+
 method destroy MicroBlocksSpinner {
+	if (notNil stopAction) {
+		call stopAction
+	}
 	if (notNil task) {
 		stopTask task
 	}
+	setCursor 'default'
 	destroy morph
 }
 
 method step MicroBlocksSpinner {
-	if (call doneGetter) { destroy this }
+	if (call doneGetter) {
+		destroy this
+	} else {
+		setCursor 'wait'
+	}
+
 	rotation = ((rotation + 5) % 360)
-	setText label (call labelGetter)
+	setText label (localized (call labelGetter))
 	fixLayout this
 	changed morph
 }
