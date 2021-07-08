@@ -260,6 +260,7 @@ method openProjectMenu MicroBlocksEditor {
 
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the given file path or URL.
+  setCursor 'wait'
   if (beginsWith location '//') {
     lastProjectFolder = 'Examples'
   } else {
@@ -297,6 +298,7 @@ method openProject MicroBlocksEditor projectData projectName {
   updateLibraryList scripter
   developerModeChanged scripter
   saveAllChunks (smallRuntime)
+  setCursor 'default'
 }
 
 method openFromBoard MicroBlocksEditor {
@@ -304,12 +306,12 @@ method openFromBoard MicroBlocksEditor {
   clearProject this
   fileName = ''
   updateTitle this
+  spinner = (newSpinner (action 'decompilerStatus' (smallRuntime)) (action 'decompilerDone' (smallRuntime)))
+  print spinner
+  setStopAction spinner (action 'cancelReadCodeFromNextBoardConnected' (smallRuntime))
+  addPart (global 'page') spinner
+
   readCodeFromNextBoardConnected (smallRuntime)
-  if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
-	inform 'Plug in the board and click the USB icon to connect.'
-  } else {
-    inform 'Plug in the board.'
-  }
 }
 
 method saveProjectToFile MicroBlocksEditor {

@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs
 
 method scripter SmallRuntime { return scripter }
 
@@ -22,7 +22,7 @@ method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
 	readFromBoard = false
-	decompilerStatus = ''
+	initializeDecompilerStatus this
 	clearLoggedData this
 	return this
 }
@@ -270,9 +270,22 @@ method analyzeProject SmallRuntime {
 
 // Decompiling
 
+method initializeDecompilerStatus SmallRuntime {
+	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+		decompilerStatus = 'Plug in the board and click the USB icon to connect.'
+	} else {
+		decompilerStatus = 'Plug in the board.'
+	}
+}
+
 method readCodeFromNextBoardConnected SmallRuntime {
 	readFromBoard = true
 	disconnected = false
+}
+
+method cancelReadCodeFromNextBoardConnected SmallRuntime {
+	readFromBoard = false
+	initializeDecompilerStatus this
 }
 
 method readCodeFromBoard SmallRuntime {
@@ -316,14 +329,21 @@ method decompilerDone SmallRuntime { return (decompilerStatus == '') }
 method decompilerStatus SmallRuntime { return decompilerStatus }
 
 method stopDecompilation SmallRuntime {
+	stopSpinner this
 	if (notNil decompiler) {
-		spinner = (findMorph 'MicroBlocksSpinner')
-		if (notNil spinner) { destroy (handler spinner) }
 		decompilerStatus = ''
 		decompiler = nil
 		clearBoardIfConnected this true
 		stopAndSyncScripts this
 	}
+	initializeDecompilerStatus this
+}
+
+// Spinner modal window
+
+method stopSpinner SmallRuntime {
+	spinner = (findMorph 'MicroBlocksSpinner')
+	if (notNil spinner) { destroy (handler spinner) }
 }
 
 method waitForPing SmallRuntime {
