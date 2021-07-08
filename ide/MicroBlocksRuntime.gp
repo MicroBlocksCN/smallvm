@@ -1624,6 +1624,7 @@ method getAndSaveFile SmallRuntime remoteFileName {
 }
 
 method readFileFromBoard SmallRuntime remoteFileName {
+	setCursor 'wait'
 	msg = (list)
 	id = (rand ((1 << 24) - 1))
 	appendInt32 this msg id
@@ -1648,6 +1649,7 @@ method readFileFromBoard SmallRuntime remoteFileName {
 		if (byteCount > 0) { replaceByteRange result startIndex endIndex msg 9 }
 		startIndex += byteCount
 	}
+	setCursor 'default'
 	return result
 }
 
@@ -1656,6 +1658,7 @@ method putFileOnBoard SmallRuntime {
 }
 
 method writeFileToBoard SmallRuntime srcFileName {
+	setCursor 'wait'
 	fileContents = (readFile srcFileName true)
 	totalBytes = (byteCount fileContents)
 	if (isNil fileContents) { return }
@@ -1691,6 +1694,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 	appendInt32 this msg id
 	appendInt32 this msg bytesSent
 	sendMsgSync this 'fileChunk' 0 msg
+	setCursor 'default'
 }
 
 method appendInt32 SmallRuntime msg n {
