@@ -22,7 +22,7 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 	rotation = 0
 
 	scale = (global 'scale')
-	label = (newText (call labelGetter) 'Arial' (24 * scale) (gray 255))
+	label = (newText (localized (call labelGetter)) 'Arial' (24 * scale) (gray 255))
 	addPart morph (morph label)
 
 	sublabel = (newText (localized '(press ESC to cancel)') 'Arial' (18 * scale) (gray 255))
@@ -84,7 +84,7 @@ method step MicroBlocksSpinner {
 	}
 
 	rotation = ((rotation + 5) % 360)
-	setText label (call labelGetter)
+	setText label (localized (call labelGetter))
 	fixLayout this
 	changed morph
 }

@@ -307,7 +307,6 @@ method openFromBoard MicroBlocksEditor {
   fileName = ''
   updateTitle this
   spinner = (newSpinner (action 'decompilerStatus' (smallRuntime)) (action 'decompilerDone' (smallRuntime)))
-  print spinner
   setStopAction spinner (action 'cancelReadCodeFromNextBoardConnected' (smallRuntime))
   addPart (global 'page') spinner
 
