@@ -685,7 +685,7 @@ method closePort SmallRuntime {
 	boardType = nil
 
 	// remove talk bubble and running highlights when disconnected
-	removeHint (global 'page')
+//	removeHint (global 'page') // xxx disabled; it was deleting helpful hints on Linux
 	clearRunningHighlights this
 }
 
