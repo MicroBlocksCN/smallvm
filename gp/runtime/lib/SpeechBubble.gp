@@ -103,6 +103,7 @@ method step SpeechBubble {
 	setDirection this 'left'
     setRight morph ((left vis) + overlap)
   }
+  keepWithin morph (bounds (owner morph))
   lastClientVis = vis
 }
 

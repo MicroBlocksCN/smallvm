@@ -883,6 +883,7 @@ method showHint Morph hintData bubbleWidth isHint isError {
   scale = (global 'scale')
   overlap = (scale * 7)
   bubble = (newBubble hintData bubbleWidth 'right' isError)
+  setClientMorph bubble this
   rightSpace = ((right (morph page)) - (right vis))
   setTop (morph bubble) ((top bounds) - ((height (morph bubble)) - overlap))
   if (rightSpace > (width (morph bubble))) {

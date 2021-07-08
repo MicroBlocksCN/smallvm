@@ -1186,6 +1186,7 @@ method showHint Page aSpeechBubble isHint {
   removeHint this
   keepWithin (morph aSpeechBubble) (bounds morph)
   addPart this aSpeechBubble
+  step aSpeechBubble
   if isHint { activeHint = aSpeechBubble }
 }
 

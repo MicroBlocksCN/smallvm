@@ -684,8 +684,7 @@ method closePort SmallRuntime {
 	vmVersion = nil
 	boardType = nil
 
-	// remove talk bubble and running highlights when disconnected
-//	removeHint (global 'page') // xxx disabled; it was deleting helpful hints on Linux
+	// remove running highlights and result bubbles when disconnected
 	clearRunningHighlights this
 }
 
@@ -1749,6 +1748,15 @@ method updateHighlights SmallRuntime {
 			} else {
 				removeHighlight m
 			}
+		}
+	}
+}
+
+method removeResultBubbles SmallRuntime {
+	for m (allMorphs (morph (global 'page'))) {
+		h = (handler m)
+		if (and (isClass h 'SpeechBubble') (isClass (handler (clientMorph h)) 'Block')) {
+			removeFromOwner m
 		}
 	}
 }
