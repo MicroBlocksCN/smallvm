@@ -572,6 +572,10 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'autoDecompile')) {
 		autoDecompile = (at prefs 'autoDecompile')
 	}
+	if (notNil (at prefs 'blockScale')) {
+		setGlobal 'blockScale' (at prefs 'blockScale')
+		languageChanged scripter
+	}
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
@@ -875,6 +879,9 @@ method languageChanged MicroBlocksEditor {
   addTopBarParts this
   updateIndicator this true
   fixLayout this
+
+  // not the best place to do it, but this gets called when block size changes
+  saveToUserPreferences this 'blockScale' (global 'blockScale')
 }
 
 // Iconic menus
