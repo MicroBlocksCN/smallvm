@@ -133,7 +133,7 @@ method updateSliders ScrollFrame doNotAdjustContents {
 method adjustContents ScrollFrame {
   if (isAnyClass contents 'ListBox' 'TreeBox') {
     h = (height (area contents))
-    if ((+ h (height (morph hSlider))) > (height morph)) {
+    if (and (isVisible (morph hSlider)) ((+ h (height (morph hSlider))) > (height morph))) {
       setMinWidth contents (- (width morph) (width (morph vSlider)))
     } else {
       setMinWidth contents (width morph)

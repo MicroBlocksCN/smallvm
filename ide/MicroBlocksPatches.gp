@@ -615,11 +615,11 @@ method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
 	if (and (isClass onSelect 'Action') (isOneOf (function onSelect) 'categorySelected' 'librarySelected')) {
 	  c = (blockColorForCategory (authoringSpecs) dta)
 	  isMouseOver = (bgClrReady == backgroundColor)
-	  if isMouseOver { c = (shiftSaturation (lighter c 20) -30) }
-	  bm = (newBitmap ((width morph) + (20 * scale)) (21 * scale))
+	  if isMouseOver { c = (lighter c 40) }
+	  bm = (newBitmap (width morph) (21 * scale))
 	  fillRect bm c 0 0 (width bm) ((height bm) - (2 * scale))
 	  stringBM = (stringImage (localized dta) fontName fontSize (gray 255))
-	  drawBitmap bm stringBM (29 * scale) (1 * scale)
+	  drawBitmap bm stringBM (19 * scale) (1 * scale)
 	  return bm
 	}
     return (itemCostume this (stringImage dta fontName fontSize foregroundColor) foregroundColor backgroundColor alpha 'id')

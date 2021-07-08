@@ -218,6 +218,10 @@ method fixLayout MicroBlocksScripter {
   updateSliders blocksFrame
   updateSliders scriptsFrame
 
+  // update item widths of category and library list boxes
+  updateMorphContents (contents categoriesFrame)
+  updateMorphContents (contents libFrame)
+
   if (notNil projectEditor) { fixLayout projectEditor true }
 }
 
