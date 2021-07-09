@@ -2153,6 +2153,11 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	closePort this
 	updateIndicator (findMicroBlocksEditor)
 
+	if (endsWith vmFileName '.hex') {
+		// for micro:bit, filename must be less than 9 letter before the extension
+		vmFileName = 'firmware.hex'
+	}
+
 	browserWriteFile vmData vmFileName 'vmInstall'
 	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
 	if (endsWith vmFileName '.uf2') {
