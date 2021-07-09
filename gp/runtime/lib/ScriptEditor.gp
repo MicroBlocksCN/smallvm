@@ -48,8 +48,9 @@ method rightClicked ScriptEditor aHand {
 }
 
 method justGrabbedPart ScriptEditor part {
-  if (isClass (handler (owner morph)) 'ScrollFrame') {updateSliders (handler (owner morph))}
-  scriptChanged this
+  if (isClass (handler (owner morph)) 'ScrollFrame') {
+    updateSliders (handler (owner morph))
+  }
 }
 
 method clicked ScriptEditor hand {
@@ -114,6 +115,8 @@ method textChanged ScriptEditor text {
   raise morph 'textChanged' text
 }
 
+method layoutChanged ScriptEditor { changed morph }
+
 // swapping blocks for text
 
 method swapBlockForText ScriptEditor block text {
@@ -137,7 +140,7 @@ method targetFor ScriptEditor block x y {
   // answer a snapping target or nil
   if ((type block) == 'reporter') {return (inputFor this block x y)}
   isHatSrc = (== (type block) 'hat')
-  scale = (scale block)
+  scale = (blockScale)
   thres = (15 * scale)
   x = (left (morph block))
   y = (top (morph block))
@@ -267,8 +270,10 @@ method showReporterDropFeedback ScriptEditor target {
 
 method contextMenu ScriptEditor {
   menu = (menu nil this)
+  addItem menu 'set block size...' 'setBlockSize' 'make blocks smaller'
+  addLine menu
   addItem menu 'clean up' 'cleanUp' 'arrange scripts'
-  if (and (notNil lastDrop) (isRestorable lastDrop)) {
+  if (notNil lastDrop) {
     addItem menu 'undrop' 'undrop' 'undo last drop'
   }
   addLine menu
@@ -298,6 +303,23 @@ method cleanUp ScriptEditor {
   fixLayout alignment
 }
 
+method setBlockSize ScriptEditor {
+  menu = (menu nil (action 'setBlockScalePercent' this) true)
+  for percent (list 50 75 100 125 150 175 200 250 300 400 500) {
+	  addItem menu (join '' percent '%') percent
+  }
+  popUpAtHand menu (global 'page')
+}
+
+method setBlockScalePercent ScriptEditor percent {
+  pe = (findProjectEditor)
+  if (notNil pe) {
+	setGlobal 'blockScale' (percent / 100)
+	languageChanged pe
+	saveToUserPreferences pe 'blockSizePercent' percent
+  }
+}
+
 // highlighting
 
 method updateHighlights ScriptEditor {
@@ -309,7 +331,7 @@ method updateHighlights ScriptEditor {
     if (isClass (handler m) 'Block') {
       tasks = (numberOfTasksRunning taskMaster  (expression (handler m)) targetObj)
       if (tasks > 0) {
-        addHighlight m (scale * 4)
+        addHighlight m
         if (tasks > 1) {
           st = (getStackPart m)
           if (isNil st) {
@@ -401,6 +423,7 @@ method stopEditing ScriptEditor {
   focus = nil
   root = (handler (root morph))
   if (isClass root 'Page') {stopEditing (keyboard root) this}
+  scriptChanged this
 }
 
 method focus ScriptEditor {return focus}
@@ -431,12 +454,6 @@ method cancelled ScriptEditor aText {
   }
 }
 
-method inputContentsChanged ScriptEditor anInput {
-  if (notNil focus) {
-    edit this anInput
-  }
-}
-
 // undrop
 
 method clearDropHistory ScriptEditor {lastDrop = nil}
@@ -455,6 +472,7 @@ method grab ScriptEditor aBlock {
   h = (hand (handler (root morph)))
   setCenter (morph aBlock) (x h) (y h)
   grab h aBlock
+  changed h
 }
 
 // change detection
@@ -468,21 +486,15 @@ method scriptChanged ScriptEditor {
 // saving script image
 
 method saveScriptsImage ScriptEditor {
-  if ('Browser' != (platform)) {
+  bm = (fullCostume morph)
+  pngData = (encodePNG bm)
+  if ('Browser' == (platform)) {
+	browserWriteFile pngData 'allScripts.png' 'scriptImage'
+  } else {
 	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'allScripts' '.png')
 	fName = (fileToWrite fName '.png')
 	if ('' == fName) { return }
 	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
-  }
-  gc
-  bnds = (bounds morph)
-  bm = (newBitmap (width bnds) (height bnds))
-  draw2 morph bm (- (left bnds)) (- (top bnds))
-  pixelsPerInch = (72 * (global 'scale'))
-  pngData = (encodePNG bm pixelsPerInch)
-  if ('Browser' == (platform)) {
-	browserWriteFile pngData 'allScripts' 'png'
-  } else {
 	writeFile fName pngData
   }
 }

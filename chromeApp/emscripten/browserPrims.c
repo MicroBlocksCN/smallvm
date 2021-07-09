@@ -15,7 +15,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#define MAX_TEXTURE_SIZE 2048
+#define MAX_TEXTURE_SIZE 8192
 
 // ***** Fetch request state *****
 
@@ -366,20 +366,20 @@ static OBJ primBrowserReadFile(int nargs, OBJ args[]) {
 
 static OBJ primBrowserWriteFile(int nargs, OBJ args[]) {
 	char *suggestedFileName = "";
-	char *extension = "";
+	char *id = "";
 	if (nargs < 1) return notEnoughArgsFailure();
 	if ((nargs > 1) && (IS_CLASS(args[1], StringClass))) suggestedFileName = obj2str(args[1]);
-	if ((nargs > 2) && (IS_CLASS(args[2], StringClass))) extension = obj2str(args[2]);
+	if ((nargs > 2) && (IS_CLASS(args[2], StringClass))) id = obj2str(args[2]);
 
 	if (IS_CLASS(args[0], StringClass)) {
 		EM_ASM_({
 			GP_writeFile(UTF8ToString($0), UTF8ToString($1), UTF8ToString($2));
-		}, obj2str(args[0]), suggestedFileName, extension);
+		}, obj2str(args[0]), suggestedFileName, id);
 	} else if (IS_CLASS(args[0], BinaryDataClass)) {
 		EM_ASM_({
 			let buf = new Uint8Array(HEAPU8.buffer, $0, $1);
 			GP_writeFile(buf, UTF8ToString($2), UTF8ToString($3));
-		}, &FIELD(args[0], 0), objBytes(args[0]), suggestedFileName, extension);
+		}, &FIELD(args[0], 0), objBytes(args[0]), suggestedFileName, id);
 	} else {
 		return primFailed("Argument must be a string");
 	}
@@ -420,6 +420,36 @@ static OBJ primBrowserReadPrefs(int nargs, OBJ args[]) {
 	return result;
 }
 
+// ***** Browser Canvas Shadow Effects *****
+
+static OBJ primBrowserSetShadow(int nargs, OBJ args[]) {
+	if ((nargs < 3) || !isInt(args[1]) || !isInt(args[2])) return nilObj;
+	OBJ color = args[0];
+	int offset = obj2int(args[1]);
+	int blur = obj2int(args[2]);
+
+	int r = 0, g = 0, b = 0, a = 255;
+	int words = objWords(color);
+	if (words >= 3) {
+		r = clip(obj2int(FIELD(color, 0)), 0, 255);
+		g = clip(obj2int(FIELD(color, 1)), 0, 255);
+		b = clip(obj2int(FIELD(color, 2)), 0, 255);
+		a = (words <= 3) ? 255 : clip(obj2int(FIELD(color, 3)), 0, 255);
+	}
+
+	EM_ASM({
+		setShadow($0, $1, $2, $3, $4, $5);
+	}, r, g, b, a / 255.0, offset, blur);
+	return nilObj;
+}
+
+static OBJ primBrowserClearShadow(int nargs, OBJ args[]) {
+	EM_ASM({
+		clearShadow();
+	}, 0);
+	return nilObj;
+}
+
 // ***** Graphics Helper Functions *****
 
 static inline uint32 alphaBlend(uint32 dstPix, uint32 srcPix, int srcAlpha) {
@@ -450,6 +480,15 @@ static void finalizeTexture(OBJ obj) {
 	}, (int) a[0]);
 
 	a[0] = NULL;
+}
+
+static void freeCanvas(int cnvID) {
+	EM_ASM_({
+		var cnvID = $0 - 1;
+		if ((cnvID >= 0) && (cnvID < GP.canvasCache.length)) {
+			GP.canvasCache[cnvID] = null;
+		}
+	}, cnvID);
 }
 
 static int canvasID(OBJ obj) {
@@ -483,24 +522,56 @@ static inline int isBitmap(OBJ bitmap) {
 		objWords(FIELD(bitmap, 2)) == (obj2int(FIELD(bitmap, 0)) * obj2int(FIELD(bitmap, 1)));
 }
 
-// ***** Canava-based graphics primitives *****
+static void setClipRect(OBJ clipRectObj) {
+	EM_ASM({
+		GP.clipLeft = GP.clipTop = GP.clipWidth = GP.clipHeight = null;
+	}, 0);
+	if (!clipRectObj || (objWords(clipRectObj) != 4)) return;
+
+	int left = (int) evalFloat(FIELD(clipRectObj, 0));
+	int top = (int) evalFloat(FIELD(clipRectObj, 1));
+	int width = (int) evalFloat(FIELD(clipRectObj, 2));
+	int height = (int) evalFloat(FIELD(clipRectObj, 3));
+	EM_ASM_({
+		GP.clipLeft = $0;
+		GP.clipTop = $1;
+		GP.clipWidth = $2;
+		GP.clipHeight = $3;
+	}, left, top, width, height);
+}
+
+// ***** Canvas-based graphics primitives *****
 
 static OBJ primOpenWindow(int nargs, OBJ args[]) {
 	int w = intOrFloatArg(0, 500, nargs, args);
 	int h = intOrFloatArg(1, 500, nargs, args);
+	int tryRetina = (nargs > 2) && (trueObj == args[2]);
+
+	double pixelRatio = EM_ASM_DOUBLE({
+		return window.devicePixelRatio;
+	}, NULL);
+	if (pixelRatio < 1) tryRetina = false;
 
 	EM_ASM_({
 		var w = $0;
 		var h = $1;
+		var tryRetina = $2;
+
+		// hack to prevent scrollbars from appearing at certain zoom levels in Chrome:
+		if (((devicePixelRatio % 1) == 0.5) || (devicePixelRatio == 10))  {
+			w -= 1;
+			h -= 1;
+		}
 
 		var winCnv = document.getElementById('canvas');
 		if (winCnv) {
-			winCnv.width = w;
-			winCnv.height = h;
-			winCnv.style.setProperty("width", w + "px");
-			winCnv.style.setProperty("height", h + "px");
+			winCnv.style.setProperty('width', w + 'px');
+			winCnv.style.setProperty('height', h + 'px');
+			winCnv.width = tryRetina ? (2 * w) : w;
+			winCnv.height = tryRetina ? (2 * h) : h;
 		}
-	}, w, h);
+		GP.isRetina = tryRetina;
+	}, w, h, tryRetina);
 
 	return nilObj;
 }
@@ -508,20 +579,30 @@ static OBJ primOpenWindow(int nargs, OBJ args[]) {
 static OBJ primCloseWindow(int nargs, OBJ args[]) { return nilObj; } // noop
 
 static OBJ primWindowSize(int nargs, OBJ args[]) {
-	int w = EM_ASM_INT({
+	int logicalW = EM_ASM_INT({
 		var winCnv = document.getElementById('canvas');
-		return winCnv ? winCnv.getAttribute('width') : 0;
+		return winCnv ? winCnv.clientWidth : 0;
 	}, NULL);
-	int h = EM_ASM_INT({
+	int logicalH = EM_ASM_INT({
 		var winCnv = document.getElementById('canvas');
-		return winCnv ? winCnv.getAttribute('height') : 0;
+		return winCnv ? winCnv.clientHeight : 0;
 	}, NULL);
 
+	int physicalW = EM_ASM_INT({
+		var winCnv = document.getElementById('canvas');
+		return winCnv ? winCnv.width : 0;
+	}, NULL);
+	int physicalH = EM_ASM_INT({
+		var winCnv = document.getElementById('canvas');
+		return winCnv ? winCnv.height : 0;
+	}, NULL);
+
+
 	OBJ result = newArray(4);
-	FIELD(result, 0) = int2obj(w);
-	FIELD(result, 1) = int2obj(h);
-	FIELD(result, 2) = int2obj(w);
-	FIELD(result, 3) = int2obj(h);
+	FIELD(result, 0) = int2obj(logicalW);
+	FIELD(result, 1) = int2obj(logicalH);
+	FIELD(result, 2) = int2obj(physicalW);
+	FIELD(result, 3) = int2obj(physicalH);
 	return result;
 }
 
@@ -535,8 +616,8 @@ static OBJ primClearWindowBuffer(int nargs, OBJ args[]) {
 		var color = $0;
 		var winCnv = document.getElementById('canvas');
 		if (winCnv) {
-			var w = winCnv.getAttribute('width');
-			var h = winCnv.getAttribute('height');
+			var w = winCnv.width;
+			var h = winCnv.height;
 			var ctx = winCnv.getContext('2d');
 			var a = ((color >> 24) & 255) / 255.0;
 			var r = (color >> 16) & 255;
@@ -668,6 +749,7 @@ static OBJ primShowTexture(int nargs, OBJ args[]) {
 		if (!srcCnv) return;
 		var ctx = dstCnv.getContext('2d');
 		ctx.save();
+		if (GP.shadowColor) setContextShadow(ctx);
 		if (clipWidth > 0) {
 			ctx.beginPath();
 			ctx.rect(clipLeft, clipTop, clipWidth, clipHeight);
@@ -685,9 +767,40 @@ static OBJ primShowTexture(int nargs, OBJ args[]) {
 			ctx.drawImage(srcCnv, x, y);
 		}
 		ctx.restore();
+		ctx.shadowColor = 'transparent';
 	}, dstID, srcID, x, y, globalAlpha / 255.0, xScale, yScale, rotation, blendFlag,
 		clipLeft, clipTop, clipWidth, clipHeight);
 
+	return nilObj;
+}
+
+static OBJ copyCanvasToBitmap(int srcID, OBJ bitmap) {
+	if (!isBitmap(bitmap)) return primFailed("Bad bitmap");
+
+	int w = obj2int(FIELD(bitmap, 0));
+	int h = obj2int(FIELD(bitmap, 1));
+	OBJ bmData = FIELD(bitmap, 2);
+	if (objWords(bmData) != (w * h)) return primFailed("Bad bitmap size");
+
+	EM_ASM_({
+		var bmData = $0;
+		var w = $1;
+		var h = $2;
+		var srcID = $3 - 1;
+
+		var cnv = GP.canvasCache[srcID];
+		if ((!cnv) || (w != cnv.width) || (h != cnv.height)) return;
+		var ctx = cnv.getContext('2d');
+		var imgData = ctx.getImageData(0, 0, w, h);
+		var imgBytes = imgData.data;
+		var srcIndex = bmData;
+		for (var i = 0; i < imgBytes.length; i += 4) {
+			Module.HEAPU8[srcIndex++] = imgBytes[i + 2];
+			Module.HEAPU8[srcIndex++] = imgBytes[i + 1];
+			Module.HEAPU8[srcIndex++] = imgBytes[i];
+			Module.HEAPU8[srcIndex++] = imgBytes[i + 3];
+		}
+	}, &FIELD(bmData, 0), w, h, srcID);
 	return nilObj;
 }
 
@@ -907,6 +1020,7 @@ static OBJ primDrawBitmap(int nargs, OBJ args[]) {
 			}
 		}
 	} else {
+		setClipRect(clipRectObj);
 		EM_ASM_({
 			var dstID = $0 - 1;
 			var bmData = $1;
@@ -924,6 +1038,11 @@ static OBJ primDrawBitmap(int nargs, OBJ args[]) {
 			if (!cnv) return;
 			var ctx = cnv.getContext('2d');
 			ctx.save();
+			if (GP.clipLeft) {
+				ctx.beginPath();
+				ctx.rect(GP.clipLeft, GP.clipTop, GP.clipWidth, GP.clipHeight);
+				ctx.clip();
+			}
 			var tmpCnv = document.createElement('canvas');
 			tmpCnv.setAttribute('width', cpyW);
 			tmpCnv.setAttribute('height', cpyH);
@@ -953,7 +1072,111 @@ static OBJ primDrawBitmap(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
-static OBJ primWarpBitmap(int nargs, OBJ args[]) { return nilObj; } // Not yet implemented
+static int bitmapToTexture(OBJ bitmap) {
+	// Helper function for primWarpBitmap. Copies a bitmap into a texture of the same size.
+
+	if (!isBitmap(bitmap)) return -1;
+	int w = obj2int(FIELD(bitmap, 0));
+	int h = obj2int(FIELD(bitmap, 1));
+	OBJ bmData = FIELD(bitmap, 2);
+
+	int cnvID = EM_ASM_INT({
+		var w = $0;
+		var h = $1;
+		var bmData = $2;
+
+		// create canvas of given size
+		var newCnv = document.createElement('canvas');
+		newCnv.setAttribute('width', w);
+		newCnv.setAttribute('height', h);
+
+		if (!GP.canvasCache) GP.canvasCache = [];
+		var i = 0;
+		for (i = 0; i < GP.canvasCache.length; i++) { // use an empty slot, if possible
+			if (GP.canvasCache[i] == null) {
+				GP.canvasCache[i] = newCnv;
+				break;
+			}
+		}
+		if (i == GP.canvasCache.length) {
+			GP.canvasCache.push(newCnv);
+		}
+		var cnvID = i + 1;
+
+		// copy bitmap data into canvas
+		var ctx = newCnv.getContext('2d');
+		var imgData = ctx.createImageData(w, h);
+		var imgBytes = imgData.data;
+		var srcIndex = bmData;
+		for (var i = 0; i < imgBytes.byteLength; i += 4) {
+			imgBytes[i + 2] = Module.HEAPU8[srcIndex++];
+			imgBytes[i + 1] = Module.HEAPU8[srcIndex++];
+			imgBytes[i] = Module.HEAPU8[srcIndex++];
+			imgBytes[i + 3] = Module.HEAPU8[srcIndex++];
+		}
+		ctx.putImageData(imgData, 0, 0);
+		return cnvID;
+	}, w, h, &FIELD(bmData, 0));
+
+	return cnvID;
+}
+
+static OBJ primWarpBitmap(int nargs, OBJ args[]) {
+	if (nargs < 2) return notEnoughArgsFailure();
+
+	int centerX = intOrFloatArg(2, 0, nargs, args);
+	int centerY = intOrFloatArg(3, 0, nargs, args);
+	double scaleX = floatArg(4, 1, nargs, args);
+	double scaleY = floatArg(5, 1, nargs, args);
+	double rotation = floatArg(6, 0, nargs, args);
+	OBJ clipRect = (nargs > 7) ? args[7] : nilObj;
+
+	int dstID = (nilObj == args[0]) ? 0 : bitmapToTexture(args[0]);
+	if (dstID < 0) return primFailed("warpBitmap destination must be a Bitmap or nil");
+	int srcID = bitmapToTexture(args[1]);
+	if (srcID < 0) return primFailed("Bad bitmap");
+
+	setClipRect(clipRect);
+	EM_ASM_({
+		var dstID = $0 - 1;
+		var srcID = $1 - 1;
+		var centerX = $2;
+		var centerY = $3;
+		var scaleX = $4;
+		var scaleY = $5;
+		var rotation = $6;
+
+		var dstCnv = (dstID < 0) ? document.getElementById('canvas') : GP.canvasCache[dstID];
+		var srcCnv = (srcID < 0) ? document.getElementById('canvas') : GP.canvasCache[srcID];
+		if ((!dstCnv) || (!srcCnv)) return;
+
+		var halfSrcW = srcCnv.width / 2;
+		var halfSrcH = srcCnv.height / 2;
+
+		var ctx = dstCnv.getContext('2d');
+		ctx.save();
+		if (GP.clipLeft) {
+			ctx.beginPath();
+			ctx.rect(GP.clipLeft, GP.clipTop, GP.clipWidth, GP.clipHeight);
+			ctx.clip();
+		}
+		ctx.translate(centerX - halfSrcW, centerY - halfSrcH); // position of top-left in dst before transforms
+		ctx.translate(halfSrcW, halfSrcH); // rotate around center of scaled image
+		ctx.rotate((rotation * Math.PI) / 180);
+		ctx.scale(scaleX, scaleY);
+		ctx.translate(-halfSrcW, -halfSrcH);
+		ctx.drawImage(srcCnv, 0, 0);
+		ctx.restore();
+	}, dstID, srcID, centerX, centerY, scaleX, scaleY, rotation);
+
+	if (nilObj != args[0]) {
+		// if dst was not the screen, copy dst texture pixels into dst bitmap
+		copyCanvasToBitmap(dstID, args[0]);
+		freeCanvas(dstID);
+	}
+	freeCanvas(srcID);
+	return nilObj;
+}
 
 static inline void plot(OBJ dst, int isBitmap, int x, int y, int width, int c) {
 	// Plot a width x width square on the given bitmap or canvas.
@@ -1051,6 +1274,15 @@ OBJ primShowKeyboard(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+OBJ primSetCursor(int nargs, OBJ args[]) {
+	if ((nargs < 1) || !IS_CLASS(args[0], StringClass)) return nilObj;
+
+	EM_ASM_({
+		document.body.style.setProperty('cursor', UTF8ToString($0));
+	}, obj2str(args[0]));
+	return nilObj;
+}
+
 static PrimEntry browserPrimList[] = {
 	{"-----", NULL, "Browser Support"},
 	{"browserURL",				primBrowserURL,			"Return the full URL of the current browser page."},
@@ -1068,7 +1300,9 @@ static PrimEntry browserPrimList[] = {
 	{"browserIsChromeOS",		primBrowserIsChromeOS,		"Return true if running as a Chromebook app."},
 	{"browserHasWebSerial",		primBrowserHasWebSerial,	"Return true the browser supports the Web Serial API."},
 	{"browserReadFile",			primBrowserReadFile,		"Select and read a file in the browser. Args: [extension]"},
-	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [suggestedFileName, extension]"},
+	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [suggestedFileName, id]"},
+	{"browserSetShadow",		primBrowserSetShadow,		"Set the Canvas shadow color, offset, and blur for following graphics operations. Args: color, offset, blur"},
+	{"browserClearShadow",		primBrowserClearShadow,		"Disable the Canvas shadow effect."},
 	{"browserReadPrefs",		primBrowserReadPrefs,		"Read user preferences from localStorage."},
 	{"browserWritePrefs",		primBrowserWritePrefs,		"Write user preferences to localStorage. Args: jsonString"},
 };
@@ -1098,6 +1332,7 @@ static PrimEntry graphicsPrimList[] = {
 	{"getClipboard",	primGetClipboard,		"Return the string from the clipboard, or the empty string if the cliboard is empty."},
 	{"setClipboard",	primSetClipboard,		"Set the clipboard to the given string."},
 	{"showKeyboard",	primShowKeyboard,		"Show or hide the on-screen keyboard on a touchsceen devices. Argument: true or false."},
+	{"setCursor",		primSetCursor,			"Change the mouse pointer appearance. Argument: cursorNumber (0 -> arrow, 3 -> crosshair, 11 -> hand...)"},
 };
 
 PrimEntry* browserPrimitives(int *primCount) {

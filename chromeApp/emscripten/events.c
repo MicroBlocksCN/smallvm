@@ -413,6 +413,7 @@ OBJ getEvent() {
 				updateMouseScale();
 				windowWidth = event.window.data1 * mouseScale;
 				windowHeight = event.window.data2 * mouseScale;
+				createOrUpdateOffscreenBitmap(false);
 			}
 			break;
 		case SDL_QUIT:

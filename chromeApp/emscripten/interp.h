@@ -160,6 +160,8 @@ OBJ uint32Obj(unsigned int val);
 // To allow stop() to turn off audio.
 OBJ primClosePortAudio(int nargs, OBJ args[]);
 
+void createOrUpdateOffscreenBitmap(int createFlag);
+
 // Inlined Functions
 
 static inline int intArg(int i, int defaultValue, int nargs, OBJ args[]) {

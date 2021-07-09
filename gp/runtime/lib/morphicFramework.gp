@@ -5,7 +5,7 @@
 // to override the default behavior
 
 to step aHandler { noop }
-to redraw aHandler { noop }
+to redraw aHandler aContext { noop }
 
 to duplicate aHandler {
   error (join (className (classOf aHandler)) 'cannot be duplicated')
@@ -44,7 +44,7 @@ to touchHold aHandler {return false}
 to swipe aHandler scrollX scrollY { return (dispatchEvent aHandler 'whenScrolled' scrollX scrollY) }
 to pageResized aHandler { dispatchEvent aHandler 'whenPageResized' }
 to scaleChanged aHandler { noop }
-to changed aHandler { noop }
+to changed aHandler { changed (morph aHandler) }
 to okayToBeDestroyedByUser aHandler {return true}
 to destroyedMorph aHandler { noop }
 
@@ -78,6 +78,18 @@ to morph aHandler {
   return (getField aHandler 'morph')
 }
 
+to findMorph handlerClassName {
+	page = (global 'page')
+	if (notNil page) {
+		for m (parts (morph page)) {
+			if (isClass (handler m) handlerClassName) {
+				return m
+			}
+		}
+	}
+	return nil
+}
+
 // stubs for handler pre- and post-serialization
 
 to preSerialize aHandler {}
@@ -101,7 +113,6 @@ method x Hand {return x}
 method y Hand {return y}
 method focus Hand {return focus}
 method focusOn Hand aHandler {focus = aHandler}
-method changed Hand {changed page}
 
 method objectAt Hand {
   // Answer the topmost morph under the hand.
@@ -117,10 +128,14 @@ method objectAt Hand {
   return page
 }
 
+// drawing
+
+method drawOn Hand aContext { } // noop
+
 // grabbing and dropping
 
 method grabbedObject Hand {
-  if ((count (parts morph)) > 1) {return (handler (at (parts morph) 2))}
+  if ((count (parts morph)) > 0) {return (handler (last (parts morph)))}
   return nil
 }
 
@@ -136,10 +151,44 @@ method grab Hand handler {
     setCenter (morph handler) x y
   }
   removeAllParts morph
-  shadow = (shadow (morph handler) 60 (* (global 'scale') 7))
-  addPart morph shadow
+  if ('Browser' == (platform)) {
+	addPart morph (morph (newCachedTexture handler))
+  } else {
+	addPart morph (shadow (morph handler) 50 (7 * (global 'scale')))
+	addPart morph (cachedCostumeFor this handler)
+  }
+  hide (morph handler)
   addPart morph (morph handler)
   justGrabbedPart parent handler
+}
+
+method cachedCostumeFor Hand handler {
+  result = (newMorph)
+  bm = (fullCostume (morph handler))
+//  fixCachedCostume this bm // less necessary now that we are not calling unmultiplyAlpha
+  setCostume result bm
+  bnds = (bounds (morph handler))
+  setPosition result (left bnds) (top bnds)
+  return result
+}
+
+method fixCachedCostume Hand aBitmap {
+  // This hack improves rendering anti-aliased shapes such as blocks into a cached bitmap and
+  // then rendering that with SDL2 while dragging. While I don't fully understand the issue,
+  // it involves the interaction between Cairo's pre-multiplied alpha and SDL's blend mode.
+  // There is a detailed explanation here:
+  //   https://stackoverflow.com/questions/45781683/how-to-get-correct-sourceover-alpha-compositing-in-sdl-with-opengl
+  // Without this adjustment, some edge pixels become nearly white when a script is picked up,
+  // which is visually jarring, especially when blocks are scaled up.
+  // This fix is neither needed nor used when running in the browser.
+
+  pixelData = (pixelData aBitmap)
+  for i (count pixelData) {
+	a = (getPixelAlpha pixelData i)
+    if (and (a > 110) (a < 250)) {
+	  setPixelRGBA pixelData i 100 100 100 a
+	}
+  }
 }
 
 method rootForGrab Hand handler {
@@ -179,7 +228,9 @@ method drop Hand {
 	  setScale (morph src) 1
 	}
   }
-  destroy (at (parts morph) 1)
+  changed morph
+  removeAllParts morph
+  show (morph src)
   addPart (morph trg) (morph src)
   justDropped src this
   justReceivedDrop trg src
@@ -235,7 +286,12 @@ method step Hand {
 method processEvent Hand evt {
   type  = (at evt 'type')
   if (type == 'mousewheel') {
-    processSwipe this (at evt 'x') (at evt 'y')
+	wheelScale = (5 * (global 'scale'))
+	if ('Linux' == (platform)) {
+		// Linux only reports +/- 1 for mousewheel events so scale them up
+		wheelScale = (50 * (global 'scale'))
+	}
+    processSwipe this (wheelScale * (at evt 'x')) (wheelScale * (at evt 'y'))
     return
   }
   x = (at evt 'x')
@@ -494,50 +550,85 @@ method focusOn Keyboard aHandler {focus = aHandler}
 method processEvent Keyboard evt {
   type = (at evt 'type')
   key = (at evt 'keycode')
+  if (and ('Browser' != (platform)) (74 <= key) (key <= 78)) {
+	// Map SDL key codes to browser key codes
+	if (74 === key) { key = 36 // home
+	} (75 === key) { key = 33 // page up
+	} (77 === key) {  key = 35 // end
+	} (78 === key) { key = 34 // page down
+	}
+  }
   updateModifiedKeys this (at evt 'modifierKeys')
   if (and (1 <= key) (key <= 255)) {
-    if (type == 'keyDown') {
-	  if (and (27 == key) (isInPresentationMode this)) {
-		stopAll page
-		exitPresentationMode page
-		return
+	if (type == 'keyUp') {
+	  atPut currentKeys key false
+	} (type == 'keyDown') {
+	  // Arrow key navigation in scrollable morph under mouse pointer
+	  if (and (key >= 33) (key <= 40) (isNil focus)) {
+		morph = (ownerThatIsA (morph (objectAt (hand (global 'page')))) 'ScrollFrame')
+		if (notNil morph) {
+			scrollFrame = (handler morph)
+			if (33 === key) { // page up
+				scrollPage scrollFrame -1
+			} (34 === key) { // page down
+				scrollPage scrollFrame 1
+			} (35 === key) { // end
+				scrollEnd scrollFrame
+			} (36 === key) { // home
+				scrollHome scrollFrame
+			} (37 === key) { // left arrow
+				arrowKey scrollFrame 1 0
+			} (38 === key) { // up arrow
+				arrowKey scrollFrame 0 1
+			} (39 === key) { // right arrow
+				arrowKey scrollFrame -1 0
+			} (40 === key) { // down arrow
+				arrowKey scrollFrame 0 -1
+			}
+		}
 	  }
-      if (and (27 == key) (isNil focus)) { // escape key
-        stopAll page
-        return
-      } (and (13 == key) (isNil focus) (shiftKeyDown this)) { // shift-enter initiates keyboard editing for blocks
-        startEditingScripts
-        return
-      }
-      if (at currentKeys key) { return } // suppress duplicated keyDown events on Gnome and some other Linux desktops
-      atPut currentKeys key true
+
+	  if (at currentKeys key) { return } // suppress duplicated keyDown events on Gnome and some other Linux desktops
+	  atPut currentKeys key true
+
 	  if (isNil focus) {
-        keyName = nil
-        if (8 == key) { keyName = 'delete'
-        }  (9 == key) { keyName = 'tab'
-        } (13 == key) { keyName = 'enter'
-        } (32 == key) { keyName = 'space'
-        } (37 == key) { keyName = 'left arrow'
-        } (38 == key) { keyName = 'up arrow'
-        } (39 == key) { keyName = 'right arrow'
-        } (40 == key) { keyName = 'down arrow'
-        } (127 == key) { keyName = 'delete'
-        } (and (65 <= key) (key <= 90)) { keyName = (string (key + 32)) // use lowercase key name
-        }
-        if (isNil keyName) {
-		  ch = (at evt 'char')
-		  if (and (32 < ch) (ch < 128)) { keyName = (string ch) } // symbols keys
-        }
-        if (notNil keyName) {
-          dispatchKeyPressedEvent page keyName
-        }
+		if (27 == key) { // escape key
+			if (notNil (flasher (smallRuntime))) {
+				confirmRemoveFlasher (smallRuntime)
+			} (not (decompilerDone (smallRuntime))) {
+				stopDecompilation (smallRuntime)
+			} (notNil (findMorph 'MicroBlocksFilePicker')) {
+				destroy (findMorph 'MicroBlocksFilePicker')
+			} (notNil (findMorph 'Prompter')) {
+				cancel (handler (findMorph 'Prompter'))
+			} else {
+				stopAndSyncScripts (smallRuntime)
+			}
+		} (13 == key) { // enter key
+			if (notNil (findMorph 'Prompter')) {
+				accept (handler (findMorph 'Prompter'))
+			}
+		}
+		if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
+			// cmd-O or ctrl-O - open file dialog
+			(openProjectMenu (findProjectEditor))
+		}
+		if (and (115 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
+			// cmd-S or ctrl-S - save file dialog
+			(saveProjectToFile (findProjectEditor))
+		}
+		if (and (122 == (at evt 'char'))
+			(or (controlKeyDown this) (commandKeyDown this))
+			(isNil (grabbedObject (hand (global 'page'))))) {
+				// cmd-Z or ctrl-Z - undo last drop
+				pe = (findProjectEditor)
+				if (notNil pe) { undrop (scriptEditor (scripter pe)) }
+		}
 	  }
-    } (type == 'keyUp') {
-      atPut currentKeys key false
-    }
+	}
   }
   if (notNil focus) {
-    call type focus evt this
+	call type focus evt this
   }
 }
 
@@ -609,14 +700,13 @@ method updateModifiedKeys Keyboard modifierKeys {
 
 // Page
 
-defineClass Page morph hand keyboard taskMaster soundMixer schedules activeMenu isChanged color activeHint isShowingConnectors foreground devMode profileTimer droppedFiles
+defineClass Page morph hand keyboard taskMaster soundMixer schedules activeMenu isChanged color activeHint isShowingConnectors foreground devMode profileTimer droppedFiles damages redrawAll
 
 to go tryRetina {
   // Run 'go' at command prompt to open or restart.
   if (and (isNil (global 'page')) (notNil (shared 'page' (topLevelModule)))) {
 	// copy page and other state from topLevelModule
-	pageVars = (array
-		'authoringSpecs' 'page' 'scale' 'flat' 'flatBlocks' 'stealthBlocks' 'stealthLevel')
+	pageVars = (array 'authoringSpecs' 'page' 'scale')
 	for varName pageVars {
 	  // Move page state from topLevelModule to sessionModule
 	  value = (shared varName (topLevelModule))
@@ -625,12 +715,15 @@ to go tryRetina {
 	}
 	// set default values if necessary
 	if (isNil (global 'scale')) { setGlobal 'scale' 1 }
-	if (isNil (global 'flat')) { setGlobal 'flat' true }
-	if (isNil (global 'flatBlocks')) { setGlobal 'flatBlocks' false }
-	if (isNil (global 'stealthBlocks')) { setGlobal 'stealthBlocks' false }
-	if (isNil (global 'stealthLevel')) { setGlobal 'stealthLevel' -50 }
   } else {
 	if (isNil (global 'page')) { openPage tryRetina }
+  }
+  page = (global 'page')
+  if (isEmpty (parts (morph page))) {
+	// for testing: add a Box when first created
+	box = (newBox)
+	setGrabRule (morph box) 'handle'
+	addPart page (morph box)
   }
   startSteppingSafely (global 'page')
 }
@@ -640,8 +733,6 @@ to openPage tryRetina {
   page = (newPage 1040 650) // make one dimension > 1024 for best iOS retina detection
   setGlobal 'page' page
   open page tryRetina
-  changed page
-  step (morph page)
 }
 
 to newPage width height color {
@@ -654,24 +745,30 @@ to newPage width height color {
   setWidth (bounds morph) width
   setHeight (bounds morph) height
   setMorph page morph
+  setCostume morph color
   hand = (newHand)
   setPage hand page
   setHand page hand
   keyboard = (new 'Keyboard' page nil (newArray 255 false))
   setKeyboard page keyboard
   setField page 'droppedFiles' (list)
+  setField page 'damages' (list)
+  setField page 'redrawAll' false
   return page
 }
 
 method open Page tryRetina title {
   setGlobal 'page' this
   setGlobal 'scale' 1
-  setGlobal 'flat' true
-  setGlobal 'flatBlocks' false
-  setGlobal 'stealthBlocks' false
-  setGlobal 'stealthLevel' -50
   setClipping morph true
-  openWindow (width morph) (height morph) tryRetina title
+
+  // Morphic Rework:
+  // The renderToBitmap flag makes SDL screen be a bitmap vs. a texture,
+  // allowing direct rendering (including vectors and text) to SDL's display.
+  renderToBitmap = (not ('Browser' == (platform)))
+  print 'renderToBitmap' renderToBitmap 'retina' tryRetina
+
+  openWindow (width morph) (height morph) tryRetina title renderToBitmap
   winSize = (windowSize)
   setExtent morph (at winSize 3) (at winSize 4) // actual extent
   if ((at winSize 3) > (at winSize 1)) {
@@ -681,33 +778,10 @@ method open Page tryRetina title {
 	} else {
 	  // revert to non-retina mode if scale != 2 (some iPhones have non-integer scales)
 	  closeWindow
-	  openWindow (width morph) (height morph) false title
+	  openWindow (width morph) (height morph) false title renderToBitmap
 	}
   }
-}
-
-to setBlocksMode option {
-  // options can be 'normal', 'flat' or 'stealth'
-  if (option == 'normal') {
-    setGlobal 'flatBlocks' false
-    setGlobal 'stealthBlocks' false
-  } (option == 'flat') {
-    setGlobal 'flatBlocks' true
-    setGlobal 'stealthBlocks' false
-  } (option == 'stealth') {
-    setGlobal 'flatBlocks' true
-    setGlobal 'stealthBlocks' true
-  } else {
-    error 'unsupported option' option
-  }
-}
-
-to stealthLevel lo hi {
-  if (isNil lo) {lo = 0}
-  if (isNil hi) {hi = 255}
-  st = ((hi - lo) / 100.0)
-  sm = ((global 'stealthLevel') * st)
-  return (round (lo + sm))
+  redrawAll this
 }
 
 method hand Page {return hand}
@@ -752,7 +826,6 @@ Enter developer mode?'
 }
 
 method exitDeveloperMode Page {
-  setBlocksMode 'normal'
   devMode = false
   editor = (findProjectEditor)
   if (notNil editor) {developerModeChanged editor}
@@ -780,17 +853,20 @@ method doOneCycle Page {
   stepSchedules this
   wakeUpDisplayTasks taskMaster
   stepTasks taskMaster 75
-  if isChanged {
-    step soundMixer
-    clearBuffer color
-    draw morph nil 0 0 1 1 nil
-    draw (morph hand)
-	drawLinks this
-	drawForeground this
-    step soundMixer
-    flipBuffer
-    isChanged = false
-  }
+  // ToDo: revisit drawing links and foreground
+//   if isChanged {
+//     step soundMixer
+//     clearBuffer color
+//     draw morph nil 0 0 1 1 nil
+//     draw (morph hand)
+//     drawLinks this
+//     drawForeground this
+//     step soundMixer
+//     flipBuffer
+//     isChanged = false
+//   }
+  if (or redrawAll (notEmpty damages)) { fixDamages this }
+
   step soundMixer
   // sleep for any extra time, but always sleep a little to ensure that
   // we get events (and to return control to the browser)
@@ -798,14 +874,102 @@ method doOneCycle Page {
   waitMSecs sleepTime
 }
 
+// damage recording and redrawing
+
+method redrawAll Page { redrawAll = true }
+
+method addDamage Page newRect {
+  // Add the given damage rectangle to the damage list.
+
+  if (isNil damages) { damages = (list) }
+
+  maxDamageEntries = 10
+  if ((count damages) >= maxDamageEntries) { redrawAll = true }
+  if redrawAll { return }
+
+  newRect = (roundToIntegers newRect)
+  if ((area newRect) <= 0) { return } // do nothing if newRect is empty
+
+  if (isEmpty damages) { // new rectangle is the first damage; just add it
+	add damages (copy newRect)
+  } else {
+	if (intersects (last damages) newRect) {
+	  if (not (containsRectangle (last damages) newRect)) {
+		// optimization: merge the new rectangle with the last one rather than adding it --
+		// but only if the new rectangle is not already contained in the last one
+		r = (removeLast damages)
+		add damages (mergedWith r newRect)
+	  }
+	} else {
+	  // newRect doesn't overlap the last damage rect, so add it
+	  add damages (copy newRect)
+	}
+  }
+}
+
+method fixDamages Page {
+  // Redraw morphs that overlap the damage rectangles and reset the damage list.
+
+  // make debug true to show damage handling
+  debug = false
+  if debug {
+	totalArea = 0
+	for r damages { totalArea += (area r) }
+	if redrawAll {
+	  print '*** redraw all ***'
+	} else {
+	  print '*** redraw count' (count damages) 'area' totalArea '***'
+	}
+  }
+  t = (newTimer)
+
+  if redrawAll {
+	damages = (list (rect 0 0 (width morph) (height morph)))
+  }
+
+  for rect damages {
+    if ((area rect) > 0) {
+	  // make flashDamage true to flash damage rectangle before redrawing
+	  flashDamage = false
+	  if flashDamage {
+		fillRect nil (color 200 0 200) (left rect) (top rect) (width rect) (height rect)
+		flipBuffer
+	  }
+	  ctx = (newGraphicContextOnScreen rect)
+      fullDrawOn morph ctx
+      fullDrawOn (morph hand) ctx
+    }
+  }
+
+  // make debug2 true to show damage handling
+  debug2 = false
+  if (and debug2 ((msecs t) > 2)) { print 'fixDamages' (msecs t) 'msecs' }
+  flipBuffer
+  damages = (list)
+  redrawAll = false
+}
+
+// drawing
+
+method drawOn Page aContext {
+  fillRect aContext color 0 0 (width morph) (height morph)
+}
+
+// events
+
 method processEvents Page {
   evt = (getNextEvent)
   while (notNil evt) {
     nxt = (getNextEvent)
     type = (at evt 'type')
-    if (or (type == 'mouseMove') (type == 'mouseDown') (type == 'mouseUp') (type == 'mousewheel')) {
+    if (or (type == 'mouseMove') (type == 'mouseDown') (type == 'mouseUp')) {
       // optimization: out of consecutive mouseMove events only handle the last one
       if (not (and (type == 'mouseMove') (notNil nxt) ((at nxt 'type') == 'mouseMove'))) {
+        processEvent hand evt
+      }
+    } (type == 'mousewheel') {
+      // optimization: skip all but the final mousewheel event in a burst of mousewheel events
+      if (not (and (type == 'mousewheel') (notNil nxt) ((at nxt 'type') == 'mousewheel'))) {
         processEvent hand evt
       }
     } (or (type == 'keyDown') (type == 'keyUp') (type == 'textinput')) {
@@ -844,7 +1008,7 @@ to readClipboard {
 method updateScale Page {
   winSize = (windowSize)
   ratio = ((at winSize 3) / (at winSize 1))
-  if (2 == ratio) {
+  if (ratio > 1) {
 	setGlobal 'scale' 2 // retina display
   } else {
 	setGlobal 'scale' 1 // non-retina display
@@ -866,13 +1030,12 @@ method processWindowEvent Page evt {
 	flipBuffer
 	setPosition morph 0 0
 	setExtent morph w h
-	isChanged = true
 	for each (parts morph) { pageResized (handler each) w h this }
 	if (scale != oldScale) {
 	  for m (allMorphs morph) { scaleChanged (handler m) }
 	}
   } (isOneOf id 1 3 8 9) {
-	isChanged = true
+	changed morph
 	for each (parts morph) {pageResized (handler each) w h this}
   }
 }
@@ -894,6 +1057,7 @@ method startStepping Page startFlag {
   if (isNil startFlag) { startFlag = false }
   stopAll this
   if startFlag { broadcastGo this }
+  redrawAll this
   interactionLoop this
 }
 
@@ -910,6 +1074,7 @@ method startSteppingSafely Page startFlag {
   if (isNil startFlag) { startFlag = false }
   stopAll this
   if startFlag { broadcastGo this }
+  redrawAll this
   task = (newStepTask this)
   while true {
 	resume task
@@ -1029,6 +1194,7 @@ method showHint Page aSpeechBubble isHint {
   removeHint this
   keepWithin (morph aSpeechBubble) (bounds morph)
   addPart this aSpeechBubble
+  step aSpeechBubble
   if isHint { activeHint = aSpeechBubble }
 }
 
@@ -1098,7 +1264,6 @@ method inform Page details title yesLabel {
 
 // events
 
-method changed Page {isChanged = true}
 method handDownOn Page {return true}
 method handUpOn Page {return true}
 method clicked Page {return true}

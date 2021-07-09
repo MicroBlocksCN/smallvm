@@ -1,6 +1,6 @@
 // editable input slot for blocks
 
-defineClass InputSlot morph text contents scale color menuSelector menuRange isStatic isAuto isID
+defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID
 
 to newInputSlot default editRule blockColor menuSelector {
   if (isNil default) {default = ''}
@@ -12,19 +12,11 @@ method initialize InputSlot default editRule blockColor slotMenu {
   isID = false
   fontName = 'Arial'
   fontSize = 10
-  if (global 'stealthBlocks') {
-  	fontName = 'Verdana'
-  	fontSize = 12
-  }
   if ('Linux' == (platform)) { fontSize = 9 }
-  scale = (global 'scale')
+  scale = (blockScale)
   morph = (newMorph this)
-
-  s = (toString default)
-  if ('allVarsMenu' != slotMenu) { s = (localized s) }
-  text = (newText s fontName (scale * fontSize))
+  text = (newText (toString default) fontName (scale * fontSize))
   addPart morph (morph text)
-
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
 	editRule = 'line'
@@ -37,9 +29,6 @@ method initialize InputSlot default editRule blockColor slotMenu {
     setBorders text (scale * 5) 0
   } else {
     setBorders text (scale * 3) scale
-  }
-  if (global 'stealthBlocks') {
-    setBorders text (stealthLevel (scale * 3) 0) (stealthLevel scale 0)
   }
   if (editRule == 'static') {
     contents = default
@@ -88,79 +77,57 @@ method setContents InputSlot data {
   if ((or (true == contents) (false == contents))) {
     menuSelector = 'boolMenu'
   }
-  if (and (notNil menuSelector) (not (isVarSlot this))) {
-	setText text (localized (toString data))
-  } else {
-	setText text (toString data)
-  }
+  setText text (toString data)
   textChanged this
-  if (and (isClass data 'String') ('' != data) ('editable' != (editRule text)) (representsANumber data)) {
-	switchType this 'editable' // old value was a string; covert to string-only
-  }
-  raise morph 'inputContentsChanged' this // experimental for script editor focus
-}
-
-method isVarSlot InputSlot {
-  if (isNil (owner morph)) { return false }
-  owner = (handler (owner morph))
-  if (or (not (isClass owner 'Block')) (isNil (expression owner))) { return false }
-  return (isOneOf (primName (expression owner)) '=' '+=')
 }
 
 method fixLayout InputSlot {
+  scale = (blockScale)
   h = (height (morph text))
-  w = (width (morph text))
-  if ('Linux' == (platform)) { h = (h + scale) }
+  w = ((width (morph text)) + 1)
+  if ('Linux' == (platform)) { h += scale }
   if (notNil menuSelector) {w += (fontSize text)} // leave room for down-arrow
-  setPosition (morph text) (left morph) (top morph)
-  if ('Linux' == (platform)) { setPosition (morph text) (left morph) ((top morph) + scale) }
+  textX = (left morph)
+  textY = ((top morph) + 1)
+  setPosition (morph text) textX textY
   setExtent morph w h
   raise morph 'layoutChanged' this
 }
 
-method redraw InputSlot {
-  bm = (newBitmap (width morph) (height morph))
-  pen = (newShapeMaker bm)
+method drawOn InputSlot ctx {
+  scale = (blockScale)
+  border = (max 1 (scale / 2))
+  pen = (getShapeMaker ctx)
 
   isNumber = ((editRule text) == 'numerical')
   if (and (isAuto == true) (representsANumber (text text))) {
     isNumber = (notNil (toNumber (text text) nil))
   }
 
-  if (global 'flatBlocks') {
-    border = 0
-  } else {
-    border = (max 1 (scale / 2))
-  }
-
+  x = (left morph)
+  y = (top morph)
   if isNumber {
     h = (height morph)
-    c = (color 255 255 255)
-    if (global 'stealthBlocks') {setAlpha c (stealthLevel 255 0)}
-	drawButton pen 0 0 (width morph) h c ((h / 2) - 1) border true
+    c = (gray 255)
+	drawButton pen x y (width morph) h c ((h / 2) - 1) border true
   } ((editRule text) == 'static') {
-    c = (color 220 220 220)
+    c = (gray 220)
     if (notNil color) { c = color }
-    if (global 'stealthBlocks') {setAlpha c (stealthLevel 255 0)}
-	drawButton pen 0 0 (width morph) (height morph) c scale border true
+	drawButton pen x y (width morph) (height morph) c scale border true
   } else {
-    c = (color 255 255 255)
-    if (global 'stealthBlocks') {setAlpha c (stealthLevel 255 0)}
-	drawButton pen 0 0 (width morph) (height morph) c scale border true
+    c = (gray 255)
+	drawButton pen x y (width morph) (height morph) c scale border true
   }
   if (notNil menuSelector) { // draw down-arrow
+	fontH = (fontSize text)
     border = scale
-    w = (fontSize text)
-    h = (w / 2)
-    x = ((width bm) - w)
-    y = ((height morph) / 2)
+    x += (((width morph) - fontH) - border)
+    y += (((height morph) / 4) + border)
+    w = (fontH - (2 * border))
+    h = ((fontH / 2) + border)
     clr = (gray 0)
-	if (global 'stealthBlocks') {
-	  clr = (gray (stealthLevel 0 180))
-	}
-	fillArrow pen (rect (x + border) y (w - (border * 2)) (h - border)) 'down' clr
+	fillArrow (getShapeMaker ctx) (rect x y w h) 'down' clr
   }
-  setCostume morph bm
 }
 
 // events
@@ -169,15 +136,14 @@ method layoutChanged InputSlot {fixLayout this}
 
 method textChanged InputSlot {
   if (isAuto == true) {
-    scale = (global 'scale')
+    scale = (blockScale)
     isNumber = (and (representsANumber (text text)) (notNil (toNumber (text text) nil)))
     if isNumber {
       setBorders text (scale * 5) 0
     } else {
       setBorders text (scale * 3) scale
     }
-    if (global 'stealthBlocks') {setBorders text (stealthLevel (scale * 3) 0) (stealthLevel scale 0)}
-    redraw this
+	fixLayout this
   }
   raise morph 'inputChanged' this
 }

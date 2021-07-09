@@ -19,7 +19,7 @@ to stringImage aString fontName fontSize color alignment shadowColor shadowOffse
     if (shadowOffsetX != 0) {shadowColor = (color 230 230 230)}
   }
   if (isNil shadowOffsetY) {shadowOffsetY = shadowOffsetX}
-  if (isNil flat) {flat = (global 'flat')}
+  if (isNil flat) {flat = true}
   flat = true // force flat text
 
   if flat {
@@ -132,7 +132,7 @@ to newText aString fontName fontSize color alignment shadowColor shadowOffsetX s
   morph = (newMorph txt)
   setTransparentTouch morph true
   setMorph txt morph
-  redraw txt
+  fixLayout txt
   return txt
 }
 
@@ -177,7 +177,7 @@ method setText Text aString {
   startMark = nil
   endMark = nil
   raise morph 'textEdited' this
-  redraw this
+  fixLayout this
 }
 
 method fontName Text {return fontName}
@@ -186,9 +186,10 @@ method fontSize Text {return fontSize}
 method setFont Text name size {
   if (isNil name) {name = fontName}
   if (isNil size) {size = fontSize}
+  if (and (name == fontName) (size == fontSize)) { return } // no change
   fontName = name
   fontSize = size
-  redraw this
+  fixLayout this
 }
 
 method color Text {return color}
@@ -202,7 +203,7 @@ method setColor Text textColor shadeColor backgroundColor {
   color = textColor
   shadowColor = shadeColor
   bgColor = backgroundColor
-  redraw this
+  changed morph
 }
 
 method alignment Text {return alignment}
@@ -210,7 +211,7 @@ method alignment Text {return alignment}
 method align Text optionString {
   // optionString can be 'left', 'center' or 'right'
   alignment = optionString
-  redraw this
+  fixLayout this
 }
 
 method shadowOffsetX Text {return shadowOffsetX}
@@ -221,7 +222,7 @@ method setShadowOffset Text x y {
   if (isNil y) {y = shadowOffsetY}
   shadowOffsetX = x
   shadowOffsetY = y
-  redraw this
+  fixLayout this
 }
 
 method borderX Text {return borderX}
@@ -233,7 +234,7 @@ method setBorders Text x y silently {
   borderX = x
   borderY = y
   if silently {return}
-  redraw this
+  fixLayout this
 }
 
 method editRule Text {return editRule}
@@ -253,30 +254,86 @@ method setCodeContext Text anObjectOrNil {codeContext = anObjectOrNil}
 method setMinWidth Text w {minWidth = (max 0 (truncate w))}
 method setMinHeight Text h {minHeight = (max 0 (truncate h))}
 
-method redraw Text {
-  bm = (stringImage text fontName fontSize color alignment shadowColor shadowOffsetX shadowOffsetY borderX borderY bgColor minWidth minHeight isFlat)
-  renderMarkedOn this bm
-  setCostume morph bm true // keep former dimensions to enable editing inside scrolling panes
-  owner = (owner morph)
-  if (and (notNil owner) (isClass (handler owner) 'ScrollFrame'))  {
-    updateSliders (handler owner)
-  } else {
-    setWidth (bounds morph) (width bm)
-    setHeight (bounds morph) (height bm)
+method drawOn Text ctx {
+  setFont ctx fontName fontSize // set font before getting fontHeight
+  lineHeight = (fontHeight)
+  w = ((width morph) - (2 * borderX))
+  if (notNil bgColor) {
+    r = (insetBy (bounds morph) borderX borderY)
+    fillRect ctx bgColor (left r) (top r) (width r) (height r) 1
   }
-  if (notNil caret) {adjustSize caret}
+
+  x = ((left morph) + borderX)
+  y = ((top morph) + borderY)
+  for s (lines text) {
+	if (alignment == 'right') {
+	  inset = (w - (stringWidth s))
+	} (alignment == 'center') {
+	  inset = (half (w - (stringWidth s)))
+	} else {
+	  inset = 0
+	}
+	drawString ctx s color (x + inset) y
+	y += lineHeight
+  }
+  drawSelectionOn this ctx
+}
+
+method drawSelectionOn Text ctx {
+	if ((count text) == 0) { return }
+	if (or (isNil startMark) (isNil endMark)) { return }
+	begin = (min startMark endMark)
+	end = ((max startMark endMark) - 1)
+	marked = (substring text begin end)
+	lines = (lines marked)
+	setFont ctx fontName fontSize
+	lineHeight = (fontHeight)
+	slot = begin
+	for row (count lines) {
+		s = (at lines row)
+		pos = (relativeSlotPosition this slot)
+		xPos = ((left morph) + (at pos 1))
+		yPos = ((top morph) + (at pos 2))
+		fillRect ctx (color 0 0 100) xPos yPos (stringWidth s) lineHeight
+		drawString ctx s (gray 255) xPos yPos
+		slot += ((count (at lines row)) + 1)
+	}
+}
+
+method fixLayout Text {
+  changed morph
+  computeBounds this
+  changed morph
   raise morph 'layoutChanged' this
+}
+
+method computeBounds Text {
+  lines = (lines text)
+  setFont fontName fontSize
+
+  // determine width
+  w = 0
+  if (notNil minWidth) { w = minWidth }
+  for s lines {
+    lw = ((stringWidth s) + (2 * borderX))
+	if (lw > 4000) { lw = 4000 } // truncate really wide strings
+    w = (max w lw)
+  }
+  setWidth (bounds morph) w
+
+  // determine height
+  lineHeight = (fontHeight)
+  h = (((count lines) * lineHeight) + (2 * borderY))
+  if (notNil minHeight) { h = (max h minHeight) }
+  setHeight (bounds morph) h
 }
 
 method adjustSizeToScrollFrame Text aScrollFrame {
   ca = (clientArea aScrollFrame)
-  bm = (costumeData morph)
-  if (isNil bm) {
-	redraw this
-	 bm = (costumeData morph)
-  }
-  setWidth (bounds morph) (max (width bm) (width ca))
-  setHeight (bounds morph) (max (height bm) (height ca))
+  computeBounds this
+  bnds = (bounds morph)
+  setWidth bnds (max (width bnds) (width ca))
+  setHeight bnds (max (height bnds) (height ca))
 }
 
 // events
@@ -361,6 +418,22 @@ method rightClicked Text hand {
   return false
 }
 
+method handEnter Text aHand {
+  if (editRule != 'static') {
+	setCursor 'text'
+  }
+}
+
+method handLeave Text aHand {
+  // handEnter happens before handLeave, so cursor wouldn't go back to finger
+  // when you move between two buttons without any space in between. A temporary
+  // solution is to re-trigger handEnter on the new morph under the hand.
+  if (isNil caret) {
+	setCursor 'default'
+	handEnter (objectAt aHand) aHand
+  }
+}
+
 // context menu
 
 method contextMenu Text {
@@ -405,12 +478,14 @@ method contextMenu Text {
 method edit Text hand keepFocus {
   root = (handler (root morph))
   if (isClass root 'Page') {edit (keyboard root) this (slotAt this (x hand) (y hand)) keepFocus}
+  setCursor 'text'
 }
 
 method stopEditing Text {
   unmark this
   root = (handler (root morph))
   if (isClass root 'Page') {stopEditing (keyboard root) this}
+  setCursor 'default'
 }
 
 // measuring
@@ -535,14 +610,14 @@ method unmark Text {
   if (notNil startMark) {
     startMark = nil
     endMark = nil
-    redraw this
+    changed morph
   }
 }
 
 method selectAll Text {
   startMark = 1
   endMark = ((count text) + 1)
-  redraw this
+  changed morph
 }
 
 method selectWordAt Text slot {
@@ -553,24 +628,7 @@ method selectWordAt Text slot {
   while (and (slot <= (count text)) (not (isWhiteSpace (at letters slot)))) {slot += 1}
   slot = (min slot ((count text) + 1))
   endMark = slot
-  redraw this
-}
-
-method renderMarkedOn Text aBitmap {
-  if (or (isNil startMark) (isNil endMark)) {return}
-  begin = (min startMark endMark)
-  end = ((max startMark endMark) - 1)
-  if ((count text) == 0) {return}
-  marked = (substring text begin end)
-  lines = (lines marked)
-  slot = begin
-  for row (count lines) {
-    line = (stringImage (at lines row) fontName fontSize (gray 255))
-    pos = (relativeSlotPosition this slot)
-    fillRect aBitmap (color 0 0 100) (at pos 1) (at pos 2) (width line) (height line)
-    drawBitmap aBitmap line (at pos 1) (at pos 2)
-    slot += ((count (at lines row)) + 1)
-  }
+  changed morph
 }
 
 // evaluating
@@ -610,7 +668,7 @@ method printResult Text result {
   insertRight caret (join ' ' (printString result))
   startMark = start
   endMark = (slot caret)
-  redraw this
+  fixLayout this
 }
 
 method inspectIt Text {

@@ -101,7 +101,7 @@ method redraw Slider {
   scale = (global 'scale')
   w = (width morph)
   h = (height morph)
-  nbm = (buttonBitmap nil color w h true (thickness / 3) (max 1 (scale / 2)))
+  nbm = (buttonBitmap nil (withAlpha color 80) w h true (thickness / 3) (max 1 (scale / 2)))
   setCostume morph nbm
 }
 
@@ -115,6 +115,7 @@ method updateGripFromValue Slider {
     setExtent (morph grip) thickness (stretch this)
     setPosition (morph grip) (left morph) (+ (top morph) pos)
   }
+  updateCostumes grip
   keepWithin (morph grip) (bounds morph)
 }
 
@@ -140,14 +141,16 @@ method normalCostume Slider {
   grip = (grip this)
   w = (width (morph grip))
   h = (height (morph grip))
-  return (buttonBitmap nil (darker color 40) w h false (thickness / 3) (max 1 (scale / 2)))
+  c = (withAlpha (darker color 40) 80)
+  return (buttonBitmap nil c w h false (thickness / 3) (max 1 (scale / 2)))
 }
 
 method highlightCostume Slider {
   grip = (grip this)
   w = (width (morph grip))
   h = (height (morph grip))
-  return (buttonBitmap nil (darker color 50) w h false (thickness / 3) (max 1 (scale / 2)))
+  c = (withAlpha (darker color 50) 80)
+  return (buttonBitmap nil c w h false (thickness / 3) (max 1 (scale / 2)))
 }
 
 method pressedCostume Slider {return (highlightCostume this)}

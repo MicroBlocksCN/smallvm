@@ -21,6 +21,7 @@ method handDownOn Toggle aHand {
 }
 
 method handEnter Toggle aHand {
+  setCursor 'pointer'
   if (transitionSelector == 'handEnter') {
     if (and (not (isDown aHand)) (not (isOn this))) {
       handDownOn trigger aHand
@@ -33,6 +34,11 @@ method handEnter Toggle aHand {
 }
 
 method handLeave Toggle aHand {
+  setCursor 'default'
+  // handEnter happens before handLeave, so cursor wouldn't go back to finger
+  // when you move between two buttons without any space in between. A temporary
+  // solution is to re-trigger handEnter on the new morph under the hand.
+  handEnter (objectAt aHand) aHand
   if (notNil (hint trigger)) {removeHint (page aHand)}
   raise morph 'highlightOff' this
   refresh this
@@ -65,7 +71,7 @@ to toggleButton action query width height corner border hasFrame flat {
   if (isNil corner) {corner = (scale * 13)}
   if (isNil border) {border = (max 1 (scale / 2))}
   if (isNil hasFrame) {hasFrame = true}
-  if (isNil flat) {flat = (global 'flat')}
+  if (isNil flat) {flat = true}
   frameSize = 2
   incr = 0
   if (not hasFrame) {

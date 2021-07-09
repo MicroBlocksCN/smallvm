@@ -17,16 +17,17 @@ method setLeft Rectangle aNumber {left = aNumber}
 method top Rectangle {return top}
 method setTop Rectangle aNumber {top = aNumber}
 method width Rectangle {return width}
-method setWidth Rectangle aNumber {width = aNumber}
+method setWidth Rectangle aNumber {width = (max 0 aNumber)}
 method right Rectangle {return (left + width)}
-method setRight Rectangle aNumber {width = (aNumber - left)}
+method setRight Rectangle aNumber {width = (max 0 (aNumber - left))}
 method height Rectangle {return height}
-method setHeight Rectangle aNumber {height = aNumber}
+method setHeight Rectangle aNumber {height = (max 0 aNumber)}
 method bottom Rectangle {return (top + height)}
-method setBottom Rectangle aNumber {height = (aNumber - top)}
+method setBottom Rectangle aNumber {height = (max 0 (aNumber - top))}
 method hCenter Rectangle {return (+ left (width / 2))}
 method vCenter Rectangle {return (+ top (height / 2))}
 method copy Rectangle {return (rect left top width height)}
+method area Rectangle {return (width * height)}
 
 // converting
 
@@ -98,6 +99,16 @@ method mergedWith Rectangle another {
   setRight result (max (right this) (right another))
   setBottom result (max (bottom this) (bottom another))
   return result
+}
+
+method roundToIntegers Rectangle {
+  // Round to integer coordinates.
+
+  left = (floor left)
+  top = (floor top)
+  width = (ceiling width)
+  height = (ceiling height)
+  return this
 }
 
 // intersecting line segments

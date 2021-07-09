@@ -20,7 +20,6 @@ method initialize MicroBlocksScripter aProjectEditor {
   projectEditor = aProjectEditor
   scale = (global 'scale')
   morph = (newMorph this)
-  setCostume morph (gray 150) // border color
   listColor = (gray 240)
   fontName = 'Arial Bold'
   fontSize = 16
@@ -52,7 +51,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (gray 220))
-  setExtent (morph blocksFrame) (235 * scale) (100 * scale)
+  setExtent (morph blocksFrame) (260 * scale) (100 * scale)
   setAutoScroll blocksFrame false
   addPart morph (morph blocksFrame)
 
@@ -142,6 +141,7 @@ method addLibraryButton MicroBlocksScripter label w h {
   fillRect bm2 (gray 30) (centerX - halfW) (centerY - halfLen) lineW len
 
   button = (newButton '' (action 'importLibrary' this))
+  setHint button (localized 'Add Library')
   setCostumes button bm1 bm2
   return button
 }
@@ -184,24 +184,19 @@ method showAllLibraryDefinitions MicroBlocksScripter libName {
 method exportLibrary MicroBlocksScripter libName {
   lib = (libraryNamed mbProject libName)
   if (isNil lib) { return }
-  if ('Browser' != (platform)) {
+
+  if ('Browser' == (platform)) {
+	fName = (join (moduleName lib) '.ubl')
+	browserWriteFile (codeString lib mbProject) fName 'library'
+  } else {
 	fName = (fileToWrite (moduleName lib) (array '.ubl'))
 	if ('' == fName) { return false }
 	if (not (endsWith fName '.ubl' )) { fName = (join fName '.ubl') }
-  }
-
-  if ('Browser' == (platform)) {
-	browserWriteFile (codeString lib mbProject) libName 'ubl'
-  } else {
 	writeFile fName (codeString lib mbProject)
   }
 }
 
 // layout
-
-method redraw MicroBlocksScripter {
-  fixLayout this
-}
 
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
@@ -210,8 +205,7 @@ method fixLayout MicroBlocksScripter {
   catHeight = (((height (morph (contents categoriesFrame))) / scale) + 4)
   columnHeaderHeight = 33
 
-  packer = (newPanePacker (bounds morph) scale scale)
-  packPanesH packer blocksFrame blocksWidth scriptsFrame '100%'
+  packer = (newPanePacker (bounds morph) scale)
   packPanesH packer categoriesFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
@@ -222,7 +216,12 @@ method fixLayout MicroBlocksScripter {
 
   fixResizerLayout this
   fixLibraryHeaderLayout this
+  updateSliders blocksFrame
   updateSliders scriptsFrame
+
+  // update item widths of category and library list boxes
+  updateMorphContents (contents categoriesFrame)
+  updateMorphContents (contents libFrame)
 
   if (notNil projectEditor) { fixLayout projectEditor true }
 }
@@ -241,6 +240,21 @@ method fixResizerLayout MicroBlocksScripter {
   setTop (morph blocksResizer) (top morph)
   setExtent (morph blocksResizer) resizerWidth (height morph)
   drawPaneResizingCostumes blocksResizer
+}
+
+// drawing
+
+method drawOn MicroBlocksScripter ctx {
+  scale = (global 'scale')
+  borderColor = (gray 150)
+  borderWidth = (2 * scale)
+  x = (right (morph categoriesFrame))
+  fillRect ctx borderColor x (top morph) borderWidth (height morph)
+  x = (right (morph blocksFrame))
+  fillRect ctx borderColor x (top morph) borderWidth (height morph)
+  r = (bounds (morph libHeader))
+  fillRect ctx borderColor (left r) ((top r) - borderWidth) (width r) borderWidth
+  fillRect ctx borderColor (left r) (bottom r) (width r) borderWidth
 }
 
 // MicroBlocksScripter UI support
@@ -314,6 +328,7 @@ method updateBlocks MicroBlocksScripter {
 	addBlocksForCategory this cat
   }
   cleanUp blocksPane
+  updateSliders blocksFrame
 }
 
 method addBlocksForCategory MicroBlocksScripter cat {
@@ -333,7 +348,7 @@ method addBlocksForSpecs MicroBlocksScripter specList {
   for spec specList {
 	if ('-' == spec) {
 	  // add some vertical space
-	   nextY += (20 * (global 'scale'))
+	   nextY += (20 * (blockScale))
 	} else {
 	  addBlock this (blockForSpec spec) spec
 	}
@@ -552,7 +567,11 @@ method deleteVariable MicroBlocksScripter varName {
 
 // save and restore scripts in class
 
-method scriptChanged MicroBlocksScripter { saveNeeded = true }
+method scriptChanged MicroBlocksScripter {
+  updateHighlights (smallRuntime)
+  saveNeeded = true
+}
+
 method functionBodyChanged  MicroBlocksScripter { saveNeeded = true }
 
 method step MicroBlocksScripter {
@@ -1163,16 +1182,18 @@ method setLibsDraggable MicroBlocksScripter flag {
 }
 
 method exportAsLibrary MicroBlocksScripter defaultFileName {
-  if ('Browser' != (platform)) {
-	fileName = (fileToWrite (withoutExtension defaultFileName) '.ubl')
-	if (isEmpty fileName) { return }
-	if (not (endsWith fileName '.ubl' )) { fileName = (join fileName '.ubl') }
-  }
   if ('Browser' == (platform)) {
-	libName = (prompt (global 'page') (localized 'Library name?') (localized 'my library'))
-	browserWriteFile (codeString (main mbProject) mbProject libName) libName 'ubl'
+	if (or (isNil defaultFileName) ('' == defaultFileName)) {
+		defaultFileName = (localized 'my library')
+	}
+	libName = (prompt (global 'page') (localized 'Library name?') defaultFileName)
+	fName = (join libName '.ubl')
+	browserWriteFile (codeString (main mbProject) mbProject libName) fName 'library'
   } else {
-	libName = (withoutExtension (filePart fileName))
-	writeFile fileName (codeString (main mbProject) mbProject libName)
+	fName = (fileToWrite (withoutExtension defaultFileName) '.ubl')
+	if (isEmpty fName) { return }
+	if (not (endsWith fName '.ubl' )) { fName = (join fName '.ubl') }
+	libName = (withoutExtension (filePart fName))
+	writeFile fName (codeString (main mbProject) mbProject libName)
   }
 }

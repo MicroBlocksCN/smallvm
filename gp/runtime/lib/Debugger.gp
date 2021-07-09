@@ -22,6 +22,7 @@ to debug {
 }
 
 to printStackTrace aTask {
+  if (isNil aTask) { aTask = (currentTask) }
   db = (new 'Debugger' aTask)
   calls db
 }
@@ -268,6 +269,7 @@ method morph Debugger {
   if (isNil morph) {
     buildUI this
     updateStack this
+	calls this // print call stack in console
   }
   return morph
 }
@@ -392,6 +394,7 @@ method updateStack Debugger {
   if ((count frames) > 100) {
 	print 'Large stack; showing only the first 100 frames'
 	frames = (copyFromTo frames 1 100)
+	calls this // print call stack in console
   }
   b = nil
   if (notNil debugeeTask) { b = (getField debugeeTask 'currentBlock') }

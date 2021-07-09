@@ -81,6 +81,11 @@ method setRGBA Bitmap x y r g b a {
   comment '
 	Set the color of the given pixel. x and y are zero-based offsets from the top-left corner.'
 
+  if (0 == a) { // fully transparent pixel; set RGB to 0 (consistent with premultiplied alpha)
+	r = 0
+	g = 0
+	b = 0
+  }
   setPixelRGBA pixelData (toInteger (((y * width) + x) + 1)) r g b a
 }
 
@@ -88,17 +93,14 @@ method setRGBA Bitmap x y r g b a {
 
 method thumbnail Bitmap w h {
   // Create a thumbnail of this bitmap with given width and height.
-  w = (floor w)
-  h = (floor h)
-  if (or (width == 0) (height == 0)) {
-	return (newBitmap w h)
-  }
+  w = (max 0 (floor w))
+  h = (max 0 (floor h))
+  result = (newBitmap w h)
+  if (or (width == 0) (height == 0)) { return result }
+
   scale = (min ((toFloat w) / width) ((toFloat h) / height))
-  xOffset = (floor ((w - (scale * width)) / 2))
-  yOffset = (floor ((h - (scale * height)) / 2))
-  t = (newTexture w h)
-  showTexture t (toTexture this) xOffset yOffset 255 scale scale
-  return (toBitmap t)
+  warpBitmap result this (w / 2) (h / 2) scale scale
+  return result
 }
 
 method scaleAndRotate Bitmap xScale yScale rotationDegrees dstBitmap {
@@ -114,23 +116,14 @@ method scaleAndRotate Bitmap xScale yScale rotationDegrees dstBitmap {
   newW = (xScale * width)
   newH = (yScale * height)
   if (rotationDegrees != 0) {
-	diagonal = (sqrt ((newW * newW) + (newH * newH)))
+	diagonal = (max 1 (sqrt ((newW * newW) + (newH * newH))))
 	xOffset = (half (diagonal - newW))
 	yOffset = (half (diagonal - newH))
 	newW = diagonal
 	newH = diagonal
   }
-  srcTexture = (toTexture this)
-  t = (newTexture (max 1 (ceiling newW)) (max 1 (ceiling newH)))
-  showTexture t srcTexture xOffset yOffset 255 xScale yScale rotationDegrees false 0
-  if (and (notNil dstBitmap) ((width dstBitmap) == (width t)) ((height dstBitmap) == (height t))) {
-	result = dstBitmap
-	readTexture result t
-  } else {
-	result = (toBitmap t)
-  }
-  destroyTexture t
-  destroyTexture srcTexture
+  result = (newBitmap (max 1 newW) (max 1 newH))
+  warpBitmap result this (half newW) (half newH) xScale yScale rotationDegrees
   return result
 }
 
@@ -300,21 +293,15 @@ method applyAlphaChannel Bitmap alphaChannel color {
   return this
 }
 
-// converting
-
-method toTexture Bitmap {
-  comment '
-	Return a new texture with the contents of this bitmap.'
-
-  if (or (width < 1) (height < 1)) { return (newTexture 1 1) }
-  result = (newTexture width height)
-  updateTexture result this
-  return result
-}
-
 method toString Bitmap {
   return (join '<Bitmap ' width 'x' height '>')
 }
+
+// font utility
+
+to fontHeight { return ((fontAscent) + (fontDescent)) }
+
+// Textures (deprecated after Morphic rewrite)
 
 defineClass Texture width height ref
 
@@ -353,10 +340,16 @@ method toBitmap Texture {
   return result
 }
 
-method toString Texture {
-  return (join '<Texture ' width 'x' height '>')
+method toTexture Bitmap {
+  comment '
+	Return a new texture with the contents of this bitmap.'
+
+  if (or (width < 1) (height < 1)) { return (newTexture 1 1) }
+  result = (newTexture width height)
+  updateTexture result this
+  return result
 }
 
-to fontHeight {
-  return ((fontAscent) + (fontDescent))
+method toString Texture {
+  return (join '<Texture ' width 'x' height '>')
 }

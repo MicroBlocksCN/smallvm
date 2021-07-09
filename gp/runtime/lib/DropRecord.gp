@@ -5,7 +5,6 @@ defineClass DropRecord block target next input
 
 method restore DropRecord aScriptEditor {
   // "undrop"
-  if (not (isRestorable this)) {return}
   if ('reporter' == (type block)) {
     if (notNil target) {
       replaceInput target block input
@@ -20,17 +19,5 @@ method restore DropRecord aScriptEditor {
       setNext target next
     }
   }
-  if (notNil next) {fixBlockColor next}
-  fixBlockColor block
   grab aScriptEditor block
-}
-
-method isRestorable DropRecord {
-  return (and
-    (notNil block)
-    (or
-      (notNil (costume (morph block)))
-      (notNil (costumeData (morph block)))
-    )
-  )
 }

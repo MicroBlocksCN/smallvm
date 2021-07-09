@@ -78,7 +78,7 @@ method updateMorphContents TabBar {
   }
   fixLayout alignment
 
-  // create a new background bitmap/texture
+  // create a new background bitmap
   bg = (newBitmap (max 1 (width morph)) (max 1 (height morph)) (getField listBox 'bgColor'))
   setCostume morph bg
 
@@ -161,8 +161,7 @@ method tabBitmap TabBar label color bodyColor isInFront frontColor {
   } else {
     lbm = nil
   }
-  tabBorder = (max 1 (scale / 2))
-  if (global 'flat') {tabBorder = 0}
+  tabBorder = 0 // flat
 
   w = (+ (width lbm) (tabCorner * 4) (tabBorder * 2))
   h = (+ (height lbm) (tabBorder * 2))

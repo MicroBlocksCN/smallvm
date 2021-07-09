@@ -1,33 +1,25 @@
 // Block
 // Handlers for the GP blocks GUI
 
-defineClass Block morph blockSpec type expression labelParts corner rounding dent inset hatWidth border color scale expansionLevel function isAlternative
+defineClass Block morph blockSpec type expression labelParts corner rounding dent inset hatWidth border color expansionLevel function isAlternative layoutNeeded
 
 to block type color opName {
-  if (isNil opName) {opName = 'foo'}
+  scale = (blockScale (new 'Block'))
 
-  // type can be 'command', 'reporter' or 'hat'
-  scale = (global 'scale')
-  off = (max (scale / 2) 1)
-  if (isNil type) {type = 'command'}
-  if (isNil color) {color = (color 150 150 150)}
+  if (isNil opName) {opName = 'foo'}
+  if (isNil type) {type = 'command'} // type can be 'command', 'reporter' or 'hat'
+  if (isNil color) {color = (gray 150)}
   labelParts = (list (list))
   for i ((argCount) - 2) {add (at labelParts 1) (arg (i + 2))}
-  lc = (color 255 255 255)
+  lc = (gray 255)
   fn = 'Verdana Bold'
   fontSize = (11 * scale)
   if (or ('Linux' == (platform)) ('Browser' == (platform))) {
 	fn = 'Arial Bold'
 	fontSize = (15 * scale)
   }
-  if (global 'stealthBlocks') {
-    lc = (gray (stealthLevel 255 0))
-    if ((red lc) < 200) {
-      fn = 'Arial'
-    }
-  }
   if ((count (at labelParts 1)) == 0)  {
-    labelParts = (list (list (newText opName fn fontSize lc nil (darker color) (off * -1) (off * -1))))
+    labelParts = (list (list (newText opName fn fontSize lc)))
     op = opName
   } else {
     op = (arg 3)
@@ -36,7 +28,7 @@ to block type color opName {
   for i (count group) {
     part = (at group i)
     if (isClass part 'String') {
-      atPut group i (newText part fn fontSize lc nil (darker color) (off * -1) (off * -1))
+      atPut group i (newText part fn fontSize lc)
     } (isClass part 'Command') {
       inp = (newCommandSlot color)
       atPut group i inp
@@ -56,19 +48,20 @@ to block type color opName {
   setField block 'hatWidth' 80
   setField block 'inset' 4
   setField block 'border' 1
-  setField block 'scale' scale
   setField block 'expansionLevel' 1
+  setField block 'layoutNeeded' true
   morph = (newMorph block)
   if (type == 'command') {
     setField block 'expression' (callWith 'newCommand' (toArray argValues))
   } (type == 'hat') {
-    setField block 'expression' (cmd)
+    setField block 'expression' (newCommand 'nop')
   } (type == 'reporter') {
     setField block 'expression' (callWith 'newReporter' (toArray argValues))
   }
   setMorph block morph
   setGrabRule morph 'handle'
   for each group {addPart (morph block) (morph each)}
+  layoutChanged block
   fixLayout block
   return block
 }
@@ -83,7 +76,7 @@ to slot contents isID {
     inp = (newInputSlot contents 'editable')
     setGrabRule (morph inp) 'ignore'
     return inp
-  } (and (isClass contents 'Boolean') (not (global 'stealthBlocks'))) {
+  } (isClass contents 'Boolean') {
     inp = (newBooleanSlot contents)
     return inp
   } (isClass contents 'Color') {
@@ -97,49 +90,72 @@ to slot contents isID {
   }
 }
 
-to cmd {return (newCommand 'nop')}
+to blockScale {
+  if (isNil (global 'blockScale')) { setGlobal 'blockScale' 1.25 }
+  return ((global 'blockScale') * (global 'scale'))
+}
+
+method fixLayoutNow Block {
+  layoutNeeded = true
+  fixLayout this
+}
 
 method fixLayout Block {
+  if (isNil layoutNeeded) { layoutNeeded = true }
+  if (not layoutNeeded) { return }
+  scale = (blockScale)
+  wasHighlighted = false
+
+  if (and (isClass (handler (owner morph)) 'ScriptEditor') (notNil (getHighlight morph))) {
+	removeHighlight morph
+	wasHighlighted = true
+  }
+
+  // fix layout of parts
+  for m (parts morph) {
+	if (isClass (handler m) 'Block') { fixLayout (handler m) }
+	if (isClass (handler m) 'CommandSlot') {
+	  nestedBlock = (nested (handler m))
+	  if (notNil nestedBlock) { fixLayout nestedBlock }
+	  fixLayout (handler m)
+	}
+	if (isClass (handler m) 'InputDeclaration') {
+	  fixLayout (handler m)
+	}
+  }
+
   space = 3
   vSpace = 3
 
   break = 450
   lineHeights = (list)
   lines = (list)
+  lineArgCount = 0
 
   left = (left morph)
-  blockWidth = 0
-  blockHeight = 0
   h = 0
   w = 0
 
-  if (global 'stealthBlocks') {
-    if (type == 'hat') {
-      indentation = (stealthLevel (* scale (+ border space)) 0)
-    } (type == 'reporter') {
-      indentation = (stealthLevel (* scale rounding) (width (stealthText this '(')))
-    } (type == 'command') {
-      indentation = (stealthLevel (* scale (+ border inset dent (corner * 2))) 0)
-    }
-  } else {
-    if (type == 'hat') {
-      indentation = (* scale (+ border space))
-    } (type == 'reporter') {
-      indentation = (* scale rounding)
-    } (type == 'command') {
-      indentation = (* scale (+ border inset dent (corner * 2)))
-    }
+  if (type == 'hat') {
+    indentation = (* scale (+ border space space))
+  } (type == 'reporter') {
+    indentation = (* scale rounding)
+  } (type == 'command') {
+    indentation = (* scale (+ border space space border))
   }
 
   // arrange label parts horizontally and break up into lines
+  breakLineBeforeFirstArg = ((count (argList expression)) >= 5)
   currentLine = (list)
   for group labelParts {
     for each group {
       if (isVisible (morph each)) {
         if (isClass each 'CommandSlot') {
-          add lines currentLine
-          add lineHeights h
-          setLeft (morph each) (+ left (* scale (+ border corner)))
+          if (notEmpty currentLine) {
+          	add lines currentLine
+          	add lineHeights h
+          }
+          fastSetLeft (morph each) (+ left (* scale (+ border corner)))
           add lines (list each)
           add lineHeights (height (morph each))
           currentLine = (list)
@@ -149,17 +165,29 @@ method fixLayout Block {
           x = (+ left indentation w)
           w += (width (fullBounds (morph each)))
           w += (space * scale)
-          if (and (w > (break * scale)) (notEmpty currentLine)) {
-            add lines currentLine
-            add lineHeights h
-            currentLine = (list)
+          if (and breakLineBeforeFirstArg (not (isClass each 'Text'))) {
+			breakLineBeforeFirstArg = false // only do this once
+ 			lineArgCount = 10 // force a line break before first arg for blocks with >=5 args
+		  }
+		  if (and ('[display:mbDisplay]' == (primName expression)) (each == (first group))) {
+			lineArgCount = 10 // force a line break after first item of block
+		  }
+		  if ('if' == (primName expression)) { lineArgCount = 0 } // never break 'if' blocks
+		  if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
+			if (notEmpty currentLine) {
+			  add lines currentLine
+			  add lineHeights h
+			  currentLine = (list)
+			}
             h = 0
             x = (+ left indentation)
             w = ((width (fullBounds (morph each))) + (space * scale))
+            lineArgCount = 0
           }
           add currentLine each
           h = (max h (height (morph each)))
-          setLeft (morph each) x
+          fastSetLeft (morph each) x
+		  if (not (isClass each 'Text')) { lineArgCount += 1 }
         }
       }
     }
@@ -172,32 +200,27 @@ method fixLayout Block {
     w += (width (fullBounds (morph drawer)))
     w += (space * scale)
     if (and (w > (break * scale)) (notEmpty currentLine)) {
-      add lines currentLine
-      add lineHeights h
-      currentLine = (list)
+      if (notEmpty currentLine) {
+		add lines currentLine
+		add lineHeights h
+		currentLine = (list)
+	  }
       h = 0
       x = (+ left indentation)
       w = ((width (fullBounds (morph drawer))) + (space * scale))
     }
     add currentLine drawer
     h = (max h (height (morph drawer)))
-    setLeft (morph drawer) x
+    fastSetLeft (morph drawer) x
   }
 
-  // add last label line
-  add lines currentLine
-  add lineHeights h
-
-  // purge empty lines
-  // to do: prevent empty lines from being added in the first place
-  for i (count lines) {
-    if (isEmpty (at lines i)) {
-      removeAt lines i
-      removeAt lineHeights i
-    }
+  // add last line
+  if (notEmpty currentLine) {
+	add lines currentLine
+	add lineHeights h
   }
 
-  // determine block dimensions from line data
+  // determine blockWidth from line data
   blockWidth = 0
   for each lines {
     if (notEmpty each) {
@@ -207,16 +230,11 @@ method fixLayout Block {
       }
     }
   }
-  blockWidth = (- blockWidth (space * scale))
   blockHeight = (callWith + (toArray lineHeights))
   blockHeight += (* (count lines) vSpace scale)
 
   // arrange label parts vertically
-  if (global 'stealthBlocks') {
-    tp = (+ (top morph) (stealthLevel (* 2 scale border) 0))
-  } else {
-    tp =  (+ (top morph) (* 2 scale border))
-  }
+  tp = (+ (top morph) (* 2 scale border))
   if (type == 'hat') {
     tp += (hatHeight this)
   }
@@ -225,96 +243,86 @@ method fixLayout Block {
     line += 1
     bottom = (+ tp (at lineHeights line) (vSpace * scale))
     for each eachLine {
-      setYCenterWithin (morph each) tp bottom
+      fastSetYCenterWithin (morph each) tp bottom
     }
     tp = bottom
   }
 
   // add extra space below the bottom-most c-slot
   extraSpace = 0
-  if (and (isNil drawer) (isClass (last (last labelParts)) 'CommandSlot')) {
-    extraSpace = (scale * corner)
+  if (isClass (last (last labelParts)) 'CommandSlot') {
+	// adjust space below last command slot
+	if (isNil drawer) {
+	  extraSpace = (scale * corner)
+	} else {
+	  // adjust layout of final block drawer in if-else block
+	  blockHeight += (-6 * scale)
+	  fastMoveBy (morph drawer) 0 (-5 * scale)
+	}
   }
 
-  // set block dimensions
-  blockWidth += (* -1 scale space)
-  blockWidth += (* scale border)
-
-  if (global 'stealthBlocks') {
-    if (type == 'command') {
-      setWidth (bounds morph) (+ blockWidth indentation (stealthLevel (scale * corner) 0))
-      setHeight (bounds morph) (stealthLevel (+ blockHeight (* scale corner) (* scale border 4) extraSpace) blockHeight)
-    } (type == 'hat') {
-      setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (stealthLevel (scale * corner) 0)))
-      setHeight (bounds morph) (stealthLevel (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace) (+ blockHeight (hatHeight this)))
-    } (type == 'reporter') {
-      setWidth (bounds morph) (+ blockWidth (2 * indentation) (stealthLevel (scale * rounding) 0))
-      setHeight (bounds morph) (stealthLevel (+ blockHeight (* scale border 4) extraSpace) blockHeight)
-    }
-  } else {
-    if (type == 'command') {
-      setWidth (bounds morph) (max (scale * 50) (+ blockWidth indentation (scale * corner)))
-      setHeight (bounds morph) (+ blockHeight (* scale corner) (* scale border 4) extraSpace)
-    } (type == 'hat') {
-      setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (scale * corner)))
-      setHeight (bounds morph) (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace)
-    } (type == 'reporter') {
-      setWidth (bounds morph) (max (scale * 20) (+ blockWidth indentation (scale * rounding)))
-      setHeight (bounds morph) (+ blockHeight (* scale border 4) extraSpace)
-    }
+  // adjust block width (i.e. right margin)
+  if (type == 'command') {
+	blockWidth += (-3 * scale)
+  } (type == 'hat') {
+	blockWidth += (-2 * scale)
+  } (type == 'reporter') {
+	blockWidth += (-8 * scale)
   }
 
-  for group labelParts {
-    for each group {
-      if (isClass each 'CommandSlot') {fixLayout each true}
-    }
+  if (type == 'command') {
+    setWidth (bounds morph) (max (scale * 50) (+ blockWidth indentation (scale * corner)))
+    setHeight (bounds morph) (+ blockHeight (* scale corner) (* scale border 4) extraSpace)
+  } (type == 'hat') {
+    setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (scale * corner)))
+    setHeight (bounds morph) (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace)
+  } (type == 'reporter') {
+    setWidth (bounds morph) (max (scale * 20) (+ blockWidth indentation (scale * rounding)))
+    setHeight (bounds morph) (+ blockHeight (* scale border 4) extraSpace)
   }
-  redraw this
+
+  if ((localized 'RTL') == 'true') { fixLayoutRTL this }
+
   nb = (next this)
   if (notNil nb) {
-    setPosition (morph nb) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
+    fastSetPosition (morph nb) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
   }
-  raise morph 'layoutChanged' this
+  rerender morph
+  if wasHighlighted { addHighlight morph }
+  layoutNeeded = false
 }
 
-method redraw Block stealthAlpha {
-  clr = color
-  if (getAlternative this) {color = (lighter clr 20)}
-  if (global 'stealthBlocks') {
-    if (isNil stealthAlpha) {stealthAlpha = (stealthLevel 255 0)}
-      setAlpha clr stealthAlpha
-  }
+method drawOn Block ctx {
+	scale = (blockScale)
+	sm = (getShapeMaker ctx)
+	r = (bounds morph)
+	if (type == 'command') {
+		commandSlots = (commandSlots this)
+		if (isEmpty commandSlots) {
+			drawBlock sm r color (scale * corner) (scale * dent) (scale * inset)
+		} else {
+			drawBlockWithCommandSlots sm r commandSlots color (scale * corner) (scale * dent) (scale * inset)
+		}
+	} (type == 'reporter') {
+		clr = color
+		if (getAlternative this) { clr = (lighter color 17) }
+		drawReporter sm r clr (scale * rounding)
+	} (type == 'hat') {
+		drawHatBlock sm r (scale * hatWidth) color (scale * corner) (scale * dent) (scale * inset)
+	}
+}
 
-  isHighlighted = (removeHighlight morph)
-  bm = (newBitmap (width morph) (height morph))
-  if (type == 'command') {
-	drawBlock (newShapeMaker bm) 0 0 (width bm) (height bm) color (scale * corner) (scale * dent) (scale * inset) ((max 1 (scale / 2)) * border)
-  } (type == 'reporter') {
-	drawReporter (newShapeMaker bm) 0 0 (width bm) (height bm) color (scale * rounding) ((max 1 (scale / 2)) * border)
-    if (global 'stealthBlocks') {
-      // draw parentheses
-      openP = (stealthText this '(')
-      closeP = (stealthText this ')')
-      topP = (half ((height morph) - (height openP)))
-      drawBitmap bm openP 0 topP
-      drawBitmap bm closeP (- (width bm) (width closeP)) topP
-    }
-  } (type == 'hat') {
-	drawHatBlock (newShapeMaker bm) 0 0 (width bm) (height bm) (scale * hatWidth) color (scale * corner) (scale * dent) (scale * inset) ((max 1 (scale / 2)) * border)
-  }
-  for group labelParts {
-    for each group {
-      if (isClass each 'CommandSlot') {
-        fillRect bm (color 0 0 0 0) ((left (morph each)) - (left morph)) ((top (morph each)) - (top morph)) (width (morph each)) (height (morph each))
-      }
-    }
-  }
-  setCostume morph bm
-  if isHighlighted {addHighlight morph (scale * 4)}
-  color = clr
+method commandSlots Block {
+	result = (list)
+	top = (top morph)
+	for m (parts morph) {
+		if (isClass (handler m) 'CommandSlot') { add result (list ((top m) - top) (height m)) }
+	}
+	return result
 }
 
 method hatHeight Block {
+  scale = (blockScale)
   hw = (scale * hatWidth)
   ru = (hw / (sqrt 2))
   return (truncate (ru - (hw / 2)))
@@ -324,11 +332,15 @@ method hatHeight Block {
 
 method type Block {return type}
 method corner Block {return corner}
-method bottomLine Block {return ((bottom morph) - (scale * corner))}
 method scale Block {return scale}
 method blockSpec Block {return blockSpec}
 method function Block {return function}
 method isPrototype Block {return (notNil function)}
+
+method bottomLine Block {
+  scale = (blockScale)
+  return ((bottom morph) - (scale * corner))
+}
 
 method blockDefinition Block {
   if (isNil function) {return nil}
@@ -426,11 +438,11 @@ method inputs Block {
 // events
 
 method justDropped Block hand {
-  fixBlockColor this
   snap this (x hand) (y hand)
 }
 
 method snap Block x y {
+  scale = (blockScale)
   if (isNil x) {
     fb = (fullBounds morph)
     x = (left fb)
@@ -459,6 +471,7 @@ method snap Block x y {
       }
     } else { // no snap target, record drop on scripting area
       recordDrop parent this
+      if ('reporter' == type) { fixBlockColor this }
     }
     tb = (topBlock this)
     removeStackPart (morph tb)
@@ -473,7 +486,6 @@ method aboutToBeGrabbed Block {
   se = (ownerThatIsA (morph tb) 'ScriptEditor')
   if (notNil se) {
     stopEditing (handler se)
-    scriptChanged (handler se)
   }
   removeSignalPart (morph tb)
   removeStackPart (morph tb)
@@ -490,7 +502,11 @@ method aboutToBeGrabbed Block {
   }
 }
 
-method layoutChanged Block {fixLayout this}
+method layoutChanged Block origin {
+	changed morph
+	layoutNeeded = true
+	raise morph 'layoutChanged' origin
+}
 
 method inputChanged Block aSlotOrReporter {
   value = (contents aSlotOrReporter)
@@ -629,21 +645,6 @@ method okayToBeDestroyedByUser Block {
   return true
 }
 
-method isSelectable Block {return (global 'stealthBlocks')}
-
-method handEnter Block hand {
-  if (global 'stealthBlocks') {
-    sl = (stealthLevel 255 0)
-    redraw this (+ sl (toInteger ((255 - sl) / 4.0)))
-  }
-}
-
-method handLeave Block hand {
-  if (global 'stealthBlocks') {
-    redraw this
-  }
-}
-
 // stacking
 
 method next Block {
@@ -661,6 +662,7 @@ method previous Block {
 }
 
 method setNext Block another {
+  scale = (blockScale)
   removeHighlight morph
   if (notNil another) {removeHighlight (morph another)}
   n = (next this)
@@ -684,7 +686,6 @@ method setNext Block another {
     raise morph 'scriptChanged' this
     raise morph 'blockStackChanged' this
   }
-  if (notNil another) {fixBlockColor another}
 }
 
 method blockStackChanged Block another {
@@ -738,8 +739,7 @@ method scriptEditor Block {
 
 // nesting (inputs)
 
-method replaceInput Block source target silently {
-  if (isNil silently) {silently = false}
+method replaceInput Block source target {
   if (notNil (owner (morph target))) {removePart (owner (morph target)) (morph target)}
   idx = (indexOf (parts morph) (morph source))
   if (isNil idx) {  // can happen when call has more parameters than prototype has slots
@@ -760,8 +760,8 @@ method replaceInput Block source target silently {
   } (isClass target 'Block') {
     setArg expression (inputIndex this target) (expression target)
   }
-  if (not silently) {fixLayout this}
-  if (isAnyClass target 'Block' 'CommandSlot') {fixBlockColor target}
+  layoutChanged this
+  if (isClass target 'Block') { fixBlockColor target }
   raise morph 'scriptChanged' this
 }
 
@@ -890,34 +890,63 @@ method copyToClipboard Block {
   setClipboard (joinStrings result)
 }
 
-method exportAsImage Block {
-  if ('Browser' != (platform)) {
-	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'scriptImage' '.png')
-	fName = (fileToWrite fName '.png')
-	if ('' == fName) { return }
-	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
+method exportAsImage Block { exportAsImageScaled this 2 }
+
+method exportAsImageScaled Block scale result {
+  // Save a PNG picture of the given script at the given scale.
+  // If result is not nil, include a speech bubble showing the result.
+
+  // if block is a function definition hat use its prototype block
+  if (isPrototypeHat this) {
+	proto = (editedPrototype this)
+	if (notNil proto) { this = proto }
   }
-  gc
-  pixelsPerInch = 144
-  scaledScript = (scaledScript this (pixelsPerInch / 72))
-  bnds = (fullBounds (morph scaledScript))
-  bm = (newBitmap (width bnds) (height bnds))
-  draw2 (morph scaledScript) bm (- (left bnds)) (- (top bnds))
-  pngData = (encodePNG bm pixelsPerInch)
-  if ('Browser' == (platform)) {
-	browserWriteFile pngData 'scriptImage' 'png'
+
+  // draw script and bubble at high resolution
+  oldScale = (global 'scale')
+  setGlobal 'scale' scale // change global scale temporarily to ensure retina resolution
+  if (notNil (function this)) {
+	scaledScript = (scriptForFunction (function this))
   } else {
+    scaledScript = (toBlock (expression this))
+  }
+  bnds = (fullBounds (morph scaledScript))
+  scriptW = (width bnds)
+  scriptH = (height bnds)
+
+  // draw the result bubble, if any
+  if (notNil result) {
+	scaledBubble = (newBubble result 200 'right')
+	bubbleW = (width (fullBounds (morph scaledBubble)))
+	bubbleH = (height (fullBounds (morph scaledBubble)))
+	bubbleInset = 18
+  } else {
+	bubbleW = 0
+	bubbleH = 0
+	bubbleInset = 0
+  }
+
+  // combine the morph and result bubble, if any
+  bm = (newBitmap (+ scriptW bubbleW (- bubbleInset)) (+ scriptH bubbleH (- bubbleInset)))
+  ctx = (newGraphicContextOn bm)
+  setOffset ctx 0 (bubbleH - bubbleInset)
+  fullDrawOn (morph scaledScript) ctx
+  if (notNil scaledBubble) {
+	topMorphWidth = (width (morph scaledScript))
+	setOffset ctx (topMorphWidth - bubbleInset) 0
+	fullDrawOn (morph scaledBubble) ctx
+  }
+  setGlobal 'scale' oldScale // revert to old scale
+
+  // save result as a PNG file
+  pngData = (encodePNG bm)
+  if ('Browser' == (platform)) {
+	browserWriteFile pngData (join 'scriptImage' (msecsSinceStart) '.png') 'scriptImage'
+  } else {
+	fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
+	if ('' == fName) { return false }
 	writeFile fName pngData
   }
-}
-
-method scaledScript Block scriptScale {
-  // Hack to get high resolution blocks for image export
-  oldScale = (global 'scale')
-  setGlobal 'scale' scriptScale
-  result = (toBlock expression)
-  setGlobal 'scale' oldScale
-  return result
 }
 
 method delete Block {
@@ -935,16 +964,11 @@ method delete Block {
         setNested (handler cslot) nxt
       } (notNil scripts) {
         addPart scripts (morph nxt)
-        fixBlockColor nxt
       }
     }
   }
   aboutToBeGrabbed this
-
-  // Allow recovery of deleted morph with undrop
-  pe = (findProjectEditor)
-  recordDrop (scriptEditor (scripter pe)) this
-  if (notNil (owner morph)) { removePart (owner morph) morph }
+  removeFromOwner morph
 }
 
 method editAsText Block {
@@ -952,6 +976,7 @@ method editAsText Block {
 }
 
 method turnIntoText Block hand {
+  scale = (blockScale)
   owner = (owner morph)
   if (or (isNil owner) (not (isClass (handler owner) 'ScriptEditor'))) {return}
   code = (toTextCode this)
@@ -1176,7 +1201,7 @@ method renameVariableTo Block varName {
   oldName = (at (argList expression) 1)
   setArg expression 1 varName
   setText (at (at labelParts 1) 1) varName
-  fixLayout this
+  layoutChanged this
 
   if (notNil (ownerThatIsA morph 'BlockSectionDefinition')) {
     raise morph 'updateBlockDefinition'
@@ -1184,7 +1209,6 @@ method renameVariableTo Block varName {
   }
 
   raise morph 'inputChanged' this
-  raise morph 'inputContentsChanged' this // experimental keyboard focus op
 
   // update the function
   if (notNil (owner morph)) {func = (function (handler (owner morph)))}
@@ -1195,55 +1219,41 @@ method renameVariableTo Block varName {
 
 // constructing blocks from commands and reporters
 
-to toBlock commandOrReporter silently {
-  if (isNil silently) {silently = false}
+to toBlock commandOrReporter {
   block = (new 'Block')
-  initialize block commandOrReporter silently
+  initialize block commandOrReporter
+  layoutChanged block
+  fixLayout block
   return block
 }
 
-method labelText Block aString {
+method labelText Block aString { return (blockLabelText aString) }
+
+to blockLabelText aString {
+  scale = (blockScale)
   fontName =  'Verdana Bold'
   fontSize = (11 * scale)
-  if (isOneOf aString '/' '=' '+' '×' '−') { // last two: unicode multiply and minus
-  	fontSize = (15 * scale)
-  }
-  if (isOneOf aString '≠') { // unicode not equal
-  	fontSize = (16 * scale)
+  if (isOneOf aString '=' '+' '/' '×' '−' '≠') { // last three: unicode multiply, minus, not equals
+  	fontSize = (13 * scale)
   }
   if ('Linux' == (platform)) {
-	fontName =  'Sans Bold'
+	fontName = 'Sans Bold'
 	fontSize = (round (0.85 * fontSize))
   }
   if ('Browser' == (platform)) {
 	fontName = 'Arial Bold'
 	fontSize = (fontSize + (2 * scale))
   }
-  if (global 'stealthBlocks') {
-    labelColor = (gray (stealthLevel 255 0))
-    if ((red labelColor) < 100) {
-      fontName = (first (words fontName))
-      fontSize += (2 * scale)
-    }
-  } else {
-    labelColor = (global 'blockTextColor')
-    if (isNil labelColor) { labelColor = (gray 255) }
-  }
-  if (true == (global 'alanMode')) {
-	fontName = 'Verdana Bold'
-	labelColor = (gray 0)
-  }
+  labelColor = (global 'blockTextColor')
+  if (isNil labelColor) { labelColor = (gray 255) }
   if ('comment' == aString) { labelColor = (gray 80) }
-  off = (scale / 2)
-  return (newText aString fontName fontSize labelColor nil (darker color) (off * -1) (off * -1) nil nil nil nil (global 'flatBlocks'))
-}
-
-method stealthText Block aString {
-  return (stringImage aString 'Arial' (11 * scale) (gray (stealthLevel 255 0)))
+  return (newText aString fontName fontSize labelColor)
 }
 
 method rawInitialize Block commandOrReporter {
   // disregard any block spec, e.g. if none is found
+
+  scale = (blockScale)
   cslots = (list)
   expression = commandOrReporter
   op = (primName expression)
@@ -1253,7 +1263,6 @@ method rawInitialize Block commandOrReporter {
 
   morph = (newMorph this)
   setGrabRule morph 'handle'
-  scale = (global 'scale')
   labelParts = (list (list (labelText this (primName expression))))
   group = (at labelParts 1)
   corner = 3
@@ -1303,12 +1312,9 @@ method rawInitialize Block commandOrReporter {
   if (and (type != 'reporter') (notNil (nextBlock expression))) {
     addPart morph (morph (toBlock (nextBlock expression)))
   }
-  //  fixLayout this // not sure if this is needed anymore
-  for each cslots {fixBlockColor (nested each)}
 }
 
-method initializeForNode Block commandOrReporter silently {
-  if (isNil silently) {silently = false}
+method initializeForNode Block commandOrReporter {
   expandTo this (count (argList commandOrReporter)) true
   slots = (inputs this)
   idx = 0
@@ -1353,28 +1359,24 @@ method initializeForNode Block commandOrReporter silently {
   }
 
   if (and (type != 'reporter') (notNil (nextBlock commandOrReporter))) {
-    addPart morph (morph (toBlock (nextBlock commandOrReporter) silently))
+    addPart morph (morph (toBlock (nextBlock commandOrReporter)))
   }
   expression = commandOrReporter
-  if silently {return}
-  fixLayout this
+  layoutChanged this
 }
 
-method initialize Block commandOrReporter silently {
-  if (isNil silently) {silently = false}
+method initialize Block commandOrReporter {
   op = (primName commandOrReporter)
   // special case for variables
   if (isOneOf (primName commandOrReporter) 'v' 'my') {
     rawInitialize this commandOrReporter
     s = (at (argList commandOrReporter) 1)
-    if (true != (global 'alanMode')) {
-	  if ('my' == op) { s = (join 'my ' s) }
-	}
+	if ('my' == op) { s = (join 'my ' s) }
     labelParts = (list (list (labelText this s)))
     removeAllParts morph
     addPart morph (morph (at (at labelParts 1) 1))
     expression = commandOrReporter
-    if (not silently) {fixLayout this}
+    layoutChanged this
     return
   }
 
@@ -1384,11 +1386,11 @@ method initialize Block commandOrReporter silently {
   }
   if (isNil spec) {
     rawInitialize this commandOrReporter
-    fixLayout this
+    layoutChanged this
     return
   }
   initializeForSpec this spec true true
-  initializeForNode this commandOrReporter silently
+  initializeForNode this commandOrReporter
 }
 
 to blockForFunction aFunction {
@@ -1431,8 +1433,9 @@ to blockPrototypeForFunction aFunction {
   return block
 }
 
-method initializeForSpec Block spec suppressExpansion silently {
-  if (notNil silently) {silently = false}
+method initializeForSpec Block spec suppressExpansion {
+  scale = (blockScale)
+
   blockSpec = spec
   type = 'command'
   if (isHat spec) { type = 'hat' }
@@ -1441,8 +1444,6 @@ method initializeForSpec Block spec suppressExpansion silently {
 
   morph = (newMorph this)
   setGrabRule morph 'handle'
-  scale = (global 'scale')
-  if (isNil scale) { scale = 1 }
   corner = 3
   rounding = 8
   dent = 2
@@ -1457,7 +1458,7 @@ method initializeForSpec Block spec suppressExpansion silently {
     addPart morph (morph p)
   }
   labelParts = (list group)
-  addAllLabelParts this silently
+  addAllLabelParts this
 
   // hack: make the font bigger in comment blocks
   if ('comment' == (blockOp spec)) {
@@ -1530,25 +1531,39 @@ method expand Block {
   nb = (next this)
   removeAllParts morph
   expansionLevel += 1
-  add labelParts (labelGroup this expansionLevel)
+  if ('if' == (primName expression)) {
+	lastGroup = (last labelParts)
+	if (and
+		((count lastGroup) == 2)
+		(isClass (first lastGroup) 'BooleanSlot')) {
+		  oldSlot = (last lastGroup)
+		  removeLast labelParts
+		  add labelParts (list
+		    (labelText this 'else')
+		    (labelText this 'if')
+		    (newBooleanSlot true)
+		    oldSlot)
+	}
+    add labelParts (list (newBooleanSlot true true) (newCommandSlot color))
+  } else {
+    add labelParts (labelGroup this expansionLevel)
+  }
   addAllLabelParts this
-  fixPartColors this
   setNext this nb
   if ('template' == (grabRule morph)) { comeToFront morph } // ensure collapse arrow not covered
 }
 
-method expandTo Block numberOfInputs silently {
+method expandTo Block numberOfInputs {
   // helper method for initializeForNode
   // expands the blocks so it can accomodate at least the given
   // number of inputs
-  if (isNil silently) {silently = false}
   nb = (next this)
   removeAllParts morph
   while (and ((count (inputs this)) < numberOfInputs) (canExpand this)) {
     expansionLevel += 1
     add labelParts (labelGroup this expansionLevel)
   }
-  addAllLabelParts this silently
+  addAllLabelParts this
   setNext this nb
 }
 
@@ -1556,6 +1571,18 @@ method collapse Block {
   nb = (next this)
   old = (at labelParts expansionLevel)
   removeAt labelParts expansionLevel
+  if ('if' == (primName expression)) {
+    lastGroup = (last labelParts)
+	if (and
+	  ((count lastGroup) == 4)
+	  ('else' == (text (first lastGroup)))
+	  (isClass (at lastGroup 3) 'BooleanSlot')
+	  (true == (contents (at lastGroup 3)))) {
+		oldSlot = (last lastGroup)
+		removeLast labelParts
+		add labelParts (list (newBooleanSlot true true) oldSlot)
+	}
+  }
   removeAllParts morph
   expansionLevel += -1
   addAllLabelParts this
@@ -1578,8 +1605,7 @@ method collapse Block {
   }
 }
 
-method addAllLabelParts Block silently {
-  if (isNil silently) {silently = false}
+method addAllLabelParts Block {
   allParts = (flattened labelParts)
   for p allParts {addPart morph (morph p)}
   if (and (isVariadic this) (not (isPrototype this))) {addPart morph (morph (newBlockDrawer this))}
@@ -1606,14 +1632,10 @@ method addAllLabelParts Block silently {
     for p allParts {
       if (isAnyClass p 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'Block' 'MicroBitDisplaySlot') {
         inputChanged this p
-		if (hasField p 'menuSelector') {
-			redraw (getField p 'text')
-		}
       }
     }
   }
-
-  if (not silently) {fixLayout this}
+  layoutChanged this
   if (not (isPrototype this)) {
     raise morph 'expressionChanged' this
   }
@@ -1652,7 +1674,7 @@ method containsPrim Block aPrimName {
 
 method setContents Block obj {nop} // only used for 'var' type input slots
 
-// zebra-coloring
+// zebra-coloring for reporter blocks
 
 method color Block {return color}
 
@@ -1662,38 +1684,25 @@ method getAlternative Block {
 }
 
 method fixBlockColor Block {
-  if (global 'stealthBlocks') {return}
-  if (notNil (owner morph)) {
-    if (or (global 'flatBlocks') (type == 'reporter')) {
-      parent = (handler (owner morph))
-      if (and (isAnyClass parent 'Block' 'CommandSlot')
-          ((color parent) == color)
-          ((getAlternative parent) == (getAlternative this))) {
-        isAlternative = (not isAlternative)
-      } (isClass parent 'ScriptEditor') {
-        isAlternative = false
-      }
-      redraw this
-    } (and (not (global 'flatBlocks')) (not (type == 'reporter'))) {
-      cslot = (ownerThatIsA morph 'CommandSlot')
-      if (and (notNil cslot) (contains (stackList (handler cslot)) this)
-          ((color (handler cslot)) == color)
-          ((getAlternative (handler cslot)) == (getAlternative this))) {
-        isAlternative = (not isAlternative)
-      } else {
-        isAlternative = false
-      }
-      redraw this
+  if (and (type == 'reporter') (notNil (owner morph))) {
+    parent = (handler (owner morph))
+    oldAlternative = isAlternative
+    if (and (isClass parent 'Block') ((color parent) == color)) {
+      isAlternative = (not (getAlternative parent))
+    } else {
+      isAlternative = false
     }
-    fixPartColors this
+    if (isAlternative != oldAlternative) {
+      changed morph
+      fixPartColors this
+    }
   }
 }
 
 method fixPartColors Block {
-  for i (count (parts morph)) {
-    each = (handler (at (parts morph) i))
-    if (isAnyClass each 'Block' 'CommandSlot') {
-      fixBlockColor each
+  for m (parts morph) {
+    if (isClass (handler m) 'Block') {
+      fixBlockColor (handler m)
     }
   }
 }

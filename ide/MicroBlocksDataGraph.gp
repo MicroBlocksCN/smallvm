@@ -1,10 +1,10 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-// Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
-
-// interactively eval GP code in a morphic window
+//
+// Copyright 2021 John Maloney, Bernat Romagosa, and Jens Mönig
+//
+// Display graph data
 
 defineClass MicroBlocksDataGraph morph window lastDataIndex zeroAtBottom
 
@@ -25,30 +25,48 @@ method initialize MicroBlocksDataGraph {
 
 method step MicroBlocksDataGraph {
 	if ((lastDataIndex (smallRuntime)) == lastDataIndex) { return }
-	redraw this
 	lastDataIndex = (lastDataIndex (smallRuntime))
+	changed morph
+}
+
+method graphArea MicroBlocksDataGraph {
+	scale = (global 'scale')
+	inset = (5 * scale)
+	topInset = (24 * scale)
+	left = ((left morph) + inset)
+	top = ((top morph) + topInset)
+	w = ((width morph) - (2 * inset))
+	h = ((height morph) - (topInset + inset))
+	return (rect left top w h)
+}
+
+method drawOn MicroBlocksDataGraph ctx {
+  scale = (global 'scale')
+  radius = (4 * scale)
+
+  // draw window frame
+  fillRoundedRect (getShapeMaker ctx) (bounds morph) radius (gray 80)
+
+  // clear graph area
+  bgColor = (gray 240)
+  fillRoundedRect (getShapeMaker ctx) (graphArea this) radius bgColor
+
+  // draw the data
+  drawData this ctx
 }
 
 method redraw MicroBlocksDataGraph {
 	fixLayout window
-	redraw window
-	drawData this
-	costumeChanged morph
+	changed morph
 }
 
-method drawData MicroBlocksDataGraph {
-	bgColor = (gray 240)
-
+method drawData MicroBlocksDataGraph ctx {
 	yScale = (1 * (global 'scale'))
-	clientArea = (clientArea window)
-	top = ((top clientArea) - (top morph))
-	left = ((left clientArea) - (left morph))
-	fillRect (costumeData morph) bgColor left top (width clientArea) (height clientArea)
-	drawGrid this yScale
+	drawGrid this ctx yScale
 	colors = (list (color 200 0 0) (color 0 110 0) (color 0 0 200) (gray 30) (color 0 170 170) (color 180 0 180))
 	sequences = (extractSequences this)
 	for i (min (count sequences) (count colors)) {
-		graphSequence this (at sequences i) (at colors i) yScale
+		graphSequence this ctx (at sequences i) (at colors i) yScale
 	}
 }
 
@@ -78,15 +96,15 @@ method pointCount MicroBlocksDataGraph {
 	scale = (global 'scale')
 	leftInset = (40 * scale)
 	lineW = scale
-	return (toInteger (((width (clientArea window)) - leftInset) / lineW))
+	return (toInteger (((width (graphArea this)) - leftInset) / lineW))
 }
 
-method graphSequence MicroBlocksDataGraph seq aColor yScale {
+method graphSequence MicroBlocksDataGraph ctx seq aColor yScale {
 	if (isEmpty seq) { return }
 	scale = (global 'scale')
 	lineW = (2 * scale)
 
-	graphBnds = (translatedBy (clientArea window) (- (left morph)) (- (top morph)))
+	graphBnds = (graphArea this)
 	graphBnds = (insetBy graphBnds (half lineW))
 	right = (right graphBnds)
 	top = (top graphBnds)
@@ -97,63 +115,38 @@ method graphSequence MicroBlocksDataGraph seq aColor yScale {
 		yOrigin = ((top + (half (height graphBnds))) + 1)
 	}
 
-	useVectorPen = true
-	if useVectorPen {
-		// use vector graphics primitives
-		lineW = scale
-		pen = (newVectorPen (costumeData morph))
-		x = ((left graphBnds) + (38 * scale))
-		pointCount = (pointCount this)
-		i = (max 1 ((count seq) - pointCount))
-		isFirstPoint = true
-		while (i < (count seq)) {
-			n = (at seq i)
-			y = (yOrigin - (n * yScale))
-			if (y < top) { y = top }
-			if (y > bottom) { y = bottom }
-			if isFirstPoint {
-				beginPath pen x y
-				isFirstPoint = false
-			} else {
-				goto pen x y
-			}
-			x += scale
-			if (x > right) { return }
-			i += 1
-		}
-		stroke pen aColor lineW
-
-	} else {
-		// use simulated pen (Bressenham)
-		pen = (newPen (costumeData morph))
-		setLineWidth pen lineW
-		setColor pen aColor
-		x = ((left graphBnds) + (38 * scale))
-		pointCount = (pointCount this)
-		i = (max 1 ((count seq) - pointCount))
-		while (i < (count seq)) {
-			n = (at seq i)
-			y = (yOrigin - (n * yScale))
-			if (y < top) { y = top }
-			if (y > bottom) { y = bottom }
+	lineW = scale
+	pen = (pen (getShapeMaker ctx))
+	x = ((left graphBnds) + (38 * scale))
+	pointCount = (pointCount this)
+	i = (max 1 ((count seq) - pointCount))
+	isFirstPoint = true
+	while (i < (count seq)) {
+		n = (at seq i)
+		y = (yOrigin - (n * yScale))
+		if (y < top) { y = top }
+		if (y > bottom) { y = bottom }
+		if isFirstPoint {
+			beginPath pen x y
+			isFirstPoint = false
+		} else {
 			goto pen x y
-			if (not (isDown pen)) { down pen } // first point
-			x += scale
-			if (x > right) { return }
-			i += 1
 		}
+		x += scale
+		if (x > right) { return }
+		i += 1
 	}
+	stroke pen aColor lineW
 }
 
-method drawGrid MicroBlocksDataGraph yScale {
+method drawGrid MicroBlocksDataGraph ctx yScale {
 	scale = (global 'scale')
 	lineW = scale
 
-	graphBnds = (translatedBy (clientArea window) (- (left morph)) (- (top morph)))
+	graphBnds = (graphArea this)
 	graphBnds = (insetBy graphBnds (half lineW))
 	left = ((left graphBnds) + (38 * scale))
 	right = (right graphBnds)
-	bm = (costumeData morph)
 
 	if zeroAtBottom {
 		yOrigin = (((top graphBnds) + (height graphBnds)) - (10 * scale))
@@ -162,8 +155,8 @@ method drawGrid MicroBlocksDataGraph yScale {
 			c = (gray 220)
 			if ((offset % 100) == 0) { c = (gray 190) } // darker lines for multiples of 100
 			y = (yOrigin - (offset * yScale))
-			fillRect bm c left y (right - left) lineW
-			drawLabel this bm (toString offset) left y
+			fillRect ctx c left y (right - left) lineW
+			drawLabel this ctx (toString offset) left y
 		}
 	} else {
 		yOrigin = ((top graphBnds) + (half (height graphBnds)))
@@ -172,23 +165,23 @@ method drawGrid MicroBlocksDataGraph yScale {
 			c = (gray 220)
 			if ((offset % 100) == 0) { c = (gray 190) } // darker lines for multiples of 100
 			y = (yOrigin - (offset * yScale))
-			fillRect bm c left y (right - left) lineW
-			drawLabel this bm (toString offset) left y
+			fillRect ctx c left y (right - left) lineW
+			drawLabel this ctx (toString offset) left y
 			y = (yOrigin + (offset * yScale))
-			fillRect bm c left y (right - left) lineW
-			drawLabel this bm (toString (- offset)) left y
+			fillRect ctx c left y (right - left) lineW
+			drawLabel this ctx (toString (- offset)) left y
 		}
 	}
 }
 
-method drawLabel MicroBlocksDataGraph bm label left y {
+method drawLabel MicroBlocksDataGraph ctx label left y {
 	scale = (global 'scale')
 	fontName = 'Arial'
 	fontSize = (13 * scale)
 
-	label = (stringImage label fontName fontSize (gray 100))
-	x = (left - ((width label) + (7 * scale)))
-	drawBitmap bm label x (y - (half (fontSize + scale)))
+	x = (left - ((stringWidth label) + (7 * scale)))
+	setFont ctx fontName fontSize
+	drawString ctx label (gray 100) x (y - (half (fontSize + scale)))
 }
 
 // context menu
@@ -251,7 +244,7 @@ method exportData MicroBlocksDataGraph {
 	data = (joinStrings result (newline))
 
 	if ('Browser' == (platform)) {
-		browserWriteFile data 'data' 'csv'
+		browserWriteFile data 'data.csv' 'graphData'
 		return
 	}
 

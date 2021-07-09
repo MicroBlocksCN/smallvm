@@ -136,25 +136,9 @@ method confirmToQuit Page {
 	confirm this nil (join 'Quit MicroBlocks?') nil nil 'exit'
 }
 
-to findMorph handlerClassName {
-	page = (global 'page')
-	if (notNil page) {
-		for p (parts (morph page)) {
-			if (isClass (handler p) handlerClassName) {
-				return (morph (handler p))
-			}
-		}
-	}
-	return nil
-}
-
 to findProjectEditor {
-  page = (global 'page')
-  if (notNil page) {
-	for p (parts (morph page)) {
-	  if (isClass (handler p) 'MicroBlocksEditor') { return (handler p) }
-	}
-  }
+  m = (findMorph 'MicroBlocksEditor')
+  if (notNil m) { return (handler m) }
   return nil
 }
 
@@ -272,8 +256,10 @@ method contextMenu Block {
 	  addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
 	}
   }
-  addLine menu
-  addItem menu 'delete block' 'delete' 'delete this block'
+  if (not isInPalette) {
+	addLine menu
+	addItem menu 'delete block' 'delete' 'delete this block'
+  }
 
   if (devMode) {
 	addLine menu
@@ -302,6 +288,7 @@ method contextMenu Block {
 	  spec = (specForOp (authoringSpecs) op)
 	  if (and (notNil spec) (op != myOp)) {
 		b = (blockForSpec spec)
+		fixLayout b
 		addItem menu (fullCostume (morph b)) (action 'changeOperator' this op)
 	  }
 	}
@@ -331,11 +318,11 @@ method pickUp Block {
   grabCentered morph this
 }
 
-method exportAsImage Block { exportScriptAsImage (smallRuntime) (topBlock this) }
+method exportAsImage Block { exportAsImageScaled (topBlock this) 2 }
 method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
 
 method exportAsImage BlockDefinition {
-  exportScriptAsImage (smallRuntime) (handler (ownerThatIsA morph 'Block'))
+	exportAsImageScaled (handler (ownerThatIsA morph 'Block')) 2
 }
 
 // Block definition operations
@@ -463,12 +450,8 @@ return // xxx suppress the ability to make variadic user-defined blocks
   addPart (morph repeater) (morph drawer)
 
   scale = (global 'scale')
-  if (global 'stealthBlocks') {
-    labelColor = (gray (stealthLevel 255 0))
-  } else {
-    labelColor = (global 'blockTextColor')
-    if (isNil labelColor) { labelColor = (gray 255) }
-  }
+  labelColor = (global 'blockTextColor')
+  if (isNil labelColor) { labelColor = (gray 255) }
   txt = (newText 'repeat last section:' 'Arial' (10 * scale) labelColor)
   addPart (morph repeater) (morph txt)
 
@@ -479,10 +462,12 @@ return // xxx suppress the ability to make variadic user-defined blocks
 
 method contextMenu ScriptEditor {
   menu = (menu nil this)
-  addItem menu 'clean up' 'cleanUp' 'arrange scripts'
-  if (and (notNil lastDrop) (isRestorable lastDrop)) {
+  addItem menu 'set block size...' 'setBlockSize' 'make blocks bigger or smaller'
+  addLine menu
+  if (notNil lastDrop) {
     addItem menu 'undrop  (ctrl-Z)' 'undrop' 'undo the last block drop'
   }
+  addItem menu 'clean up' 'cleanUp' 'arrange scripts'
   addLine menu
   addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
   clip = (readClipboard)
@@ -503,196 +488,6 @@ method copyScriptsToClipboard ScriptEditor {
 }
 
 // Block layout tweak
-
-method fixLayout Block {
-  space = 3
-  vSpace = 3
-
-  break = 450
-  lineHeights = (list)
-  lines = (list)
-  lineArgCount = 0
-
-  left = (left morph)
-  blockWidth = 0
-  blockHeight = 0
-  h = 0
-  w = 0
-
-  if (global 'stealthBlocks') {
-    if (type == 'hat') {
-      indentation = (stealthLevel (* scale (+ border space)) 0)
-    } (type == 'reporter') {
-      indentation = (stealthLevel (* scale rounding) (width (stealthText this '(')))
-    } (type == 'command') {
-      indentation = (stealthLevel (* scale (+ border inset dent (corner * 2))) 0)
-    }
-  } else {
-    if (type == 'hat') {
-      indentation = (* scale (+ border space))
-    } (type == 'reporter') {
-      indentation = (* scale rounding)
-    } (type == 'command') {
-      indentation = (* scale (+ border inset dent (corner * 2)))
-    }
-  }
-
-  // arrange label parts horizontally and break up into lines
-  breakLineBeforeFirstArg = ((count (argList expression)) >= 5)
-  currentLine = (list)
-  for group labelParts {
-    for each group {
-      if (isVisible (morph each)) {
-        if (isClass each 'CommandSlot') {
-          add lines currentLine
-          add lineHeights h
-          setLeft (morph each) (+ left (* scale (+ border corner)))
-          add lines (list each)
-          add lineHeights (height (morph each))
-          currentLine = (list)
-          w = 0
-          h = 0
-        } else {
-          x = (+ left indentation w)
-          w += (width (fullBounds (morph each)))
-          w += (space * scale)
-          if (and breakLineBeforeFirstArg (not (isClass each 'Text'))) {
-			breakLineBeforeFirstArg = false // only do this once
- 			lineArgCount = 10 // force a line break before first arg for blocks with >=5 args
-         }
-		  if (and ('[display:mbDisplay]' == (primName expression)) (each == (first group))) {
-			lineArgCount = 10 // force a line break after first item of block
-		  }
-		  if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
-			add lines currentLine
-			add lineHeights h
-			currentLine = (list)
-			h = 0
-			x = (+ left indentation)
-			w = ((width (fullBounds (morph each))) + (space * scale))
-			lineArgCount = 0
-          }
-          add currentLine each
-          h = (max h (height (morph each)))
-          setLeft (morph each) x
-		  if (not (isClass each 'Text')) { lineArgCount += 1 }
-        }
-      }
-    }
-  }
-
-  // add the block drawer, if any
-  drawer = (drawer this)
-  if (notNil drawer) {
-    x = (+ left indentation w)
-    w += (width (fullBounds (morph drawer)))
-    w += (space * scale)
-    if (and (w > (break * scale)) (notEmpty currentLine)) {
-      add lines currentLine
-      add lineHeights h
-      currentLine = (list)
-      h = 0
-      x = (+ left indentation)
-      w = ((width (fullBounds (morph drawer))) + (space * scale))
-    }
-    add currentLine drawer
-    h = (max h (height (morph drawer)))
-    setLeft (morph drawer) x
-  }
-
-  // add last label line
-  add lines currentLine
-  add lineHeights h
-
-  // purge empty lines
-  // to do: prevent empty lines from being added in the first place
-  for i (count lines) {
-    if (isEmpty (at lines i)) {
-      removeAt lines i
-      removeAt lineHeights i
-    }
-  }
-
-  // determine block dimensions from line data
-  blockWidth = 0
-  for each lines {
-    if (notEmpty each) {
-      elem = (last each)
-      if (not (isClass elem 'CommandSlot')) {
-        blockWidth = (max blockWidth ((right (fullBounds (morph elem))) - left))
-      }
-    }
-  }
-  blockWidth = (- blockWidth (space * scale))
-  blockHeight = (callWith + (toArray lineHeights))
-  blockHeight += (* (count lines) vSpace scale)
-
-  // arrange label parts vertically
-  if (global 'stealthBlocks') {
-    tp = (+ (top morph) (stealthLevel (* 2 scale border) 0))
-  } else {
-    tp =  (+ (top morph) (* 2 scale border))
-  }
-  if (type == 'hat') {
-    tp += (hatHeight this)
-  }
-  line = 0
-  for eachLine lines {
-    line += 1
-    bottom = (+ tp (at lineHeights line) (vSpace * scale))
-    for each eachLine {
-      setYCenterWithin (morph each) tp bottom
-    }
-    tp = bottom
-  }
-
-  // add extra space below the bottom-most c-slot
-  extraSpace = 0
-  if (and (isNil drawer) (isClass (last (last labelParts)) 'CommandSlot')) {
-    extraSpace = (scale * corner)
-  }
-
-  // set block dimensions
-  blockWidth += (* -1 scale space)
-  blockWidth += (* scale border)
-
-  if (global 'stealthBlocks') {
-    if (type == 'command') {
-      setWidth (bounds morph) (+ blockWidth indentation (stealthLevel (scale * corner) 0))
-      setHeight (bounds morph) (stealthLevel (+ blockHeight (* scale corner) (* scale border 4) extraSpace) blockHeight)
-    } (type == 'hat') {
-      setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (stealthLevel (scale * corner) 0)))
-      setHeight (bounds morph) (stealthLevel (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace) (+ blockHeight (hatHeight this)))
-    } (type == 'reporter') {
-      setWidth (bounds morph) (+ blockWidth (2 * indentation) (stealthLevel (scale * rounding) 0))
-      setHeight (bounds morph) (stealthLevel (+ blockHeight (* scale border 4) extraSpace) blockHeight)
-    }
-  } else {
-    if (type == 'command') {
-      setWidth (bounds morph) (max (scale * 50) (+ blockWidth indentation (scale * corner)))
-      setHeight (bounds morph) (+ blockHeight (* scale corner) (* scale border 4) extraSpace)
-    } (type == 'hat') {
-      setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (scale * corner)))
-      setHeight (bounds morph) (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace)
-    } (type == 'reporter') {
-      setWidth (bounds morph) (max (scale * 20) (+ blockWidth indentation (scale * rounding)))
-      setHeight (bounds morph) (+ blockHeight (* scale border 4) extraSpace)
-    }
-  }
-
-  for group labelParts {
-    for each group {
-      if (isClass each 'CommandSlot') {fixLayout each true}
-    }
-  }
-  if ((localized 'RTL') == 'true') { fixLayoutRTL this }
-  redraw this
-  nb = (next this)
-  if (notNil nb) {
-    setPosition (morph nb) (left morph) (- (+ (top morph) (height morph)) (scale * corner))
-  }
-  raise morph 'layoutChanged' this
-}
 
 //Right-to-Left Support
 method fixLayoutRTL Block {
@@ -717,39 +512,9 @@ method fixLayoutRTL Block {
 	}
 }
 
-// Make ColorSlots be round
-
-method redraw ColorSlot {
-  scale = (global 'scale')
-  border = (1 * scale)
-  center = (9 * scale)
-  radius = (center - 1)
-  size = (2 * center)
-  bm = (costume morph)
-  bm = nil
-  if (isNil bm) { bm = (newBitmap size size) }
-  fill bm (gray 0 0)
-  drawCircle (newShapeMaker bm) center center radius contents border (gray 0)
-  setCostume morph bm
-}
-
-// Color picker tweaks
-
-to newColorPicker action initialColor {
-  // If there is already a ColorPicker on the screen, return it.
-  // Otherwise, create and return a new one.
-
-  for m (parts (morph (global 'page'))) {
-	if (isClass (handler m) 'ColorPicker') {
-	  setAction (handler m) action
-	  return (handler m)
-	}
-  }
-  return (initialize (new 'ColorPicker') action initialColor)
-}
+// Color picker tweak
 
 method addTransparentButton ColorPicker x y { } // don't add a transparent button
-method setAction ColorPicker anAction { action = anAction }
 
 // Block colors
 
@@ -850,152 +615,15 @@ method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
 	if (and (isClass onSelect 'Action') (isOneOf (function onSelect) 'categorySelected' 'librarySelected')) {
 	  c = (blockColorForCategory (authoringSpecs) dta)
 	  isMouseOver = (bgClrReady == backgroundColor)
-	  if isMouseOver { c = (shiftSaturation (lighter c 20) -30) }
-	  bm = (newBitmap ((width morph) + (20 * scale)) (21 * scale))
+	  if isMouseOver { c = (lighter c 40) }
+	  bm = (newBitmap (width morph) (21 * scale))
 	  fillRect bm c 0 0 (width bm) ((height bm) - (2 * scale))
 	  stringBM = (stringImage (localized dta) fontName fontSize (gray 255))
-	  drawBitmap bm stringBM (29 * scale) (1 * scale)
+	  drawBitmap bm stringBM (19 * scale) (1 * scale)
 	  return bm
 	}
     return (itemCostume this (stringImage dta fontName fontSize foregroundColor) foregroundColor backgroundColor alpha 'id')
   } else {
     return (itemCostume this (toString dta) foregroundColor backgroundColor alpha 'id')
   }
-}
-
-method processEvent Keyboard evt {
-  type = (at evt 'type')
-  key = (at evt 'keycode')
-  updateModifiedKeys this (at evt 'modifierKeys')
-  if (and (1 <= key) (key <= 255)) {
-	if (type == 'keyUp') {
-	  atPut currentKeys key false
-	} (type == 'keyDown') {
-		// Arrow key navigation in scrollable morph under mouse pointer
-	  if (and (key >= 37) (key <= 40) (isNil focus)) {
-		morph = (ownerThatIsA (morph (objectAt (hand (global 'page')))) 'ScrollFrame')
-		if (notNil morph) {
-			if (37 === key) { // left arrow
-				swipe (handler morph) 1 0
-			} (38 === key) { // up arrow
-				swipe (handler morph) 0 1
-			} (39 === key) { // right arrow
-				swipe (handler morph) -1 0
-			} (40 === key) { // down arrow
-				swipe (handler morph) 0 -1
-			}
-		}
-	  }
-
-	  if (at currentKeys key) { return } // suppress duplicated keyDown events on Gnome and some other Linux desktops
-	  atPut currentKeys key true
-
-	  if (isNil focus) {
-		if (27 == key) { // escape key
-			if (notNil (flasher (smallRuntime))) {
-				confirmRemoveFlasher (smallRuntime)
-			} (not (decompilerDone (smallRuntime))) {
-				stopDecompilation (smallRuntime)
-			} (notNil (findMorph 'MicroBlocksFilePicker')) {
-				destroy (findMorph 'MicroBlocksFilePicker')
-			} (notNil (findMorph 'Prompter')) {
-				cancel (handler (findMorph 'Prompter'))
-			} else {
-				stopAndSyncScripts (smallRuntime)
-			}
-		} (13 == key) { // enter key
-			if (notNil (findMorph 'Prompter')) {
-				accept (handler (findMorph 'Prompter'))
-			}
-		}
-		if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
-			// cmd-O or ctrl-O - open file dialog
-			(openProjectMenu (findProjectEditor))
-		}
-		if (and (115 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
-			// cmd-S or ctrl-S - save file dialog
-			(saveProjectToFile (findProjectEditor))
-		}
-		if (and (122 == (at evt 'char'))
-			(or (controlKeyDown this) (commandKeyDown this))
-			(isNil (grabbedObject (hand (global 'page'))))) {
-				// cmd-Z or ctrl-Z - undo last drop
-				pe = (findProjectEditor)
-				if (notNil pe) { undrop (scriptEditor (scripter pe)) }
-		}
-	  }
-	}
-  }
-  if (notNil focus) {
-	call type focus evt this
-  }
-}
-
-// "say" block formatting
-
-method initialize SpeechBubble someData bubbleWidth dir isErrorFlag {
-  scale = (global 'scale')
-  font = 'Arial'
-  fontSize = (18 * scale)
-  if ('Linux' == (platform)) { fontSize = (13 * scale) }
-  maxLines = 30
-  shadowOffset = 3 // optional; if nil, no shadow is drawn
-
-  if (isNil someData) {someData = 'hint!'}
-  if (isNil bubbleWidth) {bubbleWidth = (175 * scale) }
-  if (isNil dir) {dir = 'right'}
-  direction = dir
-  isError = false
-  if (true == isErrorFlag) { isError = true }
-
-  setFont font fontSize
-  if (isClass someData 'Boolean') {
-    contents = (newBooleanSlot someData)
-  } else {
-    someData = (toString someData)
-    lines = (toList (wordWrapped someData bubbleWidth))
-    if ((count lines) > maxLines) {
-      lines = (copyFromTo lines 1 maxLines)
-      add lines '...'
-    }
-    contents = (newText (joinStrings lines (newline)) font fontSize (gray 0) 'center')
-  }
-
-  morph = (newMorph this)
-  addPart morph (morph contents)
-  fixLayout this
-  return this
-}
-
-// Increase font size in confirm dialogs
-
-method initializeForConfirm Prompter label question yesLabel noLabel anAction {
-  answer = false
-  isDone = false
-  if (isNil label) {label = 'Confirm'}
-  if (isNil question) {question = ''}
-  if (isNil yesLabel) {yesLabel = 'Yes'}
-  if (isNil noLabel) {noLabel = 'No'}
-  callback = anAction // optional
-
-  window = (window (localized label))
-  hide (morph (getField window 'resizer'))
-  border = (border window)
-  morph = (morph window)
-  setHandler morph this
-
-  lbl = (getField window 'label')
-  fontSize = (16 * (global 'scale'))
-  if ('Linux' == (platform)) { fontSize = (13 * (global 'scale')) }
-  textFrame = (newText (localized question) (fontName lbl) fontSize (gray 0) 'center')
-  addPart morph (morph textFrame)
-  createButtons this (localized yesLabel) (localized noLabel)
-
-  textWidth = (width (morph textFrame))
-  buttonWidth = (width buttons)
-  labelWidth = (width (morph lbl))
-  xBtnWidth = (width (morph (getField window 'closeBtn')))
-  w = (max textWidth buttonWidth labelWidth)
-  setExtent morph (+ w xBtnWidth (4 * border)) (+ (height (morph lbl)) (height (morph textFrame)) (height (bounds buttons)) (8 * border))
-  setMinExtent morph (width morph) (height morph)
 }

@@ -43,7 +43,7 @@
 
 // ***** Version Date and Time *****
 
-static char *versionNum = "v265";
+static char *versionNum = "v267";
 static char *versionDate = __DATE__;
 static char *versionTime = __TIME__;
 
@@ -2137,12 +2137,12 @@ OBJ primUnmultiplyAlpha(int nargs, OBJ args[]) {
 
 	if (nargs < 1) return notEnoughArgsFailure();
 	OBJ bitmap = args[0];
-	if (!isBitmap(bitmap)) return primFailed("Bad bitmap");
+	if (!isBitmap(bitmap)) return nilObj; // do nothing if not a bitmap
 
 	int w = obj2int(FIELD(bitmap, 0));
 	int h = obj2int(FIELD(bitmap, 1));
 	OBJ pixels = FIELD(bitmap, 2);
-	if (objWords(pixels) != (w * h)) primFailed("Bad bitmap");
+	if (objWords(pixels) != (w * h)) return primFailed("Bad bitmap");
 
 	uint32 *ptr = &FIELD(pixels, 0);
 	uint32 *end = ptr + (w * h);

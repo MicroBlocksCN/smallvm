@@ -1,4 +1,4 @@
-defineClass ProjectEditor morph fileName project imagesFolder soundsFolder stage scripter library viewer viewerWidth tabs leftItems rightItems rightItemsRow2 stealthSlider title connectorToggle fpsReadout lastFrameTime frameCount
+defineClass ProjectEditor morph fileName project imagesFolder soundsFolder stage scripter library viewer viewerWidth tabs leftItems rightItems rightItemsRow2 title connectorToggle fpsReadout lastFrameTime frameCount
 
 method project ProjectEditor { return project }
 method stage ProjectEditor { return stage }
@@ -34,8 +34,7 @@ to o tryRetina devMode { openProjectEditor tryRetina devMode } // shortcut, beca
 to openProjectEditor tryRetina devMode {
   if (isNil tryRetina) { tryRetina = true }
   if (isNil devMode) { devMode = true }
-  if (isNil (global 'alanMode')) { setGlobal 'alanMode' false }
-  if (isNil (global 'vectorTrails')) { setGlobal 'vectorTrails' false }
+  if (isNil (global 'vectorTrails')) { setGlobal 'vectorTrails' true }
   if (and ('Browser' == (platform)) (browserIsMobile)) {
 	page = (newPage 1024 640)
   } else {
@@ -114,11 +113,8 @@ method addTopBarParts ProjectEditor {
   connectorToggle = (toggleButton
 	(action 'toggleConnectors' page) (action 'isShowingConnectors' page)
 	(scale * 20) (scale * 13) (scale * 5) (max 1 (scale / 2)) false)
-  addPart morph (morph connectorLabel)
-  addPart morph (morph connectorToggle)
-
-  stealthSlider = (slider 'horizontal' (* scale 50) (action 'setBlocksStealthLevel' this) nil -50 110 (global 'stealthLevel'))
-  addPart morph (morph stealthSlider)
+//   addPart morph (morph connectorLabel)
+//   addPart morph (morph connectorToggle)
 
   leftItems = (list)
   add leftItems (textButton this 'New' 'newProject')
@@ -138,12 +134,8 @@ method addTopBarParts ProjectEditor {
   add rightItems (textButton this 'Stop' (action 'stopAll' page))
 
   rightItemsRow2 = (list)
-  add rightItemsRow2 connectorLabel
-  add rightItemsRow2 connectorToggle
-  add rightItemsRow2 space
-  add rightItemsRow2 (clickLabel this 'Blocks' 'slideToBlocks')
-  add rightItemsRow2 stealthSlider
-  add rightItemsRow2 (clickLabel this 'Text' 'slideToText')
+//   add rightItemsRow2 connectorLabel
+//   add rightItemsRow2 connectorToggle
   add rightItemsRow2 space
   add rightItemsRow2 (addFPSReadout this)
 }
@@ -199,7 +191,6 @@ method clearProject ProjectEditor {
   // reset global state (pen trails, stage color, connector state)
   deletePenTrails (morph stage)
   setColor (handler (morph stage)) (gray 240)
-  if (true == (global 'alanMode')) { setColor (handler (morph stage)) (gray 255) }
   setIsShowingConnectors page (not ('Browser' == (platform))) // show arrows
   refresh connectorToggle
 }
@@ -593,40 +584,6 @@ method addSoundToProject ProjectEditor data fName {
   refreshTab this
 }
 
-// blocks stealth level
-
-method setBlocksStealthLevel ProjectEditor level {
-  level = (max (min level 100) -50)
-  setGlobal 'stealthLevel' level
-  if (level < -19) {
-	setBlocksMode 'normal'
-  } (level < 0) {
-	setBlocksMode 'flat'
-  } (level > 99) {
-	setBlocksMode 'stealth'
-  } else {
-	setBlocksMode 'stealth'
-  }
-  if (and (notNil scripter) ('Scripts' == (selection tabs))) { restoreScripts scripter }
-}
-
-method animateStealth ProjectEditor level {
-  setBlocksStealthLevel this level
-  setValue stealthSlider level
-}
-
-method slideToText ProjectEditor {
-  time = 5000
-  already = ((+ 50 (global 'stealthLevel')) / 150.0)
-  addSchedule (global 'page') (newAnimation (global 'stealthLevel') 120 (time - (toInteger (* already time))) (action 'animateStealth' this) nil false)
-}
-
-method slideToBlocks ProjectEditor {
-  time = 5000
-  already = ((+ 50 (global 'stealthLevel')) / 150.0)
-  addSchedule (global 'page') (newAnimation (global 'stealthLevel') -50 (toInteger (* already time)) (action 'animateStealth' this) nil false)
-}
-
 // FPS readout
 
 method addFPSReadout ProjectEditor {
@@ -757,18 +714,13 @@ method pageResized ProjectEditor {
 	drawTopBar this
 	fixLayout this
   }
-  if ('Win' == (platform)) {
-	// workaround for a Windows graphics issue: when resizing a window it seems to clear
-	// some or all textures. this forces them to be updated from the underlying bitmap.
-	for m (allMorphs (morph page)) { costumeChanged m }
-  }
 }
 
 method drawTopBar ProjectEditor {
   w = (width (morph (global 'page')))
   h = (48 * (global 'scale'))
   if ('iOS' == (platform)) { h += (13 * (global 'scale')) }
-  oldC = (costume morph)
+  oldC = (costumeData morph)
   if (or (isNil oldC) (w != (width oldC)) (h != (height oldC))) {
 	setCostume morph (newBitmap w h (gray 200))
   if ('iOS' == (platform)) {
@@ -865,6 +817,7 @@ method fixStageLayout ProjectEditor {
   newH = (max 1 ((height pageM) - (top viewerM)))
   scaleToFit stage newW newH
   setPosition (morph stage) (right viewerM) (bottom morph) true
+  changed this
 }
 
 method fixLibraryLayout ProjectEditor {

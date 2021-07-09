@@ -122,7 +122,7 @@ method updateMorphContents ListBox {
   setWidth (bounds morph) (max itemWidth minWidth)
   setHeight (bounds morph) height
 
-  // create a new background bitmap/texture
+  // create a new background bitmap
   // --- commented out to preserve resources ---
   // bg = (newBitmap (max 1 (width morph)) (max 1 height) bgColor)
   // setCostume morph bg false true // don't resize
@@ -144,7 +144,7 @@ method setMinWidth ListBox newWidth {
   minWidth = (max newWidth itemWidth)
   setWidth (bounds morph) minWidth
 
-  // create a new background bitmap/texture
+  // create a new background bitmap
   // --- commented out to preserve resources ---
   // bg = (newBitmap (max 1 (width morph)) (max 1 (height morph)) bgColor)
   // setCostume morph bg false true // don't resize
@@ -181,6 +181,7 @@ method listItem ListBox item {
   setTransparentTouch m true
   li = (new 'Toggle' m tr (action 'isSelecting' this item) 'handEnter')
   setHandler m li
+  setClipping m true
   return li
 }
 

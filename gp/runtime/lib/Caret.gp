@@ -48,6 +48,8 @@ method adjustSize Caret {
   setExtent morph 2 (fontHeight)
 }
 
+to gotoSlot anObject { } // hack: backstop method to avoid errors if caret is nil
+
 method gotoSlot Caret index {
   // index is optional, and can be used to set the slot
   if (notNil index) {slot = index}
@@ -299,7 +301,7 @@ method updateMarkingMode Caret shiftPressed {
 method updateMark Caret {
   if (isNil (startMark target)) {return}
   setEndMark target slot
-  redraw target
+  changed (morph target)
 }
 
 // destroying

@@ -158,11 +158,6 @@ method hasTopLevelSpec AuthoringSpecs op {
 // block colors
 
 method blockColorForOp AuthoringSpecs op {
-  if (true == (global 'alanMode')) {
-	if ('comment' == op) { return (gray 237) }
-	c = (blockColorForCategory this (at opCategory op))
-	return (alansBlockColorForCategory this (at opCategory op))
-  }
   if ('comment' == op) { return (colorHSV 55 0.6 0.93) }
   return (blockColorForCategory this (at opCategory op))
 }
@@ -182,18 +177,6 @@ method blockColorForCategory AuthoringSpecs cat {
 	return (color 196 15 0)
   }
   if (notNil (global 'defaultColor')) { return (global 'defaultColor') }
-  return defaultColor
-}
-
-method alansBlockColorForCategory AuthoringSpecs cat {
-  defaultColor = (gray 190) // 180
-  if (isOneOf cat 'Control' 'Functions') {
-	return (gray 200) // 190
-  } ('Variables' == cat) {
-	return (gray 185) // 175
-  } ('Operators' == cat) {
-	return (gray 220) // 230
-  }
   return defaultColor
 }
 

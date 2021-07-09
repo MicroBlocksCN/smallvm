@@ -1,6 +1,6 @@
 // a self-updating thumbnail of a morphic handler
 
-defineClass SpriteThumbnail morph target
+defineClass SpriteThumbnail morph target lastTargetCostume
 
 to thumbnailFor aHandler {
   if (isClass aHandler 'Morph') {aHandler = (handler aHandler)}
@@ -13,40 +13,23 @@ method initialize SpriteThumbnail aHandler {
   setTransparentTouch morph true
   setWidth (bounds morph) (40 * (global 'scale'))
   setHeight (bounds morph) (40 * (global 'scale'))
+  setFPS morph 5
   step this
   return this
 }
 
 method step SpriteThumbnail {
-  if (isNil target) {return}
+  // This is a placeholder during the Morphic rewrite. It responds to costume
+  // switches but not to rotation or costume modifications. It will get replaced
+  // by a drawOn method and possibly invalidated by the "change" mechanism.
+
+  if (isNil target) { return }
   targetM = (morph target)
-  if (and
-	((costumeData morph) === (costumeData targetM))
-	((rotation morph) == (rotation targetM))) {
-	  return
-  }
+  if (lastTargetCostume === (costumeData targetM)) { return }
 
-  // determine minimum scale (keep aspect ratio)
-  if (((width targetM) * (scaleX targetM)) == 0) {
-	xRatio = 1
-  } else {
-	xRatio = ((width (bounds morph)) / ((width targetM) / (scaleX targetM)))
-  }
-  if (((height targetM) * (scaleY targetM)) == 0) {
-	yRatio = 1
-  } else {
-	yRatio = ((height (bounds morph)) / ((height targetM) / (scaleY targetM)))
-  }
-  newScale = (min xRatio yRatio)
-  setField morph 'scaleX' newScale
-  setField morph 'scaleY' newScale
-
-  // update costume and rotation from target
-  if (isNil (costume targetM)) {updateCostume targetM true}
-  setField morph 'costume' (costume targetM)
-  setField morph 'costumeData' (costumeData targetM)
-  setField morph 'rotation' (rotation targetM)
-  if (isNil (costume morph)) {updateCostume morph}
+  side = (min (width morph) (height morph))
+  setCostume morph (thumbnail (costumeData targetM) side side)
+  lastTargetCostume = (costumeData targetM)
 }
 
 method rightClicked SpriteThumbnail {

@@ -27,7 +27,7 @@ method initialize ScrollFrame newContents aColor noSliderFlag {
   setAction hSlider (action 'scrollToX' this)
   setAction vSlider (action 'scrollToY' this)
   cache = nil
-  cachingEnabled = true
+  cachingEnabled = false
   updateCache = true
   updateSliders this
   return this
@@ -47,15 +47,11 @@ method setContents ScrollFrame aHandler anInt {
   contents = aHandler
   setPosition (morph contents) (left morph) (top morph)
   updateSliders this
-}
-
-method redraw ScrollFrame {
   changed this
-  updateSliders this
 }
 
-method updateSliders ScrollFrame {
-  adjustContents this
+method updateSliders ScrollFrame doNotAdjustContents {
+  if (true != doNotAdjustContents) { adjustContents this }
   if noSliders {
     hide (morph hSlider)
     hide (morph vSlider)
@@ -131,12 +127,13 @@ method updateSliders ScrollFrame {
     }
     update vSlider 0 hc val h
   }
+  changed this
 }
 
 method adjustContents ScrollFrame {
   if (isAnyClass contents 'ListBox' 'TreeBox') {
     h = (height (area contents))
-    if ((+ h (height (morph hSlider))) > (height morph)) {
+    if (and (isVisible (morph hSlider)) ((+ h (height (morph hSlider))) > (height morph))) {
       setMinWidth contents (- (width morph) (width (morph vSlider)))
     } else {
       setMinWidth contents (width morph)
@@ -157,6 +154,7 @@ method scrollToX ScrollFrame x {
     (left morph)
     (toInteger (* (/ (toFloat x) (ceiling hSlider)) overlap))
   )
+  changed morph
 }
 
 method scrollToY ScrollFrame y {
@@ -173,6 +171,7 @@ method scrollToY ScrollFrame y {
     (top morph)
     (toInteger (* (/ (toFloat y) (ceiling vSlider)) overlap))
   )
+  changed morph
 }
 
 method scrollIntoView ScrollFrame aRect favorTopLeft {
@@ -218,18 +217,43 @@ method rightClicked ScrollFrame {
   return true
 }
 
+// Scrolling with scrollwheel and keys
+
 method swipe ScrollFrame x y {
-  factor = (4.0 * (global 'scale'))
-  if ('Browser' == (platform)) { factor = 1 }
-  if (isVisible (morph hSlider)) {
-    moveBy (morph (grip hSlider)) ((0 - x) * factor) 0
-    trigger (grip hSlider)
-  }
-  if (isVisible (morph vSlider)) {
-    moveBy (morph (grip vSlider)) 0 ((0 - y) * factor)
-    trigger (grip vSlider)
-  }
+  changeScrollOffset this (0 - x) (0 - y)
   return true
+}
+
+method scrollEnd ScrollFrame { changeScrollOffset this 0 1000000 }
+method scrollHome ScrollFrame { changeScrollOffset this 0 -1000000 }
+
+method arrowKey ScrollFrame dx dy {
+  stepSize = (-40 * (global 'scale'))
+  changeScrollOffset this (dx * stepSize) (dy * stepSize)
+}
+
+method scrollPage ScrollFrame dir {
+  stepSize = (half (height morph))
+  changeScrollOffset this 0 (dir * stepSize)
+}
+
+method changeScrollOffset ScrollFrame dx dy {
+  contentsM = (morph contents)
+
+  maxXOffset = (max 0 ((width contentsM) - (width morph)))
+  maxYOffset = (max 0 ((height contentsM) - (height morph)))
+
+  if (isVisible (morph vSlider)) { maxXOffset += (width (morph vSlider)) }
+  if (isVisible (morph hSlider)) { maxYOffset += (height (morph hSlider)) }
+
+  xOffset = (((left morph) - (left contentsM)) + dx)
+  yOffset = (((top morph) - (top contentsM)) + dy)
+
+  xOffset = (clamp xOffset 0 maxXOffset)
+  yOffset = (clamp yOffset 0 maxYOffset)
+
+  setPosition contentsM ((left morph) - xOffset) ((top morph) - yOffset)
+  updateSliders this true
 }
 
 // auto-scrolling
@@ -275,24 +299,39 @@ method autoScroll ScrollFrame hand obj {
   }
 }
 
+method drawOn ScrollFrame ctx {
+  bm = (cachedContents this)
+  if (notNil bm) {
+    x = (left (morph contents))
+    y = (top (morph contents))
+	drawBitmap ctx bm x y
+	fullDrawOn (morph hSlider) ctx
+	fullDrawOn (morph vSlider) ctx
+  } else {
+	drawCostumeOn morph ctx
+	for each (parts morph) { fullDrawOn each ctx }
+  }
+}
+
 // caching support to improve redrawing speed
 
+method cachingEnabled ScrollFrame { return cachingEnabled}
 method setCachingEnabled ScrollFrame bool { cachingEnabled = bool }
 
 method changed ScrollFrame {
-  if cachingEnabled { updateCache = true } // update the cache on next display
+  updateCache = true // update the cache on next display
+  changed morph
 }
 
 method cachedContents ScrollFrame {
-  // Return a Texture containing my contents if caching is enabled, or nil if not.
+  // Return a Bitmap containing my contents if caching is enabled, or nil if not.
 
   if (not cachingEnabled) { return nil }
   if updateCache {
-	if (or (isNil cache)
-			((width cache) != (normalWidth morph))
-			((height cache) != (normalHeight morph))) {
-	  if (notNil cache) { destroyTexture cache }
-	  cache = (newTexture (normalWidth morph) (normalHeight morph))
+	contentsW = (normalWidth (morph contents))
+	contentsH = (normalHeight (morph contents))
+	if (or (isNil cache) ((width cache) != contentsW) ((height cache) != contentsH)) {
+	  cache = (newBitmap contentsW contentsH)
 	}
 	if (isClass (costumeData morph) 'Color') {
 	  fill cache (costumeData morph)
@@ -302,13 +341,12 @@ method cachedContents ScrollFrame {
 		drawBitmap cache (costumeData morph)
 	  }
 	}
+
 	// draw contents onto cache
-	xOffset = (- (left morph))
-	yOffset = (- (top morph))
-	clipRect = (rect 0 0 (width cache) (height cache))
-	for m (parts morph) {
-	  draw2 m cache xOffset yOffset clipRect
-	}
+	ctx = (newGraphicContextOn cache)
+	setOffset ctx (- (left (morph contents))) (- (top (morph contents)))
+	fullDrawOn (morph contents) ctx
+
 	updateCache = false
   }
   return cache

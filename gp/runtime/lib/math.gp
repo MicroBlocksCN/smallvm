@@ -125,6 +125,8 @@ to interpolate n1 n2 fraction {
   return (n1 + (fraction * (n2 - n1)))
 }
 
+to sign n { if (n < 0) { return -1 } else { return 1 } }
+
 // angles and vectors
 
 to toRadians n { return ((n * (pi)) / 180) }

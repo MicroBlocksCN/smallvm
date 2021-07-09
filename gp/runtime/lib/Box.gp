@@ -19,12 +19,12 @@ to newBox morph color corner border isInset hasFrame {
 method initialize Box {
   scale = (global 'scale')
   morph = (newMorph this)
-  color = (color 200 200 130)
+  color = (color 70 160 180)
   corner = (scale * 4)
-  border = (max 1 (scale / 2))
+  border = 0
   isInset = true
   hasFrame = false
-  setExtent morph 40 30
+  setExtent morph (60 * scale) (40 * scale)
   return this
 }
 
@@ -38,10 +38,14 @@ method isInset Box {return isInset}
 method setInset Box bool {isInset = bool}
 method setFrame Box bool {hasFrame = bool}
 
+method drawOn Box aContext {
+  if (0 == (alpha color)) { return }
+  drawButton (getShapeMaker aContext) (left morph) (top morph) (width morph) (height morph) color corner border isInset
+}
+
 method redraw Box {
   bm = (newBitmap (width morph) (height morph))
   if (0 == (alpha color)) {return}
-  if (global 'flat') {border = 0}
   drawButton (newShapeMaker bm) 0 0 (width morph) (height morph) color corner border isInset
   setCostume morph bm
 }
