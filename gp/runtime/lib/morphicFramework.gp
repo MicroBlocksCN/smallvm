@@ -766,7 +766,6 @@ method open Page tryRetina title {
   // The renderToBitmap flag makes SDL screen be a bitmap vs. a texture,
   // allowing direct rendering (including vectors and text) to SDL's display.
   renderToBitmap = (not ('Browser' == (platform)))
-  print 'renderToBitmap' renderToBitmap 'retina' tryRetina
 
   openWindow (width morph) (height morph) tryRetina title renderToBitmap
   winSize = (windowSize)

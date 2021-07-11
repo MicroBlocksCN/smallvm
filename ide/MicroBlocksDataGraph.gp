@@ -179,8 +179,8 @@ method drawLabel MicroBlocksDataGraph ctx label left y {
 	fontName = 'Arial'
 	fontSize = (13 * scale)
 
-	x = (left - ((stringWidth label) + (7 * scale)))
 	setFont ctx fontName fontSize
+	x = (left - ((stringWidth label) + (7 * scale)))
 	drawString ctx label (gray 100) x (y - (half (fontSize + scale)))
 }
 
