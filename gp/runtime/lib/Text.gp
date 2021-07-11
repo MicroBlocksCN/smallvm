@@ -176,8 +176,8 @@ method setText Text aString {
   text = aString
   startMark = nil
   endMark = nil
-  raise morph 'textEdited' this
   fixLayout this
+  raise morph 'textEdited' this
 }
 
 method fontName Text {return fontName}
