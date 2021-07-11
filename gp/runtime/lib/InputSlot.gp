@@ -48,6 +48,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
     menuSelector = slotMenu
   }
   isStatic = (isOneOf menuSelector 'sharedVarMenu' 'myVarMenu' 'localVarMenu' 'allVarsMenu' 'propertyMenu')
+  textChanged this
   fixLayout this
   return this
 }

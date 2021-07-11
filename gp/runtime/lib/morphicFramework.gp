@@ -550,6 +550,10 @@ method focusOn Keyboard aHandler {focus = aHandler}
 method processEvent Keyboard evt {
   type = (at evt 'type')
   key = (at evt 'keycode')
+  if (and ('textinput' == type) ('Browser' == (platform)) ('	' == (at evt 'text'))) {
+    // skip textinput events for tab characters (sent by browsers but not SDL2)
+    return
+  }
   if (and ('Browser' != (platform)) (74 <= key) (key <= 78)) {
 	// Map SDL key codes to browser key codes
 	if (74 === key) { key = 36 // home
