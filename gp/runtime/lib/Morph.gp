@@ -868,7 +868,31 @@ method removeHighlight Morph {
   return false
 }
 
-// hint/talk bubble
+// tooltip
+
+method showTooltip Morph aString bubbleWidth  {
+  if (or (isNil aString) ('' == aString)) { return nil }
+  if (isNil owner) { return nil } // morph deleted before hint was scheduled to appear (e.g. a menu)
+  page = (page this)
+  if (isNil page) { return nil } // the morph requesting the hint has been deleted
+
+  bubble = (newBubble aString 300 nil false true)
+  overlap = (5 * (global 'scale'))
+  if ((top this) < 10) { overlap = (0 - overlap) } // for top bar buttons (outset horizontally)
+  vis = (visibleBounds this)
+  rightSpace = ((right (morph page)) - (right vis))
+  setTop (morph bubble) ((top bounds) - ((height (morph bubble)) - overlap))
+  if (rightSpace > (width (morph bubble))) {
+    setLeft (morph bubble) ((right vis) - overlap)
+  } else {
+    setRight (morph bubble) ((left vis) + overlap)
+  }
+  showHint page bubble true
+  reportDamage this (fullBounds (morph bubble))
+  return bubble
+}
+
+// talk bubble
 
 method showHint Morph hintData bubbleWidth isHint isError {
   if (isNil isHint) { isHint = true }

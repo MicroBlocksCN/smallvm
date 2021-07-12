@@ -97,7 +97,7 @@ method handEnter Button aHand {
 	setCostume morph onCostume
   }
   if (notNil hint) {
-	addSchedule (global 'page') (schedule (action 'showHint' morph hint) 800)
+	addSchedule (global 'page') (schedule (action 'showTooltip' morph hint) 500)
   }
 }
 
@@ -109,5 +109,5 @@ method handLeave Button aHand {
   handEnter (objectAt aHand) aHand
   setOn this isOn
   if (notNil hint) {removeHint (page aHand)}
-  removeSchedulesFor (global 'page') 'showHint' morph
+  removeSchedulesFor (global 'page') 'showTooltip' morph
 }
