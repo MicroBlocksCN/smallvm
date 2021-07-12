@@ -728,7 +728,7 @@ method tryToInstallVM SmallRuntime {
 
 method updateConnection SmallRuntime {
 	pingSendInterval = 2000 // msecs between pings
-	pingTimeout = 5000
+	pingTimeout = 8000
 	if (isNil pingSentMSecs) { pingSentMSecs = 0 }
 	if (isNil lastPingRecvMSecs) { lastPingRecvMSecs = 0 }
 	if (isNil disconnected) { disconnected = false }
@@ -767,7 +767,7 @@ method updateConnection SmallRuntime {
 		// ping timeout: close port to force reconnection
 		print 'Lost communication to the board'
 		clearRunningHighlights this
-		if (not (isWebSerial this)) { closePort this }
+		closePort this
 		return 'not connected'
 	}
 }
