@@ -50,8 +50,10 @@ method fixLayout SpeechBubble {
   fontSize = (18 * scale)
   if ('Linux' == (platform)) { fontSize = (13 * scale) }
   hInset = (10 * scale)
+  if ('Browser' == (platform)) { hInset = (5 * scale) }
   vInset = (8 * scale)
   tailH = (7 * scale) // height of bubble tail
+  if isTooltip { tailH = 0 }
   setPosition (morph contents) ((left morph) + hInset) ((top morph) + vInset)
   w = ((width (morph contents)) + (2 * hInset))
   h = (+ (height (morph contents)) (2 * vInset) tailH)
