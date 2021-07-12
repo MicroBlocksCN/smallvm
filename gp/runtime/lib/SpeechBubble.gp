@@ -49,11 +49,10 @@ method fixLayout SpeechBubble {
   if isTooltip { scale = (global 'scale') }
   fontSize = (18 * scale)
   if ('Linux' == (platform)) { fontSize = (13 * scale) }
-  hInset = (10 * scale)
-  if ('Browser' == (platform)) { hInset = (5 * scale) }
-  vInset = (8 * scale)
+  hInset = (11 * scale)
+  vInset = (7 * scale)
   tailH = (7 * scale) // height of bubble tail
-  if isTooltip { tailH = 0 }
+  if isTooltip { tailH = scale }
   setPosition (morph contents) ((left morph) + hInset) ((top morph) + vInset)
   w = ((width (morph contents)) + (2 * hInset))
   h = (+ (height (morph contents)) (2 * vInset) tailH)
@@ -98,7 +97,12 @@ method step SpeechBubble {
   if (lastClientVis == vis) { return }
   overlap = (5 * (blockScale)) // xxx
   rightSpace = ((right (owner morph)) - (right vis))
-  setBottom morph (vCenter vis)
+  bottomY = ((top vis) + overlap)
+  if (isClass (handler clientMorph) 'Block') {
+    b = (handler clientMorph)
+    if ('hat' == (type b)) { bottomY = (vCenter vis) }
+  }
+  setBottom morph bottomY
   if (rightSpace > (width morph)) {
 	setDirection this 'right'
     setLeft morph ((right vis) - overlap)

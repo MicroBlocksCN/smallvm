@@ -919,21 +919,24 @@ method exportAsImageScaled Block scale result {
 	scaledBubble = (newBubble result 200 'right')
 	bubbleW = (width (fullBounds (morph scaledBubble)))
 	bubbleH = (height (fullBounds (morph scaledBubble)))
-	bubbleInset = 18
+	bubbleInsetX = (5 * scale)
+	bubbleInsetY = (5 * scale)
+	if ('hat' == type) { bubbleInsetY = ((half (height morph)) + (3 * scale)) }
   } else {
 	bubbleW = 0
 	bubbleH = 0
-	bubbleInset = 0
+	bubbleInsetX = 0
+	bubbleInsetY = 0
   }
 
   // combine the morph and result bubble, if any
-  bm = (newBitmap (+ scriptW bubbleW (- bubbleInset)) (+ scriptH bubbleH (- bubbleInset)))
+  bm = (newBitmap (+ scriptW bubbleW (- bubbleInsetX)) (+ scriptH bubbleH (- bubbleInsetY)))
   ctx = (newGraphicContextOn bm)
-  setOffset ctx 0 (bubbleH - bubbleInset)
+  setOffset ctx 0 (bubbleH - bubbleInsetY)
   fullDrawOn (morph scaledScript) ctx
   if (notNil scaledBubble) {
 	topMorphWidth = (width (morph scaledScript))
-	setOffset ctx (topMorphWidth - bubbleInset) 0
+	setOffset ctx (topMorphWidth - bubbleInsetX) 0
 	fullDrawOn (morph scaledBubble) ctx
   }
   setGlobal 'scale' oldScale // revert to old scale

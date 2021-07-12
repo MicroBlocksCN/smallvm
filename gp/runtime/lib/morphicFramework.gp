@@ -1196,7 +1196,7 @@ method hasActiveMenu Page {return (notNil activeMenu)}
 method showHint Page aSpeechBubble isHint {
   removeHint this
   inset = 3
-  if ('Browser' == (platform)) { inset = 1 }
+  if ('Browser' == (platform)) { inset = 2 }
   keepWithin (morph aSpeechBubble) (insetBy (bounds morph) (inset * (global 'scale')))
   addPart this aSpeechBubble
   step aSpeechBubble
