@@ -114,13 +114,15 @@ method y Hand {return y}
 method focus Hand {return focus}
 method focusOn Hand aHandler {focus = aHandler}
 
-method objectAt Hand {
+method objectAt Hand pixelPerfect {
   // Answer the topmost morph under the hand.
+
+  if (isNil pixelPerfect) { pixelPerfect = false }
   for m (reversed (morphsAt (morph page) x y)) {
     hdl = (handler m)
     if (and (notNil hdl) (not (isClass hdl 'Caret'))) {
       if (and (isVisible m) (containsPoint (visibleBounds m) x y)) {
-        if (noticesTransparentTouch m) {return hdl}
+        if (or (noticesTransparentTouch m) (not pixelPerfect)) {return hdl}
         if (not (isTransparentAt m x y)) {return hdl}
       }
     }
@@ -213,7 +215,7 @@ method rootForGrab Hand handler {
 method drop Hand {
   src = (grabbedObject this)
   if (isNil src) {return}
-  trg = (objectAt this x y)
+  trg = (objectAt this)
   if (isNil trg) {trg = page}
   while (not (wantsDropOf trg src)) {
     parent = (owner (morph trg))
@@ -314,7 +316,7 @@ method processEvent Hand evt {
 
 method currentObject Hand {
   if (notNil focus) {return focus}
-  return (objectAt this x y)
+  return (objectAt this)
 }
 
 method processMove Hand {
@@ -361,7 +363,7 @@ method processSwipe Hand xDelta yDelta {
 }
 
 method processDown Hand button {
-  currentObj = (currentObject this)
+  currentObj = (objectAt this true)
   if (isNil (ownerThatIsA (morph currentObj) 'Menu')) {
 	// stop editing unless this is a menu selection (it could a text edit menu command)
 	stopEditingUnfocusedText this currentObj
@@ -396,7 +398,7 @@ method processUp Hand {
 	drop this
 	return
   }
-  current = (objectAt this x y)
+  current = (objectAt this)
   trg = current
   while (not (and (acceptsEvents trg) (handUpOn trg this))) {trg = (parentHandler (morph trg))}
   if (current === lastTouched) {

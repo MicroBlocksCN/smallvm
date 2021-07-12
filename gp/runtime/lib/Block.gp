@@ -60,6 +60,7 @@ to block type color opName {
   }
   setMorph block morph
   setGrabRule morph 'handle'
+  setTransparentTouch morph false
   for each group {addPart (morph block) (morph each)}
   layoutChanged block
   fixLayout block
@@ -1266,6 +1267,7 @@ method rawInitialize Block commandOrReporter {
 
   morph = (newMorph this)
   setGrabRule morph 'handle'
+  setTransparentTouch morph false
   labelParts = (list (list (labelText this (primName expression))))
   group = (at labelParts 1)
   corner = 3
@@ -1447,6 +1449,8 @@ method initializeForSpec Block spec suppressExpansion {
 
   morph = (newMorph this)
   setGrabRule morph 'handle'
+  setTransparentTouch morph false
+
   corner = 3
   rounding = 8
   dent = 2

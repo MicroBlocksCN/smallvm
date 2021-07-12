@@ -675,7 +675,7 @@ to self_touchingMouse {
   handY = (handY)
   morph = (morph (implicitReceiver))
   if (not (containsPoint (bounds morph) handX handY)) { return false }
-  return ((implicitReceiver) == (objectAt (hand (global 'page'))))
+  return ((implicitReceiver) == (objectAt (hand (global 'page')) true))
 }
 
 to self_touching other {

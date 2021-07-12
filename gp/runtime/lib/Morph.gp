@@ -15,6 +15,7 @@ method initialize Morph {
   scaleX = 1
   scaleY = 1
   shouldRedraw = false
+  noticesTransparentTouch = true
   return this
 }
 
@@ -1307,19 +1308,21 @@ method takeThumbnail Morph thumbWidth thumbHeight {
 // sensing
 
 method isTransparentAt Morph x y {
-  return false
-  // TODO special case holes, etc
-//  if (not (isClass costumeData 'Bitmap')) {return false}
-//  costumeW = (width costumeData)
-//  costumeH = (height costumeData)
-//  p = (normal this x y) // offset from costume center
-//  rx = (truncate ((first p) + (costumeW / 2)))
-//  ry = (truncate ((last p) + (costumeH / 2)))
-//  i = (((ry * (width costumeData)) + rx) + 1)
-//  // Note: i can go out of range due to rounding in coordinate transform
-//  if (or (i < 1) (i > (costumeW * costumeH))) { return true }
-//  a = (getPixelAlpha (getField costumeData 'pixelData') i)
-//  return (a == 0)
+  // Return true if the given morph is transparent at the given (global) position.
+  // Fast in apps but expensive for large blocks in the browser (30-60 msecs).
+  // May want to try a different stategy -- draw onto canvas, read back one pixel.
+
+  if (rotation != 0) { return false } // don't deal with rotation for now
+  bm = (newBitmap (width bounds) (height bounds))
+  ctx = (newGraphicContextOn bm)
+  setOffset ctx (0 - (left this)) (0 - (top this))
+  drawOn (handler this) ctx
+
+  relX = (round (x - (left bounds)))
+  relY = (round (y - (top bounds)))
+  if (or (relX < 0) (relX >= (width bm))) { return true }
+  if (or (relY < 0) (relY >= (height bm))) { return true }
+  return ((getAlpha bm relX relY) < 10)
 }
 
 // stepping

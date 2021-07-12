@@ -68,6 +68,15 @@ method getPixel Bitmap x y {
   return (color ((rgb >> 16) & 255) ((rgb >> 8) & 255) (rgb & 255) alpha)
 }
 
+method getAlpha Bitmap x y {
+  comment '
+	Return the alpha of the given pixel. x and y are zero-based offsets from the top-left corner.'
+
+  if (or (x < 0) (x >= width) (y < 0) (y >= height)) { error 'bad pixel coordinate' }
+  i = (toInteger (((y * width) + x) + 1))
+  return (getPixelAlpha pixelData i)
+}
+
 method setPixel Bitmap x y color {
   comment '
 	Set the color of the given pixel. x and y are zero-based offsets from the top-left corner.'
