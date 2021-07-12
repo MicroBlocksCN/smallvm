@@ -313,10 +313,26 @@ method setBlockSize ScriptEditor {
 
 method setBlockScalePercent ScriptEditor percent {
   pe = (findProjectEditor)
+  oldBlockScale = (global 'blockScale')
   if (notNil pe) {
 	setGlobal 'blockScale' (percent / 100)
 	languageChanged pe
 	saveToUserPreferences pe 'blockSizePercent' percent
+  }
+  factor = ((global 'blockScale') / oldBlockScale)
+  if (1 == factor) { return }
+
+  originX = (left morph)
+  originY = (top morph)
+  for m (parts morph) {
+	if (isClass (handler m) 'Block') {
+	  dx = (round (factor * ((left m) - originX)))
+	  dy = (round (factor * ((top m) - originY)))
+	  setPosition m (originX + dx) (originY + dy)
+    }
+  }
+  if (isClass (parentHandler morph) 'ScrollFrame') {
+    updateSliders (parentHandler morph)
   }
 }
 
