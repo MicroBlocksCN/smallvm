@@ -7,7 +7,6 @@
 // WebAssembly seems to be working in iOS 12, so workaround was removed.
 
 if (typeof WebAssembly === 'object') {
-	console.log("WebAssembly supported");
 	var script = document.createElement('script');
 	script.src = "./gp_wasm.js"
 	document.head.appendChild(script);
