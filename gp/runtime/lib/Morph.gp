@@ -676,7 +676,7 @@ method fullCostume Morph {
   return result
 }
 
-// shadows
+// shadow (bitmap shadow, used when not running the browser)
 
 method shadow Morph transparency offset {
   if (isClass handler 'Block') { fixLayout handler }
@@ -688,46 +688,6 @@ method shadow Morph transparency offset {
   setCostume s shadowBM // to do: make the shadow untouchable and neutral for fullBounds
   setPosition s ((left fb) + offset) ((top fb) + offset)
   return s
-}
-
-method shadowPart Morph transparency offset {
-  // Return a shadow version that can be added to the front
-  // by cutting out the shape of the shadowed morph.
-
-  fb = (fullBounds this)
-  bm = (fullCostume this)
-  shadowBM = (newBitmap (width bm) (height bm) (gray 0 100)) // transparent black
-  applyMask shadowBM bm // black silouette of fullCostume
-
-  maskBM = (newBitmap (width bm) (height bm))
-  drawBitmap maskBM bm (0 - offset) (0 - offset)
-  applyMask shadowBM maskBM true // cut out fullCostume, offset left and up
-
-  s = (newMorph)
-  setTag s 'shadow'
-  setCostume s shadowBM
-  setAlpha s transparency
-  rotateAndScale s rotation scaleX scaleY
-  setPosition s ((left fb) + offset) ((top fb) + offset)
-  return s
-}
-
-method getShadowPart Morph {
-  for each parts {
-    if ((tag each) == 'shadow') {return each}
-  }
-  return nil
-}
-
-method addShadowPart Morph transparency border {addPart this (shadowPart this transparency border)}
-
-method removeShadowPart Morph {
-  sd = (getShadowPart this)
-  if (notNil sd) {
-    removePart this sd
-    return true
-  }
-  return false
 }
 
 method stackPart Morph offset layers {
