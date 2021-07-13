@@ -512,11 +512,11 @@ method deleteChunkForBlock SmallRuntime aBlock {
 	}
 }
 
-method stopAndSyncScripts SmallRuntime {
+method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
 	setCursor 'wait'
 
-	if (notNil port) {
+	if (and (notNil port) (true != alreadyStopped)) {
 		sendStopAll this
 		softReset this
 	}
@@ -786,10 +786,12 @@ method tryToConnect SmallRuntime {
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
-			connectionStartTime = nil // stop calling tryToConnect
-			vmVersion = nil
 			sendMsg this 'pingMsg'
 			pingSentMSecs = (msecsSinceStart)
+			print 'Connected to' portName
+			connectionStartTime = nil
+			vmVersion = nil
+			clearRunningHighlights this
 			setDefaultSerialDelay this
 			if readFromBoard {
 				readFromBoard = false
@@ -797,7 +799,7 @@ method tryToConnect SmallRuntime {
 				readCodeFromBoard this
 			} else {
 				clearBoardIfConnected this false
-				stopAndSyncScripts this
+				stopAndSyncScripts this true
 			}
 			sendMsg this 'getVersionMsg'
 			return 'connected'
@@ -825,16 +827,16 @@ method tryToConnect SmallRuntime {
 			connectionStartTime = nil
 			vmVersion = nil
 			clearRunningHighlights this
-			sendMsg this 'getVersionMsg'
+			setDefaultSerialDelay this
 			if readFromBoard {
 				readFromBoard = false
 				sendStopAll this
 				readCodeFromBoard this
 			} else {
 				clearBoardIfConnected this false
-				stopAndSyncScripts this
+				stopAndSyncScripts this true
 			}
-			setDefaultSerialDelay this
+			sendMsg this 'getVersionMsg'
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
