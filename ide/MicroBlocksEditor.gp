@@ -584,7 +584,8 @@ method saveToUserPreferences MicroBlocksEditor key value {
 	} else {
 		atPut prefs key value
 	}
-    if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+    if ('Browser' == (platform)) {
+		if (browserIsChromeOS) { return }
 		browserWritePrefs (jsonStringify prefs)
 	} else {
 		path = (join (gpFolder) '/preferences.json')
