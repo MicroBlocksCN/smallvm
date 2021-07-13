@@ -945,7 +945,8 @@ if ((typeof chrome != 'undefined') &&
 // progressive web app service worker
 
 window.onload = function() {
-  if ('serviceWorker' in navigator) {
+  if (!(/(CrOS)/.test(navigator.userAgent)) && ('serviceWorker' in navigator)) {
     navigator.serviceWorker.register('sw.js');
   }
 }
+

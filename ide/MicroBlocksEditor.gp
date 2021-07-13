@@ -547,7 +547,7 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 
 method readUserPreferences MicroBlocksEditor {
   result = (dictionary)
-  if ('Browser' == (platform)) {
+  if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
     jsonString = (browserReadPrefs)
   } else {
     path = (join (gpFolder) '/preferences.json')
@@ -584,7 +584,7 @@ method saveToUserPreferences MicroBlocksEditor key value {
 	} else {
 		atPut prefs key value
 	}
-	if ('Browser' == (platform)) {
+    if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
 		browserWritePrefs (jsonStringify prefs)
 	} else {
 		path = (join (gpFolder) '/preferences.json')
