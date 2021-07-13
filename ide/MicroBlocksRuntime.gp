@@ -790,7 +790,7 @@ method tryToConnect SmallRuntime {
 			vmVersion = nil
 			sendMsg this 'pingMsg'
 			pingSentMSecs = (msecsSinceStart)
-			sendMsg this 'getVersionMsg'
+			setDefaultSerialDelay this
 			if readFromBoard {
 				readFromBoard = false
 				sendStopAll this
@@ -799,7 +799,7 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this
 			}
-			setDefaultSerialDelay this
+			sendMsg this 'getVersionMsg'
 			return 'connected'
 		} else {
 			portName = nil
@@ -960,7 +960,7 @@ method versionReceived SmallRuntime versionString {
 
 method checkVmVersion SmallRuntime {
 	// prevent version check from running while the decompiler is working
-	if (decompilerStatus != '') { return }
+	if (not readFromBoard) { return }
 	if ((latestVmVersion this) > vmVersion) {
 		ok = (confirm (global 'page') nil (join
 			(localized 'The MicroBlocks in your board is not current')
@@ -973,7 +973,7 @@ method checkVmVersion SmallRuntime {
 method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
-	if (decompilerStatus != '') { return } // don't load libraries while decompiling
+	if readFromBoard { return } // don't load libraries while decompiling
 	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
 	if (boardLibAutoLoadDisabled (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
 
