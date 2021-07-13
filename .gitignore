@@ -7,8 +7,10 @@ chromeApp/*/gp_wasm.wasm
 chromeApp/MicroBlocks.zip
 linux+pi/ublockscode
 linux+pi/vm.*
+linux+pi/vm_*
 linux+pi/qemu
 precompiled/vm.*
+precompiled/vm_*
 data/*
 BUILD
 *.swp
