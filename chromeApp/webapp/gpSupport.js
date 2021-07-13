@@ -901,6 +901,10 @@ async function GP_writeFile(data, fName, id) {
 		};
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
 	} else if (typeof window.showSaveFilePicker != 'undefined') { // Native Filesystem API
+		if (/(CrOS)/.test(navigator.userAgent)) {
+			// On Chromebooks, the extension is not automatically appended.
+			fName = fName + '.' + ext;
+		}
 		options = { suggestedName: fName, id: id };
 		if ('' != ext) {
 			if ('.' != ext[0]) ext = '.' + ext;
