@@ -630,7 +630,7 @@ method restoreScripts MicroBlocksScripter {
   if (notNil scripts) {
     paneX = (left (morph scriptsPane))
     paneY = (top (morph scriptsPane))
-    for entry (reversed scripts) {
+    for entry scripts {
       dta = (last entry)
       if ('to' == (primName dta)) {
         func = (functionNamed mbProject (first (argList dta)))
