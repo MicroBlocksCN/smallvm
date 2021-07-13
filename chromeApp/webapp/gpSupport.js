@@ -952,7 +952,8 @@ if ((typeof chrome != 'undefined') &&
 // progressive web app service worker
 
 window.onload = function() {
-  if ('serviceWorker' in navigator) {
+  if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
     navigator.serviceWorker.register('sw.js');
   }
 }
+

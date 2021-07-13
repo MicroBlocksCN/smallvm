@@ -60,6 +60,7 @@ var GP = {
 	clipboardBytes: [],
 	droppedTextBytes: [],
 	droppedFiles: [],
+	lastSavedFileName: null,
 	messages: [],
 
 	audioOutBuffer: null,
@@ -882,6 +883,7 @@ async function GP_writeFile(data, fName, id) {
 	function onFileSelected(entry) {
 		void chrome.runtime.lastError; // suppress error message
 		if (entry) entry.createWriter(function(writer) {
+			GP.lastSavedFileName = entry.name;
 			writer.write(new Blob([data], {type: 'text/plain'})); });
 	}
 
@@ -901,6 +903,10 @@ async function GP_writeFile(data, fName, id) {
 		};
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
 	} else if (typeof window.showSaveFilePicker != 'undefined') { // Native Filesystem API
+		if (/(CrOS)/.test(navigator.userAgent)) {
+			// On Chromebooks, the extension is not automatically appended.
+			fName = fName + '.' + ext;
+		}
 		options = { suggestedName: fName, id: id };
 		if ('' != ext) {
 			if ('.' != ext[0]) ext = '.' + ext;
@@ -916,6 +922,7 @@ async function GP_writeFile(data, fName, id) {
 		const writable = await fileHandle.createWritable();
 		await writable.write(new Blob([data]));
 		await writable.close();
+		GP.lastSavedFileName = fileHandle.name;
 	} else {
 		saveAs(new Blob([data]), fName + '.' + ext);
 	}
@@ -945,7 +952,7 @@ if ((typeof chrome != 'undefined') &&
 // progressive web app service worker
 
 window.onload = function() {
-  if (!(/(CrOS)/.test(navigator.userAgent)) && ('serviceWorker' in navigator)) {
+  if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
     navigator.serviceWorker.register('sw.js');
   }
 }
