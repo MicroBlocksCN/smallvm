@@ -60,6 +60,7 @@ var GP = {
 	clipboardBytes: [],
 	droppedTextBytes: [],
 	droppedFiles: [],
+	lastSavedFileName: null,
 	messages: [],
 
 	audioOutBuffer: null,
@@ -882,6 +883,7 @@ async function GP_writeFile(data, fName, id) {
 	function onFileSelected(entry) {
 		void chrome.runtime.lastError; // suppress error message
 		if (entry) entry.createWriter(function(writer) {
+			GP.lastSavedFileName = entry.name;
 			writer.write(new Blob([data], {type: 'text/plain'})); });
 	}
 
@@ -920,6 +922,7 @@ async function GP_writeFile(data, fName, id) {
 		const writable = await fileHandle.createWritable();
 		await writable.write(new Blob([data]));
 		await writable.close();
+		GP.lastSavedFileName = fileHandle.name;
 	} else {
 		saveAs(new Blob([data]), fName + '.' + ext);
 	}

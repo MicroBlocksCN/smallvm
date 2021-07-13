@@ -416,6 +416,12 @@ method step MicroBlocksEditor {
   if ('Browser' == (platform)) {
 	checkForBrowserResize this
 	processBrowserDroppedFile this
+	lastSavedName = (browserLastSaveName)
+	if (and (notNil lastSavedName) (endsWith lastSavedName '.ubp')) {
+		// Update the title
+		fileName = (withoutExtension lastSavedName)
+		updateTitle this
+	}
   }
   processDroppedFiles this
   updateIndicator this
