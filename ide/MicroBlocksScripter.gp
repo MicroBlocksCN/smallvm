@@ -587,7 +587,7 @@ method step MicroBlocksScripter {
 }
 
 method saveScripts MicroBlocksScripter oldScale {
-  scale = (global 'scale')
+  scale = (blockScale)
   if (notNil oldScale) { scale = oldScale }
   scriptsPane = (contents scriptsFrame)
   paneX = (left (morph scriptsPane))
@@ -621,7 +621,7 @@ method updateFunctionOrMethod MicroBlocksScripter script {
 }
 
 method restoreScripts MicroBlocksScripter {
-  scale = (global 'scale')
+  scale = (blockScale)
   scriptsPane = (contents scriptsFrame)
   removeAllParts (morph scriptsPane)
   clearDropHistory scriptsPane
@@ -659,7 +659,7 @@ method restoreScripts MicroBlocksScripter {
 method allScriptsString MicroBlocksScripter {
   // Return a string with all scripts in the scripting area.
 
-  scale = (global 'scale')
+  scale = (blockScale)
   newline = (newline)
   pp = (new 'PrettyPrinter')
   result = (list)

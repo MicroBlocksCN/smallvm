@@ -123,14 +123,13 @@ method initialize MicroBlocksEditor {
 method scaleChanged MicroBlocksEditor {
   // Called when the window resolution changes.
 
-  scale = (global 'scale')
   removeHint (global 'page')
   removeAllParts morph
   addTopBarParts this
 
   // save the state of the current scripter
-  if (2 == scale) { oldScale = 1 } else { oldScale = 2 }
-  saveScripts scripter oldScale
+  if (2 == (global 'scale')) { oldScale = 1 } else { oldScale = 2 }
+  saveScripts scripter (oldScale * (global 'blockScale'))
   oldProject = (project scripter)
   oldCategory = (currentCategory scripter)
   oldLibrary = (currentLibrary scripter)
