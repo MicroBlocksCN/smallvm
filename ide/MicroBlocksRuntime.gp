@@ -767,7 +767,7 @@ method updateConnection SmallRuntime {
 		// ping timeout: close port to force reconnection
 		print 'Lost communication to the board'
 		clearRunningHighlights this
-		closePort this
+		if (not (isWebSerial this)) { closePort this }
 		return 'not connected'
 	}
 }
