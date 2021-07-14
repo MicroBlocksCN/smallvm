@@ -10,6 +10,7 @@ method initialize Button label action {
   if (isNil label) { label = 'Button' }
   if (isNil action) { action = (action 'toggle' this) }
   morph = (newMorph this)
+  setGrabRule morph 'ignore'
   setLabel this label
   clickAction = action
   isOn = false

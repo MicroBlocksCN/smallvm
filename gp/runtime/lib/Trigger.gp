@@ -142,6 +142,7 @@ method clearCostumes Trigger {
 to pushButton label color action minWidth minHeight {
   btn = (new 'Trigger' (newMorph) action)
   setHandler (morph btn) btn
+  setGrabRule (morph btn) 'ignore'
   drawLabelCostumes btn label color minWidth minHeight
   return btn
 }

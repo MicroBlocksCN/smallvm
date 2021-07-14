@@ -40,7 +40,6 @@ to rightClicked aHandler {
   return false
 }
 
-to touchHold aHandler {return false}
 to swipe aHandler scrollX scrollY { return (dispatchEvent aHandler 'whenScrolled' scrollX scrollY) }
 to pageResized aHandler { dispatchEvent aHandler 'whenPageResized' }
 to scaleChanged aHandler { noop }
@@ -418,33 +417,15 @@ method processUp Hand {
 }
 
 method processTouchHold Hand currentObj {
+  lastTouchTime = nil
   isMobile = (or
   	('iOS' == (platform))
 	(and ('Browser' == (platform)) (browserIsMobile)))
   if isMobile {
 	// on mobile devices, make map touchHold gestures to rightClicked
 	processRightClicked this currentObj
-	return
+	lastTouched = nil
   }
-  trg = currentObj
-  while (notNil trg) {
-    if (and (acceptsEvents trg) (touchHold trg this)) {
-      lastTouched = nil
-      lastTouchTime = nil
-      return
-    }
-    m = (morph trg)
-    if (and (notNil m) (notNil (owner m))) {
-      trg = (handler (owner m))
-    } else {
-      trg = nil
-    }
-  }
-  if (isNil focus) {
-    processMove this
-  }
-  lastTouched = nil
-  lastTouchTime = nil
 }
 
 method processRightClicked Hand currentObj {
