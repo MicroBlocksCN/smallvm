@@ -502,12 +502,14 @@ method scriptChanged ScriptEditor {
 // saving script image
 
 method saveScriptsImage ScriptEditor {
-  bm = (fullCostume morph)
+  bm = (cropTransparent (fullCostume morph))
+  if (or ((width bm) == 0) ((height bm) == 0)) { return } // no scripts; empty bitmap
+
   pngData = (encodePNG bm)
+  fName = (join 'allScripts' (msecsSinceStart) '.png')
   if ('Browser' == (platform)) {
-	browserWriteFile pngData 'allScripts.png' 'scriptImage'
+	browserWriteFile pngData fName 'scriptImage'
   } else {
-	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'allScripts' '.png')
 	fName = (fileToWrite fName '.png')
 	if ('' == fName) { return }
 	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
