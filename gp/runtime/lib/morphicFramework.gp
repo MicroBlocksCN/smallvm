@@ -1183,6 +1183,7 @@ to inform details title yesLabel {
 }
 
 method closeUnclickedMenu Page aHandler {
+  setCursor 'default'
   removeHint this
   if (isNil activeMenu) {return}
   if (contains (allOwners (morph aHandler)) (morph activeMenu)) {return}
