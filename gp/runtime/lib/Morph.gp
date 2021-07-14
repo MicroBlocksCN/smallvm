@@ -1129,7 +1129,11 @@ method fullDrawOn Morph aContext {
   if (intersectsClip aContext bounds) {
 	if (and (isNil handler) (notNil costumeData)) {
 	  // this case (no handler) is used for the hand's shadow
-	  drawBitmap aContext costumeData (left bounds) (top bounds)
+	  if (isClass costumeData 'Bitmap') {
+		drawBitmap aContext costumeData (left bounds) (top bounds)
+	  } (isClass costumeData 'Color') {
+		fillRect aContext costumeData (left bounds) (top bounds) (width bounds) (height bounds)
+	  }
 	} else {
 	  useOldDraw = false
 	  if useOldDraw {
