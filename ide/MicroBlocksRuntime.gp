@@ -1110,6 +1110,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
 		stopRunningChunk this chunkID
 		runChunk this chunkID
+		waitForResponse this
 	}
 }
 
