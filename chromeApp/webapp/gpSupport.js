@@ -949,6 +949,12 @@ if ((typeof chrome != 'undefined') &&
 		chrome.runtime.getBackgroundPage(GP_ChromebookLaunch);
 }
 
+// warn before leaving page
+
+window.onbeforeunload = function() {
+   return "Leave this page? (changes will be lost)";
+};
+
 // progressive web app service worker
 
 window.onload = function() {
