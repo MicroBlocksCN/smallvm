@@ -123,14 +123,13 @@ method initialize MicroBlocksEditor {
 method scaleChanged MicroBlocksEditor {
   // Called when the window resolution changes.
 
-  scale = (global 'scale')
   removeHint (global 'page')
   removeAllParts morph
   addTopBarParts this
 
   // save the state of the current scripter
-  if (2 == scale) { oldScale = 1 } else { oldScale = 2 }
-  saveScripts scripter oldScale
+  if (2 == (global 'scale')) { oldScale = 1 } else { oldScale = 2 }
+  saveScripts scripter (oldScale * (global 'blockScale'))
   oldProject = (project scripter)
   oldCategory = (currentCategory scripter)
   oldLibrary = (currentLibrary scripter)
@@ -306,9 +305,14 @@ method openFromBoard MicroBlocksEditor {
   clearProject this
   fileName = ''
   updateTitle this
-  spinner = (newSpinner (action 'decompilerStatus' (smallRuntime)) (action 'decompilerDone' (smallRuntime)))
-  setStopAction spinner (action 'cancelReadCodeFromNextBoardConnected' (smallRuntime))
-  addPart (global 'page') spinner
+
+  if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+	inform 'Plug in the board and click the USB icon to connect.'
+  } else {
+	spinner = (newSpinner (action 'decompilerStatus' (smallRuntime)) (action 'decompilerDone' (smallRuntime)))
+	setStopAction spinner (action 'cancelReadCodeFromNextBoardConnected' (smallRuntime))
+	addPart (global 'page') spinner
+  }
 
   readCodeFromNextBoardConnected (smallRuntime)
 }
@@ -412,6 +416,12 @@ method step MicroBlocksEditor {
   if ('Browser' == (platform)) {
 	checkForBrowserResize this
 	processBrowserDroppedFile this
+	lastSavedName = (browserLastSaveName)
+	if (and (notNil lastSavedName) (endsWith lastSavedName '.ubp')) {
+		// Update the title
+		fileName = (withoutExtension lastSavedName)
+		updateTitle this
+	}
   }
   processDroppedFiles this
   updateIndicator this
@@ -547,7 +557,7 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 
 method readUserPreferences MicroBlocksEditor {
   result = (dictionary)
-  if ('Browser' == (platform)) {
+  if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
     jsonString = (browserReadPrefs)
   } else {
     path = (join (gpFolder) '/preferences.json')
@@ -584,7 +594,8 @@ method saveToUserPreferences MicroBlocksEditor key value {
 	} else {
 		atPut prefs key value
 	}
-	if ('Browser' == (platform)) {
+    if ('Browser' == (platform)) {
+		if (browserIsChromeOS) { return }
 		browserWritePrefs (jsonStringify prefs)
 	} else {
 		path = (join (gpFolder) '/preferences.json')

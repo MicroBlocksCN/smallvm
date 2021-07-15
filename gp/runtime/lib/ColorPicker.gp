@@ -117,9 +117,9 @@ method addSwatch ColorPicker x y w h {
   h = (h * scale)
 
   swatch = (newMorph)
-  bm = (newBitmap w h (color 200 0 0))
-  setCostume swatch bm
+  setExtent swatch w h
   setPosition swatch x y
+  setCostume swatch (gray 255)
   addPart morph swatch
 }
 
@@ -194,8 +194,7 @@ method handMoveFocus ColorPicker aHand {
 }
 
 method selectColor ColorPicker c updateSlider {
-  fill (costumeData swatch) c
-  costumeChanged swatch
+  setCostume swatch c
   updateRGBReadouts this c
   if updateSlider { setValue slider (100.0 * (sqrt (1.0 - (brightness c)))) }
   if (notNil action) { call action c }

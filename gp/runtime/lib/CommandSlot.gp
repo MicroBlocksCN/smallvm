@@ -13,6 +13,7 @@ method initialize CommandSlot blockColor nestedBlock {
   corner = 3
   color = blockColor
   morph = (newMorph this)
+  setTransparentTouch morph false
   if (isNil nestedBlock) { return }
   addPart morph (morph nestedBlock)
 }

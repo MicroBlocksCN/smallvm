@@ -305,7 +305,7 @@ method cleanUp ScriptEditor {
 
 method setBlockSize ScriptEditor {
   menu = (menu nil (action 'setBlockScalePercent' this) true)
-  for percent (list 50 75 100 125 150 175 200 250 300 400 500) {
+  for percent (list 50 75 100 125 150 175 200 250) {
 	  addItem menu (join '' percent '%') percent
   }
   popUpAtHand menu (global 'page')
@@ -313,10 +313,26 @@ method setBlockSize ScriptEditor {
 
 method setBlockScalePercent ScriptEditor percent {
   pe = (findProjectEditor)
+  oldBlockScale = (global 'blockScale')
   if (notNil pe) {
 	setGlobal 'blockScale' (percent / 100)
 	languageChanged pe
 	saveToUserPreferences pe 'blockSizePercent' percent
+  }
+  factor = ((global 'blockScale') / oldBlockScale)
+  if (1 == factor) { return }
+
+  originX = (left morph)
+  originY = (top morph)
+  for m (parts morph) {
+	if (isClass (handler m) 'Block') {
+	  dx = (round (factor * ((left m) - originX)))
+	  dy = (round (factor * ((top m) - originY)))
+	  setPosition m (originX + dx) (originY + dy)
+    }
+  }
+  if (isClass (parentHandler morph) 'ScrollFrame') {
+    updateSliders (parentHandler morph)
   }
 }
 
@@ -486,12 +502,17 @@ method scriptChanged ScriptEditor {
 // saving script image
 
 method saveScriptsImage ScriptEditor {
-  bm = (fullCostume morph)
+  oldBlockScale = (global 'blockScale')
+  setBlockScalePercent this 100
+  bm = (cropTransparent (fullCostume morph))
+  setBlockScalePercent this (100 * oldBlockScale)
+
+  if (or ((width bm) == 0) ((height bm) == 0)) { return } // no scripts; empty bitmap
   pngData = (encodePNG bm)
+  fName = (join 'allScripts' (msecsSinceStart) '.png')
   if ('Browser' == (platform)) {
-	browserWriteFile pngData 'allScripts.png' 'scriptImage'
+	browserWriteFile pngData fName 'scriptImage'
   } else {
-	fName = (uniqueNameNotIn (listFiles (gpFolder)) 'allScripts' '.png')
 	fName = (fileToWrite fName '.png')
 	if ('' == fName) { return }
 	if (not (endsWith fName '.png')) { fName = (join fName '.png') }

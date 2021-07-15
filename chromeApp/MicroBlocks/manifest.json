@@ -2,7 +2,7 @@
   "name": "MicroBlocks",
   "short_name": "MicroBlocks",
   "description": "Simple, easy-to-use blocks programming language for the BBC micro:bit and other microcontrollers",
-  "version": "1.0.15",
+  "version": "1.1.1",
   "manifest_version": 2,
   "permissions": [
 	"clipboardRead",
@@ -10,7 +10,8 @@
 	{"fileSystem": ["write"]},
 	"fileSystem",
 	"fullscreen",
-	"serial"
+	"serial",
+	"storage"
   ],
   "offline_enabled": true,
   "app": {

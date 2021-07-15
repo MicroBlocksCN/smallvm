@@ -566,7 +566,13 @@ method addInput BlockSectionDefinition {
 }
 
 method textChanged BlockSectionDefinition {
+  // called editing a text field is complete
   raise morph 'updateBlockDefinition' this
+}
+
+method textEdited BlockSectionDefinition {
+  // called after every character
+  fixLayout this
 }
 
 method addInputSlot BlockSectionDefinition blockSpec slotIndex argNames {

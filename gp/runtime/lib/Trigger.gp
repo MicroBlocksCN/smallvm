@@ -54,7 +54,7 @@ method handEnter Trigger aHand {
   setCursor 'pointer'
   highlight this
   if (notNil hint) {
-	addSchedule (global 'page') (schedule (action 'showHint' morph hint) 300)
+	addSchedule (global 'page') (schedule (action 'showTooltip' morph hint) 300)
   }
 }
 
@@ -66,7 +66,7 @@ method handLeave Trigger aHand {
   handEnter (objectAt aHand) aHand
   normal this
   if (notNil hint) {removeHint (page aHand)}
-  removeSchedulesFor (global 'page') 'showHint' morph
+  removeSchedulesFor (global 'page') 'showTooltip' morph
 }
 
 method handDownOn Trigger aHand {
@@ -142,6 +142,7 @@ method clearCostumes Trigger {
 to pushButton label color action minWidth minHeight {
   btn = (new 'Trigger' (newMorph) action)
   setHandler (morph btn) btn
+  setGrabRule (morph btn) 'ignore'
   drawLabelCostumes btn label color minWidth minHeight
   return btn
 }

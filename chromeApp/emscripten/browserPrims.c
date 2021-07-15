@@ -386,6 +386,32 @@ static OBJ primBrowserWriteFile(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+static OBJ primBrowserLastSaveName(int nargs, OBJ args[]) {
+	int len = EM_ASM_INT({
+		if (GP.lastSavedFileName) {
+			return (new TextEncoder()).encode(GP.lastSavedFileName).length;
+		} else {
+			return 0;
+		}
+	});
+
+	if (!len) return nilObj;
+
+	if (!canAllocate(len / 4)) return nilObj;
+	OBJ result = allocateString(len);
+	EM_ASM_({
+		var dst = $0;
+		var len = $1;
+		var s = (new TextEncoder()).encode(GP.lastSavedFileName);
+		for (var i = 0; i < len; i++) {
+			Module.HEAPU8[dst++] = s[i];
+		}
+		GP.lastSavedFileName = null; // clear name after reading
+	}, &FIELD(result, 0), len);
+
+	return result;
+}
+
 // ***** Browser User Preferences *****
 
 static OBJ primBrowserWritePrefs(int nargs, OBJ args[]) {
@@ -1301,6 +1327,7 @@ static PrimEntry browserPrimList[] = {
 	{"browserHasWebSerial",		primBrowserHasWebSerial,	"Return true the browser supports the Web Serial API."},
 	{"browserReadFile",			primBrowserReadFile,		"Select and read a file in the browser. Args: [extension]"},
 	{"browserWriteFile",		primBrowserWriteFile,		"Select and write a file the browser. Args: data [suggestedFileName, id]"},
+	{"browserLastSaveName",		primBrowserLastSaveName,	"Return the name of the most recent file save."},
 	{"browserSetShadow",		primBrowserSetShadow,		"Set the Canvas shadow color, offset, and blur for following graphics operations. Args: color, offset, blur"},
 	{"browserClearShadow",		primBrowserClearShadow,		"Disable the Canvas shadow effect."},
 	{"browserReadPrefs",		primBrowserReadPrefs,		"Read user preferences from localStorage."},

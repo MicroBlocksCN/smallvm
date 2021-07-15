@@ -15,6 +15,7 @@ method initialize Morph {
   scaleX = 1
   scaleY = 1
   shouldRedraw = false
+  noticesTransparentTouch = true
   return this
 }
 
@@ -676,7 +677,7 @@ method fullCostume Morph {
   return result
 }
 
-// shadows
+// shadow (bitmap shadow, used when not running the browser)
 
 method shadow Morph transparency offset {
   if (isClass handler 'Block') { fixLayout handler }
@@ -688,46 +689,6 @@ method shadow Morph transparency offset {
   setCostume s shadowBM // to do: make the shadow untouchable and neutral for fullBounds
   setPosition s ((left fb) + offset) ((top fb) + offset)
   return s
-}
-
-method shadowPart Morph transparency offset {
-  // Return a shadow version that can be added to the front
-  // by cutting out the shape of the shadowed morph.
-
-  fb = (fullBounds this)
-  bm = (fullCostume this)
-  shadowBM = (newBitmap (width bm) (height bm) (gray 0 100)) // transparent black
-  applyMask shadowBM bm // black silouette of fullCostume
-
-  maskBM = (newBitmap (width bm) (height bm))
-  drawBitmap maskBM bm (0 - offset) (0 - offset)
-  applyMask shadowBM maskBM true // cut out fullCostume, offset left and up
-
-  s = (newMorph)
-  setTag s 'shadow'
-  setCostume s shadowBM
-  setAlpha s transparency
-  rotateAndScale s rotation scaleX scaleY
-  setPosition s ((left fb) + offset) ((top fb) + offset)
-  return s
-}
-
-method getShadowPart Morph {
-  for each parts {
-    if ((tag each) == 'shadow') {return each}
-  }
-  return nil
-}
-
-method addShadowPart Morph transparency border {addPart this (shadowPart this transparency border)}
-
-method removeShadowPart Morph {
-  sd = (getShadowPart this)
-  if (notNil sd) {
-    removePart this sd
-    return true
-  }
-  return false
 }
 
 method stackPart Morph offset layers {
@@ -868,7 +829,31 @@ method removeHighlight Morph {
   return false
 }
 
-// hint/talk bubble
+// tooltip
+
+method showTooltip Morph aString bubbleWidth  {
+  if (or (isNil aString) ('' == aString)) { return nil }
+  if (isNil owner) { return nil } // morph deleted before hint was scheduled to appear (e.g. a menu)
+  page = (page this)
+  if (isNil page) { return nil } // the morph requesting the hint has been deleted
+
+  bubble = (newBubble aString 300 nil false true)
+  overlap = (5 * (global 'scale'))
+  if ((top this) < 10) { overlap = (0 - overlap) } // for top bar buttons (outset horizontally)
+  vis = (visibleBounds this)
+  rightSpace = ((right (morph page)) - (right vis))
+  setTop (morph bubble) ((top bounds) - ((height (morph bubble)) - overlap))
+  if (rightSpace > (width (morph bubble))) {
+    setLeft (morph bubble) ((right vis) - overlap)
+  } else {
+    setRight (morph bubble) ((left vis) + overlap)
+  }
+  showHint page bubble true
+  reportDamage this (fullBounds (morph bubble))
+  return bubble
+}
+
+// talk bubble
 
 method showHint Morph hintData bubbleWidth isHint isError {
   if (isNil isHint) { isHint = true }
@@ -1144,7 +1129,11 @@ method fullDrawOn Morph aContext {
   if (intersectsClip aContext bounds) {
 	if (and (isNil handler) (notNil costumeData)) {
 	  // this case (no handler) is used for the hand's shadow
-	  drawBitmap aContext costumeData (left bounds) (top bounds)
+	  if (isClass costumeData 'Bitmap') {
+		drawBitmap aContext costumeData (left bounds) (top bounds)
+	  } (isClass costumeData 'Color') {
+		fillRect aContext costumeData (left bounds) (top bounds) (width bounds) (height bounds)
+	  }
 	} else {
 	  useOldDraw = false
 	  if useOldDraw {
@@ -1323,19 +1312,21 @@ method takeThumbnail Morph thumbWidth thumbHeight {
 // sensing
 
 method isTransparentAt Morph x y {
-  return false
-  // TODO special case holes, etc
-//  if (not (isClass costumeData 'Bitmap')) {return false}
-//  costumeW = (width costumeData)
-//  costumeH = (height costumeData)
-//  p = (normal this x y) // offset from costume center
-//  rx = (truncate ((first p) + (costumeW / 2)))
-//  ry = (truncate ((last p) + (costumeH / 2)))
-//  i = (((ry * (width costumeData)) + rx) + 1)
-//  // Note: i can go out of range due to rounding in coordinate transform
-//  if (or (i < 1) (i > (costumeW * costumeH))) { return true }
-//  a = (getPixelAlpha (getField costumeData 'pixelData') i)
-//  return (a == 0)
+  // Return true if the given morph is transparent at the given (global) position.
+  // Fast in apps but expensive for large blocks in the browser (30-60 msecs).
+  // May want to try a different stategy -- draw onto canvas, read back one pixel.
+
+  if (rotation != 0) { return false } // don't deal with rotation for now
+  bm = (newBitmap (width bounds) (height bounds))
+  ctx = (newGraphicContextOn bm)
+  setOffset ctx (0 - (left this)) (0 - (top this))
+  drawOn (handler this) ctx
+
+  relX = (round (x - (left bounds)))
+  relY = (round (y - (top bounds)))
+  if (or (relX < 0) (relX >= (width bm))) { return true }
+  if (or (relY < 0) (relY >= (height bm))) { return true }
+  return ((getAlpha bm relX relY) < 10)
 }
 
 // stepping

@@ -40,7 +40,6 @@ to rightClicked aHandler {
   return false
 }
 
-to touchHold aHandler {return false}
 to swipe aHandler scrollX scrollY { return (dispatchEvent aHandler 'whenScrolled' scrollX scrollY) }
 to pageResized aHandler { dispatchEvent aHandler 'whenPageResized' }
 to scaleChanged aHandler { noop }
@@ -114,13 +113,15 @@ method y Hand {return y}
 method focus Hand {return focus}
 method focusOn Hand aHandler {focus = aHandler}
 
-method objectAt Hand {
+method objectAt Hand pixelPerfect {
   // Answer the topmost morph under the hand.
+
+  if (isNil pixelPerfect) { pixelPerfect = false }
   for m (reversed (morphsAt (morph page) x y)) {
     hdl = (handler m)
     if (and (notNil hdl) (not (isClass hdl 'Caret'))) {
       if (and (isVisible m) (containsPoint (visibleBounds m) x y)) {
-        if (noticesTransparentTouch m) {return hdl}
+        if (or (noticesTransparentTouch m) (not pixelPerfect)) {return hdl}
         if (not (isTransparentAt m x y)) {return hdl}
       }
     }
@@ -213,7 +214,7 @@ method rootForGrab Hand handler {
 method drop Hand {
   src = (grabbedObject this)
   if (isNil src) {return}
-  trg = (objectAt this x y)
+  trg = (objectAt this)
   if (isNil trg) {trg = page}
   while (not (wantsDropOf trg src)) {
     parent = (owner (morph trg))
@@ -314,7 +315,7 @@ method processEvent Hand evt {
 
 method currentObject Hand {
   if (notNil focus) {return focus}
-  return (objectAt this x y)
+  return (objectAt this)
 }
 
 method processMove Hand {
@@ -361,7 +362,7 @@ method processSwipe Hand xDelta yDelta {
 }
 
 method processDown Hand button {
-  currentObj = (currentObject this)
+  currentObj = (objectAt this true)
   if (isNil (ownerThatIsA (morph currentObj) 'Menu')) {
 	// stop editing unless this is a menu selection (it could a text edit menu command)
 	stopEditingUnfocusedText this currentObj
@@ -396,7 +397,7 @@ method processUp Hand {
 	drop this
 	return
   }
-  current = (objectAt this x y)
+  current = (objectAt this)
   trg = current
   while (not (and (acceptsEvents trg) (handUpOn trg this))) {trg = (parentHandler (morph trg))}
   if (current === lastTouched) {
@@ -416,33 +417,15 @@ method processUp Hand {
 }
 
 method processTouchHold Hand currentObj {
+  lastTouchTime = nil
   isMobile = (or
   	('iOS' == (platform))
 	(and ('Browser' == (platform)) (browserIsMobile)))
   if isMobile {
 	// on mobile devices, make map touchHold gestures to rightClicked
 	processRightClicked this currentObj
-	return
+	lastTouched = nil
   }
-  trg = currentObj
-  while (notNil trg) {
-    if (and (acceptsEvents trg) (touchHold trg this)) {
-      lastTouched = nil
-      lastTouchTime = nil
-      return
-    }
-    m = (morph trg)
-    if (and (notNil m) (notNil (owner m))) {
-      trg = (handler (owner m))
-    } else {
-      trg = nil
-    }
-  }
-  if (isNil focus) {
-    processMove this
-  }
-  lastTouched = nil
-  lastTouchTime = nil
 }
 
 method processRightClicked Hand currentObj {
@@ -550,6 +533,10 @@ method focusOn Keyboard aHandler {focus = aHandler}
 method processEvent Keyboard evt {
   type = (at evt 'type')
   key = (at evt 'keycode')
+  if (and ('textinput' == type) ('Browser' == (platform)) ('	' == (at evt 'text'))) {
+    // skip textinput events for tab characters (sent by browsers but not SDL2)
+    return
+  }
   if (and ('Browser' != (platform)) (74 <= key) (key <= 78)) {
 	// Map SDL key codes to browser key codes
 	if (74 === key) { key = 36 // home
@@ -766,7 +753,6 @@ method open Page tryRetina title {
   // The renderToBitmap flag makes SDL screen be a bitmap vs. a texture,
   // allowing direct rendering (including vectors and text) to SDL's display.
   renderToBitmap = (not ('Browser' == (platform)))
-  print 'renderToBitmap' renderToBitmap 'retina' tryRetina
 
   openWindow (width morph) (height morph) tryRetina title renderToBitmap
   winSize = (windowSize)
@@ -1178,6 +1164,7 @@ to inform details title yesLabel {
 }
 
 method closeUnclickedMenu Page aHandler {
+  setCursor 'default'
   removeHint this
   if (isNil activeMenu) {return}
   if (contains (allOwners (morph aHandler)) (morph activeMenu)) {return}
@@ -1192,7 +1179,9 @@ method hasActiveMenu Page {return (notNil activeMenu)}
 
 method showHint Page aSpeechBubble isHint {
   removeHint this
-  keepWithin (morph aSpeechBubble) (bounds morph)
+  inset = 3
+  if ('Browser' == (platform)) { inset = 2 }
+  keepWithin (morph aSpeechBubble) (insetBy (bounds morph) (inset * (global 'scale')))
   addPart this aSpeechBubble
   step aSpeechBubble
   if isHint { activeHint = aSpeechBubble }

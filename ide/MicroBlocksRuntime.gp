@@ -512,11 +512,11 @@ method deleteChunkForBlock SmallRuntime aBlock {
 	}
 }
 
-method stopAndSyncScripts SmallRuntime {
+method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
 	setCursor 'wait'
 
-	if (notNil port) {
+	if (and (notNil port) (true != alreadyStopped)) {
 		sendStopAll this
 		softReset this
 	}
@@ -728,7 +728,7 @@ method tryToInstallVM SmallRuntime {
 
 method updateConnection SmallRuntime {
 	pingSendInterval = 2000 // msecs between pings
-	pingTimeout = 5000
+	pingTimeout = 8000
 	if (isNil pingSentMSecs) { pingSentMSecs = 0 }
 	if (isNil lastPingRecvMSecs) { lastPingRecvMSecs = 0 }
 	if (isNil disconnected) { disconnected = false }
@@ -786,20 +786,22 @@ method tryToConnect SmallRuntime {
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
-			connectionStartTime = nil // stop calling tryToConnect
-			vmVersion = nil
 			sendMsg this 'pingMsg'
 			pingSentMSecs = (msecsSinceStart)
-			sendMsg this 'getVersionMsg'
+			print 'Connected to' portName
+			connectionStartTime = nil
+			vmVersion = nil
+			clearRunningHighlights this
+			setDefaultSerialDelay this
 			if readFromBoard {
 				readFromBoard = false
 				sendStopAll this
 				readCodeFromBoard this
 			} else {
 				clearBoardIfConnected this false
-				stopAndSyncScripts this
+				stopAndSyncScripts this true
 			}
-			setDefaultSerialDelay this
+			sendMsg this 'getVersionMsg'
 			return 'connected'
 		} else {
 			portName = nil
@@ -825,16 +827,16 @@ method tryToConnect SmallRuntime {
 			connectionStartTime = nil
 			vmVersion = nil
 			clearRunningHighlights this
-			sendMsg this 'getVersionMsg'
+			setDefaultSerialDelay this
 			if readFromBoard {
 				readFromBoard = false
 				sendStopAll this
 				readCodeFromBoard this
 			} else {
 				clearBoardIfConnected this false
-				stopAndSyncScripts this
+				stopAndSyncScripts this true
 			}
-			setDefaultSerialDelay this
+			sendMsg this 'getVersionMsg'
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
@@ -960,7 +962,7 @@ method versionReceived SmallRuntime versionString {
 
 method checkVmVersion SmallRuntime {
 	// prevent version check from running while the decompiler is working
-	if (decompilerStatus != '') { return }
+	if (not readFromBoard) { return }
 	if ((latestVmVersion this) > vmVersion) {
 		ok = (confirm (global 'page') nil (join
 			(localized 'The MicroBlocks in your board is not current')
@@ -973,7 +975,7 @@ method checkVmVersion SmallRuntime {
 method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
-	if (decompilerStatus != '') { return } // don't load libraries while decompiling
+	if readFromBoard { return } // don't load libraries while decompiling
 	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
 	if (boardLibAutoLoadDisabled (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
 
@@ -1108,6 +1110,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
 		stopRunningChunk this chunkID
 		runChunk this chunkID
+		waitForResponse this
 	}
 }
 
@@ -2152,6 +2155,11 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	disconnected = true
 	closePort this
 	updateIndicator (findMicroBlocksEditor)
+
+	if (endsWith vmFileName '.hex') {
+		// for micro:bit, filename must be less than 9 letter before the extension
+		vmFileName = 'firmware.hex'
+	}
 
 	browserWriteFile vmData vmFileName 'vmInstall'
 	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt

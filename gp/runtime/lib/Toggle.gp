@@ -29,7 +29,7 @@ method handEnter Toggle aHand {
     }
   }
   if (notNil (hint trigger)) {
-    addSchedule (global 'page') (schedule (action 'showHint' morph (hint trigger)) 300)
+    addSchedule (global 'page') (schedule (action 'showTooltip' morph (hint trigger)) 300)
   }
 }
 
