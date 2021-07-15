@@ -502,9 +502,12 @@ method scriptChanged ScriptEditor {
 // saving script image
 
 method saveScriptsImage ScriptEditor {
+  oldBlockScale = (global 'blockScale')
+  setBlockScalePercent this 100
   bm = (cropTransparent (fullCostume morph))
-  if (or ((width bm) == 0) ((height bm) == 0)) { return } // no scripts; empty bitmap
+  setBlockScalePercent this (100 * oldBlockScale)
 
+  if (or ((width bm) == 0) ((height bm) == 0)) { return } // no scripts; empty bitmap
   pngData = (encodePNG bm)
   fName = (join 'allScripts' (msecsSinceStart) '.png')
   if ('Browser' == (platform)) {
