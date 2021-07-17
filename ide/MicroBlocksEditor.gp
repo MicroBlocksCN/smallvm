@@ -520,6 +520,9 @@ method processBrowserFileSave MicroBlocksEditor {
 			fileName = (withoutExtension lastSavedName)
 			updateTitle this
 		}
+		if ('_no_file_selected_' == lastSavedName) {
+			startFirmwareCountdown (smallRuntime) lastSavedName
+		}
 	}
 }
 

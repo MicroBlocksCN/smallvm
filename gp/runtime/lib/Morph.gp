@@ -58,6 +58,8 @@ method isTopLevel Morph {
 
 // disabling events
 
+to acceptsEvents any { return false } // backstop for nil or non-morph
+
 method acceptsEvents Morph {
   if (isNil acceptsEvents) {acceptsEvents = true}
   return acceptsEvents
