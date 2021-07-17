@@ -101,11 +101,11 @@ method initializeForInform Prompter label details okLabel {
   border = (border window)
   morph = (morph window)
   setHandler morph this
-  minW = (max (titleBarWidth window) (350 * scale))
+  minW = (max (titleBarWidth window) (370 * scale))
   lbl = (getField window 'label')
   fontName = 'Arial Bold'
-  fontSize = (14 * (global 'scale'))
-  if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
+  fontSize = (18 * (global 'scale'))
+  if ('Linux' == (platform)) { fontSize = (15 * (global 'scale')) }
 
   if ((count (lines details)) == 1) { align = 'center' } else { align = 'left' }
 
@@ -214,8 +214,8 @@ method fixLayout Prompter {
 
   if (notNil detailsFrame) {
   	setLeft (morph detailsFrame) ((left clientArea) + hPadding)
-	setTop (morph detailsFrame) (top clientArea)
-	detailsHeight = (((height clientArea) - (height buttons)) - (border * 3))
+	setTop (morph detailsFrame) ((top clientArea) + (2 * border))
+	detailsHeight = (((height clientArea) - (height buttons)) - (5 * border))
 	if (notNil textBox) {
 		detailsHeight = ((detailsHeight - ((height (morph textBox)))) - border)
 	}
