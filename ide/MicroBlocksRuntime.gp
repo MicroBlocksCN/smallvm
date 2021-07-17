@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs firmwareInstallTimer
 
 method scripter SmallRuntime { return scripter }
 
@@ -1940,7 +1940,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 				addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
 			}
 			addLine menu
-			addItem menu 'Adafruit Board' (action 'adaFruitMessage' this)
+			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
 			popUpAtHand menu (global 'page')
 		}
 	} else {
@@ -2126,11 +2126,6 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	}
 
 	prefix = ''
-	if (isNil boardType) {
-		prefix = (join
-			(localized 'Connect the board to your computer.')
-			(newline) (newline))
-	}
 	if (endsWith vmFileName '.uf2') {
 		// Extra instruction for Adafruit boards
 		prefix = (join
@@ -2141,6 +2136,7 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	msg = (join
 		prefix
 		(localized 'You will be asked to save the firmware file.')
+		(newline)
 		(newline)
 		(localized 'Select')
 		' ' driveName ' '
@@ -2159,27 +2155,67 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	if (endsWith vmFileName '.hex') {
 		// for micro:bit, filename must be less than 9 letter before the extension
 		vmFileName = 'firmware.hex'
+		waitForFirmwareInstall this
 	}
 
 	browserWriteFile vmData vmFileName 'vmInstall'
-	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
+
 	if (endsWith vmFileName '.uf2') {
-		msg = (localized 'When the NeoPixels turn off')
-	} else {
-		msg = (localized 'When the LED stops flashing')
+		waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
+		adaFruitReconnectMessage this
 	}
-//	if (and ('Browser' == (platform)) (browserIsChromeOS)) {
-	if false {  // always use manual reconnect, even on Chromebooks
-		waitMSecs 5000
-		msg = (join msg  ', ' (localized 'the board should reconnect. If it does not, unplug and replug the USB cable.'))
-	} else {
-		msg = (join msg  ', ' (localized 'reconnect to the board by clicking the "Connect" button (USB icon).'))
-	}
+}
+
+method adaFruitResetMessage SmallRuntime {
+	inform (localized 'For Adafruit boards, double-click reset button and try again.')
+}
+
+method adaFruitReconnectMessage SmallRuntime {
+	msg = (join
+		(localized 'When the NeoPixels turn off')  ', '
+		(localized 'reconnect to the board by clicking the "Connect" button (USB icon).'))
 	inform msg
 }
 
-method adaFruitMessage SmallRuntime {
-	inform (localized 'For Adafruit boards, double-click reset button and try again.')
+method waitForFirmwareInstall SmallRuntime {
+	firmwareInstallTimer = nil
+	spinner = (newSpinner (action 'firwareInstallStatus' this) (action 'firmwareInstallDone' this))
+	addPart (global 'page') spinner
+}
+
+method startFirmwareCountdown SmallRuntime fileName {
+	// Called by editor after firmware file is saved.
+
+	if ('_no_file_selected_' ==  fileName) {
+		spinner = (findMorph 'MicroBlocksSpinner')
+		if (notNil spinner) { destroy (handler spinner) }
+	} else {
+		firmwareInstallTimer = (newTimer)
+	}
+}
+
+method firmwareInstallSecsRemaining SmallRuntime {
+	if (isNil firmwareInstallTimer) { return 0 }
+	installWaitMSecs = 6000
+	if (and ('Browser' == (platform)) (browserIsChromeOS)) {
+		installWaitMSecs =  14000
+	}
+	return (ceiling ((installWaitMSecs - (msecs firmwareInstallTimer)) / 1000))
+}
+
+method firwareInstallStatus SmallRuntime {
+	if (isNil firmwareInstallTimer) { return 'Installing firmware...' }
+	return (join '' (firmwareInstallSecsRemaining this) ' seconds remaining.')
+}
+
+method firmwareInstallDone SmallRuntime {
+	if (isNil firmwareInstallTimer) { return false }
+
+	if ((firmwareInstallSecsRemaining this) <= 0) {
+		firmwareInstallTimer = nil
+		return true
+	}
+	return false
 }
 
 // espressif board flashing

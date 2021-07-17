@@ -416,12 +416,7 @@ method step MicroBlocksEditor {
   if ('Browser' == (platform)) {
 	checkForBrowserResize this
 	processBrowserDroppedFile this
-	lastSavedName = (browserLastSaveName)
-	if (and (notNil lastSavedName) (endsWith lastSavedName '.ubp')) {
-		// Update the title
-		fileName = (withoutExtension lastSavedName)
-		updateTitle this
-	}
+	processBrowserFileSave this
   }
   processDroppedFiles this
   updateIndicator this
@@ -514,6 +509,21 @@ method processBrowserDroppedFile MicroBlocksEditor {
   data = (last pair)
   processDroppedFile this fName data
 }
+
+method processBrowserFileSave MicroBlocksEditor {
+	lastSavedName = (browserLastSaveName)
+	if (notNil lastSavedName) {
+		if (endsWith lastSavedName '.hex') {
+			startFirmwareCountdown (smallRuntime) lastSavedName
+		} (endsWith lastSavedName '.ubp') {
+			// Update the title
+			fileName = (withoutExtension lastSavedName)
+			updateTitle this
+		}
+	}
+}
+
+// dropped files
 
 method processDroppedFiles MicroBlocksEditor {
   for evt (droppedFiles (global 'page')) {

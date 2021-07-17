@@ -918,7 +918,10 @@ async function GP_writeFile(data, fName, id) {
 		}
 
 		const fileHandle = await window.showSaveFilePicker(options).catch((e) => { console.log(e); });
-		if (!fileHandle) return; // no file selected
+		if (!fileHandle) {
+			GP.lastSavedFileName = '_no_file_selected_';
+			return; // no file selected
+		}
 		const writable = await fileHandle.createWritable();
 		await writable.write(new Blob([data]));
 		await writable.close();

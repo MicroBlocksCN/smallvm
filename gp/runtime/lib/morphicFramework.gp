@@ -586,6 +586,8 @@ method processEvent Keyboard evt {
 				stopDecompilation (smallRuntime)
 			} (notNil (findMorph 'MicroBlocksFilePicker')) {
 				destroy (findMorph 'MicroBlocksFilePicker')
+			} (notNil (findMorph 'MicroBlocksSpinner')) {
+				destroy (findMorph 'MicroBlocksSpinner')
 			} (notNil (findMorph 'Prompter')) {
 				cancel (handler (findMorph 'Prompter'))
 			} else {
