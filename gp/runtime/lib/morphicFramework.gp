@@ -161,6 +161,7 @@ method grab Hand handler {
   hide (morph handler)
   addPart morph (morph handler)
   justGrabbedPart parent handler
+  changed morph
 }
 
 method cachedCostumeFor Hand handler {
