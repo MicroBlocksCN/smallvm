@@ -207,9 +207,12 @@ int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount) {
 	return true;
 }
 
+extern OBJ lastBroadcast;
+
 void startReceiversOfBroadcast(char *msg, int byteCount) {
 	// Start tasks for chunks with hat blocks matching the given broadcast if not already running.
 
+	lastBroadcast = newStringFromBytes(msg, byteCount);
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		int chunkType = chunks[i].chunkType;
 		if (((broadcastHat == chunkType) || (functionHat == chunkType)) && (broadcastMatches(i, msg, byteCount))) {
