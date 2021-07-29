@@ -802,7 +802,7 @@ method tryToConnect SmallRuntime {
 				stopAndSyncScripts this true
 			}
 			sendMsg this 'getVersionMsg'
-			return 'connected'
+			return 'not connected' // don't make circle green until successful ping
 		} else {
 			portName = nil
 			port = nil
@@ -1270,7 +1270,10 @@ method setDefaultSerialDelay SmallRuntime {
 }
 
 method setSerialDelay SmallRuntime newDelay {
-	if ('reset to default' == newDelay) { newDelay = 5 }
+	if ('reset to default' == newDelay) {
+		newDelay = 5
+		if ('Browser' == (platform)) { newDelay = 15 }
+	}
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
 
