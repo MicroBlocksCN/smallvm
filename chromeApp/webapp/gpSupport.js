@@ -960,9 +960,9 @@ window.onbeforeunload = function() {
 
 // progressive web app service worker
 
-window.onload = function() {
-  if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
-    navigator.serviceWorker.register('sw.js');
-  }
-}
-
+// window.onload = function() {
+//   if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
+//     navigator.serviceWorker.register('sw.js');
+//   }
+// }
+//

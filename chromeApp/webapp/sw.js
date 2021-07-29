@@ -1,4 +1,4 @@
-const version = 5; // increment version to force local cache flush of wasm files
+const version = 7; // increment version to force local cache flush of wasm files
 
 var cacheName = 'MicroBlocks';
 var filesToCache = [
