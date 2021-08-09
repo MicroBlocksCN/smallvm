@@ -101,6 +101,8 @@ method redraw Slider {
   scale = (global 'scale')
   w = (width morph)
   h = (height morph)
+  oldBM = (costumeData morph)
+  if (and (notNil oldBM) (w == (width oldBM)) (h == (height oldBM))) { return }
   nbm = (buttonBitmap nil (withAlpha color 80) w h true (thickness / 3) (max 1 (scale / 2)))
   setCostume morph nbm
 }
