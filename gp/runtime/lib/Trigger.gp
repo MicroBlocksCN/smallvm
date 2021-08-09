@@ -112,6 +112,8 @@ method rightClicked Trigger {
   return true
 }
 
+method normalCostume Trigger { return normalCostume }
+
 method replaceCostumes Trigger normalBM highlightBM pressedBM {
   if (notNil normalBM) {
 	setExtent morph (width normalBM) (height normalBM)

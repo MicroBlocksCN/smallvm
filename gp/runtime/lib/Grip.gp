@@ -287,6 +287,8 @@ method drawSquareHotSpotCostumes Grip {
 method drawPaneResizingCostumes Grip {
   w = (width morph)
   h = (height morph)
+  oldBM = (normalCostume trigger)
+  if (and (h == (height oldBM)) (w == (width oldBM))) { return }
   hc = (color 180 180 255 150)
   nbm = (newBitmap w h)
   hbm = (newBitmap w h hc)
