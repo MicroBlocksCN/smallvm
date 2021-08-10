@@ -3,7 +3,7 @@ var mbUniveralHex = require('@microbit/microbit-universal-hex'),
 
 var universalHex = mbUniveralHex.createUniversalHex([
   {
-    hex: fs.readFileSync('vm.microbit.hex').toString(),
+    hex: fs.readFileSync('vm.microbitV1.hex').toString(),
     boardId: mbUniveralHex.microbitBoardId.V1,
   },
   {
