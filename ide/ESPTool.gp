@@ -394,14 +394,14 @@ method readVMData ESPTool boardName downloadFlag {
 }
 
 method vmNameForBoard ESPTool boardName {
-	if ('ESP8266' == boardName) { return 'vm_nodemcu.bin'
-	} ('D1-Mini' == boardName) { return 'vm_nodemcu.bin'
-	} ('ESP32' == boardName) { return 'vm_esp32.bin'
-	} ('Citilab ED1' == boardName) { return 'vm_citilab-ed1.bin'
-	} ('M5Stack-Core' == boardName) { return 'vm_m5stack.bin'
-	} ('M5StickC' == boardName) { return 'vm_m5stick.bin'
-	} ('M5StickC+' == boardName) { return 'vm_m5stick+.bin'
-	} ('M5Atom-Matrix' == boardName) { return 'vm_m5atom.bin'
+	if ('ESP8266' == boardName) { return 'vm.nodemcu.bin'
+	} ('D1-Mini' == boardName) { return 'vm.nodemcu.bin'
+	} ('ESP32' == boardName) { return 'vm.esp32.bin'
+	} ('Citilab ED1' == boardName) { return 'vm.citilab-ed1.bin'
+	} ('M5Stack-Core' == boardName) { return 'vm.m5stack.bin'
+	} ('M5StickC' == boardName) { return 'vm.m5stick.bin'
+	} ('M5StickC+' == boardName) { return 'vm.m5stick+.bin'
+	} ('M5Atom-Matrix' == boardName) { return 'vm.m5atom.bin'
 	}
 	return nil
 }
