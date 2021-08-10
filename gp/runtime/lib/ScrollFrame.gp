@@ -309,7 +309,6 @@ method drawOn ScrollFrame ctx {
 	fullDrawOn (morph vSlider) ctx
   } else {
 	drawCostumeOn morph ctx
-	for each (parts morph) { fullDrawOn each ctx }
   }
 }
 
