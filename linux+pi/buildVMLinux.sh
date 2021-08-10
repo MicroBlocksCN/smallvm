@@ -27,4 +27,4 @@ gcc -m32 -std=c99 -Wall -Wno-unused-variable -Wno-unused-result -O3 \
 	/usr/lib/i386-linux-gnu/libpng.a \
 	/usr/lib/i386-linux-gnu/libz.a \
 	-ldl -lm -lpthread \
-	-o vm_linux_i386
+	-o vm.linux.i386

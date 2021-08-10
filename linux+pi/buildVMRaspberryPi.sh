@@ -15,4 +15,4 @@ gcc -std=c99 -O3 -Wall -Wno-unused-variable -Wno-unused-result \
 	-lSDL2 -lSDL2_ttf \
 	-l wiringPi \
 	-ldl -lm -lpthread -lz \
-	-o vm_linux_rpi
+	-o vm.linux.rpi
