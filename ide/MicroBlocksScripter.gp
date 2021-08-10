@@ -60,10 +60,10 @@ method initialize MicroBlocksScripter aProjectEditor {
   addPart morph (morph scriptsFrame)
 
   // add resizers last so they are in front
-  catResizer = (resizeHandle categoriesFrame 'horizontal')
+  catResizer = (newPaneResizer (morph categoriesFrame) 'horizontal')
   addPart morph (morph catResizer)
 
-  blocksResizer = (resizeHandle blocksFrame 'horizontal')
+  blocksResizer = (newPaneResizer (morph blocksFrame) 'horizontal')
   addPart morph (morph blocksResizer)
 
   setGrabRule morph 'ignore'
@@ -233,13 +233,11 @@ method fixResizerLayout MicroBlocksScripter {
   setLeft (morph catResizer) (right (morph categoriesFrame))
   setTop (morph catResizer) (top morph)
   setExtent (morph catResizer) resizerWidth (height morph)
-  drawPaneResizingCostumes catResizer
 
   // blocks pane resizer
   setLeft (morph blocksResizer) (right (morph blocksFrame))
   setTop (morph blocksResizer) (top morph)
   setExtent (morph blocksResizer) resizerWidth (height morph)
-  drawPaneResizingCostumes blocksResizer
 }
 
 // drawing
