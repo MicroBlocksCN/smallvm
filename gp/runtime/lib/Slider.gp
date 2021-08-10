@@ -25,6 +25,8 @@ method initialize Slider span {
 	return this
 }
 
+method ceiling Slider { return ceiling }
+method floor Slider { return floor }
 method value Slider { return value }
 // method unit Slider {
 // 	span = (height morph)
