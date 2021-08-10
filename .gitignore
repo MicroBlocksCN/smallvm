@@ -11,6 +11,8 @@ linux+pi/vm_*
 linux+pi/qemu
 precompiled/vm.*
 precompiled/vm_*
+precompiled/node_modules
+precompiled/package-lock.json
 data/*
 BUILD
 *.swp
