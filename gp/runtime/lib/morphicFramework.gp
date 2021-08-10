@@ -970,7 +970,7 @@ method processEvents Page {
       processWindowEvent this evt
 	} (type == 'dropFile') {
 	  add droppedFiles evt
-   } (type == 'quit') {
+	} (type == 'quit') {
       confirmToQuit this
     }
     evt = nxt

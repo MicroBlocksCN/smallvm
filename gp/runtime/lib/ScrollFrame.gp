@@ -249,10 +249,10 @@ method changeScrollOffset ScrollFrame dx dy {
   xOffset = (((left morph) - (left contentsM)) + dx)
   yOffset = (((top morph) - (top contentsM)) + dy)
 
-  xOffset = (clamp xOffset 0 maxXOffset)
-  yOffset = (clamp yOffset 0 maxYOffset)
+  xOffset = (round (clamp xOffset 0 maxXOffset))
+  yOffset = (round (clamp yOffset 0 maxYOffset))
 
-  setPosition contentsM ((left morph) - xOffset) ((top morph) - yOffset)
+  fastSetPosition contentsM ((left morph) - xOffset) ((top morph) - yOffset)
   updateSliders this true
 }
 
