@@ -219,9 +219,16 @@ method fixLayout MicroBlocksScripter {
   updateSliders blocksFrame
   updateSliders scriptsFrame
 
-  // update item widths of category and library list boxes
-  updateMorphContents (contents categoriesFrame)
-  updateMorphContents (contents libFrame)
+  // Check whether category pane width has changed
+  oldCatWidth = 0
+  if (notEmpty (parts (morph categoriesFrame))) {
+    oldCatWidth = (width (first (parts (morph categoriesFrame))))
+  }
+  if ((width (morph categoriesFrame)) != oldCatWidth) {
+    // update item widths of category and library list boxes
+    updateMorphContents (contents categoriesFrame)
+    updateMorphContents (contents libFrame)
+  }
 
   if (notNil projectEditor) { fixLayout projectEditor true }
 }
@@ -238,6 +245,16 @@ method fixResizerLayout MicroBlocksScripter {
   setLeft (morph blocksResizer) (right (morph blocksFrame))
   setTop (morph blocksResizer) (top morph)
   setExtent (morph blocksResizer) resizerWidth (height morph)
+}
+
+method hideScrollbars MicroBlocksScripter {
+  hideSliders blocksFrame
+  hideSliders scriptsFrame
+}
+
+method showScrollbars MicroBlocksScripter {
+  showSliders blocksFrame
+  showSliders scriptsFrame
 }
 
 // drawing

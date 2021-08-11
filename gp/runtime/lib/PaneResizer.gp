@@ -45,6 +45,15 @@ method handDownOn PaneResizer aHand {
 	focusOn aHand this
 	offsetX = ((x aHand) - (left morph))
 	offsetY = ((y aHand) - (top morph))
+
+	scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+	if (notNil scripter) { hideScrollbars (handler scripter) }
+	return true
+}
+
+method handUpOn PaneResizer aHand {
+	scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+	if (notNil scripter) { showScrollbars (handler scripter) }
 	return true
 }
 

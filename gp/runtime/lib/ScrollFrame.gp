@@ -51,6 +51,17 @@ method setContents ScrollFrame aHandler anInt {
   changed morph
 }
 
+method hideSliders ScrollFrame {
+  noSliders = true
+  hide (morph hSlider)
+  hide (morph vSlider)
+}
+
+method showSliders ScrollFrame {
+  noSliders = false
+  updateSliders this
+}
+
 method updateSliders ScrollFrame doNotAdjustContents {
   if (true != doNotAdjustContents) { adjustContents this }
   if noSliders {
