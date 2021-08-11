@@ -56,10 +56,13 @@ method handMoveFocus PaneResizer aHand {
 	if (notNil owner) { newY = (clamp newY (top owner) (bottom owner)) }
 
 	if (orientation == 'horizontal') {
-		setLeft morph newX
+		fastSetLeft morph newX
+		// !! setWidthToRight is super slow !!
+		// It calls fixLayout on the ScriptEditor, which touches the damage
+		// list a thousand times
 		if (notNil target) { setWidthToRight target morph }
 	} (orientation == 'vertical') {
-		setTop morph newY
+		fastSetTop morph newY
 		if (notNil target) { setHeightToBottom target morph }
 	}
 }

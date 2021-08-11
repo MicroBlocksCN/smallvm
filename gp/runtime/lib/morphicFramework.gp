@@ -829,6 +829,13 @@ to devMode {
   return (getField page 'devMode')
 }
 
+to debugPrintTime t label {
+	time = (msecSplit t)
+	if (time > 15) {
+		print label ':' time
+	}
+}
+
 // stepping
 
 method doOneCycle Page {

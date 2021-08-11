@@ -64,11 +64,11 @@ method handMoveFocus Grip aHand {
   newX = (((x aHand) - offsetX) + gripInset)
   newY = (((y aHand) - offsetY) + gripInset)
   if (orientation == 'horizontal') {
-    setLeft morph newX
+    fastSetLeft morph newX
   } (orientation == 'vertical') {
-    setTop morph newY
+    fastSetTop morph newY
   } else {
-    setPosition morph newX newY
+    fastSetPosition morph newX newY
   }
   trigger this
 }
@@ -123,19 +123,19 @@ to resizeHandle target orientation {
 
   if (orientation == 'vertical') {
     action = (action 'setHeightToBottom' (morph target) m)
-    setBottom m (bottom (morph target))
-    setXCenter m (hCenter (bounds (morph target)))
+    fastsetBottom m (bottom (morph target))
+    fastSetXCenter m (hCenter (bounds (morph target)))
   } (orientation == 'horizontal') {
     action = (action 'setWidthToRight' (morph target) m)
-    setRight m (right (morph target))
-    setYCenter m (vCenter (bounds (morph target)))
+    fastSetRight m (right (morph target))
+    fastSetYCenter m (vCenter (bounds (morph target)))
   } else {
     action = (action 'setExtentToRightBottom' (morph target) m)
     if (isClass target 'Window') {
       setGripInset grip (border target)
     }
-    setRight m (right (morph target))
-    setBottom m (bottom (morph target))
+    fastSetRight m (right (morph target))
+    fastSetBottom m (bottom (morph target))
   }
   setAction bt action
 
