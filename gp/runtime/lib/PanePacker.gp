@@ -51,7 +51,7 @@ method packPanesH PanePacker panesAndWidthSpecs... {
       x += (border + (width paneMorph))
     } else {
 	  w = (max w 0)
-      setLeft paneMorph x
+      fastSetLeft paneMorph x
       setWidth (bounds paneMorph) w
       if (isClass pane 'Text') { setMinWidth pane w }
       x += (w + border)
@@ -96,7 +96,7 @@ method packPanesV PanePacker panesAndHeightSpecs... {
       y += (border + (height paneMorph))
     } else {
 	  h = (max h 0)
-      setTop paneMorph y
+      fastSetTop paneMorph y
       setHeight (bounds paneMorph) h
       if (isClass pane 'Text') { setMinHeight pane h }
       y += (h + border)
