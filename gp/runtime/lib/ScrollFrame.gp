@@ -27,7 +27,7 @@ method initialize ScrollFrame newContents aColor noSliderFlag {
   setAction hSlider (action 'scrollToX' this)
   setAction vSlider (action 'scrollToY' this)
   cache = nil
-  cachingEnabled = false
+  cachingEnabled = true
   updateCache = true
   updateSliders this
   return this
@@ -46,8 +46,9 @@ method setContents ScrollFrame aHandler anInt {
   setOwner (morph aHandler) morph
   contents = aHandler
   setPosition (morph contents) (left morph) (top morph)
+  updateCache = true
   updateSliders this
-  changed this
+  changed morph
 }
 
 method updateSliders ScrollFrame doNotAdjustContents {
@@ -127,7 +128,7 @@ method updateSliders ScrollFrame doNotAdjustContents {
     }
     update vSlider 0 hc val h
   }
-  changed this
+  changed morph
 }
 
 method adjustContents ScrollFrame {
@@ -141,7 +142,8 @@ method adjustContents ScrollFrame {
   } (implements contents 'adjustSizeToScrollFrame') {
     adjustSizeToScrollFrame contents this
   }
-  changed this
+  updateCache = true
+  changed morph
 }
 
 method scrollToX ScrollFrame x {
@@ -272,30 +274,42 @@ method step ScrollFrame {
 }
 
 method autoScroll ScrollFrame hand obj {
+return // xxx
   thres = (50 * (global 'scale'))
   jump = (5 * (global 'scale'))
   fb = (fullBounds (morph obj))
+  contentsM = (morph contents)
+  offsetX = (left contentsM)
+  offsetY = (top contentsM)
   if (((x hand) - (left morph)) < thres) {
     if ((left fb) < (left morph)) {
-      moveBy (morph (grip hSlider)) (0 - jump) 0
-      trigger (grip hSlider)
+      offsetX += jump
+//       moveBy (morph (grip hSlider)) (0 - jump) 0
+//       trigger (grip hSlider)
     }
   } (((right morph) - (x hand)) < thres) {
     if ((right fb) > (right morph)) {
-      moveBy (morph (grip hSlider)) jump 0
-      trigger (grip hSlider)
+      offsetX += (0 - jump)
+//       moveBy (morph (grip hSlider)) jump 0
+//       trigger (grip hSlider)
     }
   }
   if (((y hand) - (top morph)) < thres) {
     if ((top fb) < (top morph)) {
-      moveBy (morph (grip vSlider)) 0 (0 - jump)
-      trigger (grip vSlider)
+      offsetY += (0 - jump)
+//       moveBy (morph (grip vSlider)) 0 (0 - jump)
+//       trigger (grip vSlider)
     }
   } (((bottom morph) - (y hand)) < thres) {
     if ((bottom fb) > (bottom morph)) {
-      moveBy (morph (grip vSlider)) 0 jump
-      trigger (grip vSlider)
+      offsetY += (0 - jump)
+//       moveBy (morph (grip vSlider)) 0 jump
+//       trigger (grip vSlider)
     }
+  }
+  if (or (offsetX != (left contentsM)) (offsetY != (left contentsM))) {
+    fastSetPosition (morph contents) offsetX offsetY
+    updateSliders this true
   }
 }
 
@@ -317,16 +331,21 @@ method drawOn ScrollFrame ctx {
 method cachingEnabled ScrollFrame { return cachingEnabled}
 method setCachingEnabled ScrollFrame bool { cachingEnabled = bool }
 
-method changed ScrollFrame {
-  updateCache = true // update the cache on next display
-  changed morph
-}
+method scriptChanged ScrollFrame { updateCache = true }
+method functionBodyChanged ScrollFrame { saveNeeded = true }
+
+// method changed ScrollFrame {
+// print 'changed ScrollFrame'
+//   updateCache = true // update the cache on next display
+//   changed morph
+// }
 
 method cachedContents ScrollFrame {
   // Return a Bitmap containing my contents if caching is enabled, or nil if not.
 
   if (not cachingEnabled) { return nil }
   if updateCache {
+print 'updating'
 	contentsW = (normalWidth (morph contents))
 	contentsH = (normalHeight (morph contents))
 	if (or (isNil cache) ((width cache) != contentsW) ((height cache) != contentsH)) {
