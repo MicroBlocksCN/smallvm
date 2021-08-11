@@ -946,6 +946,10 @@ method moveBy Morph xDelta yDelta {
 method fastSetPosition Morph x y { fastMoveBy this (x - (left bounds)) (y - (top bounds)) }
 method fastSetLeft Morph x { fastMoveBy this (x - (left bounds)) 0 }
 method fastSetTop Morph y { fastMoveBy this 0 (y - (top bounds)) }
+method fastSetRight Morph x {fastMoveBy this (x - (right bounds)) 0}
+method fastSetBottom Morph y {fastMoveBy this 0 (y - (bottom bounds))}
+method fastSetXCenter Morph x {fastMoveBy this (x - ((left bounds) + (half (width bounds)))) 0}
+method fastSetYCenter Morph y {fastMoveBy this 0 (y - ((top bounds) + (half (height bounds))))}
 
 method fastSetYCenterWithin Morph top bottom {
   ySpan = (bottom - top)

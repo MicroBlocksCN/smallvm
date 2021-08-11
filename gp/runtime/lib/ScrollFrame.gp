@@ -71,7 +71,7 @@ method updateSliders ScrollFrame doNotAdjustContents {
 
   if ((+ hc hw) > h) {
     show (morph vSlider)
-    setPosition (morph vSlider) ((right b) - vw) (top b)
+    fastSetPosition (morph vSlider) ((right b) - vw) (top b)
     setHeight (bounds (morph vSlider)) (- h hw)
     redraw vSlider
     if ((bottom bc) < (- (bottom b) hw)) {setBottom (morph contents) (- (bottom b) hw)}
@@ -88,15 +88,15 @@ method updateSliders ScrollFrame doNotAdjustContents {
 
   } else {
     hide (morph vSlider)
-    setTop (morph contents) (top b)
+    fastSetTop (morph contents) (top b)
   }
 
   if (or (and (isVisible (morph vSlider)) ((+ wc vw) > w)) (and (not (isVisible (morph vSlider))) (wc > w))) {
     show (morph hSlider)
-    setPosition (morph hSlider) (left b) ((bottom b) - hw)
+    fastSetPosition (morph hSlider) (left b) ((bottom b) - hw)
     setWidth (bounds (morph hSlider)) (- w vw)
     redraw hSlider
-    if ((right bc) < (- (right b) vw)) {setRight (morph contents) (- (right b) vw)}
+    if ((right bc) < (- (right b) vw)) {fastSetRight (morph contents) (- (right b) vw)}
 
     shift = ((left b) - (left bc))
     overlap = ((wc + vw) - w)
@@ -110,7 +110,7 @@ method updateSliders ScrollFrame doNotAdjustContents {
 
   } else {
     hide (morph hSlider)
-    setLeft (morph contents) (left b)
+    fastSetLeft (morph contents) (left b)
   }
 
   if (and (not (isVisible (morph hSlider))) (hc <= h)) {
@@ -152,7 +152,7 @@ method scrollToX ScrollFrame x {
     (+ w (width (morph vSlider)))
     (width morph)
   ))
-  setLeft (morph contents) (-
+  fastSetLeft (morph contents) (-
     (left morph)
     (toInteger (* (/ (toFloat x) (ceiling hSlider)) overlap))
   )
@@ -169,7 +169,7 @@ method scrollToY ScrollFrame y {
         (height morph)
       ))
   }
-  setTop (morph contents) (-
+  fastSetTop (morph contents) (-
     (top morph)
     (toInteger (* (/ (toFloat y) (ceiling vSlider)) overlap))
   )
