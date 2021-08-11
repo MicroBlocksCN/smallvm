@@ -73,7 +73,6 @@ method updateSliders ScrollFrame doNotAdjustContents {
     show (morph vSlider)
     fastSetPosition (morph vSlider) ((right b) - vw) (top b)
     setHeight (bounds (morph vSlider)) (- h hw)
-    redraw vSlider
     if ((bottom bc) < (- (bottom b) hw)) {setBottom (morph contents) (- (bottom b) hw)}
 
     shift = ((top b) - (top bc))
@@ -95,7 +94,6 @@ method updateSliders ScrollFrame doNotAdjustContents {
     show (morph hSlider)
     fastSetPosition (morph hSlider) (left b) ((bottom b) - hw)
     setWidth (bounds (morph hSlider)) (- w vw)
-    redraw hSlider
     if ((right bc) < (- (right b) vw)) {fastSetRight (morph contents) (- (right b) vw)}
 
     shift = ((left b) - (left bc))
@@ -274,7 +272,7 @@ method step ScrollFrame {
 }
 
 method autoScroll ScrollFrame hand obj {
-return // xxx
+return // xxx needs work to limit scrolling
   thres = (50 * (global 'scale'))
   jump = (5 * (global 'scale'))
   fb = (fullBounds (morph obj))
@@ -284,27 +282,19 @@ return // xxx
   if (((x hand) - (left morph)) < thres) {
     if ((left fb) < (left morph)) {
       offsetX += jump
-//       moveBy (morph (grip hSlider)) (0 - jump) 0
-//       trigger (grip hSlider)
     }
   } (((right morph) - (x hand)) < thres) {
     if ((right fb) > (right morph)) {
       offsetX += (0 - jump)
-//       moveBy (morph (grip hSlider)) jump 0
-//       trigger (grip hSlider)
     }
   }
   if (((y hand) - (top morph)) < thres) {
     if ((top fb) < (top morph)) {
       offsetY += (0 - jump)
-//       moveBy (morph (grip vSlider)) 0 (0 - jump)
-//       trigger (grip vSlider)
     }
   } (((bottom morph) - (y hand)) < thres) {
     if ((bottom fb) > (bottom morph)) {
       offsetY += (0 - jump)
-//       moveBy (morph (grip vSlider)) 0 jump
-//       trigger (grip vSlider)
     }
   }
   if (or (offsetX != (left contentsM)) (offsetY != (left contentsM))) {
@@ -345,7 +335,7 @@ method cachedContents ScrollFrame {
 
   if (not cachingEnabled) { return nil }
   if updateCache {
-print 'updating'
+print 'updating cache'
 	contentsW = (normalWidth (morph contents))
 	contentsH = (normalHeight (morph contents))
 	if (or (isNil cache) ((width cache) != contentsW) ((height cache) != contentsH)) {
