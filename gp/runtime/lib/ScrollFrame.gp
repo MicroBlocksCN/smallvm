@@ -27,7 +27,7 @@ method initialize ScrollFrame newContents aColor noSliderFlag {
   setAction hSlider (action 'scrollToX' this)
   setAction vSlider (action 'scrollToY' this)
   cache = nil
-  cachingEnabled = true
+  cachingEnabled = false
   updateCache = true
   updateSliders this
   return this
