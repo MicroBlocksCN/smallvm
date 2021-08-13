@@ -867,6 +867,7 @@ method duplicate Block {
   } else {
     dup = (toBlock (copy expression))
   }
+  fixLayout dup
   setPosition (morph dup) (left morph) (top morph)
   return dup
 }
