@@ -35,9 +35,9 @@ to pickFile anAction defaultPath extensionList saveFlag {
 	defaultPath = ''
   }
   picker = (initialize (new 'MicroBlocksFilePicker') anAction defaultPath extensionList saveFlag)
-  addPart page picker
   pickerM = (morph picker)
   setPosition pickerM (half ((width page) - (width pickerM))) (40 * (global 'scale'))
+  addPart page picker
 
   if (and saveFlag (isNil anAction)) {
 	// modal version -- waits until done and returns result or nil

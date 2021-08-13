@@ -635,8 +635,8 @@ method parentHandler Morph {
 }
 
 method fullBounds Morph {
-  if (or isClipping (isEmpty parts)) { return bounds }
   result = (copy bounds)
+  if (or isClipping (isEmpty parts)) { return result }
   for m parts {
     if (getField m 'isVisible') {
       merge result (fullBounds m)
@@ -934,14 +934,14 @@ method destroy Morph recoverable {
 
 method moveBy Morph xDelta yDelta {
   if (and (xDelta == 0) (yDelta == 0)) { return }
-  changed this
-  if (isPenDown this) {movePenBy this xDelta yDelta}
-  translateBy bounds xDelta yDelta
-  for m parts {moveBy m xDelta yDelta}
-  changed this
+  fb = (fullBounds this)
+  reportDamage this fb
+  if (isPenDown this) { movePenBy this xDelta yDelta }
+  fastMoveBy this xDelta yDelta
+  reportDamage this (translatedBy fb xDelta yDelta)
 }
 
-// fast positioning functions used for block layout
+// fast positioning functions -- these do not report damage!
 
 method fastSetPosition Morph x y { fastMoveBy this (x - (left bounds)) (y - (top bounds)) }
 method fastSetLeft Morph x { fastMoveBy this (x - (left bounds)) 0 }
@@ -962,7 +962,7 @@ method fastSetYCenterWithin Morph top bottom {
 }
 
 method fastMoveBy Morph xDelta yDelta {
-  // Internal version of moveBy used for block layout.
+  // Internal helper for moveBy. Just moves the morph and all its descendent morphs.
   // Does not report damage or move the pen.
 
   if (and (xDelta == 0) (yDelta == 0)) { return }
@@ -1360,7 +1360,7 @@ method changed Morph {
   if (notNil owner) {
 	reportDamage owner bounds
   } (and (isClass handler 'Hand') (notEmpty parts)) {
- 	reportDamage (morph (global 'page')) (expandBy (fullBounds this) 15) // expand to include shadow
+ 	reportDamage (morph (global 'page')) (fullBounds this)
   }
 }
 
@@ -1371,6 +1371,8 @@ method reportDamage Morph rect {
 
   if (isClass handler 'Page') {
 	addDamage handler rect
+  } (isClass handler 'Hand') {
+	reportDamage (morph (global 'page')) rect
   } (isClass handler 'Stage') {
 	if costumeChanged { return } // stage has already reported damage
 	costumeChanged = true // stage uses this flag to indicate that damage has been reported
