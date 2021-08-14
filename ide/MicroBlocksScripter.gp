@@ -229,8 +229,6 @@ method fixLayout MicroBlocksScripter {
     updateMorphContents (contents categoriesFrame)
     updateMorphContents (contents libFrame)
   }
-
-  if (notNil projectEditor) { fixLayout projectEditor true }
 }
 
 method fixResizerLayout MicroBlocksScripter {
