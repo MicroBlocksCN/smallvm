@@ -12,7 +12,7 @@
 //
 // John Maloney, February 2021
 
-defineClass GraphicContext surface fontName fontSize clipRect offsetX offsetY savedState
+defineClass GraphicContext surface fontName fontSize clipRect offsetX offsetY shapeMaker savedState
 
 to newGraphicContextOnScreen clipRect {
 	ctx = (newGraphicContextOn nil)
@@ -31,6 +31,7 @@ method initialize GraphicContext aBitmapOrNil {
 	clipRect = (rect 0 0 (width this) (height this))
 	offsetX = 0
 	offsetY = 0
+	shapeMaker = (newShapeMaker surface)
 	savedState = (list)
 	return this
 }
@@ -101,9 +102,9 @@ method restoreState GraphicContext {
 method getShapeMaker GraphicContext {
 	// Get a ShapeMaker for vector drawing.
 
-	shapeMaker = (newShapeMaker surface)
-	setOffset (pen shapeMaker) offsetX offsetY
-	setClipRect (pen shapeMaker) clipRect
+	pen = (pen shapeMaker)
+	setOffset pen offsetX offsetY
+	setClipRect pen clipRect
 	return shapeMaker
 }
 
