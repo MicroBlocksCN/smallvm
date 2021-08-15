@@ -1,4 +1,4 @@
-defineClass ScrollFrame morph contents hSlider vSlider noSliders padding cache cachingEnabled updateCache enableAutoScroll
+defineClass ScrollFrame morph contents hSlider vSlider noSliders enableAutoScroll
 
 to area aHandler {return (fullBounds (morph aHandler))}
 
@@ -26,27 +26,20 @@ method initialize ScrollFrame newContents aColor noSliderFlag {
   addPart morph (morph vSlider)
   setAction hSlider (action 'scrollToX' this)
   setAction vSlider (action 'scrollToY' this)
-  cache = nil
-  cachingEnabled = false
-  updateCache = true
   updateSliders this
   return this
 }
 
 method contents ScrollFrame {return contents}
-method setPadding ScrollFrame intOrNull {padding = intOrNull}
 method setAutoScroll ScrollFrame bool {enableAutoScroll = bool}
 
-method setContents ScrollFrame aHandler anInt {
-  if (isNil anInt) {anInt = 0}
-  padding = anInt
+method setContents ScrollFrame aHandler {
   idx = (indexOf (parts morph) (morph contents))
   setOwner (morph contents) nil
   atPut (parts morph) idx (morph aHandler)
   setOwner (morph aHandler) morph
   contents = aHandler
   setPosition (morph contents) (left morph) (top morph)
-  updateCache = true
   updateSliders this
   changed morph
 }
@@ -72,7 +65,6 @@ method updateSliders ScrollFrame doNotAdjustContents {
   hw = (height (morph hSlider))
   vw = (width (morph vSlider))
   b = (bounds morph)
-  if (notNil padding) {b = (insetBy b padding)}
   bc = (fullBounds (morph contents))
   if (isClass contents 'TreeBox') {bc = (area contents)}
   w = (width b)
@@ -151,7 +143,6 @@ method adjustContents ScrollFrame {
   } (implements contents 'adjustSizeToScrollFrame') {
     adjustSizeToScrollFrame contents this
   }
-  updateCache = true
   changed morph
 }
 
@@ -315,58 +306,6 @@ return // xxx needs work to limit scrolling
 }
 
 method drawOn ScrollFrame ctx {
-  bm = (cachedContents this)
-  if (notNil bm) {
-    x = (left (morph contents))
-    y = (top (morph contents))
-	drawBitmap ctx bm x y
-	fullDrawOn (morph hSlider) ctx
-	fullDrawOn (morph vSlider) ctx
-  } else {
-	drawCostumeOn morph ctx
-  }
-}
-
-// caching support to improve redrawing speed
-
-method cachingEnabled ScrollFrame { return cachingEnabled}
-method setCachingEnabled ScrollFrame bool { cachingEnabled = bool }
-
-method scriptChanged ScrollFrame { updateCache = true }
-method functionBodyChanged ScrollFrame { saveNeeded = true }
-
-// method changed ScrollFrame {
-// print 'changed ScrollFrame'
-//   updateCache = true // update the cache on next display
-//   changed morph
-// }
-
-method cachedContents ScrollFrame {
-  // Return a Bitmap containing my contents if caching is enabled, or nil if not.
-
-  if (not cachingEnabled) { return nil }
-  if updateCache {
-print 'updating cache'
-	contentsW = (normalWidth (morph contents))
-	contentsH = (normalHeight (morph contents))
-	if (or (isNil cache) ((width cache) != contentsW) ((height cache) != contentsH)) {
-	  cache = (newBitmap contentsW contentsH)
-	}
-	if (isClass (costumeData morph) 'Color') {
-	  fill cache (costumeData morph)
-	} else {
-	  fill cache (transparent)
-	  if (isClass (costumeData morph) 'Bitmap') {
-		drawBitmap cache (costumeData morph)
-	  }
-	}
-
-	// draw contents onto cache
-	ctx = (newGraphicContextOn cache)
-	setOffset ctx (- (left (morph contents))) (- (top (morph contents)))
-	fullDrawOn (morph contents) ctx
-
-	updateCache = false
-  }
-  return cache
+  // Fill bounds with my color.
+  drawCostumeOn morph ctx
 }

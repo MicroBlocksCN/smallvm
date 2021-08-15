@@ -1147,10 +1147,9 @@ method fullDrawOn Morph aContext {
 	  }
 	}
   }
-  // draw its parts (except for caching ScrollFrames)
-  if (not (and (isClass handler 'ScrollFrame') (cachingEnabled handler))) {
-	for each parts { fullDrawOn each aContext }
-  }
+
+  // draw its parts
+  for each parts { fullDrawOn each aContext }
   restoreState aContext
 }
 
@@ -1173,12 +1172,6 @@ method drawCostumeOn Morph aContext {
 
   x = (left bounds)
   y = (top bounds)
-
-  if (and (isClass handler 'ScrollFrame') (cachingEnabled handler)) {
-	// special case: draw ScrollFrame when it is caching
-	drawOn handler aContext
-	return
-  }
 
   if (isClass costumeData 'Color') {
 	fillRect aContext costumeData x y (width this) (height this) 1 // blend mode
@@ -1246,11 +1239,7 @@ method draw Morph destination xOffset yOffset destScaleX destScaleY clipRect {
   }
 
   for each parts {
-	if (and (isClass (handler each) 'ScrollFrame') (notNil (cachedContents (handler each)))) {
-	  drawBitmap destination (cachedContents (handler each)) (left each) (top each)
-	} else {
-	  draw each destination xOffset yOffset destScaleX destScaleY clipRect
-	}
+    draw each destination xOffset yOffset destScaleX destScaleY clipRect
   }
 }
 
