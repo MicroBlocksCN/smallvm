@@ -628,7 +628,7 @@ method restoreScripts MicroBlocksScripter {
   scriptsPane = (contents scriptsFrame)
   removeAllParts (morph scriptsPane)
   clearDropHistory scriptsPane
-  updateSliders scriptsFrame
+
   scripts = (scripts (main mbProject))
   if (notNil scripts) {
     paneX = (left (morph scriptsPane))

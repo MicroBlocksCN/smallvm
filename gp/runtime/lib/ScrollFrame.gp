@@ -44,6 +44,11 @@ method setContents ScrollFrame aHandler {
   changed morph
 }
 
+method drawOn ScrollFrame ctx {
+  // Fill bounds with my color.
+  drawCostumeOn morph ctx
+}
+
 method hideSliders ScrollFrame {
   noSliders = true
   hide (morph hSlider)
@@ -130,6 +135,41 @@ method updateSliders ScrollFrame doNotAdjustContents {
     update vSlider 0 hc val h
   }
   changed morph
+}
+
+method updateSliderPositions ScrollFrame {
+  if (not (or (isVisible (morph vSlider)) (isVisible (morph hSlider)))) {
+	return // neither slider is visible
+  }
+
+  frameBnds = (bounds morph)
+  contentBnds = (fullBounds (morph contents))
+  if (isClass contents 'TreeBox') { contentBnds = (area contents) }
+
+  if (isVisible (morph vSlider)) {
+    shift = ((top frameBnds) - (top contentBnds))
+    overlap = ((height contentBnds) - (height frameBnds))
+    if (or (shift == 0) (overlap == 0)) {
+      val = 0
+    } else {
+      ratio = (shift / overlap)
+      val = (ratio * (height contentBnds))
+    }
+    update vSlider 0 (height contentBnds) val (height frameBnds)
+  }
+
+  if (isVisible (morph hSlider)) {
+	totalW = ((width contentBnds) + (width (morph vSlider)))
+    shift = ((left frameBnds) - (left contentBnds))
+    overlap = (totalW - (width frameBnds))
+    if (or (shift == 0) (overlap == 0)) {
+      val = 0
+    } else {
+      ratio = (shift / overlap)
+      val = (ratio * totalW)
+    }
+    update hSlider 0 totalW val (width frameBnds)
+  }
 }
 
 method adjustContents ScrollFrame {
@@ -255,7 +295,8 @@ method changeScrollOffset ScrollFrame dx dy {
   yOffset = (round (clamp yOffset 0 maxYOffset))
 
   fastSetPosition contentsM ((left morph) - xOffset) ((top morph) - yOffset)
-  updateSliders this true
+  changed morph
+  updateSliderPositions this
 }
 
 // auto-scrolling
@@ -274,38 +315,27 @@ method step ScrollFrame {
 }
 
 method autoScroll ScrollFrame hand obj {
-return // xxx needs work to limit scrolling
-  thres = (50 * (global 'scale'))
-  jump = (5 * (global 'scale'))
-  fb = (fullBounds (morph obj))
-  contentsM = (morph contents)
-  offsetX = (left contentsM)
-  offsetY = (top contentsM)
-  if (((x hand) - (left morph)) < thres) {
-    if ((left fb) < (left morph)) {
-      offsetX += jump
-    }
-  } (((right morph) - (x hand)) < thres) {
-    if ((right fb) > (right morph)) {
-      offsetX += (0 - jump)
-    }
-  }
-  if (((y hand) - (top morph)) < thres) {
-    if ((top fb) < (top morph)) {
-      offsetY += (0 - jump)
-    }
-  } (((bottom morph) - (y hand)) < thres) {
-    if ((bottom fb) > (bottom morph)) {
-      offsetY += (0 - jump)
-    }
-  }
-  if (or (offsetX != (left contentsM)) (offsetY != (left contentsM))) {
-    fastSetPosition (morph contents) offsetX offsetY
+  thres = (80 * (global 'scale'))
+  jump = (15 * (global 'scale'))
+  dx = 0
+  dy = 0
+
+  if (((x hand) - (left morph)) < thres) { dx = jump }
+  if (((right morph) - (x hand)) < thres) { dx = (0 - jump) }
+  if (((y hand) - (top morph)) < thres) { dy = jump }
+  if (((bottom morph) - (y hand)) < thres) { dy = (0 - jump) }
+
+  if (or (dx != 0) (dy != 0)) {
+    extra = (10 * (global 'scale'))
+    contentBounds = (bounds (morph contents))
+    frameBounds = (bounds morph)
+    minX = ((right frameBounds) - ((width contentBounds) + extra))
+    minY = ((bottom frameBounds) - ((height contentBounds) + extra))
+    newX = (clamp ((left contentBounds) + dx) minX (left frameBounds))
+    newY = (clamp ((top contentBounds) + dy) minY (top frameBounds))
+
+    fastSetPosition (morph contents) newX newY
+    changed morph
     updateSliders this true
   }
-}
-
-method drawOn ScrollFrame ctx {
-  // Fill bounds with my color.
-  drawCostumeOn morph ctx
 }
