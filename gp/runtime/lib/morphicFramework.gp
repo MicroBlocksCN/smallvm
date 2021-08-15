@@ -890,19 +890,20 @@ method addDamage Page newRect {
 
   if (isEmpty damages) { // new rectangle is the first damage; just add it
 	add damages (copy newRect)
-  } else {
-	if (intersects (last damages) newRect) {
-	  if (not (containsRectangle (last damages) newRect)) {
-		// optimization: merge the new rectangle with the last one rather than adding it --
-		// but only if the new rectangle is not already contained in the last one
-		r = (removeLast damages)
-		add damages (mergedWith r newRect)
-	  }
-	} else {
-	  // newRect doesn't overlap the last damage rect, so add it
-	  add damages (copy newRect)
-	}
+	return
   }
+
+  // try to merge with an existing damage rectangle
+  for i (count damages) {
+	r = (at damages i)
+	if (intersects newRect r) {
+      atPut damages i (mergedWith newRect r) // merge!
+      return
+    }
+  }
+
+  // newRect doesn't overlap any existing damage rectangle, so add it
+  add damages (copy newRect)
 }
 
 method fixDamages Page {
