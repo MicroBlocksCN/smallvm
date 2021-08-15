@@ -66,9 +66,6 @@ method handMoveFocus PaneResizer aHand {
 
 	if (orientation == 'horizontal') {
 		fastSetLeft morph newX
-		// !! setWidthToRight is super slow !!
-		// It calls fixLayout on the ScriptEditor, which touches the damage
-		// list a thousand times
 		if (notNil target) { setWidthToRight target morph }
 	} (orientation == 'vertical') {
 		fastSetTop morph newY

@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categoriesFrame catResizer libHeader libFrame blocksFrame blocksResizer scriptsFrame nextX nextY
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector blocksFrame blocksResizer scriptsFrame nextX nextY
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -36,15 +36,13 @@ method initialize MicroBlocksScripter aProjectEditor {
 
   makeLibraryHeader this
 
-  lbox = (listBox (categories this) nil (action 'categorySelected' this) listColor)
-  setFont lbox fontName fontSize
-  categoriesFrame = (scrollFrame lbox listColor true)
-  addPart morph (morph categoriesFrame)
+  categorySelector = (newCategorySelector (categories this) (action 'categorySelected' this))
+  setFont categorySelector fontName fontSize
+  addPart morph (morph categorySelector)
 
-  lbox = (listBox (array) nil (action 'librarySelected' this) listColor)
-  setFont lbox fontName fontSize
-  libFrame = (scrollFrame lbox listColor true)
-  addPart morph (morph libFrame)
+  libSelector = (newCategorySelector (array) (action 'librarySelected' this))
+  setFont libSelector fontName fontSize
+  addPart morph (morph libSelector)
 
   blocksPane = (newBlocksPalette)
   setSortingOrder (alignment blocksPane) nil
@@ -60,7 +58,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   addPart morph (morph scriptsFrame)
 
   // add resizers last so they are in front
-  catResizer = (newPaneResizer (morph categoriesFrame) 'horizontal')
+  catResizer = (newPaneResizer (morph categorySelector) 'horizontal')
   addPart morph (morph catResizer)
 
   blocksResizer = (newPaneResizer (morph blocksFrame) 'horizontal')
@@ -74,16 +72,12 @@ method initialize MicroBlocksScripter aProjectEditor {
   restoreScripts this
 
   smallRuntime this // create a SmallRuntime instance
-  if (isNil projectEditor) { select (contents categoriesFrame) 'Control' }
+  if (isNil projectEditor) { select categorySelector 'Control' }
   return this
 }
 
 method languageChanged MicroBlocksScripter {
   updateLibraryHeader this
-
-  // update categories and library names
-  updateMorphContents (handler (first (parts (morph categoriesFrame))))
-  updateMorphContents (handler (first (parts (morph libFrame))))
 
   // update the scripts
   updateBlocks this
@@ -149,8 +143,8 @@ method addLibraryButton MicroBlocksScripter label w h {
 // library item menu
 
 method handleListContextRequest MicroBlocksScripter anArray {
-  if ((first anArray) != (contents libFrame)) { return } // not a library list entry; ignore
-  libName = (data (last anArray))
+  if ((first anArray) != libSelector) { return } // not a library list entry; ignore
+  libName = (last anArray)
   menu = (menu)
   addItem menu 'library information' (action 'showLibraryInfo' this libName)
   if (devMode) {
@@ -200,42 +194,35 @@ method exportLibrary MicroBlocksScripter libName {
 
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
-  catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 137)
+  catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) 137)
+  catHeight = ((height (morph categorySelector)) / scale)
   blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) 130)
-  catHeight = (((height (morph (contents categoriesFrame))) / scale) + 4)
   columnHeaderHeight = 33
 
   packer = (newPanePacker (bounds morph) scale)
-  packPanesH packer categoriesFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
+  packPanesH packer categorySelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesH packer libFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesV packer categoriesFrame catHeight libHeader columnHeaderHeight libFrame '100%'
+  packPanesH packer libSelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
+  packPanesV packer categorySelector catHeight libHeader columnHeaderHeight libSelector '100%'
   packPanesV packer blocksFrame '100%'
   packPanesV packer scriptsFrame '100%'
   finishPacking packer
+
+  // extra damage report for area below libSelector
+  libSelectorM = (morph libSelector)
+  reportDamage morph (rect 0 (bottom libSelectorM) (width libSelectorM) (height morph))
 
   fixResizerLayout this
   fixLibraryHeaderLayout this
   updateSliders blocksFrame
   updateSliders scriptsFrame
-
-  // Check whether category pane width has changed
-  oldCatWidth = 0
-  if (notEmpty (parts (morph categoriesFrame))) {
-    oldCatWidth = (width (first (parts (morph categoriesFrame))))
-  }
-  if ((width (morph categoriesFrame)) != oldCatWidth) {
-    // update item widths of category and library list boxes
-    updateMorphContents (contents categoriesFrame)
-    updateMorphContents (contents libFrame)
-  }
 }
 
 method fixResizerLayout MicroBlocksScripter {
   resizerWidth = (10 * (global 'scale'))
 
   // categories pane resizer
-  setLeft (morph catResizer) (right (morph categoriesFrame))
+  setLeft (morph catResizer) (right (morph categorySelector))
   setTop (morph catResizer) (top morph)
   setExtent (morph catResizer) resizerWidth (height morph)
 
@@ -261,7 +248,8 @@ method drawOn MicroBlocksScripter ctx {
   scale = (global 'scale')
   borderColor = (gray 150)
   borderWidth = (2 * scale)
-  x = (right (morph categoriesFrame))
+  x = (right (morph categorySelector))
+  fillRect ctx (gray 240) 0 (top morph) x (height morph) // bg color for category/lib panes
   fillRect ctx borderColor x (top morph) borderWidth (height morph)
   x = (right (morph blocksFrame))
   fillRect ctx borderColor x (top morph) borderWidth (height morph)
@@ -273,10 +261,10 @@ method drawOn MicroBlocksScripter ctx {
 // MicroBlocksScripter UI support
 
 method developerModeChanged MicroBlocksScripter {
-  catList = (contents categoriesFrame)
+  catList = categorySelector
   setCollection catList (categories this)
   if (not (or (contains (collection catList) (selection catList))
-  			  (notNil (selection (contents libFrame))))) {
+  			  (notNil (selection libSelector)))) {
     select catList 'Output'
   } else {
     updateBlocks this
@@ -293,30 +281,30 @@ method categories MicroBlocksScripter {
 }
 
 method selectCategory MicroBlocksScripter aCategory {
-  select (contents categoriesFrame) aCategory
+  select categorySelector aCategory
   categorySelected this
 }
 
 method currentCategory MicroBlocksScripter {
-  return (selection (contents categoriesFrame))
+  return (selection categorySelector)
 }
 
 method categorySelected MicroBlocksScripter {
-   select (contents libFrame) nil // deselect library
+   select libSelector nil // deselect library
    updateBlocks this
 }
 
 method selectLibrary MicroBlocksScripter aLibrary {
-  select (contents libFrame) aLibrary
+  select libSelector aLibrary
   librarySelected this
 }
 
 method currentLibrary MicroBlocksScripter {
-  return (selection (contents libFrame))
+  return (selection libSelector)
 }
 
 method librarySelected MicroBlocksScripter {
-   select (contents categoriesFrame) nil // deselect category
+   select categorySelector nil // deselect category
    updateBlocks this
 }
 
@@ -330,9 +318,9 @@ method updateBlocks MicroBlocksScripter {
   nextX = ((left (morph (contents blocksFrame))) + (16 * scale))
   nextY = ((top (morph (contents blocksFrame))) + (16 * scale))
 
-  cat = (selection (contents categoriesFrame))
+  cat = (selection categorySelector)
   if (isNil cat) {
-	addBlocksForLibrary this (selection (contents libFrame))
+	addBlocksForLibrary this (selection libSelector)
   } ('Variables' == cat) {
 	addVariableBlocks this
     addAdvancedBlocksForCategory this cat
@@ -1165,8 +1153,8 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 
 	// update library list and select the new library
 	updateLibraryList this
-	select (contents categoriesFrame) nil
-	select (contents libFrame) libName
+	select categorySelector nil
+	select libSelector libName
 	updateBlocks this
 	saveScripts this
 	restoreScripts this
@@ -1174,8 +1162,8 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 
 method updateLibraryList MicroBlocksScripter {
   libNames = (sorted (keys (libraries mbProject)))
-  setCollection (contents libFrame) libNames
-  oldSelection = (selection (contents libFrame))
+  setCollection libSelector libNames
+  oldSelection = (selection libSelector)
   if (not (contains libNames oldSelection)) {
 	selectCategory this 'Control'
   }
@@ -1187,13 +1175,7 @@ method justGrabbedPart MicroBlocksScripter part {
 }
 
 method setLibsDraggable MicroBlocksScripter flag {
-  for libItem (parts (morph (contents libFrame))) {
-	if flag {
-		setGrabRule libItem 'handle'
-	} else {
-		setGrabRule libItem 'defer'
-	}
-  }
+	// deprecated; do nothing
 }
 
 method exportAsLibrary MicroBlocksScripter defaultFileName {
