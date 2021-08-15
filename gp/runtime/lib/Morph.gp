@@ -1357,7 +1357,7 @@ method step Morph {
 // change propagation
 
 method changed Morph {
-  if (notNil owner) {
+  if (and isVisible (notNil owner)) {
 	reportDamage owner bounds
   } (and (isClass handler 'Hand') (notEmpty parts)) {
  	reportDamage (morph (global 'page')) (fullBounds this)
@@ -1369,10 +1369,12 @@ method reportDamage Morph rect {
   // Propagation is stopped by an invisble morph (whose subtree is also invisible).
   // The damage rectangle is clipped to the bounds of clipping morphs.
 
+  if (not isVisible) { return }
+
   if (isClass handler 'Page') {
 	addDamage handler rect
   } (isClass handler 'Hand') {
-	reportDamage (morph (global 'page')) rect
+	if (not (isEmpty parts)) { reportDamage (morph (global 'page')) rect }
   } (isClass handler 'Stage') {
 	if costumeChanged { return } // stage has already reported damage
 	costumeChanged = true // stage uses this flag to indicate that damage has been reported
