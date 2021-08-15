@@ -385,8 +385,8 @@ method isHidden Morph {return (not isVisible)}
 
 method hide Morph {
   if isVisible {
-    isVisible = false
     changed this
+    isVisible = false
   }
 }
 
