@@ -487,31 +487,6 @@ method copyScriptsToClipboard ScriptEditor {
   setClipboard (join 'GP Scripts' (newline) (allScriptsString (handler scripter)))
 }
 
-// Block layout tweak
-
-//Right-to-Left Support
-method fixLayoutRTL Block {
-	block_width = (width morph)
-	block_left = (left (fullBounds morph ))
-	drawer = (drawer this)
-	if (notNil drawer) {
-		block_width = (block_width - (width (fullBounds (morph drawer))))
-		block_width = (block_width - (3 * scale))
-	}
-
-	for group labelParts {
-		for each group {
-			if (isVisible (morph each)) {
-				word_left = ((left (fullBounds (morph each))) - block_left)
-				w = (width (fullBounds (morph each)))
-				if (not (isClass each 'CommandSlot')) {
-					setLeft (morph each) (block_left + ((block_width - word_left) - w ))
-				}
-			}
-		}
-	}
-}
-
 // Color picker tweak
 
 method addTransparentButton ColorPicker x y { } // don't add a transparent button

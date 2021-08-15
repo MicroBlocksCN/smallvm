@@ -293,6 +293,28 @@ method fixLayout Block {
   layoutNeeded = false
 }
 
+method fixLayoutRTL Block {
+	block_width = (width morph)
+	block_left = (left (fullBounds morph ))
+	drawer = (drawer this)
+	if (notNil drawer) {
+		block_width = (block_width - (width (fullBounds (morph drawer))))
+		block_width = (block_width - (3 * scale))
+	}
+
+	for group labelParts {
+		for each group {
+			if (isVisible (morph each)) {
+				word_left = ((left (fullBounds (morph each))) - block_left)
+				w = (width (fullBounds (morph each)))
+				if (not (isClass each 'CommandSlot')) {
+					setLeft (morph each) (block_left + ((block_width - word_left) - w ))
+				}
+			}
+		}
+	}
+}
+
 method drawOn Block ctx {
 	scale = (blockScale)
 	sm = (getShapeMaker ctx)
