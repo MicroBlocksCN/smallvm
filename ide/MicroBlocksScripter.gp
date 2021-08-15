@@ -323,6 +323,7 @@ method librarySelected MicroBlocksScripter {
 method updateBlocks MicroBlocksScripter {
   scale = (global 'scale')
   blocksPane = (contents blocksFrame)
+  hide (morph blocksPane) // suppress damage reports while adding blocks
   removeAllParts (morph blocksPane)
   setRule (alignment blocksPane) 'none'
 
@@ -341,6 +342,7 @@ method updateBlocks MicroBlocksScripter {
 	addBlocksForCategory this cat
   }
   cleanUp blocksPane
+  show (morph blocksPane) // show after adding blocks
   updateSliders blocksFrame
 }
 
