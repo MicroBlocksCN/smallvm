@@ -96,6 +96,7 @@ method select CategorySelector itemName {
 		if (itemName == (at items i)) {
 			selectedIndex = i
 			changed morph
+			if (notNil selectAction) { call selectAction selection }
 			return
 		}
 	}
