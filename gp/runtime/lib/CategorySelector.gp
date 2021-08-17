@@ -120,9 +120,7 @@ method handDownOn CategorySelector aHand {
 
 method step CategorySelector {
 	hand = (hand (global 'page'))
-	if (or (notNil (focus hand)) (notNil (grabbedObject hand))) {
-		return // don't track when hand is in use
-	}
+	if (isBusy hand) { return }
 	handX = (x hand)
 	handY = (y hand)
 	oldHoverIndex = hoverIndex

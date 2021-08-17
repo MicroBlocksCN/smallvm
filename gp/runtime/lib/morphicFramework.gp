@@ -129,6 +129,12 @@ method objectAt Hand pixelPerfect {
   return page
 }
 
+method isBusy Hand {
+  if (or (notNil focus)  (notEmpty (parts morph))) { return true }
+  if (hasActiveMenu page) { return true }
+  return false
+}
+
 // drawing
 
 method drawOn Hand aContext { } // noop
