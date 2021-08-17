@@ -113,6 +113,7 @@ method handDownOn CategorySelector aHand {
 	if (and (i >= 0) (i < (count items))) {
 		selectedIndex = (i + 1)
 		if (notNil selectAction) { call selectAction selection }
+		hoverIndex = 0
 		changed morph
 	}
 	return true
@@ -140,6 +141,7 @@ method step CategorySelector {
 // context menu
 
 method rightClicked CategorySelector {
+	handDownOn this (hand (global 'page'))
 	item = (selection this)
 	if (notNil item) {
 		raise morph 'handleListContextRequest' (array this item)

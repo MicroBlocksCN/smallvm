@@ -374,6 +374,7 @@ method processDown Hand button {
 	stopEditingUnfocusedText this currentObj
   }
   if (or (button == 3) (commandKeyDown (keyboard page))) {
+    closeUnclickedMenu page currentObj
     processRightClicked this currentObj
     return
   }
