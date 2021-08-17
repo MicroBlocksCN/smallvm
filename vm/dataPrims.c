@@ -526,6 +526,7 @@ OBJ primFind(int argCount, OBJ *args) {
 		if (startOffset > stringSize(arg1)) return int2obj(-1); // not found
 		char *s = obj2str(arg1);
 		char *sought = obj2str(arg0);
+		if (0 == sought[0]) return int2obj(-1); // empty string
 		char *match = strstr(s + startOffset - 1, sought);
 		if (!match) return int2obj(-1);
 		// count the Unicode characters up to match
