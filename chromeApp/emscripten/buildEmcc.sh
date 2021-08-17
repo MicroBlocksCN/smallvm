@@ -23,10 +23,6 @@ cp ../../ide/* runtime/lib
 mv runtime/lib/MicroBlocksPatches.gp runtime/lib/zzzMicroBlocksPatches.gp # makes patches load last
 cp -r ../../translations .
 
-# hack for pathfinders: use the universal hex file for BOTH microblocks v1 and v2
-cp ../vm_microbit_universal.hex precompiled/vm_microbit.hex
-cp ../vm_microbit_universal.hex precompiled/vm_microbitV2.hex
-
 emcc -std=gnu99 -Wall -O3 \
 -D EMSCRIPTEN \
 -D NO_JPEG \

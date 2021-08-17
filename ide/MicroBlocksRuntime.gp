@@ -2020,16 +2020,15 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	closePort this
 
 	if ('MICROBIT' == driveName) {
- 		contents = (readFile (join boardPath '/MICROBIT.HTM'))
-		vmFileName = 'vm.microbit-universal.hex'
+		vmFileName = 'vm_microbit-universal.hex'
  	} ('MINI' == driveName) {
-		vmFileName = 'vm.calliope.hex'
+		vmFileName = 'vm_calliope.hex'
 	} ('CPLAYBOOT' == driveName) {
-		vmFileName = 'vm.circuitplay.uf2'
+		vmFileName = 'vm_circuitplay.uf2'
 	} ('CPLAYBTBOOT' == driveName) {
-		vmFileName = 'vm.cplay52.uf2'
+		vmFileName = 'vm_cplay52.uf2'
 	} ('CLUEBOOT' == driveName) {
-		vmFileName = 'vm.clue.uf2'
+		vmFileName = 'vm_clue.uf2'
 	} else {
 		vmFileName = 'UNKNOWN'
 	}
