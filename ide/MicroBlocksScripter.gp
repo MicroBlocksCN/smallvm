@@ -143,6 +143,13 @@ method addLibraryButton MicroBlocksScripter label w h {
 // library item menu
 
 method handleListContextRequest MicroBlocksScripter anArray {
+  if (and ((first anArray) == categorySelector) ('My Blocks' == (last anArray))) {
+    menu = (menu)
+	addItem menu 'show all block definitions' (action 'showAllMyBlocks' this)
+	addItem menu 'hide all block definitions' (action 'hideAllMyBlocks' this)
+    popUpAtHand menu (global 'page')
+    return
+  }
   if ((first anArray) != libSelector) { return } // not a library list entry; ignore
   libName = (last anArray)
   menu = (menu)
@@ -155,6 +162,26 @@ method handleListContextRequest MicroBlocksScripter anArray {
   addLine menu
   addItem menu 'delete library' (action 'removeLibraryNamed' this libName)
   popUpAtHand menu (global 'page')
+}
+
+method showAllMyBlocks MicroBlocksScripter libName {
+  newY = (height (morph (contents scriptsFrame))) // current bottom
+  for f (functions (main mbProject)) {
+	internalShowDefinition this (functionName f)
+  }
+  saveScripts this
+  updateSliders scriptsFrame
+  scrollToY scriptsFrame newY
+}
+
+method hideAllMyBlocks MicroBlocksScripter libName {
+  for f (functions (main mbProject)) {
+	internalHideDefinition this (functionName f)
+  }
+  saveScripts this
+  scrollToX scriptsFrame 0
+  scrollToY scriptsFrame 0
+  updateSliders scriptsFrame
 }
 
 method removeLibraryNamed MicroBlocksScripter libName {
@@ -741,7 +768,7 @@ method pasteScripts MicroBlocksScripter scriptString {
 		} else {
 		  block = (toBlock script)
 		}
-		moveBy (morph block) x y
+		fastMoveBy (morph block) x y
 		y += ((height (fullBounds (morph block))) + (10 * scale))
 		addPart (morph scriptsPane) (morph block)
 		fixBlockColor block
