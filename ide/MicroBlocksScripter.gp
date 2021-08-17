@@ -149,6 +149,7 @@ method handleListContextRequest MicroBlocksScripter anArray {
   addItem menu 'library information' (action 'showLibraryInfo' this libName)
   if (devMode) {
 	addItem menu 'show all block definitions' (action 'showAllLibraryDefinitions' this libName)
+	addItem menu 'hide all block definitions' (action 'hideAllLibraryDefinitions' this libName)
 	addItem menu 'export this library' (action 'exportLibrary' this libName)
   }
   addLine menu
@@ -170,9 +171,25 @@ method showLibraryInfo MicroBlocksScripter libName {
 method showAllLibraryDefinitions MicroBlocksScripter libName {
   lib = (libraryNamed mbProject libName)
   if (isNil lib) { return }
+  newY = (height (morph (contents scriptsFrame))) // current bottom
   for f (functions lib) {
-	showDefinition this (functionName f)
+	internalShowDefinition this (functionName f)
   }
+  saveScripts this
+  updateSliders scriptsFrame
+  scrollToY scriptsFrame newY
+}
+
+method hideAllLibraryDefinitions MicroBlocksScripter libName {
+  lib = (libraryNamed mbProject libName)
+  if (isNil lib) { return }
+  for f (functions lib) {
+	internalHideDefinition this (functionName f)
+  }
+  saveScripts this
+  scrollToX scriptsFrame 0
+  scrollToY scriptsFrame 0
+  updateSliders scriptsFrame
 }
 
 method exportLibrary MicroBlocksScripter libName {
@@ -649,7 +666,7 @@ method restoreScripts MicroBlocksScripter {
       if (notNil block) {
 		x = (paneX + ((at entry 1) * scale))
 		y = (paneY + ((at entry 2) * scale))
-		moveBy (morph block) x y
+		fastMoveBy (morph block) x y
 		addPart (morph scriptsPane) (morph block)
 		fixBlockColor block
 	  }
@@ -763,32 +780,61 @@ method addGlobalsFor MicroBlocksScripter script {
 method hideDefinition MicroBlocksScripter funcName {
   // Hide the given method/function definition.
 
+  internalHideDefinition this funcName
   saveScripts this
-  newScripts = (list)
-  for entry (scripts (main mbProject)) {
-	cmd = (at entry 3)
-	if ('to' == (primName cmd)) {
-	  if (funcName != (first (argList cmd))) { add newScripts entry }
-	} else {
-	  add newScripts entry
-	}
+  updateSliders scriptsFrame
+}
+
+method internalHideDefinition MicroBlocksScripter funcName {
+  // Internal helper method.
+  // Hide the given method/function definition but does not save the scripts.
+
+  scriptsPaneM = (morph (contents scriptsFrame))
+  for m (parts scriptsPaneM) {
+    b = (handler m)
+    if (isClass b 'Block') {
+      proto = (editedPrototype b)
+      if (and (notNil proto) (funcName == (functionName (function proto)))) {
+        removeFromOwner m
+      }
+    }
   }
-  setScripts (main mbProject) newScripts
-  restoreScripts this
 }
 
 method showDefinition MicroBlocksScripter funcName {
   if (not (isShowingDefinition this funcName)) {
-	f = (functionNamed mbProject funcName)
-	if (isNil f) { return } // shouldn't happen
-	ref = (newCommand 'to' funcName)
-
-	// add the method/function definition to the scripts
-	entry = (array (rand 50 200) (rand 50 200) ref)
-	setScripts (main mbProject) (join (array entry) (scripts (main mbProject)))
-	restoreScripts this
+    internalShowDefinition this funcName
+    saveScripts this
+    updateSliders scriptsFrame
   }
   scrollToDefinitionOf this funcName
+}
+
+method internalShowDefinition MicroBlocksScripter funcName {
+  // Internal helper method.
+  // Adds function definition to scripts pane but does not save the scripts.
+
+  if (isShowingDefinition this funcName) { return } // already showing
+  f = (functionNamed mbProject funcName)
+  if (isNil f) { return }
+  scale = (blockScale)
+  scriptsPaneM = (morph (contents scriptsFrame))
+
+  // find a position for the defintion below all other scripts
+  x = ((left scriptsPaneM) + (50 * scale))
+  y = ((top scriptsPaneM) + (50 * scale))
+  for m (parts scriptsPaneM) {
+    if (isClass (handler m) 'Block') {
+	  mBnds = (fullBounds m)
+	  if ((left mBnds) < x) { x = (left mBnds) }
+	  if ((bottom mBnds) > y) { y = (bottom mBnds) }
+    }
+  }
+
+  // add the definition and save the scripts
+  block = (scriptForFunction f)
+  fastSetPosition (morph block) x y
+  addPart scriptsPaneM (morph block)
 }
 
 method isShowingDefinition MicroBlocksScripter funcName {

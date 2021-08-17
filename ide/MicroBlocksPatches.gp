@@ -369,6 +369,7 @@ method justReceivedDrop BlocksPalette aHandler {
 	proto = (editedPrototype aHandler)
 	if (and (notNil pe) (notNil proto) (notNil (function proto))) {
 		hideDefinition (scripter pe) op
+		removeFromOwner (morph aHandler)
 		return
 	}
   }
