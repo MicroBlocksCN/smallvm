@@ -9,7 +9,6 @@ method initialize SpriteLibrary aScripter {
   classesFrame = (scrollFrame classes (gray 240))
   instances = (initialize (new 'SpriteList'))
   instancesFrame = (scrollFrame instances (gray 220))
-  setCachingEnabled instancesFrame false
   morph = (newMorph this)
   setTransparentTouch morph true
   newClassButton = (makeNewThingButton this 'createClass' 'Make a new class')

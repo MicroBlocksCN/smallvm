@@ -123,7 +123,7 @@ to resizeHandle target orientation {
 
   if (orientation == 'vertical') {
     action = (action 'setHeightToBottom' (morph target) m)
-    fastsetBottom m (bottom (morph target))
+    fastSetBottom m (bottom (morph target))
     fastSetXCenter m (hCenter (bounds (morph target)))
   } (orientation == 'horizontal') {
     action = (action 'setWidthToRight' (morph target) m)

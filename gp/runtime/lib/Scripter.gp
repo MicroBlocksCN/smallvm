@@ -100,14 +100,12 @@ method initialize Scripter aProjectEditor {
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (gray 220))
-  setCachingEnabled blocksFrame false
   setAutoScroll blocksFrame false
   setExtent (morph blocksFrame) nil (285 * scale) // initial height
   addPart morph (morph blocksFrame)
 
   scriptsPane = (newScriptEditor 10 10 nil)
   scriptsFrame = (scrollFrame scriptsPane (gray 220))
-  setCachingEnabled scriptsFrame false
   addPart morph (morph scriptsFrame)
 
   // add resizers last so they are in front
