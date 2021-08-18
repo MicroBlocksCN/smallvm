@@ -31,6 +31,7 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 	pageM = (morph (global 'page'))
 	setExtent morph (width (bounds pageM)) (height (bounds pageM))
 
+	setFPS morph 10
 	fixLayout this
 	return this
 }
@@ -83,8 +84,8 @@ method step MicroBlocksSpinner {
 		setCursor 'wait'
 	}
 
+	changed morph
 	rotation = ((rotation + 5) % 360)
 	setText label (localized (call labelGetter))
 	fixLayout this
-	changed morph
 }
