@@ -47,7 +47,7 @@ method fixLayout MicroBlocksSpinner {
 
 method drawOn MicroBlocksSpinner ctx {
 	r = (bounds morph)
-	fillRect GraphicContext (costumeData morph) (left r) (top r) (width r) (height r) 1
+	fillRect ctx (costumeData morph) (left r) (top r) (width r) (height r) 1
 	pen = (pen (getShapeMaker ctx))
 	beginPath pen (hCenter r) (vCenter r)
 	setHeading pen rotation
@@ -85,7 +85,7 @@ method step MicroBlocksSpinner {
 	}
 
 	changed morph
-	rotation = ((rotation + 5) % 360)
+	rotation = ((rotation + 15) % 360)
 	setText label (localized (call labelGetter))
 	fixLayout this
 }
