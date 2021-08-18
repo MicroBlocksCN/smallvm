@@ -295,7 +295,7 @@ method processEvent Hand evt {
   type  = (at evt 'type')
   if (type == 'mousewheel') {
 	// Windows and Linux only report +/- 1 for mousewheel events so scale them up
-	wheelScale = (50 * (global 'scale'))
+	wheelScale = (60 * (global 'scale'))
 	if ('Browser' == (platform)) { wheelScale = (1 * (global 'scale')) }
 	if ('Mac' == (platform)) { wheelScale = (10 * (global 'scale')) }
     processSwipe this (wheelScale * (at evt 'x')) (wheelScale * (at evt 'y'))

@@ -270,12 +270,12 @@ method scrollEnd ScrollFrame { changeScrollOffset this 0 1000000 }
 method scrollHome ScrollFrame { changeScrollOffset this 0 -1000000 }
 
 method arrowKey ScrollFrame dx dy {
-  stepSize = (-40 * (global 'scale'))
+  stepSize = (-50 * (global 'scale'))
   changeScrollOffset this (dx * stepSize) (dy * stepSize)
 }
 
 method scrollPage ScrollFrame dir {
-  stepSize = (half (height morph))
+  stepSize = ((height morph) / 3)
   changeScrollOffset this 0 (dir * stepSize)
 }
 
