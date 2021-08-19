@@ -70,8 +70,6 @@ method handLeave Trigger aHand {
 }
 
 method handDownOn Trigger aHand {
-  downX = (x aHand)
-  downY = (y aHand)
   press this
   return true
 }
@@ -83,16 +81,10 @@ method handUpOn Trigger aHand {
   if (notNil hint) {removeHint (page aHand)}
   removeSchedulesFor (global 'page') 'showHint' morph
   doOneCycle (page aHand)
-  if (and (not wasDragged) (notNil downX) (notNil downY)) {
-     x = (downX - (x aHand))
-     y = (downY - (y aHand))
-     if (((x * x) + (y * y)) < 100) {
+  if (not wasDragged) {
        trigger this
-       downX = nil
-       downY = nil
        return true
-     }
-   }
+  } else { print 'TriggerUpMoved' }
   return false
 }
 
@@ -215,6 +207,4 @@ to buttonImage labelBitmap color corner border isInset hasFrame width height fla
 
 method preSerialize Trigger {
   if (notNil renderer) { clearCostumes this }
-  downX = nil
-  downY = nil
 }
