@@ -154,9 +154,9 @@ method updateTransformedCostume Morph {
   dstW = (width this)
   dstH = (height this)
   if (or
-  	(isNil transformedCostume)
-  	(!= (width transformedCostume) dstW)
-  	(!= (height transformedCostume) dstH)) {
+	(isNil transformedCostume)
+	(!= (width transformedCostume) dstW)
+	(!= (height transformedCostume) dstH)) {
 	  transformedCostume = (newBitmap dstW dstH)
   }
   warpBitmap transformedCostume costumeData (dstW / 2) (dstH / 2) scaleX scaleY (0 - rotation)
@@ -1349,7 +1349,7 @@ method changed Morph {
   if (and isVisible (notNil owner)) {
 	reportDamage owner bounds
   } (and (isClass handler 'Hand') (notEmpty parts)) {
- 	reportDamage (morph (global 'page')) (fullBounds this)
+	reportDamage (morph (global 'page')) (fullBounds this)
   }
 }
 
