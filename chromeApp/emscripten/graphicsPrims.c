@@ -15,7 +15,7 @@
 // Note: Although SDL2 officially supports textures as large as 8192x8192, I got
 // crashes, long pauses, and other strange behavior with textures larger than about
 // 5000x5000. The conservative limit below appears to be safe, at least on a MacBook Pro.
-#define MAX_TEXTURE_SIZE 2048
+#define MAX_TEXTURE_SIZE 4096
 
 static int initialized = false;
 SDL_Window *window = NULL; // used by events.c
@@ -219,7 +219,7 @@ void createOrUpdateOffscreenBitmap(int createFlag) {
 
 		// Create offscreen texture
 		screenTexture = SDL_CreateTexture(
-			renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, w, h);
+			renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, w, h);
 		if (!screenTexture) printf("Could not create offscreen texture");
 	} else {
 		screenBitmap = SDL_GetWindowSurface(window);
@@ -288,13 +288,13 @@ OBJ primOpenWindow(int nargs, OBJ args[]) {
 	// Note: On some platforms (e.g. running Windows in VMWare on a Mac), the temporary texture
 	// must be a STREAMING texture. On other platforms (e.g. Mac Powerbook Pro with Radeon GPU)
 	// it must be a TARGET texture. Here, we try both and use the one that works.
-	tmpTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE);
+	tmpTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE);
 	int onePixel = 0;
 	SDL_Rect r = {0, 0, 1, 1};
 	int err = SDL_UpdateTexture(tmpTexture, &r, &onePixel, 4);
 	if (err != 0) {
 		SDL_DestroyTexture(tmpTexture);
-		tmpTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE);
+		tmpTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, MAX_TEXTURE_SIZE, MAX_TEXTURE_SIZE);
 	}
 
 	// Clear both buffers
