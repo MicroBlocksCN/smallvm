@@ -29,7 +29,6 @@
 			cairo_set_source_rgb(ctx, r / 255.0, g / 255.0, b / 255.0);
 		}
 	}
-
 #endif
 
 // Path State
@@ -127,9 +126,7 @@ static void toColorString(OBJ colorObj, char *result, int resultSize) {
 
 static void beginPath() {
 	#ifdef EMSCRIPTEN
-		EM_ASM({
-			GP.ctx.beginPath();
-		}, 0);
+		EM_ASM({GP.ctx.beginPath()}, 0);
 	#else
 		cairo_new_path(cairoCtx);
 	#endif
@@ -169,6 +166,7 @@ static void stroke(OBJ borderColor, double borderWidth) {
 		char colorString[100];
 		toColorString(borderColor, colorString, sizeof(colorString));
 		EM_ASM_({
+			if (GP.shadowColor) setContextShadow(GP.ctx);
 			GP.ctx.strokeStyle = UTF8ToString($0);
 			GP.ctx.lineWidth = $1;
 			GP.ctx.lineCap = 'round';
@@ -194,6 +192,7 @@ static void fill(OBJ fillColor, int doneFlag) {
 		char colorString[100];
 		toColorString(fillColor, colorString, sizeof(colorString));
 		EM_ASM_({
+			if (GP.shadowColor) setContextShadow(GP.ctx);
 			GP.ctx.fillStyle = UTF8ToString($0);
 			GP.ctx.fill();
 
