@@ -30,7 +30,7 @@ emcc -std=gnu99 -Wall -O3 \
 -D NO_SOCKETS \
 -D SHA2_USE_INTTYPES_H \
 -s USE_ZLIB=1 \
--s TOTAL_MEMORY=209715200 \
+-s TOTAL_MEMORY=136314880 \
 -s ALLOW_MEMORY_GROWTH=0 \
 --memory-init-file 0 \
 -s WASM=1 \
