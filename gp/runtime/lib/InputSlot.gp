@@ -105,23 +105,25 @@ method drawOn InputSlot ctx {
     isNumber = (notNil (toNumber (text text) nil))
   }
 
-  x = (left morph)
-  y = (top morph)
+  white = (gray 255)
+  gray = (gray 180)
+  corner = scale
+
   if isNumber {
-    h = (height morph)
-    c = (gray 255)
-	drawButton pen x y (width morph) h c ((h / 2) - 1) border true
+    corner = (((height morph) / 2) - 1)
+    fillRoundedRect pen (bounds morph) corner white border gray white
   } ((editRule text) == 'static') {
     c = (gray 220)
     if (notNil color) { c = color }
-	drawButton pen x y (width morph) (height morph) c scale border true
+    fillRoundedRect pen (bounds morph) corner c border (darker c) (lighter c)
   } else {
-    c = (gray 255)
-	drawButton pen x y (width morph) (height morph) c scale border true
+    fillRoundedRect pen (bounds morph) corner white border gray white
   }
   if (notNil menuSelector) { // draw down-arrow
 	fontH = (fontSize text)
     border = scale
+    x = (left morph)
+    y = (top morph)
     x += (((width morph) - fontH) - border)
     y += (((height morph) / 4) + border)
     w = (fontH - (2 * border))
