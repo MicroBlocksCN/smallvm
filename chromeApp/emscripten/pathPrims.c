@@ -8,6 +8,22 @@
 #ifdef EMSCRIPTEN
 	#include <emscripten.h>
 	#include <emscripten/html5.h>
+
+	static void toColorString(OBJ colorObj, char *result, int resultSize) {
+		// Write a Javascript color string for the given color into the result.
+
+		int words = objWords(colorObj);
+		result[0] = 0;
+		if (words < 3) {
+			snprintf(result, resultSize, "rgba(0, 0, 0, 255)"); // black
+			return;
+		}
+		int r = clip(obj2int(FIELD(colorObj, 0)), 0, 255);
+		int g = clip(obj2int(FIELD(colorObj, 1)), 0, 255);
+		int b = clip(obj2int(FIELD(colorObj, 2)), 0, 255);
+		int a = (words <= 3) ? 255 : clip(obj2int(FIELD(colorObj, 3)), 0, 255);
+		snprintf(result, resultSize, "rgba(%d, %d, %d, %f)", r, g, b, a / 255.0);
+	}
 #else
 	#include <cairo/cairo.h>
 	#include <SDL.h>
@@ -108,22 +124,6 @@ static void initGraphics() {
 	#endif
 }
 
-static void toColorString(OBJ colorObj, char *result, int resultSize) {
-	// Write a Javascript color string for the given color into the result.
-
-	int words = objWords(colorObj);
-	result[0] = 0;
-	if (words < 3) {
-		snprintf(result, resultSize, "rgba(0, 0, 0, 255)"); // black
-		return;
-	}
-	int r = clip(obj2int(FIELD(colorObj, 0)), 0, 255);
-	int g = clip(obj2int(FIELD(colorObj, 1)), 0, 255);
-	int b = clip(obj2int(FIELD(colorObj, 2)), 0, 255);
-	int a = (words <= 3) ? 255 : clip(obj2int(FIELD(colorObj, 3)), 0, 255);
-	snprintf(result, resultSize, "rgba(%d, %d, %d, %f)", r, g, b, a / 255.0);
-}
-
 static void beginPath() {
 	#ifdef EMSCRIPTEN
 		EM_ASM({GP.ctx.beginPath()}, 0);
@@ -148,16 +148,16 @@ static void lineTo(double x, double y) {
 	#endif
 }
 
-static void curveTo(double x, double y, double cx, double cy) {
+static void curveTo(double lastX, double lastY, double x, double y, double cx, double cy) {
 	#ifdef EMSCRIPTEN
 		EM_ASM_({GP.ctx.quadraticCurveTo($0, $1, $2, $3)}, cx, cy, x, y);
 	#else
 		// compute cubic Bezier control points for cairo
-		c1x = penX + ((2 * (qx - penX)) / 3);
-		c1y = penY + ((2 * (qy - penY)) / 3);
-		c2x = x + ((2 * (qx - x)) / 3);
-		c2y = y + ((2 * (qy - y)) / 3);
-		cairo_curve_to(ctx, c1x, c1y, c2x, c2y, x, y);
+		double c1x = lastX + ((2 * (cx - lastX)) / 3);
+		double c1y = lastY + ((2 * (cy - lastY)) / 3);
+		double c2x = x + ((2 * (cx - x)) / 3);
+		double c2y = y + ((2 * (cy - y)) / 3);
+		cairo_curve_to(cairoCtx, c1x, c1y, c2x, c2y, x, y);
 	#endif
 }
 
@@ -179,7 +179,7 @@ static void stroke(OBJ borderColor, double borderWidth) {
 			GP.ctx = null;
 		}, colorString, borderWidth);
 	#else
-		setCairoColor(borderColor);
+		setCairoColor(cairoCtx, borderColor);
 		cairo_set_line_width(cairoCtx, borderWidth);
 		cairo_set_line_join(cairoCtx, CAIRO_LINE_JOIN_ROUND);
 		cairo_set_line_cap(cairoCtx, CAIRO_LINE_CAP_ROUND);
@@ -204,7 +204,7 @@ static void fill(OBJ fillColor, int doneFlag) {
 			}
 		}, colorString, doneFlag);
 	#else
-		setCairoColor(fillColor);
+		setCairoColor(cairoCtx, fillColor);
 		cairo_fill(cairoCtx);
 	#endif
 }
@@ -289,7 +289,7 @@ OBJ primPathForward(int nargs, OBJ args[]) {
 		double midpointY = (startY + penY) / 2;
 		double cx = midpointX + ((curvature / 100) * (penY - startY));
 		double cy = midpointY + ((curvature / 100) * (startX - penX));
-		curveTo(penX, penY, cx, cy);
+		curveTo(startX, startY, penX, penY, cx, cy);
 	}
 	return nilObj;
 }
@@ -332,10 +332,12 @@ OBJ primPathTurn(int nargs, OBJ args[]) {
 		double cx = (((-0.5 * (COSINE(angle) + COSINE(endAngle))) + (2 * COSINE(midAngle))) * radius) + centerX;
 		double cy = (((-0.5 * (SINE(angle) + SINE(endAngle))) + (2 * SINE(midAngle))) * radius) + centerY;
 
+		double startX = penX;
+		double startY = penY;
 		penX = centerX + (radius * COSINE(endAngle));
 		penY = centerY + (radius * SINE(endAngle));
 		angle = endAngle;
-		curveTo(penX, penY, cx, cy);
+		curveTo(startX, startY, penX, penY, cx, cy);
 	}
 
 	heading = fmod((heading + degrees), 360);
