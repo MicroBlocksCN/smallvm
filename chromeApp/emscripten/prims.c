@@ -3574,6 +3574,10 @@ void initPrimitiveTable() {
 		PrimEntry* vectorPrimitives(int *count);
 		entries = vectorPrimitives(&count);
 		addPrimitiveSet(entries, count);
+
+		PrimEntry* pathPrimitives(int *count);
+		entries = pathPrimitives(&count);
+		addPrimitiveSet(entries, count);
 	#endif // NO_CAIRO
 
 	#ifndef NO_JPEG
