@@ -243,6 +243,17 @@ method fill VectorPen fillColor {
   if (notNil owner) { costumeChanged owner }
 }
 
+method fillAndStroke VectorPen fillColor borderColor borderWidth {
+  if (isNil borderColor) { borderColor = (gray 0) }
+  if (isNil borderWidth) { borderWidth = 1 }
+  if (and (notNil fillColor) ((alpha fillColor) > 0)) {
+    fill this fillColor
+  }
+  if (and ((alpha borderColor) > 0) (borderWidth > 0)) {
+    stroke this borderColor borderWidth
+  }
+}
+
 method fillRoundedRect VectorPen rect radius fillColor border borderColor {
   // Draw a rounded rectangle. If fillColor is nil, just draw the border.
   // If border is nil or 0, just draw the fill. borderColor defaults to black.

@@ -90,21 +90,15 @@ method roundedRectHalfPath ShapeMaker rect radius {
   turn pen 45
 }
 
-method drawCircle ShapeMaker centerX centerY radius color border borderColor {
+method drawCircle ShapeMaker centerX centerY radius fillColor borderWidth borderColor {
   // Draw a circle with an optional border. If color is nil or transparent,
   // the circle is not filled.
 
-  if (isNil border) {border = 0}
+  if (isNil borderWidth) { borderWidth = 0 }
   startY = (centerY - radius)
   beginPath pen centerX startY
   turn pen 360 radius
-  if (and (notNil color) ((alpha color) > 0)) {
-    fill pen color
-  }
-  if (border > 0) {
-    if (isNil borderColor) {borderColor = (gray 0)}
-    stroke pen borderColor border
-  }
+  fillAndStroke pen fillColor borderColor borderWidth
 }
 
 method fillArrow ShapeMaker rect orientation fillColor {
@@ -158,10 +152,7 @@ method drawTab ShapeMaker rect radius border color {
   // start at bottom right and draw base first (helps filling heuristic when simulating vector primitives)
   beginPath pen (right rect) (bottom rect)
   tabPath this rect radius
-  fill pen color
-  if (border > 0) {
-    stroke pen (lighter color) border
-  }
+  fillAndStroke pen color (lighter color) border
 }
 
 method tabPath ShapeMaker rect radius {
@@ -231,8 +222,7 @@ method drawSpeechBubble ShapeMaker rect scale direction fillColor borderColor {
   lineTo pen ((left r) + radius) ((bottom r) - tailH)
   turn pen 90 radius
 
-  fill pen fillColor
-  stroke pen borderColor border
+  fillAndStroke pen fillColor borderColor border
 }
 
 // Grips
