@@ -8,7 +8,11 @@ to newShapeMaker bitmap {
 
 method initialize ShapeMaker aBitmap {
   if (isNil aBitmap) {
-	pen = (newVectorPenOnScreen)
+	if ('Browser' == (platform)) {
+	  pen = (newVectorPenPrims)
+	} else {
+	  pen = (newVectorPenOnScreen)
+	}
   } else {
 	pen = (newVectorPen aBitmap)
   }
