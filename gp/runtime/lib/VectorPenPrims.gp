@@ -13,6 +13,11 @@ method beginPath VectorPenPrims x y { pathBeginPath x y }
 method beginPathFromCurrentPostion VectorPenPrims { pathBeginPathFromHere }
 method lineTo VectorPenPrims x y { pathLineTo x y }
 
+method goto VectorPenPrims x y {
+  // For compatability with Pen
+  pathLineTo x y
+}
+
 method forward VectorPenPrims dist curvature {
 	if (isNil curvature) { curvature = 0 }
 	pathForward dist curvature
@@ -50,6 +55,7 @@ method setOffset FakeVectorPen x y { }
 method beginPath FakeVectorPen x y { }
 method beginPathFromCurrentPostion FakeVectorPen { }
 method lineTo FakeVectorPen x y { }
+method goto FakeVectorPen x y { }
 method forward FakeVectorPen dist curvature { }
 method turn FakeVectorPen degrees radius { }
 method stroke FakeVectorPen borderColor borderWidth { }
