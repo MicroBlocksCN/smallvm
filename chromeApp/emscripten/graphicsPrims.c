@@ -253,7 +253,7 @@ OBJ primOpenWindow(int nargs, OBJ args[]) {
 	}
 	closeWindow();
 
-#ifdef MAC
+#if defined(MAC) || defined(RPI)
 	#define USE_RENDERER true
 #endif
 
