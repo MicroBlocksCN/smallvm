@@ -316,6 +316,7 @@ void addMiscPrims();
 void addNetPrims();
 void addRadioPrims();
 void addSensorPrims();
+void addSerialPrims();
 void addTFTPrims();
 void addVarPrims();
 

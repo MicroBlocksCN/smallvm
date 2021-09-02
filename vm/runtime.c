@@ -90,6 +90,7 @@ void primsInit() {
 	addNetPrims();
 	addRadioPrims();
 	addSensorPrims();
+	addSerialPrims();
 	addTFTPrims();
 	addVarPrims();
 }
