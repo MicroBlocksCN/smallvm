@@ -33,13 +33,82 @@ static int serialAvailable() { return -1; }
 static void serialReadBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); }
 static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); return 0; }
 
-#elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_CALLIOPE_MINI)
+#elif defined(ARDUINO_BBC_MICROBIT_V2) // use UART directly
 
-static void serialOpen(int baudRate) { }
-static void serialClose() { }
-static int serialAvailable() { return 0; }
-static void serialReadBytes(uint8 *buf, int byteCount) { }
-static int serialWriteBytes(uint8 *buf, int byteCount) { }
+#define PIN_RX 0
+#define PIN_TX 1
+
+#define BUF_SIZE 128
+uint8 rxBuf[BUF_SIZE];
+uint8 txBuf[BUF_SIZE];
+
+int rxReadIndex = 0;
+
+static void serialClose() {
+	NRF_UARTE1->TASKS_STOPRX = true;
+	NRF_UARTE1->TASKS_STOPTX = true;
+	while (!NRF_UARTE1->EVENTS_TXSTOPPED) /* wait */;
+	NRF_UARTE1->ENABLE = UARTE_ENABLE_ENABLE_Disabled;
+	isOpen = false;
+}
+
+static void serialOpen(int baudRate) {
+	if (isOpen) serialClose();
+
+	// set DMA pointers
+	NRF_UARTE1->RXD.PTR = (uint32_t) &rxBuf[0];
+	NRF_UARTE1->RXD.MAXCNT = BUF_SIZE;
+	NRF_UARTE1->TXD.PTR = (uint32_t) &txBuf[0];
+	NRF_UARTE1->TXD.MAXCNT = BUF_SIZE;
+
+	// set pins
+	NRF_UARTE1->PSEL.RXD = g_ADigitalPinMap[PIN_RX];
+	NRF_UARTE1->PSEL.TXD = g_ADigitalPinMap[PIN_TX];
+
+	// set baud rate
+	NRF_UARTE1->BAUDRATE = 268 * baudRate;
+
+	// set receive shortcut (restart receive and wrap when end of buffer is reached)
+	NRF_UARTE1->SHORTS = (1 << 5); // Shortcut between event ENDRX and task STARTRX
+
+	// enable and start rx and tx
+	NRF_UARTE1->ENABLE = UARTE_ENABLE_ENABLE_Enabled;
+	NRF_UARTE1->TASKS_STARTRX = true;
+	while (!NRF_UARTE1->EVENTS_RXSTARTED) /* wait */;
+	NRF_UARTE1->TASKS_STARTTX = true;
+	while (!NRF_UARTE1->EVENTS_TXSTARTED) /* wait */;
+
+	NRF_UARTE1->EVENTS_ENDTX = true; // ready to transmit
+
+	isOpen = true;
+}
+
+static int serialAvailable() {
+	int byteCount = NRF_UARTE1->RXD.AMOUNT - rxReadIndex;
+	if (byteCount < 0) byteCount += BUF_SIZE;
+	return byteCount;
+}
+
+static void serialReadBytes(uint8 *buf, int byteCount) {
+	int srcIndex = rxReadIndex;
+	for (int i = 0; i < byteCount; i++) {
+		*buf++ = rxBuf[srcIndex++];
+		if (srcIndex >= BUF_SIZE) srcIndex = 0;
+	}
+	rxReadIndex = srcIndex;
+}
+
+static int serialWriteBytes(uint8 *buf, int byteCount) {
+	if (!NRF_UARTE1->EVENTS_ENDTX) return 0; // last transmission is still in progress
+	if (byteCount > BUF_SIZE) byteCount = BUF_SIZE;
+	for (int i = 0; i < byteCount; i++) {
+		txBuf[i++] = *buf++;
+	}
+	NRF_UARTE1->TXD.MAXCNT = byteCount;
+	NRF_UARTE1->EVENTS_ENDTX = false;
+	NRF_UARTE1->TASKS_STARTTX = true;
+	return byteCount;
+}
 
 #else // use Serial1 or Serial2
 
