@@ -16,6 +16,15 @@
 #include "mem.h"
 #include "interp.h"
 
+// Use Serial2 on ESP32 board, Serial1 on others
+#if defined(ESP32)
+	#define SERIAL_PORT Serial2
+#else
+	#define SERIAL_PORT Serial1
+#endif
+
+static int isOpen = false;
+
 #if defined(NRF51) // not implemented (has only one UART)
 
 static void serialOpen(int baudRate) { fail(primitiveNotImplemented); }
@@ -24,7 +33,7 @@ static int serialAvailable() { return -1; }
 static void serialReadBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); }
 static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplemented); return 0; }
 
-#elif defined(NRF52) // use secondary UART
+#elif defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_CALLIOPE_MINI)
 
 static void serialOpen(int baudRate) { }
 static void serialClose() { }
@@ -32,13 +41,31 @@ static int serialAvailable() { return 0; }
 static void serialReadBytes(uint8 *buf, int byteCount) { }
 static int serialWriteBytes(uint8 *buf, int byteCount) { }
 
-#else // use Serial1
+#else // use Serial1 or Serial2
 
-static void serialOpen(int baudRate) { Serial1.begin(baudRate); }
-static void serialClose() { Serial1.end(); }
-static int serialAvailable() { return Serial1.available(); }
-static void serialReadBytes(uint8 *buf, int byteCount) { Serial1.readBytes(buf, byteCount); }
-static int serialWriteBytes(uint8 *buf, int byteCount) { return Serial1.write(buf, byteCount); }
+static void serialClose() {
+	isOpen = false;
+	SERIAL_PORT.flush();
+	SERIAL_PORT.end();
+}
+
+static void serialOpen(int baudRate) {
+	if (isOpen) serialClose();
+	SERIAL_PORT.begin(baudRate);
+	isOpen = true;
+}
+
+static int serialAvailable() {
+	return isOpen ? SERIAL_PORT.available() : 0;
+}
+
+static void serialReadBytes(uint8 *buf, int byteCount) {
+	if (isOpen) SERIAL_PORT.readBytes(buf, byteCount);
+}
+
+static int serialWriteBytes(uint8 *buf, int byteCount) {
+	return isOpen ? SERIAL_PORT.write(buf, byteCount) : 0;
+}
 
 #endif
 
@@ -97,10 +124,10 @@ static OBJ primSerialWrite(int argCount, OBJ *args) {
 // Primitives
 
 static PrimEntry entries[] = {
-	{"serialOpen", primSerialOpen},
-	{"serialClose", primSerialClose},
-	{"serialRead", primSerialRead},
-	{"serialWrite", primSerialWrite},
+	{"open", primSerialOpen},
+	{"close", primSerialClose},
+	{"read", primSerialRead},
+	{"write", primSerialWrite},
 };
 
 void addSerialPrims() {
