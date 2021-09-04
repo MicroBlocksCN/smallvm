@@ -35,14 +35,22 @@ static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplem
 
 #elif defined(ARDUINO_BBC_MICROBIT_V2) // use UART directly
 
+// Note: Due to a bug or misfeature in the nRF52 UARTE hardware, the RXD.AMOUNT is
+// not updated correctly. As a work-around (hack!), we fill the receive buffer with
+// 255's and detect the number of bytes by finding the last non-255 value. This
+// implementation could miss an actual 255 data byte if it happens to the be last
+// byte received when a read operation is performed. However, that should not be an
+// problem in most real applications (since 255 bytes are rare in strings) and this
+// solution avoids using a hardware counter, interrupts, or PPI entries.
+
 #define PIN_RX 0
 #define PIN_TX 1
 
-#define BUF_SIZE 128
-uint8 rxBuf[BUF_SIZE];
-uint8 txBuf[BUF_SIZE];
+#define RX_BUF_SIZE 10
+uint8 rxBuf[RX_BUF_SIZE];
 
-int rxReadIndex = 0;
+#define TX_BUF_SIZE 1024
+uint8 txBuf[TX_BUF_SIZE];
 
 static void serialClose() {
 	NRF_UARTE1->TASKS_STOPRX = true;
@@ -55,12 +63,6 @@ static void serialClose() {
 static void serialOpen(int baudRate) {
 	if (isOpen) serialClose();
 
-	// set DMA pointers
-	NRF_UARTE1->RXD.PTR = (uint32_t) &rxBuf[0];
-	NRF_UARTE1->RXD.MAXCNT = BUF_SIZE;
-	NRF_UARTE1->TXD.PTR = (uint32_t) &txBuf[0];
-	NRF_UARTE1->TXD.MAXCNT = BUF_SIZE;
-
 	// set pins
 	NRF_UARTE1->PSEL.RXD = g_ADigitalPinMap[PIN_RX];
 	NRF_UARTE1->PSEL.TXD = g_ADigitalPinMap[PIN_TX];
@@ -68,41 +70,53 @@ static void serialOpen(int baudRate) {
 	// set baud rate
 	NRF_UARTE1->BAUDRATE = 268 * baudRate;
 
+	// clear receive buffer
+	memset(rxBuf, 255, RX_BUF_SIZE);
+
+	// initialize Easy DMA pointers
+	NRF_UARTE1->RXD.PTR = (uint32_t) rxBuf;
+	NRF_UARTE1->RXD.MAXCNT = RX_BUF_SIZE;
+	NRF_UARTE1->TXD.PTR = (uint32_t) txBuf;
+	NRF_UARTE1->TXD.MAXCNT = TX_BUF_SIZE;
+
 	// set receive shortcut (restart receive and wrap when end of buffer is reached)
-	NRF_UARTE1->SHORTS = (1 << 5); // Shortcut between event ENDRX and task STARTRX
+	NRF_UARTE1->SHORTS = UARTE_SHORTS_ENDRX_STARTRX_Msk;
 
-	// enable and start rx and tx
+	// enable the UART
 	NRF_UARTE1->ENABLE = UARTE_ENABLE_ENABLE_Enabled;
-	NRF_UARTE1->TASKS_STARTRX = true;
-	while (!NRF_UARTE1->EVENTS_RXSTARTED) /* wait */;
-	NRF_UARTE1->TASKS_STARTTX = true;
-	while (!NRF_UARTE1->EVENTS_TXSTARTED) /* wait */;
 
-	NRF_UARTE1->EVENTS_ENDTX = true; // ready to transmit
+	// start rx
+	NRF_UARTE1->EVENTS_RXDRDY = false;
+	NRF_UARTE1->TASKS_STARTRX = true;
+
+	// start tx by sending zero bytes
+	NRF_UARTE1->TXD.MAXCNT = 0;
+	NRF_UARTE1->TASKS_STARTTX = true;
 
 	isOpen = true;
 }
 
 static int serialAvailable() {
-	int byteCount = NRF_UARTE1->RXD.AMOUNT - rxReadIndex;
-	if (byteCount < 0) byteCount += BUF_SIZE;
-	return byteCount;
+	if (!NRF_UARTE1->EVENTS_RXDRDY) return 0;
+	uint8* p = rxBuf + (RX_BUF_SIZE - 1);
+	while ((255 == *p) && (p >= rxBuf)) p--; // scan from end of buffer for first non-255 byte
+	return (p - rxBuf) + 1;
 }
 
 static void serialReadBytes(uint8 *buf, int byteCount) {
-	int srcIndex = rxReadIndex;
 	for (int i = 0; i < byteCount; i++) {
-		*buf++ = rxBuf[srcIndex++];
-		if (srcIndex >= BUF_SIZE) srcIndex = 0;
+		*buf++ = rxBuf[i];
+		rxBuf[i] = 255;
 	}
-	rxReadIndex = srcIndex;
+	NRF_UARTE1->EVENTS_RXDRDY = false;
+	NRF_UARTE1->TASKS_STARTRX = true;
 }
 
 static int serialWriteBytes(uint8 *buf, int byteCount) {
 	if (!NRF_UARTE1->EVENTS_ENDTX) return 0; // last transmission is still in progress
-	if (byteCount > BUF_SIZE) byteCount = BUF_SIZE;
+	if (byteCount > TX_BUF_SIZE) byteCount = TX_BUF_SIZE;
 	for (int i = 0; i < byteCount; i++) {
-		txBuf[i++] = *buf++;
+		txBuf[i] = *buf++;
 	}
 	NRF_UARTE1->TXD.MAXCNT = byteCount;
 	NRF_UARTE1->EVENTS_ENDTX = false;
@@ -114,7 +128,9 @@ static int serialWriteBytes(uint8 *buf, int byteCount) {
 
 static void serialClose() {
 	isOpen = false;
-	SERIAL_PORT.flush();
+	#if defined(ESP32)
+		SERIAL_PORT.flush();
+	#endif
 	SERIAL_PORT.end();
 }
 
