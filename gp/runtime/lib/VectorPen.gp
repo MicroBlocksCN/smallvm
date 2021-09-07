@@ -81,12 +81,12 @@ method goto VectorPen dstX dstY {
   lineTo this dstX dstY
 }
 
-method lineTo VectorPen dstX dstY {
+method lineTo VectorPen dstX dstY curvature {
   startX = penX
   startY = penY
   penX = (dstX + offsetX)
   penY = (dstY + offsetY)
-  addSegment this startX startY penX penY
+  addSegment this startX startY penX penY curvature
 }
 
 method curveTo VectorPen dstX dstY cx cy {
