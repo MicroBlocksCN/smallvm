@@ -6,7 +6,7 @@
 // or line cap and joint styles. It may also omit future features of GP vector graphics
 // primitives such as gradients.
 
-defineClass VectorPen offsetX offsetY penX penY heading bitmap clipRect owner path usePrimitives pathWidth halfWidth color
+defineClass VectorPen offsetX offsetY penX penY heading bitmap svgData clipRect owner path usePrimitives pathWidth halfWidth color
 
 method examples VectorPen {
   showImage (drawCircle (newVectorPen))
@@ -34,6 +34,10 @@ to newVectorPen bitmap owningMorph noPrimitives {
 	bitmap = (newBitmap 200 200)
   }
   return (intialize (new 'VectorPen') bitmap owningMorph noPrimitives)
+}
+
+to newVectorPenForSVG pageW pageH {
+  return (initSVG (intialize (new 'VectorPen')) pageW pageH)
 }
 
 method x VectorPen { return (penX - offsetX) }
@@ -215,6 +219,10 @@ method stroke VectorPen borderColor width joint cap {
   if (isNil joint) { joint = 0 }
   if (isNil cap) { cap = 0 }
 
+  if (notNil svgData) {
+	add svgData (join '	<path stroke=' (svgColor this borderColor) ' stroke-width="' width '" ' (svgPath this path) '/>')
+	return
+  }
   if usePrimitives {
 	vectorStrokePath bitmap (toArray path) borderColor width joint cap clipRect
   } else {
@@ -227,6 +235,10 @@ method stroke VectorPen borderColor width joint cap {
 
 method fill VectorPen fillColor {
   if (isNil fillColor) { fillColor = (gray 0) }
+  if (notNil svgData) {
+	add svgData (join '	<path fill=' (svgColor this fillColor) (svgPath this path true) '/>')
+	return
+  }
   if usePrimitives {
 	closedPath = (copy path)
 	add closedPath 'Z'
@@ -253,6 +265,73 @@ method fillAndStroke VectorPen fillColor borderColor borderWidth {
     stroke this borderColor borderWidth
   }
 }
+
+// SVG support
+
+method initSVG VectorPen pageW pageH {
+print 'initSVG' pageW pageH
+  if (isNil pageW) { pageW = 200 }
+  if (isNil pageH)  {pageH = 250 }
+  svgData = (list)
+  add svgData '<svg version="1.1"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns="http://www.w3.org/2000/svg"
+	fill="none" fill-rule="evenodd"
+	stroke="none" stroke-width="0.1"
+	stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10"'
+  add svgData (join '	viewBox="0 0 ' pageW ' ' pageH '"')
+  add svgData (join '	width="' pageW 'mm"')
+  add svgData (join '	height="' pageH 'mm">')
+  add svgData '  <g>'
+  return this
+}
+
+method saveSVGFile VectorPen fileName {
+  data = (joinStrings svgData (newline))
+  data = (join data (newline) '  </g>
+</svg>')
+  writeFile fileName data
+}
+
+method svgColor VectorPen aColor {
+  return (join '"rgba(' (red aColor) ',' (green aColor) ',' (blue aColor) ')"')
+}
+
+method newSVGGroup VectorPen {
+  add svgData '  </g>'
+  add svgData '  <g>'
+}
+
+method svgPath VectorPen aColor closeFlag {
+  result = (list 'd="')
+  i = 1
+  while (i <= (count path)) {
+	cmd = (at path i)
+	if ('M' == cmd) {
+	  startX = (at path (i + 1))
+	  startY = (at path (i + 2))
+	  add result (join 'M ' startX ' ' startY)
+	  i += 3
+	} ('L' == cmd) {
+	  endX = (at path (i + 1))
+	  endY = (at path (i + 2))
+	  add result (join 'L ' endX ' ' endY)
+	  i += 3
+	} ('C' == cmd) {
+	  endX = (at path (i + 1))
+	  endY = (at path (i + 2))
+	  cx = (at path (i + 3))
+	  cy = (at path (i + 4))
+	  add result (join 'Q ' cx ' ' cy ' ' endX ' ' endY)
+	  i += 5
+	}
+  }
+  if (true == closeFlag) { add result 'Z' }
+  add result '"'
+  return (joinStrings result ' ')
+}
+
+// shapes
 
 method fillRoundedRect VectorPen rect radius fillColor border borderColor {
   // Draw a rounded rectangle. If fillColor is nil, just draw the border.
