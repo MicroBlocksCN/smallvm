@@ -9,19 +9,8 @@
 
 #include <Arduino.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "mem.h"
 #include "interp.h"
-
-// Use Serial2 on ESP32 board, Serial1 on others
-#if defined(ESP32)
-	#define SERIAL_PORT Serial2
-#else
-	#define SERIAL_PORT Serial1
-#endif
 
 static int isOpen = false;
 
@@ -36,17 +25,17 @@ static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplem
 #elif defined(ARDUINO_BBC_MICROBIT_V2) // use UART directly
 
 // Note: Due to a bug or misfeature in the nRF52 UARTE hardware, the RXD.AMOUNT is
-// not updated correctly. As a work-around (hack!), we fill the receive buffer with
+// not updated correctly. As a work around (hack!), we fill the receive buffer with
 // 255's and detect the number of bytes by finding the last non-255 value. This
 // implementation could miss an actual 255 data byte if it happens to the be last
 // byte received when a read operation is performed. However, that should not be an
-// problem in most real applications (since 255 bytes are rare in strings) and this
-// solution avoids using a hardware counter, interrupts, or PPI entries.
+// problem in most real applications since 255 bytes are rare in string data, and
+// this work around avoids using a hardware counter, interrupts, or PPI entries.
 
 #define PIN_RX 0
 #define PIN_TX 1
 
-#define RX_BUF_SIZE 10
+#define RX_BUF_SIZE 1024
 uint8 rxBuf[RX_BUF_SIZE];
 
 #define TX_BUF_SIZE 1024
@@ -93,6 +82,7 @@ static void serialOpen(int baudRate) {
 	NRF_UARTE1->TXD.MAXCNT = 0;
 	NRF_UARTE1->TASKS_STARTTX = true;
 
+	delay(5); // leave a litte time for the line level to settle
 	isOpen = true;
 }
 
@@ -125,6 +115,13 @@ static int serialWriteBytes(uint8 *buf, int byteCount) {
 }
 
 #else // use Serial1 or Serial2
+
+// Use Serial2 on ESP32 board, Serial1 on others
+#if defined(ESP32)
+	#define SERIAL_PORT Serial2
+#else
+	#define SERIAL_PORT Serial1
+#endif
 
 static void serialClose() {
 	isOpen = false;
@@ -167,13 +164,18 @@ static OBJ primSerialClose(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+// Empty byte array constant
+static uint32 emptyByteArray = HEADER(ByteArrayType, 0);
+
 static OBJ primSerialRead(int argCount, OBJ *args) {
 	int byteCount = serialAvailable();
+	if (byteCount == 0) return (OBJ) &emptyByteArray;
 	if (byteCount < 0) return fail(primitiveNotImplemented);
+
 	int wordCount = (byteCount + 3) / 4;
 	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
 	if (!result) return fail(insufficientMemoryError);
-	serialReadBytes((uint8 *) &FIELD(result, 0), byteCount);
+	if (byteCount > 0) serialReadBytes((uint8 *) &FIELD(result, 0), byteCount);
 	setByteCountAdjust(result, byteCount);
 	return result;
 }
@@ -181,6 +183,7 @@ static OBJ primSerialRead(int argCount, OBJ *args) {
 static OBJ primSerialWrite(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	OBJ arg = args[0];
+	uint8 multiBytes[1024];
 	uint8 oneByte = 0;
 	int bytesWritten = 0;
 
@@ -194,14 +197,16 @@ static OBJ primSerialWrite(int argCount, OBJ *args) {
 		bytesWritten = serialWriteBytes((uint8 *) &FIELD(arg, 0), BYTES(arg));
 	} else if (IS_TYPE(arg, ListType)) { // list of bytes
 		int count = obj2int(FIELD(arg, 0));
+		if (count > (int) sizeof(multiBytes)) count = sizeof(multiBytes);
+		uint8 *dst = multiBytes;
 		for (int i = 1; i <= count; i++) {
 			OBJ item = FIELD(arg, i);
 			if (isInt(item)) {
-				oneByte = obj2int(item) & 255;
-				if (!serialWriteBytes(&oneByte, 1)) break; // no more room
+				*dst++ = obj2int(item) & 255;
 				bytesWritten++;
 			}
 		}
+		bytesWritten = serialWriteBytes(multiBytes, bytesWritten);
 	}
 	return int2obj(bytesWritten);
 }
