@@ -265,6 +265,9 @@ method contextMenu Block {
 	addLine menu
     addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
     addItem menu 'show compiled bytes' (action 'showCompiledBytes' (smallRuntime) this)
+    if (and isInPalette (notNil (functionNamed (project pe) (primName expression)))) {
+	  addItem menu 'show call tree' (action 'showCallTree' (smallRuntime) this)
+    }
 
 	// xxx internal testing only; remove later!:
 	if (contains (commandLine) '--allowMorphMenu') {
@@ -419,6 +422,7 @@ method contextMenu BlockDefinition {
     addLine menu
     addItem menu 'show instructions' (action 'showInstructions' this)
     addItem menu 'show compiled bytes' (action 'showCompiledBytes' this)
+    addItem menu 'show call tree' (action 'showCallTree' this)
   }
   addLine menu
   addItem menu 'delete block definition...' 'deleteBlockDefinition'
@@ -431,6 +435,10 @@ method showInstructions BlockDefinition {
 
 method showCompiledBytes BlockDefinition {
   showCompiledBytes (smallRuntime) (handler (owner (owner morph)))
+}
+
+method showCallTree BlockDefinition {
+  showCallTree (smallRuntime) (handler (owner (owner morph)))
 }
 
 method initializeRepeater BlockDefinition aBlockSpec {

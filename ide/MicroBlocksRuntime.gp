@@ -173,6 +173,67 @@ method showCompiledBytes SmallRuntime aBlock {
 	fixLayout ws
 }
 
+method showCallTree SmallRuntime aBlock {
+	proto = (editedPrototype aBlock)
+	if (notNil proto) {
+		if (isNil (function proto)) { return }
+		funcName = (functionName (function proto))
+	} else {
+		funcName = (primName (expression aBlock))
+	}
+
+	allFunctions = (dictionary)
+	for f (allFunctions (project scripter)) { atPut allFunctions (functionName f) f }
+
+	result = (list)
+	appendCallsForFunction this funcName result '' allFunctions (array funcName)
+
+	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
+	setTitle ws 'Call Tree'
+	setFont ws 'Arial' (16 * (global 'scale'))
+	setExtent (morph ws) (400 * (global 'scale')) (400 * (global 'scale'))
+	fixLayout ws
+}
+
+method appendCallsForFunction SmallRuntime funcName result indent allFunctions callers {
+	func = (at allFunctions funcName)
+
+	argCount = (count (argNames func))
+	localCount = (count (localNames func))
+	stackWords = (+ 3 argCount localCount)
+	info = ''
+	if (or (argCount > 0) (localCount > 0)) {
+		info = (join info ' (')
+		if (argCount > 0) {
+			info = (join info argCount ' arg')
+			if (argCount > 1) { info = (join info 's') }
+			if (localCount > 0) { info = (join info ', ') }
+		}
+		if (localCount > 0) {
+			info = (join info localCount ' local')
+			if (localCount > 1) { info = (join info 's') }
+		}
+		info = (join info ')')
+	}
+	add result (join indent funcName info ' ' stackWords)
+	indent = (join '   ' indent)
+
+	if (isNil (cmdList func)) { return }
+
+	processed = (dictionary)
+	for cmd (allBlocks (cmdList func)) {
+		op = (primName cmd)
+		if (and (contains allFunctions op) (not (contains processed op))) {
+			if (contains callers op) {
+				add result (join indent '   ' funcName ' [recursive]')
+			} else {
+				appendCallsForFunction this op result indent allFunctions (copyWith callers op)
+			}
+			add processed op
+		}
+	}
+}
+
 // Decompiler tests
 
 method testDecompiler SmallRuntime aBlock {
