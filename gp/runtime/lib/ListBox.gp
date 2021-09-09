@@ -98,6 +98,8 @@ method setFont ListBox fName fSize {
 }
 
 method updateMorphContents ListBox {
+  changed morph
+
   // remove all existing list items, if any
   repeat (count (parts morph)) {destroy (at (parts morph) 1)}
   setWidth (bounds morph) 1
@@ -137,6 +139,8 @@ method updateMorphContents ListBox {
   // update sliders, if any
   owner = (owner morph)
   if (and (notNil owner) (isClass (handler owner) 'ScrollFrame'))  {updateSliders (handler owner)}
+
+  changed morph
 }
 
 method setMinWidth ListBox newWidth {
