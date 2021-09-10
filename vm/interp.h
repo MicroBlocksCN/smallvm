@@ -176,6 +176,9 @@ extern int extraByteDelay;
 #define needsIndexable			33	// Needs an indexable type such as a string or list
 #define joinArgsNotSameType		34	// All arguments to join must be the same type (e.g. lists)
 #define i2cTransferFailed		35	// I2C transfer failed
+#define needsByteArray			36	// Needs a byte array
+#define serialPortNotOpen		37	// Serial port not open
+#define serialWriteTooBig		38	// Serial port write is limited to 128 bytes
 
 // Runtime Operations
 
