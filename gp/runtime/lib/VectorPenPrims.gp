@@ -38,6 +38,9 @@ method fill VectorPenPrims fillColor {
 }
 
 method fillAndStroke VectorPenPrims fillColor borderColor borderWidth {
+	if (isNil borderColor) { borderColor = (gray 0) }
+	if (isNil borderWidth) { borderWidth = 1 }
+
 	pathFillAndStroke fillColor borderColor borderWidth
 }
 
