@@ -205,7 +205,11 @@ static void fill(OBJ fillColor, int doneFlag) {
 		}, colorString, doneFlag);
 	#else
 		setCairoColor(cairoCtx, fillColor);
-		cairo_fill(cairoCtx);
+		if (doneFlag) {
+			cairo_fill(cairoCtx);
+		} else {
+			cairo_fill_preserve(cairoCtx);
+		}
 	#endif
 }
 
