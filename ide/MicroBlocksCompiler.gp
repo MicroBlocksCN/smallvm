@@ -74,7 +74,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[serial:open]'			'serial open _ baud' 'num' 9600)
 		(array ' ' '[serial:close]'			'serial close')
 		(array 'r' '[serial:read]'			'serial read')
-		(array 'r' '[serial:write]'			'serial write _' 'auto' 'aByteStringListOrByteArray')
+		(array ' ' '[serial:write]'			'serial write _' 'auto' 'aByteStringListOrByteArray')
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'menu.buttonMenu' 'A')
