@@ -269,7 +269,6 @@ method fillAndStroke VectorPen fillColor borderColor borderWidth {
 // SVG support
 
 method initSVG VectorPen pageW pageH {
-print 'initSVG' pageW pageH
   if (isNil pageW) { pageW = 200 }
   if (isNil pageH)  {pageH = 250 }
   svgData = (list)
