@@ -1081,6 +1081,7 @@ method newPrimFor MicroBlocksModule oldPrim {
 	} ('newArray' == oldPrim) { return 'newList'
 	} ('fillArray' == oldPrim) { return 'fillList'
 	} ('sendBroadcastSimple' == oldPrim) { return 'sendBroadcast'
+	} ('split' == oldPrim) { return '[data:split]'
 	}
 	return nil
 }

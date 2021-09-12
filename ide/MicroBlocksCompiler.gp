@@ -157,6 +157,7 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' 'smiles' 2 5)
+		(array 'r' '[data:split]'		'split _ by _' 'str str' 'A,B,C' ',')
 	'Data-Advanced'
 		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' nil ' ')
 		'-'

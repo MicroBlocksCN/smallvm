@@ -1,6 +1,6 @@
 module DrawBot
 author 'MicroBlocks and José García'
-version 2 1
+version 2 2
 depends Servo Strings
 tags cnc protoneer drawbot plotter
 description 'Control CoreXY DrawBots that use the Protoneer CNC shield.'
@@ -168,7 +168,7 @@ to '_create letters 3' {
 }
 
 to '_plot commands' commands {
-  local 'cmd list' (split commands ',')
+  local 'cmd list' ('[data:split]' commands ',')
   for i (size (v 'cmd list')) {
     local 'key' (at 1 (at i (v 'cmd list')))
     local 'value' ('[data:copyFromTo]' (at i (v 'cmd list')) 2)
