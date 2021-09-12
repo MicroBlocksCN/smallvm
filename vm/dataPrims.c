@@ -453,6 +453,71 @@ OBJ primJoin(int argCount, OBJ *args) {
 	return result;
 }
 
+OBJ primSplit(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
+	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
+	char *s = obj2str(args[0]);
+	char *delim = obj2str(args[1]);
+	int delimLen = strlen(delim);
+
+	// count substrings for result
+	int resultCount = 0;
+	if (delimLen == 0) {
+		resultCount = countUTF8(s);
+	} else {
+		char *match = s;
+		while (match) {
+			resultCount++;
+			match = strstr(match + delimLen, delim);
+		}
+	}
+
+	// allocate result list
+	OBJ result = newObj(ListType, resultCount + 1, zeroObj);
+	if (!result) return result; // allocation failed
+	FIELD(result, 0) = int2obj(resultCount);
+
+	// add substrings to result list
+	if (delimLen == 0) {
+		// return a list containing the characters of s
+		char *last = s;
+		char *next = nextUTF8(last);
+		for (int i = 0; i < resultCount; i++) {
+			// allocate string and save in list
+			int byteCount = next - last;
+			OBJ item = newStringFromBytes(last, byteCount);
+			if (!item) return result; // allocation failed
+			FIELD(result, i + 1) = item;
+			last = next;
+			next = nextUTF8(last);
+		}
+	} else {
+		if (1 == resultCount) { // no delimiters found; return unsplit source string
+			FIELD(result, 1) = args[0];
+			return result;
+		}
+		int i = 1;
+		char *last = s;
+		char *next = strstr(last + 1, delim);
+		while (next && (i <= resultCount)) {
+			int byteCount = next - last;
+			OBJ item = newStringFromBytes(last, byteCount);
+			if (!item) return result; // allocation failed
+			FIELD(result, i++) = item;
+			last = next + delimLen;
+			next = strstr(last, delim);
+		}
+		if (i <= resultCount) { //
+			OBJ item = newStringFromBytes(last, strlen(last));
+			if (!item) return result; // allocation failed
+			FIELD(result, i++) = item;
+		}
+	}
+
+	return result;
+}
+
 OBJ primJoinStrings(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	if (!IS_TYPE(args[0], ListType)) return fail(needsListError);
@@ -699,6 +764,7 @@ static PrimEntry entries[] = {
 	{"addLast", primListAddLast},
 	{"delete", primListDelete},
 	{"join", primJoin},
+	{"split", primSplit},
 	{"copyFromTo", primCopyFromTo},
 	{"find", primFind},
 	{"joinStrings", primJoinStrings},
