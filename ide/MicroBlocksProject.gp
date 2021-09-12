@@ -776,9 +776,10 @@ method getNewerVersion MicroBlocksModule {
 	}
 
 	// Find the embedded lib path
+	moduleFileName = (join moduleName '.ubl')
 	v1 = version // current version
 	for filePath embeddedFiles {
-		if (endsWith filePath (join moduleName '.ubl')) {
+		if ((filePart filePath) == moduleFileName) {
 			cmdList = (parse (readEmbeddedFile filePath))
 			candidate = (newMicroBlocksModule moduleName)
 			loadFromCmds candidate cmdList
