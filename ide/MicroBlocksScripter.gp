@@ -664,7 +664,10 @@ method updateFunctionOrMethod MicroBlocksScripter script {
   if ('to' == (primName script)) {
     f = (functionNamed mbProject functionName)
   }
-  if (notNil f) { updateCmdList f newCmdList }
+  if (notNil f) {
+    updateCmdList f newCmdList
+    removeFieldsFromLocals f (allVariableNames mbProject)
+  }
 }
 
 method restoreScripts MicroBlocksScripter {

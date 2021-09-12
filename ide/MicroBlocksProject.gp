@@ -253,6 +253,7 @@ method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
 	for k (keys specList) { atPut blockSpecs k (at specList k) }
 	setScripts main (copy (scripts aClass))
 	updatePrimitives this
+	fixFunctionLocals this
 	return this
 }
 
@@ -274,6 +275,7 @@ method loadFromString MicroBlocksProject s {
 	}
 	checkForNewerLibraryVersions this
 	updatePrimitives this
+	fixFunctionLocals this
 	return this
 }
 
@@ -299,6 +301,7 @@ method addLibraryFromString MicroBlocksProject s libName fileName {
 			setPath lib nil
 		}
 		updatePrimitives lib
+		fixFunctionLocals this
 		installChoices lib project
 		importDependencies lib (scripter (smallRuntime))
 		addLibrary this lib
@@ -368,7 +371,14 @@ method codeString MicroBlocksProject {
 	return (joinStrings result)
 }
 
-// Updating primitives
+// Post-load processing
+
+method fixFunctionLocals MicroBlocksProject {
+	// Remove project variables for function locals.
+
+	projectVars = (allVariableNames this)
+	for f (allFunctions this) { removeFieldsFromLocals f projectVars }
+}
 
 method updatePrimitives MicroBlocksProject {
 	// Update primitives that have been replaced with newer versions.
