@@ -461,7 +461,7 @@ OBJ primSplit(int argCount, OBJ *args) {
 	char *delim = obj2str(args[1]);
 	int delimLen = strlen(delim);
 
-	// count substrings for result
+	// count substrings for result list
 	int resultCount = 0;
 	if (delimLen == 0) {
 		resultCount = countUTF8(s);
@@ -473,12 +473,13 @@ OBJ primSplit(int argCount, OBJ *args) {
 		}
 	}
 
-	// allocate result list
-	OBJ result = newObj(ListType, resultCount + 1, zeroObj);
-	if (!result) return result; // allocation failed
-	FIELD(result, 0) = int2obj(resultCount);
+	// allocate result list (stored in tempGCRoot so it will be processed by garbage collector
+	// if a GC happens during a later allocation)
+	tempGCRoot = newObj(ListType, resultCount + 1, zeroObj);
+	if (!tempGCRoot) return tempGCRoot; // allocation failed
+	FIELD(tempGCRoot, 0) = int2obj(resultCount);
 
-	// add substrings to result list
+	// add substrings to the result list
 	if (delimLen == 0) {
 		// return a list containing the characters of s
 		char *last = s;
@@ -487,15 +488,15 @@ OBJ primSplit(int argCount, OBJ *args) {
 			// allocate string and save in list
 			int byteCount = next - last;
 			OBJ item = newStringFromBytes(last, byteCount);
-			if (!item) return result; // allocation failed
-			FIELD(result, i + 1) = item;
+			if (!item) return falseObj; // allocation failed
+			FIELD(tempGCRoot, i + 1) = item;
 			last = next;
 			next = nextUTF8(last);
 		}
 	} else {
 		if (1 == resultCount) { // no delimiters found; return unsplit source string
-			FIELD(result, 1) = args[0];
-			return result;
+			FIELD(tempGCRoot, 1) = args[0];
+			return tempGCRoot;
 		}
 		int i = 1;
 		char *last = s;
@@ -503,19 +504,18 @@ OBJ primSplit(int argCount, OBJ *args) {
 		while (next && (i <= resultCount)) {
 			int byteCount = next - last;
 			OBJ item = newStringFromBytes(last, byteCount);
-			if (!item) return result; // allocation failed
-			FIELD(result, i++) = item;
+			if (!item) return falseObj; // allocation failed
+			FIELD(tempGCRoot, i++) = item;
 			last = next + delimLen;
 			next = strstr(last, delim);
 		}
 		if (i <= resultCount) { //
 			OBJ item = newStringFromBytes(last, strlen(last));
-			if (!item) return result; // allocation failed
-			FIELD(result, i++) = item;
+			if (!item) return falseObj; // allocation failed
+			FIELD(tempGCRoot, i++) = item;
 		}
 	}
-
-	return result;
+	return tempGCRoot;
 }
 
 OBJ primJoinStrings(int argCount, OBJ *args) {

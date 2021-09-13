@@ -67,7 +67,9 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 			int entryCount = primSets[i].entryCount;
 			for (int j = 0; j < entryCount; j++) {
 				if (0 == strcmp(entries[j].primName, primName)) {
-					return (entries[j].primFunc)(argCount - 2, args + 2); // call primitive
+					OBJ result = (entries[j].primFunc)(argCount - 2, args + 2); // call primitive
+					tempGCRoot = NULL; // clear tempGCRoot in case it was used
+					return result;
 				}
 			}
 		}
