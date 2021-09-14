@@ -113,8 +113,8 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 
 static OBJ primI2cWrite(int argCount, OBJ *args) {
 	// Write one or multiple bytes to the given I2C device. If the second argument is an
-	// integer, write it as a single byte. If it is a list of bytes, write those bytes.
-	// The list should contain integers in the range 0..255; anything else will be skipped.
+	// integer, write it as a single byte. If it is a byte array or list of bytes, write them.
+	// The list should contain integers in the range 0..255.
 
 	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
 	int deviceID = obj2int(args[0]);
@@ -123,14 +123,26 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	if (isInt(data)) {
-		Wire.write(obj2int(data) & 255);
+		int byteValue = obj2int(data);
+		if ((byteValue < 0) || (byteValue > 255)) fail(i2cValueOutOfRange);
+		Wire.write(byteValue & 255);
 	} else if (IS_TYPE(data, ListType)) {
 		int count = obj2int(FIELD(data, 0));
 		for (int i = 0; i < count; i++) {
 			OBJ item = FIELD(data, i + 1);
 			if (isInt(item)) {
-				Wire.write(obj2int(item) & 255);
+				int byteValue = obj2int(item);
+				if ((byteValue < 0) || (byteValue > 255)) fail(i2cValueOutOfRange);
+				Wire.write(byteValue & 255);
+			} else {
+				fail(i2cValueOutOfRange);
 			}
+		}
+	} else if (IS_TYPE(data, ByteArrayType)) {
+		uint8 *src = (uint8 *) &FIELD(data, 0);
+		int count = BYTES(data);
+		for (int i = 0; i < count; i++) {
+			Wire.write(*src++);
 		}
 	}
 	int error = Wire.endTransmission();

@@ -717,23 +717,37 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 
 OBJ primNewByteArray(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
+	if (!isInt(args[0])) return fail(needsIntegerError);
+
+	int byteCount = obj2int(args[0]);
+	if (byteCount < 0) byteCount = 0;
+	OBJ result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+	if (result) setByteCountAdjust(result, byteCount);
+	return result;
+}
+
+OBJ primAsByteArray(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
 	OBJ arg = args[0];
 	OBJ result = falseObj;
 	int byteCount;
 
 	if (isInt(arg)) {
-		byteCount = obj2int(arg);
-		if (byteCount < 0) byteCount = 0;
-		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
-		if (result) setByteCountAdjust(result, byteCount);
-	} else if (StringType == objType(arg)) {
+		int byteValue = obj2int(arg);
+		if ((byteValue < 0) || (byteValue > 255)) return fail(byteArrayStoreError);
+		result = newObj(ByteArrayType, 1, falseObj);
+		if (result) {
+			setByteCountAdjust(result, byteCount);
+			*((uint8 *) &FIELD(result, 0)) = byteValue;
+		}
+	} else if (IS_TYPE(arg, StringType)) {
 		byteCount = stringSize(arg);
 		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
 		if (result) {
 			setByteCountAdjust(result, byteCount);
 			memcpy(&FIELD(result, 0), obj2str(arg), byteCount);
 		}
-	} else if (ListType == objType(arg)) {
+	} else if (IS_TYPE(arg, ListType)) {
 		byteCount = obj2int(FIELD(arg, 0));
 		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
 		if (result) {
@@ -742,13 +756,16 @@ OBJ primNewByteArray(int argCount, OBJ *args) {
 			for (int i = 0; i < byteCount; i++) {
 				OBJ item = FIELD(arg, i + 1);
 				if (isInt(item)) {
-					int n = obj2int(item);
-					if (n < 0) n = 0;
-					if (n > 255) n = 255;
-					bytes[i] = n;
+					int byteValue = obj2int(item);
+					if ((byteValue < 0) || (byteValue > 255)) return fail(byteArrayStoreError);
+					bytes[i] = byteValue;
 				}
 			}
 		}
+	} else if (IS_TYPE(arg, ByteArrayType)) {
+		result = arg;
+	} else {
+		return fail(byteArrayStoreError);
 	}
 	return result;
 }
@@ -771,6 +788,7 @@ static PrimEntry entries[] = {
 	{"unicodeAt", primUnicodeAt},
 	{"unicodeString", primUnicodeString},
 	{"newByteArray", primNewByteArray},
+	{"asByteArray", primAsByteArray},
 	{"freeMemory", primFreeMemory},
 };
 

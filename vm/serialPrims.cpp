@@ -253,20 +253,6 @@ static OBJ primSerialWrite(int argCount, OBJ *args) {
 		serialWriteSync((uint8 *) s, strlen(s));
 	} else if (IS_TYPE(arg, ByteArrayType)) { // byte array
 		serialWriteSync((uint8 *) &FIELD(arg, 0), BYTES(arg));
-	} else if (IS_TYPE(arg, ListType)) { // list of bytes
-		uint8 buf[TX_BUF_SIZE]; // buffer for list contents
-		int listSize = obj2int(FIELD(arg, 0));
-		if (listSize > (int) sizeof(buf)) return fail(serialWriteTooBig);
-		int byteCount = 0;
-		uint8 *dst = buf;
-		for (int i = 1; i <= listSize; i++) {
-			OBJ item = FIELD(arg, i);
-			if (isInt(item)) {
-				*dst++ = obj2int(item) & 255;
-				byteCount++;
-			}
-		}
-		serialWriteSync(buf, byteCount);
 	}
 	return falseObj;
 }
