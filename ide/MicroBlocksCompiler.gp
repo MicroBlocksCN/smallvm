@@ -74,7 +74,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[serial:open]'			'serial open _ baud' 'num' 9600)
 		(array ' ' '[serial:close]'			'serial close')
 		(array 'r' '[serial:read]'			'serial read')
-		(array ' ' '[serial:write]'			'serial write _' 'auto' 'aByteStringListOrByteArray')
+		(array ' ' '[serial:write]'			'serial write _' 'auto' 'aByteStringOrByteArray')
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'menu.buttonMenu' 'A')
@@ -166,6 +166,7 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' 'newList'				'new list length _' 'num' 10)
 		(array 'r' '[data:newByteArray]'	'new byte array _' 'auto' 5)
+		(array 'r' '[data:asByteArray]'		'as byte array _' 'auto' 'aByteListOrString')
 		(array 'r' '[data:freeMemory]'		'free memory')
 
 	// The following block specs allow primitives to be rendered correctly
