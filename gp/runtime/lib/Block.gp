@@ -937,6 +937,9 @@ method exportAsImageScaled Block scale result {
   bnds = (fullBounds (morph scaledScript))
   scriptW = (width bnds)
   scriptH = (height bnds)
+  if ('reporter' == type) {
+    scriptH += (3 * (blockScale)) // padding to align reporter and command block bottoms in Wiki
+  }
 
   // draw the result bubble, if any
   if (notNil result) {

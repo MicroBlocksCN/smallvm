@@ -305,7 +305,7 @@ method cleanUp ScriptEditor {
 
 method setBlockSize ScriptEditor {
   menu = (menu nil (action 'setBlockScalePercent' this) true)
-  for percent (list 50 75 100 125 150 175 200 250) {
+  for percent (list 55 75 100 110 125 150 175 200 250) {
 	  addItem menu (join '' percent '%') percent
   }
   popUpAtHand menu (global 'page')
