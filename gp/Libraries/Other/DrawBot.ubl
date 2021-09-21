@@ -1,4 +1,4 @@
-module DrawBot
+module DrawBot Output
 author 'MicroBlocks and José García'
 version 2 2
 depends Servo Strings

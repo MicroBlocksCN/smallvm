@@ -1,4 +1,4 @@
-module VL53L0X
+module VL53L0X Input
 author 'José García Yeste'
 version 1 0 
 tags sensor distance 

@@ -1,4 +1,4 @@
-module 'DAC MCP4725'
+module 'DAC MCP4725' Output
 author 'Luis Mateos - @proyectonoise'
 version 1 0 
 tags DAC MCP4725 
