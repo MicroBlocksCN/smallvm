@@ -3,7 +3,7 @@ author unknown
 version 1 0 
 description ''
 
-script 388 50 {
+script 387 49 {
 comment 'NOTE: Requires an ESP-based board with a built-in
 accelerometer, like the M5Stick, the M5Stack Core Grey
 (not the M5Stack Core Basic) or the Citilab ED1.
@@ -17,7 +17,7 @@ and catch it.
 acceleration throughout the launch.'
 }
 
-script 50 111 {
+script 49 111 {
 whenButtonPressed 'A'
 '[file:delete]' 'launch data'
 '[file:open]' 'launch data'
@@ -27,7 +27,7 @@ repeat 1000 {
 '[file:close]' 'launch data'
 }
 
-script 408 323 {
+script 407 323 {
 comment 'graph script'
 '[file:open]' 'launch data'
 repeat 1000 {
@@ -52,9 +52,9 @@ description 'Provides blocks to read tilt in the three axes, acceleration, tempe
 
 module Files Data
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags data esp 
-description 'Flash file system operations. Currently supports the SPIFFS file system on ESP8266 and ESP32 boards.'
+description 'Flash file system operations. Currently supports the SPIFFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
 
 	spec ' ' '[file:open]' 'open file _' 'str'
 	spec ' ' '[file:close]' 'close file _' 'str'
@@ -64,12 +64,12 @@ description 'Flash file system operations. Currently supports the SPIFFS file sy
 	spec 'r' '[file:endOfFile]' 'end of file _' 'str'
 	spec 'r' '[file:readLine]' 'next line of file _' 'str'
 	spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
-	spec 'r' 'file names' 'file names'
+	spec 'r' 'file names' 'file names : in directory _' 'str'
 	spec 'r' '[file:fileSize]' 'size of file _' 'str'
 	spec 'r' '[file:systemInfo]' 'file system info'
 
-to 'file names' {
-  '[file:startList]'
+to 'file names' dir {
+  '[file:startList]' dir
   local 'result' ('[data:makeList]')
   local 'fileName' ('[file:nextInList]')
   repeatUntil (fileName == '') {

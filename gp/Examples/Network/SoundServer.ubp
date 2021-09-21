@@ -41,7 +41,7 @@ headers (the byte sequence CR-LF-CR-LF).'
   }
 }
 
-script 54 50 {
+script 53 49 {
 whenStarted
 comment 'Fill in the name and password for your WiFi network:'
 'wifi connect to' 'Network_Name' '' 3
@@ -82,9 +82,9 @@ forever {
 
 module Files Data
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags data esp 
-description 'Flash file system operations. Currently supports the SPIFFS file system on ESP8266 and ESP32 boards.'
+description 'Flash file system operations. Currently supports the SPIFFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
 
 	spec ' ' '[file:open]' 'open file _' 'str'
 	spec ' ' '[file:close]' 'close file _' 'str'
@@ -94,12 +94,12 @@ description 'Flash file system operations. Currently supports the SPIFFS file sy
 	spec 'r' '[file:endOfFile]' 'end of file _' 'str'
 	spec 'r' '[file:readLine]' 'next line of file _' 'str'
 	spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
-	spec 'r' 'file names' 'file names'
+	spec 'r' 'file names' 'file names : in directory _' 'str'
 	spec 'r' '[file:fileSize]' 'size of file _' 'str'
 	spec 'r' '[file:systemInfo]' 'file system info'
 
-to 'file names' {
-  '[file:startList]'
+to 'file names' dir {
+  '[file:startList]' dir
   local 'result' ('[data:makeList]')
   local 'fileName' ('[file:nextInList]')
   repeatUntil (fileName == '') {
