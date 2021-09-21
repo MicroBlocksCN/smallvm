@@ -246,7 +246,7 @@ method contextMenu Block {
   }
   addLine menu
   if (and (not isInPalette) (notNil (next this))) {
-    addItem menu 'extract block' 'pickUp' 'pull out this block'
+    addItem menu 'extract block' 'extractBlock' 'pull out this block'
   }
   addLine menu
   addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this) 'copy these blocks to the clipboard')
@@ -299,7 +299,7 @@ method contextMenu Block {
   return menu
 }
 
-method pickUp Block {
+method extractBlock Block {
   if ('reporter' != type) { // hat or command
     nxt = (next this)
     if (and (notNil nxt) (notNil (owner morph))) {
@@ -316,6 +316,7 @@ method pickUp Block {
         addPart scripts (morph nxt)
         fixBlockColor nxt
       }
+      setNext this nil
     }
   }
   grabCentered morph this
