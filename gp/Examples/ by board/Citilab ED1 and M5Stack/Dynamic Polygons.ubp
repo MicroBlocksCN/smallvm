@@ -33,14 +33,14 @@ to polygon sides size xoffset {
   'pen up'
 }
 
-script 497 50 {
+script 497 49 {
 whenCondition (('[sensors:tiltZ]') < -140)
 deco += 1
 deco = (deco % 4)
 waitMillis 200
 }
 
-script 51 55 {
+script 51 54 {
 comment '    By José García Yeste - Citilab
 ===========================
 A cool Turtle library demo!
@@ -57,7 +57,7 @@ whenCondition ('OK button')
 setPenToRandomColor
 }
 
-script 50 231 {
+script 49 231 {
 whenStarted
 deco = 1
 'set pen color to' (colorSwatch 195 188 254 255)
@@ -72,7 +72,7 @@ forever {
 }
 }
 
-script 505 305 {
+script 504 305 {
 whenButtonPressed 'A'
 setPenToRandomColor
 }
@@ -151,17 +151,22 @@ to 'up button' {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
 	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
 
 to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 
@@ -209,10 +214,11 @@ to randomColor {
 
 module Turtle Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 depends TFT 
 tags tft graphics draw 
-description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.
+'
 variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
 
 	spec ' ' 'home' 'home'
@@ -259,7 +265,6 @@ to 'go to x' x y {
 
 to home {
   if (0 == _turtlePenIsDown) {
-    '[tft:enableDisplay]' true
     'set pen color to' (colorSwatch 7 255 1 255)
     '[display:mbDisplayOff]'
     'pen up'
