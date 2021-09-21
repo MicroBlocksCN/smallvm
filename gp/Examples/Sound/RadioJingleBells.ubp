@@ -4,14 +4,14 @@ version 1 0
 description ''
 variables 'part A' 'part B' 'part C' 
 
-script 50 50 {
+script 49 49 {
 comment 'This project uses two micro:bit''s to play two-part harmony.
 When the A button is pressed on one board, it starts
 playing the tune and sends a radio message to the other
 board to tell it to start playing the harmony.'
 }
 
-script 380 144 {
+script 379 144 {
 whenCondition ('[radio:messageReceived]')
 if (('[radio:receivedString]') == 'start') {
   sendBroadcast 'bells'
@@ -35,7 +35,7 @@ c5,c5,c.5,8c5,c5,b,b.,8b,b,a,a.,8b,2a,2s,
 c5,c5,c.5,8c5,c5,b,b.,8b,d5,d5,c5,a,g,s,g2'
 }
 
-script 52 348 {
+script 51 348 {
 whenBroadcastReceived 'bells'
 repeat 16 {
   '[display:mbDisplay]' 32979072
@@ -53,7 +53,7 @@ repeat 16 {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
@@ -65,6 +65,10 @@ description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Ca
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 

@@ -4,12 +4,12 @@ version 1 0
 description ''
 variables 'changing sparsity' sparsity 
 
-script 416 50 {
+script 416 49 {
 comment 'Generates symmetric patterns on the BBC micro:bit 5x5 LED display'
 comment 'Use the A and B buttons to control the sparsity of dots in the patterns'
 }
 
-script 54 56 {
+script 53 56 {
 whenStarted
 'changing sparsity' = (booleanConstant false)
 sparsity = 4
@@ -33,7 +33,7 @@ forever {
 }
 }
 
-script 418 122 {
+script 417 122 {
 whenButtonPressed 'A'
 'changing sparsity' = (booleanConstant true)
 if (sparsity > 1) {
@@ -44,7 +44,7 @@ scroll_number sparsity 100
 'changing sparsity' = (booleanConstant false)
 }
 
-script 418 375 {
+script 417 375 {
 whenButtonPressed 'B'
 'changing sparsity' = (booleanConstant true)
 sparsity += 1
@@ -56,17 +56,22 @@ scroll_number sparsity 100
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
 	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
 
 to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 
