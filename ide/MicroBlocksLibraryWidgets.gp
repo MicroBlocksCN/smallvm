@@ -369,16 +369,24 @@ method justDropped MicroBlocksLibraryItemMorph aHand { itemDropped itemViewer th
 
 method handEnter MicroBlocksLibraryItemMorph aHand {
 	if (notNil onClick) {
-		setColor text (gray 0) (gray 0) (gray 180)
+		setCostumeColor this (gray 180)
 	}
 }
 
 method handLeave MicroBlocksLibraryItemMorph aHand {
 	if (notNil onClick) {
-		setColor text (gray 0) (gray 0) (gray 200)
+		setCostumeColor this (gray 200)
 	}
 }
 
+method setCostumeColor MicroBlocksLibraryItemMorph color {
+	fontName = 'Arial'
+	fontSize = (14 * (global 'scale'))
+	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
+
+	bm = (stringImage itemName fontName fontSize (gray 0) 'center' nil 0 0 5 3 color)
+	setCostume morph bm
+}
 
 // Library properties frame
 // ------------------------
