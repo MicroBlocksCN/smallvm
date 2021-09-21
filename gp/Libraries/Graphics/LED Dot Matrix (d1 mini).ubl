@@ -1,4 +1,4 @@
-module 'LED Dot Matrix' output
+module 'LED Dot Matrix' Output
 author MicroBlocks
 version 1 0 
 tags display d1mini 
