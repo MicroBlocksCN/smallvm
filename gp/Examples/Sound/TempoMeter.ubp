@@ -4,13 +4,13 @@ version 1 0
 description ''
 variables clapsPerMinute lastClapTime 
 
-script 50 50 {
+script 49 49 {
 comment 'Click start and then clap at a steady rate.
 This program will show the tempo in
 beats per minute (bpm).'
 }
 
-script 53 125 {
+script 53 124 {
 whenCondition ((loudness) > 80)
 local 'now' (millisOp)
 clapsPerMinute = (60000 / (now - lastClapTime))
@@ -32,7 +32,7 @@ forever {
 
 module Microphone Input
 author MicroBlocks
-version 1 1 
+version 1 2 
 description 'Microphone, loudness, and clap counting support for boards with built in microphones. The microphone block usually reports values between -512 and 511, with zero for silence. However, very loud sounds may exceed that range on some boards. On the micro:bit v2, the microphone must be turned on before use.'
 variables _clapThreshold _loudnessSamples 
 
@@ -64,7 +64,7 @@ to clapCount {
   waitUntil ((loudness) > _clapThreshold)
   local 'count' 1
   forever {
-    waitUntil ((loudness) < _clapThreshold)
+    waitUntil ((loudness) < ((3 * _clapThreshold) / 4))
     resetTimer
     repeatUntil ((loudness) > _clapThreshold) {
       comment 'This loop awaits either the next clap or for a pause, indicating that the claps have ended.'
