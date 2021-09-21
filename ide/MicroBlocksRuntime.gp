@@ -1049,10 +1049,12 @@ method installBoardSpecificBlocks SmallRuntime {
 	} (or ('micro:bit' == boardType) ('micro:bit v2' == boardType)) {
 		importEmbeddedLibrary scripter 'Basic Sensors'
 		importEmbeddedLibrary scripter 'LED Display'
+		importEmbeddedLibrary scripter 'Scrolling'
 	} ('Calliope' == boardType) {
 		importEmbeddedLibrary scripter 'Calliope'
 		importEmbeddedLibrary scripter 'Basic Sensors'
 		importEmbeddedLibrary scripter 'LED Display'
+		importEmbeddedLibrary scripter 'Scrolling'
 	} ('CircuitPlayground' == boardType) {
 		importEmbeddedLibrary scripter 'Circuit Playground'
 		importEmbeddedLibrary scripter 'Basic Sensors'
