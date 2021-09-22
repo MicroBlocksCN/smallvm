@@ -38,6 +38,7 @@ method initialize MicroBlocksScripter aProjectEditor {
 
   categorySelector = (newCategorySelector (categories this) (action 'categorySelected' this))
   setFont categorySelector fontName fontSize
+  setExtent (morph categorySelector) (140 * scale) 100
   addPart morph (morph categorySelector)
 
   libSelector = (newCategorySelector (array) (action 'librarySelected' this))
