@@ -713,8 +713,10 @@ method downArrowButton InputDeclaration action {
 
 method setType InputDeclaration typeStr defaultValue {
   if (isNil defaultValue) {
-    if ('auto' == typeStr) {
+    if (isOneOf typeStr 'auto' 'num') {
       defaultValue = 10
+    } ('str' == typeStr) {
+      defaultValue = 'text'
     } ('bool' == typeStr) {
       defaultValue = true
     }
@@ -799,5 +801,10 @@ method typesMenu InputDeclaration {
   addItem menu 'number/string' 'auto' 'editable number or string'
   addItem menu '' 'bool' 'boolean switch' (fullCostume (morph (element this 'bool')))
   addItem menu '' 'color' 'color patch' (fullCostume (morph (element this 'color')))
+  if (devMode) {
+    addLine menu
+    addItem menu 'number only' 'num'
+    addItem menu 'string only' 'str'
+  }
   popUp menu (global 'page') (left morph) (bottom morph)
 }
