@@ -220,7 +220,7 @@ method stroke VectorPen borderColor width joint cap {
   if (isNil cap) { cap = 0 }
 
   if (notNil svgData) {
-	add svgData (join '	<path stroke=' (svgColor this borderColor) ' stroke-width="' width '" ' (svgPath this path) '/>')
+	add svgData (join '	<path stroke=' (svgColor this borderColor) ' stroke-width="' width 'mm" ' (svgPath this path) '/>')
 	return
   }
   if usePrimitives {
@@ -276,8 +276,8 @@ method initSVG VectorPen pageW pageH {
 	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns="http://www.w3.org/2000/svg"
 	fill="none" fill-rule="evenodd"
-	stroke="none" stroke-width="0.1"
-	stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10"'
+	stroke="#000000" stroke-width="0.1mm"
+	stroke-linecap="butt" stroke-linejoin="round"'
   add svgData (join '	viewBox="0 0 ' pageW ' ' pageH '"')
   add svgData (join '	width="' pageW 'mm"')
   add svgData (join '	height="' pageH 'mm">')
@@ -292,8 +292,18 @@ method saveSVGFile VectorPen fileName {
   writeFile fileName data
 }
 
+method twoHexDigits VectorPen n {
+  result = (toStringBase16 n)
+  if ((count result) == 1) { result = (join '0' result) }
+  return result
+}
+
 method svgColor VectorPen aColor {
-  return (join '"rgba(' (red aColor) ',' (green aColor) ',' (blue aColor) ')"')
+  return (join '"#'
+    (twoHexDigits this (red aColor))
+    (twoHexDigits this (green aColor))
+    (twoHexDigits this (blue aColor))
+    '"')
 }
 
 method newSVGGroup VectorPen {
