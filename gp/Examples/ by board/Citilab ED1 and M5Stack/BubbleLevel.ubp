@@ -19,8 +19,9 @@ forever {
 
 module 'Basic Sensors' Input
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags tilt acceleration light sensor 
+choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
 	spec 'r' '[sensors:tiltX]' 'tilt x'
@@ -29,6 +30,12 @@ description 'Provides blocks to read tilt in the three axes, acceleration, tempe
 	spec 'r' '[sensors:acceleration]' 'acceleration'
 	spec 'r' '[display:lightLevel]' 'light level'
 	spec 'r' '[sensors:temperature]' 'temperature (°C)'
+	spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+
+to '_setAccelRange' n {
+  '[sensors:setAccelerometerRange]' (0 + n)
+}
+
 
 module TFT Output
 author MicroBlocks
