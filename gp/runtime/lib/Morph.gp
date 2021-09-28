@@ -667,6 +667,12 @@ method fullCostume Morph {
   fb = (fullBounds this)
   w = (ceiling (width fb))
   h = (ceiling (height fb))
+  if (or (w > 2000) (h > 4000)) {
+    // truncate size to avoid running out of memory
+    print 'Cropping image to avoid running out of memory'
+    w = (min w 2000)
+    h = (min h 4000)
+  }
   if (or (w == 0) (h == 0)) {return (newBitmap 1 1)}
   result = (newBitmap w h (gray 0 0))
   offX = ((left this) - (left fb))
