@@ -868,10 +868,11 @@ method collectVars SmallCompiler cmdOrReporter {
 		if (isOneOf (primName cmd) 'local' 'for') {
 			// explicit local variables and 'for' loop indexes are always local
 			varName = (first (argList cmd))
-			if (not (or
-				(contains argNames varName)
-				(contains localVars varName))) {
-					atPut localVars varName (count localVars)
+			if (contains argNames varName) {
+				print 'Warning: Local variable overrides parameter:' varName
+			}
+			if (not (contains localVars varName)) {
+				atPut localVars varName (count localVars)
 			}
 		} (isOneOf (primName cmd) 'v' '=' '+=') {
 			// undeclared variables that are not global (shared) are treated as local
