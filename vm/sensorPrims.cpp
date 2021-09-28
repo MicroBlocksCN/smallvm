@@ -165,6 +165,7 @@ static void initSPI() {
 		setPinMode(PIN_SPI_MOSI, OUTPUT);
 		setPinMode(PIN_SPI_SCK, OUTPUT);
 	#endif
+	SPI.begin();
 	SPI.beginTransaction(SPISettings(spiSpeed, MSBFIRST, spiMode));
 }
 
