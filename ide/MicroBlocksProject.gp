@@ -271,6 +271,7 @@ method loadFromString MicroBlocksProject s {
 		} else { // library
 			lib = (loadFromCmds (newMicroBlocksModule) cmdList true)
 			atPut libraries (moduleName lib) lib
+			installChoices lib this
 		}
 	}
 	checkForNewerLibraryVersions this
