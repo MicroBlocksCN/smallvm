@@ -720,6 +720,7 @@ static int readAcceleration(int registerID) {
 	if (!accelStarted) {
 		writeI2CReg(LIS3DH_ID, 0x20, 0x8F); // turn on accelerometer, 1600 Hz update, 8-bit (low power) mode
 		writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
+		delay(2);
 		accelStarted = true;
 	}
 	int val = readI2CReg(LIS3DH_ID, 0x28 + registerID);
