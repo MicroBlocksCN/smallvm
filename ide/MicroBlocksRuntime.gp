@@ -1654,6 +1654,9 @@ method isRunning SmallRuntime aBlock {
 // File Transfer Support
 
 method boardHasFileSystem SmallRuntime {
+	if (true == disconnected) { return false }
+	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
+	if (isNil port) { return false }
 	if (isNil boardType) { getVersion this }
 	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040')
 }
@@ -1678,8 +1681,13 @@ method getFileListFromBoard SmallRuntime {
 }
 
 method getFileFromBoard SmallRuntime {
+	fileNames = (sorted (getFileListFromBoard this))
+	if (isEmpty fileNames) {
+		inform 'No files on board.'
+		return
+	}
 	menu = (menu 'File to read from board:' (action 'getAndSaveFile' this) true)
-	for fn (sorted (getFileListFromBoard this)) {
+	for fn fileNames {
 		addItem menu fn
 	}
 	popUpAtHand menu (global 'page')
