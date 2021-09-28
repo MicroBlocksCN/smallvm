@@ -243,6 +243,7 @@ method enterKey Caret {
 
 method tabToNextEntryField Caret shiftDown {
   page = (page morph)
+  if (isNil page) { return }
   isEditField = (function item {return (and (isClass (handler item) 'Text') ((editRule (handler item)) != 'static'))})
   fields = (filter isEditField (allMorphs (morph page)))
   idx = (indexOf fields (morph target))
