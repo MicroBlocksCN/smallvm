@@ -6,9 +6,14 @@ to newColorPicker action initialColor {
 
   for m (parts (morph (global 'page'))) {
 	if (isClass (handler m) 'ColorPicker') {
-	  setAction (handler m) action
-	  changed m
-	  return (handler m)
+      picker = (handler m)
+	  setAction picker action
+	  if (notNil initialColor) {
+	    setField picker 'lastColor' initialColor
+	    selectColor picker initialColor true
+	  }
+	  changed (morph picker)
+	  return picker
 	}
   }
   return (initialize (new 'ColorPicker') action initialColor)
