@@ -607,6 +607,13 @@ method processEvent Keyboard evt {
 			if (notNil (findMorph 'Prompter')) {
 				accept (handler (findMorph 'Prompter'))
 			}
+			filePicker = (findMorph 'FilePicker')
+			if (isNil filePicker) {
+				filePicker = (findMorph 'MicroBlocksFilePicker')
+			}
+			if (notNil filePicker) {
+				okay (handler filePicker)
+			}
 		}
 		if (and (111 == (at evt 'char')) (or (controlKeyDown this) (commandKeyDown this))) {
 			// cmd-O or ctrl-O - open file dialog

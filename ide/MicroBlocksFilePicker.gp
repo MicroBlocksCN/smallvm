@@ -450,6 +450,7 @@ method newFolder MicroBlocksFilePicker {
 }
 
 method okay MicroBlocksFilePicker {
+  removeFromOwner morph
   answer = ''
   if forSaving {
 	answer = (join currentDir '/' (text (contents nameField)))
@@ -462,7 +463,6 @@ method okay MicroBlocksFilePicker {
   if (and useEmbeddedFS ('' != answer)) { answer = (join '//' answer) }
   if (and (notNil action) ('' != answer)) { call action answer }
   isDone = true
-  removeFromOwner morph
 }
 
 method fileOrFolderSelected MicroBlocksFilePicker {
