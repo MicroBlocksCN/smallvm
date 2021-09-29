@@ -1,0 +1,1004 @@
+module '128x64OLED(1306-09)' Output
+author 'Turgut Guneysu'
+version 1 0 
+description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C.'
+depends Strings miscPrims
+variables _cList _dList _INITseq _cTABLE OLEDready _row _col _begCol _begRow _endCol _endRow _cStarts _GDBuffer _displayType _cHexTBL _09ResetPin OLEDi2cAddr _delayGDUpd _hexTbl _clearSprite _imgBMPTbl _GDBufReady 
+
+	spec ' ' 'OLEDInit' 'OLEDInit 0.96"< _ >2.4" ResetPin# _ I2Caddr(hex) _' 'bool auto auto' false 0 '3C'
+	spec ' ' 'OLEDClear' 'OLEDClear'
+	spec ' ' 'OLEDColMode' 'OLEDColMode Beg(1-16) _ End(1-16) _' 'auto auto' 1 16
+	spec ' ' 'OLEDContrast' 'OLEDContrast (1-4) _' 'auto' 4
+	spec ' ' 'OLEDCursorReset' 'OLEDCursorReset'
+	spec ' ' 'OLEDDisplay' 'OLEDDisplay Off< _ >On' 'bool' true
+	spec ' ' 'OLEDDispString' 'OLEDDispString _ InvYN _ : Row(1-8) _ Col(1-16) _' 'auto bool auto auto' 'Hello!' false 1 1
+	spec ' ' 'OLEDDrawCircle' 'OLEDDrawCircle Cx(0-127) _ Cy(0-63) _ R _ Pix On _' 'auto auto auto bool' 64 32 '10' true
+	spec ' ' 'OLEDDrawLine' 'OLEDDrawLine x0(0-127) _ y0(0-63) _ x1 _ y1 _ pixOn _' 'auto auto auto auto bool' 0 0 127 63 true
+	spec ' ' 'OLEDDrawPic' 'OLEDDrawPic ImgList _ To Display< _ >ToGDBuffer' 'auto bool' '' false
+	spec ' ' 'OLEDDrawRect TLx(0-127)' 'OLEDDrawRect TLx(0-127) _ TLy(0-63) _ BRx _ BRy _ Pix On _ Rounded _ R(3-15) _' 'auto auto auto auto bool bool auto' 0 0 127 63 true false 3
+	spec ' ' 'OLEDDrawSprite' 'OLEDDrawSprite _ Row(1-8) _ Col(1-128) _' 'auto auto auto' 0 1 1
+	spec ' ' 'OLEDDrawString' 'OLEDDrawString _ Row(1-8) _ Col(1-128) _ InvYN _' 'auto auto auto bool' 'Hello!' 1 1 false
+	spec 'r' 'OLEDMakeSprite' 'OLEDMakeSprite _ : sprSeed(0-33554431) _' 'microbitDisplay auto' 15237440 0
+	spec ' ' 'OLEDMode' 'OLEDMode Vert< _ >Hor' 'bool' true
+	spec ' ' 'OLEDPixel' 'OLEDPixel Px(0-127) _ Py(0-63) _ Pix On _' 'auto auto bool' 0 0 true
+	spec ' ' 'OLEDSetVideo' 'OLEDSetVideo Normal _ Inverse' 'bool' true
+	spec ' ' 'OLEDShowGDBuffer' 'OLEDShowGDBuffer'
+	spec ' ' '_2xHighMode' '_2xHighModeYN _' 'bool' true
+	spec ' ' '_GDDRAMoff' '_GDDRAMoff'
+	spec ' ' '_GDDRAMon' '_GDDRAMon'
+	spec ' ' '_OLED1309Reset' '_OLED1309Reset Pin# _' 'auto' '10'
+	spec ' ' '_OLEDScroll-R/L' '_OLEDScroll-R/L _ BegRow(1-8) _ EndRow _ BegCol_9(1-128) _ EndCol_9 _' 'auto auto auto auto auto' 'R' 1 8 1 128
+	spec ' ' '_OLEDScroll-VR/VL' '_OLEDScroll-VR/VL _ BegRow(1-8) _ EndRow _ #Hor(0-1) _ #Ver(0-63) _ BegCol(1-128) _ EndCol _' 'auto auto auto auto auto auto auto' 'VR' 1 8 0 1 1 128    
+	spec ' ' '_OLEDStopScroll' '_OLEDStopScroll'
+	spec ' ' '_T1' '_T1'
+	spec ' ' '_T2' '_T2'
+	spec ' ' '_T3' '_T3'
+	spec ' ' '_T4' '_T4'
+	spec ' ' '_buildHexTBL' '_buildHexTBL'
+	spec 'r' '_cBMP' '_cBMP _ InvYN _' 'auto bool' '' false
+	spec ' ' '_corner' '_corner _ _ _ _' 'auto auto auto auto' 'TL' 32 1 0
+	spec 'r' '_dec2hex' '_dec2hex _' 'auto' 0
+	spec ' ' '_initChars' '_initChars'
+	spec ' ' '_initCheck' '_initCheck'
+	spec ' ' '_initDisplayHW' '_initDisplayHW _' 'auto' 0
+	spec ' ' '_initGDBuffer' '_initGDBuffer'
+	spec ' ' '_proc10' '_proc10'
+	spec ' ' '_processString' '_processString _ _' 'auto bool' '' false
+	spec ' ' '_sendCmd' '_sendCmd _' 'auto' ''
+	spec 'r' '_valicC' '_validC _' 'auto' 1
+	spec 'r' '_validR' '_validR _' 'auto' 1
+	spec 'r' '_validScrollCol' '_validScrollCol _' 'auto' 1
+	spec ' ' '_validateArgs' '_validateArgs _ _' 'auto auto' 1 1
+
+to OLEDClear {
+  comment 'Set bounds to FullScreen and CLEARs display
+and GDBuffer
+Executes here, doesn''t call _sendCMD
+Max i2c IO is 64 bytes: 1cmd + 63bytes'
+  '_initCheck'
+  local 'clearBuff' (newList 1024)
+  local 'idx' 0
+  OLEDCursorReset
+  repeat 17 {
+    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' ('[data:makeList]' (hexToInt '40')) ('[data:copyFromTo]' clearBuff idx (idx + 60)))
+    idx += 61
+  }
+  '_initGDBuffer'
+}
+
+to OLEDColMode begC endC {
+  comment 'When using OLEDDispString, restricts horizontal display area between the specified columns.
+This will allow one to display text at any column position by aligning it vertically at that column.'
+  '_initCheck'
+  if (and (and ('_valicC' begC) ('_valicC' endC)) (begC <= endC)) {
+    _col = begC
+    _begCol = (hexToInt (at begC _cStarts))
+    _endCol = ((hexToInt (at endC _cStarts)) + 7)
+    _begRow = (_row - 1)
+    _endRow = 7
+    local 'comma' ('[data:unicodeString]' 44)
+    comment 'ROW = 22, COL=21
+All values are in HEX'
+    OLEDMode true
+    '_sendCmd' ('[data:join]' '22' comma _begRow comma _endRow comma '21' comma ('_dec2hex' _begCol) comma ('_dec2hex' _endCol))
+  } else {
+    sayIt 'Invalid COLUMN value.'
+    stopTask
+  }
+}
+
+to OLEDContrast contrast {
+  comment 'Sets the brightness control of the display to one of four values.
+1 is the least bright, 4 is the brightest setting.'
+  '_initCheck'
+  local 'cLevels' ('[data:makeList]' 0 '1F' '2F' 'F0')
+  if (and (contrast >= 1) (contrast <= 4)) {
+    local 'i2cCmd' ('[data:join]' '81' ',' (at contrast cLevels))
+    '_sendCmd' i2cCmd
+  } else {
+    sayIt 'Error in CONTRAST Level'
+  }
+}
+
+
+to OLEDDispString string invFlag row col {
+  comment 'Displays strings of any length directly to the display.
+Strings may include \n newline characters to advance to the next line on the display.
+If no row or col is specified, consecutive use of this block will display the string at
+the location after the previous display operation.'
+  '_initCheck'
+  if ((size string) == 0) {
+    sayIt 'Invalid STRING value.'
+    stopTask
+  }
+  if ((pushArgCount) > 2) {
+    '_validateArgs' row col
+  }
+  for char string {
+    comment 'If \n skip it'
+    if (('[data:unicodeAt]' 1 char) == 10) {
+      noop
+    } else {
+      comment 'If in table skip it'
+      if (('[data:find]' char _cTABLE) != -1) {
+        noop
+      } else {
+        comment 'bad char - STOP'
+        sayIt 'Invalid CHAR value:' char 'uniCode:' ('[data:unicodeAt]' 1 char)
+        stopTask
+      }
+    }
+  }
+  '_processString' string invFlag
+}
+
+to OLEDDisplay on {
+  comment 'Puts the display into SLEEP or WAKE mode.
+Images on display are preserved.'
+  '_initCheck'
+  if on {
+    local 'i2cCmd' 'AF'
+  } else {
+    local 'i2cCmd' 'AE'
+  }
+  '_sendCmd' i2cCmd
+}
+
+to OLEDDrawCircle cx cy r pixOn {
+  comment 'Bresenham Circle:
+Draws circles, even partially bigger than the display. 
+
+x: 0-127
+y: 0-63
+
+void plotCircle(int xm, int ym, int r)
+{
+   int x = -r, y = 0, err = 2-2*r; /* II. Quadrant */ 
+   do {
+      setPixel(xm-x, ym+y); /*   I. Quadrant */
+      setPixel(xm-y, ym-x); /*  II. Quadrant */
+      setPixel(xm+x, ym-y); /* III. Quadrant */
+      setPixel(xm+y, ym+x); /*  IV. Quadrant */
+      r = err;
+      if (r <= y) err += ++y*2+1;           /* e_xy+e_y < 0 */
+      if (r > x || err > y) err += ++x*2+1; /* e_xy+e_x > 0 or no 2nd y-step */
+   } while (x < 0);
+}'
+  '_initCheck'
+  if (or (or (x < 0) (x > 127)) (and (y < 0) (y > 63))) {
+    sayIt 'Circle: x,y range error ' 'x=' cx 'y=' cy
+    stopTask
+  }
+  local 'x' (-1 * r)
+  local 'y' 0
+  local 'err' (2 - (2 * r))
+  repeatUntil (x >= 0) {
+    OLEDPixel (cx - x) (cy + y) pixOn
+    OLEDPixel (cx - y) (cy - x) pixOn
+    OLEDPixel (cx + x) (cy - y) pixOn
+    OLEDPixel (cx + y) (cy + x) pixOn
+    r = err
+    if (r <= y) {
+      y += 1
+      err = (err + ((y * 2) + 1))
+    }
+    if (or (r > x) (err > y)) {
+      x += 1
+      err = (err + ((x * 2) + 1))
+    }
+  }
+  if (not _delayGDUpd) {
+    OLEDShowGDBuffer
+  }
+}
+
+to OLEDDrawLine x0 y0 x1 y1 pixOn {
+  comment 'Draws a line from x0,y0 to x1,y1 using the Bresenham Algorithm
+
+x: 0-127
+y: 0-63
+
+plotLine(int x0, int y0, int x1, int y1)
+    dx =  abs(x1-x0);
+    sx = x0<x1 ? 1 : -1;
+    dy = -abs(y1-y0);
+    sy = y0<y1 ? 1 : -1;
+    err = dx+dy;  /* error value e_xy */
+    while (true)   /* loop */
+        plot(x0, y0);
+        if (x0 == x1 && y0 == y1) break;
+        e2 = 2*err;
+        if (e2 >= dy) /* e_xy+e_x > 0 */
+            err += dy;
+            x0 += sx;
+        end if
+        if (e2 <= dx) /* e_xy+e_y < 0 */
+            err += dx;
+            y0 += sy;
+        end if
+    end while'
+  '_initCheck'
+  results = ('[data:makeList]')
+  local 'dx' (absoluteValue (x1 - x0))
+  local 'dy' (-1 * (absoluteValue (y1 - y0)))
+  local 'err' (dx + dy)
+  local 'e2' 0
+  local 'done' (booleanConstant false)
+  if (x0 < x1) {
+    local 'sx' 1
+  } else {
+    local 'sx' -1
+  }
+  if (y0 < y1) {
+    local 'sy' 1
+  } else {
+    local 'sy' -1
+  }
+  repeatUntil done {
+    OLEDPixel x0 y0 pixOn
+    if (and (x0 == x1) (y0 == y1)) {
+      if (not _delayGDUpd) {OLEDShowGDBuffer}
+      done = (booleanConstant true)
+    }
+    e2 = (2 * err)
+    if (e2 >= dy) {
+      err += dy
+      x0 += sx
+    }
+    if (e2 <= dx) {
+      err += dx
+      y0 += sy
+    }
+  }
+}
+
+to OLEDDrawPic imgList toGDBuf {
+  comment 'Will display the image stored in imgList either directly to 
+the display OR write it to the GDBuffer.
+Image Format:
+Each display column is 8 comma delimited hex numbers, terminated by a 
+0x10 newline character. For each hex number, the LSB is at the top, and
+MSB is at the bottom.
+You can look at advanced blocks T1-T4 to get an idea.
+You can also experiment with the OLEDMakeSprite block in a smaller 5x5 image.'
+  '_initCheck'
+  if (not toGDBuf) {
+    OLEDMode false
+    local 'cmdPrefix' (hexToInt 'C0')
+    for bitmap _imgBMPTbl {
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix (hexToInt bitmap))
+    }
+  } else {
+    comment 'Transform vertical img data to horizontal display mode
+
+GDbuffer(n) = image( (page-1) + ( ( byte# * 8) - 7 ) 
+'
+    local 'DGidx' 1
+    for page 8 {
+      for byte# ((size _imgBMPTbl) / 8) {
+        atPut DGidx _GDBuffer (hexToInt (at ((page - 1) + ((byte# * 8) - 7)) _imgBMPTbl))
+        DGidx += 1
+      }
+      repeat (128 - ((size _imgBMPTbl) / 8)) {
+        atPut DGidx _GDBuffer 0
+        DGidx += 1
+      }
+    }
+    OLEDShowGDBuffer
+  }
+}
+
+to 'OLEDDrawRect TLx(0-127)' TLx TLy BRx BRy pixOn rounded cornerRad {
+  comment 'Draw Rectangle with optional rounded corners with radius R.
+Does not check for reversed rectangle coordinates for round corners.'
+  '_initCheck'
+  _delayGDUpd = (booleanConstant true)
+  if rounded {
+    '_corner' 'TL' TLx TLy cornerRad
+    '_corner' 'TR' BRx TLy cornerRad
+    '_corner' 'BR' BRx BRy cornerRad
+    '_corner' 'BL' TLx BRy cornerRad
+    comment 'TOP - Adjust x'
+    OLEDDrawLine (TLx + cornerRad) TLy (BRx - cornerRad) TLy pixOn
+    comment 'RIGHT- Adjust y'
+    OLEDDrawLine BRx (TLy + cornerRad) BRx (BRy - cornerRad) pixOn
+    comment 'BOTTOM - Adjust x'
+    OLEDDrawLine (BRx - cornerRad) BRy (TLx + cornerRad) BRy pixOn
+    comment 'LEFT - Adjust y'
+    OLEDDrawLine TLx (BRy - cornerRad) TLx (TLy + cornerRad) pixOn
+  } else {
+    OLEDDrawLine TLx TLy BRx TLy pixOn
+    OLEDDrawLine BRx TLy BRx BRy pixOn
+    OLEDDrawLine BRx BRy TLx BRy pixOn
+    OLEDDrawLine TLx BRy TLx TLy pixOn
+  }
+  if (not _delayGDUpd) {
+    OLEDShowGDBuffer
+  }
+}
+
+to OLEDDrawSprite sprite row col {
+  comment 'Will load the image bitmap given in sprite parameter into the virtual _GDBuffer.
+Sprites are usually created via the OLEDMakeSprite 5x5 matrix input block and 
+saved as program variables and manipulated in code. 
+This block is also used for drawing the charSet onto the GDBuffer.
+Sprites drawn can be erased by using the var _clearSprite with OLEDDrawSprite.
+To make the sprites appear on display, use OLEDDshowGDBuffer.'
+  '_initCheck'
+  local 'idx' ((((row - 1) * 128) + (col - 1)) + 1)
+  for bmp sprite {
+    atPut idx _GDBuffer bmp
+    idx += 1
+    if (idx > 1024) {
+      stopTask
+    }
+  }
+}
+
+to OLEDDrawString string sRow sCol invFlag {
+  comment 'Draws chars to GDBuffer. It does NOT process newLine (\nl).
+It does not wrap text.
+Need to use OLEDShowGDBuffer to refresh the display.'
+  '_initCheck'
+  if (not _GDBufReady) {
+    '_initGDBuffer'
+  }
+  if (sCol > 128) {
+    sayIt ('[data:join]' 'STRING start position exceeds Display bounds at Col:' sCol)
+    stopTask
+  }
+  for char string {
+    OLEDDrawSprite ('_cBMP' char invFlag) sRow sCol
+    sCol += 8
+    if (sCol >= 121) {
+      return 0
+    }
+  }
+}
+
+to OLEDCursorReset {
+  comment 'Sets display bounds to full range and resets cursor
+to the origin top-left (0,0)
+Rows: 0-7
+Cols: 0-127
+Cursor position is affected by any display operation
+and also by OLEDColMode block.'
+  '_initCheck'
+  local 'i2cCmd' '22,00,07,21,00,7F'
+  '_sendCmd' i2cCmd
+  _col = 1
+  _row = 1
+  _begCol = 0
+  _endCol = 127
+  _begRow = 0
+  _endRow = 7
+}
+
+to OLEDInit dispType resetPin i2cAddr {
+  comment 'Sets all Library variables and initializes the display hardware.
+It also initializes the virtual GDBuffer, and clears the display.
+
+NOTE:
+Displays supported: OLED1306 (0.96in) and OLED1309 (2.42"), selected via boolean position.
+OLED1309 requires the connection of RESET pin to a digital pin.
+Both displays are 128x64 pixels or 16x8 characters in size.
+
+Make sure the character hex tables are \n (LF) terminated.
+Otherwise, extra lines are added in between and it gets messed up.
+eg: A: 00,7C,12,11,11,12,7C,00\n
+
+Max i2c IO is 64 bytes: buffered writes need to be max that size - 16 x 64'
+  comment 'Col starts are in HEX'
+  _cStarts = '0,8,10,18,20,28,30,38,40,48,50,58,60,68,70,78'
+  _cStarts = ('[data:split]' _cStarts ',')
+  _hexTbl = ('[data:makeList]' '0' '1' '2' '3' '4' '5' '6' '7' '8' '9' 'A' 'B' 'C' 'D' 'E' 'F')
+  OLEDready = (booleanConstant false)
+  _GDBufReady = (booleanConstant false)
+  _col = 1
+  _row = 1
+  _begRow = 0
+  _begCol = 0
+  _endRow = 7
+  _endCol = 127
+  OLEDi2cAddr = (hexToInt ('[data:join]' '' i2cAddr))
+  _delayGDUpd = (booleanConstant false)
+  _clearSprite = ('[data:makeList]' 0 0 0 0 0)
+  if dispType {
+    _displayType = 9
+    _09ResetPin = resetPin
+  } else {
+    _displayType = 6
+    _09ResetPin = 0
+  }
+  OLEDready = (booleanConstant true)
+  '_initChars'
+  '_initDisplayHW' _09ResetPin
+  '_initGDBuffer'
+  OLEDMode true
+  OLEDClear
+}
+
+to OLEDMakeSprite spr# sprNum {
+  comment 'Receives a spr# representing 5x5 image matrix.
+Converts it to a vertical array of 5 bitmap numbers.
+This can be displayed with the OLEDDrawSprite block.
+sprNum max is 33554431'
+  '_initCheck'
+  local 'spriteList' ('[data:makeList]')
+  local 'val' 0
+  if ((pushArgCount) > 1) {
+    spr# = sprNum
+  }
+  for col 5 {
+    for row ('[data:makeList]' 0 5 10 15 20) {
+      local 'bit' (col + row)
+      local 'vertBit#' (bit / 5)
+      if ((spr# & (1 << (bit - 1))) != 0) {
+        if (col != 5) {
+          val += (1 << vertBit#)
+        } else {
+          val += (1 << (vertBit# - 1))
+        }
+      }
+    }
+    '[data:addLast]' val spriteList
+    val = 0
+  }
+  return spriteList
+}
+
+to OLEDMode horizontal {
+  comment 'Sets the display to process display data in:
+false - vertical manner T->B and L->R  
+true - horizontal manner L->R and T->B'
+  '_initCheck'
+  if horizontal {
+    local 'i2cCmd' '20,00'
+  } else {
+    local 'i2cCmd' '20,01'
+  }
+  '_sendCmd' i2cCmd
+}
+
+to OLEDPixel x y pixOn {
+  comment 'Places a pixel at x,y in the virtual GDBuffer
+Use OLEDShowGDBuffer to display it
+
+1024 Locations
+x: 0-127
+y: 0-63
+page#: 0-7
+pagePixel#: 0-7
+GDIndex: 1-1024
+
+RangeCheck:
+verify x and y are in range of display limits
+
+if X <= num <= Y'
+  '_initCheck'
+  if (and (and (x >= 0) (x <= 127)) (and (y >= 0) (y <= 63))) {
+    local 'page#' (y / 8)
+    local 'pagePixel#' (y % 8)
+    local 'GDIndex' ((x + ((y / 8) * 128)) + 1)
+    if (or (GDIndex < 1) (GDIndex > 1024)) {
+      sayIt 'Boundary error in _GDBuffer index (1-1024): ' GDIndex
+      stopTask
+    }
+    local 'bytePrevBMP' (at GDIndex _GDBuffer)
+    if pixOn {
+      local 'byteNewBMP' (bytePrevBMP | (1 << pagePixel#))
+    } else {
+      local 'byteNewBMP' (bytePrevBMP ^ (1 << pagePixel#))
+    }
+    atPut GDIndex _GDBuffer byteNewBMP
+  }
+}
+
+to OLEDSetVideo inverse {
+  comment 'Switches the entire display:
+false - to the normal video mode.
+true - to the inverse video mode.
+Any image on the display will be preserved when mode changes.'
+  '_initCheck'
+  if inverse {
+    local 'i2cCmd' 'A7'
+  } else {
+    local 'i2cCmd' 'A6'
+  }
+  '_sendCmd' i2cCmd
+}
+
+to OLEDShowGDBuffer {
+  comment 'Copies contents of virtual _GDBuffer to display 
+in 61 byte chunks for speed. 
+1 byte is used for the command 40.
+
+_GDBuffer is in decimal'
+  '_initCheck'
+  local 'idx' 0
+  OLEDMode true
+  repeat 17 {
+    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' ('[data:makeList]' (hexToInt '40')) ('[data:copyFromTo]' _GDBuffer idx (idx + 60)))
+    idx += 61
+  }
+  OLEDCursorReset
+}
+
+to _OLEDStopScroll {
+  comment 'Stops any active Right/Left or Vertical scrolling.'
+  local 'i2cCmd' '2E'
+  '_sendCmd' i2cCmd
+}
+
+to '_2xHighMode' dblHigh {
+  comment 'Sets and resets double high letters mode: 
+Column use is always 8bits or 16 chars per line
+Double: 16x4 ; Normal: 16x8'
+  if dblHigh {
+    local 'i2cCmd' 'DA,02'
+  } else {
+    local 'i2cCmd' 'DA,12'
+  }
+  '_sendCmd' i2cCmd
+}
+
+to '_GDDRAMoff' {
+  comment 'Displays a full empty screen of reverse video.
+It disengages the hardware GDBuffer. '
+  local 'i2cCmd' 'A5'
+  '_sendCmd' i2cCmd
+}
+
+to '_GDDRAMon' {
+  comment 'It disables the GDDRAMoff mode and engages the hardware GDBuffer for display content.'
+  local 'i2cCmd' 'A4'
+  '_sendCmd' i2cCmd
+}
+
+to _OLED1309Reset Pin {
+  comment 'Does a power off and on on the display,
+thus forcing a hardware initialization.'
+  digitalWriteOp Pin false
+  waitMillis 1
+  digitalWriteOp Pin true
+  waitMillis 1
+  OLEDDisplay true
+}
+
+to '_OLEDScroll-R/L' dir begR endR begC endC {
+  comment 'Initiates the Right/Left scroll modes, optionally restricting them to the selected rows.
+For the OLED1309 displays, it is possible to also restrict the columns as specified.
+
+1306: dir=26/27,00,bR=00,00,eR=07,00,FF,2F=start
+1309: dir=26/27,00,bR=00,00,eR=07,00,bC=00,eC=7F,2F
+
+1306: Only scroll the entire line.
+1309: can restrict scrolling within set columns'
+  local 'sR' '26'
+  local 'sL' '27' _
+  local ',' ('[data:unicodeString]' 44)
+  if ((uppercase dir) == 'R') {
+    dir = sR
+  } ((uppercase dir) == 'L') {
+    dir = sL
+  } else {
+    sayIt 'Error in Scroll Direction'
+    stopTask
+  }
+  if (not (and (and ('_validR' begR) ('_validR' endR)) (begR <= endR))) {
+    sayIt 'Invalid ROW setting'
+    stopTask
+  }
+  if (not (and (and ('_validScrollCol' begC) ('_validScrollCol' endC)) (begC <= endC))) {
+    sayIt 'Invalid COLUMN setting'
+    stopTask
+  }
+  begR += -1
+  endR += -1
+  begC = ('_dec2hex' (begC - 1))
+  endC = ('_dec2hex' (endC - 1))
+  if (_displayType == 6) {
+    local 'cmd1306' ('[data:join]' dir , '00' , begR , '07' , endR , '00' , 'FF' , '2F')
+    '_sendCmd' cmd1306
+  } (_displayType == 9) {
+    local 'cmd1309' ('[data:join]' dir , '00' , begR , '07' , endR , '00' , begC , endC , '2F')
+    '_sendCmd' cmd1309
+  }
+}
+
+to '_OLEDScroll-VR/VL' dir begR endR cOffset vOffset begC endC {
+  comment '1306: dir=29/2A,00,bR=00,00,eR=07,00,#R=01,2F=start
+1309: dir=29/2A,#C=00,bR=00,07,eR=07,#R=00,bC=00,eC=7F,2F
+All values are in HEX.
+1306: will minimally scroll 1 pixel horizontally = no cont vertical scroll.
+           But #Ver=0 will do horizontal only.'
+  if (_displayType == 6) {
+    sayIt 'VR/VL only supported for display type OLED 2.42in. OLED1309.'
+    stopTask
+  }
+  local 'VR' 29
+  local 'VL' '2A'
+  local ',' ('[data:unicodeString]' 44)
+  if ((uppercase dir) == 'VR') {
+    dir = VR
+  } ((uppercase dir) == 'VL') {
+    dir = VL
+  } else {
+    sayIt 'Error in Scroll Direction'
+    stopTask
+  }
+  if (not (and (and ('_validR' begR) ('_validR' endR)) (begR <= endR))) {
+    sayIt 'Invalid ROW setting'
+    stopTask
+  }
+  if (not (and (and ('_validScrollCol' begC) ('_validScrollCol' endC)) (begC <= endC))) {
+    sayIt 'Invalid COLUMN setting'
+    stopTask
+  }
+  begR += -1
+  endR += -1
+  vOffset = ('_dec2hex' vOffset)
+  begC = ('_dec2hex' (begC - 1))
+  endC = ('_dec2hex' (endC - 1))
+  local 'cmd1309' ('[data:join]' dir , cOffset , begR , '07' , endR , vOffset , begC , endC , '2F')
+  '_sendCmd' cmd1309
+}
+
+to '_T1' {
+  comment 'THIN-SS Character Set
+Range: space - 7'
+  local '_cHEX1' ('[data:join]' '' '00,00,00,00,00,00,00,00
+00,00,00,5F,00,00,00,00
+00,00,07,00,00,07,00,00
+00,14,7F,14,14,7F,14,00
+00,24,2A,6B,6B,2A,12,00
+00,46,26,10,08,64,62,00
+30,4A,45,4D,32,48,48,00
+00,00,04,03,00,00,00,00
+00,1C,22,41,00,00,00,00
+00,00,41,22,1C,00,00,00
+08,2A,1C,1C,1C,2A,08,00
+00,08,08,3E,08,08,00,00
+00,00,80,60,00,00,00,00
+00,08,08,08,08,08,08,00
+00,00,00,60,00,00,00,00
+00,40,20,10,08,04,02,00
+00,3E,61,51,49,45,3E,00
+00,44,42,7F,40,40,00,00
+00,62,51,51,49,49,66,00
+00,22,41,49,49,49,36,00
+10,18,14,52,7F,50,10,00
+00,27,45,45,45,45,39,00
+00,3C,4A,49,49,49,30,00
+00,03,01,71,09,05,03,00')
+  _cHexTBL = ('[data:join]' _cHexTBL ('[data:split]' _cHEX1 ('[data:unicodeString]' 10)))
+}
+
+to '_T2' {
+  comment 'THIN-SS Character Set
+Range: 8 - O (letter O)'
+  local '_cHEX2' ('[data:join]' '' '00,36,49,49,49,49,36,00
+00,06,49,49,49,29,1E,00
+00,00,00,66,00,00,00,00
+00,00,80,66,00,00,00,00
+00,08,14,22,41,00,00,00
+00,24,24,24,24,24,24,00
+00,00,00,41,22,14,08,00
+00,02,01,01,51,09,06,00
+00,3E,41,5D,55,55,1E,00
+00,7C,12,11,11,12,7C,00
+00,41,7F,49,49,49,36,00
+00,1C,22,41,41,41,22,00
+00,41,7F,41,41,22,1C,00
+00,41,7F,49,5D,41,63,00
+00,41,7F,49,1D,01,03,00
+00,1C,22,41,51,51,72,00
+00,7F,08,08,08,08,7F,00
+00,00,41,7F,41,00,00,00
+00,30,40,40,41,3F,01,00
+00,41,7F,08,14,22,41,40
+00,41,7F,41,40,40,60,00
+00,7F,01,02,04,02,01,7F
+00,7F,01,02,04,08,7F,00
+00,3E,41,41,41,41,3E,00')
+  _cHexTBL = ('[data:join]' _cHexTBL ('[data:split]' _cHEX2 ('[data:unicodeString]' 10)))
+}
+
+to '_T3' {
+  comment 'THIN-SS Character Set
+Range: P - g'
+  local '_cHEX3' ('[data:join]' '' '00,41,7F,49,09,09,06,00
+00,1E,21,21,31,21,5E,40
+00,41,7F,49,19,29,46,00
+00,26,49,49,49,49,32,00
+00,03,01,41,7F,41,01,03
+00,3F,40,40,40,40,3F,00
+00,0F,10,20,40,20,10,0F
+00,3F,40,40,38,40,40,3F
+00,41,22,14,08,14,22,41
+00,01,02,44,78,44,02,01
+00,43,61,51,49,45,43,61
+00,7F,41,41,41,00,00,00
+01,02,04,08,10,20,40,00
+00,41,41,41,7F,00,00,00
+08,04,02,01,02,04,08,00
+80,80,80,80,80,80,80,80
+00,00,00,03,04,00,00,00
+00,20,54,54,54,54,78,40
+00,01,7F,30,48,48,48,30
+00,38,44,44,44,44,28,00
+00,30,48,48,48,31,7F,40
+00,38,54,54,54,54,18,00
+00,00,48,7E,49,01,02,00
+00,98,A4,A4,A4,A4,78,04')
+  _cHexTBL = ('[data:join]' _cHexTBL ('[data:split]' _cHEX3 ('[data:unicodeString]' 10)))
+}
+
+to '_T4' {
+  comment 'THIN-SS Character Set
+Range: h - space'
+  local '_cHEX4' ('[data:join]' '' '00,41,7F,08,04,04,78,00
+00,00,44,7D,40,00,00,00
+00,60,80,80,80,84,7D,00
+00,01,7F,10,28,44,40,00
+00,00,41,7F,40,00,00,00
+00,7C,04,04,78,04,04,78
+00,7C,08,04,04,04,78,00
+00,38,44,44,44,44,38,00
+00,84,FC,98,24,24,18,00
+00,18,24,24,98,FC,84,00
+00,44,7C,48,04,04,18,00
+00,48,54,54,54,54,24,00
+00,04,04,3F,44,44,20,00
+00,3C,40,40,40,20,7C,00
+00,0C,10,20,40,20,10,0C
+00,3C,40,40,38,40,40,3C
+00,44,28,10,28,44,00,00
+00,9C,A0,A0,A0,A0,7C,00
+00,44,64,54,4C,44,00,00
+00,08,08,36,41,41,00,00
+00,00,00,77,00,00,00,00
+00,00,41,41,36,08,08,00
+00,02,01,01,02,02,01,00
+00,00,00,00,00,00,00,00')
+  _cHexTBL = ('[data:join]' _cHexTBL ('[data:split]' _cHEX4 ('[data:unicodeString]' 10)))
+}
+
+to '_buildHexTBL' {
+  comment 'This builds the THIN-SS character set 96 bitmaps 0x20 - 0x7F
+into the Global _cHexTBL.'
+  _cHexTBL = ('[data:makeList]')
+  '_T1'
+  '_T2'
+  '_T3'
+  '_T4'
+}
+
+to '_cBMP' char invFlag {
+  comment 'Returns DEC char bitmap from cHexTbl and
+optionally converts it to inverse.
+
+A: 00,7c,12,11,12,7c,00
+
+dec:  0,124,18,17,17,124,0
+inv:    255,131,237,238,238,131,255'
+  local 'charList' ('[data:split]' (at (('[data:unicodeAt]' 1 char) - 31) _cHexTBL) ',')
+  comment 'hex2dec and inverse'
+  for item# (size charList) {
+    if invFlag {
+      atPut item# charList ((hexToInt (at item# charList)) ^ 255)
+    } else {
+      atPut item# charList (hexToInt (at item# charList))
+    }
+  }
+  return charList
+}
+
+to '_corner' loc cx cy r {
+  comment 'Calculates and displays the rounded corners for the rectangles.
+loc is one of TL, TR, BL, BR ... topLeft, topright, bottomleft, bottomright
+cx,cy are the corner coordinates for the rounded corner.
+r is the radius in pixels of the arc to be calculated.'
+  local 'x' (-1 * r)
+  local 'y' 0
+  local 'err' (2 - (2 * r))
+  if (loc == 'TL') {
+    cx += r
+    cy += r
+  } (loc == 'TR') {
+    cx += (-1 * r)
+    cy += r
+  } (loc == 'BL') {
+    cx += r
+    cy += (-1 * r)
+  } (loc == 'BR') {
+    cx += (-1 * r)
+    cy += (-1 * r)
+  }
+  repeatUntil (x >= 0) {
+    if (loc == 'TL') {
+      OLEDPixel (cx + x) (cy - y) pixOn
+    } (loc == 'TR') {
+      OLEDPixel (cx + y) (cy + x) pixOn
+    } (loc == 'BL') {
+      OLEDPixel (cx - y) (cy - x) pixOn
+    } (loc == 'BR') {
+      OLEDPixel (cx - x) (cy + y) pixOn
+    }
+    r = err
+    if (r <= y) {
+      y += 1
+      err = (err + ((y * 2) + 1))
+    }
+    if (or (r > x) (err > y)) {
+      x += 1
+      err = (err + ((x * 2) + 1))
+    }
+  }
+  if (not _delayGDUpd) {
+    OLEDShowGDBuffer
+  }
+}
+
+to '_dec2hex' num {
+  comment 'Fast version w/o inversion. (~217uSecs)'
+  local 'hexNum' ''
+  repeatUntil (num < 0) {
+    if ((num / 16) != 0) {
+      hexNum = ('[data:join]' (at ((num % 16) + 1) _hexTbl) hexNum)
+      num = (num / 16)
+    } else {
+      hexNum = ('[data:join]' (at ((num % 16) + 1) _hexTbl) hexNum)
+      num = -1
+      return hexNum
+    }
+  }
+}
+
+to '_initChars' {
+  comment 'Creates the character set used in the Library (96 characters)
+
+used JOIN  for SPACE (uni-32) character so it won''t be deleted by mistake.'
+  _cTABLE = ('[data:join]' ('[data:unicodeString]' 32) '!"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~.')
+  '_buildHexTBL'
+}
+
+
+to '_initCheck' {
+  comment 'Verifies Library initialization status.'
+  if (not OLEDready) {
+    sayIt 'Display needs to be initialized before using the library blocks.'
+    stopTask
+  }
+}
+
+to '_initDisplayHW' resetPin {
+  comment '*** DO NOT CHANGE THESE WITHOUT UNDERSTANDING THEIR MEANINGS ***
+*** IT CAN MAKE THE DISPLAY NOT OPERATE CORRECTLY                          ***
+Initialize display hw timings
+DA,02: Sets double high letters
+DA,12: Sets regular high letters'
+  if (resetPin != 0) {
+    _OLED1309Reset resetPin
+    local 'i2cCmd' 'A8,3F,D3.00,40,A0,C0,DA,12,81,7F,A4,A6,D5,F0,D9,22,DB,34,8D,14,AF'
+  } else {
+    local 'i2cCmd' 'A8,3F,D3.00,40,A0,C0,DA,12,81,7F,A4,A6,D5,F0,D9,22,DB,20,8D,14,AF'
+  }
+  '_sendCmd' i2cCmd
+}
+
+to '_initGDBuffer' {
+  comment '1024 byte VIRTUAL GDBuffer is INITIALIZED to 1024 x 0'
+  _GDBuffer = (newList 1024)
+  atPut 'all' _GDBuffer 0
+  _GDBufReady = (booleanConstant true)
+}
+
+to '_proc10' {
+  comment 'NEWLINE \n 0x10 intercept for the 
+string display block.'
+  _begRow = (_row - 1)
+  _endRow = 7
+  local 'comma' ('[data:unicodeString]' 44)
+  comment 'ROW = 22, COL=21
+All values are in HEX'
+  '_sendCmd' ('[data:join]' '22' comma (_begRow + 1) comma _endRow comma '21' comma ('_dec2hex' _begCol) comma ('_dec2hex' _endCol))
+  _col = ('[data:find]' ('_dec2hex' _begCol) _cStarts)
+  _row += 1
+  if (_row > 8) {
+    _row = 1
+  }
+}
+
+to '_processString' string invFlag {
+  comment 'Performs the actual processing of the string display function.
+Optionally, sets inverse video for the characters.'
+  local 'cmdPrefix' (hexToInt 'C0')
+  for char string {
+    if (('[data:unicodeAt]' 1 char) == 10) {
+      '_proc10'
+    } else {
+      _dList = ('_cBMP' char invFlag)
+      for bitmap _dList {
+        '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix bitmap)
+      }
+      _col += 1
+      if (_col > 16) {
+        _col = 1
+        _row += 1
+      }
+      if (_row > 8) {
+        _row = 1
+      }
+    }
+  }
+}
+
+to '_sendCmd' i2cCmd {
+  comment 'Input is a comma sep. STRING.
+MAKE SURE ALL  INPUT PARAMETERS ARE HEX'
+  local '_cList' ('[data:split]' i2cCmd ',')
+  local 'cmdPrefix' (hexToInt '80')
+  for cmd _cList {
+    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix (hexToInt cmd))
+  }
+  comment 'DEBUG Blocks below - doesn''t execute.'
+  return ('[data:join]' ('[data:joinStrings]' _cList ' ') ('[data:unicodeString]' 10) ('[data:joinStrings]' ('[data:makeList]' cmdPrefix (hexToInt cmd)) ' '))
+}
+
+to '_valicC' col {
+  comment 'Validates column limit values.'
+  local 'validC' ' 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16'
+  local 'searchCol' ('[data:join]' ('[data:unicodeString]' 32) col)
+  local 'ptr' ('[data:find]' searchCol validC)
+  if (or (col < 1) (ptr == -1)) {
+    return (booleanConstant false)
+  } else {
+    return (booleanConstant true)
+  }
+}
+
+to '_validR' row {
+  comment 'Validates row limit values'
+  local 'validR' ' 1 2 3 4 5 6 7 8'
+  local 'searchRow' ('[data:join]' ('[data:unicodeString]' 32) row)
+  local 'ptr' ('[data:find]' searchRow validR)
+  if (or (row < 1) (ptr == -1)) {
+    return (booleanConstant false)
+  } else {
+    return (booleanConstant true)
+  }
+}
+
+to '_validScrollCol' col {
+  comment 'Validates scroll column limits'
+  if (or (col < 1) (col > 128)) {
+    return (booleanConstant false)
+  } else {
+    return (booleanConstant true)
+  }
+}
+
+to '_validateArgs' row col {
+  comment 'Validates row and col values.
+After validation, GLOBAL vars:
+ _row, _col, __begRow, _endRow, _begCol, __endCol
+are all set properly. 
+No need to pass them on to subProcesses.'
+  if (and ('_validR' row) ('_valicC' col)) {
+    _row = row
+    _col = col
+    _begRow = (row - 1)
+    _endRow = 7
+    _begCol = (hexToInt (at col _cStarts))
+    _endCol = 127
+    local 'comma' ('[data:unicodeString]' 44)
+    comment 'ROW = 22, COL=21
+All values are in HEX'
+    '_sendCmd' ('[data:join]' '22' comma _begRow comma _endRow comma '21' comma ('_dec2hex' _begCol) comma ('_dec2hex' _endCol))
+  } else {
+    sayIt 'Invalid ROW or COLUMN value.'
+    stopTask
+  }
+}
+
