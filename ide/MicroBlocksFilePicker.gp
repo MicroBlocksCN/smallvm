@@ -384,6 +384,7 @@ method showFolder MicroBlocksFilePicker path isTop {
   setText folderReadout (localized (filePart path))
   updateParentAndNewFolderButtons this
   setCollection (contents listPane) (folderContents this)
+  changeScrollOffset listPane -100000 -100000 // scroll to top-left
   if (notNil onFolderSelect) {
 	call onFolderSelect (join path)
   }
