@@ -1252,18 +1252,16 @@ method draw Morph destination xOffset yOffset destScaleX destScaleY clipRect {
 method takeSnapshot Morph {
   // Return a bitmap with a snapshot of the given morph at its normal size.
 
-  xOffset = (- (left bounds))
-  yOffset = (- (top bounds))
-  bm = (newBitmap (width bounds) (height bounds))
-  draw this bm xOffset yOffset 1
-  return bm
+  return (takeSnapshotWithBounds this (fullBounds this))
 }
 
 method takeSnapshotWithBounds Morph rect {
   // Return a bitmap with a snapshot of this morph with the given global rectangle.
 
   bm = (newBitmap (width rect) (height rect))
-  draw this bm (- (left rect)) (- (top rect)) 1
+  ctx = (newGraphicContextOn bm)
+  setOffset ctx (- (left rect)) (- (top rect))
+  fullDrawOn this ctx
   return bm
 }
 

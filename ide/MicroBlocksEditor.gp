@@ -960,7 +960,9 @@ method projectMenu MicroBlocksEditor {
   addItem menu 'Save' 'saveProjectToFile'
   if (devMode) {
 	addLine menu
-	addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
+	if ((count (functions (main (project scripter)))) > 0) {
+		addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
+	}
 	if (boardHasFileSystem (smallRuntime)) {
 		addLine menu
 		addItem menu 'put file on board' (action 'putFileOnBoard' (smallRuntime))
