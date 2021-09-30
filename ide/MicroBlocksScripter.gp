@@ -1149,11 +1149,29 @@ method importLibrary MicroBlocksScripter {
   pickLibraryToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ubl')
 }
 
+method allFilesInDir MicroBlocksScripter rootDir {
+	// Return a list of all files below the given directory.
+
+	result = (list)
+	todo = (list rootDir)
+	while (notEmpty todo) {
+		dir = (removeFirst todo)
+		for fName (listFiles dir) {
+			add result (join dir '/' fName)
+		}
+		for dirName (listDirectories dir) {
+			add todo (join dir '/' dirName)
+		}
+	}
+	return result
+}
+
 method importEmbeddedLibrary MicroBlocksScripter libName {
 	if ('Browser' == (platform)) {
-		for filePath (listFiles 'Libraries') {
-			if (endsWith filePath (join libName '.ubl')) {
-				importLibraryFromFile this (join 'Libraries/' filePath)
+		libFileName = (join libName '.ubl')
+		for filePath (allFilesInDir this 'Libraries') {
+			if (endsWith filePath libFileName) {
+				importLibraryFromFile this filePath
 				return
 			}
 		}

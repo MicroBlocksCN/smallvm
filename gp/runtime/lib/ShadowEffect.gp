@@ -16,7 +16,7 @@ method initialize ShadowEffect aBlock effectType {
 	targetBlock = aBlock
 	scale = (global 'scale')
 	if ('highlight' == effectType) {
-		color = (color 153 255 213)
+		color = (colorHSV 155 0.9 1.0)
 		offset = 0
 		blur = (15 * scale)
 	} else {
