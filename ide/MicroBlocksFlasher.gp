@@ -34,7 +34,7 @@ method isDone MicroBlocksFlasher {
 
 method destroy MicroBlocksFlasher {
 	destroy spinner
-    enableAutoConnect (smallRuntime)
+    enableAutoConnect (smallRuntime) (success espTool)
 }
 
 method startFlasher MicroBlocksFlasher serialPortID {
