@@ -1506,7 +1506,8 @@ method waitForResponse SmallRuntime {
 			return true
 		}
 		sendMsg this 'pingMsg'
-		waitMSecs 25
+		doOneCycle (global 'page')
+		waitMSecs 10
 	}
 	return false
 }
