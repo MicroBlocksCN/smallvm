@@ -362,8 +362,15 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 		ok = (uploadESP32VM this vmData eraseFlag)
 	}
 
-	if ok { status = (localized 'Done') } else { status = (localized 'Failed') }
-	if ok { success = true }
+	if ok {
+		status = (localized 'Done')
+		success = true
+	} else {
+		status = (localized 'Failed')
+		if closeWhenDone { closePort this }
+		enableAutoConnect (smallRuntime) false
+		return
+	}
 
 	waitMSecs 200 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
 	exitBootMode this

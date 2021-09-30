@@ -750,15 +750,19 @@ method closePort SmallRuntime {
 	clearRunningHighlights this
 }
 
-method enableAutoConnect SmallRuntime syncScriptsFlag {
-	// Pass false as the optional syncScriptsFlag to prevent script synching on ChromeOS.
-
-	disconnected = false
-	if ('Browser' == (platform)) { port = 1 }
+method enableAutoConnect SmallRuntime success {
 	closeAllDialogs (findMicroBlocksEditor)
-	if (false != syncScriptsFlag) {
-		stopAndSyncScripts this
+	if ('Browser' == (platform)) {
+		// In the browser, the serial port must be closed and re-opened after installing
+		// firmware on an ESP board. Not sure why. Adding a delay did not help.
+		closePort this
+		closeSerialPort 1 // make sure port is really disconnected
+		disconnected = true
+		if success { otherReconnectMessage this }
+		return
 	}
+	disconnected = false
+	stopAndSyncScripts this
 }
 
 method tryToInstallVM SmallRuntime {
@@ -2251,6 +2255,12 @@ method adaFruitReconnectMessage SmallRuntime {
 	inform msg
 }
 
+method otherReconnectMessage SmallRuntime {
+	title = (localized 'Firmware Installed')
+	msg = (localized 'Reconnect to the board by clicking the "Connect" button (USB icon).')
+	inform (global 'page') msg title nil true
+}
+
 method waitForFirmwareInstall SmallRuntime {
 	firmwareInstallTimer = nil
 	spinner = (newSpinner (action 'firwareInstallStatus' this) (action 'firmwareInstallDone' this))
@@ -2272,7 +2282,7 @@ method firmwareInstallSecsRemaining SmallRuntime {
 	if (isNil firmwareInstallTimer) { return 0 }
 	installWaitMSecs = 6000
 	if (and ('Browser' == (platform)) (browserIsChromeOS)) {
-		installWaitMSecs =  14000
+		installWaitMSecs =  16000
 	}
 	return (ceiling ((installWaitMSecs - (msecs firmwareInstallTimer)) / 1000))
 }
@@ -2287,6 +2297,7 @@ method firmwareInstallDone SmallRuntime {
 
 	if ((firmwareInstallSecsRemaining this) <= 0) {
 		firmwareInstallTimer = nil
+		otherReconnectMessage this
 		return true
 	}
 	return false
