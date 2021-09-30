@@ -1267,12 +1267,13 @@ method confirm Page title question yesLabel noLabel callback {
   }
 }
 
-method inform Page details title yesLabel {
+method inform Page details title yesLabel nonBlocking {
   p = (new 'Prompter')
   initializeForInform p title details yesLabel
   setPosition (morph p) (half ((width morph) - (width (morph p)))) (40 * (global 'scale'))
   addPart morph (morph p)
   setField hand 'lastTouchTime' nil
+  if (nonBlocking == true) { return true }
   while (not (isDone p)) {doOneCycle this}
   destroy (morph p)
   return (answer p)
