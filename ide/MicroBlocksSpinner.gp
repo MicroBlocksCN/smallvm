@@ -71,17 +71,15 @@ method destroy MicroBlocksSpinner {
 		call stopAction
 	}
 	if (notNil task) {
-		stopTask task
+		terminate task
 	}
-	setCursor 'default'
 	destroy morph
 }
 
 method step MicroBlocksSpinner {
 	if (call doneGetter) {
 		destroy this
-	} else {
-		setCursor 'wait'
+		return
 	}
 
 	changed morph
