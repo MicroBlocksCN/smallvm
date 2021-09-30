@@ -45,6 +45,7 @@ uint8 rxBufB[RX_BUF_SIZE];
 uint8 txBuf[TX_BUF_SIZE];
 
 static void serialClose() {
+	if (!NRF_UARTE1->ENABLE) return; // already stopped
 	NRF_UARTE1->TASKS_STOPRX = true;
 	NRF_UARTE1->TASKS_STOPTX = true;
 	while (!NRF_UARTE1->EVENTS_TXSTOPPED) /* wait */;
@@ -202,7 +203,8 @@ static OBJ primSerialOpen(int argCount, OBJ *args) {
 }
 
 static OBJ primSerialClose(int argCount, OBJ *args) {
-	serialClose();
+	if (isOpen) serialClose();
+	isOpen = false;
 	return falseObj;
 }
 
