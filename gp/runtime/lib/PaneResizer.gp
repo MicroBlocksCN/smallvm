@@ -33,7 +33,7 @@ method handEnter PaneResizer aHand {
 	changed morph
 }
 method handLeave PaneResizer aHand {
-	setCursor 'normal'
+	setCursor 'default'
 	isHighlit = false
 	changed morph
 }

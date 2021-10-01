@@ -1177,6 +1177,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	// restart the chunk if it is a Block and is running
 	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
 		stopRunningChunk this chunkID
+		waitForResponse this
 		runChunk this chunkID
 		waitForResponse this
 	}
@@ -1510,8 +1511,7 @@ method waitForResponse SmallRuntime {
 			return true
 		}
 		sendMsg this 'pingMsg'
-		doOneCycle (global 'page')
-		waitMSecs 10
+		waitMSecs 25
 	}
 	return false
 }
