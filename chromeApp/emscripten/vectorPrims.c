@@ -311,7 +311,7 @@ static void fillPath(OBJ bitmapOrTexture, OBJ path, OBJ fillColor, OBJ clipRect)
 	EM_ASM({
 		GP.ctx.restore();
 		GP.ctx.shadowColor = 'transparent';
-		GP.ctx = null;
+		GP.ctx = (document.getElementById('canvas')).getContext('2d');
 	}, 0);
 }
 
@@ -352,7 +352,7 @@ static void strokePath(OBJ bitmapOrTexture, OBJ path, OBJ strokeColor, double li
 	EM_ASM({
 		GP.ctx.restore();
 		GP.ctx.shadowColor = 'transparent';
-		GP.ctx = null;
+		GP.ctx = (document.getElementById('canvas')).getContext('2d');
 	}, 0);
 }
 

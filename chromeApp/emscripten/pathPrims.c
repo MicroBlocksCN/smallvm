@@ -176,7 +176,7 @@ static void stroke(OBJ borderColor, double borderWidth) {
 			// restore GP context
 			GP.ctx.restore();
 			GP.ctx.shadowColor = 'transparent';
-			GP.ctx = null;
+			GP.ctx = (document.getElementById('canvas')).getContext('2d');
 		}, colorString, borderWidth);
 	#else
 		setCairoColor(cairoCtx, borderColor);
@@ -200,7 +200,7 @@ static void fill(OBJ fillColor, int doneFlag) {
 				// restore GP context if done (i.e. not going to also stroke the path)
 				GP.ctx.restore();
 				GP.ctx.shadowColor = 'transparent';
-				GP.ctx = null;
+				GP.ctx = (document.getElementById('canvas')).getContext('2d');
 			}
 		}, colorString, doneFlag);
 	#else
