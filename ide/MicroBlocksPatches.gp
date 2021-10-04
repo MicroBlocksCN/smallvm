@@ -33,6 +33,19 @@ method allVarsMenu InputSlot {
   // local vars
   myBlock = (handler (ownerThatIsA morph 'Block'))
   localVars = (collectLocals (expression (topBlock myBlock)))
+
+  // if inside function, add the function arg names
+  topExpr = (expression (topBlock myBlock))
+  if (and ('to' == (primName topExpr)) (notNil scripter)) {
+    fName = (first (argList topExpr))
+    func = (functionNamed (project (handler scripter)) fName)
+    if (notNil func) {
+      for argName (argNames func) {
+        if (not (contains localVars argName)) { add localVars argName }
+      }
+    }
+  }
+
   remove localVars ''
   for v varNames { remove localVars v }
   if (notEmpty localVars) {
