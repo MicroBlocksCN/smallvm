@@ -1867,10 +1867,10 @@ method showResult SmallRuntime chunkID value isError isResult {
 				}
 			}
 			if (and (true == isResult) (h == blockForResultImage)) {
+				blockForResultImage = nil
 				doOneCycle (global 'page')
 				waitMSecs 500 // show result bubble briefly before showing menu
 				exportAsImageScaled h 2 value
-				blockForResultImage = nil
 			}
 		}
 	}
