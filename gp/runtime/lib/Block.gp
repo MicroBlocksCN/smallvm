@@ -674,7 +674,11 @@ method next Block {
   items = (count (flattened labelParts))
   offset = 1
   if (and (isVariadic this) (not (isPrototype this))) {offset = 2} // because there is also a drawer
-  if ((count (parts morph)) > (items + (offset - 1))) {return (handler (at (parts morph) (+ offset items)))}
+  if (notNil (getHighlight morph)) { offset += 1 }
+  if ((count (parts morph)) > (items + (offset - 1))) {
+    nxt = (handler (at (parts morph) (+ offset items)))
+    if (not (isClass nxt 'Block')) { return nil } // guard against return non-blocks
+    return (handler (at (parts morph) (+ offset items)))}
   return nil
 }
 
