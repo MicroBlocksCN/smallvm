@@ -382,6 +382,7 @@ method justReceivedDrop BlocksPalette aHandler {
   // Hide a block definitions when it is is dropped on the palette.
 
   pe = (findProjectEditor)
+  if (isClass aHandler 'Block') { stopRunningBlock (smallRuntime) aHandler }
   if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
 	proto = (editedPrototype aHandler)
 	if (and (notNil pe) (notNil proto) (notNil (function proto))) {

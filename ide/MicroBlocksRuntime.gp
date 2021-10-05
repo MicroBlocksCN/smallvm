@@ -47,6 +47,12 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 	runChunk this (lookupChunkID this aBlock)
 }
 
+method stopRunningBlock SmallRuntime aBlock {
+  if (isRunning this aBlock) {
+	stopRunningChunk this (lookupChunkID this aBlock)
+  }
+}
+
 method chunkTypeFor SmallRuntime aBlockOrFunction {
 	if (isClass aBlockOrFunction 'Function') { return 3 }
 	if (and
