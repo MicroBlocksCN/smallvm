@@ -1372,7 +1372,7 @@ method reportDamage Morph rect {
 	if costumeChanged { return } // stage has already reported damage
 	costumeChanged = true // stage uses this flag to indicate that damage has been reported
 	reportDamage owner bounds
-  } (and isVisible (notNil owner)) {
+  } (and isVisible (notNil owner) (owner != this)) {
 	if isClipping {
 	  if (intersects rect bounds) {
 		reportDamage owner (intersection bounds rect)
