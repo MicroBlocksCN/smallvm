@@ -162,11 +162,12 @@ int touchEnabled = false;
 		void tftInit() {
                         #ifdef ARDUINO_M5Stick_Plus
 			tft.init(TFT_HEIGHT, TFT_WIDTH);
-                        #else
+ 			tft.setRotation(3);
+                       #else
 			tft.initR(INITR_MINI160x80);
 			tft.setOffsets(26, 1);
-                        #endif
 			tft.setRotation(1);
+                        #endif
 			tft.invertDisplay(true); // display must be inverted to give correct colors...
 			tftClear();
 

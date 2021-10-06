@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected flasher crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs firmwareInstallTimer
 
 method scripter SmallRuntime { return scripter }
 
@@ -22,7 +22,7 @@ method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
 	readFromBoard = false
-	decompilerStatus = ''
+	initializeDecompilerStatus this
 	clearLoggedData this
 	return this
 }
@@ -45,6 +45,12 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		saveChunk this aBlock
 	}
 	runChunk this (lookupChunkID this aBlock)
+}
+
+method stopRunningBlock SmallRuntime aBlock {
+  if (isRunning this aBlock) {
+	stopRunningChunk this (lookupChunkID this aBlock)
+  }
 }
 
 method chunkTypeFor SmallRuntime aBlockOrFunction {
@@ -134,6 +140,7 @@ method showInstructions SmallRuntime aBlock {
 	setTitle ws 'Instructions'
 	setFont ws 'Arial' (16 * (global 'scale'))
 	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
+	fixLayout ws
 }
 
 method addWithLineNum SmallRuntime aList instruction items {
@@ -169,6 +176,68 @@ method showCompiledBytes SmallRuntime aBlock {
 	setTitle ws 'Instruction Bytes'
 	setFont ws 'Arial' (16 * (global 'scale'))
 	setExtent (morph ws) (220 * (global 'scale')) (400 * (global 'scale'))
+	fixLayout ws
+}
+
+method showCallTree SmallRuntime aBlock {
+	proto = (editedPrototype aBlock)
+	if (notNil proto) {
+		if (isNil (function proto)) { return }
+		funcName = (functionName (function proto))
+	} else {
+		funcName = (primName (expression aBlock))
+	}
+
+	allFunctions = (dictionary)
+	for f (allFunctions (project scripter)) { atPut allFunctions (functionName f) f }
+
+	result = (list)
+	appendCallsForFunction this funcName result '' allFunctions (array funcName)
+
+	ws = (openWorkspace (global 'page') (joinStrings result (newline)))
+	setTitle ws 'Call Tree'
+	setFont ws 'Arial' (16 * (global 'scale'))
+	setExtent (morph ws) (400 * (global 'scale')) (400 * (global 'scale'))
+	fixLayout ws
+}
+
+method appendCallsForFunction SmallRuntime funcName result indent allFunctions callers {
+	func = (at allFunctions funcName)
+
+	argCount = (count (argNames func))
+	localCount = (count (localNames func))
+	stackWords = (+ 3 argCount localCount)
+	info = ''
+	if (or (argCount > 0) (localCount > 0)) {
+		info = (join info ' (')
+		if (argCount > 0) {
+			info = (join info argCount ' arg')
+			if (argCount > 1) { info = (join info 's') }
+			if (localCount > 0) { info = (join info ', ') }
+		}
+		if (localCount > 0) {
+			info = (join info localCount ' local')
+			if (localCount > 1) { info = (join info 's') }
+		}
+		info = (join info ')')
+	}
+	add result (join indent funcName info ' ' stackWords)
+	indent = (join '   ' indent)
+
+	if (isNil (cmdList func)) { return }
+
+	processed = (dictionary)
+	for cmd (allBlocks (cmdList func)) {
+		op = (primName cmd)
+		if (and (contains allFunctions op) (not (contains processed op))) {
+			if (contains callers op) {
+				add result (join indent '   ' funcName ' [recursive]')
+			} else {
+				appendCallsForFunction this op result indent allFunctions (copyWith callers op)
+			}
+			add processed op
+		}
+	}
 }
 
 // Decompiler tests
@@ -268,9 +337,22 @@ method analyzeProject SmallRuntime {
 
 // Decompiling
 
+method initializeDecompilerStatus SmallRuntime {
+	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+		decompilerStatus = 'Plug in the board and click the USB icon to connect.'
+	} else {
+		decompilerStatus = 'Plug in the board.'
+	}
+}
+
 method readCodeFromNextBoardConnected SmallRuntime {
 	readFromBoard = true
 	disconnected = false
+}
+
+method cancelReadCodeFromNextBoardConnected SmallRuntime {
+	readFromBoard = false
+	initializeDecompilerStatus this
 }
 
 method readCodeFromBoard SmallRuntime {
@@ -314,14 +396,21 @@ method decompilerDone SmallRuntime { return (decompilerStatus == '') }
 method decompilerStatus SmallRuntime { return decompilerStatus }
 
 method stopDecompilation SmallRuntime {
+	stopSpinner this
 	if (notNil decompiler) {
-		spinner = (findMorph 'MicroBlocksSpinner')
-		if (notNil spinner) { destroy (handler spinner) }
 		decompilerStatus = ''
 		decompiler = nil
 		clearBoardIfConnected this true
 		stopAndSyncScripts this
 	}
+	initializeDecompilerStatus this
+}
+
+// Spinner modal window
+
+method stopSpinner SmallRuntime {
+	spinner = (findMorph 'MicroBlocksSpinner')
+	if (notNil spinner) { destroy (handler spinner) }
 }
 
 method waitForPing SmallRuntime {
@@ -490,16 +579,19 @@ method deleteChunkForBlock SmallRuntime aBlock {
 	}
 }
 
-method stopAndSyncScripts SmallRuntime {
+method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
+	setCursor 'wait'
 
-	if (notNil port) {
+	if (and (notNil port) (true != alreadyStopped)) {
 		sendStopAll this
 		softReset this
 	}
 	clearRunningHighlights this
 	saveAllChunks this
 	verifyCRCs this
+
+	setCursor 'default'
 }
 
 method stopAndClearChunks SmallRuntime {
@@ -583,7 +675,8 @@ method portList SmallRuntime {
 		for pname (listSerialPorts) {
 			blackListed = (or
 				((containsSubString pname 'Bluetooth') > 0)
-				((containsSubString pname '(COM1)') > 0))
+				((containsSubString pname '(COM1)') > 0)
+				((containsSubString pname 'Intel(R) Active Management') > 0))
 			if (not blackListed) {
 				add portList pname
 			}
@@ -659,20 +752,23 @@ method closePort SmallRuntime {
 	vmVersion = nil
 	boardType = nil
 
-	// remove talk bubble and running highlights when disconnected
-	removeHint (global 'page')
+	// remove running highlights and result bubbles when disconnected
 	clearRunningHighlights this
 }
 
-method enableAutoConnect SmallRuntime syncScriptsFlag {
-	// Pass false as the optional syncScriptsFlag to prevent script synching on ChromeOS.
-
-	disconnected = false
-	if ('Browser' == (platform)) { port = 1 }
+method enableAutoConnect SmallRuntime success {
 	closeAllDialogs (findMicroBlocksEditor)
-	if (false != syncScriptsFlag) {
-		stopAndSyncScripts this
+	if ('Browser' == (platform)) {
+		// In the browser, the serial port must be closed and re-opened after installing
+		// firmware on an ESP board. Not sure why. Adding a delay did not help.
+		closePort this
+		closeSerialPort 1 // make sure port is really disconnected
+		disconnected = true
+		if success { otherReconnectMessage this }
+		return
 	}
+	disconnected = false
+	stopAndSyncScripts this
 }
 
 method tryToInstallVM SmallRuntime {
@@ -704,7 +800,7 @@ method tryToInstallVM SmallRuntime {
 
 method updateConnection SmallRuntime {
 	pingSendInterval = 2000 // msecs between pings
-	pingTimeout = 5000
+	pingTimeout = 8000
 	if (isNil pingSentMSecs) { pingSentMSecs = 0 }
 	if (isNil lastPingRecvMSecs) { lastPingRecvMSecs = 0 }
 	if (isNil disconnected) { disconnected = false }
@@ -762,21 +858,23 @@ method tryToConnect SmallRuntime {
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
-			connectionStartTime = nil // stop calling tryToConnect
-			vmVersion = nil
 			sendMsg this 'pingMsg'
 			pingSentMSecs = (msecsSinceStart)
-			sendMsg this 'getVersionMsg'
+			print 'Connected to' portName
+			connectionStartTime = nil
+			vmVersion = nil
+			clearRunningHighlights this
+			setDefaultSerialDelay this
 			if readFromBoard {
 				readFromBoard = false
 				sendStopAll this
 				readCodeFromBoard this
 			} else {
 				clearBoardIfConnected this false
-				stopAndSyncScripts this
+				stopAndSyncScripts this true
 			}
-			setDefaultSerialDelay this
-			return 'connected'
+			sendMsg this 'getVersionMsg'
+			return 'not connected' // don't make circle green until successful ping
 		} else {
 			portName = nil
 			port = nil
@@ -801,16 +899,16 @@ method tryToConnect SmallRuntime {
 			connectionStartTime = nil
 			vmVersion = nil
 			clearRunningHighlights this
-			sendMsg this 'getVersionMsg'
+			setDefaultSerialDelay this
 			if readFromBoard {
 				readFromBoard = false
 				sendStopAll this
 				readCodeFromBoard this
 			} else {
 				clearBoardIfConnected this false
-				stopAndSyncScripts this
+				stopAndSyncScripts this true
 			}
-			setDefaultSerialDelay this
+			sendMsg this 'getVersionMsg'
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
@@ -936,7 +1034,7 @@ method versionReceived SmallRuntime versionString {
 
 method checkVmVersion SmallRuntime {
 	// prevent version check from running while the decompiler is working
-	if (decompilerStatus != '') { return }
+	if (not readFromBoard) { return }
 	if ((latestVmVersion this) > vmVersion) {
 		ok = (confirm (global 'page') nil (join
 			(localized 'The MicroBlocks in your board is not current')
@@ -949,7 +1047,7 @@ method checkVmVersion SmallRuntime {
 method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
-	if (decompilerStatus != '') { return } // don't load libraries while decompiling
+	if readFromBoard { return } // don't load libraries while decompiling
 	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
 	if (boardLibAutoLoadDisabled (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
 
@@ -961,10 +1059,12 @@ method installBoardSpecificBlocks SmallRuntime {
 	} (or ('micro:bit' == boardType) ('micro:bit v2' == boardType)) {
 		importEmbeddedLibrary scripter 'Basic Sensors'
 		importEmbeddedLibrary scripter 'LED Display'
+		importEmbeddedLibrary scripter 'Scrolling'
 	} ('Calliope' == boardType) {
 		importEmbeddedLibrary scripter 'Calliope'
 		importEmbeddedLibrary scripter 'Basic Sensors'
 		importEmbeddedLibrary scripter 'LED Display'
+		importEmbeddedLibrary scripter 'Scrolling'
 	} ('CircuitPlayground' == boardType) {
 		importEmbeddedLibrary scripter 'Circuit Playground'
 		importEmbeddedLibrary scripter 'Basic Sensors'
@@ -1083,7 +1183,9 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	// restart the chunk if it is a Block and is running
 	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
 		stopRunningChunk this chunkID
+		waitForResponse this
 		runChunk this chunkID
+		waitForResponse this
 	}
 }
 
@@ -1245,7 +1347,7 @@ method setDefaultSerialDelay SmallRuntime {
 method setSerialDelay SmallRuntime newDelay {
 	if ('reset to default' == newDelay) {
 		newDelay = 5
-		if ('Browser' == (platform)) { newDelay = 20 }
+		if ('Browser' == (platform)) { newDelay = 15 }
 	}
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
@@ -1330,6 +1432,9 @@ method errorString SmallRuntime errID {
 #define needsIndexable			33	// Needs an indexable type such as a string or list
 #define joinArgsNotSameType		34	// All arguments to join must be the same type (e.g. lists)
 #define i2cTransferFailed		35	// I2C transfer failed
+#define needsByteArray			36	// Needs a byte array
+#define serialPortNotOpen		37	// Serial port not open
+#define serialWriteTooBig		38	// Serial port write is limited to 128 bytes
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
@@ -1560,6 +1665,9 @@ method isRunning SmallRuntime aBlock {
 // File Transfer Support
 
 method boardHasFileSystem SmallRuntime {
+	if (true == disconnected) { return false }
+	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
+	if (isNil port) { return false }
 	if (isNil boardType) { getVersion this }
 	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040')
 }
@@ -1584,8 +1692,13 @@ method getFileListFromBoard SmallRuntime {
 }
 
 method getFileFromBoard SmallRuntime {
+	fileNames = (sorted (getFileListFromBoard this))
+	if (isEmpty fileNames) {
+		inform 'No files on board.'
+		return
+	}
 	menu = (menu 'File to read from board:' (action 'getAndSaveFile' this) true)
-	for fn (sorted (getFileListFromBoard this)) {
+	for fn fileNames {
 		addItem menu fn
 	}
 	popUpAtHand menu (global 'page')
@@ -1594,7 +1707,7 @@ method getFileFromBoard SmallRuntime {
 method getAndSaveFile SmallRuntime remoteFileName {
 	data = (readFileFromBoard this remoteFileName)
 	if ('Browser' == (platform)) {
-		browserWriteFile data remoteFileName
+		browserWriteFile data remoteFileName 'fileFromBoard'
 	} else {
 		fName = (fileToWrite remoteFileName)
 		if ('' != fName) { writeFile fName data }
@@ -1602,6 +1715,7 @@ method getAndSaveFile SmallRuntime remoteFileName {
 }
 
 method readFileFromBoard SmallRuntime remoteFileName {
+	setCursor 'wait'
 	msg = (list)
 	id = (rand ((1 << 24) - 1))
 	appendInt32 this msg id
@@ -1626,6 +1740,7 @@ method readFileFromBoard SmallRuntime remoteFileName {
 		if (byteCount > 0) { replaceByteRange result startIndex endIndex msg 9 }
 		startIndex += byteCount
 	}
+	setCursor 'default'
 	return result
 }
 
@@ -1634,6 +1749,7 @@ method putFileOnBoard SmallRuntime {
 }
 
 method writeFileToBoard SmallRuntime srcFileName {
+	setCursor 'wait'
 	fileContents = (readFile srcFileName true)
 	totalBytes = (byteCount fileContents)
 	if (isNil fileContents) { return }
@@ -1669,6 +1785,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 	appendInt32 this msg id
 	appendInt32 this msg bytesSent
 	sendMsgSync this 'fileChunk' 0 msg
+	setCursor 'default'
 }
 
 method appendInt32 SmallRuntime msg n {
@@ -1716,10 +1833,19 @@ method updateHighlights SmallRuntime {
 	for m (parts (morph (scriptEditor scripter))) {
 		if (isClass (handler m) 'Block') {
 			if (isRunning this (handler m)) {
-				addHighlight m (4 * scale)
+				addHighlight m
 			} else {
 				removeHighlight m
 			}
+		}
+	}
+}
+
+method removeResultBubbles SmallRuntime {
+	for m (allMorphs (morph (global 'page'))) {
+		h = (handler m)
+		if (and (isClass h 'SpeechBubble') (isClass (handler (clientMorph h)) 'Block')) {
+			removeFromOwner m
 		}
 	}
 }
@@ -1747,93 +1873,13 @@ method showResult SmallRuntime chunkID value isError isResult {
 				}
 			}
 			if (and (true == isResult) (h == blockForResultImage)) {
+				blockForResultImage = nil
 				doOneCycle (global 'page')
 				waitMSecs 500 // show result bubble briefly before showing menu
-				exportScriptAsImage this h value
-				blockForResultImage = nil
+				exportAsImageScaled h 2 value
 			}
 		}
 	}
-}
-
-// Script Image Saving
-
-method exportScriptAsImage SmallRuntime aBlock result {
-  if (not (devMode)) {
-	exportAsImageScaled this aBlock 1.0 result
-	return
-  }
-  menu = (menu 'Scale?' this)
-  addItem menu '50%' (action 'exportAsImageScaled' this aBlock 0.50 result)
-  addItem menu '55%' (action 'exportAsImageScaled' this aBlock 0.55 result)
-  addItem menu '60%' (action 'exportAsImageScaled' this aBlock 0.60 result)
-  addItem menu '65%' (action 'exportAsImageScaled' this aBlock 0.65 result)
-  addItem menu '70%' (action 'exportAsImageScaled' this aBlock 0.70 result)
-  addItem menu '75%' (action 'exportAsImageScaled' this aBlock 0.75 result)
-  addItem menu '80%' (action 'exportAsImageScaled' this aBlock 0.80 result)
-  addItem menu '90%' (action 'exportAsImageScaled' this aBlock 0.90 result)
-  addItem menu '100%' (action 'exportAsImageScaled' this aBlock 1.0 result)
-  popUpAtHand menu (global 'page')
-}
-
-method exportAsImageScaled SmallRuntime aBlock scale result {
-  // Save a PNG picture of the given script at the given scale (1.0 = 144 dpi).
-  // If result is not nil, include a speech bubble showing the result.
-
-  // if block is a function definition hat use its prototype block
-  if (isPrototypeHat aBlock) {
-	proto = (editedPrototype aBlock)
-	if (notNil proto) { aBlock = proto }
-  }
-
-  // draw script and bubble at high resolution
-  gc
-  oldScale = (global 'scale')
-  setGlobal 'scale' 2 // change global scale temporarily
-  if (notNil (function aBlock)) {
-	scaledScript = (scriptForFunction (function aBlock))
-  } else {
-    scaledScript = (toBlock (expression aBlock))
-  }
-  scriptW = (width (fullBounds (morph scaledScript)))
-  scriptH = (height (fullBounds (morph scaledScript)))
-  if (notNil result) {
-	scaledBubble = (newBubble result 200 'right')
-	bubbleW = (width (fullBounds (morph scaledBubble)))
-	bubbleH = (height (fullBounds (morph scaledBubble)))
-	inset = 14
-  } else {
-	bubbleW = 0
-	bubbleH = 0
-	inset = 0
-  }
-  setGlobal 'scale' oldScale // revert to old scale
-
-  // draw the morph and result bubble, if any
-  bm = (newBitmap (+ scriptW bubbleW (- inset)) (+ scriptH bubbleH (- inset)))
-  draw2 (morph scaledScript) bm 0 (bubbleH - inset)
-  if (notNil scaledBubble) {
-	topMorphWidth = (width (morph scaledScript))
-	draw2 (morph scaledBubble) bm (topMorphWidth - inset) 0
-  }
-
-  // scale the result bitmap
-  if ('Browser' == (platform)) {
-	scaleBM = (scaleAndRotate bm scale)
-  } else {
-	scaleBM = (newBitmap (ceiling (scale * (width bm))) (ceiling (scale * (height bm))))
-	warpBitmap scaleBM bm 0 0 scale scale
-  }
-
-  // save result as a PNG file
-  pngData = (encodePNG scaleBM (round (scale * 144)))
-  if ('Browser' == (platform)) {
-	browserWriteFile pngData 'scriptImage' 'png'
-  } else {
-	fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
-	if ('' == fName) { return false }
-	writeFile fName pngData
-  }
 }
 
 method exportScriptImageWithResult SmallRuntime aBlock {
@@ -1983,7 +2029,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 				addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
 			}
 			addLine menu
-			addItem menu 'Adafruit Board' (action 'adaFruitMessage' this)
+			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
 			popUpAtHand menu (global 'page')
 		}
 	} else {
@@ -2059,11 +2105,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	closePort this
 
 	if ('MICROBIT' == driveName) {
- 		contents = (readFile (join boardPath '/MICROBIT.HTM'))
-		vmFileName = 'vm_microbit.hex'
-		if (notNil (nextMatchIn 'id=9904' contents)) {
-			vmFileName = 'vm_microbitV2.hex'
-		}
+		vmFileName = 'vm_microbit-universal.hex'
  	} ('MINI' == driveName) {
 		vmFileName = 'vm_calliope.hex'
 	} ('CPLAYBOOT' == driveName) {
@@ -2108,7 +2150,6 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	} else {
 		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this) true)
 		addItem menu 'micro:bit'
-		addItem menu 'micro:bit v2'
 		addItem menu 'Calliope mini'
 		addItem menu 'Circuit Playground Express'
 		addItem menu 'Circuit Playground Bluefruit'
@@ -2149,10 +2190,10 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	}
 
 	if ('micro:bit' == boardName) {
-		vmFileName = 'vm_microbit.hex'
+		vmFileName = 'vm_microbit-universal.hex'
 		driveName = 'MICROBIT'
 	} ('micro:bit v2' == boardName) {
-		vmFileName = 'vm_microbitV2.hex'
+		vmFileName = 'vm_microbit-universal.hex'
 		driveName = 'MICROBIT'
 	} ('Calliope mini' == boardName) {
 		vmFileName = 'vm_calliope.hex'
@@ -2169,11 +2210,6 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	}
 
 	prefix = ''
-	if (isNil boardType) {
-		prefix = (join
-			(localized 'Connect the board to your computer.')
-			(newline) (newline))
-	}
 	if (endsWith vmFileName '.uf2') {
 		// Extra instruction for Adafruit boards
 		prefix = (join
@@ -2183,7 +2219,8 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	}
 	msg = (join
 		prefix
-		(localized 'You will be asked to save an untitled file.')
+		(localized 'You will be asked to save the firmware file.')
+		(newline)
 		(newline)
 		(localized 'Select')
 		' ' driveName ' '
@@ -2199,25 +2236,77 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	closePort this
 	updateIndicator (findMicroBlocksEditor)
 
-	browserWriteFile vmData vmFileName
-	waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
+	if (endsWith vmFileName '.hex') {
+		// for micro:bit, filename must be less than 9 letter before the extension
+		vmFileName = 'firmware.hex'
+		waitForFirmwareInstall this
+	}
+
+	browserWriteFile vmData vmFileName 'vmInstall'
+
 	if (endsWith vmFileName '.uf2') {
-		msg = (localized 'When the NeoPixels turn off')
-	} else {
-		msg = (localized 'When the LED stops flashing')
+		waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
+		adaFruitReconnectMessage this
 	}
-//	if (and ('Browser' == (platform)) (browserIsChromeOS)) {
-	if false {  // always use manual reconnect, even on Chromebooks
-		waitMSecs 5000
-		msg = (join msg  ', ' (localized 'the board should reconnect. If it does not, unplug and replug the USB cable.'))
-	} else {
-		msg = (join msg  ', ' (localized 'reconnect to the board by clicking the "Connect" button (USB icon).'))
-	}
+}
+
+method adaFruitResetMessage SmallRuntime {
+	inform (localized 'For Adafruit boards, double-click reset button and try again.')
+}
+
+method adaFruitReconnectMessage SmallRuntime {
+	msg = (join
+		(localized 'When the NeoPixels turn off')  ', '
+		(localized 'reconnect to the board by clicking the "Connect" button (USB icon).'))
 	inform msg
 }
 
-method adaFruitMessage SmallRuntime {
-	inform (localized 'For Adafruit boards, double-click reset button and try again.')
+method otherReconnectMessage SmallRuntime {
+	title = (localized 'Firmware Installed')
+	msg = (localized 'Reconnect to the board by clicking the "Connect" button (USB icon).')
+	inform (global 'page') msg title nil true
+}
+
+method waitForFirmwareInstall SmallRuntime {
+	firmwareInstallTimer = nil
+	spinner = (newSpinner (action 'firwareInstallStatus' this) (action 'firmwareInstallDone' this))
+	addPart (global 'page') spinner
+}
+
+method startFirmwareCountdown SmallRuntime fileName {
+	// Called by editor after firmware file is saved.
+
+	if ('_no_file_selected_' ==  fileName) {
+		spinner = (findMorph 'MicroBlocksSpinner')
+		if (notNil spinner) { destroy (handler spinner) }
+	} else {
+		firmwareInstallTimer = (newTimer)
+	}
+}
+
+method firmwareInstallSecsRemaining SmallRuntime {
+	if (isNil firmwareInstallTimer) { return 0 }
+	installWaitMSecs = 6000
+	if (and ('Browser' == (platform)) (browserIsChromeOS)) {
+		installWaitMSecs =  16000
+	}
+	return (ceiling ((installWaitMSecs - (msecs firmwareInstallTimer)) / 1000))
+}
+
+method firwareInstallStatus SmallRuntime {
+	if (isNil firmwareInstallTimer) { return 'Installing firmware...' }
+	return (join '' (firmwareInstallSecsRemaining this) ' seconds remaining.')
+}
+
+method firmwareInstallDone SmallRuntime {
+	if (isNil firmwareInstallTimer) { return false }
+
+	if ((firmwareInstallSecsRemaining this) <= 0) {
+		firmwareInstallTimer = nil
+		otherReconnectMessage this
+		return true
+	}
+	return false
 }
 
 // espressif board flashing

@@ -141,7 +141,7 @@ method redraw TextEditor {
   descent = (fontDescent)
 
   fixLayout this
-  bm = (costume morph)
+  bm = (costumeData morph)
   if (or (isNil bm) ((width bm) != (width morph)) ((width bm) != (width morph))) {
 	bm = (newBitmap (width morph) (height morph))
   }

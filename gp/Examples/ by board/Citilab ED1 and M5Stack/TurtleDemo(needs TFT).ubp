@@ -3,7 +3,7 @@ author unknown
 version 1 0 
 description ''
 
-script 50 50 {
+script 49 49 {
 whenStarted
 home
 '[display:mbDisplayOff]'
@@ -61,10 +61,11 @@ to randomColor {
 
 module Turtle Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 depends TFT 
 tags tft graphics draw 
-description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+description 'Draw with turtle geometry on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.
+'
 variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
 
 	spec ' ' 'home' 'home'
@@ -111,7 +112,6 @@ to 'go to x' x y {
 
 to home {
   if (0 == _turtlePenIsDown) {
-    '[tft:enableDisplay]' true
     'set pen color to' (colorSwatch 7 255 1 255)
     '[display:mbDisplayOff]'
     'pen up'

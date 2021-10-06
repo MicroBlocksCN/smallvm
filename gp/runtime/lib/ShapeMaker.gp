@@ -7,33 +7,33 @@ to newShapeMaker bitmap {
 }
 
 method initialize ShapeMaker aBitmap {
-  pen = (newVectorPen aBitmap)
+  if (isNil aBitmap) {
+    pen = (newVectorPenPrims)
+  } else {
+	pen = (newVectorPen aBitmap)
+  }
   return this
 }
 
 // shapes
 
 method fillRectangle ShapeMaker rect fillColor {
-  bitmap = (bitmap pen)
-  fillRect bitmap fillColor (left rect) (top rect) (width rect) (height rect)
+  beginPath pen (left rect) (bottom rect)
+  roundedRectPath this rect 0
+  fill pen fillColor
 }
 
 method outlineRectangle ShapeMaker rect border borderColor {
-  x = (left rect)
-  y = (top rect)
-  w = (width rect)
-  h = (height rect)
-  bitmap = (bitmap pen)
-  fillRect bitmap borderColor x y w border
-  fillRect bitmap borderColor x y border h
-  fillRect bitmap borderColor ((x + w) - border) y border h
-  fillRect bitmap borderColor x ((y + h) - border) w border
+  if (border <= 0) { return }
+  beginPath pen (left rect) (bottom rect)
+  roundedRectPath this rect 0
+  stroke pen borderColor border
 }
 
 method fillRoundedRect ShapeMaker rect radius color border borderColorTop borderColorBottom {
   if (isNil border) {border = 0}
   if (border > 0) {
-    if (isNil borderColorTop) {borderColorTop = (color 0 0 0 255)}
+    if (isNil borderColorTop) {borderColorTop = (darker color)}
     if (isNil borderColorBottom) {borderBolorBottom = borderColorTop}
     rect = (insetBy rect (border / 2))
   }
@@ -55,25 +55,50 @@ method fillRoundedRect ShapeMaker rect radius color border borderColorTop border
     roundedRectHalfPath this rect radius
     stroke pen borderColorBottom border
   }
-  unmultiplyAlpha (bitmap pen)
 }
 
-method drawCircle ShapeMaker centerX centerY radius color border borderColor {
+method roundedRectPath ShapeMaker rect radius {
+  setHeading pen 270
+  if (0 == radius) {
+	w = (width rect)
+	h = (height rect)
+	repeat 2 {
+	  forward pen h
+	  turn pen 90
+	  forward pen w
+	  turn pen 90
+	}
+  } else {
+	repeat 2 {
+	  roundedRectHalfPath this rect radius
+	}
+  }
+}
+
+method roundedRectHalfPath ShapeMaker rect radius {
+  radius = (min radius ((height rect) / 2) ((width rect) / 2))
+  w = ((width rect) - (radius * 2))
+  h = ((height rect) - (radius * 2))
+  corner = (sqrt ((radius * radius) * 2))
+  forward pen h
+  turn pen 45
+  forward pen corner 50
+  turn pen 45
+  forward pen w
+  turn pen 45
+  forward pen corner 50
+  turn pen 45
+}
+
+method drawCircle ShapeMaker centerX centerY radius fillColor borderWidth borderColor {
   // Draw a circle with an optional border. If color is nil or transparent,
   // the circle is not filled.
 
-  if (isNil border) {border = 0}
+  if (isNil borderWidth) { borderWidth = 0 }
   startY = (centerY - radius)
   beginPath pen centerX startY
   turn pen 360 radius
-  if (and (notNil color) ((alpha color) > 0)) {
-    fill pen color
-  }
-  if (border > 0) {
-    if (isNil borderColor) {borderColor = (gray 0)}
-    stroke pen borderColor border
-  }
-  unmultiplyAlpha (bitmap pen)
+  fillAndStroke pen fillColor borderColor borderWidth
 }
 
 method fillArrow ShapeMaker rect orientation fillColor {
@@ -107,8 +132,7 @@ method fillArrow ShapeMaker rect orientation fillColor {
   forward pen baseLength
   turn pen tipAngle
   forward pen tipLength
-  fill pen fillColor 1
-  unmultiplyAlpha (bitmap pen)
+  fill pen fillColor
 }
 
 method drawLine ShapeMaker x0 y0 x1 y1 thickness color joint cap {
@@ -128,11 +152,37 @@ method drawTab ShapeMaker rect radius border color {
   // start at bottom right and draw base first (helps filling heuristic when simulating vector primitives)
   beginPath pen (right rect) (bottom rect)
   tabPath this rect radius
-  fill pen color
-  if (border > 0) {
-    stroke pen (lighter color) border
-  }
-  unmultiplyAlpha (bitmap pen)
+  fillAndStroke pen color (lighter color) border
+}
+
+method tabPath ShapeMaker rect radius {
+  w = ((width rect) - (radius * 4))
+  h = ((height rect) - (radius * 2))
+  corner = (sqrt ((radius * radius) * 2))
+
+  // start at bottom right and draw base first (helps filling heuristic when simulating vector primitives)
+  beginPath pen (right rect) (bottom rect)
+  setHeading pen 180
+  forward pen (width rect)
+
+  setHeading pen 0
+  turn pen -45
+  forward pen corner -50
+  turn pen -45
+  forward pen h
+  turn pen 45
+  forward pen corner 50
+  turn pen 45
+  forward pen w
+  turn pen 45
+  forward pen corner 50
+  turn pen 45
+
+  setHeading pen 90
+  forward pen h
+  turn pen -45
+  forward pen corner -50
+  turn pen -45
 }
 
 // Speech bubble
@@ -172,9 +222,7 @@ method drawSpeechBubble ShapeMaker rect scale direction fillColor borderColor {
   lineTo pen ((left r) + radius) ((bottom r) - tailH)
   turn pen 90 radius
 
-  fill pen fillColor
-  stroke pen borderColor border
-  unmultiplyAlpha (bitmap pen)
+  fillAndStroke pen fillColor borderColor border
 }
 
 // Grips
@@ -183,7 +231,6 @@ method circleWithCrosshairs ShapeMaker size circleRadius color {
   center = (size / 2)
   circleBorder = (size / 6)
   drawCircle this center center circleRadius nil circleBorder color
-  unmultiplyAlpha (bitmap pen)
   fillRectangle this (rect 0 (center - 1) size 2) color
   fillRectangle this (rect (center - 1) 0 2 size) color
 }
@@ -192,7 +239,6 @@ method drawRotationHandle ShapeMaker size circleRadius color {
   center = (size / 2)
   circleBorder = (size / 6)
   drawCircle this center center circleRadius nil circleBorder color
-  unmultiplyAlpha (bitmap pen)
 }
 
 method drawResizer ShapeMaker x y width height orientation isInset {
@@ -222,75 +268,7 @@ method drawResizer ShapeMaker x y width height orientation isInset {
   }
 }
 
-// Blocks
-
-method drawBlock ShapeMaker x y width height blockColor radius dent inset border {
-  rect = (insetBy (rect x y width height) (border / 2))
-  beginPath pen (left rect) ((bottom rect) - (radius * 2))
-
-  blockPath this rect radius dent inset
-  fill pen blockColor
-
-  if (and (not (global 'flatBlocks')) (border > 0)) {
-    beginPath pen (left rect) ((bottom rect) - (radius * 2))
-    blockTopPath this rect radius dent inset
-    stroke pen (lighter blockColor) border
-
-    beginPath pen (right rect) ((top rect) + radius)
-    blockBottomPath this rect radius dent inset
-    stroke pen (darker blockColor) border
-  }
-  unmultiplyAlpha (bitmap pen)
-}
-
-method drawHatBlock ShapeMaker x y width height hatWidth blockColor radius dent inset border {
-  hatHeight = ((hatWidth / (sqrt 2)) - (hatWidth / 2))
-  rect = (insetBy (rect x y width height) (border / 2))
-
-  beginPath pen (left rect) ((bottom rect) - (radius * 2))
-  hatBlockPath this rect radius dent inset hatWidth
-  fill pen blockColor
-
-  if (and (not (global 'flatBlocks')) (border > 0)) {
-    beginPath pen (left rect) ((bottom rect) - (radius * 2))
-    hatBlockTopPath this rect radius dent inset hatWidth
-    stroke pen (lighter blockColor) border
-
-    beginPath pen (right rect) (+ (top rect) hatHeight radius)
-    setHeading pen 90
-    hatBlockBottomPath this rect radius dent inset hatWidth
-    stroke pen (darker blockColor) border
-  }
-  unmultiplyAlpha (bitmap pen)
-}
-
-method drawCSlot ShapeMaker x y width height blockColor radius dent inset border {
-  halfBorder = (border / 2)
-
-  rect = (rect x y width (height + border))
-  beginPath pen x (y - halfBorder)
-  cSlotPath this rect radius dent inset border
-  fill pen blockColor
-
-  if (and (not (global 'flatBlocks')) (border > 0)) {
-    corner = (sqrt ((radius * radius) * 2))
-
-    beginPath pen ((right rect) - halfBorder) ((top rect) - halfBorder)
-    cSlotTopPath this rect radius dent inset border
-    stroke pen (darker blockColor) border
-
-    beginPath pen (((left rect) + inset) - (border * 2.5)) ((bottom rect) - (+ halfBorder (radius * 2)))
-    setHeading pen 90
-    cSlotBottomPath this rect radius dent inset border
-    stroke pen (lighter blockColor) border
-  }
-  unmultiplyAlpha (bitmap pen)
-}
-
-method drawReporter ShapeMaker x y width height blockColor rounding border {
-  if (global 'flatBlocks') {border = 0}
-  drawButton this x y width height blockColor rounding border
-}
+// Button
 
 method drawButton ShapeMaker x y width height buttonColor corner border isInset {
   if (isNil isInset) {isInset = false}
@@ -304,147 +282,166 @@ method drawButton ShapeMaker x y width height buttonColor corner border isInset 
   fillRoundedRect this (rect x y width height) corner buttonColor border topColor bottomColor
 }
 
-// paths
+// Blocks
 
-method roundedRectPath ShapeMaker rect radius {
-  setHeading pen 270
-  if (0 == radius) {
-	w = (width rect)
-	h = (height rect)
-	repeat 2 {
-	  forward pen h
-	  turn pen 90
-	  forward pen w
-	  turn pen 90
-	}
-  } else {
-	repeat 2 {
-	  roundedRectHalfPath this rect radius
-	}
-  }
+method drawReporter ShapeMaker rect blockColor radius {
+  fillRoundedRect this rect radius blockColor (blockBorder this) (topColor this blockColor) (darker blockColor)
 }
 
-method roundedRectHalfPath ShapeMaker rect radius {
-  radius = (min radius ((height rect) / 2) ((width rect) / 2))
-  w = ((width rect) - (radius * 2))
-  h = ((height rect) - (radius * 2))
-  corner = (sqrt ((radius * radius) * 2))
-  forward pen h
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
-  forward pen w
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
-}
-
-method blockPath ShapeMaker rect radius dent inset {
+method drawBlock ShapeMaker rect blockColor radius dent inset {
+  // fill the block
+  beginPath pen (left rect) ((bottom rect) - (radius * 2))
   blockTopPath this rect radius dent inset
   blockBottomPath this rect radius dent inset
+  fill pen blockColor
+
+  // add outline
+  rect = (insetBy rect (blockBorderInset this)) // draw highlight/shadow lines inset by half the border
+
+  beginPath pen (left rect) ((bottom rect) - (radius * 2))
+  blockTopPath this rect radius dent inset
+  stroke pen (topColor this blockColor) (blockBorder this)
+
+  beginPath pen (right rect) ((top rect) + radius)
+  blockBottomPath this rect radius dent inset
+  stroke pen (darker blockColor) (blockBorder this)
 }
 
-method tabPath ShapeMaker rect radius {
-  w = ((width rect) - (radius * 4))
-  h = ((height rect) - (radius * 2))
-  corner = (sqrt ((radius * radius) * 2))
+method drawHatBlock ShapeMaker rect hatWidth blockColor radius dent inset {
+  hatHeight = ((hatWidth / (sqrt 2)) - (hatWidth / 2))
 
-  // start at bottom right and draw base first (helps filling heuristic when simulating vector primitives)
-  beginPath pen (right rect) (bottom rect)
-  setHeading pen 180
-  forward pen (width rect)
+  // fill the block
+  beginPath pen (left rect) ((bottom rect) - (radius * 2))
+  hatBlockTopPath this rect radius dent inset hatWidth
+  blockBottomPath this rect radius dent inset
+  fill pen blockColor
 
-  setHeading pen 0
-  turn pen -45
-  forward pen corner -50
-  turn pen -45
-  forward pen h
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
-  forward pen w
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
+  // add outline
+  rect = (insetBy rect (blockBorderInset this)) // draw highlight/shadow lines inset by half the border
 
+  beginPath pen (left rect) ((bottom rect) - (radius * 2))
+  hatBlockTopPath this rect radius dent inset hatWidth
+  stroke pen (topColor this blockColor) (blockBorder this)
+
+  beginPath pen (right rect) (+ (top rect) hatHeight radius)
   setHeading pen 90
-  forward pen h
-  turn pen -45
-  forward pen corner -50
-  turn pen -45
+  blockBottomPath this rect radius dent inset
+  stroke pen (darker blockColor) (blockBorder this)
+}
+
+method drawBlockWithCommandSlots ShapeMaker rect commandSlots blockColor radius dent inset {
+  scale = (blockScale)
+
+  // contruct and fill a path including command slots
+  beginPath pen (left rect) ((bottom rect) - (radius * 2))
+  blockTopPath this rect radius dent inset
+  for cslot commandSlots {
+	slotTopPath this cslot rect radius dent inset
+	slotBottomPath this cslot rect radius dent inset
+  }
+  blockBottomPath this rect radius dent inset
+  fill pen blockColor
+
+  // add outline
+  rect = (insetBy rect (blockBorderInset this)) // draw highlight/shadow lines inset by half the border
+
+  beginPath pen (left rect) ((bottom rect) - (radius * 2))
+  blockTopPath this rect radius dent inset
+  stroke pen (topColor this blockColor) (blockBorder this)
+  for cslot commandSlots {
+    beginPathFromCurrentPostion pen
+    slotTopPath this cslot rect radius dent inset
+    stroke pen (darker blockColor) (blockBorder this)
+
+    beginPathFromCurrentPostion pen
+    slotBottomPath this cslot rect radius dent inset
+    stroke pen (topColor this blockColor) (blockBorder this)
+  }
+  beginPathFromCurrentPostion pen
+  blockBottomPath this rect radius dent inset
+  stroke pen (darker blockColor) (blockBorder this)
+}
+
+method slotTopPath ShapeMaker cslot rect radius dent inset {
+  scale = (blockScale)
+
+  slotTop = (((at cslot 1) - (2 * scale)) - 1)
+  slotH = (((at cslot 2) - (12 * scale)) + 1)
+  upperIndentInset = ((24 * scale) + 1)
+
+  setHeading pen 90 // down
+  lineTo pen (right rect) ((top rect) + slotTop)
+
+  turn pen 90 radius
+
+  // top slot edge to notch
+  forward pen ((width rect) - upperIndentInset)
+
+  // top notch
+  blockNotch this radius (dent + 0.5) -1
+
+  // top edge inset
+  forward pen (1.5 * scale)
+
+  // inner left of slot
+  turn pen -90 radius
+  forward pen slotH
+}
+
+method slotBottomPath ShapeMaker cslot rect radius dent inset {
+  // bottom edge of slot and corner
+  turn pen -90 radius
+  lineTo pen ((right rect) - radius) (y pen)
+  turn pen 90 radius
 }
 
 method blockTopPath ShapeMaker rect radius dent inset {
-  corner = (sqrt ((radius * radius) * 2))
+  dent += 2 // increase width of top indentation
+  halfExtraDent = 1
 
   // left side
   setHeading pen 270
   forward pen ((height rect) - (radius * 3))
 
   // top left corner
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
+  roundedCorner this radius 1
 
   // upper inset
-  forward pen (inset - radius)
+  forward pen ((inset - radius) - halfExtraDent)
 
   // upper notch
-  turn pen 45
-  forward pen corner
-  turn pen -45
-  forward pen dent
-  turn pen -45
-  forward pen corner
-  turn pen 45
+  blockNotch this radius dent 1
 
+  // top edge
   forward pen ((width rect) - (+ inset dent (radius * 3)))
+  forward pen halfExtraDent
 
   // upper right corner
-  turn pen 45
-  forward pen corner 50
+  roundedCorner this radius 1
 }
 
 method blockBottomPath ShapeMaker rect radius dent inset {
-  corner = (sqrt ((radius * radius) * 2))
-
-  setHeading pen 90
-
   // right side
-  forward pen ((height rect) - (radius * 3))
+  setHeading pen 90
+  lineTo pen (x pen) ((bottom rect) - (radius * 2))
 
   // bottom right corner
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
+  roundedCorner this radius 1
 
+  // bottom edge
   forward pen ((width rect) - (+ inset dent (radius * 3)))
 
   // bottom notch
-  turn pen -45
-  forward pen corner
-  turn pen 45
-  forward pen dent
-  turn pen 45
-  forward pen corner
-  turn pen -45
+  blockNotch this radius dent -1
 
   // bottom inset
   forward pen (inset - radius)
 
   // bottom left corner
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
-}
-
-method hatBlockPath ShapeMaker rect radius dent inset hatWidth {
-  hatBlockTopPath this rect radius dent inset hatWidth
-  hatBlockBottomPath this rect radius dent inset hatWidth
+  roundedCorner this radius 1
 }
 
 method hatBlockTopPath ShapeMaker rect radius dent inset hatWidth {
-  corner = (sqrt ((radius * radius) * 2))
   hatHeight = ((hatWidth / (sqrt 2)) - (hatWidth / 2))
 
   // left side
@@ -454,103 +451,39 @@ method hatBlockTopPath ShapeMaker rect radius dent inset hatWidth {
   // top hat-curve
   turn pen 90
   forward pen hatWidth 40
-  forward pen ((width rect) - (+ hatWidth radius))
+  forward pen ((width rect) - (hatWidth + radius))
 
   // upper right corner
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
+  roundedCorner this radius 1
 }
 
-method hatBlockBottomPath ShapeMaker rect radius dent inset hatWidth {
-  corner = (sqrt ((radius * radius) * 2))
-  hatHeight = ((hatWidth / (sqrt 2)) - (hatWidth / 2))
+method roundedCorner ShapeMaker radius dir {
+  // Turn by 90 degrees with rounding.
+  // dir is 1 for a right turn, -1 for a left turn.
 
-  // right side
-  forward pen ((height rect) - (+ hatHeight (radius * 3)))
+  turn pen (dir * 45)
+  forward pen (sqrt ((radius * radius) * 2)) (dir * 50)
+  turn pen (dir * 45)
+}
 
-  // bottom right corner
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
+method blockNotch ShapeMaker radius dent dir {
+  // Draw a block notch.
+  // dir is 1 if notch starts with a right turn, -1 if it starts with left turn.
 
-  forward pen ((width rect) - (+ inset dent (radius * 3)))
-
-  // bottom notch
-  turn pen -45
-  forward pen corner
-  turn pen 45
+  diagonal = (sqrt ((radius * radius) * 2))
+  turn pen (dir * 45)
+  forward pen diagonal
+  turn pen (dir * -45)
   forward pen dent
-  turn pen 45
-  forward pen corner
-  turn pen -45
-
-  // bottom inset
-  forward pen (inset - radius)
-
-  // bottom left corner
-  turn pen 45
-  forward pen corner 50
-  turn pen 45
+  turn pen (dir * -45)
+  forward pen diagonal
+  turn pen (dir * 45)
 }
 
-method cSlotPath ShapeMaker rect radius dent inset border {
-  corner = (sqrt ((radius * radius) * 2))
-  b = (border / 2)
-
-  // top
-  forward pen ((width rect) - b)
-
-  cSlotTopPath this rect radius dent inset border
-  cSlotBottomPath this rect radius dent inset border
-
-  // bottom
-  turn pen 135
-  forward pen ((width rect) - b)
+method topColor ShapeMaker blockColor {
+  if (global 'flatBlocks') { return (darker blockColor) }
+  return (lighter blockColor)
 }
 
-method cSlotTopPath ShapeMaker rect radius dent inset border {
-  corner = (sqrt ((radius * radius) * 2))
-
-  // top right corner
-  turn pen 135
-  forward pen corner 50
-  turn pen 45
-
-  // upper inner slot
-  forward pen ((width rect) - (+ (radius * 4) inset dent border))
-
-  // upper notch
-  turn pen -45
-  forward pen corner
-  turn pen 45
-  forward pen dent
-  turn pen 45
-  forward pen corner
-  turn pen -45
-  forward pen (+ border (inset - radius))
-
-  // upper left inner corner
-  turn pen -45
-  forward pen corner -50
-  turn pen -45
-
-  // right (inner) side
-  forward pen ((height rect) - (radius * 4))
-}
-
-method cSlotBottomPath ShapeMaker rect radius dent inset border {
-  corner = (sqrt ((radius * radius) * 2))
-
-  // lower left inner corner
-  turn pen -45
-  forward pen corner -50
-  turn pen -45
-
-  // lower inner slot
-  forward pen ((width rect) - (radius * 3))
-
-  // bottom right corner
-  turn pen 45
-  forward pen corner 50
-}
+method blockBorder ShapeMaker { return (max 1 (half (blockScale))) }
+method blockBorderInset ShapeMaker { return ((blockBorder this) / 2) }

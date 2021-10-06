@@ -84,10 +84,10 @@ To make this variable refer to a different object, drop that object onto the rea
 
   hint = 'Press and hold to point to the object in this variable.
 To refer to a different object, drop it onto the readout.'
-  addSchedule (global 'page') (schedule (action 'showHint' morph hint) 800)
+  addSchedule (global 'page') (schedule (action 'showTooltip' morph hint) 800)
 }
 
 method handLeave MorphRefIcon aHand {
-  removeSchedulesFor (global 'page') 'showHint' morph
+  removeSchedulesFor (global 'page') 'showTooltip' morph
   removeHint (page aHand)
 }

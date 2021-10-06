@@ -18,15 +18,11 @@ method initialize MicroBlocksFlasher board serialPortName eraseFlashFlag downloa
 	portName = serialPortName
 	eraseFlag = eraseFlashFlag
 	downloadFlag = downloadLatestFlag
-
 	spinner = (newSpinner (action 'fetchStatus' this) (action 'isDone' this))
-
 	return this
 }
 
-method spinner MicroBlocksFlasher {
-	return spinner
-}
+method spinner MicroBlocksFlasher { return spinner }
 
 method fetchStatus MicroBlocksFlasher {
 	if (notNil espTool) { return (status espTool) }
@@ -38,7 +34,7 @@ method isDone MicroBlocksFlasher {
 
 method destroy MicroBlocksFlasher {
 	destroy spinner
-    enableAutoConnect (smallRuntime)
+    enableAutoConnect (smallRuntime) (success espTool)
 }
 
 method startFlasher MicroBlocksFlasher serialPortID {

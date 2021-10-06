@@ -6,27 +6,31 @@
 #include "interp.h"
 
 #ifdef EMSCRIPTEN
-  #include <emscripten.h>
-  #include <emscripten/html5.h>
-  typedef void cairo_t;
+	#include <emscripten.h>
+	#include <emscripten/html5.h>
+	typedef void cairo_t;
 
-  #define closePath cairo_close_path
-  #define curveTo cairo_curve_to
-  #define lineTo cairo_line_to
-  #define moveTo cairo_move_to
-
+	#define closePath cairo_close_path
+	#define curveTo cairo_curve_to
+	#define lineTo cairo_line_to
+	#define moveTo cairo_move_to
 #else
+	#include <cairo/cairo.h>
 
-  #include <cairo/cairo.h>
-
-  #define closePath cairo_close_path
-  #define curveTo cairo_curve_to
-  #define lineTo cairo_line_to
-  #define moveTo cairo_move_to
-
+	#define closePath cairo_close_path
+	#define curveTo cairo_curve_to
+	#define lineTo cairo_line_to
+	#define moveTo cairo_move_to
 #endif
 
 // Helper Functions
+
+static inline int intValue(OBJ obj) {
+	// Return the value of an Integer or Float object.
+	if (isInt(obj)) return obj2int(obj);
+	if (IS_CLASS(obj, FloatClass)) return (int) round(evalFloat(obj));
+	return 0;
+}
 
 static int isBitmap(OBJ bitmap) {
 	return
@@ -34,6 +38,15 @@ static int isBitmap(OBJ bitmap) {
 		isInt(FIELD(bitmap, 0)) && isInt(FIELD(bitmap, 1)) &&
 		IS_CLASS(FIELD(bitmap, 2), BinaryDataClass) &&
 		(objWords(FIELD(bitmap, 2)) == (obj2int(FIELD(bitmap, 0)) * obj2int(FIELD(bitmap, 1))));
+}
+
+static int isRectangle(OBJ rect) {
+	return
+		(objWords(rect) >= 4) &&
+		(isInt(FIELD(rect, 0)) || IS_CLASS(FIELD(rect, 0), FloatClass)) &&
+		(isInt(FIELD(rect, 1)) || IS_CLASS(FIELD(rect, 1), FloatClass)) &&
+		(isInt(FIELD(rect, 2)) || IS_CLASS(FIELD(rect, 2), FloatClass)) &&
+		(isInt(FIELD(rect, 3)) || IS_CLASS(FIELD(rect, 3), FloatClass));
 }
 
 static void interpretPath(cairo_t *ctx, OBJ path) {
@@ -120,6 +133,49 @@ static void interpretPath(cairo_t *ctx, OBJ path) {
 
 #ifdef EMSCRIPTEN
 
+static int canvasID(OBJ obj) {
+	// If obj is a texture reference, return its id. Otherwise, return -1.
+
+	if (objWords(obj) < 3) return -1;
+	OBJ ref = FIELD(obj, 2);
+	if (NOT_CLASS(ref, ExternalReferenceClass)) return -1;
+	ADDR *a = (ADDR*)BODY(ref);
+	return (int) a[0];
+}
+
+static void setCanvasClipRect(OBJ clipRect) {
+	if (!isRectangle(clipRect)) return;
+
+	int x = intValue(FIELD(clipRect, 0));
+	int y = intValue(FIELD(clipRect, 1));
+	int w = intValue(FIELD(clipRect, 2));
+	int h = intValue(FIELD(clipRect, 3));
+	EM_ASM_({
+		GP.ctx.save();
+		GP.ctx.beginPath();
+		GP.ctx.rect($0, $1, $2, $3);
+		GP.ctx.clip();
+		GP.ctx.beginPath();
+	}, x, y, w, h);
+}
+
+int setTargetCanvas(OBJ obj, OBJ clipRect) {
+	int id = (nilObj == obj) ? 0 : canvasID(obj); // if obj == nil, use the screen
+	if (id < 0) return false;
+
+	EM_ASM_({
+		var cnvID = $0 - 1;
+		if ((0 <= cnvID) && (cnvID < GP.canvasCache.length) && GP.canvasCache[cnvID]) {
+			var canvas = GP.canvasCache[cnvID];
+			GP.ctx = canvas.getContext('2d');
+		} else {
+			GP.ctx = (document.getElementById('canvas')).getContext('2d');
+		}
+	}, id);
+	setCanvasClipRect(clipRect);
+	return true;
+}
+
 static void copyResultToBitmap(OBJ bitmap, OBJ edgeColor) {
 	int w = obj2int(FIELD(bitmap, 0));
 	int h = obj2int(FIELD(bitmap, 1));
@@ -145,8 +201,8 @@ static void copyResultToBitmap(OBJ bitmap, OBJ edgeColor) {
 			console.log('Bitmap and canvas dimensions do not match.'); // should never happen
 			return;
 		}
- 		for (var y = 0; y < h; y++) {
- 			var srcIndex = (4 * y * w);
+		for (var y = 0; y < h; y++) {
+			var srcIndex = (4 * y * w);
 			var dstIndex = bmData + (4 * y * w);
 			for (var x = 0; x < w; x++) {
 				var alpha = cnvData[srcIndex + 3];
@@ -192,26 +248,27 @@ static void copyResultToBitmap(OBJ bitmap, OBJ edgeColor) {
 				}
 				srcIndex += 4;
 			}
-  		}
+		}
 	}, &FIELD(bmData, 0), w, h, edgeR, edgeG, edgeB);
 }
 
-static void createCanvas(OBJ bitmap) {
+static int createCanvas(OBJ bitmap, OBJ clipRect) {
 	// Create a canvas and context on it and store the context in GP.ctx.
 
 	int w = obj2int(FIELD(bitmap, 0));
 	int h = obj2int(FIELD(bitmap, 1));
+	OBJ bmData = FIELD(bitmap, 2);
+	if ((w < 1) || (h < 1) || (objWords(bmData) != (w * h))) return false;
 
 	EM_ASM_({
-		if (!GP.ctx || ($0 != GP.ctx.canvas.width) || ($1 != GP.ctx.canvas.height)) {
 			var canvas = document.createElement('canvas');
-			canvas.width  = $0;
+			canvas.width = $0;
 			canvas.height = $1;
 			GP.ctx = canvas.getContext('2d');
-		} else {
-			GP.ctx.beginPath();
-		}
 	}, w, h);
+	setCanvasClipRect(clipRect);
+
+	return true;
 }
 
 static void toColorString(OBJ colorObj, char *result, int resultSize) {
@@ -230,29 +287,35 @@ static void toColorString(OBJ colorObj, char *result, int resultSize) {
 	snprintf(result, resultSize, "rgba(%d, %d, %d, %f)", r, g, b, a / 255.0);
 }
 
-static void fillPath(OBJ bitmap, OBJ path, OBJ fillColor) {
-	int w = obj2int(FIELD(bitmap, 0));
-	int h = obj2int(FIELD(bitmap, 1));
-	if ((w < 1) || (h < 1)) return;
-
+static void fillPath(OBJ bitmapOrTexture, OBJ path, OBJ fillColor, OBJ clipRect) {
 	char fillColorString[1000];
 	toColorString(fillColor, fillColorString, sizeof(fillColorString));
 
-	createCanvas(bitmap);
+	int isBM = false;
+	if (isBitmap(bitmapOrTexture)) {
+		isBM = true;
+		int ok = createCanvas(bitmapOrTexture, clipRect);
+		if (!ok) return;
+	} else {
+		int ok = setTargetCanvas(bitmapOrTexture, clipRect);
+		if (!ok) return;
+	}
+
 	interpretPath(NULL, path);
 	EM_ASM_({
+		if (GP.shadowColor) setContextShadow(GP.ctx);
 		GP.ctx.fillStyle = UTF8ToString($0);
 		GP.ctx.fill();
 	}, fillColorString);
-	copyResultToBitmap(bitmap, fillColor);
-	EM_ASM({ GP.ctx = null }, 0);
+	if (isBM) copyResultToBitmap(bitmapOrTexture, fillColor);
+	EM_ASM({
+		GP.ctx.restore();
+		GP.ctx.shadowColor = 'transparent';
+		GP.ctx = (document.getElementById('canvas')).getContext('2d');
+	}, 0);
 }
 
-static void strokePath(OBJ bitmap, OBJ path, OBJ strokeColor, double lineWidth, int jointStyle, int capStyle) {
-	int w = obj2int(FIELD(bitmap, 0));
-	int h = obj2int(FIELD(bitmap, 1));
-	if ((w < 1) || (h < 1)) return;
-
+static void strokePath(OBJ bitmapOrTexture, OBJ path, OBJ strokeColor, double lineWidth, int jointStyle, int capStyle, OBJ clipRect) {
 	char strokeColorString[1000];
 	toColorString(strokeColor, strokeColorString, sizeof(strokeColorString));
 
@@ -266,24 +329,47 @@ static void strokePath(OBJ bitmap, OBJ path, OBJ strokeColor, double lineWidth, 
 	if (1 == capStyle) lineCap = "round";
 	if (2 == capStyle) lineCap = "square";
 
-	createCanvas(bitmap);
+	int isBM = false;
+	if (isBitmap(bitmapOrTexture)) {
+		isBM = true;
+		int ok = createCanvas(bitmapOrTexture, clipRect);
+		if (!ok) return;
+	} else {
+		int ok = setTargetCanvas(bitmapOrTexture, clipRect);
+		if (!ok) return;
+	}
+
 	interpretPath(NULL, path);
 	EM_ASM_({
+		if (GP.shadowColor) setContextShadow(GP.ctx);
 		GP.ctx.strokeStyle = UTF8ToString($0);
 		GP.ctx.lineWidth = $1;
 		GP.ctx.lineJoin = UTF8ToString($2);
 		GP.ctx.lineCap = UTF8ToString($3);
 		GP.ctx.stroke();
 	}, strokeColorString, lineWidth, lineJoin, lineCap);
-	copyResultToBitmap(bitmap, strokeColor);
-	EM_ASM({ GP.ctx = null }, 0);
+	if (isBM) copyResultToBitmap(bitmapOrTexture, strokeColor);
+	EM_ASM({
+		GP.ctx.restore();
+		GP.ctx.shadowColor = 'transparent';
+		GP.ctx = (document.getElementById('canvas')).getContext('2d');
+	}, 0);
 }
 
 #else
 
 #include <cairo/cairo.h>
 
+#include <SDL.h>
+extern SDL_Surface *screenBitmap;
+
 static inline cairo_surface_t * bitmap2surface(OBJ bitmap) {
+	if (nilObj == bitmap) {
+		SDL_Surface *screen = screenBitmap;
+		if (!screen) return NULL;
+		return cairo_image_surface_create_for_data(
+			screen->pixels, CAIRO_FORMAT_ARGB32, screen->w, screen->h, (4 * screen->w));
+	}
 	if (!isBitmap(bitmap)) return NULL;
 
 	int w = obj2int(FIELD(bitmap, 0));
@@ -308,10 +394,23 @@ static inline void setColor(cairo_t *ctx, OBJ colorObj) {
 	}
 }
 
-static void fillPath(OBJ bitmap, OBJ path, OBJ fillColor) {
+static void setCairoClipRect(cairo_t *ctx, OBJ clipRect) {
+	if (!isRectangle(clipRect)) return;
+
+	int x = intValue(FIELD(clipRect, 0));
+	int y = intValue(FIELD(clipRect, 1));
+	int w = intValue(FIELD(clipRect, 2));
+	int h = intValue(FIELD(clipRect, 3));
+	cairo_rectangle(ctx, x, y, w, h);
+	cairo_clip(ctx);
+	cairo_new_path(ctx); // clear path
+}
+
+static void fillPath(OBJ bitmap, OBJ path, OBJ fillColor, OBJ clipRect) {
 	cairo_surface_t *surface = bitmap2surface(bitmap);
 	if (!surface) return;
 	cairo_t *ctx = cairo_create(surface);
+	setCairoClipRect(ctx, clipRect);
 
 	interpretPath(ctx, path);
 	setColor(ctx, fillColor);
@@ -321,10 +420,11 @@ static void fillPath(OBJ bitmap, OBJ path, OBJ fillColor) {
 	cairo_surface_destroy(surface);
 }
 
-static void strokePath(OBJ bitmap, OBJ path, OBJ strokeColor, double lineWidth, int jointStyle, int capStyle) {
+static void strokePath(OBJ bitmap, OBJ path, OBJ strokeColor, double lineWidth, int jointStyle, int capStyle, OBJ clipRect) {
 	cairo_surface_t *surface = bitmap2surface(bitmap);
 	if (!surface) return;
 	cairo_t *ctx = cairo_create(surface);
+	setCairoClipRect(ctx, clipRect);
 
 	interpretPath(ctx, path);
 	setColor(ctx, strokeColor);
@@ -343,38 +443,38 @@ static void strokePath(OBJ bitmap, OBJ path, OBJ strokeColor, double lineWidth, 
 
 OBJ primVectorFill(int nargs, OBJ args[]) {
 	if (nargs < 3) return notEnoughArgsFailure();
-	OBJ bitmap = args[0];
+	OBJ bitmapOrTexture = args[0];
 	OBJ path = args[1];
 	OBJ color = args[2];
+	OBJ clipRect = (nargs > 3) ? args[3] : nilObj;
 
-	if (!isBitmap(bitmap)) return primFailed("Bad bitmap");
 	if (NOT_CLASS(path, ArrayClass)) return primFailed("Bad path");
 
-	fillPath(bitmap, path, color);
+	fillPath(bitmapOrTexture, path, color, clipRect);
 	return nilObj;
 }
 
 OBJ primVectorStroke(int nargs, OBJ args[]) {
 	if (nargs < 3) return notEnoughArgsFailure();
-	OBJ bitmap = args[0];
+	OBJ bitmapOrTexture = args[0];
 	OBJ path = args[1];
 	OBJ color = args[2];
 	double lineWidth = 1.0;
 	if (nargs > 3) lineWidth = evalFloat(args[3]);
 	int jointStyle = intArg(4, 0, nargs, args);
 	int capStyle = intArg(5, 0, nargs, args);
+	OBJ clipRect = (nargs > 6) ? args[6] : nilObj;
 
-	if (!isBitmap(bitmap)) return primFailed("Bad bitmap");
 	if (NOT_CLASS(path, ArrayClass)) return primFailed("Bad path");
 
-	strokePath(bitmap, path, color, lineWidth, jointStyle, capStyle);
+	strokePath(bitmapOrTexture, path, color, lineWidth, jointStyle, capStyle, clipRect);
 	return nilObj;
 }
 
 PrimEntry vectorPrimList[] = {
 	{"-----", NULL, "Vector Graphics"},
-	{"vectorFillPath",		primVectorFill,		"Fill a path on the given Bitmap. Arguments: bitmap, path, color"},
-	{"vectorStrokePath",	primVectorStroke,	"Stroke a path on the given Bitmap. Arguments: bitmap, path, color [width, jointStyle, capStyle]"},
+	{"vectorFillPath",		primVectorFill,		"Fill a path on the given Bitmap. Arguments: bitmap, path, color [clipRect]"},
+	{"vectorStrokePath",	primVectorStroke,	"Stroke a path on the given Bitmap. Arguments: bitmap, path, color [width, jointStyle, capStyle, clipRect]"},
 };
 
 PrimEntry* vectorPrimitives(int *primCount) {

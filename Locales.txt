@@ -83,6 +83,10 @@ stop all
 
 last message
 
+call _
+
+with _
+
 Operators
 
 _ mod _
@@ -196,6 +200,14 @@ i2c device _ write list _
 spi send _
 
 spi receive
+
+spi setup speed _
+
+mode _
+
+rpi channel _
+
+spi exchange bytes _
 
 print _
 
@@ -890,6 +902,12 @@ Quit MicroBlocks?
 
 Discard current project?
 
+# Scripting area right-click context menu
+
+set block size...
+
+make blocks bigger or smaller
+
 clean up
 
 arrange scripts
@@ -905,6 +923,8 @@ paste script
 save a picture of all scripts
 
 about...
+
+About MicroBlocks
 
 virtual machine version
 
@@ -936,6 +956,8 @@ erase flash and update firmware on ESP board
 
 Use board type
 
+Plug in the board.
+
 Wiping board...
 
 (press ESC to cancel)
@@ -960,7 +982,23 @@ export functions as library
 
 hide advanced blocks
 
+put file on board
+
+get file from board
+
 Data Graph
+
+Graph
+
+clear graph
+
+zero at bottom
+
+export data to CSV file
+
+import data from CSV file
+
+copy graph data to clipboard
 
 show instructions
 
@@ -1003,6 +1041,8 @@ extract block
 pull out this block
 
 save picture of script
+
+save picture of script with result
 
 save a picture of this block definition as a PNG file
 

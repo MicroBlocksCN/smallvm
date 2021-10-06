@@ -1,5 +1,4 @@
 // Button.gp - Simple button
-// addPart (global 'page') (morph (newButton)) xxx
 
 defineClass Button morph clickAction offCostume onCostume isOn hint
 
@@ -11,6 +10,7 @@ method initialize Button label action {
   if (isNil label) { label = 'Button' }
   if (isNil action) { action = (action 'toggle' this) }
   morph = (newMorph this)
+  setGrabRule morph 'ignore'
   setLabel this label
   clickAction = action
   isOn = false
@@ -93,16 +93,22 @@ method handDownOn Button hand {
 }
 
 method handEnter Button aHand {
+  setCursor 'pointer'
   if (notNil onCostume) {
 	setCostume morph onCostume
   }
   if (notNil hint) {
-	addSchedule (global 'page') (schedule (action 'showHint' morph hint) 800)
+	addSchedule (global 'page') (schedule (action 'showTooltip' morph hint) 500)
   }
 }
 
 method handLeave Button aHand {
+  setCursor 'default'
+  // handEnter happens before handLeave, so cursor wouldn't go back to finger
+  // when you move between two buttons without any space in between. A temporary
+  // solution is to re-trigger handEnter on the new morph under the hand.
+  handEnter (objectAt aHand) aHand
   setOn this isOn
   if (notNil hint) {removeHint (page aHand)}
-  removeSchedulesFor (global 'page') 'showHint' morph
+  removeSchedulesFor (global 'page') 'showTooltip' morph
 }

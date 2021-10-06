@@ -7,7 +7,7 @@
 // MicroBlocksSpinner.gp - A modal spinner animation
 // Bernat Romagosa, October 2020
 
-defineClass MicroBlocksSpinner morph label sublabel paddle1 rotation labelGetter doneGetter task
+defineClass MicroBlocksSpinner morph label sublabel rotation labelGetter doneGetter task stopAction
 
 to newSpinner labelReporter doneReporter {
 	return (initialize (new 'MicroBlocksSpinner') labelReporter doneReporter)
@@ -19,18 +19,10 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 
 	morph = (newMorph this)
 	setCostume morph (gray 0 80)
-
-	paddle1 = (newBox nil (gray 255) 10)
-	paddle2 = (newBox nil (gray 255) 10)
-	setExtent (morph paddle1) 100 20
-	setExtent (morph paddle2) 20 100
-	addPart (morph paddle1) (morph paddle2)
-	gotoCenterOf (morph paddle2) (morph paddle1)
-	addPart morph (morph paddle1)
 	rotation = 0
 
 	scale = (global 'scale')
-	label = (newText (call labelGetter) 'Arial' (24 * scale) (gray 255))
+	label = (newText (localized (call labelGetter)) 'Arial' (24 * scale) (gray 255))
 	addPart morph (morph label)
 
 	sublabel = (newText (localized '(press ESC to cancel)') 'Arial' (18 * scale) (gray 255))
@@ -39,33 +31,59 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 	pageM = (morph (global 'page'))
 	setExtent morph (width (bounds pageM)) (height (bounds pageM))
 
+	setFPS morph 10
+	fixLayout this
 	return this
 }
 
-method task MicroBlocksSpinner { return task }
-method setTask MicroBlocksSpinner aTask { task = aTask }
-
-method redraw MicroBlocksSpinner {
+method fixLayout MicroBlocksSpinner {
 	pageM = (morph (global 'page'))
 	gotoCenterOf morph pageM
-	gotoCenterOf (morph paddle1) pageM
 	gotoCenterOf (morph label) pageM
 	gotoCenterOf (morph sublabel) pageM
 	moveBy (morph label) 0 105
 	moveBy (morph sublabel) 0 170
 }
 
+method drawOn MicroBlocksSpinner ctx {
+	r = (bounds morph)
+	fillRect ctx (costumeData morph) (left r) (top r) (width r) (height r) 1
+	pen = (pen (getShapeMaker ctx))
+	beginPath pen (hCenter r) (vCenter r)
+	setHeading pen rotation
+	repeat 2 {
+		forward pen 50
+		turn pen 180
+		forward pen 100
+		forward pen -50
+		turn pen 90
+	}
+	stroke pen (gray 230) 25
+}
+
+method task MicroBlocksSpinner { return task }
+method setTask MicroBlocksSpinner aTask { task = aTask }
+
+method setStopAction MicroBlocksSpinner anAction { stopAction = anAction }
+
 method destroy MicroBlocksSpinner {
+	if (notNil stopAction) {
+		call stopAction
+	}
 	if (notNil task) {
-		stopTask task
+		terminate task
 	}
 	destroy morph
 }
 
 method step MicroBlocksSpinner {
-	if (call doneGetter) { destroy this }
-	rotation = (rotation - 1)
-	rotateAndScale (morph paddle1) rotation
-	redraw this
-	setText label (call labelGetter)
+	if (call doneGetter) {
+		destroy this
+		return
+	}
+
+	changed morph
+	rotation = ((rotation + 15) % 360)
+	setText label (localized (call labelGetter))
+	fixLayout this
 }

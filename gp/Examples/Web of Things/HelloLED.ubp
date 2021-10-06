@@ -25,7 +25,7 @@ to 'microbit-LEDs' {
   }
 }
 
-script 51 50 {
+script 51 49 {
 comment 'This example lets you control the built-in LEDs of a board, much as you
 might control a smart bulb using the WebThings Gateway UI.'
 }
@@ -34,7 +34,7 @@ script 535 74 {
 to 'microbit-LEDs' {}
 }
 
-script 54 129 {
+script 53 129 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 'set thing name to' 'Hello LED'
@@ -150,17 +150,22 @@ to 'request method' request {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
 	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
 
 to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 

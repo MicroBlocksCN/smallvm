@@ -1,9 +1,9 @@
 // Morph
 
-defineClass Morph owner parts handler bounds costume costumeData costumeChanged isVisible alpha grabRule noticesTransparentTouch isClipping minWidth minHeight fps lastStepTime acceptsEvents penTrails penTrailsData tag param pen drawOnOwner rotation rotateWithOwner scaleX scaleY pinX pinY vectorPen
+defineClass Morph owner parts handler bounds costume costumeData transformedCostume costumeChanged isVisible alpha grabRule noticesTransparentTouch isClipping minWidth minHeight fps lastStepTime acceptsEvents penTrails penTrailsData tag param pen drawOnOwner rotation rotateWithOwner scaleX scaleY pinX pinY vectorPen shouldRedraw
 
 to newMorph handler {
-  return (initialize (new 'Morph' nil (list) handler (rect) nil nil false true 255 'defer' false false 1 1 nil nil true))
+  return (initialize (new 'Morph' nil (list) handler (rect) nil nil nil false true 255 'defer' false false 1 1 nil nil true))
 }
 
 method initialize Morph {
@@ -14,6 +14,8 @@ method initialize Morph {
   rotateWithOwner = true
   scaleX = 1
   scaleY = 1
+  shouldRedraw = false
+  noticesTransparentTouch = true
   return this
 }
 
@@ -29,6 +31,10 @@ method fieldInfo Morph fieldName {
   return nil
 }
 
+// backstop
+
+to handler anyObject { return nil } // allow "(handler nil)" for convenience
+
 // accessing
 
 method owner Morph {return owner}
@@ -37,7 +43,6 @@ method handler Morph {return handler}
 method setHandler Morph aHandler {handler = aHandler}
 method bounds Morph {return bounds}
 method setBounds Morph aRect {bounds = aRect}
-method costume Morph {return costume}
 method costumeData Morph {return costumeData}
 method setTag Morph aString {tag = aString}
 method tag Morph {return tag}
@@ -77,30 +82,22 @@ method page Morph {
   return page
 }
 
-// costume accessing
+// Costume
 
-method setCostume Morph aTextureBitmapOrNil ignoreBounds {
+method setCostume Morph aBitmapColorOrNil ignoreBounds {
+  changed this
   if (isNil ignoreBounds) {ignoreBounds = false}
-  if (isClass aTextureBitmapOrNil 'Texture') {
-    if (notNil costume) {destroyTexture costume}
-    costume = aTextureBitmapOrNil
-    costumeData = (toBitmap costume)
-  } (isClass aTextureBitmapOrNil 'Bitmap') {
-    costumeData = aTextureBitmapOrNil
-    updateCostume this
-  } (isNil aTextureBitmapOrNil) {
-    if (notNil costume) {
-      destroyTexture costume
-      costume = nil
-    }
-    costumeData = nil
-  } (isClass aTextureBitmapOrNil 'Color') {
-	costumeData = aTextureBitmapOrNil
-	costume = nil
+  transformedCostume = nil
+  if (isClass aBitmapColorOrNil 'Bitmap') {
+    costumeData = aBitmapColorOrNil
+  } (isClass aBitmapColorOrNil 'Color') {
+	costumeData = aBitmapColorOrNil
 	changed this
 	return
+  } (isNil aBitmapColorOrNil) {
+    costumeData = nil
   } else {
-    error 'expected a texture, bitmap or nil. Received ' aTextureBitmapOrNil
+    error 'expected a bitmap, color, or nil. Received ' aBitmapColorOrNil
   }
   if (and (not ignoreBounds) (notNil costumeData)) {
     setWidth bounds (scaleX * (width costumeData))
@@ -110,19 +107,17 @@ method setCostume Morph aTextureBitmapOrNil ignoreBounds {
 }
 
 method costumeChanged Morph {
+  // Called when the original costume is changed (e.g. pixel color changed).
+
+  if costumeChanged { return } // change was already reported
   costumeChanged = true
   changed this
 }
 
 method updateCostume Morph {
-  if (isNormal this) {return}
-  if (isClass costumeData 'Color') {return}
-  if (and (notNil costume) (== (width costume) (width costumeData)) (== (height costume) (height costumeData))) {
-    updateTexture costume costumeData
-  } else {
-    if (notNil costume) {destroyTexture costume}
-    if (notNil costumeData) {costume = (toTexture costumeData)}
-  }
+  // Called when the scale or rotation changes.
+
+  transformedCostume = nil
   changed this
 }
 
@@ -142,6 +137,29 @@ method isNormal Morph {
     (scaleX == 1)
     (scaleY == 1)
   )
+}
+
+method transformedCostume Morph {
+  if (isNil transformedCostume) {
+	updateTransformedCostume this
+  }
+  return transformedCostume
+}
+
+method updateTransformedCostume Morph {
+  if (notNil transformedCostume) { return }
+  if (isNil costumeData) { return }
+  srcW = (width costumeData)
+  srcH = (height costumeData)
+  dstW = (width this)
+  dstH = (height this)
+  if (or
+	(isNil transformedCostume)
+	(!= (width transformedCostume) dstW)
+	(!= (height transformedCostume) dstH)) {
+	  transformedCostume = (newBitmap dstW dstH)
+  }
+  warpBitmap transformedCostume costumeData (dstW / 2) (dstH / 2) scaleX scaleY (0 - rotation)
 }
 
 // scaling and rotating
@@ -221,22 +239,15 @@ method rotateAndScale Morph heading xScale yScale aroundX aroundY noDraw {
   scaleY = yScale
   rotation = (heading % 360)
   if (rotation < 0) { rotation += 360 } // ensure range is [0..360)
+  changed this
   bounds = (scaledAndRotatedBoundingBox normalBounds scaleX scaleY rotation fixedX fixedY)
-
-  // optimization remove costume texture if not needed
-  if (isNormal this) {
-    if (notNil costume) {
-      destroyTexture costume
-      costume = nil
-    }
-  } else {
-    if (isNil costume) {updateCostume this}
-  }
+  updateCostume this
 
   // draw pen trails
   if (and (isPenDown this) (not noDraw)) {
     target = (penTarget this)
     if (and (notNil target) (notNil pen)) {
+	  movePenBy this 0 0 // fix initial pen position after being manually dragged
       setCanvas pen (requirePenTrails target)
       penEnd = (rotationCenter this)
       if (and ((x pen) == 0) ((y pen) == 0)) {
@@ -266,12 +277,12 @@ method rotateAndScale Morph heading xScale yScale aroundX aroundY noDraw {
 
 method normalWidth Morph {
   if (isClass costumeData 'Bitmap') {return (width costumeData)}
-  return (width this)
+  return ((width this) / scaleX)
 }
 
 method normalHeight Morph {
   if (isClass costumeData 'Bitmap') {return (height costumeData)}
-  return (height this)
+  return ((height this) / scaleY)
 }
 
 method normal Morph x y {
@@ -304,8 +315,8 @@ method transform Morph x y {
 }
 
 method drawingPoint Morph {
-  // answer the point at wich the texture can be drawn
-  // deduced from its currently scaled and rotated bounds
+  // Return the point at which the costume should be drawn.
+  // Deduced from its currently scaled and rotated bounds.
 
   w = (width bounds)
   h = (height bounds)
@@ -374,8 +385,8 @@ method isHidden Morph {return (not isVisible)}
 
 method hide Morph {
   if isVisible {
-    isVisible = false
     changed this
+    isVisible = false
   }
 }
 
@@ -480,7 +491,7 @@ method addPart Morph another {
   if (notNil (owner another)) {removePart (owner another) another}
   add parts another
   setOwner another this
-  changed this
+  changed another
 }
 
 method userAddPart Morph another {
@@ -490,6 +501,7 @@ method userAddPart Morph another {
 
 method removePart Morph another {
   uninterruptedly {
+	changed another
 	remove parts another
 	setOwner another nil
 	changed this
@@ -497,6 +509,7 @@ method removePart Morph another {
 }
 
 method removeAllParts Morph {
+  reportDamage this (fullBounds this) // remove damage enclosing all parts
   for p parts { setOwner p nil }
   parts = (list)
   changed this
@@ -622,8 +635,8 @@ method parentHandler Morph {
 }
 
 method fullBounds Morph {
-  if (or isClipping (isEmpty parts)) { return bounds }
   result = (copy bounds)
+  if (or isClipping (isEmpty parts)) { return result }
   for m parts {
     if (getField m 'isVisible') {
       merge result (fullBounds m)
@@ -652,70 +665,36 @@ method visibleBounds Morph {
 
 method fullCostume Morph {
   fb = (fullBounds this)
-  w = (min 4000 (truncate (width fb)))
-  h = (min 4000 (truncate (height fb)))
+  w = (ceiling (width fb))
+  h = (ceiling (height fb))
+  if (or (w > 2000) (h > 4000)) {
+    // truncate size to avoid running out of memory
+    print 'Cropping image to avoid running out of memory'
+    w = (min w 2000)
+    h = (min h 4000)
+  }
   if (or (w == 0) (h == 0)) {return (newBitmap 1 1)}
-  tx = (newTexture w h (gray 255 0))
+  result = (newBitmap w h (gray 0 0))
   offX = ((left this) - (left fb))
   offY = ((top this) - (top fb))
-  draw this tx (- ((left this) - offX)) (- ((top this) - offY))
-  result = (toBitmap tx)
-  destroyTexture tx
+  ctx = (newGraphicContextOn result)
+  setOffset ctx (0 - (left fb)) (0 - (top fb))
+  fullDrawOn this ctx
   return result
 }
 
-// shadows
+// shadow (bitmap shadow, used when not running the browser)
 
 method shadow Morph transparency offset {
+  if (isClass handler 'Block') { fixLayout handler }
   fb = (fullBounds this)
   bm = (fullCostume this)
-  shadowBM = (newBitmap (width bm) (height bm) (gray 0))
+  shadowBM = (newBitmap (width bm) (height bm) (gray 0 transparency))
   applyMask shadowBM bm
   s = (newMorph)
   setCostume s shadowBM // to do: make the shadow untouchable and neutral for fullBounds
-  setAlpha s transparency
   setPosition s ((left fb) + offset) ((top fb) + offset)
   return s
-}
-
-method shadowPart Morph transparency offset {
-  // Return a shadow version that can be added to the front
-  // by cutting out the shape of the shadowed morph.
-
-  fb = (fullBounds this)
-  bm = (fullCostume this)
-  shadowBM = (newBitmap (width bm) (height bm) (color)) // solid black
-  applyMask shadowBM bm // black silouette of fullCostume
-
-  maskBM = (newBitmap (width bm) (height bm))
-  drawBitmap maskBM bm (0 - offset) (0 - offset)
-  applyMask shadowBM maskBM true // cut out fullCostume, offset left and up
-
-  s = (newMorph)
-  setTag s 'shadow'
-  setCostume s shadowBM
-  setAlpha s transparency
-  rotateAndScale s rotation scaleX scaleY
-  setPosition s ((left fb) + offset) ((top fb) + offset)
-  return s
-}
-
-method getShadowPart Morph {
-  for each parts {
-    if ((tag each) == 'shadow') {return each}
-  }
-  return nil
-}
-
-method addShadowPart Morph transparency border {addPart this (shadowPart this transparency border)}
-
-method removeShadowPart Morph {
-  sd = (getShadowPart this)
-  if (notNil sd) {
-    removePart this sd
-    return true
-  }
-  return false
 }
 
 method stackPart Morph offset layers {
@@ -798,32 +777,37 @@ method removeSignalPart Morph {
 // highlights
 
 method highlight Morph size {
-  hi = (getHighlight this)
-  if (notNil hi) {return hi}
-  s2 = (size * 2)
-  bm = (fullCostume this)
-  hl = (newBitmap (+ s2 (width bm)) (+ s2 (height bm)) (color 153 255 213))
+  highlightM = (getHighlight this)
+  if (notNil highlightM) { return highlightM }
 
-  maskBM = (newBitmap (width hl) (height hl))
-  drawBitmap maskBM bm 0 0
-  drawBitmap maskBM bm size 0
-  drawBitmap maskBM bm s2 0
-  drawBitmap maskBM bm s2 size
-  drawBitmap maskBM bm s2 s2
-  drawBitmap maskBM bm size s2
-  drawBitmap maskBM bm 0 s2
-  drawBitmap maskBM bm 0 size
-  applyMask hl maskBM // make silhouette
+  if ('Browser' == (platform)) {
+	highlightM = (morph (newShadowEffect handler 'highlight'))
+  } else {
+	s2 = (size * 2)
+	bm = (fullCostume this)
+	hl = (newBitmap (+ s2 (width bm)) (+ s2 (height bm)) (color 153 255 213))
 
-  fill maskBM (transparent)
-  drawBitmap maskBM bm size size
-  applyMask hl maskBM true // punch a hole the shape of fullCostume
+	maskBM = (newBitmap (width hl) (height hl))
+	drawBitmap maskBM bm 0 0
+	drawBitmap maskBM bm size 0
+	drawBitmap maskBM bm s2 0
+	drawBitmap maskBM bm s2 size
+	drawBitmap maskBM bm s2 s2
+	drawBitmap maskBM bm size s2
+	drawBitmap maskBM bm 0 s2
+	drawBitmap maskBM bm 0 size
+	applyMask hl maskBM // make silhouette
 
-  hi = (newMorph)
-  setTag hi 'highlight'
-  setCostume hi hl
-  setPosition hi (- (left bounds) size) (- (top bounds) size)
-  return hi
+	fill maskBM (transparent)
+	drawBitmap maskBM bm size size
+	applyMask hl maskBM true // punch a hole the shape of fullCostume
+
+	highlightM = (newMorph)
+	setCostume highlightM hl
+	setPosition highlightM (- (left bounds) size) (- (top bounds) size)
+  }
+  setTag highlightM 'highlight'
+  return highlightM
 }
 
 method getHighlight Morph {
@@ -833,9 +817,12 @@ method getHighlight Morph {
   return nil
 }
 
-method addHighlight Morph border {
+method addHighlight Morph {
+  highlightWidth = (4 * (global 'scale'))
   if (isNil (getHighlight this)) {
-    addPart this (highlight this border)
+	highlightM = (highlight this highlightWidth)
+    addPart this highlightM
+    goBackBy highlightM 10000 // behind everything else!
   }
 }
 
@@ -848,7 +835,31 @@ method removeHighlight Morph {
   return false
 }
 
-// hint/talk bubble
+// tooltip
+
+method showTooltip Morph aString bubbleWidth  {
+  if (or (isNil aString) ('' == aString)) { return nil }
+  if (isNil owner) { return nil } // morph deleted before hint was scheduled to appear (e.g. a menu)
+  page = (page this)
+  if (isNil page) { return nil } // the morph requesting the hint has been deleted
+
+  bubble = (newBubble aString 300 nil false true)
+  overlap = (5 * (global 'scale'))
+  if ((top this) < 10) { overlap = (0 - overlap) } // for top bar buttons (outset horizontally)
+  vis = (visibleBounds this)
+  rightSpace = ((right (morph page)) - (right vis))
+  setTop (morph bubble) ((top bounds) - ((height (morph bubble)) - overlap))
+  if (rightSpace > (width (morph bubble))) {
+    setLeft (morph bubble) ((right vis) - overlap)
+  } else {
+    setRight (morph bubble) ((left vis) + overlap)
+  }
+  showHint page bubble true
+  reportDamage this (fullBounds (morph bubble))
+  return bubble
+}
+
+// talk bubble
 
 method showHint Morph hintData bubbleWidth isHint isError {
   if (isNil isHint) { isHint = true }
@@ -863,8 +874,9 @@ method showHint Morph hintData bubbleWidth isHint isError {
   scale = (global 'scale')
   overlap = (scale * 7)
   bubble = (newBubble hintData bubbleWidth 'right' isError)
+  setClientMorph bubble this
   rightSpace = ((right (morph page)) - (right vis))
-  setBottom (morph bubble) (vCenter vis)
+  setTop (morph bubble) ((top bounds) - ((height (morph bubble)) - overlap))
   if (rightSpace > (width (morph bubble))) {
     setLeft (morph bubble) (- (right vis) overlap)
   } else {
@@ -873,6 +885,7 @@ method showHint Morph hintData bubbleWidth isHint isError {
     setRight (morph bubble) (+ (left vis) overlap)
   }
   showHint page bubble isHint
+  reportDamage this (fullBounds (morph bubble))
   return bubble
 }
 
@@ -910,11 +923,12 @@ method userDestroy Morph recoverable {
 
 method destroy Morph recoverable {
   if (isNil recoverable) {recoverable = false}
-  if (notNil owner) {removePart owner this}
+  if (notNil owner) {
+	reportDamage owner (fullBounds this)
+	removePart owner this
+  }
   if (not recoverable) {
-    costume = nil
     costumeData = nil
-    penTrails = nil
     penTrailsData = nil
   }
   while ((count parts) > 0) {destroy (at parts 1)}
@@ -924,17 +938,48 @@ method destroy Morph recoverable {
 
 // moving
 
-method moveBy Morph xDelta yDelta noDraw {
+method moveBy Morph xDelta yDelta {
   if (and (xDelta == 0) (yDelta == 0)) { return }
-  silentMoveBy this xDelta yDelta noDraw
-  if isVisible {changed this}
+  fb = (fullBounds this)
+  reportDamage this fb
+  if (isPenDown this) { movePenBy this xDelta yDelta }
+  fastMoveBy this xDelta yDelta
+  reportDamage this (translatedBy fb xDelta yDelta)
 }
 
-method silentMoveBy Morph xDelta yDelta noDraw {
-  if (isNil noDraw) {noDraw = false}
-  if (and (isPenDown this) (not noDraw)) {movePenBy this xDelta yDelta}
+// fast positioning functions -- these do not report damage!
+
+method fastSetPosition Morph x y { fastMoveBy this (x - (left bounds)) (y - (top bounds)) }
+method fastSetLeft Morph x { fastMoveBy this (x - (left bounds)) 0 }
+method fastSetTop Morph y { fastMoveBy this 0 (y - (top bounds)) }
+method fastSetRight Morph x {fastMoveBy this (x - (right bounds)) 0}
+method fastSetBottom Morph y {fastMoveBy this 0 (y - (bottom bounds))}
+method fastSetXCenter Morph x {fastMoveBy this (x - ((left bounds) + (half (width bounds)))) 0}
+method fastSetYCenter Morph y {fastMoveBy this 0 (y - ((top bounds) + (half (height bounds))))}
+
+method fastSetYCenterWithin Morph top bottom {
+  ySpan = (bottom - top)
+  height = (height bounds)
+  if (height > ySpan) {
+	fastSetTop this top
+  } else {
+	fastSetTop this (top + (half (ySpan - height)))
+  }
+}
+
+method fastMoveBy Morph xDelta yDelta {
+  // Internal helper for moveBy. Just moves the morph and all its descendent morphs.
+  // Does not report damage or move the pen.
+
+  if (and (xDelta == 0) (yDelta == 0)) { return }
   translateBy bounds xDelta yDelta
-  for m parts {silentMoveBy m xDelta yDelta noDraw}
+  todo = (list)
+  addAll todo parts
+  while (notEmpty todo) {
+	m = (removeFirst todo)
+	translateBy (bounds m) xDelta yDelta
+	addAll todo (parts m)
+  }
 }
 
 method movePenBy Morph xDelta yDelta {
@@ -949,7 +994,7 @@ method movePenBy Morph xDelta yDelta {
   }
 }
 
-method setPosition Morph x y noDraw {moveBy this (x - (left bounds)) (y - (top bounds)) noDraw}
+method setPosition Morph x y {moveBy this (x - (left bounds)) (y - (top bounds))}
 method setLeft Morph x {moveBy this (x - (left bounds)) 0}
 method setRight Morph x {moveBy this (x - (right bounds)) 0}
 method setTop Morph y {moveBy this 0 (y - (top bounds))}
@@ -1013,7 +1058,8 @@ method animateTo Morph dstX dstY doneAction {
 	(function m srcX srcY dstX dstY ratio {
 	  newX = (round (srcX + (ratio * (dstX - srcX))))
 	  newY = (round (srcY + (ratio * (dstY - srcY))))
-	  setPosition m newX newY true
+	  reportDamage m (expandBy (fullBounds m) 1) // why is this needed?
+	  setPosition m newX newY
 	})
 	this (left this) (top this) dstX dstY)
   addSchedule (global 'page') (newAnimation 0.0 1.0 400 updatePosition doneAction true)
@@ -1034,33 +1080,37 @@ method setInsetInOwner Morph dx dy {
 
 method setExtent Morph width height {
   if (isNil width) {width = (max 0 (width bounds))}
-  if (isNil height) {height = (height bounds)}
+  if (isNil height) {height = (max 0 (height bounds))}
 
   // only redraw if the dimensions have changed
-  // has issues that need more investigation, commented out for now
-  // if (and (width == (width bounds)) (height == (height bounds))) {return}
+  if (and (width == (width bounds)) (height == (height bounds))) {return}
 
+  changed this
   setWidth bounds width
   setHeight bounds height
-  if (notNil handler) {redraw handler}
   resizePenTrails this
+  rerender this
 }
 
 // event-induced resizing
 
 method setExtentToRightBottom Morph another {
+  changed this
   setRight bounds (right another)
   setBottom bounds (bottom another)
+  raise this 'fixLayout' handler
   redraw handler
 }
 
 method setWidthToRight Morph another {
+  changed this
   setRight bounds (right another)
   raise this 'fixLayout' handler
   redraw handler
 }
 
 method setHeightToBottom Morph another {
+  changed this
   setBottom bounds (bottom another)
   raise this 'fixLayout' handler
   redraw handler
@@ -1068,16 +1118,93 @@ method setHeightToBottom Morph another {
 
 // drawing
 
+method fullDrawOn Morph aContext {
+  if (not isVisible) { return }
+  if (and (isClass handler 'Block') (true == (getField handler 'layoutNeeded'))) { fixLayout handler }
+  if (and isClipping (not (intersectsClip aContext bounds))) { return }
+
+  if shouldRedraw {
+	redraw handler
+	shouldRedraw = false
+  }
+  if costumeChanged {
+	transformedCostume = nil
+	costumeChanged = false
+  }
+
+  saveState aContext
+  if isClipping { setClip aContext bounds }
+
+  // draw the morph
+  if (intersectsClip aContext bounds) {
+	if (and (isNil handler) (notNil costumeData)) {
+	  // this case (no handler) is used for the hand's shadow
+	  if (isClass costumeData 'Bitmap') {
+		drawBitmap aContext costumeData (left bounds) (top bounds)
+	  } (isClass costumeData 'Color') {
+		fillRect aContext costumeData (left bounds) (top bounds) (width bounds) (height bounds)
+	  }
+	} else {
+	  useOldDraw = false
+	  if useOldDraw {
+		drawCostumeOn this aContext
+	  } else {
+		drawOn handler aContext
+	  }
+	}
+  }
+
+  // draw its parts
+  for each parts { fullDrawOn each aContext }
+  restoreState aContext
+}
+
+to drawOn aHandler aContext {
+  // Backstop for handlers that have not implemented drawOn.
+
+  if (isNil aHandler) { return }
+  morph = nil
+  if (hasField aHandler 'morph') { morph = (getField aHandler 'morph') }
+  if (isNil morph) { // shouldn't happen
+	print 'nil morph in drawOn of' (className (class aHandler))
+	return
+  }
+  drawCostumeOn (getField aHandler 'morph') aContext
+}
+
+method drawCostumeOn Morph aContext {
+  // Draw my costumeData on the given GraphicContext.
+  // Called when a handler does not implement drawOn.
+
+  x = (left bounds)
+  y = (top bounds)
+
+  if (isClass costumeData 'Color') {
+	fillRect aContext costumeData x y (width this) (height this) 1 // blend mode
+  } (isClass costumeData 'Bitmap') {
+	if (0 == (rotation % 360)) {
+	  if (and (scaleX == 1) (scaleY == 1)) { // neither scaled nor rotated
+		drawBitmap aContext costumeData x y
+	  } else { // scaled, but not rotated
+		warpBitmap aContext costumeData x y scaleX scaleX
+	  }
+	} else { // rotated
+	  rotatedBM = (transformedCostume this)
+	  if (notNil rotatedBM) { drawBitmap aContext rotatedBM x y }
+	}
+  }
+}
+
+// Old draw method (still used for off-screen rendering right now)
+
 method draw Morph destination xOffset yOffset destScaleX destScaleY clipRect {
+  // Still used for off-screen rendering of morphs.
+
   if (not isVisible) {return}
   if (isNil xOffset) {xOffset = 0}
   if (isNil yOffset) {yOffset = xOffset}
   if (isNil destScaleX) {destScaleX = 1}
   if (isNil destScaleY) {destScaleY = destScaleX}
-  if costumeChanged {
-  	updateCostume this
-  	costumeChanged = false
-  }
 
   if isClipping {
     bnds = (translatedBy bounds xOffset yOffset)
@@ -1095,100 +1222,46 @@ method draw Morph destination xOffset yOffset destScaleX destScaleY clipRect {
   x = (((first origin) + xOffset) * destScaleX)
   y = (((last origin) + yOffset) * destScaleY)
 
-  if (and (notNil costume) (not (isClass destination 'Bitmap'))) {
-	showTexture destination costume x y alpha (scaleX * destScaleX) (scaleY * destScaleY) rotation nil nil clipRect
-  } (notNil costumeData) {
-	if (isClass costumeData 'Color') {
-	  r = (rect x y (width bounds) (height bounds))
-	  if (notNil clipRect) { intersect r clipRect }
-	  fillRect destination costumeData (left r) (top r) (width r) (height r) 1 // blendMode=blend
-	} (isClass costumeData 'Bitmap') {
-	  drawBitmap destination costumeData x y alpha 1 clipRect
+  if (isClass costumeData 'Color') {
+	r = (rect x y (width bounds) (height bounds))
+	if (notNil clipRect) { intersect r clipRect }
+	fillRect destination costumeData (left r) (top r) (width r) (height r) 1 // blendMode=blend
+  } (isClass costumeData 'Bitmap') {
+	if (0 == (rotation % 360)) {
+	  if (and (scaleX == 1) (scaleY == 1)) { // neither scaled nor rotated
+		drawBitmap destination costumeData x y alpha 1 clipRect
+	  } else { // scaled, but not rotated
+		centerX = (x + (half (destScaleX * (width bounds))))
+		centerY = (y + (half (destScaleY * (height bounds))))
+		warpBitmap destination costumeData centerX centerY (scaleX * destScaleX) (scaleY * destScaleY) 0
+	  }
+	} else { // rotated
+	  drawBitmap destination (transformedCostume this) x y alpha 1 clipRect
 	}
- }
+  }
 
   if (notNil penTrailsData) {
-	updatePenTrails this
-	showTexture destination penTrails x y alpha (scaleX * destScaleX) (scaleY * destScaleY) rotation nil nil clipRect
+	drawPenTrailsOn this destination x y destScaleX destScaleY
   }
 
   for each parts {
-	if (and (isClass (handler each) 'ScrollFrame') (notNil (cachedContents (handler each)))) {
-	  showTexture destination (cachedContents (handler each)) (left each) (top each)
-	} else {
-	  draw each destination xOffset yOffset destScaleX destScaleY clipRect
-	}
+    draw each destination xOffset yOffset destScaleX destScaleY clipRect
   }
-}
-
-method draw2 Morph destination xOffset yOffset clipRect {
-  // Draw this morph onto the given texture with the given (global) offset and clipping rectangle.
-
-  if (not isVisible) {return}
-  if (isNil xOffset) {xOffset = 0}
-  if (isNil yOffset) {yOffset = xOffset}
-  if costumeChanged {
-  	updateCostume this
-  	costumeChanged = false
-  }
-  if isClipping {
-	bnds = (rect
-		((left this) + (round xOffset))
-		((top this) + (round yOffset))
-		(scaleX * (width bounds))
-		(scaleY * (height bounds)))
-    if (isNil clipRect) {
-      clipRect = bnds
-    } else {
-      clipRect = (intersection bnds clipRect)
-      if (or ((width clipRect) <= 0) ((height clipRect) <= 0)) { return }
-    }
-  }
-  if (or (isNil clipRect) (intersects clipRect (translatedBy (bounds this) xOffset yOffset))) {
-	origin = (drawingPoint this)
-	x = ((first origin) + xOffset)
-	y = ((last origin) + yOffset)
-
-	if (and (notNil costume) (isClass destination 'Texture')) {
-	  showTexture destination costume x y alpha scaleX scaleY rotation nil nil clipRect
-	} (notNil costumeData) {
-	  if (isClass costumeData 'Color') {
-		r = (rect x y (width bounds) (height bounds))
-		if (notNil clipRect) { intersect r clipRect }
-		fillRect destination costumeData (left r) (top r) (width r) (height r) 1 // blendMode=blend
-	  } (isClass costumeData 'Bitmap') {
-		drawBitmap destination costumeData x y alpha 1 clipRect
-	  }
-	}
-	if (notNil penTrailsData) {
-	  updatePenTrails this
-	  showTexture destination penTrails x y alpha scaleX scaleY rotation nil nil clipRect
-	}
-  }
-  for each parts { draw2 each destination xOffset yOffset clipRect }
 }
 
 method takeSnapshot Morph {
   // Return a bitmap with a snapshot of the given morph at its normal size.
 
-  oldScale = (scale this)
-  setScale this 1
-  txt = (newTexture (normalWidth this) (normalHeight this))
-  draw2 this txt (- (left this)) (- (top this))
-  setScale this oldScale
-
-  bm = (cropTransparent (toBitmap txt))
-  destroyTexture txt
-  return bm
+  return (takeSnapshotWithBounds this (fullBounds this))
 }
 
 method takeSnapshotWithBounds Morph rect {
   // Return a bitmap with a snapshot of this morph with the given global rectangle.
 
-  txt = (newTexture (width rect) (height rect) (gray 250))
-  draw2 this txt (- (left rect)) (- (top rect))
-  bm = (toBitmap txt)
-  destroyTexture txt
+  bm = (newBitmap (width rect) (height rect))
+  ctx = (newGraphicContextOn bm)
+  setOffset ctx (- (left rect)) (- (top rect))
+  fullDrawOn this ctx
   return bm
 }
 
@@ -1236,18 +1309,21 @@ method takeThumbnail Morph thumbWidth thumbHeight {
 // sensing
 
 method isTransparentAt Morph x y {
-  // todo: Jens -- is this correct?
-  if (not (isClass costumeData 'Bitmap')) {return false}
-  costumeW = (width costumeData)
-  costumeH = (height costumeData)
-  p = (normal this x y) // offset from costume center
-  rx = (truncate ((first p) + (costumeW / 2)))
-  ry = (truncate ((last p) + (costumeH / 2)))
-  i = (((ry * (width costumeData)) + rx) + 1)
-  // Note: i can go out of range due to rounding in coordinate transform
-  if (or (i < 1) (i > (costumeW * costumeH))) { return true }
-  a = (getPixelAlpha (getField costumeData 'pixelData') i)
-  return (a == 0)
+  // Return true if the given morph is transparent at the given (global) position.
+  // Fast in apps but expensive for large blocks in the browser (30-60 msecs).
+  // May want to try a different stategy -- draw onto canvas, read back one pixel.
+
+  if (rotation != 0) { return false } // don't deal with rotation for now
+  bm = (newBitmap (width bounds) (height bounds))
+  ctx = (newGraphicContextOn bm)
+  setOffset ctx (0 - (left this)) (0 - (top this))
+  drawOn (handler this) ctx
+
+  relX = (round (x - (left bounds)))
+  relY = (round (y - (top bounds)))
+  if (or (relX < 0) (relX >= (width bm))) { return true }
+  if (or (relY < 0) (relY >= (height bm))) { return true }
+  return ((getAlpha bm relX relY) < 10)
 }
 
 // stepping
@@ -1274,8 +1350,43 @@ method step Morph {
 // change propagation
 
 method changed Morph {
-  if (notNil handler) {changed handler}
-  if (notNil owner) {changed owner}
+  if (and isVisible (notNil owner)) {
+	reportDamage owner bounds
+  } (and (isClass handler 'Hand') (notEmpty parts)) {
+	reportDamage (morph (global 'page')) (fullBounds this)
+  }
+}
+
+method reportDamage Morph rect {
+  // Pass a damage rectangle up the owner chain and record it in Page/s damage list.
+  // Propagation is stopped by an invisble morph (whose subtree is also invisible).
+  // The damage rectangle is clipped to the bounds of clipping morphs.
+
+  if (not isVisible) { return }
+
+  if (isClass handler 'Page') {
+	addDamage handler rect
+  } (isClass handler 'Hand') {
+	if (not (isEmpty parts)) { reportDamage (morph (global 'page')) rect }
+  } (isClass handler 'Stage') {
+	if costumeChanged { return } // stage has already reported damage
+	costumeChanged = true // stage uses this flag to indicate that damage has been reported
+	reportDamage owner bounds
+  } (and isVisible (notNil owner) (owner != this)) {
+	if isClipping {
+	  if (intersects rect bounds) {
+		reportDamage owner (intersection bounds rect)
+	  }
+	} else {
+	  reportDamage owner rect
+	}
+  }
+}
+
+method rerender Morph {
+  if shouldRedraw { return } // already reported damage
+  changed this
+  shouldRedraw = true
 }
 
 method raise Morph eventName origin {
@@ -1290,23 +1401,26 @@ method raise Morph eventName origin {
 
 // pentrails layer
 
-method penTrails Morph {return penTrails}
-method penTrailsData Morph {return penTrailsData}
-
-method createPenTrails Morph {penTrailsData = (newBitmap (normalWidth this) (normalHeight this))}
-
-method deletePenTrails Morph {
-  if (notNil penTrails) {
-    destroyTexture penTrails
-    penTrails = nil
-  }
-  penTrailsData = nil
-}
+method deletePenTrails Morph { penTrailsData = nil }
 
 method clearPenTrails Morph {
   transparent = (gray 255 0) // transparent white
-  if (notNil penTrailsData) {fill penTrailsData transparent}
-  if (notNil penTrails) {fill penTrails transparent}
+  if (notNil penTrailsData) { fill penTrailsData transparent }
+}
+
+method drawPenTrailsOn Morph destination dstX dstY dstScaleX dstScaleY {
+  centerX = (dstX + (half (width this)))
+  centerY = (dstY + (half (height this)))
+  drawScaleX = (scaleX * dstScaleX)
+  drawScaleY = (scaleY * dstScaleY)
+  warpBitmap destination penTrailsData centerX centerY drawScaleX drawScaleY
+}
+
+method requirePenTrails Morph {
+  if (isNil penTrailsData) {
+	penTrailsData = (newBitmap (normalWidth this) (normalHeight this))
+  }
+  return penTrailsData
 }
 
 method resizePenTrails Morph {
@@ -1315,38 +1429,6 @@ method resizePenTrails Morph {
     drawBitmap bm penTrailsData
     penTrailsData = bm
   }
-  if (notNil penTrails) {
-    t = (newTexture (normalWidth this) (normalHeight this))
-    showTexture t penTrails
-    destroyTexture penTrails
-    penTrails = t
-  }
-}
-
-method updatePenTrails Morph {
-  if (isNil penTrailsData) {return}
-  if (or ((width penTrailsData) != (normalWidth this))
-		 ((height penTrailsData) != (normalHeight this))) {
-			penTrailsData = (newBitmap (normalWidth this) (normalHeight this))
-  }
-  if (or (isNil penTrails)
-		 ((width penTrails) != (width penTrailsData))
-		 ((height penTrails) != (height penTrailsData))) {
-			if (notNil penTrails) {destroyTexture penTrails}
-			penTrails = (newTexture (width penTrailsData) (height penTrailsData) (gray 255 0))
-  }
-  drawBitmap penTrails penTrailsData
-  fill penTrailsData (gray 255 0) // clear penTrailsData to transparent white
-}
-
-method requirePenTrails Morph getTexture {
-  if (isNil getTexture) {getTexture = false}
-  if (isNil penTrailsData) {createPenTrails this}
-  if getTexture {
-    updatePenTrails this
-    return penTrails
-  }
-  return penTrailsData
 }
 
 // pen
@@ -1369,7 +1451,7 @@ method requirePen Morph {
 
 method penDown Morph {down (requirePen this)}
 method isPenDown Morph {return (and (notNil pen) (isDown pen))}
-method penUp Morph {up (requirePen this)}
+method penUp Morph {if (notNil pen) {up pen}}
 method isPenUp Morph {return (not (isPenDown this))}
 method setPenColor Morph aColor {setColor (requirePen this) aColor}
 method penColor Morph {return (color (requirePen this))}
@@ -1380,7 +1462,7 @@ method setDrawOnOwner Morph bool {drawOnOwner = bool}
 method penClear Morph {
   target = (penTarget this)
   if (notNil target) {
-    clearPenTrails target
+    deletePenTrails target
     changed target
   }
 }
@@ -1394,7 +1476,7 @@ method stampCostume Morph stampTransparency {
   if (isNil stampTransparency) { stampTransparency = 0 }
   stampAlpha = (clamp (toInteger (2.55 * (100 - stampTransparency))) 0 255)
   if (0 == stampAlpha) { return } // completely transparent; no effect
-  trails = (requirePenTrails target true) // updates penTrails texture
+  trails = (requirePenTrails target)
   oldAlpha = alpha
   wasHidden = (isHidden this)
   show this
@@ -1407,9 +1489,9 @@ method stampCostume Morph stampTransparency {
 
 method penTarget Morph {
   if (isNil owner) {return nil}
+  if (isClass (handler owner) 'Hand') {return nil}
   if drawOnOwner {
 	target = owner
-	if (isClass (handler owner) 'Hand') {target = nil}
   } (isAnyClass (handler owner) 'Page' 'Stage') { // common case optimization
 	target = owner
   } else {
@@ -1440,7 +1522,7 @@ method contextMenu Morph {
 	addItem menu 'browse class...' 'browseHandler' 'open a browser window on this object''s class'
 	addLine menu
   }
-  if (notNil penTrails) {
+  if (notNil penTrailsData) {
 	addLine menu
     addItem menu 'clear pen trails' 'deletePenTrails'
   }
@@ -1666,11 +1748,6 @@ method deserialize Morph fieldDict {
 	setField this k (at fieldDict k)
   }
 
-  // Morph transition: bitmap costume to texture costume
-  if (isClass costume 'Bitmap') {
-	costumeData = costume
-	costume = nil
-  }
   if (contains fieldDict 'originalCostume') {
 	origCostume = (at fieldDict 'originalCostume')
 	if (notNil origCostume) { costumeData = origCostume }
@@ -1700,10 +1777,8 @@ method preSerialize Morph {
   } (implements handler 'redraw') {
 	setCostume (morph handler) nil
   }
-  if (notNil costumeData) {
-	costume = nil // costume will be recreated from costumeData by postSerialize
-	penTrails = nil
-  }
+  costume = nil
+  penTrails = nil
   preSerialize handler
   for m parts { preSerialize m }
 }
@@ -1731,6 +1806,5 @@ method postSerialize Morph {
 	}
   }
   if doRedraw { redraw handler true }
-  if (notNil costumeData) { updateCostume this }
   gcIfNeeded
 }

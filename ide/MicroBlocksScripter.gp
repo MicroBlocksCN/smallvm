@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categoriesFrame catResizer libHeader libFrame blocksFrame blocksResizer scriptsFrame nextX nextY
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector blocksFrame blocksResizer scriptsFrame nextX nextY
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -20,7 +20,6 @@ method initialize MicroBlocksScripter aProjectEditor {
   projectEditor = aProjectEditor
   scale = (global 'scale')
   morph = (newMorph this)
-  setCostume morph (gray 150) // border color
   listColor = (gray 240)
   fontName = 'Arial Bold'
   fontSize = 16
@@ -37,22 +36,21 @@ method initialize MicroBlocksScripter aProjectEditor {
 
   makeLibraryHeader this
 
-  lbox = (listBox (categories this) nil (action 'categorySelected' this) listColor)
-  setFont lbox fontName fontSize
-  categoriesFrame = (scrollFrame lbox listColor true)
-  addPart morph (morph categoriesFrame)
+  categorySelector = (newCategorySelector (categories this) (action 'categorySelected' this))
+  setFont categorySelector fontName fontSize
+  setExtent (morph categorySelector) (140 * scale) 100
+  addPart morph (morph categorySelector)
 
-  lbox = (listBox (array) nil (action 'librarySelected' this) listColor)
-  setFont lbox fontName fontSize
-  libFrame = (scrollFrame lbox listColor true)
-  addPart morph (morph libFrame)
+  libSelector = (newCategorySelector (array) (action 'librarySelected' this))
+  setFont libSelector fontName fontSize
+  addPart morph (morph libSelector)
 
   blocksPane = (newBlocksPalette)
   setSortingOrder (alignment blocksPane) nil
   setPadding (alignment blocksPane) (15 * scale) // inter-column space
   setFramePadding (alignment blocksPane) (10 * scale) (10 * scale)
   blocksFrame = (scrollFrame blocksPane (gray 220))
-  setExtent (morph blocksFrame) (235 * scale) (100 * scale)
+  setExtent (morph blocksFrame) (260 * scale) (100 * scale)
   setAutoScroll blocksFrame false
   addPart morph (morph blocksFrame)
 
@@ -61,10 +59,10 @@ method initialize MicroBlocksScripter aProjectEditor {
   addPart morph (morph scriptsFrame)
 
   // add resizers last so they are in front
-  catResizer = (resizeHandle categoriesFrame 'horizontal')
+  catResizer = (newPaneResizer (morph categorySelector) 'horizontal')
   addPart morph (morph catResizer)
 
-  blocksResizer = (resizeHandle blocksFrame 'horizontal')
+  blocksResizer = (newPaneResizer (morph blocksFrame) 'horizontal')
   addPart morph (morph blocksResizer)
 
   setGrabRule morph 'ignore'
@@ -75,16 +73,12 @@ method initialize MicroBlocksScripter aProjectEditor {
   restoreScripts this
 
   smallRuntime this // create a SmallRuntime instance
-  if (isNil projectEditor) { select (contents categoriesFrame) 'Control' }
+  if (isNil projectEditor) { select categorySelector 'Control' }
   return this
 }
 
 method languageChanged MicroBlocksScripter {
   updateLibraryHeader this
-
-  // update categories and library names
-  updateMorphContents (handler (first (parts (morph categoriesFrame))))
-  updateMorphContents (handler (first (parts (morph libFrame))))
 
   // update the scripts
   updateBlocks this
@@ -142,6 +136,7 @@ method addLibraryButton MicroBlocksScripter label w h {
   fillRect bm2 (gray 30) (centerX - halfW) (centerY - halfLen) lineW len
 
   button = (newButton '' (action 'importLibrary' this))
+  setHint button (localized 'Add Library')
   setCostumes button bm1 bm2
   return button
 }
@@ -149,17 +144,45 @@ method addLibraryButton MicroBlocksScripter label w h {
 // library item menu
 
 method handleListContextRequest MicroBlocksScripter anArray {
-  if ((first anArray) != (contents libFrame)) { return } // not a library list entry; ignore
-  libName = (data (last anArray))
+  if (and ((first anArray) == categorySelector) ('My Blocks' == (last anArray))) {
+    menu = (menu)
+	addItem menu 'show all block definitions' (action 'showAllMyBlocks' this)
+	addItem menu 'hide all block definitions' (action 'hideAllMyBlocks' this)
+    popUpAtHand menu (global 'page')
+    return
+  }
+  if ((first anArray) != libSelector) { return } // not a library list entry; ignore
+  libName = (last anArray)
   menu = (menu)
   addItem menu 'library information' (action 'showLibraryInfo' this libName)
   if (devMode) {
 	addItem menu 'show all block definitions' (action 'showAllLibraryDefinitions' this libName)
+	addItem menu 'hide all block definitions' (action 'hideAllLibraryDefinitions' this libName)
 	addItem menu 'export this library' (action 'exportLibrary' this libName)
   }
   addLine menu
   addItem menu 'delete library' (action 'removeLibraryNamed' this libName)
   popUpAtHand menu (global 'page')
+}
+
+method showAllMyBlocks MicroBlocksScripter libName {
+  newY = (height (morph (contents scriptsFrame))) // current bottom
+  for f (functions (main mbProject)) {
+	internalShowDefinition this (functionName f)
+  }
+  saveScripts this
+  updateSliders scriptsFrame
+  scrollToY scriptsFrame newY
+}
+
+method hideAllMyBlocks MicroBlocksScripter libName {
+  for f (functions (main mbProject)) {
+	internalHideDefinition this (functionName f)
+  }
+  saveScripts this
+  scrollToX scriptsFrame 0
+  scrollToY scriptsFrame 0
+  updateSliders scriptsFrame
 }
 
 method removeLibraryNamed MicroBlocksScripter libName {
@@ -176,80 +199,117 @@ method showLibraryInfo MicroBlocksScripter libName {
 method showAllLibraryDefinitions MicroBlocksScripter libName {
   lib = (libraryNamed mbProject libName)
   if (isNil lib) { return }
+  newY = (height (morph (contents scriptsFrame))) // current bottom
   for f (functions lib) {
-	showDefinition this (functionName f)
+	internalShowDefinition this (functionName f)
   }
+  saveScripts this
+  updateSliders scriptsFrame
+  scrollToY scriptsFrame newY
+}
+
+method hideAllLibraryDefinitions MicroBlocksScripter libName {
+  lib = (libraryNamed mbProject libName)
+  if (isNil lib) { return }
+  for f (functions lib) {
+	internalHideDefinition this (functionName f)
+  }
+  saveScripts this
+  scrollToX scriptsFrame 0
+  scrollToY scriptsFrame 0
+  updateSliders scriptsFrame
 }
 
 method exportLibrary MicroBlocksScripter libName {
   lib = (libraryNamed mbProject libName)
   if (isNil lib) { return }
-  if ('Browser' != (platform)) {
+
+  if ('Browser' == (platform)) {
+	fName = (join (moduleName lib) '.ubl')
+	browserWriteFile (codeString lib mbProject) fName 'library'
+  } else {
 	fName = (fileToWrite (moduleName lib) (array '.ubl'))
 	if ('' == fName) { return false }
 	if (not (endsWith fName '.ubl' )) { fName = (join fName '.ubl') }
-  }
-
-  if ('Browser' == (platform)) {
-	browserWriteFile (codeString lib mbProject) libName 'ubl'
-  } else {
 	writeFile fName (codeString lib mbProject)
   }
 }
 
 // layout
 
-method redraw MicroBlocksScripter {
-  fixLayout this
-}
-
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
-  catWidth = (max (toInteger ((width (morph categoriesFrame)) / scale)) 137)
+  catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) 137)
+  catHeight = ((height (morph categorySelector)) / scale)
   blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) 130)
-  catHeight = (((height (morph (contents categoriesFrame))) / scale) + 4)
   columnHeaderHeight = 33
 
-  packer = (newPanePacker (bounds morph) scale scale)
-  packPanesH packer blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesH packer categoriesFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
+  packer = (newPanePacker (bounds morph) scale)
+  packPanesH packer categorySelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
   packPanesH packer libHeader catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesH packer libFrame catWidth blocksFrame blocksWidth scriptsFrame '100%'
-  packPanesV packer categoriesFrame catHeight libHeader columnHeaderHeight libFrame '100%'
+  packPanesH packer libSelector catWidth blocksFrame blocksWidth scriptsFrame '100%'
+  packPanesV packer categorySelector catHeight libHeader columnHeaderHeight libSelector '100%'
   packPanesV packer blocksFrame '100%'
   packPanesV packer scriptsFrame '100%'
   finishPacking packer
 
+  // extra damage report for area below libSelector
+  libSelectorM = (morph libSelector)
+  reportDamage morph (rect 0 (bottom libSelectorM) (width libSelectorM) (height morph))
+
   fixResizerLayout this
   fixLibraryHeaderLayout this
+  updateSliders blocksFrame
   updateSliders scriptsFrame
-
-  if (notNil projectEditor) { fixLayout projectEditor true }
 }
 
 method fixResizerLayout MicroBlocksScripter {
   resizerWidth = (10 * (global 'scale'))
 
   // categories pane resizer
-  setLeft (morph catResizer) (right (morph categoriesFrame))
+  setLeft (morph catResizer) (right (morph categorySelector))
   setTop (morph catResizer) (top morph)
   setExtent (morph catResizer) resizerWidth (height morph)
-  drawPaneResizingCostumes catResizer
 
   // blocks pane resizer
   setLeft (morph blocksResizer) (right (morph blocksFrame))
   setTop (morph blocksResizer) (top morph)
   setExtent (morph blocksResizer) resizerWidth (height morph)
-  drawPaneResizingCostumes blocksResizer
+}
+
+method hideScrollbars MicroBlocksScripter {
+  hideSliders blocksFrame
+  hideSliders scriptsFrame
+}
+
+method showScrollbars MicroBlocksScripter {
+  showSliders blocksFrame
+  showSliders scriptsFrame
+}
+
+// drawing
+
+method drawOn MicroBlocksScripter ctx {
+  scale = (global 'scale')
+  borderColor = (gray 150)
+  borderWidth = (2 * scale)
+  x = (right (morph categorySelector))
+  fillRect ctx (gray 240) 0 (top morph) x (height morph) // bg color for category/lib panes
+  fillRect ctx borderColor x (top morph) borderWidth (height morph)
+  x = (right (morph blocksFrame))
+  fillRect ctx borderColor x (top morph) borderWidth (height morph)
+  r = (bounds (morph libHeader))
+  fillRect ctx borderColor (left r) ((top r) - borderWidth) (width r) borderWidth
+  fillRect ctx borderColor (left r) (bottom r) (width r) borderWidth
 }
 
 // MicroBlocksScripter UI support
 
 method developerModeChanged MicroBlocksScripter {
-  catList = (contents categoriesFrame)
+  catList = categorySelector
   setCollection catList (categories this)
   if (not (or (contains (collection catList) (selection catList))
-  			  (notNil (selection (contents libFrame))))) {
+  			  (notNil (selection libSelector)))) {
     select catList 'Output'
   } else {
     updateBlocks this
@@ -266,45 +326,46 @@ method categories MicroBlocksScripter {
 }
 
 method selectCategory MicroBlocksScripter aCategory {
-  select (contents categoriesFrame) aCategory
+  select categorySelector aCategory
   categorySelected this
 }
 
 method currentCategory MicroBlocksScripter {
-  return (selection (contents categoriesFrame))
+  return (selection categorySelector)
 }
 
 method categorySelected MicroBlocksScripter {
-   select (contents libFrame) nil // deselect library
+   select libSelector nil // deselect library
    updateBlocks this
 }
 
 method selectLibrary MicroBlocksScripter aLibrary {
-  select (contents libFrame) aLibrary
+  select libSelector aLibrary
   librarySelected this
 }
 
 method currentLibrary MicroBlocksScripter {
-  return (selection (contents libFrame))
+  return (selection libSelector)
 }
 
 method librarySelected MicroBlocksScripter {
-   select (contents categoriesFrame) nil // deselect category
+   select categorySelector nil // deselect category
    updateBlocks this
 }
 
 method updateBlocks MicroBlocksScripter {
   scale = (global 'scale')
   blocksPane = (contents blocksFrame)
+  hide (morph blocksPane) // suppress damage reports while adding blocks
   removeAllParts (morph blocksPane)
   setRule (alignment blocksPane) 'none'
 
   nextX = ((left (morph (contents blocksFrame))) + (16 * scale))
   nextY = ((top (morph (contents blocksFrame))) + (16 * scale))
 
-  cat = (selection (contents categoriesFrame))
+  cat = (selection categorySelector)
   if (isNil cat) {
-	addBlocksForLibrary this (selection (contents libFrame))
+	addBlocksForLibrary this (selection libSelector)
   } ('Variables' == cat) {
 	addVariableBlocks this
     addAdvancedBlocksForCategory this cat
@@ -314,6 +375,8 @@ method updateBlocks MicroBlocksScripter {
 	addBlocksForCategory this cat
   }
   cleanUp blocksPane
+  show (morph blocksPane) // show after adding blocks
+  updateSliders blocksFrame
 }
 
 method addBlocksForCategory MicroBlocksScripter cat {
@@ -333,7 +396,7 @@ method addBlocksForSpecs MicroBlocksScripter specList {
   for spec specList {
 	if ('-' == spec) {
 	  // add some vertical space
-	   nextY += (20 * (global 'scale'))
+	   nextY += (20 * (blockScale))
 	} else {
 	  addBlock this (blockForSpec spec) spec
 	}
@@ -552,7 +615,11 @@ method deleteVariable MicroBlocksScripter varName {
 
 // save and restore scripts in class
 
-method scriptChanged MicroBlocksScripter { saveNeeded = true }
+method scriptChanged MicroBlocksScripter {
+  updateHighlights (smallRuntime)
+  saveNeeded = true
+}
+
 method functionBodyChanged  MicroBlocksScripter { saveNeeded = true }
 
 method step MicroBlocksScripter {
@@ -568,7 +635,7 @@ method step MicroBlocksScripter {
 }
 
 method saveScripts MicroBlocksScripter oldScale {
-  scale = (global 'scale')
+  scale = (blockScale)
   if (notNil oldScale) { scale = oldScale }
   scriptsPane = (contents scriptsFrame)
   paneX = (left (morph scriptsPane))
@@ -598,20 +665,23 @@ method updateFunctionOrMethod MicroBlocksScripter script {
   if ('to' == (primName script)) {
     f = (functionNamed mbProject functionName)
   }
-  if (notNil f) { updateCmdList f newCmdList }
+  if (notNil f) {
+    updateCmdList f newCmdList
+    removeFieldsFromLocals f (allVariableNames mbProject)
+  }
 }
 
 method restoreScripts MicroBlocksScripter {
-  scale = (global 'scale')
+  scale = (blockScale)
   scriptsPane = (contents scriptsFrame)
   removeAllParts (morph scriptsPane)
   clearDropHistory scriptsPane
-  updateSliders scriptsFrame
+
   scripts = (scripts (main mbProject))
   if (notNil scripts) {
     paneX = (left (morph scriptsPane))
     paneY = (top (morph scriptsPane))
-    for entry (reversed scripts) {
+    for entry scripts {
       dta = (last entry)
       if ('to' == (primName dta)) {
         func = (functionNamed mbProject (first (argList dta)))
@@ -627,7 +697,7 @@ method restoreScripts MicroBlocksScripter {
       if (notNil block) {
 		x = (paneX + ((at entry 1) * scale))
 		y = (paneY + ((at entry 2) * scale))
-		moveBy (morph block) x y
+		fastMoveBy (morph block) x y
 		addPart (morph scriptsPane) (morph block)
 		fixBlockColor block
 	  }
@@ -640,7 +710,7 @@ method restoreScripts MicroBlocksScripter {
 method allScriptsString MicroBlocksScripter {
   // Return a string with all scripts in the scripting area.
 
-  scale = (global 'scale')
+  scale = (blockScale)
   newline = (newline)
   pp = (new 'PrettyPrinter')
   result = (list)
@@ -702,7 +772,7 @@ method pasteScripts MicroBlocksScripter scriptString {
 		} else {
 		  block = (toBlock script)
 		}
-		moveBy (morph block) x y
+		fastMoveBy (morph block) x y
 		y += ((height (fullBounds (morph block))) + (10 * scale))
 		addPart (morph scriptsPane) (morph block)
 		fixBlockColor block
@@ -741,32 +811,61 @@ method addGlobalsFor MicroBlocksScripter script {
 method hideDefinition MicroBlocksScripter funcName {
   // Hide the given method/function definition.
 
+  internalHideDefinition this funcName
   saveScripts this
-  newScripts = (list)
-  for entry (scripts (main mbProject)) {
-	cmd = (at entry 3)
-	if ('to' == (primName cmd)) {
-	  if (funcName != (first (argList cmd))) { add newScripts entry }
-	} else {
-	  add newScripts entry
-	}
+  updateSliders scriptsFrame
+}
+
+method internalHideDefinition MicroBlocksScripter funcName {
+  // Internal helper method.
+  // Hide the given method/function definition but does not save the scripts.
+
+  scriptsPaneM = (morph (contents scriptsFrame))
+  for m (parts scriptsPaneM) {
+    b = (handler m)
+    if (isClass b 'Block') {
+      proto = (editedPrototype b)
+      if (and (notNil proto) (funcName == (functionName (function proto)))) {
+        removeFromOwner m
+      }
+    }
   }
-  setScripts (main mbProject) newScripts
-  restoreScripts this
 }
 
 method showDefinition MicroBlocksScripter funcName {
   if (not (isShowingDefinition this funcName)) {
-	f = (functionNamed mbProject funcName)
-	if (isNil f) { return } // shouldn't happen
-	ref = (newCommand 'to' funcName)
-
-	// add the method/function definition to the scripts
-	entry = (array (rand 50 200) (rand 50 200) ref)
-	setScripts (main mbProject) (join (array entry) (scripts (main mbProject)))
-	restoreScripts this
+    internalShowDefinition this funcName
+    saveScripts this
+    updateSliders scriptsFrame
   }
   scrollToDefinitionOf this funcName
+}
+
+method internalShowDefinition MicroBlocksScripter funcName {
+  // Internal helper method.
+  // Adds function definition to scripts pane but does not save the scripts.
+
+  if (isShowingDefinition this funcName) { return } // already showing
+  f = (functionNamed mbProject funcName)
+  if (isNil f) { return }
+  scale = (blockScale)
+  scriptsPaneM = (morph (contents scriptsFrame))
+
+  // find a position for the defintion below all other scripts
+  x = ((left scriptsPaneM) + (50 * scale))
+  y = ((top scriptsPaneM) + (50 * scale))
+  for m (parts scriptsPaneM) {
+    if (isClass (handler m) 'Block') {
+	  mBnds = (fullBounds m)
+	  if ((left mBnds) < x) { x = (left mBnds) }
+	  if ((bottom mBnds) > y) { y = (bottom mBnds) }
+    }
+  }
+
+  // add the definition and save the scripts
+  block = (scriptForFunction f)
+  fastSetPosition (morph block) x y
+  addPart scriptsPaneM (morph block)
 }
 
 method isShowingDefinition MicroBlocksScripter funcName {
@@ -1050,11 +1149,29 @@ method importLibrary MicroBlocksScripter {
   pickLibraryToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ubl')
 }
 
+method allFilesInDir MicroBlocksScripter rootDir {
+	// Return a list of all files below the given directory.
+
+	result = (list)
+	todo = (list rootDir)
+	while (notEmpty todo) {
+		dir = (removeFirst todo)
+		for fName (listFiles dir) {
+			add result (join dir '/' fName)
+		}
+		for dirName (listDirectories dir) {
+			add todo (join dir '/' dirName)
+		}
+	}
+	return result
+}
+
 method importEmbeddedLibrary MicroBlocksScripter libName {
 	if ('Browser' == (platform)) {
-		for filePath (listFiles 'Libraries') {
-			if (endsWith filePath (join libName '.ubl')) {
-				importLibraryFromFile this (join 'Libraries/' filePath)
+		libFileName = (join libName '.ubl')
+		for filePath (allFilesInDir this 'Libraries') {
+			if (endsWith filePath libFileName) {
+				importLibraryFromFile this filePath
 				return
 			}
 		}
@@ -1131,8 +1248,8 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 
 	// update library list and select the new library
 	updateLibraryList this
-	select (contents categoriesFrame) nil
-	select (contents libFrame) libName
+	select categorySelector nil
+	select libSelector libName
 	updateBlocks this
 	saveScripts this
 	restoreScripts this
@@ -1140,8 +1257,8 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 
 method updateLibraryList MicroBlocksScripter {
   libNames = (sorted (keys (libraries mbProject)))
-  setCollection (contents libFrame) libNames
-  oldSelection = (selection (contents libFrame))
+  setCollection libSelector libNames
+  oldSelection = (selection libSelector)
   if (not (contains libNames oldSelection)) {
 	selectCategory this 'Control'
   }
@@ -1153,26 +1270,22 @@ method justGrabbedPart MicroBlocksScripter part {
 }
 
 method setLibsDraggable MicroBlocksScripter flag {
-  for libItem (parts (morph (contents libFrame))) {
-	if flag {
-		setGrabRule libItem 'handle'
-	} else {
-		setGrabRule libItem 'defer'
-	}
-  }
+	// deprecated; do nothing
 }
 
 method exportAsLibrary MicroBlocksScripter defaultFileName {
-  if ('Browser' != (platform)) {
-	fileName = (fileToWrite (withoutExtension defaultFileName) '.ubl')
-	if (isEmpty fileName) { return }
-	if (not (endsWith fileName '.ubl' )) { fileName = (join fileName '.ubl') }
-  }
   if ('Browser' == (platform)) {
-	libName = (prompt (global 'page') (localized 'Library name?') (localized 'my library'))
-	browserWriteFile (codeString (main mbProject) mbProject libName) libName 'ubl'
+	if (or (isNil defaultFileName) ('' == defaultFileName)) {
+		defaultFileName = (localized 'my library')
+	}
+	libName = (prompt (global 'page') (localized 'Library name?') defaultFileName)
+	fName = (join libName '.ubl')
+	browserWriteFile (codeString (main mbProject) mbProject libName) fName 'library'
   } else {
-	libName = (withoutExtension (filePart fileName))
-	writeFile fileName (codeString (main mbProject) mbProject libName)
+	fName = (fileToWrite (withoutExtension defaultFileName) '.ubl')
+	if (isEmpty fName) { return }
+	if (not (endsWith fName '.ubl' )) { fName = (join fName '.ubl') }
+	libName = (withoutExtension (filePart fName))
+	writeFile fName (codeString (main mbProject) mbProject libName)
   }
 }

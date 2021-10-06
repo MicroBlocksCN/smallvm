@@ -453,6 +453,71 @@ OBJ primJoin(int argCount, OBJ *args) {
 	return result;
 }
 
+OBJ primSplit(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
+	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
+	char *s = obj2str(args[0]);
+	char *delim = obj2str(args[1]);
+	int delimLen = strlen(delim);
+
+	// count substrings for result list
+	int resultCount = 0;
+	if (delimLen == 0) {
+		resultCount = countUTF8(s);
+	} else {
+		char *match = s;
+		while (match) {
+			resultCount++;
+			match = strstr(match + delimLen, delim);
+		}
+	}
+
+	// allocate result list (stored in tempGCRoot so it will be processed by garbage collector
+	// if a GC happens during a later allocation)
+	tempGCRoot = newObj(ListType, resultCount + 1, zeroObj);
+	if (!tempGCRoot) return tempGCRoot; // allocation failed
+	FIELD(tempGCRoot, 0) = int2obj(resultCount);
+
+	// add substrings to the result list
+	if (delimLen == 0) {
+		// return a list containing the characters of s
+		char *last = s;
+		char *next = nextUTF8(last);
+		for (int i = 0; i < resultCount; i++) {
+			// allocate string and save in list
+			int byteCount = next - last;
+			OBJ item = newStringFromBytes(last, byteCount);
+			if (!item) return falseObj; // allocation failed
+			FIELD(tempGCRoot, i + 1) = item;
+			last = next;
+			next = nextUTF8(last);
+		}
+	} else {
+		if (1 == resultCount) { // no delimiters found; return unsplit source string
+			FIELD(tempGCRoot, 1) = args[0];
+			return tempGCRoot;
+		}
+		int i = 1;
+		char *last = s;
+		char *next = strstr(last + 1, delim);
+		while (next && (i <= resultCount)) {
+			int byteCount = next - last;
+			OBJ item = newStringFromBytes(last, byteCount);
+			if (!item) return falseObj; // allocation failed
+			FIELD(tempGCRoot, i++) = item;
+			last = next + delimLen;
+			next = strstr(last, delim);
+		}
+		if (i <= resultCount) { //
+			OBJ item = newStringFromBytes(last, strlen(last));
+			if (!item) return falseObj; // allocation failed
+			FIELD(tempGCRoot, i++) = item;
+		}
+	}
+	return tempGCRoot;
+}
+
 OBJ primJoinStrings(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	if (!IS_TYPE(args[0], ListType)) return fail(needsListError);
@@ -526,6 +591,7 @@ OBJ primFind(int argCount, OBJ *args) {
 		if (startOffset > stringSize(arg1)) return int2obj(-1); // not found
 		char *s = obj2str(arg1);
 		char *sought = obj2str(arg0);
+		if (0 == sought[0]) return int2obj(-1); // empty string
 		char *match = strstr(s + startOffset - 1, sought);
 		if (!match) return int2obj(-1);
 		// count the Unicode characters up to match
@@ -651,23 +717,37 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 
 OBJ primNewByteArray(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
+	if (!isInt(args[0])) return fail(needsIntegerError);
+
+	int byteCount = obj2int(args[0]);
+	if (byteCount < 0) byteCount = 0;
+	OBJ result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+	if (result) setByteCountAdjust(result, byteCount);
+	return result;
+}
+
+OBJ primAsByteArray(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
 	OBJ arg = args[0];
 	OBJ result = falseObj;
 	int byteCount;
 
 	if (isInt(arg)) {
-		byteCount = obj2int(arg);
-		if (byteCount < 0) byteCount = 0;
-		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
-		if (result) setByteCountAdjust(result, byteCount);
-	} else if (StringType == objType(arg)) {
+		int byteValue = obj2int(arg);
+		if ((byteValue < 0) || (byteValue > 255)) return fail(byteArrayStoreError);
+		result = newObj(ByteArrayType, 1, falseObj);
+		if (result) {
+			setByteCountAdjust(result, byteCount);
+			*((uint8 *) &FIELD(result, 0)) = byteValue;
+		}
+	} else if (IS_TYPE(arg, StringType)) {
 		byteCount = stringSize(arg);
 		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
 		if (result) {
 			setByteCountAdjust(result, byteCount);
 			memcpy(&FIELD(result, 0), obj2str(arg), byteCount);
 		}
-	} else if (ListType == objType(arg)) {
+	} else if (IS_TYPE(arg, ListType)) {
 		byteCount = obj2int(FIELD(arg, 0));
 		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
 		if (result) {
@@ -676,13 +756,16 @@ OBJ primNewByteArray(int argCount, OBJ *args) {
 			for (int i = 0; i < byteCount; i++) {
 				OBJ item = FIELD(arg, i + 1);
 				if (isInt(item)) {
-					int n = obj2int(item);
-					if (n < 0) n = 0;
-					if (n > 255) n = 255;
-					bytes[i] = n;
+					int byteValue = obj2int(item);
+					if ((byteValue < 0) || (byteValue > 255)) return fail(byteArrayStoreError);
+					bytes[i] = byteValue;
 				}
 			}
 		}
+	} else if (IS_TYPE(arg, ByteArrayType)) {
+		result = arg;
+	} else {
+		return fail(byteArrayStoreError);
 	}
 	return result;
 }
@@ -698,12 +781,14 @@ static PrimEntry entries[] = {
 	{"addLast", primListAddLast},
 	{"delete", primListDelete},
 	{"join", primJoin},
+	{"split", primSplit},
 	{"copyFromTo", primCopyFromTo},
 	{"find", primFind},
 	{"joinStrings", primJoinStrings},
 	{"unicodeAt", primUnicodeAt},
 	{"unicodeString", primUnicodeString},
 	{"newByteArray", primNewByteArray},
+	{"asByteArray", primAsByteArray},
 	{"freeMemory", primFreeMemory},
 };
 

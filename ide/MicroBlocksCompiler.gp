@@ -70,6 +70,11 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'spiRecv'				'spi receive')
 		(array ' ' '[sensors:spiSetup]'		'spi setup speed _ : mode _ : rpi channel _' 'num num num' 1000000 0 0)
 		(array ' ' '[sensors:spiExchange]'	'spi exchange bytes _' 'auto' 'aByteArray')
+		'-'
+		(array ' ' '[serial:open]'			'serial open _ baud' 'num' 9600)
+		(array ' ' '[serial:close]'			'serial close')
+		(array 'r' '[serial:read]'			'serial read')
+		(array ' ' '[serial:write]'			'serial write _' 'auto' 'aByteStringOrByteArray')
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'menu.buttonMenu' 'A')
@@ -152,6 +157,7 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' 'smiles' 2 5)
+		(array 'r' '[data:split]'		'split _ by _' 'str str' 'A,B,C' ',')
 	'Data-Advanced'
 		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' nil ' ')
 		'-'
@@ -160,6 +166,7 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' 'newList'				'new list length _' 'num' 10)
 		(array 'r' '[data:newByteArray]'	'new byte array _' 'auto' 5)
+		(array 'r' '[data:asByteArray]'		'as byte array _' 'auto' 'aByteListOrString')
 		(array 'r' '[data:freeMemory]'		'free memory')
 
 	// The following block specs allow primitives to be rendered correctly
@@ -861,10 +868,11 @@ method collectVars SmallCompiler cmdOrReporter {
 		if (isOneOf (primName cmd) 'local' 'for') {
 			// explicit local variables and 'for' loop indexes are always local
 			varName = (first (argList cmd))
-			if (not (or
-				(contains argNames varName)
-				(contains localVars varName))) {
-					atPut localVars varName (count localVars)
+			if (contains argNames varName) {
+				print 'Warning: Local variable overrides parameter:' varName
+			}
+			if (not (contains localVars varName)) {
+				atPut localVars varName (count localVars)
 			}
 		} (isOneOf (primName cmd) 'v' '=' '+=') {
 			// undeclared variables that are not global (shared) are treated as local

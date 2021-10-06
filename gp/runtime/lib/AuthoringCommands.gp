@@ -179,14 +179,14 @@ to self_getProperty property obj {
 to stageWidth {
   m = (morph (implicitReceiver))
   stage = (self_stageMorph)
-  if (notNil stage) { return (width (costumeData stage)) }
+  if (notNil stage) { return (normalWidth stage) }
   return (width (morph (global 'page')))
 }
 
 to stageHeight {
   m = (morph (implicitReceiver))
   stage = (self_stageMorph)
-  if (notNil stage) { return (height (costumeData stage)) }
+  if (notNil stage) { return (normalHeight stage) }
   return (height (morph (global 'page')))
 }
 
@@ -569,23 +569,17 @@ to self_drawBitmap bitmapOrName x y scale alpha {
   }
   if (not (isClass srcBM 'Bitmap')) { return }
 
-  if (notNil scale) {
-	w = (width srcBM)
-	h = (height srcBM)
-	scale = (min scale (4000 / w) (4000 / h))
-	dstTxt = (newTexture (scale * w) (scale * h))
-	srcTxt = (toTexture srcBM)
-	showTexture dstTxt srcTxt 0 0 255 scale scale
-	srcBM = (toBitmap dstTxt)
-	destroyTexture srcTxt
-	destroyTexture dstTxt
+  dstBM = (costumeData m)
+  if (not (isClass dstBM 'Bitmap')) { return }
+
+  if (and (notNil scale) (1 != scale)) {
+	scaledBM = (newBitmap (scale * (width srcBM)) (scale * (height srcBM)))
+	warpBitmap scaledBM srcBM (half (width scaledBM)) (half (height scaledBM)) scale scale
+	srcBM = scaledBM
   }
 
-  bm = (costumeData m)
-  if (and (isClass bm 'Bitmap') (isClass srcBM 'Bitmap')) {
-	drawBitmap bm srcBM x y alpha
-	costumeChanged m
-  }
+  drawBitmap dstBM srcBM x y alpha
+  costumeChanged m
 }
 
 to self_setPinXY x y { setPin (morph (implicitReceiver)) x y }
@@ -681,7 +675,7 @@ to self_touchingMouse {
   handY = (handY)
   morph = (morph (implicitReceiver))
   if (not (containsPoint (bounds morph) handX handY)) { return false }
-  return ((implicitReceiver) == (objectAt (hand (global 'page'))))
+  return ((implicitReceiver) == (objectAt (hand (global 'page')) true))
 }
 
 to self_touching other {
@@ -708,19 +702,18 @@ to self_touching other {
 
   r = (intersection (bounds m) (bounds other))
   if (or ((width r) < 1) ((height r) < 1)) { return false }
-  xOffset = (- (left r))
-  yOffset = (- (top r))
   ownerScale = (scale (owner m))
   w = (ceiling ((width r) / ownerScale))
   h = (ceiling ((height r) / ownerScale))
   if (or (w < 1) (h < 1)) { return false }
-  txt = (newTexture w h)
-  draw m txt xOffset yOffset (1 / ownerScale)
-  bm1 = (toBitmap txt)
-  fill txt (transparent)
-  draw other txt xOffset yOffset (1 / ownerScale)
-  bm2 = (toBitmap txt)
-  destroyTexture txt
+
+  xOffset = (- (left r))
+  yOffset = (- (top r))
+  bm1 = (newBitmap w h)
+  draw m bm1 xOffset yOffset (1 / ownerScale)
+  bm2 = (newBitmap w h)
+  draw other bm2 xOffset yOffset (1 / ownerScale)
+
   return (bitmapsTouch bm1 bm2)
 }
 

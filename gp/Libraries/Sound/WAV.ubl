@@ -1,4 +1,4 @@
-module WAV output
+module WAV Output
 author 'José García Yeste'
 version 1 2 
 description 'Play WAV sound files. Requires a board with a DAC.

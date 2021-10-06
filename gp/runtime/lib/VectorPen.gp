@@ -6,7 +6,7 @@
 // or line cap and joint styles. It may also omit future features of GP vector graphics
 // primitives such as gradients.
 
-defineClass VectorPen penX penY heading bitmap owner path usePrimitives pathWidth halfWidth color
+defineClass VectorPen offsetX offsetY penX penY heading bitmap svgData clipRect owner path usePrimitives pathWidth halfWidth color
 
 method examples VectorPen {
   showImage (drawCircle (newVectorPen))
@@ -25,6 +25,10 @@ method examples VectorPen {
   showImage (drawRoundedRect (newVectorPen nil nil true))
 }
 
+to newVectorPenOnScreen {
+  return (intialize (new 'VectorPen'))
+}
+
 to newVectorPen bitmap owningMorph noPrimitives {
   if (isNil bitmap) {
 	bitmap = (newBitmap 200 200)
@@ -32,11 +36,20 @@ to newVectorPen bitmap owningMorph noPrimitives {
   return (intialize (new 'VectorPen') bitmap owningMorph noPrimitives)
 }
 
+to newVectorPenForSVG pageW pageH {
+  return (initSVG (intialize (new 'VectorPen')) pageW pageH)
+}
+
+method x VectorPen { return (penX - offsetX) }
+method y VectorPen { return (penY - offsetY) }
 method bitmap VectorPen { return bitmap }
 method setColor VectorPen c { noop } // for compatability with pen; ignore
+method setClipRect VectorPen aRect { clipRect = aRect }
 method setHeading VectorPen degrees { heading = degrees }
 
 method intialize VectorPen aBitmap aMorph noPrimitives {
+  offsetX = 0
+  offsetY = 0
   penX = 100
   penY = 100
   heading = 0
@@ -49,13 +62,22 @@ if (true == (global 'fakeVectors')) { usePrimitives = false } // xxx for testing
   return this
 }
 
+method setOffset VectorPen x y {
+  offsetX = x
+  offsetY = y
+}
+
 method beginPath VectorPen x y {
   if (isNil x) { x = 100 }
   if (isNil y) { y = 100 }
-  penX = x
-  penY = y
+  penX = (x + offsetX)
+  penY = (y + offsetY)
   heading = 0
-  path = (list 'M' x y)
+  path = (list 'M' penX penY)
+}
+
+method beginPathFromCurrentPostion VectorPen {
+  path = (list 'M' penX penY)
 }
 
 method goto VectorPen dstX dstY {
@@ -63,20 +85,20 @@ method goto VectorPen dstX dstY {
   lineTo this dstX dstY
 }
 
-method lineTo VectorPen dstX dstY {
+method lineTo VectorPen dstX dstY curvature {
   startX = penX
   startY = penY
-  penX = dstX
-  penY = dstY
-  addSegment this startX startY penX penY
+  penX = (dstX + offsetX)
+  penY = (dstY + offsetY)
+  addSegment this startX startY penX penY curvature
 }
 
 method curveTo VectorPen dstX dstY cx cy {
   startX = penX
   startY = penY
-  penX = dstX
-  penY = dstY
-  addAll path (array 'C' dstX dstY cx cy)
+  penX = (dstX + offsetX)
+  penY = (dstY + offsetY)
+  addAll path (array 'C' dstX dstY (cx + offsetX) (cy + offsetY))
 }
 
 method cubicCurveTo VectorPen c1X c1Y c2X c2Y dstX dstY {
@@ -85,10 +107,17 @@ method cubicCurveTo VectorPen c1X c1Y c2X c2Y dstX dstY {
   // uses a simplified version of the midpoint algorithm by Helen Triolo.
   // http://www.timotheegroleau.com/Flash/articles/cubic_bezier_in_flash.htm
 
+  c1X += offsetX
+  c1Y += offsetY
+  c2X += offsetX
+  c2Y += offsetY
+  dstX += offsetX
+  dstY += offsetY
+
   startX = penX
   startY = penY
-  penX = dstX
-  penY = dstY
+  penX = (dstX + offsetX)
+  penY = (dstY + offsetY)
 
   // points used to calculate the control points pc2 and pc3
   paX = (interpolate startX c1X 0.75)
@@ -190,8 +219,12 @@ method stroke VectorPen borderColor width joint cap {
   if (isNil joint) { joint = 0 }
   if (isNil cap) { cap = 0 }
 
+  if (notNil svgData) {
+	add svgData (join '	<path stroke=' (svgColor this borderColor) ' stroke-width="' width 'mm" ' (svgPath this path) '/>')
+	return
+  }
   if usePrimitives {
-	vectorStrokePath bitmap (toArray path) borderColor width joint cap
+	vectorStrokePath bitmap (toArray path) borderColor width joint cap clipRect
   } else {
 	// Simulate vector primitives. Cap and joint are ignored.
 	color = borderColor
@@ -202,10 +235,14 @@ method stroke VectorPen borderColor width joint cap {
 
 method fill VectorPen fillColor {
   if (isNil fillColor) { fillColor = (gray 0) }
+  if (notNil svgData) {
+	add svgData (join '	<path fill=' (svgColor this fillColor) (svgPath this path true) '/>')
+	return
+  }
   if usePrimitives {
 	closedPath = (copy path)
 	add closedPath 'Z'
-	vectorFillPath bitmap (toArray closedPath) fillColor
+	vectorFillPath bitmap (toArray closedPath) fillColor clipRect
   } else {
 	if (fillColor == (gray 0)) { fillColor = (gray 1) } // avoid black/transparent confusion
 	oldPath = path
@@ -217,6 +254,93 @@ method fill VectorPen fillColor {
   }
   if (notNil owner) { costumeChanged owner }
 }
+
+method fillAndStroke VectorPen fillColor borderColor borderWidth {
+  if (isNil borderColor) { borderColor = (gray 0) }
+  if (isNil borderWidth) { borderWidth = 1 }
+  if (and (notNil fillColor) ((alpha fillColor) > 0)) {
+    fill this fillColor
+  }
+  if (and ((alpha borderColor) > 0) (borderWidth > 0)) {
+    stroke this borderColor borderWidth
+  }
+}
+
+// SVG support
+
+method initSVG VectorPen pageW pageH {
+  if (isNil pageW) { pageW = 200 }
+  if (isNil pageH)  {pageH = 250 }
+  svgData = (list)
+  add svgData '<svg version="1.1"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns="http://www.w3.org/2000/svg"
+	fill="none" fill-rule="evenodd"
+	stroke="#000000" stroke-width="0.1mm"
+	stroke-linecap="butt" stroke-linejoin="round"'
+  add svgData (join '	viewBox="0 0 ' pageW ' ' pageH '"')
+  add svgData (join '	width="' pageW 'mm"')
+  add svgData (join '	height="' pageH 'mm">')
+  add svgData '  <g>'
+  return this
+}
+
+method saveSVGFile VectorPen fileName {
+  data = (joinStrings svgData (newline))
+  data = (join data (newline) '  </g>
+</svg>')
+  writeFile fileName data
+}
+
+method twoHexDigits VectorPen n {
+  result = (toStringBase16 n)
+  if ((count result) == 1) { result = (join '0' result) }
+  return result
+}
+
+method svgColor VectorPen aColor {
+  return (join '"#'
+    (twoHexDigits this (red aColor))
+    (twoHexDigits this (green aColor))
+    (twoHexDigits this (blue aColor))
+    '"')
+}
+
+method newSVGGroup VectorPen {
+  add svgData '  </g>'
+  add svgData '  <g>'
+}
+
+method svgPath VectorPen aColor closeFlag {
+  result = (list 'd="')
+  i = 1
+  while (i <= (count path)) {
+	cmd = (at path i)
+	if ('M' == cmd) {
+	  startX = (at path (i + 1))
+	  startY = (at path (i + 2))
+	  add result (join 'M ' startX ' ' startY)
+	  i += 3
+	} ('L' == cmd) {
+	  endX = (at path (i + 1))
+	  endY = (at path (i + 2))
+	  add result (join 'L ' endX ' ' endY)
+	  i += 3
+	} ('C' == cmd) {
+	  endX = (at path (i + 1))
+	  endY = (at path (i + 2))
+	  cx = (at path (i + 3))
+	  cy = (at path (i + 4))
+	  add result (join 'Q ' cx ' ' cy ' ' endX ' ' endY)
+	  i += 5
+	}
+  }
+  if (true == closeFlag) { add result 'Z' }
+  add result '"'
+  return (joinStrings result ' ')
+}
+
+// shapes
 
 method fillRoundedRect VectorPen rect radius fillColor border borderColor {
   // Draw a rounded rectangle. If fillColor is nil, just draw the border.

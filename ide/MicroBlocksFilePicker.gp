@@ -35,9 +35,9 @@ to pickFile anAction defaultPath extensionList saveFlag {
 	defaultPath = ''
   }
   picker = (initialize (new 'MicroBlocksFilePicker') anAction defaultPath extensionList saveFlag)
-  addPart page picker
   pickerM = (morph picker)
   setPosition pickerM (half ((width page) - (width pickerM))) (40 * (global 'scale'))
+  addPart page picker
 
   if (and saveFlag (isNil anAction)) {
 	// modal version -- waits until done and returns result or nil
@@ -384,6 +384,7 @@ method showFolder MicroBlocksFilePicker path isTop {
   setText folderReadout (localized (filePart path))
   updateParentAndNewFolderButtons this
   setCollection (contents listPane) (folderContents this)
+  changeScrollOffset listPane -100000 -100000 // scroll to top-left
   if (notNil onFolderSelect) {
 	call onFolderSelect (join path)
   }
@@ -450,6 +451,7 @@ method newFolder MicroBlocksFilePicker {
 }
 
 method okay MicroBlocksFilePicker {
+  removeFromOwner morph
   answer = ''
   if forSaving {
 	answer = (join currentDir '/' (text (contents nameField)))
@@ -462,7 +464,6 @@ method okay MicroBlocksFilePicker {
   if (and useEmbeddedFS ('' != answer)) { answer = (join '//' answer) }
   if (and (notNil action) ('' != answer)) { call action answer }
   isDone = true
-  removeFromOwner morph
 }
 
 method fileOrFolderSelected MicroBlocksFilePicker {

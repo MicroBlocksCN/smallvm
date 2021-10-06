@@ -1,14 +1,21 @@
-module DrawBot
+module DrawBot Output
 author 'MicroBlocks and José García'
-version 1 1 
-depends Servo 
-tags cnc protoneer drawbot plotter 
+version 2 2
+depends Servo Strings
+tags cnc protoneer drawbot plotter
 description 'Control CoreXY DrawBots that use the Protoneer CNC shield.'
-variables _plotterDelay _plotterHeading
+variables _plotterDelay _plotterHeading _letters '_letter size' '_letter spacing'
 
 	spec ' ' '_plotter init' '_plotter init'
 	spec ' ' '_plotter step A' '_plotter step A'
 	spec ' ' '_plotter step B' '_plotter step B'
+	spec ' ' '_plot letter' '_plot letter _' 'auto' 'A'
+	spec ' ' '_plot commands' '_plot commands _' 'auto' 'p0,r4,m30,t90'
+	spec ' ' '_create letters' '_create letters'
+	spec ' ' '_create letters 1' '_create letters 1'
+	spec ' ' '_create letters 2' '_create letters 2'
+	spec ' ' '_create letters 3' '_create letters 3'
+	spec ' ' '_read letters from file' '_read letters from file'
 	spec ' ' 'plotter move' 'plotter move X _ Y _' 'auto auto' 1000 2000
 	spec ' ' 'ploturtle move' 'plotter move _ steps' 'auto' '1000'
 	spec ' ' 'ploturtle turnBy' 'plotter turn _ degrees' 'auto' 90
@@ -18,6 +25,7 @@ variables _plotterDelay _plotterHeading
 	spec ' ' 'plotter pen up' 'plotter pen up'
 	spec ' ' 'plotter stop' 'plotter stop'
 	spec ' ' 'set plotter speed to' 'set plotter speed to _ %' 'auto' 10
+	spec ' ' 'plot text' 'plot text _ size _' 'auto auto' 'HELLO' 20
 
 to '_plotter init' {
   if (_plotterDelay == 0) {'set plotter speed to' 10}
@@ -124,5 +132,121 @@ to 'ploturtle turnBy' a {
 to 'ploturtle turnFraction' num denom {
   _plotterHeading += ((num * 36000) / denom)
   _plotterHeading = (_plotterHeading % 36000)
+}
+
+to '_create letters' {
+  '_read letters from file'
+  if ((size letters) == 0) {
+    callCustomCommand '_create letters 1'
+    callCustomCommand '_create letters 2'
+    callCustomCommand '_create letters 3'
+  }
+  if ((v '_letter size') == 0) {
+    '_letter size' = 20
+  }
+  if ((v '_letter spacing') == 0) {
+    '_letter spacing' = 12
+  }
+}
+
+to '_create letters 1' {
+  _letters = ('[data:makeList]' 'A:d,t-73,m52,t146,m26,t107,m15,t180,m15,t74,m26' 'B:d,t-90,m50,t90,m10,r8,m4,t18,u,m1,t18,m17,t180,d,m15,r9,m4,t18,m19,u,t180,m30' 'C:u,t-90,m17,d,m20,r10,t16,m4,u,t4,m20,d,m1,r10,t16,m4,m1,u,t124,m34' 'D:d,t-90,m50,t90,m4,r8,m4,t10,m8,r8,t10,m4,m4,u,t181,m30' 'E:d,t-90,m50,t90,m29,u,t140,m38,t220,d,m16,u,t122,m30,t238,d,m29,u,m1' 'F:d,t-90,m50,t90,m29,u,t140,m38,t220,d,m18,u,m12,t90,m26' 'G:u,t-90,m16,d,m22,r7,t20,m5,u,t20,m16,t90,d,m12,t180,m12,t90,m10,r8,t20,m5,u,t119,m35' 'H:d,t-90,m50,u,m-25,t90,d,m29,u,t-90,m25,t180,d,m50' 'I:u,m14,t-90,d,m50,u,t90,m16,t90,m50' 'J:u,m1,t-90,m12,d,t180,r8,t-20,m5,m33,u,t180,m50')
+}
+
+to '_create letters 2' {
+  l2 = ('[data:makeList]' 'K:d,t-90,m50,m-22,t50,m32,u,t180,m25,d,t-88,m41' 'L:d,t-90,m50,t180,m50,t-90,m29' 'M:d,t-90,m50,t148,m31,t-120,m30,t152,m50' 'N:d,t-90,m50,t150,m58,u,t-150,m50,t180,d,m50' 'O:u,t-90,m32,d,r11,m4,t15,m22,r11,t15,m4,m18,u,t140,m47' 'P:d,t-90,m50,t90,m18,r9,t18,m4,m14,u,t220,m39' 'Q:u,t-90,m18,d,m20,r8,t20,m5,m20,r8,t20,m5,u,t121,m20,d,m15' 'R:d,t-90,m50,t90,m10,r8,m4,t18,t18,m18,m-18,t-115,m28' 'S:u,t-90,m12,t180,d,r5,t-22,m6,r3,t-30,m6,m14,r3,t30,m6,r3,t22,m6,t22,m5,u,t22,m38' 'T:u,m15,d,t-90,m50,u,t-90,m15,t180,d,m30,u,t90,m50')
+  for i l2 {
+    '[data:addLast]' i _letters
+  }
+}
+
+to '_create letters 3' {
+  l2 = ('[data:makeList]' 'U:u,t-90,m50,t180,d,m38,r8,t-20,m5,m33,u,t180,m50' 'V:u,t-90,m50,d,t162,m52,t-146,m51,u,t164,m49' 'W:u,t-90,m50,d,t172,m50,t-152,m24,t140,m24,t-152,m50,u,t172,m50' 'X:d,t-60,m57,u,t-120,m28,t-120,d,m57' 'Y:u,m15,d,t-90,m25,t-30,m28,m-28,t60,m28,u,t149,m49' 'Z:u,m1,t-90,m50,t90,d,m28,t120,m57,t-120,m29')
+  for i l2 {
+    '[data:addLast]' i _letters
+  }
+}
+
+to '_plot commands' commands {
+  local 'cmd list' ('[data:split]' commands ',')
+  for i (size (v 'cmd list')) {
+    local 'key' (at 1 (at i (v 'cmd list')))
+    local 'value' ('[data:copyFromTo]' (at i (v 'cmd list')) 2)
+    if (key == 'm') {
+      'ploturtle move' (value * (v '_letter size'))
+    }
+    if (key == 'p') {
+      'ploturtle setHeading' value
+    }
+    if (key == 't') {
+      'ploturtle turnBy' (0 - value)
+    }
+    if (key == 'u') {
+      'plotter pen up'
+    }
+    if (key == 'd') {
+      'plotter pen down'
+    }
+    if (key == 'r') {
+      repeat value {
+        comment ('[data:join]' (at (i + 1) (v 'cmd list')) ',' (at (i + 2) (v 'cmd list')))
+        key = (at 1 (at (i + 1) (v 'cmd list')))
+        value = ('[data:copyFromTo]' (at (i + 1) (v 'cmd list')) 2)
+        if (key == 'm') {
+          'ploturtle move' (value * (v '_letter size'))
+        }
+        if (key == 't') {
+          'ploturtle turnBy' (0 - value)
+        }
+        key = (at 1 (at (i + 2) (v 'cmd list')))
+        value = ('[data:copyFromTo]' (at (i + 2) (v 'cmd list')) 2)
+        if (key == 'm') {
+          'ploturtle move' (value * (v '_letter size'))
+        }
+        if (key == 't') {
+          'ploturtle turnBy' (0 - value)
+        }
+      }
+      i += 2
+    }
+  }
+}
+
+to '_plot letter' letter {
+  if (letters == 0) {'_create letters'}
+  local 'heading' _plotterHeading
+  letter = (uppercase letter)
+  if (isUppercase letter) {
+    local 'commands' (at (('[data:unicodeAt]' 1 letter) - 64) _letters)
+    '_plot commands' ('[data:copyFromTo]' commands 3)
+  } else {
+    '_plot commands' 'm50'
+  }
+  'plotter pen up'
+  _plotterHeading = heading
+}
+
+to '_read letters from file' {
+  if (('[data:find]' 'letters.txt' ('file names')) > 0) {
+    _letters = ('[data:makeList]')
+    '[file:open]' 'letters.txt'
+    local 'line' ('[file:readLine]' 'letters.txt')
+    repeatUntil ((size line) == 0) {
+      '[data:addLast]' line letters
+      line = ('[file:readLine]' 'letters.txt')
+    }
+    '[file:close]' 'letters.txt'
+    if ((size _letters) == 0) {
+      _letters = 0
+    }
+  }
+}
+
+to 'plot text' text size {
+  '_letter size' = size
+  for i text {
+    '_plot letter' i
+    'ploturtle move' ((v '_letter spacing') * (v '_letter size'))
+  }
 }
 

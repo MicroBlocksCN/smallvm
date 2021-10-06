@@ -3,7 +3,7 @@
 rm *.hex *.bin *.uf2
 cd ..
 pio run -e microbit
-cp .pio/build/microbit/firmware.hex precompiled/vm_microbit.hex
+cp .pio/build/microbit/firmware.hex precompiled/vm_microbitV1.hex
 pio run -e microbitV2
 cp .pio/build/microbitV2/firmware.hex precompiled/vm_microbitV2.hex
 pio run -e calliope
@@ -30,6 +30,14 @@ pio run -e clue
 python precompiled/uf2conv.py -c -f 0xada52840 .pio/build/clue/firmware.hex -o precompiled/vm_clue.uf2
 pio run -e itsybitsy
 python precompiled/uf2conv.py -c .pio/build/itsybitsy/firmware.bin -o precompiled/vm_itsybitsy.uf2
+
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/
 cd precompiled
+
+# Create micro:bit Universal Hex File
+cd precompiled
+# Make sure we have the proper dep(s) installed
+npm install
+node buildUniversalHex.js
+

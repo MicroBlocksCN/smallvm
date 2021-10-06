@@ -229,12 +229,9 @@ method initialize MicroBlocksListItemViewer aList forEditing win {
 	morph = (morph box)
 	window = win
 	setClipping morph true
-	setAlpha morph 0
 	editFlag = (or (and (notNil forEditing) forEditing) false)
 	setContents this aList
-
 	fixLayout this
-
 	return this
 }
 
@@ -349,6 +346,7 @@ to newLibraryItem aName anItemViewer forEditing clickAction {
 }
 
 method initialize MicroBlocksLibraryItemMorph aName anItemViewer forEditing clickAction {
+	morph = (newMorph this)
 	fontName = 'Arial'
 	fontSize = (14 * (global 'scale'))
 	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
@@ -358,12 +356,9 @@ method initialize MicroBlocksLibraryItemMorph aName anItemViewer forEditing clic
 	editFlag = forEditing
 	onClick = clickAction
 
-	text = (newText itemName fontName fontSize (gray 0) 'center' nil 0 0 5 3 'static' (gray 200))
-	morph = (morph text)
-	setHandler morph this
-
+	bm = (stringImage itemName fontName fontSize (gray 0) 'center' nil 0 0 5 3 (gray 200))
+	setCostume morph bm
 	if editFlag { setGrabRule morph 'handle' }
-
 	return this
 }
 
@@ -374,16 +369,24 @@ method justDropped MicroBlocksLibraryItemMorph aHand { itemDropped itemViewer th
 
 method handEnter MicroBlocksLibraryItemMorph aHand {
 	if (notNil onClick) {
-		setColor text (gray 0) (gray 0) (gray 180)
+		setCostumeColor this (gray 180)
 	}
 }
 
 method handLeave MicroBlocksLibraryItemMorph aHand {
 	if (notNil onClick) {
-		setColor text (gray 0) (gray 0) (gray 200)
+		setCostumeColor this (gray 200)
 	}
 }
 
+method setCostumeColor MicroBlocksLibraryItemMorph color {
+	fontName = 'Arial'
+	fontSize = (14 * (global 'scale'))
+	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
+
+	bm = (stringImage itemName fontName fontSize (gray 0) 'center' nil 0 0 5 3 color)
+	setCostume morph bm
+}
 
 // Library properties frame
 // ------------------------

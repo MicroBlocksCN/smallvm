@@ -48,6 +48,8 @@ method adjustSize Caret {
   setExtent morph 2 (fontHeight)
 }
 
+to gotoSlot anObject { } // hack: backstop method to avoid errors if caret is nil
+
 method gotoSlot Caret index {
   // index is optional, and can be used to set the slot
   if (notNil index) {slot = index}
@@ -241,6 +243,7 @@ method enterKey Caret {
 
 method tabToNextEntryField Caret shiftDown {
   page = (page morph)
+  if (isNil page) { return }
   isEditField = (function item {return (and (isClass (handler item) 'Text') ((editRule (handler item)) != 'static'))})
   fields = (filter isEditField (allMorphs (morph page)))
   idx = (indexOf fields (morph target))
@@ -299,7 +302,7 @@ method updateMarkingMode Caret shiftPressed {
 method updateMark Caret {
   if (isNil (startMark target)) {return}
   setEndMark target slot
-  redraw target
+  changed (morph target)
 }
 
 // destroying

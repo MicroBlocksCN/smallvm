@@ -163,9 +163,7 @@ method inputSlot BlockSpec slotIndex blockColor isFormalParameter argNames {
   if ('bool' == slotType) {
     slotContent = (at info 2)
     if (isNil slotContent) {slotContent = true}
-    if (not (global 'stealthBlocks')) {
-      return (newBooleanSlot slotContent)
-    }
+    return (newBooleanSlot slotContent)
   }
   if ('color' == slotType) {
     return (newColorSlot)

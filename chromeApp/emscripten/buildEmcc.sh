@@ -6,6 +6,8 @@
 # The following options to emcc can help with debugging:
 #-s ASSERTIONS=2 \
 #-s SAFE_HEAP=1 \
+#
+# Increased memory from 136314880 (130 MB) to 209715200 (~200 MB)
 
 # copy folders to be included in embedded file system
 cp -r ../../gp/Examples .
@@ -28,12 +30,12 @@ emcc -std=gnu99 -Wall -O3 \
 -D NO_SOCKETS \
 -D SHA2_USE_INTTYPES_H \
 -s USE_ZLIB=1 \
--s TOTAL_MEMORY=117440512 \
+-s TOTAL_MEMORY=136314880 \
 -s ALLOW_MEMORY_GROWTH=0 \
 --memory-init-file 0 \
 -s WASM=1 \
-browserPrims.c cache.c dict.c embeddedFS.c events.c gp.c interp.c mem.c memGC.c \
-oop.c parse.c prims.c serialPortPrims.c sha1.c sha2.c soundPrims.c textAndFontPrims.c vectorPrims.c \
+browserPrims.c cache.c dict.c embeddedFS.c events.c gp.c interp.c mem.c memGC.c oop.c parse.c \
+pathPrims.c prims.c serialPortPrims.c sha1.c sha2.c soundPrims.c textAndFontPrims.c vectorPrims.c \
 --preload-file Examples \
 --preload-file Libraries \
 --preload-file precompiled \
@@ -42,7 +44,12 @@ oop.c parse.c prims.c serialPortPrims.c sha1.c sha2.c soundPrims.c textAndFontPr
 --preload-file translations \
 -o gp_wasm.html
 
-# copy the compiler output files into the MicroBlocks folder and remove unused gp_wasm.html
+# copy the compiler output files to the webapp folder
+cp gp_wasm.js ../webapp
+cp gp_wasm.wasm ../webapp
+cp gp_wasm.data ../webapp
+
+# move the compiler output files into the MicroBlocks folder and remove unused gp_wasm.html
 mv gp_wasm.js ../MicroBlocks
 mv gp_wasm.wasm ../MicroBlocks
 mv gp_wasm.data ../MicroBlocks

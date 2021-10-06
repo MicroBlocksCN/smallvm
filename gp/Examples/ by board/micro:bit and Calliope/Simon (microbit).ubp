@@ -38,7 +38,7 @@ to 'wrong guess' index {
   return (or (and (buttonA) ((at index letters) == 'B')) (and (buttonB) ((at index letters) == 'A')))
 }
 
-script 453 50 {
+script 453 49 {
 whenBroadcastReceived 'play'
 local 'index' 1
 repeatUntil (index > (v 'current index')) {
@@ -63,17 +63,17 @@ waitMillis 500
 sendBroadcast 'draw sequence'
 }
 
-script 50 56 {
+script 49 56 {
 comment 'This is the "Simon" memory game for the
 BBC micro:bit.'
 }
 
-script 52 107 {
+script 51 106 {
 whenStarted
 sendBroadcast 'go!'
 }
 
-script 195 111 {
+script 194 111 {
 whenBroadcastReceived 'go!'
 'initialize letters'
 'current index' = 1
@@ -81,7 +81,7 @@ scroll_text 'GO!' 100
 sendBroadcast 'draw sequence'
 }
 
-script 52 233 {
+script 51 233 {
 whenBroadcastReceived 'draw sequence'
 if ((v 'current index') > 10) {
   '[display:mbDisplay]' 15237440
@@ -102,17 +102,22 @@ if ((v 'current index') > 10) {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237450
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
 	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
 
 to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 

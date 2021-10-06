@@ -56,7 +56,7 @@ to 'show pattern' pattern {
   }
 }
 
-script 74 60 {
+script 73 59 {
 comment '         HOW TO PLAY
          ============
 
@@ -85,7 +85,7 @@ pattern.
 Good luck! :)'
 }
 
-script 380 60 {
+script 379 59 {
 whenStarted
 difficulty = 3
 sendBroadcast 'go!'
@@ -112,7 +112,7 @@ script 596 253 {
 to 'guess pattern' {}
 }
 
-script 383 513 {
+script 382 513 {
 whenBroadcastReceived 'fail'
 repeat 5 {
   'show pattern' guess
@@ -128,8 +128,9 @@ sendBroadcast 'go!'
 
 module 'Basic Sensors' Input
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags tilt acceleration light sensor 
+choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
 	spec 'r' '[sensors:tiltX]' 'tilt x'
@@ -138,10 +139,16 @@ description 'Provides blocks to read tilt in the three axes, acceleration, tempe
 	spec 'r' '[sensors:acceleration]' 'acceleration'
 	spec 'r' '[display:lightLevel]' 'light level'
 	spec 'r' '[sensors:temperature]' 'temperature (°C)'
+	spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+
+to '_setAccelRange' n {
+  '[sensors:setAccelerometerRange]' (0 + n)
+}
+
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
@@ -153,6 +160,10 @@ description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Ca
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 

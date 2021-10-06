@@ -18,11 +18,6 @@ method redraw ScriptFocus {
     scale = (global 'scale')
     h = (scale * 5)
     bigger = (scale * 12)
-    if (global 'stealthBlocks') {
-      h = (stealthLevel (scale * 5) (scale * 3))
-      bigger = (stealthLevel (scale * 12) (scale * 4))
-      clr = (gray (255 - ((global 'stealthLevel') * 1.8)))
-    }
     if (and (isClass element 'Block') ((type element) != 'reporter')) { // command or hat block types
       setHeight (bounds morph) h
       if atEnd {
@@ -44,11 +39,7 @@ method redraw ScriptFocus {
         atEnd = false
         setCostume morph (newBitmap (scale * 100) h clr)
     } else {
-      if (global 'stealthBlocks') {
-        setAlpha clr 80
-      } else {
-        setAlpha clr 150
-      }
+      setAlpha clr 150
       setBounds morph (expandBy (bounds (morph element)) bigger)
       area = (rect 0 0 (width morph) (height morph))
       bm = (newBitmap (width area) (height area))
@@ -326,7 +317,7 @@ method deleteLeft ScriptFocus {
       lastElement this
     }
   } (isClass element 'BooleanSlot') {
-    setToFalse element
+    setContents element false
   }
 }
 

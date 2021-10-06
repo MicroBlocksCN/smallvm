@@ -83,6 +83,8 @@ method runTask Task {
   return result
 }
 
+method terminate Task { waitReason = 'terminated' }
+
 method isTerminated Task {
   return (or (isNil currentBlock) ('terminated' == waitReason) ('error' == waitReason))
 }

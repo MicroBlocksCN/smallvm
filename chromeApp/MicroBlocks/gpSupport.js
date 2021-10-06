@@ -7,7 +7,6 @@
 // WebAssembly seems to be working in iOS 12, so workaround was removed.
 
 if (typeof WebAssembly === 'object') {
-	console.log("WebAssembly supported");
 	var script = document.createElement('script');
 	script.src = "./gp_wasm.js"
 	document.head.appendChild(script);
@@ -51,11 +50,17 @@ addGPHandlers();
 
 var GP = {
 	events: [],
+	isRetina: false,
+
+	shadowColor: null,
+	shadowOffset: 0,
+	shadowBlur: 0,
 
 	clipboard: null,
 	clipboardBytes: [],
 	droppedTextBytes: [],
 	droppedFiles: [],
+	lastSavedFileName: null,
 	messages: [],
 
 	audioOutBuffer: null,
@@ -90,6 +95,9 @@ function setGPClipboard(s) {
 	GP.clipboard.value = s;
 	if (navigator.clipboard.writeText) {
 		navigator.clipboard.writeText(s).catch(() => {});
+	} else if (chrome && chrome.clipboard) {
+		chrome.clipboard.data = s;
+		chrome.clipboard.type = 'textPlain';
 	}
 }
 
@@ -100,6 +108,9 @@ async function readGPClipboard(s) {
 			GP.clipboard.value = s;
 			GP.clipboardBytes = toUTF8Array(s);
 		}
+	} else if (chrome && chrome.clipboard && (typeof chrome.clipboard.data === 'string')) {
+		GP.clipboard.value = chrome.clipboard.data;
+		GP.clipboardBytes = toUTF8Array(chrome.clipboard.data);
 	}
 	return GP.clipboardBytes.length;
 }
@@ -151,6 +162,10 @@ function initGPEventHandlers() {
 		y = (y - r.top) | 0;
 		if (x < 0) x = 0;
 		if (y < 0) y = 0;
+		if (GP.isRetina) {
+			x = 2 * x;
+			y = 2 * y;
+		}
 		return [x, y];
 	}
 	function modifierBits(evt) {
@@ -229,6 +244,7 @@ function initGPEventHandlers() {
 			evt.preventDefault();
 		}
 		if (8 == key) evt.preventDefault(); // delete
+		if ((33 <= evt.which) && (evt.which <= 36)) evt.preventDefault(); // home, end, page up/down keys
 		if ((37 <= evt.which) && (evt.which <= 40)) evt.preventDefault(); // arrow keys
 		if ((112 <= evt.which) && (evt.which <= 123)) evt.preventDefault(); // function keys
 		if (evt.ctrlKey || evt.metaKey) {
@@ -245,8 +261,9 @@ function initGPEventHandlers() {
 		GP.events.push([TEXTINPUT, charCode]);
 	}
 	canvas.onwheel = function(evt) {
-		var dx = Math.sign(evt.wheelDeltaX);
-		var dy = Math.sign(evt.wheelDeltaY);
+		if (evt.shiftKey || evt.ctrlKey) { return; } // default behavior (browser zoom)
+		var dx = evt.wheelDeltaX;
+		var dy = evt.wheelDeltaY;
 		GP.events.push([MOUSE_WHEEL, dx, dy]);
 		evt.preventDefault();
 	}
@@ -405,6 +422,28 @@ function adjustButtonVisibility() {
 	}
 }
 adjustButtonVisibility();
+
+// Canvas shadow effects
+
+function setContextShadow(ctx) {
+	if (!GP.shadowColor) return;
+	ctx.shadowColor = GP.shadowColor;
+	ctx.shadowOffsetX = GP.shadowOffset;
+	ctx.shadowOffsetY = GP.shadowOffset;
+	ctx.shadowBlur = GP.shadowBlur;
+}
+
+function setShadow(red, green, blue, alpha, offset, blur) {
+	GP.shadowColor = 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + alpha + ')';
+	GP.shadowOffset = offset;
+	GP.shadowBlur = blur;
+}
+
+function clearShadow() {
+	GP.shadowColor = null;
+	GP.shadowOffset = 0;
+	GP.shadowBlur = 0;
+}
 
 // audio input and output support
 
@@ -836,21 +875,27 @@ function download(filename, text) {
     }
 }
 
-async function GP_writeFile(data, fName, ext) {
+async function GP_writeFile(data, fName, id) {
+	// Write the given data to the given file. fName should including an extension.
+	// id is hint for the operation type (e.g. 'project' for saving a project file.
+	// The browser remembers the folder for the last save with that id.
+
 	function onFileSelected(entry) {
 		void chrome.runtime.lastError; // suppress error message
 		if (entry) entry.createWriter(function(writer) {
+			GP.lastSavedFileName = entry.name;
 			writer.write(new Blob([data], {type: 'text/plain'})); });
 	}
 
-	// extract extension from fName if not provided
-	if (('' == ext) && (fName.lastIndexOf('.') > 0)) {
-		ext = fName.substr(fName.lastIndexOf('.'));
-	}
+	i = fName.lastIndexOf('.');
+	ext = (i >= 0) ? fName.substr(i + 1) : '';
 
-	// Note: suggestedName is supported by the chrome.fileSystem API but not (yet) by the
-	// Native File System API in the browser. With luck, support for it will be added later.
+	i = fName.indexOf('.');
+	if (i > 0) fName = fName.substr(0, i);
+	if (i == 0) fName = 'Untitled';
+
 	if (hasChromeFilesystem()) {
+		// extract the extension from fName
 		const options = {
 			type: 'saveFile',
 			suggestedName: fName + '.' + ext,
@@ -858,23 +903,28 @@ async function GP_writeFile(data, fName, ext) {
 		};
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
 	} else if (typeof window.showSaveFilePicker != 'undefined') { // Native Filesystem API
-		options = {};
+		if (/(CrOS)/.test(navigator.userAgent)) {
+			// On Chromebooks, the extension is not automatically appended.
+			fName = fName + '.' + ext;
+		}
+		options = { suggestedName: fName, id: id };
 		if ('' != ext) {
 			if ('.' != ext[0]) ext = '.' + ext;
 			if (('.hex' == ext) || ('.uf2' == ext)) {
-				options = { fileName: fName, types: [{ accept: { 'application/octet-stream': [ext] } }] };
-
+				options.types = [{ accept: { 'application/octet-stream': [ext] } }];
 			} else {
-				options = { fileName: fName, types: [{ accept: { 'text/plain': [ext] } }] };
+				options.types = [{ accept: { 'text/plain': [ext] } }];
 			}
 		}
+
 		const fileHandle = await window.showSaveFilePicker(options).catch((e) => { console.log(e); });
 		if (!fileHandle) return; // no file selected
 		const writable = await fileHandle.createWritable();
 		await writable.write(new Blob([data]));
 		await writable.close();
+		GP.lastSavedFileName = fileHandle.name;
 	} else {
-		saveAs(new Blob([data]), fName);
+		saveAs(new Blob([data]), fName + '.' + ext);
 	}
 }
 
@@ -898,3 +948,18 @@ if ((typeof chrome != 'undefined') &&
 	(typeof chrome.runtime.getBackgroundPage != 'undefined')) {
 		chrome.runtime.getBackgroundPage(GP_ChromebookLaunch);
 }
+
+// warn before leaving page
+
+window.onbeforeunload = function() {
+   return "Leave this page? (changes will be lost)";
+};
+
+// progressive web app service worker
+
+window.onload = function() {
+  if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
+    navigator.serviceWorker.register('sw.js');
+  }
+}
+

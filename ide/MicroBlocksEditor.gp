@@ -16,13 +16,15 @@ to uload fileName {
   if (not (endsWith fileName '.gp')) { fileName = (join fileName '.gp') }
   if (contains (listFiles '../ide') fileName) {
 	fileName = (join '../ide/' fileName)
+  } (contains (listFiles 'ide') fileName) {
+	fileName = (join 'ide/' fileName)
   } else {
 	fileName = (join '../gp/runtime/lib/' fileName)
   }
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -31,7 +33,6 @@ method httpServer MicroBlocksEditor { return httpServer }
 
 to openMicroBlocksEditor devMode {
   if (isNil devMode) { devMode = false }
-  setGlobal 'alanMode' false
   page = (newPage 1000 600)
   setDevMode page devMode
   toggleMorphicMenu (hand page) (contains (commandLine) '--allowMorphMenu')
@@ -44,11 +45,12 @@ to openMicroBlocksEditor devMode {
 	dataAndURL = (global 'initialProject')
 	openProject editor (first dataAndURL) (last dataAndURL)
   }
+  redrawAll (global 'page')
   readVersionFile (smallRuntime)
   launch (global 'page') (checkLatestVersion)
+  applyUserPreferences editor
   pageResized editor
   developerModeChanged editor
-  applyUserPreferences editor
   startSteppingSafely page
 }
 
@@ -112,7 +114,6 @@ method initialize MicroBlocksEditor {
   scripter = (initialize (new 'MicroBlocksScripter') this)
   lastProjectFolder = 'Examples'
   addPart morph (morph scripter)
-  drawTopBar this
   clearProject this
   fixLayout this
   setFPS morph 200
@@ -122,14 +123,13 @@ method initialize MicroBlocksEditor {
 method scaleChanged MicroBlocksEditor {
   // Called when the window resolution changes.
 
-  scale = (global 'scale')
   removeHint (global 'page')
   removeAllParts morph
   addTopBarParts this
 
   // save the state of the current scripter
-  if (2 == scale) { oldScale = 1 } else { oldScale = 2 }
-  saveScripts scripter oldScale
+  if (2 == (global 'scale')) { oldScale = 1 } else { oldScale = 2 }
+  saveScripts scripter (oldScale * (global 'blockScale'))
   oldProject = (project scripter)
   oldCategory = (currentCategory scripter)
   oldLibrary = (currentLibrary scripter)
@@ -146,7 +146,6 @@ method scaleChanged MicroBlocksEditor {
 
   lastStatus = nil // force update
   addPart morph (morph scripter)
-  drawTopBar this
   fixLayout this
 }
 
@@ -155,22 +154,43 @@ method scaleChanged MicroBlocksEditor {
 method addTopBarParts MicroBlocksEditor {
   scale = (global 'scale')
 
+  addLogo this
+
   leftItems = (list)
   add leftItems (140 * scale)
-  add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu')
-  add leftItems (addIconButton this (settingsButtonIcon this) 'settingsMenu')
-  add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu')
-  add leftItems (addIconButton this (graphIcon this) 'showGraph')
-  add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard')
+  add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu' 'Language')
+  add leftItems (addIconButton this (settingsButtonIcon this) 'settingsMenu' 'MicroBlocks')
+  add leftItems (addIconButton this (projectButtonIcon this) 'projectMenu' 'File')
+  add leftItems (addIconButton this (graphIcon this) 'showGraph' 'Graph')
+  add leftItems (addIconButton this (connectButtonIcon this) 'connectToBoard' 'Connect')
   indicator = (last leftItems)
 
-  title = (newText '' 'Arial' (17 * scale))
-  addPart morph (morph title)
+  if (isNil title) {
+    // only add the first time
+    title = (newText '' 'Arial' (17 * scale))
+    addPart morph (morph title)
+  }
 
   rightItems = (list)
-  add rightItems (addIconButton this (startButtonIcon this) 'startAll' 36)
-  add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 36)
+
+  addFrameRate = (contains (commandLine) '--allowMorphMenu')
+  if addFrameRate {
+	frameRate = (newText '0 fps' 'Arial' (14 * scale))
+	addPart morph (morph frameRate)
+	add rightItems frameRate
+	add rightItems (10 * scale)
+  }
+
+  add rightItems (addIconButton this (startButtonIcon this) 'startAll' 'Start' 36)
+  add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 'Stop' 36)
   add rightItems (7 * scale)
+}
+
+method addLogo MicroBlocksEditor {
+  logoM = (newMorph)
+  setCostume logoM (logoAndText this)
+  setPosition logoM 0 0
+  addPart morph logoM
 }
 
 method textButton MicroBlocksEditor label selector {
@@ -239,6 +259,7 @@ method openProjectMenu MicroBlocksEditor {
 
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the given file path or URL.
+  setCursor 'wait'
   if (beginsWith location '//') {
     lastProjectFolder = 'Examples'
   } else {
@@ -276,6 +297,7 @@ method openProject MicroBlocksEditor projectData projectName {
   updateLibraryList scripter
   developerModeChanged scripter
   saveAllChunks (smallRuntime)
+  setCursor 'default'
 }
 
 method openFromBoard MicroBlocksEditor {
@@ -283,12 +305,16 @@ method openFromBoard MicroBlocksEditor {
   clearProject this
   fileName = ''
   updateTitle this
-  readCodeFromNextBoardConnected (smallRuntime)
+
   if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
 	inform 'Plug in the board and click the USB icon to connect.'
   } else {
-    inform 'Plug in the board.'
+	spinner = (newSpinner (action 'decompilerStatus' (smallRuntime)) (action 'decompilerDone' (smallRuntime)))
+	setStopAction spinner (action 'cancelReadCodeFromNextBoardConnected' (smallRuntime))
+	addPart (global 'page') spinner
   }
+
+  readCodeFromNextBoardConnected (smallRuntime)
 }
 
 method saveProjectToFile MicroBlocksEditor {
@@ -310,8 +336,10 @@ method saveProject MicroBlocksEditor fName {
 
   if ('Browser' == (platform)) {
 	if (or (isNil fName) ('' == fName)) { fName = 'Untitled' }
-	if (endsWith fName '.ubp') { fName = (substring fName 1 ((count fName) - 4)) }
-	browserWriteFile (codeString (project scripter)) fName 'ubp'
+	i = (findLast fName '/')
+	if (notNil i) { fName = (substring fName (i + 1)) }
+	if (not (endsWith fName '.ubp')) { fName = (join fName '.ubp') }
+	browserWriteFile (codeString (project scripter)) fName 'project'
 	return
   }
 
@@ -388,6 +416,7 @@ method step MicroBlocksEditor {
   if ('Browser' == (platform)) {
 	checkForBrowserResize this
 	processBrowserDroppedFile this
+	processBrowserFileSave this
   }
   processDroppedFiles this
   updateIndicator this
@@ -395,6 +424,24 @@ method step MicroBlocksEditor {
   if (isRunning httpServer) {
 	step httpServer
   }
+  if (notNil frameRate) {
+	updateFPS this
+  }
+}
+
+method updateFPS MicroBlocksEditor {
+	if (isNil lastFrameTime) { lastFrameTime = 0 }
+	if (isNil frameCount) { frameCount = 0 }
+	if (frameCount > 5) {
+		now = (msecsSinceStart)
+		frameMSecs = (now - lastFrameTime)
+		msecsPerFrame = (round ((frameCount * 1000) / frameMSecs))
+		setText frameRate (join '' msecsPerFrame ' fps')
+		frameCount = 1
+		lastFrameTime = now
+	} else {
+		frameCount += 1
+	}
 }
 
 method updateIndicator MicroBlocksEditor forcefully {
@@ -435,13 +482,24 @@ method checkForBrowserResize MicroBlocksEditor {
   w = (first browserSize)
   h = (last browserSize)
   winSize = (windowSize)
-  if (and (w == (at winSize 1)) (h == (at winSize 2))) { return }
+  if (and
+  	((abs ((at winSize 1) - w)) < 10)
+  	((abs ((at winSize 2) - h)) < 10)) {
+  		// size may be off by a few pixels due to rounding
+  		return
+  }
 
   openWindow w h true
+  page = (global 'page')
+  oldScale = (global 'scale')
+  updateScale page
   scale = (global 'scale')
-  pageM = (morph (global 'page'))
+  pageM = (morph page)
   setExtent pageM (w * scale) (h * scale)
   for each (parts pageM) { pageResized (handler each) w h this }
+  if (scale != oldScale) {
+	for m (allMorphs pageM) { scaleChanged (handler m) }
+  }
 }
 
 method processBrowserDroppedFile MicroBlocksEditor {
@@ -451,6 +509,24 @@ method processBrowserDroppedFile MicroBlocksEditor {
   data = (last pair)
   processDroppedFile this fName data
 }
+
+method processBrowserFileSave MicroBlocksEditor {
+	lastSavedName = (browserLastSaveName)
+	if (notNil lastSavedName) {
+		if (endsWith lastSavedName '.hex') {
+			startFirmwareCountdown (smallRuntime) lastSavedName
+		} (endsWith lastSavedName '.ubp') {
+			// Update the title
+			fileName = (withoutExtension lastSavedName)
+			updateTitle this
+		}
+		if ('_no_file_selected_' == lastSavedName) {
+			startFirmwareCountdown (smallRuntime) lastSavedName
+		}
+	}
+}
+
+// dropped files
 
 method processDroppedFiles MicroBlocksEditor {
   for evt (droppedFiles (global 'page')) {
@@ -491,9 +567,10 @@ method justReceivedDrop MicroBlocksEditor aHandler {
 }
 
 // user preferences
+
 method readUserPreferences MicroBlocksEditor {
   result = (dictionary)
-  if ('Browser' == (platform)) {
+  if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
     jsonString = (browserReadPrefs)
   } else {
     path = (join (gpFolder) '/preferences.json')
@@ -517,6 +594,10 @@ method applyUserPreferences MicroBlocksEditor {
 	if (notNil (at prefs 'autoDecompile')) {
 		autoDecompile = (at prefs 'autoDecompile')
 	}
+	if (notNil (at prefs 'blockSizePercent')) {
+		percent = (at prefs 'blockSizePercent')
+		setGlobal 'blockScale' ((clamp percent 25 500) / 100)
+	}
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
@@ -526,7 +607,8 @@ method saveToUserPreferences MicroBlocksEditor key value {
 	} else {
 		atPut prefs key value
 	}
-	if ('Browser' == (platform)) {
+    if ('Browser' == (platform)) {
+		if (browserIsChromeOS) { return }
 		browserWritePrefs (jsonStringify prefs)
 	} else {
 		path = (join (gpFolder) '/preferences.json')
@@ -564,7 +646,6 @@ method developerModeChanged MicroBlocksEditor {
 method pageResized MicroBlocksEditor {
   scale = (global 'scale')
   page = (global 'page')
-  drawTopBar this
   fixLayout this
   if ('Win' == (platform)) {
 	// workaround for a Windows graphics issue: when resizing a window it seems to clear
@@ -573,27 +654,28 @@ method pageResized MicroBlocksEditor {
   }
 }
 
+// top bar drawing
+
 method topBarBlue MicroBlocksEditor { return (colorHSV 180 0.045 1.0) }
 method topBarBlueHighlight MicroBlocksEditor { return (colorHSV 180 0.17 1.0) }
-method topBarHeight MicroBlocksEditor { return (45 * (global 'scale')) }
+method topBarHeight MicroBlocksEditor { return (46 * (global 'scale')) }
 
-method drawTopBar MicroBlocksEditor {
+method drawOn MicroBlocksEditor aContext {
   scale = (global 'scale')
-  w = (width (morph (global 'page')))
-  h = (topBarHeight this)
-  oldC = (costume morph)
-  if (or (isNil oldC) (w != (width oldC)) (h != (height oldC))) {
-	setCostume morph (newBitmap w h (gray 200))
-  }
-  bm = (costumeData morph)
-  fill bm (topBarBlue this)
-  grassHeight = (4 * scale)
-  fillRect bm (color 137 169 31) 0 ((height bm) - grassHeight) (width bm) grassHeight
-  drawBitmap bm (logoAndText this)
-  costumeChanged morph
+  x = (left morph)
+  y = (top morph)
+  w = (width morph)
+  topBarH = (topBarHeight this)
+  fillRect aContext (topBarBlue this) x y w topBarH
+  grassColor = (color 137 169 31)
+  grassH = (5 * scale)
+  fillRect aContext grassColor x ((y + topBarH) - grassH) w grassH
 }
 
+// layout
+
 method fixLayout MicroBlocksEditor fromScripter {
+  setExtent morph (width (morph (global 'page'))) (height (morph (global 'page')))
   fixTopBarLayout this
   if (true != fromScripter) { fixScripterLayout this }
 }
@@ -601,6 +683,10 @@ method fixLayout MicroBlocksEditor fromScripter {
 method fixTopBarLayout MicroBlocksEditor {
   scale = (global 'scale')
   space = 0
+
+  // Optimization: report one damage rectangle for the entire top bar
+  reportDamage morph (rect (left morph) (top morph) (width morph) (topBarHeight this))
+
   centerY = (20 * scale)
   centerTitle this
 
@@ -636,6 +722,7 @@ method fixScripterLayout MicroBlocksEditor {
   w = (width (morph (global 'page')))
   h = (max 1 ((height (morph (global 'page'))) - (top m)))
   setExtent m w h
+  fixLayout scripter
 }
 
 method drawIcon MicroBlocksEditor {
@@ -717,10 +804,30 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 		addItem menu 'enable PlugShare when project empty' (action 'toggleAutoDecompile' this true) 'when plugging a board, automatically read its contents into the IDE if the current project is empty'
 	}
 
+//addItem menu 'cursorTest' cursorTest
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
   return menu
+}
+
+method cursorTest MicroBlocksEditor {
+  menu = (menu 'Cursor Test' this)
+  addItem menu 'default'		(action 'setCursor' 'default')
+  addItem menu 'text'			(action 'setCursor' 'text')
+  addItem menu 'wait'			(action 'setCursor' 'wait')
+  addItem menu 'crosshair'		(action 'setCursor' 'crosshair')
+
+  addItem menu 'nwse-resize'	(action 'setCursor' 'nwse-resize')
+  addItem menu 'nesw-resize'	(action 'setCursor' 'nesw-resize')
+  addItem menu 'ew-resize'		(action 'setCursor' 'ew-resize')
+  addItem menu 'ns-resize'		(action 'setCursor' 'ns-resize')
+
+  addItem menu 'move'			(action 'setCursor' 'move')
+  addItem menu 'not-allowed'	(action 'setCursor' 'not-allowed')
+  addItem menu 'pointer'		(action 'setCursor' 'pointer')
+
+  popUpAtHand menu (global 'page')
 }
 
 method showGraph MicroBlocksEditor {
@@ -823,11 +930,11 @@ method settingsMenu MicroBlocksEditor {
   popUpAtHand (contextMenu this) (global 'page')
 }
 
-method addIconButton MicroBlocksEditor icon selector width {
+method addIconButton MicroBlocksEditor icon selector hint width {
   scale = (global 'scale')
   w = (43 * scale)
   if (notNil width) { w = (width * scale) }
-  h = (41 * scale)
+  h = (42 * scale)
   x = (half (w - (width icon)))
   y = (11 * scale)
   bm1 = (newBitmap w h (topBarBlue this))
@@ -835,6 +942,7 @@ method addIconButton MicroBlocksEditor icon selector width {
   bm2 = (newBitmap w h (topBarBlueHighlight this))
   drawBitmap bm2 icon x y
   button = (newButton '' (action selector this))
+  if (notNil hint) { setHint button (localized hint) }
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
@@ -852,7 +960,9 @@ method projectMenu MicroBlocksEditor {
   addItem menu 'Save' 'saveProjectToFile'
   if (devMode) {
 	addLine menu
-	addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
+	if ((count (functions (main (project scripter)))) > 0) {
+		addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
+	}
 	if (boardHasFileSystem (smallRuntime)) {
 		addLine menu
 		addItem menu 'put file on board' (action 'putFileOnBoard' (smallRuntime))

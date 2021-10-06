@@ -312,6 +312,7 @@ method newFolder FilePicker {
 }
 
 method okay FilePicker {
+  removeFromOwner morph
   answer = ''
   if forSaving {
 	answer = (join currentDir '/' (text (contents nameField)))
@@ -323,7 +324,6 @@ method okay FilePicker {
   }
   if (and (notNil action) ('' != answer)) { call action answer }
   isDone = true
-  removeFromOwner morph
 }
 
 method fileOrFolderSelected FilePicker {

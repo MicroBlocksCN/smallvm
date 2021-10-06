@@ -113,8 +113,8 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 
 static OBJ primI2cWrite(int argCount, OBJ *args) {
 	// Write one or multiple bytes to the given I2C device. If the second argument is an
-	// integer, write it as a single byte. If it is a list of bytes, write those bytes.
-	// The list should contain integers in the range 0..255; anything else will be skipped.
+	// integer, write it as a single byte. If it is a byte array or list of bytes, write them.
+	// The list should contain integers in the range 0..255.
 
 	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
 	int deviceID = obj2int(args[0]);
@@ -123,14 +123,26 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	if (isInt(data)) {
-		Wire.write(obj2int(data) & 255);
+		int byteValue = obj2int(data);
+		if ((byteValue < 0) || (byteValue > 255)) fail(i2cValueOutOfRange);
+		Wire.write(byteValue & 255);
 	} else if (IS_TYPE(data, ListType)) {
 		int count = obj2int(FIELD(data, 0));
 		for (int i = 0; i < count; i++) {
 			OBJ item = FIELD(data, i + 1);
 			if (isInt(item)) {
-				Wire.write(obj2int(item) & 255);
+				int byteValue = obj2int(item);
+				if ((byteValue < 0) || (byteValue > 255)) fail(i2cValueOutOfRange);
+				Wire.write(byteValue & 255);
+			} else {
+				fail(i2cValueOutOfRange);
 			}
+		}
+	} else if (IS_TYPE(data, ByteArrayType)) {
+		uint8 *src = (uint8 *) &FIELD(data, 0);
+		int count = BYTES(data);
+		for (int i = 0; i < count; i++) {
+			Wire.write(*src++);
 		}
 	}
 	int error = Wire.endTransmission();
@@ -153,6 +165,7 @@ static void initSPI() {
 		setPinMode(PIN_SPI_MOSI, OUTPUT);
 		setPinMode(PIN_SPI_SCK, OUTPUT);
 	#endif
+	SPI.begin();
 	SPI.beginTransaction(SPISettings(spiSpeed, MSBFIRST, spiMode));
 }
 
@@ -228,17 +241,18 @@ static AccelerometerType_t accelType = accel_unknown;
 static void startAccelerometer() {
 	if (0x5A == readI2CReg(MMA8653_ID, 0x0D)) {
 		accelType = accel_MMA8653;
-		writeI2CReg(MMA8653_ID, 0x2A, 1);
+		writeI2CReg(MMA8653_ID, 0x2A, 1); // 800 Hz sample rage (max)
 	} else if (0x33 == readI2CReg(LSM303_ID, 0x0F)) {
 		accelType = accel_LSM303;
 		writeI2CReg(LSM303_ID, 0x20, 0x8F); // 1620 Hz sample rate, low power, all axes
 	} else if (0xC7 == readI2CReg(FXOS8700_ID, 0x0D)) {
 		accelType = accel_FXOS8700;
 		writeI2CReg(FXOS8700_ID, 0x2A, 0); // turn off chip before configuring
-		writeI2CReg(FXOS8700_ID, 0x2A, 0x1B); // 100 Hz sample rate, fast read, turn on
+		writeI2CReg(FXOS8700_ID, 0x2A, 3); // 800 Hz sample rate (max), fast read, turn on
 	} else {
 		accelType = accel_none;
 	}
+	delay(2);
 	accelStarted = true;
 }
 
@@ -269,8 +283,26 @@ static int readAcceleration(int registerID) {
 }
 
 static void setAccelRange(int range) {
-	// xxx work in progress...
-	writeI2CReg(LSM303_ID, 0x23, 0x30); // +/- 16G
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+
+	if (!accelStarted) startAccelerometer();
+	switch (accelType) {
+	case accel_MMA8653:
+		if (range > 2) range = 2;
+		writeI2CReg(MMA8653_ID, 0x2A, 0); // turn off
+		writeI2CReg(MMA8653_ID, 0x0E, range);
+		writeI2CReg(MMA8653_ID, 0x2A, 1); // 800 Hz sample rage (max)
+		break;
+	case accel_LSM303:
+		writeI2CReg(LSM303_ID, 0x23, (range << 4));
+		break;
+	case accel_FXOS8700:
+		if (range > 2) range = 2;
+		writeI2CReg(FXOS8700_ID, 0x0E, range);
+		break;
+	default:
+		break;
+	}
 }
 
 static int readTemperature() {
@@ -340,17 +372,18 @@ static AccelerometerType_t accelType = accel_unknown;
 static void startAccelerometer() {
 	if (0x5A == readInternalI2CReg(MMA8653_ID, 0x0D)) {
 		accelType = accel_MMA8653;
-		writeInternalI2CReg(MMA8653_ID, 0x2A, 1);
+		writeInternalI2CReg(MMA8653_ID, 0x2A, 1); // 800 Hz sample rage (max)
 	} else if (0x33 == readInternalI2CReg(LSM303_ID, 0x0F)) {
 		accelType = accel_LSM303;
 		writeInternalI2CReg(LSM303_ID, 0x20, 0x8F); // 1620 Hz sample rate, low power, all axes
 	} else if (0xC7 == readInternalI2CReg(FXOS8700_ID, 0x0D)) {
 		accelType = accel_FXOS8700;
 		writeInternalI2CReg(FXOS8700_ID, 0x2A, 0); // turn off chip before configuring
-		writeInternalI2CReg(FXOS8700_ID, 0x2A, 0x1B); // 100 Hz sample rate, fast read, turn on
+		writeInternalI2CReg(FXOS8700_ID, 0x2A, 3); // 800 Hz sample rate, fast read, turn on
 	} else {
 		accelType = accel_none;
 	}
+	delay(2);
 	accelStarted = true;
 }
 
@@ -380,9 +413,27 @@ static int readAcceleration(int registerID) {
 	return val;
 }
 
-static int setAccelRange(int range) {
-	// xxx work in progress...
-	writeInternalI2CReg(LSM303_ID, 0x23, 0x30); // +/- 16G
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+
+	if (!accelStarted) startAccelerometer();
+	switch (accelType) {
+	case accel_MMA8653:
+		if (range > 2) range = 2;
+		writeInternalI2CReg(MMA8653_ID, 0x2A, 0); // turn off
+		writeInternalI2CReg(MMA8653_ID, 0x0E, range);
+		writeInternalI2CReg(MMA8653_ID, 0x2A, 1); // 800 Hz sample rage (max)
+		break;
+	case accel_LSM303:
+		writeInternalI2CReg(LSM303_ID, 0x23, (range << 4));
+		break;
+	case accel_FXOS8700:
+		if (range > 2) range = 2;
+		writeInternalI2CReg(FXOS8700_ID, 0x0E, range);
+		break;
+	default:
+		break;
+	}
 }
 
 static int readTemperature() {
@@ -400,6 +451,12 @@ static int readTemperature() {
 #define BMX055 24
 
 static int readAcceleration(int registerID) {
+	if (!accelStarted) {
+		// Use accelerometer defaults: unfiltered sampling rate 2k Hz
+		readI2CReg(BMX055, 5); // do a read operation to start accelerometer
+		delay(2);
+		accelStarted = true;
+	}
 	int val = 0;
 	if (1 == registerID) val = readI2CReg(BMX055, 5); // x-axis
 	if (3 == registerID) val = readI2CReg(BMX055, 3); // y-axis
@@ -417,6 +474,26 @@ static int readTemperature() {
 	return (readI2CReg(BMX055, 8) / 2) + 23 - fudgeFactor;
 }
 
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+	// See datasheet pg. 57, PMU_RANGE.
+
+	switch (range) {
+	case 0:
+		writeI2CReg(BMX055, 0x0F, 3);
+		break;
+	case 1:
+		writeI2CReg(BMX055, 0x0F, 5);
+		break;
+	case 2:
+		writeI2CReg(BMX055, 0x0F, 8);
+		break;
+	case 3:
+		writeI2CReg(BMX055, 0x0F, 12);
+		break;
+	}
+}
+
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 
 #define LIS3DH_ID 25
@@ -429,8 +506,9 @@ static int readAcceleration(int registerID) {
 		// turn on the accelerometer
 		Wire1.beginTransmission(LIS3DH_ID);
 		Wire1.write(0x20);
-		Wire1.write(0x7F);
+		Wire1.write(0x8F); // 1600 Hz sampling rate, Low Power, Enable x/y/z
 		Wire1.endTransmission();
+		delay(2);
 		accelStarted = true;
 	}
 	Wire1.beginTransmission(LIS3DH_ID);
@@ -447,6 +525,16 @@ static int readAcceleration(int registerID) {
 	val = ((val * 200) / 127); // scale to range 0-200
 	if (1 == registerID) val = -val; // invert sign for x axis
 	return val;
+}
+
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+	// See datasheet pg. 37, CTRL_REG4.
+
+	Wire1.beginTransmission(LIS3DH_ID);
+	Wire1.write(0x23);
+	Wire1.write(range << 4);
+	Wire1.endTransmission();
 }
 
 static int readTemperature() {
@@ -480,7 +568,8 @@ static int readTemperature() {
 #define LSM6DS 106
 
 static void startAccelerometer() {
-	writeI2CReg(LSM6DS, 0x10, 0x40); // enable accelerometer,  104 Hz sample rate
+	writeI2CReg(LSM6DS, 0x10, 0x80); // enable accelerometer, 1660 Hz sample rate
+	delay(2);
 	accelStarted = true;
 }
 
@@ -496,6 +585,22 @@ static int readAcceleration(int registerID) {
 	val = ((val * 200) / 127); // invert sign and scale to range 0-200
 	if (5 == registerID) val = -val; // invert z-axis
 	return val;
+}
+
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+	// See datasheet pg. 47, CTRL1_XL.
+
+	int rangeBits = 0;
+	switch (range) {
+	case 0: rangeBits = 0; break;
+	case 1: rangeBits = 2; break;
+	case 2: rangeBits = 3; break;
+	case 3: rangeBits = 1; break;
+	default: break;
+	}
+	int sampleRate = 8; // 1660 Hz
+	writeI2CReg(LSM6DS, 0x10, (sampleRate << 4) | (rangeBits << 2));
 }
 
 static int readTemperature() {
@@ -514,6 +619,7 @@ static int readTemperature() {
 #define MPU6886_ID			0x68
 #define MPU6886_SMPLRT_DIV	0x19
 #define MPU6886_CONFIG		0x1A
+#define MPU6886_ACCEL_CONFIG	0x1C
 #define MPU6886_PWR_MGMT_1	0x6B
 #define MPU6886_PWR_MGMT_2	0x6C
 #define MPU6886_WHO_AM_I	0x75
@@ -550,12 +656,13 @@ static void startAccelerometer() {
 	writeAccelReg(MPU6886_PWR_MGMT_1, 0x80); // reset (must be done by itself)
 	delay(1); // required to avoid hang
 
-	writeAccelReg(MPU6886_SMPLRT_DIV, 4); // 200 samples/sec
+	writeAccelReg(MPU6886_SMPLRT_DIV, 0); // 1000 Hz sample rate
 	writeAccelReg(MPU6886_CONFIG, 5); // low-pass filtering: 0-6
 	writeAccelReg(MPU6886_PWR_MGMT_1, 1); // use best clock rate (required!)
 	writeAccelReg(MPU6886_PWR_MGMT_2, 7); // disable the gyroscope
 
 	is6886 = (25 == readAccelReg(MPU6886_WHO_AM_I));
+	delay(3);
 	accelStarted = true;
 }
 
@@ -583,6 +690,13 @@ static int readAcceleration(int registerID) {
 	return sign * val;
 }
 
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+	// See datasheet pg. 37, ACCELEROMETER CONFIGURATION.
+
+	writeAccelReg(MPU6886_ACCEL_CONFIG, range << 3);
+}
+
 static int readTemperature() {
 	// Return the temperature in Celcius
 
@@ -605,8 +719,9 @@ static int readTemperature() {
 
 static int readAcceleration(int registerID) {
 	if (!accelStarted) {
-		writeI2CReg(LIS3DH_ID, 0x20, 0x7F); // turn on accelerometer, 400 Hz update, 8-bit
+		writeI2CReg(LIS3DH_ID, 0x20, 0x8F); // turn on accelerometer, 1600 Hz update, 8-bit (low power) mode
 		writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
+		delay(2);
 		accelStarted = true;
 	}
 	int val = readI2CReg(LIS3DH_ID, 0x28 + registerID);
@@ -615,6 +730,13 @@ static int readAcceleration(int registerID) {
 	val = ((val * 200) / 127); // scale to range 0-200
 	val = -val; // invert sign for all axes
 	return val;
+}
+
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+	// See datasheet pg. 37, CTRL_REG4.
+
+	writeI2CReg(LIS3DH_ID, 0x23, range << 4);
 }
 
 static int readTemperature() {
@@ -638,6 +760,7 @@ static int readTemperature() {
 
 static int readAcceleration(int reg) { return 0; }
 static int readTemperature() { return 0; }
+static void setAccelRange(int range) { }
 
 #endif // micro:bit primitve support
 
@@ -685,7 +808,7 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 
 	if (!accelStarted) readAcceleration(1); // initialize the accelerometer
 
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT)
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
 		if (accel_unknown == accelType) startAccelerometer();
 		switch (accelType) {
 		case accel_MMA8653:
@@ -740,15 +863,26 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 }
 
 OBJ primSetAccelerometerRange(int argCount, OBJ *args) {
-	// xxx this is a work in progress; not yet used in libraries
+	// Argument is 1, 2, 4, or 8 (#g's to read 100) for full scale of +/- 2, 4, 8, or 16g.
+	// The argument give the number of G's that output as 100.
 
-	if ((argCount < 1) || !isInt(args[0])) return falseObj;
-	int range = obj2int(args[0]);
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!isInt(args[0])) return fail(needsIntegerError);
+	int arg = obj2int(args[0]);
 
-	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
-		setAccelRange(range);
-	#endif
-
+	// Map argument to a range setting 0-3
+	int rangeSetting = 0;
+	if (arg <= 1) { // default
+		rangeSetting = 0;
+	} else if (arg <= 2) {
+		rangeSetting = 1;
+	} else if (arg <= 4) {
+		rangeSetting = 2;
+	} else {
+		rangeSetting = 3;
+	}
+	setAccelRange(rangeSetting);
+	delay(2);
 	return falseObj;
 }
 
@@ -766,7 +900,6 @@ OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(readAcceleration(5)); 
 extern int buttonReadings[6];
 
 static OBJ primTouchRead(int argCount, OBJ *args) {
-	//return int2obj(touchRead(obj2int(args[0])));
 	int pin = obj2int(args[0]);
 	switch (pin) {
 		case 2: return int2obj(buttonReadings[0]);

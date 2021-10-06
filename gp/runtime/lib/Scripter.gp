@@ -75,6 +75,7 @@ method initialize Scripter aProjectEditor {
   scale = (global 'scale')
   morph = (newMorph this)
   setCostume morph (gray 150) // border color
+  setClipping morph true
   listColor = (gray 240)
   fontName = 'Arial'
   fontSize = 13
@@ -196,9 +197,12 @@ method fixLayout Scripter {
   packPanesV packer classPane 28 categoriesFrame blocksHeight scriptsFrame '100%'
   packPanesV packer classPane 28 blocksFrame blocksHeight
   finishPacking packer
+
   fixClassPaneLayout this
+  redraw blocksFrame
+  redraw scriptsFrame
   fixResizerLayout this
-  if (notNil projectEditor) { fixLayout projectEditor true }
+  if (notNil projectEditor) { fixLayout projectEditor }
 }
 
 method fixClassPaneLayout Scripter {
@@ -238,7 +242,7 @@ method fixResizerLayout Scripter {
   drawPaneResizingCostumes blocksResizer
 
   // scripter width resizer
-  setLeft (morph resizer) ((right morph) - border)
+  setLeft (morph resizer) ((right morph) - (width (morph resizer)))
   setTop (morph resizer) (top morph)
   setExtent (morph resizer) size (height morph)
   drawPaneResizingCostumes resizer
@@ -518,6 +522,7 @@ method addBlock Scripter b spec isVarReporter {
 	  }
 	}
   }
+  fixLayout b
   setGrabRule (morph b) 'template'
   setPosition (morph b) nextX nextY
   if isVarReporter { setLeft (morph b) (nextX + (135 * scale)) }
@@ -1014,7 +1019,7 @@ method restoreScripts Scripter {
       if (notNil block) {
 		x = (paneX + ((at entry 1) * scale))
 		y = (paneY + ((at entry 2) * scale))
-		moveBy (morph block) x y
+		fastMoveBy (morph block) x y
 		addPart (morph scriptsPane) (morph block)
 		fixBlockColor block
 	  }
@@ -1022,6 +1027,7 @@ method restoreScripts Scripter {
   }
   updateSliders scriptsFrame
   updateBlocks this
+  changed scriptsPane
 }
 
 method pasteScripts Scripter scriptString {
@@ -1235,7 +1241,6 @@ method blockPrototypeChanged Scripter aBlock {
     body = (toBlock (cmdList (function aBlock)))
     setNext block nil
     setNext block body
-    fixBlockColor block
   }
 
   // update the palette template

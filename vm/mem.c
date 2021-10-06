@@ -65,7 +65,7 @@ static OBJ memStart = NULL;
 static OBJ memEnd = NULL;
 static OBJ freeChunk = NULL;
 
-static OBJ tempObj = NULL; // used during resizeObj()
+OBJ tempGCRoot = NULL; // used during resizeObj() and primitives that allocate multiple objects
 
 extern OBJ lastBroadcast; // an additional GC root
 
@@ -153,10 +153,10 @@ OBJ resizeObj(OBJ oldObj, int wordCount) {
 	if (isInt(oldObj)) return oldObj;
 	if ((oldObj < memStart) || (oldObj >= memEnd)) return oldObj; // object must be in object store
 
-	tempObj = oldObj; // record oldObj in case newObj() triggers GC that moves it
+	tempGCRoot = oldObj; // record oldObj in case newObj() triggers GC that moves it
 	OBJ result = newObj(TYPE(oldObj), wordCount, zeroObj);
-	oldObj = tempObj; // restore oldObj
-	tempObj = NULL;
+	oldObj = tempGCRoot; // restore oldObj
+	tempGCRoot = NULL;
 	if (!result) return oldObj;
 
 	int copyCount = WORDS(oldObj);
@@ -314,7 +314,7 @@ static void forwardRoots(void) {
 	for (int i = 0; i < MAX_VARS; i++) vars[i] = forward(vars[i]);
 	lastBroadcast = forward(lastBroadcast);
 
-	if (tempObj) tempObj = forward(tempObj);
+	if (tempGCRoot) tempGCRoot = forward(tempGCRoot);
 
 	// mark objects on Task stacks
 	for (int i = 0; i < taskCount; i++) {
@@ -402,7 +402,7 @@ static void markRoots(void) {
 	mark(lastBroadcast);
 
 	// mark temporary object used during object resizing
-	if (tempObj) mark(tempObj);
+	if (tempGCRoot) mark(tempGCRoot);
 
 	// mark objects on Task stacks
 	for (int i = 0; i < taskCount; i++) {

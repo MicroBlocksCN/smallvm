@@ -1,4 +1,4 @@
-module '16x2 DFRobot LCD (1602 I2C)'
+module '16x2 DFRobot LCD (1602 I2C)' Output
 author MicroBlocks
 version 1 1 
 description 'Basic library for 16x2 displays with an I2C "backpack" like the ones commercialized by DFRobot, SunFounder and others.

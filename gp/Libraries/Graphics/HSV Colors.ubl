@@ -1,4 +1,4 @@
-module 'HSV Colors'
+module 'HSV Colors' Operators
 author MicroBlocks
 version 1 0 
 depends Fractions 

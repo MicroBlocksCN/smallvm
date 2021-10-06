@@ -1,41 +1,70 @@
-// editable bool slot for blocks
-
-defineClass BooleanSlot morph toggle contents
-
-to newBooleanSlot default {
-  if (isNil default) {default = false}
-  return (initialize (new 'BooleanSlot') default)
-}
+// Boolean input slot for blocks
 
 to booleanConstant b { return b }
 
-method initialize BooleanSlot default {
-  scale = (global 'scale')
-  contents = default
-  corner = 5
-  toggle = (toggleButton (action 'switch' this) (action 'contents' this) (scale * 20) (scale * 13) (scale * corner) (max 1 (scale / 2)) false false)
-  morph = (morph toggle)
-  setHandler morph this
-  return this
+defineClass BooleanSlot morph contents displayAsElse
+
+to newBooleanSlot defaultValue isElse {
+	return (initialize (new 'BooleanSlot') defaultValue isElse)
 }
 
-method setContents BooleanSlot bool {
-  if (not (isClass bool 'Boolean')) {return}
-  contents = bool
-  refresh toggle
-  raise morph 'inputChanged' this
+method initialize BooleanSlot defaultValue isElse {
+	contents = (true == defaultValue)
+	displayAsElse = (true == isElse)
+	morph = (newMorph this)
+	setExtent morph (23 * (blockScale)) (13 * (blockScale))
+	return this
 }
 
-method contents BooleanSlot {return contents}
+method contents BooleanSlot { return contents }
 
-method switch BooleanSlot {
-  if (not (isClass contents 'Boolean')) { contents = false }
-  setContents this (not contents)
+method setContents BooleanSlot newValue {
+	if (not (isClass newValue 'Boolean')) { return }
+	contents = newValue
+	raise morph 'inputChanged' this
+	changed morph
+}
+
+method toggleState BooleanSlot {
+	if displayAsElse { return } // don't toggle when used as 'else' in an if block
+	if (not (isClass contents 'Boolean')) { contents = false }
+	setContents this (not contents)
+}
+
+// drawing
+
+method drawOn BooleanSlot ctx {
+	scale = (blockScale)
+	if (and displayAsElse contents) {
+		// used to display a true boolean slot as 'else' in the final case of an 'if' block
+		elseLabel = (labelText (new 'Block') 'else')
+		setPosition (morph elseLabel) (left morph) (top morph)
+		drawOn elseLabel ctx
+		return
+	}
+	borderWidth = (max 1 (half scale))
+	sliderSize = (height morph)
+	corner = (8 * scale)
+	r = (bounds morph)
+	sm = (getShapeMaker ctx)
+	if contents {
+		c = (color 100 200 100) // green
+		offset = ((width morph) - sliderSize)
+	} else {
+		c = (color 200 100 100) // red
+		offset = 0
+	}
+	if contents { c = (color 0 200 0) }
+	r = (bounds morph)
+	fillRoundedRect sm r corner c borderWidth (gray 80) (gray 80)
+	sliderRect = (rect ((left r) + offset) (top r) sliderSize sliderSize)
+	fillRoundedRect sm sliderRect corner (gray 130) borderWidth (gray 80) (gray 80)
 }
 
 // replacement rule
 
 method isReplaceableByReporter BooleanSlot {
+	if displayAsElse { return false } // not replaceable when used as 'else' in an if block
 	owner = (handler (owner morph))
 	if (and (isClass owner 'Block') ('booleanConstant' == (primName (expression owner)))) {
 		// Don't allow replacing the boolean slot in a boolean constant reporter
@@ -46,16 +75,8 @@ method isReplaceableByReporter BooleanSlot {
 
 // events
 
-method handDownOn BooleanSlot aHand {return (handDownOn toggle aHand)}
-method clicked BooleanSlot aHand {return (clicked toggle aHand)}
+method clicked BooleanSlot aHand { toggleState this; return true }
 
 // keyboard accessibility hooks
 
-method trigger BooleanSlot {
-  clicked toggle
-}
-
-method setToFalse BooleanSlot {
-  setContents this false
-  refresh toggle
-}
+method trigger BooleanSlot { clicked this nil }

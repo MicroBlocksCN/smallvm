@@ -112,6 +112,10 @@ static inline int objType(OBJ obj) {
 
 #define FIELD(obj, i) (((OBJ *) obj)[HEADER_WORDS + (i)])
 
+// Global temporary GC root for use by primitives that do multiple allocations.
+
+extern OBJ tempGCRoot;
+
 // Object Memory Operations
 
 void memInit();

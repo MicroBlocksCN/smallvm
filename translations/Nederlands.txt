@@ -120,7 +120,7 @@ stop all
 stop alles
 
 last message
-Laatste bericht
+laatste bericht
 
 Operators
 Functies
@@ -150,7 +150,7 @@ or _
 of _
 
 _ is a _
-_ is en _
+_ is een _
 
 boolean
 booleaans
@@ -165,7 +165,7 @@ list
 lijst
 
 Advanced:
---MISSING--
+Gevorderd
 
 hex _
 hex _
@@ -193,7 +193,7 @@ change _ by _
 verander _ met _
 
 initialize local _ to _
---MISSING--
+initialiseer lokaal _ naar _
 
 Data
 Data
@@ -232,7 +232,7 @@ starting at _
 start op _
 
 join items of list _
-voeg items van lijst _
+voeg items van lijst _ samen
 
 separator _
 scheidingsteken _
@@ -247,7 +247,7 @@ new list length _
 nieuwe lijst lengte _
 
 new byte array _
---MISSING--
+nieuwe byte array _
 
 free memory
 vrij geheugen
@@ -278,7 +278,7 @@ i2c set device _ register _ to _
 i2c maak device _ register _ naar _
 
 i2c device _ read list _
-i2c device _ leese lijst _
+i2c device _ lees lijst _
 
 i2c device _ write list _
 i2c device _ schrijf lijst _
@@ -438,7 +438,7 @@ PIR
 PIR
 
 PIR at pin _ detected movement
-PIR op pin _ waargenomen beweging
+PIR op pin _ detecteerde beweging 
 
 ####
 # Citilab ED1 board libraries
@@ -531,10 +531,10 @@ Other
 Ander
 
 Finch Beak Red _ Green _ Blue _
---MISSING--
+Finch Snavel Rood _ Groen _ Blauw _
 
 Finch Tail _ Red _ Green _ Blue _
---MISSING--
+Finch Staart _ Rood _ Groen _ Blauw _
 
 Finch Move _ _ cm at _ %
 Finch Beweeg _ _ cm op _ %
@@ -558,61 +558,61 @@ Finch _ Line
 Finch _ Lijn
 
 Finch Reset Encoders
-Finch Encoders Resetten
+Finch Reset Encoders
 
 Finch _ Encoder
 Finch _ Encoder
 
 Finch Accelerometer _
-Finch Accelerometer _
+Finch Versnellingsmeter _
 
 Finch Battery
 Finch Batterij
 
 All
---MISSING--
+Alle
 
 Forward
---MISSING--
+Vooruit
 
 Backward
---MISSING--
+Achteruit
 
 Right
---MISSING--
+Rechtsaf
 
 Left
---MISSING--
+Linksaf
 
 Beak Up
---MISSING--
+Snavel omhoog
 
 Beak Down
---MISSING--
+Snavel omlaag
 
 Tilt Left
---MISSING--
+Kantel links
 
 Tilt Right
---MISSING--
+Kantel rechts
 
 Level
---MISSING--
+Level
 
 Upside Down
---MISSING--
+Ondersteboven
 
 x
---MISSING--
+x
 
 y
---MISSING--
+y
 
 z
---MISSING--
+z
 
 strength
---MISSING--
+sterkte
 
 ####
 # Ultrasound distance library
@@ -630,7 +630,7 @@ receive IR code
 ontvang IR code
 
 receive IR code from device _
-ontvang IR code van apparaat _
+ontvang IR code van device _
 
 test IR
 test IR
@@ -660,7 +660,7 @@ scroll number _
 scroll nummer _
 
 pausing _ ms
-_ ms pauze
+pauzeer _ ms
 
 stop scrolling
 stop met scrollen
@@ -695,10 +695,10 @@ clear display
 wis scherm
 
 plot x _ y _
-zet aan x _ y _
+teken x _ y _
 
 unplot x _ y _
-zet uit x _ y _
+wis x _ y _
 
 display character _
 toon teken _
@@ -716,7 +716,7 @@ TFT height
 TFT hoogte
 
 set TFT pixel x _ y _ to _
-zet TFT pixel x _ y _ op _
+maak TFT pixel x _ y _ op _
 
 draw line on TFT from x _ y _ to x _ y _ color _
 teken lijn op TFT van x _ y _ naar x _ y _ kleur _
@@ -868,7 +868,7 @@ motion
 beweging
 
 start step counter
-start stappen teller
+start stappenteller
 
 step count
 aantal stappen
@@ -898,19 +898,19 @@ knop _ ingedrukt
 # Calliope board library
 
 Calliope set LED red _ green _ blue _
-Calliope zet LED op rood _ groen _ blauw _
+Calliope maak LED op rood _ groen _ blauw _
 
 Calliope set speaker _
-Calliope zet luidspreker op _
+Calliope maak luidspreker _
 
 Calliope loudness
-Calliope luidheid
+Calliope volume
 
 ####
 # Circuit Playground Express board library
 
 Circuit Playground set speaker _
-Circuit Playground zet luidspreker op _
+Circuit Playground maak luidspreker _
 
 Circuit Playground slide switch
 Circuit Playground schuifschakelaar
@@ -919,16 +919,16 @@ Circuit Playground schuifschakelaar
 # DotStar LED library
 
 attach _ DotStar LEDs to data pin _ clock pin _
-hecht _ DotStar LEDs in op data pin _ klok pin _
+verbind _ DotStar LEDs aan data pin _ klok pin _
 
 set all DotStar LEDs to r _ g _ b _
-zet alle DotStar LEDs op r _ g _ b _
+maak alle DotStar LEDs op r _ g _ b _
 
 set DotStar LED _ to r _ g _ b _
-zet DotStar LED _ op r _ g _ b _
+maak DotStar LED _ op r _ g _ b _
 
 set DotStar brightness _
-zet DotStar helderheid _
+maak DotStar helderheid _
 
 ####
 # BME280 environmental sensor
@@ -985,7 +985,7 @@ RFID _ = _
 RFID _ = _
 
 get PN532 firmware version
-lees PN532 firmwareversie
+lees PN532 firmware versie
 
 ####
 # HTTP libraries
@@ -1003,10 +1003,10 @@ start HTTP server
 HTTP-server opstarten
 
 HTTP server request
-HTTP-serververzoek
+HTTP-server verzoek
 
 respond _ to HTTP request
-antwoord _ op HTTP-verzoek
+antwoord _ op HTTP verzoek
 
 with body _
 met body _
@@ -1018,7 +1018,7 @@ body of request _
 verzoek-body _
 
 path of request _
-verzoek-path _
+verzoek-pad _
 
 method of request _
 methode van verzoek _
@@ -1030,22 +1030,22 @@ Web Thing
 WebThing
 
 set thing name to _
-zet WebThing naam op _
+maak thing naam _
 
 set thing capability to _
-zet WebThing vermogen op _
+maak WebThing vermogen _
 
 set boolean property _ title _ @Type _
-zet booleaans eigenschap _ titel _ @Type _
+maak booleaans eigenschap _ titel _ @Type _
 
 set string property _ title _ @Type _
-zet tekst eigenschap _ titel _ @Type _
+maak tekst eigenschap _ titel _ @Type _
 
 set number property _ title _ @Type _
-zet getal eigenschap _ titel _ @Type _
+maak getal eigenschap _ titel _ @Type _
 
 set number property _ title _ min _ max _ @Type _
-zet getal eigenschap _ titel _ min _ max _ @Type _
+maak getal eigenschap _ titel _ min _ max _ @Type _
 
 read only _
 alleen lezen _
@@ -1057,7 +1057,7 @@ start WebThing server
 start WebThing server
 
 trigger event _
-trigger-gebeurtenis _
+trigger gebeurtenis _
 
 thing description JSON
 WebThing beschrijving JSON
@@ -1084,25 +1084,25 @@ Open
 Open
 
 Open from board
---MISSING--
+Open vanaf board-
 
 Information
---MISSING--
+Informatie
 
 Plug in the board.
---MISSING--
+Sluit het board aan
 
 Reading project from board...
---MISSING--
+Project lezen van het bord...
 
 Loading project...
---MISSING--
+Project laden
 
 Found a newer version of
---MISSING--
+Nieuwere versie gevonden van
 
 Do you want me to update the one in the project?
---MISSING--
+Wil je dat ik die ene in het project update?
 
 Save
 Bewaar
@@ -1231,10 +1231,10 @@ stop WebThing server
 stop WebThing server
 
 HTTP Server
---MISSING--
+HTTP Server
 
 MicroBlocks HTTP Server listening on port 6473
-MicroBlocks HTTP Server via poort 6473
+MicroBlocks HTTP Server luistert op poort 6473
 
 disable autoloading board libraries
 schakel autoloading board bibliotheken uit
@@ -1243,13 +1243,13 @@ enable autoloading board libraries
 schakel autoloading board bibliotheken in
 
 enable PlugShare when project empty
---MISSING--
+PlugShare inschakelen als project leeg is
 
 disable PlugShare when project empty
---MISSING--
+PlugShare uitschakelen als project leeg is
 
 erase flash and update firmware on ESP board
-wis en partitioneer esp
+flash wissen en firmware op ESP-bord updaten
 
 Use board type
 Gebruik board type

@@ -19,7 +19,7 @@ forever {
 }
 }
 
-script 67 368 {
+script 66 368 {
 comment 'Run this loop while talking (but not clapping) to
 get an estimate of the minimum clap threshold'
 turnOnMicrophone
@@ -35,7 +35,7 @@ script 266 1276 (guessClapThreshold)
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
 
@@ -47,13 +47,17 @@ description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Ca
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 
 
 module Microphone Input
 author MicroBlocks
-version 1 1 
+version 1 2 
 description 'Microphone, loudness, and clap counting support for boards with built in microphones. The microphone block usually reports values between -512 and 511, with zero for silence. However, very loud sounds may exceed that range on some boards. On the micro:bit v2, the microphone must be turned on before use.'
 variables _clapThreshold _loudnessSamples 
 
@@ -85,7 +89,7 @@ to clapCount {
   waitUntil ((loudness) > _clapThreshold)
   local 'count' 1
   forever {
-    waitUntil ((loudness) < _clapThreshold)
+    waitUntil ((loudness) < ((3 * _clapThreshold) / 4))
     resetTimer
     repeatUntil ((loudness) > _clapThreshold) {
       comment 'This loop awaits either the next clap or for a pause, indicating that the claps have ended.'

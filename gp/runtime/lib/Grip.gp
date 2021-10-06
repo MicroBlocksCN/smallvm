@@ -26,11 +26,20 @@ to newGrip orientation width height {
   grip = (new 'Grip' m bt orientation 0)
   setHandler m grip
   setRenderer bt grip
-  redraw grip
+  replaceCostumes grip
   return grip
 }
 
-method handEnter Grip aHand {handEnter trigger aHand}
+method handEnter Grip aHand {
+	handEnter trigger aHand
+	if (orientation == 'vertical') {
+		setCursor 'ns-resize'
+	} (orientation == 'horizontal') {
+		setCursor 'ew-resize'
+	} else {
+		setCursor 'nwse-resize'
+	}
+}
 method handLeave Grip aHand {handLeave trigger aHand}
 method clicked Grip {return true}
 method rightClicked Grip {return true}
@@ -55,11 +64,11 @@ method handMoveFocus Grip aHand {
   newX = (((x aHand) - offsetX) + gripInset)
   newY = (((y aHand) - offsetY) + gripInset)
   if (orientation == 'horizontal') {
-    setLeft morph newX
+    fastSetLeft morph newX
   } (orientation == 'vertical') {
-    setTop morph newY
+    fastSetTop morph newY
   } else {
-    setPosition morph newX newY
+    fastSetPosition morph newX newY
   }
   trigger this
 }
@@ -83,12 +92,6 @@ method trigger Grip {
   trigger trigger
 }
 
-method redraw Grip {
-  // adjust to a change of bounds
-  // by creating a new set of canvasses
-  replaceCostumes this
-}
-
 method replaceCostumes Grip normalCostume highlightCostume pressedCostume {
   replaceCostumes trigger normalCostume highlightCostume pressedCostume
 }
@@ -98,6 +101,12 @@ method removeCostume Grip costumeName {removeCostume trigger costumeName}
 method normalCostume Grip {return (newBitmap (width morph) (height morph) (color 200 200 255))}
 method highlightCostume Grip {return (newBitmap (width morph) (height morph) (color 200 255 200))}
 method pressedCostume Grip {return (newBitmap (width morph) (height morph) (color 255 200 200))}
+
+method updateCostumes Grip {
+  clearCostumes trigger
+  highlight trigger
+  normal trigger
+}
 
 to resizeHandle target orientation {
   if (isNil orientation) {orientation = 'free'}
@@ -114,19 +123,19 @@ to resizeHandle target orientation {
 
   if (orientation == 'vertical') {
     action = (action 'setHeightToBottom' (morph target) m)
-    setBottom m (bottom (morph target))
-    setXCenter m (hCenter (bounds (morph target)))
+    fastSetBottom m (bottom (morph target))
+    fastSetXCenter m (hCenter (bounds (morph target)))
   } (orientation == 'horizontal') {
     action = (action 'setWidthToRight' (morph target) m)
-    setRight m (right (morph target))
-    setYCenter m (vCenter (bounds (morph target)))
+    fastSetRight m (right (morph target))
+    fastSetYCenter m (vCenter (bounds (morph target)))
   } else {
     action = (action 'setExtentToRightBottom' (morph target) m)
     if (isClass target 'Window') {
       setGripInset grip (border target)
     }
-    setRight m (right (morph target))
-    setBottom m (bottom (morph target))
+    fastSetRight m (right (morph target))
+    fastSetBottom m (bottom (morph target))
   }
   setAction bt action
 
@@ -278,6 +287,8 @@ method drawSquareHotSpotCostumes Grip {
 method drawPaneResizingCostumes Grip {
   w = (width morph)
   h = (height morph)
+  oldBM = (normalCostume trigger)
+  if (and (h == (height oldBM)) (w == (width oldBM))) { return }
   hc = (color 180 180 255 150)
   nbm = (newBitmap w h)
   hbm = (newBitmap w h hc)

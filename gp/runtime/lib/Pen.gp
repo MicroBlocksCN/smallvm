@@ -1,5 +1,4 @@
-// Pen
-// graphics primitives for canvasses (bitmaps or textures)
+// Pen - Turtle graphics and simple drawing on a drawing surface using fillRect.
 
 defineClass Pen canvas color size xPos yPos heading isDown
 
@@ -7,7 +6,7 @@ to newPen canvas {
   return (new 'Pen' canvas (color) 1 0 0 0.0 false)
 }
 method canvas Pen {return canvas}
-method setCanvas Pen aBitmapOrTexture {canvas = aBitmapOrTexture}
+method setCanvas Pen aBitmap {canvas = aBitmap}
 
 // pen color and thickness
 

@@ -253,6 +253,7 @@ method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
 	for k (keys specList) { atPut blockSpecs k (at specList k) }
 	setScripts main (copy (scripts aClass))
 	updatePrimitives this
+	fixFunctionLocals this
 	return this
 }
 
@@ -270,10 +271,12 @@ method loadFromString MicroBlocksProject s {
 		} else { // library
 			lib = (loadFromCmds (newMicroBlocksModule) cmdList true)
 			atPut libraries (moduleName lib) lib
+			installChoices lib this
 		}
 	}
 	checkForNewerLibraryVersions this
 	updatePrimitives this
+	fixFunctionLocals this
 	return this
 }
 
@@ -299,6 +302,7 @@ method addLibraryFromString MicroBlocksProject s libName fileName {
 			setPath lib nil
 		}
 		updatePrimitives lib
+		fixFunctionLocals this
 		installChoices lib project
 		importDependencies lib (scripter (smallRuntime))
 		addLibrary this lib
@@ -368,7 +372,14 @@ method codeString MicroBlocksProject {
 	return (joinStrings result)
 }
 
-// Updating primitives
+// Post-load processing
+
+method fixFunctionLocals MicroBlocksProject {
+	// Remove project variables for function locals.
+
+	projectVars = (allVariableNames this)
+	for f (allFunctions this) { removeFieldsFromLocals f projectVars }
+}
 
 method updatePrimitives MicroBlocksProject {
 	// Update primitives that have been replaced with newer versions.
@@ -776,9 +787,10 @@ method getNewerVersion MicroBlocksModule {
 	}
 
 	// Find the embedded lib path
+	moduleFileName = (join moduleName '.ubl')
 	v1 = version // current version
 	for filePath embeddedFiles {
-		if (endsWith filePath (join moduleName '.ubl')) {
+		if ((filePart filePath) == moduleFileName) {
 			cmdList = (parse (readEmbeddedFile filePath))
 			candidate = (newMicroBlocksModule moduleName)
 			loadFromCmds candidate cmdList
@@ -1070,6 +1082,7 @@ method newPrimFor MicroBlocksModule oldPrim {
 	} ('newArray' == oldPrim) { return 'newList'
 	} ('fillArray' == oldPrim) { return 'fillList'
 	} ('sendBroadcastSimple' == oldPrim) { return 'sendBroadcast'
+	} ('split' == oldPrim) { return '[data:split]'
 	}
 	return nil
 }
