@@ -206,6 +206,7 @@ void primDigitalSet(int pinNum, int flag) { };
 
 // Stubs for other functions not used on Linux
 
+void addSerialPrims() {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
 void resetServos() {}
 void stopPWM() {}
