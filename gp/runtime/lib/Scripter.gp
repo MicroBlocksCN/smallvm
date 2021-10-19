@@ -266,6 +266,12 @@ method slideClosed Scripter {
 
 // scripter UI support
 
+method blockScaleChanged Scripter {
+  updateBlocks this
+  saveScripts this
+  restoreScripts this
+}
+
 method developerModeChanged Scripter {
   catList = (contents categoriesFrame)
   setCollection catList (categories this)

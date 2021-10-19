@@ -160,6 +160,16 @@ method clickLabel ProjectEditor label selectorOrAction {
   return result
 }
 
+// block updating
+
+method languageChanged ProjectEditor {
+  blockScaleChanged scripter
+}
+
+method saveToUserPreferences ProjectEditor {
+  // not yet implemented
+}
+
 // project operations
 
 method newProject ProjectEditor {
