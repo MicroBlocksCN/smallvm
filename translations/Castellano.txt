@@ -9,10 +9,10 @@ Output
 Salida
 
 set user LED _
-encender LED integrado _
+enciende LED integrado _
 
 say _
-decir _
+di _
 
 graph _
 añade al gráfico _
@@ -26,6 +26,12 @@ botón A
 button B
 botón B
 
+timer
+cronómetro
+
+reset timer
+reinicia cronómetro
+
 microseconds
 microsegundos
 
@@ -36,7 +42,7 @@ board type
 tipo de placa
 
 Pins
-Pins
+Pines
 
 read digital pin _
 lectura digital _
@@ -45,10 +51,10 @@ read analog pin _
 lectura analógica _
 
 set digital pin _ to _
-poner pin digital _ a _
+pon pin digital _ a _
 
 set pin _ to _
-poner pin _ a _
+pon pin _ a _
 
 analog pins
 pines analógicos
@@ -69,10 +75,10 @@ forever _
 por siempre _
 
 repeat _ _
-repetir _ veces _
+repite _ veces _
 
 wait _ millisecs
-esperar _ milisegundos
+espera _ milisegundos
 
 if _ _
 si _ _
@@ -87,19 +93,19 @@ when _
 cuando _
 
 wait until _
-esperar hasta que _
+espera hasta que _
 
 wait _ microsecs
-esperar _ microsegundos
+espera _ microsegundos
 
 return _
-retornar _
+retorna _
 
 when _ received
 al recibir _
 
 broadcast _
-envíar _
+envía _
 
 comment _
 comentario _
@@ -108,16 +114,16 @@ for _ in _ _
 por cada _ en _ _
 
 repeat until _ _
-repetir hasta que _ _
+repite hasta que _ _
 
 stop this task
-detener esta tarea
+detén esta tarea
 
 stop other tasks
-detener las otras tareas
+detén las otras tareas
 
 stop all
-detenerlo todo
+detenlo todo
 
 last message
 último mensaje
@@ -255,6 +261,9 @@ nueva lista de tamaño _
 new byte array _
 nueva lista de bytes de tamaño _
 
+as byte array _
+lista de bytes a partir de _
+
 free memory
 memoria libre
 
@@ -290,10 +299,10 @@ i2c device _ write list _
 escribe al dispositivo i2c _ el contenido de la lista _
 
 spi send _
-spi envíar _
+spi envía _
 
 spi receive
-spi leer
+spi lee
 
 spi setup speed _
 velocidad de spi _
@@ -307,14 +316,26 @@ canal de rpi _
 spi exchange bytes _
 bytes de intercambio de spi _
 
+serial open _ baud
+abre puerto serie a _ baudios
+
+serial close
+cierra puerto serie
+
+serial read
+lee puerto serie
+
+serial write _
+escribe _ al puerto serie
+
 print _
-escribir _
+escribe _
 
 no op
 no op
 
 ignore
-ignorar
+ignora
 
 ##############
 # Primitives #
@@ -329,7 +350,7 @@ shape for letter _
 forma para letra _
 
 send NeoPixel rgb _
-envíar RGB _ al NeoPixel
+envía RGB _ al NeoPixel
 
 has tone support
 tiene soporte para tonos
@@ -549,22 +570,22 @@ Other
 Otro
 
 Finch Beak Red _ Green _ Blue _
-Encender el pico de color R _ % V _ % A _ %
+Enciende el pico de color R _ % V _ % A _ %
 
 Finch Tail _ Red _ Green _ Blue _
-Encender la cola de color R _ % V _ % A _ %
+Enciende la cola de color R _ % V _ % A _ %
 
 Finch Move _ _ cm at _ %
-Mover hacia _ _ cm  a velocidad _ %
+Mueve hacia _ _ cm  a velocidad _ %
 
 Finch Turn _ _ ° at _ %
-Girar hacia la _ _ ° a velocidad _ %
+Gira hacia la _ _ ° a velocidad _ %
 
 Finch Wheels L _ % R _ %
-Poner las ruedas a velocidad I _ % D _ %
+Pon las ruedas a velocidad I _ % D _ %
 
 Finch Stop
-Detener el Finch
+Detén el Finch
 
 Finch Distance (cm)
 Distancia (cm)
@@ -576,7 +597,7 @@ Finch _ Line
 Línea _
 
 Finch Reset Encoders
-Reinicializar los contadores de vueltas
+Reinicializa los contadores de vueltas
 
 Finch _ Encoder
 Recuento de vueltas _
@@ -710,13 +731,13 @@ display _
 pantalla _
 
 clear display
-limpiar pantalla
+limpia pantalla
 
 plot x _ y _
-encender x _ y _
+enciende x _ y _
 
 unplot x _ y _
-apagar x _ y _
+apaga x _ y _
 
 display character _
 muestra carácter _
@@ -867,7 +888,7 @@ WiFi
 WiFi
 
 wifi connect to _ password _ try _ times
-connéctate a la wifi _ con contraseña _ en _ intentos
+conéctate a la wifi _ con contraseña _ en _ intentos
 
 wifi create hotspot _ password _
 crea punto de acceso wifi _ con contraseña _
@@ -1111,7 +1132,7 @@ MiKe digital D8 sensor
 MiKe sensor digital D8
 
 MiKe stop motors
-Mike parar motores
+Mike para motores
 
 MiKe Robot go _ at _ %
 MiKe Robot ir _ a _ %
@@ -1123,19 +1144,19 @@ MiKe Robot direction _
 MiKe Robot dirección _
 
 MiKe turn _ motor _
-MiKe mover motor _ en _
+MiKe mueve motor _ en _
 
 MiKe speed _ motor at _ %
 MiKe velocidad de motor _ a _ %
 
 MiKe front lights off
-MiKe apagar luces delanteras
+MiKe apaga luces delanteras
 
 MiKe front lights to _
 MiKe luces delanteras a _
 
 MiKe circle lights off
-MiKe apagar círculo de luces
+MiKe apaga círculo de luces
 
 MiKe circle ligths to _
 MiKe círculo de luces a _
@@ -1144,41 +1165,41 @@ MiKe circle light _ (1-18) to _
 MiKe luz _ del círculo(1-18) a _
 
 MiKe rotate lights by _
-MiKe girar luces en _
+MiKe gira luces en _
 
 MiKe digital D8 to _
-Mike fijar actuador D8 a _
+Mike fija actuador D8 a _
 
 ####
 # DrawBot Library
 # A CoreXY plotter library that supports turtle geometry
 
 plotter move X _ Y _
-mover plotter en X _ e Y _
+mueve plotter en X _ e Y _
 
 plotter move _ steps
-mover plotter _ pasos
+mueve plotter _ pasos
 
 plotter turn _ degrees
-rotar rumbo del plotter en _ °
+rota rumbo del plotter en _ °
 
 plotter turn _ / _ of circle
-rotar rumbo del plotter en _ / _ de vuelta
+rota rumbo del plotter en _ / _ de vuelta
 
 plotter point in direction _
-fijar rumbo del plotter a _ °
+fija rumbo del plotter a _ °
 
 plotter pen down
-bajar lápiz del plotter
+baja lápiz del plotter
 
 plotter pen up
-subir lápiz del plotter
+sube lápiz del plotter
 
 plotter stop
-detener plotter
+detén plotter
 
 set plotter speed to _ %
-fijar velocidad del plotter a _ %
+fija velocidad del plotter a _ %
 
 ##################
 # MicroBlocks UI #
