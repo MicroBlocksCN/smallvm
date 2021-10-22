@@ -536,6 +536,10 @@ method processDroppedFiles MicroBlocksEditor {
 	  processDroppedFile this fName data
 	}
   }
+  for evt (droppedTexts (global 'page')) {
+	text = (at evt 'file')
+	processDroppedText this text
+  }
 }
 
 method processDroppedFile MicroBlocksEditor fName data {
@@ -551,6 +555,30 @@ method processDroppedFile MicroBlocksEditor fName data {
 	data = (joinStrings (splitWith (toString data) ',')) // remove commas
 	clearLoggedData (smallRuntime)
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
+  }
+  print fName
+}
+
+method processDroppedText MicroBlocksEditor text {
+  if (beginsWith text 'http') {
+    url = (substring text ((findFirst text ':') + 3))
+    host = (substring url 1 ((findFirst url '/') - 1))
+    path = (substring url (findFirst url '/'))
+    fileName = (substring path ((findLast path '/') + 1) ((findLast path '.') - 1))
+    if (or (endsWith url '.ubp') (endsWith url '.gpp')) {
+      if (not (canReplaceCurrentProject this)) { return }
+      openProject this (httpBody (httpGet host path)) fileName
+    } (or (endsWith url '.ubl') (endsWith url '.ulib')) {
+      importLibraryFromString scripter (httpBody (httpGet host path)) fileName fileName
+    }
+  } else {
+	spec = (specForOp (authoringSpecs) 'comment')
+	block = (blockForSpec spec)
+	setContents (first (inputs block)) text
+	// doesn't work because hand position isn't updated until the drop is done
+	setLeft (morph block) (x (hand (global 'page')))
+	setTop (morph block) (y (hand (global 'page')))
+	addPart (morph (scriptEditor scripter)) (morph block)
   }
 }
 

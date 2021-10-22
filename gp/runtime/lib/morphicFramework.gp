@@ -706,7 +706,7 @@ method updateModifiedKeys Keyboard modifierKeys {
 
 // Page
 
-defineClass Page morph hand keyboard taskMaster soundMixer schedules activeMenu isChanged color activeHint isShowingConnectors foreground devMode profileTimer droppedFiles damages redrawAll
+defineClass Page morph hand keyboard taskMaster soundMixer schedules activeMenu isChanged color activeHint isShowingConnectors foreground devMode profileTimer droppedFiles droppedTexts damages redrawAll
 
 to go tryRetina {
   // Run 'go' at command prompt to open or restart.
@@ -758,6 +758,7 @@ to newPage width height color {
   keyboard = (new 'Keyboard' page nil (newArray 255 false))
   setKeyboard page keyboard
   setField page 'droppedFiles' (list)
+  setField page 'droppedTexts' (list)
   setField page 'damages' (list)
   setField page 'redrawAll' false
   return page
@@ -991,6 +992,8 @@ method processEvents Page {
       processWindowEvent this evt
 	} (type == 'dropFile') {
 	  add droppedFiles evt
+	} (type == 'dropText') {
+	  add droppedTexts evt
 	} (type == 'quit') {
       confirmToQuit this
     }
@@ -1566,6 +1569,15 @@ method droppedFiles Page {
   if (isEmpty droppedFiles) { return droppedFiles }
   result = droppedFiles
   droppedFiles = (list)
+  return result
+}
+
+method droppedTexts Page {
+  // Return a list of dropText events and clear droppedTexts.
+
+  if (isEmpty droppedTexts) { return droppedTexts }
+  result = droppedTexts
+  droppedTexts = (list)
   return result
 }
 
