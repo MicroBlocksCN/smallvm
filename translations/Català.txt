@@ -26,6 +26,12 @@ botó A
 button B
 botó B
 
+timer
+cronòmetre
+
+reset timer
+reinicia el cronòmetre
+
 microseconds
 microsegons
 
@@ -255,6 +261,9 @@ nova llista de llargada _
 new byte array _
 nova llista de bytes de llargada _
 
+as byte array _
+llista de bytes a partir de _
+
 free memory
 memòria disponible
 
@@ -306,6 +315,18 @@ canal rpi _
 
 spi exchange bytes _
 bytes d'intercanvi spi _
+
+serial open _ baud
+obre port sèrie a _ bauds
+
+serial close
+tanca port sèrie
+
+serial read
+llegeix port sèrie
+
+serial write _
+escriu _ al port sèrie
 
 print _
 escriu _

@@ -19,6 +19,10 @@ button A
 
 button B
 
+timer
+
+reset timer
+
 microseconds
 
 milliseconds
@@ -173,6 +177,8 @@ new list length _
 
 new byte array _
 
+as byte array _
+
 free memory
 
 My Blocks
@@ -208,6 +214,14 @@ mode _
 rpi channel _
 
 spi exchange bytes _
+
+serial open _ baud
+
+serial close
+
+serial read
+
+serial write _
 
 print _
 
