@@ -78,8 +78,22 @@ method setContents InputSlot data {
   if ((or (true == contents) (false == contents))) {
     menuSelector = 'boolMenu'
   }
-  setText text (toString data)
+  if (and (notNil menuSelector) (not (isVarSlot this))) {
+    setText text (localized (toString data))
+  } else {
+    setText text (toString data)
+  }
   textChanged this
+  if (and (isClass data 'String') ('' != data) ('editable' != (editRule text)) (representsANumber data)) {
+    switchType this 'editable' // old value was a string; covert to string-only
+  }
+}
+
+method isVarSlot InputSlot {
+  if (isNil (owner morph)) { return false }
+  owner = (handler (owner morph))
+  if (or (not (isClass owner 'Block')) (isNil (expression owner))) { return false }
+  return (isOneOf (primName (expression owner)) '=' '+=')
 }
 
 method fixLayout InputSlot {
