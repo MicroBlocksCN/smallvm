@@ -1,7 +1,8 @@
 // To test it:
-// ./gp-linux64bit runtime/lib/* renderScript.gp - --scriptString "script nil 10 10 { whenStarted; '[display:mbDisplayOff]'; forever { setUserLED true; waitMillis 200; setUserLED false; waitMillis 200; } }" --fileName 'script.png' --scale 4
+// ./gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp renderScript.gp - --scriptString "script nil 10 10 { whenStarted; '[display:mbDisplayOff]'; forever { setUserLED true; waitMillis 200; setUserLED false; waitMillis 200; } }" --fileName 'script.png' --scale 4
 
 to startup {
+	initMicroBlocksSpecs (new 'SmallCompiler')
 	scriptString = (at (commandLine) ((indexOf (commandLine) '--scriptString') + 1))
 	fileName = (at (commandLine) ((indexOf (commandLine) '--fileName') + 1))
 	scale = (at (commandLine) ((indexOf (commandLine) '--scale') + 1))
