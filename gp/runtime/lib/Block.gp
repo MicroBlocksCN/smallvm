@@ -920,7 +920,7 @@ method copyToClipboard Block {
 
 method exportAsImage Block { exportAsImageScaled this 2 }
 
-method exportAsImageScaled Block scale result {
+method exportAsImageScaled Block scale result fileName {
   // Save a PNG picture of the given script at the given scale.
   // If result is not nil, include a speech bubble showing the result.
 
@@ -977,7 +977,11 @@ method exportAsImageScaled Block scale result {
   if ('Browser' == (platform)) {
 	browserWriteFile pngData (join 'scriptImage' (msecsSinceStart) '.png') 'scriptImage'
   } else {
-	fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
+  	if (notNil fileName) {
+		fName = fileName
+	} else {
+		fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
+	}
 	if ('' == fName) { return false }
 	writeFile fName pngData
   }
