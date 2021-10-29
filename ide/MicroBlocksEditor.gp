@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -111,6 +111,7 @@ method initialize MicroBlocksEditor {
   morph = (newMorph this)
   httpServer = (newMicroBlocksHTTPServer)
   addTopBarParts this
+  addTipBar this
   scripter = (initialize (new 'MicroBlocksScripter') this)
   lastProjectFolder = 'Examples'
   addPart morph (morph scripter)
@@ -126,6 +127,7 @@ method scaleChanged MicroBlocksEditor {
   removeHint (global 'page')
   removeAllParts morph
   addTopBarParts this
+  addTipBar this
 
   // save the state of the current scripter
   if (2 == (global 'scale')) { oldScale = 1 } else { oldScale = 2 }
@@ -209,6 +211,15 @@ method textButton MicroBlocksEditor label selector {
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
+}
+
+// tip bar
+method addTipBar MicroBlocksEditor {
+  tipBar = (initialize (new 'MicroBlocksTipBar'))
+  setGlobal 'tipBar' tipBar
+  setTitle tipBar 'an element'
+  setTip tipBar 'some tip about it'
+  addPart morph (morph tipBar)
 }
 
 // project operations
@@ -556,7 +567,6 @@ method processDroppedFile MicroBlocksEditor fName data {
 	clearLoggedData (smallRuntime)
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
   }
-  print fName
 }
 
 method processDroppedText MicroBlocksEditor text {
@@ -705,6 +715,7 @@ method drawOn MicroBlocksEditor aContext {
 method fixLayout MicroBlocksEditor fromScripter {
   setExtent morph (width (morph (global 'page'))) (height (morph (global 'page')))
   fixTopBarLayout this
+  fixTipBarLayout this
   if (true != fromScripter) { fixScripterLayout this }
 }
 
@@ -742,13 +753,19 @@ method fixTopBarLayout MicroBlocksEditor {
   }
 }
 
+method fixTipBarLayout MicroBlocksEditor {
+	fixLayout tipBar
+	setLeft (morph tipBar) 0
+	setBottom (morph tipBar) (bottom morph)
+}
+
 method fixScripterLayout MicroBlocksEditor {
   scale = (global 'scale')
   if (isNil scripter) { return } // happens during initialization
   m = (morph scripter)
   setPosition m 0 (topBarHeight this)
   w = (width (morph (global 'page')))
-  h = (max 1 ((height (morph (global 'page'))) - (top m)))
+  h = (max 1 (((height (morph (global 'page'))) - (top m)) - (height (morph tipBar))))
   setExtent m w h
   fixLayout scripter
 }
