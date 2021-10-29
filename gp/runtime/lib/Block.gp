@@ -299,7 +299,7 @@ method fixLayoutRTL Block {
 	drawer = (drawer this)
 	if (notNil drawer) {
 		block_width = (block_width - (width (fullBounds (morph drawer))))
-		block_width = (block_width - (3 * scale))
+		block_width = (block_width - (3 * (blockScale)))
 	}
 
 	for group labelParts {
@@ -355,7 +355,7 @@ method hatHeight Block {
 
 method type Block {return type}
 method corner Block {return corner}
-method scale Block {return scale}
+method scale Block {return (blockScale)}
 method blockSpec Block {return blockSpec}
 method function Block {return function}
 method isPrototype Block {return (notNil function)}
