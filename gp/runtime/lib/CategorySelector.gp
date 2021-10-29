@@ -138,6 +138,18 @@ method step CategorySelector {
 	if (hoverIndex != oldHoverIndex) { changed morph }
 }
 
+method categoryUnderHand CategorySelector {
+	hand = (hand (global 'page'))
+	if (isBusy hand) { return nil }
+	handX = (x hand)
+	handY = (y hand)
+	if (containsPoint (bounds morph) handX handY) {
+		i = (truncate ((handY - (top morph)) / (itemHeight this)))
+		if (and (i >= 0) (i < (count items))) { return (at items (i + 1)) }
+	}
+	return nil
+}
+
 // context menu
 
 method rightClicked CategorySelector {

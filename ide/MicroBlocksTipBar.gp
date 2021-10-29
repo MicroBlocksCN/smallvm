@@ -25,6 +25,7 @@ method initialize MicroBlocksTipBar {
 
 	box = (newBox nil (gray 200) 0 1)
 	morph = (morph box)
+	setFPS morph 5
 
 	initContents this
 
@@ -40,6 +41,16 @@ method initialize MicroBlocksTipBar {
 method setTitle MicroBlocksTipBar aTitle { setText title aTitle }
 method setTip MicroBlocksTipBar aTip { setText tip aTip }
 
+method step MicroBlocksTipBar {
+	hand = (hand (global 'page'))
+	if (isBusy hand) {
+		setTitle this ''
+		setTip this ''
+	} else {
+		updateTip this (objectAt hand)
+	}
+}
+
 method updateTip MicroBlocksTipBar anElement {
 	contents = (contentsFor this anElement)
 	setTitle this (at contents 1)
@@ -54,20 +65,39 @@ method initContents MicroBlocksTipBar {
 }
 
 method contentsFor MicroBlocksTipBar anElement {
-	className = (className (classOf anElement))
-	content = (at contentDict className)
-	if (isNil content) { return (array '' '') }
+	key = (className (classOf anElement))
+	if ('Text' == key) {
+		if (notNil (ownerThatIsA (morph anElement) 'InputSlot')) {
+			key = 'InputSlot'
+		} (notNil (ownerThatIsA (morph anElement) 'Block')) {
+			key = 'Block'
+		}
+	}
+	if (isClass anElement 'CategorySelector') {
+		category = (categoryUnderHand anElement)
+		items = (collection anElement)
+		if (and (notEmpty items) ('Output' == (first items))) {
+			key = (join 'Category: ' category)
+		} else {
+			key = (join 'Library: ' category)
+		}
+	}
+	content = (at contentDict key)
+	if (isNil content) { return (array key '') } // show key in tip bar during devlopment
 	return content
 }
 
 method fixLayout MicroBlocksTipBar {
+	scale = (global 'scale')
 	page = (global 'page')
-	setExtent morph (width page) 30
+	setExtent morph (width page) (20 * scale)
 	redraw box
 
-	setLeft (morph title) ((left morph) + 3)
-	setTop (morph title) ((top morph) + 3)
+	topInset = (0 * scale)
+	hInset = (1 * scale)
+	setLeft (morph title) ((left morph) + hInset)
+	setTop (morph title) ((top morph) + topInset)
 
-	setLeft (morph tip) ((right (morph title)) + 10)
-	setTop (morph tip) ((top morph) + 3)
+	setLeft (morph tip) ((right (morph title)) + hInset)
+	setTop (morph tip) ((top morph) + topInset)
 }

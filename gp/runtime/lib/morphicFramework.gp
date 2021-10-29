@@ -331,9 +331,7 @@ method processMove Hand {
   }
   oldMorphs = currentMorphs
   currentMorphs = (list)
-  currentObject = (currentObject this)
-  updateTip (global 'tipBar') currentObject
-  m = (morph currentObject)
+  m = (morph (currentObject this))
   stopped = false
   while (and (not stopped) (notNil m)) {
     add currentMorphs m
