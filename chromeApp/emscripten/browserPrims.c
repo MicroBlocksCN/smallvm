@@ -29,7 +29,7 @@ typedef struct {
 } FetchRequest;
 
 #define MAX_REQUESTS 1000
-FetchRequest requests[MAX_REQUESTS];
+FetchRequest httpRequests[MAX_REQUESTS];
 
 static int nextFetchID = 100;
 
@@ -93,18 +93,18 @@ static OBJ primStartFetch(int nargs, OBJ args[]) {
 	// find an unused request
 	int i;
 	for (i = 0; i < MAX_REQUESTS; i++) {
-		if (!requests[i].id) {
-			requests[i].id = nextFetchID++;
-			requests[i].status = IN_PROGRESS;
-			requests[i].data = NULL;
-			requests[i].byteCount = 0;
+		if (!httpRequests[i].id) {
+			httpRequests[i].id = nextFetchID++;
+			httpRequests[i].status = IN_PROGRESS;
+			httpRequests[i].data = NULL;
+			httpRequests[i].byteCount = 0;
 			break;
 		}
 	}
 	if (i >= MAX_REQUESTS) return nilObj; // no free request slots (unlikely)
 
-	emscripten_async_wget_data(obj2str(url), &requests[i], fetchDoneCallback, fetchErrorCallback);
-	return int2obj(requests[i].id);
+	emscripten_async_wget_data(obj2str(url), &httpRequests[i], fetchDoneCallback, fetchErrorCallback);
+	return int2obj(httpRequests[i].id);
 }
 
 static OBJ primFetchResult(int nargs, OBJ args[]) {
@@ -116,29 +116,29 @@ static OBJ primFetchResult(int nargs, OBJ args[]) {
 	// find the fetch request with the given id
 	int i;
 	for (i = 0; i < MAX_REQUESTS; i++) {
-		if (requests[i].id == id) break;
+		if (httpRequests[i].id == id) break;
 	}
 	if (i >= MAX_REQUESTS) return falseObj; // could not find request with id; report as failure
-	if (IN_PROGRESS == requests[i].status) return nilObj; // in progress
+	if (IN_PROGRESS == httpRequests[i].status) return nilObj; // in progress
 
 	OBJ result = falseObj;
 
-	if (DONE == requests[i].status && requests[i].data) {
+	if (DONE == httpRequests[i].status && httpRequests[i].data) {
 		// allocate result object
-		int byteCount = requests[i].byteCount;
+		int byteCount = httpRequests[i].byteCount;
 		result = newBinaryData(byteCount);
 		if (result) {
-			memmove(&FIELD(result, 0), requests[i].data, byteCount);
+			memmove(&FIELD(result, 0), httpRequests[i].data, byteCount);
 		} else {
 			printf("Insufficient memory for requested file (%ul bytes needed); skipping.\n", byteCount);
 		}
 	}
 
 	// mark request as free and free the request data, if any
-	requests[i].id = 0;
-	if (requests[i].data) free(requests[i].data);
-	requests[i].data = NULL;
-	requests[i].byteCount = 0;
+	httpRequests[i].id = 0;
+	if (httpRequests[i].data) free(httpRequests[i].data);
+	httpRequests[i].data = NULL;
+	httpRequests[i].byteCount = 0;
 
 	return result;
 }
