@@ -40,6 +40,7 @@ static int _x;
 static int _y;
 
 static int type_dropfile;
+static int type_droptext;
 static int type_keydown;
 static int type_keyup;
 static int type_mousedown;
@@ -95,6 +96,7 @@ static void initialize() {
 	_y = makeKey("y");
 
 	type_dropfile = makeKey("dropFile");
+	type_droptext = makeKey("dropText");
 	type_keydown = makeKey("keyDown");
 	type_keyup = makeKey("keyUp");
 	type_mousedown = makeKey("mouseDown");
@@ -396,6 +398,11 @@ OBJ getEvent() {
 			break;
 		case SDL_DROPFILE:
 			dictAtPut(dict, key(_type), key(type_dropfile));
+			dictAtPut(dict, key(_file), newString(event.drop.file));
+			SDL_free(event.drop.file);
+			break;
+		case SDL_DROPTEXT:
+			dictAtPut(dict, key(_type), key(type_droptext));
 			dictAtPut(dict, key(_file), newString(event.drop.file));
 			SDL_free(event.drop.file);
 			break;
