@@ -26,6 +26,12 @@ Knopf A
 button B
 Knopf B
 
+timer
+Stoppuhr
+
+reset timer
+Stoppuhr zurücksetzen
+
 microseconds
 Mikrosekunden
 
@@ -227,6 +233,9 @@ bis _
 
 find _ in _
 finde _ in _
+
+split _ by _
+trenne _ nach _
 
 starting at _
 beginnend bei _
