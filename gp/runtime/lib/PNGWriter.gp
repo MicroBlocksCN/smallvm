@@ -1,14 +1,15 @@
 defineClass PNGWriter bitmap dataStream
 
-to encodePNG aBitmap pixelsPerInch { return (writeImage (new 'PNGWriter') aBitmap pixelsPerInch) }
+to encodePNG aBitmap pixelsPerInch scriptText { return (writeImage (new 'PNGWriter') aBitmap pixelsPerInch scriptText) }
 
-method writeImage PNGWriter aBitmap pixelsPerInch {
+method writeImage PNGWriter aBitmap pixelsPerInch scriptText {
   bitmap = aBitmap
   dataStream = (dataStream (newBinaryData ((width bitmap) * (height bitmap))) true)
 
   writeSignature this
   writeChunk this 'IHDR' (headerChunk this)
   if (notNil pixelsPerInch) { writeChunk this 'pHYs' (physChunk this pixelsPerInch) }
+  if (notNil scriptText) { writeChunk this 'tEXt' (textChunk this scriptText) }
   writeChunk this 'IDAT' (dataChunk this)
   writeChunk this 'IEND' (newBinaryData 0)
 
@@ -71,4 +72,14 @@ method dataChunk PNGWriter {
   }
   compressed = (zlibEncode dst)
   return compressed
+}
+
+method textChunk PNGWriter aString {
+  // Embed a tEXt chunk into the PNG data. Useful for storing actual scripts
+  // into script images :)
+  chunk = (dataStream (newBinaryData (7 + (count aString))) true)
+  nextPutAll chunk 'script'
+  putUInt8 chunk 0
+  nextPutAll chunk aString
+  return (contents chunk)
 }

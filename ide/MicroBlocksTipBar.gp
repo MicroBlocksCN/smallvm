@@ -83,7 +83,7 @@ method contentsFor MicroBlocksTipBar anElement {
 		}
 	}
 	content = (at contentDict key)
-	if (isNil content) { return (array key '') } // show key in tip bar during devlopment
+	if (isNil content) { return (array key '') } // show key in tip bar during development
 	return content
 }
 

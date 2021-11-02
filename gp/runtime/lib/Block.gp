@@ -899,6 +899,10 @@ method duplicate Block {
 }
 
 method copyToClipboard Block {
+  setClipboard (scriptText this)
+}
+
+method scriptText Block {
   result = (list 'GP Script' (newline))
   pp = (new 'PrettyPrinter')
   add result (join 'script nil 10 10 ')
@@ -915,7 +919,7 @@ method copyToClipboard Block {
 	add result (join '}' (newline))
   }
   add result (newline)
-  setClipboard (joinStrings result)
+  return (joinStrings result)
 }
 
 method exportAsImage Block { exportAsImageScaled this 2 }
@@ -973,7 +977,7 @@ method exportAsImageScaled Block scale result fileName {
   setGlobal 'scale' oldScale // revert to old scale
 
   // save result as a PNG file
-  pngData = (encodePNG bm)
+  pngData = (encodePNG bm nil (scriptText this))
   if ('Browser' == (platform)) {
 	browserWriteFile pngData (join 'scriptImage' (msecsSinceStart) '.png') 'scriptImage'
   } else {

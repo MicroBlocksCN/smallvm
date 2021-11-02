@@ -1,4 +1,4 @@
-defineClass PNGReader data allDataChunk unknownChunks colorType interlaceMethod bitmap width height depth palette transparency backColor bitsPerPixel bitsPerChannel bytesPerScanline BPP BlockWidth BlockHeight
+defineClass PNGReader data allDataChunk unknownChunks colorType interlaceMethod bitmap width height depth palette transparency backColor bitsPerPixel bitsPerChannel bytesPerScanline BPP BlockWidth BlockHeight script
 
 method init PNGReader {
   BPP = (array (array 1 2 4 8 16)
@@ -34,6 +34,11 @@ method readFrom PNGReader d {
      processInterlaced this allDataChunk
   }
   return bitmap
+}
+
+method getScriptText PNGReader d {
+  readFrom this d
+  return script
 }
 
 method processNextChunk PNGReader {
@@ -198,6 +203,9 @@ method processTextChunk PNGReader chunk {
   s = (dataStream chunk true)
   key = (nextNullTerminatedString s)
   val = (nextNullTerminatedString s)
+  if ('script' == key) {
+    script = val
+  }
   ignore s key val
 }
 

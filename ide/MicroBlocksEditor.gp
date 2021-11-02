@@ -567,6 +567,12 @@ method processDroppedFile MicroBlocksEditor fName data {
 	clearLoggedData (smallRuntime)
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
   }
+  if (endsWith fName '.png') {
+	script = (getScriptText (new 'PNGReader') data)
+    i = (find (letters script) (newline))
+    script = (substring script i)
+	pasteScripts scripter script
+  }
 }
 
 method processDroppedText MicroBlocksEditor text {
