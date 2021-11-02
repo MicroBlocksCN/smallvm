@@ -1186,14 +1186,14 @@ static void runTask(Task *task) {
 			if (calleeChunkIndex >= 0) {
 				int paramCount = 0;
 				if (arg == 2) { // has parameters
-					if (IS_TYPE(params, ListType)) { // list: push list contents onto stack
+					if (IS_TYPE(params, ListType)) { // push parameters onto stack
 						paramCount = (obj2int(FIELD(params, 0)) & 0xFF);
 						for (int i = 1; i <= paramCount; i++) {
 							*sp++ = FIELD(params, i);
 						}
-					} else { // non-list: push the single parameter onto stack
-						paramCount = 1;
-						*sp++ = params;
+					} else { // fail: parameters must be a list
+						*sp++ = fail(needsListError);
+						DISPATCH();
 					}
 				}
 				// call the function
