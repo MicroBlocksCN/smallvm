@@ -569,6 +569,7 @@ method processDroppedFile MicroBlocksEditor fName data {
   }
   if (endsWith fName '.png') {
 	script = (getScriptText (new 'PNGReader') data)
+	if (isNil script) { return } // no script in this PNG file
     i = (find (letters script) (newline))
     script = (substring script i)
 	pasteScripts scripter script

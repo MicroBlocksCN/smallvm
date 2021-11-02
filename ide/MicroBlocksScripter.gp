@@ -758,6 +758,7 @@ method pasteScripts MicroBlocksScripter scriptString {
   scriptsPane = (contents scriptsFrame)
   clearDropHistory scriptsPane
   scripts = (parse scriptString)
+  lastScript = nil
   if (notNil scripts) {
 	hand = (hand (global 'page'))
     x = (x hand)
@@ -776,12 +777,16 @@ method pasteScripts MicroBlocksScripter scriptString {
 		y += ((height (fullBounds (morph block))) + (10 * scale))
 		addPart (morph scriptsPane) (morph block)
 		fixBlockColor block
+		lastScript = block
       }
     }
     scriptChanged this
   }
   updateSliders scriptsFrame
   updateBlocks this
+  if (notNil lastScript) {
+	scrollIntoView scriptsFrame (fullBounds (morph block)) true // favorTopLeft
+  }
 }
 
 method addGlobalsFor MicroBlocksScripter script {
