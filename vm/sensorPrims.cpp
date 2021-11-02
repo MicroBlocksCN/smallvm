@@ -208,9 +208,9 @@ OBJ primSPISetup(int argCount, OBJ *args) {
 OBJ primSPIExchange(int argCount, OBJ *args) {
 	if ((argCount < 1) || (objType(args[0]) != ByteArrayType)) return falseObj;
 
-	SPI.beginTransaction(SPISettings(1000, MSBFIRST, 0));
 	unsigned char *data = (unsigned char *) &FIELD(args[0], 0);
 	int byteCount = BYTES(args[0]);
+	initSPI();
 	for (int i = 0; i < byteCount; i++) {
 		data[i] = SPI.transfer(data[i]);
 	}
