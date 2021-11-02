@@ -163,8 +163,53 @@ static void codePointToUTF8(int unicode, char *utf8) {
 	utf8[dst] = 0; // zero terminator
 }
 
+OBJ droppedTextEvent() {
+	// Return a dropped text event, if any.
+
+	int len = EM_ASM_INT({
+		if ((typeof chrome != 'undefined') &&
+			(typeof chrome.runtime != 'undefined') &&
+			(typeof chrome.runtime.getBackgroundPage != 'undefined')) {
+				// For now, do not report dropped text events when running on ChromeOS
+				// because Chromebooks depend on browserGetDroppedText as a substitute
+				// for copy-paste.
+				return 0;
+		}
+		return GP.droppedTextBytes.length;
+	}, NULL);
+	if (len == 0) return nilObj;
+
+	OBJ droppedText = nilObj;
+	if (canAllocate(len / 4)) {
+		droppedText = allocateString(len);
+		EM_ASM_({
+			var src = GP.droppedTextBytes;
+			var dst = $0;
+			var len = $1;
+			for (var i = 0; i < len; i++) {
+				Module.HEAPU8[dst++] = src[i];
+			}
+			GP.droppedTextBytes = [];
+		}, &FIELD(droppedText, 0), len);
+	}
+
+	EM_ASM_({ GP.droppedTextBytes = []; }, 0); // clear dropped text
+
+	OBJ result = nilObj;
+	if (droppedText != nilObj) {
+		result = newDict(4);
+		dictAtPut(result, key(_type), key(type_droptext));
+		dictAtPut(result, key(_file), droppedText);
+	}
+	return result;
+}
+
 OBJ getEvent() {
 	if (!initialized) initialize();
+
+	// report dropped text event, if any
+	OBJ textDropEvt = droppedTextEvent();
+	if (textDropEvt != nilObj) return textDropEvt;
 
 	int evtLen = EM_ASM_INT({
 		if (GP.events.length == 0) return -1;
