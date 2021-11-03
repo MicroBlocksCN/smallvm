@@ -54,6 +54,9 @@ method setTip MicroBlocksTipBar aTip {
 	// [l] run this block [r] open context menu
 	removeAllParts tipMorph
 	text = ''
+	if (isNil aTip) {
+		return
+	}
 	for word (words aTip) {
 		if (contains (keys iconsDict) word) {
 			if ((count text) > 0) {
