@@ -90,21 +90,35 @@ method languageChanged MicroBlocksScripter {
 
 // zoom buttons
 method addZoomButtons MicroBlocksScripter {
-  zoomButtons = (newAlignment 'centered-line' 0 'bounds')
-  setMorph zoomButtons (newMorph zoomButtons)
+  zoomButtons = (array
+  	(newButton '=' (action 'restoreZoom' this))
+	(newButton '-' (action 'decreaseZoom' this))
+	(newButton '+' (action 'increaseZoom' this)))
+  for button zoomButtons {
+	  addPart (morph (contents scriptsFrame)) (morph button)
+  }
+}
 
-  plusButton = (pushButton '+' (gray 130) 'increaseZoom')
-  lessButton = (pushButton '-' (gray 130) 'decreaseZoom')
+method restoreZoom MicroBlocksScripter {
+  setBlockScalePercent (scriptEditor this) 100
+}
 
-  addPart (morph zoomButtons) (morph (contents scriptsFrame))
+method increaseZoom MicroBlocksScripter {
+  setBlockScalePercent (scriptEditor this) (((global 'blockScale') * 100) + 5)
+}
+
+method decreaseZoom MicroBlocksScripter {
+  setBlockScalePercent (scriptEditor this) (((global 'blockScale') * 100) - 5)
 }
 
 method fixZoomButtonsLayout MicroBlocksScripter {
-  buttonsM = (morph zoomButtons)
-  scriptFrameM = (morph (contents scriptsFrame))
-  setLeft buttonsM (((right scriptFrameM) - (width buttonsM)) - 10)
-  setTop buttonsM (((bottom scriptFrameM) - (height buttonsM)) - 10)
-  fixLayout zoomButtons
+  right = ((right morph) - 15)
+  bottom = ((bottom morph) - 15)
+  for button zoomButtons {
+	right = ((right - (width (morph button))) - 5)
+    setLeft (morph button) right
+    setTop (morph button) ((bottom - (height (morph button))) - 5)
+  }
 }
 
 // library header
@@ -697,6 +711,7 @@ method restoreScripts MicroBlocksScripter {
   scale = (blockScale)
   scriptsPane = (contents scriptsFrame)
   removeAllParts (morph scriptsPane)
+  addZoomButtons this
   clearDropHistory scriptsPane
 
   scripts = (scripts (main mbProject))
