@@ -1455,7 +1455,7 @@ to blockForSpec spec {
 
 to scriptForFunction aFunction {
   if (isNil aFunction) { return nil }
-  hatLabel = 'define'
+  hatLabel = (localized 'define')
   if (isMethod aFunction) { hatLabel = 'method' }
   block = (block 'hat' (color 140 0 140) hatLabel (blockPrototypeForFunction aFunction))
   if (notNil (cmdList aFunction)) {
