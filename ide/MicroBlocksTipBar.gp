@@ -8,7 +8,7 @@
 // 						  currently hovered item
 // Bernat Romagosa, November 2021
 
-defineClass MicroBlocksTipBar morph box title tip contentDict
+defineClass MicroBlocksTipBar morph box title tipMorph tip contentDict iconsDict
 
 method title MicroBlocksTipBar { return title }
 method tip MicroBlocksTipBar { return tip }
@@ -21,25 +21,58 @@ method initialize MicroBlocksTipBar {
 	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
 
 	title = (newText '' titleFontName fontSize (gray 0) 'left' nil 0 0 5 3)
-	tip = (newText '' fontName fontSize (gray 0) 'left' nil 0 0 5 3)
+
+	tip = (newAlignment 'centered-line' 0 'bounds')
+	tipMorph = (newMorph tip)
+	setMorph tip tipMorph
 
 	box = (newBox nil (gray 200) 0 1)
 	morph = (morph box)
 	setFPS morph 5
 
 	initContents this
+	initIcons this
 
 	setClipping morph true
 	setHandler morph this
 
 	addPart morph (morph title)
-	addPart morph (morph tip)
+	addPart morph tipMorph
 
 	return this
 }
 
+method initIcons MicroBlocksTipBar {
+	iconsDict = (dictionary)
+	atPut iconsDict '[l]' (leftClickLogo this)
+	atPut iconsDict '[r]' (rightClickLogo this)
+}
+
 method setTitle MicroBlocksTipBar aTitle { setText title aTitle }
-method setTip MicroBlocksTipBar aTip { setText tip aTip }
+method setTip MicroBlocksTipBar aTip {
+	// Tips can contain icon placeholders, like so:
+	// [l] run this block [r] open context menu
+	removeAllParts tipMorph
+	text = ''
+	for word (words aTip) {
+		if (contains (keys iconsDict) word) {
+			if ((count text) > 0) {
+				addPart tipMorph (morph (newText text titleFontName fontSize (gray 0) 'left' nil 0 0 5 3))
+				text = ''
+			}
+			icon = (newMorph)
+			setCostume icon (at iconsDict word)
+			setPosition icon 0 0
+			addPart tipMorph icon
+		} else {
+			text = (join text word ' ')
+		}
+	}
+	if ((count text) > 0) {
+		addPart tipMorph (morph (newText text titleFontName fontSize (gray 0) 'left' nil 0 0 5 3))
+	}
+	fixLayout tip
+}
 
 method step MicroBlocksTipBar {
 	hand = (hand (global 'page'))
@@ -60,21 +93,21 @@ method updateTip MicroBlocksTipBar anElement {
 
 method initContents MicroBlocksTipBar {
 	contentDict = (dictionary)
-	atPut contentDict 'BooleanSlot' (array 'Boolean Input' 'Click on it toggle value, or drop a reporter into it.')
-	atPut contentDict 'ColorSlot' (array 'Color Input' 'Click on it to change the color, or drop a reporter into it.')
-	atPut contentDict 'InputSlot' (array 'Input' 'Click on it to edit its value, or drop a reporter into it.')
-	atPut contentDict 'BlockDrawer' (array 'Block Extension' 'Click the right arrow to show optional inputs or the left arrow to hide them.')
+	atPut contentDict 'BooleanSlot' (array 'Boolean Input' '[l] toggle value, or drop a reporter into it.')
+	atPut contentDict 'ColorSlot' (array 'Color Input' '[l] change the color, or drop a reporter into it.')
+	atPut contentDict 'InputSlot' (array 'Input' '[l] edit its value, or drop a reporter into it.')
+	atPut contentDict 'BlockDrawer' (array 'Block Extension' '[l] right arrow to show optional inputs. [l] left arrow to hide them.')
 
-	atPut contentDict 'Command' (array 'Command Block' 'Click on it to run it, or drag attach to other command blocks to build scripts. Right-click for menu.')
-	atPut contentDict 'Reporter' (array 'Reporter Block' 'Click on it to see its value, or drop it into an input slot to use the value. Right-click for menu.')
-	atPut contentDict 'Script' (array 'Script' 'Click on it to run it.')
+	atPut contentDict 'Command' (array 'Command Block' '[l] run it, or drag attach to other command blocks to build scripts. [r] menu.')
+	atPut contentDict 'Reporter' (array 'Reporter Block' '[l] see its value, or drop it into an input slot to use the value. [r] menu.')
+	atPut contentDict 'Script' (array 'Script' '[l] run it. [r] menu.')
 
 	atPut contentDict 'PaneResizer' (array 'Pane Divider' 'Drag to change pane width.')
-	atPut contentDict 'Library' (array 'Library' 'Click to show the blocks in this library. Right-click for menu.')
-	atPut contentDict 'BlockCategory' (array 'Block Category' 'Click to show the blocks in this category.')
+	atPut contentDict 'Library' (array 'Library' '[l] show the blocks in this library. [r] menu.')
+	atPut contentDict 'BlockCategory' (array 'Block Category' '[l] show the blocks in this category.')
 	atPut contentDict 'BlocksPalette' (array 'Palette' 'Drag blocks from here for use in scripts. Drop blocks or scripts here to delete them.')
 
-	atPut contentDict 'ScriptEditor' (array 'Scripts Pane' 'Drag blocks here to build scripts. Right-click for menu.')
+	atPut contentDict 'ScriptEditor' (array 'Scripts Pane' 'Drag blocks here to build scripts. [r] menu.')
 }
 
 method contentsFor MicroBlocksTipBar anElement {
@@ -134,7 +167,7 @@ method contentsFor MicroBlocksTipBar anElement {
 method fixLayout MicroBlocksTipBar {
 	scale = (global 'scale')
 	page = (global 'page')
-	setExtent morph (width page) (20 * scale)
+	setExtent morph (width page) (24 * scale)
 	redraw box
 
 	topInset = (0 * scale)
@@ -142,6 +175,30 @@ method fixLayout MicroBlocksTipBar {
 	setLeft (morph title) ((left morph) + hInset)
 	setTop (morph title) ((top morph) + topInset)
 
-	setLeft (morph tip) ((right (morph title)) + hInset)
-	setTop (morph tip) ((top morph) + topInset)
+	setLeft tipMorph ((right (morph title)) + hInset)
+	setTop tipMorph ((top morph) + topInset)
+}
+
+method rightClickLogo MicroBlocksTipBar {
+	data = '
+iVBORw0KGgoAAAANSUhEUgAAAAsAAAAPCAYAAAAyPTUwAAAACXBIWXMAAAUTAAAFEwFaO8pPAAAAGXRF
+WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAQJJREFUKJHN0qFKQ3EYhvHfzubckZ22MFgS
+nVjEYZElm2CZXoFJ1OAtiHdgEYNWi0mMg92CA5tBMGgSi9vAicP9LUcmsmH1SS8vT3g/+DJGbGMPU4gw
+xAfOcAHZVDxBGU1kcFQoFOZDCNchhBVsoJnFFuYwixks4aZUKh1Wq9WNTqcTDQaDF2Qj7OIBtzjAIyRJ
+8t5oNJJarbYcx/ET9iPksYZTY6jX60k+n9/EdISQ7n0eJxeLRcPhsIyQQQttrOAVq9iJ4/iqUqkM+v1+
+6PV6l91ud+FbXsdieiDco5rmN9yhlUuLkBY/af+eFI3bOYl/JMdGPzKJLOIcznGDzz/k4y9pHkHLpi92
+fAAAAABJRU5ErkJggg=='
+	return (readFrom (new 'PNGReader') (base64Decode data))
+}
+
+method leftClickLogo MicroBlocksTipBar {
+	data = '
+iVBORw0KGgoAAAANSUhEUgAAAAsAAAAPCAYAAAAyPTUwAAAACXBIWXMAAAUTAAAFEwFaO8pPAAAAGXRF
+WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAQZJREFUKJHN0rFKQgEUxvGf92rem16hJaql
+IYpASBAanNqCFomgxtoq6Al6iZZoKNp6hYLCJ4hqamioKZBeQDLStOWCEUpr/+nw8eecbzgZA7axhxwC
+9PCJU1xAmIrHmArD8CaKomK32z3ENC5RxRquQ6xjrlgsVsvl8k6n01lotVpX2EQWs2ghDLAbRVGzUqks
+1ev1JEmSj/TaKw7wiGfsBxjL5/PrtVotMZwTrCAfoN/r9SYLhcII1xtm0M+gUSqVXpIk2YrjONNsNnPt
+dnsD57jFBO6wnEEDq1jEeLrtGfPp/I4nNLJp0E+Dnzz87hOMKjqMfyTHBj8yihBxFme4x9cf8tE3ewE5
+yrBvnpwAAAAASUVORK5CYII='
+	return (readFrom (new 'PNGReader') (base64Decode data))
 }
