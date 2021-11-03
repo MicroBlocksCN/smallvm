@@ -60,30 +60,74 @@ method updateTip MicroBlocksTipBar anElement {
 
 method initContents MicroBlocksTipBar {
 	contentDict = (dictionary)
-	atPut contentDict 'InputSlot' (array 'Input slot' 'Click on it to edit its value, or drop a reporter into it.')
-	atPut contentDict 'Block' (array 'Block' 'Click on it to run it, or drag it into the scripting area to build scripts.')
+	atPut contentDict 'BooleanSlot' (array 'Boolean Input' 'Click on it toggle value, or drop a reporter into it.')
+	atPut contentDict 'ColorSlot' (array 'Color Input' 'Click on it to change the color, or drop a reporter into it.')
+	atPut contentDict 'InputSlot' (array 'Input' 'Click on it to edit its value, or drop a reporter into it.')
+	atPut contentDict 'BlockDrawer' (array 'Block Extension' 'Click the right arrow to show optional inputs or the left arrow to hide them.')
+
+	atPut contentDict 'Command' (array 'Command Block' 'Click on it to run it, or drag attach to other command blocks to build scripts. Right-click for menu.')
+	atPut contentDict 'Reporter' (array 'Reporter Block' 'Click on it to see its value, or drop it into an input slot to use the value. Right-click for menu.')
+	atPut contentDict 'Script' (array 'Script' 'Click on it to run it.')
+
+	atPut contentDict 'PaneResizer' (array 'Pane Divider' 'Drag to change pane width.')
+	atPut contentDict 'Library' (array 'Library' 'Click to show the blocks in this library. Right-click for menu.')
+	atPut contentDict 'BlockCategory' (array 'Block Category' 'Click to show the blocks in this category.')
+	atPut contentDict 'BlocksPalette' (array 'Palette' 'Drag blocks from here for use in scripts. Drop blocks or scripts here to delete them.')
+
+	atPut contentDict 'ScriptEditor' (array 'Scripts Pane' 'Drag blocks here to build scripts. Right-click for menu.')
 }
 
 method contentsFor MicroBlocksTipBar anElement {
 	key = (className (classOf anElement))
+	if ('Button' == key) {
+		return (array 'Button' (hint anElement))
+	}
+	block = nil
+	if ('Block' == key) { block = anElement }
 	if ('Text' == key) {
 		if (notNil (ownerThatIsA (morph anElement) 'InputSlot')) {
 			key = 'InputSlot'
 		} (notNil (ownerThatIsA (morph anElement) 'Block')) {
-			key = 'Block'
+			block = (handler (ownerThatIsA (morph anElement) 'Block'))
+		}
+	}
+	if ('Slider' == key) {
+		paneM = (ownerThatIsA (morph anElement) 'ScrollFrame')
+		if (notNil paneM) {
+			key = (className (classOf (contents (handler paneM))))
+		}
+	}
+	if (notNil block) {
+		topBlock = (topBlock block)
+		if ('reporter' == (type block)) {
+			if (block == topBlock) { // stand-alone reporter
+				key = 'Reporter'
+			} else { // reporter in a script
+				key = 'Script'
+			}
+		} else {
+			if (and (block == topBlock) (isNil (next block))) { // stand-alone command
+				key = 'Command'
+			} else {
+				key = 'Script'
+			}
 		}
 	}
 	if (isClass anElement 'CategorySelector') {
 		category = (categoryUnderHand anElement)
 		items = (collection anElement)
 		if (and (notEmpty items) ('Output' == (first items))) {
-			key = (join 'Category: ' category)
+			key = 'BlockCategory'
 		} else {
-			key = (join 'Library: ' category)
+			key = 'Library'
 		}
 	}
 	content = (at contentDict key)
-	if (isNil content) { return (array key '') } // show key in tip bar during development
+	if (isNil content) { // no match
+		devMode = false
+		if devMode { return (array key '') } // show key in tip bar during development
+		return (array '' '')
+	}
 	return content
 }
 
