@@ -65,6 +65,9 @@ to initLibrarySpecs libraryName {
 			}
 			if ('spec' == (at words 1)) {
 				add specs (copyFromTo words 2)
+				op = (at words 4)
+				op = (substring op 2 ((count op) - 1)) // remove quotes
+ 				setOpCategory (authoringSpecs) op category
 			}
 		}
 	}
