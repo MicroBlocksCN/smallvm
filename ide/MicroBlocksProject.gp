@@ -105,7 +105,7 @@ method addLibrary MicroBlocksProject aMicroBlocksModule {
 	remove libraries libName
 	atPut libraries libName aMicroBlocksModule
 
-	// the functions in this new library supercede all earlier versions of those functions
+	// the functions in this new library supersede all earlier versions of those functions
 	newFunctionNames = (dictionary)
 	for f (functions aMicroBlocksModule) { add newFunctionNames (functionName f) }
 	removeSupercededFunctions main newFunctionNames
