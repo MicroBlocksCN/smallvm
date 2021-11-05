@@ -1,5 +1,5 @@
 // To test it:
-// ./gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --scriptString "script nil 10 10 { whenButtonPressed 'A'; repeatUntil (not (buttonA)) { '[display:mbDisplay]' 145728; waitMillis 250; '[display:mbDisplay]' 4685802; waitMillis 250; '[display:mbDisplayOff]'; waitMillis 300 } }" --libs '["LED Display"]'
+// ./gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --scriptString "script nil 10 10 { whenButtonPressed 'A'; repeatUntil (not (buttonA)) { '[display:mbDisplay]' 145728; waitMillis 250; '[display:mbDisplay]' 4685802; waitMillis 250; '[display:mbDisplayOff]'; waitMillis 300 } }" --libs '["LED Display"]' --locale 'Català'
 
 to startup {
 	initMicroBlocksSpecs (new 'SmallCompiler')
@@ -7,7 +7,7 @@ to startup {
 	// default param values
 	fileName = 'script.png'
 	scale = 2
-	libs = (array)
+	locale = 'English'
 
 	// parse params
 	i = (indexOf (commandLine) '--scriptString')
@@ -23,6 +23,13 @@ to startup {
 	if (i > 0) {
 		scale = (at (commandLine) (i + 1))
 	}
+
+	i = (indexOf (commandLine) '--locale')
+	if (i > 0) {
+		locale = (at (commandLine) (i + 1))
+	}
+
+	setLanguage (authoringSpecs) locale
 
 	i = (indexOf (commandLine) '--libs')
 	if (i > 0) {
