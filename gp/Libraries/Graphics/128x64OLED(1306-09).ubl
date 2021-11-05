@@ -1,50 +1,79 @@
 module '128x64OLED(1306-09)' Output
 author 'Turgut Guneysu'
-version 1 0 
-description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C.'
-depends Strings miscPrims
-variables _cList _dList _INITseq _cTABLE OLEDready _row _col _begCol _begRow _endCol _endRow _cStarts _GDBuffer _displayType _cHexTBL _09ResetPin OLEDi2cAddr _delayGDUpd _hexTbl _clearSprite _imgBMPTbl _GDBufReady 
+version 2 3 
+depends Strings miscPrims 
+choices ModeMenu Horizontal Vertical 
+choices TargetMenu Display GDBuffer 
+choices OnOffMenu On Off 
+choices VideoMenu Inverse Normal 
+choices ScrollMenu1 Right Left 
+choices ScrollMenu2 'Vert-Right' 'Vert-Left' 
+choices LineMenu '│' '┤' '╡' '╢' '╖' '╕' '╣' '║' '╗' '╝' '╜' '╛' '┐' '└' '┴' '┬' '├' '─' '┼' '╞' '╟' '╚' '╔' '╩' '╦' '╠' '═' '╬' '╧' '╨' '╤' '╥' '╙' '╘' '╒' '╓' '╫' '╪' '┘' '┌' 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI. Changes:
+- OLEDFlip added.
+- OLEDClear mod
+- OLEDContrast def = 2
+- Scrolls have dropdowns
+- _initDispHW mod for pin location
+- _processString mod for hex(13)
+- LineDraw set added
+- images display within Col limits
+'
+variables _cList _dList _INITseq _cTABLE _row _col _begCol _begRow _endCol _endRow _cStarts _GDBuffer _displayType _cHexTBL OLEDi2cAddr _delayGDUpd _hexTbl _clearSprite _imgBMPTbl _GDBufReady _resetPin _comMode _dcPin OLEDReady timer _lineHexTBL _lineTABLE _cLINEUniTBL char invFlag 
 
-	spec ' ' 'OLEDInit' 'OLEDInit 0.96"< _ >2.4" ResetPin# _ I2Caddr(hex) _' 'bool auto auto' false 0 '3C'
+	spec ' ' 'OLEDInit_I2C' 'OLEDInit_I2C _ I2CAddr(hex) _ ResetPin# _' 'str.DispTypeMenu auto auto' 'OLED_0.96in' '3C' 0
+	spec ' ' 'OLEDInit_SPI' 'OLEDInit_SPI _ D/CPin# _ ResetPin# _' 'str.DispTypeMenu auto auto' 'OLED_2.42in' 16 8
 	spec ' ' 'OLEDClear' 'OLEDClear'
-	spec ' ' 'OLEDColMode' 'OLEDColMode Beg(1-16) _ End(1-16) _' 'auto auto' 1 16
-	spec ' ' 'OLEDContrast' 'OLEDContrast (1-4) _' 'auto' 4
+	spec ' ' 'OLEDFlip' 'OLEDFlip'
+	spec ' ' 'OLEDColMode' 'OLEDColMode Beg (1-16) _ End (1-16) _' 'auto auto' 1 16
+	spec ' ' 'OLEDContrast' 'OLEDContrast (1-4) _' 'auto' 2
 	spec ' ' 'OLEDCursorReset' 'OLEDCursorReset'
-	spec ' ' 'OLEDDisplay' 'OLEDDisplay Off< _ >On' 'bool' true
-	spec ' ' 'OLEDDispString' 'OLEDDispString _ InvYN _ : Row(1-8) _ Col(1-16) _' 'auto bool auto auto' 'Hello!' false 1 1
-	spec ' ' 'OLEDDrawCircle' 'OLEDDrawCircle Cx(0-127) _ Cy(0-63) _ R _ Pix On _' 'auto auto auto bool' 64 32 '10' true
-	spec ' ' 'OLEDDrawLine' 'OLEDDrawLine x0(0-127) _ y0(0-63) _ x1 _ y1 _ pixOn _' 'auto auto auto auto bool' 0 0 127 63 true
-	spec ' ' 'OLEDDrawPic' 'OLEDDrawPic ImgList _ To Display< _ >ToGDBuffer' 'auto bool' '' false
-	spec ' ' 'OLEDDrawRect TLx(0-127)' 'OLEDDrawRect TLx(0-127) _ TLy(0-63) _ BRx _ BRy _ Pix On _ Rounded _ R(3-15) _' 'auto auto auto auto bool bool auto' 0 0 127 63 true false 3
-	spec ' ' 'OLEDDrawSprite' 'OLEDDrawSprite _ Row(1-8) _ Col(1-128) _' 'auto auto auto' 0 1 1
-	spec ' ' 'OLEDDrawString' 'OLEDDrawString _ Row(1-8) _ Col(1-128) _ InvYN _' 'auto auto auto bool' 'Hello!' 1 1 false
+	spec ' ' 'OLEDDisplay' 'OLEDDisplay _' 'str.OnOffMenu' 'On'
+	spec ' ' 'OLEDDispString' 'OLEDDispString _ InvYN _ : Row (1-8) _ Col (1-16) _' 'auto bool auto auto' 'Hello!' false 1 1
+	spec ' ' 'OLEDDrawCircle' 'OLEDDrawCircle Cx (0-127) _ Cy (0-63) _ R _ Pix On _' 'auto auto auto bool' 64 32 '10' true
+	spec ' ' 'OLEDDrawLine' 'OLEDDrawLine x0 (0-127) _ y0 (0-63) _ x1 _ y1 _ pixOn _' 'auto auto auto auto bool' 0 0 127 63 true
+	spec ' ' 'OLEDDrawPic' 'OLEDDrawPic ImgList _ To _ : Col (0-127) _' 'auto str.TargetMenu num' '' 'Display' 0
+	spec ' ' 'OLEDDrawRect' 'OLEDDrawRect TLx (0-127) _ TLy (0-63) _ BRx _ BRy _ Pix On _ Rounded _ R(3-15) _' 'auto auto auto auto bool bool auto' 0 0 127 63 true false 3
+	spec ' ' 'OLEDDrawSprite' 'OLEDDrawSprite _ Row (1-8) _ Col (1-128) _' 'auto auto auto' 0 1 1
+	spec ' ' 'OLEDDrawString' 'OLEDDrawString _ Row (1-8) _ Col (1-128) _ InvYN _' 'auto auto auto bool' 'Hello!' 1 1 false
 	spec 'r' 'OLEDMakeSprite' 'OLEDMakeSprite _ : sprSeed(0-33554431) _' 'microbitDisplay auto' 15237440 0
-	spec ' ' 'OLEDMode' 'OLEDMode Vert< _ >Hor' 'bool' true
-	spec ' ' 'OLEDPixel' 'OLEDPixel Px(0-127) _ Py(0-63) _ Pix On _' 'auto auto bool' 0 0 true
-	spec ' ' 'OLEDSetVideo' 'OLEDSetVideo Normal _ Inverse' 'bool' true
+	spec ' ' 'OLEDMode' 'OLEDMode _' 'str.ModeMenu' 'Horizontal'
+	spec ' ' 'OLEDPixel' 'OLEDPixel Px (0-127) _ Py (0-63) _ Pix On _' 'auto auto bool' 0 0 true
+	spec ' ' 'OLEDSetVideo' 'OLEDSetVideo _' 'str.VideoMenu' 'Inverse'
 	spec ' ' 'OLEDShowGDBuffer' 'OLEDShowGDBuffer'
-	spec ' ' '_2xHighMode' '_2xHighModeYN _' 'bool' true
+	spec ' ' 'OLEDZoomMode' 'OLEDZoomMode _' 'str.OnOffMenu' 'On'
 	spec ' ' '_GDDRAMoff' '_GDDRAMoff'
 	spec ' ' '_GDDRAMon' '_GDDRAMon'
-	spec ' ' '_OLED1309Reset' '_OLED1309Reset Pin# _' 'auto' '10'
-	spec ' ' '_OLEDScroll-R/L' '_OLEDScroll-R/L _ BegRow(1-8) _ EndRow _ BegCol_9(1-128) _ EndCol_9 _' 'auto auto auto auto auto' 'R' 1 8 1 128
-	spec ' ' '_OLEDScroll-VR/VL' '_OLEDScroll-VR/VL _ BegRow(1-8) _ EndRow _ #Hor(0-1) _ #Ver(0-63) _ BegCol(1-128) _ EndCol _' 'auto auto auto auto auto auto auto' 'VR' 1 8 0 1 1 128    
+	spec ' ' '_L1' '_L1'
+	spec ' ' '_L2' '_L2'
+	spec ' ' '_OLEDReset' '_OLEDReset Pin# _' 'auto' '0'
+	spec ' ' '_OLEDScroll-RL' '_OLEDScroll-RL _ BegRow (1-8) _ EndRow _ BegCol (1-128) _ EndCol _' 'str.ScrollMenu1 auto auto auto auto' 'Right' 1 8 1 128
+	spec ' ' '_OLEDScroll-VRL' '_OLEDScroll-VRL _ BegRow (1-8) _ EndRow _ #Hor (0-1) _ #Ver (0-63) _ BegCol (1-128) _ EndCol _' 'str.ScrollMenu2 auto auto auto auto auto auto' 'Vert-Right' 1 8 0 1 1 128
 	spec ' ' '_OLEDStopScroll' '_OLEDStopScroll'
+	spec ' ' '_SPIWriteCmd' '_SPIWriteCmd'
+	spec ' ' '_SPIWriteData' '_SPIWriteData'
 	spec ' ' '_T1' '_T1'
 	spec ' ' '_T2' '_T2'
 	spec ' ' '_T3' '_T3'
 	spec ' ' '_T4' '_T4'
 	spec ' ' '_buildHexTBL' '_buildHexTBL'
+	spec ' ' '_buildLineTBL' '_buildLineTBL'
 	spec 'r' '_cBMP' '_cBMP _ InvYN _' 'auto bool' '' false
 	spec ' ' '_corner' '_corner _ _ _ _' 'auto auto auto auto' 'TL' 32 1 0
 	spec 'r' '_dec2hex' '_dec2hex _' 'auto' 0
 	spec ' ' '_initChars' '_initChars'
 	spec ' ' '_initCheck' '_initCheck'
-	spec ' ' '_initDisplayHW' '_initDisplayHW _' 'auto' 0
+	spec ' ' '_initDisplayHW' '_initDisplayHW'
 	spec ' ' '_initGDBuffer' '_initGDBuffer'
+	spec ' ' '_initLibrary' '_initLibrary'
+	spec ' ' '_initLines' '_initLines'
 	spec ' ' '_proc10' '_proc10'
 	spec ' ' '_processString' '_processString _ _' 'auto bool' '' false
 	spec ' ' '_sendCmd' '_sendCmd _' 'auto' ''
+	spec ' ' '_selLine' '_selLine _' 'str.LineMenu' '╬'
+	spec ' ' '_toDisplay' '_toDisplay _' 'auto' ''
+	spec ' ' '_toGDBuffer' '_toGDBuffer _' 'auto' ''
 	spec 'r' '_valicC' '_validC _' 'auto' 1
 	spec 'r' '_validR' '_validR _' 'auto' 1
 	spec 'r' '_validScrollCol' '_validScrollCol _' 'auto' 1
@@ -56,13 +85,22 @@ and GDBuffer
 Executes here, doesn''t call _sendCMD
 Max i2c IO is 64 bytes: 1cmd + 63bytes'
   '_initCheck'
-  local 'clearBuff' (newList 1024)
-  local 'idx' 0
+  OLEDMode 'Horizontal'
   OLEDCursorReset
-  repeat 17 {
-    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' ('[data:makeList]' (hexToInt '40')) ('[data:copyFromTo]' clearBuff idx (idx + 60)))
-    idx += 61
+  local 'clearBuff' (newList 60)
+  if ('i2c' == _comMode) {
+    local 'idx' 0
+    repeat 17 {
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' ('[data:makeList]' (hexToInt '40')) clearBuff)
+    }
+    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' ('[data:makeList]' (hexToInt '40')) (newList 4))
+  } else {
+    '_SPIWriteData'
+    repeat 1024 {
+      spiSend 0
+    }
   }
+  OLEDCursorReset
   '_initGDBuffer'
 }
 
@@ -79,7 +117,7 @@ This will allow one to display text at any column position by aligning it vertic
     local 'comma' ('[data:unicodeString]' 44)
     comment 'ROW = 22, COL=21
 All values are in HEX'
-    OLEDMode true
+    OLEDMode 'Horizontal'
     '_sendCmd' ('[data:join]' '22' comma _begRow comma _endRow comma '21' comma ('_dec2hex' _begCol) comma ('_dec2hex' _endCol))
   } else {
     sayIt 'Invalid COLUMN value.'
@@ -100,11 +138,31 @@ to OLEDContrast contrast {
   }
 }
 
+to OLEDCursorReset {
+  comment 'Sets display bounds to full range and resets cursor
+to the origin top-left (0,0)
+Rows: 0-7
+Cols: 0-127
+Cursor position is affected by any display operation
+and also by OLEDColMode block.'
+  '_initCheck'
+  local 'i2cCmd' '22,00,07,21,00,7F'
+  '_sendCmd' i2cCmd
+  _col = 1
+  _row = 1
+  _begCol = 0
+  _endCol = 127
+  _begRow = 0
+  _endRow = 7
+}
 
 to OLEDDispString string invFlag row col {
   comment 'Displays strings of any length directly to the display.
+
 Strings may include \n newline characters to advance to the next line on the display.
+
 If no row or col is specified, consecutive use of this block will display the string at
+
 the location after the previous display operation.'
   '_initCheck'
   if ((size string) == 0) {
@@ -115,12 +173,12 @@ the location after the previous display operation.'
     '_validateArgs' row col
   }
   for char string {
-    comment 'If \n skip it'
-    if (('[data:unicodeAt]' 1 char) == 10) {
+    comment 'If \n or \r skip it'
+    if (or (('[data:unicodeAt]' 1 char) == 10) (('[data:unicodeAt]' 1 char) == 13)) {
       noop
     } else {
-      comment 'If in table skip it'
-      if (('[data:find]' char _cTABLE) != -1) {
+      comment 'If in char OR line tables, skip it'
+      if (or (('[data:find]' char _cTABLE) != -1) (('[data:find]' char _lineTABLE) != -1)) {
         noop
       } else {
         comment 'bad char - STOP'
@@ -132,11 +190,12 @@ the location after the previous display operation.'
   '_processString' string invFlag
 }
 
-to OLEDDisplay on {
-  comment 'Puts the display into SLEEP or WAKE mode.
+to OLEDDisplay onoff {
+  comment 'Puts the display into 
+Off:SLEEP   On:WAKE   mode.
 Images on display are preserved.'
   '_initCheck'
-  if on {
+  if (onoff == 'On') {
     local 'i2cCmd' 'AF'
   } else {
     local 'i2cCmd' 'AE'
@@ -252,43 +311,43 @@ plotLine(int x0, int y0, int x1, int y1)
   }
 }
 
-to OLEDDrawPic imgList toGDBuf {
+to OLEDDrawPic imgList target colStart {
   comment 'Will display the image stored in imgList either directly to 
-the display OR write it to the GDBuffer.
+the display OR write it to the GDBuffer. Image can be positioned at any col#.
+Any COL-Mode predefined has priority over col#.
 Image Format:
 Each display column is 8 comma delimited hex numbers, terminated by a 
 0x10 newline character. For each hex number, the LSB is at the top, and
 MSB is at the bottom.
-You can look at advanced blocks T1-T4 to get an idea.
+you can look at advanced blocks T1-T4 to get an idea.
+
 You can also experiment with the OLEDMakeSprite block in a smaller 5x5 image.'
   '_initCheck'
-  if (not toGDBuf) {
-    OLEDMode false
-    local 'cmdPrefix' (hexToInt 'C0')
-    for bitmap _imgBMPTbl {
-      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix (hexToInt bitmap))
-    }
-  } else {
-    comment 'Transform vertical img data to horizontal display mode
+  if ((pushArgCount) > 2) {
+    comment 'If ColMode is active, colStart has to be within.
 
-GDbuffer(n) = image( (page-1) + ( ( byte# * 8) - 7 ) 
-'
-    local 'DGidx' 1
-    for page 8 {
-      for byte# ((size _imgBMPTbl) / 8) {
-        atPut DGidx _GDBuffer (hexToInt (at ((page - 1) + ((byte# * 8) - 7)) _imgBMPTbl))
-        DGidx += 1
-      }
-      repeat (128 - ((size _imgBMPTbl) / 8)) {
-        atPut DGidx _GDBuffer 0
-        DGidx += 1
-      }
+Then _begCol = colStart.'
+    if (not (and (colStart >= _begCol) (colStart <= _endCol))) {
+      sayIt 'Image display col# invalid.' ('[data:unicodeString]' 10) ('[data:join]' _begCol ' =< ' colStart ' =< ' _endCol)
+      stopTask
     }
-    OLEDShowGDBuffer
+    _begCol = colStart
+  }
+  if (target == 'Display') {
+    comment '22:ROW   21:COL
+
+All values are in HEX.
+
+Adjusts ColMode to start at colStart'
+    local 'comma' ('[data:unicodeString]' 44)
+    '_sendCmd' ('[data:join]' '22' comma '0' comma '7' comma '21' comma ('_dec2hex' _begCol) comma ('_dec2hex' _endCol))
+    '_toDisplay' imgList
+  } else {
+    '_toGDBuffer' imgList
   }
 }
 
-to 'OLEDDrawRect TLx(0-127)' TLx TLy BRx BRy pixOn rounded cornerRad {
+to OLEDDrawRect TLx TLy BRx BRy pixOn rounded cornerRad {
   comment 'Draw Rectangle with optional rounded corners with radius R.
 Does not check for reversed rectangle coordinates for round corners.'
   '_initCheck'
@@ -336,8 +395,10 @@ To make the sprites appear on display, use OLEDDshowGDBuffer.'
 }
 
 to OLEDDrawString string sRow sCol invFlag {
-  comment 'Draws chars to GDBuffer. It does NOT process newLine (\nl).
+  comment 'Draws chars to GDBuffer. 
+It does NOT process multi line strings.
 It does not wrap text.
+
 Need to use OLEDShowGDBuffer to refresh the display.'
   '_initCheck'
   if (not _GDBufReady) {
@@ -346,6 +407,17 @@ Need to use OLEDShowGDBuffer to refresh the display.'
   if (sCol > 128) {
     sayIt ('[data:join]' 'STRING start position exceeds Display bounds at Col:' sCol)
     stopTask
+  }
+  local 'err' (booleanConstant false)
+  for char string {
+    comment 'If in table skip it'
+    if (('[data:find]' char _cTABLE) != -1) {
+      noop
+    } else {
+      comment 'bad char - STOP'
+      sayIt 'Invalid CHAR value:' char 'uniCode:' ('[data:unicodeAt]' 1 char)
+      stopTask
+    }
   }
   for char string {
     OLEDDrawSprite ('_cBMP' char invFlag) sRow sCol
@@ -356,65 +428,59 @@ Need to use OLEDShowGDBuffer to refresh the display.'
   }
 }
 
-to OLEDCursorReset {
-  comment 'Sets display bounds to full range and resets cursor
-to the origin top-left (0,0)
-Rows: 0-7
-Cols: 0-127
-Cursor position is affected by any display operation
-and also by OLEDColMode block.'
-  '_initCheck'
-  local 'i2cCmd' '22,00,07,21,00,7F'
-  '_sendCmd' i2cCmd
-  _col = 1
-  _row = 1
-  _begCol = 0
-  _endCol = 127
-  _begRow = 0
-  _endRow = 7
+to OLEDFlip {
+  comment 'Flips the display initialization horizontally or vertically.
+Horizontal or vertical is based on the pin connector location.'
+  '_sendCmd' 'A0,C0'
 }
 
-to OLEDInit dispType resetPin i2cAddr {
-  comment 'Sets all Library variables and initializes the display hardware.
-It also initializes the virtual GDBuffer, and clears the display.
-
+to OLEDInit_I2C dispType i2cAddr resetPin {
+  comment 'Sets display type and interface and initializes HW settings.
+Do NOT set a ResetPin# unless one exists on the display hardware.
 NOTE:
-Displays supported: OLED1306 (0.96in) and OLED1309 (2.42"), selected via boolean position.
-OLED1309 requires the connection of RESET pin to a digital pin.
+Displays supported: 
+- OLED 0.96in (SD1306 chip) and 
+- OLED 2.42" (SD1309 chip)
 Both displays are 128x64 pixels or 16x8 characters in size.
-
-Make sure the character hex tables are \n (LF) terminated.
-Otherwise, extra lines are added in between and it gets messed up.
-eg: A: 00,7C,12,11,11,12,7C,00\n
-
-Max i2c IO is 64 bytes: buffered writes need to be max that size - 16 x 64'
-  comment 'Col starts are in HEX'
-  _cStarts = '0,8,10,18,20,28,30,38,40,48,50,58,60,68,70,78'
-  _cStarts = ('[data:split]' _cStarts ',')
-  _hexTbl = ('[data:makeList]' '0' '1' '2' '3' '4' '5' '6' '7' '8' '9' 'A' 'B' 'C' 'D' 'E' 'F')
-  OLEDready = (booleanConstant false)
-  _GDBufReady = (booleanConstant false)
-  _col = 1
-  _row = 1
-  _begRow = 0
-  _begCol = 0
-  _endRow = 7
-  _endCol = 127
-  OLEDi2cAddr = (hexToInt ('[data:join]' '' i2cAddr))
-  _delayGDUpd = (booleanConstant false)
-  _clearSprite = ('[data:makeList]' 0 0 0 0 0)
-  if dispType {
-    _displayType = 9
-    _09ResetPin = resetPin
-  } else {
+Displays come in dual mode version (i2c and spi) and pure i2c.
+Pure i2c models do not have a Reset pin.'
+  _comMode = 'i2c'
+  OLEDi2cAddr = (hexToInt ('[data:join]' ('[data:unicodeString]' 32) i2cAddr))
+  if (dispType == 'OLED_0.96in') {
     _displayType = 6
-    _09ResetPin = 0
+    _resetPin = resetPin
+  } else {
+    _displayType = 9
+    _resetPin = resetPin
   }
-  OLEDready = (booleanConstant true)
-  '_initChars'
-  '_initDisplayHW' _09ResetPin
-  '_initGDBuffer'
-  OLEDMode true
+  '_initLibrary'
+  OLEDMode 'Horizontal'
+  OLEDClear
+}
+
+to OLEDInit_SPI dispType dcPin resetPin {
+  comment 'Sets display type and interface and initializes HW settings.
+SPI four wire in Mode-0 is supported. Max speed=10000000.
+
+Do NOT set a ResetPin# unless one exists on the display hardware.
+NOTE:
+Displays supported: 
+- OLED 0.96in (SD1306 chip) and 
+- OLED 2.42" (SD1309 chip)
+Both displays are 128x64 pixels or 16x8 characters in size.
+Displays come in dual mode version (i2c and spi) and pure i2c.
+Pure i2c models do not have a Reset pin.'
+  _comMode = 'spi'
+  _dcPin = dcPin
+  if (dispType == 'OLED_0.96in') {
+    _displayType = 6
+    _resetPin = resetPin
+  } else {
+    _displayType = 9
+    _resetPin = resetPin
+  }
+  '_initLibrary'
+  OLEDMode 'Horizontal'
   OLEDClear
 }
 
@@ -447,12 +513,13 @@ sprNum max is 33554431'
   return spriteList
 }
 
-to OLEDMode horizontal {
+to OLEDMode processMode {
   comment 'Sets the display to process display data in:
-false - vertical manner T->B and L->R  
-true - horizontal manner L->R and T->B'
+Horizontal: L->R and T->B
+Vertical: T->B and L->R  
+'
   '_initCheck'
-  if horizontal {
+  if (processMode == 'Horizontal') {
     local 'i2cCmd' '20,00'
   } else {
     local 'i2cCmd' '20,01'
@@ -494,13 +561,14 @@ if X <= num <= Y'
   }
 }
 
-to OLEDSetVideo inverse {
+to OLEDSetVideo videoMode {
   comment 'Switches the entire display:
-false - to the normal video mode.
-true - to the inverse video mode.
+Inverse: inverse video mode (bit 0 = on)
+Normal: normal video mode (bit 1 = on).
+.
 Any image on the display will be preserved when mode changes.'
   '_initCheck'
-  if inverse {
+  if (videoMode == 'Inverse') {
     local 'i2cCmd' 'A7'
   } else {
     local 'i2cCmd' 'A6'
@@ -509,32 +577,36 @@ Any image on the display will be preserved when mode changes.'
 }
 
 to OLEDShowGDBuffer {
-  comment 'Copies contents of virtual _GDBuffer to display 
-in 61 byte chunks for speed. 
-1 byte is used for the command 40.
-
+  comment 'Copies contents of virtual _GDBuffer to display
+i2c:
+   in 61 byte chunks for speed. 
+   1 byte is used for the command 40
+spi:
+   fastest is DataMode one at a time
+ 
 _GDBuffer is in decimal'
   '_initCheck'
-  local 'idx' 0
-  OLEDMode true
-  repeat 17 {
-    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' ('[data:makeList]' (hexToInt '40')) ('[data:copyFromTo]' _GDBuffer idx (idx + 60)))
-    idx += 61
+  OLEDMode 'Horizontal'
+  if (_comMode == 'i2c') {
+    local 'idx' 0
+    repeat 17 {
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' ('[data:makeList]' (hexToInt '40')) ('[data:copyFromTo]' _GDBuffer idx (idx + 60)))
+      idx += 61
+    }
+  } else {
+    '_SPIWriteData'
+    for byte _GDBuffer {
+      spiSend byte
+    }
   }
   OLEDCursorReset
 }
 
-to _OLEDStopScroll {
-  comment 'Stops any active Right/Left or Vertical scrolling.'
-  local 'i2cCmd' '2E'
-  '_sendCmd' i2cCmd
-}
-
-to '_2xHighMode' dblHigh {
+to OLEDZoomMode mode {
   comment 'Sets and resets double high letters mode: 
 Column use is always 8bits or 16 chars per line
-Double: 16x4 ; Normal: 16x8'
-  if dblHigh {
+Double: 16c x 4 r; Normal: 16c x 8r'
+  if (mode == 'On') {
     local 'i2cCmd' 'DA,02'
   } else {
     local 'i2cCmd' 'DA,12'
@@ -555,17 +627,68 @@ to '_GDDRAMon' {
   '_sendCmd' i2cCmd
 }
 
-to _OLED1309Reset Pin {
-  comment 'Does a power off and on on the display,
-thus forcing a hardware initialization.'
-  digitalWriteOp Pin false
-  waitMillis 1
-  digitalWriteOp Pin true
-  waitMillis 1
-  OLEDDisplay true
+to '_L1' {
+  comment 'THIN-SS Line Set
+Range: 179-198'
+  local '_cLINE1' ('[data:join]' '' '00,00,00,FF,00,00,00,00
+10,10,10,FF,00,00,00,00
+14,14,14,FF,00,00,00,00
+10,10,10,FF,00,FF,00,00
+10,10,10,F0,10,F0,00,00
+14,14,14,FC,00,00,00,00
+14,14,14,F7,00,FF,00,00
+00,00,00,FF,00,FF,00,00
+14,14,14,F4,04,FC,00,00
+14,14,14,17,10,1F,00,00
+10,10,10,1F,10,1F,00,00
+14,14,14,1F,00,00,00,00
+10,10,10,F0,00,00,00,00
+00,00,00,1F,10,10,10,10
+10,10,10,1F,10,10,10,10
+10,10,10,F0,10,10,10,10
+00,00,00,FF,10,10,10,10
+10,10,10,10,10,10,10,10
+10,10,10,FF,10,10,10,10
+00,00,00,FF,14,14,14,14')
+  _lineHexTBL = ('[data:join]' _lineHexTBL ('[data:split]' _cLINE1 ('[data:unicodeString]' 10)))
 }
 
-to '_OLEDScroll-R/L' dir begR endR begC endC {
+to '_L2' {
+  comment 'THIN-SS Line Set
+Range: 199-218'
+  local '_cLINE2' ('[data:join]' '' '00,00,00,FF,00,FF,10,10
+00,00,00,1F,10,17,14,14
+00,00,00,FC,04,F4,14,14
+14,14,14,17,10,17,14,14
+14,14,14,F4,04,F4,14,14
+00,00,00,FF,00,F7,14,14
+14,14,14,14,14,14,14,14
+14,14,14,F7,00,F7,14,14
+14,14,14,17,14,14,14,14
+10,10,10,1F,10,1F,10,10
+14,14,14,F4,14,14,14,14
+10,10,10,F0,10,F0,10,10
+00,00,00,1F,10,1F,10,10
+00,00,00,1F,14,14,14,14
+00,00,00,FC,14,14,14,14
+00,00,00,F0,10,F0,10,10
+10,10,10,FF,10,FF,10,10
+14,14,14,FF,14,14,14,14
+10,10,10,1F,00,00,00,00
+00,00,00,F0,10,10,10,10')
+  _lineHexTBL = ('[data:join]' _lineHexTBL ('[data:split]' _cLINE2 ('[data:unicodeString]' 10)))
+}
+
+to '_OLEDReset' pin {
+  comment 'Does a power off and on on the display,
+thus forcing a hardware initialization.'
+  digitalWriteOp pin false
+  waitMillis 1
+  digitalWriteOp pin true
+  waitMillis 1
+}
+
+to '_OLEDScroll-RL' dir begR endR begC endC {
   comment 'Initiates the Right/Left scroll modes, optionally restricting them to the selected rows.
 For the OLED1309 displays, it is possible to also restrict the columns as specified.
 
@@ -573,17 +696,14 @@ For the OLED1309 displays, it is possible to also restrict the columns as specif
 1309: dir=26/27,00,bR=00,00,eR=07,00,bC=00,eC=7F,2F
 
 1306: Only scroll the entire line.
-1309: can restrict scrolling within set columns'
+1309: can restrict scrolling within selected columns'
   local 'sR' '26'
-  local 'sL' '27' _
-  local ',' ('[data:unicodeString]' 44)
-  if ((uppercase dir) == 'R') {
+  local 'sL' '27'
+  local 'comma' ('[data:unicodeString]' 44)
+  if (dir == 'Right') {
     dir = sR
-  } ((uppercase dir) == 'L') {
+  } (dir == 'Left') {
     dir = sL
-  } else {
-    sayIt 'Error in Scroll Direction'
-    stopTask
   }
   if (not (and (and ('_validR' begR) ('_validR' endR)) (begR <= endR))) {
     sayIt 'Invalid ROW setting'
@@ -598,15 +718,15 @@ For the OLED1309 displays, it is possible to also restrict the columns as specif
   begC = ('_dec2hex' (begC - 1))
   endC = ('_dec2hex' (endC - 1))
   if (_displayType == 6) {
-    local 'cmd1306' ('[data:join]' dir , '00' , begR , '07' , endR , '00' , 'FF' , '2F')
+    local 'cmd1306' ('[data:join]' dir comma '00' comma begR comma '07' comma endR comma '00' comma 'FF' comma '2F')
     '_sendCmd' cmd1306
   } (_displayType == 9) {
-    local 'cmd1309' ('[data:join]' dir , '00' , begR , '07' , endR , '00' , begC , endC , '2F')
+    local 'cmd1309' ('[data:join]' dir comma '00' comma begR comma '07' comma endR comma '00' comma begC comma endC comma '2F')
     '_sendCmd' cmd1309
   }
 }
 
-to '_OLEDScroll-VR/VL' dir begR endR cOffset vOffset begC endC {
+to '_OLEDScroll-VRL' dir begR endR cOffset vOffset begC endC {
   comment '1306: dir=29/2A,00,bR=00,00,eR=07,00,#R=01,2F=start
 1309: dir=29/2A,#C=00,bR=00,07,eR=07,#R=00,bC=00,eC=7F,2F
 All values are in HEX.
@@ -616,16 +736,13 @@ All values are in HEX.
     sayIt 'VR/VL only supported for display type OLED 2.42in. OLED1309.'
     stopTask
   }
-  local 'VR' 29
+  local 'VR' '29'
   local 'VL' '2A'
-  local ',' ('[data:unicodeString]' 44)
-  if ((uppercase dir) == 'VR') {
+  local 'comma' ('[data:unicodeString]' 44)
+  if (dir == 'Vert-Right') {
     dir = VR
-  } ((uppercase dir) == 'VL') {
+  } (dir == 'Vert-Left') {
     dir = VL
-  } else {
-    sayIt 'Error in Scroll Direction'
-    stopTask
   }
   if (not (and (and ('_validR' begR) ('_validR' endR)) (begR <= endR))) {
     sayIt 'Invalid ROW setting'
@@ -640,8 +757,22 @@ All values are in HEX.
   vOffset = ('_dec2hex' vOffset)
   begC = ('_dec2hex' (begC - 1))
   endC = ('_dec2hex' (endC - 1))
-  local 'cmd1309' ('[data:join]' dir , cOffset , begR , '07' , endR , vOffset , begC , endC , '2F')
+  local 'cmd1309' ('[data:join]' dir comma cOffset comma begR comma '07' comma endR comma vOffset comma begC comma endC comma '2F')
   '_sendCmd' cmd1309
+}
+
+to '_OLEDStopScroll' {
+  comment 'Stops any active Right/Left or Vertical scrolling.'
+  local 'i2cCmd' '2E'
+  '_sendCmd' i2cCmd
+}
+
+to '_SPIWriteCmd' {
+  digitalWriteOp _dcPin false
+}
+
+to '_SPIWriteData' {
+  digitalWriteOp _dcPin true
 }
 
 to '_T1' {
@@ -774,15 +905,34 @@ into the Global _cHexTBL.'
   '_T4'
 }
 
+to '_buildLineTBL' {
+  _lineHexTBL = ('[data:makeList]')
+  '_L1'
+  '_L2'
+}
+
 to '_cBMP' char invFlag {
-  comment 'Returns DEC char bitmap from cHexTbl and
+  comment 'Returns DEC char bitmap from _cHexTbl and
+
 optionally converts it to inverse.
+
+For Line segments, _cLineTBL is used.
+
+
 
 A: 00,7c,12,11,12,7c,00
 
+
+
 dec:  0,124,18,17,17,124,0
+
 inv:    255,131,237,238,238,131,255'
-  local 'charList' ('[data:split]' (at (('[data:unicodeAt]' 1 char) - 31) _cHexTBL) ',')
+  local 'uCode' ('[data:unicodeAt]' 1 char)
+  if (uCode <= 128) {
+    local 'charList' ('[data:split]' (at (uCode - 31) _cHexTBL) ',')
+  } else {
+    local 'charList' ('[data:split]' (at ('[data:find]' ('[data:unicodeAt]' 1 char) _cLINEUniTBL) _lineHexTBL) ',')
+  }
   comment 'hex2dec and inverse'
   for item# (size charList) {
     if invFlag {
@@ -863,26 +1013,46 @@ used JOIN  for SPACE (uni-32) character so it won''t be deleted by mistake.'
   '_buildHexTBL'
 }
 
-
 to '_initCheck' {
   comment 'Verifies Library initialization status.'
-  if (not OLEDready) {
+  if (not OLEDReady) {
     sayIt 'Display needs to be initialized before using the library blocks.'
     stopTask
   }
 }
 
-to '_initDisplayHW' resetPin {
+to '_initDisplayHW' {
   comment '*** DO NOT CHANGE THESE WITHOUT UNDERSTANDING THEIR MEANINGS ***
 *** IT CAN MAKE THE DISPLAY NOT OPERATE CORRECTLY                          ***
-Initialize display hw timings
-DA,02: Sets double high letters
-DA,12: Sets regular high letters'
-  if (resetPin != 0) {
-    _OLED1309Reset resetPin
-    local 'i2cCmd' 'A8,3F,D3.00,40,A0,C0,DA,12,81,7F,A4,A6,D5,F0,D9,22,DB,34,8D,14,AF'
+
+Initializes display HW timings
+OLED INITIALIZATION STRINGS:
+1306: pins are on top
+1309: pins are on the right
+
+
+
+A8 3F - Multiplex Ratio 0F-3F (16mux to 64mux)
+D3 00 - Display Offset (vertical) 00-63
+40    - Display Start Line 40-7F (40:0)
+A0    - Set Segment Remap A0: Remap 0:0, A1: 127:0                 [A0]
+C0    - Scan Direction C0:0-127, C8:127-0                                     [C0]
+DA 12 - COM pin hw config 02:double-high 12:normal bits
+81 7F - Set contrast 00-FF (00:dimmest, FF:brightest)
+A4    - A4:display shows GDRAM, A5:display all ON pixels
+A6    - A6:Normal video, A7:Inverse video
+D5 F0 - Set display clock HB:OSC freq / HB:divide ratio (00-FF)
+D9 22 - Set pre-charge period HB:Phase2 / LB:Phase1 (1-15 DCLK)
+DB 20 - Set Vcomh deselect level 20:1306(~0.77xVcc), 34:1309(~0.78xVcc)
+8D 14 - Charge Pump Setting 10:disable CP, 14:enable CP
+AF    - Display ON/OFF AE:off (sleep mode), AF:on'
+  if (_resetPin != 0) {
+    '_OLEDReset' _resetPin
+  }
+  if (9 == _displayType) {
+    local 'i2cCmd' 'A8,3F,D3,00,40,A1,C8,DA,12,81,7F,A4,A6,D5,F0,D9,22,DB,34,8D,14,AF'
   } else {
-    local 'i2cCmd' 'A8,3F,D3.00,40,A0,C0,DA,12,81,7F,A4,A6,D5,F0,D9,22,DB,20,8D,14,AF'
+    local 'i2cCmd' 'A8,3F,D3,00,40,A1,C8,DA,12,81,7F,A4,A6,D5,F0,D9,22,DB,20,8D,14,AF'
   }
   '_sendCmd' i2cCmd
 }
@@ -892,6 +1062,50 @@ to '_initGDBuffer' {
   _GDBuffer = (newList 1024)
   atPut 'all' _GDBuffer 0
   _GDBufReady = (booleanConstant true)
+}
+
+to '_initLibrary' {
+  comment 'Sets all Library variables and initializes the display hardware.
+It also initializes the virtual GDBuffer, and clears the display.
+
+NOTE:
+Displays supported: OLED1306 (0.96in) and OLED1309 (2.42"), selected via boolean position.
+OLED1309 requires the connection of RESET pin to a digital pin.
+Both displays are 128x64 pixels or 16x8 characters in size.
+
+Make sure the character hex tables are \n (LF) terminated.
+Otherwise, extra lines are added in between and it gets messed up.
+eg: A: 00,7C,12,11,11,12,7C,00\n
+
+Max i2c IO is 64 bytes: buffered writes need to be max that size - 16 x 64'
+  comment 'Col starts are in HEX'
+  _cStarts = '0,8,10,18,20,28,30,38,40,48,50,58,60,68,70,78'
+  _cStarts = ('[data:split]' _cStarts ',')
+  _hexTbl = ('[data:makeList]' '0' '1' '2' '3' '4' '5' '6' '7' '8' '9' 'A' 'B' 'C' 'D' 'E' 'F')
+  _GDBufReady = (booleanConstant false)
+  _col = 1
+  _row = 1
+  _begRow = 0
+  _begCol = 0
+  _endRow = 7
+  _endCol = 127
+  _delayGDUpd = (booleanConstant false)
+  _clearSprite = ('[data:makeList]' 0 0 0 0 0)
+  '_initChars'
+  '_initLines'
+  '_initGDBuffer'
+  '_initDisplayHW'
+  OLEDReady = (booleanConstant true)
+  OLEDDisplay 'On'
+}
+
+to '_initLines' {
+  _lineTABLE = '│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌'
+  _cLINEUniTBL = ('[data:makeList]')
+  for char _lineTABLE {
+    '[data:addLast]' ('[data:unicodeAt]' 1 char) _cLINEUniTBL
+  }
+  '_buildLineTBL'
 }
 
 to '_proc10' {
@@ -912,15 +1126,23 @@ All values are in HEX'
 
 to '_processString' string invFlag {
   comment 'Performs the actual processing of the string display function.
+
 Optionally, sets inverse video for the characters.'
   local 'cmdPrefix' (hexToInt 'C0')
   for char string {
-    if (('[data:unicodeAt]' 1 char) == 10) {
+    if (('[data:unicodeAt]' 1 char) == 13) {
+      noop
+    } (('[data:unicodeAt]' 1 char) == 10) {
       '_proc10'
     } else {
       _dList = ('_cBMP' char invFlag)
       for bitmap _dList {
-        '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix bitmap)
+        if ('i2c' == _comMode) {
+          '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix bitmap)
+        } else {
+          '_SPIWriteData'
+          spiSend bitmap
+        }
       }
       _col += 1
       if (_col > 16) {
@@ -934,16 +1156,79 @@ Optionally, sets inverse video for the characters.'
   }
 }
 
+to '_selLine' lineSeg {
+  sayIt lineSeg
+}
+
 to '_sendCmd' i2cCmd {
   comment 'Input is a comma sep. STRING.
 MAKE SURE ALL  INPUT PARAMETERS ARE HEX'
-  local '_cList' ('[data:split]' i2cCmd ',')
-  local 'cmdPrefix' (hexToInt '80')
-  for cmd _cList {
-    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix (hexToInt cmd))
+  local '_cList' ('[data:split]' i2cCmd ('[data:unicodeString]' 44))
+  if ('i2c' == _comMode) {
+    local 'cmdPrefix' (hexToInt '80')
+    for cmd _cList {
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix (hexToInt cmd))
+    }
+  } else {
+    '_SPIWriteCmd'
+    for cmd _cList {
+      spiSend (hexToInt cmd)
+    }
   }
   comment 'DEBUG Blocks below - doesn''t execute.'
   return ('[data:join]' ('[data:joinStrings]' _cList ' ') ('[data:unicodeString]' 10) ('[data:joinStrings]' ('[data:makeList]' cmdPrefix (hexToInt cmd)) ' '))
+}
+
+to '_toDisplay' imgList {
+  OLEDMode 'Vertical'
+  local 'imgColCnt' ((size imgList) / 8)
+  comment 'If display window is < image width
+
+  crop image width to window size.'
+  if (((_endCol - _begCol) + 1) < imgColCnt) {
+    imgColCnt = ((_endCol - _begCol) + 1)
+  }
+  local 'cmdPrefix' (hexToInt 'C0')
+  local 'byteCnt' 0
+  for bitmap imgList {
+    if (_comMode == 'i2c') {
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix (hexToInt bitmap))
+    } else {
+      '_SPIWriteData'
+      spiSend (hexToInt bitmap)
+    }
+    byteCnt += 1
+    if (byteCnt > (imgColCnt * 8)) {
+      OLEDCursorReset
+      comment 'Need RETURN here to prevent
+
+ displays in LOOPs from failing.'
+      return 0
+    }
+  }
+}
+
+to '_toGDBuffer' imgList {
+  comment 'Transform vertical img data to horizontal display mode
+
+GDbuffer(n) = image( (page-1) + ( ( byte# * 8) - 7 ) '
+  local 'imgColCnt' ((size imgList) / 8)
+  if (((_endCol - _begCol) + 1) < imgColCnt) {
+    imgColCnt = ((_endCol - _begCol) + 1)
+  }
+  local 'GDidx' (1 + _begCol)
+  for page 8 {
+    comment 'For @Page, 
+
+  Prints all columns across.'
+    for col# imgColCnt {
+      atPut GDidx _GDBuffer (hexToInt (at ((page - 1) + ((col# * 8) - 7)) imgList))
+      GDidx += 1
+    }
+    GDidx += (128 - imgColCnt)
+  }
+  OLEDColMode 1 16
+  OLEDShowGDBuffer
 }
 
 to '_valicC' col {
