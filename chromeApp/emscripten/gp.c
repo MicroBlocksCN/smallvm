@@ -199,7 +199,7 @@ static gp_boolean isGPFile(char *s) {
 }
 
 static void readLibraryFromFileSystem(gp_boolean runStartup) {
-	char fName[200];
+	char fName[300];
 	int loadedCount = 0;
 #ifdef _WIN32
 	char entry[200]; // directory entry name
@@ -225,7 +225,7 @@ static void readLibraryFromFileSystem(gp_boolean runStartup) {
 		struct dirent *entry;
 		while ((entry = readdir(dir))) {
 			if ((DT_REG == entry->d_type) && isGPFile(entry->d_name)) {
-				snprintf(fName, 200, "runtime/lib/%s", entry->d_name);
+				snprintf(fName, 300, "runtime/lib/%s", entry->d_name);
  				parse_runFile(fName);
  				loadedCount++;
 			}

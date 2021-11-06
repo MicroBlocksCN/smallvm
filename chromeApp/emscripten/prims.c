@@ -28,6 +28,10 @@
 #include <emscripten.h>
 #endif
 
+#ifdef MAC
+#include <Carbon/Carbon.h>
+#endif
+
 #ifdef IOS
 #include "iosOps.h"
 #endif
@@ -43,7 +47,7 @@
 
 // ***** Version Date and Time *****
 
-static char *versionNum = "v269";
+static char *versionNum = "v271";
 static char *versionDate = __DATE__;
 static char *versionTime = __TIME__;
 
@@ -2848,6 +2852,38 @@ OBJ primExecStatus(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+OBJ primOpenURL(int nargs, OBJ args[]) {
+	if (nargs < 1) return notEnoughArgsFailure();
+	if (!IS_CLASS(args[0], StringClass)) return primFailed("First argument must be a string");
+	char *url = obj2str(args[0]);
+	#if defined(EMSCRIPTEN)
+		EM_ASM_({
+			var url = UTF8ToString($0);
+			window.open(url, '_blank').focus();
+		}, url);
+	#elif defined(_WIN32) || defined(_WIN64)
+		ShellExecute(NULL, TEXT("open"), url, NULL, NULL, SW_SHOWNORMAL);
+	#elif defined(MAC)
+		CFStringRef urlString = CFStringCreateWithCString(kCFAllocatorDefault, url, kCFStringEncodingUTF8);
+		CFURLRef urlRef = CFURLCreateWithString(kCFAllocatorDefault, urlString, NULL);
+		if (urlRef != NULL) {
+			LSOpenCFURLRef(urlRef, NULL);
+			CFRelease (urlRef);
+		}
+		CFRelease(urlString);
+	#elif defined(__linux__)
+		char *argList[3] = {"xdg-open", url, NULL};
+		char *cmd = argList[0];
+		int pid = fork();
+		if (pid == 0) {
+			execvp(cmd, (char * const *) argList);
+			exit(0);
+			return nilObj;
+		}
+	#endif
+	return nilObj;
+}
+
 // ***** Debugger/Process Hooks *****
 
 OBJ primDebugeeTask(int nargs, OBJ args[]) { return debugeeTask; }
@@ -3417,6 +3453,7 @@ PrimEntry corePrimList[] = {
 	{"platform",	primPlatform,		"Return a string describing the platform (e.g. 'iOS')."},
 	{"exec",		primExec,			"Ask the OS to execute a command (a string) with zero or more argument strings. Return the pid of the exec-ed process"},
 	{"execStatus",	primExecStatus,		"Return the status of an exec-ed process. Return nil if the project is still running. Argument: the process ID returned by exec."},
+	{"openURL",		primOpenURL,		"Open the given URL in the default system browser. Argument: URL string"},
 
 	{"-----", NULL, "Debugging"},
 	{"error",		primHalt,			"Stop the script due to an error. By convention, the first argument is an error message."},

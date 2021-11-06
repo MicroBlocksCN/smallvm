@@ -56,7 +56,7 @@ static unsigned char * encodeJPEG(int *bitmapData, int width, int height, int qu
 
 	// create and initialize the compressor
 	jpeg_create_compress(&cinfo);
-	jpeg_mem_dest(&cinfo, &outBuf, outBufSizePtr);
+	jpeg_mem_dest(&cinfo, &outBuf, (size_t *) outBufSizePtr);
 	cinfo.image_width = width;
 	cinfo.image_height = height;
 	cinfo.input_components = 3;
