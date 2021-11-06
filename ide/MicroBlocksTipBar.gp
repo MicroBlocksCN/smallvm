@@ -8,7 +8,7 @@
 // 						  currently hovered item
 // Bernat Romagosa, November 2021
 
-defineClass MicroBlocksTipBar morph box title tipMorph tip contentDict iconsDict
+defineClass MicroBlocksTipBar morph box title tipMorph tip contentDict iconsDict help
 
 method title MicroBlocksTipBar { return title }
 method tip MicroBlocksTipBar { return tip }
@@ -38,6 +38,8 @@ method initialize MicroBlocksTipBar {
 
 	addPart morph (morph title)
 	addPart morph tipMorph
+
+	help = (initialize (new 'MicroBlocksHelp'))
 
 	return this
 }
@@ -164,6 +166,15 @@ method contentsFor MicroBlocksTipBar anElement {
 		if devMode { return (array key '') } // show key in tip bar during development
 		return (array '' '')
 	}
+	if (isOneOf key 'Reporter' 'Command') {
+ 		helpEntry = (entryForOp help (primName (expression block)))
+ 		if (notNil helpEntry) {
+ 			// append block description
+ 			fullDescription = (join (at helpEntry 3) '    ' (at content 2))
+ 			content = (copy content)
+ 			atPut content 2 fullDescription
+ 		}
+ 	}
 	return content
 }
 
