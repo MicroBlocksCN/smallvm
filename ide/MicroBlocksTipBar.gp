@@ -215,6 +215,7 @@ IeePJnCNA8wi7vJizOEQVxjPjRousVWshjucYgURtkNHMazhqAcEX0jxjhMM4RircIaFAWCKN6xjMXSh
 WZipH5jiOYzWjAKU9AGLGgtgHJUEcn3L5lQbkJjiI+xj2ZV8lgHn8xNkj+Gp23wt32mHqTrjr/4FJhUL
 xEgiPKBeAazjHpZxg5ES0ChusZQHdtGQvcXJHsBU8BrYKZoz2Mcj2jofuR1ie5jOk38AxyA7mTaRsDIA
 AAAASUVORK5CYII='
+	if (2 == (global 'scale')) { data = dataRetina }
 	return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
