@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector blocksFrame blocksResizer scriptsFrame zoomButtons nextX nextY
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector blocksFrame blocksResizer scriptsFrame nextX nextY
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -58,8 +58,6 @@ method initialize MicroBlocksScripter aProjectEditor {
   scriptsFrame = (scrollFrame scriptsPane (gray 220))
   addPart morph (morph scriptsFrame)
 
-  addZoomButtons this
-
   // add resizers last so they are in front
   catResizer = (newPaneResizer (morph categorySelector) 'horizontal')
   addPart morph (morph catResizer)
@@ -86,39 +84,6 @@ method languageChanged MicroBlocksScripter {
   updateBlocks this
   saveScripts this
   restoreScripts this
-}
-
-// zoom buttons
-method addZoomButtons MicroBlocksScripter {
-  zoomButtons = (array
-  	(newButton '=' (action 'restoreZoom' this))
-	(newButton '-' (action 'decreaseZoom' this))
-	(newButton '+' (action 'increaseZoom' this)))
-  for button zoomButtons {
-	  addPart (morph (contents scriptsFrame)) (morph button)
-  }
-}
-
-method restoreZoom MicroBlocksScripter {
-  setBlockScalePercent (scriptEditor this) 100
-}
-
-method increaseZoom MicroBlocksScripter {
-  setBlockScalePercent (scriptEditor this) (((global 'blockScale') * 100) + 5)
-}
-
-method decreaseZoom MicroBlocksScripter {
-  setBlockScalePercent (scriptEditor this) (((global 'blockScale') * 100) - 5)
-}
-
-method fixZoomButtonsLayout MicroBlocksScripter {
-  right = ((right morph) - 15)
-  bottom = ((bottom morph) - 15)
-  for button zoomButtons {
-	right = ((right - (width (morph button))) - 5)
-    setLeft (morph button) right
-    setTop (morph button) ((bottom - (height (morph button))) - 5)
-  }
 }
 
 // library header
@@ -294,7 +259,6 @@ method fixLayout MicroBlocksScripter {
 
   fixResizerLayout this
   fixLibraryHeaderLayout this
-  fixZoomButtonsLayout this
   updateSliders blocksFrame
   updateSliders scriptsFrame
 }
@@ -711,7 +675,6 @@ method restoreScripts MicroBlocksScripter {
   scale = (blockScale)
   scriptsPane = (contents scriptsFrame)
   removeAllParts (morph scriptsPane)
-  addZoomButtons this
   clearDropHistory scriptsPane
 
   scripts = (scripts (main mbProject))

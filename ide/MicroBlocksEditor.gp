@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -115,6 +115,7 @@ method initialize MicroBlocksEditor {
   scripter = (initialize (new 'MicroBlocksScripter') this)
   lastProjectFolder = 'Examples'
   addPart morph (morph scripter)
+  addZoomButtons this
   clearProject this
   fixLayout this
   setFPS morph 200
@@ -127,6 +128,7 @@ method scaleChanged MicroBlocksEditor {
   removeHint (global 'page')
   removeAllParts morph
   addTopBarParts this
+  addZoomButtons this
   addTipBar this
 
   // save the state of the current scripter
@@ -211,6 +213,40 @@ method textButton MicroBlocksEditor label selector {
   setCostumes button bm1 bm2
   addPart morph (morph button)
   return button
+}
+
+// zoom buttons
+method addZoomButtons MicroBlocksEditor {
+  zoomButtons = (array
+	(addIconButton this (zoomOutIcon this) 'decreaseZoom' 'Decrease block size by 5%' 36 (colorHSV 0 0 0.86))
+	(addIconButton this (zoomRestoreIcon this) 'restoreZoom' 'Restore block size to 100%' 36 (colorHSV 0 0 0.86))
+	(addIconButton this (zoomInIcon this) 'increaseZoom' 'Increase block size by 5%' 36 (colorHSV 0 0 0.86)))
+  for button zoomButtons {
+	addPart morph (morph button)
+  }
+  fixZoomButtonsLayout this
+}
+
+method restoreZoom MicroBlocksEditor {
+  setBlockScalePercent (scriptEditor scripter) 100
+}
+
+method increaseZoom MicroBlocksEditor {
+  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) + 5)
+}
+
+method decreaseZoom MicroBlocksEditor {
+  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) - 5)
+}
+
+method fixZoomButtonsLayout MicroBlocksEditor {
+  right = ((right morph) - 15)
+  bottom = (((bottom morph) - (height (morph tipBar))) - 10)
+  for button zoomButtons {
+	right = (right - (width (morph button)))
+    setLeft (morph button) right
+    setTop (morph button) ((bottom - (height (morph button))) - 5)
+  }
 }
 
 // tip bar
@@ -722,6 +758,7 @@ method drawOn MicroBlocksEditor aContext {
 method fixLayout MicroBlocksEditor fromScripter {
   setExtent morph (width (morph (global 'page'))) (height (morph (global 'page')))
   fixTopBarLayout this
+  fixZoomButtonsLayout this
   fixTipBarLayout this
   if (true != fromScripter) { fixScripterLayout this }
 }
@@ -982,16 +1019,22 @@ method settingsMenu MicroBlocksEditor {
   popUpAtHand (contextMenu this) (global 'page')
 }
 
-method addIconButton MicroBlocksEditor icon selector hint width {
+method addIconButton MicroBlocksEditor icon selector hint width background {
+  if (isNil background) {
+	background = (topBarBlue this)
+	backgroundHighlight = (topBarBlueHighlight this)
+  } else {
+	backgroundHighlight = (darker background)
+  }
   scale = (global 'scale')
   w = (43 * scale)
   if (notNil width) { w = (width * scale) }
   h = (42 * scale)
   x = (half (w - (width icon)))
   y = (11 * scale)
-  bm1 = (newBitmap w h (topBarBlue this))
+  bm1 = (newBitmap w h background)
   drawBitmap bm1 icon x y
-  bm2 = (newBitmap w h (topBarBlueHighlight this))
+  bm2 = (newBitmap w h backgroundHighlight)
   drawBitmap bm2 icon x y
   button = (newButton '' (action selector this))
   if (notNil hint) { setHint button (localized hint) }
@@ -1410,6 +1453,104 @@ tZXz5s2rHhkZGd2zZ8/vU23WsqzFjuO0YdRCuZbRwXA4/F4oFDqxuiSTyZ2O43xU7A/6+/t9tbW1T6RS
 qW+01tNxTD+YTeQ6FxoUkQDGThoOhx/Yvn17SZtRY2Pjt36/f3dnZ+efk/OaG6XWQruAq4Arge3l7KSF
 znCmAzkTEJFuoFtErgD+mUlD5aJgKSEi382Ukf+KU/4LTfYyeqp95MMGjnLyS2W92XgKoN8HbJltF5NA
 l7Vw4cIfGKvvFzL+aO//jH5gg23bz/8LsSjXmhMY0ssAAAAASUVORK5CYII='
+  if (2 == (global 'scale')) { data = dataRetina }
+  return (readFrom (new 'PNGReader') (base64Decode data))
+}
+
+method zoomOutIcon MicroBlocksEditor scale {
+  dataRetina = '
+iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAABx2AAAcdgH7OYqmAAAAGXRF
+WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAy5JREFUWIXN2EtoXVUUBuAvMU0Uan3Vtj5A
+FFqtigNtpa0jpT4gOnCggtDSgkMfOFHEgUUQCk7EFkQdtBOtYBxWMSNBUetjKlofQSltBtKmRmxq08bB
+ziXnrnvuPY97LvGHPdgc1r/+vdfae691hjSHy/EAxnEzrsMazOM4pvEtDuNz/Nug7564FRM4h4WS4zRe
+x1WDFLYaB6QdKissjhm8jJGmxd2B3wqcz+EPKbxFi5jElU2JewSzOU7O4UPsxDXBZhi34Hl80UXkz9jQ
+r7jNOJND/gHWV+DZLh2YPJG1d/JaHAuEZ7CjJt8I9uWInFQzJycD0d/YVlNcFs/miHypKsn2QHABTzQg
+roU3A/+MCqEewpFA8EaD4kgh/S742FvW+O5geNpgLtj7g59TWFHG8NVg+NoAxLXwZfB173AJo4fDfKJp
+VRl8FObjRQYjOG9pRcelnBwUNmrfwc+K7pu10ivQwk+Lhi1cJr0sdTGnPSJHpQ25aHEeX6QObNK+okPh
++23he9XxZ47P6cz32aIcjDs8X7SiBpCtE1cUhXg6zNeF+Um824eY2TAfCj5OFBFcrD0kR/sQUwbXB39f
+FYV4DlOZ+XrcOBhtSC1DFj+UuQcPh3k/p7YI8c79uIzRQ9q3fQpjzepCarSyfc1ZXFrGcEwq3bMinx6A
+wIngI15pPfFUMP5HKu2bws7APy+1CKUxgh8DyXmdOVMH90iHMcv9Th2izTp73wvY3Ye4x6XKPOb46qpE
+V+DTQJQN9zMYrcB3NfZLC8xy/YXbq4rbKHVbRe/qFJ7DTV14hqUo7F0UkrfQjpQpKp3G8T5W5XzLVh0R
+v+B3qTwblTrCDVJ1lIdjeFQq+0thCC8uiohhWJDCvU3nwakzPtH5xvfEGA5aOgR5oWz1JMN4DL/WEPY1
+7qsijBSK2MFlT+ysVANGjOJBqRHvJnYe3+AV3FVVGGyRyptu4qrce2O4AVtxp1QZl3n3u+JJ+f9csuOF
+fhz0gz2651trvGewzVJPzPQQtiD9hbpkucTB2zmiWjt6QqpylxUr8b1OcWelJP9fYK1OkbuWU1AeVuIt
+qVPbs7xSlvAfCj2QzoDCDrQAAAAASUVORK5CYII='
+  data = '
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAA6QAAAOkAHc49yqAAAAGXRF
+WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAYFJREFUOI2l1L9LVWEcx/HXjaRMLRquJQi5
+ZDlHe4M0REsNQqND/0AQ7bVas+Bi0BAKTtEWzYkRUaDiIoRDOfij8t5SvA3nq/fpeO85V/zA4ZznfD/f
+9/P9nvM8D+W6iUksYwe/8AUvcK2D/EP14BX20YhrB/VkvBvg02WwPnyMpO94hMEkfhVPsR2et2XQuTB+
+wKUC3zBWwvu8nWk0DN9QLeyjCf0pa3+4qLrxDmAHehY5E/lAJWaro/cYwOsB/FzJBar4gSWM4DymC0B/
+8CAKqeFv/s+cinsjGV8pANaS50aS/x+wht84WwDKayiAi3niPt7jHO4eAzgW93etgvdjtmUMdAAbwHoU
+c6OVoYL5gG6XQPsT78t2ptvY1NyvK7KWuhPPBTzEWngWZHv/iJ4ksA3Z1jsA17EYE+wm72e0WLNn8DqB
+beJOtH8Pb2QnTSOJz+JWq6qq+JQkbOFxm8/Rj4ttYodaxZ7meTdTllCmKdlC3sNXWfsnUldAV3H5pLB/
+foZsC5ZTyFQAAAAASUVORK5CYII='
+  if (2 == (global 'scale')) { data = dataRetina }
+  return (readFrom (new 'PNGReader') (base64Decode data))
+}
+
+method zoomRestoreIcon MicroBlocksEditor scale {
+  dataRetina = '
+iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAABx2AAAcdgH7OYqmAAAAGXRF
+WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAA0lJREFUWIXN2EmIXFUUBuCv2rY7QpRoYuIE
+opDExAEcIhpdSYxCzMKFCgGDgsskIooiLnQZ0IWoILrRjQOYbRTbjRAhzrgSjUOjhKQXDh3b2Ind6XZx
+q+hXp17Ve69eFe0PF+rUrfuf/95zh3OqYXBYhe3YgY24FGsxj2OYwhc4iEP4d4C+e2IzDmAOiyXbCTyP
+1cMUtgZvSCtUVlhs03gGo4MWdx1+LnB+Cr9K4S2axAQuGJS4nZjJcTKH97AbF4cxI7gKj+GTLiJ/wIa6
+4rZgNof8XayvwLNNOjB5IvteyUtwNBDO4sE++Ubxco7ICX3uyYlA9De29ikui305Ip+uSrItECzggQGI
+a+GlwD+tQqgb+CwQvDhAcaSQfhl87C87+OYw8IThXLB3Bj9/4uwym/GeYL+C35uf12JvDVEnLa3URziM
+W5v2KtxehuRr7TO7PtN3tc4NXqX9Fnw9HvpfKBI3ijOZAcekPTksgZtC/8dFIV4nvQItfN8c2MIUniia
+ZQ/MBvuItCBnNe34InXgJu0zeqeGmLKYyvibGSn4cVzh+aFIakc2Tyw8xVPBvijYK3BtDTFz+CZjN4KP
+40UEK7SH+EjoH/QhuSz0Hy4K8SlMZuz1uKJoVjWwPdjflrmoD2JPxt4pvZ2ki/ZQDUHTwY6PwvtlSO7W
+vuyTGK8hqhs2aq9rTuPcMgPHpdQ9K3JPzxH94UDwUelKeyQM/kdK7QeF3YF/XioRSmMU3wWSMzr3TD+4
+TTqMWe7X+yHaorP2XcDDNcTdL2XmcY+vqUp0Pj4MRNlw78VYBb4LpbRtIXD9hWuqitskVVtFl+4kHsWV
+XXhGpCjsbwrJm2jHlmnELwJ24G2cl9OXzToifsQvUno2JlWEG6TsKA9Hca+U9pdCA081RcQwLErh3qrz
+4PTTPtD5xvfEON60dAjyQtmqSUZwH37qQ9inuKOKMFIoYgWXPbEzUoIQMYa7pEK8m9h5fI5ncWNVYXCL
+lN50E1fl3hvH5VIBdIOUGRclJj2xS/5/Ltn2ZB0HdfCc7vut1d5SfOKHhukewhalf6HOWS5x8FqOqNaK
+Hpey3GXFSnylU9xpS1X+smOdTpEPLaegPKzEq/hDOjj/C/wH9uC4M441HhwAAAAASUVORK5CYII='
+  data = '
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAA6QAAAOkAHc49yqAAAAGXRF
+WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAZVJREFUOI2l079rlEEQxvFPgmLEH40mZ8BC
+C6O9pLKKSECxCugfIGhhKUiakMJesRSsBAtJwEZiF8RSUUQUNaY5EAuxMDF6OWO8s9h54+a8e99ABpZ5
+991nvjuzO0u1jeIOFtDAD7zBLRzfQvyG7cF9tNCO0UAzm/8O8I4q2D68jKAvuIbD2fox3MD30Dyugj4M
+4TPUSnQjWAztzV6iMyH4hMHSOv5BV6TyR7qleTX8NJZwugT2B09xG1O40inoi92a2BsZtktGI+JOxPx1
+Z4YHA/RBao8mTlVkSGqpXzjaCewP3w7fQr0E2Mq+21n8JuAqfmLA1ks+EvP3nRm28ARncR6PcKkkw/Xw
+F8PPdxNNxG4LGC6BFTaMr5HMyW6CPjwP6EoFdCjT3uslGpf6rzinRVzA7kyzH5fxOTQvpLf/n01msG/S
+0yvAq3iHj1jL/s9Ib3+T7cKDDLaEc1H+BOakGy0gy5jFWLesBvEqC1jG9R7HUcOBHmsbVpeuv+irmaqA
+KrsrNfI63krlb8t2BrSOQ9uF/QUd5IF+Y39L9AAAAABJRU5ErkJggg=='
+  if (2 == (global 'scale')) { data = dataRetina }
+  return (readFrom (new 'PNGReader') (base64Decode data))
+}
+
+
+method zoomInIcon MicroBlocksEditor scale {
+  dataRetina = '
+iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAABx2AAAcdgH7OYqmAAAAGXRF
+WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAA2pJREFUWIXN2EuIXEUUBuCvx86MQtREo/ER
+8EUePoigiWgUFxKjMLpwEUXBaECXKm4UcWE2QsCNaEBUUDc+wOguiuNCQSE+wZVoog5qcGZhdOKImZjJ
+jIvqJtV1b/e91dNh/KHgHm6dU/+tU3Uet2FwWIYtGMVanI+zMYvfMIkvsQef4N8Brt0Tl2E3jmK+5jiE
+Z3DmiSS2Aq8KO1SXWDqm8CSagya3Hj9VLD6DXwT3Vn3EGM4YFLnbMV2yyFG8jW04N9EZwjo8ik+7kNyP
+NQsltxGHS4y/hdUZdjYLF6aMZN87eR4OJAYP494+7TXxfAnJMX2eybHE0N/Y1Ce5GA+XkHwi18jmxMAc
+7qrQ2SXc0incXTH3ucT+lAxXN/B5YuDZGnqvRPPvq5jbxFfJGjvrErwmUTykXoDNIQg3J+v8iSVDNRRv
+S+RdOFhDLxcfYm8kL8MN/RDcPTBKRbyTyKNVBJu4MpIn8M1AKXXivUTeUBVvVgpZoI3vhfPRxulCZinD
+JdHzdThWMmdGp0f2tead1JLTjFTABp0H983k/eWKMSxn/F6y5mT0frqOi2PMVn3RABDXiUuqXDyZyOck
+8h94uYvujULhCh8LeTbFdCI3kjUmKvg5WadL9lUpRMiNg7AqWW9vlYtnMB7Jq3FRBslcbEnkb+vEwT2J
+3O3WDgJpzE3DTilu1bnt4xipoZfr4rU6+5ojOLXODn6EXyP5QjxYQy8XT+uMGu8qXqKueEDnLv4jlPa9
+kLOD2xL7s0KLUBtNfJcYOaZ4ZmKsEpqr9VjeY971wmWMbb+UQ66NjYq97xy292OshTuFyjw94ytyDS3H
+B4mh2N0PYTjD3llC2TaX2PoLV+SSu1TIAlV5dRyP4OIudoYEL+xsESn70MKRaVSQG8UbOK3kXVx1pPgB
+PwtN+7DQEa4RqqMyHMAdQtlfCw083iKRumFecPcmxYvTz3hfMcf3xAhec/wSlLmy3ZMMYSt+7IPYZ7gp
+hxjBFWkHF9/YaaEGTDGMW4RGvBvZWXyBp3B1LjG4VihvupGrinsxRnCBUElfJVTGdbJWV9yj/J9LPB5b
+yAILwQ7dz1t7vK76xp8wTPUgNi/8hTplscjBiyWk2js6IeTURcVSfK1I7ohwyP8XWKlI8v7FJFSGpXhB
+6NR2LC6V4/gPU86YtMg9uoAAAAAASUVORK5CYII='
+  data = '
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAA6QAAAOkAHc49yqAAAAGXRF
+WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAaJJREFUOI2l1L1rVEEUBfDfihq/g8JGA4I2
+Rq3FXkQsxEYLwT9AC0tB0lnYK5aCjYKFRBALsRPbKIqIQoxpAmKhFolRsxsTdi3mbjI+57mRXHgMM+fc
+c++Zj0f/OIpbmMQ8fuAtbuDgKvKXYyvuoYNufPNoZ/PFEF7fT2w7XkXSZ1zG3gw/gGuYC86TfqIPg/gc
+u//BG8FUcK/XkU4E4SOaFWwcYwXR75L9kXUFwUsxXsXXCjaAjZW1D7gpWb5YFWtEtTa2FYq9xqPC+iHJ
+1ZtGBWjiC97jMHbgToYfl056POYLOB+NtPCrejK9Lehm830Z3rPbW2tlWDfL/0OwhZ/YVLBWZ3l/CE5U
+FTt4hi04XUisi3MxPi2BZ6PaJIZX0eGwdBs6OFISbOBFiM5VRHdhMJsPZdy7de2fxIyV9zoVljZnnEFc
+wKfgvJTe/l8xitkgzUhPryfcxkQUWMzWxxTu7ADuZ2KzOBX2z+CxdP+6Gf4Ax0pdNaXN7iV8w5Wa7RjC
+zhpsOaaxZOV/V338/x23pYu8hHeS/TXFhhCdxp61iv0GkDZz2QEPwisAAAAASUVORK5CYII='
   if (2 == (global 'scale')) { data = dataRetina }
   return (readFrom (new 'PNGReader') (base64Decode data))
 }
