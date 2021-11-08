@@ -290,10 +290,10 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 
 module Tone Output
 author MicroBlocks
-version 1 5 
+version 1 6 
 tags tone sound music audio note speaker 
 description 'Audio tone generation. Make music with MicroBlocks!'
-variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneFrequencies 
+variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
 	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
 	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
@@ -304,17 +304,22 @@ variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneFrequen
 	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
 	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
 	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
-	spec 'r' '_baseFreqForSharpOrFlat' 'obsolete _baseFreqForSharpOrFlat _' 'auto' 'c#'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
 scaled by 1000. For example, return 440000 (440Hz) for A.
 Note names may be upper or lower case. Note names
 may be followed by # for a sharp or b for a flat.'
+  local 'normalized note' ('_trimmedLowercase' note)
   if (_toneNoteNames == 0) {
     _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
+    _toneArezzoNotes = ('[data:makeList]' 'do' 'do#' 're' 're#' 'mi' 'fa' 'fa#' 'sol' 'sol#' 'la' 'la#' 'si' 'do_' 'dob' 're_' 'reb' 'mi_' 'mi#' 'fa_' 'solb' 'sol_' 'lab' 'la_' 'sib' 'si_' 'si#')
   }
-  return ('_baseFreqForSemitone' ('[data:find]' ('_trimmedLowercase' note) _toneNoteNames))
+  if (('[data:find]' (v 'normalized note') _toneArezzoNotes) > 0) {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneArezzoNotes))
+  } else {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneNoteNames))
+  }
 }
 
 to '_baseFreqForSemitone' semitone {
@@ -433,4 +438,5 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
+
 
