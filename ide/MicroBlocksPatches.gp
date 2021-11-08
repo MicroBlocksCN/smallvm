@@ -571,6 +571,10 @@ method blockColorForCategory AuthoringSpecs cat {
 
 // ListBox: Support for colored blocks categories
 
+method setOpCategory AuthoringSpecs op category {
+  atPut opCategory op category
+}
+
 method normalCostume ListBox data accessor {
   scale = (global 'scale')
   if (isNil accessor) {accessor = getEntry}

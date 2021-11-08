@@ -91,6 +91,54 @@ forever {
 }
 
 
+module 'LED Display' Output
+author MicroBlocks
+version 1 2 
+tags pixel matrix led tft 
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+variables _stop_scrolling_text 
+
+	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+	spec ' ' '[display:mbDisplayOff]' 'clear display'
+	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+	spec ' ' 'stopScrollingText' 'stop scrolling'
+
+to displayCharacter s {
+  s = ('[data:join]' '' s)
+  if ((size s) == 0) {
+    '[display:mbDisplayOff]'
+    return 0
+  }
+  '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+to scroll_text text optionalDelay {
+  text = ('[data:join]' text '')
+  delay = 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  local 'length' (size text)
+  for position ((length * 6) + 6) {
+    if _stop_scrolling_text {return 0}
+    for i length {
+      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
+}
+
+
 module NeoPixel Output
 author MicroBlocks
 version 1 2 
@@ -240,108 +288,12 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 }
 
 
-module Scrolling Output
-author MicroBlocks
-version 1 0 
-depends 'LED Display' 
-tags animation text pixel matrix led tft 
-description 'Scroll text across the screen of the 5x5 LED display on the BBC micro:bit, Calliope mini or M5Atom Matrix. Also works on boards with a TFT display by simulating the 5x5 matrix with "fat pixels".'
-variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text 
-
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'scroll_number' 'scroll number _ : pausing _ ms' 'num num' 123 100
-	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num' 42
-	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
-
-to '_covert_to_shapes' n {
-  if (_digit_shapes == 0) {_digit_shapes = (newList 12)}
-  fillList _digit_shapes ('[display:mbShapeForLetter]' ' ')
-  local 'index' (size _digit_shapes)
-  local 'isNegative' (booleanConstant false)
-  if (n < 0) {
-    isNegative = (booleanConstant true)
-    n = (0 - n)
-  } (n == 0) {
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' '0')
-    _digit_shapes_start_index = index
-  }
-  repeatUntil (n == 0) {
-    local 'digit' (n % 10)
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' (48 + digit))
-    index += -1
-    n = (n / 10)
-  }
-  if isNegative {
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' '-')
-    index += -1
-  }
-  _digit_shapes_start_index = index
-}
-
-to '_scroll_digit_shapes' delay {
-  _stop_scrolling_text = (booleanConstant false)
-  local 'prevShape' ('[display:mbShapeForLetter]' ' ')
-  local 'i' _digit_shapes_start_index
-  local 'end' ((size _digit_shapes) + 1)
-  repeatUntil (i > end) {
-    local 'shape' ('[display:mbShapeForLetter]' ' ')
-    if (i < end) {
-      shape = (at i _digit_shapes)
-    }
-    for j 5 {
-      local 'x' (1 - j)
-      '[display:mbDrawShape]' prevShape x 1
-      '[display:mbDrawShape]' shape (x + 5) 1
-      waitMillis delay
-      if _stop_scrolling_text {
-        '[display:mbDisplayOff]'
-        return 0
-      }
-    }
-    prevShape = shape
-    i += 1
-  }
-}
-
-to scroll_number n optionalDelay {
-  delay = 100
-  if ((pushArgCount) > 1) {
-    delay = optionalDelay
-  }
-  '_covert_to_shapes' n
-  '_scroll_digit_shapes' delay
-}
-
-to scroll_text text optionalDelay {
-  delay = 100
-  if ((pushArgCount) > 1) {
-    delay = optionalDelay
-  }
-  _stop_scrolling_text = (booleanConstant false)
-  local 'length' (size text)
-  for position ((length * 6) + 6) {
-    if _stop_scrolling_text {return 0}
-    for i length {
-      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
-    }
-    waitMillis delay
-  }
-}
-
-to stopScrollingText {
-  _stop_scrolling_text = (booleanConstant true)
-  waitMillis 10
-  '[display:mbDisplayOff]'
-}
-
-
 module Tone Output
 author MicroBlocks
-version 1 5 
+version 1 6 
 tags tone sound music audio note speaker 
 description 'Audio tone generation. Make music with MicroBlocks!'
-variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneFrequencies 
+variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
 	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
 	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
@@ -352,17 +304,22 @@ variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneFrequen
 	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
 	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
 	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
-	spec 'r' '_baseFreqForSharpOrFlat' 'obsolete _baseFreqForSharpOrFlat _' 'auto' 'c#'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
 scaled by 1000. For example, return 440000 (440Hz) for A.
 Note names may be upper or lower case. Note names
 may be followed by # for a sharp or b for a flat.'
+  local 'normalized note' ('_trimmedLowercase' note)
   if (_toneNoteNames == 0) {
     _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
+    _toneArezzoNotes = ('[data:makeList]' 'do' 'do#' 're' 're#' 'mi' 'fa' 'fa#' 'sol' 'sol#' 'la' 'la#' 'si' 'do_' 'dob' 're_' 'reb' 'mi_' 'mi#' 'fa_' 'solb' 'sol_' 'lab' 'la_' 'sib' 'si_' 'si#')
   }
-  return ('_baseFreqForSemitone' ('[data:find]' ('_trimmedLowercase' note) _toneNoteNames))
+  if (('[data:find]' (v 'normalized note') _toneArezzoNotes) > 0) {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneArezzoNotes))
+  } else {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneNoteNames))
+  }
 }
 
 to '_baseFreqForSemitone' semitone {
@@ -481,4 +438,5 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
+
 

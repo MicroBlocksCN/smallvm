@@ -59,15 +59,18 @@ playing = (booleanConstant true)
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+variables _stop_scrolling_text 
 
 	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
 	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+	spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -78,81 +81,8 @@ to displayCharacter s {
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
 }
 
-
-module Scrolling Output
-author MicroBlocks
-version 1 0 
-depends 'LED Display' 
-tags animation text pixel matrix led tft 
-description 'Scroll text across the screen of the 5x5 LED display on the BBC micro:bit, Calliope mini or M5Atom Matrix. Also works on boards with a TFT display by simulating the 5x5 matrix with "fat pixels".'
-variables _digit_shapes _digit_shapes_start_index _stop_scrolling_text 
-
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'scroll_number' 'scroll number _ : pausing _ ms' 'num num' 123 100
-	spec ' ' '_covert_to_shapes' '_covert_to_shapes _' 'num' 42
-	spec ' ' '_scroll_digit_shapes' '_scroll_digit_shapes _' 'num' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
-
-to '_covert_to_shapes' n {
-  if (_digit_shapes == 0) {_digit_shapes = (newList 12)}
-  fillList _digit_shapes ('[display:mbShapeForLetter]' ' ')
-  local 'index' (size _digit_shapes)
-  local 'isNegative' (booleanConstant false)
-  if (n < 0) {
-    isNegative = (booleanConstant true)
-    n = (0 - n)
-  } (n == 0) {
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' '0')
-    _digit_shapes_start_index = index
-  }
-  repeatUntil (n == 0) {
-    local 'digit' (n % 10)
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' (48 + digit))
-    index += -1
-    n = (n / 10)
-  }
-  if isNegative {
-    atPut index _digit_shapes ('[display:mbShapeForLetter]' '-')
-    index += -1
-  }
-  _digit_shapes_start_index = index
-}
-
-to '_scroll_digit_shapes' delay {
-  _stop_scrolling_text = (booleanConstant false)
-  local 'prevShape' ('[display:mbShapeForLetter]' ' ')
-  local 'i' _digit_shapes_start_index
-  local 'end' ((size _digit_shapes) + 1)
-  repeatUntil (i > end) {
-    local 'shape' ('[display:mbShapeForLetter]' ' ')
-    if (i < end) {
-      shape = (at i _digit_shapes)
-    }
-    for j 5 {
-      local 'x' (1 - j)
-      '[display:mbDrawShape]' prevShape x 1
-      '[display:mbDrawShape]' shape (x + 5) 1
-      waitMillis delay
-      if _stop_scrolling_text {
-        '[display:mbDisplayOff]'
-        return 0
-      }
-    }
-    prevShape = shape
-    i += 1
-  }
-}
-
-to scroll_number n optionalDelay {
-  delay = 100
-  if ((pushArgCount) > 1) {
-    delay = optionalDelay
-  }
-  '_covert_to_shapes' n
-  '_scroll_digit_shapes' delay
-}
-
 to scroll_text text optionalDelay {
+  text = ('[data:join]' text '')
   delay = 100
   if ((pushArgCount) > 1) {
     delay = optionalDelay
