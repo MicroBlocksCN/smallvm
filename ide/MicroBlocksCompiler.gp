@@ -164,8 +164,8 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[data:unicodeAt]'		'unicode _ of _' 'num str' 2 'cat')
 		(array 'r' '[data:unicodeString]'	'string from unicode _' 'num' 65)
 		'-'
-		(array 'r' 'newList'				'new list length _' 'num' 10)
-		(array 'r' '[data:newByteArray]'	'new byte array _' 'auto' 5)
+		(array 'r' 'newList'				'new list length _ : with all _' 'num auto' 10 0)
+		(array 'r' '[data:newByteArray]'	'new byte array _ : with all _' 'num num' 5 0)
 		(array 'r' '[data:asByteArray]'		'as byte array _' 'auto' 'aByteListOrString')
 		(array 'r' '[data:freeMemory]'		'free memory')
 

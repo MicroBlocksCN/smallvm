@@ -106,7 +106,9 @@ OBJ primNewList(int argCount, OBJ *args) {
 
 	int count = ((argCount > 0) && isInt(args[0])) ? obj2int(args[0]) : 0;
 	if (count < 0) count = 0;
-	OBJ result = newObj(ListType, count + 1, int2obj(0)); // filled with zeros
+	OBJ fillValue = (argCount > 1) ? args[1] : zeroObj;
+
+	OBJ result = newObj(ListType, count + 1, fillValue);
 	if (result) FIELD(result, 0) = int2obj(count);
 	return result;
 }
@@ -721,7 +723,16 @@ OBJ primNewByteArray(int argCount, OBJ *args) {
 
 	int byteCount = obj2int(args[0]);
 	if (byteCount < 0) byteCount = 0;
-	OBJ result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+
+	int fillWord = 0;
+	if (argCount > 1) {
+		if (!isInt(args[1])) return fail(needsIntegerError);
+		int fillByte = obj2int(args[1]);
+		if ((fillByte < 0) || (fillByte > 255)) return fail(byteArrayStoreError);
+		fillWord = (fillByte << 24) | (fillByte << 16) | (fillByte << 8) | fillByte;
+	}
+
+	OBJ result = newObj(ByteArrayType, (byteCount + 3) / 4, fillWord);
 	if (result) setByteCountAdjust(result, byteCount);
 	return result;
 }
