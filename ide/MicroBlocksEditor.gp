@@ -218,24 +218,42 @@ method textButton MicroBlocksEditor label selector {
 // zoom buttons
 method addZoomButtons MicroBlocksEditor {
   zoomButtons = (array
-	(addIconButton this (zoomOutIcon this) 'decreaseZoom' 'Decrease block size by 5%' 36 (colorHSV 0 0 0.86))
-	(addIconButton this (zoomRestoreIcon this) 'restoreZoom' 'Restore block size to 100%' 36 (colorHSV 0 0 0.86))
-	(addIconButton this (zoomInIcon this) 'increaseZoom' 'Increase block size by 5%' 36 (colorHSV 0 0 0.86)))
+	(newZoomButton this 'zoomOut' 'Decrease block size by 5%')
+	(newZoomButton this 'restoreZoom' 'Restore block size to 100%')
+	(newZoomButton this 'zoomIn' 'Increase block size by 5%'))
   for button zoomButtons {
 	addPart morph (morph button)
   }
   fixZoomButtonsLayout this
 }
 
+method newZoomButton MicroBlocksEditor selector hint {
+  scale = (global 'scale')
+  icon = (call (action (join selector 'Icon') this))
+  w = (30 * scale)
+  h = (30 * scale)
+  x = (half (w - (width icon)))
+  y = (5 * scale)
+  bm1 = (newBitmap w h (transparent))
+  drawBitmap bm1 icon x y
+  //bm2 = (newBitmap w h (topBarBlueHighlight this))
+  //drawBitmap bm2 icon x y
+  button = (newButton '' (action selector this))
+  if (notNil hint) { setHint button (localized hint) }
+  setCostumes button bm1
+  addPart morph (morph button)
+  return button 
+}
+
 method restoreZoom MicroBlocksEditor {
   setBlockScalePercent (scriptEditor scripter) 100
 }
 
-method increaseZoom MicroBlocksEditor {
+method zoomIn MicroBlocksEditor {
   setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) + 5)
 }
 
-method decreaseZoom MicroBlocksEditor {
+method zoomOut MicroBlocksEditor {
   setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) - 5)
 }
 
@@ -1019,22 +1037,16 @@ method settingsMenu MicroBlocksEditor {
   popUpAtHand (contextMenu this) (global 'page')
 }
 
-method addIconButton MicroBlocksEditor icon selector hint width background {
-  if (isNil background) {
-	background = (topBarBlue this)
-	backgroundHighlight = (topBarBlueHighlight this)
-  } else {
-	backgroundHighlight = (darker background)
-  }
+method addIconButton MicroBlocksEditor icon selector hint width {
   scale = (global 'scale')
   w = (43 * scale)
   if (notNil width) { w = (width * scale) }
   h = (42 * scale)
   x = (half (w - (width icon)))
   y = (11 * scale)
-  bm1 = (newBitmap w h background)
+  bm1 = (newBitmap w h (topBarBlue this))
   drawBitmap bm1 icon x y
-  bm2 = (newBitmap w h backgroundHighlight)
+  bm2 = (newBitmap w h (topBarBlueHighlight this))
   drawBitmap bm2 icon x y
   button = (newButton '' (action selector this))
   if (notNil hint) { setHint button (localized hint) }
@@ -1489,7 +1501,7 @@ foZsC5ZTyFQAAAAASUVORK5CYII='
   return (readFrom (new 'PNGReader') (base64Decode data))
 }
 
-method zoomRestoreIcon MicroBlocksEditor scale {
+method restoreZoomIcon MicroBlocksEditor scale {
   dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAACXBIWXMAABx2AAAcdgH7OYqmAAAAGXRF
 WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAA0lJREFUWIXN2EmIXFUUBuCv2rY7QpRoYuIE
