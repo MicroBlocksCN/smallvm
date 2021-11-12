@@ -15,7 +15,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
   if ('Linux' == (platform)) { fontSize = 9 }
   scale = (blockScale)
   morph = (newMorph this)
-  text = (newText (toString default) fontName (scale * fontSize))
+  text = (newText (localized (toString default)) fontName (scale * fontSize))
   addPart morph (morph text)
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
