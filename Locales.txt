@@ -555,6 +555,28 @@ play frequency _ for _ ms
 play midi key _ for _ ms
 
 ####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+
+play ringtone _
+
+current song name
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+
+pluck note _ octave _ for _ ms
+
+pluck MIDI key _ for _ msecs
+
+set pluck pin _
+
+####
 # Turtle geometry library
 
 Turtle

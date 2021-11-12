@@ -801,6 +801,35 @@ play midi key _ for _ ms
 toca la tecla MIDI _ durant _ ms
 
 ####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+Politons
+
+play ringtone _
+toca el politò _
+
+current song name
+títol de la cançó actual
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+Guitarra
+
+pluck note _ octave _ for _ ms
+punteja la nota _ a l'octava _ durant _ ms
+
+pluck MIDI key _ for _ msecs
+punteja la nota MIDI _ durant _ ms
+
+set pluck pin _
+fixa el pin de puntejat a _
+
+####
 # Turtle geometry library
 
 Turtle
