@@ -183,6 +183,12 @@ as byte array _
 
 free memory
 
+all
+
+last
+
+random
+
 My Blocks
 
 # Buttons on top of "My Blocks" category

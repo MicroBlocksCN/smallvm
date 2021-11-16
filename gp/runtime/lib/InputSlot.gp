@@ -58,6 +58,7 @@ method setID InputSlot bool {isID = bool}
 
 method contents InputSlot {
   if ((editRule text) == 'numerical') {return (toNumber (text text))}
+  if (notNil menuSelector) { return contents }
   if (isAuto == true) {
 	if (representsANumber (text text)) {
 	  num = (toNumber (text text) nil)
@@ -78,7 +79,7 @@ method setContents InputSlot data {
   if ((or (true == contents) (false == contents))) {
     menuSelector = 'boolMenu'
   }
-  if (and (notNil menuSelector) (not (isVarSlot this))) {
+  if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
     setText text (localized (toString data))
   } else {
     setText text (toString data)
