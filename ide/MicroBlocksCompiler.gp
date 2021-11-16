@@ -150,7 +150,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[data:join]'		'join _ _ : _ : ...' 'str str str' 'micro' 'blocks')
 		'-'
 		(array 'r' '[data:makeList]'	'list : _ : ...' 'auto auto auto' 'cat' 'dog' 'bird')
-		(array ' ' '[data:addLast]'		'add _ to list _' 'str auto' 'fish')
+		(array ' ' '[data:addLast]'		'add _ to list _' 'auto auto' 'fish')
 		'-'
 		(array ' ' 'atPut'				'replace item _ of list _ with _' 'auto.replaceItemMenu str auto' 1 nil 10)
 		(array ' ' '[data:delete]'		'delete item _ of list _' 'auto.replaceItemMenu str' 1)
