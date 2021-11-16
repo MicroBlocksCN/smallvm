@@ -58,7 +58,7 @@ method setID InputSlot bool {isID = bool}
 
 method contents InputSlot {
   if ((editRule text) == 'numerical') {return (toNumber (text text))}
-  if (notNil menuSelector) { return contents }
+  if (and (notNil menuSelector) (notNil contents)) { return contents }
   if (isAuto == true) {
 	if (representsANumber (text text)) {
 	  num = (toNumber (text text) nil)
