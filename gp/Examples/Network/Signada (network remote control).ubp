@@ -181,7 +181,7 @@ to tilt which {
   }
 }
 
-script 484 40 {
+script 482 40 {
 whenStarted
 '[display:mbDisplayOff]'
 '[tft:circle]' (('[tft:getWidth]') / 2) (('[tft:getHeight]') / 2) 30 255
@@ -194,7 +194,7 @@ if (and (buttonA) (buttonB)) {
 sendBroadcast 'go'
 }
 
-script 40 44 {
+script 38 44 {
 comment 'Signada: a network remote control procotol
 ================================
 
@@ -239,7 +239,7 @@ blocks provided by the Snap! library to
 communicate with the board.'
 }
 
-script 930 46 {
+script 928 46 {
 whenBroadcastReceived 'go'
 connection
 showConnectionInfo
@@ -255,6 +255,11 @@ forever {
   }
   waitMillis 20
 }
+}
+
+script 531 448 {
+comment 'Use this script to set the Wifi credentials manually'
+savewifi 'MySSID' 'MyPassword' ''
 }
 
 
@@ -568,15 +573,18 @@ description 'Very fast and efficient primitives to parse JSON strings.'
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+variables _stop_scrolling_text 
 
 	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
 	spec ' ' '[display:mbDisplayOff]' 'clear display'
 	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
 	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
 	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+	spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -585,6 +593,29 @@ to displayCharacter s {
     return 0
   }
   '[display:mbDrawShape]' ('[display:mbShapeForLetter]' (at 1 s))
+}
+
+to scroll_text text optionalDelay {
+  text = ('[data:join]' text '')
+  delay = 100
+  if ((pushArgCount) > 1) {
+    delay = optionalDelay
+  }
+  _stop_scrolling_text = (booleanConstant false)
+  local 'length' (size text)
+  for position ((length * 6) + 6) {
+    if _stop_scrolling_text {return 0}
+    for i length {
+      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+    }
+    waitMillis delay
+  }
+}
+
+to stopScrollingText {
+  _stop_scrolling_text = (booleanConstant true)
+  waitMillis 10
+  '[display:mbDisplayOff]'
 }
 
 
@@ -779,8 +810,6 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
-
 
 
 module 'WebSocket server' Comm
