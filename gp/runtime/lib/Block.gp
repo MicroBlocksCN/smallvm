@@ -1584,8 +1584,7 @@ method expand Block {
 		  oldSlot = (last lastGroup)
 		  removeLast labelParts
 		  add labelParts (list
-		    (labelText this (localized 'else'))
-		    (labelText this (localized 'if'))
+		    (labelText this (localized 'else if'))
 		    (newBooleanSlot true)
 		    oldSlot)
 	}
