@@ -37,7 +37,7 @@ method drawOn BooleanSlot ctx {
 	scale = (blockScale)
 	if (and displayAsElse contents) {
 		// used to display a true boolean slot as 'else' in the final case of an 'if' block
-		elseLabel = (labelText (new 'Block') 'else')
+		elseLabel = (labelText (new 'Block') (localized 'else'))
 		setPosition (morph elseLabel) (left morph) (top morph)
 		drawOn elseLabel ctx
 		return
