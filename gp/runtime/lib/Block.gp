@@ -902,9 +902,10 @@ method copyToClipboard Block {
   setClipboard (scriptText this)
 }
 
-method scriptText Block {
+method scriptText Block withSemicolons {
   result = (list 'GP Script' (newline))
   pp = (new 'PrettyPrinter')
+  useSemicolons pp
   add result (join 'script nil 10 10 ')
   if (isClass expression 'Reporter') {
 	if (isOneOf (primName expression) 'v') {

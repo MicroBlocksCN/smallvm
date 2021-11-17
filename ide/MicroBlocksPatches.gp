@@ -269,6 +269,9 @@ method contextMenu Block {
 	  addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
 	}
   }
+  if (devMode) {
+    addItem menu 'copy picture of script for web' 'copyForWeb' 'copy a picture of these blocks to the clipboard as an HTML tag for the web'
+  }
   if (not isInPalette) {
 	addLine menu
 	addItem menu 'delete block' 'delete' 'delete this block'
@@ -337,6 +340,9 @@ method extractBlock Block {
 
 method exportAsImage Block { exportAsImageScaled (topBlock this) 2 }
 method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
+method copyForWeb Block {
+  setClipboard (scriptText this true) // withSemicolons
+}
 
 method exportAsImage BlockDefinition {
 	exportAsImageScaled (handler (ownerThatIsA morph 'Block')) 2

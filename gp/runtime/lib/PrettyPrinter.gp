@@ -1,6 +1,10 @@
-defineClass PrettyPrinter gen offset
+defineClass PrettyPrinter gen offset useSemicolons
 
 // public methods
+
+method useSemicolons PrettyPrinter {
+  useSemicolons = true
+}
 
 method prettyPrint PrettyPrinter block generator {
   gen = generator
@@ -57,7 +61,11 @@ method prettyPrintString PrettyPrinter aString {
   for i (count commands) {
     add output (prettyPrint this (at commands i))
     if (i < (count commands)) {
-      add output (newline)
+      if useSemicolons {
+        add output ';'
+      } else {
+        add output (newline)
+      }
     }
   }
   return (joinStringArray (toArray output))
@@ -381,7 +389,11 @@ method crIfNeeded PrettyPrinterGenerator {
 }
 
 method cr PrettyPrinterGenerator {
-  nextPutAll this (newline)
+  if useSemicolons {
+    nextPutAll this ';'
+  } else {
+    nextPutAll this (newline)
+  }
   hadCr = true
 }
 
@@ -412,7 +424,7 @@ method nextPutAll PrettyPrinterGenerator value {
   if ((count value) > 0) {
     last = (last (letters value))
     hadSpace = (or (last == ' ') (last == (newline)) (last == '('))
-    hadCr = (last == (newline))
+    hadCr = (or (last == (newline)) (last == ';'))
   }
 }
 
