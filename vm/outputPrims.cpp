@@ -10,6 +10,7 @@
 #include <Arduino.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <nrf.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -269,14 +270,14 @@ static int updateLightLevel() {
 	// circuits are charged up. How long that takes depends on the state of the LED's during
 	// the last display cycle. The charge time needs to be long enough to fully charge all the
 	// capacitances even if they were fully discharged in the last display cycle.
-	const uint32 chargeTime = 200;
+	const int chargeTime = 200;
 
 	// During phase 2, charge leaks through the reverse-biased LED junctions.
 	// It leaks faster in bright light, slower in dim light, so longer discharge times
 	// yield greater low-light sensitivity. There is a tradeoff, however, since longer
 	// discharge times result in more display flicker when using the display and light
 	// sensor at the same time.
-	const uint32 dischargeTime = 4000; // over about 5000 causes noticeable flicker
+	const int dischargeTime = 4000; // over about 5000 causes noticeable flicker
 
 	if (0 == lightLevelPhase) { // start a light level reading
 		turnDisplayOff(); // put all rows and columns into input mode
@@ -499,15 +500,11 @@ inline void restoreIRQState(uint32 pmask) {
 
 static int neoPixelBits = 24;
 static int neoPixelPinMask = 0;
-static volatile int *neoPixelPinSet = NULL;
-static volatile int *neoPixelPinClr = NULL;
+static volatile uint32_t *neoPixelPinSet = NULL;
+static volatile uint32_t *neoPixelPinClr = NULL;
 
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
 	defined(NRF51) || defined(NRF52)
-
-#define GPIO_SET 0x50000508
-#define GPIO_CLR 0x5000050C
-#define GPIO_SET_DIR 0x50000518
 
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
@@ -521,15 +518,21 @@ static void initNeoPixelPin(int pinNum) {
 			pinNum = 0; // use pin 0 on others
 		#endif
 	}
+	// use port0 by default
+	neoPixelPinSet = &NRF_P0->OUTSET; // (int *) GPIO_SET;
+	neoPixelPinClr = &NRF_P0->OUTCLR; // (int *) GPIO_CLR;
+	volatile uint32_t *neoPixelPinSetDir = &NRF_P0->DIRSET; //  (int *) GPIO_SET_DIR;
+
 	#if defined(ARDUINO_NRF52_PRIMO)
 		neoPixelPinMask = digitalPinToBitMask(pinNum);
 	#else
-		neoPixelPinMask = 1 << g_ADigitalPinMap[pinNum];
+		if (g_ADigitalPinMap[pinNum] > 31) { // use port1
+			neoPixelPinSet = &NRF_P1->OUTSET;
+			neoPixelPinClr = &NRF_P1->OUTCLR;
+			neoPixelPinSetDir = &NRF_P1->DIRSET;
+		}
+		neoPixelPinMask = 1 << (g_ADigitalPinMap[pinNum] & 0x1F);
 	#endif
-	neoPixelPinSet = (int *) GPIO_SET;
-	neoPixelPinClr = (int *) GPIO_CLR;
-
-	volatile int *neoPixelPinSetDir = (int *) GPIO_SET_DIR;
 	*neoPixelPinSetDir = neoPixelPinMask;
 }
 
@@ -543,9 +546,9 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
 			#if defined(NRF52)
-				*((int *) GPIO_SET) = neoPixelPinMask;
+				*neoPixelPinSet = neoPixelPinMask;
 				DELAY_CYCLES(11);
-				*((int *) GPIO_CLR) = neoPixelPinMask;
+				*neoPixelPinClr = neoPixelPinMask;
 				DELAY_CYCLES(3);
 			#else
 				*neoPixelPinSet = neoPixelPinMask;
@@ -555,13 +558,13 @@ static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
 		} else { // zero bit; timing goal: high 350 nsecs, low 800 nsecs
 			// This addressing mode gave the shortest pulse width.
 			#if defined(NRF52)
-				*((int *) GPIO_SET) = neoPixelPinMask;
+				*neoPixelPinSet = neoPixelPinMask;
 				DELAY_CYCLES(3);
-				*((int *) GPIO_CLR) = neoPixelPinMask;
+				*neoPixelPinClr = neoPixelPinMask;
 				DELAY_CYCLES(14);
 			#else
-				*((int *) GPIO_SET) = neoPixelPinMask;
-				*((int *) GPIO_CLR) = neoPixelPinMask;
+				*neoPixelPinSet = neoPixelPinMask;
+				*neoPixelPinClr = neoPixelPinMask;
 			#endif
 		}
 	}

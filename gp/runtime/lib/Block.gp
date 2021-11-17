@@ -1585,8 +1585,7 @@ method expand Block {
 		  oldSlot = (last lastGroup)
 		  removeLast labelParts
 		  add labelParts (list
-		    (labelText this 'else')
-		    (labelText this 'if')
+		    (labelText this (localized 'else if'))
 		    (newBooleanSlot true)
 		    oldSlot)
 	}
@@ -1621,7 +1620,7 @@ method collapse Block {
     lastGroup = (last labelParts)
 	if (and
 	  ((count lastGroup) == 4)
-	  ('else' == (text (first lastGroup)))
+	  ((localized 'else') == (text (first lastGroup)))
 	  (isClass (at lastGroup 3) 'BooleanSlot')
 	  (true == (contents (at lastGroup 3)))) {
 		oldSlot = (last lastGroup)

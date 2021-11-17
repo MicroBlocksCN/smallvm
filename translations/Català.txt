@@ -86,6 +86,12 @@ si _ _
 else if _ _
 si no, si _ _
 
+else
+si no
+
+if
+si
+
 if _ _ else _
 si _ _ si no _
 

@@ -57,9 +57,11 @@ wait _ millisecs
 
 if _ _
 
-else if _ _
-
 if _ _ else _
+
+else if
+
+else
 
 when _
 
@@ -180,6 +182,12 @@ new byte array _
 as byte array _
 
 free memory
+
+all
+
+last
+
+random
 
 My Blocks
 
