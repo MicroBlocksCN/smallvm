@@ -10,7 +10,6 @@
 #include <Arduino.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <nrf.h>
 
 #include "mem.h"
 #include "interp.h"
@@ -503,8 +502,21 @@ static int neoPixelPinMask = 0;
 static volatile uint32_t *neoPixelPinSet = NULL;
 static volatile uint32_t *neoPixelPinClr = NULL;
 
+static void unusedVars() {
+	// suppress compiler warnings for boards that don't use these variables
+	(void) neoPixelPinSet;
+	(void) neoPixelPinClr;
+	(void) unusedVars;
+}
+
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
 	defined(NRF51) || defined(NRF52)
+
+#if defined(NRF51) && !defined(NRF_P0)
+	// map both NRF_P0 and NRF_P1 to NRF_GPIO on the nrf51 (NRF_P1 won't be used)
+	#define NRF_P0 NRF_GPIO
+	#define NRF_P1 NRF_GPIO
+#endif
 
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
@@ -589,8 +601,8 @@ static void initNeoPixelPin(int pinNum) {
 
 	neoPixelPinMask = 1 << g_APinDescription[pinNum].ulPin;
 	int baseReg = PORT_BASE + (0x80 * g_APinDescription[pinNum].ulPort);
-	neoPixelPinSet = (int *) (baseReg + 0x18);
-	neoPixelPinClr = (int *) (baseReg + 0x14);
+	neoPixelPinSet = (uint32_t *) (baseReg + 0x18);
+	neoPixelPinClr = (uint32_t *) (baseReg + 0x14);
 
 	volatile int *neoPixelPinSetDir = (int *) (baseReg + 0x08);
 	*neoPixelPinSetDir = neoPixelPinMask;
