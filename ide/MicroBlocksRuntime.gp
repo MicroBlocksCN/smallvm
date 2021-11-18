@@ -22,7 +22,6 @@ method initialize SmallRuntime aScripter {
 	scripter = aScripter
 	chunkIDs = (dictionary)
 	readFromBoard = false
-	initializeDecompilerStatus this
 	clearLoggedData this
 	return this
 }
@@ -337,39 +336,22 @@ method analyzeProject SmallRuntime {
 
 // Decompiling
 
-method initializeDecompilerStatus SmallRuntime {
-	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
-		decompilerStatus = 'Plug in the board and click the USB icon to connect.'
-	} else {
-		decompilerStatus = 'Plug in the board.'
-	}
-}
-
 method readCodeFromNextBoardConnected SmallRuntime {
+	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+		decompilerStatus = (localized 'Plug in the board and click the USB icon to connect.')
+	} else {
+		decompilerStatus = (localized 'Plug in the board.')
+	}
 	readFromBoard = true
 	disconnected = false
-}
-
-method cancelReadCodeFromNextBoardConnected SmallRuntime {
-	readFromBoard = false
-	initializeDecompilerStatus this
+	spinner = (newSpinner (action 'decompilerStatus' (smallRuntime)) (action 'decompilerDone' (smallRuntime)))
+	addPart (global 'page') spinner
 }
 
 method readCodeFromBoard SmallRuntime {
-	decompilerStatus = (localized 'Reading project from board...')
-	closeAllDialogs (findMicroBlocksEditor)
 	decompiler = (newDecompiler)
-	spinner = (newSpinner (action 'decompilerStatus' this) (action 'decompilerDone' this))
-	addPart (global 'page') spinner
-	setTask spinner (launch
-		(global 'page')
-		(action 'startReadingCode' this))
-}
-
-method startReadingCode SmallRuntime {
-	timeout = 2500
-
 	waitForPing this
+	decompilerStatus = (localized 'Reading project from board...')
 
 	sendMsg this 'getVarNamesMsg'
 	lastRcvMSecs = (msecsSinceStart)
@@ -380,37 +362,35 @@ method startReadingCode SmallRuntime {
 
 	sendMsg this 'getAllCodeMsg'
 	lastRcvMSecs = (msecsSinceStart)
-	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
+	while (((msecsSinceStart) - lastRcvMSecs) < 2000) {
 		processMessages this
+		doOneCycle (global 'page')
 		waitMSecs 10
 	}
 	if (isNil decompiler) { return } // decompilation was aborted
 
-	print 'decompiler read' (count (getField decompiler 'vars')) 'vars' (count (getField decompiler 'chunks')) 'chunks'
+print 'Read' (count (getField decompiler 'vars')) 'vars' (count (getField decompiler 'chunks')) 'chunks'
 	proj = (decompileProject decompiler)
 	decompilerStatus = (localized 'Loading project...')
+	doOneCycle (global 'page')
 	installDecompiledProject this proj
+	readFromBoard = false
+	decompiler = nil
 }
 
-method decompilerDone SmallRuntime { return (decompilerStatus == '') }
+method decompilerDone SmallRuntime { return (and (isNil decompiler) (not readFromBoard)) }
 method decompilerStatus SmallRuntime { return decompilerStatus }
 
 method stopDecompilation SmallRuntime {
-	stopSpinner this
+	readFromBoard = false
+	spinnerM = (findMorph 'MicroBlocksSpinner')
+	if (notNil spinnerM) { removeFromOwner spinnerM }
+
 	if (notNil decompiler) {
-		decompilerStatus = ''
 		decompiler = nil
 		clearBoardIfConnected this true
 		stopAndSyncScripts this
 	}
-	initializeDecompilerStatus this
-}
-
-// Spinner modal window
-
-method stopSpinner SmallRuntime {
-	spinner = (findMorph 'MicroBlocksSpinner')
-	if (notNil spinner) { destroy (handler spinner) }
 }
 
 method waitForPing SmallRuntime {
@@ -430,13 +410,10 @@ method installDecompiledProject SmallRuntime proj {
 	clearBoardIfConnected this true
 	setProject scripter proj
 	updateLibraryList scripter
-	decompilerStatus = ''
-	checkForNewerLibraryVersions (project scripter) (not (devMode))
+	checkForNewerLibraryVersions (project scripter) true
 	restoreScripts scripter // fix block colors
 	cleanUp (scriptEditor scripter)
 	saveAllChunks this
-	vmVersion = nil
-	getVersion this
 }
 
 method receivedChunk SmallRuntime chunkID chunkType bytecodes {
@@ -805,6 +782,7 @@ method updateConnection SmallRuntime {
 	if (isNil lastPingRecvMSecs) { lastPingRecvMSecs = 0 }
 	if (isNil disconnected) { disconnected = false }
 
+	if (notNil decompiler) { return 'connected' }
 	if disconnected { return 'not connected' }
 
 	// handle connection attempt in progress
