@@ -218,9 +218,9 @@ method textButton MicroBlocksEditor label selector {
 // zoom buttons
 method addZoomButtons MicroBlocksEditor {
   zoomButtons = (array
-	(newZoomButton this 'zoomOut' 'Decrease block size by 5%')
+	(newZoomButton this 'zoomOut' 'Decrease block size by 15%')
 	(newZoomButton this 'restoreZoom' 'Restore block size to 100%')
-	(newZoomButton this 'zoomIn' 'Increase block size by 5%'))
+	(newZoomButton this 'zoomIn' 'Increase block size by 15%'))
   for button zoomButtons {
 	addPart morph (morph button)
   }
@@ -250,11 +250,11 @@ method restoreZoom MicroBlocksEditor {
 }
 
 method zoomIn MicroBlocksEditor {
-  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) + 5)
+  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) + 15)
 }
 
 method zoomOut MicroBlocksEditor {
-  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) - 5)
+  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) - 15)
 }
 
 method fixZoomButtonsLayout MicroBlocksEditor {

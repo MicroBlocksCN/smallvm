@@ -313,6 +313,7 @@ method setBlockSize ScriptEditor {
 }
 
 method setBlockScalePercent ScriptEditor percent {
+  if (or (percent < 25) (percent > 300)) { return }
   pe = (findProjectEditor)
   oldBlockScale = (global 'blockScale')
   if (notNil pe) {
