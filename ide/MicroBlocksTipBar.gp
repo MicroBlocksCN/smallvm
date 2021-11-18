@@ -81,7 +81,9 @@ method setTip MicroBlocksTipBar aTip {
 
 method step MicroBlocksTipBar {
 	hand = (hand (global 'page'))
-	if (isBusy hand) {
+	if (and (isClass (grabbedObject hand) 'Block') (isClass (objectAt hand) 'BlocksPalette')) {
+		updateTip this (objectAt hand)
+	} (isBusy hand) {
 		setTitle this ''
 		setTip this ''
 	} else {
