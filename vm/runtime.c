@@ -797,6 +797,7 @@ void delay(int); // Arduino delay function
 static void sendAllCode() {
 	// Send the code and attributes for all chunks to the IDE.
 
+	int delayPerWord = extraByteDelay / 250; // derive from extraByteDelay
 	for (int chunkID = 0; chunkID < MAX_CHUNKS; chunkID++) {
 		OBJ code = chunks[chunkID].code;
 		if (NULL == code) continue; // skip unused chunk entry
@@ -806,7 +807,7 @@ static void sendAllCode() {
 		char *chunkData = (char *) (code + PERSISTENT_HEADER_WORDS);
 		sendCodeChunk(chunkID, chunkType, (4 * chunkWords), chunkData);
 		sendData();
-		delay(5 * chunkWords); // 2 fails on Johns Chromebook; 3 works; 5 is conservative
+		delay(delayPerWord * chunkWords); // 2 fails on Johns Chromebook; 3 works; 5 is conservative
 		sendData();
 	}
 }
