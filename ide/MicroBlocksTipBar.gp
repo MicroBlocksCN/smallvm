@@ -199,7 +199,7 @@ method fixLayout MicroBlocksTipBar {
 	setLeft (morph title) ((left morph) + (3 * scale))
 	setLeft tipMorph ((right (morph title)) + (1 * scale))
 
-	top = ((top morph) + (2 * scale))
+	top = (top morph)
 	setTop (morph title) top
 	setTop tipMorph top
 }
