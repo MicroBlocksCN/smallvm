@@ -2,15 +2,14 @@ defineClass PrettyPrinter gen offset useSemicolons
 
 // public methods
 
-method useSemicolons PrettyPrinter {
-  useSemicolons = true
-}
+method useSemicolons PrettyPrinter { useSemicolons = true }
 
 method prettyPrint PrettyPrinter block generator {
   gen = generator
   offset = ((fieldNameCount (class 'Command')) + 1)
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
+    if useSemicolons { useSemicolons gen }
   }
   printCmd this block
   return (joinStringArray (toArray (getField gen 'result')))
@@ -21,6 +20,7 @@ method prettyPrintFunction PrettyPrinter func generator {
   offset = ((fieldNameCount (class 'Command')) + 1)
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
+    if useSemicolons { useSemicolons gen }
   }
   printFunction this func
   return (joinStringArray (toArray (getField gen 'result')))
@@ -31,6 +31,7 @@ method prettyPrintMethod PrettyPrinter func generator {
   offset = ((fieldNameCount (class 'Command')) + 1)
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
+    if useSemicolons { useSemicolons gen }
   }
   printFunction this func (className (class (classIndex func)))
   return (joinStringArray (toArray (getField gen 'result')))
@@ -41,6 +42,7 @@ method prettyPrintList PrettyPrinter block generator {
   offset = ((fieldNameCount (class 'Command')) + 1)
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
+    if useSemicolons { useSemicolons gen }
   }
 
   currentBlock = block
@@ -80,6 +82,7 @@ method prettyPrintClass PrettyPrinter aClass withoutDefinition generator {
   gen = generator
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
+    if useSemicolons { useSemicolons gen }
   }
 
   if (not (withoutDefinition === false)) {
@@ -115,7 +118,7 @@ method infixOp PrettyPrinter token {
              ('!=' == token) ('>=' == token) ('>' == token) ('===' == token)
              ('&' == token) ('|' == token) ('^' == token)
              ('<<' == token) ('>>' == token) ('>>>' == token)
-	     ('->' == token))
+             ('->' == token))
 }
 
 method allAlphaNumeric PrettyPrinter letters {
@@ -153,10 +156,10 @@ method op PrettyPrinter value {
 method printValue PrettyPrinter block {
   if (isClass block 'Reporter') {
     if ((primName block) == 'v') {
-	  varRef = (getField block offset)
-	  if (contains (letters varRef) ' ') {
-		varRef = (join '(v ''' varRef ''')')
-	  }
+      varRef = (getField block offset)
+      if (contains (letters varRef) ' ') {
+        varRef = (join '(v ''' varRef ''')')
+      }
       symbol gen varRef
     } else {
       openParen gen
@@ -168,12 +171,12 @@ method printValue PrettyPrinter block {
   } (isClass block 'String') {
     const gen (printString block)
   } (isClass block 'Float') {
-	const gen (toString block 20)
+    const gen (toString block 20)
   } (isClass block 'Color') {
-	c = block
-	const gen (join '(colorSwatch ' (red c) ' ' (green c) ' ' (blue c) ' ' (alpha c) ')')
+    c = block
+    const gen (join '(colorSwatch ' (red c) ' ' (green c) ' ' (blue c) ' ' (alpha c) ')')
   } else {
-	const gen (toString block)
+    const gen (toString block)
   }
 }
 
@@ -360,7 +363,9 @@ method printCmd PrettyPrinter block early {
   }
 }
 
-defineClass PrettyPrinterGenerator result tabLevel hadCr hadSpace
+defineClass PrettyPrinterGenerator result tabLevel hadCr hadSpace useSemicolons
+
+method useSemicolons PrettyPrinterGenerator { useSemicolons = true }
 
 method closeBrace PrettyPrinterGenerator {
   nextPutAll this '}'
@@ -414,7 +419,7 @@ method functionName PrettyPrinterGenerator value {
 
 method varName PrettyPrinterGenerator value {
   if (contains (letters value) ' ') {
-	value = (printString value) // enclose in quotes
+    value = (printString value) // enclose in quotes
   }
   nextPutAllWithSpace this value
 }
@@ -448,9 +453,12 @@ method symbol PrettyPrinterGenerator value {
 }
 
 method tab PrettyPrinterGenerator {
-  repeat tabLevel {
-    repeat 2 {
-      nextPutAll this ' '
+  useSemicolons = (useSemicolons == true)
+  if (not useSemicolons) {
+    repeat tabLevel {
+      repeat 2 {
+        nextPutAll this ' '
+      }
     }
   }
 }

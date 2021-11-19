@@ -902,8 +902,13 @@ method copyToClipboard Block {
   setClipboard (scriptText this)
 }
 
-method scriptText Block withSemicolons {
-  result = (list 'GP Script' (newline))
+method scriptText Block useSemicolons {
+  useSemicolons = (useSemicolons == true)
+  if useSemicolons {
+    result = (list)
+  } else {
+    result = (list 'GP Script' (newline))
+  }
   pp = (new 'PrettyPrinter')
   useSemicolons pp
   add result (join 'script nil 10 10 ')
@@ -913,13 +918,15 @@ method scriptText Block withSemicolons {
 	} else {
 	  add result (join '(' (prettyPrint pp expression) ')')
 	}
-	add result (newline)
+    if (not useSemicolons) { add result (newline) }
   } else {
-	add result (join '{' (newline))
-	add result (prettyPrintList pp expression)
-	add result (join '}' (newline))
+	add result '{'
+    if useSemicolons { add result ' ' } else { add result (newline) }
+    add result (prettyPrintList pp expression)
+    add result '}'
+    if useSemicolons { add result ' ' } else { add result (newline) }
   }
-  add result (newline)
+  if (not useSemicolons) { add result (newline) }
   return (joinStrings result)
 }
 
