@@ -33,9 +33,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.6568542"
-     inkscape:cx="312.62959"
-     inkscape:cy="661.41001"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="109.248"
+     inkscape:cy="653.72022"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1527,6 +1527,52 @@
              style="font-weight:bold;font-size:3.52777px;line-height:1.25;-inkscape-font-specification:'sans-serif Bold';letter-spacing:0px;word-spacing:0px;stroke-width:0.264583" />
         </g>
       </g>
+    </g>
+    <g
+       id="g18515"
+       transform="matrix(0.68869188,0,0,0.67285462,-11.48179,41.193548)"
+       style="stroke-width:1.46902"
+       inkscape:export-filename="/home/renard/true-retina.png"
+       inkscape:export-xdpi="247.67004"
+       inkscape:export-ydpi="247.67004">
+      <rect
+         style="fill:#00c800;fill-opacity:1;stroke:#535353;stroke-width:0.388677;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+         id="rect369"
+         width="7.2261491"
+         height="3.8790698"
+         x="81.460846"
+         y="176.55841"
+         ry="1.8750157"
+         rx="1.8335782" />
+      <circle
+         style="fill:#909090;fill-opacity:1;stroke:#535353;stroke-width:0.388677;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+         id="path15858"
+         cx="86.763382"
+         cy="178.49928"
+         r="1.9106704" />
+    </g>
+    <g
+       id="g18515-3"
+       transform="matrix(-0.68869188,0,0,0.67285462,111.76754,41.193548)"
+       style="stroke-width:1.46902"
+       inkscape:export-filename="/home/renard/false-retina.png"
+       inkscape:export-xdpi="247.67004"
+       inkscape:export-ydpi="247.67004">
+      <rect
+         style="fill:#c86464;fill-opacity:1;stroke:#535353;stroke-width:0.388677;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+         id="rect369-6"
+         width="7.2261491"
+         height="3.8790698"
+         x="81.460846"
+         y="176.55841"
+         ry="1.8750157"
+         rx="1.8335782" />
+      <circle
+         style="fill:#909090;fill-opacity:1;stroke:#535353;stroke-width:0.388677;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
+         id="path15858-7"
+         cx="86.763382"
+         cy="178.49928"
+         r="1.9106704" />
     </g>
   </g>
 </svg>
