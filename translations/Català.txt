@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: November 19 2021
 
 #########################
 # Blocks and categories #
@@ -50,6 +50,9 @@ lectura digital _
 read analog pin _
 lectura analògica _
 
+pullup _
+amb resistència interna _
+
 set digital pin _ to _
 posa el pin digital _ a _
 
@@ -83,17 +86,14 @@ espera _ mil·lisegons
 if _ _
 si _ _
 
-else if _ _
-si no, si _ _
+if _ _ else _
+si _ _ si no _
+
+else if
+si no, si
 
 else
 si no
-
-if
-si
-
-if _ _ else _
-si _ _ si no _
 
 when _
 quan _
@@ -181,6 +181,9 @@ text
 
 list
 llista
+
+byte array
+llista de bytes
 
 Advanced:
 Avançat:
@@ -270,8 +273,23 @@ nova llista de bytes de llargada _
 as byte array _
 llista de bytes a partir de _
 
+with all _
+plena amb _
+
 free memory
 memòria disponible
+
+all
+tots
+
+last
+últim
+
+random
+qualsevol
+
+split _ by _
+divideix _ per _
 
 My Blocks
 Els meus blocs
@@ -446,6 +464,9 @@ nivell de llum
 temperature (°C)
 temperatura (°C)
 
+set acceleration range _ g = 100
+fixa l'escala d'acceleració en _ g = 100
+
 ####
 # NeoPixel library
 
@@ -484,6 +505,30 @@ Sensor de presència
 
 PIR at pin _ detected movement
 Moviment detectat pel PIR al pin _
+
+####
+# Microphone library
+
+Microphone
+Micròfon
+
+microphone
+micròfon
+
+turn on microphone
+activa el micròfon
+
+loudness
+volum
+
+clap count
+recompte d'aplaudiments
+
+set clap threshold _
+fixa el llindar d'aplaudiment a _
+
+estimate clap threshold
+detecta el llindar d'aplaudiment
 
 ####
 # Citilab ED1 board libraries
@@ -674,14 +719,11 @@ Infraroigs
 receive IR code
 rep codi IR
 
-receive IR code from device _
-rep codi IR del dispositiu _
-
-test IR
-prova IR
-
 attach IR receiver to pin _
 inicialitza receptor IR al pin _
+
+IR transmit device _ command _
+envia al dispositiu IR _ la comanda _
 
 ####
 # Radio comm library
@@ -788,6 +830,67 @@ scale _ wrap _
 escala _ amb salts de línia _
 
 ####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _
+mostra arxiu BMP _
+
+####
+# HSV color library
+
+HSV Colors
+Colors HSV
+
+RGB of hue _ saturation _ brightness _ (0-100)
+RGB amb to _ saturació _ brillantor _ (0-100)
+
+####
+# Fractions library
+
+Fractions
+Fraccions
+
+fract _ / _
+frac _ / _
+
+fract _ + _
+frac _ + _
+
+fract _ - _
+frac _ - _
+
+fract _ × _
+frac _ × _
+
+fract _ = _
+frac _ = _
+
+fract _ < _
+frac _ < _
+
+fract _ > _
+frac _ > _
+
+simplify fraction _
+simplifica fracció _
+
+integer part of fraction _
+part entera de fracció _
+
+numerator of fraction _
+numerador de fracció _
+
+denominator of fraction _
+denominador de fracció _
+
+gcd _ _
+mcd de _ i _
+
+lcm _ _
+mcm de _ i _
+
+####
 # Tone library
 # Generates music tones on buzzers
 
@@ -834,6 +937,13 @@ punteja la nota MIDI _ durant _ ms
 
 set pluck pin _
 fixa el pin de puntejat a _
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+reprodueix arxiu WAV _
 
 ####
 # Turtle geometry library
@@ -917,6 +1027,43 @@ file system info
 dades del sistema de fitxers
 
 ####
+# Strings
+# string (text) processing functions
+
+Strings
+Text
+
+_ is a digit
+_ és un dígit
+
+_ is lowercase
+_ és en minúscules
+
+_ is uppercase
+_ és en majúscules
+
+_ begins with _
+_ comença per _
+
+_ ends with _
+_ acaba en _
+
+_ contains _
+_ conté _
+
+lowercase _
+_ en minúscules
+
+uppercase _
+_ en majúscules
+
+_ without white space
+_ sense espais en blanc
+
+join string list _ separator _
+uneix llista de texts _ amb separador _
+
+####
 # WiFi library
 
 WiFi
@@ -925,11 +1072,17 @@ WiFi
 wifi connect to _ password _ try _ times
 connecta't a la wifi _ amb contrasenya _ amb _ intents
 
+gateway _ subnet _
+porta d'enllaç _ subxarxa _
+
 wifi create hotspot _ password _
 crea punt d'accés wifi _ amb contrasenya _
 
 IP address
 adreça IP
+
+MAC address
+adreça MAC
 
 ####
 # Motion library
@@ -1062,7 +1215,7 @@ get PN532 firmware version
 versió del firmware del PN532
 
 ####
-# HTTP libraries
+# HTTP Client
 
 HTTP client
 Client HTTP
@@ -1070,11 +1223,14 @@ Client HTTP
 _ data _ to http܃// _
 sol·licitud _ amb contingut _ a http:// _
 
+port _
+port _
+
+####
+# HTTP Server
+
 HTTP server
 Servidor HTTP
-
-start HTTP server
-inicia el servidor HTTP
 
 HTTP server request
 sol·licitud HTTP al servidor
@@ -1096,6 +1252,33 @@ camí de la sol·licitud _
 
 method of request _
 mètode de la sol·licitud _
+
+content length of request _
+mida del contingut de la sol·licitud _
+
+####
+# WebSocket server
+
+WebSocket server
+Servidor de WebSocket
+
+start WebSocket server
+inicia el servidor de WebSocket
+
+last WebSocket event
+últim esdeveniment de WebSocket
+
+client ID for WebSocket event _
+ID del client de l'esdeveniment de WebSocket _
+
+payload for WebSocket event _
+càrrega útil de l'esdeveniment de WebSocket _
+
+type of WebSocket event _
+tipus de l'esdeveniment de WebSocket _
+
+send _ to WebSocket client _
+envia _ al client de WebSocket _
 
 ####
 # Web Things library

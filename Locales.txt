@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: November 19 2021
 
 #########################
 # Blocks and categories #
@@ -34,6 +34,8 @@ Pins
 read digital pin _
 
 read analog pin _
+
+pullup _
 
 set digital pin _ to _
 
@@ -121,6 +123,8 @@ string
 
 list
 
+byte array
+
 Advanced:
 
 hex _
@@ -181,6 +185,8 @@ new byte array _
 
 as byte array _
 
+with all _
+
 free memory
 
 all
@@ -188,6 +194,8 @@ all
 last
 
 random
+
+split _ by _
 
 My Blocks
 
@@ -309,6 +317,8 @@ light level
 
 temperature (°C)
 
+set acceleration range _ g = 100
+
 ####
 # NeoPixel library
 
@@ -335,6 +345,23 @@ has white _
 PIR
 
 PIR at pin _ detected movement
+
+####
+# Microphone library
+
+Microphone
+
+microphone
+
+turn on microphone
+
+loudness
+
+clap count
+
+set clap threshold _
+
+estimate clap threshold
 
 ####
 # Citilab ED1 board libraries
@@ -466,11 +493,9 @@ IR Remote
 
 receive IR code
 
-receive IR code from device _
-
-test IR
-
 attach IR receiver to pin _
+
+IR transmit device _ command _
 
 ####
 # Radio comm library
@@ -549,6 +574,50 @@ write _ on TFT at x _ y _ color _
 scale _ wrap _
 
 ####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _
+
+####
+# HSV color library
+
+HSV Colors
+
+RGB of hue _ saturation _ brightness _ (0-100)
+
+####
+# Fractions library
+
+Fractions
+
+fract _ / _
+
+fract _ + _
+
+fract _ - _
+
+fract _ × _
+
+fract _ = _
+
+fract _ < _
+
+fract _ > _
+
+simplify fraction _
+
+integer part of fraction _
+
+numerator of fraction _
+
+denominator of fraction _
+
+gcd _ _
+
+lcm _ _
+
+####
 # Tone library
 # Generates music tones on buzzers
 
@@ -583,6 +652,12 @@ pluck note _ octave _ for _ ms
 pluck MIDI key _ for _ msecs
 
 set pluck pin _
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
 
 ####
 # Turtle geometry library
@@ -641,15 +716,45 @@ size of file _
 file system info
 
 ####
+# Strings
+# string (text) processing functions
+
+Strings
+
+_ is a digit
+
+_ is lowercase
+
+_ is uppercase
+
+_ begins with _
+
+_ ends with _
+
+_ contains _
+
+lowercase _
+
+uppercase _
+
+_ without white space
+
+join string list _ separator _
+
+####
 # WiFi library
 
 WiFi
 
 wifi connect to _ password _ try _ times
 
+gateway _ subnet _
+
 wifi create hotspot _ password _
 
 IP address
+
+MAC address
 
 ####
 # Motion library
@@ -748,15 +853,18 @@ RFID _ = _
 get PN532 firmware version
 
 ####
-# HTTP libraries
+# HTTP Client
 
 HTTP client
 
 _ data _ to http܃// _
 
-HTTP server
+port _
 
-start HTTP server
+####
+# HTTP Server
+
+HTTP server
 
 HTTP server request
 
@@ -771,6 +879,25 @@ body of request _
 path of request _
 
 method of request _
+
+content length of request _
+
+####
+# WebSocket server
+
+WebSocket server
+
+start WebSocket server
+
+last WebSocket event
+
+client ID for WebSocket event _
+
+payload for WebSocket event _
+
+type of WebSocket event _
+
+send _ to WebSocket client _
 
 ####
 # Web Things library

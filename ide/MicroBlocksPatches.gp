@@ -270,7 +270,7 @@ method contextMenu Block {
 	}
   }
   if (devMode) {
-    addItem menu 'copy picture of script for web' 'copyForWeb' 'copy a picture of these blocks to the clipboard as an HTML tag for the web'
+    addItem menu 'copy as HTML image tag' 'copyForWeb' 'copy a picture of these blocks to the clipboard as an HTML tag for the web'
   }
   if (not isInPalette) {
 	addLine menu

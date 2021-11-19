@@ -1,19 +1,19 @@
 module Strings Data
 author MicroBlocks
-version 1 3
+version 1 4
 description 'String operations.'
 
-	spec 'r' 'isDigit' 'is digit _' 'str' '5'
-	spec 'r' 'isLowercase' 'is lowercase _' 'str' 'A'
-	spec 'r' 'isUppercase' 'is uppercase _' 'str' 'E'
+	spec 'r' 'isDigit' '_ is a digit' 'str' '5'
+	spec 'r' 'isLowercase' '_ is lowercase' 'str' 'A'
+	spec 'r' 'isUppercase' '_ is uppercase' 'str' 'E'
 	'space'
-	spec 'r' 'beginsWith' '_ beginsWith _' 'str str' 'prefix' 'pre'
-	spec 'r' 'endsWith' '_ endsWith _' 'str str' 'suffix' 'fix'
+	spec 'r' 'beginsWith' '_ begins with _' 'str str' 'prefix' 'pre'
+	spec 'r' 'endsWith' '_ ends with _' 'str str' 'suffix' 'fix'
 	spec 'r' 'contains' '_ contains _' 'str str' 'smiles' 'mile'
 	'space'
 	spec 'r' 'lowercase' 'lowercase _' 'str' 'THIS is a String! :)'
 	spec 'r' 'uppercase' 'uppercase _' 'str' 'Hello, world!'
-	spec 'r' 'withoutWhiteSpace' 'withoutWhiteSpace _' 'str' '1, 2,	3,
+	spec 'r' 'withoutWhiteSpace' '_ without white space' 'str' '1, 2,	3,
 4'
 	'space'
 	spec 'r' 'joinWith' 'join string list _ separator _' 'auto str' ' ' ' '

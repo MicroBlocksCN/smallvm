@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: November 19 2021
 
 #########################
 # Blocks and categories #
@@ -50,6 +50,9 @@ lectura digital _
 read analog pin _
 lectura analógica _
 
+pullup _
+con resistencia interna _
+
 set digital pin _ to _
 pon pin digital _ a _
 
@@ -83,17 +86,14 @@ espera _ milisegundos
 if _ _
 si _ _
 
-else if _ _
-si no, si _ _
+if _ _ else _
+si _ _ si no _
+
+else if
+si no, si
 
 else
 si no
-
-if
-si
-
-if _ _ else _
-si _ _ si no _
 
 when _
 cuando _
@@ -181,6 +181,9 @@ texto
 
 list
 listas
+
+byte array
+lista de bytes
 
 Advanced:
 Avanzado:
@@ -270,8 +273,23 @@ nueva lista de bytes de tamaño _
 as byte array _
 lista de bytes a partir de _
 
+with all _
+llena de _
+
 free memory
 memoria libre
+
+all
+todos
+
+last
+último
+
+random
+cualquiera
+
+split _ by _
+divide _ por _
 
 My Blocks
 Mis bloques
@@ -446,6 +464,9 @@ nivel de luz
 temperature (°C)
 temperatura (°C)
 
+set acceleration range _ g = 100
+fija el rango de aceleración en _ g = 100
+
 ####
 # NeoPixel library
 
@@ -484,6 +505,30 @@ Sensor de movimiento
 
 PIR at pin _ detected movement
 Movimiento detectado por PIR en pin _
+
+####
+# Microphone library
+
+Microphone
+Micrófono
+
+microphone
+micrófono
+
+turn on microphone
+activa micrófono
+
+loudness
+volumen
+
+clap count
+recuento de palmadas
+
+set clap threshold _
+fija el umbral de palmada en _
+
+estimate clap threshold
+detecta el umbral de palmada
 
 ####
 # Citilab ED1 board libraries
@@ -674,14 +719,11 @@ Infrarrojos
 receive IR code
 recibe código IR
 
-receive IR code from device _
-recibe código IR del dispositivo _
-
-test IR
-prueba IR
-
 attach IR receiver to pin _
 inicializa receptor IR en el pin _
+
+IR transmit device _ command _
+envía al dispositivo IR _ el comando _
 
 ####
 # Radio comm library
@@ -788,6 +830,68 @@ scale _ wrap _
 escala _ con saltos de línea _
 
 ####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _
+muestra archivo BMP _
+
+####
+# HSV color library
+
+HSV Colors
+Colores HSV
+
+RGB of hue _ saturation _ brightness _ (0-100)
+RGB del tono _ saturación _ brillo _ (0-100)
+
+####
+# Fractions library
+
+Fractions
+Fracciones
+
+fract _ / _
+frac _ / _
+
+fract _ + _
+frac _ + _
+
+fract _ - _
+frac _ - _
+
+fract _ × _
+frac _ × _
+
+fract _ = _
+frac _ = _
+
+fract _ < _
+frac _ < _
+
+fract _ > _
+frac _ > _
+fract _ / _
+
+simplify fraction _
+simplifica fracción _
+
+integer part of fraction _
+parte entera de fracción _
+
+numerator of fraction _
+numerador de fracción _
+
+denominator of fraction _
+denominador de fracción _
+
+gcd _ _
+mcd de _ y _
+
+lcm _ _
+mcm de _ y _
+
+####
 # Tone library
 # Generates music tones on buzzers
 
@@ -834,6 +938,13 @@ tañe la nota MIDI _ durante _ ms
 
 set pluck pin _
 fija el pin de cuerda tañida a _
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+reproduce el archivo WAV _
 
 ####
 # Turtle geometry library
@@ -917,6 +1028,43 @@ file system info
 detalles del sistema de archivos
 
 ####
+# Strings
+# string (text) processing functions
+
+Strings
+Texto
+
+_ is a digit
+_ es un dígito
+
+_ is lowercase
+_ está en minúscula
+
+_ is uppercase
+_ está en mayúscula
+
+_ begins with _
+_ empieza por _
+
+_ ends with _
+_ acaba en _
+
+_ contains _
+_ contiene _
+
+lowercase _
+_ en minúscula
+
+uppercase _
+_ en mayúscula
+
+_ without white space
+_ sin espacios en blanco
+
+join string list _ separator _
+une la lista de textos _ con separador _
+
+####
 # WiFi library
 
 WiFi
@@ -925,11 +1073,17 @@ WiFi
 wifi connect to _ password _ try _ times
 conéctate a la wifi _ con contraseña _ en _ intentos
 
+gateway _ subnet _
+puerta de enlace _ subred _
+
 wifi create hotspot _ password _
 crea punto de acceso wifi _ con contraseña _
 
 IP address
 dirección IP
+
+MAC address
+dirección MAC
 
 ####
 # Motion library
@@ -1062,7 +1216,7 @@ get PN532 firmware version
 versión del firmware del PN532
 
 ####
-# HTTP libraries
+# HTTP Client
 
 HTTP client
 Cliente HTTP
@@ -1070,11 +1224,14 @@ Cliente HTTP
 _ data _ to http܃// _
 petición _ con contenido _ a http:// _
 
+port _
+puerto _
+
+####
+# HTTP Server
+
 HTTP server
 Servidor HTTP
-
-start HTTP server
-inicia servidor HTTP
 
 HTTP server request
 petición HTTP al servidor
@@ -1096,6 +1253,33 @@ ruta de la petición _
 
 method of request _
 método de la petición _
+
+content length of request _
+tamaño del contenido de la petición _
+
+####
+# WebSocket server
+
+WebSocket server
+Servidor de WebSocket
+
+start WebSocket server
+inicia el servidor de WebSocket
+
+last WebSocket event
+último evento de WebSocket
+
+client ID for WebSocket event _
+ID de cliente del evento de WebSocket _
+
+payload for WebSocket event _
+carga del evento de WebSocket _
+
+type of WebSocket event _
+tipo del evento de WebSocket _
+
+send _ to WebSocket client _
+envía _ al cliente WebSocket _
 
 ####
 # Web Things library
