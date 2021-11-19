@@ -130,7 +130,7 @@ method objectAt Hand pixelPerfect {
 }
 
 method isBusy Hand {
-  if (or (notNil focus)  (notEmpty (parts morph))) { return true }
+  if (or (notNil focus) (notEmpty (parts morph))) { return true }
   if (hasActiveMenu page) { return true }
   return false
 }

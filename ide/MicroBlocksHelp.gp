@@ -104,7 +104,7 @@ method initialize MicroBlocksHelp {
 		(array 'v' 'variables#xxx' '')
 		(array '=' 'variables#set-variable' 'Assigns the given value to a variable.')
 		(array '+=' 'variables#change-variable' 'Changes the value of a variable by the given amount.')
-		(array '+=' 'variables#initialize-local' 'Creates a variable local to the containing script, and initializes it to the given value.')
+		(array 'local' 'variables#initialize-local' 'Creates a variable local to the containing script, and initializes it to the given value.')
 
 		// DATA
 		(array 'at' 'data#item' 'Returns the Nth item of a list, string, or byte array.')

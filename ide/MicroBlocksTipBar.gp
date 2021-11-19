@@ -17,10 +17,10 @@ method initialize MicroBlocksTipBar {
 	page = (global 'page')
 	fontName = 'Arial'
 	titleFontName = 'Arial Bold'
-	fontSize = (14 * (global 'scale'))
-	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
+	titleFontSize = (14 * (global 'scale'))
+	if ('Linux' == (platform)) { titleFontSize = (12 * (global 'scale')) }
 
-	title = (newText '' titleFontName fontSize (gray 0) 'left' nil 0 0 5 3)
+	title = (newText '' titleFontName titleFontSize (gray 0) 'left' nil 0 0 5 3)
 
 	tip = (newAlignment 'centered-line' 0 'bounds')
 	tipMorph = (newMorph tip)
@@ -54,16 +54,21 @@ method setTitle MicroBlocksTipBar aTitle { setText title aTitle }
 method setTip MicroBlocksTipBar aTip {
 	// Tips can contain icon placeholders, like so:
 	// [l] run this block [r] open context menu
+
+	fontName = 'Arial'
+	fontSize = (14 * (global 'scale'))
+	if ('Linux' == (platform)) { fontSize = (12 * (global 'scale')) }
+
 	removeAllParts tipMorph
-	text = ''
+	text = ' '
 	if (isNil aTip) {
 		return
 	}
 	for word (words aTip) {
 		if (contains (keys iconsDict) word) {
 			if ((count text) > 0) {
-				addPart tipMorph (morph (newText text titleFontName fontSize (gray 0) 'left' nil 0 0 5 3))
-				text = ''
+				addPart tipMorph (morph (newText text fontName fontSize (gray 0) 'left' nil 0 0 5 3))
+				text = ' '
 			}
 			icon = (newMorph)
 			setCostume icon (at iconsDict word)
@@ -74,14 +79,16 @@ method setTip MicroBlocksTipBar aTip {
 		}
 	}
 	if ((count text) > 0) {
-		addPart tipMorph (morph (newText text titleFontName fontSize (gray 0) 'left' nil 0 0 5 3))
+		addPart tipMorph (morph (newText text fontName fontSize (gray 0) 'left' nil 0 0 5 3))
 	}
 	fixLayout tip
 }
 
 method step MicroBlocksTipBar {
 	hand = (hand (global 'page'))
-	if (isBusy hand) {
+	if (and (isClass (grabbedObject hand) 'Block') (isClass (objectAt hand) 'BlocksPalette')) {
+		updateTip this (objectAt hand)
+	} (isBusy hand) {
 		setTitle this ''
 		setTip this ''
 	} else {
@@ -101,11 +108,12 @@ method initContents MicroBlocksTipBar {
 	atPut contentDict 'BooleanSlot' (array 'Boolean Input' '[l] toggle value, or drop a reporter into it.')
 	atPut contentDict 'ColorSlot' (array 'Color Input' '[l] change the color, or drop a reporter into it.')
 	atPut contentDict 'InputSlot' (array 'Input' '[l] edit its value, or drop a reporter into it.')
-	atPut contentDict 'BlockDrawer' (array 'Block Extension' '[l] right arrow to show optional inputs. [l] left arrow to hide them.')
+	atPut contentDict 'BlockDrawer' (array 'Block Extension' '[l] right arrow for optional inputs. [l] left arrow to hide them.')
 
-	atPut contentDict 'Command' (array 'Command Block' '[l] run it, or drag attach to other command blocks to build scripts. [r] menu.')
+	atPut contentDict 'Command' (array 'Command Block' '[l] to run, or drag to build scripts. [r] menu.')
+	atPut contentDict 'Hat' (array 'Hat Block' '[l] to run, or drag to build scripts. [r] menu.')
 	atPut contentDict 'Reporter' (array 'Reporter Block' '[l] see its value, or drop it into an input slot to use the value. [r] menu.')
-	atPut contentDict 'Script' (array 'Script' '[l] run it. [r] menu.')
+	atPut contentDict 'Script' (array 'Script' '[l] to run. [r] menu.')
 
 	atPut contentDict 'PaneResizer' (array 'Pane Divider' 'Drag to change pane width.')
 	atPut contentDict 'Library' (array 'Library' '[l] show the blocks in this library. [r] menu.')
@@ -137,7 +145,9 @@ method contentsFor MicroBlocksTipBar anElement {
 	}
 	if (notNil block) {
 		topBlock = (topBlock block)
-		if ('reporter' == (type block)) {
+		if (and ('hat' == (type block)) (isNil (next block))) {
+			key = 'Hat'
+		} ('reporter' == (type block)) {
 			if (block == topBlock) { // stand-alone reporter
 				key = 'Reporter'
 			} else { // reporter in a script
@@ -166,7 +176,7 @@ method contentsFor MicroBlocksTipBar anElement {
 		if devMode { return (array key '') } // show key in tip bar during development
 		return (array '' '')
 	}
-	if (isOneOf key 'Reporter' 'Command') {
+	if (isOneOf key 'Reporter' 'Command' 'Hat') {
  		helpEntry = (entryForOp help (primName (expression block)))
  		if (notNil helpEntry) {
  			// append block description
@@ -181,16 +191,15 @@ method contentsFor MicroBlocksTipBar anElement {
 method fixLayout MicroBlocksTipBar {
 	scale = (global 'scale')
 	page = (global 'page')
-	setExtent morph (width page) (24 * scale)
+	setExtent morph (width page) (22 * scale)
 	redraw box
 
-	topInset = (0 * scale)
-	hInset = (1 * scale)
-	setLeft (morph title) ((left morph) + hInset)
-	setTop (morph title) ((top morph) + topInset)
+	setLeft (morph title) ((left morph) + (3 * scale))
+	setLeft tipMorph ((right (morph title)) + (1 * scale))
 
-	setLeft tipMorph ((right (morph title)) + hInset)
-	setTop tipMorph ((top morph) + topInset)
+	top = ((top morph) + (2 * scale))
+	setTop (morph title) top
+	setTop tipMorph top
 }
 
 method rightClickLogo MicroBlocksTipBar {

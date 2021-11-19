@@ -24,6 +24,7 @@ method drawOn PaneResizer ctx {
 }
 
 method handEnter PaneResizer aHand {
+	if (isBusy aHand) { return }
 	if (orientation == 'horizontal') {
 		setCursor 'ew-resize'
 	} (orientation == 'vertical') {
