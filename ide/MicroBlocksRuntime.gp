@@ -355,7 +355,7 @@ method readCodeFromBoard SmallRuntime {
 	decompilerStatus = (localized 'Reading project from board...')
 
 	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
-		prompter = (findMorph 'Prompter'))
+		prompter = (findMorph 'Prompter')
 		if (notNil prompter) { destroy prompter } // remove the prompt to connect board
 
 		if (not (canReplaceCurrentProject (findMicroBlocksEditor))) {
