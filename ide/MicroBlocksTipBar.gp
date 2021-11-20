@@ -200,6 +200,7 @@ method fixLayout MicroBlocksTipBar {
 	setLeft tipMorph ((right (morph title)) + (1 * scale))
 
 	top = (top morph)
+	if ('Linux' != (platform)) { top += (2 * scale) }
 	setTop (morph title) top
 	setTop tipMorph top
 }
