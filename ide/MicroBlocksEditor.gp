@@ -910,6 +910,51 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
   return menu
 }
 
+// Pretty Printer test
+
+method ppTest MicroBlocksEditor {
+	// Test the pretty printer by loading each example project and then generating its
+	// code string. The result should match the original file.
+
+	for fn (listEmbeddedFiles) {
+		if (beginsWith fn 'Examples') {
+			data1 = (readEmbeddedFile fn)
+			proj = (loadFromString (newMicroBlocksProject) data1)
+			data2 = (codeString proj)
+			if (data2 != data1) {
+				showMismatches this fn data1 data2
+			}
+		}
+	}
+}
+
+method showMismatches MicroBlocksEditor fn s1 s2 {
+	print 'MISMATCH!' (filePart fn)
+	lines1 = (nonEmptyLines this s1)
+	lines2 = (nonEmptyLines this s2)
+	if ((count lines1) != (count lines2)) {
+		print '  Line counts do not match' (count lines1) (count lines2)
+	}
+	mismatchCount = 0
+	for i (min (count lines1) (count lines2)) {
+		l1 = (at lines1 i)
+		l2 = (at lines2 i)
+		if (l1 != l2) {
+			print '    A: ' l1; print '    B: ' l2
+			mismatchCount += 1
+		}
+	}
+	print '  Mismatched lines:' mismatchCount
+}
+
+method nonEmptyLines MicroBlocksEditor s {
+	result = (list)
+	for line (lines s) {
+		if (line != '') { add result line }
+	}
+	return result
+}
+
 method cursorTest MicroBlocksEditor {
   menu = (menu 'Cursor Test' this)
   addItem menu 'default'		(action 'setCursor' 'default')
