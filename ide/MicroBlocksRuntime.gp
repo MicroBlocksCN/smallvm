@@ -337,13 +337,14 @@ method analyzeProject SmallRuntime {
 // Decompiling
 
 method readCodeFromNextBoardConnected SmallRuntime {
-	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
-		decompilerStatus = (localized 'Plug in the board and click the USB icon to connect.')
-	} else {
-		decompilerStatus = (localized 'Plug in the board.')
-	}
 	readFromBoard = true
 	disconnected = false
+	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+		// in browser, cannot add the spinner before user has clicked connect icon
+		inform 'Plug in the board and click the USB icon to connect.'
+		return
+	}
+	decompilerStatus = (localized 'Plug in the board.')
 	spinner = (newSpinner (action 'decompilerStatus' (smallRuntime)) (action 'decompilerDone' (smallRuntime)))
 	addPart (global 'page') spinner
 }
@@ -352,6 +353,19 @@ method readCodeFromBoard SmallRuntime {
 	decompiler = (newDecompiler)
 	waitForPing this
 	decompilerStatus = (localized 'Reading project from board...')
+
+	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+		prompter = (findMorph 'Prompter'))
+		if (notNil prompter) { destroy prompter } // remove the prompt to connect board
+
+		if (not (canReplaceCurrentProject (findMicroBlocksEditor))) {
+			return // uncommon: user started writing code before connecting the board
+		}
+
+		// in browser, spinner was not added earlier
+		spinner = (newSpinner (action 'decompilerStatus' (smallRuntime)) (action 'decompilerDone' (smallRuntime)))
+		addPart (global 'page') spinner
+	}
 
 	sendMsg this 'getVarNamesMsg'
 	lastRcvMSecs = (msecsSinceStart)
