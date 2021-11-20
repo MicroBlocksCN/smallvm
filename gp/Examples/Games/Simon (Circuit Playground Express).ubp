@@ -48,7 +48,7 @@ to 'wrong guess' index {
   return (or (and (buttonA) ((at index sequence) == 1)) (and (buttonB) ((at index sequence) == 0)))
 }
 
-script 50 50 {
+script 49 49 {
 comment 'This is the "Simon" memory game for the
 Adafruit Circuit Playground Express.'
 }
@@ -105,7 +105,7 @@ waitMillis 500
 sendBroadcast 'play sequence'
 }
 
-script 50 129 {
+script 49 129 {
 whenStarted
 neoPixelAttach 10 ''
 sendBroadcast 'go!'
@@ -118,7 +118,7 @@ waitMillis 1000
 sendBroadcast 'play sequence'
 }
 
-script 52 361 {
+script 51 361 {
 whenBroadcastReceived 'go!'
 neoPixelSetAllToColor (colorSwatch 0 0 0 255)
 for i 5 {
@@ -431,6 +431,4 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
-
 

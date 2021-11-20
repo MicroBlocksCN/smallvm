@@ -29,7 +29,7 @@ to 'draw dot x' x y {
   '[tft:circle]' x y 10 0 true
 }
 
-script 166 50 {
+script 166 49 {
 comment '    By José García Yeste - Citilab
 ===========================
 Motion and TFT library demo.
@@ -38,7 +38,7 @@ Wait for the ED1 to say "Shake!", then
 shake it to roll a die.'
 }
 
-script 50 112 {
+script 49 112 {
 whenStarted
 repeat 12 {
   local 'ignore' (motion)
@@ -354,5 +354,4 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
 

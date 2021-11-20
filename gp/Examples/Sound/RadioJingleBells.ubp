@@ -4,7 +4,7 @@ version 1 0
 description ''
 variables 'part A' 'part B' 'part C' 
 
-script 49 49 {
+script 48 49 {
 comment 'This project uses two micro:bit''s to play two-part harmony.
 When the A button is pressed on one board, it starts
 playing the tune and sends a radio message to the other
@@ -362,6 +362,4 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
-
 

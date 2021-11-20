@@ -4,7 +4,7 @@ version 1 0
 description ''
 variables eighth quarter whole 
 
-script 50 50 {
+script 49 49 {
 whenStarted
 comment 'On a micro:bit, attach a piezo speaker between pin 0 and ground'
 comment 'This will use the built-in speaker on boards that have one
@@ -211,6 +211,4 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
-
 

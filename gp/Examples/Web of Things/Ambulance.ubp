@@ -4,7 +4,7 @@ version 1 0
 description ''
 variables interval octave onOff 
 
-script 50 50 {
+script 49 49 {
 whenStarted
 comment 'Works out of the box on the Adafruit Circuit Playground Express.
 
@@ -427,8 +427,6 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
-
 
 
 module WebThings Comm

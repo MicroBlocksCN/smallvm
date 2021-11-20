@@ -62,7 +62,7 @@ to 'part A3' {
   'play tone' 'D#' 1 1000
 }
 
-script 50 50 {
+script 49 49 {
 whenStarted
 comment 'On a micro:bit, attach a piezo speaker between pin 0 and ground'
 comment 'This will use the built-in speaker on boards that have one
@@ -73,7 +73,7 @@ such as the Circuit Playground Express, ED1, or M5Stack.'
 'part A3'
 }
 
-script 179 188 {
+script 178 188 {
 comment 'To see what each "part" block does, right click
 on it and select "show block definition..."'
 'part A'
@@ -230,5 +230,4 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
 

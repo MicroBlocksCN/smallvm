@@ -63,7 +63,7 @@ waitMillis 500
 sendBroadcast 'draw sequence'
 }
 
-script 49 56 {
+script 48 56 {
 comment 'This is the "Simon" memory game for the
 BBC micro:bit.'
 }
@@ -73,7 +73,7 @@ whenStarted
 sendBroadcast 'go!'
 }
 
-script 194 111 {
+script 193 111 {
 whenBroadcastReceived 'go!'
 'initialize letters'
 'current index' = 1
@@ -298,6 +298,4 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
-
 

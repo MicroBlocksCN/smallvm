@@ -3,7 +3,7 @@ author MicroBlocks
 version 1 0 
 description ''
 
-script 50 50 {
+script 49 49 {
 whenStarted
 comment 'This demonstrates plucked string synthesis
 on a micro:bit v2, Circuit Playground, CIrcuit
@@ -287,6 +287,4 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
-
 

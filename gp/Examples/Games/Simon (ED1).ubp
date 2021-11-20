@@ -57,12 +57,12 @@ to 'wrong guess' index {
   return (or (or (and ('up button') ((at index sequence) != 1)) (and ('down button') ((at index sequence) != 2))) (or (and ('left button') ((at index sequence) != 3)) (and ('right button') ((at index sequence) != 4))))
 }
 
-script 52 50 {
+script 51 49 {
 comment 'This is the Simon memory game for the
 Citilab ED1 board'
 }
 
-script 413 50 {
+script 412 49 {
 whenBroadcastReceived 'player turn'
 local 'index' 1
 repeatUntil (index > (v 'current index')) {
@@ -88,12 +88,12 @@ waitMillis 500
 sendBroadcast 'play sequence'
 }
 
-script 50 100 {
+script 49 99 {
 whenStarted
 sendBroadcast 'go!'
 }
 
-script 202 105 {
+script 202 104 {
 whenBroadcastReceived 'go!'
 'current index' = 1
 'initialize letters'
@@ -373,6 +373,4 @@ to playMIDIKey key ms {
   }
   '_toneLoop' freq ms
 }
-
-
 

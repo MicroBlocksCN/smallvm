@@ -51,7 +51,7 @@ to 'happy-birthday' {
   waitMillis half
 }
 
-script 56 50 {
+script 56 49 {
 whenButtonPressed 'A'
 comment 'On a micro:bit, attach a piezo speaker between pin 0 and ground'
 comment 'This will use the built-in speaker on boards that have one
@@ -61,7 +61,7 @@ sendBroadcast 'show message'
 'and-many-more'
 }
 
-script 268 180 {
+script 267 180 {
 comment 'To see what each of these block does, right click
 on it and select "show block definition..."'
 'happy-birthday'
