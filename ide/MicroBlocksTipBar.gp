@@ -181,8 +181,13 @@ method contentsFor MicroBlocksTipBar anElement {
 	if (isOneOf key 'Reporter' 'Command' 'Hat') {
  		helpEntry = (entryForOp help (primName (expression block)))
  		if (notNil helpEntry) {
- 			// append block description
- 			fullDescription = (join (at helpEntry 3) '    ' (at content 2))
+ 			if (devMode) {
+ 				// just show the help string
+ 				fullDescription = (at helpEntry 3)
+ 			} else {
+ 				// show help string and gesture hints
+ 				fullDescription = (join (at helpEntry 3) '    ' (at content 2))
+ 			}
  			content = (copy content)
  			atPut content 2 fullDescription
  		}
