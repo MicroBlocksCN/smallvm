@@ -225,8 +225,8 @@ static void setHighDrive(int pin) {
 	port->PIN_CNF[pin & 0x1F] |= (3 << 8); // high drive 1 and 0
 }
 
-static int lightLevelPhase = 0;
-static uint32 lightLevelStartTime = 0;
+static int lightReadingStarted = false;
+static uint32 lightReadingStartTime = 0;
 
 static int displaySnapshot = 0;
 static int displayCycle = 0;
@@ -265,60 +265,60 @@ static int updateLightLevel() {
 
 	char col[3] = {COL1, COL3, COL5}; // these are analog input pins 4, 3, 10
 
-	// During phase 1, the LED's are reverse-biased and the stray capacitances in the LED
-	// circuits are charged up. How long that takes depends on the state of the LED's during
-	// the last display cycle. The charge time needs to be long enough to fully charge all the
-	// capacitances even if they were fully discharged in the last display cycle.
-	const int chargeTime = 200;
+	// How this works:
+	// The first step is to reverse-bias the LED's to charge up the stray capacitance
+	// in the LED circuits. That only takes a fraction of a microsecond.
+	//
+	// During the next phase, charge leaks through the reverse-biased LED junctions.
+	// It leaks faster in bright light, slower in dim light, so longer discharge
+	// times provide greater low-light sensitivity. There is a tradeoff, however,
+	// between low-light sensitivity and the ability to handle higher light levels
+	// without saturating. That tradeoff is controlled by the discharge time.
 
-	// During phase 2, charge leaks through the reverse-biased LED junctions.
-	// It leaks faster in bright light, slower in dim light, so longer discharge times
-	// yield greater low-light sensitivity. There is a tradeoff, however, since longer
-	// discharge times result in more display flicker when using the display and light
-	// sensor at the same time.
-	const int dischargeTime = 4000; // over about 5000 causes noticeable flicker
+	const int dischargeTime = 2000; // over about 5000 causes noticeable flicker
 
-	if (0 == lightLevelPhase) { // start a light level reading
+	if (!lightReadingStarted) { // start a light level reading
+
 		turnDisplayOff(); // put all rows and columns into input mode
-		// set row lines low
+		// set the row lines low
 		for (int i = 0; i < 5; i++) {
 			setPinMode(rowPins[i], OUTPUT);
 			digitalWrite(rowPins[i], LOW);
 		}
-		// set column lines high to reverse-bias the LED's
+		// set columns high to reverse-bias the LED's and charge the stray capacitance
 		for (int i = 0; i < 3; i++) {
 			setPinMode(col[i], OUTPUT);
 			digitalWrite(col[i], HIGH);
 		}
-		lightLevelStartTime = microsecs();
-		lightLevelPhase = 1;
-		return false; // wait for next phase
-	} else if (1 == lightLevelPhase) {
-		if (microsSince(lightLevelStartTime) < chargeTime) return false; // keep waiting
 
-		// charging complete; switch colums to input mode to start discharge cycle
+		// switch colums to input mode (high impedance) to start the discharge cycle
+		// (charge leaks backwards through LED's at rate depending on the light level)
 		for (int i = 0; i < 3; i++) {
 			setPinMode(col[i], INPUT);
 		}
-		lightLevelStartTime = microsecs();
-		lightLevelPhase = 2;
-		return false; // wait for next phase
-	} else if (2 == lightLevelPhase) {
-		if (microsSince(lightLevelStartTime) < dischargeTime) return false; // keep waiting
-
-		int c1 = analogRead(COL1);
-		int c3 = analogRead(COL3);
-		int c5 = analogRead(COL5);
-		lightLevel = (3069 - (c1 + c3 + c5)) / 3;
-
-		// xxx not sure why this is needed:
-		analogRead(1); // read from another analog pin to free the last column read for output
+		lightReadingStarted = true;
+		lightReadingStartTime = microsecs();
+		return false; // wait for phase 1 to complete
 	}
 
-	// done!
-	lightLevelPhase = 0;
+	if (microsSince(lightReadingStartTime) < dischargeTime) {
+		return false; // continue to wait for phase 1 to complete
+	}
+
+	// measure the voltage on pin c1, c3, and c5
+	analogReference(AR_VDD4); // use VDD as reference to be independent of battery level
+	int c1 = analogRead(COL1);
+	int c3 = analogRead(COL3);
+	int c5 = analogRead(COL5);
+	analogReference(AR_INTERNAL); // revert to using the internal 0.6v reference
+	analogRead(1); // read from another analog pin to free the last column pin for output
+
+	lightLevel = (2950 - (c1 + c3 + c5)) / 3;
+	if (lightLevel < 0) lightLevel = 0;
+
+	lightReadingStarted = false;
 	lightReadingRequested = false;
-	return true;
+	return true; // done!åå
 }
 
 void updateMicrobitDisplay() {
