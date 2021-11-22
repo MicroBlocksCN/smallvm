@@ -1203,7 +1203,8 @@ method closeUnclickedMenu Page aHandler {
   activeMenu = nil
 }
 
-method hasActiveMenu Page {return (notNil activeMenu)}
+method hasActiveMenu Page { return (notNil activeMenu) }
+method clearActiveMenu Page { activeMenu = nil }
 
 // hint
 

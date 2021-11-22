@@ -243,6 +243,7 @@ method focus Menu {
 
 method unfocus Menu {
   page = (global 'page')
+  clearActiveMenu page
   if ((focus (keyboard page)) === this) {
       stopEditing (keyboard page)
   }
