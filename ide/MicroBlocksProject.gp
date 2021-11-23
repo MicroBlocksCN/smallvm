@@ -257,7 +257,7 @@ method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {
 	return this
 }
 
-method loadFromString MicroBlocksProject s {
+method loadFromString MicroBlocksProject s updateLibraries {
 	// Load project from a string in .ubp format. Keep libraries (modules) together.
 	initialize this
 	cmdList = (parse s)
@@ -274,7 +274,8 @@ method loadFromString MicroBlocksProject s {
 			installChoices lib this
 		}
 	}
-	checkForNewerLibraryVersions this
+	if (isNil updateLibraries) { updateLibraries = true }
+	if updateLibraries { checkForNewerLibraryVersions this }
 	updatePrimitives this
 	fixFunctionLocals this
 	return this

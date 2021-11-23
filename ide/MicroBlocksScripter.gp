@@ -539,11 +539,11 @@ method loadOldProjectFromClass MicroBlocksScripter aClass specs {
   restoreScripts this
 }
 
-method loadNewProjectFromData MicroBlocksScripter aString {
+method loadNewProjectFromData MicroBlocksScripter aString updateLibraries {
   // Load an new-style MicroBlocks project from the given string.
 
   mbProject = (newMicroBlocksProject)
-  loadFromString mbProject aString
+  loadFromString mbProject aString updateLibraries
   restoreScripts this
 }
 
