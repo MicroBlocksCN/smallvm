@@ -275,7 +275,7 @@ static int updateLightLevel() {
 	// between low-light sensitivity and the ability to handle higher light levels
 	// without saturating. That tradeoff is controlled by the discharge time.
 
-	const int dischargeTime = 2000; // over about 5000 causes noticeable flicker
+	const int dischargeTime = 4000; // over about 5000 causes noticeable flicker
 
 	if (!lightReadingStarted) { // start a light level reading
 
@@ -313,7 +313,7 @@ static int updateLightLevel() {
 	analogReference(AR_INTERNAL); // revert to using the internal 0.6v reference
 	analogRead(1); // read from another analog pin to free the last column pin for output
 
-	lightLevel = (2950 - (c1 + c3 + c5)) / 3;
+	lightLevel = (2850 - (c1 + c3 + c5)) / 3;
 	if (lightLevel < 0) lightLevel = 0;
 
 	lightReadingStarted = false;
