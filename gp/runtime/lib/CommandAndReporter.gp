@@ -291,5 +291,7 @@ to argList cmdOrReporter {
 
 to setArg cmdOrReporter n val {
   fixedFields = (fieldNameCount (class 'Command'))
+  i = (fixedFields + n)
+  if (or (i < 1) (i > (count cmdOrReporter))) { return } // shouldn't happen
   setField cmdOrReporter (fixedFields + n) val
 }
