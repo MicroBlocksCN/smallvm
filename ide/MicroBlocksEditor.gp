@@ -41,16 +41,17 @@ to openMicroBlocksEditor devMode {
   open page tryRetina 'MicroBlocks'
   editor = (initialize (new 'MicroBlocksEditor') (emptyProject))
   addPart page editor
-  if (notNil (global 'initialProject')) {
-	dataAndURL = (global 'initialProject')
-	openProject editor (first dataAndURL) (last dataAndURL)
-  }
   redrawAll (global 'page')
   readVersionFile (smallRuntime)
-  launch (global 'page') (checkLatestVersion)
+  checkLatestVersion
   applyUserPreferences editor
   pageResized editor
   developerModeChanged editor
+  if ('Browser' == (platform)) { fetchProject }
+  if (notNil (global 'initialProject')) {
+	dataAndURL = (global 'initialProject')
+	openProject editor (first dataAndURL) (last dataAndURL) false
+  }
   startSteppingSafely page
 }
 
@@ -91,9 +92,9 @@ to fetchLatestVersionNumber {
     suffix = '?R='
   }
   url = (join '/downloads/latest/VERSION.txt' suffix (rand 100000 999999))
-  versionText = (httpGet 'microblocks.fun' url)
+  versionText = (basicHTTPGet 'microblocks.fun' url)
   if (isNil versionText) { return (array 0 0 0) }
-  return (splitWith (substring (first (lines (httpBody versionText))) 1) '.')
+  return (splitWith (substring (first (lines versionText)) 1) '.')
 }
 
 to findMicroBlocksEditor {
