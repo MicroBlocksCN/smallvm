@@ -344,7 +344,7 @@ method openProjectFromFile MicroBlocksEditor location {
   openProject this data location
 }
 
-method openProject MicroBlocksEditor projectData projectName {
+method openProject MicroBlocksEditor projectData projectName updateLibraries {
   clearProject this
   fileName = projectName
   updateTitle this
@@ -357,7 +357,7 @@ method openProject MicroBlocksEditor projectData projectName {
 	}
 	loadOldProjectFromClass scripter mainClass (blockSpecs proj)
   } else {
-	loadNewProjectFromData scripter (toString projectData)
+	loadNewProjectFromData scripter (toString projectData) updateLibraries
   }
   updateLibraryList scripter
   developerModeChanged scripter
