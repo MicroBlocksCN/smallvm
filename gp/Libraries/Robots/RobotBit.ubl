@@ -1,0 +1,112 @@
+module RobotBit Output
+author MicroBlocks
+version 1 0
+description 'Library for the Kittenbot RobotBit motor and servo controller board.
+Currently supports servos and gear motors but not stepper motors.'
+variables tmp _robotbitMicrosecsPerCycle
+
+	spec ' ' 'initRobotbit' 'initialize Robotbit (all off)'
+	spec ' ' 'setRobobitServoAngle' 'set Robotbit servo _ to _ degrees (-90 to 90)' 'menu.range:1-8 num' 1 90
+	spec ' ' 'setRobotbitServoSpeed' 'set Robotbit servo  _ to speed _ (-100 to 100)' 'menu.range:1-8 num' 1 100
+	spec ' ' 'setRobotbitMotor' 'set Robotbit motor _ to speed _ (-100 to 100)' 'menu.range:1-4 num' 1 100
+	spec 'r' '_computeMicrosecsPerCycle' '_compute microsecs per cycle'
+	spec ' ' '_robotbitAllOff' '_robotbitAllOff'
+	spec ' ' '_setPWM' '_setPWM _ _ _' 'auto auto auto' 1 0 2048
+
+to '_computeMicrosecsPerCycle' {
+  comment 'The Robobit''s clock speed varies slightly board to board,
+which can slightly offset the range of servo pulse widths.
+This function allows you measure the actual PWM cycle time
+allowing you to achieve greater servo precision.
+Connect a jumper wire from pin S1 to P15 and run this
+script to measure the microseconds per PWM cycle.
+Set the variable _robotbitMicrosecsPerCycle to the
+result in your startup code (after "initialize Robotbit").'
+  initRobotbit
+  '_setPWM' 8 0 1000
+  local 'total' 0
+  repeat 10 {
+    waitUntil (not (digitalReadOp 15))
+    waitUntil (digitalReadOp 15)
+    local 'start' (microsOp)
+    waitUntil (not (digitalReadOp 15))
+    waitUntil (digitalReadOp 15)
+    total += (((microsOp) - start) + 120)
+  }
+  return (total / 10)
+}
+
+to _robotbitAllOff {
+  comment 'Writing to egisters 250-253 sets the PWM parameters
+for all 16 channels at once. Here we turn them all off.
+See the PCA9685 datasheet for technical details.'
+  for i 4 {
+    i2cSet 64 (249 + i) 0
+  }
+}
+
+to '_setPWM' channel on off {
+  comment 'Set the on and off time of the given PWM channel.
+The I2C message is: <starting register address> <start time (2 bytes) <end time (2 bytes)>
+The start and stop times (range 0-4096) are sent least significant byte first.
+Usually the start time is zero and the end time determines the duty cycle.
+'
+  if (or (channel < 0) (channel > 15)) {return 0}
+  local 'buf' ('[data:newByteArray]' 5)
+  atPut 1 buf (6 + (4 * channel))
+  atPut 2 buf (on & 255)
+  atPut 3 buf ((on >> 8) & 255)
+  atPut 4 buf (off & 255)
+  atPut 5 buf ((off >> 8) & 255)
+  '[sensors:i2cWrite]' 64 buf
+}
+
+to initRobotbit {
+  comment 'Initialize the Kittenbot Robobit servo and motor board.
+See the PCA9685 datasheet for technical details.'
+  comment 'Enter sleep mode'
+  i2cSet 64 0 (hexToInt '10')
+  comment 'Set prescale register to generate 50 Hz'
+  i2cSet 64 (hexToInt 'FE') (25000000 / (50 * 4096))
+  _robotbitAllOff
+  comment 'Start PWM again (with autoincrement enabled)'
+  i2cSet 64 0 (hexToInt '20')
+  comment 'Set the default calibration. This can be adjusted by for a specific
+Robotbit by running "_compute microsecs per cycle" block, then
+setting _robotbitMicrosecsPerCycle to the number it returns.'
+  _robotbitMicrosecsPerCycle = 20000
+}
+
+to setRobobitServoAngle servo degrees {
+  if (or (servo < 1) (servo > 8)) {return 0}
+  degrees = (maximum -100 (minimum degrees 100))
+  local 'usecs' (1500 + ((500 * degrees) / 90))
+  '_setPWM' (servo + 7) 0 ((usecs * 4096) / _robotbitMicrosecsPerCycle)
+}
+
+to setRobotbitMotor motor speed {
+  if (or (motor < 1) (motor > 4)) {return 0}
+  speed = (maximum -100 (minimum speed 100))
+  local 'plusPin' (2 * (motor - 1))
+  local 'minusPin' (plusPin + 1)
+  local 'pwmSteps' ((4095 * speed) / 100)
+  if (pwmSteps < 0) {
+    '_setPWM' plusPin 0 0
+    '_setPWM' minusPin 0 (absoluteValue pwmSteps)
+  } else {
+    '_setPWM' plusPin 0 pwmSteps
+    '_setPWM' minusPin 0 0
+  }
+}
+
+to setRobotbitServoSpeed servo speed {
+  if (or (servo < 1) (servo > 8)) {return 0}
+  speed = (maximum -120 (minimum speed 120))
+  if (speed == 0) {
+    '_setPWM' (servo + 7) 0 0 // turn off PWM
+    return
+  }
+  local 'usecs' (1500 + (6 * speed))
+  '_setPWM' (servo + 7) 0 ((usecs * 4096) / _robotbitMicrosecsPerCycle)
+}
+
