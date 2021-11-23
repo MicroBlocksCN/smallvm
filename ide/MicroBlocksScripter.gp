@@ -774,7 +774,7 @@ method pasteScripts MicroBlocksScripter scriptString {
 		  block = (toBlock script)
 		}
 		fastMoveBy (morph block) x y
-		y += ((height (fullBounds (morph block))) + (10 * scale))
+		y += ((height (fullBounds (morph block))) + (20 * (blockScale)))
 		addPart (morph scriptsPane) (morph block)
 		fixBlockColor block
 		lastScript = block

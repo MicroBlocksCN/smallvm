@@ -298,7 +298,8 @@ method contextMenu ScriptEditor {
 
 method cleanUp ScriptEditor {
   order = (function m1 m2 {return ((top m1) < (top m2))})
-  alignment = (newAlignment 'column' nil 'fullBounds' order)
+  alignment = (newAlignment 'multi-line' nil 'fullBounds' order)
+  setPadding alignment (20 * (blockScale))
   setVPadding alignment (20 * (blockScale))
   setMorph alignment morph
   fixLayout alignment
