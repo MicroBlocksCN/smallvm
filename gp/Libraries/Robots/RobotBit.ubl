@@ -3,7 +3,7 @@ author MicroBlocks
 version 1 0
 description 'Library for the Kittenbot RobotBit motor and servo controller board.
 Currently supports servos and gear motors but not stepper motors.'
-variables tmp _robotbitMicrosecsPerCycle
+variables _robotbitMicrosecsPerCycle
 
 	spec ' ' 'initRobotbit' 'initialize Robotbit (all off)'
 	spec ' ' 'setRobobitServoAngle' 'set Robotbit servo _ to _ degrees (-90 to 90)' 'menu.range:1-8 num' 1 90
