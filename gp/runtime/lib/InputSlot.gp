@@ -157,6 +157,7 @@ method textChanged InputSlot {
     scale = (blockScale)
     isNumber = (and (representsANumber (text text)) (notNil (toNumber (text text) nil)))
     if isNumber {
+	  contents = (toNumber (text text))
       setBorders text (scale * 5) 0
     } else {
       setBorders text (scale * 3) scale
