@@ -594,7 +594,14 @@ static void initPins(void) {
 	// Initialize currentMode to MODE_NOT_SET (neither INPUT nor OUTPUT)
 	// to force the pin's mode to be set on first use.
 
-	#if !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_RASPBERRY_PI_PICO)
+	#if defined(NRF52)
+		// Use 8-bit PWM resolution on NRF52 to improve quaility of audio output.
+		// With 8-bit samples, the PWM sampling rate is 16 MHz / 256 = 62500 samples/sec,
+		// allowing a 0.1 to 0.33 uF capacitor to be used as a simple low-pass filter.
+		// The analog write primitve takes a 10-bit value, as it does on all MicroBlocks boards,
+		// but on NRF52 only the 8 most signifcant bits are used.
+		analogWriteResolution(8);
+	#elif !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_RASPBERRY_PI_PICO)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 
@@ -797,6 +804,17 @@ void primAnalogWrite(OBJ *args) {
 			if (esp32Channel) ledcWrite(esp32Channel, value);
 		}
 	#else
+		#ifdef NRF52
+			// On NRF52, wait until last PWM cycle is finished before writing a new value.
+			// Prevents a tight loop writing audio samples from exceeding the PWM sample rate.
+			NRF_PWM_Type* pwm = NRF_PWM0;
+			if (pwm->EVENTS_SEQSTARTED[0]) {
+				while (!pwm->EVENTS_PWMPERIODEND) /* wait */;
+				pwm->EVENTS_PWMPERIODEND = 0;
+			}
+			value = (value >> 2); // On NRF52, use only the top 8-bits of the 10-bit value
+		#endif
+
 		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 	#endif
 }
