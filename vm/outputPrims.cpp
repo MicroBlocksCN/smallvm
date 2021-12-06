@@ -298,11 +298,11 @@ static int updateLightLevel() {
 		}
 		lightReadingStarted = true;
 		lightReadingStartTime = microsecs();
-		return false; // wait for phase 1 to complete
+		return false; // wait for discharge phase to complete
 	}
 
 	if (microsSince(lightReadingStartTime) < dischargeTime) {
-		return false; // continue to wait for phase 1 to complete
+		return false; // continue to wait for discharge phase to complete
 	}
 
 	// measure the voltage on pin c1, c3, and c5
@@ -318,7 +318,7 @@ static int updateLightLevel() {
 
 	lightReadingStarted = false;
 	lightReadingRequested = false;
-	return true; // done!åå
+	return true; // done!
 }
 
 void updateMicrobitDisplay() {
