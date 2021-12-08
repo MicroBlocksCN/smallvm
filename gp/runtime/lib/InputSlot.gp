@@ -15,7 +15,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
   if ('Linux' == (platform)) { fontSize = 9 }
   scale = (blockScale)
   morph = (newMorph this)
-  text = (newText (localized (toString default)) fontName (scale * fontSize))
+  text = (newText '' fontName (scale * fontSize))
   addPart morph (morph text)
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
@@ -44,7 +44,10 @@ method initialize InputSlot default editRule blockColor slotMenu {
   }
   menuSelector = slotMenu
   isStatic = (isOneOf menuSelector 'sharedVarMenu' 'myVarMenu' 'localVarMenu' 'allVarsMenu' 'propertyMenu')
-  textChanged this
+  if (and isAuto (isClass default 'String') ('' != default) (representsANumber default)) {
+	default = (toNumber default)
+  }
+  setContents this default
   fixLayout this
   return this
 }
@@ -53,21 +56,12 @@ method morph InputSlot {return morph}
 method setID InputSlot bool {isID = bool}
 
 method contents InputSlot {
-  if ((editRule text) == 'numerical') {return (toNumber (text text))}
-  if (and (notNil menuSelector) (notNil contents)) { return contents }
-  if (isAuto == true) {
-	if (representsANumber (text text)) {
-	  num = (toNumber (text text) nil)
-	  if (notNil num) { return num }
-	}
-	return (text text)
-  }
   if ((editRule text) == 'static') {
     if isID {return contents}
     if (isNil menuSelector) { return nil } // default is just a hint; value is nil
     return contents
   }
-  return (text text)
+  return contents
 }
 
 method setContents InputSlot data {
@@ -76,10 +70,12 @@ method setContents InputSlot data {
   } else {
     setText text (toString data)
   }
-  textChanged this
   if (and (isClass data 'String') ('' != data) ('editable' != (editRule text)) (representsANumber data)) {
     switchType this 'editable' // old value was a string; covert to string-only
   }
+  if isAuto { adjustAutoSlotBorders this }
+  contents = data
+  raise morph 'inputChanged' this
 }
 
 method isVarSlot InputSlot {
@@ -87,6 +83,17 @@ method isVarSlot InputSlot {
   owner = (handler (owner morph))
   if (or (not (isClass owner 'Block')) (isNil (expression owner))) { return false }
   return (isOneOf (primName (expression owner)) '=' '+=')
+}
+
+method adjustAutoSlotBorders InputSlot {
+  scale = (blockScale)
+  isNumber = (and (representsANumber (text text)) (notNil (toNumber (text text) nil)))
+  if isNumber {
+    setBorders text (scale * 5) 0
+  } else {
+    setBorders text (scale * 3) scale
+  }
+  fixLayout this
 }
 
 method fixLayout InputSlot {
@@ -145,18 +152,11 @@ method drawOn InputSlot ctx {
 method layoutChanged InputSlot {fixLayout this}
 
 method textChanged InputSlot {
-  if (isAuto == true) {
-    scale = (blockScale)
-    isNumber = (and (representsANumber (text text)) (notNil (toNumber (text text) nil)))
-    if isNumber {
-	  contents = (toNumber (text text))
-      setBorders text (scale * 5) 0
-    } else {
-      setBorders text (scale * 3) scale
-    }
-	fixLayout this
+  if ((editRule text) == 'numerical') {
+    setContents this (toNumber (text text))
+  } else {
+   setContents this (text text)
   }
-  raise morph 'inputChanged' this
 }
 
 method clicked InputSlot aHand {
