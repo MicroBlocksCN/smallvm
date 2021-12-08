@@ -4,14 +4,14 @@ version 1 0
 description ''
 variables _WoT_definingEvents _useWiFi 
 
-script 50 50 {
+script 58 58 {
 comment 'Web of Things pushbutton example.
 
 To test it, either press, long-press or double-press the A button
 in your board and look at the display.'
 }
 
-script 54 143 {
+script 62 151 {
 whenStarted
 'wifi connect to' 'Network_Name' '' 3
 'set thing name to' 'microButton'
@@ -22,7 +22,7 @@ whenStarted
 'start WebThing server'
 }
 
-script 462 143 {
+script 470 151 {
 whenCondition ('button double pressed' 'A')
 'trigger event' 'Button double-pressed'
 setUserLED true
@@ -34,7 +34,7 @@ waitMillis 100
 setUserLED false
 }
 
-script 56 361 {
+script 64 369 {
 whenCondition ('button long pressed' 'A')
 'trigger event' 'Button long-pressed'
 setUserLED true
@@ -42,7 +42,7 @@ waitMillis 1500
 setUserLED false
 }
 
-script 290 362 {
+script 298 370 {
 whenCondition ('button pressed' 'A')
 'trigger event' 'Button pressed'
 setUserLED true
@@ -163,7 +163,7 @@ depends WiFi
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
-	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _' 'bool' false
+	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _ : port _' 'bool num' false 8080
 	spec 'r' 'request method' 'method of request _' 'str' ''
 	spec 'r' 'path of request' 'path of request _' 'str' ''
 	spec 'r' 'headers of request' 'headers of request _' 'str' ''
@@ -233,6 +233,11 @@ author MicroBlocks
 version 3 4 
 depends 'HTTP server' WiFi 
 tags iot webthing wot 
+choices thingTypesMenu Alarm BinarySensor ColorControl ColorSensor DoorSensor EnergyMonitor LeakSensor Light Lock MotionSensor MultiLevelSensor MultiLevelSwitch OnOffSwitch PushButton SmartPlug TemperatureSensor Thermostat 
+choices thingEventTypesMenu OverheatedEvent PressedEvent DoublePressedEvent LongPressedEvent AlarmEvent 
+choices numberPropertyTypesMenu LevelProperty BrightnessProperty ColorTemperatureProperty InstantaneousPowerProperty CurrentProperty VoltageProperty FrequencyProperty TargetTemperatureProperty TemperatureProperty 
+choices booleanPropertyTypesMenu BooleanProperty OnOffProperty MotionProperty OpenProperty LeakProperty PushedProperty AlarmProperty 
+choices stringPropertyTypesMenu ColorProperty TextProperty HeatingCoolingProperty LockedProperty ThermostatModeProperty 
 description 'Create WebThings as specified by the WebThings schema and protocol. If your board is WiFi enabled, you can serve its thing description directly via HTTP. Otherwise, you can enable the MicroBlocks add-on in the WebThings Gateway.
 '
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description' 
@@ -551,6 +556,7 @@ description 'Connect to a WiFi network. To be used in conjunction with other net
 	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times : IP _ gateway _ subnet _' 'str str num str str str' 'Network_Name' '' 3 '192.168.1.42' '192.168.1.1' '255.255.255.0'
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
+	spec 'r' '[net:myMAC]' 'MAC address'
 
 to getIPAddress {
   return ('[net:myIPAddress]')
