@@ -34,19 +34,15 @@ method initialize InputSlot default editRule blockColor slotMenu {
     contents = default
     if (notNil blockColor) { color = (lighter blockColor 75) }
   }
-  if ((or (contents == true) (contents == false))) {
-    menuSelector = 'boolMenu'
-  } else {
-	if (and (notNil slotMenu) (beginsWith slotMenu 'range:')) {
-	  // integer range such as 'range:1-3'
-	  pair = (splitWith (substring slotMenu 7) '-')
-	  if (and (2 == (count pair)) (allDigits (first pair)) (allDigits (last pair))) {
-		menuRange = (array (toInteger (first pair)) (toInteger (last pair)))
-		slotMenu = 'rangeMenu'
-	  }
-	}
-    menuSelector = slotMenu
+  if (and (notNil slotMenu) (beginsWith slotMenu 'range:')) {
+    // integer range such as 'range:1-3'
+    pair = (splitWith (substring slotMenu 7) '-')
+    if (and (2 == (count pair)) (allDigits (first pair)) (allDigits (last pair))) {
+      menuRange = (array (toInteger (first pair)) (toInteger (last pair)))
+      slotMenu = 'rangeMenu'
+    }
   }
+  menuSelector = slotMenu
   isStatic = (isOneOf menuSelector 'sharedVarMenu' 'myVarMenu' 'localVarMenu' 'allVarsMenu' 'propertyMenu')
   textChanged this
   fixLayout this
@@ -75,10 +71,6 @@ method contents InputSlot {
 }
 
 method setContents InputSlot data {
-  contents = data
-  if ((or (true == contents) (false == contents))) {
-    menuSelector = 'boolMenu'
-  }
   if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
     setText text (localized (toString data))
   } else {
@@ -206,13 +198,6 @@ method rangeMenu InputSlot {
 }
 
 // menus
-
-method boolMenu InputSlot {
-  menu = (menu nil (action 'setContents' this) true)
-  addItem menu 'true' true
-  addItem menu 'false' false
-  return menu
-}
 
 method directionsMenu InputSlot {
   menu = (menu nil (action 'setContents' this) true)
