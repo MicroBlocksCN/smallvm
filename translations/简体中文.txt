@@ -165,7 +165,7 @@ list
 列表
 
 Advanced:
---MISSING--
+高级
 
 hex _
 十六进制 _
@@ -184,7 +184,7 @@ Delete a variable
 # New variable dialog
 
 New variable name?
-请输入新变量的名字：
+新变量的名字是？
 
 set _ to _
 把 _ 设定为 _
@@ -193,7 +193,7 @@ change _ by _
 把 _ 增加 _
 
 initialize local _ to _
---MISSING--
+将本地的 _ 初始化为 _
 
 Data
 数据
@@ -226,7 +226,7 @@ to _
 到 _
 
 find _ in _
-寻找 _ 在 _ 中
+在 _ 中 _ 查找
 
 starting at _
 开始于 _
@@ -247,7 +247,7 @@ new list length _
 新建长度为 _ 的列表
 
 new byte array _
---MISSING--
+新 byte 数组 _
 
 free memory
 释放内存
@@ -308,10 +308,10 @@ draw shape _ at x _ y _
 绘制形状 _ 于 x _ y _
 
 shape for letter _
-Form für Buchstabe _
+字母 _ 的形状
 
 send NeoPixel rgb _
-向新光像素发送 RGB _
+向 NeoPixel 发送 RGB _
 
 has tone support
 具有音调支持
@@ -320,19 +320,19 @@ play tone pin _ frequency _
 播放音调于引脚 _ 频率 _
 
 has WiFi support
-具有WiFi支持
+具有 WiFi 支持
 
 start WiFi _ password _
 开启 WiFi _ 密码 _
 
 stop WiFi
-停止WiFi
+停止 WiFi
 
 WiFi status
-WiFi状态
+WiFi 状态
 
 my IP address
-我的IP地址
+我的 IP 地址
 
 radio send number _
 广播发送数字 _
@@ -353,25 +353,25 @@ radio last string
 最后广播的字符串
 
 radio last message type
---MISSING--
+最后广播消息类型
 
 radio set group _
 设置广播分组 _
 
 radio set channel (0-83) _
---MISSING--
+设置广播信道 (0-83) _
 
 radio set power (0-7) _
 设置广播信号强度 (0-7) _
 
 radio last signal strength
---MISSING--
+最后广播信号强度
 
 radio receive packet _
---MISSING--
+广播收到包 _
 
 radio send packet _
---MISSING--
+广播发送包 _
 
 disable radio
 禁止广播
@@ -405,22 +405,22 @@ temperature (°C)
 # NeoPixel library
 
 NeoPixel
-新光像素
+NeoPixel
 
 set NeoPixels _ _ _ _ _ _ _ _ _ _
-设置 新光像素 _ _ _ _ _ _ _ _ _ _
+设置 NeoPixels _ _ _ _ _ _ _ _ _ _
 
 clear NeoPixels
-关闭新光像素
+关闭 NeoPixels
 
 set NeoPixel _ color _
-设置新光像素 _ 颜色 _
+设置 NeoPixel _ 颜色 _
 
 set all NeoPixels color _
-设置所有新光像素的颜色为 _
+设置所有 NeoPixels 的颜色为 _
 
 rotate NeoPixels by _
-轮转新光像素 间距 _
+轮转 NeoPixel 间距 _
 
 color r _ g _ b _ (0-31)
 颜色 R _ G _ B _ (0-31)
@@ -429,7 +429,7 @@ random color
 随机颜色
 
 attach _ LED NeoPixel strip to pin _
-将 _ 个LED的新光像素灯带 连接至引脚 _
+将 _ 个 LED NeoPixel 灯带 连接至引脚 _
 
 has white _
 具有白光 _
@@ -444,7 +444,7 @@ PIR at pin _ detected movement
 # Citilab ED1 board libraries
 
 ED1 Stepper Motor
-ED1步进电机
+ED1 步进电机
 
 move motor _ _ steps _
 马达运动 _ _ 步 _
@@ -513,7 +513,7 @@ Hummingbird _ _
 Hummingbird _ _
 
 Hummingbird Battery (mV)
-Hummingbird电池 (mV)
+Hummingbird 电池 (mV)
 
 Light
 亮度
@@ -531,22 +531,22 @@ Other
 其他
 
 Finch Beak Red _ Green _ Blue _
-Finch喙部 红 _ 绿 _ 蓝 _
+Finch 喙部 红 _ 绿 _ 蓝 _
 
 Finch Tail _ Red _ Green _ Blue _
-Finch尾部 红 _ 绿 _ 蓝 _
+Finch 尾部 红 _ 绿 _ 蓝 _
 
 Finch Move _ _ cm at _ %
-Finch移动 _ _ 厘米 位于 _ %
+Finch 移动 _ _ 厘米 位于 _ %
 
 Finch Turn _ _ ° at _ %
-Finch旋转 _ _ ° 位于 _ %
+Finch 旋转 _ _ ° 位于 _ %
 
 Finch Wheels L _ % R _ %
-Finch轮子 左 _ % 右 _ %
+Finch 轮子 左 _ % 右 _ %
 
 Finch Stop
-停止Finch
+停止 Finch
 
 Finch Distance (cm)
 Finch 距离 (厘米)
@@ -558,16 +558,16 @@ Finch _ Line
 Finch _ 画线
 
 Finch Reset Encoders
-Finch重置编码器
+Finch 重置编码器
 
 Finch _ Encoder
 Finch _ 编码器
 
 Finch Accelerometer _
-Finch加速度 _
+Finch 加速度 _
 
 Finch Battery
-Finch电池量
+Finch 电池量
 
 All
 全部
@@ -934,25 +934,25 @@ set DotStar brightness _
 # BME280 environmental sensor
 
 bme280 connected
-bme280已连接
+bme280 已连接
 
 bmp280 connected
-bmp280已连接
+bmp280 已连接
 
 bmx280 temperature
-bmx280温度
+bmx280 温度
 
 bmx280 pressure
-bmx280压力
+bmx280 压力
 
 bme280 humidity
-bme280湿度
+bme280 湿度
 
 ####
 # TCS34725 color sensor
 
 TCS34725 connected
-TCS34725已连接
+TCS34725 已连接
 
 TCS34725 rgb
 TCS34725 RGB
@@ -985,7 +985,7 @@ RFID _ = _
 RFID _ = _
 
 get PN532 firmware version
-PN532固件版本
+PN532 固件版本
 
 ####
 # HTTP libraries
@@ -994,16 +994,16 @@ HTTP client
 HTTP客户端
 
 _ data _ to http܃// _
-_ 数据 _ 至 http// _
+_ 数据 _ 至 http܃// _
 
 HTTP server
-HTTP服务器
+HTTP 服务器
 
 start HTTP server
-启动HTTP服务器
+启动 HTTP 服务器
 
 HTTP server request
-HTTP服务器请求
+HTTP 服务器请求
 
 respond _ to HTTP request
 回应 _ 至HTTP请求
@@ -1015,13 +1015,13 @@ and headers _
 and headers _
 
 body of request _
-body of request _
+请求体 _
 
 path of request _
-path of request _
+请求路径 _
 
 method of request _
-method of request _
+请求方法 _
 
 ####
 # Web Things library
@@ -1030,10 +1030,10 @@ Web Thing
 Web Thing
 
 set thing name to _
-设置Thing的名字为 _
+设置 Thing 的名字为 _
 
 set thing capability to _
-设置thing的能力为 _
+设置 thing 的能力为 _
 
 set boolean property _ title _ @Type _
 设置逻辑属性 _ 名字 _ @类型 _
@@ -1054,13 +1054,13 @@ register event _ type _
 注册事件 _ 类型 _
 
 start WebThing server
-启动WebThing服务器
+启动 WebThing 服务器
 
 trigger event _
 触发事件 _
 
 thing description JSON
-Thing的JSON描述
+Thing 的 JSON 描述
 
 properties JSON
 属性 JSON
@@ -1084,25 +1084,25 @@ Open
 打开
 
 Open from board
---MISSING--
+从主板上打开
 
 Information
---MISSING--
+信息
 
 Plug in the board.
---MISSING--
+连接主板
 
 Reading project from board...
---MISSING--
+从主板读取项目...
 
 Loading project...
---MISSING--
+加载项目
 
 Found a newer version of
---MISSING--
+发现新版本
 
 Do you want me to update the one in the project?
---MISSING--
+你希望在项目中进行升级吗？
 
 Save
 保存
@@ -1126,10 +1126,10 @@ Port name?
 端口名?
 
 Board type:
-控制板类型:
+主板类型:
 
 Select board:
-选择控制板:
+选择主板:
 
 Could not read:
 无法读取:
@@ -1153,25 +1153,25 @@ Script is too large to send to board.
 脚本太大，无法发送至主板.
 
 Use "Connect" button to connect to a MicroBlocks device.
-使用"连接"按钮连接至一个MicroBlocks设备.
+使用"连接"按钮连接至一个 MicroBlocks 设备.
 
 No boards found; is your board plugged in?
-无法找到控制板，您的控制板已经连接好了么?
+无法找到主板，您的主板已经连接好了么?
 
 For AdaFruit boards, double-click reset button and try again.
-如果是AdaFruit控制板，双击reset键并再次尝试.
+如果是AdaFruit主板，双击reset键并再次尝试.
 
 The board is not responding.
-控制板未响应.
+主板未响应.
 
 Try to Install MicroBlocks on the board?
-将MicroBlocks安装到这块控制板上么?
+将MicroBlocks安装到这块主板上么?
 
 The MicroBlocks in your board is not current
-控制板中的MicroBlocks并非最新版本
+主板中的 MicroBlocks 不是最新版本
 
 Try to update MicroBlocks on the board?
-将MicroBlocks上传至控制板么?
+是否升级主板上的 MicroBlocks?
 
 Stop
 停止
@@ -1180,7 +1180,7 @@ Start
 开始
 
 Quit MicroBlocks?
-退出MicroBlocks?
+退出 MicroBlocks?
 
 Discard current project?
 放弃当前项目?
@@ -1231,28 +1231,28 @@ stop WebThing server
 停止WebThing服务器
 
 HTTP Server
---MISSING--
+HTTP 服务器
 
 MicroBlocks HTTP Server listening on port 6473
-MicroBlocks HTTP服务器正在监听端口 6473
+MicroBlocks HTTP 服务器正在监听端口 6473
 
 disable autoloading board libraries
-禁止自动加载和控制板相关的积木库
+禁止自动加载和主板相关的积木库
 
 enable autoloading board libraries
-允许自动加载和控制板相关的积木库
+允许自动加载和主板相关的积木库
 
 enable PlugShare when project empty
---MISSING--
+项目为空时允许 PlugShare
 
 disable PlugShare when project empty
---MISSING--
+项目为空时禁止 PlugShare
 
 erase flash and update firmware on ESP board
-擦除信息并重新分区ESP
+擦除信息并升级 ESP 固件
 
 Use board type
-使用控制板类信息
+使用主板类型信息
 
 Wiping board...
 擦除主板上的信息...
@@ -1264,13 +1264,13 @@ Done!
 完成!
 
 download and install latest VM
-下载并且安装最新版的虚拟机
+下载并且安装最新版的 VM
 
 Select board type:
 选择主板类型:
 
 Uploading MicroBlocks to board...
-将MicroBlocks上传至主板...
+将 MicroBlocks 上传至主板...
 
 copy data to clipboard
 将数据复制至剪贴板
@@ -1303,7 +1303,7 @@ expand
 扩展
 
 collapse
-collapse
+折叠
 
 rename...
 重命名...
@@ -1408,7 +1408,7 @@ Custom...
 定制...
 
 Obsolete
-obsolet
+废弃
 
 OK
 确定
@@ -1497,7 +1497,7 @@ built-in library
 内置积木库
 
 Dependency path, name or URL?
-依赖的路径,名字或URL?
+依赖的路径,名字或 URL?
 
 Tag name?
 标签名称?
