@@ -65,15 +65,22 @@ method contents InputSlot {
 }
 
 method setContents InputSlot data {
-  if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
+  if (and (notNil menuSelector) ('static' == (editRule text)) (not (isVarSlot this)) (isClass data 'String')) {
     setText text (localized (toString data))
   } else {
     setText text (toString data)
   }
-  if (and (isClass data 'String') ('' != data) ('editable' != (editRule text)) (representsANumber data)) {
-    switchType this 'editable' // old value was a string; covert to string-only
+  if isAuto {
+    scale = (blockScale)
+    isNumber = (and (representsANumber (text text)) (notNil (toNumber (text text) nil)))
+    if isNumber {
+      data = (toNumber data)
+      setBorders text (scale * 5) 0
+    } else {
+      setBorders text (scale * 3) scale
+    }
+    fixLayout this
   }
-  if isAuto { adjustAutoSlotBorders this }
   contents = data
   raise morph 'inputChanged' this
 }
@@ -83,17 +90,6 @@ method isVarSlot InputSlot {
   owner = (handler (owner morph))
   if (or (not (isClass owner 'Block')) (isNil (expression owner))) { return false }
   return (isOneOf (primName (expression owner)) '=' '+=')
-}
-
-method adjustAutoSlotBorders InputSlot {
-  scale = (blockScale)
-  isNumber = (and (representsANumber (text text)) (notNil (toNumber (text text) nil)))
-  if isNumber {
-    setBorders text (scale * 5) 0
-  } else {
-    setBorders text (scale * 3) scale
-  }
-  fixLayout this
 }
 
 method fixLayout InputSlot {
