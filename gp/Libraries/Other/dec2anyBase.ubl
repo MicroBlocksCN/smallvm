@@ -1,0 +1,42 @@
+module dec2anyBase Operators
+author 'Turgut Guneysu'
+version 1 1 
+choices BaseMenu '2' '8' '16' '32' 
+description 'Converts DEC numbers into any Base system.
+eg: BIN (base=2) or OCT (base=8) or HEX (base=16)'
+
+	spec 'r' 'dec2any Base' 'dec2any Base _ Dec# _ PadLen _ Rev _' 'str.BaseMenu auto auto bool' '16' '255' '4' false
+
+to 'dec2any Base' base decNo padLength reversed {
+  local '_convTable' '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  local '_answer' ('[data:makeList]')
+  local '_output' ''
+  _convTable = ('[data:copyFromTo]' _convTable 1 (base - 1))
+  repeatUntil (decNo < base) {
+    '[data:addLast]' (decNo - ((decNo / base) * base)) _answer
+    decNo = (decNo / base)
+  }
+  '[data:addLast]' decNo _answer
+  repeatUntil ((size _answer) == 0) {
+    if ((at 'last' _answer) == 0) {
+      _output = ('[data:join]' _output '0')
+    } else {
+      _output = ('[data:join]' _output (at (at 'last' _answer) _convTable))
+    }
+    '[data:delete]' 'last' _answer
+  }
+  if (and (padLength > 0) ((size _output) < padLength)) {
+    _output = ('[data:join]' ('[data:copyFromTo]' '000000000000' 1 (padLength - (size _output))) _output)
+  }
+  if reversed {
+    _answer = ('[data:split]' _output '')
+    _output = ('[data:makeList]')
+    repeat (size _answer) {
+      '[data:addLast]' (at 'last' _answer) _output
+      '[data:delete]' 'last' _answer
+    }
+    _output = ('[data:join]' '' ('[data:joinStrings]' _output))
+  }
+  return _output
+}
+

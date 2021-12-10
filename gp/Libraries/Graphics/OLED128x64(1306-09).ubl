@@ -1,6 +1,6 @@
-module '128x64OLED(1306-09)' Output
+module 'OLED128x64(1306-09)' Output
 author 'Turgut Guneysu'
-version 2 3.2 
+version 2 3.5 
 depends Strings miscPrims 
 choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices TargetMenu Display GDBuffer 
@@ -10,22 +10,12 @@ choices ScrollMenu1 Right Left
 choices ScrollMenu2 'Vert-Right' 'Vert-Left' 
 choices LineMenu '│' '┤' '╡' '╢' '╖' '╕' '╣' '║' '╗' '╝' '╜' '╛' '┐' '└' '┴' '┬' '├' '─' '┼' '╞' '╟' '╚' '╔' '╩' '╦' '╠' '═' '╬' '╧' '╨' '╤' '╥' '╙' '╘' '╒' '╓' '╫' '╪' '┘' '┌' 
 choices ModeMenu Horizontal Vertical 
-description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI. Changes:
-- OLEDFlip added.
-- OLEDClear mod
-- OLEDContrast def = 2
-- Scrolls have dropdowns
-- _initDispHW mod for pin location
-- _processString mod for hex(13)
-- LineDraw set added
-- images display within Col limits
-- fixed redraw w pixel off.
-- rectangle corners are corrected
-- fix rectangle bug
-- speedy SPI, Clear
-- OLEDReveal w delay
+description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI. 
+Changes:
+- fix pixel off logic
+- name change
 '
-variables OLEDReady OLEDi2cAddr _GDBufReady _GDBuffer _INITseq _begCol _begRow _cHexTBL _cLINEUniTBL _cList _cStarts _cTABLE _clearSprite _col _comMode _dList _dcPin _delayGDUpd _displayType _endCol _endRow _hexTbl _imgBMPTbl _lineHexTBL _lineTABLE _resetPin _row char invFlag timer 
+variables OLEDReady OLEDi2cAddr _GDBufReady _GDBuffer _INITseq _begCol _begRow _cHexTBL _cLINEUniTBL _cList _comma _cStarts _cTABLE _clearSprite _col _comMode _dList _dcPin _delayGDUpd _displayType _endCol _endRow _hexTbl _imgBMPTbl _lineHexTBL _lineTABLE _resetPin _row char invFlag timer _cmdPrefix 
 
 	spec ' ' 'OLEDInit_I2C' 'OLEDInit_I2C _ I2CAddr(hex) _ ResetPin# _' 'str.DispTypeMenu auto auto' 'OLED_0.96in' '3C' 0
 	spec ' ' 'OLEDInit_SPI' 'OLEDInit_SPI _ D/CPin# _ ResetPin# _' 'str.DispTypeMenu auto auto' 'OLED_2.42in' 16 8
@@ -38,7 +28,7 @@ variables OLEDReady OLEDi2cAddr _GDBufReady _GDBuffer _INITseq _begCol _begRow _
 	spec ' ' 'OLEDDispString' 'OLEDDispString _ InvYN _ : Row (1-8) _ Col (1-16) _' 'auto bool auto auto' 'Hello!' false 1 1
 	spec ' ' 'OLEDDrawCircle' 'OLEDDrawCircle Cx (0-127) _ Cy (0-63) _ R _ Pix On _' 'auto auto auto bool' 64 32 '10' true
 	spec ' ' 'OLEDDrawLine' 'OLEDDrawLine x0 (0-127) _ y0 (0-63) _ x1 _ y1 _ pixOn _' 'auto auto auto auto bool' 0 0 127 63 true
-	spec ' ' 'OLEDDrawPic' 'OLEDDrawPic ImgList _ To _ : Col (0-127) _' 'auto str.TargetMenu num' '' 'Display' 0
+	spec ' ' 'OLEDDrawPic' 'OLEDDrawPic ImgList _ To _ : Row (0-7) _ Col (0-127) _' 'auto str.TargetMenu auto auto' '' 'Display' 0 0
 	spec ' ' 'OLEDDrawRect' 'OLEDDrawRect TLx (0-127) _ TLy (0-63) _ BRx _ BRy _ Pix On _ Rounded _ R(3-15) _' 'auto auto auto auto bool bool auto' 0 0 127 63 true false 3
 	spec ' ' 'OLEDDrawSprite' 'OLEDDrawSprite _ Row (1-8) _ Col (1-128) _' 'auto auto auto' 0 1 1
 	spec ' ' 'OLEDDrawString' 'OLEDDrawString _ Row (1-8) _ Col (1-128) _ InvYN _' 'auto auto auto bool' 'Hello!' 1 1 false
@@ -122,11 +112,10 @@ This will allow one to display text at any column position by aligning it vertic
     _endCol = ((hexToInt (at endC _cStarts)) + 7)
     _begRow = (_row - 1)
     _endRow = 7
-    local 'comma' ('[data:unicodeString]' 44)
     comment 'ROW = 22, COL=21
 All values are in HEX'
     OLEDMode 'Horizontal'
-    '_sendCmd' ('[data:join]' '22' comma _begRow comma _endRow comma '21' comma ('_dec2hex' _begCol) comma ('_dec2hex' _endCol))
+    '_sendCmd' ('[data:join]' '22' _comma _begRow _comma _endRow _comma '21' _comma ('_dec2hex' _begCol) _comma ('_dec2hex' _endCol))
   } else {
     sayIt 'Invalid COLUMN value.'
     stopTask
@@ -166,11 +155,8 @@ and also by OLEDColMode block.'
 
 to OLEDDispString string invFlag row col {
   comment 'Displays strings of any length directly to the display.
-
 Strings may include \n newline characters to advance to the next line on the display.
-
 If no row or col is specified, consecutive use of this block will display the string at
-
 the location after the previous display operation.'
   '_initCheck'
   if ((size string) == 0) {
@@ -319,36 +305,42 @@ plotLine(int x0, int y0, int x1, int y1)
   }
 }
 
-to OLEDDrawPic imgList target colStart {
+to OLEDDrawPic imgList target rowStart colStart {
   comment 'Will display the image stored in imgList either directly to 
-the display OR write it to the GDBuffer. Image can be positioned at any col#.
+the display OR write it to the GDBuffer. 
+Image can be positioned at any row#,col#.
 Any COL-Mode predefined has priority over col#.
 Image Format:
-Each display column is 8 comma delimited hex numbers, terminated by a 
-0x10 newline character. For each hex number, the LSB is at the top, and
+
+Uses the new _imgBMPTbl format.
+Each display column is 1- 8 comma delimited hex numbers, terminated by a / character. 
+For each hex number, the LSB is at the top, and
 MSB is at the bottom.
-you can look at advanced blocks T1-T4 to get an idea.
+You can look at advanced blocks T1-T4 to get an idea.
 
 You can also experiment with the OLEDMakeSprite block in a smaller 5x5 image.'
   '_initCheck'
   if ((pushArgCount) > 2) {
     comment 'If ColMode is active, colStart has to be within.
-
 Then _begCol = colStart.'
     if (not (and (colStart >= _begCol) (colStart <= _endCol))) {
       sayIt 'Image display col# invalid.' ('[data:unicodeString]' 10) ('[data:join]' _begCol ' =< ' colStart ' =< ' _endCol)
       stopTask
+      if (not (and (rowStart >= _begRow) (rowStart <= _endRow))) {
+        sayIt 'Image display row# invalid.' ('[data:unicodeString]' 10) ('[data:join]' _begRow ' =< ' rowStart ' =< ' _endRow)
+        stopTask
+      }
     }
     _begCol = colStart
+    _begRow = rowStart
   }
   if (target == 'Display') {
     comment '22:ROW   21:COL
-
 All values are in HEX.
+Adjusts ColMode to start at colStart.
 
-Adjusts ColMode to start at colStart'
-    local 'comma' ('[data:unicodeString]' 44)
-    '_sendCmd' ('[data:join]' '22' comma '0' comma '7' comma '21' comma ('_dec2hex' _begCol) comma ('_dec2hex' _endCol))
+Assumes rowStart-7 page layout.'
+    '_sendCmd' ('[data:join]' '22' _comma _begRow _comma _endRow _comma '21' _comma ('_dec2hex' _begCol) _comma ('_dec2hex' _endCol))
     '_toDisplay' imgList
   } else {
     '_toGDBuffer' imgList
@@ -357,7 +349,6 @@ Adjusts ColMode to start at colStart'
 
 to OLEDDrawRect TLx TLy BRx BRy pixOn rounded cornerRad {
   comment 'Draw Rectangle with optional rounded corners with radius R.
-
 Does not check for reversed rectangle coordinates for round corners.'
   '_initCheck'
   _delayGDUpd = (booleanConstant true)
@@ -565,7 +556,8 @@ if X <= num <= Y'
     if pixOn {
       local 'byteNewBMP' (bytePrevBMP | (1 << pagePixel#))
     } else {
-      local 'byteNewBMP' (bytePrevBMP ^ (1 << pagePixel#))
+      comment 'Turn off n th bit'
+      local 'byteNewBMP' (bytePrevBMP & ('~' (1 << pagePixel#)))
     }
     atPut GDIndex _GDBuffer byteNewBMP
   }
@@ -722,7 +714,6 @@ For the OLED1309 displays, it is possible to also restrict the columns as specif
 1309: can restrict scrolling within selected columns'
   local 'sR' '26'
   local 'sL' '27'
-  local 'comma' ('[data:unicodeString]' 44)
   if (dir == 'Right') {
     dir = sR
   } (dir == 'Left') {
@@ -741,10 +732,10 @@ For the OLED1309 displays, it is possible to also restrict the columns as specif
   begC = ('_dec2hex' (begC - 1))
   endC = ('_dec2hex' (endC - 1))
   if (_displayType == 6) {
-    local 'cmd1306' ('[data:join]' dir comma '00' comma begR comma '07' comma endR comma '00' comma 'FF' comma '2F')
+    local 'cmd1306' ('[data:join]' dir _comma '00' _comma begR _comma '07' _comma endR _comma '00' _comma 'FF' _comma '2F')
     '_sendCmd' cmd1306
   } (_displayType == 9) {
-    local 'cmd1309' ('[data:join]' dir comma '00' comma begR comma '07' comma endR comma '00' comma begC comma endC comma '2F')
+    local 'cmd1309' ('[data:join]' dir _comma '00' _comma begR _comma '07' _comma endR _comma '00' _comma begC _comma endC _comma '2F')
     '_sendCmd' cmd1309
   }
 }
@@ -761,7 +752,6 @@ All values are in HEX.
   }
   local 'VR' '29'
   local 'VL' '2A'
-  local 'comma' ('[data:unicodeString]' 44)
   if (dir == 'Vert-Right') {
     dir = VR
   } (dir == 'Vert-Left') {
@@ -780,7 +770,7 @@ All values are in HEX.
   vOffset = ('_dec2hex' vOffset)
   begC = ('_dec2hex' (begC - 1))
   endC = ('_dec2hex' (endC - 1))
-  local 'cmd1309' ('[data:join]' dir comma cOffset comma begR comma '07' comma endR comma vOffset comma begC comma endC comma '2F')
+  local 'cmd1309' ('[data:join]' dir _comma cOffset _comma begR _comma '07' _comma endR _comma vOffset _comma begC _comma endC _comma '2F')
   '_sendCmd' cmd1309
 }
 
@@ -792,18 +782,14 @@ to '_OLEDStopScroll' {
 
 to '_SPIWriteCmd' {
   comment 'In SPI mode, we send either a write command
-
 or write data control code. Then follow it with
-
 the appropriate command/data bundle.'
   digitalWriteOp _dcPin false
 }
 
 to '_SPIWriteData' {
   comment 'In SPI mode, we send either a write command
-
 or write data control code. Then follow it with
-
 the appropriate command/data bundle.'
   digitalWriteOp _dcPin true
 }
@@ -961,19 +947,10 @@ into the Global _lineHexTBL.'
 
 to '_cBMP' char invFlag {
   comment 'Returns DEC char bitmap from _cHexTbl and
-
 optionally converts it to inverse.
-
 For Line segments, _cLineTBL is used.
-
-
-
 A: 00,7c,12,11,12,7c,00
-
-
-
 dec:  0,124,18,17,17,124,0
-
 inv:    255,131,237,238,238,131,255'
   local 'uCode' ('[data:unicodeAt]' 1 char)
   if (uCode <= 128) {
@@ -1074,12 +1051,12 @@ to '_dec2hex' num {
 }
 
 to '_dispByte' value row col {
-  comment 'Copies a byte from _GDBuffer to Display'
-  local 'comma' ('[data:unicodeString]' 44)
-  '_sendCmd' ('[data:join]' '22' comma ('_dec2hex' row) comma ('_dec2hex' row) comma '21' comma ('_dec2hex' col) comma ('_dec2hex' col))
-  local 'cmdPrefix' (hexToInt 'C0')
+  comment 'Copies a byte from _GDBuffer to Display
+
+Values are DEC.'
+  '_sendCmd' ('[data:join]' '22' _comma ('_dec2hex' row) _comma ('_dec2hex' row) _comma '21' _comma ('_dec2hex' col) _comma ('_dec2hex' col))
   if (_comMode == 'i2c') {
-    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix value)
+    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' _cmdPrefix value)
   } else {
     '_SPIWriteData'
     spiSend value
@@ -1098,7 +1075,6 @@ to '_hexList2dec' list {
 
 to '_initChars' {
   comment 'Creates the character set used in the Library (96 characters)
-
 used JOIN  for SPACE (uni-32) character so it won''t be deleted by mistake.'
   _cTABLE = ('[data:join]' ('[data:unicodeString]' 32) '!"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~.')
   '_buildHexTBL'
@@ -1130,7 +1106,7 @@ DA 12 - COM pin hw config 02:double-high 12:normal bits
 81 7F - Set contrast 00-FF (00:dimmest, FF:brightest)
 A4    - A4:display shows GDRAM, A5:display all ON pixels
 A6    - A6:Normal video, A7:Inverse video
-D5 F0 - Set display clock HB:OSC freq / HB:divide ratio (00-FF)
+D5 F0 - Set display clock HB:OSC freq / LB:divide ratio (00-FF)
 D9 22 - Set pre-charge period HB:Phase2 / LB:Phase1 (1-15 DCLK)
 DB 20 - Set Vcomh deselect level 20:1306(~0.77xVcc), 34:1309(~0.78xVcc)
 8D 14 - Charge Pump Setting 10:disable CP, 14:enable CP
@@ -1139,9 +1115,9 @@ AF    - Display ON/OFF AE:off (sleep mode), AF:on'
     '_OLEDReset' _resetPin
   }
   if (9 == _displayType) {
-    local 'initCmd' 'A8,3F,D3,00,40,A1,C8,DA,12,81,7F,A4,A6,D5,F0,D9,22,DB,34,8D,14,AF'
+    local 'initCmd' 'A8,3F,D3,00,40,A1,C8,DA,12,81,7F,A4,A6,D5,70,D9,22,DB,34,8D,14,AF'
   } else {
-    local 'initCmd' 'A8,3F,D3,00,40,A1,C8,DA,12,81,7F,A4,A6,D5,F0,D9,22,DB,20,8D,14,AF'
+    local 'initCmd' 'A8,3F,D3,00,40,A1,C8,DA,12,81,7F,A4,A6,D5,70,D9,22,DB,20,8D,14,AF'
   }
   '_sendCmd' initCmd
 }
@@ -1166,9 +1142,11 @@ Otherwise, extra lines are added in between and it gets messed up.
 eg: A: 00,7C,12,11,11,12,7C,00\n
 
 Max i2c IO is 64 bytes: buffered writes need to be max that size - 16 x 64'
+  _comma = ('[data:unicodeString]' 44)
   comment 'Col starts are in HEX'
   _cStarts = '0,8,10,18,20,28,30,38,40,48,50,58,60,68,70,78'
-  _cStarts = ('[data:split]' _cStarts ',')
+  _cStarts = ('[data:split]' _cStarts _comma)
+  _cmdPrefix = (hexToInt 'C0')
   _hexTbl = ('[data:makeList]' '0' '1' '2' '3' '4' '5' '6' '7' '8' '9' 'A' 'B' 'C' 'D' 'E' 'F')
   _GDBufReady = (booleanConstant false)
   _col = 1
@@ -1178,13 +1156,15 @@ Max i2c IO is 64 bytes: buffered writes need to be max that size - 16 x 64'
   _endRow = 7
   _endCol = 127
   _delayGDUpd = (booleanConstant false)
-  _clearSprite = (newList 5)
   '_initChars'
   '_initLines'
   '_initGDBuffer'
   '_initDisplayHW'
   OLEDReady = (booleanConstant true)
   OLEDDisplay 'On'
+  setUserLED true
+  waitMillis 1000
+  setUserLED false
 }
 
 to '_initLines' {
@@ -1202,10 +1182,9 @@ to '_proc10' {
 string display block.'
   _begRow = (_row - 1)
   _endRow = 7
-  local 'comma' ('[data:unicodeString]' 44)
   comment 'ROW = 22, COL=21
 All values are in HEX'
-  '_sendCmd' ('[data:join]' '22' comma (_begRow + 1) comma _endRow comma '21' comma ('_dec2hex' _begCol) comma ('_dec2hex' _endCol))
+  '_sendCmd' ('[data:join]' '22' _comma (_begRow + 1) _comma _endRow _comma '21' _comma ('_dec2hex' _begCol) _comma ('_dec2hex' _endCol))
   _col = ('[data:find]' ('_dec2hex' _begCol) _cStarts)
   _row += 1
   if (_row > 8) {
@@ -1215,9 +1194,7 @@ All values are in HEX'
 
 to '_processString' string invFlag {
   comment 'Performs the actual processing of the string display function.
-
 Optionally, sets inverse video for the characters.'
-  local 'cmdPrefix' (hexToInt 'C0')
   for char string {
     if (('[data:unicodeAt]' 1 char) == 13) {
       noop
@@ -1227,7 +1204,7 @@ Optionally, sets inverse video for the characters.'
       _dList = ('_cBMP' char invFlag)
       if ('i2c' == _comMode) {
         for bitmap _dList {
-          '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix bitmap)
+          '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' _cmdPrefix bitmap)
         }
       } else {
         for bitmap _dList {
@@ -1254,7 +1231,7 @@ to '_selLine' lineSeg {
 to '_sendCmd' cmdString {
   comment 'Input is a comma sep. STRING.
 MAKE SURE ALL  INPUT PARAMETERS ARE HEX'
-  local '_cList' ('[data:split]' cmdString ('[data:unicodeString]' 44))
+  local '_cList' ('[data:split]' cmdString _comma)
   local 'cmdPrefix' (hexToInt '80')
   if ('i2c' == _comMode) {
     for cmd _cList {
@@ -1269,30 +1246,54 @@ MAKE SURE ALL  INPUT PARAMETERS ARE HEX'
 }
 
 to '_toDisplay' imgList {
+  comment 'Uses the new _imgBMPTbl format.
+
+Can print smaller than display images.'
   OLEDMode 'Vertical'
-  local 'imgColCnt' ((size imgList) / 8)
+  local 'pageSize' (size ('[data:split]' (at 1 imgList) _comma))
+  local 'imgColCnt' (size imgList)
+  local 'imgRowCnt' pageSize
   comment 'If display window is < image width
 
   crop image width to window size.'
   if (((_endCol - _begCol) + 1) < imgColCnt) {
     imgColCnt = ((_endCol - _begCol) + 1)
   }
-  local 'cmdPrefix' (hexToInt 'C0')
-  local 'byteCnt' 0
-  for bitmap imgList {
-    if (_comMode == 'i2c') {
-      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' cmdPrefix (hexToInt bitmap))
-    } else {
-      '_SPIWriteData'
-      spiSend (hexToInt bitmap)
-    }
-    byteCnt += 1
-    if (byteCnt > (imgColCnt * 8)) {
-      OLEDCursorReset
-      comment 'Need RETURN here to prevent
+  comment 'If display window is < image height
 
- displays in LOOPs from failing.'
-      return 0
+  crop image height to window size.'
+  if (((_endRow - _begRow) + 1) < imgRowCnt) {
+    imgRowCnt = ((_endRow - _begRow) + 1)
+  }
+  local 'byteCnt' 0
+  if (pageSize < 8) {
+    comment 'Adjusting page size to picture height, so we can display 
+
+continuously. No worries about proper wrapping.'
+    _endRow = (imgRowCnt - 1)
+    local 'dispCmd' ('[data:join]' '22' _comma _begRow _comma _endRow)
+    '_sendCmd' dispCmd
+  }
+  for column imgList {
+    local 'rowCnt' _begRow
+    for byte@Page ('[data:split]' column _comma) {
+      if (rowCnt < (_endRow + 1)) {
+        if (_comMode == 'i2c') {
+          '[sensors:i2cWrite]' OLEDi2cAddr ('[data:makeList]' _cmdPrefix (hexToInt byte@Page))
+        } else {
+          '_SPIWriteData'
+          spiSend (hexToInt byte@Page)
+        }
+        byteCnt += 1
+        rowCnt += 1
+        if (byteCnt > (imgColCnt * imgRowCnt)) {
+          OLEDCursorReset
+          comment 'Need RETURN here to prevent
+
+displays in LOOPs from failing.'
+          return 0
+        }
+      }
     }
   }
 }
@@ -1300,24 +1301,48 @@ to '_toDisplay' imgList {
 to '_toGDBuffer' imgList {
   comment 'Transform vertical img data to horizontal display mode
 
-GDbuffer(n) = image( (page-1) + ( ( byte# * 8) - 7 ) '
-  local 'imgColCnt' ((size imgList) / 8)
+Uses the new _imgBMPTbl format.
+
+Incr GDidx by 128 and GDColStart by 1
+
+Check for ColStartOverflow: exit if true '
+  local 'imgColCnt' (size imgList)
+  comment 'If display window is < image width
+
+  crop image width to window size.'
   if (((_endCol - _begCol) + 1) < imgColCnt) {
     imgColCnt = ((_endCol - _begCol) + 1)
   }
-  local 'GDidx' (1 + _begCol)
-  for page 8 {
-    comment 'For @Page, 
+  comment 'If display window is < image height
 
-  Prints all columns across.'
-    for col# imgColCnt {
-      atPut GDidx _GDBuffer (hexToInt (at ((page - 1) + ((col# * 8) - 7)) imgList))
-      GDidx += 1
-    }
-    GDidx += (128 - imgColCnt)
+  crop image height to window size.'
+  if (((_endRow - _begRow) + 1) < imgRowCnt) {
+    imgRowCnt = ((_endRow - _begRow) + 1)
   }
-  OLEDColMode 1 16
-  OLEDShowGDBuffer
+  local 'GDColStart#' (1 + _begCol)
+  local 'GDidx' (GDColStart# + (_begRow * 128))
+  local 'colCount' 1
+  for column imgList {
+    local 'rowCnt' _begRow
+    for byte@Page ('[data:split]' column _comma) {
+      if (GDidx <= 1024) {
+        atPut GDidx _GDBuffer (hexToInt byte@Page)
+        GDidx += 128
+      }
+    }
+    colCount += 1
+    rowCnt += 1
+    GDColStart# += 1
+    GDidx = (GDColStart# + (_begRow * 128))
+    if (colCount > imgColCnt) {
+      OLEDCursorReset
+      comment 'Need RETURN here to prevent
+
+displays in LOOPs from failing.'
+      return 0
+    }
+  }
+  OLEDCursorReset
 }
 
 to '_valicC' col {
@@ -1366,10 +1391,9 @@ No need to pass them on to subProcesses.'
     _endRow = 7
     _begCol = (hexToInt (at col _cStarts))
     _endCol = 127
-    local 'comma' ('[data:unicodeString]' 44)
     comment 'ROW = 22, COL=21
 All values are in HEX'
-    '_sendCmd' ('[data:join]' '22' comma _begRow comma _endRow comma '21' comma ('_dec2hex' _begCol) comma ('_dec2hex' _endCol))
+    '_sendCmd' ('[data:join]' '22' _comma _begRow _comma _endRow _comma '21' _comma ('_dec2hex' _begCol) _comma ('_dec2hex' _endCol))
   } else {
     sayIt 'Invalid ROW or COLUMN value.'
     stopTask

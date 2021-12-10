@@ -1,0 +1,294 @@
+module OLEDTurtle Output
+author 'Turgut Guneysu'
+version 1 1 
+depends 'OLED128x64(1306-09)' dec2anyBase 
+choices DegMenu '45' '90' '135' '180' '225' '270' '315' 
+choices DirMenu '→' '↘' '↓' '↙' '←' '↖' '↑' '↗' 
+choices SizeMenu small large 
+choices PenMenu up down 
+description 'Turtle Graphics based on the OLED Library.
+Will write text anywhere on screen.
+Degreee turns are restricted to 45degs.
+Changes: Text support
+         Small and Large Turtles
+         Direction bug fix
+'
+variables Tpen Tdir Tx Ty TShapes _TDirs _TSaveGDBuffInfo TpenPrev _GDIndex _dX _dY _bits _charBMPList_convTBL _TSize _TDisp 
+
+	spec ' ' 'TCircle' 'TCircle Radius _' 'auto' '10'
+	spec ' ' 'TClear' 'TClear'
+	spec ' ' 'TGo to x' 'TGo to x _ y _ : Dir(1-8) _' 'num num str.DirMenu' 0 0 '→'
+	spec ' ' 'THome' 'THome'
+	spec ' ' 'TInit' 'TInit _' 'str.SizeMenu' 'large'
+	spec ' ' 'TMove' 'TMove _' 'auto' '10'
+	spec ' ' 'TPenDOWN' 'TPenDOWN'
+	spec ' ' 'TPenUP' 'TPenUP'
+	spec ' ' 'TPoint in direction' 'TPoint in direction _' 'str.DirMenu' '→'
+	spec ' ' 'TText' 'TText _ X _ Y _' 'auto num num' '' 0 0
+	spec ' ' 'TTurn Deg' 'TTurn Deg _' 'str.DegMenu' '45'
+	spec 'r' 'WRU' 'WRU'
+	spec ' ' '_TDraw' '_TDraw X _ Y _ Dir _' 'num num num' 0 0 1
+	spec ' ' '_TRestoreGDBuff' '_TRestoreGDBuff'
+	spec ' ' '_TSaveGDBuff' '_TSaveGDBuff _ _' 'auto auto' '10' '10'
+	spec 'r' '_dir2xy' '_dir2xy _' 'auto' 1
+	spec 'r' '_num2TF' '_num2TF _' 'auto' 0
+
+to TCircle rad {
+  comment 'Go to center of circle x,y
+
+Then call this block with desired radius.'
+  if Tpen {
+    OLEDDrawCircle Tx Ty rad true
+  } else {
+    OLEDDrawCircle Tx Ty rad false
+  }
+}
+
+to TClear {
+  comment 'Clears the screen and initlalizes the turtle.'
+  OLEDClear
+  Tx = 64
+  Ty = 32
+  '_TSaveGDBuff' (Tx - 1) (Ty - 1)
+  TpenPrev = (booleanConstant false)
+  Tpen = (booleanConstant false)
+  Tdir = 1
+}
+
+to 'TGo to x' x y dir {
+  comment 'Places the turtle at x, y.
+Optionally sets direction of turtle.
+If PEN is down, a line will be drawn.'
+  if ((pushArgCount) > 2) {
+    Tdir = ('[data:find]' dir _TDirs)
+  }
+  comment 'ERASE Turtle by restoring GDBuff Info
+
+and mark its prev loc with prev Tpen'
+  '_TRestoreGDBuff'
+  if TpenPrev {
+    OLEDPixel Tx Ty true
+  }
+  if Tpen {
+    OLEDPixel x y true
+    '_TDraw' x y Tdir
+  } else {
+    '_TDraw' x y Tdir
+  }
+  Tx = x
+  Ty = y
+  TpenPrev = Tpen
+  if (not _delayGDUpd) {
+    OLEDShowGDBuffer
+  }
+}
+
+to THome {
+  comment 'Places turtle at the center of screen'
+  'TGo to x' 64 32 '→'
+}
+
+to TInit size {
+  comment 'Initializes all turtle controls.
+Turtle is either Small (3x3) or Large (5x5).
+TShapes is bitmaps of Turtles (LSB-MSB)
+ starting w -> in clockwise rotation, numbered 1-8.
+
+
+small: 0-7
+1:072 2:467 3;262 4:764 5:270 6:731 7:232 8:137
+
+large: 0-V
+1:00VE4 2:GOSUV 3;4CSCH 4:VUSOG 5:4EV00 6:VF731 7:46764 8:137FV'
+  _convTBL = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  if (size == 'small') {
+    TShapes = ('[data:makeList]' ('[data:join]' '0' '72') '467' '262' '764' '270' '731' '232' '137')
+    _TSize = 3
+    _TDisp = 1
+  } else {
+    TShapes = ('[data:makeList]' ('[data:join]' '00' 'VE4') 'GOSUV' '4CSC4' 'VUSOG' '4EV00' 'VF731' '46764' '137FV')
+    _TSize = 5
+    _TDisp = 2
+  }
+  _TDirs = '→↘↓↙←↖↑↗'
+  local 'idx' 1
+  for TCode TShapes {
+    local 'bmpList' ('[data:makeList]')
+    for i _TSize {
+      local 'num' 0
+      if ((at i TCode) != '0') {
+        num = ('[data:find]' (at i TCode) _convTBL)
+      }
+      '[data:addLast]' ('dec2any Base' 2 num _TSize true) bmpList
+    }
+    atPut idx TShapes bmpList
+    idx += 1
+  }
+  TClear
+}
+
+to TMove steps {
+  comment 'moves turtle steps times in the direction set earlier.
+If PEN is down, a line will be drawn.'
+  local 'dx' (at 1 ('_dir2xy' Tdir))
+  local 'dy' (at 'last' ('_dir2xy' Tdir))
+  for i steps {
+    Tx += dx
+    Ty += dy
+    'TGo to x' Tx Ty
+  }
+}
+
+to TPenDOWN {
+  comment 'Sets PEN down, causing any movement to draw a line.'
+  Tpen = (booleanConstant true)
+}
+
+to TPenUP {
+  comment 'Sets PEN up.
+
+Drawing stops.'
+  Tpen = (booleanConstant false)
+}
+
+to 'TPoint in direction' dir {
+  comment 'Selects one of 8 cardinal directions.'
+  local '_Tdir' '→↘↓↙←↖↑↗'
+  Tdir = ('[data:find]' dir _Tdir)
+  'TGo to x' Tx Ty
+}
+
+to TText string x y {
+  _dX = 0
+  _dY = 0
+  _bits = ''
+  for char string {
+    TPenUP
+    'TGo to x' (x + _dX) (y + _dY) '↓'
+    _charBMPList = ('_cBMP' char false)
+    _idx = 0
+    repeat 8 {
+      _idx += 1
+      _bits = ('dec2any Base' 2 (at _idx _charBMPList) 8 true)
+      repeat 8 {
+        if ((at 1 _bits) == '1') {
+          _dY += 1
+          TPenDOWN
+          'TGo to x' (x + _dX) (y + _dY) '↓'
+          TPenUP
+        } else {
+          _dY += 1
+        }
+        _bits = ('[data:copyFromTo]' _bits 2)
+      }
+      _dY = 0
+      _dX += 1
+    }
+  }
+}
+
+to 'TTurn Deg' deg {
+  comment 'Calculate deltaDeg = deg / 45
+Add deltaDeg to Tdir to get new 
+direction.'
+  local 'dDeg' (deg / 45)
+  Tdir += dDeg
+  Tdir = (Tdir % 8)
+  if (Tdir == 0) {
+    Tdir = 8
+  }
+  'TGo to x' Tx Ty
+}
+
+to WRU {
+  local 'penStat' 'UP'
+  if Tpen {
+    penStat = 'DOWN'
+  }
+  return ('[data:join]' (at Tdir _TDirs) '@' ' x:' Tx ' y:' Ty ('[data:unicodeString]' 10) 'Pen:' penStat)
+}
+
+to '_TDraw' x y dir {
+  local 'col' (x - _TDisp)
+  local 'row' (y - _TDisp)
+  '_TSaveGDBuff' col row
+  for bits (at dir TShapes) {
+    for bit bits {
+      OLEDPixel col row ('_num2TF' bit)
+      row += 1
+    }
+    col += 1
+    row = (y - _TDisp)
+  }
+}
+
+to '_TRestoreGDBuff' {
+  for info _TSaveGDBuffInfo {
+    atPut (at 1 info) _GDBuffer (at 2 info)
+  }
+  _TSaveGDBuffInfo = ('[data:makeList]')
+}
+
+to '_TSaveGDBuff' x y {
+  comment 'Save GDBuff info of Turtle Location
+
+to be restored later.
+
+x,y is the Turtle matrix coordinates from _TDraw.'
+  local 'prevIdx' 0
+  _TSaveGDBuffInfo = ('[data:makeList]')
+  repeat _TSize {
+    repeat _TSize {
+      _GDIndex = ((x + ((y / 8) * 128)) + 1)
+      if (_GDIndex < 1) {
+        _GDIndex = 1
+      } (_GDIndex > 1024) {
+        _GDIndex = 1024
+      }
+      if (_GDIndex != prevIdx) {
+        '[data:addLast]' ('[data:makeList]' _GDIndex (at _GDIndex _GDBuffer)) _TSaveGDBuffInfo
+        prevIdx = _GDIndex
+      }
+      y += 1
+    }
+    x += 1
+    y += (-1 * _TSize)
+  }
+}
+
+to '_dir2xy' dir {
+  local 'x' 0
+  local 'y' 0
+  if (dir == 1) {
+    x = 1
+  } (dir == 2) {
+    x = 1
+    y = 1
+  } (dir == 3) {
+    y = 1
+  } (dir == 4) {
+    x = -1
+    y = 1
+  } (dir == 5) {
+    x = -1
+    y = 0
+  } (dir == 6) {
+    x = -1
+    y = -1
+  } (dir == 7) {
+    y = -1
+  } (dir == 8) {
+    x = 1
+    y = -1
+  }
+  return ('[data:makeList]' x y)
+}
+
+to '_num2TF' num {
+  if (or (num == 0) (num == '0')) {
+    return (booleanConstant false)
+  } else {
+    return (booleanConstant true)
+  }
+}
+
