@@ -12,6 +12,7 @@ defineClass MicroBlocksTipBar morph box title tipMorph tip contentDict iconsDict
 
 method title MicroBlocksTipBar { return title }
 method tip MicroBlocksTipBar { return tip }
+method helpEntry MicroBlocksTipBar primName { return (entryForOp help primName) }
 
 method initialize MicroBlocksTipBar {
 	page = (global 'page')
@@ -179,7 +180,7 @@ method contentsFor MicroBlocksTipBar anElement {
 		return (array '' '')
 	}
 	if (isOneOf key 'Reporter' 'Command' 'Hat') {
- 		helpEntry = (entryForOp help (primName (expression block)))
+ 		helpEntry = (helpEntry this (primName (expression block)))
  		if (notNil helpEntry) {
  			if (devMode) {
  				// just show the help string

@@ -262,6 +262,10 @@ method contextMenu Block {
     addItem menu 'extract block' 'extractBlock' 'pull out this block'
   }
   addLine menu
+  if (hasHelpEntryFor pe this) {
+    addItem menu 'help' (action 'openHelp' pe this 'show help for this block in a browser')
+    addLine menu
+  }
   addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this) 'copy these blocks to the clipboard')
   addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
   if (not (isPrototypeHat (topBlock this))) {

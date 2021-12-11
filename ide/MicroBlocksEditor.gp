@@ -911,6 +911,17 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
   return menu
 }
 
+method hasHelpEntryFor MicroBlocksEditor aBlock {
+  return (notNil (helpEntry tipBar (primName (expression aBlock))))
+}
+
+method openHelp MicroBlocksEditor aBlock {
+  entry = (helpEntry tipBar (primName (expression aBlock)))
+  if (isNil entry) { return }
+  url = (join 'https://wiki.microblocks.fun/reference_manual/' (at entry 2))
+  openURL url
+}
+
 // Pretty Printer test
 
 method ppTest MicroBlocksEditor {
