@@ -14,6 +14,30 @@ method init PNGReader {
   depth = 32
 }
 
+method getScriptText PNGReader d {
+  // Extract a tEXt chunk with the key 'script'. If there isn't one, return nil.
+  init this
+  data = (dataStream d true)
+  unknownChunks = (list)
+  sig = (toArray (nextData data 8))
+  if (sig != (array 137 80 78 71 13 10 26 10)) {
+	error 'Bad PNG file signature'
+  }
+  script = nil
+  while (not (atEnd data)) {
+    // Process only 'tEXt' chunks; skip others.
+    length = (nextUInt32 data)
+    chunkType = (nextString data 4)
+    chunk = (nextData data length)
+    chunkCrc = (nextUInt32 data)
+    crc = (crc chunk false (crc chunkType))
+    if (and (crc == chunkCrc) (chunkType == 'tEXt')) {
+      processTextChunk this chunk
+    }
+  }
+  return script
+}
+
 method readFrom PNGReader d {
   init this
   data = (dataStream d true)
@@ -34,11 +58,6 @@ method readFrom PNGReader d {
      processInterlaced this allDataChunk
   }
   return bitmap
-}
-
-method getScriptText PNGReader d {
-  readFrom this d
-  return script
 }
 
 method processNextChunk PNGReader {
