@@ -65,7 +65,7 @@ method contents InputSlot {
 }
 
 method setContents InputSlot data {
-  if (and (notNil menuSelector) ('static' == (editRule text)) (not (isVarSlot this)) (isClass data 'String')) {
+  if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
     setText text (localized (toString data))
   } else {
     setText text (toString data)

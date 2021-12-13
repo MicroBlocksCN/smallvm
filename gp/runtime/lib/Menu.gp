@@ -11,12 +11,13 @@ method addItemNonlocalized Menu itemLabel itemAction itemHint itemThumb {
   addItem this itemLabel itemAction itemHint itemThumb false
 }
 
-method addItem Menu itemLabel itemAction itemHint itemThumb {
+method addItem Menu itemLabel itemAction itemHint itemThumb localizeFlag {
   if (isNil itemAction) { itemAction = itemLabel }
+  if (isNil localizeFlag) { localizeFlag = true }
   if (not (isAnyClass itemLabel 'Bitmap' 'String')) {
 	itemLabel = (toString itemLabel)
   }
-  if (isClass itemLabel 'String') {
+  if (and (isClass itemLabel 'String') localizeFlag) {
         itemLabel = (localized itemLabel)
   }
   add items (array itemLabel itemAction itemHint itemThumb)
