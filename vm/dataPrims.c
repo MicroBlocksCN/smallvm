@@ -148,16 +148,23 @@ OBJ primAt(int argCount, OBJ *args) {
 	} else if (IS_TYPE(obj, ByteArrayType)) {
 		count = BYTES(obj);
 	}
-	if (isInt(args[0])) {
-		i = obj2int(args[0]);
+
+	OBJ arg0 = args[0];
+	if (isInt(arg0)) {
+		i = obj2int(arg0);
 		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
-	} else if (matches("random", args[0])) {
+	} else if (matches("random", arg0)) {
 		i = (rand() % count) + 1;
-	} else if (matches("last", args[0])) {
+	} else if (matches("last", arg0)) {
 		i = count;
+	} else if (IS_TYPE(arg0, StringType)) {
+		i = evalInt(arg0);
+		if ((0 == i) && !matches("0", arg0)) return fail(needsIntegerIndexError);
+		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
 	} else {
 		return fail(needsIntegerIndexError);
 	}
+
 	if (IS_TYPE(obj, ListType)) {
 		return FIELD(obj, i);
 	} else if (IS_TYPE(obj, StringType)) {
@@ -210,11 +217,16 @@ OBJ primAtPut(int argCount, OBJ *args) {
 		return falseObj;
 	}
 
-	if (isInt(args[0])) {
-		i = obj2int(args[0]);
+	OBJ arg0 = args[0];
+	if (isInt(arg0)) {
+		i = obj2int(arg0);
 		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
-	} else if (matches("last", args[0])) {
+	} else if (matches("last", arg0)) {
 		i = count;
+	} else if (IS_TYPE(arg0, StringType)) {
+		i = evalInt(arg0);
+		if ((0 == i) && !matches("0", arg0)) return fail(needsIntegerIndexError);
+		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
 	} else {
 		return fail(needsIntegerIndexError);
 	}
@@ -282,21 +294,26 @@ OBJ primListDelete(int argCount, OBJ *args) {
 	int count = obj2int(FIELD(list, 0));
 	if (count >= WORDS(list)) count = WORDS(list) - 1;
 
-	if (matches("all", args[0])) {
+	int i;
+	if (isInt(args[0])) {
+		i = obj2int(args[0]);
+		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
+	} else if (matches("all", args[0])) {
 		for (int i = 0; i <= count; i++) FIELD(list, i) = zeroObj;
 		return falseObj;
-	}
-	if (matches("last", args[0])) {
+	} else if (matches("last", args[0])) {
 		if (count) {
 			FIELD(list, count) = zeroObj;
 			FIELD(list, 0) = int2obj(count - 1);
 		}
 		return falseObj;
+	} else if (IS_TYPE(args[0], StringType)) {
+		i = evalInt(args[0]);
+		if ((0 == i) && !matches("0", args[0])) return fail(needsIntegerIndexError);
+		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
+	} else {
+		return fail(needsIntegerIndexError);
 	}
-
-	if (!isInt(args[0])) return fail(needsIntegerError);
-	int i = obj2int(args[0]);
-	if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
 
 	while (i < count) {
 		FIELD(list, i) = FIELD(list, i + 1);
