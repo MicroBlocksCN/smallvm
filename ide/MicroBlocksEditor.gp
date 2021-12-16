@@ -625,6 +625,7 @@ method processDroppedFile MicroBlocksEditor fName data {
 
 method processDroppedText MicroBlocksEditor text {
   if (beginsWith text 'http') {
+    text = (first (lines text))
     url = (substring text ((findFirst text ':') + 3))
     host = (substring url 1 ((findFirst url '/') - 1))
     path = (substring url (findFirst url '/'))
@@ -634,6 +635,14 @@ method processDroppedText MicroBlocksEditor text {
       openProject this (httpBody (httpGet host path)) fileName
     } (or (endsWith url '.ubl') (endsWith url '.ulib')) {
       importLibraryFromString scripter (httpBody (httpGet host path)) fileName fileName
+    } (and (endsWith url '.png') ('Browser' == (platform))) {
+      data = (httpBody (basicHTTPGetBinary host path))
+      if ('' == data) { return }
+      script = (getScriptText (new 'PNGReader') data)
+      if (isNil script) { return } // no script in this PNG file
+      i = (find (letters script) (newline))
+      script = (substring script i)
+      pasteScripts scripter script
     }
   } else {
 	spec = (specForOp (authoringSpecs) 'comment')
