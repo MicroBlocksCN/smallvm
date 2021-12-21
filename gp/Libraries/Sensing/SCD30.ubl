@@ -11,7 +11,7 @@ Allows the user to measure
 - humidity in %.
 
 To get started execute the "SCD30 read loop" block.
-It starts the continous measurement,
+It starts the continuous measurement,
 waits until the SCD30 could provide a new measurement,
 reads the values into the respective global variables,
 and displays them.
