@@ -25,31 +25,30 @@ the "SDC30 generate CRC" block is taken from his microblocks sgp30 library'
 variables temperature humidity co2
 
 	spec ' ' 'SCD30 read loop' 'SCD30 read loop'
-	spec ' ' 'SCD30 calibrate in fresh air' 'SCD30 calibrate CO2 to _ ppm with ambient air pressure _
-	spec ' ' 'SCD30 send' 'SCD30 send _ with _' 'auto auto' '' ''
-	spec 'r' 'SCD30 read' 'SCD30 send _ read _' 'auto auto' '10' 10
-	spec 'r' 'SGC30 generate CRC' 'generate CRC _' 'auto' 1
-	spec 'r' 'SCD30 to decimal' 'SCD30 to decimal _ _ _ _' 'auto auto auto auto' 10 '10' '10' '10'
-	spec ' ' 'SCD30 start measuring with ambient pressure' 'SCD30 start measuring with ambient pressure _' 'auto' ''
+	spec ' ' 'SCD30 calibrate in fresh air' 'SCD30 calibrate CO2 to _ ppm with ambient air pressure _' 'num num' '400' '1013'
+	spec ' ' 'SCD30 send' 'SCD30 send command _ parameter _' 'num num'
+	spec 'r' 'SCD30 read uint16' 'SCD30 read uint16 _' 'num'
+	spec 'r' 'SGC30 generate CRC' 'generate CRC _' 'num'
+	spec 'r' 'SCD30 float32 to integer' 'SCD30 float32 to integer _ _ _ _' 'num num num num'
+	spec ' ' 'SCD30 start measuring with ambient pressure' 'SCD30 start measuring with ambient pressure _' 'num'
 	spec ' ' 'SCD30 start measuring' 'SCD30 start measuring'
 	spec ' ' 'SCD30 stop measuring' 'SCD30 stop measuring'
-	spec ' ' 'SCD30 set measurement interval' 'SCD30 measure each _ second' 'auto' '10'
+	spec ' ' 'SCD30 set measurement interval' 'SCD30 measure each _ second' 'num' '2'
 	spec 'r' 'SCD30 measurement interval' 'SCD30 measurement interval'
 	spec 'r' 'SCD30 isReady?' 'SCD30 isReady?'
-	spec 'r' 'SCD30 check CRC' 'SCD30 check CRC _' 'auto' '10'
+	spec 'r' 'SCD30 check CRC' 'SCD30 check CRC _' 'auto'
 	spec ' ' 'SCD30 read measurement' 'SCD30 read measurement'
 	spec ' ' 'SCD30 start calibrating' 'SCD30 start calibrating'
 	spec 'r' 'SCD30 is calibrating?' 'SCD30 is calibrating?'
 	spec ' ' 'SCD30 stop calibrating' 'SCD30 stop calibrating'
-	spec ' ' 'SCD30 set forced recalibration value' 'SCD30 set forced recalibration value _' 'auto' '10'
+	spec ' ' 'SCD30 set forced recalibration value' 'SCD30 set forced recalibration value _' 'num' '400'
 	spec 'r' 'SCD30 forced recalibration value' 'SCD30 forced recalibration value'
-	spec ' ' 'SCD30 set temperature offset' 'SCD30 set temperature offset _' 'auto' '10'
+	spec ' ' 'SCD30 set temperature offset' 'SCD30 set temperature offset _' 'num' '200'
 	spec 'r' 'SCD30 temperature offset' 'SCD30 temperature offset'
-	spec ' ' 'SCD30 set altitude compensation' 'SCD30 set altitude compensation _' 'auto' '10'
+	spec ' ' 'SCD30 set altitude compensation' 'SCD30 set altitude compensation _' 'num'
 	spec 'r' 'SCD30 altitude compensation' 'SCD30 altitude compensation'
 	spec 'r' 'SCD30 firmware' 'SCD30 firmware'
 	spec ' ' 'SCD30 soft reset' 'SCD30 soft reset'
-	mbar' 'auto auto' 400 1013
 
 to 'SCD30 read loop' {
   'SCD30 start measuring with ambient pressure'
@@ -69,7 +68,7 @@ Look up the current ambient air pressure in mbar --
 if no value is given it defaults to 1013 mbar.
 
 Start this script with these parameters and let it work for at least 2 minutes.
-Afterwards this script will force the SCD30 to accomodate
+Afterwards this script will force the SCD30 to accommodate
 its CO2 persistent calibration curve accordingly.
 
 The script will continue to run afterwards and should then
@@ -102,10 +101,10 @@ to 'SCD30 send' command parameter {
   '[sensors:i2cWrite]' (hexToInt '61') cmdList
 }
 
-to 'SCD30 read' command size {
+to 'SCD30 read uint16' command {
   'SCD30 send' command ''
   waitMillis 3
-  local 'response' (newList size)
+  local 'response' (newList 2)
   '[sensors:i2cRead]' (hexToInt '61') response
   local 'singleResponse' (((at 1 response) << 8) | (at 2 response))
   return singleResponse
@@ -129,7 +128,7 @@ to 'SGC30 generate CRC' value {
   return (crc & 255)
 }
 
-to 'SCD30 to decimal' byte1 byte2 byte3 byte4 {
+to 'SCD30 float32 to integer' byte1 byte2 byte3 byte4 {
   comment 'Only yields the floor of the decimal at the moment, i.e. no values after the "."'
   local 'exponent' 0
   local 'significand' 0
@@ -163,11 +162,11 @@ to 'SCD30 set measurement interval' second {
 }
 
 to 'SCD30 measurement interval' {
-  return ('SCD30 read' (hexToInt '4600') 2)
+  return ('SCD30 read uint16' (hexToInt '4600'))
 }
 
 to 'SCD30 isReady?' {
-  return (('SCD30 read' (hexToInt '0202') 2) == 1)
+  return (('SCD30 read uint16' (hexToInt '0202')) == 1)
 }
 
 to 'SCD30 check CRC' list {
@@ -198,9 +197,9 @@ Make sure that the measurement is completed by reading the data ready status bit
   '[sensors:i2cRead]' (hexToInt '61') all
   if ('SCD30 check CRC' all) {
     local 'temp' 0
-    co2 = ('SCD30 to decimal' (at 1 all) (at 2 all) (at 4 all) (at 5 all))
-    temperature = ('SCD30 to decimal' (at 7 all) (at 8 all) (at 10 all) (at 11 all))
-    humidity = ('SCD30 to decimal' (at 13 all) (at 14 all) (at 16 all) (at 17 all))
+    co2 = ('SCD30 float32 to integer' (at 1 all) (at 2 all) (at 4 all) (at 5 all))
+    temperature = ('SCD30 float32 to integer' (at 7 all) (at 8 all) (at 10 all) (at 11 all))
+    humidity = ('SCD30 float32 to integer' (at 13 all) (at 14 all) (at 16 all) (at 17 all))
   }
 }
 
@@ -209,7 +208,7 @@ to 'SCD30 start calibrating' {
 }
 
 to 'SCD30 is calibrating?' {
-  return (('SCD30 read' (hexToInt '5306') 2) == 1)
+  return (('SCD30 read uint16' (hexToInt '5306')) == 1)
 }
 
 to 'SCD30 stop calibrating' {
@@ -221,7 +220,7 @@ to 'SCD30 set forced recalibration value' ppm {
 }
 
 to 'SCD30 forced recalibration value' {
-  return ('SCD30 read' (hexToInt '5204') 2)
+  return ('SCD30 read uint16' (hexToInt '5204'))
 }
 
 to 'SCD30 set temperature offset' tick {
@@ -239,7 +238,7 @@ Format: uint16 Temperature offset, unit [°C x 100], i.e. one tick corresponds t
 }
 
 to 'SCD30 temperature offset' {
-  return ('SCD30 read' (hexToInt '5403') 2)
+  return ('SCD30 read uint16' (hexToInt '5403'))
 }
 
 to 'SCD30 set altitude compensation' 'current altitude in meter' {
@@ -249,11 +248,11 @@ via "SCD30 start measuring with ambient pressure"'
 }
 
 to 'SCD30 altitude compensation' {
-  return ('SCD30 read' (hexToInt '5102') 2)
+  return ('SCD30 read uint16' (hexToInt '5102'))
 }
 
 to 'SCD30 firmware' {
-  return ('SCD30 read' (hexToInt 'D100') 2)
+  return ('SCD30 read uint16' (hexToInt 'D100'))
 }
 
 to 'SCD30 soft reset' {
