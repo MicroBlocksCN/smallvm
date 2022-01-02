@@ -544,7 +544,7 @@ void restartSerial() {
 #elif defined(ARDUINO_RASPBERRY_PI_PICO)
 
 	#define BOARD_TYPE "RP2040"
-	#define DIGITAL_PINS 23
+	#define DIGITAL_PINS 30
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3};
@@ -687,6 +687,10 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return int2obj(0);
 	#endif
+	#ifdef ARDUINO_RASPBERRY_PI_PICO
+		if (pinNum >= 26) pinNum -= 26; // map pins 26-29 to A0-A3
+	#endif
+
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
 	int pin = analogPin[pinNum];
 	#if !defined(ESP8266)
