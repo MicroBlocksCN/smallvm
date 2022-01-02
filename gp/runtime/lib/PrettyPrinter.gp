@@ -429,7 +429,7 @@ method nextPutAll PrettyPrinterGenerator value {
   if ((count value) > 0) {
     last = (last (letters value))
     hadSpace = (or (last == ' ') (last == (newline)) (last == '('))
-    hadCr = (or (last == (newline)) (last == ';'))
+    hadCr = (or (last == (newline)) (last == ';') (last == '{'))
   }
 }
 

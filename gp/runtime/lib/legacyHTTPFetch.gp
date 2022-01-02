@@ -81,12 +81,12 @@ to httpGetInBrowser url timeout {
 		url = (join 'https://' (substring url 8))
 	}
 	requestID = (startFetch url)
-print 'httpGetInBrowser started' requestID
 	start = (msecsSinceStart)
 	while (((msecsSinceStart) - start) < timeout) {
 		result = (fetchResult requestID)
-		if (false == result) { print 'timeout'; return '' } // request failed
-		if (notNil result) { print 'result:' result; return result } // request completed
+		if (false == result) { return '' } // request failed
+		if (notNil result) { return result } // request completed
 		waitMSecs 20
 	}
+	return ''
 }

@@ -70,7 +70,9 @@ to httpGetInBrowser url timeout {
 }
 
 to httpBody response {
-	headers = (list)
+	if (isClass response 'BinaryData') {
+		return (httpBinaryBody response)
+	}
 	lines = (lines response)
 	i = (indexOf lines '')
 	if (isNil i) { return '' } // no body
@@ -126,7 +128,7 @@ to httpBinaryBody data {
 			return (copyFromTo data (i + 4))
 		}
 	}
-	return nil
+	return data // no header; assume data is the body
 }
 
 to httpHeaders response {
