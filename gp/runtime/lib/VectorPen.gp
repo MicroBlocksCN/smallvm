@@ -236,7 +236,7 @@ method stroke VectorPen borderColor width joint cap {
 method fill VectorPen fillColor {
   if (isNil fillColor) { fillColor = (gray 0) }
   if (notNil svgData) {
-	add svgData (join '	<path fill=' (svgColor this fillColor) (svgPath this path true) '/>')
+	add svgData (join '	<path fill=' (svgColor this fillColor) ' ' (svgPath this path true) '/>')
 	return
   }
   if usePrimitives {
