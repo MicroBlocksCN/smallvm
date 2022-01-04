@@ -1312,7 +1312,10 @@ static void setTone(int pin, int frequency) {
 }
 
 void stopTone() {
-	if (tonePin >= 0) noTone(tonePin);
+	if (tonePin >= 0) {
+		noTone(tonePin);
+		SET_MODE(tonePin, INPUT);
+	}
 	tonePin = -1;
 }
 
@@ -1531,7 +1534,6 @@ OBJ primHasServo(int argCount, OBJ *args) { return falseObj; }
 OBJ primSetServo(int argCount, OBJ *args) { return falseObj; }
 
 #endif
-
 
 OBJ primDACInit(int argCount, OBJ *args) {
 	// Initialize the DAC pin and (optional) sample rate. If the pin is not a DAC pin (pins

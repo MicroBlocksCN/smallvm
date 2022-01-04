@@ -476,8 +476,6 @@ inline uint32 saveIRQState(void) {
 		__asm__ volatile ("rsil %0, 15" : "=a" (pmask));
 	#elif defined(CORE_TEENSY)
 		__disable_irq();
-	#elif defined(ARDUINO_RASPBERRY_PI_PICO)
-		// todo
 	#else
 		pmask = __get_PRIMASK() & 1;
 		__set_PRIMASK(1);
@@ -490,8 +488,6 @@ inline void restoreIRQState(uint32 pmask) {
 		__asm__ volatile ("wsr %0, ps; rsync" :: "a" (pmask));
 	#elif defined(CORE_TEENSY)
 		__enable_irq();
-	#elif defined(ARDUINO_RASPBERRY_PI_PICO)
-		// todo
 	#else
 		__set_PRIMASK(pmask);
 	#endif
@@ -700,6 +696,50 @@ static void sendNeoPixelData(int val) {
 	portEXIT_CRITICAL(&mux);
 }
 
+#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+
+#include "pinDefinitions.h"
+#include "hardware/sync.h"
+
+static mbed::DigitalInOut* gpioNeopixelGPIO = NULL;
+
+static inline void picoDelay(int n) {
+	volatile int dummy;
+	for (int i = 0; i < n; i++) dummy += 1;
+}
+
+static void initNeoPixelPin(int pinNum) {
+	gpioNeopixelGPIO = NULL;
+	neoPixelPinMask = 0; // clear
+	if ((0 <= pinNum) && (pinNum <= 22)) {
+		if (NULL == digitalPinToGpio(pinNum)) {
+			digitalPinToGpio(pinNum) = new mbed::DigitalInOut(digitalPinToPinName(pinNum), PIN_OUTPUT, PullNone, LOW);
+		}
+		gpioNeopixelGPIO = digitalPinToGpio(pinNum);
+		neoPixelPinMask = 1; // indicate that pin has been set
+	}
+}
+
+static void sendNeoPixelData(int val) {
+	if (!gpioNeopixelGPIO) return;
+
+	uint32_t oldInterruptStatus = save_and_disable_interrupts();
+	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
+		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 300 nsecs
+			gpioNeopixelGPIO->write(HIGH);
+			picoDelay(8);  // ~798 nsecs
+			gpioNeopixelGPIO->write(LOW);
+			picoDelay(2); // ~450 nsecs
+		} else { // zero bit; timing goal: high 380 nsecs, low 700 nsecs
+			gpioNeopixelGPIO->write(HIGH);
+			picoDelay(2); // ~375 nsecs
+			gpioNeopixelGPIO->write(LOW);
+			picoDelay(8); // ~906 nsecs
+		}
+	}
+	restore_interrupts(oldInterruptStatus);
+}
+
 #else // stub for boards without NeoPixels
 
 static void initNeoPixelPin(int pinNum) { }
@@ -757,6 +797,7 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 					val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
 				}
 				sendNeoPixelData(val);
+				delayMicroseconds(1);  // reduces chance of first NeoPixel glitching to green
 			}
 		}
 	}
