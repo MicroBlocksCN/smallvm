@@ -113,7 +113,7 @@ int recvBytes(uint8 *buf, int count) {
 }
 
 int sendByte(char aByte) {
-	#ifdef ARDUINO_RASPBERRY_PI_PICO
+	#ifdef ARDUINO_ARCH_RP2040
 		// Workaround for Pico Arduino library bug:
 		// Serial.write() should return 1 if byte is written but always returns 0 on Pico
 		Serial.write(aByte);
@@ -541,7 +541,7 @@ void restartSerial() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
-#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+#elif defined(ARDUINO_ARCH_RP2040)
 
 	#define BOARD_TYPE "RP2040"
 	#define DIGITAL_PINS 30
@@ -601,7 +601,7 @@ static void initPins(void) {
 		// The analog write primitve takes a 10-bit value, as it does on all MicroBlocks boards,
 		// but on NRF52 only the 8 most signifcant bits are used.
 		analogWriteResolution(8);
-	#elif !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32) && !defined(ARDUINO_RASPBERRY_PI_PICO)
+	#elif !defined(ESP8266) && !defined(ARDUINO_ARCH_ESP32)
 		analogWriteResolution(10); // 0-1023; low-order bits ignored on boards with lower resolution
 	#endif
 
@@ -687,7 +687,7 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return int2obj(0);
 	#endif
-	#ifdef ARDUINO_RASPBERRY_PI_PICO
+	#ifdef ARDUINO_ARCH_RP2040
 		if (pinNum >= 26) pinNum -= 26; // map pins 26-29 to A0-A3
 	#endif
 
@@ -1224,10 +1224,85 @@ void stopServos() {
 	}
 }
 
-#elif ARDUINO_RASPBERRY_PI_PICO
+#elif ARDUINO_ARCH_MBED
 
-static void setServo(int pin, int usecs) { }
-void stopServos() { }
+#include <mbed.h>
+
+#define MAX_SERVOS 8
+#define UNUSED 255
+
+static char servoPin[MAX_SERVOS] = {UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED, UNUSED};
+static unsigned short servoPulseWidth[MAX_SERVOS] = {1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500};
+
+mbed::Timeout servoTimeout; // calls servoTick when timeout expires
+static int servoIndex = 0;
+static char servoPinHigh = false;
+static char servoToneTimerStarted = 0;
+
+static void servoTick() {
+	if (servoPinHigh && (0 <= servoIndex) && (servoIndex < MAX_SERVOS)) {
+		digitalWrite(servoPin[servoIndex], LOW); // end the current servo pulse
+	}
+
+	// find the next active servo
+	servoIndex = (servoIndex + 1) % MAX_SERVOS;
+	while ((servoIndex < MAX_SERVOS) && (UNUSED == servoPin[servoIndex])) {
+		servoIndex++;
+	}
+
+	if (servoIndex < MAX_SERVOS) { // start servo pulse for servoIndex
+		digitalWrite(servoPin[servoIndex], HIGH);
+		servoPinHigh = true;
+		servoTimeout.attach(&servoTick, (std::chrono::microseconds) servoPulseWidth[servoIndex]);
+	} else { // idle until next set of pulses
+		servoIndex = -1;
+		servoPinHigh = false;
+		servoTimeout.attach(&servoTick, (std::chrono::microseconds) 18000);
+	}
+}
+
+void stopServos() {
+	for (int i = 0; i < MAX_SERVOS; i++) {
+		servoPin[i] = UNUSED;
+		servoPulseWidth[i] = 1500;
+	}
+	servoPinHigh = false;
+	servoIndex = 0;
+}
+
+static void setServo(int pin, int usecs) {
+	if (!servoToneTimerStarted) {
+		// start servoTick callbacks
+		servoIndex = -1;
+		servoTimeout.attach(&servoTick, (std::chrono::microseconds) 100);
+		servoToneTimerStarted = true;
+	}
+
+	if (usecs <= 0) { // turn off servo
+		for (int i = 0; i < MAX_SERVOS; i++) {
+			if (pin == servoPin[i]) {
+				servoPulseWidth[i] = 1500;
+				servoPin[i] = UNUSED;
+			}
+		}
+		return;
+	}
+
+	for (int i = 0; i < MAX_SERVOS; i++) {
+		if (pin == servoPin[i]) { // update the pulse width for the given pin
+			servoPulseWidth[i] = usecs;
+			return;
+		}
+	}
+
+	for (int i = 0; i < MAX_SERVOS; i++) {
+		if (UNUSED == servoPin[i]) { // found unused servo entry
+			servoPin[i] = pin;
+			servoPulseWidth[i] = usecs;
+			return;
+		}
+	}
+}
 
 #else // use Arduino Servo library
 
@@ -1427,6 +1502,38 @@ static inline int writeDAC(int sample) {
 	return 1;
 }
 
+#elif defined(ARDUINO_ARCH_RP2040) && defined(ARDUINO_ARCH_MBED)
+
+#include "pinDefinitions.h"
+
+mbed::PwmOut *dacPWM = NULL;
+
+static void initDAC(int pin, int sampleRate) {
+	if (dacPWM) { // delete old PWM instance
+		delete dacPWM;
+		dacPWM = NULL;
+	}
+
+	if ((pin < 0) || (pin >= TOTAL_PINS)) return; // pin out of range
+
+	mbed::PwmOut *oldPWM = digitalPinToPwm(pin);
+	if (oldPWM) delete oldPWM; // delete old PWM instance for pin, if any
+
+	dacPWM = new mbed::PwmOut(digitalPinToPinName(pin));
+	digitalPinToPwm(pin) = dacPWM;
+
+	if (sampleRate < 500) sampleRate = 500;
+	if (sampleRate > 125000) sampleRate = 125000;
+	dacPWM->period_us(1000000 / sampleRate);
+}
+
+static int writeDAC(int sample) {
+	if (sample < 0) sample = 0;
+	if (sample > 255) sample = 255;
+	if (dacPWM) dacPWM->write(sample / 255.0);
+	return true;
+}
+
 #else
 
 static void initDAC(int pin, int sampleRate) { }
@@ -1492,7 +1599,12 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	return trueObj;
 }
 
-#ifndef ARDUINO_RASPBERRY_PI_PICO
+#if defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED)
+
+OBJ primHasServo(int argCount, OBJ *args) { return falseObj; }
+OBJ primSetServo(int argCount, OBJ *args) { return falseObj; }
+
+#else
 
 OBJ primHasServo(int argCount, OBJ *args) { return trueObj; }
 
@@ -1527,11 +1639,6 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	setServo(pin, usecs);
 	return trueObj;
 }
-
-#else
-
-OBJ primHasServo(int argCount, OBJ *args) { return falseObj; }
-OBJ primSetServo(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
