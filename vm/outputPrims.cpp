@@ -696,7 +696,7 @@ static void sendNeoPixelData(int val) {
 	portEXIT_CRITICAL(&mux);
 }
 
-#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+#elif defined(ARDUINO_ARCH_RP2040)
 
 #include "pinDefinitions.h"
 #include "hardware/sync.h"

@@ -389,7 +389,7 @@ void flashWriteWord(int *addr, int value) {
 	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
 		#define USE_CODE_FILE true
 		#define HALF_SPACE (20 * 1024) // ESP8266 is unreliable at 24
-	#elif defined(ARDUINO_RASPBERRY_PI_PICO)
+	#elif defined(ARDUINO_ARCH_RP2040)
 		#define USE_CODE_FILE !defined(NO_FILESYSTEM)
 		#define HALF_SPACE (20 * 1024)
 	#else

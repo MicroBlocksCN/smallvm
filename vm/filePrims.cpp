@@ -14,7 +14,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(ESP8266) || defined(ESP32) || (defined(ARDUINO_RASPBERRY_PI_PICO) && !defined(NO_FILESYSTEM))
+#if defined(ESP8266) || defined(ESP32) || (defined(ARDUINO_ARCH_RP2040) && !defined(NO_FILESYSTEM))
 
 // This operations assume that the file system was mounted by restoreScripts() at startup.
 
