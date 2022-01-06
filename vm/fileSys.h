@@ -10,7 +10,6 @@
 #include <FS.h>
 
 // Select file system (Note: LittleFS is often much slower than SPIFFS)
-#define useLittleFS defined(ARDUINO_RASPBERRY_PI_PICO)
 #if useLittleFS
 	#ifdef ARDUINO_ARCH_ESP32
 		#include <LITTLEFS.h>

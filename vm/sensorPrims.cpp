@@ -928,8 +928,6 @@ static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
 
 // DHT Humidity/Temperature Sensor
 
-#ifndef ARDUINO_RASPBERRY_PI_PICO
-
 static uint8_t dhtData[5];
 
 static int readDHTData(int pin) {
@@ -970,12 +968,6 @@ static OBJ primReadDHT(int argCount, OBJ *args) {
 	}
 	return result;
 }
-
-#else
-
-static OBJ primReadDHT(int argCount, OBJ *args) { return falseObj; }
-
-#endif
 
 // Microphone Support
 
