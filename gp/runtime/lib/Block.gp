@@ -911,7 +911,7 @@ method scriptText Block useSemicolons {
   }
   pp = (new 'PrettyPrinter')
   useSemicolons pp
-  add result (join 'script nil 10 10 ')
+  add result (join 'script 10 10 ')
   if (isClass expression 'Reporter') {
 	if (isOneOf (primName expression) 'v') {
 	  add result (join '(v ' (first (argList expression)) ')')

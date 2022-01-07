@@ -753,40 +753,71 @@ method allScriptsString MicroBlocksScripter {
   return (joinStrings result)
 }
 
-method pasteScripts MicroBlocksScripter scriptString {
-  scale = (global 'scale')
+method pasteScripts MicroBlocksScripter scriptString atHand {
+  scripts = (parse scriptString)
+  if (isNil scripts) { return }
+
   scriptsPane = (contents scriptsFrame)
   clearDropHistory scriptsPane
-  scripts = (parse scriptString)
-  lastScript = nil
-  if (notNil scripts) {
-	hand = (hand (global 'page'))
-    x = (x hand)
-    y = ((y hand) - (40 * scale)) // adjust for menu offset
-    for entry scripts {
-      if (and ('script' == (primName entry)) (notNil (last (argList entry)))) {
-		script = (last (argList entry))
-		addGlobalsFor this script
-		if ('to' == (primName script)) {
-		  cmd = (copyFunction this script nil)
-		  block = (scriptForFunction (functionNamed mbProject (first (argList cmd))))
-		} else {
-		  block = (toBlock script)
-		}
-		fastMoveBy (morph block) x y
-		y += ((height (fullBounds (morph block))) + (20 * (blockScale)))
-		addPart (morph scriptsPane) (morph block)
-		fixBlockColor block
-		lastScript = block
-      }
-    }
-    scriptChanged this
+
+  // find destination for scripts
+  if (true == atHand) {
+  	// current had position, adjusted for approximate menu offset
+    hand = (hand (global 'page'))
+    dstX = ((x hand) - (40 * (global 'scale')))
+    dstY = ((y hand) - (90 * (global 'scale')))
+  } else {
+    dstX = ((left (morph (contents scriptsFrame))) + (100 * (global 'scale')))
+    dstY = ((scriptsBottom this) + (30 * (blockScale)))
   }
+
+  // find origin of scripts to be pasted
+  scriptsX = 10000
+  scriptsY = 10000
+  for entry scripts {
+    args = (argList entry)
+    scriptsX = (min scriptsX (at args 1))
+    scriptsY = (min scriptsY (at args 2))
+  }
+
+  for entry scripts {
+    args = (argList entry)
+    if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {
+      script = (last args)
+      addGlobalsFor this script
+      if ('to' == (primName script)) {
+        cmd = (copyFunction this script nil)
+        block = (scriptForFunction (functionNamed mbProject (first (argList cmd))))
+      } else {
+        block = (toBlock script)
+      }
+      fixBlockColor block
+      blockX = (round (dstX + ((blockScale) * ((at args 1) - scriptsX))))
+      blockY = (round (dstY + ((blockScale) * ((at args 2) - scriptsY))))
+      fastMoveBy (morph block) blockX blockY
+      addPart (morph scriptsPane) (morph block)
+    }
+  }
+  scriptChanged this
   updateSliders scriptsFrame
   updateBlocks this
-  if (notNil lastScript) {
-	scrollIntoView scriptsFrame (fullBounds (morph block)) true // favorTopLeft
+  if (notNil block) {
+    scrollIntoView scriptsFrame (fullBounds (morph block)) true // favorTopLeft
   }
+}
+
+method scriptsBottom MicroBlocksScripter {
+  // Return the vertical position of the bottom-most script in the scripting area.
+
+  scriptsM = (morph (contents scriptsFrame))
+  result = (top scriptsM)
+  for m (parts scriptsM) {
+    if (isClass (handler m) 'Block') {
+	  mBnds = (fullBounds m)
+	  if ((bottom mBnds) > result) { result = (bottom mBnds) }
+    }
+  }
+  return result
 }
 
 method addGlobalsFor MicroBlocksScripter script {

@@ -619,7 +619,7 @@ method processDroppedFile MicroBlocksEditor fName data {
 	if (isNil script) { return } // no script in this PNG file
     i = (find (letters script) (newline))
     script = (substring script i)
-	pasteScripts scripter script
+	pasteScripts scripter script false
   }
 }
 
@@ -642,7 +642,7 @@ method processDroppedText MicroBlocksEditor text {
       if (isNil script) { return } // no script in this PNG file
       i = (find (letters script) (newline))
       script = (substring script i)
-      pasteScripts scripter script
+      pasteScripts scripter script false
     }
   } else {
 	spec = (specForOp (authoringSpecs) 'comment')

@@ -508,8 +508,14 @@ method saveScriptsImage ScriptEditor {
   gc
   bm = (cropTransparent (fullCostume morph))
 
+  scriptsString = nil
+  mbScripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (notNil mbScripter) {
+    scriptsString = (join 'GP Scripts' (newline) (allScriptsString (handler mbScripter)))
+  }
+
   if (or ((width bm) == 0) ((height bm) == 0)) { return } // no scripts; empty bitmap
-  pngData = (encodePNG bm)
+  pngData = (encodePNG bm nil scriptsString)
   fName = (join 'allScripts' (msecsSinceStart) '.png')
   if ('Browser' == (platform)) {
 	browserWriteFile pngData fName 'scriptImage'
@@ -538,6 +544,6 @@ method pasteScripts ScriptEditor {
   s = (readClipboard)
   i = (find (letters s) (newline))
   s = (substring s i)
-  pasteScripts (handler scripter) s
+  pasteScripts (handler scripter) s true
   scriptChanged (handler scripter)
 }
