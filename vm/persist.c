@@ -391,7 +391,7 @@ void flashWriteWord(int *addr, int value) {
 		#define HALF_SPACE (20 * 1024) // ESP8266 is unreliable at 24
 	#elif defined(ARDUINO_ARCH_RP2040)
 		#define USE_CODE_FILE !defined(NO_FILESYSTEM)
-		#define HALF_SPACE (20 * 1024)
+		#define HALF_SPACE (40 * 1024)
 	#else
 		#define HALF_SPACE (10 * 1024)
 	#endif

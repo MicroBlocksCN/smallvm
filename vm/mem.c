@@ -51,6 +51,8 @@
   #define OBJSTORE_BYTES 32000 // 48000 // max that compiles is 56000
 #elif defined(GNUBLOCKS)
   #define OBJSTORE_BYTES 262100 // max number of bytes that we can allocate for now
+#elif defined(ARDUINO_ARCH_RP2040)
+  #define OBJSTORE_BYTES 100000
 #else
   #define OBJSTORE_BYTES 5000
   // max that works on Wemos D1 mini (ESP8266) is 11000
