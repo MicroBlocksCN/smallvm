@@ -252,20 +252,21 @@ void restartSerial() {
 #elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
 
 	#define BOARD_TYPE "CircuitPlayground Bluefruit"
-	#define DIGITAL_PINS 13
+	#define DIGITAL_PINS 14
 	#define ANALOG_PINS 10
-	#define TOTAL_PINS 13
+	#define TOTAL_PINS 14
 	static const int analogPin[10] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
 		// A0-A7 Pads on board
 		// A8 - light sensor
 		// A9 - temperature sensor
-	static const char digitalPin[13] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 8, 13};
+	static const char digitalPin[14] = {12, 6, 9, 10, 3, 2, 0, 1, 4, 5, 7, 8, 13, 13};
 		// Pins 0-7 Pads on board
 		// Pin 8 - button A
 		// Pin 9 - button B
 		// Pin 10 - slide switch
 		// Pin 11 - neopixels
 		// Pin 12 - red LED
+		// Pin 13 - red LED (duplicate, to match label on board)
 	#define PIN_LED 13
 	#define PIN_BUTTON_A 4
 	#define PIN_BUTTON_B 5
