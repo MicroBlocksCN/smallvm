@@ -611,7 +611,7 @@ method addInputSlot BlockSectionDefinition blockSpec slotIndex argNames {
 }
 
 method labelText BlockSectionDefinition aString {
-  lbl = (blockLabelText aString)
+  lbl = (labelText (new 'Block') aString)
   setGrabRule (morph lbl) 'ignore'
   return lbl
 }

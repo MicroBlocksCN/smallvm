@@ -4,22 +4,16 @@
 defineClass Block morph blockSpec type expression labelParts corner rounding dent inset hatWidth border color expansionLevel function isAlternative layoutNeeded
 
 to block type color opName {
-  scale = (blockScale (new 'Block'))
+  block = (new 'Block')
+  scale = (blockScale block)
 
   if (isNil opName) {opName = 'foo'}
   if (isNil type) {type = 'command'} // type can be 'command', 'reporter' or 'hat'
   if (isNil color) {color = (gray 150)}
   labelParts = (list (list))
   for i ((argCount) - 2) {add (at labelParts 1) (arg (i + 2))}
-  lc = (gray 255)
-  fn = 'Verdana Bold'
-  fontSize = (11 * scale)
-  if (or ('Linux' == (platform)) ('Browser' == (platform))) {
-	fn = 'Arial Bold'
-	fontSize = (15 * scale)
-  }
   if ((count (at labelParts 1)) == 0)  {
-    labelParts = (list (list (newText opName fn fontSize lc)))
+    labelParts = (list (list (labelText block opName)))
     op = opName
   } else {
     op = (arg 3)
@@ -28,7 +22,7 @@ to block type color opName {
   for i (count group) {
     part = (at group i)
     if (isClass part 'String') {
-      atPut group i (newText part fn fontSize lc)
+      atPut group i (labelText block part)
     } (isClass part 'Command') {
       inp = (newCommandSlot color)
       atPut group i inp
@@ -38,7 +32,6 @@ to block type color opName {
   for each group {
     if (isAnyClass each 'InputSlot' 'BooleanSlot' 'ColorSlot' 'CommandSlot' 'MicroBitDisplaySlot') {add argValues (contents each)}
   }
-  block = (new 'Block')
   setField block 'type' type
   setField block 'labelParts' labelParts
   setField block 'color' color
@@ -1277,9 +1270,7 @@ to toBlock commandOrReporter {
   return block
 }
 
-method labelText Block aString { return (blockLabelText aString) }
-
-to blockLabelText aString {
+method labelText Block aString {
   scale = (blockScale)
   fontName =  'Verdana Bold'
   fontSize = (11 * scale)
