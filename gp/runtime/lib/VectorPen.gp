@@ -46,7 +46,7 @@ method bitmap VectorPen { return bitmap }
 method setColor VectorPen c { noop } // for compatability with pen; ignore
 method setClipRect VectorPen aRect { clipRect = aRect }
 method setHeading VectorPen degrees { heading = degrees }
-method path VectorPen { return path }
+method path VectorPen { return (toArray path) }
 
 method intialize VectorPen aBitmap aMorph noPrimitives {
   offsetX = 0

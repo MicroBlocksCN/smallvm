@@ -36,6 +36,8 @@ method initialize GraphicContext aBitmapOrNil {
 	return this
 }
 
+method surface GraphicContext { return surface }
+
 method width GraphicContext {
 	if (notNil surface) { return (width surface) }
 	return (at (windowSize) 3)
@@ -173,4 +175,26 @@ method show GraphicContext {
 		showTexture nil surface
 	}
 	flipBuffer
+}
+
+// cached path drawing
+
+method drawCachedPaths GraphicContext pathList x y {
+	// Draw cached paths to the screen.
+
+	if (notNil surface){ return } // do nothing if not screen
+
+	for p pathList {
+		op = (at p 1)
+		path = (at p 2)
+		vectorSetPathOffset x y
+		if ('stroke' == op) {
+			vectorStrokePath nil path (at p 3) (at p 4) (at p 5) (at p 6) clipRect
+		} ('fill' == op) {
+			vectorFillPath nil path (at p 3) clipRect
+		} ('strokeAndFill' == op) {
+			vectorFillPath nil path (at p 3) clipRect
+			vectorStrokePath nil path (at p 4) (at p 5) 0 0 clipRect
+		}
+	}
 }

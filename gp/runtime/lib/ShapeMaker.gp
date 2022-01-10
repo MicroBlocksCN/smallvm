@@ -1,32 +1,39 @@
 defineClass ShapeMaker pen recordedPaths
 
 method pen ShapeMaker { return pen }
-method recordedPaths ShapeMaker { return recordedPaths }
-method isRecording ShapeMaker { return (notNil recordedPaths) }
 
 to newShapeMaker bitmap {
   return (initialize (new 'ShapeMaker') bitmap)
 }
 
 to newShapeMakerForPathRecording {
-  return (initialize (new 'ShapeMaker') nil true)
+  return (initForRecording (new 'ShapeMaker'))
 }
 
-method initialize ShapeMaker aBitmap isRecording {
+method initialize ShapeMaker aBitmap {
   if (isNil aBitmap) {
-    pen = (newVectorPenOnScreen)
+    pen = (newVectorPenPrims)
   } else {
     pen = (newVectorPen aBitmap)
   }
-  if (true == isRecording) { recordedPaths = (list) }
+  recordedPaths = nil
   return this
 }
 
 // path recording
 
+method initForRecording ShapeMaker {
+  pen = (newVectorPen aBitmap)
+  recordedPaths = (list)
+  return this
+}
+
+method isRecording ShapeMaker { return (notNil recordedPaths) }
+method recordedPaths ShapeMaker { return recordedPaths }
+
 method fill ShapeMaker fillColor {
   if (notNil recordedPaths) {
-    add recordedPaths (array 'fill' fillColor (path pen))
+    add recordedPaths (array 'fill' (copyWith (path pen) 'Z') fillColor)
   } else {
     fill pen fillColor
   }
@@ -34,15 +41,17 @@ method fill ShapeMaker fillColor {
 
 method fillAndStroke ShapeMaker fillColor borderColor borderWidth {
   if (notNil recordedPaths) {
-    add recordedPaths (array 'fillAndStroke' fillColor borderColor borderWidth (path pen))
+    add recordedPaths (array 'fillAndStroke' (path pen) fillColor borderColor borderWidth)
   } else {
     fillAndStroke pen fillColor borderColor borderWidth
   }
 }
 
 method stroke ShapeMaker borderColor borderWidth joint cap {
+  if (isNil joint) { joint = 0 }
+  if (isNil cap) { cap = 0 }
   if (notNil recordedPaths) {
-    add recordedPaths (array 'stroke' borderColor borderWidth joint cap (path pen))
+    add recordedPaths (array 'stroke' (path pen) borderColor borderWidth joint cap)
   } else {
     stroke pen borderColor borderWidth joint cap
   }
