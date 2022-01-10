@@ -4,56 +4,38 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// MicroBlocksTipBar.gp - A bar that displays useful information about the
-// 						  currently hovered item
+// MicroBlocksTipBar.gp - A bar that displays useful information about the item under the mouse
 // Bernat Romagosa, November 2021
 
-defineClass MicroBlocksTipBar morph box title tipMorph tip contentDict iconsDict help
-
-method title MicroBlocksTipBar { return title }
-method tip MicroBlocksTipBar { return tip }
-method helpEntry MicroBlocksTipBar primName { return (entryForOp help primName) }
+defineClass MicroBlocksTipBar morph title tipMorph tip contentDict iconsDict help
 
 method initialize MicroBlocksTipBar {
-	page = (global 'page')
-	fontName = 'Arial'
-	titleFontName = 'Arial Bold'
-	titleFontSize = (14 * (global 'scale'))
-	if ('Linux' == (platform)) { titleFontSize = (12 * (global 'scale')) }
-
-	title = (newText '' titleFontName titleFontSize (gray 0) 'left' nil 0 0 5 3)
-
-	tip = (newAlignment 'centered-line' 0 'bounds')
-	tipMorph = (newMorph tip)
-	setMorph tip tipMorph
-
-	box = (newBox nil (gray 200) 0 1)
-	morph = (morph box)
+	morph = (newMorph this)
+	setClipping morph true
 	setFPS morph 5
 
 	initContents this
 	initIcons this
-
-	setClipping morph true
-	setHandler morph this
-
-	addPart morph (morph title)
-	addPart morph tipMorph
-
 	help = (initialize (new 'MicroBlocksHelp'))
 
+	titleFontName = 'Arial Bold'
+	titleFontSize = (14 * (global 'scale'))
+	if ('Linux' == (platform)) { titleFontSize = (12 * (global 'scale')) }
+	title = (newText '' titleFontName titleFontSize (gray 0) 'left' nil 0 0 5 3)
+	addPart morph (morph title)
+
+	tip = (newAlignment 'centered-line' 0 'bounds')
+	tipMorph = (newMorph tip)
+	setMorph tip tipMorph
+	addPart morph tipMorph
 	return this
 }
 
-method initIcons MicroBlocksTipBar {
-	iconsDict = (dictionary)
-	atPut iconsDict '[l]' (leftClickLogo this)
-	atPut iconsDict '[r]' (rightClickLogo this)
-	atPut iconsDict '(-o)' (trueLogo this)
-	atPut iconsDict '(o-)' (falseLogo this)
-}
-
+method helpEntry MicroBlocksTipBar primName { return (entryForOp help primName) }
+method title MicroBlocksTipBar { return title }
 method setTitle MicroBlocksTipBar aTitle { setText title aTitle }
+method tip MicroBlocksTipBar { return tip }
+
 method setTip MicroBlocksTipBar aTip {
 	// Tips can contain icon placeholders, like so:
 	// [l] run this block [r] open context menu
@@ -87,6 +69,14 @@ method setTip MicroBlocksTipBar aTip {
 	fixLayout tip
 }
 
+// drawing
+
+method drawOn MicroBlocksTipBar ctx {
+	fillRectangle (getShapeMaker ctx) (bounds morph) (gray 200)
+}
+
+// stepping
+
 method step MicroBlocksTipBar {
 	hand = (hand (global 'page'))
 	if (and (isClass (grabbedObject hand) 'Block') (isClass (objectAt hand) 'BlocksPalette')) {
@@ -105,6 +95,22 @@ method updateTip MicroBlocksTipBar anElement {
 	setTip this (at contents 2)
 	fixLayout this
 }
+
+method fixLayout MicroBlocksTipBar {
+	scale = (global 'scale')
+	page = (global 'page')
+	setExtent morph (width page) (22 * scale)
+
+	setLeft (morph title) ((left morph) + (3 * scale))
+	setLeft tipMorph ((right (morph title)) + (1 * scale))
+
+	top = (top morph)
+	if ('Linux' != (platform)) { top += (2 * scale) }
+	setTop (morph title) top
+	setTop tipMorph top
+}
+
+// tip Contents
 
 method initContents MicroBlocksTipBar {
 	contentDict = (dictionary)
@@ -196,19 +202,14 @@ method contentsFor MicroBlocksTipBar anElement {
 	return content
 }
 
-method fixLayout MicroBlocksTipBar {
-	scale = (global 'scale')
-	page = (global 'page')
-	setExtent morph (width page) (22 * scale)
-	redraw box
+// icons
 
-	setLeft (morph title) ((left morph) + (3 * scale))
-	setLeft tipMorph ((right (morph title)) + (1 * scale))
-
-	top = (top morph)
-	if ('Linux' != (platform)) { top += (2 * scale) }
-	setTop (morph title) top
-	setTop tipMorph top
+method initIcons MicroBlocksTipBar {
+	iconsDict = (dictionary)
+	atPut iconsDict '[l]' (leftClickLogo this)
+	atPut iconsDict '[r]' (rightClickLogo this)
+	atPut iconsDict '(-o)' (trueLogo this)
+	atPut iconsDict '(o-)' (falseLogo this)
 }
 
 method rightClickLogo MicroBlocksTipBar {
@@ -264,7 +265,7 @@ cgtWngAAAABJRU5ErkJggg=='
 }
 
 method trueLogo MicroBlocksTipBar {
-    dataRetina = '
+	dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAADMAAAAcCAYAAADMW4fJAAAACXBIWXMAACYWAAAmFgGz33QBAAAAGXRF
 WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAABWxJREFUWIW1mE9MHPcVxz/vtzszyy4smLXN
 slgOFmlsg6tUipKqh0RqVDknUGRMEsnyJeq9zSFRlKa3tFGlXtsc7B45OGCM4iiKeqtkyVIvrUjkhVUN
@@ -291,7 +292,7 @@ tYDPr169+pd6YwtTPp+/MTAw4AJviopkZ7P0zPTw0HlIJV0hjB/892Dp6BLLR5fpnu3GBIb19XXu37+P
 cRwsyyIMQzzP2ylzqARBcGFycnLyyYEdL9DQ0FBbPB7/UEQ+APZ/waOHD/zVGPPp2NjY2tMm7Pk1jIyM
 tKjqWVUdUtUzItIDdBFxeVZVG9dMNwJSVUSWgakgCC5ZlvXN2NjYrh7p/+bgN+TqDPt+AAAAAElFTkSu
 QmCC'
-    data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAABoAAAAOCAYAAAAxDQxDAAAACXBIWXMAABMLAAATCwErAKTWAAAAGXRF
 WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAlVJREFUOI2VlMFPE0EUxr8322XZsmBLlsYC
 lmAgxEJDgopH41EPEtn/wcSIxpsX48lo4s1o4t9g0hI8ePNgTDx4JDWlhcZAONRDuy3ttoWys88DFDBi
@@ -309,7 +310,7 @@ P+xGYQNVuwoAr1ZXVz+cjaD7TPyueaHJO6mdvrpZDxRB+oCOkejISQTVG3VUKhXg6O28SKfTz4+HccrS
 }
 
 method falseLogo MicroBlocksTipBar {
-    dataRetina = '
+	dataRetina = '
 iVBORw0KGgoAAAANSUhEUgAAADMAAAAcCAYAAADMW4fJAAAACXBIWXMAACYWAAAmFgGz33QBAAAAGXRF
 WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAABSVJREFUWIXFmE1sVFUUx3/nzpuZzsyjbWaE
 RqIBonwUCGm6MHGhiYkaE6QJpdUFwRiDC5YmLkS3sEAisjXRaEQWZtIxtmFhWGoMxgQWaNs0xUACCB1m
@@ -334,7 +335,7 @@ GzduoKoI8FYyyfYQfCVQ5Uq1yoVymUbWEpHjIyMj3zXWLPtdQ0NDJ1X109a57u7uZkMjuiQiqSqzs7MU
 CgXu3r3b9LcY8LZtt93QWKw/vf9YXKTQ0tBQ1eO5XO7z1rUr2v7gwYODxpgfWKXV5Lruisl2gzFsi0bb
 bjXN1VtNS8LRjKp+kMvlLiyVeyzbwMDAhmg0egI4Rr0YfcqYB740xpzOZrOllRas+uuGh4cTvu/vF5Gj
 wD5V7QIS0m6T4MnwgLvATeBvVf05EolczGazT2wk/AfDzRDiodhsigAAAABJRU5ErkJggg=='
-    data = '
+	data = '
 iVBORw0KGgoAAAANSUhEUgAAABoAAAAOCAYAAAAxDQxDAAAACXBIWXMAABMLAAATCwErAKTWAAAAGXRF
 WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAj5JREFUOI2VlEFrE1EUhb/7Jpl0aGMwTcF0
 J9ZqanGnm4K4cePCRUPJb5AiuHAhrsWNK0uhCP6DphF/gCCiC627Bim2uJC2kSYNRNLOTGbee26aatU2
