@@ -921,7 +921,7 @@ method addDamage Page newRect {
   add damages (copy newRect)
 }
 
-method fixDamages Page {
+method fixDamages Page forBenchmark {
   // Redraw morphs that overlap the damage rectangles and reset the damage list.
 
   // make debug true to show damage handling
@@ -958,7 +958,7 @@ method fixDamages Page {
   // make debug2 true to show damage handling
   debug2 = false
   if (and debug2 ((msecs t) > 2)) { print 'fixDamages' (msecs t) 'msecs' }
-  flipBuffer
+  if (true != forBenchmark) { flipBuffer }
   damages = (list)
   redrawAll = false
 }

@@ -1137,6 +1137,36 @@ method projectMenu MicroBlocksEditor {
   popUpAtHand menu (global 'page')
 }
 
+// Internal graphics performance tests
+
+to timeRedraw { timeRedraw (first (allInstances 'MicroBlocksEditor')) }
+
+method timeRedraw MicroBlocksEditor {
+  page = (global 'page')
+  scriptsM = (morph (scriptEditor scripter))
+  count = 100
+  t = (newTimer)
+  repeat count {
+    changed scriptsM
+    fixDamages page true
+  }
+  msecs = (msecs t)
+  print msecs 'msecs' ((1000 * count) / msecs) 'fps'
+}
+
+method redrawnMorphs MicroBlocksEditor {
+  // Shows the number of each type of morph redrawn by timeRedraw.
+
+  stats = (dictionary)
+  scriptsM = (morph (scriptEditor scripter))
+  for m (allMorphs scriptsM) {
+    add stats (className (classOf (handler m)))
+  }
+  for p (reversed (sortedPairs stats)) {
+    print p
+  }
+}
+
 // UI image resources
 
 method makeLogoPNG MicroBlocksEditor {
