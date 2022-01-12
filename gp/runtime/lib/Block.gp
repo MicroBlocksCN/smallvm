@@ -1,7 +1,7 @@
 // Block
 // Handlers for the GP blocks GUI
 
-defineClass Block morph blockSpec type expression labelParts corner rounding dent inset hatWidth border color expansionLevel function isAlternative layoutNeeded
+defineClass Block morph blockSpec type expression labelParts corner rounding dent inset hatWidth border color expansionLevel function isAlternative layoutNeeded pathCache cacheW cacheH
 
 to block type color opName {
   block = (new 'Block')
@@ -309,22 +309,43 @@ method fixLayoutRTL Block {
 }
 
 method drawOn Block ctx {
+	usePathCache = ('Browser' == (platform)) // xxx make true to enable path caching
+	if (or (not usePathCache) (notNil (getField ctx 'surface'))) {
+		drawShape this (getShapeMaker ctx)
+		return
+	}
+
+	if (or (isNil pathCache) (cacheW != (width morph)) (cacheH != (height morph))) {
+		// update pathCache
+		sm = (newShapeMakerForPathRecording)
+		drawShape this sm
+		pathCache = (recordedPaths sm)
+		cacheW = (width morph)
+		cacheH = (height morph)
+	}
+	drawCachedPaths ctx pathCache (left morph) (top morph)
+}
+
+method drawShape Block aShapeMaker {
 	scale = (blockScale)
-	sm = (getShapeMaker ctx)
-	r = (bounds morph)
+	if (isRecording aShapeMaker) {
+		r = (rect 0 0 (width morph) (height morph))
+	} else {
+		r = (bounds morph)
+	}
 	if (type == 'command') {
 		commandSlots = (commandSlots this)
 		if (isEmpty commandSlots) {
-			drawBlock sm r color (scale * corner) (scale * dent) (scale * inset)
+			drawBlock aShapeMaker r color (scale * corner) (scale * dent) (scale * inset)
 		} else {
-			drawBlockWithCommandSlots sm r commandSlots color (scale * corner) (scale * dent) (scale * inset)
+			drawBlockWithCommandSlots aShapeMaker r commandSlots color (scale * corner) (scale * dent) (scale * inset)
 		}
 	} (type == 'reporter') {
 		clr = color
 		if (getAlternative this) { clr = (lighter color 17) }
-		drawReporter sm r clr (scale * rounding)
+		drawReporter aShapeMaker r clr (scale * rounding)
 	} (type == 'hat') {
-		drawHatBlock sm r (scale * hatWidth) color (scale * corner) (scale * dent) (scale * inset)
+		drawHatBlock aShapeMaker r (scale * hatWidth) color (scale * corner) (scale * dent) (scale * inset)
 	}
 }
 

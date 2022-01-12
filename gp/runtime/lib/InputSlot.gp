@@ -1,6 +1,6 @@
 // editable input slot for blocks
 
-defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID
+defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID pathCache cacheW cacheH
 
 to newInputSlot default editRule blockColor menuSelector {
   if (isNil default) {default = ''}
@@ -106,9 +106,26 @@ method fixLayout InputSlot {
 }
 
 method drawOn InputSlot ctx {
+  usePathCache = ('Browser' == (platform)) // xxx make true to enable path caching
+  if (or (not usePathCache) (notNil (getField ctx 'surface'))) {
+    drawShape this (getShapeMaker ctx)
+    return
+  }
+
+  if (or (isNil pathCache) (cacheW != (width morph)) (cacheH != (height morph))) {
+    // update pathCache
+    sm = (newShapeMakerForPathRecording)
+    drawShape this sm
+    pathCache = (recordedPaths sm)
+    cacheW = (width morph)
+    cacheH = (height morph)
+  }
+  drawCachedPaths ctx pathCache (left morph) (top morph)
+}
+
+method drawShape InputSlot aShapeMaker {
   scale = (blockScale)
   border = (max 1 (scale / 2))
-  pen = (getShapeMaker ctx)
 
   isNumber = ((editRule text) == 'numerical')
   if (and (isAuto == true) (representsANumber (text text))) {
@@ -119,27 +136,33 @@ method drawOn InputSlot ctx {
   gray = (gray 180)
   corner = scale
 
+  if (isRecording aShapeMaker) {
+    r = (rect 0 0 (width morph) (height morph))
+  } else {
+    r = (bounds morph)
+  }
+
   if isNumber {
     corner = (((height morph) / 2) - 1)
-    fillRoundedRect pen (bounds morph) corner white border gray white
+    fillRoundedRect aShapeMaker r corner white border gray white
   } ((editRule text) == 'static') {
     c = (gray 220)
     if (notNil color) { c = color }
-    fillRoundedRect pen (bounds morph) corner c border (darker c) (lighter c)
+    fillRoundedRect aShapeMaker r corner c border (darker c) (lighter c)
   } else {
-    fillRoundedRect pen (bounds morph) corner white border gray white
+    fillRoundedRect aShapeMaker r corner white border gray white
   }
   if (notNil menuSelector) { // draw down-arrow
 	fontH = (fontSize text)
     border = scale
-    x = (left morph)
-    y = (top morph)
+    x = (left r)
+    y = (top r)
     x += (((width morph) - fontH) - border)
     y += (((height morph) / 4) + border)
     w = (fontH - (2 * border))
     h = ((fontH / 2) + border)
     clr = (gray 0)
-	fillArrow (getShapeMaker ctx) (rect x y w h) 'down' clr
+	fillArrow aShapeMaker (rect x y w h) 'down' clr
   }
 }
 
