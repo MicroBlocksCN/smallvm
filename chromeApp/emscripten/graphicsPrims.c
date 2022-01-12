@@ -1,7 +1,6 @@
 // graphicsPrims.c
 // John Maloney, October 2013
 
-#include <cairo/cairo.h>
 #include <dirent.h>
 #include <math.h>
 #include <stdio.h>
@@ -118,18 +117,6 @@ static void setSurfaceClipRect(SDL_Surface *surface, OBJ clipRect) {
 	clipR.w = intValue(FIELD(clipRect, 2));
 	clipR.h = intValue(FIELD(clipRect, 3));
 	SDL_SetClipRect(surface, &clipR);
-}
-
-static void setCairoClipRect(cairo_t *ctx, OBJ clipRect) {
-	if (!isRectangle(clipRect)) return;
-
-	int x = intValue(FIELD(clipRect, 0));
-	int y = intValue(FIELD(clipRect, 1));
-	int w = intValue(FIELD(clipRect, 2));
-	int h = intValue(FIELD(clipRect, 3));
-	cairo_rectangle(ctx, x, y, w, h);
-	cairo_clip(ctx);
-	cairo_new_path(ctx); // clear path
 }
 
 static SDL_Texture * obj2texture(OBJ textureObj) {
@@ -490,6 +477,121 @@ OBJ primDrawBitmap(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+#ifdef BLEND2D
+
+#include <blend2d.h>
+#include <SDL.h>
+
+extern SDL_Surface *screenBitmap;
+
+static BLImageCore srcImg;
+static BLImageCore dstImg;
+static BLContextCore blendCtx;
+
+static inline double floatValue(OBJ obj) {
+	// Return the value of an Integer or Float object.
+	if (isInt(obj)) return (double) obj2int(obj);
+	if (IS_CLASS(obj, FloatClass)) return evalFloat(obj);
+	return 0.0;
+}
+
+static int startBlend(OBJ srcBitmap, OBJ dstBitmap, OBJ clipRect) {
+	int r, w, h;
+
+	if (!isBitmap(srcBitmap)) return false;
+
+	if (!isBitmap(srcBitmap)) return false; // not a bitmap object; shouldn't happen
+
+	w = obj2int(FIELD(srcBitmap, 0));
+	h = obj2int(FIELD(srcBitmap, 1));
+	OBJ data = FIELD(srcBitmap, 2);
+
+	r = blImageInitAsFromData(&srcImg,
+		w, h, BL_FORMAT_PRGB32, &FIELD(data, 0), (4 * w), NULL, NULL);
+	if (r != BL_SUCCESS) return false;
+
+	if (nilObj == dstBitmap) {
+		// draw on the display screen
+		SDL_Surface *screen = screenBitmap;
+		if (!screen) return false;
+
+		r = blImageInitAsFromData(&dstImg,
+			screen->w, screen->h, BL_FORMAT_PRGB32, screen->pixels, (4 * screen->w), NULL, NULL);
+		if (r != BL_SUCCESS) return false;
+	} else if (!isBitmap(dstBitmap)) {
+		return false;
+	} else {
+		// draw on the given bitmap
+		if (!isBitmap(dstBitmap)) return false; // not a bitmap object; shouldn't happen
+
+		w = obj2int(FIELD(dstBitmap, 0));
+		h = obj2int(FIELD(dstBitmap, 1));
+		OBJ data = FIELD(dstBitmap, 2);
+
+		r = blImageInitAsFromData(&dstImg,
+			w, h, BL_FORMAT_PRGB32, &FIELD(data, 0), (4 * w), NULL, NULL);
+		if (r != BL_SUCCESS) return false;
+	}
+
+	// create a context
+	r = blContextInitAs(&blendCtx, &dstImg, NULL);
+	if (r != BL_SUCCESS) return false;
+
+	// set clip rectangle
+	if (isRectangle(clipRect)) {
+		BLRect clip;
+		clip.x = floatValue(FIELD(clipRect, 0));
+		clip.y = floatValue(FIELD(clipRect, 1));
+		clip.w = floatValue(FIELD(clipRect, 2));
+		clip.h = floatValue(FIELD(clipRect, 3));
+		blContextClipToRectD(&blendCtx, &clip);
+	}
+	return true; // success!
+}
+
+static void endBlend() {
+	blContextEnd(&blendCtx);
+	blImageDestroy(&dstImg);
+	blImageDestroy(&srcImg);
+}
+
+static void warpBitmap(OBJ src, OBJ dst, OBJ clipRect,
+		int centerX, int centerY,
+		double scaleX, double scaleY, double rotation) {
+
+	int srcW = obj2int(FIELD(src, 0));
+	int srcH = obj2int(FIELD(src, 1));
+	double dstW = scaleX * srcW;
+	double dstH = scaleY * srcH;
+
+	if (!startBlend(src, dst, clipRect)) return; // failed to init Blend2d; bad dst or clipRect?
+
+	if (0 == rotation) {
+		// special case: no rotation
+		BLRect dstRect = { centerX - (dstW / 2), centerY - (dstH / 2), dstW, dstH };
+		blContextBlitScaledImageD(&blendCtx, &dstRect, &srcImg, NULL);
+	} else { // has rotation
+		// general case: rotation with possible scaling as well
+
+		double args1[2] = { (centerX - (scaleX * (srcW / 2))), (centerY - (scaleY * (srcH / 2))) };
+		blContextMatrixOp(&blendCtx, BL_MATRIX2D_OP_TRANSLATE, args1);
+
+		double args2[2] = { scaleX, scaleY };
+ 		blContextMatrixOp(&blendCtx, BL_MATRIX2D_OP_SCALE, &args2);
+
+		double args3[3] = { (rotation * M_PI) / 180.0, (srcW / 2), (srcH / 2) };
+		blContextMatrixOp(&blendCtx, BL_MATRIX2D_OP_ROTATE_PT, &args3);
+
+		BLPoint dstPoint = { 0, 0 };
+		blContextBlitImageD(&blendCtx, &dstPoint, &srcImg, NULL);
+	}
+	endBlend();
+}
+
+#else // cairo
+
+#include <cairo/cairo.h>
+
 static inline cairo_surface_t * bitmap2cairo(OBJ bitmap) {
 	if ((nilObj == bitmap) && screenBitmap) {
 		SDL_Surface *screen = screenBitmap;
@@ -506,18 +608,21 @@ static inline cairo_surface_t * bitmap2cairo(OBJ bitmap) {
 	return cairo_image_surface_create_for_data((unsigned char *) &FIELD(data, 0), CAIRO_FORMAT_ARGB32, w, h, (4 * w));
 }
 
-OBJ primWarpBitmap(int nargs, OBJ args[]) {
-	if (nargs < 2) return notEnoughArgsFailure();
-	OBJ dst = args[0];
-	OBJ src = args[1];
-	int centerX = intOrFloatArg(2, 0, nargs, args);
-	int centerY = intOrFloatArg(3, 0, nargs, args);
-	double scaleX = floatArg(4, 1, nargs, args);
-	double scaleY = floatArg(5, 1, nargs, args);
-	double rotation = floatArg(6, 0, nargs, args);
-	OBJ clipRect = (nargs > 7) ? args[7] : nilObj;
+static void setCairoClipRect(cairo_t *ctx, OBJ clipRect) {
+	if (!isRectangle(clipRect)) return;
 
-	if (!isBitmap(src)) return primFailed("Bad bitmap");
+	int x = intValue(FIELD(clipRect, 0));
+	int y = intValue(FIELD(clipRect, 1));
+	int w = intValue(FIELD(clipRect, 2));
+	int h = intValue(FIELD(clipRect, 3));
+	cairo_rectangle(ctx, x, y, w, h);
+	cairo_clip(ctx);
+	cairo_new_path(ctx); // clear path
+}
+
+static void warpBitmap(OBJ src, OBJ dst, OBJ clipRect,
+	int centerX, int centerY,
+	double scaleX, double scaleY, double rotation) {
 
 	int srcW = obj2int(FIELD(src, 0));
 	int srcH = obj2int(FIELD(src, 1));
@@ -556,14 +661,14 @@ OBJ primWarpBitmap(int nargs, OBJ args[]) {
 			SDL_SetRenderTarget(renderer, NULL); // revert to window
 		}
 		SDL_FreeSurface(srcSurface);
-		return nilObj;
+		return;
 	}
 
 	cairo_surface_t *dstSurf = bitmap2cairo(dst);
 	cairo_surface_t *srcSurf = bitmap2cairo(src);
 	if (!dstSurf || !srcSurf) {
 		printf("WarpBitmap: first two arguments must be bitmaps\n");
-		return nilObj;
+		return;
 	}
 
 	// general case: rotation with possible scaling as well
@@ -585,6 +690,24 @@ OBJ primWarpBitmap(int nargs, OBJ args[]) {
 	cairo_destroy(cr);
 	cairo_surface_destroy(dstSurf);
 	cairo_surface_destroy(srcSurf);
+}
+
+#endif
+
+OBJ primWarpBitmap(int nargs, OBJ args[]) {
+	if (nargs < 2) return notEnoughArgsFailure();
+	OBJ dst = args[0];
+	OBJ src = args[1];
+	if (!isBitmap(src)) return primFailed("Bad bitmap");
+
+	int centerX = intOrFloatArg(2, 0, nargs, args);
+	int centerY = intOrFloatArg(3, 0, nargs, args);
+	double scaleX = floatArg(4, 1, nargs, args);
+	double scaleY = floatArg(5, 1, nargs, args);
+	double rotation = floatArg(6, 0, nargs, args);
+	OBJ clipRect = (nargs > 7) ? args[7] : nilObj;
+
+	warpBitmap(src, dst, clipRect, centerX, centerY, scaleX, scaleY, rotation);
 	return nilObj;
 }
 

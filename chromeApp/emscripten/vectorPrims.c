@@ -5,31 +5,20 @@
 #include "mem.h"
 #include "interp.h"
 
-#ifdef EMSCRIPTEN
-	#include <emscripten.h>
-	#include <emscripten/html5.h>
-	typedef void cairo_t;
+// offset used for all path points; reset to zero after each drawing operation
 
-	#define closePath cairo_close_path
-	#define curveTo cairo_curve_to
-	#define lineTo cairo_line_to
-	#define moveTo cairo_move_to
-#else
-	#include <cairo/cairo.h>
-
-	#define closePath cairo_close_path
-	#define curveTo cairo_curve_to
-	#define lineTo cairo_line_to
-	#define moveTo cairo_move_to
-#endif
+static double pathXOffset = 0;
+static double pathYOffset = 0;
 
 // Helper Functions
 
-static inline int intValue(OBJ obj) {
+static void interpretPath(OBJ path); // forward reference
+
+static inline double floatValue(OBJ obj) {
 	// Return the value of an Integer or Float object.
-	if (isInt(obj)) return obj2int(obj);
-	if (IS_CLASS(obj, FloatClass)) return (int) round(evalFloat(obj));
-	return 0;
+	if (isInt(obj)) return (double) obj2int(obj);
+	if (IS_CLASS(obj, FloatClass)) return evalFloat(obj);
+	return 0.0;
 }
 
 static int isBitmap(OBJ bitmap) {
@@ -49,89 +38,10 @@ static int isRectangle(OBJ rect) {
 		(isInt(FIELD(rect, 3)) || IS_CLASS(FIELD(rect, 3), FloatClass));
 }
 
-static void interpretPath(cairo_t *ctx, OBJ path) {
-	int count = objWords(path);
-	double x = 0, y = 0;
-	double c1x, c1y, c2x, c2y, qx, qy;
-	double firstX = 0, lastX = 0;
-	double firstY = 0, lastY = 0;
-	int i = 0;
-	while (i < count) {
-		OBJ cmdObj = FIELD(path, i++);
-		if (NOT_CLASS(cmdObj, StringClass)) {
-			printf("Non-string command in path\n");
-			return;
-		}
-		char *cmd = obj2str(cmdObj);
-		if (strcmp("L", cmd) == 0) {
-			x = evalFloat(FIELD(path, i++));
-			y = evalFloat(FIELD(path, i++));
-			#ifdef EMSCRIPTEN
-				EM_ASM_({GP.ctx.lineTo($0, $1)}, x, y);
-			#else
-				cairo_line_to(ctx, x, y);
-			#endif
-		} else if (strcmp("C", cmd) == 0) { // quadratic Bezier curve
-			x = evalFloat(FIELD(path, i++));
-			y = evalFloat(FIELD(path, i++));
-			qx = evalFloat(FIELD(path, i++));
-			qy = evalFloat(FIELD(path, i++));
-			// compute cubic Bezier control points
-			c1x = lastX + ((2 * (qx - lastX)) / 3);
-			c1y = lastY + ((2 * (qy - lastY)) / 3);
-			c2x = x + ((2 * (qx - x)) / 3);
-			c2y = y + ((2 * (qy - y)) / 3);
-			#ifdef EMSCRIPTEN
-				EM_ASM_({GP.ctx.quadraticCurveTo($0, $1, $2, $3)}, qx, qy, x, y);
-			#else
-				cairo_curve_to(ctx, c1x, c1y, c2x, c2y, x, y);
-			#endif
-		} else if (strcmp("B", cmd) == 0) { // cubic Bezier curve
-			x = evalFloat(FIELD(path, i++));
-			y = evalFloat(FIELD(path, i++));
-			c1x = evalFloat(FIELD(path, i++));
-			c1y = evalFloat(FIELD(path, i++));
-			c2x = evalFloat(FIELD(path, i++));
-			c2y = evalFloat(FIELD(path, i++));
-			#ifdef EMSCRIPTEN
-				EM_ASM_({GP.ctx.bezierCurveTo($0, $1, $2, $3, $4, $5)}, c1x, c1y, c2x, c2y, x, y);
-			#else
-				cairo_curve_to(ctx, c1x, c1y, c2x, c2y, x, y);
-			#endif
-		} else if (strcmp("M", cmd) == 0) {
-			x = evalFloat(FIELD(path, i++));
-			y = evalFloat(FIELD(path, i++));
-			firstX = x;
-			firstY = y;
-			#ifdef EMSCRIPTEN
-				EM_ASM_({GP.ctx.moveTo($0, $1)}, x, y);
-			#else
-				cairo_move_to(ctx, x, y);
-			#endif
-		} else if (strcmp("Z", cmd) == 0) {
-			#ifdef EMSCRIPTEN
-				EM_ASM({ GP.ctx.closePath() }, 0);
-			#else
-				cairo_close_path(ctx);
-			#endif
-		} else {
-			printf("Unknown path command %s\n", cmd);
-			return;
-		}
-		lastX = x;
-		lastY = y;
-	}
-	if ((fabs(lastX - firstX) < 0.0001) &&
-		(fabs(lastY - firstY) < 0.0001)) {
-			#ifdef EMSCRIPTEN
-				EM_ASM({ GP.ctx.closePath() }, 0);
-			#else
-				cairo_close_path(ctx);
-			#endif
-	}
-}
-
 #ifdef EMSCRIPTEN
+	#include <emscripten.h>
+	#include <emscripten/html5.h>
+//	typedef void cairo_t;
 
 static int canvasID(OBJ obj) {
 	// If obj is a texture reference, return its id. Otherwise, return -1.
@@ -146,10 +56,10 @@ static int canvasID(OBJ obj) {
 static void setCanvasClipRect(OBJ clipRect) {
 	if (!isRectangle(clipRect)) return;
 
-	int x = intValue(FIELD(clipRect, 0));
-	int y = intValue(FIELD(clipRect, 1));
-	int w = intValue(FIELD(clipRect, 2));
-	int h = intValue(FIELD(clipRect, 3));
+	double x = floatValue(FIELD(clipRect, 0));
+	double y = floatValue(FIELD(clipRect, 1));
+	double w = floatValue(FIELD(clipRect, 2));
+	double h = floatValue(FIELD(clipRect, 3));
 	EM_ASM_({
 		GP.ctx.save();
 		GP.ctx.beginPath();
@@ -301,7 +211,7 @@ static void fillPath(OBJ bitmapOrTexture, OBJ path, OBJ fillColor, OBJ clipRect)
 		if (!ok) return;
 	}
 
-	interpretPath(NULL, path);
+	interpretPath(path);
 	EM_ASM_({
 		if (GP.shadowColor) setContextShadow(GP.ctx);
 		GP.ctx.fillStyle = UTF8ToString($0);
@@ -339,7 +249,7 @@ static void strokePath(OBJ bitmapOrTexture, OBJ path, OBJ strokeColor, double li
 		if (!ok) return;
 	}
 
-	interpretPath(NULL, path);
+	interpretPath(path);
 	EM_ASM_({
 		if (GP.shadowColor) setContextShadow(GP.ctx);
 		GP.ctx.strokeStyle = UTF8ToString($0);
@@ -356,12 +266,117 @@ static void strokePath(OBJ bitmapOrTexture, OBJ path, OBJ strokeColor, double li
 	}, 0);
 }
 
-#else
+#elif defined(BLEND2D)
+
+#include <blend2d.h>
+#include <SDL.h>
+
+extern SDL_Surface *screenBitmap;
+
+static BLImageCore blendImg;
+static BLContextCore blendCtx;
+static BLPathCore blendPath;
+
+static int startBlend(OBJ bitmap, OBJ clipRect) {
+	int r;
+
+	if (nilObj == bitmap) {
+		// draw on the display screen
+		SDL_Surface *screen = screenBitmap;
+		if (!screen) return false;
+
+		r = blImageInitAsFromData(&blendImg,
+			screen->w, screen->h, BL_FORMAT_PRGB32, screen->pixels, (4 * screen->w), NULL, NULL);
+		if (r != BL_SUCCESS) return false;
+	} else {
+		// draw on the given bitmap
+		if (!isBitmap(bitmap)) return false; // not a bitmap object; shouldn't happen
+
+		int w = obj2int(FIELD(bitmap, 0));
+		int h = obj2int(FIELD(bitmap, 1));
+		OBJ data = FIELD(bitmap, 2);
+
+		r = blImageInitAsFromData(&blendImg,
+			w, h, BL_FORMAT_PRGB32, &FIELD(data, 0), (4 * w), NULL, NULL);
+		if (r != BL_SUCCESS) return false;
+	}
+
+	// create a context and path
+	r = blContextInitAs(&blendCtx, &blendImg, NULL);
+	if (r != BL_SUCCESS) return false;
+	r = blPathInit(&blendPath);
+	if (r != BL_SUCCESS) return false;
+
+	// set clip rectangle
+	if (isRectangle(clipRect)) {
+		BLRect clip;
+		clip.x = floatValue(FIELD(clipRect, 0));
+		clip.y = floatValue(FIELD(clipRect, 1));
+		clip.w = floatValue(FIELD(clipRect, 2));
+		clip.h = floatValue(FIELD(clipRect, 3));
+		blContextClipToRectD(&blendCtx, &clip);
+	}
+	return true; // success!
+}
+
+static void endBlend() {
+	blPathDestroy(&blendPath);
+	blContextEnd(&blendCtx);
+	blImageDestroy(&blendImg);
+}
+
+static inline uint32_t rgba32Color(OBJ colorObj) {
+	int words = objWords(colorObj);
+	if (words < 3) return 0;
+	int r = clip(obj2int(FIELD(colorObj, 0)), 0, 255);
+	int g = clip(obj2int(FIELD(colorObj, 1)), 0, 255);
+	int b = clip(obj2int(FIELD(colorObj, 2)), 0, 255);
+	int a = (words > 3) ? clip(obj2int(FIELD(colorObj, 3)), 0, 255) : 255;
+	return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+static void fillPath(OBJ bitmap, OBJ path, OBJ fillColor, OBJ clipRect) {
+	if (!startBlend(bitmap, clipRect)) return;
+
+	interpretPath(path);
+	blContextSetFillStyleRgba32(&blendCtx, rgba32Color(fillColor));
+	blContextFillPathD(&blendCtx, &blendPath);
+
+	endBlend();
+}
+
+static void strokePath(OBJ bitmap, OBJ path, OBJ strokeColor, double lineWidth, int jointStyle, int capStyle, OBJ clipRect) {
+	if (!startBlend(bitmap, clipRect)) return;
+
+	interpretPath(path);
+	blContextSetStrokeStyleRgba32(&blendCtx, rgba32Color(strokeColor));
+	blContextSetStrokeWidth(&blendCtx, lineWidth);
+	blContextSetStrokeJoin(&blendCtx, BL_STROKE_JOIN_ROUND);
+	blContextSetStrokeCaps(&blendCtx, BL_STROKE_CAP_BUTT);
+	blContextStrokePathD(&blendCtx, &blendPath);
+
+	endBlend();
+}
+
+static void moveTo(double x, double y) { blPathMoveTo(&blendPath, x, y); }
+static void lineTo(double x, double y) { blPathLineTo(&blendPath, x, y); }
+static void closePath() { blPathClose(&blendPath); }
+static void quadTo(double cx, double cy, double x, double y) {
+	blPathQuadTo(&blendPath, cx, cy, x, y);
+}
+static void cubicTo(double c1x, double c1y, double c2x, double c2y, double x, double y) {
+	blPathCubicTo(&blendPath, c1x, c1y, c2x, c2y, x, y);
+}
+
+#else // cairo
 
 #include <cairo/cairo.h>
-
 #include <SDL.h>
+
 extern SDL_Surface *screenBitmap;
+
+cairo_surface_t *surface = NULL;
+cairo_t *ctx = NULL;
 
 static inline cairo_surface_t * bitmap2surface(OBJ bitmap) {
 	if (nilObj == bitmap) {
@@ -397,47 +412,145 @@ static inline void setColor(cairo_t *ctx, OBJ colorObj) {
 static void setCairoClipRect(cairo_t *ctx, OBJ clipRect) {
 	if (!isRectangle(clipRect)) return;
 
-	int x = intValue(FIELD(clipRect, 0));
-	int y = intValue(FIELD(clipRect, 1));
-	int w = intValue(FIELD(clipRect, 2));
-	int h = intValue(FIELD(clipRect, 3));
+	double x = floatValue(FIELD(clipRect, 0));
+	double y = floatValue(FIELD(clipRect, 1));
+	double w = floatValue(FIELD(clipRect, 2));
+	double h = floatValue(FIELD(clipRect, 3));
 	cairo_rectangle(ctx, x, y, w, h);
 	cairo_clip(ctx);
 	cairo_new_path(ctx); // clear path
 }
 
-static void fillPath(OBJ bitmap, OBJ path, OBJ fillColor, OBJ clipRect) {
-	cairo_surface_t *surface = bitmap2surface(bitmap);
-	if (!surface) return;
-	cairo_t *ctx = cairo_create(surface);
+static int startCairo(OBJ bitmap, OBJ clipRect) {
+	surface = bitmap2surface(bitmap);
+	if (!surface) return false;
+	ctx = cairo_create(surface);
 	setCairoClipRect(ctx, clipRect);
+	return true;
+}
 
-	interpretPath(ctx, path);
+static void endCairo() {
+	cairo_destroy(ctx);
+	ctx = NULL;
+	cairo_surface_destroy(surface);
+	surface = NULL;
+}
+
+static void fillPath(OBJ bitmap, OBJ path, OBJ fillColor, OBJ clipRect) {
+	if (!startCairo(bitmap, clipRect)) return;
+
+	interpretPath(path);
 	setColor(ctx, fillColor);
 	cairo_fill(ctx);
 
-	cairo_destroy(ctx);
-	cairo_surface_destroy(surface);
+	endCairo();
 }
 
 static void strokePath(OBJ bitmap, OBJ path, OBJ strokeColor, double lineWidth, int jointStyle, int capStyle, OBJ clipRect) {
-	cairo_surface_t *surface = bitmap2surface(bitmap);
-	if (!surface) return;
-	cairo_t *ctx = cairo_create(surface);
-	setCairoClipRect(ctx, clipRect);
+	if (!startCairo(bitmap, clipRect)) return;
 
-	interpretPath(ctx, path);
+	interpretPath(path);
 	setColor(ctx, strokeColor);
 	cairo_set_line_width(ctx, lineWidth);
 	cairo_set_line_join(ctx, jointStyle);
 	cairo_set_line_cap(ctx, capStyle);
 	cairo_stroke(ctx);
 
-	cairo_destroy(ctx);
-	cairo_surface_destroy(surface);
+	endCairo();
+}
+
+static void moveTo(double x, double y) { cairo_move_to(ctx, x, y); }
+static void lineTo(double x, double y) { cairo_line_to(ctx, x, y); }
+static void closePath() { cairo_close_path(ctx); }
+static void cubicTo(double c1x, double c1y, double c2x, double c2y, double x, double y) {
+	cairo_curve_to(ctx, c1x, c1y, c2x, c2y, x, y);
 }
 
 #endif
+
+static void interpretPath(OBJ path) {
+	int count = objWords(path);
+	double x = 0, y = 0;
+	double c1x, c1y, c2x, c2y, qx, qy;
+	double firstX = 0, lastX = 0;
+	double firstY = 0, lastY = 0;
+	int i = 0;
+	while (i < count) {
+		OBJ cmdObj = FIELD(path, i++);
+		if (NOT_CLASS(cmdObj, StringClass)) {
+			printf("Non-string command in path\n");
+			return;
+		}
+		char *cmd = obj2str(cmdObj);
+		if (strcmp("L", cmd) == 0) {
+			x = pathXOffset + evalFloat(FIELD(path, i++));
+			y = pathYOffset + evalFloat(FIELD(path, i++));
+			#ifdef EMSCRIPTEN
+				EM_ASM_({ GP.ctx.lineTo($0, $1) }, x, y);
+			#else
+				lineTo(x, y);
+			#endif
+		} else if (strcmp("C", cmd) == 0) { // quadratic Bezier curve
+			x = pathXOffset + evalFloat(FIELD(path, i++));
+			y = pathYOffset + evalFloat(FIELD(path, i++));
+			qx = pathXOffset + evalFloat(FIELD(path, i++));
+			qy = pathYOffset + evalFloat(FIELD(path, i++));
+			#ifdef EMSCRIPTEN
+				EM_ASM_({ GP.ctx.quadraticCurveTo($0, $1, $2, $3) }, qx, qy, x, y);
+			#elif defined(BLEND2D)
+				quadTo(qx, qy, x, y);
+			#else
+				// compute cubic Bezier control points for cairo
+				c1x = lastX + ((2 * (qx - lastX)) / 3);
+				c1y = lastY + ((2 * (qy - lastY)) / 3);
+				c2x = x + ((2 * (qx - x)) / 3);
+				c2y = y + ((2 * (qy - y)) / 3);
+				cubicTo(c1x, c1y, c2x, c2y, x, y);
+			#endif
+		} else if (strcmp("B", cmd) == 0) { // cubic Bezier curve
+			x = pathXOffset + evalFloat(FIELD(path, i++));
+			y = pathYOffset + evalFloat(FIELD(path, i++));
+			c1x = pathXOffset + evalFloat(FIELD(path, i++));
+			c1y = pathYOffset + evalFloat(FIELD(path, i++));
+			c2x = pathXOffset + evalFloat(FIELD(path, i++));
+			c2y = pathYOffset + evalFloat(FIELD(path, i++));
+			#ifdef EMSCRIPTEN
+				EM_ASM_({ GP.ctx.bezierCurveTo($0, $1, $2, $3, $4, $5) }, c1x, c1y, c2x, c2y, x, y);
+			#else
+				cubicTo(c1x, c1y, c2x, c2y, x, y);
+			#endif
+		} else if (strcmp("M", cmd) == 0) {
+			x = pathXOffset + evalFloat(FIELD(path, i++));
+			y = pathYOffset + evalFloat(FIELD(path, i++));
+			firstX = x;
+			firstY = y;
+			#ifdef EMSCRIPTEN
+				EM_ASM_({ GP.ctx.moveTo($0, $1) }, x, y);
+			#else
+				moveTo(x, y);
+			#endif
+		} else if (strcmp("Z", cmd) == 0) {
+			#ifdef EMSCRIPTEN
+				EM_ASM({ GP.ctx.closePath() }, 0);
+			#else
+				closePath();
+			#endif
+		} else {
+			printf("Unknown path command %s\n", cmd);
+			return;
+		}
+		lastX = x;
+		lastY = y;
+	}
+	if ((fabs(lastX - firstX) < 0.0001) &&
+		(fabs(lastY - firstY) < 0.0001)) {
+			#ifdef EMSCRIPTEN
+				EM_ASM({ GP.ctx.closePath() }, 0);
+			#else
+				closePath();
+			#endif
+	}
+}
 
 // Vector Primitives
 
@@ -451,6 +564,7 @@ OBJ primVectorFill(int nargs, OBJ args[]) {
 	if (NOT_CLASS(path, ArrayClass)) return primFailed("Bad path");
 
 	fillPath(bitmapOrTexture, path, color, clipRect);
+	pathXOffset = pathYOffset = 0;
 	return nilObj;
 }
 
@@ -468,6 +582,14 @@ OBJ primVectorStroke(int nargs, OBJ args[]) {
 	if (NOT_CLASS(path, ArrayClass)) return primFailed("Bad path");
 
 	strokePath(bitmapOrTexture, path, color, lineWidth, jointStyle, capStyle, clipRect);
+	pathXOffset = pathYOffset = 0;
+	return nilObj;
+}
+
+OBJ primVectorSetPathOffset(int nargs, OBJ args[]) {
+	if (nargs < 2) return notEnoughArgsFailure();
+	pathXOffset = evalFloat(args[0]);
+	pathYOffset = evalFloat(args[1]);
 	return nilObj;
 }
 
@@ -475,6 +597,7 @@ PrimEntry vectorPrimList[] = {
 	{"-----", NULL, "Vector Graphics"},
 	{"vectorFillPath",		primVectorFill,		"Fill a path on the given Bitmap. Arguments: bitmap, path, color [clipRect]"},
 	{"vectorStrokePath",	primVectorStroke,	"Stroke a path on the given Bitmap. Arguments: bitmap, path, color [width, jointStyle, capStyle, clipRect]"},
+	{"vectorSetPathOffset",	primVectorSetPathOffset, "Set the path offset for the next fill or stroke. Offset is cleared by fill/stroke. Arguments: xOffset, yOffset"},
 };
 
 PrimEntry* vectorPrimitives(int *primCount) {
