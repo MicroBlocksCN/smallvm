@@ -696,7 +696,47 @@ static void sendNeoPixelData(int val) {
 	portEXIT_CRITICAL(&mux);
 }
 
-#elif defined(ARDUINO_ARCH_RP2040)
+#elif defined(ARDUINO_ARCH_RP2040XXX) // Philhower Arduino
+
+static int neoPixelPin = -1;
+
+static void initNeoPixelPin(int pinNum) {
+	neoPixelPin = pinNum;
+	pinMode(pinNum, OUTPUT);
+	digitalWrite(pinNum, 0);
+	neoPixelPinMask = 1; // record that pin has been initialized
+}
+
+static inline void picoDelay(int n) {
+	volatile int dummy;
+	for (int i = 0; i < n; i++) {
+		dummy += 1;
+	}
+}
+
+static void __not_in_flash_func(sendNeoPixelData)(int val) {
+	if (neoPixelPin < 0) return;
+
+	noInterrupts();
+// 	gpio_put(neoPixelPin, LOW);
+// 	picoDelay(80); // 300 worked, 150 worked, 80 worked, 0 worked
+	for (unsigned int mask = (1 << 23); mask > 0; mask >>= 1) {
+		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 300 nsecs
+			gpio_put(neoPixelPin, HIGH);
+			picoDelay(13);  // ~798 nsecs
+			gpio_put(neoPixelPin, LOW);
+			picoDelay(4); // ~450 nsecs
+		} else { // zero bit; timing goal: high 380 nsecs, low 700 nsecs
+			gpio_put(neoPixelPin, HIGH);
+			picoDelay(4); // ~375 nsecs
+			gpio_put(neoPixelPin, LOW);
+			picoDelay(13); // ~906 nsecs
+		}
+	}
+	interrupts();
+}
+
+#elif defined(ARDUINO_ARCH_RP2040) // mbed Arduino
 
 #include "pinDefinitions.h"
 #include "hardware/sync.h"
@@ -720,21 +760,23 @@ static void initNeoPixelPin(int pinNum) {
 	}
 }
 
-static void sendNeoPixelData(int val) {
+static void __not_in_flash_func(sendNeoPixelData)(int val) {
 	if (!gpioNeopixelGPIO) return;
 
 	uint32_t oldInterruptStatus = save_and_disable_interrupts();
+	gpioNeopixelGPIO->write(LOW);
+	picoDelay(1); // 20 works, 0 fails, 10 works, 0 fails, 5 works, 2 works, 1 works
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 300 nsecs
 			gpioNeopixelGPIO->write(HIGH);
-			picoDelay(8);  // ~798 nsecs
+			picoDelay(10);  // ~798 nsecs
 			gpioNeopixelGPIO->write(LOW);
 			picoDelay(2); // ~450 nsecs
 		} else { // zero bit; timing goal: high 380 nsecs, low 700 nsecs
 			gpioNeopixelGPIO->write(HIGH);
-			picoDelay(2); // ~375 nsecs
+			picoDelay(1); // ~375 nsecs
 			gpioNeopixelGPIO->write(LOW);
-			picoDelay(8); // ~906 nsecs
+			picoDelay(11); // ~906 nsecs
 		}
 	}
 	restore_interrupts(oldInterruptStatus);
@@ -756,6 +798,7 @@ static inline int gamma(int val) {
 	// neoMax determines the max brightness (and power draw!) of each NeoPixel color channel,
 	// which is about (neoMax / 255) * 20 mA per color channel.
 
+//return val; // xxx
 	const int neoMax = 40;
 	const int divisor = (255 * 255) / neoMax;
 	return ((val * val) / divisor) & 0xFF;
@@ -797,7 +840,7 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 					val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
 				}
 				sendNeoPixelData(val);
-				delayMicroseconds(1);  // reduces chance of first NeoPixel glitching to green
+//				delayMicroseconds(1);  // reduces chance of first NeoPixel glitching to green
 			}
 		}
 	}
