@@ -621,6 +621,10 @@ method processDroppedFile MicroBlocksEditor fName data {
     script = (substring script i)
 	pasteScripts scripter script false
   }
+  // xxx for testing:
+  if (endsWith fName '.gp') {
+    eval (toString data) nil (topLevelModule)
+  }
 }
 
 method processDroppedText MicroBlocksEditor text {
@@ -913,6 +917,9 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 		addItem menu 'enable PlugShare when project empty' (action 'toggleAutoDecompile' this true) 'when plugging a board, automatically read its contents into the IDE if the current project is empty'
 	}
 
+// xxx for testing blend in browser...
+addItem menu 'time redraw' (action 'timeRedraw' this)
+addLine menu
 //addItem menu 'cursorTest' cursorTest
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
