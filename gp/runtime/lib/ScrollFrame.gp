@@ -187,6 +187,12 @@ method adjustContents ScrollFrame {
 }
 
 method scrollToX ScrollFrame x {
+  if (0 == (ceiling hSlider)) {
+    // special case when empty
+    fastSetLeft (morph contents) (left morph)
+    return
+  }
+
   w = (width (area contents))
   overlap = (toFloat (-
     (+ w (width (morph vSlider)))
@@ -200,6 +206,12 @@ method scrollToX ScrollFrame x {
 }
 
 method scrollToY ScrollFrame y {
+  if (0 == (ceiling hSlider)) {
+    // special case when empty
+    fastSetTop (morph contents) (top morph)
+    return
+  }
+
   h = (height (area contents))
   if (not (isVisible (morph hSlider))) {
       overlap = (toFloat (- h (height morph)))

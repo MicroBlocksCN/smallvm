@@ -60,7 +60,11 @@ method drawOn Slider ctx {
 
 	bgColor = (gray 255 90)
 	fillRect ctx bgColor (left morph) (top morph) (width morph) (height morph)
-	frac = ((value - floor) / (ceiling - floor))
+	if ((ceiling - floor) == 0) {
+		frac = 0
+	} else {
+		frac = ((value - floor) / (ceiling - floor))
+	}
 	if (orientation == 'horizontal') {
 		sliderRange = ((width morph) - sliderSize)
 		offset = (toInteger (frac * sliderRange))
