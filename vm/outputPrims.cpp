@@ -765,7 +765,7 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) {
 
 	uint32_t oldInterruptStatus = save_and_disable_interrupts();
 	gpioNeopixelGPIO->write(LOW);
-	picoDelay(1); // 20 works, 0 fails, 10 works, 0 fails, 5 works, 2 works, 1 works
+	picoDelay(5); // 20 works, 0 fails, 10 works, 0 fails, 5 works, 2 works, 1 works
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 300 nsecs
 			gpioNeopixelGPIO->write(HIGH);
