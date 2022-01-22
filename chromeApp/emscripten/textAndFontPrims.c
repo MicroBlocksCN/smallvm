@@ -399,22 +399,21 @@ static OBJ fontNames() {
 
 #if defined(_WIN32)
 
-#define UNICODE 1 // use WCHAR API's
-
 #include <string.h>
 #include <windows.h>
 #include <usp10.h>
 
-#define MAX_STRING 5000
-
 typedef HFONT FontRef;
 
 static FontRef openFont(char *fontName, int fontSize) {
+	// Note: ANTIALIASED_QUALITY does not work. Only CLEARTYPE_QUALITY results in smoothing.
+	// Negative font size selects font based on character height, not cell height.
+
 	return CreateFont(
 		-abs(fontSize), 0, 0, 0,
 		FW_DONTCARE, false, false, false,
-		0, OUT_OUTLINE_PRECIS, /* OUT_DEFAULT_PRECIS, */
-		0, CLEARTYPE_QUALITY, /* ANTIALIASED_QUALITY, */ FF_DONTCARE,
+		0, OUT_OUTLINE_PRECIS,
+		0, CLEARTYPE_QUALITY, FF_DONTCARE,
 		fontName);
 }
 
@@ -446,17 +445,16 @@ static int descent(FontRef font) {
 	return (ok ? metrics.tmDescent : 0);
 }
 
+// maximum wide string length
+#define MAX_STRING 5000
+
 static SCRIPT_STRING_ANALYSIS analyze(HDC hdc, char *s) {
 	WCHAR wStr[MAX_STRING];
 	SCRIPT_STRING_ANALYSIS ssa = NULL;
 	SCRIPT_CONTROL scriptControl = {0};
 	SCRIPT_STATE scriptState = {0};
 
-	int length = strlen(s);
-	if (length == 0) return NULL;
-	if (length > MAX_STRING) length = MAX_STRING;
-
-	int wLength = MultiByteToWideChar(CP_UTF8, 0, s, length, wStr, MAX_STRING);
+	int wLength = MultiByteToWideChar(CP_UTF8, 0, s, strlen(s), wStr, MAX_STRING);
 	if (wLength < 1) return NULL;
 
 	ScriptStringAnalyse(
@@ -468,6 +466,7 @@ static SCRIPT_STRING_ANALYSIS analyze(HDC hdc, char *s) {
 		&scriptControl, &scriptState,
 		0, 0, 0,
 		&ssa);
+
 	return ssa;
 }
 
@@ -481,40 +480,78 @@ static void setWinClipRect(HDC hdc, int x, int y, OBJ clipRect) {
 	IntersectClipRect(hdc, clipX, clipY, clipR, clipB);
 }
 
-static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, OBJ clipRect) {
+static HBITMAP createBitmap(HDC hdc, int w, int h, uint32_t **pixelsPtr) {
+	// Create and return a device independent bitmap of the given size.
+
+	BITMAPINFO bi;
+	bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bi.bmiHeader.biWidth = w;
+	bi.bmiHeader.biHeight = -h; // negative indicates top-down bitmap
+	bi.bmiHeader.biPlanes = 1;
+	bi.bmiHeader.biBitCount = 32;
+	bi.bmiHeader.biCompression = BI_RGB;
+	bi.bmiHeader.biSizeImage = 0;
+	bi.bmiHeader.biXPelsPerMeter = 0;
+	bi.bmiHeader.biYPelsPerMeter = 0;
+	bi.bmiHeader.biClrUsed = 0;
+	bi.bmiHeader.biClrImportant	= 0;
+	return CreateDIBSection(hdc, &bi, DIB_RGB_COLORS, (void *) pixelsPtr, NULL, 0);
+}
+
+// static bitmap used for rendering most text strings
+
+#define TEXT_BM_WIDTH 500
+#define TEXT_BM_HEIGHT 50
+static HBITMAP textBM = NULL;
+static uint32_t *textBMPixels = NULL;
+
+static void initTextBitmap() {
+	// Initialize a persistent bitmap to be used for drawing small strings (i.e. most strings).
+	// This saves the cost of creating a new bitmap for every call to drawString().
+
+	if (!textBM) {
+		HDC hdc = CreateCompatibleDC(0);
+		textBM = createBitmap(hdc, TEXT_BM_WIDTH, TEXT_BM_HEIGHT, &textBMPixels);
+		DeleteDC(hdc);
+	}
+}
+
+static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int dstX, int dstY, OBJ clipRect) {
 	HDC hdc = NULL;
 	SCRIPT_STRING_ANALYSIS ssa = NULL;
 	HBITMAP hBitmap = NULL;
-	BITMAPINFO bi;
-	unsigned int *dibBits;
+	uint32_t *bmPixels;
+	int bmSpan;
 	HGDIOBJ oldObj;
 
-	int w = 0;
-	int h = 0;
-	unsigned char *pixelData = NULL;
-	SDL_Surface *screen = screenBitmap;
-	if ((nilObj == bm) && screen) {
-		w = screen->w;
-		h = screen->h;
-		pixelData = screen->pixels;
+	// select target bitmap
+	int w = 0, h = 0;
+	uint32_t *pixelData = NULL;
+	if ((nilObj == bm) && screenBitmap) {
+		w = screenBitmap->w;
+		h = screenBitmap->h;
+		pixelData = screenBitmap->pixels;
 	} else if (isBitmap(bm)) {
 		w = obj2int(FIELD(bm, 0));
 		h = obj2int(FIELD(bm, 1));
-		pixelData = (unsigned char *) &FIELD(FIELD(bm, 2), 0);
+		pixelData = &FIELD(FIELD(bm, 2), 0);
 	} else {
 		printf("drawString target must be a bitmap (Win)\n");
 		return;
 	}
 
+	// set font
 	hdc = CreateCompatibleDC(0);
 	SelectObject(hdc, font);
+
+	// analyze the string
 	ssa = analyze(hdc, s);
 	if (ssa == NULL) {
 		primFailed("Could not analyze string");
 		goto cleanup;
 	}
 
-	// get text size
+	// get rendered text dimensions
 	CONST SIZE *pSize = ScriptString_pSize(ssa);
 	if (pSize == NULL) {
 		primFailed("Could not get string size");
@@ -523,10 +560,22 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, O
 	int textW = pSize->cx;
 	int textH = pSize->cy;
 
-	// default color is black
-	int r = 0;
-	int g = 0;
-	int b = 0;
+	if ((textW <= TEXT_BM_WIDTH) && (textH <= TEXT_BM_HEIGHT)) {
+		// most strings -- reuse the text rendering bitmap
+		if (!textBM) initTextBitmap();
+		memset(textBMPixels, 0, (4 * TEXT_BM_WIDTH * TEXT_BM_HEIGHT)); // clear
+		hBitmap = textBM;
+		bmPixels = textBMPixels;
+		bmSpan = TEXT_BM_WIDTH;
+	} else {
+		// large string -- create a one-time use bitmap
+		hBitmap = createBitmap(hdc, textW, textH, &bmPixels);
+		bmSpan = textW;
+	}
+	if (!hBitmap) goto cleanup; // failed to create bitmap
+
+	// set the color (defaults to black)
+	int r = 0, g = 0, b = 0;
 	if (objWords(color) >= 3) { // extract RGB components from color
 		OBJ n = FIELD(color, 0);
 		if (isInt(n)) r = clip(obj2int(n), 0, 255);
@@ -535,59 +584,44 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, O
 		n = FIELD(color, 2);
 		if (isInt(n)) b = clip(obj2int(n), 0, 255);
 	}
-	unsigned int textRGB = (255 << 24)| (r << 16) | (g << 8) | b; // opaque text color
-
-	// create a device independent bitmap
-	bi.bmiHeader.biSize			= sizeof(BITMAPINFOHEADER);
-	bi.bmiHeader.biWidth		= textW;
-	bi.bmiHeader.biHeight		= -textH; // negative indicates top-down bitmap
-	bi.bmiHeader.biPlanes		= 1;
-	bi.bmiHeader.biBitCount		= 32;
-	bi.bmiHeader.biCompression	= BI_RGB;
-	bi.bmiHeader.biSizeImage	= 0;
-	bi.bmiHeader.biXPelsPerMeter = 0;
-	bi.bmiHeader.biYPelsPerMeter = 0;
-	bi.bmiHeader.biClrUsed		= 0;
-	bi.bmiHeader.biClrImportant	= 0;
-	hBitmap = CreateDIBSection(hdc, &bi, DIB_RGB_COLORS, (void *) &dibBits, NULL, 0);
-	if (hBitmap == NULL) goto cleanup;
+	uint32_t textRGB = (255 << 24)| (r << 16) | (g << 8) | b; // opaque text color
 
 	oldObj = SelectObject(hdc, hBitmap);
 	if (oldObj != NULL) {
-		setWinClipRect(hdc, x, y, clipRect);
-		// set fg and bg colors and render the string
+		setWinClipRect(hdc, dstX, dstY, clipRect);
+
+		// Render the string as white. Pixel brightness will used as the source alpha.
 		SetBkMode(hdc, TRANSPARENT);
-		SetBkColor(hdc, RGB(0, 0, 0));
 		SetTextColor(hdc, RGB(255, 255, 255));
 		ScriptStringOut(ssa, 0, 0, 0, NULL, 0, 0, FALSE);
 
-		unsigned int *src = dibBits;
-		unsigned int *dst = (unsigned int *) pixelData;
-		int endX = x + textW;
-		int endY = y + textH;
-
-		for (int dstY = y; dstY < endY; dstY++) {
-			for (int dstX = x; dstX < endX; dstX++) {
+		// copy all non-transparent pixels to target bitmap, using the brightness of each
+		// pixel as the source alpha for the output color, textRGB.
+		int endX = dstX + textW;
+		int endY = dstY + textH;
+		for (int y = dstY, srcY = 0; y < endY; y++, srcY++) {
+			uint32_t *src = &bmPixels[srcY * bmSpan];
+			for (int x = dstX; x < endX; x++) {
 				unsigned int pix = *src++;
 				if (pix != 0) { // if not transparent
-					if ((0 <= dstX) && (dstX < w) && (0 <= dstY) && (dstY < h)) {
-						// must average R, G, and B due to subpixel rendering
-						int alpha = (((pix >> 16) & 255) + ((pix >> 8) & 255) + (pix & 255)) / 3;
-						if (alpha < 20) { // transparent
-							continue;
-						} else if (alpha > 250) { // opaque
+					if ((0 <= x) && (x < w) && (0 <= y) && (y < h)) {
+						// Note: Windows cleartype does subpixel rendering so R, G, and B
+						// have different values for edge pixels. The green channel is close
+						// to the average of all three channels.
+						int alpha = (pix >> 8) & 255; // use green channel as alpha
+						if (alpha > 220) { // consider alphas above this threshold opaque
 							pix = textRGB;
 						} else { // do alpha blending
-							int dstPix = dst[(dstY * w) + dstX];
+							int dstPix = pixelData[(y * w) + x];
 							int dstAlpha = (dstPix >> 24) & 255;
 							int invAlpha = 255 - alpha;
-							int rOut = (((invAlpha * ((dstPix >> 16) & 255)) + (alpha * r)) / 255);
-							int gOut = (((invAlpha * ((dstPix >> 8) & 255)) + (alpha * g)) / 255);
-							int bOut = (((invAlpha * (dstPix & 255)) + (alpha * b)) / 255);
+							int rOut = ((alpha * r) + (invAlpha * ((dstPix >> 16) & 255))) / 255;
+							int gOut = ((alpha * g) + (invAlpha * ((dstPix >> 8) & 255))) / 255;
+							int bOut = ((alpha * b) + (invAlpha * (dstPix & 255))) / 255;
 							int aOut = (alpha > dstAlpha) ? alpha : dstAlpha;
 							pix = (aOut << 24) | (rOut << 16) | (gOut << 8) | bOut;
 						}
-						dst[(dstY * w) + dstX] = pix;
+						pixelData[(y * w) + x] = pix;
 					}
 				}
 			}
@@ -596,7 +630,7 @@ static void drawString(char *s, FontRef font, OBJ bm, OBJ color, int x, int y, O
 	}
 
 cleanup:
-	if (hBitmap) DeleteObject(hBitmap);
+	if (hBitmap && (hBitmap != textBM)) DeleteObject(hBitmap);
 	if (ssa) ScriptStringFree(&ssa);
 	if (hdc) DeleteDC(hdc);
 }
@@ -616,76 +650,42 @@ static int stringWidth(char *s, FontRef font) {
 	return width;
 }
 
-// Variables used during font enumeration:
-static OBJ g_fontDict = nilObj;
-static OBJ g_fontList = nilObj;
+// variables used for font enumeration
+
+static char lastFontFamily[200];
+static OBJ g_fontList = nilObj; // array for collecting font names
 static int g_fontCount = 0;
 
 static int CALLBACK fontEnumCallback(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpntme, DWORD fontType, LPARAM lParam) {
-	if (!g_fontList || !g_fontDict) return true;
+	if (!g_fontList || !IS_CLASS(g_fontList, ArrayClass)) return true; // shouldn't happen
+	if (g_fontCount >= objWords(g_fontList)) return true; // no more room
 	if (fontType != TRUETYPE_FONTTYPE) return true;
 
 	char *s = (char *) lpelfe->elfFullName;
 	if ('@' == s[0]) s = &s[1]; // skip first character if it is '@'
-	OBJ fontName = newString(s);
-
-	if (dictHasKey(g_fontDict, fontName)) return true; // duplicate
-	dictAtPut(g_fontDict, fontName, trueObj);
-
-	if (g_fontCount >= objWords(g_fontList)) {
-		// grow font array
-		g_fontList = copyObj(g_fontList, 2 * objWords(g_fontList), 1);
+	if (strcmp(s, lastFontFamily) != 0) {
+		FIELD(g_fontList, g_fontCount++) = newString(s);
+		strncpy(lastFontFamily, s, 200);
+		lastFontFamily[199] = 0; // ensure null termination
 	}
-	FIELD(g_fontList, g_fontCount++) = fontName;
 	return true;
 }
 
-static OBJ collectFonts(char *family) {
-	g_fontDict = newDict(1000);
-	g_fontList = newArray(100);
+static OBJ fontNames() {
+	g_fontList = newArray(500);
 	g_fontCount = 0;
 
 	LOGFONT fontSpec;
 	memset(&fontSpec, 0, sizeof(fontSpec));
 	fontSpec.lfCharSet = DEFAULT_CHARSET;
-	fontSpec.lfFaceName[0] = 0;
-
-	strcpy(fontSpec.lfFaceName, family);
+	fontSpec.lfFaceName[0] = 0; // empty string; enumerates font families
 
 	HDC hdc = CreateCompatibleDC(0);
 	EnumFontFamiliesEx(hdc, &fontSpec, (FONTENUMPROC) fontEnumCallback, 0, 0);
 	DeleteDC(hdc);
 
 	OBJ result = copyObj(g_fontList, g_fontCount, 1);
-
-	g_fontDict = nilObj;
 	g_fontList = nilObj;
-	return result;
-}
-
-static OBJ fontNames() {
-	OBJ result = newArray(100);
-	int resultCount = 0;
-	OBJ recorded = newDict(1000);
-
-	OBJ fontFamilies = collectFonts("");
-	int n = objWords(fontFamilies);
-	for (int i = 0; i < n; i++) {
-		// get the members of font family[i]
-		OBJ family = collectFonts(obj2str(FIELD(fontFamilies, i)));
-		int familySize = objWords(family);
-		for (int j = 0; j < familySize; j++) {
-			OBJ thisFont = FIELD(family, j);
-			if (!dictHasKey(recorded, thisFont)) { // add family member to result if not already added
-				dictAtPut(recorded, thisFont, trueObj);
-				if (resultCount >= objWords(result)) {
-					// grow the result array
-					result = copyObj(result, 2 * objWords(result), 1);
-				}
-				FIELD(result, resultCount++) = thisFont;
-			}
-		}
-	}
 	return result;
 }
 

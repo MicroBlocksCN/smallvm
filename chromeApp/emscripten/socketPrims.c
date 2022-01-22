@@ -11,8 +11,14 @@
 #include <windows.h>
 #include <ws2tcpip.h>
 
-#define EWOULDBLOCK WSAEWOULDBLOCK
-#define EAGAIN WSAEWOULDBLOCK
+#if !defined(EWOULDBLOCK)
+  #define EWOULDBLOCK WSAEWOULDBLOCK
+#endif
+
+#if !defined(EAGAIN)
+  #define EAGAIN WSAEWOULDBLOCK
+#endif
+
 #define SHUT_RDWR SD_BOTH
 
 // Winsock2 state
