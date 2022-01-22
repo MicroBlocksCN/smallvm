@@ -206,7 +206,7 @@ method scrollToX ScrollFrame x {
 }
 
 method scrollToY ScrollFrame y {
-  if (0 == (ceiling hSlider)) {
+  if (0 == (ceiling vSlider)) {
     // special case when empty
     fastSetTop (morph contents) (top morph)
     return
