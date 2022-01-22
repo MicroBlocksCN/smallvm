@@ -152,6 +152,12 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 
 // SPI prims
 
+#if defined(ARDUINO_ARCH_RP2040) && !defined(PIN_SPI_MISO)
+  #define PIN_SPI_MISO PIN_SPI0_MISO
+  #define PIN_SPI_MOSI PIN_SPI0_MOSI
+  #define PIN_SPI_SCK  PIN_SPI0_SCK
+#endif
+
 static int spiSpeed = 1000000;
 static int spiMode = SPI_MODE0;
 

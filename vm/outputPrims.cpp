@@ -696,7 +696,7 @@ static void sendNeoPixelData(int val) {
 	portEXIT_CRITICAL(&mux);
 }
 
-#elif defined(ARDUINO_ARCH_RP2040XXX) // Philhower Arduino
+#elif defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__) // Philhower framework (PicoSDK)
 
 static int neoPixelPin = -1;
 
@@ -708,35 +708,34 @@ static void initNeoPixelPin(int pinNum) {
 }
 
 static inline void picoDelay(int n) {
-	volatile int dummy;
-	for (int i = 0; i < n; i++) {
-		dummy += 1;
+	for (int i = n; i > 0; i--) {
+		__asm volatile ("nop\n");
 	}
 }
 
 static void __not_in_flash_func(sendNeoPixelData)(int val) {
 	if (neoPixelPin < 0) return;
 
-	noInterrupts();
-// 	gpio_put(neoPixelPin, LOW);
-// 	picoDelay(80); // 300 worked, 150 worked, 80 worked, 0 worked
+	uint32_t oldInterruptStatus = save_and_disable_interrupts();
+ 	gpio_put(neoPixelPin, LOW);
+	picoDelay(5); // prevents jitter in first pulse due to a possible instruction cache miss
 	for (unsigned int mask = (1 << 23); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 300 nsecs
 			gpio_put(neoPixelPin, HIGH);
-			picoDelay(13);  // ~798 nsecs
+			picoDelay(18);
 			gpio_put(neoPixelPin, LOW);
-			picoDelay(4); // ~450 nsecs
+			picoDelay(6);
 		} else { // zero bit; timing goal: high 380 nsecs, low 700 nsecs
 			gpio_put(neoPixelPin, HIGH);
-			picoDelay(4); // ~375 nsecs
+			picoDelay(4);
 			gpio_put(neoPixelPin, LOW);
-			picoDelay(13); // ~906 nsecs
+			picoDelay(20);
 		}
 	}
-	interrupts();
+	restore_interrupts(oldInterruptStatus);
 }
 
-#elif defined(ARDUINO_ARCH_RP2040) // mbed Arduino
+#elif defined(ARDUINO_ARCH_RP2040) && defined(__MBED__) // Arduino framework (mbed)
 
 #include "pinDefinitions.h"
 #include "hardware/sync.h"
