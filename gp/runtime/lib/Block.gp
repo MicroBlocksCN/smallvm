@@ -309,8 +309,7 @@ method fixLayoutRTL Block {
 }
 
 method drawOn Block ctx {
-	usePathCache = ('Browser' == (platform)) // xxx make true to enable path caching
-	if (or (not usePathCache) (notNil (getField ctx 'surface'))) {
+	if (notNil (getField ctx 'surface')) {
 		drawShape this (getShapeMaker ctx)
 		return
 	}
