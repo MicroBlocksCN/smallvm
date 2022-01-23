@@ -616,6 +616,30 @@ static int * copyChunk(int *dst, int *src) {
 	return dst + wordCount;
 }
 
+static void updateChunkTable() {
+	memset(chunks, 0, sizeof(chunks)); // clear chunk table
+
+	int *p = compactionStartRecord();
+	while (p) {
+		int recType = (*p >> 16) & 0xFF;
+		if (chunkCode == recType) {
+			int chunkIndex = (*p >> 8) & 0xFF;
+			if (chunkIndex < MAX_CHUNKS) {
+				chunks[chunkIndex].chunkType = *p & 0xFF;
+				chunks[chunkIndex].code = p;
+			}
+		}
+		if (chunkDeleted == recType) {
+			int chunkIndex = (*p >> 8) & 0xFF;
+			if (chunkIndex < MAX_CHUNKS) {
+				chunks[chunkIndex].chunkType = unusedChunk;
+				chunks[chunkIndex].code = NULL;
+			}
+		}
+		p = recordAfter(p);
+	}
+}
+
 // Flash Compaction
 
 #ifndef RAM_CODE_STORE
@@ -734,6 +758,8 @@ static void compactFlash() {
 	current = !current;
 	freeStart = dst;
 
+	updateChunkTable();
+
 	#if defined(NRF51) || defined(ARDUINO_BBC_MICROBIT_V2)
 		// Compaction messes up the serial port on the micro:bit v1 and v2 and Calliope
 		restartSerial();
@@ -818,6 +844,8 @@ static void compactRAM() {
 	freeStart = dst;
 	memset(freeStart, 0, (4 * (end0 - freeStart))); // clear everything following freeStart
 
+	updateChunkTable();
+
 	// re-write the code file
 	#if USE_CODE_FILE
 		setCycleCount(current, cycleCount(current) + 1);
@@ -899,31 +927,12 @@ void compactCodeStore() {
 
 void restoreScripts() {
 	initPersistentMemory();
-	memset(chunks, 0, sizeof(chunks));
 
 	#if USE_CODE_FILE
 		initCodeFile(flash, HALF_SPACE);
 	#endif
 
-	int *p = compactionStartRecord();
-	while (p) {
-		int recType = (*p >> 16) & 0xFF;
-		if (chunkCode == recType) {
-			int chunkIndex = (*p >> 8) & 0xFF;
-			if (chunkIndex < MAX_CHUNKS) {
-				chunks[chunkIndex].chunkType = *p & 0xFF;
-				chunks[chunkIndex].code = p;
-			}
-		}
-		if (chunkDeleted == recType) {
-			int chunkIndex = (*p >> 8) & 0xFF;
-			if (chunkIndex < MAX_CHUNKS) {
-				chunks[chunkIndex].chunkType = unusedChunk;
-				chunks[chunkIndex].code = NULL;
-			}
-		}
-		p = recordAfter(p);
-	}
+	updateChunkTable();
 
 	// Give feedback:
 	int chunkCount = 0;
