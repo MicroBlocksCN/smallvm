@@ -20,6 +20,10 @@
   #define ESP32_S2_OR_S3 1
 #endif
 
+#if defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__)
+  #define ROBOTISTAN_PROTOTYPE 1
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
