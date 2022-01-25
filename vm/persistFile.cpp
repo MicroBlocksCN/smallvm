@@ -23,7 +23,7 @@ static File codeFile;
 
 static void closeAndOpenCodeFile() {
 	if (codeFile) codeFile.close();
-	codeFile = myFS.open(FILE_NAME, "a");
+	codeFile = myFS.open(FILE_NAME, "a+");
 	codeFile.seek(0, SeekEnd);
 }
 

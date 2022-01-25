@@ -147,17 +147,7 @@ static void sendFileList() {
 	char fileName[32];
 	int fileIndex = 1;
 
-	#if defined(ESP8266) || (defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__))
-		Dir rootDir = myFS.openDir("/");
-		while (rootDir.next()) {
-			memset(fileName, 0, sizeof(fileName));
-			strncpy(fileName, rootDir.fileName().c_str(), 31);
-			if ((strcmp(fileName, "/") != 0) && (strcmp(fileName, "/ublockscode") != 0)) {
-				sendFileInfo(fileName, rootDir.fileSize(), fileIndex);
-				fileIndex++;
-			}
-		}
-	#elif defined(ESP32)
+	#if defined(ESP32)
 		File rootDir = myFS.open("/");
 		while (true) {
 			File file = rootDir.openNextFile();
@@ -167,6 +157,19 @@ static void sendFileList() {
 			if ((strcmp(fileName, "/") != 0) && (strcmp(fileName, "/ublockscode") != 0)) {
 				sendFileInfo(fileName, file.size(), fileIndex);
 				fileIndex++;
+			}
+		}
+	// xxx Could this be just #else? Need to test with all non-ESP32 boards
+	#elif defined(ESP8266) || (defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__))
+		Dir rootDir = myFS.openDir("/");
+		while (rootDir.next()) {
+			memset(fileName, 0, sizeof(fileName));
+			strncpy(fileName, rootDir.fileName().c_str(), 31);
+			if ((strcmp(fileName, "/") != 0) &&
+				(strcmp(fileName, "/ublockscode") != 0) &&
+				(strcmp(fileName, "ublockscode") != 0)) {
+					sendFileInfo(fileName, rootDir.fileSize(), fileIndex);
+					fileIndex++;
 			}
 		}
 	#endif
