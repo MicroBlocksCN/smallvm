@@ -749,7 +749,7 @@ OBJ primNewByteArray(int argCount, OBJ *args) {
 		fillWord = (fillByte << 24) | (fillByte << 16) | (fillByte << 8) | fillByte;
 	}
 
-	OBJ result = newObj(ByteArrayType, (byteCount + 3) / 4, fillWord);
+	OBJ result = newObj(ByteArrayType, (byteCount + 3) / 4, (OBJ) fillWord);
 	if (result) setByteCountAdjust(result, byteCount);
 	return result;
 }
