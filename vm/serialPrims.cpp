@@ -132,7 +132,7 @@ static int serialWriteBytes(uint8 *buf, int byteCount) {
 #else // use Serial1 or Serial2
 
 // Use Serial2 on ESP32 board, Serial1 on others
-#if defined(ESP32)
+#if defined(ESP32) || defined(ROBOTISTAN_PROTOTYPE)
 	#define SERIAL_PORT Serial2
 #else
 	#define SERIAL_PORT Serial1

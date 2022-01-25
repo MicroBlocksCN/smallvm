@@ -16,6 +16,11 @@
 #include "mem.h"
 #include "interp.h"
 
+// Temporary mapping for Robotistan board prototype
+#if defined(ROBOTISTAN_PROTOTYPE)
+	#define Wire Wire1
+#endif
+
 // i2c helper functions
 
 static int wireStarted = false;
