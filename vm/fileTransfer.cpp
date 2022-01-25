@@ -147,7 +147,7 @@ static void sendFileList() {
 	char fileName[32];
 	int fileIndex = 1;
 
-	#if defined(ESP8266)
+	#if defined(ESP8266) || (defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__))
 		Dir rootDir = myFS.openDir("/");
 		while (rootDir.next()) {
 			memset(fileName, 0, sizeof(fileName));
