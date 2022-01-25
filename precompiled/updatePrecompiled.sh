@@ -30,8 +30,10 @@ pio run -e clue
 python precompiled/uf2conv.py -c -f 0xada52840 .pio/build/clue/firmware.hex -o precompiled/vm_clue.uf2
 pio run -e itsybitsy
 python precompiled/uf2conv.py -c .pio/build/itsybitsy/firmware.bin -o precompiled/vm_itsybitsy.uf2
-pio run -e pico
-cp .pio/build/pico/firmware.uf2 precompiled/vm_pico.uf2
+
+# not ready yet
+#pio run -e pico
+#cp .pio/build/pico/firmware.uf2 precompiled/vm_pico.uf2
 
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/
