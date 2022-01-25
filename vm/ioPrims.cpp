@@ -1600,13 +1600,6 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	return trueObj;
 }
 
-#if defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED)
-
-OBJ primHasServo(int argCount, OBJ *args) { return falseObj; }
-OBJ primSetServo(int argCount, OBJ *args) { return falseObj; }
-
-#else
-
 OBJ primHasServo(int argCount, OBJ *args) { return trueObj; }
 
 OBJ primSetServo(int argCount, OBJ *args) {
@@ -1640,8 +1633,6 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	setServo(pin, usecs);
 	return trueObj;
 }
-
-#endif
 
 OBJ primDACInit(int argCount, OBJ *args) {
 	// Initialize the DAC pin and (optional) sample rate. If the pin is not a DAC pin (pins

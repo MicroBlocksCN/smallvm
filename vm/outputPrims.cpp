@@ -720,12 +720,12 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) {
  	gpio_put(neoPixelPin, LOW);
 	picoDelay(5); // prevents jitter in first pulse due to a possible instruction cache miss
 	for (unsigned int mask = (1 << 23); mask > 0; mask >>= 1) {
-		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 300 nsecs
+		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 420 nsecs
 			gpio_put(neoPixelPin, HIGH);
-			picoDelay(18);
+			picoDelay(17);
 			gpio_put(neoPixelPin, LOW);
-			picoDelay(6);
-		} else { // zero bit; timing goal: high 380 nsecs, low 700 nsecs
+			picoDelay(7);
+		} else { // zero bit; timing goal: high 300 nsecs, low 900 nsecs
 			gpio_put(neoPixelPin, HIGH);
 			picoDelay(4);
 			gpio_put(neoPixelPin, LOW);
@@ -743,8 +743,9 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) {
 static mbed::DigitalInOut* gpioNeopixelGPIO = NULL;
 
 static inline void picoDelay(int n) {
-	volatile int dummy;
-	for (int i = 0; i < n; i++) dummy += 1;
+	for (int i = n; i > 0; i--) {
+		__asm volatile ("nop\n");
+	}
 }
 
 static void initNeoPixelPin(int pinNum) {
@@ -764,18 +765,18 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) {
 
 	uint32_t oldInterruptStatus = save_and_disable_interrupts();
 	gpioNeopixelGPIO->write(LOW);
-	picoDelay(5); // 20 works, 0 fails, 10 works, 0 fails, 5 works, 2 works, 1 works
+	picoDelay(5); // 5 works, 2 works, 1 works, 0 fails
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
-		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 300 nsecs
+		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 420 nsecs
 			gpioNeopixelGPIO->write(HIGH);
-			picoDelay(10);  // ~798 nsecs
+			picoDelay(10);
 			gpioNeopixelGPIO->write(LOW);
-			picoDelay(2); // ~450 nsecs
-		} else { // zero bit; timing goal: high 380 nsecs, low 700 nsecs
+			picoDelay(1);
+		} else { // zero bit; timing goal: high 300 nsecs, low 900 nsecs
 			gpioNeopixelGPIO->write(HIGH);
-			picoDelay(1); // ~375 nsecs
+			picoDelay(1);
 			gpioNeopixelGPIO->write(LOW);
-			picoDelay(11); // ~906 nsecs
+			picoDelay(9);
 		}
 	}
 	restore_interrupts(oldInterruptStatus);
