@@ -1,9 +1,12 @@
 module 'Sphero-RVR'
 author wwj718
-version 1 0
-description ''
-Add a comment to this line
-variables my_bytes _led_list _rvr_started
+version 1 0 
+description 'Controls a Sphero RVR Robot via a serial port.
+
+Works on the micro:bit v2 and most other boards
+but not the micro:bit v1 because that board lacks
+a second hardware serial port.'
+variables my_bytes _led_list _rvr_started 
 
 	spec ' ' 'wake' 'wake'
 	spec ' ' 'sleep' 'sleep'
@@ -116,3 +119,4 @@ to wake {  '_start_rvr'
   local 'cmd' ('[data:makeList]' (hexToInt '8d') (hexToInt '3e') (hexToInt '11') (hexToInt '01') (hexToInt '13') (hexToInt '0d') (hexToInt '00') (hexToInt '8f') (hexToInt 'd8'))
   '[serial:write]' ('[data:asByteArray]' cmd)
 }
+
