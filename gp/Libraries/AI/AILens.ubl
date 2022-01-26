@@ -12,7 +12,7 @@ variables _Camera_Add _Card _Face _Ball _Tracking _Color _Learn _numberCards _le
 
 	spec ' ' '_AILens setup' '_AILens setup'
 	spec ' ' '_get_image' '_get_image'
-	spec ' ' 'switch_function' 'switch mode _' 'menu.nil' 'Card'
+	spec ' ' 'switch_function' 'switch mode _' 'menu.modeMenu' 'Card'
 	spec 'r' 'get_card_content' 'get_card_content'
 	spec 'r' 'get_card_data' 'get_card_data'
 	spec 'r' 'get_ball_color' 'get_ball_color'
