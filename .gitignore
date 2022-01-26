@@ -1,5 +1,6 @@
 .pio
 .piolibdeps
+ublockscode
 apps
 chromeApp/*/gp_wasm.data
 chromeApp/*/gp_wasm.js
