@@ -1,0 +1,176 @@
+module AILens
+author wwj718
+version 1 0 
+choices modeMenu Card Ball Color Face Tracking Learn 
+description 'AI Lens
+
+The AI Lens is able to achieve the functions of face recognition, balls tracking, cards recognition and characteristics acquisition.
+
+ref: https://www.elecfreaks.com/learn-en/microbitplanetX/ai/Plant_X_EF05035.html
+'
+variables _Camera_Add _Card _Face _Ball _Tracking _Color _Learn _numberCards _letterCards _otherCards _colorList '_AILens initialized' _Data_buff _Temp_Data_buff _recursion_depth 
+
+	spec ' ' '_AILens setup' '_AILens setup'
+	spec ' ' '_get_image' '_get_image'
+	spec ' ' 'switch_function' 'switch mode _' 'menu.modeMenu' 'Card'
+	spec 'r' 'get_card_content' 'get_card_content'
+	spec 'r' 'get_card_data' 'get_card_data'
+	spec 'r' 'get_ball_color' 'get_ball_color'
+	spec 'r' 'get_ball_data' 'get_ball_data'
+	spec 'r' 'get_color_name' 'get_color_name'
+	spec 'r' 'get_face' 'get_face'
+	spec 'r' 'get_face_data' 'get_face_data'
+	spec 'r' 'get_track_data' 'get_track_data'
+	spec ' ' 'learn_object' 'learn_object _' 'auto' 1
+	spec 'r' 'get_learn_data' 'get_learn_data'
+	spec 'r' '_get_7_data' '_get_7_data'
+
+to '_AILens setup' {
+  if ((v '_AILens initialized') == 0) {
+    _Camera_Add = (hexToInt '14')
+    _Card = 0
+    _Face = 0
+    _Ball = 7
+    _Tracking = 1
+    _Color = 0
+    _Learn = 0
+    _numberCards = ('[data:makeList]' 0 1 2 3 4 5 6 7 8 9)
+    _letterCards = ('[data:makeList]' 'A' 'B' 'C' 'D' 'E')
+    _otherCards = ('[data:makeList]' 'Mouse' 'micro:bit' 'Ruler' 'Cat' 'Peer' 'Ship' 'Apple' 'Car' 'Pan' 'Dog' 'Umbrella' 'Airplane' 'Clock' 'Grape' 'Cup' 'Turn left' 'Turn right' 'Forward' 'Stop' 'Back')
+    _colorList = ('[data:makeList]' 'Green' 'Blue' 'Yellow' 'Black' 'Red' 'White')
+    _Temp_Data_buff = (newList 9)
+    _Data_buff = (newList 9)
+    _recursion_depth = 0
+    local 'tmp' (newList 1)
+    '[sensors:i2cRead]' _Camera_Add tmp
+    '_AILens initialized' = 1
+  }
+}
+
+to '_get_7_data' {
+  '_get_image'
+  comment 'return (a list):Data [x,y,w,h,confidence,total,order]'
+  local 'data' ('[data:makeList]')
+  for i 7 {
+    '[data:addLast]' (at (i + 2) _Data_buff) data
+  }
+  return data
+}
+
+to '_get_image' {
+  '_AILens setup'
+  '[sensors:i2cRead]' _Camera_Add _Temp_Data_buff
+  if (_Temp_Data_buff == _Data_buff) {
+    waitMillis 100
+    if (_recursion_depth < 5) {
+      _recursion_depth = (_recursion_depth + 1)
+      '_get_image'
+    }
+  } else {
+    _Data_buff = _Temp_Data_buff
+  }
+}
+
+to get_ball_color {
+  '_get_image'
+  if ((at 1 _Data_buff) == 7) {
+    if ((at 2 _Data_buff) == 1) {
+      return 'Blue'
+    } else {
+      if ((at 2 _Data_buff) == 2) {return 'Red'}
+    }
+  }
+  if else {
+    return '"No Ball"'
+  }
+}
+
+to get_ball_data {
+  return ('_get_7_data')
+}
+
+to get_card_content {
+  '_get_image'
+  if ((at 1 _Data_buff) == 2) {
+    return (at (at 2 _Data_buff) _numberCards)
+  }
+  if ((at 1 _Data_buff) == 4) {
+    return (at (at 2 _Data_buff) _letterCards)
+  }
+  if (and ((at 1 _Data_buff) == 3) ((at 2 _Data_buff) < 21)) {
+    return (at (at 2 _Data_buff) _otherCards)
+  }
+  return 'No Card'
+}
+
+to get_card_data {
+  return ('_get_7_data')
+}
+
+to get_color_name {
+  '_get_image'
+  if ((at 1 _Data_buff) == 9) {
+    return (at (at 2 _Data_buff) _colorList)
+  } else {
+    return 'No Color'
+  }
+}
+
+to get_face {
+  '_get_image'
+  return ((at 1 _Data_buff) == 6)
+}
+
+to get_face_data {
+  return ('_get_7_data')
+}
+
+to get_learn_data {
+  comment 'return: LearnData [ID,confidence]'
+  '_get_image'
+  return ('[data:makeList]' (at 2 _Data_buff) (100 - (at 3 _Data_buff)))
+}
+
+to get_track_data {
+  comment 'return: LineData [angel,width,len]'
+  '_get_image'
+  local 'data' 0
+  for i 3 {
+    '[data:addLast]' (at (i + 2) _Data_buff) data
+  }
+  return data
+}
+
+to learn_object id {
+  '_AILens setup'
+  if (or (id > 5) (id < 1)) {
+    sayIt '"Learn id out of range"'
+  } else {
+    '[sensors:i2cWrite]' _Camera_Add ('[data:asByteArray]' ('[data:makeList]' 10 id))
+  }
+}
+
+to switch_function mode {
+  '_AILens setup'
+  comment 'mode'
+  if (mode == 'Card') {
+    mode = 2
+  }
+  if (mode == 'Face') {
+    mode = 6
+  }
+  if (mode == 'Ball') {
+    mode = 7
+  }
+  if (mode == 'Tracking') {
+    mode = 8
+  }
+  if (mode == 'Color') {
+    mode = 9
+  }
+  if (mode == 'Learn') {
+    mode = 10
+  }
+  '[sensors:i2cWrite]' _Camera_Add ('[data:asByteArray]' ('[data:makeList]' (hexToInt '20') mode))
+}
+

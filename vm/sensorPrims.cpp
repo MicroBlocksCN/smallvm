@@ -53,7 +53,7 @@ static int readI2CReg(int deviceID, int reg) {
 	return Wire.available() ? Wire.read() : 0;
 }
 
-static void writeI2CReg(int deviceID, int reg, int value) {
+void writeI2CReg(int deviceID, int reg, int value) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
