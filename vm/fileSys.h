@@ -9,6 +9,10 @@
 
 #include <FS.h>
 
+#if defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__)
+  #define useLittleFS 1
+#endif
+
 // Select file system (Note: LittleFS is often much slower than SPIFFS)
 #if useLittleFS
 	#ifdef ARDUINO_ARCH_ESP32

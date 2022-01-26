@@ -918,8 +918,8 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 	}
 
 // xxx for testing blend in browser...
-addItem menu 'time redraw' (action 'timeRedraw' this)
-addLine menu
+// addItem menu 'time redraw' (action 'timeRedraw' this)
+// addLine menu
 //addItem menu 'cursorTest' cursorTest
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'

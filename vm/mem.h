@@ -15,6 +15,15 @@
   #define NRF52 1
 #endif
 
+// Unify ESP32 S2 and S3
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+  #define ESP32_S2_OR_S3 1
+#endif
+
+#if defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__)
+  #define ROBOTISTAN_PROTOTYPE 1
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

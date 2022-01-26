@@ -1,0 +1,122 @@
+module 'Sphero-RVR'
+author wwj718
+version 1 0 
+description 'Controls a Sphero RVR Robot via a serial port.
+
+Works on the micro:bit v2 and most other boards
+but not the micro:bit v1 because that board lacks
+a second hardware serial port.'
+variables my_bytes _led_list _rvr_started 
+
+	spec ' ' 'wake' 'wake'
+	spec ' ' 'sleep' 'sleep'
+	spec ' ' 'reset yaw' 'reset the yaw'
+	spec ' ' 'drive with speed' 'drive with speed _ and heading _' 'auto auto' 0 0
+	spec ' ' 'set raw motors with left mode' 'set raw motors with left mode _ left speed _ right mode _ right speed _' 'auto auto auto auto' 0 0 0 0
+	spec ' ' 'stop' 'stop with heading _' 'auto' '10'
+	spec ' ' 'set RGB LED' 'set RGB LED _ to red _ green _ blue _' 'auto auto auto auto' 1 0 0 0
+	spec ' ' 'set_all_leds' 'set all LEDs to red _ green _ blue _' 'auto auto auto' 0 0 0
+	spec ' ' '_start_rvr' '_start_rvr'
+
+to '_start_rvr' {  if (_rvr_started == 0) {    '[serial:open]' 115200
+    _rvr_started = 1
+    _led_list = ('[data:makeList]' ('[data:makeList]' (hexToInt '00') (hexToInt '00') (hexToInt '00') (hexToInt '07')) ('[data:makeList]' (hexToInt '00') (hexToInt '00') (hexToInt '00') (hexToInt '38')) ('[data:makeList]' (hexToInt '00') (hexToInt '00') (hexToInt '01') (hexToInt 'c0')) ('[data:makeList]' (hexToInt '00') (hexToInt '00') (hexToInt '0e') (hexToInt '00')) ('[data:makeList]' (hexToInt '00') (hexToInt '03') (hexToInt '80') (hexToInt '00')) ('[data:makeList]' (hexToInt '00') (hexToInt '00') (hexToInt '70') (hexToInt '00')) ('[data:makeList]' (hexToInt '00') (hexToInt '1c') (hexToInt '00') (hexToInt '00')) ('[data:makeList]' (hexToInt '00') (hexToInt 'e0') (hexToInt '00') (hexToInt '00')) ('[data:makeList]' (hexToInt '07') (hexToInt '00') (hexToInt '00') (hexToInt '00')) ('[data:makeList]' (hexToInt '38') (hexToInt '00') (hexToInt '00') (hexToInt '00')))
+  }
+}
+
+to 'drive with speed' speed heading {  '_start_rvr'
+  local 'flags' (hexToInt '00')
+  if (speed < 0) {    speed = (-1 * speed)
+    heading = ((180 + heading) % 360)
+    flags = (hexToInt '01')
+  }
+  local 'drive_data' ('[data:makeList]' (hexToInt '8d') (hexToInt '3e') (hexToInt '12') (hexToInt '01') (hexToInt '16') (hexToInt '07') (hexToInt '00') speed (heading >> 8) (heading & (hexToInt 'ff')) flags)
+  local 'sum' 0
+  for i (size drive_data) {    sum = (sum + (at i drive_data))
+  }
+  '[data:addLast]' (('~' ((sum - (hexToInt '8d')) % 256)) & (hexToInt '00ff')) drive_data
+  '[data:addLast]' (hexToInt 'd8') drive_data
+  '[serial:write]' ('[data:asByteArray]' drive_data)
+}
+
+to 'reset yaw' {  '_start_rvr'
+  local 'drive_data' ('[data:makeList]' (hexToInt '8d') (hexToInt '3e') (hexToInt '12') (hexToInt '01') (hexToInt '16') (hexToInt '06') (hexToInt '00'))
+  local 'sum' 0
+  for i (size drive_data) {    sum = (sum + (at i drive_data))
+  }
+  '[data:addLast]' (('~' ((sum - (hexToInt '8d')) % 256)) & (hexToInt '00ff')) drive_data
+  '[data:addLast]' (hexToInt 'd8') drive_data
+  '[serial:write]' ('[data:asByteArray]' drive_data)
+}
+
+to 'set RGB LED' led_index red green blue {  '_start_rvr'
+  comment 'led index
+
+1    RIGHT_HEADLIGHT = [0x00, 0x00, 0x00, 0x07]
+2    LEFT_HEADLIGHT = [0x00, 0x00, 0x00, 0x38]
+3    LEFT_STATUS = [0x00, 0x00, 0x01, 0xC0]
+4    RIGHT_STATUS = [0x00, 0x00, 0x0E, 0x00]
+5    BATTERY_DOOR_FRONT = [0x00, 0x03, 0x80, 0x00]
+6    BATTERY_DOOR_REAR = [0x00, 0x00, 0x70, 0x00]
+7    POWER_BUTTON_FRONT = [0x00, 0x1C, 0x00, 0x00]
+8    POWER_BUTTON_REAR = [0x00, 0xE0, 0x00, 0x00]
+9    LEFT_BRAKELIGHT = [0x07, 0x00, 0x00, 0x00]
+10    RIGHT_BRAKELIGHT = [0x38, 0x00, 0x00, 0x00]'
+  if (or (led_index < 1) (led_index > 10)) {    led_index = 1
+  }
+  local 'led_data' ('[data:makeList]' (hexToInt '8d') (hexToInt '3e') (hexToInt '11') (hexToInt '01') (hexToInt '1a') (hexToInt '1a') (hexToInt '00'))
+  for i (size (at led_index _led_list)) {    '[data:addLast]' (at i (at led_index _led_list)) led_data
+  }
+  '[data:addLast]' red led_data
+  '[data:addLast]' green led_data
+  '[data:addLast]' blue led_data
+  local 'sum' 0
+  for i (size led_data) {    sum = (sum + (at i led_data))
+  }
+  '[data:addLast]' (('~' ((sum - (hexToInt '8d')) % 256)) & (hexToInt '00ff')) led_data
+  '[data:addLast]' (hexToInt 'd8') led_data
+  '[serial:write]' ('[data:asByteArray]' led_data)
+}
+
+to 'set raw motors with left mode' left_mode left_speed right_mode right_speed {  '_start_rvr'
+  comment 'mode 0 off 1 forward 2 backward'
+  if (or (left_mode < 0) (left_mode > 2)) {    left_mode = 0
+  }
+  if (or (right_mode < 0) (right_mode > 2)) {    right_mode = 0
+  }
+  local 'raw_motor_data' ('[data:makeList]' (hexToInt '8d') (hexToInt '3e') (hexToInt '12') (hexToInt '01') (hexToInt '16') (hexToInt '01') (hexToInt '00') left_mode left_speed right_mode right_speed)
+  local 'sum' 0
+  for i (size raw_motor_data) {    sum = (sum + (at i raw_motor_data))
+  }
+  '[data:addLast]' (('~' ((sum - (hexToInt '8d')) % 256)) & (hexToInt '00ff')) raw_motor_data
+  '[data:addLast]' (hexToInt 'd8') raw_motor_data
+  '[serial:write]' ('[data:asByteArray]' raw_motor_data)
+}
+
+to set_all_leds red green blue {  '_start_rvr'
+  local 'led_data' ('[data:makeList]' (hexToInt '8d') (hexToInt '3e') (hexToInt '11') (hexToInt '01') (hexToInt '1a') (hexToInt '1a') (hexToInt '00') (hexToInt '3f') (hexToInt 'ff') (hexToInt 'ff') (hexToInt 'ff'))
+  repeat 10 {    '[data:addLast]' red led_data
+    '[data:addLast]' green led_data
+    '[data:addLast]' blue led_data
+  }
+  local 'sum' 0
+  for i (size led_data) {    sum = (sum + (at i led_data))
+  }
+  '[data:addLast]' (('~' ((sum - (hexToInt '8d')) % 256)) & (hexToInt '00ff')) led_data
+  '[data:addLast]' (hexToInt 'd8') led_data
+  '[serial:write]' ('[data:asByteArray]' led_data)
+}
+
+to sleep {  '_start_rvr'
+  local 'cmd' ('[data:makeList]' (hexToInt '8d') (hexToInt '3e') (hexToInt '11') (hexToInt '01') (hexToInt '13') (hexToInt '01') (hexToInt '00') (hexToInt '9b') (hexToInt 'd8'))
+  '[serial:write]' ('[data:asByteArray]' cmd)
+}
+
+to stop heading {  'drive with speed' 0 heading
+}
+
+to wake {  '_start_rvr'
+  local 'cmd' ('[data:makeList]' (hexToInt '8d') (hexToInt '3e') (hexToInt '11') (hexToInt '01') (hexToInt '13') (hexToInt '0d') (hexToInt '00') (hexToInt '8f') (hexToInt 'd8'))
+  '[serial:write]' ('[data:asByteArray]' cmd)
+}
+

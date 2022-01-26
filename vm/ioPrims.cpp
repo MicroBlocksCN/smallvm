@@ -1378,7 +1378,61 @@ void stopTone() {
 	}
 }
 
-#elif !defined(ARDUINO_SAM_DUE)
+#elif defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED)
+
+// Temporary replacement for Tone library.
+
+#include "tone2.pio.h"
+static PIOProgram _tone2Pgm(&tone2_program);
+
+static int tonePin = -1;
+static PIO tonePio;
+static int toneSm;
+
+void setTone(int pin, int frequency) {
+	if (pin > 29) return;
+	if (!frequency) { noTone(pin); return; }
+
+	int us = 1000000 / frequency / 2;
+	if (us < 5) us = 5;
+
+	if (tonePin >= 0) stopTone();
+
+	if (tonePin < 0) {
+		tonePin = pin;
+		pinMode(pin, OUTPUT);
+		int offset;
+		if (!_tone2Pgm.prepare(&tonePio, &toneSm, &offset)) {
+			outputString("Could not start tone, out of PIO resources");
+			return;
+		}
+		tone2_program_init(tonePio, toneSm, offset, pin);
+	}
+
+	pio_sm_clear_fifos(tonePio, toneSm); // Remove any old updates that haven't yet taken effect
+	pio_sm_put_blocking(tonePio, toneSm, RP2040::usToPIOCycles(us));
+	pio_sm_set_enabled(tonePio, toneSm, true);
+	tonePin = pin;
+}
+
+void stopTone() {
+	if (tonePin >= 0) {
+		pio_sm_set_enabled(tonePio, toneSm, false);
+		pio_sm_unclaim(tonePio, toneSm);
+		pinMode(tonePin, OUTPUT);
+		digitalWrite(tonePin, LOW);
+		tonePin = -1;
+	}
+}
+
+#elif defined(ARDUINO_SAM_DUE)
+
+// the Due does not have Tone functions
+
+static void setTone(int pin, int frequency) { }
+void stopTone() { }
+
+#else // use Arduino Tone functions
 
 int tonePin = -1;
 
@@ -1396,16 +1450,11 @@ void stopTone() {
 	tonePin = -1;
 }
 
-#else
-
-static void setTone(int pin, int frequency) { }
-void stopTone() { }
-
 #endif // tone
 
 // DAC (digital to analog converter) Support
 
-#if defined(ESP32)
+#if defined(ESP32) && !defined(ESP32_S2_OR_S3)
 
 // DAC ring buffer. Size must be a power of 2.
 #define DAC_BUF_SIZE 128
@@ -1713,7 +1762,7 @@ static int startRF(int pin, int frequency) {
 	return true;
 }
 
-#elif defined(ESP32)
+#elif defined(ESP32) && !defined(ESP32_S2_OR_S3)
 
 #include "driver/ledc.h"
 
