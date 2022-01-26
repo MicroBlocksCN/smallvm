@@ -244,6 +244,8 @@ void restartSerial();
 const char *boardType();
 void hardwareInit(void);
 
+void writeI2CReg(int deviceID, int reg, int value);
+
 // I/O Support
 
 int pinCount();
