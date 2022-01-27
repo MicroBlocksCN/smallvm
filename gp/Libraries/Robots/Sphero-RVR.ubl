@@ -6,13 +6,15 @@ description 'Controls a Sphero RVR Robot via a serial port.
 Works on the micro:bit v2 and most other boards
 but not the micro:bit v1 because that board lacks
 a second hardware serial port.'
+choices leftModeMenu Forward Backward Off 
+choices rightModeMenu Forward Backward Off 
 variables my_bytes _led_list _rvr_started 
 
 	spec ' ' 'wake' 'wake'
 	spec ' ' 'sleep' 'sleep'
 	spec ' ' 'reset yaw' 'reset the yaw'
 	spec ' ' 'drive with speed' 'drive with speed _ and heading _' 'auto auto' 0 0
-	spec ' ' 'set raw motors with left mode' 'set raw motors with left mode _ left speed _ right mode _ right speed _' 'auto auto auto auto' 0 0 0 0
+	spec ' ' 'set raw motors with left mode' 'set raw motors with left mode _ left speed _ right mode _ right speed _' 'menu.leftModeMenu auto menu.rightModeMenu auto' 'Forward' 0 'Forward' 0
 	spec ' ' 'stop' 'stop with heading _' 'auto' '10'
 	spec ' ' 'set RGB LED' 'set RGB LED _ to red _ green _ blue _' 'auto auto auto auto' 1 0 0 0
 	spec ' ' 'set_all_leds' 'set all LEDs to red _ green _ blue _' 'auto auto auto' 0 0 0
@@ -80,9 +82,17 @@ to 'set RGB LED' led_index red green blue {  '_start_rvr'
 
 to 'set raw motors with left mode' left_mode left_speed right_mode right_speed {  '_start_rvr'
   comment 'mode 0 off 1 forward 2 backward'
-  if (or (left_mode < 0) (left_mode > 2)) {    left_mode = 0
+  if (left_mode == 'Forward') {    left_mode = 1
   }
-  if (or (right_mode < 0) (right_mode > 2)) {    right_mode = 0
+  if (left_mode == 'Backward') {    left_mode = 2
+  }
+  if (left_mode == 'Off') {    left_mode = 0
+  }
+  if (right_mode == 'Forward') {    right_mode = 1
+  }
+  if (right_mode == 'Backward') {    right_mode = 2
+  }
+  if (right_mode == 'Off') {    right_mode = 0
   }
   local 'raw_motor_data' ('[data:makeList]' (hexToInt '8d') (hexToInt '3e') (hexToInt '12') (hexToInt '01') (hexToInt '16') (hexToInt '01') (hexToInt '00') left_mode left_speed right_mode right_speed)
   local 'sum' 0

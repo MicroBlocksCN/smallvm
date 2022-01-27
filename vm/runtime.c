@@ -370,11 +370,9 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 
 static void deleteAllChunks() {
 	stopAllTasks();
-	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS)
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS) || defined(ROBOTISTAN_PROTOTYPE)
 		clearPersistentMemory();
 		clearCodeFile(0);
-	#elif defined(ARDUINO_ARCH_RP2040)
-		clearPersistentMemory(); // xxx temporary, while using RAM code store
 	#else
 		appendPersistentRecord(deleteAll, 0, 0, 0, NULL);
 	#endif

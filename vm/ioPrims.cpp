@@ -91,6 +91,7 @@ void hardwareInit() {
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
 		touchSetCycles(0x800, 0x800);
+		writeI2CReg(0x20, 0, 0); // initialize IO expander
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1) || \
 		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
@@ -697,6 +698,9 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	#if !defined(ESP8266)
 		SET_MODE(pin, INPUT);
 		if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
+	#endif
+	#ifdef ROBOTISTAN_PROTOTYPE
+			return int2obj(analogRead(pin) >> 2);
 	#endif
 	return int2obj(analogRead(pin));
 }
@@ -1377,7 +1381,7 @@ void stopTone() {
 	}
 }
 
-#elif defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED)
+#elif defined(ARDUINO_ARCH_RP2040XXX) && !defined(ARDUINO_ARCH_MBED)
 
 // Temporary replacement for Tone library.
 
