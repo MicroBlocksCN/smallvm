@@ -699,6 +699,9 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		SET_MODE(pin, INPUT);
 		if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
 	#endif
+	#ifdef ROBOTISTAN_PROTOTYPE
+			return int2obj(analogRead(pin) >> 2);
+	#endif
 	return int2obj(analogRead(pin));
 }
 
@@ -1378,7 +1381,7 @@ void stopTone() {
 	}
 }
 
-#elif defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED)
+#elif defined(ARDUINO_ARCH_RP2040XXX) && !defined(ARDUINO_ARCH_MBED)
 
 // Temporary replacement for Tone library.
 
