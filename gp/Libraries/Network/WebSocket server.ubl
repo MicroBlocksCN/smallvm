@@ -2,7 +2,7 @@ module 'WebSocket server' Comm
 author MicroBlocks
 version 1 1 
 tags websockets network 
-description 'Blocks to build your own (very) simple websockets server.'
+description 'Blocks to build your own (very) simple websockets server. The websockets server runs on port 81.'
 
 	spec ' ' 'start WebSocket server' 'start WebSocket server'
 	spec 'r' '[net:webSocketLastEvent]' 'last WebSocket event'
@@ -12,6 +12,7 @@ description 'Blocks to build your own (very) simple websockets server.'
 	spec ' ' '[net:webSocketSendToClient]' 'send _ to WebSocket client _' 'str num' 'Hello, Client!' 0
 
 to 'start WebSocket server' {
+  comment 'The websockets server runs on port 81.'
   if ((getIPAddress) != '0.0.0.0') {
     '[net:webSocketStart]'
   } else {
