@@ -1830,7 +1830,11 @@ static PrimEntry entries[] = {
 	{"setServo", primSetServo},
 	{"dacInit", primDACInit},
 	{"dacWrite", primDACWrite},
-	{"squareWave", primSquareWave},
+//	{"setUserLED", primSetUserLED},
+	{"analogRead", primAnalogRead},
+//	{"analogWrite", primAnalogWrite},
+	{"digitalRead", primDigitalRead},
+//	{"digitalWrite", primDigitalWrite},
 };
 
 void addIOPrims() {
