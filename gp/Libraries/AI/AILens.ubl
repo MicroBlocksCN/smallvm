@@ -21,7 +21,7 @@ variables _Camera_Add _Card _Face _Ball _Tracking _Color _Learn _numberCards _le
 	spec 'r' 'get_face' 'get_face'
 	spec 'r' 'get_face_data' 'get_face_data'
 	spec 'r' 'get_track_data' 'get_track_data'
-	spec ' ' 'learn_object' 'learn_object _' 'auto' 1
+	spec ' ' 'learn_object' 'learn_object _' 'menu.range:1-5' 1
 	spec 'r' 'get_learn_data' 'get_learn_data'
 	spec 'r' '_get_7_data' '_get_7_data'
 
