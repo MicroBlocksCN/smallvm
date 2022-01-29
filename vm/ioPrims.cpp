@@ -1822,6 +1822,11 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 	return isSupported ? trueObj : falseObj;
 }
 
+// forward to primitives that don't take argCount
+
+static OBJ primSetUserLED2(int argCount, OBJ *args) { primSetUserLED(args); return falseObj; }
+static OBJ primAnalogWrite2(int argCount, OBJ *args) { primAnalogWrite(args); return falseObj; }
+static OBJ primDigitalWrite2(int argCount, OBJ *args) { primDigitalWrite(args); return falseObj; }
 
 static PrimEntry entries[] = {
 	{"hasTone", primHasTone},
@@ -1830,11 +1835,11 @@ static PrimEntry entries[] = {
 	{"setServo", primSetServo},
 	{"dacInit", primDACInit},
 	{"dacWrite", primDACWrite},
-//	{"setUserLED", primSetUserLED},
+	{"setUserLED", primSetUserLED2},
 	{"analogRead", primAnalogRead},
-//	{"analogWrite", primAnalogWrite},
+	{"analogWrite", primAnalogWrite2},
 	{"digitalRead", primDigitalRead},
-//	{"digitalWrite", primDigitalWrite},
+	{"digitalWrite", primDigitalWrite2},
 };
 
 void addIOPrims() {
