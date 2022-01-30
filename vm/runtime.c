@@ -47,6 +47,45 @@ void addPrimitiveSet(const char *setName, int entryCount, PrimEntry *entries) {
 	}
 }
 
+PrimitiveFunction findPrimitive(char *primName) {
+	// Return the address of the named primitive with the given name or -1 if not found.
+	// The primitive name is a string of the form: [primSet:primName].
+
+	int len = strlen(primName);
+	if (len < 2) return -1;
+	if (('[' != primName[0]) || (']' != primName[len - 1])) return -1;
+	char *colon = strchr(primName + 1, ':');
+	if (!colon) return -1;
+
+	char setName[100];
+	char opName[100];
+
+	// extract primitive set name
+	int count = colon - (primName + 1);
+	if (count < 1) return NULL;
+	strncpy(setName, primName + 1, count);
+	setName[count] = 0;
+
+	// extract primitive  name
+	count = (primName + len - 1) - (colon + 1);
+	if (count < 1) return NULL;
+	strncpy(opName, colon + 1, count);
+	opName[count] = 0;
+
+	for (int i = 0; i < primSetCount; i++) {
+		if (0 == strcmp(primSets[i].setName, setName)) {
+			PrimEntry *entries = primSets[i].entries;
+			int entryCount = primSets[i].entryCount;
+			for (int j = 0; j < entryCount; j++) {
+				if (0 == strcmp(entries[j].primName, opName)) {
+					return entries[j].primFunc;
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
 OBJ callPrimitive(int argCount, OBJ *args) {
 	// Call a named primitive. The first two arguments are the primitive set name
 	// and the primitive name, followed by the arguments to the primitive itself.

@@ -330,7 +330,9 @@ static int functionNameMatches(int chunkIndex, char *functionName) {
 	return (strstr(s, functionName) == s);
 }
 
-static int calleesChunkIndex(char *functionName) {
+static int chunkIndexForFunction(char *functionName) {
+	// Return the chunk index for the function with the given name or -1 if not found.
+
 	for (int i = 0; i < MAX_CHUNKS; i++) {
 		int chunkType = chunks[i].chunkType;
 		if (functionHat == chunkType) {
@@ -338,6 +340,18 @@ static int calleesChunkIndex(char *functionName) {
 			if (functionNameMatches(i, functionName)) return i;
 		}
 	}
+	return -1;
+}
+
+PrimitiveFunction findPrimitive(char *namedPrimitive);
+
+static int findCallee(char *functionOrPrimitiveName) {
+	int result = chunkIndexForFunction(functionOrPrimitiveName);
+	if (result >= 0) return result;
+
+	PrimitiveFunction f = findPrimitive(functionOrPrimitiveName);
+	if (f) return (int) f;
+
 	return -1;
 }
 
@@ -1175,18 +1189,19 @@ static void runTask(Task *task) {
 	callCustomCommand_op:
 	callCustomReporter_op:
 		if (arg > 0) {
-			OBJ params = *(sp - 1);
-			int calleeChunkIndex = -1;
+			uint32 callee = -1;
+			OBJ params = *(sp - 1); // save the parameters array, if any
+			// look up the function or primitive name
 			if ((arg == 1) && (IS_TYPE(*(sp - 1), StringType))) {
-				calleeChunkIndex = calleesChunkIndex(obj2str(*(sp - 1)));
+				callee = findCallee(obj2str(*(sp - 1)));
 			} else if ((arg == 2) && (IS_TYPE(*(sp - 2), StringType))) {
-				calleeChunkIndex = calleesChunkIndex(obj2str(*(sp - 2)));
+				callee = findCallee(obj2str(*(sp - 2)));
 			}
 			POP_ARGS_COMMAND();
-			if (calleeChunkIndex >= 0) {
+			if (callee != -1) { // found a callee
 				int paramCount = 0;
-				if (arg == 2) { // has parameters
-					if (IS_TYPE(params, ListType)) { // push parameters onto stack
+				if (arg == 2) { // has an optional parameters list (the second argument)
+					if (IS_TYPE(params, ListType)) { // push the parameters onto the stack
 						paramCount = (obj2int(FIELD(params, 0)) & 0xFF);
 						for (int i = 1; i <= paramCount; i++) {
 							*sp++ = FIELD(params, i);
@@ -1196,13 +1211,23 @@ static void runTask(Task *task) {
 						DISPATCH();
 					}
 				}
-				// call the function
-				arg = (calleeChunkIndex << 8) | paramCount;
-				goto callFunction_op;
+
+				// invoke the callee
+				if (callee < 256) { // callee is a MicroBlocks function (i.e. a chunk index)
+					arg = (callee << 8) | paramCount;
+					goto callFunction_op;
+				} else { // callee is a named primitive (i.e. a pointer to a C function)
+					task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
+					tmpObj = ((PrimitiveFunction) callee)(paramCount, sp - paramCount); // call the primitive
+					tempGCRoot = NULL; // clear tempGCRoot in case it was used
+					sp -= paramCount;
+					*sp++ = tmpObj; // push primitive return value
+					DISPATCH();
+				}
 			}
 		}
 		// failed: bad arguments
-		*sp++ = falseObj; // push a dummy function return value
+		*sp++ = falseObj; // push a dummy return value
 		DISPATCH();
 
 	// named primitives:
