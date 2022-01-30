@@ -54,6 +54,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
 
 method morph InputSlot {return morph}
 method setID InputSlot bool {isID = bool}
+method color InputSlot {return color}
 
 method contents InputSlot {
   if ((editRule text) == 'static') {
