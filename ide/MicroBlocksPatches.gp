@@ -356,12 +356,12 @@ method copyForWeb Block markdown {
   atPut dict 'scale' (blockScale this)
   atPut dict 'libs' libNames
   atPut dict 'locale' (language (authoringSpecs))
-  atPut dict 'script' (urlEncode scriptText)
+  atPut dict 'script' scriptText
 
   if markdown { text = '![MicroBlocks script](' } else { text = '<img src="' }
   text = (join text
     'https://microblocks.fun/render?json='
-	(jsonStringify dict)
+	(urlEncode (jsonStringify dict))
   )
   if markdown { text = (join text ')') } else { text = (join text '">') }
   setClipboard text
