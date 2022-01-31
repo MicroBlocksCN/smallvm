@@ -352,14 +352,17 @@ method copyForWeb Block markdown {
   libs = (libraries (project (scripter (smallRuntime))))
   libNames = (list)
   for libName (keys libs) { add libNames (urlEncode (join '"' libName '"')) }
-  libText = (joinStrings libNames (urlEncode ','))
+  dict = (dictionary)
+  atPut dict 'scale' (blockScale this)
+  atPut dict 'libs' libNames
+  atPut dict 'locale' (language (authoringSpecs))
+  atPut dict 'script' (urlEncode scriptText)
 
   if markdown { text = '![MicroBlocks script](' } else { text = '<img src="' }
   text = (join text
-    'https://microblocks.fun/render?script=%22' (urlEncode scriptText) '%22'
-    '&scale=' (blockScale this)
-    '&locale=' (urlEncode (language (authoringSpecs)))
-	'&libs=[' libText ']')
+    'https://microblocks.fun/render?json='
+	(jsonStringify dict)
+  )
   if markdown { text = (join text ')') } else { text = (join text '">') }
   setClipboard text
 }

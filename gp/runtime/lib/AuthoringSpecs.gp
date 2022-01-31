@@ -155,6 +155,10 @@ method hasTopLevelSpec AuthoringSpecs op {
   return (contains specsByOp op)
 }
 
+method setOpCategory AuthoringSpecs op category {
+	atPut opCategory op category
+}
+
 // block colors
 
 method blockColorForOp AuthoringSpecs op {

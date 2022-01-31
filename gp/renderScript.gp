@@ -1,5 +1,5 @@
 // To test it:
-// ./gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --scriptString "script nil 10 10 { whenButtonPressed 'A'; repeatUntil (not (buttonA)) { '[display:mbDisplay]' 145728; waitMillis 250; '[display:mbDisplay]' 4685802; waitMillis 250; '[display:mbDisplayOff]'; waitMillis 300 } }" --libs '["LED Display"]' --locale 'Català'
+// ./gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --jsonFile jsonFile
 
 to startup {
 	initMicroBlocksSpecs (new 'SmallCompiler')
@@ -9,40 +9,28 @@ to startup {
 	scale = 2
 	locale = 'English'
 
-	// parse params
-	i = (indexOf (commandLine) '--scriptString')
+	// get file name
+	i = (indexOf (commandLine) '--jsonFile')
 	if (isNil i) { missingArg }
-	scriptString = (at (commandLine) (i + 1))
+	jsonFile = (at (commandLine) (i + 1))
 
-	i = (indexOf (commandLine) '--fileName')
-	if (i > 0) {
-		fileName = (at (commandLine) (i + 1))
-	}
+	// parse JSON file
+	params = (jsonParse (readFile jsonFile))
 
-	i = (indexOf (commandLine) '--scale')
-	if (i > 0) {
-		scale = (at (commandLine) (i + 1))
-	}
+	setLanguage (authoringSpecs) (at params 'locale')
 
-	i = (indexOf (commandLine) '--locale')
-	if (i > 0) {
-		locale = (at (commandLine) (i + 1))
-	}
-
-	setLanguage (authoringSpecs) locale
-
-	i = (indexOf (commandLine) '--libs')
-	if (i > 0) {
-		for lib (jsonParse (at (commandLine) (i + 1))) {
+	libs = (at params 'libs')
+	if (notNil libs) {
+		for lib libs {
 			(initLibrarySpecs lib)
 		}
 	}
 
-	script = (last (argList (last (parse scriptString))))
+	script = (last (argList (last (parse (at params 'script')))))
 	setGlobal 'scale' 2
-	block = (toBlock (last (argList (last (parse scriptString)))))
+	block = (toBlock (last (argList (last (parse (at params 'script'))))))
 	fixBlockColor block
-	exportAsImageScaled block (toNumber scale) nil fileName
+	exportAsImageScaled block (toNumber (at params 'scale')) nil (at params 'outPath')
 	exit
 }
 
@@ -73,7 +61,6 @@ to initLibrarySpecs libraryName {
 			if ('spec' == (at words 1)) {
 				add specs (copyFromTo words 2)
 				op = (at words 4)
-				op = (substring op 2 ((count op) - 1)) // remove quotes
  				setOpCategory (authoringSpecs) op category
 			}
 		}
@@ -98,7 +85,7 @@ to findLibrary libraryName path {
 to missingArg {
 	print 'Missing argument(s)!'
 	print 'Usage example: '
-	print './gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --scriptString "script nil 10 10 { whenButtonPressed ''A''; repeatUntil (not (buttonA)) { ''[display:mbDisplay]'' 145728; waitMillis 250; ''[display:mbDisplay]'' 4685802; waitMillis 250; ''[display:mbDisplayOff]''; waitMillis 300 } }" --libs ''["LED Display"]'''
+	print './gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --jsonFile jsonFile'
 	// just making my syntax highlighter happy.. */
 	exit
 }
