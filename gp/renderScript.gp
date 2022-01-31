@@ -17,6 +17,9 @@ to startup {
 	// parse JSON file
 	params = (jsonParse (readFile jsonFile))
 
+	outPath = (at params 'outPath')
+	if (isNil outPath) { outPath = '/tmp/render.png' }
+
 	setLanguage (authoringSpecs) (at params 'locale')
 
 	libs = (at params 'libs')
@@ -30,7 +33,7 @@ to startup {
 	setGlobal 'scale' 2
 	block = (toBlock (last (argList (last (parse (at params 'script'))))))
 	fixBlockColor block
-	exportAsImageScaled block (toNumber (at params 'scale')) nil (at params 'outPath')
+	exportAsImageScaled block (toNumber (at params 'scale')) nil outPath
 	exit
 }
 
