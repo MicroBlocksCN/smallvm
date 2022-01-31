@@ -27,7 +27,7 @@ static int wireStarted = false;
 
 static void startWire() {
   #if defined(ROBOTISTAN_PROTOTYPE)
-	Wire.setClock(1000000); // i2c fast mode+ (seems pretty ubiquitous among i2c devices)
+	Wire.setClock(400000); // i2c fast mode+ (seems pretty ubiquitous among i2c devices)
   #endif
 	Wire.begin();
 	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
