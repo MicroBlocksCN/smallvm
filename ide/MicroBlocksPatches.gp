@@ -350,16 +350,17 @@ method copyForWeb Block markdown {
 
   // iterating over lib names because map is way too cumbersome in GP...
   libs = (libraries (project (scripter (smallRuntime))))
-  libNames = (list)
-  for libName (keys libs) { add libNames (urlEncode (join '"' libName '"')) }
-  libText = (joinStrings libNames (urlEncode ','))
+  dict = (dictionary)
+  atPut dict 'scale' (blockScale this)
+  atPut dict 'libs' (keys libs)
+  atPut dict 'locale' (language (authoringSpecs))
+  atPut dict 'script' scriptText
 
   if markdown { text = '![MicroBlocks script](' } else { text = '<img src="' }
   text = (join text
-    'https://microblocks.fun/render?script=%22' (urlEncode scriptText) '%22'
-    '&scale=' (blockScale this)
-    '&locale=' (urlEncode (language (authoringSpecs)))
-	'&libs=[' libText ']')
+    'https://microblocks.fun/render?json='
+	(urlEncode (jsonStringify dict))
+  )
   if markdown { text = (join text ')') } else { text = (join text '">') }
   setClipboard text
 }
