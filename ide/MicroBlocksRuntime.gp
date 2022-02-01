@@ -1096,7 +1096,6 @@ method sendStopAll SmallRuntime {
 }
 
 method sendStartAll SmallRuntime {
-	oldVarNames = nil // force var names to be updated
 	saveAllChunks this
 	sendMsg this 'startAllMsg'
 }
