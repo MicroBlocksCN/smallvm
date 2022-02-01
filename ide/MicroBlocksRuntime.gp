@@ -574,6 +574,7 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
 	setCursor 'wait'
 
+	removeHint (global 'page')
 	if (and (notNil port) (true != alreadyStopped)) {
 		sendStopAll this
 		softReset this
@@ -1857,7 +1858,7 @@ method showResult SmallRuntime chunkID value isError isResult {
 			} else {
 				showHint m value
 			}
-			if ('' == value) {
+			if (or (isNil value) ('' == value)) {
 				removeHint (global 'page')
 			} else {
 				if (shiftKeyDown (keyboard (global 'page'))) {
@@ -1886,7 +1887,7 @@ method exportScriptImageWithResult SmallRuntime aBlock {
 // Return values
 
 method returnedValue SmallRuntime msg {
-	if ((byteCount msg) < 7) { return nil } // incomplete msg
+	if ((byteCount msg) < 6) { return nil } // incomplete msg
 	type = (byteAt msg 6)
 	if (1 == type) {
 		return (+ ((byteAt msg 10) << 24) ((byteAt msg 9) << 16) ((byteAt msg 8) << 8) (byteAt msg 7))
