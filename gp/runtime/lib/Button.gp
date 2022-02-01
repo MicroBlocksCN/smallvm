@@ -109,6 +109,6 @@ method handLeave Button aHand {
   // solution is to re-trigger handEnter on the new morph under the hand.
   handEnter (objectAt aHand) aHand
   setOn this isOn
-  if (notNil hint) {removeHint (page aHand)}
+  if (notNil hint) {removeTooltip (page aHand)}
   removeSchedulesFor (global 'page') 'showTooltip' morph
 }
