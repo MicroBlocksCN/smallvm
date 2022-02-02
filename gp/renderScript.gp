@@ -53,6 +53,7 @@ to initLibrarySpecs libraryName {
 	specs = (list)
 	// should look like:
 	// (array 'Output' (array ' ' 'setUserLED' 'set user LED _' 'bool' 'true') ...)
+	singleQuote = ''''
 	category = 'Foo'
 	for line lines {
 		words = (words line)
@@ -64,6 +65,8 @@ to initLibrarySpecs libraryName {
 			if ('spec' == (at words 1)) {
 				add specs (copyFromTo words 2)
 				op = (at words 4)
+				opLen = (count op)
+				if (opLen > 2) { op = (substring op 2 (opLen - 1)) } // remove single quotes around op name
  				setOpCategory (authoringSpecs) op category
 			}
 		}
