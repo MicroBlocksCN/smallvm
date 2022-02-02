@@ -38,6 +38,7 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 
 method fixLayout MicroBlocksSpinner {
 	pageM = (morph (global 'page'))
+	setExtent morph (width (bounds pageM)) (height (bounds pageM))
 	gotoCenterOf morph pageM
 	gotoCenterOf (morph label) pageM
 	gotoCenterOf (morph sublabel) pageM
