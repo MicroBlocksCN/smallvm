@@ -274,8 +274,8 @@ method contextMenu Block {
 	}
   }
   if (devMode) {
-    addItem menu 'copy as HTML image tag' 'copyForWeb' 'copy a picture of these blocks to the clipboard as an HTML tag for the web'
-    addItem menu 'copy as MarkDown image tag' (action 'copyForWeb' this true) 'copy a picture of these blocks to the clipboard as a MarkDown tag for the web'
+//    addItem menu 'copy as HTML image tag' 'copyForWeb' 'copy a picture of these blocks to the clipboard as an HTML tag for the web'
+    addItem menu 'copy MarkDown to clipboard' (action 'copyForWeb' this true) 'copy a picture of these blocks to the clipboard as a MarkDown image tag'
   }
   if (not isInPalette) {
 	addLine menu
@@ -345,21 +345,20 @@ method extractBlock Block {
 
 method exportAsImage Block { exportAsImageScaled (topBlock this) 2 }
 method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
+
 method copyForWeb Block markdown {
   scriptText = (scriptText this true) // last param forces semicolons
 
-  // iterating over lib names because map is way too cumbersome in GP...
   libs = (libraries (project (scripter (smallRuntime))))
   dict = (dictionary)
-  atPut dict 'scale' (blockScale this)
-  atPut dict 'libs' (keys libs)
   atPut dict 'locale' (language (authoringSpecs))
+  atPut dict 'libs' (keys libs)
   atPut dict 'script' scriptText
 
   if markdown { text = '![MicroBlocks script](' } else { text = '<img src="' }
   text = (join text
     'https://microblocks.fun/render?json='
-	(urlEncode (jsonStringify dict))
+	(urlEncode (jsonStringify dict) true)
   )
   if markdown { text = (join text ')') } else { text = (join text '">') }
   setClipboard text
