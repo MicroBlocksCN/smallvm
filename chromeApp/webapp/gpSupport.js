@@ -649,6 +649,7 @@ async function webSerialConnect() {
 		{ usbVendorId: 0x1366},		// SEGGER Calliope mini
 		{ usbVendorId: 0x16c0},		// Teensy
 		{ usbVendorId: 0x2E8A},		// Raspberry Pi Pico RP2040
+		{ usbVendorId: 0x303a},		// esp32s3 dev board
 	];
 	webSerialDisconnect();
 	GP_webSerialPort = await navigator.serial.requestPort({filters: vendorIDs}).catch((e) => { console.log(e); });
