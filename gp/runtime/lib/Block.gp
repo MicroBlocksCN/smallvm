@@ -916,14 +916,14 @@ method copyToClipboard Block {
 }
 
 method scriptText Block useSemicolons {
-  useSemicolons = (useSemicolons == true)
+  useSemicolons = (useSemicolons == true) // useSemicolons is an optional parameter
+  pp = (new 'PrettyPrinter')
   if useSemicolons {
+    useSemicolons pp
     result = (list)
   } else {
     result = (list 'GP Script' (newline))
   }
-  pp = (new 'PrettyPrinter')
-  useSemicolons pp
   add result (join 'script 10 10 ')
   if (isClass expression 'Reporter') {
 	if (isOneOf (primName expression) 'v') {
@@ -934,10 +934,10 @@ method scriptText Block useSemicolons {
     if (not useSemicolons) { add result (newline) }
   } else {
 	add result '{'
-    if useSemicolons { add result ' ' } else { add result (newline) }
+    if (not useSemicolons) { add result (newline) }
     add result (prettyPrintList pp expression)
     add result '}'
-    if useSemicolons { add result ' ' } else { add result (newline) }
+    if (not useSemicolons) { add result (newline) }
   }
   if (not useSemicolons) { add result (newline) }
   return (joinStrings result)
