@@ -54,7 +54,9 @@ method prettyPrintList PrettyPrinter block generator {
     crIfNeeded gen
     currentBlock = (getField currentBlock 'nextBlock')
   }
-  return (joinStringArray (toArray (getField gen 'result')))
+  result = (getField gen 'result')
+  if (and ((count result) > 0) (';' == (last result))) { removeLast result }
+  return (joinStringArray (toArray result))
 }
 
 method prettyPrintString PrettyPrinter aString {
