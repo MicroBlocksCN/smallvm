@@ -351,7 +351,7 @@ method copyForWeb Block markdown {
   // iterating over lib names because map is way too cumbersome in GP...
   libs = (libraries (project (scripter (smallRuntime))))
   dict = (dictionary)
-  atPut dict 'scale' (blockScale this)
+  atPut dict 'scale' 1
   atPut dict 'libs' (keys libs)
   atPut dict 'locale' (language (authoringSpecs))
   atPut dict 'script' scriptText
