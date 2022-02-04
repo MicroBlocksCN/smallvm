@@ -18,6 +18,7 @@ to startup {
 	params = (jsonParse data)
 	localeParam = (at params 'locale' 'English')
 	libsParam = (at params 'libs' (array))
+	scaleParam = (at params 'scale' 2)
 	scriptParam = (at params 'script')
 	if (isNil scriptParam) { exit } // gotta have a script!
 	resultParam = (at params 'result')
@@ -33,15 +34,14 @@ to startup {
 	// set the language
 	setLanguage (authoringSpecs) localeParam
 
-	// set scale and blockScale to 1; scale will be determined by desiredScale
+	// set scale and blockScale to 1; scale will be determined by scaleParam
 	setGlobal 'scale' 1
 	setGlobal 'blockScale' 1
-	desiredScale = 2
 
 	script = (last (argList (last (parse scriptParam))))
 	block = (toBlock script)
 	fixBlockColor block
-	exportAsImageScaled block desiredScale resultParam outFilePath
+	exportAsImageScaled block scaleParam resultParam outFilePath
 	exit
 }
 
