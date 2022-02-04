@@ -927,7 +927,11 @@ method scriptText Block useSemicolons {
   add result (join 'script 10 10 ')
   if (isClass expression 'Reporter') {
 	if (isOneOf (primName expression) 'v') {
-	  add result (join '(v ' (first (argList expression)) ')')
+      varName = (first (argList expression))
+      if (contains (letters varName) ' ') {
+        varName = (printString varName) // enclose varName in quotes
+      }
+	  add result (join '(v ' varName ')')
 	} else {
 	  add result (join '(' (prettyPrint pp expression) ')')
 	}
