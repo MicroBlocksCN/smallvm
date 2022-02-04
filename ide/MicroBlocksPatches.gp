@@ -274,8 +274,7 @@ method contextMenu Block {
 	}
   }
   if (devMode) {
-//    addItem menu 'copy as HTML image tag' 'copyForWeb' 'copy a picture of these blocks to the clipboard as an HTML tag for the web'
-    addItem menu 'copy MarkDown to clipboard' (action 'copyForWeb' this true) 'copy a picture of these blocks to the clipboard as a MarkDown image tag'
+    addItem menu 'copy image URL to clipboard' (action 'copyForWeb' this) 'copy these blocks to the clipboard as URL that can draw the blocks translated or scaled'
   }
   if (not isInPalette) {
 	addLine menu
@@ -346,22 +345,20 @@ method extractBlock Block {
 method exportAsImage Block { exportAsImageScaled (topBlock this) 2 }
 method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
 
-method copyForWeb Block markdown {
+method copyForWeb Block {
   scriptText = (scriptText this true) // last param forces semicolons
 
   libs = (libraries (project (scripter (smallRuntime))))
   dict = (dictionary)
-  atPut dict 'scale' 1
+  atPut dict 'scale' 2
   atPut dict 'locale' (language (authoringSpecs))
   atPut dict 'libs' (keys libs)
   atPut dict 'script' scriptText
 
-  if markdown { text = '![MicroBlocks script](' } else { text = '<img src="' }
-  text = (join text
+  text = (join
     'https://microblocks.fun/render?json='
 	(urlEncode (jsonStringify dict) true)
   )
-  if markdown { text = (join text ')') } else { text = (join text '">') }
   setClipboard text
 }
 
