@@ -20,6 +20,7 @@ to startup {
 	libsParam = (at params 'libs' (array))
 	scriptParam = (at params 'script')
 	if (isNil scriptParam) { exit } // gotta have a script!
+	resultParam = (at params 'result')
 
 	// initalize blocks specs
 	initMicroBlocksSpecs (new 'SmallCompiler')
@@ -40,7 +41,7 @@ to startup {
 	script = (last (argList (last (parse scriptParam))))
 	block = (toBlock script)
 	fixBlockColor block
-	exportAsImageScaled block desiredScale nil outFilePath
+	exportAsImageScaled block desiredScale resultParam outFilePath
 	exit
 }
 
