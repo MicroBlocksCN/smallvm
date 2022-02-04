@@ -64,16 +64,20 @@ to checkLatestVersion {
 	current = (toInteger (at currentVersion i))
 	pilot = (current > latest)
 	if pilot {
-	  // we're running a pilot release, lets check the latest one
+      // we're running a pilot release, lets check the latest one
       latestVersion = (fetchLatestPilotVersionNumber)
       latest = (toInteger (at latestVersion i))
 	}
 	if (latest > current) {
-	  (inform (global 'page') (join
+      (inform (global 'page') (join
 		'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
 		(newline)
 		'Get it now at http://microblocks.fun')
 		'New version available')
+	} (current > latest) {
+      // if this subpart of the current version number is > latest, don't check following parts
+      // (e.g. 2.0.0 is later than 1.9.9)
+      return
 	}
   }
 }
