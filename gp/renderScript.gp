@@ -1,39 +1,46 @@
-// To test it:
-// ./gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --jsonFile jsonFile
+// To test:
+// ./gp-linux64bit runtime/lib/* ../ide/* renderScript.gp - --jsonFile test.json
 
 to startup {
-	initMicroBlocksSpecs (new 'SmallCompiler')
+	outFilePath = '/tmp/render.png'
 
-	// default param values
-	fileName = 'script.png'
-	scale = 2
-	locale = 'English'
+	// delete previous output file, if any, so if there will be no file if rendering fails
+	safelyRun (action 'deleteFile' outFilePath)
 
-	// get file name
+	// get file name from the command line
 	i = (indexOf (commandLine) '--jsonFile')
-	if (isNil i) { missingArg }
+	if (or (isNil i) ((count (commandLine)) < (i + 1))) { missingArg }
 	jsonFile = (at (commandLine) (i + 1))
 
-	// parse JSON file
-	params = (jsonParse (readFile jsonFile))
+	// read and extract parameters from JSON file
+	data = (readFile jsonFile)
+	if (isNil data) { exit }
+	params = (jsonParse data)
+	localeParam = (at params 'locale' 'English')
+	libsParam = (at params 'libs' (array))
+	scriptParam = (at params 'script')
+	if (isNil scriptParam) { exit } // gotta have a script!
 
-	outPath = (at params 'outPath')
-	if (isNil outPath) { outPath = '/tmp/render.png' }
+	// initalize blocks specs
+	initMicroBlocksSpecs (new 'SmallCompiler')
 
-	setLanguage (authoringSpecs) (at params 'locale')
-
-	libs = (at params 'libs')
-	if (notNil libs) {
-		for lib libs {
-			(initLibrarySpecs lib)
-		}
+	// import libraries
+	for lib libsParam {
+		initLibrarySpecs lib
 	}
 
-	script = (last (argList (last (parse (at params 'script')))))
-	setGlobal 'scale' 2
-	block = (toBlock (last (argList (last (parse (at params 'script'))))))
+	// set the language
+	setLanguage (authoringSpecs) localeParam
+
+	// set scale and blockScale to 1; scale will be determined by desiredScale
+	setGlobal 'scale' 1
+	setGlobal 'blockScale' 1
+	desiredScale = 2
+
+	script = (last (argList (last (parse scriptParam))))
+	block = (toBlock script)
 	fixBlockColor block
-	exportAsImageScaled block (toNumber (at params 'scale')) nil outPath
+	exportAsImageScaled block desiredScale nil outFilePath
 	exit
 }
 
@@ -51,10 +58,7 @@ to initLibrarySpecs libraryName {
 	}
 	lines = (lines data)
 	specs = (list)
-	// should look like:
-	// (array 'Output' (array ' ' 'setUserLED' 'set user LED _' 'bool' 'true') ...)
-	singleQuote = ''''
-	category = 'Foo'
+	category = 'None'
 	for line lines {
 		words = (words line)
 		if ((count words) > 0) {
@@ -63,11 +67,10 @@ to initLibrarySpecs libraryName {
 				add specs category
 			}
 			if ('spec' == (at words 1)) {
-				add specs (copyFromTo words 2)
-				op = (at words 4)
-				opLen = (count op)
-				if (opLen > 2) { op = (substring op 2 (opLen - 1)) } // remove single quotes around op name
- 				setOpCategory (authoringSpecs) op category
+				blockSpec = (argList (first (parse line)))
+				add specs blockSpec
+				op = (at blockSpec 2)
+				setOpCategory (authoringSpecs) op category
 			}
 		}
 	}
