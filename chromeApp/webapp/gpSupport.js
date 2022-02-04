@@ -260,11 +260,11 @@ function initGPEventHandlers() {
 		if (evt.char && (evt.char.length == 1)) charCode = evt.char.charCodeAt(0);
 		GP.events.push([TEXTINPUT, charCode]);
 	}
-	document.oninput = function(evt) {
-		for (let ch of evt.data) {
-			GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
-		}
-	}
+// 	document.oninput = function(evt) {
+// 		for (let ch of evt.data) {
+// 			GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
+// 		}
+// 	}
 	canvas.onwheel = function(evt) {
 		if (evt.shiftKey || evt.ctrlKey) { return; } // default behavior (browser zoom)
 		var dx = evt.wheelDeltaX;
