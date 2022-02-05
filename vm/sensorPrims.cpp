@@ -26,7 +26,7 @@
 static int wireStarted = false;
 
 static void startWire() {
-  #if defined(ROBOTISTAN_PROTOTYPE)
+  #if defined(RP2040_PHILHOWER)
 	Wire.setClock(400000); // i2c fast mode+ (seems pretty ubiquitous among i2c devices)
   #endif
 	Wire.begin();

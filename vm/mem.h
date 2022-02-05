@@ -21,7 +21,7 @@
 #endif
 
 #if defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__)
-  #define ROBOTISTAN_PROTOTYPE 1
+  #define RP2040_PHILHOWER 1
 #endif
 
 #ifdef __cplusplus
