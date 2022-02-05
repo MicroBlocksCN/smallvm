@@ -1835,6 +1835,7 @@ static PrimEntry entries[] = {
 	{"setServo", primSetServo},
 	{"dacInit", primDACInit},
 	{"dacWrite", primDACWrite},
+    {"squareWave", primSquareWave},
 	{"setUserLED", primSetUserLED2},
 	{"analogRead", primAnalogRead},
 	{"analogWrite", primAnalogWrite2},

@@ -765,7 +765,7 @@ OBJ primAsByteArray(int argCount, OBJ *args) {
 		if ((byteValue < 0) || (byteValue > 255)) return fail(byteArrayStoreError);
 		result = newObj(ByteArrayType, 1, falseObj);
 		if (result) {
-			setByteCountAdjust(result, byteCount);
+			setByteCountAdjust(result, 1);
 			*((uint8 *) &FIELD(result, 0)) = byteValue;
 		}
 	} else if (IS_TYPE(arg, StringType)) {
