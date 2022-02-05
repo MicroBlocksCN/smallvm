@@ -1,0 +1,167 @@
+module main
+author wwj718
+version 1 0 
+description ''
+variables event 
+
+script 77 31 {
+whenStarted
+comment '1. connect wifi'
+'wifi connect to' '' '' 3
+waitMillis 1000
+comment '2. connect MQTT broker'
+'MQTT connect to' 'test.mosquitto.org'
+}
+
+script 343 225 {
+comment 'publish topic payload'
+if ('[net:MQTTIsConnected]') {
+  '[net:MQTTPub]' 'testTopic' 'Hello2!'
+  sayIt 'pub ok'
+}
+}
+
+script 56 239 {
+comment 'subscribe topic'
+'[net:MQTTSub]' 'testTopic'
+sayIt 'sub ok'
+}
+
+script 66 357 {
+comment 'receive mqtt message'
+forever {
+  if ('[net:MQTTIsConnected]') {
+    event = ('[net:MQTTLastEvent]')
+    if (isType event 'list') {
+      sayIt 'topic' ('MQTT event topic' event) ', payload' ('MQTT event payload' event)
+    }
+  } else {
+    sayIt 'try to connect ...'
+    'MQTT connect to' 'test.mosquitto.org'
+  }
+}
+}
+
+
+module MQTT Comm
+author wwj718
+version 1 1 
+depends WiFi 
+tags websockets network 
+description 'A simple MQTT client.'
+
+	spec ' ' 'MQTT connect to' 'MQTT connect to _ : _ _' 'str str str' 'test.mosquitto.org' 'username' 'password'
+	spec 'r' '[net:MQTTIsConnected]' 'MQTT connected'
+	spec ' ' '[net:MQTTSub]' 'MQTT sub _' 'str' 'testTopic'
+	spec ' ' '[net:MQTTUnsub]' 'MQTT unsub _' 'str' 'testTopic'
+	spec ' ' '[net:MQTTPub]' 'MQTT pub topic _ payload _' 'str str' 'testTopic' 'Hello!'
+	spec 'r' '[net:MQTTLastEvent]' 'last MQTT event'
+	spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
+	spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
+
+to 'MQTT connect to' broker username password {
+  if ((getIPAddress) != '0.0.0.0') {
+    if ((pushArgCount) > 2) {
+      '[net:MQTTConnect]' broker username password
+    } else {
+      '[net:MQTTConnect]' broker
+    }
+    if ('[net:MQTTIsConnected]') {
+      sayIt 'Connected!'
+    } else {
+      sayIt 'Not Connected'
+    }
+  } else {
+    sayIt 'Not Connected'
+  }
+}
+
+to 'MQTT event payload' event {
+  if (and (isType event 'list') ((size event) > 1)) {
+    return (at 2 event)
+  } else {
+    return ''
+  }
+}
+
+to 'MQTT event topic' event {
+  if (and (isType event 'list') ((size event) > 1)) {
+    return (at 1 event)
+  } else {
+    return ''
+  }
+}
+
+
+module WiFi Comm
+author MicroBlocks
+version 1 3 
+tags communication network 
+description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
+
+	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times : IP _ gateway _ subnet _' 'str str num str str str' 'Network_Name' '' 3 '192.168.1.42' '192.168.1.1' '255.255.255.0'
+	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+	spec 'r' 'getIPAddress' 'IP address'
+	spec 'r' '[net:myMAC]' 'MAC address'
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to 'wifi connect to' ssid password tries fixedIP gatewayIP subnetIP {
+  local 'ip' fixedIP
+  local 'gateway' gatewayIP
+  local 'subnet' subnetIP
+  if (not ('[net:hasWiFi]')) {
+    return
+  }
+  if ((pushArgCount) < 3) {
+    ip = ''
+    gateway = ''
+    subnet = ''
+  }
+  '[net:stopWiFi]'
+  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+    '[net:startWiFi]' ssid password false ip gateway subnet
+    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+      comment 'Slow blink while connecting'
+      setUserLED true
+      waitMillis 500
+      setUserLED false
+      waitMillis 500
+    }
+    tries += -1
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  waitMillis 1000
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:startWiFi]' ssid password true
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
+    setUserLED true
+    waitMillis 500
+    setUserLED false
+    waitMillis 500
+  }
+  repeat 8 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  waitMillis 1000
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
