@@ -944,7 +944,12 @@ static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
 
 static uint8_t dhtData[5];
 
-static int readDHTData(int pin) {
+#if !defined(ARDUINO_ARCH_RP2040)
+  // this macro does nothing on non-RP2040 boards
+  #define __not_in_flash_func(f) (f)
+#endif
+
+static int __not_in_flash_func(readDHTData)(int pin) {
 	// Read DHT data into dhtData. Return true if successful, false if timeout.
 
 	// read the start pulse
