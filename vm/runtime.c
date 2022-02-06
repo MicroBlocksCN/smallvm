@@ -48,14 +48,14 @@ void addPrimitiveSet(const char *setName, int entryCount, PrimEntry *entries) {
 }
 
 PrimitiveFunction findPrimitive(char *primName) {
-	// Return the address of the named primitive with the given name or -1 if not found.
+	// Return the address of the named primitive with the given name or NULL if not found.
 	// The primitive name is a string of the form: [primSet:primName].
 
 	int len = strlen(primName);
-	if (len < 2) return -1;
-	if (('[' != primName[0]) || (']' != primName[len - 1])) return -1;
+	if (len < 2) return NULL;
+	if (('[' != primName[0]) || (']' != primName[len - 1])) return NULL;
 	char *colon = strchr(primName + 1, ':');
-	if (!colon) return -1;
+	if (!colon) return NULL;
 
 	char setName[100];
 	char opName[100];
@@ -409,7 +409,7 @@ static void deleteCodeChunk(uint8 chunkIndex) {
 
 static void deleteAllChunks() {
 	stopAllTasks();
-	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS) || defined(ROBOTISTAN_PROTOTYPE)
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(GNUBLOCKS) || defined(RP2040_PHILHOWER)
 		clearPersistentMemory();
 		clearCodeFile(0);
 	#else

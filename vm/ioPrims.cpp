@@ -115,7 +115,7 @@ int recvBytes(uint8 *buf, int count) {
 
 int sendByte(char aByte) {
 	#ifdef ARDUINO_ARCH_RP2040
-		// Workaround for Pico Arduino library bug:
+		// Workaround for Pico Arduino bug (both mbed and Philhower):
 		// Serial.write() should return 1 if byte is written but always returns 0 on Pico
 		Serial.write(aByte);
 		return 1; // assume byte was actually written
@@ -699,8 +699,9 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		SET_MODE(pin, INPUT);
 		if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
 	#endif
-	#ifdef ROBOTISTAN_PROTOTYPE
-			return int2obj(analogRead(pin) >> 2);
+	#ifdef RP2040_PHILHOWER
+		// Philhower framework defaults to 12-bit resolution
+		return int2obj(analogRead(pin) >> 2);
 	#endif
 	return int2obj(analogRead(pin));
 }
@@ -1319,12 +1320,8 @@ static void setServo(int pin, int usecs) {
 		if (servo[pin].attached()) servo[pin].detach();
 	} else {
 		if (!servo[pin].attached()) {
-			#if defined(ROBOTISTAN_PROTOTYPE)
-				// allow a very wide range; the MicroBlocks library imposes tighter limits
-				servo[pin].attach(pin, 200, 3000);
-			#else
-				servo[pin].attach(pin);
-			#endif
+			// allow a wide range of pulse widths; MicroBlocks library imposes its own limits
+			servo[pin].attach(pin, 200, 3000);
 		}
 		servo[pin].writeMicroseconds(usecs);
 	}
@@ -1835,6 +1832,7 @@ static PrimEntry entries[] = {
 	{"setServo", primSetServo},
 	{"dacInit", primDACInit},
 	{"dacWrite", primDACWrite},
+    {"squareWave", primSquareWave},
 	{"setUserLED", primSetUserLED2},
 	{"analogRead", primAnalogRead},
 	{"analogWrite", primAnalogWrite2},

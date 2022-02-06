@@ -12,8 +12,7 @@
 #include "mem.h"
 #include "persist.h"
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || (defined(ARDUINO_ARCH_RP2040) && !defined(NO_FILESYSTEM))
-// Persistent file operations for Espressif boards
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
 
 #include "fileSys.h"
 

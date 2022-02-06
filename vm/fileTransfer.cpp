@@ -22,8 +22,7 @@
 #define StartWritingFileMsg 204
 #define FileChunkMsg 205
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || (defined(ARDUINO_ARCH_RP2040) && !defined(NO_FILESYSTEM))
-// File system operations for Espressif boards
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(RP2040_PHILHOWER)
 
 #include "fileSys.h"
 
@@ -160,7 +159,7 @@ static void sendFileList() {
 			}
 		}
 	// xxx Could this be just #else? Need to test with all non-ESP32 boards
-	#elif defined(ESP8266) || (defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__))
+	#elif defined(ESP8266) || defined(RP2040_PHILHOWER)
 		Dir rootDir = myFS.openDir("/");
 		while (rootDir.next()) {
 			memset(fileName, 0, sizeof(fileName));
