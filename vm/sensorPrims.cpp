@@ -27,7 +27,8 @@ static int wireStarted = false;
 
 static void startWire() {
   #if defined(RP2040_PHILHOWER)
-	Wire.setClock(400000); // i2c fast mode+ (seems pretty ubiquitous among i2c devices)
+	// push clock slightly
+	Wire.setClock(500000); // i2c fast mode+ (seems pretty ubiquitous among i2c devices)
   #endif
 	Wire.begin();
 	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
@@ -769,6 +770,12 @@ static int readTemperature() {
 	}
 	return 20 + offsetDegreesC;
 }
+
+#elif  defined(RP2040_PHILHOWER)
+
+static int readTemperature() { return analogReadTemp(); }
+static int readAcceleration(int reg) { return 0; } // RP2040 has no accelerometer
+static void setAccelRange(int range) { } // RP2040 has no accelerometer
 
 #else // stubs for non-micro:bit boards
 
