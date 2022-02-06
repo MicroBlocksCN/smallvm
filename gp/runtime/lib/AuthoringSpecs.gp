@@ -229,7 +229,8 @@ to fixBlockColors {
 method language AuthoringSpecs { return language }
 method languageCode AuthoringSpecs { return (languageCodeForName this language) }
 
-method setLanguage AuthoringSpecs newLang {
+method setLanguage AuthoringSpecs newLangOrCode {
+  newLang = (languageNameForCode this newLangOrCode)
   translationData = (readEmbeddedFile (join 'translations/' newLang '.txt'))
   if (isNil translationData) {
 	// if not embedded file, try reading external file
