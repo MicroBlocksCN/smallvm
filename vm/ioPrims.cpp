@@ -1776,6 +1776,48 @@ static int startRF(int pin, int frequency) {
 	return true;
 }
 
+#elif defined(RP2040_PHILHOWER)
+
+#include <hardware/pwm.h>
+
+int rfPin = -1;
+
+static int startRF(int pin, int freq) {
+	// Use PWM to generate a square wave at frequencies from 10 Hz to ~30 MHz.
+	int analogScale = 2; // 1 bit
+
+	if ((pin < 0) || (pin > 29) || (freq <= 0)) {
+		stopRF();
+		return true; // RF is supported
+	}
+
+	if (rfPin < 0) analogWrite(pin, 512); // initialze PWM for all pins before setting up RF
+	rfPin = pin;
+
+	// adjust analogScale to achieve lower periods (inspired by wiring_analog.cpp)
+	while (((clock_get_hz(clk_sys) / (float) (analogScale * freq)) > 255.0) && (analogScale < 0xFFFF)) {
+		analogScale *= 2;
+		if (analogScale > 0xFFFF) analogScale = 0xFFFF;
+	}
+
+	pwm_config c = pwm_get_default_config();
+	pwm_config_set_clkdiv(&c, (float) clock_get_hz(clk_sys) / (freq * analogScale));
+	pwm_config_set_wrap(&c, analogScale - 1);
+	pwm_init(pwm_gpio_to_slice_num(rfPin), &c, true);
+    gpio_set_function(rfPin, GPIO_FUNC_PWM);
+    pwm_set_gpio_level(rfPin, analogScale / 2);
+    return true;
+}
+
+static void stopRF() {
+	if (rfPin >= 0) {
+		pwm_set_enabled(pwm_gpio_to_slice_num(rfPin), false);
+    	gpio_set_function(rfPin, GPIO_FUNC_SIO);
+		SET_MODE(rfPin, INPUT);
+	}
+	rfPin = -1;
+}
+
 #else
 
 static int startRF(int pin, int frequency) { return false; }
