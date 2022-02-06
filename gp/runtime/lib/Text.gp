@@ -110,7 +110,7 @@ to stringImage aString fontName fontSize color alignment shadowColor shadowOffse
   return bm
 }
 
-defineClass Text morph text fontName fontSize color alignment shadowColor shadowOffsetX shadowOffsetY borderX borderY editRule bgColor isFlat minWidth minHeight caret startMark endMark codeContext scrubValue clickedForEdit
+defineClass Text morph text fontName fontSize color alignment shadowColor shadowOffsetX shadowOffsetY borderX borderY editRule bgColor isFlat minWidth minHeight caret startMark endMark codeContext scrubValue clickedForEdit cachedBM
 
 to newText aString fontName fontSize color alignment shadowColor shadowOffsetX shadowOffsetY borderX borderY editRule bgColor flat {
   scale = (global 'scale')
@@ -255,6 +255,18 @@ method setMinWidth Text w {minWidth = (max 0 (truncate w))}
 method setMinHeight Text h {minHeight = (max 0 (truncate h))}
 
 method drawOn Text ctx {
+// 	h = (handler (owner morph))
+// 	if (or (isClass h 'Block') (isClass h 'InputSlot')) {
+// 		if (isNil cachedBM) {
+// 			cachedBM = (newBitmap (width morph) (height morph) (color h))
+// 			bmCtx = (newGraphicContextOn cachedBM)
+// 			setFont bmCtx fontName fontSize // set font before getting fontHeight
+// 			drawString bmCtx (first (lines text)) color 0 0
+// 		}
+// 		drawBitmap ctx cachedBM (left morph) (top morph)
+// 		return
+// 	}
+
   setFont ctx fontName fontSize // set font before getting fontHeight
   lineHeight = (fontHeight)
   w = ((width morph) - (2 * borderX))

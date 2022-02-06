@@ -248,8 +248,8 @@ function initGPEventHandlers() {
 		if ((37 <= evt.which) && (evt.which <= 40)) evt.preventDefault(); // arrow keys
 		if ((112 <= evt.which) && (evt.which <= 123)) evt.preventDefault(); // function keys
 		if (evt.ctrlKey || evt.metaKey) {
-			// disable browser's handling of ctrl/cmd-C and ctrl/cmd-V
-			if ((67 == evt.keyCode) || (86 == evt.keyCode)) evt.preventDefault();
+			// disable browser's handling of ctrl/cmd-X, ctrl/cmd-C, and ctrl/cmd-V
+			if ((88 == evt.keyCode) || (67 == evt.keyCode) || (86 == evt.keyCode)) evt.preventDefault();
         }
 	}
 	document.onkeyup = function(evt) {
@@ -260,6 +260,11 @@ function initGPEventHandlers() {
 		if (evt.char && (evt.char.length == 1)) charCode = evt.char.charCodeAt(0);
 		GP.events.push([TEXTINPUT, charCode]);
 	}
+// 	document.oninput = function(evt) {
+// 		for (let ch of evt.data) {
+// 			GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
+// 		}
+// 	}
 	canvas.onwheel = function(evt) {
 		if (evt.shiftKey || evt.ctrlKey) { return; } // default behavior (browser zoom)
 		var dx = evt.wheelDeltaX;
@@ -643,6 +648,8 @@ async function webSerialConnect() {
 		{ usbVendorId: 0x03eb},		// Atmel Corporation
 		{ usbVendorId: 0x1366},		// SEGGER Calliope mini
 		{ usbVendorId: 0x16c0},		// Teensy
+		{ usbVendorId: 0x2E8A},		// Raspberry Pi Pico RP2040
+		{ usbVendorId: 0x303a},		// Espressif USB JTAG/serial debug unit
 	];
 	webSerialDisconnect();
 	GP_webSerialPort = await navigator.serial.requestPort({filters: vendorIDs}).catch((e) => { console.log(e); });
@@ -918,7 +925,10 @@ async function GP_writeFile(data, fName, id) {
 		}
 
 		const fileHandle = await window.showSaveFilePicker(options).catch((e) => { console.log(e); });
-		if (!fileHandle) return; // no file selected
+		if (!fileHandle) {
+			GP.lastSavedFileName = '_no_file_selected_';
+			return; // no file selected
+		}
 		const writable = await fileHandle.createWritable();
 		await writable.write(new Blob([data]));
 		await writable.close();
@@ -957,9 +967,9 @@ window.onbeforeunload = function() {
 
 // progressive web app service worker
 
-window.onload = function() {
-  if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
-    navigator.serviceWorker.register('sw.js');
-  }
-}
-
+// window.onload = function() {
+//   if (('serviceWorker' in navigator) && !hasChromeFilesystem()) {
+//     navigator.serviceWorker.register('sw.js');
+//   }
+// }
+//

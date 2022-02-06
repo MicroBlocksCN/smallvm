@@ -1,48 +1,47 @@
-// To test it:
-// ./gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --scriptString "script nil 10 10 { whenButtonPressed 'A'; repeatUntil (not (buttonA)) { '[display:mbDisplay]' 145728; waitMillis 250; '[display:mbDisplay]' 4685802; waitMillis 250; '[display:mbDisplayOff]'; waitMillis 300 } }" --libs '["LED Display"]' --locale 'Català'
+// To test:
+// ./gp-linux64bit runtime/lib/* ../ide/* renderScript.gp - --jsonFile test.json
 
 to startup {
+	outFilePath = '/tmp/render.png'
+
+	// delete previous output file, if any, so if there will be no file if rendering fails
+	safelyRun (action 'deleteFile' outFilePath)
+
+	// get file name from the command line
+	i = (indexOf (commandLine) '--jsonFile')
+	if (or (isNil i) ((count (commandLine)) < (i + 1))) { missingArg }
+	jsonFile = (at (commandLine) (i + 1))
+
+	// read and extract parameters from JSON file
+	data = (readFile jsonFile)
+	if (isNil data) { exit }
+	params = (jsonParse data)
+	localeParam = (at params 'locale' 'English')
+	libsParam = (at params 'libs' (array))
+	scaleParam = (at params 'scale' 2)
+	scriptParam = (at params 'script')
+	if (isNil scriptParam) { exit } // gotta have a script!
+	resultParam = (at params 'result')
+
+	// initalize blocks specs
 	initMicroBlocksSpecs (new 'SmallCompiler')
 
-	// default param values
-	fileName = 'script.png'
-	scale = 2
-	locale = 'English'
-
-	// parse params
-	i = (indexOf (commandLine) '--scriptString')
-	if (isNil i) { missingArg }
-	scriptString = (at (commandLine) (i + 1))
-
-	i = (indexOf (commandLine) '--fileName')
-	if (i > 0) {
-		fileName = (at (commandLine) (i + 1))
+	// import libraries
+	for lib libsParam {
+		initLibrarySpecs lib
 	}
 
-	i = (indexOf (commandLine) '--scale')
-	if (i > 0) {
-		scale = (at (commandLine) (i + 1))
-	}
+	// set the language
+	setLanguage (authoringSpecs) localeParam
 
-	i = (indexOf (commandLine) '--locale')
-	if (i > 0) {
-		locale = (at (commandLine) (i + 1))
-	}
+	// set scale and blockScale to 1; scale will be determined by scaleParam
+	setGlobal 'scale' 1
+	setGlobal 'blockScale' 1
 
-	setLanguage (authoringSpecs) locale
-
-	i = (indexOf (commandLine) '--libs')
-	if (i > 0) {
-		for lib (jsonParse (at (commandLine) (i + 1))) {
-			(initLibrarySpecs lib)
-		}
-	}
-
-	script = (last (argList (last (parse scriptString))))
-	setGlobal 'scale' 2
-	block = (toBlock (last (argList (last (parse scriptString)))))
+	script = (last (argList (last (parse scriptParam))))
+	block = (toBlock script)
 	fixBlockColor block
-	exportAsImageScaled block (toNumber scale) nil fileName
+	exportAsImageScaled block scaleParam resultParam outFilePath
 	exit
 }
 
@@ -60,9 +59,7 @@ to initLibrarySpecs libraryName {
 	}
 	lines = (lines data)
 	specs = (list)
-	// should look like:
-	// (array 'Output' (array ' ' 'setUserLED' 'set user LED _' 'bool' 'true') ...)
-	category = 'Foo'
+	category = 'None'
 	for line lines {
 		words = (words line)
 		if ((count words) > 0) {
@@ -71,10 +68,10 @@ to initLibrarySpecs libraryName {
 				add specs category
 			}
 			if ('spec' == (at words 1)) {
-				add specs (copyFromTo words 2)
-				op = (at words 4)
-				op = (substring op 2 ((count op) - 1)) // remove quotes
- 				setOpCategory (authoringSpecs) op category
+				blockSpec = (argList (first (parse line)))
+				add specs blockSpec
+				op = (at blockSpec 2)
+				setOpCategory (authoringSpecs) op category
 			}
 		}
 	}
@@ -98,7 +95,7 @@ to findLibrary libraryName path {
 to missingArg {
 	print 'Missing argument(s)!'
 	print 'Usage example: '
-	print './gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --scriptString "script nil 10 10 { whenButtonPressed ''A''; repeatUntil (not (buttonA)) { ''[display:mbDisplay]'' 145728; waitMillis 250; ''[display:mbDisplay]'' 4685802; waitMillis 250; ''[display:mbDisplayOff]''; waitMillis 300 } }" --libs ''["LED Display"]'''
+	print './gp-linux64bit runtime/lib/* ../ide/MicroBlocksCompiler.gp ../ide/MicroBitDisplaySlot.gp renderScript.gp - --jsonFile jsonFile'
 	// just making my syntax highlighter happy.. */
 	exit
 }

@@ -9,7 +9,7 @@ method prettyPrint PrettyPrinter block generator {
   offset = ((fieldNameCount (class 'Command')) + 1)
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
-    if useSemicolons { useSemicolons gen }
+    if (true == useSemicolons) { useSemicolons gen }
   }
   printCmd this block
   return (joinStringArray (toArray (getField gen 'result')))
@@ -20,7 +20,7 @@ method prettyPrintFunction PrettyPrinter func generator {
   offset = ((fieldNameCount (class 'Command')) + 1)
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
-    if useSemicolons { useSemicolons gen }
+    if (true == useSemicolons) { useSemicolons gen }
   }
   printFunction this func
   return (joinStringArray (toArray (getField gen 'result')))
@@ -31,7 +31,7 @@ method prettyPrintMethod PrettyPrinter func generator {
   offset = ((fieldNameCount (class 'Command')) + 1)
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
-    if useSemicolons { useSemicolons gen }
+    if (true == useSemicolons) { useSemicolons gen }
   }
   printFunction this func (className (class (classIndex func)))
   return (joinStringArray (toArray (getField gen 'result')))
@@ -42,7 +42,7 @@ method prettyPrintList PrettyPrinter block generator {
   offset = ((fieldNameCount (class 'Command')) + 1)
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
-    if useSemicolons { useSemicolons gen }
+    if (true == useSemicolons) { useSemicolons gen }
   }
 
   currentBlock = block
@@ -54,7 +54,9 @@ method prettyPrintList PrettyPrinter block generator {
     crIfNeeded gen
     currentBlock = (getField currentBlock 'nextBlock')
   }
-  return (joinStringArray (toArray (getField gen 'result')))
+  result = (getField gen 'result')
+  if (and ((count result) > 0) (';' == (last result))) { removeLast result }
+  return (joinStringArray (toArray result))
 }
 
 method prettyPrintString PrettyPrinter aString {
@@ -63,7 +65,7 @@ method prettyPrintString PrettyPrinter aString {
   for i (count commands) {
     add output (prettyPrint this (at commands i))
     if (i < (count commands)) {
-      if useSemicolons {
+      if (true == useSemicolons) {
         add output ';'
       } else {
         add output (newline)
@@ -82,7 +84,7 @@ method prettyPrintClass PrettyPrinter aClass withoutDefinition generator {
   gen = generator
   if (isNil gen) {
     gen = (new 'PrettyPrinterGenerator' (list) 0 true true)
-    if useSemicolons { useSemicolons gen }
+    if (true == useSemicolons) { useSemicolons gen }
   }
 
   if (not (withoutDefinition === false)) {
@@ -229,8 +231,10 @@ method printOp PrettyPrinter block {
 
 method printCmdList PrettyPrinter block inIf {
   openBrace gen
-  addTab gen
-  crIfNeeded gen
+  if (useSemicolons != true) {
+    cr gen
+    addTab gen
+  }
   currentBlock = block
   early = true
   while (notNil currentBlock) {
@@ -368,6 +372,7 @@ defineClass PrettyPrinterGenerator result tabLevel hadCr hadSpace useSemicolons
 method useSemicolons PrettyPrinterGenerator { useSemicolons = true }
 
 method closeBrace PrettyPrinterGenerator {
+  if (';' == (last result)) { removeLast result }
   nextPutAll this '}'
 }
 
@@ -394,7 +399,7 @@ method crIfNeeded PrettyPrinterGenerator {
 }
 
 method cr PrettyPrinterGenerator {
-  if useSemicolons {
+  if (true == useSemicolons) {
     nextPutAll this ';'
   } else {
     nextPutAll this (newline)
@@ -428,8 +433,8 @@ method nextPutAll PrettyPrinterGenerator value {
   add result value
   if ((count value) > 0) {
     last = (last (letters value))
-    hadSpace = (or (last == ' ') (last == (newline)) (last == '('))
-    hadCr = (or (last == (newline)) (last == ';') (last == '{'))
+    hadSpace = (isOneOf last ' ' '(' '{' (newline))
+    hadCr = (isOneOf last ';' '{' (newline))
   }
 }
 

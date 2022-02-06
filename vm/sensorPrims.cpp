@@ -26,6 +26,10 @@
 static int wireStarted = false;
 
 static void startWire() {
+  #if defined(RP2040_PHILHOWER)
+	// push clock slightly
+	Wire.setClock(500000); // i2c fast mode+ (seems pretty ubiquitous among i2c devices)
+  #endif
 	Wire.begin();
 	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 	wireStarted = true;
@@ -767,6 +771,12 @@ static int readTemperature() {
 	return 20 + offsetDegreesC;
 }
 
+#elif  defined(RP2040_PHILHOWER)
+
+static int readTemperature() { return analogReadTemp(); }
+static int readAcceleration(int reg) { return 0; } // RP2040 has no accelerometer
+static void setAccelRange(int range) { } // RP2040 has no accelerometer
+
 #else // stubs for non-micro:bit boards
 
 static int readAcceleration(int reg) { return 0; }
@@ -941,7 +951,12 @@ static OBJ primTouchRead(int argCount, OBJ *args) { return int2obj(0); }
 
 static uint8_t dhtData[5];
 
-static int readDHTData(int pin) {
+#if !defined(ARDUINO_ARCH_RP2040)
+  // this macro does nothing on non-RP2040 boards
+  #define __not_in_flash_func(f) (f)
+#endif
+
+static int __not_in_flash_func(readDHTData)(int pin) {
 	// Read DHT data into dhtData. Return true if successful, false if timeout.
 
 	// read the start pulse

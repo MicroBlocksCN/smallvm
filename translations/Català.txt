@@ -89,8 +89,8 @@ si _ _
 if _ _ else _
 si _ _ si no _
 
-else if
-si no, si
+else if _ _
+si no, si _ _
 
 else
 si no

@@ -115,7 +115,7 @@ int recvBytes(uint8 *buf, int count) {
 
 int sendByte(char aByte) {
 	#ifdef ARDUINO_ARCH_RP2040
-		// Workaround for Pico Arduino library bug:
+		// Workaround for Pico Arduino bug (both mbed and Philhower):
 		// Serial.write() should return 1 if byte is written but always returns 0 on Pico
 		Serial.write(aByte);
 		return 1; // assume byte was actually written
@@ -550,6 +550,7 @@ void restartSerial() {
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3};
+	#define DEFAULT_TONE_PIN 19 // speaker pin on Raspico Pico Bricks board
 
 #else // unknown board
 
@@ -699,8 +700,10 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		SET_MODE(pin, INPUT);
 		if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
 	#endif
-	#ifdef ROBOTISTAN_PROTOTYPE
-			return int2obj(analogRead(pin) >> 2);
+	#ifdef RP2040_PHILHOWER
+		// Philhower framework defaults to 12-bit resolution
+		// NOTE: xxx Remove this workaround when upstream fix becomes available!
+		return int2obj(analogRead(pin) >> 2);
 	#endif
 	return int2obj(analogRead(pin));
 }
@@ -1318,7 +1321,10 @@ static void setServo(int pin, int usecs) {
 	if (usecs <= 0) {
 		if (servo[pin].attached()) servo[pin].detach();
 	} else {
-		if (!servo[pin].attached()) servo[pin].attach(pin);
+		if (!servo[pin].attached()) {
+			// allow a wide range of pulse widths; MicroBlocks library imposes its own limits
+			servo[pin].attach(pin, 200, 3000);
+		}
 		servo[pin].writeMicroseconds(usecs);
 	}
 }
@@ -1378,53 +1384,6 @@ void stopTone() {
 	if (tonePin >= 0) {
 		ledcWrite(0, 0);
 		ledcDetachPin(tonePin);
-	}
-}
-
-#elif defined(ARDUINO_ARCH_RP2040XXX) && !defined(ARDUINO_ARCH_MBED)
-
-// Temporary replacement for Tone library.
-
-#include "tone2.pio.h"
-static PIOProgram _tone2Pgm(&tone2_program);
-
-static int tonePin = -1;
-static PIO tonePio;
-static int toneSm;
-
-void setTone(int pin, int frequency) {
-	if (pin > 29) return;
-	if (!frequency) { noTone(pin); return; }
-
-	int us = 1000000 / frequency / 2;
-	if (us < 5) us = 5;
-
-	if (tonePin >= 0) stopTone();
-
-	if (tonePin < 0) {
-		tonePin = pin;
-		pinMode(pin, OUTPUT);
-		int offset;
-		if (!_tone2Pgm.prepare(&tonePio, &toneSm, &offset)) {
-			outputString("Could not start tone, out of PIO resources");
-			return;
-		}
-		tone2_program_init(tonePio, toneSm, offset, pin);
-	}
-
-	pio_sm_clear_fifos(tonePio, toneSm); // Remove any old updates that haven't yet taken effect
-	pio_sm_put_blocking(tonePio, toneSm, RP2040::usToPIOCycles(us));
-	pio_sm_set_enabled(tonePio, toneSm, true);
-	tonePin = pin;
-}
-
-void stopTone() {
-	if (tonePin >= 0) {
-		pio_sm_set_enabled(tonePio, toneSm, false);
-		pio_sm_unclaim(tonePio, toneSm);
-		pinMode(tonePin, OUTPUT);
-		digitalWrite(tonePin, LOW);
-		tonePin = -1;
 	}
 }
 
@@ -1819,6 +1778,48 @@ static int startRF(int pin, int frequency) {
 	return true;
 }
 
+#elif defined(RP2040_PHILHOWER)
+
+#include <hardware/pwm.h>
+
+int rfPin = -1;
+
+static int startRF(int pin, int freq) {
+	// Use PWM to generate a square wave at frequencies from 10 Hz to ~30 MHz.
+	int analogScale = 2; // 1 bit
+
+	if ((pin < 0) || (pin > 29) || (freq <= 0)) {
+		stopRF();
+		return true; // RF is supported
+	}
+
+	if (rfPin < 0) analogWrite(pin, 512); // initialze PWM for all pins before setting up RF
+	rfPin = pin;
+
+	// adjust analogScale to achieve lower periods (inspired by wiring_analog.cpp)
+	while (((clock_get_hz(clk_sys) / (float) (analogScale * freq)) > 255.0) && (analogScale < 0xFFFF)) {
+		analogScale *= 2;
+		if (analogScale > 0xFFFF) analogScale = 0xFFFF;
+	}
+
+	pwm_config c = pwm_get_default_config();
+	pwm_config_set_clkdiv(&c, (float) clock_get_hz(clk_sys) / (freq * analogScale));
+	pwm_config_set_wrap(&c, analogScale - 1);
+	pwm_init(pwm_gpio_to_slice_num(rfPin), &c, true);
+    gpio_set_function(rfPin, GPIO_FUNC_PWM);
+    pwm_set_gpio_level(rfPin, analogScale / 2);
+    return true;
+}
+
+static void stopRF() {
+	if (rfPin >= 0) {
+		pwm_set_enabled(pwm_gpio_to_slice_num(rfPin), false);
+    	gpio_set_function(rfPin, GPIO_FUNC_SIO);
+		SET_MODE(rfPin, INPUT);
+	}
+	rfPin = -1;
+}
+
 #else
 
 static int startRF(int pin, int frequency) { return false; }
@@ -1862,6 +1863,11 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 	return isSupported ? trueObj : falseObj;
 }
 
+// forward to primitives that don't take argCount
+
+static OBJ primSetUserLED2(int argCount, OBJ *args) { primSetUserLED(args); return falseObj; }
+static OBJ primAnalogWrite2(int argCount, OBJ *args) { primAnalogWrite(args); return falseObj; }
+static OBJ primDigitalWrite2(int argCount, OBJ *args) { primDigitalWrite(args); return falseObj; }
 
 static PrimEntry entries[] = {
 	{"hasTone", primHasTone},
@@ -1870,7 +1876,12 @@ static PrimEntry entries[] = {
 	{"setServo", primSetServo},
 	{"dacInit", primDACInit},
 	{"dacWrite", primDACWrite},
-	{"squareWave", primSquareWave},
+    {"squareWave", primSquareWave},
+	{"setUserLED", primSetUserLED2},
+	{"analogRead", primAnalogRead},
+	{"analogWrite", primAnalogWrite2},
+	{"digitalRead", primDigitalRead},
+	{"digitalWrite", primDigitalWrite2},
 };
 
 void addIOPrims() {

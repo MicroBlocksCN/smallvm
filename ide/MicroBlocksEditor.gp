@@ -62,14 +62,22 @@ to checkLatestVersion {
   for i (count latestVersion) {
 	latest = (toInteger (at latestVersion i))
 	current = (toInteger (at currentVersion i))
+	pilot = (current > latest)
+	if pilot {
+      // we're running a pilot release, lets check the latest one
+      latestVersion = (fetchLatestPilotVersionNumber)
+      latest = (toInteger (at latestVersion i))
+	}
 	if (latest > current) {
-	  (inform (global 'page') (join
+      (inform (global 'page') (join
 		'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
 		(newline)
 		'Get it now at http://microblocks.fun')
 		'New version available')
 	} (current > latest) {
-	  return
+      // if this subpart of the current version number is > latest, don't check following parts
+      // (e.g. 2.0.0 is later than 1.9.9)
+      return
 	}
   }
 }
@@ -95,6 +103,14 @@ to fetchLatestVersionNumber {
   versionText = (basicHTTPGet 'microblocks.fun' url)
   if (isNil versionText) { return (array 0 0 0) }
   return (splitWith (substring (first (lines versionText)) 1) '.')
+}
+
+to fetchLatestPilotVersionNumber {
+  versionText = (basicHTTPGet 'microblocks.fun' '/downloads/pilot/VERSION.txt')
+  if (isNil versionText) { return (array 0 0 0) }
+  versionLine = (first (lines versionText))
+  // take out "-pilot" first
+  return (splitWith (substring versionLine 1 ((count versionLine) - 6)) '.')
 }
 
 to findMicroBlocksEditor {
@@ -1065,7 +1081,8 @@ method languageMenu MicroBlocksEditor {
   popUpAtHand menu (global 'page')
 }
 
-method setLanguage MicroBlocksEditor newLang {
+method setLanguage MicroBlocksEditor newLangOrCode {
+  newLang = (languageNameForCode (authoringSpecs) newLangOrCode)
   saveToUserPreferences this 'locale' newLang
   setLanguage (authoringSpecs) newLang
   languageChanged this

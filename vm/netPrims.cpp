@@ -38,13 +38,6 @@ int serverPort = 80;
 WiFiServer server(serverPort);
 WiFiClient client;
 
-#if defined(ARDUINO_ARCH_ESP32)
-WebSocketsServer webSocket = WebSocketsServer(81);
-static int lastWebSocketType;
-static int lastWebSocketClientId;
-char lastWebSocketPayload[1000];
-#endif
-
 // WiFi Connection
 
 // Macro for creating MicroBlocks string object constants
@@ -448,8 +441,14 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	return result;
 }
 
-#ifdef ARDUINO_ARCH_ESP32
 // Websocket support for ESP32
+
+#ifdef ARDUINO_ARCH_ESP32
+
+WebSocketsServer webSocket = WebSocketsServer(81);
+static int lastWebSocketType;
+static int lastWebSocketClientId;
+char lastWebSocketPayload[1000];
 
 void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t * payload, size_t length) {
 	lastWebSocketType = type;
@@ -506,12 +505,99 @@ static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
+
 #endif
 
 #ifndef ARDUINO_ARCH_ESP32
+
 static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWiFi); }
+
+#endif
+
+// Optional MQTT support of ESP32 (compile with -D MQTT_PRIMS)
+// Code provided by Wenji Wu
+
+#if defined(ARDUINO_ARCH_ESP32) && defined(MQTT_PRIMS)
+
+#include <MQTT.h>
+
+MQTTClient mqtt_client;
+static char hasMQTTMessage = false;
+char lastMQTTTopic[1000];
+char lastMQTTPayload[1000];
+
+void MQTTmessageReceived(String &topic, String &payload) {
+	hasMQTTMessage = true;
+
+	memcpy(lastMQTTTopic, topic.c_str(), strlen(topic.c_str()));
+	lastMQTTTopic[strlen(topic.c_str())] = '\0';
+	memcpy(lastMQTTPayload, payload.c_str(), strlen(payload.c_str()));
+	lastMQTTPayload[strlen(payload.c_str())] = '\0';
+	/*
+	strcpy(lastMQTTTopic,topic.c_str());
+    strcpy(lastMQTTPayload, payload.c_str());
+	*/
+}
+
+static OBJ primMQTTConnect(int argCount, OBJ *args) {
+	char *broker_uri = obj2str(args[0]);
+	char *client_id = "microblocks-client"; // todo: random id
+	mqtt_client.begin(broker_uri, client);
+	if (argCount > 2) { // username/password
+		char *username = obj2str(args[1]);
+		char *password = obj2str(args[2]);
+		while (!mqtt_client.connect(client_id, username, password)) {delay(1000);}
+	} else {
+		while (!mqtt_client.connect(client_id)) {delay(1000);}
+	}
+
+	mqtt_client.onMessage(MQTTmessageReceived);
+	return falseObj;
+}
+
+static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
+	mqtt_client.loop();
+	if (hasMQTTMessage == true) {
+		OBJ event = newObj(ListType, 3, zeroObj);
+		FIELD(event, 0) = int2obj(2); //list size
+		FIELD(event, 1) = newStringFromBytes(lastMQTTTopic, strlen(lastMQTTTopic));
+		FIELD(event, 2) = newStringFromBytes(lastMQTTPayload, strlen(lastMQTTPayload));
+		hasMQTTMessage = false;
+		return event;
+	} else {
+		return falseObj;
+	}
+}
+
+static OBJ primMQTTPub(int argCount, OBJ *args) {
+	char *topic = obj2str(args[0]);
+	char *message = obj2str(args[1]);
+	mqtt_client.publish(topic, message);
+	mqtt_client.loop();
+	return falseObj;
+}
+
+static OBJ primMQTTSub(int argCount, OBJ *args) {
+	char *topic = obj2str(args[0]);
+	mqtt_client.subscribe(topic);
+	//mqtt_client.loop();
+	return falseObj;
+}
+
+static OBJ primMQTTUnsub(int argCount, OBJ *args) {
+	char *topic = obj2str(args[0]);
+	mqtt_client.unsubscribe(topic);
+	//mqtt_client.loop();
+	return falseObj;
+}
+
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
+	// Return true when connected to MQTT broker.
+	return (mqtt_client.connected()) ? trueObj : falseObj;
+}
+
 #endif
 
 static PrimEntry entries[] = {
@@ -532,6 +618,16 @@ static PrimEntry entries[] = {
 	{"webSocketStart", primWebSocketStart},
 	{"webSocketLastEvent", primWebSocketLastEvent},
 	{"webSocketSendToClient", primWebSocketSendToClient},
+
+  #if defined(ARDUINO_ARCH_ESP32) && defined(MQTT_PRIMS)
+	{"MQTTConnect", primMQTTConnect},
+	{"MQTTLastEvent", primMQTTLastEvent},
+	{"MQTTPub", primMQTTPub},
+	{"MQTTSub", primMQTTSub},
+	{"MQTTUnsub", primMQTTUnsub},
+	{"MQTTIsConnected", primMQTTIsConnected},
+  #endif
+
 };
 
 void addNetPrims() {

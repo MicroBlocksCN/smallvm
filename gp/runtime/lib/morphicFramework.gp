@@ -706,7 +706,7 @@ method updateModifiedKeys Keyboard modifierKeys {
 
 // Page
 
-defineClass Page morph hand keyboard taskMaster soundMixer schedules activeMenu isChanged color activeHint isShowingConnectors foreground devMode profileTimer droppedFiles droppedTexts damages redrawAll
+defineClass Page morph hand keyboard taskMaster soundMixer schedules activeMenu isChanged color activeHint activeTooltip isShowingConnectors foreground devMode profileTimer droppedFiles droppedTexts damages redrawAll
 
 to go tryRetina {
   // Run 'go' at command prompt to open or restart.
@@ -745,7 +745,7 @@ to newPage width height color {
   if (isNil width) { width = 500 }
   if (isNil height) { height = 500 }
   if (isNil color) {color = (color 250 250 250)}
-  page = (new 'Page' nil nil nil (newTaskMaster) (newSoundMixer) (list) nil false color nil false nil true nil)
+  page = (new 'Page' nil nil nil (newTaskMaster) (newSoundMixer) (list) nil false color nil nil false nil true nil)
   morph = (newMorph page)
   setTransparentTouch morph true
   setWidth (bounds morph) width
@@ -1182,7 +1182,7 @@ method showMenu Page aMenu x y {
   if (isNil x) {x = (half ((width morph) - (width (morph aMenu))))}
   if (isNil y) {y = (half ((height morph) - (height (morph aMenu))))}
   if (notNil activeMenu) {destroy (morph activeMenu)}
-  removeHint this
+  removeTooltip this
   setPosition (morph aMenu) x y
   keepWithin (morph aMenu) (insetBy (bounds morph) 50)
   addPart morph (morph aMenu)
@@ -1195,7 +1195,8 @@ to inform details title yesLabel {
 
 method closeUnclickedMenu Page aHandler {
   setCursor 'default'
-  removeHint this
+  removeTooltip this
+  removeAllHints this
   if (isNil activeMenu) {return}
   if (contains (allOwners (morph aHandler)) (morph activeMenu)) {return}
   if (and (isClass activeMenu 'Menu') (contains (triggers activeMenu) aHandler)) {return}
@@ -1222,6 +1223,41 @@ method removeHint Page {
   if (notNil activeHint) {
     destroy (morph activeHint)
     activeHint = nil
+  }
+}
+
+method removeHintForMorph Page aMorph {
+  for m (copy (parts morph)) {
+    if (and (isClass (handler m) 'SpeechBubble') (aMorph == (clientMorph (handler m)))) {
+      removeFromOwner m
+    }
+  }
+}
+
+method removeAllHints Page {
+  for m (copy (parts morph)) {
+    if (isClass (handler m) 'SpeechBubble') {
+      removeFromOwner m
+    }
+  }
+  activeHint = nil
+}
+
+// tooltips
+
+method showTooltip Page aTooltip {
+  removeTooltip this
+  inset = 3
+  if ('Browser' == (platform)) { inset = 2 }
+  keepWithin (morph aTooltip) (insetBy (bounds morph) (inset * (global 'scale')))
+  addPart this aTooltip
+  activeTooltip = aTooltip
+}
+
+method removeTooltip Page {
+  if (notNil activeTooltip) {
+    destroy (morph activeTooltip)
+    activeTooltip = nil
   }
 }
 

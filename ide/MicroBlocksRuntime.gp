@@ -574,6 +574,7 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
 	setCursor 'wait'
 
+	removeHint (global 'page')
 	if (and (notNil port) (true != alreadyStopped)) {
 		sendStopAll this
 		softReset this
@@ -1095,7 +1096,6 @@ method sendStopAll SmallRuntime {
 }
 
 method sendStartAll SmallRuntime {
-	oldVarNames = nil // force var names to be updated
 	saveAllChunks this
 	sendMsg this 'startAllMsg'
 }
@@ -1569,6 +1569,11 @@ method processNextMessage SmallRuntime {
 		print 'Bad message start byte; should be 250 or 251 but is:' firstByte
 		print (toString recvBuf) // show the bad string (could be an ESP error message)
 		skipMessage this // discard
+		// ESP32 doesn't run the VM right away. It always outputs a debug
+		// message, which means that the first pingMsg is never received by the
+		// board. We just wait a bit before assuming the VM has started. The
+		// 500 delay has been found to work experimentally in several computers.
+		waitMSecs 500
 	}
 	return true
 }
@@ -1855,10 +1860,10 @@ method showResult SmallRuntime chunkID value isError isResult {
 			if (true == isError) {
 				showError m value
 			} else {
-				showHint m value
+				showHint m value nil false
 			}
-			if ('' == value) {
-				removeHint (global 'page')
+			if (or (isNil value) ('' == value)) {
+				removeHintForMorph (global 'page') m
 			} else {
 				if (shiftKeyDown (keyboard (global 'page'))) {
 					setClipboard (toString value)
@@ -1886,7 +1891,7 @@ method exportScriptImageWithResult SmallRuntime aBlock {
 // Return values
 
 method returnedValue SmallRuntime msg {
-	if ((byteCount msg) < 7) { return nil } // incomplete msg
+	if ((byteCount msg) < 6) { return nil } // incomplete msg
 	type = (byteAt msg 6)
 	if (1 == type) {
 		return (+ ((byteAt msg 10) << 24) ((byteAt msg 9) << 16) ((byteAt msg 8) << 8) (byteAt msg 7))

@@ -260,6 +260,11 @@ function initGPEventHandlers() {
 		if (evt.char && (evt.char.length == 1)) charCode = evt.char.charCodeAt(0);
 		GP.events.push([TEXTINPUT, charCode]);
 	}
+// 	document.oninput = function(evt) {
+// 		for (let ch of evt.data) {
+// 			GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
+// 		}
+// 	}
 	canvas.onwheel = function(evt) {
 		if (evt.shiftKey || evt.ctrlKey) { return; } // default behavior (browser zoom)
 		var dx = evt.wheelDeltaX;
@@ -644,6 +649,7 @@ async function webSerialConnect() {
 		{ usbVendorId: 0x1366},		// SEGGER Calliope mini
 		{ usbVendorId: 0x16c0},		// Teensy
 		{ usbVendorId: 0x2E8A},		// Raspberry Pi Pico RP2040
+		{ usbVendorId: 0x303a},		// Espressif USB JTAG/serial debug unit
 	];
 	webSerialDisconnect();
 	GP_webSerialPort = await navigator.serial.requestPort({filters: vendorIDs}).catch((e) => { console.log(e); });

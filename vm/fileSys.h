@@ -9,7 +9,7 @@
 
 #include <FS.h>
 
-#if defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__)
+#if defined(RP2040_PHILHOWER)
   #define useLittleFS 1
 #endif
 

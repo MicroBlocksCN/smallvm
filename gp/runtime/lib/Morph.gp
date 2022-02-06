@@ -837,26 +837,24 @@ method removeHighlight Morph {
 
 // tooltip
 
-method showTooltip Morph aString bubbleWidth  {
+method showTooltip Morph aString tipWidth {
   if (or (isNil aString) ('' == aString)) { return nil }
   if (isNil owner) { return nil } // morph deleted before hint was scheduled to appear (e.g. a menu)
-  page = (page this)
-  if (isNil page) { return nil } // the morph requesting the hint has been deleted
-
-  bubble = (newBubble aString 300 nil false true)
-  overlap = (5 * (global 'scale'))
-  if ((top this) < 10) { overlap = (0 - overlap) } // for top bar buttons (outset horizontally)
+  page = (global 'page')
   vis = (visibleBounds this)
+  scale = (global 'scale')
+  overlap = (scale * 7)
+  tip = (newToolTip aString tipWidth)
   rightSpace = ((right (morph page)) - (right vis))
-  setTop (morph bubble) ((top bounds) - ((height (morph bubble)) - overlap))
-  if (rightSpace > (width (morph bubble))) {
-    setLeft (morph bubble) ((right vis) - overlap)
+  setTop (morph tip) ((top bounds) - ((height (morph tip)) - overlap))
+  if (rightSpace > (width (morph tip))) {
+    setLeft (morph tip) (- (right vis) overlap)
   } else {
-    setRight (morph bubble) ((left vis) + overlap)
+    setRight (morph tip) (+ (left vis) overlap)
   }
-  showHint page bubble true
-  reportDamage this (fullBounds (morph bubble))
-  return bubble
+  showTooltip page tip
+  reportDamage this (fullBounds (morph tip))
+  return tip
 }
 
 // talk bubble
@@ -884,13 +882,14 @@ method showHint Morph hintData bubbleWidth isHint isError {
     fixLayout bubble
     setRight (morph bubble) (+ (left vis) overlap)
   }
+  removeHintForMorph page this
   showHint page bubble isHint
   reportDamage this (fullBounds (morph bubble))
   return bubble
 }
 
 method showError Morph errorMsg {
-  showHint this errorMsg 300 true true
+  showHint this errorMsg 300 false true
 }
 
 method say Morph s {

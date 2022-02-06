@@ -916,28 +916,32 @@ method copyToClipboard Block {
 }
 
 method scriptText Block useSemicolons {
-  useSemicolons = (useSemicolons == true)
+  useSemicolons = (useSemicolons == true) // useSemicolons is an optional parameter
+  pp = (new 'PrettyPrinter')
   if useSemicolons {
+    useSemicolons pp
     result = (list)
   } else {
     result = (list 'GP Script' (newline))
   }
-  pp = (new 'PrettyPrinter')
-  useSemicolons pp
   add result (join 'script 10 10 ')
   if (isClass expression 'Reporter') {
 	if (isOneOf (primName expression) 'v') {
-	  add result (join '(v ' (first (argList expression)) ')')
+      varName = (first (argList expression))
+      if (contains (letters varName) ' ') {
+        varName = (printString varName) // enclose varName in quotes
+      }
+	  add result (join '(v ' varName ')')
 	} else {
 	  add result (join '(' (prettyPrint pp expression) ')')
 	}
     if (not useSemicolons) { add result (newline) }
   } else {
 	add result '{'
-    if useSemicolons { add result ' ' } else { add result (newline) }
+    if (not useSemicolons) { add result (newline) }
     add result (prettyPrintList pp expression)
     add result '}'
-    if useSemicolons { add result ' ' } else { add result (newline) }
+    if (not useSemicolons) { add result (newline) }
   }
   if (not useSemicolons) { add result (newline) }
   return (joinStrings result)
@@ -1756,6 +1760,7 @@ method fixBlockColor Block {
       isAlternative = false
     }
     if (isAlternative != oldAlternative) {
+	  pathCache = nil
       changed morph
       fixPartColors this
     }
