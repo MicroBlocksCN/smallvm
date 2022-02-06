@@ -227,6 +227,7 @@ to fixBlockColors {
 // translation
 
 method language AuthoringSpecs { return language }
+method languageCode AuthoringSpecs { return (languageCodeForName this language) }
 
 method setLanguage AuthoringSpecs newLang {
   translationData = (readEmbeddedFile (join 'translations/' newLang '.txt'))
@@ -317,6 +318,50 @@ to localizedOrNil aString {
   } else {
 	return (at dict aString)
   }
+}
+
+// country codes
+
+method languageCodeForName AuthoringSpecs langName {
+  // Return the language code for the given language or the argument if no match found.
+
+  for pair (languageCodeList this) {
+    if (langName == (first pair)) { return (at pair 2) }
+  }
+  return langName
+}
+
+method languageNameForCode AuthoringSpecs langCode {
+  // Return the language name for the given languag codee or the argument if no match found.
+  // The language name is the file name of the translation file.
+
+  for pair (languageCodeList this) {
+    if (langCode == (at pair 2)) { return (first pair) }
+  }
+  return langCode
+}
+
+method languageCodeList AuthoringSpecs {
+  // Return an array of (<languageName> <abbreviation>) pairs."
+
+  return (array
+    (array 'English' 'en' )
+    (array 'Castellano' 'es' )
+    (array 'Català' 'ca' )
+    (array 'Deutsch' 'de' )
+    (array 'Français' 'fr' )
+    (array 'Galego' 'gl' )
+    (array 'Nederlands' 'nl' )
+    (array 'Português (Brasil)' 'pt-br' )
+    (array 'Português' 'pt' )
+    (array 'Türkçe' 'tr' )
+    (array 'Uzbek' 'ux' )
+    (array 'Ελληνικά' 'el' )
+    (array 'Русский' 'ru' )
+    (array 'عربى' 'ar' )
+    (array '日本語' 'ja' )
+    (array '简体中文' 'zh' )
+  )
 }
 
 // authoring specs

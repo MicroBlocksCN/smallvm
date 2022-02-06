@@ -1081,7 +1081,8 @@ method languageMenu MicroBlocksEditor {
   popUpAtHand menu (global 'page')
 }
 
-method setLanguage MicroBlocksEditor newLang {
+method setLanguage MicroBlocksEditor newLangOrCode {
+  newLang = (languageNameForCode (authoringSpecs) newLangOrCode)
   saveToUserPreferences this 'locale' newLang
   setLanguage (authoringSpecs) newLang
   languageChanged this
