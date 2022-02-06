@@ -19,7 +19,6 @@
 	#include <ESP8266WiFi.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
-	#include <MQTT.h>
 	#include <WebSocketsServer.h>
 #elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
 	#define USE_WIFI101
@@ -38,21 +37,6 @@ static char serverStarted = false;
 int serverPort = 80;
 WiFiServer server(serverPort);
 WiFiClient client;
-
-#if defined(ARDUINO_ARCH_ESP32)
-WebSocketsServer webSocket = WebSocketsServer(81);
-static int lastWebSocketType;
-static int lastWebSocketClientId;
-char lastWebSocketPayload[1000];
-
-// MQTT
-
-MQTTClient mqtt_client;
-static char hasMQTTMessage = false;
-char lastMQTTTopic[1000];
-char lastMQTTPayload[1000];
-
-#endif
 
 // WiFi Connection
 
@@ -457,8 +441,14 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	return result;
 }
 
-#ifdef ARDUINO_ARCH_ESP32
 // Websocket support for ESP32
+
+#ifdef ARDUINO_ARCH_ESP32
+
+WebSocketsServer webSocket = WebSocketsServer(81);
+static int lastWebSocketType;
+static int lastWebSocketClientId;
+char lastWebSocketPayload[1000];
 
 void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t * payload, size_t length) {
 	lastWebSocketType = type;
@@ -497,11 +487,50 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-// MQTT
+#endif
+
+#else // WiFi is not supported
+
+static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
+static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primStartSSIDscan(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetSSID(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primGetMAC(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
+
+#endif
+
+#ifndef ARDUINO_ARCH_ESP32
+
+static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWiFi); }
+
+#endif
+
+// Optional MQTT support of ESP32 (compile with -D MQTT_PRIMS)
+// Code provided by Wenji Wu
+
+#if defined(ARDUINO_ARCH_ESP32) && defined(MQTT_PRIMS)
+
+#include <MQTT.h>
+
+MQTTClient mqtt_client;
+static char hasMQTTMessage = false;
+char lastMQTTTopic[1000];
+char lastMQTTPayload[1000];
 
 void MQTTmessageReceived(String &topic, String &payload) {
 	hasMQTTMessage = true;
-	
+
 	memcpy(lastMQTTTopic, topic.c_str(), strlen(topic.c_str()));
 	lastMQTTTopic[strlen(topic.c_str())] = '\0';
 	memcpy(lastMQTTPayload, payload.c_str(), strlen(payload.c_str()));
@@ -523,7 +552,7 @@ static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	} else {
 		while (!mqtt_client.connect(client_id)) {delay(1000);}
 	}
-	
+
 	mqtt_client.onMessage(MQTTmessageReceived);
 	return falseObj;
 }
@@ -550,7 +579,6 @@ static OBJ primMQTTPub(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-
 static OBJ primMQTTSub(int argCount, OBJ *args) {
 	char *topic = obj2str(args[0]);
 	mqtt_client.subscribe(topic);
@@ -572,39 +600,6 @@ static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
 
 #endif
 
-#else // WiFi is not supported
-
-static OBJ primHasWiFi(int argCount, OBJ *args) { return falseObj; }
-static OBJ primStartWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primStopWiFi(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primWiFiStatus(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primGetIP(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primStartSSIDscan(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primGetSSID(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primGetMAC(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primHttpServerGetRequest(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primRespondToHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
-#endif
-
-#ifndef ARDUINO_ARCH_ESP32
-static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWiFi); }
-
-static OBJ primMQTTConnect(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTPub(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTSub(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTUnsub(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
-
-
-#endif
-
 static PrimEntry entries[] = {
 	{"hasWiFi", primHasWiFi},
 	{"startWiFi", primStartWiFi},
@@ -623,12 +618,16 @@ static PrimEntry entries[] = {
 	{"webSocketStart", primWebSocketStart},
 	{"webSocketLastEvent", primWebSocketLastEvent},
 	{"webSocketSendToClient", primWebSocketSendToClient},
+
+  #if defined(ARDUINO_ARCH_ESP32) && defined(MQTT_PRIMS)
 	{"MQTTConnect", primMQTTConnect},
 	{"MQTTLastEvent", primMQTTLastEvent},
 	{"MQTTPub", primMQTTPub},
 	{"MQTTSub", primMQTTSub},
 	{"MQTTUnsub", primMQTTUnsub},
 	{"MQTTIsConnected", primMQTTIsConnected},
+  #endif
+
 };
 
 void addNetPrims() {
