@@ -1760,6 +1760,7 @@ method fixBlockColor Block {
       isAlternative = false
     }
     if (isAlternative != oldAlternative) {
+	  pathCache = nil
       changed morph
       fixPartColors this
     }
