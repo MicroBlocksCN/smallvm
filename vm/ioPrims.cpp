@@ -550,6 +550,7 @@ void restartSerial() {
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3};
+	#define DEFAULT_TONE_PIN 19 // speaker pin on Raspico Pico Bricks board
 
 #else // unknown board
 
