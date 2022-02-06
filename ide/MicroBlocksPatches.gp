@@ -351,7 +351,7 @@ method copyForWeb Block {
   libs = (libraries (project (scripter (smallRuntime))))
   dict = (dictionary)
   atPut dict 'scale' 2
-  atPut dict 'locale' (language (authoringSpecs))
+  atPut dict 'locale' (languageCode (authoringSpecs))
   atPut dict 'libs' (keys libs)
   atPut dict 'script' scriptText
 
