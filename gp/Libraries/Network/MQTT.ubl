@@ -1,0 +1,50 @@
+module 'MQTT' Comm
+author wwj718
+version 1 1 
+depends WiFi 
+tags websockets network 
+description 'A simple MQTT client.'
+
+  spec ' ' 'MQTT connect to' 'MQTT connect to _ : _ _' 'str str str' 'test.mosquitto.org' 'username' 'password'
+  spec 'r' '[net:MQTTIsConnected]' 'MQTT connected'
+  spec ' ' '[net:MQTTSub]' 'MQTT sub _' 'str' 'testTopic'
+  spec ' ' '[net:MQTTUnsub]' 'MQTT unsub _' 'str' 'testTopic'
+	spec ' ' '[net:MQTTPub]' 'MQTT pub topic _ payload _' 'str str' 'testTopic' 'Hello!'
+  spec 'r' '[net:MQTTLastEvent]' 'last MQTT event'
+	spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
+	spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
+
+
+to 'MQTT connect to' broker username password {
+
+  if ((getIPAddress) != '0.0.0.0') {
+    if ((pushArgCount) > 2) {
+      '[net:MQTTConnect]' broker username password
+    } else {
+      '[net:MQTTConnect]' broker
+    }
+    if (('[net:MQTTIsConnected]')) {
+      sayIt 'Connected!'
+    } else {
+      sayIt 'Not Connected'
+    }
+  } else {
+    sayIt 'Not Connected'
+  }  
+}
+
+to 'MQTT event payload' event {
+  if (and (isType event 'list') ((size event) > 1)) {
+    return (at 2 event)
+  } else {
+    return ''
+  }
+}
+
+to 'MQTT event topic' event {
+  if (and (isType event 'list') ((size event) > 1)) {
+    return (at 1 event)
+  } else {
+    return ''
+  }
+}

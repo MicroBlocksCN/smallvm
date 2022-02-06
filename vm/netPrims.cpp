@@ -19,6 +19,7 @@
 	#include <ESP8266WiFi.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
+	#include <MQTT.h>
 	#include <WebSocketsServer.h>
 #elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
 	#define USE_WIFI101
@@ -43,6 +44,14 @@ WebSocketsServer webSocket = WebSocketsServer(81);
 static int lastWebSocketType;
 static int lastWebSocketClientId;
 char lastWebSocketPayload[1000];
+
+// MQTT
+
+MQTTClient mqtt_client;
+static char hasMQTTMessage = false;
+char lastMQTTTopic[1000];
+char lastMQTTPayload[1000];
+
 #endif
 
 // WiFi Connection
@@ -488,6 +497,79 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+// MQTT
+
+void MQTTmessageReceived(String &topic, String &payload) {
+	hasMQTTMessage = true;
+	
+	memcpy(lastMQTTTopic, topic.c_str(), strlen(topic.c_str()));
+	lastMQTTTopic[strlen(topic.c_str())] = '\0';
+	memcpy(lastMQTTPayload, payload.c_str(), strlen(payload.c_str()));
+	lastMQTTPayload[strlen(payload.c_str())] = '\0';
+	/*
+	strcpy(lastMQTTTopic,topic.c_str());
+    strcpy(lastMQTTPayload, payload.c_str());
+	*/
+}
+
+static OBJ primMQTTConnect(int argCount, OBJ *args) {
+	char *broker_uri = obj2str(args[0]);
+	char *client_id = "microblocks-client"; // todo: random id
+	mqtt_client.begin(broker_uri, client);
+	if (argCount > 2) { // username/password
+		char *username = obj2str(args[1]);
+		char *password = obj2str(args[2]);
+		while (!mqtt_client.connect(client_id, username, password)) {delay(1000);}
+	} else {
+		while (!mqtt_client.connect(client_id)) {delay(1000);}
+	}
+	
+	mqtt_client.onMessage(MQTTmessageReceived);
+	return falseObj;
+}
+
+static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
+	mqtt_client.loop();
+	if (hasMQTTMessage == true) {
+		OBJ event = newObj(ListType, 3, zeroObj);
+		FIELD(event, 0) = int2obj(2); //list size
+		FIELD(event, 1) = newStringFromBytes(lastMQTTTopic, strlen(lastMQTTTopic));
+		FIELD(event, 2) = newStringFromBytes(lastMQTTPayload, strlen(lastMQTTPayload));
+		hasMQTTMessage = false;
+		return event;
+	} else {
+		return falseObj;
+	}
+}
+
+static OBJ primMQTTPub(int argCount, OBJ *args) {
+	char *topic = obj2str(args[0]);
+	char *message = obj2str(args[1]);
+	mqtt_client.publish(topic, message);
+	mqtt_client.loop();
+	return falseObj;
+}
+
+
+static OBJ primMQTTSub(int argCount, OBJ *args) {
+	char *topic = obj2str(args[0]);
+	mqtt_client.subscribe(topic);
+	//mqtt_client.loop();
+	return falseObj;
+}
+
+static OBJ primMQTTUnsub(int argCount, OBJ *args) {
+	char *topic = obj2str(args[0]);
+	mqtt_client.unsubscribe(topic);
+	//mqtt_client.loop();
+	return falseObj;
+}
+
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
+	// Return true when connected to MQTT broker.
+	return (mqtt_client.connected()) ? trueObj : falseObj;
+}
+
 #endif
 
 #else // WiFi is not supported
@@ -512,6 +594,15 @@ static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWiFi); }
+
+static OBJ primMQTTConnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTPub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTSub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTUnsub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
+
+
 #endif
 
 static PrimEntry entries[] = {
@@ -532,6 +623,12 @@ static PrimEntry entries[] = {
 	{"webSocketStart", primWebSocketStart},
 	{"webSocketLastEvent", primWebSocketLastEvent},
 	{"webSocketSendToClient", primWebSocketSendToClient},
+	{"MQTTConnect", primMQTTConnect},
+	{"MQTTLastEvent", primMQTTLastEvent},
+	{"MQTTPub", primMQTTPub},
+	{"MQTTSub", primMQTTSub},
+	{"MQTTUnsub", primMQTTUnsub},
+	{"MQTTIsConnected", primMQTTIsConnected},
 };
 
 void addNetPrims() {
