@@ -1860,10 +1860,10 @@ method showResult SmallRuntime chunkID value isError isResult {
 			if (true == isError) {
 				showError m value
 			} else {
-				showHint m value
+				showHint m value nil false
 			}
 			if (or (isNil value) ('' == value)) {
-				removeHint (global 'page')
+				removeHintForMorph (global 'page') m
 			} else {
 				if (shiftKeyDown (keyboard (global 'page'))) {
 					setClipboard (toString value)

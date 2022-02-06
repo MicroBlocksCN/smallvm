@@ -882,13 +882,14 @@ method showHint Morph hintData bubbleWidth isHint isError {
     fixLayout bubble
     setRight (morph bubble) (+ (left vis) overlap)
   }
+  removeHintForMorph page this
   showHint page bubble isHint
   reportDamage this (fullBounds (morph bubble))
   return bubble
 }
 
 method showError Morph errorMsg {
-  showHint this errorMsg 300 true true
+  showHint this errorMsg 300 false true
 }
 
 method say Morph s {

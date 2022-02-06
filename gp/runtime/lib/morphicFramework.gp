@@ -1196,6 +1196,7 @@ to inform details title yesLabel {
 method closeUnclickedMenu Page aHandler {
   setCursor 'default'
   removeTooltip this
+  removeAllHints this
   if (isNil activeMenu) {return}
   if (contains (allOwners (morph aHandler)) (morph activeMenu)) {return}
   if (and (isClass activeMenu 'Menu') (contains (triggers activeMenu) aHandler)) {return}
@@ -1223,6 +1224,23 @@ method removeHint Page {
     destroy (morph activeHint)
     activeHint = nil
   }
+}
+
+method removeHintForMorph Page aMorph {
+  for m (copy (parts morph)) {
+    if (and (isClass (handler m) 'SpeechBubble') (aMorph == (clientMorph (handler m)))) {
+      removeFromOwner m
+    }
+  }
+}
+
+method removeAllHints Page {
+  for m (copy (parts morph)) {
+    if (isClass (handler m) 'SpeechBubble') {
+      removeFromOwner m
+    }
+  }
+  activeHint = nil
 }
 
 // tooltips
