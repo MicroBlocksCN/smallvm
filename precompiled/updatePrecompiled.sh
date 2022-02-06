@@ -31,17 +31,22 @@ python precompiled/uf2conv.py -c -f 0xada52840 .pio/build/clue/firmware.hex -o p
 pio run -e itsybitsy
 python precompiled/uf2conv.py -c .pio/build/itsybitsy/firmware.bin -o precompiled/vm_itsybitsy.uf2
 
-# not ready yet
-#pio run -e pico
-#cp .pio/build/pico/firmware.uf2 precompiled/vm_pico.uf2
+# Platformio build system for Raspberry Pi Pico is system dependent
+currentOS=`uname -s`
+if [ "$currentOS" == "Darwin" ]; then
+    pio run -e pico-mac
+	cp .pio/build/pico-mac/firmware.uf2 precompiled/vm_pico.uf2
+elif [ "$currentOS" == "Linux" ]; then
+    pio run -e pico-linux
+	cp .pio/build/pico-linux/firmware.uf2 precompiled/vm_pico.uf2
+fi
 
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/
-cd precompiled
 
 # Create micro:bit Universal Hex File
-cd precompiled
 # Make sure we have the proper dep(s) installed
+cd precompiled
 npm install
 node buildUniversalHex.js
 
