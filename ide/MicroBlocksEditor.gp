@@ -655,7 +655,7 @@ method processDroppedText MicroBlocksEditor text {
       openProject this (httpBody (httpGet host path)) fileName
     } (or (endsWith url '.ubl') (endsWith url '.ulib')) {
       importLibraryFromString scripter (httpBody (httpGet host path)) fileName fileName
-    } (and (endsWith url '.png') ('Browser' == (platform))) {
+    } (and (or (notNil (findSubstring 'render?json=' path)) (endsWith url '.png')) ('Browser' == (platform))) {
       data = (httpBody (basicHTTPGetBinary host path))
       if ('' == data) { return }
       script = (getScriptText (new 'PNGReader') data)
