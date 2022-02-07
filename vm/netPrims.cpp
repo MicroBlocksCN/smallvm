@@ -544,18 +544,21 @@ void MQTTmessageReceived(String &topic, String &payload) {
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	char *broker_uri = obj2str(args[0]);
 	char *client_id = "microblocks-client"; // todo: random id
+	char connected = false;
 	mqtt_client.begin(broker_uri, client);
 	if (argCount > 2) { // username/password
 		char *username = obj2str(args[1]);
 		char *password = obj2str(args[2]);
-		while (!mqtt_client.connect(client_id, username, password)) {delay(1000);}
+		connected = mqtt_client.connect(client_id, username, password);
 	} else {
-		while (!mqtt_client.connect(client_id)) {delay(1000);}
+		connected = mqtt_client.connect(client_id);
 	}
-
-	mqtt_client.onMessage(MQTTmessageReceived);
+	if (connected){
+		mqtt_client.onMessage(MQTTmessageReceived);
+	}
 	return falseObj;
 }
+
 
 static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
 	mqtt_client.loop();
