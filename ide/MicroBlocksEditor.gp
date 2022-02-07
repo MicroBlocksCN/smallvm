@@ -650,18 +650,23 @@ method processDroppedText MicroBlocksEditor text {
     host = (substring url 1 ((findFirst url '/') - 1))
     path = (substring url (findFirst url '/'))
     fileName = (substring path ((findLast path '/') + 1) ((findLast path '.') - 1))
+    i = (findSubstring 'render?json=' path)
+    if (notNil i) { // script and parameters pass as a json object
+      json = (urlDecode (substring path (i + 12))) // extract and decode the JSON string
+    }
     if (or (endsWith url '.ubp') (endsWith url '.gpp')) {
       if (not (canReplaceCurrentProject this)) { return }
       openProject this (httpBody (httpGet host path)) fileName
     } (or (endsWith url '.ubl') (endsWith url '.ulib')) {
       importLibraryFromString scripter (httpBody (httpGet host path)) fileName fileName
-    } (and (or (notNil (findSubstring 'render?json=' path)) (endsWith url '.png')) ('Browser' == (platform))) {
+    } (and (or (notNil json) (endsWith url '.png')) ('Browser' == (platform))) {
       data = (httpBody (basicHTTPGetBinary host path))
       if ('' == data) { return }
       script = (getScriptText (new 'PNGReader') data)
       if (isNil script) { return } // no script in this PNG file
       i = (find (letters script) (newline))
       script = (substring script i)
+      installLibsFromJSON scripter json
       pasteScripts scripter script false
     }
   } else {
