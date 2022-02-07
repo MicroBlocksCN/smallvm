@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector blocksFrame blocksResizer scriptsFrame nextX nextY
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -1324,4 +1324,58 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 	libName = (withoutExtension (filePart fName))
 	writeFile fName (codeString (main mbProject) mbProject libName)
   }
+}
+
+// importing libraries for dropped scripts
+
+method installLibsFromJSON MicroBlocksScripter jsonString {
+	libs = (at (jsonParse jsonString) 'libs')
+	if (isNil libs) { return }
+	for lib libs {
+		fileName = (fileNameForLibraryNamed this lib)
+		if ('Browser' != (platform)) { fileName = (join '//' fileName) }
+    importLibraryFromFile this fileName
+  }
+}
+
+method fileNameForLibraryNamed MicroBlocksScripter libName {
+  if (isNil embeddedLibraries) {
+	// build a dictionary mapping libName -> fileName
+	embeddedLibraries = (dictionary)
+	if ('Browser' == (platform)) {
+	  for filePath (allFilesInDir this 'Libraries') {
+		if (endsWith filePath '.ubl') {
+		  name = (extractLibraryName this (readFile filePath))
+		  if (notNil name) {
+			atPut embeddedLibraries name filePath
+		  }
+		}
+	  }
+	} else {
+	  for filePath (listEmbeddedFiles) {
+		if (endsWith filePath '.ubl') {
+		  name = (extractLibraryName this (readEmbeddedFile filePath))
+		  if (notNil name) {
+			atPut embeddedLibraries name (withoutExtension filePath)
+		  }
+		}
+	  }
+	}
+  }
+  return (at embeddedLibraries libName)
+}
+
+method extractLibraryName MicroBlocksScripter libData {
+  if (isNil libData) { return nil }
+  for line (lines libData) {
+    if (beginsWith line 'module') {
+      i = (findFirst line '''')
+      if (notNil i) { // quoted library name
+        j = (findLast line '''')
+        if ((j - i) > 2) { return (substring line (i + 1) (j - 1)) }
+      }
+      return (at (words line) 2)
+    }
+  }
+  return nil
 }
