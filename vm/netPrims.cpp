@@ -523,7 +523,7 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 
 #include <MQTT.h>
 
-MQTTClient mqtt_client;
+MQTTClient mqtt_client(1024);
 static char hasMQTTMessage = false;
 char lastMQTTTopic[1000];
 char lastMQTTPayload[1000];
