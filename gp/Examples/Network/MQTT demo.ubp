@@ -4,35 +4,37 @@ version 1 0
 description ''
 variables event 
 
-script 76 34 {
+script 120 40 {
 whenStarted
 comment '1. connect wifi'
 'wifi connect to' '' '' 3
 waitMillis 1000
 comment '2. connect MQTT broker'
-'MQTT connect to' 'public.cloud.shiftr.io' 'public' 'public'
+'MQTT connect to' 'public.cloud.shiftr.io' 128 'MicroBlocks_client' 'public' 'public'
 }
 
-script 342 228 {
-comment 'publish topic payload'
-if ('[net:MQTTIsConnected]') {  '[net:MQTTPub]' 'testTopic' 'Hello!'
-  sayIt 'pub ok'
-}
-}
-
-script 55 242 {
+script 50 269 {
 comment 'subscribe topic'
-'[net:MQTTSub]' 'testTopic'
-sayIt 'sub ok'
+'MQTT sub' 'testTopic'
 }
 
-script 66 360 {
+script 367 270 {
+comment 'publish topic payload'
+'MQTT pub' 'testTopic' 'Hello!'
+}
+
+script 110 366 {
 comment 'receive mqtt message'
-forever {  if ('[net:MQTTIsConnected]') {    event = ('[net:MQTTLastEvent]')
-    if (isType event 'list') {      sayIt 'topic' ('MQTT event topic' event) ', payload' ('MQTT event payload' event)
+forever {
+  if ('MQTT connected') {
+    event = ('last MQTT event')
+    if (isType event 'list') {
+      sayIt 'topic' ('MQTT event topic' event) ', payload' ('MQTT event payload' event)
     }
-  } else {    sayIt 'try to connect ...'
-    'MQTT connect to' 'public.cloud.shiftr.io' 'public' 'public'
+  } else {
+    sayIt 'try to connect ...'
+    waitMillis 500
+    'MQTT connect to' 'public.cloud.shiftr.io' 128 'MicroBlocks_client' 'public' 'public'
   }
 }
 }
@@ -45,32 +47,96 @@ depends WiFi
 tags websockets network 
 description 'A simple MQTT client.'
 
-	spec ' ' 'MQTT connect to' 'MQTT connect to _ : _ _' 'str str str' 'test.mosquitto.org' 'username' 'password'
-	spec 'r' '[net:MQTTIsConnected]' 'MQTT connected'
-	spec ' ' '[net:MQTTSub]' 'MQTT sub _' 'str' 'testTopic'
-	spec ' ' '[net:MQTTUnsub]' 'MQTT unsub _' 'str' 'testTopic'
-	spec ' ' '[net:MQTTPub]' 'MQTT pub topic _ payload _' 'str str' 'testTopic' 'Hello!'
-	spec 'r' '[net:MQTTLastEvent]' 'last MQTT event'
+	spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num auto str str' '' 128 'MicroBlocks_client' '' ''
+	spec 'r' 'MQTT connected' 'MQTT connected'
+	spec ' ' 'MQTT sub' 'MQTT sub _' 'str' 'testTopic'
+	spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
+	spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _' 'str str' 'testTopic' 'Hello!'
+	spec 'r' 'last MQTT event' 'last MQTT event'
 	spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
 	spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
 
-to 'MQTT connect to' broker username password {  if ((getIPAddress) != '0.0.0.0') {    if ((pushArgCount) > 2) {      '[net:MQTTConnect]' broker username password
-    } else {      '[net:MQTTConnect]' broker
+to 'MQTT connect to' broker buffer_sizes client_id username password {
+  if ((getIPAddress) != '0.0.0.0') {
+    if ((pushArgCount) == 1) {
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker 128 'MicroBlocks_client')
+    } ((pushArgCount) == 3) {
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker buffer_sizes client_id)
+    } else {
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker buffer_sizes client_id username password)
     }
-    if ('[net:MQTTIsConnected]') {      sayIt 'Connected!'
-    } else {      sayIt 'Not Connected'
+    if ('MQTT connected') {
+      sayIt 'Connected!'
+    } else {
+      sayIt 'Not Connected'
     }
-  } else {    sayIt 'Not Connected'
+  } else {
+    sayIt 'Not Connected'
   }
 }
 
-to 'MQTT event payload' event {  if (and (isType event 'list') ((size event) > 1)) {    return (at 2 event)
-  } else {    return ''
+to 'MQTT connected' {
+  return (callCustomReporter '[net:MQTTIsConnected]')
+}
+
+to 'MQTT event payload' event {
+  if (and (isType event 'list') ((size event) > 1)) {
+    return (at 2 event)
+  } else {
+    return ''
   }
 }
 
-to 'MQTT event topic' event {  if (and (isType event 'list') ((size event) > 1)) {    return (at 1 event)
-  } else {    return ''
+to 'MQTT event topic' event {
+  if (and (isType event 'list') ((size event) > 1)) {
+    return (at 1 event)
+  } else {
+    return ''
+  }
+}
+
+to 'MQTT pub' topic payload {
+  if ('MQTT connected') {
+    if ((callCustomReporter '[net:MQTTPub]' ('[data:makeList]' topic payload)) == (booleanConstant true)) {
+      sayIt 'pub success!'
+    } else {
+      sayIt 'pub failure!'
+    }
+    callCustomCommand '[net:MQTTPub]' ('[data:makeList]' topic payload)
+  } else {
+    sayIt 'Not Connected'
+  }
+}
+
+to 'MQTT sub' topic {
+  if ('MQTT connected') {
+    if ((callCustomReporter '[net:MQTTSub]' ('[data:makeList]' topic)) == (booleanConstant true)) {
+      sayIt 'sub success!'
+    } else {
+      sayIt 'sub failure!'
+    }
+  } else {
+    sayIt 'Not Connected'
+  }
+}
+
+to 'MQTT unsub' topic {
+  if ('MQTT connected') {
+    if ((callCustomReporter '[net:MQTTUnsub]' ('[data:makeList]' topic)) == (booleanConstant true)) {
+      sayIt 'unsub success!'
+    } else {
+      sayIt 'unsub failure!'
+    }
+  } else {
+    sayIt 'Not Connected'
+  }
+}
+
+to 'last MQTT event' {
+  if ('MQTT connected') {
+    return (callCustomReporter '[net:MQTTLastEvent]')
+  } else {
+    return (booleanConstant false)
   }
 }
 
@@ -87,21 +153,27 @@ description 'Connect to a WiFi network. To be used in conjunction with other net
 	spec 'r' 'getIPAddress' 'IP address'
 	spec 'r' '[net:myMAC]' 'MAC address'
 
-to getIPAddress {  return ('[net:myIPAddress]')
+to getIPAddress {
+  return ('[net:myIPAddress]')
 }
 
-to 'wifi connect to' ssid password tries fixedIP gatewayIP subnetIP {  local 'ip' fixedIP
+to 'wifi connect to' ssid password tries fixedIP gatewayIP subnetIP {
+  local 'ip' fixedIP
   local 'gateway' gatewayIP
   local 'subnet' subnetIP
-  if (not ('[net:hasWiFi]')) {    return
+  if (not ('[net:hasWiFi]')) {
+    return
   }
-  if ((pushArgCount) < 3) {    ip = ''
+  if ((pushArgCount) < 3) {
+    ip = ''
     gateway = ''
     subnet = ''
   }
   '[net:stopWiFi]'
-  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {    '[net:startWiFi]' ssid password false ip gateway subnet
-    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {      comment 'Slow blink while connecting'
+  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+    '[net:startWiFi]' ssid password false ip gateway subnet
+    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
+      comment 'Slow blink while connecting'
       setUserLED true
       waitMillis 500
       setUserLED false
@@ -109,7 +181,8 @@ to 'wifi connect to' ssid password tries fixedIP gatewayIP subnetIP {  local 'ip
     }
     tries += -1
   }
-  repeat 8 {    comment 'Quick blinks when connected'
+  repeat 8 {
+    comment 'Quick blinks when connected'
     setUserLED true
     waitMillis 50
     setUserLED false
@@ -119,15 +192,18 @@ to 'wifi connect to' ssid password tries fixedIP gatewayIP subnetIP {  local 'ip
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
-to wifiCreateHotspot ssid password {  if (not ('[net:hasWiFi]')) {return}
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
   '[net:startWiFi]' ssid password true
-  repeatUntil ('Connected' == ('[net:wifiStatus]')) {    comment 'Slow blink while connecting'
+  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
+    comment 'Slow blink while connecting'
     setUserLED true
     waitMillis 500
     setUserLED false
     waitMillis 500
   }
-  repeat 8 {    comment 'Quick blinks when connected'
+  repeat 8 {
+    comment 'Quick blinks when connected'
     setUserLED true
     waitMillis 50
     setUserLED false

@@ -546,6 +546,8 @@ static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	int buffer_sizes = obj2int(args[1]);
 	char *client_id = obj2str(args[2]);
 	char connected = false;
+	// debug
+	// char s[100]; sprintf(s, "buffer_sizes:  %d", buffer_sizes); outputString(s);
 	static MQTTClient mqtt_client(buffer_sizes);
 	pmqtt_client=&mqtt_client;
 	pmqtt_client->begin(broker_uri, client);
