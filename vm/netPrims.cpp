@@ -523,7 +523,7 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 
 #include <MQTT.h>
 
-MQTTClient mqtt_client(1024);
+MQTTClient* pmqtt_client;
 static char hasMQTTMessage = false;
 char lastMQTTTopic[1000];
 char lastMQTTPayload[1000];
@@ -543,25 +543,38 @@ void MQTTmessageReceived(String &topic, String &payload) {
 
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	char *broker_uri = obj2str(args[0]);
-	char *client_id = "microblocks-client"; // todo: random id
+	int buffer_sizes = obj2int(args[1]);
+	char *client_id = obj2str(args[2]);
 	char connected = false;
-	mqtt_client.begin(broker_uri, client);
-	if (argCount > 2) { // username/password
-		char *username = obj2str(args[1]);
-		char *password = obj2str(args[2]);
-		connected = mqtt_client.connect(client_id, username, password);
+	static MQTTClient mqtt_client(buffer_sizes);
+	pmqtt_client=&mqtt_client;
+	pmqtt_client->begin(broker_uri, client);
+	if (argCount > 3) {
+		char *username = obj2str(args[3]);
+		char *password = obj2str(args[4]);
+		connected = pmqtt_client->connect(client_id, username, password);
 	} else {
-		connected = mqtt_client.connect(client_id);
+		connected = pmqtt_client->connect(client_id);
 	}
 	if (connected){
-		mqtt_client.onMessage(MQTTmessageReceived);
+		pmqtt_client->onMessage(MQTTmessageReceived);
+		// outputString('hello')
+		/* debug
+		char s[100];
+		sprintf(s, "  %s", connected);
+		outputString(s);
+		*/
 	}
 	return falseObj;
 }
 
 
 static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
-	mqtt_client.loop();
+	if (pmqtt_client==nullptr)
+	{
+		return falseObj;
+	}
+	pmqtt_client->loop();
 	if (hasMQTTMessage == true) {
 		OBJ event = newObj(ListType, 3, zeroObj);
 		FIELD(event, 0) = int2obj(2); //list size
@@ -575,30 +588,51 @@ static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTPub(int argCount, OBJ *args) {
+	if (pmqtt_client==nullptr)
+	{
+		return falseObj;
+	}
+	int success = false;
 	char *topic = obj2str(args[0]);
 	char *message = obj2str(args[1]);
-	mqtt_client.publish(topic, message);
-	mqtt_client.loop();
-	return falseObj;
+	success = pmqtt_client->publish(topic, message);
+	pmqtt_client->loop();
+	// return falseObj;
+	return success ? trueObj : falseObj;
 }
 
 static OBJ primMQTTSub(int argCount, OBJ *args) {
+	if (pmqtt_client==nullptr)
+	{
+		return falseObj;
+	}
+	int success = false;
 	char *topic = obj2str(args[0]);
-	mqtt_client.subscribe(topic);
-	//mqtt_client.loop();
-	return falseObj;
+	success = pmqtt_client->subscribe(topic);
+	// mqtt_client.loop();
+	return success ? trueObj : falseObj;
 }
 
 static OBJ primMQTTUnsub(int argCount, OBJ *args) {
+	if (pmqtt_client==nullptr)
+	{
+		return falseObj;
+	}
+	int success = false;
 	char *topic = obj2str(args[0]);
-	mqtt_client.unsubscribe(topic);
-	//mqtt_client.loop();
-	return falseObj;
+	success = pmqtt_client->unsubscribe(topic);
+	// mqtt_client.loop();
+	// return falseObj;
+	return success ? trueObj : falseObj;
 }
 
 static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
+	if (pmqtt_client==nullptr)
+	{
+		return falseObj;
+	}
 	// Return true when connected to MQTT broker.
-	return (mqtt_client.connected()) ? trueObj : falseObj;
+	return (pmqtt_client->connected()) ? trueObj : falseObj;
 }
 
 #endif
