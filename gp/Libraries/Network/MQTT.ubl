@@ -1,36 +1,40 @@
-module 'MQTT' Comm
+module MQTT Comm
 author wwj718
 version 1 1 
 depends WiFi 
 tags websockets network 
 description 'A simple MQTT client.'
 
-  spec ' ' 'MQTT connect to' 'MQTT connect to _ : _ _' 'str str str' 'test.mosquitto.org' 'username' 'password'
-  spec 'r' '[net:MQTTIsConnected]' 'MQTT connected'
-  spec ' ' '[net:MQTTSub]' 'MQTT sub _' 'str' 'testTopic'
-  spec ' ' '[net:MQTTUnsub]' 'MQTT unsub _' 'str' 'testTopic'
-	spec ' ' '[net:MQTTPub]' 'MQTT pub topic _ payload _' 'str str' 'testTopic' 'Hello!'
-  spec 'r' '[net:MQTTLastEvent]' 'last MQTT event'
+	spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num auto str str' '' 128 'MicroBlocks_client' '' ''
+	spec 'r' 'MQTT connected' 'MQTT connected'
+	spec ' ' 'MQTT sub' 'MQTT sub _' 'str' 'testTopic'
+	spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
+	spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _' 'str str' 'testTopic' 'Hello!'
+	spec 'r' 'last MQTT event' 'last MQTT event'
 	spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
 	spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
 
-
-to 'MQTT connect to' broker username password {
-
+to 'MQTT connect to' broker buffer_sizes client_id username password {
   if ((getIPAddress) != '0.0.0.0') {
-    if ((pushArgCount) > 2) {
-      '[net:MQTTConnect]' broker username password
+    if ((pushArgCount) == 1) {
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker 128 'MicroBlocks_client')
+    } ((pushArgCount) == 3) {
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker buffer_sizes client_id)
     } else {
-      '[net:MQTTConnect]' broker
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker buffer_sizes client_id username password)
     }
-    if (('[net:MQTTIsConnected]')) {
+    if ('MQTT connected') {
       sayIt 'Connected!'
     } else {
       sayIt 'Not Connected'
     }
   } else {
     sayIt 'Not Connected'
-  }  
+  }
+}
+
+to 'MQTT connected' {
+  return (callCustomReporter '[net:MQTTIsConnected]')
 }
 
 to 'MQTT event payload' event {
@@ -48,3 +52,49 @@ to 'MQTT event topic' event {
     return ''
   }
 }
+
+to 'MQTT pub' topic payload {
+  if ('MQTT connected') {
+    if ((callCustomReporter '[net:MQTTPub]' ('[data:makeList]' topic payload)) == (booleanConstant true)) {
+      sayIt 'pub success!'
+    } else {
+      sayIt 'pub failure!'
+    }
+    callCustomCommand '[net:MQTTPub]' ('[data:makeList]' topic payload)
+  } else {
+    sayIt 'Not Connected'
+  }
+}
+
+to 'MQTT sub' topic {
+  if ('MQTT connected') {
+    if ((callCustomReporter '[net:MQTTSub]' ('[data:makeList]' topic)) == (booleanConstant true)) {
+      sayIt 'sub success!'
+    } else {
+      sayIt 'sub failure!'
+    }
+  } else {
+    sayIt 'Not Connected'
+  }
+}
+
+to 'MQTT unsub' topic {
+  if ('MQTT connected') {
+    if ((callCustomReporter '[net:MQTTUnsub]' ('[data:makeList]' topic)) == (booleanConstant true)) {
+      sayIt 'unsub success!'
+    } else {
+      sayIt 'unsub failure!'
+    }
+  } else {
+    sayIt 'Not Connected'
+  }
+}
+
+to 'last MQTT event' {
+  if ('MQTT connected') {
+    return (callCustomReporter '[net:MQTTLastEvent]')
+  } else {
+    return (booleanConstant false)
+  }
+}
+
