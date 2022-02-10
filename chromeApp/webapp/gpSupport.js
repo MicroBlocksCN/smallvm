@@ -155,6 +155,7 @@ function initGPEventHandlers() {
 	var TOUCH_DOWN = 8;
 	var TOUCH_UP = 9;
 	var TOUCH_MOVE = 10;
+	var WINDOW_SHOWN = 11;
 
 	function localPoint(x, y) {
 		var r = canvas.getBoundingClientRect();
@@ -292,6 +293,12 @@ function initGPEventHandlers() {
 			GP.events.push([TOUCH_MOVE, p[0], p[1], 0]);
 		}
 		evt.preventDefault();
+	}
+	window.onpageshow = function(evt) {
+	  GP.events.push([WINDOW_SHOWN]);
+	}
+	window.onfocus = function(evt) {
+	  GP.events.push([WINDOW_SHOWN]);
 	}
 }
 initGPEventHandlers();

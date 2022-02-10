@@ -135,6 +135,7 @@ static void initialize() {
 #define TOUCH_DOWN		8
 #define TOUCH_UP		9
 #define TOUCH_MOVE		10
+#define WINDOW_SHOWN    11
 
 // position of last touchmove event used for the touchup event
 int lastTouchX = 0;
@@ -290,6 +291,10 @@ OBJ getEvent() {
 			dictAtPut(dict, key(_x), int2obj(evt[1]));
 			dictAtPut(dict, key(_y), int2obj(evt[2]));
 			dictAtPut(dict, key(_button), int2obj(evt[3]));
+			break;
+		case WINDOW_SHOWN:
+			dictAtPut(dict, key(_type), key(type_window));
+			dictAtPut(dict, key(_eventID), int2obj(1)); // 1 == SDL_WINDOWEVENT_SHOWN
 			break;
 	}
 	return dict;
