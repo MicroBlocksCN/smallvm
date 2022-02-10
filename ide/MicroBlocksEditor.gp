@@ -666,7 +666,7 @@ method processDroppedText MicroBlocksEditor text {
       if (isNil script) { return } // no script in this PNG file
       i = (find (letters script) (newline))
       script = (substring script i)
-      if (notNil json) { installLibsFromJSONscripter json }
+      if (notNil json) { installLibsFromJSON scripter json }
       pasteScripts scripter script false
     }
   } else {
