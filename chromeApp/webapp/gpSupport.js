@@ -265,7 +265,7 @@ function initGPEventHandlers() {
 		// console.log(evt.data)
 		if (Symbol.iterator in Object(evt.data)){
 			for (let ch of evt.data) {
-				if (/\p{Script=Han}/u.test(ch)){
+				if (/\p{Script=Han}/u.test(ch) || /\p{Emoji_Presentation}/u.test(ch)){
 					GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
 				}
 			}
