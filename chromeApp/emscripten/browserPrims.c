@@ -178,6 +178,10 @@ static OBJ primBrowserSize(int nargs, OBJ args[]) {
 		return winH - document.getElementById('canvas').offsetTop;
 	}, NULL);
 
+    // hack: inset by 1 pixel to avoid scrollbars
+    w -= 1;
+    h -= 1;
+
 	OBJ result = newObj(ArrayClass, 2, nilObj);
 	FIELD(result, 0) = int2obj(w);
 	FIELD(result, 1) = int2obj(h);
@@ -588,6 +592,9 @@ static OBJ primOpenWindow(int nargs, OBJ args[]) {
 			w -= 1;
 			h -= 1;
 		}
+
+        // make background gray to make 1 pixel gap less noticable
+		document.body.style.backgroundColor = "rgb(200,200,200)";
 
 		var winCnv = document.getElementById('canvas');
 		if (winCnv) {
