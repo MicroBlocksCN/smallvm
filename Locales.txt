@@ -748,7 +748,7 @@ WiFi
 
 wifi connect to _ password _ try _ times
 
-gateway _ subnet _
+IP _ gateway _ subnet _
 
 wifi create hotspot _ password _
 
@@ -994,6 +994,31 @@ plotter pen up
 plotter stop
 
 set plotter speed to _ %
+
+
+####
+# MQTT
+
+MQTT connect to broker _
+
+buffer sizes _ client id _
+
+username _ password _
+
+MQTT connected
+
+MQTT sub _
+
+MQTT unsub _
+
+MQTT pub topic _ payload _
+
+last MQTT event
+
+topic for MQTT event _
+
+payload for MQTT event _
+
 
 ##################
 # MicroBlocks UI #

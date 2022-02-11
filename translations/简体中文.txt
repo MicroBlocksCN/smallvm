@@ -851,11 +851,17 @@ WiFi
 wifi connect to _ password _ try _ times
 连接WiFi至 _ 密码 _ 尝试 _ 次
 
+IP _ gateway _ subnet _
+IP地址 _ 网关 _ 子网掩码 _
+
 wifi create hotspot _ password _
 创建WiFi热点 _ 密码 _
 
 IP address
 IP地址
+
+MAC address
+MAC地址
 
 ####
 # Motion library
@@ -1070,6 +1076,39 @@ event definitions JSON
 
 events JSON
 事件 JSON
+
+####
+# MQTT
+
+MQTT connect to broker _
+连接到MQTT服务器 _
+
+buffer sizes _ client id _
+缓存大小 _ 客户端 id _
+
+username _ password _
+用户名 _ 密码 _
+
+MQTT connected
+MQTT服务器已连接
+
+MQTT sub _
+订阅主题 _
+
+MQTT unsub _
+取消订阅主题 _
+
+MQTT pub topic _ payload _
+向主题 _ 发布消息 _
+
+last MQTT event
+最新MQTT事件
+
+topic for MQTT event _
+最新MQTT事件的主题 _
+
+payload for MQTT event _
+最新MQTT事件的消息 _
 
 ##################
 # MicroBlocks UI #
