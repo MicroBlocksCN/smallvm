@@ -1051,6 +1051,7 @@ method processWindowEvent Page evt {
 	  for m (allMorphs morph) { scaleChanged (handler m) }
 	}
   } (isOneOf id 1 3 8 9) {
+	redrawAll this
 	changed morph
 	for each (parts morph) {pageResized (handler each) w h this}
   }

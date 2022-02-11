@@ -294,9 +294,6 @@ function initGPEventHandlers() {
 		}
 		evt.preventDefault();
 	}
-	window.onpageshow = function(evt) {
-	  GP.events.push([WINDOW_SHOWN]);
-	}
 	window.onfocus = function(evt) {
 	  GP.events.push([WINDOW_SHOWN]);
 	}

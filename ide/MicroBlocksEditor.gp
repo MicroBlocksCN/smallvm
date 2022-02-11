@@ -556,11 +556,9 @@ method checkForBrowserResize MicroBlocksEditor {
   w = (first browserSize)
   h = (last browserSize)
   winSize = (windowSize)
-  if (and
-  	((abs ((at winSize 1) - w)) < 10)
-  	((abs ((at winSize 2) - h)) < 10)) {
-  		// size may be off by a few pixels due to rounding
-  		return
+
+  if (and ((at winSize 1) == w) ((at winSize 2) == h)) {
+    return // no change
   }
 
   openWindow w h true
