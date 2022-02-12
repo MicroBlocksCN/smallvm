@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Copyright 2018 John Maloney, Bernat Romagosa, and Jens MÃ¶nig
+// Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
 // netPrims.cpp - MicroBlocks network primitives
 // Bernat Romagosa, August 2018
@@ -519,7 +519,7 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 // Optional MQTT support of ESP32 (compile with -D MQTT_PRIMS)
 // Code provided by Wenji Wu
 
-#if defined(ARDUINO_ARCH_ESP32) && defined(MQTT_PRIMS)
+#if (defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)) && defined(MQTT_PRIMS)
 
 #include <MQTT.h>
 
@@ -658,8 +658,8 @@ static PrimEntry entries[] = {
 	{"webSocketLastEvent", primWebSocketLastEvent},
 	{"webSocketSendToClient", primWebSocketSendToClient},
 
-  #if defined(ARDUINO_ARCH_ESP32) && defined(MQTT_PRIMS)
-	{"MQTTConnect", primMQTTConnect},
+  #if (defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)) && defined(MQTT_PRIMS)
+  	{"MQTTConnect", primMQTTConnect},
 	{"MQTTLastEvent", primMQTTLastEvent},
 	{"MQTTPub", primMQTTPub},
 	{"MQTTSub", primMQTTSub},
