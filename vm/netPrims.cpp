@@ -517,9 +517,9 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 #endif
 
 // Optional MQTT support of ESP32 (compile with -D MQTT_PRIMS)
-// Code provided by Wenji Wu
+// Code provided by Wenji Wu  
 
-#if (defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)) && defined(MQTT_PRIMS)
+#if (defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)) && defined(MQTT_PRIMS) //edit by Tom ming
 
 #include <MQTT.h>
 
@@ -658,7 +658,7 @@ static PrimEntry entries[] = {
 	{"webSocketLastEvent", primWebSocketLastEvent},
 	{"webSocketSendToClient", primWebSocketSendToClient},
 
-  #if (defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)) && defined(MQTT_PRIMS)
+  #if (defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)) && defined(MQTT_PRIMS)  //edit by Tom ming
   	{"MQTTConnect", primMQTTConnect},
 	{"MQTTLastEvent", primMQTTLastEvent},
 	{"MQTTPub", primMQTTPub},
