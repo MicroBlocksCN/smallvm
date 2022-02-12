@@ -2,12 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
+// Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mšnig
 
 // netPrims.cpp - MicroBlocks network primitives
 // Bernat Romagosa, August 2018
 // Revised by John Maloney, November 2018
 // Revised by Bernat Romagosa & John Maloney, March 2020
+// MQTT primitives added by Wenjie Wu with help from Tom Ming
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -516,10 +517,10 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 
 #endif
 
-// Optional MQTT support of ESP32 (compile with -D MQTT_PRIMS)
-// Code provided by Wenji Wu  
+// Optional MQTT support (compile with -D MQTT_PRIMS)
+// Code provided by Wenji Wu with help from Tom Ming
 
-#if (defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)) && defined(MQTT_PRIMS) //edit by Tom ming
+#if defined(MQTT_PRIMS)
 
 #include <MQTT.h>
 
@@ -531,14 +532,15 @@ char lastMQTTPayload[1000];
 void MQTTmessageReceived(String &topic, String &payload) {
 	hasMQTTMessage = true;
 
-	memcpy(lastMQTTTopic, topic.c_str(), strlen(topic.c_str()));
-	lastMQTTTopic[strlen(topic.c_str())] = '\0';
-	memcpy(lastMQTTPayload, payload.c_str(), strlen(payload.c_str()));
-	lastMQTTPayload[strlen(payload.c_str())] = '\0';
-	/*
-	strcpy(lastMQTTTopic,topic.c_str());
-    strcpy(lastMQTTPayload, payload.c_str());
-	*/
+	int len = strlen(topic.c_str());
+	if (len > 999) len = 999;
+	memcpy(lastMQTTTopic, topic.c_str(), len);
+	lastMQTTTopic[len] = '\0';
+
+	len = strlen(payload.c_str());
+	if (len > 999) len = 999;
+	memcpy(lastMQTTPayload, payload.c_str(), len);
+	lastMQTTPayload[len] = '\0';
 }
 
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
@@ -548,8 +550,27 @@ static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	char connected = false;
 	// debug
 	// char s[100]; sprintf(s, "buffer_sizes:  %d", buffer_sizes); outputString(s);
+
 	static MQTTClient mqtt_client(buffer_sizes);
-	pmqtt_client=&mqtt_client;
+	pmqtt_client = &mqtt_client;
+
+	// Wenjie:
+	// Although the above code works, I'm not sure what it actually does!!
+	// C++ contstructor rules are complex and I'm not sure how they interact
+	// with the static declaration here. It's not clear to me that this code
+	// is actually using buffer_sizes parameter. Or it might used it only the
+	// first time the primitive is called...
+	//
+	// You might use a C++ constructor to allocate an instance dynamically instead:
+	//
+	//	pmqtt_client = new MQTTClient(buffer_sizes);
+	//
+	// However, I think your earlier soution -- allocating a static instance with fixed
+	// 1k buffers using MQTTClient mqtt_client(1024) is both simpler and safer from
+	// potential storage leaks. The default buffer size before you specified it was
+	// only 128 bytes, so I think 1024 should be more than enough for most uses, and
+	// lastMQTTTopic and lastMQTTPayload have size limits anyhow. -- John
+
 	pmqtt_client->begin(broker_uri, client);
 	if (argCount > 3) {
 		char *username = obj2str(args[3]);
@@ -570,14 +591,11 @@ static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-
 static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
-	if (pmqtt_client==nullptr)
-	{
-		return falseObj;
-	}
+	if (pmqtt_client == nullptr) return falseObj;
+
 	pmqtt_client->loop();
-	if (hasMQTTMessage == true) {
+	if (hasMQTTMessage) {
 		OBJ event = newObj(ListType, 3, zeroObj);
 		FIELD(event, 0) = int2obj(2); //list size
 		FIELD(event, 1) = newStringFromBytes(lastMQTTTopic, strlen(lastMQTTTopic));
@@ -590,24 +608,20 @@ static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTPub(int argCount, OBJ *args) {
-	if (pmqtt_client==nullptr)
-	{
-		return falseObj;
-	}
+	if (pmqtt_client == nullptr) return falseObj;
+
 	int success = false;
 	char *topic = obj2str(args[0]);
 	char *message = obj2str(args[1]);
 	success = pmqtt_client->publish(topic, message);
 	pmqtt_client->loop();
-	// return falseObj;
+
 	return success ? trueObj : falseObj;
 }
 
 static OBJ primMQTTSub(int argCount, OBJ *args) {
-	if (pmqtt_client==nullptr)
-	{
-		return falseObj;
-	}
+	if (pmqtt_client == nullptr) return falseObj;
+
 	int success = false;
 	char *topic = obj2str(args[0]);
 	success = pmqtt_client->subscribe(topic);
@@ -616,10 +630,8 @@ static OBJ primMQTTSub(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTUnsub(int argCount, OBJ *args) {
-	if (pmqtt_client==nullptr)
-	{
-		return falseObj;
-	}
+	if (pmqtt_client == nullptr) return falseObj;
+
 	int success = false;
 	char *topic = obj2str(args[0]);
 	success = pmqtt_client->unsubscribe(topic);
@@ -629,10 +641,8 @@ static OBJ primMQTTUnsub(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
-	if (pmqtt_client==nullptr)
-	{
-		return falseObj;
-	}
+	if (pmqtt_client == nullptr) return falseObj;
+
 	// Return true when connected to MQTT broker.
 	return (pmqtt_client->connected()) ? trueObj : falseObj;
 }
