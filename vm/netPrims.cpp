@@ -649,6 +649,146 @@ static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
 
 #endif
 
+#if defined(BLE_PRIMS)
+//https://registry.platformio.org/libraries/nkolban/ESP32%20BLE%20Arduino/examples/BLE_uart/BLE_uart.ino
+// client debug: chrome://bluetooth-internals/
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+static bool BLEServerStarted = false;
+BLEServer *pServer = NULL;
+BLECharacteristic * pTxCharacteristic;
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
+uint8_t txValue = 0;
+static char lastBLE_UART_Message[1000];
+static bool hasBLE_UART_Message = false;
+
+#define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
+#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+#define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+      deviceConnected = true;
+    };
+
+    void onDisconnect(BLEServer* pServer) {
+      deviceConnected = false;
+    }
+};
+
+
+class MyCallbacks: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string rxValue = pCharacteristic->getValue();
+      
+	  if (rxValue.length() > 0) {
+		hasBLE_UART_Message = true;
+		int len = strlen(rxValue.c_str());
+		if (len > 999) len = 999;
+		memcpy(lastBLE_UART_Message, rxValue.c_str(), len);
+	  	lastBLE_UART_Message[len] = '\0';
+		// char s[100]; sprintf(s, "lastBLE_UART_Message:  %s", lastBLE_UART_Message); outputString(s);
+      }
+    }
+};
+
+
+static OBJ primBLE_UART_ServerStart(int argCount, OBJ *args) {
+  //Serial.begin(115200);
+  char* name = obj2str(args[0]);
+
+  if (BLEServerStarted) {
+	return falseObj; 
+  }
+
+  BLEServerStarted = true;
+  // Create the BLE Device
+  BLEDevice::init(name);
+
+  // Create the BLE Server
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+
+  // Create the BLE Service
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  // Create a BLE Characteristic
+  pTxCharacteristic = pService->createCharacteristic(
+										CHARACTERISTIC_UUID_TX,
+										BLECharacteristic::PROPERTY_NOTIFY
+									);
+                      
+  pTxCharacteristic->addDescriptor(new BLE2902());
+
+  BLECharacteristic * pRxCharacteristic = pService->createCharacteristic(
+											 CHARACTERISTIC_UUID_RX,
+											BLECharacteristic::PROPERTY_WRITE
+										);
+
+  pRxCharacteristic->setCallbacks(new MyCallbacks());
+
+  // Start the service
+  pService->start();
+
+  // Start advertising
+  pServer->getAdvertising()->start();
+  outputString("Waiting a client connection...");
+  // char s[100]; sprintf(s, "rxValue:  %s", rxValue); outputString(s);
+  //Serial.println("Waiting a client connection to notify...");
+
+  return falseObj;
+}
+
+static OBJ primStartAdvertisingAndReconnectLoop(int argCount, OBJ *args) {
+	// disconnecting
+    if (!deviceConnected && oldDeviceConnected) {
+        delay(500); // give the bluetooth stack the chance to get things ready
+        pServer->startAdvertising(); // restart advertising
+        // Serial.println("start advertising");
+        oldDeviceConnected = deviceConnected;
+    }
+    // connecting
+    if (deviceConnected && !oldDeviceConnected) {
+		// do stuff here on connecting
+        oldDeviceConnected = deviceConnected;
+    }
+	return falseObj;
+}
+
+static OBJ primBLE_DeviceConnected(int argCount, OBJ *args) {
+	return deviceConnected ? trueObj : falseObj;
+}
+
+static OBJ primBLE_UART_LastEvent(int argCount, OBJ *args) {
+	if (hasBLE_UART_Message == true) {
+		OBJ event = newObj(ListType, 2, zeroObj);
+		FIELD(event, 0) = int2obj(1); //list size
+		FIELD(event, 1) = newStringFromBytes(lastBLE_UART_Message, strlen(lastBLE_UART_Message));
+		hasBLE_UART_Message = false;
+		return event;
+	} else {
+		return falseObj;
+	}
+}
+
+static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
+	char* message = obj2str(args[0]);
+	pTxCharacteristic->setValue(message);
+    pTxCharacteristic->notify();
+	delay(10); // bluetooth stack will go into congestion, if too many packets are sent
+	return falseObj;
+}
+
+#endif
+
+#if defined(ESP_NOW_PRIMS)
+	//https://registry.platformio.org/libraries/yoursunny/WifiEspNow/examples/EspNowBroadcast/EspNowBroadcast.ino
+	#include <WifiEspNow.h>
+#endif
+
 static PrimEntry entries[] = {
 	{"hasWiFi", primHasWiFi},
 	{"startWiFi", primStartWiFi},
@@ -675,6 +815,14 @@ static PrimEntry entries[] = {
 	{"MQTTSub", primMQTTSub},
 	{"MQTTUnsub", primMQTTUnsub},
 	{"MQTTIsConnected", primMQTTIsConnected},
+  #endif
+
+  #if defined(ARDUINO_ARCH_ESP32) && defined(BLE_PRIMS)
+	{"BLE_UART_ServerStart", primBLE_UART_ServerStart},
+	{"BLE_DeviceConnected", primBLE_DeviceConnected},
+	{"BLE_UART_LastEvent", primBLE_UART_LastEvent},
+	{"BLE_UART_Write", primBLE_UART_Write},
+	{"StartAdvertisingAndReconnectLoop", primStartAdvertisingAndReconnectLoop},
   #endif
 
 };
