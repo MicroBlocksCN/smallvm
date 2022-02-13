@@ -1427,6 +1427,7 @@ method errorString SmallRuntime errID {
 #define needsByteArray			36	// Needs a byte array
 #define serialPortNotOpen		37	// Serial port not open
 #define serialWriteTooBig		38	// Serial port write is limited to 128 bytes
+#define needsListOfIntegers		39	// Needs a list of integers
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
