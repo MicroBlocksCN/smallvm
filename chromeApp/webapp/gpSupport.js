@@ -258,7 +258,7 @@ function initGPEventHandlers() {
 	}
 	document.onkeypress = function(evt) {
 		var charCode = evt.charCode;
-		if (evt.char && (evt.char.length == 1)) charCode = evt.char.charCodeAt(0);
+		if (evt.char && (evt.char.length == 1)) charCode = evt.char.codePointAt(0);
 		GP.events.push([TEXTINPUT, charCode]);
 	}
 	document.oninput = function(evt) {
@@ -271,6 +271,21 @@ function initGPEventHandlers() {
 			}
 		}
 	}
+
+    // testing composition events...
+//     document.addEventListener('compositionstart', function(evt) {
+//         console.log('compositionstart', evt.data);
+//     });
+//     document.addEventListener('compositionupdate', function(evt) {
+//         console.log('compositionupdate', evt.data);
+//     });
+//     document.addEventListener('compositionend', function(evt) {
+//         console.log('compositionend', evt.data);
+//         for (let ch of evt.data) {
+//             GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
+//         }
+//     });
+
 	canvas.onwheel = function(evt) {
 		if (evt.shiftKey || evt.ctrlKey) { return; } // default behavior (browser zoom)
 		var dx = evt.wheelDeltaX;
