@@ -1329,6 +1329,7 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 // importing libraries for dropped scripts
 
 method installLibsFromJSON MicroBlocksScripter jsonString {
+  if (isNil jsonString) { return }
 	libs = (at (jsonParse jsonString) 'libs')
 	if (isNil libs) { return }
 	for lib libs {

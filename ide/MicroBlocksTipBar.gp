@@ -33,7 +33,7 @@ method initialize MicroBlocksTipBar {
 
 method helpEntry MicroBlocksTipBar primName { return (entryForOp help primName) }
 method title MicroBlocksTipBar { return title }
-method setTitle MicroBlocksTipBar aTitle { setText title aTitle }
+method setTitle MicroBlocksTipBar aTitle { setText title (localized aTitle) }
 method tip MicroBlocksTipBar { return tip }
 
 method setTip MicroBlocksTipBar aTip {
@@ -49,7 +49,7 @@ method setTip MicroBlocksTipBar aTip {
 	if (isNil aTip) {
 		return
 	}
-	for word (words aTip) {
+	for word (words (localized aTip)) {
 		if (contains (keys iconsDict) word) {
 			if ((count text) > 0) {
 				addPart tipMorph (morph (newText text fontName fontSize (gray 0) 'left' nil 0 0 5 3))
@@ -117,17 +117,17 @@ method initContents MicroBlocksTipBar {
 	atPut contentDict 'BooleanSlot' (array 'Boolean Input' '[l] toggle value, or drop a reporter into it.')
 	atPut contentDict 'ColorSlot' (array 'Color Input' '[l] change the color, or drop a reporter into it.')
 	atPut contentDict 'InputSlot' (array 'Input' '[l] edit its value, or drop a reporter into it.')
-	atPut contentDict 'BlockDrawer' (array 'Block Extension' '[l] right arrow for optional inputs. [l] left arrow to hide them.')
+	atPut contentDict 'BlockDrawer' (array 'Block Extension' '[l] right arrow to show optional inputs, left arrow to hide.')
 
 	atPut contentDict 'Command' (array 'Command Block' '[l] to run, or drag to build scripts. [r] menu.')
 	atPut contentDict 'Hat' (array 'Hat Block' '[l] to run, or drag to build scripts. [r] menu.')
-	atPut contentDict 'Reporter' (array 'Reporter Block' '[l] see its value, or drop it into an input slot to use the value. [r] menu.')
+	atPut contentDict 'Reporter' (array 'Reporter Block' '[l] to see value, or drop into an input slot. [r] menu.')
 	atPut contentDict 'Script' (array 'Script' '[l] to run. [r] menu.')
 
 	atPut contentDict 'PaneResizer' (array 'Pane Divider' 'Drag to change pane width.')
-	atPut contentDict 'Library' (array 'Library' '[l] show the blocks in this library. [r] menu.')
-	atPut contentDict 'BlockCategory' (array 'Block Category' '[l] show the blocks in this category.')
-	atPut contentDict 'BlocksPalette' (array 'Palette' 'Drag blocks from here for use in scripts. Drop blocks or scripts here to delete them.')
+	atPut contentDict 'Library' (array 'Library' '[l] to show the blocks in this library. [r] menu.')
+	atPut contentDict 'BlockCategory' (array 'Block Category' '[l] to show the blocks in this category.')
+	atPut contentDict 'BlocksPalette' (array 'Palette' 'Drag blocks from here to build scripts. Drop scripts here to delete them.')
 
 	atPut contentDict 'ScriptEditor' (array 'Scripts Pane' 'Drag blocks here to build scripts. [r] menu.')
 }

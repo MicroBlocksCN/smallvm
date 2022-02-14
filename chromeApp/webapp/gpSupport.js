@@ -155,6 +155,7 @@ function initGPEventHandlers() {
 	var TOUCH_DOWN = 8;
 	var TOUCH_UP = 9;
 	var TOUCH_MOVE = 10;
+	var WINDOW_SHOWN = 11;
 
 	function localPoint(x, y) {
 		var r = canvas.getBoundingClientRect();
@@ -257,14 +258,34 @@ function initGPEventHandlers() {
 	}
 	document.onkeypress = function(evt) {
 		var charCode = evt.charCode;
-		if (evt.char && (evt.char.length == 1)) charCode = evt.char.charCodeAt(0);
+		if (evt.char && (evt.char.length == 1)) charCode = evt.char.codePointAt(0);
 		GP.events.push([TEXTINPUT, charCode]);
 	}
-// 	document.oninput = function(evt) {
-// 		for (let ch of evt.data) {
-// 			GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
-// 		}
-// 	}
+	document.oninput = function(evt) {
+		// console.log(evt.data)
+		if (Symbol.iterator in Object(evt.data)){
+			for (let ch of evt.data) {
+				if (/\p{Script=Han}/u.test(ch) || /\p{Emoji_Presentation}/u.test(ch)){
+					GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
+				}
+			}
+		}
+	}
+
+    // testing composition events...
+//     document.addEventListener('compositionstart', function(evt) {
+//         console.log('compositionstart', evt.data);
+//     });
+//     document.addEventListener('compositionupdate', function(evt) {
+//         console.log('compositionupdate', evt.data);
+//     });
+//     document.addEventListener('compositionend', function(evt) {
+//         console.log('compositionend', evt.data);
+//         for (let ch of evt.data) {
+//             GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
+//         }
+//     });
+
 	canvas.onwheel = function(evt) {
 		if (evt.shiftKey || evt.ctrlKey) { return; } // default behavior (browser zoom)
 		var dx = evt.wheelDeltaX;
@@ -292,6 +313,9 @@ function initGPEventHandlers() {
 			GP.events.push([TOUCH_MOVE, p[0], p[1], 0]);
 		}
 		evt.preventDefault();
+	}
+	window.onfocus = function(evt) {
+	  GP.events.push([WINDOW_SHOWN]);
 	}
 }
 initGPEventHandlers();
