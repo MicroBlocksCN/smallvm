@@ -1287,12 +1287,6 @@ set serial delay
 firmware version
 固件版本
 
-Firmware Installed
-完成固件安装
-
-Reconnect to the board by clicking the "Connect" button (USB icon).
-点击 '连接' 按钮 (USB 图标) 重新连接板子。
-
 start WebThing server
 启动WebThing服务器
 
@@ -1325,6 +1319,24 @@ Use board type
 
 Wiping board...
 擦除主板上的信息...
+
+Firmware Installed
+完成固件安装
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+点击 '连接' 按钮 (USB 图标) 重新连接板子。
+
+You will be asked to save the firmware file.
+你将被要求保存固件文件。
+
+Select
+选择
+
+as the destination drive, then click Save.
+作为目标驱动器，然后点击保存。
+
+Installing firmware...
+正在安装固件...
 
 (press ESC to cancel)
 (按下ESC键取消)
