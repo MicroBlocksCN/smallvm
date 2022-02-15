@@ -633,7 +633,7 @@ method processDroppedFile MicroBlocksEditor fName data {
 	if (isNil script) { return } // no script in this PNG file
     i = (find (letters script) (newline))
     script = (substring script i)
-	pasteScripts scripter script false
+	pasteScripts scripter script
   }
   // xxx for testing:
   if (endsWith fName '.gp') {
@@ -665,7 +665,7 @@ method processDroppedText MicroBlocksEditor text {
       i = (find (letters script) (newline))
       script = (substring script i)
       if (notNil json) { installLibsFromJSON scripter json }
-      pasteScripts scripter script false
+      pasteScripts scripter script
     }
   } else {
 	spec = (specForOp (authoringSpecs) 'comment')

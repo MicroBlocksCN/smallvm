@@ -1246,64 +1246,30 @@ method extractLibraryName MicroBlocksScripter libData {
   return nil
 }
 
-// script copy-paste via clipboard or PNG file embedding
+// support for script copy-paste via clipboard or embedding in a PNG files
+
+method scriptStringFor MicroBlocksScripter aBlock {
+  // Return a script string for the given script.
+
+  return (join
+  	'GP Script' (newline)
+  	(exportScripts (newMicroBlocksExchange mbProject) (list (morph (topBlock aBlock)))))
+}
 
 method allScriptsString MicroBlocksScripter {
   // Return a string with all scripts in the scripting area.
 
-  scale = (blockScale)
-  newline = (newline)
-  pp = (new 'PrettyPrinter')
-  result = (list)
-
-  scriptsPane = (contents scriptsFrame)
-  paneX = (left (morph scriptsPane))
-  paneY = (top (morph scriptsPane))
-  scriptsCopy = (list)
-  for m (parts (morph scriptsPane)) {
-    if (isClass (handler m) 'Block') {
-	  expr = (expression (handler m))
-      x = (((left m) - paneX) / scale)
-      y = (((top m) - paneY) / scale)
-
-	  add result (join 'script ' x ' ' y ' ')
-
-	  if (isClass expr 'Reporter') {
-		op = (primName expr)
-		if (isOneOf op 'v' 'my') {
-		  add result (join '(v ' (first (argList expr)) ')')
-		} else {
-		  add result (join '(' (prettyPrint pp expr) ')')
-		}
-		add result newline
-	  } else {
-		add result (join '{' newline)
-		op = (primName expr)
-		if ('to' == op) {
-// xxx
-//print 'to' (first (argList expr)) (functionNamed mbProject (first (argList expr)))
-//		  add result (prettyPrintFunction pp (functionNamed (first (argList expr))))
-		} else {
-		  add result (prettyPrintList pp expr)
-		}
-		add result (join '}' newline)
-	  }
-	  add result newline
-	}
-  }
-  return (joinStrings result)
+  scriptsPaneM = (morph (contents scriptsFrame))
+  paneX = (left scriptsPaneM)
+  paneY = (top scriptsPaneM)
+  return (exportScripts (newMicroBlocksExchange mbProject) (parts scriptsPaneM) paneX paneY)
 }
 
 method pasteScripts MicroBlocksScripter scriptString atHand {
-  scripts = (parse scriptString)
-  if (isNil scripts) { return }
-
-  scriptsPane = (contents scriptsFrame)
-  clearDropHistory scriptsPane
-
-  // find destination for scripts
-  if (true == atHand) {
-  	// current had position, adjusted for approximate menu offset
+  // find destination position for scripts
+  if (isNil atHand) { atHand = false }
+  if atHand {
+  	// current hand position, adjusted for approximate menu offset
     hand = (hand (global 'page'))
     dstX = ((x hand) - (40 * (global 'scale')))
     dstY = ((y hand) - (90 * (global 'scale')))
@@ -1312,36 +1278,12 @@ method pasteScripts MicroBlocksScripter scriptString atHand {
     dstY = ((scriptsBottom this) + (30 * (blockScale)))
   }
 
-  // find origin of scripts to be pasted
-  scriptsX = 10000
-  scriptsY = 10000
-  for entry scripts {
-    args = (argList entry)
-    scriptsX = (min scriptsX (at args 1))
-    scriptsY = (min scriptsY (at args 2))
-  }
-
-  for entry scripts {
-    args = (argList entry)
-    if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {
-      script = (last args)
-      addGlobalsFor this script
-      if ('to' == (primName script)) {
-        cmd = (copyFunction this script nil)
-        block = (scriptForFunction (functionNamed mbProject (first (argList cmd))))
-      } else {
-        block = (toBlock script)
-      }
-      fixBlockColor block
-      blockX = (round (dstX + ((blockScale) * ((at args 1) - scriptsX))))
-      blockY = (round (dstY + ((blockScale) * ((at args 2) - scriptsY))))
-      fastMoveBy (morph block) blockX blockY
-      addPart (morph scriptsPane) (morph block)
-    }
-  }
+  scriptsPane = (contents scriptsFrame)
+  clearDropHistory scriptsPane
+  importScripts (newMicroBlocksExchange mbProject) scriptString scriptsPane dstX dstY
   scriptChanged this
-  updateSliders scriptsFrame
   updateBlocks this
+  updateSliders scriptsFrame
   if (notNil block) {
     scrollIntoView scriptsFrame (fullBounds (morph block)) true // favorTopLeft
   }
@@ -1359,26 +1301,4 @@ method scriptsBottom MicroBlocksScripter {
     }
   }
   return result
-}
-
-method addGlobalsFor MicroBlocksScripter script {
-  globalVars = (toList (allVariableNames mbProject))
-  varRefs = (list)
-  localVars = (list)
-  for b (allBlocks script) {
-	args = (argList b)
-	if (notEmpty args) {
-	  varName = (first args)
-	  if (isOneOf (primName b) 'v' '=' '+=') { add varRefs varName }
-	  if (isOneOf (primName b) 'local' 'for') { add localVars varName }
-	}
-  }
-  for v varRefs {
-	if (and (not (contains globalVars v)) (not (contains localVars v))) {
-	  // add new global variable
-	  addVariable (main mbProject) (uniqueVarName this v)
-	  variablesChanged (smallRuntime)
-	  updateBlocks this
-	}
-  }
 }
