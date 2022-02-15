@@ -1090,6 +1090,8 @@ The MicroBlocks in your board is not current
 
 Try to update MicroBlocks on the board?
 
+MicroBlocks
+
 Stop
 
 Start
@@ -1338,7 +1340,19 @@ Dependency path, name or URL?
 
 Tag name?
 
-# Tips Bar
+Add Library
+
+seconds remaining
+
+Decrease block size
+
+Restore block size to 100%
+
+Increase block size
+
+############
+# Tips Bar #
+############
 
 Boolean Input
 

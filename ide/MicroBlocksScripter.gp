@@ -424,7 +424,7 @@ method addBlocksForLibrary MicroBlocksScripter libName {
 method addVariableBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
-  addButton this (localized 'Add a variable') (action 'createVariable' this) 'Create a variable usable in all scripts'
+  addButton this (localized 'Add a variable') (action 'createVariable' this)
   visibleVars = (visibleVars this)
   if (notEmpty visibleVars) {
 	addButton this (localized 'Delete a variable') (action 'deleteVariableMenu' this)
