@@ -1,0 +1,51 @@
+module main
+author wwj718
+version 1 0 
+description ''
+
+script 445 40 {
+whenStarted
+comment 'Run it on a ESP32 board'
+forever {
+  setUserLED false
+  waitMillis 100
+  local 'tmp' ('[data:join]' 'micro' (random 1 100))
+  'esp now broadcast' tmp
+  sayIt tmp
+  setUserLED true
+  waitMillis 100
+}
+}
+
+script 48 144 {
+comment 'Run it on **another** ESP board'
+forever {
+  local 'message' ('esp now last message')
+  if (message != (booleanConstant false)) {
+    sayIt message
+  }
+}
+}
+
+
+module 'ESP Now'
+author wwj718
+version 1 0 
+description ''
+
+	spec ' ' 'esp now broadcast' 'esp now broadcast _' 'auto' 'hello'
+	spec 'r' 'esp now last message' 'esp now last message'
+
+to 'esp now broadcast' message {
+  callCustomCommand '[net:EspNowBroadcast]' ('[data:makeList]' message)
+}
+
+to 'esp now last message' {
+  local 'event' (callCustomReporter '[net:EspNowLastEvent]')
+  if (event != (booleanConstant false)) {
+    return (at 1 event)
+  } else {
+    return (booleanConstant false)
+  }
+}
+
