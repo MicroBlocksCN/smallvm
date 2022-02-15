@@ -2293,7 +2293,7 @@ method firmwareInstallSecsRemaining SmallRuntime {
 
 method firmwareInstallStatus SmallRuntime {
 	if (isNil firmwareInstallTimer) { return 'Installing firmware...' }
-	return (join '' (firmwareInstallSecsRemaining this) ' ' (localized 'seconds remaining' '.')
+	return (join '' (firmwareInstallSecsRemaining this) ' ' (localized 'seconds remaining') '.')
 }
 
 method firmwareInstallDone SmallRuntime {
