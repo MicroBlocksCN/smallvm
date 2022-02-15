@@ -7,7 +7,7 @@
 // MicroBlocksExchange.gp - A textual representation for exchanging scripts between projects.
 // John Maloney, February, 2022
 
-defineClass MicroBlocksExchange mbProject
+defineClass MicroBlocksExchange mbProject functionsUsed libsUsed
 
 to newMicroBlocksExchange aProject {
 	return (initialize (new 'MicroBlocksExchange') aProject)
@@ -21,18 +21,16 @@ method initialize MicroBlocksExchange aProject {
 // Script export
 
 method exportScripts MicroBlocksExchange blockList {
-	// Return a string representation of the give scripts. blockList is a list of Block morphs.
-	// ToDo:
-	// [ ] add user-defined block definitions
-	// [ ] add specs for user-defined blocks
-	// [ ] add library dependencies
+	// Return a string representation for the given scripts (a list of Block morphs).
+
+	result = (list)
+
+	analyzeCalls this blockList
+	add result (libraryDepencies this)
+	add result (newline)
+	addAll result (functionDefinitions this)
 
 	scale = (blockScale)
-	result = (list)
-	add result 'depends ''foo'' ''bar'''
-	add result (newline)
-	add result 'spec '' '' ''myBlock'' ''my block _'' ''bool'' true'
-	add result (newline)
 	for m blockList {
 		if (isClass (handler m) 'Block') {
 			expr = (expression (handler m))
@@ -42,6 +40,34 @@ method exportScripts MicroBlocksExchange blockList {
 		}
 	}
 	return (joinStrings result)
+}
+
+method libraryDepencies MicroBlocksExchange {
+	// Return a string listing the library dependencies, if any.
+
+	if (isEmpty libsUsed) { return '' }
+	result = (list 'depends')
+	for lib libsUsed {
+		add result (join ' ''' lib '''')
+	}
+	add result (newline)
+	return (joinStrings result)
+}
+
+method functionDefinitions MicroBlocksExchange {
+	// Return a list containing the specs and definitions of functions used, if any'
+
+	result = (list)
+	for funcName functionsUsed {
+		spec = (at (blockSpecs mbProject) funcName)
+		if (notNil spec) {
+			add result (join 'spec ' (specDefinitionString spec) (newline))
+		}
+		func = (functionNamed mbProject funcName)
+		add result (prettyPrintFunction (new 'PrettyPrinter') func)
+		add result (newline)
+	}
+	return result
 }
 
 method scriptText MicroBlocksExchange cmdOrReporter x y useSemicolons {
@@ -75,11 +101,53 @@ method scriptText MicroBlocksExchange cmdOrReporter x y useSemicolons {
 	return (joinStrings result)
 }
 
+// Script analysis to collect function calls and library references
+
+method analyzeCalls MicroBlocksExchange blockList {
+	// Collect all the user-defined functions (i.e. blocks defined in the main project)
+	// and libraries used by the given list of blocks.
+
+	functionsUsed = (dictionary)
+	libsUsed = (dictionary)
+	for m blockList {
+		if (isClass (handler m) 'Block') {
+			analyzeCallsInExpression this (expression (handler m))
+		}
+	}
+	functionsUsed = (sorted (keys functionsUsed))
+	libsUsed = (sorted (keys libsUsed))
+}
+
+method analyzeCallsInExpression MicroBlocksExchange cmdOrReporter {
+	// Collect all function calls and library references by the given command or reporter.
+
+	for cmdOrReporter (allBlocks cmdOrReporter) {
+		op = (primName cmdOrReporter)
+		if (isFunctionCall this op) {
+			if (isUserDefined this op) {
+				add functionsUsed op
+			} else {
+				for lib (values (libraries mbProject)) {
+					if (notNil (functionNamed lib op)) {
+						add libsUsed (moduleName lib)
+					}
+				}
+			}
+		}
+	}
+}
+
+method isFunctionCall MicroBlocksExchange funcName {
+	return (notNil (functionNamed mbProject funcName))
+}
+
+method isUserDefined MicroBlocksExchange funcName {
+	return (notNil (functionNamed (main mbProject) funcName))
+}
+
 // Script import
 
-method importScripts MicroBlocksExchange scriptString scriptsPane dstX dstY {
-print 'MicroBlocksExchange importScripts'
-
+method importScripts MicroBlocksExchange scriptString scripter dstX dstY {
 	scripts = (parse scriptString)
 	if (isNil scripts) { return }
 
@@ -94,6 +162,7 @@ print 'MicroBlocksExchange importScripts'
 		}
 	}
 
+	scriptsPane = (scriptEditor scripter)
 	for entry scripts {
 		args = (argList entry)
 		if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {
@@ -111,11 +180,13 @@ print 'MicroBlocksExchange importScripts'
 			fastMoveBy (morph block) blockX blockY
 			addPart (morph scriptsPane) (morph block)
 		} ('depends' == (primName entry)) {
-print 'depends' args
-		} ('spec' == (primName entry)) {
-print 'spec' args
+			for libName args {
+				installLibraryNamed scripter libName
+			}
 		}
 	}
+	// add block specs contained in scripts
+	loadSpecs mbProject scripts
 }
 
 method addGlobalsFor MicroBlocksExchange script {

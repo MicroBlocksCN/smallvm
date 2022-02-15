@@ -1195,13 +1195,18 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 
 method installLibsFromJSON MicroBlocksScripter jsonString {
   if (isNil jsonString) { return }
-	libs = (at (jsonParse jsonString) 'libs')
-	if (isNil libs) { return }
-	for lib libs {
-		fileName = (fileNameForLibraryNamed this lib)
-		if ('Browser' != (platform)) { fileName = (join '//' fileName) }
-    importLibraryFromFile this fileName
+  libs = (at (jsonParse jsonString) 'libs')
+  if (isNil libs) { return }
+  for libName libs {
+    installLibraryNamed this libName
   }
+}
+
+method installLibraryNamed MicroBlocksScripter libName {
+  fileName = (fileNameForLibraryNamed this libName)
+  if (not (endsWith fileName '.ubl')) { fileName = (join fileName '.ubl') }
+  if ('Browser' != (platform)) { fileName = (join '//' fileName) }
+  importLibraryFromFile this fileName
 }
 
 method fileNameForLibraryNamed MicroBlocksScripter libName {
@@ -1280,7 +1285,7 @@ method pasteScripts MicroBlocksScripter scriptString atHand {
 
   scriptsPane = (contents scriptsFrame)
   clearDropHistory scriptsPane
-  importScripts (newMicroBlocksExchange mbProject) scriptString scriptsPane dstX dstY
+  importScripts (newMicroBlocksExchange mbProject) scriptString this dstX dstY
   scriptChanged this
   updateBlocks this
   updateSliders scriptsFrame
