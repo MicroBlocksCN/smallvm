@@ -9,7 +9,7 @@ Output
 输出
 
 set user LED _
-设置用户LED _
+设置用户 LED _
 
 say _
 说 _
@@ -25,6 +25,12 @@ button A
 
 button B
 按键 B
+
+timer
+计时器
+
+reset timer
+计时器归零
 
 microseconds
 微秒
@@ -104,6 +110,9 @@ broadcast _
 comment _
 注释 _
 
+How this works...
+...
+
 for _ in _ _
 重复执行 变化因子 _ 范围 _ _
 
@@ -130,6 +139,12 @@ _ 除以 _ 的余数
 
 abs _
 绝对值 _
+
+min _ _
+最小值 _ _
+
+max _ _
+最大值 _ _
 
 random _ to _
 在 _ 到 _ 间选取随机数
@@ -221,6 +236,9 @@ join _ _
 
 copy _ from _
 复制字符 _ 从 _
+
+split _ by _
+分割 _ 通过 _
 
 to _
 到 _
@@ -355,8 +373,8 @@ radio last string
 radio last message type
 最后广播消息类型
 
-radio set group _
-设置广播分组 _
+radio set group _ (0-255)
+设置广播分组 _ (0-255)
 
 radio set channel (0-83) _
 设置广播信道 (0-83) _
@@ -686,7 +704,7 @@ stop servo _
 # with differently sized LED arrays, NeoPixel arrays or TFT displays
 
 LED Display
-LED显示
+LED 显示
 
 display _
 显示 _
@@ -1081,7 +1099,7 @@ events JSON
 # MQTT
 
 MQTT connect to broker _
-连接到MQTT服务器 _
+连接到 MQTT 服务器 _
 
 buffer sizes _ client id _
 缓存大小 _ 客户端 id _
@@ -1090,7 +1108,7 @@ username _ password _
 用户名 _ 密码 _
 
 MQTT connected
-MQTT服务器已连接
+MQTT 服务器已连接
 
 MQTT sub _
 订阅主题 _
@@ -1102,13 +1120,13 @@ MQTT pub topic _ payload _
 向主题 _ 发布消息 _
 
 last MQTT event
-最新MQTT事件
+最新 MQTT 事件
 
 topic for MQTT event _
-最新MQTT事件的主题 _
+最新 MQTT 事件的主题 _
 
 payload for MQTT event _
-最新MQTT事件的消息 _
+最新 MQTT 事件的消息 _
 
 ##################
 # MicroBlocks UI #
@@ -1204,7 +1222,7 @@ The board is not responding.
 主板未响应.
 
 Try to Install MicroBlocks on the board?
-将MicroBlocks安装到这块主板上么?
+将 MicroBlocks 安装到这块主板上么?
 
 The MicroBlocks in your board is not current
 主板中的 MicroBlocks 不是最新版本
@@ -1223,6 +1241,12 @@ Quit MicroBlocks?
 
 Discard current project?
 放弃当前项目?
+
+set block size...
+设置积木块大小
+
+make blocks bigger or smaller
+将积木块变大或变小
 
 clean up
 清除
@@ -1362,6 +1386,9 @@ delete the definition of this block
 duplicate
 复制
 
+help
+帮助
+
 duplicate this block
 复制这块积木
 
@@ -1443,6 +1470,13 @@ Are you sure you want to remove this block definition?
 Language
 语言
 
+Graph
+图表
+
+MicroBlocks
+设置
+
+
 Custom...
 定制...
 
@@ -1474,6 +1508,9 @@ Confirm
 
 Libraries
 积木库
+
+Add Library
+添加积木库
 
 Examples
 示例
@@ -1527,7 +1564,7 @@ File not found in server.
 无法在服务器上找到该文件.
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
-服务器请求HTTPS协议，但MicroBlocks目前还不支持.
+服务器请求 HTTPS 协议，但 MicroBlocks 目前还不支持.
 
 library information
 积木库信息
