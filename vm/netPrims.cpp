@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mšnig
+// Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mï¿½nig
 
 // netPrims.cpp - MicroBlocks network primitives
 // Bernat Romagosa, August 2018
@@ -785,8 +785,61 @@ static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
 #endif
 
 #if defined(ESP_NOW_PRIMS)
-	//https://registry.platformio.org/libraries/yoursunny/WifiEspNow/examples/EspNowBroadcast/EspNowBroadcast.ino
-	#include <WifiEspNow.h>
+//https://registry.platformio.org/libraries/yoursunny/WifiEspNow/examples/EspNowBroadcast/EspNowBroadcast.ino
+#include <WifiEspNowBroadcast.h>
+static char receiveBuffer[1000];
+static bool EspNoWInitialized = false;
+static bool hasEspNowMessage = false;
+
+
+void processRx(const uint8_t mac[WIFIESPNOW_ALEN], const uint8_t* buf, size_t count, void* arg)
+{	
+	char* data = (char*) buf;
+	int len = strlen(data);
+	if (len > 999) len = 999;
+	memcpy(receiveBuffer, data, len);
+	receiveBuffer[len] = '\0';
+  	hasEspNowMessage = true;
+}
+
+static void initializeEspNoW() {
+	if (EspNoWInitialized) return;
+
+	WiFi.persistent(false);
+ 	bool ok = WifiEspNowBroadcast.begin("ESPNOW", 3);
+  	if (!ok) {
+		// outputString("WifiEspNowBroadcast.begin() failed");
+    	ESP.restart();
+ 	 }
+	// outputString("WifiEspNowBroadcast.begin() success");
+	WifiEspNowBroadcast.onReceive(processRx, nullptr);
+	EspNoWInitialized = true;
+}
+
+static OBJ primEspNowLastEvent(int argCount, OBJ *args) {
+	if (!EspNoWInitialized) initializeEspNoW();
+	WifiEspNowBroadcast.loop();
+	delay(10);
+
+	if (hasEspNowMessage) {
+		OBJ event = newObj(ListType, 2, zeroObj);
+		FIELD(event, 0) = int2obj(1); //list size
+		FIELD(event, 1) = newStringFromBytes(receiveBuffer, strlen(receiveBuffer));
+		hasEspNowMessage = false;
+		return event;
+	} else {
+		return falseObj;
+	}
+}
+
+static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
+  if (!EspNoWInitialized) initializeEspNoW();
+
+  char* message = obj2str(args[0]);
+  WifiEspNowBroadcast.send(reinterpret_cast<const uint8_t*>(message), strlen(message));
+  WifiEspNowBroadcast.loop();
+}
+
 #endif
 
 static PrimEntry entries[] = {
@@ -823,6 +876,11 @@ static PrimEntry entries[] = {
 	{"BLE_UART_LastEvent", primBLE_UART_LastEvent},
 	{"BLE_UART_Write", primBLE_UART_Write},
 	{"StartAdvertisingAndReconnectLoop", primStartAdvertisingAndReconnectLoop},
+  #endif
+
+  #if defined(ESP_NOW_PRIMS)
+	{"EspNowLastEvent", primEspNowLastEvent},
+	{"EspNowBroadcast", primEspNowBroadcast},
   #endif
 
 };
