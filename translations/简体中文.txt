@@ -1249,7 +1249,7 @@ make blocks bigger or smaller
 将积木块变大或变小
 
 clean up
-清除
+整理积木
 
 arrange scripts
 排列脚本
@@ -1286,6 +1286,12 @@ set serial delay
 
 firmware version
 固件版本
+
+Firmware Installed
+完成固件安装
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+点击 '连接' 按钮 (USB 图标) 重新连接板子。
 
 start WebThing server
 启动WebThing服务器
@@ -1423,10 +1429,10 @@ save picture of script
 保存脚本图片
 
 save a picture of this block definition as a PNG file
-将这块积木的定义保存为一个PNG文件
+将这块积木的定义保存为一个 PNG 文件
 
 save a picture of these blocks as a PNG file
-将这些积木的图片保存为一个PNG文件
+将这些积木的图片保存为一个 PNG 文件
 
 copy script
 复制脚本
