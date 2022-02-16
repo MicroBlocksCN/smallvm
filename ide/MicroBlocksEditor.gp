@@ -401,7 +401,7 @@ method copyProjectURLToClipboard MicroBlocksEditor {
 
   saveScripts scripter
   setClipboard (join
-    'https://microblocks.fun/run/microblocks.html?project='
+    'https://microblocks.fun/run/microblocks.html#project='
 	(urlEncode (codeString (project scripter)) true)
   )
 }
@@ -654,7 +654,7 @@ method processDroppedText MicroBlocksEditor text {
     path = (substring url (findFirst url '/'))
     fileName = (substring path ((findLast path '/') + 1) ((findLast path '.') - 1))
 
-    if (or ((findSubstring '?scripts=' url) > 0) ((findSubstring '?project=' url) > 0)) {
+    if (or ((findSubstring '#scripts=' url) > 0) ((findSubstring '#project=' url) > 0)) {
       importFromURL this url
       return
     }
@@ -687,13 +687,13 @@ method processDroppedText MicroBlocksEditor text {
 }
 
 method importFromURL MicroBlocksEditor url {
-  i = (findSubstring '?scripts=' url)
+  i = (findSubstring '#scripts=' url)
   if (notNil i) { // import scripts embedded in URL
     scriptString = (urlDecode (substring url (i + 9)))
     pasteScripts scripter scriptString
     return
   }
-  i = (findSubstring '?project=' url)
+  i = (findSubstring '#project=' url)
   if (notNil i) { // open a complete project embedded in URL
     projectString = (urlDecode (substring url (i + 9)))
     if (not (canReplaceCurrentProject this)) { return }
