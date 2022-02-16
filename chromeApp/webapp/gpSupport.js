@@ -261,30 +261,20 @@ function initGPEventHandlers() {
 		if (evt.char && (evt.char.length == 1)) charCode = evt.char.codePointAt(0);
 		GP.events.push([TEXTINPUT, charCode]);
 	}
-	document.oninput = function(evt) {
-		// console.log(evt.data)
-		if (Symbol.iterator in Object(evt.data)){
-			for (let ch of evt.data) {
-				if (/\p{Script=Han}/u.test(ch) || /\p{Emoji_Presentation}/u.test(ch)){
-					GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
-				}
-			}
-		}
-	}
 
-    // testing composition events...
-//     document.addEventListener('compositionstart', function(evt) {
-//         console.log('compositionstart', evt.data);
-//     });
-//     document.addEventListener('compositionupdate', function(evt) {
-//         console.log('compositionupdate', evt.data);
-//     });
-//     document.addEventListener('compositionend', function(evt) {
-//         console.log('compositionend', evt.data);
-//         for (let ch of evt.data) {
-//             GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
-//         }
-//     });
+    // IME composition events
+    document.addEventListener('compositionstart', function(evt) {
+        GP.compositionText = '';
+    });
+    document.addEventListener('compositionupdate', function(evt) {
+        GP.compositionText = evt.data;
+    });
+    document.addEventListener('compositionend', function(evt) {
+        for (let ch of GP.compositionText) {
+            GP.events.push([TEXTINPUT, ch.codePointAt(0)]);
+        }
+        GP.compositionText = '';
+    });
 
 	canvas.onwheel = function(evt) {
 		if (evt.shiftKey || evt.ctrlKey) { return; } // default behavior (browser zoom)

@@ -1,15 +1,15 @@
 defineClass PNGWriter bitmap dataStream
 
-to encodePNG aBitmap pixelsPerInch scriptText { return (writeImage (new 'PNGWriter') aBitmap pixelsPerInch scriptText) }
+to encodePNG aBitmap pixelsPerInch scriptToEmbed { return (writeImage (new 'PNGWriter') aBitmap pixelsPerInch scriptToEmbed) }
 
-method writeImage PNGWriter aBitmap pixelsPerInch scriptText {
+method writeImage PNGWriter aBitmap pixelsPerInch scriptToEmbed {
   bitmap = aBitmap
   dataStream = (dataStream (newBinaryData ((width bitmap) * (height bitmap))) true)
 
   writeSignature this
   writeChunk this 'IHDR' (headerChunk this)
   if (notNil pixelsPerInch) { writeChunk this 'pHYs' (physChunk this pixelsPerInch) }
-  if (notNil scriptText) { writeChunk this 'tEXt' (textChunk this scriptText) }
+  if (notNil scriptToEmbed) { writeChunk this 'tEXt' (textChunk this scriptToEmbed) }
   writeChunk this 'IDAT' (dataChunk this)
   writeChunk this 'IEND' (newBinaryData 0)
 

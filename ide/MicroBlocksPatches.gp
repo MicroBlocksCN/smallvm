@@ -366,6 +366,11 @@ method exportAsImage BlockDefinition {
 	exportAsImageScaled (handler (ownerThatIsA morph 'Block')) 2
 }
 
+method scriptText Block useSemicolons {
+  mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+  return (scriptStringFor mbScripter this)
+}
+
 // Block definition operations
 
 method showDefinition Block {
