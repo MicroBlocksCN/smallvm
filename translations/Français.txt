@@ -422,7 +422,7 @@ set all NeoPixels color _
 rotate NeoPixels by _
 --MISSING--
 
-color r _ g _ b _ (0-31)
+color r _ g _ b _ (0-255)
 --MISSING--
 
 random color
