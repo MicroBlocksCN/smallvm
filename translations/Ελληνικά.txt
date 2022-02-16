@@ -422,8 +422,8 @@ set all NeoPixels color _
 rotate NeoPixels by _
 στρίψε τα NeoPixels κατά _
 
-color r _ g _ b _ (0-31)
-χρώμα κ _ π _ μ _ (0-31)
+color r _ g _ b _ (0-255)
+χρώμα κ _ π _ μ _ (0-255)
 
 random color
 τυχαίο χρώμα

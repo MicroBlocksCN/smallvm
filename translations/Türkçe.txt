@@ -422,8 +422,8 @@ Tüm NeoPixel renklerini _ yap
 rotate NeoPixels by _
 NeoPixelleri _ döndür
 
-color r _ g _ b _ (0-31)
-renk r _ g _ b _ (0-31)
+color r _ g _ b _ (0-255)
+renk r _ g _ b _ (0-255)
 
 random color
 rastgele renk
