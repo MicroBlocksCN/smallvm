@@ -624,11 +624,11 @@ method processDroppedFiles MicroBlocksEditor {
 }
 
 method processDroppedFile MicroBlocksEditor fName data {
-  if (or (endsWith fName '.ubp') (endsWith fName '.gpp')) {
+  if (endsWith fName '.ubp') {
 	if (not (canReplaceCurrentProject this)) { return }
 	openProject this data fName
   }
-  if (or (endsWith fName '.ubl') (endsWith fName '.ulib')) {
+  if (endsWith fName '.ubl') {
 	importLibraryFromFile scripter fName data
   }
   if (endsWith fName '.csv') {
@@ -664,10 +664,11 @@ method processDroppedText MicroBlocksEditor text {
     if (notNil i) { // script and parameters pass as a json object
       json = (urlDecode (substring path (i + 12))) // extract and decode the JSON string
     }
-    if (or (endsWith url '.ubp') (endsWith url '.gpp')) {
+
+    if (endsWith url '.ubp') {
       if (not (canReplaceCurrentProject this)) { return }
       openProject this (httpBody (httpGet host path)) fileName
-    } (or (endsWith url '.ubl') (endsWith url '.ulib')) {
+    } (endsWith url '.ubl') {
       importLibraryFromString scripter (httpBody (httpGet host path)) fileName fileName
     } (and (or (notNil json) (endsWith url '.png')) ('Browser' == (platform))) {
       data = (httpBody (basicHTTPGetBinary host path))
