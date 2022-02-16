@@ -534,7 +534,7 @@ method contextMenu ScriptEditor {
 method copyScriptsToClipboard ScriptEditor {
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (isNil scripter) { return }
-  setClipboard (join 'GP Scripts' (newline) (allScriptsString (handler scripter)))
+  setClipboard (allScriptsString (handler scripter))
 }
 
 // Color picker tweak

@@ -629,11 +629,7 @@ method processDroppedFile MicroBlocksEditor fName data {
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
   }
   if (endsWith fName '.png') {
-	script = (getScriptText (new 'PNGReader') data)
-	if (isNil script) { return } // no script in this PNG file
-    i = (find (letters script) (newline))
-    script = (substring script i)
-	pasteScripts scripter script
+    importFromPNG this data
   }
   // xxx for testing:
   if (endsWith fName '.gp') {
@@ -648,6 +644,13 @@ method processDroppedText MicroBlocksEditor text {
     host = (substring url 1 ((findFirst url '/') - 1))
     path = (substring url (findFirst url '/'))
     fileName = (substring path ((findLast path '/') + 1) ((findLast path '.') - 1))
+
+    if (or ((findSubstring '?scripts=' url) > 0) ((findSubstring '?project=' url) > 0)) {
+      importFromURL this url
+      return
+    }
+
+	// xxx remove this after switching to .PNG files
     i = (findSubstring 'render?json=' path)
     if (notNil i) { // script and parameters pass as a json object
       json = (urlDecode (substring path (i + 12))) // extract and decode the JSON string
@@ -660,12 +663,8 @@ method processDroppedText MicroBlocksEditor text {
     } (and (or (notNil json) (endsWith url '.png')) ('Browser' == (platform))) {
       data = (httpBody (basicHTTPGetBinary host path))
       if ('' == data) { return }
-      script = (getScriptText (new 'PNGReader') data)
-      if (isNil script) { return } // no script in this PNG file
-      i = (find (letters script) (newline))
-      script = (substring script i)
-      if (notNil json) { installLibsFromJSON scripter json }
-      pasteScripts scripter script
+      if (notNil json) { installLibsFromJSON scripter json } // xxx remove this after switching to .PNG files
+      importFromPNG this data
     }
   } else {
 	spec = (specForOp (authoringSpecs) 'comment')
@@ -676,6 +675,30 @@ method processDroppedText MicroBlocksEditor text {
 	setTop (morph block) (y (hand (global 'page')))
 	addPart (morph (scriptEditor scripter)) (morph block)
   }
+}
+
+method importFromURL MicroBlocksEditor url {
+  i = (findSubstring '?scripts=' url)
+  if (notNil i) { // import scripts embedded in URL
+    scriptString = (urlDecode (substring url (i + 9)))
+    pasteScripts scripter scriptString
+    return
+  }
+  i = (findSubstring '?project=' url)
+  if (notNil i) { // open a complete project embedded in URL
+    projectString = (urlDecode (substring url (i + 9)))
+    if (not (canReplaceCurrentProject this)) { return }
+    openProject this projectString ''
+    return
+  }
+}
+
+method importFromPNG MicroBlocksEditor pngData {
+  scriptString = (getScriptText (new 'PNGReader') pngData)
+  if (isNil scriptString) { return } // no script in this PNG file
+  i = (find (letters scriptString) (newline))
+  scriptString = (substring scriptString i)
+  pasteScripts scripter scriptString
 }
 
 // handle drops

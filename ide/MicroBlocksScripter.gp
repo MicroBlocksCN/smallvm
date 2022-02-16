@@ -1258,7 +1258,7 @@ method scriptStringFor MicroBlocksScripter aBlock {
 
   return (join
   	'GP Script' (newline)
-  	(exportScripts (newMicroBlocksExchange mbProject) (list (morph (topBlock aBlock)))))
+  	(exportScripts (newMicroBlocksExchange) this (list (morph (topBlock aBlock)))))
 }
 
 method allScriptsString MicroBlocksScripter {
@@ -1267,7 +1267,9 @@ method allScriptsString MicroBlocksScripter {
   scriptsPaneM = (morph (contents scriptsFrame))
   paneX = (left scriptsPaneM)
   paneY = (top scriptsPaneM)
-  return (exportScripts (newMicroBlocksExchange mbProject) (parts scriptsPaneM) paneX paneY)
+  return (join
+    'GP Scripts' (newline)
+    (exportScripts (newMicroBlocksExchange) this (parts scriptsPaneM) paneX paneY))
 }
 
 method pasteScripts MicroBlocksScripter scriptString atHand {
@@ -1285,9 +1287,10 @@ method pasteScripts MicroBlocksScripter scriptString atHand {
 
   scriptsPane = (contents scriptsFrame)
   clearDropHistory scriptsPane
-  importScripts (newMicroBlocksExchange mbProject) scriptString this dstX dstY
+  importScripts (newMicroBlocksExchange) this scriptString dstX dstY
   scriptChanged this
   updateBlocks this
+  saveScripts this
   updateSliders scriptsFrame
   if (notNil block) {
     scrollIntoView scriptsFrame (fullBounds (morph block)) true // favorTopLeft

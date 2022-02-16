@@ -10,19 +10,15 @@
 defineClass MicroBlocksExchange mbProject functionsUsed libsUsed
 
 to newMicroBlocksExchange aProject {
-	return (initialize (new 'MicroBlocksExchange') aProject)
-}
-
-method initialize MicroBlocksExchange aProject {
-	mbProject = aProject
-	return this
+	return (new 'MicroBlocksExchange')
 }
 
 // Script export
 
-method exportScripts MicroBlocksExchange blockList {
+method exportScripts MicroBlocksExchange aMicroBlocksScripter blockList {
 	// Return a string representation for the given scripts (a list of Block morphs).
 
+	mbProject = (project aMicroBlocksScripter)
 	result = (list)
 
 	analyzeCalls this blockList
@@ -147,7 +143,8 @@ method isUserDefined MicroBlocksExchange funcName {
 
 // Script import
 
-method importScripts MicroBlocksExchange scriptString scripter dstX dstY {
+method importScripts MicroBlocksExchange aMicroBlocksScripter scriptString dstX dstY {
+	mbProject = (project aMicroBlocksScripter)
 	scripts = (parse scriptString)
 	if (isNil scripts) { return }
 
@@ -162,7 +159,9 @@ method importScripts MicroBlocksExchange scriptString scripter dstX dstY {
 		}
 	}
 
-	scriptsPane = (scriptEditor scripter)
+	scriptsPane = (scriptEditor aMicroBlocksScripter)
+	if (isNil dstX) { dstX = ((left (morph scriptsPane)) + (100 * (global 'scale'))) }
+	if (isNil dstY) { dstY = ((top (morph scriptsPane)) + (100 * (global 'scale'))) }
 	for entry scripts {
 		args = (argList entry)
 		if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {
@@ -181,7 +180,7 @@ method importScripts MicroBlocksExchange scriptString scripter dstX dstY {
 			addPart (morph scriptsPane) (morph block)
 		} ('depends' == (primName entry)) {
 			for libName args {
-				installLibraryNamed scripter libName
+				installLibraryNamed aMicroBlocksScripter libName
 			}
 		}
 	}
