@@ -47,10 +47,9 @@ to openMicroBlocksEditor devMode {
   applyUserPreferences editor
   pageResized editor
   developerModeChanged editor
-  if ('Browser' == (platform)) { fetchProject }
-  if (notNil (global 'initialProject')) {
-	dataAndURL = (global 'initialProject')
-	openProject editor (first dataAndURL) (last dataAndURL) false
+  if ('Browser' == (platform)) {
+    // attempt to extra project or scripts from URL; does nothing if absent
+    importFromURL (scripter editor) (browserURL)
   }
   startSteppingSafely page
 }
@@ -395,6 +394,16 @@ method saveProjectToFile MicroBlocksEditor {
   fp = (findMorph 'MicroBlocksFilePicker')
   if (notNil fp) { destroy fp }
   saveProject this nil
+}
+
+method copyProjectURLToClipboard MicroBlocksEditor {
+  // Copy a URL encoding of this project to the clipboard.
+
+  saveScripts scripter
+  setClipboard (join
+    'https://microblocks.fun/run/microblocks.html?project='
+	(urlEncode (codeString (project scripter)) true)
+  )
 }
 
 method saveProject MicroBlocksEditor fName {
@@ -1175,7 +1184,9 @@ method projectMenu MicroBlocksEditor {
   addItem menu 'Save' 'saveProjectToFile'
   if (devMode) {
 	addLine menu
+    addItem menu 'Copy project URL to cliboard' 'copyProjectURLToClipboard'
 	if ((count (functions (main (project scripter)))) > 0) {
+		addLine menu
 		addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
 	}
 	if (boardHasFileSystem (smallRuntime)) {
