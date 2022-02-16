@@ -49,7 +49,7 @@ to openMicroBlocksEditor devMode {
   developerModeChanged editor
   if ('Browser' == (platform)) {
     // attempt to extra project or scripts from URL; does nothing if absent
-    importFromURL (scripter editor) (browserURL)
+    importFromURL editor (browserURL)
   }
   startSteppingSafely page
 }
@@ -654,7 +654,7 @@ method processDroppedText MicroBlocksEditor text {
     path = (substring url (findFirst url '/'))
     fileName = (substring path ((findLast path '/') + 1) ((findLast path '.') - 1))
 
-    if (or ((findSubstring '#scripts=' url) > 0) ((findSubstring '#project=' url) > 0)) {
+    if (or ((findSubstring 'scripts=' url) > 0) ((findSubstring 'project=' url) > 0)) {
       importFromURL this url
       return
     }
@@ -688,15 +688,15 @@ method processDroppedText MicroBlocksEditor text {
 }
 
 method importFromURL MicroBlocksEditor url {
-  i = (findSubstring '#scripts=' url)
+  i = (findSubstring 'scripts=' url)
   if (notNil i) { // import scripts embedded in URL
-    scriptString = (urlDecode (substring url (i + 9)))
+    scriptString = (urlDecode (substring url (i + 8)))
     pasteScripts scripter scriptString
     return
   }
-  i = (findSubstring '#project=' url)
+  i = (findSubstring 'project=' url)
   if (notNil i) { // open a complete project embedded in URL
-    projectString = (urlDecode (substring url (i + 9)))
+    projectString = (urlDecode (substring url (i + 8)))
     if (not (canReplaceCurrentProject this)) { return }
     openProject this projectString ''
     return
