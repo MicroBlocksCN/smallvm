@@ -24,12 +24,14 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
 method scripter MicroBlocksEditor { return scripter }
 method httpServer MicroBlocksEditor { return httpServer }
+method lastScriptPicFolder MicroBlocksEditor { return lastScriptPicFolder }
+method setLastScriptPicFolder MicroBlocksEditor dir { lastScriptPicFolder = dir }
 
 to openMicroBlocksEditor devMode {
   if (isNil devMode) { devMode = false }

@@ -6,7 +6,7 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
@@ -35,6 +35,7 @@ method initialize MicroBlocksScripter aProjectEditor {
   saveNeeded = false
 
   makeLibraryHeader this
+  lastLibraryFolder = 'Libraries'
 
   categorySelector = (newCategorySelector (categories this) (action 'categorySelected' this))
   setFont categorySelector fontName fontSize
@@ -1047,7 +1048,7 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 // Library import/export
 
 method importLibrary MicroBlocksScripter {
-  pickLibraryToOpen (action 'importLibraryFromFile' this) 'Libraries' (array '.ubl')
+  pickLibraryToOpen (action 'importLibraryFromFile' this) lastLibraryFolder (array '.ubl')
 }
 
 method allFilesInDir MicroBlocksScripter rootDir {
@@ -1089,12 +1090,14 @@ method importEmbeddedLibrary MicroBlocksScripter libName {
 method importLibraryFromFile MicroBlocksScripter fileName data {
   // Import a library with the given file path. If data is not nil, it came from
   // a browser upload or file drop. Use it rather than attempting to read the file.
-
+  setCursor 'wait'
   if (isNil data) {
 	if (beginsWith fileName '//') {
 	  data = (readEmbeddedFile (substring fileName 3))
+      lastLibraryFolder = 'Libraries'
 	} else {
 	  data = (readFile fileName)
+      lastLibraryFolder = (directoryPart fileName)
 	}
 	if (isNil data) { return } // could not read file
   }
