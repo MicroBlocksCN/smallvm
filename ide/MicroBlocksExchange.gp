@@ -30,6 +30,13 @@ method exportScripts MicroBlocksExchange aMicroBlocksScripter blockList {
 	for m blockList {
 		if (isClass (handler m) 'Block') {
 			expr = (expression (handler m))
+			if ('to' == (primName expr)) {
+				// save block definition in scripting area as 'to' command with a nil body
+				// all function definitions are saved separately as a top-level 'to' commands
+				callArgs = (join (list 'to') (argList expr))
+				atPut callArgs (count callArgs) nil // replace the body with nil
+				expr = (callWith 'newCommand' (toArray callArgs))
+			}
 			x = (round ((left m) / scale))
 			y = (round ((top m)/ scale))
 			add result (scriptText this expr x y)
