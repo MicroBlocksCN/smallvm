@@ -273,9 +273,6 @@ method contextMenu Block {
 	  addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
 	}
   }
-  if (devMode) {
-    addItem menu 'copy image URL to clipboard' (action 'copyForWeb' this) 'copy these blocks to the clipboard as URL that can draw the blocks translated or scaled'
-  }
   if (not isInPalette) {
 	addLine menu
 	addItem menu 'delete block' 'delete' 'delete this block'
@@ -537,7 +534,7 @@ method contextMenu ScriptEditor {
 method copyScriptsToClipboard ScriptEditor {
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (isNil scripter) { return }
-  setClipboard (join 'GP Scripts' (newline) (allScriptsString (handler scripter)))
+  setClipboard (allScriptsString (handler scripter))
 }
 
 // Color picker tweak

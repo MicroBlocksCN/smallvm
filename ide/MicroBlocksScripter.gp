@@ -424,7 +424,7 @@ method addBlocksForLibrary MicroBlocksScripter libName {
 method addVariableBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
-  addButton this (localized 'Add a variable') (action 'createVariable' this) 'Create a variable usable in all scripts'
+  addButton this (localized 'Add a variable') (action 'createVariable' this)
   visibleVars = (visibleVars this)
   if (notEmpty visibleVars) {
 	addButton this (localized 'Delete a variable') (action 'deleteVariableMenu' this)
@@ -1195,13 +1195,18 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 
 method installLibsFromJSON MicroBlocksScripter jsonString {
   if (isNil jsonString) { return }
-	libs = (at (jsonParse jsonString) 'libs')
-	if (isNil libs) { return }
-	for lib libs {
-		fileName = (fileNameForLibraryNamed this lib)
-		if ('Browser' != (platform)) { fileName = (join '//' fileName) }
-    importLibraryFromFile this fileName
+  libs = (at (jsonParse jsonString) 'libs')
+  if (isNil libs) { return }
+  for libName libs {
+    installLibraryNamed this libName
   }
+}
+
+method installLibraryNamed MicroBlocksScripter libName {
+  fileName = (fileNameForLibraryNamed this libName)
+  if (not (endsWith fileName '.ubl')) { fileName = (join fileName '.ubl') }
+  if ('Browser' != (platform)) { fileName = (join '//' fileName) }
+  importLibraryFromFile this fileName
 }
 
 method fileNameForLibraryNamed MicroBlocksScripter libName {
@@ -1253,7 +1258,7 @@ method scriptStringFor MicroBlocksScripter aBlock {
 
   return (join
   	'GP Script' (newline)
-  	(exportScripts (newMicroBlocksExchange mbProject) (list (morph (topBlock aBlock)))))
+  	(exportScripts (newMicroBlocksExchange) this (list (morph (topBlock aBlock)))))
 }
 
 method allScriptsString MicroBlocksScripter {
@@ -1262,7 +1267,9 @@ method allScriptsString MicroBlocksScripter {
   scriptsPaneM = (morph (contents scriptsFrame))
   paneX = (left scriptsPaneM)
   paneY = (top scriptsPaneM)
-  return (exportScripts (newMicroBlocksExchange mbProject) (parts scriptsPaneM) paneX paneY)
+  return (join
+    'GP Scripts' (newline)
+    (exportScripts (newMicroBlocksExchange) this (parts scriptsPaneM) paneX paneY))
 }
 
 method pasteScripts MicroBlocksScripter scriptString atHand {
@@ -1280,9 +1287,10 @@ method pasteScripts MicroBlocksScripter scriptString atHand {
 
   scriptsPane = (contents scriptsFrame)
   clearDropHistory scriptsPane
-  importScripts (newMicroBlocksExchange mbProject) scriptString scriptsPane dstX dstY
+  importScripts (newMicroBlocksExchange) this scriptString dstX dstY
   scriptChanged this
   updateBlocks this
+  saveScripts this
   updateSliders scriptsFrame
   if (notNil block) {
     scrollIntoView scriptsFrame (fullBounds (morph block)) true // favorTopLeft

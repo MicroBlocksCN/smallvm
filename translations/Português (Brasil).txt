@@ -422,8 +422,8 @@ defina todos os NeoPixels de cor _
 rotate NeoPixels by _
 gire NeoPixels em _
 
-color r _ g _ b _ (0-31)
-cor r _ g _ b _ (0-31)
+color r _ g _ b _ (0-255)
+cor r _ g _ b _ (0-255)
 
 random color
 cor aleatória
