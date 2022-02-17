@@ -1185,7 +1185,7 @@ method projectMenu MicroBlocksEditor {
   addItem menu 'Save' 'saveProjectToFile'
   if (devMode) {
 	addLine menu
-    addItem menu 'Copy project URL to cliboard' 'copyProjectURLToClipboard'
+    addItem menu 'Copy project URL to clipboard' 'copyProjectURLToClipboard'
 	if ((count (functions (main (project scripter)))) > 0) {
 		addLine menu
 		addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)

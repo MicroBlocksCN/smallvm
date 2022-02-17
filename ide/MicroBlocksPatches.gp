@@ -263,21 +263,18 @@ method contextMenu Block {
   }
   addLine menu
   if (hasHelpEntryFor pe this) {
-    addItem menu 'help' (action 'openHelp' pe this 'show help for this block in a browser')
+    addItem menu 'help' (action 'openHelp' pe this) 'show help for this block in a browser'
     addLine menu
   }
-  addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this) 'copy these blocks to the clipboard')
+  addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this)) 'copy these blocks to the clipboard'
+  addItem menu 'copy to clipboard as URL' (action 'copyToClipboardAsURL' (topBlock this)) 'copy these blocks to the clipboard as a URL'
+  addLine menu
   addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
   if (not (isPrototypeHat (topBlock this))) {
 	if (or ('reporter' == (type (topBlock this))) (devMode)) {
 	  addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
 	}
   }
-  if (not isInPalette) {
-	addLine menu
-	addItem menu 'delete block' 'delete' 'delete this block'
-  }
-
   if (devMode) {
 	addLine menu
     addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
@@ -313,6 +310,10 @@ method contextMenu Block {
 	  }
 	}
   }
+  if (not isInPalette) {
+	addLine menu
+	addItem menu 'delete block' 'delete' 'delete this block'
+  }
   return menu
 }
 
@@ -342,30 +343,21 @@ method extractBlock Block {
 method exportAsImage Block { exportAsImageScaled (topBlock this) 2 }
 method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
 
-method copyForWeb Block {
-  scriptText = (scriptText this true) // last param forces semicolons
-
-  libs = (libraries (project (scripter (smallRuntime))))
-  dict = (dictionary)
-  atPut dict 'scale' 2
-  atPut dict 'locale' (languageCode (authoringSpecs))
-  atPut dict 'libs' (keys libs)
-  atPut dict 'script' scriptText
-
-  text = (join
-    'https://microblocks.fun/render?json='
-	(urlEncode (jsonStringify dict) true)
-  )
-  setClipboard text
-}
-
 method exportAsImage BlockDefinition {
 	exportAsImageScaled (handler (ownerThatIsA morph 'Block')) 2
 }
 
-method scriptText Block useSemicolons {
+method copyToClipboard Block {
   mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
-  return (scriptStringFor mbScripter this)
+  setClipboard (scriptStringFor mbScripter this)
+}
+
+method copyToClipboardAsURL Block {
+  mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+  setClipboard (join
+    'https://microblocks.fun/run/microblocks.html#scripts='
+	(urlEncode (scriptStringFor mbScripter this) true)
+  )
 }
 
 // Block definition operations
@@ -458,6 +450,10 @@ method representsANumber String {
 method contextMenu BlockDefinition {
   menu = (menu nil this)
   addItem menu 'hide block definition' 'hideDefinition'
+  addLine menu
+  addItem menu 'copy to clipboard' (action 'copyToClipboard' (handler (ownerThatIsA morph 'Block'))) 'copy these blocks to the clipboard'
+  addItem menu 'copy to clipboard as URL' (action 'copyToClipboardAsURL' (handler (ownerThatIsA morph 'Block'))) 'copy these blocks to the clipboard as a URL'
+  addLine menu
   addItem menu 'save picture of script' 'exportAsImage' 'save a picture of this block definition as a PNG file'
   if (devMode) {
     addLine menu
