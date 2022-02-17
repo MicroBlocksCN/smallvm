@@ -57,7 +57,7 @@ method functionDefinitions MicroBlocksExchange {
 	for funcName functionsUsed {
 		spec = (at (blockSpecs mbProject) funcName)
 		if (notNil spec) {
-			add result (join 'spec ' (specDefinitionString spec) (newline))
+			add result (join (specDefinitionString spec) (newline))
 		}
 		func = (functionNamed mbProject funcName)
 		add result (prettyPrintFunction (new 'PrettyPrinter') func)
@@ -129,6 +129,8 @@ method analyzeCallsInExpression MicroBlocksExchange cmdOrReporter {
 					}
 				}
 			}
+		} ('to' == op) {
+			add functionsUsed (first (argList cmdOrReporter))
 		}
 	}
 }
@@ -145,13 +147,31 @@ method isUserDefined MicroBlocksExchange funcName {
 
 method importScripts MicroBlocksExchange aMicroBlocksScripter scriptString dstX dstY {
 	mbProject = (project aMicroBlocksScripter)
-	scripts = (parse scriptString)
-	if (isNil scripts) { return }
+	scriptCmds = (parse scriptString)
+	if (isNil scriptCmds) { return }
 
-	// find origin of scripts to be pasted
+	// add block specs
+	loadSpecs mbProject scriptCmds
+
+	// add libraries and function definitions
+	for entry scriptCmds {
+		if ('depends' == (primName entry)) {
+			for libName (argList entry) {
+				installLibraryNamed aMicroBlocksScripter libName
+			}
+		} ('to' == (primName entry)) {
+			args = (argList entry)
+			funcName = (first args)
+			parameterNames = (copyFromTo args 2 ((count args) - 1))
+			body = (last args)
+			defineFunctionInModule (main mbProject) funcName parameterNames body
+		}
+	}
+
+	// find the origin of scripts to be pasted
 	scriptsX = 10000
 	scriptsY = 10000
-	for entry scripts {
+	for entry scriptCmds {
 		args = (argList entry)
 		if (and ('script' == (primName entry)) (3 == (count args))) {
 			scriptsX = (min scriptsX (at args 1))
@@ -159,17 +179,17 @@ method importScripts MicroBlocksExchange aMicroBlocksScripter scriptString dstX 
 		}
 	}
 
+	// add scripts to the scripts pane
 	scriptsPane = (scriptEditor aMicroBlocksScripter)
-	if (isNil dstX) { dstX = ((left (morph scriptsPane)) + (100 * (global 'scale'))) }
-	if (isNil dstY) { dstY = ((top (morph scriptsPane)) + (100 * (global 'scale'))) }
-	for entry scripts {
+	for entry scriptCmds {
 		args = (argList entry)
 		if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {
 			script = (last args)
 			addGlobalsFor this script
 			if ('to' == (primName script)) {
-				cmd = (copyFunction this script nil)
-				block = (scriptForFunction (functionNamed mbProject (first (argList cmd))))
+				funcName = (first (argList script))
+				f = (functionNamed mbProject funcName)
+				block = (scriptForFunction f)
 			} else {
 				block = (toBlock script)
 			}
@@ -178,14 +198,8 @@ method importScripts MicroBlocksExchange aMicroBlocksScripter scriptString dstX 
 			blockY = (round (dstY + ((blockScale) * ((at args 2) - scriptsY))))
 			fastMoveBy (morph block) blockX blockY
 			addPart (morph scriptsPane) (morph block)
-		} ('depends' == (primName entry)) {
-			for libName args {
-				installLibraryNamed aMicroBlocksScripter libName
-			}
 		}
 	}
-	// add block specs contained in scripts
-	loadSpecs mbProject scripts
 }
 
 method addGlobalsFor MicroBlocksExchange script {
