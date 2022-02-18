@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Copyright 2018 John Maloney, Bernat Romagosa, and Jens M�nig
+// Copyright 2018 John Maloney, Bernat Romagosa, and Jens Mönig
 
 // netPrims.cpp - MicroBlocks network primitives
 // Bernat Romagosa, August 2018
@@ -517,98 +517,111 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 
 #endif
 
-// Optional MQTT support (compile with -D MQTT_PRIMS)
+#if !(defined(ESP8266) || defined(ARDUINO_ARCH_ESP32))
+
+static OBJ primMQTTConnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTPub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTSub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTUnsub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
+
+#endif
+
+// MQTT support for ESP32 and ESP8266
 // Code provided by Wenji Wu with help from Tom Ming
 
-#if defined(MQTT_PRIMS)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
 #include <MQTT.h>
 
-MQTTClient* pmqtt_client;
+static MQTTClient* pmqtt_client = NULL;
+static int mqttBufferSize = -1;
+
 static char hasMQTTMessage = false;
-char lastMQTTTopic[1000];
-char lastMQTTPayload[1000];
+static char *lastMQTTTopic = NULL;
+static char *lastMQTTPayload = NULL;
 
 void MQTTmessageReceived(String &topic, String &payload) {
+	if (!lastMQTTTopic || !lastMQTTPayload || (mqttBufferSize <= 1)) {
+		return; // not initialized
+	}
+
 	hasMQTTMessage = true;
+	int maxLen = mqttBufferSize - 1;
 
 	int len = strlen(topic.c_str());
-	if (len > 999) len = 999;
+	if (len > maxLen) len = maxLen;
 	memcpy(lastMQTTTopic, topic.c_str(), len);
 	lastMQTTTopic[len] = '\0';
 
 	len = strlen(payload.c_str());
-	if (len > 999) len = 999;
+	if (len > maxLen) len = maxLen;
 	memcpy(lastMQTTPayload, payload.c_str(), len);
 	lastMQTTPayload[len] = '\0';
 }
 
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	char *broker_uri = obj2str(args[0]);
-	int buffer_sizes = obj2int(args[1]);
-	char *client_id = obj2str(args[2]);
+	int buffer_size = (argCount > 1) ? obj2int(args[1]) : 128;
+	char *client_id = (argCount > 2) ? obj2str(args[2]) : (char *) "";
 	char connected = false;
-	// debug
-	// char s[100]; sprintf(s, "buffer_sizes:  %d", buffer_sizes); outputString(s);
 
-	static MQTTClient mqtt_client(buffer_sizes);
-	pmqtt_client = &mqtt_client;
+	// constrain buffer size
+	// Note: buffers consume 4 x buffer_size byte of RAM
+	if (buffer_size < 32) buffer_size = 32;
+	if (buffer_size > 32768) buffer_size = 16384;
 
-	// Wenjie:
-	// Although the above code works, I'm not sure what it actually does!!
-	// C++ contstructor rules are complex and I'm not sure how they interact
-	// with the static declaration here. It's not clear to me that this code
-	// is actually using buffer_sizes parameter. Or it might used it only the
-	// first time the primitive is called...
-	//
-	// You might use a C++ constructor to allocate an instance dynamically instead:
-	//
-	//	pmqtt_client = new MQTTClient(buffer_sizes);
-	//
-	// However, I think your earlier soution -- allocating a static instance with fixed
-	// 1k buffers using MQTTClient mqtt_client(1024) is both simpler and safer from
-	// potential storage leaks. The default buffer size before you specified it was
-	// only 128 bytes, so I think 1024 should be more than enough for most uses, and
-	// lastMQTTTopic and lastMQTTPayload have size limits anyhow. -- John
+	if (buffer_size != mqttBufferSize) {
+		if (lastMQTTTopic) free(lastMQTTTopic);
+		if (lastMQTTPayload) free(lastMQTTPayload);
+		lastMQTTTopic = lastMQTTPayload = NULL;
+
+		delete pmqtt_client;
+		pmqtt_client = new MQTTClient(buffer_size);
+		if (!pmqtt_client) return falseObj;
+
+		lastMQTTTopic = (char *) malloc(buffer_size);
+		lastMQTTPayload = (char *) malloc(buffer_size);
+		mqttBufferSize = buffer_size;
+	}
 
 	pmqtt_client->begin(broker_uri, client);
-	if (argCount > 3) {
+	if (argCount >= 5) {
 		char *username = obj2str(args[3]);
 		char *password = obj2str(args[4]);
 		connected = pmqtt_client->connect(client_id, username, password);
 	} else {
 		connected = pmqtt_client->connect(client_id);
 	}
-	if (connected){
+	if (connected) {
 		pmqtt_client->onMessage(MQTTmessageReceived);
-		// outputString('hello')
-		/* debug
-		char s[100];
-		sprintf(s, "  %s", connected);
-		outputString(s);
-		*/
 	}
 	return falseObj;
 }
 
 static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
-	if (pmqtt_client == nullptr) return falseObj;
+	if (!pmqtt_client) return falseObj;
 
 	pmqtt_client->loop();
 	if (hasMQTTMessage) {
-		OBJ event = newObj(ListType, 3, zeroObj);
-		FIELD(event, 0) = int2obj(2); //list size
-		FIELD(event, 1) = newStringFromBytes(lastMQTTTopic, strlen(lastMQTTTopic));
-		FIELD(event, 2) = newStringFromBytes(lastMQTTPayload, strlen(lastMQTTPayload));
+		// allocate a result list (stored in tempGCRoot so it will be processed by the
+		// garbage collector if a GC happens during a later allocation)
+		tempGCRoot = newObj(ListType, 3, zeroObj);
+		if (!tempGCRoot) return tempGCRoot; // allocation failed
+
+		FIELD(tempGCRoot, 0) = int2obj(2); //list size
+		FIELD(tempGCRoot, 1) = newStringFromBytes(lastMQTTTopic, strlen(lastMQTTTopic));
+		FIELD(tempGCRoot, 2) = newStringFromBytes(lastMQTTPayload, strlen(lastMQTTPayload));
 		hasMQTTMessage = false;
-		return event;
+		return tempGCRoot;
 	} else {
 		return falseObj;
 	}
 }
 
 static OBJ primMQTTPub(int argCount, OBJ *args) {
-	if (pmqtt_client == nullptr) return falseObj;
+	if (!pmqtt_client) return falseObj;
 
 	int success = false;
 	char *topic = obj2str(args[0]);
@@ -620,7 +633,7 @@ static OBJ primMQTTPub(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTSub(int argCount, OBJ *args) {
-	if (pmqtt_client == nullptr) return falseObj;
+	if (!pmqtt_client) return falseObj;
 
 	int success = false;
 	char *topic = obj2str(args[0]);
@@ -630,7 +643,7 @@ static OBJ primMQTTSub(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTUnsub(int argCount, OBJ *args) {
-	if (pmqtt_client == nullptr) return falseObj;
+	if (!pmqtt_client) return falseObj;
 
 	int success = false;
 	char *topic = obj2str(args[0]);
@@ -641,7 +654,7 @@ static OBJ primMQTTUnsub(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
-	if (pmqtt_client == nullptr) return falseObj;
+	if (!pmqtt_client) return falseObj;
 
 	// Return true when connected to MQTT broker.
 	return (pmqtt_client->connected()) ? trueObj : falseObj;
@@ -649,7 +662,11 @@ static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
 
 #endif
 
+// Experimental! Optional BLE support (compile with -D BLE_PRIMS)
+// Code provided by Wenji Wu
+
 #if defined(BLE_PRIMS)
+
 //https://registry.platformio.org/libraries/nkolban/ESP32%20BLE%20Arduino/examples/BLE_uart/BLE_uart.ino
 // client debug: chrome://bluetooth-internals/
 #include <BLEDevice.h>
@@ -679,11 +696,10 @@ class MyServerCallbacks: public BLEServerCallbacks {
     }
 };
 
-
 class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string rxValue = pCharacteristic->getValue();
-      
+
 	  if (rxValue.length() > 0) {
 		hasBLE_UART_Message = true;
 		int len = strlen(rxValue.c_str());
@@ -701,7 +717,7 @@ static OBJ primBLE_UART_ServerStart(int argCount, OBJ *args) {
   char* name = obj2str(args[0]);
 
   if (BLEServerStarted) {
-	return falseObj; 
+	return falseObj;
   }
 
   BLEServerStarted = true;
@@ -720,7 +736,7 @@ static OBJ primBLE_UART_ServerStart(int argCount, OBJ *args) {
 										CHARACTERISTIC_UUID_TX,
 										BLECharacteristic::PROPERTY_NOTIFY
 									);
-                      
+
   pTxCharacteristic->addDescriptor(new BLE2902());
 
   BLECharacteristic * pRxCharacteristic = pService->createCharacteristic(
@@ -782,18 +798,21 @@ static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-#endif
+#endif // BLE_PRIMS
+
+// Experimental! Optional ESP Now support (compile with -D ESP_NOW_PRIMS)
+// Code provided by Wenji Wu
 
 #if defined(ESP_NOW_PRIMS)
 //https://registry.platformio.org/libraries/yoursunny/WifiEspNow/examples/EspNowBroadcast/EspNowBroadcast.ino
+
 #include <WifiEspNowBroadcast.h>
+
 static char receiveBuffer[1000];
 static bool EspNoWInitialized = false;
 static bool hasEspNowMessage = false;
 
-
-void processRx(const uint8_t mac[WIFIESPNOW_ALEN], const uint8_t* buf, size_t count, void* arg)
-{	
+void processRx(const uint8_t mac[WIFIESPNOW_ALEN], const uint8_t* buf, size_t count, void* arg) {
 	char* data = (char*) buf;
 	int len = strlen(data);
 	if (len > 999) len = 999;
@@ -818,6 +837,7 @@ static void initializeEspNoW() {
 
 static OBJ primEspNowLastEvent(int argCount, OBJ *args) {
 	if (!EspNoWInitialized) initializeEspNoW();
+
 	WifiEspNowBroadcast.loop();
 	delay(10);
 
@@ -833,14 +853,14 @@ static OBJ primEspNowLastEvent(int argCount, OBJ *args) {
 }
 
 static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
-  if (!EspNoWInitialized) initializeEspNoW();
+	if (!EspNoWInitialized) initializeEspNoW();
 
-  char* message = obj2str(args[0]);
-  WifiEspNowBroadcast.send(reinterpret_cast<const uint8_t*>(message), strlen(message));
-  WifiEspNowBroadcast.loop();
+	char* message = obj2str(args[0]);
+	WifiEspNowBroadcast.send(reinterpret_cast<const uint8_t*>(message), strlen(message));
+	WifiEspNowBroadcast.loop();
 }
 
-#endif
+#endif // ESP_NOW_PRIMS
 
 static PrimEntry entries[] = {
 	{"hasWiFi", primHasWiFi},
@@ -857,20 +877,19 @@ static PrimEntry entries[] = {
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
+
 	{"webSocketStart", primWebSocketStart},
 	{"webSocketLastEvent", primWebSocketLastEvent},
 	{"webSocketSendToClient", primWebSocketSendToClient},
 
-  #if (defined(ARDUINO_ARCH_ESP32) || defined(ESP8266)) && defined(MQTT_PRIMS)  //edit by Tom ming
-  	{"MQTTConnect", primMQTTConnect},
+	{"MQTTConnect", primMQTTConnect},
 	{"MQTTLastEvent", primMQTTLastEvent},
 	{"MQTTPub", primMQTTPub},
 	{"MQTTSub", primMQTTSub},
 	{"MQTTUnsub", primMQTTUnsub},
 	{"MQTTIsConnected", primMQTTIsConnected},
-  #endif
 
-  #if defined(ARDUINO_ARCH_ESP32) && defined(BLE_PRIMS)
+  #if defined(BLE_PRIMS)
 	{"BLE_UART_ServerStart", primBLE_UART_ServerStart},
 	{"BLE_DeviceConnected", primBLE_DeviceConnected},
 	{"BLE_UART_LastEvent", primBLE_UART_LastEvent},
