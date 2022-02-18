@@ -570,7 +570,7 @@ static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	// constrain buffer size
 	// Note: buffers consume 4 x buffer_size byte of RAM
 	if (buffer_size < 32) buffer_size = 32;
-	if (buffer_size > 32768) buffer_size = 16384;
+	if (buffer_size > 16384) buffer_size = 16384;
 
 	if (buffer_size != mqttBufferSize) {
 		if (lastMQTTTopic) free(lastMQTTTopic);
