@@ -511,7 +511,7 @@ method contextMenu ScriptEditor {
   addItem menu 'set block size...' 'setBlockSize' 'make blocks bigger or smaller'
   addLine menu
   if (notNil lastDrop) {
-    addItem menu 'undrop  (ctrl-Z)' 'undrop' 'undo the last block drop'
+    addItem menu 'undrop (ctrl-Z)' 'undrop' 'undo the last block drop'
   }
   addItem menu 'clean up' 'cleanUp' 'arrange scripts'
   addLine menu
