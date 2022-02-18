@@ -1112,6 +1112,8 @@ arrange scripts
 
 undrop (ctrl-Z)
 
+undo the last block drop
+
 copy all scripts to clipboard
 
 paste all scripts

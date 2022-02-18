@@ -1255,7 +1255,10 @@ arrange scripts
 排列脚本
 
 undrop (ctrl-Z)
-恢复 (ctrl-Z)
+撤销 (ctrl-Z)
+
+undo the last block drop
+撤销上次拖拽
 
 copy all scripts to clipboard
 将所有脚本复制到剪贴板
