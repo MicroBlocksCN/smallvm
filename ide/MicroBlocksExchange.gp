@@ -124,14 +124,15 @@ method analyzeCalls MicroBlocksExchange blockList {
 method analyzeCallsInExpression MicroBlocksExchange cmdOrReporter {
 	// Collect all function calls and library references by the given command or reporter.
 
+	main = (main mbProject)
 	for cmdOrReporter (allBlocks cmdOrReporter) {
 		op = (primName cmdOrReporter)
 		if (isFunctionCall this op) {
-			if (isUserDefined this op) {
+			if (libraryDefines this main op) {
 				add functionsUsed op
 			} else {
 				for lib (values (libraries mbProject)) {
-					if (notNil (functionNamed lib op)) {
+					if (libraryDefines this lib op) {
 						add libsUsed (moduleName lib)
 					}
 				}
@@ -143,11 +144,22 @@ method analyzeCallsInExpression MicroBlocksExchange cmdOrReporter {
 }
 
 method isFunctionCall MicroBlocksExchange funcName {
-	return (notNil (functionNamed mbProject funcName))
+	return (or
+		(notNil (functionNamed mbProject funcName)) // function call
+		(and (beginsWith funcName '[') (endsWith funcName ']'))) // primitive call
 }
 
 method isUserDefined MicroBlocksExchange funcName {
 	return (notNil (functionNamed (main mbProject) funcName))
+}
+
+method libraryDefines MicroBlocksExchange lib funcName {
+	if (notNil (functionNamed lib funcName)) { return true } // lib defines function
+	if (contains (blockSpecs lib) funcName) {
+		// lib has spec (funcName is a primitive call)
+		return true
+	}
+	return false
 }
 
 // Script import
