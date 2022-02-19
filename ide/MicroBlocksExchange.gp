@@ -125,20 +125,27 @@ method analyzeCallsInExpression MicroBlocksExchange cmdOrReporter {
 	// Collect all function calls and library references by the given command or reporter.
 
 	main = (main mbProject)
-	for cmdOrReporter (allBlocks cmdOrReporter) {
-		op = (primName cmdOrReporter)
-		if (isFunctionCall this op) {
-			if (libraryDefines this main op) {
-				add functionsUsed op
-			} else {
-				for lib (values (libraries mbProject)) {
-					if (libraryDefines this lib op) {
-						add libsUsed (moduleName lib)
+	todo = (list cmdOrReporter)
+	while (notEmpty todo) {
+		cmd = (removeFirst todo)
+		for cmdOrReporter (allBlocks cmd) {
+			op = (primName cmdOrReporter)
+			if (isFunctionCall this op) {
+				if (libraryDefines this main op) {
+					if (not (contains functionsUsed op)) {
+						add functionsUsed op
+						add todo (cmdList (functionNamed main op))
+					}
+				} else {
+					for lib (values (libraries mbProject)) {
+						if (libraryDefines this lib op) {
+							add libsUsed (moduleName lib)
+						}
 					}
 				}
+			} ('to' == op) {
+				add functionsUsed (first (argList cmdOrReporter))
 			}
-		} ('to' == op) {
-			add functionsUsed (first (argList cmdOrReporter))
 		}
 	}
 }
