@@ -348,16 +348,21 @@ method exportAsImage BlockDefinition {
 }
 
 method copyToClipboard Block {
-  mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
-  setClipboard (scriptStringFor mbScripter this)
+  setClipboard (scriptText this)
 }
 
 method copyToClipboardAsURL Block {
-  mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
   setClipboard (join
     'https://microblocks.fun/run/microblocks.html#scripts='
-	(urlEncode (scriptStringFor mbScripter this) true)
+	(urlEncode (scriptText this) true)
   )
+}
+
+method scriptText Block useSemicolons {
+  // Note: scriptText is also called by exportAsImageScaled when saving PNG files.
+
+  mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+  return (scriptStringFor mbScripter this)
 }
 
 // Block definition operations

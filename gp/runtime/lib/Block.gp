@@ -949,7 +949,7 @@ method scriptText Block useSemicolons {
 
 method exportAsImage Block { exportAsImageScaled this 2 }
 
-method exportAsImageScaled Block scale result fileName {
+method exportAsImageScaled Block scale result {
   // Save a PNG picture of the given script at the given scale.
   // If result is not nil, include a speech bubble showing the result.
 
@@ -1006,12 +1006,7 @@ method exportAsImageScaled Block scale result fileName {
   if ('Browser' == (platform)) {
 	browserWriteFile pngData (join 'scriptImage' (msecsSinceStart) '.png') 'scriptImage'
   } else {
-  	if (notNil fileName) {
-		fName = fileName
-	} else {
-		fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
-	}
-	if ('' == fName) { return false }
+  	fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
 	writeFile fName pngData
   }
 }

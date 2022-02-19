@@ -19,7 +19,9 @@ to fileToWrite defaultPath extensionList {
 
   if (and (notNil defaultPath) (endsWith defaultPath 'png') ) {
 	lastScriptPicFolder = (lastScriptPicFolder (findProjectEditor))
-    if (notNil lastScriptPicFolder) { defaultPath = lastScriptPicFolder }
+    if (notNil lastScriptPicFolder) {
+      defaultPath = (join lastScriptPicFolder (filePart defaultPath))
+    }
   }
 
   if (and (isClass extensionList 'String') (notNil defaultPath) ((count defaultPath) > 0)) {
