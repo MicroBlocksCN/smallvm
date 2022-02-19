@@ -516,6 +516,8 @@ method contextMenu ScriptEditor {
   addItem menu 'clean up' 'cleanUp' 'arrange scripts'
   addLine menu
   addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
+  addItem menu 'copy all scripts to clipboard as URL' 'copyScriptsToClipboardAsURL'
+  addLine menu
   clip = (readClipboard)
   if (beginsWith clip 'GP Scripts') {
 	addItem menu 'paste all scripts from clipboard' 'pasteScripts'
@@ -531,6 +533,15 @@ method copyScriptsToClipboard ScriptEditor {
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (isNil scripter) { return }
   setClipboard (allScriptsString (handler scripter))
+}
+
+method copyScriptsToClipboardAsURL ScriptEditor {
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (isNil scripter) { return }
+  scriptsString = (allScriptsString (handler scripter))
+  setClipboard (join
+      'https://microblocks.fun/run/microblocks.html#scripts='
+	  (urlEncode scriptsString true))
 }
 
 // Color picker tweak
