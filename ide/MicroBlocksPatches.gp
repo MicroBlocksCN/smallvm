@@ -263,24 +263,18 @@ method contextMenu Block {
   }
   addLine menu
   if (hasHelpEntryFor pe this) {
-    addItem menu 'help' (action 'openHelp' pe this 'show help for this block in a browser')
+    addItem menu 'help' (action 'openHelp' pe this) 'show help for this block in a browser'
     addLine menu
   }
-  addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this) 'copy these blocks to the clipboard')
+  addItem menu 'copy to clipboard' (action 'copyToClipboard' (topBlock this)) 'copy these blocks to the clipboard'
+  addItem menu 'copy to clipboard as URL' (action 'copyToClipboardAsURL' (topBlock this)) 'copy these blocks to the clipboard as a URL'
+  addLine menu
   addItem menu 'save picture of script' 'exportAsImage' 'save a picture of these blocks as a PNG file'
   if (not (isPrototypeHat (topBlock this))) {
 	if (or ('reporter' == (type (topBlock this))) (devMode)) {
 	  addItem menu 'save picture of script with result' 'exportAsImageWithResult' 'save a picture of these blocks and their result as a PNG file'
 	}
   }
-  if (devMode) {
-    addItem menu 'copy image URL to clipboard' (action 'copyForWeb' this) 'copy these blocks to the clipboard as URL that can draw the blocks translated or scaled'
-  }
-  if (not isInPalette) {
-	addLine menu
-	addItem menu 'delete block' 'delete' 'delete this block'
-  }
-
   if (devMode) {
 	addLine menu
     addItem menu 'show instructions' (action 'showInstructions' (smallRuntime) this)
@@ -316,6 +310,10 @@ method contextMenu Block {
 	  }
 	}
   }
+  if (not isInPalette) {
+	addLine menu
+	addItem menu 'delete block' 'delete' 'delete this block'
+  }
   return menu
 }
 
@@ -345,25 +343,26 @@ method extractBlock Block {
 method exportAsImage Block { exportAsImageScaled (topBlock this) 2 }
 method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
 
-method copyForWeb Block {
-  scriptText = (scriptText this true) // last param forces semicolons
-
-  libs = (libraries (project (scripter (smallRuntime))))
-  dict = (dictionary)
-  atPut dict 'scale' 2
-  atPut dict 'locale' (languageCode (authoringSpecs))
-  atPut dict 'libs' (keys libs)
-  atPut dict 'script' scriptText
-
-  text = (join
-    'https://microblocks.fun/render?json='
-	(urlEncode (jsonStringify dict) true)
-  )
-  setClipboard text
-}
-
 method exportAsImage BlockDefinition {
 	exportAsImageScaled (handler (ownerThatIsA morph 'Block')) 2
+}
+
+method copyToClipboard Block {
+  setClipboard (scriptText this)
+}
+
+method copyToClipboardAsURL Block {
+  setClipboard (join
+    'https://microblocks.fun/run/microblocks.html#scripts='
+	(urlEncode (scriptText this) true)
+  )
+}
+
+method scriptText Block useSemicolons {
+  // Note: scriptText is also called by exportAsImageScaled when saving PNG files.
+
+  mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+  return (scriptStringFor mbScripter this)
 }
 
 // Block definition operations
@@ -456,6 +455,10 @@ method representsANumber String {
 method contextMenu BlockDefinition {
   menu = (menu nil this)
   addItem menu 'hide block definition' 'hideDefinition'
+  addLine menu
+  addItem menu 'copy to clipboard' (action 'copyToClipboard' (handler (ownerThatIsA morph 'Block'))) 'copy these blocks to the clipboard'
+  addItem menu 'copy to clipboard as URL' (action 'copyToClipboardAsURL' (handler (ownerThatIsA morph 'Block'))) 'copy these blocks to the clipboard as a URL'
+  addLine menu
   addItem menu 'save picture of script' 'exportAsImage' 'save a picture of this block definition as a PNG file'
   if (devMode) {
     addLine menu
@@ -513,11 +516,13 @@ method contextMenu ScriptEditor {
   addItem menu 'set block size...' 'setBlockSize' 'make blocks bigger or smaller'
   addLine menu
   if (notNil lastDrop) {
-    addItem menu 'undrop  (ctrl-Z)' 'undrop' 'undo the last block drop'
+    addItem menu 'undrop (ctrl-Z)' 'undrop' 'undo the last block drop'
   }
   addItem menu 'clean up' 'cleanUp' 'arrange scripts'
   addLine menu
   addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
+  addItem menu 'copy all scripts to clipboard as URL' 'copyScriptsToClipboardAsURL'
+  addLine menu
   clip = (readClipboard)
   if (beginsWith clip 'GP Scripts') {
 	addItem menu 'paste all scripts from clipboard' 'pasteScripts'
@@ -532,7 +537,16 @@ method contextMenu ScriptEditor {
 method copyScriptsToClipboard ScriptEditor {
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
   if (isNil scripter) { return }
-  setClipboard (join 'GP Scripts' (newline) (allScriptsString (handler scripter)))
+  setClipboard (allScriptsString (handler scripter))
+}
+
+method copyScriptsToClipboardAsURL ScriptEditor {
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (isNil scripter) { return }
+  scriptsString = (allScriptsString (handler scripter))
+  setClipboard (join
+      'https://microblocks.fun/run/microblocks.html#scripts='
+	  (urlEncode scriptsString true))
 }
 
 // Color picker tweak

@@ -981,7 +981,7 @@ static OBJ primReadDHT(int argCount, OBJ *args) {
 	// Return a five-byte ByteArray if successful, false on failure (e.g. no or partial data).
 
 	if (!isInt(args[0])) return fail(needsIntegerError);
-	int pin = obj2int(args[0]);
+	int pin = mapDigitalPinNum(obj2int(args[0]));
 	if ((pin < 0) || (pin > pinCount())) return falseObj;
 	if (!readDHTData(pin)) return falseObj;
 

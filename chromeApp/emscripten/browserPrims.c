@@ -58,29 +58,25 @@ static void fetchErrorCallback(void *arg) {
 // ***** Browser Support Primitives *****
 
 static OBJ primBrowserURL(int nargs, OBJ args[]) {
-	// Note: This does not handle UTF-8 strings (i.e. bytes with
-	// values > 127). However, Unicode characters above the ASCII
-	// range must be encoded as hex values in URL's, so no valid
-	// URL should contain bytes outside the ASCII range.
-
 	if (!isInBrowser()) return primFailed("Only works in a browser");
 
-	char s[1000];
+	int len = EM_ASM_INT({
+        GP.urlBytes = (typeof window == 'undefined') ? [] : toUTF8Array(window.location.href);
+        return GP.urlBytes.length;
+	}, NULL);
+
+	if (!canAllocate(len / 4)) return nilObj;
+	OBJ result = allocateString(len);
 	EM_ASM_({
-		var result = "";
-		if (typeof window !== 'undefined') result = window.location.href;
-		var out = $0;
-		var outLen = $1;
-		var outIndex = 0;
-		for (var i = 0; i < result.length; i++) {
-			var ch = result.charCodeAt(i);
-			if ((ch < 128) && (outIndex < outLen)) {
-				Module.HEAPU8[out + outIndex++] = ch;
-			}
+		var dst = $0;
+		var len = $1;
+		for (var i = 0; i < len; i++) {
+			Module.HEAPU8[dst++] = GP.urlBytes[i];
 		}
-		Module.HEAPU8[out + outIndex] = 0; // null terminate
-	}, &s, sizeof(s));
-	return newString(s);
+		GP.urlBytes = []; // clear URL
+	}, &FIELD(result, 0), len);
+
+	return result;
 }
 
 static OBJ primStartFetch(int nargs, OBJ args[]) {
@@ -177,6 +173,10 @@ static OBJ primBrowserSize(int nargs, OBJ args[]) {
 		}
 		return winH - document.getElementById('canvas').offsetTop;
 	}, NULL);
+
+    // hack: inset by 1 pixel to avoid scrollbars
+    w -= 1;
+    h -= 1;
 
 	OBJ result = newObj(ArrayClass, 2, nilObj);
 	FIELD(result, 0) = int2obj(w);
@@ -588,6 +588,9 @@ static OBJ primOpenWindow(int nargs, OBJ args[]) {
 			w -= 1;
 			h -= 1;
 		}
+
+        // make background gray to make 1 pixel gap less noticable
+		document.body.style.backgroundColor = "rgb(200,200,200)";
 
 		var winCnv = document.getElementById('canvas');
 		if (winCnv) {

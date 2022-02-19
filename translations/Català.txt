@@ -488,8 +488,8 @@ posa tots els NeoPíxels de color _
 rotate NeoPixels by _
 rota NeoPíxels en _
 
-color r _ g _ b _ (0-31)
-color vermell _ verd _ blau _ (0-31)
+color r _ g _ b _ (0-255)
+color vermell _ verd _ blau _ (0-255)
 
 random color
 color a l'atzar

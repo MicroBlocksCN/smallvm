@@ -1427,6 +1427,7 @@ method errorString SmallRuntime errID {
 #define needsByteArray			36	// Needs a byte array
 #define serialPortNotOpen		37	// Serial port not open
 #define serialWriteTooBig		38	// Serial port write is limited to 128 bytes
+#define needsListOfIntegers		39	// Needs a list of integers
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
@@ -2266,7 +2267,7 @@ method otherReconnectMessage SmallRuntime {
 
 method waitForFirmwareInstall SmallRuntime {
 	firmwareInstallTimer = nil
-	spinner = (newSpinner (action 'firwareInstallStatus' this) (action 'firmwareInstallDone' this))
+	spinner = (newSpinner (action 'firmwareInstallStatus' this) (action 'firmwareInstallDone' this))
 	addPart (global 'page') spinner
 }
 
@@ -2290,9 +2291,9 @@ method firmwareInstallSecsRemaining SmallRuntime {
 	return (ceiling ((installWaitMSecs - (msecs firmwareInstallTimer)) / 1000))
 }
 
-method firwareInstallStatus SmallRuntime {
+method firmwareInstallStatus SmallRuntime {
 	if (isNil firmwareInstallTimer) { return 'Installing firmware...' }
-	return (join '' (firmwareInstallSecsRemaining this) ' seconds remaining.')
+	return (join '' (firmwareInstallSecsRemaining this) ' ' (localized 'seconds remaining') '.')
 }
 
 method firmwareInstallDone SmallRuntime {

@@ -485,6 +485,7 @@ OBJ primSplit(int argCount, OBJ *args) {
 	if (delimLen == 0) {
 		resultCount = countUTF8(s);
 	} else {
+		if (strstr(s, delim) == s) resultCount++; // s begins with a delimiter
 		char *match = s;
 		while (match) {
 			resultCount++;
@@ -519,7 +520,7 @@ OBJ primSplit(int argCount, OBJ *args) {
 		}
 		int i = 1;
 		char *last = s;
-		char *next = strstr(last + 1, delim);
+		char *next = strstr(last, delim);
 		while (next && (i <= resultCount)) {
 			int byteCount = next - last;
 			OBJ item = newStringFromBytes(last, byteCount);
@@ -717,7 +718,7 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 		int utfByteCount = 0;
 		for (int i = 1; i <= listCount; i++) {
 			OBJ item = FIELD(arg, i);
-			if (!isInt(item)) return fail(needsIntegerError);
+			if (!isInt(item)) return fail(needsListOfIntegers);
 			utfByteCount += bytesForUnicode(obj2int(item));
 		}
 		OBJ result = newString(utfByteCount);
@@ -726,12 +727,12 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 		uint8 *s = (uint8 *) obj2str(result);
 		for (int i = 1; i <= listCount; i++) {
 			OBJ item = FIELD(arg, i);
-			if (!isInt(item)) return fail(needsIntegerError);
+			if (!isInt(item)) return fail(needsListOfIntegers);
 			s = appendUTF8(s, obj2int(item));
 		}
 		return result;
 	}
-	return fail(needsIndexable);
+	return fail(needsListError);
 }
 
 OBJ primNewByteArray(int argCount, OBJ *args) {

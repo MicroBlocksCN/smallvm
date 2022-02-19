@@ -8,6 +8,7 @@
 // Bernat Romagosa, August 2018
 // Revised by John Maloney, November 2018
 // Revised by Bernat Romagosa & John Maloney, March 2020
+// MQTT primitives added by Wenjie Wu with help from Tom Ming
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -516,92 +517,350 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 
 #endif
 
-// Optional MQTT support of ESP32 (compile with -D MQTT_PRIMS)
-// Code provided by Wenji Wu
+#if !(defined(ESP8266) || defined(ARDUINO_ARCH_ESP32))
 
-#if defined(ARDUINO_ARCH_ESP32) && defined(MQTT_PRIMS)
+static OBJ primMQTTConnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTPub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTSub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTUnsub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
+
+#endif
+
+// MQTT support for ESP32 and ESP8266
+// Code provided by Wenji Wu with help from Tom Ming
+
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
 #include <MQTT.h>
 
-MQTTClient mqtt_client;
+static MQTTClient* pmqtt_client = NULL;
+static int mqttBufferSize = -1;
+
 static char hasMQTTMessage = false;
-char lastMQTTTopic[1000];
-char lastMQTTPayload[1000];
+static char *lastMQTTTopic = NULL;
+static char *lastMQTTPayload = NULL;
 
 void MQTTmessageReceived(String &topic, String &payload) {
-	hasMQTTMessage = true;
+	if (!lastMQTTTopic || !lastMQTTPayload || (mqttBufferSize <= 1)) {
+		return; // not initialized
+	}
 
-	memcpy(lastMQTTTopic, topic.c_str(), strlen(topic.c_str()));
-	lastMQTTTopic[strlen(topic.c_str())] = '\0';
-	memcpy(lastMQTTPayload, payload.c_str(), strlen(payload.c_str()));
-	lastMQTTPayload[strlen(payload.c_str())] = '\0';
-	/*
-	strcpy(lastMQTTTopic,topic.c_str());
-    strcpy(lastMQTTPayload, payload.c_str());
-	*/
+	hasMQTTMessage = true;
+	int maxLen = mqttBufferSize - 1;
+
+	int len = strlen(topic.c_str());
+	if (len > maxLen) len = maxLen;
+	memcpy(lastMQTTTopic, topic.c_str(), len);
+	lastMQTTTopic[len] = '\0';
+
+	len = strlen(payload.c_str());
+	if (len > maxLen) len = maxLen;
+	memcpy(lastMQTTPayload, payload.c_str(), len);
+	lastMQTTPayload[len] = '\0';
 }
 
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	char *broker_uri = obj2str(args[0]);
-	char *client_id = "microblocks-client"; // todo: random id
+	int buffer_size = (argCount > 1) ? obj2int(args[1]) : 128;
+	char *client_id = (argCount > 2) ? obj2str(args[2]) : (char *) "";
 	char connected = false;
-	mqtt_client.begin(broker_uri, client);
-	if (argCount > 2) { // username/password
-		char *username = obj2str(args[1]);
-		char *password = obj2str(args[2]);
-		connected = mqtt_client.connect(client_id, username, password);
-	} else {
-		connected = mqtt_client.connect(client_id);
+
+	// constrain buffer size
+	// Note: buffers consume 4 x buffer_size byte of RAM
+	if (buffer_size < 32) buffer_size = 32;
+	if (buffer_size > 16384) buffer_size = 16384;
+
+	if (buffer_size != mqttBufferSize) {
+		if (lastMQTTTopic) free(lastMQTTTopic);
+		if (lastMQTTPayload) free(lastMQTTPayload);
+		lastMQTTTopic = lastMQTTPayload = NULL;
+
+		delete pmqtt_client;
+		pmqtt_client = new MQTTClient(buffer_size);
+		if (!pmqtt_client) return falseObj;
+
+		lastMQTTTopic = (char *) malloc(buffer_size);
+		lastMQTTPayload = (char *) malloc(buffer_size);
+		mqttBufferSize = buffer_size;
 	}
-	if (connected){
-		mqtt_client.onMessage(MQTTmessageReceived);
+
+	pmqtt_client->begin(broker_uri, client);
+	if (argCount >= 5) {
+		char *username = obj2str(args[3]);
+		char *password = obj2str(args[4]);
+		connected = pmqtt_client->connect(client_id, username, password);
+	} else {
+		connected = pmqtt_client->connect(client_id);
+	}
+	if (connected) {
+		pmqtt_client->onMessage(MQTTmessageReceived);
 	}
 	return falseObj;
 }
 
-
 static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
-	mqtt_client.loop();
-	if (hasMQTTMessage == true) {
-		OBJ event = newObj(ListType, 3, zeroObj);
-		FIELD(event, 0) = int2obj(2); //list size
-		FIELD(event, 1) = newStringFromBytes(lastMQTTTopic, strlen(lastMQTTTopic));
-		FIELD(event, 2) = newStringFromBytes(lastMQTTPayload, strlen(lastMQTTPayload));
+	if (!pmqtt_client) return falseObj;
+
+	pmqtt_client->loop();
+	if (hasMQTTMessage) {
+		// allocate a result list (stored in tempGCRoot so it will be processed by the
+		// garbage collector if a GC happens during a later allocation)
+		tempGCRoot = newObj(ListType, 3, zeroObj);
+		if (!tempGCRoot) return tempGCRoot; // allocation failed
+
+		FIELD(tempGCRoot, 0) = int2obj(2); //list size
+		FIELD(tempGCRoot, 1) = newStringFromBytes(lastMQTTTopic, strlen(lastMQTTTopic));
+		FIELD(tempGCRoot, 2) = newStringFromBytes(lastMQTTPayload, strlen(lastMQTTPayload));
 		hasMQTTMessage = false;
-		return event;
+		return tempGCRoot;
 	} else {
 		return falseObj;
 	}
 }
 
 static OBJ primMQTTPub(int argCount, OBJ *args) {
+	if (!pmqtt_client) return falseObj;
+
+	int success = false;
 	char *topic = obj2str(args[0]);
 	char *message = obj2str(args[1]);
-	mqtt_client.publish(topic, message);
-	mqtt_client.loop();
-	return falseObj;
+	success = pmqtt_client->publish(topic, message);
+	pmqtt_client->loop();
+
+	return success ? trueObj : falseObj;
 }
 
 static OBJ primMQTTSub(int argCount, OBJ *args) {
+	if (!pmqtt_client) return falseObj;
+
+	int success = false;
 	char *topic = obj2str(args[0]);
-	mqtt_client.subscribe(topic);
-	//mqtt_client.loop();
-	return falseObj;
+	success = pmqtt_client->subscribe(topic);
+	// mqtt_client.loop();
+	return success ? trueObj : falseObj;
 }
 
 static OBJ primMQTTUnsub(int argCount, OBJ *args) {
+	if (!pmqtt_client) return falseObj;
+
+	int success = false;
 	char *topic = obj2str(args[0]);
-	mqtt_client.unsubscribe(topic);
-	//mqtt_client.loop();
-	return falseObj;
+	success = pmqtt_client->unsubscribe(topic);
+	// mqtt_client.loop();
+	// return falseObj;
+	return success ? trueObj : falseObj;
 }
 
 static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
+	if (!pmqtt_client) return falseObj;
+
 	// Return true when connected to MQTT broker.
-	return (mqtt_client.connected()) ? trueObj : falseObj;
+	return (pmqtt_client->connected()) ? trueObj : falseObj;
 }
 
 #endif
+
+// Experimental! Optional BLE support (compile with -D BLE_PRIMS)
+// Code provided by Wenji Wu
+
+#if defined(BLE_PRIMS)
+
+//https://registry.platformio.org/libraries/nkolban/ESP32%20BLE%20Arduino/examples/BLE_uart/BLE_uart.ino
+// client debug: chrome://bluetooth-internals/
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+static bool BLEServerStarted = false;
+BLEServer *pServer = NULL;
+BLECharacteristic * pTxCharacteristic;
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
+uint8_t txValue = 0;
+static char lastBLE_UART_Message[1000];
+static bool hasBLE_UART_Message = false;
+
+#define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" // UART service UUID
+#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
+#define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
+
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+      deviceConnected = true;
+    };
+
+    void onDisconnect(BLEServer* pServer) {
+      deviceConnected = false;
+    }
+};
+
+class MyCallbacks: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string rxValue = pCharacteristic->getValue();
+
+	  if (rxValue.length() > 0) {
+		hasBLE_UART_Message = true;
+		int len = strlen(rxValue.c_str());
+		if (len > 999) len = 999;
+		memcpy(lastBLE_UART_Message, rxValue.c_str(), len);
+	  	lastBLE_UART_Message[len] = '\0';
+		// char s[100]; sprintf(s, "lastBLE_UART_Message:  %s", lastBLE_UART_Message); outputString(s);
+      }
+    }
+};
+
+
+static OBJ primBLE_UART_ServerStart(int argCount, OBJ *args) {
+  //Serial.begin(115200);
+  char* name = obj2str(args[0]);
+
+  if (BLEServerStarted) {
+	return falseObj;
+  }
+
+  BLEServerStarted = true;
+  // Create the BLE Device
+  BLEDevice::init(name);
+
+  // Create the BLE Server
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+
+  // Create the BLE Service
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  // Create a BLE Characteristic
+  pTxCharacteristic = pService->createCharacteristic(
+										CHARACTERISTIC_UUID_TX,
+										BLECharacteristic::PROPERTY_NOTIFY
+									);
+
+  pTxCharacteristic->addDescriptor(new BLE2902());
+
+  BLECharacteristic * pRxCharacteristic = pService->createCharacteristic(
+											 CHARACTERISTIC_UUID_RX,
+											BLECharacteristic::PROPERTY_WRITE
+										);
+
+  pRxCharacteristic->setCallbacks(new MyCallbacks());
+
+  // Start the service
+  pService->start();
+
+  // Start advertising
+  pServer->getAdvertising()->start();
+  outputString("Waiting a client connection...");
+  // char s[100]; sprintf(s, "rxValue:  %s", rxValue); outputString(s);
+  //Serial.println("Waiting a client connection to notify...");
+
+  return falseObj;
+}
+
+static OBJ primStartAdvertisingAndReconnectLoop(int argCount, OBJ *args) {
+	// disconnecting
+    if (!deviceConnected && oldDeviceConnected) {
+        delay(500); // give the bluetooth stack the chance to get things ready
+        pServer->startAdvertising(); // restart advertising
+        // Serial.println("start advertising");
+        oldDeviceConnected = deviceConnected;
+    }
+    // connecting
+    if (deviceConnected && !oldDeviceConnected) {
+		// do stuff here on connecting
+        oldDeviceConnected = deviceConnected;
+    }
+	return falseObj;
+}
+
+static OBJ primBLE_DeviceConnected(int argCount, OBJ *args) {
+	return deviceConnected ? trueObj : falseObj;
+}
+
+static OBJ primBLE_UART_LastEvent(int argCount, OBJ *args) {
+	if (hasBLE_UART_Message == true) {
+		OBJ event = newObj(ListType, 2, zeroObj);
+		FIELD(event, 0) = int2obj(1); //list size
+		FIELD(event, 1) = newStringFromBytes(lastBLE_UART_Message, strlen(lastBLE_UART_Message));
+		hasBLE_UART_Message = false;
+		return event;
+	} else {
+		return falseObj;
+	}
+}
+
+static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
+	char* message = obj2str(args[0]);
+	pTxCharacteristic->setValue(message);
+    pTxCharacteristic->notify();
+	delay(10); // bluetooth stack will go into congestion, if too many packets are sent
+	return falseObj;
+}
+
+#endif // BLE_PRIMS
+
+// Experimental! Optional ESP Now support (compile with -D ESP_NOW_PRIMS)
+// Code provided by Wenji Wu
+
+#if defined(ESP_NOW_PRIMS)
+//https://registry.platformio.org/libraries/yoursunny/WifiEspNow/examples/EspNowBroadcast/EspNowBroadcast.ino
+
+#include <WifiEspNowBroadcast.h>
+
+static char receiveBuffer[1000];
+static bool EspNoWInitialized = false;
+static bool hasEspNowMessage = false;
+
+void processRx(const uint8_t mac[WIFIESPNOW_ALEN], const uint8_t* buf, size_t count, void* arg) {
+	char* data = (char*) buf;
+	int len = strlen(data);
+	if (len > 999) len = 999;
+	memcpy(receiveBuffer, data, len);
+	receiveBuffer[len] = '\0';
+  	hasEspNowMessage = true;
+}
+
+static void initializeEspNoW() {
+	if (EspNoWInitialized) return;
+
+	WiFi.persistent(false);
+ 	bool ok = WifiEspNowBroadcast.begin("ESPNOW", 3);
+  	if (!ok) {
+		// outputString("WifiEspNowBroadcast.begin() failed");
+    	ESP.restart();
+ 	 }
+	// outputString("WifiEspNowBroadcast.begin() success");
+	WifiEspNowBroadcast.onReceive(processRx, nullptr);
+	EspNoWInitialized = true;
+}
+
+static OBJ primEspNowLastEvent(int argCount, OBJ *args) {
+	if (!EspNoWInitialized) initializeEspNoW();
+
+	WifiEspNowBroadcast.loop();
+	delay(10);
+
+	if (hasEspNowMessage) {
+		OBJ event = newObj(ListType, 2, zeroObj);
+		FIELD(event, 0) = int2obj(1); //list size
+		FIELD(event, 1) = newStringFromBytes(receiveBuffer, strlen(receiveBuffer));
+		hasEspNowMessage = false;
+		return event;
+	} else {
+		return falseObj;
+	}
+}
+
+static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
+	if (!EspNoWInitialized) initializeEspNoW();
+
+	char* message = obj2str(args[0]);
+	WifiEspNowBroadcast.send(reinterpret_cast<const uint8_t*>(message), strlen(message));
+	WifiEspNowBroadcast.loop();
+}
+
+#endif // ESP_NOW_PRIMS
 
 static PrimEntry entries[] = {
 	{"hasWiFi", primHasWiFi},
@@ -618,17 +877,29 @@ static PrimEntry entries[] = {
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
+
 	{"webSocketStart", primWebSocketStart},
 	{"webSocketLastEvent", primWebSocketLastEvent},
 	{"webSocketSendToClient", primWebSocketSendToClient},
 
-  #if defined(ARDUINO_ARCH_ESP32) && defined(MQTT_PRIMS)
 	{"MQTTConnect", primMQTTConnect},
 	{"MQTTLastEvent", primMQTTLastEvent},
 	{"MQTTPub", primMQTTPub},
 	{"MQTTSub", primMQTTSub},
 	{"MQTTUnsub", primMQTTUnsub},
 	{"MQTTIsConnected", primMQTTIsConnected},
+
+  #if defined(BLE_PRIMS)
+	{"BLE_UART_ServerStart", primBLE_UART_ServerStart},
+	{"BLE_DeviceConnected", primBLE_DeviceConnected},
+	{"BLE_UART_LastEvent", primBLE_UART_LastEvent},
+	{"BLE_UART_Write", primBLE_UART_Write},
+	{"StartAdvertisingAndReconnectLoop", primStartAdvertisingAndReconnectLoop},
+  #endif
+
+  #if defined(ESP_NOW_PRIMS)
+	{"EspNowLastEvent", primEspNowLastEvent},
+	{"EspNowBroadcast", primEspNowBroadcast},
   #endif
 
 };

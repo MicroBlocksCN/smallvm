@@ -24,12 +24,14 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastLibraryFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
 method scripter MicroBlocksEditor { return scripter }
 method httpServer MicroBlocksEditor { return httpServer }
+method lastScriptPicFolder MicroBlocksEditor { return lastScriptPicFolder }
+method setLastScriptPicFolder MicroBlocksEditor dir { lastScriptPicFolder = dir }
 
 to openMicroBlocksEditor devMode {
   if (isNil devMode) { devMode = false }
@@ -47,10 +49,9 @@ to openMicroBlocksEditor devMode {
   applyUserPreferences editor
   pageResized editor
   developerModeChanged editor
-  if ('Browser' == (platform)) { fetchProject }
-  if (notNil (global 'initialProject')) {
-	dataAndURL = (global 'initialProject')
-	openProject editor (first dataAndURL) (last dataAndURL) false
+  if ('Browser' == (platform)) {
+    // attempt to extra project or scripts from URL; does nothing if absent
+    importFromURL editor (browserURL)
   }
   startSteppingSafely page
 }
@@ -235,9 +236,9 @@ method textButton MicroBlocksEditor label selector {
 // zoom buttons
 method addZoomButtons MicroBlocksEditor {
   zoomButtons = (array
-	(newZoomButton this 'zoomOut' 'Decrease block size by 15%')
+	(newZoomButton this 'zoomOut' 'Decrease block size')
 	(newZoomButton this 'restoreZoom' 'Restore block size to 100%')
-	(newZoomButton this 'zoomIn' 'Increase block size by 15%'))
+	(newZoomButton this 'zoomIn' 'Increase block size'))
   for button zoomButtons {
 	addPart morph (morph button)
   }
@@ -395,6 +396,16 @@ method saveProjectToFile MicroBlocksEditor {
   fp = (findMorph 'MicroBlocksFilePicker')
   if (notNil fp) { destroy fp }
   saveProject this nil
+}
+
+method copyProjectURLToClipboard MicroBlocksEditor {
+  // Copy a URL encoding of this project to the clipboard.
+
+  saveScripts scripter
+  setClipboard (join
+    'https://microblocks.fun/run/microblocks.html#project='
+	(urlEncode (codeString (project scripter)) true)
+  )
 }
 
 method saveProject MicroBlocksEditor fName {
@@ -556,11 +567,9 @@ method checkForBrowserResize MicroBlocksEditor {
   w = (first browserSize)
   h = (last browserSize)
   winSize = (windowSize)
-  if (and
-  	((abs ((at winSize 1) - w)) < 10)
-  	((abs ((at winSize 2) - h)) < 10)) {
-  		// size may be off by a few pixels due to rounding
-  		return
+
+  if (and ((at winSize 1) == w) ((at winSize 2) == h)) {
+    return // no change
   }
 
   openWindow w h true
@@ -617,11 +626,11 @@ method processDroppedFiles MicroBlocksEditor {
 }
 
 method processDroppedFile MicroBlocksEditor fName data {
-  if (or (endsWith fName '.ubp') (endsWith fName '.gpp')) {
+  if (endsWith fName '.ubp') {
 	if (not (canReplaceCurrentProject this)) { return }
 	openProject this data fName
   }
-  if (or (endsWith fName '.ubl') (endsWith fName '.ulib')) {
+  if (endsWith fName '.ubl') {
 	importLibraryFromFile scripter fName data
   }
   if (endsWith fName '.csv') {
@@ -631,11 +640,7 @@ method processDroppedFile MicroBlocksEditor fName data {
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
   }
   if (endsWith fName '.png') {
-	script = (getScriptText (new 'PNGReader') data)
-	if (isNil script) { return } // no script in this PNG file
-    i = (find (letters script) (newline))
-    script = (substring script i)
-	pasteScripts scripter script false
+    importFromPNG this data
   }
   // xxx for testing:
   if (endsWith fName '.gp') {
@@ -650,24 +655,28 @@ method processDroppedText MicroBlocksEditor text {
     host = (substring url 1 ((findFirst url '/') - 1))
     path = (substring url (findFirst url '/'))
     fileName = (substring path ((findLast path '/') + 1) ((findLast path '.') - 1))
+
+    if (or ((findSubstring 'scripts=' url) > 0) ((findSubstring 'project=' url) > 0)) {
+      importFromURL this url
+      return
+    }
+
+	// xxx remove this after switching to .PNG files
     i = (findSubstring 'render?json=' path)
     if (notNil i) { // script and parameters pass as a json object
       json = (urlDecode (substring path (i + 12))) // extract and decode the JSON string
     }
-    if (or (endsWith url '.ubp') (endsWith url '.gpp')) {
+
+    if (endsWith url '.ubp') {
       if (not (canReplaceCurrentProject this)) { return }
       openProject this (httpBody (httpGet host path)) fileName
-    } (or (endsWith url '.ubl') (endsWith url '.ulib')) {
+    } (endsWith url '.ubl') {
       importLibraryFromString scripter (httpBody (httpGet host path)) fileName fileName
     } (and (or (notNil json) (endsWith url '.png')) ('Browser' == (platform))) {
       data = (httpBody (basicHTTPGetBinary host path))
       if ('' == data) { return }
-      script = (getScriptText (new 'PNGReader') data)
-      if (isNil script) { return } // no script in this PNG file
-      i = (find (letters script) (newline))
-      script = (substring script i)
-      installLibsFromJSON scripter json
-      pasteScripts scripter script false
+      if (notNil json) { installLibsFromJSON scripter json } // xxx remove this after switching to .PNG files
+      importFromPNG this data
     }
   } else {
 	spec = (specForOp (authoringSpecs) 'comment')
@@ -678,6 +687,30 @@ method processDroppedText MicroBlocksEditor text {
 	setTop (morph block) (y (hand (global 'page')))
 	addPart (morph (scriptEditor scripter)) (morph block)
   }
+}
+
+method importFromURL MicroBlocksEditor url {
+  i = (findSubstring 'scripts=' url)
+  if (notNil i) { // import scripts embedded in URL
+    scriptString = (urlDecode (substring url (i + 8)))
+    pasteScripts scripter scriptString
+    return
+  }
+  i = (findSubstring 'project=' url)
+  if (notNil i) { // open a complete project embedded in URL
+    projectString = (urlDecode (substring url (i + 8)))
+    if (not (canReplaceCurrentProject this)) { return }
+    openProject this projectString ''
+    return
+  }
+}
+
+method importFromPNG MicroBlocksEditor pngData {
+  scriptString = (getScriptText (new 'PNGReader') pngData)
+  if (isNil scriptString) { return } // no script in this PNG file
+  i = (find (letters scriptString) (newline))
+  scriptString = (substring scriptString i)
+  pasteScripts scripter scriptString
 }
 
 // handle drops
@@ -1154,7 +1187,9 @@ method projectMenu MicroBlocksEditor {
   addItem menu 'Save' 'saveProjectToFile'
   if (devMode) {
 	addLine menu
+    addItem menu 'Copy project URL to clipboard' 'copyProjectURLToClipboard'
 	if ((count (functions (main (project scripter)))) > 0) {
+		addLine menu
 		addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)
 	}
 	if (boardHasFileSystem (smallRuntime)) {
