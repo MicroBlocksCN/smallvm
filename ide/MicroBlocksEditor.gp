@@ -402,9 +402,14 @@ method copyProjectURLToClipboard MicroBlocksEditor {
   // Copy a URL encoding of this project to the clipboard.
 
   saveScripts scripter
+  codeString = (codeString (project scripter))
+  if (notNil title) {
+    projName = (text title)
+    codeString = (join 'projectName ''' projName '''' (newline) (newline) codeString)
+  }
   setClipboard (join
     'https://microblocks.fun/run/microblocks.html#project='
-	(urlEncode (codeString (project scripter)) true)
+	(urlEncode codeString true)
   )
 }
 
@@ -700,9 +705,19 @@ method importFromURL MicroBlocksEditor url {
   if (notNil i) { // open a complete project embedded in URL
     projectString = (urlDecode (substring url (i + 8)))
     if (not (canReplaceCurrentProject this)) { return }
-    openProject this projectString ''
+    projName = (extractProjectName this projectString)
+    openProject this projectString projName
     return
   }
+}
+
+method extractProjectName MicroBlocksEditor projectString {
+  for line (lines projectString) {
+    if (beginsWith line 'projectName') {
+      return (first (argList (first (parse line))))
+    }
+  }
+  return '' // no name found
 }
 
 method importFromPNG MicroBlocksEditor pngData {

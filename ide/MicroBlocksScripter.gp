@@ -1207,6 +1207,10 @@ method installLibsFromJSON MicroBlocksScripter jsonString {
 
 method installLibraryNamed MicroBlocksScripter libName {
   fileName = (fileNameForLibraryNamed this libName)
+  if (isNil fileName) {
+    print 'Unknown library:' libName
+    return
+  }
   if (not (endsWith fileName '.ubl')) { fileName = (join fileName '.ubl') }
   if ('Browser' != (platform)) { fileName = (join '//' fileName) }
   importLibraryFromFile this fileName
