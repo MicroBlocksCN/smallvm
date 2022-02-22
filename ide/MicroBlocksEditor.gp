@@ -1192,6 +1192,8 @@ method addIconButton MicroBlocksEditor icon selector hint width {
 
 method projectMenu MicroBlocksEditor {
   menu = (menu 'File' this)
+  addItem menu 'Save' 'saveProjectToFile'
+  addLine menu
   addItem menu 'New' 'newProject'
   addItem menu 'Open' 'openProjectMenu'
   if ('connected' != (updateConnection (smallRuntime))) {
@@ -1199,10 +1201,9 @@ method projectMenu MicroBlocksEditor {
   } else {
   	checkBoardType (smallRuntime)
   }
-  addItem menu 'Save' 'saveProjectToFile'
+  addLine menu
+  addItem menu 'Copy project URL to clipboard' 'copyProjectURLToClipboard'
   if (devMode) {
-	addLine menu
-    addItem menu 'Copy project URL to clipboard' 'copyProjectURLToClipboard'
 	if ((count (functions (main (project scripter)))) > 0) {
 		addLine menu
 		addItem menu 'export functions as library' (action 'exportAsLibrary' scripter fileName)

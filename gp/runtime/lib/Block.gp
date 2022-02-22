@@ -953,6 +953,8 @@ method exportAsImageScaled Block scale result {
   // Save a PNG picture of the given script at the given scale.
   // If result is not nil, include a speech bubble showing the result.
 
+  timer = (newTimer)
+
   // if block is a function definition hat use its prototype block
   if (isPrototypeHat this) {
 	proto = (editedPrototype this)
@@ -1004,6 +1006,10 @@ method exportAsImageScaled Block scale result {
   // save result as a PNG file
   pngData = (encodePNG bm nil (scriptText this))
   if ('Browser' == (platform)) {
+    if ((msecs timer) > 4500) {
+      // if it has been more than ~4.5 seconds the user must click to allow file save
+      inform (global 'page') (localized 'PNG preparation complete.')
+    }
 	browserWriteFile pngData (join 'scriptImage' (msecsSinceStart) '.png') 'scriptImage'
   } else {
   	fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
