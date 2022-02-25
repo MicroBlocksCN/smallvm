@@ -1,6 +1,6 @@
 module NeoPixel Output
 author MicroBlocks
-version 1 2 
+version 1 3
 tags led strip rgb string ws2812 
 description 'Control NeoPixel (WS2812) RGB LED strips.
 '
@@ -74,6 +74,13 @@ to neoPixelAttach number pinNumber optionalHasWhite {
     _np_pixels = (newList number)
   }
   fillList _np_pixels 0
+  if ((boardType) == 'Citilab ED1') {
+    if (and (pinNumber >= 100) (pinNumber <= 139)) {
+      pinNumber += -100
+    } (and (3 >= 1) (pinNumber <= 4)) {
+      pinNumber = (at pinNumber ('[data:makeList]' 12 25 32 26))
+    }
+  }
   '[display:neoPixelSetPin]' pinNumber hasWhite
 }
 
