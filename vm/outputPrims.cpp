@@ -666,10 +666,15 @@ static void initNeoPixelPin(int pinNum) {
 		#endif
 	}
 	if ((0 < pinNum) && (pinNum <= 31)) {
-		// must use a pin between 0-31
 		setPinMode(pinNum, OUTPUT);
+		neoPixelPinSet = &GPIO.out_w1ts;
+		neoPixelPinClr = &GPIO.out_w1tc;
 		neoPixelPinMask = 1 << pinNum;
-		GPIO.out_w1tc = neoPixelPinMask;
+	} else if ((32 <= pinNum) && (pinNum <= 33)) {
+		setPinMode(pinNum, OUTPUT);
+		neoPixelPinSet = (uint32_t *) &GPIO.out1_w1ts;
+		neoPixelPinClr = (uint32_t *) &GPIO.out1_w1tc;
+		neoPixelPinMask = 1 << (pinNum - 32);
 	} else {
 		neoPixelPinMask = 0;
 	}
@@ -682,14 +687,14 @@ static void IRAM_ATTR sendNeoPixelData(int val) {
 	portENTER_CRITICAL(&mux);
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 700 nsecs, low 300 nsecs
-			GPIO.out_w1ts = neoPixelPinMask;
+			*neoPixelPinSet = neoPixelPinMask;
 			DELAY_CYCLES(170); // 210
-			GPIO.out_w1tc = neoPixelPinMask;
+			*neoPixelPinClr = neoPixelPinMask;
 			DELAY_CYCLES(60); // 90
 		} else { // zero bit; timing goal: high 300 nsecs, low 700 nsecs
-			GPIO.out_w1ts = neoPixelPinMask;
+			*neoPixelPinSet = neoPixelPinMask;
 			DELAY_CYCLES(60);
-			GPIO.out_w1tc = neoPixelPinMask;
+			*neoPixelPinClr = neoPixelPinMask;
 			DELAY_CYCLES(170);
 		}
 	}
