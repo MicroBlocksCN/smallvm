@@ -638,13 +638,20 @@ void turnOffPins() {
 	}
 }
 
-int mapDigitalPinNum(int userPinNum) {
+int mapDigitalPinNum(int pinNum) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
 		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
-			if ((0 <= userPinNum) && (userPinNum < DIGITAL_PINS)) return digitalPin[userPinNum];
+			if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) return digitalPin[pinNum];
 	#endif
-	return userPinNum;
+	#if defined(ARDUINO_CITILAB_ED1)
+		if ((100 <= pinNum) && (pinNum <= 139)) {
+			return pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
+		} else if ((1 <= pinNum) && (pinNum <= 4)) {
+			return digitalPinMappings[pinNum - 1];
+		}
+	#endif
+	return pinNum;
 }
 
 #if defined(ARDUINO_BBC_MICROBIT_V2)

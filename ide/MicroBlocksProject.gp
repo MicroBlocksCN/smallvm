@@ -259,6 +259,10 @@ method loadFromString MicroBlocksProject s updateLibraries {
 	// Load project from a string in .ubp format. Keep libraries (modules) together.
 	initialize this
 	cmdList = (parse s)
+	if (and (notEmpty cmdList) ('projectName' == (primName (first cmdList)))) {
+      // skip projectName line, if any
+      cmdList = (copyFromTo cmdList 2)
+    }
 	loadSpecs this cmdList
 	cmdsByModule = (splitCmdListIntoModules this cmdList)
 	isFirst = true

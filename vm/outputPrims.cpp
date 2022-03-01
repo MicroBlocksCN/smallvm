@@ -634,7 +634,7 @@ static void initNeoPixelPin(int pinNum) {
 	}
 }
 
-static void sendNeoPixelData(int val) {
+static void IRAM_ATTR sendNeoPixelData(int val) {
 	if (!neoPixelPinMask) return;
 
 	noInterrupts();
@@ -675,7 +675,7 @@ static void initNeoPixelPin(int pinNum) {
 	}
 }
 
-static void sendNeoPixelData(int val) {
+static void IRAM_ATTR sendNeoPixelData(int val) {
 	if (!neoPixelPinMask) return;
 
 	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
