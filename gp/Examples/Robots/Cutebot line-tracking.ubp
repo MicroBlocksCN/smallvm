@@ -1,0 +1,194 @@
+module main
+author wwj718
+version 1 0 
+description ''
+variables running 
+
+script 47 35 {
+whenStarted
+running = (booleanConstant false)
+forever {
+  if running {
+    if ('Tracking state is' '◌' '●') {'set motor speed' 40 15}
+    if ('Tracking state is' '●' '◌') {'set motor speed' 15 40}
+    if ('Tracking state is' '●' '●') {'set motor speed' 40 40}
+  } else {
+    'stop all motors'
+  }
+}
+}
+
+script 347 104 {
+whenButtonPressed 'A'
+running = (booleanConstant true)
+}
+
+script 347 225 {
+whenButtonPressed 'B'
+running = (booleanConstant false)
+}
+
+
+module Cutebot Output
+author wwj718
+version 1 0 
+depends Trackbit Distance 
+choices servoType '180' '270' '360' 
+choices channel_state '●' '◌' 
+choices direction left right 
+description 'Cutebot is a rear-drive smart car driven by dual high speed motors.
+
+There are many on-board equipments on the Cutebot including ultrasonic sensor and distance sensor, two RGB LED headlights and clearance lamps on the bottom, two line-tracking probes, an active buzzer as the horn and so on! Let’s drive your first smart car!
+
+ps: Cutebot can work with AILens library.
+
+https://www.elecfreaks.com/learn-en/microbitKit/smart_cutebot/cutebot_car.html'
+variables _Cutebot_ADDR '_Cutebot initialized' 
+
+	spec ' ' 'set motor speed' 'Cutebot set left wheel speed to _ % right wheel speed to _ %' 'num num' 100 -100
+	spec ' ' 'stop all motors' 'Cutebot stop car'
+	spec 'r' 'Tracking channel' 'Cutebot tracking channel _ is _' 'menu.direction menu.channel_state' 'left' '◌'
+	spec 'r' 'Tracking state is' 'Cutebot tracking state is _ _' 'menu.channel_state menu.channel_state' '◌' '◌'
+	spec ' ' 'set led color' 'Cutebot set LED _ to _' 'menu.direction color' 'left'
+	spec 'r' 'get distance' 'Cutebot ultrasonic sensor distance(cm)'
+	spec ' ' 'set servo angle' 'Cutebot set _ servo _ angle to _' 'menu.servoType menu.range:1-2 num' '180' 1 0
+	spec ' ' '_Cutebot setup' '_Cutebot setup'
+	spec 'r' '_rescale' 'rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
+
+to 'Tracking channel' channel state {
+  local 'pinL' 13
+  local 'pinR' 14
+  if (channel == 'left') {
+    channel = pinL
+  } else {
+    channel = pinR
+  }
+  if (state == '●') {
+    state = (booleanConstant false)
+  } else {
+    state = (booleanConstant true)
+  }
+  return ((digitalReadOp channel true) == state)
+}
+
+to 'Tracking state is' channel1_state channel2_state {
+  local 'pinL' 13
+  local 'pinR' 14
+  if (channel1_state == '●') {
+    channel1_state = (booleanConstant false)
+  } else {
+    channel1_state = (booleanConstant true)
+  }
+  if (channel2_state == '●') {
+    channel2_state = (booleanConstant false)
+  } else {
+    channel2_state = (booleanConstant true)
+  }
+  return (and ((digitalReadOp pinL true) == channel1_state) ((digitalReadOp pinR false) == channel2_state))
+}
+
+to '_Cutebot setup' {
+  if ((v '_Cutebot initialized') == 0) {
+    _Cutebot_ADDR = (hexToInt '10')
+    '_Cutebot initialized' = 1
+  }
+}
+
+to '_rescale' val in_min in_max out_min out_max {
+  return (((val - in_min) * (out_max - out_min)) / ((in_max - in_min) + out_min))
+}
+
+to 'get distance' {
+  '_Cutebot setup'
+  local 'pin_e' 12
+  local 'pin_t' 8
+  return ('distance (cm)' pin_t pin_e)
+}
+
+to 'set led color' led_name color {
+  '_Cutebot setup'
+  if (led_name == 'left') {
+    local 'led' (hexToInt '04')
+  } else {
+    local 'led' (hexToInt '08')
+  }
+  local 'r' ((color >> 16) & 255)
+  local 'g' ((color >> 8) & 255)
+  local 'b' ((color >> b) & 255)
+  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' led r g b))
+}
+
+to 'set motor speed' left_wheel_speed right_wheel_speed {
+  '_Cutebot setup'
+  comment 'speed (number): -100-100'
+  local 'left_direction' 0
+  local 'right_direction' 0
+  if (or (left_wheel_speed < -100) (left_wheel_speed > 100)) {
+    left_wheel_speed = 0
+  }
+  if (or (right_wheel_speed < -100) (right_wheel_speed > 100)) {
+    right_wheel_speed = 0
+  }
+  if (left_wheel_speed > 0) {
+    left_direction = 2
+  } else {
+    left_direction = 1
+    left_wheel_speed = (left_wheel_speed * -1)
+  }
+  if (right_wheel_speed > 0) {
+    right_direction = 2
+  } else {
+    right_direction = 1
+    right_wheel_speed = (right_wheel_speed * -1)
+  }
+  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' 1 left_direction left_wheel_speed 0))
+  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' 2 right_direction right_wheel_speed 0))
+}
+
+to 'set servo angle' servo_type servo angle {
+  '_Cutebot setup'
+  sayIt servo_type '' servo '' angle
+  comment 'servo (number): 1 2'
+  comment '''180'' ''270'' ''360''
+
+str -> num'
+  servo_type = (absoluteValue servo_type)
+  if (or (servo < 1) (servo > 2)) {
+    servo = 1
+  }
+  if (or (angle < 0) (angle > servo_type)) {
+    angle = 0
+  }
+  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' (servo + 4) angle 0 0))
+}
+
+to 'stop all motors' {
+  '_Cutebot setup'
+  'set motor speed' 0 0
+}
+
+
+module Distance Input
+author 'Joan Guillén & Josep Ferràndiz'
+version 1 0 
+tags sensor 'hc-sr04' distance ultrasound 
+description 'Support for the HC-SR04 ultrasound distance sensor.'
+
+	spec 'r' 'distance (cm)' 'distance (cm) trigger _ echo _' 'auto auto' 2 4
+
+to 'distance (cm)' trig ech {
+  comment 'Contributed by Joan Guillén and Josep Ferràndiz'
+  digitalWriteOp trig false
+  waitMicros 2
+  digitalWriteOp trig true
+  waitMicros 50
+  digitalWriteOp trig false
+  local 'start' (microsOp)
+  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - start) > 23320))
+  waitUntil (or (digitalReadOp ech) (((microsOp) - start) > 23320))
+  local 'init' (microsOp)
+  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - init) > 23320))
+  local 'end' (microsOp)
+  return ((10 * (end - init)) / 583)
+}
+
