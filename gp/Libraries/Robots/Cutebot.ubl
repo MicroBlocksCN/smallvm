@@ -116,7 +116,6 @@ to 'set motor speed' left_wheel_speed right_wheel_speed {
 
 to 'set servo angle' servo_type servo angle {
   '_Cutebot setup'
-  sayIt servo_type '' servo '' angle
   comment 'servo (number): 1 2'
   comment '''180'' ''270'' ''360''
 
@@ -128,7 +127,7 @@ str -> num'
   if (or (angle < 0) (angle > servo_type)) {
     angle = 0
   }
-  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' (servo + 4) angle 0 0))
+  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' (servo + 4) ('_rescale' angle 0 servo_type 0 180) 0 0))
 }
 
 to 'stop all motors' {
