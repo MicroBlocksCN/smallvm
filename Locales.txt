@@ -1040,6 +1040,20 @@ left
 
 right
 
+# Wukong
+
+Wukong set motor _ speed to _ %
+
+Wukong stop motor _
+
+Wukong stop all motors
+
+Wukong set _ servo _ angle to _
+
+Wukong set NeoPixel _ _ _ _
+
+Wukong set light intensity to _
+
 ##################
 # MicroBlocks UI #
 ##################

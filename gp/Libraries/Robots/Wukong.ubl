@@ -3,7 +3,14 @@ author wwj718
 version 1 0 
 depends NeoPixel 
 choices servoType '180' '270' '360' 
-description ''
+description 'Wukong is a high integrated breakout board with multiple functions based on micro:bit, which has a similar size with the micro:bit with buzzer, servo and motor drivers on board.
+
+With a built-in 400mAh Li-ion battery pack and the on-board power controlling system, it supports fast charge with only 20 minutes for full filling that can operate for more than 40 minutes a time.
+
+The base board designs with standard 7x5 square bricks that can adapt perfectly to Lego.
+
+https://www.elecfreaks.com/learn-en/microbitExtensionModule/wukong.html
+'
 variables _Wukong_ADDR '_Wukong initialized' 
 
 	spec ' ' 'set motor speed' 'Wukong set motor _ speed to _ %' 'menu.range:1-2 num' 1 100
@@ -46,7 +53,10 @@ to 'set led color' led_name color {
 }
 
 to 'set light intensity' num {
-  return 0
+  '_Wukong setup'
+  '[sensors:i2cWrite]' _Wukong_ADDR ('[data:asByteArray]' ('[data:makeList]' (hexToInt '12') num 0 0))
+  waitMillis 100
+  '[sensors:i2cWrite]' _Wukong_ADDR ('[data:asByteArray]' ('[data:makeList]' (hexToInt '11') 160 0 0))
 }
 
 to 'set motor speed' motor speed {
