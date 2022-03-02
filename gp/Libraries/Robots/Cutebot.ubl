@@ -1,7 +1,7 @@
 module Cutebot Output
 author wwj718
 version 1 0 
-depends Trackbit Distance 
+depends Distance 
 choices servoType '180' '270' '360' 
 choices channel_state '●' '◌' 
 choices direction left right 
