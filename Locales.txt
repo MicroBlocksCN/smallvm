@@ -1019,6 +1019,26 @@ topic for MQTT event _
 
 payload for MQTT event _
 
+####
+# Cutebot
+
+Cutebot set left wheel speed to _ % right wheel speed to _ %
+
+Cutebot stop car
+
+Cutebot tracking channel _ is _
+
+Cutebot tracking state is _ _
+
+Cutebot set LED _ to _
+
+Cutebot ultrasonic sensor distance(cm)
+
+Cutebot set _ servo _ angle to _
+
+left
+
+right
 
 ##################
 # MicroBlocks UI #
