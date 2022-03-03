@@ -258,7 +258,7 @@ method contextMenu Block {
     addItem menu 'duplicate all' 'grabDuplicateAll' 'duplicate this block and all blocks below it'
   }
   addLine menu
-  if (and (not isInPalette) (notNil (next this))) {
+  if (and (not isInPalette) ('reporter' != type)) {
     addItem menu 'extract block' 'extractBlock' 'pull out this block'
   }
   addLine menu
