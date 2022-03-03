@@ -258,6 +258,7 @@ function initGPEventHandlers() {
 	}
 	document.onkeypress = function(evt) {
 		var charCode = evt.charCode;
+		if (13 == charCode) return; // don't report a text input event for cr/enter
 		if (evt.char && (evt.char.length == 1)) charCode = evt.char.codePointAt(0);
 		GP.events.push([TEXTINPUT, charCode]);
 	}
