@@ -821,8 +821,22 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 		delay(1); // ensure we're not interrupted by scheduled (works for up to ~32 Neopixels)
 	#endif
 	OBJ arg = args[0];
-	if (isInt(arg)) {
-		int rgb = obj2int(arg);
+	if (IS_TYPE(arg, ListType)) {
+		int count = obj2int(FIELD(arg, 0));
+		for (int i = 0; i < count; i++) {
+			OBJ item = FIELD(arg, i + 1);
+			int rgb = evalInt(item);
+			int r = gamma((rgb >> 16) & 0xFF);
+			int g = gamma((rgb >> 8) & 0xFF);
+			int b = gamma(rgb & 0xFF);
+			int val = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
+			if (32 == neoPixelBits) { // send white as the final byte of four
+				val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
+			}
+			sendNeoPixelData(val);
+		}
+	} else {
+		int rgb = evalInt(arg);
 		int r = gamma((rgb >> 16) & 0xFF);
 		int g = gamma((rgb >> 8) & 0xFF);
 		int b = gamma(rgb & 0xFF);
@@ -831,24 +845,8 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 			val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
 		}
 		sendNeoPixelData(val);
-	} else if (IS_TYPE(arg, ListType)) {
-		int count = obj2int(FIELD(arg, 0));
-		for (int i = 0; i < count; i++) {
-			OBJ item = FIELD(arg, i + 1);
-			if (isInt(item)) {
-				int rgb = obj2int(item);
-				int r = gamma((rgb >> 16) & 0xFF);
-				int g = gamma((rgb >> 8) & 0xFF);
-				int b = gamma(rgb & 0xFF);
-				int val = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
-				if (32 == neoPixelBits) { // send white as the final byte of four
-					val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
-				}
-				sendNeoPixelData(val);
-//				delayMicroseconds(1);  // reduces chance of first NeoPixel glitching to green
-			}
-		}
 	}
+
 	return falseObj;
 }
 
