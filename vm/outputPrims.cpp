@@ -634,7 +634,7 @@ static void initNeoPixelPin(int pinNum) {
 	}
 }
 
-static void IRAM_ATTR sendNeoPixelData(int val) {
+static void IRAM_ATTR sendNeoPixelData(int val) { // ESP8266
 	if (!neoPixelPinMask) return;
 
 	noInterrupts();
@@ -656,6 +656,8 @@ static void IRAM_ATTR sendNeoPixelData(int val) {
 }
 
 #elif defined(ARDUINO_ARCH_ESP32)
+
+// #include "esp_task_wdt.h" //xxx
 
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
@@ -680,22 +682,23 @@ static void initNeoPixelPin(int pinNum) {
 	}
 }
 
-static void IRAM_ATTR sendNeoPixelData(int val) {
+static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
 	if (!neoPixelPinMask) return;
 
+//	esp_task_wdt_feed(); // xxx
 	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 	portENTER_CRITICAL(&mux);
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
-		if (val & mask) { // one bit; timing goal: high 700 nsecs, low 300 nsecs
+		if (val & mask) { // one bit; timing goal: high 800 nsecs, low 400 nsecs
 			*neoPixelPinSet = neoPixelPinMask;
-			DELAY_CYCLES(170); // 210
+			DELAY_CYCLES(190);
 			*neoPixelPinClr = neoPixelPinMask;
-			DELAY_CYCLES(60); // 90
-		} else { // zero bit; timing goal: high 300 nsecs, low 700 nsecs
+			DELAY_CYCLES(90);
+		} else { // zero bit; timing goal: high 300 nsecs, low 900 nsecs
 			*neoPixelPinSet = neoPixelPinMask;
-			DELAY_CYCLES(60);
+			DELAY_CYCLES(70);
 			*neoPixelPinClr = neoPixelPinMask;
-			DELAY_CYCLES(170);
+			DELAY_CYCLES(210);
 		}
 	}
 	portEXIT_CRITICAL(&mux);
@@ -718,7 +721,7 @@ static inline void picoDelay(int n) {
 	}
 }
 
-static void __not_in_flash_func(sendNeoPixelData)(int val) {
+static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 Philhower
 	if (neoPixelPin < 0) return;
 
 	uint32_t oldInterruptStatus = save_and_disable_interrupts();
@@ -765,7 +768,7 @@ static void initNeoPixelPin(int pinNum) {
 	}
 }
 
-static void __not_in_flash_func(sendNeoPixelData)(int val) {
+static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 mbed
 	if (!gpioNeopixelGPIO) return;
 
 	uint32_t oldInterruptStatus = save_and_disable_interrupts();
@@ -803,7 +806,6 @@ static inline int gamma(int val) {
 	// neoMax determines the max brightness (and power draw!) of each NeoPixel color channel,
 	// which is about (neoMax / 255) * 20 mA per color channel.
 
-//return val; // xxx
 	const int neoMax = 40;
 	const int divisor = (255 * 255) / neoMax;
 	return ((val * val) / divisor) & 0xFF;
