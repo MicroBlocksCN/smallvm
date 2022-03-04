@@ -1849,12 +1849,12 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 		return falseObj;
 	}
 
-	pinNum = mapDigitalPinNum(pinNum);
+	int pinNum = mapDigitalPinNum(obj2int(pinArg));
 
 	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
-		if (RESERVED(pin)) return falseObj;
+		if (RESERVED(pinNum)) return falseObj;
 	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
-		if (pin < 2) return falseObj;
+		if (pinNum < 2) return falseObj;
 	#endif
 
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;

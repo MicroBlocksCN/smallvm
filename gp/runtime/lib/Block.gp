@@ -1013,6 +1013,7 @@ method exportAsImageScaled Block scale result {
 	browserWriteFile pngData (join 'scriptImage' (msecsSinceStart) '.png') 'scriptImage'
   } else {
   	fName = (fileToWrite (join 'scriptImage' (msecsSinceStart) '.png'))
+    if ('' == fName) { return }
 	writeFile fName pngData
   }
 }

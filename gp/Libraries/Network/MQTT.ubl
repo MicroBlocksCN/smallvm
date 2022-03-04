@@ -1,11 +1,11 @@
 module MQTT Comm
 author wwj718
-version 1 1 
+version 1 2 
 depends WiFi 
 tags websockets network 
 description 'A simple MQTT client.'
 
-	spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num auto str str' '' 128 'MicroBlocks_client' '' ''
+	spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num str str str' '' 128 '' '' ''
 	spec 'r' 'MQTT connected' 'MQTT connected'
 	spec ' ' 'MQTT sub' 'MQTT sub _' 'str' 'testTopic'
 	spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
