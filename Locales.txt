@@ -1063,6 +1063,20 @@ rocker value of _
 
 motor vibrate for _ ms
 
+####
+# NeZha
+
+NeZha
+
+NeZha set motor _ speed to _ %
+
+NeZha stop motor _
+
+NeZha stop all motors
+
+NeZha set _ servo _ angle to _
+
+NeZha set continuous rotation servo _ speed to _ %
 
 
 ##################

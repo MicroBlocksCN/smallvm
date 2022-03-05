@@ -1197,6 +1197,27 @@ rocker value of _
 motor vibrate for _ ms
 震动 _ 毫秒
 
+####
+# NeZha
+
+NeZha
+哪吒扩展板
+
+NeZha set motor _ speed to _ %
+哪吒 设置电机 _ 速度为 _ %
+
+NeZha stop motor _
+哪吒 停止电机 _
+
+NeZha stop all motors
+哪吒 停止所有电机
+
+NeZha set _ servo _ angle to _
+哪吒 设置 _ 舵机 _ 角度为 _
+
+NeZha set continuous rotation servo _ speed to _ %
+哪吒 设置 连续转动舵机 _ 速度为 _ %
+
 ##################
 # MicroBlocks UI #
 ##################
