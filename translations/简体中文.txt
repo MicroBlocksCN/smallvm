@@ -1162,6 +1162,29 @@ left
 right
 右
 
+# Wukong
+
+Wukong
+悟空扩展板
+
+Wukong set motor _ speed to _ %
+设置电机 _ 速度为 _ %
+
+Wukong stop motor _
+停止电机 _ 
+
+Wukong stop all motors
+停止所有电机
+
+Wukong set _ servo _ angle to _
+设置 _ 舵机 _ 角度为 _ 
+
+Wukong set NeoPixel _ _ _ _
+设置 NeoPixel _ _ _ _
+
+Wukong set light intensity to _
+设置氛围灯亮度为 _
+
 ##################
 # MicroBlocks UI #
 ##################
