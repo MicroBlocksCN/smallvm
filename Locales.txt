@@ -1054,6 +1054,17 @@ Wukong set NeoPixel _ _ _ _
 
 Wukong set light intensity to _
 
+####
+# Joystick:bit
+
+button _ is pressed
+
+rocker value of _
+
+motor vibrate for _ ms
+
+
+
 ##################
 # MicroBlocks UI #
 ##################

@@ -1185,6 +1185,18 @@ Wukong set NeoPixel _ _ _ _
 Wukong set light intensity to _
 设置氛围灯亮度为 _
 
+####
+# Joystick:bit
+
+button _ is pressed
+按键 _ 被按下
+
+rocker value of _
+摇杆 _ 的数值
+
+motor vibrate for _ ms
+震动 _ 毫秒
+
 ##################
 # MicroBlocks UI #
 ##################
