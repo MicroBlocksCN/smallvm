@@ -1128,6 +1128,63 @@ topic for MQTT event _
 payload for MQTT event _
 最新 MQTT 事件的消息 _
 
+####
+# Cutebot
+
+Cutebot
+酷比特小车
+
+Cutebot set left wheel speed to _ % right wheel speed to _ %
+设置左轮速度为 _ % 右轮速度为 _ %
+
+Cutebot stop car
+停车
+
+Cutebot tracking channel _ is _
+_ 巡线传感器 状态为 _
+
+Cutebot tracking state is _ _
+巡线传感器状态为 _ _
+
+
+Cutebot set LED _ to _
+将 _ LED 车头灯 设为 _
+
+Cutebot ultrasonic sensor distance(cm)
+超声波返回距离值
+
+Cutebot set _ servo _ angle to _
+设置 _ 舵机 _ 的角度为 _
+
+left
+左
+
+right
+右
+
+# Wukong
+
+Wukong
+悟空扩展板
+
+Wukong set motor _ speed to _ %
+设置电机 _ 速度为 _ %
+
+Wukong stop motor _
+停止电机 _ 
+
+Wukong stop all motors
+停止所有电机
+
+Wukong set _ servo _ angle to _
+设置 _ 舵机 _ 角度为 _ 
+
+Wukong set NeoPixel _ _ _ _
+设置 NeoPixel _ _ _ _
+
+Wukong set light intensity to _
+设置氛围灯亮度为 _
+
 ##################
 # MicroBlocks UI #
 ##################

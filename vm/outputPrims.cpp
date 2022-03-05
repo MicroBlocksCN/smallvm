@@ -634,7 +634,7 @@ static void initNeoPixelPin(int pinNum) {
 	}
 }
 
-static void IRAM_ATTR sendNeoPixelData(int val) {
+static void IRAM_ATTR sendNeoPixelData(int val) { // ESP8266
 	if (!neoPixelPinMask) return;
 
 	noInterrupts();
@@ -657,6 +657,8 @@ static void IRAM_ATTR sendNeoPixelData(int val) {
 
 #elif defined(ARDUINO_ARCH_ESP32)
 
+// #include "esp_task_wdt.h" //xxx
+
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#ifdef ARDUINO_M5Atom_Matrix_ESP32
@@ -666,31 +668,37 @@ static void initNeoPixelPin(int pinNum) {
 		#endif
 	}
 	if ((0 < pinNum) && (pinNum <= 31)) {
-		// must use a pin between 0-31
 		setPinMode(pinNum, OUTPUT);
+		neoPixelPinSet = &GPIO.out_w1ts;
+		neoPixelPinClr = &GPIO.out_w1tc;
 		neoPixelPinMask = 1 << pinNum;
-		GPIO.out_w1tc = neoPixelPinMask;
+	} else if ((32 <= pinNum) && (pinNum <= 33)) {
+		setPinMode(pinNum, OUTPUT);
+		neoPixelPinSet = (uint32_t *) &GPIO.out1_w1ts;
+		neoPixelPinClr = (uint32_t *) &GPIO.out1_w1tc;
+		neoPixelPinMask = 1 << (pinNum - 32);
 	} else {
 		neoPixelPinMask = 0;
 	}
 }
 
-static void IRAM_ATTR sendNeoPixelData(int val) {
+static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
 	if (!neoPixelPinMask) return;
 
+//	esp_task_wdt_feed(); // xxx
 	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 	portENTER_CRITICAL(&mux);
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
-		if (val & mask) { // one bit; timing goal: high 700 nsecs, low 300 nsecs
-			GPIO.out_w1ts = neoPixelPinMask;
-			DELAY_CYCLES(170); // 210
-			GPIO.out_w1tc = neoPixelPinMask;
-			DELAY_CYCLES(60); // 90
-		} else { // zero bit; timing goal: high 300 nsecs, low 700 nsecs
-			GPIO.out_w1ts = neoPixelPinMask;
-			DELAY_CYCLES(60);
-			GPIO.out_w1tc = neoPixelPinMask;
-			DELAY_CYCLES(170);
+		if (val & mask) { // one bit; timing goal: high 800 nsecs, low 400 nsecs
+			*neoPixelPinSet = neoPixelPinMask;
+			DELAY_CYCLES(190);
+			*neoPixelPinClr = neoPixelPinMask;
+			DELAY_CYCLES(90);
+		} else { // zero bit; timing goal: high 300 nsecs, low 900 nsecs
+			*neoPixelPinSet = neoPixelPinMask;
+			DELAY_CYCLES(70);
+			*neoPixelPinClr = neoPixelPinMask;
+			DELAY_CYCLES(210);
 		}
 	}
 	portEXIT_CRITICAL(&mux);
@@ -713,7 +721,7 @@ static inline void picoDelay(int n) {
 	}
 }
 
-static void __not_in_flash_func(sendNeoPixelData)(int val) {
+static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 Philhower
 	if (neoPixelPin < 0) return;
 
 	uint32_t oldInterruptStatus = save_and_disable_interrupts();
@@ -760,7 +768,7 @@ static void initNeoPixelPin(int pinNum) {
 	}
 }
 
-static void __not_in_flash_func(sendNeoPixelData)(int val) {
+static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 mbed
 	if (!gpioNeopixelGPIO) return;
 
 	uint32_t oldInterruptStatus = save_and_disable_interrupts();
@@ -798,7 +806,6 @@ static inline int gamma(int val) {
 	// neoMax determines the max brightness (and power draw!) of each NeoPixel color channel,
 	// which is about (neoMax / 255) * 20 mA per color channel.
 
-//return val; // xxx
 	const int neoMax = 40;
 	const int divisor = (255 * 255) / neoMax;
 	return ((val * val) / divisor) & 0xFF;
@@ -816,8 +823,22 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 		delay(1); // ensure we're not interrupted by scheduled (works for up to ~32 Neopixels)
 	#endif
 	OBJ arg = args[0];
-	if (isInt(arg)) {
-		int rgb = obj2int(arg);
+	if (IS_TYPE(arg, ListType)) {
+		int count = obj2int(FIELD(arg, 0));
+		for (int i = 0; i < count; i++) {
+			OBJ item = FIELD(arg, i + 1);
+			int rgb = evalInt(item);
+			int r = gamma((rgb >> 16) & 0xFF);
+			int g = gamma((rgb >> 8) & 0xFF);
+			int b = gamma(rgb & 0xFF);
+			int val = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
+			if (32 == neoPixelBits) { // send white as the final byte of four
+				val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
+			}
+			sendNeoPixelData(val);
+		}
+	} else {
+		int rgb = evalInt(arg);
 		int r = gamma((rgb >> 16) & 0xFF);
 		int g = gamma((rgb >> 8) & 0xFF);
 		int b = gamma(rgb & 0xFF);
@@ -826,24 +847,8 @@ OBJ primNeoPixelSend(int argCount, OBJ *args) {
 			val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
 		}
 		sendNeoPixelData(val);
-	} else if (IS_TYPE(arg, ListType)) {
-		int count = obj2int(FIELD(arg, 0));
-		for (int i = 0; i < count; i++) {
-			OBJ item = FIELD(arg, i + 1);
-			if (isInt(item)) {
-				int rgb = obj2int(item);
-				int r = gamma((rgb >> 16) & 0xFF);
-				int g = gamma((rgb >> 8) & 0xFF);
-				int b = gamma(rgb & 0xFF);
-				int val = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
-				if (32 == neoPixelBits) { // send white as the final byte of four
-					val = (val << 8) | whiteTable[(rgb >> 24) & 0x3F];
-				}
-				sendNeoPixelData(val);
-//				delayMicroseconds(1);  // reduces chance of first NeoPixel glitching to green
-			}
-		}
 	}
+
 	return falseObj;
 }
 

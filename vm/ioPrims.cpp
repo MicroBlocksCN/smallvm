@@ -419,8 +419,8 @@ void restartSerial() {
 	#define PIN_BUTTON_A 15
 	#define PIN_BUTTON_B 14
 	#define DEFAULT_TONE_PIN 26
-	static const char analogPinMappings[4] = { 36, 37, 38, 39 };
-	static const char digitalPinMappings[4] = { 12, 25, 32, 26 };
+	static const char ed1AnalogPinMap[4] = { 36, 37, 38, 39 };
+	static const char ed1DigitalPinMap[4] = { 12, 25, 32, 26 };
 	#define CAP_THRESHOLD 16
 	static const char buttonsPins[6] = { 2, 4, 13, 14, 15, 27 };
 	static int buttonIndex = 0;
@@ -648,7 +648,7 @@ int mapDigitalPinNum(int pinNum) {
 		if ((100 <= pinNum) && (pinNum <= 139)) {
 			return pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
 		} else if ((1 <= pinNum) && (pinNum <= 4)) {
-			return digitalPinMappings[pinNum - 1];
+			return ed1DigitalPinMap[pinNum - 1];
 		}
 	#endif
 	return pinNum;
@@ -685,7 +685,7 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		if ((100 <= pinNum) && (pinNum <= 139)) {
 			pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
 		} else if ((1 <= pinNum) && (pinNum <= 4)) {
-			pinNum = analogPinMappings[pinNum - 1];
+			pinNum = ed1AnalogPinMap[pinNum - 1];
 		}
 	#endif
 	#ifdef ARDUINO_ARCH_ESP32
@@ -763,7 +763,7 @@ void primAnalogWrite(OBJ *args) {
 			if ((100 <= pinNum) && (pinNum <= 139)) {
 				pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
 			} else if ((1 <= pinNum) && (pinNum <= 4)) {
-				pinNum = digitalPinMappings[pinNum - 1];
+				pinNum = ed1DigitalPinMap[pinNum - 1];
 			}
 		#endif
 		if (RESERVED(pinNum)) return;
@@ -865,7 +865,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 		if ((100 <= pinNum) && (pinNum <= 139)) {
 			pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
 		} else if ((1 <= pinNum) && (pinNum <= 4)) {
-			pinNum = digitalPinMappings[pinNum - 1];
+			pinNum = ed1DigitalPinMap[pinNum - 1];
 		}
 		if (pinNum == 2 || pinNum == 4 || pinNum == 13 ||
 			pinNum == 14 || pinNum == 15 || pinNum == 27) {
@@ -925,7 +925,7 @@ void primDigitalSet(int pinNum, int flag) {
 		if ((100 <= pinNum) && (pinNum <= 139)) {
 			pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
 		} else if ((1 <= pinNum) && (pinNum <= 4)) {
-			pinNum = digitalPinMappings[pinNum - 1];
+			pinNum = ed1DigitalPinMap[pinNum - 1];
 		}
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
@@ -1589,7 +1589,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 		if ((100 <= pin) && (pin <= 139)) {
 			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
 		} else if ((1 <= pin) && (pin <= 4)) {
-			pin = digitalPinMappings[pin - 1];
+			pin = ed1DigitalPinMap[pin - 1];
 		} else {
 			pin = DEFAULT_TONE_PIN;
 		}
@@ -1640,7 +1640,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 		if ((100 <= pin) && (pin <= 139)) {
 			pin = pin - 100; // allows access to unmapped IO pins 0-39 as 100-139
 		} else if ((1 <= pin) && (pin <= 4)) {
-			pin = digitalPinMappings[pin - 1];
+			pin = ed1DigitalPinMap[pin - 1];
 		}
 	#endif
 	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
@@ -1849,19 +1849,13 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 		return falseObj;
 	}
 
-	int pinNum = obj2int(pinArg);
-	#if defined(ARDUINO_ARCH_ESP32)
-		#if defined(ARDUINO_CITILAB_ED1)
-			if ((100 <= pinNum) && (pinNum <= 139)) {
-				pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
-			} else if ((1 <= pinNum) && (pinNum <= 4)) {
-				pinNum = digitalPinMappings[pinNum - 1];
-			}
-		#endif
-		if (RESERVED(pinNum)) return falseObj;
-	#endif
+	int pinNum = mapDigitalPinNum(obj2int(pinArg));
 
-	pinNum = mapDigitalPinNum(pinNum);
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+		if (RESERVED(pinNum)) return falseObj;
+	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
+		if (pinNum < 2) return falseObj;
+	#endif
 
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, OUTPUT);
