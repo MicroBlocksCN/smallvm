@@ -1054,6 +1054,31 @@ Wukong set NeoPixel _ _ _ _
 
 Wukong set light intensity to _
 
+####
+# Joystick:bit
+
+button _ is pressed
+
+rocker value of _
+
+motor vibrate for _ ms
+
+####
+# NeZha
+
+NeZha
+
+NeZha set motor _ speed to _ %
+
+NeZha stop motor _
+
+NeZha stop all motors
+
+NeZha set _ servo _ angle to _
+
+NeZha set continuous rotation servo _ speed to _ %
+
+
 ##################
 # MicroBlocks UI #
 ##################
