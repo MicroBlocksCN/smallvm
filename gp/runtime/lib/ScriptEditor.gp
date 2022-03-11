@@ -277,6 +277,7 @@ method contextMenu ScriptEditor {
     addItem menu 'undrop' 'undrop' 'undo last drop'
   }
   addLine menu
+  addItem menu 'set exported script scale' 'setExportedScriptScale'
   addItem menu 'save picture of all scripts' 'saveScriptsImage'
   addItem menu 'copy all scripts to clipboard' 'copyScriptsToClipboard'
   clip = (readClipboard)
@@ -503,6 +504,20 @@ method scriptChanged ScriptEditor {
 }
 
 // saving script image
+
+method setExportedScriptScale ScriptEditor {
+  // Set the scale used for exported scripts.
+
+  menu = (menu nil (action 'setExportScale' this) true)
+  for percent (list 55 85 100 110 125 150 200 250) {
+	  addItem menu (join '' percent '%') percent
+  }
+  popUpAtHand menu (global 'page')
+}
+
+method setExportScale ScriptEditor percent {
+  setGlobal 'blockExportScale' (percent / 100)
+}
 
 method saveScriptsImage ScriptEditor {
   gc

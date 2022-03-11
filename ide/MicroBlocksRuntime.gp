@@ -1874,7 +1874,7 @@ method showResult SmallRuntime chunkID value isError isResult {
 				blockForResultImage = nil
 				doOneCycle (global 'page')
 				waitMSecs 500 // show result bubble briefly before showing menu
-				exportAsImageScaled h 2 value
+				exportAsImageScaled h value
 			}
 		}
 	}

@@ -340,11 +340,11 @@ method extractBlock Block {
   grabCentered morph this
 }
 
-method exportAsImage Block { exportAsImageScaled (topBlock this) 2 }
+method exportAsImage Block { exportAsImageScaled (topBlock this) }
 method exportAsImageWithResult Block { exportScriptImageWithResult (smallRuntime) this }
 
 method exportAsImage BlockDefinition {
-	exportAsImageScaled (handler (ownerThatIsA morph 'Block')) 2
+	exportAsImageScaled (handler (ownerThatIsA morph 'Block'))
 }
 
 method copyToClipboard Block {
@@ -530,6 +530,7 @@ method contextMenu ScriptEditor {
 	addItem menu 'paste script from clipboard' 'pasteScripts'
   }
   addLine menu
+  addItem menu 'set exported script scale' 'setExportedScriptScale'
   addItem menu 'save a picture of all scripts' 'saveScriptsImage'
   return menu
 }
