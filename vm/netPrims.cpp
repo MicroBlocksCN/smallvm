@@ -451,7 +451,7 @@ static int lastWebSocketType;
 static int lastWebSocketClientId;
 char lastWebSocketPayload[1000];
 
-void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t * payload, size_t length) {
+static void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t * payload, size_t length) {
 	lastWebSocketType = type;
 	lastWebSocketClientId = client_id;
 	length = length >= 1000 ? 999 : length;
@@ -541,24 +541,25 @@ static int mqttBufferSize = -1;
 static char hasMQTTMessage = false;
 static char *lastMQTTTopic = NULL;
 static char *lastMQTTPayload = NULL;
+static int payloadByteCount = 0;
 
-void MQTTmessageReceived(String &topic, String &payload) {
-	if (!lastMQTTTopic || !lastMQTTPayload || (mqttBufferSize <= 1)) {
+static void MQTTmessageReceived(MQTTClient *client, char *topic, char *bytes, int length) {
+	if (!pmqtt_client || !lastMQTTTopic || !lastMQTTPayload || (mqttBufferSize <= 1)) {
 		return; // not initialized
 	}
 
 	hasMQTTMessage = true;
+	payloadByteCount = 0; // default
 	int maxLen = mqttBufferSize - 1;
 
-	int len = strlen(topic.c_str());
+	int len = strlen(topic);
 	if (len > maxLen) len = maxLen;
-	memcpy(lastMQTTTopic, topic.c_str(), len);
+	memcpy(lastMQTTTopic, topic, len);
 	lastMQTTTopic[len] = '\0';
 
-	len = strlen(payload.c_str());
-	if (len > maxLen) len = maxLen;
-	memcpy(lastMQTTPayload, payload.c_str(), len);
-	lastMQTTPayload[len] = '\0';
+	payloadByteCount = length;
+	if (payloadByteCount > maxLen) payloadByteCount = maxLen;
+	memcpy(lastMQTTPayload, bytes, payloadByteCount);
 }
 
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
@@ -595,7 +596,7 @@ static OBJ primMQTTConnect(int argCount, OBJ *args) {
 		connected = pmqtt_client->connect(client_id);
 	}
 	if (connected) {
-		pmqtt_client->onMessage(MQTTmessageReceived);
+		pmqtt_client->onMessageAdvanced(MQTTmessageReceived);
 	}
 	return falseObj;
 }
@@ -612,7 +613,14 @@ static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
 
 		FIELD(tempGCRoot, 0) = int2obj(2); //list size
 		FIELD(tempGCRoot, 1) = newStringFromBytes(lastMQTTTopic, strlen(lastMQTTTopic));
-		FIELD(tempGCRoot, 2) = newStringFromBytes(lastMQTTPayload, strlen(lastMQTTPayload));
+
+		int wordCount = (payloadByteCount + 3) / 4;
+		OBJ payload = newObj(ByteArrayType, wordCount, falseObj);
+		if (!payload) return fail(insufficientMemoryError);
+		memcpy(&FIELD(payload, 0), lastMQTTPayload, payloadByteCount);
+		setByteCountAdjust(payload, payloadByteCount);
+		FIELD(tempGCRoot, 2) = payload;
+
 		hasMQTTMessage = false;
 		return tempGCRoot;
 	} else {
@@ -812,7 +820,7 @@ static char receiveBuffer[1000];
 static bool EspNoWInitialized = false;
 static bool hasEspNowMessage = false;
 
-void processRx(const uint8_t mac[WIFIESPNOW_ALEN], const uint8_t* buf, size_t count, void* arg) {
+static void processRx(const uint8_t mac[WIFIESPNOW_ALEN], const uint8_t* buf, size_t count, void* arg) {
 	char* data = (char*) buf;
 	int len = strlen(data);
 	if (len > 999) len = 999;
@@ -858,6 +866,7 @@ static OBJ primEspNowBroadcast(int argCount, OBJ *args) {
 	char* message = obj2str(args[0]);
 	WifiEspNowBroadcast.send(reinterpret_cast<const uint8_t*>(message), strlen(message));
 	WifiEspNowBroadcast.loop();
+	return falseObj;
 }
 
 #endif // ESP_NOW_PRIMS
