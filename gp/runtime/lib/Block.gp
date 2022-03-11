@@ -956,7 +956,7 @@ method scriptText Block useSemicolons {
 
 method exportAsImage Block { exportAsImageScaled this }
 
-method exportAsImageScaled Block result {
+method exportAsImageScaled Block result isError {
   // Save a PNG picture of the given script at the given scale.
   // If result is not nil, include a speech bubble showing the result.
 
@@ -992,7 +992,7 @@ method exportAsImageScaled Block result {
 
   // draw the result bubble, if any
   if (notNil result) {
-	scaledBubble = (newBubble result 200 'right')
+	scaledBubble = (newBubble result 200 'right' isError)
 	bubbleW = (width (fullBounds (morph scaledBubble)))
 	bubbleH = (height (fullBounds (morph scaledBubble)))
 	bubbleInsetX = (5 * scale)
