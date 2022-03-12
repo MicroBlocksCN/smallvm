@@ -1012,8 +1012,10 @@ method exportAsImageScaled Block result isError {
   fullDrawOn (morph scaledScript) ctx
   if (notNil scaledBubble) {
 	topMorphWidth = (width (morph scaledScript))
-	setOffset ctx (topMorphWidth - bubbleInsetX) 0
+    adjustment = (round (6 * scale)) // needed because bubble bounds is slightly too large
+	setOffset ctx ((topMorphWidth - bubbleInsetX) + adjustment) (- adjustment)
 	fullDrawOn (morph scaledBubble) ctx
+	if ('hat' == type) { bm = (cropTransparent bm) } // remove extra space
   }
 
   // revert to old scale
