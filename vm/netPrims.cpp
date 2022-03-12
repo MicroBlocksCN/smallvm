@@ -451,7 +451,7 @@ static int lastWebSocketType;
 static int lastWebSocketClientId;
 char lastWebSocketPayload[1000];
 
-static void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t * payload, size_t length) {
+static void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t *payload, size_t length) {
 	lastWebSocketType = type;
 	lastWebSocketClientId = client_id;
 	length = length >= 1000 ? 999 : length;
@@ -520,11 +520,12 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 #if !(defined(ESP8266) || defined(ARDUINO_ARCH_ESP32))
 
 static OBJ primMQTTConnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTDisconnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTPub(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTSub(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTUnsub(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
@@ -544,6 +545,8 @@ static char *lastMQTTPayload = NULL;
 static int payloadByteCount = 0;
 
 static void MQTTmessageReceived(MQTTClient *client, char *topic, char *bytes, int length) {
+	// Incoming MQTT message callback.
+
 	if (!pmqtt_client || !lastMQTTTopic || !lastMQTTPayload || (mqttBufferSize <= 1)) {
 		return; // not initialized
 	}
@@ -558,8 +561,9 @@ static void MQTTmessageReceived(MQTTClient *client, char *topic, char *bytes, in
 	lastMQTTTopic[len] = '\0';
 
 	payloadByteCount = length;
-	if (payloadByteCount > maxLen) payloadByteCount = maxLen;
+	if (payloadByteCount > (maxLen - 1)) payloadByteCount = (maxLen - 1); // leave room for terminator
 	memcpy(lastMQTTPayload, bytes, payloadByteCount);
+	lastMQTTPayload[payloadByteCount] = '\0'; // add string teriminator
 }
 
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
@@ -568,8 +572,8 @@ static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	char *client_id = (argCount > 2) ? obj2str(args[2]) : (char *) "";
 	char connected = false;
 
-	// constrain buffer size
-	// Note: buffers consume 4 x buffer_size byte of RAM
+	// constrain the buffer size
+	// Note: buffers consume 4 x buffer_size bytes of RAM
 	if (buffer_size < 32) buffer_size = 32;
 	if (buffer_size > 16384) buffer_size = 16384;
 
@@ -601,8 +605,21 @@ static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
 	if (!pmqtt_client) return falseObj;
+
+	return (pmqtt_client->connected()) ? trueObj : falseObj;
+}
+
+static OBJ primMQTTDisconnect(int argCount, OBJ *args) {
+	if (!pmqtt_client) return falseObj;
+	pmqtt_client->disconnect();
+	return trueObj;
+}
+
+static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
+	if (!pmqtt_client || !pmqtt_client->connected()) return falseObj;
+	int useBinary = (argCount > 0) && (trueObj == args[0]);
 
 	pmqtt_client->loop();
 	if (hasMQTTMessage) {
@@ -614,12 +631,16 @@ static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
 		FIELD(tempGCRoot, 0) = int2obj(2); //list size
 		FIELD(tempGCRoot, 1) = newStringFromBytes(lastMQTTTopic, strlen(lastMQTTTopic));
 
-		int wordCount = (payloadByteCount + 3) / 4;
-		OBJ payload = newObj(ByteArrayType, wordCount, falseObj);
-		if (!payload) return fail(insufficientMemoryError);
-		memcpy(&FIELD(payload, 0), lastMQTTPayload, payloadByteCount);
-		setByteCountAdjust(payload, payloadByteCount);
-		FIELD(tempGCRoot, 2) = payload;
+		if (useBinary) {
+			int wordCount = (payloadByteCount + 3) / 4;
+			OBJ payload = newObj(ByteArrayType, wordCount, falseObj);
+			if (!payload) return fail(insufficientMemoryError);
+			memcpy(&FIELD(payload, 0), lastMQTTPayload, payloadByteCount);
+			setByteCountAdjust(payload, payloadByteCount);
+			FIELD(tempGCRoot, 2) = payload;
+		} else {
+			FIELD(tempGCRoot, 2) = newStringFromBytes(lastMQTTPayload, strlen(lastMQTTPayload));
+		}
 
 		hasMQTTMessage = false;
 		return tempGCRoot;
@@ -629,43 +650,43 @@ static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTPub(int argCount, OBJ *args) {
-	if (!pmqtt_client) return falseObj;
+	if (!pmqtt_client || !pmqtt_client->connected()) return falseObj;
 
-	int success = false;
 	char *topic = obj2str(args[0]);
-	char *message = obj2str(args[1]);
-	success = pmqtt_client->publish(topic, message);
-	pmqtt_client->loop();
+	OBJ payloadObj = args[1];
+	char *payload;
+	int payloadByteCount = 0;
+	if (IS_TYPE(payloadObj, StringType)) { // string
+		payload = obj2str(payloadObj);
+		payloadByteCount = strlen(payload);
+	} else if (IS_TYPE(payloadObj, ByteArrayType)) { // byte array
+		payload = (char *) &FIELD(payloadObj, 0);
+		payloadByteCount = BYTES(payloadObj);
+	} else {
+		return falseObj; // must be string or byte array
+	}
 
+	int retained = (argCount > 2) && (trueObj == args[2]);
+	int qos = (argCount > 3) ? obj2int(args[3]) : 0;
+	int success = pmqtt_client->publish(topic, payload, payloadByteCount, retained, qos);
 	return success ? trueObj : falseObj;
 }
 
 static OBJ primMQTTSub(int argCount, OBJ *args) {
-	if (!pmqtt_client) return falseObj;
+	if (!pmqtt_client || !pmqtt_client->connected()) return falseObj;
 
-	int success = false;
 	char *topic = obj2str(args[0]);
-	success = pmqtt_client->subscribe(topic);
-	// mqtt_client.loop();
+	int qos = (argCount > 1) ? obj2int(args[1]) : 0;
+	int success = pmqtt_client->subscribe(topic, qos);
 	return success ? trueObj : falseObj;
 }
 
 static OBJ primMQTTUnsub(int argCount, OBJ *args) {
-	if (!pmqtt_client) return falseObj;
+	if (!pmqtt_client || !pmqtt_client->connected()) return falseObj;
 
-	int success = false;
 	char *topic = obj2str(args[0]);
-	success = pmqtt_client->unsubscribe(topic);
-	// mqtt_client.loop();
-	// return falseObj;
+	int success = pmqtt_client->unsubscribe(topic);
 	return success ? trueObj : falseObj;
-}
-
-static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
-	if (!pmqtt_client) return falseObj;
-
-	// Return true when connected to MQTT broker.
-	return (pmqtt_client->connected()) ? trueObj : falseObj;
 }
 
 #endif
@@ -892,11 +913,12 @@ static PrimEntry entries[] = {
 	{"webSocketSendToClient", primWebSocketSendToClient},
 
 	{"MQTTConnect", primMQTTConnect},
+	{"MQTTIsConnected", primMQTTIsConnected},
+	{"MQTTDisconnect", primMQTTDisconnect},
 	{"MQTTLastEvent", primMQTTLastEvent},
 	{"MQTTPub", primMQTTPub},
 	{"MQTTSub", primMQTTSub},
 	{"MQTTUnsub", primMQTTUnsub},
-	{"MQTTIsConnected", primMQTTIsConnected},
 
   #if defined(BLE_PRIMS)
 	{"BLE_UART_ServerStart", primBLE_UART_ServerStart},
