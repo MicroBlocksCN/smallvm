@@ -1,0 +1,46 @@
+module 'Joystick:bit' Input
+author wwj718
+version 1 0 
+choices axisXY X Y 
+choices button_4 C D E F 
+description 'Joystick:bit V2 is a game board based on micro:bit. It contains a 4-direction joystick and 4 undefined buttons. At the same time, it enhances the game experience with its on-board buzzer and vibration motor. Joystick:bit V2 can also be used as a remote control with a good apperance and comfortable feels.
+
+https://www.elecfreaks.com/learn-en/microbitExtensionModule/joystick_bit_v2.html
+'
+
+	spec 'r' 'button' 'button _ is pressed' 'menu.button_4' 'C'
+	spec 'r' 'rocker value of' 'rocker value of _' 'menu.axisXY' 'X'
+	spec ' ' 'motor vibrate for' 'motor vibrate for _ ms' 'auto' 100
+	spec ' ' '_initialization' 'initialization'
+
+to '_initialization' {
+  digitalWriteOp 0 false
+  digitalWriteOp 16 true
+}
+
+to button button {
+  if (button == 'C') {
+    return (not (digitalReadOp 12 true))
+  } (button == 'D') {
+    return (not (digitalReadOp 13 true))
+  } (button == 'E') {
+    return (not (digitalReadOp 14 true))
+  } else {
+    return (not (digitalReadOp 15 true))
+  }
+}
+
+to 'motor vibrate for' x {
+  digitalWriteOp 16 false
+  waitMillis x
+  digitalWriteOp 16 true
+}
+
+to 'rocker value of' axis {
+  if (axis == 'X') {
+    return (analogReadOp 1)
+  } else {
+    return (analogReadOp 2)
+  }
+}
+

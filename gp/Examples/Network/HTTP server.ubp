@@ -17,7 +17,7 @@ to initializeResponses {
 </ul>') ('[data:makeList]' '/test' '<p>This is a <strong>test</strong> URL</p>') ('[data:makeList]' '/foo' '<p>Just a page that says</p>
 <h1>FOO</h1>') ('[data:makeList]' '/bar' '<p>Just a page that says</p>
 <h1>BAR</h1>
-<img src="http://microblocks.fun/logo.png"/>'))
+<img src="https://microblocks.fun/assets/img/logos/MicroBlocks.svg"/>'))
 }
 
 script 55 50 {

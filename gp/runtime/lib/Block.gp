@@ -89,6 +89,13 @@ to blockScale {
   return ((global 'blockScale') * (global 'scale'))
 }
 
+to blockExportScale {
+  // This variable is controls the scale of exported script PNG files.
+
+  if (isNil (global 'blockExportScale')) { setGlobal 'blockExportScale' 1 }
+  return (global 'blockExportScale')
+}
+
 method fixLayoutNow Block {
   layoutNeeded = true
   fixLayout this
@@ -947,9 +954,9 @@ method scriptText Block useSemicolons {
   return (joinStrings result)
 }
 
-method exportAsImage Block { exportAsImageScaled this 2 }
+method exportAsImage Block { exportAsImageScaled this }
 
-method exportAsImageScaled Block scale result {
+method exportAsImageScaled Block result isError {
   // Save a PNG picture of the given script at the given scale.
   // If result is not nil, include a speech bubble showing the result.
 
@@ -963,12 +970,19 @@ method exportAsImageScaled Block scale result {
 
   // draw script and bubble at high resolution
   oldScale = (global 'scale')
-  setGlobal 'scale' scale // change global scale temporarily to ensure retina resolution
+  setGlobal 'scale' 2 // change global scale temporarily to ensure retina resolution
+
+  // use given block scale
+  oldBlockScale = (global 'blockScale')
+  scale = (blockExportScale)
+  setGlobal 'blockScale' scale
+
   if (notNil (function this)) {
 	scaledScript = (scriptForFunction (function this))
   } else {
     scaledScript = (toBlock (expression this))
   }
+  fixLayout scaledScript
   bnds = (fullBounds (morph scaledScript))
   scriptW = (width bnds)
   scriptH = (height bnds)
@@ -978,7 +992,7 @@ method exportAsImageScaled Block scale result {
 
   // draw the result bubble, if any
   if (notNil result) {
-	scaledBubble = (newBubble result 200 'right')
+	scaledBubble = (newBubble result 200 'right' isError)
 	bubbleW = (width (fullBounds (morph scaledBubble)))
 	bubbleH = (height (fullBounds (morph scaledBubble)))
 	bubbleInsetX = (5 * scale)
@@ -998,10 +1012,15 @@ method exportAsImageScaled Block scale result {
   fullDrawOn (morph scaledScript) ctx
   if (notNil scaledBubble) {
 	topMorphWidth = (width (morph scaledScript))
-	setOffset ctx (topMorphWidth - bubbleInsetX) 0
+    adjustment = (round (6 * scale)) // needed because bubble bounds is slightly too large
+	setOffset ctx ((topMorphWidth - bubbleInsetX) + adjustment) (- adjustment)
 	fullDrawOn (morph scaledBubble) ctx
+	if ('hat' == type) { bm = (cropTransparent bm) } // remove extra space
   }
-  setGlobal 'scale' oldScale // revert to old scale
+
+  // revert to old scale
+  setGlobal 'blockScale' oldBlockScale
+  setGlobal 'scale' oldScale
 
   // save result as a PNG file
   pngData = (encodePNG bm nil (scriptText this))
