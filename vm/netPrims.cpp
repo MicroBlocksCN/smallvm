@@ -654,7 +654,7 @@ static OBJ primMQTTPub(int argCount, OBJ *args) {
 
 	char *topic = obj2str(args[0]);
 	OBJ payloadObj = args[1];
-	char *payload;
+	const char *payload;
 	int payloadByteCount = 0;
 	if (IS_TYPE(payloadObj, StringType)) { // string
 		payload = obj2str(payloadObj);
@@ -662,6 +662,14 @@ static OBJ primMQTTPub(int argCount, OBJ *args) {
 	} else if (IS_TYPE(payloadObj, ByteArrayType)) { // byte array
 		payload = (char *) &FIELD(payloadObj, 0);
 		payloadByteCount = BYTES(payloadObj);
+	} else if (isBoolean(payloadObj)) {
+		payload = (char *) (trueObj == payloadObj) ? "true" : "false";
+		payloadByteCount = strlen(payload);
+	} else if (isInt(payloadObj)) {
+		char s[20];
+		sprintf(s, "%d", obj2int(payloadObj));
+		payload = s;
+		payloadByteCount = strlen(payload);
 	} else {
 		return falseObj; // must be string or byte array
 	}
