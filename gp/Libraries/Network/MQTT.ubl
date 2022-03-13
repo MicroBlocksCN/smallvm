@@ -1,18 +1,20 @@
 module MQTT Comm
 author wwj718
-version 1 3
+version 1 4 
 depends WiFi 
-tags websockets network 
+tags mqtt network 
 description 'A simple MQTT client.'
 
 	spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num str str str' '' 128 '' '' ''
 	spec 'r' 'MQTT connected' 'MQTT connected'
-	spec ' ' 'MQTT sub' 'MQTT sub _' 'str' 'testTopic'
+	spec ' ' 'MQTT disconnect' 'MQTT disconnect'
+	spec ' ' 'MQTT sub' 'MQTT sub _ : QoS _' 'str num' 'testTopic' 0
 	spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
-	spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _' 'str str' 'testTopic' 'Hello!'
-	spec 'r' 'last MQTT event' 'last MQTT event'
+	spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _ : retain _ QoS _' 'str auto bool num' 'testTopic' 'Hello!' false 0
+	spec 'r' '[net:MQTTLastEvent]' 'last MQTT event : binary _' 'bool' false
 	spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
 	spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
+	spec 'r' 'last MQTT event' 'obsolete last MQTT event'
 
 to 'MQTT connect to' broker buffer_sizes client_id username password {
   if ((getIPAddress) != '0.0.0.0') {
@@ -37,9 +39,14 @@ to 'MQTT connected' {
   return (callCustomReporter '[net:MQTTIsConnected]')
 }
 
+to 'MQTT disconnect' {
+  callCustomCommand '[net:MQTTdisconnect]'
+}
+
 to 'MQTT event payload' event {
   if (and (isType event 'list') ((size event) > 1)) {
-    return (at 2 event)
+    comment 'Join to empty string converts byte array to string'
+    return ('[data:join]' '' (at 2 event))
   } else {
     return ''
   }
@@ -53,47 +60,37 @@ to 'MQTT event topic' event {
   }
 }
 
-to 'MQTT pub' topic payload {
-  if ('MQTT connected') {
-    if ((callCustomReporter '[net:MQTTPub]' ('[data:makeList]' topic payload)) == (booleanConstant true)) {
-      sayIt 'pub success!'
-    } else {
-      sayIt 'pub failure!'
-    }
+to 'MQTT pub' topic payload retain qos {
+  if ((pushArgCount) < 4) {
+    okay = (callCustomReporter '[net:MQTTPub]' ('[data:makeList]' topic payload))
   } else {
-    sayIt 'Not Connected'
+    okay = (callCustomReporter '[net:MQTTPub]' ('[data:makeList]' topic payload retain qos))
+  }
+  if (not okay) {
+    sayIt 'pub failure!'
   }
 }
 
-to 'MQTT sub' topic {
-  if ('MQTT connected') {
-    if ((callCustomReporter '[net:MQTTSub]' ('[data:makeList]' topic)) == (booleanConstant true)) {
-      sayIt 'sub success!'
-    } else {
-      sayIt 'sub failure!'
-    }
+to 'MQTT sub' topic qos {
+  if ((pushArgCount) < 2) {
+    okay = (callCustomReporter '[net:MQTTSub]' ('[data:makeList]' topic))
   } else {
-    sayIt 'Not Connected'
+    okay = (callCustomReporter '[net:MQTTSub]' ('[data:makeList]' topic qos))
+  }
+  if (not okay) {
+    sayIt 'sub failure!'
   }
 }
 
 to 'MQTT unsub' topic {
-  if ('MQTT connected') {
-    if ((callCustomReporter '[net:MQTTUnsub]' ('[data:makeList]' topic)) == (booleanConstant true)) {
-      sayIt 'unsub success!'
-    } else {
-      sayIt 'unsub failure!'
-    }
-  } else {
-    sayIt 'Not Connected'
-  }
+  if ((callCustomReporter '[net:MQTTUnsub]' ('[data:makeList]' topic)) != (booleanConstant true)) {sayIt 'unsub failure!'}
 }
 
-to 'last MQTT event' {
-  if ('MQTT connected') {
+to 'last MQTT event' useBinary {
+  if ((pushArgCount) < 1) {
     return (callCustomReporter '[net:MQTTLastEvent]')
   } else {
-    return (booleanConstant false)
+    return (callCustomReporter '[net:MQTTLastEvent]' ('[data:makeList]' binaryFlag))
   }
 }
 
