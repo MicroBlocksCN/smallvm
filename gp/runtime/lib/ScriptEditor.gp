@@ -509,7 +509,7 @@ method setExportedScriptScale ScriptEditor {
   // Set the scale used for exported scripts.
 
   menu = (menu nil (action 'setExportScale' this) true)
-  for percent (list 50 75 100 125 150 200 250) {
+  for percent (list 50 65 100 200) {
 	  addItem menu (join '' percent '%') percent
   }
   popUpAtHand menu (global 'page')
