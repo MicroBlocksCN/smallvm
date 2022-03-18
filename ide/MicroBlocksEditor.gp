@@ -573,7 +573,10 @@ method checkForBrowserResize MicroBlocksEditor {
   h = (last browserSize)
   winSize = (windowSize)
 
-  if (and ((at winSize 1) == w) ((at winSize 2) == h)) {
+  dx = (abs ((at winSize 1) - w))
+  dy = (abs ((at winSize 2) - h))
+  if (and (dx <= 1) (dy <= 1)) {
+    // At the smallest browser zoom levels, sizes can differ by one pixel
     return // no change
   }
 

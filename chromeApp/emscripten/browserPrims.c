@@ -569,38 +569,28 @@ static void setClipRect(OBJ clipRectObj) {
 // ***** Canvas-based graphics primitives *****
 
 static OBJ primOpenWindow(int nargs, OBJ args[]) {
+    // Note: We always use retina mode the browser.
+
 	int w = intOrFloatArg(0, 500, nargs, args);
 	int h = intOrFloatArg(1, 500, nargs, args);
-	int tryRetina = (nargs > 2) && (trueObj == args[2]);
-
-	double pixelRatio = EM_ASM_DOUBLE({
-		return window.devicePixelRatio;
-	}, NULL);
-	if (pixelRatio < 1) tryRetina = false;
 
 	EM_ASM_({
 		var w = $0;
 		var h = $1;
-		var tryRetina = $2;
 
-		// hack to prevent scrollbars from appearing at certain zoom levels in Chrome:
-		if (((devicePixelRatio % 1) == 0.5) || (devicePixelRatio == 10))  {
-			w -= 1;
-			h -= 1;
-		}
-
-        // make background gray to make 1 pixel gap less noticable
+        // make background gray to make any gaps less noticable
 		document.body.style.backgroundColor = "rgb(200,200,200)";
 
 		var winCnv = document.getElementById('canvas');
 		if (winCnv) {
+		    winCnv.style.setProperty('margin-top', -19 + 'px'); // avoid gray band in Chrome
 			winCnv.style.setProperty('width', w + 'px');
 			winCnv.style.setProperty('height', h + 'px');
-			winCnv.width = tryRetina ? (2 * w) : w;
-			winCnv.height = tryRetina ? (2 * h) : h;
+			winCnv.width = 2 * w;
+			winCnv.height = 2 * h;
+			GP.isRetina = true;
 		}
-		GP.isRetina = tryRetina;
-	}, w, h, tryRetina);
+	}, w, h);
 
 	return nilObj;
 }
