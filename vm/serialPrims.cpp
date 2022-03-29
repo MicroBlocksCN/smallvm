@@ -148,7 +148,13 @@ static void serialClose() {
 
 static void serialOpen(int baudRate) {
 	if (isOpen) serialClose();
-	SERIAL_PORT.begin(baudRate);
+	#if defined(ARDUINO_CITILAB_ED1)
+		int txPin = mapDigitalPinNum(1);
+		int rxPin = mapDigitalPinNum(2);
+		SERIAL_PORT.begin(baudRate, SERIAL_8N1, rxPin, txPin);
+	#else
+		SERIAL_PORT.begin(baudRate);
+	#endif
 	isOpen = true;
 }
 
