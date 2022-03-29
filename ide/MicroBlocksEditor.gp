@@ -669,12 +669,6 @@ method processDroppedText MicroBlocksEditor text {
       return
     }
 
-	// xxx remove this after switching to .PNG files
-    i = (findSubstring 'render?json=' path)
-    if (notNil i) { // script and parameters pass as a json object
-      json = (urlDecode (substring path (i + 12))) // extract and decode the JSON string
-    }
-
     if (endsWith url '.ubp') {
       if (not (canReplaceCurrentProject this)) { return }
       openProject this (httpBody (httpGet host path)) fileName
@@ -683,7 +677,6 @@ method processDroppedText MicroBlocksEditor text {
     } (and (or (notNil json) (endsWith url '.png')) ('Browser' == (platform))) {
       data = (httpBody (basicHTTPGetBinary host path))
       if ('' == data) { return }
-      if (notNil json) { installLibsFromJSON scripter json } // xxx remove this after switching to .PNG files
       importFromPNG this data
     }
   } else {
