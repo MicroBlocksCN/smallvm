@@ -707,7 +707,7 @@ display character _
 # TFT display library
 
 enable TFT _
-启用 TFT
+启用 TFT _
 
 TFT width
 TFT宽度
