@@ -92,7 +92,7 @@ to blockScale {
 to blockExportScale {
   // This variable is controls the scale of exported script PNG files.
 
-  if (isNil (global 'blockExportScale')) { setGlobal 'blockExportScale' 1 }
+  if (isNil (global 'blockExportScale')) { setGlobal 'blockExportScale' 0.65 } // default
   return (global 'blockExportScale')
 }
 

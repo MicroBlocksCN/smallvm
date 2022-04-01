@@ -509,9 +509,10 @@ method setExportedScriptScale ScriptEditor {
   // Set the scale used for exported scripts.
 
   menu = (menu nil (action 'setExportScale' this) true)
-  for percent (list 50 65 100 200) {
-	  addItem menu (join '' percent '%') percent
-  }
+  addItem menu 'small (50%)' 50
+  addItem menu 'normal (65%)' 65
+  addItem menu 'large (100%)' 100
+  addItem menu 'printable (200%)' 200
   popUpAtHand menu (global 'page')
 }
 
@@ -520,8 +521,19 @@ method setExportScale ScriptEditor percent {
 }
 
 method saveScriptsImage ScriptEditor {
+  // save scale and blockScale, then set scale for export
+  oldScale = (global 'scale')
+  oldBlockScale = (global 'blockScale')
+  setGlobal 'scale' 2
+  setBlockScalePercent this (100 * (global 'blockExportScale'))
+
+  // draw the entire scripting pane
   gc
   bm = (cropTransparent (fullCostume morph))
+
+  // revert to old scales
+  setGlobal 'scale' oldScale
+  setBlockScalePercent this (100 * oldBlockScale)
 
   scriptsString = nil
   mbScripter = (ownerThatIsA morph 'MicroBlocksScripter')
