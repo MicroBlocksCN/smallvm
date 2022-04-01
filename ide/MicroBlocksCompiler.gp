@@ -852,6 +852,9 @@ method primitive SmallCompiler op args isCommand {
 		}
 	} else {
 		print 'Skipping unknown op:' op
+		if (not isCommand) {
+			add result (array 'pushImmediate' zeroObj) // missing reporter; push dummy result
+		}
 	}
 	return result
 }
