@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -45,7 +45,6 @@ to openMicroBlocksEditor devMode {
   addPart page editor
   redrawAll (global 'page')
   readVersionFile (smallRuntime)
-  checkLatestVersion
   applyUserPreferences editor
   pageResized editor
   developerModeChanged editor
@@ -54,64 +53,6 @@ to openMicroBlocksEditor devMode {
     importFromURL editor (browserURL)
   }
   startSteppingSafely page
-}
-
-to checkLatestVersion {
-  latestVersion = (fetchLatestVersionNumber) // fetch version, even in browser, to log useage
-  if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
-  currentVersion = (splitWith (ideVersionNumber (smallRuntime)) '.')
-  for i (count latestVersion) {
-	latest = (toInteger (at latestVersion i))
-	current = (toInteger (at currentVersion i))
-	pilot = (current > latest)
-	if pilot {
-      // we're running a pilot release, lets check the latest one
-      latestVersion = (fetchLatestPilotVersionNumber)
-      latest = (toInteger (at latestVersion i))
-	}
-	if (latest > current) {
-      (inform (global 'page') (join
-		'A new MicroBlocks version has been released (' (joinStrings latestVersion '.') ').' (newline)
-		(newline)
-		'Get it now at http://microblocks.fun')
-		'New version available')
-	} (current > latest) {
-      // if this subpart of the current version number is > latest, don't check following parts
-      // (e.g. 2.0.0 is later than 1.9.9)
-      return
-	}
-  }
-}
-
-to fetchLatestVersionNumber {
-  platform = (platform)
-  if ('Browser' == platform) {
-    if (browserIsChromeOS) {
-      suffix = '?C='
-    } else {
-      suffix = '?B='
-    }
-  } ('Mac' == (platform)) {
-    suffix = '?M='
-  } ('Linux' == (platform)) {
-    suffix = '?L='
-  } ('Win' == (platform)) {
-    suffix = '?W='
-  } else {
-    suffix = '?R='
-  }
-  url = (join '/downloads/latest/VERSION.txt' suffix (rand 100000 999999))
-  versionText = (basicHTTPGet 'microblocks.fun' url)
-  if (isNil versionText) { return (array 0 0 0) }
-  return (splitWith (substring (first (lines versionText)) 1) '.')
-}
-
-to fetchLatestPilotVersionNumber {
-  versionText = (basicHTTPGet 'microblocks.fun' '/downloads/pilot/VERSION.txt')
-  if (isNil versionText) { return (array 0 0 0) }
-  versionLine = (first (lines versionText))
-  // take out "-pilot" first
-  return (splitWith (substring versionLine 1 ((count versionLine) - 6)) '.')
 }
 
 to findMicroBlocksEditor {
@@ -137,6 +78,7 @@ method initialize MicroBlocksEditor {
   clearProject this
   fixLayout this
   setFPS morph 200
+  newerVersion = 'unknown'
   return this
 }
 
@@ -514,6 +456,13 @@ method step MicroBlocksEditor {
   if (isRunning httpServer) {
 	step httpServer
   }
+  if ('unknown' == newerVersion) {
+    launch (global 'page') (newCommand 'checkLatestVersion' this) // start version check
+    newerVersion = nil
+  } (notNil newerVersion) {
+    reportNewerVersion this
+    newerVersion = nil
+  }
   if (notNil frameRate) {
 	updateFPS this
   }
@@ -734,6 +683,72 @@ method justReceivedDrop MicroBlocksEditor aHandler {
   } else {
 	animateBackToOldOwner (hand (global 'page')) (morph aHandler)
   }
+}
+
+// version check
+
+method checkLatestVersion MicroBlocksEditor {
+  latestVersion = (fetchLatestVersionNumber this) // fetch version, even in browser, to log useage
+  if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
+  currentVersion = (splitWith (ideVersionNumber (smallRuntime)) '.')
+  for i (count latestVersion) {
+	latest = (toInteger (at latestVersion i))
+	current = (toInteger (at currentVersion i))
+	pilot = (current > latest)
+	if pilot {
+      // we're running a pilot release, lets check the latest one
+      latestVersion = (fetchLatestPilotVersionNumber this)
+      latest = (toInteger (at latestVersion i))
+	}
+	if (latest > current) {
+	  newerVersion = latestVersion
+	} (current > latest) {
+      // if this subpart of the current version number is > latest, don't check following parts
+      // (e.g. 2.0.0 is later than 1.9.9)
+      return
+	}
+  }
+}
+
+method fetchLatestVersionNumber MicroBlocksEditor {
+  platform = (platform)
+  if ('Browser' == platform) {
+    if (browserIsChromeOS) {
+      suffix = '?C='
+    } else {
+      suffix = '?B='
+    }
+  } ('Mac' == (platform)) {
+    suffix = '?M='
+  } ('Linux' == (platform)) {
+    suffix = '?L='
+  } ('Win' == (platform)) {
+    suffix = '?W='
+  } else {
+    suffix = '?R='
+  }
+  url = (join '/downloads/latest/VERSION.txt' suffix (rand 100000 999999))
+  versionText = (basicHTTPGet 'microblocks.fun' url)
+  if (isNil versionText) { return (array 0 0 0) }
+  return (splitWith (substring (first (lines versionText)) 1) '.')
+}
+
+method fetchLatestPilotVersionNumber MicroBlocksEditor {
+  versionText = (basicHTTPGet 'microblocks.fun' '/downloads/pilot/VERSION.txt')
+  if (isNil versionText) { return (array 0 0 0) }
+  versionLine = (first (lines versionText))
+  // take out "-pilot" first
+  return (splitWith (substring versionLine 1 ((count versionLine) - 6)) '.')
+}
+
+method reportNewerVersion MicroBlocksEditor {
+  versionString = (joinStrings newerVersion '.')
+  newerVersion = nil // clear this to avoid repeated calls from step
+  (inform (global 'page') (join
+      'A new MicroBlocks version has been released (' versionString ').' (newline)
+      (newline)
+      'Get it now at http://microblocks.fun')
+    'New version available')
 }
 
 // user preferences
