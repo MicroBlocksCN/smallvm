@@ -729,16 +729,16 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 Philhower
  	gpio_put(neoPixelPin, LOW);
 	picoDelay(5); // prevents jitter in first pulse due to a possible instruction cache miss
 	for (unsigned int mask = (1 << 23); mask > 0; mask >>= 1) {
-		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 420 nsecs
+		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 500 nsecs
 			gpio_put(neoPixelPin, HIGH);
-			picoDelay(17);
+			picoDelay(21);
 			gpio_put(neoPixelPin, LOW);
-			picoDelay(7);
-		} else { // zero bit; timing goal: high 300 nsecs, low 900 nsecs
+			picoDelay(10);
+		} else { // zero bit; timing goal: high 250 nsecs, low 1150 nsecs
 			gpio_put(neoPixelPin, HIGH);
-			picoDelay(4);
+			picoDelay(2);
 			gpio_put(neoPixelPin, LOW);
-			picoDelay(20);
+			picoDelay(26);
 		}
 	}
 	restore_interrupts(oldInterruptStatus);
