@@ -88,6 +88,10 @@ GP.clipboard.style.right = '101%'; // placed just out of view
 GP.clipboard.style.top = '0px';
 document.body.appendChild(GP.clipboard);
 
+function isChrome() {
+    return (typeof chrome !== 'undefined');
+}
+
 function setGPClipboard(s) {
 	// Called by GP's setClipboard primitive
 
@@ -95,7 +99,7 @@ function setGPClipboard(s) {
 	GP.clipboard.value = s;
 	if (navigator.clipboard.writeText) {
 		navigator.clipboard.writeText(s).catch(() => {});
-	} else if (chrome && chrome.clipboard) {
+	} else if (isChrome() && chrome.clipboard) {
 		chrome.clipboard.data = s;
 		chrome.clipboard.type = 'textPlain';
 	}
@@ -108,7 +112,7 @@ async function readGPClipboard(s) {
 			GP.clipboard.value = s;
 			GP.clipboardBytes = toUTF8Array(s);
 		}
-	} else if (chrome && chrome.clipboard && (typeof chrome.clipboard.data === 'string')) {
+	} else if (isChrome() && chrome.clipboard && (typeof chrome.clipboard.data === 'string')) {
 		GP.clipboard.value = chrome.clipboard.data;
 		GP.clipboardBytes = toUTF8Array(chrome.clipboard.data);
 	}

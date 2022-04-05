@@ -530,8 +530,10 @@ method contextMenu ScriptEditor {
 	addItem menu 'paste script from clipboard' 'pasteScripts'
   }
   addLine menu
-  addItem menu 'set exported script scale' 'setExportedScriptScale'
   addItem menu 'save a picture of all scripts' 'saveScriptsImage'
+  if (devMode) {
+    addItem menu 'set exported script scale' 'setExportedScriptScale'
+  }
   return menu
 }
 

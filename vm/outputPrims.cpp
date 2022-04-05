@@ -544,35 +544,39 @@ static void initNeoPixelPin(int pinNum) {
 	*neoPixelPinSetDir = neoPixelPinMask;
 }
 
-static void sendNeoPixelData(int val) { // micro:bit/Calliope (16 MHz)
+static void sendNeoPixelData(int val) { // micro:bit (v1 & v2)/Calliope
 	// Note: This code is timing sensitive and the timing changes in unpredictable
 	// ways with code changes. For example, the zero-bit code uses constant register
 	// addresses while the one-bit uses the indirect variables. Making those
 	// consistent (either way) increases the timing. Go figure! Thus, if you change
 	// this code in any way, be sure to check the timing with an oscilloscope.
+
 	uint32 oldIRQ = saveIRQState();
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
-		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 350 nsecs
+		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 420 nsecs
 			#if defined(NRF52)
 				*neoPixelPinSet = neoPixelPinMask;
-				DELAY_CYCLES(11);
+				DELAY_CYCLES(13);
 				*neoPixelPinClr = neoPixelPinMask;
-				DELAY_CYCLES(3);
+				DELAY_CYCLES(6);
 			#else
-				*neoPixelPinSet = neoPixelPinMask;
+				// Note: Use NRF_P0->OUTSET/OUTCLR form to achieve better timing on nRF51
+				NRF_P0->OUTSET = neoPixelPinMask;
 				DELAY_CYCLES(8);
-				*neoPixelPinClr = neoPixelPinMask;
+				NRF_P0->OUTCLR = neoPixelPinMask;
 			#endif
-		} else { // zero bit; timing goal: high 350 nsecs, low 800 nsecs
+		} else { // zero bit; timing goal: high 300 nsecs, low 900 nsecs
 			// This addressing mode gave the shortest pulse width.
 			#if defined(NRF52)
 				*neoPixelPinSet = neoPixelPinMask;
-				DELAY_CYCLES(3);
+				DELAY_CYCLES(2);
 				*neoPixelPinClr = neoPixelPinMask;
 				DELAY_CYCLES(14);
 			#else
-				*neoPixelPinSet = neoPixelPinMask;
-				*neoPixelPinClr = neoPixelPinMask;
+				// Note: Use NRF_P0->OUTSET/OUTCLR form to achieve a short enough zero pulse on nRF51
+				NRF_P0->OUTSET = neoPixelPinMask;
+				NRF_P0->OUTCLR = neoPixelPinMask;
+				DELAY_CYCLES(6);
 			#endif
 		}
 	}
@@ -657,8 +661,6 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP8266
 
 #elif defined(ARDUINO_ARCH_ESP32)
 
-// #include "esp_task_wdt.h" //xxx
-
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#ifdef ARDUINO_M5Atom_Matrix_ESP32
@@ -685,7 +687,6 @@ static void initNeoPixelPin(int pinNum) {
 static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
 	if (!neoPixelPinMask) return;
 
-//	esp_task_wdt_feed(); // xxx
 	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 	portENTER_CRITICAL(&mux);
 	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
@@ -728,16 +729,16 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 Philhower
  	gpio_put(neoPixelPin, LOW);
 	picoDelay(5); // prevents jitter in first pulse due to a possible instruction cache miss
 	for (unsigned int mask = (1 << 23); mask > 0; mask >>= 1) {
-		if (val & mask) { // one bit; timing goal: high 780 nsecs, low 420 nsecs
+		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 500 nsecs
 			gpio_put(neoPixelPin, HIGH);
-			picoDelay(17);
+			picoDelay(21);
 			gpio_put(neoPixelPin, LOW);
-			picoDelay(7);
-		} else { // zero bit; timing goal: high 300 nsecs, low 900 nsecs
+			picoDelay(10);
+		} else { // zero bit; timing goal: high 250 nsecs, low 1150 nsecs
 			gpio_put(neoPixelPin, HIGH);
-			picoDelay(4);
+			picoDelay(2);
 			gpio_put(neoPixelPin, LOW);
-			picoDelay(20);
+			picoDelay(26);
 		}
 	}
 	restore_interrupts(oldInterruptStatus);
