@@ -1,10 +1,10 @@
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
-version 1 7 
-choices ModeMenu Horizontal Vertical 
+version 1 8 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI. 
 Changes:
 - switch to x (0-127), y (0-63)
@@ -18,27 +18,27 @@ Changes:
 - image draw bug fix
 - stack overflow fix
 '
-variables OLEDReady OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTABLE _comMode _dcPin _delayGDUpd _displayType _endCol _endRow _eol _resetPin _textX _textY _dataPrefix timer _byteCount _imgData _imgWidth _imgHeight 
+variables _OLEDReady _OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTABLE _comMode _dcPin _delayGDUpd _displayType _endCol _endRow _eol _resetPin _textX _textY _dataPrefix _byteCount _imgData _imgWidth _imgHeight 
 
 	spec ' ' 'OLEDInit_I2C' 'initialize i2c _ address(hex) _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_0.96in' '3C' '-' false
 	spec ' ' 'OLEDInit_SPI' 'initialize spi _ d/c pin# _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_2.42in' 16 8 false
-	spec ' ' 'OLEDwrite' 'write _ at x _ y _ inverse _' 'auto auto auto bool' 'Hello!' 0 0 false
 	spec ' ' 'OLEDclear' 'clear'
-	spec ' ' 'OLEDcontrast' 'set contrast (1-4) _' 'auto' 2
+	spec ' ' 'OLEDwrite' 'write _ at x _ y _ inverse _' 'auto auto auto bool' 'Hello!' 0 0 false
+	spec ' ' 'OLEDshowGDBuffer' 'show display buffer'
 	spec ' ' 'OLEDdrawCircle' 'draw circle at x _ y _ radius _ erase _' 'auto auto auto bool' 64 32 '10' false
-	spec ' ' 'OLEDdrawImage' 'draw image _ at x _ y _' 'auto auto auto' 0 0 0
 	spec ' ' 'OLEDdrawLine' 'draw line from x _ y _ to x _ y _ erase _' 'auto auto auto auto bool' 0 0 127 63 false
 	spec ' ' 'OLEDdrawRect' 'draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _' 'auto auto auto auto bool auto' 0 0 127 63 false 0
-	spec ' ' 'OLEDflip' '_flip display top _' 'bool' false
-	spec 'r' 'OLEDmakeSprite' 'make sprite _ : ' 'microbitDisplay' 33084991
+	spec 'r' 'OLEDmakeImage' 'make image _' 'microbitDisplay' 33084991
+	spec ' ' 'OLEDdrawImage' 'draw image _ at x _ y _' 'auto auto auto' 0 0 0
 	spec ' ' 'OLEDpixel' 'set pixel x _ y _ erase _' 'auto auto bool' 0 0 false
 	spec ' ' 'OLEDreveal' 'reveal display buffer _ msecs' 'auto' 0
+	spec ' ' 'OLEDcontrast' 'set contrast (1-4) _' 'auto' 2
 	spec ' ' 'OLEDsetVideo' 'set video _' 'str.VideoMenu' 'Inverse'
-	spec ' ' 'OLEDshowGDBuffer' 'show display buffer'
 	spec 'r' 'OLEDwru' 'cursor location'
 	spec ' ' '_GDDRAMoff' '_GDDRAMoff'
 	spec ' ' '_GDDRAMon' '_GDDRAMon'
 	spec ' ' '_OLEDcursorReset' '_cursor reset'
+	spec ' ' '_OLEDflip' '_flip display top _' 'bool' false
 	spec ' ' '_OLEDsetDisplay' '_set display _' 'str.OnOffMenu' 'On'
 	spec ' ' '_OLEDreset' '_set reset Pin# _' 'auto' '0'
 	spec ' ' '_SPIWriteCmd' '_SPIWriteCmd'
@@ -75,7 +75,7 @@ flip setting controls display hardware write direction:
 - true: bottom to top'
   _comma = ('[data:unicodeString]' 44)
   _comMode = 'i2c'
-  OLEDi2cAddr = (hexToInt ('[data:join]' ('[data:unicodeString]' 32) i2cAddr))
+  _OLEDi2cAddr = (hexToInt ('[data:join]' ('[data:unicodeString]' 32) i2cAddr))
   if (dispType == 'OLED_0.96in') {
     _displayType = 6
     _resetPin = resetPin
@@ -85,7 +85,7 @@ flip setting controls display hardware write direction:
   }
   '_initDisplayHW'
   if flip {
-    OLEDflip true
+    '_OLEDflip' true
   }
   '_initLibrary'
   OLEDclear
@@ -119,7 +119,7 @@ flip setting controls display hardware write direction:
   '[sensors:spiSetup]' 10000000
   '_initDisplayHW'
   if flip {
-    OLEDflip true
+    '_OLEDflip' true
   }
   '_initLibrary'
   OLEDclear
@@ -316,18 +316,8 @@ Does not check for reversed rectangle coordinates for round corners.'
   }
 }
 
-to OLEDflip flip {
-  comment 'Flips the display initialization horizontally or vertically.
-Horizontal or vertical is based on the pin connector location.'
-  if flip {
-    '_sendCmd' 'A0,C0'
-  } else {
-    '_sendCmd' 'A1,C8'
-  }
-}
-
-to OLEDmakeSprite spr# {
-  comment 'Receives a spr# representing 5x5 image matrix.
+to OLEDmakeImage spr# {
+  comment 'Receives a 25-bit number representing 5x5 image matrix.
 Converts it to a HOR array of 5 VERT bitmap numbers.
 This can be displayed with the draw image block.
 sprNum max is 33554431'
@@ -424,7 +414,7 @@ spi:
   if (_comMode == 'i2c') {
     local 'idx' 0
     repeat 17 {
-      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _dataPrefix ('[data:copyFromTo]' _GDBuffer idx (idx + 60)))
+      '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:join]' _dataPrefix ('[data:copyFromTo]' _GDBuffer idx (idx + 60)))
       idx += 61
     }
   } else {
@@ -504,6 +494,16 @@ and also by OLEDColMode block.'
   _endCol = 127
   _begRow = 0
   _endRow = 7
+}
+
+to '_OLEDflip' flip {
+  comment 'Flips the display initialization horizontally or vertically.
+Horizontal or vertical is based on the pin connector location.'
+  if flip {
+    '_sendCmd' 'A0,C0'
+  } else {
+    '_sendCmd' 'A1,C8'
+  }
 }
 
 to '_OLEDreset' pin {
@@ -605,9 +605,9 @@ to '_clearDisplay' {
   local 'clearBuff' ('[data:newByteArray]' 60 0)
   if ('i2c' == _comMode) {
     repeat 17 {
-      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
+      '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
     }
-    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
+    '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
   } else {
     '_SPIWriteData'
     '[sensors:spiExchange]' ('[data:newByteArray]' 1024)
@@ -686,7 +686,7 @@ Values are DEC.'
   local '_cmdPrefix' ('[data:newByteArray]' 1 (hexToInt 'C0'))
   '_sendCmd' ('[data:join]' '22' _comma ('_dec2hex' row) _comma ('_dec2hex' row) _comma '21' _comma ('_dec2hex' col) _comma ('_dec2hex' col))
   if (_comMode == 'i2c') {
-    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _cmdPrefix ('[data:newByteArray]' 1 value))
+    '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:join]' _cmdPrefix ('[data:newByteArray]' 1 value))
   } else {
     '_SPIWriteData'
     spiSend value
@@ -705,7 +705,7 @@ For each character, _cDecTbl is updated with 8 byte array values.'
 
 to '_initCheck' {
   comment 'Verifies Library initialization status.'
-  if (not OLEDReady) {
+  if (not _OLEDReady) {
     sayIt 'Display needs to be initialized before using the library blocks.'
     stopTask
   }
@@ -773,7 +773,7 @@ this value is used to build the byteArray.'
   _endCol = 127
   _delayGDUpd = (booleanConstant false)
   '_initChars'
-  OLEDReady = (booleanConstant true)
+  _OLEDReady = (booleanConstant true)
   '_OLEDsetDisplay' 'On'
   setUserLED true
   waitMillis 1000
@@ -811,7 +811,7 @@ MAKE SURE ALL  INPUT PARAMETERS ARE HEX'
   local 'cmdPrefix' (hexToInt '80')
   if ('i2c' == _comMode) {
     for cmd _cList {
-      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:asByteArray]' ('[data:makeList]' cmdPrefix (hexToInt cmd)))
+      '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:asByteArray]' ('[data:makeList]' cmdPrefix (hexToInt cmd)))
     }
   } else {
     '_SPIWriteCmd'
