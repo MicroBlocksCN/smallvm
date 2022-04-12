@@ -1010,13 +1010,15 @@ OBJ primMagneticField(int argCount, OBJ *args) {
 		return int2obj(hall_sensor_read());
 	#elif defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT) || defined(ARDUINO_CALLIOPE_MINI)
 		readMagMicrobitV1Calliope(buf);
+		processMessage(); // process messages now
 	#elif defined(ARDUINO_BBC_MICROBIT_V2)
 		readMagMicrobitV2(buf);
+		processMessage(); // process messages now
 	#else
 		return zeroObj;
 	#endif
 
-	// read signed 16-bit values (use shift by 16 and back to sign-extend)
+	// read signed 16-bit values
 	int x, y, z;
 	if (magnetometerBigEndian) {
 		x = (int16_t) ((buf[0] << 8) | buf[1]);
