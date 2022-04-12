@@ -15,6 +15,7 @@ choices accelerometerRange '1' '2' '4' '8'
 	spec 'r' '[sensors:acceleration]'	'acceleration'
 	spec 'r' '[display:lightLevel]'		'light level'
 	spec 'r' '[sensors:temperature]'	'temperature (°C)'
+	spec 'r' '[sensors:magneticField]'	'magnetic field'
 	spec ' ' '_setAccelRange'			'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
 to _setAccelRange n {
