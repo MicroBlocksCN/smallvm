@@ -525,7 +525,7 @@ method saveScriptsImage ScriptEditor {
   oldScale = (global 'scale')
   oldBlockScale = (global 'blockScale')
   setGlobal 'scale' 2
-  setBlockScalePercent this (100 * (global 'blockExportScale'))
+  setBlockScalePercent this (100 * (blockExportScale))
 
   // draw the entire scripting pane
   gc

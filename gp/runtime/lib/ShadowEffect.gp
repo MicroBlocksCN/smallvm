@@ -13,6 +13,7 @@ to newShadowEffect aBlock effectType {
 method initialize ShadowEffect aBlock effectType {
 	morph = (newMorph this)
 	acceptEvents morph false
+	setTransparentTouch morph false
 	targetBlock = aBlock
 	scale = (global 'scale')
 	if ('highlight' == effectType) {
