@@ -1,10 +1,9 @@
 module Cutebot Output
 author wwj718
-version 1 0 
-depends Distance 
-choices servoType '180' '270' '360' 
-choices channel_state '●' '◌' 
-choices direction left right 
+version 1 1
+depends Distance
+choices channel_state '●' '◌'
+choices direction left right
 description 'Cutebot is a rear-drive smart car driven by dual high speed motors.
 
 There are many on-board equipments on the Cutebot including ultrasonic sensor and distance sensor, two RGB LED headlights and clearance lamps on the bottom, two line-tracking probes, an active buzzer as the horn and so on! Let’s drive your first smart car!
@@ -12,17 +11,15 @@ There are many on-board equipments on the Cutebot including ultrasonic sensor an
 ps: Cutebot can work with AILens library.
 
 https://www.elecfreaks.com/learn-en/microbitKit/smart_cutebot/cutebot_car.html'
-variables _Cutebot_ADDR '_Cutebot initialized' 
 
-	spec ' ' 'set motor speed' 'Cutebot set left wheel speed to _ % right wheel speed to _ %' 'num num' 100 -100
-	spec ' ' 'stop all motors' 'Cutebot stop car'
+	spec ' ' 'set motor speed' 'Cutebot left wheel _ % right wheel  _ %' 'num num' 100 -100
+	spec ' ' 'stop all motors' 'Cutebot stop wheels'
 	spec 'r' 'Tracking channel' 'Cutebot tracking channel _ is _' 'menu.direction menu.channel_state' 'left' '◌'
 	spec 'r' 'Tracking state is' 'Cutebot tracking state is _ _' 'menu.channel_state menu.channel_state' '◌' '◌'
 	spec ' ' 'set led color' 'Cutebot set LED _ to _' 'menu.direction color' 'left'
-	spec 'r' 'get distance' 'Cutebot ultrasonic sensor distance(cm)'
-	spec ' ' 'set servo angle' 'Cutebot set _ servo _ angle to _' 'menu.servoType menu.range:1-2 num' '180' 1 0
-	spec ' ' '_Cutebot setup' '_Cutebot setup'
-	spec 'r' '_rescale' 'rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
+	spec 'r' 'get distance' 'Cutebot distance (cm)'
+	spec ' ' 'set servo' 'Cutebot set servo _ to _ (-100 to 100)' 'menu.range:1-2 num' 1 0
+	spec 'r' '_rescale' '_rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
 
 to 'Tracking channel' channel state {
   local 'pinL' 13
@@ -56,26 +53,19 @@ to 'Tracking state is' channel1_state channel2_state {
   return (and ((digitalReadOp pinL true) == channel1_state) ((digitalReadOp pinR false) == channel2_state))
 }
 
-to '_Cutebot setup' {
-  if ((v '_Cutebot initialized') == 0) {
-    _Cutebot_ADDR = (hexToInt '10')
-    '_Cutebot initialized' = 1
-  }
-}
+to _cutebot_ADDR { return 16 }
 
 to '_rescale' val in_min in_max out_min out_max {
   return (((val - in_min) * (out_max - out_min)) / ((in_max - in_min) + out_min))
 }
 
 to 'get distance' {
-  '_Cutebot setup'
   local 'pin_e' 12
   local 'pin_t' 8
   return ('distance (cm)' pin_t pin_e)
 }
 
 to 'set led color' led_name color {
-  '_Cutebot setup'
   if (led_name == 'left') {
     local 'led' (hexToInt '04')
   } else {
@@ -84,11 +74,10 @@ to 'set led color' led_name color {
   local 'r' ((color >> 16) & 255)
   local 'g' ((color >> 8) & 255)
   local 'b' ((color >> b) & 255)
-  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' led r g b))
+  '[sensors:i2cWrite]' (_cutebot_ADDR) ('[data:asByteArray]' ('[data:makeList]' led r g b))
 }
 
 to 'set motor speed' left_wheel_speed right_wheel_speed {
-  '_Cutebot setup'
   comment 'speed (number): -100-100'
   local 'left_direction' 0
   local 'right_direction' 0
@@ -110,28 +99,22 @@ to 'set motor speed' left_wheel_speed right_wheel_speed {
     right_direction = 1
     right_wheel_speed = (right_wheel_speed * -1)
   }
-  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' 1 left_direction left_wheel_speed 0))
-  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' 2 right_direction right_wheel_speed 0))
+  '[sensors:i2cWrite]' (_cutebot_ADDR) ('[data:asByteArray]' ('[data:makeList]' 1 left_direction left_wheel_speed 0))
+  '[sensors:i2cWrite]' (_cutebot_ADDR) ('[data:asByteArray]' ('[data:makeList]' 2 right_direction right_wheel_speed 0))
 }
 
-to 'set servo angle' servo_type servo angle {
-  '_Cutebot setup'
-  comment 'servo (number): 1 2'
-  comment '''180'' ''270'' ''360''
+to 'set servo' servo value {
+  comment 'servo (number) is one of: 1 2
+value range of -100 to 100 maps to the full range of the servo'
 
-str -> num'
-  servo_type = (absoluteValue servo_type)
   if (or (servo < 1) (servo > 2)) {
     servo = 1
   }
-  if (or (angle < 0) (angle > servo_type)) {
-    angle = 0
-  }
-  '[sensors:i2cWrite]' _Cutebot_ADDR ('[data:asByteArray]' ('[data:makeList]' (servo + 4) ('_rescale' angle 0 servo_type 0 180) 0 0))
+  value = (maximum -100 (minimum value 100))
+  '[sensors:i2cWrite]' (_cutebot_ADDR) ('[data:asByteArray]' ('[data:makeList]' (servo + 4) ('_rescale' angle -100 100 0 180) 0 0))
 }
 
 to 'stop all motors' {
-  '_Cutebot setup'
   'set motor speed' 0 0
 }
 
