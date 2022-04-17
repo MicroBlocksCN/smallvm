@@ -1,107 +1,72 @@
 module Wukong Output
 author wwj718
-version 1 0 
-depends NeoPixel 
-choices servoType '180' '270' '360' 
-description 'Wukong is a high integrated breakout board with multiple functions based on micro:bit, which has a similar size with the micro:bit with buzzer, servo and motor drivers on board.
+version 1 1
+depends NeoPixel
+description 'Wukong is a compact micro:bit breakout board with servo and motor drivers, eight I/O pins, four NeoPixels, and four blue LEDs.
 
-With a built-in 400mAh Li-ion battery pack and the on-board power controlling system, it supports fast charge with only 20 minutes for full filling that can operate for more than 40 minutes a time.
+The built-in 400mAh Li-ion battery provides over than 40 minutes of power and can be fully recharged in just 20 minutes.
 
-The base board designs with standard 7x5 square bricks that can adapt perfectly to Lego.
+The base board design is compatible with Lego.
 
 https://www.elecfreaks.com/learn-en/microbitExtensionModule/wukong.html
 '
-variables _Wukong_ADDR '_Wukong initialized' 
 
-	spec ' ' 'set motor speed' 'Wukong set motor _ speed to _ %' 'menu.range:1-2 num' 1 100
-	spec ' ' 'stop motor' 'Wukong stop motor _' 'menu.range:1-2' 1
-	spec ' ' 'stop all motors' 'Wukong stop all motors'
-	spec ' ' 'set servo angle' 'Wukong set _ servo _ angle to _' 'menu.servoType menu.range:0-7 num' '180' 0 0
-	spec ' ' 'set NeoPixel Color' 'Wukong set NeoPixel _ _ _ _' 'color color color color'
-	spec ' ' 'set light intensity' 'Wukong set light intensity to _' 'num' 100
-	spec ' ' '_Wukong setup' '_Wukong setup'
-	spec 'r' '_rescale' 'rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
-
-to '_Wukong setup' {
-  if ((v '_Wukong initialized') == 0) {
-    _Wukong_ADDR = (hexToInt '10')
-    '_Wukong initialized' = 1
-    neoPixelAttach 4 16
-  }
-}
+	spec ' ' 'wukong_setMotor' 'Wukong set motor _ to _ (-100 to 100)' 'menu.range:1-2 num' 1 100
+	spec ' ' 'wukong_stopAllMotors' 'Wukong stop all motors'
+	spec ' ' 'wukong_setServo' 'Wukong set servo _ to _ (-100 to 100)' 'menu.range:0-7 num' 1 0
+	space
+	spec ' ' 'wukong_setNeopixels' 'Wukong set NeoPixels _ _ _ _' 'color color color color'
+	spec ' ' 'wukong_setLEDBrightness' 'Wukong set LED brightness to _' 'num' 100
+	spec 'r' '_rescale' '_rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
 
 to '_rescale' val in_min in_max out_min out_max {
   return (((val - in_min) * (out_max - out_min)) / ((in_max - in_min) + out_min))
 }
 
-to 'set NeoPixel Color' c1 c2 c3 c4 {
-  '_Wukong setup'
-  setNeoPixelColors10 c1 c2 c3 c4
+to '_wukong_ADDR' {
+  return 16
 }
 
-to 'set led color' led_name color {
-  '_Wukong setup'
-  if (led_name == 'left') {
-    local 'led' (hexToInt '04')
-  } else {
-    local 'led' (hexToInt '08')
-  }
-  local 'r' ((color >> 16) & 255)
-  local 'g' ((color >> 8) & 255)
-  local 'b' ((color >> b) & 255)
-  '[sensors:i2cWrite]' _Wukong_ADDR ('[data:asByteArray]' ('[data:makeList]' led r g b))
+to wukong_setLEDBrightness num {
+  num = (maximum 0 (minimum num 100))
+  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' (hexToInt '12') num 0 0)
+  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' (hexToInt '11') 160 0 0)
 }
 
-to 'set light intensity' num {
-  '_Wukong setup'
-  '[sensors:i2cWrite]' _Wukong_ADDR ('[data:asByteArray]' ('[data:makeList]' (hexToInt '12') num 0 0))
-  waitMillis 100
-  '[sensors:i2cWrite]' _Wukong_ADDR ('[data:asByteArray]' ('[data:makeList]' (hexToInt '11') 160 0 0))
-}
-
-to 'set motor speed' motor speed {
-  '_Wukong setup'
-  comment 'motor (number): 1 2'
-  comment 'speed (number): -100-100'
+to wukong_setMotor motor power {
+  comment 'motor (number): 1 or 2'
+  comment 'power (number): -100 to 100'
   if (or (motor < 1) (motor > 2)) {
     motor = 1
   }
-  if (or (speed < -100) (speed > 100)) {
-    speed = 0
-  }
-  if (speed < 0) {
-    '[sensors:i2cWrite]' _Wukong_ADDR ('[data:asByteArray]' ('[data:makeList]' motor 2 (speed * -1) 0))
+  power = (maximum -100 (minimum power 100))
+  if (power < 0) {
+    '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' motor 2 (0 - power) 0)
   } else {
-    '[sensors:i2cWrite]' _Wukong_ADDR ('[data:asByteArray]' ('[data:makeList]' motor 1 speed 0))
+    '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' motor 1 power 0)
   }
 }
 
-to 'set servo angle' servo_type servo angle {
-  '_Wukong setup'
-  comment 'servo (number): 0-7'
-  comment '''180'' ''270'' ''360''
-str -> num'
-  servo_type = (absoluteValue servo_type)
-  if (or (servo < 0) (servo > 7)) {
-    servo = 1
-  }
-  if (or (angle < 0) (angle > servo_type)) {
-    angle = 0
-  }
-  if (servo == 8) {
-    '[sensors:i2cWrite]' _Wukong_ADDR ('[data:asByteArray]' ('[data:makeList]' (hexToInt '10') ('_rescale' angle 0 servo_type 0 180) 0 0))
-  } else {
-    '[sensors:i2cWrite]' _Wukong_ADDR ('[data:asByteArray]' ('[data:makeList]' (servo + 3) ('_rescale' angle 0 servo_type 0 180) 0 0))
-  }
+to wukong_setNeopixels c1 c2 c3 c4 {
+  neoPixelAttach 4 16
+  setNeoPixelColors10 c1 c2 c3 c4
 }
 
-to 'stop all motors' {
-  '_Wukong setup'
-  'set motor speed' 0 0
+to wukong_setServo servo value {
+  comment 'servo (number) is 0-7
+value range of -100 to 100 maps to the full range of the servo'
+  servo = (maximum 0 (minimum servo 7))
+  channel = (servo + 3)
+  if (servo == 7) {
+    comment 'servo 7 is controlled by channel 16'
+    channel = 16
+  }
+  value = (maximum -100 (minimum value 100))
+  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' channel ('_rescale' value -100 100 0 180) 0 0)
 }
 
-to 'stop motor' index {
-  '_Wukong setup'
-  'set motor speed' index 0
+to wukong_stopAllMotors {
+  wukong_setMotor 1 0
+  wukong_setMotor 2 0
 }
 
