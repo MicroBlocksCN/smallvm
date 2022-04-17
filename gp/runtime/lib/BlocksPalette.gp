@@ -25,6 +25,10 @@ method cleanUp BlocksPalette {
   fixLayout alignment
 }
 
+method layoutChanged BlocksPalette {
+  changed morph
+}
+
 method wantsDropOf BlocksPalette aHandler {
   return (isAnyClass aHandler 'Block' 'Monitor')
 }
