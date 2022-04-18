@@ -1271,6 +1271,18 @@ method allScriptsString MicroBlocksScripter {
 }
 
 method pasteScripts MicroBlocksScripter scriptString atHand {
+  // hide the definitions of functions that will be pasted
+  for entry (parse scriptString) {
+    args = (argList entry)
+    if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {
+      script = (last args)
+      if ('to' == (primName script)) {
+        funcName = (first (argList script))
+        internalHideDefinition this funcName
+      }
+    }
+  }
+
   // find destination position for scripts
   if (isNil atHand) { atHand = false }
   if atHand {
