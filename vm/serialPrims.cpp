@@ -178,7 +178,7 @@ static int serialWriteBytes(uint8 *buf, int byteCount) {
 static void serialWriteSync(uint8 *buf, int bytesToWrite) {
 	// Synchronously write the given buffer to the serial port, performing multipe write
 	// operations if necessary. Buffer size is limited to keep the operation from blocking
-	// for too long a lower baud rates.
+	// for too long at low baud rates.
 
 	if (bytesToWrite > TX_BUF_SIZE) {
 		fail(serialWriteTooBig);
@@ -190,9 +190,12 @@ static void serialWriteSync(uint8 *buf, int bytesToWrite) {
 			buf += written;
 			bytesToWrite -= written;
 		} else {
-			#if defined(ARDUINO_BBC_MICROBIT_V2)
+			// do background VM tasks
+			#if defined(ARDUINO_BBC_MICROBIT_V2) || defined(GNUBLOCKS)
 				updateMicrobitDisplay(); // update display while sending to avoid flicker
 			#endif
+			checkButtons();
+			processMessage();
 			delay(1);
 		}
 	}
@@ -254,7 +257,9 @@ static OBJ primSerialWrite(int argCount, OBJ *args) {
 	OBJ arg = args[0];
 
 	if (isInt(arg)) { // single byte
-		uint8 oneByte = obj2int(arg) & 255;
+		int byteValue = obj2int(arg);
+		if (((uint32) byteValue) > 255) return fail(byteOutOfRange);
+		uint8 oneByte = byteValue;
 		serialWriteSync(&oneByte, 1);
 	} else if (IS_TYPE(arg, StringType)) { // string
 		char *s = obj2str(arg);
@@ -265,6 +270,25 @@ static OBJ primSerialWrite(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
+	if (!isOpen) return fail(serialPortNotOpen);
+	if (argCount < 2) return fail(notEnoughArguments);
+
+	OBJ buf = args[0];
+	int bufType = objType(buf);
+	if (!((bufType == StringType) || (bufType == ByteArrayType))) return fail(needsByteArray);
+	if (!isInt(args[1])) return fail(needsIntegerIndexError);
+
+	int srcLen = (bufType == StringType) ? strlen(obj2str(buf)) : BYTES(buf);
+	int startIndex = obj2int(args[1]) - 1;
+	if ((startIndex < 0) || (startIndex >= srcLen)) return fail(indexOutOfRangeError);
+
+	int bytesToWrite = srcLen - startIndex;
+	if (bytesToWrite > TX_BUF_SIZE) bytesToWrite = TX_BUF_SIZE;
+	int bytesWritten = serialWriteBytes((uint8 *) &FIELD(buf, 0), bytesToWrite);
+	return int2obj(bytesWritten);
+}
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -273,6 +297,7 @@ static PrimEntry entries[] = {
 	{"read", primSerialRead},
 	{"readInto", primSerialReadInto},
 	{"write", primSerialWrite},
+	{"writeBytes", primSerialWriteBytes},
 };
 
 void addSerialPrims() {
