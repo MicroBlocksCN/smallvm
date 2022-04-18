@@ -912,6 +912,136 @@ OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(readAcceleration(1)); 
 OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(readAcceleration(3)); }
 OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(readAcceleration(5)); }
 
+// Magnetometer
+
+#ifdef ARDUINO_ARCH_ESP32
+  #include "driver/adc.h"
+#endif
+
+// accelerometer addresses for ID testing:
+#define BMX055 24
+#define LSM303 25
+
+// magnetometer addresses:
+#define MAG_3110 14
+#define MAG_BMX055 16
+#define MAG_LSM303 30
+
+int8_t magnetometerAddr = -1;
+int8_t magnetometerDataReg = -1;
+int8_t magnetometerBigEndian = true;
+
+void readMagMicrobitV1Calliope(uint8 *sixByteBuffer) {
+	if (!wireStarted) startWire();
+
+	if (magnetometerAddr < 0) { // detect and initialize magnetometer
+		if (0xC4 == readI2CReg(MAG_3110, 0x07)) {
+			magnetometerAddr = MAG_3110;
+			magnetometerDataReg = 1;
+			magnetometerBigEndian = true;
+			writeI2CReg(MAG_3110, 16, 1); // 80 samples/sec
+			writeI2CReg(MAG_3110, 17, 128); // enable automatic magnetic sensor resets
+		} else if (0x33 == readI2CReg(LSM303, 0x0F)) {
+			magnetometerAddr = MAG_LSM303; // different from accellerometer address
+			magnetometerDataReg = 104;
+			magnetometerBigEndian = false;
+			writeI2CReg(MAG_LSM303, 0x60, 12); // 50 samples/sec
+			writeI2CReg(MAG_LSM303, 0x61, 2); // offset cancellation
+		} else if (0xFA == readI2CReg(BMX055, 0)) {
+			magnetometerAddr = MAG_BMX055; // different from accellerometer address
+			magnetometerDataReg = 0x42;
+			magnetometerBigEndian = false;
+			writeI2CReg(MAG_BMX055, 0x4B, 1); // power on
+			delay(4); // give BMX055 time to start up
+			writeI2CReg(MAG_BMX055, 0x4C, 56); // 30 samples/sec
+			writeI2CReg(MAG_BMX055, 0x51, 15); // x/y repetitions
+			writeI2CReg(MAG_BMX055, 0x52, 27); // z repetitions
+		}
+	}
+	if (magnetometerAddr < 0) return;
+
+	Wire.beginTransmission(magnetometerAddr);
+	Wire.write(magnetometerDataReg);
+	Wire.endTransmission();
+
+	noInterrupts();
+	Wire.requestFrom(magnetometerAddr, 6);
+	interrupts();
+	for (int i = 0; i < 6; i++) {
+		if (!Wire.available()) return; /* no more data */;
+		sixByteBuffer[i] = Wire.read();
+	}
+}
+
+#if defined(ARDUINO_BBC_MICROBIT_V2)
+
+void readMagMicrobitV2(uint8 *sixByteBuffer) {
+	if (!internalWireStarted) startInternalWire();
+
+	if (magnetometerAddr < 0) { // detect and initialize magnetometer
+		if (0x33 == readInternalI2CReg(LSM303, 0x0F)) {
+			magnetometerAddr = MAG_LSM303; // different from accellerometer address
+			magnetometerDataReg = 104;
+			magnetometerBigEndian = false;
+			writeInternalI2CReg(MAG_LSM303, 0x60, 12); // 50 samples/sec
+			writeInternalI2CReg(MAG_LSM303, 0x61, 2); // offset cancellation
+		}
+	}
+	if (magnetometerAddr < 0) return;
+
+	Wire1.beginTransmission(magnetometerAddr);
+	Wire1.write(magnetometerDataReg);
+	Wire1.endTransmission();
+	Wire1.requestFrom(magnetometerAddr, 6);
+	for (int i = 0; i < 6; i++) {
+		if (!Wire1.available()) return; /* no more data */;
+		sixByteBuffer[i] = Wire1.read();
+	}
+}
+
+#endif
+
+OBJ primMagneticField(int argCount, OBJ *args) {
+	// Return the magnitude of the magnetic field vector, regardless of orientation.
+
+	uint8 buf[6] = {0, 0, 0, 0, 0, 0};
+
+	#if defined(ARDUINO_ARCH_ESP32)
+		return int2obj(hall_sensor_read());
+	#elif defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT) || defined(ARDUINO_CALLIOPE_MINI)
+		readMagMicrobitV1Calliope(buf);
+		processMessage(); // process messages now
+	#elif defined(ARDUINO_BBC_MICROBIT_V2)
+		readMagMicrobitV2(buf);
+		processMessage(); // process messages now
+	#else
+		return zeroObj;
+	#endif
+
+	// read signed 16-bit values
+	int x, y, z;
+	if (magnetometerBigEndian) {
+		x = (int16_t) ((buf[0] << 8) | buf[1]);
+		y = (int16_t) ((buf[2] << 8) | buf[3]);
+		z = (int16_t) ((buf[4] << 8) | buf[5]);
+	} else {
+		x = (int16_t) ((buf[1] << 8) | buf[0]);
+		y = (int16_t) ((buf[3] << 8) | buf[2]);
+		z = (int16_t) ((buf[5] << 8) | buf[4]);
+	}
+
+	if (MAG_BMX055 == magnetometerAddr) {
+		// remove unused low-order bits
+		z >>= 1;
+		x >>= 3;
+		y >>= 3;
+	}
+
+	// return the sum of the field strengths
+	int result = abs(x) + abs(y) + abs(z);
+	return int2obj(result);
+}
+
 // Capacitive Touch Primitives for ESP32
 
 #ifdef ARDUINO_ARCH_ESP32
@@ -1210,6 +1340,7 @@ static PrimEntry entries[] = {
 	{"tiltY", primMBTiltY},
 	{"tiltZ", primMBTiltZ},
 	{"setAccelerometerRange", primSetAccelerometerRange},
+	{"magneticField", primMagneticField},
 	{"touchRead", primTouchRead},
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},

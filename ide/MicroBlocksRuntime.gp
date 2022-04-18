@@ -1428,6 +1428,7 @@ method errorString SmallRuntime errID {
 #define serialPortNotOpen		37	// Serial port not open
 #define serialWriteTooBig		38	// Serial port write is limited to 128 bytes
 #define needsListOfIntegers		39	// Needs a list of integers
+#define byteOutOfRange			40	// Needs a value between 0 and 255
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
@@ -2024,6 +2025,9 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
+		} ('RP2040' == boardType) {
+			rp2040ResetMessage this
+			return
 		} else {
 			disconnected = true
 			closePort this
@@ -2034,6 +2038,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			}
 			addLine menu
 			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
+			addItem menu 'RP2040 (Pico)' (action 'rp2040ResetMessage' this)
 			popUpAtHand menu (global 'page')
 		}
 	} else {
@@ -2098,6 +2103,7 @@ method getBoardDriveName SmallRuntime path {
 			if (notNil (nextMatchIn 'CPlay Express' contents)) { return 'CPLAYBOOT' }
 			if (notNil (nextMatchIn 'Circuit Playground nRF52840' contents)) { return 'CPLAYBTBOOT' }
 			if (notNil (nextMatchIn 'Adafruit Clue' contents)) { return 'CLUEBOOT' }
+			if (notNil (nextMatchIn 'RPI-RP2' contents)) { return 'RPI-RP2' }
 		}
 	}
 	return nil
@@ -2118,8 +2124,11 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 		vmFileName = 'vm_cplay52.uf2'
 	} ('CLUEBOOT' == driveName) {
 		vmFileName = 'vm_clue.uf2'
+	} ('RPI-RP2' == driveName) {
+		vmFileName = 'vm_pico.uf2'
 	} else {
-		vmFileName = 'UNKNOWN'
+		print 'unknown drive name in "copyVMToBoard"' // shouldn't happen
+		return
 	}
 	vmData = (readEmbeddedFile (join 'precompiled/' vmFileName) true)
 	if (isNil vmData) {
@@ -2147,6 +2156,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
 		copyVMToBoardInBrowser this 'Clue'
+	} ('RP2040' == boardType) {
+		copyVMToBoardInBrowser this 'RP2040 (Pico)'
 	} (and
 		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
 		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
@@ -2165,6 +2176,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		addItem menu 'M5Atom-Matrix'
 		addItem menu 'ESP32'
 		addItem menu 'ESP8266'
+		addItem menu 'RP2040 (Pico)'
 		popUpAtHand menu (global 'page')
 	}
 }
@@ -2211,15 +2223,26 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	} ('Clue' == boardName) {
 		vmFileName = 'vm_clue.uf2'
 		driveName = 'CLUEBOOT'
+	} ('RP2040 (Pico)' == boardName) {
+		vmFileName = 'vm_pico.uf2'
+		driveName = 'RPI-RP2'
 	}
 
 	prefix = ''
 	if (endsWith vmFileName '.uf2') {
-		// Extra instruction for Adafruit boards
-		prefix = (join
-			prefix
-			(localized 'Press the reset button on the board twice before proceeding. The NeoPixels should turn green.')
-			(newline) (newline))
+		if ('RPI-RP2' == driveName) {
+			// Extra instruction for RP2040 Pico
+			prefix = (join
+				prefix
+				(localized 'Connect USB cable while holding down the white BOOTSEL button before proceeding.')
+				(newline) (newline))
+		} else {
+			// Extra instruction for Adafruit boards
+			prefix = (join
+				prefix
+				(localized 'Press the reset button on the board twice before proceeding. The NeoPixels should turn green.')
+				(newline) (newline))
+		}
 	}
 	msg = (join
 		prefix
@@ -2250,7 +2273,11 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 
 	if (endsWith vmFileName '.uf2') {
 		waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
-		adaFruitReconnectMessage this
+		if ('RPI-RP2' == driveName) {
+			otherReconnectMessage this
+		} else {
+			adaFruitReconnectMessage this
+		}
 	}
 }
 
@@ -2263,6 +2290,10 @@ method adaFruitReconnectMessage SmallRuntime {
 		(localized 'When the NeoPixels turn off')  ', '
 		(localized 'reconnect to the board by clicking the "Connect" button (USB icon).'))
 	inform msg
+}
+
+method rp2040ResetMessage SmallRuntime {
+	inform (localized 'Connect USB cable while holding down the white BOOTSEL button and try again.')
 }
 
 method otherReconnectMessage SmallRuntime {

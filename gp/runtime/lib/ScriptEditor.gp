@@ -525,11 +525,10 @@ method saveScriptsImage ScriptEditor {
   oldScale = (global 'scale')
   oldBlockScale = (global 'blockScale')
   setGlobal 'scale' 2
-  setBlockScalePercent this (100 * (global 'blockExportScale'))
+  setBlockScalePercent this (100 * (blockExportScale))
 
-  // draw the entire scripting pane
-  gc
-  bm = (cropTransparent (fullCostume morph))
+  // draw scripts
+  bm = (scriptsCostume this)
 
   // revert to old scales
   setGlobal 'scale' oldScale
@@ -552,6 +551,37 @@ method saveScriptsImage ScriptEditor {
 	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
 	writeFile fName pngData
   }
+}
+
+method scriptsCostume ScriptEditor {
+  r = (scriptsRect this)
+  w = (ceiling (width r))
+  h = (ceiling (height r))
+  if (or (w == 0) (h == 0)) { return (newBitmap 1 1) }
+  if (or (w > 2000) (h > 4000)) {
+    print 'Cropping scripts image to avoid running out of memory'
+    w = (min w 2000)
+    h = (min h 4000)
+  }
+  result = (newBitmap w h (gray 0 0))
+  ctx = (newGraphicContextOn result)
+  setOffset ctx (0 - (left r)) (0 - (top r))
+  fullDrawOn morph ctx
+  return result
+}
+
+method scriptsRect ScriptEditor {
+  // Return a rectangle that enclose all my scripts.
+
+  if (isEmpty (parts morph)) { return (rect 0 0 0 0) }
+  for m (parts morph) {
+    if (isNil result) {
+      result = (fullBounds m)
+    } else {
+      merge result (fullBounds m)
+    }
+  }
+  return result
 }
 
 // script copy/paste via clipboard
