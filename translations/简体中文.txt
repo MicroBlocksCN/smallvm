@@ -1134,27 +1134,29 @@ payload for MQTT event _
 Cutebot
 酷比特小车
 
-Cutebot set left wheel speed to _ % right wheel speed to _ %
-设置左轮速度为 _ % 右轮速度为 _ %
+Cutebot set wheel left _ right _ (-100 to 100)
+设置左轮速度为 _ 右轮速度为 _ (-100 ... 100)
 
-Cutebot stop car
+Cutebot stop wheels
 停车
 
-Cutebot tracking channel _ is _
-_ 巡线传感器 状态为 _
-
-Cutebot tracking state is _ _
-巡线传感器状态为 _ _
-
-
-Cutebot set LED _ to _
+Cutebot set headlight _ to _
 将 _ LED 车头灯 设为 _
 
-Cutebot ultrasonic sensor distance(cm)
+Cutebot set NeoPixel _ to _
+Cutebot set NeoPixel _ to _
+
+Cutebot _ line sensor
+_ 巡线传感器 状态为
+
+Cutebot sees line on left _ right _
+巡线传感器状态为 _ _
+
+Cutebot distance (cm)
 超声波返回距离值
 
-Cutebot set _ servo _ angle to _
-设置 _ 舵机 _ 的角度为 _
+Cutebot set servo _ to _ (-100 to 100)
+设置 舵机 _ 的角度为 _ (-100 ... 100)
 
 left
 左
@@ -1162,13 +1164,16 @@ left
 right
 右
 
+both
+both
+
 # Wukong
 
 Wukong
 悟空扩展板
 
-Wukong set motor _ speed to _ %
-设置电机 _ 速度为 _ %
+Wukong set motor _ to _ (-100 to 100)
+设置电机 _ 速度为 _ (-100 ... 100)
 
 Wukong stop motor _
 停止电机 _ 
@@ -1176,13 +1181,13 @@ Wukong stop motor _
 Wukong stop all motors
 停止所有电机
 
-Wukong set _ servo _ angle to _
-设置 _ 舵机 _ 角度为 _ 
+Wukong set servo _ to _ (-100 to 100)
+设置 舵机 _ 角度为 _ (-100 ... 100)
 
-Wukong set NeoPixel _ _ _ _
+Wukong set NeoPixels _ _ _ _
 设置 NeoPixel _ _ _ _
 
-Wukong set light intensity to _
+Wukong set LED brightness to _
 设置氛围灯亮度为 _
 
 ####
