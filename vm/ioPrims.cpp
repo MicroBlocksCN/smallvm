@@ -520,6 +520,8 @@ void restartSerial() {
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
 		#define BOARD_TYPE "IOT-BUS"
+		#define PIN_BUTTON_A 15
+		#define PIN_BUTTON_B 14
 	#else
 		#define BOARD_TYPE "ESP32"
 	#endif
@@ -527,8 +529,6 @@ void restartSerial() {
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
 	static const int analogPin[] = {};
-	#define PIN_BUTTON_A 15
-	#define PIN_BUTTON_B 14
 	#ifdef BUILTIN_LED
 		#define PIN_LED BUILTIN_LED
 	#else
@@ -536,6 +536,8 @@ void restartSerial() {
 	#endif
 	#ifdef KEY_BUILTIN
 		#define PIN_BUTTON_A KEY_BUILTIN
+	#else
+		#define PIN_BUTTON_A 0
 	#endif
 	static const char reservedPin[TOTAL_PINS] = {
 		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,

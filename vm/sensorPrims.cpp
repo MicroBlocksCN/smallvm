@@ -351,14 +351,7 @@ static int readInternalI2CReg(int deviceID, int reg) {
 	#endif
 	if (error) return -error; // error; bad device ID?
 
-	#if defined(NRF51)
-		noInterrupts();
-		Wire1.requestFrom(deviceID, 1);
-		interrupts();
-	#else
-		Wire1.requestFrom(deviceID, 1);
-	#endif
-
+	Wire1.requestFrom(deviceID, 1);
 	return Wire1.available() ? Wire1.read() : 0;
 }
 
@@ -964,9 +957,7 @@ void readMagMicrobitV1Calliope(uint8 *sixByteBuffer) {
 	Wire.write(magnetometerDataReg);
 	Wire.endTransmission();
 
-	noInterrupts();
 	Wire.requestFrom(magnetometerAddr, 6);
-	interrupts();
 	for (int i = 0; i < 6; i++) {
 		if (!Wire.available()) return; /* no more data */;
 		sixByteBuffer[i] = Wire.read();
