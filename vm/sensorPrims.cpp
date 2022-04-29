@@ -918,13 +918,14 @@ OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(readAcceleration(5)); 
 // magnetometer addresses:
 #define MAG_3110 14
 #define MAG_BMX055 16
+#define MAG_LIS3MDL 28
 #define MAG_LSM303 30
 
 int8_t magnetometerAddr = -1;
 int8_t magnetometerDataReg = -1;
 int8_t magnetometerBigEndian = true;
 
-void readMagMicrobitV1Calliope(uint8 *sixByteBuffer) {
+void readMagMicrobitV1CalliopeClue(uint8 *sixByteBuffer) {
 	if (!wireStarted) startWire();
 
 	if (magnetometerAddr < 0) { // detect and initialize magnetometer
@@ -949,6 +950,14 @@ void readMagMicrobitV1Calliope(uint8 *sixByteBuffer) {
 			writeI2CReg(MAG_BMX055, 0x4C, 56); // 30 samples/sec
 			writeI2CReg(MAG_BMX055, 0x51, 15); // x/y repetitions
 			writeI2CReg(MAG_BMX055, 0x52, 27); // z repetitions
+		} else if (0x3D == readI2CReg(MAG_LIS3MDL, 0x0F)) {
+			magnetometerAddr = MAG_LIS3MDL;
+			magnetometerDataReg = 0x28;
+			magnetometerBigEndian = false;
+			writeI2CReg(MAG_LIS3MDL, 0x20, 0x02);	// low performance x & y; fast mode
+			writeI2CReg(MAG_LIS3MDL, 0x22, 0);		// power on, continuous sampling
+			writeI2CReg(MAG_LIS3MDL, 0x23, 0);		// low performance z
+			writeI2CReg(MAG_LIS3MDL, 0x24, 0x40);	// block update mode
 		}
 	}
 	if (magnetometerAddr < 0) return;
@@ -999,8 +1008,9 @@ OBJ primMagneticField(int argCount, OBJ *args) {
 
 	#if defined(ARDUINO_ARCH_ESP32)
 		return int2obj(hall_sensor_read());
-	#elif defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_SINOBIT) || defined(ARDUINO_CALLIOPE_MINI)
-		readMagMicrobitV1Calliope(buf);
+	#elif defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
+			defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_SINOBIT)
+		readMagMicrobitV1CalliopeClue(buf);
 		processMessage(); // process messages now
 	#elif defined(ARDUINO_BBC_MICROBIT_V2)
 		readMagMicrobitV2(buf);
