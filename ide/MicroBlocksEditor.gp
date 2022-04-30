@@ -583,24 +583,25 @@ method processDroppedFiles MicroBlocksEditor {
 }
 
 method processDroppedFile MicroBlocksEditor fName data {
-  if (endsWith fName '.ubp') {
+  lcFilename = (toLowerCase fName)
+  if (endsWith lcFilename '.ubp') {
 	if (not (canReplaceCurrentProject this)) { return }
 	openProject this data fName
   }
-  if (endsWith fName '.ubl') {
+  if (endsWith lcFilename '.ubl') {
 	importLibraryFromFile scripter fName data
   }
-  if (endsWith fName '.csv') {
+  if (endsWith lcFilename '.csv') {
 	if (isNil data) { return } // could not read file
 	data = (joinStrings (splitWith (toString data) ',')) // remove commas
 	clearLoggedData (smallRuntime)
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
   }
-  if (endsWith fName '.png') {
+  if (endsWith lcFilename '.png') {
     importFromPNG this data
   }
   // xxx for testing:
-  if (endsWith fName '.gp') {
+  if (endsWith lcFilename '.gp') {
     eval (toString data) nil (topLevelModule)
   }
 }
