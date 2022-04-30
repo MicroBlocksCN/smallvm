@@ -89,7 +89,7 @@ to cutebot_setServo servo value {
 value range of -100 to 100 maps to the full range of the servo'
   servo = (maximum 1 (minimum servo 2))
   value = (maximum -100 (minimum value 100))
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:asByteArray]' ('[data:makeList]' (servo + 4) ('_rescale' value 100 -100 0 180) 0 0))
+  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' (servo + 4) ('_rescale' value 100 -100 0 180) 0 0)
 }
 
 to cutebot_setWheelSpeed left_wheel_speed right_wheel_speed {
@@ -107,8 +107,8 @@ direction: 1 = backward, 2 = forward'
   }
   left_wheel_speed = (minimum left_wheel_speed 100)
   right_wheel_speed = (minimum right_wheel_speed 100)
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:asByteArray]' ('[data:makeList]' 1 left_direction left_wheel_speed 0))
-  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:asByteArray]' ('[data:makeList]' 2 right_direction right_wheel_speed 0))
+  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' 1 left_direction left_wheel_speed 0)
+  '[sensors:i2cWrite]' ('_cutebot_ADDR') ('[data:makeList]' 2 right_direction right_wheel_speed 0)
 }
 
 to cutebot_stopWheels {
