@@ -1,0 +1,157 @@
+module Maqueen Output
+author 'Turgut Guneysu'
+version 1 0 
+depends 'IR Remote' 
+choices LRBMenu left right both 
+choices DirMenu fwd bwd 
+choices PosMenu left right 
+description 'DFRobot Maqueen Car Kit Library
+Supports:
+  micro:bit v1 and v2
+  2 x N20 Motors (133rpm)
+  2 x LEDs
+  2 x Servos (use Servo Lib)
+  2 x Line Sensors
+  2 x Extension Ports
+  4 x RGB LEDs (use NEOPixel Lib)
+  HC-SR04 Distance Sensor
+  Buzzer
+  IR receiver (NEC)
+  I2C Connector
+  3.5-5V Battery Connector
+Pin assignments:
+  Buzzer = 0
+  Trigger = 1
+  Echo = 2
+  Servo1 = 1
+  Servo2 = 2
+  LED_Left = 8
+  LED_Right = 12
+  Line_Left = 13
+  Line_Right = 14
+  NeoPixels = 15
+  IR Receiver = 16
+Note: HC-SR04 and SERVOs share pins 1 and 2.
+'
+
+	spec ' ' 'Maqueen motor' 'Maqueen motor _ dir _ speed(0-255) _' 'menu.LRBMenu menu.DirMenu auto' 'both' 'fwd' 128
+	spec ' ' 'Maqueen stop motors' 'Maqueen stop motors _' 'menu.LRBMenu' 'both'
+	space
+	spec ' ' 'Maqueen LED' 'Maqueen LED _ _' 'menu.LRBMenu bool' 'left' true
+	spec ' ' 'Maqueen beep' 'Maqueen beep _ ms' 'auto' 100
+	space
+	spec 'r' 'Maqueen line sensor' 'Maqueen line sensor _' 'menu.PosMenu' 'left'
+	spec 'r' 'Maqueen sees line on left' 'Maqueen sees line on left _ right _' 'bool bool' true true
+	space
+	spec 'r' 'Maqueen distance (cm)' 'Maqueen distance (cm)'
+	spec 'r' 'Maqueen IR keycode' 'Maqueen IR keycode'
+
+to 'Maqueen IR keycode' {
+  comment 'Wait for an IR message and return the key code.'
+  attachIR 16
+  return (receiveIR)
+}
+
+to 'Maqueen LED' lrb LEDstatus {
+  comment '2 x red LEDs'
+  local '_mq_pin_LED_Left' 8
+  local '_mq_pin_LED_Right' 12
+  if (lrb == 'left') {
+    digitalWriteOp _mq_pin_LED_Left LEDstatus
+  } (lrb == 'right') {
+    digitalWriteOp _mq_pin_LED_Right LEDstatus
+  } (lrb == 'both') {
+    digitalWriteOp _mq_pin_LED_Left LEDstatus
+    digitalWriteOp _mq_pin_LED_Right LEDstatus
+  }
+}
+
+to 'Maqueen beep' duration {
+  comment 'Buzzer
+Remember to set the P0 switch.'
+  local '_mq_pin_Buzzer' 0
+  local 'end time' ((millisOp) + duration)
+  repeatUntil ((millisOp) >= (v 'end time')) {
+    digitalWriteOp _mq_pin_Buzzer true
+    waitMicros 1900
+    digitalWriteOp _mq_pin_Buzzer false
+    waitMicros 1900
+  }
+}
+
+to 'Maqueen distance (cm)' {
+  comment 'HC-SR04 Distance Sensor
+Contributed by Joan Guillén and Josep Ferràndiz'
+  local '_mq_pin_Trigger' 1
+  local '_mq_pin_Echo' 2
+  digitalWriteOp _mq_pin_Trigger false
+  waitMicros 2
+  digitalWriteOp _mq_pin_Trigger true
+  waitMicros 50
+  digitalWriteOp _mq_pin_Trigger false
+  local 'start' (microsOp)
+  waitUntil (or (not (digitalReadOp _mq_pin_Echo)) (((microsOp) - start) > 23320))
+  waitUntil (or (digitalReadOp _mq_pin_Echo) (((microsOp) - start) > 23320))
+  local 'init' (microsOp)
+  waitUntil (or (not (digitalReadOp _mq_pin_Echo)) (((microsOp) - init) > 23320))
+  local 'end' (microsOp)
+  return ((10 * (end - init)) / 583)
+}
+
+to 'Maqueen line sensor' lr {
+  comment '2 x Line Sensors (true/false)
+When Maqueen’s line-tracking sensor is put on the black line,
+the sensor outputs 0, and the blue LED turns off;
+if put on white area, it outputs 1 and the blue LED turns on.'
+  local '_mq_pin_Line_Left' 13
+  local '_mq_pin_Line_Right' 14
+  if (lr == 'left') {
+    return (digitalReadOp _mq_pin_Line_Left)
+  } (lr == 'right') {
+    return (digitalReadOp _mq_pin_Line_Right)
+  }
+}
+
+to 'Maqueen motor' lrb dir speed {
+  comment 'MOTOR CONTROL:
+
+//% blockId="left motor" block="left" M1 = 0,
+//% blockId="right motor" block="right" M2 = 1,
+//% blockId="all motor" block="all" All  (issue 2 cmds, one for each motor)
+
+//% blockId="CW" block="Forward" CW = 0x0,
+//% blockId="CCW" block="Backward" CCW = 0x1
+
+//% blockId=motor_MotorRun block="motor|%index|move|%Dir|at speed|%speed"
+//% speed.min=0 speed.max=255'
+  local '_mq_i2c_addr' (hexToInt '10')
+  speed = (minimum 255 speed)
+  if (dir == 'fwd') {
+    dir = 0
+  } (dir == 'bwd') {
+    dir = 1
+  }
+  if (lrb == 'left') {
+    lrb = 0
+    '[sensors:i2cWrite]' (hexToInt _mq_i2c_addr) ('[data:makeList]' lrb dir speed)
+  } (lrb == 'right') {
+    lrb = 2
+    '[sensors:i2cWrite]' (hexToInt _mq_i2c_addr) ('[data:makeList]' lrb dir speed)
+  } (lrb == 'both') {
+    '[sensors:i2cWrite]' (hexToInt _mq_i2c_addr) ('[data:makeList]' 0 dir speed)
+    waitMillis 1
+    '[sensors:i2cWrite]' (hexToInt _mq_i2c_addr) ('[data:makeList]' 2 dir speed)
+  }
+  waitMillis 50
+}
+
+to 'Maqueen sees line on left' leftSide rightSide {
+  comment 'Allows for dual evaluation of the sensors for faster results '
+  return (and (leftSide == (not ('Maqueen line sensor' 'left'))) (rightSide == (not ('Maqueen line sensor' 'right'))))
+}
+
+to 'Maqueen stop motors' lrb {
+  comment 'STOP Motors'
+  'Maqueen motor' lrb 'fwd' 0
+}
+
