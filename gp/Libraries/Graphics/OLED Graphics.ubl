@@ -1,12 +1,15 @@
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
-version 1 8 
+version 1 9 
 choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
 choices ModeMenu Horizontal Vertical 
-description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI. 
+description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
+- always display buffer
+- defer display updates block
+- remove reveal
 - switch to x (0-127), y (0-63)
 - Pruned commands and vars
 - textX and textY
@@ -18,27 +21,27 @@ Changes:
 - image draw bug fix
 - stack overflow fix
 '
-variables _OLEDReady _OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTABLE _comMode _dcPin _delayGDUpd _displayType _endCol _endRow _eol _resetPin _textX _textY _dataPrefix _byteCount _imgData _imgWidth _imgHeight 
+variables OLEDReady OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTABLE _comMode _dcPin _delayGDUpd _displayType _endCol _endRow _eol _resetPin _textX _textY _dataPrefix _byteCount _imgData _imgWidth _imgHeight 
 
 	spec ' ' 'OLEDInit_I2C' 'initialize i2c _ address(hex) _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_0.96in' '3C' '-' false
 	spec ' ' 'OLEDInit_SPI' 'initialize spi _ d/c pin# _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_2.42in' 16 8 false
-	spec ' ' 'OLEDclear' 'clear'
 	spec ' ' 'OLEDwrite' 'write _ at x _ y _ inverse _' 'auto auto auto bool' 'Hello!' 0 0 false
 	spec ' ' 'OLEDshowGDBuffer' 'show display buffer'
+	spec ' ' 'OLEDclear' 'clear'
+	spec ' ' 'OLEDcontrast' 'set contrast (1-4) _' 'auto' 2
 	spec ' ' 'OLEDdrawCircle' 'draw circle at x _ y _ radius _ erase _' 'auto auto auto bool' 64 32 '10' false
+	spec ' ' 'OLEDdrawImage' 'draw image _ at x _ y _' 'auto auto auto' 0 0 0
 	spec ' ' 'OLEDdrawLine' 'draw line from x _ y _ to x _ y _ erase _' 'auto auto auto auto bool' 0 0 127 63 false
 	spec ' ' 'OLEDdrawRect' 'draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _' 'auto auto auto auto bool auto' 0 0 127 63 false 0
-	spec 'r' 'OLEDmakeImage' 'make image _' 'microbitDisplay' 33084991
-	spec ' ' 'OLEDdrawImage' 'draw image _ at x _ y _' 'auto auto auto' 0 0 0
+	spec ' ' 'OLEDflip' '_flip display top _' 'bool' false
+	spec 'r' 'OLEDmakeImage' 'make image _ : ' 'microbitDisplay' 33084991
 	spec ' ' 'OLEDpixel' 'set pixel x _ y _ erase _' 'auto auto bool' 0 0 false
-	spec ' ' 'OLEDreveal' 'reveal display buffer _ msecs' 'auto' 0
-	spec ' ' 'OLEDcontrast' 'set contrast (1-4) _' 'auto' 2
 	spec ' ' 'OLEDsetVideo' 'set video _' 'str.VideoMenu' 'Inverse'
 	spec 'r' 'OLEDwru' 'cursor location'
+	spec ' ' 'defer display updates' 'defer display updates'
 	spec ' ' '_GDDRAMoff' '_GDDRAMoff'
 	spec ' ' '_GDDRAMon' '_GDDRAMon'
 	spec ' ' '_OLEDcursorReset' '_cursor reset'
-	spec ' ' '_OLEDflip' '_flip display top _' 'bool' false
 	spec ' ' '_OLEDsetDisplay' '_set display _' 'str.OnOffMenu' 'On'
 	spec ' ' '_OLEDreset' '_set reset Pin# _' 'auto' '0'
 	spec ' ' '_SPIWriteCmd' '_SPIWriteCmd'
@@ -50,7 +53,6 @@ variables _OLEDReady _OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTA
 	spec ' ' '_clearDisplay' '_clearDisplay'
 	spec ' ' '_corner' '_corner _ _ _ _ _' 'auto auto auto auto bool' 'TL' 32 1 0 true
 	spec 'r' '_dec2hex' '_dec2hex _' 'auto' 0
-	spec ' ' '_dispByte' '_dispByte _ _ _' 'auto auto auto' 0 0 0
 	spec ' ' '_initChars' '_initChars'
 	spec ' ' '_initCheck' '_initCheck'
 	spec ' ' '_initDisplayHW' '_initDisplayHW'
@@ -63,8 +65,8 @@ to OLEDInit_I2C dispType i2cAddr resetPin flip {
   comment 'Sets display type and interface and initializes HW settings.
 Do NOT set a ResetPin# unless one exists on the display hardware.
 NOTE:
-Displays supported: 
-- OLED 0.96in (SD1306 chip) and 
+Displays supported:
+- OLED 0.96in (SD1306 chip) and
 - OLED 2.42" (SD1309 chip)
 Both displays are 128x64 pixels or 16x8 characters in size.
 Displays come in dual mode version (i2c and spi) and pure i2c.
@@ -75,7 +77,7 @@ flip setting controls display hardware write direction:
 - true: bottom to top'
   _comma = ('[data:unicodeString]' 44)
   _comMode = 'i2c'
-  _OLEDi2cAddr = (hexToInt ('[data:join]' ('[data:unicodeString]' 32) i2cAddr))
+  OLEDi2cAddr = (hexToInt ('[data:join]' ('[data:unicodeString]' 32) i2cAddr))
   if (dispType == 'OLED_0.96in') {
     _displayType = 6
     _resetPin = resetPin
@@ -85,7 +87,7 @@ flip setting controls display hardware write direction:
   }
   '_initDisplayHW'
   if flip {
-    '_OLEDflip' true
+    OLEDflip true
   }
   '_initLibrary'
   OLEDclear
@@ -97,8 +99,8 @@ SPI four wire in Mode-0 is supported. Max speed=10000000.
 
 Do NOT set a ResetPin# unless one exists on the display hardware.
 NOTE:
-Displays supported: 
-- OLED 0.96in (SD1306 chip) and 
+Displays supported:
+- OLED 0.96in (SD1306 chip) and
 - OLED 2.42" (SD1309 chip)
 Both displays are 128x64 pixels or 16x8 characters in size.
 Displays come in dual mode version (i2c and spi) and pure i2c.
@@ -119,7 +121,7 @@ flip setting controls display hardware write direction:
   '[sensors:spiSetup]' 10000000
   '_initDisplayHW'
   if flip {
-    '_OLEDflip' true
+    OLEDflip true
   }
   '_initLibrary'
   OLEDclear
@@ -149,12 +151,12 @@ to OLEDcontrast contrast {
 
 to OLEDdrawCircle cx cy r erase {
   comment 'Bresenham Circle:
-Draws circles, even partially bigger than the display. 
+Draws circles, even partially bigger than the display.
 x: 0-127
 y: 0-63
 void plotCircle(int xm, int ym, int r)
 {
-   int x = -r, y = 0, err = 2-2*r; /* II. Quadrant */ 
+   int x = -r, y = 0, err = 2-2*r; /* II. Quadrant */
    do {
       setPixel(xm-x, ym+y); /*   I. Quadrant */
       setPixel(xm-y, ym-x); /*  II. Quadrant */
@@ -200,6 +202,7 @@ to OLEDdrawImage image x y {
         atPut GDidx _GDBuffer (at (imgDispl + byte#) image)
         GDidx += 1
         if (GDidx > 1024) {
+          if (not _delayGDUpd) {OLEDshowGDBuffer}
           return 0
         }
       } else {
@@ -218,12 +221,16 @@ to OLEDdrawImage image x y {
         }
         GDidx += 1
         if (GDidx > 1024) {
+          if (not _delayGDUpd) {OLEDshowGDBuffer}
           return 0
         }
       }
       waitMillis 0
     }
     y += 8
+  }
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
   }
 }
 
@@ -270,7 +277,6 @@ plotLine(int x0, int y0, int x1, int y1)
   repeatUntil done {
     OLEDpixel x0 y0 erase
     if (and (x0 == x1) (y0 == y1)) {
-      if (not _delayGDUpd) {OLEDshowGDBuffer}
       done = (booleanConstant true)
     }
     e2 = (2 * err)
@@ -283,13 +289,17 @@ plotLine(int x0, int y0, int x1, int y1)
       y0 += sy
     }
   }
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
 }
 
 to OLEDdrawRect TLx TLy width height erase cornerRad {
   comment 'Draw Rectangle with optional rounded corners with radius R.
 Does not check for reversed rectangle coordinates for round corners.'
   '_initCheck'
-  _delayGDUpd = (booleanConstant true)
+  local 'oldDelayGDUpd' _delayGDUpd
+  _delayGDUpd = true
   local 'BRx' (TLx + width)
   local 'BRy' (TLy + height)
   if (cornerRad >= 3) {
@@ -311,13 +321,24 @@ Does not check for reversed rectangle coordinates for round corners.'
     OLEDdrawLine (BRx - 1) BRy TLx BRy erase
     OLEDdrawLine TLx (BRy - 1) TLx (TLy + 1) erase
   }
+  _delayGDUpd = oldDelayGDUpd
   if (not _delayGDUpd) {
     OLEDshowGDBuffer
   }
 }
 
+to OLEDflip flip {
+  comment 'Flips the display initialization horizontally or vertically.
+Horizontal or vertical is based on the pin connector location.'
+  if flip {
+    '_sendCmd' 'A0,C0'
+  } else {
+    '_sendCmd' 'A1,C8'
+  }
+}
+
 to OLEDmakeImage spr# {
-  comment 'Receives a 25-bit number representing 5x5 image matrix.
+  comment 'Receives a spr# representing 5x5 image matrix.
 Converts it to a HOR array of 5 VERT bitmap numbers.
 This can be displayed with the draw image block.
 sprNum max is 33554431'
@@ -373,21 +394,6 @@ if X <= num <= Y'
   }
 }
 
-to OLEDreveal delay {
-  comment 'Display _GDBuffer content random bytes at a time with delay.'
-  '_clearDisplay'
-  local 'randNums' (newList 1024)
-  local 'base' 128
-  repeatUntil (-1 == ('[data:find]' 0 randNums)) {
-    local 'num' (random 0 1023)
-    if (0 == (at (num + 1) randNums)) {
-      atPut (num + 1) randNums 1
-      '_dispByte' (at (num + 1) _GDBuffer) (num / base) (num % base)
-      waitMillis delay
-    }
-  }
-}
-
 to OLEDsetVideo videoMode {
   comment 'Switches the entire display:
 Inverse: inverse video mode (bit 0 = on)
@@ -405,7 +411,7 @@ Any image on the display will be preserved when mode changes.'
 to OLEDshowGDBuffer {
   comment 'Copies contents of virtual _GDBuffer to display
 i2c:
-   in 61 byte chunks for speed. 
+   in 61 byte chunks for speed.
    1 byte is used for the command 40
 spi:
    fastest is dump buffer
@@ -414,19 +420,22 @@ spi:
   if (_comMode == 'i2c') {
     local 'idx' 0
     repeat 17 {
-      '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:join]' _dataPrefix ('[data:copyFromTo]' _GDBuffer idx (idx + 60)))
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _dataPrefix ('[data:copyFromTo]' _GDBuffer idx (idx + 60)))
       idx += 61
     }
   } else {
     '_SPIWriteData'
     '[sensors:spiExchange]' ('[data:copyFromTo]' _GDBuffer 1)
   }
+  _delayGDUpd = (booleanConstant false)
 }
 
 to OLEDwrite string x y invFlag {
   comment 'Writes strings to display at any x,y; processing CR LF and wrapping at col x.
 _textX and _textY are next write locations.'
   '_initCheck'
+  local 'oldDelayGDUpd' _delayGDUpd
+  _delayGDUpd = true
   '_verifyXY' x y
   local 'origX' x
   for char string {
@@ -457,6 +466,10 @@ _textX and _textY are next write locations.'
   }
   _textX = x
   _textY = y
+  _delayGDUpd = oldDelayGDUpd
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
 }
 
 to OLEDwru {
@@ -496,16 +509,6 @@ and also by OLEDColMode block.'
   _endRow = 7
 }
 
-to '_OLEDflip' flip {
-  comment 'Flips the display initialization horizontally or vertically.
-Horizontal or vertical is based on the pin connector location.'
-  if flip {
-    '_sendCmd' 'A0,C0'
-  } else {
-    '_sendCmd' 'A1,C8'
-  }
-}
-
 to '_OLEDreset' pin {
   comment 'Does a power off and on on the display,
 thus forcing a hardware initialization.'
@@ -516,7 +519,7 @@ thus forcing a hardware initialization.'
 }
 
 to '_OLEDsetDisplay' onoff {
-  comment 'Puts the display into 
+  comment 'Puts the display into
 Off:SLEEP   On:WAKE   mode.
 Images on display are preserved.'
   '_initCheck'
@@ -605,9 +608,9 @@ to '_clearDisplay' {
   local 'clearBuff' ('[data:newByteArray]' 60 0)
   if ('i2c' == _comMode) {
     repeat 17 {
-      '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
     }
-    '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
+    '[sensors:i2cWrite]' OLEDi2cAddr ('[data:join]' _dataPrefix clearBuff)
   } else {
     '_SPIWriteData'
     '[sensors:spiExchange]' ('[data:newByteArray]' 1024)
@@ -655,9 +658,6 @@ r is the radius in pixels of the arc to be calculated.'
       err = (err + ((x * 2) + 1))
     }
   }
-  if (not _delayGDUpd) {
-    OLEDshowGDBuffer
-  }
 }
 
 to '_dec2hex' num {
@@ -673,24 +673,11 @@ to '_dec2hex' num {
       num = -1
     }
   }
-  comment 'If not EVEN length'
-  repeatUntil ((size hexNum) == 4) {
+  comment 'If not half-byte length, pad it.'
+  repeatUntil (((size hexNum) % 4) == 0) {
     hexNum = ('[data:join]' '0' hexNum)
   }
   return hexNum
-}
-
-to '_dispByte' value row col {
-  comment 'Copies a byte from _GDBuffer to Display
-Values are DEC.'
-  local '_cmdPrefix' ('[data:newByteArray]' 1 (hexToInt 'C0'))
-  '_sendCmd' ('[data:join]' '22' _comma ('_dec2hex' row) _comma ('_dec2hex' row) _comma '21' _comma ('_dec2hex' col) _comma ('_dec2hex' col))
-  if (_comMode == 'i2c') {
-    '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:join]' _cmdPrefix ('[data:newByteArray]' 1 value))
-  } else {
-    '_SPIWriteData'
-    spiSend value
-  }
 }
 
 to '_initChars' {
@@ -705,7 +692,9 @@ For each character, _cDecTbl is updated with 8 byte array values.'
 
 to '_initCheck' {
   comment 'Verifies Library initialization status.'
-  if (not _OLEDReady) {
+  if OLEDReady {
+    return 0
+  } else {
     sayIt 'Display needs to be initialized before using the library blocks.'
     stopTask
   }
@@ -773,7 +762,7 @@ this value is used to build the byteArray.'
   _endCol = 127
   _delayGDUpd = (booleanConstant false)
   '_initChars'
-  _OLEDReady = (booleanConstant true)
+  OLEDReady = (booleanConstant true)
   '_OLEDsetDisplay' 'On'
   setUserLED true
   waitMillis 1000
@@ -811,7 +800,7 @@ MAKE SURE ALL  INPUT PARAMETERS ARE HEX'
   local 'cmdPrefix' (hexToInt '80')
   if ('i2c' == _comMode) {
     for cmd _cList {
-      '[sensors:i2cWrite]' _OLEDi2cAddr ('[data:asByteArray]' ('[data:makeList]' cmdPrefix (hexToInt cmd)))
+      '[sensors:i2cWrite]' OLEDi2cAddr ('[data:asByteArray]' ('[data:makeList]' cmdPrefix (hexToInt cmd)))
     }
   } else {
     '_SPIWriteCmd'
@@ -828,5 +817,9 @@ to '_verifyXY' x y {
     sayIt 'x or y value error:' ('[data:unicodeString]' 10) 'x:' x ' y:' y
     stopTask
   }
+}
+
+to 'defer display updates' {
+  _delayGDUpd = (booleanConstant true)
 }
 
