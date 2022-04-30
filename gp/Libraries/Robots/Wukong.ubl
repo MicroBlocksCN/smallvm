@@ -11,12 +11,14 @@ The base board design is compatible with Lego.
 https://www.elecfreaks.com/learn-en/microbitExtensionModule/wukong.html
 '
 
-	spec ' ' 'wukong_setMotor' 'Wukong set motor _ to _ (-100 to 100)' 'menu.range:1-2 num' 1 100
+	spec ' ' 'wukong_setServo' 'Wukong set servo _ to _ (-100 to 100)' 'menu.range:0-7 num' 0 0
+	space
+	spec ' ' 'wukong_setMotor' 'Wukong set motor _ to _ (-100 to 100)' 'menu.range:1-2 num' 1 50
 	spec ' ' 'wukong_stopAllMotors' 'Wukong stop all motors'
-	spec ' ' 'wukong_setServo' 'Wukong set servo _ to _ (-100 to 100)' 'menu.range:0-7 num' 1 0
 	space
 	spec ' ' 'wukong_setNeopixels' 'Wukong set NeoPixels _ _ _ _' 'color color color color'
 	spec ' ' 'wukong_setLEDBrightness' 'Wukong set LED brightness to _' 'num' 100
+	space
 	spec 'r' '_rescale' '_rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
 
 to '_rescale' val in_min in_max out_min out_max {
@@ -62,7 +64,7 @@ value range of -100 to 100 maps to the full range of the servo'
     channel = 16
   }
   value = (maximum -100 (minimum value 100))
-  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' channel ('_rescale' value -100 100 0 180) 0 0)
+  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' channel ('_rescale' value 100 -100 0 180) 0 0)
 }
 
 to wukong_stopAllMotors {
