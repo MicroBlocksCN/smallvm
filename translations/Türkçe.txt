@@ -1285,7 +1285,7 @@ show advanced blocks
 gelişmiş blokları göster
 
 export functions as library
-fonksiyonları kütüphane olarak dışarı aktar
+fonksiyonları kitaplık olarak dışarı aktar
 
 hide advanced blocks
 gelişmiş blokları gizle
@@ -1434,7 +1434,7 @@ Onayla
 # File picker and library dialogs
 
 Libraries
-Kütüphaneler
+Kitaplıklar
 
 Examples
 Örnekler
@@ -1479,7 +1479,7 @@ Invalid URL
 geçersiz URL
 
 Could not fetch library.
-Kütüphane getirilemedi.
+Kitaplık getirilemedi.
 
 Host does not exist or is currently down.
 Ana makine mevcut değil veya şu anda kapalı.
@@ -1491,10 +1491,10 @@ Server expects HTTPS, and MicroBlocks doesn't currently support it.
 Sunucu HTTPS bekliyor ve MicroBlocks şu anda desteklemiyor.
 
 library information
-kütüphane bilgileri
+kitaplık bilgileri
 
 built-in library
-yerleşik kütüphane
+yerleşik kitaplık
 
 Dependency path, name or URL?
 Bağımlılık yol, ad veya URl'si
