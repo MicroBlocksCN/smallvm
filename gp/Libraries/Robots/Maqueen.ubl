@@ -1,6 +1,6 @@
 module Maqueen Output
 author 'Turgut Guneysu'
-version 1 0 
+version 1 1 
 depends 'IR Remote' 
 choices LRBMenu left right both 
 choices DirMenu fwd bwd 
@@ -133,14 +133,14 @@ to 'Maqueen motor' lrb dir speed {
   }
   if (lrb == 'left') {
     lrb = 0
-    '[sensors:i2cWrite]' (hexToInt _mq_i2c_addr) ('[data:makeList]' lrb dir speed)
+    '[sensors:i2cWrite]' _mq_i2c_addr ('[data:makeList]' lrb dir speed)
   } (lrb == 'right') {
     lrb = 2
-    '[sensors:i2cWrite]' (hexToInt _mq_i2c_addr) ('[data:makeList]' lrb dir speed)
+    '[sensors:i2cWrite]' _mq_i2c_addr ('[data:makeList]' lrb dir speed)
   } (lrb == 'both') {
-    '[sensors:i2cWrite]' (hexToInt _mq_i2c_addr) ('[data:makeList]' 0 dir speed)
+    '[sensors:i2cWrite]' _mq_i2c_addr ('[data:makeList]' 0 dir speed)
     waitMillis 1
-    '[sensors:i2cWrite]' (hexToInt _mq_i2c_addr) ('[data:makeList]' 2 dir speed)
+    '[sensors:i2cWrite]' _mq_i2c_addr ('[data:makeList]' 2 dir speed)
   }
   waitMillis 50
 }
