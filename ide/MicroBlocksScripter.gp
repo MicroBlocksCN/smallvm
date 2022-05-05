@@ -1272,6 +1272,7 @@ method allScriptsString MicroBlocksScripter {
 
 method pasteScripts MicroBlocksScripter scriptString atHand {
   // hide the definitions of functions that will be pasted
+  scriptString = (normalizeLineEndings scriptString)
   for entry (parse scriptString) {
     args = (argList entry)
     if (and ('script' == (primName entry)) (3 == (count args)) (notNil (last args))) {

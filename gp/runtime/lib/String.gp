@@ -569,6 +569,10 @@ method escapeDoubleQuotes String {
   return (joinStrings result)
 }
 
+method normalizeLineEndings String {
+  return (joinStringArray (lines this) (newline))
+}
+
 // Unicode encoding
 
 method codePoints String {
