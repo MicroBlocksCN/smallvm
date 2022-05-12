@@ -723,16 +723,45 @@ static int readTemperature() {
 
 #elif defined(ARDUINO_CITILAB_ED1)
 
-#define LIS3DH_ID 25
+typedef enum {
+	accel_unknown = -1,
+	accel_none = 0,
+	accel_LIS3DH = 1,
+	accel_MXC6655 = 2,
+} AccelerometerType_t;
 
-static int readAcceleration(int registerID) {
-	if (!accelStarted) {
+static AccelerometerType_t accelType = accel_unknown;
+
+#define LIS3DH_ID 25
+#define MXC6655_ID  21
+
+static void startAccelerometer() {
+	if (0x33 == readI2CReg(LIS3DH_ID, 0x0F)) {
 		writeI2CReg(LIS3DH_ID, 0x20, 0x8F); // turn on accelerometer, 1600 Hz update, 8-bit (low power) mode
 		writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
-		delay(2);
-		accelStarted = true;
+		accelType = accel_LIS3DH;
+	} else if (0x05 == readI2CReg(MXC6655_ID, 0x0F)) {
+		accelType = accel_MXC6655;
 	}
-	int val = readI2CReg(LIS3DH_ID, 0x28 + registerID);
+	delay(2);
+	accelStarted = true;
+}
+
+
+static int readAcceleration(int registerID) {
+	if (!accelStarted) startAccelerometer();
+	int val = 0;
+	switch (accelType) {
+	case accel_LIS3DH:
+		val = readI2CReg(LIS3DH_ID, 0x28 + registerID);
+		break;
+	case accel_MXC6655:
+		val = readI2CReg(MXC6655_ID, 0x02 + registerID);
+		break;
+	default:
+		val = 0;
+		break;
+	}
 	val = (val >= 128) ? (val - 256) : val; // value is a signed byte
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = ((val * 200) / 127); // scale to range 0-200
@@ -741,27 +770,47 @@ static int readAcceleration(int registerID) {
 }
 
 static void setAccelRange(int range) {
-	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
-	// See datasheet pg. 37, CTRL_REG4.
-
-	writeI2CReg(LIS3DH_ID, 0x23, range << 4);
+	switch (accelType) {
+	case accel_LIS3DH:
+		// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+		// See datasheet pg. 37, CTRL_REG4.
+		writeI2CReg(LIS3DH_ID, 0x23, range << 4);
+	break;
+	case accel_MXC6655:
+		if (range > 2) range = 2; // only 2, 4 or 8 supported
+		writeI2CReg(MXC6655_ID, 0x0D, range << 5);
+		break;
+	default:
+		break;
+	}
 }
 
 static int readTemperature() {
-	if (!accelStarted) readAcceleration(1); // initialize accelerometer if necessary
-
-	writeI2CReg(LIS3DH_ID, 0x23, 0x80); // enable block data update (needed for temperature)
-	int hiByte = readI2CReg(LIS3DH_ID, 0x0D);
-	int lowByte = readI2CReg(LIS3DH_ID, 0x0C);
-	writeI2CReg(LIS3DH_ID, 0x23, 0); // disable block data update
-	int offsetDegreesC;
-
-	if (hiByte <= 127) { // positive offset
-		offsetDegreesC = hiByte + ((lowByte >= 128) ? 1 : 0); // round up
-	} else { // negative offset
-		offsetDegreesC = (hiByte - 256) + ((lowByte >= 128) ? -1 : 0); // round down
+	if (!accelStarted) startAccelerometer(); // initialize accelerometer if necessary
+	int val = 0;
+	int offsetDegreesC, hiByte, lowByte;
+	switch (accelType) {
+	case accel_LIS3DH:
+		writeI2CReg(LIS3DH_ID, 0x23, 0x80); // enable block data update (needed for temperature)
+		hiByte = readI2CReg(LIS3DH_ID, 0x0D);
+		lowByte = readI2CReg(LIS3DH_ID, 0x0C);
+		writeI2CReg(LIS3DH_ID, 0x23, 0); // disable block data update
+		if (hiByte <= 127) { // positive offset
+			offsetDegreesC = hiByte + ((lowByte >= 128) ? 1 : 0); // round up
+		} else { // negative offset
+			offsetDegreesC = (hiByte - 256) + ((lowByte >= 128) ? -1 : 0); // round down
+		}
+		val =  20 + offsetDegreesC;
+		break;
+	case accel_MXC6655:
+		val = readI2CReg(MXC6655_ID, 0x09);
+		val =(val >= 128) ? (val - 256) : val; // value is a signed byte
+		val = 18 + val;
+		break;
+	default:
+		break;
 	}
-	return 20 + offsetDegreesC;
+	return val;
 }
 
 #elif  defined(RP2040_PHILHOWER)
