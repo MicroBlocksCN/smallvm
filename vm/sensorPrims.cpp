@@ -733,7 +733,7 @@ typedef enum {
 static AccelerometerType_t accelType = accel_unknown;
 
 #define LIS3DH_ID 25
-#define MXC6655_ID  21
+#define MXC6655_ID 21
 
 static void startAccelerometer() {
 	if (0x33 == readI2CReg(LIS3DH_ID, 0x0F)) {
@@ -770,9 +770,9 @@ static int readAcceleration(int registerID) {
 }
 
 static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 	switch (accelType) {
 	case accel_LIS3DH:
-		// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 		// See datasheet pg. 37, CTRL_REG4.
 		writeI2CReg(LIS3DH_ID, 0x23, range << 4);
 	break;
@@ -894,8 +894,13 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 		deviceID = BMX055;
 		reg = 3;
 	#elif defined(ARDUINO_CITILAB_ED1)
-		deviceID = LIS3DH_ID;
-		reg = 0x29 | 0x80; // address + auto-increment flag
+		if (accelType == accel_LIS3DH) {
+			deviceID = LIS3DH_ID;
+			reg = 0x29 | 0x80; // address + auto-increment flag
+		} else if (accelType == accel_MXC6655) {
+			deviceID = MXC6655_ID;
+			reg = 0x03;
+		}
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		deviceID = LIS3DH_ID;
 		reg = 0x29 | 0x80; // address + auto-increment flag
