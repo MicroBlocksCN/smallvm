@@ -805,7 +805,7 @@ static int readTemperature() {
 	case accel_MXC6655:
 		val = readI2CReg(MXC6655_ID, 0x09);
 		val =(val >= 128) ? (val - 256) : val; // value is a signed byte
-		val = 18 + val;
+		val = 20 + ((val * 568) / 1000);
 		break;
 	default:
 		break;
