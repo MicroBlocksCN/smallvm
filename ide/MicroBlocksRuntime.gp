@@ -47,9 +47,9 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 }
 
 method stopRunningBlock SmallRuntime aBlock {
-  if (isRunning this aBlock) {
-	stopRunningChunk this (lookupChunkID this aBlock)
-  }
+	if (isRunning this aBlock) {
+		stopRunningChunk this (lookupChunkID this aBlock)
+	}
 }
 
 method chunkTypeFor SmallRuntime aBlockOrFunction {
@@ -543,7 +543,7 @@ method assignFunctionIDs SmallRuntime {
 		if (not (contains chunkIDs fName)) {
 			id = (unusedChunkID this)
 			entry = (array id nil (chunkTypeFor this func))
-			atPut chunkIDs fName entry  // fName -> (<id>, <crc>, <chunkType>)
+			atPut chunkIDs fName entry // fName -> (<id>, <crc>, <chunkType>)
 		}
 	}
 }
@@ -1325,8 +1325,8 @@ method clearVariableNames SmallRuntime {
 
 method serialDelayMenu SmallRuntime {
 	menu = (menu (join 'Serial delay' (newline) '(smaller is faster, but may fail if computer cannot keep up)') (action 'setSerialDelay' this) true)
-	for i (range 1 5)  { addItem menu i }
-	for i (range 6 20 2)  { addItem menu i }
+	for i (range 1 5) { addItem menu i }
+	for i (range 6 20 2) { addItem menu i }
 	addLine menu
 	addItem menu 'reset to default'
 	popUpAtHand menu (global 'page')
@@ -1885,12 +1885,12 @@ method showResult SmallRuntime chunkID value isError isResult {
 }
 
 method exportScriptImageWithResult SmallRuntime aBlock {
-  topBlock = (topBlock aBlock)
-  if (isPrototypeHat topBlock) { return }
-  blockForResultImage = topBlock
-  if (not (isRunning this topBlock)) {
-	evalOnBoard this topBlock
-  }
+	topBlock = (topBlock aBlock)
+	if (isPrototypeHat topBlock) { return }
+	blockForResultImage = topBlock
+	if (not (isRunning this topBlock)) {
+		evalOnBoard this topBlock
+	}
 }
 
 // Return values
@@ -2284,7 +2284,7 @@ method adaFruitResetMessage SmallRuntime {
 
 method adaFruitReconnectMessage SmallRuntime {
 	msg = (join
-		(localized 'When the NeoPixels turn off')  ', '
+		(localized 'When the NeoPixels turn off') ', '
 		(localized 'reconnect to the board by clicking the "Connect" button (USB icon).'))
 	inform msg
 }
@@ -2308,7 +2308,7 @@ method waitForFirmwareInstall SmallRuntime {
 method startFirmwareCountdown SmallRuntime fileName {
 	// Called by editor after firmware file is saved.
 
-	if ('_no_file_selected_' ==  fileName) {
+	if ('_no_file_selected_' == fileName) {
 		spinner = (findMorph 'MicroBlocksSpinner')
 		if (notNil spinner) { destroy (handler spinner) }
 	} else {
@@ -2320,7 +2320,7 @@ method firmwareInstallSecsRemaining SmallRuntime {
 	if (isNil firmwareInstallTimer) { return 0 }
 	installWaitMSecs = 6000
 	if (and ('Browser' == (platform)) (browserIsChromeOS)) {
-		installWaitMSecs =  16000
+		installWaitMSecs = 16000
 	}
 	return (ceiling ((installWaitMSecs - (msecs firmwareInstallTimer)) / 1000))
 }
