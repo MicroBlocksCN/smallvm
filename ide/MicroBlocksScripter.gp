@@ -1157,6 +1157,7 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 	updateBlocks this
 	saveScripts this
 	restoreScripts this
+	setCursor 'default'
 }
 
 method updateLibraryList MicroBlocksScripter {
