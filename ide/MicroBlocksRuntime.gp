@@ -1573,14 +1573,6 @@ method processNextMessage SmallRuntime {
 		print 'Bad message start byte; should be 250 or 251 but is:' firstByte
 		print (toString recvBuf) // show the bad string (could be an ESP error message)
 		skipMessage this // discard
-		// ESP32 doesn't run the VM right away. It always outputs a debug
-		// message, which means that the first pingMsg is never received by the
-		// board. We just wait a bit before assuming the VM has started. The
-		// 500 delay has been found to work experimentally in several computers.
-		// NOTE: This change made it impossible to install the firmware when an Arduino
-		// program was sending serial data (e.g. printing "Hello" ever 100 msecs).
-		// Commented out for now. Will be removed entirely soon.
-//		waitMSecs 500
 	}
 	return true
 }
