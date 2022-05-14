@@ -851,7 +851,7 @@ method tryToConnect SmallRuntime {
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
-			sendMsg this 'pingMsg'
+			waitForPing this // wait up to 1 second for ping
 			pingSentMSecs = (msecsSinceStart)
 			print 'Connected to' portName
 			connectionStartTime = nil
@@ -1525,6 +1525,8 @@ method ensurePortOpen SmallRuntime {
 				(notNil (findSubstring 'pts' portName)))) { // support for GnuBlocks
 			port = (safelyRun (action 'openSerialPort' portName 115200))
 			if (not (isClass port 'Integer')) { port = nil } // failed
+			if (isNil port) { return }
+			// connected!
 			disconnected = false
 			if ('Browser' == (platform)) { waitMSecs 100 } // let browser callback complete
 		}
@@ -1575,7 +1577,10 @@ method processNextMessage SmallRuntime {
 		// message, which means that the first pingMsg is never received by the
 		// board. We just wait a bit before assuming the VM has started. The
 		// 500 delay has been found to work experimentally in several computers.
-		waitMSecs 500
+		// NOTE: This change made it impossible to install the firmware when an Arduino
+		// program was sending serial data (e.g. printing "Hello" ever 100 msecs).
+		// Commented out for now. Will be removed entirely soon.
+//		waitMSecs 500
 	}
 	return true
 }
