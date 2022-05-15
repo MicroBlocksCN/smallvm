@@ -766,6 +766,9 @@ static int readAcceleration(int registerID) {
 	if (val < -127) val = -127; // keep in range -127 to 127
 	val = ((val * 200) / 127); // scale to range 0-200
 	val = -val; // invert sign for all axes
+	#ifdef ARDUINO_CITILAB_ED1
+		if ((accelType == accel_MXC6655) && (5 == registerID)) val -= 25; // fix z value from MXC6655
+	#endif
 	return val;
 }
 
@@ -813,7 +816,7 @@ static int readTemperature() {
 	return val;
 }
 
-#elif  defined(RP2040_PHILHOWER)
+#elif defined(RP2040_PHILHOWER)
 
 static int readTemperature() { return analogReadTemp(); }
 static int readAcceleration(int reg) { return 0; } // RP2040 has no accelerometer
@@ -926,6 +929,9 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 		y = ((y * 200) >> 7);
 		z = ((z * 200) >> 7);
 	}
+	#ifdef ARDUINO_CITILAB_ED1
+		if (accelType == accel_MXC6655) z = -z - 25; // fix z value from MXC6655
+	#endif
 	int accel = (int) sqrt((x * x) + (y * y) + (z * z));
 	return int2obj(accel);
 }
