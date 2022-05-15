@@ -70,14 +70,18 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 
 	serverStarted = false;
 
-	if (argCount > 5) { // static IP
-		IPAddress ip;
-		IPAddress gateway;
-		IPAddress subnet;
-		ip.fromString(obj2str(args[3]));
-		gateway.fromString(obj2str(args[4]));
-		subnet.fromString(obj2str(args[5]));
-		WiFi.config(ip, gateway, subnet);
+	if ((argCount > 5) &&
+		(obj2str(args[3])[0] != 0) &&
+		(obj2str(args[4])[0] != 0) &&
+		(obj2str(args[5])[0] != 0)) { // use static IP (all parameters must be non-empty strings)
+			IPAddress ip;
+			IPAddress gateway;
+			IPAddress subnet;
+
+			ip.fromString(obj2str(args[3]));
+			gateway.fromString(obj2str(args[4]));
+			subnet.fromString(obj2str(args[5]));
+			WiFi.config(ip, gateway, subnet);
 	}
 
 	#ifdef USE_WIFI101
