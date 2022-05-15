@@ -9,15 +9,9 @@ description 'Connect to a WiFi network. Used in conjunction with other network l
 	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
 	spec 'r' '[net:myMAC]' 'MAC address'
-	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times (old)' 'str str num' 'Network_Name' '' 3
 
 to getIPAddress {
   return ('[net:myIPAddress]')
-}
-
-to 'wifi connect to' ssid password tries {
-  comment 'Deprecated. Use "wifi connect to _ password _", which uses a timeout rather than retrying.'
-  wifiConnect ssid password
 }
 
 to wifiConnect ssid password fixedIP gatewayIP subnetIP {
