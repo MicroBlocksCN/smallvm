@@ -11,10 +11,9 @@ description 'A simple MQTT client.'
 	spec ' ' 'MQTT sub' 'MQTT sub _ : QoS _' 'str num' 'testTopic' 0
 	spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
 	spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _ : retain _ QoS _' 'str auto bool num' 'testTopic' 'Hello!' false 0
-	spec 'r' '[net:MQTTLastEvent]' 'last MQTT event : binary _' 'bool' false
+	spec 'r' '[net:MQTTLastEvent]' 'MQTT event : binary _' 'bool' false
 	spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
 	spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
-	spec 'r' 'last MQTT event' 'obsolete last MQTT event'
 
 to 'MQTT connect to' broker buffer_sizes client_id username password {
   if ((getIPAddress) != '0.0.0.0') {
@@ -84,13 +83,5 @@ to 'MQTT sub' topic qos {
 
 to 'MQTT unsub' topic {
   if ((callCustomReporter '[net:MQTTUnsub]' ('[data:makeList]' topic)) != (booleanConstant true)) {sayIt 'unsub failure!'}
-}
-
-to 'last MQTT event' useBinary {
-  if ((pushArgCount) < 1) {
-    return (callCustomReporter '[net:MQTTLastEvent]')
-  } else {
-    return (callCustomReporter '[net:MQTTLastEvent]' ('[data:makeList]' binaryFlag))
-  }
 }
 
