@@ -1,0 +1,114 @@
+module 'TdR STEAM' Output
+author 'K Giori'
+version 1 0
+description 'Library for INNOVA DIDACTIC Imagina TdR STEAM v2.0 shield when used with ESP32 board.
+
+https://shop.innovadidactic.com/es/placas-kits-y-robots/1574-kit-imagina-tdr-steam-basado-en-esp32-steamaker.html'
+depends 'DHT' 'IR Remote'
+
+	spec ' ' 'tdr_test_buzzer' 'TdR test buzzer'
+	spec ' ' 'tdr_set_blue_LED' 'TdR set blue LED _' 'bool' true
+	spec ' ' 'tdr_set_red_LED' 'TdR set red LED _' 'bool' true
+	space
+	spec ' ' 'tdr_set_RGB_LED' 'TdR set RGB LED _' 'color'
+	spec ' ' 'tdr_clear_RGB_LED' 'TdR clear RGB LED'
+	spec 'r' 'tdr_colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+	spec 'r' 'tdr_randomColor' 'random color'
+	space
+	spec 'r' 'tdr_LM35_temp' 'TdR LM35 temperature °C'
+	spec 'r' 'tdr_DHT11_temp' 'TdR DHT11 temperature °C'
+	spec 'r' 'tdr_DHT11_humidity' 'TdR DHT11 humidity'
+	space
+	spec 'r' 'tdr_rotation' 'TdR rotation'
+	spec 'r' 'tdr_light_level' 'TdR light level'
+	spec 'r' 'tdr_switch_1' 'TdR button 1'
+	spec 'r' 'tdr_switch_2' 'TdR button 2'
+	space
+	spec 'r' 'tdr_receiveIRcode' 'TdR receive IR code'
+
+to tdr_colorFromRGB r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to tdr_randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+to tdr_DHT11_humidity {
+  return (humidity_DHT11 17)
+}
+
+to tdr_DHT11_temp {
+  return (temperature_DHT11 17)
+}
+
+to tdr_LM35_temp {
+  return (((5000 * (analogReadOp 35)) / 1024) / 10)
+}
+
+to tdr_rotation {
+  return (analogReadOp 2)
+}
+
+to tdr_light_level {
+  return (analogReadOp 4)
+}
+
+to tdr_set_blue_LED on {
+  digitalWriteOp 18 on
+}
+
+to tdr_set_red_LED on {
+  digitalWriteOp 19 on
+}
+
+to tdr_set_RGB_LED color {
+  comment 'red 27, green 13, blue 5'
+  local 'r' (255 & (color >> 16))
+  local 'g' (255 & (color >> 8))
+  local 'b' (255 & color)
+  analogWriteOp 27 (r * 2)
+  analogWriteOp 13 (g * 2)
+  analogWriteOp 5 (b * 3)
+}
+
+to tdr_clear_RGB_LED {
+  analogWriteOp 27 0
+  analogWriteOp 13 0
+  analogWriteOp 5 0
+}
+
+to tdr_switch_1 {
+  return (digitalReadOp 26)
+}
+
+to tdr_switch_2 {
+  return (digitalReadOp 14)
+}
+
+to tdr_test_buzzer {
+  comment 'buzzer is pin 12'
+  repeat 500 {
+    digitalWriteOp 12 true
+    waitMillis 10
+    digitalWriteOp 12 false
+    waitMillis 10
+  }
+}
+
+to tdr_receiveIRcode {
+  attachIR 23
+  return (receiveIR)
+}
+
