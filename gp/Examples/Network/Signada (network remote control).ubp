@@ -54,7 +54,7 @@ to connection {
       mode = 'ap'
       wifiCreateHotspot SSID password
     } else {
-      'wifi connect to' SSID password 3
+      wifiConnect SSID password
     }
   }
 }
@@ -181,7 +181,7 @@ to tilt which {
   }
 }
 
-script 482 40 {
+script 494 50 {
 whenStarted
 '[display:mbDisplayOff]'
 '[tft:circle]' (('[tft:getWidth]') / 2) (('[tft:getHeight]') / 2) 30 255
@@ -194,7 +194,7 @@ if (and (buttonA) (buttonB)) {
 sendBroadcast 'go'
 }
 
-script 38 44 {
+script 50 54 {
 comment 'Signada: a network remote control procotol
 ================================
 
@@ -239,7 +239,7 @@ blocks provided by the Snap! library to
 communicate with the board.'
 }
 
-script 928 46 {
+script 940 56 {
 whenBroadcastReceived 'go'
 connection
 showConnectionInfo
@@ -257,7 +257,7 @@ forever {
 }
 }
 
-script 531 448 {
+script 543 458 {
 comment 'Use this script to set the Wifi credentials manually'
 savewifi 'MySSID' 'MyPassword' ''
 }
@@ -860,73 +860,65 @@ to 'ws event type' event {
 
 module WiFi Comm
 author MicroBlocks
-version 1 3 
+version 1 4 
 tags communication network 
-description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
-	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times : IP _ gateway _ subnet _' 'str str num str str str' 'Network_Name' '' 3 '192.168.1.42' '192.168.1.1' '255.255.255.0'
-	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+	spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'auto auto auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'auto auto' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
-	spec 'r' '[net:myMAC]' 'my MAC address'
+	spec 'r' '[net:myMAC]' 'MAC address'
 
 to getIPAddress {
   return ('[net:myIPAddress]')
 }
 
-to 'wifi connect to' ssid password tries fixedIP gatewayIP subnetIP {
-  local 'ip' fixedIP
-  local 'gateway' gatewayIP
-  local 'subnet' subnetIP
-  if (not ('[net:hasWiFi]')) {
-    return
-  }
-  if ((pushArgCount) < 3) {
-    ip = ''
-    gateway = ''
-    subnet = ''
-  }
+to wifiConnect ssid password fixedIP gatewayIP subnetIP {
+  if (not ('[net:hasWiFi]')) {return}
   '[net:stopWiFi]'
-  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
-    '[net:startWiFi]' ssid password false ip gateway subnet
-    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
-      comment 'Slow blink while connecting'
-      setUserLED true
-      waitMillis 500
-      setUserLED false
-      waitMillis 500
-    }
-    tries += -1
+  if ((pushArgCount) < 5) {
+    '[net:startWiFi]' ssid password
+  } else {
+    '[net:startWiFi]' ssid password false fixedIP gatewayIP subnetIP
   }
-  repeat 8 {
+  local 'startMSecs' (millisOp)
+  repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
+    comment 'Timeout after N seconds'
+    if (((millisOp) - startMSecs) > 10000) {
+      sayIt 'Could not connect'
+      return 0
+    }
+    comment 'Slow blink while trying to connect'
+    setUserLED true
+    waitMillis 300
+    setUserLED false
+    waitMillis 300
+  }
+  repeat 6 {
     comment 'Quick blinks when connected'
     setUserLED true
     waitMillis 50
     setUserLED false
     waitMillis 50
   }
-  waitMillis 1000
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
   '[net:startWiFi]' ssid password true
-  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
-    comment 'Slow blink while connecting'
-    setUserLED true
-    waitMillis 500
-    setUserLED false
-    waitMillis 500
+  if ('Connected' != ('[net:wifiStatus]')) {
+    sayIt 'Could not create hotspot'
+    return 0
   }
-  repeat 8 {
+  repeat 6 {
     comment 'Quick blinks when connected'
     setUserLED true
     waitMillis 50
     setUserLED false
     waitMillis 50
   }
-  waitMillis 1000
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 

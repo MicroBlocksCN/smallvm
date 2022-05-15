@@ -9,7 +9,7 @@ whenStarted
 comment 'This server responds to any request with a JSON object
 containing the tilt x, y, and z values.'
 comment 'Remember to use your network name (SSID) and password below'
-'wifi connect to' 'Network_Name' '' 3
+wifiConnect 'Network_Name' ''
 forever {
   repeatUntil (('[net:httpServerGetRequest]') != '') {
     waitMillis 10
@@ -113,61 +113,65 @@ to 'request method' request {
 
 module WiFi Comm
 author MicroBlocks
-version 1 3 
+version 1 4 
 tags communication network 
-description 'Connect to a WiFi network. To be used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
-	spec ' ' 'wifi connect to' 'wifi connect to _ password _ try _ times' 'str str num' 'Network_Name' '' 3
-	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+	spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'auto auto auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'auto auto' 'Network_Name' 'Network_Password'
 	spec 'r' 'getIPAddress' 'IP address'
+	spec 'r' '[net:myMAC]' 'MAC address'
 
 to getIPAddress {
   return ('[net:myIPAddress]')
 }
 
-to 'wifi connect to' ssid password tries {
+to wifiConnect ssid password fixedIP gatewayIP subnetIP {
   if (not ('[net:hasWiFi]')) {return}
-  repeatUntil (or ('Connected' == ('[net:wifiStatus]')) (tries < 1)) {
+  '[net:stopWiFi]'
+  if ((pushArgCount) < 5) {
     '[net:startWiFi]' ssid password
-    repeatUntil ('Trying...' != ('[net:wifiStatus]')) {
-      comment 'Slow blink while connecting'
-      setUserLED true
-      waitMillis 500
-      setUserLED false
-      waitMillis 500
-    }
-    tries += -1
+  } else {
+    '[net:startWiFi]' ssid password false fixedIP gatewayIP subnetIP
   }
-  repeat 8 {
+  local 'startMSecs' (millisOp)
+  repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
+    comment 'Timeout after N seconds'
+    if (((millisOp) - startMSecs) > 10000) {
+      sayIt 'Could not connect'
+      return 0
+    }
+    comment 'Slow blink while trying to connect'
+    setUserLED true
+    waitMillis 300
+    setUserLED false
+    waitMillis 300
+  }
+  repeat 6 {
     comment 'Quick blinks when connected'
     setUserLED true
     waitMillis 50
     setUserLED false
     waitMillis 50
   }
-  waitMillis 1000
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
 to wifiCreateHotspot ssid password {
   if (not ('[net:hasWiFi]')) {return}
   '[net:startWiFi]' ssid password true
-  repeatUntil ('Connected' == ('[net:wifiStatus]')) {
-    comment 'Slow blink while connecting'
-    setUserLED true
-    waitMillis 500
-    setUserLED false
-    waitMillis 500
+  if ('Connected' != ('[net:wifiStatus]')) {
+    sayIt 'Could not create hotspot'
+    return 0
   }
-  repeat 8 {
+  repeat 6 {
     comment 'Quick blinks when connected'
     setUserLED true
     waitMillis 50
     setUserLED false
     waitMillis 50
   }
-  waitMillis 1000
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
 
