@@ -1,10 +1,10 @@
 module 'TdR STEAM' Output
 author 'K Giori'
-version 1 0
+version 1 0 
+depends DHT 'IR Remote' 
 description 'Library for INNOVA DIDACTIC Imagina TdR STEAM v2.0 shield when used with ESP32 board.
 
 https://shop.innovadidactic.com/es/placas-kits-y-robots/1574-kit-imagina-tdr-steam-basado-en-esp32-steamaker.html'
-depends 'DHT' 'IR Remote'
 
 	spec ' ' 'tdr_test_buzzer' 'TdR test buzzer'
 	spec ' ' 'tdr_set_blue_LED' 'TdR set blue LED _' 'bool' true
@@ -26,11 +26,33 @@ depends 'DHT' 'IR Remote'
 	space
 	spec 'r' 'tdr_receiveIRcode' 'TdR receive IR code'
 
+to tdr_DHT11_humidity {
+  return (humidity_DHT11 17)
+}
+
+to tdr_DHT11_temp {
+  return (temperature_DHT11 17)
+}
+
+to tdr_LM35_temp {
+  return (((5000 * (analogReadOp 35)) / 10240) + 4)
+}
+
+to tdr_clear_RGB_LED {
+  analogWriteOp 27 0
+  analogWriteOp 13 0
+  analogWriteOp 5 0
+}
+
 to tdr_colorFromRGB r g b {
   r = (maximum 0 (minimum r 255))
   g = (maximum 0 (minimum g 255))
   b = (maximum 0 (minimum b 255))
   return (((r << 16) | (g << 8)) | b)
+}
+
+to tdr_light_level {
+  return (analogReadOp 4)
 }
 
 to tdr_randomColor {
@@ -45,24 +67,23 @@ to tdr_randomColor {
   }
 }
 
-to tdr_DHT11_humidity {
-  return (humidity_DHT11 17)
-}
-
-to tdr_DHT11_temp {
-  return (temperature_DHT11 17)
-}
-
-to tdr_LM35_temp {
-  return (((5000 * (analogReadOp 35)) / 1024) / 10)
+to tdr_receiveIRcode {
+  attachIR 23
+  return (receiveIR)
 }
 
 to tdr_rotation {
   return (analogReadOp 2)
 }
 
-to tdr_light_level {
-  return (analogReadOp 4)
+to tdr_set_RGB_LED color {
+  comment 'red 27, green 13, blue 5'
+  local 'r' (255 & (color >> 16))
+  local 'g' (255 & (color >> 8))
+  local 'b' (255 & color)
+  analogWriteOp 27 (r / 3)
+  analogWriteOp 13 (g / 4)
+  analogWriteOp 5 (b / 2)
 }
 
 to tdr_set_blue_LED on {
@@ -71,22 +92,6 @@ to tdr_set_blue_LED on {
 
 to tdr_set_red_LED on {
   digitalWriteOp 19 on
-}
-
-to tdr_set_RGB_LED color {
-  comment 'red 27, green 13, blue 5'
-  local 'r' (255 & (color >> 16))
-  local 'g' (255 & (color >> 8))
-  local 'b' (255 & color)
-  analogWriteOp 27 (r * 2)
-  analogWriteOp 13 (g * 2)
-  analogWriteOp 5 (b * 3)
-}
-
-to tdr_clear_RGB_LED {
-  analogWriteOp 27 0
-  analogWriteOp 13 0
-  analogWriteOp 5 0
 }
 
 to tdr_switch_1 {
@@ -99,16 +104,11 @@ to tdr_switch_2 {
 
 to tdr_test_buzzer {
   comment 'buzzer is pin 12'
-  repeat 500 {
+  repeat 100 {
     digitalWriteOp 12 true
-    waitMillis 10
+    waitMillis 2
     digitalWriteOp 12 false
-    waitMillis 10
+    waitMillis 2
   }
-}
-
-to tdr_receiveIRcode {
-  attachIR 23
-  return (receiveIR)
 }
 
