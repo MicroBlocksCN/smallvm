@@ -1,11 +1,11 @@
 module 'ED1 Stepper Motor' Output
 author MicroBlocks
-version 1 0
-description 'Provides blocks to control 28BYJ-48 stepper motors, like the ones included in the Fantastic robot kit for the Citilab ED1 board.'
-tags '28byj-48' stepper motor fantastic ed1
-choices directions clockwise 'counter-clockwise'
-
-variables _ED1_stepper_init _ED1_CW1 _ED1_CW2 _ED1_CCW1 _ED1_CCW2 _ED1_motor_running _ED1_exp_register
+version 1 1 
+tags '28byj-48' stepper motor fantastic ed1 
+choices directions clockwise 'counter-clockwise' 
+description 'Provides blocks to control 28BYJ-48 stepper motors, like the ones included in the Fantastic robot kit for the Citilab ED1 board.
+'
+variables _ED1_stepper_init _ED1_CW1 _ED1_CW2 _ED1_CCW1 _ED1_CCW2 _ED1_motor_running _ED1_exp_register 
 
 	spec ' ' 'motor step' 'move motor _ _ steps _' 'auto auto menu.directions' 1 '128' 'clockwise'
 	spec ' ' 'move motor ' 'move motor 1 _ and motor 2 _ _ steps' 'menu.directions menu.directions auto' 'clockwise' 'counter-clockwise' '64'
@@ -28,6 +28,7 @@ to '_ED1_stepper_init' {
     _ED1_CCW2 = (hexToInt 'C')
     _ED1_stepper_init = (booleanConstant true)
     i2cSet (hexToInt '20') 0 0
+    i2cSet (hexToInt '20') 6 255
   }
 }
 
