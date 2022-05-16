@@ -450,7 +450,7 @@ static OBJ primReceivedInteger() {
 }
 
 static OBJ primReceivedMessageType(int argCount, OBJ *args) {
-	char *s = "other";
+	const char *s = "other";
 	if (-1 == receivedMessageType) s = "none";
 	if (MAKECODE_PACKET_INTEGER == receivedMessageType) s = "number";
 	if (MAKECODE_PACKET_PAIR == receivedMessageType) s = "pair";

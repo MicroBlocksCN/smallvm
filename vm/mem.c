@@ -106,7 +106,7 @@ int wordsFree() {
 	return (result < 0) ? 0 : result;
 }
 
-void vmPanic(char *errorMessage) {
+void vmPanic(const char *errorMessage) {
 	// Called when VM encounters a fatal error. Output the given message and loop forever.
 	// NOTE: This call never returns!
 
@@ -197,12 +197,12 @@ OBJ newStringFromBytes(const char *bytes, int byteCount) {
 }
 
 char* obj2str(OBJ obj) {
-	if (isInt(obj)) return "<Integer>";
-	if (isBoolean(obj)) return ((trueObj == obj) ? "true" : "false");
+	if (isInt(obj)) return (char *) "<Integer>";
+	if (isBoolean(obj)) return (char *) ((trueObj == obj) ? "true" : "false");
 	if (IS_TYPE(obj, StringType)) return (char *) &obj[HEADER_WORDS];
-	if (IS_TYPE(obj, ListType)) return "<List>";
-	if (IS_TYPE(obj, ByteArrayType)) return "<ByteArray>";
-	return "<Object>";
+	if (IS_TYPE(obj, ListType)) return (char *) "<List>";
+	if (IS_TYPE(obj, ByteArrayType)) return (char *) "<ByteArray>";
+	return (char *) "<Object>";
 }
 
 // Debugging Utilities

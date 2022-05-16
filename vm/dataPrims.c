@@ -546,7 +546,7 @@ OBJ primJoinStrings(int argCount, OBJ *args) {
 	int count = obj2int(FIELD(stringList, 0));
 	if (count <= 0) return newString(0);
 
-	char *separator = ((argCount > 1) && IS_TYPE(args[1], StringType)) ? obj2str(args[1]) : "";
+	char *separator = ((argCount > 1) && IS_TYPE(args[1], StringType)) ? obj2str(args[1]) : (char *) "";
 	int separatorLen = strlen(separator);
 	char buf[50];
 

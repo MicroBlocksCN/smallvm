@@ -200,7 +200,7 @@ void sendBroadcastToIDE(char *s, int len);
 int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
-void vmPanic(char *s);
+void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);
 void waitAndSendMessage(int msgType, int chunkIndex, int dataSize, char *data);

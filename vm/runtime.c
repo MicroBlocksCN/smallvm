@@ -97,8 +97,8 @@ OBJ callPrimitive(int argCount, OBJ *args) {
 	// but are fine for slower operations (e.g. updating the micro:bit display).
 
 	if (argCount < 2) return fail(primitiveNotImplemented);
-	char *setName = IS_TYPE(args[0], StringType) ? obj2str(args[0]) : "";
-	char *primName = IS_TYPE(args[1], StringType) ? obj2str(args[1]) : "";
+	char *setName = IS_TYPE(args[0], StringType) ? obj2str(args[0]) : (char *) "";
+	char *primName = IS_TYPE(args[1], StringType) ? obj2str(args[1]) : (char *) "";
 
 	for (int i = 0; i < primSetCount; i++) {
 		if (0 == strcmp(primSets[i].setName, setName)) {
