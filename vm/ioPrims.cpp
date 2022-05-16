@@ -1442,6 +1442,7 @@ static portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 // Copy of __dacWrite from esp32-hal-dac.c without the call to pinMode():
 #include "soc/sens_reg.h"
+#include "soc/rtc_io_reg.h"
 
 static void IRAM_ATTR __dacWrite(uint8_t pin, uint8_t value) {
 	if(pin < 25 || pin > 26) return;//not dac pin
