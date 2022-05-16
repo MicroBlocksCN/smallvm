@@ -171,7 +171,8 @@ int touchEnabled = false;
 			tft.invertDisplay(true); // display must be inverted to give correct colors...
 			tftClear();
 
-			Wire1.begin(21, 22, 400000);
+			Wire1.begin(21, 22);
+			Wire1.setClock(400000);
 
 			// turn on LCD power pins (LD02 and LD03) = 0x0C
 			// and for C+, turn on Ext (0x40) for the buzzer and DCDC1 (0x01) since M5Stack's init code does that
