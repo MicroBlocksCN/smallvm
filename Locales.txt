@@ -746,7 +746,7 @@ join string list _ separator _
 
 WiFi
 
-wifi connect to _ password _ try _ times
+wifi connect to _ password _
 
 IP _ gateway _ subnet _
 
@@ -878,6 +878,8 @@ body of request _
 
 path of request _
 
+headers of request _
+
 method of request _
 
 content length of request _
@@ -1007,13 +1009,19 @@ username _ password _
 
 MQTT connected
 
+MQTT disconnect
+
 MQTT sub _
 
 MQTT unsub _
 
 MQTT pub topic _ payload _
 
-last MQTT event
+retain _ QoS _
+
+MQTT event
+
+binary _
 
 topic for MQTT event _
 
@@ -1022,23 +1030,28 @@ payload for MQTT event _
 ####
 # Cutebot
 
-Cutebot set left wheel speed to _ % right wheel speed to _ %
+Cutebot set wheel left _ right _ (-100 to 100)
 
-Cutebot stop car
+Cutebot stop wheels
 
-Cutebot tracking channel _ is _
+Cutebot set headlight _ to _
 
-Cutebot tracking state is _ _
+Cutebot set NeoPixel _ to _
 
-Cutebot set LED _ to _
+Cutebot _ line sensor
 
-Cutebot ultrasonic sensor distance(cm)
+Cutebot sees line on left _ right _
 
-Cutebot set _ servo _ angle to _
+Cutebot distance (cm)
+
+Cutebot set servo _ to _ (-100 to 100)
 
 left
 
 right
+
+both
+
 
 # Wukong
 
