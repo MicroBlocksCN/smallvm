@@ -866,20 +866,20 @@ file system info
 WiFi
 WiFi
 
-wifi connect to _ password _ try _ times
-连接WiFi至 _ 密码 _ 尝试 _ 次
+wifi connect to _ password _
+连接 wifi 至 _ 密码 _
 
 IP _ gateway _ subnet _
-IP地址 _ 网关 _ 子网掩码 _
+IP 地址 _ 网关 _ 子网掩码 _
 
 wifi create hotspot _ password _
-创建WiFi热点 _ 密码 _
+创建 wifi 热点 _ 密码 _
 
 IP address
-IP地址
+IP 地址
 
 MAC address
-MAC地址
+MAC 地址
 
 ####
 # Motion library
@@ -1044,8 +1044,14 @@ body of request _
 path of request _
 请求路径 _
 
+headers of request _
+请求头 _
+
 method of request _
 请求方法 _
+
+content length of request _
+请求内容长度 _
 
 ####
 # Web Things library
@@ -1110,6 +1116,9 @@ username _ password _
 MQTT connected
 MQTT 服务器已连接
 
+MQTT disconnect
+断开 MQTT 服务器连接
+
 MQTT sub _
 订阅主题 _
 
@@ -1119,8 +1128,14 @@ MQTT unsub _
 MQTT pub topic _ payload _
 向主题 _ 发布消息 _
 
-last MQTT event
-最新 MQTT 事件
+retain _ QoS _
+保留 _ QoS _
+
+MQTT event
+MQTT 事件
+
+binary _
+二进制 _
 
 topic for MQTT event _
 最新 MQTT 事件的主题 _
@@ -1144,7 +1159,7 @@ Cutebot set headlight _ to _
 将 _ LED 车头灯 设为 _
 
 Cutebot set NeoPixel _ to _
-Cutebot set NeoPixel _ to _
+Cutebot 设置 NeoPixel _ 颜色 _
 
 Cutebot _ line sensor
 _ 巡线传感器 状态为
@@ -1165,7 +1180,7 @@ right
 右
 
 both
-both
+全部
 
 # Wukong
 
