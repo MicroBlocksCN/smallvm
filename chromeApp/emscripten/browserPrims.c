@@ -244,7 +244,7 @@ static OBJ primBrowserGetDroppedFile(int nargs, OBJ args[]) {
 		var dst = $0 / 4;
 		var len = $1;
 		for (var i = 0; i < len; i++) {
-			Module.HEAPU32[dst++] = (file.name.charCodeAt(i) << 1) | 1;
+			Module.HEAPU32[dst++] = (file.name[i] << 1) | 1;
 		}
 	}, &FIELD(fileName, 0), nameSize);
 
