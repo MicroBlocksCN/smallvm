@@ -1214,7 +1214,7 @@ method projectMenu MicroBlocksEditor {
   	checkBoardType (smallRuntime)
   }
   addLine menu
-  addItem menu 'Copy project URL to clipboard' 'copyProjectURLToClipboard'
+  addItem menu (localized 'Copy project URL to clipboard') 'copyProjectURLToClipboard'
   if (devMode) {
 	if ((count (functions (main (project scripter)))) > 0) {
 		addLine menu

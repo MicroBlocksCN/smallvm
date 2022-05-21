@@ -239,6 +239,8 @@ serial read
 
 serial write _
 
+serial write _ starting at _
+
 print _
 
 no op
@@ -1103,6 +1105,8 @@ New
 Open
 
 Open from board
+
+Copy project URL to clipboard
 
 Information
 
