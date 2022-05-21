@@ -50,6 +50,9 @@ read digital pin _
 read analog pin _
 读取模拟引脚 _
 
+pullup _
+上拉 _
+
 set digital pin _ to _
 设置数字引脚 _ 为 _
 
@@ -130,6 +133,12 @@ stop all
 
 last message
 最新消息
+
+with _
+参数 _
+
+call _
+调用 _
 
 Operators
 运算
@@ -267,8 +276,14 @@ new list length _
 new byte array _
 新 byte 数组 _
 
+as byte array _
+作为 byte 数组 _
+
+with all _
+填充 _
+
 free memory
-释放内存
+闲置内存
 
 My Blocks
 我的积木
@@ -306,6 +321,33 @@ spi 发送 _
 
 spi receive
 spi 接收
+
+spi setup speed _
+spi 设置速率 _
+
+mode _
+模式 _
+
+rpi channel _
+rpi 通道 _
+
+spi exchange bytes _
+spi 交换 bytes _
+
+serial open _ baud
+串口打开 _ 波特率
+
+serial close
+串口关闭
+
+serial read
+串口读取
+
+serial write _
+串口写入 _
+
+serial write _ starting at _
+串口写入 _ 开始于 _
 
 print _
 打印 _
@@ -1252,6 +1294,9 @@ Open
 
 Open from board
 从主板上打开
+
+Copy project URL to clipboard
+复制项目 URL 到剪贴板
 
 Information
 信息
