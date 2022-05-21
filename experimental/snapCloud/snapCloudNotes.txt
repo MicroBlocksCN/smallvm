@@ -1,0 +1,19 @@
+To integrate with Snap! Cloud:
+
+1. add cloud.js and sha512.js files to webapp folder
+
+2. add these lines to microblocks.html:
+
+    <script type="text/javascript" src="cloud.js"></script>
+    <script type="text/javascript" src="sha512.js"></script>
+
+3. add this line to gpSupport.js:
+
+	var modules = {};
+
+To use, make an instance of Cloud and initialize it:
+
+	var cloud = new Cloud();
+	cloud.initSession()
+
+See Bernat's email of May 22, 2022 for notes about project format and uploading.
