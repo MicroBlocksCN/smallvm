@@ -133,6 +133,19 @@ method replaceItemMenu InputSlot {
   return menu
 }
 
+method functionNameMenu InputSlot {
+  menu = (menu nil (action 'setContents' this) true)
+  scripterM = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (notNil scripterM) {
+    project = (project (handler scripterM))
+    specs = (blockSpecs project)
+    for func (functions (main project)) {
+	  addItem menu (functionName func)
+    }
+  }
+  return menu
+}
+
 // Disallow reporter blocks in hat block input slots
 // (does apply to BooleanSlots in "when <boolean>" hat blocks)
 
