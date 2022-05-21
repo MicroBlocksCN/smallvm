@@ -450,45 +450,64 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 
 #ifdef ARDUINO_ARCH_ESP32
 
-WebSocketsServer webSocket = WebSocketsServer(81);
-static int lastWebSocketType;
-static int lastWebSocketClientId;
-char lastWebSocketPayload[1000];
+#define WEBSOCKET_MAX_PAYLOAD 1024
+
+static WebSocketsServer websocketServer = WebSocketsServer(81);
+static int websocketEvtType = -1;
+static int websocketClientId;
+static int websocketPayloadLength;
+static char websocketPayload[WEBSOCKET_MAX_PAYLOAD];
 
 static void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t *payload, size_t length) {
-	lastWebSocketType = type;
-	lastWebSocketClientId = client_id;
-	length = length >= 1000 ? 999 : length;
-	memcpy(lastWebSocketPayload, payload, length);
-	lastWebSocketPayload[length] = '\0';
+	websocketEvtType = type;
+	websocketClientId = client_id;
+	websocketPayloadLength = length;
+	if (websocketPayloadLength > WEBSOCKET_MAX_PAYLOAD) websocketPayloadLength = WEBSOCKET_MAX_PAYLOAD;
+	memcpy(websocketPayload, payload, websocketPayloadLength);
 }
 
 static OBJ primWebSocketStart(int argCount, OBJ *args) {
-	webSocket.begin();
-	webSocket.onEvent(webSocketEventCallback);
+	websocketServer.begin();
+	websocketServer.onEvent(webSocketEventCallback);
+	websocketEvtType = -1;
 	return falseObj;
 }
 
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) {
-	webSocket.loop();
-	if (lastWebSocketType > -1) {
-		OBJ event = newObj(ListType, 4, zeroObj);
-		FIELD(event, 0) = int2obj(3);
-		FIELD(event, 1) = int2obj(lastWebSocketType);
-		FIELD(event, 2) = int2obj(lastWebSocketClientId);
-		FIELD(event, 3) = newStringFromBytes(lastWebSocketPayload, strlen(lastWebSocketPayload));
-		lastWebSocketType = -1;
-		return event;
+	websocketServer.loop();
+	if (websocketEvtType > -1) {
+		tempGCRoot = newObj(ListType, 4, zeroObj); // use tempGCRoot in case of GC
+		if (!tempGCRoot) return falseObj; // allocation failed
+		FIELD(tempGCRoot, 0) = int2obj(3);
+		FIELD(tempGCRoot, 1) = int2obj(websocketEvtType);
+		FIELD(tempGCRoot, 2) = int2obj(websocketClientId);
+		if (WStype_TEXT == websocketEvtType) {
+			FIELD(tempGCRoot, 3) = newStringFromBytes(websocketPayload, websocketPayloadLength);
+		} else {
+			int wordCount = (websocketPayloadLength + 3) / 4;
+			FIELD(tempGCRoot, 3) = newObj(ByteArrayType, wordCount, falseObj);
+			OBJ payload = FIELD(tempGCRoot, 3);
+			if (!payload) return fail(insufficientMemoryError);
+			memcpy(&FIELD(payload, 0), websocketPayload, websocketPayloadLength);
+			setByteCountAdjust(payload, websocketPayloadLength);
+		}
+		websocketEvtType = -1;
+		return tempGCRoot;
 	} else {
 		return falseObj;
 	}
 }
 
 static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
-	char *message = obj2str(args[0]);
-	int client = obj2int(args[1]);
-	int length = strlen(message);
-	webSocket.sendTXT(client, message, length);
+	if (argCount < 2) return fail(notEnoughArguments);
+	int clientID = obj2int(args[1]);
+	if (StringType == objType(args[0])) {
+		char *msg = obj2str(args[0]);
+		websocketServer.sendTXT(clientID, msg, strlen(msg));
+	} else if (ByteArrayType == objType(args[0])) {
+		uint8_t *msg = (uint8_t *) &FIELD(args[0], 0);
+		websocketServer.sendBIN(clientID, msg, BYTES(args[0]));
+	}
 	return falseObj;
 }
 
