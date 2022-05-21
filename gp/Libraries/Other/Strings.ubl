@@ -19,6 +19,9 @@ description 'String operations.'
 	spec 'r' 'joinWith' 'join string list _ separator _' 'auto str' ' ' ' '
 	spec 'r' 'stringToUnicodes' 'unicodes _' 'auto' 'aString'
 	spec 'r' 'unicodesToString' 'string from unicodes _' 'auto' 'aList'
+	space
+	spec 'r' 'num2str' 'num2str _' 'auto' 42
+	spec 'r' 'str2num' 'str2num _' 'str' '123'
 
 to beginsWith string substring {
   return (('[data:find]' substring string) == 1)
@@ -70,6 +73,14 @@ to lowercase string {
     }
   }
   return (v 'new string')
+}
+
+to num2str n {
+  return ('[data:join]' '' n)
+}
+
+to str2num s {
+  return (0 + s)
 }
 
 to stringToUnicodes s {
