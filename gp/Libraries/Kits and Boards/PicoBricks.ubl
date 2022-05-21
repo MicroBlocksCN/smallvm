@@ -1,6 +1,6 @@
-module PicoBricks
+module PicoBricks Output
 author MicroBlocks
-version 1 0 
+version 2 0 
 depends DHT 
 description 'Robotistan PicoBricks Library
 
@@ -20,9 +20,10 @@ Use separate librares to control:
 - Graphic display (OLED)
 - WIFI/Bluetooth expansion board
 
-See https://www.robotistan.com
+See https://www.robotistan.com, 
+https://wiki.microblocks.fun/boards/pico
 '
-variables _pb_initialized _pb_pin_RedLED _pb_pin_Button _pb_pin_DHT _pb_pin_Relay _pb_pin_Pot _pb_pin_LDR _pb_pin_Buzzer _pb_pin_Motor1 _pb_pin_Motor2 _pb_pin_RGB_LED 
+variables _pb_initialized _pb_pin_RedLED _pb_pin_Button _pb_pin_DHT _pb_pin_Relay _pb_pin_Pot _pb_pin_LDR _pb_pin_Buzzer _pb_pin_Motor1 _pb_pin_Motor2 _pb_pin_RGB_LED _pb_pin_TX _pb_pin_RX _pb_i2c_Addr 
 
 	spec ' ' 'pb_beep' 'PicoBricks beep _ ms' 'auto' 500
 	spec 'r' 'pb_button' 'PicoBricks button'
@@ -37,11 +38,11 @@ variables _pb_initialized _pb_pin_RedLED _pb_pin_Button _pb_pin_DHT _pb_pin_Rela
 	spec ' ' 'pb_set_rgb_color' 'PicoBricks set RGB LED color _' 'color'
 	spec 'r' 'pb_temperature' 'PicoBricks temperature (°C)'
 	spec ' ' 'pb_turn_off_RGB' 'PicoBricks turn off RGB LED'
-	spec 'r' '_pb_rescale' '_pb_rescale _ from range ( _ , _ ) to ( _ , _ )' 'auto auto auto auto auto' 0 0 0 0 0
+	spec 'r' '_pb_rescale' '_pb_rescale _ from  ( _ , _ ) to ( _ , _ )' 'auto auto auto auto auto' 0 0 0 0 0
 	spec ' ' '_pb_init_pins' '_pb_init_pins'
 
 to '_pb_init_pins' {
-  if (true == _pb_initialized) {return}
+  if _pb_initialized {return}
   _pb_pin_RGB_LED = 6
   _pb_pin_RedLED = 7
   _pb_pin_Button = 10
@@ -52,7 +53,10 @@ to '_pb_init_pins' {
   _pb_pin_Motor2 = 22
   _pb_pin_Pot = 26
   _pb_pin_LDR = 27
-  _pb_initialized = true
+  _pb_pin_TX = 0
+  _pb_pin_RX = 1
+  _pb_i2c_Addr = '3C'
+  _pb_initialized = (booleanConstant true)
 }
 
 to '_pb_rescale' val in_min in_max out_min out_max {
@@ -93,7 +97,7 @@ to pb_light_sensor {
 
 to pb_potentiometer {
   '_pb_init_pins'
-  return (analogReadOp _pb_pin_Pot false)
+  return (analogReadOp _pb_pin_Pot)
 }
 
 to pb_random_color {

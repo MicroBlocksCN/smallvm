@@ -1,22 +1,24 @@
 module Strings Data
 author MicroBlocks
-version 1 4
+version 1 5 
 description 'String operations.'
 
 	spec 'r' 'isDigit' '_ is a digit' 'str' '5'
 	spec 'r' 'isLowercase' '_ is lowercase' 'str' 'A'
 	spec 'r' 'isUppercase' '_ is uppercase' 'str' 'E'
-	'space'
+	space
 	spec 'r' 'beginsWith' '_ begins with _' 'str str' 'prefix' 'pre'
 	spec 'r' 'endsWith' '_ ends with _' 'str str' 'suffix' 'fix'
 	spec 'r' 'contains' '_ contains _' 'str str' 'smiles' 'mile'
-	'space'
+	space
 	spec 'r' 'lowercase' 'lowercase _' 'str' 'THIS is a String! :)'
 	spec 'r' 'uppercase' 'uppercase _' 'str' 'Hello, world!'
 	spec 'r' 'withoutWhiteSpace' '_ without white space' 'str' '1, 2,	3,
 4'
-	'space'
+	space
 	spec 'r' 'joinWith' 'join string list _ separator _' 'auto str' ' ' ' '
+	spec 'r' 'stringToUnicodes' 'unicodes _' 'auto' 'aString'
+	spec 'r' 'unicodesToString' 'string from unicodes _' 'auto' 'aList'
 
 to beginsWith string substring {
   return (('[data:find]' substring string) == 1)
@@ -68,6 +70,18 @@ to lowercase string {
     }
   }
   return (v 'new string')
+}
+
+to stringToUnicodes s {
+  local 'result' (newList (size s))
+  for i (size s) {
+    atPut i result ('[data:unicodeAt]' i s)
+  }
+  return result
+}
+
+to unicodesToString aList {
+  return ('[data:unicodeString]' aList)
 }
 
 to uppercase string {

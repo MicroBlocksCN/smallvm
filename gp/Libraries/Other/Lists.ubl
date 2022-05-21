@@ -1,0 +1,118 @@
+module Lists Data
+author MicroBlocks
+version 1 0 
+description 'Useful functions for working with lists.'
+
+	spec 'r' 'list_range' 'range _ to _ : by _' 'num num num' 1 10 1
+	spec 'r' 'list_contains' 'list _ contains _' 'auto auto' 'aList' 'cat'
+	space
+	spec 'r' 'list_map' 'map _ over _' 'str.functionNameMenu auto' 'aFunction' 'aList'
+	spec 'r' 'list_filter' 'filter _ with _' 'auto str.functionNameMenu' 'aList' 'aFunction'
+	space
+	spec ' ' 'list_reverse' 'reverse _' 'auto' 'aList'
+	spec ' ' 'list_shuffle' 'shuffle _' 'auto' 'aList'
+	spec ' ' 'list_mergesort' 'sort _' 'auto' 'aList'
+	spec ' ' '_list_mergeStep' '_mergeStep _ _ _ _ _' 'auto num num num auto' 'srcList' 1 2 3 'dstList'
+
+to '_list_mergeStep' src left right end dst {
+  local 'i' left
+  local 'j' right
+  local 'k' left
+  repeatUntil (k > end) {
+    if (and (i < right) (or (j > end) ((at i src) <= (at j src)))) {
+      atPut k dst (at i src)
+      i += 1
+    } else {
+      atPut k dst (at j src)
+      j += 1
+    }
+    k += 1
+  }
+}
+
+to list_contains aList aValue {
+  for item aList {
+    if (aValue == item) {return (booleanConstant true)}
+  }
+  return (booleanConstant false)
+}
+
+to list_filter src selectionFunction {
+  local 'result' ('[data:makeList]')
+  for item src {
+    if (callCustomReporter selectionFunction ('[data:makeList]' item)) {'[data:addLast]' item result}
+  }
+  return result
+}
+
+to list_map aFunction src {
+  local 'result' ('[data:makeList]')
+  for item src {
+    '[data:addLast]' (callCustomReporter aFunction ('[data:makeList]' item)) result
+  }
+  return result
+}
+
+to list_mergesort src {
+  local 'len' (size src)
+  local 'work list' (newList len)
+  local 'width' 1
+  repeatUntil (width >= len) {
+    local 'i' 1
+    repeatUntil (i > len) {
+      '_list_mergeStep' src i (minimum (i + width) len) (minimum (i + ((2 * width) - 1)) len) (v 'work list')
+      i += (2 * width)
+    }
+    comment 'Copy working list into the source list.'
+    for i len {
+      atPut i src (at i (v 'work list'))
+    }
+    width = (2 * width)
+  }
+}
+
+to list_range first last incr {
+  local 'result' ('[data:makeList]')
+  local 'n' first
+  local 'increment' 1
+  if ((pushArgCount) > 2) {
+    increment = incr
+  }
+  if (first <= last) {
+    increment = (absoluteValue increment)
+    repeatUntil (n > last) {
+      '[data:addLast]' n result
+      n += increment
+    }
+  } else {
+    increment = (0 - (absoluteValue increment))
+    repeatUntil (n < last) {
+      '[data:addLast]' n result
+      n += increment
+    }
+  }
+  return result
+}
+
+to list_reverse aList {
+  local 'i' 1
+  local 'j' (size aList)
+  repeatUntil (i >= j) {
+    local 'tmp' (at i aList)
+    atPut i aList (at j aList)
+    atPut j aList tmp
+    i += 1
+    j += -1
+  }
+}
+
+to list_shuffle aList {
+  local 'len' (size aList)
+  for i len {
+    local 'j' (random 1 len)
+    local 'tmp' (at i aList)
+    atPut i aList (at j aList)
+    atPut j aList tmp
+  }
+}
+
