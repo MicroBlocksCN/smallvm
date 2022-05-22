@@ -269,7 +269,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[file:appendLine]'		'append line _ to file _' 'str str')
 		(array ' ' '[file:appendBytes]'		'append bytes _ to file _' 'str str')
 		(array 'r' '[file:fileSize]'		'size of file _' 'str')
-		(array ' ' '[file:startList]'		'start file list')
+		(array ' ' '[file:startList]'		'start file list _' 'str' 'dir')
 		(array 'r' '[file:nextInList]'		'next file in list')
 		(array 'r' '[file:systemInfo]'		'file system info')
 
