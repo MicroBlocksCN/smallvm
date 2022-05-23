@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -79,6 +79,7 @@ method initialize MicroBlocksEditor {
   fixLayout this
   setFPS morph 200
   newerVersion = 'unknown'
+  putNextDroppedFileOnBoard = false
   return this
 }
 
@@ -542,12 +543,21 @@ method checkForBrowserResize MicroBlocksEditor {
   }
 }
 
+method putNextDroppedFileOnBoard MicroBlocksEditor {
+  putNextDroppedFileOnBoard = true
+}
+
 method processBrowserDroppedFile MicroBlocksEditor {
   pair = (browserGetDroppedFile)
   if (isNil pair) { return }
   fName = (callWith 'string' (first pair))
   data = (last pair)
-  processDroppedFile this fName data
+  if putNextDroppedFileOnBoard {
+    putNextDroppedFileOnBoard = false // clear flag
+	sendFileData (smallRuntime) fName data
+  } else {
+    processDroppedFile this fName data
+  }
 }
 
 method processBrowserFileSave MicroBlocksEditor {

@@ -1741,25 +1741,35 @@ method readFileFromBoard SmallRuntime remoteFileName {
 }
 
 method putFileOnBoard SmallRuntime {
-	pickFileToOpen (action 'writeFileToBoard' this)
+	if ('Browser' == (platform)) {
+		putNextDroppedFileOnBoard (findMicroBlocksEditor)
+		browserReadFile ''
+	} else {
+		pickFileToOpen (action 'writeFileToBoard' this)
+	}
 }
 
 method writeFileToBoard SmallRuntime srcFileName {
-	setCursor 'wait'
-	fileContents = (readFile srcFileName true)
-	totalBytes = (byteCount fileContents)
-	if (isNil fileContents) { return }
+	fileData = (readFile srcFileName true)
+	if (isNil fileData) { return }
 
 	targetFileName = (filePart srcFileName)
 	if ((count targetFileName) > 30) {
 		targetFileName = (substring targetFileName 1 30)
 	}
+	sendFileData this targetFileName fileData
+}
+
+method sendFileData SmallRuntime fileName fileData {
+	setCursor 'wait'
+
+	totalBytes = (byteCount fileData)
 	id = (rand ((1 << 24) - 1))
 	bytesSent = 0
 
 	msg = (list)
 	appendInt32 this msg id
-	addAll msg (toArray (toBinaryData targetFileName))
+	addAll msg (toArray (toBinaryData fileName))
 	sendMsgSync this 'startWritingFile' 0 msg
 
 	// send data as a sequence of chunks
@@ -1770,7 +1780,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 		chunkByteCount = (min 960 (totalBytes - bytesSent))
 		repeat chunkByteCount {
 			bytesSent += 1
-			add msg (byteAt fileContents bytesSent)
+			add msg (byteAt fileData bytesSent)
 		}
 		sendMsgSync this 'fileChunk' 0 msg
 		processMessages this
@@ -1781,6 +1791,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 	appendInt32 this msg id
 	appendInt32 this msg bytesSent
 	sendMsgSync this 'fileChunk' 0 msg
+
 	setCursor 'default'
 }
 
