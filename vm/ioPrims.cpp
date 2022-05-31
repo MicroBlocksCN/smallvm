@@ -95,7 +95,8 @@ void hardwareInit() {
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1) || \
 		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
-		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_NRF52840_CLUE)
+		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_NRF52840_CLUE) || \
+		defined(TTGO_RP2040)
 			tftInit();
 	#endif
 }
@@ -544,6 +545,16 @@ void restartSerial() {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+
+#elif defined(TTGO_RP2040)
+
+	#define BOARD_TYPE "TTGO RP2040" //definition order it's important
+	#define DIGITAL_PINS 30
+	#define ANALOG_PINS 4
+	#define TOTAL_PINS DIGITAL_PINS
+	static const int analogPin[] = {A0, A1, A2, A3};
+	#define PIN_BUTTON_A 6
+	#define PIN_BUTTON_B 7
 
 #elif defined(ARDUINO_ARCH_RP2040)
 
