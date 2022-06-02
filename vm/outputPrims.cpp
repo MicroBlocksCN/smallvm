@@ -659,7 +659,7 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP8266
 	interrupts();
 }
 
-#elif defined(ARDUINO_ARCH_ESP32)
+#elif defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_C3)
 
 static void initNeoPixelPin(int pinNum) {
 	if ((pinNum < 0) || (pinNum >= pinCount())) {

@@ -823,7 +823,7 @@ void primAnalogWrite(OBJ *args) {
 		#endif
 	#endif
 
-	#if defined(ESP32)
+	#if defined(ESP32) && !defined(ESP32_C3)
 		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 DAC pins
 			dacWrite(pinNum, value);
 			return;
@@ -1436,7 +1436,7 @@ void stopTone() {
 
 // DAC (digital to analog converter) Support
 
-#if defined(ESP32) && !defined(ESP32_S2_OR_S3)
+#if defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)
 
 // DAC ring buffer. Size must be a power of 2.
 #define DAC_BUF_SIZE 128
@@ -1745,7 +1745,7 @@ static int startRF(int pin, int frequency) {
 	return true;
 }
 
-#elif defined(ESP32) && !defined(ESP32_S2_OR_S3)
+#elif defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)
 
 #include "driver/ledc.h"
 

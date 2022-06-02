@@ -1066,7 +1066,7 @@ OBJ primMagneticField(int argCount, OBJ *args) {
 
 	uint8 buf[6] = {0, 0, 0, 0, 0, 0};
 
-	#if defined(ARDUINO_ARCH_ESP32)
+	#if defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_C3)
 		return int2obj(hall_sensor_read());
 	#elif defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
 			defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_SINOBIT)
@@ -1105,7 +1105,7 @@ OBJ primMagneticField(int argCount, OBJ *args) {
 
 // Capacitive Touch Primitives for ESP32
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_C3)
 
 #ifdef ARDUINO_CITILAB_ED1
 
