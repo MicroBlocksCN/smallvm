@@ -1509,14 +1509,16 @@ static void initDAC(int pin, int sampleRate) {
 		dacPin = pin;
 	} else { // disable DAC output if pin is not a DAC pin (i.e. pin 25 or 26)
 		if (timer) timerEnd(timer);
+		timer = NULL;
 		dacPin = 255;
 		return;
 	}
+	if (timer) return; // timer initialized
 	if (sampleRate <= 0) sampleRate = 1;
 	if (sampleRate > 100000) sampleRate = 100000;
-	timer = timerBegin(0, 1, true);
+	timer = timerBegin(1, 2, true);
 	timerAttachInterrupt(timer, &onTimer, true);
-	timerAlarmWrite(timer, (40000000 / sampleRate) + fineTune, true);
+	timerAlarmWrite(timer, (20000000 / sampleRate) + fineTune, true);
 	timerAlarmEnable(timer);
 }
 
