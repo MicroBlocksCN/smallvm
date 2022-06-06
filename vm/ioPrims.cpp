@@ -96,7 +96,7 @@ void hardwareInit() {
 	#if defined(ARDUINO_CITILAB_ED1) || \
 		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
 		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_NRF52840_CLUE) || \
-		defined(TTGO_RP2040)
+		defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2)
 			tftInit();
 	#endif
 }
@@ -517,6 +517,19 @@ void restartSerial() {
 		1, 1, 0, 1, 1, 1, 1, 1, 1, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 1, 1, 1, 1, 1, 0};
+
+#elif defined(ARDUINO_M5STACK_Core2)
+	#define BOARD_TYPE "M5StackCore2"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 2
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 0, 1};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
@@ -973,7 +986,7 @@ void primSetUserLED(OBJ *args) {
 		} else {
 			primMBUnplot(2, coords);
 		}
-	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32)
+	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
 		tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#else
 		if (PIN_LED < TOTAL_PINS) {

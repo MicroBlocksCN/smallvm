@@ -25,7 +25,7 @@ int touchEnabled = false;
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
-	defined(TTGO_RP2040)
+	defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2)
 
 	#define BLACK 0
 
@@ -184,6 +184,204 @@ int touchEnabled = false;
 			n = readAXP(0x28);
 			writeAXP(0x28, (brightness << 4) | (n & 0x0f)); // set brightness
 
+			useTFT = true;
+		}
+
+	#elif defined(ARDUINO_M5STACK_Core2)
+		// Preliminary: this is not yet working...
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ILI9341.h"
+		#define TFT_CS	5
+		#define TFT_DC	15
+		#define TFT_WIDTH 320
+		#define TFT_HEIGHT 240
+		Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+
+		int readAXP(int reg) {
+			Wire1.beginTransmission(0x34);
+			Wire1.write(reg);
+			Wire1.endTransmission();
+			Wire1.requestFrom(0x34, 1);
+			return Wire1.available() ? Wire1.read() : 0;
+		}
+
+		void writeAXP(int reg, int value) {
+			Wire1.beginTransmission(0x34);
+			Wire1.write(reg);
+			Wire1.write(value);
+			Wire1.endTransmission();
+		}
+
+		void AXP192_SetDCVoltage(uint8_t number, uint16_t voltage) {
+			uint8_t addr;
+			if (number > 2) return;
+			voltage = (voltage < 700) ? 0 : (voltage - 700) / 25;
+			switch (number) {
+			case 0:
+				addr = 0x26;
+				break;
+			case 1:
+				addr = 0x25;
+				break;
+			case 2:
+				addr = 0x27;
+				break;
+			}
+			writeAXP(addr, (readAXP(addr) & 0x80) | (voltage & 0x7F));
+		}
+
+		void AXP192_SetLDOVoltage(uint8_t number, uint16_t voltage) {
+			voltage = (voltage > 3300) ? 15 : (voltage / 100) - 18;
+			if (2 == number) writeAXP(0x28, (readAXP(0x28) & 0x0F) | (voltage << 4));
+			if (3 == number) writeAXP(0x28, (readAXP(0x28) & 0xF0) | voltage);
+		}
+
+		void AXP192_SetLDOEnable(uint8_t number, bool state) {
+			uint8_t mark = 0x01;
+			if ((number < 2) || (number > 3)) return;
+
+			mark <<= number;
+			if (state) {
+				writeAXP(0x12, (readAXP(0x12) | mark));
+			} else {
+				writeAXP(0x12, (readAXP(0x12) & (~mark)));
+			}
+		}
+
+		void AXP192_SetDCDC3(bool state) {
+			uint8_t buf = readAXP(0x12);
+			if (state == true) {
+				buf = (1 << 1) | buf;
+			} else {
+				buf = ~(1 << 1) & buf;
+			}
+			writeAXP(0x12, buf);
+		}
+
+		void AXP192_SetLCDRSet(bool state) {
+			uint8_t reg_addr = 0x96;
+			uint8_t gpio_bit = 0x02;
+			uint8_t data = readAXP(reg_addr);
+
+			if (state) {
+				data |= gpio_bit;
+			} else {
+				data &= ~gpio_bit;
+			}
+			writeAXP(reg_addr, data);
+		}
+
+		void AXP192_SetLed(uint8_t state) {
+			uint8_t reg_addr = 0x94;
+			uint8_t data = readAXP(reg_addr);
+
+			if (state) {
+				data = data & 0xFD;
+			} else {
+				data |= 0x02;
+			}
+			writeAXP(reg_addr, data);
+		}
+
+		void AXP192_SetSpkEnable(uint8_t state) {
+			// Set true to enable speaker
+
+			uint8_t reg_addr = 0x94;
+			uint8_t gpio_bit = 0x04;
+			uint8_t data;
+			data = readAXP(reg_addr);
+
+			if (state) {
+				data |= gpio_bit;
+			} else {
+				data &= ~gpio_bit;
+			}
+			writeAXP(reg_addr, data);
+		}
+
+		void AXP192_SetCHGCurrent(uint8_t state) {
+			uint8_t data = readAXP(0x33);
+			data &= 0xf0;
+			data = data | ( state & 0x0f );
+			writeAXP(0x33, data);
+		}
+
+		void AXP192_SetBusPowerMode(uint8_t state) {
+			// Select source for BUS_5V
+			// 0 : powered by USB or battery; use internal boost
+			// 1 : powered externally
+
+			uint8_t data;
+			if (state == 0) {
+				// Set GPIO to 3.3V (LDO OUTPUT mode)
+				data = readAXP(0x91);
+				writeAXP(0x91, (data & 0x0F) | 0xF0);
+				// Set GPIO0 to LDO OUTPUT, pullup N_VBUSEN to disable VBUS supply from BUS_5V
+				data = readAXP(0x90);
+				writeAXP(0x90, (data & 0xF8) | 0x02);
+				// Set EXTEN to enable 5v boost
+				data = readAXP(0x10);
+				writeAXP(0x10, data | 0x04);
+			} else {
+				// Set EXTEN to disable 5v boost
+				data = readAXP(0x10);
+				writeAXP(0x10, data & ~0x04);
+				// Set GPIO0 to float, using enternal pulldown resistor to enable VBUS supply from BUS_5V
+				data = readAXP(0x90);
+				writeAXP(0x90, (data & 0xF8) | 0x07);
+			}
+		}
+
+		void AXP192_begin() {
+			// derived from AXP192.cpp from https://github.com/m5stack/M5Core2
+			Wire1.begin(21, 22);
+			Wire1.setClock(400000);
+
+			writeAXP(0x30, (readAXP(0x30) & 0x04) | 0x02); // turn vbus limit off
+			writeAXP(0x92, readAXP(0x92) & 0xf8); // set gpio1 to output
+			writeAXP(0x93, readAXP(0x93) & 0xf8); // set gpio2 to output
+			writeAXP(0x35, (readAXP(0x35) & 0x1c) | 0xa2); // enable rtc battery charging
+			AXP192_SetDCVoltage(0, 3350); // set esp32 power voltage to 3.35v
+			AXP192_SetDCVoltage(2, 2800); // set backlight voltage was set to 2.8v
+			AXP192_SetLDOVoltage(2, 3300); // set peripheral voltage (LCD_logic, SD card) voltage to 2.0v
+			AXP192_SetLDOVoltage(3, 2000); // set vibrator motor voltage to 2.0v
+			AXP192_SetLDOEnable(2, true);
+			AXP192_SetDCDC3(true); // LCD backlight
+			AXP192_SetLed(false);
+			AXP192_SetSpkEnable(true);
+
+			AXP192_SetCHGCurrent(0); // charge current: 100mA
+			writeAXP(0x95, (readAXP(0x95) & 0x72) | 0x84); // GPIO4
+
+			writeAXP(0x36, 0x4C); // ???
+			writeAXP(0x82,0xff); // ???
+
+			AXP192_SetLCDRSet(0);
+			delay(100);
+			AXP192_SetLCDRSet(1);
+			delay(100);
+
+			// axp: check v-bus status
+			if (readAXP(0x00) & 0x08) {
+				writeAXP(0x30, readAXP(0x30) | 0x80);
+				// if has v-bus power, disable M-Bus 5V output to input
+				AXP192_SetBusPowerMode(1);
+			} else {
+				// otherwise, enable M-Bus 5V output
+				AXP192_SetBusPowerMode(0);
+			}
+		}
+
+		void tftInit() {
+			AXP192_begin();
+
+			tft.begin(40000000); // Run SPI at 80MHz/2
+			tft.setRotation(1);
+			tft.invertDisplay(true);
+			uint8_t m = 0x08 | 0x04; // RGB pixel order, refresh LCD right to left
+			tft.sendCommand(ILI9341_MADCTL, &m, 1);
+
+			tftClear();
 			useTFT = true;
 		}
 
