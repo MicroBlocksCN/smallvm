@@ -1451,47 +1451,20 @@ void stopTone() {
 
 #if defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)
 
-// DAC ring buffer. Size must be a power of 2.
+#include "driver/dac_common.h"
+
+// DAC ring buffer. Size must be a power of 2 <= 256.
 #define DAC_BUF_SIZE 128
 #define DAC_BUF_MASK (DAC_BUF_SIZE - 1)
 static uint8 ringBuf[DAC_BUF_SIZE];
 
 static volatile uint8 readPtr = 0;
 static volatile uint8 writePtr = 0;
-static volatile uint8 dacPin = 255;
 static volatile uint8 lastValue = 0;
+static volatile uint8 dacChannel = 255; // DAC not initialized
 
 static hw_timer_t *timer = NULL;
 static portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
-
-// Copy of __dacWrite from esp32-hal-dac.c without the call to pinMode():
-#include "soc/sens_reg.h"
-#include "soc/rtc_io_reg.h"
-
-static void IRAM_ATTR __dacWrite(uint8_t pin, uint8_t value) {
-	if(pin < 25 || pin > 26) return;//not dac pin
-//	pinMode(pin, ANALOG); // this call causes a crash when __dacWrite is called from the ISR
-
-	//Disable Tone
-	CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL1_REG, SENS_SW_TONE_EN);
-
-	uint8_t channel = pin - 25;
-	if (channel) {
-		//Disable Channel Tone
-		CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN2_M);
-		//Set the Dac value
-		SET_PERI_REG_BITS(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_DAC, value, RTC_IO_PDAC2_DAC_S); //dac_output
-		//Channel output enable
-		SET_PERI_REG_MASK(RTC_IO_PAD_DAC2_REG, RTC_IO_PDAC2_XPD_DAC | RTC_IO_PDAC2_DAC_XPD_FORCE);
-	} else {
-		//Disable Channel Tone
-		CLEAR_PERI_REG_MASK(SENS_SAR_DAC_CTRL2_REG, SENS_DAC_CW_EN1_M);
-		//Set the Dac value
-		SET_PERI_REG_BITS(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_DAC, value, RTC_IO_PDAC1_DAC_S); //dac_output
-		//Channel output enable
-		SET_PERI_REG_MASK(RTC_IO_PAD_DAC1_REG, RTC_IO_PDAC1_XPD_DAC | RTC_IO_PDAC1_DAC_XPD_FORCE);
-	}
-}
 
 static void IRAM_ATTR onTimer() {
 	int value;
@@ -1504,14 +1477,13 @@ static void IRAM_ATTR onTimer() {
 			value = lastValue;
 		}
 	portEXIT_CRITICAL_ISR(&timerMux);
-	if (dacPin != 255) __dacWrite(dacPin, value);
+	if (dacChannel <= 2) dac_output_voltage((dac_channel_t) dacChannel, value);
 	lastValue = value;
 }
 
 static void initDAC(int pin, int sampleRate) {
 	// Set the DAC pin and sample rate.
 
-	const int fineTune = -2;
 	#if defined(ARDUINO_CITILAB_ED1)
 		// On ED1 board pins 2 and 4 are aliases for ESP32 pins 25 and 26
 		if (2 == pin) pin = 25;
@@ -1519,19 +1491,32 @@ static void initDAC(int pin, int sampleRate) {
 	#endif
 	if ((25 == pin) || (26 == pin)) {
 		pinMode(pin, ANALOG);
-		dacPin = pin;
+		dacChannel = (uint8_t) (pin - 25);
+		dac_cw_generator_disable();
+		dac_output_enable((dac_channel_t) dacChannel);
 	} else { // disable DAC output if pin is not a DAC pin (i.e. pin 25 or 26)
-		if (timer) timerEnd(timer);
+		if (timer) {
+			timerAlarmDisable(timer);
+			delay(1);
+			timerEnd(timer);
+		}
 		timer = NULL;
-		dacPin = 255;
+		dacChannel = 255;
 		return;
 	}
-	if (timer) return; // timer initialized
 	if (sampleRate <= 0) sampleRate = 1;
-	if (sampleRate > 100000) sampleRate = 100000;
-	timer = timerBegin(1, 2, true);
-	timerAttachInterrupt(timer, &onTimer, true);
-	timerAlarmWrite(timer, (20000000 / sampleRate) + fineTune, true);
+	if (sampleRate > 48000) sampleRate = 48000; // ESP32 crashs at higher sample rates
+
+	if (!timer) {
+		timer = timerBegin(1, 2, true);
+		timerAttachInterrupt(timer, &onTimer, true);
+	} else {
+		timerAlarmDisable(timer);
+		delay(1);
+	}
+
+	sampleRate = 1.020 * sampleRate; // fine tune (based on John's M5Stack Grey)
+	timerAlarmWrite(timer, (40000000 / sampleRate), true);
 	timerAlarmEnable(timer);
 }
 
@@ -1539,7 +1524,7 @@ static inline int writeDAC(int sample) {
 	// If there's room, add the given sample to the DAC ring buffer and return 1.
 	// Otherwise return 0.
 
-	if (255 == dacPin) return 0; // DAC not initialized
+	if (dacChannel > 1) return 0; // DAC is not initialized
 	if (((writePtr + 1) & DAC_BUF_MASK) == readPtr) return 0; // buffer is full
 
 	if (sample < 0) sample = 0;
