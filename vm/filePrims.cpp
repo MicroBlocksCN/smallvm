@@ -189,6 +189,19 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 	return newObj(ByteArrayType, 0, falseObj); // empty byte array
 }
 
+static OBJ primReadInto(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	OBJ buf = args[0];
+	char *fileName = extractFilename(args[1]);
+	if (ByteArrayType != objType(buf)) return fail(needsByteArray);
+
+	int i = entryFor(fileName);
+	if (i < 0) return zeroObj; // file not found
+
+	int bytesRead = fileEntry[i].file.read((uint8 *) &FIELD(buf, 0), BYTES(buf));
+	return int2obj(bytesRead);
+}
+
 // Writing
 
 static OBJ primAppendLine(int argCount, OBJ *args) {
@@ -340,6 +353,7 @@ static OBJ primDelete(int argCount, OBJ *args) { return falseObj; }
 static OBJ primEndOfFile(int argCount, OBJ *args) { return trueObj; }
 static OBJ primReadLine(int argCount, OBJ *args) { return falseObj; }
 static OBJ primReadBytes(int argCount, OBJ *args) { return falseObj; }
+static OBJ primReadInto(int argCount, OBJ *args) { return falseObj; }
 static OBJ primAppendLine(int argCount, OBJ *args) { return falseObj; }
 static OBJ primAppendBytes(int argCount, OBJ *args) { return falseObj; }
 static OBJ primFileSize(int argCount, OBJ *args) { return zeroObj; };
@@ -358,6 +372,7 @@ static PrimEntry entries[] = {
 	{"endOfFile", primEndOfFile},
 	{"readLine", primReadLine},
 	{"readBytes", primReadBytes},
+	{"readInto", primReadInto},
 	{"appendLine", primAppendLine},
 	{"appendBytes", primAppendBytes},
 	{"fileSize", primFileSize},

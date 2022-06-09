@@ -14,6 +14,7 @@ description 'Flash file system operations. Currently supports the SPIFFS file sy
 	spec 'r' '[file:endOfFile]' 'end of file _' 'str'
 	spec 'r' '[file:readLine]' 'next line of file _' 'str'
 	spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+	spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
 	space
 	spec 'r' 'file names' 'file names : in directory _' 'str'
 	spec 'r' '[file:fileSize]' 'size of file _' 'str'
