@@ -67,6 +67,16 @@ static int freeEntry() {
 	return -1; // no free entry
 }
 
+void closeIfOpen(char *fileName) {
+	// Used when downloading a file to ensure target file is closed before replacing it.
+
+	int i = entryFor(fileName);
+	if (i >= 0) {
+		fileEntry[i].fileName[0] = '\0';
+		fileEntry[i].file.close();
+	}
+}
+
 // Open, Close, Delete
 
 static OBJ primOpen(int argCount, OBJ *args) {

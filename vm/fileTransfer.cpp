@@ -59,6 +59,8 @@ static void clearFileRecieveState() {
 	if (!tempFile) tempFile.close();
 }
 
+void closeIfOpen(char *fileName); // from filePrims.cpp
+
 static void receiveChunk(int msgByteCount, char *msg) {
 	// Append the incoming chunk to the file being received.
 
@@ -83,7 +85,10 @@ static void receiveChunk(int msgByteCount, char *msg) {
 	} else { // tranfer complete
 		// close and rename file
 		tempFile.close();
-		if (myFS.exists(receivedFileName)) myFS.remove(receivedFileName); // delete old file, if any
+		if (myFS.exists(receivedFileName)) {
+			closeIfOpen(receivedFileName); // in case the user opened it
+			myFS.remove(receivedFileName); // delete old file, if any
+		}
 		myFS.rename(tempFileName, receivedFileName);
 		clearFileRecieveState();
 	}
@@ -104,6 +109,7 @@ static void receiveFile(int id, char *fileName) {
 
 	receiveID = id;
 	receivedBytes = 0;
+	closeIfOpen((char *) tempFileName);
 	tempFile = myFS.open(tempFileName, "w");
 }
 

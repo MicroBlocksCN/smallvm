@@ -15,13 +15,8 @@
 
 // Select file system (Note: LittleFS is often much slower than SPIFFS)
 #if useLittleFS
-	#ifdef ARDUINO_ARCH_ESP32
-		#include <LITTLEFS.h>
-		#define myFS LITTLEFS
-	#else
-		#include <LittleFS.h>
-		#define myFS LittleFS
-	#endif
+	#include <LittleFS.h>
+	#define myFS LittleFS
 #else
 	#ifdef ARDUINO_ARCH_ESP32
 		#include <SPIFFS.h>
