@@ -69,9 +69,18 @@ to '_wavIs16Bit' header {
 }
 
 to '_wavPlayBuffer' data byteCount bytesPerSample is16Bit {
+  comment 'Write the sound samples in the given ByteArray to the DAC.
+The DAC expects unsigned 8-bit samples in the range 0-255.
+Samples can be 1, 2, or 4 bytes depending on the combination
+of bits/sample (8 or 16) and channels (mono or stereo) but the
+last byte of each sample is always the high-order byte of one of
+the channels (16-bit samples are little-endian).'
   local 'i' bytesPerSample
   local 'sampleAdjust' 0
   if is16Bit {
+    comment '16-bit samples are signed, but the DAC expects unsigned values.
+Adding 128 to the high byte of a 16-bit sample converts from a
+signed 16-bit sample to an unsigned 8-bit DAC sample.'
     sampleAdjust = 128
   }
   repeatUntil (i > byteCount) {
