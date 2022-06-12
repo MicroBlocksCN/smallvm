@@ -733,11 +733,6 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		SET_MODE(pin, INPUT);
 		if ((argCount > 1) && (trueObj == args[1])) { pinMode(pin, INPUT_PULLUP); }
 	#endif
-	#ifdef RP2040_PHILHOWER
-		// Philhower framework defaults to 12-bit resolution
-		// NOTE: xxx Remove this workaround when upstream fix becomes available!
-		return int2obj(analogRead(pin) >> 2);
-	#endif
 	return int2obj(analogRead(pin));
 }
 
