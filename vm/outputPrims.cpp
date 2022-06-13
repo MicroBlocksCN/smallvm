@@ -716,11 +716,18 @@ static void initNeoPixelPin(int pinNum) {
 	neoPixelPinMask = 1; // record that pin has been initialized
 }
 
-static inline void __not_in_flash_func(picoDelay(int n)) {
-	volatile int dummy;
-	for (int i = n; i > 0; i--) {
-		dummy = i;
-	}
+static inline __attribute__((always_inline)) void PICO_DELAY_CYCLES(uint32_t cnt) {
+	asm volatile (
+		".syntax unified\n"
+			"MOVS r1, %[ucnt]\n"
+		"1:\n"
+			"SUBS r1, #1\n"
+			"BGT 1b\n"
+		".syntax divided\n"
+		:
+		: [ucnt] "l" (cnt)
+		: "r1"
+	);
 }
 
 static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 Philhower
@@ -728,18 +735,17 @@ static void __not_in_flash_func(sendNeoPixelData)(int val) { // RP2040 Philhower
 
 	uint32_t oldInterruptStatus = save_and_disable_interrupts();
  	gpio_put(neoPixelPin, LOW);
-	picoDelay(5); // prevents jitter in first pulse due to a possible instruction cache miss
 	for (unsigned int mask = (1 << 23); mask > 0; mask >>= 1) {
 		if (val & mask) { // one bit; timing goal: high 900 nsecs, low 500 nsecs
 			gpio_put(neoPixelPin, HIGH);
-			picoDelay(20);
+			PICO_DELAY_CYCLES(40);
 			gpio_put(neoPixelPin, LOW);
-			picoDelay(17);
+			PICO_DELAY_CYCLES(21);
 		} else { // zero bit; timing goal: high 250 nsecs, low 1150 nsecs
 			gpio_put(neoPixelPin, HIGH);
-			picoDelay(12);
+			PICO_DELAY_CYCLES(11);
 			gpio_put(neoPixelPin, LOW);
-			picoDelay(25);
+			PICO_DELAY_CYCLES(50);
 		}
 	}
 	restore_interrupts(oldInterruptStatus);
