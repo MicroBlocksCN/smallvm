@@ -295,7 +295,10 @@ method fixLayout Block {
 
 method fixLayoutRTL Block {
 	block_width = (width morph)
-	block_left = (left (fullBounds morph ))
+	if (and (notNil expression) ('if' == (primName expression))) {
+	  block_width += (15 * (blockScale))
+	}
+	block_left = (left (fullBounds morph))
 	drawer = (drawer this)
 	if (notNil drawer) {
 		block_width = (block_width - (width (fullBounds (morph drawer))))
@@ -308,7 +311,7 @@ method fixLayoutRTL Block {
 				word_left = ((left (fullBounds (morph each))) - block_left)
 				w = (width (fullBounds (morph each)))
 				if (not (isClass each 'CommandSlot')) {
-					setLeft (morph each) (block_left + ((block_width - word_left) - w ))
+					setLeft (morph each) (block_left + ((block_width - word_left) - w))
 				}
 			}
 		}
