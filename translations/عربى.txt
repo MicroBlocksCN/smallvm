@@ -86,6 +86,9 @@ else if _ _
 if _ _ else _
 إذا _ _ آخر _
 
+else
+آخر
+
 when _
 عندما _
 

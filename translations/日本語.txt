@@ -83,6 +83,9 @@ else if _ _
 if _ _ else _
 もし _ _ でなければ _
 
+else
+でなければ
+
 when _
 とき _
 

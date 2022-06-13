@@ -83,6 +83,9 @@ anders als _ dan _
 if _ _ else _
 als _ dan _ anders _
 
+else
+anders
+
 when _
 wanneer _
 

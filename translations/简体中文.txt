@@ -92,6 +92,9 @@ else if _ _
 if _ _ else _
 如果 _ _ 否则 _
 
+else
+否则
+
 when _
 当 _
 

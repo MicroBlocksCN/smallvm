@@ -83,6 +83,9 @@ yana boshqa, agar _ _
 if _ _ else _
 agar _ _ yana boshqa _
 
+else
+yana boshqa
+
 when _
 qachon _
 

@@ -83,6 +83,9 @@ se non, se _ _
 if _ _ else _
 se _ _ se non _
 
+else
+se non
+
 when _
 cando _
 

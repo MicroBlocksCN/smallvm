@@ -89,6 +89,9 @@ sonst falls _ _
 if _ _ else _
 falls _ _ sonst _
 
+else
+sonst
+
 when _
 Wenn _
 
