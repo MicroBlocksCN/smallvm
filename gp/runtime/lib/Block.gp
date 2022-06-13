@@ -1402,7 +1402,7 @@ method rawInitialize Block commandOrReporter {
 }
 
 method initializeForNode Block commandOrReporter {
-  expandTo this (count (argList commandOrReporter)) true
+  expandTo this commandOrReporter
   slots = (inputs this)
   idx = 0
   for each (argList commandOrReporter) {
@@ -1620,37 +1620,25 @@ method expand Block {
   nb = (next this)
   removeAllParts morph
   expansionLevel += 1
-  if ('if' == (primName expression)) {
-	lastGroup = (last labelParts)
-	if (and
-		((count lastGroup) == 2)
-		(isClass (first lastGroup) 'BooleanSlot')) {
-		  oldSlot = (last lastGroup)
-		  removeLast labelParts
-		  add labelParts (list
-		    (labelText this (localized 'else if'))
-		    (newBooleanSlot true)
-		    oldSlot)
-	}
-    add labelParts (list (newBooleanSlot true true) (newCommandSlot color))
-  } else {
-    add labelParts (labelGroup this expansionLevel)
-  }
+  add labelParts (labelGroup this expansionLevel)
+  adjustIfElseBlocks this expression
   addAllLabelParts this
   setNext this nb
   if ('template' == (grabRule morph)) { comeToFront morph } // ensure collapse arrow not covered
 }
 
-method expandTo Block numberOfInputs {
+method expandTo Block commandOrReporter {
   // helper method for initializeForNode
   // expands the blocks so it can accomodate at least the given
   // number of inputs
+  numberOfInputs = (count (argList commandOrReporter))
   nb = (next this)
   removeAllParts morph
   while (and ((count (inputs this)) < numberOfInputs) (canExpand this)) {
     expansionLevel += 1
     add labelParts (labelGroup this expansionLevel)
   }
+  adjustIfElseBlocks this commandOrReporter
   addAllLabelParts this
   setNext this nb
 }
@@ -1659,18 +1647,6 @@ method collapse Block {
   nb = (next this)
   old = (at labelParts expansionLevel)
   removeAt labelParts expansionLevel
-  if ('if' == (primName expression)) {
-    lastGroup = (last labelParts)
-	if (and
-	  ((count lastGroup) == 4)
-	  ((localized 'else') == (text (first lastGroup)))
-	  (isClass (at lastGroup 3) 'BooleanSlot')
-	  (true == (contents (at lastGroup 3)))) {
-		oldSlot = (last lastGroup)
-		removeLast labelParts
-		add labelParts (list (newBooleanSlot true true) oldSlot)
-	}
-  }
   removeAllParts morph
   expansionLevel += -1
   addAllLabelParts this
@@ -1689,6 +1665,47 @@ method collapse Block {
     if (notNil keep) {
       addPart (morph editor) keep
       moveBy keep 20 20
+    }
+  }
+}
+
+method ifElseParts Block boolSlot cmdSlot {
+  // Helper method for adjustIfElseBlocks. Returns a set of parts for an ifElse section.
+  // Assume this is an 'if' block.
+
+  setField boolSlot 'displayAsElse' false
+  result = (labelGroup this 2)
+  for i (count result) {
+    if (isClass (at result i) 'BooleanSlot') { atPut result i boolSlot }
+    if (isClass (at result i) 'CommandSlot') { atPut result i cmdSlot }
+  }
+print 'ifElseParts'
+  return result
+}
+
+
+method adjustIfElseBlocks Block commandOrReporter {
+  // Adjust the parts list of an if statement to show "else" if final condition is constant true.
+
+  if ('if' != (primName commandOrReporter)) { return } // do nothing this is not an "if" block
+  args = (argList commandOrReporter)
+  lastCondition = (at args ((count args) - 1))
+  if (and ((count args) > 2) (true == lastCondition)) {
+    oldSlot = (last (last labelParts))
+    removeLast labelParts
+    add labelParts (list (newBooleanSlot true true) oldSlot)
+  }
+
+// print (localized 'else if _ _')
+// print (labelGroup this 2)
+  if ((count labelParts) < 3) { return }
+  for i (range 2 ((count labelParts) - 1)) {
+    parts = (at labelParts i)
+    if (and ((count parts) == 2) (isClass (first parts) 'BooleanSlot') (isClass (last parts) 'CommandSlot')) {
+      atPut labelParts i (ifElseParts this (first parts) (last parts))
+//print i parts (ifElseParts this (first parts) (last parts))
+//setField (first parts) 'displayAsElse' false
+    // xxx
     }
   }
 }
