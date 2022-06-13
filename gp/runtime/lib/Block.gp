@@ -1649,6 +1649,7 @@ method collapse Block {
   removeAt labelParts expansionLevel
   removeAllParts morph
   expansionLevel += -1
+  adjustIfElseBlocks this expression
   addAllLabelParts this
   setNext this nb
 
@@ -1670,42 +1671,44 @@ method collapse Block {
 }
 
 method ifElseParts Block boolSlot cmdSlot {
-  // Helper method for adjustIfElseBlocks. Returns a set of parts for an ifElse section.
+  // Helper method for adjustIfElseBlocks. Return a localized set of parts for
+  // an ifElse section with the given boolean and command slots.
   // Assume this is an 'if' block.
 
-  setField boolSlot 'displayAsElse' false
+  setField boolSlot 'displayAsElse' false // set Boolean slot to normal display mode
   result = (labelGroup this 2)
   for i (count result) {
     if (isClass (at result i) 'BooleanSlot') { atPut result i boolSlot }
     if (isClass (at result i) 'CommandSlot') { atPut result i cmdSlot }
   }
-print 'ifElseParts'
   return result
 }
 
 
 method adjustIfElseBlocks Block commandOrReporter {
-  // Adjust the parts list of an if statement to show "else" if final condition is constant true.
+  // Adjust the parts list of an if statement to show "else" if the final condition is
+  // the constant true. Make all intermediate cases "else if <condition>".
 
   if ('if' != (primName commandOrReporter)) { return } // do nothing this is not an "if" block
+
+  // convert final case to "else" if the condition is the constant true
   args = (argList commandOrReporter)
   lastCondition = (at args ((count args) - 1))
   if (and ((count args) > 2) (true == lastCondition)) {
-    oldSlot = (last (last labelParts))
+    // final condition is of the form "else if true ..."
+    // convert it to a Boolean slot that displays as "else" (localized)
+    oldCmdSlot = (last (last labelParts))
     removeLast labelParts
-    add labelParts (list (newBooleanSlot true true) oldSlot)
+    add labelParts (list (newBooleanSlot true true) oldCmdSlot)
   }
 
-// print (localized 'else if _ _')
-// print (labelGroup this 2)
-  if ((count labelParts) < 3) { return }
+  if ((count labelParts) <= 2) { return } // no intermediate cases
+
+  // convert intermediate cases to "else if <condition>"
   for i (range 2 ((count labelParts) - 1)) {
     parts = (at labelParts i)
     if (and ((count parts) == 2) (isClass (first parts) 'BooleanSlot') (isClass (last parts) 'CommandSlot')) {
       atPut labelParts i (ifElseParts this (first parts) (last parts))
-//print i parts (ifElseParts this (first parts) (last parts))
-//setField (first parts) 'displayAsElse' false
-    // xxx
     }
   }
 }
