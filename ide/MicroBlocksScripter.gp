@@ -240,9 +240,9 @@ method exportLibrary MicroBlocksScripter libName {
 
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
-  catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) 137)
+  catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) (9 * scale))
   catHeight = ((height (morph categorySelector)) / scale)
-  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) 130)
+  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) (9 * scale))
   columnHeaderHeight = 33
 
   packer = (newPanePacker (bounds morph) scale)
