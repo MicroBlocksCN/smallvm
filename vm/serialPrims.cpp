@@ -153,7 +153,7 @@ static void serialOpen(int baudRate) {
 		int rxPin = mapDigitalPinNum(2);
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, rxPin, txPin);
 	#elif defined(RP2040_PHILHOWER)
-		SERIAL_PORT.setFIFOSize(255);
+		SERIAL_PORT.setFIFOSize(1024);
 		SERIAL_PORT.begin(baudRate);
 	#else
 		SERIAL_PORT.begin(baudRate);
