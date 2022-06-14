@@ -447,7 +447,7 @@ void softReset(int clearMemoryFlag) {
 	stopAllTasks();
 
 	OBJ off = falseObj;
-	primSetUserLED(&off);
+	if (!useTFT) primSetUserLED(&off);
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_BBC_MICROBIT_V2)
 	primMBDisplayOff(0, NULL);
 	updateMicrobitDisplay();
