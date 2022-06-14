@@ -83,6 +83,9 @@ então, se _ _
 if _ _ else _
 se _ _ então _
 
+else
+então
+
 when _
 quando _
 

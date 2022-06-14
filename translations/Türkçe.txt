@@ -83,6 +83,9 @@ yoksa eğer _ _
 if _ _ else _
 eğer _ yap _ değilse _
 
+else
+yoksa
+
 when _
 _ olunca
 
