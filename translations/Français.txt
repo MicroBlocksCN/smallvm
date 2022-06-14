@@ -83,6 +83,9 @@ sinon, si _ _
 if _ _ else _
 si _ _ sinon _
 
+else
+sinon
+
 when _
 quand _
 
