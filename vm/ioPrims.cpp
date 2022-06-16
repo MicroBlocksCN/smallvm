@@ -1490,29 +1490,24 @@ static void initDAC(int pin, int sampleRate) {
 		dac_cw_generator_disable();
 		dac_output_enable((dac_channel_t) dacChannel);
 	} else { // disable DAC output if pin is not a DAC pin (i.e. pin 25 or 26)
-		if (timer) {
-			timerAlarmDisable(timer);
-			delay(1);
-			timerEnd(timer);
-		}
-		timer = NULL;
+		if (timer) timerStop(timer);
 		dacChannel = 255;
 		return;
 	}
+
 	if (sampleRate <= 0) sampleRate = 1;
 	if (sampleRate > 48000) sampleRate = 48000; // ESP32 crashs at higher sample rates
+	sampleRate = 1.020 * sampleRate; // fine tune (based on John's M5Stack Grey)
 
-	if (!timer) {
+	if (!timer) { // initialize timer on first use
 		timer = timerBegin(1, 2, true);
 		timerAttachInterrupt(timer, &onTimer, true);
+		timerAlarmWrite(timer, (40000000 / sampleRate), true);
+		timerAlarmEnable(timer);
 	} else {
-		timerAlarmDisable(timer);
-		delay(1);
+		timerAlarmWrite(timer, (40000000 / sampleRate), true);
+		timerStart(timer); // may have been stopped
 	}
-
-	sampleRate = 1.020 * sampleRate; // fine tune (based on John's M5Stack Grey)
-	timerAlarmWrite(timer, (40000000 / sampleRate), true);
-	timerAlarmEnable(timer);
 }
 
 static inline int writeDAC(int sample) {
