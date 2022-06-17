@@ -779,10 +779,21 @@ method readUserPreferences MicroBlocksEditor {
   return result
 }
 
+method isChineseWebapp MicroBlocksEditor {
+	if ('Browser' != (platform) { return false }
+	url = (browserURL)
+	return (or
+		(containsSubString url 'microblocksfun.cn')
+		(containsSubString url 'blocks.aimaker.space')
+	)
+}
+
 method applyUserPreferences MicroBlocksEditor {
 	prefs = (readUserPreferences this)
 	if (notNil (at prefs 'locale')) {
 		setLanguage this (at prefs 'locale')
+	} (isChineseWebapp this) {
+		setLanguage this '简体中文'
 	}
 	if (notNil (at prefs 'boardLibAutoLoadDisabled')) {
 		boardLibAutoLoadDisabled = (at prefs 'boardLibAutoLoadDisabled')
