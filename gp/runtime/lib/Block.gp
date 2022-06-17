@@ -1701,7 +1701,7 @@ method adjustIfElseBlocks Block commandOrReporter {
   if isCollapsing { args = (copyFromTo args 1 ((count args) - 2)) } // dropping the last 2 args
 
   lastCondition = (at args ((count args) - 1))
-  if (and (or isExpanding ((count args) > 2)) (true == lastCondition)) {
+  if (or isExpanding (and ((count args) > 2) (true == lastCondition))) {
     // final condition is of the form "else if true ..."
     // convert it to a Boolean slot that displays as "else" (localized)
     oldCmdSlot = (last (last labelParts))

@@ -780,11 +780,11 @@ method readUserPreferences MicroBlocksEditor {
 }
 
 method isChineseWebapp MicroBlocksEditor {
-	if ('Browser' != (platform) { return false }
+	if ('Browser' != (platform)) { return false }
 	url = (browserURL)
 	return (or
-		(containsSubString url 'microblocksfun.cn')
-		(containsSubString url 'blocks.aimaker.space')
+		((containsSubString url 'microblocksfun.cn') > 0)
+		((containsSubString url 'blocks.aimaker.space') > 0)
 	)
 }
 
