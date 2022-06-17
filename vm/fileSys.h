@@ -9,17 +9,6 @@
 
 #include <FS.h>
 
-#if defined(RP2040_PHILHOWER)
-  #define useLittleFS 1
-#endif
-
-// Select file system (Note: LittleFS is often much slower than SPIFFS)
-#if useLittleFS
-	#include <LittleFS.h>
-	#define myFS LittleFS
-#else
-	#ifdef ARDUINO_ARCH_ESP32
-		#include <SPIFFS.h>
-	#endif
-	#define myFS SPIFFS
-#endif
+// always use LittleFS
+#include <LittleFS.h>
+#define myFS LittleFS
