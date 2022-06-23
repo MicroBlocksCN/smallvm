@@ -1,6 +1,6 @@
 module main
 author wwj718
-version 1 0 
+version 1 1
 description ''
 variables running 
 
@@ -95,7 +95,7 @@ to '_Cutebot setup' {
 }
 
 to '_rescale' val in_min in_max out_min out_max {
-  return (((val - in_min) * (out_max - out_min)) / ((in_max - in_min) + out_min))
+  return ((((val - in_min) * (out_max - out_min)) / (in_max - in_min) ) + out_min)
 }
 
 to 'get distance' {

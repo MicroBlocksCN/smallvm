@@ -1,6 +1,6 @@
 module Cutebot Output
 author wwj718
-version 1 2 
+version 1 3 
 depends Distance NeoPixel 
 choices cutebot_side left right 
 choices cutebot_light left right both 
@@ -31,7 +31,7 @@ to '_cutebot_ADDR' {
 }
 
 to '_rescale' val in_min in_max out_min out_max {
-  return (((val - in_min) * (out_max - out_min)) / ((in_max - in_min) + out_min))
+  return ((((val - in_min) * (out_max - out_min)) / (in_max - in_min) ) + out_min )
 }
 
 to cutebot_distance {
