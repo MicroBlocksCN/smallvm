@@ -565,7 +565,9 @@ method fixLayout MicroBlocksFilePicker {
   topInset = (55 * scale)
   bottomInset = (40 * scale)
   leftInset = (110 * scale)
-  leftInset = (max leftInset ((width (morph nameLabel)) + (23 * scale)))
+  if (notNil nameLabel) {
+    leftInset = (max leftInset ((width (morph nameLabel)) + (23 * scale)))
+  }
   rightInset = (20 * scale)
   setPosition (morph listPane) ((left morph) + leftInset) ((top morph) + topInset)
   setExtent (morph listPane) ((width morph) - (leftInset + rightInset)) ((height morph) - (topInset + bottomInset))
