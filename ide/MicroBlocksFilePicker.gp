@@ -130,8 +130,8 @@ method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveF
   okayButton = (textButton this 0 0 okayLabel 'okay')
   cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
-  setMinExtent morph (460 * scale) (390 * scale)
-  setExtent morph (460 * scale) (390 * scale)
+  setMinExtent morph (520 * scale) (400 * scale)
+  setExtent morph (520 * scale) (400 * scale)
 
   if forSaving {
 	defaultPath = (directoryPart defaultPath)
@@ -565,9 +565,15 @@ method fixLayout MicroBlocksFilePicker {
   topInset = (55 * scale)
   bottomInset = (40 * scale)
   leftInset = (110 * scale)
+  leftInset = (max leftInset ((width (morph nameLabel)) + (23 * scale)))
   rightInset = (20 * scale)
   setPosition (morph listPane) ((left morph) + leftInset) ((top morph) + topInset)
   setExtent (morph listPane) ((width morph) - (leftInset + rightInset)) ((height morph) - (topInset + bottomInset))
+
+  // parentButton and folder readout
+  parentButtonM = (morph parentButton)
+  setLeft (morph folderReadout) (left (morph listPane))
+  setLeft parentButtonM ((left (morph listPane)) - ((width parentButtonM) + (13 * scale)))
 
   // nameLabel and nameField
   if (notNil nameLabel) {

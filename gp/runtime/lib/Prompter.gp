@@ -118,7 +118,7 @@ method initializeForInform Prompter label details okLabel {
   minW = ((width (morph detailsFrame)) + (border * 10))
 
   createButtons this (localized okLabel) nil true // single button
-  minH = (+ (height (morph lbl)) (height (morph detailsFrame)) (height (bounds buttons)) (3 * border))
+  minH = (+ (height (morph lbl)) (height (morph detailsFrame)) (height (bounds buttons)) (4 * border))
   setExtent morph minW minH
   setMinExtent morph (width morph) (height morph)
 }
