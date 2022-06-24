@@ -119,8 +119,6 @@ method scaleChanged MicroBlocksEditor {
 method addTopBarParts MicroBlocksEditor {
   scale = (global 'scale')
 
-  addLogo this
-
   leftItems = (list)
   add leftItems (140 * scale)
   add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu' 'Language')
@@ -131,7 +129,8 @@ method addTopBarParts MicroBlocksEditor {
   indicator = (last leftItems)
 
   if (isNil title) {
-    // only add the first time
+    // only add the logo and title the first time
+    addLogo this
     title = (newText '' 'Arial' (17 * scale))
     addPart morph (morph title)
   }
