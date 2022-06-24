@@ -521,18 +521,9 @@ method setExportScale ScriptEditor percent {
 }
 
 method saveScriptsImage ScriptEditor {
-  // save scale and blockScale, then set scale for export
-  oldScale = (global 'scale')
-  oldBlockScale = (global 'blockScale')
-  setGlobal 'scale' 2
-  setBlockScalePercent this (100 * (blockExportScale))
-
-  // draw scripts
+  // draw scripts (cropped to the dimensions of the ScriptEditor's scroll frame)
+  // Use the current block scale, not blockExportScale to support semi-WYSIWYG.
   bm = (scriptsCostume this)
-
-  // revert to old scales
-  setGlobal 'scale' oldScale
-  setBlockScalePercent this (100 * oldBlockScale)
 
   scriptsString = nil
   mbScripter = (ownerThatIsA morph 'MicroBlocksScripter')
