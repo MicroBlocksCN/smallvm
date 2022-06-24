@@ -558,10 +558,13 @@ method scriptsCostume ScriptEditor {
   w = (ceiling (width r))
   h = (ceiling (height r))
   if (or (w == 0) (h == 0)) { return (newBitmap 1 1) }
-  if (or (w > 2000) (h > 4000)) {
+
+  // limit size to dimensions of ScriptEditor's scroll frame
+  bnds = (bounds (owner morph))
+  if (or (w > (width bnds)) (h > (height bnds))) {
     print 'Cropping scripts image to avoid running out of memory'
-    w = (min w 2000)
-    h = (min h 4000)
+    w = (min w (width bnds))
+    h = (min h (height bnds))
   }
   result = (newBitmap w h (gray 0 0))
   ctx = (newGraphicContextOn result)
