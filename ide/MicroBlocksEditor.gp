@@ -897,8 +897,6 @@ method fixTopBarLayout MicroBlocksEditor {
   reportDamage morph (rect (left morph) (top morph) (width morph) (topBarHeight this))
 
   centerY = (20 * scale)
-  centerTitle this
-
   x = 0
   for item leftItems {
 	if (isNumber item) {
@@ -921,6 +919,7 @@ method fixTopBarLayout MicroBlocksEditor {
 	  x = ((x - (width m)) - space)
 	}
   }
+  centerTitle this
 }
 
 method fixTipBarLayout MicroBlocksEditor {
