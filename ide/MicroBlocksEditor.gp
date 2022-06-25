@@ -70,10 +70,10 @@ method initialize MicroBlocksEditor {
   morph = (newMorph this)
   httpServer = (newMicroBlocksHTTPServer)
   addTopBarParts this
-  addTipBar this
   scripter = (initialize (new 'MicroBlocksScripter') this)
   lastProjectFolder = 'Examples'
   addPart morph (morph scripter)
+  addTipBar this
   addZoomButtons this
   clearProject this
   fixLayout this
@@ -89,8 +89,8 @@ method scaleChanged MicroBlocksEditor {
   removeHint (global 'page')
   removeAllParts morph
   addTopBarParts this
-  addZoomButtons this
   addTipBar this
+  addZoomButtons this
 
   // save the state of the current scripter
   if (2 == (global 'scale')) { oldScale = 1 } else { oldScale = 2 }
@@ -119,8 +119,6 @@ method scaleChanged MicroBlocksEditor {
 method addTopBarParts MicroBlocksEditor {
   scale = (global 'scale')
 
-  addLogo this
-
   leftItems = (list)
   add leftItems (140 * scale)
   add leftItems (addIconButton this (languageButtonIcon this) 'languageMenu' 'Language')
@@ -131,7 +129,8 @@ method addTopBarParts MicroBlocksEditor {
   indicator = (last leftItems)
 
   if (isNil title) {
-    // only add the first time
+    // only add the logo and title the first time
+    addLogo this
     title = (newText '' 'Arial' (17 * scale))
     addPart morph (morph title)
   }
@@ -897,8 +896,6 @@ method fixTopBarLayout MicroBlocksEditor {
   reportDamage morph (rect (left morph) (top morph) (width morph) (topBarHeight this))
 
   centerY = (20 * scale)
-  centerTitle this
-
   x = 0
   for item leftItems {
 	if (isNumber item) {
@@ -921,6 +918,7 @@ method fixTopBarLayout MicroBlocksEditor {
 	  x = ((x - (width m)) - space)
 	}
   }
+  centerTitle this
 }
 
 method fixTipBarLayout MicroBlocksEditor {

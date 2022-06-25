@@ -240,10 +240,14 @@ method exportLibrary MicroBlocksScripter libName {
 
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
-  catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) (9 * scale))
+  catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) (20 * scale))
   catHeight = ((height (morph categorySelector)) / scale)
-  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) (9 * scale))
+  blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) (20 * scale))
   columnHeaderHeight = 33
+
+  // prevent pane dividers from going off right side
+  catWidth = (min catWidth ((width morph) - (20 * scale)))
+  blocksWidth = (min blocksWidth ((width morph) - (catWidth + (20 * scale))))
 
   packer = (newPanePacker (bounds morph) scale)
   packPanesH packer categorySelector catWidth blocksFrame blocksWidth scriptsFrame '100%'

@@ -521,18 +521,9 @@ method setExportScale ScriptEditor percent {
 }
 
 method saveScriptsImage ScriptEditor {
-  // save scale and blockScale, then set scale for export
-  oldScale = (global 'scale')
-  oldBlockScale = (global 'blockScale')
-  setGlobal 'scale' 2
-  setBlockScalePercent this (100 * (blockExportScale))
-
-  // draw scripts
+  // draw scripts (cropped to the dimensions of the ScriptEditor's scroll frame)
+  // Use the current block scale, not blockExportScale to support semi-WYSIWYG.
   bm = (scriptsCostume this)
-
-  // revert to old scales
-  setGlobal 'scale' oldScale
-  setBlockScalePercent this (100 * oldBlockScale)
 
   scriptsString = nil
   mbScripter = (ownerThatIsA morph 'MicroBlocksScripter')
@@ -558,10 +549,13 @@ method scriptsCostume ScriptEditor {
   w = (ceiling (width r))
   h = (ceiling (height r))
   if (or (w == 0) (h == 0)) { return (newBitmap 1 1) }
-  if (or (w > 2000) (h > 4000)) {
+
+  // limit size to dimensions of ScriptEditor's scroll frame
+  bnds = (bounds (owner morph))
+  if (or (w > (width bnds)) (h > (height bnds))) {
     print 'Cropping scripts image to avoid running out of memory'
-    w = (min w 2000)
-    h = (min h 4000)
+    w = (min w (width bnds))
+    h = (min h (height bnds))
   }
   result = (newBitmap w h (gray 0 0))
   ctx = (newGraphicContextOn result)
