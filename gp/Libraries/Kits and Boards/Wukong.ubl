@@ -1,6 +1,6 @@
 module Wukong Output
 author wwj718
-version 1 1
+version 1 2
 depends NeoPixel
 description 'Wukong is a compact micro:bit breakout board with servo and motor drivers, eight I/O pins, four NeoPixels, and four blue LEDs.
 
@@ -22,7 +22,7 @@ https://www.elecfreaks.com/learn-en/microbitExtensionModule/wukong.html
 	spec 'r' '_rescale' '_rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
 
 to '_rescale' val in_min in_max out_min out_max {
-  return (((val - in_min) * (out_max - out_min)) / ((in_max - in_min) + out_min))
+  return ((((val - in_min) * (out_max - out_min)) / (in_max - in_min) ) + out_min)
 }
 
 to '_wukong_ADDR' {
