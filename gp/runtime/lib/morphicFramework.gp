@@ -585,7 +585,7 @@ method processEvent Keyboard evt {
 		}
 	  }
 
-	  if (at currentKeys key) { return } // suppress duplicated keyDown events on Gnome and some other Linux desktops
+	  if (and (at currentKeys key) (8 != key)) { return } // suppress duplicated keyDown events on Gnome and some other Linux desktops
 	  atPut currentKeys key true
 
 	  if (isNil focus) {
