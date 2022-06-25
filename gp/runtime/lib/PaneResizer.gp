@@ -59,11 +59,14 @@ method handUpOn PaneResizer aHand {
 }
 
 method handMoveFocus PaneResizer aHand {
+	scale = (global 'scale')
 	newX = ((x aHand) - offsetX)
 	newY = ((y aHand) - offsetY)
 	owner = (owner morph)
-	if (notNil owner) { newX = (clamp newX (left owner) (right owner)) }
-	if (notNil owner) { newY = (clamp newY (top owner) (bottom owner)) }
+	if (notNil owner) {
+		newX = (clamp newX (left owner) ((right owner) - (25 * scale)))
+		newY = (clamp newY (top owner) ((bottom owner) - (25 * scale)))
+	}
 
 	if (orientation == 'horizontal') {
 		fastSetLeft morph newX

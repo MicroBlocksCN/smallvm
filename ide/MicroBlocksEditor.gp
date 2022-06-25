@@ -70,10 +70,10 @@ method initialize MicroBlocksEditor {
   morph = (newMorph this)
   httpServer = (newMicroBlocksHTTPServer)
   addTopBarParts this
-  addTipBar this
   scripter = (initialize (new 'MicroBlocksScripter') this)
   lastProjectFolder = 'Examples'
   addPart morph (morph scripter)
+  addTipBar this
   addZoomButtons this
   clearProject this
   fixLayout this
@@ -89,8 +89,8 @@ method scaleChanged MicroBlocksEditor {
   removeHint (global 'page')
   removeAllParts morph
   addTopBarParts this
-  addZoomButtons this
   addTipBar this
+  addZoomButtons this
 
   // save the state of the current scripter
   if (2 == (global 'scale')) { oldScale = 1 } else { oldScale = 2 }
