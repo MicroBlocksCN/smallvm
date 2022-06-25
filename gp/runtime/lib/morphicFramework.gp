@@ -155,7 +155,7 @@ method grab Hand handler {
   fb = (fullBounds (morph handler))
   if (not (containsPoint fb x y)) {
     // avoid "trailing behind" the mouse cursor
-    setCenter (morph handler) x y
+    setPosition (morph handler) (x - 5) (y - 5)
   }
   removeAllParts morph
   if ('Browser' == (platform)) {
