@@ -65,7 +65,19 @@ method contents InputSlot {
   return contents
 }
 
-method setContents InputSlot data {
+method setContents InputSlot data fixStringOnlyNum {
+  // Set the contents of this slot to data.
+  // If the slot is auto, the optional argument fixStringOnlyNum is true,
+  // and data is a string that represents a number, change the slot
+  // to 'string only'. This is needed when recreating blocks from code
+  // where an auto input slot had been manually changed to 'string only'.
+
+  if (and isAuto (true == fixStringOnlyNum)) {
+    if (and (isClass data 'String') ('' != data) (representsANumber data)) {
+      isAuto = false
+      setEditRule text 'editable'
+    }
+  }
   if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
     setText text (localized (toString data))
   } else {
@@ -103,6 +115,7 @@ method fixLayout InputSlot {
   textY = ((top morph) + 1)
   setPosition (morph text) textX textY
   setExtent morph w h
+  pathCache = nil
   raise morph 'layoutChanged' this
 }
 

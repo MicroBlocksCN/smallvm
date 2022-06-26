@@ -1430,7 +1430,7 @@ method initializeForNode Block commandOrReporter {
       }
     } else {
       if (isAnyClass slot 'InputSlot' 'BooleanSlot' 'ColorSlot' 'MicroBitDisplaySlot') {
-        setContents slot each
+        setContents slot each true
       } (and (isClass slot 'Block') (isRenamableVar slot)) {
         renameVariableTo slot each
       } (notNil each) {
