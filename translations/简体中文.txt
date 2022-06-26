@@ -1761,6 +1761,9 @@ Tag name?
 # Tips Bar #
 ############
 
+Button
+按键
+
 Boolean Input
 布尔值输入
 
@@ -2065,8 +2068,7 @@ Report bitwise inverse of the given number.
 Report the given number shifted left by the given number of bits.
 反馈输入数字向左平移若干位后的结果
 
-Report the given number shifted right by the given number of bits (arithmetic shift; sign is
-maintained).
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
 反馈输入数字向右平移若干位后的结果（算术位移；符号保持不变）
 
 Set a variable to the given value.
