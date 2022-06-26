@@ -1432,6 +1432,8 @@ Increase block size
 # Tips Bar #
 ############
 
+Button
+
 Boolean Input
 
 [l] toggle value, or drop a reporter into it.
