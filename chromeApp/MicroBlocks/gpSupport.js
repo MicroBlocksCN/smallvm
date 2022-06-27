@@ -393,7 +393,7 @@ function uploadFiles(files) {
 		reader = new FileReader();
 		reader.onloadend = function() {
 			if (reader.result) {
-				GP.droppedFiles.push({ name: f.name, contents: reader.result });
+				GP.droppedFiles.push({ name: toUTF8Array(f.name), contents: reader.result });
 			}
 			if (todo.length) recordFile(todo.shift());
 		};
@@ -859,7 +859,7 @@ async function GP_ReadFile(ext) {
 		entry.file(function(file) {
 			var reader = new FileReader();
 			reader.onload = function(evt) {
-				GP.droppedFiles.push({ name: file.name, contents: evt.target.result });
+				GP.droppedFiles.push({ name: toUTF8Array(file.name), contents: evt.target.result });
 			};
 			reader.readAsArrayBuffer(file);
 		});
@@ -878,7 +878,7 @@ async function GP_ReadFile(ext) {
 		if (!files || (files.length == 0) || !files[0].getFile) return; // no file selected
 		const file = await files[0].getFile();
 		const contents = await file.arrayBuffer();
-		GP.droppedFiles.push({ name: file.name, contents: contents });
+		GP.droppedFiles.push({ name: toUTF8Array(file.name), contents: contents });
 	} else {
 		GP_UploadFiles();
 		return;
@@ -965,7 +965,7 @@ function GP_ChromebookLaunch(bgPage) {
 		bgPage.launchFileEntry.file(function(file) {
 			var reader = new FileReader();
 			reader.onload = function(evt) {
-				GP.droppedFiles.push({ name: fName, contents: evt.target.result });
+				GP.droppedFiles.push({ name: toUTF8Array(fName), contents: evt.target.result });
 			};
 			reader.readAsArrayBuffer(file);
 		});
