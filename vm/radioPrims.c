@@ -7,6 +7,7 @@
 // radioPrims.cpp - Primitives for the BBC micro:bit radio
 // John Maloney, February 2019
 
+#include <stdio.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -279,7 +280,8 @@ static int receiveMakeCodeMessage() {
 
 static uint32 deviceID() {
 	// Return the NRF51/52 device ID truncated to 31 bits to fit into a integer object.
-	return (NRF_FICR->DEVICEID[1] << 1) >> 1;
+
+	return NRF_FICR->DEVICEID[0];
 }
 
 static void initMakeCodePacket(uint8_t *packet, int makeCodePacketType, int packetLength) {
@@ -424,7 +426,9 @@ static OBJ primSetPower(int argCount, OBJ *args) {
 }
 
 static OBJ primDeviceID(int argCount, OBJ *args) {
-	return int2obj(deviceID());
+	char s[10];
+	sprintf(s, "%08x", deviceID());
+	return newStringFromBytes(s, 8);
 }
 
 #else // not nrf51 or nrf52
@@ -473,7 +477,9 @@ static OBJ primSignalStrength(int argCount, OBJ *args) {
 }
 
 static OBJ primMessageSenderID(int argCount, OBJ *args) {
-	return int2obj(receivedMessageSenderID);
+	char s[10];
+	sprintf(s, "%08x", receivedMessageSenderID);
+	return newStringFromBytes(s, 8);
 }
 
 static PrimEntry entries[] = {

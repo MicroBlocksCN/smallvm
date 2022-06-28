@@ -1,6 +1,6 @@
 module 'Radio Primitives' Comm
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags radio communication messaging network 
 description 'Low level BBC micro:bit radio primitives. You are probably looking for the Radio library in the folder above.
 
@@ -22,4 +22,6 @@ The packetSend/packetReceive primitives provide access to raw 32-byte radio pack
 	spec 'r' '[radio:signalStrength]' 'radio last signal strength'
 	spec 'r' '[radio:packetReceive]' 'radio receive packet _' 'str'
 	spec ' ' '[radio:packetSend]' 'radio send packet _' 'str'
+	spec 'r' '[radio:deviceID]' 'radio my ID'
+	spec 'r' '[radio:lastMessageID]' 'radio last sender ID'
 	spec ' ' '[radio:disableRadio]' 'disable radio'
