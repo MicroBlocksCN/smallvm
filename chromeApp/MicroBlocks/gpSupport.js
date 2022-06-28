@@ -97,25 +97,34 @@ function setGPClipboard(s) {
 
 	GP.clipboardBytes = toUTF8Array(s);
 	GP.clipboard.value = s;
-	if (navigator.clipboard.writeText) {
+
+	if (isChrome()) {
+		GP.clipboard.focus();
+		GP.clipboard.select();
+		try {
+			document.execCommand('copy');
+		} catch (err) {
+			console.error('setGPClipboard failed', err);
+		}
+	} else if (navigator.clipboard.writeText) {
 		navigator.clipboard.writeText(s).catch(() => {});
-	} else if (isChrome() && chrome.clipboard) {
-		chrome.clipboard.data = s;
-		chrome.clipboard.type = 'textPlain';
 	}
 }
 
 async function readGPClipboard(s) {
-	if (navigator.clipboard.readText) {
-		var s = await navigator.clipboard.readText().catch(() => { return ''});
-		if (s) {
-			GP.clipboard.value = s;
-			GP.clipboardBytes = toUTF8Array(s);
+	if (isChrome()) {
+		GP.clipboard.focus();
+		GP.clipboard.select();
+		try {
+			document.execCommand('paste');
+		} catch (err) {
+			console.error('readGPClipboard failed', err);
 		}
-	} else if (isChrome() && chrome.clipboard && (typeof chrome.clipboard.data === 'string')) {
-		GP.clipboard.value = chrome.clipboard.data;
-		GP.clipboardBytes = toUTF8Array(chrome.clipboard.data);
+	} else if (navigator.clipboard.readText) {
+		var s = await navigator.clipboard.readText().catch(() => {});
+		if (s) GP.clipboard.value = s;
 	}
+	GP.clipboardBytes = toUTF8Array(GP.clipboard.value);
 	return GP.clipboardBytes.length;
 }
 
