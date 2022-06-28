@@ -1249,7 +1249,9 @@ method crcReceived SmallRuntime chunkID chunkCRC {
 	// Record the CRC for the given chunkID as reported by the board.
 
 	lastRcvMSecs = (msecsSinceStart)
-	atPut crcDict chunkID chunkCRC
+	if (notNil crcDict) {
+		atPut crcDict chunkID chunkCRC
+	}
 }
 
 method saveVariableNames SmallRuntime {
