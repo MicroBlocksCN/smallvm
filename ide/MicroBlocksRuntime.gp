@@ -1556,26 +1556,31 @@ method processNextMessage SmallRuntime {
 
 	// Parse and dispatch messages
 	firstByte = (byteAt recvBuf 1)
+	byteTwo = (byteAt recvBuf 2)
+	if (or (byteTwo < 1) (and (32 <= byteTwo) (byteTwo < 200)) (byteTwo > 205)) {
+		print 'Serial error, opcode:' (byteAt recvBuf 2)
+		skipMessage this // discard unrecognized message
+		return true
+	}
 	if (250 == firstByte) { // short message
 		msg = (copyFromTo recvBuf 1 3)
 		recvBuf = (copyFromTo recvBuf 4) // remove message
 		handleMessage this msg
 	} (251 == firstByte) { // long message
 		if ((byteCount recvBuf) < 5) { return false } // incomplete length field
-		byteTwo = (byteAt recvBuf 2)
-		if (or (byteTwo < 1) (byteTwo >= 250)) {
-			print 'Bad message type; should be 1-249 but is:' (byteAt recvBuf 2)
+		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
+		if (bodyBytes >= 1024) {
+			print 'Serial error, length:' bodyBytes
 			skipMessage this // discard unrecognized message
 			return true
 		}
-		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
 		if ((byteCount recvBuf) < (5 + bodyBytes)) { return false } // incomplete body
 		msg = (copyFromTo recvBuf 1 (bodyBytes + 5))
 		recvBuf = (copyFromTo recvBuf (bodyBytes + 6)) // remove message
 		handleMessage this msg
 	} else {
-		print 'Bad message start byte; should be 250 or 251 but is:' firstByte
-		print (toString recvBuf) // show the bad string (could be an ESP error message)
+		print 'Serial error, start byte:' firstByte
+		print (toString recvBuf) // show the string (could be an ESP error message)
 		skipMessage this // discard
 	}
 	return true
@@ -1911,15 +1916,19 @@ method exportScriptImageWithResult SmallRuntime aBlock {
 // Return values
 
 method returnedValue SmallRuntime msg {
-	if ((byteCount msg) < 6) { return nil } // incomplete msg
+	byteCount = (byteCount msg)
+	if (byteCount < 7) { return nil } // incomplete msg
+
 	type = (byteAt msg 6)
 	if (1 == type) {
+		if (byteCount < 10) { return nil } // incomplete msg
 		return (+ ((byteAt msg 10) << 24) ((byteAt msg 9) << 16) ((byteAt msg 8) << 8) (byteAt msg 7))
 	} (2 == type) {
-		return (toString (copyFromTo msg 7))
+		return (stringFromByteRange msg 7 (byteCount msg))
 	} (3 == type) {
 		return (0 != (byteAt msg 7))
 	} (4 == type) {
+		if (byteCount < 8) { return nil } // incomplete msg
 		total = (((byteAt msg 8) << 8) | (byteAt msg 7))
 		if (total == 0) { return '[empty list]' }
 		sentItems = (readItems this msg)
@@ -1935,9 +1944,11 @@ method returnedValue SmallRuntime msg {
 		add out ']'
 		return (joinStrings out)
 	} (5 == type) {
+		if (byteCount < 9) { return nil } // incomplete msg
 		total = (((byteAt msg 8) << 8) | (byteAt msg 7))
 		if (total == 0) { return '(empty byte array)' }
 		sentCount = (byteAt msg 9)
+		sentCount = (min sentCount (byteCount - 9))
 		out = (list '(')
 		for i sentCount {
 			add out (toString (byteAt msg (9 + i)))
@@ -1950,7 +1961,8 @@ method returnedValue SmallRuntime msg {
 		add out ')'
 		return (joinStrings out)
 	} else {
-		return (join 'unknown type: ' type)
+		print 'unknown type: ' type
+		return nil
 	}
 }
 
@@ -1958,17 +1970,22 @@ method readItems SmallRuntime msg {
 	// Read a sequence of list items from the given value message.
 
 	result = (list)
+	byteCount = (byteCount msg)
+	if (byteCount < 10) { return result } // corrupted msg
 	count = (byteAt msg 9)
 	i = 10
 	repeat count {
+		if (byteCount < (i + 1)) { return result } // corrupted msg
 		itemType = (byteAt msg i)
 		if (1 == itemType) { // integer
+			if (byteCount < (i + 4)) { return result } // corrupted msg
 			n = (+ ((byteAt msg (i + 4)) << 24) ((byteAt msg (i + 3)) << 16)
 					((byteAt msg (i + 2)) << 8) (byteAt msg (i + 1)))
 			add result n
 			i += 5
 		} (2 == itemType) { // string
 			len = (byteAt msg (i + 1))
+			if (byteCount < (+ i len 1)) { return result } // corrupted msg
 			add result (toString (copyFromTo msg (i + 2) (+ i len 1)))
 			i += (len + 2)
 		} (3 == itemType) { // boolean
@@ -1976,6 +1993,7 @@ method readItems SmallRuntime msg {
 			add result isTrue
 			i += 2
 		} (4 == itemType) { // sublist
+			if (byteCount < (i + 3)) { return result } // corrupted msg
 			n = (+ ((byteAt msg (i + 2)) << 8) (byteAt msg (i + 1)))
 			if (0 != (byteAt msg (i + 3))) {
 				print 'skipping sublist with non-zero sent items'
@@ -1984,6 +2002,7 @@ method readItems SmallRuntime msg {
 			add result (join '[' n ' item list]')
 			i += 4
 		} (5 == itemType) { // bytearray
+			if (byteCount < (i + 3)) { return result } // corrupted msg
 			n = (+ ((byteAt msg (i + 2)) << 8) (byteAt msg (i + 1)))
 			if (0 != (byteAt msg (i + 3))) {
 				print 'skipping bytearray with non-zero sent items inside a list'
