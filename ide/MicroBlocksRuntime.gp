@@ -1961,7 +1961,7 @@ method returnedValue SmallRuntime msg {
 		add out ')'
 		return (joinStrings out)
 	} else {
-		print 'unknown type: ' type
+		print 'Serial error, type: ' type
 		return nil
 	}
 }
