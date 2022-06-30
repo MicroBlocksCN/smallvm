@@ -523,7 +523,9 @@ method setExportScale ScriptEditor percent {
 method saveScriptsImage ScriptEditor {
   // draw scripts (cropped to the dimensions of the ScriptEditor's scroll frame)
   // Use the current block scale, not blockExportScale to support semi-WYSIWYG.
-  bm = (scriptsCostume this)
+
+  timer = (newTimer)
+  bm = (croppedScriptsCostume this)
 
   scriptsString = nil
   mbScripter = (ownerThatIsA morph 'MicroBlocksScripter')
@@ -535,6 +537,10 @@ method saveScriptsImage ScriptEditor {
   pngData = (encodePNG bm nil scriptsString)
   fName = (join 'allScripts' (msecsSinceStart) '.png')
   if ('Browser' == (platform)) {
+    if ((msecs timer) > 4000) {
+      // if it has been more than a few seconds the user must click again to allow file save
+      inform (global 'page') (localized 'PNG preparation complete.')
+    }
 	browserWriteFile pngData fName 'scriptImage'
   } else {
 	fName = (fileToWrite fName '.png')
@@ -544,7 +550,7 @@ method saveScriptsImage ScriptEditor {
   }
 }
 
-method scriptsCostume ScriptEditor {
+method croppedScriptsCostume ScriptEditor {
   r = (scriptsRect this)
   w = (ceiling (width r))
   h = (ceiling (height r))
