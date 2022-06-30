@@ -563,10 +563,17 @@ method croppedScriptsCostume ScriptEditor {
     w = (min w (width bnds))
     h = (min h (height bnds))
   }
-  result = (newBitmap w h (gray 0 0))
+  if ('Browser' == (platform)) { // in browser, draw on Texture for speed
+    result = (newTexture w h (gray 0 0))
+  } else {
+    result = (newBitmap w h (gray 0 0))
+  }
   ctx = (newGraphicContextOn result)
   setOffset ctx (0 - (left r)) (0 - (top r))
   fullDrawOn morph ctx
+  if ('Browser' == (platform)) {
+    result = (toBitmap result)
+  }
   return result
 }
 
