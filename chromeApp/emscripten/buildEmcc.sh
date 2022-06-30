@@ -8,6 +8,7 @@
 #-s SAFE_HEAP=1 \
 #
 # Increased memory from 136314880 (130 MB) to 209715200 (~200 MB)
+# Increased memory to 268435456 (256 MB) (June 2022)
 
 # copy folders to be included in embedded file system
 cp -r ../../gp/Examples .
@@ -31,7 +32,7 @@ emcc -std=gnu99 -Wall -O3 \
 -D SHA2_USE_INTTYPES_H \
 -s USE_ZLIB=1 \
 -s FETCH=1 \
--s TOTAL_MEMORY=136314880 \
+-s TOTAL_MEMORY=268435456 \
 -s ALLOW_MEMORY_GROWTH=0 \
 --memory-init-file 0 \
 -s WASM=1 \

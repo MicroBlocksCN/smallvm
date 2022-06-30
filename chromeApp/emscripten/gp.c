@@ -312,9 +312,10 @@ static gp_boolean processCommandLine(int argc, char *argv[], char *prefix) {
 	// iPad mini2 (1 GB memory) works with 80MB, not with 100MB
 	// Nexus7 and iPad Pro work with 200MB
 	// Decreased memory to 100MB for iOS 10 Safari and Chrome
-	#define MEM_SIZE 100
+	// Increasing memory to 230MB (June 2022)
+	#define MEM_SIZE 230
 #else
-	#define MEM_SIZE 200  // tested with 45; fedora project uses 80MB when ship selected
+	#define MEM_SIZE 230  // tested with 45; fedora project uses 80MB when ship selected
 #endif
 
 // ***** Main *****
