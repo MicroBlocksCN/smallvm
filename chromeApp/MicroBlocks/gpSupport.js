@@ -649,7 +649,6 @@ function hasChromeSerial() {
 }
 
 function hasWebSerial() {
-	if (hasChromeSerial()) return false; // Chrome OS has a different serial API
 	return (typeof navigator.serial != 'undefined');
 }
 
@@ -773,27 +772,27 @@ function GP_openSerialPort(id, path, baud) {
 			GP_serialPortListenersAdded = true;
 		}
 	}
-	if (hasChromeSerial()) {
+	if (hasWebSerial()) {
+		webSerialConnect();
+	} else if (hasChromeSerial()) {
 		if (GP_serialPortID >= 0) return 1; // already open (not an error)
 		chrome.serial.connect(path, {bitrate: baud}, portOpened)
-	} else if (hasWebSerial()) {
-		webSerialConnect();
 	}
 	return 1; // connect is asynchronous, but assume it will succeed
 }
 
 function GP_isOpenSerialPort() {
-	if (hasChromeSerial()) return (GP_serialPortID >= 0);
 	if (hasWebSerial()) return webSerialIsConnected();
+	if (hasChromeSerial()) return (GP_serialPortID >= 0);
 	return false;
 }
 
 function GP_closeSerialPort() {
-	function portClosed(ignored) { }
-	if (GP_serialPortID > 0) {
-		chrome.serial.disconnect(GP_serialPortID, portClosed);
-	} else if (hasWebSerial()) {
+	if (hasWebSerial()) {
 		webSerialDisconnect();
+	} else if (GP_serialPortID > 0) {
+		function portClosed(ignored) { }
+		chrome.serial.disconnect(GP_serialPortID, portClosed);
 	}
 	GP_serialPortID = -1;
 	GP_serialInputBuffers = [];
@@ -824,36 +823,36 @@ function GP_readSerialPort(maxBytes) {
 }
 
 function GP_writeSerialPort(data) {
-	if (hasChromeSerial()) {
+	if (hasWebSerial()) {
+		return webSerialWrite(data);
+	} else if (hasChromeSerial()) {
 		function dataSent(ignored) { }
 		if (GP_serialPortID < 0) return -1; // port not open
 		chrome.serial.send(GP_serialPortID, data.buffer, dataSent);
 		return data.buffer.byteLength;
-	} else if (hasWebSerial()) {
-		return webSerialWrite(data);
 	}
 	return 0;
 }
 
 async function GP_setSerialPortDTR(flag) {
-	function ignore(result) {}
-	if (hasChromeSerial()) {
-		flag = (flag) ? true : false;
-		chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag }, ignore);
-	} else if (hasWebSerial()) {
+	if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ dtr: flag, dataTerminalReady: flag }).catch(() => {});
+	} else if (hasChromeSerial()) {
+		function ignore(result) {}
+		flag = (flag) ? true : false;
+		chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag }, ignore);
 	}
 }
 
 async function GP_setSerialPortRTS(flag) {
-	function ignore(result) {}
-	if (hasChromeSerial()) {
-		flag = (flag) ? true : false;
-		chrome.serial.setControlSignals(GP_serialPortID, { rts: flag }, ignore);
-	} else if (hasWebSerial()) {
+	if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ rts: flag, requestToSend: flag }).catch(() => {});
+	} else if (hasChromeSerial()) {
+		function ignore(result) {}
+		flag = (flag) ? true : false;
+		chrome.serial.setControlSignals(GP_serialPortID, { rts: flag }, ignore);
 	}
 }
 

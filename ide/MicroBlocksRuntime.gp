@@ -645,6 +645,9 @@ method selectPort SmallRuntime {
 		for s portList {
 			if (or (isNil port) (portName != s)) { addItem menu s }
 		}
+		if (isEmpty portList) {
+			addItem menu 'Connect board and try again'
+		}
 	}
 	if (and (devMode) ('Browser' != (platform))) {
 		addItem menu 'other...'
@@ -709,6 +712,7 @@ method portList SmallRuntime {
 }
 
 method setPort SmallRuntime newPortName {
+	if (beginsWith newPortName 'Connect board and try again') { return }
 	if (beginsWith newPortName 'disconnect') {
 		if (notNil port) {
 			stopAndSyncScripts this
@@ -910,6 +914,11 @@ method tryToConnect SmallRuntime {
 
 	closePort this
 	connectionStartTime = nil
+
+	if ('Browser' == (platform)) {  // disable autoconnect on ChromeOS
+		disconnected = true
+		return 'not connected'
+	}
 
 	portNames = (portList this)
 	if (isEmpty portNames) { return 'not connected' } // no ports available
