@@ -740,7 +740,9 @@ function GP_getSerialPorts() {
 	function listPorts(ports) {
 		GP_serialPortNames = [];
 		for (var i = 0; i < ports.length; i++) {
-			GP_serialPortNames.push(toUTF8Array(ports[i].path));
+			if (!ports[i].path.startsWith('/dev/ttyMSM')) {
+				GP_serialPortNames.push(toUTF8Array(ports[i].path));
+			}
 		}
 	}
 	if (hasChromeSerial()) chrome.serial.getDevices(listPorts);
@@ -773,7 +775,7 @@ function GP_openSerialPort(id, path, baud) {
 	}
 	if (hasChromeSerial()) {
 		if (GP_serialPortID >= 0) return 1; // already open (not an error)
-		chrome.serial.connect(path, {persistent: true, bitrate: baud}, portOpened)
+		chrome.serial.connect(path, {bitrate: baud}, portOpened)
 	} else if (hasWebSerial()) {
 		webSerialConnect();
 	}
@@ -781,8 +783,8 @@ function GP_openSerialPort(id, path, baud) {
 }
 
 function GP_isOpenSerialPort() {
-	if (hasWebSerial()) return webSerialIsConnected();
 	if (hasChromeSerial()) return (GP_serialPortID >= 0);
+	if (hasWebSerial()) return webSerialIsConnected();
 	return false;
 }
 
@@ -822,13 +824,15 @@ function GP_readSerialPort(maxBytes) {
 }
 
 function GP_writeSerialPort(data) {
-	function dataSent(ignored) { }
-	if (hasWebSerial()) {
+	if (hasChromeSerial()) {
+		function dataSent(ignored) { }
+		if (GP_serialPortID < 0) return -1; // port not open
+		chrome.serial.send(GP_serialPortID, data.buffer, dataSent);
+		return data.buffer.byteLength;
+	} else if (hasWebSerial()) {
 		return webSerialWrite(data);
 	}
-	if (GP_serialPortID < 0) return -1; // port not open
-	chrome.serial.send(GP_serialPortID, data.buffer, dataSent);
-	return data.buffer.byteLength;
+	return 0;
 }
 
 async function GP_setSerialPortDTR(flag) {
