@@ -1365,7 +1365,15 @@ int readAnalogMicrophone() {
 
 #else
 
-int readAnalogMicrophone() { return 0; }
+int readAnalogMicrophone() {
+	// If there's no built-in microphone, read the first analog pin on ED1, else return 0.
+
+	#if defined(ARDUINO_CITILAB_ED1)
+		int pin = 36; // Pin A0 on ED1
+		return (analogRead(pin) >> 2);
+	#endif
+	return 0;
+}
 
 #endif // Microphone Support
 
