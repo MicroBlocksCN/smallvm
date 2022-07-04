@@ -31,7 +31,7 @@ method initialize MicroBlocksSpinner labelReporter doneReporter {
 	pageM = (morph (global 'page'))
 	setExtent morph (width (bounds pageM)) (height (bounds pageM))
 
-	setFPS morph 10
+	setFPS morph 30
 	fixLayout this
 	return this
 }
@@ -68,6 +68,7 @@ method setTask MicroBlocksSpinner aTask { task = aTask }
 method setStopAction MicroBlocksSpinner anAction { stopAction = anAction }
 
 method destroy MicroBlocksSpinner {
+	setCursor 'default'
 	if (notNil stopAction) {
 		call stopAction
 	}
@@ -79,10 +80,12 @@ method destroy MicroBlocksSpinner {
 
 method step MicroBlocksSpinner {
 	if (call doneGetter) {
+		setCursor 'default'
 		destroy this
 		return
 	}
 
+	setCursor 'wait'
 	changed morph
 	rotation = ((rotation + 15) % 360)
 	setText label (localized (call labelGetter))

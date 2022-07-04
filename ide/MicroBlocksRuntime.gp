@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs firmwareInstallTimer
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress  fileTransfer firmwareInstallTimer
 
 method scripter SmallRuntime { return scripter }
 
@@ -1775,10 +1775,31 @@ method writeFileToBoard SmallRuntime srcFileName {
 	if ((count targetFileName) > 30) {
 		targetFileName = (substring targetFileName 1 30)
 	}
-	sendFileData this targetFileName fileData
+	fileTransferProgress = 0
+	spinner = (newSpinner (action 'fileUploadProgress' this) (action 'fileUploadDone' this))
+	addPart (global 'page') spinner
+
+	setTask spinner (launch
+		(global 'page')
+		(action 'sendFileData' this targetFileName fileData)
+	)
+}
+
+method fileUploadProgress SmallRuntime {
+	progress = (withoutExtension (toString fileTransferProgress))
+	return (join progress '% uploaded')
+}
+
+method fileUploadDone SmallRuntime {
+	if (fileTransferProgress == 100) {
+		fileTransferProgress = 0
+		return true
+	}
+	return false
 }
 
 method sendFileData SmallRuntime fileName fileData {
+	// send data as a sequence of chunks
 	setCursor 'wait'
 
 	totalBytes = (byteCount fileData)
@@ -1790,7 +1811,6 @@ method sendFileData SmallRuntime fileName fileData {
 	addAll msg (toArray (toBinaryData fileName))
 	sendMsgSync this 'startWritingFile' 0 msg
 
-	// send data as a sequence of chunks
 	while (bytesSent < totalBytes) {
 		msg = (list)
 		appendInt32 this msg id
@@ -1801,16 +1821,13 @@ method sendFileData SmallRuntime fileName fileData {
 			add msg (byteAt fileData bytesSent)
 		}
 		sendMsgSync this 'fileChunk' 0 msg
-		processMessages this
+		fileTransferProgress = ((bytesSent / totalBytes) * 100)
 	}
-
 	// final (empty) chunk
 	msg = (list)
 	appendInt32 this msg id
 	appendInt32 this msg bytesSent
 	sendMsgSync this 'fileChunk' 0 msg
-
-	setCursor 'default'
 }
 
 method appendInt32 SmallRuntime msg n {
