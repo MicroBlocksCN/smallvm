@@ -204,16 +204,22 @@ OBJ primBoardType() {
 // Misc primitives
 
 static OBJ primRandom(int argCount, OBJ *args) {
-	int base, range;
-	if (argCount == 1) {
-		base = 1;
-		range = evalInt(args[0]);
-	} else {
-		base = evalInt(args[0]);
-		range = (evalInt(args[1]) + 1) - base;
+	int first = 1, last = 100; // defaults for zero arguments
+	if (argCount == 1) { // use range [1..arg]
+		first = 1;
+		last = evalInt(args[0]);
+		if (last < 0) first = -1;
+	} else if (argCount == 2) { // use range [first..last]
+		first = evalInt(args[0]);
+		last = evalInt(args[1]);
 	}
-	if (range < 1) range = 1;
-	return int2obj((rand() % range) + base); // result range is [base..base+range], inclusive
+	if (first > last) { // ensure first <= last
+		int tmp = first;
+		first = last;
+		last = tmp;
+	}
+	int range = (last + 1) - first; // if first == last range is 1 and first is returned
+	return int2obj(first + (rand() % range)); // result range is [first..last], inclusive
 }
 
 static OBJ primMinimum(int argCount, OBJ *args) {
