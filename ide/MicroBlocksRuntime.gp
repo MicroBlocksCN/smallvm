@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress  fileTransfer firmwareInstallTimer
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer
 
 method scripter SmallRuntime { return scripter }
 
@@ -1768,6 +1768,10 @@ method putFileOnBoard SmallRuntime {
 }
 
 method writeFileToBoard SmallRuntime srcFileName {
+	if (notNil (findMorph 'MicroBlocksFilePicker')) {
+		destroy (findMorph 'MicroBlocksFilePicker')
+	}
+
 	fileData = (readFile srcFileName true)
 	if (isNil fileData) { return }
 
@@ -1775,32 +1779,30 @@ method writeFileToBoard SmallRuntime srcFileName {
 	if ((count targetFileName) > 30) {
 		targetFileName = (substring targetFileName 1 30)
 	}
+
 	fileTransferProgress = 0
-	spinner = (newSpinner (action 'fileUploadProgress' this) (action 'fileUploadDone' this))
+	spinner = (newSpinner (action 'fileTransferProgress' this) (action 'fileTransferCompleted' this))
+	setStopAction spinner (action 'abortFileTransfer' this)
 	addPart (global 'page') spinner
 
-	setTask spinner (launch
-		(global 'page')
-		(action 'sendFileData' this targetFileName fileData)
-	)
+	sendFileData this targetFileName fileData
 }
 
-method fileUploadProgress SmallRuntime {
-	progress = (withoutExtension (toString fileTransferProgress))
-	return (join progress '% uploaded')
-}
+// busy tells the MicroBlocksEditor to suspect board communciations during file transfers
+method busy SmallRuntime { return (notNil fileTransferProgress) }
 
-method fileUploadDone SmallRuntime {
-	if (fileTransferProgress == 100) {
-		fileTransferProgress = 0
-		return true
-	}
-	return false
+method fileTransferProgress SmallRuntime { return (join '' fileTransferProgress '% uploaded') }
+method abortFileTransfer SmallRuntime { fileTransferProgress = nil }
+
+method fileTransferCompleted SmallRuntime {
+	// return true if the file transfer is complete or aborted
+	return (or (isNil fileTransferProgress) (fileTransferProgress == 100))
 }
 
 method sendFileData SmallRuntime fileName fileData {
 	// send data as a sequence of chunks
 	setCursor 'wait'
+	fileTransferProgress = 0
 
 	totalBytes = (byteCount fileData)
 	id = (rand ((1 << 24) - 1))
@@ -1812,6 +1814,10 @@ method sendFileData SmallRuntime fileName fileData {
 	sendMsgSync this 'startWritingFile' 0 msg
 
 	while (bytesSent < totalBytes) {
+		if (isNil fileTransferProgress) {
+			print 'File transfer aborted.'
+			return
+		}
 		msg = (list)
 		appendInt32 this msg id
 		appendInt32 this msg bytesSent
@@ -1821,13 +1827,16 @@ method sendFileData SmallRuntime fileName fileData {
 			add msg (byteAt fileData bytesSent)
 		}
 		sendMsgSync this 'fileChunk' 0 msg
-		fileTransferProgress = ((bytesSent / totalBytes) * 100)
+		fileTransferProgress = (round (100 * (bytesSent / totalBytes)))
+		doOneCycle (global 'page')
 	}
 	// final (empty) chunk
 	msg = (list)
 	appendInt32 this msg id
 	appendInt32 this msg bytesSent
 	sendMsgSync this 'fileChunk' 0 msg
+
+	fileTransferProgress = nil
 }
 
 method appendInt32 SmallRuntime msg n {

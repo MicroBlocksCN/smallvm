@@ -452,7 +452,7 @@ method step MicroBlocksEditor {
   }
   processDroppedFiles this
   updateIndicator this
-  processMessages (smallRuntime)
+  if (not (busy (smallRuntime))) { processMessages (smallRuntime) }
   if (isRunning httpServer) {
 	step httpServer
   }
@@ -484,6 +484,8 @@ method updateFPS MicroBlocksEditor {
 }
 
 method updateIndicator MicroBlocksEditor forcefully {
+	if (busy (smallRuntime)) { return } // do nothing during file transfer
+
 	status = (updateConnection (smallRuntime))
 	if (and (lastStatus == status) (forcefully != true)) { return } // no change
 	if ('connected' == status) {
