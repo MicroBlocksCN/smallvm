@@ -1,6 +1,6 @@
 module main
 author unknown
-version 1 0 
+version 2 0 
 description ''
 variables 'player x' 'player y' playing 'stone x' 'stone y' 
 
@@ -33,7 +33,7 @@ Have fun!'
 script 51 218 {
 whenStarted
 playing = (booleanConstant true)
-'stone x' = (random 5)
+'stone x' = (random 1 5)
 'stone y' = 0
 forever {
   if playing {
@@ -41,7 +41,7 @@ forever {
       'stone y' += 1
       waitMillis 200
     }
-    'stone x' = (random 5)
+    'stone x' = (random 1 5)
     'stone y' = 0
   }
 }

@@ -1,13 +1,13 @@
 module main
 author unknown
-version 1 0 
+version 2 0 
 description ''
 variables 'reaction time' remark 'start time' 
 
 script 152 50 {
 whenButtonPressed 'A'
 sayIt ''
-waitMillis (500 + (random 2000))
+waitMillis (random 500 2000)
 setUserLED true
 resetTimer
 waitUntil (buttonA)
