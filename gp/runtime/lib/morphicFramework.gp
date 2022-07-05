@@ -597,7 +597,7 @@ method processEvent Keyboard evt {
 			} (notNil (findMorph 'MicroBlocksFilePicker')) {
 				destroy (findMorph 'MicroBlocksFilePicker')
 			} (notNil (findMorph 'MicroBlocksSpinner')) {
-				destroy (findMorph 'MicroBlocksSpinner')
+				destroy (handler (findMorph 'MicroBlocksSpinner'))
 			} (notNil (findMorph 'Prompter')) {
 				cancel (handler (findMorph 'Prompter'))
 			} else {
