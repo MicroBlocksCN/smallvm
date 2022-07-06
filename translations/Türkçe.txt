@@ -1505,3 +1505,372 @@ Bağımlılık yol, ad veya URl'si
 Tag name?
 Teg adı?
 
+############
+# Tips Bar #
+############
+
+Boolean Input
+Boole Girdisi
+
+[l] toggle value, or drop a reporter into it.
+[l] değeri değiştirin veya içine bir raportör bırakın.
+
+Color Input
+Renk Girdisi
+
+[l] change the color, or drop a reporter into it.
+[l] rengi değiştirin veya içine bir raportör bırakın.
+
+Input
+Girdi
+
+[l] edit its value, or drop a reporter into it.
+[l] değerini düzenleyin veya içine bir raportör bırakın.
+
+Block Extension
+Blok Uzantısı
+
+[l] right arrow to show optional inputs, left arrow to hide.
+[l] isteğe bağlı girişleri göstermek için sağ ok, gizlemek için sol ok.
+
+Command Block
+Komut bloğu
+
+[l] to run, or drag to build scripts. [r] menu.
+çalıştırmak için [l] veya komut dosyaları oluşturmak için sürükleyin. [r] menü.
+
+Hat Block
+Şapka Bloğu
+
+[l] to run, or drag to build scripts. [r] menu.
+çalıştırmak için [l] veya komut dosyaları oluşturmak için sürükleyin. [r] menü.
+
+Reporter Block
+raportör Bloğu
+
+[l] to see value, or drop into an input slot. [r] menu.
+değeri görmek için veya bir girdi alanına bırakmak için [l] . [r] menü.
+
+Script
+Betik
+
+[l] to run. [r] menu.
+[l] çalıştır. [r] menü.
+
+Pane Divider
+Bölüm ayırıcısı
+
+Drag to change pane width.
+Bölme genişliğini değiştirmek için sürükleyin.
+
+Library
+Kütüphane
+
+[l] to show the blocks in this library. [r] menu.
+[l] bu kitaplıktaki blokları göster. [r] menü.
+
+Block Category
+Blok Kategorisi
+
+[l] to show the blocks in this category.
+[l] bu kategorideki blokları gösterç
+
+Palette
+Palet
+
+Drag blocks from here to build scripts. Drop scripts here to delete them.
+Komut dosyaları oluşturmak için blokları buradan sürükleyin. Silmek için komut dosyalarını buraya bırakın.
+
+Scripts Pane
+Betik Bölümü
+
+Drag blocks here to build scripts. [r] menu.
+Komut dosyaları oluşturmak için blokları buraya sürükleyin. [r] menü.
+
+#################################
+# Block Descriptions for TipBar #
+#################################
+
+Turn the user LED on or off.
+Kullanıcı LED'ini açın veya kapatın.
+
+Display a bubble showing the value.
+Değeri gösteren bir balon görüntüleyin.
+
+Graph the value.
+Değerin grafiğini çizin.
+
+Report the state of button A ( (-o) or (o-) ).
+A düğmesinin ( (-o) veya (o-) ) durumunu bildirin.
+
+Report the state of button B ( (-o) or (o-) ).
+B düğmesinin ( (-o) veya (o-) ) durumunu bildirin.
+
+Report the milliseconds since the timer was last reset.
+Zamanlayıcının en son sıfırlanmasından bu yana geçen milisaniyeleri bildirin.
+
+Reset the timer.
+Zamanlayıcıyı sıfırlayın.
+
+Report the milliseconds since power up.
+Güç açıldıktan sonraki milisaniyeleri bildirin.
+
+Report the microseconds since power up.
+Güç açıldıktan sonraki mikrosaniyeleri bildirin.
+
+Report the board type.
+Kart tipini bildirin.
+
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
+bir dijital pimdeki elektriksel mantık seviyesini ( (-o) veya (o-) ) bildirin.
+
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
+Analog pin üzerindeki voltajla orantılı bir sayı bildirin (0 = toprak, 1023 = besleme voltajı).
+
+Turn a pin on or off ( (-o) or (o-) ).
+Bir pimi açın veya kapatın ( (-o) veya (o-) ).
+
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
+Verilen görev döngüsü (0 - 1023) ile bir pin darbe genişliği modülasyonu (PWM).
+
+Report number of analog pins on this device.
+Bu cihazdaki analog pin sayısını bildir.
+
+Report number of digital pins on this device.
+Bu cihazdaki dijital pin sayısını bildirin.
+
+Report the value of a register (0-255) of an I2C device (0-127).
+Bir I2C cihazının (0-127) sayacının (0-255) değerini bildirin.
+
+Set an I2C device and register to given value (0-255).
+Bir I2C cihazını  ve sayacını verilen değere (0-255) ayarlayın.
+
+Receive multiple bytes from an I2C device.
+Bir I2C cihazından birden çok bayt alın.
+
+Send multiple bytes to an I2C device.
+Bir I2C cihazına birden çok bayt gönderin.
+
+Send a byte (0-255) to an SPI device.
+Bir SPI cihazına bir bayt (0-255) gönderin.
+
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
+Sıfır bayt gönderirken bir SPI cihazından bir bayt okuyun. Alınan baytı bildirin.
+
+Set the SPI clock speed and mode.
+SPI saat hızını ve modunu ayarlayın.
+
+Send a byte array via SPI, replacing its contents with the bytes received.
+İçeriğini alınan baytlarla değiştirerek SPI aracılığıyla bir bayt dizisi gönderin.
+
+Open the serial port at the given baud rate.
+Verilen baud hızında seri bağlantı noktasını açın.
+
+Close the serial port.
+Seri bağlantı noktasını kapatın.
+
+Report data received from the serial port (a byte array).
+Seri bağlantı noktasından (bir bayt dizisi) alınan verileri bildirin.
+
+Send a byte array to the serial port.
+Seri bağlantı noktasına bir bayt dizisi gönderin.
+
+Run when the board powers up or when the IDE start button is clicked.
+Kart açıldığında veya IDE başlat düğmesine tıklandığında çalıştırın.
+
+Run when buttons A, B, or A+B are pressed.
+A, B veya A+B düğmelerine basıldığında çalıştırın.
+
+Repeat the enclosed blocks indefinitely.
+İçerilen blokları süresiz olarak tekrarlayın.
+
+Repeat the enclosed blocks the given number of times.
+İçerilen blokları verilen sayıda tekrarlayın.
+
+Wait the given number of milliseconds.
+Verilen milisaniye kadar bekleyin.
+
+Run the first set of blocks whose test condition is (-o) .
+Test koşulu (-o) olan ilk blok grubunu çalıştırın.
+
+Run when the condition becomes (-o) .
+Koşul (-o) olduğunda çalıştırın.
+
+Wait until the condition becomes (-o) .
+Koşul (-o) olana kadar bekleyin.
+
+Return (report) the given value from a function or script.
+Bir işlevden veya betikten verilen değeri döndürün (bildirin).
+
+Run when the given message is broadcast.
+Verilen mesaj yayınlandığında çalıştırın.
+
+Broadcast the given message.
+Verilen mesajı yayınlayın.
+
+Do nothing. Used to add notes and documentation.
+Hiçbir şey yapma. Notlar ve belgeler eklemek için kullanılır.
+
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
+İçerilen blokları, değişken geçerli yineleme numarasına veya öğeye ayarlanmış olarak tekrarlayın.
+
+Repeat the enclosed blocks until the condition becomes (-o) .
+Koşul (-o) olana kadar İçerilen blokları tekrarlayın.
+
+Stop this task.
+Bu görevi durdur.
+
+Stop all tasks except this one.
+Bunun dışındaki tüm görevleri durdurun.
+
+Wait the given number of microseconds.
+Verilen mikrosaniye kadar bekleyin.
+
+Report the last broadcast message received.
+Alınan son yayın mesajını bildirin.
+
+Call the function with the given name and optional parameter list.
+Verilen ad ve isteğe bağlı parametre listesi ile işlevi çağırın.
+
+Call the function with the given name and optional parameter list and report its return value.
+Belirtilen ad ve isteğe bağlı parametre listesi ile işlevi çağırın ve dönüş değerini bildirin.
+
+Report the sum of the given numbers.
+Verilen sayıların toplamını bildiriniz.
+
+Report the first number minus the second.
+İlk sayı eksi ikinci sonucunu bildirin.
+
+Report the product of the given numbers.
+Verilen sayıların çarpımını bildirin.
+
+Report the first number divided by the second.
+İkinci bölü ilk sayıyı bildirin.
+
+Report the remainder of dividing the first number by the second.
+İlk sayıyı ikinciye bölmenin kalanını bildirin.
+
+Report the absolute value of the given number (always >= 0).
+Verilen sayının mutlak değerini bildirin (daima >= 0).
+
+Report the minimum of the values.
+Minimum değeri bildirin.
+
+Report the maximum of the values.
+Maksimum değeri bildirin.
+
+Report a randomly chosen number in the given range.
+Verilen aralıkta rastgele seçilen bir sayıyı bildirin.
+
+Report (-o) if the first value is less than the second one.
+İlk değer ikinciden küçükse (-o) rapor edin.
+
+Report (-o) if the first value is less than or equal to the second one.
+İlk değer ikinciden küçük veya ona eşit ise (-o) rapor edin .
+
+Report (-o) if the two values are equal.
+İki değer eşitse (-o) rapor edin.
+
+Report (-o) if the two values are not equal.
+İki değer eşit değilse (-o) rapor edin .
+
+Report (-o) if the first value is greater than or equal to the second one.
+İlk değer ikinciden büyük veya ona eşitse (-o) bildirin.
+
+Report (-o) if the first value is greater than the second one.
+İlk değer ikinciden büyükse (-o) rapor edin.
+
+Boolean constant ( (-o) or (o-) ).
+Boole sabiti ( (-o) veya (o-) ).
+
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
+Boolean ( (-o) veya (o-) ) değerinin mantıksal tersini bildirin.
+
+Report (-o) if both values are (-o)
+Her iki değer de (-o) ise (-o) rapor edin.
+
+Report (-o) if either value is (-o)
+Herhangi bir değer (-o) ise (-o) rapor edin.
+
+Report (-o) if first input is a value of the given data type.
+Rapor (-o) eğer ilk girdi verilen veri tipiyse.
+
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
+Onaltılık bir dizenin sayısal değerini bildirin (aralık: -0x1FFFFFFF - 0x1FFFFFFFF)
+
+Report bitwise AND of two numbers.
+İki sayının bit düzeyinde VE değerini bildirin.
+
+Report bitwise OR of two numbers.
+İki sayının bit düzeyinde VEYA değerini bildirin.
+
+Report bitwise XOR (exclusive OR) of two numbers.
+İki sayının bit düzeyinde XOR'unu (özel VEYA) bildirin.
+
+Report bitwise inverse of the given number.
+Verilen sayının bit düzeyinde tersini bildirin.
+
+Report the given number shifted left by the given number of bits.
+
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+
+Set a variable to the given value.
+Bir değişkeni verilen değere ayarlayın.
+
+Change a variable by the given amount.
+Bir değişkeni verilen değerde değiştirin.
+
+Create a variable local to the containing script with the given initial value.
+Verilen başlangıç değeriyle yerel bir değişkeni içerilen komut dosyasında  oluşturun.
+
+Report the Nth item of a list, string, or byte array.
+Bir listenin, dizenin veya bayt dizisinin N. öğesini bildirin.
+
+Report the number of items in a list, string, or byte array.
+Liste, dize veya bayt dizisindeki öğelerin sayısını bildirin.
+
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
+Verilen listeleri, dizeleri veya bayt dizilerini birleştirin ve sonucu bildirin.
+
+Create and report a short list containing the given items. Length limited by available stack space.
+Verilen öğeleri içeren kısa bir liste oluşturun ve rapor edin. Uzunluk, kullanılabilir yığın alanıyla sınırlıdır.
+
+Add an item to the end of a list.
+Listenin sonuna bir öğe ekleyin.
+
+Replace the Nth item (or all items) of a list or byte array with the given value.
+Bir listenin veya bayt dizisinin N. öğesini (veya tüm öğelerini) verilen değerle değiştirin.
+
+Delete the Nth item (or all items) of a list.
+Listenin N. öğesini (veya tüm öğelerini) silin.
+
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
+Bir listedeki bir öğenin dizinini veya bir dize içindeki bir alt dizeyi bulun ve bildirin. Bulunamazsa -1 rapor edin.
+
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
+Verilen listenin, dizenin veya bayt dizisinin sonuna (veya isteğe bağlı durdurma indeksine) kadar verilen dizinden bir kopya bildirin.
+
+Split the given string with the given delimiter and report the result (a list of strings).
+Verilen dizgiyi verilen sınırlayıcı ile bölün ve sonucu rapor edin (dizelerin bir listesi).
+
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
+Bir listenin öğelerini, isteğe bağlı olarak bir sınırlayıcıyla (ör. virgül) ayırarak bir dizede birleştirin.
+
+Report the Unicode value ("code point") of the Nth character of the given string.
+Verilen dizenin N. karakterinin Unicode değerini ("kod noktası") bildirin.
+
+Report a string containing the given Unicode value ("code point") or list of values.
+Verilen Unicode değerini ("kod noktası") veya değerler listesini içeren bir dize bildirin.
+
+Report a new list of the given length filled with zero or the optional value.
+Sıfır veya isteğe bağlı değerle doldurulmuş verilen uzunlukta yeni bir liste bildirin.
+
+Report a new byte array of the given length filled with zero or the optional value.
+Sıfır veya isteğe bağlı değerle doldurulmuş, verilen uzunlukta yeni bir bayt dizisi bildirin.
+
+Report a byte array cointaining the UTF-8 bytes of the given string.
+Verilen dizenin UTF-8 baytlarını içeren bir bayt dizisini bildirin.
+
+Report the number of words of memory available. Stop button frees up memory.
+Kullanılabilir bellekteki sözcük sayısını bildirin. Durdur düğmesi hafızayı boşaltır.
+
