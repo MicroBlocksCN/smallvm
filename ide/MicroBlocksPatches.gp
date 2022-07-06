@@ -433,6 +433,51 @@ method justReceivedDrop BlocksPalette aHandler {
   removeFromOwner (morph aHandler)
 }
 
+method wantsDropOf CategorySelector aHandler {
+	// only accept definition hat blocks, and only in the library selector
+	scripter = (scripter (findProjectEditor))
+	return (and
+		((getField scripter 'libSelector') == this)
+		(isClass aHandler 'Block')
+		(isNil (blockSpec aHandler))
+		((type aHandler) == 'hat')
+	)
+}
+
+// Allow adding blocks to libraries by dropping their definitions into the
+// library selector
+method justReceivedDrop CategorySelector aHandler {
+	pe = (findProjectEditor)
+	scripter = (scripter pe)
+	mainModule = (main (project pe))
+	if (notNil (categoryUnderHand this)) {
+		library = (at (libraries (project scripter)) (categoryUnderHand this))
+		block = (handler (at (parts (morph aHandler)) 2))
+		function = (function block)
+		if (not (contains (functions library) function)) {
+			if (contains (functions mainModule) function) {
+				// Block is in My Blocks, let's remove it from there first
+				removeFunction mainModule function
+				remove (blockList mainModule) (functionName function)
+				remove (blockSpecs mainModule) (blockSpecFor function)
+			}
+			for lib (values (libraries (project scripter))) {
+				if (contains (functions lib) function) {
+					// Block already in a library, let's remove it from there first
+					removeFunction lib function
+					remove (blockList lib) (functionName function)
+					remove (blockSpecs lib) (blockSpecFor function)
+				}
+			}
+			addFunction library function
+			add (blockList library) (functionName function)
+			add (blockSpecs library) (blockSpecFor function)
+		}
+		select this (categoryUnderHand this)
+	}
+	animateBackToOldOwner (hand (global 'page')) (morph aHandler) (action 'languageChanged' scripter)
+}
+
 // Input slots
 
 method inputIndex Block anInput {

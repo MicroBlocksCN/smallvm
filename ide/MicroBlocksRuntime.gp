@@ -1752,7 +1752,6 @@ method readFileFromBoard SmallRuntime remoteFileName {
 		totalBytes += byteCount
 		fileTransferProgress = (100 - (round (100 * (byteCount / totalBytes))))
 		doOneCycle (global 'page')
-		print fileTransferProgress
 	}
 
 	result = (newBinaryData totalBytes)

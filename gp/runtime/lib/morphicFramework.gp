@@ -252,9 +252,9 @@ method returnGrabbedObjectToOldPosition Hand aHandler {
   }
 }
 
-method animateBackToOldOwner Hand aMorph {
+method animateBackToOldOwner Hand aMorph finalAction {
   doneAction = (action
-	(function oldOwner m {
+	(function oldOwner m finallyDo {
 	  if (isNil oldOwner) {
 		removeFromOwner m
 		return
@@ -276,8 +276,12 @@ method animateBackToOldOwner Hand aMorph {
 	  } else {
 		addPart oldOwner m
 	  }
-	})
-	(morph oldOwner) aMorph)
+	  if (notNil finallyDo) {
+		  call finallyDo
+	  }
+	}
+	)
+	(morph oldOwner) aMorph finalAction)
   addPart (morph page) aMorph // move in front of everything else during the animation
   animateTo aMorph oldX oldY doneAction
 }
