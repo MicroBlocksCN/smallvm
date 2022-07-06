@@ -1706,7 +1706,9 @@ method getFileListFromBoard SmallRuntime {
 }
 
 method getFileFromBoard SmallRuntime {
+	setCursor 'wait'
 	fileNames = (sorted (getFileListFromBoard this))
+	setCursor 'default'
 	if (isEmpty fileNames) {
 		inform 'No files on board.'
 		return
@@ -1729,7 +1731,11 @@ method getAndSaveFile SmallRuntime remoteFileName {
 }
 
 method readFileFromBoard SmallRuntime remoteFileName {
-	setCursor 'wait'
+	fileTransferProgress = 0
+	spinner = (newSpinner (action 'fileTransferProgress' this 'downloaded') (action 'fileTransferCompleted' this))
+	setStopAction spinner (action 'abortFileTransfer' this)
+	addPart (global 'page') spinner
+
 	msg = (list)
 	id = (rand ((1 << 24) - 1))
 	appendInt32 this msg id
@@ -1744,6 +1750,9 @@ method readFileFromBoard SmallRuntime remoteFileName {
 		offset = (readInt32 this msg 5)
 		byteCount = ((byteCount msg) - 8)
 		totalBytes += byteCount
+		fileTransferProgress = (100 - (round (100 * (byteCount / totalBytes))))
+		doOneCycle (global 'page')
+		print fileTransferProgress
 	}
 
 	result = (newBinaryData totalBytes)
@@ -1781,7 +1790,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 	}
 
 	fileTransferProgress = 0
-	spinner = (newSpinner (action 'fileTransferProgress' this) (action 'fileTransferCompleted' this))
+	spinner = (newSpinner (action 'fileTransferProgress' this 'uploaded') (action 'fileTransferCompleted' this))
 	setStopAction spinner (action 'abortFileTransfer' this)
 	addPart (global 'page') spinner
 
@@ -1791,7 +1800,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 // busy tells the MicroBlocksEditor to suspect board communciations during file transfers
 method busy SmallRuntime { return (notNil fileTransferProgress) }
 
-method fileTransferProgress SmallRuntime { return (join '' fileTransferProgress '% uploaded') }
+method fileTransferProgress SmallRuntime actionLabel { return (join '' fileTransferProgress '% ' (localized actionLabel)) }
 method abortFileTransfer SmallRuntime { fileTransferProgress = nil }
 
 method fileTransferCompleted SmallRuntime {
@@ -1861,6 +1870,7 @@ method collectFileTransferResponses SmallRuntime {
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		if (notEmpty fileTransferMsgs) { timeout = 500 } // decrease timeout after first response
 		processMessages this
+		doOneCycle (global 'page')
 		waitMSecs 10
 	}
 }

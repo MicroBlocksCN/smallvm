@@ -10,6 +10,8 @@ linux+pi/ublockscode
 linux+pi/vm.*
 linux+pi/vm_*
 linux+pi/qemu
+linux+pi/GnuBlocks
+linux+pi/ubuntu*
 precompiled/vm.*
 precompiled/vm_*
 precompiled/node_modules
