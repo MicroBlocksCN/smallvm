@@ -1262,6 +1262,10 @@ put file on board
 
 get file from board
 
+uploaded
+
+downloaded
+
 Data Graph
 
 Graph
