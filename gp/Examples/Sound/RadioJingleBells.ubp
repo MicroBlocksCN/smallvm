@@ -101,7 +101,7 @@ to stopScrollingText {
 
 module Radio Comm
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags radio communication messaging network 
 description 'Send and receive messages between micro:bit boards via their built-in radio system.'
 
@@ -113,9 +113,19 @@ description 'Send and receive messages between micro:bit boards via their built-
 	spec 'r' '[radio:receivedString]' 'radio last string'
 	spec ' ' '[radio:setGroup]' 'radio set group _ (0-255)' 'num' 0
 	spec ' ' '[radio:setPower]' 'radio set power (0-7) _' 'num' 4
+	spec 'r' '_signalStrength' '_radio last signal strength'
+	spec 'r' '_radioLastSenderID' '_radio last sender ID'
+	spec 'r' '_radioMyID' '_radio my ID'
 	spec 'r' '_receivedMessageType' '_radio last message type'
 	spec ' ' '_setChannel' '_radio set channel (0-83) _' 'num' 7
-	spec 'r' '_signalStrength' '_radio last signal strength'
+
+to '_radioLastSenderID' {
+  return ('[radio:lastMessageID]')
+}
+
+to '_radioMyID' {
+  return ('[radio:deviceID]')
+}
 
 to '_receivedMessageType' {
   return ('[radio:receivedMessageType]')
