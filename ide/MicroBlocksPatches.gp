@@ -434,10 +434,9 @@ method justReceivedDrop BlocksPalette aHandler {
 }
 
 method wantsDropOf CategorySelector aHandler {
-	// only accept definition hat blocks, and only in the library selector
+	// only accept definition hat blocks
 	scripter = (scripter (findProjectEditor))
 	return (and
-		((getField scripter 'libSelector') == this)
 		(isClass aHandler 'Block')
 		(isNil (blockSpec aHandler))
 		((type aHandler) == 'hat')
@@ -450,24 +449,37 @@ method justReceivedDrop CategorySelector aHandler {
 	pe = (findProjectEditor)
 	scripter = (scripter pe)
 	mainModule = (main (project pe))
-	if (notNil (categoryUnderHand this)) {
-		library = (at (libraries (project scripter)) (categoryUnderHand this))
+	intoLibrary = (and
+		((getField scripter 'libSelector') == this)
+		(notNil (categoryUnderHand this)))
+	intoMyBlocks = (and 
+		((getField scripter 'categorySelector') == this)
+		((categoryUnderHand this) == 'My Blocks'))
+
+	// accept it if dropping onto the library list or onto the category list,
+	// but only if it's onto My Blocks
+	if (or intoLibrary intoMyBlocks){
 		block = (handler (at (parts (morph aHandler)) 2))
 		function = (function block)
+		for lib (values (libraries (project scripter))) {
+			if (contains (functions lib) function) {
+				// Block already in a library, let's remove it from there first
+				removeFunction lib function
+				remove (blockList lib) (functionName function)
+				remove (blockSpecs lib) (blockSpecFor function)
+			}
+		}
+		if intoLibrary {
+			library = (at (libraries (project scripter)) (categoryUnderHand this))
+		} else {
+			library = mainModule
+		}
 		if (not (contains (functions library) function)) {
 			if (contains (functions mainModule) function) {
 				// Block is in My Blocks, let's remove it from there first
 				removeFunction mainModule function
 				remove (blockList mainModule) (functionName function)
 				remove (blockSpecs mainModule) (blockSpecFor function)
-			}
-			for lib (values (libraries (project scripter))) {
-				if (contains (functions lib) function) {
-					// Block already in a library, let's remove it from there first
-					removeFunction lib function
-					remove (blockList lib) (functionName function)
-					remove (blockSpecs lib) (blockSpecFor function)
-				}
 			}
 			addFunction library function
 			add (blockList library) (functionName function)
