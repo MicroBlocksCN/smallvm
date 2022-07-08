@@ -301,8 +301,9 @@ method contextMenu Block {
 		addItem menu 'test decompiler' (action 'testDecompiler' (smallRuntime) this) // xxx
 	}
   }
+  addLine menu
+  addItem menu 'find users' (action 'findUsers' (project pe) this) 'find scripts or block definitions using this block'
   if (notNil (functionNamed (project pe) (primName expression))) {
-    addLine menu
     addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
 	if isInPalette {
 	  addLine menu

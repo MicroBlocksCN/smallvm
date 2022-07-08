@@ -391,17 +391,19 @@ method newLibrary MicroBlocksFilePicker {
 
   libName = (prompt (global 'page') 'New library name?' '')
 
-  lib = (newMicroBlocksModule libName)
+  if (libName != '') {
+	  lib = (newMicroBlocksModule libName)
 
-  addLibrary (project scripter) lib
-  updateLibraryList scripter
-  updateBlocks scripter
-  selectLibrary scripter lib
+	  addLibrary (project scripter) lib
+	  updateLibraryList scripter
+	  updateBlocks scripter
+	  selectLibrary scripter lib
 
-  showLibraryInfo lib true
+	  showLibraryInfo lib true
 
-  removeFromOwner morph
-  isDone = true
+	  removeFromOwner morph
+	  isDone = true
+  }
 }
 
 method parentFolder MicroBlocksFilePicker {
