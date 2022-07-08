@@ -264,6 +264,10 @@ method addShortcutButtons MicroBlocksFilePicker {
 	addIconButton this buttonX buttonY 'cloudIcon' (action 'cloudAction' this) 'Cloud'
 	buttonY += dy
   }
+  if showLibraries {
+	addIconButton this buttonX buttonY 'newLibraryIcon' (action 'newLibrary' this) 'New'
+	buttonY += dy
+  }
 
   newFolderButton = (textButton this (buttonX + (2 * scale)) buttonY 'New Folder' 'newFolder')
 }
@@ -380,6 +384,24 @@ method setLibraries MicroBlocksFilePicker {
 method setMicroBlocksFolder MicroBlocksFilePicker {
   useEmbeddedFS = false
   showFolder this (microblocksFolder) true
+}
+
+method newLibrary MicroBlocksFilePicker {
+  scripter = (scripter (findProjectEditor))
+
+  libName = (prompt (global 'page') 'New library name?' '')
+
+  lib = (newMicroBlocksModule libName)
+
+  addLibrary (project scripter) lib
+  updateLibraryList scripter
+  updateBlocks scripter
+  selectLibrary scripter lib
+
+  showLibraryInfo lib true
+
+  removeFromOwner morph
+  isDone = true
 }
 
 method parentFolder MicroBlocksFilePicker {
@@ -987,6 +1009,69 @@ SSFIqUKCd+YINmz03O3g5o3LXL70reOLmLtgNYuWviKqLKeWxS/VVVB6eLdjKXu0CVVHsXjZj0mdKmyL
 H8AMYLaM3ePu7mZYXc0+QDNAdU39qAXkbc6eqxtKNkmBWCCzuqae51YtRakce4sd7uSmvo31P/0FXV3d
 AH+VAGFADRCj0YTx+uYCFuVkoFKNzpq/pzCZOik/Vsm77xXS3m4Ee8ufPvQ8FbjIGDjG6qXrIpDyfZHk
 wGbs//4yjYEg3X2ZgGPApvt1BeBfy0VRnxa1jVQAAAAASUVORK5CYII='
+  if (2 == (global 'scale')) { data = dataRetina }
+  return (readFrom (new 'PNGReader') (base64Decode data))
+}
+
+method newLibraryIcon MicroBlocksFilePickerIcons {
+  data = '
+iVBORw0KGgoAAAANSUhEUgAAACMAAAAjCAYAAAAe2bNZAAAACXBIWXMAABAnAAAQJwFR8a7xAAAAGXRF
+WHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAABARJREFUWIXtln1M1HUcx1+/33G/23HccccB
+hxhNRQWEIsAHkIcawpKHHMLWTMyNJms92dbc2lrTVZabNKgtWy6NRsBWUDFK0B0+jFQEhbDSMhggIHIc
+wREQcncd/dFqIx68g2Ot5fvv9/v7ee37+T584J7u6T8sYYG5VGAb0Ouk3wzUAP3uhslUKKRqL5UnGenJ
+VmcCHZ3d9qbLV7FabQ8Dze6CyZEkeUVm+hbh2vU2mi997XSw8N1jjoLCo42jo2Ob5/KILoDskuTyinfe
+PiDsydvhQuxPpSQniHa7bd18HmdhdiokqaSkuEjYvSvHZRAAURSYmpq/Ex5OrPOoJMlLS4qLhIy0ZAAc
+jilkMpHqykLM/V2zhmQeEnEJ2YREzNkVl2HCFArFicLDr/4NAnDSeBZJtPB9yxlSMvag0ehnBEcsAxhr
+j7kPRq32anA4HLK6Mxcw1tWDINBvMtPR0U1Z8VsErwrCP2DlrNmB/i4u1lc6DXJXmMnJSXn+U09gMPjR
+2d7K0GAv8evXUHDwaaJikmhpquWH1nOzZsfHLKjVM3dswTCiKNqfzM0mIjyEyYlxvr1ykvYbV/jpu9ME
+BCynvq6MlasfQj1Lm9QaPbGJrh12Zw4wAAqlitjEHDRaP2qrjlB2/BVkMg+StuSi0y9zqeiiYQD6ettQ
+KjXk7z2CxtsX0+0OLMMmLMOmaT6tzrAgQKdhmhtP8E1dOYIoQ+tj4IGoZM6e+hiVSodckqZ5h4ZuszPv
+IMuDQpYGZqCvk+hN6awIjuRyw1d0treyak00W7c9g9JTM81bUfoG/X3tSweDKGCzTeIfsILtO15GFEXs
+dit2m5U7E2PTrL/b7YiizCUQl2DCIhKoLHuThvpKojemkb79BY6/9yJm080ZXq3OQFrWc0sHsyI4kn37
+P6PxQhVN57/k8/JDjAybyHu2yOV2LBrmL4VFJCCXKwAIXhuDYdnsL/CSwvxi7uFU9QdMTIwSGZPK+rjH
+qPq0YN6ZRuWlIzUzH73vfe6FaWmsxdNLi843EGPNh5wzfsLknd/IyNmLt7f/rJmrzUZaGmtJzch3L4zd
+ZsVHH8jmRx4nNjEbAEEQ0eoMc2Z6uq4xPjrsbAnnYby89dy43sDY6BCrQzewNiyWpvNVDJp75sz03Woj
+ZF2c+2E2xWehUCj5+cdGmi/VoNb4crG+cs6PEuDBqGSiNmx1P4ykULIxPguN1o/TNR/xRfkh5JKCpJRc
+dD7/wkcJEBoeT2h4vFuK/1PzDuSSJA129/S5pdDN7ltIkmSezzPvtC6K4vM+PtrDr+1/SXl/UOCiQA68
+XjgxPDyyz+FwvL8gGACZTLZbrfLMnxKY+w7fRcIUJsuvo0eB0oWu8f/WH7ozRDZHhK3AAAAAAElFTkSu
+QmCC'
+  dataRetina = '
+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
+TI/+pAAAAABJRU5ErkJggg=
+='
   if (2 == (global 'scale')) { data = dataRetina }
   return (readFrom (new 'PNGReader') (base64Decode data))
 }
