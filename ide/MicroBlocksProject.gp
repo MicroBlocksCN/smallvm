@@ -240,29 +240,6 @@ method deleteVariable MicroBlocksProject varName {
 	}
 }
 
-// Debugging helpers
-
-method findUsers MicroBlocksProject aBlock {
-	entries = (list)
-	// look in block definitions
-	for function (allFunctions this) {
-		if (contains (allCalls function) (primName (expression aBlock))) {
-			add entries function
-		}
-	}
-	// look in scripts
-	for script (scripts main) {
-		// script is a 3 item array where the first two are its coordinates
-		for expression (allBlocks (at script 3)) {
-			if ((primName expression) == (primName (expression aBlock))) {
-				add entries (at script 3)
-			}
-		}
-	}
-	// for now, just explore the result
-	explore (hand (global 'page')) entries
-}
-
 // Loading
 
 method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {

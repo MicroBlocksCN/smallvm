@@ -302,7 +302,7 @@ method contextMenu Block {
 	}
   }
   addLine menu
-  addItem menu 'find users' (action 'findUsers' (project pe) this) 'find scripts or block definitions using this block'
+  addItem menu 'find users' 'findBlockUsers' 'find scripts or block definitions using this block'
   if (notNil (functionNamed (project pe) (primName expression))) {
     addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
 	if isInPalette {
@@ -377,6 +377,13 @@ method scriptText Block useSemicolons {
 
   mbScripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
   return (scriptStringFor mbScripter this)
+}
+
+// Block users
+
+method findBlockUsers Block {
+  pe = (findProjectEditor)
+  findBlockUsers (project pe) this
 }
 
 // Block definition operations

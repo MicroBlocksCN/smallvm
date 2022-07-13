@@ -176,6 +176,11 @@ method showAllMyBlocks MicroBlocksScripter libName {
   scrollToY scriptsFrame newY
 }
 
+method scrollToXY MicroBlocksScripter x y {
+	scrollToX scriptsFrame x
+	scrollToY scriptsFrame y
+}
+
 method hideAllMyBlocks MicroBlocksScripter libName {
   for f (functions (main mbProject)) {
 	internalHideDefinition this (functionName f)
