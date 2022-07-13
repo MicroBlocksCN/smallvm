@@ -339,7 +339,7 @@ method analyzeProject SmallRuntime {
 method readCodeFromNextBoardConnected SmallRuntime {
 	readFromBoard = true
 	disconnected = false
-	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+	if ('Browser' == (platform)) {
 		// in browser, cannot add the spinner before user has clicked connect icon
 		inform 'Plug in the board and click the USB icon to connect.'
 		return
@@ -354,7 +354,7 @@ method readCodeFromBoard SmallRuntime {
 	waitForPing this
 	decompilerStatus = (localized 'Reading project from board...')
 
-	if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+	if ('Browser' == (platform)) {
 		prompter = (findMorph 'Prompter')
 		if (notNil prompter) { destroy prompter } // remove the prompt to connect board
 
