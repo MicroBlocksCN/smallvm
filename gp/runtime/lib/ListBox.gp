@@ -229,6 +229,27 @@ method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
   }
 }
 
+// arrow key navigation
+
+method arrowKey ListBox dx dy scrollFrame {
+	index = (selectionIndex this)
+	if (and
+		((count collection) > 0)
+		(isNil index)
+	) {
+		select this (first collection) true
+	}
+	if (dy < 0) {
+		if (index < (count collection)) {
+			select this (at collection (index + 1)) true
+		}
+	} (dy > 0) {
+		if (index > 1) {
+			select this (at collection (index - 1)) true
+		}
+	}
+}
+
 // context menu
 
 method handleContextRequest ListBox item {
