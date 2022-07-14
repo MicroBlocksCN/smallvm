@@ -645,7 +645,7 @@ method codeString MicroBlocksModule owningProject newLibName {
 		if ('space' != op) {
 			spec = (at projectSpecs op)
 			if (notNil spec) {
-				add result (join '  ' (specDefinitionString spec) (newline))
+				add result (join '	' (specDefinitionString spec) (newline))
 				add processed op
 			}
 		}
@@ -663,7 +663,7 @@ method codeString MicroBlocksModule owningProject newLibName {
 			if (not (contains processed op)) {
 				spec = (at projectSpecs op)
 				if (notNil spec) {
-					add result (join '  ' (specDefinitionString spec) (newline))
+					add result (join '	' (specDefinitionString spec) (newline))
 					add processed op
 				}
 			}
