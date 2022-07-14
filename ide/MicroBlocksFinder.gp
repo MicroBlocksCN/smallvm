@@ -13,7 +13,7 @@
 to findBlockUsers aProject aBlock {
 	page = (global 'page')
 	finder = (initialize (new 'BlockFinder') aProject aBlock)
-	menu = (menu nil finder)
+	menu = (menu (join 'Users of ' (primName (expression aBlock))) finder)
 	for entry (functions finder) {
 		b = (blockForFunction entry)
 		fixLayout b
@@ -74,9 +74,4 @@ method jumpTo BlockFinder entry {
 	} else {
 		showDefinition scripter (functionName entry)
 	}
-}
-
-method explore BlockFinder {
-	// for now, just explore the result
-	explore (hand (global 'page')) (allEntries this)
 }
