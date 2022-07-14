@@ -938,7 +938,7 @@ method scriptText Block useSemicolons {
   if (isClass expression 'Reporter') {
 	if (isOneOf (primName expression) 'v') {
       varName = (first (argList expression))
-      if (contains (letters varName) ' ') {
+      if (varMustBeQuoted varName) {
         varName = (printString varName) // enclose varName in quotes
       }
 	  add result (join '(v ' varName ')')

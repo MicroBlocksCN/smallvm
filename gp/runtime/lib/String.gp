@@ -573,6 +573,13 @@ method normalizeLineEndings String {
   return (joinStringArray (lines this) (newline))
 }
 
+method varMustBeQuoted String {
+  if (contains (letters this) ' ') { return true }
+  ch = (at this 1)
+  if (or (isDigit ch) ('-' == ch)) { return true }
+  return false
+}
+
 // Unicode encoding
 
 method codePoints String {

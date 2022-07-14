@@ -157,10 +157,11 @@ method op PrettyPrinter value {
 
 method printValue PrettyPrinter block {
   if (isClass block 'Reporter') {
-    if ((primName block) == 'v') {
+    prim = (primName block)
+    if (isOneOf prim 'v' 'my') {
       varRef = (getField block offset)
-      if (contains (letters varRef) ' ') {
-        varRef = (join '(v ''' varRef ''')')
+      if (or (varMustBeQuoted varRef) ('my' == prim)) {
+        varRef = (join '(' prim ' ' (printString varRef) ')')
       }
       symbol gen varRef
     } else {
@@ -423,7 +424,7 @@ method functionName PrettyPrinterGenerator value {
 }
 
 method varName PrettyPrinterGenerator value {
-  if (contains (letters value) ' ') {
+  if (varMustBeQuoted value) {
     value = (printString value) // enclose in quotes
   }
   nextPutAllWithSpace this value

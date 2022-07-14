@@ -85,7 +85,7 @@ method scriptText MicroBlocksExchange cmdOrReporter x y useSemicolons {
 	if (isClass cmdOrReporter 'Reporter') {
 		if ('v' == (primName cmdOrReporter)) {
 			varName = (first (argList cmdOrReporter))
-			if (contains (letters varName) ' ') {
+			if (varMustBeQuoted varName) {
 				varName = (printString varName) // enclose varName in quotes
 			}
 			add result (join '(v ' varName ')')

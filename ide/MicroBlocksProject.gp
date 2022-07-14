@@ -707,11 +707,7 @@ method scriptString MicroBlocksModule {
 		expr = (at entry 3)
 		add result (join 'script ' x ' ' y ' ')
 		if (isClass expr 'Reporter') {
-			if (isOneOf (primName expr) 'v' 'my') {
-				add result (join '(v ' (first (argList expr)) ')')
-			} else {
-				add result (join '(' (prettyPrint pp expr) ')')
-			}
+			add result (join '(' (prettyPrint pp expr) ')')
 			add result (newline)
 		} else {
 			add result (join '{' (newline))
