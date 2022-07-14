@@ -88,34 +88,39 @@ GP.clipboard.style.right = '101%'; // placed just out of view
 GP.clipboard.style.top = '0px';
 document.body.appendChild(GP.clipboard);
 
-function isChrome() {
-    return (typeof chrome !== 'undefined');
-}
-
 function setGPClipboard(s) {
 	// Called by GP's setClipboard primitive
 
 	GP.clipboardBytes = toUTF8Array(s);
 	GP.clipboard.value = s;
-	if (navigator.clipboard.writeText) {
+
+	if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.writeText)) {
 		navigator.clipboard.writeText(s).catch(() => {});
-	} else if (isChrome() && chrome.clipboard) {
-		chrome.clipboard.data = s;
-		chrome.clipboard.type = 'textPlain';
+	} else {
+		GP.clipboard.focus();
+		GP.clipboard.select();
+		try {
+			document.execCommand('copy');
+		} catch (err) {
+			console.error('setGPClipboard failed', err);
+		}
 	}
 }
 
 async function readGPClipboard(s) {
-	if (navigator.clipboard.readText) {
-		var s = await navigator.clipboard.readText().catch(() => { return ''});
-		if (s) {
-			GP.clipboard.value = s;
-			GP.clipboardBytes = toUTF8Array(s);
+	if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.readText)) {
+		var s = await navigator.clipboard.readText().catch(() => {});
+		if (s) GP.clipboard.value = s;
+	} else {
+		GP.clipboard.focus();
+		GP.clipboard.select();
+		try {
+			document.execCommand('paste');
+		} catch (err) {
+			console.error('readGPClipboard failed', err);
 		}
-	} else if (isChrome() && chrome.clipboard && (typeof chrome.clipboard.data === 'string')) {
-		GP.clipboard.value = chrome.clipboard.data;
-		GP.clipboardBytes = toUTF8Array(chrome.clipboard.data);
 	}
+	GP.clipboardBytes = toUTF8Array(GP.clipboard.value);
 	return GP.clipboardBytes.length;
 }
 
@@ -640,7 +645,6 @@ function hasChromeSerial() {
 }
 
 function hasWebSerial() {
-	if (hasChromeSerial()) return false; // Chrome OS has a different serial API
 	return (typeof navigator.serial != 'undefined');
 }
 
@@ -731,7 +735,9 @@ function GP_getSerialPorts() {
 	function listPorts(ports) {
 		GP_serialPortNames = [];
 		for (var i = 0; i < ports.length; i++) {
-			GP_serialPortNames.push(toUTF8Array(ports[i].path));
+			if (!ports[i].path.startsWith('/dev/ttyMSM')) {
+				GP_serialPortNames.push(toUTF8Array(ports[i].path));
+			}
 		}
 	}
 	if (hasChromeSerial()) chrome.serial.getDevices(listPorts);
@@ -762,11 +768,11 @@ function GP_openSerialPort(id, path, baud) {
 			GP_serialPortListenersAdded = true;
 		}
 	}
-	if (hasChromeSerial()) {
-		if (GP_serialPortID >= 0) return 1; // already open (not an error)
-		chrome.serial.connect(path, {persistent: true, bitrate: baud}, portOpened)
-	} else if (hasWebSerial()) {
+	if (hasWebSerial()) {
 		webSerialConnect();
+	} else if (hasChromeSerial()) {
+		if (GP_serialPortID >= 0) return 1; // already open (not an error)
+		chrome.serial.connect(path, {bitrate: baud}, portOpened)
 	}
 	return 1; // connect is asynchronous, but assume it will succeed
 }
@@ -778,11 +784,11 @@ function GP_isOpenSerialPort() {
 }
 
 function GP_closeSerialPort() {
-	function portClosed(ignored) { }
-	if (GP_serialPortID > 0) {
-		chrome.serial.disconnect(GP_serialPortID, portClosed);
-	} else if (hasWebSerial()) {
+	if (hasWebSerial()) {
 		webSerialDisconnect();
+	} else if (GP_serialPortID > 0) {
+		function portClosed(ignored) { }
+		chrome.serial.disconnect(GP_serialPortID, portClosed);
 	}
 	GP_serialPortID = -1;
 	GP_serialInputBuffers = [];
@@ -813,34 +819,36 @@ function GP_readSerialPort(maxBytes) {
 }
 
 function GP_writeSerialPort(data) {
-	function dataSent(ignored) { }
 	if (hasWebSerial()) {
 		return webSerialWrite(data);
+	} else if (hasChromeSerial()) {
+		function dataSent(ignored) { }
+		if (GP_serialPortID < 0) return -1; // port not open
+		chrome.serial.send(GP_serialPortID, data.buffer, dataSent);
+		return data.buffer.byteLength;
 	}
-	if (GP_serialPortID < 0) return -1; // port not open
-	chrome.serial.send(GP_serialPortID, data.buffer, dataSent);
-	return data.buffer.byteLength;
+	return 0;
 }
 
 async function GP_setSerialPortDTR(flag) {
-	function ignore(result) {}
-	if (hasChromeSerial()) {
-		flag = (flag) ? true : false;
-		chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag }, ignore);
-	} else if (hasWebSerial()) {
+	if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ dtr: flag, dataTerminalReady: flag }).catch(() => {});
+	} else if (hasChromeSerial()) {
+		function ignore(result) {}
+		flag = (flag) ? true : false;
+		chrome.serial.setControlSignals(GP_serialPortID, { dtr: flag }, ignore);
 	}
 }
 
 async function GP_setSerialPortRTS(flag) {
-	function ignore(result) {}
-	if (hasChromeSerial()) {
-		flag = (flag) ? true : false;
-		chrome.serial.setControlSignals(GP_serialPortID, { rts: flag }, ignore);
-	} else if (hasWebSerial()) {
+	if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ rts: flag, requestToSend: flag }).catch(() => {});
+	} else if (hasChromeSerial()) {
+		function ignore(result) {}
+		flag = (flag) ? true : false;
+		chrome.serial.setControlSignals(GP_serialPortID, { rts: flag }, ignore);
 	}
 }
 
