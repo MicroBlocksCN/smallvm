@@ -17,7 +17,7 @@
 #include "interp.h"
 
 // Temporary mapping for Robotistan board prototype
-#if defined(ROBOTISTAN_PROTOTYPE)
+#if defined(ROBOTISTAN_PROTOTYPE) || defined(PICO_ED)
 	#define Wire Wire1
 #endif
 
@@ -26,6 +26,10 @@
 static int wireStarted = false;
 
 static void startWire() {
+  #if defined(PICO_ED)
+	Wire.setSDA(18);
+	Wire.setSCL(19);
+  #endif
   #if defined(RP2040_PHILHOWER)
 	// push clock slightly
 	Wire.setClock(500000); // i2c fast mode+ (seems pretty ubiquitous among i2c devices)
