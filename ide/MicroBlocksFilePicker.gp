@@ -486,19 +486,25 @@ method newFolder MicroBlocksFilePicker {
 }
 
 method okay MicroBlocksFilePicker {
-  removeFromOwner morph
-  answer = ''
-  if forSaving {
-	answer = (join currentDir '/' (text (contents nameField)))
-  } else {
-	sel = (selection (contents listPane))
-	if (and (notNil sel) (not (beginsWith sel '[ ] '))) {
-	  answer = (join currentDir '/' sel)
+	answer = ''
+	if forSaving {
+		answer = (join currentDir '/' (text (contents nameField)))
+	} else {
+		sel = (selection (contents listPane))
+			if (notNil sel) {
+				if (beginsWith sel '[ ] ') {
+					// jump inside folder
+					select (contents listPane) sel
+					return
+				} else {
+					answer = (join currentDir '/' sel)
+				}
+			}
+		if (and useEmbeddedFS ('' != answer)) { answer = (join '//' answer) }
+		if (and (notNil action) ('' != answer)) { call action answer }
 	}
-  }
-  if (and useEmbeddedFS ('' != answer)) { answer = (join '//' answer) }
-  if (and (notNil action) ('' != answer)) { call action answer }
-  isDone = true
+	removeFromOwner morph
+	isDone = true
 }
 
 method fileOrFolderSelected MicroBlocksFilePicker {

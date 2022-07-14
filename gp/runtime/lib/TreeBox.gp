@@ -85,6 +85,85 @@ method isSelected TreeBox {
   return (=== this (getField (root this) 'selection'))
 }
 
+method arrowKey TreeBox dx dy scrollFrame {
+	if (dx < 0) {
+		// right arrow
+		if (isCollapsed selection) {
+			toggleExpansion selection
+		}
+	} (dx > 0) {
+		// left arrow
+		if (not (isCollapsed selection)) {
+			toggleExpansion selection
+		}
+	} (dy < 0) {
+		// down arrow
+		// find next item in parent
+		selectNext this
+	} (dy > 0) {
+		// up arrow
+		// find previous item in parent
+		selectPrevious this
+	}
+	scrollIntoView scrollFrame (fullBounds (morph selection)) true
+}
+
+method selectNext TreeBox {
+	owner = (owner (morph selection))
+	items = (parts owner)
+	index = (indexOf items (morph selection))
+	if (and
+		(not (isCollapsed selection))
+		(hasBranches selection)
+	) {
+		// select the first item inside subtree
+		select (handler (at (parts (morph selection)) 2))
+	} else {
+		if (index < (count items)) {
+			// select next item at same level
+			select (handler (at items (index + 1)))
+		} else {
+			// select first item at next subtree
+			items = (parts (owner owner))
+			index = (indexOf items owner)
+			if (index < (count items)) {
+				next = (handler (at items (index + 1)))
+				if (isClass next 'TreeBox') {
+					select next
+				} else {
+					print next
+				}
+			}
+		}
+	}
+}
+
+method selectPrevious TreeBox {
+	owner = (owner (morph selection))
+	items = (parts owner)
+	index = (indexOf items (morph selection))
+	if (index > 2) {
+		previous = (handler (at items (index - 1)))
+		if (and
+			(not (isCollapsed previous))
+			(hasBranches previous)
+		) {
+			// select last item at previous subtree
+			items = (parts (morph previous))
+			select (handler (last items))
+		} else {
+			// select previous item at same level
+			select previous
+		}
+	} (and
+		(not (isCollapsed (handler owner)))
+		((level (handler owner)) > 0)
+	) {
+		// select parent
+		select (handler owner)
+	}
+}
+
 method handDownOn TreeBox aHand {return (handDownOn toggle aHand)}
 
 method handEnter TreeBox aHand {
