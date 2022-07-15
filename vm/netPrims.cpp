@@ -370,7 +370,7 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	char* host = obj2str(args[0]);
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
 	uint32 start = millisecs();
-	const int timeout = 800;
+	const int timeout = 3000;
 	int ok;
 	#ifdef ARDUINO_ARCH_ESP32
 		ok = httpClient.connect(host, port, timeout);
