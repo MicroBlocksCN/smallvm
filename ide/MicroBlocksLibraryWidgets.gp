@@ -44,6 +44,10 @@ method initialize MicroBlocksLibraryImportDialog anAction defaultPath {
 	return this
 }
 
+method okay MicroBlocksLibraryImportDialog {
+	okay filePicker
+}
+
 method updateLibraryInfo MicroBlocksLibraryImportDialog selectedPath {
 	libName = (withoutExtension (substring selectedPath ((findLast selectedPath '/') + 1)))
 	if (beginsWith selectedPath '//') {

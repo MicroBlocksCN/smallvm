@@ -264,7 +264,7 @@ method addShortcutButtons MicroBlocksFilePicker {
 	addIconButton this buttonX buttonY 'cloudIcon' (action 'cloudAction' this) 'Cloud'
 	buttonY += dy
   }
-  if showLibraries {
+  if (and (devMode) showLibraries) {
 	addIconButton this buttonX buttonY 'newLibraryIcon' (action 'newLibrary' this) 'New'
 	buttonY += dy
   }

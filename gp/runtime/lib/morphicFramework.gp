@@ -611,9 +611,8 @@ method processEvent Keyboard evt {
 			if (notNil (findMorph 'Prompter')) {
 				accept (handler (findMorph 'Prompter'))
 			}
-			filePicker = (findMorph 'FilePicker')
-			if (isNil filePicker) {
-				filePicker = (findMorph 'MicroBlocksFilePicker')
+			for morphName (array 'FilePicker' 'MicroBlocksFilePicker' 'MicroBlocksLibraryImportDialog') {
+				if (isNil filePicker) { filePicker = (findMorph morphName) }
 			}
 			if (notNil filePicker) {
 				okay (handler filePicker)
