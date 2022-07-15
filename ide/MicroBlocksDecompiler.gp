@@ -182,6 +182,13 @@ method decompile MicroBlocksDecompiler chunkID chunkType chunkData {
 	findIfs this
 	fixLocals this
 
+	printChunkInfo = false
+	if printChunkInfo {
+		fName = ''
+		if (3 == chunkType) { fName = (at funcs chunkID 'unknown function') }
+		print 'decompiling' chunkID chunkType fName
+	}
+
 	debug = false
 	if debug {
 		print '----'
@@ -814,6 +821,14 @@ method codeForSequence MicroBlocksDecompiler start end {
 				add code (newCommand 'waitUntil' condition)
 			}
 			i = next
+		} (isOneOf op 'callCustomCommand' 'callCustomReporter') {
+			isReporter = (not (cmdIs this (at opcodes (i + 1)) 'pop' 1))
+			decodeCmd this i
+			if isReporter {
+				i += 1
+			} else {
+				i += 2
+			}
 		} else {
 			decodeCmd this i
 			i = next
