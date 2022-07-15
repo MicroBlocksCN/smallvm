@@ -88,15 +88,17 @@ GP.clipboard.style.right = '101%'; // placed just out of view
 GP.clipboard.style.top = '0px';
 document.body.appendChild(GP.clipboard);
 
+function isChromeOS() {
+	return ((typeof chrome !== 'undefined') && (typeof chrome.app !== 'undefined'));
+}
+
 function setGPClipboard(s) {
 	// Called by GP's setClipboard primitive
 
 	GP.clipboardBytes = toUTF8Array(s);
 	GP.clipboard.value = s;
 
-	if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.writeText)) {
-		navigator.clipboard.writeText(s).catch(() => {});
-	} else {
+	if (isChromeOS()) {
 		GP.clipboard.focus();
 		GP.clipboard.select();
 		try {
@@ -104,14 +106,15 @@ function setGPClipboard(s) {
 		} catch (err) {
 			console.error('setGPClipboard failed', err);
 		}
+	} else if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.writeText)) {
+		navigator.clipboard.writeText(s).catch(() => {});
+	} else {
+		console.log('setGPClipboard failed');
 	}
 }
 
 async function readGPClipboard(s) {
-	if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.readText)) {
-		var s = await navigator.clipboard.readText().catch(() => {});
-		if (s) GP.clipboard.value = s;
-	} else {
+	if (isChromeOS()) {
 		GP.clipboard.focus();
 		GP.clipboard.select();
 		try {
@@ -119,6 +122,11 @@ async function readGPClipboard(s) {
 		} catch (err) {
 			console.error('readGPClipboard failed', err);
 		}
+	} else if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.readText)) {
+		var s = await navigator.clipboard.readText().catch(() => {});
+		if (s) GP.clipboard.value = s;
+	} else {
+		console.log('readGPClipboard failed');
 	}
 	GP.clipboardBytes = toUTF8Array(GP.clipboard.value);
 	return GP.clipboardBytes.length;

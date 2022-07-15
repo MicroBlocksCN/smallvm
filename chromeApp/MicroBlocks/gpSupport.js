@@ -123,10 +123,9 @@ async function readGPClipboard(s) {
 			console.error('readGPClipboard failed', err);
 		}
 	} else if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.readText)) {
-		var s = await navigator.clipboard.readText().catch(() => { consle.log('error'); });
+		var s = await navigator.clipboard.readText().catch(() => {});
 		if (s) GP.clipboard.value = s;
 	} else {
-		GP.clipboard.value = '';
 		console.log('readGPClipboard failed');
 	}
 	GP.clipboardBytes = toUTF8Array(GP.clipboard.value);
