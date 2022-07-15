@@ -1597,6 +1597,19 @@ method setBlockColor Block op {
     color = (blockColorForOp (authoringSpecs) op)
 }
 
+method flash Block {
+	oldColor = color
+	color = (color 255 255 0)
+	pathCache = nil
+	changed morph
+	doOneCycle (global 'page')
+	waitMSecs 100
+	color = oldColor
+	pathCache = nil
+	changed morph
+	doOneCycle (global 'page')
+}
+
 // expanding and collapsing
 
 method drawer Block {

@@ -13,6 +13,13 @@
 to findBlockUsers aProject aBlock {
 	page = (global 'page')
 	finder = (initialize (new 'BlockFinder') aProject aBlock)
+	
+	count = ((count (functions finder)) + (count (scripts finder)))
+	if (count == 0) {
+		inform (global 'page') 'This block is not being used in this project'
+		return
+	}
+
 	menu = (menu (join 'Users of ' (primName (expression aBlock))) finder)
 	for entry (functions finder) {
 		b = (blockForFunction entry)
@@ -21,9 +28,8 @@ to findBlockUsers aProject aBlock {
 	}
 	if (notNil (functions finder)) { addLine menu }
 	for entry (scripts finder) {
-		b = (blockForFunction (at entry 3))
-		fixLayout b
-		addItem menu (fullCostume (morph b)) (action 'jumpTo' finder entry)
+		// entries are 2-item arrays with topBlock and actual found block
+		addItem menu (fullCostume (at entry 1) 600 200) (action 'jumpTo' finder (at entry 2))
 	}
 	popUp menu (global 'page')
 }
@@ -56,22 +62,36 @@ method findAllUsers BlockFinder {
 		}
 	}
 	// look in scripts
-	for script (scripts (main project)) {
+	for script (parts (morph (scriptEditor (scripter (smallRuntime))))) {
 		// script is a 3 item array where the first two are its coordinates
-		for expression (allBlocks (at script 3)) {
-			if ((primName expression) == (primName (expression block))) {
-				add scripts script
+		if (isClass (handler script) 'Block') {
+			instance = (findInScript this script)
+			if (notNil instance) {
+				add scripts (array script instance)
 			}
 		}
 	}
 }
 
+method findInScript BlockFinder script {
+	for child (allMorphs script) {
+		if (and
+			(isClass (handler child) 'Block')
+			((primName (expression (handler child))) == (primName (expression block)))
+		) {
+			return child
+		}
+	}
+	return nil
+}
+
 method jumpTo BlockFinder entry {
 	scripter = (scripter (findProjectEditor))
-	if (isClass entry 'Array') {
-		// script entries have their coordinates as their first two elements
-		scrollToXY scripter (at entry 1) (at entry 2)
-	} else {
+	if (isClass entry 'Function') {
 		showDefinition scripter (functionName entry)
+		m = (findDefinitionOf scripter (functionName entry))
+		entry = (findInScript this m)
 	}
+	scrollIntoView (scriptsFrame scripter) (fullBounds entry) true
+	repeat 10 { flash (handler entry) }
 }

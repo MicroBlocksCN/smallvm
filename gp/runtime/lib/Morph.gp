@@ -663,15 +663,16 @@ method visibleBounds Morph {
   return result
 }
 
-method fullCostume Morph {
+method fullCostume Morph maxW maxH {
   fb = (fullBounds this)
   w = (ceiling (width fb))
   h = (ceiling (height fb))
-  if (or (w > 2000) (h > 4000)) {
-    // truncate size to avoid running out of memory
-    print 'Cropping image to avoid running out of memory'
-    w = (min w 2000)
-    h = (min h 4000)
+  // truncate size to avoid running out of memory
+  if (isNil maxW) { maxW = 2000 }
+  if (isNil maxH) { maxH = 4000 }
+  if (or (w > maxW) (h > maxH)) {
+    w = (min w maxW)
+    h = (min h maxH)
   }
   if (or (w == 0) (h == 0)) {return (newBitmap 1 1)}
   result = (newBitmap w h (gray 0 0))

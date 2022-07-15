@@ -10,6 +10,7 @@ defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categor
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
+method scriptsFrame MicroBlocksScripter { return scriptsFrame }
 method project MicroBlocksScripter { return mbProject }
 method httpServer MicroBlocksScripter { return (httpServer projectEditor) }
 
@@ -177,8 +178,8 @@ method showAllMyBlocks MicroBlocksScripter libName {
 }
 
 method scrollToXY MicroBlocksScripter x y {
-	scrollToX scriptsFrame x
-	scrollToY scriptsFrame y
+	scrollToX scriptsFrame (x + (left (morph scriptsFrame)))
+	scrollToY scriptsFrame (y + (top (morph scriptsFrame)))
 }
 
 method hideAllMyBlocks MicroBlocksScripter libName {
@@ -789,16 +790,24 @@ method isShowingDefinition MicroBlocksScripter funcName {
   return false // not found
 }
 
-method scrollToDefinitionOf MicroBlocksScripter funcName {
+method findDefinitionOf MicroBlocksScripter funcName {
   for m (parts (morph (contents scriptsFrame))) {
     if (isClass (handler m) 'Block') {
       def = (editedDefinition (handler m))
       if (notNil def) {
         if ((op def) == funcName) {
-          scrollIntoView scriptsFrame (fullBounds m) true // favorTopLeft
+          return m
         }
       }
     }
+  }
+  return nil
+}
+
+method scrollToDefinitionOf MicroBlocksScripter funcName {
+  m = (findDefinitionOf this funcName)
+  if (notNil m) {
+	scrollIntoView scriptsFrame (fullBounds m) true
   }
 }
 
