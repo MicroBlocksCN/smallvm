@@ -1022,7 +1022,9 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // xxx for testing blend in browser...
 // addItem menu 'time redraw' (action 'timeRedraw' this)
 // addLine menu
-//addItem menu 'cursorTest' cursorTest
+// addItem menu 'cursorTest' cursorTest
+// addItem menu 'benchmark' (action 'runBenchmarks' (global 'page'))
+
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
