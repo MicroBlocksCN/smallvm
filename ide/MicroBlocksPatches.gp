@@ -302,7 +302,7 @@ method contextMenu Block {
 	}
   }
   addLine menu
-  addItem menu 'find users' 'findBlockUsers' 'find scripts or block definitions using this block'
+  addItem menu 'find uses of this block' 'findBlockUsers' 'find scripts or block definitions using this block'
   if (notNil (functionNamed (project pe) (primName expression))) {
     addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
 	if isInPalette {

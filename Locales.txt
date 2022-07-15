@@ -1290,6 +1290,10 @@ collapse
 
 rename...
 
+find uses of this block
+
+find scripts or block definitions using this block
+
 show block definition...
 
 show the definition of this block
