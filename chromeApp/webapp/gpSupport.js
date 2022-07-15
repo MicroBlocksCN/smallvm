@@ -89,7 +89,11 @@ GP.clipboard.style.top = '0px';
 document.body.appendChild(GP.clipboard);
 
 function isChromeOS() {
-	return ((typeof chrome !== 'undefined') && (typeof chrome.app !== 'undefined'));
+	return (
+		(typeof chrome !== 'undefined') &&
+		(typeof chrome.app !== 'undefined') &&
+		(typeof chrome.app.runtime !== 'undefined') &&
+		(typeof chrome.app.window !== 'undefined'));
 }
 
 function setGPClipboard(s) {
