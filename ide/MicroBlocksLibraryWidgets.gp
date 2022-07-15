@@ -156,7 +156,9 @@ method saveChanges MicroBlocksLibraryInfoDialog {
 }
 
 method close MicroBlocksLibraryInfoDialog {
-	setLibsDraggable (scripter (smallRuntime)) false
+	scripter = (scripter (smallRuntime))
+	setLibsDraggable scripter false
+	selectLibrary scripter (moduleName library)
 	destroy morph false
 }
 
@@ -392,11 +394,58 @@ method setCostumeColor MicroBlocksLibraryItemMorph color {
 	setCostume morph bm
 }
 
+// Library category picker
+// -----------------------
+// Simple colored box that lets you pick a category when clicked
+
+defineClass MicroBlocksLibraryCategoryPicker morph box category
+
+method initialize MicroBlocksLibraryCategoryPicker aCategory {
+	box = (newBox)
+	morph = (morph box)
+	updateColor this
+	setHandler morph this
+	redraw this
+	return this
+}
+
+method category MicroBlocksLibraryCategoryPicker { return category }
+
+method setCategory MicroBlocksLibraryCategoryPicker aCategory {
+	category = aCategory
+	updateColor this
+}
+
+method pickCategory MicroBlocksLibraryCategoryPicker {
+	scripter = (scripter (smallRuntime))
+	menu = (menu)
+	for cat (categories scripter) {
+		addItem menu (localized cat) (action 'setCategory' this cat) '' (fullCostume (morph (newBox nil (blockColorForCategory (authoringSpecs) cat))))
+	}
+	addItem menu (localized 'Generic') (action 'setCategory' this 'Library') '' (fullCostume (morph (newBox nil (blockColorForCategory (authoringSpecs) 'Library'))))
+	popUp menu (global 'page') (left morph) (bottom morph)
+}
+
+method clicked MicroBlocksLibraryCategoryPicker aCategory {
+	pickCategory this
+}
+
+method updateColor MicroBlocksLibraryCategoryPicker {
+	if (notNil category) {
+		setColor box (blockColorForCategory (authoringSpecs) category)
+		redraw this
+	}
+}
+
+method redraw MicroBlocksLibraryCategoryPicker {
+	redraw box
+}
+
 // Library properties frame
 // ------------------------
 // Embeddable frame that displays library information
 
-defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText sourceFrame sourceText depsViewer versionText versionFrame authorText authorFrame tagViewer editFlag
+defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText categoryPicker sourceFrame sourceText depsViewer versionText versionFrame authorText authorFrame tagViewer editFlag
 
 to newLibraryPropertiesFrame lib forEditing win {
 	return (initialize (new 'MicroBlocksLibraryPropertiesFrame') lib forEditing win)
@@ -417,6 +466,9 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 	addPart (morph descriptionFrame) (morph descriptionText)
 
 	addPart morph (morph descriptionFrame)
+
+	categoryPicker = (initialize (new 'MicroBlocksLibraryCategoryPicker'))
+	addPart morph (morph categoryPicker)
 
 	sourceText = (newText '' fontName fontSize (gray 0) 'left' nil 0 0 5)
 	sourceFrame = (newBox nil (gray 255) 0)
@@ -497,6 +549,7 @@ method setLibrary MicroBlocksLibraryPropertiesFrame lib {
 method saveChanges MicroBlocksLibraryPropertiesFrame {
 	setDescription library (getDescription this)
 	setDependencies library (contents depsViewer)
+	setCategory library (category categoryPicker)
 	setVersion library (getVersion this)
 	setAuthor library (getAuthor this)
 	setTags library (contents tagViewer)
@@ -526,6 +579,8 @@ method updateFields MicroBlocksLibraryPropertiesFrame {
 	} else {
 		setText sourceText ''
 	}
+
+	setCategory categoryPicker (moduleCategory library)
 
 	setItemRenderer depsViewer (action 'dependencyName' library)
 	setLabel depsViewer (localized 'Depends:')
@@ -580,14 +635,21 @@ method fixLayout MicroBlocksLibraryPropertiesFrame {
 	setBottom (morph authorFrame) (bottom (morph versionFrame))
 	descriptionHeight = ((descriptionHeight - (height (morph versionFrame))) - margin)
 
-	// source
 	if editFlag {
-		setExtent (morph sourceFrame) (width morph) (height (morph sourceText))
-		setLeft (morph sourceFrame) (left morph)
+		// category color
+		setExtent (morph categoryPicker) ((width morph) / 6) (height (morph versionFrame))
+		setLeft (morph categoryPicker) (left morph)
+		setBottom (morph categoryPicker) ((top (morph versionFrame)) - margin)
+		show (morph categoryPicker)
+
+		// source
+		setExtent (morph sourceFrame) (((width morph) - (width (morph categoryPicker))) - margin) (height (morph sourceText))
+		setLeft (morph sourceFrame) ((right (morph categoryPicker)) + margin)
 		setBottom (morph sourceFrame) ((top (morph versionFrame)) - margin)
 		descriptionHeight = ((descriptionHeight - (height (morph sourceFrame))) - margin)
 		show (morph sourceFrame)
 	} else {
+		hide (morph categoryPicker)
 		hide (morph sourceFrame)
 	}
 

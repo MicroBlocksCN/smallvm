@@ -471,6 +471,7 @@ method dependencies MicroBlocksModule { return (copy dependencies) }
 method setDependencies MicroBlocksModule deps { dependencies = (toArray (copy deps)) }
 method setDescription MicroBlocksModule desc { description = desc }
 method setAuthor MicroBlocksModule auth { author = auth }
+method setCategory MicroBlocksModule cat { moduleCategory = cat }
 method setVersion MicroBlocksModule versionArray {
 	atPut version 1 (at versionArray 1)
 	atPut version 2 (at versionArray 2)
