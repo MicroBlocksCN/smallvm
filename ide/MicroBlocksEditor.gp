@@ -767,8 +767,10 @@ method reportNewerVersion MicroBlocksEditor {
 
 method readUserPreferences MicroBlocksEditor {
   result = (dictionary)
-  if (and ('Browser' == (platform)) (not (browserIsChromeOS))) {
+  if ('Browser' == (platform)) {
     jsonString = (browserReadPrefs)
+    waitMSecs 20 // timer for callback in ChromeOS
+    jsonString = (browserReadPrefs) // will have result the second time
   } else {
     path = (join (gpFolder) '/preferences.json')
     jsonString = (readFile path)
@@ -816,7 +818,6 @@ method saveToUserPreferences MicroBlocksEditor key value {
 		atPut prefs key value
 	}
     if ('Browser' == (platform)) {
-		if (browserIsChromeOS) { return }
 		browserWritePrefs (jsonStringify prefs)
 	} else {
 		path = (join (gpFolder) '/preferences.json')

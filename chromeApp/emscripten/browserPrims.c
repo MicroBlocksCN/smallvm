@@ -418,15 +418,28 @@ static OBJ primBrowserWritePrefs(int nargs, OBJ args[]) {
 	char *jsonData = "";
 	if ((nargs > 0) && (IS_CLASS(args[0], StringClass))) jsonData = obj2str(args[0]);
 	EM_ASM_({
-		localStorage.setItem('user-prefs', UTF8ToString($0));
+	    if ((typeof chrome !== 'undefined') && (typeof chrome.storage !== 'undefined')) {
+ 			chrome.storage.sync.set(
+				{ userPrefs: UTF8ToString($0) },
+				function() {});
+	    } else {
+		    localStorage.setItem('user-prefs', UTF8ToString($0));
+		}
 	}, jsonData);
 	return nilObj;
 }
 
 static OBJ primBrowserReadPrefs(int nargs, OBJ args[]) {
 	int len = EM_ASM_INT({
-		return (new TextEncoder()).encode(
-			localStorage.getItem('user-prefs')).length;
+	    if ((typeof chrome !== 'undefined') && (typeof chrome.storage !== 'undefined')) {
+            chrome.storage.sync.get(
+                ['userPrefs'],
+                function(result) { GP.prefs = result.userPrefs; });
+	    } else {
+	        GP.prefs = localStorage.getItem('user-prefs');
+	    }
+	    if (!GP.prefs) return 0;
+		return (new TextEncoder()).encode(GP.prefs).length;
 	});
 
 	if (!len) return nilObj;
@@ -437,7 +450,7 @@ static OBJ primBrowserReadPrefs(int nargs, OBJ args[]) {
 		var dst = $0;
 		var len = $1;
 		var prefs =
-			(new TextEncoder()).encode(localStorage.getItem('user-prefs'));
+			(new TextEncoder()).encode(GP.prefs);
 		for (var i = 0; i < len; i++) {
 			Module.HEAPU8[dst++] = prefs[i];
 		}
