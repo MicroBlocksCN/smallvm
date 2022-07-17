@@ -13,7 +13,7 @@
 to findBlockUsers aProject aBlock {
 	page = (global 'page')
 	finder = (initialize (new 'BlockFinder') aProject aBlock)
-	
+
 	count = ((count (functions finder)) + (count (scripts finder)))
 	if (count == 0) {
 		inform (global 'page') 'This block is not being used in this project'
@@ -93,5 +93,5 @@ method jumpTo BlockFinder entry {
 		entry = (findInScript this m)
 	}
 	scrollIntoView (scriptsFrame scripter) (fullBounds entry) true
-	repeat 10 { flash (handler entry) }
+	repeat 6 { flash (handler entry) }
 }

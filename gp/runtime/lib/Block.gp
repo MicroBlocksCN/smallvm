@@ -1603,11 +1603,12 @@ method flash Block {
 	pathCache = nil
 	changed morph
 	doOneCycle (global 'page')
-	waitMSecs 100
+	waitMSecs 50
 	color = oldColor
 	pathCache = nil
 	changed morph
 	doOneCycle (global 'page')
+	waitMSecs 80
 }
 
 // expanding and collapsing
