@@ -1,0 +1,80 @@
+module 'Octopus MP3 Player' Output
+author MicroBlocks
+version 1 0 
+description 'Support for Octopus MP3 Player by Elecfreaks.
+Requires a board with serial support (i.e. not micro:bit v1).
+Connect the player to TX pin of the board.'
+
+  spec ' ' 'octMP3_initialize' 'mp3 initialize'
+  spec ' ' 'octMP3_setVolume' 'mp3 set volume _ (0-30)' 'num' 20
+  spec ' ' 'octMP3_playTrack' 'mp3 play track _ in folder _' 'num num' 1 1
+  spec ' ' 'octMP3_nextTrack' 'mp3 play next track in folder'
+  spec ' ' 'octMP3_pause' 'mp3 pause'
+  spec ' ' 'octMP3_resume' 'mp3 resume'
+  spec ' ' 'octMP3_repeatAllInFolder' 'mp3 repeat all in folder _' 'num' 1
+  spec ' ' '_octMP3_sendMP3Cmd' '_octMP3_sendMP3Cmd _ _ _' 'auto num num' '0x0C' 0 0
+
+to octMP3_initialize {
+  '[serial:open]' 9600
+  comment 'Reset'
+  _octMP3_sendMP3Cmd '0x0C' 0 0
+  waitMillis 1000
+  comment 'Set initial volume.'
+  octMP3_setVolume 20
+}
+
+to octMP3_nextTrack {
+  comment 'Skip to the next track in the current folder, wrapping back to the first track.'
+  _octMP3_sendMP3Cmd '0x01' 0 0
+  waitMillis 100
+  _octMP3_sendMP3Cmd '0x01' 0 0
+}
+
+to octMP3_pause {
+  _octMP3_sendMP3Cmd '0x0E' 0 0
+}
+
+to octMP3_playTrack trackNum folderNum {
+  comment 'Play the given track in the given folder.
+If folder is 0, play the given track at the top level.
+Folder names must start with two digits, 01-99.
+Track names in a folder must start with three digits, 001-999.
+Track names at the top level must start with four digits 0001-9999.
+This sets the folder for the "next track" command.'
+  if (folderNum < 1) {
+    comment 'Play top-level track (e.g. 0001)'
+    _octMP3_sendMP3Cmd '0x03' 0 trackNum
+  } else {
+    comment 'Play track in folder'
+    _octMP3_sendMP3Cmd '0x0F' folderNum trackNum
+  }
+}
+
+to octMP3_repeatAllInFolder folderNum {
+  comment 'Repeatedly play all files in the given folder. Does not work for top level (folder 0).'
+  _octMP3_sendMP3Cmd '0x17' 0 folderNum
+}
+
+to octMP3_resume {
+  _octMP3_sendMP3Cmd '0x0D' 0 0
+}
+
+to _octMP3_sendMP3Cmd cmd arg1 arg2 {
+  local 'msg' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt cmd) 0 arg1 arg2 0 0 (hexToInt 'EF'))
+  comment 'compute and add checksum (not used by YX5300)'
+  local 'sum' 0
+  for i 6 {
+    sum += (at (i + 1) msg)
+  }
+  sum = (65536 - sum)
+  atPut 8 msg ((sum >> 8) & 255)
+  atPut 9 msg (sum & 255)
+  comment 'send command'
+  '[serial:write]' ('[data:asByteArray]' msg)
+}
+
+to octMP3_setVolume level {
+  comment 'Range is 0-30'
+  _octMP3_sendMP3Cmd '0x06' 0 level
+}
+
