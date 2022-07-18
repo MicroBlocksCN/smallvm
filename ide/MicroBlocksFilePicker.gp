@@ -443,7 +443,7 @@ method folderContents MicroBlocksFilePicker {
   for fn (sorted fileList 'caseInsensitiveSort') {
 	if (not (beginsWith fn '.')) {
 	  if (or (isNil extensions) (hasExtension fn extensions)) {
-		add result fn
+		add result (array (localized (withoutExtension fn)) fn)
 	  }
 	}
   }
@@ -491,6 +491,7 @@ method okay MicroBlocksFilePicker {
 		answer = (join currentDir '/' (text (contents nameField)))
 	} else {
 		sel = (selection (contents listPane))
+			if (isClass sel 'Array') { sel = (at sel 2) }
 			if (notNil sel) {
 				if (beginsWith sel '[ ] ') {
 					// jump inside folder
@@ -509,6 +510,7 @@ method okay MicroBlocksFilePicker {
 
 method fileOrFolderSelected MicroBlocksFilePicker {
 	sel = (selection (contents listPane))
+	if (isClass sel 'Array') { sel = (at sel 2) }
 	if (beginsWith sel '[ ] ') {
 		sel = (substring sel 5)
 		if (endsWith sel ':') {

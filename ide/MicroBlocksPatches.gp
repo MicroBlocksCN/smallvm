@@ -698,7 +698,9 @@ method normalCostume ListBox data accessor {
   scale = (global 'scale')
   if (isNil accessor) {accessor = getEntry}
   dta = (call accessor data)
-  if (isClass dta 'String') {
+  if (isClass dta 'Array') {
+    return (stringImage (at dta 1) fontName fontSize txtClrNormal nil nil nil nil paddingX paddingY)
+  } (isClass dta 'String') {
 	// Colored categories:
 	if (and (isClass onSelect 'Action') (isOneOf (function onSelect) 'categorySelected' 'librarySelected')) {
 	  // add color swatch for category
