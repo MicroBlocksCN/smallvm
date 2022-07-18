@@ -201,12 +201,26 @@ method normalCostume ListBox data accessor {
     bm = (newBitmap (+ (* 2 paddingX) (width dta)) (+ (height dta) (* 2 paddingY)) bgClrNormal)
     drawBitmap bm dta paddingX paddingY normalAlpha
     return bm
+  } (isClass dta 'Array') {
+    return (stringImage (at dta 1) fontName fontSize txtClrNormal nil nil nil nil paddingX paddingY)
   }
   return (itemCostume this dta txtClrNormal nil normalAlpha 'id')
 }
 
-method highlightCostume ListBox data accessor {return (itemCostume this data txtClrSelected bgClrSelected 255 accessor)}
-method pressedCostume ListBox data accessor {return (itemCostume this data txtClrReady bgClrReady 255 accessor)}
+method highlightCostume ListBox data accessor {
+	if (isClass data 'Array') {
+		return (itemCostume this (at data 1) txtClrSelected bgClrSelected 255 accessor)
+	} else {
+		return (itemCostume this data txtClrSelected bgClrSelected 255 accessor)
+	}
+}
+method pressedCostume ListBox data accessor {
+	if (isClass data 'Array') {
+		return (itemCostume this (at data 1) txtClrReady bgClrReady 255 accessor)
+	} else {
+		return (itemCostume this data txtClrReady bgClrReady 255 accessor)
+	}
+}
 
 method itemCostume ListBox data foregroundColor backgroundColor alpha accessor {
   // private - return a bitmap representing a list item
