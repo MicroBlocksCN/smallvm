@@ -537,6 +537,7 @@ method fileOrFolderSelected MicroBlocksFilePicker {
 
 method fileOrFolderDoubleClicked MicroBlocksFilePicker {
   sel = (selection (contents listPane))
+  if (isClass sel 'Array') { sel = (at sel 2) }
   if (beginsWith sel '[ ] ') {
 	sel = (substring sel 5)
 	if (or (endsWith sel ':')) {
