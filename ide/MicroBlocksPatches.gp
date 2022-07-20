@@ -302,6 +302,10 @@ method contextMenu Block {
 	}
   }
   addLine menu
+  if (contains (array 'v' '=' '+=') (primName expression)) {
+	  addItem menu 'find variable accessors' 'findVarAccessors' 'find scripts or block definitions where this variable is being read'
+	  addItem menu 'find variable modifiers' 'findVarModifiers' 'find scripts or block definitions where this variable is being set or changed'
+  }
   addItem menu 'find uses of this block' 'findBlockUsers' 'find scripts or block definitions using this block'
   if (notNil (functionNamed (project pe) (primName expression))) {
     addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
@@ -379,12 +383,23 @@ method scriptText Block useSemicolons {
   return (scriptStringFor mbScripter this)
 }
 
-// Block users
+// Inspection operations
 
 method findBlockUsers Block {
-  pe = (findProjectEditor)
-  findBlockUsers (project pe) this
+	pe = (findProjectEditor)
+	findBlockUsers (project pe) this
 }
+
+method findVarAccessors Block {
+	pe = (findProjectEditor)
+	findVarAccessors (project pe) this
+}
+
+method findVarModifiers Block {
+	pe = (findProjectEditor)
+	findVarModifiers (project pe) this
+}
+
 
 // Block definition operations
 
