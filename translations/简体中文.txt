@@ -1913,10 +1913,10 @@ Report the board type.
 报告当前主板类型
 
 Report the electrical logic level on a digital pin ( (-o) or (o-) ).
-报告一个数字引脚的电器逻辑关系（ (-o) 或 (o-) ）
+报告一个数字引脚的电气逻辑电平（ (-o) 或 (o-) ）
 
 Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
-报告一个模拟引脚上的电压比数值（0=接地，1023=电源电压）
+报告一个与模拟引脚上的电压成比例的数字（0=接地，1023=电源电压）
 
 Turn a pin on or off ( (-o) or (o-) ).
 打开 (-o) 或关闭 (o-) 引脚
