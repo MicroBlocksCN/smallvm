@@ -1296,6 +1296,14 @@ collapse
 
 rename...
 
+find variable accessors
+
+find scripts or block definitions where this variable is being read
+
+find variable modifiers
+
+find scripts or block definitions where this variable is being set or changed
+
 find uses of this block
 
 find scripts or block definitions using this block
@@ -1320,6 +1328,8 @@ just this one block
 
 copy to clipboard
 
+copy to clipboard as URL
+
 copy these blocks to the clipboard
 
 duplicate all
@@ -1330,6 +1340,8 @@ extract block
 
 pull out this block
 
+show help for this block in a browser
+
 save picture of script
 
 save picture of script with result
@@ -1337,6 +1349,8 @@ save picture of script with result
 save a picture of this block definition as a PNG file
 
 save a picture of these blocks as a PNG file
+
+save a picture of these blocks and their result as a PNG file
 
 copy script
 

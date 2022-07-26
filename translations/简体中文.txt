@@ -1559,6 +1559,24 @@ collapse
 rename...
 重命名...
 
+find variable accessors
+查找变量访问器
+
+find scripts or block definitions where this variable is being read
+查找到正在读取该变量的脚本或积木定义
+
+find variable modifiers
+查找变量修改器
+
+find scripts or block definitions where this variable is being set or changed
+查找正在设置或修改该变量的脚本或积木定义
+
+find uses of this block
+寻找当前积木在哪里被使用
+
+find scripts or block definitions using this block
+寻找使用当前积木的脚本或积木定义
+
 show block definition...
 显示积木定义...
 
@@ -1592,6 +1610,9 @@ just this one block
 copy to clipboard
 复制至剪贴板
 
+copy to clipboard as URL
+作为 URL 复制到剪贴板
+
 copy these blocks to the clipboard
 将这些积木复制至剪贴板
 
@@ -1607,14 +1628,23 @@ extract block
 pull out this block
 撤出积木
 
+show help for this block in a browser
+在浏览器中显示积木的帮助信息
+
 save picture of script
 保存脚本图片
+
+save picture of script with result
+保存带结果的脚本图片
 
 save a picture of this block definition as a PNG file
 将这块积木的定义保存为一个 PNG 文件
 
 save a picture of these blocks as a PNG file
 将这些积木的图片保存为一个 PNG 文件
+
+save a picture of these blocks and their result as a PNG file
+将这些积木的图片和他们的结果保存为一个 PNG 文件
 
 copy script
 复制脚本
