@@ -199,6 +199,8 @@ split _ by _
 
 My Blocks
 
+Generic
+
 # Buttons on top of "My Blocks" category
 
 Add a command block
@@ -1192,11 +1194,15 @@ undo the last block drop
 
 copy all scripts to clipboard
 
+copy all scripts to clipboard as URL
+
 paste all scripts
 
 paste script
 
 save a picture of all scripts
+
+set exported script scale
 
 about...
 
@@ -1381,6 +1387,16 @@ Confirm
 # File picker and library dialogs
 
 Libraries
+
+New library name?
+
+show all block definitions
+
+hide all block definitions
+
+export this library
+
+delete library
 
 Examples
 

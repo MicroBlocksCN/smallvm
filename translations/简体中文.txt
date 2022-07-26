@@ -291,6 +291,9 @@ free memory
 My Blocks
 我的积木
 
+Generic
+通用
+
 # Buttons on top of "My Blocks" category
 
 Add a command block
@@ -302,7 +305,7 @@ Add a reporter block
 # Make a block dialog
 
 Enter function name:
-输入功能名称:
+输入积木名称:
 
 Comm
 通信
@@ -1421,6 +1424,9 @@ undo the last block drop
 copy all scripts to clipboard
 将所有脚本复制到剪贴板
 
+copy all scripts to clipboard as URL
+将所有脚本作为 URL 复制到剪贴板
+
 paste all scripts
 粘贴所有脚本
 
@@ -1429,6 +1435,9 @@ paste script
 
 save a picture of all scripts
 将所有脚本保存为图片
+
+set exported script scale
+设置导出脚本的比例
 
 about...
 关于...
@@ -1688,8 +1697,20 @@ Confirm
 Libraries
 积木库
 
-Add Library
-添加积木库
+New library name?
+积木库的名字?
+
+show all block definitions
+显示所有积木定义
+
+hide all block definitions
+隐藏所有积木定义
+
+export this library
+到处这个库
+
+delete library
+删除这个库
 
 Examples
 示例
@@ -1756,6 +1777,21 @@ Dependency path, name or URL?
 
 Tag name?
 标签名称?
+
+Add Library
+添加积木库
+
+seconds remaining
+剩余秒数
+
+Decrease block size
+减少积木大小
+
+Restore block size to 100%
+将积木大小恢复到100%
+
+Increase block size
+增加积木大小
 
 ############
 # Tips Bar #
@@ -1828,7 +1864,7 @@ Block Category
 积木分类
 
 [l] to show the blocks in this category.
-[l] 显示此分类中的积木代码
+[l] 显示此分类中的积木
 
 Palette
 积木区
@@ -1850,7 +1886,7 @@ Turn the user LED on or off.
 打开或关闭 LED 灯
 
 Display a bubble showing the value.
-用气泡对话框显示数值
+用气泡对话框显示值
 
 Graph the value.
 为数值绘制图表
