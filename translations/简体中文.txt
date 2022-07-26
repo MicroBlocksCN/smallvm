@@ -1804,19 +1804,19 @@ Boolean Input
 布尔值输入
 
 [l] toggle value, or drop a reporter into it.
-[l] 切换布尔值，或嵌入反馈类积木
+[l] 切换布尔值，或嵌入报告类积木
 
 Color Input
 颜色输入
 
 [l] change the color, or drop a reporter into it.
-[l] 改变颜色，或嵌入反馈类积木
+[l] 改变颜色，或嵌入报告类积木
 
 Input
 输入
 
 [l] edit its value, or drop a reporter into it.
-[l] 修改数值，或嵌入反馈类积木
+[l] 修改数值，或嵌入报告类积木
 
 Block Extension
 积木扩展
@@ -1837,7 +1837,7 @@ Hat Block
 [l] 点击运行，或用鼠标拖拽出来搭建脚本。 [r] 打开菜单
 
 Reporter Block
-反馈类积木
+报告类积木
 
 [l] to see value, or drop into an input slot. [r] menu.
 [l] 点击查看数值，或用鼠标拖拽出来嵌入输出框内。 [r] 打开菜单
@@ -1892,31 +1892,31 @@ Graph the value.
 为数值绘制图表
 
 Report the state of button A ( (-o) or (o-) ).
-反馈按键 A 的状态（ (-o) 或 (o-) ）
+报告按键 A 的状态（ (-o) 或 (o-) ）
 
 Report the state of button B ( (-o) or (o-) ).
-反馈按键 B 的状态（ (-o) 或 (o-) ）
+报告按键 B 的状态（ (-o) 或 (o-) ）
 
 Report the milliseconds since the timer was last reset.
-反馈上一次计时器归零后的毫秒时长
+报告上一次计时器归零后的毫秒时长
 
 Reset the timer.
 重置计时器
 
 Report the milliseconds since power up.
-反馈通电后的毫秒计时
+报告通电后的毫秒计时
 
 Report the microseconds since power up.
-反馈通电后的微秒计时
+报告通电后的微秒计时
 
 Report the board type.
-反馈当前主板类型
+报告当前主板类型
 
 Report the electrical logic level on a digital pin ( (-o) or (o-) ).
-反馈一个数字引脚的电器逻辑关系（ (-o) 或 (o-) ）
+报告一个数字引脚的电器逻辑关系（ (-o) 或 (o-) ）
 
 Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
-反馈一个模拟引脚上的电压比数值（0=接地，1023=电源电压）
+报告一个模拟引脚上的电压比数值（0=接地，1023=电源电压）
 
 Turn a pin on or off ( (-o) or (o-) ).
 打开 (-o) 或关闭 (o-) 引脚
@@ -1925,13 +1925,13 @@ Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
 以输入的占空比（0-1023）对一个引脚进行脉冲宽度调制（PWM)
 
 Report number of analog pins on this device.
-反馈当前设备上的模拟引脚数量
+报告当前设备上的模拟引脚数量
 
 Report number of digital pins on this device.
-反馈当前设备上的数字引脚数量
+报告当前设备上的数字引脚数量
 
 Report the value of a register (0-255) of an I2C device (0-127).
-反馈一个 I2C 设备（0-127）上的寄存器（0-255）数值
+报告一个 I2C 设备（0-127）上的寄存器（0-255）数值
 
 Set an I2C device and register to given value (0-255).
 设置一个 I2C 设备上的寄存器（0-255）数值
@@ -1946,7 +1946,7 @@ Send a byte (0-255) to an SPI device.
 向一个 SPI 设备发送一个字节（0-255）
 
 Read a byte from an SPI device while sending a zero byte. Report the byte received.
-从一个 SPI 设备上读取字节的同时发送 0 字节。反馈读取到的字节
+从一个 SPI 设备上读取字节的同时发送 0 字节。报告读取到的字节
 
 Set the SPI clock speed and mode.
 设置 SPI 时钟频率和模式
@@ -1961,7 +1961,7 @@ Close the serial port.
 关闭串行端口
 
 Report data received from the serial port (a byte array).
-反馈串行端口上读取到的数据（一个字节数组）
+报告串行端口上读取到的数据（一个字节数组）
 
 Send a byte array to the serial port.
 向串行端口发送一个字节数组
@@ -1991,7 +1991,7 @@ Wait until the condition becomes (-o) .
 一直等待直到到条件满足 (-o)
 
 Return (report) the given value from a function or script.
-反馈一个函数或脚本的数值
+报告一个函数或脚本的数值
 
 Run when the given message is broadcast.
 当接收到输入的广播信息时运行
@@ -2018,94 +2018,94 @@ Wait the given number of microseconds.
 等待输入的微秒时长
 
 Report the last broadcast message received.
-反馈接受到的最新广播消息
+报告接受到的最新广播消息
 
 Call the function with the given name and optional parameter list.
 调用输入的函数或可选列表中的函数
 
 Call the function with the given name and optional parameter list and report its return value.
-调用输入的函数或可选列表中的函数，并反馈其数值
+调用输入的函数或可选列表中的函数，并报告其数值
 
 Report the sum of the given numbers.
-反馈输入的数字总和
+报告输入的数字总和
 
 Report the first number minus the second.
-反馈第一个数字减去第二个数字的值
+报告第一个数字减去第二个数字的值
 
 Report the product of the given numbers.
-反馈输入的数字的乘积
+报告输入的数字的乘积
 
 Report the first number divided by the second.
-反馈第一个数字除以第二个数字的值
+报告第一个数字除以第二个数字的值
 
 Report the remainder of dividing the first number by the second.
-反馈第一个数字除以第二个数字的余数
+报告第一个数字除以第二个数字的余数
 
 Report the absolute value of the given number (always >= 0).
-反馈输入数字的绝对值（永远大于或等于0）
+报告输入数字的绝对值（永远大于或等于0）
 
 Report the minimum of the values.
-反馈输入数字中的最小值
+报告输入数字中的最小值
 
 Report the maximum of the values.
-反馈输入数字中的最大值
+报告输入数字中的最大值
 
 Report a randomly chosen number in the given range.
-反馈输入的数字范围中的一个任意随机数
+报告输入的数字范围中的一个任意随机数
 
 Report (-o) if the first value is less than the second one.
-反馈第一个数值是否小于第二个数值 (-o)
+报告第一个数值是否小于第二个数值 (-o)
 
 Report (-o) if the first value is less than or equal to the second one.
-反馈第一个数值是否小于或等于第二个数值 (-o)
+报告第一个数值是否小于或等于第二个数值 (-o)
 
 Report (-o) if the two values are equal.
-反馈两个数值是否相等 (-o)
+报告两个数值是否相等 (-o)
 
 Report (-o) if the two values are not equal.
-反馈两个数值是否不相等 (-o)
+报告两个数值是否不相等 (-o)
 
 Report (-o) if the first value is greater than or equal to the second one.
-反馈第一个数值是否大于或等于第二个数值 (-o)
+报告第一个数值是否大于或等于第二个数值 (-o)
 
 Report (-o) if the first value is greater than the second one.
-反馈第一个数值是否大于第二个数值 (-o)
+报告第一个数值是否大于第二个数值 (-o)
 
 Boolean constant ( (-o) or (o-) ).
 布尔值常量（ (-o) 或 (o-) ）
 
 Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
-反馈一个布尔值（ (-o) 或 (o-) ）的逻辑非数值
+报告一个布尔值（ (-o) 或 (o-) ）的逻辑非数值
 
 Report (-o) if both values are (-o)
-反馈两个布尔值是否都为真 (-o)
+报告两个布尔值是否都为真 (-o)
 
 Report (-o) if either value is (-o)
-反馈两个布尔值中是否有一个为真 (-o)
+报告两个布尔值中是否有一个为真 (-o)
 
 Report (-o) if first input is a value of the given data type.
-反馈输入的内容是否属于选中的数据类型 (-o)
+报告输入的内容是否属于选中的数据类型 (-o)
 
 Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
-反馈一个十六进制数的十进制数值（可输入范围：-0x1FFFFFFF ~ 0x1FFFFFFF）
+报告一个十六进制数的十进制数值（可输入范围：-0x1FFFFFFF ~ 0x1FFFFFFF）
 
 Report bitwise AND of two numbers.
-反馈两个数字的按位与运算结果
+报告两个数字的按位与运算结果
 
 Report bitwise OR of two numbers.
-反馈两个数字的按位或运算结果
+报告两个数字的按位或运算结果
 
 Report bitwise XOR (exclusive OR) of two numbers.
-反馈两个数字的按位异或运算结果
+报告两个数字的按位异或运算结果
 
 Report bitwise inverse of the given number.
-反馈输入数字的按位取反运算结果
+报告输入数字的按位取反运算结果
 
 Report the given number shifted left by the given number of bits.
-反馈输入数字向左平移若干位后的结果
+报告输入数字向左平移若干位后的结果
 
 Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
-反馈输入数字向右平移若干位后的结果（算术位移；符号保持不变）
+报告输入数字向右平移若干位后的结果（算术位移；符号保持不变）
 
 Set a variable to the given value.
 将变量设为输入的数值
@@ -2117,16 +2117,16 @@ Create a variable local to the containing script with the given initial value.
 以输入的初始值创建一个包含脚本的局部变量
 
 Report the Nth item of a list, string, or byte array.
-反馈列表、字符或字节数组中的第 N 项元素
+报告列表、字符或字节数组中的第 N 项元素
 
 Report the number of items in a list, string, or byte array.
-反馈列表、字符或字节数字中的元素的数量
+报告列表、字符或字节数字中的元素的数量
 
 Join (concatenate) the given lists, strings, or byte arrays and report the result.
-将输入的列表、字符或字节数组组合起来并反馈结果
+将输入的列表、字符或字节数组组合起来并报告结果
 
 Create and report a short list containing the given items. Length limited by available stack space.
-创建并反馈一个包含输入元素的短列表。长度受限于可用的堆栈空间
+创建并报告一个包含输入元素的短列表。长度受限于可用的堆栈空间
 
 Add an item to the end of a list.
 在列表的末尾添加一项元素
@@ -2138,31 +2138,31 @@ Delete the Nth item (or all items) of a list.
 删除列表中的第 N 项元素（或所有元素）
 
 Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
-查找并反馈列表中某一元素或字符串中某一子串的索引。如果没有找到则反馈 -1
+查找并报告列表中某一元素或字符串中某一子串的索引。如果没有找到则报告 -1
 
 Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
-反馈从输入的索引在输入的列表、字符串或字节数组中（或可选的停止索引）的拷贝
+报告从输入的索引在输入的列表、字符串或字节数组中（或可选的停止索引）的拷贝
 
 Split the given string with the given delimiter and report the result (a list of strings).
-用输入的分隔符分割输入的字符串，并反馈结果（一个字符串的列表）
+用输入的分隔符分割输入的字符串，并报告结果（一个字符串的列表）
 
 Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
 将一个列表中的元素合并成一个字符串，可选择用分界符（如逗号）分隔
 
 Report the Unicode value ("code point") of the Nth character of the given string.
-反馈输入字符串的第 N 个字符的 Unicode 值（代码点）
+报告输入字符串的第 N 个字符的 Unicode 值（代码点）
 
 Report a string containing the given Unicode value ("code point") or list of values.
-反馈一个包含输入的 Unicode 值（代码点）或值列表的字符串
+报告一个包含输入的 Unicode 值（代码点）或值列表的字符串
 
 Report a new list of the given length filled with zero or the optional value.
-反馈一个新的列表，其长度为输入值，列表元素为 0 或可选数值
+报告一个新的列表，其长度为输入值，列表元素为 0 或可选数值
 
 Report a new byte array of the given length filled with zero or the optional value.
-反馈一个新的字节数组，其长度为输入值，数组元素为 0 或可选数值
+报告一个新的字节数组，其长度为输入值，数组元素为 0 或可选数值
 
 Report a byte array cointaining the UTF-8 bytes of the given string.
-反馈一个字节数组，该数组包含输入字符串的 UTF-8 字节
+报告一个字节数组，该数组包含输入字符串的 UTF-8 字节
 
 Report the number of words of memory available. Stop button frees up memory.
-反馈可用内存的字数。停止按钮释放内存
+报告可用内存的字数。停止按钮释放内存
