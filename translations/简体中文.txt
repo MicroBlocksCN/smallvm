@@ -1737,7 +1737,7 @@ hide all block definitions
 隐藏所有积木定义
 
 export this library
-到处这个库
+导出这个库
 
 delete library
 删除这个库
