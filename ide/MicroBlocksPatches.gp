@@ -305,8 +305,9 @@ method contextMenu Block {
   if (contains (array 'v' '=' '+=') (primName expression)) {
 	  addItem menu 'find variable accessors' 'findVarAccessors' 'find scripts or block definitions where this variable is being read'
 	  addItem menu 'find variable modifiers' 'findVarModifiers' 'find scripts or block definitions where this variable is being set or changed'
+  } else {
+	  addItem menu 'find uses of this block' 'findBlockUsers' 'find scripts or block definitions using this block'
   }
-  addItem menu 'find uses of this block' 'findBlockUsers' 'find scripts or block definitions using this block'
   if (notNil (functionNamed (project pe) (primName expression))) {
     addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
 	if isInPalette {
