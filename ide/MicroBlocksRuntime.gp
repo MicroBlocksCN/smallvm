@@ -1108,6 +1108,7 @@ method sendStopAll SmallRuntime {
 
 method sendStartAll SmallRuntime {
 	saveAllChunks this
+	verifyCRCs this
 	sendMsg this 'startAllMsg'
 }
 
@@ -1214,7 +1215,6 @@ method verifyCRCs SmallRuntime {
 	for entry (values chunkIDs) {
 		sendMsg this 'getChunkCRCMsg' (first entry)
 		processMessages this
-		waitMSecs 10
 	}
 	timeout = 100
 	lastRcvMSecs = (msecsSinceStart)
