@@ -1,4 +1,4 @@
-module RFID Input
+module 'RFID (PN532)' Input
 author 'José García Yeste'
 version 1 0
 description 'Read Radio Frequency Identification (RFID) data from key cards and other electronic tags with the PN532 sensor.'
