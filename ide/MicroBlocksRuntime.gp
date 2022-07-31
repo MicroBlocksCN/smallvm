@@ -1215,6 +1215,7 @@ method verifyCRCs SmallRuntime {
 	for entry (values chunkIDs) {
 		sendMsg this 'getChunkCRCMsg' (first entry)
 		processMessages this
+		waitMSecs 1
 	}
 	timeout = 100
 	lastRcvMSecs = (msecsSinceStart)
