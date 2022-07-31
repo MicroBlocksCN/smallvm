@@ -1474,13 +1474,14 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 	while ((byteCount dataToSend) > 0) {
 		// Note: Adafruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
 		// written in one call to writeSerialPort, so send smaller chunks
-		byteCount = (min 1000 (byteCount dataToSend))
+		byteCount = (min 50 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
 		if (not (isOpenSerialPort port)) {
 			closePort this
 			return
 		}
+		waitMSecs 1
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
 		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
 	}
