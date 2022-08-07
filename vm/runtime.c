@@ -1084,14 +1084,15 @@ void processMessage() {
 	rcvByteCount += bytesRead;
 	if (!rcvByteCount) return;
 
-	while (bytesRead > 0) {
-		// wait time: on microBit, 35 seems to work, 25 fails
-		// on Arduino Primo, 100 sometimes fails; use 150 to be safe (character time is ~90 usecs)
-//		busyWaitMicrosecs(150); // needed when built on mbed to avoid dropped bytes
-		bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
-		rcvByteCount += bytesRead;
-		lastRcvTime = microsecs();
-	}
+	// the following is needed when built on mbed to avoid dropped bytes
+// 	while (bytesRead > 0) {
+// 		// on Arduino Primo, 100 sometimes fails; use 150 to be safe (character time is ~90 usecs)
+// 		busyWaitMicrosecs(150);
+// 		bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+// 		rcvByteCount += bytesRead;
+// 	}
+
+	lastRcvTime = microsecs();
 	int firstByte = rcvBuf[0];
 	if (0xFA == firstByte) {
 		processShortMessage();
