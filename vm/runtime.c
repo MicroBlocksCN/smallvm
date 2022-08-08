@@ -453,6 +453,7 @@ void softReset(int clearMemoryFlag) {
 	updateMicrobitDisplay();
 #endif
 
+	resetRadio();
 	stopPWM();
 	stopServos();
 	stopTone();

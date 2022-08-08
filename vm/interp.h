@@ -256,6 +256,7 @@ void setPinMode(int pin, int newMode);
 void turnOffPins();
 void updateMicrobitDisplay();
 void checkButtons();
+void resetRadio();
 void stopPWM();
 void stopServos();
 void stopTone();

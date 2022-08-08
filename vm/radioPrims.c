@@ -307,6 +307,16 @@ static void initMakeCodePacket(uint8_t *packet, int makeCodePacketType, int pack
 	packet[12] = (id >> 24) & 255;
 }
 
+void resetRadio() {
+	// called by softReset to restore radio defaults
+
+	if (!radioInitialized) return; // do nothing if radio has not been initialized
+	setChannel(7);
+	setGroup(0);
+	setPower(6);
+}
+
+
 // primitives
 
 static OBJ primDisableRadio(int argCount, OBJ *args) {
@@ -435,6 +445,7 @@ static OBJ primDeviceID(int argCount, OBJ *args) {
 
 // stubs
 
+void resetRadio() { }
 static OBJ primDisableRadio(int argCount, OBJ *args) { return falseObj; }
 static OBJ primMessageReceived(int argCount, OBJ *args) { return falseObj; }
 static OBJ primPacketReceive(int argCount, OBJ *args) { return falseObj; }
