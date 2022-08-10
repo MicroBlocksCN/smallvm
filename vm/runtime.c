@@ -434,6 +434,12 @@ static void processExtendedMessage(uint8 msgID, int byteCount, uint8 *data) {
 		if (arg > 50) arg = 50;
 		extraByteDelay = arg * 100; // 100 to 5000 microseconds per character
 		break;
+	case 2: // suspend saving to the code file on file-based boards while loading a project or library
+		suspendCodeFileUpdates();
+		break;
+	case 3: // save the entire RAM code store to the code file and resume incremental saving
+		resumeCodeFileUpdates();
+		break;
 	}
 }
 
@@ -445,6 +451,7 @@ void softReset(int clearMemoryFlag) {
 	// This is not a full hardware reset/reboot, but close.
 
 	stopAllTasks();
+	resumeCodeFileUpdates();
 
 	OBJ off = falseObj;
 	if (!useTFT) primSetUserLED(&off);

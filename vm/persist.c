@@ -434,6 +434,8 @@ static int *end1 = (int *) (START + (2 * HALF_SPACE));;
 static int current;		// current half-space (0 or 1)
 static int *freeStart;	// first free word
 
+static int suspendFileUpdates = false;	// suspend slow file updates when loading a project/library
+
 // helper functions
 
 static void clearHalfSpace(int halfSpace) {
@@ -795,7 +797,7 @@ static int keepCodeChunk(int id, int header, int *start) {
 	return true;
 }
 
-static void compactRAM() {
+static void compactRAM(int printStats) {
 	// Compact a RAM-based code store in place. In-place compaction is possible in RAM since,
 	// unlike Flash memory, RAM can be re-written without first erasing it. This approach
 	// allows twice as much space for code as the half-space design.
@@ -857,11 +859,13 @@ static void compactRAM() {
 		writeCodeFile((uint8 *) codeStart, 4 * (freeStart - codeStart));
 	#endif
 
-	char s[100];
-	int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
-	sprintf(s, "Compacted RAM code store\n%d bytes used (%d%%) of %d",
-		bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
-	outputString(s);
+	if (printStats) {
+		char s[100];
+		int bytesUsed = 4 * (freeStart - ((0 == current) ? start0 : start1));
+		sprintf(s, "Compacted RAM code store\n%d bytes used (%d%%) of %d",
+			bytesUsed, (100 * bytesUsed) / HALF_SPACE, HALF_SPACE);
+		outputString(s);
+	}
 }
 
 #endif
@@ -907,9 +911,11 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 // }
 
 	#if USE_CODE_FILE
-		writeCodeFileWord(header);
-		writeCodeFileWord(wordCount);
-		writeCodeFile(data, 4 * wordCount);
+		if (!suspendFileUpdates) {
+			writeCodeFileWord(header);
+			writeCodeFileWord(wordCount);
+			writeCodeFile(data, 4 * wordCount);
+		}
 	#endif
 
 	int *result = freeStart;
@@ -922,7 +928,7 @@ int * appendPersistentRecord(int recordType, int id, int extra, int byteCount, u
 
 void compactCodeStore() {
 	#ifdef RAM_CODE_STORE
-		compactRAM();
+		compactRAM(true);
 	#else
 		compactFlash();
 	#endif
@@ -959,6 +965,21 @@ int *scanStart() {
 		if (deleteAll == type) result = ptr;
 	}
 	return result;
+}
+
+void suspendCodeFileUpdates() {
+	#ifdef USE_CODE_FILE
+		suspendFileUpdates = true;
+	#endif
+}
+
+void resumeCodeFileUpdates() {
+	#ifdef USE_CODE_FILE
+		if (suspendFileUpdates) {
+			compactRAM(false);
+		}
+		suspendFileUpdates = false;
+	#endif
 }
 
 // testing

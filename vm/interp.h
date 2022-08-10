@@ -204,6 +204,8 @@ void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);
 void waitAndSendMessage(int msgType, int chunkIndex, int dataSize, char *data);
+void suspendCodeFileUpdates();
+void resumeCodeFileUpdates();
 
 // Integer Evaluation
 
