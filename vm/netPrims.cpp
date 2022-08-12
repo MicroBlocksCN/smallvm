@@ -236,6 +236,11 @@ static int serverHasClient() {
 
 	if (!client) client = server.available(); // attempt to accept a client connection
 	if (!client) return false; // no client connection
+
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+		client.setNoDelay(true);
+	#endif
+
 	return (client.connected() || client.available());
 }
 
@@ -350,12 +355,7 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 			client.write(body, BYTES(args[1]));
 		}
 	}
-
-	#if defined(ESP8266)
-		client.flush(20);
-	#else
-		delay(20); // write flush() not supported on ESP32; allow time for data to get sent
-	#endif
+	delay(1); // allow some time for data to be sent
 	if (!keepAlive) client.stop(); // close the connection
 	return falseObj;
 }
@@ -377,6 +377,10 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	#else
 		httpClient.setTimeout(timeout);
 		ok = httpClient.connect(host, port);
+	#endif
+
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+		client.setNoDelay(true);
 	#endif
 
 	while (ok && !httpClient.connected()) { // wait for connection to be fully established
@@ -431,18 +435,13 @@ Accept: */*\r\n",
 static OBJ primHttpResponse(int argCount, OBJ *args) {
 	// Read some HTTP request data, if any is available, otherwise return the empty string.
 
-	int byteCount = httpClient.available();
+	uint8_t buf[800];
+	int byteCount = httpClient.read(buf, 800);
 	if (!byteCount) return (OBJ) &noDataString;
-	if (byteCount > 800) byteCount = 800; // max length string that can be reported to IDE
 
 	OBJ result = newString(byteCount);
-	while (falseObj == result) {
-		if (byteCount < 4) return (OBJ) &noDataString; // out of memory
-		byteCount = byteCount / 2;
-		result = newString(byteCount); // try to allocate half the previous amount
-	}
-	fail(noError); // clear memory allocation error, if any
-	httpClient.read((uint8 *) obj2str(result), byteCount);
+	if (falseObj == result) return (OBJ) &noDataString; // out of memory
+	memcpy((uint8_t *) obj2str(result), buf, byteCount);
 	return result;
 }
 
