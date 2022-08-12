@@ -1114,10 +1114,16 @@ method sendStartAll SmallRuntime {
 
 // Saving and verifying
 
+method suspendCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 2 (list) }
+method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
+
 method saveAllChunks SmallRuntime {
 	// Save the code for all scripts and user-defined functions.
 
 	if (isNil port) { return }
+
+	suspendCodeFileUpdates this
+
 	saveVariableNames this
 	assignFunctionIDs this
 	removeObsoleteChunks this
@@ -1131,6 +1137,8 @@ method saveAllChunks SmallRuntime {
 			if (isNil port) { return } // connection closed
 		}
 	}
+
+	resumeCodeFileUpdates this
 }
 
 method forceSaveChunk SmallRuntime aBlockOrFunction {
@@ -1215,9 +1223,11 @@ method verifyCRCs SmallRuntime {
 	for entry (values chunkIDs) {
 		sendMsg this 'getChunkCRCMsg' (first entry)
 		processMessages this
-		waitMSecs 1
+		waitMSecs 6 // faster than waitForResponse and appears to work well (note: 4 msecs is not enough on ESP boards)
 	}
-	timeout = 100
+	waitForResponse this // wait for the first response
+
+	timeout = 30
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		processMessages this
@@ -1481,7 +1491,7 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 			closePort this
 			return
 		}
-		waitMSecs 1
+		waitMSecs 2
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
 		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
 	}
@@ -1526,7 +1536,7 @@ method waitForResponse SmallRuntime {
 			return true
 		}
 		sendMsg this 'pingMsg'
-		waitMSecs 25
+		waitMSecs 5
 	}
 	return false
 }
