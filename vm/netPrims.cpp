@@ -417,8 +417,8 @@ Accept: */*\r\n",
 			reqType,
 			path,
 			host);
-	httpClient.write(request, strlen(request));
 	if ((argCount > 3) && IS_TYPE(args[3], StringType)) {
+		httpClient.write(request, strlen(request));
 		char length_str[50];
 		char* body = obj2str(args[3]);
 		int content_length = strlen(body);
@@ -427,7 +427,8 @@ Accept: */*\r\n",
 		httpClient.write(length_str, strlen(length_str));
 		httpClient.write(body, content_length);
 	} else {
-		httpClient.write("\r\n", 2);
+		strcat(request, "\r\n");
+		httpClient.write(request, strlen(request));
 	}
 	return falseObj;
 }
