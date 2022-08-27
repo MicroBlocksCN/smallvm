@@ -18,6 +18,7 @@
 
 #if defined(ESP8266)
 	#include <ESP8266WiFi.h>
+	#include <WiFiUDP.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
 	#include <WebSocketsServer.h>
@@ -446,6 +447,78 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	return result;
 }
 
+// UDP
+
+WiFiUDP UDP;
+
+static OBJ primUDPStart(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	int port = evalInt(args[0]);
+	if (port > 0) {
+		UDP.begin(port);
+	}
+	return falseObj;
+}
+
+static OBJ primUDPStop(int argCount, OBJ *args) {
+	UDP.stop();
+	return falseObj;
+}
+
+static OBJ primUDPSendPacket(int argCount, OBJ *args) {
+	if (argCount < 3) return fail(notEnoughArguments);
+	OBJ data = args[0];
+	char* ipAddr = obj2str(args[1]);
+	int port = evalInt(args[2]);
+	if (port <= 0) return falseObj; // bad port number
+
+	UDP.beginPacket(ipAddr, port);
+	if (isInt(data)) {
+		UDP.print(obj2int(data));
+	} else if (isBoolean(data)) {
+		UDP.print((trueObj == data) ? "true" : "false");
+	} else if (StringType == TYPE(data)) {
+		char *s = obj2str(data);
+		UDP.write(s, strlen(s));
+	} else if (ByteArrayType == TYPE(data)) {
+		UDP.write((char *) &data[HEADER_WORDS], BYTES(data));
+	}
+	UDP.endPacket();
+	return falseObj;
+}
+
+static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
+	int useBinary = ((argCount > 0) && (trueObj == args[0]));
+	int byteCount = UDP.parsePacket();
+	if (!byteCount) return (OBJ) &noDataString;
+
+	OBJ result = falseObj;
+	if (useBinary) {
+		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+		if (IS_TYPE(result, ByteArrayType)) setByteCountAdjust(result, byteCount);
+	} else {
+		result = newString(byteCount);
+	}
+	if (falseObj == result) { // allocation failed
+		UDP.flush(); // discard packet
+		result = (OBJ) &noDataString;
+	} else {
+		UDP.read((char *) &FIELD(result, 0), byteCount);
+	}
+	return result;
+}
+
+static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) {
+	char s[100];
+	IPAddress ip = UDP.remoteIP();
+	sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+	return newStringFromBytes(s, strlen(s));
+}
+
+static OBJ primUDPRemotePort(int argCount, OBJ *args) {
+	return int2obj(UDP.remotePort());
+}
+
 // Websocket support for ESP32
 
 #ifdef ARDUINO_ARCH_ESP32
@@ -529,6 +602,13 @@ static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
+
+static OBJ primUDPStart(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPStop(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPSendPacket(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPReceivePacket(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPRemotePort(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
@@ -938,6 +1018,13 @@ static PrimEntry entries[] = {
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
+
+	{"udpStart", primUDPStart},
+	{"udpStop", primUDPStop},
+	{"udpSendPacket", primUDPSendPacket},
+	{"udpReceivePacket", primUDPReceivePacket},
+	{"udpRemoteIPAddress", primUDPRemoteIPAddress},
+	{"udpRemotePort", primUDPRemotePort},
 
 	{"webSocketStart", primWebSocketStart},
 	{"webSocketLastEvent", primWebSocketLastEvent},

@@ -1,10 +1,9 @@
 module 'WiFi Primitives' Comm
 author MicroBlocks
-version 1 4
+version 1 5
 choices requestTypes GET POST PUT DELETE
 tags network http server client
-description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server or Wifi libraries in the Network folder.'
-
+description 'Low level network primitives. You are probably looking for either the HTTP Client, HTTP Server, UDP, or Wifi libraries in the Network folder.'
 
 	// These primitives support WiFi
 	// These primitives currently work only on ESP8266 and ESP32 boards, but may be ported
@@ -18,9 +17,18 @@ description 'Low level network primitives. You are probably looking for either t
 	spec 'r' '[net:getSSID]'				'get SSID number _' 'num' 1
 	spec 'r' '[net:myMAC]'					'my MAC address'
 	spec 'r' '[net:myIPAddress]'			'my IP address'
+
 	spec ' ' '[net:httpConnect]'			'connect to http꞉// _ : port _' 'auto num' 'microblocks.fun' 80
 	spec 'r' '[net:httpIsConnected]'		'is HTTP connected?'
 	spec ' ' '[net:httpRequest]'			'_ request http꞉// _ / _ : body _' 'menu.requestTypes auto auto str' 'GET' 'microblocks.fun' 'example.txt' ''
 	spec 'r' '[net:httpResponse]'			'HTTP response'
+
 	spec 'r' '[net:httpServerGetRequest]'	'HTTP server request : binary data _ : port _' 'bool num' false 8080
 	spec ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP server request : with body _ : and headers _' 'auto str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain'
+
+	spec ' ' '[net:udpStart]'			'UDP start port _' 'auto' 5000
+	spec ' ' '[net:udpStop]'			'UDP stop'
+	spec ' ' '[net:udpSendPacket]'		'UDP send packet _ to _ port _' 'auto auto num' 'Hello!' '127.0.0.1' 5000
+	spec 'r' '[net:udpReceivePacket]'	'UDP receive packet : binary data _' 'bool' false
+	spec 'r' '[net:udpRemoteIPAddress]'	'UDP remote IP address'
+	spec 'r' '[net:udpRemotePort]'		'UDP remote port'
