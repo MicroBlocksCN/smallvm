@@ -246,6 +246,13 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[net:httpServerGetRequest]'	'HTTP server request : binary data _ : port _' 'bool num' false 8080)
 		(array ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP server request : with body _ : and headers _' 'auto str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain')
 
+		(array ' ' '[net:udpStart]'				'UDP start port _' 'auto' 5000)
+		(array ' ' '[net:udpStop]'				'UDP stop')
+		(array ' ' '[net:udpSendPacket]'		'UDP send packet _ to ip _ port _' 'auto auto num' 'Hello!' '255.255.255.255' 5000)
+		(array 'r' '[net:udpReceivePacket]'		'UDP receive packet : binary data _' 'bool' false)
+		(array 'r' '[net:udpRemoteIPAddress]'	'UDP remote IP address')
+		(array 'r' '[net:udpRemotePort]'		'UDP remote port')
+
 		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
 		(array ' ' '[tft:line]'				'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)
