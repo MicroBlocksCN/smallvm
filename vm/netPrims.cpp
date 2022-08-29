@@ -26,6 +26,7 @@
 	#define USE_WIFI101
 	#define uint32 wifi_uint32
 	#include <WiFi101.h>
+	#include <WiFiUdp.h>
 	#undef uint32
 #endif
 
@@ -449,19 +450,19 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 
 // UDP
 
-WiFiUDP UDP;
+WiFiUDP udp;
 
 static OBJ primUDPStart(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	int port = evalInt(args[0]);
 	if (port > 0) {
-		UDP.begin(port);
+		udp.begin(port);
 	}
 	return falseObj;
 }
 
 static OBJ primUDPStop(int argCount, OBJ *args) {
-	UDP.stop();
+	udp.stop();
 	return falseObj;
 }
 
@@ -472,24 +473,24 @@ static OBJ primUDPSendPacket(int argCount, OBJ *args) {
 	int port = evalInt(args[2]);
 	if (port <= 0) return falseObj; // bad port number
 
-	UDP.beginPacket(ipAddr, port);
+	udp.beginPacket(ipAddr, port);
 	if (isInt(data)) {
-		UDP.print(obj2int(data));
+		udp.print(obj2int(data));
 	} else if (isBoolean(data)) {
-		UDP.print((trueObj == data) ? "true" : "false");
+		udp.print((trueObj == data) ? "true" : "false");
 	} else if (StringType == TYPE(data)) {
 		char *s = obj2str(data);
-		UDP.write(s, strlen(s));
+		udp.write((uint8_t *) s, strlen(s));
 	} else if (ByteArrayType == TYPE(data)) {
-		UDP.write((char *) &data[HEADER_WORDS], BYTES(data));
+		udp.write((uint8_t *) &data[HEADER_WORDS], BYTES(data));
 	}
-	UDP.endPacket();
+	udp.endPacket();
 	return falseObj;
 }
 
 static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
 	int useBinary = ((argCount > 0) && (trueObj == args[0]));
-	int byteCount = UDP.parsePacket();
+	int byteCount = udp.parsePacket();
 	if (!byteCount) return (OBJ) &noDataString;
 
 	OBJ result = falseObj;
@@ -500,23 +501,23 @@ static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
 		result = newString(byteCount);
 	}
 	if (falseObj == result) { // allocation failed
-		UDP.flush(); // discard packet
+		udp.flush(); // discard packet
 		result = (OBJ) &noDataString;
 	} else {
-		UDP.read((char *) &FIELD(result, 0), byteCount);
+		udp.read((char *) &FIELD(result, 0), byteCount);
 	}
 	return result;
 }
 
 static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) {
 	char s[100];
-	IPAddress ip = UDP.remoteIP();
+	IPAddress ip = udp.remoteIP();
 	sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
 	return newStringFromBytes(s, strlen(s));
 }
 
 static OBJ primUDPRemotePort(int argCount, OBJ *args) {
-	return int2obj(UDP.remotePort());
+	return int2obj(udp.remotePort());
 }
 
 // Websocket support for ESP32
