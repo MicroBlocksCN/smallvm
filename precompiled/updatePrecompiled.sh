@@ -30,6 +30,8 @@ pio run -e clue
 python precompiled/uf2conv.py -c -f 0xada52840 .pio/build/clue/firmware.hex -o precompiled/vm_clue.uf2
 pio run -e itsybitsy
 python precompiled/uf2conv.py -c .pio/build/itsybitsy/firmware.bin -o precompiled/vm_itsybitsy.uf2
+pio run -e metroM0
+python precompiled/uf2conv.py -c .pio/build/metroM0/firmware.bin -o precompiled/vm_metroM0.uf2
 
 # Platformio build system for Raspberry Pi Pico is system dependent
 currentOS=`uname -s`
