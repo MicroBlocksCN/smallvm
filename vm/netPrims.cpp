@@ -18,7 +18,7 @@
 
 #if defined(ESP8266)
 	#include <ESP8266WiFi.h>
-	#include <WiFiUDP.h>
+	#include <WiFiUdp.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
 	#include <WebSocketsServer.h>
