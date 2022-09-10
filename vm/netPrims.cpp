@@ -22,6 +22,8 @@
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
 	#include <WebSocketsServer.h>
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+	#include <WiFi.h>
 #elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
 	#define USE_WIFI101
 	#define uint32 wifi_uint32
@@ -32,7 +34,7 @@
 
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
 
 static char connecting = false;
 static char serverStarted = false;
@@ -91,7 +93,9 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 	#else
 		int createHotSpot = (argCount > 2) && (trueObj == args[2]);
 
-		WiFi.persistent(false); // don't save network info to Flash
+		#if !defined(ARDUINO_RASPBERRY_PI_PICO_W)
+			WiFi.persistent(false); // don't save network info to Flash
+		#endif
 		WiFi.mode(WIFI_OFF); // Kill the current connection, if any
 		if (createHotSpot) {
 			WiFi.mode(WIFI_AP); // access point & station mode
@@ -165,7 +169,7 @@ static int isConnectedToWiFi() {
 }
 
 static OBJ primGetIP(int argCount, OBJ *args) {
-	#ifdef USE_WIFI101
+	#if defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
 		IPAddress ip = WiFi.localIP();
 	#else
 		IPAddress ip = (WIFI_AP == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
@@ -188,7 +192,7 @@ static OBJ primStartSSIDscan(int argCount, OBJ *args) {
 static OBJ primGetSSID(int argCount, OBJ *args) {
 	char ssid[100];
 	ssid[0] = '\0'; // clear string
-	#ifdef USE_WIFI101
+	#if defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
 		strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1), 31);
 	#else
 		strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1).c_str(), 31);
