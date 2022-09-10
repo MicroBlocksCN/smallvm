@@ -559,24 +559,32 @@ void restartSerial() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
-#elif defined(TTGO_RP2040)
+#elif defined(TTGO_RP2040) // must come before ARDUINO_ARCH_RP2040
 
-	#define BOARD_TYPE "TTGO RP2040" //definition order it's important
+	#define BOARD_TYPE "TTGO RP2040"
 	#define DIGITAL_PINS 30
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3};
 	#define PIN_BUTTON_A 6
 	#define PIN_BUTTON_B 7
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_ARCH_RP2040)
 
 	#define BOARD_TYPE "RP2040"
-	#define DIGITAL_PINS 30
+	#define DIGITAL_PINS 29
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3};
 	#define DEFAULT_TONE_PIN 20 // speaker pin on Raspico Pico Bricks board
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 1, 0, 0, 0};
 
 #else // unknown board
 
@@ -780,7 +788,7 @@ void primAnalogWrite(OBJ *args) {
 		if (pinNum > 25) return;
 	#elif defined(ADAFRUIT_TRINKET_M0)
 		if (pinNum > 4) return;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		#if defined(ARDUINO_CITILAB_ED1)
 			if ((100 <= pinNum) && (pinNum <= 139)) {
 				pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
@@ -896,7 +904,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 			return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
 		}
 		if (RESERVED(pinNum)) return falseObj;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pinNum)) return falseObj;
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
@@ -950,7 +958,7 @@ void primDigitalSet(int pinNum, int flag) {
 			pinNum = ed1DigitalPinMap[pinNum - 1];
 		}
 		if (RESERVED(pinNum)) return;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pinNum < 2) return;
@@ -984,6 +992,8 @@ void primSetUserLED(OBJ *args) {
 		}
 	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
 		tftSetHugePixel(3, 1, (trueObj == args[0]));
+	#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+		digitalWrite(PIN_LED, (trueObj == args[0]) ? HIGH : LOW);
 	#else
 		if (PIN_LED < TOTAL_PINS) {
 			SET_MODE(PIN_LED, OUTPUT);
@@ -1608,7 +1618,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 			pin = digitalPin[pin];
 	#endif
 
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pin)) return falseObj;
 	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pin < 2) return falseObj;
@@ -1648,7 +1658,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 			pin = ed1DigitalPinMap[pin - 1];
 		}
 	#endif
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pin)) return falseObj;
 	#endif
 	int usecs = obj2int(usecsArg);
@@ -1856,7 +1866,7 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 
 	int pinNum = mapDigitalPinNum(obj2int(pinArg));
 
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pinNum)) return falseObj;
 	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pinNum < 2) return falseObj;
