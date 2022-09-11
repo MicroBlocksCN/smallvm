@@ -375,10 +375,6 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 	waitMSecs 200 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
 	exitBootMode this
 	waitMSecs 1500
-	if eraseFlag {
-		status = 'Initializing file system; this takes a while...'
-		waitMSecs 75000
-	}
 	if closeWhenDone { closePort this }
 	enableAutoConnect (smallRuntime) success
 }
