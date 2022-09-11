@@ -34,6 +34,8 @@ pio run -e metroM0
 python precompiled/uf2conv.py -c .pio/build/metroM0/firmware.bin -o precompiled/vm_metroM0.uf2
 pio run -e pico
 cp .pio/build/pico/firmware.uf2 precompiled/vm_pico.uf2
+pio run -e pico-w
+cp .pio/build/pico-w/firmware.uf2 precompiled/vm_pico_w.uf2
 
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/
