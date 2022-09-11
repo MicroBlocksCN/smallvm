@@ -594,6 +594,9 @@ static void initNeoPixelPin(int pinNum) {
 			pinNum = 8; // internal NeoPixel pin
 		#elif defined(ADAFRUIT_METRO_M0_EXPRESS)
 			pinNum = 40;
+			// clear the Neopixel pin's (GPIO A30) configuration register
+			volatile uint8_t *cnf = (uint8_t *) (PORT_BASE + 0x40 + 30);
+			*cnf = 0;
 		#else
 			pinNum = 0; // default to pin 0
 		#endif
