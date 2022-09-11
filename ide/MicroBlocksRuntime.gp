@@ -2273,6 +2273,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		addItem menu 'M5StickC'
 		addItem menu 'M5StickC+'
 		addItem menu 'M5Atom-Matrix'
+		addItem menu 'Metro M0'
 		addItem menu 'ESP32'
 		addItem menu 'ESP8266'
 		addItem menu 'RP2040 (Pico)'
