@@ -2148,6 +2148,10 @@ method niceBoardName SmallRuntime board {
 		return 'Circuit Playground Bluefruit'
 	} (beginsWith name 'CLUE') {
 		return 'Clue'
+	} (beginsWith name 'METRO') {
+		return 'Metro M0'
+	} (beginsWith name 'RPI-RP2') {
+		return 'Raspberry Pi Pico'
 	}
 	return name
 }
@@ -2190,6 +2194,7 @@ method getBoardDriveName SmallRuntime path {
 			if (notNil (nextMatchIn 'CPlay Express' contents)) { return 'CPLAYBOOT' }
 			if (notNil (nextMatchIn 'Circuit Playground nRF52840' contents)) { return 'CPLAYBTBOOT' }
 			if (notNil (nextMatchIn 'Adafruit Clue' contents)) { return 'CLUEBOOT' }
+			if (notNil (nextMatchIn 'Metro M0' contents)) { return 'METROBOOT' }
 			if (notNil (nextMatchIn 'RPI-RP2' contents)) { return 'RPI-RP2' }
 		}
 	}
@@ -2211,8 +2216,15 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 		vmFileName = 'vm_cplay52.uf2'
 	} ('CLUEBOOT' == driveName) {
 		vmFileName = 'vm_clue.uf2'
+	} ('METROBOOT' == driveName) {
+		vmFileName = 'vm_metroM0.uf2'
 	} ('RPI-RP2' == driveName) {
-		vmFileName = 'vm_pico.uf2'
+		isPicoW = (confirm (global 'page') nil (localized 'Is this a Pico W (WiFi) board?'))
+		if isPicoW {
+			vmFileName = 'vm_pico_w.uf2'
+		} else {
+			vmFileName = 'vm_pico.uf2'
+		}
 	} else {
 		print 'unknown drive name in "copyVMToBoard"' // shouldn't happen
 		return
@@ -2310,6 +2322,9 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	} ('Clue' == boardName) {
 		vmFileName = 'vm_clue.uf2'
 		driveName = 'CLUEBOOT'
+	} ('Metro M0' == boardName) {
+		vmFileName = 'vm_metroM0.uf2'
+		driveName = 'METROBOOT'
 	} ('RP2040 (Pico)' == boardName) {
 		vmFileName = 'vm_pico.uf2'
 		driveName = 'RPI-RP2'
