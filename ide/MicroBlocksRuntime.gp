@@ -2201,6 +2201,15 @@ method getBoardDriveName SmallRuntime path {
 	return nil
 }
 
+method picoVMFileName SmallRuntime {
+	isPicoW = (confirm (global 'page') nil (localized 'Is this a Pico W (WiFi) board?'))
+	if isPicoW {
+		return 'vm_pico_w.uf2'
+	} else {
+		return 'vm_pico.uf2'
+	}
+}
+
 method copyVMToBoard SmallRuntime driveName boardPath {
 	// disable auto-connect and close the serial port
 	disconnected = true
@@ -2219,12 +2228,7 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 	} ('METROBOOT' == driveName) {
 		vmFileName = 'vm_metroM0.uf2'
 	} ('RPI-RP2' == driveName) {
-		isPicoW = (confirm (global 'page') nil (localized 'Is this a Pico W (WiFi) board?'))
-		if isPicoW {
-			vmFileName = 'vm_pico_w.uf2'
-		} else {
-			vmFileName = 'vm_pico.uf2'
-		}
+		vmFileName = (picoVMFileName this)
 	} else {
 		print 'unknown drive name in "copyVMToBoard"' // shouldn't happen
 		return
@@ -2327,7 +2331,7 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 		vmFileName = 'vm_metroM0.uf2'
 		driveName = 'METROBOOT'
 	} ('RP2040 (Pico)' == boardName) {
-		vmFileName = 'vm_pico.uf2'
+		vmFileName = (picoVMFileName this)
 		driveName = 'RPI-RP2'
 	}
 
