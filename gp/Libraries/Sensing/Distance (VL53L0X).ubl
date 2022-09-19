@@ -1,14 +1,17 @@
-module VL53L0X Input
+module 'Distance (VL53L0X)' Input
 author 'José García Yeste'
-version 1 1 
+version 1 2 
 tags sensor distance 
 description 'Support for VL53L0X distance sensor.
 TOF laser based.
-Range 40-400mm.
+Range 3-200mm.
+
+Tested on:
+https://shop.m5stack.com/products/tof-sensor-unit (take Kapton tape on sensor!)
 '
 
-	spec 'r' 'VL53L0X connected' 'VL53L0X connected'
-	spec 'r' 'VL53L0X distance (mm)' 'VL53L0X distance (mm)'
+  spec 'r' 'VL53L0X connected' 'VL53L0X connected'
+  spec 'r' 'VL53L0X distance (mm)' 'VL53L0X distance (mm)'
 
 to 'VL53L0X connected' {
   return ((i2cGet 41 (hexToInt 'C0')) == (hexToInt 'EE'))
@@ -21,15 +24,13 @@ to 'VL53L0X distance (mm)' {
     '[sensors:i2cWrite]' 41 ('[data:makeList]' (hexToInt '14'))
     local 'buf' (newList 12)
     '[sensors:i2cRead]' 41 buf
-    if ((at 1 buf) == 65) {
-      return -2
-    }
-    if ((((at 7 buf) << 8) | (at 8 buf)) < 400) {
+    if ((at 1 buf) == 95) {
+      return (((at 11 buf) << 8) | (at 12 buf))
+    } else {
       return -1
     }
-    return (((at 11 buf) << 8) | (at 12 buf))
   } else {
-    return -3
+    return -2
   }
 }
 
