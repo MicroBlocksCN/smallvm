@@ -1,4 +1,4 @@
-module SCD30 Input
+module 'CO2 Temperature Humidity (SCD30)' Input
 author 'Markus Gälli'
 version 1 0
 description 'Implements the interface of the SCD30 environmental sensor

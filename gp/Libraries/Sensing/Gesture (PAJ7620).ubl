@@ -1,4 +1,4 @@
-module PAJ7620 Input
+module 'Gesture (PAJ7620)' Input
 author 'José García'
 version 1 0 
 tags sensor gesture 

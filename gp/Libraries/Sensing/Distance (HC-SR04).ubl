@@ -1,4 +1,4 @@
-module Distance Input
+module 'Distance (HC-SR04)' Input
 author 'Joan Guillén & Josep Ferràndiz'
 version 1 0
 description 'Support for the HC-SR04 ultrasound distance sensor.'
