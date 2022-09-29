@@ -229,6 +229,19 @@ The ID specifies the extended message type. The format depends on the message ty
 ### *Reserved* (OpCode: 0x1F, long message)
 
 
+## CRC Exchange
+
+### Get All CRCs (OpCode: 0x30, IDE → Board)
+
+Ask the board to send the CRC's for all chunks.
+
+### All CRCs (OpCode: 0x31, Board → IDE)
+
+A message containing the CRCs for all chunks on the board.
+
+Each CRC record is 5 bytes: <chunkID (one byte)><CRC (four bytes)>
+
+
 ## File Transfer Messages (OpCode: 200 to 205)
 
 ### Delete File (OpCode: 200, long message) (IDE → Board)
