@@ -799,6 +799,45 @@ void sendChunkCRC(int chunkID) {
 	}
 }
 
+void delay(int); // Arduino delay function
+
+void sendAllCRCs() {
+	// count chunks
+	int chunkCount = 0;
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		if (chunks[i].code) chunkCount++;
+	}
+
+	// send message header
+	int dataSize = 5 * chunkCount;
+	waitForOutbufBytes(10);
+	queueByte(251);
+	queueByte(allCRCsMsg);
+	queueByte(0);
+	queueByte(dataSize & 0xFF); // low byte of size
+	queueByte((dataSize >> 8) & 0xFF); // high byte of size
+
+	// send CRC records for chunks in use
+	// each record is 5 bytes: chunkID (one byte) + the CRC for that chunk (four bytes)
+	int delayPerCRC = extraByteDelay / 250;  // msec delay for 4 bytes (extraByteDelay is in usecs)
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		if (chunks[i].code) {
+			OBJ code = chunks[i].code;
+			int wordCount = *(code + 1); // size is the second word in the persistent store record
+			uint8_t *chunkData = (uint8_t *) (code + PERSISTENT_HEADER_WORDS);
+			uint32_t crc = crc32(chunkData, (4 * wordCount));
+			char *crcBytes = (char *) &crc;
+			waitForOutbufBytes(5);
+			queueByte(i);
+			queueByte(crcBytes[0]);
+			queueByte(crcBytes[1]);
+			queueByte(crcBytes[2]);
+			queueByte(crcBytes[3]);
+			delay(delayPerCRC);
+		}
+	}
+}
+
 // Retrieving source code and attributes
 
 // static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
@@ -838,8 +877,6 @@ static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chun
 		queueByte(*p);
 	}
 }
-
-void delay(int); // Arduino delay function
 
 static void sendAllCode() {
 	// Send the code and attributes for all chunks to the IDE.
@@ -1000,6 +1037,9 @@ static void processShortMessage() {
 		break;
 	case getChunkCRCMsg:
 		sendChunkCRC(chunkIndex);
+		break;
+	case getAllCRCsMsg:
+		sendAllCRCs();
 		break;
 	case getVersionMsg:
 		sendVersionString();
