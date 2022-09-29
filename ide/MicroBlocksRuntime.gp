@@ -1108,7 +1108,6 @@ method sendStopAll SmallRuntime {
 
 method sendStartAll SmallRuntime {
 	saveAllChunks this
-	verifyCRCs this
 	sendMsg this 'startAllMsg'
 }
 
@@ -1212,19 +1211,28 @@ method crcForChunk SmallRuntime aBlockOrFunctionName {
 	return result
 }
 
-method verifyCRCs SmallRuntime {
-	// Check that the CRCs of the chunks on the board match the ones in the IDE.
-	// Resend the code of any chunks whose CRC's do not match.
-
-	if (isNil port) { return }
-
-	// collect CRCs from the board
+method collectCRCsBulk SmallRuntime {
 	crcDict = (dictionary)
+
+	// request CRCs for all chunks on board
+	sendMsg this 'getAllCRCsMsg'
+
+	// wait until crcDict is filled in or timeout
+	startT = (msecsSinceStart)
+	while (and (isEmpty crcDict) (((msecsSinceStart) - startT) < 2000)) {
+		processMessages this
+		waitMSecs 5
+	}
+}
+
+method collectCRCsIndividually SmallRuntime {
+	crcDict = (dictionary)
+
+	// request a CRC for every chunk
 	for entry (values chunkIDs) {
 		sendMsg this 'getChunkCRCMsg' (first entry)
-		processMessages this
-		waitMSecs 6 // faster than waitForResponse and appears to work well (note: 4 msecs is not enough on ESP boards)
 	}
+
 	waitForResponse this // wait for the first response
 
 	timeout = 30
@@ -1233,9 +1241,24 @@ method verifyCRCs SmallRuntime {
 		processMessages this
 		waitMSecs 10
 	}
+}
 
-	// build a dictionary mapping chunkID -> block or functionName
+method verifyCRCs SmallRuntime {
+	// Check that the CRCs of the chunks on the board match the ones in the IDE.
+	// Resend the code of any chunks whose CRC's do not match.
+
+	if (isNil port) { return }
+
+	// collect CRCs from the board
+	crcDict = (dictionary)
+	// collectCRCsBulk this // xxx enable this when VM supports it
+	collectCRCsIndividually this
+
+	// build dictionaries:
+	//  ideChunks: maps chunkID -> block or functionName
+	//  crcForChunkID: maps chunkID -> CRC
 	ideChunks = (dictionary)
+	crcForChunkID = (dictionary)
 	for pair (sortedPairs chunkIDs) {
 		id = (first (first pair))
 		key = (last pair)
@@ -1243,13 +1266,14 @@ method verifyCRCs SmallRuntime {
 			remove chunkIDs key // remove reference to deleted function (rarely needed)
 		} else {
 			atPut ideChunks id (last pair)
+			atPut crcForChunkID id (at (first pair) 2)
 		}
 	}
 
 	// process CRCs
 	for chunkID (keys crcDict) {
 		sourceItem = (at ideChunks chunkID)
-		if (and (notNil sourceItem) ((at crcDict chunkID) != (crcForChunk this sourceItem))) {
+		if (and (notNil sourceItem) ((at crcDict chunkID) != (at crcForChunkID chunkID))) {
 			print 'CRC mismatch; resaving chunk:' chunkID
 			forceSaveChunk this sourceItem
 		}
