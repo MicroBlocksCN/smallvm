@@ -1274,6 +1274,20 @@ method crcReceived SmallRuntime chunkID chunkCRC {
 	}
 }
 
+method allCRCsReceived SmallRuntime data {
+	// Record the CRCs list.
+	// Each CRC record is 5 bytes: <chunkID (one byte)> <CRC (four bytes)>
+
+	byteCount = (count data)
+	i = 1
+	while (i <= (byteCount - 4)) {
+		chunkID = (at data i)
+		chunkCRC = (copyFromTo data (i + 1) (i + 4))
+		atPut crcDict chunkID chunkCRC
+		i += 5
+	}
+}
+
 method saveVariableNames SmallRuntime {
 	newVarNames = (allVariableNames (project scripter))
 	if (oldVarNames == newVarNames) { return }
@@ -1363,7 +1377,6 @@ method setDefaultSerialDelay SmallRuntime {
 method setSerialDelay SmallRuntime newDelay {
 	if ('reset to default' == newDelay) {
 		newDelay = 5
-//		if ('Browser' == (platform)) { newDelay = 15 }
 	}
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
@@ -1402,6 +1415,8 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'chunkAttributeMsg' 28
 		atPut msgDict 'varNameMsg' 29
 		atPut msgDict 'extendedMsg' 30
+		atPut msgDict 'getAllCRCsMsg' 48
+		atPut msgDict 'allCRCsMsg' 49
 		atPut msgDict 'deleteFile' 200
 		atPut msgDict 'listFiles' 201
 		atPut msgDict 'fileInfo' 202
@@ -1578,7 +1593,7 @@ method processNextMessage SmallRuntime {
 	// Parse and dispatch messages
 	firstByte = (byteAt recvBuf 1)
 	byteTwo = (byteAt recvBuf 2)
-	if (or (byteTwo < 1) (and (32 <= byteTwo) (byteTwo < 200)) (byteTwo > 205)) {
+	if (or (byteTwo < 1) (and (50 <= byteTwo) (byteTwo < 200)) (byteTwo > 205)) {
 		print 'Serial error, opcode:' (byteAt recvBuf 2)
 		skipMessage this // discard unrecognized message
 		return true
@@ -1655,6 +1670,8 @@ method handleMessage SmallRuntime msg {
 		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'chunkCRCMsg')) {
 		crcReceived this (byteAt msg 3) (copyFromTo (toArray msg) 6)
+	} (op == (msgNameToID this 'allCRCsMsg')) {
+		allCRCsReceived this (copyFromTo (toArray msg) 6)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
