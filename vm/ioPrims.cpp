@@ -593,11 +593,21 @@ void restartSerial() {
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3};
-	#define DEFAULT_TONE_PIN 20 // speaker pin on Raspico Pico Bricks board
-	static const char reservedPin[TOTAL_PINS] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 1, 1, 1, 0, 0, 0};
+	#if defined(PICO_ED)
+		#define PIN_BUTTON_A 20
+		#define PIN_BUTTON_B 21
+		#define DEFAULT_TONE_PIN 0 // speaker pin on Pico-ed v1 board
+		static const char reservedPin[TOTAL_PINS] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0};
+	#else
+		#define DEFAULT_TONE_PIN 20 // speaker pin on PicoBricks board
+		static const char reservedPin[TOTAL_PINS] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 1, 1, 1, 0, 0, 0};
+	#endif
 
 #else // unknown board
 
