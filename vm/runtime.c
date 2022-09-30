@@ -973,7 +973,7 @@ static void skipToStartByteAfter(int startIndex) {
 		if ((0xFA == b) || (0xFB == b)) {
 			if ((i + 1) < rcvByteCount) {
 				b = rcvBuf[i + 1];
-				if ((b < 0x01) || (b > 0x20)) continue; // illegal msg type; keep scanning
+                if ((b == 0) || ((b > LAST_MSG) && (b < 200))) continue; // illegal msg type; keep scanning			}
 			}
 			nextStart = i;
 			break;

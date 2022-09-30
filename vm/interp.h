@@ -146,8 +146,9 @@ extern int extraByteDelay;
 
 // Serial Protocol Messages: CRC Exchange
 
-#define getAllCRCsMsg			48
-#define allCRCsMsg				49
+#define getAllCRCsMsg			38
+#define allCRCsMsg				39
+#define LAST_MSG				39
 
 // Error Codes (codes 1-9 are reserved for protocol errors; 10 and up are runtime errors)
 
