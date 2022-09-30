@@ -38,7 +38,7 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		showError (morph aBlock) 'Board not connected'
 		return
 	}
-	saveAllChunks this
+//	saveAllChunks this // xxx
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
 		// running a block from the palette, not included in saveAllChunks
 		saveChunk this aBlock
@@ -1107,7 +1107,7 @@ method sendStopAll SmallRuntime {
 }
 
 method sendStartAll SmallRuntime {
-	saveAllChunks this
+//	saveAllChunks this // xxx
 	sendMsg this 'startAllMsg'
 }
 
@@ -1119,6 +1119,7 @@ method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) 
 method saveAllChunks SmallRuntime {
 	// Save the code for all scripts and user-defined functions.
 
+t = (newTimer) // xxx
 	if (isNil port) { return }
 
 	suspendCodeFileUpdates this
@@ -1126,18 +1127,26 @@ method saveAllChunks SmallRuntime {
 	saveVariableNames this
 	assignFunctionIDs this
 	removeObsoleteChunks this
+
+msecSplit t
 	for aFunction (allFunctions (project scripter)) {
 		saveChunk this aFunction
 		if (isNil port) { return } // connection closed
 	}
+saveFuncMSecs = (msecSplit t)
+
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
 			saveChunk this aBlock
 			if (isNil port) { return } // connection closed
 		}
 	}
+saveScriptsMSecs = (msecSplit t)
 
 	resumeCodeFileUpdates this
+
+totalMSecs = (msecs t)
+print '** saveAllChunks' totalMSecs 'msecs ( funcs:' saveFuncMSecs 'scripts:' saveScriptsMSecs 'other:' (totalMSecs - (saveFuncMSecs + saveScriptsMSecs)) ')'
 }
 
 method forceSaveChunk SmallRuntime aBlockOrFunction {
@@ -1211,48 +1220,24 @@ method crcForChunk SmallRuntime aBlockOrFunctionName {
 	return result
 }
 
-method collectCRCsBulk SmallRuntime {
-	crcDict = (dictionary)
-
-	// request CRCs for all chunks on board
-	sendMsg this 'getAllCRCsMsg'
-
-	// wait until crcDict is filled in or timeout
-	startT = (msecsSinceStart)
-	while (and (isEmpty crcDict) (((msecsSinceStart) - startT) < 2000)) {
-		processMessages this
-		waitMSecs 5
-	}
-}
-
-method collectCRCsIndividually SmallRuntime {
-	crcDict = (dictionary)
-
-	// request a CRC for every chunk
-	for entry (values chunkIDs) {
-		sendMsg this 'getChunkCRCMsg' (first entry)
-	}
-
-	waitForResponse this // wait for the first response
-
-	timeout = 30
-	lastRcvMSecs = (msecsSinceStart)
-	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
-		processMessages this
-		waitMSecs 10
-	}
-}
-
 method verifyCRCs SmallRuntime {
 	// Check that the CRCs of the chunks on the board match the ones in the IDE.
 	// Resend the code of any chunks whose CRC's do not match.
 
 	if (isNil port) { return }
 
+t = (newTimer) // xxx
 	// collect CRCs from the board
 	crcDict = (dictionary)
-	// collectCRCsBulk this // xxx enable this when VM supports it
-	collectCRCsIndividually this
+collectType = ''
+	if (and (notNil vmVersion) (vmVersion >= 159)) {
+collectType = 'bulk'
+		collectCRCsBulk this
+	} else {
+collectType = 'individually'
+		collectCRCsIndividually this
+	}
+collectCRCsMsecs = (msecSplit t)
 
 	// build dictionaries:
 	//  ideChunks: maps chunkID -> block or functionName
@@ -1287,10 +1272,34 @@ method verifyCRCs SmallRuntime {
 			forceSaveChunk this sourceItem
 		}
 	}
+
+totalMSecs = (msecs t)
+print '** verifyCRCs msecs:' (msecs t) '( collectCRCs:' collectCRCsMsecs 'other:' (totalMSecs - collectCRCsMsecs) ')'
+}
+
+method collectCRCsIndividually SmallRuntime {
+	// Collect the CRC's from all chunks on the board by requesting them individually
+
+	crcDict = (dictionary)
+
+	// request a CRC for every chunk
+	for entry (values chunkIDs) {
+		sendMsg this 'getChunkCRCMsg' (first entry)
+	}
+
+	waitForResponse this // wait for the first response
+
+	timeout = 30
+	lastRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
+		processMessages this
+		waitMSecs 10
+	}
 }
 
 method crcReceived SmallRuntime chunkID chunkCRC {
-	// Record the CRC for the given chunkID as reported by the board.
+	// Received an individual CRC message from board.
+	// Record the CRC for the given chunkID.
 
 	lastRcvMSecs = (msecsSinceStart)
 	if (notNil crcDict) {
@@ -1298,10 +1307,28 @@ method crcReceived SmallRuntime chunkID chunkCRC {
 	}
 }
 
+method collectCRCsBulk SmallRuntime {
+	// Collect the CRC's from all chunks on the board via a bulk CRC request.
+
+	crcDict = nil
+
+	// request CRCs for all chunks on board
+	sendMsg this 'getAllCRCsMsg'
+
+	// wait until crcDict is filled in or timeout
+	startT = (msecsSinceStart)
+	while (and (isNil crcDict) (((msecsSinceStart) - startT) < 2000)) {
+		processMessages this
+		waitMSecs 5
+	}
+}
+
 method allCRCsReceived SmallRuntime data {
-	// Record the CRCs list.
+	// Received a message from baord with the CRCs of all chunks.
+	// Create crcDict and record the (possibly empty) list of CRCs.
 	// Each CRC record is 5 bytes: <chunkID (one byte)> <CRC (four bytes)>
 
+	crcDict = (dictionary)
 	byteCount = (count data)
 	i = 1
 	while (i <= (byteCount - 4)) {
@@ -1439,8 +1466,8 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'chunkAttributeMsg' 28
 		atPut msgDict 'varNameMsg' 29
 		atPut msgDict 'extendedMsg' 30
-		atPut msgDict 'getAllCRCsMsg' 48
-		atPut msgDict 'allCRCsMsg' 49
+		atPut msgDict 'getAllCRCsMsg' 38
+		atPut msgDict 'allCRCsMsg' 39
 		atPut msgDict 'deleteFile' 200
 		atPut msgDict 'listFiles' 201
 		atPut msgDict 'fileInfo' 202
@@ -1617,7 +1644,7 @@ method processNextMessage SmallRuntime {
 	// Parse and dispatch messages
 	firstByte = (byteAt recvBuf 1)
 	byteTwo = (byteAt recvBuf 2)
-	if (or (byteTwo < 1) (and (50 <= byteTwo) (byteTwo < 200)) (byteTwo > 205)) {
+	if (or (byteTwo < 1) (and (40 <= byteTwo) (byteTwo < 200)) (byteTwo > 205)) {
 		print 'Serial error, opcode:' (byteAt recvBuf 2)
 		skipMessage this // discard unrecognized message
 		return true
