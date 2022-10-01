@@ -240,11 +240,13 @@ method addGlobalsFor MicroBlocksExchange script {
 			if (isOneOf (primName b) 'local' 'for') { add localVars varName }
 		}
 	}
+	varsChanged = false
 	for v varRefs {
 		if (and (not (contains globalVars v)) (not (contains localVars v))) {
 			// add new global variable
 			addVariable (main mbProject) v
+			varsChanged = true
 		}
 	}
-	variablesChanged (smallRuntime)
+	if varsChanged { variablesChanged (smallRuntime) }
 }

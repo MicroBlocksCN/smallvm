@@ -440,6 +440,7 @@ method startEditing ScriptEditor {
 }
 
 method stopEditing ScriptEditor {
+  if (isNil focus) { return }
   focus = nil
   root = (handler (root morph))
   if (isClass root 'Page') {stopEditing (keyboard root) this}
