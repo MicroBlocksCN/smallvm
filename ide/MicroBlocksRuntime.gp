@@ -1400,9 +1400,10 @@ method setVar SmallRuntime varID val {
 
 method variablesChanged SmallRuntime {
 	// Called by scripter when variables are added or removed.
+
 	sendStopAll this
 	clearVariableNames this
-	saveAllChunks this
+	scriptChanged scripter
 }
 
 method clearVariableNames SmallRuntime {
