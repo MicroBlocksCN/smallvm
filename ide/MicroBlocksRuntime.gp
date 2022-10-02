@@ -577,6 +577,7 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 		softReset this
 	}
 	clearRunningHighlights this
+	doOneCycle (global 'page')
 	saveAllChunks this
 	verifyCRCs this
 
@@ -1111,6 +1112,46 @@ method sendStartAll SmallRuntime {
 
 method suspendCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 2 (list) }
 method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
+
+method reachableFunctions SmallRuntime {
+	// Not currently used. This function finds all the functions in a project that
+	// are called explicitly. This might be used to prune unused library functions
+	// when downloading a project. However, it does not find dynamic calls that us
+	// the "call" primitive, so it is a bit risky.
+
+	proj = (project scripter)
+	todo = (list)
+	result = (dictionary)
+
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (isPrototypeHat aBlock) {
+			// todo: add function name to todo list
+		} else {
+			add todo aBlock
+		}
+	}
+	while (notEmpty todo) {
+		blockOrFuncName = (removeFirst todo)
+		expr = nil
+		if (isClass blockOrFuncName 'Block') {
+			expr = (expression blockOrFuncName)
+		} (isClass blockOrFuncName 'String') {
+			func = (functionNamed proj blockOrFuncName)
+			if (notNil func) { expr = (cmdList func) }
+		}
+		if (notNil expr) {
+			for b (allBlocks expr) {
+				op = (primName b)
+				if (and (not (contains result op)) (notNil (functionNamed proj op))) {
+					add result op
+					add todo op
+				}
+			}
+		}
+	}
+	print (count result) 'reachable functions:'
+	for fName (keys result) { print '  ' fName }
+}
 
 method saveAllChunks SmallRuntime {
 	// Save the code for all scripts and user-defined functions.
