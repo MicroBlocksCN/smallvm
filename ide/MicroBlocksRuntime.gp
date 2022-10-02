@@ -38,7 +38,6 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		showError (morph aBlock) 'Board not connected'
 		return
 	}
-//	saveAllChunks this // xxx
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
 		// running a block from the palette, not included in saveAllChunks
 		saveChunk this aBlock
@@ -431,7 +430,6 @@ method installDecompiledProject SmallRuntime proj {
 }
 
 method receivedChunk SmallRuntime chunkID chunkType bytecodes {
-//xxx print 'receivedChunk' chunkID
 	lastRcvMSecs = (msecsSinceStart)
 	if (isEmpty bytecodes) {
 		print 'truncated chunk!' chunkID chunkType (count bytecodes) // shouldn't happen
@@ -443,7 +441,6 @@ method receivedChunk SmallRuntime chunkID chunkType bytecodes {
 }
 
 method receivedVarName SmallRuntime varID varName byteCount {
-//xxx print 'receivedVar' varID
 	lastRcvMSecs = (msecsSinceStart)
 	if (notNil decompiler) {
 		addVar decompiler varID varName
@@ -1107,7 +1104,6 @@ method sendStopAll SmallRuntime {
 }
 
 method sendStartAll SmallRuntime {
-//	saveAllChunks this // xxx
 	sendMsg this 'startAllMsg'
 }
 
