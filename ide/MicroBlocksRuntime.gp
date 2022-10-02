@@ -477,10 +477,10 @@ method syncScripts SmallRuntime {
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (isPrototypeHat aBlock) {
 			fName = (functionName (function (editedPrototype aBlock)))
-			chunkEntry = (at chunkIDs fName nil)
-print '  resaving function:' fName
-			if (notNil chunkEntry) {
-				atPut chunkEntry 4 '' // clear source string to force CRC check
+			entry = (at chunkIDs fName nil)
+			if (notNil entry) {
+				// record that function is in scripting area so must be checked for changes
+				atPut entry 5 true
 			}
 		}
 	}
@@ -541,8 +541,8 @@ method ensureChunkIdFor SmallRuntime aBlock {
 	entry = (at chunkIDs aBlock nil)
 	if (isNil entry) {
 		id = (unusedChunkID this)
-		entry = (array id nil (chunkTypeFor this aBlock) '')
-		atPut chunkIDs aBlock entry // block -> (<id>, <crc>, <chunkType>, <lastSrc>)
+		entry = (array id nil (chunkTypeFor this aBlock) '' false)
+		atPut chunkIDs aBlock entry // block -> (<id>, <crc>, <chunkType>, <lastSrc>, <functionMayHaveChanged>)
 	}
 	return (first entry)
 }
@@ -555,8 +555,8 @@ method assignFunctionIDs SmallRuntime {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
 			id = (unusedChunkID this)
-			entry = (array id nil (chunkTypeFor this func) '')
-			atPut chunkIDs fName entry // fName -> (<id>, <crc>, <chunkType>, <lastSrc>)
+			entry = (array id nil (chunkTypeFor this func) '' true)
+			atPut chunkIDs fName entry // fName -> (<id>, <crc>, <chunkType>, <lastSrc>, <functionMayHaveChanged>)
 		}
 	}
 }
@@ -874,6 +874,7 @@ method tryToConnect SmallRuntime {
 			print 'Connected to' portName
 			connectionStartTime = nil
 			vmVersion = nil
+			sendMsgSync this 'getVersionMsg'
 			clearRunningHighlights this
 			setDefaultSerialDelay this
 			if readFromBoard {
@@ -884,7 +885,6 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this true
 			}
-			sendMsg this 'getVersionMsg'
 			return 'not connected' // don't make circle green until successful ping
 		} else {
 			portName = nil
@@ -909,6 +909,7 @@ method tryToConnect SmallRuntime {
 			print 'Connected to' portName
 			connectionStartTime = nil
 			vmVersion = nil
+			sendMsgSync this 'getVersionMsg'
 			clearRunningHighlights this
 			setDefaultSerialDelay this
 			if readFromBoard {
@@ -919,7 +920,6 @@ method tryToConnect SmallRuntime {
 				clearBoardIfConnected this false
 				stopAndSyncScripts this true
 			}
-			sendMsg this 'getVersionMsg'
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
@@ -1226,6 +1226,8 @@ method saveChunk SmallRuntime aBlockOrFunction {
 		functionName = (functionName aBlockOrFunction)
 		chunkID = (lookupChunkID this functionName)
 		entry = (at chunkIDs functionName)
+		if (not (at entry 5)) { return false } // function is not in scripting area so has not changed
+		atPut entry 5 false
 		currentSrc = (prettyPrintFunction pp aBlockOrFunction)
 	} else {
 		expr = (expression aBlockOrFunction)
@@ -1340,7 +1342,7 @@ collectCRCsMsecs = (msecSplit t)
 	}
 
 totalMSecs = (msecs t)
-print '** verifyCRCs msecs:' (msecs t) '( collectCRCs:' collectCRCsMsecs 'other:' (totalMSecs - collectCRCsMsecs) ')'
+print '** verifyCRCs' (join '(' collectType ')') 'msecs:' (msecs t) '( collectCRCs:' collectCRCsMsecs 'other:' (totalMSecs - collectCRCsMsecs) ')'
 }
 
 method collectCRCsIndividually SmallRuntime {
@@ -1351,6 +1353,7 @@ method collectCRCsIndividually SmallRuntime {
 	// request a CRC for every chunk
 	for entry (values chunkIDs) {
 		sendMsg this 'getChunkCRCMsg' (first entry)
+		processMessages this
 	}
 
 	waitForResponse this // wait for the first response
