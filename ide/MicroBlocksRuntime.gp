@@ -469,7 +469,23 @@ method readVarsFromBoard SmallRuntime client {
 // chunk management
 
 method syncScripts SmallRuntime {
-	if (notNil port) { saveAllChunks this }
+	// Called by scripter when anything changes.
+
+	if (isNil port) { return }
+
+	// force re-save of any functions in the scripting area
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (isPrototypeHat aBlock) {
+			fName = (functionName (function (editedPrototype aBlock)))
+			chunkEntry = (at chunkIDs fName nil)
+print '  resaving function:' fName
+			if (notNil chunkEntry) {
+				atPut chunkEntry 4 '' // clear source string to force CRC check
+			}
+		}
+	}
+
+	saveAllChunks this
 }
 
 method lookupChunkID SmallRuntime key {
@@ -525,8 +541,8 @@ method ensureChunkIdFor SmallRuntime aBlock {
 	entry = (at chunkIDs aBlock nil)
 	if (isNil entry) {
 		id = (unusedChunkID this)
-		entry = (array id nil (chunkTypeFor this aBlock))
-		atPut chunkIDs aBlock entry // block -> (<id>, <crc>, <chunkType>)
+		entry = (array id nil (chunkTypeFor this aBlock) '')
+		atPut chunkIDs aBlock entry // block -> (<id>, <crc>, <chunkType>, <lastSrc>)
 	}
 	return (first entry)
 }
@@ -539,8 +555,8 @@ method assignFunctionIDs SmallRuntime {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
 			id = (unusedChunkID this)
-			entry = (array id nil (chunkTypeFor this func))
-			atPut chunkIDs fName entry // fName -> (<id>, <crc>, <chunkType>)
+			entry = (array id nil (chunkTypeFor this func) '')
+			atPut chunkIDs fName entry // fName -> (<id>, <crc>, <chunkType>, <lastSrc>)
 		}
 	}
 }
@@ -565,6 +581,34 @@ method deleteChunkForBlock SmallRuntime aBlock {
 		sendMsgSync this 'deleteChunkMsg' chunkID
 		remove chunkIDs key
 	}
+}
+
+method computeCRCsFromSourceTEST SmallRuntime { // xxx remove later
+ t = (newTimer) // xxx
+
+	pp = (new 'PrettyPrinter')
+	for func (allFunctions (project scripter)) {
+		tmp = (crcForChunk this (functionName func))
+//		codeString = (prettyPrintFunction pp func)
+//		tmp = (codeString == codeString)
+//		tmp = (crc codeString)
+	}
+ funcMSecs = (msecSplit t)
+
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+ 		tmp = (crcForChunk this aBlock)
+// 		expr = (expression aBlock)
+// 		if (isClass expr 'Reporter') {
+// 			codeString = (prettyPrint pp expr)
+// 		} else {
+// 			codeString = (prettyPrintList pp expr)
+// 		}
+// 		tmp = (codeString == codeString)
+//  		tmp = (crc codeString)
+	}
+  blockMSecs = (msecSplit t)
+
+  print '** computeCRCsFromSource msecs:' (msecs t) '(' funcMSecs blockMSecs ')'
 }
 
 method stopAndSyncScripts SmallRuntime alreadyStopped {
@@ -1166,15 +1210,17 @@ t = (newTimer) // xxx
 	removeObsoleteChunks this
 
 msecSplit t
+	functionsSaved = 0
 	for aFunction (allFunctions (project scripter)) {
-		saveChunk this aFunction
+		if (saveChunk this aFunction) { functionsSaved += 1 }
 		if (isNil port) { return } // connection closed
 	}
 saveFuncMSecs = (msecSplit t)
 
+	scriptsSaved = 0
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
-			saveChunk this aBlock
+		if (saveChunk this aBlock) { scriptsSaved += 1 }
 			if (isNil port) { return } // connection closed
 		}
 	}
@@ -1183,6 +1229,8 @@ saveScriptsMSecs = (msecSplit t)
 	resumeCodeFileUpdates this
 
 totalMSecs = (msecs t)
+if (functionsSaved > 0) { print '  saved' functionsSaved 'functions' }
+if (scriptsSaved > 0) { print '  saved' scriptsSaved 'scripts' }
 print '** saveAllChunks' totalMSecs 'msecs ( funcs:' saveFuncMSecs 'scripts:' saveScriptsMSecs 'other:' (totalMSecs - (saveFuncMSecs + saveScriptsMSecs)) ')'
 }
 
@@ -1190,7 +1238,7 @@ method forceSaveChunk SmallRuntime aBlockOrFunction {
 	// Save the chunk for the given block or function even if it was previously saved.
 
 	if (contains chunkIDs aBlockOrFunction) {
-		atPut (at chunkIDs aBlockOrFunction) 2 nil // clear the old CRC to force re-save
+		atPut (at chunkIDs aBlockOrFunction) 4 '' // clear the old source to force re-save
 	}
 	saveChunk this aBlockOrFunction
 }
@@ -1199,33 +1247,60 @@ method saveChunk SmallRuntime aBlockOrFunction {
 	// Save the given script or function as an executable code "chunk".
 	// Also save the source code (in GP format) and the script position.
 
+	pp = (new 'PrettyPrinter')
 	if (isClass aBlockOrFunction 'String') {
 		aBlockOrFunction = (functionNamed (project scripter) aBlockOrFunction)
-		if (isNil aBlockOrFunction) { return } // unknown function
+		if (isNil aBlockOrFunction) { return false } // unknown function
 	}
 	if (isClass aBlockOrFunction 'Function') {
 		functionName = (functionName aBlockOrFunction)
 		chunkID = (lookupChunkID this functionName)
 		entry = (at chunkIDs functionName)
-		newCRC = (crcForChunk this functionName)
+		currentSrc = (prettyPrintFunction pp aBlockOrFunction)
+
+// newCRC = (crcForChunk this functionName) // compile and generate CRC
+// print '  function crc:' newCRC
+
+// 		if (notNil (at entry 2)) {
+// 			newCRC = (at entry 2) // if function has a non-nil CRC, use it
+// 		} else {
+// 			newCRC = (crcForChunk this functionName) // compile and generate CRC
+// 		}
 	} else {
+
+// newCRC = (crcForChunk this aBlockOrFunction)
+// print '  block crc:' newCRC
+
+		expr = (expression aBlockOrFunction)
+		if (isClass expr 'Reporter') {
+			currentSrc = (prettyPrint pp expr)
+		} else {
+			currentSrc = (prettyPrintList pp expr)
+		}
 		chunkID = (ensureChunkIdFor this aBlockOrFunction)
 		entry = (at chunkIDs aBlockOrFunction)
-		newCRC = (crcForChunk this aBlockOrFunction)
+//		newCRC = (crcForChunk this aBlockOrFunction)
 		if ((at entry 3) != (chunkTypeFor this aBlockOrFunction)) {
 			// user changed A/B/A+B button hat type with menu
 			atPut entry 3 (chunkTypeFor this aBlockOrFunction)
-			atPut entry 2 nil // clear CRC to force save
+			atPut entry 4 '' // clear lastSrc to force save
+//			atPut entry 2 nil // clear CRC to force save
 		}
 	}
 
-	if (newCRC == (at entry 2)) { return } // code hasn't changed
-	atPut entry 2 newCRC // remember the CRC of the code we're about to save
+	lastSrc = (at entry 4)
+// print (currentSrc == lastSrc) currentSrc lastSrc
+	if (currentSrc == lastSrc) { return false } // source hasn't changed; save not needed
+	atPut entry 4 currentSrc // remember the source of the code we're about to save
+
+//	if (newCRC == (at entry 2)) { return } // code hasn't changed
+//	atPut entry 2 newCRC // remember the CRC of the code we're about to save
 
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
+	chunkBytes = (chunkBytesFor this aBlockOrFunction)
 	data = (list chunkType)
-	addAll data (chunkBytesFor this aBlockOrFunction)
+	addAll data chunkBytes
 	if ((count data) > 1000) {
 		if (isClass aBlockOrFunction 'Function') {
 			inform (global 'page') (join
@@ -1236,6 +1311,8 @@ method saveChunk SmallRuntime aBlockOrFunction {
 		}
 	}
 	sendMsgSync this 'chunkCodeMsg' chunkID data
+	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
+// print 'crc:' (at entry 2) newCRC
 
 	// restart the chunk if it is a Block and is running
 	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
@@ -1244,6 +1321,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 		runChunk this chunkID
 		waitForResponse this
 	}
+	return true
 }
 
 method crcForChunk SmallRuntime aBlockOrFunctionName {
@@ -1256,6 +1334,18 @@ method crcForChunk SmallRuntime aBlockOrFunctionName {
 	for i 4 { atPut result i (digitAt crc i) }
 	return result
 }
+
+method computeCRC SmallRuntime chunkData {
+	// Return the CRC for the given compiled code.
+
+	crc = (crc (toBinaryData (toArray chunkData)))
+
+	// convert crc to a 4-byte array
+	result = (newArray 4)
+	for i 4 { atPut result i (digitAt crc i) }
+	return result
+}
+
 
 method verifyCRCs SmallRuntime {
 	// Check that the CRCs of the chunks on the board match the ones in the IDE.
