@@ -1,6 +1,6 @@
 module Wukong Output
 author wwj718
-version 1 3 
+version 1 4 
 depends NeoPixel 
 description 'Wukong is a compact micro:bit breakout board with servo and motor drivers, eight I/O pins, four NeoPixels, and four blue LEDs.
 
@@ -11,8 +11,10 @@ The base board design is compatible with Lego.
 https://www.elecfreaks.com/learn-en/microbitExtensionModule/wukong.html
 '
 
-  spec ' ' 'wukong_setServo' 'Wukong set servo _ to _ (-100 to 100)' 'num.range:0-7 num' 0 0
-  spec ' ' 'wukong_setMotor' 'Wukong set motor _ to _ (-100 to 100)' 'num.range:1-2 num' 1 50
+  spec ' ' 'wukong_setServo' 'Wukong set servo _ to _ degrees (-90 to 90)' 'menu.range:0-7 num' 0 90
+  spec ' ' 'wukong_setServoSpeed' 'Wukong set servo _ to speed _ (-100 to 100)' 'menu.range:0-7 num' 0 100
+  space
+  spec ' ' 'wukong_setMotor' 'Wukong set motor _ to _ (-100 to 100)' 'menu.range:1-2 num' 1 50
   spec ' ' 'wukong_stopAll' 'Wukong stop all'
   space
   spec ' ' 'wukong_setNeopixels' 'Wukong set NeoPixels _ _ _ _' 'color color color color'
@@ -55,6 +57,19 @@ to wukong_setNeopixels c1 c2 c3 c4 {
 }
 
 to wukong_setServo servo value {
+  comment 'servo (number) is 0-7
+value range of -90 to 90 maps to the full range of the servo'
+  servo = (maximum 0 (minimum servo 7))
+  channel = (servo + 3)
+  if (servo == 7) {
+    comment 'servo 7 is controlled by channel 16'
+    channel = 16
+  }
+  value = (maximum -90 (minimum value 90))
+  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' channel ('_rescale' value 90 -90 0 180) 0 0)
+}
+
+to wukong_setServoSpeed servo value {
   comment 'servo (number) is 0-7
 value range of -100 to 100 maps to the full range of the servo'
   servo = (maximum 0 (minimum servo 7))
