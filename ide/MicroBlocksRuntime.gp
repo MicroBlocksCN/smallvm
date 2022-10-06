@@ -38,6 +38,7 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		showError (morph aBlock) 'Board not connected'
 		return
 	}
+	step scripter // save script changes if needed
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
 		// running a block from the palette, not included in saveAllChunks
 		saveChunk this aBlock
@@ -1121,6 +1122,7 @@ method sendStopAll SmallRuntime {
 }
 
 method sendStartAll SmallRuntime {
+	step scripter // save script changes if needed
 	sendMsg this 'startAllMsg'
 }
 
@@ -1390,6 +1392,7 @@ method collectCRCsBulk SmallRuntime {
 		processMessages this
 		waitMSecs 5
 	}
+	if (isNil crcDict) { crcDict = (dictionary) } // timeout
 }
 
 method allCRCsReceived SmallRuntime data {
