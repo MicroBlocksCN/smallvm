@@ -1719,7 +1719,7 @@ method processNextMessage SmallRuntime {
 	byteTwo = (byteAt recvBuf 2)
 	if (or (byteTwo < 1) (and (40 <= byteTwo) (byteTwo < 200)) (byteTwo > 205)) {
 		print 'Serial error, opcode:' (byteAt recvBuf 2)
-		skipMessage this // discard unrecognized message
+		discardMessage this
 		return true
 	}
 	if (250 == firstByte) { // short message
@@ -1731,7 +1731,7 @@ method processNextMessage SmallRuntime {
 		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
 		if (bodyBytes >= 1024) {
 			print 'Serial error, length:' bodyBytes
-			skipMessage this // discard unrecognized message
+			discardMessage this
 			return true
 		}
 		if ((byteCount recvBuf) < (5 + bodyBytes)) { return false } // incomplete body
@@ -1741,12 +1741,14 @@ method processNextMessage SmallRuntime {
 	} else {
 		print 'Serial error, start byte:' firstByte
 		print (toString recvBuf) // show the string (could be an ESP error message)
-		skipMessage this // discard
+		discardMessage this
 	}
 	return true
 }
 
-method skipMessage SmallRuntime {
+method discardMessage SmallRuntime { skipMessage this true }
+
+method skipMessage SmallRuntime discard {
 	// Discard bytes in recvBuf until the start of the next message, if any.
 
 	end = (byteCount recvBuf)
@@ -1754,11 +1756,13 @@ method skipMessage SmallRuntime {
 	while (i < end) {
 		byte = (byteAt recvBuf i)
 		if (or (250 == byte) (251 == byte)) {
+		if (true == discard) { print '    ' (toString (copyFromTo recvBuf 1 (i - 1))) }
 			recvBuf = (copyFromTo recvBuf i)
 			return
 		}
 		i += 1
 	}
+	if (true == discard) { print '    ' (toString recvBuf) }
 	recvBuf = (newBinaryData 0) // no message start found; discard entire buffer
 }
 
