@@ -1957,7 +1957,10 @@ method writeFileToBoard SmallRuntime srcFileName {
 method busy SmallRuntime { return (notNil fileTransferProgress) }
 
 method fileTransferProgress SmallRuntime actionLabel { return (join '' fileTransferProgress '% ' (localized actionLabel)) }
-method abortFileTransfer SmallRuntime { fileTransferProgress = nil }
+
+method abortFileTransfer SmallRuntime {
+	if (not (fileTransferCompleted this)) { fileTransferProgress = nil }
+}
 
 method fileTransferCompleted SmallRuntime {
 	// return true if the file transfer is complete or aborted
