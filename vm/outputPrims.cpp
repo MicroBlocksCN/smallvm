@@ -16,6 +16,8 @@
 
 // LED Matrix Pins on BBC micro:bit and Calliope
 
+int disableLEDDisplay = false; // disable micro:bit 5x5 display and light sensor when true
+
 #if defined(ARDUINO_BBC_MICROBIT)
 
 #define ROW1 3
@@ -148,6 +150,8 @@ void updateMicrobitDisplay() {
 	// Update the display by cycling through the three columns, turning on the rows
 	// for each column. To minimize display artifacts, the display bits are snapshot
 	// at the start of each cycle and the snapshot is not changed during the cycle.
+
+	if (disableLEDDisplay) return;
 
 	if (!microBitDisplayBits && !displaySnapshot) { // display is off
 		if (lightReadingRequested) updateLightLevel();
@@ -326,6 +330,8 @@ void updateMicrobitDisplay() {
 	// for each column. To minimize display artifacts, the display bits are snapshot
 	// at the start of each cycle and the snapshot is not changed during the cycle.
 
+	if (disableLEDDisplay) return;
+
 	if (!microBitDisplayBits && !displaySnapshot) { // display is off
 		if (lightReadingRequested) updateLightLevel();
 		return;
@@ -363,6 +369,8 @@ void updateMicrobitDisplay() {
 	static int displaySnapshot = 0;
 
 	void updateMicrobitDisplay() {
+		if (disableLEDDisplay) return;
+
 		if (microBitDisplayBits == displaySnapshot) return; // no change
 		updateAtomDisplay();
 		displaySnapshot = microBitDisplayBits;
@@ -370,8 +378,10 @@ void updateMicrobitDisplay() {
 
 #else
 
-	// stub for boards without 5x5 LED displays or light sensors
+	// stubs for boards without 5x5 LED displays or light sensors
 	void updateMicrobitDisplay() { }
+	static void turnDisplayOff() { }
+	static void turnDisplayOn() { }
 
 #endif
 
@@ -424,6 +434,19 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 		lightReadingRequested = true;
 	#endif
 	return int2obj(lightLevel);
+}
+
+OBJ primMBDisableDisplay(int argCount, OBJ *args) {
+	if (argCount > 0) {
+		disableLEDDisplay = (trueObj == args[0]);
+		if (disableLEDDisplay) {
+			turnDisplayOff();
+			lightLevel = 0;
+		} else {
+			turnDisplayOn();
+		}
+	}
+	return falseObj;
 }
 
 // NeoPixel Support
@@ -998,6 +1021,7 @@ static PrimEntry entries[] = {
 	{"mbUnplot", primMBUnplot},
 	{"mbDrawShape", primMBDrawShape},
 	{"mbShapeForLetter", primMBShapeForLetter},
+	{"mbDisableDisplay", primMBDisableDisplay},
 	{"neoPixelSend", primNeoPixelSend},
 	{"neoPixelSetPin", primNeoPixelSetPin},
 };
