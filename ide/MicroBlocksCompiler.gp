@@ -132,6 +132,8 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 123 'number')
 	'Operators-Advanced'
+		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
+		'-'
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 		'-'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
