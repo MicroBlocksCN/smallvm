@@ -1039,7 +1039,12 @@ method hasHelpEntryFor MicroBlocksEditor aBlock {
 method openHelp MicroBlocksEditor aBlock {
   entry = (helpEntry tipBar (primName (expression aBlock)))
   if (isNil entry) { return }
-  url = (join 'https://wiki.microblocks.fun/reference_manual/' (at entry 2))
+  helpPath = (at entry 2)
+  if (beginsWith helpPath '/') {
+    url = (join 'https://wiki.microblocks.fun' helpPath)
+  } else {
+    url = (join 'https://wiki.microblocks.fun/reference_manual/' helpPath)
+  }
   openURL url
 }
 

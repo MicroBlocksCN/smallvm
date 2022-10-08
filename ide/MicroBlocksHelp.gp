@@ -124,7 +124,27 @@ method initialize MicroBlocksHelp {
 		(array '[data:newByteArray]' 'data#new-byte-array' 'Report a new byte array of the given length filled with zero or the optional value.')
 		(array '[data:asByteArray]' 'data#as-byte-array' 'Report a byte array cointaining the UTF-8 bytes of the given string.')
 		(array '[data:freeMemory]' 'data#free-memory' 'Report the number of words of memory available. Stop button frees up memory.')
+
+		// BASIC SENSORS LIBRARY
+		(array '[sensors:tiltX]' '/libraries#tilt-x-y-z' 'Report x acceleration/tilt (+/-200).')
+		(array '[sensors:tiltY]' '/libraries#tilt-x-y-z' 'Report y acceleration/tilt (+/-200).')
+		(array '[sensors:tiltZ]' '/libraries#tilt-x-y-z' 'Report z acceleration/tilt (+/-200).')
+		(array '[sensors:acceleration]' '/libraries#acceleration' 'Report total acceleration (0-346).')
+		(array '[display:lightLevel]' '/libraries#light-level' 	'Report ambient light level (0-1023).')
+		(array '[sensors:temperature]' '/libraries#temperature'	'Report ambient temperature in degrees Celsius.')
+		(array '[sensors:magneticField]' '/libraries#magnetic field' 'Report magnetic field strength (0-100000).')
+		(array '_setAccelRange' '/libraries#set-acceleration-range'	'Set accelermeter range. Higher ranges are usefl for collisions.')
+
+		// LED DISPLAY LIBRARY
+		(array '[display:mbDisplay]' '/libraries#display' 'Display a 5x5 image on the LED display.')
+		(array '[display:mbDisplayOff]' '/libraries#clear-display' 'Clear the LED display (all pixels off).')
+		(array '[display:mbPlot]' '/libraries#plot-x-y' 'Turn on the LED at the given row and column (1-5).')
+		(array '[display:mbUnplot]' '/libraries#unplot-x-y' 'Turn off the LED at the given row and column (1-5).')
+		(array 'displayCharacter' '/libraries#display-character' 'Display a single character on the LED display.')
+		(array 'scroll_text' '/libraries#scroll-text' 'Scroll words or numbers across the LED display.')
+		(array 'stopScrollingText' 	'/libraries#stop-scrolling' 'Stop scrolling and clear the display.')
 	)
+
 	opDict = (dictionary)
 	for e opEntries {
 		atPut opDict (first e) e
