@@ -1176,21 +1176,19 @@ method saveAllChunks SmallRuntime {
 
 	if (isNil port) { return }
 
-t = (newTimer) // xxx
-
+	t = (newTimer)
 	suspendCodeFileUpdates this
 
 	saveVariableNames this
 	assignFunctionIDs this
 	removeObsoleteChunks this
 
-msecSplit t
 	functionsSaved = 0
 	for aFunction (allFunctions (project scripter)) {
 		if (saveChunk this aFunction) { functionsSaved += 1 }
 		if (isNil port) { return } // connection closed
 	}
-if (functionsSaved > 0) { print '  saved' functionsSaved 'functions' (join '(' (msecSplit t) ' msecs)') }
+	if (functionsSaved > 0) { print 'Downloaded' functionsSaved 'functions to board' (join '(' (msecSplit t) ' msecs)') }
 
 	scriptsSaved = 0
 	for aBlock (sortedScripts (scriptEditor scripter)) {
@@ -1199,11 +1197,9 @@ if (functionsSaved > 0) { print '  saved' functionsSaved 'functions' (join '(' (
 			if (isNil port) { return } // connection closed
 		}
 	}
-if (scriptsSaved > 0) { print '  saved' scriptsSaved 'scripts' (join '(' (msecSplit t) ' msecs)') }
+	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
 	resumeCodeFileUpdates this
-
-print '** saveAllChunks' (join '(' (msecs t t) ' msecs)')
 }
 
 method forceSaveChunk SmallRuntime aBlockOrFunction {
@@ -1296,18 +1292,13 @@ method verifyCRCs SmallRuntime {
 
 	if (isNil port) { return }
 
-t = (newTimer) // xxx
 	// collect CRCs from the board
 	crcDict = (dictionary)
-collectType = ''
 	if (and (notNil vmVersion) (vmVersion >= 159)) {
-collectType = 'bulk'
 		collectCRCsBulk this
 	} else {
-collectType = 'individually'
 		collectCRCsIndividually this
 	}
-collectCRCsMsecs = (msecSplit t)
 
 	// build dictionaries:
 	//  ideChunks: maps chunkID -> block or functionName
@@ -1342,9 +1333,6 @@ collectCRCsMsecs = (msecSplit t)
 			forceSaveChunk this sourceItem
 		}
 	}
-
-totalMSecs = (msecs t)
-print '** verifyCRCs' (join '(' collectType ')') 'msecs:' (msecs t) '( collectCRCs:' collectCRCsMsecs 'other:' (totalMSecs - collectCRCsMsecs) ')'
 }
 
 method collectCRCsIndividually SmallRuntime {
