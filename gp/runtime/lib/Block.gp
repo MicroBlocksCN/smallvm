@@ -146,7 +146,10 @@ method fixLayout Block {
   }
 
   // arrange label parts horizontally and break up into lines
-  breakLineBeforeFirstArg = ((count (argList expression)) >= 5)
+  op = (primName expression)
+  breakLineBeforeFirstArg = (isOneOf op '[display:mbDisplay]' 'setNeoPixelColors10')
+  maxArgsPerLine = 6
+  if ('setNeoPixelColors10' == op) { maxArgsPerLine = 5 }
   currentLine = (list)
   for group labelParts {
     for each group {
@@ -163,18 +166,22 @@ method fixLayout Block {
           w = 0
           h = 0
         } else {
+          isArgSlot = (not (isClass each 'Text'))
           x = (+ left indentation w)
           w += (width (fullBounds (morph each)))
           w += (space * scale)
-          if (and breakLineBeforeFirstArg (not (isClass each 'Text'))) {
+          if (and breakLineBeforeFirstArg isArgSlot) {
 			breakLineBeforeFirstArg = false // only do this once
- 			lineArgCount = 10 // force a line break before first arg for blocks with >=5 args
+ 			lineArgCount = 10 // force a line break before first arg
 		  }
-		  if (and ('[display:mbDisplay]' == (primName expression)) (each == (first group))) {
+		  if (and breakLineBeforeFirstArg (each == (first group))) {
 			lineArgCount = 10 // force a line break after first item of block
 		  }
-		  if ('if' == (primName expression)) { lineArgCount = 0 } // never break 'if' blocks
-		  if (and (or (w > (break * scale)) (lineArgCount >= 5)) (notEmpty currentLine)) {
+		  if ('if' == op) { lineArgCount = 0 } // never break 'if' blocks
+		  if (and
+                (notEmpty currentLine)
+                (or (w > (break * scale)) (and isArgSlot (lineArgCount >= maxArgsPerLine)))
+            ) {
 			if (notEmpty currentLine) {
 			  add lines currentLine
 			  add lineHeights h
@@ -188,7 +195,7 @@ method fixLayout Block {
           add currentLine each
           h = (max h (height (morph each)))
           fastSetLeft (morph each) x
-		  if (not (isClass each 'Text')) { lineArgCount += 1 }
+		  if isArgSlot { lineArgCount += 1 }
         }
       }
     }
