@@ -1,0 +1,60 @@
+module MakerBit Output
+author MicroBlocks
+version 1 0 
+depends 'Touch (MPR121)' 
+choices makerbit_motor A B 
+description 'Support for MakerBit (https://makerbit.com)'
+variables pinOutputValues 
+
+  spec 'r' 'makerbit_pinTouched' 'Is MakerBit Pin _ Touched?' 'menu.range:5-16' 5
+  spec ' ' 'makerbit_setDigitalPin' 'Set Digital Pin _ to _' 'menu.range:5-16 bool' 5 true
+  spec ' ' 'makerbit_setMotorMakerBit' 'Set Motor _ Power _' 'menu.hyperduino_motor num' 'A' 100
+  spec ' ' 'makerbit_stopMotors' 'Stop All Motors'
+
+to makerbit_pinTouched pin {
+  return (touch_isTouched (pin - 2))
+}
+
+to makerbit_setDigitalPin pin value {
+  if (pinOutputValues == 0) {pinOutputValues = (newList 32 '')}
+  digitalWriteOp pin value
+  atPut (pin + 1) pinOutputValues value
+}
+
+to makerbit_setMotorMakerBit motor power {
+  comment 'Set motor (A or B) power (-100 to 100). The sign
+of the power value determines motor direction.'
+  comment 'Motor A: 11 & 12 (direction), 13 (power)
+Motor B: 15 & 16 (direction), 14 (power)'
+  if (motor == 'A') {
+    local 'p1' 11
+    local 'p2' 12
+    local 'pwrPin' 13
+  } (motor == 'B') {
+    local 'p1' 15
+    local 'p2' 16
+    local 'pwrPin' 14
+  } else {
+    return 0
+  }
+  comment 'Set the motor direction based on sign of power'
+  if (power > 0) {
+    makerbit_setDigitalPin p1 false
+    makerbit_setDigitalPin p2 true
+  } (power < 0) {
+    makerbit_setDigitalPin p1 true
+    makerbit_setDigitalPin p2 false
+  } else {
+    makerbit_setDigitalPin p1 false
+    makerbit_setDigitalPin p2 false
+  }
+  comment 'Set the PWM duty cycle on the power pin'
+  atPut (pwrPin + 1) pinOutputValues (power != 0)
+  analogWriteOp pwrPin (minimum (((absoluteValue power) * 1023) / 100) 1023)
+}
+
+to makerbit_stopMotors {
+  makerbit_setMotorMakerBit 'A' 0
+  makerbit_setMotorMakerBit 'B' 0
+}
+
