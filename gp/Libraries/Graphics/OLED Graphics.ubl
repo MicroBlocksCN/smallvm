@@ -35,7 +35,7 @@ variables OLEDReady OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTABL
   spec ' ' 'OLEDdrawRect' 'draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _' 'auto auto auto auto bool auto' 0 0 127 63 false 0
   spec ' ' 'fillRectangle' 'fill rectangle x _ y _ w _ h _ erase _' 'auto auto auto auto bool' 20 20 30 20 false
   spec ' ' 'OLEDflip' '_flip display top _' 'bool' false
-  spec 'r' 'OLEDmakeImage' 'make image _ : ' 'microbitDisplay' 33084991
+  spec 'r' 'OLEDmakeImage' 'make image _' 'microbitDisplay' 33084991
   spec ' ' 'OLEDpixel' 'set pixel x _ y _ erase _' 'auto auto bool' 0 0 false
   spec ' ' 'OLEDsetVideo' 'set video _' 'str.VideoMenu' 'Inverse'
   spec 'r' 'OLEDwru' 'cursor location'
