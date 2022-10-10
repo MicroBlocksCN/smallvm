@@ -1,4 +1,4 @@
-module 'MP3 Player' Output
+module 'MP3 Player (DFRobot, Octopus)' Output
 author MicroBlocks
 version 1 0 
 choices mp3PlayerType Octopus DFRobot 
@@ -11,9 +11,9 @@ variables _mp3UseChecksum
   spec ' ' 'mp3_setVolume' 'mp3 set volume _ (0-30)' 'num' 20
   spec ' ' 'mp3_playTrack' 'mp3 play track _ in folder _' 'num num' 1 1
   spec ' ' 'mp3_nextTrack' 'mp3 play next track in folder'
+  spec ' ' 'mp3_repeatAllInFolder' 'mp3 repeat all in folder _' 'num' 1
   spec ' ' 'mp3_pause' 'mp3 pause'
   spec ' ' 'mp3_resume' 'mp3 resume'
-  spec ' ' 'mp3_repeatAllInFolder' 'mp3 repeat all in folder _' 'num' 1
   spec ' ' '_mp3_sendMP3Cmd' '_mp3_sendMP3Cmd _ _ _' 'auto num num' '0x0C' 0 0
 
 to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
@@ -33,6 +33,7 @@ to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
   }
   comment 'send command'
   '[serial:write]' ('[data:asByteArray]' msg)
+  waitMillis 20
 }
 
 to mp3_initialize type {
@@ -58,11 +59,11 @@ to mp3_pause {
 
 to mp3_playTrack trackNum folderNum {
   comment 'Play the given track in the given folder.
-If folder is 0, play the given track at the top level.
+If folder is 0, play the given track at the top level of the SD card.
 Folder names must start with two digits, 01-99.
 Track names in a folder must start with three digits, 001-999.
-Track names at the top level must start with four digits 0001-9999.
-This sets the folder for the "next track" command.'
+Track names at the top level must start with four digits, 0001-9999.
+This sets the folder for the "play next track in folder" command.'
   if (folderNum < 1) {
     comment 'Play top-level track (e.g. 0001)'
     '_mp3_sendMP3Cmd' '0x03' 0 trackNum
@@ -74,7 +75,8 @@ This sets the folder for the "next track" command.'
 
 to mp3_repeatAllInFolder folderNum {
   comment 'Repeatedly play all files in the given folder. Does not work for top level (folder 0).'
-  '_mp3_sendMP3Cmd' '0x17' 0 folderNum
+  '_mp3_sendMP3Cmd' '0x17' folderNum folderNum
+  mp3_resume
 }
 
 to mp3_resume {
