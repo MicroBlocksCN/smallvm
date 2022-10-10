@@ -1,7 +1,7 @@
 module PicoBricks Output
 author 'Turgut Guneysu'
-version 2 1
-depends DHT 
+version 2 2
+depends 'Temperature Humidity (DHT11, DHT22)' 
 description 'Robotistan PicoBricks Library
 
 This library controls these Pico Bricks components:

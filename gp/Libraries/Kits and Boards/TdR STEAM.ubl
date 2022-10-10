@@ -1,7 +1,7 @@
 module 'TdR STEAM' Output
 author 'K Giori'
-version 1 0 
-depends DHT 'IR Remote' 
+version 1 1 
+depends 'IR Remote' 'Temperature Humidity (DHT11, DHT22)' 
 description 'Library for INNOVA DIDACTIC Imagina TdR STEAM v2.0 shield when used with ESP32 board.
 
 https://shop.innovadidactic.com/es/placas-kits-y-robots/1574-kit-imagina-tdr-steam-basado-en-esp32-steamaker.html'
