@@ -199,6 +199,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[sensors:tiltY]'		'tilt y')
 		(array 'r' '[sensors:tiltZ]'		'tilt z')
 		(array 'r' '[sensors:microphone]'	'microphone')
+		(array ' ' '[sensors:i2cSetClockSpeed]'	'set i2c clock speed _' 'num' 400000)
 	'Prims-Variables (not in palette)'
 		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
 		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
