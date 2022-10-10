@@ -10,12 +10,9 @@ to newInputSlot default editRule blockColor menuSelector {
 
 method initialize InputSlot default editRule blockColor slotMenu {
   isID = false
-  fontName = 'Arial'
-  fontSize = 10
-  if ('Linux' == (platform)) { fontSize = 9 }
   scale = (blockScale)
   morph = (newMorph this)
-  text = (newText '' fontName (scale * fontSize))
+  text = (newText '')
   addPart morph (morph text)
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
@@ -25,6 +22,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
 	isAuto = false
   }
   setEditRule text editRule
+  setTextFont this
   if (editRule == 'numerical') {
     setBorders text (scale * 5) 0
   } else {
@@ -76,6 +74,7 @@ method setContents InputSlot data fixStringOnlyNum {
     if (and (isClass data 'String') ('' != data) (representsANumber data)) {
       isAuto = false
       setEditRule text 'editable'
+      setTextFont this
     }
   }
   if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
@@ -96,6 +95,15 @@ method setContents InputSlot data fixStringOnlyNum {
   }
   contents = data
   raise morph 'inputChanged' this
+}
+
+method setTextFont InputSlot {
+  scale = (blockScale)
+  fontName = 'Arial'
+  fontSize = 10
+  if ('editable' == (editRule text)) { fontName = 'Monaco' }
+  if ('Linux' == (platform)) { fontSize += -1 }
+  setFont text fontName (fontSize * (blockScale))
 }
 
 method isVarSlot InputSlot {
@@ -522,6 +530,7 @@ method switchType InputSlot editRule {
 	  dta = (toString dta)
 	}
   }
+  setTextFont this
   setContents this dta
 }
 
