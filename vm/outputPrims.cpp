@@ -368,6 +368,9 @@ void updateMicrobitDisplay() {
 
 	static int displaySnapshot = 0;
 
+	static void turnDisplayOff() { }
+	static void turnDisplayOn() { }
+
 	void updateMicrobitDisplay() {
 		if (disableLEDDisplay) return;
 
