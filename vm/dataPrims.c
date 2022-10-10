@@ -263,6 +263,33 @@ OBJ primMakeList(int argCount, OBJ *args) {
 	return result;
 }
 
+OBJ primRange(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	int start = evalInt(args[0]);
+	int end = evalInt(args[1]);
+	int incr = (argCount > 2) ? evalInt(args[2]) : 1;
+	if (incr < 1) return fail(needsPositiveIncrement); // increment must be >= 1
+
+	int count;
+	if (end >= start) {
+		count = ((end - start) / incr) + 1;
+	} else {
+		count = ((start - end) / incr) + 1;
+		incr = -incr; // make the increment negative
+	}
+
+	OBJ result = newObj(ListType, count + 1, falseObj);
+	if (!result) return result; // allocation failed
+
+	FIELD(result, 0) = int2obj(count);
+	int n = start;
+	for (int i = 0; i < count; i++) {
+		FIELD(result, i + 1) = int2obj(n);
+		n += incr;
+	}
+	return result;
+}
+
 OBJ primListAddLast(int argCount, OBJ *args) {
 	// Add the given item to the end of the List. Grow if necessary.
 
@@ -807,6 +834,7 @@ OBJ primFreeMemory(int argCount, OBJ *args) {
 
 static PrimEntry entries[] = {
 	{"makeList", primMakeList},
+	{"range", primRange},
 	{"addLast", primListAddLast},
 	{"delete", primListDelete},
 	{"join", primJoin},

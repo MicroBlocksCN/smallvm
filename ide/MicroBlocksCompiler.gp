@@ -94,6 +94,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'sendBroadcast'		'broadcast _' 'str' 'go!' '')
 		'-'
 		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
+		(array 'r' '[data:range]'		'range _ to _ : by _' 'num num num' 1 10 2)
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		'-'

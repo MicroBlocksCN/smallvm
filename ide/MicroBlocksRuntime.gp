@@ -1592,6 +1592,7 @@ method errorString SmallRuntime errID {
 #define serialWriteTooBig		38	// Serial port write is limited to 128 bytes
 #define needsListOfIntegers		39	// Needs a list of integers
 #define byteOutOfRange			40	// Needs a value between 0 and 255
+#define needsPositiveIncrement	41	// Range increment must be a positive integer
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
