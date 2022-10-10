@@ -77,9 +77,13 @@ method redraw MicroBitDisplaySlot {
 
 // events
 
+method handEnter MicroBitDisplaySlot aHand { setCursor 'crosshair' }
+method handLeave MicroBitDisplaySlot aHand { setCursor 'default' }
+
 method handDownOn MicroBitDisplaySlot aHand {
 	// Start drawing on the LED display.
 
+	setCursor 'crosshair'
 	focusOn aHand this
 	paintMode = true
 	index = (ledIndex this aHand)
