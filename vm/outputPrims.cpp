@@ -439,9 +439,9 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 	return int2obj(lightLevel);
 }
 
-OBJ primMBDisableDisplay(int argCount, OBJ *args) {
+OBJ primMBEnableDisplay(int argCount, OBJ *args) {
 	if (argCount > 0) {
-		disableLEDDisplay = (trueObj == args[0]);
+		disableLEDDisplay = (trueObj != args[0]);
 		if (disableLEDDisplay) {
 			turnDisplayOff();
 			lightLevel = 0;
@@ -1024,7 +1024,7 @@ static PrimEntry entries[] = {
 	{"mbUnplot", primMBUnplot},
 	{"mbDrawShape", primMBDrawShape},
 	{"mbShapeForLetter", primMBShapeForLetter},
-	{"mbDisableDisplay", primMBDisableDisplay},
+	{"mbEnableDisplay", primMBEnableDisplay},
 	{"neoPixelSend", primNeoPixelSend},
 	{"neoPixelSetPin", primNeoPixelSetPin},
 };
