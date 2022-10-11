@@ -1,10 +1,10 @@
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
-version 1 10 
-choices ModeMenu Horizontal Vertical 
+version 1 11 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -18,6 +18,7 @@ Changes:
 - removed dependencies
 - unified data format for chars, sprites, and images
 - image draw at any x,y
+- filled rectangle
 - image draw bug fix
 - stack overflow fix
 '
@@ -33,7 +34,7 @@ variables OLEDReady OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTABL
   spec ' ' 'OLEDdrawImage' 'draw image _ at x _ y _' 'auto auto auto' 0 0 0
   spec ' ' 'OLEDdrawLine' 'draw line from x _ y _ to x _ y _ erase _' 'auto auto auto auto bool' 0 0 127 63 false
   spec ' ' 'OLEDdrawRect' 'draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _' 'auto auto auto auto bool auto' 0 0 127 63 false 0
-  spec ' ' 'fillRectangle' 'fill rectangle x _ y _ w _ h _ erase _' 'auto auto auto auto bool' 20 20 30 20 false
+  spec ' ' 'OLEDfillRect' 'fill rectangle x _ y _ w _ h _ erase _' 'auto auto auto auto bool' 20 20 30 20 false
   spec ' ' 'OLEDflip' '_flip display top _' 'bool' false
   spec 'r' 'OLEDmakeImage' 'make image _' 'microbitDisplay' 33084991
   spec ' ' 'OLEDpixel' 'set pixel x _ y _ erase _' 'auto auto bool' 0 0 false
@@ -323,6 +324,17 @@ Does not check for reversed rectangle coordinates for round corners.'
     OLEDdrawLine TLx (BRy - 1) TLx (TLy + 1) erase
   }
   _delayGDUpd = oldDelayGDUpd
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
+to OLEDfillRect x y w h erase {
+  for row h {
+    for col w {
+      OLEDpixel (x + (col - 1)) (y + (row - 1)) erase
+    }
+  }
   if (not _delayGDUpd) {
     OLEDshowGDBuffer
   }
@@ -822,16 +834,5 @@ to '_verifyXY' x y {
 
 to 'defer display updates' {
   _delayGDUpd = (booleanConstant true)
-}
-
-to fillRectangle x y w h erase {
-  for row h {
-    for col w {
-      OLEDpixel (x + (col - 1)) (y + (row - 1)) erase
-    }
-  }
-  if (not _delayGDUpd) {
-    OLEDshowGDBuffer
-  }
 }
 
