@@ -1,24 +1,32 @@
 module HyperDuino Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 depends 'Touch (MPR121)' 
 choices hyperduino_motor A B 
 description 'Support for HyperDuino (https://hyperduino.com).'
-variables pinOutputValues 
+variables _pinOutputValues 
 
   spec 'r' 'hyperduino_pinTouched' 'Is HyperDuino Pin _ Touched?' 'menu.range:2-13' 2
   spec ' ' 'hyperduino_setDigitalPin' 'Set Digital Pin _ to _' 'menu.range:2-13 bool' 2 true
+  spec 'r' 'hyperduino_allPins' 'HyperDuino Pins'
+  space
   spec ' ' 'hyperduino_setMotorHyperduino' 'Set Motor _ Power _' 'menu.hyperduino_motor num' 'A' 100
   spec ' ' 'hyperduino_stopMotors' 'Stop All Motors'
+  space
+  spec ' ' '[display:mbEnableDisplay]' 'enable LED display _' 'bool' false
+
+to hyperduino_allPins {
+  return ('[data:range]' 2 13)
+}
 
 to hyperduino_pinTouched pin {
   return (touch_isTouched (pin - 2))
 }
 
 to hyperduino_setDigitalPin pin value {
-  if (pinOutputValues == 0) {pinOutputValues = (newList 32 '')}
+  if (_pinOutputValues == 0) {_pinOutputValues = (newList 32 '')}
   digitalWriteOp pin value
-  atPut (pin + 1) pinOutputValues value
+  atPut (pin + 1) _pinOutputValues value
 }
 
 to hyperduino_setMotorHyperduino motor power {
@@ -49,7 +57,7 @@ Motor B: 7 & 8 (direction), 6 (power)'
     hyperduino_setDigitalPin p2 false
   }
   comment 'Set the PWM duty cycle on the power pin'
-  atPut (pwrPin + 1) pinOutputValues (power != 0)
+  atPut (pwrPin + 1) _pinOutputValues (power != 0)
   analogWriteOp pwrPin (minimum (((absoluteValue power) * 1023) / 100) 1023)
 }
 

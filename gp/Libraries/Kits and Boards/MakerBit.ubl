@@ -1,24 +1,32 @@
 module MakerBit Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 depends 'Touch (MPR121)' 
 choices makerbit_motor A B 
 description 'Support for MakerBit (https://makerbit.com)'
-variables pinOutputValues 
+variables _pinOutputValues 
 
   spec 'r' 'makerbit_pinTouched' 'Is MakerBit Pin _ Touched?' 'menu.range:5-16' 5
   spec ' ' 'makerbit_setDigitalPin' 'Set Digital Pin _ to _' 'menu.range:5-16 bool' 5 true
+  spec 'r' 'makerbit_allPins' 'HyperDuino Pins'
+  space
   spec ' ' 'makerbit_setMotorMakerBit' 'Set Motor _ Power _' 'menu.hyperduino_motor num' 'A' 100
   spec ' ' 'makerbit_stopMotors' 'Stop All Motors'
+  space
+  spec ' ' '[display:mbEnableDisplay]' 'enable LED display _' 'bool' false
+
+to hyperduino_allPins {
+  return ('[data:range]' 5 16)
+}
 
 to makerbit_pinTouched pin {
   return (touch_isTouched (pin - 2))
 }
 
 to makerbit_setDigitalPin pin value {
-  if (pinOutputValues == 0) {pinOutputValues = (newList 32 '')}
+  if (_pinOutputValues == 0) {_pinOutputValues = (newList 32 '')}
   digitalWriteOp pin value
-  atPut (pin + 1) pinOutputValues value
+  atPut (pin + 1) _pinOutputValues value
 }
 
 to makerbit_setMotorMakerBit motor power {
@@ -49,7 +57,7 @@ Motor B: 15 & 16 (direction), 14 (power)'
     makerbit_setDigitalPin p2 false
   }
   comment 'Set the PWM duty cycle on the power pin'
-  atPut (pwrPin + 1) pinOutputValues (power != 0)
+  atPut (pwrPin + 1) _pinOutputValues (power != 0)
   analogWriteOp pwrPin (minimum (((absoluteValue power) * 1023) / 100) 1023)
 }
 
