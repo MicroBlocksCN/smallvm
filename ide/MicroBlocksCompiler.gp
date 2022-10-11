@@ -188,7 +188,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[display:mbUnplot]'		'unplot x _ y _' 'num num' 3 3)
 		(array ' ' '[display:mbDrawShape]'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
 		(array 'r' '[display:mbShapeForLetter]'	'shape for letter _' 'str' 'A')
-		(array ' ' '[display:mbDisableDisplay]'	'disable microbit display _' 'bool' true)
+		(array ' ' '[display:mbEnableDisplay]'	'enable LED display _' 'bool' false)
 		(array ' ' '[display:neoPixelSetPin]'	'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
 		(array ' ' '[display:neoPixelSend]'		'send NeoPixel rgb _' 'num' 5)
 	'Prims-Sensing (not in palette)'

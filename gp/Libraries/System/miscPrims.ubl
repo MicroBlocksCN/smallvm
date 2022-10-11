@@ -1,13 +1,15 @@
 module 'Misc Primitives'
 author MicroBlocks
-version 1 1
+version 1 2
 description 'Miscellaneous system primitives.'
 
-	spec ' ' 'noop'				'no op'
-	spec ' ' 'ignoreArgs'		'ignore : _ : ...' 'auto' 0
-	space
-	spec 'r' 'pushArgCount'		'arg count'
-	spec 'r' 'getArg'			'arg _' 'num' 0
-	space
-	spec 'r' 'longMult'			'( _ * _ ) >> _' 'num num num' 1024 2048 10
-	spec 'r' '[misc:sin]'		'fixed sine _' 'num' 9000
+  spec ' ' 'noop' 'no op'
+  spec ' ' 'ignoreArgs' 'ignore : _ : ...' 'auto' 0
+  space
+  spec 'r' 'pushArgCount' 'arg count'
+  spec 'r' 'getArg' 'arg _' 'num' 0
+  space
+  spec 'r' 'longMult' '( _ * _ ) >> _' 'num num num' 1024 2048 10
+  spec 'r' '[misc:sin]' 'fixed sine _' 'num' 9000
+  space
+  spec ' ' '[display:mbEnableDisplay]' 'enable LED display _' 'bool' false
