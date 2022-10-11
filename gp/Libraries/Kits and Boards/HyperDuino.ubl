@@ -25,7 +25,7 @@ to hyperduino_setMotorHyperduino motor power {
   comment 'Set motor (A or B) power (-100 to 100). The sign
 of the power value determines motor direction.'
   comment 'Motor A: 3 & 4 (direction), 5 (power)
-Motor B: 7 & 8 (diretion), 6 (power)'
+Motor B: 7 & 8 (direction), 6 (power)'
   if (motor == 'A') {
     local 'p1' 3
     local 'p2' 4
