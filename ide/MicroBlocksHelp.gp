@@ -143,7 +143,42 @@ method initialize MicroBlocksHelp {
 		(array 'displayCharacter' '/libraries#display-character' 'Display a single character on the LED display.')
 		(array 'scroll_text' '/libraries#scroll-text' 'Scroll words or numbers across the LED display.')
 		(array 'stopScrollingText' 	'/libraries#stop-scrolling' 'Stop scrolling and clear the display.')
-	)
+
+		// NEOPIXEL
+		(array 'neoPixelAttach' '/libraries#attach-NeoPixel-LED-to-pin' 'Set Neopixel count and pin number.')
+		(array 'setNeoPixelColors10' '/libraries#set-NeoPixels' 'Set the colors of the first ten NeoPixels.')
+		(array 'clearNeoPixels' '/libraries#clear-NeoPixels' 'Turn off all NeoPixels.')
+		(array 'neoPixelSetAllToColor' '/libraries#set-all-NeoPixels-color' 'Set all NeoPixels to the given color.')
+		(array 'setNeoPixelColor' '/libraries#set-NeoPixel-color' 'Set the given NeoPixel to the selected color.')
+		(array 'rotateNeoPixelsBy' '/libraries#rotate-NeoPixels-by' 'Shift/rotate the NeoPixel colors by the given number.')
+		(array 'colorFromRGB' '/libraries#color-r-g-b' 'Return a color defined by values of R G B (0-255).')
+		(array 'randomColor' '/libraries#random-color' 'Return a random color.')
+
+		// RADIO
+		(array '[radio:sendInteger]' '/libraries#radio-send-number' 'Send a numerical message.')
+		(array '[radio:sendString]' '/libraries#radio-send-string' 'Send a text message.')
+		(array '[radio:sendPair]' '/libraries#radio-send-pair' 'Send a message containing both short text string and a number.')
+		(array '[radio:messageReceived]' '/libraries#radio-message-received' 'Return (-o) when a new radio message is received.')
+		(array '[radio:receivedInteger]' '/libraries#radio-last-number' 'Return the number part of the last radio message received.')
+		(array '[radio:receivedString]' '/libraries#radio-last-string' 'Return the text part of the last radio message received.')
+		(array '[radio:setGroup]' '/libraries#radio-set-group' 'Set the radio group number (0-255).')
+		(array '[radio:setPower]' '/libraries#radio-set-power' 'Set the radio transmission power level (0-7).')
+
+		// RINGTONE
+		(array 'play ringtone' '/libraries#play-ringtone' 'Play the given ringtone string.')
+		(array 'current song name' '/libraries#current-song-name' 'Report the name of the currently playing ringtone song.')
+
+		// SERVO
+		(array 'setServoAngle' '/libraries#set-servo-degrees' 'Set the angle of a positional servo.')
+		(array 'setServoSpeed' '/libraries#set-servo-speed' 'Set the speed of a continuous rotation servo.')
+		(array 'stopServo' '/libraries#servo-stop' 'Stop sending servo control pulses.')
+
+		//TONE
+		(array 'play tone' '/libraries#play-note' 'Play the given note in the given octave for milliseconds.')
+		(array 'playMIDIKey' '/libraries#play-midi' 'Play the given piano key (0-127) for milliseconds. Middle C is 60.')
+		(array 'play frequency' '/libraries#play-frequency' 'Play a note specified in Hertz (Hz). Middle C is ~261 Hz.')
+		(array 'attach buzzer to pin' '/libraries#attach-buzzer' 'Specify the pin used to play tones.')
+ 	)
 
 	opDict = (dictionary)
 	for e opEntries {
