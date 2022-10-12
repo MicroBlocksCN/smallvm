@@ -104,8 +104,8 @@ method setTextFont InputSlot {
   if ('editable' == (editRule text)) {
     if ('Browser' == (platform)) {
       fontName = 'monospace'
-    } ('Windows' == (platform)) {
-      fontName = 'Lucida Sans' // or Consolas
+    } ('Win' == (platform)) {
+      fontName = 'Lucida Console' // Lucida Console or Consolas
     } ('Mac' == (platform)) {
       fontName = 'Menlo Regular'
     } ('Linux' == (platform)) {
