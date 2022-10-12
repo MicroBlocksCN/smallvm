@@ -132,7 +132,7 @@ method initialize MicroBlocksHelp {
 		(array '[sensors:acceleration]' '/libraries#acceleration' 'Report total acceleration (0-346).')
 		(array '[display:lightLevel]' '/libraries#light-level' 	'Report ambient light level (0-1023).')
 		(array '[sensors:temperature]' '/libraries#temperature'	'Report ambient temperature in degrees Celsius.')
-		(array '[sensors:magneticField]' '/libraries#magnetic field' 'Report magnetic field strength (0-100000).')
+		(array '[sensors:magneticField]' '/libraries#magnetic-field' 'Report magnetic field strength (0-100000).')
 		(array '_setAccelRange' '/libraries#set-acceleration-range'	'Set accelermeter range. Higher ranges are usefl for collisions.')
 
 		// LED DISPLAY LIBRARY
@@ -145,12 +145,12 @@ method initialize MicroBlocksHelp {
 		(array 'stopScrollingText' 	'/libraries#stop-scrolling' 'Stop scrolling and clear the display.')
 
 		// NEOPIXEL
-		(array 'neoPixelAttach' '/libraries#attach-NeoPixel-LED-to-pin' 'Set Neopixel count and pin number.')
-		(array 'setNeoPixelColors10' '/libraries#set-NeoPixels' 'Set the colors of the first ten NeoPixels.')
-		(array 'clearNeoPixels' '/libraries#clear-NeoPixels' 'Turn off all NeoPixels.')
-		(array 'neoPixelSetAllToColor' '/libraries#set-all-NeoPixels-color' 'Set all NeoPixels to the given color.')
-		(array 'setNeoPixelColor' '/libraries#set-NeoPixel-color' 'Set the given NeoPixel to the selected color.')
-		(array 'rotateNeoPixelsBy' '/libraries#rotate-NeoPixels-by' 'Shift/rotate the NeoPixel colors by the given number.')
+		(array 'neoPixelAttach' '/libraries#attach-neopixel-led-to-pin' 'Set Neopixel count and pin number.')
+		(array 'setNeoPixelColors10' '/libraries#set-neopixels' 'Set the colors of the first ten NeoPixels.')
+		(array 'clearNeoPixels' '/libraries#clear-neopixels' 'Turn off all NeoPixels.')
+		(array 'neoPixelSetAllToColor' '/libraries#set-all-neopixels-color' 'Set all NeoPixels to the given color.')
+		(array 'setNeoPixelColor' '/libraries#set-neopixel-color' 'Set the given NeoPixel to the selected color.')
+		(array 'rotateNeoPixelsBy' '/libraries#rotate-neopixels-by' 'Shift/rotate the NeoPixel colors by the given number.')
 		(array 'colorFromRGB' '/libraries#color-r-g-b' 'Return a color defined by values of R G B (0-255).')
 		(array 'randomColor' '/libraries#random-color' 'Return a random color.')
 
