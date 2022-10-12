@@ -159,8 +159,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'atPut'				'replace item _ of list _ with _' 'auto.replaceItemMenu str auto' 1 nil 10)
 		(array ' ' '[data:delete]'		'delete item _ of list _' 'auto.replaceItemMenu str' 1)
 		'-'
-		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
-		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' 'smiles' 2 5)
+		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'str str num' 'a' 'cat' 1)
+		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'str num num' 'smiles' 2 5)
 		(array 'r' '[data:split]'		'split _ by _' 'str str' 'A,B,C' ',')
 	'Data-Advanced'
 		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' nil ' ')
