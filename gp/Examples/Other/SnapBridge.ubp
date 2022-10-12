@@ -1,0 +1,292 @@
+module main
+author MicroBlocks
+version 1 0 
+description 'Bridge between MicroBlocks and Snap! using broadcast messages over USB-serial/WebSerial.
+Streams pin and sensor data to Snap! Allows digital pins to be set.
+Includes support for MakerBit and HyperDuino motor control.'
+variables isMakerBit pinOutputValues 
+
+  spec ' ' 'snapConnect_processCommands' 'Read & Execute Snap! Commands'
+  spec ' ' 'snapConnect_sendPinState' 'Send Touch & Pin State'
+  spec 'r' 'snapConnect_digitalPins' 'Digital Pin State from pin _ through pin _' 'auto auto' 2 13
+  spec ' ' 'snapConnect_setDigitalPin' 'Set Digital Pin _ to _' 'auto bool' 2 true
+  spec ' ' 'snapConnect_setMotorHyperduino' 'Set Motor _ Power _ (HyperDuino)' 'auto auto' 'A' 100
+  spec ' ' 'snapConnect_setMotorMakerbit' 'Set Motor _ label _ (MakerBit)' 'auto auto' 'A' 100
+  spec ' ' 'Send Sensors' 'Send Sensors'
+  spec 'r' 'is microbit?' 'is microbit?'
+
+to 'Send Sensors' {
+  local 'msg' (newList 7)
+  atPut 1 msg 'sensors'
+  atPut 2 msg ('[sensors:tiltX]')
+  atPut 3 msg ('[sensors:tiltY]')
+  atPut 4 msg ('[sensors:tiltZ]')
+  atPut 5 msg ('[display:lightLevel]')
+  atPut 6 msg ('[sensors:temperature]')
+  atPut 7 msg ('[sensors:magneticField]')
+  sendBroadcast ('[data:joinStrings]' msg ',')
+}
+
+to 'is microbit?' {
+  return (('[data:find]' 'micro:bit' (boardType)) == 1)
+}
+
+to snapConnect_digitalPins firstPin lastPin {
+  comment 'Return an integer encoding the state of the digital pins from
+firstPin through lastPin. The result encodes the pin values
+as bits, where the pin number determines the bit offset.'
+  comment 'Least signifcant bit is always pin zero, regardless of firstPin.'
+  if (pinOutputValues == 0) {
+    pinOutputValues = (newList 32 '')
+  }
+  local 'pinState' 0
+  for i ((lastPin - firstPin) + 1) {
+    local 'pin' ((firstPin + i) - 1)
+    local 'output' (at (pin + 1) pinOutputValues)
+    if (isType output 'boolean') {
+      comment 'Pin is an output; set bit if current output is true'
+      if output {
+        pinState = (pinState | (1 << pin))
+      }
+    } else {
+      comment 'Pin is an input; set bit if pin voltage is "high"'
+      if (digitalReadOp pin) {
+        pinState = (pinState | (1 << pin))
+      }
+    }
+  }
+  return pinState
+}
+
+to snapConnect_processCommands {
+  local 'msg parts' ('[data:split]' (getLastBroadcast) ',')
+  local 'cmd' (at 1 (v 'msg parts'))
+  if (cmd == 'Set Digital Pin') {
+    local 'pin' ((at 2 (v 'msg parts')) + 0)
+    local 'value' ((at 3 (v 'msg parts')) == 'true')
+    snapConnect_setDigitalPin pin value
+  } (cmd == 'Enable Display') {
+    '[display:mbEnableDisplay]' ((at 2 (v 'msg parts')) == 'true')
+  } (cmd == 'Set Motor') {
+    if ('is microbit?') {
+      snapConnect_setMotorMakerbit (at 2 (v 'msg parts')) (at 3 (v 'msg parts'))
+    } else {
+      snapConnect_setMotorHyperduino (at 2 (v 'msg parts')) (at 3 (v 'msg parts'))
+    }
+  }
+}
+
+to snapConnect_sendPinState {
+  local 'msg' (newList 9)
+  atPut 1 msg 'pins'
+  comment 'Add digital pin state'
+  if ('is microbit?') {
+    atPut 2 msg (snapConnect_digitalPins 0 16)
+  } else {
+    atPut 2 msg (snapConnect_digitalPins 0 13)
+  }
+  comment 'Update and add touch state'
+  if (not _touch_initialized) {
+    '_touch_init'
+  }
+  '_touch_update'
+  atPut 3 msg _touch_state
+  comment 'Add analog pin values'
+  for i 6 {
+    atPut (i + 3) msg (analogReadOp (i - 1))
+  }
+  sendBroadcast ('[data:joinStrings]' msg ',')
+}
+
+to snapConnect_setDigitalPin pin value {
+  if (pinOutputValues == 0) {pinOutputValues = (newList 32 '')}
+  digitalWriteOp pin value
+  atPut (pin + 1) pinOutputValues value
+}
+
+to snapConnect_setMotorHyperduino motor power {
+  comment 'Set motor (A or B) power (-100 to 100). The sign
+of the power value determines motor direction.'
+  comment 'HyperDuino pins: Motor A 3, 4, 5; Motor B 7, 8, 6'
+  if (motor == 'A') {
+    local 'p1' 3
+    local 'p2' 4
+    local 'pwrPin' 5
+  } (motor == 'B') {
+    local 'p1' 7
+    local 'p2' 8
+    local 'pwrPin' 6
+  } else {
+    return 0
+  }
+  comment 'Set the motor direction based on sign of power'
+  if (power > 0) {
+    snapConnect_setDigitalPin p1 false
+    snapConnect_setDigitalPin p2 true
+  } (power < 0) {
+    snapConnect_setDigitalPin p1 true
+    snapConnect_setDigitalPin p2 false
+  } else {
+    snapConnect_setDigitalPin p1 false
+    snapConnect_setDigitalPin p2 false
+  }
+  comment 'Set the PWM duty cycle on the power pin'
+  atPut (pwrPin + 1) pinOutputValues (power != 0)
+  analogWriteOp pwrPin (minimum (((absoluteValue power) * 1023) / 100) 1023)
+}
+
+to snapConnect_setMotorMakerbit motor power {
+  comment 'Set motor (A or B) power (-100 to 100). The sign
+of the power value determines motor direction.'
+  comment 'MakerBit pins: Motor A 11, 12, 13; Motor B 15, 16, 14'
+  if (motor == 'A') {
+    local 'p1' 11
+    local 'p2' 12
+    local 'pwrPin' 13
+  } (motor == 'B') {
+    local 'p1' 15
+    local 'p2' 16
+    local 'pwrPin' 14
+  } else {
+    return 0
+  }
+  comment 'Set the motor direction based on sign of power'
+  if (power > 0) {
+    snapConnect_setDigitalPin p1 false
+    snapConnect_setDigitalPin p2 true
+  } (power < 0) {
+    snapConnect_setDigitalPin p1 true
+    snapConnect_setDigitalPin p2 false
+  } else {
+    snapConnect_setDigitalPin p1 false
+    snapConnect_setDigitalPin p2 false
+  }
+  comment 'Set the PWM duty cycle on the power pin'
+  atPut (pwrPin + 1) pinOutputValues (power != 0)
+  analogWriteOp pwrPin (minimum (((absoluteValue power) * 1023) / 100) 1023)
+}
+
+script 349 45 {
+comment 'Click to test!'
+sendBroadcast 'Set Digital Pin,2,false'
+}
+
+script 46 48 {
+comment 'Click to test!'
+sendBroadcast 'Set Digital Pin,2,true'
+}
+
+script 354 124 {
+comment 'Click to test!'
+sendBroadcast 'Set Motor,A,0'
+}
+
+script 46 124 {
+comment 'Click to test!'
+sendBroadcast 'Set Motor,A,100'
+}
+
+script 360 208 {
+whenBroadcastReceived ''
+comment 'Handle commands with arguments
+(e.g. motor and pin control)'
+snapConnect_processCommands
+}
+
+script 47 217 {
+whenStarted
+comment 'Send pin and sensor state'
+forever {
+  snapConnect_sendPinState
+  if ('is microbit?') {
+    'Send Sensors'
+  }
+  waitMillis 30
+}
+}
+
+script 366 343 {
+whenBroadcastReceived 'Get Info'
+sendBroadcast ('[data:join]' 'info,SnapBridge 1.0 ' (boardType))
+}
+
+
+module 'Basic Sensors' Input
+author MicroBlocks
+version 1 1 
+tags tilt acceleration light sensor 
+choices accelerometerRange '1' '2' '4' '8' 
+description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
+
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+  spec 'r' '[sensors:magneticField]' 'magnetic field'
+  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+
+to '_setAccelRange' n {
+  '[sensors:setAccelerometerRange]' (0 + n)
+}
+
+
+module 'Touch (MPR121)' Input
+author MicroBlocks
+version 1 1 
+description 'Support for the MPR121 12-channel i2c touch sensor.'
+variables _touch_initialized _touch_state 
+
+  spec 'r' 'touch_isTouched' 'is MPR121 pin _ touched?' 'menu.range:0-11' 0
+  spec ' ' '_touch_init' '_touch_init'
+  spec ' ' '_touch_update' '_touch_update'
+  spec ' ' '_touch_setRegister' '_touch_setRegister _ to _' 'auto auto' 'hex register' 'hex value'
+
+to '_touch_init' {
+  comment 'Soft reset -- sets all registers to defaults'
+  '_touch_setRegister' '0x80' '0x63'
+  comment 'Set filter parameters'
+  '_touch_setRegister' '0x2B' '0x01'
+  '_touch_setRegister' '0x2C' '0x01'
+  '_touch_setRegister' '0x2D' '0x10'
+  '_touch_setRegister' '0x2E' '0x20'
+  '_touch_setRegister' '0x2F' '0x01'
+  '_touch_setRegister' '0x30' '0x01'
+  '_touch_setRegister' '0x31' '0x10'
+  '_touch_setRegister' '0x32' '0x20'
+  '_touch_setRegister' '0x33' '0x01'
+  '_touch_setRegister' '0x34' '0x10'
+  '_touch_setRegister' '0x35' '0xFF'
+  comment 'Init debounce and config registers'
+  '_touch_setRegister' '0x5B' '0x11'
+  '_touch_setRegister' '0x5C' '0xFF'
+  '_touch_setRegister' '0x5D' '0x30'
+  comment 'Set touch/release thresholds'
+  local 'touchThreshold' 40
+  local 'releaseThreshold' 20
+  for i 12 {
+    local 'reg' ((hexToInt '40') + (2 * i))
+    i2cSet 90 (reg - 1) touchThreshold
+    i2cSet 90 reg releaseThreshold
+  }
+  comment 'Start tracking all 12 inputs (proximity detection disabled)'
+  '_touch_setRegister' '0x5E' '0xCC'
+  _touch_initialized = (booleanConstant true)
+}
+
+to '_touch_setRegister' reg value {
+  i2cSet 90 (hexToInt reg) (hexToInt value)
+}
+
+to '_touch_update' {
+  if (not _touch_initialized) {'_touch_init'}
+  _touch_state = (((i2cGet 90 1) << 8) | (i2cGet 90 0))
+}
+
+to touch_isTouched pin {
+  if (or (pin < 0) (pin > 11)) {return false}
+  '_touch_update'
+  return ((_touch_state & (1 << (11 - pin))) != 0)
+}
+
