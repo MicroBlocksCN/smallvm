@@ -8,7 +8,7 @@ variables _pinOutputValues
 
   spec 'r' 'makerbit_pinTouched' 'Is MakerBit Pin _ Touched?' 'menu.range:5-16' 5
   spec ' ' 'makerbit_setDigitalPin' 'Set Digital Pin _ to _' 'menu.range:5-16 bool' 5 true
-  spec 'r' 'makerbit_allPins' 'HyperDuino Pins'
+  spec 'r' 'makerbit_allPins' 'MakerBit Pins'
   space
   spec ' ' 'makerbit_setMotorMakerBit' 'Set Motor _ Power _' 'menu.hyperduino_motor num' 'A' 100
   spec ' ' 'makerbit_stopMotors' 'Stop All Motors'
@@ -20,7 +20,7 @@ to hyperduino_allPins {
 }
 
 to makerbit_pinTouched pin {
-  return (touch_isTouched (pin - 2))
+  return (touch_isTouched (pin - 5))
 }
 
 to makerbit_setDigitalPin pin value {
