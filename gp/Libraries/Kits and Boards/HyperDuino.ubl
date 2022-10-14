@@ -1,6 +1,6 @@
 module HyperDuino Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 depends 'Touch (MPR121)' 
 choices hyperduino_motor A B 
 description 'Support for HyperDuino (https://hyperduino.com).'
@@ -12,8 +12,6 @@ variables _pinOutputValues
   space
   spec ' ' 'hyperduino_setMotorHyperduino' 'Set Motor _ Power _' 'menu.hyperduino_motor num' 'A' 100
   spec ' ' 'hyperduino_stopMotors' 'Stop All Motors'
-  space
-  spec ' ' '[display:mbEnableDisplay]' 'enable LED display _' 'bool' false
 
 to hyperduino_allPins {
   return ('[data:range]' 2 13)
@@ -26,6 +24,13 @@ to hyperduino_pinTouched pin {
 to hyperduino_setDigitalPin pin value {
   if (_pinOutputValues == 0) {_pinOutputValues = (newList 32 '')}
   digitalWriteOp pin value
+  if (or (pin == 5) (pin == 6)) {
+    if value {
+      analogWriteOp pin 1023
+    } else {
+      analogWriteOp pin 0
+    }
+  }
   atPut (pin + 1) _pinOutputValues value
 }
 
