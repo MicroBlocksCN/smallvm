@@ -61,14 +61,14 @@ method redraw MicroBitDisplaySlot {
 	offColor = (colorHSV 235 0.62 0.40)
 	onColor = (colorHSV 0 1.0 0.9)
 	bm = (costumeData morph)
-	if (isNil bm) { bm = (newBitmap (69 * scale) (78 * scale) bgColor) }
+	if (isNil bm) { bm = (newBitmap (69 * scale) (72 * scale) bgColor) }
 	for y 5 {
 		for x 5 {
 			index = ((5 * (y - 1)) + x)
 			c = offColor
 			if (at display index) { c = onColor }
 			left = (inset + ((x - 1) * stride))
-			top = (inset + ((y - 1) * stride))
+			top = (inset + ((y - 1) * (stride - 1)))
 			fillRect bm c (left * scale) (top * scale) (ledWidth * scale) (ledHeight * scale)
 		}
 	}
