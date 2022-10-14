@@ -102,6 +102,7 @@ method setTextFont InputSlot {
   fontName = 'Arial'
   fontSize = 11
   if ('editable' == (editRule text)) {
+    fontSize = 12
     if ('Browser' == (platform)) {
       fontName = 'monospace'
     } ('Win' == (platform)) {
