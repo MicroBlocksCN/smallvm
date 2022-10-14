@@ -1,6 +1,6 @@
 module MakerBit Output
 author MicroBlocks
-version 1 1 
+version 1 2 
 depends 'Touch (MPR121)' 
 choices makerbit_motor A B 
 description 'Support for MakerBit (https://makerbit.com)'
@@ -10,12 +10,12 @@ variables _pinOutputValues
   spec ' ' 'makerbit_setDigitalPin' 'Set Digital Pin _ to _' 'menu.range:5-16 bool' 5 true
   spec 'r' 'makerbit_allPins' 'MakerBit Pins'
   space
-  spec ' ' 'makerbit_setMotorMakerBit' 'Set Motor _ Power _' 'menu.hyperduino_motor num' 'A' 100
+  spec ' ' 'makerbit_setMotorMakerBit' 'Set Motor _ Power _' 'menu.makerbit_motor num' 'A' 100
   spec ' ' 'makerbit_stopMotors' 'Stop All Motors'
   space
   spec ' ' '[display:mbEnableDisplay]' 'enable LED display _' 'bool' false
 
-to hyperduino_allPins {
+to makerbit_allPins {
   return ('[data:range]' 5 16)
 }
 
