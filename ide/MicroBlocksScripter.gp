@@ -579,7 +579,7 @@ method visibleVars MicroBlocksScripter {
 }
 
 method createVariable MicroBlocksScripter srcObj {
-  varName = (prompt (global 'page') 'New variable name?' '')
+  varName = (trim (prompt (global 'page') 'New variable name?' ''))
   if (varName != '') {
 	addVariable (main mbProject) (uniqueVarName this varName)
 	variablesChanged (smallRuntime)
