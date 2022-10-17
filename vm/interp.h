@@ -299,6 +299,7 @@ OBJ primSPIRecv(OBJ *args);
 
 OBJ primMBDisplay(int argCount, OBJ *args);
 OBJ primMBDisplayOff(int argCount, OBJ *args);
+OBJ primMBEnableDisplay(int argCount, OBJ *args);
 OBJ primMBPlot(int argCount, OBJ *args);
 OBJ primMBUnplot(int argCount, OBJ *args);
 

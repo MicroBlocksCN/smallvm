@@ -16,7 +16,7 @@
 
 // LED Matrix Pins on BBC micro:bit and Calliope
 
-int disableLEDDisplay = false; // disable micro:bit 5x5 display and light sensor when true
+static int disableLEDDisplay = false; // disable micro:bit 5x5 display and light sensor when true
 
 #if defined(ARDUINO_BBC_MICROBIT)
 
