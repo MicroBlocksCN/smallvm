@@ -120,7 +120,11 @@ method filePart String {
   // If there is no '/' return the entire string.
 
   i = (findLast this '/')
-  if (isNil i) { return this }
+  if (isNil i) {
+    j = (findLast this '\') // check for Windows file separater (e.g. from drag-file file name)
+    if (isNil j) { return this }
+    i = j
+  }
   return (substring this (i + 1))
 }
 
@@ -574,6 +578,7 @@ method normalizeLineEndings String {
 }
 
 method varMustBeQuoted String {
+  if ('' == this) { return true } // empty string
   if (contains (letters this) ' ') { return true }
   ch = (at this 1)
   if (or (isDigit ch) ('-' == ch)) { return true }
