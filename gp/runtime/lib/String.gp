@@ -300,6 +300,16 @@ method separateCamelCase String {
   return (joinStringArray (toArray words) ' ')
 }
 
+method toUnixPath String {
+  // Convert from Windows to Unix/Mac directory delimitors.
+
+  letters = (letters this)
+  for i (count letters) {
+    if ('\' == (at letters i)) { atPut letters i '/' }
+  }
+  return (joinStringArray letters)
+}
+
 // Printing and Formatting
 
 method toString String { return this }

@@ -581,7 +581,7 @@ method processBrowserFileSave MicroBlocksEditor {
 
 method processDroppedFiles MicroBlocksEditor {
   for evt (droppedFiles (global 'page')) {
-	fName = (at evt 'file')
+	fName = (toUnixPath (at evt 'file'))
 	data = (readFile fName true)
 	if (notNil data) {
 	  processDroppedFile this fName data
