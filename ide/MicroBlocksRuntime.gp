@@ -473,6 +473,7 @@ method syncScripts SmallRuntime {
 	// Called by scripter when anything changes.
 
 	if (isNil port) { return }
+	if (notNil decompiler) { return }
 
 	// force re-save of any functions in the scripting area
 	for aBlock (sortedScripts (scriptEditor scripter)) {
@@ -1064,7 +1065,7 @@ method checkVmVersion SmallRuntime {
 method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
-	if readFromBoard { return } // don't load libraries while decompiling
+	if (or readFromBoard (notNil decompiler)) { return } // don't load libraries while decompiling
 	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
 	if (boardLibAutoLoadDisabled (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
 
