@@ -99,24 +99,19 @@ method setContents InputSlot data fixStringOnlyNum {
 
 method setTextFont InputSlot {
   scale = (blockScale)
-  fontName = 'Arial'
-  fontSize = 11
-  if ('editable' == (editRule text)) {
-    if ('Browser' == (platform)) {
-      fontSize = 11
-      fontName = 'monospace'
-    } ('Win' == (platform)) {
-      fontSize = 12
-      fontName = 'Lucida Console' // Lucida Console or Consolas
-    } ('Mac' == (platform)) {
-      fontSize = 11
-      fontName = 'Menlo Regular'
-    } ('Linux' == (platform)) {
-      fontSize = 10
-      fontName = 'DejaVu Sans Mono'
-    }
+  if ('Browser' == (platform)) {
+    fontSize = 11
+    fontName = 'monospace'
+  } ('Win' == (platform)) {
+    fontSize = 12
+    fontName = 'Lucida Console' // Lucida Console or Consolas
+  } ('Mac' == (platform)) {
+    fontSize = 11
+    fontName = 'Menlo Regular'
+  } ('Linux' == (platform)) {
+    fontSize = 9
+    fontName = 'DejaVu Sans Mono'
   }
-  if ('Linux' == (platform)) { fontSize += -1 }
   setFont text fontName (fontSize * (blockScale))
 }
 

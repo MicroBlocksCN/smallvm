@@ -74,7 +74,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[serial:open]'			'serial open _ baud' 'num' 9600)
 		(array ' ' '[serial:close]'			'serial close')
 		(array 'r' '[serial:read]'			'serial read')
-		(array ' ' '[serial:write]'			'serial write _' 'auto' 'aByteStringOrByteArray')
+		(array ' ' '[serial:write]'			'serial write _' 'str' 'aByteStringOrByteArray')
 		(array 'r' '[serial:writeBytes]'	'serial write _ starting at _' 'str num' 'aByteStringOrByteArray' 1)
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
