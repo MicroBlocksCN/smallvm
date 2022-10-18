@@ -102,12 +102,14 @@ method setTextFont InputSlot {
   fontName = 'Arial'
   fontSize = 11
   if ('editable' == (editRule text)) {
-    fontSize = 12
     if ('Browser' == (platform)) {
+      fontSize = 11
       fontName = 'monospace'
     } ('Win' == (platform)) {
+      fontSize = 12
       fontName = 'Lucida Console' // Lucida Console or Consolas
     } ('Mac' == (platform)) {
+      fontSize = 11
       fontName = 'Menlo Regular'
     } ('Linux' == (platform)) {
       fontSize = 10
