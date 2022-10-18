@@ -1561,11 +1561,6 @@ method initializeForSpec Block spec suppressExpansion {
   labelParts = (list group)
   addAllLabelParts this
 
-  // hack: make the font bigger in comment blocks
-  if ('comment' == (blockOp spec)) {
-	setFont (getField (last (first labelParts)) 'text') nil (13 * scale)
-  }
-
   // expand to the first input slot, if any
   if suppressExpansion {return}
   if (and (repeatLastSpec blockSpec) (== 0 (countInputSlots blockSpec (at (specs blockSpec) 1)))) {
