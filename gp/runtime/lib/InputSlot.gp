@@ -110,7 +110,7 @@ method setTextFont InputSlot {
     } ('Mac' == (platform)) {
       fontName = 'Menlo Regular'
     } ('Linux' == (platform)) {
-      fontSize = 11
+      fontSize = 10
       fontName = 'DejaVu Sans Mono'
     }
   }
