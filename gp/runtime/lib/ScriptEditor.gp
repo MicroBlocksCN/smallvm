@@ -521,12 +521,12 @@ method setExportScale ScriptEditor percent {
   setGlobal 'blockExportScale' (percent / 100)
 }
 
-method saveScriptsImage ScriptEditor {
+method saveScriptsImage ScriptEditor fName doNotCrop {
   // draw scripts (cropped to the dimensions of the ScriptEditor's scroll frame)
   // Use the current block scale, not blockExportScale to support semi-WYSIWYG.
 
   timer = (newTimer)
-  bm = (croppedScriptsCostume this)
+  bm = (croppedScriptsCostume this doNotCrop)
 
   scriptsString = nil
   mbScripter = (ownerThatIsA morph 'MicroBlocksScripter')
@@ -536,33 +536,38 @@ method saveScriptsImage ScriptEditor {
 
   if (or ((width bm) == 0) ((height bm) == 0)) { return } // no scripts; empty bitmap
   pngData = (encodePNG bm nil scriptsString)
-  fName = (join 'allScripts' (msecsSinceStart) '.png')
+
+  defaultFileName = (join 'allScripts' (msecsSinceStart) '.png')
   if ('Browser' == (platform)) {
     if ((msecs timer) > 4000) {
       // if it has been more than a few seconds the user must click again to allow file save
       inform (global 'page') (localized 'PNG preparation complete.')
     }
-	browserWriteFile pngData fName 'scriptImage'
+	browserWriteFile pngData defaultFileName 'scriptImage'
   } else {
-	fName = (fileToWrite fName '.png')
-	if ('' == fName) { return }
-	if (not (endsWith fName '.png')) { fName = (join fName '.png') }
+    if (isNil fName) {
+      fName = (fileToWrite defaultFileName '.png')
+      if ('' == fName) { return }
+    }
+    if (not (endsWith fName '.png')) { fName = (join fName '.png') }
 	writeFile fName pngData
   }
 }
 
-method croppedScriptsCostume ScriptEditor {
+method croppedScriptsCostume ScriptEditor doNotCrop {
   r = (scriptsRect this)
   w = (ceiling (width r))
   h = (ceiling (height r))
   if (or (w == 0) (h == 0)) { return (newBitmap 1 1) }
 
-  // limit size to dimensions of ScriptEditor's scroll frame
-  bnds = (bounds (owner morph))
-  if (or (w > (width bnds)) (h > (height bnds))) {
-    print 'Cropping scripts image to avoid running out of memory'
-    w = (min w (width bnds))
-    h = (min h (height bnds))
+  if (true != doNotCrop) {
+    // limit size to dimensions of ScriptEditor's scroll frame
+    bnds = (bounds (owner morph))
+    if (or (w > (width bnds)) (h > (height bnds))) {
+      print 'Cropping scripts image to avoid running out of memory'
+      w = (min w (width bnds))
+      h = (min h (height bnds))
+    }
   }
   if ('Browser' == (platform)) { // in browser, draw on Texture for speed
     result = (newTexture w h (gray 0 0))
