@@ -1,6 +1,6 @@
 // editable input slot for blocks
 
-defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID pathCache cacheW cacheH
+defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID isMonospace pathCache cacheW cacheH
 
 to newInputSlot default editRule blockColor menuSelector {
   if (isNil default) {default = ''}
@@ -10,6 +10,7 @@ to newInputSlot default editRule blockColor menuSelector {
 
 method initialize InputSlot default editRule blockColor slotMenu {
   isID = false
+  isMonospace = false
   scale = (blockScale)
   morph = (newMorph this)
   text = (newText '')
@@ -53,6 +54,8 @@ method initialize InputSlot default editRule blockColor slotMenu {
 method morph InputSlot {return morph}
 method setID InputSlot bool {isID = bool}
 method color InputSlot {return color}
+method isMonospace InputSlot {return isMonospace}
+method setMonospace InputSlot bool {isMonospace = bool}
 
 method contents InputSlot {
   if ((editRule text) == 'static') {
@@ -99,19 +102,24 @@ method setContents InputSlot data fixStringOnlyNum {
 
 method setTextFont InputSlot {
   scale = (blockScale)
-  if ('Browser' == (platform)) {
-    fontSize = 11
-    fontName = 'monospace'
-  } ('Win' == (platform)) {
-    fontSize = 12
-    fontName = 'Lucida Console' // Lucida Console or Consolas
-  } ('Mac' == (platform)) {
-    fontSize = 11
-    fontName = 'Menlo Regular'
-  } ('Linux' == (platform)) {
-    fontSize = 9
-    fontName = 'DejaVu Sans Mono'
+  fontName = 'Arial'
+  fontSize = 11
+  if isMonospace {
+    if ('Browser' == (platform)) {
+      fontSize = 11
+      fontName = 'monospace'
+    } ('Win' == (platform)) {
+      fontSize = 12
+      fontName = 'Lucida Console' // Lucida Console or Consolas
+    } ('Mac' == (platform)) {
+      fontSize = 11
+      fontName = 'Menlo Regular'
+    } ('Linux' == (platform)) {
+      fontSize = 10
+      fontName = 'DejaVu Sans Mono'
+    }
   }
+  if ('Linux' == (platform)) { fontSize += -1 }
   setFont text fontName (fontSize * (blockScale))
 }
 
