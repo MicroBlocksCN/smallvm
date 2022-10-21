@@ -1,17 +1,16 @@
 module 'IR Motion (PIR)' Input
 author MicroBlocks
-version 1 0
+version 1 1 
+tags sensor motion presence 
 description 'Detect motion with a passive infrared (PIR) sensor.'
-tags sensor motion presence
+variables _PIRs 
 
-variables _PIRs
-
-	spec 'r' 'PIR' 'PIR at pin _ detected movement' 'auto' '10'
-	spec 'r' '_PIR' '_PIR at pin _' 'auto' '10'
-	spec ' ' '_pirLoop' '_pirLoop'
+  spec 'r' 'PIR' 'PIR at pin _ detected movement' 'auto' '10'
+  spec 'r' '_PIR' '_PIR at pin _' 'auto' '10'
+  spec ' ' '_pirLoop' '_pirLoop'
 
 to PIR pin {
-  sendBroadcastSimple '_pirLoop'
+  sendBroadcast '_pirLoop'
   waitUntil (_PIRs != 0)
   return (at 2 ('_PIR' pin))
 }

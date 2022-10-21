@@ -1,23 +1,22 @@
 module Servo Output
 author MicroBlocks
-version 1 0
+version 1 1 
+tags servo motor angle rotation position 
 description 'Control both positional (angle) and rotational servo motors.'
-tags servo motor angle rotation position
+variables _servoPin _servoPulseWidth 
 
-variables _servoPin _servoPulseWidth
-
-	spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'num num' 1 90
-	spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100)' 'num num' 1 100
-	spec ' ' 'stopServo' 'stop servo _' 'num' 1
-	spec 'r' '_servoIndex' '_servoIndex _' 'num' 1
-	spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'num num' 1 1500
-	spec ' ' '_servoUpdateLoop' '_servoUpdateLoop'
+  spec ' ' 'setServoAngle' 'set servo _ to _ degrees (-90 to 90)' 'num num' 1 90
+  spec ' ' 'setServoSpeed' 'set servo _ to speed _ (-100 to 100)' 'num num' 1 100
+  spec ' ' 'stopServo' 'stop servo _' 'num' 1
+  spec 'r' '_servoIndex' '_servoIndex _' 'num' 1
+  spec ' ' '_servoPulse' '_servoPulse pin _ usecs _' 'num num' 1 1500
+  spec ' ' '_servoUpdateLoop' '_servoUpdateLoop'
 
 to '_servoIndex' which {
   if (_servoPin == 0) {
     _servoPin = ('[data:makeList]')
     _servoPulseWidth = ('[data:makeList]')
-    sendBroadcastSimple '_servoUpdateLoop'
+    sendBroadcast '_servoUpdateLoop'
   }
   local 'i' ('[data:find]' which _servoPin)
   if (i < 0) {
