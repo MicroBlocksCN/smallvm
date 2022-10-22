@@ -1288,6 +1288,43 @@ method redrawnMorphs MicroBlocksEditor {
   }
 }
 
+// Script image utility
+
+method fixScriptsInFolderTree MicroBlocksEditor language countryCode rootPath {
+  scriptEditor = (scriptEditor scripter)
+  setBlockScalePercent scriptEditor 150
+  setExportScale scriptEditor 200
+  setLanguage this language
+
+  pattern = (join 'locales/' countryCode '/files/')
+  for pngFilePath (allFiles rootPath '.png') {
+    if (notNil (findSubstring pattern pngFilePath)) {
+      fixPNGScriptImage this pngFilePath
+    }
+  }
+}
+
+method fixPNGScriptImage MicroBlocksEditor pngFile {
+  scriptEditor = (scriptEditor scripter)
+
+  // load scripts from file
+  clearProject this
+  importFromPNG this (readFile pngFile true)
+
+  scriptCount = (count (parts (morph scriptEditor)))
+  if (0 == scriptCount) { return }
+
+  updateLibraryList scripter
+  if (1 == scriptCount) {
+    block = (handler (first (parts (morph scriptEditor))))
+    exportAsImageScaled block nil false pngFile
+print (filePart pngFile)
+  } else {
+    saveScriptsImage scriptEditor pngFile true
+print scriptCount 'scripts:' (filePart pngFile)
+  }
+}
+
 // UI image resources
 
 method makeLogoPNG MicroBlocksEditor {
