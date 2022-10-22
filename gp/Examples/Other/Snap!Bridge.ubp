@@ -176,14 +176,14 @@ comment 'Click to test!'
 sendBroadcast 'Set Digital Pin,2,true'
 }
 
-script 354 124 {
-comment 'Click to test!'
-sendBroadcast 'Set Motor,A,0'
-}
-
 script 46 124 {
 comment 'Click to test!'
 sendBroadcast 'Set Motor,A,100'
+}
+
+script 354 124 {
+comment 'Click to test!'
+sendBroadcast 'Set Motor,A,0'
 }
 
 script 360 208 {
@@ -193,7 +193,7 @@ comment 'Handle commands with arguments
 snapConnect_processCommands
 }
 
-script 47 217 {
+script 46 217 {
 whenStarted
 comment 'Send pin and sensor state'
 forever {
@@ -201,7 +201,7 @@ forever {
   if ('is microbit?') {
     'Send Sensors'
   }
-  waitMillis 30
+  waitMillis 16
 }
 }
 
