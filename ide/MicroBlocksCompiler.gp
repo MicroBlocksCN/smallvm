@@ -76,6 +76,8 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[serial:read]'			'serial read')
 		(array ' ' '[serial:write]'			'serial write _' 'str' 'aByteStringOrByteArray')
 		(array 'r' '[serial:writeBytes]'	'serial write _ starting at _' 'str num' 'aByteStringOrByteArray' 1)
+		'-'
+		(array ' ' '[io:softWriteByte]'		'soft serial write byte _ pin _ baud _' 'num num num' '85' 2 9600)
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'menu.buttonMenu' 'A')

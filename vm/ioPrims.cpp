@@ -1729,6 +1729,49 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 	return int2obj(count);
 }
 
+// Software serial (output only)
+
+static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
+	// Write a byte to the given pin at the given baudrate using software serial.
+
+	if (argCount < 3) return fail(notEnoughArguments);
+	int byte = evalInt(args[0]);
+	int pinNum = evalInt(args[1]);
+	int baud = evalInt(args[2]);
+	int bitTime = 1000000 / baud;
+
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
+	SET_MODE(pinNum, OUTPUT);
+
+	// start bit
+	digitalWrite(pinNum, LOW);
+	delayMicroseconds(bitTime);
+
+	// eight data bits, LSB first
+	digitalWrite(pinNum, (byte & 1) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 2) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 4) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 8) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 16) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 32) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 64) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 128) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+
+	// stop bit
+	digitalWrite(pinNum, HIGH);
+	delayMicroseconds(bitTime);
+
+	return falseObj;
+}
+
 // Experimental RF Square Wave Generator (nRF51 and nRF52 only)
 
 #if defined(NRF51) || defined(NRF52)
@@ -1915,6 +1958,7 @@ static PrimEntry entries[] = {
 	{"setServo", primSetServo},
 	{"dacInit", primDACInit},
 	{"dacWrite", primDACWrite},
+	{"softWriteByte", primSoftwareSerialWriteByte},
     {"squareWave", primSquareWave},
 	{"setUserLED", primSetUserLED2},
 	{"analogRead", primAnalogRead},
