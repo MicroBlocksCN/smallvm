@@ -1,35 +1,104 @@
 module '16x2 DFRobot LCD (1602 I2C)' Output
 author MicroBlocks
-version 1 2 
-description 'Basic library for 16x2 displays with an I2C "backpack" like the ones commercialized by DFRobot, SunFounder and others.
+version 1 3 
+description 'Basic library for 16x2 displays with an I2C "backpack" like the ones from DFRobot, SunFounder, and others.
 
-Note that these displays need a 5v input, so you will need an external power source for 3.3v boards like the micro:bit.'
-variables '_LCD1602 ADDR' '_LCD1602 WIDTH' '_LCD1602 LINE 1' '_LCD1602 LINE 2' '_LCD1602 BACKLIGHT' '_LCD1602 ENABLE' '_LCD1602 initialized' 
+Many of these displays need 5 volts, so you will need an external power source for 3.3v boards like the micro:bit.'
+variables _LCD1602_ADDR _LCD1602_LINE1 _LCD1602_LINE2 _LCD1602_LOCK_MSECS 
 
-  spec ' ' 'write' 'write _ on LCD at line _' 'auto num' 'Hello, World!' 1
-  spec ' ' 'clear LCD' 'clear LCD'
+  spec ' ' 'LCD1602_write' 'write _ on LCD line _' 'str num num num' 'Hello, World!' 1 1 16
+  spec ' ' 'LCD1602_write_field' 'write field _ on LCD line _ from _ to _' 'str num num num' 'Moon!' 1 8 12
+  spec ' ' 'LCD1602_clear' 'clear LCD'
+  spec 'r' 'LCD1602_isConnected' 'is LCD connected?'
   spec ' ' '_LCD1602 init' '_LCD1602 init'
-  spec ' ' '_LCD1602 send' '_LCD1602 send byte _ mode _' 'num num' '10' 1
-  spec ' ' '_LCD1602 send command' '_LCD1602 send command _' 'num' '10'
-  spec ' ' '_LCD1602 send data' '_LCD1602 send data _' 'num' '10'
-  spec ' ' '_LCD1602 toggle enable' '_LCD1602 toggle enable _' 'num' '10'
+  spec ' ' '_LCD1602 send' '_LCD1602 send byte _ mode _' 'num num' 10 1
+  spec ' ' '_LCD1602 send command' '_LCD1602 send command _' 'num' 10
+  spec ' ' '_LCD1602 send data' '_LCD1602 send data _' 'num' 10
+  spec ' ' '_LCD1602 toggle enable' '_LCD1602 toggle enable _' 'num' 10
+
+to LCD1602_clear {
+  if (_LCD1602_ADDR == 0) {if (not (LCD1602_isConnected)) {
+    return
+  }}
+  waitUntil (((millisOp) - _LCD1602_LOCK_MSECS) > 500)
+  _LCD1602_LOCK_MSECS = (millisOp)
+  _LCD1602_LINE1 = ('[data:newByteArray]' 16 32)
+  _LCD1602_LINE2 = ('[data:newByteArray]' 16 32)
+  '_LCD1602 send command' 1
+  _LCD1602_LOCK_MSECS = 0
+}
+
+to LCD1602_isConnected {
+  if (_LCD1602_ADDR == 0) {'_LCD1602 init'}
+  return (_LCD1602_ADDR != 0)
+}
+
+to LCD1602_write string line {
+  LCD1602_write_field string line 1 16
+}
+
+to LCD1602_write_buffer line {
+  local 'bytes' 0
+  if (line == 1) {
+    '_LCD1602 send command' (hexToInt '80')
+    bytes = _LCD1602_LINE1
+  } else {
+    '_LCD1602 send command' (hexToInt 'C0')
+    bytes = _LCD1602_LINE2
+  }
+  for b bytes {
+    '_LCD1602 send data' b
+  }
+}
+
+to LCD1602_write_field string line start end {
+  if (_LCD1602_ADDR == 0) {if (not (LCD1602_isConnected)) {
+    return
+  }}
+  string = ('[data:join]' '' string)
+  if (or (start < 1) (start > 16)) {
+    return
+  }
+  if (or (end < start) (end > 16)) {
+    return
+  }
+  if (line == 1) {
+    bytes = _LCD1602_LINE1
+  } else {
+    bytes = _LCD1602_LINE2
+  }
+  waitUntil (((millisOp) - _LCD1602_LOCK_MSECS) > 500)
+  _LCD1602_LOCK_MSECS = (millisOp)
+  local 'count' ((end - start) + 1)
+  for i count {
+    local 'char' 32
+    if (i <= (size string)) {
+      char = ('[data:unicodeAt]' i string)
+      if (char > 127) {
+        char = 32
+      }
+    }
+    atPut ((start - 1) + i) bytes char
+  }
+  LCD1602_write_buffer line
+  _LCD1602_LOCK_MSECS = 0
+}
 
 to '_LCD1602 init' {
   comment 'Use slow I2C speed'
   '[sensors:i2cSetClockSpeed]' 100000
   comment 'Try two common I2C addresses and
 use the one that gets a response'
-  '_LCD1602 ADDR' = (hexToInt '27')
-  if ((i2cGet (v '_LCD1602 ADDR') 0) < 0) {
-    '_LCD1602 ADDR' = (hexToInt '3F')
+  _LCD1602_ADDR = (hexToInt '27')
+  if ((i2cGet _LCD1602_ADDR 0) < 0) {
+    _LCD1602_ADDR = (hexToInt '3F')
   }
-  '_LCD1602 WIDTH' = 16
-  '_LCD1602 SEND DATA MODE' = 1
-  '_LCD1602 SEND COMMAND MODE' = 0
-  '_LCD1602 LINE 1' = (hexToInt '80')
-  '_LCD1602 LINE 2' = (hexToInt 'C0')
-  '_LCD1602 BACKLIGHT' = (hexToInt '8')
-  '_LCD1602 ENABLE' = 4
+  if ((i2cGet _LCD1602_ADDR 0) < 0) {
+    _LCD1602_ADDR = 0
+    return
+  }
+  _LCD1602_LINE1 = ('[data:newByteArray]' 16 32)
+  _LCD1602_LINE2 = ('[data:newByteArray]' 16 32)
   comment 'Initialize display'
   '_LCD1602 send command' (hexToInt '33')
   '_LCD1602 send command' (hexToInt '32')
@@ -37,18 +106,18 @@ use the one that gets a response'
   '_LCD1602 send command' (hexToInt '0C')
   '_LCD1602 send command' (hexToInt '28')
   '_LCD1602 send command' (hexToInt '01')
-  '_LCD1602 initialized' = (booleanConstant true)
   waitMillis 250
 }
 
 to '_LCD1602 send' bits mode {
   comment 'Use slow I2C speed'
   '[sensors:i2cSetClockSpeed]' 100000
+  local '_LCD1602 BACKLIGHT' (hexToInt '8')
   local 'high bits' ((mode | (bits & (hexToInt 'F0'))) | (v '_LCD1602 BACKLIGHT'))
   local 'low bits' ((mode | ((bits << 4) & (hexToInt 'F0'))) | (v '_LCD1602 BACKLIGHT'))
-  '[sensors:i2cWrite]' (v '_LCD1602 ADDR') ('[data:makeList]' (v 'high bits'))
+  '[sensors:i2cWrite]' _LCD1602_ADDR ('[data:makeList]' (v 'high bits'))
   '_LCD1602 toggle enable' (v 'high bits')
-  '[sensors:i2cWrite]' (v '_LCD1602 ADDR') ('[data:makeList]' (v 'low bits'))
+  '[sensors:i2cWrite]' _LCD1602_ADDR ('[data:makeList]' (v 'low bits'))
   '_LCD1602 toggle enable' (v 'low bits')
   comment 'Revert to fast I2C speed'
   '[sensors:i2cSetClockSpeed]' 400000
@@ -56,34 +125,22 @@ to '_LCD1602 send' bits mode {
 
 to '_LCD1602 send command' byte {
   '_LCD1602 send' byte 0
+  waitMillis 1
 }
 
 to '_LCD1602 send data' byte {
   '_LCD1602 send' byte 1
+  waitMillis 1
 }
 
 to '_LCD1602 toggle enable' bits {
+  local '_LCD1602 ENABLE' 4
   waitMicros 5
-  '[sensors:i2cWrite]' (v '_LCD1602 ADDR') ('[data:makeList]' (bits | (v '_LCD1602 ENABLE')))
+  '[sensors:i2cWrite]' _LCD1602_ADDR ('[data:makeList]' (bits | (v '_LCD1602 ENABLE')))
   waitMicros 5
-  '[sensors:i2cWrite]' (v '_LCD1602 ADDR') ('[data:makeList]' (bits & ('~' (v '_LCD1602 ENABLE'))))
+  '[sensors:i2cWrite]' _LCD1602_ADDR ('[data:makeList]' (bits & ('~' (v '_LCD1602 ENABLE'))))
   waitMicros 5
 }
 
-to 'clear LCD' {
-  if ((v '_LCD1602 initialized') == 0) {'_LCD1602 init'}
-  '_LCD1602 send command' 1
-}
-
-to write string line {
-  if ((v '_LCD1602 initialized') == 0) {'_LCD1602 init'}
-  if (line == 2) {
-    '_LCD1602 send command' (v '_LCD1602 LINE 2')
-  } else {
-    '_LCD1602 send command' (v '_LCD1602 LINE 1')
-  }
-  for i (size string) {
-    '_LCD1602 send data' ('[data:unicodeAt]' i string)
-  }
-}
+script 166 210 (millisOp)
 
