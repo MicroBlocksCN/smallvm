@@ -936,7 +936,7 @@ async function GP_writeFile(data, fName, id) {
 	i = fName.lastIndexOf('.');
 	ext = (i >= 0) ? fName.substr(i + 1) : '';
 
-	i = fName.indexOf('.');
+	i = fName.lastIndexOf('.');
 	if (i > 0) fName = fName.substr(0, i);
 	if (i == 0) fName = 'Untitled';
 
@@ -970,7 +970,7 @@ async function GP_writeFile(data, fName, id) {
 		}
 		const writable = await fileHandle.createWritable();
 		await writable.write(new Blob([data]));
-		await writable.close();
+		await writable.close().catch(() => {});
 		GP.lastSavedFileName = fileHandle.name;
 	} else {
 		saveAs(new Blob([data]), fName + '.' + ext);
