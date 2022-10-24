@@ -281,6 +281,8 @@ OBJ primLength(int argCount, OBJ *args);
 
 OBJ primHexToInt(int argCount, OBJ *args);
 
+OBJ primBroadcastToIDEOnly(int argCount, OBJ *args);
+
 OBJ primAnalogPins(OBJ *args);
 OBJ primDigitalPins(OBJ *args);
 OBJ primAnalogRead(int argCount, OBJ *args);

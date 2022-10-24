@@ -12,4 +12,6 @@ description 'Miscellaneous system primitives.'
   spec 'r' 'longMult' '( _ * _ ) >> _' 'num num num' 1024 2048 10
   spec 'r' '[misc:sin]' 'fixed sine _' 'num' 9000
   space
+  spec ' ' '[misc:broadcastToIDE]' 'broadcast _ to IDE only' 'str' ''
+  space
   spec ' ' '[display:mbEnableDisplay]' 'enable LED display _' 'bool' false

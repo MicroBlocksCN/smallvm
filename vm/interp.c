@@ -126,6 +126,14 @@ static void primSendBroadcast(int argCount, OBJ *args) {
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
 }
 
+OBJ primBroadcastToIDEOnly(int argCount, OBJ *args) {
+	// Broadcast a string to the IDE only, not locally.
+
+	printArgs(argCount, args, false, false);
+	sendBroadcastToIDE(printBuffer, printBufferByteCount);
+	return falseObj;
+}
+
 // Timer
 
 static uint32 timerStart = 0;

@@ -152,6 +152,7 @@ static PrimEntry entries[] = {
 	{"hexToInt", primHexToInt},
 	{"rescale", primRescale},
 	{"sin", primSine},
+	{"broadcastToIDE", primBroadcastToIDEOnly},
 	{"jsonGet", primJSONGet},
 	{"jsonCount", primJSONCount},
 	{"jsonValueAt", primJSONValueAt},
