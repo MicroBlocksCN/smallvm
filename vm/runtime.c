@@ -485,11 +485,22 @@ static int outBufEnd = 0;
 
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
+static uint32 lastSendMSecs = 0; // used to detect when serial is connected and accepting data
+
 static inline void sendData() {
+	int someDataSent = false;
 	while (outBufStart != outBufEnd) {
 		if (!sendByte(outBuf[outBufStart])) break;
 		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
+		someDataSent = true;
 	}
+	if (someDataSent) lastSendMSecs = millisecs();
+}
+
+int serialConnected() {
+	uint32 now = millisecs();
+	if (lastSendMSecs > now) lastSendMSecs = 0; // clock wrap
+	return ((now - lastSendMSecs) < 2000);
 }
 
 static inline void queueByte(uint8 aByte) {
@@ -650,6 +661,8 @@ void logData(char *s) {
 
 void outputString(const char *s) {
 	// Sending a debug string. Use chunkID 255.
+
+	if (!serialConnected()) return; // serial port not open; do nothing
 
 	char data[200];
 	data[0] = 2; // data type (2 is string)

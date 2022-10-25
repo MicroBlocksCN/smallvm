@@ -103,8 +103,6 @@ void hardwareInit() {
 
 // Communication Functions
 
-int serialConnected() { return Serial; }
-
 int recvBytes(uint8 *buf, int count) {
 	int bytesRead = Serial.available();
 	if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
