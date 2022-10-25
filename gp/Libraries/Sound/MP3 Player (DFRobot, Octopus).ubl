@@ -1,13 +1,13 @@
 module 'MP3 Player (DFRobot, Octopus)' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 choices mp3PlayerType Octopus DFRobot 
 description 'Support for Octopus (FN-M16P chip) and DFRobot (and HyperDuino, MakerBit) MP3 Players (YX5300 chip).
 Requires a board with serial support (i.e. not micro:bit v1).
 Connect the player to TX pin of the board.'
-variables _mp3UseChecksum 
+variables _mp3UseChecksum _mp3SoftSerialPin 
 
-  spec ' ' 'mp3_initialize' 'mp3 initialize _' 'menu.mp3PlayerType' 'Octopus'
+  spec ' ' 'mp3_initialize' 'mp3 initialize _ : pin _' 'menu.mp3PlayerType num' 'Octopus' 0
   spec ' ' 'mp3_setVolume' 'mp3 set volume _ (0-30)' 'num' 20
   spec ' ' 'mp3_playTrack' 'mp3 play track _ in folder _' 'num num' 1 1
   spec ' ' 'mp3_nextTrack' 'mp3 play next track in folder'
@@ -17,6 +17,10 @@ variables _mp3UseChecksum
   spec ' ' '_mp3_sendMP3Cmd' '_mp3_sendMP3Cmd _ _ _' 'auto num num' '0x0C' 0 0
 
 to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
+  if (_mp3UseChecksum == 0) {
+    sayIt 'MP3 Player is not initialized'
+    return 0
+  }
   if _mp3UseChecksum {
     comment 'YX5300 chip (DFRobot,HyperDuino,MakerBit); no checksum'
     local 'msg' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt cmd) 0 arg1 arg2 (hexToInt 'EF'))
@@ -31,14 +35,27 @@ to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
     atPut 8 msg ((sum >> 8) & 255)
     atPut 9 msg (sum & 255)
   }
-  comment 'send command'
-  '[serial:write]' ('[data:asByteArray]' msg)
+  comment 'Send the command'
+  if (_mp3SoftSerialPin >= 0) {
+    comment 'Use soft serial via any digital pin'
+    for byte msg {
+      '[io:softWriteByte]' byte _mp3SoftSerialPin 9600
+    }
+  } else {
+    comment 'Use hardware serial'
+    '[serial:write]' ('[data:asByteArray]' msg)
+  }
   waitMillis 20
 }
 
-to mp3_initialize type {
+to mp3_initialize type optionalPin {
   _mp3UseChecksum = ('Octopus' == type)
-  '[serial:open]' 9600
+  _mp3SoftSerialPin = -1
+  if ((pushArgCount) > 1) {
+    _mp3SoftSerialPin = optionalPin
+  } else {
+    '[serial:open]' 9600
+  }
   comment 'Reset'
   '_mp3_sendMP3Cmd' '0x0C' 0 0
   waitMillis 1000
