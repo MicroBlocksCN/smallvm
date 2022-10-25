@@ -857,6 +857,30 @@ method updateConnection SmallRuntime {
 	}
 }
 
+method justConnected SmallRuntime {
+	// Called when a board has just connected (browser or stand-alone).
+
+	print 'Connected to' portName
+	connectionStartTime = nil
+	vmVersion = nil
+	sendMsgSync this 'getVersionMsg'
+	sendStopAll this
+	clearRunningHighlights this
+	setDefaultSerialDelay this
+	if readFromBoard {
+		readFromBoard = false
+		readCodeFromBoard this
+	} else {
+		if (isEmpty chunkIDs) {
+			clearBoardIfConnected this false
+			stopAndSyncScripts this true
+		} else {
+			verifyCRCs this
+			syncScripts this
+		}
+	}
+}
+
 method tryToConnect SmallRuntime {
 	// Called when connectionStartTime is not nil, indicating that we are trying
 	// to establish a connection to a board the current serial port.
@@ -873,20 +897,7 @@ method tryToConnect SmallRuntime {
 			port = 1
 			waitForPing this // wait up to 1 second for ping
 			pingSentMSecs = (msecsSinceStart)
-			print 'Connected to' portName
-			connectionStartTime = nil
-			vmVersion = nil
-			sendMsgSync this 'getVersionMsg'
-			clearRunningHighlights this
-			setDefaultSerialDelay this
-			if readFromBoard {
-				readFromBoard = false
-				sendStopAll this
-				readCodeFromBoard this
-			} else {
-				clearBoardIfConnected this false
-				stopAndSyncScripts this true
-			}
+			justConnected this
 			return 'not connected' // don't make circle green until successful ping
 		} else {
 			portName = nil
@@ -908,20 +919,7 @@ method tryToConnect SmallRuntime {
 		sendMsg this 'pingMsg'
 		processMessages this
 		if (lastPingRecvMSecs != 0) { // got a ping; we're connected!
-			print 'Connected to' portName
-			connectionStartTime = nil
-			vmVersion = nil
-			sendMsgSync this 'getVersionMsg'
-			clearRunningHighlights this
-			setDefaultSerialDelay this
-			if readFromBoard {
-				readFromBoard = false
-				sendStopAll this
-				readCodeFromBoard this
-			} else {
-				clearBoardIfConnected this false
-				stopAndSyncScripts this true
-			}
+			justConnected this
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
@@ -956,6 +954,10 @@ method openPortAndSendPing SmallRuntime {
 	closePort this // ensure port is closed
 	connectionStartTime = (msecsSinceStart)
 	ensurePortOpen this // attempt to reopen the port
+	if (notNil port) {
+		// discard any random bytes in buffer
+		readSerialPort port true
+	}
 	lastPingRecvMSecs = 0
 	sendMsg this 'pingMsg'
 }
