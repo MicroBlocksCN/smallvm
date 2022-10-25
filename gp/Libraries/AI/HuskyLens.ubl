@@ -1,0 +1,305 @@
+module HuskyLens Input
+author 'Murat Akguller'
+version 1 0 
+choices requestByMenu Blocks Arrows 
+choices requestedMenu Blocks Arrows 'Learned Blocks' 'Learned Arrows' 
+choices changeAlgoMenu 'Color Recog' 'Face Recog' 'Line Track' 'Obj Classify' 'Obj Recog' 'Obj Track' 'Tag Recog' 
+choices getInfoMenu 'Object Count' 'Learned Count' 'Frame Number' 
+choices requestFileMenu 'Save Model' 'Load Model' 
+choices doMenu Knock 'Save Picture' 'Save Screenshot' 'Forget Learned Objects' 'Clear Screen' 'is pro' 'firmware version' 
+choices getArrowMenu 'X origin' 'Y origin' 'X target' 'Y target' id 
+choices getBlockMenu 'X center' 'Y center' Width Height id 
+choices requestPhotoMenu 'Save Picture' 'Save Screenshot' 
+description ''
+variables HuskyData HL_I2C_address _buffer _cmd_list _get_lists _bufferdata HL_initalized _currAlgo _algo_list 
+
+  spec ' ' 'HL initialize' 'HL initialize'
+  spec ' ' 'HL set I2C address(hex) _' 'HL set I2C address(hex) _' 'str' '32'
+  spec ' ' 'HL change algorithm' 'HL change algorithm _' 'menu.changeAlgoMenu' 'Face Recog'
+  spec 'r' 'HL do' 'HL do _' 'menu.doMenu' 'Knock'
+  spec ' ' 'HL request' 'HL request _' 'menu.requestedMenu' 'Blocks'
+  spec ' ' 'HL request by ID' 'HL request by ID _ Object _' 'num menu.requestByMenu' 1 'Blocks'
+  spec 'r' 'HL get info' 'HL get info _' 'menu.getInfoMenu' 'Object Count'
+  spec 'r' 'HL get block' 'HL get block _ block index _' 'menu.getBlockMenu num' 'X center' 1
+  spec 'r' 'HL get arrow' 'HL get arrow _ arrow index _' 'menu.getArrowMenu num' 'X origin' 1
+  spec 'r' 'HL learn current object with ID' 'HL learn current object with ID _' 'num' 1
+  spec 'r' 'HL learn object with ID' 'HL learn object with ID _ Name _' 'num str' 1 'name'
+  spec 'r' 'HL set CustomName' 'HL set CustomName _ for a learned object with ID _' 'str num' 'name' 1
+  spec ' ' 'HL write' 'HL write _ at x _ y _' 'str num num' 'Hello!' 0 0
+  spec 'r' 'HL file' 'HL file _ file# _' 'menu.requestFileMenu num' 'Save Model' 1
+  spec 'r' '_HLcalc_checkSum' '_HLcalc_checkSum _' 'auto' '10'
+  spec 'r' '_HLcheck' '_HLcheck'
+  spec ' ' '_HLcmd_init' '_HLcmd_init'
+  spec 'r' '_HLcmdarrow43' '_HLcmdarrow43 _' 'auto' 'return arrow'
+  spec 'r' '_HLcmdblock42' '_HLcmdblock42 _' 'auto' 'return block'
+  spec 'r' '_HLcmdinfo41' '_HLcmdinfo41 _' 'auto' 'return info'
+  spec 'r' '_HLdecode_bufferdata' '_HLdecode_bufferdata _' 'auto' 'buffer data'
+  spec 'r' '_HLgetcmdnum' '_HLgetcmdnum _' 'auto' 'Blocks'
+  spec ' ' '_HLgetdata_from_cmd' '_HLgetdata_from_cmd'
+  spec ' ' '_HLsendCommand' '_HLsendCommand _ data _' 'auto auto' 10 '10'
+
+to 'HL change algorithm' algo {
+  if (not HL_initalized) {'HL initialize'}
+  local 'data' ('[data:makeList]' (at (('[data:find]' algo _algo_list) + 1) _algo_list) 0)
+  '_HLsendCommand' 45 data
+  waitUntil ('_HLcheck')
+  _currAlgo = algo
+}
+
+to 'HL do' command {
+  if (not HL_initalized) {'HL initialize'}
+  local 'data' ('[data:makeList]')
+  local 'cmd_num' ('_HLgetcmdnum' command)
+  '_HLsendCommand' cmd_num data
+  waitUntil ('_HLcheck')
+  '_HLgetdata_from_cmd'
+  return ('_HLdecode_bufferdata' _bufferdata)
+}
+
+to 'HL file' action fileNum {
+  if (not HL_initalized) {'HL initialize'}
+  if (or (fileNum <= 0) (fileNum > 65535)) {return 'File number range: 0-65535'}
+  local 'data' ('[data:makeList]' (fileNum % 256) (fileNum / 256))
+  '_HLsendCommand' ('_HLgetcmdnum' action) data
+  waitUntil ('_HLcheck')
+  '_HLgetdata_from_cmd'
+  return ('_HLdecode_bufferdata' _bufferdata)
+}
+
+to 'HL get arrow' arrowDetails inx {
+  if ((size HuskyData) == 1) {
+    return 'No Object Detected'
+  } ((size HuskyData) == 0) {
+    return 'HuskyData is empty, Make a request'
+  }
+  if (inx <= 0) {
+    return 'Index Error'
+  } (inx > ((size HuskyData) - 1)) {
+    return 'Index Error but Object detected'
+  }
+  local 'split_data' ('[data:split]' (at (inx + 1) HuskyData) ',')
+  return ((at ('[data:find]' arrowDetails (at 2 _get_lists)) split_data) + 0)
+}
+
+to 'HL get block' blockDetails inx {
+  if ((size HuskyData) == 1) {
+    return 'No Object Detected'
+  } ((size HuskyData) == 0) {
+    return 'HuskyData is empty, Make a request'
+  }
+  if (inx <= 0) {
+    return 'Index Error'
+  } (inx > ((size HuskyData) - 1)) {
+    return 'Index Error but Object detected'
+  }
+  local 'split_data' ('[data:split]' (at (inx + 1) HuskyData) ',')
+  return ((at ('[data:find]' blockDetails (at 1 _get_lists)) split_data) + 0)
+}
+
+to 'HL get info' infoDetails {
+  if ((size HuskyData) == 0) {return 'HuskyData is empty, Make a request'}
+  local 'split_data' ('[data:split]' (at 1 HuskyData) ',')
+  return ((at ('[data:find]' infoDetails (at 3 _get_lists)) split_data) + 0)
+}
+
+to 'HL initialize' {
+  '_HLcmd_init'
+  _get_lists = ('[data:makeList]' ('[data:makeList]' 'B' 'X center' 'Y center' 'Width' 'Height' 'id') ('[data:makeList]' 'A' 'X origin' 'Y origin' 'X target' 'Y target' 'id') ('[data:makeList]' 'I' 'Object Count' 'Learned Count' 'Frame Number'))
+  _algo_list = ('[data:makeList]' 'Color Recog' 4 'Face Recog' 0 'Line Track' 3 'Obj Classify' 6 'Obj Recog' 2 'Obj Track' 1 'Tag Recog' 5)
+  HuskyData = ('[data:makeList]')
+  _bufferdata = ('[data:makeList]')
+  _buffer = (newList 32)
+  HL_initalized = (booleanConstant true)
+}
+
+to 'HL learn current object with ID' id {
+  if (not HL_initalized) {'HL initialize'}
+  if (or (id <= 0) (id > 255)) {return 'ID must be 0 - 255'}
+  local 'data' ('[data:makeList]' (id % 256) (id / 256))
+  '_HLsendCommand' ('_HLgetcmdnum' 'Learn ById') data
+  waitUntil ('_HLcheck')
+  '_HLgetdata_from_cmd'
+  return ('_HLdecode_bufferdata' _bufferdata)
+}
+
+to 'HL learn object with ID' id name {
+  if (('HL learn current object with ID' id) == 'OK') {return ('HL set CustomName' name id)}
+}
+
+to 'HL request' objName {
+  if (not HL_initalized) {'HL initialize'}
+  local 'resultList' ('[data:makeList]')
+  '_HLsendCommand' ('_HLgetcmdnum' objName) ('[data:makeList]')
+  waitUntil ('_HLcheck')
+  '_HLgetdata_from_cmd'
+  HuskyData = ('_HLdecode_bufferdata' _bufferdata)
+  if (('HL get info' 'Object Count') != ((size HuskyData) - 1)) {
+    HuskyData = ('[data:makeList]')
+  }
+}
+
+to 'HL request by ID' id objName {
+  if (not HL_initalized) {'HL initialize'}
+  local 'resultList' ('[data:makeList]')
+  if (or (id <= 0) (id > 65535)) {
+    return 'ID must be greater than 0 and less than 65536'
+  }
+  local 'data' ('[data:makeList]' (id % 256) (id / 256))
+  '_HLsendCommand' ('_HLgetcmdnum' ('[data:join]' 'ById' objName)) data
+  waitUntil ('_HLcheck')
+  '_HLgetdata_from_cmd'
+  HuskyData = ('_HLdecode_bufferdata' _bufferdata)
+  if (and ((('HL get info' 'Object Count') + 1) != (size HuskyData)) (('HL get info' 'Object Count') == 0)) {
+    HuskyData = ('[data:makeList]')
+  }
+}
+
+to 'HL set CustomName' name id {
+  if (not HL_initalized) {'HL initialize'}
+  if (or (id <= 0) (id > 255)) {return 'ID must be 0 - 255'}
+  local 'data' ('[data:makeList]' id ((size name) + 1))
+  for byte ('[data:asByteArray]' name) {
+    '[data:addLast]' byte data
+  }
+  '[data:addLast]' 0 data
+  '_HLsendCommand' ('_HLgetcmdnum' 'Set Custom Name') data
+  waitUntil ('_HLcheck')
+  '_HLgetdata_from_cmd'
+  return ('_HLdecode_bufferdata' _bufferdata)
+}
+
+to 'HL set I2C address(hex) _' addr {
+  HL_I2C_address = (hexToInt addr)
+}
+
+to 'HL write' text x y {
+  if (not HL_initalized) {'HL initialize'}
+  if ((size text) >= 20) {
+    sayIt 'Text string must be less than 20 characters'
+    stopTask
+  }
+  if (or (x >= 320) (x < 0)) {
+    sayIt 'X must be 0-319'
+    stopTask
+  }
+  if (or (y >= 240) (y < 0)) {
+    sayIt 'Y must be 0-239'
+    stopTask
+  }
+  local 'data' ('[data:makeList]' (size text))
+  if (x >= 255) {
+    '[data:addLast]' 255 data
+  } else {
+    '[data:addLast]' 0 data
+  }
+  '[data:addLast]' (x % 256) data
+  '[data:addLast]' y data
+  for byte ('[data:asByteArray]' text) {
+    '[data:addLast]' byte data
+  }
+  '_HLsendCommand' ('_HLgetcmdnum' 'Write') data
+  waitUntil ('_HLcheck')
+}
+
+to '_HLcalc_checkSum' cmdData {
+  local 'checksum' 0
+  for byte cmdData {
+    checksum += byte
+  }
+  return (checksum % 256)
+}
+
+to '_HLcheck' {
+  _buffer = (newList 32)
+  _bufferdata = ('[data:makeList]')
+  local 'returned' (booleanConstant false)
+  repeatUntil (returned == (booleanConstant true)) {
+    waitMillis 10
+    '[sensors:i2cRead]' HL_I2C_address _buffer
+    if (('[data:find]' '8517017' ('[data:joinStrings]' _buffer)) > 0) {
+      _bufferdata = ('[data:join]' _bufferdata _buffer)
+      returned = (booleanConstant true)
+    } else {
+      returned = (booleanConstant false)
+    }
+  }
+  return returned
+}
+
+to '_HLcmd_init' {
+  _cmd_list = ('[data:makeList]' 'Blocks' 33 'Arrows' 34 'Learned Blocks' 36 'Learned Arrows' 37 'Knock' 44 'Save Picture' 48 'Save Screenshot' 57 'Forget Learned Objects' 55 'Clear Screen' 53 'firmware version' 60 'is pro' 59 'ByIdBlocks' 39 'ByIdArrows' 40 'Change Algorithm' 45 'Save Model' 50 'Load Model' 51 'Learn ById' 54 'Set Custom Name' 47 'Write' 52)
+}
+
+to '_HLcmdarrow43' obj_data {
+  return ('[data:join]' 'A' ',' (((at 4 obj_data) * 256) + (at 3 obj_data)) ',' (((at 6 obj_data) * 256) + (at 5 obj_data)) ',' (((at 8 obj_data) * 256) + (at 7 obj_data)) ',' (((at 10 obj_data) * 256) + (at 9 obj_data)) ',' (('[data:join]' (at 12 obj_data) (at 11 obj_data)) + 0))
+}
+
+to '_HLcmdblock42' obj_data {
+  return ('[data:join]' 'B' ',' (((at 4 obj_data) * 256) + (at 3 obj_data)) ',' (((at 6 obj_data) * 256) + (at 5 obj_data)) ',' (((at 8 obj_data) * 256) + (at 7 obj_data)) ',' (((at 10 obj_data) * 256) + (at 9 obj_data)) ',' (('[data:join]' (at 12 obj_data) (at 11 obj_data)) + 0))
+}
+
+to '_HLcmdinfo41' info_data {
+  return ('[data:join]' 'I' ',' (('[data:join]' (at 4 info_data) (at 3 info_data)) + 0) ',' (('[data:join]' (at 6 info_data) (at 5 info_data)) + 0) ',' (((at 8 info_data) * 256) + (at 7 info_data)))
+}
+
+to '_HLdecode_bufferdata' data {
+  comment 'Split Buffer Data 0x55 0xAA 0x11
+dec85 dec170 dec17 '
+  local 'parsed_data' ('[data:split]' ('[data:joinStrings]' data ',') '85,170,17,')
+  '[data:delete]' 1 parsed_data
+  comment 'split each parsed data(string)  for  decoding'
+  for i (size parsed_data) {
+    atPut i parsed_data ('[data:split]' (at i parsed_data) ',')
+  }
+  comment 'What is returned?
+INFO?41 OK?46 IS PRO?59'
+  if (((at 2 (at 1 parsed_data)) + 0) == 41) {
+    local 'data_item' ('[data:makeList]')
+    local 'decoded_dataList' ('[data:makeList]')
+    '[data:addLast]' ('_HLcmdinfo41' (at 1 parsed_data)) decoded_dataList
+    if ((size parsed_data) > 1) {
+      if (((at 2 (at 2 parsed_data)) + 0) == 42) {
+        for i ((size parsed_data) - 1) {
+          data_item = (at (i + 1) parsed_data)
+          '[data:addLast]' ('_HLcmdblock42' data_item) decoded_dataList
+        }
+      } else {
+        for i ((size parsed_data) - 1) {
+          data_item = (at (i + 1) parsed_data)
+          '[data:addLast]' ('_HLcmdarrow43' data_item) decoded_dataList
+        }
+      }
+    }
+    return decoded_dataList
+  } (((at 2 (at 1 parsed_data)) + 0) == 46) {
+    return 'OK'
+  } (((at 2 (at 1 parsed_data)) + 0) == 59) {
+    if ((at 6 _buffer) == 1) {
+      return 'HuskyLens is pro'
+    } else {
+      return 'HuskyLens is not pro'
+    }
+  }
+}
+
+to '_HLgetcmdnum' cmdName {
+  return (at (('[data:find]' cmdName _cmd_list) + 1) _cmd_list)
+}
+
+to '_HLgetdata_from_cmd' {
+  repeatUntil (0 == (('[data:joinStrings]' _buffer) + 0)) {
+    '[sensors:i2cRead]' HL_I2C_address _buffer
+    _bufferdata = ('[data:join]' _bufferdata _buffer)
+  }
+}
+
+to '_HLsendCommand' cmd data {
+  if (HL_I2C_address == 0) {
+    sayIt 'I2C address can not be 0, Set I2C address'
+    stopTask
+  }
+  _buffer = ('[data:join]' ('[data:makeList]' 85 170 17 (size data) cmd) data)
+  '[data:addLast]' ('_HLcalc_checkSum' _buffer) _buffer
+  '[sensors:i2cWrite]' HL_I2C_address _buffer
+}
+
