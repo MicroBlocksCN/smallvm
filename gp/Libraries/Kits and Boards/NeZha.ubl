@@ -1,6 +1,6 @@
 module NeZha Output
 author wwj718
-version 1 1 
+version 1 2 
 choices servoType '180' '270' '360' 
 choices RJ_pin J1 J2 J3 J4 
 choices inputPin J1 J2 
@@ -9,13 +9,12 @@ description 'Nezha is an expanstion board for micro:bit with multuple functions 
 https://www.elecfreaks.com/learn-en/microbitExtensionModule/nezha.html'
 variables _NEZHA_ADDR '_NeZha initialized' 
 
-	spec ' ' 'set motor speed' 'NeZha set motor _ speed to _ %' 'menu.range:1-4 num' 1 100
-	spec ' ' 'stop motor' 'NeZha stop motor _' 'menu.range:1-4' 1
-	spec ' ' 'stop all motors' 'NeZha stop all motors'
-	spec ' ' 'set servo angle' 'NeZha set _ servo _ angle to _' 'menu.servoType menu.range:1-4 num' '360' 1 0
-	spec ' ' 'set continuous rotation servo speed' 'NeZha set continuous rotation servo _ speed to _ %' 'menu.range:1-4 num' 1 0
-	spec ' ' '_NeZha setup' 'NeZha _NeZha setup'
-	spec 'r' '_rescale' 'rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
+  spec ' ' 'set motor speed' 'NeZha set motor _ speed to _ %' 'menu.range:1-4 num' 1 100
+  spec ' ' 'stop motor' 'NeZha stop motor _' 'menu.range:1-4' 1
+  spec ' ' 'stop all motors' 'NeZha stop all motors'
+  spec ' ' 'set servo angle' 'NeZha set _ servo _ angle to _' 'menu.servoType menu.range:1-4 num' '360' 1 0
+  spec ' ' 'set continuous rotation servo speed' 'NeZha set continuous rotation servo _ speed to _ %' 'menu.range:1-4 num' 1 0
+  spec ' ' '_NeZha setup' 'NeZha _NeZha setup'
 
 to '_NeZha setup' {
   if ((v '_NeZha initialized') == 0) {
@@ -24,17 +23,13 @@ to '_NeZha setup' {
   }
 }
 
-to '_rescale' val in_min in_max out_min out_max {
-  return ((((val - in_min) * (out_max - out_min)) / (in_max - in_min) ) + out_min)
-}
-
 to 'set continuous rotation servo speed' servo angle {
   comment 'motor (number): 1 2 3 4'
   comment 'speed (number): -100-100'
   if (or (angle < -100) (angle > 100)) {
     angle = 0
   }
-  'set servo angle' '180' servo ('_rescale' angle -100 100 0 180)
+  'set servo angle' '180' servo ('[misc:rescale]' angle -100 100 0 180)
 }
 
 to 'set motor speed' motor speed {
@@ -67,7 +62,7 @@ str -> num'
   if (or (angle < 0) (angle > servo_type)) {
     angle = 0
   }
-  '[sensors:i2cWrite]' _NEZHA_ADDR ('[data:asByteArray]' ('[data:makeList]' ((hexToInt '10') + (servo - 1)) ('_rescale' angle 0 servo_type 0 180) 0 0))
+  '[sensors:i2cWrite]' _NEZHA_ADDR ('[data:asByteArray]' ('[data:makeList]' ((hexToInt '10') + (servo - 1)) ('[misc:rescale]' angle 0 servo_type 0 180) 0 0))
 }
 
 to 'stop all motors' {

@@ -1,6 +1,6 @@
 module Wukong Output
 author wwj718
-version 1 4 
+version 1 5 
 depends NeoPixel 
 description 'Wukong is a compact micro:bit breakout board with servo and motor drivers, eight I/O pins, four NeoPixels, and four blue LEDs.
 
@@ -20,12 +20,7 @@ https://www.elecfreaks.com/learn-en/microbitExtensionModule/wukong.html
   spec ' ' 'wukong_setNeopixels' 'Wukong set NeoPixels _ _ _ _' 'color color color color'
   spec ' ' 'wukong_setLEDBrightness' 'Wukong set LED brightness to _' 'num' 100
   space
-  spec 'r' '_rescale' '_rescale _ from range ( _ , _ ) to ( _ , _ )' 'num num num num num' 0 0 0 0 0
   spec 'r' '_wukong_ADDR' '_wukong_ADDR'
-
-to '_rescale' val in_min in_max out_min out_max {
-  return ((((val - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min)
-}
 
 to '_wukong_ADDR' {
   return 16
@@ -66,7 +61,7 @@ value range of -90 to 90 maps to the full range of the servo'
     channel = 16
   }
   value = (maximum -90 (minimum value 90))
-  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' channel ('_rescale' value 90 -90 0 180) 0 0)
+  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' channel ('[misc:rescale]' value 90 -90 0 180) 0 0)
 }
 
 to wukong_setServoSpeed servo value {
@@ -79,7 +74,7 @@ value range of -100 to 100 maps to the full range of the servo'
     channel = 16
   }
   value = (maximum -100 (minimum value 100))
-  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' channel ('_rescale' value 100 -100 0 180) 0 0)
+  '[sensors:i2cWrite]' ('_wukong_ADDR') ('[data:makeList]' channel ('[misc:rescale]' value 100 -100 0 180) 0 0)
 }
 
 to wukong_stopAll {
