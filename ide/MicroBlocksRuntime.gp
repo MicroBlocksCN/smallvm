@@ -602,15 +602,6 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 	setCursor 'default'
 }
 
-method stopAndClearChunks SmallRuntime {
-	// Stop any running scripts and clear chunks dictionary. Used when a screen resolution
-	// change forces all scripts to be rebuilt.
-
-	sendMsg this 'stopAllMsg'
-	chunkIDs = (dictionary)
-	chunkRunning = (newArray 256 false) // clear all running flags
-}
-
 method softReset SmallRuntime {
 	// Stop everyting, clear memory, and reset the I/O pins.
 
@@ -629,7 +620,6 @@ method webSerialConnect SmallRuntime action {
 		portName = nil
 		port = nil
 	} else {
-		stopAndClearChunks this
 		openSerialPort 'webserial' 115200
 		disconnected = false
 		connectionStartTime = (msecsSinceStart)
@@ -867,6 +857,7 @@ method justConnected SmallRuntime {
 	sendStopAll this
 	clearRunningHighlights this
 	setDefaultSerialDelay this
+	processMessages this // process incoming version message
 	if readFromBoard {
 		readFromBoard = false
 		readCodeFromBoard this
