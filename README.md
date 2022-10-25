@@ -140,9 +140,7 @@ and the gp/runtime folders and build scripts in the the gp folder.
 
 ## Status ##
 
-MicroBlocks is currently "beta".
-It is stable and used by thousands of people, many of them complete beginners.
-The "beta" status indicates that MicroBlocks is still evolving.
+MicroBlocks is currently used by thousands of people, many of them complete beginners.
 
 There are two release streams available on the download page.
 
