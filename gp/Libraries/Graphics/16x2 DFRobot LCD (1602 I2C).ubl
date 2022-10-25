@@ -115,9 +115,9 @@ to '_LCD1602 send' bits mode {
   local '_LCD1602 BACKLIGHT' (hexToInt '8')
   local 'high bits' ((mode | (bits & (hexToInt 'F0'))) | (v '_LCD1602 BACKLIGHT'))
   local 'low bits' ((mode | ((bits << 4) & (hexToInt 'F0'))) | (v '_LCD1602 BACKLIGHT'))
-  '[sensors:i2cWrite]' _LCD1602_ADDR ('[data:makeList]' (v 'high bits'))
+  '[sensors:i2cWrite]' _LCD1602_ADDR (v 'high bits')
   '_LCD1602 toggle enable' (v 'high bits')
-  '[sensors:i2cWrite]' _LCD1602_ADDR ('[data:makeList]' (v 'low bits'))
+  '[sensors:i2cWrite]' _LCD1602_ADDR (v 'low bits')
   '_LCD1602 toggle enable' (v 'low bits')
   comment 'Revert to fast I2C speed'
   '[sensors:i2cSetClockSpeed]' 400000
@@ -136,11 +136,9 @@ to '_LCD1602 send data' byte {
 to '_LCD1602 toggle enable' bits {
   local '_LCD1602 ENABLE' 4
   waitMicros 5
-  '[sensors:i2cWrite]' _LCD1602_ADDR ('[data:makeList]' (bits | (v '_LCD1602 ENABLE')))
+  '[sensors:i2cWrite]' _LCD1602_ADDR (bits | (v '_LCD1602 ENABLE'))
   waitMicros 5
-  '[sensors:i2cWrite]' _LCD1602_ADDR ('[data:makeList]' (bits & ('~' (v '_LCD1602 ENABLE'))))
+  '[sensors:i2cWrite]' _LCD1602_ADDR (bits & ('~' (v '_LCD1602 ENABLE')))
   waitMicros 5
 }
-
-script 166 210 (millisOp)
 
