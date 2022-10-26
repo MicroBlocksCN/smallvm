@@ -1161,9 +1161,12 @@ static int __not_in_flash_func(readDHTData)(int pin) {
 	// Read DHT data into dhtData. Return true if successful, false if timeout.
 
 	// read the start pulse
-	setPinMode(pin, INPUT);
+	setPinMode(pin, INPUT_PULLUP);
 	int pulseWidth = pulseIn(pin, HIGH, 2000);
-	if (!pulseWidth) return false; // timeout
+	if (!pulseWidth) {
+		setPinMode(pin, INPUT);
+		return false; // timeout
+	}
 
 	for (int i = 0; i < 5; i++) {
 		int byte = 0;
@@ -1174,6 +1177,8 @@ static int __not_in_flash_func(readDHTData)(int pin) {
 		}
 		dhtData[i] = byte;
 	}
+
+	setPinMode(pin, INPUT);
 	return true;
 }
 
