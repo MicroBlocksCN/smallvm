@@ -82,6 +82,8 @@ method extractSequences MicroBlocksDataGraph {
 			val = (at items i)
 			if ('true' == val) {
 				add (at sequences i) 100 // map true to 100 (useful for graphing digital pins)
+			} ('false' == val) {
+				add (at sequences i) 0 // map false to 0 (useful for graphing digital pins)
 			} (representsANumber val) {
 				add (at sequences i) (toNumber val)
 			}
