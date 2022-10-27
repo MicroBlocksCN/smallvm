@@ -2,6 +2,7 @@
 .piolibdeps
 ublockscode
 apps
+boardie/run_boardie.*
 chromeApp/*/gp_wasm.data
 chromeApp/*/gp_wasm.js
 chromeApp/*/gp_wasm.wasm
