@@ -18,6 +18,10 @@
 #include "interp.h"
 #include "persist.h"
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 // Tasks - Set USE_TASKS to false to test interpreter performance without task switching
 
 #define USE_TASKS true
@@ -1322,6 +1326,43 @@ void vmLoop() {
 #endif
 	}
 }
+
+// Boardie support
+#ifdef EMSCRIPTEN
+int pendingMessages();
+
+void interpretStep() {
+	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
+
+	// at some point, regularly do this:
+	/*
+	   checkButtons();
+	   processMessage();
+   */
+
+	printf("pending messages: %d", pendingMessages());
+
+	uint32 usecs = 0; // compute times only the first time they are needed
+	for (int t = 0; t < taskCount; t++) {
+		currentTaskIndex++;
+		if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
+		Task *task = &tasks[currentTaskIndex];
+		if (unusedTask == task->status) {
+			continue;
+		} else if (running == task->status) {
+			runTask(task);
+			break;
+		} else if (waiting_micros == task->status) {
+			if (!usecs) usecs = microsecs(); // get usecs
+			if ((usecs - task->wakeTime) < RECENT) task->status = running;
+		}
+		if (running == task->status) {
+			runTask(task);
+			break;
+		}
+	}
+}
+#endif
 
 // Testing
 
