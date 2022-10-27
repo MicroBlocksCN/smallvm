@@ -18,10 +18,6 @@
 #include "interp.h"
 #include "persist.h"
 
-#ifdef EMSCRIPTEN
-#include <emscripten.h>
-#endif
-
 // Tasks - Set USE_TASKS to false to test interpreter performance without task switching
 
 #define USE_TASKS true
