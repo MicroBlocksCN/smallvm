@@ -12,6 +12,8 @@
 #include <sys/time.h>
 #include <signal.h>
 
+#include <emscripten.h>
+
 #include "mem.h"
 #include "interp.h"
 #include "persist.h"
@@ -42,7 +44,6 @@ uint32 millisecs() {
 
 // Communication/System Functions (stubs for now)
 
-int serialConnected() { return false; }
 int recvBytes(uint8 *buf, int count) { return 0; }
 int canReadByte() { return false; }
 int sendByte(char aByte) { return 1; }
@@ -112,30 +113,41 @@ void clearCodeFile(int ignore) {
 	fwrite((uint8 *) &cycleCount, 1, 4, codeFile);
 }
 
-// Signal Handling (Linux)
+// Messaging
 
-static void exitGracefully() {
-	printf("-- Boardie exited --\n");
-	exit(0);
+void initMessageService() {
+	EM_ASM_({
+		window.messages = [];
+		window.addEventListener('message', function (event) {
+			console.log('received', event.data);
+			window.messages.push(event.data);
+		}, false);
+	}, NULL);
 }
 
-void segfault() {
-	printf("-- Boardie crashed --\n");
-}
+int pendingMessages() {
+	printf("checking for pending messages");
+	return EM_ASM_INT({ return window.messages.length; }, NULL);
+};
 
 // Linux Main
+void interpretStep();
 
 int main(int argc, char *argv[]) {
-	signal(SIGSEGV, segfault);
-	signal(SIGINT, exit);
-	atexit(exitGracefully);
 	printf("Starting Boardie\n");
 
+	initMessageService();
 	initTimers();
 	memInit();
 	primsInit();
 	restoreScripts();
 	startAll();
-	vmLoop();
+
+	printf("Boardie started, starting interpreter :)\n");
+
+	emscripten_set_main_loop(interpretStep, 10, true); // callback, fps, loopFlag
+
+	printf("Main loop set up\n");
+
 	return 0;
 }

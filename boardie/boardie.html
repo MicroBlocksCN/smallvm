@@ -1,0 +1,13 @@
+<html>
+	<head>
+	</head>
+	<body>
+		<iframe id="boardie" src="run_boardie.html" style="width: 100%; height: 90%;"></iframe>
+		<script>
+			var boardie = document.querySelector('#boardie').contentWindow;
+			function sendMessage() {
+				boardie.postMessage(new Uint8Array([1, 2, 3]));
+			};
+		</script>
+	</body>
+</html>
