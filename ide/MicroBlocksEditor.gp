@@ -483,34 +483,65 @@ method updateFPS MicroBlocksEditor {
 	}
 }
 
-method updateIndicator MicroBlocksEditor forcefully {
-	if (busy (smallRuntime)) { return } // do nothing during file transfer
-
-	status = (updateConnection (smallRuntime))
-	if (and (lastStatus == status) (forcefully != true)) { return } // no change
-	if ('connected' == status) {
-		c = (mixed (color 0 200 0) 70 (topBarBlue this)) // green circle
-	} else {
-		c = nil // no circle
-	}
-
+method drawIndicator MicroBlocksEditor bm bgColor isConnected downloadProgress {
 	scale = (global 'scale')
-	bm1 = (getField indicator 'offCostume')
-	bm2 = (getField indicator 'onCostume')
-	cx = (half (width bm1))
-	cy = ((half (height bm1)) + scale)
 	icon = (connectButtonIcon this)
-	x = (10 * scale)
-	y = (10 * scale)
+	cx = (half (width bm))
+	cy = ((half (height bm)) + scale)
 	radius = (13 * scale)
 
-	fill bm1 (topBarBlue this)
-	if (notNil c) { drawCircle (newShapeMaker bm1) cx cy radius c }
-	drawBitmap bm1 icon x y
+	fill bm bgColor
+	if isConnected {
+		gray = (mixed (gray 0) 25 bgColor)
+		green = (mixed (color 0 200 0) 70 bgColor)
 
-	fill bm2 (topBarBlueHighlight this)
-	if (notNil c) { drawCircle (newShapeMaker bm2) cx cy radius c }
-	drawBitmap bm2 icon x y
+		if (downloadProgress >= 1) {
+			drawCircle (newShapeMaker bm) cx cy radius green
+			iconAlpha = 255
+		} else {
+			drawCircle (newShapeMaker bm) cx cy radius gray
+			iconAlpha = 120
+
+			// draw green progress pie chart
+			degrees = (round (360 * downloadProgress))
+			oneDegreeDistance = ((* 2 (pi) radius) / 360.0)
+			pen = (pen (newShapeMaker bm))
+			beginPath pen cx cy
+			setHeading pen 270
+			forward pen radius
+			turn pen 90
+			repeat degrees {
+			  forward pen oneDegreeDistance
+			  turn pen 1
+			}
+			goto pen cx cy
+			fill pen green
+		}
+	}
+	drawBitmap bm icon (10 * scale) (10 * scale) iconAlpha
+}
+
+method showDownloadProgress MicroBlocksEditor downloadProgress {
+	bm1 = (getField indicator 'offCostume')
+	drawIndicator this bm1 (topBarBlue this) true downloadProgress
+	bm2 = (getField indicator 'onCostume')
+	drawIndicator this bm2 (topBarBlueHighlight this) true downloadProgress
+	costumeChanged (morph indicator)
+	doOneCycle (global 'page') // force redisplay
+}
+
+method updateIndicator MicroBlocksEditor forcefully downloadProgress {
+	if (busy (smallRuntime)) { return } // do nothing during file transfer
+
+	if (isNil downloadProgress) { downloadProgress = 1 }
+	status = (updateConnection (smallRuntime))
+	if (and (lastStatus == status) (forcefully != true)) { return } // no change
+	isConnected = ('connected' == status)
+
+	bm1 = (getField indicator 'offCostume')
+	drawIndicator this bm1 (topBarBlue this) isConnected downloadProgress
+	bm2 = (getField indicator 'onCostume')
+	drawIndicator this bm2 (topBarBlueHighlight this) isConnected downloadProgress
 
 	costumeChanged (morph indicator)
 	lastStatus = status

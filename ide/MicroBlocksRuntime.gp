@@ -1171,6 +1171,11 @@ method saveAllChunks SmallRuntime {
 	if (isNil port) { return }
 
 	t = (newTimer)
+	editor = (findMicroBlocksEditor)
+	totalScripts = (
+		(count (allFunctions (project scripter))) +
+		(count (sortedScripts (scriptEditor scripter))))
+	processedScripts = 0
 	suspendCodeFileUpdates this
 
 	saveVariableNames this
@@ -1179,20 +1184,29 @@ method saveAllChunks SmallRuntime {
 
 	functionsSaved = 0
 	for aFunction (allFunctions (project scripter)) {
-		if (saveChunk this aFunction) { functionsSaved += 1 }
+		if (saveChunk this aFunction) {
+			functionsSaved += 1
+			showDownloadProgress editor (processedScripts / totalScripts)
+		}
 		if (isNil port) { return } // connection closed
+		processedScripts += 1
 	}
 	if (functionsSaved > 0) { print 'Downloaded' functionsSaved 'functions to board' (join '(' (msecSplit t) ' msecs)') }
 
 	scriptsSaved = 0
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
-		if (saveChunk this aBlock) { scriptsSaved += 1 }
+			if (saveChunk this aBlock) {
+				scriptsSaved += 1
+				showDownloadProgress editor (processedScripts / totalScripts)
+			}
 			if (isNil port) { return } // connection closed
 		}
+		processedScripts += 1
 	}
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
+	showDownloadProgress editor 1
 	resumeCodeFileUpdates this
 }
 
@@ -1310,13 +1324,19 @@ method verifyCRCs SmallRuntime {
 		}
 	}
 
+	editor = (findMicroBlocksEditor)
+	totalCount = ((count crcDict) + (count ideChunks))
+	processedCount = 0
+
 	// process CRCs
 	for chunkID (keys crcDict) {
 		sourceItem = (at ideChunks chunkID)
 		if (and (notNil sourceItem) ((at crcDict chunkID) != (at crcForChunkID chunkID))) {
 			print 'CRC mismatch; resaving chunk:' chunkID
 			forceSaveChunk this sourceItem
+			showDownloadProgress editor (processedCount / totalCount)
 		}
+		processedCount += 1
 	}
 
 	// check for missing chunks
@@ -1325,8 +1345,11 @@ method verifyCRCs SmallRuntime {
 			print 'Resaving missing chunk:' chunkID
 			sourceItem = (at ideChunks chunkID)
 			forceSaveChunk this sourceItem
+			showDownloadProgress editor (processedCount / totalCount)
 		}
+		processedCount += 1
 	}
+	showDownloadProgress editor 1
 }
 
 method collectCRCsIndividually SmallRuntime {
