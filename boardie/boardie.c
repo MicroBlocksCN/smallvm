@@ -42,16 +42,54 @@ uint32 millisecs() {
 	return (1000 * (now.tv_sec - startSecs)) + (now.tv_usec / 1000);
 }
 
-// Communication/System Functions (stubs for now)
+// Communication/System Functions
 
-int recvBytes(uint8 *buf, int count) { return 0; }
-int canReadByte() { return false; }
-int sendByte(char aByte) { return 1; }
+void initMessageService() {
+	EM_ASM_({
+		window.recvBuffer = [];
+		window.addEventListener('message', function (event) {
+			window.recvBuffer.push(...event.data);
+		}, false);
+	}, NULL);
+}
+
+int nextByte() {
+	return EM_ASM_INT({
+		// Returns first byte in the buffer, and removes it from the buffer.
+		// Returns undefined if buffer is empty, which will be cast to 0, so it
+		// needs to be paired with pendingByteCount to make sure we're not
+		// reading zeroes that aren't there.
+		return window.recvBuffer.splice(0, 1)[0];
+	}, NULL);
+}
+
+int canReadByte() {
+	return EM_ASM_INT({
+		if (!window.recvBuffer) { window.recvBuffer = []; }
+		return window.recvBuffer.length > 0;
+	}, NULL);
+}
+
+int recvBytes(uint8 *buf, int count) {
+	int total = 0;
+	while (canReadByte() && total <= count) {
+		buf[total] = nextByte();
+		total++;
+	}
+	return total;
+}
+
+int sendByte(char aByte) {
+	EM_ASM_({
+		window.parent.postMessage([$0]);
+	}, aByte);
+	return 1;
+}
 
 // System Functions
 
 const char * boardType() {
-	return "Boardie (MicroBlocks Virtual Board";
+	return "Boardie (MicroBlocks Virtual Board)";
 }
 
 // Stubs for functions not used by Boardie
@@ -113,25 +151,7 @@ void clearCodeFile(int ignore) {
 	fwrite((uint8 *) &cycleCount, 1, 4, codeFile);
 }
 
-// Messaging
-
-void initMessageService() {
-	EM_ASM_({
-		window.messages = [];
-		window.addEventListener('message', function (event) {
-			console.log('received', event.data);
-			window.messages.push(event.data);
-		}, false);
-	}, NULL);
-}
-
-int pendingMessages() {
-	printf("checking for pending messages");
-	return EM_ASM_INT({ return window.messages.length; }, NULL);
-};
-
-// Linux Main
-void interpretStep();
+// Main loop
 
 int main(int argc, char *argv[]) {
 	printf("Starting Boardie\n");
@@ -143,11 +163,6 @@ int main(int argc, char *argv[]) {
 	restoreScripts();
 	startAll();
 
-	printf("Boardie started, starting interpreter :)\n");
-
-	emscripten_set_main_loop(interpretStep, 10, true); // callback, fps, loopFlag
-
-	printf("Main loop set up\n");
-
-	return 0;
+	printf("Boardie started, starting interpreter\n");
+	emscripten_set_main_loop(interpretStep, 0, true); // callback, fps, loopFlag
 }

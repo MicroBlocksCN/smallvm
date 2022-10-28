@@ -1323,9 +1323,8 @@ void vmLoop() {
 	}
 }
 
-// Boardie support
 #ifdef EMSCRIPTEN
-int pendingMessages();
+// Boardie support
 
 void interpretStep() {
 	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
@@ -1333,10 +1332,9 @@ void interpretStep() {
 	// at some point, regularly do this:
 	/*
 	   checkButtons();
-	   processMessage();
    */
-
-	printf("pending messages: %d", pendingMessages());
+	// TODO where to do this? Not constantly, of course...
+	processMessage();
 
 	uint32 usecs = 0; // compute times only the first time they are needed
 	for (int t = 0; t < taskCount; t++) {

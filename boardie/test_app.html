@@ -5,9 +5,12 @@
 		<iframe id="boardie" src="run_boardie.html" style="width: 100%; height: 90%;"></iframe>
 		<script>
 			var boardie = document.querySelector('#boardie').contentWindow;
-			function sendMessage() {
-				boardie.postMessage(new Uint8Array([1, 2, 3]));
+			function sendMessage(bytes) {
+				boardie.postMessage(bytes);
 			};
+			window.addEventListener('message', function (event) {
+				console.log('RECEIVED:', ...event.data);
+			}, false);
 		</script>
 	</body>
 </html>
