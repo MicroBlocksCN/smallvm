@@ -1,19 +1,21 @@
 module MakerBit Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 depends 'Touch (MPR121)' 
 choices makerbit_motor A B 
 description 'Support for MakerBit (https://makerbit.com)'
 variables _pinOutputValues 
 
-  spec 'r' 'makerbit_pinTouched' 'Is MakerBit Pin _ Touched?' 'menu.range:5-16' 5
-  spec ' ' 'makerbit_setDigitalPin' 'Set Digital Pin _ to _' 'menu.range:5-16 bool' 5 true
-  spec 'r' 'makerbit_allPins' 'MakerBit Pins'
+  spec 'r' 'makerbit_pinTouched' 'is MakerBit pin _ touched?' 'menu.range:5-16' 5
   space
-  spec ' ' 'makerbit_setMotorMakerBit' 'Set Motor _ Power _' 'menu.makerbit_motor num' 'A' 100
-  spec ' ' 'makerbit_stopMotors' 'Stop All Motors'
+  spec ' ' 'makerbit_setDigitalPin' 'set MakerBit pin _ to _' 'menu.range:5-16 bool' 5 true
+  spec ' ' 'makerbit_setAllPins' 'set all MakerBit LEDs _' 'bool' false
+  spec 'r' 'makerbit_allPins' 'MakerBit pins'
   space
-  spec ' ' '[display:mbEnableDisplay]' 'enable LED display _' 'bool' false
+  spec ' ' 'makerbit_setMotorMakerBit' 'set motor _ power _' 'menu.makerbit_motor num' 'A' 100
+  spec ' ' 'makerbit_stopMotors' 'stop all motors'
+  space
+  spec ' ' '[display:mbEnableDisplay]' 'enable microbit LED display _' 'bool' false
 
 to makerbit_allPins {
   return ('[data:range]' 5 16)
@@ -23,17 +25,23 @@ to makerbit_pinTouched pin {
   return (touch_isTouched (pin - 5))
 }
 
-to makerbit_setDigitalPin pin value {
+to makerbit_setAllPins bool {
+  for pin (makerbit_allPins) {
+    makerbit_setDigitalPin pin bool
+  }
+}
+
+to makerbit_setDigitalPin pin bool {
   if (_pinOutputValues == 0) {_pinOutputValues = (newList 32 '')}
-  digitalWriteOp pin value
+  digitalWriteOp pin bool
   if (or (pin == 13) (pin == 14)) {
-    if value {
+    if bool {
       analogWriteOp pin 1023
     } else {
       analogWriteOp pin 0
     }
   }
-  atPut (pin + 1) _pinOutputValues value
+  atPut (pin + 1) _pinOutputValues bool
 }
 
 to makerbit_setMotorMakerBit motor power {

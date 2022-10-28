@@ -1,17 +1,19 @@
 module HyperDuino Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 depends 'Touch (MPR121)' 
 choices hyperduino_motor A B 
 description 'Support for HyperDuino (https://hyperduino.com).'
 variables _pinOutputValues 
 
-  spec 'r' 'hyperduino_pinTouched' 'Is HyperDuino Pin _ Touched?' 'menu.range:2-13' 2
-  spec ' ' 'hyperduino_setDigitalPin' 'Set Digital Pin _ to _' 'menu.range:2-13 bool' 2 true
-  spec 'r' 'hyperduino_allPins' 'HyperDuino Pins'
+  spec 'r' 'hyperduino_pinTouched' 'is HyperDuino pin _ touched?' 'menu.range:2-13' 2
   space
-  spec ' ' 'hyperduino_setMotorHyperduino' 'Set Motor _ Power _' 'menu.hyperduino_motor num' 'A' 100
-  spec ' ' 'hyperduino_stopMotors' 'Stop All Motors'
+  spec ' ' 'hyperduino_setDigitalPin' 'set HyperDuino pin _ to _' 'menu.range:2-13 bool' 2 true
+  spec ' ' 'hyperduino_setAllPins' 'set all HyperDuino LEDs _' 'bool' false
+  spec 'r' 'hyperduino_allPins' 'HyperDuino pins'
+  space
+  spec ' ' 'hyperduino_setMotorHyperduino' 'set motor _ power _' 'menu.hyperduino_motor num' 'A' 100
+  spec ' ' 'hyperduino_stopMotors' 'stop all motors'
 
 to hyperduino_allPins {
   return ('[data:range]' 2 13)
@@ -21,17 +23,23 @@ to hyperduino_pinTouched pin {
   return (touch_isTouched (pin - 2))
 }
 
-to hyperduino_setDigitalPin pin value {
+to hyperduino_setAllPins bool {
+  for pin (hyperduino_allPins) {
+    hyperduino_setDigitalPin pin bool
+  }
+}
+
+to hyperduino_setDigitalPin pin bool {
   if (_pinOutputValues == 0) {_pinOutputValues = (newList 32 '')}
-  digitalWriteOp pin value
+  digitalWriteOp pin bool
   if (or (pin == 5) (pin == 6)) {
-    if value {
+    if bool {
       analogWriteOp pin 1023
     } else {
       analogWriteOp pin 0
     }
   }
-  atPut (pin + 1) _pinOutputValues value
+  atPut (pin + 1) _pinOutputValues bool
 }
 
 to hyperduino_setMotorHyperduino motor power {
