@@ -1,0 +1,68 @@
+module 'D1 Motor Shield' Output
+author MicroBlocks
+version 1 0 
+choices d1_motor A B 
+description 'Support for Wemos/Lolin D1 mini motor shield.
+https://www.wemos.cc/en/latest/d1_mini_shield/motor.html'
+
+  spec ' ' 'd1MotorControl' 'd1 motor _ power _' 'menu.d1_motor num' 'A' 50
+  spec ' ' 'd1MotorStopAll' 'd1 stop all motors'
+  spec ' ' '_d1MotorSetPower' '_d1MotorSetPower _ label _' 'num num' 0 100
+  spec ' ' '_d1MotorSetPWMFrequency' '_d1MotorSetPWMFrequency'
+  spec ' ' '_d1MotorSendCmd' '_d1MotorSendCmd _' 'num' 10
+
+to '_d1MotorSendCmd' bytes {
+  '[sensors:i2cWrite]' 48 bytes
+  local 'result' (newList 1)
+  '[sensors:i2cRead]' 48 result
+}
+
+to '_d1MotorSetPWMFrequency' {
+  comment 'Set PWM frequency for both motors to 1000 Hz'
+  local 'freq' 1000
+  local 'cmd' (newList 5)
+  atPut 1 cmd 5
+  atPut 2 cmd 2
+  atPut 3 cmd (freq & 255)
+  atPut 4 cmd ((freq >> 8) & 255)
+  atPut 5 cmd ((freq >> 16) & 255)
+  '_d1MotorSendCmd' cmd
+}
+
+to '_d1MotorSetPower' motorNum power {
+  comment 'motorNum: 0, 1, 2 (both)
+Power: 0-100'
+  '_d1MotorSetPWMFrequency'
+  local 'pwr' (100 * (absoluteValue power))
+  local 'cmd' (newList 4)
+  atPut 1 cmd 6
+  atPut 2 cmd motorNum
+  atPut 3 cmd (pwr & 255)
+  atPut 4 cmd ((pwr >> 8) & 255)
+  '_d1MotorSendCmd' cmd
+}
+
+to d1MotorControl motor power {
+  if ('A' == motor) {
+    motorNum = 0
+  } else {
+    motorNum = 1
+  }
+  '_d1MotorSetPower' motorNum (absoluteValue power)
+  if (power > 0) {
+    comment 'Clockwise'
+    '_d1MotorSendCmd' ('[data:makeList]' 4 motorNum 1)
+  } (power < 0) {
+    comment 'Counter clockwise'
+    '_d1MotorSendCmd' ('[data:makeList]' 4 motorNum 2)
+  } (power == 0) {
+    comment 'Stop motor (brake)'
+    '_d1MotorSendCmd' ('[data:makeList]' 4 motorNum 3)
+  }
+}
+
+to d1MotorStopAll {
+  d1MotorControl 'A' 0
+  d1MotorControl 'B' 0
+}
+
