@@ -1108,7 +1108,7 @@ method importEmbeddedLibrary MicroBlocksScripter libName {
 method importLibraryFromFile MicroBlocksScripter fileName data {
   // Import a library with the given file path. If data is not nil, it came from
   // a browser upload or file drop. Use it rather than attempting to read the file.
-  setCursor 'wait'
+
   if (isNil data) {
 	if (beginsWith fileName '//') {
 	  data = (readEmbeddedFile (substring fileName 3))
@@ -1175,7 +1175,6 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 	updateBlocks this
 	saveScripts this
 	restoreScripts this
-	setCursor 'default'
 }
 
 method updateLibraryList MicroBlocksScripter {

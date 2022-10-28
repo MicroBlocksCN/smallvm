@@ -890,6 +890,13 @@ method doOneCycle Page {
   waitMSecs sleepTime
 }
 
+method updateDisplay Page {
+  processEvents this
+  step hand
+  if (or redrawAll (notEmpty damages)) { fixDamages this }
+  waitMSecs 1 // needed for browser?
+}
+
 // damage recording and redrawing
 
 method redrawAll Page { redrawAll = true }

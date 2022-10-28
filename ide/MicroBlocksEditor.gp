@@ -284,7 +284,6 @@ method openProjectMenu MicroBlocksEditor {
 
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the given file path or URL.
-  setCursor 'wait'
   if (beginsWith location '//') {
     lastProjectFolder = 'Examples'
   } else {
@@ -322,7 +321,6 @@ method openProject MicroBlocksEditor projectData projectName updateLibraries {
   updateLibraryList scripter
   developerModeChanged scripter
   saveAllChunks (smallRuntime)
-  setCursor 'default'
 }
 
 method openFromBoard MicroBlocksEditor {
@@ -527,7 +525,7 @@ method showDownloadProgress MicroBlocksEditor downloadProgress {
 	bm2 = (getField indicator 'onCostume')
 	drawIndicator this bm2 (topBarBlueHighlight this) true downloadProgress
 	costumeChanged (morph indicator)
-	doOneCycle (global 'page') // force redisplay
+	updateDisplay (global 'page') // update the display
 }
 
 method updateIndicator MicroBlocksEditor forcefully downloadProgress {

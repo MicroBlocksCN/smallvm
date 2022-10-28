@@ -587,7 +587,6 @@ method deleteChunkForBlock SmallRuntime aBlock {
 
 method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
-	setCursor 'wait'
 
 	removeHint (global 'page')
 	if (and (notNil port) (true != alreadyStopped)) {
@@ -598,8 +597,6 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 	doOneCycle (global 'page')
 	saveAllChunks this
 	verifyCRCs this
-
-	setCursor 'default'
 }
 
 method softReset SmallRuntime {
