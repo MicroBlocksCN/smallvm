@@ -133,6 +133,6 @@ int main(int argc, char *argv[]) {
 	restoreScripts();
 	startAll();
 
-	printf("Boardie started, starting interpreter\n");
+	printf("Starting interpreter\n");
 	emscripten_set_main_loop(interpretStep, 0, true); // callback, fps, loopFlag
 }
