@@ -5,12 +5,11 @@
 // Copyright 2022 John Maloney, Bernat Romagosa, and Jens Mönig
 
 // boardie.c - Boardie - A Simulated MicroBlocks Board for Web Browsers
-// John Maloney, October 2022
+// John Maloney and Bernat Romagosa, October 2022
 
 #include <stdio.h>
-#include <stdlib.h> // still needed?
+#include <stdlib.h>
 #include <sys/time.h>
-#include <signal.h>
 
 #include <emscripten.h>
 
@@ -96,10 +95,17 @@ const char * boardType() {
 
 void addFilePrims() {}
 void addNetPrims() {}
-void addSerialPrims() {}
 void addSensorPrims() {}
+void addSerialPrims() {}
 void delay(int msecs) {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
+
+// Stubs for code file (persistence) not used by Boardie
+
+void initCodeFile(uint8 *flash, int flashByteCount) {}
+void writeCodeFile(uint8 *code, int byteCount) { }
+void writeCodeFileWord(int word) { }
+void clearCodeFile(int ignore) { }
 
 // Stubs for primitives not used by Boardie
 
@@ -114,42 +120,6 @@ OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
 OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
-
-// Persistence support
-
-char *codeFileName = "ublockscode";
-FILE *codeFile;
-
-void initCodeFile(uint8 *flash, int flashByteCount) {
-	codeFile = fopen(codeFileName, "ab+");
-	fseek(codeFile, 0 , SEEK_END);
-	long fileSize = ftell(codeFile);
-
-	// read code file into simulated Flash:
-	fseek(codeFile, 0L, SEEK_SET);
-	long bytesRead = fread((char*) flash, 1, flashByteCount, codeFile);
-	if (bytesRead != fileSize) {
-		outputString("initCodeFile did not read entire file");
-	}
-}
-
-void writeCodeFile(uint8 *code, int byteCount) {
-	fwrite(code, 1, byteCount, codeFile);
-	fflush(codeFile);
-}
-
-void writeCodeFileWord(int word) {
-	fwrite(&word, 1, 4, codeFile);
-	fflush(codeFile);
-}
-
-void clearCodeFile(int ignore) {
-	fclose(codeFile);
-	remove(codeFileName);
-	codeFile = fopen(codeFileName, "ab+");
-	uint32 cycleCount = ('S' << 24) | 1; // Header record, version 1
-	fwrite((uint8 *) &cycleCount, 1, 4, codeFile);
-}
 
 // Main loop
 
