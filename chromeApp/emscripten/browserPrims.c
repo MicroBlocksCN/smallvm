@@ -459,6 +459,15 @@ static OBJ primBrowserReadPrefs(int nargs, OBJ args[]) {
 	return result;
 }
 
+// Boardie Support
+
+static OBJ primBrowserOpenBoardie(int nargs, OBJ args[]) {
+	EM_ASM({
+	    GP_openBoardie();
+	}, NULL);
+	return nilObj;
+}
+
 // ***** Browser Canvas Shadow Effects *****
 
 static OBJ primBrowserSetShadow(int nargs, OBJ args[]) {
@@ -1338,6 +1347,7 @@ static PrimEntry browserPrimList[] = {
 	{"browserClearShadow",		primBrowserClearShadow,		"Disable the Canvas shadow effect."},
 	{"browserReadPrefs",		primBrowserReadPrefs,		"Read user preferences from localStorage."},
 	{"browserWritePrefs",		primBrowserWritePrefs,		"Write user preferences to localStorage. Args: jsonString"},
+	{"browserOpenBoardie",      primBrowserOpenBoardie,		"Open boardie."},
 };
 
 static PrimEntry graphicsPrimList[] = {

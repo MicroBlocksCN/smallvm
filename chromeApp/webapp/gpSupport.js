@@ -630,6 +630,21 @@ function GP_toggleFullscreen() {
   }
 }
 
+// Boardie Support
+
+// The IDE communicates with Boardie as if it were a serial port (i.e. using serial read/write)
+// Boardie receives serial data from the IDE as a queue of Uint8 buffers.
+// Boardie sends serial data to the IDE by pushing Uint8 buffers to GP_serialInputBuffers.
+
+GP.boardie_IsOpen = false;
+GP.boardie_incomingData = []; // a list of Uint8 arrays
+
+function GP_openBoardie() {
+	GP_closeSerialPort(); // close serial port if open
+	// add the iframe here...
+	GP.boardie_IsOpen = true;
+}
+
 // Serial Ports (supported in Chrome OS and Chromium-based browsers only)
 // Only one serial port can be open at a time.
 
@@ -715,7 +730,7 @@ function webSerialWrite(data) {
 
 GP_serialPortNames = [];
 GP_serialPortID = -1;
-GP_serialInputBuffers = [];
+GP_serialInputBuffers = [];  // a list of Uint8 arrays
 GP_serialPortListenersAdded = false;
 
 // Serial support for both WebSerial and Chromebook App
@@ -761,6 +776,7 @@ function GP_openSerialPort(id, path, baud) {
 			GP_serialPortListenersAdded = true;
 		}
 	}
+	if (GP.boardie_IsOpen) { return 1; }
 	if (hasWebSerial()) {
 		webSerialConnect();
 	} else if (hasChromeSerial()) {
@@ -771,13 +787,16 @@ function GP_openSerialPort(id, path, baud) {
 }
 
 function GP_isOpenSerialPort() {
+	if (GP.boardie_IsOpen) { return true; }
 	if (hasWebSerial()) return webSerialIsConnected();
 	if (hasChromeSerial()) return (GP_serialPortID >= 0);
 	return false;
 }
 
 function GP_closeSerialPort() {
-	if (hasWebSerial()) {
+	if (GP.boardie_IsOpen) {
+		GP.boardie_IsOpen = false;
+	} else if (hasWebSerial()) {
 		webSerialDisconnect();
 	} else if (GP_serialPortID > 0) {
 		function portClosed(ignored) { }
@@ -812,7 +831,10 @@ function GP_readSerialPort(maxBytes) {
 }
 
 function GP_writeSerialPort(data) {
-	if (hasWebSerial()) {
+	if (GP.boardie_IsOpen) {
+		GP.boardie_incomingData.push(data);
+		return data.buffer.byteLength;
+	} else if (hasWebSerial()) {
 		return webSerialWrite(data);
 	} else if (hasChromeSerial()) {
 		function dataSent(ignored) { }
@@ -824,7 +846,9 @@ function GP_writeSerialPort(data) {
 }
 
 async function GP_setSerialPortDTR(flag) {
-	if (hasWebSerial()) {
+	if (GP.boardie_IsOpen) {
+		return; // do nothing
+	} else if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ dtr: flag, dataTerminalReady: flag }).catch(() => {});
 	} else if (hasChromeSerial()) {
@@ -835,7 +859,9 @@ async function GP_setSerialPortDTR(flag) {
 }
 
 async function GP_setSerialPortRTS(flag) {
-	if (hasWebSerial()) {
+	if (GP.boardie_IsOpen) {
+		return; // do nothing
+	} else if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ rts: flag, requestToSend: flag }).catch(() => {});
 	} else if (hasChromeSerial()) {

@@ -611,11 +611,17 @@ method isWebSerial SmallRuntime {
 
 method webSerialConnect SmallRuntime action {
 	if ('disconnect' == action) {
-		stopAndSyncScripts this
-		sendStartAll this
+		if ('boardie' != portName) {
+			stopAndSyncScripts this
+			sendStartAll this
+		}
 		closeSerialPort 1
 		portName = nil
 		port = nil
+	} ('open Boardie' == action) {
+		browserOpenBoardie
+		portName = 'boardie'
+		port = 1
 	} else {
 		openSerialPort 'webserial' 115200
 		disconnected = false
@@ -629,13 +635,14 @@ method selectPort SmallRuntime {
 	if (isNil disconnected) { disconnected = false }
 
 	if (isWebSerial this) {
-		if (not (isOpenSerialPort 1)) {
-			webSerialConnect this 'connect'
+		menu = (menu 'Connect' (action 'webSerialConnect' this) true)
+		if (isNil port) {
+			addItem menu 'connect'
+			addItem menu 'open Boardie'
 		} else {
-			menu = (menu 'Connect' (action 'webSerialConnect' this) true)
 			addItem menu 'disconnect'
-			popUpAtHand menu (global 'page')
 		}
+		popUpAtHand menu (global 'page')
 		return
 	} (and ('Browser' == (platform)) (not (browserIsChromeOS))) { // running in a browser w/o WebSerial (or it is not enabled)
 		inform (localized 'Only recent Chrome and Edge browsers support WebSerial.')
