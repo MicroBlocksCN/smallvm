@@ -434,7 +434,9 @@ static int *end1 = (int *) (START + (2 * HALF_SPACE));;
 static int current;		// current half-space (0 or 1)
 static int *freeStart;	// first free word
 
-static int suspendFileUpdates = false;	// suspend slow file updates when loading a project/library
+#ifdef USE_CODE_FILE
+	static int suspendFileUpdates = false;	// suspend slow file updates when loading a project/library
+#endif
 
 // helper functions
 

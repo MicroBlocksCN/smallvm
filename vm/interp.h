@@ -206,6 +206,7 @@ void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendBroadcastToIDE(char *s, int len);
 int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
+void interpretStep();
 void vmLoop(void);
 void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
