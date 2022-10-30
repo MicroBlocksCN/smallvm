@@ -732,6 +732,12 @@ method checkLatestVersion MicroBlocksEditor {
   latestVersion = (fetchLatestVersionNumber this) // fetch version, even in browser, to log useage
   if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
   currentVersion = (splitWith (ideVersionNumber (smallRuntime)) '.')
+
+  // sanity checks -- both versions should be lists/arrays of strings representing integers
+  // can get garbage if the HTTP request fails
+  for n latestVersion { if (not (representsAnInteger n)) { return }}
+  for n currentVersion { if (not (representsAnInteger n)) { return }}
+
   for i (count latestVersion) {
 	latest = (toInteger (at latestVersion i))
 	current = (toInteger (at currentVersion i))
@@ -739,6 +745,7 @@ method checkLatestVersion MicroBlocksEditor {
 	if pilot {
       // we're running a pilot release, lets check the latest one
       latestVersion = (fetchLatestPilotVersionNumber this)
+      for n latestVersion { if (not (representsAnInteger n)) { return }} // sanity check
       latest = (toInteger (at latestVersion i))
 	}
 	if (latest > current) {
