@@ -8,8 +8,13 @@
   </head>
   <body>
     <div class="emscripten">
-      <canvas class="emscripten" id="screen"></canvas>
+      <canvas class="emscripten" id="screen" width="200" height="150"></canvas>
     </div>
     <script type="text/javascript" src="run_boardie.js"></script>
+	<script>
+		var screen = document.querySelector('#screen'),
+			ctx = screen.getContext('2d');
+		ctx.imageSmoothingEnabled = false;
+	</script>
   </body>
 </html>
