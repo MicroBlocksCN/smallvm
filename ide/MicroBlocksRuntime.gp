@@ -1213,12 +1213,14 @@ method forceSaveChunk SmallRuntime aBlockOrFunction {
 	if (contains chunkIDs aBlockOrFunction) {
 		atPut (at chunkIDs aBlockOrFunction) 4 '' // clear the old source to force re-save
 	}
-	saveChunk this aBlockOrFunction
+	saveChunk this aBlockOrFunction false
 }
 
-method saveChunk SmallRuntime aBlockOrFunction {
+method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 	// Save the given script or function as an executable code "chunk".
 	// Also save the source code (in GP format) and the script position.
+
+	if (isNil skipHiddenFunctions) { skipHiddenFunctions = true } // optimize by default
 
 	pp = (new 'PrettyPrinter')
 	if (isClass aBlockOrFunction 'String') {
@@ -1229,7 +1231,7 @@ method saveChunk SmallRuntime aBlockOrFunction {
 		functionName = (functionName aBlockOrFunction)
 		chunkID = (lookupChunkID this functionName)
 		entry = (at chunkIDs functionName)
-		if (not (at entry 5)) { return false } // function is not in scripting area so has not changed
+		if (and skipHiddenFunctions (not (at entry 5))) { return false } // function is not in scripting area so has not changed
 		atPut entry 5 false
 		currentSrc = (prettyPrintFunction pp aBlockOrFunction)
 	} else {
