@@ -13,3 +13,10 @@ emcc -std=gnu99 -Wall -O3 \
 	boardie.c ../vm/*.c \
 	boardieIOPrims.c boardieOutputPrims.c boardieTftPrims.c \
 	-o run_boardie.html
+
+rm run_boardie.html
+
+cp boardie.html ../chromeApp/webapp/boardie
+cp style.css ../chromeApp/webapp/boardie
+cp run_boardie.js ../chromeApp/webapp/boardie
+cp run_boardie.wasm ../chromeApp/webapp/boardie

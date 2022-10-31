@@ -360,10 +360,14 @@ function queueGPMessage(s) {
 
 function handleMessage(evt) {
 	// Handle a message sent by the JavaScript postMessage() function.
-	// This is used to control button visibility or to queue a message to GP.
+	// This is used to control button visibility, to queue a message to GP
+	// or to communicate with Boardie.
 
 	var msg = evt.data;
-	if (msg.startsWith('showButton ')) {
+	if (GP.boardie.isOpen && (typeof evt.data === 'object')) {
+		// Boardie sent us a byte. Let's add it to the serial buffer.
+		GP_serialInputBuffers.push(msg[0]);
+	} else if (msg.startsWith('showButton ')) {
 		var btn = document.getElementById(msg.substring(11));
 		if (btn) btn.style.display = 'inline';
 	} else if (msg.startsWith('hideButton ')){
@@ -638,6 +642,7 @@ function GP_toggleFullscreen() {
 
 GP.boardie = {
 	element: null,
+	iframe: null,
 	isOpen: false,
 	incomingData: [] // a list of Uint8 arrays
 };
@@ -665,11 +670,14 @@ function GP_openBoardie() {
 	header.style.zIndex = 1000;
 	header.style.backgroundColor = '#797';
 	header.style.color = '#fff';
+	header.style.marginBottom = '10px';
 	boardie.element.append(header);
 
-	iframe.src = 'boardie.html';
-	iframe.width = 150;
-	iframe.height = 200;
+	iframe.src = 'boardie/boardie.html';
+	iframe.width = 220;
+	iframe.height = 300;
+	iframe.style.border = 0;
+	boardie.iframe = iframe;
 	boardie.element.append(iframe);
 
 	makeDraggable(boardie.element);
@@ -724,6 +732,7 @@ function GP_closeBoardie() {
 	if (GP.boardie.element) {
 		document.body.removeChild(GP.boardie.element);
 		GP.boardie.element = null;
+		GP.boardie.iframe = null;
 		GP.boardie.isOpen = false;
 	}
 }
@@ -914,8 +923,8 @@ function GP_readSerialPort(maxBytes) {
 }
 
 function GP_writeSerialPort(data) {
-	if (GP.boardie_IsOpen) {
-		GP.boardie_incomingData.push(data);
+	if (GP.boardie.isOpen) {
+		GP.boardie.iframe.contentWindow.postMessage(data);
 		return data.buffer.byteLength;
 	} else if (hasWebSerial()) {
 		return webSerialWrite(data);
