@@ -636,13 +636,96 @@ function GP_toggleFullscreen() {
 // Boardie receives serial data from the IDE as a queue of Uint8 buffers.
 // Boardie sends serial data to the IDE by pushing Uint8 buffers to GP_serialInputBuffers.
 
-GP.boardie_IsOpen = false;
-GP.boardie_incomingData = []; // a list of Uint8 arrays
+GP.boardie = {
+	element: null,
+	isOpen: false,
+	incomingData: [] // a list of Uint8 arrays
+};
 
 function GP_openBoardie() {
+	var header = document.createElement('div'),
+		iframe = document.createElement('iframe'),
+		boardie = GP.boardie;
+
 	GP_closeSerialPort(); // close serial port if open
-	// add the iframe here...
-	GP.boardie_IsOpen = true;
+
+	boardie.element = document.createElement('div');
+	boardie.element.id = 'boardie';
+	boardie.element.style.position = 'absolute';
+	boardie.element.style.zIndex = 999;
+	boardie.element.style.backgroundColor = '#aba';
+	boardie.element.style.border = '1px solid #686';
+	boardie.element.style.top = '10px';
+	boardie.element.style.left = '10px';
+
+	header.class = 'header';
+	header.innerHTML = '<span>Boardie</span>';
+	header.style.padding = '10px';
+	header.style.cursor = 'move';
+	header.style.zIndex = 1000;
+	header.style.backgroundColor = '#797';
+	header.style.color = '#fff';
+	boardie.element.append(header);
+
+	iframe.src = 'boardie.html';
+	iframe.width = 150;
+	iframe.height = 200;
+	boardie.element.append(iframe);
+
+	makeDraggable(boardie.element);
+	document.body.append(boardie.element);
+
+	boardie.isOpen = true;
+};
+
+function makeDraggable (element) {
+	// taken from w3schools (https://www.w3schools.com/howto/howto_js_draggable.asp)
+	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+	if (document.getElementById(element.id + "header")) {
+		// if present, the header is where you move the DIV from:
+		document.getElementById(element.id + "header").onmousedown = dragMouseDown;
+	} else {
+		// otherwise, move the DIV from anywhere inside the DIV:
+		element.onmousedown = dragMouseDown;
+	}
+
+	function dragMouseDown(e) {
+		e = e || window.event;
+		e.preventDefault();
+		// get the mouse cursor position at startup:
+		pos3 = e.clientX;
+		pos4 = e.clientY;
+		document.onmouseup = closeDragElement;
+		// call a function whenever the cursor moves:
+		document.onmousemove = elementDrag;
+	};
+
+	function elementDrag(e) {
+		e = e || window.event;
+		e.preventDefault();
+		// calculate the new cursor position:
+		pos1 = pos3 - e.clientX;
+		pos2 = pos4 - e.clientY;
+		pos3 = e.clientX;
+		pos4 = e.clientY;
+		// set the element's new position:
+		element.style.top = (element.offsetTop - pos2) + "px";
+		element.style.left = (element.offsetLeft - pos1) + "px";
+	};
+
+	function closeDragElement() {
+		// stop moving when mouse button is released:
+		document.onmouseup = null;
+		document.onmousemove = null;
+	};
+};
+
+function GP_closeBoardie() {
+	if (GP.boardie.element) {
+		document.body.removeChild(GP.boardie.element);
+		GP.boardie.element = null;
+		GP.boardie.isOpen = false;
+	}
 }
 
 // Serial Ports (supported in Chrome OS and Chromium-based browsers only)
@@ -776,7 +859,7 @@ function GP_openSerialPort(id, path, baud) {
 			GP_serialPortListenersAdded = true;
 		}
 	}
-	if (GP.boardie_IsOpen) { return 1; }
+	if (GP.boardie.isOpen) { return 1; }
 	if (hasWebSerial()) {
 		webSerialConnect();
 	} else if (hasChromeSerial()) {
@@ -787,15 +870,15 @@ function GP_openSerialPort(id, path, baud) {
 }
 
 function GP_isOpenSerialPort() {
-	if (GP.boardie_IsOpen) { return true; }
+	if (GP.boardie.isOpen) { return true; }
 	if (hasWebSerial()) return webSerialIsConnected();
 	if (hasChromeSerial()) return (GP_serialPortID >= 0);
 	return false;
 }
 
 function GP_closeSerialPort() {
-	if (GP.boardie_IsOpen) {
-		GP.boardie_IsOpen = false;
+	if (GP.boardie.isOpen) {
+		GP_closeBoardie();
 	} else if (hasWebSerial()) {
 		webSerialDisconnect();
 	} else if (GP_serialPortID > 0) {
