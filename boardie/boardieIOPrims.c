@@ -66,6 +66,10 @@ OBJ primSetServo(int argCount, OBJ *args) { return falseObj; }
 OBJ primDACInit(int argCount, OBJ *args) { return falseObj; }
 OBJ primDACWrite(int argCount, OBJ *args) { return falseObj; }
 
+void primSetUserLED(OBJ *args) {
+	tftSetHugePixel(3, 1, (trueObj == args[0]));
+}
+
 static PrimEntry entries[] = {
 	{"hasTone", primHasTone},
 	{"playTone", primPlayTone},

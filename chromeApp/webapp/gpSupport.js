@@ -643,8 +643,7 @@ function GP_toggleFullscreen() {
 GP.boardie = {
 	element: null,
 	iframe: null,
-	isOpen: false,
-	incomingData: [] // a list of Uint8 arrays
+	isOpen: false
 };
 
 function GP_openBoardie() {
