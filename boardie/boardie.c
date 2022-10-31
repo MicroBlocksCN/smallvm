@@ -80,7 +80,7 @@ int recvBytes(uint8 *buf, int count) {
 
 int sendByte(char aByte) {
 	EM_ASM_({
-		window.parent.postMessage([$0]);
+		window.parent.postMessage($0);
 	}, aByte);
 	return 1;
 }

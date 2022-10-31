@@ -364,9 +364,9 @@ function handleMessage(evt) {
 	// or to communicate with Boardie.
 
 	var msg = evt.data;
-	if (GP.boardie.isOpen && (typeof evt.data === 'object')) {
+	if (GP.boardie.isOpen && (typeof evt.data === 'number')) {
 		// Boardie sent us a byte. Let's add it to the serial buffer.
-		GP_serialInputBuffers.push(msg[0]);
+		GP_serialInputBuffers.push(new Uint8Array([msg]));
 	} else if (msg.startsWith('showButton ')) {
 		var btn = document.getElementById(msg.substring(11));
 		if (btn) btn.style.display = 'inline';

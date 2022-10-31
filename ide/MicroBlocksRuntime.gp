@@ -622,6 +622,8 @@ method webSerialConnect SmallRuntime action {
 		port = nil
 	} ('open Boardie' == action) {
 		browserOpenBoardie
+		disconnected = false
+		connectionStartTime = (msecsSinceStart)
 		portName = 'boardie'
 		port = 1
 	} else {
