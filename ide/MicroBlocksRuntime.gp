@@ -1183,7 +1183,7 @@ method saveAllChunks SmallRuntime {
 	for aFunction (allFunctions (project scripter)) {
 		if (saveChunk this aFunction) {
 			functionsSaved += 1
-			showDownloadProgress editor (processedScripts / totalScripts)
+			showDownloadProgress editor 3 (processedScripts / totalScripts)
 		}
 		if (isNil port) { return } // connection closed
 		processedScripts += 1
@@ -1195,7 +1195,7 @@ method saveAllChunks SmallRuntime {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
 			if (saveChunk this aBlock) {
 				scriptsSaved += 1
-				showDownloadProgress editor (processedScripts / totalScripts)
+				showDownloadProgress editor 3 (processedScripts / totalScripts)
 			}
 			if (isNil port) { return } // connection closed
 		}
@@ -1203,7 +1203,7 @@ method saveAllChunks SmallRuntime {
 	}
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
-	showDownloadProgress editor 1
+	showDownloadProgress editor 3 1
 	resumeCodeFileUpdates this
 }
 
@@ -1333,7 +1333,7 @@ method verifyCRCs SmallRuntime {
 		if (and (notNil sourceItem) ((at crcDict chunkID) != (at crcForChunkID chunkID))) {
 			print 'CRC mismatch; resaving chunk:' chunkID
 			forceSaveChunk this sourceItem
-			showDownloadProgress editor (processedCount / totalCount)
+			showDownloadProgress editor 3 (processedCount / totalCount)
 		}
 		processedCount += 1
 	}
@@ -1344,11 +1344,11 @@ method verifyCRCs SmallRuntime {
 			print 'Resaving missing chunk:' chunkID
 			sourceItem = (at ideChunks chunkID)
 			forceSaveChunk this sourceItem
-			showDownloadProgress editor (processedCount / totalCount)
+			showDownloadProgress editor 3 (processedCount / totalCount)
 		}
 		processedCount += 1
 	}
-	showDownloadProgress editor 1
+	showDownloadProgress editor 3 1
 }
 
 method collectCRCsIndividually SmallRuntime {
@@ -1419,6 +1419,9 @@ method saveVariableNames SmallRuntime {
 	newVarNames = (allVariableNames (project scripter))
 	if (oldVarNames == newVarNames) { return }
 
+	editor = (findMicroBlocksEditor)
+	varCount = (count newVarNames)
+
 	clearVariableNames this
 	varID = 0
 	for varName newVarNames {
@@ -1426,6 +1429,7 @@ method saveVariableNames SmallRuntime {
 			sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
 		}
 		varID += 1
+		showDownloadProgress editor 2 (varID / varCount)
 	}
 	oldVarNames = (copy newVarNames)
 }

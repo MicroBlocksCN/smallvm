@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -142,8 +142,12 @@ method addTopBarParts MicroBlocksEditor {
 	frameRate = (newText '0 fps' 'Arial' (14 * scale))
 	addPart morph (morph frameRate)
 	add rightItems frameRate
-	add rightItems (10 * scale)
+	add rightItems (16 * scale)
   }
+
+  add rightItems (addIconButton this (newBitmap 0 0) 'noop' 'Progress' 36)
+  progressIndicator = (last rightItems)
+  add rightItems (3 * scale)
 
   add rightItems (addIconButton this (startButtonIcon this) 'startAll' 'Start' 36)
   add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 'Stop' 36)
@@ -481,65 +485,83 @@ method updateFPS MicroBlocksEditor {
 	}
 }
 
-method drawIndicator MicroBlocksEditor bm bgColor isConnected downloadProgress {
+// Progress indicator
+
+method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
 	scale = (global 'scale')
-	icon = (connectButtonIcon this)
+	radius = (13 * scale)
 	cx = (half (width bm))
 	cy = ((half (height bm)) + scale)
-	radius = (13 * scale)
+	bgColor = (topBarBlue this)
+	if (1 == phase) {
+		lightGray = (mixed (gray 0) 5 bgColor)
+		darkGray = (mixed (gray 0) 15 bgColor)
+	} (2 == phase) {
+		lightGray = (mixed (gray 0) 15 bgColor)
+		darkGray = (mixed (gray 0) 30 bgColor)
+	} (3 == phase) {
+		lightGray = (mixed (gray 0) 30 bgColor)
+		darkGray = (mixed (gray 0) 60 bgColor)
+	}
 
 	fill bm bgColor
-	if isConnected {
-		gray = (mixed (gray 0) 25 bgColor)
-		green = (mixed (color 0 200 0) 70 bgColor)
+	if (and (3 == phase) (downloadProgress >= 1)) { return }
 
-		if (downloadProgress >= 1) {
-			drawCircle (newShapeMaker bm) cx cy radius green
-			iconAlpha = 255
-		} else {
-			drawCircle (newShapeMaker bm) cx cy radius gray
-			iconAlpha = 120
+	// background circle
+	drawCircle (newShapeMaker bm) cx cy radius lightGray
 
-			// draw green progress pie chart
-			degrees = (round (360 * downloadProgress))
-			oneDegreeDistance = ((* 2 (pi) radius) / 360.0)
-			pen = (pen (newShapeMaker bm))
-			beginPath pen cx cy
-			setHeading pen 270
-			forward pen radius
-			turn pen 90
-			repeat degrees {
-			  forward pen oneDegreeDistance
-			  turn pen 1
-			}
-			goto pen cx cy
-			fill pen green
-		}
+	// draw progress pie chart
+	degrees = (round (360 * downloadProgress))
+	oneDegreeDistance = ((* 2 (pi) radius) / 360.0)
+	pen = (pen (newShapeMaker bm))
+	beginPath pen cx cy
+	setHeading pen 270
+	forward pen radius
+	turn pen 90
+	repeat degrees {
+	  forward pen oneDegreeDistance
+	  turn pen 1
 	}
-	drawBitmap bm icon (10 * scale) (10 * scale) iconAlpha
+	goto pen cx cy
+	fill pen darkGray
 }
 
-method showDownloadProgress MicroBlocksEditor downloadProgress {
-	bm1 = (getField indicator 'offCostume')
-	drawIndicator this bm1 (topBarBlue this) true downloadProgress
-	bm2 = (getField indicator 'onCostume')
-	drawIndicator this bm2 (topBarBlueHighlight this) true downloadProgress
-	costumeChanged (morph indicator)
+method showDownloadProgress MicroBlocksEditor phase downloadProgress {
+	bm1 = (getField progressIndicator 'offCostume')
+	drawProgressIndicator this bm1 phase downloadProgress
+	bm2 = (getField progressIndicator 'onCostume')
+	drawProgressIndicator this bm2 phase downloadProgress
+	costumeChanged (morph progressIndicator)
 	updateDisplay (global 'page') // update the display
 }
 
-method updateIndicator MicroBlocksEditor forcefully downloadProgress {
+// Connection indicator
+
+method drawIndicator MicroBlocksEditor bm bgColor isConnected {
+	scale = (global 'scale')
+	fill bm bgColor
+	if isConnected {
+		cx = (half (width bm))
+		cy = ((half (height bm)) + scale)
+		radius = (13 * scale)
+		green = (mixed (color 0 200 0) 70 bgColor)
+		drawCircle (newShapeMaker bm) cx cy radius green
+	}
+	icon = (connectButtonIcon this)
+	drawBitmap bm icon (10 * scale) (10 * scale)
+}
+
+method updateIndicator MicroBlocksEditor forcefully {
 	if (busy (smallRuntime)) { return } // do nothing during file transfer
 
-	if (isNil downloadProgress) { downloadProgress = 1 }
 	status = (updateConnection (smallRuntime))
 	if (and (lastStatus == status) (forcefully != true)) { return } // no change
 	isConnected = ('connected' == status)
 
 	bm1 = (getField indicator 'offCostume')
-	drawIndicator this bm1 (topBarBlue this) isConnected downloadProgress
+	drawIndicator this bm1 (topBarBlue this) isConnected
 	bm2 = (getField indicator 'onCostume')
-	drawIndicator this bm2 (topBarBlueHighlight this) isConnected downloadProgress
+	drawIndicator this bm2 (topBarBlueHighlight this) isConnected
 
 	costumeChanged (morph indicator)
 	lastStatus = status

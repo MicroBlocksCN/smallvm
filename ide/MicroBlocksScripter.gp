@@ -690,9 +690,12 @@ method restoreScripts MicroBlocksScripter {
 
   scripts = (scripts (main mbProject))
   if (notNil scripts) {
+	editor = (findMicroBlocksEditor)
+    scriptCount = (count scripts)
     paneX = (left (morph scriptsPane))
     paneY = (top (morph scriptsPane))
-    for entry scripts {
+    for i scriptCount {
+      entry = (at scripts i)
       dta = (last entry)
       if ('to' == (primName dta)) {
         func = (functionNamed mbProject (first (argList dta)))
@@ -712,6 +715,7 @@ method restoreScripts MicroBlocksScripter {
 		addPart (morph scriptsPane) (morph block)
 		fixBlockColor block
 	  }
+	  showDownloadProgress editor 1 (i / scriptCount)
     }
   }
   updateSliders scriptsFrame
