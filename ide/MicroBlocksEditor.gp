@@ -505,7 +505,7 @@ method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
 	}
 
 	fill bm bgColor
-	if (and (3 == phase) (downloadProgress >= 1)) { return }
+	if (downloadProgress >= 1) { return }
 
 	// background circle
 	drawCircle (newShapeMaker bm) cx cy radius lightGray
