@@ -1,10 +1,10 @@
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
-version 1 11 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+version 1 12 
+choices ModeMenu Horizontal Vertical 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices ModeMenu Horizontal Vertical 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -451,6 +451,9 @@ _textX and _textY are next write locations.'
   _delayGDUpd = true
   '_verifyXY' x y
   local 'origX' x
+  if (not (isType string 'string')) {
+    string = ('[data:join]' '' string)
+  }
   for char string {
     comment 'If in table process it - LINE SET is not supported.'
     if (('[data:find]' char _cTABLE) != -1) {
