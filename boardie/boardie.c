@@ -86,10 +86,19 @@ int sendByte(char aByte) {
 void initKeyboardHandler() {
 	EM_ASM_({
 		window.keys = new Map();
+		window.buttons = [];
+		buttons[37] = document.querySelector('.btn-37');
+		buttons[39] = document.querySelector('.btn-39');
 		window.addEventListener('keydown', function (event) {
+			if (buttons[event.keyCode]) {
+				buttons[event.keyCode].classList.add('active');
+			}
 			window.keys.set(event.keyCode, true);
 		}, false);
 		window.addEventListener('keyup', function (event) {
+			if (buttons[event.keyCode]) {
+				window.buttons[event.keyCode].classList.remove('active');
+			}
 			window.keys.set(event.keyCode, false);
 		}, false);
 	});

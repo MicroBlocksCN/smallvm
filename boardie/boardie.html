@@ -11,15 +11,17 @@
       <canvas class="emscripten" id="screen" width="240" height="240"></canvas>
     </div>
 	<div class="buttons">
-		<span onmousedown="keys.set(37, true)" onmouseup="keys.set(37, false)">A</span>
-		<span onmousedown="[37,39].forEach(k=>keys.set(k, true))" onmouseup="[37,39].forEach(k=>keys.set(k, false))">A+B</span>
-		<span onmousedown="keys.set(39, true)" onmouseup="keys.set(39, false)">B</span>
+		<span class="btn-37" onmousedown="press(37);" onmouseup="unpress(37)">A</span>
+		<span onmousedown="[37,39].forEach(k=>press(k))" onmouseup="[37,39].forEach(k=>unpress(k))">A+B</span>
+		<span class="btn-39" onmousedown="press(39)" onmouseup="unpress(39)">B</span>
 	</div>
     <script type="text/javascript" src="run_boardie.js"></script>
 	<script>
 		var screen = document.querySelector('#screen'),
 			ctx = screen.getContext('2d');
 		ctx.imageSmoothingEnabled = false;
+		function press(keycode) { keys.set(keycode, true) };
+		function unpress(keycode) { keys.set(keycode, false); };
 	</script>
   </body>
 </html>

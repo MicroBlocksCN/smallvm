@@ -659,6 +659,7 @@ function GP_openBoardie() {
 	boardie.element.style.zIndex = 999;
 	boardie.element.style.backgroundColor = '#aba';
 	boardie.element.style.border = '1px solid #686';
+	boardie.element.style.borderRadius = '5px';
 	boardie.element.style.top = '10px';
 	boardie.element.style.left = '10px';
 
