@@ -148,8 +148,6 @@ static OBJ primCircle(int argCount, OBJ *args) {
 
 static OBJ primRoundedRect(int argCount, OBJ *args) {
 	tftInit();
-	int x = obj2int(args[0]);
-	int y = obj2int(args[1]);
 	int width = obj2int(args[2]);
 	int height = obj2int(args[3]);
 	int radius = obj2int(args[4]);
@@ -161,12 +159,47 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 		radius = width / 2 - 1;
 	}
 
-	int fill = (argCount > 6) ? (trueObj == args[6]) : true;
-	if (fill) {
-		// draw filled rounded rect
-	} else {
-		// draw rounded rect outline
-	}
+	EM_ASM_({
+			if ($6) {
+				ctx.fillStyle = rgbFrom24b($5);
+			} else {
+				ctx.strokeStyle = rgbFrom24b($5);
+			}
+			var x = $0;
+			var y = $1;
+			var w = $2;
+			var h = $3;
+			var r = $4;
+
+			ctx.beginPath();
+			ctx.moveTo(x + r, y);
+
+			ctx.lineTo(x + w - r, y); // top
+			ctx.arc(x + w - r, y + r, r, 3 * Math.PI / 2, 0, false); // t-r
+
+			ctx.lineTo(x + w, y + h - r); // right
+			ctx.arc(x + w - r, y + h - r, r, 0, Math.PI / 2, false); // b-r
+
+			ctx.lineTo(x + r, y + h); // bottom
+			ctx.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI, false); // b-l
+
+			ctx.lineTo(x, y + r); // left
+			ctx.arc(x + r, y + r, r, Math.PI , 3 * Math.PI / 2, false); // t-l
+
+			if ($6) {
+				ctx.fill();
+			} else {
+				ctx.stroke();
+			}
+		},
+		obj2int(args[0]), // x
+		obj2int(args[1]), // y
+		width, // (2)
+		height, // (3)
+		radius, // (4)
+		obj2int(args[5]), // color
+		(argCount > 6) ? (trueObj == args[6]) : true // fill (6)
+	);
 	return falseObj;
 }
 
