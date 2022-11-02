@@ -487,7 +487,17 @@ static int outBufEnd = 0;
 
 static uint32 lastSendMSecs = 0; // used to detect when serial is connected and accepting data
 
+int sendBytes(uint8 *buf, int start, int end);
+
 static inline void sendData() {
+#ifdef EMSCRIPTEN
+	if (outBufStart != outBufEnd) {
+		if (sendBytes(outBuf, outBufStart, outBufEnd)) {
+			lastSendMSecs = millisecs();
+			outBufStart = outBufEnd & OUTBUF_MASK;
+		}
+	}
+#else
 	int someDataSent = false;
 	while (outBufStart != outBufEnd) {
 		if (!sendByte(outBuf[outBufStart])) break;
@@ -495,6 +505,7 @@ static inline void sendData() {
 		someDataSent = true;
 	}
 	if (someDataSent) lastSendMSecs = millisecs();
+#endif
 }
 
 int serialConnected() {

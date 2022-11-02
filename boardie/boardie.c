@@ -75,11 +75,15 @@ int recvBytes(uint8 *buf, int count) {
 	return total;
 }
 
-int sendByte(char aByte) {
+int sendBytes(uint8 *buf, int start, int end) {
 	EM_ASM_({
-		window.parent.postMessage($0);
-	}, aByte);
-	return 1;
+		var bytes = new Uint8Array($2 - $1);
+		for (var i = $1; i < $2; i++) {
+			bytes[i - $1] = getValue($0 + i, 'i8');
+		}
+		window.parent.postMessage(bytes);
+	}, buf, start, end);
+	return end - start;
 }
 
 // Keyboard support
@@ -153,5 +157,5 @@ int main(int argc, char *argv[]) {
 	startAll();
 
 	printf("Starting interpreter\n");
-	emscripten_set_main_loop(interpretStep, 0, true); // callback, fps, loopFlag
+	emscripten_set_main_loop(interpretStep, 60, true); // callback, fps, loopFlag
 }

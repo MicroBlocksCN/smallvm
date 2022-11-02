@@ -1326,13 +1326,19 @@ void vmLoop() {
 #ifdef EMSCRIPTEN
 // Boardie support
 
+int tick = 0;
+
 void interpretStep() {
+	if (taskCount == 0) {
+		processMessage();
+		checkButtons();
+	} else if (tick == 0) {
+		processMessage();
+		checkButtons();
+	}
+	tick = (tick + 1) % 15;
+
 	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
-
-	// TODO where to do this? Not constantly, of course...
-	processMessage();
-	checkButtons();
-
 	uint32 usecs = 0; // compute times only the first time they are needed
 	for (int t = 0; t < taskCount; t++) {
 		currentTaskIndex++;
