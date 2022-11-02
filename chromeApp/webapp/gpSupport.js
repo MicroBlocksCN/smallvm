@@ -673,8 +673,8 @@ function GP_openBoardie() {
 	boardie.element.append(header);
 
 	iframe.src = 'boardie/boardie.html';
-	iframe.width = 220;
-	iframe.height = 300;
+	iframe.width = 260;
+	iframe.height = 292;
 	iframe.style.border = 0;
 	boardie.iframe = iframe;
 	boardie.element.append(iframe);

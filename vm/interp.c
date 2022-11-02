@@ -1329,12 +1329,9 @@ void vmLoop() {
 void interpretStep() {
 	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 
-	// at some point, regularly do this:
-	/*
-	   checkButtons();
-   */
 	// TODO where to do this? Not constantly, of course...
 	processMessage();
+	checkButtons();
 
 	uint32 usecs = 0; // compute times only the first time they are needed
 	for (int t = 0; t < taskCount; t++) {

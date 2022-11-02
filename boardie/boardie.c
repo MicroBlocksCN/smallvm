@@ -49,24 +49,21 @@ void initMessageService() {
 		window.addEventListener('message', function (event) {
 			window.recvBuffer.push(...event.data);
 		}, false);
-	}, NULL);
+	});
 }
 
 int nextByte() {
 	return EM_ASM_INT({
-		// Returns first byte in the buffer, and removes it from the buffer.
-		// Returns undefined if buffer is empty, which will be cast to 0, so it
-		// needs to be paired with pendingByteCount to make sure we're not
-		// reading zeroes that aren't there.
+		// Returns first byte in the buffer, and removes it from the buffer
 		return window.recvBuffer.splice(0, 1)[0];
-	}, NULL);
+	});
 }
 
 int canReadByte() {
 	return EM_ASM_INT({
 		if (!window.recvBuffer) { window.recvBuffer = []; }
 		return window.recvBuffer.length > 0;
-	}, NULL);
+	});
 }
 
 int recvBytes(uint8 *buf, int count) {
@@ -85,6 +82,31 @@ int sendByte(char aByte) {
 	return 1;
 }
 
+// Keyboard support
+void initKeyboardHandler() {
+	EM_ASM_({
+		window.keys = new Map();
+		window.addEventListener('keydown', function (event) {
+			window.keys.set(event.keyCode, true);
+		}, false);
+		window.addEventListener('keyup', function (event) {
+			window.keys.set(event.keyCode, false);
+		}, false);
+	});
+}
+
+// Sound support
+void initSound() {
+	EM_ASM_({
+		var context = new AudioContext();
+		window.gainNode = context.createGain();
+		window.oscillator = context.createOscillator();
+		oscillator.type = 'square';
+		oscillator.start();
+		gainNode.connect(context.destination);
+	});
+};
+
 // System Functions
 
 const char * boardType() {
@@ -95,7 +117,6 @@ const char * boardType() {
 
 void addFilePrims() {}
 void addNetPrims() {}
-void addSensorPrims() {}
 void addSerialPrims() {}
 void delay(int msecs) {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
@@ -107,26 +128,15 @@ void writeCodeFile(uint8 *code, int byteCount) { }
 void writeCodeFileWord(int word) { }
 void clearCodeFile(int ignore) { }
 
-// Stubs for primitives not used by Boardie
-
-OBJ primI2cGet(OBJ *args) { return int2obj(0); }
-OBJ primI2cSet(OBJ *args) { return int2obj(0); }
-OBJ primSPISend(OBJ *args) { return int2obj(0); }
-OBJ primSPIRecv(OBJ *args) { return int2obj(0); }
-OBJ primSPIExchange(int argCount, OBJ *args) { return falseObj; }
-OBJ primSPISetup(int argCount, OBJ *args) { return falseObj; }
-
-OBJ primMBTemp(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltX(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltY(int argCount, OBJ *args) { return int2obj(0); }
-OBJ primMBTiltZ(int argCount, OBJ *args) { return int2obj(0); }
-
 // Main loop
 
 int main(int argc, char *argv[]) {
 	printf("Starting Boardie\n");
 
 	initMessageService();
+	initKeyboardHandler();
+	initSound();
+
 	initTimers();
 	memInit();
 	primsInit();

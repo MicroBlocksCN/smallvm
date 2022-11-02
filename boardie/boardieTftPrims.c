@@ -15,11 +15,10 @@
 #include "mem.h"
 #include "interp.h"
 
-#define DEFAULT_WIDTH 200
-#define DEFAULT_HEIGHT 150
+#define DEFAULT_WIDTH 240
+#define DEFAULT_HEIGHT 240
 
 static int tftEnabled = false;
-static int lastRefreshTime = 0;
 
 void tftClear() {
 	tftInit();
@@ -30,7 +29,6 @@ void tftClear() {
 
 void tftInit() {
 	if (!tftEnabled) {
-		lastRefreshTime = millisecs();
 		tftEnabled = true;
 
 		EM_ASM_({
@@ -40,10 +38,6 @@ void tftInit() {
 			};
 		}, NULL);
 	}
-}
-
-void updateMicrobitDisplay() {
-	// do nothing?
 }
 
 // TFT Primitives

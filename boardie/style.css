@@ -15,25 +15,27 @@ body {
     background-color: #000;
 }
 
-
-#status {
-    display: inline-block;
-    vertical-align: top;
-    margin-top: 15px;
-    margin-left: 15px;
-    font-weight: bold;
-    color: rgb(120, 120, 120);
+.buttons {
+margin: 10px;
+text-align: center;
+font-family: 'sans';
 }
 
-#progress {
-    height: 20px;
-    width: 30px;
+.buttons span {
+	display: inline-block;
+	background: #898;
+	padding: 5px;
+	border-radius: 5px;
+	border: 1px outset;
+	margin: 0 10px;
+	user-select: none;
 }
 
-#controls {
-    display: none;
-
-#output {
-    display: none;
+.buttons span:hover {
+	cursor: 'hand';
+	background: #9A9;
 }
 
+.buttons span:active {
+	border: 1px inset;
+}

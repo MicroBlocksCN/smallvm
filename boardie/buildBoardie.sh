@@ -11,7 +11,7 @@ emcc -std=gnu99 -Wall -O3 \
 	-s WASM=1 \
 	-I ../vm \
 	boardie.c ../vm/*.c \
-	boardieIOPrims.c boardieOutputPrims.c boardieTftPrims.c \
+	boardieIOPrims.c boardieOutputPrims.c boardieTftPrims.c boardieSensorPrims.c \
 	-o run_boardie.html
 
 rm run_boardie.html

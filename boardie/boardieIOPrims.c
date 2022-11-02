@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <emscripten.h>
 #include "mem.h"
 #include "interp.h"
 
@@ -34,30 +35,44 @@ void stopServos() { }
 
 // Button simulation (use keyboard)
 
-static int KEY_SCANCODE[255];
-
 OBJ primButtonA(OBJ *args) {
 	// simulate button A with the left arrow key
-	return KEY_SCANCODE[80] ? trueObj : falseObj;
+	return EM_ASM_INT({ return keys.get(37); }) ? trueObj : falseObj;
 }
 
 OBJ primButtonB(OBJ *args) {
 	// simulate button B with the right arrow key
-	return KEY_SCANCODE[79] ? trueObj : falseObj;
+	return EM_ASM_INT({ return keys.get(39); }) ? trueObj : falseObj;
 }
 
-// static OBJ primTouchRead(int argCount, OBJ *args) {
-// 	// instead of pins, we use key scancodes
-// 	int code = obj2int(args[0]);
-// 	return int2obj(KEY_SCANCODE[code] ? 0 : 255);
-// }
+// Tone
 
-// Tone (stubs for now)
+void stopTone() {
+	EM_ASM_({
+		if (oscillator.playing) {
+			oscillator.disconnect();
+			oscillator.playing = false;
+		}
+	});
+}
 
-void stopTone() { }
+OBJ primHasTone(int argCount, OBJ *args) { return trueObj; }
+OBJ primPlayTone(int argCount, OBJ *args) {
+	if ((argCount < 2) || !isInt(args[1])) return falseObj;
+	int frequency = obj2int(args[1]);
 
-OBJ primHasTone(int argCount, OBJ *args) { return falseObj; }
-OBJ primPlayTone(int argCount, OBJ *args) { return falseObj; }
+	if ((frequency > 16) && (frequency < 11025)) {
+		EM_ASM_({
+			oscillator.frequency.value = $0;
+			oscillator.playing = true;
+			oscillator.connect(gainNode);
+		}, frequency);
+	} else {
+		stopTone();
+	}
+
+	return falseObj;
+}
 
 // Other primitives (stubs)
 
