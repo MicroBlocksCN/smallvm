@@ -497,15 +497,15 @@ method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
 		lightGray = (mixed (gray 0) 5 bgColor)
 		darkGray = (mixed (gray 0) 15 bgColor)
 	} (2 == phase) {
-		lightGray = (mixed (gray 0) 15 bgColor)
-		darkGray = (mixed (gray 0) 30 bgColor)
+		lightGray = (mixed (gray 0) 10 bgColor)
+		darkGray = (mixed (gray 0) 25 bgColor)
 	} (3 == phase) {
-		lightGray = (mixed (gray 0) 30 bgColor)
-		darkGray = (mixed (gray 0) 60 bgColor)
+		lightGray = (mixed (gray 0) 25 bgColor)
+		darkGray = (mixed (gray 0) 50 bgColor)
 	}
 
 	fill bm bgColor
-	if (downloadProgress >= 1) { return }
+	if (and (3 == phase) (downloadProgress >= 1)) { return }
 
 	// background circle
 	drawCircle (newShapeMaker bm) cx cy radius lightGray

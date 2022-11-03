@@ -715,7 +715,6 @@ method restoreScripts MicroBlocksScripter {
 		addPart (morph scriptsPane) (morph block)
 		fixBlockColor block
 	  }
-	  showDownloadProgress editor 1 (i / scriptCount)
     }
   }
   updateSliders scriptsFrame
