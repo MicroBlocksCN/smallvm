@@ -30,7 +30,7 @@ OBJ primSPISetup(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTouchRead(int argCount, OBJ *args) {
 	// instead of pins, we use keycodes
  	int code = obj2int(args[0]);
-	return int2obj(EM_ASM_INT({ return keys.get($0); }, code) ? 0 : 255);
+	return int2obj(EM_ASM_INT({ return window.keys.get($0); }, code) ? 0 : 255);
 }
 
 // Stubs

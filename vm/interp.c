@@ -1326,38 +1326,53 @@ void vmLoop() {
 #ifdef EMSCRIPTEN
 // Boardie support
 
-int tick = 0;
-
 void interpretStep() {
-	if (taskCount == 0) {
-		processMessage();
-		checkButtons();
-	} else if (tick == 0) {
-		processMessage();
-		checkButtons();
-	}
-	tick = (tick + 1) % 15;
-
-	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
-	uint32 usecs = 0; // compute times only the first time they are needed
-	for (int t = 0; t < taskCount; t++) {
-		currentTaskIndex++;
-		if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
-		Task *task = &tasks[currentTaskIndex];
-		if (unusedTask == task->status) {
-			continue;
-		} else if (running == task->status) {
-			runTask(task);
-			break;
-		} else if (waiting_micros == task->status) {
+	processMessage();
+	checkButtons();
+	updateMicrobitDisplay();
+	int cycles = 0;
+	int start = microsecs();
+	while (cycles < 10000) {
+		// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
+		int runCount = 0;
+		uint32 usecs = 0; // compute times only the first time they are needed
+		for (int t = 0; t < taskCount; t++) {
+			currentTaskIndex++;
+			if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
+			Task *task = &tasks[currentTaskIndex];
+			if (unusedTask == task->status) {
+				continue;
+			} else if (running == task->status) {
+				runTask(task);
+				runCount++;
+				break;
+			} else if (waiting_micros == task->status) {
+				if (!usecs) usecs = microsecs(); // get usecs
+				if ((usecs - task->wakeTime) < RECENT) task->status = running;
+			}
+			if (running == task->status) {
+				runTask(task);
+				runCount++;
+				break;
+			}
+		}
+		if (!runCount) { // no active tasks; consider taking a nap
 			if (!usecs) usecs = microsecs(); // get usecs
-			if ((usecs - task->wakeTime) < RECENT) task->status = running;
+			int sleepUSecs = 2000;
+			for (int i = 0; i < taskCount; i++) {
+				Task *task = &tasks[i];
+				if (waiting_micros == task->status) {
+					int usecsUntilWake = (task->wakeTime - usecs) - 5; // leave 5 extra usecs
+					if ((usecsUntilWake > 0) && (usecsUntilWake < sleepUSecs)) {
+						sleepUSecs = usecsUntilWake;
+					}
+				}
+			}
+			if (sleepUSecs > 1666) { break; } // relinquish control
 		}
-		if (running == task->status) {
-			runTask(task);
-			break;
-		}
+		cycles ++;
 	}
+	printf("%d cycles took %d\n", cycles, microsecs() - start);
 }
 #endif
 

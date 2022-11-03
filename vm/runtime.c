@@ -491,6 +491,12 @@ int sendBytes(uint8 *buf, int start, int end);
 
 static inline void sendData() {
 #ifdef EMSCRIPTEN
+	if (outBufStart > outBufEnd) {
+		if (sendBytes(outBuf, outBufStart, OUTBUF_SIZE)) {
+			lastSendMSecs = millisecs();
+			outBufStart = 0;
+		}
+	}
 	if (outBufStart != outBufEnd) {
 		if (sendBytes(outBuf, outBufStart, outBufEnd)) {
 			lastSendMSecs = millisecs();
@@ -1151,7 +1157,6 @@ static void processLongMessage() {
 
 void processMessage() {
 	// Process a message from the client.
-
 	sendData();
 
 	int bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);

@@ -18,8 +18,8 @@
     <script type="text/javascript" src="run_boardie.js"></script>
 	<script>
 		var screen = document.querySelector('#screen'),
-			ctx = screen.getContext('2d');
-		ctx.imageSmoothingEnabled = false;
+			mainCtx = screen.getContext('2d', { alpha: false });
+		mainCtx.imageSmoothingEnabled = false;
 		function press(keycode) { keys.set(keycode, true) };
 		function unpress(keycode) { keys.set(keycode, false); };
 	</script>

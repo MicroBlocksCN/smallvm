@@ -37,21 +37,21 @@ void stopServos() { }
 
 OBJ primButtonA(OBJ *args) {
 	// simulate button A with the left arrow key
-	return EM_ASM_INT({ return keys.get(37); }) ? trueObj : falseObj;
+	return EM_ASM_INT({ return window.keys.get(37); }) ? trueObj : falseObj;
 }
 
 OBJ primButtonB(OBJ *args) {
 	// simulate button B with the right arrow key
-	return EM_ASM_INT({ return keys.get(39); }) ? trueObj : falseObj;
+	return EM_ASM_INT({ return window.keys.get(39); }) ? trueObj : falseObj;
 }
 
 // Tone
 
 void stopTone() {
 	EM_ASM_({
-		if (oscillator.playing) {
-			oscillator.disconnect();
-			oscillator.playing = false;
+		if (window.oscillator.playing) {
+			window.oscillator.disconnect();
+			window.oscillator.playing = false;
 		}
 	});
 }
@@ -63,9 +63,9 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 
 	if ((frequency > 16) && (frequency < 11025)) {
 		EM_ASM_({
-			oscillator.frequency.value = $0;
-			oscillator.playing = true;
-			oscillator.connect(gainNode);
+			window.oscillator.frequency.value = $0;
+			window.oscillator.playing = true;
+			window.oscillator.connect(window.gainNode);
 		}, frequency);
 	} else {
 		stopTone();

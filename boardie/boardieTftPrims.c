@@ -19,24 +19,46 @@
 #define DEFAULT_HEIGHT 240
 
 static int tftEnabled = false;
+static int tftChanged = false;
 
 void tftClear() {
 	tftInit();
 	EM_ASM_({
-		ctx.clearRect(0, 0, $0, $1);
+		window.ctx.clearRect(0, 0, $0, $1);
 	}, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+	tftChanged = true;
 }
 
 void tftInit() {
 	if (!tftEnabled) {
 		tftEnabled = true;
-
 		EM_ASM_({
+			// initialize an offscreen canvas
+			window.offscreenCanvas = document.createElement('canvas');
+			window.offscreenCanvas.width = $0;
+			window.offscreenCanvas.height = $1;
+			window.ctx = window.offscreenCanvas.getContext('2d', { alpha: false });
+			window.ctx.imageSmoothingEnabled = false;
+
 			window.rgbFrom24b = function (color24b) {
 				return 'rgb(' + ((color24b >> 16) & 255) + ',' +
 					((color24b >> 8) & 255) + ',' + (color24b & 255) + ')';
 			};
-		}, NULL);
+		}, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+	}
+}
+
+void updateMicrobitDisplay() {
+	// transfer the offscreen canvas image to the main canvas
+	if (tftEnabled && tftChanged) {
+		EM_ASM_({
+			if (!window.mainCtx) {
+				window.mainCtx = document.querySelector('#screen').getContext('2d', { alpha: false });
+				window.mainCtx.imageSmoothingEnabled = false;
+			}
+			window.mainCtx.drawImage(window.offscreenCanvas, 0, 0);
+		});
+		tftChanged = false;
 	}
 }
 
@@ -47,7 +69,6 @@ static OBJ primEnableDisplay(int argCount, OBJ *args) {
 		tftInit();
 	} else {
 		tftClear();
-		tftEnabled = false;
 	}
 	return falseObj;
 }
@@ -63,24 +84,25 @@ static OBJ primGetHeight(int argCount, OBJ *args) {
 static OBJ primSetPixel(int argCount, OBJ *args) {
 	tftInit();
 	EM_ASM_({
-			ctx.fillStyle = rgbFrom24b($2);
-			ctx.fillRect($0, $1, 1, 1);
+			window.ctx.fillStyle = window.rgbFrom24b($2);
+			window.ctx.fillRect($0, $1, 1, 1);
 		},
 		obj2int(args[0]), // x
 		obj2int(args[1]), // y
 		obj2int(args[2]) // color
 	);
+	tftChanged = true;
 	return falseObj;
 }
 
 static OBJ primLine(int argCount, OBJ *args) {
 	tftInit();
 	EM_ASM_({
-			ctx.strokeStyle = rgbFrom24b($4);
-			ctx.beginPath();
-			ctx.moveTo($0, $1);
-			ctx.lineTo($2, $3);
-			ctx.stroke();
+			window.ctx.strokeStyle = window.rgbFrom24b($4);
+			window.ctx.beginPath();
+			window.ctx.moveTo($0, $1);
+			window.ctx.lineTo($2, $3);
+			window.ctx.stroke();
 		},
 		obj2int(args[0]), // x0
 		obj2int(args[1]), // y0
@@ -88,6 +110,7 @@ static OBJ primLine(int argCount, OBJ *args) {
 		obj2int(args[3]), // y1
 		obj2int(args[4]) // color
 	);
+	tftChanged = true;
 	return falseObj;
 }
 
@@ -95,11 +118,11 @@ static OBJ primRect(int argCount, OBJ *args) {
 	tftInit();
 	EM_ASM_({
 			if ($5) {
-				ctx.fillStyle = rgbFrom24b($4);
-				ctx.fillRect($0, $1, $2, $3);
+				window.ctx.fillStyle = window.rgbFrom24b($4);
+				window.ctx.fillRect($0, $1, $2, $3);
 			} else {
-				ctx.strokeStyle = rgbFrom24b($4);
-				ctx.strokeRect($0, $1, $2, $3);
+				window.ctx.strokeStyle = window.rgbFrom24b($4);
+				window.ctx.strokeRect($0, $1, $2, $3);
 			}
 		},
 		obj2int(args[0]), // x
@@ -109,6 +132,7 @@ static OBJ primRect(int argCount, OBJ *args) {
 		obj2int(args[4]), // color
 		(argCount > 5) ? (trueObj == args[5]) : true // fill
 	);
+	tftChanged = true;
 	return falseObj;
 }
 
@@ -120,15 +144,15 @@ static OBJ primCircle(int argCount, OBJ *args) {
 			var r = $2;
 			var fill = $4;
 			if (fill) {
-				ctx.fillStyle = rgbFrom24b($3);
-				ctx.beginPath();
-				ctx.arc(x, y, r, 0, 2 * Math.PI);
-				ctx.fill();
+				window.ctx.fillStyle = window.rgbFrom24b($3);
+				window.ctx.beginPath();
+				window.ctx.arc(x, y, r, 0, 2 * Math.PI);
+				window.ctx.fill();
 			} else {
-				ctx.strokeStyle = rgbFrom24b($3);
-				ctx.beginPath();
-				ctx.arc(x, y, r, 0, 2 * Math.PI);
-				ctx.stroke();
+				window.ctx.strokeStyle = window.rgbFrom24b($3);
+				window.ctx.beginPath();
+				window.ctx.arc(x, y, r, 0, 2 * Math.PI);
+				window.ctx.stroke();
 			}
 		},
 		obj2int(args[0]), // x
@@ -137,6 +161,7 @@ static OBJ primCircle(int argCount, OBJ *args) {
 		obj2int(args[3]), // color
 		(argCount > 4) ? (trueObj == args[4]) : true // fill
 	);
+	tftChanged = true;
 	return falseObj;
 }
 
@@ -155,9 +180,9 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 
 	EM_ASM_({
 			if ($6) {
-				ctx.fillStyle = rgbFrom24b($5);
+				window.ctx.fillStyle = window.rgbFrom24b($5);
 			} else {
-				ctx.strokeStyle = rgbFrom24b($5);
+				window.ctx.strokeStyle = window.rgbFrom24b($5);
 			}
 			var x = $0;
 			var y = $1;
@@ -165,25 +190,25 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 			var h = $3;
 			var r = $4;
 
-			ctx.beginPath();
-			ctx.moveTo(x + r, y);
+			window.ctx.beginPath();
+			window.ctx.moveTo(x + r, y);
 
-			ctx.lineTo(x + w - r, y); // top
-			ctx.arc(x + w - r, y + r, r, 3 * Math.PI / 2, 0, false); // t-r
+			window.ctx.lineTo(x + w - r, y); // top
+			window.ctx.arc(x + w - r, y + r, r, 3 * Math.PI / 2, 0, false); // t-r
 
-			ctx.lineTo(x + w, y + h - r); // right
-			ctx.arc(x + w - r, y + h - r, r, 0, Math.PI / 2, false); // b-r
+			window.ctx.lineTo(x + w, y + h - r); // right
+			window.ctx.arc(x + w - r, y + h - r, r, 0, Math.PI / 2, false); // b-r
 
-			ctx.lineTo(x + r, y + h); // bottom
-			ctx.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI, false); // b-l
+			window.ctx.lineTo(x + r, y + h); // bottom
+			window.ctx.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI, false); // b-l
 
-			ctx.lineTo(x, y + r); // left
-			ctx.arc(x + r, y + r, r, Math.PI , 3 * Math.PI / 2, false); // t-l
+			window.ctx.lineTo(x, y + r); // left
+			window.ctx.arc(x + r, y + r, r, Math.PI , 3 * Math.PI / 2, false); // t-l
 
 			if ($6) {
-				ctx.fill();
+				window.ctx.fill();
 			} else {
-				ctx.stroke();
+				window.ctx.stroke();
 			}
 		},
 		obj2int(args[0]), // x
@@ -194,6 +219,7 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 		obj2int(args[5]), // color
 		(argCount > 6) ? (trueObj == args[6]) : true // fill (6)
 	);
+	tftChanged = true;
 	return falseObj;
 }
 
@@ -203,19 +229,19 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 	// draw triangle
 	EM_ASM_({
 			if ($7) {
-				ctx.fillStyle = rgbFrom24b($6);
+				window.ctx.fillStyle = window.rgbFrom24b($6);
 			} else {
-				ctx.strokeStyle = rgbFrom24b($6);
+				window.ctx.strokeStyle = window.rgbFrom24b($6);
 			}
-			ctx.beginPath();
-			ctx.moveTo($0, $1);
-			ctx.lineTo($2, $3);
-			ctx.lineTo($3, $4);
-			ctx.closePath();
+			window.ctx.beginPath();
+			window.ctx.moveTo($0, $1);
+			window.ctx.lineTo($2, $3);
+			window.ctx.lineTo($3, $4);
+			window.ctx.closePath();
 			if ($7) {
-				ctx.fill();
+				window.ctx.fill();
 			} else {
-				ctx.stroke();
+				window.ctx.stroke();
 			}
 		},
 		obj2int(args[0]), // x0
@@ -228,6 +254,7 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 		(argCount > 7) ? (trueObj == args[7]) : true // fill
 	);
 
+	tftChanged = true;
 	return falseObj;
 }
 
@@ -249,10 +276,10 @@ static OBJ primText(int argCount, OBJ *args) {
 
 	// draw text
 	EM_ASM_({
-			ctx.fillStyle = rgbFrom24b($3);
-			ctx.font = ($4 * 6) + 'px monospace';
-			ctx.textBaseline = 'top';
-			ctx.fillText(UTF8ToString($0), $1, $2);
+			window.ctx.fillStyle = window.rgbFrom24b($3);
+			window.ctx.font = ($4 * 6) + 'px monospace';
+			window.ctx.textBaseline = 'top';
+			window.ctx.fillText(UTF8ToString($0), $1, $2);
 		},
 		text, // text
 		obj2int(args[1]), // x
@@ -262,6 +289,7 @@ static OBJ primText(int argCount, OBJ *args) {
 		(argCount > 5) ? (trueObj == args[5]) : true // wrap
 	);
 
+	tftChanged = true;
 	return falseObj;
 }
 
@@ -282,14 +310,16 @@ void tftSetHugePixel(int x, int y, int state) {
 	int squareSize = (minDimension - (6 * lineWidth)) / 5;
 
 	EM_ASM_({
-			ctx.fillStyle = $3 == 0 ? '#000' : '#0F0';
-			ctx.fillRect($0, $1, $2, $2);
+			window.ctx.fillStyle = $3 == 0 ? '#000' : '#0F0';
+			window.ctx.fillRect($0, $1, $2, $2);
 		},
 		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
 		yInset + ((y - 1) * squareSize) + (y * lineWidth), // y
 		squareSize,
 		state
 	);
+
+	tftChanged = true;
 }
 
 void tftSetHugePixelBits(int bits) {
