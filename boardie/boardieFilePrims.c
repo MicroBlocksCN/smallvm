@@ -12,10 +12,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <emscripten.h>
+
 #include "mem.h"
 #include "interp.h"
 
-// Fake declarations for stuff that came from ESP FIle system
+// Fake declarations for stuff that came from ESP File system
 typedef int File;
 int myFS;
 
@@ -33,19 +35,6 @@ char fullPath[40]; // buffer for full file path
 static FileEntry fileEntry[FILE_ENTRIES]; // fileEntry[] records open files
 
 // Helper functions
-
-static char *extractFilename(OBJ obj) {
-	fullPath[0] = '\0';
-	if (IS_TYPE(obj, StringType)) {
-		char *fileName = obj2str(obj);
-		if (strcmp(fileName, "ublockscode") == 0) return fullPath;
-		if ('/' == fileName[0]) return fileName; // fileName already had a leading "/"
-		snprintf(fullPath, 31, "/%s", fileName);
-	} else {
-		fail(needsStringError);
-	}
-	return fullPath;
-}
 
 static int entryFor(char *fileName) {
 	// Return the index of a file entry for the file with the given path.
@@ -92,7 +81,7 @@ void closeAndDeleteFile(char *fileName) {
 
 static OBJ primOpen(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = extractFilename(args[0]);
+	char *fileName = args[0];
 	if (!fileName[0]) return falseObj;
 
 	int i = entryFor(fileName);
@@ -116,16 +105,12 @@ static OBJ primOpen(int argCount, OBJ *args) {
 }
 
 static OBJ primClose(int argCount, OBJ *args) {
-	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = extractFilename(args[0]);
-
-	closeIfOpen(fileName);
 	return falseObj;
 }
 
 static OBJ primDelete(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = extractFilename(args[0]);
+	char *fileName = args[0];
 	if (!fileName[0]) return falseObj;
 
 	closeAndDeleteFile(fileName);
@@ -136,7 +121,7 @@ static OBJ primDelete(int argCount, OBJ *args) {
 
 static OBJ primEndOfFile(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = extractFilename(args[0]);
+	char *fileName = args[0];
 
 	int i = entryFor(fileName);
 	if (i < 0) return trueObj;
@@ -147,7 +132,7 @@ return falseObj; // placeholder
 
 static OBJ primReadLine(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = extractFilename(args[0]);
+	char *fileName = args[0];
 
 	int i = entryFor(fileName);
 	if (i < 0) return newString(0);
@@ -179,7 +164,7 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 	if (!isInt(args[0])) return fail(needsIntegerError);
 	uint32 byteCount = obj2int(args[0]);
-	char *fileName = extractFilename(args[1]);
+	char *fileName = args[1];
 
 	int i = entryFor(fileName);
 	if (i >= 0) {
@@ -212,7 +197,7 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 static OBJ primReadInto(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 	OBJ buf = args[0];
-	char *fileName = extractFilename(args[1]);
+	char *fileName = args[1];
 	if (ByteArrayType != objType(buf)) return fail(needsByteArray);
 
 	int i = entryFor(fileName);
@@ -230,7 +215,7 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 
 	if (argCount < 2) return fail(notEnoughArguments);
 	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
-	char *fileName = extractFilename(args[1]);
+	char *fileName = args[1];
 	OBJ arg = args[0];
 
 	int i = entryFor(fileName);
@@ -274,7 +259,7 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 
 	if (argCount < 2) return fail(notEnoughArguments);
 	OBJ data = args[0];
-	char *fileName = extractFilename(args[1]);
+	char *fileName = args[1];
 
 	int i = entryFor(fileName);
 	if (i < 0) return falseObj;
@@ -294,57 +279,40 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 
 static OBJ primFileSize(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = extractFilename(args[0]);
+	char *fileName = obj2str(args[0]);
 	if (!fileName[0]) return int2obj(0);
-
-/*
-	File file = myFS.open(fileName, "r");
-	if (!file) return int2obj(0);
-	file.seek(0, SeekEnd); // seek to end
-	int size = file.position();
-	file.close();
-*/
-int size = 0; // placeholder
-	return int2obj(size);
+	return int2obj(EM_ASM_INT({
+		var file = localStorage[UTF8ToString($0)];
+		return file ? file.length : -1;
+	}, fileName));
 }
 
 static OBJ primStartFileList(int argCount, OBJ *args) {
-//	rootDir = myFS.openDir("/");
+	EM_ASM_({ window.currentFileIndex = 0; });
 	return falseObj;
-}
-
-static void nextFileName(char *fileName) {
-	// Copy the next file name into the argument. Set argument to empty string when done.
-	// Argument must have room for at least 32 bytes.
-
-	fileName[0] = '\0'; // clear string
-// 	if (rootDir.next()) strncat(fileName, rootDir.fileName().c_str(), 31);
 }
 
 static OBJ primNextFileInList(int argCount, OBJ *args) {
 	char fileName[100];
-	nextFileName(fileName);
-	while ((strcmp(fileName, "/") == 0) || strstr(fileName, "ublockscode")) {
-		nextFileName(fileName); // skip root directory and code file
-	}
 	char *s = fileName;
-	if ('/' == s[0]) s++; // skip leading slash
+	EM_ASM_({
+		var fileNames = Object.keys(window.localStorage);
+		if (!window.currentFileIndex) { window.currentFileIndex = 0; }
+		if (window.currentFileIndex >= fileNames.length) {
+			stringToUTF8("", $0, 100);
+		} else {
+			stringToUTF8(fileNames[window.currentFileIndex], $0, 100);
+			window.currentFileIndex ++;
+		}
+	}, s);
 	return newStringFromBytes(s, strlen(s));
 }
 
 // System info
 
 static OBJ primSystemInfo(int argCount, OBJ *args) {
-	size_t totalBytes = 0;
-	size_t usedBytes = 0;
-
-// 	FSInfo info;
-// 	myFS.info(info);
-// 	totalBytes = info.totalBytes;
-// 	usedBytes = info.usedBytes;
-
 	char result[100];
-	sprintf(result, "%u bytes used of %u", usedBytes, totalBytes);
+	sprintf(result, "Using browser localStorage FS");
 	return newStringFromBytes(result, strlen(result));
 }
 

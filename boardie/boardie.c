@@ -128,7 +128,6 @@ const char * boardType() {
 
 // Stubs for functions not used by Boardie
 
-void addFilePrims() {}
 void addNetPrims() {}
 void addSerialPrims() {}
 void delay(int msecs) {}
