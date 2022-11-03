@@ -1331,7 +1331,6 @@ void interpretStep() {
 	checkButtons();
 	updateMicrobitDisplay();
 	int cycles = 0;
-	int start = microsecs();
 	while (cycles < 10000) {
 		// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 		int runCount = 0;
@@ -1372,7 +1371,6 @@ void interpretStep() {
 		}
 		cycles ++;
 	}
-	printf("%d cycles took %d\n", cycles, microsecs() - start);
 }
 #endif
 

@@ -21,6 +21,8 @@
 static int tftEnabled = false;
 static int tftChanged = false;
 
+static int touchEnabled = false;
+
 void tftClear() {
 	tftInit();
 	EM_ASM_({
@@ -53,7 +55,11 @@ void updateMicrobitDisplay() {
 	if (tftEnabled && tftChanged) {
 		EM_ASM_({
 			if (!window.mainCtx) {
-				window.mainCtx = document.querySelector('#screen').getContext('2d', { alpha: false });
+				window.mainCtx =
+					document.querySelector('#screen').getContext(
+						'2d',
+						{ alpha: false }
+					);
 				window.mainCtx.imageSmoothingEnabled = false;
 			}
 			window.mainCtx.drawImage(window.offscreenCanvas, 0, 0);
@@ -334,6 +340,66 @@ void tftSetHugePixelBits(int bits) {
 	}
 }
 
+// TFT Touch Primitives
+
+// Mouse support
+void initMouseHandler() {
+	if (!touchEnabled) {
+		EM_ASM_({
+			var screen = window.document.querySelector('#screen');
+			window.mouseX = 0;
+			window.mouseY = 0;
+			window.mouseDown = false;
+			window.mouseDownTime = 0;
+			screen.addEventListener('mousemove', function (event) {
+				window.mouseX = Math.floor(event.clientX - screen.offsetLeft);
+				window.mouseY = Math.floor(event.clientY - screen.offsetTop);
+			}, false);
+			screen.addEventListener('mousedown', function (event) {
+				window.mouseDown = true;
+				window.mouseDownTime = Date.now();
+			}, false);
+			screen.addEventListener('mouseup', function (event) {
+				window.mouseDown = false;
+				window.mouseDownTime = 0;
+			}, false);
+		});
+	touchEnabled = true;
+	}
+}
+
+static OBJ primTftTouched(int argCount, OBJ *args) {
+	initMouseHandler();
+	return EM_ASM_INT({ return window.mouseDown }) ? trueObj : falseObj;
+}
+
+static OBJ primTftTouchX(int argCount, OBJ *args) {
+	initMouseHandler();
+	return int2obj(EM_ASM_INT({
+		return window.mouseDown ? window.mouseX : -1
+	}));
+}
+
+static OBJ primTftTouchY(int argCount, OBJ *args) {
+	initMouseHandler();
+	return int2obj(EM_ASM_INT({
+		return window.mouseDown ? window.mouseY : -1
+	}));
+}
+
+static OBJ primTftTouchPressure(int argCount, OBJ *args) {
+	initMouseHandler();
+	return int2obj(EM_ASM_INT({
+		if (window.mouseDown) {
+			var mousePressure = (Date.now() - window.mouseDownTime);
+			if (mousePressure > 4095) { mousePressure = 4095; }
+		} else {
+			mousePressure = -1;
+		}
+		return mousePressure;
+	}));
+}
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -347,6 +413,10 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
+	{"tftTouched", primTftTouched},
+	{"tftTouchX", primTftTouchX},
+	{"tftTouchY", primTftTouchY},
+	{"tftTouchPressure", primTftTouchPressure},
 };
 
 void addTFTPrims() {
