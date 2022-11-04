@@ -131,7 +131,6 @@ const char * boardType() {
 void addNetPrims() {}
 void addSerialPrims() {}
 void delay(int msecs) {}
-void processFileMessage(int msgType, int dataSize, char *data) {}
 
 // Stubs for code file (persistence) not used by Boardie
 

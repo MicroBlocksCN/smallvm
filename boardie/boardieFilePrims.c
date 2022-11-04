@@ -19,10 +19,6 @@
 
 // Helper functions
 
-void closeIfOpen(char *fileName) {
-	// Called from fileTransfer.cpp.
-}
-
 void closeAndDeleteFile(char *fileName) {
 	// Called from fileTransfer.cpp.
 	EM_ASM_({

@@ -213,6 +213,7 @@ void processFileMessage(int msgType, int dataSize, char *data) {
 }
 
 #else
+
 // File system messages are just ignored on non-Espressif boards
 
 void processFileMessage(int msgType, int dataSize, char *data) { }
