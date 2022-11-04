@@ -4,8 +4,8 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// filePrims.c - File system primitives.
-// John Maloney, April 2020
+// boardieFilePrims.c - File system primitives.
+// John Maloney and Bernat Romagosa, November 2022
 
 #include <math.h>
 #include <stdio.h>
@@ -17,90 +17,47 @@
 #include "mem.h"
 #include "interp.h"
 
-// Fake declarations for stuff that came from ESP File system
-typedef int File;
-int myFS;
-
-// Variables
-
-typedef struct {
-	char fileName[32];
-	int file;
-//s	File file;
-} FileEntry;
-
-char fullPath[40]; // buffer for full file path
-
-#define FILE_ENTRIES 8
-static FileEntry fileEntry[FILE_ENTRIES]; // fileEntry[] records open files
-
 // Helper functions
-
-static int entryFor(char *fileName) {
-	// Return the index of a file entry for the file with the given path.
-	// Return -1 if fileName doesn't match any entry.
-
-	if (!fileName[0]) return -1; // empty string is not a valid file name
-	for (int i = 0; i < FILE_ENTRIES; i++) {
-		if (0 == strcmp(fileName, fileEntry[i].fileName)) return i;
-	}
-	return -1;
-}
-
-static int freeEntry() {
-	// Return the index of an unused file entry or -1 if there isn't one.
-
-	for (int i = 0; i < FILE_ENTRIES; i++) {
-		if (!fileEntry[i].file) return i;
-	}
-	return -1; // no free entry
-}
 
 void closeIfOpen(char *fileName) {
 	// Called from fileTransfer.cpp.
-
-	int i = entryFor(fileName);
-	if (i >= 0) {
-// 		fileEntry[i].fileName[0] = '\0';
-// 		fileEntry[i].file.close();
-	}
 }
 
 void closeAndDeleteFile(char *fileName) {
 	// Called from fileTransfer.cpp.
+	EM_ASM_({
+		var fileName = UTF8ToString($0);
+		delete(window.localStorage[fileName]);
+		delete(window.fileCharPositions[fileName]);
+	}, fileName);
+}
 
-	closeIfOpen(fileName);
-
-	// to avoid a LittleFS error message, must ensure that the file exists before removing it
-// 	File tempFile = myFS.open(fileName, "w");
-// 	tempFile.close();
-// 	myFS.remove(fileName);
+int openFile(char *fileName, int createIfNotExists) {
+	return EM_ASM_INT({
+		var fileName = UTF8ToString($0);
+		if (window.localStorage[fileName] === undefined) {
+			if ($1) {
+				window.localStorage[fileName] = "";
+			} else {
+				return 0;
+			}
+		}
+		if (!window.fileCharPositions) { window.fileCharPositions = {}; }
+		if (!window.fileCharPositions[fileName] || $1) {
+			window.fileCharPositions[fileName] = 0;
+		}
+		return 1;
+	}, fileName, createIfNotExists);
 }
 
 // Open, Close, Delete
 
 static OBJ primOpen(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = args[0];
+	char *fileName = obj2str(args[0]);
 	if (!fileName[0]) return falseObj;
 
-	int i = entryFor(fileName);
-/*
-	if (i >= 0) { // found an existing entry; close and reopen
-		fileEntry[i].file.close();
-		fileEntry[i].file = myFS.open(fileName, "a+");
-		fileEntry[i].file.seek(0, SeekSet); // read from start of file
-		return falseObj;
-	}
-
-	i = freeEntry();
-	if (i >= 0) { // initialize new entry
-		fileEntry[i].fileName[0] = '\0';
-		strncat(fileEntry[i].fileName, fileName, 31);
-		fileEntry[i].file = myFS.open(fileName, "a+");
-		fileEntry[i].file.seek(0, SeekSet); // read from start of file
-	}
-*/
+	openFile(fileName, 1);
 	return falseObj;
 }
 
@@ -110,8 +67,8 @@ static OBJ primClose(int argCount, OBJ *args) {
 
 static OBJ primDelete(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = args[0];
-	if (!fileName[0]) return falseObj;
+	char *fileName = obj2str(args[0]);
+	if (!fileName[0] || !openFile(fileName, 0)) return falseObj;
 
 	closeAndDeleteFile(fileName);
 	return falseObj;
@@ -121,75 +78,77 @@ static OBJ primDelete(int argCount, OBJ *args) {
 
 static OBJ primEndOfFile(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = args[0];
+	char *fileName = obj2str(args[0]);
+	
+	if (!openFile(fileName, 0)) return falseObj;
 
-	int i = entryFor(fileName);
-	if (i < 0) return trueObj;
-
-return falseObj; // placeholder
-//	return (!fileEntry[i].file.available()) ? trueObj : falseObj;
+	return EM_ASM_INT({
+		var fileName = UTF8ToString($0);
+		return window.fileCharPositions[fileName] >=
+			window.localStorage[fileName].length;
+	}, fileName) ? trueObj : falseObj;
 }
 
 static OBJ primReadLine(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
-	char *fileName = args[0];
+	char *fileName = obj2str(args[0]);
+	if (!fileName[0] || !openFile(fileName, 0)) return newString(0);
+	char line[1024];
+	char *s = line;
 
-	int i = entryFor(fileName);
-	if (i < 0) return newString(0);
-
-/*
-	File file = fileEntry[i].file;
-	char buf[800];
-	uint32 byteCount = 0;
-	while ((byteCount < sizeof(buf)) && file.available()) {
-		int ch = file.read();
-		if ((10 == ch) || (13 == ch)) {
-			if ((10 == ch) && (13 == file.peek())) file.read(); // lf-cr ending
-			if ((13 == ch) && (10 == file.peek())) file.read(); // cr-lf ending
-			break;
+	EM_ASM_({
+		var fileName = UTF8ToString($0);
+		var file = window.localStorage[fileName];
+		if (window.fileCharPositions[fileName] < file.length) {
+			var endIndex = file.indexOf('\n', window.fileCharPositions[fileName]);
+			if (endIndex === -1) { endIndex = file.length }
+			var line = file.substring(
+				window.fileCharPositions[fileName],
+				endIndex
+			);
+			stringToUTF8(line, $1, 1024);
+			window.fileCharPositions[fileName] = endIndex + 1;
+		} else {
+			stringToUTF8("", $1, 1024);
 		}
-		buf[byteCount++] = ch;
-	}
-*/
-char buf[4]; // placeholder
-int byteCount = 0; // placeholder
-	OBJ result = newString(byteCount);
-	if (result) {
-		memcpy(obj2str(result), buf, byteCount);
-	}
-	return result;
+	}, fileName, s);
+
+	return newStringFromBytes(s, strlen(s));
 }
 
 static OBJ primReadBytes(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 	if (!isInt(args[0])) return fail(needsIntegerError);
 	uint32 byteCount = obj2int(args[0]);
-	char *fileName = args[1];
+	char *fileName = obj2str(args[1]);
+	if (!fileName[0] || !openFile(fileName, 0)) return newString(0);
+	uint8 buf[1024];
+	if (byteCount > sizeof(buf)) byteCount = sizeof(buf);
+	int startIndex = ((argCount > 2) && isInt(args[2])) ? obj2int(args[2]) : 0;
 
-	int i = entryFor(fileName);
-	if (i >= 0) {
-		uint8 buf[800];
-		if (byteCount > sizeof(buf)) byteCount = sizeof(buf);
-		if ((argCount > 2) && isInt(args[2])) {
-//			fileEntry[i].file.seek(obj2int(args[2]), SeekSet);
+	int readCount = EM_ASM_INT({
+		var fileName = UTF8ToString($0);
+		var file = window.localStorage[fileName];
+		var startIndex = $3 || window.fileCharPositions[fileName];
+		var endIndex = (startIndex + $1 > file.length) ?
+			file.length :
+			startIndex + $1;
+
+		for (var i = startIndex; i < endIndex; i++) {
+			setValue($2 + i, file.charCodeAt(i), 'i8');
 		}
-/*
-		byteCount = fileEntry[i].file.read(buf, byteCount);
-		if (!byteCount && fileEntry[i].file.available()) {
-			// workaround for rare read error -- skip to the next block
-			int pos = fileEntry[i].file.position();
-			reportNum("skipping bad file block at", pos);
-			fileEntry[i].file.seek(pos + 256, SeekSet);
-			byteCount = fileEntry[i].file.read(buf, byteCount);
-		}
-*/
-		int wordCount = (byteCount + 3) / 4;
-		OBJ result = newObj(ByteArrayType, wordCount, falseObj);
-		if (result) {
-			setByteCountAdjust(result, byteCount);
-			memcpy(&FIELD(result, 0), buf, byteCount);
-			return result;
-		}
+
+		window.fileCharPositions[fileName] = endIndex + 1;
+
+		return endIndex - startIndex;
+	}, fileName, byteCount, buf, startIndex);
+
+	int wordCount = (readCount + 3) / 4;
+	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
+	if (result) {
+		setByteCountAdjust(result, readCount);
+		memcpy(&FIELD(result, 0), buf, readCount);
+		return result;
 	}
 	return newObj(ByteArrayType, 0, falseObj); // empty byte array
 }
@@ -197,15 +156,23 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 static OBJ primReadInto(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 	OBJ buf = args[0];
-	char *fileName = args[1];
+	char *fileName = obj2str(args[1]);
 	if (ByteArrayType != objType(buf)) return fail(needsByteArray);
+	if (!fileName[0] || !openFile(fileName, 0)) { return int2obj(0); }
+	return int2obj(EM_ASM_INT({
+		var fileName = UTF8ToString($0);
+		var file = window.localStorage[fileName];
+		var startIndex = window.fileCharPositions[fileName];
+		var endIndex = $2 + startIndex > file.length ?
+			file.length :
+			$2 + startIndex;
+		for (var i = startIndex; i < endIndex; i++) {
+			setValue($1 + i, file.charCodeAt(i), 'i8');
+		}
+		window.fileCharPositions[fileName] = endIndex + 1;
+		return endIndex - startIndex;
 
-	int i = entryFor(fileName);
-	if (i < 0) return zeroObj; // file not found
-
-int bytesRead = 0; // placeholder
-//	int bytesRead = fileEntry[i].file.read((uint8 *) &FIELD(buf, 0), BYTES(buf));
-	return int2obj(bytesRead);
+	}, fileName, (uint8 *) &FIELD(buf, 0), BYTES(buf)));
 }
 
 // Writing
@@ -214,43 +181,43 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 	// Append a String to a file followed by a newline.
 
 	if (argCount < 2) return fail(notEnoughArguments);
-	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
-	char *fileName = args[1];
+	char *fileName = obj2str(args[1]);
+	if (!openFile(fileName, 0)) return falseObj;
+	char line[1024] = "";
 	OBJ arg = args[0];
 
-	int i = entryFor(fileName);
-	if (i >= 0) {
-/*
-		File file = fileEntry[i].file;
-		int oldPos = file.position();
-		int oldSize = file.size();
-		if (oldPos != oldSize) file.seek(0, SeekEnd); // seek to current end
-		if (IS_TYPE(arg, StringType)) {
-			fileEntry[i].file.print(obj2str(arg));
-		} else if (isInt(arg)) {
-			fileEntry[i].file.print(obj2int(arg));
-		} else if (isBoolean(arg)) {
-			fileEntry[i].file.print((trueObj == arg) ? "true" : "false");
-		} else if (IS_TYPE(arg, ListType)) {
-			// print list items separated by spaces
-			int count = obj2int(FIELD(arg, 0));
-			for (int j = 1; j <= count; j++) {
-				OBJ item = FIELD(arg, j);
-				if (IS_TYPE(item, StringType)) {
-					fileEntry[i].file.print(obj2str(item));
-				} else if (isInt(item)) {
-					fileEntry[i].file.print(obj2int(item));
-				} else if (isBoolean(item)) {
-					fileEntry[i].file.print((trueObj == item) ? "true" : "false");
-				}
-				if (j < count) fileEntry[i].file.write(32); // space
+	if (IS_TYPE(arg, StringType)) {
+		sprintf(line, obj2str(arg));
+	} else if (isInt(arg)) {
+		sprintf(line, "%d", obj2int(arg));
+	} else if (isBoolean(arg)) {
+		sprintf(line, (trueObj == arg) ? "true" : "false");
+	} else if (IS_TYPE(arg, ListType)) {
+		// print list items separated by spaces
+		int count = obj2int(FIELD(arg, 0));
+		for (int j = 1; j <= count; j++) {
+			OBJ item = FIELD(arg, j);
+			if (IS_TYPE(item, StringType)) {
+				strcat(line, obj2str(item));
+			} else if (isInt(item)) {
+				char num[100];
+				sprintf(num, "%d", obj2int(item));
+				strcat(line, num);
+			} else if (isBoolean(item)) {
+				strcat(line, (trueObj == item) ? "true" : "false");
 			}
+			if (j < count) strcat(line, " "); // space
 		}
-		fileEntry[i].file.write(10); // newline
-		if (oldPos != oldSize) file.seek(oldPos, SeekSet); // reset position for reading
-*/
 	}
-	processMessage();
+
+	EM_ASM_({
+		var fileName = UTF8ToString($0);
+		var line = UTF8ToString($1);
+
+		window.localStorage[fileName] += line + '\n';
+
+	}, fileName, line);
+
 	return falseObj;
 }
 
@@ -259,19 +226,22 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 
 	if (argCount < 2) return fail(notEnoughArguments);
 	OBJ data = args[0];
-	char *fileName = args[1];
+	char *fileName = obj2str(args[1]);
+	if (!openFile(fileName, 0)) return falseObj;
 
-	int i = entryFor(fileName);
-	if (i < 0) return falseObj;
-
-	File f = fileEntry[i].file;
 	if (IS_TYPE(data, ByteArrayType)) {
-//		f.write((uint8 *) &FIELD(data, 0), BYTES(data));
+		EM_ASM_({
+			for (var i = 0; i < $2; i++) {
+				window.localStorage[UTF8ToString($0)] +=
+					String.fromCharCode(getValue($1 + i, 'i8'));
+			}
+		}, fileName, (uint8 *) &FIELD(data, 0), BYTES(data));
 	} else if (IS_TYPE(data, StringType)) {
-		char *s = obj2str(data);
-//		f.write((uint8 *) s, strlen(s));
+		EM_ASM_({
+			window.localStorage[UTF8ToString($0)] += UTF8ToString($1);
+		}, fileName, (uint8 *) obj2str(data));
 	}
-	processMessage();
+
 	return falseObj;
 }
 
@@ -280,10 +250,10 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 static OBJ primFileSize(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char *fileName = obj2str(args[0]);
-	if (!fileName[0]) return int2obj(0);
+	if (!fileName[0] || !openFile(fileName, 0)) return int2obj(-1);
 	return int2obj(EM_ASM_INT({
-		var file = localStorage[UTF8ToString($0)];
-		return file ? file.length : -1;
+		var file = window.localStorage[UTF8ToString($0)];
+		return file.length;
 	}, fileName));
 }
 
