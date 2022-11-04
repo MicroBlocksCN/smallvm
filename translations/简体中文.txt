@@ -1286,6 +1286,159 @@ NeZha set _ servo _ angle to _
 NeZha set continuous rotation servo _ speed to _ %
 哪吒 设置 连续转动舵机 _ 速度为 _ %
 
+#### 
+# HuskyLens
+
+HuskyLens
+二哈识图
+
+HL initialize
+初始化二哈
+
+HL set I2C address(hex) _
+二哈设置 I2C 地址 _
+
+HL change algorithm _
+二哈切换算法 _
+
+Color Recog
+颜色识别
+
+Face Recog
+人脸识别
+
+Line Track
+巡线
+
+Obj Classify
+物体分类
+
+Obj Recog
+物体识别
+
+Obj Track
+物体追踪
+
+Tag Recog
+标签识别
+
+HL do _
+二哈触发 _
+
+Knock
+敲击
+
+Save Picture
+保存图片
+
+Save Screenshot
+保存截图
+
+Forget Learned Objects
+遗忘学习数据
+
+Clear Screen
+清空截图
+
+is pro
+pro 版
+
+firmware version
+固件版本
+
+HL request _
+二哈请求 _
+
+Blocks
+方框
+
+Arrows
+箭头
+
+Learned Blocks
+学习到的方框
+
+Learned Arrows
+学习到的箭头
+
+HL request by ID _ Object _
+二哈请求 ID _ 对象 _
+
+Blocks
+方框
+
+Arrows
+箭头
+
+HL get info _
+二哈获取信息 _
+
+Object Count
+对象计数
+
+Learned Count
+学会的计数
+
+Frame Number
+帧数
+
+HL get block _ block index _
+二哈获取方框 _ 索引方框 _
+
+X center
+X 中心
+
+Y center
+Y 中心
+
+Width
+宽度
+
+Height
+高度
+
+id
+id
+
+HL get arrow _ arrow index _
+二哈获取方框 _ 索引箭头 _
+
+X origin
+X 起点
+
+Y origin
+Y 起点
+
+X target
+X 终点
+
+Y target
+Y 终点
+
+id
+id
+
+HL learn current object with ID _
+二哈当前学习对象的 ID _
+
+HL learn object with ID _ Name _
+二哈学习对象的 ID _ 名称 _
+
+HL set CustomName _ for a learned object with ID _
+二哈设置自定义名称 _ 给已学习对象 ID _
+
+HL write _ at x _ y _
+二哈显示文字 _ 在 x _ y _
+
+HL file _ file# _
+二哈存档 _ 文件 _
+
+Save Model
+保存模型
+
+Load Model
+加载模型
+
 ##################
 # MicroBlocks UI #
 ##################
