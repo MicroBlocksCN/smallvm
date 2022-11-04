@@ -129,16 +129,18 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 	int readCount = EM_ASM_INT({
 		var fileName = UTF8ToString($0);
 		var file = window.localStorage[fileName];
-		var startIndex = $3 || window.fileCharPositions[fileName];
+		var startIndex = $3 > 0 ? $3 : window.fileCharPositions[fileName];
+		console.log(startIndex);
 		var endIndex = (startIndex + $1 > file.length) ?
 			file.length :
 			startIndex + $1;
 
 		for (var i = startIndex; i < endIndex; i++) {
-			setValue($2 + i, file.charCodeAt(i), 'i8');
+			setValue($2, file.charCodeAt(i), 'i8');
+			$2++;
 		}
 
-		window.fileCharPositions[fileName] = endIndex + 1;
+		window.fileCharPositions[fileName] = endIndex;
 
 		return endIndex - startIndex;
 	}, fileName, byteCount, buf, startIndex);
@@ -167,7 +169,8 @@ static OBJ primReadInto(int argCount, OBJ *args) {
 			file.length :
 			$2 + startIndex;
 		for (var i = startIndex; i < endIndex; i++) {
-			setValue($1 + i, file.charCodeAt(i), 'i8');
+			setValue($1, file.charCodeAt(i), 'i8');
+			$1++;
 		}
 		window.fileCharPositions[fileName] = endIndex + 1;
 		return endIndex - startIndex;
