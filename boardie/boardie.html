@@ -11,9 +11,9 @@
       <canvas class="emscripten" id="screen" width="240" height="240"></canvas>
     </div>
 	<div class="buttons">
-		<span class="btn-37" onmousedown="press(37);" onmouseup="unpress(37)">A</span>
-		<span onmousedown="[37,39].forEach(k=>press(k))" onmouseup="[37,39].forEach(k=>unpress(k))">A+B</span>
-		<span class="btn-39" onmousedown="press(39)" onmouseup="unpress(39)">B</span>
+		<span class="btn-37" onpointerdown="press(37);" onpointerup="unpress(37)">A</span>
+		<span onpointerdown="[37,39].forEach(k=>press(k))" onpointerup="[37,39].forEach(k=>unpress(k))">A+B</span>
+		<span class="btn-39" onpointerdown="press(39)" onpointerup="unpress(39)">B</span>
 	</div>
     <script type="text/javascript" src="run_boardie.js"></script>
 	<script>

@@ -351,15 +351,15 @@ void initMouseHandler() {
 			window.mouseY = 0;
 			window.mouseDown = false;
 			window.mouseDownTime = 0;
-			screen.addEventListener('mousemove', function (event) {
+			screen.addEventListener('pointermove', function (event) {
 				window.mouseX = Math.floor(event.clientX - screen.offsetLeft);
 				window.mouseY = Math.floor(event.clientY - screen.offsetTop);
 			}, false);
-			screen.addEventListener('mousedown', function (event) {
+			screen.addEventListener('pointerdown', function (event) {
 				window.mouseDown = true;
 				window.mouseDownTime = Date.now();
 			}, false);
-			screen.addEventListener('mouseup', function (event) {
+			screen.addEventListener('pointerup', function (event) {
 				window.mouseDown = false;
 				window.mouseDownTime = 0;
 			}, false);

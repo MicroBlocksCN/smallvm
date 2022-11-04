@@ -1863,7 +1863,7 @@ method boardHasFileSystem SmallRuntime {
 	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
 	if (isNil port) { return false }
 	if (isNil boardType) { getVersion this }
-	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040', 'TTGO RP2040')
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040', 'TTGO RP2040' 'Boardie')
 }
 
 method deleteFileOnBoard SmallRuntime fileName {

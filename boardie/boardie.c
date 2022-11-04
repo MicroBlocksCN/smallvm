@@ -123,7 +123,7 @@ void initSound() {
 // System Functions
 
 const char * boardType() {
-	return "Boardie (MicroBlocks Virtual Board)";
+	return "Boardie";
 }
 
 // Stubs for functions not used by Boardie
