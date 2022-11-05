@@ -190,6 +190,7 @@ method importScripts MicroBlocksExchange aMicroBlocksScripter scriptString dstX 
 			funcName = (first args)
 			parameterNames = (copyFromTo args 2 ((count args) - 1))
 			body = (last args)
+			addGlobalsFor this body parameterNames
 			defineFunctionInModule (main mbProject) funcName parameterNames body
 		}
 	}
@@ -228,10 +229,11 @@ method importScripts MicroBlocksExchange aMicroBlocksScripter scriptString dstX 
 	}
 }
 
-method addGlobalsFor MicroBlocksExchange script {
+method addGlobalsFor MicroBlocksExchange script parameterNames {
 	globalVars = (toList (allVariableNames mbProject))
 	varRefs = (list)
 	localVars = (list)
+	if (notNil parameterNames) { addAll localVars parameterNames }
 	for b (allBlocks script) {
 		args = (argList b)
 		if (notEmpty args) {
