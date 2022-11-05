@@ -210,15 +210,20 @@ method newZoomButton MicroBlocksEditor selector hint {
 }
 
 method restoreZoom MicroBlocksEditor {
-  setBlockScalePercent (scriptEditor scripter) 100
+  setBlockScalePercent this 100
 }
 
 method zoomIn MicroBlocksEditor {
-  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) + 15)
+  setBlockScalePercent this (((global 'blockScale') * 100) + 15)
 }
 
 method zoomOut MicroBlocksEditor {
-  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) - 15)
+  setBlockScalePercent this (((global 'blockScale') * 100) - 15)
+}
+
+method setBlockScalePercent MicroBlocksEditor newPercent {
+  setBlockScalePercent (scriptEditor scripter) newPercent
+  syncScripts (smallRuntime)
 }
 
 method fixZoomButtonsLayout MicroBlocksEditor {
@@ -1350,7 +1355,7 @@ method redrawnMorphs MicroBlocksEditor {
 
 method fixScriptsInFolderTree MicroBlocksEditor language countryCode rootPath {
   scriptEditor = (scriptEditor scripter)
-  setBlockScalePercent scriptEditor 150
+  setBlockScalePercent this 150
   setExportScale scriptEditor 200
   setLanguage this language
 
