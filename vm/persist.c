@@ -645,6 +645,13 @@ static void updateChunkTable() {
 		}
 		p = recordAfter(p);
 	}
+
+	// update code pointers for tasks
+	for (int i = 0; i < MAX_TASKS; i++) {
+		if (tasks[i].status) { // task entry is in use
+			tasks[i].code = chunks[tasks[i].taskChunkIndex].code;
+		}
+	}
 }
 
 // Flash Compaction
@@ -978,7 +985,7 @@ void suspendCodeFileUpdates() {
 void resumeCodeFileUpdates() {
 	#ifdef USE_CODE_FILE
 		if (suspendFileUpdates) {
-			compactRAM(false);
+			compactRAM(false); // also updates code file
 		}
 		suspendFileUpdates = false;
 	#endif
