@@ -356,7 +356,7 @@ method extractBlock Block {
       setNext this nil
     }
   }
-  grabCentered morph this
+  grabTopLeft morph
 }
 
 method exportAsImage Block { exportAsImageScaled (topBlock this) }
@@ -476,7 +476,7 @@ method justReceivedDrop CategorySelector aHandler {
 	intoLibrary = (and
 		((getField scripter 'libSelector') == this)
 		(notNil (categoryUnderHand this)))
-	intoMyBlocks = (and 
+	intoMyBlocks = (and
 		((getField scripter 'categorySelector') == this)
 		((categoryUnderHand this) == 'My Blocks'))
 
