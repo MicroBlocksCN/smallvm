@@ -1175,13 +1175,19 @@ method saveAllChunks SmallRuntime {
 	processedScripts = 0
 	suspendCodeFileUpdates this
 
-	saveVariableNames this
+	skipHiddenFunctions = true
+	if (saveVariableNames this) {
+		// Clear the source code field of all chunk entries to force script recompilation
+		// and possible re-download since variable offsets have changed.
+		for entry (values chunkIDs) { atPut entry 4 '' }
+		skipHiddenFunctions = false
+	}
 	assignFunctionIDs this
 	removeObsoleteChunks this
 
 	functionsSaved = 0
 	for aFunction (allFunctions (project scripter)) {
-		if (saveChunk this aFunction) {
+		if (saveChunk this aFunction skipHiddenFunctions) {
 			functionsSaved += 1
 			showDownloadProgress editor 3 (processedScripts / totalScripts)
 		}
@@ -1193,7 +1199,7 @@ method saveAllChunks SmallRuntime {
 	scriptsSaved = 0
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
-			if (saveChunk this aBlock) {
+			if (saveChunk this aBlock skipHiddenFunctions) {
 				scriptsSaved += 1
 				showDownloadProgress editor 3 (processedScripts / totalScripts)
 			}
@@ -1268,6 +1274,7 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		}
 		return false
 	}
+	if ((at entry 2) == (computeCRC this chunkBytes)) { return false }
 	sendMsgSync this 'chunkCodeMsg' chunkID data
 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
@@ -1416,8 +1423,11 @@ method allCRCsReceived SmallRuntime data {
 }
 
 method saveVariableNames SmallRuntime {
+	// If the variables list has changed, save the new variable names.
+	// Return true if varibles have changed, false otherwise.
+
 	newVarNames = (allVariableNames (project scripter))
-	if (oldVarNames == newVarNames) { return }
+	if (oldVarNames == newVarNames) { return false }
 
 	editor = (findMicroBlocksEditor)
 	varCount = (count newVarNames)
@@ -1432,6 +1442,7 @@ method saveVariableNames SmallRuntime {
 		showDownloadProgress editor 2 (varID / varCount)
 	}
 	oldVarNames = (copy newVarNames)
+	return true
 }
 
 method runChunk SmallRuntime chunkID {
