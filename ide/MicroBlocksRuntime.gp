@@ -1119,9 +1119,6 @@ method sendStartAll SmallRuntime {
 
 // Saving and verifying
 
-method suspendCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 2 (list) }
-method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
-
 method reachableFunctions SmallRuntime {
 	// Not currently used. This function finds all the functions in a project that
 	// are called explicitly. This might be used to prune unused library functions
@@ -1162,6 +1159,15 @@ method reachableFunctions SmallRuntime {
 	for fName (keys result) { print '  ' fName }
 }
 
+method suspendCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 2 (list) }
+method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
+
+method saveAllChunksAfterLoad SmallRuntime {
+	suspendCodeFileUpdates this
+	saveAllChunks this
+	resumeCodeFileUpdates this
+}
+
 method saveAllChunks SmallRuntime {
 	// Save the code for all scripts and user-defined functions.
 
@@ -1173,7 +1179,6 @@ method saveAllChunks SmallRuntime {
 		(count (allFunctions (project scripter))) +
 		(count (sortedScripts (scriptEditor scripter))))
 	processedScripts = 0
-	suspendCodeFileUpdates this
 
 	skipHiddenFunctions = true
 	if (saveVariableNames this) {
@@ -1210,7 +1215,6 @@ method saveAllChunks SmallRuntime {
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
 	showDownloadProgress editor 3 1
-	resumeCodeFileUpdates this
 }
 
 method forceSaveChunk SmallRuntime aBlockOrFunction {
