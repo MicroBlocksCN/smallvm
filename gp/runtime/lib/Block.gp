@@ -900,11 +900,11 @@ method contextMenu Block {
 method grabDuplicate Block {
   dup = (duplicate this)
   if (notNil (next dup)) {setNext dup nil}
-  grabCentered morph dup
+  grabTopLeft (morph dup)
 }
 
 method grabDuplicateAll Block {
-  grabCentered morph (duplicate this)
+  grabTopLeft (morph (duplicate this))
 }
 
 method duplicate Block {

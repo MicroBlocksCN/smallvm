@@ -1133,9 +1133,6 @@ method sendStartAll SmallRuntime {
 
 // Saving and verifying
 
-method suspendCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 2 (list) }
-method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
-
 method reachableFunctions SmallRuntime {
 	// Not currently used. This function finds all the functions in a project that
 	// are called explicitly. This might be used to prune unused library functions
@@ -1176,6 +1173,15 @@ method reachableFunctions SmallRuntime {
 	for fName (keys result) { print '  ' fName }
 }
 
+method suspendCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 2 (list) }
+method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
+
+method saveAllChunksAfterLoad SmallRuntime {
+	suspendCodeFileUpdates this
+	saveAllChunks this
+	resumeCodeFileUpdates this
+}
+
 method saveAllChunks SmallRuntime {
 	// Save the code for all scripts and user-defined functions.
 
@@ -1187,15 +1193,20 @@ method saveAllChunks SmallRuntime {
 		(count (allFunctions (project scripter))) +
 		(count (sortedScripts (scriptEditor scripter))))
 	processedScripts = 0
-	suspendCodeFileUpdates this
 
-	saveVariableNames this
+	skipHiddenFunctions = true
+	if (saveVariableNames this) {
+		// Clear the source code field of all chunk entries to force script recompilation
+		// and possible re-download since variable offsets have changed.
+		for entry (values chunkIDs) { atPut entry 4 '' }
+		skipHiddenFunctions = false
+	}
 	assignFunctionIDs this
 	removeObsoleteChunks this
 
 	functionsSaved = 0
 	for aFunction (allFunctions (project scripter)) {
-		if (saveChunk this aFunction) {
+		if (saveChunk this aFunction skipHiddenFunctions) {
 			functionsSaved += 1
 			showDownloadProgress editor 3 (processedScripts / totalScripts)
 		}
@@ -1207,7 +1218,7 @@ method saveAllChunks SmallRuntime {
 	scriptsSaved = 0
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
-			if (saveChunk this aBlock) {
+			if (saveChunk this aBlock skipHiddenFunctions) {
 				scriptsSaved += 1
 				showDownloadProgress editor 3 (processedScripts / totalScripts)
 			}
@@ -1218,7 +1229,6 @@ method saveAllChunks SmallRuntime {
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
 	showDownloadProgress editor 3 1
-	resumeCodeFileUpdates this
 }
 
 method forceSaveChunk SmallRuntime aBlockOrFunction {
@@ -1282,6 +1292,7 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		}
 		return false
 	}
+	if ((at entry 2) == (computeCRC this chunkBytes)) { return false }
 	sendMsgSync this 'chunkCodeMsg' chunkID data
 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
@@ -1430,8 +1441,11 @@ method allCRCsReceived SmallRuntime data {
 }
 
 method saveVariableNames SmallRuntime {
+	// If the variables list has changed, save the new variable names.
+	// Return true if varibles have changed, false otherwise.
+
 	newVarNames = (allVariableNames (project scripter))
-	if (oldVarNames == newVarNames) { return }
+	if (oldVarNames == newVarNames) { return false }
 
 	editor = (findMicroBlocksEditor)
 	varCount = (count newVarNames)
@@ -1446,6 +1460,7 @@ method saveVariableNames SmallRuntime {
 		showDownloadProgress editor 2 (varID / varCount)
 	}
 	oldVarNames = (copy newVarNames)
+	return true
 }
 
 method runChunk SmallRuntime chunkID {
@@ -1615,6 +1630,7 @@ method errorString SmallRuntime errID {
 #define needsListOfIntegers		39	// Needs a list of integers
 #define byteOutOfRange			40	// Needs a value between 0 and 255
 #define needsPositiveIncrement	41	// Range increment must be a positive integer
+#define needsIntOrListOfInts	42	// Needs an integer or a list of integers
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
@@ -2279,11 +2295,11 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
 		}
 		popUpAtHand menu (global 'page')
-	} ((count (portList this)) > 0) {
+	} (notNil boardType) {
 		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
-		} ('RP2040' == boardType) {
+		} (isOneOf boardType 'RP2040' 'Pico W') {
 			rp2040ResetMessage this
 			return
 		} else {
@@ -2301,8 +2317,9 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		}
 	} else {
 		(inform (join
-			(localized 'No boards found; is your board plugged in?') (newline)
-			(localized 'For Adafruit boards, double-click reset button and try again.'))
+			(localized 'No boards found; is your board plugged in?') (newline) (newline)
+			(localized 'For Adafruit boards, double-click reset button and try again.') (newline) (newline)
+			(localized 'For Raspberry Pi Pico boards, connect USB cable while holding down the white BOOTSEL button and try again.'))
 			'No boards found')
 	}
 }
@@ -2373,8 +2390,13 @@ method getBoardDriveName SmallRuntime path {
 }
 
 method picoVMFileName SmallRuntime {
-	isPicoW = (confirm (global 'page') nil (localized 'Is this a Pico W (WiFi) board?'))
-	if isPicoW {
+	tmp = (array nil)
+	menu = (menu 'Pico board type?' (action 'atPut' tmp 1) true)
+	addItem menu 'RP2040 (Pico)'
+	addItem menu 'Pico W (WiFi)'
+	waitForSelection menu
+	result = (first tmp)
+	if ('Pico W (WiFi)' == result) {
 		return 'vm_pico_w.uf2'
 	} else {
 		return 'vm_pico.uf2'
@@ -2430,8 +2452,6 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
 		copyVMToBoardInBrowser this 'Clue'
-	} ('RP2040' == boardType) {
-		copyVMToBoardInBrowser this 'RP2040 (Pico)'
 	} (and
 		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
 		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
@@ -2440,18 +2460,23 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this) true)
 		addItem menu 'micro:bit'
 		addItem menu 'Calliope mini'
+		addLine menu
+		addItem menu 'Citilab ED1'
+		addLine menu
+		addItem menu 'RP2040 (Pico)'
+		addItem menu 'Pico W (WiFi)'
+		addLine menu
 		addItem menu 'Circuit Playground Express'
 		addItem menu 'Circuit Playground Bluefruit'
 		addItem menu 'Clue'
-		addItem menu 'Citilab ED1'
+		addItem menu 'Metro M0'
+		addLine menu
 		addItem menu 'M5Stack-Core'
 		addItem menu 'M5StickC'
 		addItem menu 'M5StickC+'
 		addItem menu 'M5Atom-Matrix'
-		addItem menu 'Metro M0'
 		addItem menu 'ESP32'
 		addItem menu 'ESP8266'
-		addItem menu 'RP2040 (Pico)'
 		popUpAtHand menu (global 'page')
 	}
 }
@@ -2502,7 +2527,10 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 		vmFileName = 'vm_metroM0.uf2'
 		driveName = 'METROBOOT'
 	} ('RP2040 (Pico)' == boardName) {
-		vmFileName = (picoVMFileName this)
+		vmFileName = 'vm_pico.uf2'
+		driveName = 'RPI-RP2'
+	} ('Pico W (WiFi)' == boardName) {
+		vmFileName = 'vm_pico_w.uf2'
 		driveName = 'RPI-RP2'
 	}
 

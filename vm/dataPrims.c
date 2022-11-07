@@ -745,21 +745,21 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 		int utfByteCount = 0;
 		for (int i = 1; i <= listCount; i++) {
 			OBJ item = FIELD(arg, i);
-			if (!isInt(item)) return fail(needsListOfIntegers);
-			utfByteCount += bytesForUnicode(obj2int(item));
+			utfByteCount += bytesForUnicode(evalInt(item));
 		}
+		if (failure()) return fail(needsIntOrListOfInts); // evalInt failed on some list item
+
 		OBJ result = newString(utfByteCount);
 		if (!result) return result; // allocation failed
 		arg = args[0]; // update arg after possible GC
 		uint8 *s = (uint8 *) obj2str(result);
 		for (int i = 1; i <= listCount; i++) {
 			OBJ item = FIELD(arg, i);
-			if (!isInt(item)) return fail(needsListOfIntegers);
-			s = appendUTF8(s, obj2int(item));
+			s = appendUTF8(s, evalInt(item));
 		}
 		return result;
 	}
-	return fail(needsListError);
+	return fail(needsIntOrListOfInts);
 }
 
 OBJ primNewByteArray(int argCount, OBJ *args) {
