@@ -13,7 +13,7 @@ emcc -std=gnu99 -Wall -O3 \
 	-sEXPORTED_RUNTIME_METHODS=_sendFileInfo \
 	-I ../vm \
 	boardie.c ../vm/*.c \
-	boardieIOPrims.c boardieOutputPrims.c boardieTftPrims.c \
+	boardieIOPrims.c boardieOutputPrims.c boardieTftPrims.c boardieNetPrims.c \
 	boardieSensorPrims.c boardieFilePrims.c boardieFileTransfer.c \
 	-o run_boardie.html
 
