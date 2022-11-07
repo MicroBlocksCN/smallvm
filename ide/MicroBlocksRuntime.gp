@@ -859,13 +859,17 @@ method justConnected SmallRuntime {
 		readFromBoard = false
 		readCodeFromBoard this
 	} else {
-		if (isEmpty chunkIDs) {
-			clearBoardIfConnected this false
-			stopAndSyncScripts this true
-		} else {
-			verifyCRCs this
-			syncScripts this
-		}
+		clearBoardIfConnected this true
+		stopAndSyncScripts this true
+// xxx Disable this attempt to reuse scripts already on board for now; it sometimes fails
+// 		if (isEmpty chunkIDs) {
+// 			clearBoardIfConnected this false
+// 			stopAndSyncScripts this true
+// 		} else {
+// 			forceFunctionChecks this
+// 			syncScripts this
+// 			verifyCRCs this
+// 		}
 	}
 }
 
@@ -1215,6 +1219,17 @@ method saveAllChunks SmallRuntime {
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
 	showDownloadProgress editor 3 1
+}
+
+method forceFunctionChecks SmallRuntime {
+	// Mark the entries for all functions to disable the hidden function optimization.
+
+	for key (keys chunkIDs) {
+		if (isClass key 'String') {
+			entry = (at chunkIDs key)
+			atPut entry 5 true
+		}
+	}
 }
 
 method forceSaveChunk SmallRuntime aBlockOrFunction {
