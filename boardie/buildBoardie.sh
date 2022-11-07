@@ -10,6 +10,7 @@ emcc -std=gnu99 -Wall -O3 \
 	--closure 1 \
 	--memory-init-file 0 \
 	-s WASM=1 \
+	-sEXPORTED_RUNTIME_METHODS=_sendFileInfo \
 	-I ../vm \
 	boardie.c ../vm/*.c \
 	boardieIOPrims.c boardieOutputPrims.c boardieTftPrims.c \

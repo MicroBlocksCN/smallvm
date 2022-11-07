@@ -43,7 +43,50 @@ static int readInt(char *src) {
 	return (src[3] << 24) | (src[2] << 16) | (src[1] << 8) | src[0];
 }
 
+static void writeInt(int n, char *dst) {
+	// Write a four-byte integer to the given destination in little-endian order.
+
+	*dst++ = (n & 0xFF);
+	*dst++ = ((n >> 8) & 0xFF);
+	*dst++ = ((n >> 16) & 0xFF);
+	*dst++ = ((n >> 24) & 0xFF);
+}
+
 // File Operations
+
+static void receiveChunk(int msgByteCount, char *msg) {
+	// Append the incoming chunk to the file being received.
+
+	// not receiving a file; ignore
+	if (!EM_ASM_INT({ return window.tempFile !== undefined })) return;
+
+	int transferID = readInt(&msg[0]);
+	int offset = readInt(&msg[4]);
+	char *chunkData = &msg[8];
+	int chunkSize = msgByteCount - 8;
+
+	if ((transferID != receiveID) /*|| (offset != receivedBytes) */) {
+		// Unexpected transferID or offset; abort file transfer.
+		outputString("Communication error; file transfer canceled");
+		EM_ASM_({ delete(window.tempFile); });
+		return;
+	}
+
+	if (chunkSize > 0) { // append chunk to the temporary variable
+		EM_ASM_({
+			for (var i = 0; i < $1; i++) {
+				window.tempFile += String.fromCharCode(getValue($0 + i, 'i8'));
+			}
+		}, (uint8_t *) chunkData, chunkSize);
+		receivedBytes += chunkSize;
+	} else { // transfer complete
+		// move file to localStorage
+		EM_ASM_({
+			window.localStorage[UTF8ToString($0)] = window.tempFile;
+			delete(window.tempFile);
+		}, receivedFileName);
+	}
+}
 
 static void receiveFile(int id, char *fileName) {
 	if (strlen(fileName) <= 1) {
@@ -55,6 +98,68 @@ static void receiveFile(int id, char *fileName) {
 	receiveID = id;
 	receivedBytes = 0;
 	EM_ASM_({ window.tempFile = ""; });
+}
+
+static void sendFile(int id, char *fileName) {
+	int byteIndex = 0;
+	char buf[1024];
+
+	if (!EM_ASM_INT({
+		return window.localStorage[UTF8ToString($0)] !== undefined;
+	}, fileName)) {
+		// could not find file
+		return;
+	}
+
+	while (true) {
+		int byteCount = EM_ASM_INT({
+			var file = window.localStorage[UTF8ToString($0)];
+			var chunkSize = Math.min(960, file.length - $2);
+			for (var i = 0; i < chunkSize; i ++) {
+				setValue($1 + 8 + i, file.charCodeAt($2 + i), 'i8');
+			}
+			//stringToUTF8(file.substring($2, $2 + chunkSize), $1 + 8, 1024);
+			return chunkSize;
+		}, fileName, buf, byteIndex);
+		if (byteCount > 0) {
+			// <transfer ID (4 byte int)><byte offset (4 byte int)><data...>
+			writeInt(id, &buf[0]);
+			writeInt(byteIndex, &buf[4]);
+			waitAndSendMessage(FileChunkMsg, 0, byteCount + 8, buf);
+			byteIndex += byteCount;
+		} else {
+			break;
+		}
+	}
+	printf("all done, sending final chunk\n");
+
+	// send a final, empty chunk to indicate end of file
+	writeInt(id, &buf[0]);
+	writeInt(byteIndex, &buf[4]);
+	waitAndSendMessage(FileChunkMsg, 0, 8, buf);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void sendFileInfo(int entryIndex, int fileSize) {
+	//  Send file info message. Format: (entryIndex, file size in bytes, name)
+	char buf[1024];
+	char fileName[64];
+	EM_ASM_({
+		stringToUTF8(Object.keys(window.localStorage)[$0], $1, 64);
+	}, entryIndex, fileName);
+	int len = strlen(fileName);
+	writeInt(entryIndex, &buf[0]);
+	writeInt(fileSize, &buf[4]);
+	memcpy(&buf[8], fileName, len);
+	waitAndSendMessage(FileInfoMsg, 0, len + 8, buf);
+}
+
+static void sendFileList() {
+	EM_ASM_({
+		Object.keys(window.localStorage).forEach(function (fileName, index) {
+			_sendFileInfo(index, window.localStorage[fileName].length);
+		});
+	});
 }
 
 void processFileMessage(int msgType, int dataSize, char *data) {
@@ -72,20 +177,16 @@ void processFileMessage(int msgType, int dataSize, char *data) {
 		closeAndDeleteFile(fileName);
 		break;
 	case ListFilesMsg:
-		printf("list files\n");
 		// format: no data (short message)
-		//sendFileList();
+		sendFileList();
 		break;
 	case StartReadingFileMsg:
-		printf("start reading file\n");
 		// format: <transfer ID (4 byte int)><file name>
-		/*
 		id = readInt(data);
 		dataSize -= 4;
 		if (dataSize > 30) dataSize = 30;
 		strncat(fileName, &data[4], dataSize);
 		sendFile(id, fileName);
-		*/
 		break;
 	case StartWritingFileMsg:
 		// format: <transfer ID (4 byte int)><file name>
@@ -96,9 +197,8 @@ void processFileMessage(int msgType, int dataSize, char *data) {
 		receiveFile(id, fileName);
 		break;
 	case FileChunkMsg:
-		printf("file chunk %d\n", dataSize);
 		// format: <transfer ID (4 byte int)><byte offset (4 byte int)><data...>
-		//receiveChunk(dataSize, data);
+		receiveChunk(dataSize, data);
 		break;
 	}
 }
