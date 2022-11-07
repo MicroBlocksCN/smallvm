@@ -735,9 +735,9 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	OBJ arg = args[0];
 
-	if (isInt(arg)) { // convert a single integer to a Unicode character
+	if (isInt(arg) || IS_TYPE(arg, StringType)) { // convert a single integer to a Unicode character
 		uint8 buf[8]; // buffer for one UTF-8 character
-		uint8 *s = appendUTF8(buf, obj2int(arg));
+		uint8 *s = appendUTF8(buf, evalInt(arg));
 		int byteCount = s - buf;
 		return newStringFromBytes((char *) buf, byteCount);
 	} else if (IS_TYPE(arg, ListType)) { // convert list of integers to a Unicode string
