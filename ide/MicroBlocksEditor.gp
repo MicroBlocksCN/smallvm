@@ -427,7 +427,7 @@ method copyProjectURLToClipboard MicroBlocksEditor {
     codeString = (join 'projectName ''' projName '''' (newline) (newline) codeString)
   }
   setClipboard (join
-    'https://microblocks.fun/run/microblocks.html#project='
+    'https://microblocksfun.cn/run/microblocks.html#project='
 	(urlEncode codeString true)
   )
 }
@@ -893,7 +893,7 @@ method fetchLatestVersionNumber MicroBlocksEditor {
     suffix = '?R='
   }
   url = (join '/downloads/latest/VERSION.txt' suffix (rand 100000 999999))
-  versionText = (basicHTTPGet 'microblocks.fun' url)
+  versionText = (basicHTTPGet 'microblocksfun.cn' url)
   if (isNil versionText) { return (array 0 0 0) }
   return (splitWith (substring (first (lines versionText)) 1) '.')
 }
