@@ -462,31 +462,42 @@ static OBJ primBrowserReadPrefs(int nargs, OBJ args[]) {
 // Boardie Support
 
 static OBJ primBrowserOpenBoardie(int nargs, OBJ args[]) {
-	EM_ASM({
-	    GP_openBoardie();
-	}, NULL);
+	EM_ASM({ GP_openBoardie(); });
 	return nilObj;
 }
 
 static OBJ primBrowserCloseBoardie(int nargs, OBJ args[]) {
-	EM_ASM({
-	    GP_closeBoardie();
-	}, NULL);
+	EM_ASM({ GP_closeBoardie(); });
 	return nilObj;
 }
 
 static OBJ primBoardiePutFile(int nargs, OBJ args[]) {
-    // xxx to be done
+	EM_ASM({ });
 	return nilObj;
 }
 static OBJ primBoardieGetFile(int nargs, OBJ args[]) {
-    // xxx to be done
+	EM_ASM({ });
 	return nilObj;
 }
 
 static OBJ primBoardieListFiles(int nargs, OBJ args[]) {
-    // xxx to be done
-	return nilObj;
+	int fileCount =
+			EM_ASM_INT({ return Object.keys(window.localStorage).length });
+	OBJ fileList = newObj(ArrayClass, fileCount, nilObj);
+
+	for (int i = 0; i < fileCount; i++) {
+		int length = EM_ASM_INT(
+			{ return Object.keys(window.localStorage)[$0].length; },
+			i
+		);
+		OBJ fileName = allocateString(length);
+		EM_ASM_({
+			var fileName = Object.keys(window.localStorage)[$0];
+			stringToUTF8(fileName, $1, fileName.length + 1);
+		}, i, &FIELD(fileName, 0));
+		FIELD(fileList, i) = fileName;
+	}
+	return fileList;
 }
 
 // ***** Browser Canvas Shadow Effects *****
