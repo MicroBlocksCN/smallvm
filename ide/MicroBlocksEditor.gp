@@ -911,26 +911,26 @@ method checkLatestVersion MicroBlocksEditor {
 }
 
 method fetchLatestVersionNumber MicroBlocksEditor {
-	platform = (platform)
-	if ('Browser' == platform) {
-		if (browserIsChromeOS) {
-			suffix = '?C='
-		} else {
-			suffix = '?B='
-		}
-	} ('Mac' == (platform)) {
-		suffix = '?M='
-	} ('Linux' == (platform)) {
-		suffix = '?L='
-	} ('Win' == (platform)) {
-		suffix = '?W='
-	} else {
-		suffix = '?R='
-	}
-	url = (join '/downloads/latest/VERSION.txt' suffix (rand 100000 999999))
-	versionText = (basicHTTPGet 'microblocks.fun' url)
-	if (isNil versionText) { return (array 0 0 0) }
-	return (splitWith (substring (first (lines versionText)) 1) '.')
+  platform = (platform)
+  if ('Browser' == platform) {
+    if (browserIsChromeOS) {
+      suffix = '?C='
+    } else {
+      suffix = '?B='
+    }
+  } ('Mac' == (platform)) {
+    suffix = '?M='
+  } ('Linux' == (platform)) {
+    suffix = '?L='
+  } ('Win' == (platform)) {
+    suffix = '?W='
+  } else {
+    suffix = '?R='
+  }
+  url = (join '/downloads/latest/VERSION.txt' suffix (rand 100000 999999))
+  versionText = (basicHTTPGet 'microblocksfun.cn' url)
+  if (isNil versionText) { return (array 0 0 0) }
+  return (splitWith (substring (first (lines versionText)) 1) '.')
 }
 
 method fetchLatestPilotVersionNumber MicroBlocksEditor {
