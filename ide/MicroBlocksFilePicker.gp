@@ -145,7 +145,8 @@ method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveF
 	useEmbeddedFS = true
 	if ('Browser' == (platform)) { useEmbeddedFS = false }
   }
-  showFolder this defaultPath true
+  isTopLevel = (isNil (findFirst defaultPath '/')) // root folder
+  showFolder this defaultPath isTopLevel
   return this
 }
 
