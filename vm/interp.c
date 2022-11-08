@@ -48,6 +48,10 @@ OBJ fail(uint8 errCode) {
 	return falseObj;
 }
 
+int failure() {
+	return errorCode != noError;
+}
+
 // Printing
 
 #define PRINT_BUF_SIZE 800

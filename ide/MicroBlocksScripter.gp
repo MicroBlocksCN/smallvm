@@ -1178,6 +1178,7 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 	updateBlocks this
 	saveScripts this
 	restoreScripts this
+	saveAllChunksAfterLoad (smallRuntime)
 }
 
 method updateLibraryList MicroBlocksScripter {
