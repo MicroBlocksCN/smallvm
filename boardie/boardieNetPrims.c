@@ -59,7 +59,8 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 }
 
 static OBJ primHttpIsConnected(int argCount, OBJ *args) {
-	return EM_ASM_INT({ return window.httpRequest !== undefined; }) ? trueObj : falseObj;
+	return EM_ASM_INT({ return window.httpRequest !== undefined; }) ?
+		trueObj : falseObj;
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
@@ -67,12 +68,21 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 	char* host = obj2str(args[1]);
 	char* path = obj2str(args[2]);
 	EM_ASM_({
+		window.httpRequest = new XMLHttpRequest();
 		var req = window.httpRequest;
+		req.currentIndex = 0;
 		req.open(
 			UTF8ToString($0), // method
 			window.location.protocol + "//" + UTF8ToString($1) +
-				":" + req.port + "/" + UTF8ToString($2) // URL
+				"/" + UTF8ToString($2) // URL
 		);
+		req.onreadystatechange = function () {
+			if (req.readyState == 4){
+				req.fullResponse = "HTTP/1.1 " + req.status + " " +
+					req.statusText + "\r\n" + req.getAllResponseHeaders() +
+					"\r\n\r\n" + req.responseText;
+			}
+		};
 		req.send(UTF8ToString($3)); // body
 	},
 	reqType,
@@ -84,17 +94,19 @@ static OBJ primHttpRequest(int argCount, OBJ *args) {
 
 static OBJ primHttpResponse(int argCount, OBJ *args) {
 	OBJ response;
-	char buffer[799];
+	char buffer[800];
 	int byteCount = EM_ASM_INT({
 		var req = window.httpRequest;
-		if (req.readyState == 4 && req.status == 200) {
-			var byteCount = Math.min(
-				req.responseText.length - req.currentIndex,
+		var byteCount = 0;
+		if (req && req.fullResponse) {
+			byteCount = Math.min(
+				req.fullResponse.length - req.currentIndex,
 				799
 			);
-			var chunk = req.responseText.substring(req.currentIndex, byteCount);
-			stringToUTF8(chunk, $0, byteCount);
+			var chunk = req.fullResponse.substr(req.currentIndex, byteCount);
+			stringToUTF8(chunk, $0, byteCount + 1);
 			req.currentIndex += byteCount;
+			if (byteCount == 0) { delete(window.httpRequest); }
 		}
 		return byteCount;
 	}, buffer);
