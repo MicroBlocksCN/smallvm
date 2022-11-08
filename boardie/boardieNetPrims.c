@@ -28,8 +28,8 @@ static OBJ primWiFiStatus(int argCount, OBJ *args) {
 }
 
 static OBJ primGetIP(int argCount, OBJ *args) {
-	char ip[7] = "0.0.0.0";
-	return newStringFromBytes(ip, 7);
+	char ip[9] = "127.0.0.1";
+	return newStringFromBytes(ip, 9);
 }
 
 static OBJ primGetMAC(int argCount, OBJ *args) {
@@ -115,6 +115,122 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 	return response;
 }
 
+
+// MQTT support
+
+static OBJ primMQTTConnect(int argCount, OBJ *args) {
+	// args[1] is buffer size, which we ignore for Boardie	
+	printf("connecting...\n");
+	EM_ASM_({
+		var brokerURI = UTF8ToString($0);
+		var clientId = UTF8ToString($1);
+		var username = UTF8ToString($2);
+		var password = UTF8ToString($3);
+		var opts = {};
+		var client;
+		if (username) { opts.username = username };
+		if (password) { opts.password = password };
+		if (clientId) { opts.clientId = clientId };
+		client = window.mqtt.connect(brokerURI, opts);
+		window.mqttClient = client;
+		client.messages = [];
+		client.on('message', function (topic, msg) {
+			client.messages.push(msg);
+		});
+	},
+	obj2str(args[0]), // broker_uri
+	(argCount > 2) ? obj2str(args[2]) : (char *) "", // client_id
+	(argCount > 4) ? obj2str(args[3]) : (char *) "", // username
+	(argCount > 4) ? obj2str(args[4]) : (char *) "" // password
+	);
+	return falseObj;
+}
+
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
+	return EM_ASM_INT({
+		return window.mqttClient && window.mqttClient.connected;
+	}) ? trueObj : falseObj;
+}
+
+static OBJ primMQTTDisconnect(int argCount, OBJ *args) {
+	EM_ASM_({
+		if (window.mqttClient && window.mqttClient.connected) {
+			window.mqttClient.end(true);
+			delete(window.mqttClient);
+		}
+	});
+	return trueObj;
+}
+static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
+	return falseObj;
+}
+static OBJ primMQTTPub(int argCount, OBJ *args) {
+	return falseObj;
+}
+static OBJ primMQTTSub(int argCount, OBJ *args) {
+	// slightly ugly because of the async nature of the success callback
+
+	EM_ASM_({
+		var client = window.mqttClient;
+		client.callbackCalled = false;
+		client.subSuccess = false;
+		if (client && client.connected) {
+			var topic = UTF8ToString($0);
+			var qos = $1 === 1;
+			client.subscribe(
+				topic,
+				{ qos : qos },
+				function (err, granted) {
+					client.callbackCalled = true;
+					client.subSuccess = err != undefined;
+				}
+			);
+		}
+	}, obj2str(args[0]));
+
+	// TODO add a timeout
+	while (!EM_ASM_INT({ return window.mqttClient.callbackCalled })) { }
+
+	return EM_ASM_INT({
+		var client = window.mqttClient;
+		var success = client.subSuccess;
+		delete client.callbackCalled;
+		delete client.subSuccess;
+		return success;
+	}) ? trueObj : falseObj;
+}
+
+static OBJ primMQTTUnsub(int argCount, OBJ *args) {
+	// slightly ugly because of the async nature of the success callback
+
+	EM_ASM_({
+		var client = window.mqttClient;
+		client.callbackCalled = false;
+		client.unsubSuccess = false;
+		if (client && client.connected) {
+			var topic = UTF8ToString($0);
+			client.unsubscribe(
+				topic,
+				function (err) {
+					client.callbackCalled = true;
+					client.unsubSuccess = err != undefined;
+				}
+			);
+		}
+	}, obj2str(args[0]));
+
+	// TODO add a timeout
+	while (!EM_ASM_INT({ return window.mqttClient.callbackCalled })) { }
+
+	return EM_ASM_INT({
+		var client = window.mqttClient;
+		var success = client.unsubSuccess;
+		delete client.callbackCalled;
+		delete client.unsubSuccess;
+		return success;
+	}) ? trueObj : falseObj;
+}
+
 static PrimEntry entries[] = {
 	{"hasWiFi", primHasWiFi},
 	{"startWiFi", primStartWiFi},
@@ -124,15 +240,26 @@ static PrimEntry entries[] = {
 	{"startSSIDscan", primStartSSIDscan},
 	{"getSSID", primGetSSID},
 	{"myMAC", primGetMAC},
+
 	{"httpServerGetRequest", primHttpServerGetRequest},
 	{"respondToHttpRequest", primRespondToHttpRequest},
+
 	{"httpConnect", primHttpConnect},
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
+
 	{"webSocketStart", primWebSocketStart},
 	{"webSocketLastEvent", primWebSocketLastEvent},
 	{"webSocketSendToClient", primWebSocketSendToClient},
+
+	{"MQTTConnect", primMQTTConnect},
+	{"MQTTIsConnected", primMQTTIsConnected},
+	{"MQTTDisconnect", primMQTTDisconnect},
+	{"MQTTLastEvent", primMQTTLastEvent},
+	{"MQTTPub", primMQTTPub},
+	{"MQTTSub", primMQTTSub},
+	{"MQTTUnsub", primMQTTUnsub},
 };
 
 void addNetPrims() {
