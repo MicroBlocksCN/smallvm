@@ -1872,6 +1872,12 @@ method deleteFileOnBoard SmallRuntime fileName {
 }
 
 method getFileListFromBoard SmallRuntime {
+	if ('boardie' == portName) {
+		print 'get file list from boardie'
+		result = (boardieFileList)
+		if (notNil result) { return result }
+	}
+
 	sendMsg this 'listFiles'
 	collectFileTransferResponses this
 
@@ -1911,6 +1917,12 @@ method getAndSaveFile SmallRuntime remoteFileName {
 }
 
 method readFileFromBoard SmallRuntime remoteFileName {
+	if ('boardie' == portName) {
+		print 'read file from boardie' remoteFileName
+		result = (boardieGetFile remoteFileName)
+		if (notNil result) { return result }
+	}
+
 	fileTransferProgress = 0
 	spinner = (newSpinner (action 'fileTransferProgress' this 'downloaded') (action 'fileTransferCompleted' this))
 	setStopAction spinner (action 'abortFileTransfer' this)
@@ -1991,6 +2003,11 @@ method fileTransferCompleted SmallRuntime {
 }
 
 method sendFileData SmallRuntime fileName fileData {
+	if ('boardie' == portName) {
+		print 'send file to boardie' fileName (byteCount fileData) 'bytes'
+		boardiePutFile fileName fileData
+	}
+
 	// send data as a sequence of chunks
 	setCursor 'wait'
 	fileTransferProgress = 0

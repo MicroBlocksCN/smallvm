@@ -475,6 +475,20 @@ static OBJ primBrowserCloseBoardie(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+static OBJ primBoardiePutFile(int nargs, OBJ args[]) {
+    // xxx to be done
+	return nilObj;
+}
+static OBJ primBoardieGetFile(int nargs, OBJ args[]) {
+    // xxx to be done
+	return nilObj;
+}
+
+static OBJ primBoardieListFiles(int nargs, OBJ args[]) {
+    // xxx to be done
+	return nilObj;
+}
+
 // ***** Browser Canvas Shadow Effects *****
 
 static OBJ primBrowserSetShadow(int nargs, OBJ args[]) {
@@ -1356,6 +1370,9 @@ static PrimEntry browserPrimList[] = {
 	{"browserWritePrefs",		primBrowserWritePrefs,		"Write user preferences to localStorage. Args: jsonString"},
 	{"browserOpenBoardie",      primBrowserOpenBoardie,		"Open boardie."},
 	{"browserCloseBoardie",     primBrowserCloseBoardie,	"Disconnect boardie."},
+	{"boardiePutFile",          primBoardiePutFile,         "Store a file in boardie's file system."},
+	{"boardieGetFile",          primBoardieGetFile,         "Read a file from boardie's file system."},
+	{"boardieFileList",         primBoardieListFiles,       "Get a list of files in boardie's file system."},
 };
 
 static PrimEntry graphicsPrimList[] = {
