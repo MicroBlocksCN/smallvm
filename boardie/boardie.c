@@ -130,8 +130,9 @@ const char * boardType() {
 
 void addSerialPrims() {}
 void delay(int msecs) {}
+void processFileMessage(int msgType, int dataSize, char *data) {}
 
-// Stubs for code file (persistence) not used by Boardie
+// Stubs for code file (persistence) not yet used by Boardie
 
 void initCodeFile(uint8 *flash, int flashByteCount) {}
 void writeCodeFile(uint8 *code, int byteCount) { }

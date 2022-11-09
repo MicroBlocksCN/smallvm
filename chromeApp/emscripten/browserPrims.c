@@ -476,8 +476,24 @@ static OBJ primBoardiePutFile(int nargs, OBJ args[]) {
 	return nilObj;
 }
 static OBJ primBoardieGetFile(int nargs, OBJ args[]) {
-	EM_ASM({ });
-	return nilObj;
+	int fileSize =
+		EM_ASM_INT(
+			{ return window.localStorage[UTF8ToString($0)].length },
+			obj2str(args[0])
+		);
+	OBJ result = newBinaryData(fileSize);
+
+	EM_ASM_(
+		{
+			var file = window.localStorage[UTF8ToString($1)];
+			for (var i = 0; i < file.length; i++) {
+				setValue($0++, file.charCodeAt(i), 'i8');
+			}
+		},
+		&FIELD(result, 0), obj2str(args[0])
+	);
+	printf("result: %d\n", result);
+	return result;
 }
 
 static OBJ primBoardieListFiles(int nargs, OBJ args[]) {

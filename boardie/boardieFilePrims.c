@@ -126,7 +126,6 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 		var fileName = UTF8ToString($0);
 		var file = window.localStorage[fileName];
 		var startIndex = $3 > 0 ? $3 : window.fileCharPositions[fileName];
-		console.log(startIndex);
 		var endIndex = (startIndex + $1 > file.length) ?
 			file.length :
 			startIndex + $1;
