@@ -2036,7 +2036,7 @@ method fileTransferCompleted SmallRuntime {
 method sendFileData SmallRuntime fileName fileData {
 	if ('boardie' == portName) {
 		print 'send file to boardie' fileName (byteCount fileData) 'bytes'
-		boardiePutFile fileName fileData
+		boardiePutFile fileName fileData (byteCount fileData)
 	}
 
 	// send data as a sequence of chunks
