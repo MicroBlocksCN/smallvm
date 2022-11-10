@@ -1,5 +1,8 @@
 # README #
 
+## 帮助改进中文翻译
+欢迎帮忙改进编程界面的中文翻译, 翻译文件位于 [translations/简体中文.txt](https://github.com/MicroBlocksCN/smallvm/blob/devCN/translations/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87.txt)
+
 ## MicroBlocks Website ##
 
 This repository contains the source code for MicroBlocks.
