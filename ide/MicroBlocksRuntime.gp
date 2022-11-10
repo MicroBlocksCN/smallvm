@@ -2553,28 +2553,24 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	} else {
 		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this eraseFlashFlag downloadLatestFlag) true)
 		if eraseFlashFlag {
-			addItem menu 'Citilab ED1'
-			addItem menu 'Databot'
+			// addItem menu 'Citilab ED1'
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
 		} else {
 			addItem menu 'micro:bit'
-			addItem menu 'Calliope mini'
-			addLine menu
-			addItem menu 'Citilab ED1'
-			addItem menu 'Databot'
+			// addItem menu 'Calliope mini'
 			addLine menu
 			addItem menu 'Elecfreaks Pico:ed'
 			addItem menu 'Elecfreaks Wukong2040'
 			addItem menu 'RP2040 (Pico)'
 			addItem menu 'Pico W (WiFi)'
 			addLine menu
-			addItem menu 'Circuit Playground Express'
-			addItem menu 'Circuit Playground Bluefruit'
-			addItem menu 'Clue'
-			addItem menu 'Metro M0'
-			addLine menu
+			//addItem menu 'Circuit Playground Express'
+			//addItem menu 'Circuit Playground Bluefruit'
+			//addItem menu 'Clue'
+			//addItem menu 'Metro M0'
+			//addLine menu
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
