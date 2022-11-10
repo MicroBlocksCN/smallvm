@@ -503,7 +503,10 @@ method okay MicroBlocksFilePicker {
 				}
 			}
 		if (and useEmbeddedFS ('' != answer)) { answer = (join '//' answer) }
-		if (and (notNil action) ('' != answer)) { call action answer }
+		if (and (notNil action) ('' != answer)) {
+			removeFromOwner morph
+			call action answer
+		}
 	}
 	removeFromOwner morph
 	isDone = true
