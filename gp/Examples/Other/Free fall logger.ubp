@@ -3,7 +3,7 @@ author unknown
 version 1 0 
 description ''
 
-script 387 49 {
+script 388 50 {
 comment 'NOTE: Requires an ESP-based board with a built-in
 accelerometer, like the M5Stick, the M5Stack Core Grey
 (not the M5Stack Core Basic) or the Citilab ED1.
@@ -17,7 +17,7 @@ and catch it.
 acceleration throughout the launch.'
 }
 
-script 49 111 {
+script 50 112 {
 whenButtonPressed 'A'
 '[file:delete]' 'launch data'
 '[file:open]' 'launch data'
@@ -27,7 +27,7 @@ repeat 1000 {
 '[file:close]' 'launch data'
 }
 
-script 407 323 {
+script 408 324 {
 comment 'graph script'
 '[file:open]' 'launch data'
 repeat 1000 {
@@ -44,13 +44,13 @@ tags tilt acceleration light sensor
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[sensors:acceleration]' 'acceleration'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
-	spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
 to '_setAccelRange' n {
   '[sensors:setAccelerometerRange]' (0 + n)
@@ -59,21 +59,22 @@ to '_setAccelRange' n {
 
 module Files Data
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags data esp 
-description 'Flash file system operations. Currently supports the SPIFFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
+description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
 
-	spec ' ' '[file:open]' 'open file _' 'str'
-	spec ' ' '[file:close]' 'close file _' 'str'
-	spec ' ' '[file:delete]' 'delete file _' 'str'
-	spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
-	spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
-	spec 'r' '[file:endOfFile]' 'end of file _' 'str'
-	spec 'r' '[file:readLine]' 'next line of file _' 'str'
-	spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
-	spec 'r' 'file names' 'file names : in directory _' 'str'
-	spec 'r' '[file:fileSize]' 'size of file _' 'str'
-	spec 'r' '[file:systemInfo]' 'file system info'
+  spec ' ' '[file:open]' 'open file _' 'str'
+  spec ' ' '[file:close]' 'close file _' 'str'
+  spec ' ' '[file:delete]' 'delete file _' 'str'
+  spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
+  spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
+  spec 'r' '[file:endOfFile]' 'end of file _' 'str'
+  spec 'r' '[file:readLine]' 'next line of file _' 'str'
+  spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+  spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
+  spec 'r' 'file names' 'file names : in directory _' 'str'
+  spec 'r' '[file:fileSize]' 'size of file _' 'str'
+  spec 'r' '[file:systemInfo]' 'file system info'
 
 to 'file names' dir {
   '[file:startList]' dir

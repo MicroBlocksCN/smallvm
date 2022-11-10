@@ -1,8 +1,8 @@
 module Files Data
 author MicroBlocks
-version 1 1
+version 1 2
 tags data esp
-description 'Flash file system operations. Currently supports the SPIFFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
+description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
 
 	spec ' ' '[file:open]' 'open file _' 'str'
 	spec ' ' '[file:close]' 'close file _' 'str'
