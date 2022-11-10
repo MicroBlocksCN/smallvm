@@ -2037,6 +2037,7 @@ method sendFileData SmallRuntime fileName fileData {
 	if ('boardie' == portName) {
 		print 'send file to boardie' fileName (byteCount fileData) 'bytes'
 		boardiePutFile fileName fileData (byteCount fileData)
+		return
 	}
 
 	// send data as a sequence of chunks
