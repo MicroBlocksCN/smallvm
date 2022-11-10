@@ -222,6 +222,22 @@ method initialize MicroBlocksHelp {
 		(array 'Maqueen motor' '/extension_libraries/maqueen/#maqueen-motor' 'Set the motor directions and speeds.')
 		(array 'Maqueen stop motors' '/extension_libraries/maqueen/#maqueen-stop-motors' 'Stop the motors.')
 		(array 'Maqueen sees line on left' '/extension_libraries/maqueen/#maqueen-sees-line-on-left' 'Return (-o) if the given line sensor sees a black line.')
+
+		// HUSKYLENS
+		(array 'HL initialize' '/extension_libraries/huskylens#hl-initialize' 'Initialize HuskyLens.')
+		(array 'HL set I2C address(hex) _' '/extension_libraries/huskylens#hl-set-i2c-address' 'Set I2C address of camera.')
+		(array 'HL change algorithm' '/extension_libraries/huskylens#hl-change-algorithm' 'Change recognition algorithm.')
+		(array 'HL do' '/extension_libraries/huskylens#hl-do' 'Perform maintenance operation.')
+		(array 'HL request' '/extension_libraries/huskylens#hl-request' 'Request recognized objects from HuskyLens.')
+		(array 'HL request by ID' '/extension_libraries/huskylens#hl-request-by-id' 'Request only one object by id from HuskyLens.')
+		(array 'HL get info' '/extension_libraries/huskylens#hl-get-info' 'Get Info details from HuskyData.')
+		(array 'HL get block' '/extension_libraries/huskylens#hl-get-block' 'Get Block details from HuskyData.')
+		(array 'HL get arrow'  '/extension_libraries/huskylens#hl-get-arrow' 'Get Arrow details from HuskyData')
+		(array 'HL learn current object with ID' '/extension_libraries/huskylens#hl-learn-by-id' 'Learn recognized object by ID.')
+		(array 'HL learn object with ID' '/extension_libraries/huskylens#hl-learn-id-and-name' 'Learn recognized object by ID and assign it a name.')
+		(array 'HL set CustomName' '/extension_libraries/huskylens#hl-set-custom-name' 'Set custom name for a learned object.')
+		(array 'HL write' '/extension_libraries/huskylens#hl-write' 'Display text on the HuskyLens screen @ x,y [0,0 is top left].')
+		(array 'HL file' '/extension_libraries/huskylens#hl-file' 'Save/Load a file to/from SDcard.')
  	)
 
 	opDict = (dictionary)
