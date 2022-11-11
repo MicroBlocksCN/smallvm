@@ -126,6 +126,38 @@ const char * boardType() {
 	return "Boardie";
 }
 
+// Grab ublockscode as a base64 URL
+void EMSCRIPTEN_KEEPALIVE getScripts() {
+	compactCodeStore();
+	EM_ASM_({
+		console.log(
+			encodeURIComponent(
+				btoa(
+					String.fromCharCode.apply(
+						null,
+						new Uint8Array(HEAP8.subarray($0, $0 + $1))
+					)
+				)
+			)
+		);
+	}, ramStart(), ramSize());
+}
+
+void readScriptsFromURL() {
+	EM_ASM_({
+		var b64 = (new URLSearchParams(window.location.search)).get('code');
+		if (b64) {
+			var bytes = Int8Array.from(atob(b64), (c) => c.charCodeAt(0));
+			for (var i = 0; i < bytes.length; i++) {
+				setValue($0, bytes[i], 'i8');
+				$0++;
+			}
+		}
+	}, ramStart());
+	restoreScripts();
+	startAll();
+}
+
 // Stubs for functions not used by Boardie
 
 void addSerialPrims() {}
@@ -152,7 +184,7 @@ int main(int argc, char *argv[]) {
 	memInit();
 	primsInit();
 	restoreScripts();
-	startAll();
+	readScriptsFromURL();
 
 	printf("Starting interpreter\n");
 	emscripten_set_main_loop(interpretStep, 60, true); // callback, fps, loopFlag
