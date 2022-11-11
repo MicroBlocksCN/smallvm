@@ -365,7 +365,8 @@ PrimitiveFunction findPrimitive(char *namedPrimitive);
 
 static int findCallee(char *functionOrPrimitiveName) {
 	int result = chunkIndexForFunction(functionOrPrimitiveName);
-	if (result >= 0) return result;
+	if (result >= 0) return (0xFFFFFF00 | result); // set top 24 bits to show callee is a chunk
+	// assume: result < 256 (MAX_CHUNKS) so it fits in low 8 bits
 
 	PrimitiveFunction f = findPrimitive(functionOrPrimitiveName);
 	if (f) return (int) f;
@@ -1231,8 +1232,8 @@ static void runTask(Task *task) {
 				}
 
 				// invoke the callee
-				if (callee < 256) { // callee is a MicroBlocks function (i.e. a chunk index)
-					arg = (callee << 8) | paramCount;
+				if ((callee & 0xFFFFFF00) == 0xFFFFFF00) { // callee is a MicroBlocks function (i.e. a chunk index)
+					arg = ((callee & 0xFF) << 8) | paramCount;
 					goto callFunction_op;
 				} else { // callee is a named primitive (i.e. a pointer to a C function)
 					task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
