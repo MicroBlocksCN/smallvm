@@ -1674,6 +1674,12 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		add msg 254 // terminator byte (helps board detect dropped bytes)
 	}
 	dataToSend = (toBinaryData (toArray msg))
+
+	if ('boardie' == portName) { // send all data at once to boardie
+		(writeSerialPort port dataToSend)
+		return
+	}
+
 	while ((byteCount dataToSend) > 0) {
 		// Note: Adafruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
 		// written in one call to writeSerialPort, so send smaller chunks
@@ -1695,6 +1701,8 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 
 	readAvailableSerialData this
 	sendMsg this msgName chunkID byteList
+	if ('boardie' == portName) { return } // don't wait for a response
+
 	ok = (waitForResponse this)
 	if (not ok) {
 		print 'Lost communication to the board in sendMsgSync'
