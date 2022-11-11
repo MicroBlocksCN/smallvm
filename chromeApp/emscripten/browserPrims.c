@@ -462,31 +462,74 @@ static OBJ primBrowserReadPrefs(int nargs, OBJ args[]) {
 // Boardie Support
 
 static OBJ primBrowserOpenBoardie(int nargs, OBJ args[]) {
-	EM_ASM({
-	    GP_openBoardie();
-	}, NULL);
+	EM_ASM_({ GP_openBoardie(); });
 	return nilObj;
 }
 
 static OBJ primBrowserCloseBoardie(int nargs, OBJ args[]) {
-	EM_ASM({
-	    GP_closeBoardie();
-	}, NULL);
+	EM_ASM_({ GP_closeBoardie(); });
 	return nilObj;
 }
 
 static OBJ primBoardiePutFile(int nargs, OBJ args[]) {
-    // xxx to be done
+	EM_ASM_(
+		{
+			// may crash the browser on really huge files?
+			window.localStorage[UTF8ToString($0)] =
+				String.fromCharCode.apply(
+					null,
+					Module.HEAPU8.subarray($1, $1 + $2)
+				);
+		},
+		obj2str(args[0]), // filename
+		&FIELD(args[1], 0), // file data
+		obj2int(args[2]) // file size
+	);
 	return nilObj;
 }
 static OBJ primBoardieGetFile(int nargs, OBJ args[]) {
-    // xxx to be done
-	return nilObj;
+	int fileSize =
+		EM_ASM_INT(
+			{ return window.localStorage[UTF8ToString($0)].length },
+			obj2str(args[0])
+		);
+	OBJ result = newBinaryData(fileSize);
+
+	EM_ASM_(
+		{
+			var file = window.localStorage[UTF8ToString($1)];
+			for (var i = 0; i < file.length; i++) {
+				setValue($0++, file.charCodeAt(i), 'i8');
+			}
+		},
+		&FIELD(result, 0),
+		obj2str(args[0])
+	);
+	return result;
 }
 
 static OBJ primBoardieListFiles(int nargs, OBJ args[]) {
-    // xxx to be done
-	return nilObj;
+	int fileCount =
+			EM_ASM_INT({ return Object.keys(window.localStorage).length });
+	OBJ fileList = newObj(ArrayClass, fileCount, nilObj);
+
+	for (int i = 0; i < fileCount; i++) {
+		int length = EM_ASM_INT(
+			{ return Object.keys(window.localStorage)[$0].length; },
+			i
+		);
+		OBJ fileName = allocateString(length);
+		EM_ASM_(
+			{
+				var fileName = Object.keys(window.localStorage)[$0];
+				stringToUTF8(fileName, $1, fileName.length + 1);
+			},
+			i,
+			&FIELD(fileName, 0)
+		);
+		FIELD(fileList, i) = fileName;
+	}
+	return fileList;
 }
 
 // ***** Browser Canvas Shadow Effects *****
