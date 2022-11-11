@@ -224,8 +224,7 @@ method initialize MicroBlocksHelp {
 		(array 'Maqueen sees line on left' '/extension_libraries/maqueen/#maqueen-sees-line-on-left' 'Return (-o) if the given line sensor sees a black line.')
 
 		// HUSKYLENS
-		(array 'HL initialize' '/extension_libraries/huskylens#hl-initialize' 'Initialize HuskyLens.')
-		(array 'HL set I2C address(hex) _' '/extension_libraries/huskylens#hl-set-i2c-address' 'Set I2C address of camera.')
+		(array 'HL init & set I2Caddr' '/extension_libraries/huskylens#hl-init-set-i2caddr' 'Initialize HuskyLens with the given I2C address.')
 		(array 'HL change algorithm' '/extension_libraries/huskylens#hl-change-algorithm' 'Change recognition algorithm.')
 		(array 'HL do' '/extension_libraries/huskylens#hl-do' 'Perform maintenance operation.')
 		(array 'HL request' '/extension_libraries/huskylens#hl-request' 'Request recognized objects from HuskyLens.')
