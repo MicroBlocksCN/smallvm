@@ -855,6 +855,7 @@ method justConnected SmallRuntime {
 	sendStopAll this
 	clearRunningHighlights this
 	setDefaultSerialDelay this
+	abortFileTransfer this
 	processMessages this // process incoming version message
 	if readFromBoard {
 		readFromBoard = false
@@ -1995,7 +1996,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 	sendFileData this targetFileName fileData
 }
 
-// busy tells the MicroBlocksEditor to suspect board communciations during file transfers
+// busy tells the MicroBlocksEditor to suspend board communciations during file transfers
 method busy SmallRuntime { return (notNil fileTransferProgress) }
 
 method fileTransferProgress SmallRuntime actionLabel { return (join '' fileTransferProgress '% ' (localized actionLabel)) }
