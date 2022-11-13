@@ -866,17 +866,20 @@ async function GP_ReadFile(ext) {
 		});
 	}
 
-	if ('' == ext) ext = 'txt';
 	if (hasChromeFilesystem()) {
+		if ('' == ext) ext = 'txt';
 		const options = {
 			type: 'openFile',
 			accepts: [{ description: 'MicroBlocks', extensions: [ext] }]
 		};
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
 	} else if (typeof window.showOpenFilePicker != 'undefined') { // Native Filesystem API
-		const options = { types: [{ description: 'MicroBlocks', accept: { 'text/plain': ['.' + ext] }}] };
+		var options = {};
+		if ('' != ext) {
+			options = { types: [{ description: 'MicroBlocks', accept: { 'text/plain': ['.' + ext] }}] };
+		}
 		const files = await window.showOpenFilePicker(options).catch((e) => { console.log(e); });
-		if (!files || (files.length == 0) || !files[0].getFile) return; // no file selected
+		if (typeof files === 'undefined') { console.log('No file selected.'); return; }
 		const file = await files[0].getFile();
 		const contents = await file.arrayBuffer();
 		GP.droppedFiles.push({ name: toUTF8Array(file.name), contents: contents });
