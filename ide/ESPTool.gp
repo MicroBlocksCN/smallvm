@@ -113,10 +113,10 @@ method enterBootMode ESPTool {
 	if (isNil port) { return }
 	setSerialPortDTR port false		// IO0 = high
 	setSerialPortRTS port true		// EN = low (chip in reset)
-	waitMSecs 100 // might need to increase to 220 msecs on some chips
+	waitMSecs 200 // might need to increase to 220 msecs on some chips
 	setSerialPortDTR port true		// IO0 = low
 	setSerialPortRTS port false		// EN = high (exit reset)
-	waitMSecs 50 // might need to increase to 450 msecs on some chips
+	waitMSecs 100 // might need to increase to 450 msecs on some chips
 	setSerialPortDTR port false		// IO0 = high
 }
 

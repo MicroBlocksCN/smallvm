@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -247,7 +247,13 @@ method addTipBar MicroBlocksEditor {
 
 // project operations
 
+method downloadInProgress MicroBlocksEditor {
+  if isDownloading { inform 'Downloading code to board. Please wait.' }
+  return isDownloading
+}
+
 method canReplaceCurrentProject MicroBlocksEditor {
+  if (downloadInProgress this) {return false }
   return (or
 	(not (hasUserCode (project scripter)))
 	(confirm (global 'page') nil 'Discard current project?'))
@@ -286,6 +292,8 @@ method closeAllDialogs MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
+  if (downloadInProgress this) {return }
+
   fp = (findMorph 'MicroBlocksFilePicker')
   if (notNil fp) { destroy fp }
   pickFileToOpen (action 'openProjectFromFile' this) lastProjectFolder (array '.ubp' '.gpp')
@@ -313,6 +321,7 @@ method openProjectFromFile MicroBlocksEditor location {
 }
 
 method openProject MicroBlocksEditor projectData projectName updateLibraries {
+  if (downloadInProgress this) { return }
   clearProject this
   fileName = projectName
   updateTitle this
@@ -532,6 +541,7 @@ method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
 }
 
 method showDownloadProgress MicroBlocksEditor phase downloadProgress {
+	isDownloading = (downloadProgress < 1)
 	bm1 = (getField progressIndicator 'offCostume')
 	drawProgressIndicator this bm1 phase downloadProgress
 	bm2 = (getField progressIndicator 'onCostume')

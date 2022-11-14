@@ -17,6 +17,7 @@ to smallRuntime aScripter {
 defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer
 
 method scripter SmallRuntime { return scripter }
+method serialPortOpen SmallRuntime { return (notNil port) }
 
 method initialize SmallRuntime aScripter {
 	scripter = aScripter
@@ -868,6 +869,7 @@ method justConnected SmallRuntime {
 	sendStopAll this
 	clearRunningHighlights this
 	setDefaultSerialDelay this
+	abortFileTransfer this
 	processMessages this // process incoming version message
 	if readFromBoard {
 		readFromBoard = false
@@ -1048,6 +1050,7 @@ method extractBoardType SmallRuntime versionString {
 }
 
 method versionReceived SmallRuntime versionString {
+	if (isNil versionString) { return } // bad version message
 	if (isNil vmVersion) { // first time: record and check the version number
 		vmVersion = (extractVersionNumber this versionString)
 		boardType = (extractBoardType this versionString)
@@ -2027,7 +2030,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 	sendFileData this targetFileName fileData
 }
 
-// busy tells the MicroBlocksEditor to suspect board communciations during file transfers
+// busy tells the MicroBlocksEditor to suspend board communciations during file transfers
 method busy SmallRuntime { return (notNil fileTransferProgress) }
 
 method fileTransferProgress SmallRuntime actionLabel { return (join '' fileTransferProgress '% ' (localized actionLabel)) }
