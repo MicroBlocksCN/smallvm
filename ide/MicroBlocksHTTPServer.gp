@@ -232,10 +232,10 @@ method handleRequest MicroBlocksHTTPWorker header body {
 	method = (at (words (first (lines header))) 1)
 	path = (at (words (first (lines header))) 2)
 	if ('GET' == method) {
-		if (not (serialPortOpen (smallRuntime))) {
-			responseBody = 'Board not connected'
-		} ('/' == path) {
+		if ('/' == path) {
 			responseBody = (helpString this)
+		} (not (serialPortOpen (smallRuntime))) {
+			responseBody = 'Board not connected'
 		} (beginsWith path '/getBroadcasts') {
 			responseBody = (getBroadcasts this path)
 		} (beginsWith path '/broadcast') {
