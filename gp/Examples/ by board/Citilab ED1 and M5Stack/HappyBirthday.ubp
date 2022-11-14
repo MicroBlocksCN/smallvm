@@ -3,8 +3,8 @@ author unknown
 version 1 0 
 description ''
 
-	spec ' ' 'happy-birthday' 'happy-birthday'
-	spec ' ' 'and-many-more' 'and-many-more'
+  spec ' ' 'happy-birthday' 'happy-birthday'
+  spec ' ' 'and-many-more' 'and-many-more'
 
 to 'and-many-more' {
   local 'third' 266
@@ -93,18 +93,18 @@ forever {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -147,17 +147,17 @@ description 'Control NeoPixel (WS2812) RGB LED strips.
 '
 variables _np_pixels 
 
-	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
-	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
-	spec ' ' 'clearNeoPixels' 'clear NeoPixels'
-	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
-	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
-	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
-	spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
-	spec 'r' 'randomColor' 'random color'
-	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
-	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
-	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+  spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
+  spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+  spec ' ' 'clearNeoPixels' 'clear NeoPixels'
+  spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+  spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
+  spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+  spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'randomColor' 'random color'
+  spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
+  spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
+  spec ' ' '_NeoPixel_update' '_NeoPixel_update'
 
 to '_NeoPixel_ensureInitialized' {
   if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {
@@ -295,15 +295,15 @@ tags tone sound music audio note speaker
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
-	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
-	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
-	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
-	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
-	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
-	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
-	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
-	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+  spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+  spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+  spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+  spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave

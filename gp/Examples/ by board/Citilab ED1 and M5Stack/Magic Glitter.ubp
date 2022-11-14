@@ -7,7 +7,7 @@ script 53 50 {
 comment 'Start the project, then shake your BBC micro:bit or CPX for some magic glitter!'
 }
 
-script 54 125 {
+script 53 124 {
 whenCondition (('[sensors:tiltX]') > 50)
 '[display:mbPlot]' (random 1 5) (random 1 5)
 '[display:mbUnplot]' (random 1 5) (random 1 5)
@@ -34,13 +34,13 @@ tags tilt acceleration light sensor
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[sensors:acceleration]' 'acceleration'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
-	spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
 to '_setAccelRange' n {
   '[sensors:setAccelerometerRange]' (0 + n)
@@ -49,18 +49,18 @@ to '_setAccelRange' n {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -103,17 +103,17 @@ description 'Control NeoPixel (WS2812) RGB LED strips.
 '
 variables _np_pixels 
 
-	spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
-	spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
-	spec ' ' 'clearNeoPixels' 'clear NeoPixels'
-	spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
-	spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
-	spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
-	spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
-	spec 'r' 'randomColor' 'random color'
-	spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
-	spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
-	spec ' ' '_NeoPixel_update' '_NeoPixel_update'
+  spec ' ' 'neoPixelAttach' 'attach _ LED NeoPixel strip to pin _ : has white _' 'num auto bool' 10 '' false
+  spec ' ' 'setNeoPixelColors10' 'set NeoPixels _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+  spec ' ' 'clearNeoPixels' 'clear NeoPixels'
+  spec ' ' 'neoPixelSetAllToColor' 'set all NeoPixels color _' 'color'
+  spec ' ' 'setNeoPixelColor' 'set NeoPixel _ color _' 'num color' 1
+  spec ' ' 'rotateNeoPixelsBy' 'rotate NeoPixels by _' 'auto' 1
+  spec 'r' 'colorFromRGB' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'randomColor' 'random color'
+  spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
+  spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
+  spec ' ' '_NeoPixel_update' '_NeoPixel_update'
 
 to '_NeoPixel_ensureInitialized' {
   if (_np_pixels == 0) {if ((boardType) == 'M5Atom-Matrix') {

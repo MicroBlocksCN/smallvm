@@ -86,7 +86,7 @@ to 'reveal display buffer delay' {
   }
 }
 
-script 74 40 {
+script 73 40 {
 whenStarted
 comment 'Program başladığında HELLO mesajı yayımlanır. Bu mesajı algılayan blok da PICO
 LED ini 9 kere yakıp söndürür.'
@@ -128,7 +128,7 @@ OLEDshowGDBuffer
 sendBroadcast 'display'
 }
 
-script 602 125 {
+script 602 124 {
 whenBroadcastReceived 'display'
 local 'dCol' 33
 forever {
@@ -170,7 +170,7 @@ repeat 9 {
 }
 }
 
-script 77 1019 {
+script 76 1019 {
 whenCondition (pb_button)
 comment 'BUTTON / LED:
 Program başladığında buton 10 devamlı algılanır.
@@ -227,7 +227,7 @@ forever {
 }
 }
 
-script 62 1449 {
+script 61 1449 {
 whenCondition ('_dhtReady')
 comment 'DHT11
 Kartınızın ısı ve rutubet sensörünün hazır olduğu algılandığında
@@ -237,7 +237,7 @@ valNem = (pb_humidity)
 waitMillis 5000
 }
 
-script 69 1643 {
+script 68 1643 {
 whenBroadcastReceived 'display'
 forever {
   comment 'LDR Read
@@ -247,7 +247,7 @@ Işık sensör değerini gösterir.'
 }
 }
 
-script 491 1648 {
+script 490 1648 {
 whenBroadcastReceived 'display'
 comment 'SERVO Control
 Mikrosaniyeleri 500 - 3000
@@ -265,14 +265,14 @@ forever {
 }
 }
 
-script 69 1842 {
+script 68 1842 {
 whenBroadcastReceived 'display'
 forever {
   neo
 }
 }
 
-script 47 1960 {
+script 46 1959 {
 to buzzer {}
 }
 
@@ -308,10 +308,10 @@ to BunnyPIC {
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
 version 1 12 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices ModeMenu Horizontal Vertical 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -1437,7 +1437,7 @@ to stopServo which {
 
 module 'Temperature Humidity (DHT11, DHT22)' Input
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags sensor dht11 dht22 temperature humidity 
 description 'Support for the DHT11 and DHT22 environmental sensors. These sensors provide temperature and humidity readings.'
 variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime 
@@ -1452,6 +1452,7 @@ variables _dht_temperature _dht_humidity _dhtData _dhtLastReadTime
   spec 'r' '_dhtReady' '_dhtReady' 'any'
 
 to '_dhtChecksumOkay' {
+  if (not (isType _dhtData 'list')) {return (booleanConstant false)}
   local 'checksum' 0
   for i 4 {
     checksum += (at i _dhtData)
@@ -1465,6 +1466,8 @@ to '_dhtReadData' pin {
   if (_dhtData == 0) {
     _dhtData = (newList 5)
   }
+  comment 'fill with 1''s set checksum will be bad if read fails'
+  atPut 'all' _dhtData 1
   comment 'Pull pin low for >18msec to request data'
   digitalWriteOp pin false
   waitMillis 20
@@ -1513,6 +1516,8 @@ to '_dhtReady' {
 
 to '_dhtUpdate' pin isDHT11 {
   if ('_dhtReady') {
+    _dht_temperature = 0
+    _dht_humidity = 0
     '_dhtReadData' pin
     _dhtLastReadTime = (millisOp)
   }

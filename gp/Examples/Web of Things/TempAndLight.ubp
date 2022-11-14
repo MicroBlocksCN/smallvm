@@ -43,13 +43,13 @@ tags tilt acceleration light sensor
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[sensors:acceleration]' 'acceleration'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
-	spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
 to '_setAccelRange' n {
   '[sensors:setAccelerometerRange]' (0 + n)
@@ -63,15 +63,15 @@ depends WiFi
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
-	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _ : port _' 'bool num' false 8080
-	spec 'r' 'request method' 'method of request _' 'str' ''
-	spec 'r' 'path of request' 'path of request _' 'str' ''
-	spec 'r' 'headers of request' 'headers of request _' 'str' ''
-	spec 'r' 'body of request' 'body of request _' 'str' ''
-	spec 'r' 'content length of request' 'content length of request _' 'str' ''
-	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _ : keepAlive _' 'str str str bool' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain' false
-	spec 'r' '_endOfHeaders' '_end of headers _' 'str'
-	spec 'r' '_toString' '_toString _' 'auto' 'abc'
+  spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _ : port _' 'bool num' false 8080
+  spec 'r' 'request method' 'method of request _' 'str' ''
+  spec 'r' 'path of request' 'path of request _' 'str' ''
+  spec 'r' 'headers of request' 'headers of request _' 'str' ''
+  spec 'r' 'body of request' 'body of request _' 'str' ''
+  spec 'r' 'content length of request' 'content length of request _' 'str' ''
+  spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP request : with body _ : and headers _ : keepAlive _' 'str str str bool' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain' false
+  spec 'r' '_endOfHeaders' '_end of headers _' 'str'
+  spec 'r' '_toString' '_toString _' 'auto' 'abc'
 
 to '_endOfHeaders' request {
   return ('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request)
@@ -130,18 +130,18 @@ to 'request method' request {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -190,30 +190,30 @@ description 'Create WebThings as specified by the WebThings schema and protocol.
 '
 variables _WoT_title _WoT_events _WoT_capability _WoT_event_defs _WoT_property_defs '_thing description' 
 
-	spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
-	spec ' ' 'set thing capability to' 'set thing capability to _' 'str.thingTypesMenu' 'Light'
-	spec ' ' 'addBooleanProperty' 'set boolean property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.booleanPropertyTypesMenu bool' '' '' 'OnOffProperty' false
-	spec ' ' 'addStringProperty' 'set string property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.stringPropertyTypesMenu bool' '' '' 'ColorProperty' false
-	spec ' ' 'addNumProp' 'set number property _ title _ min _ max _ @Type _ : read only _' 'menu.allVarsMenu str num num str.numberPropertyTypesMenu bool' '' '' 0 100 'LevelProperty' false
-	spec ' ' 'register event' 'register event _ type _' 'auto str.thingEventTypesMenu' 'Button A pressed' 'PressedEvent'
-	spec ' ' 'start WebThing server' 'start WebThing server'
-	spec ' ' 'trigger event' 'trigger event _' 'auto' 'button pressed'
-	spec 'r' 'thing description JSON' 'thing description JSON'
-	spec 'r' 'properties JSON' 'properties JSON'
-	spec 'r' 'event definitions JSON' 'event definitions JSON'
-	spec 'r' 'events JSON' 'events JSON'
-	spec ' ' '_process OPTIONS request' '_process OPTIONS request _' 'auto' ''
-	spec ' ' '_process PUT request' '_process PUT request _' 'auto' ''
-	spec ' ' '_process request' '_process GET request _' 'auto' ''
-	spec ' ' '_respond 404 Not Found' '_respond 404 Not Found'
-	spec 'r' '_JSON value' '_JSON value _' 'auto' '10'
-	spec 'r' '_parse JSON value' '_parse JSON value _' 'auto' ''
-	spec 'r' '_trimmed' '_trimmed _' 'auto' '  hello    '
-	spec ' ' '_WoT_start_server' '_WoT_start_server'
-	spec 'r' '_type of' '_type of _' 'auto' '10'
-	spec ' ' '_add or replace property' '_add or replace property _ attributes _' 'menu.nil str' '' ''
-	spec ' ' '_clear thing description' '_clear thing description'
-	spec 'r' '_varNames' '_varNames'
+  spec ' ' 'set thing name to' 'set thing name to _' 'auto' 'MicroBlocks thing'
+  spec ' ' 'set thing capability to' 'set thing capability to _' 'str.thingTypesMenu' 'Light'
+  spec ' ' 'addBooleanProperty' 'set boolean property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.booleanPropertyTypesMenu bool' '' '' 'OnOffProperty' false
+  spec ' ' 'addStringProperty' 'set string property _ title _ @Type _ : read only _' 'menu.allVarsMenu str str.stringPropertyTypesMenu bool' '' '' 'ColorProperty' false
+  spec ' ' 'addNumProp' 'set number property _ title _ min _ max _ @Type _ : read only _' 'menu.allVarsMenu str num num str.numberPropertyTypesMenu bool' '' '' 0 100 'LevelProperty' false
+  spec ' ' 'register event' 'register event _ type _' 'auto str.thingEventTypesMenu' 'Button A pressed' 'PressedEvent'
+  spec ' ' 'start WebThing server' 'start WebThing server'
+  spec ' ' 'trigger event' 'trigger event _' 'auto' 'button pressed'
+  spec 'r' 'thing description JSON' 'thing description JSON'
+  spec 'r' 'properties JSON' 'properties JSON'
+  spec 'r' 'event definitions JSON' 'event definitions JSON'
+  spec 'r' 'events JSON' 'events JSON'
+  spec ' ' '_process OPTIONS request' '_process OPTIONS request _' 'auto' ''
+  spec ' ' '_process PUT request' '_process PUT request _' 'auto' ''
+  spec ' ' '_process request' '_process GET request _' 'auto' ''
+  spec ' ' '_respond 404 Not Found' '_respond 404 Not Found'
+  spec 'r' '_JSON value' '_JSON value _' 'auto' '10'
+  spec 'r' '_parse JSON value' '_parse JSON value _' 'auto' ''
+  spec 'r' '_trimmed' '_trimmed _' 'auto' '  hello    '
+  spec ' ' '_WoT_start_server' '_WoT_start_server'
+  spec 'r' '_type of' '_type of _' 'auto' '10'
+  spec ' ' '_add or replace property' '_add or replace property _ attributes _' 'menu.nil str' '' ''
+  spec ' ' '_clear thing description' '_clear thing description'
+  spec 'r' '_varNames' '_varNames'
 
 to '_JSON value' value {
   local 'JSON value' ''
@@ -501,10 +501,10 @@ tags communication network
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
-	spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
-	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
-	spec 'r' 'getIPAddress' 'IP address'
-	spec 'r' '[net:myMAC]' 'MAC address'
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
 
 to getIPAddress {
   return ('[net:myIPAddress]')
