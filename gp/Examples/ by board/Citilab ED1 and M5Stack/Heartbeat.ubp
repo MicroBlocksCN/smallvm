@@ -18,18 +18,18 @@ repeatUntil (not (buttonA)) {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)

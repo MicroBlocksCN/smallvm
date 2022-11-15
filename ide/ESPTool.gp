@@ -47,7 +47,7 @@ method openPort ESPTool portName boardName {
 method baudForBoard ESPTool boardName {
 	if ('ESP8266' == boardName) { return 230400
 	} ('D1-Mini' == boardName) { return 921600
-	} ('ESP32' == boardName) { return 460800
+	} ('ESP32' == boardName) { return 230400
 	} ('Citilab ED1' == boardName) { return 230400
 	} ('M5Stack-Core' == boardName) { return 230400
 	} ('M5StickC' == boardName) { return 230400

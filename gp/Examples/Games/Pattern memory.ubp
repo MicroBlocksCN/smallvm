@@ -4,10 +4,10 @@ version 1 0
 description ''
 variables pattern guess difficulty 
 
-	spec ' ' 'guess pattern' 'guess pattern'
-	spec ' ' 'new pattern' 'new pattern'
-	spec 'r' 'pattern contains' 'pattern contains _ , _' 'auto auto' 1 3
-	spec ' ' 'show pattern' 'show pattern _' 'auto' '10'
+  spec ' ' 'guess pattern' 'guess pattern'
+  spec ' ' 'new pattern' 'new pattern'
+  spec 'r' 'pattern contains' 'pattern contains _ , _' 'auto auto' 1 3
+  spec ' ' 'show pattern' 'show pattern _' 'auto' '10'
 
 to 'guess pattern' {
   guess = ('[data:makeList]')
@@ -91,7 +91,7 @@ difficulty = 3
 sendBroadcast 'go!'
 }
 
-script 597 72 {
+script 597 71 {
 to 'new pattern' {}
 }
 
@@ -108,7 +108,7 @@ forever {
 }
 }
 
-script 596 253 {
+script 595 253 {
 to 'guess pattern' {}
 }
 
@@ -133,13 +133,13 @@ tags tilt acceleration light sensor
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[sensors:acceleration]' 'acceleration'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
-	spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
 to '_setAccelRange' n {
   '[sensors:setAccelerometerRange]' (0 + n)
@@ -148,18 +148,18 @@ to '_setAccelRange' n {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
