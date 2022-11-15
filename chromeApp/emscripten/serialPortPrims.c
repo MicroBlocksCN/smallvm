@@ -338,6 +338,12 @@ static void setRTS(PortHandle port, int flag) {
 	}, flag);
 }
 
+static void setDTRandRTS(PortHandle port, int dtrFlag, int rtsFlag) {
+	EM_ASM_({
+		GP_setSerialPortDTRandRTS($0, $1);
+	}, dtrFlag, rtsFlag);
+}
+
 #else // stubs for platforms without serial port support
 
 typedef int PortHandle;
@@ -522,6 +528,21 @@ OBJ primSetSerialPortRTS(int nargs, OBJ args[]) {
 	return nilObj;
 }
 
+OBJ primSetSerialPortDTRandRTS(int nargs, OBJ args[]) {
+	if (nargs < 3) return notEnoughArgsFailure();
+	if (!isInt(args[0])) return badPortIDFailure();
+	PortHandle h = getPortHandle(obj2int(args[0]));
+	#ifdef EMSCRIPTEN
+		if (h != CLOSED) setDTRandRTS(h, (trueObj == args[1]), (trueObj == args[2]));
+	#else
+		if (h != CLOSED) {
+			setDTR(h, (trueObj == args[1]));
+			setRTS(h, (trueObj == args[2]));
+		}
+	#endif
+	return nilObj;
+}
+
 PrimEntry serialPortPrimList[] = {
 	{"-----", NULL, "Serial Port"},
 	{"listSerialPorts",		primListSerialPorts,	"Return an array of serial port names."},
@@ -532,6 +553,7 @@ PrimEntry serialPortPrimList[] = {
 	{"writeSerialPort",		primWriteSerialPort,	"Write data to a serial port. Arguments: portID stringOrBinaryData"},
 	{"setSerialPortDTR",	primSetSerialPortDTR,	"Set the DTR line of a serial port. Arguments: portID dtrFlag"},
 	{"setSerialPortRTS",	primSetSerialPortRTS,	"Set the RTS line of a serial port. Arguments: portID rtsFlag"},
+	{"setSerialPortDTRandRTS",	primSetSerialPortDTRandRTS,	"Set the DTR and RTS lines of a serial port. Arguments: portID dtrFlag"},
 };
 
 PrimEntry* serialPortPrimitives(int *primCount) {
