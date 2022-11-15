@@ -965,6 +965,19 @@ async function GP_setSerialPortRTS(flag) {
 	}
 }
 
+async function GP_setSerialPortDTRandRTS(dtrFlag, rtsFlag) {
+	if (hasWebSerial()) {
+		if (!GP_webSerialPort) return; // port not open
+		await GP_webSerialPort.setSignals(
+			{ dtr: dtrFlag, dataTerminalReady: dtrFlag, rts: rtsFlag, requestToSend: rtsFlag }
+		).catch(() => {});
+	} else if (hasChromeSerial()) {
+		function ignore(result) {}
+		flag = (flag) ? true : false;
+		chrome.serial.setControlSignals(GP_serialPortID, { dtr: dtrFlag, rts: rtsFlag }, ignore);
+	}
+}
+
 // File read/write
 
 function hasChromeFilesystem() {

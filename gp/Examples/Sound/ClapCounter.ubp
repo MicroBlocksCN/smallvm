@@ -19,7 +19,7 @@ forever {
 }
 }
 
-script 66 368 {
+script 66 367 {
 comment 'Run this loop while talking (but not clapping) to
 get an estimate of the minimum clap threshold'
 turnOnMicrophone
@@ -35,18 +35,18 @@ script 266 1276 (guessClapThreshold)
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -87,13 +87,13 @@ version 1 3
 description 'Microphone, loudness, and clap counting support for boards with built in microphones. The microphone block usually reports values between -512 and 511, with zero for silence. However, very loud sounds may exceed that range on some boards. On the micro:bit v2, the microphone must be turned on before use.'
 variables _clapThreshold _loudnessSamples 
 
-	spec 'r' '[sensors:microphone]' 'microphone'
-	spec ' ' 'turnOnMicrophone' 'turn on microphone'
-	spec 'r' 'loudness' 'loudness'
-	spec 'r' 'clapCount' 'clap count'
-	spec ' ' 'setClapThreshold' 'set clap threshold _' 'auto' 200
-	spec 'r' 'guessClapThreshold' 'estimate clap threshold'
-	spec ' ' '_loudnessLoop' '_loudnessLoop'
+  spec 'r' '[sensors:microphone]' 'microphone'
+  spec ' ' 'turnOnMicrophone' 'turn on microphone'
+  spec 'r' 'loudness' 'loudness'
+  spec 'r' 'clapCount' 'clap count'
+  spec ' ' 'setClapThreshold' 'set clap threshold _' 'auto' 200
+  spec 'r' 'guessClapThreshold' 'estimate clap threshold'
+  spec ' ' '_loudnessLoop' '_loudnessLoop'
 
 to '_loudnessLoop' {
   comment 'Sample microphone at ~2000 samples/sec, keeping the most recent N samples.'

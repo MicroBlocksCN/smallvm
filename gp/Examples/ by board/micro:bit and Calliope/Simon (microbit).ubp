@@ -4,10 +4,10 @@ version 1 1
 description ''
 variables 'current index' letters 
 
-	spec ' ' 'initialize letters' 'initialize letters'
-	spec 'r' 'correct guess' 'correct guess at _' 'auto' '10'
-	spec 'r' 'wrong guess' 'wrong guess at _' 'auto' '10'
-	spec ' ' 'map-to-display' 'map-to-display _' 'auto' '10'
+  spec ' ' 'initialize letters' 'initialize letters'
+  spec 'r' 'correct guess' 'correct guess at _' 'auto' '10'
+  spec 'r' 'wrong guess' 'wrong guess at _' 'auto' '10'
+  spec ' ' 'map-to-display' 'map-to-display _' 'auto' '10'
 
 to 'correct guess' index {
   return (or (and (buttonA) ((at index letters) == 'A')) (and (buttonB) ((at index letters) == 'B')))
@@ -63,7 +63,7 @@ waitMillis 500
 sendBroadcast 'draw sequence'
 }
 
-script 49 56 {
+script 48 56 {
 comment 'This is the "Simon" memory game for the
 BBC micro:bit.'
 }
@@ -73,7 +73,7 @@ whenStarted
 sendBroadcast 'go!'
 }
 
-script 194 111 {
+script 192 111 {
 whenBroadcastReceived 'go!'
 'initialize letters'
 'current index' = 1
@@ -102,18 +102,18 @@ if ((v 'current index') > 10) {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -155,15 +155,15 @@ tags tone sound music audio note speaker
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
-	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
-	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
-	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
-	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
-	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
-	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
-	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
-	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+  spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+  spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+  spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+  spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
