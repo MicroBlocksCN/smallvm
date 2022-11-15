@@ -1065,6 +1065,7 @@ static void processShortMessage() {
 	case deleteAllCodeMsg:
 		deleteAllChunks();
 		memClear();
+		primMBDisplayOff(0, NULL);
 		break;
 	case systemResetMsg:
 		// non-zero chunkIndex is used for debugging operations
