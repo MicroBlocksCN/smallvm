@@ -248,7 +248,11 @@ method addTipBar MicroBlocksEditor {
 // project operations
 
 method downloadInProgress MicroBlocksEditor {
-  if isDownloading { inform 'Downloading code to board. Please wait.' }
+  if isDownloading {
+    existingPrompt = (findMorph 'Prompter')
+    if (notNil existingPrompt) { cancel (handler existingPrompt) }
+    inform 'Downloading code to board. Please wait.' nil nil true
+  }
   return isDownloading
 }
 
