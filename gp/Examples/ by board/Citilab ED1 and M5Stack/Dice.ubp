@@ -3,8 +3,8 @@ author unknown
 version 1 0 
 description ''
 
-	spec ' ' 'dice' 'draw die _' 'auto' 6
-	spec ' ' 'draw dot x' 'draw dot x _ y _' 'auto auto' 10 '10'
+  spec ' ' 'dice' 'draw die _' 'auto' 6
+  spec ' ' 'draw dot x' 'draw dot x _ y _' 'auto auto' 10 '10'
 
 to dice num {
   '[tft:roundedRect]' 16 16 96 96 8 -1 true
@@ -38,7 +38,7 @@ Wait for the ED1 to say "Shake!", then
 shake it to roll a die.'
 }
 
-script 49 112 {
+script 48 112 {
 whenStarted
 repeat 12 {
   local 'ignore' (motion)
@@ -72,19 +72,19 @@ forever {
 
 module Motion Input
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags acceleration steps motion accelerometer 
 description 'Count steps and detect motion in boards with a built-in accelerometer, such as the micro:bit, the Calliope, the Citilab ED1 or the Circuit Playground Express.'
 variables _motionSamples _stepCount _stepThreshold _stepMotionHigh 
 
-	spec ' ' 'startStepCounter' 'start step counter'
-	spec 'r' 'stepCount' 'step count'
-	spec ' ' 'clearStepCount' 'clear step count'
-	spec ' ' 'setStepThreshold' 'set step threshold _ (0-50)' 'auto' 10
-	spec 'r' 'motion' 'motion'
-	spec ' ' '_addSample' '_addSample _' 'auto' '10'
-	spec 'r' '_recentAverage' '_recentAverage'
-	spec ' ' '_stepCounterLoop' '_stepCounterLoop'
+  spec ' ' 'startStepCounter' 'start step counter'
+  spec 'r' 'stepCount' 'step count'
+  spec ' ' 'clearStepCount' 'clear step count'
+  spec ' ' 'setStepThreshold' 'set step threshold _ (0-50)' 'auto' 10
+  spec 'r' 'motion' 'motion'
+  spec ' ' '_addSample' '_addSample _' 'auto' '10'
+  spec 'r' '_recentAverage' '_recentAverage'
+  spec ' ' '_stepCounterLoop' '_stepCounterLoop'
 
 to '_addSample' s {
   if (0 == _motionSamples) {_motionSamples = (newList 12)}
@@ -169,20 +169,20 @@ version 1 2
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
-	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
-	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
-	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
-	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
-	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
-	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
-	spec 'r' 'randomColor' 'random color'
-	spec 'r' '[tft:getWidth]' 'TFT width'
-	spec 'r' '[tft:getHeight]' 'TFT height'
-	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
-	spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
+  spec 'r' 'randomColor' 'random color'
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))
@@ -211,15 +211,15 @@ tags tone sound music audio note speaker
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
-	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
-	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
-	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
-	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
-	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
-	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
-	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
-	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+  spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+  spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+  spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+  spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
