@@ -1200,8 +1200,8 @@ method showMenu Page aMenu x y {
   activeMenu = aMenu
 }
 
-to inform details title yesLabel {
-	return (inform (global 'page') details title yesLabel)
+to inform details title yesLabel nonBlocking {
+	return (inform (global 'page') details title yesLabel nonBlocking)
 }
 
 method closeUnclickedMenu Page aHandler {
