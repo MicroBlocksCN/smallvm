@@ -1,6 +1,6 @@
 module HuskyLens Input
 author 'Murat Akguller'
-version 1 0 
+version 1 1 
 choices requestByMenu Blocks Arrows 
 choices requestedMenu Blocks Arrows 'Learned Blocks' 'Learned Arrows' 
 choices changeAlgoMenu 'Color Recog' 'Face Recog' 'Line Track' 'Obj Classify' 'Obj Recog' 'Obj Track' 'Tag Recog' 
@@ -10,18 +10,20 @@ choices doMenu Knock 'Save Picture' 'Save Screenshot' 'Forget Learned Objects' '
 choices getArrowMenu 'X origin' 'Y origin' 'X target' 'Y target' id 
 choices getBlockMenu 'X center' 'Y center' Width Height id 
 choices requestPhotoMenu 'Save Picture' 'Save Screenshot' 
-description ''
+description 'Integrates DFROBOT HuskyLens camera into MicroBlocks.
+Full functionality is supported.
+Changes: combine init routines.
+'
 variables HuskyData HL_I2C_address _buffer _cmd_list _get_lists _bufferdata HL_initalized _currAlgo _algo_list 
 
-  spec ' ' 'HL initialize' 'HL initialize'
-  spec ' ' 'HL set I2C address(hex) _' 'HL set I2C address(hex) _' 'str' '32'
+  spec ' ' 'HL init & set I2Caddr' 'HL init & set I2Caddr (hex) _' 'str' '32'
   spec ' ' 'HL change algorithm' 'HL change algorithm _' 'menu.changeAlgoMenu' 'Face Recog'
   spec 'r' 'HL do' 'HL do _' 'menu.doMenu' 'Knock'
   spec ' ' 'HL request' 'HL request _' 'menu.requestedMenu' 'Blocks'
   spec ' ' 'HL request by ID' 'HL request by ID _ Object _' 'num menu.requestByMenu' 1 'Blocks'
-  spec 'r' 'HL get info' 'HL get info _' 'menu.getInfoMenu' 'Object Count'
-  spec 'r' 'HL get block' 'HL get block _ block index _' 'menu.getBlockMenu num' 'X center' 1
   spec 'r' 'HL get arrow' 'HL get arrow _ arrow index _' 'menu.getArrowMenu num' 'X origin' 1
+  spec 'r' 'HL get block' 'HL get block _ block index _' 'menu.getBlockMenu num' 'X center' 1
+  spec 'r' 'HL get info' 'HL get info _' 'menu.getInfoMenu' 'Object Count'
   spec 'r' 'HL learn current object with ID' 'HL learn current object with ID _' 'num' 1
   spec 'r' 'HL learn object with ID' 'HL learn object with ID _ Name _' 'num str' 1 'name'
   spec 'r' 'HL set CustomName' 'HL set CustomName _ for a learned object with ID _' 'str num' 'name' 1
@@ -102,8 +104,9 @@ to 'HL get info' infoDetails {
   return ((at ('[data:find]' infoDetails (at 3 _get_lists)) split_data) + 0)
 }
 
-to 'HL initialize' {
+to 'HL init & set I2Caddr' addr {
   '_HLcmd_init'
+  HL_I2C_address = (hexToInt addr)
   _get_lists = ('[data:makeList]' ('[data:makeList]' 'B' 'X center' 'Y center' 'Width' 'Height' 'id') ('[data:makeList]' 'A' 'X origin' 'Y origin' 'X target' 'Y target' 'id') ('[data:makeList]' 'I' 'Object Count' 'Learned Count' 'Frame Number'))
   _algo_list = ('[data:makeList]' 'Color Recog' 4 'Face Recog' 0 'Line Track' 3 'Obj Classify' 6 'Obj Recog' 2 'Obj Track' 1 'Tag Recog' 5)
   HuskyData = ('[data:makeList]')
@@ -166,10 +169,6 @@ to 'HL set CustomName' name id {
   waitUntil ('_HLcheck')
   '_HLgetdata_from_cmd'
   return ('_HLdecode_bufferdata' _bufferdata)
-}
-
-to 'HL set I2C address(hex) _' addr {
-  HL_I2C_address = (hexToInt addr)
 }
 
 to 'HL write' text x y {

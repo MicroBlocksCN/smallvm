@@ -17,6 +17,7 @@ to smallRuntime aScripter {
 defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer
 
 method scripter SmallRuntime { return scripter }
+method serialPortOpen SmallRuntime { return (notNil port) }
 
 method initialize SmallRuntime aScripter {
 	scripter = aScripter
@@ -868,6 +869,7 @@ method justConnected SmallRuntime {
 	sendStopAll this
 	clearRunningHighlights this
 	setDefaultSerialDelay this
+	abortFileTransfer this
 	processMessages this // process incoming version message
 	if readFromBoard {
 		readFromBoard = false
@@ -1049,6 +1051,7 @@ method extractBoardType SmallRuntime versionString {
 }
 
 method versionReceived SmallRuntime versionString {
+	if (isNil versionString) { return } // bad version message
 	if (isNil vmVersion) { // first time: record and check the version number
 		vmVersion = (extractVersionNumber this versionString)
 		boardType = (extractBoardType this versionString)
@@ -2028,7 +2031,7 @@ method writeFileToBoard SmallRuntime srcFileName {
 	sendFileData this targetFileName fileData
 }
 
-// busy tells the MicroBlocksEditor to suspect board communciations during file transfers
+// busy tells the MicroBlocksEditor to suspend board communciations during file transfers
 method busy SmallRuntime { return (notNil fileTransferProgress) }
 
 method fileTransferProgress SmallRuntime actionLabel { return (join '' fileTransferProgress '% ' (localized actionLabel)) }
@@ -2341,28 +2344,30 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
+		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0') {
+			adaFruitResetMessage this
 		} (isOneOf boardType 'RP2040' 'Pico W') {
 			rp2040ResetMessage this
-			return
-		} else {
-			disconnected = true
-			closePort this
-			menu = (menu 'Select board type:' this)
-			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') {
-				eraseFlashFlag = true
-				addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
+		}
+	} else {
+		disconnected = true
+		closePort this
+		menu = (menu 'Select board type:' this)
+		if (not eraseFlashFlag) {
+			for boardName (array 'microbit' 'Calliope mini') {
+				addItem menu boardName (action 'noBoardFoundMessage' this)
 			}
+			addLine menu
+		}
+		for boardName (array 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266' ) {
+			addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
+		}
+		if (not eraseFlashFlag) {
 			addLine menu
 			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
 			addItem menu 'RP2040 (Pico)' (action 'rp2040ResetMessage' this)
-			popUpAtHand menu (global 'page')
 		}
-	} else {
-		(inform (join
-			(localized 'No boards found; is your board plugged in?') (newline) (newline)
-			(localized 'For Adafruit boards, double-click reset button and try again.') (newline) (newline)
-			(localized 'For Raspberry Pi Pico boards, connect USB cable while holding down the white BOOTSEL button and try again.'))
-			'No boards found')
+		popUpAtHand menu (global 'page')
 	}
 }
 
@@ -2483,47 +2488,57 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 
 method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	if ('micro:bit' == boardType) {
-		copyVMToBoardInBrowser this 'micro:bit'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'micro:bit'
 	} ('micro:bit v2' == boardType) {
-		copyVMToBoardInBrowser this 'micro:bit v2'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'micro:bit v2'
 	} ('Calliope' == boardType) {
-		copyVMToBoardInBrowser this 'Calliope mini'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Calliope mini'
 	} ('CircuitPlayground' == boardType) {
-		copyVMToBoardInBrowser this 'Circuit Playground Express'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Express'
 	} ('CircuitPlayground Bluefruit' == boardType) {
-		copyVMToBoardInBrowser this 'Circuit Playground Bluefruit'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
-		copyVMToBoardInBrowser this 'Clue'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Clue'
 	} (and
 		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
 		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 	} else {
-		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this) true)
-		addItem menu 'micro:bit'
-		addItem menu 'Calliope mini'
-		addLine menu
-		addItem menu 'Citilab ED1'
-		addLine menu
-		addItem menu 'RP2040 (Pico)'
-		addItem menu 'Pico W (WiFi)'
-		addLine menu
-		addItem menu 'Circuit Playground Express'
-		addItem menu 'Circuit Playground Bluefruit'
-		addItem menu 'Clue'
-		addItem menu 'Metro M0'
-		addLine menu
-		addItem menu 'M5Stack-Core'
-		addItem menu 'M5StickC'
-		addItem menu 'M5StickC+'
-		addItem menu 'M5Atom-Matrix'
-		addItem menu 'ESP32'
-		addItem menu 'ESP8266'
+		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this eraseFlashFlag downloadLatestFlag) true)
+		if eraseFlashFlag {
+			addItem menu 'Citilab ED1'
+			addItem menu 'M5Stack-Core'
+			addItem menu 'M5StickC'
+			addItem menu 'M5StickC+'
+			addItem menu 'M5Atom-Matrix'
+			addItem menu 'ESP32'
+			addItem menu 'ESP8266'
+		} else {
+			addItem menu 'micro:bit'
+			addItem menu 'Calliope mini'
+			addLine menu
+			addItem menu 'Citilab ED1'
+			addLine menu
+			addItem menu 'RP2040 (Pico)'
+			addItem menu 'Pico W (WiFi)'
+			addLine menu
+			addItem menu 'Circuit Playground Express'
+			addItem menu 'Circuit Playground Bluefruit'
+			addItem menu 'Clue'
+			addItem menu 'Metro M0'
+			addLine menu
+			addItem menu 'M5Stack-Core'
+			addItem menu 'M5StickC'
+			addItem menu 'M5StickC+'
+			addItem menu 'M5Atom-Matrix'
+			addItem menu 'ESP32'
+			addItem menu 'ESP8266'
+		}
 		popUpAtHand menu (global 'page')
 	}
 }
 
-method flashVMInBrowser SmallRuntime boardName {
+method flashVMInBrowser SmallRuntime boardName eraseFlashFlag downloadLatestFlag {
 	if (isNil port) {
 		// prompt user to open the serial port
 		selectPort this
@@ -2537,13 +2552,13 @@ method flashVMInBrowser SmallRuntime boardName {
 	}
 	if (isOpenSerialPort 1) {
 		port = 1
-		flashVM this boardName false false
+		flashVM this boardName eraseFlashFlag downloadLatestFlag
 	}
 }
 
-method copyVMToBoardInBrowser SmallRuntime boardName {
+method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boardName {
 	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266') {
-		flashVMInBrowser this boardName
+		flashVMInBrowser this boardName eraseFlashFlag downloadLatestFlag
 		return
 	}
 
@@ -2629,6 +2644,10 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	}
 }
 
+method noBoardFoundMessage SmallRuntime {
+	inform (localized 'No boards found; is your board plugged in?') 'No boards found'
+}
+
 method adaFruitResetMessage SmallRuntime {
 	inform (localized 'For Adafruit boards, double-click reset button and try again.')
 }
@@ -2710,7 +2729,6 @@ method removeFlasher SmallRuntime {
 }
 
 method flashVM SmallRuntime boardName eraseFlashFlag downloadLatestFlag {
-	stopAndSyncScripts this
 	if ('Browser' == (platform)) {
 		disconnected = true
 		flasherPort = port

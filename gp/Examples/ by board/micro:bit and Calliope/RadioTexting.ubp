@@ -4,9 +4,9 @@ version 1 0
 description ''
 variables msg2send letter alphabet 'sending-flag' 
 
-	spec ' ' 'blink' 'blink'
-	spec ' ' 'letters' 'letters'
-	spec ' ' 'flash' 'flash'
+  spec ' ' 'blink' 'blink'
+  spec ' ' 'letters' 'letters'
+  spec ' ' 'flash' 'flash'
 
 to blink {
   setUserLED true
@@ -78,7 +78,7 @@ if (not sending-flag) {
 }
 }
 
-script 83 330 {
+script 82 330 {
 whenButtonPressed 'A'
 comment 'Keep pushing until desired letter shown'
 displayCharacter (at letter alphabet)
@@ -128,7 +128,7 @@ msg2send = ''
 '[display:mbDisplay]' 4291652
 }
 
-script 83 978 {
+script 82 978 {
 to letters {}
 }
 
@@ -152,13 +152,13 @@ tags tilt acceleration light sensor
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[sensors:acceleration]' 'acceleration'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
-	spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
 to '_setAccelRange' n {
   '[sensors:setAccelerometerRange]' (0 + n)
@@ -172,12 +172,12 @@ tags event button double long press
 description 'Provides blocks to detect press, long press and double press events on buttons.'
 variables _buttons 
 
-	spec 'r' 'button double pressed' 'button _ double pressed' 'auto' 'A'
-	spec 'r' 'button long pressed' 'button _ long pressed' 'auto' 5
-	spec 'r' 'button pressed' 'button _ pressed' 'auto' 5
-	spec 'r' '_button' '_button _' 'auto' 10
-	spec ' ' '_updateButtons' '_updateButtons'
-	spec 'r' '_read button' '_read button _' 'auto' 10
+  spec 'r' 'button double pressed' 'button _ double pressed' 'auto' 'A'
+  spec 'r' 'button long pressed' 'button _ long pressed' 'auto' 5
+  spec 'r' 'button pressed' 'button _ pressed' 'auto' 5
+  spec 'r' '_button' '_button _' 'auto' 10
+  spec ' ' '_updateButtons' '_updateButtons'
+  spec 'r' '_read button' '_read button _' 'auto' 10
 
 to '_button' 'pin or name' {
   '_updateButtons'
@@ -272,18 +272,18 @@ to 'button pressed' 'pin or name' {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -324,19 +324,19 @@ version 1 2
 tags radio communication messaging network 
 description 'Send and receive messages between micro:bit boards via their built-in radio system.'
 
-	spec ' ' '[radio:sendInteger]' 'radio send number _' 'num' 123
-	spec ' ' '[radio:sendString]' 'radio send string _' 'str' 'Hello!'
-	spec ' ' '[radio:sendPair]' 'radio send pair _ = _' 'str num' 'light' 10
-	spec 'r' '[radio:messageReceived]' 'radio message received?'
-	spec 'r' '[radio:receivedInteger]' 'radio last number'
-	spec 'r' '[radio:receivedString]' 'radio last string'
-	spec ' ' '[radio:setGroup]' 'radio set group _ (0-255)' 'num' 0
-	spec ' ' '[radio:setPower]' 'radio set power (0-7) _' 'num' 4
-	spec 'r' '_signalStrength' '_radio last signal strength'
-	spec 'r' '_radioLastSenderID' '_radio last sender ID'
-	spec 'r' '_radioMyID' '_radio my ID'
-	spec 'r' '_receivedMessageType' '_radio last message type'
-	spec ' ' '_setChannel' '_radio set channel (0-83) _' 'num' 7
+  spec ' ' '[radio:sendInteger]' 'radio send number _' 'num' 123
+  spec ' ' '[radio:sendString]' 'radio send string _' 'str' 'Hello!'
+  spec ' ' '[radio:sendPair]' 'radio send pair _ = _' 'str num' 'light' 10
+  spec 'r' '[radio:messageReceived]' 'radio message received?'
+  spec 'r' '[radio:receivedInteger]' 'radio last number'
+  spec 'r' '[radio:receivedString]' 'radio last string'
+  spec ' ' '[radio:setGroup]' 'radio set group _ (0-255)' 'num' 0
+  spec ' ' '[radio:setPower]' 'radio set power (0-7) _' 'num' 4
+  spec 'r' '_signalStrength' '_radio last signal strength'
+  spec 'r' '_radioLastSenderID' '_radio last sender ID'
+  spec 'r' '_radioMyID' '_radio my ID'
+  spec 'r' '_receivedMessageType' '_radio last message type'
+  spec ' ' '_setChannel' '_radio set channel (0-83) _' 'num' 7
 
 to '_radioLastSenderID' {
   return ('[radio:lastMessageID]')

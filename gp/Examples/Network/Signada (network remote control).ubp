@@ -4,22 +4,22 @@ version 1 0
 description 'Signada is a network protocol for remote control of microcontrollers'
 variables password SSID mode event 'HTTP portal' 
 
-	spec ' ' 'start WebSocket server' 'start WebSocket server'
-	spec ' ' 'handle HTTP portal' 'handle HTTP portal'
-	spec 'r' 'configPage' 'config page'
-	spec ' ' 'connection' 'check credentials and connect'
-	spec ' ' 'extract credentials from path' 'extract credentials from _' 'auto' ''
-	spec ' ' 'savewifi' 'save WiFi SSID _ password _ mode _' 'auto auto auto' '' '' '10'
-	spec ' ' 'showConnectionInfo' 'show connection info'
-	spec ' ' 'process event' 'process event'
-	spec ' ' 'set display' 'set display _' 'auto' ''
-	spec ' ' 'clear' 'clear'
-	spec 'r' 'get pin' 'get pin _ _' 'auto auto' '10' '10'
-	spec 'r' 'sensor' 'sensor _' 'auto' 'acceleration'
-	spec ' ' 'set led' 'set led _ _ _' 'auto auto bool' 10 10 true
-	spec ' ' 'set pin' 'set pin _ _ _' 'auto auto auto' '10' 'analog' '10'
-	spec ' ' 'text' 'text _ _ _ _ _' 'auto auto auto color auto' '10' '10' '10' nil '10'
-	spec 'r' 'tilt' 'tilt _' 'auto' 'x'
+  spec ' ' 'start WebSocket server' 'start WebSocket server'
+  spec ' ' 'handle HTTP portal' 'handle HTTP portal'
+  spec 'r' 'configPage' 'config page'
+  spec ' ' 'connection' 'check credentials and connect'
+  spec ' ' 'extract credentials from path' 'extract credentials from _' 'auto' ''
+  spec ' ' 'savewifi' 'save WiFi SSID _ password _ mode _' 'auto auto auto' '' '' '10'
+  spec ' ' 'showConnectionInfo' 'show connection info'
+  spec ' ' 'process event' 'process event'
+  spec ' ' 'set display' 'set display _' 'auto' ''
+  spec ' ' 'clear' 'clear'
+  spec 'r' 'get pin' 'get pin _ _' 'auto auto' '10' '10'
+  spec 'r' 'sensor' 'sensor _' 'auto' 'acceleration'
+  spec ' ' 'set led' 'set led _ _ _' 'auto auto bool' 10 10 true
+  spec ' ' 'set pin' 'set pin _ _ _' 'auto auto auto' '10' 'analog' '10'
+  spec ' ' 'text' 'text _ _ _ _ _' 'auto auto auto color auto' '10' '10' '10' nil '10'
+  spec 'r' 'tilt' 'tilt _' 'auto' 'x'
 
 to clear {
   '[display:mbDisplayOff]'
@@ -270,13 +270,13 @@ tags tilt acceleration light sensor
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[sensors:acceleration]' 'acceleration'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
-	spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
 to '_setAccelRange' n {
   '[sensors:setAccelerometerRange]' (0 + n)
@@ -290,14 +290,14 @@ tags button capacitive ed1
 description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
 variables _ED1_buttons_init '_capacitive threshold' 
 
-	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-	spec 'r' 'OK button' 'button OK'
-	spec 'r' 'cancel button' 'button X'
-	spec 'r' 'up button' 'button up'
-	spec 'r' 'down button' 'button down'
-	spec 'r' 'left button' 'button left'
-	spec 'r' 'right button' 'button right'
-	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
+  spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
+  spec 'r' 'OK button' 'button OK'
+  spec 'r' 'cancel button' 'button X'
+  spec 'r' 'up button' 'button up'
+  spec 'r' 'down button' 'button down'
+  spec 'r' 'left button' 'button left'
+  spec 'r' 'right button' 'button right'
+  spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
 
 to 'OK button' {
   '_ED1_buttons_init'
@@ -350,12 +350,12 @@ description 'Provides blocks to control 28BYJ-48 stepper motors, like the ones i
 '
 variables _ED1_stepper_init _ED1_CW1 _ED1_CW2 _ED1_CCW1 _ED1_CCW2 _ED1_motor_running _ED1_exp_register 
 
-	spec ' ' 'motor step' 'move motor _ _ steps _' 'auto auto menu.directions' 1 '128' 'clockwise'
-	spec ' ' 'move motor ' 'move motor 1 _ and motor 2 _ _ steps' 'menu.directions menu.directions auto' 'clockwise' 'counter-clockwise' '64'
-	spec ' ' 'motor angle' 'move motor _ angle _ °' 'auto auto' '1' '-90'
-	spec ' ' 'motor turns' 'move motor _ _ complete turns' 'auto auto' '1' '3'
-	spec ' ' '_ED1_stepper_init' '_ED1_stepper_init'
-	spec ' ' 'stop steppers' 'stop steppers'
+  spec ' ' 'motor step' 'move motor _ _ steps _' 'auto auto menu.directions' 1 '128' 'clockwise'
+  spec ' ' 'move motor ' 'move motor 1 _ and motor 2 _ _ steps' 'menu.directions menu.directions auto' 'clockwise' 'counter-clockwise' '64'
+  spec ' ' 'motor angle' 'move motor _ angle _ °' 'auto auto' '1' '-90'
+  spec ' ' 'motor turns' 'move motor _ _ complete turns' 'auto auto' '1' '3'
+  spec ' ' '_ED1_stepper_init' '_ED1_stepper_init'
+  spec ' ' 'stop steppers' 'stop steppers'
 
 to '_ED1_stepper_init' {
   if (_ED1_stepper_init == 0) {
@@ -462,21 +462,22 @@ to 'stop steppers' {
 
 module Files Data
 author MicroBlocks
-version 1 1 
+version 1 2 
 tags data esp 
-description 'Flash file system operations. Currently supports the SPIFFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
+description 'Flash file system operations. Currently supports the LittleFS file system on ESP8266 and ESP32 boards. The GnuBlocks virtual machine (Linux and Raspberry Pi) supports the native system.'
 
-	spec ' ' '[file:open]' 'open file _' 'str'
-	spec ' ' '[file:close]' 'close file _' 'str'
-	spec ' ' '[file:delete]' 'delete file _' 'str'
-	spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
-	spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
-	spec 'r' '[file:endOfFile]' 'end of file _' 'str'
-	spec 'r' '[file:readLine]' 'next line of file _' 'str'
-	spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
-	spec 'r' 'file names' 'file names : in directory _' 'str'
-	spec 'r' '[file:fileSize]' 'size of file _' 'str'
-	spec 'r' '[file:systemInfo]' 'file system info'
+  spec ' ' '[file:open]' 'open file _' 'str'
+  spec ' ' '[file:close]' 'close file _' 'str'
+  spec ' ' '[file:delete]' 'delete file _' 'str'
+  spec ' ' '[file:appendLine]' 'append line _ to file _' 'str str'
+  spec ' ' '[file:appendBytes]' 'append bytes _ to file _' 'str str'
+  spec 'r' '[file:endOfFile]' 'end of file _' 'str'
+  spec 'r' '[file:readLine]' 'next line of file _' 'str'
+  spec 'r' '[file:readBytes]' 'next _ bytes of file _ : starting at _' 'num str num' 100 '' 0
+  spec 'r' '[file:readInto]' 'read into _ from file _' 'str str' 'a ByteArray' ''
+  spec 'r' 'file names' 'file names : in directory _' 'str'
+  spec 'r' '[file:fileSize]' 'size of file _' 'str'
+  spec 'r' '[file:systemInfo]' 'file system info'
 
 to 'file names' dir {
   '[file:startList]' dir
@@ -497,15 +498,15 @@ depends WiFi
 tags http network 
 description 'Create an HTTP server in MicroBlocks. You can use this library to allow remote control for your Wifi-enabled board.'
 
-	spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _ : port _' 'bool num' false 8080
-	spec 'r' 'request method' 'method of request _' 'str' ''
-	spec 'r' 'path of request' 'path of request _' 'str' ''
-	spec 'r' 'headers of request' 'headers of request _' 'str' ''
-	spec 'r' 'body of request' 'body of request _' 'str' ''
-	spec 'r' 'content length of request' 'content length of request _' 'str' ''
-	spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP server request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain'
-	spec 'r' '_endOfHeaders' '_end of headers _' 'str'
-	spec 'r' '_toString' '_toString _' 'auto' 'abc'
+  spec 'r' '[net:httpServerGetRequest]' 'HTTP server request : binary data _ : port _' 'bool num' false 8080
+  spec 'r' 'request method' 'method of request _' 'str' ''
+  spec 'r' 'path of request' 'path of request _' 'str' ''
+  spec 'r' 'headers of request' 'headers of request _' 'str' ''
+  spec 'r' 'body of request' 'body of request _' 'str' ''
+  spec 'r' 'content length of request' 'content length of request _' 'str' ''
+  spec ' ' '[net:respondToHttpRequest]' 'respond _ to HTTP server request : with body _ : and headers _' 'str str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain'
+  spec 'r' '_endOfHeaders' '_end of headers _' 'str'
+  spec 'r' '_toString' '_toString _' 'auto' 'abc'
 
 to '_endOfHeaders' request {
   return ('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) request)
@@ -568,25 +569,25 @@ version 1 0
 tags data json network 
 description 'Very fast and efficient primitives to parse JSON strings.'
 
-	spec 'r' '[misc:jsonGet]' 'json _ . _' 'str str' '{ "x": 1,  "y": [41, 42, 43] }' 'y.2'
-	spec 'r' '[misc:jsonCount]' 'json count _ . _' 'str str' '[1, [4, 5, 6, 7], 3]' ''
-	spec 'r' '[misc:jsonValueAt]' 'json value _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2
-	spec 'r' '[misc:jsonKeyAt]' 'json key _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2
+  spec 'r' '[misc:jsonGet]' 'json _ . _' 'str str' '{ "x": 1,  "y": [41, 42, 43] }' 'y.2'
+  spec 'r' '[misc:jsonCount]' 'json count _ . _' 'str str' '[1, [4, 5, 6, 7], 3]' ''
+  spec 'r' '[misc:jsonValueAt]' 'json value _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2
+  spec 'r' '[misc:jsonKeyAt]' 'json key _ . _ at _' 'str str num' '{ "x": 1,  "y": 42 }' '' 2
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -627,20 +628,20 @@ version 1 2
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
-	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
-	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
-	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
-	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
-	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
-	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
-	spec 'r' 'randomColor' 'random color'
-	spec 'r' '[tft:getWidth]' 'TFT width'
-	spec 'r' '[tft:getHeight]' 'TFT height'
-	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
-	spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
+  spec 'r' 'randomColor' 'random color'
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))
@@ -669,15 +670,15 @@ tags tone sound music audio note speaker
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
-	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
-	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
-	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
-	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
-	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
-	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
-	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
-	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+  spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+  spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+  spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+  spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave
@@ -820,12 +821,12 @@ version 1 1
 tags websockets network 
 description 'Blocks to build your own (very) simple websockets server.'
 
-	spec ' ' 'start WebSocket server' 'start WebSocket server'
-	spec 'r' '[net:webSocketLastEvent]' 'last WebSocket event'
-	spec 'r' 'ws client id' 'client ID for WebSocket event _' 'str' ''
-	spec 'r' 'ws event payload' 'payload for WebSocket event _' 'str' ''
-	spec 'r' 'ws event type' 'type of WebSocket event _' 'str' ''
-	spec ' ' '[net:webSocketSendToClient]' 'send _ to WebSocket client _' 'str num' 'Hello, Client!' 0
+  spec ' ' 'start WebSocket server' 'start WebSocket server'
+  spec 'r' '[net:webSocketLastEvent]' 'last WebSocket event'
+  spec 'r' 'ws client id' 'client ID for WebSocket event _' 'str' ''
+  spec 'r' 'ws event payload' 'payload for WebSocket event _' 'str' ''
+  spec 'r' 'ws event type' 'type of WebSocket event _' 'str' ''
+  spec ' ' '[net:webSocketSendToClient]' 'send _ to WebSocket client _' 'str num' 'Hello, Client!' 0
 
 to 'start WebSocket server' {
   if ((getIPAddress) != '0.0.0.0') {
@@ -867,10 +868,10 @@ tags communication network
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
-	spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
-	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
-	spec 'r' 'getIPAddress' 'IP address'
-	spec 'r' '[net:myMAC]' 'MAC address'
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
 
 to getIPAddress {
   return ('[net:myIPAddress]')

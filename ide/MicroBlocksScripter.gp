@@ -1069,6 +1069,7 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 // Library import/export
 
 method importLibrary MicroBlocksScripter {
+  if (downloadInProgress (findProjectEditor)) { return }
   pickLibraryToOpen (action 'importLibraryFromFile' this) lastLibraryFolder (array '.ubl')
 }
 

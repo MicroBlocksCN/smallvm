@@ -1236,22 +1236,25 @@ Wukong
 悟空扩展板
 
 Wukong set motor _ to _ (-100 to 100)
-设置电机 _ 速度为 _ (-100 ... 100)
+悟空 设置电机 _ 速度为 _ (-100 ... 100)
 
 Wukong stop motor _
-停止电机 _ 
+悟空 停止电机 _ 
 
-Wukong stop all motors
-停止所有电机
+Wukong stop all
+悟空 停止所有电机
 
-Wukong set servo _ to _ (-100 to 100)
-设置 舵机 _ 角度为 _ (-100 ... 100)
+Wukong set servo _ to _ degrees (-90 to 90)
+悟空 设置 舵机 _ 角度为 _ (-90 ... 90)
+
+Wukong set servo _ to speed _ (-100 to 100)
+悟空 设置 舵机 _ 速度为 _ (-100 ... 100)
 
 Wukong set NeoPixels _ _ _ _
-设置 NeoPixel _ _ _ _
+悟空 设置 NeoPixel _ _ _ _
 
 Wukong set LED brightness to _
-设置氛围灯亮度为 _
+悟空 设置氛围灯亮度为 _
 
 ####
 # Joystick:bit
@@ -1292,14 +1295,11 @@ NeZha set continuous rotation servo _ speed to _ %
 HuskyLens
 二哈识图
 
-HL initialize
-初始化二哈
-
-HL set I2C address(hex) _
-二哈设置 I2C 地址 _
+HL init & set I2Caddr (hex) _
+二哈 初始化并设置 I2C 地址 _
 
 HL change algorithm _
-二哈切换算法 _
+二哈 切换算法 _
 
 Color Recog
 颜色识别
@@ -1323,7 +1323,7 @@ Tag Recog
 标签识别
 
 HL do _
-二哈触发 _
+二哈 触发 _
 
 Knock
 敲击
@@ -1347,7 +1347,7 @@ firmware version
 固件版本
 
 HL request _
-二哈请求 _
+二哈 请求 _
 
 Blocks
 方框
@@ -1362,7 +1362,7 @@ Learned Arrows
 学习到的箭头
 
 HL request by ID _ Object _
-二哈请求 ID _ 对象 _
+二哈 请求 ID _ 对象 _
 
 Blocks
 方框
@@ -1371,7 +1371,7 @@ Arrows
 箭头
 
 HL get info _
-二哈获取信息 _
+二哈 获取信息 _
 
 Object Count
 对象计数
@@ -1383,7 +1383,7 @@ Frame Number
 帧数
 
 HL get block _ block index _
-二哈获取方框 _ 索引方框 _
+二哈 获取方框 _ 索引方框 _
 
 X center
 X 中心
@@ -1401,7 +1401,7 @@ id
 id
 
 HL get arrow _ arrow index _
-二哈获取方框 _ 索引箭头 _
+二哈 获取方框 _ 索引箭头 _
 
 X origin
 X 起点
@@ -1419,19 +1419,19 @@ id
 id
 
 HL learn current object with ID _
-二哈当前学习对象的 ID _
+二哈 当前学习对象的 ID _
 
 HL learn object with ID _ Name _
-二哈学习对象的 ID _ 名称 _
+二哈 学习对象的 ID _ 名称 _
 
 HL set CustomName _ for a learned object with ID _
-二哈设置自定义名称 _ 给已学习对象 ID _
+二哈 设置自定义名称 _ 给已学习对象 ID _
 
 HL write _ at x _ y _
-二哈显示文字 _ 在 x _ y _
+二哈 显示文字 _ 在 x _ y _
 
 HL file _ file# _
-二哈存档 _ 文件 _
+二哈 存档 _ 文件 _
 
 Save Model
 保存模型

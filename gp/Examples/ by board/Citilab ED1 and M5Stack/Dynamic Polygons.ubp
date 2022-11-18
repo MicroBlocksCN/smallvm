@@ -4,8 +4,8 @@ version 1 0
 description ''
 variables deco 
 
-	spec ' ' 'polygon' 'polygon _ _ _' 'auto auto auto' 5 100 0
-	spec ' ' 'decoration' 'decoration _' 'auto' 0
+  spec ' ' 'polygon' 'polygon _ _ _' 'auto auto auto' 5 100 0
+  spec ' ' 'decoration' 'decoration _' 'auto' 0
 
 to decoration num {
   local 'x' (_turtleX >> 14)
@@ -40,7 +40,7 @@ deco = (deco % 4)
 waitMillis 200
 }
 
-script 52 55 {
+script 51 54 {
 comment '    By José García Yeste - Citilab
 ===========================
 A cool Turtle library demo!
@@ -72,7 +72,7 @@ forever {
 }
 }
 
-script 505 306 {
+script 504 306 {
 whenButtonPressed 'A'
 setPenToRandomColor
 }
@@ -85,13 +85,13 @@ tags tilt acceleration light sensor
 choices accelerometerRange '1' '2' '4' '8' 
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 
-	spec 'r' '[sensors:tiltX]' 'tilt x'
-	spec 'r' '[sensors:tiltY]' 'tilt y'
-	spec 'r' '[sensors:tiltZ]' 'tilt z'
-	spec 'r' '[sensors:acceleration]' 'acceleration'
-	spec 'r' '[display:lightLevel]' 'light level'
-	spec 'r' '[sensors:temperature]' 'temperature (°C)'
-	spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
+  spec 'r' '[sensors:tiltX]' 'tilt x'
+  spec 'r' '[sensors:tiltY]' 'tilt y'
+  spec 'r' '[sensors:tiltZ]' 'tilt z'
+  spec 'r' '[sensors:acceleration]' 'acceleration'
+  spec 'r' '[display:lightLevel]' 'light level'
+  spec 'r' '[sensors:temperature]' 'temperature (°C)'
+  spec ' ' '_setAccelRange' 'set acceleration range _ g = 100' 'menu.accelerometerRange' '1'
 
 to '_setAccelRange' n {
   '[sensors:setAccelerometerRange]' (0 + n)
@@ -105,14 +105,14 @@ tags button capacitive ed1
 description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
 variables _ED1_buttons_init '_capacitive threshold' 
 
-	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-	spec 'r' 'OK button' 'button OK'
-	spec 'r' 'cancel button' 'button X'
-	spec 'r' 'up button' 'button up'
-	spec 'r' 'down button' 'button down'
-	spec 'r' 'left button' 'button left'
-	spec 'r' 'right button' 'button right'
-	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
+  spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
+  spec 'r' 'OK button' 'button OK'
+  spec 'r' 'cancel button' 'button X'
+  spec 'r' 'up button' 'button up'
+  spec 'r' 'down button' 'button down'
+  spec 'r' 'left button' 'button left'
+  spec 'r' 'right button' 'button right'
+  spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
 
 to 'OK button' {
   '_ED1_buttons_init'
@@ -158,18 +158,18 @@ to 'up button' {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -210,20 +210,20 @@ version 1 2
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
-	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
-	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
-	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
-	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
-	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
-	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
-	spec 'r' 'randomColor' 'random color'
-	spec 'r' '[tft:getWidth]' 'TFT width'
-	spec 'r' '[tft:getHeight]' 'TFT height'
-	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
-	spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
+  spec 'r' 'randomColor' 'random color'
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))
@@ -254,19 +254,19 @@ description 'Draw with turtle geometry on boards with a TFT display, such as the
 '
 variables _turtleX _turtleY _turtleHeading _turtlePenIsDown _turtleColor 
 
-	spec ' ' 'home' 'home'
-	spec ' ' 'move' 'move _' 'auto' '10'
-	spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
-	spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
-	spec ' ' 'pen down' 'pen down'
-	spec ' ' 'pen up' 'pen up'
-	spec ' ' 'set pen color to' 'set pen color to _' 'color'
-	spec ' ' 'setPenToRandomColor' 'set pen to random color'
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' 'clearDisplay' 'fill display with _' 'color'
-	spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
-	spec ' ' 'setHeading' 'point in direction _' 'auto' 0
-	spec ' ' '_turtleNotes' '_turtleNotes'
+  spec ' ' 'home' 'home'
+  spec ' ' 'move' 'move _' 'auto' '10'
+  spec ' ' 'turnBy' 'turn _ degrees' 'auto' 90
+  spec ' ' 'turnFraction' 'turn _ / _ of circle' 'auto auto' 1 4
+  spec ' ' 'pen down' 'pen down'
+  spec ' ' 'pen up' 'pen up'
+  spec ' ' 'set pen color to' 'set pen color to _' 'color'
+  spec ' ' 'setPenToRandomColor' 'set pen to random color'
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' 'clearDisplay' 'fill display with _' 'color'
+  spec ' ' 'go to x' 'go to x _ y _' 'auto auto' '10' '10'
+  spec ' ' 'setHeading' 'point in direction _' 'auto' 0
+  spec ' ' '_turtleNotes' '_turtleNotes'
 
 to '_turtleNotes' {
   comment 'Representation:

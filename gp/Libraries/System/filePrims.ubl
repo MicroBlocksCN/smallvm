@@ -1,8 +1,8 @@
 module 'File Primitives' Data
 author MicroBlocks
-version 1 1
+version 1 2
 tags data esp
-description 'Primitives to access the built-in SPIFFS file system on ESP32 and ESP8266 boards.'
+description 'Primitives to access the built-in file system on ESP32 and ESP8266 boards.'
 
 	// File system primtives.
 
