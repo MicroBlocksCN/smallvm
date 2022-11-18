@@ -116,8 +116,10 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 }
 
 
-// MQTT support
+// MQTT support, untested and disabled for now, until we figure out how to deal
+// with external JS libraries that get minified by the closure compiler...
 
+/*
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	// args[1] is buffer size, which we ignore for Boardie	
 	printf("connecting...\n");
@@ -230,6 +232,15 @@ static OBJ primMQTTUnsub(int argCount, OBJ *args) {
 		return success;
 	}) ? trueObj : falseObj;
 }
+*/
+
+static OBJ primMQTTConnect(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMQTTDisconnect(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMQTTLastEvent(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMQTTPub(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMQTTSub(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMQTTUnsub(int argCount, OBJ *args) { return falseObj; }
 
 static PrimEntry entries[] = {
 	{"hasWiFi", primHasWiFi},
