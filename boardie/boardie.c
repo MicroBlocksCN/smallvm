@@ -91,17 +91,19 @@ void initKeyboardHandler() {
 	EM_ASM_({
 		window.keys = new Map();
 		window.buttons = [];
-		window.buttons[37] = document.querySelector('.btn-37');
-		window.buttons[39] = document.querySelector('.btn-39');
+		window.buttons[37] =
+			window.parent.document.querySelector('[data-button="a"]');
+		window.buttons[39] =
+			window.parent.document.querySelector('[data-button="b"]');
 		window.addEventListener('keydown', function (event) {
 			if (window.buttons[event.keyCode]) {
-				window.buttons[event.keyCode].classList.add('active');
+				window.buttons[event.keyCode].classList.add('--is-active');
 			}
 			window.keys.set(event.keyCode, true);
 		}, false);
 		window.addEventListener('keyup', function (event) {
 			if (window.buttons[event.keyCode]) {
-				window.buttons[event.keyCode].classList.remove('active');
+				window.buttons[event.keyCode].classList.remove('--is-active');
 			}
 			window.keys.set(event.keyCode, false);
 		}, false);
