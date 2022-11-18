@@ -7,6 +7,7 @@ chromeApp/*/gp_wasm.data
 chromeApp/*/gp_wasm.js
 chromeApp/*/gp_wasm.wasm
 chromeApp/MicroBlocks.zip
+chromeApp/webapp/boardie/run_boardie*
 linux+pi/ublockscode
 linux+pi/vm.*
 linux+pi/vm_*
