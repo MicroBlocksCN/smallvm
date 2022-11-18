@@ -649,85 +649,76 @@ GP.boardie = {
 };
 
 function GP_openBoardie() {
-	var header = document.createElement('div'),
-		iframe = document.createElement('iframe'),
-		boardie = GP.boardie;
+    var req = new XMLHttpRequest();
+        boardie = GP.boardie;
 
-	GP_closeSerialPort(); // close serial port if open
+    GP_closeSerialPort(); // close serial port if open
 
-	boardie.element = document.createElement('div');
-	boardie.element.id = 'boardie';
-	boardie.element.style.position = 'absolute';
-	boardie.element.style.zIndex = 999;
-	boardie.element.style.backgroundColor = '#aba';
-	boardie.element.style.border = '1px solid #686';
-	boardie.element.style.borderRadius = '5px';
-	boardie.element.style.top = '10px';
-	boardie.element.style.left = '10px';
+    req.open('GET', 'boardie/boardie.html');
+    req.onreadystatechange = function () {
+        if (req.readyState == 4 && req.status == 200) {
+            boardie.element = document.createElement('div');
+            boardie.element.id = 'boardie';
+            boardie.element.style.position = 'absolute';
+            boardie.element.style.zIndex = 999;
+            boardie.element.style.top = '10px';
+            boardie.element.style.left = '10px';
+            boardie.element.style.cursor = 'grab';
+            boardie.element.innerHTML = req.responseText;
 
-	header.class = 'header';
-	header.innerHTML = '<span>Boardie</span>';
-	header.style.padding = '10px';
-	header.style.cursor = 'move';
-	header.style.zIndex = 1000;
-	header.style.backgroundColor = '#797';
-	header.style.color = '#fff';
-	header.style.marginBottom = '10px';
-	boardie.element.append(header);
+            boardie.iframe = boardie.element.querySelector('iframe');
 
-	iframe.src = 'boardie/boardie.html';
-	iframe.width = 260;
-	iframe.height = 292;
-	iframe.style.border = 0;
-	boardie.iframe = iframe;
-	boardie.element.append(iframe);
+            boardie.element.onclick = function () { boardie.iframe.focus(); }
 
-	makeDraggable(boardie.element);
-	document.body.append(boardie.element);
+            document.body.append(boardie.element);
+            makeDraggable(boardie.element);
 
-	boardie.isOpen = true;
+            boardie.isOpen = true;
+        }
+    };
+
+    req.send();
 };
 
 function makeDraggable (element) {
-	// taken from w3schools (https://www.w3schools.com/howto/howto_js_draggable.asp)
-	var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-	if (document.getElementById(element.id + "header")) {
-		// if present, the header is where you move the DIV from:
-		document.getElementById(element.id + "header").onpointerdown = dragMouseDown;
-	} else {
-		// otherwise, move the DIV from anywhere inside the DIV:
-		element.onpointerdown = dragMouseDown;
-	}
+    // taken from w3schools (https://www.w3schools.com/howto/howto_js_draggable.asp)
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
 
-	function dragMouseDown(e) {
-		e = e || window.event;
-		e.preventDefault();
-		// get the mouse cursor position at startup:
-		pos3 = e.clientX;
-		pos4 = e.clientY;
-		document.onpointerup = closeDragElement;
-		// call a function whenever the cursor moves:
-		document.onpointermove = elementDrag;
-	};
+    element.onpointerdown = dragMouseDown;
 
-	function elementDrag(e) {
-		e = e || window.event;
-		e.preventDefault();
-		// calculate the new cursor position:
-		pos1 = pos3 - e.clientX;
-		pos2 = pos4 - e.clientY;
-		pos3 = e.clientX;
-		pos4 = e.clientY;
-		// set the element's new position:
-		element.style.top = (element.offsetTop - pos2) + "px";
-		element.style.left = (element.offsetLeft - pos1) + "px";
-	};
+    function dragMouseDown(e) {
+        e = e || window.event;
+        if (!e.target.closest('[data-undraggable]')) {
+            element.style.cursor = 'grabbing';
+            e.preventDefault();
+            // get the mouse cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onpointerup = closeDragElement;
+            // call a function whenever the cursor moves:
+            document.onpointermove = elementDrag;
+        }
+    };
 
-	function closeDragElement() {
-		// stop moving when mouse button is released:
-		document.onpointerup = null;
-		document.onpointermove = null;
-	};
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        element.style.top = (element.offsetTop - pos2) + "px";
+        element.style.left = (element.offsetLeft - pos1) + "px";
+    };
+
+    function closeDragElement() {
+        // stop moving when mouse button is released:
+        document.onpointerup = null;
+        document.onpointermove = null;
+        element.style.cursor = 'grab';
+    };
 };
 
 function GP_closeBoardie() {
@@ -965,6 +956,19 @@ async function GP_setSerialPortRTS(flag) {
 	}
 }
 
+async function GP_setSerialPortDTRandRTS(dtrFlag, rtsFlag) {
+	if (hasWebSerial()) {
+		if (!GP_webSerialPort) return; // port not open
+		await GP_webSerialPort.setSignals(
+			{ dtr: dtrFlag, dataTerminalReady: dtrFlag, rts: rtsFlag, requestToSend: rtsFlag }
+		).catch(() => {});
+	} else if (hasChromeSerial()) {
+		function ignore(result) {}
+		flag = (flag) ? true : false;
+		chrome.serial.setControlSignals(GP_serialPortID, { dtr: dtrFlag, rts: rtsFlag }, ignore);
+	}
+}
+
 // File read/write
 
 function hasChromeFilesystem() {
@@ -986,17 +990,20 @@ async function GP_ReadFile(ext) {
 		});
 	}
 
-	if ('' == ext) ext = 'txt';
 	if (hasChromeFilesystem()) {
+		if ('' == ext) ext = 'txt';
 		const options = {
 			type: 'openFile',
 			accepts: [{ description: 'MicroBlocks', extensions: [ext] }]
 		};
 		chrome.fileSystem.chooseEntry(options, onFileSelected);
 	} else if (typeof window.showOpenFilePicker != 'undefined') { // Native Filesystem API
-		const options = { types: [{ description: 'MicroBlocks', accept: { 'text/plain': ['.' + ext] }}] };
+		var options = {};
+		if ('' != ext) {
+			options = { types: [{ description: 'MicroBlocks', accept: { 'text/plain': ['.' + ext] }}] };
+		}
 		const files = await window.showOpenFilePicker(options).catch((e) => { console.log(e); });
-		if (!files || (files.length == 0) || !files[0].getFile) return; // no file selected
+		if (typeof files === 'undefined') { console.log('No file selected.'); return; }
 		const file = await files[0].getFile();
 		const contents = await file.arrayBuffer();
 		GP.droppedFiles.push({ name: toUTF8Array(file.name), contents: contents });

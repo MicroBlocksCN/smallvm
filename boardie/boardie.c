@@ -184,6 +184,7 @@ int main(int argc, char *argv[]) {
 	memInit();
 	primsInit();
 	restoreScripts();
+	startAll();
 	readScriptsFromURL();
 
 	printf("Starting interpreter\n");
