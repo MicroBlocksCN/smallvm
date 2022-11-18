@@ -897,7 +897,8 @@ method tryToConnect SmallRuntime {
 		readFromBoard = true
 	}
 
-	if (isWebSerial this) {
+	if (and (isWebSerial this) ('boardie' != portName)) {
+		print 'we should never get here with boardie'
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
