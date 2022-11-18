@@ -14,10 +14,11 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
 
 method scripter SmallRuntime { return scripter }
 method serialPortOpen SmallRuntime { return (notNil port) }
+method recompileNeeded SmallRuntime { recompileAll = true }
 
 method initialize SmallRuntime aScripter {
 	scripter = aScripter
@@ -1188,7 +1189,7 @@ method saveAllChunks SmallRuntime {
 	processedScripts = 0
 
 	skipHiddenFunctions = true
-	if (saveVariableNames this) {
+	if (or (saveVariableNames this) recompileAll) {
 		// Clear the source code field of all chunk entries to force script recompilation
 		// and possible re-download since variable offsets have changed.
 		for entry (values chunkIDs) { atPut entry 4 '' }
@@ -1221,6 +1222,7 @@ method saveAllChunks SmallRuntime {
 	}
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
+	recompileAll = false
 	showDownloadProgress editor 3 1
 }
 
