@@ -750,7 +750,7 @@ Servo
 舵机
 
 set servo _ to _ degrees (-90 to 90)
-设置舵机 _ 的角度为 _ Grad (-90 到 90)
+设置舵机 _ 的角度为 _ 度 (-90 到 90)
 
 set servo _ to speed _ (-100 to 100)
 设置360度舵机 _ 的速度为 _ (-100 到 100)
@@ -1601,8 +1601,8 @@ paste all scripts
 paste script
 粘贴脚本
 
-save a picture of all scripts
-将所有脚本保存为图片
+save a picture of all visible scripts
+将所有可见脚本保存为图片
 
 set exported script scale
 设置导出脚本的比例
