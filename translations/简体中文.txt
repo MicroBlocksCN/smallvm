@@ -753,7 +753,7 @@ set servo _ to _ degrees (-90 to 90)
 设置舵机 _ 的角度为 _ Grad (-90 到 90)
 
 set servo _ to speed _ (-100 to 100)
-设置舵机 _ 的速度为 _ (-100 到 100)
+设置360度舵机 _ 的速度为 _ (-100 到 100)
 
 stop servo _
 停止舵机 _
