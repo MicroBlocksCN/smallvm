@@ -1782,7 +1782,7 @@ copy to clipboard as URL
 作为 URL 复制到剪贴板
 
 copy these blocks to the clipboard as a URL
-将积木作为 URL 复制到剪贴板
+将这些积木作为 URL 复制到剪贴板
 
 copy these blocks to the clipboard
 将这些积木复制至剪贴板
