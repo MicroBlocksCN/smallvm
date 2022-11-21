@@ -645,7 +645,13 @@ function GP_toggleFullscreen() {
 GP.boardie = {
 	element: null,
 	iframe: null,
-	isOpen: false
+	isOpen: false,
+        reset: function () {
+            var win = this.iframe.contentWindow;
+            var ctx = win.document.querySelector('canvas').getContext('2d');
+            win.postMessage(new Uint8Array([ 0xFA, 0x0F, 0 ])); // system reset
+            ctx.clearRect(0, 0, 240, 240); // clear screen
+        }
 };
 
 function GP_openBoardie() {
@@ -672,6 +678,19 @@ function GP_openBoardie() {
 
             document.body.append(boardie.element);
             makeDraggable(boardie.element);
+
+			boardie.iframe.contentWindow.addEventListener(
+				'soundstart',
+				function () {
+					boardie.element.querySelector('.audio').classList.add('--is-active');
+				}
+			);
+			boardie.iframe.contentWindow.addEventListener(
+				'soundstop',
+				function () {
+					boardie.element.querySelector('.audio').classList.remove('--is-active');
+				}
+			);
 
             boardie.isOpen = true;
         }
