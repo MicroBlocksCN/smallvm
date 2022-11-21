@@ -188,7 +188,7 @@ extern int extraByteDelay;
 #define needsListOfIntegers		39	// Needs a list of integers
 #define byteOutOfRange			40	// Needs a value between 0 and 255
 #define needsPositiveIncrement	41	// Range increment must be a positive integer
-#define needsIntOrListOfInts	42 	// Needs an integer or a list of integers
+#define needsIntOrListOfInts	42	// Needs an integer or a list of integers
 
 // Runtime Operations
 

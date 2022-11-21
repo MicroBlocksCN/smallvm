@@ -880,6 +880,7 @@ method removedUserDefinedBlock MicroBlocksScripter function {
   removeFunction (module function) function // in MicroBlocks the function "module" is its library
   deleteBlockSpecFor (project projectEditor) (functionName function)
   updateBlocks this
+  saveNeeded = true
 }
 
 method addToBottom MicroBlocksScripter aBlock noScroll {

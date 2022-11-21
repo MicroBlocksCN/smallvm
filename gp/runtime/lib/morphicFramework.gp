@@ -891,8 +891,6 @@ method doOneCycle Page {
 }
 
 method updateDisplay Page {
-  processEvents this
-  step hand
   if (or redrawAll (notEmpty damages)) { fixDamages this }
   waitMSecs 1 // needed for browser?
 }

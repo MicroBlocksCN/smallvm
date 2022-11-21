@@ -350,6 +350,10 @@ method adjustSizeToScrollFrame Text aScrollFrame {
 
 // events
 
+method clicked Text hand {
+  return (notNil caret)
+}
+
 method doubleClicked Text hand {
   if (isNil caret) {return false}
   selectWordAt this (slotAt this (x hand) (y hand))

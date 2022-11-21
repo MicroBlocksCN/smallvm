@@ -14,10 +14,11 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
 
 method scripter SmallRuntime { return scripter }
 method serialPortOpen SmallRuntime { return (notNil port) }
+method recompileNeeded SmallRuntime { recompileAll = true }
 
 method initialize SmallRuntime aScripter {
 	scripter = aScripter
@@ -1200,10 +1201,11 @@ method saveAllChunks SmallRuntime {
 	totalScripts = (
 		(count (allFunctions (project scripter))) +
 		(count (sortedScripts (scriptEditor scripter))))
+	progressInterval = (max 1 (floor (totalScripts / 20)))
 	processedScripts = 0
 
 	skipHiddenFunctions = true
-	if (saveVariableNames this) {
+	if (or (saveVariableNames this) recompileAll) {
 		// Clear the source code field of all chunk entries to force script recompilation
 		// and possible re-download since variable offsets have changed.
 		for entry (values chunkIDs) { atPut entry 4 '' }
@@ -1216,7 +1218,9 @@ method saveAllChunks SmallRuntime {
 	for aFunction (allFunctions (project scripter)) {
 		if (saveChunk this aFunction skipHiddenFunctions) {
 			functionsSaved += 1
-			showDownloadProgress editor 3 (processedScripts / totalScripts)
+			if (0 == (functionsSaved % progressInterval)) {
+				showDownloadProgress editor 3 (processedScripts / totalScripts)
+			}
 		}
 		if (isNil port) { return } // connection closed
 		processedScripts += 1
@@ -1228,7 +1232,9 @@ method saveAllChunks SmallRuntime {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
 			if (saveChunk this aBlock skipHiddenFunctions) {
 				scriptsSaved += 1
-				showDownloadProgress editor 3 (processedScripts / totalScripts)
+				if (0 == (scriptsSaved % progressInterval)) {
+					showDownloadProgress editor 3 (processedScripts / totalScripts)
+				}
 			}
 			if (isNil port) { return } // connection closed
 		}
@@ -1236,6 +1242,7 @@ method saveAllChunks SmallRuntime {
 	}
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
+	recompileAll = false
 	showDownloadProgress editor 3 1
 }
 
@@ -1468,6 +1475,7 @@ method saveVariableNames SmallRuntime {
 
 	editor = (findMicroBlocksEditor)
 	varCount = (count newVarNames)
+	progressInterval = (max 1 (floor (varCount / 20)))
 
 	clearVariableNames this
 	varID = 0
@@ -1476,7 +1484,9 @@ method saveVariableNames SmallRuntime {
 			sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
 		}
 		varID += 1
-		showDownloadProgress editor 2 (varID / varCount)
+		if (0 == (varID % progressInterval)) {
+			showDownloadProgress editor 2 (varID / varCount)
+		}
 	}
 	oldVarNames = (copy newVarNames)
 	return true

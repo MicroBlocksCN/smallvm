@@ -524,6 +524,7 @@ method defineFunctionInModule MicroBlocksModule funcName funcParams funcBody {
 		}
 	}
 	functions = (copyWith functions f)
+	recompileNeeded (smallRuntime)
 	return f
 }
 
@@ -536,10 +537,12 @@ method addFunction MicroBlocksModule aFunction {
 	}
 	setField aFunction 'module' this
 	functions = (copyWith functions aFunction)
+	recompileNeeded (smallRuntime)
 }
 
 method removeFunction MicroBlocksModule aFunction {
 	functions = (copyWithout functions aFunction)
+	recompileNeeded (smallRuntime)
 }
 
 method removeSupercededFunctions MicroBlocksModule superceded {
@@ -984,6 +987,7 @@ method loadFunctions MicroBlocksModule cmdList {
 			functions = (appendFunction this functions f)
 		}
 	}
+	recompileNeeded (smallRuntime)
 }
 
 method appendFunction MicroBlocksModule anArray f {

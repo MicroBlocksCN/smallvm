@@ -732,19 +732,31 @@ stop scrolling
 停止滚动
 
 ####
+# Ringtone library
+
+Ringtone
+铃声
+
+play ringtone _
+播放铃声 _
+
+current song name
+当前歌曲名
+
+####
 # Servo motor library
 
 Servo
-伺服控制器
+舵机
 
 set servo _ to _ degrees (-90 to 90)
-设置伺服控制器 _ 的角度为 _ Grad (-90 到 90)
+设置舵机 _ 的角度为 _ 度 (-90 到 90)
 
 set servo _ to speed _ (-100 to 100)
-设置伺服控制器 _ 的速度为 _ (-100 到 100)
+设置360度舵机 _ 的速度为 _ (-100 到 100)
 
 stop servo _
-停止伺服控制器 _
+停止舵机 _
 
 ####
 # 5x5 LED display library
@@ -1532,6 +1544,9 @@ No boards found; is your board plugged in?
 For AdaFruit boards, double-click reset button and try again.
 如果是AdaFruit主板，双击reset键并再次尝试.
 
+Only recent Chrome and Edge browsers support WebSerial.
+请使用支持 WebSerial 的浏览器(Chrome 和 Edge 浏览器)
+
 The board is not responding.
 主板未响应.
 
@@ -1586,8 +1601,8 @@ paste all scripts
 paste script
 粘贴脚本
 
-save a picture of all scripts
-将所有脚本保存为图片
+save a picture of all visible scripts
+将所有可见脚本保存为图片
 
 set exported script scale
 设置导出脚本的比例
@@ -1765,6 +1780,9 @@ copy to clipboard
 
 copy to clipboard as URL
 作为 URL 复制到剪贴板
+
+copy these blocks to the clipboard as a URL
+将这些积木作为 URL 复制到剪贴板
 
 copy these blocks to the clipboard
 将这些积木复制至剪贴板

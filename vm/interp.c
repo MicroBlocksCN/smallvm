@@ -691,12 +691,17 @@ static void runTask(Task *task) {
 		// arg N-1
 		// ...
 		// arg 0
+		tmp = (arg >> 8) & 0xFF; // callee's chunk index (middle byte of arg)
+		if (chunks[tmp].chunkType != functionHat) {
+			fail(badChunkIndexError);
+			goto error;
+		}
 		STACK_CHECK(3);
 		*sp++ = int2obj(arg & 0xFF); // # of arguments (low byte of arg)
 		*sp++ = int2obj(((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
 		*sp++ = int2obj(fp - task->stack); // old fp
 		fp = sp;
-		task->currentChunkIndex = (arg >> 8) & 0xFF; // callee's chunk index (middle byte of arg)
+		task->currentChunkIndex = tmp; // callee's chunk index (middle byte of arg)
 		task->code = chunks[task->currentChunkIndex].code;
 		ip = task->code + PERSISTENT_HEADER_WORDS; // first instruction in callee
 		DISPATCH();
