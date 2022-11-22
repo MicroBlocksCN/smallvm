@@ -156,6 +156,8 @@ static void serialOpen(int baudRate) {
 		SERIAL_PORT.setFIFOSize(1023);
 		SERIAL_PORT.setTimeout(1);
 		SERIAL_PORT.begin(baudRate);
+		delayMicroseconds(5); // wait for garbage byte when first opening the serial port after a reset (seen at 115200 baud)
+		SERIAL_PORT.begin(baudRate); // reset to discard garbage byte
 	#else
 		SERIAL_PORT.begin(baudRate);
 	#endif

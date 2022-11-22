@@ -1,10 +1,10 @@
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
-version 1 9 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+version 1 12 
+choices ModeMenu Horizontal Vertical 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices ModeMenu Horizontal Vertical 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -18,48 +18,50 @@ Changes:
 - removed dependencies
 - unified data format for chars, sprites, and images
 - image draw at any x,y
+- filled rectangle
 - image draw bug fix
 - stack overflow fix
 '
 variables OLEDReady OLEDi2cAddr _GDBuffer _begCol _begRow _cDecTBL _comma _cTABLE _comMode _dcPin _delayGDUpd _displayType _endCol _endRow _eol _resetPin _textX _textY _dataPrefix _byteCount _imgData _imgWidth _imgHeight 
 
-	spec ' ' 'OLEDInit_I2C' 'initialize i2c _ address(hex) _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_0.96in' '3C' '-' false
-	spec ' ' 'OLEDInit_SPI' 'initialize spi _ d/c pin# _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_2.42in' 16 8 false
-	spec ' ' 'OLEDwrite' 'write _ at x _ y _ inverse _' 'auto auto auto bool' 'Hello!' 0 0 false
-	spec ' ' 'OLEDshowGDBuffer' 'show display buffer'
-	spec ' ' 'OLEDclear' 'clear'
-	spec ' ' 'OLEDcontrast' 'set contrast (1-4) _' 'auto' 2
-	spec ' ' 'OLEDdrawCircle' 'draw circle at x _ y _ radius _ erase _' 'auto auto auto bool' 64 32 '10' false
-	spec ' ' 'OLEDdrawImage' 'draw image _ at x _ y _' 'auto auto auto' 0 0 0
-	spec ' ' 'OLEDdrawLine' 'draw line from x _ y _ to x _ y _ erase _' 'auto auto auto auto bool' 0 0 127 63 false
-	spec ' ' 'OLEDdrawRect' 'draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _' 'auto auto auto auto bool auto' 0 0 127 63 false 0
-	spec ' ' 'OLEDflip' '_flip display top _' 'bool' false
-	spec 'r' 'OLEDmakeImage' 'make image _ : ' 'microbitDisplay' 33084991
-	spec ' ' 'OLEDpixel' 'set pixel x _ y _ erase _' 'auto auto bool' 0 0 false
-	spec ' ' 'OLEDsetVideo' 'set video _' 'str.VideoMenu' 'Inverse'
-	spec 'r' 'OLEDwru' 'cursor location'
-	spec ' ' 'defer display updates' 'defer display updates'
-	spec ' ' '_GDDRAMoff' '_GDDRAMoff'
-	spec ' ' '_GDDRAMon' '_GDDRAMon'
-	spec ' ' '_OLEDcursorReset' '_cursor reset'
-	spec ' ' '_OLEDsetDisplay' '_set display _' 'str.OnOffMenu' 'On'
-	spec ' ' '_OLEDreset' '_set reset Pin# _' 'auto' '0'
-	spec ' ' '_SPIWriteCmd' '_SPIWriteCmd'
-	spec ' ' '_SPIWriteData' '_SPIWriteData'
-	spec ' ' '_T1' '_T1'
-	spec ' ' '_T2' '_T2'
-	spec ' ' '_T3' '_T3'
-	spec 'r' '_cBMP' '_cBMP _ InvYN _' 'auto bool' '' false
-	spec ' ' '_clearDisplay' '_clearDisplay'
-	spec ' ' '_corner' '_corner _ _ _ _ _' 'auto auto auto auto bool' 'TL' 32 1 0 true
-	spec 'r' '_dec2hex' '_dec2hex _' 'auto' 0
-	spec ' ' '_initChars' '_initChars'
-	spec ' ' '_initCheck' '_initCheck'
-	spec ' ' '_initDisplayHW' '_initDisplayHW'
-	spec ' ' '_initLibrary' '_initLibrary'
-	spec ' ' '_process image data' '_process image data _' 'auto' ' '
-	spec ' ' '_sendCmd' '_sendCmd _' 'auto' ''
-	spec ' ' '_verifyXY' '_verifyXY _ _' 'auto auto' 0 0
+  spec ' ' 'OLEDInit_I2C' 'initialize i2c _ address(hex) _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_0.96in' '3C' '-' false
+  spec ' ' 'OLEDInit_SPI' 'initialize spi _ d/c pin# _ reset pin# _ flip _' 'str.DispTypeMenu auto auto bool' 'OLED_2.42in' 16 8 false
+  spec ' ' 'OLEDwrite' 'write _ at x _ y _ inverse _' 'auto auto auto bool' 'Hello!' 0 0 false
+  spec ' ' 'OLEDshowGDBuffer' 'show display buffer'
+  spec ' ' 'OLEDclear' 'clear'
+  spec ' ' 'OLEDcontrast' 'set contrast (1-4) _' 'auto' 2
+  spec ' ' 'OLEDdrawCircle' 'draw circle at x _ y _ radius _ erase _' 'auto auto auto bool' 64 32 '10' false
+  spec ' ' 'OLEDdrawImage' 'draw image _ at x _ y _' 'auto auto auto' 0 0 0
+  spec ' ' 'OLEDdrawLine' 'draw line from x _ y _ to x _ y _ erase _' 'auto auto auto auto bool' 0 0 127 63 false
+  spec ' ' 'OLEDdrawRect' 'draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _' 'auto auto auto auto bool auto' 0 0 127 63 false 0
+  spec ' ' 'OLEDfillRect' 'fill rectangle x _ y _ w _ h _ erase _' 'auto auto auto auto bool' 20 20 30 20 false
+  spec ' ' 'OLEDflip' '_flip display top _' 'bool' false
+  spec 'r' 'OLEDmakeImage' 'make image _' 'microbitDisplay' 33084991
+  spec ' ' 'OLEDpixel' 'set pixel x _ y _ erase _' 'auto auto bool' 0 0 false
+  spec ' ' 'OLEDsetVideo' 'set video _' 'str.VideoMenu' 'Inverse'
+  spec 'r' 'OLEDwru' 'cursor location'
+  spec ' ' 'defer display updates' 'defer display updates'
+  spec ' ' '_GDDRAMoff' '_GDDRAMoff'
+  spec ' ' '_GDDRAMon' '_GDDRAMon'
+  spec ' ' '_OLEDcursorReset' '_cursor reset'
+  spec ' ' '_OLEDsetDisplay' '_set display _' 'str.OnOffMenu' 'On'
+  spec ' ' '_OLEDreset' '_set reset Pin# _' 'auto' '0'
+  spec ' ' '_SPIWriteCmd' '_SPIWriteCmd'
+  spec ' ' '_SPIWriteData' '_SPIWriteData'
+  spec ' ' '_T1' '_T1'
+  spec ' ' '_T2' '_T2'
+  spec ' ' '_T3' '_T3'
+  spec 'r' '_cBMP' '_cBMP _ InvYN _' 'auto bool' '' false
+  spec ' ' '_clearDisplay' '_clearDisplay'
+  spec ' ' '_corner' '_corner _ _ _ _ _' 'auto auto auto auto bool' 'TL' 32 1 0 true
+  spec 'r' '_dec2hex' '_dec2hex _' 'auto' 0
+  spec ' ' '_initChars' '_initChars'
+  spec ' ' '_initCheck' '_initCheck'
+  spec ' ' '_initDisplayHW' '_initDisplayHW'
+  spec ' ' '_initLibrary' '_initLibrary'
+  spec ' ' '_process image data' '_process image data _' 'auto' ' '
+  spec ' ' '_sendCmd' '_sendCmd _' 'auto' ''
+  spec ' ' '_verifyXY' '_verifyXY _ _' 'auto auto' 0 0
 
 to OLEDInit_I2C dispType i2cAddr resetPin flip {
   comment 'Sets display type and interface and initializes HW settings.
@@ -327,6 +329,17 @@ Does not check for reversed rectangle coordinates for round corners.'
   }
 }
 
+to OLEDfillRect x y w h erase {
+  for row h {
+    for col w {
+      OLEDpixel (x + (col - 1)) (y + (row - 1)) erase
+    }
+  }
+  if (not _delayGDUpd) {
+    OLEDshowGDBuffer
+  }
+}
+
 to OLEDflip flip {
   comment 'Flips the display initialization horizontally or vertically.
 Horizontal or vertical is based on the pin connector location.'
@@ -438,6 +451,9 @@ _textX and _textY are next write locations.'
   _delayGDUpd = true
   '_verifyXY' x y
   local 'origX' x
+  if (not (isType string 'string')) {
+    string = ('[data:join]' '' string)
+  }
   for char string {
     comment 'If in table process it - LINE SET is not supported.'
     if (('[data:find]' char _cTABLE) != -1) {

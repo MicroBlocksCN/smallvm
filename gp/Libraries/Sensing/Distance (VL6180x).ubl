@@ -1,4 +1,4 @@
-module VL6180x Input
+module 'Distance (VL6180x)' Input
 author 'José García Yeste'
 version 1 0 
 tags sensor distance 

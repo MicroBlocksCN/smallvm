@@ -1,4 +1,4 @@
-module BH1750 Input
+module 'Light (BH1750)' Input
 author MicroBlocks
 version 1 0 
 tags light d1mini 

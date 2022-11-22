@@ -1,0 +1,108 @@
+module 'OS MP3 Player'
+author 'Víctor Casado'
+version 1 0 
+tags sound 
+choices playModes 'play once' 'repeat all' 'repeat song' 
+description 'A library for the OPEN-SMART Serial MP3 Player:
+
+https://es.aliexpress.com/item/32782488336.html
+
+A few hints:
+
+- SD card mut be formatted in FAT16 or FAT32.
+- Songs must be named 001xxx.mp3, 002xxx.mp3 and so on.
+- Directories currently not supported.
+'
+
+  spec ' ' '_OSMP3 send command data' '_OSMP3 send command _ : data _' 'auto auto' '' ''
+  spec ' ' 'OS MP3 initialize' 'OS MP3 initialize'
+  spec ' ' 'OS MP3 set play mode' 'OS MP3 set play mode _ : number _' 'menu.playModes auto' 'play once' 1
+  spec ' ' 'OS MP3 play' 'OS MP3 play'
+  spec ' ' 'OS MP3 play song number' 'OS MP3 play song number _' 'auto' 1
+  spec ' ' 'OS MP3 pause' 'OS MP3 pause'
+  spec ' ' 'OS MP3 stop' 'OS MP3 stop'
+  spec ' ' 'OS MP3 next song' 'OS MP3 next song'
+  spec ' ' 'OS MP3 previous song' 'OS MP3 previous song'
+  spec ' ' 'OS MP3 forward' 'OS MP3 forward'
+  spec ' ' 'OS MP3 rewind' 'OS MP3 rewind'
+  spec ' ' 'OS MP3 volume up' 'OS MP3 volume up'
+  spec ' ' 'OS MP3 volume down' 'OS MP3 volume down'
+  spec ' ' 'OS MP3 set volume' 'OS MP3 set volume _ (0-30)' 'auto' 15
+
+to '_OSMP3 send command data' cmd data {
+  local 'byteList' ('[data:makeList]')
+  if (cmd < (hexToInt '1F')) {
+    byteList = ('[data:makeList]' (hexToInt '7E') (hexToInt '02') cmd (hexToInt 'EF'))
+  } (cmd < (hexToInt '40')) {
+    byteList = ('[data:makeList]' (hexToInt '7E') (hexToInt '03') cmd data (hexToInt 'EF'))
+  } (cmd < (hexToInt '50')) {
+    byteList = ('[data:makeList]' (hexToInt '7E') (hexToInt '03') cmd (data >> 8) data (hexToInt 'EF'))
+  }
+  waitMillis 50
+  '[serial:write]' ('[data:asByteArray]' byteList)
+}
+
+to 'OS MP3 initialize' {
+  '[serial:open]' 9600
+  '_OSMP3 send command data' (hexToInt '35') (hexToInt '01')
+  waitMillis 500
+}
+
+to 'OS MP3 set play mode' mode number {
+  if (mode == 'repeat all') {
+    '_OSMP3 send command data' (hexToInt '33') (hexToInt '00')
+  } (mode == 'play once') {
+    '_OSMP3 send command data' (hexToInt '33') (hexToInt '01')
+  } (mode == 'repeat song') {
+    '[serial:write]' ('[data:asByteArray]' ('[data:makeList]' (hexToInt '7E') (hexToInt '04') (hexToInt '33') ((number >> 8) & 255) (number & 255) (hexToInt 'EF')))
+  }
+}
+
+to 'OS MP3 play' {
+  '_OSMP3 send command data' (hexToInt '01')
+}
+
+to 'OS MP3 play song number' number {
+  '_OSMP3 send command data' (hexToInt '41') number
+}
+
+to 'OS MP3 pause' {
+  '_OSMP3 send command data' (hexToInt '02')
+}
+
+to 'OS MP3 stop' {
+  '_OSMP3 send command data' (hexToInt '0E')
+}
+
+to 'OS MP3 next song' {
+  '_OSMP3 send command data' (hexToInt '03')
+}
+
+to 'OS MP3 previous song' {
+  '_OSMP3 send command data' (hexToInt '04')
+}
+
+to 'OS MP3 forward' {
+  '_OSMP3 send command data' (hexToInt '0A')
+}
+
+to 'OS MP3 rewind' {
+  '_OSMP3 send command data' (hexToInt '0B')
+}
+
+to 'OS MP3 volume up' {
+  '_OSMP3 send command data' (hexToInt '05')
+}
+
+to 'OS MP3 volume down' {
+  '_OSMP3 send command data' (hexToInt '06')
+}
+
+to 'OS MP3 set volume' volume {
+  if (volume < 0) {
+    volume = 0
+  } (volume > 30) {
+    volume = 30
+  }
+  '_OSMP3 send command data' (hexToInt '31') volume
+}

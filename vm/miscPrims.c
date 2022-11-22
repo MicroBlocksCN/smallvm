@@ -25,6 +25,20 @@ OBJ primHexToInt(int argCount, OBJ *args) {
 	return int2obj(result);
 }
 
+OBJ primRescale(int argCount, OBJ *args) {
+	if (argCount < 5) return fail(notEnoughArguments);
+	int inVal = evalInt(args[0]);
+	int inMin = evalInt(args[1]);
+	int inMax = evalInt(args[2]);
+	int outMin = evalInt(args[3]);
+	int outMax = evalInt(args[4]);
+
+	if (inMax == inMin) return fail(zeroDivide);
+
+	int result = outMin + (((inVal - inMin) * (outMax - outMin)) / (inMax - inMin));
+	return int2obj(result);
+}
+
 static OBJ primSine(int argCount, OBJ *args) {
 	// Returns the sine of the given angle * 2^14 (i.e. a fixed point integer with 13 bits of
 	// fraction). The input is the angle in hundreths of a degree (e.g. 4500 means 45 degrees).
@@ -136,7 +150,9 @@ static OBJ primJSONKeyAt(int argCount, OBJ *args) {
 
 static PrimEntry entries[] = {
 	{"hexToInt", primHexToInt},
+	{"rescale", primRescale},
 	{"sin", primSine},
+	{"broadcastToIDE", primBroadcastToIDEOnly},
 	{"jsonGet", primJSONGet},
 	{"jsonCount", primJSONCount},
 	{"jsonValueAt", primJSONValueAt},

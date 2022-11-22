@@ -1,0 +1,13 @@
+module UDP Comm
+author MicroBlocks
+version 1 0 
+depends WiFi 
+tags udp network 
+description 'Blocks to send and receive UDP packets.'
+
+  spec ' ' '[net:udpStart]' 'UDP start port _' 'auto' 5000
+  spec ' ' '[net:udpStop]' 'UDP stop'
+  spec ' ' '[net:udpSendPacket]' 'UDP send packet _ to ip _ port _' 'auto auto num' 'Hello!' '255.255.255.255' 5000
+  spec 'r' '[net:udpReceivePacket]' 'UDP receive packet : binary data _' 'bool' false
+  spec 'r' '[net:udpRemoteIPAddress]' 'UDP remote IP address'
+  spec 'r' '[net:udpRemotePort]' 'UDP remote port'

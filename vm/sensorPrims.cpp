@@ -30,10 +30,6 @@ static void startWire() {
 	Wire.setSDA(18);
 	Wire.setSCL(19);
   #endif
-  #if defined(RP2040_PHILHOWER)
-	// push clock slightly
-	Wire.setClock(500000); // i2c fast mode+ (seems pretty ubiquitous among i2c devices)
-  #endif
 	Wire.begin();
 	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 	wireStarted = true;
@@ -160,6 +156,16 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	}
 	int error = Wire.endTransmission();
 	if (error) fail(i2cTransferFailed);
+	return falseObj;
+}
+
+static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
+	if ((argCount < 1) || !isInt(args[0])) return falseObj;
+	int newSpeed = obj2int(args[0]);
+	if (newSpeed > 1) {
+		if (!wireStarted) startWire();
+		Wire.setClock(newSpeed);
+	}
 	return falseObj;
 }
 
@@ -1155,9 +1161,12 @@ static int __not_in_flash_func(readDHTData)(int pin) {
 	// Read DHT data into dhtData. Return true if successful, false if timeout.
 
 	// read the start pulse
-	setPinMode(pin, INPUT);
+	setPinMode(pin, INPUT_PULLUP);
 	int pulseWidth = pulseIn(pin, HIGH, 2000);
-	if (!pulseWidth) return false; // timeout
+	if (!pulseWidth) {
+		setPinMode(pin, INPUT);
+		return false; // timeout
+	}
 
 	for (int i = 0; i < 5; i++) {
 		int byte = 0;
@@ -1168,6 +1177,8 @@ static int __not_in_flash_func(readDHTData)(int pin) {
 		}
 		dhtData[i] = byte;
 	}
+
+	setPinMode(pin, INPUT);
 	return true;
 }
 
@@ -1406,6 +1417,7 @@ static PrimEntry entries[] = {
 	{"touchRead", primTouchRead},
 	{"i2cRead", primI2cRead},
 	{"i2cWrite", primI2cWrite},
+	{"i2cSetClockSpeed", primI2cSetClockSpeed},
 	{"spiExchange", primSPIExchange},
 	{"spiSetup", primSPISetup},
 	{"readDHT", primReadDHT},

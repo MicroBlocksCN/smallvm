@@ -124,7 +124,121 @@ method initialize MicroBlocksHelp {
 		(array '[data:newByteArray]' 'data#new-byte-array' 'Report a new byte array of the given length filled with zero or the optional value.')
 		(array '[data:asByteArray]' 'data#as-byte-array' 'Report a byte array cointaining the UTF-8 bytes of the given string.')
 		(array '[data:freeMemory]' 'data#free-memory' 'Report the number of words of memory available. Stop button frees up memory.')
-	)
+
+		// BASIC SENSORS LIBRARY
+		(array '[sensors:tiltX]' '/libraries#tilt-x-y-z' 'Report x acceleration/tilt (+/-200).')
+		(array '[sensors:tiltY]' '/libraries#tilt-x-y-z' 'Report y acceleration/tilt (+/-200).')
+		(array '[sensors:tiltZ]' '/libraries#tilt-x-y-z' 'Report z acceleration/tilt (+/-200).')
+		(array '[sensors:acceleration]' '/libraries#acceleration' 'Report total acceleration (0-346).')
+		(array '[display:lightLevel]' '/libraries#light-level' 	'Report ambient light level (0-1023).')
+		(array '[sensors:temperature]' '/libraries#temperature'	'Report ambient temperature in degrees Celsius.')
+		(array '[sensors:magneticField]' '/libraries#magnetic-field' 'Report magnetic field strength (0-100000).')
+		(array '_setAccelRange' '/libraries#set-acceleration-range'	'Set accelermeter range. Higher ranges are usefl for collisions.')
+
+		// LED DISPLAY LIBRARY
+		(array '[display:mbDisplay]' '/libraries#display' 'Display a 5x5 image on the LED display.')
+		(array '[display:mbDisplayOff]' '/libraries#clear-display' 'Clear the LED display (all pixels off).')
+		(array '[display:mbPlot]' '/libraries#plot-x-y' 'Turn on the LED at the given row and column (1-5).')
+		(array '[display:mbUnplot]' '/libraries#unplot-x-y' 'Turn off the LED at the given row and column (1-5).')
+		(array 'displayCharacter' '/libraries#display-character' 'Display a single character on the LED display.')
+		(array 'scroll_text' '/libraries#scroll-text' 'Scroll words or numbers across the LED display.')
+		(array 'stopScrollingText' 	'/libraries#stop-scrolling' 'Stop scrolling and clear the display.')
+
+		// NEOPIXEL
+		(array 'neoPixelAttach' '/libraries#attach-neopixel-led-to-pin' 'Set Neopixel count and pin number.')
+		(array 'setNeoPixelColors10' '/libraries#set-neopixels' 'Set the colors of the first ten NeoPixels.')
+		(array 'clearNeoPixels' '/libraries#clear-neopixels' 'Turn off all NeoPixels.')
+		(array 'neoPixelSetAllToColor' '/libraries#set-all-neopixels-color' 'Set all NeoPixels to the given color.')
+		(array 'setNeoPixelColor' '/libraries#set-neopixel-color' 'Set the given NeoPixel to the selected color.')
+		(array 'rotateNeoPixelsBy' '/libraries#rotate-neopixels-by' 'Shift/rotate the NeoPixel colors by the given number.')
+		(array 'colorFromRGB' '/libraries#color-r-g-b' 'Return a color defined by values of R G B (0-255).')
+		(array 'randomColor' '/libraries#random-color' 'Return a random color.')
+
+		// RADIO
+		(array '[radio:sendInteger]' '/libraries#radio-send-number' 'Send a numerical message.')
+		(array '[radio:sendString]' '/libraries#radio-send-string' 'Send a text message.')
+		(array '[radio:sendPair]' '/libraries#radio-send-pair' 'Send a message containing both short text string and a number.')
+		(array '[radio:messageReceived]' '/libraries#radio-message-received' 'Return (-o) when a new radio message is received.')
+		(array '[radio:receivedInteger]' '/libraries#radio-last-number' 'Return the number part of the last radio message received.')
+		(array '[radio:receivedString]' '/libraries#radio-last-string' 'Return the text part of the last radio message received.')
+		(array '[radio:setGroup]' '/libraries#radio-set-group' 'Set the radio group number (0-255).')
+		(array '[radio:setPower]' '/libraries#radio-set-power' 'Set the radio transmission power level (0-7).')
+
+		// RINGTONE
+		(array 'play ringtone' '/libraries#play-ringtone' 'Play the given ringtone string.')
+		(array 'current song name' '/libraries#current-song-name' 'Report the name of the currently playing ringtone song.')
+
+		// SERVO
+		(array 'setServoAngle' '/libraries#set-servo-degrees' 'Set the angle of a positional servo.')
+		(array 'setServoSpeed' '/libraries#set-servo-speed' 'Set the speed of a continuous rotation servo.')
+		(array 'stopServo' '/libraries#servo-stop' 'Stop sending servo control pulses.')
+
+		//TONE
+		(array 'play tone' '/libraries#play-note' 'Play the given note in the given octave for milliseconds.')
+		(array 'playMIDIKey' '/libraries#play-midi' 'Play the given piano key (0-127) for milliseconds. Middle C is 60.')
+		(array 'play frequency' '/libraries#play-frequency' 'Play a note specified in Hertz (Hz). Middle C is ~261 Hz.')
+		(array 'attach buzzer to pin' '/libraries#attach-buzzer' 'Specify the pin used to play tones.')
+
+		// PICOBRICKS
+		(array 'pb_beep' '/extension_libraries/picobricks#picobricks-beep' 'Make a beep sound from the speaker.')
+		(array 'pb_button' 	'/extension_libraries/picobricks#picobricks-button' 'Return (-o) if the button is pressed.')
+		(array 'pb_humidity' '/extension_libraries/picobricks#picobricks-humidity' 'Return the relative humidity.')
+		(array 'pb_light_sensor' '/extension_libraries/picobricks#picobricks-light-sensor' 'Return the light level (0-100).')
+		(array 'pb_potentiometer' '/extension_libraries/picobricks#picobricks-potentiometer' 'Return the potentiometer value (0-1023).')
+		(array 'pb_random_color' '/extension_libraries/picobricks#picobricks-random-color' 'Return a random color.')
+		(array 'pb_rgb_color' '/extension_libraries/picobricks#picobricks-color' 'Return a color with the given RGB values (0-255).')
+		(array 'pb_set_motor_speed'	'/extension_libraries/picobricks#picobricks-set-motor' 'Set the speed of a DC motor (0-100)')
+		(array 'pb_set_red_LED' '/extension_libraries/picobricks#picobricks-set-red-led' 'Turn the red LED on (-o) or off (o-) .')
+		(array 'pb_set_relay' '/extension_libraries/picobricks#picobricks-set-relay' 'Turn the relay on (-o) or off (o-) .')
+		(array 'pb_set_rgb_color' '/extension_libraries/picobricks#picobricks-set-rgb-led-color' 'Set the RGB LED color using the color selector.')
+		(array 'pb_temperature' '/extension_libraries/picobricks#picobricks-temperature' 'Return the temperature (Celsius).')
+		(array 'pb_turn_off_RGB' '/extension_libraries/picobricks#picobricks-turn-off-rgb-led' 'Turn off the RGB LED.')
+
+		// OLED
+		(array 'OLEDInit_I2C' '/extension_libraries/oled#initialize-i2c' 'Initialize an I2C OLED display.')
+		(array 'OLEDInit_SPI' '/extension_libraries/oled#initialize-spi' 'Initialize an SPI OLED display.')
+		(array 'OLEDwrite' '/extension_libraries/oled#write-' 'Display the given value as a string.')
+		(array 'OLEDshowGDBuffer' '/extension_libraries/oled#show-display-buffer' 'Reveal the contents of the virtual buffer if updates were deferred.')
+		(array 'OLEDclear' '/extension_libraries/oled#clear-' 'Clear the display.')
+		(array 'OLEDcontrast' '/extension_libraries/oled#set-contrast' 'Set the display contrast (1-4).')
+		(array 'OLEDdrawCircle' '/extension_libraries/oled#draw-circle' 'Draw a circle with center at x,y.')
+		(array 'OLEDdrawImage' '/extension_libraries/oled#draw-image' 'Draw an image at x,y. See OLEDmakeImage.')
+		(array 'OLEDdrawLine' '/extension_libraries/oled#draw-line' 'Draw a line between two points.')
+		(array 'OLEDdrawRect' '/extension_libraries/oled#draw-rectangle' 'Draw a rectangle at x,y with width and height.')
+		(array 'OLEDfillRect' '/extension_libraries/oled#fill-rectangle' 'Draw a filled rectangle at x,y with width and height.')
+		(array 'OLEDflip' '/extension_libraries/oled#_flip-display-top' 'Flip which side of the display is the top.')
+		(array 'OLEDmakeImage' '/extension_libraries/oled#make-image' 'Make a 5x5 Sprite image for use with OLEDdrawImage.')
+		(array 'OLEDpixel' '/extension_libraries/oled#set-pixel' 'Turn the pixel at x,y on (-o) or off (o-) .')
+		(array 'OLEDsetVideo' '/extension_libraries/oled/set-videoa' 'Set the display to inverse video or normal mode.')
+		(array 'OLEDwru' '/extension_libraries/oled#cursor-location' 'Report the cursor location.')
+		(array 'defer display updates' '/extension_libraries/oled#defer-display-updates' 'Delay display updates during pixel level operations.')
+
+		// MAQUEEN
+		(array 'Maqueen beep' 'en/extension_libraries/maqueen/#maqueen-beep' 'Make a beep sound.')
+		(array 'Maqueen distance (cm)' '/extension_libraries/maqueen/#maqueen-distance' 'Return the distance to a wall or obstacle.')
+		(array 'Maqueen IR keycode' '/extension_libraries/maqueen/#maqueen-ir-keycode' 'Return the last received IR keycode.')
+		(array 'Maqueen LED' '/extension_libraries/maqueen/#maqueen-led' 'Turn the left and/or right LEDs on (-o) or off (o-) .')
+		(array 'Maqueen line sensor' '/extension_libraries/maqueen/#maqueen-line-sensor' 'Return the given line sensor value ( (-o) or (o-) )')
+		(array 'Maqueen motor' '/extension_libraries/maqueen/#maqueen-motor' 'Set the motor directions and speeds.')
+		(array 'Maqueen stop motors' '/extension_libraries/maqueen/#maqueen-stop-motors' 'Stop the motors.')
+		(array 'Maqueen sees line on left' '/extension_libraries/maqueen/#maqueen-sees-line-on-left' 'Return (-o) if the given line sensor sees a black line.')
+
+		// HUSKYLENS
+		(array 'HL init & set I2Caddr' '/extension_libraries/huskylens#hl-init-set-i2caddr' 'Initialize HuskyLens with the given I2C address.')
+		(array 'HL change algorithm' '/extension_libraries/huskylens#hl-change-algorithm' 'Change recognition algorithm.')
+		(array 'HL do' '/extension_libraries/huskylens#hl-do' 'Perform maintenance operation.')
+		(array 'HL request' '/extension_libraries/huskylens#hl-request' 'Request recognized objects from HuskyLens.')
+		(array 'HL request by ID' '/extension_libraries/huskylens#hl-request-by-id' 'Request only one object by id from HuskyLens.')
+		(array 'HL get info' '/extension_libraries/huskylens#hl-get-info' 'Get Info details from HuskyData.')
+		(array 'HL get block' '/extension_libraries/huskylens#hl-get-block' 'Get Block details from HuskyData.')
+		(array 'HL get arrow'  '/extension_libraries/huskylens#hl-get-arrow' 'Get Arrow details from HuskyData')
+		(array 'HL learn current object with ID' '/extension_libraries/huskylens#hl-learn-by-id' 'Learn recognized object by ID.')
+		(array 'HL learn object with ID' '/extension_libraries/huskylens#hl-learn-id-and-name' 'Learn recognized object by ID and assign it a name.')
+		(array 'HL set CustomName' '/extension_libraries/huskylens#hl-set-custom-name' 'Set custom name for a learned object.')
+		(array 'HL write' '/extension_libraries/huskylens#hl-write' 'Display text on the HuskyLens screen @ x,y [0,0 is top left].')
+		(array 'HL file' '/extension_libraries/huskylens#hl-file' 'Save/Load a file to/from SDcard.')
+ 	)
+
 	opDict = (dictionary)
 	for e opEntries {
 		atPut opDict (first e) e

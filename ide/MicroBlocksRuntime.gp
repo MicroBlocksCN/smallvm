@@ -14,9 +14,11 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
 
 method scripter SmallRuntime { return scripter }
+method serialPortOpen SmallRuntime { return (notNil port) }
+method recompileNeeded SmallRuntime { recompileAll = true }
 
 method initialize SmallRuntime aScripter {
 	scripter = aScripter
@@ -38,7 +40,7 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		showError (morph aBlock) 'Board not connected'
 		return
 	}
-	saveAllChunks this
+	step scripter // save script changes if needed
 	if (isNil (ownerThatIsA (morph aBlock) 'ScriptEditor')) {
 		// running a block from the palette, not included in saveAllChunks
 		saveChunk this aBlock
@@ -431,7 +433,6 @@ method installDecompiledProject SmallRuntime proj {
 }
 
 method receivedChunk SmallRuntime chunkID chunkType bytecodes {
-//xxx print 'receivedChunk' chunkID
 	lastRcvMSecs = (msecsSinceStart)
 	if (isEmpty bytecodes) {
 		print 'truncated chunk!' chunkID chunkType (count bytecodes) // shouldn't happen
@@ -443,7 +444,6 @@ method receivedChunk SmallRuntime chunkID chunkType bytecodes {
 }
 
 method receivedVarName SmallRuntime varID varName byteCount {
-//xxx print 'receivedVar' varID
 	lastRcvMSecs = (msecsSinceStart)
 	if (notNil decompiler) {
 		addVar decompiler varID varName
@@ -472,7 +472,24 @@ method readVarsFromBoard SmallRuntime client {
 // chunk management
 
 method syncScripts SmallRuntime {
-	if (notNil port) { saveAllChunks this }
+	// Called by scripter when anything changes.
+
+	if (isNil port) { return }
+	if (notNil decompiler) { return }
+
+	// force re-save of any functions in the scripting area
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (isPrototypeHat aBlock) {
+			fName = (functionName (function (editedPrototype aBlock)))
+			entry = (at chunkIDs fName nil)
+			if (notNil entry) {
+				// record that function is in scripting area so must be checked for changes
+				atPut entry 5 true
+			}
+		}
+	}
+
+	saveAllChunks this
 }
 
 method lookupChunkID SmallRuntime key {
@@ -528,8 +545,8 @@ method ensureChunkIdFor SmallRuntime aBlock {
 	entry = (at chunkIDs aBlock nil)
 	if (isNil entry) {
 		id = (unusedChunkID this)
-		entry = (array id nil (chunkTypeFor this aBlock))
-		atPut chunkIDs aBlock entry // block -> (<id>, <crc>, <chunkType>)
+		entry = (array id nil (chunkTypeFor this aBlock) '' false)
+		atPut chunkIDs aBlock entry // block -> (<id>, <crc>, <chunkType>, <lastSrc>, <functionMayHaveChanged>)
 	}
 	return (first entry)
 }
@@ -542,8 +559,8 @@ method assignFunctionIDs SmallRuntime {
 		fName = (functionName func)
 		if (not (contains chunkIDs fName)) {
 			id = (unusedChunkID this)
-			entry = (array id nil (chunkTypeFor this func))
-			atPut chunkIDs fName entry // fName -> (<id>, <crc>, <chunkType>)
+			entry = (array id nil (chunkTypeFor this func) '' true)
+			atPut chunkIDs fName entry // fName -> (<id>, <crc>, <chunkType>, <lastSrc>, <functionMayHaveChanged>)
 		}
 	}
 }
@@ -572,7 +589,6 @@ method deleteChunkForBlock SmallRuntime aBlock {
 
 method stopAndSyncScripts SmallRuntime alreadyStopped {
 	// Stop everything. Sync and verify scripts with the board using chunk CRC's.
-	setCursor 'wait'
 
 	removeHint (global 'page')
 	if (and (notNil port) (true != alreadyStopped)) {
@@ -580,19 +596,9 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 		softReset this
 	}
 	clearRunningHighlights this
+	doOneCycle (global 'page')
 	saveAllChunks this
 	verifyCRCs this
-
-	setCursor 'default'
-}
-
-method stopAndClearChunks SmallRuntime {
-	// Stop any running scripts and clear chunks dictionary. Used when a screen resolution
-	// change forces all scripts to be rebuilt.
-
-	sendMsg this 'stopAllMsg'
-	chunkIDs = (dictionary)
-	chunkRunning = (newArray 256 false) // clear all running flags
 }
 
 method softReset SmallRuntime {
@@ -613,7 +619,6 @@ method webSerialConnect SmallRuntime action {
 		portName = nil
 		port = nil
 	} else {
-		stopAndClearChunks this
 		openSerialPort 'webserial' 115200
 		disconnected = false
 		connectionStartTime = (msecsSinceStart)
@@ -841,6 +846,36 @@ method updateConnection SmallRuntime {
 	}
 }
 
+method justConnected SmallRuntime {
+	// Called when a board has just connected (browser or stand-alone).
+
+	print 'Connected to' portName
+	connectionStartTime = nil
+	vmVersion = nil
+	sendMsgSync this 'getVersionMsg'
+	sendStopAll this
+	clearRunningHighlights this
+	setDefaultSerialDelay this
+	abortFileTransfer this
+	processMessages this // process incoming version message
+	if readFromBoard {
+		readFromBoard = false
+		readCodeFromBoard this
+	} else {
+		clearBoardIfConnected this true
+		stopAndSyncScripts this true
+// xxx Disable this attempt to reuse scripts already on board for now; it sometimes fails
+// 		if (isEmpty chunkIDs) {
+// 			clearBoardIfConnected this false
+// 			stopAndSyncScripts this true
+// 		} else {
+// 			forceFunctionChecks this
+// 			syncScripts this
+// 			verifyCRCs this
+// 		}
+	}
+}
+
 method tryToConnect SmallRuntime {
 	// Called when connectionStartTime is not nil, indicating that we are trying
 	// to establish a connection to a board the current serial port.
@@ -857,20 +892,7 @@ method tryToConnect SmallRuntime {
 			port = 1
 			waitForPing this // wait up to 1 second for ping
 			pingSentMSecs = (msecsSinceStart)
-			print 'Connected to' portName
-			connectionStartTime = nil
-			vmVersion = nil
-			clearRunningHighlights this
-			setDefaultSerialDelay this
-			if readFromBoard {
-				readFromBoard = false
-				sendStopAll this
-				readCodeFromBoard this
-			} else {
-				clearBoardIfConnected this false
-				stopAndSyncScripts this true
-			}
-			sendMsg this 'getVersionMsg'
+			justConnected this
 			return 'not connected' // don't make circle green until successful ping
 		} else {
 			portName = nil
@@ -892,20 +914,7 @@ method tryToConnect SmallRuntime {
 		sendMsg this 'pingMsg'
 		processMessages this
 		if (lastPingRecvMSecs != 0) { // got a ping; we're connected!
-			print 'Connected to' portName
-			connectionStartTime = nil
-			vmVersion = nil
-			clearRunningHighlights this
-			setDefaultSerialDelay this
-			if readFromBoard {
-				readFromBoard = false
-				sendStopAll this
-				readCodeFromBoard this
-			} else {
-				clearBoardIfConnected this false
-				stopAndSyncScripts this true
-			}
-			sendMsg this 'getVersionMsg'
+			justConnected this
 			return 'connected'
 		}
 		if (now < connectionStartTime) { connectionStartTime = now } // clock wrap
@@ -940,6 +949,10 @@ method openPortAndSendPing SmallRuntime {
 	closePort this // ensure port is closed
 	connectionStartTime = (msecsSinceStart)
 	ensurePortOpen this // attempt to reopen the port
+	if (notNil port) {
+		// discard any random bytes in buffer
+		readSerialPort port true
+	}
 	lastPingRecvMSecs = 0
 	sendMsg this 'pingMsg'
 }
@@ -1024,6 +1037,7 @@ method extractBoardType SmallRuntime versionString {
 }
 
 method versionReceived SmallRuntime versionString {
+	if (isNil versionString) { return } // bad version message
 	if (isNil vmVersion) { // first time: record and check the version number
 		vmVersion = (extractVersionNumber this versionString)
 		boardType = (extractBoardType this versionString)
@@ -1049,7 +1063,7 @@ method checkVmVersion SmallRuntime {
 method installBoardSpecificBlocks SmallRuntime {
 	// installs default blocks libraries for each type of board.
 
-	if readFromBoard { return } // don't load libraries while decompiling
+	if (or readFromBoard (notNil decompiler)) { return } // don't load libraries while decompiling
 	if (hasUserCode (project scripter)) { return } // don't load libraries if project has user code
 	if (boardLibAutoLoadDisabled (findMicroBlocksEditor)) { return } // board lib autoload has been disabled by user
 
@@ -1107,27 +1121,123 @@ method sendStopAll SmallRuntime {
 }
 
 method sendStartAll SmallRuntime {
-	saveAllChunks this
+	step scripter // save script changes if needed
 	sendMsg this 'startAllMsg'
 }
 
 // Saving and verifying
 
+method reachableFunctions SmallRuntime {
+	// Not currently used. This function finds all the functions in a project that
+	// are called explicitly. This might be used to prune unused library functions
+	// when downloading a project. However, it does not find dynamic calls that us
+	// the "call" primitive, so it is a bit risky.
+
+	proj = (project scripter)
+	todo = (list)
+	result = (dictionary)
+
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (isPrototypeHat aBlock) {
+			// todo: add function name to todo list
+		} else {
+			add todo aBlock
+		}
+	}
+	while (notEmpty todo) {
+		blockOrFuncName = (removeFirst todo)
+		expr = nil
+		if (isClass blockOrFuncName 'Block') {
+			expr = (expression blockOrFuncName)
+		} (isClass blockOrFuncName 'String') {
+			func = (functionNamed proj blockOrFuncName)
+			if (notNil func) { expr = (cmdList func) }
+		}
+		if (notNil expr) {
+			for b (allBlocks expr) {
+				op = (primName b)
+				if (and (not (contains result op)) (notNil (functionNamed proj op))) {
+					add result op
+					add todo op
+				}
+			}
+		}
+	}
+	print (count result) 'reachable functions:'
+	for fName (keys result) { print '  ' fName }
+}
+
+method suspendCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 2 (list) }
+method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
+
+method saveAllChunksAfterLoad SmallRuntime {
+	suspendCodeFileUpdates this
+	saveAllChunks this
+	resumeCodeFileUpdates this
+}
+
 method saveAllChunks SmallRuntime {
 	// Save the code for all scripts and user-defined functions.
 
 	if (isNil port) { return }
-	saveVariableNames this
+
+	t = (newTimer)
+	editor = (findMicroBlocksEditor)
+	totalScripts = (
+		(count (allFunctions (project scripter))) +
+		(count (sortedScripts (scriptEditor scripter))))
+	progressInterval = (max 1 (floor (totalScripts / 20)))
+	processedScripts = 0
+
+	skipHiddenFunctions = true
+	if (or (saveVariableNames this) recompileAll) {
+		// Clear the source code field of all chunk entries to force script recompilation
+		// and possible re-download since variable offsets have changed.
+		for entry (values chunkIDs) { atPut entry 4 '' }
+		skipHiddenFunctions = false
+	}
 	assignFunctionIDs this
 	removeObsoleteChunks this
+
+	functionsSaved = 0
 	for aFunction (allFunctions (project scripter)) {
-		saveChunk this aFunction
+		if (saveChunk this aFunction skipHiddenFunctions) {
+			functionsSaved += 1
+			if (0 == (functionsSaved % progressInterval)) {
+				showDownloadProgress editor 3 (processedScripts / totalScripts)
+			}
+		}
 		if (isNil port) { return } // connection closed
+		processedScripts += 1
 	}
+	if (functionsSaved > 0) { print 'Downloaded' functionsSaved 'functions to board' (join '(' (msecSplit t) ' msecs)') }
+
+	scriptsSaved = 0
 	for aBlock (sortedScripts (scriptEditor scripter)) {
 		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get saved above
-			saveChunk this aBlock
+			if (saveChunk this aBlock skipHiddenFunctions) {
+				scriptsSaved += 1
+				if (0 == (scriptsSaved % progressInterval)) {
+					showDownloadProgress editor 3 (processedScripts / totalScripts)
+				}
+			}
 			if (isNil port) { return } // connection closed
+		}
+		processedScripts += 1
+	}
+	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
+
+	recompileAll = false
+	showDownloadProgress editor 3 1
+}
+
+method forceFunctionChecks SmallRuntime {
+	// Mark the entries for all functions to disable the hidden function optimization.
+
+	for key (keys chunkIDs) {
+		if (isClass key 'String') {
+			entry = (at chunkIDs key)
+			atPut entry 5 true
 		}
 	}
 }
@@ -1136,42 +1246,53 @@ method forceSaveChunk SmallRuntime aBlockOrFunction {
 	// Save the chunk for the given block or function even if it was previously saved.
 
 	if (contains chunkIDs aBlockOrFunction) {
-		atPut (at chunkIDs aBlockOrFunction) 2 nil // clear the old CRC to force re-save
+		atPut (at chunkIDs aBlockOrFunction) 4 '' // clear the old source to force re-save
 	}
-	saveChunk this aBlockOrFunction
+	saveChunk this aBlockOrFunction false
 }
 
-method saveChunk SmallRuntime aBlockOrFunction {
+method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 	// Save the given script or function as an executable code "chunk".
 	// Also save the source code (in GP format) and the script position.
 
+	if (isNil skipHiddenFunctions) { skipHiddenFunctions = true } // optimize by default
+
+	pp = (new 'PrettyPrinter')
 	if (isClass aBlockOrFunction 'String') {
 		aBlockOrFunction = (functionNamed (project scripter) aBlockOrFunction)
-		if (isNil aBlockOrFunction) { return } // unknown function
+		if (isNil aBlockOrFunction) { return false } // unknown function
 	}
 	if (isClass aBlockOrFunction 'Function') {
 		functionName = (functionName aBlockOrFunction)
 		chunkID = (lookupChunkID this functionName)
 		entry = (at chunkIDs functionName)
-		newCRC = (crcForChunk this functionName)
+		if (and skipHiddenFunctions (not (at entry 5))) { return false } // function is not in scripting area so has not changed
+		atPut entry 5 false
+		currentSrc = (prettyPrintFunction pp aBlockOrFunction)
 	} else {
+		expr = (expression aBlockOrFunction)
+		if (isClass expr 'Reporter') {
+			currentSrc = (prettyPrint pp expr)
+		} else {
+			currentSrc = (prettyPrintList pp expr)
+		}
 		chunkID = (ensureChunkIdFor this aBlockOrFunction)
 		entry = (at chunkIDs aBlockOrFunction)
-		newCRC = (crcForChunk this aBlockOrFunction)
 		if ((at entry 3) != (chunkTypeFor this aBlockOrFunction)) {
 			// user changed A/B/A+B button hat type with menu
 			atPut entry 3 (chunkTypeFor this aBlockOrFunction)
-			atPut entry 2 nil // clear CRC to force save
+			atPut entry 4 '' // clear lastSrc to force save
 		}
 	}
 
-	if (newCRC == (at entry 2)) { return } // code hasn't changed
-	atPut entry 2 newCRC // remember the CRC of the code we're about to save
+	if (currentSrc == (at entry 4)) { return false } // source hasn't changed; save not needed
+	atPut entry 4 currentSrc // remember the source of the code we're about to save
 
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
+	chunkBytes = (chunkBytesFor this aBlockOrFunction)
 	data = (list chunkType)
-	addAll data (chunkBytesFor this aBlockOrFunction)
+	addAll data chunkBytes
 	if ((count data) > 1000) {
 		if (isClass aBlockOrFunction 'Function') {
 			inform (global 'page') (join
@@ -1180,8 +1301,11 @@ method saveChunk SmallRuntime aBlockOrFunction {
 		} else {
 			showError (morph aBlockOrFunction) (localized 'Script is too large to send to board.')
 		}
+		return false
 	}
+	if ((at entry 2) == (computeCRC this chunkBytes)) { return false }
 	sendMsgSync this 'chunkCodeMsg' chunkID data
+	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
 	// restart the chunk if it is a Block and is running
 	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
@@ -1190,18 +1314,20 @@ method saveChunk SmallRuntime aBlockOrFunction {
 		runChunk this chunkID
 		waitForResponse this
 	}
+	return true
 }
 
-method crcForChunk SmallRuntime aBlockOrFunctionName {
-	// Return the CRC for the compiled code for the given script or function name.
+method computeCRC SmallRuntime chunkData {
+	// Return the CRC for the given compiled code.
 
-	crc = (crc (toBinaryData (toArray (chunkBytesFor this aBlockOrFunctionName))))
+	crc = (crc (toBinaryData (toArray chunkData)))
 
 	// convert crc to a 4-byte array
 	result = (newArray 4)
 	for i 4 { atPut result i (digitAt crc i) }
 	return result
 }
+
 
 method verifyCRCs SmallRuntime {
 	// Check that the CRCs of the chunks on the board match the ones in the IDE.
@@ -1211,20 +1337,17 @@ method verifyCRCs SmallRuntime {
 
 	// collect CRCs from the board
 	crcDict = (dictionary)
-	for entry (values chunkIDs) {
-		sendMsg this 'getChunkCRCMsg' (first entry)
-		processMessages this
-		waitMSecs 10
-	}
-	timeout = 100
-	lastRcvMSecs = (msecsSinceStart)
-	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
-		processMessages this
-		waitMSecs 10
+	if (and (notNil vmVersion) (vmVersion >= 159)) {
+		collectCRCsBulk this
+	} else {
+		collectCRCsIndividually this
 	}
 
-	// build a dictionary mapping chunkID -> block or functionName
+	// build dictionaries:
+	//  ideChunks: maps chunkID -> block or functionName
+	//  crcForChunkID: maps chunkID -> CRC
 	ideChunks = (dictionary)
+	crcForChunkID = (dictionary)
 	for pair (sortedPairs chunkIDs) {
 		id = (first (first pair))
 		key = (last pair)
@@ -1232,16 +1355,23 @@ method verifyCRCs SmallRuntime {
 			remove chunkIDs key // remove reference to deleted function (rarely needed)
 		} else {
 			atPut ideChunks id (last pair)
+			atPut crcForChunkID id (at (first pair) 2)
 		}
 	}
+
+	editor = (findMicroBlocksEditor)
+	totalCount = ((count crcDict) + (count ideChunks))
+	processedCount = 0
 
 	// process CRCs
 	for chunkID (keys crcDict) {
 		sourceItem = (at ideChunks chunkID)
-		if (and (notNil sourceItem) ((at crcDict chunkID) != (crcForChunk this sourceItem))) {
+		if (and (notNil sourceItem) ((at crcDict chunkID) != (at crcForChunkID chunkID))) {
 			print 'CRC mismatch; resaving chunk:' chunkID
 			forceSaveChunk this sourceItem
+			showDownloadProgress editor 3 (processedCount / totalCount)
 		}
+		processedCount += 1
 	}
 
 	// check for missing chunks
@@ -1250,12 +1380,37 @@ method verifyCRCs SmallRuntime {
 			print 'Resaving missing chunk:' chunkID
 			sourceItem = (at ideChunks chunkID)
 			forceSaveChunk this sourceItem
+			showDownloadProgress editor 3 (processedCount / totalCount)
 		}
+		processedCount += 1
+	}
+	showDownloadProgress editor 3 1
+}
+
+method collectCRCsIndividually SmallRuntime {
+	// Collect the CRC's from all chunks on the board by requesting them individually
+
+	crcDict = (dictionary)
+
+	// request a CRC for every chunk
+	for entry (values chunkIDs) {
+		sendMsg this 'getChunkCRCMsg' (first entry)
+		processMessages this
+	}
+
+	waitForResponse this // wait for the first response
+
+	timeout = 30
+	lastRcvMSecs = (msecsSinceStart)
+	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
+		processMessages this
+		waitMSecs 10
 	}
 }
 
 method crcReceived SmallRuntime chunkID chunkCRC {
-	// Record the CRC for the given chunkID as reported by the board.
+	// Received an individual CRC message from board.
+	// Record the CRC for the given chunkID.
 
 	lastRcvMSecs = (msecsSinceStart)
 	if (notNil crcDict) {
@@ -1263,9 +1418,49 @@ method crcReceived SmallRuntime chunkID chunkCRC {
 	}
 }
 
+method collectCRCsBulk SmallRuntime {
+	// Collect the CRC's from all chunks on the board via a bulk CRC request.
+
+	crcDict = nil
+
+	// request CRCs for all chunks on board
+	sendMsg this 'getAllCRCsMsg'
+
+	// wait until crcDict is filled in or timeout
+	startT = (msecsSinceStart)
+	while (and (isNil crcDict) (((msecsSinceStart) - startT) < 2000)) {
+		processMessages this
+		waitMSecs 5
+	}
+	if (isNil crcDict) { crcDict = (dictionary) } // timeout
+}
+
+method allCRCsReceived SmallRuntime data {
+	// Received a message from baord with the CRCs of all chunks.
+	// Create crcDict and record the (possibly empty) list of CRCs.
+	// Each CRC record is 5 bytes: <chunkID (one byte)> <CRC (four bytes)>
+
+	crcDict = (dictionary)
+	byteCount = (count data)
+	i = 1
+	while (i <= (byteCount - 4)) {
+		chunkID = (at data i)
+		chunkCRC = (copyFromTo data (i + 1) (i + 4))
+		atPut crcDict chunkID chunkCRC
+		i += 5
+	}
+}
+
 method saveVariableNames SmallRuntime {
+	// If the variables list has changed, save the new variable names.
+	// Return true if varibles have changed, false otherwise.
+
 	newVarNames = (allVariableNames (project scripter))
-	if (oldVarNames == newVarNames) { return }
+	if (oldVarNames == newVarNames) { return false }
+
+	editor = (findMicroBlocksEditor)
+	varCount = (count newVarNames)
+	progressInterval = (max 1 (floor (varCount / 20)))
 
 	clearVariableNames this
 	varID = 0
@@ -1274,8 +1469,12 @@ method saveVariableNames SmallRuntime {
 			sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
 		}
 		varID += 1
+		if (0 == (varID % progressInterval)) {
+			showDownloadProgress editor 2 (varID / varCount)
+		}
 	}
 	oldVarNames = (copy newVarNames)
+	return true
 }
 
 method runChunk SmallRuntime chunkID {
@@ -1324,9 +1523,10 @@ method setVar SmallRuntime varID val {
 
 method variablesChanged SmallRuntime {
 	// Called by scripter when variables are added or removed.
+
 	sendStopAll this
 	clearVariableNames this
-	saveAllChunks this
+	scriptChanged scripter
 }
 
 method clearVariableNames SmallRuntime {
@@ -1352,7 +1552,6 @@ method setDefaultSerialDelay SmallRuntime {
 method setSerialDelay SmallRuntime newDelay {
 	if ('reset to default' == newDelay) {
 		newDelay = 5
-//		if ('Browser' == (platform)) { newDelay = 15 }
 	}
 	sendMsg this 'extendedMsg' 1 (list newDelay)
 }
@@ -1391,6 +1590,8 @@ method msgNameToID SmallRuntime msgName {
 		atPut msgDict 'chunkAttributeMsg' 28
 		atPut msgDict 'varNameMsg' 29
 		atPut msgDict 'extendedMsg' 30
+		atPut msgDict 'getAllCRCsMsg' 38
+		atPut msgDict 'allCRCsMsg' 39
 		atPut msgDict 'deleteFile' 200
 		atPut msgDict 'listFiles' 201
 		atPut msgDict 'fileInfo' 202
@@ -1442,6 +1643,8 @@ method errorString SmallRuntime errID {
 #define serialWriteTooBig		38	// Serial port write is limited to 128 bytes
 #define needsListOfIntegers		39	// Needs a list of integers
 #define byteOutOfRange			40	// Needs a value between 0 and 255
+#define needsPositiveIncrement	41	// Range increment must be a positive integer
+#define needsIntOrListOfInts	42	// Needs an integer or a list of integers
 '
 	for line (lines defsFromHeaderFile) {
 		words = (words line)
@@ -1473,13 +1676,14 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 	while ((byteCount dataToSend) > 0) {
 		// Note: Adafruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
 		// written in one call to writeSerialPort, so send smaller chunks
-		byteCount = (min 1000 (byteCount dataToSend))
+		byteCount = (min 50 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
 		if (not (isOpenSerialPort port)) {
 			closePort this
 			return
 		}
+		waitMSecs 2
 		if (bytesSent < byteCount) { waitMSecs 200 } // output queue full; wait a bit
 		dataToSend = (copyFromTo dataToSend (bytesSent + 1))
 	}
@@ -1524,7 +1728,7 @@ method waitForResponse SmallRuntime {
 			return true
 		}
 		sendMsg this 'pingMsg'
-		waitMSecs 25
+		waitMSecs 5
 	}
 	return false
 }
@@ -1566,9 +1770,9 @@ method processNextMessage SmallRuntime {
 	// Parse and dispatch messages
 	firstByte = (byteAt recvBuf 1)
 	byteTwo = (byteAt recvBuf 2)
-	if (or (byteTwo < 1) (and (32 <= byteTwo) (byteTwo < 200)) (byteTwo > 205)) {
+	if (or (byteTwo < 1) (and (40 <= byteTwo) (byteTwo < 200)) (byteTwo > 205)) {
 		print 'Serial error, opcode:' (byteAt recvBuf 2)
-		skipMessage this // discard unrecognized message
+		discardMessage this
 		return true
 	}
 	if (250 == firstByte) { // short message
@@ -1580,7 +1784,7 @@ method processNextMessage SmallRuntime {
 		bodyBytes = (((byteAt recvBuf 5) << 8) | (byteAt recvBuf 4))
 		if (bodyBytes >= 1024) {
 			print 'Serial error, length:' bodyBytes
-			skipMessage this // discard unrecognized message
+			discardMessage this
 			return true
 		}
 		if ((byteCount recvBuf) < (5 + bodyBytes)) { return false } // incomplete body
@@ -1590,12 +1794,14 @@ method processNextMessage SmallRuntime {
 	} else {
 		print 'Serial error, start byte:' firstByte
 		print (toString recvBuf) // show the string (could be an ESP error message)
-		skipMessage this // discard
+		discardMessage this
 	}
 	return true
 }
 
-method skipMessage SmallRuntime {
+method discardMessage SmallRuntime { skipMessage this true }
+
+method skipMessage SmallRuntime discard {
 	// Discard bytes in recvBuf until the start of the next message, if any.
 
 	end = (byteCount recvBuf)
@@ -1603,11 +1809,13 @@ method skipMessage SmallRuntime {
 	while (i < end) {
 		byte = (byteAt recvBuf i)
 		if (or (250 == byte) (251 == byte)) {
+		if (true == discard) { print '    ' (toString (copyFromTo recvBuf 1 (i - 1))) }
 			recvBuf = (copyFromTo recvBuf i)
 			return
 		}
 		i += 1
 	}
+	if (true == discard) { print '    ' (toString recvBuf) }
 	recvBuf = (newBinaryData 0) // no message start found; discard entire buffer
 }
 
@@ -1643,6 +1851,8 @@ method handleMessage SmallRuntime msg {
 		versionReceived this (returnedValue this msg)
 	} (op == (msgNameToID this 'chunkCRCMsg')) {
 		crcReceived this (byteAt msg 3) (copyFromTo (toArray msg) 6)
+	} (op == (msgNameToID this 'allCRCsMsg')) {
+		allCRCsReceived this (copyFromTo (toArray msg) 6)
 	} (op == (msgNameToID this 'pingMsg')) {
 		lastPingRecvMSecs = (msecsSinceStart)
 	} (op == (msgNameToID this 'broadcastMsg')) {
@@ -1796,11 +2006,14 @@ method writeFileToBoard SmallRuntime srcFileName {
 	sendFileData this targetFileName fileData
 }
 
-// busy tells the MicroBlocksEditor to suspect board communciations during file transfers
+// busy tells the MicroBlocksEditor to suspend board communciations during file transfers
 method busy SmallRuntime { return (notNil fileTransferProgress) }
 
 method fileTransferProgress SmallRuntime actionLabel { return (join '' fileTransferProgress '% ' (localized actionLabel)) }
-method abortFileTransfer SmallRuntime { fileTransferProgress = nil }
+
+method abortFileTransfer SmallRuntime {
+	if (not (fileTransferCompleted this)) { fileTransferProgress = nil }
+}
 
 method fileTransferCompleted SmallRuntime {
 	// return true if the file transfer is complete or aborted
@@ -2096,31 +2309,34 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu (niceBoardName this b) (action 'copyVMToBoard' this (first b) (last b))
 		}
 		popUpAtHand menu (global 'page')
-	} ((count (portList this)) > 0) {
+	} (notNil boardType) {
 		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
-		} ('RP2040' == boardType) {
+		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0') {
+			adaFruitResetMessage this
+		} (isOneOf boardType 'RP2040' 'Pico W') {
 			rp2040ResetMessage this
-			return
-		} else {
-			disconnected = true
-			closePort this
-			menu = (menu 'Select board type:' this)
-			for boardName (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') {
-				eraseFlashFlag = true
-				addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
+		}
+	} else {
+		disconnected = true
+		closePort this
+		menu = (menu 'Select board type:' this)
+		if (not eraseFlashFlag) {
+			for boardName (array 'microbit' 'Calliope mini') {
+				addItem menu boardName (action 'noBoardFoundMessage' this)
 			}
+			addLine menu
+		}
+		for boardName (array 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266' ) {
+			addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
+		}
+		if (not eraseFlashFlag) {
 			addLine menu
 			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
 			addItem menu 'RP2040 (Pico)' (action 'rp2040ResetMessage' this)
-			popUpAtHand menu (global 'page')
 		}
-	} else {
-		(inform (join
-			(localized 'No boards found; is your board plugged in?') (newline)
-			(localized 'For Adafruit boards, double-click reset button and try again.'))
-			'No boards found')
+		popUpAtHand menu (global 'page')
 	}
 }
 
@@ -2136,6 +2352,10 @@ method niceBoardName SmallRuntime board {
 		return 'Circuit Playground Bluefruit'
 	} (beginsWith name 'CLUE') {
 		return 'Clue'
+	} (beginsWith name 'METRO') {
+		return 'Metro M0'
+	} (beginsWith name 'RPI-RP2') {
+		return 'Raspberry Pi Pico'
 	}
 	return name
 }
@@ -2178,10 +2398,25 @@ method getBoardDriveName SmallRuntime path {
 			if (notNil (nextMatchIn 'CPlay Express' contents)) { return 'CPLAYBOOT' }
 			if (notNil (nextMatchIn 'Circuit Playground nRF52840' contents)) { return 'CPLAYBTBOOT' }
 			if (notNil (nextMatchIn 'Adafruit Clue' contents)) { return 'CLUEBOOT' }
+			if (notNil (nextMatchIn 'Metro M0' contents)) { return 'METROBOOT' }
 			if (notNil (nextMatchIn 'RPI-RP2' contents)) { return 'RPI-RP2' }
 		}
 	}
 	return nil
+}
+
+method picoVMFileName SmallRuntime {
+	tmp = (array nil)
+	menu = (menu 'Pico board type?' (action 'atPut' tmp 1) true)
+	addItem menu 'RP2040 (Pico)'
+	addItem menu 'Pico W (WiFi)'
+	waitForSelection menu
+	result = (first tmp)
+	if ('Pico W (WiFi)' == result) {
+		return 'vm_pico_w.uf2'
+	} else {
+		return 'vm_pico.uf2'
+	}
 }
 
 method copyVMToBoard SmallRuntime driveName boardPath {
@@ -2199,8 +2434,10 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 		vmFileName = 'vm_cplay52.uf2'
 	} ('CLUEBOOT' == driveName) {
 		vmFileName = 'vm_clue.uf2'
+	} ('METROBOOT' == driveName) {
+		vmFileName = 'vm_metroM0.uf2'
 	} ('RPI-RP2' == driveName) {
-		vmFileName = 'vm_pico.uf2'
+		vmFileName = (picoVMFileName this)
 	} else {
 		print 'unknown drive name in "copyVMToBoard"' // shouldn't happen
 		return
@@ -2220,43 +2457,57 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 
 method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	if ('micro:bit' == boardType) {
-		copyVMToBoardInBrowser this 'micro:bit'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'micro:bit'
 	} ('micro:bit v2' == boardType) {
-		copyVMToBoardInBrowser this 'micro:bit v2'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'micro:bit v2'
 	} ('Calliope' == boardType) {
-		copyVMToBoardInBrowser this 'Calliope mini'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Calliope mini'
 	} ('CircuitPlayground' == boardType) {
-		copyVMToBoardInBrowser this 'Circuit Playground Express'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Express'
 	} ('CircuitPlayground Bluefruit' == boardType) {
-		copyVMToBoardInBrowser this 'Circuit Playground Bluefruit'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
-		copyVMToBoardInBrowser this 'Clue'
-	} ('RP2040' == boardType) {
-		copyVMToBoardInBrowser this 'RP2040 (Pico)'
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Clue'
 	} (and
 		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
 		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 	} else {
-		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this) true)
-		addItem menu 'micro:bit'
-		addItem menu 'Calliope mini'
-		addItem menu 'Circuit Playground Express'
-		addItem menu 'Circuit Playground Bluefruit'
-		addItem menu 'Clue'
-		addItem menu 'Citilab ED1'
-		addItem menu 'M5Stack-Core'
-		addItem menu 'M5StickC'
-		addItem menu 'M5StickC+'
-		addItem menu 'M5Atom-Matrix'
-		addItem menu 'ESP32'
-		addItem menu 'ESP8266'
-		addItem menu 'RP2040 (Pico)'
+		menu = (menu 'Select board type:' (action 'copyVMToBoardInBrowser' this eraseFlashFlag downloadLatestFlag) true)
+		if eraseFlashFlag {
+			addItem menu 'Citilab ED1'
+			addItem menu 'M5Stack-Core'
+			addItem menu 'M5StickC'
+			addItem menu 'M5StickC+'
+			addItem menu 'M5Atom-Matrix'
+			addItem menu 'ESP32'
+			addItem menu 'ESP8266'
+		} else {
+			addItem menu 'micro:bit'
+			addItem menu 'Calliope mini'
+			addLine menu
+			addItem menu 'Citilab ED1'
+			addLine menu
+			addItem menu 'RP2040 (Pico)'
+			addItem menu 'Pico W (WiFi)'
+			addLine menu
+			addItem menu 'Circuit Playground Express'
+			addItem menu 'Circuit Playground Bluefruit'
+			addItem menu 'Clue'
+			addItem menu 'Metro M0'
+			addLine menu
+			addItem menu 'M5Stack-Core'
+			addItem menu 'M5StickC'
+			addItem menu 'M5StickC+'
+			addItem menu 'M5Atom-Matrix'
+			addItem menu 'ESP32'
+			addItem menu 'ESP8266'
+		}
 		popUpAtHand menu (global 'page')
 	}
 }
 
-method flashVMInBrowser SmallRuntime boardName {
+method flashVMInBrowser SmallRuntime boardName eraseFlashFlag downloadLatestFlag {
 	if (isNil port) {
 		// prompt user to open the serial port
 		selectPort this
@@ -2270,13 +2521,13 @@ method flashVMInBrowser SmallRuntime boardName {
 	}
 	if (isOpenSerialPort 1) {
 		port = 1
-		flashVM this boardName false false
+		flashVM this boardName eraseFlashFlag downloadLatestFlag
 	}
 }
 
-method copyVMToBoardInBrowser SmallRuntime boardName {
+method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boardName {
 	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266') {
-		flashVMInBrowser this boardName
+		flashVMInBrowser this boardName eraseFlashFlag downloadLatestFlag
 		return
 	}
 
@@ -2298,8 +2549,14 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 	} ('Clue' == boardName) {
 		vmFileName = 'vm_clue.uf2'
 		driveName = 'CLUEBOOT'
+	} ('Metro M0' == boardName) {
+		vmFileName = 'vm_metroM0.uf2'
+		driveName = 'METROBOOT'
 	} ('RP2040 (Pico)' == boardName) {
 		vmFileName = 'vm_pico.uf2'
+		driveName = 'RPI-RP2'
+	} ('Pico W (WiFi)' == boardName) {
+		vmFileName = 'vm_pico_w.uf2'
 		driveName = 'RPI-RP2'
 	}
 
@@ -2354,6 +2611,10 @@ method copyVMToBoardInBrowser SmallRuntime boardName {
 			adaFruitReconnectMessage this
 		}
 	}
+}
+
+method noBoardFoundMessage SmallRuntime {
+	inform (localized 'No boards found; is your board plugged in?') 'No boards found'
 }
 
 method adaFruitResetMessage SmallRuntime {
@@ -2437,7 +2698,6 @@ method removeFlasher SmallRuntime {
 }
 
 method flashVM SmallRuntime boardName eraseFlashFlag downloadLatestFlag {
-	stopAndSyncScripts this
 	if ('Browser' == (platform)) {
 		disconnected = true
 		flasherPort = port

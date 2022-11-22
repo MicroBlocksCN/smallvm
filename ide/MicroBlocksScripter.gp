@@ -579,7 +579,7 @@ method visibleVars MicroBlocksScripter {
 }
 
 method createVariable MicroBlocksScripter srcObj {
-  varName = (prompt (global 'page') 'New variable name?' '')
+  varName = (trim (prompt (global 'page') 'New variable name?' ''))
   if (varName != '') {
 	addVariable (main mbProject) (uniqueVarName this varName)
 	variablesChanged (smallRuntime)
@@ -690,9 +690,12 @@ method restoreScripts MicroBlocksScripter {
 
   scripts = (scripts (main mbProject))
   if (notNil scripts) {
+	editor = (findMicroBlocksEditor)
+    scriptCount = (count scripts)
     paneX = (left (morph scriptsPane))
     paneY = (top (morph scriptsPane))
-    for entry scripts {
+    for i scriptCount {
+      entry = (at scripts i)
       dta = (last entry)
       if ('to' == (primName dta)) {
         func = (functionNamed mbProject (first (argList dta)))
@@ -877,6 +880,7 @@ method removedUserDefinedBlock MicroBlocksScripter function {
   removeFunction (module function) function // in MicroBlocks the function "module" is its library
   deleteBlockSpecFor (project projectEditor) (functionName function)
   updateBlocks this
+  saveNeeded = true
 }
 
 method addToBottom MicroBlocksScripter aBlock noScroll {
@@ -1066,6 +1070,7 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 // Library import/export
 
 method importLibrary MicroBlocksScripter {
+  if (downloadInProgress (findProjectEditor)) { return }
   pickLibraryToOpen (action 'importLibraryFromFile' this) lastLibraryFolder (array '.ubl')
 }
 
@@ -1108,7 +1113,7 @@ method importEmbeddedLibrary MicroBlocksScripter libName {
 method importLibraryFromFile MicroBlocksScripter fileName data {
   // Import a library with the given file path. If data is not nil, it came from
   // a browser upload or file drop. Use it rather than attempting to read the file.
-  setCursor 'wait'
+
   if (isNil data) {
 	if (beginsWith fileName '//') {
 	  data = (readEmbeddedFile (substring fileName 3))
@@ -1175,7 +1180,7 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 	updateBlocks this
 	saveScripts this
 	restoreScripts this
-	setCursor 'default'
+	saveAllChunksAfterLoad (smallRuntime)
 }
 
 method updateLibraryList MicroBlocksScripter {

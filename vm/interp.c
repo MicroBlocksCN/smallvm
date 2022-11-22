@@ -48,6 +48,10 @@ OBJ fail(uint8 errCode) {
 	return falseObj;
 }
 
+int failure() {
+	return errorCode != noError;
+}
+
 // Printing
 
 #define PRINT_BUF_SIZE 800
@@ -124,6 +128,14 @@ static void primSendBroadcast(int argCount, OBJ *args) {
 	lastBroadcast = newStringFromBytes(printBuffer, printBufferByteCount);
 	startReceiversOfBroadcast(printBuffer, printBufferByteCount);
 	sendBroadcastToIDE(printBuffer, printBufferByteCount);
+}
+
+OBJ primBroadcastToIDEOnly(int argCount, OBJ *args) {
+	// Broadcast a string to the IDE only, not locally.
+
+	printArgs(argCount, args, false, false);
+	sendBroadcastToIDE(printBuffer, printBufferByteCount);
+	return falseObj;
 }
 
 // Timer
@@ -678,12 +690,17 @@ static void runTask(Task *task) {
 		// arg N-1
 		// ...
 		// arg 0
+		tmp = (arg >> 8) & 0xFF; // callee's chunk index (middle byte of arg)
+		if (chunks[tmp].chunkType != functionHat) {
+			fail(badChunkIndexError);
+			goto error;
+		}
 		STACK_CHECK(3);
 		*sp++ = int2obj(arg & 0xFF); // # of arguments (low byte of arg)
 		*sp++ = int2obj(((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF)); // return address
 		*sp++ = int2obj(fp - task->stack); // old fp
 		fp = sp;
-		task->currentChunkIndex = (arg >> 8) & 0xFF; // callee's chunk index (middle byte of arg)
+		task->currentChunkIndex = tmp; // callee's chunk index (middle byte of arg)
 		task->code = chunks[task->currentChunkIndex].code;
 		ip = task->code + PERSISTENT_HEADER_WORDS; // first instruction in callee
 		DISPATCH();
@@ -1314,6 +1331,41 @@ void vmLoop() {
 #endif
 	}
 }
+
+#ifdef EMSCRIPTEN
+// Boardie support
+
+void interpretStep() {
+	// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
+
+	// at some point, regularly do this:
+	/*
+	   checkButtons();
+   */
+	// TODO where to do this? Not constantly, of course...
+	processMessage();
+
+	uint32 usecs = 0; // compute times only the first time they are needed
+	for (int t = 0; t < taskCount; t++) {
+		currentTaskIndex++;
+		if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
+		Task *task = &tasks[currentTaskIndex];
+		if (unusedTask == task->status) {
+			continue;
+		} else if (running == task->status) {
+			runTask(task);
+			break;
+		} else if (waiting_micros == task->status) {
+			if (!usecs) usecs = microsecs(); // get usecs
+			if ((usecs - task->wakeTime) < RECENT) task->status = running;
+		}
+		if (running == task->status) {
+			runTask(task);
+			break;
+		}
+	}
+}
+#endif
 
 // Testing
 

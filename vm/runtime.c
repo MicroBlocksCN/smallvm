@@ -434,6 +434,12 @@ static void processExtendedMessage(uint8 msgID, int byteCount, uint8 *data) {
 		if (arg > 50) arg = 50;
 		extraByteDelay = arg * 100; // 100 to 5000 microseconds per character
 		break;
+	case 2: // suspend saving to the code file on file-based boards while loading a project or library
+		suspendCodeFileUpdates();
+		break;
+	case 3: // save the entire RAM code store to the code file and resume incremental saving
+		resumeCodeFileUpdates();
+		break;
 	}
 }
 
@@ -445,14 +451,18 @@ void softReset(int clearMemoryFlag) {
 	// This is not a full hardware reset/reboot, but close.
 
 	stopAllTasks();
+	resumeCodeFileUpdates();
 
 	OBJ off = falseObj;
 	if (!useTFT) primSetUserLED(&off);
 #if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_BBC_MICROBIT_V2)
+	OBJ enable = trueObj;
+	primMBEnableDisplay(1, &enable);
 	primMBDisplayOff(0, NULL);
 	updateMicrobitDisplay();
 #endif
 
+	resetRadio();
 	stopPWM();
 	stopServos();
 	stopTone();
@@ -475,11 +485,22 @@ static int outBufEnd = 0;
 
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
+static uint32 lastSendMSecs = 0; // used to detect when serial is connected and accepting data
+
 static inline void sendData() {
+	int someDataSent = false;
 	while (outBufStart != outBufEnd) {
 		if (!sendByte(outBuf[outBufStart])) break;
 		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
+		someDataSent = true;
 	}
+	if (someDataSent) lastSendMSecs = millisecs();
+}
+
+int serialConnected() {
+	uint32 now = millisecs();
+	if (lastSendMSecs > now) lastSendMSecs = 0; // clock wrap
+	return ((now - lastSendMSecs) < 2000);
 }
 
 static inline void queueByte(uint8 aByte) {
@@ -641,6 +662,8 @@ void logData(char *s) {
 void outputString(const char *s) {
 	// Sending a debug string. Use chunkID 255.
 
+	if (!serialConnected()) return; // serial port not open; do nothing
+
 	char data[200];
 	data[0] = 2; // data type (2 is string)
 	int byteCount = strlen(s);
@@ -791,6 +814,45 @@ void sendChunkCRC(int chunkID) {
 	}
 }
 
+void delay(int); // Arduino delay function
+
+void sendAllCRCs() {
+	// count chunks
+	int chunkCount = 0;
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		if (chunks[i].code) chunkCount++;
+	}
+
+	// send message header
+	int dataSize = 5 * chunkCount;
+	waitForOutbufBytes(10);
+	queueByte(251);
+	queueByte(allCRCsMsg);
+	queueByte(0);
+	queueByte(dataSize & 0xFF); // low byte of size
+	queueByte((dataSize >> 8) & 0xFF); // high byte of size
+
+	// send CRC records for chunks in use
+	// each record is 5 bytes: chunkID (one byte) + the CRC for that chunk (four bytes)
+	int delayPerCRC = extraByteDelay / 250;  // msec delay for 4 bytes (extraByteDelay is in usecs)
+	for (int i = 0; i < MAX_CHUNKS; i++) {
+		if (chunks[i].code) {
+			OBJ code = chunks[i].code;
+			int wordCount = *(code + 1); // size is the second word in the persistent store record
+			uint8_t *chunkData = (uint8_t *) (code + PERSISTENT_HEADER_WORDS);
+			uint32_t crc = crc32(chunkData, (4 * wordCount));
+			char *crcBytes = (char *) &crc;
+			waitForOutbufBytes(5);
+			queueByte(i);
+			queueByte(crcBytes[0]);
+			queueByte(crcBytes[1]);
+			queueByte(crcBytes[2]);
+			queueByte(crcBytes[3]);
+			delay(delayPerCRC);
+		}
+	}
+}
+
 // Retrieving source code and attributes
 
 // static void sendAttributeMessage(int chunkIndex, int attributeID, int *persistentRecord) {
@@ -830,8 +892,6 @@ static void sendCodeChunk(int chunkID, int chunkType, int chunkBytes, char *chun
 		queueByte(*p);
 	}
 }
-
-void delay(int); // Arduino delay function
 
 static void sendAllCode() {
 	// Send the code and attributes for all chunks to the IDE.
@@ -928,7 +988,7 @@ static void skipToStartByteAfter(int startIndex) {
 		if ((0xFA == b) || (0xFB == b)) {
 			if ((i + 1) < rcvByteCount) {
 				b = rcvBuf[i + 1];
-				if ((b < 0x01) || (b > 0x20)) continue; // illegal msg type; keep scanning
+                if ((b == 0) || ((b > LAST_MSG) && (b < 200))) continue; // illegal msg type; keep scanning			}
 			}
 			nextStart = i;
 			break;
@@ -993,6 +1053,9 @@ static void processShortMessage() {
 	case getChunkCRCMsg:
 		sendChunkCRC(chunkIndex);
 		break;
+	case getAllCRCsMsg:
+		sendAllCRCs();
+		break;
 	case getVersionMsg:
 		sendVersionString();
 		break;
@@ -1002,6 +1065,7 @@ static void processShortMessage() {
 	case deleteAllCodeMsg:
 		deleteAllChunks();
 		memClear();
+		primMBDisplayOff(0, NULL);
 		break;
 	case systemResetMsg:
 		// non-zero chunkIndex is used for debugging operations
@@ -1084,14 +1148,15 @@ void processMessage() {
 	rcvByteCount += bytesRead;
 	if (!rcvByteCount) return;
 
-	while (bytesRead > 0) {
-		// wait time: on microBit, 35 seems to work, 25 fails
-		// on Arduino Primo, 100 sometimes fails; use 150 to be safe (character time is ~90 usecs)
-//		busyWaitMicrosecs(150); // needed when built on mbed to avoid dropped bytes
-		bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
-		rcvByteCount += bytesRead;
-		lastRcvTime = microsecs();
-	}
+	// the following is needed when built on mbed to avoid dropped bytes
+// 	while (bytesRead > 0) {
+// 		// on Arduino Primo, 100 sometimes fails; use 150 to be safe (character time is ~90 usecs)
+// 		busyWaitMicrosecs(150);
+// 		bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);
+// 		rcvByteCount += bytesRead;
+// 	}
+
+	lastRcvTime = microsecs();
 	int firstByte = rcvBuf[0];
 	if (0xFA == firstByte) {
 		processShortMessage();

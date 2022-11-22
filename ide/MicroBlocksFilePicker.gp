@@ -145,7 +145,8 @@ method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveF
 	useEmbeddedFS = true
 	if ('Browser' == (platform)) { useEmbeddedFS = false }
   }
-  showFolder this defaultPath true
+  isTopLevel = (isNil (findFirst defaultPath '/')) // root folder
+  showFolder this defaultPath isTopLevel
   return this
 }
 
@@ -443,7 +444,7 @@ method folderContents MicroBlocksFilePicker {
   for fn (sorted fileList 'caseInsensitiveSort') {
 	if (not (beginsWith fn '.')) {
 	  if (or (isNil extensions) (hasExtension fn extensions)) {
-		add result fn
+		add result (array (localized (withoutExtension fn)) fn)
 	  }
 	}
   }
@@ -491,6 +492,7 @@ method okay MicroBlocksFilePicker {
 		answer = (join currentDir '/' (text (contents nameField)))
 	} else {
 		sel = (selection (contents listPane))
+			if (isClass sel 'Array') { sel = (at sel 2) }
 			if (notNil sel) {
 				if (beginsWith sel '[ ] ') {
 					// jump inside folder
@@ -501,7 +503,10 @@ method okay MicroBlocksFilePicker {
 				}
 			}
 		if (and useEmbeddedFS ('' != answer)) { answer = (join '//' answer) }
-		if (and (notNil action) ('' != answer)) { call action answer }
+		if (and (notNil action) ('' != answer)) {
+			removeFromOwner morph
+			call action answer
+		}
 	}
 	removeFromOwner morph
 	isDone = true
@@ -509,6 +514,7 @@ method okay MicroBlocksFilePicker {
 
 method fileOrFolderSelected MicroBlocksFilePicker {
 	sel = (selection (contents listPane))
+	if (isClass sel 'Array') { sel = (at sel 2) }
 	if (beginsWith sel '[ ] ') {
 		sel = (substring sel 5)
 		if (endsWith sel ':') {
@@ -535,6 +541,7 @@ method fileOrFolderSelected MicroBlocksFilePicker {
 
 method fileOrFolderDoubleClicked MicroBlocksFilePicker {
   sel = (selection (contents listPane))
+  if (isClass sel 'Array') { sel = (at sel 2) }
   if (beginsWith sel '[ ] ') {
 	sel = (substring sel 5)
 	if (or (endsWith sel ':')) {

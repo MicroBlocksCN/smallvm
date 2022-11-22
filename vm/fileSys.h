@@ -12,3 +12,6 @@
 // always use LittleFS
 #include <LittleFS.h>
 #define myFS LittleFS
+
+void closeIfOpen(char *fileName);
+void closeAndDeleteFile(char *fileName);

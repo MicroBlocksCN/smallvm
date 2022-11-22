@@ -53,18 +53,18 @@ repeat 16 {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 2 
+version 1 4 
 tags pixel matrix led tft 
-description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) also support this primitives in a simulated "fat pixel" display.'
+description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
 
-	spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
-	spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
-	spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
-	spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
-	spec ' ' 'stopScrollingText' 'stop scrolling'
+  spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
+  spec ' ' '[display:mbUnplot]' 'unplot x _ y _' 'num num' 3 3
+  spec ' ' 'displayCharacter' 'display character _' 'str' 'A'
+  spec ' ' 'scroll_text' 'scroll text _ : pausing _ ms' 'str num' 'HELLO ROSA!' 100
+  spec ' ' 'stopScrollingText' 'stop scrolling'
 
 to displayCharacter s {
   s = ('[data:join]' '' s)
@@ -105,19 +105,19 @@ version 1 2
 tags radio communication messaging network 
 description 'Send and receive messages between micro:bit boards via their built-in radio system.'
 
-	spec ' ' '[radio:sendInteger]' 'radio send number _' 'num' 123
-	spec ' ' '[radio:sendString]' 'radio send string _' 'str' 'Hello!'
-	spec ' ' '[radio:sendPair]' 'radio send pair _ = _' 'str num' 'light' 10
-	spec 'r' '[radio:messageReceived]' 'radio message received?'
-	spec 'r' '[radio:receivedInteger]' 'radio last number'
-	spec 'r' '[radio:receivedString]' 'radio last string'
-	spec ' ' '[radio:setGroup]' 'radio set group _ (0-255)' 'num' 0
-	spec ' ' '[radio:setPower]' 'radio set power (0-7) _' 'num' 4
-	spec 'r' '_signalStrength' '_radio last signal strength'
-	spec 'r' '_radioLastSenderID' '_radio last sender ID'
-	spec 'r' '_radioMyID' '_radio my ID'
-	spec 'r' '_receivedMessageType' '_radio last message type'
-	spec ' ' '_setChannel' '_radio set channel (0-83) _' 'num' 7
+  spec ' ' '[radio:sendInteger]' 'radio send number _' 'num' 123
+  spec ' ' '[radio:sendString]' 'radio send string _' 'str' 'Hello!'
+  spec ' ' '[radio:sendPair]' 'radio send pair _ = _' 'str num' 'light' 10
+  spec 'r' '[radio:messageReceived]' 'radio message received?'
+  spec 'r' '[radio:receivedInteger]' 'radio last number'
+  spec 'r' '[radio:receivedString]' 'radio last string'
+  spec ' ' '[radio:setGroup]' 'radio set group _ (0-255)' 'num' 0
+  spec ' ' '[radio:setPower]' 'radio set power (0-7) _' 'num' 4
+  spec 'r' '_signalStrength' '_radio last signal strength'
+  spec 'r' '_radioLastSenderID' '_radio last sender ID'
+  spec 'r' '_radioMyID' '_radio my ID'
+  spec 'r' '_receivedMessageType' '_radio last message type'
+  spec ' ' '_setChannel' '_radio set channel (0-83) _' 'num' 7
 
 to '_radioLastSenderID' {
   return ('[radio:lastMessageID]')
@@ -148,11 +148,11 @@ description 'Plays tunes in RTTTL (Ringtone Text Transfer Language) a language d
 Also known as Nokring.'
 variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name' 
 
-	spec 'r' '_RTTTL parse control from' '_RTTTL parse control from _' 'str' ''
-	spec ' ' 'play ringtone' 'play ringtone _' 'str' 'Pacman:d=16,o=6,b=140:
+  spec 'r' '_RTTTL parse control from' '_RTTTL parse control from _' 'str' ''
+  spec ' ' 'play ringtone' 'play ringtone _' 'str' 'Pacman:d=16,o=6,b=140:
 b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b'
-	spec 'r' 'current song name' 'current song name'
-	spec ' ' '_RTTTL play note' '_RTTTL play note _' 'str' '8c#'
+  spec 'r' 'current song name' 'current song name'
+  spec ' ' '_RTTTL play note' '_RTTTL play note _' 'str' '8c#'
 
 to '_RTTTL parse control from' 'control section' {
   comment 'Extract control section'
@@ -255,15 +255,15 @@ tags tone sound music audio note speaker
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-	spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
-	spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
-	spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
-	spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
-	spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
-	spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
-	spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
-	spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
-	spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+  spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+  spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+  spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+  spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
 to '_baseFreqForNote' note {
   comment 'Return the frequency for the given note in the middle-C octave

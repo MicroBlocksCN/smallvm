@@ -51,6 +51,14 @@ to popUpAtHand {
   nop
 }
 
+method waitForSelection Menu {
+	// Pop up menu and wait until a selection is made or menu is closed.
+
+	page = (global 'page')
+	popUpAtHand this page
+	while (notNil (owner morph)) { doOneCycle page }
+}
+
 method rightClicked Menu {return true}
 
 method itemLabel Menu labelPic thumbPic bgColor itemWidth itemPaddingH itemPaddingV {

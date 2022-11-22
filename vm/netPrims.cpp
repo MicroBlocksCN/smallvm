@@ -18,19 +18,23 @@
 
 #if defined(ESP8266)
 	#include <ESP8266WiFi.h>
+	#include <WiFiUdp.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
 	#include <WebSocketsServer.h>
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+	#include <WiFi.h>
 #elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
 	#define USE_WIFI101
 	#define uint32 wifi_uint32
 	#include <WiFi101.h>
+	#include <WiFiUdp.h>
 	#undef uint32
 #endif
 
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
 
 static char connecting = false;
 static char serverStarted = false;
@@ -89,7 +93,9 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 	#else
 		int createHotSpot = (argCount > 2) && (trueObj == args[2]);
 
-		WiFi.persistent(false); // don't save network info to Flash
+		#if !defined(ARDUINO_RASPBERRY_PI_PICO_W)
+			WiFi.persistent(false); // don't save network info to Flash
+		#endif
 		WiFi.mode(WIFI_OFF); // Kill the current connection, if any
 		if (createHotSpot) {
 			WiFi.mode(WIFI_AP); // access point & station mode
@@ -163,7 +169,7 @@ static int isConnectedToWiFi() {
 }
 
 static OBJ primGetIP(int argCount, OBJ *args) {
-	#ifdef USE_WIFI101
+	#if defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
 		IPAddress ip = WiFi.localIP();
 	#else
 		IPAddress ip = (WIFI_AP == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
@@ -186,7 +192,7 @@ static OBJ primStartSSIDscan(int argCount, OBJ *args) {
 static OBJ primGetSSID(int argCount, OBJ *args) {
 	char ssid[100];
 	ssid[0] = '\0'; // clear string
-	#ifdef USE_WIFI101
+	#if defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
 		strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1), 31);
 	#else
 		strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1).c_str(), 31);
@@ -236,6 +242,11 @@ static int serverHasClient() {
 
 	if (!client) client = server.available(); // attempt to accept a client connection
 	if (!client) return false; // no client connection
+
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+		client.setNoDelay(true);
+	#endif
+
 	return (client.connected() || client.available());
 }
 
@@ -350,12 +361,7 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 			client.write(body, BYTES(args[1]));
 		}
 	}
-
-	#if defined(ESP8266)
-		client.flush(20);
-	#else
-		delay(20); // write flush() not supported on ESP32; allow time for data to get sent
-	#endif
+	delay(1); // allow some time for data to be sent
 	if (!keepAlive) client.stop(); // close the connection
 	return falseObj;
 }
@@ -377,6 +383,10 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 	#else
 		httpClient.setTimeout(timeout);
 		ok = httpClient.connect(host, port);
+	#endif
+
+	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+		client.setNoDelay(true);
 	#endif
 
 	while (ok && !httpClient.connected()) { // wait for connection to be fully established
@@ -413,8 +423,8 @@ Accept: */*\r\n",
 			reqType,
 			path,
 			host);
-	httpClient.write(request, strlen(request));
 	if ((argCount > 3) && IS_TYPE(args[3], StringType)) {
+		httpClient.write(request, strlen(request));
 		char length_str[50];
 		char* body = obj2str(args[3]);
 		int content_length = strlen(body);
@@ -423,7 +433,8 @@ Accept: */*\r\n",
 		httpClient.write(length_str, strlen(length_str));
 		httpClient.write(body, content_length);
 	} else {
-		httpClient.write("\r\n", 2);
+		strcat(request, "\r\n");
+		httpClient.write(request, strlen(request));
 	}
 	return falseObj;
 }
@@ -431,19 +442,86 @@ Accept: */*\r\n",
 static OBJ primHttpResponse(int argCount, OBJ *args) {
 	// Read some HTTP request data, if any is available, otherwise return the empty string.
 
-	int byteCount = httpClient.available();
+	uint8_t buf[800];
+	int byteCount = httpClient.read(buf, 800);
 	if (!byteCount) return (OBJ) &noDataString;
-	if (byteCount > 800) byteCount = 800; // max length string that can be reported to IDE
 
 	OBJ result = newString(byteCount);
-	while (falseObj == result) {
-		if (byteCount < 4) return (OBJ) &noDataString; // out of memory
-		byteCount = byteCount / 2;
-		result = newString(byteCount); // try to allocate half the previous amount
-	}
-	fail(noError); // clear memory allocation error, if any
-	httpClient.read((uint8 *) obj2str(result), byteCount);
+	if (falseObj == result) return (OBJ) &noDataString; // out of memory
+	memcpy((uint8_t *) obj2str(result), buf, byteCount);
 	return result;
+}
+
+// UDP
+
+WiFiUDP udp;
+
+static OBJ primUDPStart(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	int port = evalInt(args[0]);
+	if (port > 0) {
+		udp.begin(port);
+	}
+	return falseObj;
+}
+
+static OBJ primUDPStop(int argCount, OBJ *args) {
+	udp.stop();
+	return falseObj;
+}
+
+static OBJ primUDPSendPacket(int argCount, OBJ *args) {
+	if (argCount < 3) return fail(notEnoughArguments);
+	OBJ data = args[0];
+	char* ipAddr = obj2str(args[1]);
+	int port = evalInt(args[2]);
+	if (port <= 0) return falseObj; // bad port number
+
+	udp.beginPacket(ipAddr, port);
+	if (isInt(data)) {
+		udp.print(obj2int(data));
+	} else if (isBoolean(data)) {
+		udp.print((trueObj == data) ? "true" : "false");
+	} else if (StringType == TYPE(data)) {
+		char *s = obj2str(data);
+		udp.write((uint8_t *) s, strlen(s));
+	} else if (ByteArrayType == TYPE(data)) {
+		udp.write((uint8_t *) &data[HEADER_WORDS], BYTES(data));
+	}
+	udp.endPacket();
+	return falseObj;
+}
+
+static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
+	int useBinary = ((argCount > 0) && (trueObj == args[0]));
+	int byteCount = udp.parsePacket();
+	if (!byteCount) return (OBJ) &noDataString;
+
+	OBJ result = falseObj;
+	if (useBinary) {
+		result = newObj(ByteArrayType, (byteCount + 3) / 4, falseObj);
+		if (IS_TYPE(result, ByteArrayType)) setByteCountAdjust(result, byteCount);
+	} else {
+		result = newString(byteCount);
+	}
+	if (falseObj == result) { // allocation failed
+		udp.flush(); // discard packet
+		result = (OBJ) &noDataString;
+	} else {
+		udp.read((char *) &FIELD(result, 0), byteCount);
+	}
+	return result;
+}
+
+static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) {
+	char s[100];
+	IPAddress ip = udp.remoteIP();
+	sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+	return newStringFromBytes(s, strlen(s));
+}
+
+static OBJ primUDPRemotePort(int argCount, OBJ *args) {
+	return int2obj(udp.remotePort());
 }
 
 // Websocket support for ESP32
@@ -529,6 +607,13 @@ static OBJ primHttpConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpRequest(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primHttpResponse(int argCount, OBJ *args) { return fail(noWiFi); }
+
+static OBJ primUDPStart(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPStop(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPSendPacket(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPReceivePacket(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primUDPRemotePort(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
@@ -938,6 +1023,13 @@ static PrimEntry entries[] = {
 	{"httpIsConnected", primHttpIsConnected},
 	{"httpRequest", primHttpRequest},
 	{"httpResponse", primHttpResponse},
+
+	{"udpStart", primUDPStart},
+	{"udpStop", primUDPStop},
+	{"udpSendPacket", primUDPSendPacket},
+	{"udpReceivePacket", primUDPReceivePacket},
+	{"udpRemoteIPAddress", primUDPRemoteIPAddress},
+	{"udpRemotePort", primUDPRemotePort},
 
 	{"webSocketStart", primWebSocketStart},
 	{"webSocketLastEvent", primWebSocketLastEvent},

@@ -199,6 +199,8 @@ split _ by _
 
 My Blocks
 
+Generic
+
 # Buttons on top of "My Blocks" category
 
 Add a command block
@@ -1192,11 +1194,15 @@ undo the last block drop
 
 copy all scripts to clipboard
 
+copy all scripts to clipboard as URL
+
 paste all scripts
 
 paste script
 
 save a picture of all scripts
+
+set exported script scale
 
 about...
 
@@ -1290,6 +1296,14 @@ collapse
 
 rename...
 
+find variable accessors
+
+find scripts or block definitions where this variable is being read
+
+find variable modifiers
+
+find scripts or block definitions where this variable is being set or changed
+
 find uses of this block
 
 find scripts or block definitions using this block
@@ -1314,6 +1328,8 @@ just this one block
 
 copy to clipboard
 
+copy to clipboard as URL
+
 copy these blocks to the clipboard
 
 duplicate all
@@ -1324,6 +1340,8 @@ extract block
 
 pull out this block
 
+show help for this block in a browser
+
 save picture of script
 
 save picture of script with result
@@ -1331,6 +1349,8 @@ save picture of script with result
 save a picture of this block definition as a PNG file
 
 save a picture of these blocks as a PNG file
+
+save a picture of these blocks and their result as a PNG file
 
 copy script
 
@@ -1381,6 +1401,16 @@ Confirm
 # File picker and library dialogs
 
 Libraries
+
+New library name?
+
+show all block definitions
+
+hide all block definitions
+
+export this library
+
+delete library
 
 Examples
 

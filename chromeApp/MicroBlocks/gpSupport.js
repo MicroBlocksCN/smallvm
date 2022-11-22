@@ -1,22 +1,3 @@
-// The following code decides whether to use WebAssembly or asm.js
-//
-// Note: In iOS 11.2.6 Safari, GP WebAssembly did not work on John's iPad Pro.
-// Seemed to be an iOS Safari bug:
-//   https://github.com/kripken/emscripten/issues/6042
-// A fix was expected in iOS 11.3, which came out in March 2018.
-// WebAssembly seems to be working in iOS 12, so workaround was removed.
-
-if (typeof WebAssembly === 'object') {
-	var script = document.createElement('script');
-	script.src = "./gp_wasm.js"
-	document.head.appendChild(script);
-} else {
-	console.log("No WebAssembly");
-	var script = document.createElement('script');
-	script.src = "./gp_js.js"
-	document.head.appendChild(script);
-}
-
 // Handlers are ignored in gp.html when running as a Chrome App so must be added here:
 
 function addGPHandlers() {
@@ -936,7 +917,7 @@ async function GP_writeFile(data, fName, id) {
 	i = fName.lastIndexOf('.');
 	ext = (i >= 0) ? fName.substr(i + 1) : '';
 
-	i = fName.indexOf('.');
+	i = fName.lastIndexOf('.');
 	if (i > 0) fName = fName.substr(0, i);
 	if (i == 0) fName = 'Untitled';
 
@@ -970,7 +951,7 @@ async function GP_writeFile(data, fName, id) {
 		}
 		const writable = await fileHandle.createWritable();
 		await writable.write(new Blob([data]));
-		await writable.close();
+		await writable.close().catch(() => {});
 		GP.lastSavedFileName = fileHandle.name;
 	} else {
 		saveAs(new Blob([data]), fName + '.' + ext);

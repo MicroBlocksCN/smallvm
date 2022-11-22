@@ -1,7 +1,7 @@
-module PicoBricks Output
-author 'Turgut Guneysu'
-version 2 1
-depends DHT 
+module PicoBricks
+author MicroBlocks
+version 2 3 
+depends 'Temperature Humidity (DHT11, DHT22)' 
 description 'Robotistan PicoBricks Library
 
 This library controls these Pico Bricks components:
@@ -14,8 +14,9 @@ This library controls these Pico Bricks components:
 - Potentiometer (variable resistor)
 - Light sensor (light dependent resistor)
 - Temperature and humidity sensor (DHT11)
+- switched to renamed DHT library
 
-Use separate librares to control:
+Use separate libraries to control:
 - Servo motors
 - Graphic display (OLED)
 - WIFI/Bluetooth expansion board
@@ -25,21 +26,20 @@ https://wiki.microblocks.fun/boards/pico
 '
 variables _pb_initialized _pb_pin_RedLED _pb_pin_Button _pb_pin_DHT _pb_pin_Relay _pb_pin_Pot _pb_pin_LDR _pb_pin_Buzzer _pb_pin_Motor1 _pb_pin_Motor2 _pb_pin_RGB_LED _pb_pin_TX _pb_pin_RX _pb_i2c_Addr 
 
-	spec ' ' 'pb_beep' 'PicoBricks beep _ ms' 'auto' 500
-	spec 'r' 'pb_button' 'PicoBricks button'
-	spec 'r' 'pb_humidity' 'PicoBricks humidity'
-	spec 'r' 'pb_light_sensor (0-100) %' 'PicoBricks light sensor (0-100) %'
-	spec 'r' 'pb_potentiometer' 'PicoBricks potentiometer'
-	spec 'r' 'pb_random_color' 'PicoBricks random color'
-	spec 'r' 'pb_rgb_color' 'PicoBricks color r _ g _ b _ (0-255)' 'auto auto auto' 0 0 0
-	spec ' ' 'pb_set_motor_speed' 'PicoBricks set motor _ speed _ (0-100)' 'auto num' 1 100
-	spec ' ' 'pb_set_red_LED' 'PicoBricks set red LED _' 'bool' true
-	spec ' ' 'pb_set_relay' 'PicoBricks set relay _' 'bool' true
-	spec ' ' 'pb_set_rgb_color' 'PicoBricks set RGB LED color _' 'color'
-	spec 'r' 'pb_temperature' 'PicoBricks temperature (°C)'
-	spec ' ' 'pb_turn_off_RGB' 'PicoBricks turn off RGB LED'
-	spec 'r' '_pb_rescale' '_pb_rescale _ from  ( _ , _ ) to ( _ , _ )' 'auto auto auto auto auto' 0 0 0 0 0
-	spec ' ' '_pb_init_pins' '_pb_init_pins'
+  spec ' ' 'pb_beep' 'PicoBricks beep _ ms' 'auto' 500
+  spec 'r' 'pb_button' 'PicoBricks button'
+  spec 'r' 'pb_humidity' 'PicoBricks humidity'
+  spec 'r' 'pb_light_sensor' 'PicoBricks light sensor (0-100) %'
+  spec 'r' 'pb_potentiometer' 'PicoBricks potentiometer'
+  spec 'r' 'pb_random_color' 'PicoBricks random color'
+  spec 'r' 'pb_rgb_color' 'PicoBricks color r _ g _ b _ (0-255)' 'auto auto auto' 0 0 0
+  spec ' ' 'pb_set_motor_speed' 'PicoBricks set motor _ speed _ (0-100)' 'auto num' 1 100
+  spec ' ' 'pb_set_red_LED' 'PicoBricks set red LED _' 'bool' true
+  spec ' ' 'pb_set_relay' 'PicoBricks set relay _' 'bool' true
+  spec ' ' 'pb_set_rgb_color' 'PicoBricks set RGB LED color _' 'color'
+  spec 'r' 'pb_temperature' 'PicoBricks temperature (°C)'
+  spec ' ' 'pb_turn_off_RGB' 'PicoBricks turn off RGB LED'
+  spec ' ' '_pb_init_pins' '_pb_init_pins'
 
 to '_pb_init_pins' {
   if _pb_initialized {return}
@@ -57,13 +57,6 @@ to '_pb_init_pins' {
   _pb_pin_RX = 1
   _pb_i2c_Addr = '3C'
   _pb_initialized = (booleanConstant true)
-}
-
-to '_pb_rescale' val in_min in_max out_min out_max {
-  comment 'map(long val, long in_min, long in_max, long out_min, long out_max) {
-  return (val - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}'
-  return ((((val - in_min) * (out_max - out_min)) / (in_max - in_min) ) + out_min)
 }
 
 to pb_beep duration {
@@ -84,15 +77,14 @@ to pb_button {
 
 to pb_humidity {
   '_pb_init_pins'
-  '_dhtUpdate' _pb_pin_DHT true
-  return _dht_humidity
+  return (humidity_DHT11 _pb_pin_DHT)
 }
 
-to 'pb_light_sensor (0-100) %' {
+to pb_light_sensor {
   comment 'Returns Light Values s a percentage:
 0: dark,  100: light'
   '_pb_init_pins'
-  return ('_pb_rescale' (1023 - (analogReadOp _pb_pin_LDR)) 0 1023 0 100)
+  return ('[misc:rescale]' (1023 - (analogReadOp _pb_pin_LDR)) 0 1023 0 100)
 }
 
 to pb_potentiometer {
@@ -147,8 +139,7 @@ to pb_set_rgb_color color {
 
 to pb_temperature {
   '_pb_init_pins'
-  '_dhtUpdate' _pb_pin_DHT true
-  return _dht_temperature
+  return (temperature_DHT11 _pb_pin_DHT)
 }
 
 to pb_turn_off_RGB {

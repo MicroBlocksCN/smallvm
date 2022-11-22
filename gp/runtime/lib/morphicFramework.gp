@@ -890,6 +890,11 @@ method doOneCycle Page {
   waitMSecs sleepTime
 }
 
+method updateDisplay Page {
+  if (or redrawAll (notEmpty damages)) { fixDamages this }
+  waitMSecs 1 // needed for browser?
+}
+
 // damage recording and redrawing
 
 method redrawAll Page { redrawAll = true }
@@ -1193,8 +1198,8 @@ method showMenu Page aMenu x y {
   activeMenu = aMenu
 }
 
-to inform details title yesLabel {
-	return (inform (global 'page') details title yesLabel)
+to inform details title yesLabel nonBlocking {
+	return (inform (global 'page') details title yesLabel nonBlocking)
 }
 
 method closeUnclickedMenu Page aHandler {

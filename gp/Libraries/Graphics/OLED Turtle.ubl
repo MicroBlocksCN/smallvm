@@ -1,6 +1,6 @@
 module 'OLED Turtle' Output
 author 'Turgut Guneysu'
-version 1 9 
+version 1 11
 depends 'OLED Graphics' dec2anyBase 
 choices DegMenu '45' '90' '135' '180' '225' '270' '315' 
 choices SizeMenu small large 
@@ -14,27 +14,27 @@ Changes: Multiline Text support at any x, y with wrap
          Direction bug fix
          +/- direction changes
          Blocks renamed
-         Works with OLED Graphics19
+         Works with OLED Graphics1.11
 '
 variables Tpen Tdir Tx Ty TShapes _TDirs _TSaveGDBuffInfo TpenPrev _GDIndex _dX _dY _bits _charBMPList _convTBL _TSize _TDisp size dir num timer _idx penDirection penX penY points startX startY endX endY x y string turtle col row 
 
-	spec ' ' 'TCircle' 'draw circle radius _' 'auto' '10'
-	spec ' ' 'TClear' 'Tclear'
-	spec ' ' 'TGo to x' 'go to x _ y _' 'num num' 0 0
-	spec ' ' 'THome' 'home'
-	spec ' ' 'TInit' 'initialize turtle _' 'str.SizeMenu' 'large'
-	spec ' ' 'TMove' 'move _' 'auto' '10'
-	spec ' ' 'TPenDOWN' 'pen down'
-	spec ' ' 'TPenUP' 'pen  up'
-	spec ' ' 'TPoint in direction' 'point in direction (0-360) _' 'num' 0
-	spec ' ' 'TText' 'write text _ x _ y _ fast _' 'auto num num bool' 'hello' 0 0 true
-	spec ' ' 'TTurn Deg' 'turn _ degrees' 'auto' 45
-	spec 'r' 'WRU' 'wru'
-	spec ' ' '_TDraw' '_TDraw X _ Y _' 'num auto' 0 0
-	spec ' ' '_TRestoreGDBuff' '_TRestoreGDBuff'
-	spec ' ' '_TSaveGDBuff' '_TSaveGDBuff _ _' 'auto auto' '10' '10'
-	spec 'r' '_num2TF' '_num2TF _' 'auto' 0
-	spec 'r' '_toString' '_toString _' 'auto' ''
+  spec ' ' 'TCircle' 'draw circle radius _' 'auto' '10'
+  spec ' ' 'TClear' 'Tclear'
+  spec ' ' 'TGo to x' 'go to x _ y _' 'num num' 0 0
+  spec ' ' 'THome' 'home'
+  spec ' ' 'TInit' 'initialize turtle _' 'str.SizeMenu' 'large'
+  spec ' ' 'TMove' 'move _' 'auto' '10'
+  spec ' ' 'TPenDOWN' 'pen down'
+  spec ' ' 'TPenUP' 'pen  up'
+  spec ' ' 'TPoint in direction' 'point in direction (0-360) _' 'num' 0
+  spec ' ' 'TText' 'write text _ x _ y _ fast _' 'auto num num bool' 'hello' 0 0 true
+  spec ' ' 'TTurn Deg' 'turn _ degrees' 'auto' 45
+  spec 'r' 'WRU' 'wru'
+  spec ' ' '_TDraw' '_TDraw X _ Y _' 'num auto' 0 0
+  spec ' ' '_TRestoreGDBuff' '_TRestoreGDBuff'
+  spec ' ' '_TSaveGDBuff' '_TSaveGDBuff _ _' 'auto auto' '10' '10'
+  spec 'r' '_num2TF' '_num2TF _' 'auto' 0
+  spec 'r' '_toString' '_toString _' 'auto' ''
 
 to TCircle rad {
   comment 'Go to center of circle x,y

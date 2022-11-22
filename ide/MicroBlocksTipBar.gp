@@ -193,7 +193,7 @@ method contentsFor MicroBlocksTipBar anElement {
  				fullDescription = (at helpEntry 3)
  			} else {
  				// show help string and gesture hints
- 				fullDescription = (join (at helpEntry 3) '    ' (at content 2))
+				fullDescription = (join (localized (at helpEntry 3)) '    ' (localized (at content 2)))
  			}
  			content = (copy content)
  			atPut content 2 fullDescription

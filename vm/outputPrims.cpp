@@ -16,6 +16,8 @@
 
 // LED Matrix Pins on BBC micro:bit and Calliope
 
+static int disableLEDDisplay = false; // disable micro:bit 5x5 display and light sensor when true
+
 #if defined(ARDUINO_BBC_MICROBIT)
 
 #define ROW1 3
@@ -148,6 +150,8 @@ void updateMicrobitDisplay() {
 	// Update the display by cycling through the three columns, turning on the rows
 	// for each column. To minimize display artifacts, the display bits are snapshot
 	// at the start of each cycle and the snapshot is not changed during the cycle.
+
+	if (disableLEDDisplay) return;
 
 	if (!microBitDisplayBits && !displaySnapshot) { // display is off
 		if (lightReadingRequested) updateLightLevel();
@@ -326,6 +330,8 @@ void updateMicrobitDisplay() {
 	// for each column. To minimize display artifacts, the display bits are snapshot
 	// at the start of each cycle and the snapshot is not changed during the cycle.
 
+	if (disableLEDDisplay) return;
+
 	if (!microBitDisplayBits && !displaySnapshot) { // display is off
 		if (lightReadingRequested) updateLightLevel();
 		return;
@@ -362,7 +368,12 @@ void updateMicrobitDisplay() {
 
 	static int displaySnapshot = 0;
 
+	static void turnDisplayOff() { }
+	static void turnDisplayOn() { }
+
 	void updateMicrobitDisplay() {
+		if (disableLEDDisplay) return;
+
 		if (microBitDisplayBits == displaySnapshot) return; // no change
 		updateAtomDisplay();
 		displaySnapshot = microBitDisplayBits;
@@ -370,8 +381,10 @@ void updateMicrobitDisplay() {
 
 #else
 
-	// stub for boards without 5x5 LED displays or light sensors
+	// stubs for boards without 5x5 LED displays or light sensors
 	void updateMicrobitDisplay() { }
+	static void turnDisplayOff() { }
+	static void turnDisplayOn() { }
 
 #endif
 
@@ -424,6 +437,19 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 		lightReadingRequested = true;
 	#endif
 	return int2obj(lightLevel);
+}
+
+OBJ primMBEnableDisplay(int argCount, OBJ *args) {
+	if (argCount > 0) {
+		disableLEDDisplay = (trueObj != args[0]);
+		if (disableLEDDisplay) {
+			turnDisplayOff();
+			lightLevel = 0;
+		} else {
+			turnDisplayOn();
+		}
+	}
+	return falseObj;
 }
 
 // NeoPixel Support
@@ -594,6 +620,9 @@ static void initNeoPixelPin(int pinNum) {
 			pinNum = 8; // internal NeoPixel pin
 		#elif defined(ADAFRUIT_METRO_M0_EXPRESS)
 			pinNum = 40;
+			// clear the Neopixel pin's (GPIO A30) configuration register
+			volatile uint8_t *cnf = (uint8_t *) (PORT_BASE + 0x40 + 30);
+			*cnf = 0;
 		#else
 			pinNum = 0; // default to pin 0
 		#endif
@@ -661,7 +690,68 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP8266
 
 #elif defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_C3)
 
-static void initNeoPixelPin(int pinNum) {
+#include "driver/rmt.h"
+
+// Bit times (in clock cycles)
+// Clock is 40 MHz = 25 nsecs/cycle
+#define T1H 31	// 1 bit high time (goal: 780 nsecs)
+#define T1L 17	// 1 bit low time (goal: 420 nsecs)
+#define T0H 12	// 0 bit high time (goal: 300 nsecs)
+#define T0L 36	// 0 bit low time (goal: 900 nsecs)
+
+// Buffer of pulse durations used by RMT driver.
+rmt_item32_t rmt_buffer[32];
+
+static void initRMT(int pinNum) {
+	// Initialize RMT driver.
+
+	rmt_config_t config;
+	memset(&config, 0, sizeof(rmt_config_t));
+	config.rmt_mode = RMT_MODE_TX;
+	config.channel = RMT_CHANNEL_0;
+	config.gpio_num = (gpio_num_t) pinNum;
+	config.clk_div = 2; // 40 MHz
+	config.mem_block_num = 1;
+	config.flags = 0;
+	config.tx_config.carrier_en = false;
+	config.tx_config.loop_en = false;
+	config.tx_config.idle_output_en = true;
+	config.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
+
+	rmt_driver_uninstall(RMT_CHANNEL_0); // in case driver was installed previously
+	rmt_config(&config);
+	rmt_driver_install(RMT_CHANNEL_0, 0, 0);
+	rmt_set_source_clk(RMT_CHANNEL_0, RMT_BASECLK_APB);
+}
+
+static void initNeoPixelPin(int pinNum) { // ESP32
+	if ((pinNum < 0) || (pinNum >= pinCount())) {
+		#ifdef ARDUINO_M5Atom_Matrix_ESP32
+			pinNum = 27; // internal NeoPixel pin
+		#else
+			pinNum = 0; // default to pin 0
+		#endif
+	}
+	setPinMode(pinNum, OUTPUT);
+	initRMT(pinNum);
+	neoPixelPinMask = true; // show that NeoPixel are initialized
+}
+
+static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
+	if (!neoPixelPinMask) return;
+
+	uint32_t mask = 1 << (neoPixelBits - 1);
+	for (int bit = 0; bit < neoPixelBits; bit++) {
+		uint32_t bit_is_set = val & mask;
+		rmt_buffer[bit] = bit_is_set ?
+			(rmt_item32_t) {{{T1H, 1, T1L, 0}}} :
+			(rmt_item32_t) {{{T0H, 1, T0L, 0}}};
+		mask >>= 1;
+	}
+	rmt_write_items(RMT_CHANNEL_0, rmt_buffer, neoPixelBits, true);
+}
+
+static void initNeoPixelPinOLD(int pinNum) { // xxx
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#ifdef ARDUINO_M5Atom_Matrix_ESP32
 			pinNum = 27; // internal NeoPixel pin
@@ -684,7 +774,7 @@ static void initNeoPixelPin(int pinNum) {
 	}
 }
 
-static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
+static void IRAM_ATTR sendNeoPixelDataOLD(int val) { // ESP32 // xxx
 	if (!neoPixelPinMask) return;
 
 	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
@@ -827,9 +917,6 @@ static const int whiteTable[64] = {
 OBJ primNeoPixelSend(int argCount, OBJ *args) {
 	if (!neoPixelPinMask) initNeoPixelPin(-1); // if pin not set, use the internal NeoPixel pin
 
-	#if defined(ARDUINO_ARCH_ESP32)
-		delay(1); // ensure we're not interrupted by scheduled (works for up to ~32 Neopixels)
-	#endif
 	OBJ arg = args[0];
 	if (IS_TYPE(arg, ListType)) {
 		int count = obj2int(FIELD(arg, 0));
@@ -995,6 +1082,7 @@ static PrimEntry entries[] = {
 	{"mbUnplot", primMBUnplot},
 	{"mbDrawShape", primMBDrawShape},
 	{"mbShapeForLetter", primMBShapeForLetter},
+	{"mbEnableDisplay", primMBEnableDisplay},
 	{"neoPixelSend", primNeoPixelSend},
 	{"neoPixelSetPin", primNeoPixelSetPin},
 };

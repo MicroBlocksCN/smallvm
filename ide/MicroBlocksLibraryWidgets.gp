@@ -577,7 +577,7 @@ method updateFields MicroBlocksLibraryPropertiesFrame {
 			setText sourceText (localized 'built-in library')
 		}
 	} else {
-		setText sourceText ''
+		setText sourceText (localized 'user library')
 	}
 
 	setCategory categoryPicker (moduleCategory library)

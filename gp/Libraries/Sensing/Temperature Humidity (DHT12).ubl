@@ -1,4 +1,4 @@
-module 'DHT12 (I2C)' Input
+module 'Temperature Humidity (DHT12)' Input
 author MicroBlocks
 version 1 0 
 tags environmental temperature humidity d1mini 

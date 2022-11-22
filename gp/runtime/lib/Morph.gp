@@ -1598,6 +1598,15 @@ method grabCentered Morph aHandler {
   grab h aHandler
 }
 
+method grabTopLeft Morph {
+  // Grab this morph near it's top-left corner.
+
+  scale = (global 'scale')
+  h = (hand (global 'page'))
+  setPosition this ((x h) - (7 * scale)) ((y h) - (7 * scale))
+  grab h handler
+}
+
 method detachAll Morph {
   newOwner = (self_stageMorph)
   if (isNil newOwner) { return }

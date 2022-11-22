@@ -1,6 +1,6 @@
 // editable input slot for blocks
 
-defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID pathCache cacheW cacheH
+defineClass InputSlot morph text contents color menuSelector menuRange isStatic isAuto isID isMonospace pathCache cacheW cacheH
 
 to newInputSlot default editRule blockColor menuSelector {
   if (isNil default) {default = ''}
@@ -10,12 +10,10 @@ to newInputSlot default editRule blockColor menuSelector {
 
 method initialize InputSlot default editRule blockColor slotMenu {
   isID = false
-  fontName = 'Arial'
-  fontSize = 10
-  if ('Linux' == (platform)) { fontSize = 9 }
+  isMonospace = false
   scale = (blockScale)
   morph = (newMorph this)
-  text = (newText '' fontName (scale * fontSize))
+  text = (newText '')
   addPart morph (morph text)
   if ('auto' == editRule) {
 	// 'auto' slots switch between number or string depending on their contents
@@ -25,6 +23,7 @@ method initialize InputSlot default editRule blockColor slotMenu {
 	isAuto = false
   }
   setEditRule text editRule
+  setTextFont this
   if (editRule == 'numerical') {
     setBorders text (scale * 5) 0
   } else {
@@ -55,6 +54,8 @@ method initialize InputSlot default editRule blockColor slotMenu {
 method morph InputSlot {return morph}
 method setID InputSlot bool {isID = bool}
 method color InputSlot {return color}
+method isMonospace InputSlot {return isMonospace}
+method setMonospace InputSlot bool {isMonospace = bool}
 
 method contents InputSlot {
   if ((editRule text) == 'static') {
@@ -76,6 +77,7 @@ method setContents InputSlot data fixStringOnlyNum {
     if (and (isClass data 'String') ('' != data) (representsANumber data)) {
       isAuto = false
       setEditRule text 'editable'
+      setTextFont this
     }
   }
   if (and (notNil menuSelector) (not (isVarSlot this)) (isClass data 'String')) {
@@ -96,6 +98,29 @@ method setContents InputSlot data fixStringOnlyNum {
   }
   contents = data
   raise morph 'inputChanged' this
+}
+
+method setTextFont InputSlot {
+  scale = (blockScale)
+  fontName = 'Arial'
+  fontSize = 11
+  if isMonospace {
+    if ('Browser' == (platform)) {
+      fontSize = 11
+      fontName = 'monospace'
+    } ('Win' == (platform)) {
+      fontSize = 12
+      fontName = 'Lucida Console' // Lucida Console or Consolas
+    } ('Mac' == (platform)) {
+      fontSize = 11
+      fontName = 'Menlo Regular'
+    } ('Linux' == (platform)) {
+      fontSize = 10
+      fontName = 'DejaVu Sans Mono'
+    }
+  }
+  if ('Linux' == (platform)) { fontSize += -1 }
+  setFont text fontName (fontSize * (blockScale))
 }
 
 method isVarSlot InputSlot {
@@ -522,6 +547,7 @@ method switchType InputSlot editRule {
 	  dta = (toString dta)
 	}
   }
+  setTextFont this
   setContents this dta
 }
 

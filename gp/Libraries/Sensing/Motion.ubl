@@ -1,19 +1,18 @@
 module Motion Input
 author MicroBlocks
-version 1 0
+version 1 1 
+tags acceleration steps motion accelerometer 
 description 'Count steps and detect motion in boards with a built-in accelerometer, such as the micro:bit, the Calliope, the Citilab ED1 or the Circuit Playground Express.'
-tags acceleration steps motion accelerometer
+variables _motionSamples _stepCount _stepThreshold _stepMotionHigh 
 
-variables _motionSamples _stepCount _stepThreshold _stepMotionHigh
-
-	spec ' ' 'startStepCounter' 'start step counter'
-	spec 'r' 'stepCount' 'step count'
-	spec ' ' 'clearStepCount' 'clear step count'
-	spec ' ' 'setStepThreshold' 'set step threshold _ (0-50)' 'auto' 10
-	spec 'r' 'motion' 'motion'
-	spec ' ' '_addSample' '_addSample _' 'auto' '10'
-	spec 'r' '_recentAverage' '_recentAverage'
-	spec ' ' '_stepCounterLoop' '_stepCounterLoop'
+  spec ' ' 'startStepCounter' 'start step counter'
+  spec 'r' 'stepCount' 'step count'
+  spec ' ' 'clearStepCount' 'clear step count'
+  spec ' ' 'setStepThreshold' 'set step threshold _ (0-50)' 'auto' 10
+  spec 'r' 'motion' 'motion'
+  spec ' ' '_addSample' '_addSample _' 'auto' '10'
+  spec 'r' '_recentAverage' '_recentAverage'
+  spec ' ' '_stepCounterLoop' '_stepCounterLoop'
 
 to '_addSample' s {
   if (0 == _motionSamples) {_motionSamples = (newList 12)}
@@ -41,7 +40,7 @@ to '_stepCounterLoop' {
       if (not _stepMotionHigh) {
         _stepMotionHigh = (booleanConstant true)
         _stepCount += 1
-        sendBroadcastSimple 'step'
+        sendBroadcast 'step'
       }
     } (n < -3) {
       _stepMotionHigh = (booleanConstant false)
@@ -84,7 +83,7 @@ to startStepCounter {
   comment 'Reset the step count to zero and start the
 step counter loop.'
   _stepCount = 0
-  sendBroadcastSimple '_stepCounterLoop'
+  sendBroadcast '_stepCounterLoop'
 }
 
 to stepCount {

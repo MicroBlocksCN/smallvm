@@ -74,8 +74,10 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[serial:open]'			'serial open _ baud' 'num' 9600)
 		(array ' ' '[serial:close]'			'serial close')
 		(array 'r' '[serial:read]'			'serial read')
-		(array ' ' '[serial:write]'			'serial write _' 'auto' 'aByteStringOrByteArray')
+		(array ' ' '[serial:write]'			'serial write _' 'str' 'aByteStringOrByteArray')
 		(array 'r' '[serial:writeBytes]'	'serial write _ starting at _' 'str num' 'aByteStringOrByteArray' 1)
+		'-'
+		(array ' ' '[io:softWriteByte]'		'soft serial write byte _ pin _ baud _' 'num num num' '85' 2 9600)
 	'Control'
 		(array 'h' 'whenStarted'		'when started')
 		(array 'h' 'whenButtonPressed'	'when button _ pressed' 'menu.buttonMenu' 'A')
@@ -94,6 +96,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'sendBroadcast'		'broadcast _' 'str' 'go!' '')
 		'-'
 		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
+		(array 'r' '[data:range]'		'range _ to _ : by _' 'num num num' 1 10 2)
 		(array ' ' 'for'				'for _ in _ _' 'var num cmd' 'i' 10)
 		(array ' ' 'repeatUntil'		'repeat until _ _' 'bool cmd' false)
 		'-'
@@ -132,6 +135,8 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 123 'number')
 	'Operators-Advanced'
+		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
+		'-'
 		(array 'r' 'hexToInt'			'hex _' 'str' '3F')
 		'-'
 		(array 'r' '&'					'_ & _' 'num num' 1 3)
@@ -156,8 +161,8 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'atPut'				'replace item _ of list _ with _' 'auto.replaceItemMenu str auto' 1 nil 10)
 		(array ' ' '[data:delete]'		'delete item _ of list _' 'auto.replaceItemMenu str' 1)
 		'-'
-		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
-		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'auto num num' 'smiles' 2 5)
+		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'str str num' 'a' 'cat' 1)
+		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'str num num' 'smiles' 2 5)
 		(array 'r' '[data:split]'		'split _ by _' 'str str' 'A,B,C' ',')
 	'Data-Advanced'
 		(array 'r' '[data:joinStrings]'	'join items of list _ : separator _' 'auto str' nil ' ')
@@ -185,6 +190,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[display:mbUnplot]'		'unplot x _ y _' 'num num' 3 3)
 		(array ' ' '[display:mbDrawShape]'		'draw shape _ at x _ y _' 'num num num' 31 1 1)
 		(array 'r' '[display:mbShapeForLetter]'	'shape for letter _' 'str' 'A')
+		(array ' ' '[display:mbEnableDisplay]'	'enable LED display _' 'bool' false)
 		(array ' ' '[display:neoPixelSetPin]'	'set NeoPixel pin _ is RGBW _' 'auto bool' '' false)
 		(array ' ' '[display:neoPixelSend]'		'send NeoPixel rgb _' 'num' 5)
 	'Prims-Sensing (not in palette)'
@@ -195,6 +201,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[sensors:tiltY]'		'tilt y')
 		(array 'r' '[sensors:tiltZ]'		'tilt z')
 		(array 'r' '[sensors:microphone]'	'microphone')
+		(array ' ' '[sensors:i2cSetClockSpeed]'	'set i2c clock speed _' 'num' 400000)
 	'Prims-Variables (not in palette)'
 		(array 'r' '[vars:varExists]'	'variable named _ exists?' 'str' 'var')
 		(array 'r' '[vars:varNamed]'	'value of variable named _' 'str' 'var')
@@ -245,6 +252,13 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[net:stopHttpServer]'		'stop HTTP server')
 		(array 'r' '[net:httpServerGetRequest]'	'HTTP server request : binary data _ : port _' 'bool num' false 8080)
 		(array ' ' '[net:respondToHttpRequest]'	'respond _ to HTTP server request : with body _ : and headers _' 'auto str str' '200 OK' 'Welcome to the MicroBlocks HTTP server' 'Content-Type: text/plain')
+
+		(array ' ' '[net:udpStart]'				'UDP start port _' 'auto' 5000)
+		(array ' ' '[net:udpStop]'				'UDP stop')
+		(array ' ' '[net:udpSendPacket]'		'UDP send packet _ to ip _ port _' 'auto auto num' 'Hello!' '255.255.255.255' 5000)
+		(array 'r' '[net:udpReceivePacket]'		'UDP receive packet : binary data _' 'bool' false)
+		(array 'r' '[net:udpRemoteIPAddress]'	'UDP remote IP address')
+		(array 'r' '[net:udpRemotePort]'		'UDP remote port')
 
 		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)

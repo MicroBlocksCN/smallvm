@@ -47,7 +47,7 @@ method openPort ESPTool portName boardName {
 method baudForBoard ESPTool boardName {
 	if ('ESP8266' == boardName) { return 230400
 	} ('D1-Mini' == boardName) { return 921600
-	} ('ESP32' == boardName) { return 460800
+	} ('ESP32' == boardName) { return 230400
 	} ('Citilab ED1' == boardName) { return 230400
 	} ('M5Stack-Core' == boardName) { return 230400
 	} ('M5StickC' == boardName) { return 230400
@@ -113,10 +113,10 @@ method enterBootMode ESPTool {
 	if (isNil port) { return }
 	setSerialPortDTR port false		// IO0 = high
 	setSerialPortRTS port true		// EN = low (chip in reset)
-	waitMSecs 100 // might need to increase to 220 msecs on some chips
+	waitMSecs 200 // might need to increase to 220 msecs on some chips
 	setSerialPortDTR port true		// IO0 = low
 	setSerialPortRTS port false		// EN = high (exit reset)
-	waitMSecs 50 // might need to increase to 450 msecs on some chips
+	waitMSecs 100 // might need to increase to 450 msecs on some chips
 	setSerialPortDTR port false		// IO0 = high
 }
 
@@ -375,10 +375,6 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 	waitMSecs 200 // allow time for final flash write to complete (40 msecs minimum on d1 mini)
 	exitBootMode this
 	waitMSecs 1500
-	if eraseFlag {
-		status = 'Initializing file system; this takes a while...'
-		waitMSecs 75000
-	}
 	if closeWhenDone { closePort this }
 	enableAutoConnect (smallRuntime) success
 }

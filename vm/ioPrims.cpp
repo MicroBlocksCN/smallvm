@@ -103,8 +103,6 @@ void hardwareInit() {
 
 // Communication Functions
 
-int serialConnected() { return Serial; }
-
 int recvBytes(uint8 *buf, int count) {
 	int bytesRead = Serial.available();
 	if (bytesRead > count) bytesRead = count; // there is only enough room for count bytes
@@ -368,6 +366,14 @@ void restartSerial() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
 
+#elif defined(ADAFRUIT_METRO_M0_EXPRESS) // must come before Zero
+
+	#define BOARD_TYPE "Metro M0"
+	#define DIGITAL_PINS 14
+	#define ANALOG_PINS 12
+	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
+
 #elif defined(ARDUINO_SAMD_ZERO)
 
 	#define BOARD_TYPE "Zero"
@@ -383,14 +389,6 @@ void restartSerial() {
 	#define ANALOG_PINS 6
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5};
-
-#elif defined(ADAFRUIT_METRO_M0_EXPRESS)
-
-	#define BOARD_TYPE "Metro M0"
-	#define DIGITAL_PINS 14
-	#define ANALOG_PINS 12
-	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
-	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11};
 
 #elif defined(ESP8266) || defined(ARDUINO_ESP8266_WEMOS_D1MINI)
 
@@ -559,24 +557,55 @@ void restartSerial() {
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
-#elif defined(TTGO_RP2040)
+#elif defined(TTGO_RP2040) // must come before ARDUINO_ARCH_RP2040
 
-	#define BOARD_TYPE "TTGO RP2040" //definition order it's important
+	#define BOARD_TYPE "TTGO RP2040"
 	#define DIGITAL_PINS 30
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3};
 	#define PIN_BUTTON_A 6
 	#define PIN_BUTTON_B 7
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
 
-#elif defined(ARDUINO_ARCH_RP2040)
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W) // must come before ARDUINO_ARCH_RP2040
 
-	#define BOARD_TYPE "RP2040"
-	#define DIGITAL_PINS 30
+	#define BOARD_TYPE "Pico W"
+	#define DIGITAL_PINS 29
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
 	static const int analogPin[] = {A0, A1, A2, A3};
 	#define DEFAULT_TONE_PIN 20 // speaker pin on Raspico Pico Bricks board
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 1, 0, 0, 0};
+
+#elif defined(ARDUINO_ARCH_RP2040)
+
+	#define BOARD_TYPE "RP2040"
+	#define DIGITAL_PINS 29
+	#define ANALOG_PINS 4
+	#define TOTAL_PINS DIGITAL_PINS
+	static const int analogPin[] = {A0, A1, A2, A3};
+	#if defined(PICO_ED)
+		#define PIN_BUTTON_A 20
+		#define PIN_BUTTON_B 21
+		#define DEFAULT_TONE_PIN 0 // speaker pin on Pico-ed v1 board
+		static const char reservedPin[TOTAL_PINS] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0};
+	#else
+		#define DEFAULT_TONE_PIN 20 // speaker pin on PicoBricks board
+		static const char reservedPin[TOTAL_PINS] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 1, 1, 1, 0, 0, 0};
+	#endif
 
 #else // unknown board
 
@@ -780,7 +809,7 @@ void primAnalogWrite(OBJ *args) {
 		if (pinNum > 25) return;
 	#elif defined(ADAFRUIT_TRINKET_M0)
 		if (pinNum > 4) return;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		#if defined(ARDUINO_CITILAB_ED1)
 			if ((100 <= pinNum) && (pinNum <= 139)) {
 				pinNum = pinNum - 100; // allows access to unmapped IO pins 0-39 as 100-139
@@ -896,7 +925,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 			return (HIGH == digitalRead(pinNum)) ? falseObj : trueObj;
 		}
 		if (RESERVED(pinNum)) return falseObj;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pinNum)) return falseObj;
 	#endif
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
@@ -950,7 +979,7 @@ void primDigitalSet(int pinNum, int flag) {
 			pinNum = ed1DigitalPinMap[pinNum - 1];
 		}
 		if (RESERVED(pinNum)) return;
-	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#elif defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pinNum < 2) return;
@@ -984,6 +1013,8 @@ void primSetUserLED(OBJ *args) {
 		}
 	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
 		tftSetHugePixel(3, 1, (trueObj == args[0]));
+	#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+		digitalWrite(PIN_LED, (trueObj == args[0]) ? HIGH : LOW);
 	#else
 		if (PIN_LED < TOTAL_PINS) {
 			SET_MODE(PIN_LED, OUTPUT);
@@ -1608,7 +1639,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 			pin = digitalPin[pin];
 	#endif
 
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pin)) return falseObj;
 	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pin < 2) return falseObj;
@@ -1648,7 +1679,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 			pin = ed1DigitalPinMap[pin - 1];
 		}
 	#endif
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pin)) return falseObj;
 	#endif
 	int usecs = obj2int(usecsArg);
@@ -1694,6 +1725,49 @@ OBJ primDACWrite(int argCount, OBJ *args) {
 		}
 	}
 	return int2obj(count);
+}
+
+// Software serial (output only)
+
+static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
+	// Write a byte to the given pin at the given baudrate using software serial.
+
+	if (argCount < 3) return fail(notEnoughArguments);
+	int byte = evalInt(args[0]);
+	int pinNum = evalInt(args[1]);
+	int baud = evalInt(args[2]);
+	int bitTime = 1000000 / baud;
+
+	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
+	SET_MODE(pinNum, OUTPUT);
+
+	// start bit
+	digitalWrite(pinNum, LOW);
+	delayMicroseconds(bitTime);
+
+	// eight data bits, LSB first
+	digitalWrite(pinNum, (byte & 1) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 2) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 4) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 8) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 16) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 32) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 64) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+	digitalWrite(pinNum, (byte & 128) ? HIGH : LOW);
+	delayMicroseconds(bitTime);
+
+	// stop bit
+	digitalWrite(pinNum, HIGH);
+	delayMicroseconds(bitTime);
+
+	return falseObj;
 }
 
 // Experimental RF Square Wave Generator (nRF51 and nRF52 only)
@@ -1856,7 +1930,7 @@ static OBJ primSquareWave(int argCount, OBJ *args) {
 
 	int pinNum = mapDigitalPinNum(obj2int(pinArg));
 
-	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
+	#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_RP2040)
 		if (RESERVED(pinNum)) return falseObj;
 	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pinNum < 2) return falseObj;
@@ -1882,6 +1956,7 @@ static PrimEntry entries[] = {
 	{"setServo", primSetServo},
 	{"dacInit", primDACInit},
 	{"dacWrite", primDACWrite},
+	{"softWriteByte", primSoftwareSerialWriteByte},
     {"squareWave", primSquareWave},
 	{"setUserLED", primSetUserLED2},
 	{"analogRead", primAnalogRead},

@@ -1,6 +1,6 @@
 module 'Sensor Primitives' Input
 author MicroBlocks
-version 1 0
+version 1 1
 description 'Provides blocks to read tilt in the three axes, acceleration, temperature and light level. Many boards come with this particular set of sensors, such as the micro:bit, the Circuit Playground Express, the Calliope or the Citilab ED1.'
 tags tilt acceleration light sensor capacitive button
 
@@ -17,3 +17,5 @@ tags tilt acceleration light sensor capacitive button
 	spec 'r' '[sensors:temperature]'	'temperature (°C)'
 	space
 	spec 'r' '[sensors:touchRead]'		'capacitive sensor _' 'num' 1
+	space
+	spec ' ' '[sensors:i2cSetClockSpeed]' 'set i2c clock speed _' 'num' 400000

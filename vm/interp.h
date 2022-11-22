@@ -144,6 +144,12 @@ extern int extraByteDelay;
 #define varNameMsg				29
 #define extendedMsg				30
 
+// Serial Protocol Messages: CRC Exchange
+
+#define getAllCRCsMsg			38
+#define allCRCsMsg				39
+#define LAST_MSG				39
+
 // Error Codes (codes 1-9 are reserved for protocol errors; 10 and up are runtime errors)
 
 #define noError					0	// No error
@@ -181,10 +187,13 @@ extern int extraByteDelay;
 #define serialWriteTooBig		38	// Serial port write is limited to 128 bytes
 #define needsListOfIntegers		39	// Needs a list of integers
 #define byteOutOfRange			40	// Needs a value between 0 and 255
+#define needsPositiveIncrement	41	// Range increment must be a positive integer
+#define needsIntOrListOfInts	42	// Needs an integer or a list of integers
 
 // Runtime Operations
 
 OBJ fail(uint8 errCode);
+int failure();
 void initTasks(void);
 void startAll();
 void stopAllTasksButThis(Task *task);
@@ -199,11 +208,14 @@ void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendBroadcastToIDE(char *s, int len);
 int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
+void interpretStep();
 void vmLoop(void);
 void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);
 void waitAndSendMessage(int msgType, int chunkIndex, int dataSize, char *data);
+void suspendCodeFileUpdates();
+void resumeCodeFileUpdates();
 
 // Integer Evaluation
 
@@ -256,6 +268,7 @@ void setPinMode(int pin, int newMode);
 void turnOffPins();
 void updateMicrobitDisplay();
 void checkButtons();
+void resetRadio();
 void stopPWM();
 void stopServos();
 void stopTone();
@@ -270,6 +283,8 @@ OBJ primAtPut(int argCount, OBJ *args);
 OBJ primLength(int argCount, OBJ *args);
 
 OBJ primHexToInt(int argCount, OBJ *args);
+
+OBJ primBroadcastToIDEOnly(int argCount, OBJ *args);
 
 OBJ primAnalogPins(OBJ *args);
 OBJ primDigitalPins(OBJ *args);
@@ -289,6 +304,7 @@ OBJ primSPIRecv(OBJ *args);
 
 OBJ primMBDisplay(int argCount, OBJ *args);
 OBJ primMBDisplayOff(int argCount, OBJ *args);
+OBJ primMBEnableDisplay(int argCount, OBJ *args);
 OBJ primMBPlot(int argCount, OBJ *args);
 OBJ primMBUnplot(int argCount, OBJ *args);
 

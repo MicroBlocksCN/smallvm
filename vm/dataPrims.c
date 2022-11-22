@@ -263,6 +263,33 @@ OBJ primMakeList(int argCount, OBJ *args) {
 	return result;
 }
 
+OBJ primRange(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	int start = evalInt(args[0]);
+	int end = evalInt(args[1]);
+	int incr = (argCount > 2) ? evalInt(args[2]) : 1;
+	if (incr < 1) return fail(needsPositiveIncrement); // increment must be >= 1
+
+	int count;
+	if (end >= start) {
+		count = ((end - start) / incr) + 1;
+	} else {
+		count = ((start - end) / incr) + 1;
+		incr = -incr; // make the increment negative
+	}
+
+	OBJ result = newObj(ListType, count + 1, falseObj);
+	if (!result) return result; // allocation failed
+
+	FIELD(result, 0) = int2obj(count);
+	int n = start;
+	for (int i = 0; i < count; i++) {
+		FIELD(result, i + 1) = int2obj(n);
+		n += incr;
+	}
+	return result;
+}
+
 OBJ primListAddLast(int argCount, OBJ *args) {
 	// Add the given item to the end of the List. Grow if necessary.
 
@@ -708,9 +735,9 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	OBJ arg = args[0];
 
-	if (isInt(arg)) { // convert a single integer to a Unicode character
+	if (isInt(arg) || IS_TYPE(arg, StringType)) { // convert a single integer to a Unicode character
 		uint8 buf[8]; // buffer for one UTF-8 character
-		uint8 *s = appendUTF8(buf, obj2int(arg));
+		uint8 *s = appendUTF8(buf, evalInt(arg));
 		int byteCount = s - buf;
 		return newStringFromBytes((char *) buf, byteCount);
 	} else if (IS_TYPE(arg, ListType)) { // convert list of integers to a Unicode string
@@ -718,21 +745,21 @@ OBJ primUnicodeString(int argCount, OBJ *args) {
 		int utfByteCount = 0;
 		for (int i = 1; i <= listCount; i++) {
 			OBJ item = FIELD(arg, i);
-			if (!isInt(item)) return fail(needsListOfIntegers);
-			utfByteCount += bytesForUnicode(obj2int(item));
+			utfByteCount += bytesForUnicode(evalInt(item));
 		}
+		if (failure()) return fail(needsIntOrListOfInts); // evalInt failed on some list item
+
 		OBJ result = newString(utfByteCount);
 		if (!result) return result; // allocation failed
 		arg = args[0]; // update arg after possible GC
 		uint8 *s = (uint8 *) obj2str(result);
 		for (int i = 1; i <= listCount; i++) {
 			OBJ item = FIELD(arg, i);
-			if (!isInt(item)) return fail(needsListOfIntegers);
-			s = appendUTF8(s, obj2int(item));
+			s = appendUTF8(s, evalInt(item));
 		}
 		return result;
 	}
-	return fail(needsListError);
+	return fail(needsIntOrListOfInts);
 }
 
 OBJ primNewByteArray(int argCount, OBJ *args) {
@@ -807,6 +834,7 @@ OBJ primFreeMemory(int argCount, OBJ *args) {
 
 static PrimEntry entries[] = {
 	{"makeList", primMakeList},
+	{"range", primRange},
 	{"addLast", primListAddLast},
 	{"delete", primListDelete},
 	{"join", primJoin},

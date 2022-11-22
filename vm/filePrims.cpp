@@ -68,13 +68,24 @@ static int freeEntry() {
 }
 
 void closeIfOpen(char *fileName) {
-	// Used when downloading a file to ensure target file is closed before replacing it.
+	// Called from fileTransfer.cpp.
 
 	int i = entryFor(fileName);
 	if (i >= 0) {
 		fileEntry[i].fileName[0] = '\0';
 		fileEntry[i].file.close();
 	}
+}
+
+void closeAndDeleteFile(char *fileName) {
+	// Called from fileTransfer.cpp.
+
+	closeIfOpen(fileName);
+
+	// to avoid a LittleFS error message, must ensure that the file exists before removing it
+	File tempFile = myFS.open(fileName, "w");
+	tempFile.close();
+	myFS.remove(fileName);
 }
 
 // Open, Close, Delete
@@ -106,12 +117,7 @@ static OBJ primClose(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char *fileName = extractFilename(args[0]);
 
-	int i = entryFor(fileName);
-	if (i >= 0) {
-		fileEntry[i].fileName[0] = '\0';
-		fileEntry[i].file.close();
-		return falseObj;
-	}
+	closeIfOpen(fileName);
 	return falseObj;
 }
 
@@ -120,12 +126,7 @@ static OBJ primDelete(int argCount, OBJ *args) {
 	char *fileName = extractFilename(args[0]);
 	if (!fileName[0]) return falseObj;
 
-	int i = entryFor(fileName);
-	if (i >= 0) {
-		fileEntry[i].fileName[0] = '\0';
-		fileEntry[i].file.close();
-	}
-	if (myFS.exists(fileName)) myFS.remove(fileName);
+	closeAndDeleteFile(fileName);
 	return falseObj;
 }
 

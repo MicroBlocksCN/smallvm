@@ -226,7 +226,22 @@ The ID specifies the extended message type. The format depends on the message ty
 
   * 1: set the per-byte delay for 'say' and 'graph' blocks. Body is one-byte value in the range 1-50.
 
-### *Reserved* (OpCode: 0x1F, long message)
+### *Reserved* (OpCodes 0x1F-0x25)
+
+Reserved for additional Bidirectional messages.
+
+
+## CRC Exchange
+
+### Get All CRCs (OpCode: 0x26, IDE → Board)
+
+Ask the board to send the CRC's for all chunks.
+
+### All CRCs (OpCode: 0x27, Board → IDE)
+
+A message containing the CRCs for all chunks on the board.
+
+Each CRC record is 5 bytes: <chunkID (one byte)><CRC (four bytes)>
 
 
 ## File Transfer Messages (OpCode: 200 to 205)

@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -106,7 +106,7 @@ method scaleChanged MicroBlocksEditor {
   if (notNil oldCategory) { selectCategory scripter oldCategory }
   if (notNil oldLibrary) { selectLibrary scripter oldLibrary }
   languageChanged scripter
-  stopAndClearChunks (smallRuntime)
+  sendStopAll (smallRuntime)
   initialize (smallRuntime) scripter
 
   lastStatus = nil // force update
@@ -142,8 +142,12 @@ method addTopBarParts MicroBlocksEditor {
 	frameRate = (newText '0 fps' 'Arial' (14 * scale))
 	addPart morph (morph frameRate)
 	add rightItems frameRate
-	add rightItems (10 * scale)
+	add rightItems (16 * scale)
   }
+
+  add rightItems (addIconButton this (newBitmap 0 0) 'noop' 'Progress' 36)
+  progressIndicator = (last rightItems)
+  add rightItems (3 * scale)
 
   add rightItems (addIconButton this (startButtonIcon this) 'startAll' 'Start' 36)
   add rightItems (addIconButton this (stopButtonIcon this) 'stopAndSyncScripts' 'Stop' 36)
@@ -206,15 +210,20 @@ method newZoomButton MicroBlocksEditor selector hint {
 }
 
 method restoreZoom MicroBlocksEditor {
-  setBlockScalePercent (scriptEditor scripter) 100
+  setBlockScalePercent this 100
 }
 
 method zoomIn MicroBlocksEditor {
-  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) + 15)
+  setBlockScalePercent this (((global 'blockScale') * 100) + 15)
 }
 
 method zoomOut MicroBlocksEditor {
-  setBlockScalePercent (scriptEditor scripter) (((global 'blockScale') * 100) - 15)
+  setBlockScalePercent this (((global 'blockScale') * 100) - 15)
+}
+
+method setBlockScalePercent MicroBlocksEditor newPercent {
+  setBlockScalePercent (scriptEditor scripter) newPercent
+  syncScripts (smallRuntime)
 }
 
 method fixZoomButtonsLayout MicroBlocksEditor {
@@ -238,7 +247,17 @@ method addTipBar MicroBlocksEditor {
 
 // project operations
 
+method downloadInProgress MicroBlocksEditor {
+  if isDownloading {
+    existingPrompt = (findMorph 'Prompter')
+    if (notNil existingPrompt) { cancel (handler existingPrompt) }
+    inform 'Downloading code to board. Please wait.' nil nil true
+  }
+  return isDownloading
+}
+
 method canReplaceCurrentProject MicroBlocksEditor {
+  if (downloadInProgress this) {return false }
   return (or
 	(not (hasUserCode (project scripter)))
 	(confirm (global 'page') nil 'Discard current project?'))
@@ -277,6 +296,8 @@ method closeAllDialogs MicroBlocksEditor {
 }
 
 method openProjectMenu MicroBlocksEditor {
+  if (downloadInProgress this) {return }
+
   fp = (findMorph 'MicroBlocksFilePicker')
   if (notNil fp) { destroy fp }
   pickFileToOpen (action 'openProjectFromFile' this) lastProjectFolder (array '.ubp' '.gpp')
@@ -284,7 +305,6 @@ method openProjectMenu MicroBlocksEditor {
 
 method openProjectFromFile MicroBlocksEditor location {
   // Open a project with the given file path or URL.
-  setCursor 'wait'
   if (beginsWith location '//') {
     lastProjectFolder = 'Examples'
   } else {
@@ -305,6 +325,7 @@ method openProjectFromFile MicroBlocksEditor location {
 }
 
 method openProject MicroBlocksEditor projectData projectName updateLibraries {
+  if (downloadInProgress this) { return }
   clearProject this
   fileName = projectName
   updateTitle this
@@ -321,8 +342,7 @@ method openProject MicroBlocksEditor projectData projectName updateLibraries {
   }
   updateLibraryList scripter
   developerModeChanged scripter
-  saveAllChunks (smallRuntime)
-  setCursor 'default'
+  saveAllChunksAfterLoad (smallRuntime)
 }
 
 method openFromBoard MicroBlocksEditor {
@@ -483,34 +503,85 @@ method updateFPS MicroBlocksEditor {
 	}
 }
 
+// Progress indicator
+
+method drawProgressIndicator MicroBlocksEditor bm phase downloadProgress {
+	scale = (global 'scale')
+	radius = (13 * scale)
+	cx = (half (width bm))
+	cy = ((half (height bm)) + scale)
+	bgColor = (topBarBlue this)
+	if (1 == phase) {
+		lightGray = (mixed (gray 0) 5 bgColor)
+		darkGray = (mixed (gray 0) 15 bgColor)
+	} (2 == phase) {
+		lightGray = (mixed (gray 0) 10 bgColor)
+		darkGray = (mixed (gray 0) 25 bgColor)
+	} (3 == phase) {
+		lightGray = (mixed (gray 0) 25 bgColor)
+		darkGray = (mixed (gray 0) 50 bgColor)
+	}
+
+	fill bm bgColor
+	if (and (3 == phase) (downloadProgress >= 1)) { return }
+
+	// background circle
+	drawCircle (newShapeMaker bm) cx cy radius lightGray
+
+	// draw progress pie chart
+	degrees = (round (360 * downloadProgress))
+	oneDegreeDistance = ((* 2 (pi) radius) / 360.0)
+	pen = (pen (newShapeMaker bm))
+	beginPath pen cx cy
+	setHeading pen 270
+	forward pen radius
+	turn pen 90
+	repeat degrees {
+	  forward pen oneDegreeDistance
+	  turn pen 1
+	}
+	goto pen cx cy
+	fill pen darkGray
+}
+
+method showDownloadProgress MicroBlocksEditor phase downloadProgress {
+	isDownloading = (downloadProgress < 1)
+	bm1 = (getField progressIndicator 'offCostume')
+	drawProgressIndicator this bm1 phase downloadProgress
+	bm2 = (getField progressIndicator 'onCostume')
+	drawProgressIndicator this bm2 phase downloadProgress
+	costumeChanged (morph progressIndicator)
+	updateDisplay (global 'page') // update the display
+	nextEvent // discard events while downloading
+}
+
+// Connection indicator
+
+method drawIndicator MicroBlocksEditor bm bgColor isConnected {
+	scale = (global 'scale')
+	fill bm bgColor
+	if isConnected {
+		cx = (half (width bm))
+		cy = ((half (height bm)) + scale)
+		radius = (13 * scale)
+		green = (mixed (color 0 200 0) 70 bgColor)
+		drawCircle (newShapeMaker bm) cx cy radius green
+	}
+	icon = (connectButtonIcon this)
+	drawBitmap bm icon (10 * scale) (10 * scale)
+}
+
 method updateIndicator MicroBlocksEditor forcefully {
 	if (busy (smallRuntime)) { return } // do nothing during file transfer
 
 	status = (updateConnection (smallRuntime))
 	if (and (lastStatus == status) (forcefully != true)) { return } // no change
-	if ('connected' == status) {
-		c = (mixed (color 0 200 0) 70 (topBarBlue this)) // green circle
-	} else {
-		c = nil // no circle
-	}
+	isConnected = ('connected' == status)
 
-	scale = (global 'scale')
 	bm1 = (getField indicator 'offCostume')
+	drawIndicator this bm1 (topBarBlue this) isConnected
 	bm2 = (getField indicator 'onCostume')
-	cx = (half (width bm1))
-	cy = ((half (height bm1)) + scale)
-	icon = (connectButtonIcon this)
-	x = (10 * scale)
-	y = (10 * scale)
-	radius = (13 * scale)
-
-	fill bm1 (topBarBlue this)
-	if (notNil c) { drawCircle (newShapeMaker bm1) cx cy radius c }
-	drawBitmap bm1 icon x y
-
-	fill bm2 (topBarBlueHighlight this)
-	if (notNil c) { drawCircle (newShapeMaker bm2) cx cy radius c }
-	drawBitmap bm2 icon x y
+	drawIndicator this bm2 (topBarBlueHighlight this) isConnected
 
 	costumeChanged (morph indicator)
 	lastStatus = status
@@ -581,7 +652,7 @@ method processBrowserFileSave MicroBlocksEditor {
 
 method processDroppedFiles MicroBlocksEditor {
   for evt (droppedFiles (global 'page')) {
-	fName = (at evt 'file')
+	fName = (toUnixPath (at evt 'file'))
 	data = (readFile fName true)
 	if (notNil data) {
 	  processDroppedFile this fName data
@@ -703,6 +774,12 @@ method checkLatestVersion MicroBlocksEditor {
   latestVersion = (fetchLatestVersionNumber this) // fetch version, even in browser, to log useage
   if ('Browser' == (platform)) { return } // skip version check in browser/Chromebook
   currentVersion = (splitWith (ideVersionNumber (smallRuntime)) '.')
+
+  // sanity checks -- both versions should be lists/arrays of strings representing integers
+  // can get garbage if the HTTP request fails
+  for n latestVersion { if (not (representsAnInteger n)) { return }}
+  for n currentVersion { if (not (representsAnInteger n)) { return }}
+
   for i (count latestVersion) {
 	latest = (toInteger (at latestVersion i))
 	current = (toInteger (at currentVersion i))
@@ -710,6 +787,7 @@ method checkLatestVersion MicroBlocksEditor {
 	if pilot {
       // we're running a pilot release, lets check the latest one
       latestVersion = (fetchLatestPilotVersionNumber this)
+      for n latestVersion { if (not (representsAnInteger n)) { return }} // sanity check
       latest = (toInteger (at latestVersion i))
 	}
 	if (latest > current) {
@@ -1039,7 +1117,12 @@ method hasHelpEntryFor MicroBlocksEditor aBlock {
 method openHelp MicroBlocksEditor aBlock {
   entry = (helpEntry tipBar (primName (expression aBlock)))
   if (isNil entry) { return }
-  url = (join 'https://wiki.microblocks.fun/reference_manual/' (at entry 2))
+  helpPath = (at entry 2)
+  if (beginsWith helpPath '/') {
+    url = (join 'https://wiki.microblocks.fun' helpPath)
+  } else {
+    url = (join 'https://wiki.microblocks.fun/reference_manual/' helpPath)
+  }
   openURL url
 }
 
@@ -1283,6 +1366,43 @@ method redrawnMorphs MicroBlocksEditor {
   }
 }
 
+// Script image utility
+
+method fixScriptsInFolderTree MicroBlocksEditor language countryCode rootPath {
+  scriptEditor = (scriptEditor scripter)
+  setBlockScalePercent this 150
+  setExportScale scriptEditor 200
+  setLanguage this language
+
+  pattern = (join 'locales/' countryCode '/files/')
+  for pngFilePath (allFiles rootPath '.png') {
+    if (notNil (findSubstring pattern pngFilePath)) {
+      fixPNGScriptImage this pngFilePath
+    }
+  }
+}
+
+method fixPNGScriptImage MicroBlocksEditor pngFile {
+  scriptEditor = (scriptEditor scripter)
+
+  // load scripts from file
+  clearProject this
+  importFromPNG this (readFile pngFile true)
+
+  scriptCount = (count (parts (morph scriptEditor)))
+  if (0 == scriptCount) { return }
+
+  updateLibraryList scripter
+  if (1 == scriptCount) {
+    block = (handler (first (parts (morph scriptEditor))))
+    exportAsImageScaled block nil false pngFile
+print (filePart pngFile)
+  } else {
+    saveScriptsImage scriptEditor pngFile true
+print scriptCount 'scripts:' (filePart pngFile)
+  }
+}
+
 // UI image resources
 
 method makeLogoPNG MicroBlocksEditor {
@@ -1361,80 +1481,6 @@ FV6EiD4CcBtADoCf9Hp9IzNfxcS1Wcw2KTNfE0LsCAQCzX6/X7PwSwdUXV3tEEJ8D/UT7F8hhPPixYs/
 qjmx2+3F4XB4JRE9DgDM3JeTk3Olvb09ZlswGyBJkq4BeEZl/kY0Gt1w+fLlP+croFQhoNJoI6Kzer2+
 8v8gAgAEM5+PMb7XYrG81N7envSty0JBz8zNk4XhCwBuEdEur9d7ZKEDSxb/Afpz63umivdIAAAAAElF
 TkSuQmCC'
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
-}
-
-method greenConnectButtonIcon MicroBlocksEditor {
-  data = '
-iVBORw0KGgoAAAANSUhEUgAAABYAAAAUCAYAAACJfM0wAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAI
-pgAACKYB4IHg5wAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI0SURBVDiNrZJN
-aBNRFIW/NzM1TSAqoRGiC0EQwXahRgkorSQFVwp1ESquBAliN66kRCpMXbkoihaagjhbNxpcCP6ioFQE
-TUXBPxTRuqlYsBpJxmSY66aTJqlpp9aze+fd+d55541iBcpkMoeUUheAaV3XD+ZyuY/enloB9IRS6hyg
-zVlvdV3fncvlvi8fbKKlX6VVJBK5KCIDwWAQ27YREW/iYSAQ2Dc6OvpbW4xTr/gw6Th8al8nd0RkIBqN
-ks1mSSQS9WM9lUpl3HfiHcOcVMJZQGt31rBlpo8jh49SLpfJ5/P1iT0NLg5Oo8e7eIDQXW+vcsJ0zfSj
-3PkLh0IhSqWSt5xtWcW286yNd/K5GQpQMYq87rhaWyeTSUzTxDAMz3rxV3BiiM36D6aADa0Oto1ZPkRu
-EQ6HSaVSjI2N4TgOwFPXdfsXVLHdpEeDe0BbK2hNAht/dhMtbUVEUErdrlaracuyig2J4yYhDa74ggIo
-mFo9wa+2r4jI5Vgstt+yrCKA0TSYQVjvC+qFVi7vO24UxXCGLw3heH5DYhFSy4F6cnHeORp2vdf8eKF/
-4D4KBEk9P8W3erOhCk3xZeG/3loCz1SM3oljVJv35sEmmggH/BJR3J806W01Uqsi3k4Yv1UoxguLQGvg
-XSabsHnsAywuZAsmx5c8e+cZ9ojLdaADQOCmggqKl0rYK9AJlATuojMyeZo3fi5liMu1OagLDE6ajPj5
-cClpwBNgWhR9hf8EBfgDUie86ce31JYAAAAASUVORK5CYII='
-  dataRetina = '
-iVBORw0KGgoAAAANSUhEUgAAAC0AAAAoCAYAAABq13MpAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAR
-TAAAEUwBEn6ChwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAT7SURBVFiFzZht
-bFNVGMd/596+DJwddhETlpExtiY1IW50AorTuBiCAomgJrJosgzCyAiaIIlGlF2EKF+ICVFcy4vZB2cU
-Xz4NAdFANDrsisGECokZBBGJYzhW3NrttscPo6OW3tu1vRv+PzXP+T/P+eXpueeecwV3WC0tLSuklBrg
-kVKGga179+49YpYjpoTMYO5169btAF5PiyeA5kAg0GGYOKlYBtq4caMzFosdABoNLKNCiGV+v//rTINT
-Dr1hw4ZSXde/lFLWZ7EOCiEe9fv9p9MHphR6zZo1VaqqdgGeCaZcttlsi/bs2fN7alCxHu2WfBrTk7/X
-r1+/WFXVH0kBFkLg9XrNSszSdf2rpqamGalB1XLSmzw+jZ3A52UNHF/haXlYSvkF4EoaHA4Ha9euZeXK
-lUSjUXp7e41qzVRVdWFlZeXH4XA4DmCzmrZqN86Sa3wIrAYQcdvRYfXvaUX6jPGl6HK5aG1tZc6cOQAU
-FxdnK/u42+32A82AtLTTC96m1HGDQ8CyZEyKhP2686IojVahSDsAmzdvpqKigkQiQWdnJ0eOmG7LSdX4
-fD4ZCoVOWAZds51qdI4DNeljcWWEG84/cUerEVIhEong9Xrx+/309PTkMs1jdXV1QUt2j1qN5xXoABxm
-vrtjZVT3P4lAwW63Mzo6ms90PQV32tfGB0Kwkwk81CO2CP84rlA67CGRSBj6PB4Pg4ODRp7iQqAVn8YJ
-BM/kkhSzRRi2X8M9PDfj+JIlS2hubqa8vJxgMJjJEspr96jajaukn9NART75A87zXJzxPbMHHhmPKYpC
-Y2Mj9fVjL8qioqJMSygupWzLudML36DaEeMsgvvyAQZAwJC9D1vCyV2jMwFYtWoVDQ0NAHR3dxMIBNB1
-PTVrSAjRGAgEunKCnq/RIBV+gFtvukI0WHSJkpEyHPFi+vv7qa2t5dixYxw8eDB9PV9VFGWZ3+8/Cjmc
-PXwarcB7ueRMRErCxry+1dji04x2lDOKoixvb2+/kAxMqNM+jV1IdiCsP2BJkWDQeYnSqAcZv234m5GR
-kaX79u27khrMCv2gxhMS3p8M4KR0dZio7Rru6FxS/sgDwOr9+/cPpftNQRZquHQIA2WWk2bQvUNeZg/U
-S+CtQCCgGflMtzwdXmGKgAH6pv9KVIl0Ht95STPzGXdaQ/HBBaDcUrLsSghY0aNxyMhgeAnwjR3WpxoY
-YCAOf5kZDKGlwPRKMUnqBRb/rGF69DOEViROy5HM1T0KD4U0zmYzmnU6Yi2TqT5zuGj4RTNfFkkZ7h6K
-JGR8eLRUHSFoZhMTns4QuuJ++nrDXAZmWYKWQULwbk8bm3LNM1we58O8ySQBS5AJwWv5AINJpyW8mD+W
-iSS6cPD0qS105VvCEFrAsMy3qrFuKCqLgls4U0iRjNDzt+OVcUoLKXybBH8gqQlu5WrhpdJUp/GUhE6g
-pNDiKQqFYBEaenZrdv0H2reNl5HswtrPZR+FNF6wsN4Y9M1PWe1AUyaThJhg/A0ZR9CLpNqssISgTbDt
-p7b8HzgjiXnvcI8jxmFggYGnW7fxrF3nATl2+/42pHHOp7GYse91dUAlMCTGDjonEwqfnNrKd1bDjkP7
-ND4FnjMY77jupuW3l4hNFkA+sgFLM8TjCF4NtbFrqoEmIkXAubTYgITl/1dgAEUoNAEngQjQFVdZcErj
-8J3FMte/GgGQvMZKbHQAAAAASUVORK5CYII='
-  if (2 == (global 'scale')) { data = dataRetina }
-  return (readFrom (new 'PNGReader') (base64Decode data))
-}
-
-method orangeConnectButtonIcon MicroBlocksEditor {
-  data = '
-iVBORw0KGgoAAAANSUhEUgAAABYAAAAUCAYAAACJfM0wAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAI
-pgAACKYB4IHg5wAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIzSURBVDiNrZNN
-SBRhGMd/z8yIOjClkpB0i4JI9ywUKq7QpQ+MGpWgU3jIi6eQve2xg0gluF7aW5RaEl36JKEogoxId/q4
-RB8XPWVtrOvuuk+HHB2tXcfsf3v+7zO/9/88vCNsQ729vT0ichmYM03zZCKR+OifyTag/SIyBBgr1nvT
-NA8lEolvWwZrHKPLc6Wuru6KqvZVV1eTzWZRVb/lSWVl5ZHh4eEloxwoKO80bsrj0z5HH6hqX319PbFY
-jObm5mBbay6XGw2deNblgsBFwFgwdzLmdOKePcfi4iKTk5PBxL4GyoLVxfRgCmgJ+j8Mh2s13eR1bWDb
-tslkMn65UHIVrzupScHnjVCAHcU0Pd9vrtbt7e3E43Esy/KtN38Fvz3D/ooKvgjsKXVx7fICJ37ew3Ec
-otEoIyMjFAoFgJfFYrH7j1XMdNEq8EiUilLQoKbsFlJVB1FVROR+Pp93k8lkel3i6ePYhnI9LBSgLfOM
-3YV5VPVqQ0PDsWQymYYNr2LWpV/gUlior2Wx0oZRaIzc4KvvrUssEN0qFMDUwof8MtmgZwULBfsf/vGn
-1hJHm+6QDprrX4WsjRJKynS2lo4DG6C/UX5PHMPzmAd2hcQ+bpqgo9ThauJXHg6KHSqoMFoOugqeOcXe
-KniOlAcLqEAsMs75zS6XVBeHUW7jr0C5K0JOlRkV2gQagYwoD4smg5Ex3oWZykK5tQItqjAQmWAwzIeb
-yQBeAHMInZHx/wMF+AWd275fcXHzfQAAAABJRU5ErkJggg=='
-  dataRetina = '
-iVBORw0KGgoAAAANSUhEUgAAABYAAAAUCAYAAACJfM0wAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAI
-pgAACKYB4IHg5wAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIzSURBVDiNrZNN
-SBRhGMd/z8yIOjClkpB0i4JI9ywUKq7QpQ+MGpWgU3jIi6eQve2xg0gluF7aW5RaEl36JKEogoxId/q4
-RB8XPWVtrOvuuk+HHB2tXcfsf3v+7zO/9/88vCNsQ729vT0ichmYM03zZCKR+OifyTag/SIyBBgr1nvT
-NA8lEolvWwZrHKPLc6Wuru6KqvZVV1eTzWZRVb/lSWVl5ZHh4eEloxwoKO80bsrj0z5HH6hqX319PbFY
-jObm5mBbay6XGw2deNblgsBFwFgwdzLmdOKePcfi4iKTk5PBxL4GyoLVxfRgCmgJ+j8Mh2s13eR1bWDb
-tslkMn65UHIVrzupScHnjVCAHcU0Pd9vrtbt7e3E43Esy/KtN38Fvz3D/ooKvgjsKXVx7fICJ37ew3Ec
-otEoIyMjFAoFgJfFYrH7j1XMdNEq8EiUilLQoKbsFlJVB1FVROR+Pp93k8lkel3i6ePYhnI9LBSgLfOM
-3YV5VPVqQ0PDsWQymYYNr2LWpV/gUlior2Wx0oZRaIzc4KvvrUssEN0qFMDUwof8MtmgZwULBfsf/vGn
-1hJHm+6QDprrX4WsjRJKynS2lo4DG6C/UX5PHMPzmAd2hcQ+bpqgo9ThauJXHg6KHSqoMFoOugqeOcXe
-KniOlAcLqEAsMs75zS6XVBeHUW7jr0C5K0JOlRkV2gQagYwoD4smg5Ex3oWZykK5tQItqjAQmWAwzIeb
-yQBeAHMInZHx/wMF+AWd275fcXHzfQAAAABJRU5ErkJggg=='
   if (2 == (global 'scale')) { data = dataRetina }
   return (readFrom (new 'PNGReader') (base64Decode data))
 }

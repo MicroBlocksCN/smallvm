@@ -215,6 +215,7 @@ method printReporter PrettyPrinter block {
     symbol gen prim
     printValue this (getField block (offset + 1))
   } (prim == 'v') {
+    symbol gen 'v'
     varName gen (getField block offset)
   } else {
     printOp this prim

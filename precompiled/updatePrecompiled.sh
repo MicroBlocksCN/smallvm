@@ -30,16 +30,12 @@ pio run -e clue
 python precompiled/uf2conv.py -c -f 0xada52840 .pio/build/clue/firmware.hex -o precompiled/vm_clue.uf2
 pio run -e itsybitsy
 python precompiled/uf2conv.py -c .pio/build/itsybitsy/firmware.bin -o precompiled/vm_itsybitsy.uf2
-
-# Platformio build system for Raspberry Pi Pico is system dependent
-currentOS=`uname -s`
-if [ "$currentOS" == "Darwin" ]; then
-    pio run -e pico-mac
-	cp .pio/build/pico-mac/firmware.uf2 precompiled/vm_pico.uf2
-elif [ "$currentOS" == "Linux" ]; then
-    pio run -e pico-linux
-	cp .pio/build/pico-linux/firmware.uf2 precompiled/vm_pico.uf2
-fi
+pio run -e metroM0
+python precompiled/uf2conv.py -c .pio/build/metroM0/firmware.bin -o precompiled/vm_metroM0.uf2
+pio run -e pico
+cp .pio/build/pico/firmware.uf2 precompiled/vm_pico.uf2
+pio run -e pico-w
+cp .pio/build/pico-w/firmware.uf2 precompiled/vm_pico_w.uf2
 
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/

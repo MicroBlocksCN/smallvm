@@ -302,7 +302,12 @@ method contextMenu Block {
 	}
   }
   addLine menu
-  addItem menu 'find uses of this block' 'findBlockUsers' 'find scripts or block definitions using this block'
+  if (contains (array 'v' '=' '+=') (primName expression)) {
+	  addItem menu 'find variable accessors' 'findVarAccessors' 'find scripts or block definitions where this variable is being read'
+	  addItem menu 'find variable modifiers' 'findVarModifiers' 'find scripts or block definitions where this variable is being set or changed'
+  } else {
+	  addItem menu 'find uses of this block' 'findBlockUsers' 'find scripts or block definitions using this block'
+  }
   if (notNil (functionNamed (project pe) (primName expression))) {
     addItem menu 'show block definition...' 'showDefinition' 'show the definition of this block'
 	if isInPalette {
@@ -351,7 +356,7 @@ method extractBlock Block {
       setNext this nil
     }
   }
-  grabCentered morph this
+  grabTopLeft morph
 }
 
 method exportAsImage Block { exportAsImageScaled (topBlock this) }
@@ -379,12 +384,23 @@ method scriptText Block useSemicolons {
   return (scriptStringFor mbScripter this)
 }
 
-// Block users
+// Inspection operations
 
 method findBlockUsers Block {
-  pe = (findProjectEditor)
-  findBlockUsers (project pe) this
+	pe = (findProjectEditor)
+	findBlockUsers (project pe) this
 }
+
+method findVarAccessors Block {
+	pe = (findProjectEditor)
+	findVarAccessors (project pe) this
+}
+
+method findVarModifiers Block {
+	pe = (findProjectEditor)
+	findVarModifiers (project pe) this
+}
+
 
 // Block definition operations
 
@@ -460,7 +476,7 @@ method justReceivedDrop CategorySelector aHandler {
 	intoLibrary = (and
 		((getField scripter 'libSelector') == this)
 		(notNil (categoryUnderHand this)))
-	intoMyBlocks = (and 
+	intoMyBlocks = (and
 		((getField scripter 'categorySelector') == this)
 		((categoryUnderHand this) == 'My Blocks'))
 
@@ -608,7 +624,7 @@ method contextMenu ScriptEditor {
 	addItem menu 'paste script from clipboard' 'pasteScripts'
   }
   addLine menu
-  addItem menu 'save a picture of all scripts' 'saveScriptsImage'
+  addItem menu 'save a picture of all visible scripts' 'saveScriptsImage'
   if (devMode) {
     addItem menu 'set exported script scale' 'setExportedScriptScale'
   }
@@ -698,7 +714,9 @@ method normalCostume ListBox data accessor {
   scale = (global 'scale')
   if (isNil accessor) {accessor = getEntry}
   dta = (call accessor data)
-  if (isClass dta 'String') {
+  if (isClass dta 'Array') {
+    return (stringImage (at dta 1) fontName fontSize txtClrNormal nil nil nil nil paddingX paddingY)
+  } (isClass dta 'String') {
 	// Colored categories:
 	if (and (isClass onSelect 'Action') (isOneOf (function onSelect) 'categorySelected' 'librarySelected')) {
 	  // add color swatch for category

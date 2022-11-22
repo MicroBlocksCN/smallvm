@@ -351,20 +351,7 @@ method adjustSizeToScrollFrame Text aScrollFrame {
 // events
 
 method clicked Text hand {
-  if (notNil caret) {
-    if (and
-      (not clickedForEdit)
-      ((selected this) != '')
-      (pos >= begin)
-      (pos <= end)
-      (not (hasActiveMenu (page morph)))
-    ) {
-      unmark this
-      gotoSlot caret (slotAt this (x hand) (y hand))
-    }
-    return true
-  }
-  return false
+  return (notNil caret)
 }
 
 method doubleClicked Text hand {
@@ -386,16 +373,9 @@ method handDownOn Text hand {
       gotoSlot caret (slotAt this (x hand) (y hand))
     } else {
       pos = (max 1 (slotAt this (x hand) (y hand)))
-      if (and (notNil startMark) (notNil endMark)) {
-        begin = (min startMark endMark)
-        end = ((max startMark endMark) - 1)
-      }
-      if (not (and (containsPoint (extent this) (x hand) (y hand)) ((selected this) != '') (pos >= begin) (pos <= end))) {
-        // not clicked inside selection
-        unmark this
-        gotoSlot caret pos
-        startMark = (slot caret)
-      }
+      unmark this
+      gotoSlot caret pos
+      startMark = (slot caret)
     }
     if  clickedForEdit {raise morph 'clickedForEdit' this}
     return true

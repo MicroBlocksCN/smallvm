@@ -1,0 +1,96 @@
+module 'MP3 Player (DFRobot, Octopus)' Output
+author MicroBlocks
+version 1 3 
+choices mp3PlayerType 'MakerBit/HyperDuino' DFRobot Octopus 
+description 'Support for Octopus (FN-M16P chip) and DFRobot (and HyperDuino, MakerBit) MP3 Players (YX5300 chip).
+Requires a board with serial support (i.e. not micro:bit v1).
+Connect the player to TX pin of the board.'
+variables _mp3UseChecksum _mp3Pin 
+
+  spec ' ' 'mp3_initialize' 'mp3 initialize _ pin _' 'menu.mp3PlayerType num' 'MakerBit/HyperDuino' 14
+  spec ' ' 'mp3_setVolume' 'mp3 set volume _ (0-30)' 'num' 20
+  spec ' ' 'mp3_playTrack' 'mp3 play track _ in folder _' 'num num' 1 1
+  spec ' ' 'mp3_nextTrack' 'mp3 play next track in folder'
+  spec ' ' 'mp3_repeatAllInFolder' 'mp3 repeat all in folder _' 'num' 1
+  spec ' ' 'mp3_pause' 'mp3 pause'
+  spec ' ' 'mp3_resume' 'mp3 resume'
+  spec ' ' '_mp3_sendMP3Cmd' '_mp3_sendMP3Cmd _ _ _' 'auto num num' '0x0C' 0 0
+
+to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
+  if (_mp3UseChecksum == 0) {
+    sayIt 'MP3 Player is not initialized'
+    return 0
+  }
+  if _mp3UseChecksum {
+    comment 'YX5300 chip (DFRobot,HyperDuino,MakerBit); no checksum'
+    local 'msg' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt cmd) 0 arg1 arg2 (hexToInt 'EF'))
+  } else {
+    comment 'FN-M16P chip (Octopus MP3Player); compute checksum'
+    local 'msg' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt cmd) 0 arg1 arg2 0 0 (hexToInt 'EF'))
+    local 'sum' 0
+    for i 6 {
+      sum += (at (i + 1) msg)
+    }
+    sum = (65536 - sum)
+    atPut 8 msg ((sum >> 8) & 255)
+    atPut 9 msg (sum & 255)
+  }
+  comment 'Send the command'
+  for byte msg {
+    '[io:softWriteByte]' byte _mp3Pin 9600
+  }
+  waitMillis 20
+}
+
+to mp3_initialize type pin {
+  _mp3UseChecksum = ('Octopus' == type)
+  _mp3Pin = pin
+  comment 'Reset'
+  '_mp3_sendMP3Cmd' '0x0C' 0 0
+  waitMillis 1000
+  comment 'Set initial volume.'
+  mp3_setVolume 20
+}
+
+to mp3_nextTrack {
+  comment 'Skip to the next track in the current folder, wrapping back to the first track.'
+  '_mp3_sendMP3Cmd' '0x01' 0 0
+  waitMillis 100
+  '_mp3_sendMP3Cmd' '0x01' 0 0
+}
+
+to mp3_pause {
+  '_mp3_sendMP3Cmd' '0x0E' 0 0
+}
+
+to mp3_playTrack trackNum folderNum {
+  comment 'Play the given track in the given folder.
+If folder is 0, play the given track at the top level of the SD card.
+Folder names must start with two digits, 01-99.
+Track names in a folder must start with three digits, 001-999.
+Track names at the top level must start with four digits, 0001-9999.
+This sets the folder for the "play next track in folder" command.'
+  if (folderNum < 1) {
+    comment 'Play top-level track (e.g. 0001)'
+    '_mp3_sendMP3Cmd' '0x03' 0 trackNum
+  } else {
+    comment 'Play track in folder'
+    '_mp3_sendMP3Cmd' '0x0F' folderNum trackNum
+  }
+}
+
+to mp3_repeatAllInFolder folderNum {
+  comment 'Repeatedly play all files in the given folder. Does not work for top level (folder 0).'
+  '_mp3_sendMP3Cmd' '0x17' folderNum folderNum
+  mp3_resume
+}
+
+to mp3_resume {
+  '_mp3_sendMP3Cmd' '0x0D' 0 0
+}
+
+to mp3_setVolume level {
+  comment 'Range is 0-30'
+  '_mp3_sendMP3Cmd' '0x06' 0 level
+}
+
