@@ -127,7 +127,7 @@
 </svg>
 
             </div>
-            <button class="btn" data-button="a" data-undraggable onpointerdown="GP.boardie.iframe.contentWindow.press(37);" onpointerup="GP.boardie.iframe.contentWindow.unpress(37)">
+            <button class="btn" data-button="a" data-undraggable onpointerdown="GP.boardie.press(37);" onpointerup="GP.boardie.unpress(37)">
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M18.6376 15H21.5028L25.1264 25H22.6545L21.9944 23.0197H18.132L17.4719 25H15L18.6376 15ZM21.5449 21.3062L20.0843 16.9101H20.0562L18.5815 21.3062H21.5449Z" fill="#F5F5F5"/>
 </svg>
@@ -137,7 +137,7 @@
 
         <!-- Button A+B -->
         <div class="controls__btn-wrapper">
-            <button class="btn btn--small" data-button="ab" data-undraggable onpointerdown="[37,39].forEach(k=>GP.boardie.iframe.contentWindow.press(k))" onpointerup="[37,39].forEach(k=>GP.boardie.iframe.contentWindow.unpress(k))">
+            <button class="btn btn--small" data-button="ab" data-undraggable onpointerdown="[37,39].forEach(k=>GP.boardie.press(k))" onpointerup="[37,39].forEach(k=>GP.boardie.unpress(k))">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M5.78935 9H7.63107L9.42915 15.2147H7.95403L7.64853 13.984H5.77189L5.44894 15.2147H4L5.78935 9ZM7.43905 12.9191L6.73203 10.2133H6.71458L5.98138 12.9191H7.43905Z" fill="#F5F5F5"/>
 <path d="M10.9441 12.5874H9.87922V11.5138H10.9441V10.1522H12.1836V11.5138H13.2572V12.5874H12.1836V13.9927H10.9441V12.5874Z" fill="#F5F5F5"/>
@@ -149,7 +149,7 @@
 
         <!-- Button B -->
         <div class="controls__btn-wrapper" alt="Press →">
-            <button class="btn" data-button="b" data-undraggable onpointerdown="GP.boardie.iframe.contentWindow.press(39);" onpointerup="GP.boardie.iframe.contentWindow.unpress(39)">
+            <button class="btn" data-button="b" data-undraggable onpointerdown="GP.boardie.press(39);" onpointerup="GP.boardie.unpress(39)">
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M16 15H21.0702C22.1845 15 23.0412 15.2388 23.6404 15.7163C24.2491 16.1938 24.5534 16.8727 24.5534 17.7528C24.5534 18.2959 24.4082 18.75 24.118 19.1152C23.8371 19.4803 23.4345 19.7331 22.9101 19.8736V19.9017C23.5094 20.0234 23.9682 20.2809 24.2865 20.6742C24.6142 21.0674 24.7781 21.5777 24.7781 22.2051C24.7781 23.1039 24.4644 23.7968 23.8371 24.2837C23.2191 24.7612 22.3343 25 21.1826 25H16V15ZM20.7051 19.1292C21.1919 19.1292 21.5618 19.0309 21.8146 18.8343C22.0674 18.6283 22.1938 18.3333 22.1938 17.9494C22.1938 17.5749 22.0674 17.2893 21.8146 17.0927C21.5618 16.8867 21.1919 16.7837 20.7051 16.7837H18.3596V19.1292H20.7051ZM20.7612 23.2163C21.2949 23.2163 21.7022 23.1133 21.9831 22.9073C22.2734 22.6919 22.4185 22.383 22.4185 21.9803C22.4185 21.5684 22.2734 21.2547 21.9831 21.0393C21.7022 20.8146 21.2949 20.7022 20.7612 20.7022H18.3596V23.2163H20.7612Z" fill="#F5F5F5"/>
 </svg>
