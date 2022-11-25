@@ -921,6 +921,55 @@ file system info
 文件系统信息
 
 ####
+# Strings
+# string (text) processing functions
+
+Strings
+字符串
+
+_ is a digit
+_ 是数字
+
+_ is lowercase
+_ 是小写字母
+
+_ is uppercase
+_ 是大写字母
+
+_ begins with _
+_ 以 _ 开头
+
+_ ends with _
+_ 以 _ 结尾
+
+_ contains _
+_ 包含 _
+
+lowercase _
+小写 _
+
+uppercase _
+大写 _
+
+_ without white space
+_ 移除空格
+
+join string list _ separator _
+连接成字符串 列表 _ 分隔符 _
+
+unicodes _
+unicodes _
+
+string from unicodes _
+将 unicodes _ 转为字符串
+
+num2str _
+数字 _ 转为字符串
+
+str2num _
+字符串 _ 转为数字
+
+####
 # WiFi library
 
 WiFi
@@ -1834,6 +1883,27 @@ string or number
 
 number only
 仅数字
+
+stop editing
+停止编辑
+
+cut
+剪切
+
+copy
+复制
+
+paste
+粘贴
+
+accept
+接受
+
+revert
+还原
+
+select all
+选择全部
 
 define
 定义
