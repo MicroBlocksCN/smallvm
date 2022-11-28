@@ -259,13 +259,11 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 		obj2int(args[6]), // color
 		(argCount > 7) ? (trueObj == args[7]) : true // fill
 	);
-
 	tftChanged = true;
 	return falseObj;
 }
 
 static OBJ primText(int argCount, OBJ *args) {
-	// TODO wrap using measureText. See: https://stackoverflow.com/a/16599668
 	tftInit();
 	OBJ value = args[0];
 	char text[256];
@@ -282,10 +280,27 @@ static OBJ primText(int argCount, OBJ *args) {
 
 	// draw text
 	EM_ASM_({
+			var text = UTF8ToString($0);
+			// subtract a little bit from x, proportional to font scale, to make
+			// it match the font on physical boards
+			var x = $1 - $4;
+			var y = $2 - $4;
+			// there is a weird rounding artifact at scale 3
+			var fontSize = ($4 == 3) ? ($4 * 10.5) : ($4 * 11);
+			window.ctx.font = fontSize + 'px adafruit';
 			window.ctx.fillStyle = window.rgbFrom24b($3);
-			window.ctx.font = ($4 * 6) + 'px monospace';
 			window.ctx.textBaseline = 'top';
-			window.ctx.fillText(UTF8ToString($0), $1, $2);
+			text.split("").forEach(
+				(c) => {
+					window.ctx.fillText(c, x, y);
+					x += $4 * 6;
+					if ($5 && (x + $4 * 6 >= window.ctx.canvas.width)) {
+						// wrap
+						x = 0 - $4;
+						y += fontSize * 3 / 4;
+					}
+				}
+			);
 		},
 		text, // text
 		obj2int(args[1]), // x
@@ -298,6 +313,56 @@ static OBJ primText(int argCount, OBJ *args) {
 	tftChanged = true;
 	return falseObj;
 }
+
+static OBJ primDrawBitmap(int argCount, OBJ *args) {
+	// Draw an RGB565 bitmap endoded into a byteArray in a file
+	tftInit();
+	OBJ value = args[0];
+	char fromFile = IS_TYPE(value, StringType);
+	char bitmapFile[256];
+
+	// args[0] can contain either a file name or a ByteArray with the bitmap
+	// encoded in RGB565 format
+	if (fromFile) { sprintf(bitmapFile, "%s", obj2str(value)); }
+
+	EM_ASM_({
+			var fromFile = $6;
+			if (fromFile) { var file = window.localStorage[UTF8ToString($0)]; }
+			var imgData = window.ctx.createImageData($3, $4);
+			var pixelIndex = 0;
+
+			// ignore the first 4 bytes (header)
+			for (var i = 4; i < $3 * $4 * 2 + 4; i += 2) {
+				var rgb565 = fromFile ?
+					(file.charCodeAt(i) | (file.charCodeAt(i + 1) << 8)) :
+					(HEAP8[$0 + i] | (HEAP8[$0 + i + 1] << 8));
+
+				imgData.data[pixelIndex] = (rgb565 >> 11) << 3; // R
+				imgData.data[pixelIndex + 1] = ((rgb565 >> 5) & 0x3F) << 2; // G
+				imgData.data[pixelIndex + 2] = (rgb565 & 0x1F) << 3; // B
+				imgData.data[pixelIndex + 3] = (rgb565 == $5) ? 0 : 0xFF; // A
+				pixelIndex += 4;
+			}
+			// putImageData would destroy the original image and thus
+			// transparent pixels would just appear black
+			createImageBitmap(imgData).then(
+				(image) => { window.ctx.drawImage(image, $1, $2); }
+			);
+		},
+		// we cast the string to uint8 * to prevent compiler warning...
+		fromFile ? (uint8 *) bitmapFile : (uint8 *) &FIELD(value, 0),
+		obj2int(args[1]), 	// $1, destination x
+		obj2int(args[2]),	// $2, destination y
+		obj2int(args[3]), 	// $3, width
+		obj2int(args[4]), 	// $4, height
+		obj2int(args[5]),	// $5, alpha color (in RGB565)
+		fromFile
+	);
+
+	tftChanged = true;
+	return falseObj;
+}
+
 
 // Simulating a 5x5 LED Matrix
 
@@ -413,6 +478,7 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
+	{"drawBitmap", primDrawBitmap},
 	{"tftTouched", primTftTouched},
 	{"tftTouchX", primTftTouchX},
 	{"tftTouchY", primTftTouchY},

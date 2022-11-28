@@ -669,8 +669,8 @@ function GP_openBoardie() {
             boardie.element.id = 'boardie';
             boardie.element.style.position = 'absolute';
             boardie.element.style.zIndex = 999;
-            boardie.element.style.top = '10px';
-            boardie.element.style.left = '10px';
+            boardie.element.style.top = '70px';
+            boardie.element.style.right = '34px';
             boardie.element.style.cursor = 'grab';
             boardie.element.innerHTML = req.responseText;
 

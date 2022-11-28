@@ -7,9 +7,10 @@ chromeApp/*/gp_wasm.data
 chromeApp/*/gp_wasm.js
 chromeApp/*/gp_wasm.wasm
 chromeApp/MicroBlocks.zip
-chromeApp/webapp/boardie/boardie.html
-chromeApp/webapp/boardie/style.css
+chromeApp/webapp/boardie/*.html
+chromeApp/webapp/boardie/styles.css
 chromeApp/webapp/boardie/run_boardie*
+chromeApp/webapp/boardie/adafruit_font.ttf
 linux+pi/ublockscode
 linux+pi/vm.*
 linux+pi/vm_*
