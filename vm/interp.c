@@ -1336,12 +1336,15 @@ void vmLoop() {
 #ifdef EMSCRIPTEN
 // Boardie support
 
+int shouldYield = false;
+void yield() { shouldYield = true; }
+
 void interpretStep() {
 	processMessage();
 	checkButtons();
 	updateMicrobitDisplay();
 	int cycles = 0;
-	while (cycles < 10000) {
+	while ((cycles < 10000) && !shouldYield) {
 		// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 		int runCount = 0;
 		uint32 usecs = 0; // compute times only the first time they are needed
@@ -1381,6 +1384,7 @@ void interpretStep() {
 		}
 		cycles ++;
 	}
+	shouldYield = false;
 }
 #endif
 

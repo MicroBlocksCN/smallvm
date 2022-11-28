@@ -360,6 +360,7 @@ static OBJ primDrawBitmap(int argCount, OBJ *args) {
 	);
 
 	tftChanged = true;
+	yield();
 	return falseObj;
 }
 
