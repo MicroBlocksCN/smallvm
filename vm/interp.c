@@ -1334,10 +1334,11 @@ void vmLoop() {
 }
 
 #ifdef EMSCRIPTEN
+#include <emscripten.h>
 // Boardie support
 
 int shouldYield = false;
-void yield() { shouldYield = true; }
+void EMSCRIPTEN_KEEPALIVE yield() { shouldYield = true; }
 
 void interpretStep() {
 	processMessage();

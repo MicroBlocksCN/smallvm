@@ -38,6 +38,10 @@ int openFile(char *fileName, int createIfNotExists) {
 				return 0;
 			}
 		}
+
+		// some file ops take a _long_ time to run so we yield after max_cycles
+		window.max_cycles = 512;
+
 		if (!window.fileCharPositions) { window.fileCharPositions = {}; }
 		if (!window.fileCharPositions[fileName] || $1) {
 			window.fileCharPositions[fileName] = 0;
@@ -131,8 +135,12 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 			startIndex + $1;
 
 		for (var i = startIndex; i < endIndex; i++) {
-			setValue($2, file.charCodeAt(i), 'i8');
+			HEAP8[$2] = file.charCodeAt(i);
 			$2++;
+			// yield from time to time when dealing with big files
+			if ((i - startIndex) % window.max_cycles == window.max_cycles - 1) {
+				_yield();
+			}
 		}
 
 		window.fileCharPositions[fileName] = endIndex;
@@ -164,8 +172,12 @@ static OBJ primReadInto(int argCount, OBJ *args) {
 			file.length :
 			$2 + startIndex;
 		for (var i = startIndex; i < endIndex; i++) {
-			setValue($1, file.charCodeAt(i), 'i8');
+			HEAP8[$1] = file.charCodeAt(i);
 			$1++;
+			// yield from time to time when dealing with big files
+			if ((i - startIndex) % window.max_cycles == window.max_cycles - 1) {
+				_yield();
+			}
 		}
 		window.fileCharPositions[fileName] = endIndex + 1;
 		return endIndex - startIndex;
@@ -229,10 +241,11 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 
 	if (IS_TYPE(data, ByteArrayType)) {
 		EM_ASM_({
-			for (var i = 0; i < $2; i++) {
-				window.localStorage[UTF8ToString($0)] +=
-					String.fromCharCode(getValue($1 + i, 'i8'));
-			}
+			window.localStorage[UTF8ToString($0)] +=
+				String.fromCharCode.apply(
+					null,
+					new Uint8Array(HEAP8.subarray($1, $1 + $2))
+				);
 		}, fileName, (uint8 *) &FIELD(data, 0), BYTES(data));
 	} else if (IS_TYPE(data, StringType)) {
 		EM_ASM_({

@@ -10,7 +10,7 @@ emcc -std=gnu99 -Wall -O3 \
 	--closure 1 \
 	--memory-init-file 0 \
 	-s WASM=1 \
-	-sEXPORTED_FUNCTIONS=_main,_getScripts \
+	-sEXPORTED_FUNCTIONS=_main,_getScripts,_yield \
 	-I ../vm \
 	boardie.c ../vm/*.c \
 	boardieIOPrims.c boardieOutputPrims.c boardieTftPrims.c boardieNetPrims.c \
