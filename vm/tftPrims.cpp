@@ -689,6 +689,43 @@ static OBJ primText(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primDrawBitmap(int argCount, OBJ *args) {
+	// Draw an RGB565 bitmap encoded into a byteArray either from a file or from
+	// memory
+
+	/* drawing from file not supported yet
+
+	OBJ value = args[0];
+	char fromFile = IS_TYPE(value, StringType);
+	char bitmapFile[32];
+	*/
+
+	int x = obj2int(args[1]);
+	int y = obj2int(args[2]);
+	uint16_t * bitmap = (uint16_t *) &FIELD(args[0], 0);
+	int w = obj2int(args[3]);
+	int h = obj2int(args[4]);
+	uint16_t color;
+	uint16_t alpha_color = (uint16_t) obj2int(args[5]);
+
+	// we could use drawRGBBitmap, but it doesn't handle alpha colors and
+	// it iterates over the array anyway...
+
+	tft.startWrite();
+	for (int j = 0; j < h; j++, y++) {
+		for (int i = 0; i < w; i++) {
+			uint16_t color = bitmap[j * w + i];
+			if (color != alpha_color) {
+				tft.writePixel(x + i, y, color);
+			}
+		}
+	}
+	tft.endWrite();
+	UPDATE_DISPLAY();
+
+	return falseObj;
+}
+
 void tftSetHugePixel(int x, int y, int state) {
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
 	int minDimension, xInset = 0, yInset = 0;
@@ -802,6 +839,7 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
+	{"drawBitmap", primDrawBitmap},
 	{"tftTouched", primTftTouched},
 	{"tftTouchX", primTftTouchX},
 	{"tftTouchY", primTftTouchY},

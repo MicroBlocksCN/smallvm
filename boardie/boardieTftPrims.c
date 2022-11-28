@@ -315,7 +315,8 @@ static OBJ primText(int argCount, OBJ *args) {
 }
 
 static OBJ primDrawBitmap(int argCount, OBJ *args) {
-	// Draw an RGB565 bitmap endoded into a byteArray in a file
+	// Draw an RGB565 bitmap encoded into a byteArray either from a file or from
+	// memory
 	tftInit();
 	OBJ value = args[0];
 	char fromFile = IS_TYPE(value, StringType);
@@ -331,8 +332,7 @@ static OBJ primDrawBitmap(int argCount, OBJ *args) {
 			var imgData = window.ctx.createImageData($3, $4);
 			var pixelIndex = 0;
 
-			// ignore the first 4 bytes (header)
-			for (var i = 4; i < $3 * $4 * 2 + 4; i += 2) {
+			for (var i = 0; i < $3 * $4 * 2; i += 2) {
 				var rgb565 = fromFile ?
 					(file.charCodeAt(i) | (file.charCodeAt(i + 1) << 8)) :
 					(HEAP8[$0 + i] | (HEAP8[$0 + i + 1] << 8));
