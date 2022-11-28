@@ -666,7 +666,7 @@ function GP_openBoardie() {
     req.onreadystatechange = function () {
         if (req.readyState == 4 && req.status == 200) {
             boardie.element = document.createElement('div');
-            boardie.element.id = 'boardie';
+            boardie.element.classList.add('boardie');
             boardie.element.style.position = 'absolute';
             boardie.element.style.zIndex = 999;
             boardie.element.style.top = '70px';
