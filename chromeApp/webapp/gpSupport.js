@@ -686,27 +686,31 @@ function GP_openBoardie() {
 
             makeDraggable(boardie.element);
 
-			boardie.element.querySelectorAll('[data-button]').forEach(
-				button => {
-					button.addEventListener('keydown', (evt) => {
-						boardie.press(evt.keyCode);
-						boardie.iframe.focus();
-					});
-				}
-			);
+            boardie.element.querySelectorAll('[data-button]').forEach(
+                button => {
+                    button.addEventListener('keydown', (evt) => {
+                        boardie.press(evt.keyCode);
+                        boardie.iframe.focus();
+                    });
+                }
+            );
 
-			boardie.iframe.contentWindow.addEventListener(
-				'soundstart',
-				function () {
-					boardie.element.querySelector('.audio').classList.add('--is-active');
-				}
-			);
-			boardie.iframe.contentWindow.addEventListener(
-				'soundstop',
-				function () {
-					boardie.element.querySelector('.audio').classList.remove('--is-active');
-				}
-			);
+            boardie.iframe.contentWindow.addEventListener(
+                'soundstart',
+                function () {
+                    boardie.element.querySelector('.audio').classList.add('--is-active');
+                }
+            );
+            boardie.iframe.contentWindow.addEventListener(
+                'soundstop',
+                function () {
+                    boardie.element.querySelector('.audio').classList.remove('--is-active');
+                }
+            );
+
+            boardie.iframe.contentWindow.addEventListener('click', (event) => {
+                boardie.element.classList.add('--is-active');
+            });
 
             boardie.isOpen = true;
         }
@@ -746,15 +750,35 @@ function makeDraggable (element) {
         // set the element's new position:
         element.style.top = (element.offsetTop - pos2) + "px";
         element.style.left = (element.offsetLeft - pos1) + "px";
+        if (!element.classList.contains('--is-dragged')) {
+            element.classList.add('--is-dragged');
+        }
     };
 
     function closeDragElement() {
         // stop moving when mouse button is released:
         document.onpointerup = null;
         document.onpointermove = null;
+        element.classList.remove('--is-dragged');
         element.style.cursor = 'grab';
     };
 };
+
+function focusDetection (elementSelector) {
+    document.addEventListener('click', (event) => {
+        var element = document.querySelector(elementSelector);
+        if (element) {
+            if (event.target.closest('.boardie')) {
+                if (!element.classList.contains('--is-active')) {
+                    element.classList.add('--is-active');
+                }
+            } else {
+                element.classList.remove('--is-active');
+            }
+        }
+    });
+};
+focusDetection('.boardie');
 
 function GP_closeBoardie() {
 	if (GP.boardie.element) {
