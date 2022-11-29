@@ -86,7 +86,7 @@ static OBJ newOrSharedString(char *s) {
 
 // ***** Parsing *****
 
-static OBJ readValue(); // forward reference
+static OBJ readValue(parser *p); // forward reference
 
 static OBJ readString(parser *p) {
 	OBJ bufObj = newBinaryObj(StringClass, 5);
