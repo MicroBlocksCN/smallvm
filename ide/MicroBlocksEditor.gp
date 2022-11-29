@@ -731,7 +731,7 @@ method importFromURL MicroBlocksEditor url {
   }
   i = (findSubstring 'project=' url)
   if (notNil i) { // open a complete project
-    urlOrData = (substring url (i + 8)))
+    urlOrData = (substring url (i + 8))
     if (beginsWith urlOrData 'http') {
       // project link
       fileName = (substring urlOrData ((findLast urlOrData '/') + 1) ((findLast urlOrData '.') - 1))
