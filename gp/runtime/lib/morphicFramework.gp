@@ -544,6 +544,7 @@ method focusOn Keyboard aHandler {focus = aHandler}
 method processEvent Keyboard evt {
   type = (at evt 'type')
   key = (at evt 'keycode')
+  if (or (key == 91) (key == 93)) { key = nil } // numpad fix for keys 3 and 5
   if (and ('textinput' == type) ('Browser' == (platform)) ('	' == (at evt 'text'))) {
     // skip textinput events for tab characters (sent by browsers but not SDL2)
     return
