@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: November 29 2022
 
 #########################
 # Blocks and categories #
@@ -86,11 +86,11 @@ wait _ millisecs
 if _ _
 如果 _ _
 
-else if _ _
-否则,如果 _ _
-
 if _ _ else _
 如果 _ _ 否则 _
+
+else if _ _
+否则,如果 _ _
 
 else
 否则
@@ -137,11 +137,11 @@ stop all
 last message
 最新消息
 
-with _
-参数 _
-
 call _
 调用 _
+
+with _
+参数 _
 
 Operators
 运算
@@ -159,7 +159,7 @@ max _ _
 最大值 _ _
 
 random _ to _
-在 _ 到 _ 间选取随机数
+在 _ 到 _ 之间选取随机数
 
 not _
 _ 不成立
@@ -190,6 +190,9 @@ string
 
 list
 列表
+
+byte array
+字节数组
 
 Advanced:
 高级
@@ -249,9 +252,6 @@ join _ _
 copy _ from _
 复制字符 _ 从 _
 
-split _ by _
-分割 _ 通过 _
-
 to _
 到 _
 
@@ -277,16 +277,28 @@ new list length _
 新建长度为 _ 的列表
 
 new byte array _
-新 byte 数组 _
+新建字节数组 _
 
 as byte array _
-作为 byte 数组 _
+作为字节数组 _
 
 with all _
 填充 _
 
 free memory
 闲置内存
+
+all
+所有
+
+last
+最新
+
+random
+随机
+
+split _ by _
+分割 _ 通过 _
 
 My Blocks
 我的积木
@@ -413,13 +425,13 @@ radio message received?
 广播消息已收到?
 
 radio last number
-最后广播的数字
+最新广播的数字
 
 radio last string
-最后广播的字符串
+最新广播的字符串
 
 radio last message type
-最后广播消息类型
+最新广播消息类型
 
 radio set group _ (0-255)
 设置广播分组 _ (0-255)
@@ -431,7 +443,7 @@ radio set power (0-7) _
 设置广播信号强度 (0-7) _
 
 radio last signal strength
-最后广播信号强度
+最新广播信号强度
 
 radio receive packet _
 广播收到包 _
@@ -466,6 +478,12 @@ light level
 
 temperature (°C)
 温度 (°C)
+
+magnetic field
+磁场
+
+set acceleration range _ g = 100
+设置加速度范围 _ g = 100
 
 ####
 # NeoPixel library
@@ -505,6 +523,30 @@ PIR
 
 PIR at pin _ detected movement
 位于引脚 _ 的人体红外传感器探测到运动
+
+####
+# Microphone library
+
+Microphone
+麦克风
+
+microphone
+麦克风
+
+turn on microphone
+打开麦克风
+
+loudness
+音量大小
+
+clap count
+拍手次数
+
+set clap threshold _
+设置拍手阈值 _
+
+estimate clap threshold
+估计拍手阈值
 
 ####
 # Citilab ED1 board libraries
@@ -690,19 +732,22 @@ distance (cm) trigger _ echo _
 # Infrared remote library
 
 IR Remote
-远距IR
+红外线
 
 receive IR code
-接收IR编码
+接收红外编码
 
 receive IR code from device _
-接收 IR 编码从设备 _
+从设备 _ 接收红外编码
 
 test IR
-测试 IR
+测试红外
 
 attach IR receiver to pin _
-连接IR接收器至引脚 _
+连接红外接收器至引脚 _
+
+IR transmit device _ command _
+红外发射 设备 _ 指令 _
 
 ####
 # Radio comm library
@@ -730,18 +775,6 @@ pausing _ ms
 
 stop scrolling
 停止滚动
-
-####
-# Ringtone library
-
-Ringtone
-铃声
-
-play ringtone _
-播放铃声 _
-
-current song name
-当前歌曲名
 
 ####
 # Servo motor library
@@ -821,6 +854,68 @@ scale _ wrap _
 scale _ wrap _
 
 ####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _
+显示 BMP 文件 _
+
+####
+# HSV color library
+
+HSV Colors
+HSV 颜色
+
+RGB of hue _ saturation _ brightness _ (0-100)
+色相 _ 饱和度 _ 亮度 _ (0-100) 的 RGB
+
+####
+# Fractions library
+
+Fractions
+分数
+
+fract _ / _
+分数 _ / _
+
+fract _ + _
+分数 _ + _
+
+fract _ - _
+分数 _ - _
+
+fract _ × _
+分数 _ × _
+
+fract _ = _
+分数 _ = _
+
+fract _ < _
+分数 _ < _
+
+fract _ > _
+分数 _ > _
+
+simplify fraction _
+简化分数 _
+
+integer part of fraction _
+分数的整数部分 _
+
+numerator of fraction _
+分数的分子 _
+
+denominator of fraction _
+分数的分母 _
+
+gcd _ _
+最大公约数 _ _
+
+lcm _ _
+最小公倍数 _ _
+
+
+####
 # Tone library
 # Generates music tones on buzzers
 
@@ -838,6 +933,42 @@ play frequency _ for _ ms
 
 play midi key _ for _ ms
 弹奏midi键 _ 持续 _ 毫秒
+
+####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+铃声
+
+play ringtone _
+播放铃声 _
+
+current song name
+当前歌曲名
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+Pluck
+
+pluck note _ octave _ for _ ms
+pluck note _ octave _ for _ ms
+
+pluck MIDI key _ for _ msecs
+pluck MIDI key _ for _ msecs
+
+set pluck pin _
+set pluck pin _
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+播放 WAV 文件 _
 
 ####
 # Turtle geometry library
@@ -1121,13 +1252,19 @@ get PN532 firmware version
 PN532 固件版本
 
 ####
-# HTTP libraries
+# HTTP Client
 
 HTTP client
-HTTP客户端
+HTTP 客户端
 
-_ data _ to http܃// _
-_ 数据 _ 至 http܃// _
+_ data _ to http܃// _ 
+_ 数据 _ 到 http܃// _ 
+
+port _
+端口 _
+
+####
+# HTTP Server
 
 HTTP server
 HTTP 服务器
@@ -1161,6 +1298,30 @@ method of request _
 
 content length of request _
 请求内容长度 _
+
+####
+# WebSocket server
+
+WebSocket server
+WebSocket 服务器
+
+start WebSocket server
+启动 WebSocket 服务器
+
+last WebSocket event
+最新的 WebSocket 事件
+
+client ID for WebSocket event _
+WebSocket 事件 _ 的客户端 ID
+
+payload for WebSocket event _
+WebSocket 事件 _ 的载荷
+
+type of WebSocket event _
+WebSocket 事件 _ 的类型
+
+send _ to WebSocket client _
+发送 _ 到 WebSocket 客户端 _
 
 ####
 # Web Things library
@@ -1235,7 +1396,7 @@ MQTT unsub _
 取消订阅主题 _
 
 MQTT pub topic _ payload _
-向主题 _ 发布消息 _
+向主题 _ 发布载荷 _
 
 retain _ QoS _
 保留 _ QoS _
@@ -1250,7 +1411,31 @@ topic for MQTT event _
 最新 MQTT 事件的主题 _
 
 payload for MQTT event _
-最新 MQTT 事件的消息 _
+最新 MQTT 事件的载荷 _
+
+####
+# UDP
+
+UDP start port _
+UDP 启动服务器 端口 _ 
+
+UDP stop
+UDP 停止服务器
+
+UDP send packet _ to ip _ port _
+UDP 发送数据包 _ 到 ip _ 端口 _
+
+UDP receive packet
+UDP 接收数据包 
+
+binary data _
+二进制数据 _
+
+UDP remote IP address
+UDP 远程 IP 地址
+
+UDP remote port
+UDP 远程端口
 
 ####
 # Cutebot
@@ -1290,6 +1475,7 @@ right
 
 both
 全部
+
 
 # Wukong
 
@@ -1530,7 +1716,7 @@ Reading project from board...
 Loading project...
 加载项目
 
-Found a newer version of
+Found a newer version of 
 发现新版本
 
 Do you want me to update the one in the project?
@@ -1608,6 +1794,9 @@ The MicroBlocks in your board is not current
 Try to update MicroBlocks on the board?
 是否升级主板上的 MicroBlocks?
 
+MicroBlocks
+设置
+
 Stop
 停止
 
@@ -1619,6 +1808,9 @@ Quit MicroBlocks?
 
 Discard current project?
 放弃当前项目?
+
+# Scripting area right-click context menu
+
 
 set block size...
 设置积木块大小
@@ -1650,14 +1842,32 @@ paste all scripts
 paste script
 粘贴脚本
 
+paste script from clipboard
+从剪贴板粘贴脚本
+
 save a picture of all visible scripts
 将所有可见脚本保存为图片
 
 set exported script scale
 设置导出脚本的比例
 
+small (50%)
+小 (50%)
+
+normal (65%)
+正常 (65%)
+
+large (100%)
+大 (100%)
+
+printable (200%)
+可打印 (200%)
+
 about...
 关于...
+
+About MicroBlocks
+关于 MicroBlocks
 
 virtual machine version
 虚拟机版本
@@ -1704,9 +1914,6 @@ erase flash and update firmware on ESP board
 Use board type
 使用主板类型信息
 
-Wiping board...
-擦除主板上的信息...
-
 Firmware Installed
 完成固件安装
 
@@ -1724,6 +1931,12 @@ as the destination drive, then click Save.
 
 Installing firmware...
 正在安装固件...
+
+Plug in the board.
+插上板子。
+
+Wiping board...
+擦除主板...
 
 (press ESC to cancel)
 (按下ESC键取消)
@@ -1758,8 +1971,42 @@ export functions as library
 hide advanced blocks
 隐藏高级积木
 
+put file on board
+把文件上传到板子
+
+get file from board
+从板子获取文件
+
+uploaded
+已上传
+
+downloaded
+已下载
+
 Data Graph
 数据图表
+
+Graph
+图表
+
+clear graph
+清除图表
+
+zero at bottom
+底部为零
+
+zero in middle
+中部为零
+
+
+export data to CSV file
+将数据导出到 CSV 文件
+
+import data from CSV file
+从 CSV 文件导入数据
+
+copy graph data to clipboard
+将图形数据复制到剪贴板
 
 show instructions
 显示指令
@@ -1928,13 +2175,6 @@ Are you sure you want to remove this block definition?
 
 Language
 语言
-
-Graph
-图表
-
-MicroBlocks
-设置
-
 
 Custom...
 定制...
@@ -2437,3 +2677,4 @@ Report a byte array cointaining the UTF-8 bytes of the given string.
 
 Report the number of words of memory available. Stop button frees up memory.
 报告可用内存的字数。停止按钮释放内存
+
