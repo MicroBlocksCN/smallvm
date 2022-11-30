@@ -42,6 +42,13 @@ void tftInit() {
 			window.ctx = window.offscreenCanvas.getContext('2d', { alpha: false });
 			window.ctx.imageSmoothingEnabled = false;
 
+			var adafruitFont = new FontFace('adafruit', 'url(adafruit_font.ttf)');
+
+			adafruitFont.load().then((font) => {
+				document.fonts.add(font);
+				console.log('Font loaded');
+			});
+
 			window.rgbFrom24b = function (color24b) {
 				return 'rgb(' + ((color24b >> 16) & 255) + ',' +
 					((color24b >> 8) & 255) + ',' + (color24b & 255) + ')';

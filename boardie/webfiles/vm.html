@@ -6,20 +6,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   </head>
   <body style="margin:0;">
-    <style>
-      @font-face {
-        font-family: adafruit;
-        src: url(adafruit_font.ttf);
-      }
-    </style>
-    <div class="emscripten" style="line-height:0; cursor: crosshair;">
-      <canvas class="emscripten" id="screen" width="240" height="240"></canvas>
-    </div>
-	<script>var Module = {};</script>
-    <script type="text/javascript" src="run_boardie.js"></script>
-	<script>
-		function press(keycode) { keys.set(keycode, true) };
-		function unpress(keycode) { keys.set(keycode, false); };
-	</script>
+      <div class="emscripten" style="line-height:0; cursor: crosshair;">
+          <canvas style="font-family: adafruit;" class="emscripten" id="screen" width="240" height="240"></canvas>
+      </div>
+      <script>var Module = {};</script>
+      <script type="text/javascript" src="run_boardie.js"></script>
+      <script>
+          function press(keycode) { keys.set(keycode, true) };
+          function unpress(keycode) { keys.set(keycode, false); };
+      </script>
   </body>
 </html>
