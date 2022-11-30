@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 19 2021
+# Last updated: November 29 2022
 
 #########################
 # Blocks and categories #
@@ -100,6 +100,10 @@ Operators
 _ mod _
 
 abs _
+
+min _ _
+
+max _ _
 
 random _ to _
 
@@ -289,7 +293,7 @@ radio last string
 
 radio last message type
 
-radio set group _
+radio set group _ (0-255)
 
 radio set channel (0-83) _
 
@@ -320,6 +324,8 @@ acceleration
 light level
 
 temperature (°C)
+
+magnetic field
 
 set acceleration range _ g = 100
 
@@ -496,6 +502,10 @@ distance (cm) trigger _ echo _
 IR Remote
 
 receive IR code
+
+receive IR code from device _
+
+test IR
 
 attach IR receiver to pin _
 
@@ -745,6 +755,14 @@ _ without white space
 
 join string list _ separator _
 
+unicodes _
+
+string from unicodes _
+
+num2str _
+
+str2num _
+
 ####
 # WiFi library
 
@@ -861,7 +879,7 @@ get PN532 firmware version
 
 HTTP client
 
-_ data _ to http܃// _
+_ data _ to http܃// _ 
 
 port _
 
@@ -1032,6 +1050,23 @@ topic for MQTT event _
 payload for MQTT event _
 
 ####
+# UDP
+
+UDP start port _
+
+UDP stop
+
+UDP send packet _ to ip _ port _
+
+UDP receive packet
+
+binary data _
+
+UDP remote IP address
+
+UDP remote port
+
+####
 # Cutebot
 
 Cutebot set wheel left _ right _ (-100 to 100)
@@ -1059,17 +1094,21 @@ both
 
 # Wukong
 
-Wukong set motor _ speed to _ %
+Wukong
+
+Wukong set motor _ to _ (-100 to 100)
 
 Wukong stop motor _
 
-Wukong stop all motors
+Wukong stop all
 
-Wukong set _ servo _ angle to _
+Wukong set servo _ to _ degrees (-90 to 90)
 
-Wukong set NeoPixel _ _ _ _
+Wukong set servo _ to speed _ (-100 to 100)
 
-Wukong set light intensity to _
+Wukong set NeoPixels _ _ _ _
+
+Wukong set LED brightness to _
 
 ####
 # Joystick:bit
@@ -1118,7 +1157,7 @@ Reading project from board...
 
 Loading project...
 
-Found a newer version of
+Found a newer version of 
 
 Do you want me to update the one in the project?
 
@@ -1160,6 +1199,8 @@ No boards found; is your board plugged in?
 
 For AdaFruit boards, double-click reset button and try again.
 
+Only recent Chrome and Edge browsers support WebSerial.
+
 The board is not responding.
 
 Try to Install MicroBlocks on the board?
@@ -1200,9 +1241,19 @@ paste all scripts
 
 paste script
 
-save a picture of all scripts
+paste script from clipboard
+
+save a picture of all visible scripts
 
 set exported script scale
+
+small (50%)
+
+normal (65%)
+
+large (100%)
+
+printable (200%)
 
 about...
 
@@ -1237,6 +1288,18 @@ disable PlugShare when project empty
 erase flash and update firmware on ESP board
 
 Use board type
+
+Firmware Installed
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+
+You will be asked to save the firmware file.
+
+Select
+
+as the destination drive, then click Save.
+
+Installing firmware...
 
 Plug in the board.
 
@@ -1280,6 +1343,9 @@ clear graph
 
 zero at bottom
 
+zero in middle
+
+
 export data to CSV file
 
 import data from CSV file
@@ -1318,6 +1384,8 @@ delete the definition of this block
 
 duplicate
 
+help
+
 duplicate this block
 
 delete block
@@ -1329,6 +1397,8 @@ just this one block
 copy to clipboard
 
 copy to clipboard as URL
+
+copy these blocks to the clipboard as a URL
 
 copy these blocks to the clipboard
 
@@ -1363,6 +1433,20 @@ string only
 string or number
 
 number only
+
+stop editing
+
+cut
+
+copy
+
+paste
+
+accept
+
+revert
+
+select all
 
 define
 
