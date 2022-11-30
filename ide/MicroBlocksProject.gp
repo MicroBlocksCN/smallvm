@@ -151,8 +151,8 @@ method checkForNewerLibraryVersions MicroBlocksProject autoConfirm {
 			if (or
 				autoConfirm
 				(confirm (global 'page') nil (join
-					'Found a newer version of ' libName (newline)
-					'Do you want me to update the one in the project?'))
+					(localized 'Found a newer version of ') libName (newline)
+					(localized 'Do you want me to update the one in the project?')))
 			) {
 				addLibrary this newVersion
 			}

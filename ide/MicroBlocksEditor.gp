@@ -730,11 +730,21 @@ method importFromURL MicroBlocksEditor url {
     return
   }
   i = (findSubstring 'project=' url)
-  if (notNil i) { // open a complete project embedded in URL
-    projectString = (urlDecode (substring url (i + 8)))
-    if (not (canReplaceCurrentProject this)) { return }
-    projName = (extractProjectName this projectString)
-    openProject this projectString projName
+  if (notNil i) { // open a complete project
+    urlOrData = (substring url (i + 8))
+    if (beginsWith urlOrData 'http') {
+      // project link
+      fileName = (substring urlOrData ((findLast urlOrData '/') + 1) ((findLast urlOrData '.') - 1))
+      if (not (canReplaceCurrentProject this)) { return }
+      openProject this (httpBody (httpGetInBrowser urlOrData)) fileName
+   } else {
+      // project embedded in URL
+      projectString = (urlDecode (substring url (i + 8)))
+      if (not (canReplaceCurrentProject this)) { return }
+      projName = (extractProjectName this projectString)
+      if (not (canReplaceCurrentProject this)) { return }
+      openProject this projectString projName
+    }
     return
   }
 }
