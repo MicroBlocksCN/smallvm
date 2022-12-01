@@ -9,8 +9,8 @@ variables oldname
   spec 'r' 'BLE Device connected' 'BLE Device connected'
   spec 'r' 'last BLE UART message' 'last BLE UART message'
   spec ' ' 'BLE UART write' 'BLE UART write _' 'auto' 'hello'
-  spec ' ' '_start advertising and reconnect loop' '_start advertising and reconnect loop'
   spec ' ' 'stop BLE UART server' 'stop BLE UART server'
+  spec ' ' '_start advertising and reconnect loop' '_start advertising and reconnect loop'
 
 to 'BLE Device connected' {
   return (callCustomReporter '[net:BLE_DeviceConnected]')
