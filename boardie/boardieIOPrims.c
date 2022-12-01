@@ -36,13 +36,17 @@ void stopServos() { }
 // Button simulation (use keyboard)
 
 OBJ primButtonA(OBJ *args) {
-	// simulate button A with the left arrow key
-	return EM_ASM_INT({ return window.keys.get(37); }) ? trueObj : falseObj;
+	// simulate button A with the left arrow key or A key
+	return EM_ASM_INT({
+		return window.keys.get(37) || window.keys.get(65);
+	}) ? trueObj : falseObj;
 }
 
 OBJ primButtonB(OBJ *args) {
-	// simulate button B with the right arrow key
-	return EM_ASM_INT({ return window.keys.get(39); }) ? trueObj : falseObj;
+	// simulate button B with the right arrow key or B key
+	return EM_ASM_INT({
+		return window.keys.get(39) || window.keys.get(66);
+	}) ? trueObj : falseObj;
 }
 
 // Tone
