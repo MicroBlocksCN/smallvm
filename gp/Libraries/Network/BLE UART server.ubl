@@ -1,15 +1,13 @@
 module 'BLE UART server' Comm
-author 'wwj718 & CWEIB'
-version 1 1 
-depends 'BLE UART  server v1.0 by:wwj718' 
+author wwj718
+version 1 0 
 description 'BLE UART server. 请刷入社区固件 https://github.com/MicroBlocksCN/microblocks-site/wiki/%E6%9D%82%E9%A1%B9#esp32-ble '
-variables oldname 
+variables event valid_event 
 
   spec ' ' 'start BLE UART server' 'start BLE UART server _' 'auto' 'MicroBlocks BLE UART server'
-  spec 'r' 'BLE Device connected' 'BLE Device connected'
+	spec 'r' 'BLE Device connected' 'BLE Device connected'
   spec 'r' 'last BLE UART message' 'last BLE UART message'
-  spec ' ' 'BLE UART write' 'BLE UART write _' 'auto' 'hello'
-  spec ' ' 'stop BLE UART server' 'stop BLE UART server'
+	spec ' ' 'BLE UART write' 'BLE UART write _' 'auto' 'hello'
   spec ' ' '_start advertising and reconnect loop' '_start advertising and reconnect loop'
 
 to 'BLE Device connected' {
@@ -35,10 +33,6 @@ to 'last BLE UART message' {
 
 to 'start BLE UART server' name {
   comment 'Blocked'
-  if (name != oldname) {
-    oldname = name
-    'stop BLE UART server'
-  }
   callCustomCommand '[net:BLE_UART_ServerStart]' ('[data:makeList]' name)
   forever {
     '_start advertising and reconnect loop'
@@ -48,9 +42,5 @@ to 'start BLE UART server' name {
       sayIt 'Waiting a client connection...'
     }
   }
-}
-
-to 'stop BLE UART server' {
-  callCustomCommand '[net:BLE_UART_ServerStop]'
 }
 
