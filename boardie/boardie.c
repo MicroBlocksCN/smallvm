@@ -90,11 +90,15 @@ int sendBytes(uint8 *buf, int start, int end) {
 void initKeyboardHandler() {
 	EM_ASM_({
 		window.keys = new Map();
+
 		window.buttons = [];
-		window.buttons[37] =
+		window.buttons[37] = // left cursor
 			window.parent.document.querySelector('[data-button="a"]');
+		window.buttons[65] = window.buttons[37]; // "a" key
 		window.buttons[39] =
 			window.parent.document.querySelector('[data-button="b"]');
+		window.buttons[66] = window.buttons[39]; // "b" key
+
 		window.addEventListener('keydown', function (event) {
 			if (window.buttons[event.keyCode]) {
 				window.buttons[event.keyCode].classList.add('--is-active');
