@@ -506,15 +506,13 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 }
 
 method libraryImportHint MicroBlocksLibraryPropertiesFrame {
-	return (localized (join
-			'If you are adding a library that''s built-in into MicroBlocks, you '
-			'can just enter its name.'
+	return (join
+			(localized 'If you are adding a library that''s built into MicroBlocks, you can just enter its name.')
 			(newline)
-			'If your library is in the Libraries folder in your local '
-			'MicroBlocks project folder, you need to prefix it with a slash (/).'
+			(localized 'If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).')
 			(newline)
-			'If the library is hosted online, please input its full URL.'
-		))
+			(localized 'If the library is hosted online, please input its full URL.')
+		)
 }
 
 method isForEditing MicroBlocksLibraryPropertiesFrame { return editFlag }
