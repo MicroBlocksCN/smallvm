@@ -1069,6 +1069,14 @@ static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+static OBJ primBLE_UART_ServerStop(int argCount, OBJ *args)
+{
+	BLEDevice::stopAdvertising();
+	BLEDevice::deinit(false);
+	BLEServerStarted = false;
+	return falseObj;
+}
+
 #endif // BLE_PRIMS
 
 #if defined(OCTO_PRIMS)
@@ -1327,6 +1335,7 @@ static PrimEntry entries[] = {
 
   #if defined(BLE_PRIMS)
 	{"BLE_UART_ServerStart", primBLE_UART_ServerStart},
+	{"BLE_UART_ServerStop", primBLE_UART_ServerStop},
 	{"BLE_DeviceConnected", primBLE_DeviceConnected},
 	{"BLE_UART_LastEvent", primBLE_UART_LastEvent},
 	{"BLE_UART_Write", primBLE_UART_Write},
