@@ -888,6 +888,8 @@ port _
 
 HTTP server
 
+start HTTP server
+
 HTTP server request
 
 respond _ to HTTP request
@@ -1069,9 +1071,14 @@ UDP remote port
 ####
 # Cutebot
 
+Cutebot
 Cutebot set wheel left _ right _ (-100 to 100)
 
 Cutebot stop wheels
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+
+Cutebot set servo _ to speed _ (-100 to 100)
 
 Cutebot set headlight _ to _
 
@@ -1082,8 +1089,6 @@ Cutebot _ line sensor
 Cutebot sees line on left _ right _
 
 Cutebot distance (cm)
-
-Cutebot set servo _ to _ (-100 to 100)
 
 left
 
@@ -1109,6 +1114,25 @@ Wukong set servo _ to speed _ (-100 to 100)
 Wukong set NeoPixels _ _ _ _
 
 Wukong set LED brightness to _
+
+####
+# Sphero-RVR
+
+wake
+
+sleep
+
+reset the yaw
+
+drive with speed _ and heading _
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+
+stop with heading _
+
+set RGB LED _ to red _ green _ blue _
+
+set all LEDs to red _ green _ blue _
 
 ####
 # Joystick:bit
@@ -1284,6 +1308,10 @@ enable autoloading board libraries
 enable PlugShare when project empty
 
 disable PlugShare when project empty
+
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
 
 erase flash and update firmware on ESP board
 
@@ -1538,7 +1566,15 @@ built-in library
 
 Dependency path, name or URL?
 
+If you are adding a library that''s built into MicroBlocks, you can just enter its name.
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+
+If the library is hosted online, please input its full URL.
+
 Tag name?
+
+user library
 
 Add Library
 
