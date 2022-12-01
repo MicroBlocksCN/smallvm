@@ -2851,6 +2851,21 @@ wifi 最后广播的字符串
 
 wifi set group _ (0-255)
 wifi 设置广播分组 _ (0-255)
+# BLE UART server
+start BLE UART server _
+创建蓝牙广播 _
+
+BLE Device connected
+蓝牙服务器已连接
+
+last BLE UART message
+最后一次的接收到的消息
+
+BLE UART write _
+向蓝牙连接的的设备发送 _
+
+stop BLE UART server
+停止蓝牙广播
 
 # BLE UART server
 start BLE UART server _
