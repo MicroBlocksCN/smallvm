@@ -313,6 +313,7 @@ static int htmlKeycode(int keycode) {
 	if ((4 <= keycode) && (keycode <= 29)) return keycode + 61; // letters A-Z
 	if ((30 <= keycode) && (keycode <= 38)) return keycode + 19; // digits 1-9
 	if ((58 <= keycode) && (keycode <= 69)) return keycode + 54; // function keys F1-F12
+	if ((89 <= keycode) && (keycode <= 97)) return keycode + 8; // keypad keys 1-9
 
 	switch (keycode) {
 	case 39: return 48; // digit 0
@@ -333,19 +334,36 @@ static int htmlKeycode(int keycode) {
 	case 55: return 190; // .
 	case 56: return 191; // /
 	case 57: return 20; // caps lock
+
+	case 73: return 45; // insert
+	case 74: return 36; // home
+	case 75: return 33; // page up
 	case 76: return 46; // delete
+	case 77: return 35; // end
+	case 78: return 34; // page down
+
 	case 79: return 39; // right arrow
 	case 80: return 37; // left arrow
 	case 81: return 40; // down arrow
 	case 82: return 38; // up arrow
 
+	case 83: return 12; // keypad numlock
+	case 84: return 111; // keypad /
+	case 85: return 106; // keypad *
+	case 86: return 109; // keypad -
+	case 87: return 107; // keypad +
+	case 88: return 13; // keypad enter
+
+	case 98: return 96; // keypad 0
+
 	// modifier keys:
-	case 224: return 17; // control
+	case 224: return 17; // left control
 	case 225: return 16; // left shift
-	case 226: return 18; // left option
+	case 226: return 18; // left option/alt
 	case 227: return 91; // left command/window
+	case 228: return 17; // right control (same as left in html)
 	case 229: return 16; // right shift (same as left in html)
-	case 230: return 18; // right option (same as left in html)
+	case 230: return 18; // right option/alt (same as left in html)
 	case 231: return 93; // right command/window
 	}
 	return keycode & 0xFF;
