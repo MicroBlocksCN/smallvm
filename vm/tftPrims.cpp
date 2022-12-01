@@ -818,6 +818,7 @@ static OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
 static OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primText(int argCount, OBJ *args) { return falseObj; }
+static OBJ primDrawBitmap(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
