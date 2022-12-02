@@ -646,6 +646,7 @@ GP.boardie = {
 	element: null,
 	iframe: null,
 	isOpen: false,
+        position: null,
         reset: function () {
             var win = this.iframe.contentWindow;
             var ctx = win.document.querySelector('canvas').getContext('2d');
@@ -669,8 +670,13 @@ function GP_openBoardie() {
             boardie.element.classList.add('boardie');
             boardie.element.style.position = 'absolute';
             boardie.element.style.zIndex = 999;
-            boardie.element.style.top = '70px';
-            boardie.element.style.right = '34px';
+            if (boardie.position) {
+                boardie.element.style.left = boardie.position.left;
+                boardie.element.style.top = boardie.position.top;
+            } else {
+                boardie.element.style.top = '70px';
+                boardie.element.style.right = '34px';
+            }
             boardie.element.style.cursor = 'grab';
             boardie.element.innerHTML = req.responseText;
 
@@ -759,6 +765,10 @@ function makeDraggable (element) {
         // stop moving when mouse button is released:
         document.onpointerup = null;
         document.onpointermove = null;
+        GP.boardie.position = {
+            left: element.style.left,
+            top: element.style.top
+        };
         element.classList.remove('--is-dragged');
         element.style.cursor = 'grab';
     };
