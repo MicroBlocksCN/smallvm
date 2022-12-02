@@ -1,6 +1,6 @@
 module BMP Output
 author 'José García Yeste'
-version 1 4 
+version 1 5 
 depends TFT 
 description 'Display BMP files on a TFT screen.
 
@@ -9,13 +9,13 @@ BMP files can be transferred to and from boards with a file systems using the pu
 This library works with 16, 24 and 32 bpp BMP files,
 '
 
-	spec ' ' 'drawBMPfile' 'display BMP file _' 'auto' ''
-	spec 'r' '_checkBMP' '_check BMP signature of file _' 'auto' ''
-	spec ' ' '_drawBMP from' '_draw BMP of file _ width _ height _ bpp _' 'auto auto auto auto' '' 0 0 24
-	spec 'r' '_readLineBMP' '_read BMPline of file _ width _ bpp _' 'auto auto auto' '' 0 24
-	spec ' ' '_ignoreBMP' '_ignore _ bytes of file _' 'auto auto' 0 ''
-	spec 'r' '_read int16 of BMP file' '_read int16 of file _' 'auto' ''
-	spec 'r' '_read int32 of BMP file' '_read int32 of file _' 'auto' ''
+  spec ' ' 'drawBMPfile' 'display BMP file _ at x _ y _' 'auto auto auto' 'image.bmp' 0 0
+  spec 'r' '_checkBMP' '_check BMP signature of file _' 'auto' ''
+  spec ' ' '_drawBMP from' '_draw BMP of file _ width _ height _ bpp _ x _ y _' 'auto auto auto auto auto auto' '' 0 0 24 0 0
+  spec 'r' '_readLineBMP' '_read BMPline of file _ width _ bpp _' 'auto auto auto' '' 0 24
+  spec ' ' '_ignoreBMP' '_ignore _ bytes of file _' 'auto auto' 0 ''
+  spec 'r' '_read int16 of BMP file' '_read int16 of file _' 'auto' ''
+  spec 'r' '_read int32 of BMP file' '_read int32 of file _' 'auto' ''
 
 to '_checkBMP' filename {
   local 'signature' ''
@@ -26,12 +26,12 @@ to '_checkBMP' filename {
   return (signature == 'BM')
 }
 
-to '_drawBMP from' filename width height bpp {
+to '_drawBMP from' filename width height bpp 'origin x' 'origin y' {
   local 'y' (height - 1)
   repeatUntil (y < 0) {
     local 'line' ('_readLineBMP' filename width bpp)
     for x (size line) {
-      '[tft:setPixel]' (x - 1) y (at x line)
+      '[tft:setPixel]' ((x - 1) + (v 'origin x')) (y + (v 'origin y')) (at x line)
     }
     y += -1
   }
@@ -83,7 +83,7 @@ to '_readLineBMP' filename width bpp {
   return result
 }
 
-to drawBMPfile filename {
+to drawBMPfile filename 'origin x' 'origin y' {
   '[file:open]' filename
   if ('_checkBMP' filename) {
     '_ignoreBMP' 8 filename
@@ -94,7 +94,7 @@ to drawBMPfile filename {
     '_ignoreBMP' 2 filename
     local 'bpp' ('_read int16 of BMP file' filename)
     '_ignoreBMP' (start - 30) filename
-    '_drawBMP from' filename width height bpp
+    '_drawBMP from' filename width height bpp (v 'origin x') (v 'origin y')
   }
   '[file:close]' filename
 }
