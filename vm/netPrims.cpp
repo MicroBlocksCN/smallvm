@@ -526,7 +526,7 @@ static OBJ primUDPRemotePort(int argCount, OBJ *args) {
 
 // Websocket support for ESP32
 
-#ifdef ARDUINO_ARCH_ESP32
+#if defined(ARDUINO_ARCH_ESP32)
 
 #define WEBSOCKET_MAX_PAYLOAD 1024
 
@@ -625,22 +625,10 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 
 #endif
 
-#if !(defined(ESP8266) || defined(ARDUINO_ARCH_ESP32))
-
-static OBJ primMQTTConnect(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTDisconnect(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTPub(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTSub(int argCount, OBJ *args) { return fail(noWiFi); }
-static OBJ primMQTTUnsub(int argCount, OBJ *args) { return fail(noWiFi); }
-
-#endif
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
 
 // MQTT support for ESP32 and ESP8266
 // Code provided by Wenji Wu with help from Tom Ming
-
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
 #include <MQTT.h>
 
@@ -804,6 +792,16 @@ static OBJ primMQTTUnsub(int argCount, OBJ *args) {
 	int success = pmqtt_client->unsubscribe(topic);
 	return success ? trueObj : falseObj;
 }
+
+#else
+
+static OBJ primMQTTConnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTDisconnect(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTPub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTSub(int argCount, OBJ *args) { return fail(noWiFi); }
+static OBJ primMQTTUnsub(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
