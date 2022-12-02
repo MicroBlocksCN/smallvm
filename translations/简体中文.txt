@@ -350,7 +350,7 @@ rpi channel _
 rpi 通道 _
 
 spi exchange bytes _
-spi 交换 bytes _
+spi 交换 字节 _
 
 serial open _ baud
 串口打开 _ 波特率
@@ -366,6 +366,9 @@ serial write _
 
 serial write _ starting at _
 串口写入 _ 开始于 _
+
+soft serial write byte _ pin _ baud _
+软串口写入 字节 _ 引脚 _ 速率 _
 
 print _
 打印 _
@@ -1444,28 +1447,31 @@ Cutebot
 酷比特小车
 
 Cutebot set wheel left _ right _ (-100 to 100)
-设置左轮速度为 _ 右轮速度为 _ (-100 ... 100)
+酷比特 设置左轮速度为 _ 右轮速度为 _ (-100 ... 100)
 
 Cutebot stop wheels
-停车
+酷比特 停车
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+酷比特 设置舵机 _ 的角度为 _ (-90 ... 90)
+
+Cutebot set servo _ to speed _ (-100 to 100)
+酷比特 设置舵机 _ 的速度为 _ (-100 to 100)
 
 Cutebot set headlight _ to _
-将 _ LED 车头灯 设为 _
+酷比特 将 _ LED 车头灯 设为 _
 
 Cutebot set NeoPixel _ to _
-Cutebot 设置 NeoPixel _ 颜色 _
+酷比特 设置 NeoPixel _ 颜色 _
 
 Cutebot _ line sensor
-_ 巡线传感器 状态为
+酷比特 _ 巡线传感器 状态为
 
 Cutebot sees line on left _ right _
-巡线传感器状态为 _ _
+酷比特 巡线传感器状态为 _ _
 
 Cutebot distance (cm)
-超声波返回距离值
-
-Cutebot set servo _ to _ (-100 to 100)
-设置 舵机 _ 的角度为 _ (-100 ... 100)
+酷比特 超声波返回距离值
 
 left
 左
@@ -1502,6 +1508,33 @@ Wukong set NeoPixels _ _ _ _
 
 Wukong set LED brightness to _
 悟空 设置氛围灯亮度为 _
+
+####
+# Sphero-RVR
+
+wake
+唤醒
+
+sleep
+休眠
+
+reset the yaw
+重置偏航
+
+drive with speed _ and heading _
+以速度 _ 和朝向 _ 行驶
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+使用 左模式 _ 左速度 _ 右模式 _ 右速度 _ 设置原始电机
+
+stop with heading _
+以朝向 _ 停止
+
+set RGB LED _ to red _ green _ blue _
+将 RGB LED _ 设置为 红色 _ 绿色 _ 蓝色 _
+
+set all LEDs to red _ green _ blue _
+将所有 LED 设为 红色 _ 绿色 _ 蓝色 _
 
 ####
 # Joystick:bit
@@ -1903,10 +1936,16 @@ enable autoloading board libraries
 允许自动加载和主板相关的积木库
 
 enable PlugShare when project empty
-项目为空时允许 PlugShare
+允许项目为空时从主板里获取代码
 
 disable PlugShare when project empty
-项目为空时禁止 PlugShare
+禁止项目为空时从主板里获取代码
+
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+连接主板时，即使当前项目为空，也不要自动将主板里的代码读入 IDE
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+连接主板时，如果当前项目为空，则自动将主板里的代码读入IDE
 
 erase flash and update firmware on ESP board
 擦除信息并升级 ESP 固件
@@ -1918,7 +1957,7 @@ Firmware Installed
 完成固件安装
 
 Reconnect to the board by clicking the "Connect" button (USB icon).
-点击 '连接' 按钮 (USB 图标) 重新连接板子。
+点击 '连接' 按钮 (USB 图标) 重新连接主板。
 
 You will be asked to save the firmware file.
 你将被要求保存固件文件。
@@ -1933,7 +1972,7 @@ Installing firmware...
 正在安装固件...
 
 Plug in the board.
-插上板子。
+插上主板。
 
 Wiping board...
 擦除主板...
@@ -1972,10 +2011,10 @@ hide advanced blocks
 隐藏高级积木
 
 put file on board
-把文件上传到板子
+把文件上传到主板
 
 get file from board
-从板子获取文件
+从主板获取文件
 
 uploaded
 已上传
@@ -2013,6 +2052,9 @@ show instructions
 
 show compiled bytes
 显示字节代码
+
+show call tree
+显示调用树
 
 expand
 扩展
@@ -2251,7 +2293,7 @@ New Folder
 新建文件夹
 
 by
-由
+作者
 
 Depends:
 依赖于:
@@ -2286,8 +2328,20 @@ built-in library
 Dependency path, name or URL?
 依赖的路径,名字或 URL?
 
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+如果要添加的库，已经内置在 MicroBlocks，只需输入它的名称(英文)即可，如 NeoPixel 。
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+如果要添加的库，位于积木库文件夹中，需要在其前面加上斜杠 (/)，如 Network/MQTT 。
+
+If the library is hosted online, please input its full URL.
+如果要添加的库是在线托管的，请输入完整 URL。
+
 Tag name?
 标签名称?
+
+user library
+用户库
 
 Add Library
 添加积木库
@@ -2296,13 +2350,13 @@ seconds remaining
 剩余秒数
 
 Decrease block size
-减少积木大小
+缩小积木
 
 Restore block size to 100%
 将积木大小恢复到100%
 
 Increase block size
-增加积木大小
+放大积木
 
 ############
 # Tips Bar #
