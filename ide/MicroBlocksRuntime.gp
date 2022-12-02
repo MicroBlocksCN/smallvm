@@ -613,12 +613,26 @@ method isWebSerial SmallRuntime {
 
 method webSerialConnect SmallRuntime action {
 	if ('disconnect' == action) {
-		stopAndSyncScripts this
-		sendStartAll this
+		if ('boardie' != portName) {
+			stopAndSyncScripts this
+			sendStartAll this
+		} else {
+			browserCloseBoardie
+		}
 		closeSerialPort 1
 		portName = nil
 		port = nil
+	} ('open Boardie' == action) {
+		browserOpenBoardie
+		disconnected = false
+		connectionStartTime = (msecsSinceStart)
+		portName = 'boardie'
+		port = 1
 	} else {
+		if (and ('Browser' == (platform)) (not (browserIsChromeOS))) { // running in a browser w/o WebSerial (or it is not enabled)
+			inform (localized 'Only recent Chrome and Edge browsers support WebSerial.')
+			return
+		}
 		openSerialPort 'webserial' 115200
 		disconnected = false
 		connectionStartTime = (msecsSinceStart)
@@ -630,17 +644,17 @@ method webSerialConnect SmallRuntime action {
 method selectPort SmallRuntime {
 	if (isNil disconnected) { disconnected = false }
 
-	if (isWebSerial this) {
-		if (not (isOpenSerialPort 1)) {
-			webSerialConnect this 'connect'
+	if ('Browser' == (platform)) {
+		menu = (menu 'Connect' (action 'webSerialConnect' this) true)
+		if (isNil port) {
+			if (browserHasWebSerial) {
+				addItem menu 'connect'
+			}
+			addItem menu 'open Boardie'
 		} else {
-			menu = (menu 'Connect' (action 'webSerialConnect' this) true)
 			addItem menu 'disconnect'
-			popUpAtHand menu (global 'page')
 		}
-		return
-	} (and ('Browser' == (platform)) (not (browserIsChromeOS))) { // running in a browser w/o WebSerial (or it is not enabled)
-		inform (localized 'Only recent Chrome and Edge browsers support WebSerial.')
+		popUpAtHand menu (global 'page')
 		return
 	}
 
@@ -886,7 +900,8 @@ method tryToConnect SmallRuntime {
 		readFromBoard = true
 	}
 
-	if (isWebSerial this) {
+	if (and (isWebSerial this) ('boardie' != portName)) {
+		print 'we should never get here with boardie'
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
@@ -1673,6 +1688,12 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		add msg 254 // terminator byte (helps board detect dropped bytes)
 	}
 	dataToSend = (toBinaryData (toArray msg))
+
+	if ('boardie' == portName) { // send all data at once to boardie
+		(writeSerialPort port dataToSend)
+		return
+	}
+
 	while ((byteCount dataToSend) > 0) {
 		// Note: Adafruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
 		// written in one call to writeSerialPort, so send smaller chunks
@@ -1694,6 +1715,8 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 
 	readAvailableSerialData this
 	sendMsg this msgName chunkID byteList
+	if ('boardie' == portName) { return } // don't wait for a response
+
 	ok = (waitForResponse this)
 	if (not ok) {
 		print 'Lost communication to the board in sendMsgSync'
@@ -1893,7 +1916,7 @@ method boardHasFileSystem SmallRuntime {
 	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
 	if (isNil port) { return false }
 	if (isNil boardType) { getVersion this }
-	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040', 'TTGO RP2040')
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040', 'TTGO RP2040' 'Boardie')
 }
 
 method deleteFileOnBoard SmallRuntime fileName {
@@ -1902,6 +1925,12 @@ method deleteFileOnBoard SmallRuntime fileName {
 }
 
 method getFileListFromBoard SmallRuntime {
+	if ('boardie' == portName) {
+		print 'get file list from boardie'
+		result = (boardieFileList)
+		if (notNil result) { return result }
+	}
+
 	sendMsg this 'listFiles'
 	collectFileTransferResponses this
 
@@ -1941,6 +1970,12 @@ method getAndSaveFile SmallRuntime remoteFileName {
 }
 
 method readFileFromBoard SmallRuntime remoteFileName {
+	if ('boardie' == portName) {
+		print 'read file from boardie' remoteFileName
+		result = (boardieGetFile remoteFileName)
+		if (notNil result) { return result }
+	}
+
 	fileTransferProgress = 0
 	spinner = (newSpinner (action 'fileTransferProgress' this 'downloaded') (action 'fileTransferCompleted' this))
 	setStopAction spinner (action 'abortFileTransfer' this)
@@ -2021,6 +2056,12 @@ method fileTransferCompleted SmallRuntime {
 }
 
 method sendFileData SmallRuntime fileName fileData {
+	if ('boardie' == portName) {
+		print 'send file to boardie' fileName (byteCount fileData) 'bytes'
+		boardiePutFile fileName fileData (byteCount fileData)
+		return
+	}
+
 	// send data as a sequence of chunks
 	setCursor 'wait'
 	fileTransferProgress = 0
