@@ -14,6 +14,7 @@ variables 'ball speed' 'ball y' 'pipe height' 'pipe x' playing 'previous ball y'
   spec ' ' 'step pipe' 'step pipe'
   spec ' ' 'welcome screen' 'welcome screen'
   spec 'r' 'button pressed' 'button pressed'
+  spec ' ' 'write' 'write _ centered at scale _ y _ color _' 'str auto auto color' 'Hello!' 3 '10'
 
 to 'button pressed' {
   return (or (or (buttonA) (buttonB)) (or ('OK button') ('cancel button')))
@@ -44,10 +45,9 @@ to 'draw pipes' {
 
 to 'game over' {
   '[display:mbDisplayOff]'
-  '[tft:text]' 'GAME' (('[tft:getWidth]') / 5) (('[tft:getHeight]') / 15) 16777215 (('[tft:getHeight]') / 30) false
-  '[tft:text]' 'OVER' (('[tft:getWidth]') / 5) (('[tft:getHeight]') / 3) 16777215 (('[tft:getHeight]') / 30) false
-  '[tft:text]' 'SCORE' (('[tft:getWidth]') / 6) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) 16777215 (('[tft:getHeight]') / 60) false
-  '[tft:text]' score (('[tft:getWidth]') - (('[tft:getWidth]') / 3)) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) 16777215 (('[tft:getHeight]') / 60) false
+  write 'GAME' (('[tft:getHeight]') / 30) (('[tft:getHeight]') / 15) (colorSwatch 255 255 255 255)
+  write 'OVER' (('[tft:getHeight]') / 30) (('[tft:getHeight]') / 3) (colorSwatch 255 255 255 255)
+  write ('[data:join]' 'SCORE:' score) (('[tft:getHeight]') / 80) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) (colorSwatch 255 255 255 255)
 }
 
 to 'new game' {
@@ -89,13 +89,18 @@ to 'step pipe' {
 
 to 'welcome screen' {
   '[display:mbDisplayOff]'
-  '[tft:text]' 'JUMPY' (('[tft:getWidth]') / 12) (('[tft:getHeight]') / 15) 16000215 (('[tft:getHeight]') / 30) false
-  '[tft:text]' 'BALL' (('[tft:getWidth]') / 6) (('[tft:getHeight]') / 3) 16000215 (('[tft:getHeight]') / 30) false
-  '[tft:text]' 'Press OK' (('[tft:getWidth]') / 6) (('[tft:getHeight]') - (('[tft:getHeight]') / 3)) 16777215 (('[tft:getHeight]') / 60) false
-  '[tft:text]' 'or X' (('[tft:getWidth]') / 3) (('[tft:getHeight]') - (('[tft:getHeight]') / 6)) 16777215 (('[tft:getHeight]') / 60) false
+  write 'JUMPY' (('[tft:getHeight]') / 30) (('[tft:getHeight]') / 15) (colorSwatch 244 36 215 255)
+  write 'BALL' (('[tft:getHeight]') / 30) (('[tft:getHeight]') / 3) (colorSwatch 244 36 215 255)
+  write 'Press OK or A' (('[tft:getHeight]') / 120) (('[tft:getHeight]') - (('[tft:getHeight]') / 4)) (colorSwatch 255 255 255 255)
+  write 'to play' (('[tft:getHeight]') / 120) (('[tft:getHeight]') - (('[tft:getHeight]') / 8)) (colorSwatch 255 255 255 255)
 }
 
-script 54 54 {
+to write text scale y color {
+  local 'width' (((scale * 6) * (size text)) - scale)
+  '[tft:text]' text ((('[tft:getWidth]') - width) / 2) y color scale false
+}
+
+script 94 52 {
 whenStarted
 'welcome screen'
 forever {
