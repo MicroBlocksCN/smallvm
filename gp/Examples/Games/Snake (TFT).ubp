@@ -2,7 +2,7 @@ module main
 author unknown
 version 1 0 
 description ''
-variables 'snake position' 'snake direction' 'snake body' apple score 'cell size' 
+variables 'snake body' 'cell size' apple score 'snake direction' 
 
   spec ' ' 'check collisions' 'check collisions'
   spec 'r' 'copy of position' 'copy of position _' 'auto' ''
@@ -62,6 +62,8 @@ to 'game over' {
   write 'GAME OVER' (maximum 1 (('[tft:getWidth]') / 60)) (('[tft:getHeight]') / 3) (colorSwatch 218 6 23 255)
   write ('[data:join]' 'SCORE: ' score) (maximum 1 (('[tft:getWidth]') / 120)) (('[tft:getHeight]') / 2) (colorSwatch 218 6 23 255)
   write 'Press A+B to try again' (maximum 1 (('[tft:getWidth]') / 240)) ((('[tft:getHeight]') * 3) / 4) (colorSwatch 26 218 63 255)
+  stopAll
+  'play ringtone' 'GameOver:d=16,o=2,b=60:f,e,d#,4c#'
   stopTask
 }
 
@@ -127,17 +129,17 @@ to write text scale y color {
   '[tft:text]' text ((('[tft:getWidth]') - width) / 2) y color scale false
 }
 
-script 45 40 {
+script 81 40 {
 whenStarted
 sendBroadcast 'go!'
 }
 
-script 254 44 {
+script 290 44 {
 whenButtonPressed 'A'
 turn 'left'
 }
 
-script 44 127 {
+script 80 127 {
 whenBroadcastReceived 'go!'
 'initialize game'
 'draw apple'
@@ -150,26 +152,26 @@ forever {
 }
 }
 
-script 258 140 {
+script 294 140 {
 whenButtonPressed 'B'
 turn 'right'
 }
 
-script 260 249 {
+script 296 249 {
 whenButtonPressed 'A+B'
 sendBroadcast 'go!'
 }
 
-script 202 397 {
-'play ringtone' 'Over:d=16,o=6,b=140:'
+script 89 377 {
+whenBroadcastReceived 'go!'
+forever {
+  'play ringtone' 'Snake:d=16,o=5,b=112:d,8p.,8a,8a#,8c6,8c6,
+8a#,8a,4c6,c,8p.,c,8p.,c,8p.,d,8p.,d,p,c6,d6,d,
+8c6,a,8c6,8d6,c,8p.,c,8p.,c,8p.,c,8p.,d,8p.,8a,
+8a#,8c6,8c6,8a#,8a,4c6,c,8p.,c,8p.,c,8p.,d,8p.,
+d,p,c6,d6,d,8c6,a,8c6,8d6,c,8p.,c,8p.,c,8p.,c,
+8p.,8d'
 }
-
-script 395 496 {
-to 'game over' {}
-}
-
-script 42 503 {
-to 'eat apple' {}
 }
 
 
