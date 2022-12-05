@@ -4,16 +4,16 @@ version 1 0
 description ''
 variables 'ball speed' 'ball y' 'pipe height' 'pipe x' playing 'previous ball y' score 'ball radius' 'pipe width' gap 'ball acceleration' 
 
-	spec ' ' 'check buttons' 'check buttons'
-	spec ' ' 'check collision' 'check collision'
-	spec ' ' 'draw ball' 'draw ball'
-	spec ' ' 'draw pipes' 'draw pipe'
-	spec ' ' 'game over' 'game over'
-	spec ' ' 'new game' 'new game'
-	spec ' ' 'step ball' 'step ball'
-	spec ' ' 'step pipe' 'step pipe'
-	spec ' ' 'welcome screen' 'welcome screen'
-	spec 'r' 'button pressed' 'button pressed'
+  spec ' ' 'check buttons' 'check buttons'
+  spec ' ' 'check collision' 'check collision'
+  spec ' ' 'draw ball' 'draw ball'
+  spec ' ' 'draw pipes' 'draw pipe'
+  spec ' ' 'game over' 'game over'
+  spec ' ' 'new game' 'new game'
+  spec ' ' 'step ball' 'step ball'
+  spec ' ' 'step pipe' 'step pipe'
+  spec ' ' 'welcome screen' 'welcome screen'
+  spec 'r' 'button pressed' 'button pressed'
 
 to 'button pressed' {
   return (or (or (buttonA) (buttonB)) (or ('OK button') ('cancel button')))
@@ -31,7 +31,7 @@ to 'check collision' {
 }
 
 to 'draw ball' {
-  '[tft:circle]' (v 'ball radius') ((v 'previous ball y') / 10) (v 'ball radius') 0 true
+  '[tft:circle]' (v 'ball radius') ((v 'previous ball y') / 10) ((v 'ball radius') + 1) 0 true
   '[tft:circle]' (v 'ball radius') ((v 'ball y') / 10) (v 'ball radius') 65535 true
 }
 
@@ -122,14 +122,14 @@ tags button capacitive ed1
 description 'Provides blocks for the six capacitive buttons in the Citilab ED1 board.'
 variables _ED1_buttons_init '_capacitive threshold' 
 
-	spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
-	spec 'r' 'OK button' 'button OK'
-	spec 'r' 'cancel button' 'button X'
-	spec 'r' 'up button' 'button up'
-	spec 'r' 'down button' 'button down'
-	spec 'r' 'left button' 'button left'
-	spec 'r' 'right button' 'button right'
-	spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
+  spec ' ' '_ED1_buttons_init' '_ED1_buttons_init' 'any any any'
+  spec 'r' 'OK button' 'button OK'
+  spec 'r' 'cancel button' 'button X'
+  spec 'r' 'up button' 'button up'
+  spec 'r' 'down button' 'button down'
+  spec 'r' 'left button' 'button left'
+  spec 'r' 'right button' 'button right'
+  spec ' ' 'set capacitive threshold to' 'set capacitive threshold to _' 'auto' 16
 
 to 'OK button' {
   '_ED1_buttons_init'
@@ -179,20 +179,20 @@ version 1 2
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
-	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
-	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
-	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
-	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
-	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
-	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
-	spec 'r' 'randomColor' 'random color'
-	spec 'r' '[tft:getWidth]' 'TFT width'
-	spec 'r' '[tft:getHeight]' 'TFT height'
-	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
-	spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
+  spec 'r' 'randomColor' 'random color'
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))
