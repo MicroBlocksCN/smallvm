@@ -629,7 +629,7 @@ method webSerialConnect SmallRuntime action {
 		portName = 'boardie'
 		port = 1
 	} else {
-		if (and ('Browser' == (platform)) (not (browserIsChromeOS))) { // running in a browser w/o WebSerial (or it is not enabled)
+		if (and ('Browser' == (platform)) (not (or (browserIsChromeOS) (browserHasWebSerial)))) { // running in a browser w/o WebSerial (or it is not enabled)
 			inform (localized 'Only recent Chrome and Edge browsers support WebSerial.')
 			return
 		}
@@ -901,7 +901,6 @@ method tryToConnect SmallRuntime {
 	}
 
 	if (and (isWebSerial this) ('boardie' != portName)) {
-		print 'we should never get here with boardie'
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
