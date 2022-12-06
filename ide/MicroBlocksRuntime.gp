@@ -1925,9 +1925,7 @@ method deleteFileOnBoard SmallRuntime fileName {
 
 method getFileListFromBoard SmallRuntime {
 	if ('boardie' == portName) {
-		print 'get file list from boardie'
-		result = (boardieFileList)
-		if (notNil result) { return result }
+		return (boardieFileList)
 	}
 
 	sendMsg this 'listFiles'
@@ -1970,9 +1968,7 @@ method getAndSaveFile SmallRuntime remoteFileName {
 
 method readFileFromBoard SmallRuntime remoteFileName {
 	if ('boardie' == portName) {
-		print 'read file from boardie' remoteFileName
-		result = (boardieGetFile remoteFileName)
-		if (notNil result) { return result }
+		return (boardieGetFile remoteFileName)
 	}
 
 	fileTransferProgress = 0
@@ -2056,7 +2052,6 @@ method fileTransferCompleted SmallRuntime {
 
 method sendFileData SmallRuntime fileName fileData {
 	if ('boardie' == portName) {
-		print 'send file to boardie' fileName (byteCount fileData) 'bytes'
 		boardiePutFile fileName fileData (byteCount fileData)
 		return
 	}
