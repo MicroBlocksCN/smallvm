@@ -646,7 +646,7 @@ method selectPort SmallRuntime {
 
 	if ('Browser' == (platform)) {
 		menu = (menu 'Connect' (action 'webSerialConnect' this) true)
-		if (isNil port) {
+		if (and (isNil port) ('boardie' != portName)) {
 			if (browserHasWebSerial) {
 				addItem menu 'connect'
 			}
@@ -830,7 +830,10 @@ method updateConnection SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		clearRunningHighlights this
 		closePort this
-		if (isWebSerial this) { return 'not connected' } // user must initiate connection attempt
+		if (isWebSerial this) {
+			portName = nil // clear 'boardie' when boardie is closed with power button
+			return 'not connected' // user must initiate connection attempt
+		}
 		return (tryToConnect this)
 	}
 
