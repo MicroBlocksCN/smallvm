@@ -830,7 +830,7 @@ method updateConnection SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		clearRunningHighlights this
 		closePort this
-		if (isWebSerial this) {
+		if ('Browser' == (platform)) {
 			portName = nil // clear 'boardie' when boardie is closed with power button
 			return 'not connected' // user must initiate connection attempt
 		}
