@@ -652,6 +652,7 @@ GP.boardie = {
             var ctx = win.document.querySelector('canvas').getContext('2d');
             win.postMessage(new Uint8Array([ 0xFA, 0x0F, 0 ])); // system reset
             ctx.clearRect(0, 0, 240, 240); // clear screen
+            win.postMessage(new Uint8Array([ 0xFA, 0x05, 0 ])); // start all
         },
 	press: function (keyCode) { this.iframe.contentWindow.press(keyCode); },
 	unpress: function (keyCode) { this.iframe.contentWindow.unpress(keyCode); }
