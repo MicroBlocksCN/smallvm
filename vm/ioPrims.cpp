@@ -781,7 +781,8 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 }
 
 #if defined(ESP32)
-	#define MAX_ESP32_CHANNELS 8 // MAX 16
+
+	#define MAX_ESP32_CHANNELS 16
 	int esp32Channels[MAX_ESP32_CHANNELS];
 
 	int pinAttached(int pin) {
@@ -795,11 +796,12 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 
 	void analogAttach(int pin) {
 		int esp32Channel = 1;
-		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0)) {
+		// Note: Do not use channels 0-1 or 8-9; those use timer0, which is used by Tone.
+		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0) && ((esp32Channel & 7) > 1)) {
 			esp32Channel++;
 		}
 		if (esp32Channel < MAX_ESP32_CHANNELS) {
-			ledcSetup(esp32Channel, 5000, 10); // 5KHz, 10 bits
+			ledcSetup(esp32Channel, 50, 10); // 50Hz, 10 bits (same clock rate as servos)
 			ledcAttachPin(pin, esp32Channel);
 			esp32Channels[esp32Channel] = pin;
 		}
@@ -1276,8 +1278,9 @@ static void setServo(int pin, int usecs) {
 #elif defined(ESP32)
 
 static int attachServo(int pin) {
+	// Note: Do not use channels 0-1 or 8-9; those use timer0, which is used by Tone.
 	for (int i = 1; i < MAX_ESP32_CHANNELS; i++) {
-		if (0 == esp32Channels[i]) { // free channel
+		if ((0 == esp32Channels[i]) && ((i & 7) > 1)) { // free channel
 			ledcSetup(i, 50, 10); // 50Hz, 10 bits
 			ledcAttachPin(pin, i);
 			esp32Channels[i] = pin;
