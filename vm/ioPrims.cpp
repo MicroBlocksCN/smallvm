@@ -797,7 +797,7 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	void analogAttach(int pin) {
 		int esp32Channel = 1;
 		// Note: Do not use channels 0-1 or 8-9; those use timer0, which is used by Tone.
-		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0) && ((esp32Channel & 7) > 1)) {
+		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0) && ((esp32Channel & 7) <= 1)) {
 			esp32Channel++;
 		}
 		if (esp32Channel < MAX_ESP32_CHANNELS) {
