@@ -1320,7 +1320,18 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		}
 		return false
 	}
-	if ((at entry 2) == (computeCRC this chunkBytes)) { return false }
+
+	// don't save the chunk if its CRC has not changed unless is a button or broadcast
+	// hat because the CRC does not reflect changes to the button or broadcast name
+	crcOptimization = true
+	if (isClass aBlockOrFunction 'Block') {
+		op = (primName (expression aBlockOrFunction))
+		crcOptimization = (not (isOneOf op 'whenButtonPressed' 'whenBroadcastReceived'))
+	}
+	if (and crcOptimization ((at entry 2) == (computeCRC this chunkBytes))) {
+		return false
+	}
+
 	sendMsgSync this 'chunkCodeMsg' chunkID data
 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
