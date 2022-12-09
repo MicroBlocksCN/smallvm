@@ -538,10 +538,10 @@ void restartSerial() {
 	#define DEFAULT_TONE_PIN 2
 	#define PIN_LED 13
 	static const char reservedPin[TOTAL_PINS] = {
-		0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
 		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 0, 0, 1};
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
