@@ -111,6 +111,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 }
 
 static OBJ primStopWiFi(int argCount, OBJ *args) {
+	WiFi.disconnect();
 	#ifndef USE_WIFI101
 		WiFi.mode(WIFI_OFF);
 	#endif
@@ -385,7 +386,8 @@ static OBJ primHttpConnect(int argCount, OBJ *args) {
 		ok = httpClient.connect(host, port);
 	#endif
 
-	#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32)
+	#if defined(ESP8266) // || defined(ARDUINO_ARCH_ESP32)
+		// xxx fais on ESP32 due to an error in their code
 		client.setNoDelay(true);
 	#endif
 
