@@ -1,6 +1,6 @@
 module PicoBricks
 author MicroBlocks
-version 2 3 
+version 2 4 
 depends 'Temperature Humidity (DHT11, DHT22)' 
 description 'Robotistan PicoBricks Library
 
@@ -135,6 +135,7 @@ to pb_set_rgb_color color {
   '_pb_init_pins'
   '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
   '[display:neoPixelSend]' color
+  waitMillis 1
 }
 
 to pb_temperature {
@@ -146,5 +147,6 @@ to pb_turn_off_RGB {
   '_pb_init_pins'
   '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
   '[display:neoPixelSend]' 0
+  waitMillis 1
 }
 

@@ -25,7 +25,7 @@ int touchEnabled = false;
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
-	defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2)
+	defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2) || defined(PICO_ED)
 
 	#define BLACK 0
 
@@ -461,7 +461,7 @@ int touchEnabled = false;
 
 		#define TFT_WIDTH 128
 		#define TFT_HEIGHT 32
-		#define IS_MONCHROME true
+		#define IS_MONOCHROME true
 
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(128, 32); // xxx may need params
 
@@ -496,6 +496,102 @@ int touchEnabled = false;
 			analogWrite(TFT_BL, 250);
 			tft.setRotation(1);
 			tftClear();
+			useTFT = true;
+		}
+	#elif defined(PICO_ED)
+		#include <Adafruit_GFX.h>
+
+		#define TFT_WIDTH 17
+		#define TFT_HEIGHT 7
+		#define IS_GRAYSCALE true
+
+		// IS31FL3731 constants
+		#define IS31FL_ADDR 0x74
+		#define IS31FL_BANK_SELECT 0xFD
+		#define IS31FL_FUNCTION_BANK 0x0B
+		#define IS31FL_SHUTDOWN_REG 0x0A
+		#define IS31FL_CONFIG_REG 0x00
+		#define IS31FL_PICTUREFRAME_REG 0x01
+
+		#undef UPDATE_DISPLAY
+		#define UPDATE_DISPLAY() (tft.updateDisplay())
+
+		class IS31FL3731 : public Adafruit_GFX {
+		public:
+			IS31FL3731(uint8_t width, uint8_t height) : Adafruit_GFX(width, height) {}
+
+			uint8 displayBuffer[144];
+
+			bool begin();
+			void drawPixel(int16_t x, int16_t y, uint16_t brightness);
+			void updateDisplay(void);
+		};
+
+		bool IS31FL3731::begin() {
+			// select the function bank
+			writeI2CReg(IS31FL_ADDR, IS31FL_BANK_SELECT, IS31FL_FUNCTION_BANK);
+
+			// toggle shutdown
+			writeI2CReg(IS31FL_ADDR, IS31FL_SHUTDOWN_REG, 0);
+			delay(10);
+			writeI2CReg(IS31FL_ADDR, IS31FL_SHUTDOWN_REG, 1);
+
+			// picture mode
+			writeI2CReg(IS31FL_ADDR, IS31FL_CONFIG_REG, 0);
+
+			// set frame to display
+			writeI2CReg(IS31FL_ADDR, IS31FL_PICTUREFRAME_REG, 0);
+
+			// clear the display before enabling LED's
+			memset(displayBuffer, 0, sizeof(displayBuffer));
+			updateDisplay();
+
+			// enable all LEDs
+			for (uint8_t bank = 0; bank < 8; bank++) {
+				writeI2CReg(IS31FL_ADDR, IS31FL_BANK_SELECT, bank);
+				for (uint8_t i = 0; i < 18; i++) {
+					writeI2CReg(IS31FL_ADDR, i, 0xFF);
+				}
+			}
+
+			return true;
+		}
+
+		void IS31FL3731::drawPixel(int16_t x, int16_t y, uint16_t brightness) {
+			// Set the brigness of the pixel at (x, y).
+
+			const uint8_t topRow[17] =
+				{7, 23, 39, 55, 71, 87, 103, 119, 135, 136, 120, 104, 88, 72, 56, 40, 24};
+
+			if ((x < 0) || (x > 16)) return;
+			if ((y < 0) || (y > 6)) return;
+
+			// adjust brightness (use range 0-100 to avoid making LED's painfully bright)
+			if (brightness > 3) brightness = (100 * brightness) / 255;
+			if (brightness > 100) brightness = 100;
+
+			int incr = (x < 9) ? -1 : 1;
+			int i = topRow[x] + (y * incr);
+			displayBuffer[i] = brightness;
+		}
+
+		void IS31FL3731::updateDisplay() {
+			// Write the entire display buffer to bank 0.
+
+			writeI2CReg(IS31FL_ADDR, IS31FL_BANK_SELECT, 0); // select bank 0
+			for (uint8_t i = 0; i < 6; i++) {
+				Wire1.beginTransmission(IS31FL_ADDR);
+				Wire1.write(0x24 + (24 * i)); // offset within bank
+				Wire1.write(&displayBuffer[24 * i], 24);
+				Wire1.endTransmission();
+			}
+		}
+
+		// pretend display is 7 pixels wider so GFX will display partial characters
+		IS31FL3731 tft = IS31FL3731(TFT_WIDTH + 7, TFT_HEIGHT);
+
+		void tftInit() {
+			tft.begin();
 			useTFT = true;
 		}
 	#endif
@@ -545,14 +641,28 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 }
 
 static int color24to16b(int color24b) {
-	// Convert 24-bit RGB888 format to the TFT's color format (e.g. 16-bit RGB565).
+	// Convert 24-bit RGB888 format to the TFT's target pixel format.
+	// Return [0..1] for 1-bit display, [0-255] for grayscale, and RGB565 for 16-bit color.
 
-	#ifdef IS_MONCHROME
+	int r, g, b;
+
+	#ifdef IS_MONOCHROME
 		return color24b ? 1 : 0;
 	#endif
-	int r = (color24b >> 19) & 0x1F; // 5 bits
-	int g = (color24b >> 10) & 0x3F; // 6 bits
-	int b = (color24b >> 3) & 0x1F; // 5 bits
+
+	#ifdef IS_GRAYSCALE
+		r = (color24b >> 16) & 0xFF;
+		g = (color24b >> 8) & 0xFF;
+		b = color24b & 0xFF;
+		int gray = r;
+		if (g > r) gray = g;
+		if (b > r) gray = b;
+		return gray;
+	#endif
+
+	r = (color24b >> 19) & 0x1F; // 5 bits
+	g = (color24b >> 10) & 0x3F; // 6 bits
+	b = (color24b >> 3) & 0x1F; // 5 bits
 	#if defined(ARDUINO_M5Stick_C) && !defined(ARDUINO_M5Stick_Plus)
 		return (b << 11) | (g << 5) | r; // color order: BGR
 	#else

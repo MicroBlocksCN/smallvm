@@ -49,7 +49,7 @@ forever {
 }
 }
 
-script 48 443 {
+script 47 442 {
 whenCondition (pb_button)
 '_pb_init_pins'
 'attach buzzer to pin' _pb_pin_Buzzer
@@ -63,10 +63,10 @@ whenCondition (pb_button)
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
 version 1 12 
-choices ModeMenu Horizontal Vertical 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -904,7 +904,7 @@ to 'defer display updates' {
 
 module PicoBricks
 author MicroBlocks
-version 2 3 
+version 2 4 
 depends 'Temperature Humidity (DHT11, DHT22)' 
 description 'Robotistan PicoBricks Library
 
@@ -1039,6 +1039,7 @@ to pb_set_rgb_color color {
   '_pb_init_pins'
   '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
   '[display:neoPixelSend]' color
+  waitMillis 1
 }
 
 to pb_temperature {
@@ -1050,6 +1051,7 @@ to pb_turn_off_RGB {
   '_pb_init_pins'
   '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
   '[display:neoPixelSend]' 0
+  waitMillis 1
 }
 
 

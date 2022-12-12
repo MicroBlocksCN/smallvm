@@ -96,7 +96,7 @@ void hardwareInit() {
 	#if defined(ARDUINO_CITILAB_ED1) || \
 		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
 		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_NRF52840_CLUE) || \
-		defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2)
+		defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2) || defined(PICO_ED)
 			tftInit();
 	#endif
 }
@@ -529,6 +529,20 @@ void restartSerial() {
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 0, 1};
 
+#elif defined(ARDUINO_ESP32_PICO)
+	#define BOARD_TYPE "ESP32-Pico-D4"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 2
+	#define PIN_LED 13
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
+		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
 		#define BOARD_TYPE "IOT-BUS"
@@ -767,7 +781,8 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 }
 
 #if defined(ESP32)
-	#define MAX_ESP32_CHANNELS 8 // MAX 16
+
+	#define MAX_ESP32_CHANNELS 16
 	int esp32Channels[MAX_ESP32_CHANNELS];
 
 	int pinAttached(int pin) {
@@ -781,11 +796,12 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 
 	void analogAttach(int pin) {
 		int esp32Channel = 1;
-		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0)) {
+		// Note: Do not use channels 0-1 or 8-9; those use timer0, which is used by Tone.
+		while ((esp32Channel < MAX_ESP32_CHANNELS) && ((esp32Channels[esp32Channel] > 0) || ((esp32Channel & 7) <= 1))) {
 			esp32Channel++;
 		}
 		if (esp32Channel < MAX_ESP32_CHANNELS) {
-			ledcSetup(esp32Channel, 5000, 10); // 5KHz, 10 bits
+			ledcSetup(esp32Channel, 50, 10); // 50Hz, 10 bits (same clock rate as servos)
 			ledcAttachPin(pin, esp32Channel);
 			esp32Channels[esp32Channel] = pin;
 		}
@@ -1262,8 +1278,9 @@ static void setServo(int pin, int usecs) {
 #elif defined(ESP32)
 
 static int attachServo(int pin) {
+	// Note: Do not use channels 0-1 or 8-9; those use timer0, which is used by Tone.
 	for (int i = 1; i < MAX_ESP32_CHANNELS; i++) {
-		if (0 == esp32Channels[i]) { // free channel
+		if ((0 == esp32Channels[i]) && ((i & 7) > 1)) { // free channel
 			ledcSetup(i, 50, 10); // 50Hz, 10 bits
 			ledcAttachPin(pin, i);
 			esp32Channels[i] = pin;

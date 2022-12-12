@@ -646,7 +646,7 @@ method selectPort SmallRuntime {
 
 	if ('Browser' == (platform)) {
 		menu = (menu 'Connect' (action 'webSerialConnect' this) true)
-		if (isNil port) {
+		if (and (isNil port) ('boardie' != portName)) {
 			if (browserHasWebSerial) {
 				addItem menu 'connect'
 			}
@@ -830,7 +830,10 @@ method updateConnection SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		clearRunningHighlights this
 		closePort this
-		if (isWebSerial this) { return 'not connected' } // user must initiate connection attempt
+		if ('Browser' == (platform)) {
+			portName = nil // clear 'boardie' when boardie is closed with power button
+			return 'not connected' // user must initiate connection attempt
+		}
 		return (tryToConnect this)
 	}
 
@@ -1317,7 +1320,18 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		}
 		return false
 	}
-	if ((at entry 2) == (computeCRC this chunkBytes)) { return false }
+
+	// don't save the chunk if its CRC has not changed unless is a button or broadcast
+	// hat because the CRC does not reflect changes to the button or broadcast name
+	crcOptimization = true
+	if (isClass aBlockOrFunction 'Block') {
+		op = (primName (expression aBlockOrFunction))
+		crcOptimization = (not (isOneOf op 'whenButtonPressed' 'whenBroadcastReceived'))
+	}
+	if (and crcOptimization ((at entry 2) == (computeCRC this chunkBytes))) {
+		return false
+	}
+
 	sendMsgSync this 'chunkCodeMsg' chunkID data
 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
