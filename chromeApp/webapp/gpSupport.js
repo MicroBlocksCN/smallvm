@@ -683,10 +683,10 @@ function GP_openBoardie() {
             boardie.iframe = boardie.element.querySelector('iframe');
 
             boardie.element.onclick = function (evt) {
-				if (!evt.target.closest('[data-button]')) {
-					boardie.iframe.focus();
-				}
-			}
+                if (!evt.target.closest('[data-button]')) {
+                    boardie.iframe.focus();
+                }
+            }
 
             document.body.append(boardie.element);
 
