@@ -559,7 +559,6 @@ method showDownloadProgress MicroBlocksEditor phase downloadProgress {
 	drawProgressIndicator this bm2 phase downloadProgress
 	costumeChanged (morph progressIndicator)
 	updateDisplay (global 'page') // update the display
-	nextEvent // discard events while downloading
 }
 
 // Connection indicator
