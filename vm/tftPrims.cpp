@@ -567,7 +567,8 @@ int touchEnabled = false;
 			if ((y < 0) || (y > 6)) return;
 
 			// adjust brightness (use range 0-100 to avoid making LED's painfully bright)
-			if (brightness > 3) brightness = (100 * brightness) / 255;
+			if ((brightness != 0) && (brightness < 3)) brightness = 3; //
+			brightness = (100 * brightness) / 255;
 			if (brightness > 100) brightness = 100;
 
 			int incr = (x < 9) ? -1 : 1;
