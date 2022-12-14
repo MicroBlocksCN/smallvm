@@ -26,7 +26,10 @@ static int touchEnabled = false;
 void tftClear() {
 	tftInit();
 	EM_ASM_({
-		window.ctx.clearRect(0, 0, $0, $1);
+// This does not work in Safari:
+//		window.ctx.clearRect(0, 0, $0, $1);
+		window.ctx.fillStyle = "#000";
+		window.ctx.fillRect(0, 0, $0, $1);
 	}, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 	tftChanged = true;
 }
