@@ -152,12 +152,14 @@ void EMSCRIPTEN_KEEPALIVE getScripts() {
 
 void readScriptsFromURL() {
 	EM_ASM_({
-		var b64 = (new URLSearchParams(window.location.search)).get('code');
-		if (b64) {
-			var bytes = Int8Array.from(atob(b64), (c) => c.charCodeAt(0));
-			for (var i = 0; i < bytes.length; i++) {
-				setValue($0, bytes[i], 'i8');
-				$0++;
+		if (window.location.hash.startsWith('#code=')) {
+			var b64 = window.location.hash.substr(6); // "#code=" is 6 chars
+			if (b64) {
+				var bytes = Int8Array.from(atob(b64), (c) => c.charCodeAt(0));
+				for (var i = 0; i < bytes.length; i++) {
+					setValue($0, bytes[i], 'i8');
+					$0++;
+				}
 			}
 		}
 	}, ramStart());
