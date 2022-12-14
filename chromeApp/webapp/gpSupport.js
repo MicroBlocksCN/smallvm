@@ -671,7 +671,7 @@ function GP_openBoardie() {
             boardie.element.classList.add('boardie');
             boardie.element.style.position = 'absolute';
             boardie.element.style.zIndex = 999;
-            if (boardie.position) {
+            if (boardie.position && boardie.position.left) {
                 boardie.element.style.left = boardie.position.left;
                 boardie.element.style.top = boardie.position.top;
             } else {
