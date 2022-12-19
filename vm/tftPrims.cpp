@@ -520,27 +520,44 @@ int touchEnabled = false;
 		public:
 			IS31FL3731(uint8_t width, uint8_t height) : Adafruit_GFX(width, height) {}
 
+			TwoWire *wire;
 			uint8 displayBuffer[144];
 
 			bool begin();
 			void drawPixel(int16_t x, int16_t y, uint16_t brightness);
 			void updateDisplay(void);
+			void setRegister(uint8_t reg, uint8_t value);
 		};
 
 		bool IS31FL3731::begin() {
+			wire = &Wire1;
+			if (readI2CReg(IS31FL_ADDR, 0) < 0) {
+				// no display on external i2c bus, so this is a pico:ed v2
+
+				// initialize internal i2c bus
+				wire = &Wire;
+				wire->setSDA(0);
+				wire->setSCL(1);
+				wire->begin();
+				wire->setClock(400000);
+
+				// speaker in on pin 3 of pico:ed v2
+				setPicoEdSpeakerPin(3);
+			}
+
 			// select the function bank
-			writeI2CReg(IS31FL_ADDR, IS31FL_BANK_SELECT, IS31FL_FUNCTION_BANK);
+			setRegister(IS31FL_BANK_SELECT, IS31FL_FUNCTION_BANK);
 
 			// toggle shutdown
-			writeI2CReg(IS31FL_ADDR, IS31FL_SHUTDOWN_REG, 0);
+			setRegister(IS31FL_SHUTDOWN_REG, 0);
 			delay(10);
-			writeI2CReg(IS31FL_ADDR, IS31FL_SHUTDOWN_REG, 1);
+			setRegister(IS31FL_SHUTDOWN_REG, 1);
 
 			// picture mode
-			writeI2CReg(IS31FL_ADDR, IS31FL_CONFIG_REG, 0);
+			setRegister(IS31FL_CONFIG_REG, 0);
 
 			// set frame to display
-			writeI2CReg(IS31FL_ADDR, IS31FL_PICTUREFRAME_REG, 0);
+			setRegister(IS31FL_PICTUREFRAME_REG, 0);
 
 			// clear the display before enabling LED's
 			memset(displayBuffer, 0, sizeof(displayBuffer));
@@ -548,12 +565,11 @@ int touchEnabled = false;
 
 			// enable all LEDs
 			for (uint8_t bank = 0; bank < 8; bank++) {
-				writeI2CReg(IS31FL_ADDR, IS31FL_BANK_SELECT, bank);
+				setRegister(IS31FL_BANK_SELECT, bank);
 				for (uint8_t i = 0; i < 18; i++) {
-					writeI2CReg(IS31FL_ADDR, i, 0xFF);
+					setRegister(i, 0xFF);
 				}
 			}
-
 			return true;
 		}
 
@@ -579,13 +595,20 @@ int touchEnabled = false;
 		void IS31FL3731::updateDisplay() {
 			// Write the entire display buffer to bank 0.
 
-			writeI2CReg(IS31FL_ADDR, IS31FL_BANK_SELECT, 0); // select bank 0
+			setRegister(IS31FL_BANK_SELECT, 0); // select bank 0
 			for (uint8_t i = 0; i < 6; i++) {
-				Wire1.beginTransmission(IS31FL_ADDR);
-				Wire1.write(0x24 + (24 * i)); // offset within bank
-				Wire1.write(&displayBuffer[24 * i], 24);
-				Wire1.endTransmission();
+				wire->beginTransmission(IS31FL_ADDR);
+				wire->write(0x24 + (24 * i)); // offset within bank
+				wire->write(&displayBuffer[24 * i], 24);
+				wire->endTransmission();
 			}
+		}
+
+		void IS31FL3731::setRegister(uint8_t reg, uint8_t value) {
+			wire->beginTransmission(IS31FL_ADDR);
+			wire->write(reg);
+			wire->write(value);
+			wire->endTransmission();
 		}
 
 		// pretend display is 7 pixels wider so GFX will display partial characters
