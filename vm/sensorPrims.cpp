@@ -34,7 +34,7 @@ static void startWire() {
 	wireStarted = true;
 }
 
-static int readI2CReg(int deviceID, int reg) {
+int readI2CReg(int deviceID, int reg) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);

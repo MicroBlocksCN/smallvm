@@ -131,16 +131,11 @@ static int serialWriteBytes(uint8 *buf, int byteCount) {
 
 #else // use Serial1 or Serial2
 
-// Use Serial2 on ESP32 board, Serial1 on others
-#if (defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3))
+// Use Serial2 on ESP32 and Pico:ed boards, Serial1 on others
+#if (defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)) || defined(PICO_ED)
 	#define SERIAL_PORT Serial2
 #else
 	#define SERIAL_PORT Serial1
-#endif
-
-// Use Serial2 on PICO_ED
-#if defined(PICO_ED)
-	#define SERIAL_PORT Serial2
 #endif
 
 static void serialClose() {

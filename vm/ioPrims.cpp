@@ -607,9 +607,8 @@ void restartSerial() {
 	#define DEFAULT_TONE_PIN 17 // maps to speaker pin
 	#define PIN_BUTTON_A 20
 	#define PIN_BUTTON_B 21
-// 	#define PIN_LED 25
 	static const int analogPin[] = {26, 27, 28, 29};
-	static const char digitalPin[TOTAL_PINS] = {
+	static char digitalPin[TOTAL_PINS] = {
 		26, 27, 28, 29,  4,  5,  6,  7,  8, 9,
 		10, 11, 12, 13, 14, 15, 16, 0, 25, 19, // change pin 17 from 0 to 3 for pico-ed v2
 		18};
@@ -617,6 +616,8 @@ void restartSerial() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0};
+
+	void setPicoEdSpeakerPin(int pin) { digitalPin[17] = pin; }
 
 #elif defined(ARDUINO_ARCH_RP2040)
 

@@ -261,6 +261,7 @@ void restartSerial();
 const char *boardType();
 void hardwareInit(void);
 
+int readI2CReg(int deviceID, int reg);
 void writeI2CReg(int deviceID, int reg, int value);
 
 // I/O Support
@@ -276,6 +277,7 @@ void stopPWM();
 void stopServos();
 void stopTone();
 int readAnalogMicrophone();
+void setPicoEdSpeakerPin(int pin);
 
 // Primitives
 
