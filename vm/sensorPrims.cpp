@@ -171,6 +171,7 @@ static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
 // SPI prims
 
 #if defined(PICO_ED)
+  #define SPI SPI1
   #define PIN_SPI_MISO (8u)
   #define PIN_SPI_SS   (9u)
   #define PIN_SPI_SCK  (10u)
