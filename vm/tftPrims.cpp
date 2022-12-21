@@ -463,7 +463,7 @@ int touchEnabled = false;
 		#define TFT_HEIGHT 32
 		#define IS_MONOCHROME true
 
-		Adafruit_SSD1306 tft = Adafruit_SSD1306(128, 32); // xxx may need params
+		Adafruit_SSD1306 tft = Adafruit_SSD1306(128, 32);
 
 		#undef UPDATE_DISPLAY
 		#define UPDATE_DISPLAY() (tft.display())
@@ -525,6 +525,8 @@ int touchEnabled = false;
 
 			bool begin();
 			void drawPixel(int16_t x, int16_t y, uint16_t brightness);
+			void clearDisplayBuffer();
+			void showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos);
 			void updateDisplay(void);
 			void setRegister(uint8_t reg, uint8_t value);
 		};
@@ -573,6 +575,10 @@ int touchEnabled = false;
 			return true;
 		}
 
+		void IS31FL3731::clearDisplayBuffer() {
+			memset(displayBuffer, 0, sizeof(displayBuffer));
+		}
+
 		void IS31FL3731::drawPixel(int16_t x, int16_t y, uint16_t brightness) {
 			// Set the brigness of the pixel at (x, y).
 
@@ -590,6 +596,21 @@ int touchEnabled = false;
 			int incr = (x < 9) ? -1 : 1;
 			int i = topRow[x] + (y * incr);
 			displayBuffer[i] = brightness;
+		}
+
+		void IS31FL3731::showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos) {
+			// Draw 5x5 image at the given location where 1,1 is the origin.
+
+			int brightness = 100;
+			int y = yPos;
+			for (int i = 0; i < 25; i++) {
+				int x = (i % 5) + 5 + xPos;
+				if ((5 < x) && (x < 11) && (0 < y) && (y < 6)) {
+					if (microBitDisplayBits & (1 << i)) drawPixel(x, y, brightness);
+				}
+				if ((i % 5) == 4) y++;
+			}
+			updateDisplay();
 		}
 
 		void IS31FL3731::updateDisplay() {
@@ -618,6 +639,12 @@ int touchEnabled = false;
 			tft.begin();
 			useTFT = true;
 		}
+
+	void showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos) {
+		// Used by scrolling text; don't clear display.
+		tft.showMicroBitPixels(microBitDisplayBits, xPos, yPos);
+	}
+
 	#endif
 
 void tftClear() {
@@ -862,6 +889,14 @@ static OBJ primDrawBitmap(int argCount, OBJ *args) {
 
 void tftSetHugePixel(int x, int y, int state) {
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
+	#if defined(PICO_ED)
+		if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+			int brightness = (state ? 100 : 0);
+			tft.drawPixel((x + 5), y, brightness);
+			UPDATE_DISPLAY();
+		}
+		return;
+	#endif
 	int minDimension, xInset = 0, yInset = 0;
 	if (tft.width() > tft.height()) {
 		minDimension = tft.height();
@@ -881,6 +916,11 @@ void tftSetHugePixel(int x, int y, int state) {
 }
 
 void tftSetHugePixelBits(int bits) {
+	#if defined(PICO_ED)
+		tft.clearDisplayBuffer();
+		tft.showMicroBitPixels(bits, 1, 1);
+		return;
+	#endif
 	if (0 == bits) {
 		tftClear();
 	} else {

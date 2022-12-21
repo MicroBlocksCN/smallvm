@@ -278,6 +278,7 @@ void stopServos();
 void stopTone();
 int readAnalogMicrophone();
 void setPicoEdSpeakerPin(int pin);
+void showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos);
 
 // Primitives
 

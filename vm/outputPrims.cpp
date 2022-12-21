@@ -1047,6 +1047,12 @@ OBJ primMBDrawShape(int argCount, OBJ *args) {
 		x = evalInt(args[1]);
 		y = evalInt(args[2]);
 	}
+
+	#if defined(PICO_ED)
+		showMicroBitPixels(shape, x, y);
+		return falseObj;
+	#endif
+
 	int srcMask = 1;
 	for (int dstY = y; dstY < (y + 5); dstY++) {
 		for (int dstX = x; dstX < (x + 5); dstX++) {
