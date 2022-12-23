@@ -36,6 +36,8 @@ pio run -e pico
 cp .pio/build/pico/firmware.uf2 precompiled/vm_pico.uf2
 pio run -e pico-w
 cp .pio/build/pico-w/firmware.uf2 precompiled/vm_pico_w.uf2
+pio run -e pico-ed
+cp .pio/build/pico-ed/firmware.uf2 precompiled/vm_pico_ed.uf2
 
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/
