@@ -119,6 +119,7 @@ void initSound() {
 	EM_ASM_({
 		var context = new AudioContext();
 		window.gainNode = context.createGain();
+		window.gainNode.gain.value = 0.1;
 		window.oscillator = context.createOscillator();
 		window.oscillator.type = 'square';
 		window.oscillator.start();

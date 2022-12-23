@@ -19,5 +19,5 @@ emcc -std=gnu99 -Wall -O3 \
 
 cp font/adafruit_font.ttf ../chromeApp/webapp/boardie
 cp webfiles/* ../chromeApp/webapp/boardie
-cp run_boardie.js ../chromeApp/webapp/boardie
-cp run_boardie.wasm ../chromeApp/webapp/boardie
+mv run_boardie.js ../chromeApp/webapp/boardie
+mv run_boardie.wasm ../chromeApp/webapp/boardie
