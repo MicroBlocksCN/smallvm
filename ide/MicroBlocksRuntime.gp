@@ -2364,7 +2364,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0') {
 			adaFruitResetMessage this
-		} (isOneOf boardType 'RP2040' 'Pico W') {
+		} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed') {
 			rp2040ResetMessage this
 		}
 	} else {
@@ -2382,8 +2382,9 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		}
 		if (not eraseFlashFlag) {
 			addLine menu
+			addItem menu 'Elecfreaks Pico:ed' (action 'rp2040ResetMessage' this)
+			addItem menu 'RP2040 (Pico or Pico-W)' (action 'rp2040ResetMessage' this)
 			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
-			addItem menu 'RP2040 (Pico)' (action 'rp2040ResetMessage' this)
 		}
 		popUpAtHand menu (global 'page')
 	}
@@ -2459,10 +2460,13 @@ method picoVMFileName SmallRuntime {
 	menu = (menu 'Pico board type?' (action 'atPut' tmp 1) true)
 	addItem menu 'RP2040 (Pico)'
 	addItem menu 'Pico W (WiFi)'
+	addItem menu 'Elecfreaks Pico:ed'
 	waitForSelection menu
 	result = (first tmp)
 	if ('Pico W (WiFi)' == result) {
 		return 'vm_pico_w.uf2'
+	} ('Elecfreaks Pico:ed' == result) {
+		return 'vm_pico_ed.uf2'
 	} else {
 		return 'vm_pico.uf2'
 	}
@@ -2537,6 +2541,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addLine menu
 			addItem menu 'Citilab ED1'
 			addLine menu
+			addItem menu 'Elecfreaks Pico:ed'
 			addItem menu 'RP2040 (Pico)'
 			addItem menu 'Pico W (WiFi)'
 			addLine menu
@@ -2607,6 +2612,11 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	} ('Pico W (WiFi)' == boardName) {
 		vmFileName = 'vm_pico_w.uf2'
 		driveName = 'RPI-RP2'
+	} ('Elecfreaks Pico:ed' == boardName) {
+		vmFileName = 'vm_pico_ed.uf2'
+		driveName = 'RPI-RP2'
+	} else {
+		return // bad board name
 	}
 
 	prefix = ''
