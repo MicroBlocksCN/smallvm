@@ -600,7 +600,7 @@ void restartSerial() {
 
 #elif defined(PICO_ED)
 
-	#define BOARD_TYPE "pico:ed"
+	#define BOARD_TYPE "Pico:ed"
 	#define DIGITAL_PINS 21
 	#define ANALOG_PINS 4
 	#define TOTAL_PINS DIGITAL_PINS
