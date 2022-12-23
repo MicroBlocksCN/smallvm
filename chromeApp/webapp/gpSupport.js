@@ -646,13 +646,11 @@ GP.boardie = {
 	element: null,
 	iframe: null,
 	isOpen: false,
-        position: null,
         reset: function () {
             var win = this.iframe.contentWindow;
             var ctx = win.document.querySelector('canvas').getContext('2d');
             win.postMessage(new Uint8Array([ 0xFA, 0x0F, 0 ])); // system reset
             ctx.clearRect(0, 0, 240, 240); // clear screen
-            win.postMessage(new Uint8Array([ 0xFA, 0x05, 0 ])); // start all
         },
 	press: function (keyCode) { this.iframe.contentWindow.press(keyCode); },
 	unpress: function (keyCode) { this.iframe.contentWindow.unpress(keyCode); }
@@ -671,23 +669,18 @@ function GP_openBoardie() {
             boardie.element.classList.add('boardie');
             boardie.element.style.position = 'absolute';
             boardie.element.style.zIndex = 999;
-            if (boardie.position && boardie.position.left) {
-                boardie.element.style.left = boardie.position.left;
-                boardie.element.style.top = boardie.position.top;
-            } else {
-                boardie.element.style.top = '70px';
-                boardie.element.style.right = '34px';
-            }
+            boardie.element.style.top = '70px';
+            boardie.element.style.right = '34px';
             boardie.element.style.cursor = 'grab';
             boardie.element.innerHTML = req.responseText;
 
             boardie.iframe = boardie.element.querySelector('iframe');
 
             boardie.element.onclick = function (evt) {
-                if (!evt.target.closest('[data-button]')) {
-                    boardie.iframe.focus();
-                }
-            }
+				if (!evt.target.closest('[data-button]')) {
+					boardie.iframe.focus();
+				}
+			}
 
             document.body.append(boardie.element);
 
@@ -766,10 +759,6 @@ function makeDraggable (element) {
         // stop moving when mouse button is released:
         document.onpointerup = null;
         document.onpointermove = null;
-        GP.boardie.position = {
-            left: element.style.left,
-            top: element.style.top
-        };
         element.classList.remove('--is-dragged');
         element.style.cursor = 'grab';
     };
