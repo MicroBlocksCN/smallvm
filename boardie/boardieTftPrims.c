@@ -18,20 +18,19 @@
 #define DEFAULT_WIDTH 240
 #define DEFAULT_HEIGHT 240
 
-static int tftEnabled = false;
-static int tftChanged = false;
-
 static int touchEnabled = false;
+static int tftEnabled = false;
+static int tftShouldUpdate = false;
+
+void EMSCRIPTEN_KEEPALIVE tftChanged() { tftShouldUpdate = true; }
 
 void tftClear() {
 	tftInit();
 	EM_ASM_({
-// This does not work in Safari:
-//		window.ctx.clearRect(0, 0, $0, $1);
 		window.ctx.fillStyle = "#000";
 		window.ctx.fillRect(0, 0, $0, $1);
 	}, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-	tftChanged = true;
+	tftChanged();
 }
 
 void tftInit() {
@@ -47,10 +46,7 @@ void tftInit() {
 
 			var adafruitFont = new FontFace('adafruit', 'url(adafruit_font.ttf)');
 
-			adafruitFont.load().then((font) => {
-				document.fonts.add(font);
-				console.log('Font loaded');
-			});
+			adafruitFont.load().then((font) => { document.fonts.add(font); });
 
 			window.rgbFrom24b = function (color24b) {
 				return 'rgb(' + ((color24b >> 16) & 255) + ',' +
@@ -62,7 +58,7 @@ void tftInit() {
 
 void updateMicrobitDisplay() {
 	// transfer the offscreen canvas image to the main canvas
-	if (tftEnabled && tftChanged) {
+	if (tftEnabled && tftShouldUpdate) {
 		EM_ASM_({
 			if (!window.mainCtx) {
 				window.mainCtx =
@@ -74,7 +70,7 @@ void updateMicrobitDisplay() {
 			}
 			window.mainCtx.drawImage(window.offscreenCanvas, 0, 0);
 		});
-		tftChanged = false;
+		tftShouldUpdate = false;
 	}
 }
 
@@ -107,7 +103,7 @@ static OBJ primSetPixel(int argCount, OBJ *args) {
 		obj2int(args[1]), // y
 		obj2int(args[2]) // color
 	);
-	tftChanged = true;
+	tftChanged();
 	return falseObj;
 }
 
@@ -126,7 +122,7 @@ static OBJ primLine(int argCount, OBJ *args) {
 		obj2int(args[3]), // y1
 		obj2int(args[4]) // color
 	);
-	tftChanged = true;
+	tftChanged();
 	return falseObj;
 }
 
@@ -148,7 +144,7 @@ static OBJ primRect(int argCount, OBJ *args) {
 		obj2int(args[4]), // color
 		(argCount > 5) ? (trueObj == args[5]) : true // fill
 	);
-	tftChanged = true;
+	tftChanged();
 	return falseObj;
 }
 
@@ -177,7 +173,7 @@ static OBJ primCircle(int argCount, OBJ *args) {
 		obj2int(args[3]), // color
 		(argCount > 4) ? (trueObj == args[4]) : true // fill
 	);
-	tftChanged = true;
+	tftChanged();
 	return falseObj;
 }
 
@@ -235,7 +231,7 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 		obj2int(args[5]), // color
 		(argCount > 6) ? (trueObj == args[6]) : true // fill (6)
 	);
-	tftChanged = true;
+	tftChanged();
 	return falseObj;
 }
 
@@ -269,7 +265,7 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 		obj2int(args[6]), // color
 		(argCount > 7) ? (trueObj == args[7]) : true // fill
 	);
-	tftChanged = true;
+	tftChanged();
 	return falseObj;
 }
 
@@ -320,60 +316,74 @@ static OBJ primText(int argCount, OBJ *args) {
 		(argCount > 5) ? (trueObj == args[5]) : true // wrap
 	);
 
-	tftChanged = true;
+	tftChanged();
 	return falseObj;
 }
 
-static OBJ primDrawBitmap(int argCount, OBJ *args) {
-	// Draw an RGB565 bitmap encoded into a byteArray either from a file or from
-	// memory
+static OBJ primSetPalette(int argCount, OBJ *args) {
+	OBJ list = args[0];
+	EM_ASM_({ window.palette = []; });
+	for (int i = 0; i < obj2int(FIELD(list, 0)); i++) {
+		EM_ASM_(
+			{ window.palette[$1] = $0; },
+			obj2int(FIELD(list, i + 1)),	// $0, list item
+			i								// $1, index
+		);
+	}
+	EM_ASM_({ window['palette'] = window.palette; });
+	return falseObj;
+}
+
+static OBJ primDrawBuffer(int argCount, OBJ *args) {
 	tftInit();
-	OBJ value = args[0];
-	char fromFile = IS_TYPE(value, StringType);
-	char bitmapFile[256];
-
-	// args[0] can contain either a file name or a ByteArray with the bitmap
-	// encoded in RGB565 format
-	if (fromFile) { sprintf(bitmapFile, "%s", obj2str(value)); }
-
 	EM_ASM_({
-			var fromFile = $6;
-			if (fromFile) { var file = window.localStorage[UTF8ToString($0)]; }
-			var imgData = window.ctx.createImageData($3, $4);
+			var scale = $1 || 1;
+			var scaledWidth = Math.ceil(window.ctx.canvas.width / scale);
+			var scaledHeight = Math.ceil(window.ctx.canvas.height / scale);
+			var imgData = window.ctx.createImageData(scaledWidth, scaledHeight);
 			var pixelIndex = 0;
 
-			for (var i = 0; i < $3 * $4 * 2; i += 2) {
-				var rgb565 = fromFile ?
-					(file.charCodeAt(i) | (file.charCodeAt(i + 1) << 8)) :
-					(HEAP8[$0 + i] | (HEAP8[$0 + i + 1] << 8));
+			// Make an extra canvas where we'll draw the buffer first, so we can
+			// later scale it up to the offscreen canvas.
+			var canvas = document.createElement('canvas');
+			canvas.width = scaledWidth;
+			canvas.height = scaledHeight;
 
-				imgData.data[pixelIndex] = (rgb565 >> 11) << 3; // R
-				imgData.data[pixelIndex + 1] = ((rgb565 >> 5) & 0x3F) << 2; // G
-				imgData.data[pixelIndex + 2] = (rgb565 & 0x1F) << 3; // B
-				imgData.data[pixelIndex + 3] = (rgb565 == $5) ? 0 : 0xFF; // A
-				pixelIndex += 4;
+			// Read the indices from the buffer and turn them into color values
+			// from the palette, and transfer them into the imgData object.
+			for (var y = 0; y < scaledHeight; y ++) {
+				for (var x = 0; x < scaledWidth; x ++) {
+					var color =
+						window.palette[HEAPU8[$0 + y * scaledHeight + x]];
+					imgData.data[pixelIndex] = color >> 16; // R
+					imgData.data[pixelIndex + 1] = (color >> 8) & 255; // G
+					imgData.data[pixelIndex + 2] = color & 255; // B
+					imgData.data[pixelIndex + 3] = 255; // A
+					pixelIndex += 4;
+				}
 			}
-			// putImageData would destroy the original image and thus
-			// transparent pixels would just appear black
-			createImageBitmap(imgData).then(
-				(image) => { window.ctx.drawImage(image, $1, $2); }
+			
+			// Draw the image data into the canvas, then draw it scaled to the
+			// offscreen canvas.
+			// Note: we could do the same without an extra canvas by using
+			// createImageBitmap, but that returns a promise and we need this
+			// operation to be synchronous. Additionally, we've measured this
+			// method to be pretty much as fast as the other one.
+			canvas.getContext('2d').putImageData(imgData, 0, 0);
+			window.ctx.drawImage(
+				canvas,
+				0,
+				0,
+				window.ctx.canvas.width,
+				window.ctx.canvas.height
 			);
+			_tftChanged();
 		},
-		// we cast the string to uint8 * to prevent compiler warning...
-		fromFile ? (uint8 *) bitmapFile : (uint8 *) &FIELD(value, 0),
-		obj2int(args[1]), 	// $1, destination x
-		obj2int(args[2]),	// $2, destination y
-		obj2int(args[3]), 	// $3, width
-		obj2int(args[4]), 	// $4, height
-		obj2int(args[5]),	// $5, alpha color (in RGB565)
-		fromFile
+		(uint8 *) &FIELD(args[0], 0),	// $0, buffer
+		obj2int(args[1])				// $1, scale
 	);
-
-	tftChanged = true;
-	yield();
 	return falseObj;
 }
-
 
 // Simulating a 5x5 LED Matrix
 
@@ -401,7 +411,7 @@ void tftSetHugePixel(int x, int y, int state) {
 		state
 	);
 
-	tftChanged = true;
+	tftChanged();
 }
 
 void tftSetHugePixelBits(int bits) {
@@ -489,7 +499,8 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
-	{"drawBitmap", primDrawBitmap},
+	{"setPalette", primSetPalette},
+	{"drawBuffer", primDrawBuffer},
 	{"tftTouched", primTftTouched},
 	{"tftTouchX", primTftTouchX},
 	{"tftTouchY", primTftTouchY},
