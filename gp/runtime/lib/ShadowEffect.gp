@@ -34,6 +34,7 @@ method initialize ShadowEffect aBlock effectType {
 
 method drawOn ShadowEffect ctx {
 	if ('Browser' != (platform)) { return }
+	if (notNil (getField ctx 'surface')) { return } // don't draw shadow on surface; very slow!
 
 	blockBodies = (list)
 	for m (allMorphs (morph targetBlock)) {
