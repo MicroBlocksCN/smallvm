@@ -153,7 +153,8 @@ void EMSCRIPTEN_KEEPALIVE getScripts() {
 void readScriptsFromURL() {
 	EM_ASM_({
 		if (window.location.hash.startsWith('#code=')) {
-			var b64 = window.location.hash.substr(6); // "#code=" is 6 chars
+			// "#code=" is 6 chars
+			var b64 = decodeURIComponent(window.location.hash.substr(6));
 			if (b64) {
 				var bytes = Int8Array.from(atob(b64), (c) => c.charCodeAt(0));
 				for (var i = 0; i < bytes.length; i++) {
