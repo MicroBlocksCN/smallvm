@@ -320,22 +320,47 @@ static OBJ primText(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-static OBJ primSetPalette(int argCount, OBJ *args) {
-	OBJ list = args[0];
-	EM_ASM_({ window.palette = []; });
-	for (int i = 0; i < obj2int(FIELD(list, 0)); i++) {
-		EM_ASM_(
-			{ window.palette[$1] = $0; },
-			obj2int(FIELD(list, i + 1)),	// $0, list item
-			i								// $1, index
-		);
-	}
-	EM_ASM_({ window['palette'] = window.palette; });
+static OBJ primMergeBitmap(int argCount, OBJ *args) {
+	tftInit();
+	EM_ASM_({
+			var bitmapHeight = $2 / $1;
+			for (var y = 0; y < bitmapHeight; y++) {
+				for (var x = 0; x < $1; x++) {
+					var bufIndex =
+						($7 + y) * (window.ctx.canvas.width / $4) + x + $6;
+					var pixelValue = HEAPU8[$0 + y * $1 + x];
+					if (pixelValue !== $5) {
+						HEAPU8[$3 + bufIndex] = pixelValue;
+					}
+				}
+			}
+		},
+		(uint8 *) &FIELD(args[0], 0),	// $0, bitmap
+		obj2int(args[1]),				// $1, bitmap width
+		BYTES(args[0]),					// $2, bitmap byte size
+		(uint8 *) &FIELD(args[2], 0),	// $3, buffer
+		obj2int(args[3]),				// $4, scale
+		obj2int(args[4]),				// $5, transparent color index
+		obj2int(args[5]),				// $6, destination x
+		obj2int(args[6])				// $7, destination y
+	);
 	return falseObj;
 }
 
 static OBJ primDrawBuffer(int argCount, OBJ *args) {
 	tftInit();
+
+	// read palette into a JS object first
+	for (int i = 0; i < obj2int(FIELD(args[1], 0)); i ++) {
+		EM_ASM_({
+				if (!window.palette) { window.palette = []; }
+				window.palette[$1] = $0;
+			},
+			obj2int(FIELD(args[1], i)),
+			i
+		);
+	}
+
 	EM_ASM_({
 			var scale = $1 || 1;
 			var scaledWidth = Math.ceil(window.ctx.canvas.width / scale);
@@ -380,7 +405,7 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 			_tftChanged();
 		},
 		(uint8 *) &FIELD(args[0], 0),	// $0, buffer
-		obj2int(args[1])				// $1, scale
+		obj2int(args[2])				// $1, scale
 	);
 	return falseObj;
 }
@@ -499,8 +524,10 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
-	{"setPalette", primSetPalette},
+
+	{"mergeBitmap", primMergeBitmap},
 	{"drawBuffer", primDrawBuffer},
+
 	{"tftTouched", primTftTouched},
 	{"tftTouchX", primTftTouchX},
 	{"tftTouchY", primTftTouchY},
