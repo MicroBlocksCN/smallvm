@@ -208,11 +208,9 @@ void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendBroadcastToIDE(char *s, int len);
 int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
-#ifdef EMSCRIPTEN
-void yield();
-void interpretStep();
-#endif
 void vmLoop(void);
+void interpretStep();
+void yield();
 void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);

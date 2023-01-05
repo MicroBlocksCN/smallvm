@@ -31,14 +31,11 @@ uint32 microsecs() {
 	struct timeval now;
 	gettimeofday(&now, NULL);
 
-	return (1000000 * (now.tv_sec - startSecs)) + now.tv_usec;
+	return ((1000000 * (now.tv_sec - startSecs)) + now.tv_usec) & 0xFFFFFFFF;
 }
 
 uint32 millisecs() {
-	struct timeval now;
-	gettimeofday(&now, NULL);
-
-	return (1000 * (now.tv_sec - startSecs)) + (now.tv_usec / 1000);
+	return microsecs() / 1000;
 }
 
 // Communication/System Functions

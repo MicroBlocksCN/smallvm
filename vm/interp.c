@@ -1333,9 +1333,13 @@ void vmLoop() {
 	}
 }
 
-#ifdef EMSCRIPTEN
-#include <emscripten.h>
 // Boardie support
+
+#ifdef EMSCRIPTEN
+
+#include <emscripten.h>
+
+#define CLOCK_MASK 0xFFFFFFFF
 
 int shouldYield = false;
 void EMSCRIPTEN_KEEPALIVE yield() { shouldYield = true; }
@@ -1345,10 +1349,11 @@ void interpretStep() {
 	checkButtons();
 	updateMicrobitDisplay();
 	int cycles = 0;
+	shouldYield = false;
 	while ((cycles < 10000) && !shouldYield) {
 		// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 		int runCount = 0;
-		uint32 usecs = 0; // compute times only the first time they are needed
+		uint32 usecs = microsecs(); // get usecs
 		for (int t = 0; t < taskCount; t++) {
 			currentTaskIndex++;
 			if (currentTaskIndex >= taskCount) currentTaskIndex = 0;
@@ -1360,8 +1365,7 @@ void interpretStep() {
 				runCount++;
 				break;
 			} else if (waiting_micros == task->status) {
-				if (!usecs) usecs = microsecs(); // get usecs
-				if ((usecs - task->wakeTime) < RECENT) task->status = running;
+				if (((usecs - task->wakeTime) & CLOCK_MASK) < RECENT) task->status = running;
 			}
 			if (running == task->status) {
 				runTask(task);
@@ -1370,23 +1374,26 @@ void interpretStep() {
 			}
 		}
 		if (!runCount) { // no active tasks; consider taking a nap
-			if (!usecs) usecs = microsecs(); // get usecs
-			int sleepUSecs = 2000;
+			usecs = microsecs(); // get usecs
+			int sleepUSecs = 100000;
 			for (int i = 0; i < taskCount; i++) {
 				Task *task = &tasks[i];
 				if (waiting_micros == task->status) {
-					int usecsUntilWake = (task->wakeTime - usecs) - 5; // leave 5 extra usecs
+					int usecsUntilWake = (task->wakeTime - usecs) & CLOCK_MASK;
 					if ((usecsUntilWake > 0) && (usecsUntilWake < sleepUSecs)) {
 						sleepUSecs = usecsUntilWake;
 					}
 				}
 			}
-			if (sleepUSecs > 1666) { break; } // relinquish control
+			if (sleepUSecs > 2000) {
+				shouldYield = true;
+				break;
+			} // relinquish control
 		}
-		cycles ++;
+		cycles++;
 	}
-	shouldYield = false;
 }
+
 #endif
 
 // Testing
