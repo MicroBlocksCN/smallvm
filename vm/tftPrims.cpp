@@ -728,18 +728,6 @@ void tftSetHugePixelBits(int bits) {
 	UPDATE_DISPLAY();
 }
 
-OBJ primEnableDisplay(int argCount, OBJ *args) {
-	if (trueObj == args[0]) {
-		tftInit();
-	} else {
-		useTFT = false;
-		#if defined(TTGO_RP2040)
-			digitalWrite(TFT_PWR, 0);
-		#endif
-	}
-	return falseObj;
-}
-
 OBJ primSetBacklight(int argCount, OBJ *args) {
 	if ((argCount < 1) || !isInt(args[0])) return falseObj;
 	int brightness = obj2int(args[0]);
@@ -1008,7 +996,6 @@ void tftClear() { }
 void tftSetHugePixel(int x, int y, int state) { }
 void tftSetHugePixelBits(int bits) { }
 
-static OBJ primEnableDisplay(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSetBacklight(int argCount, OBJ *args) { return falseObj; }
 static OBJ primGetWidth(int argCount, OBJ *args) { return int2obj(0); }
 static OBJ primGetHeight(int argCount, OBJ *args) { return int2obj(0); }
@@ -1033,7 +1020,6 @@ static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 // Primitives
 
 static PrimEntry entries[] = {
-	{"enableDisplay", primEnableDisplay},
 	{"setBacklight", primSetBacklight},
 	{"getWidth", primGetWidth},
 	{"getHeight", primGetHeight},
