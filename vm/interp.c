@@ -25,7 +25,7 @@
 // RECENT is a threshold for waking up tasks waiting on timers
 // The timer can be up to this many usecs past the wakeup time.
 
-#define RECENT 1000000
+#define RECENT 10000000
 
 // Interpreter State
 
