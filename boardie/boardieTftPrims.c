@@ -22,7 +22,7 @@ static int touchEnabled = false;
 static int tftEnabled = false;
 static int tftShouldUpdate = false;
 
-void EMSCRIPTEN_KEEPALIVE tftChanged() { tftShouldUpdate = true; }
+void tftChanged() { tftShouldUpdate = true; }
 
 void tftClear() {
 	tftInit();
@@ -323,14 +323,19 @@ static OBJ primText(int argCount, OBJ *args) {
 static OBJ primMergeBitmap(int argCount, OBJ *args) {
 	tftInit();
 	EM_ASM_({
+			var bufferWidth = window.ctx.canvas.width / $4;
+			var bufferHeight = window.ctx.canvas.height / $4;
 			var bitmapHeight = $2 / $1;
 			for (var y = 0; y < bitmapHeight; y++) {
-				for (var x = 0; x < $1; x++) {
-					var bufIndex =
-						($7 + y) * (window.ctx.canvas.width / $4) + x + $6;
-					var pixelValue = HEAPU8[$0 + y * $1 + x];
-					if (pixelValue !== $5) {
-						HEAPU8[$3 + bufIndex] = pixelValue;
+				if ((y + $7) < bufferHeight && (y + $7 >= 0)) {
+					for (var x = 0; x < $1; x++) {
+						if ((x + $6) < bufferWidth && (x + $6) >= 0) {
+							var bufIndex = ($7 + y) * bufferWidth + x + $6;
+							var pixelValue = HEAPU8[$0 + y * $1 + x];
+							if (pixelValue !== $5) {
+								HEAPU8[$3 + bufIndex] = pixelValue;
+							}
+						}
 					}
 				}
 			}
@@ -342,7 +347,8 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) {
 		obj2int(args[3]),				// $4, scale
 		obj2int(args[4]),				// $5, transparent color index
 		obj2int(args[5]),				// $6, destination x
-		obj2int(args[6])				// $7, destination y
+		obj2int(args[6]),				// $7, destination y
+		BYTES(args[2])					// $8, buffer size
 	);
 	return falseObj;
 }
@@ -356,7 +362,7 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 				if (!window.palette) { window.palette = []; }
 				window.palette[$1] = $0;
 			},
-			obj2int(FIELD(args[1], i)),
+			obj2int(FIELD(args[1], i + 1)),
 			i
 		);
 	}
@@ -402,11 +408,11 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 				window.ctx.canvas.width,
 				window.ctx.canvas.height
 			);
-			_tftChanged();
 		},
 		(uint8 *) &FIELD(args[0], 0),	// $0, buffer
 		obj2int(args[2])				// $1, scale
 	);
+	tftChanged();
 	return falseObj;
 }
 
