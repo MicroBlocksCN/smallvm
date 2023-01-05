@@ -865,6 +865,7 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) {
 	int bufferWidth = TFT_WIDTH / scale;
 	int bufferHeight = TFT_HEIGHT / scale;
 	uint8 *bitmapBytes = (uint8 *) &FIELD(bitmap, 0);
+	uint8 *bufferBytes = (uint8 *) &FIELD(buffer, 0);
 
 	for (int y = 0; y < bitmapHeight; y++) {
 		if ((y + destY) < bufferHeight && (y + destY) >= 0) {
@@ -873,7 +874,7 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) {
 					int pixelValue = bitmapBytes[y * bitmapWidth + x];
 					if (pixelValue != alphaIndex) {
 						int bufIndex = (destY + y) * bufferWidth + x + destX;
-						FIELD(buffer, bufIndex) = int2obj(pixelValue);
+						bufferBytes[bufIndex] = pixelValue;
 					}
 				}
 			}
@@ -1017,7 +1018,8 @@ static OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primText(int argCount, OBJ *args) { return falseObj; }
 
-static OBJ primDrawBitmap(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMergeBitmap(int argCount, OBJ *args) { return falseObj; }
+static OBJ primDrawBuffer(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
