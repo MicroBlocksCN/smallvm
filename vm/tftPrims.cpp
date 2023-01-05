@@ -647,8 +647,84 @@ int touchEnabled = false;
 
 	#endif
 
+static int color24to16b(int color24b) {
+	// Convert 24-bit RGB888 format to the TFT's target pixel format.
+	// Return [0..1] for 1-bit display, [0-255] for grayscale, and RGB565 for 16-bit color.
+
+	int r, g, b;
+
+	#ifdef IS_MONOCHROME
+		return color24b ? 1 : 0;
+	#endif
+
+	#ifdef IS_GRAYSCALE
+		r = (color24b >> 16) & 0xFF;
+		g = (color24b >> 8) & 0xFF;
+		b = color24b & 0xFF;
+		int gray = r;
+		if (g > r) gray = g;
+		if (b > r) gray = b;
+		return gray;
+	#endif
+
+	r = (color24b >> 19) & 0x1F; // 5 bits
+	g = (color24b >> 10) & 0x3F; // 6 bits
+	b = (color24b >> 3) & 0x1F; // 5 bits
+	#if defined(ARDUINO_M5Stick_C) && !defined(ARDUINO_M5Stick_Plus)
+		return (b << 11) | (g << 5) | r; // color order: BGR
+	#else
+		return (r << 11) | (g << 5) | b; // color order: RGB
+	#endif
+}
+
 void tftClear() {
 	tft.fillScreen(BLACK);
+	UPDATE_DISPLAY();
+}
+
+void tftSetHugePixel(int x, int y, int state) {
+	// simulate a 5x5 array of square pixels like the micro:bit LED array
+	#if defined(PICO_ED)
+		if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+			int brightness = (state ? 100 : 0);
+			tft.drawPixel((x + 5), y, brightness);
+			UPDATE_DISPLAY();
+		}
+		return;
+	#endif
+	int minDimension, xInset = 0, yInset = 0;
+	if (tft.width() > tft.height()) {
+		minDimension = tft.height();
+		xInset = (tft.width() - tft.height()) / 2;
+	} else {
+		minDimension = tft.width();
+		yInset = (tft.height() - tft.width()) / 2;
+	}
+	int lineWidth = (minDimension > 60) ? 3 : 1;
+	int squareSize = (minDimension - (6 * lineWidth)) / 5;
+	tft.fillRect(
+		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
+		yInset + ((y - 1) * squareSize) + (y * lineWidth), // y
+		squareSize, squareSize,
+		color24to16b(state ? 0x00FF00 : BLACK));
+	UPDATE_DISPLAY();
+}
+
+void tftSetHugePixelBits(int bits) {
+	#if defined(PICO_ED)
+		tft.clearDisplayBuffer();
+		tft.showMicroBitPixels(bits, 1, 1);
+		return;
+	#endif
+	if (0 == bits) {
+		tftClear();
+	} else {
+		for (int x = 1; x <= 5; x++) {
+			for (int y = 1; y <= 5; y++) {
+				tftSetHugePixel(x, y, bits & (1 << ((5 * (y - 1) + x) - 1)));
+			}
+		}
+	}
 	UPDATE_DISPLAY();
 }
 
@@ -689,36 +765,6 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 		analogWrite(TFT_BL, brightness * 25);
 	#endif
 	return falseObj;
-}
-
-static int color24to16b(int color24b) {
-	// Convert 24-bit RGB888 format to the TFT's target pixel format.
-	// Return [0..1] for 1-bit display, [0-255] for grayscale, and RGB565 for 16-bit color.
-
-	int r, g, b;
-
-	#ifdef IS_MONOCHROME
-		return color24b ? 1 : 0;
-	#endif
-
-	#ifdef IS_GRAYSCALE
-		r = (color24b >> 16) & 0xFF;
-		g = (color24b >> 8) & 0xFF;
-		b = color24b & 0xFF;
-		int gray = r;
-		if (g > r) gray = g;
-		if (b > r) gray = b;
-		return gray;
-	#endif
-
-	r = (color24b >> 19) & 0x1F; // 5 bits
-	g = (color24b >> 10) & 0x3F; // 6 bits
-	b = (color24b >> 3) & 0x1F; // 5 bits
-	#if defined(ARDUINO_M5Stick_C) && !defined(ARDUINO_M5Stick_Plus)
-		return (b << 11) | (g << 5) | r; // color order: BGR
-	#else
-		return (r << 11) | (g << 5) | b; // color order: RGB
-	#endif
 }
 
 static OBJ primGetWidth(int argCount, OBJ *args) {
@@ -912,51 +958,7 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-void tftSetHugePixel(int x, int y, int state) {
-	// simulate a 5x5 array of square pixels like the micro:bit LED array
-	#if defined(PICO_ED)
-		if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
-			int brightness = (state ? 100 : 0);
-			tft.drawPixel((x + 5), y, brightness);
-			UPDATE_DISPLAY();
-		}
-		return;
-	#endif
-	int minDimension, xInset = 0, yInset = 0;
-	if (tft.width() > tft.height()) {
-		minDimension = tft.height();
-		xInset = (tft.width() - tft.height()) / 2;
-	} else {
-		minDimension = tft.width();
-		yInset = (tft.height() - tft.width()) / 2;
-	}
-	int lineWidth = (minDimension > 60) ? 3 : 1;
-	int squareSize = (minDimension - (6 * lineWidth)) / 5;
-	tft.fillRect(
-		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
-		yInset + ((y - 1) * squareSize) + (y * lineWidth), // y
-		squareSize, squareSize,
-		color24to16b(state ? 0x00FF00 : BLACK));
-	UPDATE_DISPLAY();
-}
-
-void tftSetHugePixelBits(int bits) {
-	#if defined(PICO_ED)
-		tft.clearDisplayBuffer();
-		tft.showMicroBitPixels(bits, 1, 1);
-		return;
-	#endif
-	if (0 == bits) {
-		tftClear();
-	} else {
-		for (int x = 1; x <= 5; x++) {
-			for (int y = 1; y <= 5; y++) {
-				tftSetHugePixel(x, y, bits & (1 << ((5 * (y - 1) + x) - 1)));
-			}
-		}
-	}
-	UPDATE_DISPLAY();
-}
+// touchscreen ops
 
 static OBJ primTftTouched(int argCount, OBJ *args) {
 	#ifdef HAS_TFT_TOUCH
