@@ -327,12 +327,12 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) {
 			var bufferHeight = window.ctx.canvas.height / $4;
 			var bitmapHeight = $2 / $1;
 			for (var y = 0; y < bitmapHeight; y++) {
-				if ((y + $7) < bufferHeight && (y + $7 >= 0)) {
+				if ((y + $7) < bufferHeight && (y + $7) >= 0) {
 					for (var x = 0; x < $1; x++) {
 						if ((x + $6) < bufferWidth && (x + $6) >= 0) {
-							var bufIndex = ($7 + y) * bufferWidth + x + $6;
 							var pixelValue = HEAPU8[$0 + y * $1 + x];
 							if (pixelValue !== $5) {
+								var bufIndex = ($7 + y) * bufferWidth + x + $6;
 								HEAPU8[$3 + bufIndex] = pixelValue;
 							}
 						}
@@ -347,8 +347,7 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) {
 		obj2int(args[3]),				// $4, scale
 		obj2int(args[4]),				// $5, transparent color index
 		obj2int(args[5]),				// $6, destination x
-		obj2int(args[6]),				// $7, destination y
-		BYTES(args[2])					// $8, buffer size
+		obj2int(args[6])				// $7, destination y
 	);
 	return falseObj;
 }
@@ -385,7 +384,7 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 			for (var y = 0; y < scaledHeight; y ++) {
 				for (var x = 0; x < scaledWidth; x ++) {
 					var color =
-						window.palette[HEAPU8[$0 + y * scaledHeight + x]];
+						window.palette[HEAPU8[$0 + y * scaledWidth + x]];
 					imgData.data[pixelIndex] = color >> 16; // R
 					imgData.data[pixelIndex + 1] = (color >> 8) & 255; // G
 					imgData.data[pixelIndex + 2] = color & 255; // B
