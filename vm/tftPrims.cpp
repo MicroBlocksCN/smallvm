@@ -850,40 +850,64 @@ static OBJ primText(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-static OBJ primDrawBitmap(int argCount, OBJ *args) {
-	// Draw an RGB565 bitmap encoded into a byteArray either from a file or from
-	// memory
+// 8 bit bitmap ops
 
-	/* drawing from file not supported yet
+static OBJ primMergeBitmap(int argCount, OBJ *args) {
+	OBJ bitmap = args[0];
+	int bitmapWidth = obj2int(args[1]);
+	OBJ buffer = args[2];
+	int scale = obj2int(args[3]);
+	int alphaIndex = obj2int(args[4]);
+	int destX = obj2int(args[5]);
+	int destY = obj2int(args[6]);
 
-	OBJ value = args[0];
-	char fromFile = IS_TYPE(value, StringType);
-	char bitmapFile[32];
-	*/
+	int bitmapHeight = BYTES(bitmap) / bitmapWidth;
+	int bufferWidth = TFT_WIDTH / scale;
+	int bufferHeight = TFT_HEIGHT / scale;
+	uint8 *bitmapBytes = (uint8 *) &FIELD(bitmap, 0);
 
-	int x = obj2int(args[1]);
-	int y = obj2int(args[2]);
-	uint16_t * bitmap = (uint16_t *) &FIELD(args[0], 0);
-	int w = obj2int(args[3]);
-	int h = obj2int(args[4]);
-	uint16_t color;
-	uint16_t alpha_color = (uint16_t) obj2int(args[5]);
-
-	// we could use drawRGBBitmap, but it doesn't handle alpha colors and
-	// it iterates over the array anyway...
-
-	tft.startWrite();
-	for (int j = 0; j < h; j++, y++) {
-		for (int i = 0; i < w; i++) {
-			uint16_t color = bitmap[j * w + i];
-			if (color != alpha_color) {
-				tft.writePixel(x + i, y, color);
+	for (int y = 0; y < bitmapHeight; y++) {
+		if ((y + destY) < bufferHeight && (y + destY) >= 0) {
+			for (int x = 0; x < bitmapWidth; x++) {
+				if ((x + destX) < bufferWidth && (x + destX) >= 0) {
+					int pixelValue = bitmapBytes[y * bitmapWidth + x];
+					if (pixelValue != alphaIndex) {
+						int bufIndex = (destY + y) * bufferWidth + x + destX;
+						FIELD(buffer, bufIndex) = int2obj(pixelValue);
+					}
+				}
 			}
 		}
 	}
-	tft.endWrite();
-	UPDATE_DISPLAY();
+	return falseObj;
+}
 
+static OBJ primDrawBuffer(int argCount, OBJ *args) {
+	OBJ buffer = args[0];
+	OBJ palette = args[1]; // List, index-1 based
+	int scale = obj2int(args[2]);
+	int scaledWidth = TFT_WIDTH / scale;
+	int scaledHeight = TFT_HEIGHT / scale;
+	int pixelIndex = 0;
+	uint8 *bufferBytes = (uint8 *) &FIELD(buffer, 0);
+
+	// Read the indices from the buffer and turn them into color values from the
+	// palette, and paint them onto the TFT
+	for (int y = 0; y < scaledHeight; y ++) {
+		for (int x = 0; x < scaledWidth; x ++) {
+			int colorIndex = bufferBytes[y * scaledWidth + x];
+			int color = obj2int(FIELD(palette, colorIndex + 1));
+			tft.fillRect(
+				x * scale,
+				y * scale,
+				scale, // width
+				scale, // height
+				color24to16b(color)
+			);
+		}
+	}
+
+	UPDATE_DISPLAY();
 	return falseObj;
 }
 
@@ -992,7 +1016,9 @@ static OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
 static OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primText(int argCount, OBJ *args) { return falseObj; }
+
 static OBJ primDrawBitmap(int argCount, OBJ *args) { return falseObj; }
+
 static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
@@ -1014,7 +1040,10 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
-	{"drawBitmap", primDrawBitmap},
+
+	{"mergeBitmap", primMergeBitmap},
+	{"drawBuffer", primDrawBuffer},
+
 	{"tftTouched", primTftTouched},
 	{"tftTouchX", primTftTouchX},
 	{"tftTouchY", primTftTouchY},
