@@ -1177,6 +1177,8 @@ Information
 
 Plug in the board.
 
+Plug in the board and click the USB icon to connect.
+
 Reading project from board...
 
 Loading project...
@@ -1188,6 +1190,10 @@ Do you want me to update the one in the project?
 Save
 
 Connect
+
+connect
+
+open Boardie
 
 disconnect
 
@@ -1320,6 +1326,8 @@ Use board type
 Firmware Installed
 
 Reconnect to the board by clicking the "Connect" button (USB icon).
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
 
 You will be asked to save the firmware file.
 
