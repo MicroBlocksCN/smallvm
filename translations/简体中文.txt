@@ -119,6 +119,15 @@ comment _
 How this works...
 ...
 
+range _ to _
+从 _ 到 _ 的数字列表 
+
+by _
+间隔 _
+
+rescale _ from ( _ , _ ) to ( _ , _ )
+映射 _ 从 ( _ , _ ) 到 ( _ , _ )
+
 for _ in _ _
 重复执行 变化因子 _ 范围 _ _
 
@@ -250,13 +259,13 @@ join _ _
 连接 _ _
 
 copy _ from _
-复制字符 _ 从 _
+复制 _ 从 _
 
 to _
 到 _
 
 find _ in _
-在 _ 中 _ 查找
+查找 _ 在 _ 中
 
 starting at _
 开始于 _
@@ -1743,6 +1752,9 @@ Information
 Plug in the board.
 连接主板
 
+Plug in the board and click the USB icon to connect.
+接上主板并单击 USB 图标进行连接。
+
 Reading project from board...
 从主板读取项目...
 
@@ -1760,6 +1772,12 @@ Save
 
 Connect
 连接
+
+connect
+连接主板
+
+open Boardie
+连接模拟器
 
 disconnect
 断开连接
@@ -1958,6 +1976,9 @@ Firmware Installed
 
 Reconnect to the board by clicking the "Connect" button (USB icon).
 点击 '连接' 按钮 (USB 图标) 重新连接主板。
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+按住白色 BOOTSEL 按钮的同时连接 USB 线。
 
 You will be asked to save the firmware file.
 你将被要求保存固件文件。
