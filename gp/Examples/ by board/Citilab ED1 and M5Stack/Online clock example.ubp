@@ -4,10 +4,10 @@ version 1 0
 description ''
 variables hours minutes seconds server 
 
-	spec ' ' 'draw time' 'draw time'
-	spec ' ' 'fetch current time from server' 'fetch current time from server _' 'auto' 'microblocks.fun'
-	spec 'r' 'online time' 'online time from server _' 'auto' 'microblocks.fun'
-	spec ' ' 'tick' 'tick'
+  spec ' ' 'draw time' 'draw time'
+  spec ' ' 'fetch current time from server' 'fetch current time from server _' 'auto' 'microblocks.fun'
+  spec 'r' 'online time' 'online time from server _' 'auto' 'microblocks.fun'
+  spec ' ' 'tick' 'tick'
 
 to 'draw time' {
   local 'y' (('[tft:getHeight]') / 3)
@@ -116,7 +116,7 @@ whenButtonPressed 'A'
 'fetch current time from server' server
 }
 
-script 568 365 {
+script 567 365 {
 whenCondition (and ((getIPAddress) != '0.0.0.0') (seconds == 0))
 'fetch current time from server' server
 waitUntil (seconds != 0)
@@ -131,17 +131,17 @@ tags http network get post put delete
 description 'Send HTTP requests and get responses back. You can use this library to fetch or store data in online servers, or to control other Wifi-enabled boards.
 '
 
-	spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
-	spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
-	spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
-	spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
-	spec 'r' '_http_status' '_status of response _' 'auto' ''
-	spec 'r' '_line_end' '_line_end'
-	spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
-	spec 'r' '_request_url' '_request_url _ method _ body _ : port _' 'str menu.requestTypes str num' '' 'GET' '' 80
-	spec 'r' '_readHTTPResponse' '_readHTTPResponse'
-	spec 'r' 'http܃//' 'http܃// _  : port _' 'auto num' 'microblocks.fun/example.txt' 80
-	spec ' ' 'request' '_ data _ to http܃// _  : port _' 'menu.requestTypes str str num' 'POST' 'MicroBlocks is fun' 'microblocks.fun' 80
+  spec 'r' '_http_body_start' '_http_body_start _' 'auto' ''
+  spec 'r' '_http_header_text' '_http_header_text _' 'auto' ''
+  spec 'r' '_http_status_text' '_http_status_text _' 'auto' ''
+  spec 'r' '_http_header' '_header _ of response _' 'auto auto' 'content-length' ''
+  spec 'r' '_http_status' '_status of response _' 'auto' ''
+  spec 'r' '_line_end' '_line_end'
+  spec 'r' '_lowercase' '_lowercase _' 'auto' 'ABC Def gH'
+  spec 'r' '_request_url' '_request_url _ method _ body _ : port _' 'str menu.requestTypes str num' '' 'GET' '' 80
+  spec 'r' '_readHTTPResponse' '_readHTTPResponse'
+  spec 'r' 'http܃//' 'http܃// _  : port _' 'auto num' 'microblocks.fun/example.txt' 80
+  spec ' ' 'request' '_ data _ to http܃// _  : port _' 'menu.requestTypes str str num' 'POST' 'MicroBlocks is fun' 'microblocks.fun' 80
 
 to '_http_body_start' response {
   return (('[data:find]' ('[data:unicodeString]' ('[data:makeList]' 13 10 13 10)) response) + 4)
@@ -271,30 +271,37 @@ to request method data url optionalPort {
 
 module TFT Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
-	spec ' ' '[display:mbDisplayOff]' 'clear display'
-	spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
-	spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
-	spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
-	spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
-	spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
-	spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
-	spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-	spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
-	spec 'r' 'randomColor' 'random color'
-	spec 'r' '[tft:getWidth]' 'TFT width'
-	spec 'r' '[tft:getHeight]' 'TFT height'
-	spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
-	spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'makeGray' 'gray _ %' 'num' 50
+  spec 'r' 'randomColor' 'random color'
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  spec ' ' '[tft:enableDisplay]' 'obsolete enable TFT _' 'bool' true
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))
   g = (maximum 0 (minimum g 255))
   b = (maximum 0 (minimum b 255))
   return ((r << 16) | ((g << 8) | b))
+}
+
+to makeGray percent {
+  gray = ((percent * 255) / 100)
+  gray = (maximum 0 (minimum gray 255))
+  return ((gray << 16) | ((gray << 8) | gray))
 }
 
 to randomColor {
@@ -317,10 +324,10 @@ tags communication network
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
-	spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
-	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
-	spec 'r' 'getIPAddress' 'IP address'
-	spec 'r' '[net:myMAC]' 'MAC address'
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
 
 to getIPAddress {
   return ('[net:myIPAddress]')
