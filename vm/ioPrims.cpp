@@ -603,19 +603,19 @@ void restartSerial() {
 	#define BOARD_TYPE "Pico:ed"
 	#define DIGITAL_PINS 21
 	#define ANALOG_PINS 4
-	#define TOTAL_PINS DIGITAL_PINS
+	#define TOTAL_PINS 30
 	#define DEFAULT_TONE_PIN 17 // maps to speaker pin
 	#define PIN_BUTTON_A 20
 	#define PIN_BUTTON_B 21
 	static const int analogPin[] = {26, 27, 28, 29};
 	static char digitalPin[TOTAL_PINS] = {
 		26, 27, 28, 29,  4,  5,  6,  7,  8, 9,
-		10, 11, 12, 13, 14, 15, 16, 0, 25, 19, // change pin 17 from 0 to 3 for pico-ed v2
-		18};
+		10, 11, 12, 13, 14, 15, 16,  0, 25, 19, // change pin 17 from 0 to 3 for pico-ed v2
+		18, 99, 99, 99, 99, 99, 99, 99, 99, 99}; // Note: pins 26-29 are accessed as pins 0-3 (99 means unused)
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0};
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	void setPicoEdSpeakerPin(int pin) { digitalPin[17] = pin; }
 
