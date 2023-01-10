@@ -514,11 +514,13 @@ static inline void sendData() {
 #endif
 }
 
+#ifndef GNUBLOCKS
 int serialConnected() {
 	uint32 now = millisecs();
 	if (lastSendMSecs > now) lastSendMSecs = 0; // clock wrap
 	return ((now - lastSendMSecs) < 2000);
 }
+#endif
 
 static inline void queueByte(uint8 aByte) {
 	outBuf[outBufEnd] = aByte;
