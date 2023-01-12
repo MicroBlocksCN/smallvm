@@ -514,7 +514,7 @@ static inline void sendData() {
 #endif
 }
 
-#ifndef GNUBLOCKS
+#if !defined(GNUBLOCKS) || defined(EMSCRIPTEN)
 int serialConnected() {
 	uint32 now = millisecs();
 	if (lastSendMSecs > now) lastSendMSecs = 0; // clock wrap
