@@ -1090,6 +1090,7 @@ static void processShortMessage() {
 		// non-zero chunkIndex is used for debugging operations
 		if (1 == chunkIndex) { outputRecordHeaders(); break; }
 		if (2 == chunkIndex) { compactCodeStore(); break; }
+		if (3 == chunkIndex) { primMBDisplayOff(0, NULL); } // used by Boardie reset
 		softReset(true);
 		break;
 	case pingMsg:

@@ -648,9 +648,10 @@ GP.boardie = {
 	isOpen: false,
         reset: function () {
             var win = this.iframe.contentWindow;
+            win.postMessage(new Uint8Array([ 0xFA, 0x0F, 3 ])); // system reset w/ Boardie option
             var ctx = win.document.querySelector('canvas').getContext('2d');
-            win.postMessage(new Uint8Array([ 0xFA, 0x0F, 0 ])); // system reset
-            ctx.clearRect(0, 0, 240, 240); // clear screen
+			ctx.fillStyle = "#000";
+			ctx.fillRect(0, 0, 240, 240); // clear screen
         },
 	press: function (keyCode) { this.iframe.contentWindow.press(keyCode); },
 	unpress: function (keyCode) { this.iframe.contentWindow.unpress(keyCode); }
