@@ -646,12 +646,14 @@ GP.boardie = {
 	element: null,
 	iframe: null,
 	isOpen: false,
+        position: null,
         reset: function () {
             var win = this.iframe.contentWindow;
             win.postMessage(new Uint8Array([ 0xFA, 0x0F, 3 ])); // system reset w/ Boardie option
             var ctx = win.document.querySelector('canvas').getContext('2d');
 			ctx.fillStyle = "#000";
 			ctx.fillRect(0, 0, 240, 240); // clear screen
+            win.postMessage(new Uint8Array([ 0xFA, 0x05, 0 ])); // start all
         },
 	press: function (keyCode) { this.iframe.contentWindow.press(keyCode); },
 	unpress: function (keyCode) { this.iframe.contentWindow.unpress(keyCode); }
@@ -670,8 +672,13 @@ function GP_openBoardie() {
             boardie.element.classList.add('boardie');
             boardie.element.style.position = 'absolute';
             boardie.element.style.zIndex = 999;
-            boardie.element.style.top = '70px';
-            boardie.element.style.right = '34px';
+            if (boardie.position) {
+                boardie.element.style.left = boardie.position.left;
+                boardie.element.style.top = boardie.position.top;
+            } else {
+                boardie.element.style.top = '70px';
+                boardie.element.style.right = '34px';
+            }
             boardie.element.style.cursor = 'grab';
             boardie.element.innerHTML = req.responseText;
 
@@ -760,6 +767,10 @@ function makeDraggable (element) {
         // stop moving when mouse button is released:
         document.onpointerup = null;
         document.onpointermove = null;
+        GP.boardie.position = {
+            left: element.style.left,
+            top: element.style.top
+        };
         element.classList.remove('--is-dragged');
         element.style.cursor = 'grab';
     };
