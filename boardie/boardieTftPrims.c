@@ -392,7 +392,7 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 					pixelIndex += 4;
 				}
 			}
-			
+
 			// Draw the image data into the canvas, then draw it scaled to the
 			// offscreen canvas.
 			// Note: we could do the same without an extra canvas by using
@@ -445,13 +445,10 @@ void tftSetHugePixel(int x, int y, int state) {
 }
 
 void tftSetHugePixelBits(int bits) {
-	if (0 == bits) {
-		tftClear();
-	} else {
-		for (int x = 1; x <= 5; x++) {
-			for (int y = 1; y <= 5; y++) {
-				tftSetHugePixel(x, y, bits & (1 << ((5 * (y - 1) + x) - 1)));
-			}
+	tftClear(); // erase any TFT graphics that might be on the screen
+	for (int x = 1; x <= 5; x++) {
+		for (int y = 1; y <= 5; y++) {
+			tftSetHugePixel(x, y, bits & (1 << ((5 * (y - 1) + x) - 1)));
 		}
 	}
 }
