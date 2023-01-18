@@ -147,11 +147,37 @@ void EMSCRIPTEN_KEEPALIVE getScripts() {
 	}, ramStart(), ramSize());
 }
 
+void readFilesFromURL() {
+	EM_ASM_({
+		var paramStart = window.location.hash.indexOf('&files');
+		if (paramStart > 0) {
+			window.useSessionStorage = true;
+			// "&files=" is 7 chars
+			var files = window.location.hash.substr(paramStart + 7);
+			// split files by commas
+			files.split(',').forEach(descriptor => {
+				var fileStart = descriptor.indexOf(':');
+				var fileName = decodeURIComponent(
+						descriptor.substring(0, fileStart)
+					);
+				var contents = decodeURIComponent(
+						descriptor.substring(fileStart + 1)
+					);
+				window.sessionStorage[fileName] = contents;
+			});
+		}
+	});
+}
+
 void readScriptsFromURL() {
 	EM_ASM_({
 		if (window.location.hash.startsWith('#code=')) {
 			// "#code=" is 6 chars
-			var b64 = decodeURIComponent(window.location.hash.substr(6));
+			var b64 = decodeURIComponent(
+					window.location.hash.substring(
+						6,
+						window.location.hash.indexOf('&')
+					));
 			if (b64) {
 				var bytes = Int8Array.from(atob(b64), (c) => c.charCodeAt(0));
 				for (var i = 0; i < bytes.length; i++) {
@@ -161,6 +187,7 @@ void readScriptsFromURL() {
 			}
 		}
 	}, ramStart());
+	readFilesFromURL();
 	restoreScripts();
 	startAll();
 }
