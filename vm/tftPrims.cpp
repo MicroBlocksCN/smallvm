@@ -917,29 +917,28 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+uint16_t bufferPixels[TFT_WIDTH * 8];
+
 static OBJ primDrawBuffer(int argCount, OBJ *args) {
 	OBJ buffer = args[0];
 	OBJ palette = args[1]; // List, index-1 based
 	int scale = obj2int(args[2]);
 	int scaledWidth = TFT_WIDTH / scale;
 	int scaledHeight = TFT_HEIGHT / scale;
-	int pixelIndex = 0;
 	uint8 *bufferBytes = (uint8 *) &FIELD(buffer, 0);
-
 	// Read the indices from the buffer and turn them into color values from the
 	// palette, and paint them onto the TFT
 	for (int y = 0; y < scaledHeight; y ++) {
 		for (int x = 0; x < scaledWidth; x ++) {
 			int colorIndex = bufferBytes[y * scaledWidth + x];
-			int color = obj2int(FIELD(palette, colorIndex + 1));
-			tft.fillRect(
-				x * scale,
-				y * scale,
-				scale, // width
-				scale, // height
-				color24to16b(color)
-			);
+			int color = color24to16b(obj2int(FIELD(palette, colorIndex + 1)));
+			for (int i = 0; i < scale; i ++) {
+				for (int j = 0; j < scale; j ++) {
+					bufferPixels[(j * TFT_WIDTH) + x * scale + i] = color;
+				}
+			}
 		}
+		tft.drawRGBBitmap(0, y * scale, bufferPixels, TFT_WIDTH, scale);
 	}
 
 	UPDATE_DISPLAY();
