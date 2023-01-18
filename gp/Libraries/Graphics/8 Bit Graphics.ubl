@@ -1,0 +1,200 @@
+module '8 Bit Graphics' Output
+author MicroBlocks
+version 1 0 
+tags graphics 
+choices eightBitPalettes MicroBlocks 'red hues' 'green hues' 'blue hues' grayscale 
+choices fourBitPalettes CGA 'Machintosh II' 'Win & OS/2' MSX 'RISC 2' grayscale 
+description 'Provides a full 8-bit (and lower depth) framework to create retro-looking games and applications.
+
+By combining different scales and bit depths you can adapt your project to work on virtually any board.
+
+It allows reading color palettes and raw image data exported from GIMP, or creating your own bitmaps by hand as byte arrays.  It also includes a bunch of default 4-bit and 8-bit color palettes.
+
+By using a buffer and bitmap merge operations, you can work with sprites and backgrounds at a reasonably high abstraction level, while achieving a decent framerate.
+'
+variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette 
+
+  spec ' ' 'set scale _' 'set scale _' 'num' 4
+  spec ' ' 'set transparent color index _' 'set transparent color index _' 'num' 0
+  spec ' ' 'merge' 'merge bitmap _ at _ , _' 'auto auto auto' '' '10' '20'
+  spec 'r' 'bitmap from file' 'bitmap of width _ from raw indexed file _' 'num str' 32 'filename.data'
+  spec 'r' 'bitmap' 'bitmap of width _ from string _' 'num str' 7 '0003000003B30003BFB30003B3000003000'
+  spec 'r' 'cropped bitmap' 'bitmap _ cropped from x _ y _ at width _ height _' 'auto auto auto auto auto' '' '10' '10' '10' '10'
+  spec ' ' 'draw buffer' 'draw buffer'
+  spec ' ' 'clear display' 'clear display'
+  spec ' ' 'set palette' 'set palette _' 'auto' ''
+  spec 'r' 'palette from pal format' 'palette from pal file _' 'auto' 'filename.data.pal'
+  spec 'r' '4 bit palette' '4 bit _ palette' 'menu.fourBitPalettes' 'CGA'
+  spec 'r' '8 bit palette' '8 bit _ palette' 'menu.eightBitPalettes' 'MicroBlocks'
+  spec ' ' 'draw palette table' 'draw palette table _' 'auto' ''
+  spec 'r' 'screen width' 'screen width'
+  spec 'r' 'screen height' 'screen height'
+  spec 'r' '_8bit_4bit_CGA palette' '_8bit_4bit_CGA palette'
+  spec 'r' '_8bit_4bit_Machintosh II palette' '_8bit_4bit_Machintosh II palette'
+  spec 'r' '_8bit_4bit_Win & OS/2 palette' '_8bit_4bit_Win & OS/2 palette'
+  spec 'r' '_8bit_4bit_grayscale palette' '_8bit_4bit_grayscale palette'
+  spec 'r' '_8bit_4bit_MSX palette' '_8bit_4bit_MSX palette'
+  spec 'r' '_8bit_4bit_RISC 2 palette' '_8bit_4bit_RISC 2 palette'
+  spec 'r' '_8bit_8bit_grayscale palette' '_8bit_8bit_grayscale palette'
+  spec 'r' '_8bit_8bit_green hues palette' '_8bit_8bit_green hues palette'
+  spec 'r' '_8bit_8bit_red hues palette' '_8bit_8bit_red hues palette'
+  spec 'r' '_8bit_8bit_blue hues palette' '_8bit_8bit_blue hues palette'
+  spec 'r' '_8bit_8bit_MicroBlocks palette' '_8bit_8bit_MicroBlocks palette'
+  spec 'r' '_sqrt _' '_sqrt _' 'num' 10
+
+to bitmap width 'bitmap string' {
+  local 'list' ('[data:makeList]')
+  for line ('[data:split]' (v 'bitmap string') ('[data:unicodeString]' 10)) {
+    for bit line {
+      '[data:addLast]' (hexToInt bit) list
+    }
+  }
+  return ('[data:makeList]' width ('[data:asByteArray]' list))
+}
+
+to 'bitmap from file' width 'file name' {
+  '[file:open]' (v 'file name')
+  local 'bitmap' ('[data:newByteArray]' ('[file:fileSize]' (v 'file name')))
+  for i ('[file:fileSize]' (v 'file name')) {
+    atPut i bitmap (at 1 ('[file:readBytes]' 1 (v 'file name')))
+  }
+  '[file:close]' (v 'file name')
+  return ('[data:makeList]' width bitmap)
+}
+
+to 'clear display' {
+  '[display:mbDisplayOff]'
+}
+
+to 'cropped bitmap' bitmap 'origin x' 'origin y' width height {
+  local 'cropped bitmap' ('[data:newByteArray]' (width * height))
+  local 'bitmap size' (size (at 2 bitmap))
+  for y height {
+    for x width {
+      local 'index' (((((v 'origin y') + y) - 1) * (at 1 bitmap)) + ((v 'origin x') + x))
+      if (and (index <= (v 'bitmap size')) (index > 0)) {
+        atPut (((y - 1) * width) + x) (v 'cropped bitmap') (at index (at 2 bitmap))
+      }
+    }
+  }
+  return ('[data:makeList]' width (v 'cropped bitmap'))
+}
+
+to 'draw buffer' {
+  if (not (isType _8bit_palette 'list')) {_8bit_palette = ('[data:makeList]' '0' 'AA' 'AA00' 'AAAA' 'AA0000' 'AA00AA' 'AA5500' 'AAAAAA' '555555' '5555FF' '55FF55' '55FFFF' 'FF5555' 'FF55FF' 'FFFF55' 'FFFFFF')}
+  '[tft:drawBuffer]' _8bit_buffer _8bit_palette _8bit_scale
+  waitMicros 500
+}
+
+to 'draw palette table' palette {
+  if (not (isType palette 'list')) {if (isType _8bit_palette 'list') {
+    palette = _8bit_palette
+  } else {
+    return 0
+  }}
+  local 'side' ('_sqrt _' (size palette))
+  local 'width' (('[tft:getWidth]') / side)
+  for y side {
+    for x side {
+      local 'index' (((y - 1) * side) + x)
+      if (index <= (size palette)) {
+        '[tft:rect]' ((x - 1) * width) ((y - 1) * width) width width (at index palette)
+      }
+    }
+  }
+}
+
+to merge bitmap 'origin x' 'origin y' {
+  if (_8bit_scale == 0) {'set scale _' 2}
+  '[tft:mergeBitmap]' (at 2 bitmap) (at 1 bitmap) _8bit_buffer _8bit_scale _8bit_alpha_index (v 'origin x') (v 'origin y')
+}
+
+to 'palette from pal format' 'file name' {
+  '[file:open]' (v 'file name')
+  local 'palette' (newList (('[file:fileSize]' (v 'file name')) / 3))
+  for i (('[file:fileSize]' (v 'file name')) / 3) {
+    atPut i palette ((((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 16) | ((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 8)) | (at 1 ('[file:readBytes]' 1 (v 'file name'))))
+  }
+  '[file:close]' (v 'file name')
+  return palette
+}
+
+to 'screen height' {
+  return (('[tft:getHeight]') / _8bit_scale)
+}
+
+to 'screen width' {
+  return (('[tft:getWidth]') / _8bit_scale)
+}
+
+to 'set palette' 'color list' {
+  _8bit_palette = (v 'color list')
+}
+
+to 'set scale _' scale {
+  _8bit_scale = scale
+  _8bit_buffer = ('[data:newByteArray]' (('screen width') * ('screen height')) 0)
+}
+
+to 'set transparent color index _' 'alpha index' {
+  _8bit_alpha_index = (v 'alpha index')
+}
+
+to '4 bit palette' selector {
+  return (callCustomReporter ('[data:join]' '_8bit_4bit_' selector ' palette'))
+}
+
+to '8 bit palette' selector {
+  return (callCustomReporter ('[data:join]' '_8bit_8bit_' selector ' palette'))
+}
+
+to '_8bit_4bit_CGA palette' {
+  return ('[data:makeList]' 0 170 43520 43690 11141120 11141290 11162880 11184810 5592405 5592575 5635925 5636095 16733525 16733695 16777045 16777215)
+}
+
+to '_8bit_4bit_MSX palette' {
+  return ('[data:makeList]' (hexToInt '0') (hexToInt '010101') (hexToInt '3eb849') (hexToInt '74d07d') (hexToInt '5955e0') (hexToInt '8076f1') (hexToInt 'b95e51') (hexToInt '65dbef') (hexToInt 'db6559') (hexToInt 'ff897d') (hexToInt 'ccc35e') (hexToInt 'ded087') (hexToInt '3aa241') (hexToInt 'b766b5') (hexToInt 'cccccc') (hexToInt 'ffffff'))
+}
+
+to '_8bit_4bit_Machintosh II palette' {
+  return ('[data:makeList]' (hexToInt 'ffffff') (hexToInt 'fcf400') (hexToInt 'ff6400') (hexToInt 'dd0202') (hexToInt 'f10285') (hexToInt '4600a6') (hexToInt 'd5') (hexToInt 'aee9') (hexToInt '1ab90c') (hexToInt '6408') (hexToInt '582800') (hexToInt '917135') (hexToInt 'c1c1c1') (hexToInt '818181') (hexToInt '3e3e3e') (hexToInt '0'))
+}
+
+to '_8bit_4bit_RISC 2 palette' {
+  return ('[data:makeList]' (hexToInt 'ffffff') (hexToInt 'dddddd') (hexToInt 'bdbdbd') (hexToInt '999999') (hexToInt '797979') (hexToInt '535353') (hexToInt '313131') (hexToInt '0') (hexToInt '4299') (hexToInt 'f0f000') (hexToInt 'cd00') (hexToInt 'dd0000') (hexToInt 'f0f0bd') (hexToInt '538900') (hexToInt 'ffbd00') (hexToInt 'bdff'))
+}
+
+to '_8bit_4bit_Win & OS/2 palette' {
+  return ('[data:makeList]' (hexToInt '0') (hexToInt '800000') (hexToInt '8000') (hexToInt '808000') (hexToInt '80') (hexToInt '800080') (hexToInt '8080') (hexToInt 'c0c0c0') (hexToInt '808080') (hexToInt 'ff0000') (hexToInt 'ff00') (hexToInt 'ffff00') (hexToInt 'ff') (hexToInt 'ff00ff') (hexToInt 'ffff') (hexToInt 'ffffff'))
+}
+
+to '_8bit_4bit_grayscale palette' {
+  return ('[data:makeList]' 0 1315860 2105376 2894892 3684408 4539717 5329233 6381921 7434609 8553090 9605778 10658466 11974326 13355979 14935011 16777215)
+}
+
+to '_8bit_8bit_MicroBlocks palette' {
+  return ('[data:join]' ('[data:range]' 0 (hexToInt 'FFFFFF') ((hexToInt 'FFFFFF') / 239)) ('[data:range]' 0 (hexToInt 'FFFFFF') ((hexToInt 'FFFFFF') / 15)))
+}
+
+to '_8bit_8bit_blue hues palette' {
+  return ('[data:range]' 0 255)
+}
+
+to '_8bit_8bit_grayscale palette' {
+  return ('[data:range]' 0 (hexToInt 'FFFFFF') ((hexToInt 'FFFFFF') / 255))
+}
+
+to '_8bit_8bit_green hues palette' {
+  return ('[data:range]' (hexToInt 'FF00') (hexToInt 'FFFF'))
+}
+
+to '_8bit_8bit_red hues palette' {
+  return ('[data:range]' (hexToInt 'FF0000') (hexToInt 'FF00FF'))
+}
+
+to '_sqrt _' n {
+  for i n {
+    if ((i * i) >= n) {return i}
+  }
+}
+
