@@ -1,10 +1,17 @@
 module 'Touch (MPR121)' Input
 author MicroBlocks
-version 1 1 
+version 1 2 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
-variables _touch_initialized _touch_state 
+variables _touch_initialized _touch_state _touch_last_state 
 
-  spec 'r' 'touch_isTouched' 'is MPR121 pin _ touched?' 'menu.range:0-11' 0
+  spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:0-11' 0
+  spec 'r' 'touch_any_pin_touched' 'is any pin touched?'
+  space
+  spec 'r' 'touch_touch_event' 'touch event'
+  spec 'r' 'touch_last_touched_pin' 'last touched pin'
+  space
+  spec 'r' 'touch_state_string' 'touch state string'
+  space
   spec ' ' '_touch_init' '_touch_init'
   spec ' ' '_touch_update' '_touch_update'
   spec ' ' '_touch_setRegister' '_touch_setRegister _ to _' 'auto auto' 'hex register' 'hex value'
@@ -50,9 +57,47 @@ to '_touch_update' {
   _touch_state = (((i2cGet 90 1) << 8) | (i2cGet 90 0))
 }
 
+to touch_any_pin_touched {
+  '_touch_update'
+  return (_touch_state != 0)
+}
+
 to touch_isTouched pin {
-  if (or (pin < 0) (pin > 11)) {return false}
+  if (or (pin < 0) (pin > 11)) {return (booleanConstant false)}
   '_touch_update'
   return ((_touch_state & (1 << (11 - pin))) != 0)
+}
+
+to touch_last_touched_pin {
+  comment 'If a pin was just touched, return the index of that pin,
+otherwise, return zero.'
+  for i 12 {
+    local 'previous' (_touch_last_state & (1 << (12 - i)))
+    local 'current' (_touch_state & (1 << (12 - i)))
+    if (and (previous == 0) (current != 0)) {
+      comment 'Return index of newly touched pin '
+      return (i - 1)
+    }
+  }
+  return -1
+}
+
+to touch_state_string {
+  '_touch_update'
+  local 'pin states' ('[data:makeList]')
+  for i 12 {
+    if ((_touch_state & (1 << (12 - i))) != 0) {
+      '[data:addLast]' '1' (v 'pin states')
+    } else {
+      '[data:addLast]' '0' (v 'pin states')
+    }
+  }
+  return ('[data:joinStrings]' (v 'pin states'))
+}
+
+to touch_touch_event {
+  _touch_last_state = _touch_state
+  '_touch_update'
+  return ((touch_last_touched_pin) >= 0)
 }
 

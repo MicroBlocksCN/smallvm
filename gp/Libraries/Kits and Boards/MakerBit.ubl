@@ -1,12 +1,16 @@
 module MakerBit Output
 author MicroBlocks
-version 1 4 
-depends 'Touch (MPR121)' 
-choices makerbit_motor A B 
+version 1 5
+depends 'Touch (MPR121)'
+choices makerbit_motor A B
+choices makerbit_pin_touched '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' any
 description 'Support for MakerBit (https://makerbit.com)'
-variables _pinOutputValues 
+variables _pinOutputValues
 
-  spec 'r' 'makerbit_pinTouched' 'is MakerBit pin _ touched?' 'menu.range:5-16' 5
+  spec 'r' 'makerbit_pinTouched' 'is MakerBit pin _ touched?' 'menu.makerbit_pin_touched' 5
+  space
+  spec 'r' 'makerbit_touchEvent' 'touch event'
+  spec 'r' 'makerbit_last_touched_pin' 'last touched pin'
   space
   spec ' ' 'makerbit_setDigitalPin' 'set MakerBit pin _ to _' 'menu.range:5-16 bool' 5 true
   spec ' ' 'makerbit_setAllPins' 'set all MakerBit LEDs _' 'bool' false
@@ -21,7 +25,12 @@ to makerbit_allPins {
   return ('[data:range]' 5 16)
 }
 
+to makerbit_last_touched_pin {
+  return ((touch_last_touched_pin) + 5)
+}
+
 to makerbit_pinTouched pin {
+  if ('any' == pin) {return (touch_any_pin_touched)}
   return (touch_isTouched (pin - 5))
 }
 
@@ -79,5 +88,9 @@ Motor B: 15 & 16 (direction), 14 (power)'
 to makerbit_stopMotors {
   makerbit_setMotorMakerBit 'A' 0
   makerbit_setMotorMakerBit 'B' 0
+}
+
+to makerbit_touchEvent {
+  return (touch_touch_event)
 }
 
