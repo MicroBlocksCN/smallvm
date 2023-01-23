@@ -93,7 +93,7 @@ static OBJ primEndOfFile(int argCount, OBJ *args) {
 		var fileName = UTF8ToString($0);
 		var origin = window.useSessionStorage ? 'session' : 'local';
 		return window.fileCharPositions[fileName] >=
-			atob(window[origin + 'Storage'][fileName]).length;
+			window[origin + 'Storage'][fileName].length;
 	}, fileName) ? trueObj : falseObj;
 }
 
@@ -107,7 +107,7 @@ static OBJ primReadLine(int argCount, OBJ *args) {
 	EM_ASM_({
 		var fileName = UTF8ToString($0);
 		var origin = window.useSessionStorage ? 'session' : 'local';
-		var file = atob(window[origin + 'Storage'][fileName]);
+		var file = window[origin + 'Storage'][fileName];
 		if (window.fileCharPositions[fileName] < file.length) {
 			var endIndex =
 				file.indexOf('\n', window.fileCharPositions[fileName]);
@@ -139,7 +139,7 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 	int readCount = EM_ASM_INT({
 		var fileName = UTF8ToString($0);
 		var origin = window.useSessionStorage ? 'session' : 'local';
-		var file = atob(window[origin + 'Storage'][fileName]);
+		var file = window[origin + 'Storage'][fileName];
 		var startIndex = $3 > 0 ? $3 : window.fileCharPositions[fileName];
 		var endIndex = (startIndex + $1 > file.length) ?
 			file.length :
@@ -178,7 +178,7 @@ static OBJ primReadInto(int argCount, OBJ *args) {
 	return int2obj(EM_ASM_INT({
 		var fileName = UTF8ToString($0);
 		var origin = window.useSessionStorage ? 'session' : 'local';
-		var file = atob(window[origin + 'Storage'][fileName]);
+		var file = window[origin + 'Storage'][fileName];
 		var startIndex = window.fileCharPositions[fileName];
 		var endIndex = $2 + startIndex > file.length ?
 			file.length :
@@ -237,8 +237,7 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 		var line = UTF8ToString($1);
 		var origin = window.useSessionStorage ? 'session' : 'local';
 
-		window[origin + 'Storage'][fileName] =
-			btoa(atob(window[origin + 'Storage'][fileName]) + line + '\n');
+		window[origin + 'Storage'][fileName] += line + '\n';
 
 	}, fileName, line);
 
@@ -255,23 +254,18 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 
 	if (IS_TYPE(data, ByteArrayType)) {
 		EM_ASM_({
-			var fileName = UTF8ToString($0);
 			var origin = window.useSessionStorage ? 'session' : 'local';
-			window[origin + 'Storage'][fileName] =
-				btoa(
-					atob(window[origin + 'Storage'][fileName]) +
-						String.fromCharCode.apply(
-							null,
-							new Uint8Array(HEAP8.subarray($1, $1 + $2))
-					)
-				);
+			var fileName = UTF8ToString($0);
+			var data = HEAP8.subarray($1, $1 + $2);
+			for (var i = 0; i < data.length; i++) {
+				window[origin + 'Storage'][fileName] +=
+					String.fromCharCode(data[i]);
+			}
 		}, fileName, (uint8 *) &FIELD(data, 0), BYTES(data));
 	} else if (IS_TYPE(data, StringType)) {
 		EM_ASM_({
-			var fileName = UTF8ToString($0);
 			var origin = window.useSessionStorage ? 'session' : 'local';
-			window[origin + 'Storage'][fileName] =
-				btoa(atob(window[origin + 'Storage'][fileName]) + UTF8ToString($1));
+			window[origin + 'Storage'][UTF8ToString($0)] += UTF8ToString($1);
 		}, fileName, (uint8 *) obj2str(data));
 	}
 
@@ -286,7 +280,7 @@ static OBJ primFileSize(int argCount, OBJ *args) {
 	if (!fileName[0] || !openFile(fileName, 0)) return int2obj(-1);
 	return int2obj(EM_ASM_INT({
 		var origin = window.useSessionStorage ? 'session' : 'local';
-		var file = atob(window[origin + 'Storage'][UTF8ToString($0)]);
+		var file = window[origin + 'Storage'][UTF8ToString($0)];
 		return file.length;
 	}, fileName));
 }

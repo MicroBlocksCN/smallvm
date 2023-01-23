@@ -474,14 +474,13 @@ static OBJ primBrowserCloseBoardie(int nargs, OBJ args[]) {
 static OBJ primBoardiePutFile(int nargs, OBJ args[]) {
 	EM_ASM_(
 		{
-			// may crash the browser on really huge files?
-			window.localStorage[UTF8ToString($0)] =
-				btoa(
-					String.fromCharCode.apply(
-						null,
-						Module.HEAPU8.subarray($1, $1 + $2)
-					)
-				);
+			var fileName = UTF8ToString($0);
+			var data = Module.HEAPU8.subarray($1, $1 + $2);
+			window.localStorage[fileName] = '';
+			for (var i = 0; i < data.length; i++) {
+				window.localStorage[fileName] +=
+					String.fromCharCode(data[i]);
+			}
 		},
 		obj2str(args[0]), // filename
 		&FIELD(args[1], 0), // file data
@@ -492,14 +491,14 @@ static OBJ primBoardiePutFile(int nargs, OBJ args[]) {
 static OBJ primBoardieGetFile(int nargs, OBJ args[]) {
 	int fileSize =
 		EM_ASM_INT(
-			{ return atob(window.localStorage[UTF8ToString($0)].length) },
+			{ return window.localStorage[UTF8ToString($0)].length },
 			obj2str(args[0])
 		);
 	OBJ result = newBinaryData(fileSize);
 
 	EM_ASM_(
 		{
-			var file = atob(window.localStorage[UTF8ToString($1)]);
+			var file = window.localStorage[UTF8ToString($1)];
 			for (var i = 0; i < file.length; i++) {
 				setValue($0++, file.charCodeAt(i), 'i8');
 			}

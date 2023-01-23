@@ -34,7 +34,7 @@ Module.base64Encode = function (data) {
 			'==');
 	}
 	return result.join('');
-}
+};
 
 Module.base64Decode = function (s) {
 	// Decode the base64 string, returning a uint8Array.
@@ -76,4 +76,16 @@ Module.base64Decode = function (s) {
 		}
 	}
 	return out;
-}
+};
+
+
+// Binary to String
+
+Module.binaryToString = function (data) {
+        var len = data.length;
+        var result = [];
+        for (var i = 0; i < len; i++) {
+                result.push(String.fromCharCode(data[i]));
+        }
+        return result.join('');
+};
