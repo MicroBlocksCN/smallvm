@@ -135,9 +135,7 @@ void EMSCRIPTEN_KEEPALIVE getScripts() {
 	compactCodeStore();
 	EM_ASM_({
 		console.log(
-			encodeURIComponent(
-				Module['base64Encode'](HEAP8.subarray($0, $0 + $1))
-			)
+			Module['base64Encode'](HEAP8.subarray($0, $0 + $1), true)
 		);
 		// could be new Uint8Array(HEAP8.subarray($0, $0 + $1))
 	}, ramStart(), ramSize());
@@ -156,8 +154,9 @@ void readFilesFromURL() {
 				var fileName = decodeURIComponent(
 						descriptor.substring(0, fileStart)
 					);
-				var contents = decodeURIComponent(
-						descriptor.substring(fileStart + 1)
+				var contents = Module['base64Decode'](
+						descriptor.substring(fileStart + 1),
+						true // urlSafe
 					);
 				window.sessionStorage[fileName] = contents;
 			});
@@ -169,13 +168,12 @@ void readScriptsFromURL() {
 	EM_ASM_({
 		if (window.location.hash.startsWith('#code=')) {
 			// "#code=" is 6 chars
-			var b64 = decodeURIComponent(
-					window.location.hash.substring(
+			var b64 = window.location.hash.substring(
 						6,
 						window.location.hash.indexOf('&')
-					));
+					);
 			if (b64) {
-				var bytes = Module['base64Decode'](b64);
+				var bytes = Module['base64Decode'](b64, true);
 				for (var i = 0; i < bytes.length; i++) {
 					setValue($0, bytes[i], 'i8');
 					$0++;
