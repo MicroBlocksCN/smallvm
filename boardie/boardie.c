@@ -136,14 +136,10 @@ void EMSCRIPTEN_KEEPALIVE getScripts() {
 	EM_ASM_({
 		console.log(
 			encodeURIComponent(
-				btoa(
-					String.fromCharCode.apply(
-						null,
-						new Uint8Array(HEAP8.subarray($0, $0 + $1))
-					)
-				)
+				Module['base64Encode'](HEAP8.subarray($0, $0 + $1))
 			)
 		);
+		// could be new Uint8Array(HEAP8.subarray($0, $0 + $1))
 	}, ramStart(), ramSize());
 }
 
@@ -179,7 +175,7 @@ void readScriptsFromURL() {
 						window.location.hash.indexOf('&')
 					));
 			if (b64) {
-				var bytes = Int8Array.from(atob(b64), (c) => c.charCodeAt(0));
+				var bytes = Module['base64Decode'](b64);
 				for (var i = 0; i < bytes.length; i++) {
 					setValue($0, bytes[i], 'i8');
 					$0++;
