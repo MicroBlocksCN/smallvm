@@ -1,9 +1,12 @@
 // Base64 Encoding/Decoding
 
-Module.base64Encode = function (data) {
+Module.base64Encode = function (data, urlSafe) {
 	// Encode the given data as base64. Data should be either a string or a uint8Array.
 
-	const digits = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+	var digits = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+	if (urlSafe) {
+		digits = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+	}
 	if ('string' == typeof(data)) {
 		data = new TextEncoder().encode(data); // convert to uint8 array
 	}
@@ -44,6 +47,11 @@ Module.base64Decode = function (s) {
 	for (var i = 0, len = digits.length; i < len; i++) {
 		digitValue[digits.charCodeAt(i)] = i;
 	}
+
+	// also accept base64url encoding: allow - and _ as alternatives to + and /
+	digitValue['-'.charCodeAt(0)] = 62
+	digitValue['_'.charCodeAt(0)] = 63
+
 	var inCount = s.length;
 	if ('=' == s[inCount - 2]) { // two padding characters
 		inCount -= 2;
