@@ -476,11 +476,11 @@ static OBJ primBoardiePutFile(int nargs, OBJ args[]) {
 		{
 			var fileName = UTF8ToString($0);
 			var data = Module.HEAPU8.subarray($1, $1 + $2);
-			window.localStorage[fileName] = '';
+			var dataString = "";
 			for (var i = 0; i < data.length; i++) {
-				window.localStorage[fileName] +=
-					String.fromCharCode(data[i]);
+                dataString += String.fromCharCode(data[i]);
 			}
+			window.localStorage[fileName] = dataString;
 		},
 		obj2str(args[0]), // filename
 		&FIELD(args[1], 0), // file data
