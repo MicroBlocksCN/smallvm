@@ -3,7 +3,7 @@ author MicroBlocks
 version 1 5
 depends 'Touch (MPR121)'
 choices makerbit_motor A B
-choices makerbit_pin_touched '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' any
+choices makerbit_pin_touched '5' '6' '7' '8' '9' '10' '11' '12' '13' '14' '15' '16' any
 description 'Support for MakerBit (https://makerbit.com)'
 variables _pinOutputValues
 
