@@ -765,6 +765,9 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	if (!isInt(args[0])) { fail(needsIntegerError); return int2obj(0); }
 	int pinNum = obj2int(args[0]);
 
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
+		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
+	#endif
 	#if defined(ARDUINO_BBC_MICROBIT_V2)
 		if (6 == pinNum) return int2obj(readAnalogMicrophone());
 	#endif
