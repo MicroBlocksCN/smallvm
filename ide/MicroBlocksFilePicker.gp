@@ -608,6 +608,7 @@ method fixLayout MicroBlocksFilePicker {
   rightInset = (20 * scale)
   setPosition (morph listPane) ((left morph) + leftInset) ((top morph) + topInset)
   setExtent (morph listPane) ((width morph) - (leftInset + rightInset)) ((height morph) - (topInset + bottomInset))
+  updateSliders listPane
 
   // parentButton and folder readout
   parentButtonM = (morph parentButton)
