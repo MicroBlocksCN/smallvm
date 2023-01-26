@@ -475,6 +475,7 @@ static OBJ primBoardiePutFile(int nargs, OBJ args[]) {
 	EM_ASM_(
 		{
 			var fileName = UTF8ToString($0);
+			if (fileName === 'user-prefs') return;
 			var data = Module.HEAPU8.subarray($1, $1 + $2);
 			var dataString = "";
 			for (var i = 0; i < data.length; i++) {
@@ -498,7 +499,9 @@ static OBJ primBoardieGetFile(int nargs, OBJ args[]) {
 
 	EM_ASM_(
 		{
-			var file = window.localStorage[UTF8ToString($1)];
+			var fileName = UTF8ToString($1);
+			if (fileName === 'user-prefs') return;
+			var file = window.localStorage[fileName];
 			for (var i = 0; i < file.length; i++) {
 				setValue($0++, file.charCodeAt(i), 'i8');
 			}
@@ -511,18 +514,23 @@ static OBJ primBoardieGetFile(int nargs, OBJ args[]) {
 
 static OBJ primBoardieListFiles(int nargs, OBJ args[]) {
 	int fileCount =
-			EM_ASM_INT({ return Object.keys(window.localStorage).length });
+			EM_ASM_INT({
+				return Object.keys(window.localStorage).filter(
+					fn => fn !== 'user-prefs').length;
+			});
 	OBJ fileList = newObj(ArrayClass, fileCount, nilObj);
 
 	for (int i = 0; i < fileCount; i++) {
 		int length = EM_ASM_INT(
-			{ return Object.keys(window.localStorage)[$0].length; },
+			{ return Object.keys(window.localStorage).filter(
+					fn => fn !== 'user-prefs')[$0].length; },
 			i
 		);
 		OBJ fileName = allocateString(length);
 		EM_ASM_(
 			{
-				var fileName = Object.keys(window.localStorage)[$0];
+				var fileName = Object.keys(window.localStorage).filter(
+					fn => fn !== 'user-prefs')[$0];
 				stringToUTF8(fileName, $1, fileName.length + 1);
 			},
 			i,

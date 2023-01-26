@@ -29,6 +29,7 @@ void closeAndDeleteFile(char *fileName) {
 	// Also called from fileTransfer.cpp.
 	EM_ASM_({
 		var fileName = UTF8ToString($0);
+		if (fileName === 'user-prefs') return;
 		var origin = window.useSessionStorage ? 'session' : 'local';
 		delete(window[origin + 'Storage'][fileName]);
 		delete(window.fileCharPositions[fileName]);
@@ -38,6 +39,7 @@ void closeAndDeleteFile(char *fileName) {
 int openFile(char *fileName, int createIfNotExists) {
 	return EM_ASM_INT({
 		var fileName = UTF8ToString($0);
+		if (fileName === 'user-prefs') return 0;
 		var origin = window.useSessionStorage ? 'session' : 'local';
 		if (window[origin + 'Storage'][fileName] === undefined) {
 			if ($1) {
@@ -92,6 +94,7 @@ static OBJ primEndOfFile(int argCount, OBJ *args) {
 
 	return EM_ASM_INT({
 		var fileName = UTF8ToString($0);
+		if (fileName === 'user-prefs') return 0;
 		var origin = window.useSessionStorage ? 'session' : 'local';
 		return window.fileCharPositions[fileName] >=
 			window[origin + 'Storage'][fileName].length;
@@ -107,6 +110,7 @@ static OBJ primReadLine(int argCount, OBJ *args) {
 
 	EM_ASM_({
 		var fileName = UTF8ToString($0);
+		if (fileName === 'user-prefs') return;
 		var origin = window.useSessionStorage ? 'session' : 'local';
 		var file = window[origin + 'Storage'][fileName];
 		if (window.fileCharPositions[fileName] < file.length) {
@@ -139,6 +143,7 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 
 	int readCount = EM_ASM_INT({
 		var fileName = UTF8ToString($0);
+		if (fileName === 'user-prefs') return 0;
 		var origin = window.useSessionStorage ? 'session' : 'local';
 		var file = window[origin + 'Storage'][fileName];
 		var startIndex = $3 > 0 ? $3 : window.fileCharPositions[fileName];
@@ -178,6 +183,7 @@ static OBJ primReadInto(int argCount, OBJ *args) {
 	if (!fileName[0] || !openFile(fileName, 0)) { return int2obj(0); }
 	return int2obj(EM_ASM_INT({
 		var fileName = UTF8ToString($0);
+		if (fileName === 'user-prefs') return 0;
 		var origin = window.useSessionStorage ? 'session' : 'local';
 		var file = window[origin + 'Storage'][fileName];
 		var startIndex = window.fileCharPositions[fileName];
@@ -235,6 +241,7 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 
 	EM_ASM_({
 		var fileName = UTF8ToString($0);
+		if (fileName === 'user-prefs') return;
 		var line = UTF8ToString($1);
 		var origin = window.useSessionStorage ? 'session' : 'local';
 
@@ -257,6 +264,7 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 		EM_ASM_({
 			var origin = window.useSessionStorage ? 'session' : 'local';
 			var fileName = UTF8ToString($0);
+			if (fileName === 'user-prefs') return;
 			var data = HEAP8.subarray($1, $1 + $2);
 			var newContents = window[origin + 'Storage'][fileName];
 			for (var i = 0; i < data.length; i++) {
@@ -267,7 +275,9 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 	} else if (IS_TYPE(data, StringType)) {
 		EM_ASM_({
 			var origin = window.useSessionStorage ? 'session' : 'local';
-			window[origin + 'Storage'][UTF8ToString($0)] += UTF8ToString($1);
+			var fileName = UTF8ToString($0);
+			if (fileName === 'user-prefs') return;
+			window[origin + 'Storage'][fileName] += UTF8ToString($1);
 		}, fileName, (uint8 *) obj2str(data));
 	}
 
@@ -282,7 +292,9 @@ static OBJ primFileSize(int argCount, OBJ *args) {
 	if (!fileName[0] || !openFile(fileName, 0)) return int2obj(-1);
 	return int2obj(EM_ASM_INT({
 		var origin = window.useSessionStorage ? 'session' : 'local';
-		var file = window[origin + 'Storage'][UTF8ToString($0)];
+		var fileName = UTF8ToString($0);
+		if (fileName === 'user-prefs') return 0;
+		var file = window[origin + 'Storage'][fileName];
 		return file.length;
 	}, fileName));
 }
@@ -297,7 +309,9 @@ static OBJ primNextFileInList(int argCount, OBJ *args) {
 	char *s = fileName;
 	EM_ASM_({
 		var origin = window.useSessionStorage ? 'session' : 'local';
-		var fileNames = Object.keys(window[origin + 'Storage']);
+		var fileNames =
+			Object.keys(
+				window[origin + 'Storage']).filter(fn => fn !== 'user-prefs');
 		if (!window.currentFileIndex) { window.currentFileIndex = 0; }
 		if (window.currentFileIndex >= fileNames.length) {
 			stringToUTF8("", $0, 100);
