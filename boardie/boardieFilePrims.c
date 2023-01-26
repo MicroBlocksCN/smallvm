@@ -7,10 +7,11 @@
 // boardieFilePrims.c - File system primitives.
 // John Maloney and Bernat Romagosa, November 2022
 
-// Files are stored in localStorage encoded in base64.  Boardie can also read
-// files from the &files URL parameter, and in that case they are temporarily
-// stored in sessionStorage as to not cause conflicts with user files.
-// Temporary files always have preference over permanent ones.
+// Files are stored as JavaScript strings in localStorage. Boardie can also
+// read files from the &files URL parameter. Such files are temporarily
+// stored in sessionStorage to avoid overwriting user files in localStorage.
+// Temporary files in sessionStorage have preference over user files with
+// matching names in localStorage.
 
 #include <math.h>
 #include <stdio.h>
@@ -86,7 +87,7 @@ static OBJ primDelete(int argCount, OBJ *args) {
 static OBJ primEndOfFile(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char *fileName = obj2str(args[0]);
-	
+
 	if (!openFile(fileName, 0)) return falseObj;
 
 	return EM_ASM_INT({
@@ -257,10 +258,11 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 			var origin = window.useSessionStorage ? 'session' : 'local';
 			var fileName = UTF8ToString($0);
 			var data = HEAP8.subarray($1, $1 + $2);
+			var newContents = window[origin + 'Storage'][fileName];
 			for (var i = 0; i < data.length; i++) {
-				window[origin + 'Storage'][fileName] +=
-					String.fromCharCode(data[i]);
+				newContents += String.fromCharCode(data[i]);
 			}
+			window[origin + 'Storage'][fileName] = newContents;
 		}, fileName, (uint8 *) &FIELD(data, 0), BYTES(data));
 	} else if (IS_TYPE(data, StringType)) {
 		EM_ASM_({
