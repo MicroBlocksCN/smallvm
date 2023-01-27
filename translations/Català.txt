@@ -2429,7 +2429,7 @@ Report a new list of the given length filled with zero or the optional value.
 Report a new byte array of the given length filled with zero or the optional value.
 --MISSING--
 
-Report a byte array cointaining the UTF-8 bytes of the given string.
+Report a byte array containing the UTF-8 bytes of the given string.
 --MISSING--
 
 Report the number of words of memory available. Stop button frees up memory.

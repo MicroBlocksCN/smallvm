@@ -2747,7 +2747,7 @@ Report a new list of the given length filled with zero or the optional value.
 Report a new byte array of the given length filled with zero or the optional value.
 报告一个新的字节数组，其长度为输入值，数组元素为 0 或可选数值
 
-Report a byte array cointaining the UTF-8 bytes of the given string.
+Report a byte array containing the UTF-8 bytes of the given string.
 报告一个字节数组，该数组包含输入字符串的 UTF-8 字节
 
 Report the number of words of memory available. Stop button frees up memory.

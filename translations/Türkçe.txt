@@ -1868,7 +1868,7 @@ Sıfır veya isteğe bağlı değerle doldurulmuş verilen uzunlukta yeni bir li
 Report a new byte array of the given length filled with zero or the optional value.
 Sıfır veya isteğe bağlı değerle doldurulmuş, verilen uzunlukta yeni bir bayt dizisi bildirin.
 
-Report a byte array cointaining the UTF-8 bytes of the given string.
+Report a byte array containing the UTF-8 bytes of the given string.
 Verilen dizenin UTF-8 baytlarını içeren bir bayt dizisini bildirin.
 
 Report the number of words of memory available. Stop button frees up memory.
