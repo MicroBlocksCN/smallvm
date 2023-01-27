@@ -438,7 +438,7 @@ method folderContents MicroBlocksFilePicker {
   }
   for dir (sorted dirList 'caseInsensitiveSort') {
 	if (not (beginsWith dir '.')) {
-	  add result (join '[ ] ' dir)
+	  add result (array (join '[ ] ' (localized dir)) (join '[ ] ' dir))
 	}
   }
   for fn (sorted fileList 'caseInsensitiveSort') {
