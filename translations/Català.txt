@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 19 2021
+# Last updated: November 29 2022
 
 #########################
 # Blocks and categories #
@@ -149,6 +149,12 @@ _ mòdul _
 abs _
 valor absolut de _
 
+min _ _
+mínim entre _ i _
+
+max _ _
+màxim entre _ i _
+
 random _ to _
 nombre a l'atzar entre _ i _
 
@@ -294,6 +300,9 @@ divideix _ per _
 My Blocks
 Els meus blocs
 
+Generic
+Genèric
+
 # Buttons on top of "My Blocks" category
 
 Add a command block
@@ -311,34 +320,34 @@ Comm
 Comunicacions
 
 i2c get device _ register _
-llegeix del dispositiu i2c _ el registre _
+llegeix del dispositiu I2C _ el registre _
 
 i2c set device _ register _ to _
-escriu al dispositiu i2c _ el registre _ amb _
+escriu al dispositiu I2C _ el registre _ amb _
 
 i2c device _ read list _
-llegeix del dispositiu i2c _ a llista _
+llegeix del dispositiu I2C _ a llista _
 
 i2c device _ write list _
-escriu al dispositiu i2c _ el contingut de la llista _
+escriu al dispositiu I2C _ el contingut de la llista _
 
 spi send _
-spi envia _
+envia _ per SPI
 
 spi receive
-spi llegeix
+llegeix SPI
 
 spi setup speed _
-velocitat de spi _
+fixa la velocitat SPI a _
 
 mode _
 mode _
 
 rpi channel _
-canal rpi _
+canal RPI _
 
 spi exchange bytes _
-bytes d'intercanvi spi _
+intercanvi a bytes _ per SPI
 
 serial open _ baud
 obre port sèrie a _ bauds
@@ -421,8 +430,8 @@ radio last string
 radio last message type
 tipus de l'últim missatge rebut per ràdio
 
-radio set group _
-fixa el grup de ràdio a _
+radio set group _ (0-255)
+fixa el grup de ràdio a _ (0-255)
 
 radio set channel (0-83) _
 fixa el canal de ràdio a (0-83) _
@@ -466,6 +475,9 @@ nivell de llum
 
 temperature (°C)
 temperatura (°C)
+
+magnetic field
+camp magnètic
 
 set acceleration range _ g = 100
 fixa l'escala d'acceleració en _ g = 100
@@ -721,6 +733,12 @@ Infraroigs
 
 receive IR code
 rep codi IR
+
+receive IR code from device _
+rep codi IR del dispositiu _
+
+test IR
+prova IR
 
 attach IR receiver to pin _
 inicialitza receptor IR al pin _
@@ -1066,6 +1084,18 @@ _ sense espais en blanc
 join string list _ separator _
 uneix llista de texts _ amb separador _
 
+unicodes _
+unicodes de _
+
+string from unicodes _
+text a partir dels unicodes _
+
+num2str _
+nombre _ a text
+
+str2num _
+text _ a nombre
+
 ####
 # WiFi library
 
@@ -1223,8 +1253,8 @@ versió del firmware del PN532
 HTTP client
 Client HTTP
 
-_ data _ to http܃// _
-sol·licitud _ amb contingut _ a http:// _
+_ data _ to http܃// _ 
+petició _ amb contingut _ a http܃// _ 
 
 port _
 port _
@@ -1234,6 +1264,9 @@ port _
 
 HTTP server
 Servidor HTTP
+
+start HTTP server
+inicia el servidor HTTP
 
 HTTP server request
 sol·licitud HTTP al servidor
@@ -1425,139 +1458,199 @@ atura el plotter
 set plotter speed to _ %
 fixa velocitat del plotter a _ %
 
-
 ####
 # MQTT
 
 MQTT connect to broker _
---MISSING--
+connecta al broker HTTP _
 
 buffer sizes _ client id _
---MISSING--
+mida del buffer _ id del client _
 
 username _ password _
---MISSING--
+usuari _ contrasenya _
 
 MQTT connected
---MISSING--
+MQTT connectat
 
 MQTT disconnect
---MISSING--
+desconnecta MQTT
 
 MQTT sub _
---MISSING--
+subscriu-te al tema d'MQTT _
 
 MQTT unsub _
---MISSING--
+abandona el tema d'MQTT _
 
 MQTT pub topic _ payload _
---MISSING--
+publica at tema d'MQTT _ el contingut _
 
 retain _ QoS _
---MISSING--
+amb retenció _ i qualitat del servei _
 
 MQTT event
---MISSING--
+esdeveniment MQTT
 
 binary _
---MISSING--
+binari _
 
 topic for MQTT event _
---MISSING--
+tema de l'esdeveniment MQTT _
 
 payload for MQTT event _
---MISSING--
+contingut de l'esdeveniment MQTT _
+
+####
+# UDP
+
+UDP start port _
+inicia UDP al port _
+
+UDP stop
+atura UDP
+
+UDP send packet _ to ip _ port _
+envia paquet UDP _ a la IP _ i port _
+
+UDP receive packet
+rep paquet UDP
+
+binary data _
+dades binàries _
+
+UDP remote IP address
+adreça IP remota UDP
+
+UDP remote port
+port remot UDP
 
 ####
 # Cutebot
 
+Cutebot
+Cutebot
+
 Cutebot set wheel left _ right _ (-100 to 100)
---MISSING--
+Posa la roda esquerra a _ i la dreta a _ (-100 a 100)
 
 Cutebot stop wheels
---MISSING--
+Atura les rodes
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+Posa el servo _ a _ graus (-90 a 90)
+
+Cutebot set servo _ to speed _ (-100 to 100)
+Posa la velocitat del servo _ a _ graus (-100 a 100)
 
 Cutebot set headlight _ to _
---MISSING--
+Posa el far _ a _
 
 Cutebot set NeoPixel _ to _
---MISSING--
+Posa el NeoPixel _ del Cutebot a _
 
 Cutebot _ line sensor
---MISSING--
+Valor del sensor de línia _
 
 Cutebot sees line on left _ right _
---MISSING--
+El Cutebot veu la línia a l'esquerra _ i la dreta _
 
 Cutebot distance (cm)
---MISSING--
-
-Cutebot set servo _ to _ (-100 to 100)
---MISSING--
+Distància frontal (cm)
 
 left
---MISSING--
+esquerre
 
 right
---MISSING--
+dret
 
 both
---MISSING--
-
+ambdós
 
 # Wukong
 
-Wukong set motor _ speed to _ %
---MISSING--
+Wukong
+Wukong
+
+Wukong set motor _ to _ (-100 to 100)
+Posa el motor _ a _ (-100 a 100)
 
 Wukong stop motor _
---MISSING--
+Atura el motor _
 
-Wukong stop all motors
---MISSING--
+Wukong stop all
+Atura tots els motors _
 
-Wukong set _ servo _ angle to _
---MISSING--
+Wukong set servo _ to _ degrees (-90 to 90)
+Posa el servo _ a _ graus (-90 a 90)
 
-Wukong set NeoPixel _ _ _ _
---MISSING--
+Wukong set servo _ to speed _ (-100 to 100)
+Posa el servo _ a velocitat _ (-100 a 100)
 
-Wukong set light intensity to _
---MISSING--
+Wukong set NeoPixels _ _ _ _
+Posa els NeoPíxels del Wukong a _ _ _ _
+
+Wukong set LED brightness to _
+Fixa la brillantor del LED a _
+
+####
+# Sphero-RVR
+
+wake
+desperta
+
+sleep
+adorm
+
+reset the yaw
+reinicialitza rotació
+
+drive with speed _ and heading _
+avança a velocitat _ i direcció _
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+mou el motor esquerre _ a velocitat _ i el dret _ a velocitat _
+
+stop with heading _
+atura't amb direcció _
+
+set RGB LED _ to red _ green _ blue _
+posa el LED RGB _ a vermell _ verd _ blau _
+
+set all LEDs to red _ green _ blue _
+posa tots els LEDs RGB _ a vermell _ verd _ blau _
 
 ####
 # Joystick:bit
 
 button _ is pressed
---MISSING--
+botó _ premut
 
 rocker value of _
---MISSING--
+inclinació _ de la palanca
 
 motor vibrate for _ ms
---MISSING--
+fes vibrar el motor durant _ ms
 
 ####
 # NeZha
 
 NeZha
---MISSING--
+NeZha
 
 NeZha set motor _ speed to _ %
---MISSING--
+posa el motor _ a velocitat _ %
 
 NeZha stop motor _
---MISSING--
+atura el motor _
 
 NeZha stop all motors
---MISSING--
+atura tots els motors
 
 NeZha set _ servo _ angle to _
---MISSING--
+posa el motor de _ graus número _ a angle _
 
 NeZha set continuous rotation servo _ speed to _ %
---MISSING--
-
+posa el servo de rotació contínua _ a velocitat _ %
 
 ##################
 # MicroBlocks UI #
@@ -1583,14 +1676,17 @@ Informació
 Plug in the board.
 Connecta la placa.
 
+Plug in the board and click the USB icon to connect.
+Connecta la placa i clica la icona USB per connectar-te.
+
 Reading project from board...
 Llegint projecte de la placa...
 
 Loading project...
 Carregant projecte...
 
-Found a newer version of
-He trobat una versió actualitzada de
+Found a newer version of 
+He trobat una versió més nova de 
 
 Do you want me to update the one in the project?
 Vols actualitzar el projecte amb aquesta nova versió?
@@ -1600,6 +1696,12 @@ Desa
 
 Connect
 Connecta
+
+connect
+connecta
+
+open Boardie
+connecta't al Boardie
 
 disconnect
 desconnecta
@@ -1652,6 +1754,9 @@ No s'ha trobat cap placa; has connectat la teva placa?
 For AdaFruit boards, double-click reset button and try again.
 En plaques AdaFruit, prem el botó de reinici dues vegades ràpidament i torna-ho a provar.
 
+Only recent Chrome and Edge browsers support WebSerial.
+WebSerial només està suportat per les últimes versions de Chrome i Edge.
+
 The board is not responding.
 La placa no respon.
 
@@ -1702,14 +1807,35 @@ extreu l'últim bloc col·locat
 copy all scripts to clipboard
 copia tots els programes al porta-retalls
 
+copy all scripts to clipboard as URL
+copia tots els programes al porta-retalls com a URL
+
 paste all scripts
 enganxa tots els programes
 
 paste script
 enganxa el programa
 
-save a picture of all scripts
-desa la imatge de tots els programes
+paste script from clipboard
+enganxa el programa del porta-retalls
+
+save a picture of all visible scripts
+desa una imatge de tots els programes visibles
+
+set exported script scale
+fixa l'escala de la imatge a exportar
+
+small (50%)
+petita (50%)
+
+normal (65%)
+normal (65%)
+
+large (100%)
+gran (100%)
+
+printable (200%)
+per a impressió (200%)
 
 about...
 sobre...
@@ -1756,11 +1882,38 @@ activa PlugShare en projectes en blanc
 disable PlugShare when project empty
 desactiva PlugShare en projectes en blanc
 
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+en connectar una placa, no en llegeixis els continguts automàticament encara que el projecte actual estigui en blanc
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+en connectar una placa, llegeix-ne els continguts automàticament si el projecte actual està en blanc
+
 erase flash and update firmware on ESP board
 esborra i reparticiona esp
 
 Use board type
 La placa connectada és de tipus
+
+Firmware Installed
+Firmware instal·lat
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+Torna a connectar-te a la placa clicant el botó de connexió (icona USB).
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+Abans de continuar, connecta el cable USB mentre prems el botó blanc "BOOTSEL".
+
+You will be asked to save the firmware file.
+Se't demenarà que desis l'arxiu de firmware.
+
+Select
+Selecciona
+
+as the destination drive, then click Save.
+com a unitat de destinació i clica Desa.
+
+Installing firmware...
+Instal·lant firmware...
 
 Plug in the board.
 Connecta la placa.
@@ -1825,6 +1978,9 @@ neteja gràfica
 zero at bottom
 zero a baix
 
+zero in middle
+zero al mig
+
 export data to CSV file
 exporta dades a arxiu CSV
 
@@ -1849,6 +2005,24 @@ replega
 rename...
 reanomena...
 
+find variable accessors
+cerca accessos a la variable
+
+find scripts or block definitions where this variable is being read
+cerca programes o definicions de blocs on s'estigui llegint aquesta variable
+
+find variable modifiers
+cerca modificadors de la variable
+
+find scripts or block definitions where this variable is being set or changed
+cerca programes o definicions de blocs on s'estigui fixant o modificant el valor d'aquesta variable
+
+find uses of this block
+cerca usos d'aquest bloc
+
+find scripts or block definitions using this block
+cerca programes o definicions de blocs on s'estigui utilitzant aquest bloc
+
 show block definition...
 mostra la definició del bloc...
 
@@ -1863,6 +2037,9 @@ esborra la definició d'aquest bloc
 
 duplicate
 duplica
+
+help
+ajuda
 
 duplicate this block
 duplica aquest bloc
@@ -1879,6 +2056,12 @@ només aquest bloc
 copy to clipboard
 copia al porta-retalls
 
+copy to clipboard as URL
+copia al porta-retalls com a URL
+
+copy these blocks to the clipboard as a URL
+copia aquests blocs al porta-retalls com a URL
+
 copy these blocks to the clipboard
 copia aquests blocs al porta-retalls
 
@@ -1894,6 +2077,9 @@ extrau bloc
 pull out this block
 agafa aquest bloc
 
+show help for this block in a browser
+mostra ajuda per a aquest bloc al teu navegador
+
 save picture of script
 desa la imatge del programa
 
@@ -1905,6 +2091,9 @@ desa una imatge de la definició d'aquest bloc en format PNG
 
 save a picture of these blocks as a PNG file
 desa una imatge d'aquests blocs en format PNG
+
+save a picture of these blocks and their result as a PNG file
+desa una imatge d'aquests blocs i el seu resultat en format PNG
 
 copy script
 copia el programa
@@ -1924,6 +2113,27 @@ text o nombre
 number only
 només nombre
 
+stop editing
+deixa d'editar
+
+cut
+retalla
+
+copy
+copia
+
+paste
+enganxa
+
+accept
+accepta
+
+revert
+reverteix
+
+select all
+selecciona-ho tot
+
 define
 defineix
 
@@ -1937,7 +2147,7 @@ label
 etiqueta
 
 input
-ranura
+casella
 
 hide block definition
 amaga la definició d'aquest bloc
@@ -1975,10 +2185,54 @@ D'acord
 Confirm
 Confirmació
 
-# File picker and library dialogs
+# Library folders
 
 Libraries
 Llibreries
+
+AI
+Intel·ligència artificial
+
+Graphics
+Gràfics
+
+Kits and Boards
+Kits i plaques
+
+Network
+Xarxa
+
+Other
+Altres
+
+Robots
+Robots
+
+Sensing
+Sensors
+
+Sound
+So
+
+System
+Sistema
+
+# File picker and library dialogs
+
+New library name?
+Nom de la nova llibreria?
+
+show all block definitions
+mostra les definicions de tots els blocs
+
+hide all block definitions
+amaga les definicions de tots els blocs
+
+export this library
+exporta aquesta llibreria
+
+delete library
+elimina aquesta llibreria
 
 Examples
 Exemples
@@ -2043,8 +2297,20 @@ llibreria integrada
 Dependency path, name or URL?
 Camí, nom o URL de la dependència?
 
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+Si vols afegir una llibreria interna de MicroBlocks, només cal que n'escriguis el nom.
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+Si la teva llibreria està al directori "Libraries" del teu directori local de projectes de MicroBlocks, l'has de prefixar amb una barra (/).
+
+If the library is hosted online, please input its full URL.
+Si la llibreria està hostatjada a Internet, introdueix la seva URL completa.
+
 Tag name?
 Nom de l'etiqueta?
+
+user library
+llibreria d'usuari
 
 Add Library
 Afegir llibreria
@@ -2066,373 +2332,373 @@ Augmenta mida dels blocs
 ############
 
 Button
---MISSING--
+Botó
 
 Boolean Input
---MISSING--
+Casella booleana
 
 [l] toggle value, or drop a reporter into it.
---MISSING--
+[l] commuta'n el valor, o deixa-hi caure un reportador.
 
 Color Input
---MISSING--
+Casella de color
 
 [l] change the color, or drop a reporter into it.
---MISSING--
+[l] canvia'n el color, o deixa-hi caure un reportador.
 
 Input
 Entrada
 
 [l] edit its value, or drop a reporter into it.
---MISSING--
+[l] edita'n el valor, o deixa-hi caure un reportador.
 
 Block Extension
---MISSING--
+Fletxa d'ampliació
 
 [l] right arrow to show optional inputs, left arrow to hide.
---MISSING--
+[l] a la fletxa que apunta a la dreta per mostrar caselles opcionals, i a la que apunta a l'esquerra per amagar-les.
 
 Command Block
---MISSING--
+Bloc comanda
 
 [l] to run, or drag to build scripts. [r] menu.
---MISSING--
+[l] per execuitar-lo, o arrosega'l per construir programes. [r] menú.
 
 Hat Block
---MISSING--
+Bloc de barret
 
 [l] to run, or drag to build scripts. [r] menu.
---MISSING--
+[l] per execuitar-lo, o arrosega'l per construir programes. [r] menú.
 
 Reporter Block
---MISSING--
+Bloc reportador
 
 [l] to see value, or drop into an input slot. [r] menu.
---MISSING--
+[l] per consultar-ne el valor, o deixa'l caure dins d'una casella. [r] menú.
 
 Script
---MISSING--
+Programa
 
 [l] to run. [r] menu.
---MISSING--
+[l] per executar-lo. [r] menú.
 
 Pane Divider
---MISSING--
+Divisor d'àrea
 
 Drag to change pane width.
---MISSING--
+Arrossega'l per canviar l'amplada de l'àrea.
 
 Library
---MISSING--
+Llibreria
 
 [l] to show the blocks in this library. [r] menu.
---MISSING--
+[l] per mostrar els blocs d'aquesta llibreria. [r] menú.
 
 Block Category
---MISSING--
+Categoria de blocs
 
 [l] to show the blocks in this category.
---MISSING--
+[l] per mostrar els blocs d'aquesta categoria.
 
 Palette
---MISSING--
+Paleta
 
 Drag blocks from here to build scripts. Drop scripts here to delete them.
---MISSING--
+Arrossega blocs des d'aquí fins a la zona de programació per construir programes. Deixa-hi caure programes per eliminar-los.
 
 Scripts Pane
---MISSING--
+Àrea de programes
 
 Drag blocks here to build scripts. [r] menu.
---MISSING--
+Col·loca-hi blocs per construir programes. [r] menú.
 
 #################################
 # Block Descriptions for TipBar #
 #################################
 
 Turn the user LED on or off.
---MISSING--
+Encén o apaga del LED d'usuari.
 
 Display a bubble showing the value.
---MISSING--
+Mostra una bafarada amb el valor.
 
 Graph the value.
---MISSING--
+Afegeix el valor a la gràfica.
 
 Report the state of button A ( (-o) or (o-) ).
---MISSING--
+Reporta l'estat del botó A ( (-o) o (o-) ).
 
 Report the state of button B ( (-o) or (o-) ).
---MISSING--
+Reporta l'estat del botó B ( (-o) o (o-) ).
 
 Report the milliseconds since the timer was last reset.
---MISSING--
+Reporta els mil·lisegons des de l'última inicialització del temporitzador.
 
 Reset the timer.
---MISSING--
+Inicialitza el temporitzador.
 
 Report the milliseconds since power up.
---MISSING--
+Reporta els mil·lisegons des que la placa s'ha engegat.
 
 Report the microseconds since power up.
---MISSING--
+Reporta els microsegons des que la placa s'ha engegat.
 
 Report the board type.
---MISSING--
+Reporta el tipus de placa.
 
 Report the electrical logic level on a digital pin ( (-o) or (o-) ).
---MISSING--
+Reporta el nivell lògic elèctric en un pin digital ( (-o) o (o-) ).
 
 Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
---MISSING--
+Reporta un nombre proporcional al voltatge en un pin analògic (0 = terra, 1023 = voltatge subministrat).
 
 Turn a pin on or off ( (-o) or (o-) ).
---MISSING--
+Activa o desactiva un pin digital ( (-o) o (o-) ).
 
 Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
---MISSING--
+Modula per amplada de polsos (PWM) un pin amb un cicle de treball determinat (0 - 1023).
 
 Report number of analog pins on this device.
---MISSING--
+Reporta el número de pins analògics en aquest dispositiu.
 
 Report number of digital pins on this device.
---MISSING--
+Reporta el número de pins digitals en aquest dispositiu.
 
 Report the value of a register (0-255) of an I2C device (0-127).
---MISSING--
+Reporta el valor d'un registre (0-255) d'un dispositiu I2C (0-127).
 
 Set an I2C device and register to given value (0-255).
---MISSING--
+Fixa un dispositiu i registre I2C a un valor determinat (0-255).
 
 Receive multiple bytes from an I2C device.
---MISSING--
+Rep múltiples bytes d'un dispositiu I2C.
 
 Send multiple bytes to an I2C device.
---MISSING--
+Envia múltiples bytes a un dispositiu I2C.
 
 Send a byte (0-255) to an SPI device.
---MISSING--
+Envia un byte (0-255) a un dispositiu SPI.
 
 Read a byte from an SPI device while sending a zero byte. Report the byte received.
---MISSING--
+Llegeix un byte d'un dispositiu SPI, i envia un byte zero. Reporta el byte rebut.
 
 Set the SPI clock speed and mode.
---MISSING--
+Fixa la velocitat del rellotge i el mode de l'SPI.
 
 Send a byte array via SPI, replacing its contents with the bytes received.
---MISSING--
+Envia una llista de bytes per SPI, substituint els seus continguts pels bytes rebuts.
 
 Open the serial port at the given baud rate.
---MISSING--
+Obre el port sèrie a la velocitat en bauds especificada.
 
 Close the serial port.
---MISSING--
+Tanca el port sèrie.
 
 Report data received from the serial port (a byte array).
---MISSING--
+Reporta les dades rebudes pel port sèrie (una llista de bytes).
 
 Send a byte array to the serial port.
---MISSING--
+Envia una llista de bytes pel port sèrie.
 
 Run when the board powers up or when the IDE start button is clicked.
---MISSING--
+Executa quan la placa s'engegui o en clicar al botó d'inici de l'editor. 
 
 Run when buttons A, B, or A+B are pressed.
---MISSING--
+Executa quan es premin els botons A, B, o tots dos alhora.
 
 Repeat the enclosed blocks indefinitely.
---MISSING--
+Repeteix l'execució dels blocs que conté, contínuament.
 
 Repeat the enclosed blocks the given number of times.
---MISSING--
+Repeteix l'execució dels blocs que conté, el nombre de vegades especificat.
 
 Wait the given number of milliseconds.
---MISSING--
+Espera el nombre de mil·lisegons especificat.
 
 Run the first set of blocks whose test condition is (-o) .
---MISSING--
+Executa el primer grup de blocs pels quals la condició sigui (-o) .
 
 Run when the condition becomes (-o) .
---MISSING--
+Executa quan la condició sigui (-o) .
 
 Wait until the condition becomes (-o) .
---MISSING--
+Espera fins que la condició sigui (-o) .
 
 Return (report) the given value from a function or script.
---MISSING--
+Retorna (reporta) el valor especificat des d'una funció o programa.
 
 Run when the given message is broadcast.
---MISSING--
+Executa quan s'emeti el missatge especificat.
 
 Broadcast the given message.
---MISSING--
+Emet el missatge especificat.
 
 Do nothing. Used to add notes and documentation.
---MISSING--
+No fa res. S'utilitza per afegir notes i documentació.
 
 Repeat the enclosed blocks with the variable set to the current iteration number or item.
---MISSING--
+Repeteix l'execució dels blocs que conté, fixant la variable a l'element o número de l'interval corresponent en cada iteració.
 
 Repeat the enclosed blocks until the condition becomes (-o) .
---MISSING--
+Repeteix l'execució dels blocs que conté, fins que la condició sigui (-o) .
 
 Stop this task.
---MISSING--
+Atura aquesta tasca.
 
 Stop all tasks except this one.
---MISSING--
+Atura totes les tasques excepte aquesta.
 
 Wait the given number of microseconds.
---MISSING--
+Espera el nombre de microsegons especificat.
 
 Report the last broadcast message received.
---MISSING--
+Reporta l'últim missatge emès i rebut.
 
 Call the function with the given name and optional parameter list.
---MISSING--
+Executa la funció amb el nom especificat i amb una llista de paràmetres opcional.
 
 Call the function with the given name and optional parameter list and report its return value.
---MISSING--
+Crida la funció amb el nom especificat i amb una llista de paràmetres opcional, i reporta'n el valor de retorn.
 
 Report the sum of the given numbers.
---MISSING--
+Reporta la suma dels nombres especificats.
 
 Report the first number minus the second.
---MISSING--
+Reporta la resta entre el primer i el segon nombre.
 
 Report the product of the given numbers.
---MISSING--
+Reporta el producte dels dos números especificats.
 
 Report the first number divided by the second.
---MISSING--
+Reporta el resultat de dividir el primer nombre entre el segon.
 
 Report the remainder of dividing the first number by the second.
---MISSING--
+Reporta el residu de dividir el primer nombre entre el segon.
 
 Report the absolute value of the given number (always >= 0).
---MISSING--
+Reporta el valor absolut del nombre especificat (sempre >= 0).
 
 Report the minimum of the values.
---MISSING--
+Reporta el més petit dels dos valors.
 
 Report the maximum of the values.
---MISSING--
+Reporta el més gran dels dos valors.
 
 Report a randomly chosen number in the given range.
---MISSING--
+Reporta un nombre a l'atzar dins el rang especificat.
 
 Report (-o) if the first value is less than the second one.
---MISSING--
+Reporta (-o) si el primer valor és menor que el segon.
 
 Report (-o) if the first value is less than or equal to the second one.
---MISSING--
+Reporta (-o) si el primer valor és menor o igual que el segon.
 
 Report (-o) if the two values are equal.
---MISSING--
+Reporta (-o) si els dos valors són iguals.
 
 Report (-o) if the two values are not equal.
---MISSING--
+Reporta (-o) si els dos valors són diferents.
 
 Report (-o) if the first value is greater than or equal to the second one.
---MISSING--
+Reporta (-o) si el primer valor és major o igual que el segon.
 
 Report (-o) if the first value is greater than the second one.
---MISSING--
+Reporta (-o) si el primer valor és major que el segon.
 
 Boolean constant ( (-o) or (o-) ).
---MISSING--
+Constant booleana ( (-o) o (o-) ).
 
 Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
---MISSING--
+Reporta la inversa d'un valor booleà ( (-o) o (o-) ).
 
 Report (-o) if both values are (-o)
---MISSING--
+Reporta (-o) si els dos valors són (-o).
 
 Report (-o) if either value is (-o)
---MISSING--
+Reporta (-o) si algun dels dos valors és (-o).
 
 Report (-o) if first input is a value of the given data type.
---MISSING--
+Reporta (-o) si la primera casella té un valor del tipus especificat.
 
 Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
---MISSING--
+Retorna el valor numèric d'una cadena de text hexadecimal (rang: -0x1FFFFFFF a 0x1FFFFFFF)
 
 Report bitwise AND of two numbers.
---MISSING--
+Reporta l'operació bit a bit "i" (AND) entre dos nombres.
 
 Report bitwise OR of two numbers.
---MISSING--
+Reporta l'operació bit a bit "o inclusiva" (OR) entre dos nombres.
 
 Report bitwise XOR (exclusive OR) of two numbers.
---MISSING--
+Reporta l'operació bit a bit "o exclusiva" (XOR) entre dos nombres.
 
 Report bitwise inverse of the given number.
---MISSING--
+Reporta l'inversa bit a bit del nombre especificat.
 
 Report the given number shifted left by the given number of bits.
---MISSING--
+Reporta el nombre especificat desplaçat aritmèticament cap a l'esquerra el nombre de bits especificat.
 
 Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
---MISSING--
+Reporta el nombre especificat desplaçat aritmèticament cap a la dreta el nombre de bits especificat.
 
 Set a variable to the given value.
---MISSING--
+Posa el valor especificat a una variable.
 
 Change a variable by the given amount.
---MISSING--
+Canvia el valor d'una variable en la quantitat especificada.
 
 Create a variable local to the containing script with the given initial value.
---MISSING--
+Crea una variable local al programa que la contingui i assigna-li un valor inicial.
 
 Report the Nth item of a list, string, or byte array.
---MISSING--
+Reporta l'element en la posició especificada d'una llista, cadena de text o llista de bytes.
 
 Report the number of items in a list, string, or byte array.
---MISSING--
+Retorna el nombre d'elements d'una llista, cadena de text o llista de bytes.
 
 Join (concatenate) the given lists, strings, or byte arrays and report the result.
---MISSING--
+Reporta la unió (concatenació) de les llistes, cadenes de text o llistes de bytes especificades.
 
 Create and report a short list containing the given items. Length limited by available stack space.
---MISSING--
+Crea i reporta una llista amb els elements especificats. La llargada de la llista està limitada a l'espai disponible a la pila.
 
 Add an item to the end of a list.
---MISSING--
+Afegeix un element al final d'una llista.
 
 Replace the Nth item (or all items) of a list or byte array with the given value.
---MISSING--
+Substitueix l'element en la posició especificada (o tots els elements) d'una llista o llista de bytes pel nou valor especificat.
 
 Delete the Nth item (or all items) of a list.
---MISSING--
+Elimina l'element en la posició especificada (o tots els elements) d'una llista.
 
 Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
---MISSING--
+Cerca i reporta la posició d'un element en una llista, o una cadena de text dins d'una altra. Reporta -1 si no s'hi troba.
 
 Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
---MISSING--
+Reporta una còpia d'una llista, cadena de text o llista de bytes a partir de la posició d'inici especificada i fins al final (o fins la posició final opcional especificada).
 
 Split the given string with the given delimiter and report the result (a list of strings).
---MISSING--
+Retorna una cadena de text dividida pels delimitadors especificats (una llista de cadenes de text).
 
 Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
---MISSING--
+Combina els elements d'una llista en una cadena de text, opcionalment separats per un delimitador (com ara una coma).
 
 Report the Unicode value ("code point") of the Nth character of the given string.
---MISSING--
+Reporta el valor Unicode del caràcter en la posició especificada d'una cadena de text.
 
 Report a string containing the given Unicode value ("code point") or list of values.
---MISSING--
+Reporta una cadena de text formada pel valor o llista de valors Unicode especificats.
 
 Report a new list of the given length filled with zero or the optional value.
---MISSING--
+Reporta una nova llista de la mida especificada que contingui zeros (o el valor opcional especificat) en totes les seves posicions.
 
 Report a new byte array of the given length filled with zero or the optional value.
---MISSING--
+Reporta una nova llista de bytes de la llargada especificada que contingui zeros (o el valor opcional especificat) en totes les seves posicions.
 
 Report a byte array containing the UTF-8 bytes of the given string.
---MISSING--
+Reporta una llista de bytes que contingui els bytes UTF-8 de la cadena de text especificada.
 
 Report the number of words of memory available. Stop button frees up memory.
---MISSING--
+Reporta el número de paraules (grups de 32 bits, o 4 bytes) de memòria disponibles.
 
 
