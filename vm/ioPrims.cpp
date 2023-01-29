@@ -664,6 +664,7 @@ const char * boardType() { return BOARD_TYPE; }
 
 #define MODE_NOT_SET (-1)
 static char currentMode[TOTAL_PINS];
+static char pwmRunning[TOTAL_PINS];
 
 #define SET_MODE(pin, newMode) { \
 	if ((newMode) != currentMode[pin]) { \
@@ -928,6 +929,7 @@ void primAnalogWrite(OBJ *args) {
 
 		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 	#endif
+	pwmRunning[pinNum] = true;
 }
 
 OBJ primDigitalRead(int argCount, OBJ *args) {
@@ -1037,7 +1039,11 @@ void primDigitalSet(int pinNum, int flag) {
 		}
 	#endif
 
-	digitalWrite(pinNum, (flag ? HIGH : LOW));
+	if (pwmRunning[pinNum]) {
+		analogWrite(pinNum, (flag ? 1023 : 0));
+	} else {
+		digitalWrite(pinNum, (flag ? HIGH : LOW));
+	}
 }
 
 // User LED
