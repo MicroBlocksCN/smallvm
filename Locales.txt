@@ -875,6 +875,19 @@ RFID _ = _
 get PN532 firmware version
 
 ####
+# Touch Screen
+
+Touch Screen
+
+TFT touched
+
+TFT touch X position
+
+TFT touch Y position
+
+TFT touch pressure
+
+####
 # HTTP Client
 
 HTTP client
