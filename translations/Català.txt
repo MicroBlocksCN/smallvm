@@ -1248,6 +1248,24 @@ get PN532 firmware version
 versió del firmware del PN532
 
 ####
+# Touch Screen
+
+Touch Screen
+Pantalla tàctil
+
+TFT touched
+TFT tocada
+
+TFT touch X position
+posició X del toc a la TFT
+
+TFT touch Y position
+posició Y del toc a la TFT
+
+TFT touch pressure
+pressió del toc a la TFT
+
+####
 # HTTP Client
 
 HTTP client
