@@ -2859,7 +2859,8 @@ OBJ primOpenURL(int nargs, OBJ args[]) {
 	#if defined(EMSCRIPTEN)
 		EM_ASM_({
 			var url = UTF8ToString($0);
-			window.open(url, '_blank').focus();
+			var newTab = window.open(url, '_blank');
+			if (newTab != null) { newTab.focus(); }
 		}, url);
 	#elif defined(_WIN32) || defined(_WIN64)
 		ShellExecute(NULL, TEXT("open"), url, NULL, NULL, SW_SHOWNORMAL);
