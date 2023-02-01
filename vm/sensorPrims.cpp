@@ -152,6 +152,12 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 		for (int i = 0; i < count; i++) {
 			Wire.write(*src++);
 		}
+	} else if (IS_TYPE(data, StringType) {
+		uint8 *src = (uint8 *) obj2str(data);
+		int count = strlen(data);
+		for (int i = 0; i < count; i++) {
+			Wire.write(*src++);
+		}
 	}
 	int error = Wire.endTransmission();
 	if (error) fail(i2cTransferFailed);
