@@ -2211,8 +2211,8 @@ Llibreries
 AI
 Intel·ligència artificial
 
-Graphics
-Gràfics
+Graphics and Displays
+Gràfics i pantalles
 
 Kits and Boards
 Kits i plaques
