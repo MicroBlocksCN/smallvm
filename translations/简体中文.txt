@@ -2266,6 +2266,38 @@ Okay
 Confirm
 确认
 
+# Library folders
+
+Libraries
+积木库
+
+AI
+人工智能
+
+Graphics and Displays
+图形与显示
+
+Kits and Boards
+套件与扩展板
+
+Network
+网络
+
+Other
+其他
+
+Robots
+机器人
+
+Sensing
+侦测
+
+Sound
+声音
+
+System
+系统
+
 # File picker and library dialogs
 
 Libraries
