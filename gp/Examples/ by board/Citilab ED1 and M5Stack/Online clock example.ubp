@@ -8,6 +8,7 @@ variables hours minutes seconds server
   spec ' ' 'fetch current time from server' 'fetch current time from server _' 'auto' 'microblocks.fun'
   spec 'r' 'online time' 'online time from server _' 'auto' 'microblocks.fun'
   spec ' ' 'tick' 'tick'
+  spec 'r' 'twoDigits' 'twoDigits _' 'auto' 5
 
 to 'draw time' {
   local 'y' (('[tft:getHeight]') / 3)
@@ -74,7 +75,12 @@ to tick {
   }
 }
 
-script 50 50 {
+to twoDigits n {
+  if (n < 10) {return ('[data:join]' '0' n)}
+  return ('[data:join]' '' n)
+}
+
+script 43 43 {
 comment 'This project fetches the current time (GMT) from
 the microblocks.fun server. It does so by parsing
 the headers of the HTTP response. After that, it
@@ -87,22 +93,21 @@ Remember to enter your Wifi network name and
 password.'
 }
 
-script 564 80 {
+script 557 73 {
 whenBroadcastReceived 'time received'
 forever {
+  sayIt ('[data:join]' hours ':' (twoDigits minutes) ':' (twoDigits seconds))
   'draw time'
   tick
   waitMillis 1000
 }
 }
 
-script 52 238 {
+script 45 231 {
 whenStarted
 server = 'microblocks.fun'
-if ((getIPAddress) == '0.0.0.0') {
-  '[tft:text]' 'Connecting' 0 (('[tft:getHeight]') / 3) (colorSwatch 46 255 40 255) 2 true
-  wifiConnect 'Network_Name' ''
-}
+'[tft:text]' 'Connecting' 0 (('[tft:getHeight]') / 3) (colorSwatch 46 255 40 255) 2 true
+wifiConnect 'Network_Name' ''
 '[display:mbDisplayOff]'
 '[tft:text]' 'Fetching time' 0 (('[tft:getHeight]') / 5) (colorSwatch 46 255 40 255) 2 true
 '[tft:text]' server 0 (('[tft:getHeight]') / 2) (colorSwatch 46 255 40 255) 2 true
@@ -111,12 +116,12 @@ if ((getIPAddress) == '0.0.0.0') {
 sendBroadcast 'time received'
 }
 
-script 564 260 {
+script 557 253 {
 whenButtonPressed 'A'
 'fetch current time from server' server
 }
 
-script 567 365 {
+script 560 358 {
 whenCondition (and ((getIPAddress) != '0.0.0.0') (seconds == 0))
 'fetch current time from server' server
 waitUntil (seconds != 0)
