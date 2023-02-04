@@ -14,12 +14,6 @@ pio run -e ed1
 cp .pio/build/ed1/firmware.bin precompiled/vm_citilab-ed1.bin
 pio run -e m5stack
 cp .pio/build/m5stack/firmware.bin precompiled/vm_m5stack.bin
-pio run -e m5stick
-cp .pio/build/m5stick/firmware.bin precompiled/vm_m5stick.bin
-pio run -e m5stick+
-cp .pio/build/m5stick+/firmware.bin precompiled/vm_m5stick+.bin
-pio run -e m5atom
-cp .pio/build/m5atom/firmware.bin precompiled/vm_m5atom.bin
 pio run -e esp32
 cp .pio/build/esp32/firmware.bin precompiled/vm_esp32.bin
 pio run -e cpx
