@@ -9,7 +9,9 @@ var filesToCache = [
   '/run/FileSaver.js',
   '/run/gp_wasm.js',
   '/run/gp_wasm.wasm',
-  '/run/gp_wasm.data',
+  // '/run/gp_wasm.data',
+  // use cloud file for speeding up
+  'https://scratch3-files.just4fun.site/gp_wasm-1-2-5.data',
 ];
 
 /* Start the service worker and cache all of the app's content */
