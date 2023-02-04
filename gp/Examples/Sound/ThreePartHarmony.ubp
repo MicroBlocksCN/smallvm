@@ -47,7 +47,7 @@ waitMillis verseTime
 playNoteOnVoice 'C' 0 (2 * half) 1
 }
 
-script 449 90 {
+script 448 90 {
 whenBroadcastReceived 'part1'
 playNoteOnVoice 'C' 0 half 1
 playNoteOnVoice 'B' -1 half 1
@@ -94,14 +94,14 @@ Note: This library does NOT work on the original micro:bit or Calliope mini!
 To output the audio waveform, the board must have a DAC (e.g. SAMD21 and ESP32 boards) or fast enough pulse-width modulation (PWM) hardware to simulate a DAC (e.g. nRF52 boards). To tune the output to standard A=440 pitch on boards with different clock speeds, change the tuningConstant variable in _stepForNote.'
 variables _multiTonePin _multiToneInitialized _v1 _v2 _v3 _v4 _v1Step _v2Step _v3Step _v4Step 
 
-	spec ' ' 'playNoteOnVoice' 'play note _ octave _ for _ ms voice _' 'auto num num num' 'A' 0 500 1
-	spec ' ' 'setMultitonePin' 'set multitone pin _' 'auto' ''
-	spec 'r' '_baseFreqForNoteMulti' '_baseFreqForNoteMulti _' 'auto' 'A'
-	spec ' ' '_initMultiTone' '_initMultiTone'
-	spec ' ' '_multiToneLoop' '_multiToneLoop'
-	spec 'r' '_nextSample' '_nextSample'
-	spec 'r' '_stepForNote' '_stepForNote _ octave _' 'str num' 'A' 0
-	spec 'r' '_uppercaseNote' '_uppercaseNote _' 'auto' ' a '
+  spec ' ' 'playNoteOnVoice' 'play note _ octave _ for _ ms voice _' 'auto num num num' 'A' 0 500 1
+  spec ' ' 'setMultitonePin' 'set multitone pin _' 'auto' ''
+  spec 'r' '_baseFreqForNoteMulti' '_baseFreqForNoteMulti _' 'auto' 'A'
+  spec ' ' '_initMultiTone' '_initMultiTone'
+  spec ' ' '_multiToneLoop' '_multiToneLoop'
+  spec 'r' '_nextSample' '_nextSample'
+  spec 'r' '_stepForNote' '_stepForNote _ octave _' 'str num' 'A' 0
+  spec 'r' '_uppercaseNote' '_uppercaseNote _' 'auto' ' a '
 
 to '_baseFreqForNoteMulti' note {
   comment 'Return the frequency for the given note in the middle-C octave
