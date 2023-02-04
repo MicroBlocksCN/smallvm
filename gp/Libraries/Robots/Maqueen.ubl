@@ -1,6 +1,6 @@
 module Maqueen Output
 author 'Turgut Guneysu'
-version 1 1 
+version 1 2 
 depends 'IR Remote' 
 choices LRBMenu left right both 
 choices DirMenu fwd bwd 
@@ -95,6 +95,7 @@ Contributed by Joan Guillén and Josep Ferràndiz'
   local 'init' (microsOp)
   waitUntil (or (not (digitalReadOp _mq_pin_Echo)) (((microsOp) - init) > 23320))
   local 'end' (microsOp)
+  waitMillis 10
   return ((10 * (end - init)) / 583)
 }
 

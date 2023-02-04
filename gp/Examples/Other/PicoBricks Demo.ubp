@@ -86,7 +86,7 @@ to 'reveal display buffer delay' {
   }
 }
 
-script 73 40 {
+script 72 40 {
 whenStarted
 comment 'Program başladığında HELLO mesajı yayımlanır. Bu mesajı algılayan blok da PICO
 LED ini 9 kere yakıp söndürür.'
@@ -128,7 +128,7 @@ OLEDshowGDBuffer
 sendBroadcast 'display'
 }
 
-script 602 124 {
+script 601 124 {
 whenBroadcastReceived 'display'
 local 'dCol' 33
 forever {
@@ -195,7 +195,7 @@ comment 'If Neo is left lit, this will turn it off.'
 pb_turn_off_RGB
 }
 
-script 911 1350 {
+script 910 1350 {
 whenBroadcastReceived 'display'
 comment 'POT READ
 Yukarı menüdeki graph ikonu tıklayın IDE üzerine çekip bırakın.
@@ -237,7 +237,7 @@ valNem = (pb_humidity)
 waitMillis 5000
 }
 
-script 68 1643 {
+script 67 1643 {
 whenBroadcastReceived 'display'
 forever {
   comment 'LDR Read
@@ -265,7 +265,7 @@ forever {
 }
 }
 
-script 68 1842 {
+script 67 1841 {
 whenBroadcastReceived 'display'
 forever {
   neo
@@ -276,7 +276,7 @@ script 46 1959 {
 to buzzer {}
 }
 
-script 43 2150 {
+script 42 2150 {
 to Welcome {}
 }
 
@@ -308,10 +308,10 @@ to BunnyPIC {
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
 version 1 12 
-choices ModeMenu Horizontal Vertical 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -1149,7 +1149,7 @@ to 'defer display updates' {
 
 module PicoBricks
 author MicroBlocks
-version 2 3 
+version 2 4 
 depends 'Temperature Humidity (DHT11, DHT22)' 
 description 'Robotistan PicoBricks Library
 
@@ -1284,6 +1284,7 @@ to pb_set_rgb_color color {
   '_pb_init_pins'
   '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
   '[display:neoPixelSend]' color
+  waitMillis 1
 }
 
 to pb_temperature {
@@ -1295,6 +1296,7 @@ to pb_turn_off_RGB {
   '_pb_init_pins'
   '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
   '[display:neoPixelSend]' 0
+  waitMillis 1
 }
 
 

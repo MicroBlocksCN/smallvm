@@ -701,6 +701,7 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP8266
 
 // Buffer of pulse durations used by RMT driver.
 rmt_item32_t rmt_buffer[32];
+int rmtDriverInstalled = false;
 
 static void initRMT(int pinNum) {
 	// Initialize RMT driver.
@@ -718,10 +719,11 @@ static void initRMT(int pinNum) {
 	config.tx_config.idle_output_en = true;
 	config.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
 
-	rmt_driver_uninstall(RMT_CHANNEL_0); // in case driver was installed previously
+	if (rmtDriverInstalled) rmt_driver_uninstall(RMT_CHANNEL_0);
 	rmt_config(&config);
 	rmt_driver_install(RMT_CHANNEL_0, 0, 0);
 	rmt_set_source_clk(RMT_CHANNEL_0, RMT_BASECLK_APB);
+	rmtDriverInstalled = true;
 }
 
 static void initNeoPixelPin(int pinNum) { // ESP32
@@ -1045,6 +1047,12 @@ OBJ primMBDrawShape(int argCount, OBJ *args) {
 		x = evalInt(args[1]);
 		y = evalInt(args[2]);
 	}
+
+	#if defined(PICO_ED)
+		showMicroBitPixels(shape, x, y);
+		return falseObj;
+	#endif
+
 	int srcMask = 1;
 	for (int dstY = y; dstY < (y + 5); dstY++) {
 		for (int dstX = x; dstX < (x + 5); dstX++) {

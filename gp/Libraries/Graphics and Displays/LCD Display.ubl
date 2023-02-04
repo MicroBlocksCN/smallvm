@@ -1,9 +1,9 @@
-module '16x2 DFRobot LCD (1602 I2C)' Output
+module 'LCD Display' Output
 author MicroBlocks
-version 1 3 
-description 'Basic library for 16x2 displays with an I2C "backpack" like the ones from DFRobot, SunFounder, and others.
+version 1 4 
+description 'Library for 16x2 LCD text displays with 1602 controller I2C "backpack" like the ones from DFRobot, SunFounder, and others. These displays have two lines of sixteen characters.
 
-Many of these displays need 5 volts, so you will need an external power source for 3.3v boards like the micro:bit.'
+Most of these displays require 5 volts to provide sufficient LCD contrast, so you will need an external power source for 3.3v boards like the micro:bit.'
 variables _LCD1602_ADDR _LCD1602_LINE1 _LCD1602_LINE2 _LCD1602_LOCK_MSECS 
 
   spec ' ' 'LCD1602_write' 'write _ on LCD line _' 'str num num num' 'Hello, World!' 1 1 16

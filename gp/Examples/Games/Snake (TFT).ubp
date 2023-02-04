@@ -1,0 +1,495 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables 'snake body' 'cell size' apple score 'snake direction' 
+
+  spec ' ' 'check collisions' 'check collisions'
+  spec 'r' 'copy of position' 'copy of position _' 'auto' ''
+  spec ' ' 'draw apple' 'draw apple'
+  spec ' ' 'draw snake' 'draw snake _' 'bool' true
+  spec ' ' 'eat apple' 'eat apple'
+  spec ' ' 'game over' 'game over'
+  spec ' ' 'initialize game' 'initialize game'
+  spec ' ' 'randomize apple position' 'randomize apple position'
+  spec ' ' 'turn' 'turn _' 'auto' 'left'
+  spec ' ' 'update snake position' 'update snake position'
+  spec ' ' 'write' 'write _ centered at scale _ y _ color _' 'str auto auto color' 'Hello!' 3 '10'
+
+to 'check collisions' {
+  local 'snake head' (at 1 (v 'snake body'))
+  if (or (or ((at 1 (v 'snake head')) > (('[tft:getWidth]') - (v 'cell size'))) ((at 1 (v 'snake head')) < (v 'cell size'))) (or ((at 2 (v 'snake head')) > (('[tft:getHeight]') - (v 'cell size'))) ((at 2 (v 'snake head')) < (v 'cell size')))) {
+    'game over'
+  }
+  for part ('[data:copyFromTo]' (v 'snake body') 2) {
+    if (and ((at 1 (v 'snake head')) == (at 1 part)) ((at 2 (v 'snake head')) == (at 2 part))) {'game over'}
+  }
+  if (and ((at 1 (v 'snake head')) == (at 1 apple)) ((at 2 (v 'snake head')) == (at 2 apple))) {
+    'eat apple'
+  }
+}
+
+to 'copy of position' position {
+  return ('[data:makeList]' (at 1 position) (at 2 position))
+}
+
+to 'draw apple' {
+  '[tft:circle]' (at 1 apple) (at 2 apple) (((v 'cell size') / 2) - ((v 'cell size') / 8)) (colorSwatch 190 49 11 255)
+}
+
+to 'draw snake' 'not erasing' {
+  if (v 'not erasing') {
+    for part (v 'snake body') {
+      '[tft:circle]' (at 1 part) (at 2 part) (((v 'cell size') / 2) - ((v 'cell size') / 8)) (colorSwatch 35 190 30 255)
+    }
+  } else {
+    comment 'Just clear the tail'
+    '[tft:circle]' (at 1 (at 'last' (v 'snake body'))) (at 2 (at 'last' (v 'snake body'))) ((((v 'cell size') / 2) - ((v 'cell size') / 8)) + 1) (colorSwatch 0 0 0 255)
+  }
+}
+
+to 'eat apple' {
+  'play tone' 'C' 0 10
+  score += 1
+  'randomize apple position'
+  local 'snake tail' ('copy of position' (at 'last' (v 'snake body')))
+  '[data:addLast]' (v 'snake tail') (v 'snake body')
+  'draw apple'
+}
+
+to 'game over' {
+  '[display:mbDisplayOff]'
+  write 'GAME OVER' (maximum 1 (('[tft:getWidth]') / 60)) (('[tft:getHeight]') / 3) (colorSwatch 218 6 23 255)
+  write ('[data:join]' 'SCORE: ' score) (maximum 1 (('[tft:getWidth]') / 120)) (('[tft:getHeight]') / 2) (colorSwatch 218 6 23 255)
+  write 'Press A+B to try again' (maximum 1 (('[tft:getWidth]') / 240)) ((('[tft:getHeight]') * 3) / 4) (colorSwatch 26 218 63 255)
+  stopAll
+  'play ringtone' 'GameOver:d=16,o=2,b=60:f,e,d#,4c#'
+  stopTask
+}
+
+to 'initialize game' {
+  score = 0
+  'snake direction' = ('[data:makeList]' 1 0)
+  'cell size' = (('[tft:getWidth]') / 12)
+  'snake body' = ('[data:makeList]' ('[data:makeList]' ((v 'cell size') * 3) ((v 'cell size') * 2)) ('[data:makeList]' ((v 'cell size') * 2) ((v 'cell size') * 2)) ('[data:makeList]' (v 'cell size') ((v 'cell size') * 2)))
+  apple = ('[data:makeList]' ((v 'cell size') * 2) ((v 'cell size') * 2))
+  'randomize apple position'
+  '[tft:rect]' 0 0 ('[tft:getWidth]') ('[tft:getHeight]') (colorSwatch 190 35 4 255) true
+  '[tft:rect]' ((v 'cell size') / 6) ((v 'cell size') / 6) (('[tft:getWidth]') - ((v 'cell size') / 3)) (('[tft:getHeight]') - ((v 'cell size') / 3)) (colorSwatch 0 0 0 255) true
+}
+
+to 'randomize apple position' {
+  local 'snake head' (at 1 (v 'snake body'))
+  local 'found a spot' (booleanConstant false)
+  repeatUntil (v 'found a spot') {
+    apple = ('[data:makeList]' ((random 1 ((('[tft:getWidth]') / (v 'cell size')) - 1)) * (v 'cell size')) ((random 1 ((('[tft:getHeight]') / (v 'cell size')) - 1)) * (v 'cell size')))
+    'found a spot' = (booleanConstant true)
+    for part (v 'snake body') {
+      if (and ((at 1 part) == (at 1 apple)) ((at 2 part) == (at 2 apple))) {'found a spot' = (booleanConstant false)}
+    }
+  }
+}
+
+to turn 'turn direction' {
+  comment 'Smart this up, with a lookup list, please'
+  if ((v 'turn direction') == 'right') {
+    if (('[data:joinStrings]' (v 'snake direction')) == '10') {
+      'snake direction' = ('[data:makeList]' 0 1)
+    } (('[data:joinStrings]' (v 'snake direction')) == '01') {
+      'snake direction' = ('[data:makeList]' -1 0)
+    } (('[data:joinStrings]' (v 'snake direction')) == '-10') {
+      'snake direction' = ('[data:makeList]' 0 -1)
+    } else {
+      'snake direction' = ('[data:makeList]' 1 0)
+    }
+  } else {
+    if (('[data:joinStrings]' (v 'snake direction')) == '10') {
+      'snake direction' = ('[data:makeList]' 0 -1)
+    } (('[data:joinStrings]' (v 'snake direction')) == '0-1') {
+      'snake direction' = ('[data:makeList]' -1 0)
+    } (('[data:joinStrings]' (v 'snake direction')) == '-10') {
+      'snake direction' = ('[data:makeList]' 0 1)
+    } else {
+      'snake direction' = ('[data:makeList]' 1 0)
+    }
+  }
+}
+
+to 'update snake position' {
+  for 'part index' ('[data:range]' (size (v 'snake body')) 2) {
+    atPut (v 'part index') (v 'snake body') ('copy of position' (at ((v 'part index') - 1) (v 'snake body')))
+  }
+  local 'snake head' (at 1 (v 'snake body'))
+  atPut 1 (v 'snake head') ((at 1 (v 'snake head')) + ((at 1 (v 'snake direction')) * (v 'cell size')))
+  atPut 2 (v 'snake head') ((at 2 (v 'snake head')) + ((at 2 (v 'snake direction')) * (v 'cell size')))
+}
+
+to write text scale y color {
+  local 'width' (((scale * 6) * (size text)) - scale)
+  '[tft:text]' text ((('[tft:getWidth]') - width) / 2) y color scale false
+}
+
+script 80 43 {
+whenStarted
+sendBroadcast 'go!'
+}
+
+script 290 47 {
+whenButtonPressed 'A'
+turn 'left'
+}
+
+script 80 130 {
+whenBroadcastReceived 'go!'
+'initialize game'
+'draw apple'
+forever {
+  'draw snake' false
+  'update snake position'
+  'draw snake' true
+  'check collisions'
+  waitMillis 200
+}
+}
+
+script 293 143 {
+whenButtonPressed 'B'
+turn 'right'
+}
+
+script 296 252 {
+whenButtonPressed 'A+B'
+sendBroadcast 'go!'
+}
+
+script 89 380 {
+whenBroadcastReceived 'go!'
+forever {
+  'play ringtone' 'Snake:d=16,o=5,b=112:d,8p.,8a,8a#,8c6,8c6,
+8a#,8a,4c6,c,8p.,c,8p.,c,8p.,d,8p.,d,p,c6,d6,d,
+8c6,a,8c6,8d6,c,8p.,c,8p.,c,8p.,c,8p.,d,8p.,8a,
+8a#,8c6,8c6,8a#,8a,4c6,c,8p.,c,8p.,c,8p.,d,8p.,
+d,p,c6,d6,d,8c6,a,8c6,8d6,c,8p.,c,8p.,c,8p.,c,
+8p.,8d'
+}
+}
+
+
+module Ringtone Output
+author MicroBlocks
+version 1 2 
+depends Tone 
+description 'Plays tunes in RTTTL (Ringtone Text Transfer Language) a language developed by Nokia to store ringtones.
+Also known as Nokring.'
+variables '_RTTTL default duration' '_RTTTL default octave' '_RTTTL bpm' '_RTTTL song name' 
+
+  spec 'r' '_RTTTL parse control from' '_RTTTL parse control from _' 'str' ''
+  spec ' ' 'play ringtone' 'play ringtone _' 'str' 'Pacman:d=16,o=6,b=140:
+b5,b,f#,d#,8b,8d#,c,c7,g,f,8c7,8e,b5,b,f#,d#,8b,8d#,32d#,32e,f,32f,32f#,g,32g,32g#,a,8b'
+  spec 'r' 'current song name' 'current song name'
+  spec ' ' '_RTTTL play note' '_RTTTL play note _' 'str' '8c#'
+
+to '_RTTTL parse control from' 'control section' {
+  comment 'Extract control section'
+  local 'd' 4
+  local 'o' 6
+  local 'b' 63
+  repeatUntil ((size (v 'control section')) == 0) {
+    local 'next separator' ('[data:find]' ',' (v 'control section'))
+    if ((v 'next separator') == -1) {
+      'next separator' = (size (v 'control section'))
+    }
+    local 'to process' ('[data:copyFromTo]' (v 'control section') 1 (v 'next separator'))
+    'control section' = ('[data:copyFromTo]' (v 'control section') ((v 'next separator') + 1))
+    'next separator' = ('[data:find]' ',' (v 'to process'))
+    if ((v 'next separator') == -1) {
+      'next separator' = ((size (v 'to process')) + 1)
+    }
+    if (('[data:find]' 'd' (v 'to process')) > 0) {
+      d = ('[data:copyFromTo]' (v 'to process') (('[data:find]' '=' (v 'to process')) + 1) ((v 'next separator') - 1))
+    } (('[data:find]' 'b' (v 'to process')) > 0) {
+      b = ('[data:copyFromTo]' (v 'to process') (('[data:find]' '=' (v 'to process')) + 1) ((v 'next separator') - 1))
+    } (('[data:find]' 'o' (v 'to process')) > 0) {
+      o = ('[data:copyFromTo]' (v 'to process') (('[data:find]' '=' (v 'to process')) + 1) ((v 'next separator') - 1))
+    }
+  }
+  return ('[data:makeList]' d o b)
+}
+
+to '_RTTTL play note' note {
+  local 'duration' ''
+  local 'note name' ''
+  local 'octave' (v '_RTTTL default octave')
+  local 'ms / whole note' (240000 / (v '_RTTTL bpm'))
+  local 'isDotted' (('[data:find]' '.' note) > -1)
+  note = ('_trimmedLowercase' note)
+  if (note == '') {
+    comment 'empty note string; skip'
+    return 0
+  }
+  comment 'parse duration value, if there is one'
+  repeatUntil (or (('[data:unicodeAt]' 1 note) < 48) (('[data:unicodeAt]' 1 note) > 57)) {
+    duration = ('[data:join]' duration (at 1 note))
+    note = ('[data:copyFromTo]' note 2)
+  }
+  if (duration == '') {
+    duration = (v '_RTTTL default duration')
+  }
+  comment 'parse note name'
+  if (or (('[data:find]' '#' note) > -1) (('[data:find]' '_' note) > -1)) {
+    'note name' = ('[data:copyFromTo]' note 1 2)
+  } else {
+    'note name' = (at 1 note)
+  }
+  note = ('[data:copyFromTo]' note ((size (v 'note name')) + 1))
+  comment 'deal with dotted notes'
+  if isDotted {
+    duration = ((((v 'ms / whole note') / duration) * 15) / 10)
+  } else {
+    duration = ((v 'ms / whole note') / duration)
+  }
+  comment 'parse octave, if there is one'
+  if (note != '') {
+    octave = (at 1 note)
+  }
+  'play tone' (v 'note name') (octave - 4) duration
+}
+
+to 'current song name' {
+  return (v '_RTTTL song name')
+}
+
+to 'play ringtone' RTTTL {
+  comment 'Initialize frequency map.'
+  ignoreArgs ('_baseFreqForNote' 'c')
+  comment 'Remove song name'
+  '_RTTTL song name' = ('[data:copyFromTo]' RTTTL 1 (('[data:find]' ':' RTTTL) - 1))
+  RTTTL = ('[data:copyFromTo]' RTTTL ((size (v '_RTTTL song name')) + 2))
+  local 'control' ('_RTTTL parse control from' ('[data:copyFromTo]' RTTTL 1 (('[data:find]' ':' RTTTL) - 1)))
+  '_RTTTL default duration' = (at 1 control)
+  '_RTTTL default octave' = (at 2 control)
+  '_RTTTL bpm' = (at 3 control)
+  RTTTL = ('[data:copyFromTo]' RTTTL (('[data:find]' ':' RTTTL) + 1))
+  repeatUntil ((size RTTTL) == 0) {
+    local 'next separator' ('[data:find]' ',' RTTTL)
+    if ((v 'next separator') == -1) {
+      'next separator' = ((size RTTTL) + 1)
+    }
+    local 'next note' ('[data:copyFromTo]' RTTTL 1 ((v 'next separator') - 1))
+    RTTTL = ('[data:copyFromTo]' RTTTL ((v 'next separator') + 1))
+    '_RTTTL play note' (v 'next note')
+  }
+  '_RTTTL song name' = ''
+}
+
+
+module TFT Output
+author MicroBlocks
+version 1 3 
+tags tft graphics draw 
+description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
+
+  spec ' ' '[display:mbDisplayOff]' 'clear display'
+  spec ' ' '[tft:rect]' 'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num color bool' 10 10 40 30 nil true
+  spec ' ' '[tft:roundedRect]' 'draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _ : filled _' 'num num num num num color bool' 10 10 40 30 8 nil true
+  spec ' ' '[tft:circle]' 'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num color bool' 40 40 30 nil true
+  spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
+  spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
+  spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'makeGray' 'gray _ %' 'num' 50
+  spec 'r' 'randomColor' 'random color'
+  spec 'r' '[tft:getWidth]' 'TFT width'
+  spec 'r' '[tft:getHeight]' 'TFT height'
+  spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  spec ' ' '[tft:enableDisplay]' 'obsolete enable TFT _' 'bool' true
+
+to makeColor r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return ((r << 16) | ((g << 8) | b))
+}
+
+to makeGray percent {
+  gray = ((percent * 255) / 100)
+  gray = (maximum 0 (minimum gray 255))
+  return ((gray << 16) | ((gray << 8) | gray))
+}
+
+to randomColor {
+  local 'n1' (random 100 200)
+  local 'n2' (random 0 100)
+  if (1 == (random 1 3)) {
+    return ((n1 << 16) | (n2 << 8))
+  } (1 == (random 1 2)) {
+    return ((n2 << 16) | n1)
+  } else {
+    return ((n1 << 8) | n2)
+  }
+}
+
+
+module Tone Output
+author MicroBlocks
+version 1 7 
+tags tone sound music audio note speaker 
+description 'Audio tone generation. Make music with MicroBlocks!'
+variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
+
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
+  spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  spec ' ' 'startTone' 'start tone _ Hz' 'num' 440
+  spec ' ' 'stopTone' 'stop tone'
+  spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
+  spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
+  spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+  spec ' ' '_toneLoop' '_toneLoop _ for _ ms' 'num num' 440000 100
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+
+to '_baseFreqForNote' note {
+  comment 'Return the frequency for the given note in the middle-C octave
+scaled by 1000. For example, return 440000 (440Hz) for A.
+Note names may be upper or lower case. Note names
+may be followed by # for a sharp or b for a flat.'
+  local 'normalized note' ('_trimmedLowercase' note)
+  if (_toneNoteNames == 0) {
+    _toneNoteNames = ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')
+    _toneArezzoNotes = ('[data:makeList]' 'do' 'do#' 're' 're#' 'mi' 'fa' 'fa#' 'sol' 'sol#' 'la' 'la#' 'si' 'do_' 'dob' 're_' 'reb' 'mi_' 'mi#' 'fa_' 'solb' 'sol_' 'lab' 'la_' 'sib' 'si_' 'si#')
+  }
+  if (('[data:find]' (v 'normalized note') _toneArezzoNotes) > 0) {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneArezzoNotes))
+  } else {
+    return ('_baseFreqForSemitone' ('[data:find]' (v 'normalized note') _toneNoteNames))
+  }
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883 246942 277183 277183 311127 311127 349228 329628 369994 369994 415305 415305 466164 466164 523252)}
+  if (and (1 <= semitone) (semitone <= (size _toneFrequencies))) {
+    return (at semitone _toneFrequencies)
+  } else {
+    comment 'Bad note name; return 10 Hz'
+    return 10000
+  }
+}
+
+to '_measureLoopOverhead' {
+  comment 'Measure the loop overhead on this device'
+  local 'halfCycle' 100
+  local 'startT' (microsOp)
+  repeat 100 {
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+    digitalWriteOp _tonePin false
+    waitMicros halfCycle
+  }
+  local 'usecs' ((microsOp) - startT)
+  return ((usecs - 20000) / 200)
+}
+
+to '_toneLoop' scaledFreq ms {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {
+    '[io:playTone]' _tonePin (scaledFreq / 1000)
+    waitMillis ms
+    '[io:playTone]' _tonePin 0
+  } else {
+    local 'halfCycle' ((500000000 / scaledFreq) - _toneLoopOverhead)
+    local 'cycles' ((ms * 500) / halfCycle)
+    repeat cycles {
+      digitalWriteOp _tonePin true
+      waitMicros halfCycle
+      digitalWriteOp _tonePin false
+      waitMicros halfCycle
+    }
+  }
+}
+
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+or periods and all lowercase.'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (and (ch > 32) (ch != 46)) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
+}
+
+to 'attach buzzer to pin' pinNumber {
+  if (pinNumber == '') {
+    comment 'Pin number not specified; use default pin for this device'
+    if ((boardType) == 'Citilab ED1') {
+      _tonePin = 26
+    } ((boardType) == 'M5Stack-Core') {
+      _tonePin = 25
+    } ((boardType) == 'M5StickC') {
+      _tonePin = 26
+    } ((boardType) == 'Calliope') {
+      digitalWriteOp 23 true
+      digitalWriteOp 24 true
+      _tonePin = 25
+    } ((boardType) == 'D1-Mini') {
+      _tonePin = 12
+    } else {
+      _tonePin = -1
+    }
+  } else {
+    _tonePin = pinNumber
+  }
+  _toneLoopOverhead = ('_measureLoopOverhead')
+  _toneInitalized = (booleanConstant true)
+}
+
+to 'play frequency' freq ms {
+  '_toneLoop' (freq * 1000) ms
+}
+
+to 'play tone' note octave ms {
+  local 'freq' ('_baseFreqForNote' note)
+  if (freq <= 10000) {
+    waitMillis ms
+    return 0
+  }
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to playMIDIKey key ms {
+  local 'freq' ('_baseFreqForSemitone' ((key % 12) + 1))
+  local 'octave' ((key / 12) - 5)
+  if (octave < 0) {
+    repeat (absoluteValue octave) {
+      freq = (freq / 2)
+    }
+  }
+  repeat octave {
+    freq = (freq * 2)
+  }
+  '_toneLoop' freq ms
+}
+
+to startTone freq {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {'[io:playTone]' _tonePin freq}
+}
+
+to stopTone {
+  startTone 0
+}
+

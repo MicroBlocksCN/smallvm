@@ -14,12 +14,6 @@ pio run -e ed1
 cp .pio/build/ed1/firmware.bin precompiled/vm_citilab-ed1.bin
 pio run -e m5stack
 cp .pio/build/m5stack/firmware.bin precompiled/vm_m5stack.bin
-pio run -e m5stick
-cp .pio/build/m5stick/firmware.bin precompiled/vm_m5stick.bin
-pio run -e m5stick+
-cp .pio/build/m5stick+/firmware.bin precompiled/vm_m5stick+.bin
-pio run -e m5atom
-cp .pio/build/m5atom/firmware.bin precompiled/vm_m5atom.bin
 pio run -e esp32
 cp .pio/build/esp32/firmware.bin precompiled/vm_esp32.bin
 pio run -e cpx
@@ -36,6 +30,8 @@ pio run -e pico
 cp .pio/build/pico/firmware.uf2 precompiled/vm_pico.uf2
 pio run -e pico-w
 cp .pio/build/pico-w/firmware.uf2 precompiled/vm_pico_w.uf2
+pio run -e pico-ed
+cp .pio/build/pico-ed/firmware.uf2 precompiled/vm_pico_ed.uf2
 
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/

@@ -16,8 +16,7 @@
 #include "mem.h"
 #include "interp.h"
 
-// Temporary mapping for Robotistan board prototype
-#if defined(ROBOTISTAN_PROTOTYPE) || defined(PICO_ED)
+#if defined(PICO_ED)
 	#define Wire Wire1
 #endif
 
@@ -35,7 +34,7 @@ static void startWire() {
 	wireStarted = true;
 }
 
-static int readI2CReg(int deviceID, int reg) {
+int readI2CReg(int deviceID, int reg) {
 	if (!wireStarted) startWire();
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
@@ -153,6 +152,12 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 		for (int i = 0; i < count; i++) {
 			Wire.write(*src++);
 		}
+	} else if (IS_TYPE(data, StringType)) {
+		uint8 *src = (uint8 *) obj2str(data);
+		int count = strlen((char *) data);
+		for (int i = 0; i < count; i++) {
+			Wire.write(*src++);
+		}
 	}
 	int error = Wire.endTransmission();
 	if (error) fail(i2cTransferFailed);
@@ -171,7 +176,13 @@ static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
 
 // SPI prims
 
-#if defined(ARDUINO_ARCH_RP2040) && !defined(PIN_SPI_MISO)
+#if defined(PICO_ED)
+  #define SPI SPI1
+  #define PIN_SPI_MISO (8u)
+  #define PIN_SPI_SS   (9u)
+  #define PIN_SPI_SCK  (10u)
+  #define PIN_SPI_MOSI (11u)
+#elif defined(ARDUINO_ARCH_RP2040) && !defined(PIN_SPI_MISO)
   #define PIN_SPI_MISO PIN_SPI0_MISO
   #define PIN_SPI_MOSI PIN_SPI0_MOSI
   #define PIN_SPI_SCK  PIN_SPI0_SCK
@@ -187,8 +198,15 @@ static void initSPI() {
 		setPinMode(SCK, OUTPUT);
 	#else
 		setPinMode(PIN_SPI_MISO, INPUT);
-		setPinMode(PIN_SPI_MOSI, OUTPUT);
 		setPinMode(PIN_SPI_SCK, OUTPUT);
+		setPinMode(PIN_SPI_MOSI, OUTPUT);
+	#endif
+	#if defined(PICO_ED)
+		setPinMode(PIN_SPI_SS, OUTPUT);
+		SPI.setRX(PIN_SPI_MISO);
+		SPI.setCS(PIN_SPI_SS);
+		SPI.setSCK(PIN_SPI_SCK);
+		SPI.setTX(PIN_SPI_MOSI);
 	#endif
 	SPI.begin();
 	SPI.beginTransaction(SPISettings(spiSpeed, MSBFIRST, spiMode));

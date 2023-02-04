@@ -11,7 +11,7 @@ to displaySensor value line {
   OLEDwrite ('[data:join]' '' value '  ') 80 y false
 }
 
-script 45 40 {
+script 45 43 {
 whenStarted
 pb_set_relay true
 waitMillis 500
@@ -31,7 +31,7 @@ pb_turn_off_RGB
 sendBroadcast 'update display'
 }
 
-script 357 48 {
+script 357 51 {
 whenBroadcastReceived 'update display'
 OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
 OLEDclear
@@ -49,7 +49,7 @@ forever {
 }
 }
 
-script 48 443 {
+script 47 445 {
 whenCondition (pb_button)
 '_pb_init_pins'
 'attach buzzer to pin' _pb_pin_Buzzer
@@ -63,10 +63,10 @@ whenCondition (pb_button)
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
 version 1 12 
-choices ModeMenu Horizontal Vertical 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -904,7 +904,7 @@ to 'defer display updates' {
 
 module PicoBricks
 author MicroBlocks
-version 2 3 
+version 2 4 
 depends 'Temperature Humidity (DHT11, DHT22)' 
 description 'Robotistan PicoBricks Library
 
@@ -1039,6 +1039,7 @@ to pb_set_rgb_color color {
   '_pb_init_pins'
   '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
   '[display:neoPixelSend]' color
+  waitMillis 1
 }
 
 to pb_temperature {
@@ -1050,6 +1051,7 @@ to pb_turn_off_RGB {
   '_pb_init_pins'
   '[display:neoPixelSetPin]' _pb_pin_RGB_LED false
   '[display:neoPixelSend]' 0
+  waitMillis 1
 }
 
 
@@ -1178,7 +1180,7 @@ to temperature_DHT22 pin {
 
 module Tone Output
 author MicroBlocks
-version 1 6 
+version 1 7 
 tags tone sound music audio note speaker 
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
@@ -1186,6 +1188,8 @@ variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoN
   spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
   spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
   spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
+  spec ' ' 'startTone' 'start tone _ Hz' 'num' 440
+  spec ' ' 'stopTone' 'stop tone'
   spec ' ' 'attach buzzer to pin' 'attach buzzer to pin _' 'auto' ''
   spec 'r' '_measureLoopOverhead' '_measureLoopOverhead'
   spec 'r' '_baseFreqForNote' '_baseFreqForNote _' 'auto' 'c'
@@ -1325,5 +1329,14 @@ to playMIDIKey key ms {
     freq = (freq * 2)
   }
   '_toneLoop' freq ms
+}
+
+to startTone freq {
+  if (_toneInitalized == 0) {'attach buzzer to pin' ''}
+  if ('[io:hasTone]') {'[io:playTone]' _tonePin freq}
+}
+
+to stopTone {
+  startTone 0
 }
 

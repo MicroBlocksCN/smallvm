@@ -47,6 +47,13 @@ static OBJ primSine(int argCount, OBJ *args) {
 	return int2obj((int) round(16384.0 * sin(evalInt(args[0]) * hundrethsToRadians)));
 }
 
+static OBJ primSqrt(int argCount, OBJ *args) {
+	// Returns the integer part of a square root of a given number multiplied by
+	// 1000 (e.g. sqrt(2) = 1414).
+
+	return int2obj((int) round(1000 * sqrt(evalInt(args[0]))));
+}
+
 static OBJ jsonValue(char *item) {
 	char buf[1024];
 	char *end;
@@ -152,6 +159,7 @@ static PrimEntry entries[] = {
 	{"hexToInt", primHexToInt},
 	{"rescale", primRescale},
 	{"sin", primSine},
+	{"sqrt", primSqrt},
 	{"broadcastToIDE", primBroadcastToIDEOnly},
 	{"jsonGet", primJSONGet},
 	{"jsonCount", primJSONCount},

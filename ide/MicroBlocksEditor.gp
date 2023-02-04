@@ -182,16 +182,17 @@ method textButton MicroBlocksEditor label selector {
 // zoom buttons
 method addZoomButtons MicroBlocksEditor {
   zoomButtons = (array
-	(newZoomButton this 'zoomOut' 'Decrease block size')
-	(newZoomButton this 'restoreZoom' 'Restore block size to 100%')
-	(newZoomButton this 'zoomIn' 'Increase block size'))
+	(newZoomButton this 'zoomOut')
+	(newZoomButton this 'restoreZoom')
+	(newZoomButton this 'zoomIn'))
   for button zoomButtons {
 	addPart morph (morph button)
   }
+  addZoomButtonHints this
   fixZoomButtonsLayout this
 }
 
-method newZoomButton MicroBlocksEditor selector hint {
+method newZoomButton MicroBlocksEditor selector {
   scale = (global 'scale')
   icon = (call (action (join selector 'Icon') this))
   w = (30 * scale)
@@ -203,10 +204,16 @@ method newZoomButton MicroBlocksEditor selector hint {
   //bm2 = (newBitmap w h (topBarBlueHighlight this))
   //drawBitmap bm2 icon x y
   button = (newButton '' (action selector this))
-  if (notNil hint) { setHint button (localized hint) }
   setCostumes button bm1
   addPart morph (morph button)
   return button
+}
+
+method addZoomButtonHints MicroBlocksEditor {
+  // add zoom button hints in current language
+  setHint (at zoomButtons 1) (localized 'Decrease block size')
+  setHint (at zoomButtons 2) (localized 'Restore block size to 100%')
+  setHint (at zoomButtons 3) (localized 'Increase block size')
 }
 
 method restoreZoom MicroBlocksEditor {
@@ -552,7 +559,6 @@ method showDownloadProgress MicroBlocksEditor phase downloadProgress {
 	drawProgressIndicator this bm2 phase downloadProgress
 	costumeChanged (morph progressIndicator)
 	updateDisplay (global 'page') // update the display
-	nextEvent // discard events while downloading
 }
 
 // Connection indicator
@@ -730,11 +736,21 @@ method importFromURL MicroBlocksEditor url {
     return
   }
   i = (findSubstring 'project=' url)
-  if (notNil i) { // open a complete project embedded in URL
-    projectString = (urlDecode (substring url (i + 8)))
-    if (not (canReplaceCurrentProject this)) { return }
-    projName = (extractProjectName this projectString)
-    openProject this projectString projName
+  if (notNil i) { // open a complete project
+    urlOrData = (substring url (i + 8))
+    if (beginsWith urlOrData 'http') {
+      // project link
+      fileName = (substring urlOrData ((findLast urlOrData '/') + 1) ((findLast urlOrData '.') - 1))
+      if (not (canReplaceCurrentProject this)) { return }
+      openProject this (httpBody (httpGetInBrowser urlOrData)) fileName
+   } else {
+      // project embedded in URL
+      projectString = (urlDecode (substring url (i + 8)))
+      if (not (canReplaceCurrentProject this)) { return }
+      projName = (extractProjectName this projectString)
+      if (not (canReplaceCurrentProject this)) { return }
+      openProject this projectString projName
+    }
     return
   }
 }
@@ -1281,6 +1297,7 @@ method languageChanged MicroBlocksEditor {
 	if (not (isNumber item)) { destroy (morph item) }
   }
   addTopBarParts this
+  addZoomButtonHints this
   updateIndicator this true
   fixLayout this
 }

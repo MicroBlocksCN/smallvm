@@ -122,7 +122,7 @@ method initialize MicroBlocksHelp {
 		(array '[data:unicodeString]' 'data#string-from-unicode' 'Report a string containing the given Unicode value ("code point") or list of values.')
 		(array 'newList' 'data#new-list' 'Report a new list of the given length filled with zero or the optional value.')
 		(array '[data:newByteArray]' 'data#new-byte-array' 'Report a new byte array of the given length filled with zero or the optional value.')
-		(array '[data:asByteArray]' 'data#as-byte-array' 'Report a byte array cointaining the UTF-8 bytes of the given string.')
+		(array '[data:asByteArray]' 'data#as-byte-array' 'Report a byte array containing the UTF-8 bytes of the given string.')
 		(array '[data:freeMemory]' 'data#free-memory' 'Report the number of words of memory available. Stop button frees up memory.')
 
 		// BASIC SENSORS LIBRARY

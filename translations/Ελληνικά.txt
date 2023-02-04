@@ -1,6 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
-
+# Last updated: Jan  09  2023
 #########################
 # Blocks and categories #
 #########################
@@ -9,7 +8,7 @@ Output
 Εξόδοι
 
 set user LED _
-θέσε το LED χρήστη _
+όρισε το LED χρήστη _
 
 say _
 πες _
@@ -21,10 +20,10 @@ Input
 Εισόδοι
 
 button A
-κομβίον Α
+κουμπί Α
 
 button B
-κομβίον Β
+κουμπί Β
 
 microseconds
 εκατομμυριοστά δευτερολέπτου
@@ -45,10 +44,10 @@ read analog pin _
 διάβασε τον αναλογικό ακροδέκτη _
 
 set digital pin _ to _
-θέσε το ψηφιακό ακροδέκτη _ σε _
+όρισε το ψηφιακό ακροδέκτη _ σε _
 
 set pin _ to _
-θέσε τον ακροδέκτη _ σε _
+όρισε τον ακροδέκτη _ σε _
 
 analog pins
 αναλογικοί ακροδέκτες
@@ -63,7 +62,7 @@ when started
 όταν ξεκινά
 
 when button _ pressed
-όταν το κομβίον _ πατηθεί
+όταν το κουμπί _ πατηθεί
 
 forever _
 Για πάντα επανάλαβε _
@@ -72,7 +71,7 @@ repeat _ _
 επανάλαβε _ _
 
 wait _ millisecs
-περίμενε _ χιλιοστά δευτερολέπτου
+περίμενε, _ χιλιοστά δευτερολέπτου
 
 if _ _
 Αν _ _
@@ -108,7 +107,7 @@ comment _
 σχόλιο _
 
 for _ in _ _
-για _ σε _ _
+για _ μέσα σε _ _
 
 repeat until _ _
 επανάλαβε μέχρι _ _
@@ -135,7 +134,7 @@ abs _
 απόλυτο _
 
 random _ to _
-επέλεξε τυχαίο από  _ ως _
+τυχαίο _ ως _
 
 not _
 αντίθετο _
@@ -156,7 +155,7 @@ _ is a _
 _ είναι ένα _
 
 boolean
-δυαδικό
+boolean
 
 number
 αριθμός
@@ -168,7 +167,7 @@ list
 λίστα
 
 Advanced:
---MISSING--
+Προχωρημένα:
 
 hex _
 δεκαεξαδικό _
@@ -179,7 +178,7 @@ Variables
 # Buttons on top of "Variables" category
 
 Add a variable
-Δημιούργησε μια μεταβλητή
+Πρόσθεσε μια μεταβλητή
 
 Delete a variable
 Διάγραψε μια μεταβλητή
@@ -190,13 +189,13 @@ New variable name?
 Όνομα νέας μεταβλητής?
 
 set _ to _
-θέσε _ σε _
+όρισε _ σε _
 
 change _ by _
 άλλαξε _ ανά _
 
 initialize local _ to _
---MISSING--
+αρχική τιμή τοπικής μεταβλητής _ σε _
 
 Data
 Δεδομένα
@@ -211,7 +210,7 @@ item _ of _
 στοιχείο _ του _
 
 replace item _ of list _ with _
-αντικατάστησε στοιχείο _ της λίστας _ με _
+αντικατέστησε στοιχείο _ της λίστας _ με _
 
 delete item _ of list _
 διάγραψε το στοιχείο _ της λίστας _
@@ -235,7 +234,7 @@ starting at _
 ξεκινά από _
 
 join items of list _
-ένωσε τα στοιχεία της λίστας
+ένωσε τα στοιχεία της λίστας _
 
 separator _
 διαχωριστικό _
@@ -250,13 +249,13 @@ new list length _
 μήκος νέου καταλόγου _
 
 new byte array _
---MISSING--
+νέος byte πίνακας _
 
 free memory
 ελευθέρωσε μνήμη
 
 My Blocks
-Τα μπλοκ μου
+Τα Mπλοκ μου
 
 # Buttons on top of "My Blocks" category
 
@@ -269,7 +268,7 @@ Add a reporter block
 # Make a block dialog
 
 Enter function name:
-Συμπλήρωσε το όνομα της Λειτουργίας:
+Συμπλήρωσε το όνομα της λειτουργίας:
 
 Comm
 Επικοινωνία 
@@ -284,7 +283,7 @@ i2c device _ read list _
 i2c συσκευή _ διάβασε λίστα _
 
 i2c device _ write list _
---MISSING--
+i2c συσκευή _ γράψε λίστα _
 
 spi send _
 spi στείλε _
@@ -296,7 +295,7 @@ print _
 τύπωσε _
 
 no op
---MISSING--
+καμμία εντολή
 
 ignore
 αγνόησε 
@@ -308,76 +307,76 @@ ignore
 # These are all mostly hidden from end users
 
 draw shape _ at x _ y _
---MISSING--
+σχεδίασε σχήμα _ στο x _ y _
 
 shape for letter _
---MISSING--
+σχήμα για γράμμα _
 
 send NeoPixel rgb _
---MISSING--
+στείλε στο NeoPixel κπμ _
 
 has tone support
---MISSING--
+έχει τονική υποστήριξη
 
 play tone pin _ frequency _
---MISSING--
+παίξε τόνο στον ακροδέκτη _ συχνότητα _
 
 has WiFi support
---MISSING--
+διαθέτει υποστήριξη WIFI
 
 start WiFi _ password _
---MISSING--
+ξεκίνα WIFI _ με κωδικό _
 
 stop WiFi
---MISSING--
+σταμάτα WIFI
 
 WiFi status
---MISSING--
+WIFI κατάσταση
 
 my IP address
---MISSING--
+η IP διεύθυνση μου 
 
 radio send number _
---MISSING--
+ράδιο στείλε αριθμό _ 
 
 radio send string _
---MISSING--
+ράδιο στείλε σειρά χαρακτήρων
 
 radio send pair _ = _
---MISSING--
+ράδιο στείλε ζευγάρι _ =_
 
 radio message received?
---MISSING--
+παραλήφθηκε το μήνυμα ραδίου
 
 radio last number
---MISSING--
+ράδιο τελευταίος αριθμός
 
 radio last string
---MISSING--
+ράδιο τελευταία σειρά χαρακτήρων
 
 radio last message type
---MISSING--
+ράδιο τύπος τελευταίου μηνύματος
 
 radio set group _
---MISSING--
+ράδιο ορισμός ομάδας _ 
 
 radio set channel (0-83) _
---MISSING--
+ράδιο όρισε κανάλι σε (0-83) _
 
 radio set power (0-7) _
---MISSING--
+ράδιο όρισε ισχύ σε (0-7) _
 
 radio last signal strength
---MISSING--
+ράδιο δύναμη τελευταίου σήματος
 
 radio receive packet _
---MISSING--
+ράδιο λήψη πακέτου _ 
 
 radio send packet _
---MISSING--
+ράδιο αποστολή πακέτου _ 
 
 disable radio
---MISSING--
+Απενεργοποίηση ραδίου
 
 #############
 # Libraries #
@@ -387,13 +386,13 @@ Basic Sensors
 Βασικοί Αισθητήρες
 
 tilt x
-κλίση Χ
+κλίση x
 
 tilt y
 κλίση y
 
 tilt z
-κλίση z-
+κλίση z
 
 acceleration
 επιτάχυνση
@@ -450,7 +449,7 @@ ED1 Stepper Motor
 ED1 Μότερ Βήμάτος
 
 move motor _ _ steps _
-μοτερ βήματος _ _ βήματα _
+μοτερ  _ _ βήματα _
 
 move motor 1 _ and motor 2 _ _ steps
 μοτερ 1 κινήθου _ και μοτερ 2 κινήθου _ _ βήματα
@@ -474,28 +473,28 @@ ED1 Buttons
 ED1 Κομβία
 
 button OK
-κομβίο OK
+ κουμπί OK
 
 button X
-κομβίο X
+ κουμπί X
 
 button up
-κομβίο πάνω
+ κουμπί πάνω
 
 button down
-κομβίο κάτω
+ κουμπί κάτω
 
 button left
-κομβίο αριστερά
+ κουμπί αριστερά
 
 button right
-κομβίο δεξιά
+ κουμπί δεξιά
 
 capacitive sensor _
 χωρητικός αισθητήρας _
 
 set capacitive threshold to _
-ορίστε το χωρητικό όριο σε_
+ορίσε όριο του χωρητικού σε_
 
 ####
 # BirdBrain Technologies libraries
@@ -507,103 +506,103 @@ Hummingbird Tri-LED _ R _ % G _ % B _ %
 --MISSING--
 
 Hummingbird Position Servo _ _ °
---MISSING--
+Hummingbird θέση Servo _ _ °
 
 Hummingbird Rotation Servo _ _ %
---MISSING--
+Hummingbird Περιστροφή Servo _ _ %
 
 Hummingbird _ _
 --MISSING--
 
 Hummingbird Battery (mV)
---MISSING--
+Hummingbird μπαταρία (mV)
 
 Light
---MISSING--
+Φως
 
 Distance (cm)
---MISSING--
+Απόσταση (εκ)
 
 Dial
 --MISSING--
 
 Sound
---MISSING--
+Ήχος
 
 Other
---MISSING--
+Άλλα
 
-Finch Beak Red _ Green _ Blue _
---MISSING--
+Finch Ράμφος Red _ Green _ Blue _
+Finch Beak Κόκκινο _ Πράσινο _ Μπλέ _
 
 Finch Tail _ Red _ Green _ Blue _
---MISSING--
+Finch Ουρά Κόκκινο _ Πράσινο _ Μπλέ _
 
 Finch Move _ _ cm at _ %
---MISSING--
+Finch Προχώρα _ _ εκ  με  _ %
 
 Finch Turn _ _ ° at _ %
---MISSING--
+Finch Στρίψε _ _ ° με _ %
 
 Finch Wheels L _ % R _ %
---MISSING--
+Finch Τροχοί Α _ % Δ _ %
 
 Finch Stop
---MISSING--
+Finch Σταμάτα
 
 Finch Distance (cm)
---MISSING--
+Finch Απόσταση (εκ)
 
 Finch _ Light
---MISSING--
+Finch _ Φως
 
 Finch _ Line
---MISSING--
+Finch _ Απόσταση
 
 Finch Reset Encoders
---MISSING--
+Finch Μηδένισε  Encoders
 
 Finch _ Encoder
 --MISSING--
 
 Finch Accelerometer _
---MISSING--
+Finch Επιταχυνσιόμετρο _
 
 Finch Battery
---MISSING--
+Finch Μπαταρία
 
 All
---MISSING--
+Όλα
 
 Forward
---MISSING--
+Μπροστά
 
 Backward
---MISSING--
+Πίσω
 
 Right
---MISSING--
+Δεξιά
 
 Left
---MISSING--
+Αριστερά
 
 Beak Up
---MISSING--
+Ράμφος Πάνω
 
 Beak Down
---MISSING--
+Ράμφος Κάτω
 
 Tilt Left
---MISSING--
+Κλίνε Αριστερά
 
 Tilt Right
---MISSING--
+Κλίνε Δεξιά
 
 Level
---MISSING--
+Ίσιωσε
 
 Upside Down
---MISSING--
+Ανάποδα
 
 x
 --MISSING--
@@ -615,13 +614,13 @@ z
 --MISSING--
 
 strength
---MISSING--
+δύναμη
 
 ####
 # Ultrasound distance library
 
 distance (cm) trigger _ echo _
-απόσταση (εκ) σκανδάλη _ ηχώ _
+απόσταση (εκ) ενεργοποίηση _ ηχώ _
 
 ####
 # Infrared remote library
@@ -630,7 +629,7 @@ IR Remote
 IR Τηλεχειριστήριο
 
 receive IR code
-λάβετε τον κωδικό IR
+λήψη κωδικού IR
 
 receive IR code from device _
 λήψη κωδικού IR από τη συσκευή _
@@ -654,19 +653,19 @@ Radio
 # Scrolls text on 5x5 LED displays and simulated ones
 
 Scrolling
---MISSING--
+κύλιση
 
 scroll text _
---MISSING--
+κύλιση κειμένου _
 
 scroll number _
---MISSING--
+κύλιση αριθμού _ 
 
 pausing _ ms
---MISSING--
+παύση _ χιλιοστά δευτερολέπτου
 
 stop scrolling
---MISSING--
+σταμάτημα κύλισης
 
 ####
 # Servo motor library
@@ -675,13 +674,13 @@ Servo
 Σέρβο μοτέρ
 
 set servo _ to _ degrees (-90 to 90)
-ορίστε servo από _ έως _ μοίρες (-90 έως 90)
+ορίσε servo από _ έως _ μοίρες (-90 έως 90)
 
 set servo _ to speed _ (-100 to 100)
-ορίστε το servo _ στην ταχύτητα _ (-100 έως 100)
+ορίσε servo _ στην ταχύτητα _ (-100 έως 100)
 
 stop servo _
-σταματήστε το σερβο _
+σταμάτησε το σέρβο _
 
 ####
 # 5x5 LED display library
@@ -692,7 +691,7 @@ LED Display
 Οθόνη LED
 
 display _
-εμφάνισε _
+οθόνη _
 
 clear display
 καθάρισμα Οθόνης
@@ -710,40 +709,40 @@ display character _
 # TFT display library
 
 enable TFT _
---MISSING--
+ενεργοποίησε TFT _
 
 TFT width
---MISSING--
+TFT πλάτος
 
 TFT height
---MISSING--
+TFT ύψος
 
 set TFT pixel x _ y _ to _
---MISSING--
+Όρισε TFT εικονοκύταρο x _ y _ σε _
 
 draw line on TFT from x _ y _ to x _ y _ color _
---MISSING--
+σχεδιάσε γραμμή  στο TFT από x _ y _ στο x _ y _ χρώμα _
 
 draw rectangle on TFT at x _ y _ width _ height _ color _
---MISSING--
+σχεδίασε τετράγωνο στο TFT στο x _ y _ πλάτος _ ύψος _ χρώμα _
 
 draw rounded rectangle on TFT at x _ y _ width _ height _ radius _ color _
---MISSING--
+σχεδίασε στρογγυλεμένο τετράγωνο στο TFT στο x _ y _ πλάτος _ ύψος _  ακτίνα _ χρώμα _
 
 draw circle on TFT at x _ y _ radius _ color _
---MISSING--
+σχεδιάσε κύκλο στο  TFT στο x _ y _ ακτίνα _ χρώμα _
 
 draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _
---MISSING--
+σχεδιάσε τρίγωνο στο TFT στο x _ y _ , x _ y _ , x _ y _ χρώμα _
 
 filled _
---MISSING--
+Γέμιση _
 
 write _ on TFT at x _ y _ color _
---MISSING--
+γράψε _ στο TFT στο x _ y _ χρώμα _
 
 scale _ wrap _
---MISSING--
+κλίμακα _ αναδίπλωση _
 
 ####
 # Tone library
@@ -753,16 +752,16 @@ Tone
 Τόνος
 
 attach buzzer to pin _
-επισυνάψτε το βομβητή στον ακροδέκτη _
+επισυνάψε το βομβητή στον ακροδέκτη _
 
 play note _ octave _ for _ ms
-παίξτε νότα _ οκτάβα _ για _ χδ
+παίξε νότα _ οκτάβα _ για _ χδ
 
 play frequency _ for _ ms
-παίξτε συχνότητα _ για _ χδ
+παίξε συχνότητα _ για _ χδ
 
 play midi key _ for _ ms
-παίξτε πλήκτρο midi _ για _ ms
+παίξε πλήκτρο midi _ για _ ms
 
 ####
 # Turtle geometry library
@@ -774,10 +773,10 @@ home
 Σπίτι
 
 move _
-κινήθου _
+προχώρα _
 
 turn _ degrees
-στροφή _ μοίρες
+στρίψε _ μοίρες
 
 turn _ / _ of circle
 στρίψε _ / _ του κύκλου
@@ -807,43 +806,43 @@ point in direction _
 # File system library
 
 Files
---MISSING--
+Αρχεία
 
 open file _
---MISSING--
+άνοιξε αρχείο _
 
 close file _
---MISSING--
+κλείσε αρχείο _
 
 delete file _
---MISSING--
+διάγραψε αρχείο _
 
 append line _ to file _
---MISSING--
+πρόσθεσε γραμμή _ στο αρχείο _
 
 append bytes _ to file _
---MISSING--
+πρόσθεσε bytes _ στο αρχείο _
 
 end of file _
---MISSING--
+τέλος του αρχείου _
 
 next line of file _
---MISSING--
+επόμενη γραμμή του αρχείου _
 
 next _ bytes of file _
---MISSING--
+επόμενα _ bytes του αρχείου _
 
 starting at _
 ξεκινά από _
 
 file names
---MISSING--
+όνομα αρχείων
 
 size of file _
---MISSING--
+μέγεθος του αρχείου _
 
 file system info
---MISSING--
+πληροφορίες για αρχεία συστήματος
 
 ####
 # WiFi library
@@ -852,50 +851,50 @@ WiFi
 --MISSING--
 
 wifi connect to _ password _ try _ times
---MISSING--
+wifi ενώθου στο _ κωδικός _ προσπάθησε _ φορές
 
 wifi create hotspot _ password _
---MISSING--
+wifi δημιούργησε hotspot _ κωδικός _
 
 IP address
---MISSING--
+IP διεύθυνση
 
 ####
 # Motion library
 # Counts steps and detects motion via the internal accelerometer
 
 Motion
---MISSING--
+Κίνηση
 
 motion
---MISSING--
+κίνηση
 
 start step counter
---MISSING--
+ξεκίνα μετρητή βημάτων
 
 step count
---MISSING--
+μέτρησε βήματα
 
 clear step count
---MISSING--
+Μηδένισε των μετρητή βημάτων
 
 set step threshold _ (0-50)
---MISSING--
+όρισε κατώφλι βημάτων _ (0-50)
 
 ####
 # Button Events library
 
 Button Events
-Κομβίον Συμβάντα
+κουμπί Συμβάντα
 
 button _ double pressed
-κομβίο _ διπλό πάτημα
+κουμπί _ διπλό πάτημα
 
 button _ long pressed
-κομβίο _ μακρύ πάτημα
+κουμπί _ μακρύ πάτημα
 
 button _ pressed
-κομβίο _ πατήθηκε
+κουμπί _ πατήθηκε
 
 ####
 # Calliope board library
@@ -913,10 +912,10 @@ Calliope loudness
 # Circuit Playground Express board library
 
 Circuit Playground set speaker _
---MISSING--
+Circuit Playground όρισε το μεγάφωνο _
 
 Circuit Playground slide switch
---MISSING--
+Circuit Playground κουμπί κύλισης 
 
 ####
 # DotStar LED library
@@ -937,19 +936,19 @@ set DotStar brightness _
 # BME280 environmental sensor
 
 bme280 connected
---MISSING--
+bme280 ενώθηκε
 
 bmp280 connected
---MISSING--
+-bmp280 ενώθηκε
 
 bmx280 temperature
---MISSING--
+bmx280 θερμοκρασία
 
 bmx280 pressure
---MISSING--
+bmx280 πίεση
 
 bme280 humidity
---MISSING--
+bme280 υγρασία
 
 ####
 # TCS34725 color sensor
@@ -988,91 +987,91 @@ RFID _ = _
 --MISSING--
 
 get PN532 firmware version
---MISSING--
+διάβασε PN532 έκδοση firmware
 
 ####
 # HTTP libraries
 
 HTTP client
---MISSING--
+HTTP πελάτης
 
-_ data _ to http܃// _
---MISSING--
+_ data _ to http:// _
+_ δεδομένα _ στο http://_
 
 HTTP server
---MISSING--
+HTTP εξυπηρετητής
 
 start HTTP server
---MISSING--
+ξεκίνα τον HTTP εξυπηρετητή
 
 HTTP server request
---MISSING--
+HTTP εξυπηρετητή αίτηση
 
 respond _ to HTTP request
---MISSING--
+απάντηση _ σε HTTP αίτηση
 
 with body _
---MISSING--
+με σώμα _
 
 and headers _
---MISSING--
+και επικεφαλίδες _
 
 body of request _
---MISSING--
+σώμα της αίτησης
 
 path of request _
---MISSING--
+διαδρομή αίτησης _
 
 method of request _
---MISSING--
+μέθοδος της αίτησης _
 
 ####
 # Web Things library
 
 Web Thing
---MISSING--
+Αντικείμενο Δικτύου
 
 set thing name to _
---MISSING--
+όρισε το όνομα του αντικειμένου σε _
 
 set thing capability to _
---MISSING--
+όρισε την ικανότητα του αντικειμένου σε _
 
 set boolean property _ title _ @Type _
---MISSING--
+όρισε δυαδική ιδιότητα _ τίτλος _ @Τύπος
 
 set string property _ title _ @Type _
---MISSING--
+όρισε κειμένου ιδιότητα _ τίτλος _ @Τύπος _
 
 set number property _ title _ @Type _
---MISSING--
+όρισε αριθμητική ιδιότητα _ τίτλος _ @Τύπος _
 
 set number property _ title _ min _ max _ @Type _
---MISSING--
+όρισε αριθμητική ιδιότητα _ τίτλος _ ελάχιστο _ μέγιστο _ @Τύπος _
 
 read only _
---MISSING--
+διάβασε μόνο _
 
 register event _ type _
---MISSING--
+καταχώρησε γεγονός _ τύπος _
 
 start WebThing server
---MISSING--
+ξεκίνα εξυπηρετητή WebThing
 
 trigger event _
---MISSING--
+ενεργοποίηση γεγονότος _
 
 thing description JSON
---MISSING--
+περιγραφή αντικειμένου JSON
 
 properties JSON
---MISSING--
+ιδιότητες JSON
 
 event definitions JSON
---MISSING--
+ορισμοί γεγονότων JSON
 
 events JSON
---MISSING--
+γεγονότα JSON
 
 ##################
 # MicroBlocks UI #
@@ -1087,25 +1086,25 @@ Open
 Άνοιξε
 
 Open from board
---MISSING--
+Άνοιξε από την κάρτα
 
 Information
---MISSING--
+Πληροφορία
 
 Plug in the board.
---MISSING--
+Σύνδεσε την κάρτα 
 
 Reading project from board...
---MISSING--
+Διαβάζει το έργο από την κάρτα …
 
 Loading project...
---MISSING--
+Φορτώνει το έργο…
 
 Found a newer version of
---MISSING--
+Βρέθηκε πιο νέα έκδοση από
 
 Do you want me to update the one in the project?
---MISSING--
+Επιθυμείς να ανανεώσω αυτό του έργου;
 
 Save
 Αποθήκευσε
@@ -1117,301 +1116,301 @@ disconnect
 Αποσυνδέσου
 
 Serial port:
---MISSING--
+Σειριακή θύρα:
 
 other...
---MISSING--
+άλλα…
 
 none
---MISSING--
+κανένα
 
 Port name?
---MISSING--
+Όνομα θύρας;
 
 Board type:
---MISSING--
+Τύπος κάρτας:
 
 Select board:
---MISSING--
+Επιλογή κάρτας:
 
 Could not read:
-Δεν μπορεί να διαβάσει
+Δεν μπορεί να διαβάσει:
 
 by
---MISSING--
+από
 
 Created with GP
---MISSING--
+Δημιουργήθηκε με GP
 
 More info at http://microblocks.fun
---MISSING--
+Περισσότερες πληροφορίες στο http://microblocks.fun
 
 Function "
---MISSING--
+Λειτουργία “
 
 " is too large to send to board.
---MISSING--
+“ είναι πολύ μεγάλο για να σταλεί στην κάρτα
 
 Script is too large to send to board.
---MISSING--
+Το κείμενο είναι πολύ μεγάλο για να σταλεί στην κάρτα
 
 Use "Connect" button to connect to a MicroBlocks device.
---MISSING--
+Χρησιμοποίησε “Συνδέσου” για να συνδεθείς στη συσκευή MicroBlocks.
 
 No boards found; is your board plugged in?
---MISSING--
+Δεν βρέθηκαν κάρτες, είναι συνδεδεμένη η κάρτα σου;
 
 For AdaFruit boards, double-click reset button and try again.
---MISSING--
+Για τις κάρτες Adafruit, διπλό κλίκ στο κουμπί επαναφοράς (reset)και δοκίμασε ξανά.
 
 The board is not responding.
---MISSING--
+Η κάρτα δεν ανταποκρίνεται.
 
 Try to Install MicroBlocks on the board?
---MISSING--
+Δοκίμασες να εγκαταστήσεις το Microblocks στην κάρτα;
 
 The MicroBlocks in your board is not current
---MISSING--
+Το Microblocks στην κάρτα σου δεν είναι το τελευταίο
 
 Try to update MicroBlocks on the board?
---MISSING--
+Προσπάθησες να εγκαταστήσεις το Microblocks στην κάρτα;
 
 Stop
---MISSING--
+Σταμάτα
 
 Start
---MISSING--
+Ξεκίνα
 
 Quit MicroBlocks?
---MISSING--
+Να σταματήσω το MicroBlocks;
 
 Discard current project?
---MISSING--
+Να μην αποθηκεύσω το τρέχων έργο;
 
 clean up
---MISSING--
+καθαρισμός
 
 arrange scripts
---MISSING--
+Συγήρισε τα κείμενα
 
 undrop (ctrl-Z)
 --MISSING--
 
 copy all scripts to clipboard
---MISSING--
+Αντίγραψε όλα τα κείμενα στο πρόχειρο
 
 paste all scripts
---MISSING--
+Επικόλησε όλα τα κείμενα
 
 paste script
---MISSING--
+Επικόλησε κείμενο
 
 save a picture of all scripts
---MISSING--
+αποθήκευσε φωτογραφία όλων των κειμένων
 
 about...
---MISSING--
+σχετικά…
 
 virtual machine version
---MISSING--
+εικονική μηχανή έκδοση 
 
 update firmware on board
---MISSING--
+επικαιροποίησε το firmware στην κάρτα
 
 show data graph
---MISSING--
+εμφάνισε την γραφική παράσταση
 
 set serial delay
---MISSING--
+όρισε την σειριακή καθυστέρηση
 
 firmware version
---MISSING--
+έκδοση firmware
 
 start WebThing server
---MISSING--
+ξεκίνα εξυπηρετητή WebThing
 
 stop WebThing server
---MISSING--
+σταμάτα εξυπηρετητή WebThing
 
 HTTP Server
---MISSING--
+HTTP εξυπηρετητής
 
 MicroBlocks HTTP Server listening on port 6473
---MISSING--
+MicroBlocks HTTP εξυπηρετητής ακούει στην θύρα 6473
 
 disable autoloading board libraries
---MISSING--
+απενεργοποίηση αυτόματης φόρτωσης των βιβλιοθηκών της κάρτας
 
 enable autoloading board libraries
---MISSING--
+ενεργοποίηση της αυτόματης φόρτωσης των βιβλιοθηκών της κάρτας
 
 enable PlugShare when project empty
---MISSING--
+ενεργοποίηση PlugShare όταν το έργο είναι άδειο
 
 disable PlugShare when project empty
---MISSING--
+απενεργοποίηση PlugShare όταν το έργο είναι άδειο
 
 erase flash and update firmware on ESP board
 --MISSING--
 
 Use board type
---MISSING--
+Χρησιμοποίηση κάρτας τύπου
 
 Wiping board...
---MISSING--
+Διαγράφει την κάρτα…
 
 (press ESC to cancel)
 --MISSING--
 
 Done!
---MISSING--
+Έγινε!
 
 download and install latest VM
---MISSING--
+κατέβασε και εγκατάστησε το τελευταίο VM
 
 Select board type:
---MISSING--
+Επιλογή τύπου κάρτας:
 
 Uploading MicroBlocks to board...
---MISSING--
+Φορτώνει MicroBlocks στην κάρτα…
 
 copy data to clipboard
---MISSING--
+αντίγραψε δεδομένα στο πρόχειρο
 
 clear data
---MISSING--
+καθάρισε δεδομένα
 
 clear memory and variables
---MISSING--
+καθάρισε την μνήμη και τις μεταβλητές
 
 show advanced blocks
---MISSING--
+δείξε προχωρημένα blocks
 
 export functions as library
---MISSING--
+εξαγωγή λειτουργιών σαν βιβλιοθήκη
 
 hide advanced blocks
---MISSING--
+κρύψε προχωρημένα blocks
 
 Data Graph
---MISSING--
+Γραφική Παράσταση
 
 show instructions
---MISSING--
+δείξε εντολές
 
 show compiled bytes
 --MISSING--
 
 expand
---MISSING--
+επέκτεινε
 
 collapse
---MISSING--
+κατάρρευσε
 
 rename...
---MISSING--
+μετονομασία
 
 show block definition...
---MISSING--
+δείξε τον ορισμό του μπλοκ
 
 show the definition of this block
---MISSING--
+δείξε τον ορισμό αυτού του μπλοκ
 
 delete block definition...
---MISSING--
+διαγραφή ορισμού μπλοκ
 
 delete the definition of this block
---MISSING--
+διαγραφή του ορισμού αυτού του μπλοκ
 
 duplicate
---MISSING--
+αντίγραψε
 
 duplicate this block
---MISSING--
+αντίγραψε αυτό το μπλοκ
 
 delete block
---MISSING--
+διάγραψε το μπλοκ
 
 delete this block
---MISSING--
+διάγραψε αυτό το μπλοκ
 
 just this one block
---MISSING--
+μόνο αυτό το μπλοκ
 
 copy to clipboard
---MISSING--
+αντίγραψε στο πρόχειρο
 
 copy these blocks to the clipboard
---MISSING--
+αντίγραψε αυτά τα μπλοκ στο πρόχειρο
 
 duplicate all
---MISSING--
+αντιγραφή όλων
 
 duplicate these blocks
---MISSING--
+αντίγραψε αυτά τα μπλοκ
 
 extract block
 --MISSING--
 
 pull out this block
---MISSING--
+τράβηξε έξω αυτό το μπλοκ
 
 save picture of script
---MISSING--
+αποθήκευσε φωτογραφία του κειμένου
 
 save a picture of this block definition as a PNG file
---MISSING--
+αποθήκευσε τον ορισμό αυτού του μπλοκ σε φωτογραφία σαν PNG  αρχείο
 
 save a picture of these blocks as a PNG file
---MISSING--
+αποθήκευσε φωτογραφία αυτών των μπλοκ σαν PNG  αρχείο
 
 copy script
---MISSING--
+αντιγραφή κειμένου
 
 delete
---MISSING--
+διαγραφή
 
 Input type:
---MISSING--
+Τύπος Εισόδου:
 
 string only
---MISSING--
+μόνο συμβολοσειρά
 
 string or number
---MISSING--
+συμβολοσειρά ή αριθμός
 
 number only
---MISSING--
+αριθμός μόνο
 
 define
---MISSING--
+όρισε
 
 number/string
---MISSING--
+αριθμός/συμβολοσειρά
 
 editable number or string
---MISSING--
+επεξεργάσιμος αριθμός ή συμβολοσειρά
 
 label
---MISSING--
+ετικέτα
 
 input
---MISSING--
+είσοδος
 
 hide block definition
---MISSING--
+κρύψε τον ορισμό μπλοκ
 
 Are you sure you want to remove this block definition?
---MISSING--
+Είσαι σίγουρος ότι επιθυμείς να αφαιρέσεις τον ορισμό του μπλοκ;
 
 Language
---MISSING--
+Γλώσσα
 
 Custom...
---MISSING--
+Προσαρμοσμένο…
 
 Obsolete
---MISSING--
+Ξεπερασμένο
 
 OK
 --MISSING--
@@ -1420,24 +1419,24 @@ Ok
 --MISSING--
 
 Yes
---MISSING--
+Ναι
 
 No
---MISSING--
+Όχι
 
 Cancel
---MISSING--
+Ακύρωση
 
 Okay
 --MISSING--
 
 Confirm
---MISSING--
+Επιβεβαίωση
 
 # File picker and library dialogs
 
 Libraries
---MISSING--
+Βιβλιοθήκες
 
 Examples
 Παραδείγματα
@@ -1446,62 +1445,62 @@ Desktop
 Οθόνη
 
 Computer
-Υποολογιστής
+Υπολογιστής
 
 Cloud
 Νέφος
 
 File
---MISSING--
+Αρχείο
 
 File Open
---MISSING--
+Αρχείο Ανοιγμα
 
 File Save
---MISSING--
+Αρχείο Αποθήκευση
 
 File name:
---MISSING--
+Αρχείο όνομα:
 
 New Folder
 Νέος Φάκελος
 
 by
---MISSING--
+από
 
 Depends:
---MISSING--
+Εξαρτάται:
 
 Tags:
---MISSING--
+Ετικέτες:
 
 Path, name or URL for library?
---MISSING--
+Μονοπάτι, όνομα ή URL για βιβλιοθήκη;
 
 Invalid URL
---MISSING--
+‘Aκυρο URL
 
 Could not fetch library.
---MISSING--
+Δεν μπόρεσε να φορτώσει την βιβλιοθήκη.
 
 Host does not exist or is currently down.
---MISSING--
+Οικοδεσπότης δεν υπάρχει ή δεν λειτουργεί
 
 File not found in server.
---MISSING--
+Το αρχείο δεν βρέθηκε στον εξυπηρετητή.
 
 Server expects HTTPS, and MicroBlocks doesn't currently support it.
---MISSING--
+Εξυπηρετητής  αναμένει HTTPS,  αλλά  δεν υποστηρίζεται από το MicroBlocks
 
 library information
---MISSING--
+πληροφορία για την βιβλιοθήκη
 
 built-in library
---MISSING--
+ενσωματωμένη βιβλιοθήκη
 
 Dependency path, name or URL?
---MISSING--
+Εξαρτωμένη διαδρομή, όνομα ή URL;
 
 Tag name?
---MISSING--
+Όνομα Ετικέτας;
 

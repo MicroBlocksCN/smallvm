@@ -360,10 +360,16 @@ function queueGPMessage(s) {
 
 function handleMessage(evt) {
 	// Handle a message sent by the JavaScript postMessage() function.
-	// This is used to control button visibility or to queue a message to GP.
+	// This is used to control button visibility, to queue a message to GP
+	// or to communicate with Boardie.
 
 	var msg = evt.data;
-	if (msg.startsWith('showButton ')) {
+	if (GP.boardie.isOpen && msg instanceof Uint8Array) {
+		if (msg[0]) {
+			// Boardie sent us bytes. Let's add them to the serial buffer.
+			GP_serialInputBuffers.push(msg);
+		}
+	} else if (msg.startsWith('showButton ')) {
 		var btn = document.getElementById(msg.substring(11));
 		if (btn) btn.style.display = 'inline';
 	} else if (msg.startsWith('hideButton ')){
@@ -630,6 +636,171 @@ function GP_toggleFullscreen() {
   }
 }
 
+// Boardie Support
+
+// The IDE communicates with Boardie as if it were a serial port (i.e. using serial read/write)
+// Boardie receives serial data from the IDE as a queue of Uint8 buffers.
+// Boardie sends serial data to the IDE by pushing Uint8 buffers to GP_serialInputBuffers.
+
+GP.boardie = {
+	element: null,
+	iframe: null,
+	isOpen: false,
+        position: null,
+        reset: function () {
+            var win = this.iframe.contentWindow;
+            win.postMessage(new Uint8Array([ 0xFA, 0x0F, 3 ])); // system reset w/ Boardie option
+            var ctx = win.document.querySelector('canvas').getContext('2d');
+			ctx.fillStyle = "#000";
+			ctx.fillRect(0, 0, 240, 240); // clear screen
+            win.postMessage(new Uint8Array([ 0xFA, 0x05, 0 ])); // start all
+        },
+	press: function (keyCode) { this.iframe.contentWindow.press(keyCode); },
+	unpress: function (keyCode) { this.iframe.contentWindow.unpress(keyCode); }
+};
+
+function GP_openBoardie() {
+    var req = new XMLHttpRequest();
+        boardie = GP.boardie;
+
+    GP_closeSerialPort(); // close serial port if open
+
+    req.open('GET', 'boardie/boardie.html');
+    req.onreadystatechange = function () {
+        if (req.readyState == 4 && req.status == 200) {
+            boardie.element = document.createElement('div');
+            boardie.element.classList.add('boardie');
+            boardie.element.style.position = 'absolute';
+            boardie.element.style.zIndex = 999;
+            if (boardie.position) {
+                boardie.element.style.left = boardie.position.left;
+                boardie.element.style.top = boardie.position.top;
+            } else {
+                boardie.element.style.top = '70px';
+                boardie.element.style.right = '34px';
+            }
+            boardie.element.style.cursor = 'grab';
+            boardie.element.innerHTML = req.responseText;
+
+            boardie.iframe = boardie.element.querySelector('iframe');
+
+            boardie.element.onclick = function (evt) {
+				if (!evt.target.closest('[data-button]')) {
+					boardie.iframe.focus();
+				}
+			}
+
+            document.body.append(boardie.element);
+
+            makeDraggable(boardie.element);
+
+            boardie.element.querySelectorAll('[data-button]').forEach(
+                button => {
+                    button.addEventListener('keydown', (evt) => {
+                        boardie.press(evt.keyCode);
+                        boardie.iframe.focus();
+                    });
+                }
+            );
+
+            boardie.iframe.contentWindow.addEventListener(
+                'soundstart',
+                function () {
+                    boardie.element.querySelector('.audio').classList.add('--is-active');
+                }
+            );
+            boardie.iframe.contentWindow.addEventListener(
+                'soundstop',
+                function () {
+                    boardie.element.querySelector('.audio').classList.remove('--is-active');
+                }
+            );
+
+            boardie.iframe.contentWindow.addEventListener('click', (event) => {
+                boardie.element.classList.add('--is-active');
+            });
+
+            boardie.isOpen = true;
+        }
+    };
+
+    req.send();
+};
+
+function makeDraggable (element) {
+    // taken from w3schools (https://www.w3schools.com/howto/howto_js_draggable.asp)
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    element.onpointerdown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        if (!e.target.closest('[data-undraggable]')) {
+            element.style.cursor = 'grabbing';
+            e.preventDefault();
+            // get the mouse cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onpointerup = closeDragElement;
+            // call a function whenever the cursor moves:
+            document.onpointermove = elementDrag;
+        }
+    };
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        element.style.top = (element.offsetTop - pos2) + "px";
+        element.style.left = (element.offsetLeft - pos1) + "px";
+        if (!element.classList.contains('--is-dragged')) {
+            element.classList.add('--is-dragged');
+        }
+    };
+
+    function closeDragElement() {
+        // stop moving when mouse button is released:
+        document.onpointerup = null;
+        document.onpointermove = null;
+        GP.boardie.position = {
+            left: element.style.left,
+            top: element.style.top
+        };
+        element.classList.remove('--is-dragged');
+        element.style.cursor = 'grab';
+    };
+};
+
+function focusDetection (elementSelector) {
+    document.addEventListener('click', (event) => {
+        var element = document.querySelector(elementSelector);
+        if (element) {
+            if (event.target.closest('.boardie')) {
+                if (!element.classList.contains('--is-active')) {
+                    element.classList.add('--is-active');
+                }
+            } else {
+                element.classList.remove('--is-active');
+            }
+        }
+    });
+};
+focusDetection('.boardie');
+
+function GP_closeBoardie() {
+	if (GP.boardie.element) {
+		document.body.removeChild(GP.boardie.element);
+		GP.boardie.element = null;
+		GP.boardie.iframe = null;
+		GP.boardie.isOpen = false;
+	}
+}
+
 // Serial Ports (supported in Chrome OS and Chromium-based browsers only)
 // Only one serial port can be open at a time.
 
@@ -715,7 +886,7 @@ function webSerialWrite(data) {
 
 GP_serialPortNames = [];
 GP_serialPortID = -1;
-GP_serialInputBuffers = [];
+GP_serialInputBuffers = [];  // a list of Uint8 arrays
 GP_serialPortListenersAdded = false;
 
 // Serial support for both WebSerial and Chromebook App
@@ -761,6 +932,7 @@ function GP_openSerialPort(id, path, baud) {
 			GP_serialPortListenersAdded = true;
 		}
 	}
+	if (GP.boardie.isOpen) { return 1; }
 	if (hasWebSerial()) {
 		webSerialConnect();
 	} else if (hasChromeSerial()) {
@@ -771,13 +943,16 @@ function GP_openSerialPort(id, path, baud) {
 }
 
 function GP_isOpenSerialPort() {
+	if (GP.boardie.isOpen) { return true; }
 	if (hasWebSerial()) return webSerialIsConnected();
 	if (hasChromeSerial()) return (GP_serialPortID >= 0);
 	return false;
 }
 
 function GP_closeSerialPort() {
-	if (hasWebSerial()) {
+	if (GP.boardie.isOpen) {
+		GP_closeBoardie();
+	} else if (hasWebSerial()) {
 		webSerialDisconnect();
 	} else if (GP_serialPortID > 0) {
 		function portClosed(ignored) { }
@@ -812,7 +987,10 @@ function GP_readSerialPort(maxBytes) {
 }
 
 function GP_writeSerialPort(data) {
-	if (hasWebSerial()) {
+	if (GP.boardie.isOpen) {
+		GP.boardie.iframe.contentWindow.postMessage(data);
+		return data.buffer.byteLength;
+	} else if (hasWebSerial()) {
 		return webSerialWrite(data);
 	} else if (hasChromeSerial()) {
 		function dataSent(ignored) { }
@@ -824,7 +1002,9 @@ function GP_writeSerialPort(data) {
 }
 
 async function GP_setSerialPortDTR(flag) {
-	if (hasWebSerial()) {
+	if (GP.boardie_IsOpen) {
+		return; // do nothing
+	} else if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ dtr: flag, dataTerminalReady: flag }).catch(() => {});
 	} else if (hasChromeSerial()) {
@@ -835,7 +1015,9 @@ async function GP_setSerialPortDTR(flag) {
 }
 
 async function GP_setSerialPortRTS(flag) {
-	if (hasWebSerial()) {
+	if (GP.boardie_IsOpen) {
+		return; // do nothing
+	} else if (hasWebSerial()) {
 		if (!GP_webSerialPort) return; // port not open
 		await GP_webSerialPort.setSignals({ rts: flag, requestToSend: flag }).catch(() => {});
 	} else if (hasChromeSerial()) {

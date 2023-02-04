@@ -1,14 +1,15 @@
 module HyperDuino Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 depends 'Touch (MPR121)' 
 choices hyperduino_motor A B 
 description 'Support for HyperDuino (https://hyperduino.com).'
-variables _pinOutputValues 
 
   spec 'r' 'hyperduino_pinTouched' 'is HyperDuino pin _ touched?' 'menu.range:2-13' 2
   space
-  spec ' ' 'hyperduino_setDigitalPin' 'set HyperDuino pin _ to _' 'menu.range:2-13 bool' 2 true
+  spec 'r' 'hyperduino_touchEvent' 'pin touch event'
+  spec 'r' 'hyperduino_last_touched_pin' 'last touched pin'
+  space
   spec ' ' 'hyperduino_setAllPins' 'set all HyperDuino LEDs _' 'bool' false
   spec 'r' 'hyperduino_allPins' 'HyperDuino pins'
   space
@@ -19,27 +20,22 @@ to hyperduino_allPins {
   return ('[data:range]' 2 13)
 }
 
+to hyperduino_last_touched_pin {
+  result = (touch_last_touched_pin)
+  if (result < 0) {
+    return result
+  }
+  return (result + 2)
+}
+
 to hyperduino_pinTouched pin {
   return (touch_isTouched (pin - 2))
 }
 
 to hyperduino_setAllPins bool {
   for pin (hyperduino_allPins) {
-    hyperduino_setDigitalPin pin bool
+    digitalWriteOp pin bool
   }
-}
-
-to hyperduino_setDigitalPin pin bool {
-  if (_pinOutputValues == 0) {_pinOutputValues = (newList 32 '')}
-  digitalWriteOp pin bool
-  if (or (pin == 5) (pin == 6)) {
-    if bool {
-      analogWriteOp pin 1023
-    } else {
-      analogWriteOp pin 0
-    }
-  }
-  atPut (pin + 1) _pinOutputValues bool
 }
 
 to hyperduino_setMotorHyperduino motor power {
@@ -60,22 +56,25 @@ Motor B: 7 & 8 (direction), 6 (power)'
   }
   comment 'Set the motor direction based on sign of power'
   if (power > 0) {
-    hyperduino_setDigitalPin p1 false
-    hyperduino_setDigitalPin p2 true
+    digitalWriteOp p1 false
+    digitalWriteOp p2 true
   } (power < 0) {
-    hyperduino_setDigitalPin p1 true
-    hyperduino_setDigitalPin p2 false
+    digitalWriteOp p1 true
+    digitalWriteOp p2 false
   } else {
-    hyperduino_setDigitalPin p1 false
-    hyperduino_setDigitalPin p2 false
+    digitalWriteOp p1 false
+    digitalWriteOp p2 false
   }
   comment 'Set the PWM duty cycle on the power pin'
-  atPut (pwrPin + 1) _pinOutputValues (power != 0)
   analogWriteOp pwrPin (minimum (((absoluteValue power) * 1023) / 100) 1023)
 }
 
 to hyperduino_stopMotors {
   hyperduino_setMotorHyperduino 'A' 0
   hyperduino_setMotorHyperduino 'B' 0
+}
+
+to hyperduino_touchEvent {
+  return (touch_touch_event)
 }
 

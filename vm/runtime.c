@@ -487,7 +487,23 @@ static int outBufEnd = 0;
 
 static uint32 lastSendMSecs = 0; // used to detect when serial is connected and accepting data
 
+int sendBytes(uint8 *buf, int start, int end);
+
 static inline void sendData() {
+#ifdef EMSCRIPTEN
+	if (outBufStart > outBufEnd) {
+		if (sendBytes(outBuf, outBufStart, OUTBUF_SIZE)) {
+			lastSendMSecs = millisecs();
+			outBufStart = 0;
+		}
+	}
+	if (outBufStart != outBufEnd) {
+		if (sendBytes(outBuf, outBufStart, outBufEnd)) {
+			lastSendMSecs = millisecs();
+			outBufStart = outBufEnd & OUTBUF_MASK;
+		}
+	}
+#else
 	int someDataSent = false;
 	while (outBufStart != outBufEnd) {
 		if (!sendByte(outBuf[outBufStart])) break;
@@ -495,13 +511,16 @@ static inline void sendData() {
 		someDataSent = true;
 	}
 	if (someDataSent) lastSendMSecs = millisecs();
+#endif
 }
 
+#if !defined(GNUBLOCKS) || defined(EMSCRIPTEN)
 int serialConnected() {
 	uint32 now = millisecs();
 	if (lastSendMSecs > now) lastSendMSecs = 0; // clock wrap
 	return ((now - lastSendMSecs) < 2000);
 }
+#endif
 
 static inline void queueByte(uint8 aByte) {
 	outBuf[outBufEnd] = aByte;
@@ -1071,6 +1090,7 @@ static void processShortMessage() {
 		// non-zero chunkIndex is used for debugging operations
 		if (1 == chunkIndex) { outputRecordHeaders(); break; }
 		if (2 == chunkIndex) { compactCodeStore(); break; }
+		if (3 == chunkIndex) { primMBDisplayOff(0, NULL); } // used by Boardie reset
 		softReset(true);
 		break;
 	case pingMsg:
@@ -1141,7 +1161,6 @@ static void processLongMessage() {
 
 void processMessage() {
 	// Process a message from the client.
-
 	sendData();
 
 	int bytesRead = recvBytes(&rcvBuf[rcvByteCount], RCVBUF_SIZE - rcvByteCount);

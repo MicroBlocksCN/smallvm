@@ -25,7 +25,7 @@ int touchEnabled = false;
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
-	defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2)
+	defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2) || defined(PICO_ED)
 
 	#define BLACK 0
 
@@ -461,9 +461,9 @@ int touchEnabled = false;
 
 		#define TFT_WIDTH 128
 		#define TFT_HEIGHT 32
-		#define IS_MONCHROME true
+		#define IS_MONOCHROME true
 
-		Adafruit_SSD1306 tft = Adafruit_SSD1306(128, 32); // xxx may need params
+		Adafruit_SSD1306 tft = Adafruit_SSD1306(128, 32);
 
 		#undef UPDATE_DISPLAY
 		#define UPDATE_DISPLAY() (tft.display())
@@ -498,23 +498,234 @@ int touchEnabled = false;
 			tftClear();
 			useTFT = true;
 		}
+	#elif defined(PICO_ED)
+		#include <Adafruit_GFX.h>
+
+		#define TFT_WIDTH 17
+		#define TFT_HEIGHT 7
+		#define IS_GRAYSCALE true
+
+		// IS31FL3731 constants
+		#define IS31FL_ADDR 0x74
+		#define IS31FL_BANK_SELECT 0xFD
+		#define IS31FL_FUNCTION_BANK 0x0B
+		#define IS31FL_SHUTDOWN_REG 0x0A
+		#define IS31FL_CONFIG_REG 0x00
+		#define IS31FL_PICTUREFRAME_REG 0x01
+
+		#undef UPDATE_DISPLAY
+		#define UPDATE_DISPLAY() (tft.updateDisplay())
+
+		class IS31FL3731 : public Adafruit_GFX {
+		public:
+			IS31FL3731(uint8_t width, uint8_t height) : Adafruit_GFX(width, height) {}
+
+			TwoWire *wire;
+			uint8 displayBuffer[144];
+
+			bool begin();
+			void drawPixel(int16_t x, int16_t y, uint16_t brightness);
+			void clearDisplayBuffer();
+			void showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos);
+			void updateDisplay(void);
+			void setRegister(uint8_t reg, uint8_t value);
+		};
+
+		bool IS31FL3731::begin() {
+			wire = &Wire1;
+			if (readI2CReg(IS31FL_ADDR, 0) < 0) {
+				// no display on external i2c bus, so this is a pico:ed v2
+
+				// initialize internal i2c bus
+				wire = &Wire;
+				wire->setSDA(0);
+				wire->setSCL(1);
+				wire->begin();
+				wire->setClock(400000);
+
+				// speaker in on pin 3 of pico:ed v2
+				setPicoEdSpeakerPin(3);
+			}
+
+			// select the function bank
+			setRegister(IS31FL_BANK_SELECT, IS31FL_FUNCTION_BANK);
+
+			// toggle shutdown
+			setRegister(IS31FL_SHUTDOWN_REG, 0);
+			delay(10);
+			setRegister(IS31FL_SHUTDOWN_REG, 1);
+
+			// picture mode
+			setRegister(IS31FL_CONFIG_REG, 0);
+
+			// set frame to display
+			setRegister(IS31FL_PICTUREFRAME_REG, 0);
+
+			// clear the display before enabling LED's
+			memset(displayBuffer, 0, sizeof(displayBuffer));
+			updateDisplay();
+
+			// enable all LEDs
+			for (uint8_t bank = 0; bank < 8; bank++) {
+				setRegister(IS31FL_BANK_SELECT, bank);
+				for (uint8_t i = 0; i < 18; i++) {
+					setRegister(i, 0xFF);
+				}
+			}
+			return true;
+		}
+
+		void IS31FL3731::clearDisplayBuffer() {
+			memset(displayBuffer, 0, sizeof(displayBuffer));
+		}
+
+		void IS31FL3731::drawPixel(int16_t x, int16_t y, uint16_t brightness) {
+			// Set the brigness of the pixel at (x, y).
+
+			const uint8_t topRow[17] =
+				{7, 23, 39, 55, 71, 87, 103, 119, 135, 136, 120, 104, 88, 72, 56, 40, 24};
+
+			if ((x < 0) || (x > 16)) return;
+			if ((y < 0) || (y > 6)) return;
+
+			// adjust brightness (use range 0-100 to avoid making LED's painfully bright)
+			if ((brightness != 0) && (brightness < 3)) brightness = 3; //
+			brightness = (100 * brightness) / 255;
+			if (brightness > 100) brightness = 100;
+
+			int incr = (x < 9) ? -1 : 1;
+			int i = topRow[x] + (y * incr);
+			displayBuffer[i] = brightness;
+		}
+
+		void IS31FL3731::showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos) {
+			// Draw 5x5 image at the given location where 1,1 is the origin.
+
+			int brightness = 100;
+			int y = yPos;
+			for (int i = 0; i < 25; i++) {
+				int x = (i % 5) + 5 + xPos;
+				if ((5 < x) && (x < 11) && (0 < y) && (y < 6)) {
+					if (microBitDisplayBits & (1 << i)) drawPixel(x, y, brightness);
+				}
+				if ((i % 5) == 4) y++;
+			}
+			updateDisplay();
+		}
+
+		void IS31FL3731::updateDisplay() {
+			// Write the entire display buffer to bank 0.
+
+			setRegister(IS31FL_BANK_SELECT, 0); // select bank 0
+			for (uint8_t i = 0; i < 6; i++) {
+				wire->beginTransmission(IS31FL_ADDR);
+				wire->write(0x24 + (24 * i)); // offset within bank
+				wire->write(&displayBuffer[24 * i], 24);
+				wire->endTransmission();
+			}
+		}
+
+		void IS31FL3731::setRegister(uint8_t reg, uint8_t value) {
+			wire->beginTransmission(IS31FL_ADDR);
+			wire->write(reg);
+			wire->write(value);
+			wire->endTransmission();
+		}
+
+		// pretend display is 7 pixels wider so GFX will display partial characters
+		IS31FL3731 tft = IS31FL3731(TFT_WIDTH + 7, TFT_HEIGHT);
+
+		void tftInit() {
+			tft.begin();
+			useTFT = true;
+		}
+
+	void showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos) {
+		// Used by scrolling text; don't clear display.
+		tft.showMicroBitPixels(microBitDisplayBits, xPos, yPos);
+	}
+
 	#endif
+
+static int color24to16b(int color24b) {
+	// Convert 24-bit RGB888 format to the TFT's target pixel format.
+	// Return [0..1] for 1-bit display, [0-255] for grayscale, and RGB565 for 16-bit color.
+
+	int r, g, b;
+
+	#ifdef IS_MONOCHROME
+		return color24b ? 1 : 0;
+	#endif
+
+	#ifdef IS_GRAYSCALE
+		r = (color24b >> 16) & 0xFF;
+		g = (color24b >> 8) & 0xFF;
+		b = color24b & 0xFF;
+		int gray = r;
+		if (g > r) gray = g;
+		if (b > r) gray = b;
+		return gray;
+	#endif
+
+	r = (color24b >> 19) & 0x1F; // 5 bits
+	g = (color24b >> 10) & 0x3F; // 6 bits
+	b = (color24b >> 3) & 0x1F; // 5 bits
+	#if defined(ARDUINO_M5Stick_C) && !defined(ARDUINO_M5Stick_Plus)
+		return (b << 11) | (g << 5) | r; // color order: BGR
+	#else
+		return (r << 11) | (g << 5) | b; // color order: RGB
+	#endif
+}
 
 void tftClear() {
 	tft.fillScreen(BLACK);
 	UPDATE_DISPLAY();
 }
 
-OBJ primEnableDisplay(int argCount, OBJ *args) {
-	if (trueObj == args[0]) {
-		tftInit();
+void tftSetHugePixel(int x, int y, int state) {
+	// simulate a 5x5 array of square pixels like the micro:bit LED array
+	#if defined(PICO_ED)
+		if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
+			int brightness = (state ? 100 : 0);
+			tft.drawPixel((x + 5), y, brightness);
+			UPDATE_DISPLAY();
+		}
+		return;
+	#endif
+	int minDimension, xInset = 0, yInset = 0;
+	if (tft.width() > tft.height()) {
+		minDimension = tft.height();
+		xInset = (tft.width() - tft.height()) / 2;
 	} else {
-		useTFT = false;
-		#if defined(TTGO_RP2040)
-			digitalWrite(TFT_PWR, 0);
-		#endif
+		minDimension = tft.width();
+		yInset = (tft.height() - tft.width()) / 2;
 	}
-	return falseObj;
+	int lineWidth = (minDimension > 60) ? 3 : 1;
+	int squareSize = (minDimension - (6 * lineWidth)) / 5;
+	tft.fillRect(
+		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
+		yInset + ((y - 1) * squareSize) + (y * lineWidth), // y
+		squareSize, squareSize,
+		color24to16b(state ? 0x00FF00 : BLACK));
+	UPDATE_DISPLAY();
+}
+
+void tftSetHugePixelBits(int bits) {
+	#if defined(PICO_ED)
+		tft.clearDisplayBuffer();
+		tft.showMicroBitPixels(bits, 1, 1);
+		return;
+	#endif
+	if (0 == bits) {
+		tftClear();
+	} else {
+		for (int x = 1; x <= 5; x++) {
+			for (int y = 1; y <= 5; y++) {
+				tftSetHugePixel(x, y, bits & (1 << ((5 * (y - 1) + x) - 1)));
+			}
+		}
+	}
+	UPDATE_DISPLAY();
 }
 
 OBJ primSetBacklight(int argCount, OBJ *args) {
@@ -542,22 +753,6 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 		analogWrite(TFT_BL, brightness * 25);
 	#endif
 	return falseObj;
-}
-
-static int color24to16b(int color24b) {
-	// Convert 24-bit RGB888 format to the TFT's color format (e.g. 16-bit RGB565).
-
-	#ifdef IS_MONCHROME
-		return color24b ? 1 : 0;
-	#endif
-	int r = (color24b >> 19) & 0x1F; // 5 bits
-	int g = (color24b >> 10) & 0x3F; // 6 bits
-	int b = (color24b >> 3) & 0x1F; // 5 bits
-	#if defined(ARDUINO_M5Stick_C) && !defined(ARDUINO_M5Stick_Plus)
-		return (b << 11) | (g << 5) | r; // color order: BGR
-	#else
-		return (r << 11) | (g << 5) | b; // color order: RGB
-	#endif
 }
 
 static OBJ primGetWidth(int argCount, OBJ *args) {
@@ -689,38 +884,68 @@ static OBJ primText(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-void tftSetHugePixel(int x, int y, int state) {
-	// simulate a 5x5 array of square pixels like the micro:bit LED array
-	int minDimension, xInset = 0, yInset = 0;
-	if (tft.width() > tft.height()) {
-		minDimension = tft.height();
-		xInset = (tft.width() - tft.height()) / 2;
-	} else {
-		minDimension = tft.width();
-		yInset = (tft.height() - tft.width()) / 2;
-	}
-	int lineWidth = (minDimension > 60) ? 3 : 1;
-	int squareSize = (minDimension - (6 * lineWidth)) / 5;
-	tft.fillRect(
-		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
-		yInset + ((y - 1) * squareSize) + (y * lineWidth), // y
-		squareSize, squareSize,
-		color24to16b(state ? 0x00FF00 : BLACK));
-	UPDATE_DISPLAY();
-}
+// 8 bit bitmap ops
 
-void tftSetHugePixelBits(int bits) {
-	if (0 == bits) {
-		tftClear();
-	} else {
-		for (int x = 1; x <= 5; x++) {
-			for (int y = 1; y <= 5; y++) {
-				tftSetHugePixel(x, y, bits & (1 << ((5 * (y - 1) + x) - 1)));
+static OBJ primMergeBitmap(int argCount, OBJ *args) {
+	OBJ bitmap = args[0];
+	int bitmapWidth = obj2int(args[1]);
+	OBJ buffer = args[2];
+	int scale = max(min(obj2int(args[3]), 8), 1);
+	int alphaIndex = obj2int(args[4]);
+	int destX = obj2int(args[5]);
+	int destY = obj2int(args[6]);
+
+	int bitmapHeight = BYTES(bitmap) / bitmapWidth;
+	int bufferWidth = TFT_WIDTH / scale;
+	int bufferHeight = TFT_HEIGHT / scale;
+	uint8 *bitmapBytes = (uint8 *) &FIELD(bitmap, 0);
+	uint8 *bufferBytes = (uint8 *) &FIELD(buffer, 0);
+
+	for (int y = 0; y < bitmapHeight; y++) {
+		if ((y + destY) < bufferHeight && (y + destY) >= 0) {
+			for (int x = 0; x < bitmapWidth; x++) {
+				if ((x + destX) < bufferWidth && (x + destX) >= 0) {
+					int pixelValue = bitmapBytes[y * bitmapWidth + x];
+					if (pixelValue != alphaIndex) {
+						int bufIndex = (destY + y) * bufferWidth + x + destX;
+						bufferBytes[bufIndex] = pixelValue;
+					}
+				}
 			}
 		}
 	}
-	UPDATE_DISPLAY();
+	return falseObj;
 }
+
+uint16_t bufferPixels[TFT_WIDTH * 8];
+
+static OBJ primDrawBuffer(int argCount, OBJ *args) {
+	OBJ buffer = args[0];
+	OBJ palette = args[1]; // List, index-1 based
+	int scale = max(min(obj2int(args[2]), 8), 1);
+	int scaledWidth = TFT_WIDTH / scale;
+	int scaledHeight = TFT_HEIGHT / scale;
+	uint8 *bufferBytes = (uint8 *) &FIELD(buffer, 0);
+	// Read the indices from the buffer and turn them into color values from the
+	// palette, and paint them onto the TFT
+	for (int y = 0; y < scaledHeight; y ++) {
+		for (int x = 0; x < scaledWidth; x ++) {
+			int colorIndex = bufferBytes[y * scaledWidth + x];
+			int color = color24to16b(obj2int(FIELD(palette, colorIndex + 1)));
+			for (int i = 0; i < scale; i ++) {
+				for (int j = 0; j < scale; j ++) {
+					bufferPixels[(j * TFT_WIDTH) + x * scale + i] = color;
+				}
+			}
+		}
+		tft.drawRGBBitmap(0, y * scale, bufferPixels, TFT_WIDTH, scale);
+	}
+
+	UPDATE_DISPLAY();
+	return falseObj;
+}
+
+// touchscreen ops
 
 static OBJ primTftTouched(int argCount, OBJ *args) {
 	#ifdef HAS_TFT_TOUCH
@@ -770,7 +995,6 @@ void tftClear() { }
 void tftSetHugePixel(int x, int y, int state) { }
 void tftSetHugePixelBits(int bits) { }
 
-static OBJ primEnableDisplay(int argCount, OBJ *args) { return falseObj; }
 static OBJ primSetBacklight(int argCount, OBJ *args) { return falseObj; }
 static OBJ primGetWidth(int argCount, OBJ *args) { return int2obj(0); }
 static OBJ primGetHeight(int argCount, OBJ *args) { return int2obj(0); }
@@ -781,6 +1005,10 @@ static OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
 static OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primText(int argCount, OBJ *args) { return falseObj; }
+
+static OBJ primMergeBitmap(int argCount, OBJ *args) { return falseObj; }
+static OBJ primDrawBuffer(int argCount, OBJ *args) { return falseObj; }
+
 static OBJ primTftTouched(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchX(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTftTouchY(int argCount, OBJ *args) { return falseObj; }
@@ -791,7 +1019,6 @@ static OBJ primTftTouchPressure(int argCount, OBJ *args) { return falseObj; }
 // Primitives
 
 static PrimEntry entries[] = {
-	{"enableDisplay", primEnableDisplay},
 	{"setBacklight", primSetBacklight},
 	{"getWidth", primGetWidth},
 	{"getHeight", primGetHeight},
@@ -802,6 +1029,10 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
+
+	{"mergeBitmap", primMergeBitmap},
+	{"drawBuffer", primDrawBuffer},
+
 	{"tftTouched", primTftTouched},
 	{"tftTouchX", primTftTouchX},
 	{"tftTouchY", primTftTouchY},

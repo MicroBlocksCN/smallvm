@@ -208,8 +208,9 @@ void sendTaskReturnValue(uint8 chunkIndex, OBJ returnValue);
 void sendBroadcastToIDE(char *s, int len);
 int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
-void interpretStep();
 void vmLoop(void);
+void interpretStep();
+void yield();
 void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);
@@ -258,6 +259,7 @@ void restartSerial();
 const char *boardType();
 void hardwareInit(void);
 
+int readI2CReg(int deviceID, int reg);
 void writeI2CReg(int deviceID, int reg, int value);
 
 // I/O Support
@@ -273,6 +275,8 @@ void stopPWM();
 void stopServos();
 void stopTone();
 int readAnalogMicrophone();
+void setPicoEdSpeakerPin(int pin);
+void showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos);
 
 // Primitives
 

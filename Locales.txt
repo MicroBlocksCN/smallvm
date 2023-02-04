@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 19 2021
+# Last updated: November 29 2022
 
 #########################
 # Blocks and categories #
@@ -100,6 +100,10 @@ Operators
 _ mod _
 
 abs _
+
+min _ _
+
+max _ _
 
 random _ to _
 
@@ -289,7 +293,7 @@ radio last string
 
 radio last message type
 
-radio set group _
+radio set group _ (0-255)
 
 radio set channel (0-83) _
 
@@ -320,6 +324,8 @@ acceleration
 light level
 
 temperature (°C)
+
+magnetic field
 
 set acceleration range _ g = 100
 
@@ -496,6 +502,10 @@ distance (cm) trigger _ echo _
 IR Remote
 
 receive IR code
+
+receive IR code from device _
+
+test IR
 
 attach IR receiver to pin _
 
@@ -745,6 +755,14 @@ _ without white space
 
 join string list _ separator _
 
+unicodes _
+
+string from unicodes _
+
+num2str _
+
+str2num _
+
 ####
 # WiFi library
 
@@ -857,11 +875,24 @@ RFID _ = _
 get PN532 firmware version
 
 ####
+# Touch Screen
+
+Touch Screen
+
+TFT touched
+
+TFT touch X position
+
+TFT touch Y position
+
+TFT touch pressure
+
+####
 # HTTP Client
 
 HTTP client
 
-_ data _ to http܃// _
+_ data _ to http܃// _ 
 
 port _
 
@@ -869,6 +900,8 @@ port _
 # HTTP Server
 
 HTTP server
+
+start HTTP server
 
 HTTP server request
 
@@ -1001,7 +1034,6 @@ plotter stop
 
 set plotter speed to _ %
 
-
 ####
 # MQTT
 
@@ -1032,11 +1064,34 @@ topic for MQTT event _
 payload for MQTT event _
 
 ####
+# UDP
+
+UDP start port _
+
+UDP stop
+
+UDP send packet _ to ip _ port _
+
+UDP receive packet
+
+binary data _
+
+UDP remote IP address
+
+UDP remote port
+
+####
 # Cutebot
+
+Cutebot
 
 Cutebot set wheel left _ right _ (-100 to 100)
 
 Cutebot stop wheels
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+
+Cutebot set servo _ to speed _ (-100 to 100)
 
 Cutebot set headlight _ to _
 
@@ -1048,28 +1103,48 @@ Cutebot sees line on left _ right _
 
 Cutebot distance (cm)
 
-Cutebot set servo _ to _ (-100 to 100)
-
 left
 
 right
 
 both
 
-
 # Wukong
 
-Wukong set motor _ speed to _ %
+Wukong
+
+Wukong set motor _ to _ (-100 to 100)
 
 Wukong stop motor _
 
-Wukong stop all motors
+Wukong stop all
 
-Wukong set _ servo _ angle to _
+Wukong set servo _ to _ degrees (-90 to 90)
 
-Wukong set NeoPixel _ _ _ _
+Wukong set servo _ to speed _ (-100 to 100)
 
-Wukong set light intensity to _
+Wukong set NeoPixels _ _ _ _
+
+Wukong set LED brightness to _
+
+####
+# Sphero-RVR
+
+wake
+
+sleep
+
+reset the yaw
+
+drive with speed _ and heading _
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+
+stop with heading _
+
+set RGB LED _ to red _ green _ blue _
+
+set all LEDs to red _ green _ blue _
 
 ####
 # Joystick:bit
@@ -1095,7 +1170,6 @@ NeZha set _ servo _ angle to _
 
 NeZha set continuous rotation servo _ speed to _ %
 
-
 ##################
 # MicroBlocks UI #
 ##################
@@ -1114,17 +1188,23 @@ Information
 
 Plug in the board.
 
+Plug in the board and click the USB icon to connect.
+
 Reading project from board...
 
 Loading project...
 
-Found a newer version of
+Found a newer version of 
 
 Do you want me to update the one in the project?
 
 Save
 
 Connect
+
+connect
+
+open Boardie
 
 disconnect
 
@@ -1159,6 +1239,8 @@ Use "Connect" button to connect to a MicroBlocks device.
 No boards found; is your board plugged in?
 
 For AdaFruit boards, double-click reset button and try again.
+
+Only recent Chrome and Edge browsers support WebSerial.
 
 The board is not responding.
 
@@ -1200,9 +1282,19 @@ paste all scripts
 
 paste script
 
-save a picture of all scripts
+paste script from clipboard
+
+save a picture of all visible scripts
 
 set exported script scale
+
+small (50%)
+
+normal (65%)
+
+large (100%)
+
+printable (200%)
 
 about...
 
@@ -1234,9 +1326,27 @@ enable PlugShare when project empty
 
 disable PlugShare when project empty
 
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+
 erase flash and update firmware on ESP board
 
 Use board type
+
+Firmware Installed
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+
+You will be asked to save the firmware file.
+
+Select
+
+as the destination drive, then click Save.
+
+Installing firmware...
 
 Plug in the board.
 
@@ -1280,6 +1390,8 @@ clear graph
 
 zero at bottom
 
+zero in middle
+
 export data to CSV file
 
 import data from CSV file
@@ -1318,6 +1430,8 @@ delete the definition of this block
 
 duplicate
 
+help
+
 duplicate this block
 
 delete block
@@ -1329,6 +1443,8 @@ just this one block
 copy to clipboard
 
 copy to clipboard as URL
+
+copy these blocks to the clipboard as a URL
 
 copy these blocks to the clipboard
 
@@ -1364,6 +1480,20 @@ string or number
 
 number only
 
+stop editing
+
+cut
+
+copy
+
+paste
+
+accept
+
+revert
+
+select all
+
 define
 
 number/string
@@ -1398,9 +1528,29 @@ Okay
 
 Confirm
 
-# File picker and library dialogs
+# Library folders
 
 Libraries
+
+AI
+
+Graphics and Displays
+
+Kits and Boards
+
+Network
+
+Other
+
+Robots
+
+Sensing
+
+Sound
+
+System
+
+# File picker and library dialogs
 
 New library name?
 
@@ -1454,7 +1604,15 @@ built-in library
 
 Dependency path, name or URL?
 
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+
+If the library is hosted online, please input its full URL.
+
 Tag name?
+
+user library
 
 Add Library
 
@@ -1714,7 +1872,7 @@ Report a new list of the given length filled with zero or the optional value.
 
 Report a new byte array of the given length filled with zero or the optional value.
 
-Report a byte array cointaining the UTF-8 bytes of the given string.
+Report a byte array containing the UTF-8 bytes of the given string.
 
 Report the number of words of memory available. Stop button frees up memory.
 

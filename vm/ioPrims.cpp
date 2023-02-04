@@ -96,7 +96,7 @@ void hardwareInit() {
 	#if defined(ARDUINO_CITILAB_ED1) || \
 		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
 		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_NRF52840_CLUE) || \
-		defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2)
+		defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2) || defined(PICO_ED)
 			tftInit();
 	#endif
 }
@@ -529,6 +529,20 @@ void restartSerial() {
 		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 0, 1};
 
+#elif defined(ARDUINO_ESP32_PICO)
+	#define BOARD_TYPE "ESP32-Pico-D4"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define DEFAULT_TONE_PIN 2
+	#define PIN_LED 13
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
+		0, 1, 1, 0, 0, 1, 1, 1, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
 		#define BOARD_TYPE "IOT-BUS"
@@ -584,6 +598,27 @@ void restartSerial() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 1, 0, 0, 0};
 
+#elif defined(PICO_ED)
+
+	#define BOARD_TYPE "Pico:ed"
+	#define DIGITAL_PINS 21
+	#define ANALOG_PINS 4
+	#define TOTAL_PINS 30
+	#define DEFAULT_TONE_PIN 17 // maps to speaker pin
+	#define PIN_BUTTON_A 20
+	#define PIN_BUTTON_B 21
+	static const int analogPin[] = {26, 27, 28, 29};
+	static char digitalPin[TOTAL_PINS] = {
+		26, 27, 28, 29,  4,  5,  6,  7,  8, 9,
+		10, 11, 12, 13, 14, 15, 16,  0, 25, 19, // change pin 17 from 0 to 3 for pico-ed v2
+		18, 99, 99, 99, 99, 99, 99, 99, 99, 99}; // Note: pins 26-29 are accessed as pins 0-3 (99 means unused)
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+	void setPicoEdSpeakerPin(int pin) { digitalPin[17] = pin; }
+
 #elif defined(ARDUINO_ARCH_RP2040)
 
 	#define BOARD_TYPE "RP2040"
@@ -629,6 +664,7 @@ const char * boardType() { return BOARD_TYPE; }
 
 #define MODE_NOT_SET (-1)
 static char currentMode[TOTAL_PINS];
+static char pwmRunning[TOTAL_PINS];
 
 #define SET_MODE(pin, newMode) { \
 	if ((newMode) != currentMode[pin]) { \
@@ -696,7 +732,7 @@ void turnOffPins() {
 int mapDigitalPinNum(int pinNum) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
+		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
 			if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) return digitalPin[pinNum];
 	#endif
 	#if defined(ARDUINO_CITILAB_ED1)
@@ -730,6 +766,9 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	if (!isInt(args[0])) { fail(needsIntegerError); return int2obj(0); }
 	int pinNum = obj2int(args[0]);
 
+	#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_BBC_MICROBIT_V2)
+		if (10 == pinNum) pinNum = 5; // map pin 10 to A5
+	#endif
 	#if defined(ARDUINO_BBC_MICROBIT_V2)
 		if (6 == pinNum) return int2obj(readAnalogMicrophone());
 	#endif
@@ -752,7 +791,7 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		if ((pinNum == 14) || (pinNum == 15) ||
 			((18 <= pinNum) && (pinNum <= 23))) return int2obj(0);
 	#endif
-	#ifdef ARDUINO_ARCH_RP2040
+	#if defined(ARDUINO_ARCH_RP2040) && !defined(PICO_ED)
 		if ((pinNum < 26) || (pinNum > 29)) return int2obj(0);
 		pinNum -= 26; // map pins 26-29 to A0-A3
 	#endif
@@ -767,7 +806,8 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 }
 
 #if defined(ESP32)
-	#define MAX_ESP32_CHANNELS 8 // MAX 16
+
+	#define MAX_ESP32_CHANNELS 16
 	int esp32Channels[MAX_ESP32_CHANNELS];
 
 	int pinAttached(int pin) {
@@ -781,11 +821,12 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 
 	void analogAttach(int pin) {
 		int esp32Channel = 1;
-		while ((esp32Channel < MAX_ESP32_CHANNELS) && (esp32Channels[esp32Channel] > 0)) {
+		// Note: Do not use channels 0-1 or 8-9; those use timer0, which is used by Tone.
+		while ((esp32Channel < MAX_ESP32_CHANNELS) && ((esp32Channels[esp32Channel] > 0) || ((esp32Channel & 7) <= 1))) {
 			esp32Channel++;
 		}
 		if (esp32Channel < MAX_ESP32_CHANNELS) {
-			ledcSetup(esp32Channel, 5000, 10); // 5KHz, 10 bits
+			ledcSetup(esp32Channel, 50, 10); // 50Hz, 10 bits (same clock rate as servos)
 			ledcAttachPin(pin, esp32Channel);
 			esp32Channels[esp32Channel] = pin;
 		}
@@ -831,7 +872,8 @@ void primAnalogWrite(OBJ *args) {
 		} else {
 			return;
 		}
-	#elif defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
+	#elif defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE) || \
+			defined(ESP8266) || defined(PICO_ED)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -887,6 +929,7 @@ void primAnalogWrite(OBJ *args) {
 
 		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 	#endif
+	pwmRunning[pinNum] = true;
 }
 
 OBJ primDigitalRead(int argCount, OBJ *args) {
@@ -906,7 +949,7 @@ OBJ primDigitalRead(int argCount, OBJ *args) {
 			((18 <= pinNum) && (pinNum <= 23))) return falseObj;
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
+			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -966,7 +1009,7 @@ void primDigitalSet(int pinNum, int flag) {
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
+			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
 		} else {
@@ -996,7 +1039,11 @@ void primDigitalSet(int pinNum, int flag) {
 		}
 	#endif
 
-	digitalWrite(pinNum, (flag ? HIGH : LOW));
+	if (pwmRunning[pinNum]) {
+		analogWrite(pinNum, (flag ? 1023 : 0));
+	} else {
+		digitalWrite(pinNum, (flag ? HIGH : LOW));
+	}
 }
 
 // User LED
@@ -1262,8 +1309,9 @@ static void setServo(int pin, int usecs) {
 #elif defined(ESP32)
 
 static int attachServo(int pin) {
+	// Note: Do not use channels 0-1 or 8-9; those use timer0, which is used by Tone.
 	for (int i = 1; i < MAX_ESP32_CHANNELS; i++) {
-		if (0 == esp32Channels[i]) { // free channel
+		if ((0 == esp32Channels[i]) && ((i & 7) > 1)) { // free channel
 			ledcSetup(i, 50, 10); // 50Hz, 10 bits
 			ledcAttachPin(pin, i);
 			esp32Channels[i] = pin;
@@ -1635,7 +1683,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
+		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
 			pin = digitalPin[pin];
 	#endif
 
@@ -1670,7 +1718,7 @@ OBJ primSetServo(int argCount, OBJ *args) {
 	if ((pin < 0) || (pin >= DIGITAL_PINS)) return falseObj;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
-		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266)
+		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
 			pin = digitalPin[pin];
 	#elif defined(ARDUINO_CITILAB_ED1)
 		if ((100 <= pin) && (pin <= 139)) {

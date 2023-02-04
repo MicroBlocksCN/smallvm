@@ -40,7 +40,7 @@ deco = (deco % 4)
 waitMillis 200
 }
 
-script 51 54 {
+script 50 54 {
 comment '    By José García Yeste - Citilab
 ===========================
 A cool Turtle library demo!
@@ -57,7 +57,7 @@ whenCondition ('OK button')
 setPenToRandomColor
 }
 
-script 50 232 {
+script 50 231 {
 whenStarted
 deco = 1
 'set pen color to' (colorSwatch 195 188 254 255)
@@ -72,7 +72,7 @@ forever {
 }
 }
 
-script 504 306 {
+script 503 306 {
 whenButtonPressed 'A'
 setPenToRandomColor
 }
@@ -158,7 +158,7 @@ to 'up button' {
 
 module 'LED Display' Output
 author MicroBlocks
-version 1 4 
+version 1 5 
 tags pixel matrix led tft 
 description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Calliope mini and M5Atom Matrix. Boards with TFT displays (such as the Citilab ED1 or the M5Stack family) support these primitives with a simulated "fat pixel" display.'
 variables _stop_scrolling_text 
@@ -181,19 +181,27 @@ to displayCharacter s {
 }
 
 to scroll_text text optionalDelay {
-  text = ('[data:join]' text '')
-  delay = 100
+  text = ('[data:join]' '' text)
+  local 'delay' 100
   if ((pushArgCount) > 1) {
     delay = optionalDelay
   }
   _stop_scrolling_text = (booleanConstant false)
-  local 'length' (size text)
-  for position ((length * 6) + 6) {
-    if _stop_scrolling_text {return 0}
-    for i length {
-      '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+  if ('Pico:ed' == (boardType)) {
+    for position (((size text) * 6) + 18) {
+      if _stop_scrolling_text {return 0}
+      '[display:mbDisplayOff]'
+      '[tft:text]' text (17 - position) 0 (colorSwatch 125 125 125 255) 1 true
+      waitMillis (delay / 2)
     }
-    waitMillis delay
+  } else {
+    for position (((size text) * 6) + 6) {
+      if _stop_scrolling_text {return 0}
+      for i (size text) {
+        '[display:mbDrawShape]' ('[display:mbShapeForLetter]' ('[data:unicodeAt]' i text)) (((i * 6) + 2) - position) 1
+      }
+      waitMillis delay
+    }
   }
 }
 
@@ -206,7 +214,7 @@ to stopScrollingText {
 
 module TFT Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 tags tft graphics draw 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
@@ -217,19 +225,26 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
   spec ' ' '[tft:triangle]' 'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num color bool' 20 20 30 80 60 5 nil true
   spec ' ' '[tft:text]' 'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num color num bool' 'Hello World!' 5 5 nil 2 true
   spec ' ' '[tft:line]' 'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num color' 12 8 25 15
-  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'auto auto color' '10' '10'
-  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'auto auto auto' 0 100 100
+  spec ' ' '[tft:setPixel]' 'set TFT pixel x _ y _ to _' 'num num color' 10 10
+  spec 'r' 'makeColor' 'color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+  spec 'r' 'makeGray' 'gray _ %' 'num' 50
   spec 'r' 'randomColor' 'random color'
   spec 'r' '[tft:getWidth]' 'TFT width'
   spec 'r' '[tft:getHeight]' 'TFT height'
-  spec ' ' '[tft:enableDisplay]' 'enable TFT _' 'bool' true
   spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
+  spec ' ' '[tft:enableDisplay]' 'obsolete enable TFT _' 'bool' true
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))
   g = (maximum 0 (minimum g 255))
   b = (maximum 0 (minimum b 255))
   return ((r << 16) | ((g << 8) | b))
+}
+
+to makeGray percent {
+  gray = ((percent * 255) / 100)
+  gray = (maximum 0 (minimum gray 255))
+  return ((gray << 16) | ((gray << 8) | gray))
 }
 
 to randomColor {

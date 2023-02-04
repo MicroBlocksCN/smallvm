@@ -131,8 +131,8 @@ static int serialWriteBytes(uint8 *buf, int byteCount) {
 
 #else // use Serial1 or Serial2
 
-// Use Serial2 on ESP32 board, Serial1 on others
-#if (defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)) || defined(ROBOTISTAN_PROTOTYPE)
+// Use Serial2 on ESP32 and Pico:ed boards, Serial1 on others
+#if (defined(ESP32) && !defined(ESP32_S2_OR_S3) && !defined(ESP32_C3)) || defined(PICO_ED)
 	#define SERIAL_PORT Serial2
 #else
 	#define SERIAL_PORT Serial1
@@ -153,6 +153,12 @@ static void serialOpen(int baudRate) {
 		int rxPin = mapDigitalPinNum(2);
 		SERIAL_PORT.begin(baudRate, SERIAL_8N1, rxPin, txPin);
 	#elif defined(RP2040_PHILHOWER)
+		#if defined(PICO_ED)
+			// pico:ed edge connector pins 0-3 are analog pins 26-29
+			// so use pins 4-5 for serial
+			SERIAL_PORT.setTX(4);
+			SERIAL_PORT.setRX(5);
+		#endif
 		SERIAL_PORT.setFIFOSize(1023);
 		SERIAL_PORT.setTimeout(1);
 		SERIAL_PORT.begin(baudRate);

@@ -613,12 +613,26 @@ method isWebSerial SmallRuntime {
 
 method webSerialConnect SmallRuntime action {
 	if ('disconnect' == action) {
-		stopAndSyncScripts this
-		sendStartAll this
+		if ('boardie' != portName) {
+			stopAndSyncScripts this
+			sendStartAll this
+		} else {
+			browserCloseBoardie
+		}
 		closeSerialPort 1
 		portName = nil
 		port = nil
+	} ('open Boardie' == action) {
+		browserOpenBoardie
+		disconnected = false
+		connectionStartTime = (msecsSinceStart)
+		portName = 'boardie'
+		port = 1
 	} else {
+		if (and ('Browser' == (platform)) (not (or (browserIsChromeOS) (browserHasWebSerial)))) { // running in a browser w/o WebSerial (or it is not enabled)
+			inform (localized 'Only recent Chrome and Edge browsers support WebSerial.')
+			return
+		}
 		openSerialPort 'webserial' 115200
 		disconnected = false
 		connectionStartTime = (msecsSinceStart)
@@ -630,17 +644,17 @@ method webSerialConnect SmallRuntime action {
 method selectPort SmallRuntime {
 	if (isNil disconnected) { disconnected = false }
 
-	if (isWebSerial this) {
-		if (not (isOpenSerialPort 1)) {
-			webSerialConnect this 'connect'
+	if ('Browser' == (platform)) {
+		menu = (menu 'Connect' (action 'webSerialConnect' this) true)
+		if (and (isNil port) ('boardie' != portName)) {
+			if (browserHasWebSerial) {
+				addItem menu 'connect'
+			}
+			addItem menu 'open Boardie'
 		} else {
-			menu = (menu 'Connect' (action 'webSerialConnect' this) true)
 			addItem menu 'disconnect'
-			popUpAtHand menu (global 'page')
 		}
-		return
-	} (and ('Browser' == (platform)) (not (browserIsChromeOS))) { // running in a browser w/o WebSerial (or it is not enabled)
-		inform (localized 'Only recent Chrome and Edge browsers support WebSerial.')
+		popUpAtHand menu (global 'page')
 		return
 	}
 
@@ -816,7 +830,10 @@ method updateConnection SmallRuntime {
 	if (or (isNil port) (not (isOpenSerialPort port))) {
 		clearRunningHighlights this
 		closePort this
-		if (isWebSerial this) { return 'not connected' } // user must initiate connection attempt
+		if ('Browser' == (platform)) {
+			portName = nil // clear 'boardie' when boardie is closed with power button
+			return 'not connected' // user must initiate connection attempt
+		}
 		return (tryToConnect this)
 	}
 
@@ -886,7 +903,7 @@ method tryToConnect SmallRuntime {
 		readFromBoard = true
 	}
 
-	if (isWebSerial this) {
+	if (and (isWebSerial this) ('boardie' != portName)) {
 		if (isOpenSerialPort 1) {
 			portName = 'webserial'
 			port = 1
@@ -1303,7 +1320,18 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		}
 		return false
 	}
-	if ((at entry 2) == (computeCRC this chunkBytes)) { return false }
+
+	// don't save the chunk if its CRC has not changed unless is a button or broadcast
+	// hat because the CRC does not reflect changes to the button or broadcast name
+	crcOptimization = true
+	if (isClass aBlockOrFunction 'Block') {
+		op = (primName (expression aBlockOrFunction))
+		crcOptimization = (not (isOneOf op 'whenButtonPressed' 'whenBroadcastReceived'))
+	}
+	if (and crcOptimization ((at entry 2) == (computeCRC this chunkBytes))) {
+		return false
+	}
+
 	sendMsgSync this 'chunkCodeMsg' chunkID data
 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
@@ -1673,6 +1701,12 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 		add msg 254 // terminator byte (helps board detect dropped bytes)
 	}
 	dataToSend = (toBinaryData (toArray msg))
+
+	if ('boardie' == portName) { // send all data at once to boardie
+		(writeSerialPort port dataToSend)
+		return
+	}
+
 	while ((byteCount dataToSend) > 0) {
 		// Note: Adafruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
 		// written in one call to writeSerialPort, so send smaller chunks
@@ -1694,6 +1728,8 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 
 	readAvailableSerialData this
 	sendMsg this msgName chunkID byteList
+	if ('boardie' == portName) { return } // don't wait for a response
+
 	ok = (waitForResponse this)
 	if (not ok) {
 		print 'Lost communication to the board in sendMsgSync'
@@ -1893,7 +1929,7 @@ method boardHasFileSystem SmallRuntime {
 	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
 	if (isNil port) { return false }
 	if (isNil boardType) { getVersion this }
-	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040', 'TTGO RP2040')
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040', 'Pico W', 'Pico:ed', 'TTGO RP2040' 'Boardie')
 }
 
 method deleteFileOnBoard SmallRuntime fileName {
@@ -1902,6 +1938,10 @@ method deleteFileOnBoard SmallRuntime fileName {
 }
 
 method getFileListFromBoard SmallRuntime {
+	if ('boardie' == portName) {
+		return (boardieFileList)
+	}
+
 	sendMsg this 'listFiles'
 	collectFileTransferResponses this
 
@@ -1941,6 +1981,10 @@ method getAndSaveFile SmallRuntime remoteFileName {
 }
 
 method readFileFromBoard SmallRuntime remoteFileName {
+	if ('boardie' == portName) {
+		return (boardieGetFile remoteFileName)
+	}
+
 	fileTransferProgress = 0
 	spinner = (newSpinner (action 'fileTransferProgress' this 'downloaded') (action 'fileTransferCompleted' this))
 	setStopAction spinner (action 'abortFileTransfer' this)
@@ -2021,6 +2065,11 @@ method fileTransferCompleted SmallRuntime {
 }
 
 method sendFileData SmallRuntime fileName fileData {
+	if ('boardie' == portName) {
+		boardiePutFile fileName fileData (byteCount fileData)
+		return
+	}
+
 	// send data as a sequence of chunks
 	setCursor 'wait'
 	fileTransferProgress = 0
@@ -2310,12 +2359,12 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		}
 		popUpAtHand menu (global 'page')
 	} (notNil boardType) {
-		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix') boardType)
+		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0') {
 			adaFruitResetMessage this
-		} (isOneOf boardType 'RP2040' 'Pico W') {
+		} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed') {
 			rp2040ResetMessage this
 		}
 	} else {
@@ -2328,13 +2377,14 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			}
 			addLine menu
 		}
-		for boardName (array 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266' ) {
+		for boardName (array 'Citilab ED1' 'M5Stack-Core' 'ESP32' 'ESP8266' ) {
 			addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
 		}
 		if (not eraseFlashFlag) {
 			addLine menu
+			addItem menu 'Elecfreaks Pico:ed' (action 'rp2040ResetMessage' this)
+			addItem menu 'RP2040 (Pico or Pico-W)' (action 'rp2040ResetMessage' this)
 			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
-			addItem menu 'RP2040 (Pico)' (action 'rp2040ResetMessage' this)
 		}
 		popUpAtHand menu (global 'page')
 	}
@@ -2398,6 +2448,7 @@ method getBoardDriveName SmallRuntime path {
 			if (notNil (nextMatchIn 'CPlay Express' contents)) { return 'CPLAYBOOT' }
 			if (notNil (nextMatchIn 'Circuit Playground nRF52840' contents)) { return 'CPLAYBTBOOT' }
 			if (notNil (nextMatchIn 'Adafruit Clue' contents)) { return 'CLUEBOOT' }
+			if (notNil (nextMatchIn 'Adafruit CLUE nRF52840' contents)) { return 'CLUEBOOT' } // bootloader 0.7
 			if (notNil (nextMatchIn 'Metro M0' contents)) { return 'METROBOOT' }
 			if (notNil (nextMatchIn 'RPI-RP2' contents)) { return 'RPI-RP2' }
 		}
@@ -2410,10 +2461,13 @@ method picoVMFileName SmallRuntime {
 	menu = (menu 'Pico board type?' (action 'atPut' tmp 1) true)
 	addItem menu 'RP2040 (Pico)'
 	addItem menu 'Pico W (WiFi)'
+	addItem menu 'Elecfreaks Pico:ed'
 	waitForSelection menu
 	result = (first tmp)
 	if ('Pico W (WiFi)' == result) {
 		return 'vm_pico_w.uf2'
+	} ('Elecfreaks Pico:ed' == result) {
+		return 'vm_pico_ed.uf2'
 	} else {
 		return 'vm_pico.uf2'
 	}
@@ -2469,7 +2523,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	} ('Clue' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Clue'
 	} (and
-		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266')
+		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'ESP32' 'ESP8266')
 		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 	} else {
@@ -2477,9 +2531,6 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		if eraseFlashFlag {
 			addItem menu 'Citilab ED1'
 			addItem menu 'M5Stack-Core'
-			addItem menu 'M5StickC'
-			addItem menu 'M5StickC+'
-			addItem menu 'M5Atom-Matrix'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
 		} else {
@@ -2488,6 +2539,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addLine menu
 			addItem menu 'Citilab ED1'
 			addLine menu
+			addItem menu 'Elecfreaks Pico:ed'
 			addItem menu 'RP2040 (Pico)'
 			addItem menu 'Pico W (WiFi)'
 			addLine menu
@@ -2497,9 +2549,6 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'Metro M0'
 			addLine menu
 			addItem menu 'M5Stack-Core'
-			addItem menu 'M5StickC'
-			addItem menu 'M5StickC+'
-			addItem menu 'M5Atom-Matrix'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
 		}
@@ -2526,7 +2575,7 @@ method flashVMInBrowser SmallRuntime boardName eraseFlashFlag downloadLatestFlag
 }
 
 method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boardName {
-	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'M5StickC' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266') {
+	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'ESP32' 'ESP8266') {
 		flashVMInBrowser this boardName eraseFlashFlag downloadLatestFlag
 		return
 	}
@@ -2558,6 +2607,11 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	} ('Pico W (WiFi)' == boardName) {
 		vmFileName = 'vm_pico_w.uf2'
 		driveName = 'RPI-RP2'
+	} ('Elecfreaks Pico:ed' == boardName) {
+		vmFileName = 'vm_pico_ed.uf2'
+		driveName = 'RPI-RP2'
+	} else {
+		return // bad board name
 	}
 
 	prefix = ''

@@ -876,8 +876,13 @@ static void compactRAM(int printStats) {
 		outputString(s);
 	}
 }
-
 #endif
+
+#ifdef EMSCRIPTEN
+int *ramStart() { return start0; }
+int ramSize() { return 4 * (freeStart - start0); }
+#endif
+
 
 // entry points
 

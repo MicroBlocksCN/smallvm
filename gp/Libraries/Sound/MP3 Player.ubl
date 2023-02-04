@@ -1,9 +1,9 @@
-module 'MP3 Player (DFRobot, Octopus)' Output
+module 'MP3 Player' Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 choices mp3PlayerType 'MakerBit/HyperDuino' DFRobot Octopus 
-description 'Support for Octopus (FN-M16P chip) and DFRobot (and HyperDuino, MakerBit) MP3 Players (YX5300 chip).
-Requires a board with serial support (i.e. not micro:bit v1).
+description 'Support for Octopus (FN-M16P chip) and DFRobot/HyperDuino/MakerBit) MP3 Players (YX5300 chip).
+Uses software serial via any digital pin on any board.
 Connect the player to TX pin of the board.'
 variables _mp3UseChecksum _mp3Pin 
 

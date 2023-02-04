@@ -254,6 +254,7 @@ method changeOperator Block newOp {
   scripter = (scripter (findProjectEditor))
   saveScripts scripter
   restoreScripts scripter
+  scriptChanged scripter
 }
 
 method contextMenu Block {

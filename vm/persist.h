@@ -47,6 +47,12 @@ void clearPersistentMemory();
 int * recordAfter(int *lastRecord);
 void restoreScripts();
 int *scanStart();
+void compactCodeStore();
+
+#ifdef EMSCRIPTEN
+int *ramStart();
+int ramSize();
+#endif
 
 // File-Based Persistent Memory Operations
 

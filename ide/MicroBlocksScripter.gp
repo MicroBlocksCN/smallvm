@@ -111,6 +111,9 @@ method makeLibraryHeader MicroBlocksScripter {
 method updateLibraryHeader MicroBlocksScripter {
   labelM = (first (parts (morph libHeader)))
   setText (handler labelM) (localized 'Libraries')
+
+  addButton = (handler (last (parts (morph libHeader))))
+  setHint addButton (localized 'Add Library')
 }
 
 method fixLibraryHeaderLayout MicroBlocksScripter {

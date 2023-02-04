@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: November 29 2022
 
 #########################
 # Blocks and categories #
@@ -86,11 +86,11 @@ wait _ millisecs
 if _ _
 如果 _ _
 
-else if _ _
-否则,如果 _ _
-
 if _ _ else _
 如果 _ _ 否则 _
+
+else if _ _
+否则,如果 _ _
 
 else
 否则
@@ -119,6 +119,15 @@ comment _
 How this works...
 ...
 
+range _ to _
+从 _ 到 _ 的数字列表 
+
+by _
+间隔 _
+
+rescale _ from ( _ , _ ) to ( _ , _ )
+映射 _ 从 ( _ , _ ) 到 ( _ , _ )
+
 for _ in _ _
 重复执行 变化因子 _ 范围 _ _
 
@@ -137,11 +146,11 @@ stop all
 last message
 最新消息
 
-with _
-参数 _
-
 call _
 调用 _
+
+with _
+参数 _
 
 Operators
 运算
@@ -159,7 +168,7 @@ max _ _
 最大值 _ _
 
 random _ to _
-在 _ 到 _ 间选取随机数
+在 _ 到 _ 之间选取随机数
 
 not _
 _ 不成立
@@ -190,6 +199,9 @@ string
 
 list
 列表
+
+byte array
+字节数组
 
 Advanced:
 高级
@@ -247,16 +259,13 @@ join _ _
 连接 _ _
 
 copy _ from _
-复制字符 _ 从 _
-
-split _ by _
-分割 _ 通过 _
+复制 _ 从 _
 
 to _
 到 _
 
 find _ in _
-在 _ 中 _ 查找
+查找 _ 在 _ 中
 
 starting at _
 开始于 _
@@ -277,16 +286,28 @@ new list length _
 新建长度为 _ 的列表
 
 new byte array _
-新 byte 数组 _
+新建字节数组 _
 
 as byte array _
-作为 byte 数组 _
+作为字节数组 _
 
 with all _
 填充 _
 
 free memory
 闲置内存
+
+all
+所有
+
+last
+最新
+
+random
+随机
+
+split _ by _
+分割 _ 通过 _
 
 My Blocks
 我的积木
@@ -338,7 +359,7 @@ rpi channel _
 rpi 通道 _
 
 spi exchange bytes _
-spi 交换 bytes _
+spi 交换 字节 _
 
 serial open _ baud
 串口打开 _ 波特率
@@ -354,6 +375,9 @@ serial write _
 
 serial write _ starting at _
 串口写入 _ 开始于 _
+
+soft serial write byte _ pin _ baud _
+软串口写入 字节 _ 引脚 _ 速率 _
 
 print _
 打印 _
@@ -413,13 +437,13 @@ radio message received?
 广播消息已收到?
 
 radio last number
-最后广播的数字
+最新广播的数字
 
 radio last string
-最后广播的字符串
+最新广播的字符串
 
 radio last message type
-最后广播消息类型
+最新广播消息类型
 
 radio set group _ (0-255)
 设置广播分组 _ (0-255)
@@ -431,7 +455,7 @@ radio set power (0-7) _
 设置广播信号强度 (0-7) _
 
 radio last signal strength
-最后广播信号强度
+最新广播信号强度
 
 radio receive packet _
 广播收到包 _
@@ -466,6 +490,12 @@ light level
 
 temperature (°C)
 温度 (°C)
+
+magnetic field
+磁场
+
+set acceleration range _ g = 100
+设置加速度范围 _ g = 100
 
 ####
 # NeoPixel library
@@ -505,6 +535,30 @@ PIR
 
 PIR at pin _ detected movement
 位于引脚 _ 的人体红外传感器探测到运动
+
+####
+# Microphone library
+
+Microphone
+麦克风
+
+microphone
+麦克风
+
+turn on microphone
+打开麦克风
+
+loudness
+音量大小
+
+clap count
+拍手次数
+
+set clap threshold _
+设置拍手阈值 _
+
+estimate clap threshold
+估计拍手阈值
 
 ####
 # Citilab ED1 board libraries
@@ -690,19 +744,22 @@ distance (cm) trigger _ echo _
 # Infrared remote library
 
 IR Remote
-远距IR
+红外线
 
 receive IR code
-接收IR编码
+接收红外编码
 
 receive IR code from device _
-接收 IR 编码从设备 _
+从设备 _ 接收红外编码
 
 test IR
-测试 IR
+测试红外
 
 attach IR receiver to pin _
-连接IR接收器至引脚 _
+连接红外接收器至引脚 _
+
+IR transmit device _ command _
+红外发射 设备 _ 指令 _
 
 ####
 # Radio comm library
@@ -730,18 +787,6 @@ pausing _ ms
 
 stop scrolling
 停止滚动
-
-####
-# Ringtone library
-
-Ringtone
-铃声
-
-play ringtone _
-播放铃声 _
-
-current song name
-当前歌曲名
 
 ####
 # Servo motor library
@@ -821,6 +866,68 @@ scale _ wrap _
 scale _ wrap _
 
 ####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _
+显示 BMP 文件 _
+
+####
+# HSV color library
+
+HSV Colors
+HSV 颜色
+
+RGB of hue _ saturation _ brightness _ (0-100)
+色相 _ 饱和度 _ 亮度 _ (0-100) 的 RGB
+
+####
+# Fractions library
+
+Fractions
+分数
+
+fract _ / _
+分数 _ / _
+
+fract _ + _
+分数 _ + _
+
+fract _ - _
+分数 _ - _
+
+fract _ × _
+分数 _ × _
+
+fract _ = _
+分数 _ = _
+
+fract _ < _
+分数 _ < _
+
+fract _ > _
+分数 _ > _
+
+simplify fraction _
+简化分数 _
+
+integer part of fraction _
+分数的整数部分 _
+
+numerator of fraction _
+分数的分子 _
+
+denominator of fraction _
+分数的分母 _
+
+gcd _ _
+最大公约数 _ _
+
+lcm _ _
+最小公倍数 _ _
+
+
+####
 # Tone library
 # Generates music tones on buzzers
 
@@ -838,6 +945,42 @@ play frequency _ for _ ms
 
 play midi key _ for _ ms
 弹奏midi键 _ 持续 _ 毫秒
+
+####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+铃声
+
+play ringtone _
+播放铃声 _
+
+current song name
+当前歌曲名
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+Pluck
+
+pluck note _ octave _ for _ ms
+pluck note _ octave _ for _ ms
+
+pluck MIDI key _ for _ msecs
+pluck MIDI key _ for _ msecs
+
+set pluck pin _
+set pluck pin _
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+播放 WAV 文件 _
 
 ####
 # Turtle geometry library
@@ -919,6 +1062,55 @@ size of file _
 
 file system info
 文件系统信息
+
+####
+# Strings
+# string (text) processing functions
+
+Strings
+字符串
+
+_ is a digit
+_ 是数字
+
+_ is lowercase
+_ 是小写字母
+
+_ is uppercase
+_ 是大写字母
+
+_ begins with _
+_ 以 _ 开头
+
+_ ends with _
+_ 以 _ 结尾
+
+_ contains _
+_ 包含 _
+
+lowercase _
+小写 _
+
+uppercase _
+大写 _
+
+_ without white space
+_ 移除空格
+
+join string list _ separator _
+连接成字符串 列表 _ 分隔符 _
+
+unicodes _
+unicodes _
+
+string from unicodes _
+将 unicodes _ 转为字符串
+
+num2str _
+数字 _ 转为字符串
+
+str2num _
+字符串 _ 转为数字
 
 ####
 # WiFi library
@@ -1072,13 +1264,19 @@ get PN532 firmware version
 PN532 固件版本
 
 ####
-# HTTP libraries
+# HTTP Client
 
 HTTP client
-HTTP客户端
+HTTP 客户端
 
-_ data _ to http܃// _
-_ 数据 _ 至 http܃// _
+_ data _ to http܃// _ 
+_ 数据 _ 到 http܃// _ 
+
+port _
+端口 _
+
+####
+# HTTP Server
 
 HTTP server
 HTTP 服务器
@@ -1112,6 +1310,30 @@ method of request _
 
 content length of request _
 请求内容长度 _
+
+####
+# WebSocket server
+
+WebSocket server
+WebSocket 服务器
+
+start WebSocket server
+启动 WebSocket 服务器
+
+last WebSocket event
+最新的 WebSocket 事件
+
+client ID for WebSocket event _
+WebSocket 事件 _ 的客户端 ID
+
+payload for WebSocket event _
+WebSocket 事件 _ 的载荷
+
+type of WebSocket event _
+WebSocket 事件 _ 的类型
+
+send _ to WebSocket client _
+发送 _ 到 WebSocket 客户端 _
 
 ####
 # Web Things library
@@ -1186,7 +1408,7 @@ MQTT unsub _
 取消订阅主题 _
 
 MQTT pub topic _ payload _
-向主题 _ 发布消息 _
+向主题 _ 发布载荷 _
 
 retain _ QoS _
 保留 _ QoS _
@@ -1201,7 +1423,31 @@ topic for MQTT event _
 最新 MQTT 事件的主题 _
 
 payload for MQTT event _
-最新 MQTT 事件的消息 _
+最新 MQTT 事件的载荷 _
+
+####
+# UDP
+
+UDP start port _
+UDP 启动服务器 端口 _ 
+
+UDP stop
+UDP 停止服务器
+
+UDP send packet _ to ip _ port _
+UDP 发送数据包 _ 到 ip _ 端口 _
+
+UDP receive packet
+UDP 接收数据包 
+
+binary data _
+二进制数据 _
+
+UDP remote IP address
+UDP 远程 IP 地址
+
+UDP remote port
+UDP 远程端口
 
 ####
 # Cutebot
@@ -1210,28 +1456,31 @@ Cutebot
 酷比特小车
 
 Cutebot set wheel left _ right _ (-100 to 100)
-设置左轮速度为 _ 右轮速度为 _ (-100 ... 100)
+酷比特 设置左轮速度为 _ 右轮速度为 _ (-100 ... 100)
 
 Cutebot stop wheels
-停车
+酷比特 停车
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+酷比特 设置舵机 _ 的角度为 _ (-90 ... 90)
+
+Cutebot set servo _ to speed _ (-100 to 100)
+酷比特 设置舵机 _ 的速度为 _ (-100 to 100)
 
 Cutebot set headlight _ to _
-将 _ LED 车头灯 设为 _
+酷比特 将 _ LED 车头灯 设为 _
 
 Cutebot set NeoPixel _ to _
-Cutebot 设置 NeoPixel _ 颜色 _
+酷比特 设置 NeoPixel _ 颜色 _
 
 Cutebot _ line sensor
-_ 巡线传感器 状态为
+酷比特 _ 巡线传感器 状态为
 
 Cutebot sees line on left _ right _
-巡线传感器状态为 _ _
+酷比特 巡线传感器状态为 _ _
 
 Cutebot distance (cm)
-超声波返回距离值
-
-Cutebot set servo _ to _ (-100 to 100)
-设置 舵机 _ 的角度为 _ (-100 ... 100)
+酷比特 超声波返回距离值
 
 left
 左
@@ -1241,6 +1490,7 @@ right
 
 both
 全部
+
 
 # Wukong
 
@@ -1267,6 +1517,33 @@ Wukong set NeoPixels _ _ _ _
 
 Wukong set LED brightness to _
 悟空 设置氛围灯亮度为 _
+
+####
+# Sphero-RVR
+
+wake
+唤醒
+
+sleep
+休眠
+
+reset the yaw
+重置偏航
+
+drive with speed _ and heading _
+以速度 _ 和朝向 _ 行驶
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+使用 左模式 _ 左速度 _ 右模式 _ 右速度 _ 设置原始电机
+
+stop with heading _
+以朝向 _ 停止
+
+set RGB LED _ to red _ green _ blue _
+将 RGB LED _ 设置为 红色 _ 绿色 _ 蓝色 _
+
+set all LEDs to red _ green _ blue _
+将所有 LED 设为 红色 _ 绿色 _ 蓝色 _
 
 ####
 # Joystick:bit
@@ -1475,13 +1752,16 @@ Information
 Plug in the board.
 连接主板
 
+Plug in the board and click the USB icon to connect.
+接上主板并单击 USB 图标进行连接。
+
 Reading project from board...
 从主板读取项目...
 
 Loading project...
 加载项目
 
-Found a newer version of
+Found a newer version of 
 发现新版本
 
 Do you want me to update the one in the project?
@@ -1492,6 +1772,12 @@ Save
 
 Connect
 连接
+
+connect
+连接主板
+
+open Boardie
+连接模拟器
 
 disconnect
 断开连接
@@ -1559,6 +1845,9 @@ The MicroBlocks in your board is not current
 Try to update MicroBlocks on the board?
 是否升级主板上的 MicroBlocks?
 
+MicroBlocks
+设置
+
 Stop
 停止
 
@@ -1570,6 +1859,9 @@ Quit MicroBlocks?
 
 Discard current project?
 放弃当前项目?
+
+# Scripting area right-click context menu
+
 
 set block size...
 设置积木块大小
@@ -1601,14 +1893,32 @@ paste all scripts
 paste script
 粘贴脚本
 
+paste script from clipboard
+从剪贴板粘贴脚本
+
 save a picture of all visible scripts
 将所有可见脚本保存为图片
 
 set exported script scale
 设置导出脚本的比例
 
+small (50%)
+小 (50%)
+
+normal (65%)
+正常 (65%)
+
+large (100%)
+大 (100%)
+
+printable (200%)
+可打印 (200%)
+
 about...
 关于...
+
+About MicroBlocks
+关于 MicroBlocks
 
 virtual machine version
 虚拟机版本
@@ -1644,10 +1954,16 @@ enable autoloading board libraries
 允许自动加载和主板相关的积木库
 
 enable PlugShare when project empty
-项目为空时允许 PlugShare
+允许项目为空时从主板里获取代码
 
 disable PlugShare when project empty
-项目为空时禁止 PlugShare
+禁止项目为空时从主板里获取代码
+
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+连接主板时，即使当前项目为空，也不要自动将主板里的代码读入 IDE
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+连接主板时，如果当前项目为空，则自动将主板里的代码读入IDE
 
 erase flash and update firmware on ESP board
 擦除信息并升级 ESP 固件
@@ -1655,14 +1971,14 @@ erase flash and update firmware on ESP board
 Use board type
 使用主板类型信息
 
-Wiping board...
-擦除主板上的信息...
-
 Firmware Installed
 完成固件安装
 
 Reconnect to the board by clicking the "Connect" button (USB icon).
-点击 '连接' 按钮 (USB 图标) 重新连接板子。
+点击 '连接' 按钮 (USB 图标) 重新连接主板。
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+按住白色 BOOTSEL 按钮的同时连接 USB 线。
 
 You will be asked to save the firmware file.
 你将被要求保存固件文件。
@@ -1675,6 +1991,12 @@ as the destination drive, then click Save.
 
 Installing firmware...
 正在安装固件...
+
+Plug in the board.
+插上主板。
+
+Wiping board...
+擦除主板...
 
 (press ESC to cancel)
 (按下ESC键取消)
@@ -1709,14 +2031,51 @@ export functions as library
 hide advanced blocks
 隐藏高级积木
 
+put file on board
+把文件上传到主板
+
+get file from board
+从主板获取文件
+
+uploaded
+已上传
+
+downloaded
+已下载
+
 Data Graph
 数据图表
+
+Graph
+图表
+
+clear graph
+清除图表
+
+zero at bottom
+底部为零
+
+zero in middle
+中部为零
+
+
+export data to CSV file
+将数据导出到 CSV 文件
+
+import data from CSV file
+从 CSV 文件导入数据
+
+copy graph data to clipboard
+将图形数据复制到剪贴板
 
 show instructions
 显示指令
 
 show compiled bytes
 显示字节代码
+
+show call tree
+显示调用树
 
 expand
 扩展
@@ -1835,6 +2194,27 @@ string or number
 number only
 仅数字
 
+stop editing
+停止编辑
+
+cut
+剪切
+
+copy
+复制
+
+paste
+粘贴
+
+accept
+接受
+
+revert
+还原
+
+select all
+选择全部
+
 define
 定义
 
@@ -1858,13 +2238,6 @@ Are you sure you want to remove this block definition?
 
 Language
 语言
-
-Graph
-图表
-
-MicroBlocks
-设置
-
 
 Custom...
 定制...
@@ -1892,6 +2265,38 @@ Okay
 
 Confirm
 确认
+
+# Library folders
+
+Libraries
+积木库
+
+AI
+人工智能
+
+Graphics and Displays
+图形与显示
+
+Kits and Boards
+套件与扩展板
+
+Network
+网络
+
+Other
+其他
+
+Robots
+机器人
+
+Sensing
+侦测
+
+Sound
+声音
+
+System
+系统
 
 # File picker and library dialogs
 
@@ -1941,7 +2346,7 @@ New Folder
 新建文件夹
 
 by
-由
+作者
 
 Depends:
 依赖于:
@@ -1976,8 +2381,20 @@ built-in library
 Dependency path, name or URL?
 依赖的路径,名字或 URL?
 
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+如果要添加的库，已经内置在 MicroBlocks，只需输入它的名称(英文)即可，如 NeoPixel 。
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+如果要添加的库，位于积木库文件夹中，需要在其前面加上斜杠 (/)，如 Network/MQTT 。
+
+If the library is hosted online, please input its full URL.
+如果要添加的库是在线托管的，请输入完整 URL。
+
 Tag name?
 标签名称?
+
+user library
+用户库
 
 Add Library
 添加积木库
@@ -1986,13 +2403,13 @@ seconds remaining
 剩余秒数
 
 Decrease block size
-减少积木大小
+缩小积木
 
 Restore block size to 100%
 将积木大小恢复到100%
 
 Increase block size
-增加积木大小
+放大积木
 
 ############
 # Tips Bar #
@@ -2362,8 +2779,9 @@ Report a new list of the given length filled with zero or the optional value.
 Report a new byte array of the given length filled with zero or the optional value.
 报告一个新的字节数组，其长度为输入值，数组元素为 0 或可选数值
 
-Report a byte array cointaining the UTF-8 bytes of the given string.
+Report a byte array containing the UTF-8 bytes of the given string.
 报告一个字节数组，该数组包含输入字符串的 UTF-8 字节
 
 Report the number of words of memory available. Stop button frees up memory.
 报告可用内存的字数。停止按钮释放内存
+

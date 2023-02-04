@@ -47,15 +47,15 @@ depends WiFi
 tags mqtt network 
 description 'A simple MQTT client.'
 
-	spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num str str str' '' 128 '' '' ''
-	spec 'r' 'MQTT connected' 'MQTT connected'
-	spec ' ' 'MQTT disconnect' 'MQTT disconnect'
-	spec ' ' 'MQTT sub' 'MQTT sub _ : QoS _' 'str num' 'testTopic' 0
-	spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
-	spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _ : retain _ QoS _' 'str auto bool num' 'testTopic' 'Hello!' false 0
-	spec 'r' 'MQTT last event' 'MQTT event : binary _' 'bool' false
-	spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
-	spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
+  spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num str str str' '' 128 '' '' ''
+  spec 'r' 'MQTT connected' 'MQTT connected'
+  spec ' ' 'MQTT disconnect' 'MQTT disconnect'
+  spec ' ' 'MQTT sub' 'MQTT sub _ : QoS _' 'str num' 'testTopic' 0
+  spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
+  spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _ : retain _ QoS _' 'str auto bool num' 'testTopic' 'Hello!' false 0
+  spec 'r' 'MQTT last event' 'MQTT event : binary _' 'bool' false
+  spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
+  spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
 
 to 'MQTT connect to' broker buffer_sizes client_id username password {
   if ((getIPAddress) != '0.0.0.0') {
@@ -143,10 +143,10 @@ tags communication network
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
 
-	spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
-	spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
-	spec 'r' 'getIPAddress' 'IP address'
-	spec 'r' '[net:myMAC]' 'MAC address'
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
 
 to getIPAddress {
   return ('[net:myIPAddress]')
