@@ -96,7 +96,8 @@ void hardwareInit() {
 	#if defined(ARDUINO_CITILAB_ED1) || \
 		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
 		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_NRF52840_CLUE) || \
-		defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2) || defined(PICO_ED)
+		defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2) || defined(PICO_ED) || \
+		defined(ARDUINO_IOT_BUS)
 			tftInit();
 	#endif
 }
