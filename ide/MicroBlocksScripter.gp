@@ -1074,6 +1074,8 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 
 method importLibrary MicroBlocksScripter {
   if (downloadInProgress (findProjectEditor)) { return }
+  libraryWindow = (findMorph 'MicroBlocksLibraryImportDialog')
+  if (notNil libraryWindow) { destroy libraryWindow }
   pickLibraryToOpen (action 'importLibraryFromFile' this) lastLibraryFolder (array '.ubl')
 }
 
