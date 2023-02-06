@@ -362,9 +362,9 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 5;
 }
 
-#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
 
-	static void updateAtomDisplay(); // forward reference
+	static void updateNeoPixelDisplay(); // forward reference
 
 	static int displaySnapshot = 0;
 
@@ -375,7 +375,7 @@ void updateMicrobitDisplay() {
 		if (disableLEDDisplay) return;
 
 		if (microBitDisplayBits == displaySnapshot) return; // no change
-		updateAtomDisplay();
+		updateNeoPixelDisplay();
 		displaySnapshot = microBitDisplayBits;
 	}
 
@@ -728,8 +728,10 @@ static void initRMT(int pinNum) {
 
 static void initNeoPixelPin(int pinNum) { // ESP32
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
-		#ifdef ARDUINO_M5Atom_Matrix_ESP32
+		#if defined(ARDUINO_M5Atom_Matrix_ESP32)
 			pinNum = 27; // internal NeoPixel pin
+		#elif defined(ARDUINO_Mbits)
+			pinNum = 13; // internal NeoPixel pin
 		#else
 			pinNum = 0; // default to pin 0
 		#endif
@@ -751,50 +753,6 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
 		mask >>= 1;
 	}
 	rmt_write_items(RMT_CHANNEL_0, rmt_buffer, neoPixelBits, true);
-}
-
-static void initNeoPixelPinOLD(int pinNum) { // xxx
-	if ((pinNum < 0) || (pinNum >= pinCount())) {
-		#ifdef ARDUINO_M5Atom_Matrix_ESP32
-			pinNum = 27; // internal NeoPixel pin
-		#else
-			pinNum = 0; // default to pin 0
-		#endif
-	}
-	if ((0 < pinNum) && (pinNum <= 31)) {
-		setPinMode(pinNum, OUTPUT);
-		neoPixelPinSet = &GPIO.out_w1ts;
-		neoPixelPinClr = &GPIO.out_w1tc;
-		neoPixelPinMask = 1 << pinNum;
-	} else if ((32 <= pinNum) && (pinNum <= 33)) {
-		setPinMode(pinNum, OUTPUT);
-		neoPixelPinSet = (uint32_t *) &GPIO.out1_w1ts;
-		neoPixelPinClr = (uint32_t *) &GPIO.out1_w1tc;
-		neoPixelPinMask = 1 << (pinNum - 32);
-	} else {
-		neoPixelPinMask = 0;
-	}
-}
-
-static void IRAM_ATTR sendNeoPixelDataOLD(int val) { // ESP32 // xxx
-	if (!neoPixelPinMask) return;
-
-	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-	portENTER_CRITICAL(&mux);
-	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
-		if (val & mask) { // one bit; timing goal: high 800 nsecs, low 400 nsecs
-			*neoPixelPinSet = neoPixelPinMask;
-			DELAY_CYCLES(190);
-			*neoPixelPinClr = neoPixelPinMask;
-			DELAY_CYCLES(90);
-		} else { // zero bit; timing goal: high 300 nsecs, low 900 nsecs
-			*neoPixelPinSet = neoPixelPinMask;
-			DELAY_CYCLES(70);
-			*neoPixelPinClr = neoPixelPinMask;
-			DELAY_CYCLES(210);
-		}
-	}
-	portEXIT_CRITICAL(&mux);
 }
 
 #elif defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__) // Philhower framework (PicoSDK)
@@ -961,7 +919,7 @@ void turnOffInternalNeoPixels() {
 	int count = 0;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 		count = 10;
-	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+	#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
 		count = 25;
 		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
 		for (int i = 0; i < count; i++) sendNeoPixelData(0);
@@ -972,13 +930,17 @@ void turnOffInternalNeoPixels() {
 	for (int i = 0; i < count; i++) sendNeoPixelData(0);
 }
 
-// Simulate the micro:bit 5x5 LED display on M5Stack Atom Matrix
+// Simulate the micro:bit 5x5 LED display on M5Stack Atom Matrix and Mbits
 
-#ifdef ARDUINO_M5Atom_Matrix_ESP32
+#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
 
-	void updateAtomDisplay() {
+	void updateNeoPixelDisplay() {
 		int oldPinMask = neoPixelPinMask;
+#if defined(ARDUINO_M5Atom_Matrix_ESP32) 
 		initNeoPixelPin(27); // use internal NeoPixels
+#elif defined(ARDUINO_Mbits)
+		initNeoPixelPin(13); // use internal NeoPixels
+#endif
 		delay(1);
 		int onColor = 15 << 16; // green
 		for (int i = 0; i < 25; i++) {
