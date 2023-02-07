@@ -646,7 +646,8 @@ static int readTemperature() {
 	return 25 + (temp / 16);
 }
 
-#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
+	defined(ARDUINO_M5Atom_Matrix_ESP32)
 
 #ifdef ARDUINO_M5Stack_Core_ESP32
 	#define Wire1 Wire
@@ -683,11 +684,11 @@ static char is6886 = false;
 static void startAccelerometer() {
 	#ifdef ARDUINO_M5Atom_Matrix_ESP32
 		Wire1.begin(25, 21);
-		Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 	#else
 		Wire1.begin(); // use internal I2C bus with default pins
-		Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 	#endif
+
+	Wire1.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 
 	writeAccelReg(MPU6886_PWR_MGMT_1, 0x80); // reset (must be done by itself)
 	delay(1); // required to avoid hang
@@ -855,7 +856,7 @@ static int readTemperature() {
 #define T_LOW 24.8
 #define T_HIGH 25.0125
 
-int tempInit = 0;
+char tempInit = 0;
 
 static void initTempSensor() {
 	Wire.begin(22, 21);
@@ -1088,13 +1089,13 @@ void readMagMicrobitV1CalliopeClue(uint8 *sixByteBuffer) {
 			writeI2CReg(MAG_3110, 16, 1); // 80 samples/sec
 			writeI2CReg(MAG_3110, 17, 128); // enable automatic magnetic sensor resets
 		} else if (0x33 == readI2CReg(LSM303, 0x0F)) {
-			magnetometerAddr = MAG_LSM303; // different from accellerometer address
+			magnetometerAddr = MAG_LSM303; // different from accelerometer address
 			magnetometerDataReg = 104;
 			magnetometerBigEndian = false;
 			writeI2CReg(MAG_LSM303, 0x60, 12); // 50 samples/sec
 			writeI2CReg(MAG_LSM303, 0x61, 2); // offset cancellation
 		} else if (0xFA == readI2CReg(BMX055, 0)) {
-			magnetometerAddr = MAG_BMX055; // different from accellerometer address
+			magnetometerAddr = MAG_BMX055; // different from accelerometer address
 			magnetometerDataReg = 0x42;
 			magnetometerBigEndian = false;
 			writeI2CReg(MAG_BMX055, 0x4B, 1); // power on
@@ -1132,7 +1133,7 @@ void readMagMicrobitV2(uint8 *sixByteBuffer) {
 
 	if (magnetometerAddr < 0) { // detect and initialize magnetometer
 		if (0x33 == readInternalI2CReg(LSM303, 0x0F)) {
-			magnetometerAddr = MAG_LSM303; // different from accellerometer address
+			magnetometerAddr = MAG_LSM303; // different from accelerometer address
 			magnetometerDataReg = 104;
 			magnetometerBigEndian = false;
 			writeInternalI2CReg(MAG_LSM303, 0x60, 12); // 50 samples/sec
@@ -1265,7 +1266,7 @@ static int __not_in_flash_func(readDHTData)(int pin) {
 }
 
 static OBJ primReadDHT(int argCount, OBJ *args) {
-	// Read DHT data into dhtData. Assume the the 18 msec LOW start pulse has been sent.
+	// Read DHT data into dhtData. Assume the 18 msec LOW start pulse has been sent.
 	// Return a five-byte ByteArray if successful, false on failure (e.g. no or partial data).
 
 	if (!isInt(args[0])) return fail(needsIntegerError);
@@ -1467,6 +1468,9 @@ int readAnalogMicrophone() {
 
 	#if defined(ARDUINO_CITILAB_ED1)
 		int pin = 36; // Pin A0 on ED1
+		return (analogRead(pin) >> 2);
+	#elif defined(ARDUINO_Mbits)
+		int pin = 35;
 		return (analogRead(pin) >> 2);
 	#endif
 	return 0;
