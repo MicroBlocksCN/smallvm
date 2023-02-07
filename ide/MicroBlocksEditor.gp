@@ -675,22 +675,25 @@ method processDroppedFile MicroBlocksEditor fName data {
   if (endsWith lcFilename '.ubp') {
 	if (not (canReplaceCurrentProject this)) { return }
 	openProject this data fName
-  }
-  if (endsWith lcFilename '.ubl') {
+  } (endsWith lcFilename '.ubl') {
 	importLibraryFromFile scripter fName data
-  }
-  if (endsWith lcFilename '.csv') {
+  } (endsWith lcFilename '.csv') {
 	if (isNil data) { return } // could not read file
 	data = (joinStrings (splitWith (toString data) ',')) // remove commas
 	clearLoggedData (smallRuntime)
 	for entry (lines data) { addLoggedData (smallRuntime) entry }
-  }
-  if (endsWith lcFilename '.png') {
+  } (endsWith lcFilename '.png') {
     importFromPNG this data
-  }
-  // xxx for testing:
-  if (endsWith lcFilename '.gp') {
+  } (endsWith lcFilename '.gp') {
+    // xxx for testing:
     eval (toString data) nil (topLevelModule)
+  }	else {
+	// load file into board, if possible
+	if ('Browser' == (platform)) {
+		sendFileData (smallRuntime) fName data
+	} else {
+		writeFileToBoard (smallRuntime) fName
+	}
   }
 }
 
