@@ -844,6 +844,70 @@ static int readTemperature() {
 	return val;
 }
 
+#elif defined(ARDUINO_Mbits)
+
+#define TMP75_ADDR 0x48
+#define TMP75_DEFAULT_CONFIG 0x60
+#define TMP75_TEMP_REG 0
+#define TMP75_CONF_REG 1
+#define TMP75_TLOW_REG 2
+#define TMP75_THIGH_REG 3
+#define T_LOW 24.8
+#define T_HIGH 25.0125
+
+int tempInit = 0;
+
+static void initTempSensor() {
+	Wire.begin(22, 21);
+
+	Wire.beginTransmission(TMP75_ADDR);
+	Wire.write(TMP75_CONF_REG);
+	Wire.write(TMP75_DEFAULT_CONFIG);
+	Wire.endTransmission();
+
+    int msb = T_HIGH;
+    int lsb = (T_HIGH - msb) * 256;
+    Wire.beginTransmission(TMP75_ADDR);
+    Wire.write(TMP75_THIGH_REG);
+    Wire.write(msb);
+    Wire.write(lsb & 0xF0);
+    Wire.endTransmission();
+
+    msb = T_LOW;
+    lsb = (T_LOW - msb) * 256;
+    Wire.beginTransmission(TMP75_ADDR);
+    Wire.write(TMP75_TLOW_REG);
+    Wire.write(msb);
+    Wire.write(lsb & 0xF0);
+    Wire.endTransmission();
+
+	tempInit = 1;
+}
+
+static int readTemperature() {
+	uint8_t msb, lsb;
+
+	if (!tempInit) { initTempSensor(); }
+
+	Wire.beginTransmission(TMP75_ADDR);
+	Wire.write(TMP75_TEMP_REG);
+	Wire.endTransmission();
+
+	Wire.requestFrom(TMP75_ADDR, 2);
+	while (Wire.available()) {
+		msb = Wire.read();
+		lsb = Wire.read();
+	}
+
+	reportNum("msb", msb);
+	reportNum("lsb", lsb);
+
+	return (int) (msb + lsb / 256);
+}
+
+static int readAcceleration(int reg) { return 0; }
+static void setAccelRange(int range) { }
+
 #elif defined(RP2040_PHILHOWER)
 
 static int readTemperature() { return analogReadTemp(); }
