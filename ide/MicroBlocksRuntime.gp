@@ -1198,6 +1198,8 @@ method saveAllChunks SmallRuntime {
 
 	if (isNil port) { return }
 
+	setCursor 'wait'
+
 	t = (newTimer)
 	editor = (findMicroBlocksEditor)
 	totalScripts = (
@@ -1246,6 +1248,8 @@ method saveAllChunks SmallRuntime {
 
 	recompileAll = false
 	showDownloadProgress editor 3 1
+
+	setCursor 'default'
 }
 
 method forceFunctionChecks SmallRuntime {
