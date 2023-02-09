@@ -169,7 +169,7 @@ method createButtons Prompter okLabel cancelLabel singleButton {
   if (isNil singleButton) { singleButton = false }
   if (isNil okLabel) {okLabel = 'OK'}
   buttons = (newMorph)
-  okButton = (pushButton okLabel (gray 130) (action 'accept' this))
+  okButton = (pushButton okLabel (gray 130) (action 'accept' this) nil nil true) // default
   addPart buttons (morph okButton)
 
   if (not singleButton) {

@@ -127,7 +127,7 @@ method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveF
   if forSaving { addFileNameField this (filePart defaultPath) }
   okayLabel = 'Open'
   if forSaving { okayLabel = 'Save' }
-  okayButton = (textButton this 0 0 okayLabel 'okay')
+  okayButton = (textButton this 0 0 okayLabel 'okay' true) // default
   cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
   setMinExtent morph (520 * scale) (400 * scale)
@@ -314,11 +314,11 @@ method scaledIcon MicroBlocksFilePicker iconName {
 	return resultBM
 }
 
-method textButton MicroBlocksFilePicker x y label selectorOrAction {
+method textButton MicroBlocksFilePicker x y label selectorOrAction makeDefault {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (gray 130) selectorOrAction)
+  result = (pushButton label (gray 130) selectorOrAction nil nil makeDefault)
   setPosition (morph result) x y
   addPart morph (morph result)
   return result

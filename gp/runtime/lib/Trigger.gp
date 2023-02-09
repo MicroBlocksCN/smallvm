@@ -133,18 +133,22 @@ method clearCostumes Trigger {
   setCostume morph nil
 }
 
-to pushButton label color action minWidth minHeight {
+to pushButton label color action minWidth minHeight makeDefault {
   btn = (new 'Trigger' (newMorph) action)
   setHandler (morph btn) btn
   setGrabRule (morph btn) 'ignore'
-  drawLabelCostumes btn label color minWidth minHeight
+  drawLabelCostumes btn label color minWidth minHeight makeDefault
   return btn
 }
 
-method drawLabelCostumes Trigger label color minWidth minHeight {
+method drawLabelCostumes Trigger label color minWidth minHeight makeDefault {
   if (isNil minWidth) {minWidth = 0}
   if (isNil minHeight) {minHeight = 0}
-  normalCostume = (buttonBitmap label color minWidth minHeight)
+  if makeDefault {
+	normalCostume = (buttonBitmap label (mixed color 50 (color 0 100 0)) minWidth minHeight)
+  } else {
+	normalCostume = (buttonBitmap label color minWidth minHeight)
+  }
   highlightCostume = (buttonBitmap label (darker color) minWidth minHeight)
   pressedCostume = (buttonBitmap label (darker color) minWidth minHeight true)
   setCostume morph normalCostume
