@@ -237,6 +237,24 @@ method aboutToBeGrabbed Block {
   removeSignalPart (morph tb)
   removeStackPart (morph tb)
   removeHighlight (morph tb)
+
+  if (or
+		(commandKeyDown (keyboard (global 'page')))
+		(controlKeyDown (keyboard (global 'page')))
+  ) {
+	if (shiftKeyDown (keyboard (global 'page'))) {
+		// duplicate block with control + shift + grab
+		dup = (duplicate this)
+		if (notNil (next dup)) {setNext dup nil}
+		setNext (handler (owner morph)) dup
+	} else {
+		// duplicate all with control + grab
+		dup = (duplicate this)
+		setNext (handler (owner morph)) dup
+	}
+  }
+
+  // extract block with shift + grab
   if (and
 		(shiftKeyDown (keyboard (global 'page')))
 		(notNil (next this))
@@ -244,6 +262,7 @@ method aboutToBeGrabbed Block {
     extractBlock this true
 	return
   }
+
   parent = (handler (owner morph))
   if (isClass parent 'Block') {
     if (type == 'reporter') {
