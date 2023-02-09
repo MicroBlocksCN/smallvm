@@ -242,15 +242,19 @@ method aboutToBeGrabbed Block {
 		(commandKeyDown (keyboard (global 'page')))
 		(controlKeyDown (keyboard (global 'page')))
   ) {
+	// duplicate all with control + grab
+	dup = (duplicate this)
+	owner = (handler (owner morph))
 	if (shiftKeyDown (keyboard (global 'page'))) {
 		// duplicate block with control + shift + grab
-		dup = (duplicate this)
 		if (notNil (next dup)) {setNext dup nil}
-		setNext (handler (owner morph)) dup
-	} else {
-		// duplicate all with control + grab
-		dup = (duplicate this)
-		setNext (handler (owner morph)) dup
+	}
+	if (notNil owner) {
+		if (isClass owner 'CommandSlot') {
+			setNested owner dup
+		} else {
+			setNext owner dup
+		}
 	}
   }
 
