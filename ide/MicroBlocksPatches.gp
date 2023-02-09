@@ -227,6 +227,36 @@ method clicked Block hand {
   }
 }
 
+method aboutToBeGrabbed Block {
+  if (isNil (owner morph)) {return}
+  tb = (topBlock this)
+  se = (ownerThatIsA (morph tb) 'ScriptEditor')
+  if (notNil se) {
+    stopEditing (handler se)
+  }
+  removeSignalPart (morph tb)
+  removeStackPart (morph tb)
+  removeHighlight (morph tb)
+  if (and
+		(shiftKeyDown (keyboard (global 'page')))
+		(notNil (next this))
+  ) {
+    extractBlock this true
+	return
+  }
+  parent = (handler (owner morph))
+  if (isClass parent 'Block') {
+    if (type == 'reporter') {
+      revertToDefaultInput parent this
+    } else {
+      setNext parent nil
+    }
+  } (isClass parent 'CommandSlot') {
+    setNested parent nil
+  }
+
+}
+
 method alternateOperators Block {
   opGroups = (array
 	(array 'analogReadOp' 'digitalReadOp')
@@ -337,7 +367,8 @@ method contextMenu Block {
   return menu
 }
 
-method extractBlock Block {
+method extractBlock Block whileGrabbing {
+  whileGrabbing = (whileGrabbing == true)
   if ('reporter' != type) { // hat or command
     nxt = (next this)
     if (and (notNil nxt) (notNil (owner morph))) {
@@ -346,9 +377,17 @@ method extractBlock Block {
       scripts = (ownerThatIsA (owner morph) 'ScriptEditor')
       if (and (notNil prev) (=== this (next (handler prev)))) {
         setNext this nil
-        setNext (handler prev) nxt
+		if whileGrabbing {
+			// needed while grabbing or we end up in an infinite recursion
+			setNext (handler prev) nil
+		}
+		setNext (handler prev) nxt
       } (and (notNil cslot) (=== this (nested (handler cslot)))) {
         setNext this nil
+		if whileGrabbing {
+			// needed while grabbing or we end up in an infinite recursion
+			setNested (handler cslot) nil
+		}
         setNested (handler cslot) nxt
       } (notNil scripts) {
         addPart scripts (morph nxt)
@@ -357,7 +396,7 @@ method extractBlock Block {
       setNext this nil
     }
   }
-  grabTopLeft morph
+  if (not whileGrabbing) { grabTopLeft morph }
 }
 
 method exportAsImage Block { exportAsImageScaled (topBlock this) }
