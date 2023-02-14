@@ -33,9 +33,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="5.6568542"
-     inkscape:cx="269.49607"
-     inkscape:cy="825.45878"
+     inkscape:zoom="0.5"
+     inkscape:cx="381"
+     inkscape:cy="607"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1577,6 +1577,98 @@
            style="fill:#f4eed7;fill-opacity:1;stroke:#786721;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
            d="m 85.140654,221.29594 c -0.0865,0.005 -0.154514,0.0796 -0.154514,0.17209 v 0.43201 c 0,0.0954 0.07285,0.17209 0.163298,0.17209 h 0.357084 v 0.33227 h 0.621149 v -0.33227 h 1.862421 c 0.09045,0 0.163298,-0.0767 0.163298,-0.17209 v -0.43201 c -3e-6,-0.0954 -0.07285,-0.17208 -0.163298,-0.17209 h -1.867588 v 0.20929 h -0.621668 v -0.20929 h -0.351398 c -0.0028,0 -0.006,-1.4e-4 -0.0088,0 z" />
       </g>
+    </g>
+    <g
+       id="g4693"
+       inkscape:export-filename="/tmp/trashcan.png"
+       inkscape:export-xdpi="56.848305"
+       inkscape:export-ydpi="56.848305"
+       transform="matrix(0.5927428,0,0,0.5927428,47.907038,90.094711)">
+      <path
+         id="rect254"
+         style="fill:#666666;stroke:#666666;stroke-width:0.970234;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+         d="m 150.21661,236.83816 -5.35,30.59034 c -0.10704,0.61201 -0.59299,1.11744 -1.32957,1.11744 h -18.32949 c -0.7366,0 -1.22255,-0.50544 -1.32958,-1.11744 l -5.34999,-30.59034 z"
+         sodipodi:nodetypes="csssscc"
+         inkscape:export-filename="/home/renard/Code/uBlocks/smallvm/misc/trashcan.png"
+         inkscape:export-xdpi="367.07001"
+         inkscape:export-ydpi="367.07001" />
+      <g
+         id="g4254"
+         transform="translate(-0.06407922)"
+         inkscape:export-filename="/home/renard/Code/uBlocks/smallvm/misc/trashcan.png"
+         inkscape:export-xdpi="367.07001"
+         inkscape:export-ydpi="367.07001">
+        <rect
+           style="fill:#b3b3b3;stroke:none;stroke-width:0.806176;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+           id="rect3146"
+           width="2.8771424"
+           height="26.041729"
+           x="132.93373"
+           y="239.27541"
+           rx="0.58966047"
+           ry="0.98404825" />
+        <rect
+           style="fill:#b3b3b3;stroke:none;stroke-width:0.806176;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+           id="rect3146-5-6"
+           width="2.8771424"
+           height="26.041729"
+           x="-97.366806"
+           y="252.10129"
+           rx="0.58966047"
+           ry="0.98404825"
+           transform="matrix(-0.99333329,0.11527781,0.11527781,0.99333329,0,0)" />
+        <rect
+           style="fill:#b3b3b3;stroke:none;stroke-width:0.806176;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+           id="rect3146-5-6-9"
+           width="2.8771424"
+           height="26.041729"
+           x="169.71344"
+           y="221.10623"
+           rx="0.58966047"
+           ry="0.98404825"
+           transform="rotate(6.619649)" />
+      </g>
+      <g
+         id="g4646"
+         style="fill:#666666">
+        <rect
+           style="fill:#666666;stroke:none;stroke-width:1.05833;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+           id="rect3445"
+           width="33.453403"
+           height="4.8271699"
+           x="76.356972"
+           y="248.0941"
+           rx="2"
+           ry="2"
+           transform="rotate(-9.763623)"
+           inkscape:export-filename="/home/renard/Code/uBlocks/smallvm/misc/trashcan.png"
+           inkscape:export-xdpi="367.07001"
+           inkscape:export-ydpi="367.07001" />
+        <rect
+           style="fill:#666666;stroke:none;stroke-width:1.05833;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+           id="rect3445-2"
+           width="33.453403"
+           x="76.356972"
+           y="250.92128"
+           height="2"
+           transform="rotate(-9.763623)"
+           inkscape:export-filename="/home/renard/Code/uBlocks/smallvm/misc/trashcan.png"
+           inkscape:export-xdpi="367.07001"
+           inkscape:export-ydpi="367.07001" />
+      </g>
+      <rect
+         style="fill:none;stroke:#666666;stroke-width:3.175;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect3549"
+         width="13.781067"
+         height="7.5707169"
+         x="86.193138"
+         y="243.12987"
+         rx="1.0000006"
+         ry="1.0000006"
+         transform="rotate(-9.763623)"
+         inkscape:export-filename="/home/renard/Code/uBlocks/smallvm/misc/trashcan.png"
+         inkscape:export-xdpi="367.07001"
+         inkscape:export-ydpi="367.07001" />
     </g>
   </g>
 </svg>
