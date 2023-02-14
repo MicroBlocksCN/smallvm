@@ -914,6 +914,14 @@ OBJ primNeoPixelSetPin(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+void setSingleNeoPixel(int pin, int color) {
+	// Used by boards that use a NeoPixel as their user LED.
+	// Note: This will change the current NeoPixel pin.
+
+	initNeoPixelPin(pin);
+	sendNeoPixelData(color);
+}
+
 void turnOffInternalNeoPixels() {
 	initNeoPixelPin(-1); // internal
 	int count = 0;
@@ -936,7 +944,7 @@ void turnOffInternalNeoPixels() {
 
 	void updateNeoPixelDisplay() {
 		int oldPinMask = neoPixelPinMask;
-#if defined(ARDUINO_M5Atom_Matrix_ESP32) 
+#if defined(ARDUINO_M5Atom_Matrix_ESP32)
 		initNeoPixelPin(27); // use internal NeoPixels
 #elif defined(ARDUINO_Mbits)
 		initNeoPixelPin(13); // use internal NeoPixels

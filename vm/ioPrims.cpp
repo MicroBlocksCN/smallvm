@@ -1104,9 +1104,8 @@ void primSetUserLED(OBJ *args) {
 			output = !output;
 		#endif
 		#if defined(M5STAMP)
-			initNeoPixelPin(PIN_LED);
 			int color = (output == HIGH) ? 255 : 0; // blue when on
-			sendNeoPixelData(color);
+			setSingleNeoPixel(PIN_LED, color);
 		#else
 			digitalWrite(PIN_LED, output);
 		#endif
