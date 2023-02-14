@@ -238,6 +238,9 @@ method aboutToBeGrabbed Block {
   removeStackPart (morph tb)
   removeHighlight (morph tb)
 
+  // show trashcan icon
+  showTrashcan (findMicroBlocksEditor)
+
   if (or
 		(commandKeyDown (keyboard (global 'page')))
 		(controlKeyDown (keyboard (global 'page')))
@@ -278,6 +281,11 @@ method aboutToBeGrabbed Block {
     setNested parent nil
   }
 
+}
+
+method justDropped Block hand {
+  snap this (x hand) (y hand)
+  hideTrashcan (findMicroBlocksEditor)
 }
 
 method alternateOperators Block {
