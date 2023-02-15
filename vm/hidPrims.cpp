@@ -14,7 +14,8 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(ADAFRUIT_METRO_M0_EXPRESS) || defined(ADAFRUIT_TRINKET_M0)
+#if defined(ADAFRUIT_METRO_M0_EXPRESS) || defined(ADAFRUIT_TRINKET_M0) || \
+	defined(ARDUINO_ARCH_RP2040)
 
 #include "Keyboard.h"
 #include "Mouse.h"
