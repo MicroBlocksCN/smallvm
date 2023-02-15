@@ -726,7 +726,7 @@ static void initRMT(int pinNum) {
 	rmtDriverInstalled = true;
 }
 
-void initNeoPixelPin(int pinNum) { // ESP32
+static void initNeoPixelPin(int pinNum) { // ESP32
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
 		#if defined(ARDUINO_M5Atom_Matrix_ESP32)
 			pinNum = 27; // internal NeoPixel pin
@@ -741,7 +741,7 @@ void initNeoPixelPin(int pinNum) { // ESP32
 	neoPixelPinMask = true; // show that NeoPixel are initialized
 }
 
-void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
+static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
 	if (!neoPixelPinMask) return;
 
 	uint32_t mask = 1 << (neoPixelBits - 1);
