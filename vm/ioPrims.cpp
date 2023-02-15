@@ -559,6 +559,20 @@ void restartSerial() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 0, 0, 1, 0, 0, 1, 0};
 
+
+#elif defined(M5STAMP)
+	#define BOARD_TYPE "M5STAMP"
+	#define DIGITAL_PINS 22
+	#define ANALOG_PINS 8
+	#define TOTAL_PINS 22
+	static const int analogPin[] = {};
+	#define PIN_LED 2
+	#define PIN_BUTTON_A 3
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1};
+
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
 		#define BOARD_TYPE "IOT-BUS"
@@ -1089,7 +1103,13 @@ void primSetUserLED(OBJ *args) {
 		#ifdef INVERT_USER_LED
 			output = !output;
 		#endif
-		digitalWrite(PIN_LED, output);
+		#if defined(M5STAMP)
+			int color = (output == HIGH) ? 255 : 0; // blue when on
+			setSingleNeoPixel(PIN_LED, color);
+		#else
+			digitalWrite(PIN_LED, output);
+		#endif
+
 	#endif
 }
 
@@ -1118,7 +1138,7 @@ OBJ primButtonA(OBJ *args) {
 			}
 			buttonIndex = (buttonIndex + 1) % 6;
 			return (buttonReadings[4] < CAP_THRESHOLD) ? trueObj : falseObj;
-		#elif defined(ARDUINO_NRF52840_CLUE)
+		#elif defined(ARDUINO_NRF52840_CLUE) || defined(M5STAMP)
 			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_A, INPUT);
