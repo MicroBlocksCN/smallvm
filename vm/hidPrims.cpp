@@ -53,7 +53,7 @@ OBJ primMousePress(int argCount, OBJ *args) {
 
 OBJ primMouseRelease(int argCount, OBJ *args) {
 	initMouse();
-	Mouse.release();
+	for (int i = 1; i < 5; i++) { Mouse.release(i); }
 	return falseObj;
 }
 
