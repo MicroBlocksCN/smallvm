@@ -346,6 +346,7 @@ void addSensorPrims();
 void addSerialPrims();
 void addTFTPrims();
 void addVarPrims();
+void addHIDPrims();
 
 // Named Primitive Support
 

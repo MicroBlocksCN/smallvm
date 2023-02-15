@@ -134,6 +134,7 @@ void primsInit() {
 	addSerialPrims();
 	addTFTPrims();
 	addVarPrims();
+	addHIDPrims();
 }
 
 // Task Ops
