@@ -118,14 +118,14 @@ method scaleChanged MicroBlocksEditor {
 
 method showTrashcan MicroBlocksEditor {
   palette = (blockPalette (scripter this))
+  paletteArea = (clientArea (handler (owner (morph palette))))
   trashcan = (newMorph)
   overlay = (newMorph)
   setCostume trashcan (trashcanIcon this)
   addPart (morph palette) overlay
   addPart (morph palette) trashcan
-  paletteArea = (clientArea (handler (owner (morph palette))))
-  setCenter trashcan (((width paletteArea) / 2) + (left (morph palette))) (((height paletteArea) / 2) + (top (morph palette)))
-  setPosition overlay (left (morph palette)) (top (morph palette))
+  setCenter trashcan (((width paletteArea) / 2) + (left paletteArea)) (((height paletteArea) / 2) + (top paletteArea))
+  setPosition overlay (left paletteArea) (top paletteArea)
   setExtent overlay (width paletteArea) (height paletteArea)
   setCostume overlay (gray 0 60)
 }
