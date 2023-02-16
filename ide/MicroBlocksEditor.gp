@@ -127,7 +127,7 @@ method showTrashcan MicroBlocksEditor {
   setCenter trashcan (((width paletteArea) / 2) + (left paletteArea)) (((height paletteArea) / 2) + (top paletteArea))
   setPosition overlay (left paletteArea) (top paletteArea)
   setExtent overlay (width paletteArea) (height paletteArea)
-  setCostume overlay (gray 0 60)
+  setCostume overlay (gray 0 20)
 }
 
 method hideTrashcan MicroBlocksEditor {
