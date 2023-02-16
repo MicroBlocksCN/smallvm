@@ -676,6 +676,29 @@ return // xxx suppress the ability to make variadic user-defined blocks
   addPart (morph repeater) (morph toggle)
 }
 
+
+// support for script selection
+
+method handDownOn ScriptEditor aHand {
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	startSelecting scripter aHand
+	return true
+}
+
+method handMoveOver ScriptEditor aHand {
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	if (notNil (selection scripter)) {
+		updateSelection (selection scripter) aHand
+	}
+}
+
+method handUpOn ScriptEditor aHand {
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	if (notNil (selection scripter)) { endSelection (selection scripter) }
+	return true
+}
+
+
 method contextMenu ScriptEditor {
   menu = (menu nil this)
   addItem menu 'set block size...' 'setBlockSize' 'make blocks bigger or smaller'

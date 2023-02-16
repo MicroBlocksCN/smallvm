@@ -6,13 +6,16 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries trashcan
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries trashcan selection
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
 method scriptsFrame MicroBlocksScripter { return scriptsFrame }
 method project MicroBlocksScripter { return mbProject }
 method httpServer MicroBlocksScripter { return (httpServer projectEditor) }
+
+method selection MicroBlocksScripter { return selection }
+method setSelection MicroBlocksScripter aSelection { selection = aSelection }
 
 // initialization
 
