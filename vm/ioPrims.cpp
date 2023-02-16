@@ -551,14 +551,15 @@ void restartSerial() {
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
-	static const int analogPin[] = {};
+	#define A0 32
+	static const int analogPin[] = {A0};
+	static const char digitalPin[] = {26, 32, 25};
 	#define DEFAULT_TONE_PIN 33
 	static const char reservedPin[TOTAL_PINS] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 1, 0, 0, 1, 0, 0, 1, 0};
-
+		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 1, 1, 0,
+		0, 0, 0, 0, 0, 1, 1, 0, 1, 1};
 
 #elif defined(M5STAMP)
 	#define BOARD_TYPE "M5STAMP"
@@ -761,7 +762,7 @@ void turnOffPins() {
 
 int mapDigitalPinNum(int pinNum) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+		defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_Mbits) || \
 		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
 			if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) return digitalPin[pinNum];
 	#endif
@@ -1038,7 +1039,7 @@ void primDigitalSet(int pinNum, int flag) {
 		if (22 == pinNum) return;
 		if (23 == pinNum) { digitalWrite(BUZZER, (flag ? HIGH : LOW)); return; }
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
-			defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
+			defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_Mbits) || \
 			defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
 		if ((0 <= pinNum) && (pinNum < DIGITAL_PINS)) {
 			pinNum = digitalPin[pinNum];
