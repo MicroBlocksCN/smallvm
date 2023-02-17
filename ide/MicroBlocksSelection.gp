@@ -19,21 +19,23 @@ method savePosition Hand {
 
 // a few minor additions to Block
 method select Block {
-	originalColor = color
-	color = (mixed color 50 (color 0 255 0))
-	pathCache = nil
-	changed morph
-	if (notNil (next this)) {
-		select (next this)
-	}
-	for i (inputs this) {
-		if (isClass i 'Block') {
-			select i
-		} (and
-			(isClass i 'CommandSlot')
-			(notNil (nested i))
-		) {
-			select (nested i)	
+	if (isNil originalColor) {
+		originalColor = color
+		color = (mixed color 50 (color 0 255 0))
+		pathCache = nil
+		changed morph
+		if (notNil (next this)) {
+			select (next this)
+		}
+		for i (inputs this) {
+			if (isClass i 'Block') {
+				select i
+			} (and
+				(isClass i 'CommandSlot')
+				(notNil (nested i))
+			) {
+				select (nested i)
+			}
 		}
 	}
 }
@@ -41,6 +43,7 @@ method select Block {
 method unselect Block {
 	if (notNil originalColor) {
 		color = originalColor
+		originalColor = nil
 		pathCache = nil
 		changed morph
 	}
@@ -48,15 +51,25 @@ method unselect Block {
 
 // MicroBlocksSelection
 
-defineClass MicroBlocksSelection scripter rectangle morph blocks
-
 to startSelecting aScripter aHand {
 	(initialize (new 'MicroBlocksSelection' aScripter (rect (x aHand) (y aHand))))
 	savePosition aHand
 }
 
+to cancelSelection {
+	scripter = (scripter (findMicroBlocksEditor))
+	for p (allMorphs (morph (scriptEditor scripter))) {
+		if (isClass (handler p) 'Block') { unselect (handler p) }
+	}
+	for p (parts (morph scripter)) {
+		if (isClass (handler p) 'MicroBlocksSelection') { destroy (handler p) }
+	}
+}
+
+defineClass MicroBlocksSelection scripter rectangle morph blocks
+
 method initialize MicroBlocksSelection {
-	cancelSelection this
+	cancelSelection
 	setSelection scripter this
 
 	blocks = (list)
@@ -66,7 +79,10 @@ method initialize MicroBlocksSelection {
 	return this
 }
 
-method destroy MicroBlocksSelection { destroy morph }
+method destroy MicroBlocksSelection {
+	setSelection scripter nil
+	destroy morph
+}
 
 // selecting
 
@@ -79,24 +95,17 @@ method updateSelection MicroBlocksSelection aHand {
 }
 
 method endSelection MicroBlocksSelection {
-	for p (parts (morph (scriptEditor scripter))) {
+	for p (allMorphs (morph (scriptEditor scripter))) {
 		if (isClass (handler p) 'Block') {
 			if (intersects rectangle (bounds p)) {
-				add blocks (handler p)
-				select (handler p)
+				add blocks (topBlock (handler p))
+				select (topBlock (handler p))
 			}
 		}
 	}
 	destroy this
 }
 
-method cancelSelection MicroBlocksSelection {
-	for p (allMorphs (morph (scriptEditor scripter))) {
-		if (isClass (handler p) 'Block') {
-			unselect (handler p)
-		}
-	}
-}
 
 // debugging
 

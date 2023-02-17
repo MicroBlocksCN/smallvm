@@ -199,6 +199,7 @@ to gpFolder {
 }
 
 method clicked Block hand {
+  cancelSelection
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
     userRenameVariable this
     return
@@ -228,6 +229,7 @@ method clicked Block hand {
 }
 
 method aboutToBeGrabbed Block {
+  cancelSelection
   if (isNil (owner morph)) {return}
   tb = (topBlock this)
   se = (ownerThatIsA (morph tb) 'ScriptEditor')
@@ -284,6 +286,7 @@ method aboutToBeGrabbed Block {
 }
 
 method justDropped Block hand {
+  cancelSelection
   snap this (x hand) (y hand)
   hideTrashcan (findMicroBlocksEditor)
 }
@@ -310,6 +313,7 @@ method alternateOperators Block {
 }
 
 method changeOperator Block newOp {
+  cancelSelection
   setField expression 'primName' newOp
   // update the block (inefficient, but works):
   scripter = (scripter (findProjectEditor))
@@ -399,6 +403,7 @@ method contextMenu Block {
 }
 
 method extractBlock Block whileGrabbing {
+  cancelSelection
   whileGrabbing = (whileGrabbing == true)
   if ('reporter' != type) { // hat or command
     nxt = (next this)
@@ -698,6 +703,9 @@ method handUpOn ScriptEditor aHand {
 	return true
 }
 
+method handLeave ScriptEditor aHand {
+	if (isDown aHand) { cancelSelection }
+}
 
 method contextMenu ScriptEditor {
   menu = (menu nil this)
