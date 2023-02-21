@@ -966,7 +966,9 @@ void primAnalogWrite(OBJ *args) {
 
 		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 	#endif
-	pwmRunning[pinNum] = true;
+	if (OUTPUT == currentMode[pinNum]) { // using PWM, not DAC
+		pwmRunning[pinNum] = true;
+	}
 }
 
 OBJ primDigitalRead(int argCount, OBJ *args) {
