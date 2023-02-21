@@ -17,6 +17,7 @@
 // LED Matrix Pins on BBC micro:bit and Calliope
 
 static int disableLEDDisplay = false; // disable micro:bit 5x5 display and light sensor when true
+int mbDisplayColor = 0x00FF00; // Green by default
 
 #if defined(ARDUINO_BBC_MICROBIT)
 
@@ -389,6 +390,16 @@ void updateMicrobitDisplay() {
 #endif
 
 // Display Primitives for micro:bit/Calliope (noops on other boards)
+
+OBJ primMBSetColor(int argCount, OBJ *args) {
+	mbDisplayColor = obj2int(args[0]);
+#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
+	displaySnapshot = 0; // update the display on the next cycle
+#else
+	tftSetHugePixelBits(microBitDisplayBits);
+#endif
+	return falseObj;
+}
 
 OBJ primMBDisplay(int argCount, OBJ *args) {
 	OBJ arg = args[0];
@@ -950,10 +961,13 @@ void turnOffInternalNeoPixels() {
 		initNeoPixelPin(13); // use internal NeoPixels
 #endif
 		delay(1);
-		int onColor = 15 << 16; // green
 		for (int i = 0; i < 25; i++) {
 			int isOn = (microBitDisplayBits & (1 << i));
-			sendNeoPixelData(isOn ? onColor : 0);
+			// NeoPixel order is GRB
+			int r = gamma((mbDisplayColor >> 16) & 0xFF);
+			int g = gamma((mbDisplayColor >> 8) & 0xFF);
+			int b = gamma(mbDisplayColor & 0xFF);
+			sendNeoPixelData(isOn ? (g << 16) | (r << 8) | b : 0);
 		}
 		neoPixelPinMask = oldPinMask; // restore the old NeoPixel pin
 	}
@@ -1054,6 +1068,7 @@ OBJ primMBDrawShape(int argCount, OBJ *args) {
 
 static PrimEntry entries[] = {
 	{"lightLevel", primLightLevel},
+	{"mbSetColor", primMBSetColor},
 	{"mbDisplay", primMBDisplay},
 	{"mbDisplayOff", primMBDisplayOff},
 	{"mbPlot", primMBPlot},
