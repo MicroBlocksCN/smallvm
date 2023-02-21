@@ -963,7 +963,11 @@ void turnOffInternalNeoPixels() {
 		delay(1);
 		for (int i = 0; i < 25; i++) {
 			int isOn = (microBitDisplayBits & (1 << i));
-			sendNeoPixelData(isOn ? mbDisplayColor : 0);
+			// NeoPixel order is GRB
+			int r = gamma((mbDisplayColor >> 16) & 0xFF);
+			int g = gamma((mbDisplayColor >> 8) & 0xFF);
+			int b = gamma(mbDisplayColor & 0xFF);
+			sendNeoPixelData(isOn ? (g << 16) | (r << 8) | b : 0);
 		}
 		neoPixelPinMask = oldPinMask; // restore the old NeoPixel pin
 	}
