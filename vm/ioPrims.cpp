@@ -947,7 +947,7 @@ void primAnalogWrite(OBJ *args) {
 
 	#if defined(ESP32) && !defined(ESP32_C3)
 		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 DAC pins
-			dacWrite(pinNum, value);
+			dacWrite(pinNum, (value >> 2)); // convert 10-bit to 8-bit value for ESP32 DAC
 			return;
 		}
 		if (value == 0) {
