@@ -189,6 +189,7 @@ void readScriptsFromURL() {
 // Stubs for functions not used by Boardie
 
 void addSerialPrims() {}
+void addHIDPrims() {}
 void delay(int msecs) {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
 

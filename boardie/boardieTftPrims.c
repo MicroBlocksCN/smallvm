@@ -432,7 +432,10 @@ void tftSetHugePixel(int x, int y, int state) {
 	int squareSize = (minDimension - (6 * lineWidth)) / 5;
 
 	EM_ASM_({
-			window.ctx.fillStyle = $3 == 0 ? '#000' : '#0F0';
+			if (!window.mbDisplayColor) { window.mbDisplayColor = 0x00FF00; }
+			window.ctx.fillStyle = $3 == 0 ?
+				'#000' :
+				window.rgbFrom24b(window.mbDisplayColor);
 			window.ctx.fillRect($0, $1, $2, $2);
 		},
 		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
