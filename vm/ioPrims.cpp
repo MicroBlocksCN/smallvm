@@ -895,6 +895,11 @@ void primAnalogWrite(OBJ *args) {
 				pinNum = ed1DigitalPinMap[pinNum - 1];
 			}
 		#endif
+		#ifdef ARDUINO_Mbits
+			if ((0 <= pinNum) && (pinNum <= 20) && (pinNum != 17) && (pinNum != 18)) {
+				pinNum = digitalPin[pinNum]; // map edge connector pin number to ESP32 pin number
+			}
+		#endif
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pinNum < 2) return;
