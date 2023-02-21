@@ -551,9 +551,10 @@ void restartSerial() {
 	#define DIGITAL_PINS 40
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
-	#define A0 32
-	static const int analogPin[] = {A0};
-	static const char digitalPin[] = {26, 32, 25};
+	static const int analogPin[] = {};
+	static const char digitalPin[] = {
+		26, 32, 25, 13, 27, 36, 5, 12, 4, 34,
+		14, 39, 15, 18, 19, 23, 2, 255, 255, 21, 22}; // edge connector pins 17 & 18 are not used
 	#define DEFAULT_TONE_PIN 33
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 1, 0, 1, 0, 1, 1, 1, 1, 0,
@@ -814,6 +815,11 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 		}
 	#endif
 	#ifdef ARDUINO_ARCH_ESP32
+		#ifdef ARDUINO_Mbits
+			if ((0 <= pinNum) && (pinNum <= 20) && (pinNum != 17) && (pinNum != 18)) {
+				pinNum = digitalPin[pinNum]; // map edge connector pin number to ESP32 pin number
+			}
+		#endif
 		// use the ESP32 pin number directly (if not reserved)
 		if (RESERVED(pinNum)) return int2obj(0);
 		SET_MODE(pinNum, INPUT);
