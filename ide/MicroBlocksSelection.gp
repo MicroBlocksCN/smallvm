@@ -64,6 +64,7 @@ to cancelSelection {
 	for p (parts (morph scripter)) {
 		if (isClass (handler p) 'MicroBlocksSelection') { destroy (handler p) }
 	}
+	setSelection scripter nil
 }
 
 defineClass MicroBlocksSelection scripter rectangle morph blocks
@@ -80,7 +81,6 @@ method initialize MicroBlocksSelection {
 }
 
 method destroy MicroBlocksSelection {
-	setSelection scripter nil
 	destroy morph
 }
 
@@ -99,8 +99,9 @@ method endSelection MicroBlocksSelection {
 		for p (allMorphs (morph (scriptEditor scripter))) {
 			if (isClass (handler p) 'Block') {
 				if (intersects rectangle (bounds p)) {
-					add blocks (topBlock (handler p))
-					select (topBlock (handler p))
+					tb = (topBlock (handler p))
+					add blocks tb
+					select tb
 				}
 			}
 		}
@@ -126,9 +127,35 @@ method drawOn MicroBlocksSelection ctx {
 	fillRect ctx (color 0 128 0 50) (left rectangle) (top rectangle) (width rectangle) (height rectangle) 1
 }
 
+// testing
+
+method notEmpty MicroBlocksSelection { return (notEmpty blocks) }
+
 // events
 
 method handUpOn MicroBlocksSelection aHand {
 	endSelection this
 	return true
+}
+
+// actions
+
+method contextMenu MicroBlocksSelection {
+	menu = (menu nil this)
+	addItem menu 'duplicate selection' 'duplicate'
+	addLine menu
+	addItem menu 'delete selection' 'delete'
+	return menu
+}
+
+method delete MicroBlocksSelection {
+	for b blocks {
+		removeFromOwner (morph b)
+		destroy (morph b)
+	}
+	cancelSelection this
+}
+
+method duplicate MicroBlocksSelection {
+	cancelSelection this
 }

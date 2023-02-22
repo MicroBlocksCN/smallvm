@@ -466,6 +466,29 @@ method scriptText Block useSemicolons {
   return (scriptStringFor mbScripter this)
 }
 
+method delete Block {
+  if ('reporter' != type) { // hat or command
+    nxt = (next this)
+    if (and (notNil nxt) (notNil (owner morph))) {
+      prev = (ownerThatIsA (owner morph) 'Block')
+      cslot = (ownerThatIsA (owner morph) 'CommandSlot')
+      scripts = (ownerThatIsA (owner morph) 'ScriptEditor')
+      if (and (notNil prev) (=== this (next (handler prev)))) {
+        setNext this nil
+        setNext (handler prev) nxt
+      } (and (notNil cslot) (=== this (nested (handler cslot)))) {
+        setNext this nil
+        setNested (handler cslot) nxt
+      } (notNil scripts) {
+        addPart scripts (morph nxt)
+      }
+    }
+  }
+  aboutToBeGrabbed this
+  removeFromOwner morph
+  hideTrashcan (findMicroBlocksEditor)
+}
+
 // Inspection operations
 
 method findBlockUsers Block {
@@ -714,6 +737,10 @@ method handLeave ScriptEditor aHand {
 }
 
 method contextMenu ScriptEditor {
+  selection = (selection (handler (ownerThatIsA morph 'MicroBlocksScripter')))
+  if (and (notNil selection) (notEmpty selection)) {
+	return (contextMenu selection)
+  }
   menu = (menu nil this)
   addItem menu 'set block size...' 'setBlockSize' 'make blocks bigger or smaller'
   addLine menu
