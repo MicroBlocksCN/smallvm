@@ -95,11 +95,13 @@ method updateSelection MicroBlocksSelection aHand {
 }
 
 method endSelection MicroBlocksSelection {
-	for p (allMorphs (morph (scriptEditor scripter))) {
-		if (isClass (handler p) 'Block') {
-			if (intersects rectangle (bounds p)) {
-				add blocks (topBlock (handler p))
-				select (topBlock (handler p))
+	if ((area rectangle) > 1) {
+		for p (allMorphs (morph (scriptEditor scripter))) {
+			if (isClass (handler p) 'Block') {
+				if (intersects rectangle (bounds p)) {
+					add blocks (topBlock (handler p))
+					select (topBlock (handler p))
+				}
 			}
 		}
 	}
