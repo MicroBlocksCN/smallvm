@@ -895,6 +895,11 @@ void primAnalogWrite(OBJ *args) {
 				pinNum = ed1DigitalPinMap[pinNum - 1];
 			}
 		#endif
+		#ifdef ARDUINO_Mbits
+			if ((0 <= pinNum) && (pinNum <= 20) && (pinNum != 17) && (pinNum != 18)) {
+				pinNum = digitalPin[pinNum]; // map edge connector pin number to ESP32 pin number
+			}
+		#endif
 		if (RESERVED(pinNum)) return;
 	#elif defined(ARDUINO_SAM_DUE) || defined(ARDUINO_NRF52840_FEATHER)
 		if (pinNum < 2) return;
@@ -942,7 +947,7 @@ void primAnalogWrite(OBJ *args) {
 
 	#if defined(ESP32) && !defined(ESP32_C3)
 		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 DAC pins
-			dacWrite(pinNum, value);
+			dacWrite(pinNum, (value >> 2)); // convert 10-bit to 8-bit value for ESP32 DAC
 			return;
 		}
 		if (value == 0) {
@@ -966,7 +971,9 @@ void primAnalogWrite(OBJ *args) {
 
 		analogWrite(pinNum, value); // sets the PWM duty cycle on a digital pin
 	#endif
-	pwmRunning[pinNum] = true;
+	if (OUTPUT == currentMode[pinNum]) { // using PWM, not DAC
+		pwmRunning[pinNum] = true;
+	}
 }
 
 OBJ primDigitalRead(int argCount, OBJ *args) {

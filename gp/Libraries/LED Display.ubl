@@ -6,6 +6,7 @@ description 'Display primitives for the 5x5 LED display on the BBC micro:bit, Ca
 variables _stop_scrolling_text 
 
   spec ' ' '[display:mbDisplay]' 'display _' 'microbitDisplay' 15237440
+  spec ' ' '_set display color' 'set display color _' 'color'
   spec ' ' '[display:mbDisplayOff]' 'clear display'
   space
   spec ' ' '[display:mbPlot]' 'plot x _ y _' 'num num' 3 3
@@ -55,3 +56,6 @@ to stopScrollingText {
   '[display:mbDisplayOff]'
 }
 
+to '_set display color' color {
+  callCustomCommand '[display:mbSetColor]' ('[data:makeList]' color)
+}

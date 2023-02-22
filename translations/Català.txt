@@ -802,6 +802,9 @@ pantalla _
 clear display
 neteja pantalla
 
+set display color _
+fixa el color de la pantalla a _
+
 plot x _ y _
 encén x _ y _
 

@@ -264,6 +264,8 @@ void writeI2CReg(int deviceID, int reg, int value);
 
 // I/O Support
 
+extern int mbDisplayColor;
+
 int pinCount();
 int mapDigitalPinNum(int userPinNum);
 void setPinMode(int pin, int newMode);

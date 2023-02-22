@@ -33,9 +33,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.5"
-     inkscape:cx="381"
-     inkscape:cy="607"
+     inkscape:zoom="2"
+     inkscape:cx="500.75"
+     inkscape:cy="826.75"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -72,6 +72,15 @@
      inkscape:label="Capa 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <circle
+       style="opacity:1;fill:#ffffff;stroke:none;stroke-width:0.264584;stroke-linecap:round;stop-color:#000000"
+       id="path651"
+       cx="128.0844"
+       cy="235.92119"
+       r="16.233564"
+       inkscape:export-filename="/tmp/trashcan-r.png"
+       inkscape:export-xdpi="109.53"
+       inkscape:export-ydpi="109.53" />
     <g
        id="g1455"
        transform="matrix(0.75026029,0,0,0.75026029,-7.7385602,10.474736)">
@@ -1580,9 +1589,9 @@
     </g>
     <g
        id="g4693"
-       inkscape:export-filename="/tmp/trashcan.png"
-       inkscape:export-xdpi="56.848305"
-       inkscape:export-ydpi="56.848305"
+       inkscape:export-filename="/tmp/trashcan-r.png"
+       inkscape:export-xdpi="109.53"
+       inkscape:export-ydpi="109.53"
        transform="matrix(0.5927428,0,0,0.5927428,47.907038,90.094711)">
       <path
          id="rect254"

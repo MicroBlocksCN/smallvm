@@ -580,7 +580,7 @@ int touchEnabled = false;
 		}
 
 		void IS31FL3731::drawPixel(int16_t x, int16_t y, uint16_t brightness) {
-			// Set the brigness of the pixel at (x, y).
+			// Set the brightness of the pixel at (x, y).
 
 			const uint8_t topRow[17] =
 				{7, 23, 39, 55, 71, 87, 103, 119, 135, 136, 120, 104, 88, 72, 56, 40, 24};
@@ -706,7 +706,7 @@ void tftSetHugePixel(int x, int y, int state) {
 		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x
 		yInset + ((y - 1) * squareSize) + (y * lineWidth), // y
 		squareSize, squareSize,
-		color24to16b(state ? 0x00FF00 : BLACK));
+		color24to16b(state ? mbDisplayColor : BLACK));
 	UPDATE_DISPLAY();
 }
 

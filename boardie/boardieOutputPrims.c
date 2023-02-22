@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <emscripten.h>
+
 #include "mem.h"
 #include "interp.h"
 
@@ -17,6 +19,18 @@ int microBitDisplayBits = 0;
 int useTFT = true;
 
 // Primitives for Simulated 5x5 LED Display
+
+OBJ primMBSetColor(int argCount, OBJ *args) {
+	if (EM_ASM_INT({
+		var changed = (window.mbDisplayColor != $0);
+		window.mbDisplayColor = $0;
+		return changed;
+	}, obj2int(args[0]))) {
+		// only update if color has actually changed
+		tftSetHugePixelBits(microBitDisplayBits);
+	}
+	return falseObj;
+}
 
 OBJ primMBDisplay(int argCount, OBJ *args) {
 	OBJ arg = args[0];
@@ -146,6 +160,7 @@ void turnOffInternalNeoPixels() {}
 
 static PrimEntry entries[] = {
 	{"lightLevel", primLightLevel},
+	{"mbSetColor", primMBSetColor},
 	{"mbDisplay", primMBDisplay},
 	{"mbDisplayOff", primMBDisplayOff},
 	{"mbPlot", primMBPlot},
