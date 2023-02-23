@@ -255,11 +255,17 @@ method aboutToBeGrabbed Block {
 	if (notNil owner) {
 		if (isClass owner 'CommandSlot') {
 			setNested owner dup
-		} else {
-			setNext owner dup
+		} (isClass owner 'Block') {
+			if ((type dup) == 'reporter') {
+				replaceInput owner this dup
+			} else {
+				setNext owner dup
+			}
+		} (isClass owner 'ScriptEditor') {
+			addPart (morph owner) (morph dup)
 		}
 	}
-  }
+}
 
   // extract block with shift + grab
   if (and

@@ -554,6 +554,8 @@ display _
 
 clear display
 
+set display color _
+
 plot x _ y _
 
 unplot x _ y _
