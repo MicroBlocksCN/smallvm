@@ -647,6 +647,34 @@ play frequency _ for _ ms
 
 play midi key _ for _ ms
 
+start tone _ Hz
+
+stop tone
+
+c
+
+c#
+
+d
+
+d#
+
+e
+
+f
+
+f#
+
+g
+
+g#
+
+a
+
+a#
+
+b
+
 ####
 # Ringtone library
 # Can play Nokring-formatted music. Also known as RTTTL.
