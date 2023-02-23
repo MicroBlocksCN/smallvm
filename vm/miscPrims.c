@@ -79,6 +79,11 @@ static OBJ jsonValue(char *item) {
 	return newString(0); // json parse error or end
 }
 
+static OBJ primConnectedToIDE(int argCount, OBJ *args) {
+reportNum("serialConnected", serialConnected());
+	return serialConnected() ? trueObj : falseObj;
+}
+
 static OBJ primJSONGet(int argCount, OBJ *args) {
 	// Return the value at the given path in a JSON string or the empty string
 	// if the path doesn't refer to anything. The optional third argument returns
@@ -160,6 +165,7 @@ static PrimEntry entries[] = {
 	{"rescale", primRescale},
 	{"sin", primSine},
 	{"sqrt", primSqrt},
+	{"connectedToIDE", primConnectedToIDE},
 	{"broadcastToIDE", primBroadcastToIDEOnly},
 	{"jsonGet", primJSONGet},
 	{"jsonCount", primJSONCount},

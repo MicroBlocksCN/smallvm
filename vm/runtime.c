@@ -515,14 +515,6 @@ static inline void sendData() {
 #endif
 }
 
-#if !defined(GNUBLOCKS) || defined(EMSCRIPTEN)
-int serialConnected() {
-	uint32 now = millisecs();
-	if (lastSendMSecs > now) lastSendMSecs = 0; // clock wrap
-	return ((now - lastSendMSecs) < 2000);
-}
-#endif
-
 static inline void queueByte(uint8 aByte) {
 	outBuf[outBufEnd] = aByte;
 	outBufEnd = (outBufEnd + 1) & OUTBUF_MASK;
@@ -1032,6 +1024,20 @@ static int receiveTimeout() {
 	if (usecs < lastRcvTime) lastRcvTime = 0; // clock wrap
 	return (usecs - lastRcvTime) > 20000;
 }
+
+#if !defined(GNUBLOCKS) || defined(EMSCRIPTEN)
+int serialConnected() {
+// 	uint32 now = millisecs();
+// 	if (lastSendMSecs > now) lastSendMSecs = 0; // clock wrap
+// 	return ((now - lastSendMSecs) < 2000);
+
+	if (0 == lastRcvTime) return false; // startup - no IDE messages yet
+
+	uint32 now = microsecs();
+	uint32 elapsed = (lastRcvTime > now) ? now : (now - lastRcvTime);
+	return elapsed < 3 * 1000000; // an ide msg was received in the past N seconds
+}
+#endif
 
 static void processShortMessage() {
 	if (rcvByteCount < 3) { // message is not complete
