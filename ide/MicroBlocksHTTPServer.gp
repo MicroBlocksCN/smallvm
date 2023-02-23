@@ -27,7 +27,7 @@ method initialize MicroBlocksHTTPServer {
 
 method start MicroBlocksHTTPServer {
 	stop this
-	port = (prompt (global 'page') 'Server port?' '6473')
+	port = (freshPrompt (global 'page') 'Server port?' '6473')
 	if ('' == port) { return false }
 	port = (toInteger port)
 	serverSocket = (openServerSocket port)

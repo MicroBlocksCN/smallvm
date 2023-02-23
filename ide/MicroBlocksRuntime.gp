@@ -743,7 +743,7 @@ method setPort SmallRuntime newPortName {
 		return
 	}
 	if ('other...' == newPortName) {
-		newPortName = (prompt (global 'page') 'Port name?' (localized 'none'))
+		newPortName = (freshPrompt (global 'page') 'Port name?' (localized 'none'))
 		if ('' == newPortName) { return }
 	}
 	closePort this

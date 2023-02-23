@@ -1293,7 +1293,7 @@ method isReceiverSlotTemplate Block {
 
 method userRenameVariable Block {
   if  (or (not (isRenamableVar this)) (isReceiverSlotTemplate this)) {return}
-  prompt (page morph) 'Variable Name?' (at (argList expression) 1) 'line' (action 'renameVariableTo' this)
+  freshPrompt (page morph) 'Variable Name?' (at (argList expression) 1) 'line' (action 'renameVariableTo' this)
 }
 
 method renameVariableTo Block varName {

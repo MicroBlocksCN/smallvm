@@ -390,7 +390,7 @@ method setMicroBlocksFolder MicroBlocksFilePicker {
 method newLibrary MicroBlocksFilePicker {
   scripter = (scripter (findProjectEditor))
 
-  libName = (prompt (global 'page') 'New library name?' '')
+  libName = (freshPrompt (global 'page') 'New library name?' '')
 
   if (libName != '') {
 	  lib = (newMicroBlocksModule libName)
