@@ -49,7 +49,8 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'millisOp'			'milliseconds')
 		(array 'r' 'microsOp'			'microseconds')
 		'-'
-		(array 'r' 'boardType'			'board type')
+		(array 'r' 'boardType'				'board type')
+		(array 'r' '[misc:connectedToIDE]'	'connected to IDE')
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
 		(array 'r' 'analogReadOp'		'read analog pin _ : pullup _' 'num bool' 1 false)
