@@ -428,7 +428,7 @@ method saveProject MicroBlocksEditor fName {
   }
 
   fName = (fileToWrite (withoutExtension fName) (array '.ubp'))
-  if ('' == fName) { return false }
+  if ('' == (filePart fName)) { return false }
 
   if (and
 	(not (isAbsolutePath this fName))

@@ -478,7 +478,10 @@ method newFolder MicroBlocksFilePicker {
   newFolderName = (prompt (global 'page') 'Folder name?')
   if ('' == newFolderName) { return }
   for ch (letters newFolderName) {
-	if (isOneOf ch '.' '/' '\' ':') { error 'Bad folder name' }
+    if (notNil (findFirst './\:' ch)) {
+      inform 'Folder name cannot contain: .  /  \  or  :'
+      return
+    }
   }
   newPath = (join currentDir '/' newFolderName)
   makeDirectory newPath
