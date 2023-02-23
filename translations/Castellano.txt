@@ -909,6 +909,42 @@ toca la frecuencia _ durante _ ms
 play midi key _ for _ ms
 toca la tecla MIDI _ durante _ ms
 
+c
+do
+
+c#
+do#
+
+d
+re
+
+d#
+re#
+
+e
+mi
+
+f
+fa
+
+f#
+fa#
+
+g
+sol
+
+g#
+sol#
+
+a
+la
+
+a#
+la#
+
+b
+si
+
 ####
 # Ringtone library
 # Can play Nokring-formatted music. Also known as RTTTL.
