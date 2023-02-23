@@ -100,8 +100,10 @@ method endSelection MicroBlocksSelection {
 			if (isClass (handler p) 'Block') {
 				if (intersects rectangle (bounds p)) {
 					tb = (topBlock (handler p))
-					add blocks tb
-					select tb
+					if (not (contains blocks tb)) {
+						add blocks tb
+						select tb
+					}
 				}
 			}
 		}
@@ -113,7 +115,7 @@ method endSelection MicroBlocksSelection {
 // debugging
 
 method toString MicroBlocksSelection {
-	return (join 'selection: ' (toString rectangle))
+	return (join 'selection: ' (toString blocks))
 }
 
 // drawing
@@ -131,6 +133,10 @@ method drawOn MicroBlocksSelection ctx {
 
 method notEmpty MicroBlocksSelection { return (notEmpty blocks) }
 
+method contains MicroBlocksSelection aBlock {
+	return (contains blocks (topBlock aBlock))
+}
+
 // events
 
 method handUpOn MicroBlocksSelection aHand {
@@ -142,20 +148,55 @@ method handUpOn MicroBlocksSelection aHand {
 
 method contextMenu MicroBlocksSelection {
 	menu = (menu nil this)
-	addItem menu 'duplicate selection' 'duplicate'
+	addItem menu 'duplicate selection' 'duplicateBlocks'
+	addItem menu 'drag selection' 'dragBlocks'
 	addLine menu
-	addItem menu 'delete selection' 'delete'
+	addItem menu 'delete selection' 'deleteBlocks'
 	return menu
 }
 
-method delete MicroBlocksSelection {
-	for b blocks {
-		removeFromOwner (morph b)
-		destroy (morph b)
+method deleteBlocks MicroBlocksSelection {
+	for block blocks {
+		removeFromOwner (morph block)
+		destroy (morph block)
 	}
-	cancelSelection this
+	cancelSelection
 }
 
-method duplicate MicroBlocksSelection {
-	cancelSelection this
+method duplicateBlocks MicroBlocksSelection {
+	cancelSelection
+	showTrashcan (findMicroBlocksEditor)
+	contents = (initialize (new 'MicroBlocksSelectionContents') blocks true)
+	grab (hand (global 'page')) contents
+}
+
+method dragBlocks MicroBlocksSelection {
+	cancelSelection
+	showTrashcan (findMicroBlocksEditor)
+	contents = (initialize (new 'MicroBlocksSelectionContents') blocks false)
+	grab (hand (global 'page')) contents
+}
+
+defineClass MicroBlocksSelectionContents morph blocks
+
+method initialize MicroBlocksSelectionContents someBlocks duplicating {
+	morph = (newMorph this)
+	for block someBlocks {
+		if duplicating {
+			addPart morph (morph (duplicate block))
+		} else {
+			addPart morph (morph block)
+		}
+	}
+	return this
+}
+
+method justDropped MicroBlocksSelectionContents aHand {
+	scripterMorph = (owner morph)
+	for blockMorph (parts morph) {
+		addPart scripterMorph blockMorph
+	}
+	removeFromOwner morph
+	updateSliders (handler (owner scripterMorph))
+	hideTrashcan (findMicroBlocksEditor)
 }

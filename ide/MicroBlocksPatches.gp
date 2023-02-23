@@ -198,6 +198,8 @@ to gpFolder {
   return path
 }
 
+// Block additions
+
 method clicked Block hand {
   cancelSelection
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
@@ -229,7 +231,6 @@ method clicked Block hand {
 }
 
 method aboutToBeGrabbed Block {
-  cancelSelection
   if (isNil (owner morph)) {return}
   tb = (topBlock this)
   se = (ownerThatIsA (morph tb) 'ScriptEditor')
@@ -267,7 +268,7 @@ method aboutToBeGrabbed Block {
 			addPart (morph owner) (morph dup)
 		}
 	}
-}
+  }
 
   // extract block with shift + grab
   if (and
@@ -332,6 +333,10 @@ method contextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
   pe = (findProjectEditor)
+  selection = (selection (scripter pe))
+  if (and (notNil selection) (notEmpty selection)) {
+  	return (contextMenu selection)
+  }
 
   isInPalette = ('template' == (grabRule morph))
   if (and isInPalette (isRenamableVar this)) {
@@ -715,6 +720,15 @@ return // xxx suppress the ability to make variadic user-defined blocks
 
 method handDownOn ScriptEditor aHand {
 	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	pe = (findProjectEditor)
+	selection = (selection (scripter pe))
+	if (and (notNil selection) (notEmpty selection)) {
+		grabbed = (ownerThatIsA (morph (objectAt aHand)) 'Block')
+		if (and (notNil grabbed) (contains selection (handler grabbed))) {
+			dragBlocks selection
+			return true
+		}
+	}
 	startSelecting scripter aHand
 	return true
 }
@@ -732,15 +746,20 @@ method handUpOn ScriptEditor aHand {
 	return true
 }
 
+method wantsDropOf ScriptEditor aHandler {
+  return (or
+    (isAnyClass aHandler 'Block' 'CommandSlot' 'MicroBlocksSelectionContents')
+    (and
+      (devMode)
+      (isClass aHandler 'Text')
+      (== 'code' (editRule aHandler))))
+}
+
 method handLeave ScriptEditor aHand {
 	if (isDown aHand) { cancelSelection }
 }
 
 method contextMenu ScriptEditor {
-  selection = (selection (handler (ownerThatIsA morph 'MicroBlocksScripter')))
-  if (and (notNil selection) (notEmpty selection)) {
-	return (contextMenu selection)
-  }
   menu = (menu nil this)
   addItem menu 'set block size...' 'setBlockSize' 'make blocks bigger or smaller'
   addLine menu
