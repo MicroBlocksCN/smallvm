@@ -548,9 +548,12 @@ method hideDefinition BlockDefinition {
   hideDefinition (scripter pe) op
 }
 
+method wantsDropOf BlocksPalette aHandler {
+  return (isAnyClass aHandler 'Block' 'Monitor' 'MicroBlocksSelectionContents')
+}
+
 method justReceivedDrop BlocksPalette aHandler {
   // Hide a block definitions when it is is dropped on the palette.
-
   pe = (findProjectEditor)
   if (isClass aHandler 'Block') { stopRunningBlock (smallRuntime) aHandler }
   if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
@@ -563,6 +566,9 @@ method justReceivedDrop BlocksPalette aHandler {
   }
   if (and (isClass aHandler 'Block') (notNil pe)) {
 	recordDrop (scriptEditor (scripter pe)) aHandler
+  }
+  if (and (isClass aHandler 'MicroBlocksSelectionContents')) {
+	destroy aHandler
   }
   removeFromOwner (morph aHandler)
 }
@@ -756,7 +762,13 @@ method wantsDropOf ScriptEditor aHandler {
 }
 
 method handLeave ScriptEditor aHand {
-	if (isDown aHand) { cancelSelection }
+	if (and
+		(isDown aHand)
+		(not (isClass (objectAt aHand) 'ScriptEditor')) // this does happen (???)
+		(not (isClass (objectAt aHand) 'MicroBlocksSelection'))
+	) {
+		cancelSelection
+	}
 }
 
 method contextMenu ScriptEditor {

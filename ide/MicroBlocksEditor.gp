@@ -117,6 +117,7 @@ method scaleChanged MicroBlocksEditor {
 // trashcan
 
 method showTrashcan MicroBlocksEditor {
+  hideTrashcan this // just in case, prevent trashcans from stacking
   palette = (blockPalette (scripter this))
   paletteArea = (clientArea (handler (owner (morph palette))))
   trashcan = (newMorph)
@@ -131,12 +132,8 @@ method showTrashcan MicroBlocksEditor {
 }
 
 method hideTrashcan MicroBlocksEditor {
-  if (notNil trashcan) {
-	destroy trashcan
-  }
-  if (notNil overlay) {
-	destroy overlay
-  }
+  if (notNil trashcan) { destroy trashcan }
+  if (notNil overlay) { destroy overlay }
 }
 
 // top bar parts

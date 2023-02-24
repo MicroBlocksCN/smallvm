@@ -144,6 +144,10 @@ method handUpOn MicroBlocksSelection aHand {
 	return true
 }
 
+method handMoveOver MicroBlocksSelection aHand {
+	updateSelection this aHand
+}
+
 // actions
 
 method contextMenu MicroBlocksSelection {
@@ -166,20 +170,20 @@ method deleteBlocks MicroBlocksSelection {
 method duplicateBlocks MicroBlocksSelection {
 	cancelSelection
 	showTrashcan (findMicroBlocksEditor)
-	contents = (initialize (new 'MicroBlocksSelectionContents') blocks true)
+	contents = (initialize (new 'MicroBlocksSelectionContents') blocks true scripter)
 	grab (hand (global 'page')) contents
 }
 
 method dragBlocks MicroBlocksSelection {
 	cancelSelection
 	showTrashcan (findMicroBlocksEditor)
-	contents = (initialize (new 'MicroBlocksSelectionContents') blocks false)
+	contents = (initialize (new 'MicroBlocksSelectionContents') blocks false scripter)
 	grab (hand (global 'page')) contents
 }
 
-defineClass MicroBlocksSelectionContents morph blocks
+defineClass MicroBlocksSelectionContents morph
 
-method initialize MicroBlocksSelectionContents someBlocks duplicating {
+method initialize MicroBlocksSelectionContents someBlocks duplicating aScripter {
 	morph = (newMorph this)
 	for block someBlocks {
 		if duplicating {
@@ -188,15 +192,23 @@ method initialize MicroBlocksSelectionContents someBlocks duplicating {
 			addPart morph (morph block)
 		}
 	}
+	addPart (morph (scriptEditor aScripter)) morph // just so it can be animated back to its owner
 	return this
 }
 
 method justDropped MicroBlocksSelectionContents aHand {
-	scripterMorph = (owner morph)
-	for blockMorph (parts morph) {
-		addPart scripterMorph blockMorph
+	droppedInto = (owner morph)
+	if (isClass droppedInto 'ScriptEditor') {
+		for blockMorph (parts morph) {
+			addPart droppedInto blockMorph
+		}
+		removeFromOwner morph
+		updateSliders (handler (owner droppedInto))
 	}
-	removeFromOwner morph
-	updateSliders (handler (owner scripterMorph))
 	hideTrashcan (findMicroBlocksEditor)
+}
+
+method destroy MicroBlocksSelectionContents {
+	removeFromOwner morph
+	destroy morph
 }
