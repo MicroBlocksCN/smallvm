@@ -15,7 +15,7 @@
 #include "interp.h"
 
 #if defined(ADAFRUIT_METRO_M0_EXPRESS) || defined(ADAFRUIT_TRINKET_M0) || \
-	defined(ARDUINO_ARCH_RP2040)
+	(defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED))
 
 #include "Keyboard.h"
 #include "Mouse.h"
@@ -121,4 +121,3 @@ static PrimEntry entries[] = {
 void addHIDPrims() {
 	addPrimitiveSet("hid", sizeof(entries) / sizeof(PrimEntry), entries);
 }
-

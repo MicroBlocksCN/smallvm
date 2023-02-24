@@ -1273,6 +1273,21 @@ method removeTooltip Page {
 
 // prompting and confirming
 
+method clearPrompters Page {
+    // Clear any existing prompters.
+
+    p = (findMorph 'Prompter')
+    while (notNil p) {
+        destroy p
+        p = (findMorph 'Prompter')
+    }
+}
+
+method freshPrompt Page question default editRule callback details {
+    clearPrompters this
+    return (prompt this question default editRule callback details)
+}
+
 method prompt Page question default editRule callback details {
   // prompt can be used either as a reporter or as a command
   // if a callback is passed prompt is used as a command, when

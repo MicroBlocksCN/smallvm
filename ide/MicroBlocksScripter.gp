@@ -585,7 +585,7 @@ method visibleVars MicroBlocksScripter {
 }
 
 method createVariable MicroBlocksScripter srcObj {
-  varName = (trim (prompt (global 'page') 'New variable name?' ''))
+  varName = (trim (freshPrompt (global 'page') 'New variable name?' ''))
   if (varName != '') {
 	addVariable (main mbProject) (uniqueVarName this varName)
 	variablesChanged (smallRuntime)
@@ -823,7 +823,7 @@ method scrollToDefinitionOf MicroBlocksScripter funcName {
 // Build Your Own Blocks
 
 method createFunction MicroBlocksScripter isReporter {
-  name = (prompt (global 'page') 'Enter function name:' 'myBlock')
+  name = (freshPrompt (global 'page') 'Enter function name:' 'myBlock')
   if (name == '') {return}
   opName = (uniqueFunctionName this name)
   func = (defineFunctionInModule (main mbProject) opName (array) nil)
@@ -1214,7 +1214,7 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 	if (or (isNil defaultFileName) ('' == defaultFileName)) {
 		defaultFileName = (localized 'my library')
 	}
-	libName = (prompt (global 'page') (localized 'Library name?') defaultFileName)
+	libName = (freshPrompt (global 'page') (localized 'Library name?') defaultFileName)
 	fName = (join libName '.ubl')
 	browserWriteFile (codeString (main mbProject) mbProject libName) fName 'library'
   } else {

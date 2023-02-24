@@ -486,21 +486,17 @@ static int outBufEnd = 0;
 
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
-static uint32 lastSendMSecs = 0; // used to detect when serial is connected and accepting data
-
 int sendBytes(uint8 *buf, int start, int end);
 
 static inline void sendData() {
 #ifdef EMSCRIPTEN
 	if (outBufStart > outBufEnd) {
 		if (sendBytes(outBuf, outBufStart, OUTBUF_SIZE)) {
-			lastSendMSecs = millisecs();
 			outBufStart = 0;
 		}
 	}
 	if (outBufStart != outBufEnd) {
 		if (sendBytes(outBuf, outBufStart, outBufEnd)) {
-			lastSendMSecs = millisecs();
 			outBufStart = outBufEnd & OUTBUF_MASK;
 		}
 	}
@@ -511,7 +507,6 @@ static inline void sendData() {
 		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
 		someDataSent = true;
 	}
-	if (someDataSent) lastSendMSecs = millisecs();
 #endif
 }
 
@@ -1026,10 +1021,10 @@ static int receiveTimeout() {
 }
 
 #if !defined(GNUBLOCKS) || defined(EMSCRIPTEN)
+
 int serialConnected() {
-// 	uint32 now = millisecs();
-// 	if (lastSendMSecs > now) lastSendMSecs = 0; // clock wrap
-// 	return ((now - lastSendMSecs) < 2000);
+	// Return true if the board is connected to the MicroBlocks IDE
+	// (i.e. if it has received a message from the IDE in the past 3 seconds).
 
 	if (0 == lastRcvTime) return false; // startup - no IDE messages yet
 
@@ -1037,6 +1032,7 @@ int serialConnected() {
 	uint32 elapsed = (lastRcvTime > now) ? now : (now - lastRcvTime);
 	return elapsed < 3 * 1000000; // an ide msg was received in the past N seconds
 }
+
 #endif
 
 static void processShortMessage() {
