@@ -587,6 +587,18 @@ method normalizeLineEndings String {
   return (joinStringArray (lines this) (newline))
 }
 
+method copyReplacing String aChar newChar {
+  // Return a copy of this string with all instances of aChar replaced by newChar.
+
+  result = (toList (letters this))
+  for i (count result) {
+    if (aChar == (at result i)) {
+      atPut result i newChar
+    }
+  }
+  return (joinStrings result)
+}
+
 method varMustBeQuoted String {
   if ('' == this) { return true } // empty string
   if (contains (letters this) ' ') { return true }

@@ -107,9 +107,21 @@ method showInstructions SmallRuntime aBlock {
 	compiler = (initialize (new 'SmallCompiler'))
 	code = (instructionsFor compiler (topBlock aBlock))
 	result = (list)
+	firstString = true
 	for item code {
 		if (not (isClass item 'Array')) {
-			addWithLineNum this result (toString item)
+			if firstString {
+				add result '--------'
+				firstString = false
+			}
+			add result (toString item) // string literal
+		} ('metadata' == (first item)) {
+			if ((count (last code)) > 0) {
+				add result '--------'
+			}
+		} ('pushLiteral' == (first item)) {
+			instr = (join (at item 1) ' ' (at item 2) ' ("' (at item 3) '")')
+			addWithLineNum this result instr
 		} ('pushImmediate' == (first item)) {
 			arg = (at item 2)
 			if (1 == (arg & 1)) {

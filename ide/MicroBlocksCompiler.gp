@@ -995,6 +995,7 @@ method appendLiterals SmallCompiler instructions {
 				nextOffset += (wordsForLiteral this literal)
 			}
 			atPut instr 2 (litOffset - ip)
+			atPut instructions ip (copyWith instr literal) // retain literal string for use by "show instructions"
 		}
 	}
 	addAll instructions literals
@@ -1019,7 +1020,9 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 
 	// add local variable names
 	varNames = (list)
-	for pair (sortedPairs localVars) { add varNames (last pair) }
+	for pair (sortedPairs localVars) {
+		add varNames (copyReplacing (last pair)) '	' ' ' // replace tabs with spaces in var name
+	}
 	add instructionList (joinStrings varNames (string 9)) // tab delimited string
 
 	// add function info
