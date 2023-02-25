@@ -16,9 +16,9 @@ reload '../ide/MicroBlocksFinder.gp'
 reload '../ide/MicroBlocksRuntime.gp'
 reload '../ide/MicroBlocksScripter.gp'
 reload '../ide/MicroBitDisplaySlot.gp'
-reload '../ide/MicroBlocksPatches.gp'
 reload '../ide/MicroBlocksSelection.gp'
 reload '../ide/ESPTool.gp'
+reload '../ide/MicroBlocksPatches.gp'
 
 to startup {
 	// Open the MicroBlocks IDE in developer mode
