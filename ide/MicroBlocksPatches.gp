@@ -721,6 +721,47 @@ return // xxx suppress the ability to make variadic user-defined blocks
   addPart (morph repeater) (morph toggle)
 }
 
+// additions to Hand for script selection
+
+method oldX Hand { return oldX }
+method oldY Hand { return oldY }
+method savePosition Hand {
+	oldX = x
+	oldY = y
+}
+
+// additions to Block for script selection
+
+method select Block {
+	if (isNil originalColor) {
+		originalColor = color
+		color = (mixed color 50 (color 0 255 0))
+		pathCache = nil
+		changed morph
+		if (notNil (next this)) {
+			select (next this)
+		}
+		for i (inputs this) {
+			if (isClass i 'Block') {
+				select i
+			} (and
+				(isClass i 'CommandSlot')
+				(notNil (nested i))
+			) {
+				select (nested i)
+			}
+		}
+	}
+}
+
+method unselect Block {
+	if (notNil originalColor) {
+		color = originalColor
+		originalColor = nil
+		pathCache = nil
+		changed morph
+	}
+}
 
 // support for script selection
 

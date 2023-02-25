@@ -9,46 +9,6 @@
 
 // Bernat Romagosa, February, 2023
 
-// a few minor additions to Hand
-method oldX Hand { return oldX }
-method oldY Hand { return oldY }
-method savePosition Hand {
-	oldX = x
-	oldY = y
-}
-
-// a few minor additions to Block
-method select Block {
-	if (isNil originalColor) {
-		originalColor = color
-		color = (mixed color 50 (color 0 255 0))
-		pathCache = nil
-		changed morph
-		if (notNil (next this)) {
-			select (next this)
-		}
-		for i (inputs this) {
-			if (isClass i 'Block') {
-				select i
-			} (and
-				(isClass i 'CommandSlot')
-				(notNil (nested i))
-			) {
-				select (nested i)
-			}
-		}
-	}
-}
-
-method unselect Block {
-	if (notNil originalColor) {
-		color = originalColor
-		originalColor = nil
-		pathCache = nil
-		changed morph
-	}
-}
-
 // MicroBlocksSelection
 
 to startSelecting aScripter aHand {
@@ -75,7 +35,7 @@ method initialize MicroBlocksSelection {
 
 	blocks = (list)
 	morph = (newMorph this)
-	
+
 	addPart (morph scripter) morph
 	return this
 }
@@ -90,7 +50,7 @@ method updateSelection MicroBlocksSelection aHand {
 	setLeft rectangle (min (oldX aHand) (x aHand))
 	setTop rectangle (min (oldY aHand) (y aHand))
 	setWidth rectangle (abs ((x aHand) - (oldX aHand)))
-	setHeight rectangle (abs ((y aHand) - (oldY aHand)))	
+	setHeight rectangle (abs ((y aHand) - (oldY aHand)))
 	fixLayout this
 }
 
