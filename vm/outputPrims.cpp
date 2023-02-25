@@ -711,30 +711,41 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP8266
 #define T0L 36	// 0 bit low time (goal: 900 nsecs)
 
 // Buffer of pulse durations used by RMT driver.
-rmt_item32_t rmt_buffer[32];
-int rmtDriverInstalled = false;
+static rmt_item32_t rmt_buffer[32];
+static int rmtDriverInstalled = false;
+static int neoPixelPin = -1;
 
 static void initRMT(int pinNum) {
-	// Initialize RMT driver.
+	// Initialize RMT driver, if needed, and set the NeoPixel pin.
 
-	rmt_config_t config;
-	memset(&config, 0, sizeof(rmt_config_t));
-	config.rmt_mode = RMT_MODE_TX;
-	config.channel = RMT_CHANNEL_0;
-	config.gpio_num = (gpio_num_t) pinNum;
-	config.clk_div = 2; // 40 MHz
-	config.mem_block_num = 1;
-	config.flags = 0;
-	config.tx_config.carrier_en = false;
-	config.tx_config.loop_en = false;
-	config.tx_config.idle_output_en = true;
-	config.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
+	if (!rmtDriverInstalled) {
+		rmt_config_t config;
+		memset(&config, 0, sizeof(rmt_config_t));
+		config.rmt_mode = RMT_MODE_TX;
+		config.channel = RMT_CHANNEL_0;
+		config.gpio_num = (gpio_num_t) pinNum;
+		config.clk_div = 2; // 40 MHz
+		config.mem_block_num = 1;
+		config.flags = 0;
+		config.tx_config.carrier_en = false;
+		config.tx_config.loop_en = false;
+		config.tx_config.idle_output_en = true;
+		config.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
 
-	if (rmtDriverInstalled) rmt_driver_uninstall(RMT_CHANNEL_0);
-	rmt_config(&config);
-	rmt_driver_install(RMT_CHANNEL_0, 0, 0);
-	rmt_set_source_clk(RMT_CHANNEL_0, RMT_BASECLK_APB);
-	rmtDriverInstalled = true;
+		rmt_config(&config);
+		rmt_driver_install(RMT_CHANNEL_0, 0, 0);
+		rmt_set_source_clk(RMT_CHANNEL_0, RMT_BASECLK_APB);
+		rmtDriverInstalled = true;
+	}
+
+	if (neoPixelPin >= 0) {
+		// detach old pin from RMT driver or it will continue to output NeoPixel data
+		gpio_matrix_out(neoPixelPin, 0x100, 0, 0); // detach the previous pin
+		setPinMode(pinNum, INPUT);
+	}
+
+	rmt_set_gpio(RMT_CHANNEL_0, RMT_MODE_TX, (gpio_num_t) pinNum, false);
+	neoPixelPin = pinNum;
 }
 
 static void initNeoPixelPin(int pinNum) { // ESP32
