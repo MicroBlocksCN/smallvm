@@ -48,7 +48,11 @@
 #elif defined(ARDUINO_ARCH_SAMD)
   #define OBJSTORE_BYTES 16000
 #elif defined(ARDUINO_ARCH_ESP32)
-  #define OBJSTORE_BYTES 16000 // 48000 // max that compiles is 56000
+  #ifdef BLE_PRIMS
+    #define OBJSTORE_BYTES 8000
+  #else
+    #define OBJSTORE_BYTES 16000 // 48000 // max that compiles is 56000
+  #endif
 #elif defined(GNUBLOCKS)
   #define OBJSTORE_BYTES 262100 // max number of bytes that we can allocate for now
 #elif defined(ARDUINO_ARCH_RP2040)
