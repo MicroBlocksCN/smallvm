@@ -1,7 +1,7 @@
 // Block
 // Handlers for the GP blocks GUI
 
-defineClass Block morph blockSpec type expression labelParts corner rounding dent inset hatWidth border color expansionLevel function isAlternative layoutNeeded pathCache cacheW cacheH
+defineClass Block morph blockSpec type expression labelParts corner rounding dent inset hatWidth border color expansionLevel function isAlternative layoutNeeded pathCache cacheW cacheH originalColor
 
 to block type color opName {
   block = (new 'Block')

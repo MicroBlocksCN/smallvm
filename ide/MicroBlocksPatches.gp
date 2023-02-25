@@ -198,7 +198,10 @@ to gpFolder {
   return path
 }
 
+// Block additions
+
 method clicked Block hand {
+  cancelSelection
   if (and (contains (array 'template' 'defer') (grabRule morph)) (isRenamableVar this)) {
     userRenameVariable this
     return
@@ -265,7 +268,7 @@ method aboutToBeGrabbed Block {
 			addPart (morph owner) (morph dup)
 		}
 	}
-}
+  }
 
   // extract block with shift + grab
   if (and
@@ -290,6 +293,7 @@ method aboutToBeGrabbed Block {
 }
 
 method justDropped Block hand {
+  cancelSelection
   snap this (x hand) (y hand)
   hideTrashcan (findMicroBlocksEditor)
 }
@@ -316,6 +320,7 @@ method alternateOperators Block {
 }
 
 method changeOperator Block newOp {
+  cancelSelection
   setField expression 'primName' newOp
   // update the block (inefficient, but works):
   scripter = (scripter (findProjectEditor))
@@ -328,6 +333,10 @@ method contextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
   pe = (findProjectEditor)
+  selection = (selection (scripter pe))
+  if (and (notNil selection) (notEmpty selection)) {
+  	return (contextMenu selection)
+  }
 
   isInPalette = ('template' == (grabRule morph))
   if (and isInPalette (isRenamableVar this)) {
@@ -405,6 +414,7 @@ method contextMenu Block {
 }
 
 method extractBlock Block whileGrabbing {
+  cancelSelection
   whileGrabbing = (whileGrabbing == true)
   if ('reporter' != type) { // hat or command
     nxt = (next this)
@@ -461,6 +471,29 @@ method scriptText Block useSemicolons {
   return (scriptStringFor mbScripter this)
 }
 
+method delete Block {
+  if ('reporter' != type) { // hat or command
+    nxt = (next this)
+    if (and (notNil nxt) (notNil (owner morph))) {
+      prev = (ownerThatIsA (owner morph) 'Block')
+      cslot = (ownerThatIsA (owner morph) 'CommandSlot')
+      scripts = (ownerThatIsA (owner morph) 'ScriptEditor')
+      if (and (notNil prev) (=== this (next (handler prev)))) {
+        setNext this nil
+        setNext (handler prev) nxt
+      } (and (notNil cslot) (=== this (nested (handler cslot)))) {
+        setNext this nil
+        setNested (handler cslot) nxt
+      } (notNil scripts) {
+        addPart scripts (morph nxt)
+      }
+    }
+  }
+  aboutToBeGrabbed this
+  removeFromOwner morph
+  hideTrashcan (findMicroBlocksEditor)
+}
+
 // Inspection operations
 
 method findBlockUsers Block {
@@ -515,9 +548,12 @@ method hideDefinition BlockDefinition {
   hideDefinition (scripter pe) op
 }
 
+method wantsDropOf BlocksPalette aHandler {
+  return (isAnyClass aHandler 'Block' 'Monitor' 'MicroBlocksSelectionContents')
+}
+
 method justReceivedDrop BlocksPalette aHandler {
   // Hide a block definitions when it is is dropped on the palette.
-
   pe = (findProjectEditor)
   if (isClass aHandler 'Block') { stopRunningBlock (smallRuntime) aHandler }
   if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
@@ -530,6 +566,9 @@ method justReceivedDrop BlocksPalette aHandler {
   }
   if (and (isClass aHandler 'Block') (notNil pe)) {
 	recordDrop (scriptEditor (scripter pe)) aHandler
+  }
+  if (and (isClass aHandler 'MicroBlocksSelectionContents')) {
+	destroy aHandler
   }
   removeFromOwner (morph aHandler)
 }
@@ -680,6 +719,56 @@ return // xxx suppress the ability to make variadic user-defined blocks
   corner = 5
   toggle = (toggleButton (action 'toggleRepeat' this) (action 'isRepeating' this) (scale * 20) (scale * 13) (scale * corner) (max 1 (scale / 2)) false false)
   addPart (morph repeater) (morph toggle)
+}
+
+
+// support for script selection
+
+method handDownOn ScriptEditor aHand {
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	pe = (findProjectEditor)
+	selection = (selection (scripter pe))
+	if (and (notNil selection) (notEmpty selection)) {
+		grabbed = (ownerThatIsA (morph (objectAt aHand)) 'Block')
+		if (and (notNil grabbed) (contains selection (handler grabbed))) {
+			dragBlocks selection
+			return true
+		}
+	}
+	startSelecting scripter aHand
+	return true
+}
+
+method handMoveOver ScriptEditor aHand {
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	if (notNil (selection scripter)) {
+		updateSelection (selection scripter) aHand
+	}
+}
+
+method handUpOn ScriptEditor aHand {
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	if (notNil (selection scripter)) { endSelection (selection scripter) }
+	return true
+}
+
+method wantsDropOf ScriptEditor aHandler {
+  return (or
+    (isAnyClass aHandler 'Block' 'CommandSlot' 'MicroBlocksSelectionContents')
+    (and
+      (devMode)
+      (isClass aHandler 'Text')
+      (== 'code' (editRule aHandler))))
+}
+
+method handLeave ScriptEditor aHand {
+	if (and
+		(isDown aHand)
+		(not (isClass (objectAt aHand) 'ScriptEditor')) // this does happen (???)
+		(not (isClass (objectAt aHand) 'MicroBlocksSelection'))
+	) {
+		cancelSelection
+	}
 }
 
 method contextMenu ScriptEditor {
