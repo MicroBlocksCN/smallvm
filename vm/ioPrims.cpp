@@ -774,6 +774,9 @@ int mapDigitalPinNum(int pinNum) {
 			return ed1DigitalPinMap[pinNum - 1];
 		}
 	#endif
+	#if defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_ARCH_ESP32) ||  defined(ARDUINO_ARCH_RP2040)
+		if (RESERVED(pinNum)) return -1;
+	#endif
 	return pinNum;
 }
 
