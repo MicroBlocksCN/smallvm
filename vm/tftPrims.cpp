@@ -25,7 +25,8 @@ int touchEnabled = false;
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
-	defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2) || defined(PICO_ED)
+	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
+	defined(PICO_ED)
 
 	#define BLACK 0
 
@@ -473,6 +474,31 @@ int touchEnabled = false;
 			tftClear();
 			useTFT = true;
 		}
+
+	#elif defined(TTGO_DISPLAY)
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_ST7789.h"
+
+		#define TFT_MOSI 19
+		#define TFT_SCLK 18
+		#define TFT_CS 5
+		#define TFT_DC 16
+		#define TFT_RST 23
+		#define TFT_BL 4
+		#define TFT_WIDTH 240
+		#define TFT_HEIGHT 135
+		#define TFT_PWR 22
+		Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
+
+		void tftInit() {
+			pinMode(TFT_BL, OUTPUT);
+			digitalWrite(TFT_BL, 1);
+			tft.init(TFT_HEIGHT, TFT_WIDTH);
+			tft.setRotation(1);
+			tftClear();
+			useTFT = true;
+		}
+
 	#elif defined(TTGO_RP2040)
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_ST7789.h"
@@ -498,6 +524,7 @@ int touchEnabled = false;
 			tftClear();
 			useTFT = true;
 		}
+
 	#elif defined(PICO_ED)
 		#include <Adafruit_GFX.h>
 
