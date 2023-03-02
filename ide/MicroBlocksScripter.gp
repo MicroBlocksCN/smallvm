@@ -1229,6 +1229,7 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 // importing libraries for dropped scripts
 
 method installLibraryNamed MicroBlocksScripter libName {
+  if (notNil (libraryNamed mbProject libName)) { return } // library already installed
   fileName = (fileNameForLibraryNamed this libName)
   if (isNil fileName) {
     print 'Unknown library:' libName
