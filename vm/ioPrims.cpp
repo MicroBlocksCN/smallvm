@@ -97,7 +97,7 @@ void hardwareInit() {
 		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
 		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_NRF52840_CLUE) || \
 		defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2) || defined(PICO_ED) || \
-		defined(ARDUINO_IOT_BUS)
+		defined(ARDUINO_IOT_BUS) || defined(TTGO_DISPLAY)
 			tftInit();
 	#endif
 }
@@ -561,6 +561,21 @@ void restartSerial() {
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 1, 1, 0,
 		0, 0, 0, 0, 0, 1, 1, 0, 1, 1};
+
+#elif defined(TTGO_DISPLAY)
+	#define BOARD_TYPE "TTGO_DISPLAY"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	#define PIN_LED 4 // display backlight
+	#define PIN_BUTTON_A 0
+	#define PIN_BUTTON_B 35
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
 #elif defined(M5STAMP)
 	#define BOARD_TYPE "M5STAMP"
@@ -1106,8 +1121,9 @@ void primSetUserLED(OBJ *args) {
 		} else {
 			primMBUnplot(2, coords);
 		}
-	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2)
-		tftSetHugePixel(3, 1, (trueObj == args[0]));
+	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
+		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY)
+			tftSetHugePixel(3, 1, (trueObj == args[0]));
 	#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
 		digitalWrite(PIN_LED, (trueObj == args[0]) ? HIGH : LOW);
 	#else
