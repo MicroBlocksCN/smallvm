@@ -48,12 +48,12 @@ to 'wrong guess' index {
   return (or (and (buttonA) ((at index sequence) == 1)) (and (buttonB) ((at index sequence) == 0)))
 }
 
-script 49 49 {
+script 50 50 {
 comment 'This is the "Simon" memory game for the
 Adafruit Circuit Playground Express.'
 }
 
-script 749 123 {
+script 750 124 {
 whenBroadcastReceived 'play sequence'
 if ((v 'current index') > 10) {
   clearNeoPixels
@@ -80,7 +80,7 @@ if ((v 'current index') > 10) {
 }
 }
 
-script 343 127 {
+script 344 128 {
 whenBroadcastReceived 'player turn'
 local 'index' 1
 repeatUntil (index > (v 'current index')) {
@@ -105,20 +105,20 @@ waitMillis 500
 sendBroadcast 'play sequence'
 }
 
-script 49 129 {
+script 50 130 {
 whenStarted
 neoPixelAttach 10 ''
 sendBroadcast 'go!'
 }
 
-script 50 233 {
+script 51 234 {
 whenBroadcastReceived 'go!'
 setup
 waitMillis 1000
 sendBroadcast 'play sequence'
 }
 
-script 50 361 {
+script 51 362 {
 whenBroadcastReceived 'go!'
 neoPixelSetAllToColor (colorSwatch 0 0 0 255)
 for i 5 {
@@ -283,12 +283,13 @@ to setNeoPixelColors10 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 {
 
 module Tone Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 tags tone sound music audio note speaker 
+choices tone_NoteName c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'c' 0 500
   spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
   spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
   spec ' ' 'startTone' 'start tone _ Hz' 'num' 440

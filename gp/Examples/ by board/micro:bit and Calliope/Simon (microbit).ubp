@@ -38,7 +38,7 @@ to 'wrong guess' index {
   return (or (and (buttonA) ((at index letters) == 'B')) (and (buttonB) ((at index letters) == 'A')))
 }
 
-script 453 49 {
+script 456 50 {
 whenBroadcastReceived 'play'
 local 'index' 1
 repeatUntil (index > (v 'current index')) {
@@ -63,17 +63,17 @@ waitMillis 500
 sendBroadcast 'draw sequence'
 }
 
-script 47 56 {
+script 50 57 {
 comment 'This is the "Simon" memory game for the
 BBC micro:bit.'
 }
 
-script 50 105 {
+script 53 106 {
 whenStarted
 sendBroadcast 'go!'
 }
 
-script 191 110 {
+script 194 111 {
 whenBroadcastReceived 'go!'
 'initialize letters'
 'current index' = 1
@@ -81,7 +81,7 @@ scroll_text 'GO!' 100
 sendBroadcast 'draw sequence'
 }
 
-script 50 233 {
+script 53 234 {
 whenBroadcastReceived 'draw sequence'
 if ((v 'current index') > 10) {
   '[display:mbDisplay]' 15237440
@@ -158,12 +158,13 @@ to stopScrollingText {
 
 module Tone Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 tags tone sound music audio note speaker 
+choices tone_NoteName c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'c' 0 500
   spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
   spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
   spec ' ' 'startTone' 'start tone _ Hz' 'num' 440
