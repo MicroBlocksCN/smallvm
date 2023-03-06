@@ -42,10 +42,11 @@ forever {
 
 module MQTT Comm
 author wwj718
-version 1 4 
+version 1 5 
 depends WiFi 
 tags mqtt network 
-description 'A simple MQTT client.'
+description 'A simple MQTT client.
+'
 
   spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num str str str' '' 128 '' '' ''
   spec 'r' 'MQTT connected' 'MQTT connected'
@@ -53,14 +54,15 @@ description 'A simple MQTT client.'
   spec ' ' 'MQTT sub' 'MQTT sub _ : QoS _' 'str num' 'testTopic' 0
   spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
   spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _ : retain _ QoS _' 'str auto bool num' 'testTopic' 'Hello!' false 0
-  spec 'r' 'MQTT last event' 'MQTT event : binary _' 'bool' false
+  spec 'r' '[net:MQTTLastEvent]' 'MQTT event : binary _' 'bool' false
   spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
   spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
+  spec 'r' 'MQTT last event' 'obsolete MQTT event : binary _' 'bool' false
 
 to 'MQTT connect to' broker buffer_sizes client_id username password {
   if ((getIPAddress) != '0.0.0.0') {
     if ((pushArgCount) == 1) {
-      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker 128 'MicroBlocks_client')
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker 128 ('[net:myMAC]'))
     } ((pushArgCount) == 3) {
       callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker buffer_sizes client_id)
     } else {
@@ -98,14 +100,6 @@ to 'MQTT event topic' event {
     return (at 1 event)
   } else {
     return ''
-  }
-}
-
-to 'MQTT last event' useBinary {
-  if ((pushArgCount) < 1) {
-    return (callCustomReporter '[net:MQTTLastEvent]')
-  } else {
-    return (callCustomReporter '[net:MQTTLastEvent]' ('[data:makeList]' binaryFlag))
   }
 }
 

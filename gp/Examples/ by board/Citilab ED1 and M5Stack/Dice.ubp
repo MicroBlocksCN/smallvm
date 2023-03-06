@@ -29,7 +29,7 @@ to 'draw dot x' x y {
   '[tft:circle]' x y 10 0 true
 }
 
-script 166 49 {
+script 169 50 {
 comment '    By José García Yeste - Citilab
 ===========================
 Motion and TFT library demo.
@@ -38,7 +38,7 @@ Wait for the ED1 to say "Shake!", then
 shake it to roll a die.'
 }
 
-script 47 112 {
+script 50 113 {
 whenStarted
 repeat 12 {
   local 'ignore' (motion)
@@ -213,12 +213,13 @@ to randomColor {
 
 module Tone Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 tags tone sound music audio note speaker 
+choices tone_NoteName c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'c' 0 500
   spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
   spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
   spec ' ' 'startTone' 'start tone _ Hz' 'num' 440

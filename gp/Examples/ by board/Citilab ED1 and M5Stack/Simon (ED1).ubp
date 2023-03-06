@@ -57,12 +57,12 @@ to 'wrong guess' index {
   return (or (or (and ('up button') ((at index sequence) != 1)) (and ('down button') ((at index sequence) != 2))) (or (and ('left button') ((at index sequence) != 3)) (and ('right button') ((at index sequence) != 4))))
 }
 
-script 50 49 {
+script 51 50 {
 comment 'This is the Simon memory game for the
 Citilab ED1 board'
 }
 
-script 412 49 {
+script 413 50 {
 whenBroadcastReceived 'player turn'
 local 'index' 1
 repeatUntil (index > (v 'current index')) {
@@ -88,12 +88,12 @@ waitMillis 500
 sendBroadcast 'play sequence'
 }
 
-script 49 99 {
+script 50 100 {
 whenStarted
 sendBroadcast 'go!'
 }
 
-script 201 104 {
+script 202 105 {
 whenBroadcastReceived 'go!'
 'current index' = 1
 'initialize letters'
@@ -101,7 +101,7 @@ waitMillis 1500
 sendBroadcast 'play sequence'
 }
 
-script 50 233 {
+script 51 234 {
 whenBroadcastReceived 'play sequence'
 if ((v 'current index') > 10) {
   '[display:mbDisplayOff]'
@@ -232,12 +232,13 @@ to randomColor {
 
 module Tone Output
 author MicroBlocks
-version 1 7 
+version 1 8 
 tags tone sound music audio note speaker 
+choices tone_NoteName c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b 
 description 'Audio tone generation. Make music with MicroBlocks!'
 variables _tonePin _toneInitalized _toneLoopOverhead _toneNoteNames _toneArezzoNotes _toneFrequencies 
 
-  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'auto num num' 'C' 0 500
+  spec ' ' 'play tone' 'play note _ octave _ for _ ms' 'str.tone_NoteName num num' 'c' 0 500
   spec ' ' 'playMIDIKey' 'play midi key _ for _ ms' 'num num' 60 500
   spec ' ' 'play frequency' 'play frequency _ for _ ms' 'num num' 261 500
   spec ' ' 'startTone' 'start tone _ Hz' 'num' 440

@@ -409,9 +409,26 @@ static FontRef openFont(char *fontName, int fontSize) {
 	// Note: ANTIALIASED_QUALITY does not work. Only CLEARTYPE_QUALITY results in smoothing.
 	// Negative font size selects font based on character height, not cell height.
 
+	char familyName[200];
+	strncpy(familyName, fontName, 200);
+	familyName[199] = 0; // ensure zero termination
+
+	// detect and remove 'Bold' and/or 'Italic' from the font name
+	char *boldIndex = strcasestr(familyName, "Bold");
+	char *italicIndex = strcasestr(familyName, "Italic");
+	if (boldIndex) *boldIndex = 0;
+	if (italicIndex) *italicIndex = 0;
+
+	for (int i = (strlen(familyName) - 1); ((i >= 0) && (familyName[i] <= 32)); i--) {
+		familyName[i] = 0; // trim blanks
+	}
+
+	int fontWeight = boldIndex ? 700 : 400;
+	int isItalic = italicIndex ? true : false;
+
 	return CreateFont(
 		-abs(fontSize), 0, 0, 0,
-		FW_DONTCARE, false, false, false,
+		fontWeight, isItalic, false, false,
 		0, OUT_OUTLINE_PRECIS,
 		0, CLEARTYPE_QUALITY, FF_DONTCARE,
 		fontName);
