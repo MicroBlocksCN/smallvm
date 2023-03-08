@@ -77,7 +77,15 @@ method clicked InputSlot aHand {
 		if (notNil choices) {
 		  menu = (menu nil (action 'setContents' this) true)
 		  for choice choices {
-			addItem menu choice
+		    labelAndValue = (splitWith choice ':')
+		    if ((count labelAndValue) == 2) {
+		      if (representsAnInteger (at labelAndValue 2)) {
+		        atPut labelAndValue 2 (toNumber (at labelAndValue 2))
+		      }
+		      addItem menu (at labelAndValue 1) (at labelAndValue 2)
+		    } else {
+			  addItem menu choice
+			}
 		  }
 		  popUpAtHand menu (page aHand)
 		}
