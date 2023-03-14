@@ -1767,6 +1767,7 @@ OBJ primPlayTone(int argCount, OBJ *args) {
 	int frequency = obj2int(freqArg);
 	if ((frequency < 16) || (frequency > 100000)) {
 		stopTone();
+		digitalWrite(pin, LOW);
 	} else {
 		setTone(pin, frequency);
 	}
