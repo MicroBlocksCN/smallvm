@@ -214,7 +214,10 @@ method addZoomButtons MicroBlocksEditor {
   fixZoomButtonsLayout this
 }
 
-method newZoomButton MicroBlocksEditor selector {
+method newZoomButton MicroBlocksEditor selector action {
+  if (isNil action) {
+    action = (action selector this)
+  }
   scale = (global 'scale')
   icon = (call (action (join selector 'Icon') this))
   w = (30 * scale)
@@ -225,9 +228,8 @@ method newZoomButton MicroBlocksEditor selector {
   drawBitmap bm1 icon x y
   //bm2 = (newBitmap w h (topBarBlueHighlight this))
   //drawBitmap bm2 icon x y
-  button = (newButton '' (action selector this))
+  button = (newButton '' action)
   setCostumes button bm1
-  addPart morph (morph button)
   return button
 }
 
