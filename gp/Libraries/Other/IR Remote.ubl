@@ -1,33 +1,35 @@
 module 'IR Remote' Comm
 author MicroBlocks
-version 1 2 
+version 1 3 
 tags ir infrared remote 
-description 'Sends and receives infrared remote control messages like the ones used for TV sets or air conditioners. Currently supports only the NEC protocol, which is quite common but not the only IR protocol in use. An NEC message consists of a one byte device number and a one byte command. 
+description 'Sends and receives infrared remote control messages like the ones used for TV sets or air conditioners. Currently supports only the NEC protocol, which is quite common but not the only IR protocol in use. An NEC message consists of a one byte device number and a one byte command.
 
 Note: Transmitting IR does not work on ESP8266 boards.
 
 Receiving requires an IR receiver module, such as those built into the Circuit Playground Express and ED1 boards. Transmitting requires an IR transmitter LED, such as those built into the Circuit Playground Express and several M5 Stack products. Inexpensive IR LED transmitter and receivers are available for use with other boards.'
 variables _ir_pin _ir_pulse_times _ir_transmit_pin 
 
-	spec 'r' 'receiveIR' 'receive IR code'
-	spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 0
-	spec ' ' '_testIR' 'test IR'
-	spec 'r' '_receiveIRFromDevice' 'receive IR code from device _' 'num' -1
-	spec ' ' '_captureIRMessage' '_captureIRMessage' 'any'
-	spec ' ' '_dumpIR' '_dumpIR' 'any'
-	spec 'r' '_getIRByte' '_getIRByte _' 'auto any' 4
-	spec 'r' '_got32Bits' '_got32Bits' 'any'
-	spec ' ' 'IR_Transmit' 'IR transmit device _ command _' 'num num' 48896 1
-	spec ' ' '_IR_SendByte' '_IR_SendByte _' 'auto' '10'
+  spec 'r' 'receiveIR' 'receive IR code'
+  spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 0
+  space
+  spec ' ' 'IR_Transmit' 'IR transmit device _ command _' 'num num' 48896 1
+  spec ' ' 'attachIRTransmitter' 'attach IR transmitter to pin _' 'num' 0
+  space
+  spec ' ' '_testIR' '_test IR'
+  spec 'r' '_receiveIRFromDevice' '_receive IR code from device _' 'num' 48896
+  space
+  spec ' ' '_captureIRMessage' '_captureIRMessage' 'any'
+  spec ' ' '_dumpIR' '_dumpIR' 'any'
+  spec 'r' '_getIRByte' '_getIRByte _' 'auto any' 4
+  spec 'r' '_got32Bits' '_got32Bits' 'any'
+  spec ' ' '_IR_SendByte' '_IR_SendByte _' 'auto' '10'
 
 to IR_Transmit device command {
-  if (_ir_transmit_pin == 0) {
-    if (or ((boardType) == 'CircuitPlayground') ((boardType) == 'M5Atom-Matrix')) {
-      _ir_transmit_pin = 12
-    } ((boardType) == 'M5StickC') {
-      _ir_transmit_pin = 9
-    }
-  }
+  if (_ir_transmit_pin == 0) {if (or ((boardType) == 'CircuitPlayground') ((boardType) == 'M5Atom-Matrix')) {
+    _ir_transmit_pin = 12
+  } (or ((boardType) == 'M5StickC') ((boardType) == 'M5StickC+')) {
+    _ir_transmit_pin = 9
+  }}
   comment 'Message start pulse and space'
   '[io:playTone]' _ir_transmit_pin 38000
   waitMicros 9000
@@ -42,6 +44,13 @@ to IR_Transmit device command {
   '[io:playTone]' _ir_transmit_pin 38000
   waitMicros 562
   '[io:playTone]' _ir_transmit_pin 0
+  comment 'Turn off IR transmit LED'
+  if (or ((boardType) == 'M5StickC') ((boardType) == 'M5StickC+')) {
+    comment 'IR pin is inverted so true means "off"'
+    digitalWriteOp _ir_transmit_pin true
+  } else {
+    digitalWriteOp _ir_transmit_pin false
+  }
 }
 
 to '_IR_SendByte' byte {
@@ -137,8 +146,9 @@ to '_receiveIRFromDevice' deviceID {
   forever {
     '_captureIRMessage'
     if ('_got32Bits') {
-      local 'id' ('_getIRByte' 20 nil)
-      if (id == deviceID) {
+      local 'id_lowByte' ('_getIRByte' 4 nil)
+      local 'id_highByte' ('_getIRByte' 20 nil)
+      if (and (id_highByte == (deviceID >> 8)) (id_lowByte == (deviceID & 255))) {
         return ('_getIRByte' 36 nil)
       }
     }
@@ -162,6 +172,10 @@ to '_testIR' {
 
 to attachIR pin {
   _ir_pin = pin
+}
+
+to attachIRTransmitter pin {
+  _ir_transmit_pin = pin
 }
 
 to receiveIR {
