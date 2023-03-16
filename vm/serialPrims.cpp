@@ -40,7 +40,7 @@ static int serialWriteBytes(uint8 *buf, int byteCount) { fail(primitiveNotImplem
 uint8 rxBufA[RX_BUF_SIZE];
 uint8 rxBufB[RX_BUF_SIZE];
 
-#define INACTIVE_RX_BUF() ((NRF_UARTE1->RXD.PTR == (int) rxBufB) ? rxBufA : rxBufB)
+#define INACTIVE_RX_BUF() (((void *) NRF_UARTE1->RXD.PTR == rxBufB) ? rxBufA : rxBufB)
 
 uint8 txBuf[TX_BUF_SIZE];
 
@@ -258,7 +258,7 @@ static OBJ primSerialReadInto(int argCount, OBJ *args) {
 	if (byteCount == 0) return zeroObj;
 	if (byteCount < 0) return fail(primitiveNotImplemented);
 
-	if (byteCount > BYTES(buf)) byteCount = BYTES(buf);
+	if (byteCount > (int) BYTES(buf)) byteCount = BYTES(buf);
 	serialReadBytes((uint8 *) &FIELD(buf, 0), byteCount);
 	return int2obj(byteCount);
 }

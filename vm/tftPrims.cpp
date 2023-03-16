@@ -457,6 +457,7 @@ int touchEnabled = false;
 		}
 
 	#elif defined(SCOUT_MAKES_AZUL)
+		#undef BLACK // defined in SSD1306 header
 		#include "Adafruit_GFX.h"
 		#include "Adafruit_SSD1306.h"
 
@@ -470,7 +471,7 @@ int touchEnabled = false;
 		#define UPDATE_DISPLAY() (tft.display())
 
 		void tftInit() {
-			int ok = tft.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+			tft.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 			tftClear();
 			useTFT = true;
 		}
@@ -758,6 +759,7 @@ void tftSetHugePixelBits(int bits) {
 OBJ primSetBacklight(int argCount, OBJ *args) {
 	if ((argCount < 1) || !isInt(args[0])) return falseObj;
 	int brightness = obj2int(args[0]);
+	(void) (brightness); //  // reference var to suppress compiler warning
 
 	#if defined(ARDUINO_IOT_BUS)
 		pinMode(33, OUTPUT);

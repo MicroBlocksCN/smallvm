@@ -501,11 +501,9 @@ static inline void sendData() {
 		}
 	}
 #else
-	int someDataSent = false;
 	while (outBufStart != outBufEnd) {
 		if (!sendByte(outBuf[outBufStart])) break;
 		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
-		someDataSent = true;
 	}
 #endif
 }

@@ -320,6 +320,24 @@ void restartSerial() {
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
 	#define PIN_LED 13
 
+#elif defined(ARDUINO_TEENSY40)
+	// placeholder; not tested
+	#define BOARD_TYPE "Teensy 4.0"
+	#define DIGITAL_PINS 24
+	#define ANALOG_PINS 10
+	#define TOTAL_PINS 34
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
+	#define PIN_LED 13
+
+#elif defined(ARDUINO_TEENSY41)
+	// placeholder; not tested
+	#define BOARD_TYPE "Teensy 4.1"
+	#define DIGITAL_PINS 24
+	#define ANALOG_PINS 10
+	#define TOTAL_PINS 34
+	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6, A7, A8, A9};
+	#define PIN_LED 13
+
 #elif defined(ADAFRUIT_GEMMA_M0)
 
 	#define BOARD_TYPE "Gemma M0"
@@ -341,7 +359,7 @@ void restartSerial() {
 	#define BOARD_TYPE "Trinket M0"
 	#define DIGITAL_PINS 7
 	#define ANALOG_PINS 5
-	#define TOTAL_PINS 14
+	#define TOTAL_PINS 19
 	static const int analogPin[] = {A0, A1, A2, A3, A4};
 
 #elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO)
@@ -607,10 +625,12 @@ void restartSerial() {
 	#else
 		#define PIN_LED 2
 	#endif
-	#ifdef KEY_BUILTIN
-		#define PIN_BUTTON_A KEY_BUILTIN
-	#else
-		#define PIN_BUTTON_A 0
+	#if !defined(PIN_BUTTON_A)
+		#if defined(KEY_BUILTIN)
+			#define PIN_BUTTON_A KEY_BUILTIN
+		#else
+			#define PIN_BUTTON_A 0
+		#endif
 	#endif
 	static const char reservedPin[TOTAL_PINS] = {
 		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
@@ -957,6 +977,8 @@ void primAnalogWrite(OBJ *args) {
 		}
 	#else
 		int modeChanged = (OUTPUT != currentMode[pinNum]);
+		(void)(modeChanged); // reference var to suppress compiler warning
+
 		SET_MODE(pinNum, OUTPUT);
 		#if defined(ARDUINO_BBC_MICROBIT_V2)
 			if ((27 == pinNum) && modeChanged) setHighDrive(pinNum); // use high drive for speaker
