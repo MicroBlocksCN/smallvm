@@ -751,9 +751,14 @@ static void sendVersionString() {
 }
 
 void sendBroadcastToIDE(char *s, int len) {
-	if (!serialConnected()) return; // serial port not open; do nothing
-
-	waitForOutbufBytes(len + 50); // leave a little room for other messages
+	int spaceNeeded = len + 50; // leave room for header and a few other messages
+	if (!hasOutputSpace(spaceNeeded)) {
+		if (!serialConnected()) {
+			return; // apparently not connected to IDE
+		} else {
+			waitForOutbufBytes(spaceNeeded);
+		}
+	}
 	sendMessage(broadcastMsg, 0, len, s);
 }
 

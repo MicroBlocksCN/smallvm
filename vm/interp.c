@@ -396,6 +396,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 	if (errorCode) goto error; \
 	op = *ip++; \
 	arg = ARG(op); \
+	task->sp = sp - task->stack; /* record stack pointer for garbage collector */ \
 /*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */ \
 	goto *jumpTable[CMD(op)]; \
 }
@@ -1237,11 +1238,11 @@ static void runTask(Task *task) {
 				}
 
 				// invoke the callee
+				task->sp = sp - task->stack; // record the stack pointer in case callee does a GC
 				if ((callee & 0xFFFFFF00) == 0xFFFFFF00) { // callee is a MicroBlocks function (i.e. a chunk index)
 					arg = ((callee & 0xFF) << 8) | paramCount;
 					goto callFunction_op;
 				} else { // callee is a named primitive (i.e. a pointer to a C function)
-					task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
 					tmpObj = ((PrimitiveFunction) callee)(paramCount, sp - paramCount); // call the primitive
 					tempGCRoot = NULL; // clear tempGCRoot in case it was used
 					sp -= paramCount;
@@ -1256,12 +1257,10 @@ static void runTask(Task *task) {
 
 	// named primitives:
 	callCommandPrimitive_op:
-		task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
 		callPrimitive(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	callReporterPrimitive_op:
-		task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
 		*(sp - arg) = callPrimitive(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();

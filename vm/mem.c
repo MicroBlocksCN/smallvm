@@ -322,7 +322,7 @@ static void forwardRoots(void) {
 
 	if (tempGCRoot) tempGCRoot = forward(tempGCRoot);
 
-	// mark objects on Task stacks
+	// forward objects on Task stacks
 	for (int i = 0; i < taskCount; i++) {
 		Task *task = &tasks[i];
 		if (task->status != unusedTask) {

@@ -27,11 +27,12 @@ to cancelSelection {
 	setSelection scripter nil
 }
 
-defineClass MicroBlocksSelection scripter rectangle morph blocks
+defineClass MicroBlocksSelection scripter rectangle morph blocks selecting
 
 method initialize MicroBlocksSelection {
 	cancelSelection
 	setSelection scripter this
+	selecting = true
 
 	blocks = (list)
 	morph = (newMorph this)
@@ -41,16 +42,19 @@ method initialize MicroBlocksSelection {
 }
 
 method destroy MicroBlocksSelection {
+	selecting = false
 	destroy morph
 }
 
 // selecting
 
 method updateSelection MicroBlocksSelection aHand {
-	setLeft rectangle (min (oldX aHand) (x aHand))
-	setTop rectangle (min (oldY aHand) (y aHand))
-	setWidth rectangle (abs ((x aHand) - (oldX aHand)))
-	setHeight rectangle (abs ((y aHand) - (oldY aHand)))
+	if selecting {
+		setLeft rectangle (min (oldX aHand) (x aHand))
+		setTop rectangle (min (oldY aHand) (y aHand))
+		setWidth rectangle (abs ((x aHand) - (oldX aHand)))
+		setHeight rectangle (abs ((y aHand) - (oldY aHand)))
+	}
 	fixLayout this
 }
 
@@ -68,6 +72,7 @@ method endSelection MicroBlocksSelection {
 			}
 		}
 	}
+	selecting = false
 	destroy this
 }
 

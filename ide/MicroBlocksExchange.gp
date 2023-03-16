@@ -134,7 +134,10 @@ method analyzeCallsInExpression MicroBlocksExchange cmdOrReporter {
 				if (libraryDefines this main op) {
 					if (not (contains functionsUsed op)) {
 						add functionsUsed op
-						add todo (cmdList (functionNamed main op))
+						func = (functionNamed main op)
+						if (notNil func) {
+							add todo (cmdList func)
+						}
 					}
 				} else {
 					for lib (values (libraries mbProject)) {

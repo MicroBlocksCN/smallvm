@@ -80,7 +80,6 @@ static OBJ jsonValue(char *item) {
 }
 
 static OBJ primConnectedToIDE(int argCount, OBJ *args) {
-reportNum("serialConnected", serialConnected());
 	return serialConnected() ? trueObj : falseObj;
 }
 

@@ -202,11 +202,12 @@ method textButton MicroBlocksEditor label selector {
 }
 
 // zoom buttons
+
 method addZoomButtons MicroBlocksEditor {
   zoomButtons = (array
-	(newZoomButton this 'zoomOut')
+	(newZoomButton this 'zoomIn')
 	(newZoomButton this 'restoreZoom')
-	(newZoomButton this 'zoomIn'))
+	(newZoomButton this 'zoomOut'))
   for button zoomButtons {
 	addPart morph (morph button)
   }
@@ -214,7 +215,10 @@ method addZoomButtons MicroBlocksEditor {
   fixZoomButtonsLayout this
 }
 
-method newZoomButton MicroBlocksEditor selector {
+method newZoomButton MicroBlocksEditor selector action {
+  if (isNil action) {
+    action = (action selector this)
+  }
   scale = (global 'scale')
   icon = (call (action (join selector 'Icon') this))
   w = (30 * scale)
@@ -225,9 +229,8 @@ method newZoomButton MicroBlocksEditor selector {
   drawBitmap bm1 icon x y
   //bm2 = (newBitmap w h (topBarBlueHighlight this))
   //drawBitmap bm2 icon x y
-  button = (newButton '' (action selector this))
+  button = (newButton '' action)
   setCostumes button bm1
-  addPart morph (morph button)
   return button
 }
 
@@ -243,11 +246,25 @@ method restoreZoom MicroBlocksEditor {
 }
 
 method zoomIn MicroBlocksEditor {
-  setBlockScalePercent this (((global 'blockScale') * 100) + 15)
+  zoomLevels = (list 50 75 100 125 150 200 250)
+  currentZoom = ((global 'blockScale') * 100)
+  for percent zoomLevels {
+  	if (percent > currentZoom) { // first entry greater than current zoom level
+      setBlockScalePercent this percent
+      return
+    }
+  }
 }
 
 method zoomOut MicroBlocksEditor {
-  setBlockScalePercent this (((global 'blockScale') * 100) - 15)
+  zoomLevels = (list 50 75 100 125 150 200 250)
+  currentZoom = ((global 'blockScale') * 100)
+  for percent (reversed zoomLevels) {
+  	if (percent < currentZoom) { // first entry less than current zoom level
+      setBlockScalePercent this percent
+      return
+    }
+  }
 }
 
 method setBlockScalePercent MicroBlocksEditor newPercent {
