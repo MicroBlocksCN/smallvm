@@ -34,8 +34,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2"
-     inkscape:cx="500.75"
-     inkscape:cy="826.75"
+     inkscape:cx="664.75"
+     inkscape:cy="974.75"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -1679,5 +1679,29 @@
          inkscape:export-xdpi="367.07001"
          inkscape:export-ydpi="367.07001" />
     </g>
+    <circle
+       style="fill:#ffffff;stroke:none;stroke-width:0.264584;stroke-linecap:round;stop-color:#000000"
+       id="path651-3"
+       cx="129.99245"
+       cy="279.87366"
+       r="16.233564"
+       inkscape:export-filename="/tmp/hide-retina.png"
+       inkscape:export-xdpi="109.53"
+       inkscape:export-ydpi="109.53" />
+    <path
+       id="path809"
+       style="fill:#666666;fill-opacity:1;stroke-width:0.264583;stroke-linecap:square;stop-color:#000000"
+       d="m 144.04254,279.87366 c 0,0 -6.29044,7.02504 -14.05009,7.02504 -7.75965,0 -14.05009,-7.02504 -14.05009,-7.02504 0,0 6.29043,-7.02505 14.05009,-7.02505 7.75966,0 14.05009,7.02505 14.05009,7.02505 z"
+       sodipodi:nodetypes="cscsc" />
+    <circle
+       style="fill:#666666;fill-opacity:1;stroke:#ffffff;stroke-width:2.11667;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stop-color:#000000"
+       id="path3491"
+       cx="129.99245"
+       cy="279.87366"
+       r="4.7110801" />
+    <path
+       id="path651-3-5"
+       style="fill:#c8c8c8;fill-opacity:1;stroke:none;stroke-width:0.264583;stroke-linecap:round;stop-color:#000000"
+       d="m 119.55536,267.45374 a 16.233564,16.233564 0 0 0 -1.98282,1.98283 l 22.857,22.857 a 16.233564,16.233564 0 0 0 1.98282,-1.98282 z" />
   </g>
 </svg>
