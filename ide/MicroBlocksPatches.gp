@@ -249,8 +249,9 @@ method aboutToBeGrabbed Block {
   removeStackPart (morph tb)
   removeHighlight (morph tb)
 
+
   // show trashcan icon
-  showTrashcan (findMicroBlocksEditor)
+  showTrashcan (findMicroBlocksEditor) (isNil blockSpec)
 
   if (or
 		(commandKeyDown (keyboard (global 'page')))
@@ -784,7 +785,6 @@ method handDownOn ScriptEditor aHand {
 			return true
 		}
 	}
-	print 'start selection from handDownOn ScriptEditor'
 	startSelecting scripter aHand
 	return true
 }
