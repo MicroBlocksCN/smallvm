@@ -14,7 +14,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#if defined(ADAFRUIT_METRO_M0_EXPRESS) || defined(ADAFRUIT_TRINKET_M0) || \
+#if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAM_DUE)) || \
 	(defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED))
 
 #include "Keyboard.h"
@@ -68,35 +68,45 @@ OBJ primMouseScroll(int argCount, OBJ *args) {
 OBJ primPressKey(int argCount, OBJ *args) {
 	initKeyboard();
 	OBJ key = args[0];
-	int modifier = obj2int(args[1]);
-	switch (modifier) {
-		case 1: // shift
-			Keyboard.press(KEY_LEFT_SHIFT);
-			break;
-		case 2: // control
-			Keyboard.press(KEY_LEFT_CTRL);
-			break;
-		case 3: // alt (option on Mac)
-			Keyboard.press(KEY_LEFT_ALT);
-			break;
-		case 4: // meta (command on Mac)
-			Keyboard.press(KEY_LEFT_GUI);
-			break;
-		case 5: // AltGr (option on Mac)
-			Keyboard.press(KEY_RIGHT_ALT);
-			break;
+	int modifier = (argCount > 1) ? obj2int(args[1]) : 0;
+	if (modifier) {
+		switch (modifier) {
+			case 1: // shift
+				Keyboard.press(KEY_LEFT_SHIFT);
+				break;
+			case 2: // control
+				Keyboard.press(KEY_LEFT_CTRL);
+				break;
+			case 3: // alt (option on Mac)
+				Keyboard.press(KEY_LEFT_ALT);
+				break;
+			case 4: // meta (command on Mac)
+				Keyboard.press(KEY_LEFT_GUI);
+				break;
+			case 5: // AltGr (option on Mac)
+				Keyboard.press(KEY_RIGHT_ALT);
+				break;
+		}
+		#if defined(ARDUINO_ARCH_RP2040)
+			delay(10); // xxx workaround for issue with Pico HID library
+		#endif
 	}
+
 	// accept both characters and ASCII values
 	if (IS_TYPE(key, StringType)) {
 		Keyboard.write(obj2str(key)[0]);
 	} else if (isInt(key)) {
 		Keyboard.write(obj2int(key));
 	}
+	#if defined(ARDUINO_ARCH_RP2040)
+		delay(10); // xxx workaround for issue with Pico HID library
+	#endif
 	if (modifier) {
 		Keyboard.releaseAll();
 	}
 	return falseObj;
 }
+
 #else
 
 // stubs
