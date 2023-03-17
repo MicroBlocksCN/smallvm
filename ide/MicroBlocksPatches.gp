@@ -577,7 +577,9 @@ method justReceivedDrop BlocksPalette aHandler {
 	recordDrop (scriptEditor (scripter pe)) aHandler
   }
   if (and (isClass aHandler 'MicroBlocksSelectionContents')) {
-	destroy aHandler
+	for part (parts (morph aHandler)) {
+		justReceivedDrop this (handler part)
+	}
   }
   removeFromOwner (morph aHandler)
 }
@@ -774,37 +776,33 @@ method unselect Block {
 
 // support for script selection
 
-// **** script selection disabled for now -- still some issues involving scrolling ****
-//
-// method handDownOn ScriptEditor aHand {
-// 	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
-// 	pe = (findProjectEditor)
-// 	selection = (selection (scripter pe))
-// 	if (and (notNil selection) (notEmpty selection)) {
-// 		grabbed = (ownerThatIsA (morph (objectAt aHand)) 'Block')
-// 		if (and (notNil grabbed) (contains selection (handler grabbed))) {
-// 			dragBlocks selection
-// 			return true
-// 		}
-// 	}
-// 	startSelecting scripter aHand
-// 	return true
-// }
-//
-// method handMoveOver ScriptEditor aHand {
-// 	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
-// 	if (notNil (selection scripter)) {
-// 		updateSelection (selection scripter) aHand
-// 	}
-// }
-//
-// method handUpOn ScriptEditor aHand {
-// 	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
-// 	if (notNil (selection scripter)) { endSelection (selection scripter) }
-// 	return true
-// }
-//
-// **** end of disabled script selection support ****
+method handDownOn ScriptEditor aHand {
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	pe = (findProjectEditor)
+	selection = (selection (scripter pe))
+	if (and (notNil selection) (notEmpty selection)) {
+		grabbed = (ownerThatIsA (morph (objectAt aHand)) 'Block')
+		if (and (notNil grabbed) (contains selection (handler grabbed))) {
+			dragBlocks selection
+			return true
+		}
+	}
+	startSelecting scripter aHand
+	return true
+}
+
+method handMoveOver ScriptEditor aHand {
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	if (notNil (selection scripter)) {
+		updateSelection (selection scripter) aHand
+	}
+}
+
+method handUpOn ScriptEditor aHand {
+	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
+	if (notNil (selection scripter)) { endSelection (selection scripter) }
+	return true
+}
 
 method wantsDropOf ScriptEditor aHandler {
   return (or

@@ -163,12 +163,15 @@ method initialize MicroBlocksSelectionContents someBlocks duplicating aScripter 
 
 method justDropped MicroBlocksSelectionContents aHand {
 	droppedInto = (owner morph)
-	if (isClass droppedInto 'ScriptEditor') {
+	if (isClass (handler droppedInto) 'ScriptEditor') {
 		for blockMorph (parts morph) {
 			addPart droppedInto blockMorph
 		}
 		removeFromOwner morph
-		updateSliders (handler (owner droppedInto))
+		scripter = (scripter (findProjectEditor))
+		saveScripts scripter
+		restoreScripts scripter
+		scriptChanged scripter
 	}
 	hideTrashcan (findMicroBlocksEditor)
 }
@@ -177,3 +180,5 @@ method destroy MicroBlocksSelectionContents {
 	removeFromOwner morph
 	destroy morph
 }
+
+method morph MicroBlocksSelectionContents { return morph }
