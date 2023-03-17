@@ -791,19 +791,6 @@ method handDownOn ScriptEditor aHand {
 	return true
 }
 
-method handMoveOver ScriptEditor aHand {
-	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
-	if (notNil (selection scripter)) {
-		updateSelection (selection scripter) aHand
-	}
-}
-
-method handUpOn ScriptEditor aHand {
-	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
-	if (notNil (selection scripter)) { endSelection (selection scripter) }
-	return true
-}
-
 method wantsDropOf ScriptEditor aHandler {
   return (or
     (isAnyClass aHandler 'Block' 'CommandSlot' 'MicroBlocksSelectionContents')
@@ -811,16 +798,6 @@ method wantsDropOf ScriptEditor aHandler {
       (devMode)
       (isClass aHandler 'Text')
       (== 'code' (editRule aHandler))))
-}
-
-method handLeave ScriptEditor aHand {
-	if (and
-		(isDown aHand)
-		(not (isClass (objectAt aHand) 'ScriptEditor')) // this does happen (???)
-		(not (isClass (objectAt aHand) 'MicroBlocksSelection'))
-	) {
-		cancelSelection
-	}
 }
 
 method contextMenu ScriptEditor {
