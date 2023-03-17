@@ -251,7 +251,11 @@ method aboutToBeGrabbed Block {
 
 
   // show trashcan icon
-  showTrashcan (findMicroBlocksEditor) (isNil blockSpec)
+  if (isPrototypeHat this) {
+	  showTrashcan (findMicroBlocksEditor) 'hide'
+  } else {
+	  showTrashcan (findMicroBlocksEditor) 'delete'
+  }
 
   if (or
 		(commandKeyDown (keyboard (global 'page')))
@@ -787,7 +791,9 @@ method handDownOn ScriptEditor aHand {
 			return true
 		}
 	}
-	startSelecting scripter aHand
+	if (isClass (objectAt aHand) 'ScriptEditor') {
+		startSelecting scripter aHand
+	}
 	return true
 }
 

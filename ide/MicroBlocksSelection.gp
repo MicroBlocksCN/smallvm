@@ -60,7 +60,6 @@ method handUpOn MicroBlocksSelection aHand {
 	return true
 }
 
-
 // selecting
 
 method updateSelection MicroBlocksSelection aHand {
@@ -118,6 +117,16 @@ method contains MicroBlocksSelection aBlock {
 	return (contains blocks (topBlock aBlock))
 }
 
+method containsDefinitions MicroBlocksSelection {
+	for block blocks { if (isPrototypeHat block) { return true } }
+	return false
+}
+
+method containsBlocks MicroBlocksSelection {
+	for block blocks { if (not (isPrototypeHat block)) { return true } }
+	return false
+}
+
 // events
 
 method handUpOn MicroBlocksSelection aHand {
@@ -127,6 +136,7 @@ method handUpOn MicroBlocksSelection aHand {
 
 method handMoveOver MicroBlocksSelection aHand {
 	updateSelection this aHand
+	return true
 }
 
 // actions
@@ -157,9 +167,21 @@ method duplicateBlocks MicroBlocksSelection {
 
 method dragBlocks MicroBlocksSelection {
 	cancelSelection
-	showTrashcan (findMicroBlocksEditor)
+	showTrashcan this
 	contents = (initialize (new 'MicroBlocksSelectionContents') blocks false scripter)
 	grab (hand (global 'page')) contents
+}
+
+method showTrashcan MicroBlocksSelection {
+	purpose = 'delete'
+	containsDefs = (containsDefinitions this)
+	containsBlocks = (containsBlocks this)
+	if (and containsDefs containsBlocks) {
+		purpose = 'hideAndDelete'
+	} containsDefs {
+		purpose = 'hide'
+	}
+	showTrashcan (findMicroBlocksEditor) purpose
 }
 
 defineClass MicroBlocksSelectionContents morph
