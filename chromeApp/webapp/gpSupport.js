@@ -174,7 +174,7 @@ function initGPEventHandlers() {
 	function modifierBits(evt) {
 		var modifiers = ( // SDL modifier flags (for left-side versions of those keys)
 		(evt.shiftKey ? 1 : 0) |
-		(evt.ctrKey ? 2 : 0) |
+		(evt.ctrlKey ? 2 : 0) |
 		(evt.altKey ? 4 : 0) |
 		(evt.metaKey ? 8 : 0));
 		return modifiers;
