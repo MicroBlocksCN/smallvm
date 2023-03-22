@@ -25,10 +25,23 @@
 static int wireStarted = false;
 
 static void startWire() {
-  #if defined(PICO_ED)
-	Wire.setSDA(18);
-	Wire.setSCL(19);
-  #endif
+	#if defined(PICO_ED)
+		Wire.setSDA(18);
+		Wire.setSCL(19);
+	#endif
+	#if defined(ARDUINO_ARCH_SAMD)
+		// Some Adafruit SAMD21 boards lack external pullups.
+		// To avoid hang on I2C operations, do not start Wire if the I2C lines are not high.
+		pinMode(PIN_WIRE_SCL, OUTPUT);
+		pinMode(PIN_WIRE_SDA, OUTPUT);
+		digitalWrite(PIN_WIRE_SCL, LOW);
+		digitalWrite(PIN_WIRE_SDA, LOW);
+		pinMode(PIN_WIRE_SCL, INPUT);
+		pinMode(PIN_WIRE_SDA, INPUT);
+		if ((digitalRead(PIN_WIRE_SCL) != HIGH) || (digitalRead(PIN_WIRE_SDA) != HIGH)) {
+			return;
+		}
+	#endif
 	Wire.begin();
 	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
 	wireStarted = true;
@@ -36,6 +49,8 @@ static void startWire() {
 
 int readI2CReg(int deviceID, int reg) {
 	if (!wireStarted) startWire();
+	if (!wireStarted) return -100; // could not start I2C; missing pullup resistors?
+
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
 	#if defined(ARDUINO_ARCH_ESP32)
@@ -58,6 +73,8 @@ int readI2CReg(int deviceID, int reg) {
 
 void writeI2CReg(int deviceID, int reg, int value) {
 	if (!wireStarted) startWire();
+	if (!wireStarted) return;
+
 	Wire.beginTransmission(deviceID);
 	Wire.write(reg);
 	Wire.write(value);
@@ -103,6 +120,8 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	if (count > 32) count = 32; // the Arduino Wire library limits reads to a max of 32 bytes
 
 	if (!wireStarted) startWire();
+	if (!wireStarted) return zeroObj;
+
 	#if defined(NRF51)
 		noInterrupts();
 		Wire.requestFrom(deviceID, count);
@@ -129,6 +148,11 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	OBJ data = args[1];
 
 	if (!wireStarted) startWire();
+	if (!wireStarted) {
+		fail(i2cTransferFailed);
+		return falseObj;
+	}
+
 	Wire.beginTransmission(deviceID);
 	if (isInt(data)) {
 		int byteValue = obj2int(data);
@@ -169,6 +193,7 @@ static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
 	int newSpeed = obj2int(args[0]);
 	if (newSpeed > 1) {
 		if (!wireStarted) startWire();
+		if (!wireStarted) return falseObj;
 		Wire.setClock(newSpeed);
 	}
 	return falseObj;
