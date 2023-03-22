@@ -781,6 +781,7 @@ method unselect Block {
 // support for script selection
 
 method handDownOn ScriptEditor aHand {
+	if (notNil (grabbedObject aHand)) { return false } // hand is not empty
 	scripter = (handler (ownerThatIsA morph 'MicroBlocksScripter'))
 	pe = (findProjectEditor)
 	selection = (selection (scripter pe))
