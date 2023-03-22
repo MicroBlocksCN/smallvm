@@ -12,7 +12,7 @@
 // MicroBlocksSelection
 
 to startSelecting aScripter aHand {
-	(initialize (new 'MicroBlocksSelection' aScripter (rect (x aHand) (y aHand))))
+	(initialize (new 'MicroBlocksSelection' aScripter (rect (x aHand) (y aHand))) aHand)
 	savePosition aHand
 }
 
@@ -29,21 +29,35 @@ to cancelSelection {
 
 defineClass MicroBlocksSelection scripter rectangle morph blocks selecting
 
-method initialize MicroBlocksSelection {
+method initialize MicroBlocksSelection aHand {
 	cancelSelection
 	setSelection scripter this
 	selecting = true
 
 	blocks = (list)
 	morph = (newMorph this)
-
 	addPart (morph scripter) morph
+
+	focusOn aHand this
+
 	return this
 }
 
 method destroy MicroBlocksSelection {
 	selecting = false
 	destroy morph
+}
+
+// mouse events
+
+method handMoveFocus MicroBlocksSelection aHand {
+	updateSelection this aHand
+	return true
+}
+
+method handUpOn MicroBlocksSelection aHand {
+	endSelection this
+	return true
 }
 
 // selecting
@@ -54,6 +68,7 @@ method updateSelection MicroBlocksSelection aHand {
 		setTop rectangle (min (oldY aHand) (y aHand))
 		setWidth rectangle (abs ((x aHand) - (oldX aHand)))
 		setHeight rectangle (abs ((y aHand) - (oldY aHand)))
+		intersect rectangle (bounds (morph (scriptsFrame scripter)))
 	}
 	fixLayout this
 }
@@ -102,6 +117,16 @@ method contains MicroBlocksSelection aBlock {
 	return (contains blocks (topBlock aBlock))
 }
 
+method containsDefinitions MicroBlocksSelection {
+	for block blocks { if (isPrototypeHat block) { return true } }
+	return false
+}
+
+method containsBlocks MicroBlocksSelection {
+	for block blocks { if (not (isPrototypeHat block)) { return true } }
+	return false
+}
+
 // events
 
 method handUpOn MicroBlocksSelection aHand {
@@ -111,6 +136,7 @@ method handUpOn MicroBlocksSelection aHand {
 
 method handMoveOver MicroBlocksSelection aHand {
 	updateSelection this aHand
+	return true
 }
 
 // actions
@@ -141,9 +167,21 @@ method duplicateBlocks MicroBlocksSelection {
 
 method dragBlocks MicroBlocksSelection {
 	cancelSelection
-	showTrashcan (findMicroBlocksEditor)
+	showTrashcan this
 	contents = (initialize (new 'MicroBlocksSelectionContents') blocks false scripter)
 	grab (hand (global 'page')) contents
+}
+
+method showTrashcan MicroBlocksSelection {
+	purpose = 'delete'
+	containsDefs = (containsDefinitions this)
+	containsBlocks = (containsBlocks this)
+	if (and containsDefs containsBlocks) {
+		purpose = 'hideAndDelete'
+	} containsDefs {
+		purpose = 'hide'
+	}
+	showTrashcan (findMicroBlocksEditor) purpose
 }
 
 defineClass MicroBlocksSelectionContents morph
@@ -163,12 +201,15 @@ method initialize MicroBlocksSelectionContents someBlocks duplicating aScripter 
 
 method justDropped MicroBlocksSelectionContents aHand {
 	droppedInto = (owner morph)
-	if (isClass droppedInto 'ScriptEditor') {
+	if (isClass (handler droppedInto) 'ScriptEditor') {
 		for blockMorph (parts morph) {
 			addPart droppedInto blockMorph
 		}
 		removeFromOwner morph
-		updateSliders (handler (owner droppedInto))
+		scripter = (scripter (findProjectEditor))
+		saveScripts scripter
+		restoreScripts scripter
+		scriptChanged scripter
 	}
 	hideTrashcan (findMicroBlocksEditor)
 }
@@ -177,3 +218,5 @@ method destroy MicroBlocksSelectionContents {
 	removeFromOwner morph
 	destroy morph
 }
+
+method morph MicroBlocksSelectionContents { return morph }
