@@ -727,9 +727,11 @@ method needsQuotes MicroBlocksModule s {
 	// Return true if the given string needs to be quoted in order to be parsed as
 	// a variable or function name.
 	if (isNumber s) { return false }
+	if (isOneOf s 'true' 'false') { return true }
 	letters = (letters s)
 	if (isEmpty letters) { return true }
 	firstLetter = (first letters)
+	if (or (isDigit firstLetter) ('-' == firstLetter)) { return true }
 	if (not (or (isLetter firstLetter) ('_' == firstLetter))) { return true }
 	for ch letters {
 		if (not (or (isLetter ch) (isDigit ch) ('_' == ch))) { return true }
