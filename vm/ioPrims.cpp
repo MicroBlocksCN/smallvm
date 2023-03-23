@@ -608,6 +608,21 @@ void restartSerial() {
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 		1, 1};
 
+#elif defined(DATABOT)
+	#define BOARD_TYPE "Databot"
+	#define DIGITAL_PINS 40
+	#define ANALOG_PINS 16
+	#define TOTAL_PINS 40
+	static const int analogPin[] = {};
+	// databot does not have a user LED; map it to unused pin 12
+	#define PIN_LED 12
+	#define DEFAULT_TONE_PIN 32
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+
 #elif defined(ARDUINO_ARCH_ESP32)
 	#ifdef ARDUINO_IOT_BUS
 		#define BOARD_TYPE "IOT-BUS"
