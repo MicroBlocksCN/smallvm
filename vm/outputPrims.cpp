@@ -754,6 +754,8 @@ static void initNeoPixelPin(int pinNum) { // ESP32
 			pinNum = 27; // internal NeoPixel pin
 		#elif defined(ARDUINO_Mbits)
 			pinNum = 13; // internal NeoPixel pin
+		#elif defined(DATABOT)
+			pinNum = 2; // internal NeoPixel pin
 		#else
 			pinNum = 0; // default to pin 0
 		#endif
