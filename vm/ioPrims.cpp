@@ -648,7 +648,7 @@ void restartSerial() {
 		#endif
 	#endif
 	static const char reservedPin[TOTAL_PINS] = {
-		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
@@ -1208,7 +1208,8 @@ OBJ primButtonA(OBJ *args) {
 			}
 			buttonIndex = (buttonIndex + 1) % 6;
 			return (buttonReadings[4] < CAP_THRESHOLD) ? trueObj : falseObj;
-		#elif defined(ARDUINO_NRF52840_CLUE) || defined(M5STAMP)
+		#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_ARCH_ESP32) || \
+			  defined(ESP8266) || defined(M5STAMP)
 			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_A, INPUT);
