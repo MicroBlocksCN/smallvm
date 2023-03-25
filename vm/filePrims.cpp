@@ -251,6 +251,7 @@ static OBJ primAppendLine(int argCount, OBJ *args) {
 			}
 		}
 		fileEntry[i].file.write(10); // newline
+		fileEntry[i].file.flush();
 		if (oldPos != oldSize) file.seek(oldPos, SeekSet); // reset position for reading
 	}
 	processMessage();
@@ -274,6 +275,7 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 		char *s = obj2str(data);
 		f.write((uint8 *) s, strlen(s));
 	}
+	f.flush();
 	processMessage();
 	return falseObj;
 }
