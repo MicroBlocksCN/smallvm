@@ -79,11 +79,11 @@ method connect ESPTool {
 	status = 'Connecting...'
 	repeat 30 {
 		enterBootMode this
-		waitMSecs 10
+		waitMSecs 30
 		recvBuf = (newBinaryData)
-		repeat 5 {
+		repeat 10 {
 			sendSyncMsg this
-			waitMSecs 20
+			waitMSecs 30
 			msg = (nextSLIPMsg this)
 			if (notNil msg) {
 				clearReceiveBuffer this
