@@ -100,6 +100,10 @@ void hardwareInit() {
 		defined(ARDUINO_IOT_BUS) || defined(TTGO_DISPLAY)
 			tftInit();
 	#endif
+	#if defined(DATABOT)
+		int yellow = 16777040;
+		setAllNeoPixels(-1, 3, yellow);
+	#endif
 }
 
 // Communication Functions
@@ -1175,7 +1179,7 @@ void primSetUserLED(OBJ *args) {
 		#endif
 		#if defined(M5STAMP)
 			int color = (output == HIGH) ? 255 : 0; // blue when on
-			setSingleNeoPixel(PIN_LED, color);
+			setAllNeoPixels(PIN_LED, 1, color);
 		#else
 			digitalWrite(PIN_LED, output);
 		#endif
@@ -1576,7 +1580,7 @@ int tonePin = -1;
 static void initESP32Tone(int pin) {
 	if ((pin == tonePin) || (pin < 0)) return;
 	if (tonePin < 0) {
-		ledcSetup(0, 1E5, 12); // do setup on first call
+		int f = ledcSetup(0, 15000, 12); // do setup on first call
 	} else {
 		ledcWrite(0, 0); // stop current tone, if any
 		ledcDetachPin(tonePin);
