@@ -2020,8 +2020,10 @@ method readFileFromBoard SmallRuntime remoteFileName {
 		offset = (readInt32 this msg 5)
 		byteCount = ((byteCount msg) - 8)
 		totalBytes += byteCount
-		fileTransferProgress = (100 - (round (100 * (byteCount / totalBytes))))
-		doOneCycle (global 'page')
+		if (totalBytes > 0) {
+			fileTransferProgress = (100 - (round (100 * (byteCount / totalBytes))))
+			doOneCycle (global 'page')
+		}
 	}
 
 	result = (newBinaryData totalBytes)
@@ -2032,6 +2034,8 @@ method readFileFromBoard SmallRuntime remoteFileName {
 		if (byteCount > 0) { replaceByteRange result startIndex endIndex msg 9 }
 		startIndex += byteCount
 	}
+
+	fileTransferProgress = nil
 	setCursor 'default'
 	return result
 }
@@ -2113,8 +2117,10 @@ method sendFileData SmallRuntime fileName fileData {
 			add msg (byteAt fileData bytesSent)
 		}
 		sendMsgSync this 'fileChunk' 0 msg
-		fileTransferProgress = (round (100 * (bytesSent / totalBytes)))
-		doOneCycle (global 'page')
+		if (totalBytes > 0) {
+			fileTransferProgress = (round (100 * (bytesSent / totalBytes)))
+			doOneCycle (global 'page')
+		}
 	}
 	// final (empty) chunk
 	msg = (list)
