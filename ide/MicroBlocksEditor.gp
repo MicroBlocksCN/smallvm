@@ -242,9 +242,9 @@ method newZoomButton MicroBlocksEditor selector action {
 
 method addZoomButtonHints MicroBlocksEditor {
   // add zoom button hints in current language
-  setHint (at zoomButtons 1) (localized 'Decrease block size')
+  setHint (at zoomButtons 1) (localized 'Increase block size')
   setHint (at zoomButtons 2) (localized 'Restore block size to 100%')
-  setHint (at zoomButtons 3) (localized 'Increase block size')
+  setHint (at zoomButtons 3) (localized 'Decrease block size')
 }
 
 method restoreZoom MicroBlocksEditor {
