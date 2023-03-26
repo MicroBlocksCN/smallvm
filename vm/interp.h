@@ -350,6 +350,7 @@ void addSerialPrims();
 void addTFTPrims();
 void addVarPrims();
 void addHIDPrims();
+void addOneWirePrims();
 
 // Named Primitive Support
 
