@@ -190,6 +190,7 @@ void readScriptsFromURL() {
 
 void addSerialPrims() {}
 void addHIDPrims() {}
+void addOneWirePrims() {}
 void delay(int msecs) {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
 
