@@ -181,6 +181,14 @@ method initialize MicroBlocksHelp {
 		(array 'stop tone' '/libraries#stop-tone' 'Stops playing a note that was started with start tone.')
 		(array 'attach buzzer to pin' '/libraries#attach-buzzer' 'Specify the pin used to play tones.')
 
+		// IR Remote
+		(array 'receiveIR' '/extension_libraries/irremote#receive-ir-code' 'Wait for an IR message then return its key code.')
+		(array 'attachIR' '/extension_libraries/irremote#attach-ir-receiver' 'Set the IR receiver pin.')
+		(array 'IR_Transmit' '/extension_libraries/irremote#ir-transmit-device' 'Send an IR command with the given device number and key code.')
+		(array 'attachIRTransmitter' '/extension_libraries/irremote#xxx' 'Set the IR transmitter pin.')
+		(array '_testIR' '/extension_libraries/irremote#test-ir' 'Wait for an IR message then say its device number and key code received')
+		(array '_receiveIRFromDevice' '/extension_libraries/irremote#receive-ir-code-from-device' 'Return the next IR key code from the given device.')
+
 		// PICOBRICKS
 		(array 'pb_beep' '/extension_libraries/picobricks#picobricks-beep' 'Make a beep sound from the speaker.')
 		(array 'pb_button' 	'/extension_libraries/picobricks#picobricks-button' 'Return (-o) if the button is pressed.')

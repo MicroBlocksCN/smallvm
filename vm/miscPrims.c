@@ -54,6 +54,17 @@ static OBJ primSqrt(int argCount, OBJ *args) {
 	return int2obj((int) round(1000 * sqrt(evalInt(args[0]))));
 }
 
+static OBJ primPressureToAltitude(int argCount, OBJ *args) {
+	// Computes the altitude difference (in millimeters) for a given pressure difference.
+	//  dH = 44330 * [ 1 - ( p / p0 ) ^ ( 1 / 5.255) ]
+
+	if (argCount < 2) return fail(notEnoughArguments);
+	int p0 = obj2int(args[0]);
+	int p = obj2int(args[1]);
+	double result = 44330.0 * (1.0 - pow((double) p / p0, (1.0 / 5.255))); // meters
+	return int2obj((int) (1000.0 * result)); // return result in millimeters
+}
+
 static OBJ jsonValue(char *item) {
 	char buf[1024];
 	char *end;
@@ -164,6 +175,7 @@ static PrimEntry entries[] = {
 	{"rescale", primRescale},
 	{"sin", primSine},
 	{"sqrt", primSqrt},
+	{"pressureToAltitude", primPressureToAltitude},
 	{"connectedToIDE", primConnectedToIDE},
 	{"broadcastToIDE", primBroadcastToIDEOnly},
 	{"jsonGet", primJSONGet},
