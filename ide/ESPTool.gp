@@ -53,6 +53,7 @@ method baudForBoard ESPTool boardName {
 	} ('M5StickC' == boardName) { return 230400
 	} ('M5StickC+' == boardName) { return 230400
 	} ('M5Atom-Matrix' == boardName) { return 115200
+	} ('Databot' == boardName) { return 230400
 	}
 	return 115200
 }
@@ -78,11 +79,11 @@ method connect ESPTool {
 	status = 'Connecting...'
 	repeat 30 {
 		enterBootMode this
-		waitMSecs 10
+		waitMSecs 30
 		recvBuf = (newBinaryData)
-		repeat 5 {
+		repeat 10 {
 			sendSyncMsg this
-			waitMSecs 20
+			waitMSecs 30
 			msg = (nextSLIPMsg this)
 			if (notNil msg) {
 				clearReceiveBuffer this
@@ -408,6 +409,7 @@ method vmNameForBoard ESPTool boardName {
 	} ('M5StickC' == boardName) { return 'vm_m5stick.bin'
 	} ('M5StickC+' == boardName) { return 'vm_m5stick+.bin'
 	} ('M5Atom-Matrix' == boardName) { return 'vm_m5atom.bin'
+	} ('Databot' == boardName) { return 'vm_databot.bin'
 	}
 	return nil
 }

@@ -303,6 +303,16 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[radio:packetReceive]'			'radio receive packet _' 'str' '32-element list')
 		(array ' ' '[radio:packetSend]'				'radio send packet _' 'str' '32-element list')
 		(array ' ' '[radio:disableRadio]'			'disable radio')
+
+		(array ' ' '[1wire:init]'			'oneWire init pin _' 'num' 0)
+		(array ' ' '[1wire:scanStart]'		'oneWire scan start')
+		(array 'r' '[1wire:scanNext]'		'oneWire scan next _' 'str' 'addressByteArray')
+		(array ' ' '[1wire:select]'			'oneWire select address _' 'str' 'addressByteArray')
+		(array ' ' '[1wire:selectAll]'		'oneWire select all')
+		(array ' ' '[1wire:writeByte]'		'oneWire write byte _ : power _' 'num bool' 0 false)
+		(array 'r' '[1wire:readByte]'		'oneWire read byte')
+		(array 'r' '[1wire:crc8]'			'oneWire crc8 _ : byte count _' 'str num' 'aByteArray' 8)
+		(array 'r' '[1wire:crc16]'			'oneWire crc16 _ : byte count _' 'str num' 'aByteArray' 8)
 	)
 }
 

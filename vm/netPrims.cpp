@@ -102,7 +102,11 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 			WiFi.softAP(networkName, password);
 		} else {
 			WiFi.mode(WIFI_STA);
-			WiFi.begin(networkName, password);
+			if (strlen(password) > 0) {
+				WiFi.begin(networkName, password);
+			} else {
+				WiFi.begin(networkName);
+			}
 		}
 	#endif
 

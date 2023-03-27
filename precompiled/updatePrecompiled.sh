@@ -32,6 +32,8 @@ pio run -e pico-w
 cp .pio/build/pico-w/firmware.uf2 precompiled/vm_pico_w.uf2
 pio run -e pico-ed
 cp .pio/build/pico-ed/firmware.uf2 precompiled/vm_pico_ed.uf2
+pio run -e databot
+cp .pio/build/databot/firmware.bin precompiled/vm_databot.bin
 
 # Copy Linux VMs
 cp linux+pi/vm_* precompiled/

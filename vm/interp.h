@@ -279,7 +279,7 @@ void stopTone();
 int readAnalogMicrophone();
 void setPicoEdSpeakerPin(int pin);
 void showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos);
-void setSingleNeoPixel(int pin, int color);
+void setAllNeoPixels(int pin, int ledCount, int color);
 
 // Primitives
 
@@ -350,6 +350,7 @@ void addSerialPrims();
 void addTFTPrims();
 void addVarPrims();
 void addHIDPrims();
+void addOneWirePrims();
 
 // Named Primitive Support
 

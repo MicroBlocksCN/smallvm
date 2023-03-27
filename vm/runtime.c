@@ -34,7 +34,7 @@ typedef struct {
 	PrimEntry *entries;
 } PrimitiveSet;
 
-#define MAX_PRIM_SETS 12
+#define MAX_PRIM_SETS 15
 PrimitiveSet primSets[MAX_PRIM_SETS];
 int primSetCount = 0;
 
@@ -135,6 +135,7 @@ void primsInit() {
 	addTFTPrims();
 	addVarPrims();
 	addHIDPrims();
+	addOneWirePrims();
 }
 
 // Task Ops

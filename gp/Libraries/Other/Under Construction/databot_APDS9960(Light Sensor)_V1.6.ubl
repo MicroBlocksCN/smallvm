@@ -1,0 +1,223 @@
+module 'Color/Gesture (APDS9960)'
+author unknown
+version 1 0 
+description ''
+variables 'APDS-9960 ID' APDS_mode_reg drive 
+
+choices tone_NoteName c 'c#' d 'd#' e f 'f#' g 'g#' a 'a#' b
+choices modes ALL:7 POWER:0 AMBIENT_LIGHT:1 PROXIMITY:2 WAIT:3 AMBIENT_LIGHT_INT:4 PROXIMITY_INT:5 GESTURE:6
+choices setLEDDrive LED_DRIVE_100MA:0 LED_DRIVE_50MA:1 LED_DRIVE_25MA:2 LED_DRIVE_12.5MA:3
+choices Again Gain_1x:0 Gain_4x:1 Gain_16x:2 Gain_64x:3 
+choices Pgain Gain_1x:0 Gain_2x:1 Gain_4x:2 Gain_8x:3 
+choices GwaitTime GWTIME_0MS:0 GWTIME_2_8MS:1 GWTIME_5_6MS:2 GWTIME_8_4MS:3 GWTIME_14_0MS:4 GWTIME_22_4MS:5 GWTIME_30_8MS:6 GWTIME_39_2MS:7
+
+  spec 'r' 'APDS-9960 Setup' 'APDS-9960 Setup'
+  spec ' ' 'APDS9960 Enable Light Sensor' 'APDS9960 Enable Light Sensor'
+  spec 'r' 'APDS9960 Read Blue Light' 'APDS9960 Read Blue Light'
+  spec 'r' 'APDS9960 Read Green Light' 'APDS9960 Read Green Light'
+  spec 'r' 'APDS9960 Read Red Light' 'APDS9960 Read Red Light'
+  spec ' ' 'APDS9960 Set Ambient Light Gain' 'APDS9960 Set Ambient Light Gain _' 'menu.Again' 'Gain_4x'
+  spec ' ' 'APDS9960 Set LED Drive' 'APDS9960 Set LED Drive _' 'menu.setLEDDrive' 'LED_DRIVE_100MA'
+  spec ' ' 'APDS9960 Set LightIntHighThresh' 'APDS9960 Set LightIntHigh Thresh _' 'auto' 0
+  spec ' ' 'APDS9960 Set LightIntLow Thresh' 'APDS9960 Set LightIntLow Thresh _' 'auto' 65535
+  spec ' ' 'APDS9960 Set Mode' 'APDS9960 Set Mode _ _' 'menu.modes bool' 'ALL' 1
+  spec ' ' 'APDS9960 Set ProxIntHigh Thresh' 'APDS9960 Set ProxIntHigh Thresh _' 'auto' 50
+  spec ' ' 'APDS9960 Set ProxIntLow Thresh' 'APDS9960 Set ProxIntLow Thresh _' 'auto' 1
+  spec ' ' 'APDS9960 Set Proximity Gain' 'APDS9960 Set Proximity Gain _' 'menu.Pgain' 'Gain_4x'
+  spec 'r' 'APDS9960 readAmbientLight' 'APDS9960 readAmbientLight'
+  spec ' ' 'APDS9960 setAmbientLightIntEnable' 'APDS9960 setAmbientLightIntEnable _' 'auto' 0
+  spec ' ' 'APDS9960 setGestureEnterThresh' 'APDS9960 setGestureEnterThresh _' 'auto' 40
+  spec ' ' 'APDS9960 setGestureExitThresh' 'APDS9960 setGestureExitThresh _' 'auto' 30
+  spec ' ' 'APDS9960 setGestureGain' 'APDS9960 setGestureGain _' 'menu.Pgain' 'Gain_4x'
+  spec ' ' 'APDS9960 setGestureIntEnable' 'APDS9960 setGestureIntEnable _' 'auto' 0
+  spec ' ' 'APDS9960 setGestureLEDDrive' 'APDS9960 setGestureLEDDrive _' 'menu.setLEDDrive' 'LED_DRIVE_100MA'
+  spec ' ' 'APDS9960 setGestureWaitTime' 'APDS9960 setGestureWaitTime _' 'menu.GwaitTime' 'GWTIME_2_8MS'
+
+to 'APDS-9960 Setup' {
+  'APDS-9960 ID' = (hexToInt '39')
+  local 'APDS_ID' (i2cGet (v 'APDS-9960 ID') (hexToInt '92'))
+  if (and (APDS_ID != (hexToInt 'A8')) (and (APDS_ID != (hexToInt '9C')) (APDS_ID != (hexToInt 'AB')))) {
+    return (booleanConstant false)
+  }
+  'APDS9960 Set Mode' 7 0
+  i2cSet (v 'APDS-9960 ID') (hexToInt '81') 219
+  i2cSet (v 'APDS-9960 ID') (hexToInt '83') 246
+  i2cSet (v 'APDS-9960 ID') (hexToInt '8E') (hexToInt '87')
+  i2cSet (v 'APDS-9960 ID') (hexToInt '9D') 0
+  i2cSet (v 'APDS-9960 ID') (hexToInt '9E') 0
+  i2cSet (v 'APDS-9960 ID') (hexToInt '8D') (hexToInt '60')
+  'APDS9960 Set LED Drive' 0
+  'APDS9960 Set Proximity Gain' 2
+  'APDS9960 Set Ambient Light Gain' 1
+  'APDS9960 Set ProxIntLow Thresh' 0
+  'APDS9960 Set ProxIntHigh Thresh' 50
+  'APDS9960 Set LightIntLow Thresh' 10
+  'APDS9960 Set LightIntHighThresh' 0
+  i2cSet (v 'APDS-9960 ID') (hexToInt '8C') (hexToInt '11')
+  i2cSet (v 'APDS-9960 ID') (hexToInt '90') (hexToInt '01')
+  i2cSet (v 'APDS-9960 ID') (hexToInt '9F') (hexToInt '0')
+  'APDS9960 setGestureEnterThresh' 40
+  'APDS9960 setGestureExitThresh' 30
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A2') (hexToInt '40')
+  'APDS9960 setGestureGain' 2
+  'APDS9960 setGestureLEDDrive' 0
+  'APDS9960 setGestureWaitTime' 1
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A4') 0
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A5') 0
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A7') 0
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A9') 0
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A6') (hexToInt 'C9')
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'AA') 0
+  'APDS9960 setGestureIntEnable' 0
+  return (booleanConstant true)
+}
+
+to 'APDS9960 Enable Light Sensor' {
+  'APDS9960 Set Ambient Light Gain' 1
+  'APDS9960 setAmbientLightIntEnable' 0
+  'APDS9960 Set Mode' 0 1
+  'APDS9960 Set Mode' 1 1
+}
+
+to 'APDS9960 Read Blue Light' {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt '9A'))
+  local 'val2' (i2cGet (v 'APDS-9960 ID') (hexToInt '9B'))
+  return (val + (val2 << 8))
+}
+
+to 'APDS9960 Read Green Light' {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt '98'))
+  local 'val2' (i2cGet (v 'APDS-9960 ID') (hexToInt '99'))
+  return (val + (val2 << 8))
+}
+
+to 'APDS9960 Read Red Light' {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt '96'))
+  local 'val2' (i2cGet (v 'APDS-9960 ID') (hexToInt '97'))
+  return (val + (val2 << 8))
+}
+
+to 'APDS9960 Set Ambient Light Gain' drive {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt '8F'))
+  drive = (drive & 3)
+  val = (val & 252)
+  val = (val | drive)
+  i2cSet (v 'APDS-9960 ID') (hexToInt '8F') val
+}
+
+to 'APDS9960 Set LED Drive' drive {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt '8F'))
+  drive = (drive & 3)
+  drive = (drive << 6)
+  val = (val & 63)
+  val = (val | drive)
+  i2cSet (v 'APDS-9960 ID') (hexToInt '8F') val
+}
+
+to 'APDS9960 Set LightIntHighThresh' threshold {
+  local 'var_low' (threshold & 255)
+  local 'var_high' ((threshold & 65280) >> 8)
+  i2cSet (v 'APDS-9960 ID') (hexToInt '86') var_low
+  i2cSet (v 'APDS-9960 ID') (hexToInt '87') var_high
+}
+
+to 'APDS9960 Set LightIntLow Thresh' threshold {
+  local 'var_low' (threshold & 255)
+  local 'var_high' ((threshold & 65280) >> 8)
+  i2cSet (v 'APDS-9960 ID') (hexToInt '84') var_low
+  i2cSet (v 'APDS-9960 ID') (hexToInt '85') var_high
+}
+
+to 'APDS9960 Set Mode' mode enable {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt '80'))
+  if (and (mode >= 0) (mode <= 6)) {
+    if (enable == 1) {
+      val = (val | (1 << mode))
+    } else {
+      val = (val & ('~' (1 << mode)))
+    }
+  } (mode == 7) {
+    if (enable == 1) {
+      val = (hexToInt '7F')
+    } else {
+      val = (hexToInt '0')
+    }
+  }
+  i2cSet (v 'APDS-9960 ID') (hexToInt '80') val
+}
+
+to 'APDS9960 Set ProxIntHigh Thresh' threshold {
+  i2cSet (v 'APDS-9960 ID') (hexToInt '8B') threshold
+}
+
+to 'APDS9960 Set ProxIntLow Thresh' threshold {
+  i2cSet (v 'APDS-9960 ID') (hexToInt '89') threshold
+}
+
+to 'APDS9960 Set Proximity Gain' drive {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt '8F'))
+  drive = (drive & 3)
+  drive = (drive << 2)
+  val = (val & 243)
+  val = (val | drive)
+  i2cSet (v 'APDS-9960 ID') (hexToInt '8F') val
+}
+
+to 'APDS9960 readAmbientLight' {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt '94'))
+  local 'val2' (i2cGet (v 'APDS-9960 ID') (hexToInt '95'))
+  return (val + (val2 << 8))
+}
+
+to 'APDS9960 setAmbientLightIntEnable' enable {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt '80'))
+  drive = (enable & 1)
+  drive = (enable << 4)
+  val = (val & 239)
+  val = (val | drive)
+  i2cSet (v 'APDS-9960 ID') (hexToInt '80') val
+}
+
+to 'APDS9960 setGestureEnterThresh' threshold {
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A0') threshold
+}
+
+to 'APDS9960 setGestureExitThresh' threshold {
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A1') threshold
+}
+
+to 'APDS9960 setGestureGain' gain {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt 'A3'))
+  drive = (gain & 3)
+  drive = (gain << 5)
+  val = (val & 159)
+  val = (val | gain)
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A3') val
+}
+
+to 'APDS9960 setGestureIntEnable' enable {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt 'AB'))
+  drive = (enable & 3)
+  drive = (enable << 1)
+  val = (val & 253)
+  val = (val | drive)
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'AB') val
+}
+
+to 'APDS9960 setGestureLEDDrive' drive {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt 'A3'))
+  drive = (drive & 3)
+  drive = (drive << 3)
+  val = (val & 231)
+  val = (val | drive)
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A3') val
+}
+
+to 'APDS9960 setGestureWaitTime' time {
+  local 'val' (i2cGet (v 'APDS-9960 ID') (hexToInt 'A3'))
+  drive = (time & 3)
+  val = (val & 248)
+  val = (val | drive)
+  i2cSet (v 'APDS-9960 ID') (hexToInt 'A3') val
+}
+

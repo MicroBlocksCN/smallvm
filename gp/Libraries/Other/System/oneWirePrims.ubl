@@ -1,0 +1,14 @@
+module 'OneWire Primitives' Comm
+author MicroBlocks
+version 1 0
+description 'Primitives for 1-wire protocol used by devices like the DS18S20 temperature probe.'
+
+  spec ' ' '[1wire:init]' 'oneWire init pin _' 'num' 0
+  spec ' ' '[1wire:scanStart]' 'oneWire scan start'
+  spec 'r' '[1wire:scanNext]' 'oneWire scan next _' 'str' 'addressByteArray'
+  spec ' ' '[1wire:select]' 'oneWire select address _' 'str' 'addressByteArray'
+  spec ' ' '[1wire:selectAll]' 'oneWire select all'
+  spec ' ' '[1wire:writeByte]' 'oneWire write byte _ : power _' 'num bool' 0 false
+  spec 'r' '[1wire:readByte]' 'oneWire read byte'
+  spec 'r' '[1wire:crc8]' 'oneWire crc8 _ : byte count _' 'str num' 'aByteArray' 8
+  spec 'r' '[1wire:crc16]' 'oneWire crc16 _ : byte count _' 'str num' 'aByteArray' 8

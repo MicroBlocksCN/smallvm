@@ -100,6 +100,10 @@ void hardwareInit() {
 		defined(ARDUINO_IOT_BUS) || defined(TTGO_DISPLAY)
 			tftInit();
 	#endif
+	#if defined(DATABOT)
+		int yellow = 16777040;
+		setAllNeoPixels(-1, 3, yellow);
+	#endif
 }
 
 // Communication Functions
@@ -648,7 +652,7 @@ void restartSerial() {
 		#endif
 	#endif
 	static const char reservedPin[TOTAL_PINS] = {
-		1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
 		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
@@ -1175,7 +1179,7 @@ void primSetUserLED(OBJ *args) {
 		#endif
 		#if defined(M5STAMP)
 			int color = (output == HIGH) ? 255 : 0; // blue when on
-			setSingleNeoPixel(PIN_LED, color);
+			setAllNeoPixels(PIN_LED, 1, color);
 		#else
 			digitalWrite(PIN_LED, output);
 		#endif
@@ -1208,7 +1212,8 @@ OBJ primButtonA(OBJ *args) {
 			}
 			buttonIndex = (buttonIndex + 1) % 6;
 			return (buttonReadings[4] < CAP_THRESHOLD) ? trueObj : falseObj;
-		#elif defined(ARDUINO_NRF52840_CLUE) || defined(M5STAMP)
+		#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_ARCH_ESP32) || \
+			  defined(ESP8266) || defined(M5STAMP)
 			SET_MODE(PIN_BUTTON_A, INPUT_PULLUP);
 		#else
 			SET_MODE(PIN_BUTTON_A, INPUT);
@@ -1575,7 +1580,7 @@ int tonePin = -1;
 static void initESP32Tone(int pin) {
 	if ((pin == tonePin) || (pin < 0)) return;
 	if (tonePin < 0) {
-		ledcSetup(0, 1E5, 12); // do setup on first call
+		int f = ledcSetup(0, 15000, 12); // do setup on first call
 	} else {
 		ledcWrite(0, 0); // stop current tone, if any
 		ledcDetachPin(tonePin);

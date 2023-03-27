@@ -938,12 +938,18 @@ OBJ primNeoPixelSetPin(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-void setSingleNeoPixel(int pin, int color) {
-	// Used by boards that use a NeoPixel as their user LED.
+void setAllNeoPixels(int pin, int ledCount, int color) {
 	// Note: This will change the current NeoPixel pin.
 
+	int r = gamma((color >> 16) & 0xFF);
+	int g = gamma((color >> 8) & 0xFF);
+	int b = gamma(color & 0xFF);
+	int gbr = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
+
 	initNeoPixelPin(pin);
-	sendNeoPixelData(color);
+	for (int i = 0; i < ledCount; i++) {
+		sendNeoPixelData(gbr);
+	}
 }
 
 void turnOffInternalNeoPixels() {
