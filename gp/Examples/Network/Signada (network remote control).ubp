@@ -4,7 +4,6 @@ version 1 0
 description 'Signada is a network protocol for remote control of microcontrollers'
 variables password SSID mode event 'HTTP portal' 
 
-  spec ' ' 'start WebSocket server' 'start WebSocket server'
   spec ' ' 'handle HTTP portal' 'handle HTTP portal'
   spec 'r' 'configPage' 'config page'
   spec ' ' 'connection' 'check credentials and connect'
