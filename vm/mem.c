@@ -38,7 +38,7 @@
 // update (forward) references of objects that move during compaction and object resizing.
 
 #if defined(NRF51)
-  #define OBJSTORE_BYTES 2500 // max is 2612
+  #define OBJSTORE_BYTES 2400 // max is 2480
 #elif defined(ARDUINO_BBC_MICROBIT_V2)
   #define OBJSTORE_BYTES 92000
 #elif defined(ARDUINO_NRF52_PRIMO)
