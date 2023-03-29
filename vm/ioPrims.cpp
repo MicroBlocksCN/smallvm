@@ -671,6 +671,21 @@ void restartSerial() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
 
+#elif defined(WUKONG2040) // must come before ARDUINO_RASPBERRY_PI_PICO_W
+
+	#define BOARD_TYPE "Wukong 2040"
+	#define DIGITAL_PINS 29
+	#define ANALOG_PINS 3
+	#define TOTAL_PINS DIGITAL_PINS
+	#define PIN_BUTTON_A 18
+	#define PIN_BUTTON_B 19
+	#define DEFAULT_TONE_PIN 9
+	static const int analogPin[] = {26, 27, 28};
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 1, 0, 0, 0};
+
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W) // must come before ARDUINO_ARCH_RP2040
 
 	#define BOARD_TYPE "Pico W"

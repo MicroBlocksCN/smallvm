@@ -28,6 +28,9 @@ static void startWire() {
 	#if defined(PICO_ED)
 		Wire.setSDA(18);
 		Wire.setSCL(19);
+	#elif defined(WUKONG2040)
+		Wire.setSDA(16);
+		Wire.setSCL(17);
 	#endif
 	#if defined(ARDUINO_ARCH_SAMD)
 		// Some Adafruit SAMD21 boards lack external pullups.
