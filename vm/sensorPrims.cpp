@@ -210,6 +210,11 @@ static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
   #define PIN_SPI_SS   (9u)
   #define PIN_SPI_SCK  (10u)
   #define PIN_SPI_MOSI (11u)
+#elif defined(WUKONG2040)
+  #define PIN_SPI_MISO (4u)
+  #define PIN_SPI_SS   (5u)
+  #define PIN_SPI_SCK  (2u)
+  #define PIN_SPI_MOSI (3u)
 #elif defined(ARDUINO_ARCH_RP2040) && !defined(PIN_SPI_MISO)
   #define PIN_SPI_MISO PIN_SPI0_MISO
   #define PIN_SPI_MOSI PIN_SPI0_MOSI
@@ -229,7 +234,7 @@ static void initSPI() {
 		setPinMode(PIN_SPI_SCK, OUTPUT);
 		setPinMode(PIN_SPI_MOSI, OUTPUT);
 	#endif
-	#if defined(PICO_ED)
+	#if defined(PICO_ED) || defined(WUKONG2040)
 		setPinMode(PIN_SPI_SS, OUTPUT);
 		SPI.setRX(PIN_SPI_MISO);
 		SPI.setCS(PIN_SPI_SS);
