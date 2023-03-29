@@ -673,7 +673,7 @@ void restartSerial() {
 
 #elif defined(WUKONG2040) // must come before ARDUINO_RASPBERRY_PI_PICO_W
 
-	#define BOARD_TYPE "Wukong 2040"
+	#define BOARD_TYPE "Wukong2040"
 	#define DIGITAL_PINS 29
 	#define ANALOG_PINS 3
 	#define TOTAL_PINS DIGITAL_PINS
