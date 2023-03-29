@@ -972,6 +972,8 @@ void turnOffInternalNeoPixels() {
 		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
 		for (int i = 0; i < count; i++) sendNeoPixelData(0);
 		delay(1);
+	#elif defined(DATABOT)
+		count = 3;
 	#elif defined(WUKONG2040)
 		count = 2;
 	#elif defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_NRF52840_CLUE)
