@@ -784,6 +784,16 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
 static int neoPixelPin = -1;
 
 static void initNeoPixelPin(int pinNum) {
+	if ((pinNum < 0) || (pinNum > 29)) { // use internal NeoPixel pin
+		#if defined(WUKONG2040)
+			pinNum = 22;
+		#else
+			pinNum = 0; // default to pin 0
+		#endif
+	}
+	if ((pinNum < 0) || (pinNum > 29)) return;
+	if ((23 <= pinNum) && (pinNum <= 25)) return; // pins 23-25 are reserved
+
 	neoPixelPin = pinNum;
 	pinMode(pinNum, OUTPUT);
 	digitalWrite(pinNum, 0);
@@ -962,6 +972,8 @@ void turnOffInternalNeoPixels() {
 		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
 		for (int i = 0; i < count; i++) sendNeoPixelData(0);
 		delay(1);
+	#elif defined(WUKONG2040)
+		count = 2;
 	#elif defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_NRF52840_CLUE)
 		count = 1;
 	#endif
