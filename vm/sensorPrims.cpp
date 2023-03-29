@@ -927,10 +927,6 @@ static int readTemperature() {
 		msb = Wire.read();
 		lsb = Wire.read();
 	}
-
-	reportNum("msb", msb);
-	reportNum("lsb", lsb);
-
 	return (int) (msb + lsb / 256);
 }
 
