@@ -101,7 +101,7 @@ void hardwareInit() {
 			tftInit();
 	#endif
 	#if defined(DATABOT)
-		int yellow = 16777040;
+		int yellow = 14864128;
 		setAllNeoPixels(-1, 3, yellow);
 	#endif
 }
@@ -671,19 +671,6 @@ void restartSerial() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
 
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_W) // must come before ARDUINO_ARCH_RP2040
-
-	#define BOARD_TYPE "Pico W"
-	#define DIGITAL_PINS 29
-	#define ANALOG_PINS 4
-	#define TOTAL_PINS DIGITAL_PINS
-	static const int analogPin[] = {A0, A1, A2, A3};
-	#define DEFAULT_TONE_PIN 20 // speaker pin on Raspico Pico Bricks board
-	static const char reservedPin[TOTAL_PINS] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 1, 1, 1, 0, 0, 0};
-
 #elif defined(PICO_ED)
 
 	#define BOARD_TYPE "Pico:ed"
@@ -704,6 +691,34 @@ void restartSerial() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	void setPicoEdSpeakerPin(int pin) { digitalPin[17] = pin; }
+
+#elif defined(WUKONG2040) // must come before ARDUINO_RASPBERRY_PI_PICO_W
+
+	#define BOARD_TYPE "Wukong2040"
+	#define DIGITAL_PINS 29
+	#define ANALOG_PINS 3
+	#define TOTAL_PINS DIGITAL_PINS
+	#define PIN_BUTTON_A 18
+	#define PIN_BUTTON_B 19
+	#define DEFAULT_TONE_PIN 9
+	static const int analogPin[] = {26, 27, 28};
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 1, 0, 0, 0};
+
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W) // must come before ARDUINO_ARCH_RP2040
+
+	#define BOARD_TYPE "Pico W"
+	#define DIGITAL_PINS 29
+	#define ANALOG_PINS 4
+	#define TOTAL_PINS DIGITAL_PINS
+	static const int analogPin[] = {A0, A1, A2, A3};
+	#define DEFAULT_TONE_PIN 20 // speaker pin on Raspico Pico Bricks board
+	static const char reservedPin[TOTAL_PINS] = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 1, 1, 1, 0, 0, 0};
 
 #elif defined(ARDUINO_ARCH_RP2040)
 
@@ -1165,8 +1180,6 @@ void primSetUserLED(OBJ *args) {
 	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY)
 			tftSetHugePixel(3, 1, (trueObj == args[0]));
-	#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
-		digitalWrite(PIN_LED, (trueObj == args[0]) ? HIGH : LOW);
 	#else
 		if (PIN_LED < TOTAL_PINS) {
 			SET_MODE(PIN_LED, OUTPUT);

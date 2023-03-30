@@ -1,10 +1,10 @@
 module Databot
 author MicroBlocks
-version 1 0 
-depends  'databot LPS22HB(pressure)_V1.2' 'databot_APDS9960(Light Sensor)_V1.6' 
+version 1 1 
+depends 'Air Pressure (LPS22HB)' 
 choices databot_tempUnits '°C' '°F' 
 description ''
-variables _databot_pixels 
+variables _databot_pixels
 
   spec ' ' 'databot_beep' 'databot beep'
   space
@@ -16,7 +16,6 @@ variables _databot_pixels
   spec 'r' 'databot_temp_probe2' 'databot temp probe 2 _ (x10)' 'menu.databot_tempUnits' '°C'
   space
   spec ' ' '_databot_initLEDs' '_databot_initLEDs'
-  space
   spec 'r' '_databot_DS18B20_address' '_databot_DS18B20_address pin _' 'num' 4
   spec 'r' '_databot_raw_temperature' '_databot_raw_temperature pin _' 'num' 4
 
@@ -93,13 +92,20 @@ to databot_setAllLEDs color {
   '_databot_initLEDs'
   atPut 'all' _databot_pixels color
   '[display:neoPixelSend]' _databot_pixels
+  waitMicros 150
 }
 
 to databot_setLED index color {
   '_databot_initLEDs'
   if (and (1 <= index) (index <= 3)) {
+    if (3 == index) {
+      index = 2
+    } (2 == index) {
+      index = 3
+    }
     atPut index _databot_pixels color
     '[display:neoPixelSend]' _databot_pixels
+    waitMicros 150
   }
 }
 

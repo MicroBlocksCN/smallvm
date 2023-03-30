@@ -16,6 +16,8 @@
 
 #include "mem.h"
 
+#define NO_WIFI() (false)
+
 #if defined(ESP8266)
 	#include <ESP8266WiFi.h>
 	#include <WiFiUdp.h>
@@ -24,6 +26,9 @@
 	#include <WebSocketsServer.h>
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
 	#include <WiFi.h>
+	extern bool __isPicoW;
+	#undef NO_WIFI
+	#define NO_WIFI() (!__isPicoW)
 #elif defined(ARDUINO_SAMD_ATMEL_SAMW25_XPRO) || defined(ARDUINO_SAMD_MKR1000)
 	#define USE_WIFI101
 	#define uint32 wifi_uint32
@@ -61,13 +66,16 @@ STRING_OBJ_CONST("") noDataString;
 // Empty byte array constant
 uint32 emptyByteArray = HEADER(ByteArrayType, 0);
 
-static OBJ primHasWiFi(int argCount, OBJ *args) { return trueObj; }
+static OBJ primHasWiFi(int argCount, OBJ *args) {
+	return NO_WIFI() ? falseObj : trueObj;
+}
 
 static OBJ primStartWiFi(int argCount, OBJ *args) {
 	// Start a WiFi connection attempt. The client should call wifiStatus until either
 	// the connection is established or the attempt fails.
 
 	if (argCount < 2) return fail(notEnoughArguments);
+	if (NO_WIFI()) return fail(noWiFi);
 
 	char *networkName = obj2str(args[0]);
 	char *password = obj2str(args[1]);
@@ -115,6 +123,8 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 }
 
 static OBJ primStopWiFi(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	WiFi.disconnect();
 	#ifndef USE_WIFI101
 		WiFi.mode(WIFI_OFF);
@@ -124,6 +134,8 @@ static OBJ primStopWiFi(int argCount, OBJ *args) {
 }
 
 static OBJ primWiFiStatus(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	if (!connecting) return (OBJ) &statusNotConnected;
 
 	int status = WiFi.status();
@@ -174,6 +186,8 @@ static int isConnectedToWiFi() {
 }
 
 static OBJ primGetIP(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	#if defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
 		IPAddress ip = WiFi.localIP();
 	#else
@@ -191,10 +205,14 @@ static OBJ primGetIP(int argCount, OBJ *args) {
 }
 
 static OBJ primStartSSIDscan(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	return int2obj(WiFi.scanNetworks());
 }
 
 static OBJ primGetSSID(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	char ssid[100];
 	ssid[0] = '\0'; // clear string
 	#if defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
@@ -206,6 +224,8 @@ static OBJ primGetSSID(int argCount, OBJ *args) {
 }
 
 static OBJ primGetMAC(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	#ifdef USE_WIFI101
 		unsigned char mac[6] = {0, 0, 0, 0, 0, 0};
 		// Note: WiFi.macAddress() returns incorrect MAC address before first connection.
@@ -263,6 +283,8 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 	// can specify a port. Changing ports stops and restarts the server.
 	// Fail if there isn't enough memory to allocate the result object.
 
+	if (NO_WIFI()) return fail(noWiFi);
+
 	int useBinary = ((argCount > 0) && (trueObj == args[0]));
 	OBJ noData = useBinary ? (OBJ) &emptyByteArray : (OBJ) &noDataString;
 
@@ -315,6 +337,7 @@ static OBJ primHttpServerGetRequest(int argCount, OBJ *args) {
 static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 	// Send a response to the client with the status. optional extra headers, and optional body.
 
+	if (NO_WIFI()) return fail(noWiFi);
 	if (!client) return falseObj;
 
 	// status
@@ -378,6 +401,8 @@ WiFiClient httpClient;
 static OBJ primHttpConnect(int argCount, OBJ *args) {
 	// Connect to an HTTP server and port.
 
+	if (NO_WIFI()) return fail(noWiFi);
+
 	char* host = obj2str(args[0]);
 	int port = ((argCount > 1) && isInt(args[1])) ? obj2int(args[1]) : 80;
 	uint32 start = millisecs();
@@ -410,11 +435,15 @@ static OBJ primHttpIsConnected(int argCount, OBJ *args) {
 	// Return true when connected to an HTTP server. Continue to return true if more data
 	// is available even if the connection has been closed by the server.
 
+	if (NO_WIFI()) return fail(noWiFi);
+
 	return (httpClient.connected() || httpClient.available()) ? trueObj : falseObj;
 }
 
 static OBJ primHttpRequest(int argCount, OBJ *args) {
 	// Send an HTTP request. Must have first connected to the server.
+
+	if (NO_WIFI()) return fail(noWiFi);
 
 	char* reqType = obj2str(args[0]);
 	char* host = obj2str(args[1]);
@@ -448,6 +477,8 @@ Accept: */*\r\n",
 static OBJ primHttpResponse(int argCount, OBJ *args) {
 	// Read some HTTP request data, if any is available, otherwise return the empty string.
 
+	if (NO_WIFI()) return fail(noWiFi);
+
 	uint8_t buf[800];
 	int byteCount = httpClient.read(buf, 800);
 	if (!byteCount) return (OBJ) &noDataString;
@@ -463,6 +494,8 @@ static OBJ primHttpResponse(int argCount, OBJ *args) {
 WiFiUDP udp;
 
 static OBJ primUDPStart(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	if (argCount < 1) return fail(notEnoughArguments);
 	int port = evalInt(args[0]);
 	if (port > 0) {
@@ -472,11 +505,15 @@ static OBJ primUDPStart(int argCount, OBJ *args) {
 }
 
 static OBJ primUDPStop(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	udp.stop();
 	return falseObj;
 }
 
 static OBJ primUDPSendPacket(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	if (argCount < 3) return fail(notEnoughArguments);
 	OBJ data = args[0];
 	char* ipAddr = obj2str(args[1]);
@@ -499,6 +536,8 @@ static OBJ primUDPSendPacket(int argCount, OBJ *args) {
 }
 
 static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	int useBinary = ((argCount > 0) && (trueObj == args[0]));
 	int byteCount = udp.parsePacket();
 	if (!byteCount) return (OBJ) &noDataString;
@@ -520,6 +559,8 @@ static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
 }
 
 static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	char s[100];
 	IPAddress ip = udp.remoteIP();
 	sprintf(s, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
@@ -527,6 +568,8 @@ static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) {
 }
 
 static OBJ primUDPRemotePort(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	return int2obj(udp.remotePort());
 }
 
@@ -669,6 +712,8 @@ static void MQTTmessageReceived(MQTTClient *client, char *topic, char *bytes, in
 }
 
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	char *broker_uri = obj2str(args[0]);
 	int buffer_size = (argCount > 1) ? obj2int(args[1]) : 128;
 	char *client_id = (argCount > 2) ? obj2str(args[2]) : (char *) "";
@@ -708,18 +753,24 @@ static OBJ primMQTTConnect(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTIsConnected(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	if (!pmqtt_client) return falseObj;
 
 	return (pmqtt_client->connected()) ? trueObj : falseObj;
 }
 
 static OBJ primMQTTDisconnect(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	if (!pmqtt_client) return falseObj;
 	pmqtt_client->disconnect();
 	return trueObj;
 }
 
 static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	if (!pmqtt_client || !pmqtt_client->connected()) return falseObj;
 	int useBinary = (argCount > 0) && (trueObj == args[0]);
 
@@ -752,6 +803,8 @@ static OBJ primMQTTLastEvent(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTPub(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	if (!pmqtt_client || !pmqtt_client->connected()) return falseObj;
 
 	char *topic = obj2str(args[0]);
@@ -783,6 +836,8 @@ static OBJ primMQTTPub(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTSub(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	if (!pmqtt_client || !pmqtt_client->connected()) return falseObj;
 
 	char *topic = obj2str(args[0]);
@@ -792,6 +847,8 @@ static OBJ primMQTTSub(int argCount, OBJ *args) {
 }
 
 static OBJ primMQTTUnsub(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	if (!pmqtt_client || !pmqtt_client->connected()) return falseObj;
 
 	char *topic = obj2str(args[0]);
