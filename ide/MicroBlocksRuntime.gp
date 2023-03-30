@@ -1945,7 +1945,7 @@ method boardHasFileSystem SmallRuntime {
 	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
 	if (isNil port) { return false }
 	if (isNil boardType) { getVersion this }
-	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040', 'Pico W', 'Pico:ed', 'TTGO RP2040' 'Boardie' 'Databot')
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'RP2040', 'Pico W', 'Pico:ed', 'Wukong2040', 'TTGO RP2040' 'Boardie' 'Databot')
 }
 
 method deleteFileOnBoard SmallRuntime fileName {
@@ -2386,7 +2386,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0') {
 			adaFruitResetMessage this
-		} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed') {
+		} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed', 'Wukong2040') {
 			rp2040ResetMessage this
 		}
 	} else {
@@ -2405,6 +2405,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		if (not eraseFlashFlag) {
 			addLine menu
 			addItem menu 'Elecfreaks Pico:ed' (action 'rp2040ResetMessage' this)
+			addItem menu 'Elecfreaks Wukong2040' (action 'rp2040ResetMessage' this)
 			addItem menu 'RP2040 (Pico or Pico-W)' (action 'rp2040ResetMessage' this)
 			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
 		}
@@ -2481,15 +2482,18 @@ method getBoardDriveName SmallRuntime path {
 method picoVMFileName SmallRuntime {
 	tmp = (array nil)
 	menu = (menu 'Pico board type?' (action 'atPut' tmp 1) true)
+	addItem menu 'Elecfreaks Pico:ed'
+	addItem menu 'Elecfreaks Wukong2040'
 	addItem menu 'RP2040 (Pico)'
 	addItem menu 'Pico W (WiFi)'
-	addItem menu 'Elecfreaks Pico:ed'
 	waitForSelection menu
 	result = (first tmp)
-	if ('Pico W (WiFi)' == result) {
-		return 'vm_pico_w.uf2'
-	} ('Elecfreaks Pico:ed' == result) {
+	if ('Elecfreaks Pico:ed' == result) {
 		return 'vm_pico_ed.uf2'
+	} ('Elecfreaks Wukong2040' == result) {
+		return 'vm_wukong2040.uf2'
+	} ('Pico W (WiFi)' == result) {
+		return 'vm_pico_w.uf2'
 	} else {
 		return 'vm_pico.uf2'
 	}
@@ -2564,6 +2568,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'Databot'
 			addLine menu
 			addItem menu 'Elecfreaks Pico:ed'
+			addItem menu 'Elecfreaks Wukong2040'
 			addItem menu 'RP2040 (Pico)'
 			addItem menu 'Pico W (WiFi)'
 			addLine menu
@@ -2633,6 +2638,9 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 		driveName = 'RPI-RP2'
 	} ('Elecfreaks Pico:ed' == boardName) {
 		vmFileName = 'vm_pico_ed.uf2'
+		driveName = 'RPI-RP2'
+	} ('Elecfreaks Wukong2040' == boardName) {
+		vmFileName = 'vm_wukong2040.uf2'
 		driveName = 'RPI-RP2'
 	} else {
 		return // bad board name
