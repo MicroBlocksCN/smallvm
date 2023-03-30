@@ -1101,23 +1101,17 @@ method installBoardSpecificBlocks SmallRuntime {
 		importEmbeddedLibrary scripter 'Tone'
 		importEmbeddedLibrary scripter 'Basic Sensors'
 		importEmbeddedLibrary scripter 'LED Display'
-	} (or ('micro:bit' == boardType) ('micro:bit v2' == boardType)) {
+	} (isOneOf boardType 'micro:bit' 'micro:bit v2' 'Calliope' 'Mbits') {
 		importEmbeddedLibrary scripter 'Basic Sensors'
 		importEmbeddedLibrary scripter 'LED Display'
-		importEmbeddedLibrary scripter 'Scrolling'
-	} ('Calliope' == boardType) {
-		importEmbeddedLibrary scripter 'Calliope'
-		importEmbeddedLibrary scripter 'Basic Sensors'
-		importEmbeddedLibrary scripter 'LED Display'
-		importEmbeddedLibrary scripter 'Scrolling'
 	} ('CircuitPlayground' == boardType) {
 		importEmbeddedLibrary scripter 'Circuit Playground'
 		importEmbeddedLibrary scripter 'Basic Sensors'
 		importEmbeddedLibrary scripter 'NeoPixel'
 		importEmbeddedLibrary scripter 'Tone'
 	} ('M5Stack-Core' == boardType) {
-		importEmbeddedLibrary scripter 'Tone'
 		importEmbeddedLibrary scripter 'LED Display'
+		importEmbeddedLibrary scripter 'Tone'
 		importEmbeddedLibrary scripter 'TFT'
 		importEmbeddedLibrary scripter 'HTTP client'
 	} ('ESP8266' == boardType) {
@@ -1130,6 +1124,10 @@ method installBoardSpecificBlocks SmallRuntime {
 		importEmbeddedLibrary scripter 'HTTP client'
 	} ('TTGO RP2040' == boardType) {
 		importEmbeddedLibrary scripter 'LED Display'
+	} ('Pico:ed' == boardType) {
+		importEmbeddedLibrary scripter 'LED Display'
+	} ('Databot' == boardType) {
+		importEmbeddedLibrary scripter 'Databot'
 	}
 }
 
