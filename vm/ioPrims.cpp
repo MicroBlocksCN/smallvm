@@ -101,7 +101,7 @@ void hardwareInit() {
 			tftInit();
 	#endif
 	#if defined(DATABOT)
-		int yellow = 16777040;
+		int yellow = 14864128;
 		setAllNeoPixels(-1, 3, yellow);
 	#endif
 }
@@ -1180,8 +1180,6 @@ void primSetUserLED(OBJ *args) {
 	#elif defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 		defined(ARDUINO_M5STACK_Core2) || defined(TTGO_DISPLAY)
 			tftSetHugePixel(3, 1, (trueObj == args[0]));
-	#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
-		digitalWrite(PIN_LED, (trueObj == args[0]) ? HIGH : LOW);
 	#else
 		if (PIN_LED < TOTAL_PINS) {
 			SET_MODE(PIN_LED, OUTPUT);
