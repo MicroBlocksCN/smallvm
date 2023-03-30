@@ -952,22 +952,46 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 	OBJ buffer = args[0];
 	OBJ palette = args[1]; // List, index-1 based
 	int scale = max(min(obj2int(args[2]), 8), 1);
-	int scaledWidth = TFT_WIDTH / scale;
-	int scaledHeight = TFT_HEIGHT / scale;
+
+	int originX = 0;
+	int originY = 0;
+	int copyWidth = -1;
+	int copyHeight = -1;
+
+	if (argCount > 6) {
+		originX = obj2int(args[3]);
+		originY = obj2int(args[4]);
+		copyWidth = obj2int(args[5]);
+		copyHeight = obj2int(args[6]);
+	}
+
+	int bufferWidth = TFT_WIDTH / scale;
+	int bufferHeight = TFT_HEIGHT / scale;
+
+	int originWidth = copyWidth >= 0 ? copyWidth : bufferWidth;
+	int originHeight = copyHeight >= 0 ? copyHeight : bufferHeight;
+
 	uint8 *bufferBytes = (uint8 *) &FIELD(buffer, 0);
 	// Read the indices from the buffer and turn them into color values from the
 	// palette, and paint them onto the TFT
-	for (int y = 0; y < scaledHeight; y ++) {
-		for (int x = 0; x < scaledWidth; x ++) {
-			int colorIndex = bufferBytes[y * scaledWidth + x];
+	for (int y = 0; y < originHeight; y ++) {
+		for (int x = 0; x < originWidth; x ++) {
+			int colorIndex = bufferBytes[
+				(y + originY) * bufferWidth + (x + originX)];
 			int color = color24to16b(obj2int(FIELD(palette, colorIndex + 1)));
 			for (int i = 0; i < scale; i ++) {
 				for (int j = 0; j < scale; j ++) {
-					bufferPixels[(j * TFT_WIDTH) + x * scale + i] = color;
+					bufferPixels[(j * originWidth * scale) + x * scale + i] = color;
 				}
 			}
 		}
-		tft.drawRGBBitmap(0, y * scale, bufferPixels, TFT_WIDTH, scale);
+		tft.drawRGBBitmap(
+			originX * scale,
+			(originY + y) * scale,
+			bufferPixels,
+			originWidth * scale,
+			scale
+		);
 	}
 
 	UPDATE_DISPLAY();

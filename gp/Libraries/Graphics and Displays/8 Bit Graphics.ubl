@@ -16,11 +16,10 @@ variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette
 
   spec ' ' 'set scale _' 'set scale _' 'num' 4
   spec ' ' 'set transparent color index _' 'set transparent color index _' 'num' 0
-  spec ' ' 'merge' 'merge bitmap _ at _ , _' 'auto auto auto' '' '10' '20'
+  spec ' ' 'merge' 'merge bitmap _ at _ , _' 'auto num num' '' 10 20
   spec 'r' 'bitmap from file' 'bitmap of width _ from raw indexed file _' 'num str' 32 'filename.data'
   spec 'r' 'bitmap' 'bitmap of width _ from string _' 'num str' 7 '0003000003B30003BFB30003B3000003000'
-  spec 'r' 'cropped bitmap' 'bitmap _ cropped from x _ y _ at width _ height _' 'auto auto auto auto auto' '' '10' '10' '10' '10'
-  spec ' ' 'draw buffer' 'draw buffer'
+  spec ' ' 'draw buffer' 'draw buffer : starting at x _ y _ width _ height _' 'num num num num' 10 20 7 7
   spec ' ' 'clear display' 'clear display'
   spec ' ' 'set palette' 'set palette _' 'auto' ''
   spec 'r' 'palette from pal format' 'palette from pal file _' 'auto' 'filename.data.pal'
@@ -41,104 +40,6 @@ variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette
   spec 'r' '_8bit_8bit_blue hues palette' '_8bit_8bit_blue hues palette'
   spec 'r' '_8bit_8bit_MicroBlocks palette' '_8bit_8bit_MicroBlocks palette'
   spec 'r' '_sqrt _' '_sqrt _' 'num' 10
-
-to bitmap width 'bitmap string' {
-  local 'list' ('[data:makeList]')
-  for line ('[data:split]' (v 'bitmap string') ('[data:unicodeString]' 10)) {
-    for bit line {
-      '[data:addLast]' (hexToInt bit) list
-    }
-  }
-  return ('[data:makeList]' width ('[data:asByteArray]' list))
-}
-
-to 'bitmap from file' width 'file name' {
-  '[file:open]' (v 'file name')
-  local 'bitmap' ('[data:newByteArray]' ('[file:fileSize]' (v 'file name')))
-  for i ('[file:fileSize]' (v 'file name')) {
-    atPut i bitmap (at 1 ('[file:readBytes]' 1 (v 'file name')))
-  }
-  '[file:close]' (v 'file name')
-  return ('[data:makeList]' width bitmap)
-}
-
-to 'clear display' {
-  '[display:mbDisplayOff]'
-}
-
-to 'cropped bitmap' bitmap 'origin x' 'origin y' width height {
-  local 'cropped bitmap' ('[data:newByteArray]' (width * height))
-  local 'bitmap size' (size (at 2 bitmap))
-  for y height {
-    for x width {
-      local 'index' (((((v 'origin y') + y) - 1) * (at 1 bitmap)) + ((v 'origin x') + x))
-      if (and (index <= (v 'bitmap size')) (index > 0)) {
-        atPut (((y - 1) * width) + x) (v 'cropped bitmap') (at index (at 2 bitmap))
-      }
-    }
-  }
-  return ('[data:makeList]' width (v 'cropped bitmap'))
-}
-
-to 'draw buffer' {
-  if (not (isType _8bit_palette 'list')) {_8bit_palette = ('[data:makeList]' '0' 'AA' 'AA00' 'AAAA' 'AA0000' 'AA00AA' 'AA5500' 'AAAAAA' '555555' '5555FF' '55FF55' '55FFFF' 'FF5555' 'FF55FF' 'FFFF55' 'FFFFFF')}
-  '[tft:drawBuffer]' _8bit_buffer _8bit_palette _8bit_scale
-  waitMicros 500
-}
-
-to 'draw palette table' palette {
-  if (not (isType palette 'list')) {if (isType _8bit_palette 'list') {
-    palette = _8bit_palette
-  } else {
-    return 0
-  }}
-  local 'side' ('_sqrt _' (size palette))
-  local 'width' (('[tft:getWidth]') / side)
-  for y side {
-    for x side {
-      local 'index' (((y - 1) * side) + x)
-      if (index <= (size palette)) {
-        '[tft:rect]' ((x - 1) * width) ((y - 1) * width) width width (at index palette)
-      }
-    }
-  }
-}
-
-to merge bitmap 'origin x' 'origin y' {
-  if (_8bit_scale == 0) {'set scale _' 2}
-  '[tft:mergeBitmap]' (at 2 bitmap) (at 1 bitmap) _8bit_buffer _8bit_scale _8bit_alpha_index (v 'origin x') (v 'origin y')
-}
-
-to 'palette from pal format' 'file name' {
-  '[file:open]' (v 'file name')
-  local 'palette' (newList (('[file:fileSize]' (v 'file name')) / 3))
-  for i (('[file:fileSize]' (v 'file name')) / 3) {
-    atPut i palette ((((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 16) | ((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 8)) | (at 1 ('[file:readBytes]' 1 (v 'file name'))))
-  }
-  '[file:close]' (v 'file name')
-  return palette
-}
-
-to 'screen height' {
-  return (('[tft:getHeight]') / _8bit_scale)
-}
-
-to 'screen width' {
-  return (('[tft:getWidth]') / _8bit_scale)
-}
-
-to 'set palette' 'color list' {
-  _8bit_palette = (v 'color list')
-}
-
-to 'set scale _' scale {
-  _8bit_scale = scale
-  _8bit_buffer = ('[data:newByteArray]' (('screen width') * ('screen height')) 0)
-}
-
-to 'set transparent color index _' 'alpha index' {
-  _8bit_alpha_index = (v 'alpha index')
-}
 
 to '4 bit palette' selector {
   return (callCustomReporter ('[data:join]' '_8bit_4bit_' selector ' palette'))
@@ -196,5 +97,93 @@ to '_sqrt _' n {
   for i n {
     if ((i * i) >= n) {return i}
   }
+}
+
+to bitmap width 'bitmap string' {
+  local 'list' ('[data:makeList]')
+  for line ('[data:split]' (v 'bitmap string') ('[data:unicodeString]' 10)) {
+    for bit line {
+      '[data:addLast]' (hexToInt bit) list
+    }
+  }
+  return ('[data:makeList]' width ('[data:asByteArray]' list))
+}
+
+to 'bitmap from file' width 'file name' {
+  '[file:open]' (v 'file name')
+  local 'bitmap' ('[data:newByteArray]' ('[file:fileSize]' (v 'file name')))
+  for i ('[file:fileSize]' (v 'file name')) {
+    atPut i bitmap (at 1 ('[file:readBytes]' 1 (v 'file name')))
+  }
+  '[file:close]' (v 'file name')
+  return ('[data:makeList]' width bitmap)
+}
+
+to 'clear display' {
+  '[display:mbDisplayOff]'
+}
+
+to 'draw buffer' 'region x' 'region y' width height {
+  if (not (isType _8bit_palette 'list')) {_8bit_palette = ('[data:makeList]' '0' 'AA' 'AA00' 'AAAA' 'AA0000' 'AA00AA' 'AA5500' 'AAAAAA' '555555' '5555FF' '55FF55' '55FFFF' 'FF5555' 'FF55FF' 'FFFF55' 'FFFFFF')}
+  if ((pushArgCount) < 1) {
+    '[tft:drawBuffer]' _8bit_buffer _8bit_palette _8bit_scale
+  } else {
+    '[tft:drawBuffer]' _8bit_buffer _8bit_palette _8bit_scale (v 'region x') (v 'region y') width height
+  }
+  waitMicros 500
+}
+
+to 'draw palette table' palette {
+  if (not (isType palette 'list')) {if (isType _8bit_palette 'list') {
+    palette = _8bit_palette
+  } else {
+    return 0
+  }}
+  local 'side' ('_sqrt _' (size palette))
+  local 'width' (('[tft:getWidth]') / side)
+  for y side {
+    for x side {
+      local 'index' (((y - 1) * side) + x)
+      if (index <= (size palette)) {
+        '[tft:rect]' ((x - 1) * width) ((y - 1) * width) width width (at index palette)
+      }
+    }
+  }
+}
+
+to merge bitmap 'origin x' 'origin y' {
+  if (_8bit_scale == 0) {'set scale _' 2}
+  '[tft:mergeBitmap]' (at 2 bitmap) (at 1 bitmap) _8bit_buffer _8bit_scale _8bit_alpha_index (v 'origin x') (v 'origin y')
+}
+
+to 'palette from pal format' 'file name' {
+  '[file:open]' (v 'file name')
+  local 'palette' (newList (('[file:fileSize]' (v 'file name')) / 3))
+  for i (('[file:fileSize]' (v 'file name')) / 3) {
+    atPut i palette ((((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 16) | ((at 1 ('[file:readBytes]' 1 (v 'file name'))) << 8)) | (at 1 ('[file:readBytes]' 1 (v 'file name'))))
+  }
+  '[file:close]' (v 'file name')
+  return palette
+}
+
+to 'screen height' {
+  return (('[tft:getHeight]') / _8bit_scale)
+}
+
+to 'screen width' {
+  return (('[tft:getWidth]') / _8bit_scale)
+}
+
+to 'set palette' 'color list' {
+  _8bit_palette = (v 'color list')
+}
+
+to 'set scale _' scale {
+  _8bit_scale = scale
+  _8bit_buffer = ('[data:newByteArray]' (('screen width') * ('screen height')) 0)
+}
+
+to 'set transparent color index _' 'alpha index' {
+  _8bit_alpha_index = (v 'alpha index')
 }
 
