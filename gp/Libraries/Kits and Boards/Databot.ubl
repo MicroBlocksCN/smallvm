@@ -1,10 +1,10 @@
 module Databot
 author MicroBlocks
-version 1 1 
+version 1 2 
 depends 'Air Pressure (LPS22HB)' 
 choices databot_tempUnits '°C' '°F' 
 description ''
-variables _databot_pixels
+variables _databot_pixels 
 
   spec ' ' 'databot_beep' 'databot beep'
   space
@@ -14,6 +14,8 @@ variables _databot_pixels
   space
   spec 'r' 'databot_temp_probe1' 'databot temp probe 1 _ (x10)' 'menu.databot_tempUnits' '°C'
   spec 'r' 'databot_temp_probe2' 'databot temp probe 2 _ (x10)' 'menu.databot_tempUnits' '°C'
+  space
+  spec 'r' 'databot_uvIndex' 'databot UV Index (x10)'
   space
   spec ' ' '_databot_initLEDs' '_databot_initLEDs'
   spec 'r' '_databot_DS18B20_address' '_databot_DS18B20_address pin _' 'num' 4
@@ -125,5 +127,13 @@ to databot_temp_probe2 unit {
   } else {
     return ((10 * raw) / 16)
   }
+}
+
+to databot_uvIndex {
+  local 'millivolts' ((3300 * (analogReadOp 34)) / 1023)
+  if (millivolts < 200) {
+    return 0
+  }
+  return ((millivolts - 132) / 94)
 }
 
