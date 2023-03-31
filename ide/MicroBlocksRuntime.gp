@@ -2529,7 +2529,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		}
 		popUpAtHand menu (global 'page')
 	} (notNil boardType) {
-		if (and (contains (array 'Citilab ED1' 'M5Stack-Core' 'ESP8266' 'ESP32' 'Databot') boardType)
+		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5Atom-Matrix' 'Databot') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0' 'MakerPort') {
@@ -2547,7 +2547,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			}
 			addLine menu
 		}
-		for boardName (array 'Citilab ED1' 'M5Stack-Core' 'ESP32' 'ESP8266' 'Databot') {
+		for boardName (array 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266' 'Databot') {
 			addItem menu boardName (action 'flashVM' this boardName eraseFlashFlag downloadLatestFlag)
 		}
 		if (not eraseFlashFlag) {
@@ -2705,7 +2705,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 	} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 		rp2040ResetMessage this
 	} (and
-		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'ESP32' 'ESP8266' 'Databot')
+		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266' 'Databot')
 		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 	} else {
@@ -2713,6 +2713,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		if eraseFlashFlag {
 			// addItem menu 'Citilab ED1'
 			addItem menu 'M5Stack-Core'
+			addItem menu 'M5StickC+'
+			addItem menu 'M5Atom-Matrix'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
 		} else {
@@ -2729,6 +2731,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			//addItem menu 'Metro M0'
 			//addLine menu
 			addItem menu 'M5Stack-Core'
+			addItem menu 'M5StickC+'
+			addItem menu 'M5Atom-Matrix'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
 		}
@@ -2755,7 +2759,7 @@ method flashVMInBrowser SmallRuntime boardName eraseFlashFlag downloadLatestFlag
 }
 
 method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boardName {
-	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'ESP32' 'ESP8266' 'Databot') {
+	if (isOneOf boardName 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5Atom-Matrix' 'ESP32' 'ESP8266' 'Databot') {
 		flashVMInBrowser this boardName eraseFlashFlag downloadLatestFlag
 		return
 	}
