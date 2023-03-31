@@ -468,7 +468,9 @@ void softReset(int clearMemoryFlag) {
 	stopPWM();
 	stopServos();
 	stopTone();
-	turnOffInternalNeoPixels();
+	#if !defined(DATABOT)
+		turnOffInternalNeoPixels();
+	#endif
 	turnOffPins();
 	if (clearMemoryFlag) {
 		memClear();

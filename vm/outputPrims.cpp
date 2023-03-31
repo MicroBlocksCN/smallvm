@@ -980,6 +980,7 @@ void turnOffInternalNeoPixels() {
 		count = 1;
 	#endif
 	for (int i = 0; i < count; i++) sendNeoPixelData(0);
+	delay(1); // NeoPixels latch time
 }
 
 // Simulate the micro:bit 5x5 LED display on M5Stack Atom Matrix and Mbits
