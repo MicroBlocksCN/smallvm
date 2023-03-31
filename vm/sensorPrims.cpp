@@ -120,6 +120,7 @@ static OBJ primI2cRead(int argCount, OBJ *args) {
 	if (!IS_TYPE(obj, ListType)) return int2obj(0);
 
 	int count = obj2int(FIELD(obj, 0));
+	if (count <= 0) return zeroObj;
 	if (count > 32) count = 32; // the Arduino Wire library limits reads to a max of 32 bytes
 
 	if (!wireStarted) startWire();
