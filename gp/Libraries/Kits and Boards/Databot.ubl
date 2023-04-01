@@ -58,7 +58,7 @@ from a dedicated task.'
   }
   '[1wire:select]' addr
   '[1wire:writeByte]' (hexToInt '44') true
-  waitMillis 1000
+  waitMillis 1
   '[1wire:select]' addr
   '[1wire:writeByte]' (hexToInt 'BE')
   local 'data' ('[data:newByteArray]' 9)
