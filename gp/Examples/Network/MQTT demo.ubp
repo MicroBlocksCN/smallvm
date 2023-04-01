@@ -10,7 +10,7 @@ comment '1. connect wifi'
 wifiConnect 'Network_Name' ''
 waitMillis 1000
 comment '2. connect MQTT broker'
-'MQTT connect to' 'public.cloud.shiftr.io' 128 'MicroBlocks_client' 'public' 'public'
+'MQTT connect to' 'mqtt.longan.link' 128 '' 'guest' 'test'
 sendBroadcast 'loop'
 }
 
@@ -36,7 +36,7 @@ forever {
   } else {
     sayIt 'try to connect ...'
     waitMillis 500
-    'MQTT connect to' 'public.cloud.shiftr.io' 128 'MicroBlocks_client' 'public' 'public'
+    'MQTT connect to' 'mqtt.longan.link' 128 '' 'guest' 'test'
   }
 }
 }
