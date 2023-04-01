@@ -939,6 +939,79 @@ static int readTemperature() {
 static int readAcceleration(int reg) { return 0; }
 static void setAccelRange(int range) { }
 
+#elif defined(DATABOT)
+
+#define MPU9250 0x69
+
+// registers (decimal, following datasheet)
+#define MPU9250_ACCEL_XOUT_H 59
+#define MPU9250_PWR_MGMT_1 107
+
+static uint8 mpu9250Data[6];
+
+static void mpu9250readData(int reg) {
+	if (!accelStarted) {
+		if (!wireStarted) startWire();
+		if (!wireStarted) return;
+
+		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 128); // reset accelerometer
+		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 0);
+		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 1);
+		accelStarted = true;
+	}
+
+	// Request data starting at reg
+	Wire.beginTransmission(MPU9250);
+	Wire.write(reg);
+	Wire.endTransmission();
+
+	// Read data
+	int count = sizeof(mpu9250Data);
+	Wire.requestFrom(MPU9250, count);
+	for (int i = 0; i < count; i++) {
+		if (!Wire.available()) break; /* no more data */;
+		mpu9250Data[i] = Wire.read();
+	}
+}
+
+static int mpu9250valueAt(int i) {
+	// Return signed 16-bit value at the given index in mpu9250Data.
+
+	int val = (mpu9250Data[i] << 8) | mpu9250Data[i + 1];
+	if (val >= 32768) val -= 65536; // negative 16-bit value
+	return val;
+}
+
+static int readAcceleration(int registerID) {
+	mpu9250readData(MPU9250_ACCEL_XOUT_H);
+
+	int val = 0;
+	if (1 == registerID) val = mpu9250valueAt(2); // x-axis
+	if (3 == registerID) val = mpu9250valueAt(0); // y-axis
+	if (5 == registerID) val = mpu9250valueAt(4); // z-axis
+
+	return (100 * val) >> 14;
+}
+
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+	// See MPU-9250 Register Map and Descriptions, ACCEL_CONFIG, pg. 14.
+
+	if ((range < 0) || (range > 3)) return; // out of range
+	writeI2CReg(MPU9250, 0x1C, (range << 3));
+}
+
+static int readTemperature() {
+	#define LPS22HD 0x5C
+	writeI2CReg(LPS22HD, 0x11, 1);
+	delay(1); // wait for data
+	int val = readI2CReg(LPS22HD, 0x2B); // low byte
+	val |= (readI2CReg(LPS22HD, 0x2C) << 8); // high byte
+	if (val >= 32768) val -= 65536;
+	int fudgeFactor = 1100; // partially compensate for the heat inside Databot case
+	return (val - fudgeFactor) / 100; // degrees C
+}
+
 #elif defined(RP2040_PHILHOWER)
 
 static int readTemperature() { return analogReadTemp(); }
