@@ -4,37 +4,37 @@ version 1 0
 description ''
 variables event 
 
-script 120 50 {
+script 112 40 {
 whenStarted
 comment '1. connect wifi'
 wifiConnect 'Network_Name' ''
 waitMillis 1000
 comment '2. connect MQTT broker'
-'MQTT connect to' 'public.cloud.shiftr.io' 128 'MicroBlocks_client' 'public' 'public'
+'MQTT connect to' 'mqtt.longan.link' 128 '' 'guest' 'test'
 }
 
-script 50 279 {
+script 42 269 {
 comment 'subscribe topic'
 'MQTT sub' 'testTopic'
 }
 
-script 367 280 {
+script 359 270 {
 comment 'publish topic payload'
 'MQTT pub' 'testTopic' 'Hello!'
 }
 
-script 110 376 {
+script 102 366 {
 comment 'receive mqtt message'
 forever {
   if ('MQTT connected') {
-    event = ('MQTT last event')
+    event = ('[net:MQTTLastEvent]')
     if (isType event 'list') {
       sayIt 'topic' ('MQTT event topic' event) ', payload' ('MQTT event payload' event)
     }
   } else {
     sayIt 'try to connect ...'
     waitMillis 500
-    'MQTT connect to' 'public.cloud.shiftr.io' 128 'MicroBlocks_client' 'public' 'public'
+    'MQTT connect to' 'mqtt.longan.link' 128 '' 'guest' 'test'
   }
 }
 }
@@ -57,7 +57,6 @@ description 'A simple MQTT client.
   spec 'r' '[net:MQTTLastEvent]' 'MQTT event : binary _' 'bool' false
   spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
   spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
-  spec 'r' 'MQTT last event' 'obsolete MQTT event : binary _' 'bool' false
 
 to 'MQTT connect to' broker buffer_sizes client_id username password {
   if ((getIPAddress) != '0.0.0.0') {
