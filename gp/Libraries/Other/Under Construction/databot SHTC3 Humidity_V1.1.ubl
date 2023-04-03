@@ -34,7 +34,7 @@ to 'SHTC3 Update' {
   twiTransfer 25688 6
   waitMillis 10
   _temperature = (((at 1 data) << 8) + (at 2 data))
-  _humidity = (((at 3 data) << 8) + (at 4 data))
+  _humidity = (((at 4 data) << 8) + (at 5 data))
   twiCommand 45208
   waitMillis 10
 }
