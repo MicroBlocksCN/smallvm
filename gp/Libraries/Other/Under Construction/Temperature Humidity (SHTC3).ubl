@@ -1,0 +1,68 @@
+module 'Temperature Humidity (SHTC3)' Input
+author MicroBlocks
+version 1 1 
+description 'Support for the SHTC3 temperature (°C) and relative humidity (%) sensor.'
+
+  spec 'r' 'sh30_temperature' 'SHTC3 temperature (°C)'
+  spec 'r' 'sh30_humidity' 'SHTC3 humidity (%)'
+  space
+  spec ' ' '_sh30_send_cmd' '_sh30_send_cmd _' 'num' 0
+  spec 'r' '_sh30_read' '_sh30_read'
+  spec 'r' '_sh30_crcOkay' '_sh30_crcOkay _ _ _' 'num num num' 0 0 0
+
+to '_sh30_crcOkay' b1 b2 b3 {
+  local 'crc' 255
+  for i 2 {
+    if (1 == i) {
+      crc = (crc ^ b1)
+    } else {
+      crc = (crc ^ b2)
+    }
+    repeat 8 {
+      if ((crc & 128) != 0) {
+        crc = (((crc << 1) ^ 49) & 255)
+      } else {
+        crc = (crc << 1)
+      }
+    }
+  }
+  return (0 == (crc ^ b3))
+}
+
+to '_sh30_read' {
+  local 'SHTC addr' (hexToInt '70')
+  comment 'Wakeup'
+  '_sh30_send_cmd' (hexToInt '3517')
+  comment 'Read data, temperature first (with clock stretching)'
+  '_sh30_send_cmd' (hexToInt '7CA2')
+  local 'sixBytes' (newList 6)
+  '[sensors:i2cRead]' (v 'SHTC addr') sixBytes
+  comment 'Do not send sleep command; that results in i2c error on next call'
+  return sixBytes
+}
+
+to '_sh30_send_cmd' cmd {
+  local 'SHTC addr' (hexToInt '70')
+  '[sensors:i2cWrite]' (v 'SHTC addr') ('[data:makeList]' ((cmd >> 8) & 255) (cmd & 255))
+}
+
+to sh30_humidity {
+  local 'data' ('_sh30_read')
+  local 'high' (at 4 data)
+  local 'low' (at 5 data)
+  if (not ('_sh30_crcOkay' high low (at 6 data))) {
+    return 0
+  }
+  return ((100 * ((high << 8) | low)) >> 16)
+}
+
+to sh30_temperature {
+  local 'data' ('_sh30_read')
+  local 'high' (at 1 data)
+  local 'low' (at 2 data)
+  if (not ('_sh30_crcOkay' high low (at 3 data))) {
+    return 0
+  }
+  return (((175 * ((high << 8) | low)) >> 16) - 45)
+}
+
