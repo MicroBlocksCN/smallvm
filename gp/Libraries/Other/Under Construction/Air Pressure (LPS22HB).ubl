@@ -63,6 +63,10 @@ to lps22hb_altitudeFeet {
 
 to lps22hb_setBaseAltitude baseMeters {
   local 'total' 0
+  comment 'Start regular sampling with filtering. Sampling rate is 75/9.'
+  local 'LPS22HB' (hexToInt '5C')
+  i2cSet LPS22HB (hexToInt '10') (hexToInt '58')
+  waitMillis 300
   repeat 20 {
     total += ('_lps22hb_rawPressure')
     waitMillis 1
