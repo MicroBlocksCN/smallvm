@@ -229,7 +229,7 @@ to _
 naar _
 
 find _ in _
-vind _ in_
+vind _ in _
 
 starting at _
 start op _
