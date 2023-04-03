@@ -944,10 +944,16 @@ static void setAccelRange(int range) { }
 #define MPU9250 0x69
 
 // registers (decimal, following datasheet)
+#define MPU9250_BYPASS_EN 55
 #define MPU9250_ACCEL_XOUT_H 59
 #define MPU9250_PWR_MGMT_1 107
 
 static uint8 mpu9250Data[6];
+
+static inline int fix16bitSign(int n) {
+	if (n >= 32768) n -= 65536; // negative 16-bit value
+	return n;
+}
 
 static void mpu9250readData(int reg) {
 	if (!accelStarted) {
@@ -957,6 +963,7 @@ static void mpu9250readData(int reg) {
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 128); // reset accelerometer
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 0);
 		writeI2CReg(MPU9250, MPU9250_PWR_MGMT_1, 1);
+		writeI2CReg(MPU9250, MPU9250_BYPASS_EN, 2); // allows i2c access to magnetometer
 		accelStarted = true;
 	}
 
@@ -1011,6 +1018,46 @@ static int readTemperature() {
 	int fudgeFactor = 1100; // partially compensate for the heat inside Databot case
 	return (val - fudgeFactor) / 100; // degrees C
 }
+
+#define AK8963 0x0C
+#define AK8963_X_LOW 0x03
+#define AK8963_CONTROL_1 0x0A
+
+static int databotMagStarted = false;
+
+static int databotMageneticField() {
+	static uint8 magData[7]; // includes ST2 register
+
+	if (!databotMagStarted) {
+		readAcceleration(1); // start accelerometer
+		delay(1);
+		writeI2CReg(AK8963, AK8963_CONTROL_1, 0); // switch to powerdown mode
+		delay(1);
+		writeI2CReg(AK8963, AK8963_CONTROL_1, 0x12); // 16-bit, 8 Hz, continuous
+		delay(10); // wait for first sample (min 8 msecs)
+		databotMagStarted = true;
+	}
+
+	// Request data starting at reg
+	Wire.beginTransmission(AK8963);
+	Wire.write(AK8963_X_LOW);
+	Wire.endTransmission();
+
+	// Read data
+	int count = sizeof(magData);
+	Wire.requestFrom(AK8963, count);
+	for (int i = 0; i < count; i++) {
+		if (!Wire.available()) break; /* no more data */;
+		magData[i] = Wire.read();
+	}
+
+	int magX = fix16bitSign((magData[1] << 8) + magData[0]);
+	int magY = fix16bitSign((magData[3] << 8) + magData[2]);
+	int magZ = fix16bitSign((magData[5] << 8) + magData[3]);
+
+	return sqrt((magX * magX) + (magY * magY) + (magZ * magZ));
+}
+
 
 #elif defined(RP2040_PHILHOWER)
 
@@ -1262,7 +1309,9 @@ OBJ primMagneticField(int argCount, OBJ *args) {
 
 	uint8 buf[6] = {0, 0, 0, 0, 0, 0};
 
-	#if defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_C3)
+	#if defined(DATABOT)
+		return int2obj(databotMageneticField());
+	#elif defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_C3)
 		return int2obj(hall_sensor_read());
 	#elif defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
 			defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_SINOBIT)
