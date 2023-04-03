@@ -1,0 +1,158 @@
+module Octupos Input
+author Elecfreaks
+version 1 0
+depends 'OLED Graphics' 'Temperature Humidity (DHT11, DHT22)'
+choices DHT11 'humidity(0~100)' 'temperature(°C)'
+description 'Elecfreaks Octupos Sensor Library.
+Contains many sensors to help you quickly build
+project programs and enjoy the fun of creation.
+'
+
+  spec ' ' 'set led' 'Octopus set led pin _ _' 'auto bool' 0 true
+  spec ' ' 'Octupos set led bright' 'Octopus set led pin _ bright(0~100) _' 'auto auto' '0' '100'
+  spec ' ' 'Octupos set fans' 'Octopus set fan pin _ speed(0~100) _' 'auto auto' 0 50
+  spec ' ' 'setServoAngle' 'Octopus set servo pin _ angle(0~180) _' 'num num' 0 90
+  space
+  spec 'r' 'Octupos get distance' 'Octopus get ultrasonic TRIG _ ECHO _' 'auto auto' '17' '16'
+  spec 'r' 'Octupos get lightlevel' 'Octopus get lightlevel(0~100) pin _' 'auto' '26'
+  spec 'r' 'Octupos get temperature' 'Octopus get DHT11 pin _  _ value' 'auto menu.DHT11' '26' 'temperature(°C)'
+  spec 'r' 'Octupos get waterlevel' 'Octopus get waterlevel(0~400) pin _' 'auto' '26'
+  spec 'r' 'Octupos get trimpot' 'Octopus get trimpot(0~1023) pin _' 'auto' '26'
+  spec 'r' 'Octupos get noise' 'Octopus get noise(0~1023) pin _' 'auto' '26'
+  space
+  spec ' ' 'Octupos set pixel x' 'Octopus i2c OLED pixel x _ y _' 'auto auto' '63' '31'
+  spec ' ' 'Octupos2 set show' 'Octopus i2c OLED show _ x _ y _' 'auto auto auto' 'hello!' '0' '0'
+  spec ' ' 'Octupos set clear' 'Octopus i2c OLED  clear'
+  spec ' ' 'Octupos draw line from x' 'Octopus i2c OLED draw line from x _ y _ to x _ y _' 'auto auto auto auto' '0' 0 '127' '63'
+  spec ' ' 'Octupos draw rectangel x' 'Octopus i2c OLED draw rectangel x _ y _ w _ h _ rounding(3~15) _' 'auto auto auto auto auto' '0' 0 '60' '30' '0'
+  spec ' ' 'Octopus i2c OLED fill rectangle x' 'Octopus i2c OLED fill rectangle x _ y _ w _ h _' 'auto auto auto auto' '0' 0 '60' '30'
+  spec ' ' 'Octopus i2c OLED fill circle x' 'Octopus i2c OLED fill circle at x _ y _ radius _' 'auto auto auto' '10' '10' '10'
+  spec ' ' 'Octupus draw circle x' 'Octopus i2c OLED draw circle at x _ y _ radius _ fill _' 'auto auto auto bool' '10' 10 '10' true
+
+to 'Octopus i2c OLED fill circle x' x y r {
+  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+  repeat r {
+    OLEDdrawCircle x y r false
+    r += -1
+  }
+}
+
+to 'Octopus i2c OLED fill rectangle x' x y w f {
+  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+  OLEDfillRect x y w f false
+}
+
+to 'Octupos draw line from x' x y x1 y1 {
+  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+  OLEDdrawLine x y x1 y1 false
+}
+
+to 'Octupos draw rectangel x' x y w h foo {
+  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+  OLEDdrawRect x y w h false foo
+}
+
+to 'Octupos get distance' foo bar {
+  digitalWriteOp foo false
+  waitMicros 2
+  digitalWriteOp foo true
+  waitMicros 50
+  digitalWriteOp foo false
+  local 'start' (microsOp)
+  waitUntil (or (not (digitalReadOp bar)) (((microsOp) - start) > 23320))
+  waitUntil (or (digitalReadOp bar) (((microsOp) - start) > 23320))
+  if (((microsOp) - start) > 23320) {
+    comment 'Distance sensor not ready; return the last distance reading'
+    return _sr04_last
+  }
+  comment 'Pulse sent. Measure time until echo is detected.'
+  start = (microsOp)
+  waitUntil (or (not (digitalReadOp bar)) (((microsOp) - start) > 23320))
+  _sr04_last = ((10 * ((microsOp) - start)) / 583)
+  comment 'Leave some time for reverberations to die away.'
+  waitMillis 10
+  if (_sr04_last == 0) {
+    zeroCount += 1
+  }
+  return _sr04_last
+}
+
+to 'Octupos get lightlevel' pin {
+  return ('[misc:rescale]' (analogReadOp pin) 0 1023 0 100)
+}
+
+to 'Octupos get noise' pin {
+  return (analogReadOp pin)
+}
+
+to 'Octupos get temperature' foo bar {
+  if (bar == 'temperature(°C)') {return (temperature_DHT11 foo)}
+  if (bar == 'humidity(0~100)') {return (humidity_DHT22 foo)}
+}
+
+to 'Octupos get trimpot' pin {
+  return (analogReadOp pin)
+}
+
+to 'Octupos get waterlevel' pin {
+  return ('[misc:rescale]' (analogReadOp pin) 0 550 0 400)
+}
+
+to 'Octupos set clear' {
+  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+  OLEDclear
+}
+
+to 'Octupos set fans' pin speed {
+  analogWriteOp pin ('[misc:rescale]' speed 0 100 0 1023)
+}
+
+to 'Octupos set led bright' foo bar {
+  analogWriteOp foo ('[misc:rescale]' bar 0 100 0 1023)
+}
+
+to 'Octupos set pixel x' x y {
+  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+  OLEDpixel x y false
+  OLEDshowGDBuffer
+}
+
+to 'Octupos2 set show' hello x y {
+  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+  OLEDwrite hello x y false
+}
+
+to 'Octupus draw circle x' x y foo bar {
+  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+  if (not bar) {
+    OLEDdrawCircle x y foo false
+  }
+  if bar {
+    num = foo
+    repeat foo {
+      num += -1
+      OLEDdrawCircle x y num false
+    }
+  }
+}
+
+to 'set led' pin bar {
+  digitalWriteOp pin bar
+}
+
+to setServoAngle which degrees {
+  local 'reversed' false
+  if ((pushArgCount) > 2) {
+    reversed = optionalReverse
+  }
+  if reversed {
+    degrees = (0 - (degrees - 90))
+  }
+  local 'pulseWidth' (1500 - (10 * (degrees - 90)))
+  if ('[io:hasServo]') {
+    '[io:setServo]' which pulseWidth
+  } else {
+    atPut ('_servoIndex' which) _servoPulseWidth pulseWidth
+  }
+}
+
