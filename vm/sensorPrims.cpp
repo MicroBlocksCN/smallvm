@@ -1033,7 +1033,7 @@ static int databotMageneticField() {
 		delay(1);
 		writeI2CReg(AK8963, AK8963_CONTROL_1, 0); // switch to powerdown mode
 		delay(1);
-		writeI2CReg(AK8963, AK8963_CONTROL_1, 0x12); // 16-bit, 8 Hz, continuous
+		writeI2CReg(AK8963, AK8963_CONTROL_1, 0x16); // 16-bit, 100 Hz, continuous
 		delay(10); // wait for first sample (min 8 msecs)
 		databotMagStarted = true;
 	}
