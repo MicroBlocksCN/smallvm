@@ -1,0 +1,51 @@
+module 'databot SHTC3 Humidity V1.1' Input
+author Dharmik
+version 1 0 
+description ''
+variables SHTC3_ID data _humidity _temperature 
+
+  spec 'r' 'SHTC3 Init' 'SHTC3 Init'
+  spec 'r' 'SHTC3 Read Humidity' 'SHTC3 Read Humidity'
+  spec ' ' 'SHTC3 Update' 'SHTC3 Update'
+  spec ' ' 'twiCommand' 'twiCommand _' 'auto' 0
+  spec ' ' 'twiTransfer' 'twiTransfer _ _' 'auto auto' 0 3
+
+to 'SHTC3 Init' {
+  SHTC3_ID = (hexToInt '0x70')
+  twiCommand 13591
+  twiTransfer 61384 3
+  if (and ((at 1 data) == 8) ((at 2 data) == 135)) {
+    twiCommand 32861
+    return (booleanConstant true)
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to 'SHTC3 Read Humidity' {
+  local 'var' (15259 * _humidity)
+  var = (var / 100000)
+  return var
+}
+
+to 'SHTC3 Update' {
+  twiCommand 13591
+  waitMillis 10
+  twiTransfer 25688 6
+  waitMillis 10
+  _temperature = (((at 1 data) << 8) + (at 2 data))
+  _humidity = (((at 3 data) << 8) + (at 4 data))
+  twiCommand 45208
+  waitMillis 10
+}
+
+to twiCommand cmd {
+  '[sensors:i2cWrite]' SHTC3_ID ('[data:makeList]' (cmd >> 8) (cmd & (hexToInt '0xFF')))
+}
+
+to twiTransfer cmd len {
+  data = (newList len)
+  twiCommand cmd
+  '[sensors:i2cRead]' SHTC3_ID data
+}
+

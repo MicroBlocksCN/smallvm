@@ -1,5 +1,5 @@
-module 'Air Pressure (LPS22HB)'
-author unknown
+module 'Databot LPS22HB (pressure) V1.2'
+author Dharmik
 version 1 0
 description ''
 
