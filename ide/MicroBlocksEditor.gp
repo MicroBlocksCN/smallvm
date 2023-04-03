@@ -950,6 +950,10 @@ method applyUserPreferences MicroBlocksEditor {
 		percent = (at prefs 'blockSizePercent')
 		setGlobal 'blockScale' ((clamp percent 25 500) / 100)
 	}
+	if (notNil (at prefs 'devMode')) {
+		setDevMode (global 'page') (at prefs 'devMode')
+		developerModeChanged this
+	}
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
@@ -1265,11 +1269,13 @@ method showGraph MicroBlocksEditor {
 
 method showAdvancedBlocks MicroBlocksEditor {
   setDevMode (global 'page') true
+  saveToUserPreferences this 'devMode' true
   developerModeChanged this
 }
 
 method hideAdvancedBlocks MicroBlocksEditor {
   setDevMode (global 'page') false
+  saveToUserPreferences this 'devMode' false
   developerModeChanged this
 }
 
