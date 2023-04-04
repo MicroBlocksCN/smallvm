@@ -104,6 +104,9 @@ void hardwareInit() {
 		int yellow = 14864128;
 		setAllNeoPixels(-1, 3, yellow);
 	#endif
+	#if defined(ARDUINO_Mbits) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+		mbDisplayColor = (190 << 16); // red (not full brightness)
+	#endif
 }
 
 // Communication Functions

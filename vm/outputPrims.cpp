@@ -993,14 +993,18 @@ void turnOffInternalNeoPixels() {
 #elif defined(ARDUINO_Mbits)
 		initNeoPixelPin(13); // use internal NeoPixels
 #endif
-		delay(1);
+		delay(1); // make sure NeoPixels are latched and ready for new data
+
+		// compute color RGB value; NeoPixel order is GRB
+		int r = gamma((mbDisplayColor >> 16) & 0xFF);
+		int g = gamma((mbDisplayColor >> 8) & 0xFF);
+		int b = gamma(mbDisplayColor & 0xFF);
+		int pixelValue = (g << 16) | (r << 8) | b;
+
+		// update the NeoPixels
 		for (int i = 0; i < 25; i++) {
 			int isOn = (microBitDisplayBits & (1 << i));
-			// NeoPixel order is GRB
-			int r = gamma((mbDisplayColor >> 16) & 0xFF);
-			int g = gamma((mbDisplayColor >> 8) & 0xFF);
-			int b = gamma(mbDisplayColor & 0xFF);
-			sendNeoPixelData(isOn ? (g << 16) | (r << 8) | b : 0);
+			sendNeoPixelData(isOn ? pixelValue : 0);
 		}
 		neoPixelPinMask = oldPinMask; // restore the old NeoPixel pin
 	}
