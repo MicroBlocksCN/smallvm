@@ -784,13 +784,10 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
 static int neoPixelPin = -1;
 
 static void initNeoPixelPin(int pinNum) {
-	if ((pinNum < 0) || (pinNum > 29)) { // use internal NeoPixel pin
-		#if defined(WUKONG2040)
-			pinNum = 22;
-		#else
-			pinNum = 0; // default to pin 0
-		#endif
-	}
+	#if defined(WUKONG2040)
+		if ((pinNum < 0) || (pinNum > 29)) pinNum = 22;
+	#endif
+	// Note: Do not default to pin 0; that pin is used by pico:ed v2 for internal i2c
 	if ((pinNum < 0) || (pinNum > 29)) return;
 	if ((23 <= pinNum) && (pinNum <= 25)) return; // pins 23-25 are reserved
 
@@ -963,7 +960,6 @@ void setAllNeoPixels(int pin, int ledCount, int color) {
 }
 
 void turnOffInternalNeoPixels() {
-	initNeoPixelPin(-1); // internal
 	int count = 0;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 		count = 10;
@@ -979,6 +975,9 @@ void turnOffInternalNeoPixels() {
 	#elif defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_NRF52840_CLUE)
 		count = 1;
 	#endif
+	if (!count) return; // no internal Neopixels
+
+	initNeoPixelPin(-1); // init internal neopixels pin
 	for (int i = 0; i < count; i++) sendNeoPixelData(0);
 	delay(1); // NeoPixels latch time
 }
