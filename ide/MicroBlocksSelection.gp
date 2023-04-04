@@ -168,8 +168,12 @@ method duplicateBlocks MicroBlocksSelection {
 method dragBlocks MicroBlocksSelection {
 	cancelSelection
 	showTrashcan this
-	contents = (initialize (new 'MicroBlocksSelectionContents') blocks false scripter)
-	grab (hand (global 'page')) contents
+	if ((count blocks) == 1) {
+		grab (hand (global 'page')) (first blocks)
+	} else {
+		contents = (initialize (new 'MicroBlocksSelectionContents') blocks false scripter)
+		grab (hand (global 'page')) contents
+	}
 }
 
 method showTrashcan MicroBlocksSelection {
