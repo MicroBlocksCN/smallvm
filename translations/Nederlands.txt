@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: November 29 2022
 
 #########################
 # Blocks and categories #
@@ -26,6 +26,12 @@ knop A
 button B
 knop B
 
+timer
+--MISSING--
+
+reset timer
+--MISSING--
+
 microseconds
 microseconden
 
@@ -39,10 +45,13 @@ Pins
 Pinnen
 
 read digital pin _
-lees digitale pin_
+lees digitale pin _
 
 read analog pin _
 lees analoge pin _
+
+pullup _
+--MISSING--
 
 set digital pin _ to _
 maak digitale pin _  _
@@ -77,11 +86,11 @@ wacht _ millisec.
 if _ _
 als _ _
 
-else if _ _
-anders als _ dan _
-
 if _ _ else _
 als _ dan _ anders _
+
+else if _ _
+anders als _ dan _
 
 else
 anders
@@ -125,6 +134,12 @@ stop alles
 last message
 laatste bericht
 
+call _
+--MISSING--
+
+with _
+--MISSING--
+
 Operators
 Functies
 
@@ -133,6 +148,12 @@ _ modulo _
 
 abs _
 absolute waarde van _
+
+min _ _
+--MISSING--
+
+max _ _
+--MISSING--
 
 random _ to _
 willekeurig getal tussen _ en _
@@ -166,6 +187,9 @@ tekst
 
 list
 lijst
+
+byte array
+--MISSING--
 
 Advanced:
 Gevorderd
@@ -211,7 +235,7 @@ item _ of _
 item _ van _
 
 replace item _ of list _ with _
-vervang item _ van lijst _ door
+vervang item _ van lijst _ door _
 
 delete item _ of list _
 verwijder item _ van lijst _
@@ -252,11 +276,32 @@ nieuwe lijst lengte _
 new byte array _
 nieuwe byte array _
 
+as byte array _
+--MISSING--
+
+with all _
+--MISSING--
+
 free memory
 vrij geheugen
 
+all
+--MISSING--
+
+last
+--MISSING--
+
+random
+--MISSING--
+
+split _ by _
+--MISSING--
+
 My Blocks
 Mijn blokken
+
+Generic
+--MISSING--
 
 # Buttons on top of "My Blocks" category
 
@@ -291,6 +336,33 @@ spi zend _
 
 spi receive
 spi ontvang
+
+spi setup speed _
+--MISSING--
+
+mode _
+--MISSING--
+
+rpi channel _
+--MISSING--
+
+spi exchange bytes _
+--MISSING--
+
+serial open _ baud
+--MISSING--
+
+serial close
+--MISSING--
+
+serial read
+--MISSING--
+
+serial write _
+--MISSING--
+
+serial write _ starting at _
+--MISSING--
 
 print _
 schrijf _
@@ -358,8 +430,8 @@ radio laatste tekst
 radio last message type
 radio laatste type boodschap
 
-radio set group _
-radio instellen groep _
+radio set group _ (0-255)
+--MISSING--
 
 radio set channel (0-83) _
 radio instellen kanaal (0-83) _
@@ -404,6 +476,12 @@ lichtsterkte
 temperature (°C)
 temperatuur (°C)
 
+magnetic field
+--MISSING--
+
+set acceleration range _ g = 100
+--MISSING--
+
 ####
 # NeoPixel library
 
@@ -435,13 +513,37 @@ attach _ LED NeoPixel strip to pin _
 verbind _ LED NeoPixel strip aan pin _
 
 has white _
-heeft wit_
+heeft wit _
 
 PIR
 PIR
 
 PIR at pin _ detected movement
 PIR op pin _ detecteerde beweging 
+
+####
+# Microphone library
+
+Microphone
+--MISSING--
+
+microphone
+--MISSING--
+
+turn on microphone
+--MISSING--
+
+loudness
+--MISSING--
+
+clap count
+--MISSING--
+
+set clap threshold _
+--MISSING--
+
+estimate clap threshold
+--MISSING--
 
 ####
 # Citilab ED1 board libraries
@@ -641,6 +743,9 @@ test IR
 attach IR receiver to pin _
 verbind IR ontvanger aan pin _
 
+IR transmit device _ command _
+--MISSING--
+
 ####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
@@ -697,6 +802,9 @@ scherm _
 clear display
 wis scherm
 
+set display color _
+--MISSING--
+
 plot x _ y _
 teken x _ y _
 
@@ -746,6 +854,67 @@ scale _ wrap _
 schaal _ wrap _
 
 ####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _
+--MISSING--
+
+####
+# HSV color library
+
+HSV Colors
+--MISSING--
+
+RGB of hue _ saturation _ brightness _ (0-100)
+--MISSING--
+
+####
+# Fractions library
+
+Fractions
+--MISSING--
+
+fract _ / _
+--MISSING--
+
+fract _ + _
+--MISSING--
+
+fract _ - _
+--MISSING--
+
+fract _ × _
+--MISSING--
+
+fract _ = _
+--MISSING--
+
+fract _ < _
+--MISSING--
+
+fract _ > _
+--MISSING--
+
+simplify fraction _
+--MISSING--
+
+integer part of fraction _
+--MISSING--
+
+numerator of fraction _
+--MISSING--
+
+denominator of fraction _
+--MISSING--
+
+gcd _ _
+--MISSING--
+
+lcm _ _
+--MISSING--
+
+####
 # Tone library
 # Generates music tones on buzzers
 
@@ -763,6 +932,84 @@ speel frequentie _ gedurende _ ms
 
 play midi key _ for _ ms
 speel midi toon _ gedurende _ ms
+
+start tone _ Hz
+--MISSING--
+
+stop tone
+--MISSING--
+
+c
+--MISSING--
+
+c#
+--MISSING--
+
+d
+--MISSING--
+
+d#
+--MISSING--
+
+e
+--MISSING--
+
+f
+--MISSING--
+
+f#
+--MISSING--
+
+g
+--MISSING--
+
+g#
+--MISSING--
+
+a
+--MISSING--
+
+a#
+--MISSING--
+
+b
+--MISSING--
+
+####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+--MISSING--
+
+play ringtone _
+--MISSING--
+
+current song name
+--MISSING--
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+--MISSING--
+
+pluck note _ octave _ for _ ms
+--MISSING--
+
+pluck MIDI key _ for _ msecs
+--MISSING--
+
+set pluck pin _
+--MISSING--
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+--MISSING--
 
 ####
 # Turtle geometry library
@@ -846,19 +1093,74 @@ file system info
 bestandssysteem info
 
 ####
+# Strings
+# string (text) processing functions
+
+Strings
+--MISSING--
+
+_ is a digit
+--MISSING--
+
+_ is lowercase
+--MISSING--
+
+_ is uppercase
+--MISSING--
+
+_ begins with _
+--MISSING--
+
+_ ends with _
+--MISSING--
+
+_ contains _
+--MISSING--
+
+lowercase _
+--MISSING--
+
+uppercase _
+--MISSING--
+
+_ without white space
+--MISSING--
+
+join string list _ separator _
+--MISSING--
+
+unicodes _
+--MISSING--
+
+string from unicodes _
+--MISSING--
+
+num2str _
+--MISSING--
+
+str2num _
+--MISSING--
+
+####
 # WiFi library
 
 WiFi
 WiFi
 
-wifi connect to _ password _ try _ times
-wifi verbind met _ wachtwoord _ probeer _ keer
+wifi connect to _ password _
+--MISSING--
+
+IP _ gateway _ subnet _
+--MISSING--
 
 wifi create hotspot _ password _
 wifi maak hotspot _ wachtwoord _
 
 IP address
 IP adres
+
+MAC address
+--MISSING--
 
 ####
 # Motion library
@@ -991,13 +1293,37 @@ get PN532 firmware version
 lees PN532 firmware versie
 
 ####
-# HTTP libraries
+# Touch Screen
+
+Touch Screen
+--MISSING--
+
+TFT touched
+--MISSING--
+
+TFT touch X position
+--MISSING--
+
+TFT touch Y position
+--MISSING--
+
+TFT touch pressure
+--MISSING--
+
+####
+# HTTP Client
 
 HTTP client
 HTTP-client
 
-_ data _ to http܃// _
-_ data _ naar http܃// _
+_ data _ to http܃// _ 
+--MISSING--
+
+port _
+--MISSING--
+
+####
+# HTTP Server
 
 HTTP server
 HTTP-server
@@ -1023,8 +1349,38 @@ verzoek-body _
 path of request _
 verzoek-pad _
 
+headers of request _
+--MISSING--
+
 method of request _
 methode van verzoek _
+
+content length of request _
+--MISSING--
+
+####
+# WebSocket server
+
+WebSocket server
+--MISSING--
+
+start WebSocket server
+--MISSING--
+
+last WebSocket event
+--MISSING--
+
+client ID for WebSocket event _
+--MISSING--
+
+payload for WebSocket event _
+--MISSING--
+
+type of WebSocket event _
+--MISSING--
+
+send _ to WebSocket client _
+--MISSING--
 
 ####
 # Web Things library
@@ -1074,6 +1430,291 @@ gebeurtenis definities JSON
 events JSON
 gebeurtenissen
 
+####
+# MiKe Robot library
+
+MiKe front obstacle (cm)
+--MISSING--
+
+MiKe _ obstacle ?
+--MISSING--
+
+MiKe black line on _ ?
+--MISSING--
+
+MiKe back light
+--MISSING--
+
+MiKe IR
+--MISSING--
+
+MiKe digital D8 sensor
+--MISSING--
+
+MiKe stop motors
+--MISSING--
+
+MiKe Robot go _ at _ %
+--MISSING--
+
+MiKe Robot speed _ %
+--MISSING--
+
+MiKe Robot direction _
+--MISSING--
+
+MiKe turn _ motor _
+--MISSING--
+
+MiKe speed _ motor at _ %
+--MISSING--
+
+MiKe front lights off
+--MISSING--
+
+MiKe front lights to _
+--MISSING--
+
+MiKe circle lights off
+--MISSING--
+
+MiKe circle ligths to _
+--MISSING--
+
+MiKe circle light _ (1-18) to _
+--MISSING--
+
+MiKe rotate lights by _
+--MISSING--
+
+MiKe digital D8 to _
+--MISSING--
+
+####
+# DrawBot Library
+# A CoreXY plotter library that supports turtle geometry
+
+plotter move X _ Y _
+--MISSING--
+
+plotter move _ steps
+--MISSING--
+
+plotter turn _ degrees
+--MISSING--
+
+plotter turn _ / _ of circle
+--MISSING--
+
+plotter point in direction _
+--MISSING--
+
+plotter pen down
+--MISSING--
+
+plotter pen up
+--MISSING--
+
+plotter stop
+--MISSING--
+
+set plotter speed to _ %
+--MISSING--
+
+####
+# MQTT
+
+MQTT connect to broker _
+--MISSING--
+
+buffer sizes _ client id _
+--MISSING--
+
+username _ password _
+--MISSING--
+
+MQTT connected
+--MISSING--
+
+MQTT disconnect
+--MISSING--
+
+MQTT sub _
+--MISSING--
+
+MQTT unsub _
+--MISSING--
+
+MQTT pub topic _ payload _
+--MISSING--
+
+retain _ QoS _
+--MISSING--
+
+MQTT event
+--MISSING--
+
+binary _
+--MISSING--
+
+topic for MQTT event _
+--MISSING--
+
+payload for MQTT event _
+--MISSING--
+
+####
+# UDP
+
+UDP start port _
+--MISSING--
+
+UDP stop
+--MISSING--
+
+UDP send packet _ to ip _ port _
+--MISSING--
+
+UDP receive packet
+--MISSING--
+
+binary data _
+--MISSING--
+
+UDP remote IP address
+--MISSING--
+
+UDP remote port
+--MISSING--
+
+####
+# Cutebot
+
+Cutebot
+--MISSING--
+
+Cutebot set wheel left _ right _ (-100 to 100)
+--MISSING--
+
+Cutebot stop wheels
+--MISSING--
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Cutebot set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Cutebot set headlight _ to _
+--MISSING--
+
+Cutebot set NeoPixel _ to _
+--MISSING--
+
+Cutebot _ line sensor
+--MISSING--
+
+Cutebot sees line on left _ right _
+--MISSING--
+
+Cutebot distance (cm)
+--MISSING--
+
+left
+--MISSING--
+
+right
+--MISSING--
+
+both
+--MISSING--
+
+# Wukong
+
+Wukong
+--MISSING--
+
+Wukong set motor _ to _ (-100 to 100)
+--MISSING--
+
+Wukong stop motor _
+--MISSING--
+
+Wukong stop all
+--MISSING--
+
+Wukong set servo _ to _ degrees (-90 to 90)
+--MISSING--
+
+Wukong set servo _ to speed _ (-100 to 100)
+--MISSING--
+
+Wukong set NeoPixels _ _ _ _
+--MISSING--
+
+Wukong set LED brightness to _
+--MISSING--
+
+####
+# Sphero-RVR
+
+wake
+--MISSING--
+
+sleep
+--MISSING--
+
+reset the yaw
+--MISSING--
+
+drive with speed _ and heading _
+--MISSING--
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+--MISSING--
+
+stop with heading _
+--MISSING--
+
+set RGB LED _ to red _ green _ blue _
+--MISSING--
+
+set all LEDs to red _ green _ blue _
+--MISSING--
+
+####
+# Joystick:bit
+
+button _ is pressed
+--MISSING--
+
+rocker value of _
+--MISSING--
+
+motor vibrate for _ ms
+--MISSING--
+
+####
+# NeZha
+
+NeZha
+--MISSING--
+
+NeZha set motor _ speed to _ %
+--MISSING--
+
+NeZha stop motor _
+--MISSING--
+
+NeZha stop all motors
+--MISSING--
+
+NeZha set _ servo _ angle to _
+--MISSING--
+
+NeZha set continuous rotation servo _ speed to _ %
+--MISSING--
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -1089,11 +1730,17 @@ Open
 Open from board
 Open vanaf board-
 
+Copy project URL to clipboard
+--MISSING--
+
 Information
 Informatie
 
 Plug in the board.
 Sluit het board aan
+
+Plug in the board and click the USB icon to connect.
+--MISSING--
 
 Reading project from board...
 Project lezen van het bord...
@@ -1101,8 +1748,8 @@ Project lezen van het bord...
 Loading project...
 Project laden
 
-Found a newer version of
-Nieuwere versie gevonden van
+Found a newer version of 
+--MISSING--
 
 Do you want me to update the one in the project?
 Wil je dat ik die ene in het project update?
@@ -1112,6 +1759,12 @@ Bewaar
 
 Connect
 Verbind
+
+connect
+--MISSING--
+
+open Boardie
+--MISSING--
 
 disconnect
 verbreek verbinding
@@ -1153,7 +1806,7 @@ Functie "
 " is te groot om naar board te zenden.
 
 Script is too large to send to board.
-Script is is te groot om naar board te zenden.
+Script is te groot om naar board te zenden.
 
 Use "Connect" button to connect to a MicroBlocks device.
 Gebruik "Verbind" knop om te verbinden met een MicroBlocks device.
@@ -1163,6 +1816,9 @@ Geen boards gevonden; is je board aangesloten?
 
 For AdaFruit boards, double-click reset button and try again.
 Voor AdaFruit boards, dubbelklik op de reset knop en probeer het opnieuw.
+
+Only recent Chrome and Edge browsers support WebSerial.
+--MISSING--
 
 The board is not responding.
 Het board reageert niet.
@@ -1176,6 +1832,9 @@ De MicroBlocks op je board is niet actueel.
 Try to update MicroBlocks on the board?
 Proberen om MicroBlocks op het board te updaten?
 
+MicroBlocks
+--MISSING--
+
 Stop
 Stop
 
@@ -1188,6 +1847,14 @@ MicroBlocks verlaten?
 Discard current project?
 Huidig project weggooien?
 
+# Scripting area right-click context menu
+
+set block size...
+--MISSING--
+
+make blocks bigger or smaller
+--MISSING--
+
 clean up
 opruimen
 
@@ -1197,8 +1864,14 @@ arrangeer scripts
 undrop (ctrl-Z)
 ongedaan (ctrl-Z)
 
+undo the last block drop
+--MISSING--
+
 copy all scripts to clipboard
 kopieer alle scripts naar klembord
+
+copy all scripts to clipboard as URL
+--MISSING--
 
 paste all scripts
 plak alle scripts
@@ -1206,11 +1879,32 @@ plak alle scripts
 paste script
 plak script
 
-save a picture of all scripts
-bewaar een afbeelding van alle scripts
+paste script from clipboard
+--MISSING--
+
+save a picture of all visible scripts
+--MISSING--
+
+set exported script scale
+--MISSING--
+
+small (50%)
+--MISSING--
+
+normal (65%)
+--MISSING--
+
+large (100%)
+--MISSING--
+
+printable (200%)
+--MISSING--
 
 about...
 over...
+
+About MicroBlocks
+--MISSING--
 
 virtual machine version
 virtuele machine versie
@@ -1251,11 +1945,41 @@ PlugShare inschakelen als project leeg is
 disable PlugShare when project empty
 PlugShare uitschakelen als project leeg is
 
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+--MISSING--
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+--MISSING--
+
 erase flash and update firmware on ESP board
 flash wissen en firmware op ESP-bord updaten
 
 Use board type
 Gebruik board type
+
+Firmware Installed
+--MISSING--
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+--MISSING--
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+--MISSING--
+
+You will be asked to save the firmware file.
+--MISSING--
+
+Select
+--MISSING--
+
+as the destination drive, then click Save.
+--MISSING--
+
+Installing firmware...
+--MISSING--
+
+Plug in the board.
+Sluit het board aan
 
 Wiping board...
 Board wissen ...
@@ -1293,8 +2017,41 @@ exporteer functies als bibliotheek
 hide advanced blocks
 verberg geavanceerde blokken
 
+put file on board
+--MISSING--
+
+get file from board
+--MISSING--
+
+uploaded
+--MISSING--
+
+downloaded
+--MISSING--
+
 Data Graph
 Data Grafiek
+
+Graph
+--MISSING--
+
+clear graph
+--MISSING--
+
+zero at bottom
+--MISSING--
+
+zero in middle
+--MISSING--
+
+export data to CSV file
+--MISSING--
+
+import data from CSV file
+--MISSING--
+
+copy graph data to clipboard
+--MISSING--
 
 show instructions
 toon instructies
@@ -1311,6 +2068,24 @@ bind in
 rename...
 hernoem...
 
+find variable accessors
+--MISSING--
+
+find scripts or block definitions where this variable is being read
+--MISSING--
+
+find variable modifiers
+--MISSING--
+
+find scripts or block definitions where this variable is being set or changed
+--MISSING--
+
+find uses of this block
+--MISSING--
+
+find scripts or block definitions using this block
+--MISSING--
+
 show block definition...
 toon blok definitie...
 
@@ -1325,6 +2100,9 @@ verwijder de definitie van dit blok
 
 duplicate
 dupliceer
+
+help
+--MISSING--
 
 duplicate this block
 dupliceer dit blok
@@ -1341,6 +2119,12 @@ alleen dit ene blok
 copy to clipboard
 kopieer naar klembord
 
+copy to clipboard as URL
+--MISSING--
+
+copy these blocks to the clipboard as a URL
+--MISSING--
+
 copy these blocks to the clipboard
 kopieer deze blokken naar het klembord
 
@@ -1356,14 +2140,23 @@ extract blok
 pull out this block
 trek dit blok er uit
 
+show help for this block in a browser
+--MISSING--
+
 save picture of script
 bewaar afbeelding van script
+
+save picture of script with result
+--MISSING--
 
 save a picture of this block definition as a PNG file
 bewaar een afbeelding van deze blok definitie als een PNG bestand
 
 save a picture of these blocks as a PNG file
 bewaar een afbeelding van deze blokken als een PNG bestand
+
+save a picture of these blocks and their result as a PNG file
+--MISSING--
 
 copy script
 kopieer script
@@ -1382,6 +2175,27 @@ tekst of nummer
 
 number only
 alleen nummer
+
+stop editing
+--MISSING--
+
+cut
+--MISSING--
+
+copy
+--MISSING--
+
+paste
+--MISSING--
+
+accept
+--MISSING--
+
+revert
+--MISSING--
+
+select all
+--MISSING--
 
 define
 definieer
@@ -1434,10 +2248,54 @@ Oké
 Confirm
 Bevestig
 
-# File picker and library dialogs
+# Library folders
 
 Libraries
 Bibliotheken
+
+AI
+--MISSING--
+
+Graphics and Displays
+--MISSING--
+
+Kits and Boards
+--MISSING--
+
+Network
+--MISSING--
+
+Other
+Ander
+
+Robots
+--MISSING--
+
+Sensing
+--MISSING--
+
+Sound
+Geluid
+
+System
+--MISSING--
+
+# File picker and library dialogs
+
+New library name?
+--MISSING--
+
+show all block definitions
+--MISSING--
+
+hide all block definitions
+--MISSING--
+
+export this library
+--MISSING--
+
+delete library
+--MISSING--
 
 Examples
 Voorbeelden
@@ -1502,6 +2360,408 @@ ingebouwde bibliotheek
 Dependency path, name or URL?
 afhankelijkheids -pad, -naam, of -URL
 
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+--MISSING--
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+--MISSING--
+
+If the library is hosted online, please input its full URL.
+--MISSING--
+
 Tag name?
 Tag naam?
+
+user library
+--MISSING--
+
+Add Library
+--MISSING--
+
+seconds remaining
+--MISSING--
+
+Decrease block size
+--MISSING--
+
+Restore block size to 100%
+--MISSING--
+
+Increase block size
+--MISSING--
+
+############
+# Tips Bar #
+############
+
+Button
+--MISSING--
+
+Boolean Input
+--MISSING--
+
+[l] toggle value, or drop a reporter into it.
+--MISSING--
+
+Color Input
+--MISSING--
+
+[l] change the color, or drop a reporter into it.
+--MISSING--
+
+Input
+Input
+
+[l] edit its value, or drop a reporter into it.
+--MISSING--
+
+Block Extension
+--MISSING--
+
+[l] right arrow to show optional inputs, left arrow to hide.
+--MISSING--
+
+Command Block
+--MISSING--
+
+[l] to run, or drag to build scripts. [r] menu.
+--MISSING--
+
+Hat Block
+--MISSING--
+
+[l] to run, or drag to build scripts. [r] menu.
+--MISSING--
+
+Reporter Block
+--MISSING--
+
+[l] to see value, or drop into an input slot. [r] menu.
+--MISSING--
+
+Script
+--MISSING--
+
+[l] to run. [r] menu.
+--MISSING--
+
+Pane Divider
+--MISSING--
+
+Drag to change pane width.
+--MISSING--
+
+Library
+--MISSING--
+
+[l] to show the blocks in this library. [r] menu.
+--MISSING--
+
+Block Category
+--MISSING--
+
+[l] to show the blocks in this category.
+--MISSING--
+
+Palette
+--MISSING--
+
+Drag blocks from here to build scripts. Drop scripts here to delete them.
+--MISSING--
+
+Scripts Pane
+--MISSING--
+
+Drag blocks here to build scripts. [r] menu.
+--MISSING--
+
+#################################
+# Block Descriptions for TipBar #
+#################################
+
+Turn the user LED on or off.
+--MISSING--
+
+Display a bubble showing the value.
+--MISSING--
+
+Graph the value.
+--MISSING--
+
+Report the state of button A ( (-o) or (o-) ).
+--MISSING--
+
+Report the state of button B ( (-o) or (o-) ).
+--MISSING--
+
+Report the milliseconds since the timer was last reset.
+--MISSING--
+
+Reset the timer.
+--MISSING--
+
+Report the milliseconds since power up.
+--MISSING--
+
+Report the microseconds since power up.
+--MISSING--
+
+Report the board type.
+--MISSING--
+
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
+--MISSING--
+
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
+--MISSING--
+
+Turn a pin on or off ( (-o) or (o-) ).
+--MISSING--
+
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
+--MISSING--
+
+Report number of analog pins on this device.
+--MISSING--
+
+Report number of digital pins on this device.
+--MISSING--
+
+Report the value of a register (0-255) of an I2C device (0-127).
+--MISSING--
+
+Set an I2C device and register to given value (0-255).
+--MISSING--
+
+Receive multiple bytes from an I2C device.
+--MISSING--
+
+Send multiple bytes to an I2C device.
+--MISSING--
+
+Send a byte (0-255) to an SPI device.
+--MISSING--
+
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
+--MISSING--
+
+Set the SPI clock speed and mode.
+--MISSING--
+
+Send a byte array via SPI, replacing its contents with the bytes received.
+--MISSING--
+
+Open the serial port at the given baud rate.
+--MISSING--
+
+Close the serial port.
+--MISSING--
+
+Report data received from the serial port (a byte array).
+--MISSING--
+
+Send a byte array to the serial port.
+--MISSING--
+
+Run when the board powers up or when the IDE start button is clicked.
+--MISSING--
+
+Run when buttons A, B, or A+B are pressed.
+--MISSING--
+
+Repeat the enclosed blocks indefinitely.
+--MISSING--
+
+Repeat the enclosed blocks the given number of times.
+--MISSING--
+
+Wait the given number of milliseconds.
+--MISSING--
+
+Run the first set of blocks whose test condition is (-o) .
+--MISSING--
+
+Run when the condition becomes (-o) .
+--MISSING--
+
+Wait until the condition becomes (-o) .
+--MISSING--
+
+Return (report) the given value from a function or script.
+--MISSING--
+
+Run when the given message is broadcast.
+--MISSING--
+
+Broadcast the given message.
+--MISSING--
+
+Do nothing. Used to add notes and documentation.
+--MISSING--
+
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
+--MISSING--
+
+Repeat the enclosed blocks until the condition becomes (-o) .
+--MISSING--
+
+Stop this task.
+--MISSING--
+
+Stop all tasks except this one.
+--MISSING--
+
+Wait the given number of microseconds.
+--MISSING--
+
+Report the last broadcast message received.
+--MISSING--
+
+Call the function with the given name and optional parameter list.
+--MISSING--
+
+Call the function with the given name and optional parameter list and report its return value.
+--MISSING--
+
+Report the sum of the given numbers.
+--MISSING--
+
+Report the first number minus the second.
+--MISSING--
+
+Report the product of the given numbers.
+--MISSING--
+
+Report the first number divided by the second.
+--MISSING--
+
+Report the remainder of dividing the first number by the second.
+--MISSING--
+
+Report the absolute value of the given number (always >= 0).
+--MISSING--
+
+Report the minimum of the values.
+--MISSING--
+
+Report the maximum of the values.
+--MISSING--
+
+Report a randomly chosen number in the given range.
+--MISSING--
+
+Report (-o) if the first value is less than the second one.
+--MISSING--
+
+Report (-o) if the first value is less than or equal to the second one.
+--MISSING--
+
+Report (-o) if the two values are equal.
+--MISSING--
+
+Report (-o) if the two values are not equal.
+--MISSING--
+
+Report (-o) if the first value is greater than or equal to the second one.
+--MISSING--
+
+Report (-o) if the first value is greater than the second one.
+--MISSING--
+
+Boolean constant ( (-o) or (o-) ).
+--MISSING--
+
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
+--MISSING--
+
+Report (-o) if both values are (-o)
+--MISSING--
+
+Report (-o) if either value is (-o)
+--MISSING--
+
+Report (-o) if first input is a value of the given data type.
+--MISSING--
+
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
+--MISSING--
+
+Report bitwise AND of two numbers.
+--MISSING--
+
+Report bitwise OR of two numbers.
+--MISSING--
+
+Report bitwise XOR (exclusive OR) of two numbers.
+--MISSING--
+
+Report bitwise inverse of the given number.
+--MISSING--
+
+Report the given number shifted left by the given number of bits.
+--MISSING--
+
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+--MISSING--
+
+Set a variable to the given value.
+--MISSING--
+
+Change a variable by the given amount.
+--MISSING--
+
+Create a variable local to the containing script with the given initial value.
+--MISSING--
+
+Report the Nth item of a list, string, or byte array.
+--MISSING--
+
+Report the number of items in a list, string, or byte array.
+--MISSING--
+
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
+--MISSING--
+
+Create and report a short list containing the given items. Length limited by available stack space.
+--MISSING--
+
+Add an item to the end of a list.
+--MISSING--
+
+Replace the Nth item (or all items) of a list or byte array with the given value.
+--MISSING--
+
+Delete the Nth item (or all items) of a list.
+--MISSING--
+
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
+--MISSING--
+
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
+--MISSING--
+
+Split the given string with the given delimiter and report the result (a list of strings).
+--MISSING--
+
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
+--MISSING--
+
+Report the Unicode value ("code point") of the Nth character of the given string.
+--MISSING--
+
+Report a string containing the given Unicode value ("code point") or list of values.
+--MISSING--
+
+Report a new list of the given length filled with zero or the optional value.
+--MISSING--
+
+Report a new byte array of the given length filled with zero or the optional value.
+--MISSING--
+
+Report a byte array containing the UTF-8 bytes of the given string.
+--MISSING--
+
+Report the number of words of memory available. Stop button frees up memory.
+--MISSING--
+
 
