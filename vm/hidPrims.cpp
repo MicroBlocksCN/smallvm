@@ -119,7 +119,18 @@ OBJ primHoldKey(int argCount, OBJ *args) {
 	return falseObj;
 }
 
-OBJ primReleaseKeys(int argCount, OBJ *args) {
+OBJ primReleaseKey(int argCount, OBJ *args) {
+	initKeyboard();
+	OBJ key = args[0];
+	// accept both characters and ASCII values
+	if (IS_TYPE(key, StringType)) {
+		Keyboard.release(obj2str(key)[0]);
+	} else if (isInt(key)) {
+		Keyboard.release(obj2int(key));
+	}
+	return falseObj;
+}
+OBJ primReleaseAllKeys(int argCount, OBJ *args) {
 	Keyboard.releaseAll();
 	return falseObj;
 }
@@ -133,7 +144,8 @@ OBJ primMouseRelease(int argCount, OBJ *args) { return falseObj; }
 OBJ primMouseScroll(int argCount, OBJ *args) { return falseObj; }
 OBJ primPressKey(int argCount, OBJ *args) { return falseObj; }
 OBJ primHoldKey(int argCount, OBJ *args) { return falseObj; }
-OBJ primReleaseKeys(int argCount, OBJ *args) { return falseObj; }
+OBJ primReleaseKey(int argCount, OBJ *args) { return falseObj; }
+OBJ primReleaseAllKeys(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
@@ -146,7 +158,8 @@ static PrimEntry entries[] = {
 	{"mouseScroll", primMouseScroll},
 	{"pressKey", primPressKey},
 	{"holdKey", primHoldKey},
-	{"releaseKeys", primReleaseKeys},
+	{"releaseKey", primReleaseKey},
+	{"releaseKeys", primReleaseAllKeys},
 };
 
 void addHIDPrims() {
