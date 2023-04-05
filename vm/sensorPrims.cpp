@@ -31,6 +31,9 @@ static void startWire() {
 	#elif defined(WUKONG2040)
 		Wire.setSDA(16);
 		Wire.setSCL(17);
+	#elif defined(ARDUINO_Mbits)
+		// Note: SDA and SCL are reversed from most other ESP32 boards!
+		Wire.setPins(22, 21); // SDA, SCL
 	#endif
 	#if defined(ARDUINO_ARCH_SAMD)
 		// Some Adafruit SAMD21 boards lack external pullups.
@@ -82,6 +85,13 @@ void writeI2CReg(int deviceID, int reg, int value) {
 	Wire.write(reg);
 	Wire.write(value);
 	Wire.endTransmission();
+}
+
+// other helper functions
+
+static inline int fix16bitSign(int n) {
+	if (n >= 32768) n -= 65536; // negative 16-bit value
+	return n;
 }
 
 // i2c prims
@@ -779,7 +789,7 @@ static int readTemperature() {
 		temp = (int) ((float) rawTemp / 326.8) + 8;
 	} else {
 		if ((0 == rawTemp) && (0 == readAccelReg(MPU6886_WHO_AM_I))) return 0; // no accelerometer
-		temp = (rawTemp / 40) + 9; // approximate constants for mpu9250, empirically determined
+		temp = (rawTemp / 40) + 9; // approximate constants, empirically determined
 	}
 	return temp;
 }
@@ -881,63 +891,77 @@ static int readTemperature() {
 
 #elif defined(ARDUINO_Mbits)
 
-#define TMP75_ADDR 0x48
-#define TMP75_DEFAULT_CONFIG 0x60
-#define TMP75_TEMP_REG 0
-#define TMP75_CONF_REG 1
-#define TMP75_TLOW_REG 2
-#define TMP75_THIGH_REG 3
-#define T_LOW 24.8
-#define T_HIGH 25.0125
+#define MPU6050 0x69
+#define MPU6050_ACCEL_XOUT_H 59
+#define MPU6050_PWR_MGMT_1 107
 
-char tempInit = 0;
+static uint8 mpuData[6];
 
-static void initTempSensor() {
-	Wire.begin(22, 21);
+static void mpu6050readData() {
+	if (!accelStarted) {
+		if (!wireStarted) startWire();
+		if (!wireStarted) return;
 
-	Wire.beginTransmission(TMP75_ADDR);
-	Wire.write(TMP75_CONF_REG);
-	Wire.write(TMP75_DEFAULT_CONFIG);
+		writeI2CReg(MPU6050, MPU6050_PWR_MGMT_1, 1); // use x-gyro clock
+		delay(1); // xxx 10 works
+		accelStarted = true;
+	}
+
+	// Request accelerometer data
+	Wire.beginTransmission(MPU6050);
+	Wire.write(MPU6050_ACCEL_XOUT_H);
 	Wire.endTransmission();
 
-    int msb = T_HIGH;
-    int lsb = (T_HIGH - msb) * 256;
-    Wire.beginTransmission(TMP75_ADDR);
-    Wire.write(TMP75_THIGH_REG);
-    Wire.write(msb);
-    Wire.write(lsb & 0xF0);
-    Wire.endTransmission();
+	// Read data
+	int count = sizeof(mpuData);
+	Wire.requestFrom(MPU6050, count);
 
-    msb = T_LOW;
-    lsb = (T_LOW - msb) * 256;
-    Wire.beginTransmission(TMP75_ADDR);
-    Wire.write(TMP75_TLOW_REG);
-    Wire.write(msb);
-    Wire.write(lsb & 0xF0);
-    Wire.endTransmission();
-
-	tempInit = 1;
+	for (int i = 0; i < count; i++) {
+		if (!Wire.available()) break; /* no more data */;
+		mpuData[i] = Wire.read();
+	}
 }
+
+static int readAcceleration(int registerID) {
+	mpu6050readData();
+
+	int val = 0;
+	if (1 == registerID) val = fix16bitSign((mpuData[2] << 8) | mpuData[3]); // x-axis
+	if (3 == registerID) val = -fix16bitSign((mpuData[0] << 8) | mpuData[1]); // y-axis
+	if (5 == registerID) val = -fix16bitSign((mpuData[4] << 8) | mpuData[5]); // z-axis
+
+	return (100 * val) >> 14;
+}
+
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+	// See MPU-9250 Register Map and Descriptions, ACCEL_CONFIG, pg. 14.
+
+	if ((range < 0) || (range > 3)) return; // out of range
+	writeI2CReg(MPU6050, 0x1C, (range << 3));
+}
+
+#define TMP75_ADDR 0x48
+#define TMP75_TEMP_REG 0
 
 static int readTemperature() {
 	uint8_t msb, lsb;
 
-	if (!tempInit) { initTempSensor(); }
+	if (!wireStarted) startWire();
+	if (!wireStarted) return 0;
 
+	// read temperature (two bytes)
 	Wire.beginTransmission(TMP75_ADDR);
 	Wire.write(TMP75_TEMP_REG);
 	Wire.endTransmission();
-
 	Wire.requestFrom(TMP75_ADDR, 2);
 	while (Wire.available()) {
 		msb = Wire.read();
 		lsb = Wire.read();
 	}
-	return (int) (msb + lsb / 256);
+	int fudgeFactor = 3;
+	return (fix16bitSign((msb << 8) | lsb) >> 8) - fudgeFactor; // temperture C
 }
-
-static int readAcceleration(int reg) { return 0; }
-static void setAccelRange(int range) { }
 
 #elif defined(DATABOT)
 
@@ -949,11 +973,6 @@ static void setAccelRange(int range) { }
 #define MPU9250_PWR_MGMT_1 107
 
 static uint8 mpu9250Data[6];
-
-static inline int fix16bitSign(int n) {
-	if (n >= 32768) n -= 65536; // negative 16-bit value
-	return n;
-}
 
 static void mpu9250readData(int reg) {
 	if (!accelStarted) {
