@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 29 2022
+# Last updated: April 4 2023
 
 #########################
 # Blocks and categories #
@@ -27,10 +27,10 @@ button B
 knop B
 
 timer
---MISSING--
+timer
 
 reset timer
---MISSING--
+timer resetten
 
 microseconds
 microseconden
@@ -51,7 +51,7 @@ read analog pin _
 lees analoge pin _
 
 pullup _
---MISSING--
+pullup _
 
 set digital pin _ to _
 maak digitale pin _  _
@@ -135,10 +135,10 @@ last message
 laatste bericht
 
 call _
---MISSING--
+roep _ aan
 
 with _
---MISSING--
+met _
 
 Operators
 Functies
@@ -150,10 +150,10 @@ abs _
 absolute waarde van _
 
 min _ _
---MISSING--
+min _ _
 
 max _ _
---MISSING--
+max _ _
 
 random _ to _
 willekeurig getal tussen _ en _
@@ -189,7 +189,7 @@ list
 lijst
 
 byte array
---MISSING--
+byte array
 
 Advanced:
 Gevorderd
@@ -277,31 +277,31 @@ new byte array _
 nieuwe byte array _
 
 as byte array _
---MISSING--
+als byte array _
 
 with all _
---MISSING--
+met alles als _
 
 free memory
 vrij geheugen
 
 all
---MISSING--
+alles
 
 last
---MISSING--
+laatste
 
 random
---MISSING--
+willekeurig
 
 split _ by _
---MISSING--
+splits _ door _
 
 My Blocks
 Mijn blokken
 
 Generic
---MISSING--
+Algemeen
 
 # Buttons on top of "My Blocks" category
 
@@ -338,31 +338,31 @@ spi receive
 spi ontvang
 
 spi setup speed _
---MISSING--
+spi setup snelheid _
 
 mode _
---MISSING--
+mode _
 
 rpi channel _
---MISSING--
+rpi kanaal _
 
 spi exchange bytes _
 --MISSING--
 
 serial open _ baud
---MISSING--
+serieel open _ baud
 
 serial close
---MISSING--
+serieel sluiten
 
 serial read
---MISSING--
+serieel lezen
 
 serial write _
---MISSING--
+serieel schrijven _
 
 serial write _ starting at _
---MISSING--
+serieel schrijven _ startend bij _
 
 print _
 schrijf _
@@ -431,7 +431,7 @@ radio last message type
 radio laatste type boodschap
 
 radio set group _ (0-255)
---MISSING--
+radio stel groep in _ (0-255)
 
 radio set channel (0-83) _
 radio instellen kanaal (0-83) _
@@ -477,7 +477,7 @@ temperature (°C)
 temperatuur (°C)
 
 magnetic field
---MISSING--
+magnetisch veld
 
 set acceleration range _ g = 100
 --MISSING--
@@ -519,31 +519,31 @@ PIR
 PIR
 
 PIR at pin _ detected movement
-PIR op pin _ detecteerde beweging 
+PIR op pin _ detecteerde beweging
 
 ####
 # Microphone library
 
 Microphone
---MISSING--
+Microfoon
 
 microphone
---MISSING--
+microfoon
 
 turn on microphone
---MISSING--
+microfoon aanzetten
 
 loudness
---MISSING--
+geluidssterkte
 
 clap count
---MISSING--
+klap tellen
 
 set clap threshold _
---MISSING--
+zet klap drempelwaarde _
 
 estimate clap threshold
---MISSING--
+klap drempelwaarde schatten
 
 ####
 # Citilab ED1 board libraries
@@ -803,7 +803,7 @@ clear display
 wis scherm
 
 set display color _
---MISSING--
+zet scherm kleur als _
 
 plot x _ y _
 teken x _ y _
@@ -858,13 +858,13 @@ schaal _ wrap _
 # Can display BMP image files on a TFT display
 
 display BMP file _
---MISSING--
+Laat BPM bestand _ zien
 
 ####
 # HSV color library
 
 HSV Colors
---MISSING--
+HSV kleuren
 
 RGB of hue _ saturation _ brightness _ (0-100)
 --MISSING--
@@ -934,56 +934,56 @@ play midi key _ for _ ms
 speel midi toon _ gedurende _ ms
 
 start tone _ Hz
---MISSING--
+start toon _ Hz
 
 stop tone
---MISSING--
+stop toon
 
 c
---MISSING--
+c
 
 c#
---MISSING--
+c#
 
 d
---MISSING--
+d
 
 d#
---MISSING--
+d#
 
 e
---MISSING--
+e
 
 f
---MISSING--
+f
 
 f#
---MISSING--
+f#
 
 g
---MISSING--
+g
 
 g#
---MISSING--
+g#
 
 a
---MISSING--
+a
 
 a#
---MISSING--
+a#
 
 b
---MISSING--
+b
 
 ####
 # Ringtone library
 # Can play Nokring-formatted music. Also known as RTTTL.
 
 Ringtone
---MISSING--
+Ringtone
 
 play ringtone _
---MISSING--
+ringtone _ afspelen
 
 current song name
 --MISSING--
@@ -1009,7 +1009,7 @@ set pluck pin _
 # Play WAV sound files
 
 play WAV file _
---MISSING--
+WAV bestand _ afspelen
 
 ####
 # Turtle geometry library
@@ -1097,49 +1097,49 @@ bestandssysteem info
 # string (text) processing functions
 
 Strings
---MISSING--
+Strings
 
 _ is a digit
---MISSING--
+_ is een cijfer
 
 _ is lowercase
---MISSING--
+_ is een kleine letter
 
 _ is uppercase
---MISSING--
+_ is een grote letter
 
 _ begins with _
---MISSING--
+_ begint met _
 
 _ ends with _
---MISSING--
+_ eindigt met _
 
 _ contains _
---MISSING--
+_ bevat _
 
 lowercase _
---MISSING--
+maak _ in kleine letters
 
 uppercase _
---MISSING--
+maak _ in grote letters
 
 _ without white space
---MISSING--
+_ zonder extra spaties
 
 join string list _ separator _
---MISSING--
+voeg string lijst _ samen met scheidingsteken _
 
 unicodes _
---MISSING--
+unicodes _
 
 string from unicodes _
---MISSING--
+string van unicodes _
 
 num2str _
---MISSING--
+num2str
 
 str2num _
---MISSING--
+str2num _
 
 ####
 # WiFi library
@@ -1148,10 +1148,10 @@ WiFi
 WiFi
 
 wifi connect to _ password _
---MISSING--
+verbind wifi met _ wachtwoord _
 
 IP _ gateway _ subnet _
---MISSING--
+IP _ gateway _ subnet _
 
 wifi create hotspot _ password _
 wifi maak hotspot _ wachtwoord _
@@ -1160,7 +1160,7 @@ IP address
 IP adres
 
 MAC address
---MISSING--
+MAC adres
 
 ####
 # Motion library
@@ -1296,19 +1296,19 @@ lees PN532 firmware versie
 # Touch Screen
 
 Touch Screen
---MISSING--
+Touchscreen
 
 TFT touched
---MISSING--
+TFT aangeraakt
 
 TFT touch X position
---MISSING--
+TFT aanraak X positie
 
 TFT touch Y position
---MISSING--
+TFT aanraak Y positie
 
 TFT touch pressure
---MISSING--
+TFT aanraak druk
 
 ####
 # HTTP Client
@@ -1316,11 +1316,11 @@ TFT touch pressure
 HTTP client
 HTTP-client
 
-_ data _ to http܃// _ 
---MISSING--
+_ data _ to http܃// _
+_ data _ naar http܃// _
 
 port _
---MISSING--
+poort _
 
 ####
 # HTTP Server
@@ -1362,10 +1362,10 @@ content length of request _
 # WebSocket server
 
 WebSocket server
---MISSING--
+WebSocket server
 
 start WebSocket server
---MISSING--
+Start WebSocket server
 
 last WebSocket event
 --MISSING--
@@ -1591,78 +1591,78 @@ UDP remote port
 # Cutebot
 
 Cutebot
---MISSING--
+Cutebot
 
 Cutebot set wheel left _ right _ (-100 to 100)
---MISSING--
+Cutebot zet wiel links _ rechts _ (-100 tot 100)
 
 Cutebot stop wheels
---MISSING--
+Cutebot stop wielen
 
 Cutebot set servo _ to _ degrees (-90 to 90)
---MISSING--
+Cutebot zet servo _ naar _ graden (-90 tot 90)
 
 Cutebot set servo _ to speed _ (-100 to 100)
---MISSING--
+Cutebot zet servo _ naar snelheid _ (-100 tot 100)
 
 Cutebot set headlight _ to _
---MISSING--
+Cutebot zet koplamp _ naar _
 
 Cutebot set NeoPixel _ to _
---MISSING--
+Cutebot zet NeoPixel _ naar _
 
 Cutebot _ line sensor
---MISSING--
+Cutebot _ lijnsensor
 
 Cutebot sees line on left _ right _
---MISSING--
+Cutebot zie lijn op links _ rechts _
 
 Cutebot distance (cm)
---MISSING--
+Cutbot afstand (cm)
 
 left
---MISSING--
+links
 
 right
---MISSING--
+rechts
 
 both
---MISSING--
+beide
 
 # Wukong
 
 Wukong
---MISSING--
+Wukong
 
 Wukong set motor _ to _ (-100 to 100)
---MISSING--
+Wukong zet motor _ naar _ (-100 tot 100)
 
 Wukong stop motor _
---MISSING--
+Wukong stop motor _
 
 Wukong stop all
---MISSING--
+Wukong stop alles
 
 Wukong set servo _ to _ degrees (-90 to 90)
---MISSING--
+Wukong zet servo _ naar _ graden (-90 tot 90)
 
 Wukong set servo _ to speed _ (-100 to 100)
---MISSING--
+Wukong zet servo _ naar snelheid _ (-100 tot 100)
 
 Wukong set NeoPixels _ _ _ _
---MISSING--
+Wukong zet NeoPixels _ _ _ _
 
 Wukong set LED brightness to _
---MISSING--
+Wukong zet LED helderheid naar _
 
 ####
 # Sphero-RVR
 
 wake
---MISSING--
+wakker worden
 
 sleep
---MISSING--
+slapen
 
 reset the yaw
 --MISSING--
@@ -1686,7 +1686,7 @@ set all LEDs to red _ green _ blue _
 # Joystick:bit
 
 button _ is pressed
---MISSING--
+knop _ is ingedrukt
 
 rocker value of _
 --MISSING--
@@ -1698,22 +1698,22 @@ motor vibrate for _ ms
 # NeZha
 
 NeZha
---MISSING--
+NeZha
 
 NeZha set motor _ speed to _ %
---MISSING--
+NeZha zet motor _ snelheid naar _ %
 
 NeZha stop motor _
---MISSING--
+NeZha stop motor _
 
 NeZha stop all motors
---MISSING--
+NeZha stop alle motors
 
 NeZha set _ servo _ angle to _
---MISSING--
+NeZha zet _ servo _ hoek naar _
 
 NeZha set continuous rotation servo _ speed to _ %
---MISSING--
+NeZha zet continue rotatie servo _ snelheid naar _ %
 
 ##################
 # MicroBlocks UI #
@@ -1731,7 +1731,7 @@ Open from board
 Open vanaf board-
 
 Copy project URL to clipboard
---MISSING--
+Kopieer project URL naar klembord
 
 Information
 Informatie
@@ -1740,7 +1740,7 @@ Plug in the board.
 Sluit het board aan
 
 Plug in the board and click the USB icon to connect.
---MISSING--
+Sluit het board aan klik op het USB icoon om te verbinden.
 
 Reading project from board...
 Project lezen van het bord...
@@ -1748,8 +1748,8 @@ Project lezen van het bord...
 Loading project...
 Project laden
 
-Found a newer version of 
---MISSING--
+Found a newer version of
+Een nieuwere versie gevonden van
 
 Do you want me to update the one in the project?
 Wil je dat ik die ene in het project update?
@@ -1761,10 +1761,10 @@ Connect
 Verbind
 
 connect
---MISSING--
+verbind
 
 open Boardie
---MISSING--
+open Boardie
 
 disconnect
 verbreek verbinding
@@ -1818,7 +1818,7 @@ For AdaFruit boards, double-click reset button and try again.
 Voor AdaFruit boards, dubbelklik op de reset knop en probeer het opnieuw.
 
 Only recent Chrome and Edge browsers support WebSerial.
---MISSING--
+Alleen recente Chrome en Edge browsers ondersteunen WebSerial.
 
 The board is not responding.
 Het board reageert niet.
@@ -1833,7 +1833,7 @@ Try to update MicroBlocks on the board?
 Proberen om MicroBlocks op het board te updaten?
 
 MicroBlocks
---MISSING--
+MicroBlocks
 
 Stop
 Stop
@@ -1850,10 +1850,10 @@ Huidig project weggooien?
 # Scripting area right-click context menu
 
 set block size...
---MISSING--
+stel blokgrootte in...
 
 make blocks bigger or smaller
---MISSING--
+maak blokken groter of kleiner
 
 clean up
 opruimen
@@ -1865,13 +1865,13 @@ undrop (ctrl-Z)
 ongedaan (ctrl-Z)
 
 undo the last block drop
---MISSING--
+maak het laatste plaatsen van blokken ongedaan
 
 copy all scripts to clipboard
 kopieer alle scripts naar klembord
 
 copy all scripts to clipboard as URL
---MISSING--
+kopieer alle scripts naar het klembord als URL
 
 paste all scripts
 plak alle scripts
@@ -1880,31 +1880,31 @@ paste script
 plak script
 
 paste script from clipboard
---MISSING--
+plak script vanuit het klembord
 
 save a picture of all visible scripts
---MISSING--
+bewaar een afbeelding van alle zichtbare scripts
 
 set exported script scale
---MISSING--
+zet geexporteerd script grootte
 
 small (50%)
---MISSING--
+klein (50%)
 
 normal (65%)
---MISSING--
+normaal (65%)
 
 large (100%)
---MISSING--
+groot (100%)
 
 printable (200%)
---MISSING--
+afdrukbaar (200%)
 
 about...
 over...
 
 About MicroBlocks
---MISSING--
+Over MicroBlocks
 
 virtual machine version
 virtuele machine versie
@@ -1946,10 +1946,10 @@ disable PlugShare when project empty
 PlugShare uitschakelen als project leeg is
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
---MISSING--
+wanneer je een board verbind, zet dan niet automatisch de inhoud in de IDE, zelfs als het huidige project leeg is
 
 when plugging a board, automatically read its contents into the IDE if the current project is empty
---MISSING--
+wanneer je een board verbind, zet dan automatisch de inhoud in de IDE als het huidige project leeg is
 
 erase flash and update firmware on ESP board
 flash wissen en firmware op ESP-bord updaten
@@ -1958,25 +1958,25 @@ Use board type
 Gebruik board type
 
 Firmware Installed
---MISSING--
+Firmware geïnstalleerd
 
 Reconnect to the board by clicking the "Connect" button (USB icon).
---MISSING--
+Opnieuw verbinden met het board door op de "Verbind" knop the klikken. (USB icoon).
 
 Connect USB cable while holding down the white BOOTSEL button before proceeding.
---MISSING--
+Verbind de USB kabel terwijl je de witte BOOTSEL knop ingedrukt houd voordat je verder gaat.
 
 You will be asked to save the firmware file.
---MISSING--
+Je zult worden gevraagd om het firmware bestand op te slaan.
 
 Select
---MISSING--
+Selecteer
 
 as the destination drive, then click Save.
---MISSING--
+als de bestemmings schijf, klik daarna op Bewaar.
 
 Installing firmware...
---MISSING--
+Installeer firmware...
 
 Plug in the board.
 Sluit het board aan
@@ -2018,40 +2018,40 @@ hide advanced blocks
 verberg geavanceerde blokken
 
 put file on board
---MISSING--
+zet het bestand op het board
 
 get file from board
---MISSING--
+haal het bestand van het board
 
 uploaded
---MISSING--
+geüpload
 
 downloaded
---MISSING--
+gedownload
 
 Data Graph
 Data Grafiek
 
 Graph
---MISSING--
+Grafiek
 
 clear graph
---MISSING--
+wis grafiek
 
 zero at bottom
---MISSING--
+nul aan de onderkant
 
 zero in middle
---MISSING--
+nul in het midden
 
 export data to CSV file
---MISSING--
+exporteer de data naar een CSV bestand
 
 import data from CSV file
---MISSING--
+importeer data van een CSV bestand
 
 copy graph data to clipboard
---MISSING--
+kopieer de grafiek data naar het klembord
 
 show instructions
 toon instructies
@@ -2102,7 +2102,7 @@ duplicate
 dupliceer
 
 help
---MISSING--
+help
 
 duplicate this block
 dupliceer dit blok
@@ -2120,10 +2120,10 @@ copy to clipboard
 kopieer naar klembord
 
 copy to clipboard as URL
---MISSING--
+kopieer naar klembord als URL
 
 copy these blocks to the clipboard as a URL
---MISSING--
+kopieer deze blokken naar het klembord als een URL
 
 copy these blocks to the clipboard
 kopieer deze blokken naar het klembord
@@ -2141,13 +2141,13 @@ pull out this block
 trek dit blok er uit
 
 show help for this block in a browser
---MISSING--
+laat hulp zien voor dit blok in een browser
 
 save picture of script
-bewaar afbeelding van script
+bewaar een afbeelding van het script
 
 save picture of script with result
---MISSING--
+bewaar een afbeelding van het script met een resultaat
 
 save a picture of this block definition as a PNG file
 bewaar een afbeelding van deze blok definitie als een PNG bestand
@@ -2156,7 +2156,7 @@ save a picture of these blocks as a PNG file
 bewaar een afbeelding van deze blokken als een PNG bestand
 
 save a picture of these blocks and their result as a PNG file
---MISSING--
+bewaar een afbeelding van deze blokken en hun resultaat als een PNG bestand
 
 copy script
 kopieer script
@@ -2177,25 +2177,25 @@ number only
 alleen nummer
 
 stop editing
---MISSING--
+stop bewerken
 
 cut
---MISSING--
+knip
 
 copy
---MISSING--
+kopie
 
 paste
---MISSING--
+plakken
 
 accept
---MISSING--
+accepteren
 
 revert
---MISSING--
+terugdraaien
 
 select all
---MISSING--
+alles selecteren
 
 define
 definieer
@@ -2254,48 +2254,48 @@ Libraries
 Bibliotheken
 
 AI
---MISSING--
+AI
 
 Graphics and Displays
---MISSING--
+Graphics en schermen
 
 Kits and Boards
---MISSING--
+Kits en Boards
 
 Network
---MISSING--
+Netwerk
 
 Other
 Ander
 
 Robots
---MISSING--
+Robots
 
 Sensing
---MISSING--
+Sensoren
 
 Sound
 Geluid
 
 System
---MISSING--
+Systeem
 
 # File picker and library dialogs
 
 New library name?
---MISSING--
+Naam nieuwe bibliotheek?
 
 show all block definitions
---MISSING--
+Laat alle blok definities zien
 
 hide all block definitions
---MISSING--
+verberg alle blok definities
 
 export this library
---MISSING--
+exporteer deze bibliotheek
 
 delete library
---MISSING--
+verwijder bibliotheek
 
 Examples
 Voorbeelden
@@ -2361,153 +2361,153 @@ Dependency path, name or URL?
 afhankelijkheids -pad, -naam, of -URL
 
 If you are adding a library that's built into MicroBlocks, you can just enter its name.
---MISSING--
+Als je een bibliotheek toe wil voegen die ingebouwd is in MicroBlocks dan hoef je enkel de naam in te voeren.
 
 If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
---MISSING--
+Als je bibliotheek zich in de Bibliotheek map van je lokale MicroBlocks project map bevind, dan moet je het laten vooraf gaan door een slash (/).
 
 If the library is hosted online, please input its full URL.
---MISSING--
+Als de bibliothee online staat geef dan de hele URL op.
 
 Tag name?
 Tag naam?
 
 user library
---MISSING--
+gebruikers bibliotheek
 
 Add Library
---MISSING--
+Bibliotheek toevoegen
 
 seconds remaining
---MISSING--
+resterende seconden
 
 Decrease block size
---MISSING--
+Maak de blokgrootte kleiner
 
 Restore block size to 100%
---MISSING--
+Herstel de blokgrootte naar 100%
 
 Increase block size
---MISSING--
+Maak de blokgrootte groter
 
 ############
 # Tips Bar #
 ############
 
 Button
---MISSING--
+Knop
 
 Boolean Input
---MISSING--
+Booleaanse input
 
 [l] toggle value, or drop a reporter into it.
---MISSING--
+[l] wissel de waarde of zet er een reporter blok in.
 
 Color Input
---MISSING--
+Kleur input
 
 [l] change the color, or drop a reporter into it.
---MISSING--
+[l] verander de kleur of zet er een reporter blok in.
 
 Input
 Input
 
 [l] edit its value, or drop a reporter into it.
---MISSING--
+[l] bewerk de waarde of zet er een reporter blok in.
 
 Block Extension
---MISSING--
+Blok uitbreiden
 
 [l] right arrow to show optional inputs, left arrow to hide.
---MISSING--
+[l] rechter pijl om extra inputs te laten zien, linker pijl of ze te verbergen.
 
 Command Block
---MISSING--
+Commando blok
 
 [l] to run, or drag to build scripts. [r] menu.
---MISSING--
+[l] om uit te voeren of sleep om scripts te bouwen. [r] menu.
 
 Hat Block
---MISSING--
+Hat blok
 
 [l] to run, or drag to build scripts. [r] menu.
---MISSING--
+[l] om uit te voeren of sleep om scripts te bouwen. [r] menu.
 
 Reporter Block
---MISSING--
+Reporter blok
 
 [l] to see value, or drop into an input slot. [r] menu.
---MISSING--
+[l[ om de waarde te zien of neerzetten in een input opening. [r] menu.
 
 Script
---MISSING--
+Scipt
 
 [l] to run. [r] menu.
---MISSING--
+[l] om uit te voeren. [r] menu.
 
 Pane Divider
---MISSING--
+Paneel verdeler
 
 Drag to change pane width.
---MISSING--
+Sleep om paneel breedte te veranderen.
 
 Library
---MISSING--
+Bibliotheek
 
 [l] to show the blocks in this library. [r] menu.
---MISSING--
+[l] om de blokken in deze bibliotheek te laten zien. [r] menu.
 
 Block Category
---MISSING--
+Blok categorie
 
 [l] to show the blocks in this category.
---MISSING--
+[l] om de blokken in deze categorie te laten zien.
 
 Palette
---MISSING--
+Palet
 
 Drag blocks from here to build scripts. Drop scripts here to delete them.
---MISSING--
+Sleep blokken vanuit hier om scripts te maken. Zet scripts hier neer om ze te verwijderen.
 
 Scripts Pane
---MISSING--
+Script paneel
 
 Drag blocks here to build scripts. [r] menu.
---MISSING--
+Sleep blokken naar hier om scripts te maken. [r] menu.
 
 #################################
 # Block Descriptions for TipBar #
 #################################
 
 Turn the user LED on or off.
---MISSING--
+Zet de gebruikers LED aan of uit.
 
 Display a bubble showing the value.
---MISSING--
+Laat een textballon met de waarde zien.
 
 Graph the value.
---MISSING--
+Maak een grafiek van de waarde.
 
 Report the state of button A ( (-o) or (o-) ).
---MISSING--
+Laat de status van knop A zien ( (-o) or (o-) ).
 
 Report the state of button B ( (-o) or (o-) ).
---MISSING--
+Laat de status van knop B zien ( (-o) or (o-) ).
 
 Report the milliseconds since the timer was last reset.
---MISSING--
+Laat de milliseconden zien vanaf de laatste keer dat de timer was gereset.
 
 Reset the timer.
---MISSING--
+Reset de timer.
 
 Report the milliseconds since power up.
---MISSING--
+Laat het aantal milliseconden zien sinds het opstarten.
 
 Report the microseconds since power up.
---MISSING--
+Laat het aantal microseconden zien sinds het opstarten.
 
 Report the board type.
---MISSING--
+Laat het board type zien.
 
 Report the electrical logic level on a digital pin ( (-o) or (o-) ).
 --MISSING--
@@ -2516,16 +2516,16 @@ Report a number proportional to the voltage on an analog pin (0 = ground, 1023 =
 --MISSING--
 
 Turn a pin on or off ( (-o) or (o-) ).
---MISSING--
+Zet een pin aan of uit ( (-o) or (o-) ).
 
 Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
 --MISSING--
 
 Report number of analog pins on this device.
---MISSING--
+Laat het aantal analoge pinnen zien op dit apparaat.
 
 Report number of digital pins on this device.
---MISSING--
+Laat het aantal digitale pinnen zien op dit apparaat.
 
 Report the value of a register (0-255) of an I2C device (0-127).
 --MISSING--
@@ -2534,13 +2534,13 @@ Set an I2C device and register to given value (0-255).
 --MISSING--
 
 Receive multiple bytes from an I2C device.
---MISSING--
+Ontvang meerdere bytes van een I2C apparaa
 
 Send multiple bytes to an I2C device.
---MISSING--
+Stuur meerdere bytes naar een I2C apparaat.
 
 Send a byte (0-255) to an SPI device.
---MISSING--
+Stuur een byte (0-255) naar een SPI apparaat.
 
 Read a byte from an SPI device while sending a zero byte. Report the byte received.
 --MISSING--
@@ -2763,5 +2763,3 @@ Report a byte array containing the UTF-8 bytes of the given string.
 
 Report the number of words of memory available. Stop button frees up memory.
 --MISSING--
-
-
