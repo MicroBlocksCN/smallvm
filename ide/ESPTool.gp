@@ -54,6 +54,7 @@ method baudForBoard ESPTool boardName {
 	} ('M5StickC+' == boardName) { return 230400
 	} ('M5Atom-Matrix' == boardName) { return 115200
 	} ('Databot' == boardName) { return 230400
+	} ('Mbits' == boardName) { return 230400
 	}
 	return 115200
 }
@@ -410,6 +411,7 @@ method vmNameForBoard ESPTool boardName {
 	} ('M5StickC+' == boardName) { return 'vm_m5stick+.bin'
 	} ('M5Atom-Matrix' == boardName) { return 'vm_m5atom.bin'
 	} ('Databot' == boardName) { return 'vm_databot.bin'
+	} ('Mbits' == boardName) { return 'vm_mbits.bin'
 	}
 	return nil
 }
