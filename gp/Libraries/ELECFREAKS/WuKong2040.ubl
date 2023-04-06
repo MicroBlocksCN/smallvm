@@ -1,9 +1,9 @@
 module WuKong2040 Output
-author Elecfreaks
+author ELECFREAKS
 version 1 0 
 tags pico picow wukong2040 wukong2040 pico picow 
 choices wk2040_motorMenu M1 M2 M3 M4 
-description 'Elecfreaks WuKong2040 multi-function expansion board.
+description 'ELECFREAKS WuKong2040 multi-function expansion board.
 
 Features:
   Raspberry Pi Pico/PicoW

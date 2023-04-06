@@ -2402,8 +2402,8 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		}
 		if (not eraseFlashFlag) {
 			addLine menu
-			addItem menu 'Elecfreaks Pico:ed' (action 'rp2040ResetMessage' this)
-			addItem menu 'Elecfreaks Wukong2040' (action 'rp2040ResetMessage' this)
+			addItem menu 'ELECFREAKS Pico:ed' (action 'rp2040ResetMessage' this)
+			addItem menu 'ELECFREAKS Wukong2040' (action 'rp2040ResetMessage' this)
 			addItem menu 'RP2040 (Pico or Pico-W)' (action 'rp2040ResetMessage' this)
 			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
 		}
@@ -2480,15 +2480,15 @@ method getBoardDriveName SmallRuntime path {
 method picoVMFileName SmallRuntime {
 	tmp = (array nil)
 	menu = (menu 'Pico board type?' (action 'atPut' tmp 1) true)
-	addItem menu 'Elecfreaks Pico:ed'
-	addItem menu 'Elecfreaks Wukong2040'
+	addItem menu 'ELECFREAKS Pico:ed'
+	addItem menu 'ELECFREAKS Wukong2040'
 	addItem menu 'RP2040 (Pico)'
 	addItem menu 'Pico W (WiFi)'
 	waitForSelection menu
 	result = (first tmp)
-	if ('Elecfreaks Pico:ed' == result) {
+	if ('ELECFREAKS Pico:ed' == result) {
 		return 'vm_pico_ed.uf2'
-	} ('Elecfreaks Wukong2040' == result) {
+	} ('ELECFREAKS Wukong2040' == result) {
 		return 'vm_wukong2040.uf2'
 	} ('Pico W (WiFi)' == result) {
 		return 'vm_pico_w.uf2'
@@ -2565,8 +2565,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'Citilab ED1'
 			addItem menu 'Databot'
 			addLine menu
-			addItem menu 'Elecfreaks Pico:ed'
-			addItem menu 'Elecfreaks Wukong2040'
+			addItem menu 'ELECFREAKS Pico:ed'
+			addItem menu 'ELECFREAKS Wukong2040'
 			addItem menu 'RP2040 (Pico)'
 			addItem menu 'Pico W (WiFi)'
 			addLine menu
@@ -2634,10 +2634,10 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	} ('Pico W (WiFi)' == boardName) {
 		vmFileName = 'vm_pico_w.uf2'
 		driveName = 'RPI-RP2'
-	} ('Elecfreaks Pico:ed' == boardName) {
+	} ('ELECFREAKS Pico:ed' == boardName) {
 		vmFileName = 'vm_pico_ed.uf2'
 		driveName = 'RPI-RP2'
-	} ('Elecfreaks Wukong2040' == boardName) {
+	} ('ELECFREAKS Wukong2040' == boardName) {
 		vmFileName = 'vm_wukong2040.uf2'
 		driveName = 'RPI-RP2'
 	} else {
