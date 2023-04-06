@@ -1,24 +1,24 @@
 module Octopus
-author Elecfreaks
+author ELECFREAKS
 version 1 0 
 depends 'OLED Graphics' 'Temperature Humidity (DHT11, DHT22)' 
-description 'Elecfreaks Octopus Component Library
+description 'ELECFREAKS Octopus Component Library
 
 Octopus components help you build projects quickly and enjoy the fun of creation.
 '
 
-  spec ' ' 'Octopus set led' 'Octopus set led pin _ _' 'num bool' 0 true
-  spec ' ' 'Octopus set led brightness' 'Octopus set led pin _ brightness (0~100) _' 'num num' 0 100
-  spec ' ' 'Octopus set fan' 'Octopus set fan pin _ speed (0~100) _' 'num num' 0 50
-  spec ' ' 'Octopus set servo angle' 'Octopus set servo pin _ angle (0~180) _' 'num num' 0 90
+  spec ' ' 'Octopus set led' 'Octopus LED pin _ _' 'num bool' 0 true
+  spec ' ' 'Octopus set led brightness' 'Octopus LED pin _ brightness _ (0~100)%' 'num num' 0 100
+  spec ' ' 'Octopus set fan' 'Octopus Motor fan pin _ speed to _ (0~100)%' 'num num' 0 50
+  spec ' ' 'Octopus set servo angle' 'Octopus servo pin _ angle to _ (0~180)' 'num num' 0 90
   space
-  spec 'r' 'Octopus get distance' 'Octopus get distance (cm) trig _ echo _' 'num num' 17 16
-  spec 'r' 'Octopus get light' 'Octopus get light level (0~100) pin _' 'num' 26
-  spec 'r' 'Octopus get temperature' 'Octopus get DHT11 temperature (°C) pin _' 'num' 26
-  spec 'r' 'Octopus get humidity' 'Octopus get DHT11 humidity (0~100) pin _' 'num' 26
-  spec 'r' 'Octopus get water level' 'Octopus get water level (0~400) pin _' 'num' 26
-  spec 'r' 'Octopus get trimpot' 'Octopus get trimpot (0~1023) pin _' 'num' 26
-  spec 'r' 'Octopus get loudness' 'Octopus get loudness (0~1023) pin _' 'num' 26
+  spec 'r' 'Octopus get distance' 'Octopus Ultrasonic distance (cm) trig _ echo _' 'num num' 17 16
+  spec 'r' 'Octopus get light' 'Octopus value of light intensity (0~100) at pin _' 'num' 26
+  spec 'r' 'Octopus get temperature' 'Octopus value of DHT11 temperature (°C) pin _' 'num' 26
+  spec 'r' 'Octopus get humidity' 'Octopus value of DHT11 humidity (0~100) pin _' 'num' 26
+  spec 'r' 'Octopus get water level' 'Octopus value of water level (0~400) pin _' 'num' 26
+  spec 'r' 'Octopus get trimpot' 'Octopus value of trimpot (0~1023) at pin _' 'num' 26
+  spec 'r' 'Octopus get loudness' 'Octopus value of noise (dB) at pin _' 'num' 26
   space
   spec ' ' 'Octopus draw string' 'Octopus i2c OLED show _ x _ y _' 'str num num' 'hello!' 0 0
   spec ' ' 'Octopus clear OLED' 'Octopus i2c OLED clear'
