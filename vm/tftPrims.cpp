@@ -26,7 +26,7 @@ int touchEnabled = false;
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
 	defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_IOT_BUS) || defined(SCOUT_MAKES_AZUL) || \
 	defined(TTGO_RP2040) || defined(TTGO_DISPLAY) || defined(ARDUINO_M5STACK_Core2) || \
-	defined(PICO_ED)
+	defined(PICO_ED) || defined(OLED_128_64)
 
 	#define BLACK 0
 
@@ -465,13 +465,35 @@ int touchEnabled = false;
 		#define TFT_HEIGHT 32
 		#define IS_MONOCHROME true
 
-		Adafruit_SSD1306 tft = Adafruit_SSD1306(128, 32);
+		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT);
 
 		#undef UPDATE_DISPLAY
 		#define UPDATE_DISPLAY() (tft.display())
 
 		void tftInit() {
 			tft.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+			tftClear();
+			useTFT = true;
+		}
+
+	#elif defined(OLED_128_64)
+		#undef BLACK // defined in SSD1306 header
+		#include "Adafruit_GFX.h"
+		#include "Adafruit_SSD1306.h"
+
+		#define TFT_ADDR 0x3C
+		#define TFT_WIDTH 128
+		#define TFT_HEIGHT 64
+		#define IS_MONOCHROME true
+
+		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT);
+
+		#undef UPDATE_DISPLAY
+		#define UPDATE_DISPLAY() (tft.display())
+
+		void tftInit() {
+			readI2CReg(TFT_ADDR, 0); // make sure Wire is started with correct pins
+			tft.begin(SSD1306_SWITCHCAPVCC, TFT_ADDR);
 			tftClear();
 			useTFT = true;
 		}
@@ -673,7 +695,7 @@ int touchEnabled = false;
 		tft.showMicroBitPixels(microBitDisplayBits, xPos, yPos);
 	}
 
-	#endif
+	#endif // end of board-specific sections
 
 static int color24to16b(int color24b) {
 	// Convert 24-bit RGB888 format to the TFT's target pixel format.
