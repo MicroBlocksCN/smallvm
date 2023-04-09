@@ -21,8 +21,8 @@ linux+pi/ubuntu*
 linux+pi/run
 precompiled/vm.*
 precompiled/vm_*
-precompiledBuilder/node_modules
-precompiledBuilder/package-lock.json
+precompiled/node_modules
+precompiled/package-lock.json
 data/*
 BUILD
 *.swp
