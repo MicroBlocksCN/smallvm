@@ -93,13 +93,7 @@ void hardwareInit() {
 		touchSetCycles(0x800, 0x800);
 		writeI2CReg(0x20, 0, 0); // initialize IO expander
 	#endif
-	#if defined(ARDUINO_CITILAB_ED1) || \
-		defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
-		defined(ARDUINO_ESP8266_WEMOS_D1MINI) || defined(ARDUINO_NRF52840_CLUE) || \
-		defined(TTGO_RP2040) || defined(ARDUINO_M5STACK_Core2) || defined(PICO_ED) || \
-		defined(ARDUINO_IOT_BUS) || defined(TTGO_DISPLAY)
-			tftInit();
-	#endif
+	tftInit();
 	#if defined(DATABOT)
 		int yellow = 14864128;
 		setAllNeoPixels(-1, 3, yellow);
