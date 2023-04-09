@@ -466,10 +466,10 @@ void restartSerial() {
 		#define PIN_BUTTON_A KEY_BUILTIN
 	#endif
 	static const char reservedPin[TOTAL_PINS] = {
-		1, 1, 0, 1, 1, 0, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 0, 0, 1, 1,
-		1, 1, 1, 1, 1, 0, 0, 1, 1, 1,
-		1, 1, 1, 1, 1, 0, 0, 0, 1, 1};
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
 #elif defined(ARDUINO_M5Stick_Plus)
 	#define BOARD_TYPE "M5StickC+"
@@ -544,10 +544,10 @@ void restartSerial() {
 	static const int analogPin[] = {};
 	#define DEFAULT_TONE_PIN 2
 	static const char reservedPin[TOTAL_PINS] = {
-		0, 1, 0, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 0, 0, 1, 1, 1, 0, 0,
-		1, 1, 1, 0, 1, 0, 0, 0, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 1, 0, 1};
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 
 #elif defined(ARDUINO_ESP32_PICO)
 	#define BOARD_TYPE "ESP32-Pico-D4"
