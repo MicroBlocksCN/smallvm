@@ -762,14 +762,6 @@ static OBJ primMQTTSetWill(int argCount, OBJ *args) {
 	return trueObj;
 }
 
-/*
-static OBJ primMQTTClearWill(int argCount, OBJ *args) {
-	if (NO_WIFI()) return fail(noWiFi);
-	pmqtt_client->clearWill();
-	return trueObj;
-}
-*/
-
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
 
@@ -918,7 +910,6 @@ static OBJ primMQTTUnsub(int argCount, OBJ *args) {
 #else
 
 static OBJ primMQTTSetWill(int argCount, OBJ *args) { return fail(noWiFi); }
-// static OBJ primMQTTClearWill(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTDisconnect(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -1163,8 +1154,6 @@ static PrimEntry entries[] = {
 	{"MQTTLastEvent", primMQTTLastEvent},
 	{"MQTTPub", primMQTTPub},
 	{"MQTTSetWill", primMQTTSetWill},
-	// {"MQTTClearWill", primMQTTClearWill},
-	
 	{"MQTTSub", primMQTTSub},
 	{"MQTTUnsub", primMQTTUnsub},
 
