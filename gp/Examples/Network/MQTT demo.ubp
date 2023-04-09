@@ -4,30 +4,32 @@ version 1 0
 description ''
 variables event 
 
-script 120 50 {
+script 120 40 {
 whenStarted
 comment '1. connect wifi'
 wifiConnect 'Network_Name' ''
 waitMillis 1000
 comment '2. connect MQTT broker'
 'MQTT connect to' 'public.cloud.shiftr.io' 128 'MicroBlocks_client' 'public' 'public'
+sendBroadcast 'loop'
 }
 
-script 50 279 {
+script 50 269 {
 comment 'subscribe topic'
 'MQTT sub' 'testTopic'
 }
 
-script 367 280 {
+script 367 270 {
 comment 'publish topic payload'
 'MQTT pub' 'testTopic' 'Hello!'
 }
 
-script 110 376 {
+script 110 326 {
+whenBroadcastReceived 'loop'
 comment 'receive mqtt message'
 forever {
   if ('MQTT connected') {
-    event = ('MQTT last event')
+    event = ('[net:MQTTLastEvent]')
     if (isType event 'list') {
       sayIt 'topic' ('MQTT event topic' event) ', payload' ('MQTT event payload' event)
     }
@@ -42,7 +44,7 @@ forever {
 
 module MQTT Comm
 author wwj718
-version 1 5 
+version 1 6 
 depends WiFi 
 tags mqtt network 
 description 'A simple MQTT client.
@@ -57,7 +59,7 @@ description 'A simple MQTT client.
   spec 'r' '[net:MQTTLastEvent]' 'MQTT event : binary _' 'bool' false
   spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
   spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
-  spec 'r' 'MQTT last event' 'obsolete MQTT event : binary _' 'bool' false
+  spec ' ' '_MQTT set will' 'MQTT set will topic _ payload _ : retain _ QoS _ : buffer sizes _' 'str auto bool num num' 'testWill' 'Last will!' false 0 128
 
 to 'MQTT connect to' broker buffer_sizes client_id username password {
   if ((getIPAddress) != '0.0.0.0') {
@@ -127,6 +129,23 @@ to 'MQTT sub' topic qos {
 
 to 'MQTT unsub' topic {
   if ((callCustomReporter '[net:MQTTUnsub]' ('[data:makeList]' topic)) != (booleanConstant true)) {sayIt 'unsub failure!'}
+}
+
+to '_MQTT set will' topic payload retain qos buffer_sizes {
+  if ('MQTT connected') {
+    sayIt 'set will has to be called before calling connect'
+    return ''
+  }
+  if ((pushArgCount) < 4) {
+    okay = (callCustomReporter '[net:MQTTSetWill]' ('[data:makeList]' topic payload))
+  } ((pushArgCount) == 4) {
+    okay = (callCustomReporter '[net:MQTTSetWill]' ('[data:makeList]' topic payload retain qos))
+  } else {
+    okay = (callCustomReporter '[net:MQTTSetWill]' ('[data:makeList]' topic payload retain qos buffer_sizes))
+  }
+  if (not okay) {
+    sayIt 'set will failure!'
+  }
 }
 
 
