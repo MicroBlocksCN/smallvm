@@ -668,7 +668,7 @@ void restartSerial() {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
 
-#elif defined(PICO_ED)
+#elif defined(PICO_ED) // must come before ARDUINO_ARCH_RP2040
 
 	#define BOARD_TYPE "Pico:ed"
 	#define DIGITAL_PINS 21
@@ -689,7 +689,7 @@ void restartSerial() {
 
 	void setPicoEdSpeakerPin(int pin) { digitalPin[17] = pin; }
 
-#elif defined(WUKONG2040) // must come before ARDUINO_RASPBERRY_PI_PICO_W
+#elif defined(WUKONG2040) // must come before ARDUINO_ARCH_RP2040
 
 	#define BOARD_TYPE "Wukong2040"
 	#define DIGITAL_PINS 29
@@ -699,19 +699,6 @@ void restartSerial() {
 	#define PIN_BUTTON_B 19
 	#define DEFAULT_TONE_PIN 9
 	static const int analogPin[] = {26, 27, 28};
-	static const char reservedPin[TOTAL_PINS] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 1, 1, 1, 0, 0, 0};
-
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_W) // must come before ARDUINO_ARCH_RP2040
-
-	#define BOARD_TYPE "Pico W"
-	#define DIGITAL_PINS 29
-	#define ANALOG_PINS 4
-	#define TOTAL_PINS DIGITAL_PINS
-	static const int analogPin[] = {A0, A1, A2, A3};
-	#define DEFAULT_TONE_PIN 20 // speaker pin on Raspico Pico Bricks board
 	static const char reservedPin[TOTAL_PINS] = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

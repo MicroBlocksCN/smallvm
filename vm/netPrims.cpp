@@ -18,13 +18,17 @@
 
 #define NO_WIFI() (false)
 
+#if defined(ARDUINO_ARCH_RP2040) && !defined(PICO_ED) && !defined(TTGO_RP2040)
+	#define PICO_WIFI 1
+#endif
+
 #if defined(ESP8266)
 	#include <ESP8266WiFi.h>
 	#include <WiFiUdp.h>
 #elif defined(ARDUINO_ARCH_ESP32)
 	#include <WiFi.h>
 	#include <WebSocketsServer.h>
-#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#elif defined(PICO_WIFI)
 	#include <WiFi.h>
 	extern bool __isPicoW;
 	#undef NO_WIFI
@@ -39,7 +43,7 @@
 
 #include "interp.h" // must be included *after* ESP8266WiFi.h
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(USE_WIFI101) || defined(PICO_WIFI)
 
 static char connecting = false;
 static char serverStarted = false;
@@ -101,7 +105,7 @@ static OBJ primStartWiFi(int argCount, OBJ *args) {
 	#else
 		int createHotSpot = (argCount > 2) && (trueObj == args[2]);
 
-		#if !defined(ARDUINO_RASPBERRY_PI_PICO_W)
+		#if !defined(PICO_WIFI)
 			WiFi.persistent(false); // don't save network info to Flash
 		#endif
 		WiFi.mode(WIFI_OFF); // Kill the current connection, if any
@@ -188,7 +192,7 @@ static int isConnectedToWiFi() {
 static OBJ primGetIP(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
 
-	#if defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+	#if defined(USE_WIFI101) || defined(PICO_WIFI)
 		IPAddress ip = WiFi.localIP();
 	#else
 		IPAddress ip = (WIFI_AP == WiFi.getMode()) ? WiFi.softAPIP() : WiFi.localIP();
@@ -215,7 +219,7 @@ static OBJ primGetSSID(int argCount, OBJ *args) {
 
 	char ssid[100];
 	ssid[0] = '\0'; // clear string
-	#if defined(USE_WIFI101) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+	#if defined(USE_WIFI101) || defined(PICO_WIFI)
 		strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1), 31);
 	#else
 		strncat(ssid, WiFi.SSID(obj2int(args[0]) - 1).c_str(), 31);
@@ -674,7 +678,7 @@ static OBJ primWebSocketSendToClient(int argCount, OBJ *args) { return fail(noWi
 
 #endif
 
-#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ESP8266) || defined(ARDUINO_ARCH_ESP32) || defined(PICO_WIFI)
 
 // MQTT support for ESP32 and ESP8266
 // Code provided by Wenji Wu with help from Tom Ming
