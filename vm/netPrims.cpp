@@ -711,6 +711,65 @@ static void MQTTmessageReceived(MQTTClient *client, char *topic, char *bytes, in
 	lastMQTTPayload[payloadByteCount] = '\0'; // add string teriminator
 }
 
+static OBJ primMQTTSetWill(int argCount, OBJ *args) {
+	// remix from primMQTTPub
+	if (NO_WIFI()) return fail(noWiFi);
+
+	char *topic = obj2str(args[0]);
+	OBJ payloadObj = args[1];
+	const char *payload;
+	// int payloadByteCount = 0;
+	if (IS_TYPE(payloadObj, StringType)) { // string
+		payload = obj2str(payloadObj);
+		// payloadByteCount = strlen(payload);
+	} else if (IS_TYPE(payloadObj, ByteArrayType)) { // byte array
+		payload = (char *) &FIELD(payloadObj, 0);
+		// payloadByteCount = BYTES(payloadObj);
+	} else if (isBoolean(payloadObj)) {
+		payload = (char *) (trueObj == payloadObj) ? "true" : "false";
+		// payloadByteCount = strlen(payload);
+	} else if (isInt(payloadObj)) {
+		char s[20];
+		sprintf(s, "%d", obj2int(payloadObj));
+		payload = s;
+		// payloadByteCount = strlen(payload);
+	} else {
+		return falseObj; // must be string or byte array
+	}
+
+	int retained = (argCount > 2) && (trueObj == args[2]);
+	int qos = (argCount > 3) ? obj2int(args[3]) : 0;
+
+	// if (!pmqtt_client || !pmqtt_client->connected()) return falseObj;
+	int buffer_size = (argCount > 4) ? obj2int(args[4]) : 128;
+
+	// copy from primMQTTConnect
+	if (buffer_size != mqttBufferSize) {
+		if (lastMQTTTopic) free(lastMQTTTopic);
+		if (lastMQTTPayload) free(lastMQTTPayload);
+		lastMQTTTopic = lastMQTTPayload = NULL;
+
+		delete pmqtt_client;
+		pmqtt_client = new MQTTClient(buffer_size);
+		if (!pmqtt_client) return falseObj;
+
+		lastMQTTTopic = (char *) malloc(buffer_size);
+		lastMQTTPayload = (char *) malloc(buffer_size);
+		mqttBufferSize = buffer_size;
+	}
+
+	pmqtt_client->setWill(topic, payload, retained, qos);
+	return trueObj;
+}
+
+/*
+static OBJ primMQTTClearWill(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+	pmqtt_client->clearWill();
+	return trueObj;
+}
+*/
+
 static OBJ primMQTTConnect(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
 
@@ -858,6 +917,8 @@ static OBJ primMQTTUnsub(int argCount, OBJ *args) {
 
 #else
 
+static OBJ primMQTTSetWill(int argCount, OBJ *args) { return fail(noWiFi); }
+// static OBJ primMQTTClearWill(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTConnect(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTIsConnected(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primMQTTDisconnect(int argCount, OBJ *args) { return fail(noWiFi); }
@@ -1101,6 +1162,9 @@ static PrimEntry entries[] = {
 	{"MQTTDisconnect", primMQTTDisconnect},
 	{"MQTTLastEvent", primMQTTLastEvent},
 	{"MQTTPub", primMQTTPub},
+	{"MQTTSetWill", primMQTTSetWill},
+	// {"MQTTClearWill", primMQTTClearWill},
+	
 	{"MQTTSub", primMQTTSub},
 	{"MQTTUnsub", primMQTTUnsub},
 
