@@ -1943,7 +1943,7 @@ method boardHasFileSystem SmallRuntime {
 	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
 	if (isNil port) { return false }
 	if (isNil boardType) { getVersion this }
-	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266', 'Mbits', 'RP2040', 'Pico W', 'Pico:ed', 'Wukong2040', 'TTGO RP2040' 'Boardie' 'Databot' 'Mbits')
+	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266' 'Mbits' 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040' 'TTGO RP2040' 'Boardie' 'Databot' 'Mbits')
 }
 
 method deleteFileOnBoard SmallRuntime fileName {
@@ -2384,7 +2384,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
 		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0') {
 			adaFruitResetMessage this
-		} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed', 'Wukong2040') {
+		} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 			rp2040ResetMessage this
 		}
 	} else {
