@@ -2482,19 +2482,17 @@ method picoVMFileName SmallRuntime {
 	menu = (menu 'Pico board type?' (action 'atPut' tmp 1) true)
 	addItem menu 'ELECFREAKS Pico:ed'
 	addItem menu 'ELECFREAKS Wukong2040'
-	addItem menu 'RP2040 (Pico)'
-	addItem menu 'Pico W (WiFi)'
+	addItem menu 'RP2040 (Pico or Pico W)'
 	waitForSelection menu
 	result = (first tmp)
 	if ('ELECFREAKS Pico:ed' == result) {
 		return 'vm_pico_ed.uf2'
 	} ('ELECFREAKS Wukong2040' == result) {
 		return 'vm_wukong2040.uf2'
-	} ('Pico W (WiFi)' == result) {
+	} ('RP2040 (Pico or Pico W)' == result) {
 		return 'vm_pico_w.uf2'
-	} else {
-		return 'vm_pico.uf2'
 	}
+	return 'none'
 }
 
 method copyVMToBoard SmallRuntime driveName boardPath {
@@ -2546,6 +2544,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Clue'
+	} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
+		rp2040ResetMessage this
 	} (and
 		(isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'ESP32' 'ESP8266' 'Databot' 'Mbits')
 		(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
@@ -2568,8 +2568,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addLine menu
 			addItem menu 'ELECFREAKS Pico:ed'
 			addItem menu 'ELECFREAKS Wukong2040'
-			addItem menu 'RP2040 (Pico)'
-			addItem menu 'Pico W (WiFi)'
+			addItem menu 'RP2040 (Pico or Pico W)'
 			addLine menu
 			addItem menu 'Circuit Playground Express'
 			addItem menu 'Circuit Playground Bluefruit'
@@ -2630,10 +2629,7 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	} ('Metro M0' == boardName) {
 		vmFileName = 'vm_metroM0.uf2'
 		driveName = 'METROBOOT'
-	} ('RP2040 (Pico)' == boardName) {
-		vmFileName = 'vm_pico.uf2'
-		driveName = 'RPI-RP2'
-	} ('Pico W (WiFi)' == boardName) {
+	} ('RP2040 (Pico or Pico W)' == boardName) {
 		vmFileName = 'vm_pico_w.uf2'
 		driveName = 'RPI-RP2'
 	} ('ELECFREAKS Pico:ed' == boardName) {
