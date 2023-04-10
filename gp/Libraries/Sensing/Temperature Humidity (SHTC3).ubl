@@ -1,16 +1,16 @@
 module 'Temperature Humidity (SHTC3)' Input
 author MicroBlocks
-version 1 1 
-description 'Support for the SHTC3 temperature (°C) and relative humidity (%) sensor.'
+version 1 2 
+description 'Support for the SHTC3 temperature and relative humidity sensor.'
 
-  spec 'r' 'sh30_temperature' 'SHTC3 temperature (°C)'
-  spec 'r' 'sh30_humidity' 'SHTC3 humidity (%)'
+  spec 'r' 'shtc3_temperature' 'SHTC3 temperature (°C)'
+  spec 'r' 'shtc3_humidity' 'SHTC3 relative humidity (%)'
   space
-  spec ' ' '_sh30_send_cmd' '_sh30_send_cmd _' 'num' 0
-  spec 'r' '_sh30_read' '_sh30_read'
-  spec 'r' '_sh30_crcOkay' '_sh30_crcOkay _ _ _' 'num num num' 0 0 0
+  spec ' ' '_shtc3_send_cmd' '_shtc3_send_cmd _' 'num' 0
+  spec 'r' '_shtc3_read' '_shtc3_read'
+  spec 'r' '_shtc3_crcOkay' '_shtc3_crcOkay _ _ _' 'num num num' 0 0 0
 
-to '_sh30_crcOkay' b1 b2 b3 {
+to '_shtc3_crcOkay' b1 b2 b3 {
   local 'crc' 255
   for i 2 {
     if (1 == i) {
@@ -29,40 +29,50 @@ to '_sh30_crcOkay' b1 b2 b3 {
   return (0 == (crc ^ b3))
 }
 
-to '_sh30_read' {
+to '_shtc3_read' {
   local 'SHTC addr' (hexToInt '70')
   comment 'Wakeup'
-  '_sh30_send_cmd' (hexToInt '3517')
+  '_shtc3_send_cmd' (hexToInt '3517')
   comment 'Read data, temperature first (with clock stretching)'
-  '_sh30_send_cmd' (hexToInt '7CA2')
+  '_shtc3_send_cmd' (hexToInt '7CA2')
   local 'sixBytes' (newList 6)
   '[sensors:i2cRead]' (v 'SHTC addr') sixBytes
   comment 'Do not send sleep command; that results in i2c error on next call'
   return sixBytes
 }
 
-to '_sh30_send_cmd' cmd {
+to '_shtc3_send_cmd' cmd {
   local 'SHTC addr' (hexToInt '70')
   '[sensors:i2cWrite]' (v 'SHTC addr') ('[data:makeList]' ((cmd >> 8) & 255) (cmd & 255))
 }
 
-to sh30_humidity {
-  local 'data' ('_sh30_read')
+to shtc3_humidity {
+  local 'data' ('_shtc3_read')
   local 'high' (at 4 data)
   local 'low' (at 5 data)
-  if (not ('_sh30_crcOkay' high low (at 6 data))) {
+  if (not ('_shtc3_crcOkay' high low (at 6 data))) {
     return 0
   }
-  return ((100 * ((high << 8) | low)) >> 16)
+  local 'humidity' ((100 * ((high << 8) | low)) >> 16)
+  if ('Databot' == (boardType)) {
+    comment 'Adjust for extra heat from PC board'
+    humidity += 10
+  }
+  return humidity
 }
 
-to sh30_temperature {
-  local 'data' ('_sh30_read')
+to shtc3_temperature {
+  local 'data' ('_shtc3_read')
   local 'high' (at 1 data)
   local 'low' (at 2 data)
-  if (not ('_sh30_crcOkay' high low (at 3 data))) {
+  if (not ('_shtc3_crcOkay' high low (at 3 data))) {
     return 0
   }
-  return (((175 * ((high << 8) | low)) >> 16) - 45)
+  local 'temperature' (((175 * ((high << 8) | low)) >> 16) - 45)
+  if ('Databot' == (boardType)) {
+    temperature += -13
+    comment 'Adjust for extra heat from PC board'
+  }
+  return temperature
 }
 
