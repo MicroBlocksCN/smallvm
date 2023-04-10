@@ -130,8 +130,8 @@ method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveF
   okayButton = (textButton this 0 0 okayLabel 'okay' true) // default
   cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
-  setMinExtent morph (520 * scale) (400 * scale)
-  setExtent morph (520 * scale) (400 * scale)
+  setMinExtent morph (520 * scale) (420 * scale)
+  setExtent morph (520 * scale) (420 * scale)
 
   if forSaving {
 	defaultPath = (directoryPart defaultPath)
