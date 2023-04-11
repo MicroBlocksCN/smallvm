@@ -1,0 +1,50 @@
+module minodeRGB 'My Blocks'
+author '邵悦'
+version 1 0 
+description 'RBG LED light in mi:node kits'
+
+  spec ' ' 'minodeRGB r' 'minodeRGB r _ g _ b _ clkpin _ datapin _' 'num num num auto auto' 255 0 0 3 4
+  spec ' ' 'minodeRGB' 'minodeRGB _ clkpin _ datapin _' 'color auto auto' nil 3 4
+
+to minodeRGB color clkpin datapin {
+  'minodeRGB r' (color >> 16) ((color % (1 << 16)) >> 8) (color % (1 << 8)) clkpin datapin
+}
+
+to 'minodeRGB r' r g b pin1 pin2 {
+  local '_clkpin' pin1
+  local '_datapin' pin2
+  local '_rr' (r >> 1)
+  local '_gg' (g >> 1)
+  local '_bb' (b >> 1)
+  local 'rgb' (hexToInt '808080')
+  rgb = (rgb | (_gg << 15))
+  rgb = (rgb | (_rr << 7))
+  rgb = (rgb | _bb)
+  repeat 32 {
+    digitalWriteOp _datapin false
+    digitalWriteOp _clkpin true
+    digitalWriteOp _clkpin false
+  }
+  repeat 24 {
+    if ((rgb & (hexToInt '800000')) != 0) {
+      digitalWriteOp _datapin true
+    } else {
+      digitalWriteOp _datapin false
+    }
+    digitalWriteOp _clkpin true
+    digitalWriteOp _clkpin false
+    rgb = (rgb << 1)
+  }
+  rgb = (hexToInt '808080')
+  repeat 24 {
+    if ((rgb & (hexToInt '800000')) != 0) {
+      digitalWriteOp _datapin true
+    } else {
+      digitalWriteOp _datapin false
+    }
+    digitalWriteOp _clkpin true
+    digitalWriteOp _clkpin false
+    rgb = (rgb << 1)
+  }
+}
+

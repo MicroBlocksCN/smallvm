@@ -1,0 +1,100 @@
+module TM1650
+author yinxi
+version 1 0 
+description ''
+variables _COMMAND_I2C_ADDRESS _DISPLAY_I2C_ADDRESS _SEG _intensity _dbuf _TM1650_init 
+
+  spec ' ' '_TM1650_init' '_TM1650_init'
+  spec ' ' '_cmd' '_cmd _' 'num' 0
+  spec ' ' '_dat' '_dat _ _' 'num num' 0 0
+  spec ' ' '_show digit' '_show digit _ _' 'num num' 0 0
+  spec ' ' 'clear' 'clear'
+  spec ' ' 'set intensity' 'set intensity _' 'auto' 3
+  spec ' ' 'show digit number' 'show digit number _ at _' 'auto auto' 0 0
+  spec ' ' 'show dot point' 'show dot point _ show _' 'num bool' 0 true
+  spec ' ' 'show number' 'show number _' 'num' 0
+  spec ' ' 'turn off display' 'turn off display'
+  spec ' ' 'turn on display' 'turn on display'
+
+to '_TM1650_init' {
+  if (_TM1650_init == 0) {
+    _COMMAND_I2C_ADDRESS = (hexToInt '24')
+    _DISPLAY_I2C_ADDRESS = (hexToInt '34')
+    _SEG = ('[data:makeList]' (hexToInt '3F') (hexToInt '06') (hexToInt '5B') (hexToInt '4F') (hexToInt '66') (hexToInt '6D') (hexToInt '7D') (hexToInt '07') (hexToInt '7F') (hexToInt '6F') (hexToInt '77') (hexToInt '7C') (hexToInt '39') (hexToInt '5E') (hexToInt '79') (hexToInt '71'))
+    _intensity = 3
+    _dbuf = ('[data:makeList]' 0 0 0 0)
+    _TM1650_init = 1
+  }
+}
+
+to '_cmd' num {
+  '[sensors:i2cWrite]' _COMMAND_I2C_ADDRESS ('[data:makeList]' num)
+}
+
+to '_dat' bit d {
+  '[sensors:i2cWrite]' (_DISPLAY_I2C_ADDRESS + ((bit % 4) + 0)) ('[data:makeList]' d)
+}
+
+to '_show digit' num bit {
+  atPut ((bit % 4) + 1) _dbuf (at ((num % 16) + 1) _SEG)
+  '_dat' bit (at ((num % 16) + 1) _SEG)
+}
+
+to clear {
+  '_TM1650_init'
+  '_dat' 0 0
+  '_dat' 1 0
+  '_dat' 2 0
+  '_dat' 3 0
+  _dbuf = ('[data:makeList]' 0 0 0 0)
+}
+
+to 'set intensity' dat {
+  '_TM1650_init'
+  if (or (dat < 0) (dat > 8)) {
+    sayIt '亮度范围：0~8'
+  } else {
+    if (dat == 0) {
+      'turn off display'
+    } else {
+      _intensity = dat
+      '_cmd' ((dat << 4) | (hexToInt '01'))
+    }
+  }
+}
+
+to 'show digit number' num bit {
+  '_show digit' num bit
+}
+
+to 'show dot point' bit boolean {
+  if boolean {
+    '_dat' bit ((at ((bit % 4) + 1) _dbuf) | (hexToInt '80'))
+  } else {
+    '_dat' bit ((at ((bit % 4) + 1) _dbuf) & (hexToInt '7F'))
+  }
+}
+
+to 'show number' num {
+  if (num < 0) {
+    '_dat' 0 (hexToInt '40')
+    num = (-1 * num)
+  } else {
+    '_show digit' ((num / 1000) % 10) 0
+  }
+  '_show digit' (num % 10) 3
+  '_show digit' ((num / 10) % 10) 2
+  '_show digit' ((num / 100) % 10) 1
+}
+
+to 'turn off display' {
+  '_TM1650_init'
+  _intensity = 0
+  '_cmd' 0
+}
+
+to 'turn on display' {
+  '_TM1650_init'
+  '_cmd' ((_intensity * 16) + 1)
+}
+
