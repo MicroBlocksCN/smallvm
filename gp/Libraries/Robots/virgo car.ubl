@@ -1,0 +1,35 @@
+module 'virgo car'
+author '作者 邵悦'
+version 1 0 
+depends 'Robots/Maqueen' NeoPixel 
+tags car 
+choices mqLEDMenu '1' '2' '3' '4' All 
+choices mqServoMenu S1 S2 
+description 'add I2C servo S1 S2
+neoPixel light P15'
+
+  spec ' ' 'servo angle' 'servo angle _ _' 'menu.mqServoMenu num' 'S1' 90
+  spec ' ' 'mqInit' '_mqInit'
+  spec ' ' '4 color LEDs' '4 color LEDs _ _' 'menu.mqLEDMenu color' '1'
+
+to '4 color LEDs' pos color {
+  mqInit
+  if (and (pos <= 4) (pos >= 1)) {
+    setNeoPixelColor pos color
+  } else {
+    neoPixelSetAllToColor color
+  }
+}
+
+to mqInit {
+  if _virgo_init {return 0}
+  neoPixelAttach 10 15
+  _virgo_init = (booleanConstant true)
+}
+
+to 'servo angle' servoNumber angle {
+  if (or (angle < 0) (angle > 180)) {angle = 90}
+  if (servoNumber == 'S1') {'[sensors:i2cWrite]' (hexToInt '10') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '14') angle))}
+  if (servoNumber == 'S2') {'[sensors:i2cWrite]' (hexToInt '10') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '15') angle))}
+}
+
