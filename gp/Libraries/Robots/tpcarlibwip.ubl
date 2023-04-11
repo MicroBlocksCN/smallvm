@@ -1,0 +1,44 @@
+module tpcarlibwip
+author unknown
+version 1 0 
+description ''
+variables _headlightRGB 
+
+	spec 'r' 'getDistance' 'getDistance'
+	spec ' ' 'myBlock' 'setTpSpeed left _ right _' 'num num' 10 10
+	spec ' ' 'setHeadLight' 'setHeadLight _' 'color'
+
+to getDistance {
+  return ('distance (cm)' 16 15)
+}
+
+to myBlock leftSpeed rightSpeed {
+  local 'carControl' ('[data:newByteArray]' 4)
+  atPut 1 carControl (hexToInt '01')
+  atPut 4 carControl (hexToInt '00')
+  if (and (leftSpeed < 0) (rightSpeed < 0)) {
+    atPut 4 carControl (hexToInt '03')
+  } else {
+    if (leftSpeed < 0) {atPut 4 carControl (hexToInt '01')}
+    if (rightSpeed < 0) {atPut 4 carControl (hexToInt '02')}
+  }
+  if ((absoluteValue leftSpeed) > 100) {
+    leftSpeed = 100
+  }
+  if ((absoluteValue rightSpeed) > 100) {
+    rightSpeed = 100
+  }
+  atPut 2 carControl (absoluteValue leftSpeed)
+  atPut 3 carControl (absoluteValue rightSpeed)
+  '[sensors:i2cWrite]' (hexToInt '10') carControl
+}
+
+to setHeadLight color {
+  local 'testRGB' ('[data:newByteArray]' 4)
+  atPut 1 testRGB (hexToInt '20')
+  atPut 2 testRGB (color >> 16)
+  atPut 3 testRGB ((color >> 8) & (hexToInt 'FF'))
+  atPut 4 testRGB (color & (hexToInt 'FF'))
+  '[sensors:i2cWrite]' (hexToInt '10') testRGB
+}
+
