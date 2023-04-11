@@ -1,0 +1,131 @@
+module 'VFD screen lib '
+author shaoyue
+version 1 0 
+description 'VFD 显示屏 6位 8位 12位'
+variables _vfd_clk _vfd_data _vfd_en _vfd_cs _vfd_length _vfd_brightness 
+
+  spec ' ' 'VFD_WriteStr' 'VFD_text _ _' 'num str' 0 'text'
+  spec ' ' 'VFD_WriteUserFont' 'VFD_custom_font _ _' 'num auto' 0 10
+  spec ' ' 'VFD_cmd' '_VFD_cmd _' 'num' 233
+  spec ' ' 'VFD_init' '_VFD_init _ _' 'num num' 6 30
+  spec ' ' 'VFD_show' '_VFD_show'
+  spec ' ' 'spi_write_data' '_vfd_spi_write_data _' 'num' 10
+  spec ' ' 'VFD_clear' 'VFD_clear'
+  spec ' ' '_VFD_scroll_text' 'VFD_scroll_text _ _' 'str auto' 'text scroll' 200
+  spec ' ' '_VFDpinInit' '_VFD_pin_init _ _ _ _' 'auto auto auto auto' 12 13 14 15
+  spec ' ' 'myBlock' 'VFD_screen_test'
+  spec ' ' '_VFD_turn' '_VFD_turn _' 'bool' true
+  spec ' ' '_vfd_set_brightness' '_VFD_set_brightness _' 'num' 30
+
+to VFD_WriteStr pos text {
+  digitalWriteOp _vfd_cs false
+  spi_write_data ((hexToInt '20') + pos)
+  for i (size text) {
+    spi_write_data ('[data:unicodeAt]' i text)
+  }
+  digitalWriteOp _vfd_cs true
+  VFD_show
+}
+
+to VFD_WriteUserFont pos codes {
+  comment 'code字模，长度5。字模提取方式请参考文档'
+  if ((size codes) == 5) {
+    digitalWriteOp _vfd_cs false
+    spi_write_data ((hexToInt '40') + pos)
+    for i 5 {
+      spi_write_data (at i codes)
+    }
+    digitalWriteOp _vfd_cs true
+    digitalWriteOp _vfd_cs false
+    spi_write_data ((hexToInt '20') + pos)
+    spi_write_data ((hexToInt '00') + pos)
+    digitalWriteOp _vfd_cs true
+    VFD_show
+  }
+}
+
+to VFD_clear {
+  VFD_WriteStr 0 ('[data:copyFromTo]' '                    ' 1 _vfd_length)
+}
+
+to VFD_cmd foo {
+  digitalWriteOp _vfd_cs false
+  spi_write_data foo
+  digitalWriteOp _vfd_cs true
+}
+
+to VFD_init num brightness {
+  _vfd_length = num
+  _vfd_brightness = brightness
+  comment 'SET HOW MANY digtal numbers'
+  comment '设置显示位数'
+  digitalWriteOp _vfd_cs false
+  spi_write_data (hexToInt 'e0')
+  comment '6 digtal 0x05,  8 digtal 0x07 ,16 digtal 0x0f'
+  spi_write_data (num - 1)
+  digitalWriteOp _vfd_cs true
+  '_vfd_set_brightness' brightness
+}
+
+to VFD_show {
+  VFD_cmd (hexToInt 'e8')
+}
+
+to '_VFD_scroll_text' text speed {
+  local 'var' ('[data:join]' text ' ')
+  repeat ((size text) + 1) {
+    VFD_WriteStr 0 var
+    var = ('[data:copyFromTo]' var 2 (size var))
+    waitMillis speed
+  }
+}
+
+to '_VFD_turn' foo {
+  digitalWriteOp _vfd_en foo
+  waitMicros 10
+}
+
+to '_VFDpinInit' en clk data cs {
+  comment '设置引脚 
+en 使能，
+clk 时钟
+data 数据
+cs 片选'
+  _vfd_en = en
+  _vfd_clk = clk
+  _vfd_data = data
+  _vfd_cs = cs
+  '_VFD_turn' true
+}
+
+to '_vfd_set_brightness' bright {
+  comment 'set bright'
+  comment '设置亮度'
+  _vfd_brightness = bright
+  digitalWriteOp _vfd_cs false
+  spi_write_data (hexToInt 'e4')
+  comment '240 max, 0 min'
+  spi_write_data _vfd_brightness
+  digitalWriteOp _vfd_cs true
+}
+
+to myBlock {
+  VFD_init _vfd_length _vfd_brightness
+  VFD_cmd (hexToInt 'E9')
+}
+
+to spi_write_data foo {
+  repeat 8 {
+    digitalWriteOp _vfd_clk false
+    if ((foo & (hexToInt '01')) == (hexToInt '01')) {
+      digitalWriteOp _vfd_data true
+    } else {
+      digitalWriteOp _vfd_data false
+    }
+    foo = (foo >> 1)
+    digitalWriteOp _vfd_clk true
+  }
+}
+
+
+
