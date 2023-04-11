@@ -1,0 +1,198 @@
+module 'maqueen car'
+author ShaoYue
+version 1 0 
+description 'Micro:bit car maqueen and vigo 2'
+
+choices mqLEDMenu '1' '2' '3' '4' All 
+choices mqServoMenu S1 S2 
+choices mqMotorMenu Left Right All 
+choices mqLRMenu Left Right 
+choices mqDirectionMenu Forward Backward 
+
+variables '_mq init flag' _ir_pin _ir_pulse_times _ir_transmit_pin 
+
+	spec ' ' 'motorRun' 'motor go _ _ _' 'menu.mqMotorMenu menu.mqDirectionMenu num' 'All' 'Forward' 0
+	spec ' ' 'motorStop' 'motor stop _' 'menu.mqMotorMenu' 'All'
+	spec 'r' 'getBlackLine' 'black line? _' 'menu.mqLRMenu' 'Left'
+	spec ' ' 'mqInit' '_mqInit'
+	spec 'r' 'myBlock' 'mq distance'
+	spec ' ' 'myBlock2' 'head LED _ _' 'menu.mqLRMenu bool' 'Left' true
+	spec ' ' '4 color LEDs' '4 color LEDs _ _' 'menu.mqLEDMenu color' '1'
+	spec ' ' 'servo angle' 'servo angle _ _' 'menu.mqServoMenu num' 'S1' 90
+	spec ' ' 'color LED OFF' 'color LED OFF'
+  spec 'r' 'receiveIR' 'receive IR code'
+	spec ' ' 'attachIR' 'attach IR receiver to pin _' 'num' 0
+	spec ' ' '_testIR' 'test IR'
+	spec 'r' '_receiveIRFromDevice' 'receive IR code from device _' 'num' -1
+	spec ' ' '_captureIRMessage' '_captureIRMessage' 'any'
+	spec 'r' '_getIRByte' '_getIRByte _' 'auto any' 4
+	spec 'r' '_got32Bits' '_got32Bits' 'any'
+
+to '4 color LEDs' pos color {
+  mqInit
+  if (and (pos <= 4) (pos >= 1)) {
+    setNeoPixelColor pos color
+  } else {
+    neoPixelSetAllToColor color
+  }
+}
+
+to 'color LED OFF' {
+  mqInit
+  clearNeoPixels
+}
+
+to getBlackLine LR {
+  if (LR == 'Left') {
+    return (not (digitalReadOp 13))
+  } else {
+    return (not (digitalReadOp 14))
+  }
+}
+
+to motorRun moters direction speed {
+  comment 'Left = 0,Right = 1,All = 2; forward=0,backward=1;speed 0-255;'
+  comment '速度最低50才能正常启动'
+  local 'motorControl' ('[data:newByteArray]' 3 0)
+  comment '发给 I2C的数据'
+  local 'ddirection' 0
+  comment 'forward=0,  backward=1'
+  if (direction == 'Backward') {
+    ddirection = 1
+  }
+  atPut 2 motorControl ddirection
+  atPut 3 motorControl speed
+  if (moters == 'Left') {
+    '[sensors:i2cWrite]' (hexToInt '10') motorControl
+  }
+  if (moters == 'Right') {
+    atPut 1 motorControl 2
+    '[sensors:i2cWrite]' (hexToInt '10') motorControl
+  }
+  if (moters == 'All') {
+    atPut 1 motorControl 2
+    '[sensors:i2cWrite]' (hexToInt '10') motorControl
+    atPut 1 motorControl 0
+    '[sensors:i2cWrite]' (hexToInt '10') motorControl
+  }
+}
+
+to motorStop motor {
+  motorRun motor 'Forward' 0
+}
+
+to mqInit {
+  if ((v '_mq init flag') == 0) {
+    neoPixelAttach 4 15
+    '_mq init flag' = 1
+  }
+}
+
+to myBlock {
+  return ('distance (cm)' 1 2)
+}
+
+to myBlock2 LR ONOFF {
+  if (LR == 'Left') {
+    digitalWriteOp 8 ONOFF
+  } else {
+    digitalWriteOp 12 ONOFF
+  }
+}
+
+to 'servo angle' servoNumber angle {
+  if (or (angle < 0) (angle > 180)) {angle = 90}
+  if (servoNumber == 'S1') {'[sensors:i2cWrite]' (hexToInt '10') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '14') angle))}
+  if (servoNumber == 'S2') {'[sensors:i2cWrite]' (hexToInt '10') ('[data:asByteArray]' ('[data:makeList]' (hexToInt '15') angle))}
+}
+
+to '_captureIRMessage' {
+  if (_ir_pulse_times == 0) {
+    _ir_pulse_times = (newList 200)
+    if (_ir_pin == 0) {
+      _ir_pin = 16
+    }
+  }
+  fillList _ir_pulse_times 0
+  local 'i' 1
+  comment 'Wait for IR signal -- this is the start of a new message.
+Note: THe pin goes low when an IR signal is detected.'
+  waitUntil (not (digitalReadOp _ir_pin))
+  local 'start' (microsOp)
+  forever {
+    comment 'Record the time until the end of the current IR pulse ("mark")'
+    waitUntil (digitalReadOp _ir_pin)
+    local 'end' (microsOp)
+    atPut i _ir_pulse_times (end - start)
+    i += 1
+    start = end
+    comment 'Record time until the start of the next IR pulse ("space")'
+    repeatUntil (not (digitalReadOp _ir_pin)) {
+      if (((microsOp) - start) > 5000) {
+        comment 'No IR pulse for 5000 usecs means "end of message"'
+        return 0
+      }
+    }
+    local 'end' (microsOp)
+    atPut i _ir_pulse_times (end - start)
+    i += 1
+    start = end
+  }
+}
+
+to '_getIRByte' position {
+  local 'result' 0
+  local 'i' position
+  local 'bit' 1
+  repeat 8 {
+    if ((at i _ir_pulse_times) > 1000) {result = (result | bit)}
+    bit = (bit << 1)
+    i += 2
+  }
+  return result
+}
+
+to '_got32Bits' {
+  return (and ((at 67 _ir_pulse_times) != 0) ((at 68 _ir_pulse_times) == 0))
+}
+
+to '_receiveIRFromDevice' deviceID {
+  forever {
+    '_captureIRMessage'
+    if ('_got32Bits') {
+      local 'id' ('_getIRByte' 20 nil)
+      if (id == deviceID) {
+        return ('_getIRByte' 36 nil)
+      }
+    }
+  }
+}
+
+to '_testIR' {
+  forever {
+    '_captureIRMessage'
+    if ('_got32Bits') {
+      comment 'Four byte message format:
+<device low byte><device high byte><command><command, bit-inverted>'
+      local 'b1' ('_getIRByte' 4 nil)
+      local 'b2' ('_getIRByte' 20 nil)
+      local 'b3' ('_getIRByte' 36 nil)
+      local 'b4' ('_getIRByte' 52 nil)
+      sayIt 'Device:' ((b2 << 8) | b1) 'code:' b3
+    }
+  }
+}
+
+to attachIR pin {
+  _ir_pin = pin
+}
+
+to receiveIR {
+  comment '截取自官方的 IR Remote 库'
+  forever {
+    '_captureIRMessage'
+    if ('_got32Bits') {
+      return ('_getIRByte' 36 nil)
+    }
+  }
+}
