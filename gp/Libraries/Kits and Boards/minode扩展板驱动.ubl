@@ -1,0 +1,91 @@
+module 'mi:node 扩展板驱动'
+author Shaoyue
+version 1 0 
+description 'RGB LED，Sound Sensor， Light Sensor'
+variables RGB _minode_rgb_clkpin _minode_rgb_datapin _Minode_init _minode_mic_pin _minode_mic_arry _minode_mic_check_count tButton 
+
+  spec ' ' 'clkWrite' '_clkWrite _' 'bool' true
+  spec ' ' 'dataWrite' '_dataWrite _' 'bool' false
+  spec ' ' 'rgbWrite' 'rgbWrite r _ g _ b _ pin _' 'num num num auto' 255 0 0 13
+  spec 'r' 'check sound' 'checksound pin _' 'num' 1
+  spec 'r' 'getLight' 'getLight pin _ level' 'auto' '10'
+  spec ' ' 'minnode rgb pinset clkpin' '_minnode setRGBpin _' 'auto' 13
+  spec ' ' 'minode RGB' 'minode RGB color _ pin _' 'color num' nil 13
+  spec 'r' '声音检测 接口' '声音检测 接口 _' 'auto' 1
+  spec ' ' '彩灯 接口' '彩灯 接口 _ 颜色 _' 'auto color' 15
+  spec ' ' '彩灯单独设置 接口' '彩灯单独设置 接口 _ 红 _ 绿 _ 蓝 _' 'auto num num num' 15 255 0 0
+
+to 'check sound' pin {
+  return (absoluteValue (510 - (analogReadOp pin)))
+}
+
+to clkWrite sig {
+  digitalWriteOp _minode_rgb_clkpin sig
+}
+
+to dataWrite sig {
+  digitalWriteOp _minode_rgb_datapin sig
+}
+
+to getLight pin {
+  return ((analogReadOp pin) / 180)
+}
+
+to 'minnode rgb pinset clkpin' pin {
+  _minode_rgb_clkpin = pin
+  _minode_rgb_datapin = (pin + 1)
+}
+
+to 'minode RGB' RGBcolor pin {
+  rgbWrite (RGBcolor >> 16) ((RGBcolor % (1 << 16)) >> 8) (RGBcolor % (1 << 8)) pin
+}
+
+to rgbWrite r g b pin {
+  'minnode rgb pinset clkpin' pin
+  local '_rr' (r >> 1)
+  local '_gg' (g >> 1)
+  local '_bb' (b >> 1)
+  local 'rgb' (hexToInt '808080')
+  rgb = (rgb | (_gg << 15))
+  rgb = (rgb | (_rr << 7))
+  rgb = (rgb | _bb)
+  repeat 32 {
+    dataWrite false
+    clkWrite true
+    clkWrite false
+  }
+  repeat 24 {
+    if ((rgb & (hexToInt '800000')) != 0) {
+      dataWrite true
+    } else {
+      dataWrite false
+    }
+    clkWrite true
+    clkWrite false
+    rgb = (rgb << 1)
+  }
+  rgb = (hexToInt '808080')
+  repeat 24 {
+    if ((rgb & (hexToInt '800000')) != 0) {
+      dataWrite true
+    } else {
+      dataWrite false
+    }
+    clkWrite true
+    clkWrite false
+    rgb = (rgb << 1)
+  }
+}
+
+to '声音检测 接口' foo {
+  return ('check sound' foo)
+}
+
+to '彩灯 接口' foo bar {
+  'minode RGB' bar foo
+}
+
+to '彩灯单独设置 接口' foo bar baz quux {
+  rgbWrite bar baz quux foo
+}
+
