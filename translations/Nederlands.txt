@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: April 4 2023
+# Last updated: November 29 2022
 
 #########################
 # Blocks and categories #
@@ -347,7 +347,7 @@ rpi channel _
 rpi kanaal _
 
 spi exchange bytes _
---MISSING--
+spi uitgewisselde bytes _
 
 serial open _ baud
 serieel open _ baud
@@ -480,7 +480,7 @@ magnetic field
 magnetisch veld
 
 set acceleration range _ g = 100
---MISSING--
+stel versnellingsbereik in _ g = 100
 
 ####
 # NeoPixel library
@@ -540,7 +540,7 @@ clap count
 klap tellen
 
 set clap threshold _
-zet klap drempelwaarde _
+maak klap drempelwaarde _
 
 estimate clap threshold
 klap drempelwaarde schatten
@@ -744,7 +744,7 @@ attach IR receiver to pin _
 verbind IR ontvanger aan pin _
 
 IR transmit device _ command _
---MISSING--
+IR zend device _ command _
 
 ####
 # Radio comm library
@@ -867,52 +867,52 @@ HSV Colors
 HSV kleuren
 
 RGB of hue _ saturation _ brightness _ (0-100)
---MISSING--
+RGB van tint _ verzadiging _ helderheid _ (0-100)
 
 ####
 # Fractions library
 
 Fractions
---MISSING--
+Breuken
 
 fract _ / _
---MISSING--
+breuk _ / _
 
 fract _ + _
---MISSING--
+breuk _ + _
 
 fract _ - _
---MISSING--
+breuk _ - _
 
 fract _ × _
---MISSING--
+breuk _ × _
 
 fract _ = _
---MISSING--
+breuk _ = _
 
 fract _ < _
---MISSING--
+breuk _ < _
 
 fract _ > _
---MISSING--
+breuk _ > _
 
 simplify fraction _
---MISSING--
+breuk vereenvoudigen _
 
 integer part of fraction _
---MISSING--
+gehele getal van de breuk _
 
 numerator of fraction _
---MISSING--
+teller van de breuk _
 
 denominator of fraction _
---MISSING--
+noemer van de breuk _
 
 gcd _ _
---MISSING--
+ggd _ _
 
 lcm _ _
---MISSING--
+kgv _ _
 
 ####
 # Tone library
@@ -986,23 +986,23 @@ play ringtone _
 ringtone _ afspelen
 
 current song name
---MISSING--
+huidig lied naam
 
 ####
 # Pluck
 # Generate music with plucked-string resembling sounds
 
 Pluck
---MISSING--
+Pluck
 
 pluck note _ octave _ for _ ms
---MISSING--
+pluck noot _ octaaf _ gedurende _ milliseconden
 
 pluck MIDI key _ for _ msecs
---MISSING--
+pluck MIDI key _ gedurende _ milliseconden
 
 set pluck pin _
---MISSING--
+maak pluck pin _
 
 ####
 # WAV
@@ -1121,7 +1121,7 @@ lowercase _
 maak _ in kleine letters
 
 uppercase _
-maak _ in grote letters
+maak _ in hoofdletters
 
 _ without white space
 _ zonder extra spaties
@@ -1316,7 +1316,7 @@ TFT aanraak druk
 HTTP client
 HTTP-client
 
-_ data _ to http܃// _
+_ data _ to http܃// _ 
 _ data _ naar http܃// _
 
 port _
@@ -1350,13 +1350,13 @@ path of request _
 verzoek-pad _
 
 headers of request _
---MISSING--
+headers van verzoek _
 
 method of request _
 methode van verzoek _
 
 content length of request _
---MISSING--
+inhoud lengte van verzoek _
 
 ####
 # WebSocket server
@@ -1365,22 +1365,22 @@ WebSocket server
 WebSocket server
 
 start WebSocket server
-Start WebSocket server
+start WebSocket server
 
 last WebSocket event
---MISSING--
+laatste WebSocket gebeurtenis
 
 client ID for WebSocket event _
---MISSING--
+client ID voor WebSocket event _
 
 payload for WebSocket event _
---MISSING--
+payload voor WebSocket gebeurtenis _
 
 type of WebSocket event _
---MISSING--
+type WebSocket gebeurtenis _
 
 send _ to WebSocket client _
---MISSING--
+stuur _ naar WebSocket client _
 
 ####
 # Web Things library
@@ -1434,158 +1434,158 @@ gebeurtenissen
 # MiKe Robot library
 
 MiKe front obstacle (cm)
---MISSING--
+MiKe obstakel voor (cm)
 
 MiKe _ obstacle ?
---MISSING--
+Mike _ obstakel ?
 
 MiKe black line on _ ?
---MISSING--
+MiKe zwarte lijn op _ ?
 
 MiKe back light
---MISSING--
+MiKe achterlicht
 
 MiKe IR
---MISSING--
+Mike IR
 
 MiKe digital D8 sensor
---MISSING--
+MiKe digitale D8 sensor
 
 MiKe stop motors
---MISSING--
+MiKe stop motors
 
 MiKe Robot go _ at _ %
---MISSING--
+MiKe Robot ga _ met _ %
 
 MiKe Robot speed _ %
---MISSING--
+MiKe Robot snelheid _ %
 
 MiKe Robot direction _
---MISSING--
+MiKe Robot richting _
 
 MiKe turn _ motor _
---MISSING--
+MiKe draai _ motor _
 
 MiKe speed _ motor at _ %
---MISSING--
+MiKe snelheid _ motor met _ %
 
 MiKe front lights off
---MISSING--
+MiKe koplampen uit
 
 MiKe front lights to _
---MISSING--
+MiKe koplampen naar _
 
 MiKe circle lights off
---MISSING--
+MiKe cirkel lichten uit
 
 MiKe circle ligths to _
---MISSING--
+MiKe cirkel lichten naar _
 
 MiKe circle light _ (1-18) to _
---MISSING--
+MiKe cirkel licht _ (1-18) naar _
 
 MiKe rotate lights by _
---MISSING--
+MiKe draai lichten met _
 
 MiKe digital D8 to _
---MISSING--
+MiKe digitale D8 naar _
 
 ####
 # DrawBot Library
 # A CoreXY plotter library that supports turtle geometry
 
 plotter move X _ Y _
---MISSING--
+plotter verplaats X _ Y _
 
 plotter move _ steps
---MISSING--
+plotter neem _ stappen
 
 plotter turn _ degrees
---MISSING--
+plotter draai _ graden
 
 plotter turn _ / _ of circle
---MISSING--
+plotter draai _ / _ van een cirkel
 
 plotter point in direction _
---MISSING--
+plotter wijs naar richting _
 
 plotter pen down
---MISSING--
+plotter pen neer
 
 plotter pen up
---MISSING--
+plotter pen omhoog
 
 plotter stop
---MISSING--
+plotter stop
 
 set plotter speed to _ %
---MISSING--
+maak plotter snelheid naar _ %
 
 ####
 # MQTT
 
 MQTT connect to broker _
---MISSING--
+MQTT verbinden met broker _
 
 buffer sizes _ client id _
---MISSING--
+buffer grootte _ client id _
 
 username _ password _
---MISSING--
+gebruikersnaam _ wachtwoord _
 
 MQTT connected
---MISSING--
+MQTT verbonden
 
 MQTT disconnect
---MISSING--
+MQTT verbroken
 
 MQTT sub _
---MISSING--
+MQTT sub _
 
 MQTT unsub _
---MISSING--
+MQTT unsub _
 
 MQTT pub topic _ payload _
---MISSING--
+MQTT pub onderwerp _ payload _
 
 retain _ QoS _
---MISSING--
+behoud _ QoS _
 
 MQTT event
---MISSING--
+MQTT gebeurtenis
 
 binary _
---MISSING--
+binair _
 
 topic for MQTT event _
---MISSING--
+onderwerp voor MQTT-gebeurtenis _
 
 payload for MQTT event _
---MISSING--
+payload voor MQTT-gebeurtenis _
 
 ####
 # UDP
 
 UDP start port _
---MISSING--
+UDP start poort _
 
 UDP stop
---MISSING--
+UDP stop
 
 UDP send packet _ to ip _ port _
---MISSING--
+UDP zend pakket _ naar ip _ poort _
 
 UDP receive packet
---MISSING--
+UDP pakket ontvangen
 
 binary data _
---MISSING--
+binaire data _
 
 UDP remote IP address
---MISSING--
+UDP IP-adres op afstand
 
 UDP remote port
---MISSING--
+UDP IP-adres op afstand
 
 ####
 # Cutebot
@@ -1594,22 +1594,22 @@ Cutebot
 Cutebot
 
 Cutebot set wheel left _ right _ (-100 to 100)
-Cutebot zet wiel links _ rechts _ (-100 tot 100)
+Cutebot maak wiel links _ rechts _ (-100 tot 100)
 
 Cutebot stop wheels
 Cutebot stop wielen
 
 Cutebot set servo _ to _ degrees (-90 to 90)
-Cutebot zet servo _ naar _ graden (-90 tot 90)
+Cutebot maak servo _ naar _ graden (-90 tot 90)
 
 Cutebot set servo _ to speed _ (-100 to 100)
-Cutebot zet servo _ naar snelheid _ (-100 tot 100)
+Cutebot maak servo _ naar snelheid _ (-100 tot 100)
 
 Cutebot set headlight _ to _
-Cutebot zet koplamp _ naar _
+Cutebot maak koplamp _ naar _
 
 Cutebot set NeoPixel _ to _
-Cutebot zet NeoPixel _ naar _
+Cutebot maak NeoPixel _ naar _
 
 Cutebot _ line sensor
 Cutebot _ lijnsensor
@@ -1635,7 +1635,7 @@ Wukong
 Wukong
 
 Wukong set motor _ to _ (-100 to 100)
-Wukong zet motor _ naar _ (-100 tot 100)
+Wukong maak motor _ naar _ (-100 tot 100)
 
 Wukong stop motor _
 Wukong stop motor _
@@ -1644,16 +1644,16 @@ Wukong stop all
 Wukong stop alles
 
 Wukong set servo _ to _ degrees (-90 to 90)
-Wukong zet servo _ naar _ graden (-90 tot 90)
+Wukong maak servo _ naar _ graden (-90 tot 90)
 
 Wukong set servo _ to speed _ (-100 to 100)
-Wukong zet servo _ naar snelheid _ (-100 tot 100)
+Wukong maak servo _ naar snelheid _ (-100 tot 100)
 
 Wukong set NeoPixels _ _ _ _
-Wukong zet NeoPixels _ _ _ _
+Wukong maak NeoPixels _ _ _ _
 
 Wukong set LED brightness to _
-Wukong zet LED helderheid naar _
+Wukong maak LED helderheid naar _
 
 ####
 # Sphero-RVR
@@ -1665,22 +1665,22 @@ sleep
 slapen
 
 reset the yaw
---MISSING--
+reset het gieren
 
 drive with speed _ and heading _
---MISSING--
+rijd met snelheid _ en richting _
 
 set raw motors with left mode _ left speed _ right mode _ right speed _
---MISSING--
+maak raw-motoren met linkermodus _ linkersnelheid _ rechtermodus _ rechtersnelheid _
 
 stop with heading _
---MISSING--
+stop met richting _
 
 set RGB LED _ to red _ green _ blue _
---MISSING--
+maak het RGB LED _ op rood _ groen _ blauw _
 
 set all LEDs to red _ green _ blue _
---MISSING--
+maak alle LEDs op rood _ groen _ blauw _
 
 ####
 # Joystick:bit
@@ -1689,10 +1689,10 @@ button _ is pressed
 knop _ is ingedrukt
 
 rocker value of _
---MISSING--
+knuppel waarde van _
 
 motor vibrate for _ ms
---MISSING--
+motor vibreert voor _ ms
 
 ####
 # NeZha
@@ -1701,7 +1701,7 @@ NeZha
 NeZha
 
 NeZha set motor _ speed to _ %
-NeZha zet motor _ snelheid naar _ %
+NeZha maak motor _ snelheid naar _ %
 
 NeZha stop motor _
 NeZha stop motor _
@@ -1710,10 +1710,10 @@ NeZha stop all motors
 NeZha stop alle motors
 
 NeZha set _ servo _ angle to _
-NeZha zet _ servo _ hoek naar _
+NeZha maak _ servo _ hoek naar _
 
 NeZha set continuous rotation servo _ speed to _ %
-NeZha zet continue rotatie servo _ snelheid naar _ %
+NeZha maak continue rotatie servo _ snelheid naar _ %
 
 ##################
 # MicroBlocks UI #
@@ -1728,7 +1728,7 @@ Open
 Open
 
 Open from board
-Open vanaf board-
+Open vanaf board
 
 Copy project URL to clipboard
 Kopieer project URL naar klembord
@@ -1748,7 +1748,7 @@ Project lezen van het bord...
 Loading project...
 Project laden
 
-Found a newer version of
+Found a newer version of 
 Een nieuwere versie gevonden van
 
 Do you want me to update the one in the project?
@@ -1850,7 +1850,7 @@ Huidig project weggooien?
 # Scripting area right-click context menu
 
 set block size...
-stel blokgrootte in...
+maak blokgrootte ...
 
 make blocks bigger or smaller
 maak blokken groter of kleiner
@@ -1886,7 +1886,7 @@ save a picture of all visible scripts
 bewaar een afbeelding van alle zichtbare scripts
 
 set exported script scale
-zet geexporteerd script grootte
+maak geëxporteerde script grootte
 
 small (50%)
 klein (50%)
@@ -1946,10 +1946,10 @@ disable PlugShare when project empty
 PlugShare uitschakelen als project leeg is
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
-wanneer je een board verbind, zet dan niet automatisch de inhoud in de IDE, zelfs als het huidige project leeg is
+wanneer je een board verbindt, zet dan niet automatisch de inhoud in de IDE, zelfs als het huidige project leeg is
 
 when plugging a board, automatically read its contents into the IDE if the current project is empty
-wanneer je een board verbind, zet dan automatisch de inhoud in de IDE als het huidige project leeg is
+wanneer je een board verbindt, zet dan automatisch de inhoud in de IDE als het huidige project leeg is
 
 erase flash and update firmware on ESP board
 flash wissen en firmware op ESP-bord updaten
@@ -2060,31 +2060,31 @@ show compiled bytes
 toon gecompileerde bytes
 
 expand
-breid uit
+uitklappen
 
 collapse
-bind in
+inklappen
 
 rename...
 hernoem...
 
 find variable accessors
---MISSING--
+vind variabele toegangspunten
 
 find scripts or block definitions where this variable is being read
---MISSING--
+vind scripts of blok definities waar deze variable word uitgelezen
 
 find variable modifiers
---MISSING--
+vind variabele aanpassingen
 
 find scripts or block definitions where this variable is being set or changed
---MISSING--
+vind scripts of blok definities waar deze variabele wordt ingesteld of veranderd
 
 find uses of this block
---MISSING--
+vind plekken waar dit blok word toegepast
 
 find scripts or block definitions using this block
---MISSING--
+vind scripts of blok definities die dit blok gebruiken
 
 show block definition...
 toon blok definitie...
@@ -2286,7 +2286,7 @@ New library name?
 Naam nieuwe bibliotheek?
 
 show all block definitions
-Laat alle blok definities zien
+toon alle blok definities
 
 hide all block definitions
 verberg alle blok definities
@@ -2334,7 +2334,7 @@ Tags:
 Tags:
 
 Path, name or URL for library?
-bibliotheek pad, naam, of URL?
+Pad, naam of URL voor bibliotheek?
 
 Invalid URL
 Ongeldige URL
@@ -2358,16 +2358,16 @@ built-in library
 ingebouwde bibliotheek
 
 Dependency path, name or URL?
-afhankelijkheids -pad, -naam, of -URL
+Afhankelijkheid pad, naam, of URL
 
 If you are adding a library that's built into MicroBlocks, you can just enter its name.
 Als je een bibliotheek toe wil voegen die ingebouwd is in MicroBlocks dan hoef je enkel de naam in te voeren.
 
 If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
-Als je bibliotheek zich in de Bibliotheek map van je lokale MicroBlocks project map bevind, dan moet je het laten vooraf gaan door een slash (/).
+Als je bibliotheek zich in de Bibliotheek map van je lokale MicroBlocks project map bevindt, dan moet je het laten vooraf gaan door een slash (/).
 
 If the library is hosted online, please input its full URL.
-Als de bibliothee online staat geef dan de hele URL op.
+Als de bibliotheek online staat, geef dan de hele URL op.
 
 Tag name?
 Tag naam?
@@ -2425,22 +2425,22 @@ Command Block
 Commando blok
 
 [l] to run, or drag to build scripts. [r] menu.
-[l] om uit te voeren of sleep om scripts te bouwen. [r] menu.
+[l] om uit te voeren of te slepen om scripts te bouwen. [r] menu.
 
 Hat Block
 Hat blok
 
 [l] to run, or drag to build scripts. [r] menu.
-[l] om uit te voeren of sleep om scripts te bouwen. [r] menu.
+[l] om uit te voeren of te slepen om scripts te bouwen. [r] menu.
 
 Reporter Block
 Reporter blok
 
 [l] to see value, or drop into an input slot. [r] menu.
-[l[ om de waarde te zien of neerzetten in een input opening. [r] menu.
+[l[ om de waarde te zien of neer te zetten in een input opening. [r] menu.
 
 Script
-Scipt
+Script
 
 [l] to run. [r] menu.
 [l] om uit te voeren. [r] menu.
@@ -2504,37 +2504,37 @@ Report the milliseconds since power up.
 Laat het aantal milliseconden zien sinds het opstarten.
 
 Report the microseconds since power up.
-Laat het aantal microseconden zien sinds het opstarten.
+Geef het aantal microseconden sinds het opstarten.
 
 Report the board type.
-Laat het board type zien.
+Geef het board type.
 
 Report the electrical logic level on a digital pin ( (-o) or (o-) ).
---MISSING--
+Geef het elektrische logische niveau op een digitale pin ( (-o) of (o-) ).
 
 Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
---MISSING--
+Geef een getal dat evenredig is met de spanning op een analoge pin (0 = aarde, 1023 = toevoerspanning).
 
 Turn a pin on or off ( (-o) or (o-) ).
 Zet een pin aan of uit ( (-o) or (o-) ).
 
 Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
---MISSING--
+Pulsbreedte moduleren (PWM) van een pin met de opgegeven inschakelduur (0 - 1023).
 
 Report number of analog pins on this device.
-Laat het aantal analoge pinnen zien op dit apparaat.
+Geef het aantal analoge pinnen op dit apparaat.
 
 Report number of digital pins on this device.
-Laat het aantal digitale pinnen zien op dit apparaat.
+Geef het aantal digitale pinnen  op dit apparaat.
 
 Report the value of a register (0-255) of an I2C device (0-127).
---MISSING--
+Geef de waarde van een register (0-255) van een I2C-apparaat (0-127).
 
 Set an I2C device and register to given value (0-255).
---MISSING--
+Maak een I2C-apparaat en -register een gegeven waarde (0-255).
 
 Receive multiple bytes from an I2C device.
-Ontvang meerdere bytes van een I2C apparaa
+Ontvang meerdere bytes van een I2C apparaat
 
 Send multiple bytes to an I2C device.
 Stuur meerdere bytes naar een I2C apparaat.
@@ -2543,223 +2543,225 @@ Send a byte (0-255) to an SPI device.
 Stuur een byte (0-255) naar een SPI apparaat.
 
 Read a byte from an SPI device while sending a zero byte. Report the byte received.
---MISSING--
+Lees een byte van een SPI apparaat terwijl je een nul byte verstuurt. Geef de ontvangen byte.
 
 Set the SPI clock speed and mode.
---MISSING--
+Stel de SPI kloksnelheid en modus in.
 
 Send a byte array via SPI, replacing its contents with the bytes received.
---MISSING--
+Zend een byte-array via SPI, waarbij de inhoud wordt vervangen door de ontvangen bytes.
 
 Open the serial port at the given baud rate.
---MISSING--
+Open de seriële poort met de opgegeven baudrate.
 
 Close the serial port.
---MISSING--
+Sluit de seriële poort.
 
 Report data received from the serial port (a byte array).
---MISSING--
+Geef de gegevens ontvangen van de seriële poort  (een byte-array).
 
 Send a byte array to the serial port.
---MISSING--
+Zend een byte-array naar de seriële poort.
 
 Run when the board powers up or when the IDE start button is clicked.
---MISSING--
+Uitvoeren wanneer het bord wordt ingeschakeld of wanneer op de IDE-startknop wordt geklikt.
 
 Run when buttons A, B, or A+B are pressed.
---MISSING--
+Uitvoeren wanneer knoppen A, B of A+B worden ingedrukt.
 
 Repeat the enclosed blocks indefinitely.
---MISSING--
+Herhaal de ingesloten blokken voor altijd.
 
 Repeat the enclosed blocks the given number of times.
---MISSING--
+Herhaal de ingesloten blokken het opgegeven aantal keer.
 
 Wait the given number of milliseconds.
---MISSING--
+Wacht het aantal opgegeven milliseconden.
 
 Run the first set of blocks whose test condition is (-o) .
---MISSING--
+Uitvoeren van de eerste reeks blokken met als testvoorwaarde (-o) .
 
 Run when the condition becomes (-o) .
---MISSING--
+Uitvoeren wanneer de conditie (-o) wordt.
 
 Wait until the condition becomes (-o) .
---MISSING--
+Wacht totdat de conditie (-o) wordt.
 
 Return (report) the given value from a function or script.
---MISSING--
+Meld de gegeven waarde uit een functie of script.
 
 Run when the given message is broadcast.
---MISSING--
+Uitvoeren als het opgegeven bericht is verstuurd.
 
 Broadcast the given message.
---MISSING--
+Verstuur het opgegeven bericht.
 
 Do nothing. Used to add notes and documentation.
---MISSING--
+Doe niks. Wordt gebruikt om opmerkingen en documentatie toe te voegen.
 
 Repeat the enclosed blocks with the variable set to the current iteration number or item.
---MISSING--
+Herhaal de ingesloten blokken met de variabele ingesteld op het huidige iteratienummer of item.
 
 Repeat the enclosed blocks until the condition becomes (-o) .
---MISSING--
+Herhaald de ingesloten blokken totdat de conditie (-o) wordt.
 
 Stop this task.
---MISSING--
+Stop deze taak.
 
 Stop all tasks except this one.
---MISSING--
+Stop alle taken behalve deze.
 
 Wait the given number of microseconds.
---MISSING--
+Wacht het opgegeven aantal microseconden.
 
 Report the last broadcast message received.
---MISSING--
+Geef het laatst ontvangen bericht.
 
 Call the function with the given name and optional parameter list.
---MISSING--
+Roep de functie aan met de gegeven naam en optionele parameterlijst.
 
 Call the function with the given name and optional parameter list and report its return value.
---MISSING--
+Roep de functie met de gegeven naam en optionele parameterlijst aan en geefde retourwaarde.
 
 Report the sum of the given numbers.
---MISSING--
+Geef de som van de gegeven nummers.
 
 Report the first number minus the second.
---MISSING--
+Geef het resultaat van het eerste nummer min het tweede.
 
 Report the product of the given numbers.
---MISSING--
+Geef het resultaat van de gegeven nummers.
 
 Report the first number divided by the second.
---MISSING--
+Geef het resultaat van het eerste nummer gedeeld door het tweede.
 
 Report the remainder of dividing the first number by the second.
---MISSING--
+Geef de rest van het delen van het eerste getal door het tweede.
 
 Report the absolute value of the given number (always >= 0).
---MISSING--
+Geef de absolute waarde van het gegeven getal (altijd >= 0).
 
 Report the minimum of the values.
---MISSING--
+Geef de laagste waarde zien.
 
 Report the maximum of the values.
---MISSING--
+Geef de grootste waarde.
 
 Report a randomly chosen number in the given range.
---MISSING--
+Geef een willekeurig gekozen nummer binnen het opgegeven bereik.
 
 Report (-o) if the first value is less than the second one.
---MISSING--
+Geef (-o) als de eerste waarde kleiner is dan de tweede.
 
 Report (-o) if the first value is less than or equal to the second one.
---MISSING--
+Geef (-o) als de eerste waarde kleiner of gelijk is aan de tweede.
 
 Report (-o) if the two values are equal.
---MISSING--
+Geef (-o) als de twee waarden gelijk zijn.
 
 Report (-o) if the two values are not equal.
---MISSING--
+Geef (-o) als de twee waarden niet gelijk zijn.
 
 Report (-o) if the first value is greater than or equal to the second one.
---MISSING--
+Geef (-o) als de eerste waarde groter of gelijk is aan de tweede.
 
 Report (-o) if the first value is greater than the second one.
---MISSING--
+Geef (-o) als de eerste waarde groter is dan de tweede.
 
 Boolean constant ( (-o) or (o-) ).
---MISSING--
+Booleaanse constante ( (-o) or (o-) ).
 
 Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
---MISSING--
+Geef de logische tegenpool van een Booleaanse ( (-o) of (o-) ) waarde.
 
 Report (-o) if both values are (-o)
---MISSING--
+Geef (-o) als beide waren (-o) zijn
 
 Report (-o) if either value is (-o)
---MISSING--
+Geef (-o) als een van de waardes (-o) is
 
 Report (-o) if first input is a value of the given data type.
---MISSING--
+Geef (-o) als de eerste invoer een waarde is van het gegevenstype.
 
 Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
---MISSING--
+Geef de numerieke waarde van een hexadecimale string (bereik: -0x1FFFFFFF tot 0x1FFFFFFF)
 
 Report bitwise AND of two numbers.
---MISSING--
+Geef de bitgewijze AND van twee nummers.
 
 Report bitwise OR of two numbers.
---MISSING--
+Geef de bitgewijze OR van twee nummers.
 
 Report bitwise XOR (exclusive OR) of two numbers.
---MISSING--
+Geef de bitgewijze XOR (exclusive OR) van twee nummers.
 
 Report bitwise inverse of the given number.
---MISSING--
+Geef de bitgewijze inverse van het gegeven getal.
 
 Report the given number shifted left by the given number of bits.
---MISSING--
+Geef het gegeven getal links verschoven met het gegeven aantal bits.
 
 Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
---MISSING--
+Geef het gegeven getal rechts verschoven met het gegeven aantal bits (rekenkundige verschuiving; teken blijft behouden)
 
 Set a variable to the given value.
---MISSING--
+Geef een variabele de opgegeven waarde.
 
 Change a variable by the given amount.
---MISSING--
+Verander een variabele met de gegeven waarde.
 
 Create a variable local to the containing script with the given initial value.
---MISSING--
+Maak een lokale variabele in het script met de opgegeven beginwaarde.
 
 Report the Nth item of a list, string, or byte array.
---MISSING--
+Geef het N-de item van een lijst, tekenreeks of een byte-array.
 
 Report the number of items in a list, string, or byte array.
---MISSING--
+Geef het aantal items in een lijst, tekenreeks of byte array.
 
 Join (concatenate) the given lists, strings, or byte arrays and report the result.
---MISSING--
+Voeg de opgegeven lijsten, tekenreeksen of byte arrays samen en geef het resultaat.
 
 Create and report a short list containing the given items. Length limited by available stack space.
---MISSING--
+Maak en geef een korte lijst met de gegeven items. Lengte beperkt door beschikbare stapelruimte.
 
 Add an item to the end of a list.
---MISSING--
+Voeg een item toe aan het einde van een lijst.
 
 Replace the Nth item (or all items) of a list or byte array with the given value.
---MISSING--
+Vervang het N-de item (of alle items) van een lijst of byte-array door de gegeven waarde.
 
 Delete the Nth item (or all items) of a list.
---MISSING--
+Verwijder het N-de item (of alle items) van een lijst.
 
 Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
---MISSING--
+Vind en geef de index van een item in een lijst of een substring in een string. Geef -1 indien niet gevonden.
 
 Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
---MISSING--
+Geef een kopie vanaf de opgegeven index tot het einde (of optionele stopindex) van de opgegeven lijst, tekenreeks of byte-array.
 
 Split the given string with the given delimiter and report the result (a list of strings).
---MISSING--
+Splits de gegeven tekenreeks met het gegeven scheidingsteken en geef het resultaat (een lijst van tekenreeksen).
 
 Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
---MISSING--
+Combineer de items van een lijst in een tekenreeks, optioneel gescheiden door een scheidingsteken (bv. komma).
 
 Report the Unicode value ("code point") of the Nth character of the given string.
---MISSING--
+Geef de Unicode-waarde ("codepunt") van het N-de teken van de gegeven string.
 
 Report a string containing the given Unicode value ("code point") or list of values.
---MISSING--
+Geef een tekenreeks door, die de gegeven Unicode-waarde ("codepunt") of lijst van waarden bevat.
 
 Report a new list of the given length filled with zero or the optional value.
---MISSING--
+Geef een nieuwe lijst van de gegeven lengte, gevuld met nul of de optionele waarde.
 
 Report a new byte array of the given length filled with zero or the optional value.
---MISSING--
+Geef een nieuwe byte-array van de gegeven lengte, gevuld met nul of de optionele waarde.
 
 Report a byte array containing the UTF-8 bytes of the given string.
---MISSING--
+Geef een byte-array met de UTF-8 bytes van de gegeven string.
 
 Report the number of words of memory available. Stop button frees up memory.
---MISSING--
+Geef het aantal beschikbare woorden geheugen aan. Stoptoets maakt geheugen vrij.
+
+
