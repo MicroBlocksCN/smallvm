@@ -1,6 +1,6 @@
 module Octopus
 author ELECFREAKS
-version 1 0 
+version 1 1 
 depends 'OLED Graphics' 'Temperature Humidity (DHT11, DHT22)' 
 description 'ELECFREAKS Octopus Component Library
 
@@ -21,9 +21,9 @@ http://wiki.elecfreaks.com/en/microbit/sensor/octopus-sensors/
   space
   spec ' ' 'Octopus set servo angle' 'Octopus 180° servo pin _ angle to _ ° (0~180)' 'num num' 0 90
   space
-  spec 'r' 'Octopus get distance' 'Octopus sonar  trig _ echo _ distance(cm)' 'num num' 17 16
+  spec 'r' 'Octopus get distance' 'Octopus sonar trig _ echo _ distance (cm)' 'num num' 17 16
   space
-  spec 'r' 'Octopus get light' 'Octopus value of light intensity(Lux) at pin _' 'num' 26
+  spec 'r' 'Octopus get light' 'Octopus value of light intensity (Lux) at pin _' 'num' 26
   space
   spec 'r' 'Octopus get temperature' 'Octopus value of DHT11 temperature (°C) at pin _' 'num' 26
   spec 'r' 'Octopus get humidity' 'Octopus value of DHT11 humidity (0~100) at pin _' 'num' 26
@@ -35,13 +35,13 @@ http://wiki.elecfreaks.com/en/microbit/sensor/octopus-sensors/
   spec 'r' 'Octopus get loudness' 'Octopus value of noise (dB) at pin _' 'num' 26
   space
   spec ' ' 'Octopus draw string' 'Octopus OLED show _ at x _ y _' 'str num num' 'hello!' 0 0
-  spec ' ' 'Octopus clear OLED' 'Octopus  OLED clear'
-  spec ' ' 'Octopus draw pixel' 'Octopus  OLED draw pixel x _ y _' 'num num' 63 31
-  spec ' ' 'Octopus draw line' 'Octopus  OLED draw line from x _ y _ to x _ y _' 'num num num num' 0 0 127 63
+  spec ' ' 'Octopus clear OLED' 'Octopus OLED clear'
+  spec ' ' 'Octopus draw pixel' 'Octopus OLED draw pixel x _ y _' 'num num' 63 31
+  spec ' ' 'Octopus draw line' 'Octopus OLED draw line from x _ y _ to x _ y _' 'num num num num' 0 0 127 63
   spec ' ' 'Octopus draw rectangle' 'Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)' 'num num num num num' 0 0 60 30 0
-  spec ' ' 'Octopus fill rectangle' 'Octopus  OLED fill rectangle x _ y _ w _ h _' 'num num num num' 0 0 60 30
-  spec ' ' 'Octupus draw circle' 'Octopus  OLED draw circle x _ y _ radius _' 'num num num' 10 10 10
-  spec ' ' 'Octopus fill circle' 'Octopus  OLED fill circle x _ y _ radius _' 'num num num' 10 10 10
+  spec ' ' 'Octopus fill rectangle' 'Octopus OLED fill rectangle x _ y _ w _ h _' 'num num num num' 0 0 60 30
+  spec ' ' 'Octupus draw circle' 'Octopus OLED draw circle x _ y _ radius _' 'num num num' 10 10 10
+  spec ' ' 'Octopus fill circle' 'Octopus OLED fill circle x _ y _ radius _' 'num num num' 10 10 10
 
 to 'Octopus LED pin' pin bool {
   digitalWriteOp pin bool

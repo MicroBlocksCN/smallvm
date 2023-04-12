@@ -1,10 +1,10 @@
 module WuKong2040 Output
 author ELECFREAKS
-version 1 0 
+version 1 1 
 depends Tone 
 tags pico picow wukong2040 wukong2040 pico picow tone 
-choices wk2040_rainbowLEDMenu '0' '1' 'all'
-choices wk2040_motorMenu 'M1' 'M2' 'M3' 'M4'
+choices wk2040_rainbowLEDMenu '0' '1' all 
+choices wk2040_motorMenu M1 M2 M3 M4 
 description 'ELECFREAKS WuKong2040 multi-function expansion board.
 
 Features:
@@ -47,15 +47,16 @@ http://wiki.elecfreaks.com/en/pico/extension-module/wukong2040-pico
 '
 variables _wk2040_pixels 
 
-  spec ' ' 'wk2040_set_LED_color' 'WuKong2040  rainbowLED _ color to _' 'menu.wk2040_rainbowLEDMenu color' 0
+  spec ' ' 'wk2040_set_LED_color' 'WuKong2040 rainbowLED _ color to _' 'menu.wk2040_rainbowLEDMenu color' 0
   spec ' ' 'wk2040_set_LED_RGB' 'WuKong2040 rainbowLED _ R _ G _ B _ (0~255)' 'menu.wk2040_rainbowLEDMenu num num num' '0' 0 0 255
   spec ' ' 'wk2040_turn_off_all_LEDs' 'WuKong2040 clear all rainbowLED'
   space
   spec ' ' 'wk2040_set_motor_speed' 'WuKong2040 motor _ speed to _ (-100~100)' 'menu.wk2040_motorMenu num' 'M1' 50
   spec ' ' 'WuKong2040 stop motor' 'WuKong2040 stop motor _' 'menu.wk2040_motorMenu' 'M1'
-  spec ' ' 'wk2040_stop_all_motors' 'WuKong2040 stop all motor'
+  spec ' ' 'wk2040_stop_all_motors' 'WuKong2040 stop all motors'
   space
   spec ' ' 'wk2040_beat' 'WuKong2040 buzzer beep _ ms' 'auto' '100'
+  space
   spec ' ' '_wk2040_initLEDs' '_wk2040_initLEDs'
   spec 'r' '_wk2040_colorFromRGB' '_color r _ g _ b _ (0-255)' 'num num num' 0 100 100
 
@@ -95,9 +96,9 @@ to '_wk2040_set_motor_speed' pin1 pin2 speed {
   }
 }
 
-to wk2040_beat duratiom {
+to wk2040_beat duration {
   local 'pin_buzzer' 9
-  local 'end time' ((millisOp) + duratiom)
+  local 'end time' ((millisOp) + duration)
   repeatUntil ((millisOp) >= (v 'end time')) {
     digitalWriteOp pin_buzzer true
     waitMillis 400
