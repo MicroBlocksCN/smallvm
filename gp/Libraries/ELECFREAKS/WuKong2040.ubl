@@ -101,9 +101,9 @@ to wk2040_beat duration {
   local 'end time' ((millisOp) + duration)
   repeatUntil ((millisOp) >= (v 'end time')) {
     digitalWriteOp pin_buzzer true
-    waitMillis 400
+    waitMicros 400
     digitalWriteOp pin_buzzer false
-    waitMillis 400
+    waitMicros 400
   }
 }
 
