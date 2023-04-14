@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 29 2022
+# Last updated: April 14 2023
 
 #########################
 # Blocks and categories #
@@ -110,11 +110,17 @@ terug _
 when _ received
 wanneer _ ontvangen
 
+go!
+start!
+
 broadcast _
 zend _
 
 comment _
 commentaar _
+
+How this works...
+Hoe dit werkt...
 
 for _ in _ _
 voor _ in _ _
@@ -136,6 +142,12 @@ laatste bericht
 
 call _
 roep _ aan
+
+function name
+functienaam
+
+parameter list
+parameterlijst
 
 with _
 met _
@@ -194,6 +206,9 @@ byte array
 Advanced:
 Gevorderd
 
+rescale _ from ( _ , _ ) to ( _ , _ )
+herschaal _ van ( _ , _ ) naar ( _ , _ )
+
 hex _
 hex _
 
@@ -228,6 +243,18 @@ Data
 list
 lijst
 
+cat
+kat
+
+dog
+hond
+
+bird
+vogel
+
+fish
+vis
+
 length of _
 lengte van _
 
@@ -248,6 +275,9 @@ voeg _ _ samen
 
 copy _ from _
 kopieer _ van _
+
+smiles
+lachen
 
 to _
 naar _
@@ -278,6 +308,9 @@ nieuwe byte array _
 
 as byte array _
 als byte array _
+
+aByteListOrString
+eenByteLijstOfReeks
 
 with all _
 met alles als _
@@ -349,6 +382,9 @@ rpi kanaal _
 spi exchange bytes _
 spi uitgewisselde bytes _
 
+aByteArray
+eenByteArray
+
 serial open _ baud
 serieel open _ baud
 
@@ -363,6 +399,12 @@ serieel schrijven _
 
 serial write _ starting at _
 serieel schrijven _ startend bij _
+
+aByteStringOrByteArray
+eenByteReeksOfByteArray
+
+soft serial write byte _ pin _ baud _
+soft seriele schrijf byte _ pin _ baud _
 
 print _
 schrijf _
@@ -415,8 +457,14 @@ radio zend nummer _
 radio send string _
 radio zend tekst _
 
+Hello!
+Hallo!
+
 radio send pair _ = _
 radio zend paar _ = _
+
+light
+licht
 
 radio message received?
 radio boodschap ontvangen?
@@ -764,6 +812,9 @@ Scrollen
 scroll text _
 scroll tekst _
 
+HELLO ROSA!
+HALLO ROSA!
+
 scroll number _
 scroll nummer _
 
@@ -850,6 +901,9 @@ gevuld _
 write _ on TFT at x _ y _ color _
 schrijf _ op TFT op x _ y _ kleur _
 
+Hello World!
+Hallo Wereld!
+
 scale _ wrap _
 schaal _ wrap _
 
@@ -857,8 +911,11 @@ schaal _ wrap _
 # BMP library
 # Can display BMP image files on a TFT display
 
-display BMP file _
-Laat BPM bestand _ zien
+display BMP file _ at x _ y _
+laat BMP bestand _ zien op x _ y _
+
+image.bmp
+afbeelding.bmp
 
 ####
 # HSV color library
@@ -1011,6 +1068,9 @@ maak pluck pin _
 play WAV file _
 WAV bestand _ afspelen
 
+filename
+bestandsnaam
+
 ####
 # Turtle geometry library
 
@@ -1080,11 +1140,20 @@ volgende regel van bestand _
 next _ bytes of file _
 volgende _ bytes van bestand _
 
+read into _ from file _
+lees naar _ vanuit bestand _
+
+a ByteArray
+een ByteArray
+
 starting at _
 start op _
 
 file names
 bestandsnamen
+
+in directory _
+in map _
 
 size of file _
 grootte van bestand _
@@ -1111,8 +1180,20 @@ _ is een grote letter
 _ begins with _
 _ begint met _
 
+prefix
+voorvoegsel
+
+pre
+voor
+
 _ ends with _
 _ eindigt met _
+
+suffix
+achtervoegsel
+
+fix
+voegsel
 
 _ contains _
 _ bevat _
@@ -1120,8 +1201,14 @@ _ bevat _
 lowercase _
 maak _ in kleine letters
 
+THIS is a String! :)
+DIT is een string! :)
+
 uppercase _
 maak _ in hoofdletters
+
+Hello, world!
+Hallo, wereld!
 
 _ without white space
 _ zonder extra spaties
@@ -1132,8 +1219,14 @@ voeg string lijst _ samen met scheidingsteken _
 unicodes _
 unicodes _
 
+aString
+eenString
+
 string from unicodes _
 string van unicodes _
+
+aList
+eenLijst
 
 num2str _
 num2str
@@ -1150,11 +1243,17 @@ WiFi
 wifi connect to _ password _
 verbind wifi met _ wachtwoord _
 
+Network_Name
+Netwerk_Naam
+
 IP _ gateway _ subnet _
 IP _ gateway _ subnet _
 
 wifi create hotspot _ password _
 wifi maak hotspot _ wachtwoord _
+
+Network_Password
+Netwerk_Wachtwoord
 
 IP address
 IP adres
@@ -1316,8 +1415,11 @@ TFT aanraak druk
 HTTP client
 HTTP-client
 
-_ data _ to http܃// _ 
+_ data _ to http܃// _
 _ data _ naar http܃// _
+
+MicroBlocks is fun
+MicroBlocks is leuk
 
 port _
 poort _
@@ -1339,6 +1441,9 @@ antwoord _ op HTTP verzoek
 
 with body _
 met body _
+
+Welcome to the MicroBlocks HTTP server
+Welkom op de MicroBlocks HTTP server
 
 and headers _
 en headers _
@@ -1381,6 +1486,9 @@ type WebSocket gebeurtenis _
 
 send _ to WebSocket client _
 stuur _ naar WebSocket client _
+
+Hello, Client!
+Hallo, client!
 
 ####
 # Web Things library
@@ -1542,11 +1650,17 @@ MQTT verbroken
 MQTT sub _
 MQTT sub _
 
+testTopic
+testOnderwerp
+
 MQTT unsub _
 MQTT unsub _
 
 MQTT pub topic _ payload _
 MQTT pub onderwerp _ payload _
+
+Hello!
+Hallo!
 
 retain _ QoS _
 behoud _ QoS _
@@ -1562,6 +1676,18 @@ onderwerp voor MQTT-gebeurtenis _
 
 payload for MQTT event _
 payload voor MQTT-gebeurtenis _
+
+MQTT set will topic _ payload _ retain _ QoS _
+MQTT zet will topic _ payload _ retain _ QoS _
+
+testWill
+testWill
+
+Last will!
+Laatste wil!
+
+buffer sizes _
+buffer groottes _
 
 ####
 # UDP
@@ -1748,7 +1874,7 @@ Project lezen van het bord...
 Loading project...
 Project laden
 
-Found a newer version of 
+Found a newer version of
 Een nieuwere versie gevonden van
 
 Do you want me to update the one in the project?
@@ -2763,5 +2889,3 @@ Geef een byte-array met de UTF-8 bytes van de gegeven string.
 
 Report the number of words of memory available. Stop button frees up memory.
 Geef het aantal beschikbare woorden geheugen aan. Stoptoets maakt geheugen vrij.
-
-
