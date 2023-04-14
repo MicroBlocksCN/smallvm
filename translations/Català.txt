@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 29 2022
+# Last updated: March 14 2023
 
 #########################
 # Blocks and categories #
@@ -110,11 +110,17 @@ retorna _
 when _ received
 quan rebi _
 
+go!
+endavant!
+
 broadcast _
 envia _
 
 comment _
 comentari _
+
+How this works...
+Així funciona...
 
 for _ in _ _
 per cada _ en _ _
@@ -136,6 +142,12 @@ last message
 
 call _
 crida _
+
+function name
+nom de la funció
+
+parameter list
+llista de paràmetres
 
 with _
 amb paràmetre(s) _
@@ -194,6 +206,9 @@ llista de bytes
 Advanced:
 Avançat:
 
+rescale _ from ( _ , _ ) to ( _ , _ )
+reescala _ de ( _ , _ ) a ( _ , _ )
+
 hex _
 hexadecimal _
 
@@ -228,6 +243,18 @@ Dades
 list
 llista
 
+cat
+gat
+
+dog
+gos
+
+bird
+ocell
+
+fish
+peix
+
 length of _
 llargada de _
 
@@ -248,6 +275,9 @@ uneix _ _
 
 copy _ from _
 copia _ a partir de _
+
+smiles
+foca
 
 to _
 fins a _
@@ -278,6 +308,9 @@ nova llista de bytes de llargada _
 
 as byte array _
 llista de bytes a partir de _
+
+aByteListOrString
+llistaDeBytesOCadenaDeText
 
 with all _
 plena amb _
@@ -349,6 +382,9 @@ canal RPI _
 spi exchange bytes _
 intercanvi a bytes _ per SPI
 
+aByteArray
+llistaDeBytes
+
 serial open _ baud
 obre port sèrie a _ bauds
 
@@ -363,6 +399,12 @@ escriu _ al port sèrie
 
 serial write _ starting at _
 escriu _ al port sèrie començant per _
+
+aByteStringOrByteArray
+cadenaDeTextOLlistaDeBytes
+
+soft serial write byte _ pin _ baud _
+escriu byte _ al port sèrie virtual al pin _ a _ bauds
 
 print _
 escriu _
@@ -415,8 +457,14 @@ envia nombre _ per ràdio
 radio send string _
 envia text _ per ràdio
 
+Hello!
+Hola!
+
 radio send pair _ = _
 envia associació _ = _ per ràdio
+
+light
+llum
 
 radio message received?
 missatge de ràdio rebut?
@@ -764,6 +812,9 @@ Text animat
 scroll text _
 anima el text _
 
+HELLO ROSA!
+HOLA, ROSA!
+
 scroll number _
 anima el nombre _
 
@@ -850,6 +901,9 @@ ple _
 write _ on TFT at x _ y _ color _
 escriu _ a x _ y _ color _
 
+Hello World!
+Hola, món!
+
 scale _ wrap _
 escala _ amb salts de línia _
 
@@ -857,8 +911,11 @@ escala _ amb salts de línia _
 # BMP library
 # Can display BMP image files on a TFT display
 
-display BMP file _
-mostra arxiu BMP _
+display BMP file _ at x _ y _
+mostra imatge BMP _ a x _ y _
+
+image.bmp
+imatge.bmp
 
 ####
 # HSV color library
@@ -1011,6 +1068,9 @@ fixa el pin de puntejat a _
 play WAV file _
 reprodueix arxiu WAV _
 
+filename
+nom d'arxiu
+
 ####
 # Turtle geometry library
 
@@ -1080,11 +1140,20 @@ següent línia de l'arxiu _
 next _ bytes of file _
 següents _ bytes de l'arxiu _
 
+read into _ from file _
+llegeix a _ des de l'arxiu _
+
+a ByteArray
+una LlistaDeBytes
+
 starting at _
 començant des de _
 
 file names
 noms d'arxius
+
+in directory _
+al directori _
 
 size of file _
 mida de l'arxiu _
@@ -1111,8 +1180,20 @@ _ és en majúscules
 _ begins with _
 _ comença per _
 
+prefix
+prefix
+
+pre
+pre
+
 _ ends with _
 _ acaba en _
+
+suffix
+sufix
+
+fix
+fix
 
 _ contains _
 _ conté _
@@ -1120,8 +1201,14 @@ _ conté _
 lowercase _
 _ en minúscules
 
+THIS is a String! :)
+AIXÒ és un Text! :)
+
 uppercase _
 _ en majúscules
+
+Hello, world!
+Hola, món!
 
 _ without white space
 _ sense espais en blanc
@@ -1132,8 +1219,14 @@ uneix llista de texts _ amb separador _
 unicodes _
 unicodes de _
 
+aString
+unText
+
 string from unicodes _
 text a partir dels unicodes _
+
+aList
+unaLlista
 
 num2str _
 nombre _ a text
@@ -1150,11 +1243,17 @@ WiFi
 wifi connect to _ password _
 connecta't a la wifi _ amb contrasenya _
 
+Network_Name
+Nom_De_Xarxa
+
 IP _ gateway _ subnet _
 IP _ passarel·la _ subxarxa _
 
 wifi create hotspot _ password _
 crea punt d'accés wifi _ amb contrasenya _
+
+Network_Password
+Contrasenya_De_Xarxa
 
 IP address
 adreça IP
@@ -1319,6 +1418,9 @@ Client HTTP
 _ data _ to http܃// _ 
 petició _ amb contingut _ a http܃// _ 
 
+MicroBlocks is fun
+MicroBlocks és divertit
+
 port _
 port _
 
@@ -1339,6 +1441,9 @@ respon _ a la sol·licitud HTTP
 
 with body _
 amb contingut _
+
+Welcome to the MicroBlocks HTTP server
+Benvinguts al servidor HTTP de MicroBlocks
 
 and headers _
 i capçaleres _
@@ -1381,6 +1486,9 @@ tipus de l'esdeveniment de WebSocket _
 
 send _ to WebSocket client _
 envia _ al client de WebSocket _
+
+Hello, Client!
+Hola, client!
 
 ####
 # Web Things library
@@ -1542,6 +1650,9 @@ desconnecta MQTT
 MQTT sub _
 subscriu-te al tema d'MQTT _
 
+testTopic
+temaDeProva
+
 MQTT unsub _
 abandona el tema d'MQTT _
 
@@ -1562,6 +1673,18 @@ tema de l'esdeveniment MQTT _
 
 payload for MQTT event _
 contingut de l'esdeveniment MQTT _
+
+MQTT set will topic _ payload _ retain _ QoS _
+--MISSING--
+
+testWill
+--MISSING--
+
+Last will!
+--MISSING--
+
+buffer sizes _
+--MISSING--
 
 ####
 # UDP
@@ -2165,7 +2288,7 @@ delete
 elimina
 
 Input type:
-Tipus de ranura:
+Tipus de casella:
 
 string only
 només text
