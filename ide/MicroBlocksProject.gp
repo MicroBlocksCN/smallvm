@@ -322,7 +322,15 @@ method parsedSpecs MicroBlocksProject cmdList {
 			slotTypes = ''
 			if ((count args) > 3) { slotTypes = (at args 4) }
 			slotDefaults = (array)
-			if ((count args) > 4) { slotDefaults = (copyArray args ((count args) - 4) 5) }
+			if ((count args) > 4) {
+				slotDefaults = (copyArray args ((count args) - 4) 5)
+				for n (count slotDefaults) {
+					default = (at slotDefaults n)
+					if (isClass default 'String') {
+						atPut slotDefaults n (localized default)
+					}
+				}
+			}
 			spec = (blockSpecFromStrings op blockType specString slotTypes slotDefaults)
 			atPut specs op spec
 		}

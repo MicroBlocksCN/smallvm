@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 29 2022
+# Last updated: March 14 2023
 
 #########################
 # Blocks and categories #
@@ -75,9 +75,13 @@ return _
 
 when _ received
 
+go!
+
 broadcast _
 
 comment _
+
+How this works...
 
 for _ in _ _
 
@@ -92,6 +96,10 @@ stop all
 last message
 
 call _
+
+function name
+
+parameter list
 
 with _
 
@@ -131,6 +139,8 @@ byte array
 
 Advanced:
 
+rescale _ from ( _ , _ ) to ( _ , _ )
+
 hex _
 
 Variables
@@ -155,6 +165,14 @@ Data
 
 list
 
+cat
+
+dog
+
+bird
+
+fish
+
 length of _
 
 item _ of _
@@ -168,6 +186,8 @@ add _ to list _
 join _ _
 
 copy _ from _
+
+smiles
 
 to _
 
@@ -188,6 +208,8 @@ new list length _
 new byte array _
 
 as byte array _
+
+aByteListOrString
 
 with all _
 
@@ -237,6 +259,8 @@ rpi channel _
 
 spi exchange bytes _
 
+aByteArray
+
 serial open _ baud
 
 serial close
@@ -246,6 +270,10 @@ serial read
 serial write _
 
 serial write _ starting at _
+
+aByteStringOrByteArray
+
+soft serial write byte _ pin _ baud _
 
 print _
 
@@ -283,7 +311,11 @@ radio send number _
 
 radio send string _
 
+Hello!
+
 radio send pair _ = _
+
+light
 
 radio message received?
 
@@ -526,6 +558,8 @@ Scrolling
 
 scroll text _
 
+HELLO ROSA!
+
 scroll number _
 
 pausing _ ms
@@ -587,13 +621,17 @@ filled _
 
 write _ on TFT at x _ y _ color _
 
+Hello World!
+
 scale _ wrap _
 
 ####
 # BMP library
 # Can display BMP image files on a TFT display
 
-display BMP file _
+display BMP file _ at x _ y _
+
+image.bmp
 
 ####
 # HSV color library
@@ -703,6 +741,8 @@ set pluck pin _
 
 play WAV file _
 
+filename
+
 ####
 # Turtle geometry library
 
@@ -751,9 +791,15 @@ next line of file _
 
 next _ bytes of file _
 
+read into _ from file _
+
+a ByteArray
+
 starting at _
 
 file names
+
+in directory _
 
 size of file _
 
@@ -773,13 +819,25 @@ _ is uppercase
 
 _ begins with _
 
+prefix
+
+pre
+
 _ ends with _
+
+suffix
+
+fix
 
 _ contains _
 
 lowercase _
 
+THIS is a String! :)
+
 uppercase _
+
+Hello, world!
 
 _ without white space
 
@@ -787,7 +845,11 @@ join string list _ separator _
 
 unicodes _
 
+aString
+
 string from unicodes _
+
+aList
 
 num2str _
 
@@ -800,9 +862,13 @@ WiFi
 
 wifi connect to _ password _
 
+Network_Name
+
 IP _ gateway _ subnet _
 
 wifi create hotspot _ password _
+
+Network_Password
 
 IP address
 
@@ -924,6 +990,8 @@ HTTP client
 
 _ data _ to http܃// _ 
 
+MicroBlocks is fun
+
 port _
 
 ####
@@ -938,6 +1006,8 @@ HTTP server request
 respond _ to HTTP request
 
 with body _
+
+Welcome to the MicroBlocks HTTP server
 
 and headers _
 
@@ -967,6 +1037,8 @@ payload for WebSocket event _
 type of WebSocket event _
 
 send _ to WebSocket client _
+
+Hello, Client!
 
 ####
 # Web Things library
@@ -1079,9 +1151,13 @@ MQTT disconnect
 
 MQTT sub _
 
+testTopic
+
 MQTT unsub _
 
 MQTT pub topic _ payload _
+
+Hello!
 
 retain _ QoS _
 
@@ -1092,6 +1168,14 @@ binary _
 topic for MQTT event _
 
 payload for MQTT event _
+
+MQTT set will topic _ payload _ retain _ QoS _
+
+testWill
+
+Last will!
+
+buffer sizes _
 
 ####
 # UDP
