@@ -119,7 +119,7 @@ method objectAt Hand pixelPerfect {
   if (isNil pixelPerfect) { pixelPerfect = false }
   for m (reversed (morphsAt (morph page) x y)) {
     hdl = (handler m)
-    if (and (notNil hdl) (not (isClass hdl 'Caret'))) {
+    if (and (notNil hdl) (not (isClass hdl 'Caret')) (not (isClass hdl 'ShadowEffect'))) {
       if (and (isVisible m) (containsPoint (visibleBounds m) x y)) {
         if (or (noticesTransparentTouch m) (not pixelPerfect)) {return hdl}
         if (not (isTransparentAt m x y)) {return hdl}
