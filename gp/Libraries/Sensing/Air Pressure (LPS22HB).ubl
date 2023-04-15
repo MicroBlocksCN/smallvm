@@ -1,4 +1,4 @@
-module 'Air Pressure (LPS22HB)'
+module 'Air Pressure (LPS22HB)' Output
 author MicroBlocks
 version 1 2 
 description 'Sense air pressure and altitude with the LPS22HB air pressure sensor.
