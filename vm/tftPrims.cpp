@@ -486,7 +486,7 @@ int touchEnabled = false;
 		#define TFT_HEIGHT 64
 		#define IS_MONOCHROME true
 
-		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT);
+		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT, &Wire, -1, 400000, 400000);
 
 		#undef UPDATE_DISPLAY
 		#define UPDATE_DISPLAY() (tft.display())
