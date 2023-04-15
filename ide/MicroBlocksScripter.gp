@@ -253,7 +253,7 @@ method exportLibrary MicroBlocksScripter libName {
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
   catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) (20 * scale))
-  catHeight = ((height (morph categorySelector)) / scale)
+  catHeight = ((heightForItems categorySelector) / scale)
   blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) (20 * scale))
   columnHeaderHeight = 33
 

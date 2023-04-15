@@ -88,9 +88,6 @@ method scaleChanged MicroBlocksEditor {
 
   removeHint (global 'page')
   removeAllParts morph
-  addTopBarParts this
-  addTipBar this
-  addZoomButtons this
 
   // save the state of the current scripter
   if (2 == (global 'scale')) { oldScale = 1 } else { oldScale = 2 }
@@ -109,8 +106,16 @@ method scaleChanged MicroBlocksEditor {
   sendStopAll (smallRuntime)
   initialize (smallRuntime) scripter
 
-  lastStatus = nil // force update
+  // rebuild the editor
+  addLogo this
+  addTopBarParts this
+  addPart morph (morph title)
   addPart morph (morph scripter)
+  addTipBar this
+  addZoomButtons this
+
+  fixLayout scripter
+  lastStatus = nil // force update
   fixLayout this
 }
 
@@ -289,6 +294,7 @@ method fixZoomButtonsLayout MicroBlocksEditor {
 }
 
 // tip bar
+
 method addTipBar MicroBlocksEditor {
   tipBar = (initialize (new 'MicroBlocksTipBar'))
   setGlobal 'tipBar' tipBar
@@ -1032,8 +1038,8 @@ method drawOn MicroBlocksEditor aContext {
 method fixLayout MicroBlocksEditor fromScripter {
   setExtent morph (width (morph (global 'page'))) (height (morph (global 'page')))
   fixTopBarLayout this
-  fixZoomButtonsLayout this
   fixTipBarLayout this
+  fixZoomButtonsLayout this
   if (true != fromScripter) { fixScripterLayout this }
 }
 
