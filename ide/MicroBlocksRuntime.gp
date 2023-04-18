@@ -1126,6 +1126,8 @@ method installBoardSpecificBlocks SmallRuntime {
 		importEmbeddedLibrary scripter 'LED Display'
 	} ('Pico:ed' == boardType) {
 		importEmbeddedLibrary scripter 'LED Display'
+	} ('Wukong2040' == boardType) {
+		importEmbeddedLibrary scripter 'WuKong2040'
 	} ('Databot' == boardType) {
 		importEmbeddedLibrary scripter 'Databot'
 	}
