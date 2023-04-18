@@ -1991,7 +1991,8 @@ method getFileListFromBoard SmallRuntime {
 
 method getFileFromBoard SmallRuntime {
 	setCursor 'wait'
-	fileNames = (sorted (getFileListFromBoard this))
+	fileNames = (sorted (toArray (getFileListFromBoard this)))
+	fileNames = (copyWithout fileNames 'ublockscode')
 	setCursor 'default'
 	if (isEmpty fileNames) {
 		inform 'No files on board.'
