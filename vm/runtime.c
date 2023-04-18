@@ -607,14 +607,15 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 				*dst++ = ((n >> 24) & 0xFF);
 			} else if (StringType == type) {
 				*dst++ = 2; // item type (2 is string)
+				int maxStringItem = 20;
 				char *s = obj2str(item);
 				int len = strlen(s);
-				if (len <= 12) {
+				if (len <= maxStringItem) {
 					*dst++ = len;
 					for (int i = 0; i < len; i++) *dst++ = s[i];
 				} else {
-					*dst++ = 12; // send 9 bytes plus '...'
-					for (int i = 0; i < 9; i++) *dst++ = s[i];
+					*dst++ = maxStringItem; // send (maxStringItem - 3) bytes, then '...'
+					for (int i = 0; i < (maxStringItem - 3); i++) *dst++ = s[i];
 					for (int i = 0; i < 3; i++) *dst++ = '.';
 				}
 			} else if (BooleanType == type) {
