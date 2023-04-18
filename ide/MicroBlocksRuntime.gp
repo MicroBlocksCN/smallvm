@@ -441,7 +441,7 @@ method installDecompiledProject SmallRuntime proj {
 	checkForNewerLibraryVersions (project scripter) true
 	restoreScripts scripter // fix block colors
 	cleanUp (scriptEditor scripter)
-	saveAllChunks this
+	saveAllChunksAfterLoad this
 }
 
 method receivedChunk SmallRuntime chunkID chunkType bytecodes {
@@ -609,8 +609,11 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 	}
 	clearRunningHighlights this
 	doOneCycle (global 'page')
+
+	suspendCodeFileUpdates this
 	saveAllChunks this
 	verifyCRCs this
+	resumeCodeFileUpdates this
 }
 
 method softReset SmallRuntime {
@@ -892,6 +895,7 @@ method justConnected SmallRuntime {
 		readCodeFromBoard this
 	} else {
 		clearBoardIfConnected this true
+		forceFunctionChecks this
 		stopAndSyncScripts this true
 // xxx Disable this attempt to reuse scripts already on board for now; it sometimes fails
 // 		if (isEmpty chunkIDs) {
@@ -1259,6 +1263,7 @@ method saveAllChunks SmallRuntime {
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
 	recompileAll = false
+	verifyCRCs this
 	showDownloadProgress editor 3 1
 
 	setCursor 'default'
@@ -1349,7 +1354,13 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		return false
 	}
 
-	sendMsgSync this 'chunkCodeMsg' chunkID data
+	if (((msecsSinceStart) - lastPingRecvMSecs) < 50) {
+		sendMsg this 'chunkCodeMsg' chunkID data
+		sendMsg this 'pingMsg'
+	} else {
+		sendMsgSync this 'chunkCodeMsg' chunkID data
+	}
+	processMessages this
 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
 	// restart the chunk if it is a Block and is running
@@ -1511,7 +1522,12 @@ method saveVariableNames SmallRuntime {
 	varID = 0
 	for varName newVarNames {
 		if (notNil port) {
-			sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
+			if (0 == (varID % 50)) {
+				// send a sync message every N variables
+				sendMsgSync this 'varNameMsg' varID (toArray (toBinaryData varName))
+			} else {
+				sendMsg this 'varNameMsg' varID (toArray (toBinaryData varName))
+			}
 		}
 		varID += 1
 		if (0 == (varID % progressInterval)) {
