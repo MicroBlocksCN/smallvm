@@ -1727,7 +1727,8 @@ method sendMsg SmallRuntime msgName chunkID byteList {
 	while ((byteCount dataToSend) > 0) {
 		// Note: Adafruit USB-serial drivers on Mac OS locks up if >= 1024 bytes
 		// written in one call to writeSerialPort, so send smaller chunks
-		byteCount = (min 50 (byteCount dataToSend))
+		// Note: Maximum serial write in Chrome browser is only 64 bytes!
+		byteCount = (min 64 (byteCount dataToSend))
 		chunk = (copyFromTo dataToSend 1 byteCount)
 		bytesSent = (writeSerialPort port chunk)
 		if (not (isOpenSerialPort port)) {
