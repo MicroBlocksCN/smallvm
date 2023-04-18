@@ -1320,6 +1320,7 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 
 	if (currentSrc == (at entry 4)) { return false } // source hasn't changed; save not needed
 	atPut entry 4 currentSrc // remember the source of the code we're about to save
+	atPut entry 2 -1 // clear the CRC
 
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
