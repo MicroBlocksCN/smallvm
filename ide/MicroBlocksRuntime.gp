@@ -1293,7 +1293,7 @@ method installBoardSpecificBlocks SmallRuntime {
 		importEmbeddedLibrary scripter 'TFT'
 		importEmbeddedLibrary scripter 'touchScreenPrims'
 	} ('ESP32' == boardType) {
-		importEmbeddedLibrary scripter 'HTTP client'
+		// importEmbeddedLibrary scripter 'HTTP client'
 	} ('TTGO RP2040' == boardType) {
 		importEmbeddedLibrary scripter 'LED Display'
 	} ('Pico:ed' == boardType) {
