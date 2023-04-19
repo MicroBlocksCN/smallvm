@@ -47,11 +47,11 @@ to homePage {
 <body><h1>RGB LED Color Settings</h1>
 <form action="">
 <label for="red">RED (0-255):</label>
-<input  style="accent-color: red" type="range" id="color" name="R" min="0" max="255" accent-color: #FF0000></br>
+<input  style="accent-color: red" type="range" id="color" name="R" min="50" max="255" accent-color: #FF0000></br>
 <label for="green">GREEN (0-255):</label>
-<input  style="accent-color: green" type="range" id="color" name="G" min="0" max="255"></br>
+<input  style="accent-color: green" type="range" id="color" name="G" min="50" max="255"></br>
 <label for="blue">BLUE (0-255):</label>
-<input  style="accent-color: blue" type="range" id="color" name="B" min="0" max="255"></br></br>
+<input  style="accent-color: blue" type="range" id="color" name="B" min="50" max="255"></br></br>
 <input style="background-color: #909090; font-size: x-large; padding: 10px 40px;" type="submit">
 </form></body></html>'
 }
