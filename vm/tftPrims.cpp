@@ -492,7 +492,11 @@ int touchEnabled = false;
 		#define UPDATE_DISPLAY() (tft.display())
 
 		void tftInit() {
-			readI2CReg(TFT_ADDR, 0); // make sure Wire is started with correct pins
+			if (!hasI2CPullups()) return; // no OLED connected and no I2C pullups
+
+			int reg = readI2CReg(TFT_ADDR, 0); // test if OLED responds at TFT_ADDR
+			if (reg < 0) return; // no OLED display detected
+
 			tft.begin(SSD1306_SWITCHCAPVCC, TFT_ADDR);
 			tftClear();
 			useTFT = true;
@@ -728,11 +732,15 @@ static int color24to16b(int color24b) {
 }
 
 void tftClear() {
+	if (!useTFT) return;
+
 	tft.fillScreen(BLACK);
 	UPDATE_DISPLAY();
 }
 
 void tftSetHugePixel(int x, int y, int state) {
+	if (!useTFT) return;
+
 	// simulate a 5x5 array of square pixels like the micro:bit LED array
 	#if defined(PICO_ED)
 		if ((1 <= x) && (x <= 5) && (1 <= y) && (y <= 5)) {
@@ -761,6 +769,8 @@ void tftSetHugePixel(int x, int y, int state) {
 }
 
 void tftSetHugePixelBits(int bits) {
+	if (!useTFT) return;
+
 	#if defined(PICO_ED)
 		tft.clearDisplayBuffer();
 		tft.showMicroBitPixels(bits, 1, 1);
@@ -779,6 +789,8 @@ void tftSetHugePixelBits(int bits) {
 }
 
 OBJ primSetBacklight(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	if ((argCount < 1) || !isInt(args[0])) return falseObj;
 	int brightness = obj2int(args[0]);
 	(void) (brightness); //  // reference var to suppress compiler warning
@@ -807,6 +819,8 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 }
 
 static OBJ primGetWidth(int argCount, OBJ *args) {
+	if (!useTFT) return zeroObj;
+
 	#ifdef TFT_WIDTH
 		return int2obj(TFT_WIDTH);
 	#else
@@ -815,6 +829,8 @@ static OBJ primGetWidth(int argCount, OBJ *args) {
 }
 
 static OBJ primGetHeight(int argCount, OBJ *args) {
+	if (!useTFT) return zeroObj;
+
 	#ifdef TFT_HEIGHT
 		return int2obj(TFT_HEIGHT);
 	#else
@@ -823,6 +839,8 @@ static OBJ primGetHeight(int argCount, OBJ *args) {
 }
 
 static OBJ primSetPixel(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
 	int color16b = color24to16b(obj2int(args[2]));
@@ -832,6 +850,8 @@ static OBJ primSetPixel(int argCount, OBJ *args) {
 }
 
 static OBJ primLine(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	int x0 = obj2int(args[0]);
 	int y0 = obj2int(args[1]);
 	int x1 = obj2int(args[2]);
@@ -843,6 +863,8 @@ static OBJ primLine(int argCount, OBJ *args) {
 }
 
 static OBJ primRect(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
 	int width = obj2int(args[2]);
@@ -859,6 +881,8 @@ static OBJ primRect(int argCount, OBJ *args) {
 }
 
 static OBJ primRoundedRect(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
 	int width = obj2int(args[2]);
@@ -876,6 +900,8 @@ static OBJ primRoundedRect(int argCount, OBJ *args) {
 }
 
 static OBJ primCircle(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	int x = obj2int(args[0]);
 	int y = obj2int(args[1]);
 	int radius = obj2int(args[2]);
@@ -891,6 +917,8 @@ static OBJ primCircle(int argCount, OBJ *args) {
 }
 
 static OBJ primTriangle(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	int x0 = obj2int(args[0]);
 	int y0 = obj2int(args[1]);
 	int x1 = obj2int(args[2]);
@@ -909,6 +937,8 @@ static OBJ primTriangle(int argCount, OBJ *args) {
 }
 
 static OBJ primText(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	OBJ value = args[0];
 	int x = obj2int(args[1]);
 	int y = obj2int(args[2]);
@@ -938,6 +968,8 @@ static OBJ primText(int argCount, OBJ *args) {
 // 8 bit bitmap ops
 
 static OBJ primMergeBitmap(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	OBJ bitmap = args[0];
 	int bitmapWidth = obj2int(args[1]);
 	OBJ buffer = args[2];
@@ -971,6 +1003,8 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) {
 uint16_t bufferPixels[TFT_WIDTH * 8];
 
 static OBJ primDrawBuffer(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+
 	OBJ buffer = args[0];
 	OBJ palette = args[1]; // List, index-1 based
 	int scale = max(min(obj2int(args[2]), 8), 1);
