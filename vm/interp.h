@@ -270,6 +270,7 @@ int pinCount();
 int mapDigitalPinNum(int userPinNum);
 void setPinMode(int pin, int newMode);
 void turnOffPins();
+int hasI2CPullups();
 void updateMicrobitDisplay();
 void checkButtons();
 void resetRadio();

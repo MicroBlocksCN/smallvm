@@ -20,33 +20,62 @@
 	#define Wire Wire1
 #endif
 
+// Override the default i2c pins on some boards
+
+#if defined(PICO_ED)
+	#define PIN_WIRE_SCL 19
+	#define PIN_WIRE_SDA 18
+#elif defined(WUKONG2040)
+	#define PIN_WIRE_SCL 17
+	#define PIN_WIRE_SDA 16
+#elif defined(ARDUINO_Mbits)
+	// Note: SDA and SCL are reversed from most other ESP32 boards!
+	#define PIN_WIRE_SCL 21
+	#define PIN_WIRE_SDA 22
+#elif !defined(PIN_WIRE_SCL)
+	#if defined(PIN_WIRE0_SCL)
+		#define PIN_WIRE_SCL PIN_WIRE0_SCL
+		#define PIN_WIRE_SDA PIN_WIRE0_SDA
+	#elif defined(ARDUINO_ARCH_ESP32)
+		#define PIN_WIRE_SCL SCL
+		#define PIN_WIRE_SDA SDA
+	#endif
+#endif
+
 // i2c helper functions
 
 static int wireStarted = false;
 
+int hasI2CPullups() {
+	// Return true if the board has pullup resistors on the i2c pins.
+	// To avoid hanging, do not use Wire if I2C lines do not have pullups.
+
+	// First, drive the I2C lines low to discharge them
+	pinMode(PIN_WIRE_SCL, OUTPUT);
+	pinMode(PIN_WIRE_SDA, OUTPUT);
+	digitalWrite(PIN_WIRE_SCL, LOW);
+	digitalWrite(PIN_WIRE_SDA, LOW);
+
+	// Switch to input mode
+	pinMode(PIN_WIRE_SCL, INPUT);
+	pinMode(PIN_WIRE_SDA, INPUT);
+
+	// Both SCL and SDA should read high if those pins have pullups
+	return ((digitalRead(PIN_WIRE_SCL) == HIGH) && (digitalRead(PIN_WIRE_SDA) == HIGH));
+}
+
 static void startWire() {
-	#if defined(PICO_ED)
-		Wire.setSDA(18);
-		Wire.setSCL(19);
-	#elif defined(WUKONG2040)
-		Wire.setSDA(16);
-		Wire.setSCL(17);
-	#elif defined(ARDUINO_Mbits)
-		// Note: SDA and SCL are reversed from most other ESP32 boards!
-		Wire.setPins(22, 21); // SDA, SCL
+	#if defined(ARDUINO_ARCH_RP2040)
+		Wire.setSDA(PIN_WIRE_SDA);
+		Wire.setSCL(PIN_WIRE_SCL);
+	#elif defined(ARDUINO_ARCH_ESP32)
+		Wire.setPins(PIN_WIRE_SDA, PIN_WIRE_SCL);
 	#endif
+
 	#if defined(ARDUINO_ARCH_SAMD)
 		// Some Adafruit SAMD21 boards lack external pullups.
 		// To avoid hang on I2C operations, do not start Wire if the I2C lines are not high.
-		pinMode(PIN_WIRE_SCL, OUTPUT);
-		pinMode(PIN_WIRE_SDA, OUTPUT);
-		digitalWrite(PIN_WIRE_SCL, LOW);
-		digitalWrite(PIN_WIRE_SDA, LOW);
-		pinMode(PIN_WIRE_SCL, INPUT);
-		pinMode(PIN_WIRE_SDA, INPUT);
-		if ((digitalRead(PIN_WIRE_SCL) != HIGH) || (digitalRead(PIN_WIRE_SDA) != HIGH)) {
-			return;
-		}
+		if (!hasI2CPullups()) return;
 	#endif
 	Wire.begin();
 	Wire.setClock(400000); // i2c fast mode (seems pretty ubiquitous among i2c devices)
