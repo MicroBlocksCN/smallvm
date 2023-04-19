@@ -115,13 +115,11 @@ to wk2040_set_LED_color num color {
   '_wk2040_initLEDs'
   if (num == '0') {
     atPut 1 _wk2040_pixels color
-    atPut 'last' _wk2040_pixels 0
     '[display:neoPixelSend]' _wk2040_pixels
     waitMicros 150
   }
   if (num == '1') {
     atPut 'last' _wk2040_pixels color
-    atPut 1 _wk2040_pixels 0
     '[display:neoPixelSend]' _wk2040_pixels
     waitMicros 150
   }
