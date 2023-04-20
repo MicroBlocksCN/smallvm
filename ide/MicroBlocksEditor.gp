@@ -766,6 +766,7 @@ method processDroppedText MicroBlocksEditor text {
       openProject this (httpBody (httpGet host path)) fileName
     } (endsWith url '.ubl') {
       importLibraryFromString scripter (httpBody (httpGet host path)) fileName fileName
+      saveAllChunksAfterLoad (smallRuntime)
     } (and (or (notNil json) (endsWith url '.png')) ('Browser' == (platform))) {
       data = (httpBody (basicHTTPGetBinary host path))
       if ('' == data) { return }
