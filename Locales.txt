@@ -1169,7 +1169,7 @@ topic for MQTT event _
 
 payload for MQTT event _
 
-MQTT set will topic _ payload _ retain _ QoS _
+MQTT set will topic _ payload _
 
 testWill
 
@@ -1283,6 +1283,69 @@ NeZha stop all motors
 NeZha set _ servo _ angle to _
 
 NeZha set continuous rotation servo _ speed to _ %
+
+####
+# WuKong2040
+
+WuKong2040
+
+WuKong2040 rainbowLED _ color to _
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+
+WuKong2040 clear all rainbowLED
+
+WuKong2040 motor _ speed to _ (-100~100)
+
+WuKong2040 stop motor _
+
+WuKong2040 stop all motors
+
+WuKong2040 buzzer beep _ ms
+
+####
+# Octopus
+
+Octopus
+
+Octopus LED pin _ toggle to _
+
+Octopus LED pin _ brightness _ %
+
+Octopus motor fan pin _ speed to _ %
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+
+Octopus sonar trig _ echo _ distance (cm)
+
+Octopus value of light intensity (Lux) at pin _
+
+Octopus value of DHT11 temperature (°C) at pin _
+
+Octopus value of DHT11 humidity (0~100) at pin _
+
+Octopus value of water level (0~40mm) at pin _
+
+Octopus value of trimpot (0~1023) at pin _
+
+Octopus value of noise (dB) at pin _
+
+Octopus OLED show _ at x _ y _
+
+Octopus OLED clear
+
+Octopus OLED draw pixel x _ y _
+
+Octopus OLED draw line from x _ y _ to x _ y _
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+
+Octopus OLED draw circle x _ y _ radius _
+
+Octopus OLED fill circle x _ y _ radius _
+
 
 ##################
 # MicroBlocks UI #

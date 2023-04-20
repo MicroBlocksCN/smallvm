@@ -1425,6 +1425,12 @@ topic for MQTT event _
 payload for MQTT event _
 最新 MQTT 事件的载荷 _
 
+MQTT set will topic _ payload _
+MQTT 设置遗嘱 主题 _ 载荷 _
+
+buffer sizes _
+缓存大小 _
+
 ####
 # UDP
 
@@ -1727,6 +1733,95 @@ Save Model
 
 Load Model
 加载模型
+
+####
+# WuKong2040
+
+WuKong2040
+悟空2040
+
+WuKong2040 rainbowLED _ color to _
+悟空2040 彩虹灯 _ 颜色 _
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+悟空2040 彩虹灯 _ R _ G _ B _ (0~255)
+
+WuKong2040 clear all rainbowLED
+悟空2040 关闭所有彩虹灯
+
+WuKong2040 motor _ speed to _ (-100~100)
+悟空2040 设置电机 _ 速度为 _ (-100~100)
+
+WuKong2040 stop motor _
+悟空2040 停止电机 _
+
+WuKong2040 stop all motors
+悟空2040 停止所有电机
+
+WuKong2040 buzzer beep _ ms
+悟空2040 蜂鸣器鸣叫 _ 毫秒
+
+####
+# Octopus
+Octopus
+八爪鱼系列传感器
+
+Octopus LED pin _ toggle to _
+八爪鱼 LED引脚 _ 切换为 _
+
+Octopus LED pin _ brightness _ %
+八爪鱼 LED引脚 _ 设置亮度 _ %
+
+Octopus motor fan pin _ speed to _ %
+八爪鱼 电机风扇引脚 _ 设置速度 _ %
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+八爪鱼 180°舵机引脚 _ 设置角度 _ ° (0~180)
+
+Octopus sonar trig _ echo _ distance (cm)
+八爪鱼 超声波测距(厘米) 触发 _ 回声 _
+
+Octopus value of light intensity (Lux) at pin _
+八爪鱼 光照强度值（Lux）引脚 _
+
+Octopus value of DHT11 temperature (°C) at pin _
+八爪鱼 DHT11 温度(°C) 引脚 _
+
+Octopus value of DHT11 humidity (0~100) at pin _
+八爪鱼 DHT11 湿度(0~100) 引脚 _
+
+Octopus value of water level (0~40mm) at pin _
+八爪鱼 水位值(0~40mm) 引脚 _
+
+Octopus value of trimpot (0~1023) at pin _
+八爪鱼 电位器数值(0~1023) 引脚 _
+
+Octopus value of noise (dB) at pin _
+八爪鱼 噪声值(分贝) 引脚 _
+
+Octopus OLED show _ at x _ y _
+八爪鱼 OLED 显示 _ 于 x _ y _
+
+Octopus OLED clear
+八爪鱼 OLED 清除屏幕
+
+Octopus OLED draw pixel x _ y _
+八爪鱼 OLED 绘制像素 x _ y _
+
+Octopus OLED draw line from x _ y _ to x _ y _
+八爪鱼 OLED 绘制直线 从 x _ y _ 到 x _ y _
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+八爪鱼 OLED 绘制长方形 x _ y _ w _ h _  圆角 _ (3~15)
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+八爪鱼 OLED 填充长方形 x _ y _ w _ h _
+
+Octopus OLED draw circle x _ y _ radius _
+八爪鱼 OLED 绘制圆形 x _ y _ 半径 _
+
+Octopus OLED fill circle x _ y _ radius _
+八爪鱼 OLED 填充圆形 x _ y _ 半径 _
 
 ##################
 # MicroBlocks UI #
@@ -2223,6 +2318,12 @@ number/string
 
 editable number or string
 可编辑的数字或字符串
+
+boolean switch
+布尔开关
+
+color patch
+颜色
 
 label
 标签
