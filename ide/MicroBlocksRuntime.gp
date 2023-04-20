@@ -1216,6 +1216,9 @@ method saveAllChunks SmallRuntime {
 
 	setCursor 'wait'
 
+	if (saveVariableNames this) { recompileAll = true }
+	if recompileAll { print 'recompileAll'; suspendCodeFileUpdates this }
+
 	t = (newTimer)
 	editor = (findMicroBlocksEditor)
 	totalScripts = (
@@ -1264,6 +1267,7 @@ method saveAllChunks SmallRuntime {
 
 	recompileAll = false
 	verifyCRCs this
+	resumeCodeFileUpdates this
 	showDownloadProgress editor 3 1
 
 	setCursor 'default'

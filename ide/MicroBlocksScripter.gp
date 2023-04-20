@@ -1079,7 +1079,12 @@ method importLibrary MicroBlocksScripter {
   if (downloadInProgress (findProjectEditor)) { return }
   libraryWindow = (findMorph 'MicroBlocksLibraryImportDialog')
   if (notNil libraryWindow) { destroy libraryWindow }
-  pickLibraryToOpen (action 'importLibraryFromFile' this) lastLibraryFolder (array '.ubl')
+  pickLibraryToOpen (action 'openLibraryFile' this) lastLibraryFolder (array '.ubl')
+}
+
+method openLibraryFile MicroBlocksScripter fileName {
+	importLibraryFromFile this fileName
+	saveAllChunksAfterLoad (smallRuntime)
 }
 
 method allFilesInDir MicroBlocksScripter rootDir {
@@ -1188,7 +1193,6 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 	updateBlocks this
 	saveScripts this
 	restoreScripts this
-	saveAllChunksAfterLoad (smallRuntime)
 }
 
 method updateLibraryList MicroBlocksScripter {

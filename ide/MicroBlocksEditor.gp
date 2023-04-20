@@ -766,6 +766,7 @@ method processDroppedText MicroBlocksEditor text {
       openProject this (httpBody (httpGet host path)) fileName
     } (endsWith url '.ubl') {
       importLibraryFromString scripter (httpBody (httpGet host path)) fileName fileName
+      saveAllChunksAfterLoad (smallRuntime)
     } (and (or (notNil json) (endsWith url '.png')) ('Browser' == (platform))) {
       data = (httpBody (basicHTTPGetBinary host path))
       if ('' == data) { return }
@@ -1473,10 +1474,8 @@ method fixPNGScriptImage MicroBlocksEditor pngFile {
   if (1 == scriptCount) {
     block = (handler (first (parts (morph scriptEditor))))
     exportAsImageScaled block nil false pngFile
-print (filePart pngFile)
   } else {
     saveScriptsImage scriptEditor pngFile true
-print scriptCount 'scripts:' (filePart pngFile)
   }
 }
 
