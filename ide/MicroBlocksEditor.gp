@@ -1474,10 +1474,8 @@ method fixPNGScriptImage MicroBlocksEditor pngFile {
   if (1 == scriptCount) {
     block = (handler (first (parts (morph scriptEditor))))
     exportAsImageScaled block nil false pngFile
-print (filePart pngFile)
   } else {
     saveScriptsImage scriptEditor pngFile true
-print scriptCount 'scripts:' (filePart pngFile)
   }
 }
 
