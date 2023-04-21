@@ -18,10 +18,6 @@
 
 #define NO_WIFI() (false)
 
-#if defined(ARDUINO_ARCH_RP2040) && !defined(PICO_ED) && !defined(TTGO_RP2040)
-	#define PICO_WIFI 1
-#endif
-
 #if defined(ESP8266)
 	#include <ESP8266WiFi.h>
 	#include <WiFiUdp.h>
