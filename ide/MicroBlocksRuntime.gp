@@ -1358,6 +1358,8 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 		return false
 	}
 
+	restartChunk = (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction))
+
 	if (((msecsSinceStart) - lastPingRecvMSecs) < 50) {
 		sendMsg this 'chunkCodeMsg' chunkID data
 		sendMsg this 'pingMsg'
@@ -1367,8 +1369,8 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 	processMessages this
 	atPut entry 2 (computeCRC this chunkBytes) // remember the CRC of the code we just saved
 
-	// restart the chunk if it is a Block and is running
-	if (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction)) {
+	// restart the chunk if it was running
+	if restartChunk {
 		stopRunningChunk this chunkID
 		waitForResponse this
 		runChunk this chunkID
