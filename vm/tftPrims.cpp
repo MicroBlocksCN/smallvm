@@ -17,7 +17,8 @@
 #include "interp.h"
 
 int useTFT = false;
-int touchEnabled = false;
+static int touchEnabled = false;
+static int deferUpdates = false;
 
 // Redefine this macro for displays that must explicitly push offscreen changes to the display
 #define UPDATE_DISPLAY()
@@ -468,7 +469,7 @@ int touchEnabled = false;
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT);
 
 		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() (tft.display())
+		#define UPDATE_DISPLAY() { if (!deferUpdates) tft.display(); }
 
 		void tftInit() {
 			tft.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -489,7 +490,7 @@ int touchEnabled = false;
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT, &Wire, -1, 400000, 400000);
 
 		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() (tft.display())
+		#define UPDATE_DISPLAY() { if (!deferUpdates) tft.display(); }
 
 		void tftInit() {
 			if (!hasI2CPullups()) return; // no OLED connected and no I2C pullups
@@ -499,6 +500,9 @@ int touchEnabled = false;
 
 			tft.begin(SSD1306_SWITCHCAPVCC, TFT_ADDR);
 			tftClear();
+			// set to max OLED brightness
+			writeI2CReg(TFT_ADDR, 0x80, 0x81);
+			writeI2CReg(TFT_ADDR, 0x80, 0xFF);
 			useTFT = true;
 		}
 
@@ -568,7 +572,7 @@ int touchEnabled = false;
 		#define IS31FL_PICTUREFRAME_REG 0x01
 
 		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() (tft.updateDisplay())
+		#define UPDATE_DISPLAY() { if (!deferUpdates) tft.display(); }
 
 		class IS31FL3731 : public Adafruit_GFX {
 		public:
@@ -814,6 +818,12 @@ OBJ primSetBacklight(int argCount, OBJ *args) {
 		if (brightness < 0) brightness = 0;
 		if (brightness > 10) brightness = 10;
 		analogWrite(TFT_BL, brightness * 25);
+	#elif defined(OLED_128_64)
+		int oledLevel = (255 * brightness) / 10;
+		if (oledLevel < 0) oledLevel = 0;
+		if (oledLevel > 255) oledLevel = 255;
+		writeI2CReg(TFT_ADDR, 0x80, 0x81);
+		writeI2CReg(TFT_ADDR, 0x80, oledLevel);
 	#endif
 	return falseObj;
 }
@@ -961,6 +971,21 @@ static OBJ primText(int argCount, OBJ *args) {
 		sprintf(s, "%d", obj2int(value));
 		tft.print(s);
 	}
+	UPDATE_DISPLAY();
+	return falseObj;
+}
+
+// display update control
+
+static OBJ primDeferUpdates(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+	deferUpdates = true;
+	return falseObj;
+}
+
+static OBJ primResumeUpdates(int argCount, OBJ *args) {
+	if (!useTFT) return falseObj;
+	deferUpdates = false;
 	UPDATE_DISPLAY();
 	return falseObj;
 }
@@ -1138,6 +1163,8 @@ static PrimEntry entries[] = {
 	{"circle", primCircle},
 	{"triangle", primTriangle},
 	{"text", primText},
+	{"deferUpdates", primDeferUpdates},
+	{"resumeUpdates", primResumeUpdates},
 
 	{"mergeBitmap", primMergeBitmap},
 	{"drawBuffer", primDrawBuffer},
