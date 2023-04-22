@@ -36,6 +36,22 @@ method allCalls Function {
   return result
 }
 
+method globalVarsUsed Function {
+  comment '
+	Return a list of all global variables used by this function.'
+
+  result = (toList (varsUsed this))
+  removeAll result argNames
+
+  varNameIndex = ((fieldNameCount (class 'Command')) + 1)
+  for ref (allVariableRefs this) {
+    if (isOneOf (primName ref) 'local' 'for') {
+      remove result (getField ref varNameIndex)
+    }
+  }
+  return result
+}
+
 method varsUsed Function {
   comment '
 	Return a list of all variable names referenced by this function.'

@@ -630,15 +630,22 @@ method justReceivedDrop CategorySelector aHandler {
 			library = mainModule
 		}
 		if (not (contains (functions library) function)) {
+			globalsUsed = (globalVarsUsed function)
 			if (contains (functions mainModule) function) {
 				// Block is in My Blocks, let's remove it from there first
 				removeFunction mainModule function
 				remove (blockList mainModule) (functionName function)
 				remove (blockSpecs mainModule) (blockSpecFor function)
+				for var globalsUsed {
+					deleteVariable mainModule var
+				}
 			}
 			addFunction library function
 			add (blockList library) (functionName function)
 			add (blockSpecs library) (blockSpecFor function)
+			for var globalsUsed {
+				addVariable library var
+			}
 		}
 		select this (categoryUnderHand this)
 	}
