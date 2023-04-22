@@ -654,7 +654,9 @@ method codeString MicroBlocksModule owningProject newLibName {
 	processed = (dictionary)
 
 	for op blockList {
-		if ('space' != op) {
+		if ('-' == op) {
+			add result (join '  space' (newline))
+		} else {
 			spec = (at projectSpecs op)
 			if (notNil spec) {
 				add result (join '  ' (specDefinitionString spec) (newline))
