@@ -2,11 +2,42 @@ module main
 author unknown
 version 1 0 
 description ''
-variables save_request 
 
   spec 'r' 'getFile' 'getFile _' 'auto' '10'
-  spec ' ' 'handleFormData' 'handleRequest _' 'auto' '10'
-  spec 'r' 'homePage' 'homePage'
+  spec ' ' 'favIconRequest' 'favIconRequest'
+  spec ' ' 'fileRequest' 'fileRequest _' 'auto' '10'
+  spec ' ' 'formRequest' 'formRequest _' 'auto' '10'
+  spec ' ' 'homePageRequest' 'homePageRequest'
+  spec ' ' 'rgbFormRequest' 'rgbFormRequest _' 'auto' '10'
+
+to favIconRequest {
+  local 'favIconHTML' '<html><head><link rel="icon" href="data:,"></head></html>'
+  '[net:respondToHttpRequest]' '200 OK' favIconHTML
+}
+
+to fileRequest path {
+  local 'fileData' (getFile path)
+  if ((size fileData) > 0) {
+    '[net:respondToHttpRequest]' '200 OK' fileData
+  } else {
+    '[net:respondToHttpRequest]' '404 Not found'
+  }
+}
+
+to formRequest path {
+  comment 'Show that a form was received.'
+  setUserLED true
+  '[io:playTone]' -1 440
+  waitMillis 200
+  setUserLED false
+  '[io:playTone]' -1 0
+  if (('[data:find]' '?R=' path) != -1) {
+    rgbFormRequest path
+  }
+  comment 'Could add cases to handle additional
+forms here...'
+  '[net:respondToHttpRequest]' '200 OK' 'Form received.'
+}
 
 to getFile path {
   if (i == -1) {return 0}
@@ -22,27 +53,8 @@ to getFile path {
   return ('[data:join]' '' fileContents)
 }
 
-to handleFormData path {
-  comment 'Expected path format:
-/?R=255&G=255&B=255'
-  setUserLED true
-  '[io:playTone]' -1 440
-  waitMillis 200
-  setUserLED false
-  '[io:playTone]' -1 0
-  local 'colors' ('[data:split]' ('[data:copyFromTo]' path 3) '&')
-  if ((size colors) < 3) {
-    return 0
-  }
-  local 'r' (0 + ('[data:copyFromTo]' (at 1 colors) 3))
-  local 'g' (0 + ('[data:copyFromTo]' (at 2 colors) 3))
-  local 'b' (0 + ('[data:copyFromTo]' (at 3 colors) 3))
-  waitMillis 10
-  neoPixelSetAllToColor (colorFromRGB r g b)
-}
-
-to homePage {
-  return '<!DOCTYPE html>
+to homePageRequest {
+  local 'homePageHTML' '<!DOCTYPE html>
 <html>
 <body><h1>RGB LED Color Settings</h1>
 <form action="">
@@ -54,9 +66,59 @@ to homePage {
 <input  style="accent-color: blue" type="range" id="color" name="B" min="50" max="255"></br></br>
 <input style="background-color: #909090; font-size: x-large; padding: 10px 40px;" type="submit">
 </form></body></html>'
+  '[net:respondToHttpRequest]' '200 OK' homePageHTML
 }
 
-script 485 40 {
+to rgbFormRequest path {
+  comment 'Expected path format:
+?R=255&G=255&B=255'
+  local 'i' ('[data:find]' '?R=' path)
+  path = ('[data:copyFromTo]' path (i + 1))
+  local 'colors' ('[data:split]' path '&')
+  if ((size colors) < 3) {
+    return 0
+  }
+  local 'r' (0 + ('[data:copyFromTo]' (at 1 colors) 3))
+  local 'g' (0 + ('[data:copyFromTo]' (at 2 colors) 3))
+  local 'b' (0 + ('[data:copyFromTo]' (at 3 colors) 3))
+  waitMillis 10
+  neoPixelSetAllToColor (colorFromRGB r g b)
+}
+
+script 210 40 {
+comment 'For external NeoPixels, add this block to the
+"when started" script to set the number of
+NeoPixels and the pin number.
+
+For example, on the PicoBricks board you
+would attach 1 NeoPixel to pin 6.'
+neoPixelAttach 10 ''
+}
+
+script 42 155 {
+whenStarted
+comment 'Fill in your network name (SSID) and password here:'
+wifiConnect 'Network_Name' ''
+forever {
+  local 'request' ('[net:httpServerGetRequest]')
+  if (request != '') {
+    local 'path' ('path of request' request)
+    comment 'Handle the request based on the URL path'
+    if ('/' == path) {
+      homePageRequest
+    } ('/favicon.ico' == path) {
+      favIconRequest
+    } (('[data:find]' '?' request) > 0) {
+      formRequest path
+    } else {
+      fileRequest path
+    }
+  }
+  waitMillis 10
+}
+}
+
+script 436 175 {
 comment 'This example shows how to create a browser remote control panel
 on a WIFi-capable board that allows the board to be controlled from
 a web browser on any phone, tablet, or laptop.
@@ -73,46 +135,21 @@ values encoded in a URL like this:
 
 The server responds to such requests by:
 
-  1. making a beep sound (if the board has a speaker)
-  2. setting the Neopixels to the given color (if the board has Neopixels)
-  3. blinking the user LED
+  1. blinking the user LED
+  2. making a beep sound (if the board has a speaker)
+  3. setting the Neopixels to the given color (if the board has Neopixels)
 
-One final feature: if the request URL is not "/" or something containing
-a question mark, it is taken to be a file name, and the server will return
-the contens of a file of that name in the boad''s file system.
+It also responds to browser requests for favicon.ico.
 
-Of course, you can modify this example do whatever you want.
+One final feature: if the request URL is not "/", "favicon.ico" or a URL
+containing a question mark, it is taken to be a file name, and the server
+will return the contens of a file of that name in the boad''s file system.
+
+Of course, this is just a starting point. You can modify this example to
+create all sorts of browser-controlled projects.
   
-Enjoy!'
-}
-
-script 40 49 {
-whenStarted
-comment 'Fill in your network name (SSID) and password here:'
-wifiConnect 'Network_Name' ''
-forever {
-  local 'request' ('[net:httpServerGetRequest]')
-  if (request != '') {
-    comment 'Handle the request based on the URL path'
-    local 'path' ('path of request' request)
-    save_request = path
-    if ('/' == path) {
-      '[net:respondToHttpRequest]' '200 OK' (homePage)
-    } (('[data:find]' '?' request) > 0) {
-      comment 'Handle form input'
-      handleFormData path
-      '[net:respondToHttpRequest]' '200 OK' 'Request processed'
-    } else {
-      local 'fileData' (getFile path)
-      if ((size fileData) > 0) {
-        '[net:respondToHttpRequest]' '200 OK' fileData
-      } else {
-        '[net:respondToHttpRequest]' '404 Not found'
-      }
-    }
-  }
-  waitMillis 10
-}
+Enjoy!
+'
 }
 
 
@@ -221,7 +258,7 @@ to 'request method' request {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 tags led strip rgb string ws2812 
 description 'Control NeoPixel (WS2812) RGB LED strips.
 '
@@ -245,6 +282,8 @@ to '_NeoPixel_ensureInitialized' {
   } ((boardType) == 'D1-Mini') {
     comment 'D1 mini kit'
     neoPixelAttach 7 15 false
+  } ((boardType) == 'Mbits') {
+    neoPixelAttach 25 '' false
   } else {
     neoPixelAttach 10 '' false
   }}
