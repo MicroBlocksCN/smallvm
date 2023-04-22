@@ -7,11 +7,14 @@ variables _bmxAddr _bme280coefficients _bmx280_baseAltitude _bmx280_basePressure
   spec 'r' 'bmx280 temperature' 'bmx280 temperature'
   spec 'r' 'bmx280 pressure' 'bmx280 pressure (Pa)'
   spec 'r' 'bme280 humidity' 'bme280 humidity'
-  spec ' ' 'bmx280_setBaseAltitude' 'set base altitude _ meters' 'num' 0
-  spec 'r' 'bmx280_altitudeCentimeters' 'altitude (cm)'
-  spec 'r' 'bmx280_altitudeFeet' 'altitude (feet)'
+  space
+  spec ' ' 'bmx280_setBaseAltitude' 'bmx280 set base altitude _ meters' 'num' 0
+  spec 'r' 'bmx280_altitudeCentimeters' 'bmx280 altitude (cm)'
+  spec 'r' 'bmx280_altitudeFeet' 'bmx280 altitude (feet)'
+  space
   spec 'r' 'bmp280 connected' 'bmp280 connected'
   spec 'r' 'bme280 connected' 'bme280 connected'
+  space
   spec ' ' '_bmx280_initAddr' '_bmx280_initAddr'
   spec ' ' '_bmx280 setup' '_bmx280 setup'
   spec ' ' '_bme280 read humidity coefficients' '_bme280 read humidity coefficients'

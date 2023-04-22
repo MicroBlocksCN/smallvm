@@ -941,6 +941,12 @@ bmx280 pressure
 
 bme280 humidity
 
+bmx280 set base altitude _ meters
+
+bmx280 altitude (cm)
+
+bmx280 altitude (feet)
+
 ####
 # TCS34725 color sensor
 
