@@ -262,7 +262,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[net:udpRemoteIPAddress]'	'UDP remote IP address')
 		(array 'r' '[net:udpRemotePort]'		'UDP remote port')
 
-		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
+		(array ' ' '[tft:setBacklight]'		'set TFT backlight _ (0-10)' 'num' 10)
+		(array ' ' '[tft:getWidth]'			'TFT width')
+		(array ' ' '[tft:getHeight]'		'TFT height')
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
 		(array ' ' '[tft:line]'				'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)
 		(array ' ' '[tft:rect]'				'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false)
@@ -270,6 +272,11 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[tft:circle]'			'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false)
 		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
 		(array ' ' '[tft:text]'				'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
+		(array ' ' '[tft:deferUpdates]'		'defer TFT display updates')
+		(array ' ' '[tft:resumeUpdates]'	'resume TFT display updates')
+
+		(array ' ' '[tft:mergeBitmap]'		'mergeBitmap _ width _ buffer _ scale _ alphaIndex _ destX _ destY _' 'auto num auto num num num num')
+		(array ' ' '[tft:drawBuffer]'		'drawBuffer _ palette _ scale _ : srcX _ srcY _ copyWidth _ copyHeight _' 'auto auto num num num num num')
 
 		(array 'r' '[tft:tftTouched]'		'TFT touched')
 		(array 'r' '[tft:tftTouchX]'		'TFT touch X position')
