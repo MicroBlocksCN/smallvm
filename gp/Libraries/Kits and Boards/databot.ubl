@@ -1,7 +1,7 @@
-module Databot
+module databot
 author MicroBlocks
 version 1 2 
-depends 'Air Pressure (LPS22HB)'  'Gas (SGP30)' 'Temperature Humidity (SHTC3)' 'Light & Gesture (APDS9960)'
+depends 'Air Pressure (LPS22HB)' 'Basic Senors' 'Gas (SGP30)' 'Temperature Humidity (SHTC3)' 'Light & Gesture (APDS9960)' 
 choices databot_tempUnits '°C' '°F' 
 description ''
 variables _databot_pixels 
