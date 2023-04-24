@@ -47,7 +47,7 @@ http://wiki.elecfreaks.com/en/pico/extension-module/wukong2040-pico
 '
 variables _wk2040_pixels 
 
-  spec ' ' 'wk2040_set_LED_color' 'WuKong2040 rainbowLED _ color to _' 'menu.wk2040_rainbowLEDMenu color' 0
+  spec ' ' 'wk2040_set_LED_color' 'WuKong2040 rainbowLED _ color to _' 'menu.wk2040_rainbowLEDMenu color' '0'
   spec ' ' 'wk2040_set_LED_RGB' 'WuKong2040 rainbowLED _ R _ G _ B _ (0~255)' 'menu.wk2040_rainbowLEDMenu num num num' '0' 0 0 255
   spec ' ' 'wk2040_turn_off_all_LEDs' 'WuKong2040 clear all rainbowLED'
   space
