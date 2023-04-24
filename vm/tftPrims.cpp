@@ -572,7 +572,7 @@ static int deferUpdates = false;
 		#define IS31FL_PICTUREFRAME_REG 0x01
 
 		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() { if (!deferUpdates) tft.display(); }
+		#define UPDATE_DISPLAY() { if (!deferUpdates) tft.updateDisplay(); }
 
 		class IS31FL3731 : public Adafruit_GFX {
 		public:
@@ -1139,6 +1139,9 @@ static OBJ primRoundedRect(int argCount, OBJ *args) { return falseObj; }
 static OBJ primCircle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primTriangle(int argCount, OBJ *args) { return falseObj; }
 static OBJ primText(int argCount, OBJ *args) { return falseObj; }
+
+static OBJ primDeferUpdates(int argCount, OBJ *args) { return falseObj; }
+static OBJ primResumeUpdates(int argCount, OBJ *args) { return falseObj; }
 
 static OBJ primMergeBitmap(int argCount, OBJ *args) { return falseObj; }
 static OBJ primDrawBuffer(int argCount, OBJ *args) { return falseObj; }
