@@ -312,22 +312,27 @@ method justDropped Block hand {
 }
 
 method alternateOperators Block {
-  opGroups = (array
-	(array 'analogReadOp' 'digitalReadOp')
-	(array 'analogWriteOp' 'digitalWriteOp')
-	(array 'analogPins' 'digitalPins')
-	(array 'and' 'or')
-	(array '+' '-' '*' '/' '%')
-	(array 'buttonA' 'buttonB')
-	(array '<' '<=' '==' '!=' '>=' '>')
-	(array 'maximum' 'minimum')
-	(array 'millisOp' 'microsOp')
-	(array '=' '+=')
-	(array '&' '|' '^' '<<' '>>')
-  )
-  op = (primName expression)
-  for group opGroups {
-	if (contains group op) { return group }
+  if (contains (array 'v' '=' '+=') (primName expression)) {
+	// if it's a variable, return a group with all existing variables
+	return (array '')
+  } else {
+	opGroups = (array
+		(array 'analogReadOp' 'digitalReadOp')
+		(array 'analogWriteOp' 'digitalWriteOp')
+		(array 'analogPins' 'digitalPins')
+		(array 'and' 'or')
+		(array '+' '-' '*' '/' '%')
+		(array 'buttonA' 'buttonB')
+		(array '<' '<=' '==' '!=' '>=' '>')
+		(array 'maximum' 'minimum')
+		(array 'millisOp' 'microsOp')
+		(array '=' '+=')
+		(array '&' '|' '^' '<<' '>>')
+	)
+	op = (primName expression)
+	for group opGroups {
+		if (contains group op) { return group }
+	}
   }
   return nil
 }
@@ -342,11 +347,23 @@ method changeOperator Block newOp {
   scriptChanged scripter
 }
 
+method changeVar Block varName {
+  // FIXME this only works when the var block is not inside an input slot!
+  cancelSelection
+  expression = (newReporter 'v' varName)
+  // update the block (inefficient, but works):
+  scripter = (scripter (findProjectEditor))
+  saveScripts scripter
+  restoreScripts scripter
+  scriptChanged scripter
+}
+
 method contextMenu Block {
   if (isPrototype this) {return nil}
   menu = (menu nil this)
   pe = (findProjectEditor)
-  selection = (selection (scripter pe))
+  scripter = (scripter pe)
+  selection = (selection scripter)
   if (and (notNil selection) (notEmpty selection)) {
   	return (contextMenu selection)
   }
@@ -392,6 +409,7 @@ method contextMenu Block {
 	}
   }
   addLine menu
+  
   if (contains (array 'v' '=' '+=') (primName expression)) {
 	  addItem menu 'find variable accessors' 'findVarAccessors' 'find scripts or block definitions where this variable is being read'
 	  addItem menu 'find variable modifiers' 'findVarModifiers' 'find scripts or block definitions where this variable is being set or changed'
@@ -405,18 +423,31 @@ method contextMenu Block {
 	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
 	}
   }
-  alternativeOps = (alternateOperators this)
-  if (and (not isInPalette) (notNil alternativeOps)) {
-	addLine menu
-	myOp = (primName expression)
-	for op alternativeOps {
-	  // create and display block morph (with translated spec)
-	  spec = (specForOp (authoringSpecs) op)
-	  if (and (notNil spec) (op != myOp)) {
-		b = (blockForSpec spec)
-		fixLayout b
-		addItem menu (fullCostume (morph b)) (action 'changeOperator' this op)
-	  }
+  if ((primName expression) == 'v') {
+	varNames = (allVariableNames (project scripter))
+	if (and (not isInPalette) ((count varNames) > 1)) {
+		for varName varNames {
+			if (varName != (first (argList expression))) {
+				b = (toBlock (newReporter 'v' varName))
+				fixLayout b
+				addItem menu (fullCostume (morph b)) (action 'changeVar' this varName)
+			}
+		}
+	}
+  } else {
+	alternativeOps = (alternateOperators this)
+	if (and (not isInPalette) (notNil alternativeOps)) {
+		addLine menu
+		myOp = (primName expression)
+		for op alternativeOps {
+		  // create and display block morph (with translated spec)
+		  spec = (specForOp (authoringSpecs) op)
+		  if (and (notNil spec) (op != myOp)) {
+			b = (blockForSpec spec)
+			fixLayout b
+			addItem menu (fullCostume (morph b)) (action 'changeOperator' this op)
+		  }
+		}
 	}
   }
   if (not isInPalette) {
