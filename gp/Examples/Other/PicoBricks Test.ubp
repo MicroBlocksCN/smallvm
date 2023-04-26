@@ -14,7 +14,7 @@ to displaySensor value line {
   '[tft:text]' rightJustified 95 y (colorSwatch 35 190 30 255) 1 false
 }
 
-script 311 40 {
+script 320 50 {
 whenBroadcastReceived 'update display'
 '[display:mbDisplayOff]'
 '[tft:text]' 'PicoBricks' 0 0 (colorSwatch 35 190 30 255) 2 true
@@ -34,7 +34,7 @@ forever {
 }
 }
 
-script 41 41 {
+script 50 51 {
 whenStarted
 pb_set_relay true
 waitMillis 500
@@ -54,7 +54,7 @@ pb_turn_off_RGB
 sendBroadcast 'update display'
 }
 
-script 43 443 {
+script 52 453 {
 whenCondition (pb_button)
 pb_set_red_LED true
 waitUntil (not (pb_button))

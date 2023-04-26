@@ -50,7 +50,7 @@ to getFile path {
   '[file:open]' fn
   fileSize = ('[file:readInto]' fileContents fn)
   '[file:close]' fn
-  return ('[data:join]' '' fileContents)
+  return fileContents
 }
 
 to homePageRequest {
