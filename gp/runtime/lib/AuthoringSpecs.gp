@@ -141,14 +141,7 @@ method specsFor AuthoringSpecs category {
 		currentCategory = entry
 	  }
 	} (currentCategory == category) {
-	  spec = (specForEntry this entry)
-	  for n (slotCount spec) {
-		default = (at (slotInfoForIndex spec n) 2)
-		if (isClass default 'String') {
-			atPut (slotInfoForIndex spec n) 2 (localized default)
-		}
-	  }
-	  add result spec
+	  add result (specForEntry this entry)
 	}
   }
   return result
