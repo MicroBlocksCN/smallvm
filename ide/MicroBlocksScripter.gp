@@ -649,6 +649,7 @@ method step MicroBlocksScripter {
 	syncScripts (smallRuntime)
     saveNeeded = false
   }
+  updateStopping (smallRuntime)
 }
 
 method saveScripts MicroBlocksScripter oldScale {

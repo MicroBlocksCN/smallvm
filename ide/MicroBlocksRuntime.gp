@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning chunkStopping msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
 
 method scripter SmallRuntime { return scripter }
 method serialPortOpen SmallRuntime { return (notNil port) }
@@ -1952,8 +1952,37 @@ method updateRunning SmallRuntime chunkID runFlag {
 	if (isNil chunkRunning) {
 		chunkRunning = (newArray 256 false)
 	}
-	atPut chunkRunning (chunkID + 1) runFlag
-	updateHighlights this
+	if (isNil chunkStopping) {
+		chunkStopping = (dictionary)
+	}
+	if runFlag {
+		atPut chunkRunning (chunkID + 1) runFlag
+		remove chunkStopping chunkID
+		updateHighlights this
+	} else {
+		// add chunkID to chunkStopping dictionary to be unhighlighted after a short pause
+		stepCount = 2 // two scripter steps, about half a second
+		atPut chunkStopping chunkID stepCount
+	}
+}
+
+method updateStopping SmallRuntime {
+	// Decrement the counts for chunks that are stopping.
+	// Turn off highlights for chunks whose counts reach zero.
+
+	if (and (isNil chunkStopping) (isEmpty chunkStopping))  { return }
+	highlightChanged = false
+	for chunkID (keys chunkStopping) {
+		count = ((at chunkStopping chunkID) - 1) // decrement count
+		if (count > 0) {
+			atPut chunkStopping chunkID count // continue to wait
+		} else {
+			atPut chunkRunning (chunkID + 1) false
+			remove chunkStopping chunkID
+			highlightChanged = true
+		}
+	}
+	if highlightChanged { updateHighlights this }
 }
 
 method isRunning SmallRuntime aBlock {
