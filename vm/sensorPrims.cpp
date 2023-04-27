@@ -1063,7 +1063,7 @@ static int readTemperature() {
 	int val = readI2CReg(LPS22HD, 0x2B); // low byte
 	val |= (readI2CReg(LPS22HD, 0x2C) << 8); // high byte
 	if (val >= 32768) val -= 65536;
-	int fudgeFactor = 1100; // partially compensate for the heat inside Databot case
+	int fudgeFactor = 1230; // partially compensate for the heat inside Databot case
 	return (val - fudgeFactor) / 100; // degrees C
 }
 
