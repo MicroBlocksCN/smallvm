@@ -89,6 +89,7 @@ method languageChanged MicroBlocksScripter {
   updateBlocks this
   saveScripts this
   restoreScripts this
+  scriptChanged this
 }
 
 // library header
