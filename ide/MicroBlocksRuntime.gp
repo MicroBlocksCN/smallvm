@@ -610,9 +610,11 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 	clearRunningHighlights this
 	doOneCycle (global 'page')
 
+	if (shiftKeyDown (keyboard (global 'page'))) {
+		recompileAll = true
+	}
 	suspendCodeFileUpdates this
 	saveAllChunks this
-	verifyCRCs this
 	resumeCodeFileUpdates this
 }
 
@@ -895,16 +897,15 @@ method justConnected SmallRuntime {
 		readCodeFromBoard this
 	} else {
 		clearBoardIfConnected this true
-		forceFunctionChecks this
+		recompileAll = true
 		stopAndSyncScripts this true
 // xxx Disable this attempt to reuse scripts already on board for now; it sometimes fails
 // 		if (isEmpty chunkIDs) {
 // 			clearBoardIfConnected this false
 // 			stopAndSyncScripts this true
 // 		} else {
-// 			forceFunctionChecks this
-// 			syncScripts this
-// 			verifyCRCs this
+// 			recompileAll = true
+// 			stopAndSyncScripts this
 // 		}
 	}
 }
@@ -1200,7 +1201,7 @@ method reachableFunctions SmallRuntime {
 	for fName (keys result) { print '  ' fName }
 }
 
-method suspendCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 2 (list) }
+method suspendCodeFileUpdates SmallRuntime { sendMsgSync this 'extendedMsg' 2 (list) }
 method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
 
 method saveAllChunksAfterLoad SmallRuntime {
@@ -1216,9 +1217,6 @@ method saveAllChunks SmallRuntime {
 
 	setCursor 'wait'
 
-	if (saveVariableNames this) { recompileAll = true }
-	if recompileAll { print 'recompileAll'; suspendCodeFileUpdates this }
-
 	t = (newTimer)
 	editor = (findMicroBlocksEditor)
 	totalScripts = (
@@ -1228,10 +1226,16 @@ method saveAllChunks SmallRuntime {
 	processedScripts = 0
 
 	skipHiddenFunctions = true
-	if (or (saveVariableNames this) recompileAll) {
+	if (saveVariableNames this) { recompileAll = true }
+	if recompileAll {
 		// Clear the source code field of all chunk entries to force script recompilation
 		// and possible re-download since variable offsets have changed.
-		for entry (values chunkIDs) { atPut entry 4 '' }
+		print 'Recompiling all'
+		suspendCodeFileUpdates this
+		for entry (values chunkIDs) {
+			atPut entry 4 ''
+			atPut entry 5 true
+		}
 		skipHiddenFunctions = false
 	}
 	assignFunctionIDs this
@@ -1273,22 +1277,13 @@ method saveAllChunks SmallRuntime {
 	setCursor 'default'
 }
 
-method forceFunctionChecks SmallRuntime {
-	// Mark the entries for all functions to disable the hidden function optimization.
-
-	for key (keys chunkIDs) {
-		if (isClass key 'String') {
-			entry = (at chunkIDs key)
-			atPut entry 5 true
-		}
-	}
-}
-
 method forceSaveChunk SmallRuntime aBlockOrFunction {
 	// Save the chunk for the given block or function even if it was previously saved.
 
 	if (contains chunkIDs aBlockOrFunction) {
-		atPut (at chunkIDs aBlockOrFunction) 4 '' // clear the old source to force re-save
+		// clear the old CRC and source to force re-save
+		atPut (at chunkIDs aBlockOrFunction) 2 nil // clear the old CRC
+		atPut (at chunkIDs aBlockOrFunction) 4 '' // clear the old source
 	}
 	saveChunk this aBlockOrFunction false
 }
@@ -1329,7 +1324,6 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 
 	if (currentSrc == (at entry 4)) { return false } // source hasn't changed; save not needed
 	atPut entry 4 currentSrc // remember the source of the code we're about to save
-	atPut entry 2 -1 // clear the CRC
 
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
@@ -1360,7 +1354,8 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 
 	restartChunk = (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction))
 
-	if (((msecsSinceStart) - lastPingRecvMSecs) < 50) {
+	// Note: micro:bit v1 misses chunks if time window is over 10 or 15 msecs
+	if (((msecsSinceStart) - lastPingRecvMSecs) < 10) {
 		sendMsg this 'chunkCodeMsg' chunkID data
 		sendMsg this 'pingMsg'
 	} else {
