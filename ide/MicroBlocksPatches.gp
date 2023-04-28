@@ -335,11 +335,8 @@ method alternateOperators Block {
 method changeOperator Block newOp {
   cancelSelection
   setField expression 'primName' newOp
-  // update the block (inefficient, but works):
   scripter = (scripter (findProjectEditor))
-  saveScripts scripter
-  restoreScripts scripter
-  scriptChanged scripter
+  updateScriptAfterOperatorChange scripter this
 }
 
 method contextMenu Block {

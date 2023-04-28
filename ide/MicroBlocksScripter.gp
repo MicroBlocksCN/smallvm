@@ -729,6 +729,24 @@ method restoreScripts MicroBlocksScripter {
   updateBlocks this
 }
 
+method updateScriptAfterOperatorChange MicroBlocksScripter aBlock {
+  // Rebuild the script containing aBlock after switching operators.
+
+  topBlock = (topBlock aBlock)
+  expr = (expression topBlock 'main')
+  if ('to' == (primName expr)) {
+    updateFunctionOrMethod this expr
+    func = (functionNamed mbProject (first (argList expr)))
+    newBlock = (scriptForFunction func)
+  } else {
+    newBlock = (toBlock expr)
+  }
+  removeFromOwner (morph topBlock)
+  fastMoveBy (morph newBlock) (left (morph topBlock)) (top (morph topBlock))
+  addPart (morph (contents scriptsFrame)) (morph newBlock)
+  scriptChanged this
+}
+
 // hide/show block definition
 
 method hideDefinition MicroBlocksScripter funcName {
