@@ -556,6 +556,11 @@ static void runTask(Task *task) {
 	DISPATCH();
 
 	error:
+		// yieldSignal is not a actual error; it just suspends the current task
+		if (yieldSignal == errorCode) {
+			errorCode = noError; // clear the error
+			goto suspend;
+		}
 		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
 		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		sendTaskError(task->taskChunkIndex, errorCode, tmp);
