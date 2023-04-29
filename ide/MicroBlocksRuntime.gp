@@ -2640,6 +2640,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Clue'
+	} ('Metro M0' == boardType) {
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Metro M0'
 	} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 		rp2040ResetMessage this
 	} (and
