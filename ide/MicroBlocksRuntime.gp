@@ -519,19 +519,18 @@ method removeObsoleteChunks SmallRuntime {
 	// they are deleted or the library containing them is deleted.
 
 	for k (keys chunkIDs) {
+		isObsolete = false
 		if (isClass k 'Block') {
 			owner = (owner (morph k))
 			isObsolete = (or
 				(isNil owner)
 				(isNil (handler owner))
 				(not (isAnyClass (handler owner) 'Hand' 'ScriptEditor' 'BlocksPalette')))
-			if isObsolete {
-				deleteChunkForBlock this k
-			}
 		} (isClass k 'String') {
-			if (isNil (functionNamed (project scripter) k)) {
-				remove chunkIDs k
-			}
+			isObsolete = (isNil (functionNamed (project scripter) k))
+		}
+		if isObsolete {
+			deleteChunkFor this k
 		}
 	}
 }
@@ -586,10 +585,9 @@ method functionNameForID SmallRuntime chunkID {
 	return (join 'f' chunkID)
 }
 
-method deleteChunkForBlock SmallRuntime aBlock {
-	key = aBlock
-	if (isPrototypeHat aBlock) {
-		key = (functionName (function (editedPrototype aBlock)))
+method deleteChunkFor SmallRuntime key {
+	if (and (isClass key 'Block') (isPrototypeHat key)) {
+		key = (functionName (function (editedPrototype key)))
 	}
 	entry = (at chunkIDs key nil)
 	if (and (notNil entry) (notNil port)) {
@@ -896,17 +894,16 @@ method justConnected SmallRuntime {
 		readFromBoard = false
 		readCodeFromBoard this
 	} else {
-		clearBoardIfConnected this true
+		codeReuseDisabled = true // set this to false to attempt to reuse code on board
+		if (or codeReuseDisabled (isEmpty chunkIDs) (not (boardHasSameProject this))) {
+			print 'Full download'
+			clearBoardIfConnected this
+		} else {
+			print 'Incremental download'
+		}
 		recompileAll = true
 		stopAndSyncScripts this true
-// xxx Disable this attempt to reuse scripts already on board for now; it sometimes fails
-// 		if (isEmpty chunkIDs) {
-// 			clearBoardIfConnected this false
-// 			stopAndSyncScripts this true
-// 		} else {
-// 			recompileAll = true
-// 			stopAndSyncScripts this
-// 		}
+		softReset this
 	}
 }
 
@@ -1230,7 +1227,6 @@ method saveAllChunks SmallRuntime {
 	if recompileAll {
 		// Clear the source code field of all chunk entries to force script recompilation
 		// and possible re-download since variable offsets have changed.
-		print 'Recompiling all'
 		suspendCodeFileUpdates this
 		for entry (values chunkIDs) {
 			atPut entry 4 ''
@@ -1385,7 +1381,6 @@ method computeCRC SmallRuntime chunkData {
 	return result
 }
 
-
 method verifyCRCs SmallRuntime {
 	// Check that the CRCs of the chunks on the board match the ones in the IDE.
 	// Resend the code of any chunks whose CRC's do not match.
@@ -1442,6 +1437,56 @@ method verifyCRCs SmallRuntime {
 		processedCount += 1
 	}
 	showDownloadProgress editor 3 1
+}
+
+method boardHasSameProject SmallRuntime {
+	// Return true if the board appears to have the same project as the IDE.
+
+	if (isNil port) { return false }
+
+	// update chunkIDs dictionary for script/function additions or removals while disconnected
+	assignFunctionIDs this
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get IDs above
+			ensureChunkIdFor this aBlock
+		}
+	}
+
+	// collect CRCs from the board
+	crcDict = (dictionary)
+	collectCRCsBulk this
+
+	// build dictionaries:
+	//  ideChunks: chunkID -> block or functionName
+	//  crcForChunkID: chunkID -> CRC
+	ideChunks = (dictionary)
+	crcForChunkID = (dictionary)
+	for pair (sortedPairs chunkIDs) {
+		key = (last pair)
+		chunkID = (at (first pair) 1)
+		crc = (at (first pair) 2)
+		atPut ideChunks chunkID key
+		atPut crcForChunkID chunkID crc
+	}
+
+	// count matching chunks
+	matchCount = 0
+	for chunkID (keys crcDict) {
+		entry = (at ideChunks chunkID)
+		if (and (notNil entry) ((at crcDict chunkID) == (at crcForChunkID chunkID))) {
+			matchCount += 1
+		}
+	}
+
+	// count chunks missing from the board
+	missingCount = 0
+	for chunkID (keys ideChunks) {
+		if (not (contains crcDict chunkID)) {
+			missingCount += 1
+		}
+	}
+
+	return (matchCount >= missingCount)
 }
 
 method collectCRCsIndividually SmallRuntime {
