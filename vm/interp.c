@@ -52,6 +52,12 @@ int failure() {
 	return errorCode != noError;
 }
 
+void taskYield() {
+	// Force current task to yield control.
+
+	errorCode = yieldSignal;
+}
+
 // Printing
 
 #define PRINT_BUF_SIZE 800
@@ -1346,7 +1352,7 @@ void vmLoop() {
 #define CLOCK_MASK 0xFFFFFFFF
 
 int shouldYield = false;
-void EMSCRIPTEN_KEEPALIVE yield() { shouldYield = true; }
+void EMSCRIPTEN_KEEPALIVE taskYield() { shouldYield = true; }
 
 void interpretStep() {
 	processMessage();

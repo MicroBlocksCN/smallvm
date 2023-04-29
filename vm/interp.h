@@ -211,7 +211,7 @@ int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void interpretStep();
-void yield();
+void taskYield();
 void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);
