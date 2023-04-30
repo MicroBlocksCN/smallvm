@@ -1362,12 +1362,12 @@ int shouldYield = false;
 void EMSCRIPTEN_KEEPALIVE taskSleep(int msecs) { shouldYield = true; }
 
 void interpretStep() {
+	uint32 endTime = millisecs() + 15;
 	processMessage();
 	checkButtons();
 	updateMicrobitDisplay();
-	int cycles = 0;
 	shouldYield = false;
-	while ((cycles < 10000) && !shouldYield) {
+	while ((millisecs() < endTime) && !shouldYield) {
 		// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 		int runCount = 0;
 		uint32 usecs = microsecs(); // get usecs
@@ -1407,7 +1407,6 @@ void interpretStep() {
 				break;
 			} // relinquish control
 		}
-		cycles++;
 	}
 }
 
