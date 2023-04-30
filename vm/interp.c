@@ -42,6 +42,7 @@ OBJ vars[MAX_VARS];
 // The VM stops the task and records the error code and IP where the error occurred.
 
 static uint8 errorCode = noError;
+static int taskSleepMSecs = 0;
 
 OBJ fail(uint8 errCode) {
 	errorCode = errCode;
@@ -53,9 +54,10 @@ int failure() {
 }
 
 #ifndef EMSCRIPTEN
-	void taskYield() {
-		// Force current task to yield control.
-		errorCode = yieldSignal;
+	void taskSleep(int msecs) {
+		// Make the current task sleep for the given number of milliseconds to free up cycles.
+		taskSleepMSecs = msecs;
+		errorCode = sleepSignal;
 	}
 #endif
 
@@ -563,9 +565,13 @@ static void runTask(Task *task) {
 	DISPATCH();
 
 	error:
-		// yieldSignal is not a actual error; it just suspends the current task
-		if (yieldSignal == errorCode) {
+		// sleepSignal is not a actual error; it just suspends the current task
+		if (sleepSignal == errorCode) {
 			errorCode = noError; // clear the error
+			if (taskSleepMSecs > 0) {
+				task->status = waiting_micros;
+				task->wakeTime = microsecs() + (taskSleepMSecs * 1000);
+			}
 			goto suspend;
 		}
 		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
@@ -1353,7 +1359,7 @@ void vmLoop() {
 #define CLOCK_MASK 0xFFFFFFFF
 
 int shouldYield = false;
-void EMSCRIPTEN_KEEPALIVE taskYield() { shouldYield = true; }
+void EMSCRIPTEN_KEEPALIVE taskSleep(int msecs) { shouldYield = true; }
 
 void interpretStep() {
 	processMessage();

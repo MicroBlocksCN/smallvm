@@ -189,7 +189,7 @@ extern int extraByteDelay;
 #define byteOutOfRange			40	// Needs a value between 0 and 255
 #define needsPositiveIncrement	41	// Range increment must be a positive integer
 #define needsIntOrListOfInts	42	// Needs an integer or a list of integers
-#define yieldSignal				255	// Yield. (Not a real error; used to make current task yield.)
+#define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations
 
@@ -211,7 +211,7 @@ int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void interpretStep();
-void taskYield();
+void taskSleep(int msecs);
 void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);
