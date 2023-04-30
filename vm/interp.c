@@ -52,11 +52,12 @@ int failure() {
 	return errorCode != noError;
 }
 
-void taskYield() {
-	// Force current task to yield control.
-
-	errorCode = yieldSignal;
-}
+#ifndef EMSCRIPTEN
+	void taskYield() {
+		// Force current task to yield control.
+		errorCode = yieldSignal;
+	}
+#endif
 
 // Printing
 
