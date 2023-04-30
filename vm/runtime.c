@@ -34,7 +34,7 @@ typedef struct {
 	PrimEntry *entries;
 } PrimitiveSet;
 
-#define MAX_PRIM_SETS 12
+#define MAX_PRIM_SETS 15
 PrimitiveSet primSets[MAX_PRIM_SETS];
 int primSetCount = 0;
 
@@ -134,6 +134,8 @@ void primsInit() {
 	addSerialPrims();
 	addTFTPrims();
 	addVarPrims();
+	addHIDPrims();
+	addOneWirePrims();
 }
 
 // Task Ops
@@ -466,7 +468,9 @@ void softReset(int clearMemoryFlag) {
 	stopPWM();
 	stopServos();
 	stopTone();
-	turnOffInternalNeoPixels();
+	#if !defined(DATABOT)
+		turnOffInternalNeoPixels();
+	#endif
 	turnOffPins();
 	if (clearMemoryFlag) {
 		memClear();
@@ -485,42 +489,27 @@ static int outBufEnd = 0;
 
 #define OUTBUF_BYTES() ((outBufEnd - outBufStart) & OUTBUF_MASK)
 
-static uint32 lastSendMSecs = 0; // used to detect when serial is connected and accepting data
-
 int sendBytes(uint8 *buf, int start, int end);
 
 static inline void sendData() {
 #ifdef EMSCRIPTEN
 	if (outBufStart > outBufEnd) {
 		if (sendBytes(outBuf, outBufStart, OUTBUF_SIZE)) {
-			lastSendMSecs = millisecs();
 			outBufStart = 0;
 		}
 	}
 	if (outBufStart != outBufEnd) {
 		if (sendBytes(outBuf, outBufStart, outBufEnd)) {
-			lastSendMSecs = millisecs();
 			outBufStart = outBufEnd & OUTBUF_MASK;
 		}
 	}
 #else
-	int someDataSent = false;
 	while (outBufStart != outBufEnd) {
 		if (!sendByte(outBuf[outBufStart])) break;
 		outBufStart = (outBufStart + 1) & OUTBUF_MASK;
-		someDataSent = true;
 	}
-	if (someDataSent) lastSendMSecs = millisecs();
 #endif
 }
-
-#if !defined(GNUBLOCKS) || defined(EMSCRIPTEN)
-int serialConnected() {
-	uint32 now = millisecs();
-	if (lastSendMSecs > now) lastSendMSecs = 0; // clock wrap
-	return ((now - lastSendMSecs) < 2000);
-}
-#endif
 
 static inline void queueByte(uint8 aByte) {
 	outBuf[outBufEnd] = aByte;
@@ -618,14 +607,15 @@ static void sendValueMessage(uint8 msgType, uint8 chunkOrVarIndex, OBJ value) {
 				*dst++ = ((n >> 24) & 0xFF);
 			} else if (StringType == type) {
 				*dst++ = 2; // item type (2 is string)
+				int maxStringItem = 20;
 				char *s = obj2str(item);
 				int len = strlen(s);
-				if (len <= 12) {
+				if (len <= maxStringItem) {
 					*dst++ = len;
 					for (int i = 0; i < len; i++) *dst++ = s[i];
 				} else {
-					*dst++ = 12; // send 9 bytes plus '...'
-					for (int i = 0; i < 9; i++) *dst++ = s[i];
+					*dst++ = maxStringItem; // send (maxStringItem - 3) bytes, then '...'
+					for (int i = 0; i < (maxStringItem - 3); i++) *dst++ = s[i];
 					for (int i = 0; i < 3; i++) *dst++ = '.';
 				}
 			} else if (BooleanType == type) {
@@ -763,9 +753,14 @@ static void sendVersionString() {
 }
 
 void sendBroadcastToIDE(char *s, int len) {
-	if (!serialConnected()) return; // serial port not open; do nothing
-
-	waitForOutbufBytes(len + 50); // leave a little room for other messages
+	int spaceNeeded = len + 50; // leave room for header and a few other messages
+	if (!hasOutputSpace(spaceNeeded)) {
+		if (!serialConnected()) {
+			return; // apparently not connected to IDE
+		} else {
+			waitForOutbufBytes(spaceNeeded);
+		}
+	}
 	sendMessage(broadcastMsg, 0, len, s);
 }
 
@@ -1031,6 +1026,21 @@ static int receiveTimeout() {
 	if (usecs < lastRcvTime) lastRcvTime = 0; // clock wrap
 	return (usecs - lastRcvTime) > 20000;
 }
+
+#if !defined(GNUBLOCKS) || defined(EMSCRIPTEN)
+
+int serialConnected() {
+	// Return true if the board is connected to the MicroBlocks IDE
+	// (i.e. if it has received a message from the IDE in the past 3 seconds).
+
+	if (0 == lastRcvTime) return false; // startup - no IDE messages yet
+
+	uint32 now = microsecs();
+	uint32 elapsed = (lastRcvTime > now) ? now : (now - lastRcvTime);
+	return elapsed < 3 * 1000000; // an ide msg was received in the past N seconds
+}
+
+#endif
 
 static void processShortMessage() {
 	if (rcvByteCount < 3) { // message is not complete

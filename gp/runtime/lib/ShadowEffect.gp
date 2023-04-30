@@ -13,19 +13,18 @@ to newShadowEffect aBlock effectType {
 method initialize ShadowEffect aBlock effectType {
 	morph = (newMorph this)
 	acceptEvents morph false
-	setTransparentTouch morph false
 	targetBlock = aBlock
 	scale = (global 'scale')
 	if ('highlight' == effectType) {
-		color = (colorHSV 155 0.9 1.0)
+		color = (colorHSV 120 1.0 0.6)
 		offset = 0
-		blur = (15 * scale)
+		blur = (20 * scale)
 	} else {
 		color = (gray 0 60)
 		offset = (7 * scale)
 		blur = (1 * scale)
 	}
-	r = (expandBy (fullBounds (morph targetBlock)) (15 * scale))
+	r = (expandBy (fullBounds (morph targetBlock)) (20 * scale))
 	r = (translatedBy r offset)
 	setExtent morph (width r) (height r)
 	setPosition morph (left r) (top r)

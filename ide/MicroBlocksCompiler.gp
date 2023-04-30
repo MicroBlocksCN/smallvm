@@ -49,7 +49,8 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'millisOp'			'milliseconds')
 		(array 'r' 'microsOp'			'microseconds')
 		'-'
-		(array 'r' 'boardType'			'board type')
+		(array 'r' 'boardType'				'board type')
+		(array 'r' '[misc:connectedToIDE]'	'connected to IDE')
 	'Pins'
 		(array 'r' 'digitalReadOp'		'read digital pin _ : pullup _' 'num bool' 1 false)
 		(array 'r' 'analogReadOp'		'read analog pin _ : pullup _' 'num bool' 1 false)
@@ -161,7 +162,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'atPut'				'replace item _ of list _ with _' 'auto.replaceItemMenu str auto' 1 nil 10)
 		(array ' ' '[data:delete]'		'delete item _ of list _' 'auto.replaceItemMenu str' 1)
 		'-'
-		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'str str num' 'a' 'cat' 1)
+		(array 'r' '[data:find]'		'find _ in _ : starting at _' 'auto str num' 'a' 'cat' 1)
 		(array 'r' '[data:copyFromTo]'	'copy _ from _ : to _' 'str num num' 'smiles' 2 5)
 		(array 'r' '[data:split]'		'split _ by _' 'str str' 'A,B,C' ',')
 	'Data-Advanced'
@@ -261,7 +262,9 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[net:udpRemoteIPAddress]'	'UDP remote IP address')
 		(array 'r' '[net:udpRemotePort]'		'UDP remote port')
 
-		(array ' ' '[tft:enableDisplay]'	'enable TFT _' 'bool' true)
+		(array ' ' '[tft:setBacklight]'		'set TFT backlight _ (0-10)' 'num' 10)
+		(array ' ' '[tft:getWidth]'			'TFT width')
+		(array ' ' '[tft:getHeight]'		'TFT height')
 		(array ' ' '[tft:setPixel]'			'set TFT pixel x _ y _ to _' 'num num num' 50 32 16711680)
 		(array ' ' '[tft:line]'				'draw line on TFT from x _ y _ to x _ y _ color _' 'num num num num num' 12 8 25 15 255)
 		(array ' ' '[tft:rect]'				'draw rectangle on TFT at x _ y _ width _ height _ color _ : filled _' 'num num num num num bool' 10 10 40 30 65280 false)
@@ -269,6 +272,11 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' '[tft:circle]'			'draw circle on TFT at x _ y _ radius _ color _ : filled _' 'num num num num bool' 60 100 30 65535 false)
 		(array ' ' '[tft:triangle]'			'draw triangle on TFT at x _ y _ , x _ y _ , x _ y _ color _ : filled _' 'num num num num num num num bool' 20 20 30 80 60 5 5592354 false)
 		(array ' ' '[tft:text]'				'write _ on TFT at x _ y _ color _ : scale _ wrap _' 'str num num num num bool' 'Hello World!' 0 80 16777215 1 false)
+		(array ' ' '[tft:deferUpdates]'		'defer TFT display updates')
+		(array ' ' '[tft:resumeUpdates]'	'resume TFT display updates')
+
+		(array ' ' '[tft:mergeBitmap]'		'mergeBitmap _ width _ buffer _ scale _ alphaIndex _ destX _ destY _' 'auto num auto num num num num')
+		(array ' ' '[tft:drawBuffer]'		'drawBuffer _ palette _ scale _ : srcX _ srcY _ copyWidth _ copyHeight _' 'auto auto num num num num num')
 
 		(array 'r' '[tft:tftTouched]'		'TFT touched')
 		(array 'r' '[tft:tftTouchX]'		'TFT touch X position')
@@ -302,6 +310,16 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' '[radio:packetReceive]'			'radio receive packet _' 'str' '32-element list')
 		(array ' ' '[radio:packetSend]'				'radio send packet _' 'str' '32-element list')
 		(array ' ' '[radio:disableRadio]'			'disable radio')
+
+		(array ' ' '[1wire:init]'			'oneWire init pin _' 'num' 0)
+		(array ' ' '[1wire:scanStart]'		'oneWire scan start')
+		(array 'r' '[1wire:scanNext]'		'oneWire scan next _' 'str' 'addressByteArray')
+		(array ' ' '[1wire:select]'			'oneWire select address _' 'str' 'addressByteArray')
+		(array ' ' '[1wire:selectAll]'		'oneWire select all')
+		(array ' ' '[1wire:writeByte]'		'oneWire write byte _ : power _' 'num bool' 0 false)
+		(array 'r' '[1wire:readByte]'		'oneWire read byte')
+		(array 'r' '[1wire:crc8]'			'oneWire crc8 _ : byte count _' 'str num' 'aByteArray' 8)
+		(array 'r' '[1wire:crc16]'			'oneWire crc16 _ : byte count _' 'str num' 'aByteArray' 8)
 	)
 }
 
@@ -994,6 +1012,7 @@ method appendLiterals SmallCompiler instructions {
 				nextOffset += (wordsForLiteral this literal)
 			}
 			atPut instr 2 (litOffset - ip)
+			atPut instructions ip (copyWith instr literal) // retain literal string for use by "show instructions"
 		}
 	}
 	addAll instructions literals
@@ -1018,7 +1037,9 @@ method appendDecompilerMetadata SmallCompiler aBlockOrFunction instructionList {
 
 	// add local variable names
 	varNames = (list)
-	for pair (sortedPairs localVars) { add varNames (last pair) }
+	for pair (sortedPairs localVars) {
+		add varNames (copyReplacing (last pair)) '	' ' ' // replace tabs with spaces in var name
+	}
 	add instructionList (joinStrings varNames (string 9)) // tab delimited string
 
 	// add function info

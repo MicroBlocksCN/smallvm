@@ -1,6 +1,6 @@
 module BMP Output
 author 'José García Yeste'
-version 1 5 
+version 1 6 
 depends TFT 
 description 'Display BMP files on a TFT screen.
 
@@ -27,11 +27,15 @@ to '_checkBMP' filename {
 }
 
 to '_drawBMP from' filename width height bpp 'origin x' 'origin y' {
-  local 'y' (height - 1)
+  local 'y' ((absoluteValue height) - 1)
   repeatUntil (y < 0) {
     local 'line' ('_readLineBMP' filename width bpp)
     for x (size line) {
-      '[tft:setPixel]' ((x - 1) + (v 'origin x')) (y + (v 'origin y')) (at x line)
+      if (height < 0) {
+        '[tft:setPixel]' ((x - 1) + (v 'origin x')) ((absoluteValue height) - (y + (v 'origin y'))) (at x line)
+      } else {
+        '[tft:setPixel]' ((x - 1) + (v 'origin x')) (y + (v 'origin y')) (at x line)
+      }
     }
     y += -1
   }

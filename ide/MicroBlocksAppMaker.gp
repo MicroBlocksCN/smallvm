@@ -70,7 +70,9 @@ method addFolderToEmbeddedFS MicroBlocksAppMaker srcFolder dstFolder zip {
 		}
 	}
 	for fn dirs {
-		addFolderToEmbeddedFS this (join srcFolder '/' fn) (join dstFolder '/' fn) zip
+		if ('node_modules' != fn) {
+			addFolderToEmbeddedFS this (join srcFolder '/' fn) (join dstFolder '/' fn) zip
+		}
 	}
 }
 

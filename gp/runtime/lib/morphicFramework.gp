@@ -119,7 +119,7 @@ method objectAt Hand pixelPerfect {
   if (isNil pixelPerfect) { pixelPerfect = false }
   for m (reversed (morphsAt (morph page) x y)) {
     hdl = (handler m)
-    if (and (notNil hdl) (not (isClass hdl 'Caret'))) {
+    if (and (notNil hdl) (not (isClass hdl 'Caret')) (not (isClass hdl 'ShadowEffect'))) {
       if (and (isVisible m) (containsPoint (visibleBounds m) x y)) {
         if (or (noticesTransparentTouch m) (not pixelPerfect)) {return hdl}
         if (not (isTransparentAt m x y)) {return hdl}
@@ -1272,6 +1272,21 @@ method removeTooltip Page {
 }
 
 // prompting and confirming
+
+method clearPrompters Page {
+    // Clear any existing prompters.
+
+    p = (findMorph 'Prompter')
+    while (notNil p) {
+        destroy p
+        p = (findMorph 'Prompter')
+    }
+}
+
+method freshPrompt Page question default editRule callback details {
+    clearPrompters this
+    return (prompt this question default editRule callback details)
+}
 
 method prompt Page question default editRule callback details {
   // prompt can be used either as a reporter or as a command

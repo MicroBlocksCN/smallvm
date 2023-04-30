@@ -1,0 +1,147 @@
+module Octopus
+author ELECFREAKS
+version 1 3 
+depends 'Temperature Humidity (DHT11, DHT22)' 
+description 'ELECFREAKS Octopus Component Library
+
+Octopus components help you build projects quickly and enjoy the fun of creation.
+
+Official website:
+https://www.elecfreaks.com/
+
+Wiki reference:
+http://wiki.elecfreaks.com/en/microbit/sensor/octopus-sensors/
+
+'
+
+  spec ' ' 'Octopus LED pin' 'Octopus LED pin _ toggle to _' 'auto bool' '0' true
+  spec ' ' 'Octopus set led brightness' 'Octopus LED pin _ brightness _ %' 'num num' 0 100
+  space
+  spec ' ' 'Octopus set fan' 'Octopus motor fan pin _ speed to _ %' 'num num' 0 50
+  space
+  spec ' ' 'Octopus set servo angle' 'Octopus 180° servo pin _ angle to _ ° (0~180)' 'num num' 0 90
+  space
+  spec 'r' 'Octopus get distance' 'Octopus sonar trig _ echo _ distance (cm)' 'num num' 17 16
+  space
+  spec 'r' 'Octopus get light' 'Octopus value of light intensity (Lux) at pin _' 'num' 26
+  space
+  spec 'r' 'Octopus get temperature' 'Octopus value of DHT11 temperature (°C) at pin _' 'num' 26
+  spec 'r' 'Octopus get humidity' 'Octopus value of DHT11 humidity (0~100) at pin _' 'num' 26
+  space
+  spec 'r' 'Octopus get water level' 'Octopus value of water level (0~40mm) at pin _' 'num' 26
+  space
+  spec 'r' 'Octopus get trimpot' 'Octopus value of trimpot (0~1023) at pin _' 'num' 26
+  space
+  spec 'r' 'Octopus get loudness' 'Octopus value of noise (dB) at pin _' 'num' 26
+  space
+  spec ' ' 'Octopus draw string' 'Octopus OLED show _ at x _ y _' 'str num num' 'hello!' 0 0
+  spec ' ' 'Octopus clear OLED' 'Octopus OLED clear'
+  spec ' ' 'Octopus draw pixel' 'Octopus OLED draw pixel x _ y _' 'num num' 63 31
+  spec ' ' 'Octopus draw line' 'Octopus OLED draw line from x _ y _ to x _ y _' 'num num num num' 0 0 127 63
+  spec ' ' 'Octopus draw rectangle' 'Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (0~15)' 'num num num num num' 0 0 60 30 0
+  spec ' ' 'Octopus fill rectangle' 'Octopus OLED fill rectangle x _ y _ w _ h _ rounding _ (0~15)' 'num num num num auto' 0 0 60 30 0
+  spec ' ' 'Octupus draw circle' 'Octopus OLED draw circle x _ y _ radius _' 'num num num' 10 10 10
+  spec ' ' 'Octopus fill circle' 'Octopus OLED fill circle x _ y _ radius _' 'num num num' 10 10 10
+
+to 'Octopus LED pin' pin bool {
+  digitalWriteOp pin bool
+}
+
+to 'Octopus clear OLED' {
+  '[display:mbDisplayOff]'
+}
+
+to 'Octopus draw line' x y x1 y1 {
+  '[tft:line]' x y x1 y1 (colorSwatch 35 190 30 255)
+}
+
+to 'Octopus draw pixel' x y {
+  '[tft:setPixel]' x y (colorSwatch 35 190 30 255)
+}
+
+to 'Octopus draw rectangle' x y w h rounding {
+  '[tft:roundedRect]' x y w h rounding (colorSwatch 35 190 30 255) false
+}
+
+to 'Octopus draw string' text x y {
+  '[tft:text]' text x y (colorSwatch 35 190 30 255) 1 true
+}
+
+to 'Octopus fill circle' x y r {
+  '[tft:circle]' x y r (colorSwatch 35 190 30 255) true
+}
+
+to 'Octopus fill rectangle' x y w h rounding {
+  '[tft:roundedRect]' x y w h rounding (colorSwatch 35 190 30 255) true
+}
+
+to 'Octopus get distance' trig echo {
+  digitalWriteOp trig false
+  waitMicros 2
+  digitalWriteOp trig true
+  waitMicros 50
+  digitalWriteOp trig false
+  local 'start' (microsOp)
+  waitUntil (or (not (digitalReadOp echo)) (((microsOp) - start) > 23320))
+  waitUntil (or (digitalReadOp echo) (((microsOp) - start) > 23320))
+  if (((microsOp) - start) > 23320) {
+    comment 'Distance sensor not ready; return the last distance reading'
+    return _sr04_last
+  }
+  comment 'Pulse sent. Measure time until echo is detected.'
+  start = (microsOp)
+  waitUntil (or (not (digitalReadOp echo)) (((microsOp) - start) > 23320))
+  _sr04_last = ((10 * ((microsOp) - start)) / 583)
+  comment 'Leave some time for reverberations to die away.'
+  waitMillis 10
+  if (_sr04_last == 0) {
+    zeroCount += 1
+  }
+  return _sr04_last
+}
+
+to 'Octopus get humidity' pin {
+  return (humidity_DHT11 pin)
+}
+
+to 'Octopus get light' pin {
+  if ((analogReadOp pin) <= 300) {
+    return ((((analogReadOp pin) - 10) * 1600) / 300)
+  } else {
+    return (((((analogReadOp pin) - 300) * 12400) / 723) + 1600)
+  }
+}
+
+to 'Octopus get loudness' pin {
+  return (analogReadOp pin)
+}
+
+to 'Octopus get temperature' pin {
+  return (temperature_DHT11 pin)
+}
+
+to 'Octopus get trimpot' pin {
+  return (analogReadOp pin)
+}
+
+to 'Octopus get water level' pin {
+  return ('[misc:rescale]' (analogReadOp pin) 0 550 0 400)
+}
+
+to 'Octopus set fan' pin speed {
+  analogWriteOp pin ('[misc:rescale]' speed 0 100 0 1023)
+}
+
+to 'Octopus set led brightness' pin brightness {
+  analogWriteOp pin ('[misc:rescale]' brightness 0 100 0 1023)
+}
+
+to 'Octopus set servo angle' which degrees {
+  local 'pulseWidth' (1500 - (10 * (degrees - 90)))
+  '[io:setServo]' which pulseWidth
+}
+
+to 'Octupus draw circle' x y r {
+  '[tft:circle]' x y r (colorSwatch 35 190 30 255) false
+}
+

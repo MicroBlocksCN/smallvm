@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 29 2022
+# Last updated: March 14 2023
 
 #########################
 # Blocks and categories #
@@ -110,11 +110,17 @@ retorna _
 when _ received
 quan rebi _
 
+go!
+endavant!
+
 broadcast _
 envia _
 
 comment _
 comentari _
+
+How this works...
+Així funciona...
 
 for _ in _ _
 per cada _ en _ _
@@ -136,6 +142,12 @@ last message
 
 call _
 crida _
+
+function name
+nom de la funció
+
+parameter list
+llista de paràmetres
 
 with _
 amb paràmetre(s) _
@@ -194,6 +206,9 @@ llista de bytes
 Advanced:
 Avançat:
 
+rescale _ from ( _ , _ ) to ( _ , _ )
+reescala _ de ( _ , _ ) a ( _ , _ )
+
 hex _
 hexadecimal _
 
@@ -228,6 +243,18 @@ Dades
 list
 llista
 
+cat
+gat
+
+dog
+gos
+
+bird
+ocell
+
+fish
+peix
+
 length of _
 llargada de _
 
@@ -248,6 +275,9 @@ uneix _ _
 
 copy _ from _
 copia _ a partir de _
+
+smiles
+foca
 
 to _
 fins a _
@@ -278,6 +308,9 @@ nova llista de bytes de llargada _
 
 as byte array _
 llista de bytes a partir de _
+
+aByteListOrString
+llistaDeBytesOCadenaDeText
 
 with all _
 plena amb _
@@ -349,6 +382,9 @@ canal RPI _
 spi exchange bytes _
 intercanvi a bytes _ per SPI
 
+aByteArray
+llistaDeBytes
+
 serial open _ baud
 obre port sèrie a _ bauds
 
@@ -363,6 +399,12 @@ escriu _ al port sèrie
 
 serial write _ starting at _
 escriu _ al port sèrie començant per _
+
+aByteStringOrByteArray
+cadenaDeTextOLlistaDeBytes
+
+soft serial write byte _ pin _ baud _
+escriu byte _ al port sèrie virtual al pin _ a _ bauds
 
 print _
 escriu _
@@ -386,7 +428,7 @@ shape for letter _
 forma de la lletra _
 
 send NeoPixel rgb _
-envia RGB _ al NeoPixel
+envia RGB _ al NeoPíxel
 
 has tone support
 té suport per a tons
@@ -415,8 +457,14 @@ envia nombre _ per ràdio
 radio send string _
 envia text _ per ràdio
 
+Hello!
+Hola!
+
 radio send pair _ = _
 envia associació _ = _ per ràdio
+
+light
+llum
 
 radio message received?
 missatge de ràdio rebut?
@@ -764,6 +812,9 @@ Text animat
 scroll text _
 anima el text _
 
+HELLO ROSA!
+HOLA, ROSA!
+
 scroll number _
 anima el nombre _
 
@@ -801,6 +852,9 @@ pantalla _
 
 clear display
 neteja pantalla
+
+set display color _
+fixa el color de la pantalla a _
 
 plot x _ y _
 encén x _ y _
@@ -847,6 +901,9 @@ ple _
 write _ on TFT at x _ y _ color _
 escriu _ a x _ y _ color _
 
+Hello World!
+Hola, món!
+
 scale _ wrap _
 escala _ amb salts de línia _
 
@@ -854,8 +911,11 @@ escala _ amb salts de línia _
 # BMP library
 # Can display BMP image files on a TFT display
 
-display BMP file _
-mostra arxiu BMP _
+display BMP file _ at x _ y _
+mostra imatge BMP _ a x _ y _
+
+image.bmp
+imatge.bmp
 
 ####
 # HSV color library
@@ -930,6 +990,48 @@ toca la freqüència _ durant _ ms
 play midi key _ for _ ms
 toca la tecla MIDI _ durant _ ms
 
+start tone _ Hz
+comença a tocar la freqüència _ Hz
+
+stop tone
+atura el so
+
+c
+do
+
+c#
+do#
+
+d
+re
+
+d#
+re#
+
+e
+mi
+
+f
+fa
+
+f#
+fa#
+
+g
+sol
+
+g#
+sol#
+
+a
+la
+
+a#
+la#
+
+b
+si
+
 ####
 # Ringtone library
 # Can play Nokring-formatted music. Also known as RTTTL.
@@ -965,6 +1067,9 @@ fixa el pin de puntejat a _
 
 play WAV file _
 reprodueix arxiu WAV _
+
+filename
+nom d'arxiu
 
 ####
 # Turtle geometry library
@@ -1035,11 +1140,20 @@ següent línia de l'arxiu _
 next _ bytes of file _
 següents _ bytes de l'arxiu _
 
+read into _ from file _
+llegeix a _ des de l'arxiu _
+
+a ByteArray
+una LlistaDeBytes
+
 starting at _
 començant des de _
 
 file names
 noms d'arxius
+
+in directory _
+al directori _
 
 size of file _
 mida de l'arxiu _
@@ -1066,8 +1180,20 @@ _ és en majúscules
 _ begins with _
 _ comença per _
 
+prefix
+prefix
+
+pre
+pre
+
 _ ends with _
 _ acaba en _
+
+suffix
+sufix
+
+fix
+fix
 
 _ contains _
 _ conté _
@@ -1075,8 +1201,14 @@ _ conté _
 lowercase _
 _ en minúscules
 
+THIS is a String! :)
+AIXÒ és un Text! :)
+
 uppercase _
 _ en majúscules
+
+Hello, world!
+Hola, món!
 
 _ without white space
 _ sense espais en blanc
@@ -1087,8 +1219,14 @@ uneix llista de texts _ amb separador _
 unicodes _
 unicodes de _
 
+aString
+unText
+
 string from unicodes _
 text a partir dels unicodes _
+
+aList
+unaLlista
 
 num2str _
 nombre _ a text
@@ -1105,11 +1243,17 @@ WiFi
 wifi connect to _ password _
 connecta't a la wifi _ amb contrasenya _
 
+Network_Name
+Nom_De_Xarxa
+
 IP _ gateway _ subnet _
 IP _ passarel·la _ subxarxa _
 
 wifi create hotspot _ password _
 crea punt d'accés wifi _ amb contrasenya _
+
+Network_Password
+Contrasenya_De_Xarxa
 
 IP address
 adreça IP
@@ -1274,6 +1418,9 @@ Client HTTP
 _ data _ to http܃// _ 
 petició _ amb contingut _ a http܃// _ 
 
+MicroBlocks is fun
+MicroBlocks és divertit
+
 port _
 port _
 
@@ -1294,6 +1441,9 @@ respon _ a la sol·licitud HTTP
 
 with body _
 amb contingut _
+
+Welcome to the MicroBlocks HTTP server
+Benvinguts al servidor HTTP de MicroBlocks
 
 and headers _
 i capçaleres _
@@ -1336,6 +1486,9 @@ tipus de l'esdeveniment de WebSocket _
 
 send _ to WebSocket client _
 envia _ al client de WebSocket _
+
+Hello, Client!
+Hola, client!
 
 ####
 # Web Things library
@@ -1497,11 +1650,14 @@ desconnecta MQTT
 MQTT sub _
 subscriu-te al tema d'MQTT _
 
+testTopic
+temaDeProva
+
 MQTT unsub _
 abandona el tema d'MQTT _
 
 MQTT pub topic _ payload _
-publica at tema d'MQTT _ el contingut _
+publica al tema d'MQTT _ el contingut _
 
 retain _ QoS _
 amb retenció _ i qualitat del servei _
@@ -1517,6 +1673,18 @@ tema de l'esdeveniment MQTT _
 
 payload for MQTT event _
 contingut de l'esdeveniment MQTT _
+
+MQTT set will topic _ payload _ retain _ QoS _
+--MISSING--
+
+testWill
+--MISSING--
+
+Last will!
+--MISSING--
+
+buffer sizes _
+--MISSING--
 
 ####
 # UDP
@@ -1558,13 +1726,13 @@ Cutebot set servo _ to _ degrees (-90 to 90)
 Posa el servo _ a _ graus (-90 a 90)
 
 Cutebot set servo _ to speed _ (-100 to 100)
-Posa la velocitat del servo _ a _ graus (-100 a 100)
+Fixa la velocitat del servo _ a _ (-100 a 100)
 
 Cutebot set headlight _ to _
 Posa el far _ a _
 
 Cutebot set NeoPixel _ to _
-Posa el NeoPixel _ del Cutebot a _
+Posa el NeoPíxel _ del Cutebot a _
 
 Cutebot _ line sensor
 Valor del sensor de línia _
@@ -1596,7 +1764,7 @@ Wukong stop motor _
 Atura el motor _
 
 Wukong stop all
-Atura tots els motors _
+Atura tots els motors
 
 Wukong set servo _ to _ degrees (-90 to 90)
 Posa el servo _ a _ graus (-90 a 90)
@@ -1614,10 +1782,10 @@ Fixa la brillantor del LED a _
 # Sphero-RVR
 
 wake
-desperta
+desperta't
 
 sleep
-adorm
+dorm
 
 reset the yaw
 reinicialitza rotació
@@ -1907,7 +2075,7 @@ when plugging a board, automatically read its contents into the IDE if the curre
 en connectar una placa, llegeix-ne els continguts automàticament si el projecte actual està en blanc
 
 erase flash and update firmware on ESP board
-esborra i reparticiona esp
+esborra i reparticiona el firmware en placa ESP
 
 Use board type
 La placa connectada és de tipus
@@ -2006,7 +2174,7 @@ import data from CSV file
 importa dades d'arxiu CSV
 
 copy graph data to clipboard
-copia dades de la gràfica al portapapers
+copia dades de la gràfica al porta-retalls
 
 show instructions
 mostra instruccions
@@ -2120,7 +2288,7 @@ delete
 elimina
 
 Input type:
-Tipus de ranura:
+Tipus de casella:
 
 string only
 només text
@@ -2374,7 +2542,7 @@ Block Extension
 Fletxa d'ampliació
 
 [l] right arrow to show optional inputs, left arrow to hide.
-[l] a la fletxa que apunta a la dreta per mostrar caselles opcionals, i a la que apunta a l'esquerra per amagar-les.
+[l] sobre la fletxa que apunta a la dreta per mostrar caselles opcionals, i sobre la que apunta a l'esquerra per amagar-les.
 
 Command Block
 Bloc comanda
@@ -2537,7 +2705,7 @@ Run the first set of blocks whose test condition is (-o) .
 Executa el primer grup de blocs pels quals la condició sigui (-o) .
 
 Run when the condition becomes (-o) .
-Executa quan la condició sigui (-o) .
+Executa quan la condició esdevingui (-o) .
 
 Wait until the condition becomes (-o) .
 Espera fins que la condició sigui (-o) .
@@ -2558,7 +2726,7 @@ Repeat the enclosed blocks with the variable set to the current iteration number
 Repeteix l'execució dels blocs que conté, fixant la variable a l'element o número de l'interval corresponent en cada iteració.
 
 Repeat the enclosed blocks until the condition becomes (-o) .
-Repeteix l'execució dels blocs que conté, fins que la condició sigui (-o) .
+Repeteix l'execució dels blocs que conté, fins que la condició esdevingui (-o) .
 
 Stop this task.
 Atura aquesta tasca.
@@ -2573,10 +2741,10 @@ Report the last broadcast message received.
 Reporta l'últim missatge emès i rebut.
 
 Call the function with the given name and optional parameter list.
-Executa la funció amb el nom especificat i amb una llista de paràmetres opcional.
+Executa la funció amb el nom especificat amb la llista de paràmetres opcional proporcionada.
 
 Call the function with the given name and optional parameter list and report its return value.
-Crida la funció amb el nom especificat i amb una llista de paràmetres opcional, i reporta'n el valor de retorn.
+Crida la funció amb el nom especificat amb la llista de paràmetres opcional proporcionada, i reporta'n el valor de retorn.
 
 Report the sum of the given numbers.
 Reporta la suma dels nombres especificats.
@@ -2585,7 +2753,7 @@ Report the first number minus the second.
 Reporta la resta entre el primer i el segon nombre.
 
 Report the product of the given numbers.
-Reporta el producte dels dos números especificats.
+Reporta el producte dels números especificats.
 
 Report the first number divided by the second.
 Reporta el resultat de dividir el primer nombre entre el segon.
@@ -2597,10 +2765,10 @@ Report the absolute value of the given number (always >= 0).
 Reporta el valor absolut del nombre especificat (sempre >= 0).
 
 Report the minimum of the values.
-Reporta el més petit dels dos valors.
+Reporta el més petit dels valors especificats.
 
 Report the maximum of the values.
-Reporta el més gran dels dos valors.
+Reporta el més gran dels valors especificats.
 
 Report a randomly chosen number in the given range.
 Reporta un nombre a l'atzar dins el rang especificat.
@@ -2639,7 +2807,7 @@ Report (-o) if first input is a value of the given data type.
 Reporta (-o) si la primera casella té un valor del tipus especificat.
 
 Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
-Retorna el valor numèric d'una cadena de text hexadecimal (rang: -0x1FFFFFFF a 0x1FFFFFFF)
+Retorna el valor numèric decimal d'una cadena de text hexadecimal (rang: -0x1FFFFFFF a 0x1FFFFFFF)
 
 Report bitwise AND of two numbers.
 Reporta l'operació bit a bit "i" (AND) entre dos nombres.
@@ -2672,7 +2840,7 @@ Report the Nth item of a list, string, or byte array.
 Reporta l'element en la posició especificada d'una llista, cadena de text o llista de bytes.
 
 Report the number of items in a list, string, or byte array.
-Retorna el nombre d'elements d'una llista, cadena de text o llista de bytes.
+Reporta el nombre d'elements d'una llista, cadena de text o llista de bytes.
 
 Join (concatenate) the given lists, strings, or byte arrays and report the result.
 Reporta la unió (concatenació) de les llistes, cadenes de text o llistes de bytes especificades.
@@ -2696,7 +2864,7 @@ Report a copy from the given index through the end (or optional stop index) of t
 Reporta una còpia d'una llista, cadena de text o llista de bytes a partir de la posició d'inici especificada i fins al final (o fins la posició final opcional especificada).
 
 Split the given string with the given delimiter and report the result (a list of strings).
-Retorna una cadena de text dividida pels delimitadors especificats (una llista de cadenes de text).
+Retorna la cadena de text especificada dividida pels delimitadors especificats (una llista de cadenes de text).
 
 Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
 Combina els elements d'una llista en una cadena de text, opcionalment separats per un delimitador (com ara una coma).

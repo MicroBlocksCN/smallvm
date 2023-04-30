@@ -1,10 +1,10 @@
 module 'OLED Graphics' Output
 author 'Turgut Guneysu'
-version 1 12 
-choices ModeMenu Horizontal Vertical 
+version 1 13 
+choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
 choices OnOffMenu On Off 
 choices VideoMenu Inverse Normal 
-choices DispTypeMenu 'OLED_0.96in' 'OLED_2.42in' 
+choices ModeMenu Horizontal Vertical 
 description 'Supports 0.96in and 2.42in OLED Displays with SD1306 and SD1309 chipsets. Comm mode is I2C or SPI.
 Changes:
 - always display buffer
@@ -80,6 +80,9 @@ flip setting controls display hardware write direction:
   _comma = ('[data:unicodeString]' 44)
   _comMode = 'i2c'
   OLEDi2cAddr = (hexToInt ('[data:join]' ('[data:unicodeString]' 32) i2cAddr))
+  if (_displayType != 0) { 
+    return
+  }
   if (dispType == 'OLED_0.96in') {
     _displayType = 6
     _resetPin = resetPin
@@ -93,6 +96,7 @@ flip setting controls display hardware write direction:
   }
   '_initLibrary'
   OLEDclear
+  OLEDcontrast 4
 }
 
 to OLEDInit_SPI dispType dcPin resetPin flip {
@@ -113,6 +117,9 @@ flip setting controls display hardware write direction:
   _comma = ('[data:unicodeString]' 44)
   _comMode = 'spi'
   _dcPin = dcPin
+  if (_displayType != 0) { 
+    return
+  }
   if (dispType == 'OLED_0.96in') {
     _displayType = 6
     _resetPin = resetPin
@@ -127,6 +134,7 @@ flip setting controls display hardware write direction:
   }
   '_initLibrary'
   OLEDclear
+  OLEDcontrast 4
 }
 
 to OLEDclear {

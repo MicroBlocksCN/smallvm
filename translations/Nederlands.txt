@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: April 14 2023
 
 #########################
 # Blocks and categories #
@@ -26,6 +26,12 @@ knop A
 button B
 knop B
 
+timer
+timer
+
+reset timer
+timer resetten
+
 microseconds
 microseconden
 
@@ -39,10 +45,13 @@ Pins
 Pinnen
 
 read digital pin _
-lees digitale pin_
+lees digitale pin _
 
 read analog pin _
 lees analoge pin _
+
+pullup _
+pullup _
 
 set digital pin _ to _
 maak digitale pin _  _
@@ -77,11 +86,11 @@ wacht _ millisec.
 if _ _
 als _ _
 
-else if _ _
-anders als _ dan _
-
 if _ _ else _
 als _ dan _ anders _
+
+else if _ _
+anders als _ dan _
 
 else
 anders
@@ -101,11 +110,17 @@ terug _
 when _ received
 wanneer _ ontvangen
 
+go!
+start!
+
 broadcast _
 zend _
 
 comment _
 commentaar _
+
+How this works...
+Hoe dit werkt...
 
 for _ in _ _
 voor _ in _ _
@@ -125,6 +140,18 @@ stop alles
 last message
 laatste bericht
 
+call _
+roep _ aan
+
+function name
+functienaam
+
+parameter list
+parameterlijst
+
+with _
+met _
+
 Operators
 Functies
 
@@ -133,6 +160,12 @@ _ modulo _
 
 abs _
 absolute waarde van _
+
+min _ _
+min _ _
+
+max _ _
+max _ _
 
 random _ to _
 willekeurig getal tussen _ en _
@@ -167,8 +200,14 @@ tekst
 list
 lijst
 
+byte array
+byte array
+
 Advanced:
 Gevorderd
+
+rescale _ from ( _ , _ ) to ( _ , _ )
+herschaal _ van ( _ , _ ) naar ( _ , _ )
 
 hex _
 hex _
@@ -204,6 +243,18 @@ Data
 list
 lijst
 
+cat
+kat
+
+dog
+hond
+
+bird
+vogel
+
+fish
+vis
+
 length of _
 lengte van _
 
@@ -211,7 +262,7 @@ item _ of _
 item _ van _
 
 replace item _ of list _ with _
-vervang item _ van lijst _ door
+vervang item _ van lijst _ door _
 
 delete item _ of list _
 verwijder item _ van lijst _
@@ -225,11 +276,14 @@ voeg _ _ samen
 copy _ from _
 kopieer _ van _
 
+smiles
+lachen
+
 to _
 naar _
 
 find _ in _
-vind _ in_
+vind _ in _
 
 starting at _
 start op _
@@ -252,11 +306,35 @@ nieuwe lijst lengte _
 new byte array _
 nieuwe byte array _
 
+as byte array _
+als byte array _
+
+aByteListOrString
+eenByteLijstOfReeks
+
+with all _
+met alles als _
+
 free memory
 vrij geheugen
 
+all
+alles
+
+last
+laatste
+
+random
+willekeurig
+
+split _ by _
+splits _ door _
+
 My Blocks
 Mijn blokken
+
+Generic
+Algemeen
 
 # Buttons on top of "My Blocks" category
 
@@ -291,6 +369,42 @@ spi zend _
 
 spi receive
 spi ontvang
+
+spi setup speed _
+spi setup snelheid _
+
+mode _
+mode _
+
+rpi channel _
+rpi kanaal _
+
+spi exchange bytes _
+spi uitgewisselde bytes _
+
+aByteArray
+eenByteArray
+
+serial open _ baud
+serieel open _ baud
+
+serial close
+serieel sluiten
+
+serial read
+serieel lezen
+
+serial write _
+serieel schrijven _
+
+serial write _ starting at _
+serieel schrijven _ startend bij _
+
+aByteStringOrByteArray
+eenByteReeksOfByteArray
+
+soft serial write byte _ pin _ baud _
+soft seriele schrijf byte _ pin _ baud _
 
 print _
 schrijf _
@@ -343,8 +457,14 @@ radio zend nummer _
 radio send string _
 radio zend tekst _
 
+Hello!
+Hallo!
+
 radio send pair _ = _
 radio zend paar _ = _
+
+light
+licht
 
 radio message received?
 radio boodschap ontvangen?
@@ -358,8 +478,8 @@ radio laatste tekst
 radio last message type
 radio laatste type boodschap
 
-radio set group _
-radio instellen groep _
+radio set group _ (0-255)
+radio stel groep in _ (0-255)
 
 radio set channel (0-83) _
 radio instellen kanaal (0-83) _
@@ -404,6 +524,12 @@ lichtsterkte
 temperature (°C)
 temperatuur (°C)
 
+magnetic field
+magnetisch veld
+
+set acceleration range _ g = 100
+stel versnellingsbereik in _ g = 100
+
 ####
 # NeoPixel library
 
@@ -435,13 +561,37 @@ attach _ LED NeoPixel strip to pin _
 verbind _ LED NeoPixel strip aan pin _
 
 has white _
-heeft wit_
+heeft wit _
 
 PIR
 PIR
 
 PIR at pin _ detected movement
-PIR op pin _ detecteerde beweging 
+PIR op pin _ detecteerde beweging
+
+####
+# Microphone library
+
+Microphone
+Microfoon
+
+microphone
+microfoon
+
+turn on microphone
+microfoon aanzetten
+
+loudness
+geluidssterkte
+
+clap count
+klap tellen
+
+set clap threshold _
+maak klap drempelwaarde _
+
+estimate clap threshold
+klap drempelwaarde schatten
 
 ####
 # Citilab ED1 board libraries
@@ -641,6 +791,9 @@ test IR
 attach IR receiver to pin _
 verbind IR ontvanger aan pin _
 
+IR transmit device _ command _
+IR zend device _ command _
+
 ####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
@@ -658,6 +811,9 @@ Scrollen
 
 scroll text _
 scroll tekst _
+
+HELLO ROSA!
+HALLO ROSA!
 
 scroll number _
 scroll nummer _
@@ -696,6 +852,9 @@ scherm _
 
 clear display
 wis scherm
+
+set display color _
+zet scherm kleur als _
 
 plot x _ y _
 teken x _ y _
@@ -742,8 +901,75 @@ gevuld _
 write _ on TFT at x _ y _ color _
 schrijf _ op TFT op x _ y _ kleur _
 
+Hello World!
+Hallo Wereld!
+
 scale _ wrap _
 schaal _ wrap _
+
+####
+# BMP library
+# Can display BMP image files on a TFT display
+
+display BMP file _ at x _ y _
+laat BMP bestand _ zien op x _ y _
+
+image.bmp
+afbeelding.bmp
+
+####
+# HSV color library
+
+HSV Colors
+HSV kleuren
+
+RGB of hue _ saturation _ brightness _ (0-100)
+RGB van tint _ verzadiging _ helderheid _ (0-100)
+
+####
+# Fractions library
+
+Fractions
+Breuken
+
+fract _ / _
+breuk _ / _
+
+fract _ + _
+breuk _ + _
+
+fract _ - _
+breuk _ - _
+
+fract _ × _
+breuk _ × _
+
+fract _ = _
+breuk _ = _
+
+fract _ < _
+breuk _ < _
+
+fract _ > _
+breuk _ > _
+
+simplify fraction _
+breuk vereenvoudigen _
+
+integer part of fraction _
+gehele getal van de breuk _
+
+numerator of fraction _
+teller van de breuk _
+
+denominator of fraction _
+noemer van de breuk _
+
+gcd _ _
+ggd _ _
+
+lcm _ _
+kgv _ _
 
 ####
 # Tone library
@@ -763,6 +989,87 @@ speel frequentie _ gedurende _ ms
 
 play midi key _ for _ ms
 speel midi toon _ gedurende _ ms
+
+start tone _ Hz
+start toon _ Hz
+
+stop tone
+stop toon
+
+c
+c
+
+c#
+c#
+
+d
+d
+
+d#
+d#
+
+e
+e
+
+f
+f
+
+f#
+f#
+
+g
+g
+
+g#
+g#
+
+a
+a
+
+a#
+a#
+
+b
+b
+
+####
+# Ringtone library
+# Can play Nokring-formatted music. Also known as RTTTL.
+
+Ringtone
+Ringtone
+
+play ringtone _
+ringtone _ afspelen
+
+current song name
+huidig lied naam
+
+####
+# Pluck
+# Generate music with plucked-string resembling sounds
+
+Pluck
+Pluck
+
+pluck note _ octave _ for _ ms
+pluck noot _ octaaf _ gedurende _ milliseconden
+
+pluck MIDI key _ for _ msecs
+pluck MIDI key _ gedurende _ milliseconden
+
+set pluck pin _
+maak pluck pin _
+
+####
+# WAV
+# Play WAV sound files
+
+play WAV file _
+WAV bestand _ afspelen
+
+filename
+bestandsnaam
 
 ####
 # Turtle geometry library
@@ -833,11 +1140,20 @@ volgende regel van bestand _
 next _ bytes of file _
 volgende _ bytes van bestand _
 
+read into _ from file _
+lees naar _ vanuit bestand _
+
+a ByteArray
+een ByteArray
+
 starting at _
 start op _
 
 file names
 bestandsnamen
+
+in directory _
+in map _
 
 size of file _
 grootte van bestand _
@@ -846,19 +1162,104 @@ file system info
 bestandssysteem info
 
 ####
+# Strings
+# string (text) processing functions
+
+Strings
+Strings
+
+_ is a digit
+_ is een cijfer
+
+_ is lowercase
+_ is een kleine letter
+
+_ is uppercase
+_ is een grote letter
+
+_ begins with _
+_ begint met _
+
+prefix
+voorvoegsel
+
+pre
+voor
+
+_ ends with _
+_ eindigt met _
+
+suffix
+achtervoegsel
+
+fix
+voegsel
+
+_ contains _
+_ bevat _
+
+lowercase _
+maak _ in kleine letters
+
+THIS is a String! :)
+DIT is een string! :)
+
+uppercase _
+maak _ in hoofdletters
+
+Hello, world!
+Hallo, wereld!
+
+_ without white space
+_ zonder extra spaties
+
+join string list _ separator _
+voeg string lijst _ samen met scheidingsteken _
+
+unicodes _
+unicodes _
+
+aString
+eenString
+
+string from unicodes _
+string van unicodes _
+
+aList
+eenLijst
+
+num2str _
+num2str
+
+str2num _
+str2num _
+
+####
 # WiFi library
 
 WiFi
 WiFi
 
-wifi connect to _ password _ try _ times
-wifi verbind met _ wachtwoord _ probeer _ keer
+wifi connect to _ password _
+verbind wifi met _ wachtwoord _
+
+Network_Name
+Netwerk_Naam
+
+IP _ gateway _ subnet _
+IP _ gateway _ subnet _
 
 wifi create hotspot _ password _
 wifi maak hotspot _ wachtwoord _
 
+Network_Password
+Netwerk_Wachtwoord
+
 IP address
 IP adres
+
+MAC address
+MAC adres
 
 ####
 # Motion library
@@ -991,13 +1392,40 @@ get PN532 firmware version
 lees PN532 firmware versie
 
 ####
-# HTTP libraries
+# Touch Screen
+
+Touch Screen
+Touchscreen
+
+TFT touched
+TFT aangeraakt
+
+TFT touch X position
+TFT aanraak X positie
+
+TFT touch Y position
+TFT aanraak Y positie
+
+TFT touch pressure
+TFT aanraak druk
+
+####
+# HTTP Client
 
 HTTP client
 HTTP-client
 
 _ data _ to http܃// _
 _ data _ naar http܃// _
+
+MicroBlocks is fun
+MicroBlocks is leuk
+
+port _
+poort _
+
+####
+# HTTP Server
 
 HTTP server
 HTTP-server
@@ -1014,6 +1442,9 @@ antwoord _ op HTTP verzoek
 with body _
 met body _
 
+Welcome to the MicroBlocks HTTP server
+Welkom op de MicroBlocks HTTP server
+
 and headers _
 en headers _
 
@@ -1023,8 +1454,41 @@ verzoek-body _
 path of request _
 verzoek-pad _
 
+headers of request _
+headers van verzoek _
+
 method of request _
 methode van verzoek _
+
+content length of request _
+inhoud lengte van verzoek _
+
+####
+# WebSocket server
+
+WebSocket server
+WebSocket server
+
+start WebSocket server
+start WebSocket server
+
+last WebSocket event
+laatste WebSocket gebeurtenis
+
+client ID for WebSocket event _
+client ID voor WebSocket event _
+
+payload for WebSocket event _
+payload voor WebSocket gebeurtenis _
+
+type of WebSocket event _
+type WebSocket gebeurtenis _
+
+send _ to WebSocket client _
+stuur _ naar WebSocket client _
+
+Hello, Client!
+Hallo, client!
 
 ####
 # Web Things library
@@ -1074,6 +1538,309 @@ gebeurtenis definities JSON
 events JSON
 gebeurtenissen
 
+####
+# MiKe Robot library
+
+MiKe front obstacle (cm)
+MiKe obstakel voor (cm)
+
+MiKe _ obstacle ?
+Mike _ obstakel ?
+
+MiKe black line on _ ?
+MiKe zwarte lijn op _ ?
+
+MiKe back light
+MiKe achterlicht
+
+MiKe IR
+Mike IR
+
+MiKe digital D8 sensor
+MiKe digitale D8 sensor
+
+MiKe stop motors
+MiKe stop motors
+
+MiKe Robot go _ at _ %
+MiKe Robot ga _ met _ %
+
+MiKe Robot speed _ %
+MiKe Robot snelheid _ %
+
+MiKe Robot direction _
+MiKe Robot richting _
+
+MiKe turn _ motor _
+MiKe draai _ motor _
+
+MiKe speed _ motor at _ %
+MiKe snelheid _ motor met _ %
+
+MiKe front lights off
+MiKe koplampen uit
+
+MiKe front lights to _
+MiKe koplampen naar _
+
+MiKe circle lights off
+MiKe cirkel lichten uit
+
+MiKe circle ligths to _
+MiKe cirkel lichten naar _
+
+MiKe circle light _ (1-18) to _
+MiKe cirkel licht _ (1-18) naar _
+
+MiKe rotate lights by _
+MiKe draai lichten met _
+
+MiKe digital D8 to _
+MiKe digitale D8 naar _
+
+####
+# DrawBot Library
+# A CoreXY plotter library that supports turtle geometry
+
+plotter move X _ Y _
+plotter verplaats X _ Y _
+
+plotter move _ steps
+plotter neem _ stappen
+
+plotter turn _ degrees
+plotter draai _ graden
+
+plotter turn _ / _ of circle
+plotter draai _ / _ van een cirkel
+
+plotter point in direction _
+plotter wijs naar richting _
+
+plotter pen down
+plotter pen neer
+
+plotter pen up
+plotter pen omhoog
+
+plotter stop
+plotter stop
+
+set plotter speed to _ %
+maak plotter snelheid naar _ %
+
+####
+# MQTT
+
+MQTT connect to broker _
+MQTT verbinden met broker _
+
+buffer sizes _ client id _
+buffer grootte _ client id _
+
+username _ password _
+gebruikersnaam _ wachtwoord _
+
+MQTT connected
+MQTT verbonden
+
+MQTT disconnect
+MQTT verbroken
+
+MQTT sub _
+MQTT sub _
+
+testTopic
+testOnderwerp
+
+MQTT unsub _
+MQTT unsub _
+
+MQTT pub topic _ payload _
+MQTT pub onderwerp _ payload _
+
+Hello!
+Hallo!
+
+retain _ QoS _
+behoud _ QoS _
+
+MQTT event
+MQTT gebeurtenis
+
+binary _
+binair _
+
+topic for MQTT event _
+onderwerp voor MQTT-gebeurtenis _
+
+payload for MQTT event _
+payload voor MQTT-gebeurtenis _
+
+MQTT set will topic _ payload _ retain _ QoS _
+MQTT zet will topic _ payload _ retain _ QoS _
+
+testWill
+testWill
+
+Last will!
+Laatste wil!
+
+buffer sizes _
+buffer groottes _
+
+####
+# UDP
+
+UDP start port _
+UDP start poort _
+
+UDP stop
+UDP stop
+
+UDP send packet _ to ip _ port _
+UDP zend pakket _ naar ip _ poort _
+
+UDP receive packet
+UDP pakket ontvangen
+
+binary data _
+binaire data _
+
+UDP remote IP address
+UDP IP-adres op afstand
+
+UDP remote port
+UDP IP-adres op afstand
+
+####
+# Cutebot
+
+Cutebot
+Cutebot
+
+Cutebot set wheel left _ right _ (-100 to 100)
+Cutebot maak wiel links _ rechts _ (-100 tot 100)
+
+Cutebot stop wheels
+Cutebot stop wielen
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+Cutebot maak servo _ naar _ graden (-90 tot 90)
+
+Cutebot set servo _ to speed _ (-100 to 100)
+Cutebot maak servo _ naar snelheid _ (-100 tot 100)
+
+Cutebot set headlight _ to _
+Cutebot maak koplamp _ naar _
+
+Cutebot set NeoPixel _ to _
+Cutebot maak NeoPixel _ naar _
+
+Cutebot _ line sensor
+Cutebot _ lijnsensor
+
+Cutebot sees line on left _ right _
+Cutebot zie lijn op links _ rechts _
+
+Cutebot distance (cm)
+Cutbot afstand (cm)
+
+left
+links
+
+right
+rechts
+
+both
+beide
+
+# Wukong
+
+Wukong
+Wukong
+
+Wukong set motor _ to _ (-100 to 100)
+Wukong maak motor _ naar _ (-100 tot 100)
+
+Wukong stop motor _
+Wukong stop motor _
+
+Wukong stop all
+Wukong stop alles
+
+Wukong set servo _ to _ degrees (-90 to 90)
+Wukong maak servo _ naar _ graden (-90 tot 90)
+
+Wukong set servo _ to speed _ (-100 to 100)
+Wukong maak servo _ naar snelheid _ (-100 tot 100)
+
+Wukong set NeoPixels _ _ _ _
+Wukong maak NeoPixels _ _ _ _
+
+Wukong set LED brightness to _
+Wukong maak LED helderheid naar _
+
+####
+# Sphero-RVR
+
+wake
+wakker worden
+
+sleep
+slapen
+
+reset the yaw
+reset het gieren
+
+drive with speed _ and heading _
+rijd met snelheid _ en richting _
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+maak raw-motoren met linkermodus _ linkersnelheid _ rechtermodus _ rechtersnelheid _
+
+stop with heading _
+stop met richting _
+
+set RGB LED _ to red _ green _ blue _
+maak het RGB LED _ op rood _ groen _ blauw _
+
+set all LEDs to red _ green _ blue _
+maak alle LEDs op rood _ groen _ blauw _
+
+####
+# Joystick:bit
+
+button _ is pressed
+knop _ is ingedrukt
+
+rocker value of _
+knuppel waarde van _
+
+motor vibrate for _ ms
+motor vibreert voor _ ms
+
+####
+# NeZha
+
+NeZha
+NeZha
+
+NeZha set motor _ speed to _ %
+NeZha maak motor _ snelheid naar _ %
+
+NeZha stop motor _
+NeZha stop motor _
+
+NeZha stop all motors
+NeZha stop alle motors
+
+NeZha set _ servo _ angle to _
+NeZha maak _ servo _ hoek naar _
+
+NeZha set continuous rotation servo _ speed to _ %
+NeZha maak continue rotatie servo _ snelheid naar _ %
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -1087,13 +1854,19 @@ Open
 Open
 
 Open from board
-Open vanaf board-
+Open vanaf board
+
+Copy project URL to clipboard
+Kopieer project URL naar klembord
 
 Information
 Informatie
 
 Plug in the board.
 Sluit het board aan
+
+Plug in the board and click the USB icon to connect.
+Sluit het board aan klik op het USB icoon om te verbinden.
 
 Reading project from board...
 Project lezen van het bord...
@@ -1102,7 +1875,7 @@ Loading project...
 Project laden
 
 Found a newer version of
-Nieuwere versie gevonden van
+Een nieuwere versie gevonden van
 
 Do you want me to update the one in the project?
 Wil je dat ik die ene in het project update?
@@ -1112,6 +1885,12 @@ Bewaar
 
 Connect
 Verbind
+
+connect
+verbind
+
+open Boardie
+open Boardie
 
 disconnect
 verbreek verbinding
@@ -1153,7 +1932,7 @@ Functie "
 " is te groot om naar board te zenden.
 
 Script is too large to send to board.
-Script is is te groot om naar board te zenden.
+Script is te groot om naar board te zenden.
 
 Use "Connect" button to connect to a MicroBlocks device.
 Gebruik "Verbind" knop om te verbinden met een MicroBlocks device.
@@ -1163,6 +1942,9 @@ Geen boards gevonden; is je board aangesloten?
 
 For AdaFruit boards, double-click reset button and try again.
 Voor AdaFruit boards, dubbelklik op de reset knop en probeer het opnieuw.
+
+Only recent Chrome and Edge browsers support WebSerial.
+Alleen recente Chrome en Edge browsers ondersteunen WebSerial.
 
 The board is not responding.
 Het board reageert niet.
@@ -1176,6 +1958,9 @@ De MicroBlocks op je board is niet actueel.
 Try to update MicroBlocks on the board?
 Proberen om MicroBlocks op het board te updaten?
 
+MicroBlocks
+MicroBlocks
+
 Stop
 Stop
 
@@ -1188,6 +1973,14 @@ MicroBlocks verlaten?
 Discard current project?
 Huidig project weggooien?
 
+# Scripting area right-click context menu
+
+set block size...
+maak blokgrootte ...
+
+make blocks bigger or smaller
+maak blokken groter of kleiner
+
 clean up
 opruimen
 
@@ -1197,8 +1990,14 @@ arrangeer scripts
 undrop (ctrl-Z)
 ongedaan (ctrl-Z)
 
+undo the last block drop
+maak het laatste plaatsen van blokken ongedaan
+
 copy all scripts to clipboard
 kopieer alle scripts naar klembord
+
+copy all scripts to clipboard as URL
+kopieer alle scripts naar het klembord als URL
 
 paste all scripts
 plak alle scripts
@@ -1206,11 +2005,32 @@ plak alle scripts
 paste script
 plak script
 
-save a picture of all scripts
-bewaar een afbeelding van alle scripts
+paste script from clipboard
+plak script vanuit het klembord
+
+save a picture of all visible scripts
+bewaar een afbeelding van alle zichtbare scripts
+
+set exported script scale
+maak geëxporteerde script grootte
+
+small (50%)
+klein (50%)
+
+normal (65%)
+normaal (65%)
+
+large (100%)
+groot (100%)
+
+printable (200%)
+afdrukbaar (200%)
 
 about...
 over...
+
+About MicroBlocks
+Over MicroBlocks
 
 virtual machine version
 virtuele machine versie
@@ -1251,11 +2071,41 @@ PlugShare inschakelen als project leeg is
 disable PlugShare when project empty
 PlugShare uitschakelen als project leeg is
 
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+wanneer je een board verbindt, zet dan niet automatisch de inhoud in de IDE, zelfs als het huidige project leeg is
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+wanneer je een board verbindt, zet dan automatisch de inhoud in de IDE als het huidige project leeg is
+
 erase flash and update firmware on ESP board
 flash wissen en firmware op ESP-bord updaten
 
 Use board type
 Gebruik board type
+
+Firmware Installed
+Firmware geïnstalleerd
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+Opnieuw verbinden met het board door op de "Verbind" knop the klikken. (USB icoon).
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+Verbind de USB kabel terwijl je de witte BOOTSEL knop ingedrukt houd voordat je verder gaat.
+
+You will be asked to save the firmware file.
+Je zult worden gevraagd om het firmware bestand op te slaan.
+
+Select
+Selecteer
+
+as the destination drive, then click Save.
+als de bestemmings schijf, klik daarna op Bewaar.
+
+Installing firmware...
+Installeer firmware...
+
+Plug in the board.
+Sluit het board aan
 
 Wiping board...
 Board wissen ...
@@ -1293,8 +2143,41 @@ exporteer functies als bibliotheek
 hide advanced blocks
 verberg geavanceerde blokken
 
+put file on board
+zet het bestand op het board
+
+get file from board
+haal het bestand van het board
+
+uploaded
+geüpload
+
+downloaded
+gedownload
+
 Data Graph
 Data Grafiek
+
+Graph
+Grafiek
+
+clear graph
+wis grafiek
+
+zero at bottom
+nul aan de onderkant
+
+zero in middle
+nul in het midden
+
+export data to CSV file
+exporteer de data naar een CSV bestand
+
+import data from CSV file
+importeer data van een CSV bestand
+
+copy graph data to clipboard
+kopieer de grafiek data naar het klembord
 
 show instructions
 toon instructies
@@ -1303,13 +2186,31 @@ show compiled bytes
 toon gecompileerde bytes
 
 expand
-breid uit
+uitklappen
 
 collapse
-bind in
+inklappen
 
 rename...
 hernoem...
+
+find variable accessors
+vind variabele toegangspunten
+
+find scripts or block definitions where this variable is being read
+vind scripts of blok definities waar deze variable word uitgelezen
+
+find variable modifiers
+vind variabele aanpassingen
+
+find scripts or block definitions where this variable is being set or changed
+vind scripts of blok definities waar deze variabele wordt ingesteld of veranderd
+
+find uses of this block
+vind plekken waar dit blok word toegepast
+
+find scripts or block definitions using this block
+vind scripts of blok definities die dit blok gebruiken
 
 show block definition...
 toon blok definitie...
@@ -1326,6 +2227,9 @@ verwijder de definitie van dit blok
 duplicate
 dupliceer
 
+help
+help
+
 duplicate this block
 dupliceer dit blok
 
@@ -1340,6 +2244,12 @@ alleen dit ene blok
 
 copy to clipboard
 kopieer naar klembord
+
+copy to clipboard as URL
+kopieer naar klembord als URL
+
+copy these blocks to the clipboard as a URL
+kopieer deze blokken naar het klembord als een URL
 
 copy these blocks to the clipboard
 kopieer deze blokken naar het klembord
@@ -1356,14 +2266,23 @@ extract blok
 pull out this block
 trek dit blok er uit
 
+show help for this block in a browser
+laat hulp zien voor dit blok in een browser
+
 save picture of script
-bewaar afbeelding van script
+bewaar een afbeelding van het script
+
+save picture of script with result
+bewaar een afbeelding van het script met een resultaat
 
 save a picture of this block definition as a PNG file
 bewaar een afbeelding van deze blok definitie als een PNG bestand
 
 save a picture of these blocks as a PNG file
 bewaar een afbeelding van deze blokken als een PNG bestand
+
+save a picture of these blocks and their result as a PNG file
+bewaar een afbeelding van deze blokken en hun resultaat als een PNG bestand
 
 copy script
 kopieer script
@@ -1382,6 +2301,27 @@ tekst of nummer
 
 number only
 alleen nummer
+
+stop editing
+stop bewerken
+
+cut
+knip
+
+copy
+kopie
+
+paste
+plakken
+
+accept
+accepteren
+
+revert
+terugdraaien
+
+select all
+alles selecteren
 
 define
 definieer
@@ -1434,10 +2374,54 @@ Oké
 Confirm
 Bevestig
 
-# File picker and library dialogs
+# Library folders
 
 Libraries
 Bibliotheken
+
+AI
+AI
+
+Graphics and Displays
+Graphics en schermen
+
+Kits and Boards
+Kits en Boards
+
+Network
+Netwerk
+
+Other
+Ander
+
+Robots
+Robots
+
+Sensing
+Sensoren
+
+Sound
+Geluid
+
+System
+Systeem
+
+# File picker and library dialogs
+
+New library name?
+Naam nieuwe bibliotheek?
+
+show all block definitions
+toon alle blok definities
+
+hide all block definitions
+verberg alle blok definities
+
+export this library
+exporteer deze bibliotheek
+
+delete library
+verwijder bibliotheek
 
 Examples
 Voorbeelden
@@ -1476,7 +2460,7 @@ Tags:
 Tags:
 
 Path, name or URL for library?
-bibliotheek pad, naam, of URL?
+Pad, naam of URL voor bibliotheek?
 
 Invalid URL
 Ongeldige URL
@@ -1500,8 +2484,408 @@ built-in library
 ingebouwde bibliotheek
 
 Dependency path, name or URL?
-afhankelijkheids -pad, -naam, of -URL
+Afhankelijkheid pad, naam, of URL
+
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+Als je een bibliotheek toe wil voegen die ingebouwd is in MicroBlocks dan hoef je enkel de naam in te voeren.
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+Als je bibliotheek zich in de Bibliotheek map van je lokale MicroBlocks project map bevindt, dan moet je het laten vooraf gaan door een slash (/).
+
+If the library is hosted online, please input its full URL.
+Als de bibliotheek online staat, geef dan de hele URL op.
 
 Tag name?
 Tag naam?
 
+user library
+gebruikers bibliotheek
+
+Add Library
+Bibliotheek toevoegen
+
+seconds remaining
+resterende seconden
+
+Decrease block size
+Maak de blokgrootte kleiner
+
+Restore block size to 100%
+Herstel de blokgrootte naar 100%
+
+Increase block size
+Maak de blokgrootte groter
+
+############
+# Tips Bar #
+############
+
+Button
+Knop
+
+Boolean Input
+Booleaanse input
+
+[l] toggle value, or drop a reporter into it.
+[l] wissel de waarde of zet er een reporter blok in.
+
+Color Input
+Kleur input
+
+[l] change the color, or drop a reporter into it.
+[l] verander de kleur of zet er een reporter blok in.
+
+Input
+Input
+
+[l] edit its value, or drop a reporter into it.
+[l] bewerk de waarde of zet er een reporter blok in.
+
+Block Extension
+Blok uitbreiden
+
+[l] right arrow to show optional inputs, left arrow to hide.
+[l] rechter pijl om extra inputs te laten zien, linker pijl of ze te verbergen.
+
+Command Block
+Commando blok
+
+[l] to run, or drag to build scripts. [r] menu.
+[l] om uit te voeren of te slepen om scripts te bouwen. [r] menu.
+
+Hat Block
+Hat blok
+
+[l] to run, or drag to build scripts. [r] menu.
+[l] om uit te voeren of te slepen om scripts te bouwen. [r] menu.
+
+Reporter Block
+Reporter blok
+
+[l] to see value, or drop into an input slot. [r] menu.
+[l[ om de waarde te zien of neer te zetten in een input opening. [r] menu.
+
+Script
+Script
+
+[l] to run. [r] menu.
+[l] om uit te voeren. [r] menu.
+
+Pane Divider
+Paneel verdeler
+
+Drag to change pane width.
+Sleep om paneel breedte te veranderen.
+
+Library
+Bibliotheek
+
+[l] to show the blocks in this library. [r] menu.
+[l] om de blokken in deze bibliotheek te laten zien. [r] menu.
+
+Block Category
+Blok categorie
+
+[l] to show the blocks in this category.
+[l] om de blokken in deze categorie te laten zien.
+
+Palette
+Palet
+
+Drag blocks from here to build scripts. Drop scripts here to delete them.
+Sleep blokken vanuit hier om scripts te maken. Zet scripts hier neer om ze te verwijderen.
+
+Scripts Pane
+Script paneel
+
+Drag blocks here to build scripts. [r] menu.
+Sleep blokken naar hier om scripts te maken. [r] menu.
+
+#################################
+# Block Descriptions for TipBar #
+#################################
+
+Turn the user LED on or off.
+Zet de gebruikers LED aan of uit.
+
+Display a bubble showing the value.
+Laat een textballon met de waarde zien.
+
+Graph the value.
+Maak een grafiek van de waarde.
+
+Report the state of button A ( (-o) or (o-) ).
+Laat de status van knop A zien ( (-o) or (o-) ).
+
+Report the state of button B ( (-o) or (o-) ).
+Laat de status van knop B zien ( (-o) or (o-) ).
+
+Report the milliseconds since the timer was last reset.
+Laat de milliseconden zien vanaf de laatste keer dat de timer was gereset.
+
+Reset the timer.
+Reset de timer.
+
+Report the milliseconds since power up.
+Laat het aantal milliseconden zien sinds het opstarten.
+
+Report the microseconds since power up.
+Geef het aantal microseconden sinds het opstarten.
+
+Report the board type.
+Geef het board type.
+
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
+Geef het elektrische logische niveau op een digitale pin ( (-o) of (o-) ).
+
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
+Geef een getal dat evenredig is met de spanning op een analoge pin (0 = aarde, 1023 = toevoerspanning).
+
+Turn a pin on or off ( (-o) or (o-) ).
+Zet een pin aan of uit ( (-o) or (o-) ).
+
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
+Pulsbreedte moduleren (PWM) van een pin met de opgegeven inschakelduur (0 - 1023).
+
+Report number of analog pins on this device.
+Geef het aantal analoge pinnen op dit apparaat.
+
+Report number of digital pins on this device.
+Geef het aantal digitale pinnen  op dit apparaat.
+
+Report the value of a register (0-255) of an I2C device (0-127).
+Geef de waarde van een register (0-255) van een I2C-apparaat (0-127).
+
+Set an I2C device and register to given value (0-255).
+Maak een I2C-apparaat en -register een gegeven waarde (0-255).
+
+Receive multiple bytes from an I2C device.
+Ontvang meerdere bytes van een I2C apparaat
+
+Send multiple bytes to an I2C device.
+Stuur meerdere bytes naar een I2C apparaat.
+
+Send a byte (0-255) to an SPI device.
+Stuur een byte (0-255) naar een SPI apparaat.
+
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
+Lees een byte van een SPI apparaat terwijl je een nul byte verstuurt. Geef de ontvangen byte.
+
+Set the SPI clock speed and mode.
+Stel de SPI kloksnelheid en modus in.
+
+Send a byte array via SPI, replacing its contents with the bytes received.
+Zend een byte-array via SPI, waarbij de inhoud wordt vervangen door de ontvangen bytes.
+
+Open the serial port at the given baud rate.
+Open de seriële poort met de opgegeven baudrate.
+
+Close the serial port.
+Sluit de seriële poort.
+
+Report data received from the serial port (a byte array).
+Geef de gegevens ontvangen van de seriële poort  (een byte-array).
+
+Send a byte array to the serial port.
+Zend een byte-array naar de seriële poort.
+
+Run when the board powers up or when the IDE start button is clicked.
+Uitvoeren wanneer het bord wordt ingeschakeld of wanneer op de IDE-startknop wordt geklikt.
+
+Run when buttons A, B, or A+B are pressed.
+Uitvoeren wanneer knoppen A, B of A+B worden ingedrukt.
+
+Repeat the enclosed blocks indefinitely.
+Herhaal de ingesloten blokken voor altijd.
+
+Repeat the enclosed blocks the given number of times.
+Herhaal de ingesloten blokken het opgegeven aantal keer.
+
+Wait the given number of milliseconds.
+Wacht het aantal opgegeven milliseconden.
+
+Run the first set of blocks whose test condition is (-o) .
+Uitvoeren van de eerste reeks blokken met als testvoorwaarde (-o) .
+
+Run when the condition becomes (-o) .
+Uitvoeren wanneer de conditie (-o) wordt.
+
+Wait until the condition becomes (-o) .
+Wacht totdat de conditie (-o) wordt.
+
+Return (report) the given value from a function or script.
+Meld de gegeven waarde uit een functie of script.
+
+Run when the given message is broadcast.
+Uitvoeren als het opgegeven bericht is verstuurd.
+
+Broadcast the given message.
+Verstuur het opgegeven bericht.
+
+Do nothing. Used to add notes and documentation.
+Doe niks. Wordt gebruikt om opmerkingen en documentatie toe te voegen.
+
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
+Herhaal de ingesloten blokken met de variabele ingesteld op het huidige iteratienummer of item.
+
+Repeat the enclosed blocks until the condition becomes (-o) .
+Herhaald de ingesloten blokken totdat de conditie (-o) wordt.
+
+Stop this task.
+Stop deze taak.
+
+Stop all tasks except this one.
+Stop alle taken behalve deze.
+
+Wait the given number of microseconds.
+Wacht het opgegeven aantal microseconden.
+
+Report the last broadcast message received.
+Geef het laatst ontvangen bericht.
+
+Call the function with the given name and optional parameter list.
+Roep de functie aan met de gegeven naam en optionele parameterlijst.
+
+Call the function with the given name and optional parameter list and report its return value.
+Roep de functie met de gegeven naam en optionele parameterlijst aan en geefde retourwaarde.
+
+Report the sum of the given numbers.
+Geef de som van de gegeven nummers.
+
+Report the first number minus the second.
+Geef het resultaat van het eerste nummer min het tweede.
+
+Report the product of the given numbers.
+Geef het resultaat van de gegeven nummers.
+
+Report the first number divided by the second.
+Geef het resultaat van het eerste nummer gedeeld door het tweede.
+
+Report the remainder of dividing the first number by the second.
+Geef de rest van het delen van het eerste getal door het tweede.
+
+Report the absolute value of the given number (always >= 0).
+Geef de absolute waarde van het gegeven getal (altijd >= 0).
+
+Report the minimum of the values.
+Geef de laagste waarde zien.
+
+Report the maximum of the values.
+Geef de grootste waarde.
+
+Report a randomly chosen number in the given range.
+Geef een willekeurig gekozen nummer binnen het opgegeven bereik.
+
+Report (-o) if the first value is less than the second one.
+Geef (-o) als de eerste waarde kleiner is dan de tweede.
+
+Report (-o) if the first value is less than or equal to the second one.
+Geef (-o) als de eerste waarde kleiner of gelijk is aan de tweede.
+
+Report (-o) if the two values are equal.
+Geef (-o) als de twee waarden gelijk zijn.
+
+Report (-o) if the two values are not equal.
+Geef (-o) als de twee waarden niet gelijk zijn.
+
+Report (-o) if the first value is greater than or equal to the second one.
+Geef (-o) als de eerste waarde groter of gelijk is aan de tweede.
+
+Report (-o) if the first value is greater than the second one.
+Geef (-o) als de eerste waarde groter is dan de tweede.
+
+Boolean constant ( (-o) or (o-) ).
+Booleaanse constante ( (-o) or (o-) ).
+
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
+Geef de logische tegenpool van een Booleaanse ( (-o) of (o-) ) waarde.
+
+Report (-o) if both values are (-o)
+Geef (-o) als beide waren (-o) zijn
+
+Report (-o) if either value is (-o)
+Geef (-o) als een van de waardes (-o) is
+
+Report (-o) if first input is a value of the given data type.
+Geef (-o) als de eerste invoer een waarde is van het gegevenstype.
+
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
+Geef de numerieke waarde van een hexadecimale string (bereik: -0x1FFFFFFF tot 0x1FFFFFFF)
+
+Report bitwise AND of two numbers.
+Geef de bitgewijze AND van twee nummers.
+
+Report bitwise OR of two numbers.
+Geef de bitgewijze OR van twee nummers.
+
+Report bitwise XOR (exclusive OR) of two numbers.
+Geef de bitgewijze XOR (exclusive OR) van twee nummers.
+
+Report bitwise inverse of the given number.
+Geef de bitgewijze inverse van het gegeven getal.
+
+Report the given number shifted left by the given number of bits.
+Geef het gegeven getal links verschoven met het gegeven aantal bits.
+
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+Geef het gegeven getal rechts verschoven met het gegeven aantal bits (rekenkundige verschuiving; teken blijft behouden)
+
+Set a variable to the given value.
+Geef een variabele de opgegeven waarde.
+
+Change a variable by the given amount.
+Verander een variabele met de gegeven waarde.
+
+Create a variable local to the containing script with the given initial value.
+Maak een lokale variabele in het script met de opgegeven beginwaarde.
+
+Report the Nth item of a list, string, or byte array.
+Geef het N-de item van een lijst, tekenreeks of een byte-array.
+
+Report the number of items in a list, string, or byte array.
+Geef het aantal items in een lijst, tekenreeks of byte array.
+
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
+Voeg de opgegeven lijsten, tekenreeksen of byte arrays samen en geef het resultaat.
+
+Create and report a short list containing the given items. Length limited by available stack space.
+Maak en geef een korte lijst met de gegeven items. Lengte beperkt door beschikbare stapelruimte.
+
+Add an item to the end of a list.
+Voeg een item toe aan het einde van een lijst.
+
+Replace the Nth item (or all items) of a list or byte array with the given value.
+Vervang het N-de item (of alle items) van een lijst of byte-array door de gegeven waarde.
+
+Delete the Nth item (or all items) of a list.
+Verwijder het N-de item (of alle items) van een lijst.
+
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
+Vind en geef de index van een item in een lijst of een substring in een string. Geef -1 indien niet gevonden.
+
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
+Geef een kopie vanaf de opgegeven index tot het einde (of optionele stopindex) van de opgegeven lijst, tekenreeks of byte-array.
+
+Split the given string with the given delimiter and report the result (a list of strings).
+Splits de gegeven tekenreeks met het gegeven scheidingsteken en geef het resultaat (een lijst van tekenreeksen).
+
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
+Combineer de items van een lijst in een tekenreeks, optioneel gescheiden door een scheidingsteken (bv. komma).
+
+Report the Unicode value ("code point") of the Nth character of the given string.
+Geef de Unicode-waarde ("codepunt") van het N-de teken van de gegeven string.
+
+Report a string containing the given Unicode value ("code point") or list of values.
+Geef een tekenreeks door, die de gegeven Unicode-waarde ("codepunt") of lijst van waarden bevat.
+
+Report a new list of the given length filled with zero or the optional value.
+Geef een nieuwe lijst van de gegeven lengte, gevuld met nul of de optionele waarde.
+
+Report a new byte array of the given length filled with zero or the optional value.
+Geef een nieuwe byte-array van de gegeven lengte, gevuld met nul of de optionele waarde.
+
+Report a byte array containing the UTF-8 bytes of the given string.
+Geef een byte-array met de UTF-8 bytes van de gegeven string.
+
+Report the number of words of memory available. Stop button frees up memory.
+Geef het aantal beschikbare woorden geheugen aan. Stoptoets maakt geheugen vrij.

@@ -173,11 +173,21 @@ method initialize MicroBlocksHelp {
 		(array 'setServoSpeed' '/libraries#set-servo-speed' 'Set the speed of a continuous rotation servo.')
 		(array 'stopServo' '/libraries#servo-stop' 'Stop sending servo control pulses.')
 
-		//TONE
+		// TONE
 		(array 'play tone' '/libraries#play-note' 'Play the given note in the given octave for milliseconds.')
 		(array 'playMIDIKey' '/libraries#play-midi' 'Play the given piano key (0-127) for milliseconds. Middle C is 60.')
 		(array 'play frequency' '/libraries#play-frequency' 'Play a note specified in Hertz (Hz). Middle C is ~261 Hz.')
+		(array 'start tone' '/libraries#start-tone' 'Starts playing a tone specified in Hertz (Hz).')
+		(array 'stop tone' '/libraries#stop-tone' 'Stops playing a note that was started with start tone.')
 		(array 'attach buzzer to pin' '/libraries#attach-buzzer' 'Specify the pin used to play tones.')
+
+		// IR Remote
+		(array 'receiveIR' '/extension_libraries/irremote#receive-ir-code' 'Wait for an IR message then return its key code.')
+		(array 'attachIR' '/extension_libraries/irremote#attach-ir-receiver' 'Set the IR receiver pin.')
+		(array 'IR_Transmit' '/extension_libraries/irremote#ir-transmit-device' 'Send an IR command with the given device number and key code.')
+		(array 'attachIRTransmitter' '/extension_libraries/irremote#xxx' 'Set the IR transmitter pin.')
+		(array '_testIR' '/extension_libraries/irremote#test-ir' 'Wait for an IR message then say its device number and key code received')
+		(array '_receiveIRFromDevice' '/extension_libraries/irremote#receive-ir-code-from-device' 'Return the next IR key code from the given device.')
 
 		// PICOBRICKS
 		(array 'pb_beep' '/extension_libraries/picobricks#picobricks-beep' 'Make a beep sound from the speaker.')

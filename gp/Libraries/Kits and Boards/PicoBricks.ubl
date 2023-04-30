@@ -1,6 +1,6 @@
 module PicoBricks
 author MicroBlocks
-version 2 4 
+version 2 5 
 depends 'Temperature Humidity (DHT11, DHT22)' 
 description 'Robotistan PicoBricks Library
 
@@ -60,14 +60,10 @@ to '_pb_init_pins' {
 }
 
 to pb_beep duration {
-  '_pb_init_pins'
-  local 'end time' ((millisOp) + duration)
-  repeatUntil ((millisOp) >= (v 'end time')) {
-    digitalWriteOp _pb_pin_Buzzer true
-    waitMicros 1900
-    digitalWriteOp _pb_pin_Buzzer false
-    waitMicros 1900
-  }
+  local 'buzzer pin' 20
+  '[io:playTone]' (v 'buzzer pin') 300
+  waitMillis duration
+  '[io:playTone]' (v 'buzzer pin') 0
 }
 
 to pb_button {

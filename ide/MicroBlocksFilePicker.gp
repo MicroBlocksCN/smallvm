@@ -127,11 +127,11 @@ method initialize MicroBlocksFilePicker anAction defaultPath extensionList saveF
   if forSaving { addFileNameField this (filePart defaultPath) }
   okayLabel = 'Open'
   if forSaving { okayLabel = 'Save' }
-  okayButton = (textButton this 0 0 okayLabel 'okay')
+  okayButton = (textButton this 0 0 okayLabel 'okay' true) // default
   cancelButton = (textButton this 0 0 'Cancel' (action 'destroy' morph))
 
-  setMinExtent morph (520 * scale) (400 * scale)
-  setExtent morph (520 * scale) (400 * scale)
+  setMinExtent morph (520 * scale) (420 * scale)
+  setExtent morph (520 * scale) (420 * scale)
 
   if forSaving {
 	defaultPath = (directoryPart defaultPath)
@@ -314,11 +314,11 @@ method scaledIcon MicroBlocksFilePicker iconName {
 	return resultBM
 }
 
-method textButton MicroBlocksFilePicker x y label selectorOrAction {
+method textButton MicroBlocksFilePicker x y label selectorOrAction makeDefault {
   if (isClass selectorOrAction 'String') {
 	selectorOrAction = (action selectorOrAction this)
   }
-  result = (pushButton label (gray 130) selectorOrAction)
+  result = (pushButton label (gray 130) selectorOrAction nil nil makeDefault)
   setPosition (morph result) x y
   addPart morph (morph result)
   return result
@@ -390,7 +390,7 @@ method setMicroBlocksFolder MicroBlocksFilePicker {
 method newLibrary MicroBlocksFilePicker {
   scripter = (scripter (findProjectEditor))
 
-  libName = (prompt (global 'page') 'New library name?' '')
+  libName = (freshPrompt (global 'page') 'New library name?' '')
 
   if (libName != '') {
 	  lib = (newMicroBlocksModule libName)
@@ -478,7 +478,10 @@ method newFolder MicroBlocksFilePicker {
   newFolderName = (prompt (global 'page') 'Folder name?')
   if ('' == newFolderName) { return }
   for ch (letters newFolderName) {
-	if (isOneOf ch '.' '/' '\' ':') { error 'Bad folder name' }
+    if (notNil (findFirst './\:' ch)) {
+      inform 'Folder name cannot contain: .  /  \  or  :'
+      return
+    }
   }
   newPath = (join currentDir '/' newFolderName)
   makeDirectory newPath

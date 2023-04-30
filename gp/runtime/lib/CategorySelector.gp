@@ -41,6 +41,10 @@ method setCollection CategorySelector itemNames {
 	setExtent morph nil ((count items) * (itemHeight this))
 }
 
+method heightForItems CategorySelector {
+  return ((count items) * (itemHeight this))
+}
+
 method drawOn CategorySelector ctx {
 	scale = (global 'scale')
 	bgColor = (gray 240)

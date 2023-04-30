@@ -6,7 +6,7 @@
 //
 // Display graph data
 
-defineClass MicroBlocksDataGraph morph window lastDataIndex zeroAtBottom
+defineClass MicroBlocksDataGraph morph window zoomButtons lastDataIndex zeroAtBottom dataScale
 
 to newMicroBlocksDataGraph { return (initialize (new 'MicroBlocksDataGraph')) }
 
@@ -17,8 +17,10 @@ method initialize MicroBlocksDataGraph {
 	setHandler morph this
 	setMinExtent morph (scale * 140) (scale * 50)
 	setExtent morph (scale * 200) (scale * 120)
+	addZoomButtons this
 	lastDataIndex = 0
-	zeroAtBottom = false;
+	zeroAtBottom = false
+	dataScale = 1
 	setFPS morph 20
 	return this
 }
@@ -26,6 +28,69 @@ method initialize MicroBlocksDataGraph {
 method step MicroBlocksDataGraph {
 	if ((lastDataIndex (smallRuntime)) == lastDataIndex) { return }
 	lastDataIndex = (lastDataIndex (smallRuntime))
+	changed morph
+}
+
+// zoom buttons
+
+method addZoomButtons MicroBlocksDataGraph {
+	editor = (first (allInstances 'MicroBlocksEditor')) // used editor to make buttons
+	zoomButtons = (array
+		(newZoomButton editor 'zoomIn' (action 'increaseGraphScale' this))
+		(newZoomButton editor 'restoreZoom' (action 'normalGraphScale' this))
+		(newZoomButton editor 'zoomOut' (action 'decreaseGraphScale' this)))
+	for button zoomButtons {
+		addPart morph (morph button)
+	}
+	fixZoomButtonsLayout this
+}
+
+method fixZoomButtonsLayout MicroBlocksDataGraph {
+	right = ((right morph) - (12 * (global 'scale')))
+	bottom = ((bottom morph) - (8 * (global 'scale')))
+	for button zoomButtons {
+		right = (right - (width (morph button)))
+		setLeft (morph button) right
+		setTop (morph button) ((bottom - (height (morph button))) - 5)
+	}
+}
+
+method normalGraphScale MicroBlocksDataGraph {
+	dataScale = 1
+	changed morph
+}
+
+method graphScales MicroBlocksDataGraph {
+	return (array 0.1 0.25 0.5 1 2 4 10 20 40 100 200)
+}
+
+method increaseGraphScale MicroBlocksDataGraph {
+	// Magnify the data by decreasing the range of the graph.
+	for newScale (reversed (graphScales this)) {
+		if (newScale < dataScale) { // first entry less than current scale
+			dataScale = newScale
+			changed morph
+			return
+		}
+	}
+}
+
+method decreaseGraphScale MicroBlocksDataGraph {
+	// Shrink the data by increasing the range of graph.
+	for newScale (graphScales this) {
+		if (newScale > dataScale) { // first entry greater than current scale
+			dataScale = newScale
+			changed morph
+			return
+		}
+	}
+}
+
+// drawing
+
+method redraw MicroBlocksDataGraph {
+	fixLayout window
+	fixZoomButtonsLayout this
 	changed morph
 }
 
@@ -55,18 +120,12 @@ method drawOn MicroBlocksDataGraph ctx {
   drawData this ctx
 }
 
-method redraw MicroBlocksDataGraph {
-	fixLayout window
-	changed morph
-}
-
 method drawData MicroBlocksDataGraph ctx {
-	yScale = (1 * (global 'scale'))
-	drawGrid this ctx yScale
+	drawGrid this ctx
 	colors = (list (color 200 0 0) (color 0 110 0) (color 0 0 200) (gray 30) (color 0 170 170) (color 180 0 180))
 	sequences = (extractSequences this)
 	for i (min (count sequences) (count colors)) {
-		graphSequence this ctx (at sequences i) (at colors i) yScale
+		graphSequence this ctx (at sequences i) (at colors i)
 	}
 }
 
@@ -92,19 +151,21 @@ method extractSequences MicroBlocksDataGraph {
 	return sequences
 }
 
+method leftInset MicroBlocksDataGraph { return (52 * (global 'scale')) }
+
 method pointCount MicroBlocksDataGraph {
 	// Return the number of data points that will fit the current window size.
 
 	scale = (global 'scale')
-	leftInset = (40 * scale)
 	lineW = scale
-	return (toInteger (((width (graphArea this)) - leftInset) / lineW))
+	return (toInteger (((width (graphArea this)) - ((leftInset this) + lineW)) / lineW))
 }
 
-method graphSequence MicroBlocksDataGraph ctx seq aColor yScale {
+method graphSequence MicroBlocksDataGraph ctx seq aColor {
 	if (isEmpty seq) { return }
 	scale = (global 'scale')
 	lineW = (2 * scale)
+	yScale = (scale / dataScale)
 
 	graphBnds = (graphArea this)
 	graphBnds = (insetBy graphBnds (half lineW))
@@ -119,11 +180,11 @@ method graphSequence MicroBlocksDataGraph ctx seq aColor yScale {
 
 	lineW = scale
 	pen = (pen (getShapeMaker ctx))
-	x = ((left graphBnds) + (38 * scale))
+	x = ((left graphBnds) + (leftInset this))
 	pointCount = (pointCount this)
 	i = (max 1 ((count seq) - pointCount))
 	isFirstPoint = true
-	while (i < (count seq)) {
+	while (and (i < (count seq)) (x <= right)) {
 		n = (at seq i)
 		y = (yOrigin - (n * yScale))
 		if (y < top) { y = top }
@@ -135,27 +196,32 @@ method graphSequence MicroBlocksDataGraph ctx seq aColor yScale {
 			goto pen x y
 		}
 		x += scale
-		if (x > right) { return }
 		i += 1
 	}
 	stroke pen aColor lineW
 }
 
-method drawGrid MicroBlocksDataGraph ctx yScale {
+method drawGrid MicroBlocksDataGraph ctx {
 	scale = (global 'scale')
 	lineW = scale
+	yScale = (scale / dataScale)
+
+	lineStep = (round (25 * dataScale))
+	heavyLineStep = (4 * lineStep)
+	if (0.5 == dataScale) { lineStep = 10; heavyLineStep = 50 }
+	if (0.25 >= dataScale) { lineStep = 5;  heavyLineStep = 25 }
 
 	graphBnds = (graphArea this)
 	graphBnds = (insetBy graphBnds (half lineW))
-	left = ((left graphBnds) + (38 * scale))
+	left = ((left graphBnds) + (leftInset this))
 	right = (right graphBnds)
 
 	if zeroAtBottom {
 		yOrigin = (((top graphBnds) + (height graphBnds)) - (10 * scale))
 		max = (((height graphBnds) - (16 * scale)) / yScale)
-		for offset (range 0 max 25) {
+		for offset (range 0 max lineStep) {
 			c = (gray 220)
-			if ((offset % 100) == 0) { c = (gray 190) } // darker lines for multiples of 100
+			if ((offset % heavyLineStep) == 0) { c = (gray 190) } // darker lines for multiples of heavyLineStep
 			y = (yOrigin - (offset * yScale))
 			fillRect ctx c left y (right - left) lineW
 			drawLabel this ctx (toString offset) left y
@@ -163,9 +229,9 @@ method drawGrid MicroBlocksDataGraph ctx yScale {
 	} else {
 		yOrigin = ((top graphBnds) + (half (height graphBnds)))
 		max = (((half (height graphBnds)) - 10) / yScale)
-		for offset (range 0 max 25) {
+		for offset (range 0 max lineStep) {
 			c = (gray 220)
-			if ((offset % 100) == 0) { c = (gray 190) } // darker lines for multiples of 100
+			if ((offset % heavyLineStep) == 0) { c = (gray 190) } // darker lines for multiples of heavyLineStep
 			y = (yOrigin - (offset * yScale))
 			fillRect ctx c left y (right - left) lineW
 			drawLabel this ctx (toString offset) left y

@@ -258,6 +258,7 @@ method translateToCurrentLanguage AuthoringSpecs spec {
   }
   result = (clone spec)
   setField result 'specs' newSpecStrings
+  setField result 'slotInfo' (translatedSlotInfo spec)
   return result
 }
 
@@ -267,9 +268,7 @@ method needsTranslation AuthoringSpecs spec {
   if (isNil translationDictionary) { return false }
   for s (specs spec) {
 	localization = (localizedOrNil s)
-	if (or (isNil localization) (localization == '--MISSING--')) {
-		return false
-	} else {
+	if (and (notNil localization) (localization != '--MISSING--')) {
 		return true
 	}
   }
@@ -303,6 +302,7 @@ method installTranslation AuthoringSpecs translationData langName {
 }
 
 to localized aString {
+  if (isEmpty aString) { return aString }
   localization = (localizedOrNil aString)
   if (or (isNil localization) (localization == '--MISSING--')) {
 	return aString

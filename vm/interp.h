@@ -189,6 +189,7 @@ extern int extraByteDelay;
 #define byteOutOfRange			40	// Needs a value between 0 and 255
 #define needsPositiveIncrement	41	// Range increment must be a positive integer
 #define needsIntOrListOfInts	42	// Needs an integer or a list of integers
+#define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations
 
@@ -210,7 +211,7 @@ int broadcastMatches(uint8 chunkIndex, char *msg, int byteCount);
 void sendSayForChunk(char *s, int len, uint8 chunkIndex);
 void vmLoop(void);
 void interpretStep();
-void yield();
+void taskSleep(int msecs);
 void vmPanic(const char *s);
 int indexOfVarNamed(const char *varName);
 void processFileMessage(int msgType, int dataSize, char *data);
@@ -264,10 +265,13 @@ void writeI2CReg(int deviceID, int reg, int value);
 
 // I/O Support
 
+extern int mbDisplayColor;
+
 int pinCount();
 int mapDigitalPinNum(int userPinNum);
 void setPinMode(int pin, int newMode);
 void turnOffPins();
+int hasI2CPullups();
 void updateMicrobitDisplay();
 void checkButtons();
 void resetRadio();
@@ -277,6 +281,7 @@ void stopTone();
 int readAnalogMicrophone();
 void setPicoEdSpeakerPin(int pin);
 void showMicroBitPixels(int microBitDisplayBits, int xPos, int yPos);
+void setAllNeoPixels(int pin, int ledCount, int color);
 
 // Primitives
 
@@ -346,6 +351,8 @@ void addSensorPrims();
 void addSerialPrims();
 void addTFTPrims();
 void addVarPrims();
+void addHIDPrims();
+void addOneWirePrims();
 
 // Named Primitive Support
 

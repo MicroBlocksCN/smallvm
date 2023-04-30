@@ -1,24 +1,26 @@
 module MQTT Comm
 author wwj718
-version 1 4 
+version 1 6 
 depends WiFi 
 tags mqtt network 
-description 'A simple MQTT client.'
+description 'A simple MQTT client.
+'
 
-	spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num str str str' '' 128 '' '' ''
-	spec 'r' 'MQTT connected' 'MQTT connected'
-	spec ' ' 'MQTT disconnect' 'MQTT disconnect'
-	spec ' ' 'MQTT sub' 'MQTT sub _ : QoS _' 'str num' 'testTopic' 0
-	spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
-	spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _ : retain _ QoS _' 'str auto bool num' 'testTopic' 'Hello!' false 0
-	spec 'r' '[net:MQTTLastEvent]' 'MQTT event : binary _' 'bool' false
-	spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
-	spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
+  spec ' ' 'MQTT connect to' 'MQTT connect to broker _ : buffer sizes _ client id _ : username _ password _' 'str num str str str' '' 128 '' '' ''
+  spec 'r' 'MQTT connected' 'MQTT connected'
+  spec ' ' 'MQTT disconnect' 'MQTT disconnect'
+  spec ' ' 'MQTT sub' 'MQTT sub _ : QoS _' 'str num' 'testTopic' 0
+  spec ' ' 'MQTT unsub' 'MQTT unsub _' 'str' 'testTopic'
+  spec ' ' 'MQTT pub' 'MQTT pub topic _ payload _ : retain _ QoS _' 'str auto bool num' 'testTopic' 'Hello!' false 0
+  spec 'r' '[net:MQTTLastEvent]' 'MQTT event : binary _' 'bool' false
+  spec 'r' 'MQTT event topic' 'topic for MQTT event _' 'str' ''
+  spec 'r' 'MQTT event payload' 'payload for MQTT event _' 'str' ''
+  spec ' ' '_MQTT set will' 'MQTT set will topic _ payload _ : retain _ QoS _: buffer sizes _' 'str auto bool num num' 'testWill' 'Last will!' false 0 128
 
 to 'MQTT connect to' broker buffer_sizes client_id username password {
   if ((getIPAddress) != '0.0.0.0') {
     if ((pushArgCount) == 1) {
-      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker 128 'MicroBlocks_client')
+      callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker 128 ('[net:myMAC]'))
     } ((pushArgCount) == 3) {
       callCustomCommand '[net:MQTTConnect]' ('[data:makeList]' broker buffer_sizes client_id)
     } else {
@@ -85,3 +87,20 @@ to 'MQTT unsub' topic {
   if ((callCustomReporter '[net:MQTTUnsub]' ('[data:makeList]' topic)) != (booleanConstant true)) {sayIt 'unsub failure!'}
 }
 
+
+to '_MQTT set will' topic payload retain qos buffer_sizes {
+  if ('MQTT connected') {
+      sayIt 'set will has to be called before calling connect'
+      return ''
+    }
+  if ((pushArgCount) < 4) {
+    okay = (callCustomReporter '[net:MQTTSetWill]' ('[data:makeList]' topic payload))
+  } ((pushArgCount) == 4) {
+    okay = (callCustomReporter '[net:MQTTSetWill]' ('[data:makeList]' topic payload retain qos))
+  } else {
+    okay = (callCustomReporter '[net:MQTTSetWill]' ('[data:makeList]' topic payload retain qos buffer_sizes))
+  }
+  if (not okay) {
+    sayIt 'set will failure!'
+  }
+}

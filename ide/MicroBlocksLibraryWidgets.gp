@@ -4,12 +4,12 @@
 
 // Copyright 2019 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// MicroBlocksLibraryWidgets.gp - Provides morphs dialogs to explore and load libraries
+// MicroBlocksLibraryWidgets.gp - Provides morphs and dialogs to explore and load libraries
 
 // Library Import Dialog
 // ---------------------
-// Explore and load libraries. Shows all library fields: name, author, version,
-// dependencies, tags, and description.
+// Explore and load libraries.
+// Shows all library fields: name, author, version, dependencies, source, and description.
 
 defineClass MicroBlocksLibraryImportDialog morph window filePicker propertiesFrame
 
@@ -106,11 +106,10 @@ method fixLayout MicroBlocksLibraryImportDialog {
 	fixLayout propertiesFrame
 }
 
-
 // Library Info Dialog
 // -------------------
-// Inspect and edit libraries. Shows all library fields: name, author, version,
-// dependencies, tags, source and description.
+// Inspect and edit libraries.
+// Shows all library fields: name, author, version, dependencies, source, and description.
 
 defineClass MicroBlocksLibraryInfoDialog morph window frame library propertiesFrame editFlag saveButton cancelButton
 
@@ -222,7 +221,6 @@ method fixLayout MicroBlocksLibraryInfoDialog {
 // When used for libraries, drag and drop a library from the palette to the
 // window to add it as a dependency, or click on the [ + ] button to add it by
 // its explicit path (can be a URL).
-// When used for tags, click on the [ + ] button to add a new tag.
 
 defineClass MicroBlocksListItemViewer morph box contents newItemQueryString newItemQueryHint editFlag window itemRenderer label
 
@@ -342,8 +340,7 @@ method fixLayout MicroBlocksListItemViewer {
 
 // LibraryItemMorph
 // ----------------
-// Represents a tag or a library, or anything else that you want to be able to
-// click and drag around.
+// Represents a library or anything else that you want to be able to click and drag around.
 
 defineClass MicroBlocksLibraryItemMorph text morph itemName itemViewer editFlag onClick
 
@@ -445,7 +442,7 @@ method redraw MicroBlocksLibraryCategoryPicker {
 // ------------------------
 // Embeddable frame that displays library information
 
-defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText categoryPicker sourceFrame sourceText depsViewer versionText versionFrame authorText authorFrame tagViewer editFlag
+defineClass MicroBlocksLibraryPropertiesFrame morph window library descriptionFrame descriptionText categoryPicker sourceFrame sourceText depsViewer versionText versionFrame authorText authorFrame editFlag
 
 to newLibraryPropertiesFrame lib forEditing win {
 	return (initialize (new 'MicroBlocksLibraryPropertiesFrame') lib forEditing win)
@@ -492,11 +489,6 @@ method initialize MicroBlocksLibraryPropertiesFrame lib forEditing win {
 	setNewItemQueryString depsViewer 'Dependency path, name or URL?'
 	setNewItemQueryHint depsViewer (libraryImportHint this)
 	addPart morph (morph depsViewer)
-
-	tagViewer = (newItemViewer (array) editFlag window)
-	setNewItemQueryString tagViewer 'Tag name?'
-	setNewItemQueryHint tagViewer
-	addPart morph (morph tagViewer)
 
 	if (notNil lib) { setLibrary this lib }
 
@@ -550,7 +542,6 @@ method saveChanges MicroBlocksLibraryPropertiesFrame {
 	setCategory library (category categoryPicker)
 	setVersion library (getVersion this)
 	setAuthor library (getAuthor this)
-	setTags library (contents tagViewer)
 }
 
 method clearFields MicroBlocksLibraryPropertiesFrame {
@@ -559,7 +550,6 @@ method clearFields MicroBlocksLibraryPropertiesFrame {
 	setContents depsViewer (array)
 	setText versionText ''
 	setText authorText ''
-	setContents tagViewer (array)
 }
 
 method updateFields MicroBlocksLibraryPropertiesFrame {
@@ -586,8 +576,6 @@ method updateFields MicroBlocksLibraryPropertiesFrame {
 	setText versionText (join
 		'v' (toString (at (version library) 1)) '.' (toString (at (version library) 2)))
 	setText authorText (join (localized 'by') ' ' (author library))
-	setLabel tagViewer (localized 'Tags:')
-	setContents tagViewer (tags library)
 }
 
 method fixLayout MicroBlocksLibraryPropertiesFrame {
@@ -595,24 +583,8 @@ method fixLayout MicroBlocksLibraryPropertiesFrame {
 	margin = (10 * scale)
 
 	descriptionHeight = (height morph)
-
-	// tags
-
-	setExtent (morph tagViewer) (width morph) 0
-	fixLayout tagViewer
-	setLeft (morph tagViewer) (left morph)
-	setBottom (morph tagViewer) (bottom morph)
-
-	// dependencies
-
-	if (and (not editFlag) (or (isNil library) (isEmpty (tags library)))) {
-		depsBottom = (bottom morph)
-		versionBottom = (bottom morph)
-	} else {
-		depsBottom = ((top (morph tagViewer)) - margin)
-		descriptionHeight = ((descriptionHeight - (height (morph tagViewer))) - margin)
-		versionBottom = ((top (morph tagViewer)) - margin)
-	}
+	depsBottom = (bottom morph)
+	versionBottom = (bottom morph)
 
 	setExtent (morph depsViewer) (width morph) 0
 	fixLayout depsViewer

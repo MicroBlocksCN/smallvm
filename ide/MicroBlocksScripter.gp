@@ -6,13 +6,16 @@
 
 // MicroBlocksScripter.gp - MicroBlocks script editor w/ built-in palette
 
-defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries
+defineClass MicroBlocksScripter morph mbProject projectEditor saveNeeded categorySelector catResizer libHeader libSelector lastLibraryFolder blocksFrame blocksResizer scriptsFrame nextX nextY embeddedLibraries trashcan selection
 
 method blockPalette MicroBlocksScripter { return (contents blocksFrame) }
 method scriptEditor MicroBlocksScripter { return (contents scriptsFrame) }
 method scriptsFrame MicroBlocksScripter { return scriptsFrame }
 method project MicroBlocksScripter { return mbProject }
 method httpServer MicroBlocksScripter { return (httpServer projectEditor) }
+
+method selection MicroBlocksScripter { return selection }
+method setSelection MicroBlocksScripter aSelection { selection = aSelection }
 
 // initialization
 
@@ -86,6 +89,7 @@ method languageChanged MicroBlocksScripter {
   updateBlocks this
   saveScripts this
   restoreScripts this
+  scriptChanged this
 }
 
 // library header
@@ -250,7 +254,7 @@ method exportLibrary MicroBlocksScripter libName {
 method fixLayout MicroBlocksScripter {
   scale = (global 'scale')
   catWidth = (max (toInteger ((width (morph categorySelector)) / scale)) (20 * scale))
-  catHeight = ((height (morph categorySelector)) / scale)
+  catHeight = ((heightForItems categorySelector) / scale)
   blocksWidth = (max (toInteger ((width (morph blocksFrame)) / scale)) (20 * scale))
   columnHeaderHeight = 33
 
@@ -582,7 +586,7 @@ method visibleVars MicroBlocksScripter {
 }
 
 method createVariable MicroBlocksScripter srcObj {
-  varName = (trim (prompt (global 'page') 'New variable name?' ''))
+  varName = (trim (freshPrompt (global 'page') 'New variable name?' ''))
   if (varName != '') {
 	addVariable (main mbProject) (uniqueVarName this varName)
 	variablesChanged (smallRuntime)
@@ -646,6 +650,7 @@ method step MicroBlocksScripter {
 	syncScripts (smallRuntime)
     saveNeeded = false
   }
+  updateStopping (smallRuntime)
 }
 
 method saveScripts MicroBlocksScripter oldScale {
@@ -722,6 +727,24 @@ method restoreScripts MicroBlocksScripter {
   }
   updateSliders scriptsFrame
   updateBlocks this
+}
+
+method updateScriptAfterOperatorChange MicroBlocksScripter aBlock {
+  // Rebuild the script containing aBlock after switching operators.
+
+  topBlock = (topBlock aBlock)
+  expr = (expression topBlock 'main')
+  if ('to' == (primName expr)) {
+    updateFunctionOrMethod this expr
+    func = (functionNamed mbProject (first (argList expr)))
+    newBlock = (scriptForFunction func)
+  } else {
+    newBlock = (toBlock expr)
+  }
+  removeFromOwner (morph topBlock)
+  fastMoveBy (morph newBlock) (left (morph topBlock)) (top (morph topBlock))
+  addPart (morph (contents scriptsFrame)) (morph newBlock)
+  scriptChanged this
 }
 
 // hide/show block definition
@@ -820,7 +843,7 @@ method scrollToDefinitionOf MicroBlocksScripter funcName {
 // Build Your Own Blocks
 
 method createFunction MicroBlocksScripter isReporter {
-  name = (prompt (global 'page') 'Enter function name:' 'myBlock')
+  name = (freshPrompt (global 'page') 'Enter function name:' 'myBlock')
   if (name == '') {return}
   opName = (uniqueFunctionName this name)
   func = (defineFunctionInModule (main mbProject) opName (array) nil)
@@ -1074,7 +1097,14 @@ method updateCallsInScriptingArea MicroBlocksScripter op {
 
 method importLibrary MicroBlocksScripter {
   if (downloadInProgress (findProjectEditor)) { return }
-  pickLibraryToOpen (action 'importLibraryFromFile' this) lastLibraryFolder (array '.ubl')
+  libraryWindow = (findMorph 'MicroBlocksLibraryImportDialog')
+  if (notNil libraryWindow) { destroy libraryWindow }
+  pickLibraryToOpen (action 'openLibraryFile' this) lastLibraryFolder (array '.ubl')
+}
+
+method openLibraryFile MicroBlocksScripter fileName {
+	importLibraryFromFile this fileName
+	saveAllChunksAfterLoad (smallRuntime)
 }
 
 method allFilesInDir MicroBlocksScripter rootDir {
@@ -1183,7 +1213,6 @@ method importLibraryFromString MicroBlocksScripter data libName fileName {
 	updateBlocks this
 	saveScripts this
 	restoreScripts this
-	saveAllChunksAfterLoad (smallRuntime)
 }
 
 method updateLibraryList MicroBlocksScripter {
@@ -1209,7 +1238,7 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 	if (or (isNil defaultFileName) ('' == defaultFileName)) {
 		defaultFileName = (localized 'my library')
 	}
-	libName = (prompt (global 'page') (localized 'Library name?') defaultFileName)
+	libName = (freshPrompt (global 'page') (localized 'Library name?') defaultFileName)
 	fName = (join libName '.ubl')
 	browserWriteFile (codeString (main mbProject) mbProject libName) fName 'library'
   } else {
@@ -1224,6 +1253,7 @@ method exportAsLibrary MicroBlocksScripter defaultFileName {
 // importing libraries for dropped scripts
 
 method installLibraryNamed MicroBlocksScripter libName {
+  if (notNil (libraryNamed mbProject libName)) { return } // library already installed
   fileName = (fileNameForLibraryNamed this libName)
   if (isNil fileName) {
     print 'Unknown library:' libName

@@ -11,6 +11,7 @@ description 'Miscellaneous system primitives.'
   space
   spec 'r' 'longMult' '( _ * _ ) >> _' 'num num num' 1024 2048 10
   spec 'r' '[misc:sin]' 'fixed sine _' 'num' 9000
+  spec 'r' '[misc:pressureToAltitude]' 'altitude diff for pressure change from _ to _' 'num num' 30 29
   space
   spec ' ' '[misc:broadcastToIDE]' 'broadcast _ to IDE only' 'str' ''
   space

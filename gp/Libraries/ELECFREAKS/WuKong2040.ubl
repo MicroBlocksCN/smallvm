@@ -1,0 +1,155 @@
+module WuKong2040 Output
+author ELECFREAKS
+version 1 1 
+depends Tone 
+tags pico picow wukong2040 wukong2040 pico picow tone 
+choices wk2040_rainbowLEDMenu '0' '1' all 
+choices wk2040_motorMenu M1 M2 M3 M4 
+description 'ELECFREAKS WuKong2040 multi-function expansion board.
+
+Features:
+  Raspberry Pi Pico/PicoW
+  14 × Expansion GPIO Ports (including SPI\IIC\UART)
+   4 × Motor Driving
+   2 × Rainbow LED
+   2 × Button
+   1 × Buzzer
+
+Power Supply:
+  18650 Lithium Battery
+
+Pins:
+  Buzzer = 9
+  Button_A = 18
+  Button_B = 19
+  RGB_LED = 22
+  Motor_M1 = 20, 21
+  Motor_M2 = 10, 11
+  Motor_M3 = 14, 15
+  Motor_M4 = 12, 13
+
+  UART_TX = 0
+  UART_RX = 1
+
+  SPI_SCK = 2
+  SPI_MOSI = 3
+  SPI_MISO = 4
+  SPI_SS = 5
+
+  IIC_SDA = 16
+  IIC_SCL = 17
+
+Official website:
+https://www.elecfreaks.com/
+
+Wiki reference:
+http://wiki.elecfreaks.com/en/pico/extension-module/wukong2040-pico
+'
+variables _wk2040_pixels 
+
+  spec ' ' 'wk2040_set_LED_color' 'WuKong2040 rainbowLED _ color to _' 'menu.wk2040_rainbowLEDMenu color' '0'
+  spec ' ' 'wk2040_set_LED_RGB' 'WuKong2040 rainbowLED _ R _ G _ B _ (0~255)' 'menu.wk2040_rainbowLEDMenu num num num' '0' 0 0 255
+  spec ' ' 'wk2040_turn_off_all_LEDs' 'WuKong2040 clear all rainbowLED'
+  space
+  spec ' ' 'wk2040_set_motor_speed' 'WuKong2040 motor _ speed to _ (-100~100)' 'menu.wk2040_motorMenu num' 'M1' 50
+  spec ' ' 'WuKong2040 stop motor' 'WuKong2040 stop motor _' 'menu.wk2040_motorMenu' 'M1'
+  spec ' ' 'wk2040_stop_all_motors' 'WuKong2040 stop all motors'
+  space
+  spec ' ' 'wk2040_beat' 'WuKong2040 buzzer beep _ ms' 'auto' '100'
+  space
+  spec ' ' '_wk2040_initLEDs' '_wk2040_initLEDs'
+  spec 'r' '_wk2040_colorFromRGB' '_color r _ g _ b _ (0-255)' 'num num num' 0 100 100
+
+to 'WuKong2040 stop motor' motor {
+  if ('M1' == motor) {
+    '_wk2040_set_motor_speed' 20 21 0
+  } ('M2' == motor) {
+    '_wk2040_set_motor_speed' 10 11 0
+  } ('M3' == motor) {
+    '_wk2040_set_motor_speed' 15 14 0
+  } ('M4' == motor) {
+    '_wk2040_set_motor_speed' 13 12 0
+  }
+}
+
+to '_wk2040_colorFromRGB' r g b {
+  r = (maximum 0 (minimum r 255))
+  g = (maximum 0 (minimum g 255))
+  b = (maximum 0 (minimum b 255))
+  return (((r << 16) | (g << 8)) | b)
+}
+
+to '_wk2040_initLEDs' {
+  '[display:neoPixelSetPin]' -1 false
+  if (not (isType _wk2040_pixels 'list')) {
+    _wk2040_pixels = (newList 2)
+  }
+}
+
+to '_wk2040_set_motor_speed' pin1 pin2 speed {
+  if (speed < 0) {
+    analogWriteOp pin1 ('[misc:rescale]' (absoluteValue speed) 0 100 0 1023)
+    analogWriteOp pin2 0
+  } else {
+    analogWriteOp pin2 ('[misc:rescale]' speed 0 100 0 1023)
+    analogWriteOp pin1 0
+  }
+}
+
+to wk2040_beat duration {
+  local 'pin_buzzer' 9
+  local 'end time' ((millisOp) + duration)
+  repeatUntil ((millisOp) >= (v 'end time')) {
+    digitalWriteOp pin_buzzer true
+    waitMicros 400
+    digitalWriteOp pin_buzzer false
+    waitMicros 400
+  }
+}
+
+to wk2040_set_LED_RGB num r g b {
+  wk2040_set_LED_color num ('_wk2040_colorFromRGB' r g b)
+}
+
+to wk2040_set_LED_color num color {
+  '_wk2040_initLEDs'
+  if (num == '0') {
+    atPut 1 _wk2040_pixels color
+    '[display:neoPixelSend]' _wk2040_pixels
+    waitMicros 150
+  }
+  if (num == '1') {
+    atPut 'last' _wk2040_pixels color
+    '[display:neoPixelSend]' _wk2040_pixels
+    waitMicros 150
+  }
+  if (num == 'all') {
+    atPut 'all' _wk2040_pixels color
+    '[display:neoPixelSend]' _wk2040_pixels
+    waitMicros 150
+  }
+}
+
+to wk2040_set_motor_speed motor speed {
+  if ('M1' == motor) {
+    '_wk2040_set_motor_speed' 20 21 speed
+  } ('M2' == motor) {
+    '_wk2040_set_motor_speed' 10 11 speed
+  } ('M3' == motor) {
+    '_wk2040_set_motor_speed' 15 14 speed
+  } ('M4' == motor) {
+    '_wk2040_set_motor_speed' 13 12 speed
+  }
+}
+
+to wk2040_stop_all_motors {
+  wk2040_set_motor_speed 'M1' 0
+  wk2040_set_motor_speed 'M2' 0
+  wk2040_set_motor_speed 'M3' 0
+  wk2040_set_motor_speed 'M4' 0
+}
+
+to wk2040_turn_off_all_LEDs {
+  wk2040_set_LED_color 'all' (colorSwatch 0 0 0 255)
+}
+

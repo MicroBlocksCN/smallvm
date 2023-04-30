@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 19 2021
+# Last updated: November 29 2022
 
 #########################
 # Blocks and categories #
@@ -149,6 +149,12 @@ _ módulo _
 abs _
 valor absoluto de _
 
+min _ _
+mínimo entre _ y _
+
+max _ _
+mánimo entre _ y _
+
 random _ to _
 número al azar entre _ y _
 
@@ -294,6 +300,9 @@ divide _ por _
 My Blocks
 Mis bloques
 
+Generic
+Genérico
+
 # Buttons on top of "My Blocks" category
 
 Add a command block
@@ -352,6 +361,9 @@ lee puerto serie
 serial write _
 escribe _ al puerto serie
 
+serial write _ starting at _
+escribe _ al puerto serie empezando por _
+
 print _
 escribe _
 
@@ -374,7 +386,7 @@ shape for letter _
 forma para letra _
 
 send NeoPixel rgb _
-envía RGB _ al NeoPixel
+envía RGB _ al NeoPíxel
 
 has tone support
 tiene soporte para tonos
@@ -418,8 +430,8 @@ radio last string
 radio last message type
 tipo del último mensaje recibido por radio
 
-radio set group _
-fija el grupo de radio a _
+radio set group _ (0-255)
+fija el grupo de radio a (0-255) _
 
 radio set channel (0-83) _
 fija el canal de radio a (0-83) _
@@ -463,6 +475,9 @@ nivel de luz
 
 temperature (°C)
 temperatura (°C)
+
+magnetic field
+campo magnético
 
 set acceleration range _ g = 100
 fija el rango de aceleración en _ g = 100
@@ -719,6 +734,12 @@ Infrarrojos
 receive IR code
 recibe código IR
 
+receive IR code from device _
+recibe código IR del dispositivo _
+
+test IR
+prueba IR
+
 attach IR receiver to pin _
 inicializa receptor IR en el pin _
 
@@ -780,6 +801,9 @@ pantalla _
 
 clear display
 limpia pantalla
+
+set display color _
+fija el color de la pantalla a _
 
 plot x _ y _
 enciende x _ y _
@@ -908,6 +932,48 @@ toca la frecuencia _ durante _ ms
 
 play midi key _ for _ ms
 toca la tecla MIDI _ durante _ ms
+
+start tone _ Hz
+toca la frecuencia _ Hz
+
+stop tone
+detén el sonido
+
+c
+do
+
+c#
+do#
+
+d
+re
+
+d#
+re#
+
+e
+mi
+
+f
+fa
+
+f#
+fa#
+
+g
+sol
+
+g#
+sol#
+
+a
+la
+
+a#
+la#
+
+b
+si
 
 ####
 # Ringtone library
@@ -1063,17 +1129,29 @@ _ sin espacios en blanco
 join string list _ separator _
 une la lista de textos _ con separador _
 
+unicodes _
+unicodes de _
+
+string from unicodes _
+texto a partir de los unicodes _
+
+num2str _
+número _ a texto
+
+str2num _
+texto _ a número
+
 ####
 # WiFi library
 
 WiFi
 WiFi
 
-wifi connect to _ password _ try _ times
-conéctate a la wifi _ con contraseña _ en _ intentos
+wifi connect to _ password _
+conéctate a la wifi _ con contraseña _
 
-gateway _ subnet _
-puerta de enlace _ subred _
+IP _ gateway _ subnet _
+IP _ pasarela _ subred _
 
 wifi create hotspot _ password _
 crea punto de acceso wifi _ con contraseña _
@@ -1215,13 +1293,31 @@ get PN532 firmware version
 versión del firmware del PN532
 
 ####
+# Touch Screen
+
+Touch Screen
+Pantalla táctil
+
+TFT touched
+TFT tocada
+
+TFT touch X position
+posición X del toque a la TFT
+
+TFT touch Y position
+posición Y del toque a la TFT
+
+TFT touch pressure
+pressión del toque a la TFT
+
+####
 # HTTP Client
 
 HTTP client
 Cliente HTTP
 
-_ data _ to http܃// _
-petición _ con contenido _ a http:// _
+_ data _ to http܃// _ 
+petición _ con contenido _ a http܃// _ 
 
 port _
 puerto _
@@ -1231,6 +1327,9 @@ puerto _
 
 HTTP server
 Servidor HTTP
+
+start HTTP server
+inicia el servidor HTTP
 
 HTTP server request
 petición HTTP al servidor
@@ -1249,6 +1348,9 @@ cuerpo de la petición _
 
 path of request _
 ruta de la petición _
+
+headers of request _
+cabeceras de la petición _
 
 method of request _
 método de la petición _
@@ -1419,6 +1521,200 @@ detén plotter
 set plotter speed to _ %
 fija velocidad del plotter a _ %
 
+####
+# MQTT
+
+MQTT connect to broker _
+conéctate al broker HTTP _
+
+buffer sizes _ client id _
+medida del buffer _ id del cliente _
+
+username _ password _
+usuario _ contraseña _
+
+MQTT connected
+MQTT conectado
+
+MQTT disconnect
+MQTT desconectado
+
+MQTT sub _
+suscríbete al tema de MQTT _
+
+MQTT unsub _
+abandona el tema de MQTT _
+
+MQTT pub topic _ payload _
+publica al tema de MQTT _ el contenido _
+
+retain _ QoS _
+con retención _ y calidad del servicio _
+
+MQTT event
+evento MQTT
+
+binary _
+binario _
+
+topic for MQTT event _
+tema del evento MQTT
+
+payload for MQTT event _
+contenido del evento MQTT
+
+####
+# UDP
+
+UDP start port _
+inicia UDP en el puerto _
+
+UDP stop
+detén UDP
+
+UDP send packet _ to ip _ port _
+envía paquete UDP _ a la IP _ y puerto _
+
+UDP receive packet
+recibe paquete UDP
+
+binary data _
+datos binarios _
+
+UDP remote IP address
+dirección IP remota de UDP
+
+UDP remote port
+puerto remoto de UDP
+
+####
+# Cutebot
+
+Cutebot
+Cutebot
+
+Cutebot set wheel left _ right _ (-100 to 100)
+Pon la rueda izquierda a _ y la derecha a _ (-100 a 100)
+
+Cutebot stop wheels
+Detén las ruedas
+
+Cutebot set servo _ to _ degrees (-90 to 90)
+Pon el servo a _ grados (-90 a 90)
+
+Cutebot set servo _ to speed _ (-100 to 100)
+Fija la velocidad del servo _ a _ (-100 a 100)
+
+Cutebot set headlight _ to _
+Pon el faro _ a _
+
+Cutebot set NeoPixel _ to _
+Pon el NeoPíxel _ del Cutebot a _
+
+Cutebot _ line sensor
+Valor del sensor de línea _
+
+Cutebot sees line on left _ right _
+El Cutebot ve la línea a su izquierda _ y su derecha _
+
+Cutebot distance (cm)
+Distancia frontal (cm)
+
+left
+izquierdo
+
+right
+derecho
+
+both
+ambos
+
+# Wukong
+
+Wukong
+Wukong
+
+Wukong set motor _ to _ (-100 to 100)
+Pon el motor _ a _ (-100 a 100)
+
+Wukong stop motor _
+Detén el motor _
+
+Wukong stop all
+Detén todos los motores
+
+Wukong set servo _ to _ degrees (-90 to 90)
+Pon el servo _ a _ grados (-90 a 90)
+
+Wukong set servo _ to speed _ (-100 to 100)
+Pon el servo _ a velocidad _ (-100 a 100)
+
+Wukong set NeoPixels _ _ _ _
+Pon los NeoPíxeles del Wukong a _ _ _ _
+
+Wukong set LED brightness to _
+Fija el brillo del LED a _
+
+####
+# Sphero-RVR
+
+wake
+despierta
+
+sleep
+duérmete
+
+reset the yaw
+reinicializa rotación
+
+drive with speed _ and heading _
+avanza a velocidad _ y dirección _
+
+set raw motors with left mode _ left speed _ right mode _ right speed _
+mueve el motor izquierdo _ a velocidad _ y el derecho _ a velocidad _
+
+stop with heading _
+detente con dirección _
+
+set RGB LED _ to red _ green _ blue _
+pon el LED RGB a rojo _ verde _ azul _
+
+set all LEDs to red _ green _ blue _
+pon todos los LEDs RGB a rojo _ verde _ azul _
+
+####
+# Joystick:bit
+
+button _ is pressed
+boton _ pulsado
+
+rocker value of _
+inclinación _ de la palanca
+
+motor vibrate for _ ms
+haz vibrar el motor durante _ ms
+
+####
+# NeZha
+
+NeZha
+NeZha
+
+NeZha set motor _ speed to _ %
+pon el motor _ a velocidad _ %
+
+NeZha stop motor _
+detén el motor _
+
+NeZha stop all motors
+detén todos los motores
+
+NeZha set _ servo _ angle to _
+pon el motor de _ grados número _ a ángulo _
+
+NeZha set continuous rotation servo _ speed to _ %
+pon el servo de rotación contínua _ a velocidad _ %
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -1434,11 +1730,17 @@ Abre
 Open from board
 Recupera proyecto de la placa
 
+Copy project URL to clipboard
+Copia URL del proyecto al portapapeles
+
 Information
 Información
 
 Plug in the board.
 Conecta la placa.
+
+Plug in the board and click the USB icon to connect.
+Conecta la placa y haz clic en el icono USB para conectar.
 
 Reading project from board...
 Leyendo proyecto de la placa...
@@ -1446,8 +1748,8 @@ Leyendo proyecto de la placa...
 Loading project...
 Cargando proyecto...
 
-Found a newer version of
-Existe una versión más nueva de
+Found a newer version of 
+Se ha encontrado una nueva versión de 
 
 Do you want me to update the one in the project?
 ¿Quieres actualizar a esta nueva versión en el proyecto?
@@ -1457,6 +1759,12 @@ Guarda
 
 Connect
 Conecta
+
+connect
+conecta
+
+open Boardie
+conéctate a Boardie
 
 disconnect
 desconecta
@@ -1509,6 +1817,9 @@ No se ha encontrado ninguna placa; ¿has conectado tu placa?
 For AdaFruit boards, double-click reset button and try again.
 En placas AdaFruit, pulsa el botón de reseteo dos veces rápidamente y vuelve a probar.
 
+Only recent Chrome and Edge browsers support WebSerial.
+WebSerial solo está suportado por las últimas versiones de Chrome y Edge.
+
 The board is not responding.
 La placa no responde.
 
@@ -1520,6 +1831,9 @@ El MicroBlocks instalado en tu placa no está actualizado
 
 Try to update MicroBlocks on the board?
 ¿Quieres intentar actualizarlo?
+
+MicroBlocks
+MicroBlocks
 
 Stop
 Detén
@@ -1550,8 +1864,14 @@ organiza programas
 undrop (ctrl-Z)
 deshaz el último movimiento (ctrl-Z)
 
+undo the last block drop
+extrae el último bloque colocado
+
 copy all scripts to clipboard
 copia todos los programas al portapapeles
+
+copy all scripts to clipboard as URL
+copia todos los programas al portapapeles como URL
 
 paste all scripts
 pega tocos los programas
@@ -1559,8 +1879,26 @@ pega tocos los programas
 paste script
 pega el programa
 
-save a picture of all scripts
-guarda la imagen de todos los programas
+paste script from clipboard
+pega el programa del portapapeles
+
+save a picture of all visible scripts
+guarda una imagen de todos los programas visibles
+
+set exported script scale
+fija la escala de la imagen a exportar
+
+small (50%)
+pequeño (50%)
+
+normal (65%)
+normal (65%)
+
+large (100%)
+grande (100%)
+
+printable (200%)
+para impresión (200%)
 
 about...
 sobre...
@@ -1607,11 +1945,38 @@ activar PlugShare en proyecto en blanco
 disable PlugShare when project empty
 desactivar PlugShare en proyecto en blanco
 
+when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
+al conectar una placa, no leas automáticamente sus contenidos aunque el proyecto actual esté en blanco
+
+when plugging a board, automatically read its contents into the IDE if the current project is empty
+al conectar una placa, lee automáticamente sus contenidos si el proyecto actual está en blanco
+
 erase flash and update firmware on ESP board
-borra y reparticiona esp
+borra y reparticiona el firmware en placa ESP
 
 Use board type
 ¿La placa conectada es de tipo
+
+Firmware Installed
+Firmware instalado
+
+Reconnect to the board by clicking the "Connect" button (USB icon).
+Reconéctate a la placa clicando sobre el botón de conexión (icono USB).
+
+Connect USB cable while holding down the white BOOTSEL button before proceeding.
+Antes de continuar, conecta el cable USB mientras mantienes el botón BOOTSEL pulsado.
+
+You will be asked to save the firmware file.
+Se te pedirá que guardes el fichero de firmware.
+
+Select
+Selecciona
+
+as the destination drive, then click Save.
+como unidad de desinación y haz clic en Guarda.
+
+Installing firmware...
+Instalando firmware...
 
 Plug in the board.
 Conecta la placa.
@@ -1658,6 +2023,12 @@ subir archivo a la placa
 get file from board
 bajar archivo de la placa
 
+uploaded
+subido
+
+downloaded
+bajado
+
 Data Graph
 Gráfico de datos
 
@@ -1669,6 +2040,9 @@ limpiar gráfico
 
 zero at bottom
 cero abajo
+
+zero in middle
+cero en el medio
 
 export data to CSV file
 exportar datos a archivo CSV
@@ -1694,6 +2068,24 @@ pliega
 rename...
 renombra...
 
+find variable accessors
+busca accesos a la variable
+
+find scripts or block definitions where this variable is being read
+busca programas o definiciones de bloque en qué se esté leyendo esta variable
+
+find variable modifiers
+busca modificadores de la variable
+
+find scripts or block definitions where this variable is being set or changed
+busca programas o definiciones de bloque en qué se esté fijando o modificando el valor de esta variable
+
+find uses of this block
+busca usos de este bloque
+
+find scripts or block definitions using this block
+busca programas o definiciones de bloque en qué se esté usando este bloque
+
 show block definition...
 muestra la definición del bloque...
 
@@ -1708,6 +2100,9 @@ borra la definición de este bloque
 
 duplicate
 duplica
+
+help
+ayuda
 
 duplicate this block
 duplica este bloc
@@ -1724,6 +2119,12 @@ solo este bloque
 copy to clipboard
 copia al portapapeles
 
+copy to clipboard as URL
+copia al portapapeles como URL
+
+copy these blocks to the clipboard as a URL
+copia estos bloques al portapapeles como URL
+
 copy these blocks to the clipboard
 copia estos bloques al portapapeles
 
@@ -1739,6 +2140,9 @@ extrae bloque
 pull out this block
 agarra este bloque
 
+show help for this block in a browser
+muestra ayuda para este bloque en tu navegador
+
 save picture of script
 guarda la imagen del programa
 
@@ -1751,6 +2155,9 @@ guarda una imagen de la definición de este bloque en formato PNG
 save a picture of these blocks as a PNG file
 guarda una imagen de estos bloques en formato PNG
 
+save a picture of these blocks and their result as a PNG file
+--MISSING--
+
 copy script
 copia el programa
 
@@ -1758,7 +2165,7 @@ delete
 elimina
 
 Input type:
-Tipo de ranura:
+Tipo de casilla:
 
 string only
 solo texto
@@ -1768,6 +2175,27 @@ texto o número
 
 number only
 solo número
+
+stop editing
+detén la edición
+
+cut
+corta
+
+copy
+copia
+
+paste
+pega
+
+accept
+acepta
+
+revert
+revierte
+
+select all
+selecciona todo
 
 define
 define
@@ -1782,7 +2210,7 @@ label
 etiqueta
 
 input
-ranura
+casilla
 
 hide block definition
 oculta la definición de este bloque
@@ -1820,10 +2248,54 @@ De acuerdo
 Confirm
 Confirmación
 
-# File picker and library dialogs
+# Library folders
 
 Libraries
 Librerías
+
+AI
+Inteligencia Artificial
+
+Graphics and Displays
+Gráficos y pantallas
+
+Kits and Boards
+Kits y placas
+
+Network
+Red
+
+Other
+Otro
+
+Robots
+Robots
+
+Sensing
+Sensores
+
+Sound
+Sonido
+
+System
+Sistema
+
+# File picker and library dialogs
+
+New library name?
+¿Nombre de la nueva librería?
+
+show all block definitions
+muestra las definiciones de todos los bloques
+
+hide all block definitions
+oculta las definiciones de todos los bloques
+
+export this library
+exporta esta librería
+
+delete library
+elimina esta librería
 
 Examples
 Ejemplos
@@ -1888,6 +2360,408 @@ librería integrada
 Dependency path, name or URL?
 ¿Ruta, nombre o URL de la dependencia?
 
+If you are adding a library that's built into MicroBlocks, you can just enter its name.
+Si quieres añadir una librería interna de MicroBlocks, simplemente introduce su nombre.
+
+If your library is in the Libraries folder in your local MicroBlocks project folder, you need to prefix it with a slash (/).
+Si tu librería está en la carpeta "Libraries" de tu carpeta local de MicroBlocks, deberás prefijarla con una barra (/).
+
+If the library is hosted online, please input its full URL.
+Si la librería está hospedada en Internet, introduce su URL completa.
+
 Tag name?
 ¿Nombre de la etiqueta?
+
+user library
+librería de usuario
+
+Add Library
+Añadir librería
+
+seconds remaining
+segundos restantes
+
+Decrease block size
+Reduce el tamaño de los bloques
+
+Restore block size to 100%
+Restaura el tamaño de los bloques al 100%
+
+Increase block size
+Aumenta el tamaño de los bloques
+
+############
+# Tips Bar #
+############
+
+Button
+Botón
+
+Boolean Input
+Casilla booleana
+
+[l] toggle value, or drop a reporter into it.
+[l] conmuta su valor, o arrastra un reportador encima.
+
+Color Input
+Casilla de color
+
+[l] change the color, or drop a reporter into it.
+[l] canvia su color, o arrastra un reportador encima.
+
+Input
+Entrada
+
+[l] edit its value, or drop a reporter into it.
+[l] edita su valor, o arrastra un reportador encima.
+
+Block Extension
+Flecha de expansión
+
+[l] right arrow to show optional inputs, left arrow to hide.
+[l] sobre la flecha que apunta hacia la derecha para mostrar casillas adicionales, y sobre la que apunta hacia la izquierda para ocultar-las.
+
+Command Block
+Bloque de comando
+
+[l] to run, or drag to build scripts. [r] menu.
+[l] para ejecutarlo, o arrástralo para construir programas. [r] menú.
+
+Hat Block
+Bloque de sombrero
+
+[l] to run, or drag to build scripts. [r] menu.
+[l] para ejecutarlo, o arrástralo para construir programas. [r] menú.
+
+Reporter Block
+Bloque reportador
+
+[l] to see value, or drop into an input slot. [r] menu.
+[l] para consultar su valor, o arrástralo sobre una casilla. [r] menú.
+
+Script
+Programa
+
+[l] to run. [r] menu.
+[l] para ejecutarlo. [r] menú.
+
+Pane Divider
+Divisor de área
+
+Drag to change pane width.
+Arrástralo para modificar la anchura del área.
+
+Library
+Librería
+
+[l] to show the blocks in this library. [r] menu.
+[l] para mostrar los bloques de esta librería. [r] menú.
+
+Block Category
+Categoría de bloques
+
+[l] to show the blocks in this category.
+[l] para mostrar los bloques de esta categoría.
+
+Palette
+Paleta
+
+Drag blocks from here to build scripts. Drop scripts here to delete them.
+Arrastra bloques des de aquí hasta la zona de programación para construir programas. Arrastra programas hasta aquí para eliminarlos.
+
+Scripts Pane
+Área de programas
+
+Drag blocks here to build scripts. [r] menu.
+Arrastra bloques hasta aquí para construir programas. [r] menú.
+
+#################################
+# Block Descriptions for TipBar #
+#################################
+
+Turn the user LED on or off.
+Enciende o apaga el LED de usuario.
+
+Display a bubble showing the value.
+Muestra una burbuja con el valor.
+
+Graph the value.
+Añade el valor al gráfico.
+
+Report the state of button A ( (-o) or (o-) ).
+Reporta el estado del botón A ( (-o) o (o-) ).
+
+Report the state of button B ( (-o) or (o-) ).
+Reporta el estado del botón B ( (-o) o (o-) ).
+
+Report the milliseconds since the timer was last reset.
+Reporta los milisegundos des de la última inicialización del temporizador.
+
+Reset the timer.
+Reinicializa el temporizador.
+
+Report the milliseconds since power up.
+Reporta los milisegundos des de que se encendió la placa.
+
+Report the microseconds since power up.
+Reporta los microsegundos des de que se encendió la placa.
+
+Report the board type.
+Reporta el tipo de placa.
+
+Report the electrical logic level on a digital pin ( (-o) or (o-) ).
+Reporta el nivel lógico eléctrico en un pin digital ( (-o) o (o-) ).
+
+Report a number proportional to the voltage on an analog pin (0 = ground, 1023 = supply voltage).
+Reporta un número proporcional al voltaje en un pin analógico (0 = tierra, 1023 = voltaje suministrado).
+
+Turn a pin on or off ( (-o) or (o-) ).
+Activa o desactiva un pin digital ( (-o) o (o-) ).
+
+Pulse width modulate (PWM) a pin with the given duty cycle (0 - 1023).
+Modula por amplitud de pulsos (PWM) un pin con un ciclo de trabajo determinado (0 - 1023).
+
+Report number of analog pins on this device.
+Reporta el número de pines analógicos en este dispositivo.
+
+Report number of digital pins on this device.
+Reporta el número de pines digitales en este dispositivo.
+
+Report the value of a register (0-255) of an I2C device (0-127).
+Reporta el valor de un registro (0-255) de un dispositivo I2C (0-127).
+
+Set an I2C device and register to given value (0-255).
+Fija un dispositivy y registro I2C a un valor determinado (0-255).
+
+Receive multiple bytes from an I2C device.
+Recibe múltiples bytes de un dispositivo I2C.
+
+Send multiple bytes to an I2C device.
+Envía múltiples bytes a un dispositivo I2C.
+
+Send a byte (0-255) to an SPI device.
+Envía un byte (0-255) a un dispositivo SPI.
+
+Read a byte from an SPI device while sending a zero byte. Report the byte received.
+Lee un byte de un dispositivo SPI, y envía un byte cero. Reporta el byte recibido.
+
+Set the SPI clock speed and mode.
+Fija la velocidad del reloj y el modo del SPI.
+
+Send a byte array via SPI, replacing its contents with the bytes received.
+Envía una lista de bytes por SPI, sustituyendo sus contenidos por los bytes recibidos.
+
+Open the serial port at the given baud rate.
+Abre el puerto serie a la velocidad en baudios especificada.
+
+Close the serial port.
+Cierra el puerto serie.
+
+Report data received from the serial port (a byte array).
+Reporta los datos recibidos por el puerto serie (una lista de bytes).
+
+Send a byte array to the serial port.
+Envía una lista de bytes por el puerto serie.
+
+Run when the board powers up or when the IDE start button is clicked.
+Ejecuta cuando la placa se encienda o al hacer click sobre el botón de inicio.
+
+Run when buttons A, B, or A+B are pressed.
+Ejecuta cuando se pulsen los botones A, B, o ambos a la vez.
+
+Repeat the enclosed blocks indefinitely.
+Repite la ejecución de los bloques que contiene, contínuamente.
+
+Repeat the enclosed blocks the given number of times.
+Repite la ejecución de los bloques que contiene, el número de vece especificado.
+
+Wait the given number of milliseconds.
+Espera el número de milisegundos especificado.
+
+Run the first set of blocks whose test condition is (-o) .
+Ejecuta el primer grupo de bloques para los cuales la condición sea (-o) .
+
+Run when the condition becomes (-o) .
+Ejecuta cuando la condición sea (-o) .
+
+Wait until the condition becomes (-o) .
+Espera hasta que la condición sea (-o) .
+
+Return (report) the given value from a function or script.
+Retorna (reporta) el valor especificado des de una función o programa.
+
+Run when the given message is broadcast.
+Ejecuta cuando se emita el mensaje especificado.
+
+Broadcast the given message.
+Emite el mensaje especificado.
+
+Do nothing. Used to add notes and documentation.
+No hagas nada. Se usa para añadir notas y documentación.
+
+Repeat the enclosed blocks with the variable set to the current iteration number or item.
+Repite la ejecución de los bloques que contiene, fijando la variable al elemento o número del intervalo correspondiente a cada iteración.
+
+Repeat the enclosed blocks until the condition becomes (-o) .
+Repite la ejecución de los bloques que contiene, hasta que la condición sea (-o) .
+
+Stop this task.
+Detén esta tarea.
+
+Stop all tasks except this one.
+Detén todas las tareas excepto esta.
+
+Wait the given number of microseconds.
+Espera el numero de microsegundos especificado.
+
+Report the last broadcast message received.
+Reporta el último mensaje emitido y recibido.
+
+Call the function with the given name and optional parameter list.
+Ejecuta la función con el nombre especificado con la lista de parámetros opcional proporcionada.
+
+Call the function with the given name and optional parameter list and report its return value.
+Llama la función con el nombre especificado con la lista de parámetros opcional proporcionada, y reporta su valor de retorno.
+
+Report the sum of the given numbers.
+Reporta la suma de los números especificados.
+
+Report the first number minus the second.
+Reporta la resta entre el primer y el segundo número.
+
+Report the product of the given numbers.
+Reporta el producto de los números especificados.
+
+Report the first number divided by the second.
+Reporta el resultado de dividir el primer número entre el segundo.
+
+Report the remainder of dividing the first number by the second.
+Reporta el residuo de dividir el primer número entre el segundo.
+
+Report the absolute value of the given number (always >= 0).
+Reporta el valor absoluto del número especificado (siempre >= 0).
+
+Report the minimum of the values.
+Reporta el menor de los valores especificados.
+
+Report the maximum of the values.
+Reporta el mayor de los valores especificados.
+
+Report a randomly chosen number in the given range.
+Reporta un número al azar dentro del rango especificado.
+
+Report (-o) if the first value is less than the second one.
+Reporta (-o) si el primer valor es menor que el segundo.
+
+Report (-o) if the first value is less than or equal to the second one.
+Reporta (-o) si el primer valor es menor o igual que el segundo.
+
+Report (-o) if the two values are equal.
+Reporta (-o) si los dos valores son iguales.
+
+Report (-o) if the two values are not equal.
+Reporta (-o) si los dos valores son distintos.
+
+Report (-o) if the first value is greater than or equal to the second one.
+Reporta (-o) si el primer valor es mayor o igual que el segundo.
+
+Report (-o) if the first value is greater than the second one.
+Reporta (-o) si el primer valor es mayor que el segundo.
+
+Boolean constant ( (-o) or (o-) ).
+Constante booleana ( (-o) o (o-) ).
+
+Report the logical inverse of a Boolean ( (-o) or (o-) ) value.
+Reporta la inversa de un valor booleano ( (-o) o (o-) ).
+
+Report (-o) if both values are (-o)
+Reporta (-o) si ambos valores son (-o).
+
+Report (-o) if either value is (-o)
+Reporta (-o) si alguno de los valores es (-o).
+
+Report (-o) if first input is a value of the given data type.
+Reporta (-o) si la primera casilla tiene un valor del tipo especificado.
+
+Report the numerical value of a hexadecimal string (range: -0x1FFFFFFF to 0x1FFFFFFF)
+Reporta el valor numérico decimal de una cadena de texto hexadecimal (rango: -0x1FFFFFFF a 0x1FFFFFFF)
+
+Report bitwise AND of two numbers.
+Reporta la operación bit a bit "y" (AND) entre dos números.
+
+Report bitwise OR of two numbers.
+Reporta la operación bit a bit "o" (OR) entre dos números.
+
+Report bitwise XOR (exclusive OR) of two numbers.
+Reporta la operación bit a bit "o exclusiva" (XOR) entre dos números.
+
+Report bitwise inverse of the given number.
+Reporta la inversa bit a bit del número especificado.
+
+Report the given number shifted left by the given number of bits.
+Reporta el número especificado desplazado aritméticamente hacia la izquierda el número de bits especificado.
+
+Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+Reporta el número especificado desplazado aritméticamente hacia la derecha el número de bits especificado.
+
+Set a variable to the given value.
+Fija una variable al valor especificado.
+
+Change a variable by the given amount.
+Cambia el valor de una variable en la cantidad especificada.
+
+Create a variable local to the containing script with the given initial value.
+Crea una variable local al programa que la contenga, y asígnale el valor inicial especificado.
+
+Report the Nth item of a list, string, or byte array.
+Reporta el elemento en la posición especificada de una lista, cadena de texto o lista de bytes.
+
+Report the number of items in a list, string, or byte array.
+Reporta el número de elementos de una lista, cadena de texto o lista de bytes.
+
+Join (concatenate) the given lists, strings, or byte arrays and report the result.
+Reporta la unión (concatenación) de las listas, cadenas de texto o listes de bytes especificadas.
+
+Create and report a short list containing the given items. Length limited by available stack space.
+Crea y reporta una lista con los elementos especificados. La largada de la lista esta limitada al espacio disponible en la pila.
+
+Add an item to the end of a list.
+Añade un elemento al final de una lista.
+
+Replace the Nth item (or all items) of a list or byte array with the given value.
+Sustituye el elemento en la posición especificada (o todos los elementos) de una lista o lista de bytes por el nuevo valor especificado.
+
+Delete the Nth item (or all items) of a list.
+Elimina el elemento en la posición especificada (o todos los elementos) de una lista.
+
+Find and report the index of an item in a list or a substring within a string. Report -1 if not found.
+Busca y reporta la posición de un elemento en una lista, o una cadena de texto dentro de otra. Reporta -1 si no se encuentra.
+
+Report a copy from the given index through the end (or optional stop index) of the given list, string, or byte array.
+Reporta una copia de una lista, cadena de texto o lista de bytes a partir de la posición de inicio especificada y hasta el final (o hasta la posición final opcional especificada).
+
+Split the given string with the given delimiter and report the result (a list of strings).
+Retorna la cadena de texto especificada dividida por los delimitadores especificados (una lista de cadenas de texto).
+
+Combine the items of a list into a string, optionally separated by a delimiter (e.g. comma).
+Combina los elementos de una lista en una cadena de texto, opcionalmente separados por un delimitador (por ejemplo, una coma).
+
+Report the Unicode value ("code point") of the Nth character of the given string.
+Reporta el valor Unicode del carácter en la posición especificada de una cadena de texto.
+
+Report a string containing the given Unicode value ("code point") or list of values.
+Reporta una cadena de texto formada por el valor o lista de valores Unicode especificados.
+
+Report a new list of the given length filled with zero or the optional value.
+Reporta una nueva lista del tamaño especificado que contenga ceros (o el valor opcional especificado) en todas sus posiciones.
+
+Report a new byte array of the given length filled with zero or the optional value.
+Reporta una nueva lista de bytes del tamaño especificado que contenga ceros (o el valor opcional especificado) en todas sus posiciones.
+
+Report a byte array containing the UTF-8 bytes of the given string.
+Reporta una lista de bytes que contenga los bytes UTF-8 de la cadena de texto especificada.
+
+Report the number of words of memory available. Stop button frees up memory.
+Reporta el número de palabras (grupos de 32 bits, o 4 bytes) de memoria disponibles.
+
 

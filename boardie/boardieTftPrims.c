@@ -355,6 +355,18 @@ static OBJ primMergeBitmap(int argCount, OBJ *args) {
 static OBJ primDrawBuffer(int argCount, OBJ *args) {
 	tftInit();
 
+	int originX = 0;
+	int originY = 0;
+	int copyWidth = -1;
+	int copyHeight = -1;
+
+	if (argCount > 6) {
+		originX = obj2int(args[3]);
+		originY = obj2int(args[4]);
+		copyWidth = obj2int(args[5]);
+		copyHeight = obj2int(args[6]);
+	}
+
 	// read palette into a JS object first
 	for (int i = 0; i < obj2int(FIELD(args[1], 0)); i ++) {
 		EM_ASM_({
@@ -368,23 +380,28 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 
 	EM_ASM_({
 			var scale = $1 || 1;
-			var scaledWidth = Math.ceil(window.ctx.canvas.width / scale);
-			var scaledHeight = Math.ceil(window.ctx.canvas.height / scale);
-			var imgData = window.ctx.createImageData(scaledWidth, scaledHeight);
+			var originX = $2;
+			var originY = $3;
+			var bufferWidth = Math.ceil(window.ctx.canvas.width / scale);
+			var bufferHeight = Math.ceil(window.ctx.canvas.height / scale);
+			var originWidth = $4 >= 0 ? $4 : bufferWidth;
+			var originHeight = $5 >= 0 ? $5 : bufferHeight;
+
+			var imgData = window.ctx.createImageData(originWidth, originHeight);
 			var pixelIndex = 0;
 
 			// Make an extra canvas where we'll draw the buffer first, so we can
 			// later scale it up to the offscreen canvas.
 			var canvas = document.createElement('canvas');
-			canvas.width = scaledWidth;
-			canvas.height = scaledHeight;
+			canvas.width = originWidth;
+			canvas.height = originHeight;
 
 			// Read the indices from the buffer and turn them into color values
 			// from the palette, and transfer them into the imgData object.
-			for (var y = 0; y < scaledHeight; y ++) {
-				for (var x = 0; x < scaledWidth; x ++) {
+			for (var y = originY; y < (originY + originHeight); y ++) {
+				for (var x = originX; x < (originX + originWidth); x ++) {
 					var color =
-						window.palette[HEAPU8[$0 + y * scaledWidth + x]];
+						window.palette[HEAPU8[$0 + y * bufferWidth + x]];
 					imgData.data[pixelIndex] = color >> 16; // R
 					imgData.data[pixelIndex + 1] = (color >> 8) & 255; // G
 					imgData.data[pixelIndex + 2] = color & 255; // B
@@ -402,14 +419,18 @@ static OBJ primDrawBuffer(int argCount, OBJ *args) {
 			canvas.getContext('2d').putImageData(imgData, 0, 0);
 			window.ctx.drawImage(
 				canvas,
-				0,
-				0,
-				window.ctx.canvas.width,
-				window.ctx.canvas.height
+				originX * scale,
+				originY * scale,
+				originWidth * scale,
+				originHeight * scale
 			);
 		},
 		(uint8 *) &FIELD(args[0], 0),	// $0, buffer
-		obj2int(args[2])				// $1, scale
+		obj2int(args[2]),				// $1, scale
+		originX,						// $2
+		originY,						// $3
+		copyWidth,						// $4
+		copyHeight						// $5
 	);
 	tftChanged();
 	return falseObj;
@@ -432,7 +453,10 @@ void tftSetHugePixel(int x, int y, int state) {
 	int squareSize = (minDimension - (6 * lineWidth)) / 5;
 
 	EM_ASM_({
-			window.ctx.fillStyle = $3 == 0 ? '#000' : '#0F0';
+			if (!window.mbDisplayColor) { window.mbDisplayColor = 0x00FF00; }
+			window.ctx.fillStyle = $3 == 0 ?
+				'#000' :
+				window.rgbFrom24b(window.mbDisplayColor);
 			window.ctx.fillRect($0, $1, $2, $2);
 		},
 		xInset + ((x - 1) * squareSize) + (x * lineWidth), // x

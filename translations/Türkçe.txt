@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: February 20 2022
+# Last updated: March 18 2023
 
 #########################
 # Blocks and categories #
@@ -35,6 +35,9 @@ milisaniye
 board type
 kart tipi
 
+connected to IDE
+IDE ye bağlı
+
 Pins
 Pinler
 
@@ -43,6 +46,9 @@ dijital pin oku _
 
 read analog pin _
 analog pin oku _
+
+pullup _
+çekme direnç _
 
 set digital pin _ to _
 dijital pin _ ayarını _ yap
@@ -104,6 +110,12 @@ _ mesajı geldiğinde
 broadcast _
 _ gönder
 
+range _ to _
+aralık _ den _ kadar
+
+by _
+her _
+
 comment _
 yorum _
 
@@ -124,6 +136,12 @@ tüm betikleri durdur
 
 last message
 son mesaj
+
+call _ 
+çağır _ 
+
+with _
+parametreler _
 
 Operators
 İşlemler
@@ -166,6 +184,12 @@ dizgi
 
 list
 liste
+
+byte array
+bayt dizisi
+
+rescale _ from _ _ to _ _
+ölçeklendir _ bundan _ _ buna _ _
 
 Advanced:
 Gelişmiş:
@@ -234,6 +258,9 @@ _ bul _ içinde
 starting at _
 başla _
 
+split _ by _
+_ dizisini her _ ayır
+
 join items of list _
 _ listesinin öğelerini birleştir
 
@@ -241,7 +268,7 @@ separator _
 ayırıcı _
 
 unicode _ of _
-unicode harf# _ dizgi: _
+unicode harf# _ dizginin: _
 
 string from unicode _
 unicode dan harfe _
@@ -249,8 +276,14 @@ unicode dan harfe _
 new list length _
 _ öğeli yeni liste yarat
 
+wıth all _
+her öğeyi _ yap
+
 new byte array _
 yeni bayt dizisi
+
+as byte array _
+bayt dizisine çevir _
 
 free memory
 boş bellek
@@ -272,7 +305,7 @@ Enter function name:
 İşlev adını gir
 
 Comm
-iletişim
+İletişim
 
 i2c get device _ register _
 i2c oku modül _ yazmaç _
@@ -291,6 +324,36 @@ spi gönder _
 
 spi receive
 spi oku
+
+spi setup speed _
+spi hızı _
+
+mode _
+mod _
+
+rpi channel _
+rpi kanal _
+
+spi exchange bytes _
+spi baytları takasla _
+
+serial open _ baud
+seri portu başlat _ baud 
+
+serial close
+seri portu kapat
+
+serial read
+seri oku
+
+serial write _
+seri yaz _
+
+serial write _ starting at _
+seri yaz _  bayt _ başlayarak
+
+soft serial write byte _ pin _ baud _
+soft seri yaz bayt _ pin _ baud _
 
 print _
 yaz _
@@ -1546,7 +1609,7 @@ Hat Block
 çalıştırmak için [l] veya komut dosyaları oluşturmak için sürükleyin. [r] menü.
 
 Reporter Block
-raportör Bloğu
+Raportör Bloğu
 
 [l] to see value, or drop into an input slot. [r] menu.
 değeri görmek için veya bir girdi alanına bırakmak için [l] . [r] menü.
@@ -1640,19 +1703,19 @@ Report number of digital pins on this device.
 Bu cihazdaki dijital pin sayısını bildirin.
 
 Report the value of a register (0-255) of an I2C device (0-127).
-Bir I2C cihazının (0-127) sayacının (0-255) değerini bildirin.
+I2C cihazının (0-127) sayacının (0-255) değerini bildirin.
 
 Set an I2C device and register to given value (0-255).
-Bir I2C cihazını  ve sayacını verilen değere (0-255) ayarlayın.
+I2C cihazını  ve sayacını verilen değere (0-255) ayarlayın.
 
 Receive multiple bytes from an I2C device.
-Bir I2C cihazından birden çok bayt alın.
+I2C cihazından birden çok bayt alın.
 
 Send multiple bytes to an I2C device.
-Bir I2C cihazına birden çok bayt gönderin.
+I2C cihazına birden çok bayt gönderin.
 
 Send a byte (0-255) to an SPI device.
-Bir SPI cihazına bir bayt (0-255) gönderin.
+SPI cihazına bir bayt (0-255) gönderin.
 
 Read a byte from an SPI device while sending a zero byte. Report the byte received.
 Sıfır bayt gönderirken bir SPI cihazından bir bayt okuyun. Alınan baytı bildirin.
@@ -1811,8 +1874,10 @@ Report bitwise inverse of the given number.
 Verilen sayının bit düzeyinde tersini bildirin.
 
 Report the given number shifted left by the given number of bits.
+Verilen sayıyı verilen bit sayısı kadar sola kaydırın.
 
 Report the given number shifted right by the given number of bits (arithmetic shift; sign is maintained).
+Verilen sayıyı verilen bit sayısı kadar sağa kaydırın (arıtmetik kaydırma, işaret korunur).
 
 Set a variable to the given value.
 Bir değişkeni verilen değere ayarlayın.

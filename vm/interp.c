@@ -42,6 +42,7 @@ OBJ vars[MAX_VARS];
 // The VM stops the task and records the error code and IP where the error occurred.
 
 static uint8 errorCode = noError;
+static int taskSleepMSecs = 0;
 
 OBJ fail(uint8 errCode) {
 	errorCode = errCode;
@@ -51,6 +52,14 @@ OBJ fail(uint8 errCode) {
 int failure() {
 	return errorCode != noError;
 }
+
+#ifndef EMSCRIPTEN
+	void taskSleep(int msecs) {
+		// Make the current task sleep for the given number of milliseconds to free up cycles.
+		taskSleepMSecs = msecs;
+		errorCode = sleepSignal;
+	}
+#endif
 
 // Printing
 
@@ -396,6 +405,7 @@ static int findCallee(char *functionOrPrimitiveName) {
 	if (errorCode) goto error; \
 	op = *ip++; \
 	arg = ARG(op); \
+	task->sp = sp - task->stack; /* record stack pointer for garbage collector */ \
 /*	printf("ip: %d cmd: %d arg: %d sp: %d\n", (ip - task->code), CMD(op), arg, (sp - task->stack)); */ \
 	goto *jumpTable[CMD(op)]; \
 }
@@ -555,6 +565,15 @@ static void runTask(Task *task) {
 	DISPATCH();
 
 	error:
+		// sleepSignal is not a actual error; it just suspends the current task
+		if (sleepSignal == errorCode) {
+			errorCode = noError; // clear the error
+			if (taskSleepMSecs > 0) {
+				task->status = waiting_micros;
+				task->wakeTime = microsecs() + (taskSleepMSecs * 1000);
+			}
+			goto suspend;
+		}
 		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
 		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		sendTaskError(task->taskChunkIndex, errorCode, tmp);
@@ -1237,11 +1256,11 @@ static void runTask(Task *task) {
 				}
 
 				// invoke the callee
+				task->sp = sp - task->stack; // record the stack pointer in case callee does a GC
 				if ((callee & 0xFFFFFF00) == 0xFFFFFF00) { // callee is a MicroBlocks function (i.e. a chunk index)
 					arg = ((callee & 0xFF) << 8) | paramCount;
 					goto callFunction_op;
 				} else { // callee is a named primitive (i.e. a pointer to a C function)
-					task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
 					tmpObj = ((PrimitiveFunction) callee)(paramCount, sp - paramCount); // call the primitive
 					tempGCRoot = NULL; // clear tempGCRoot in case it was used
 					sp -= paramCount;
@@ -1256,12 +1275,10 @@ static void runTask(Task *task) {
 
 	// named primitives:
 	callCommandPrimitive_op:
-		task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
 		callPrimitive(arg, sp - arg);
 		POP_ARGS_COMMAND();
 		DISPATCH();
 	callReporterPrimitive_op:
-		task->sp = sp - task->stack; // record the stack pointer in case primitive does a GC
 		*(sp - arg) = callPrimitive(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
@@ -1285,7 +1302,7 @@ void vmLoop() {
 			// do background VM tasks once every N VM loop cycles
 			#if defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
 				defined(ARDUINO_BBC_MICROBIT_V2) || defined(ARDUINO_M5Atom_Matrix_ESP32) || \
-				defined(GNUBLOCKS)
+				defined(GNUBLOCKS) || defined(ARDUINO_Mbits)
 					updateMicrobitDisplay();
 			#endif
 			checkButtons();
@@ -1342,7 +1359,7 @@ void vmLoop() {
 #define CLOCK_MASK 0xFFFFFFFF
 
 int shouldYield = false;
-void EMSCRIPTEN_KEEPALIVE yield() { shouldYield = true; }
+void EMSCRIPTEN_KEEPALIVE taskSleep(int msecs) { shouldYield = true; }
 
 void interpretStep() {
 	processMessage();

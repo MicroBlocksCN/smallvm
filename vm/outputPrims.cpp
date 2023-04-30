@@ -17,6 +17,7 @@
 // LED Matrix Pins on BBC micro:bit and Calliope
 
 static int disableLEDDisplay = false; // disable micro:bit 5x5 display and light sensor when true
+int mbDisplayColor = 0x00FF00; // Green by default
 
 #if defined(ARDUINO_BBC_MICROBIT)
 
@@ -362,9 +363,9 @@ void updateMicrobitDisplay() {
 	displayCycle = (displayCycle + 1) % 5;
 }
 
-#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
 
-	static void updateAtomDisplay(); // forward reference
+	static void updateNeoPixelDisplay(); // forward reference
 
 	static int displaySnapshot = 0;
 
@@ -375,7 +376,7 @@ void updateMicrobitDisplay() {
 		if (disableLEDDisplay) return;
 
 		if (microBitDisplayBits == displaySnapshot) return; // no change
-		updateAtomDisplay();
+		updateNeoPixelDisplay();
 		displaySnapshot = microBitDisplayBits;
 	}
 
@@ -389,6 +390,16 @@ void updateMicrobitDisplay() {
 #endif
 
 // Display Primitives for micro:bit/Calliope (noops on other boards)
+
+OBJ primMBSetColor(int argCount, OBJ *args) {
+	mbDisplayColor = obj2int(args[0]);
+#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
+	displaySnapshot = 0; // update the display on the next cycle
+#else
+	tftSetHugePixelBits(microBitDisplayBits);
+#endif
+	return falseObj;
+}
 
 OBJ primMBDisplay(int argCount, OBJ *args) {
 	OBJ arg = args[0];
@@ -688,7 +699,7 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP8266
 	interrupts();
 }
 
-#elif defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_C3)
+#elif defined(ARDUINO_ARCH_ESP32)
 
 #include "driver/rmt.h"
 
@@ -700,36 +711,51 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP8266
 #define T0L 36	// 0 bit low time (goal: 900 nsecs)
 
 // Buffer of pulse durations used by RMT driver.
-rmt_item32_t rmt_buffer[32];
-int rmtDriverInstalled = false;
+static rmt_item32_t rmt_buffer[32];
+static int rmtDriverInstalled = false;
+static int neoPixelPin = -1;
 
 static void initRMT(int pinNum) {
-	// Initialize RMT driver.
+	// Initialize RMT driver, if needed, and set the NeoPixel pin.
 
-	rmt_config_t config;
-	memset(&config, 0, sizeof(rmt_config_t));
-	config.rmt_mode = RMT_MODE_TX;
-	config.channel = RMT_CHANNEL_0;
-	config.gpio_num = (gpio_num_t) pinNum;
-	config.clk_div = 2; // 40 MHz
-	config.mem_block_num = 1;
-	config.flags = 0;
-	config.tx_config.carrier_en = false;
-	config.tx_config.loop_en = false;
-	config.tx_config.idle_output_en = true;
-	config.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
+	if (!rmtDriverInstalled) {
+		rmt_config_t config;
+		memset(&config, 0, sizeof(rmt_config_t));
+		config.rmt_mode = RMT_MODE_TX;
+		config.channel = RMT_CHANNEL_0;
+		config.gpio_num = (gpio_num_t) pinNum;
+		config.clk_div = 2; // 40 MHz
+		config.mem_block_num = 1;
+		config.flags = 0;
+		config.tx_config.carrier_en = false;
+		config.tx_config.loop_en = false;
+		config.tx_config.idle_output_en = true;
+		config.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
 
-	if (rmtDriverInstalled) rmt_driver_uninstall(RMT_CHANNEL_0);
-	rmt_config(&config);
-	rmt_driver_install(RMT_CHANNEL_0, 0, 0);
-	rmt_set_source_clk(RMT_CHANNEL_0, RMT_BASECLK_APB);
-	rmtDriverInstalled = true;
+		rmt_config(&config);
+		rmt_driver_install(RMT_CHANNEL_0, 0, 0);
+		rmt_set_source_clk(RMT_CHANNEL_0, RMT_BASECLK_APB);
+		rmtDriverInstalled = true;
+	}
+
+	if (neoPixelPin >= 0) {
+		// detach old pin from RMT driver or it will continue to output NeoPixel data
+		gpio_matrix_out(neoPixelPin, 0x100, 0, 0); // detach the previous pin
+		setPinMode(pinNum, INPUT);
+	}
+
+	rmt_set_gpio(RMT_CHANNEL_0, RMT_MODE_TX, (gpio_num_t) pinNum, false);
+	neoPixelPin = pinNum;
 }
 
 static void initNeoPixelPin(int pinNum) { // ESP32
 	if ((pinNum < 0) || (pinNum >= pinCount())) {
-		#ifdef ARDUINO_M5Atom_Matrix_ESP32
+		#if defined(ARDUINO_M5Atom_Matrix_ESP32)
 			pinNum = 27; // internal NeoPixel pin
+		#elif defined(ARDUINO_Mbits)
+			pinNum = 13; // internal NeoPixel pin
+		#elif defined(DATABOT)
+			pinNum = 2; // internal NeoPixel pin
 		#else
 			pinNum = 0; // default to pin 0
 		#endif
@@ -753,55 +779,18 @@ static void IRAM_ATTR sendNeoPixelData(int val) { // ESP32
 	rmt_write_items(RMT_CHANNEL_0, rmt_buffer, neoPixelBits, true);
 }
 
-static void initNeoPixelPinOLD(int pinNum) { // xxx
-	if ((pinNum < 0) || (pinNum >= pinCount())) {
-		#ifdef ARDUINO_M5Atom_Matrix_ESP32
-			pinNum = 27; // internal NeoPixel pin
-		#else
-			pinNum = 0; // default to pin 0
-		#endif
-	}
-	if ((0 < pinNum) && (pinNum <= 31)) {
-		setPinMode(pinNum, OUTPUT);
-		neoPixelPinSet = &GPIO.out_w1ts;
-		neoPixelPinClr = &GPIO.out_w1tc;
-		neoPixelPinMask = 1 << pinNum;
-	} else if ((32 <= pinNum) && (pinNum <= 33)) {
-		setPinMode(pinNum, OUTPUT);
-		neoPixelPinSet = (uint32_t *) &GPIO.out1_w1ts;
-		neoPixelPinClr = (uint32_t *) &GPIO.out1_w1tc;
-		neoPixelPinMask = 1 << (pinNum - 32);
-	} else {
-		neoPixelPinMask = 0;
-	}
-}
-
-static void IRAM_ATTR sendNeoPixelDataOLD(int val) { // ESP32 // xxx
-	if (!neoPixelPinMask) return;
-
-	portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-	portENTER_CRITICAL(&mux);
-	for (uint32 mask = (1 << (neoPixelBits - 1)); mask > 0; mask >>= 1) {
-		if (val & mask) { // one bit; timing goal: high 800 nsecs, low 400 nsecs
-			*neoPixelPinSet = neoPixelPinMask;
-			DELAY_CYCLES(190);
-			*neoPixelPinClr = neoPixelPinMask;
-			DELAY_CYCLES(90);
-		} else { // zero bit; timing goal: high 300 nsecs, low 900 nsecs
-			*neoPixelPinSet = neoPixelPinMask;
-			DELAY_CYCLES(70);
-			*neoPixelPinClr = neoPixelPinMask;
-			DELAY_CYCLES(210);
-		}
-	}
-	portEXIT_CRITICAL(&mux);
-}
-
 #elif defined(ARDUINO_ARCH_RP2040) && !defined(__MBED__) // Philhower framework (PicoSDK)
 
 static int neoPixelPin = -1;
 
 static void initNeoPixelPin(int pinNum) {
+	#if defined(WUKONG2040)
+		if ((pinNum < 0) || (pinNum > 29)) pinNum = 22;
+	#endif
+	// Note: Do not default to pin 0; that pin is used by pico:ed v2 for internal i2c
+	if ((pinNum < 0) || (pinNum > 29)) return;
+	if ((23 <= pinNum) && (pinNum <= 25)) return; // pins 23-25 are reserved
+
 	neoPixelPin = pinNum;
 	pinMode(pinNum, OUTPUT);
 	digitalWrite(pinNum, 0);
@@ -956,34 +945,66 @@ OBJ primNeoPixelSetPin(int argCount, OBJ *args) {
 	return falseObj;
 }
 
+void setAllNeoPixels(int pin, int ledCount, int color) {
+	// Note: This will change the current NeoPixel pin.
+
+	int r = gamma((color >> 16) & 0xFF);
+	int g = gamma((color >> 8) & 0xFF);
+	int b = gamma(color & 0xFF);
+	int gbr = (g << 16) | (r << 8) | b; // NeoPixel order is GRB
+
+	initNeoPixelPin(pin);
+	for (int i = 0; i < ledCount; i++) {
+		sendNeoPixelData(gbr);
+	}
+}
+
 void turnOffInternalNeoPixels() {
-	initNeoPixelPin(-1); // internal
 	int count = 0;
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 		count = 10;
-	#elif defined(ARDUINO_M5Atom_Matrix_ESP32)
+	#elif defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
 		count = 25;
 		// sending neopixel data twice on the Atom Matrix eliminates green pixel at startup
 		for (int i = 0; i < count; i++) sendNeoPixelData(0);
 		delay(1);
+	#elif defined(DATABOT)
+		count = 3;
+	#elif defined(WUKONG2040)
+		count = 2;
 	#elif defined(ARDUINO_CALLIOPE_MINI) || defined(ARDUINO_NRF52840_CLUE)
 		count = 1;
 	#endif
+	if (!count) return; // no internal Neopixels
+
+	initNeoPixelPin(-1); // init internal neopixels pin
 	for (int i = 0; i < count; i++) sendNeoPixelData(0);
+	delay(1); // NeoPixels latch time
 }
 
-// Simulate the micro:bit 5x5 LED display on M5Stack Atom Matrix
+// Simulate the micro:bit 5x5 LED display on M5Stack Atom Matrix and Mbits
 
-#ifdef ARDUINO_M5Atom_Matrix_ESP32
+#if defined(ARDUINO_M5Atom_Matrix_ESP32) || defined(ARDUINO_Mbits)
 
-	void updateAtomDisplay() {
+	void updateNeoPixelDisplay() {
 		int oldPinMask = neoPixelPinMask;
+#if defined(ARDUINO_M5Atom_Matrix_ESP32)
 		initNeoPixelPin(27); // use internal NeoPixels
-		delay(1);
-		int onColor = 15 << 16; // green
+#elif defined(ARDUINO_Mbits)
+		initNeoPixelPin(13); // use internal NeoPixels
+#endif
+		delay(1); // make sure NeoPixels are latched and ready for new data
+
+		// compute color RGB value; NeoPixel order is GRB
+		int r = gamma((mbDisplayColor >> 16) & 0xFF);
+		int g = gamma((mbDisplayColor >> 8) & 0xFF);
+		int b = gamma(mbDisplayColor & 0xFF);
+		int pixelValue = (g << 16) | (r << 8) | b;
+
+		// update the NeoPixels
 		for (int i = 0; i < 25; i++) {
 			int isOn = (microBitDisplayBits & (1 << i));
-			sendNeoPixelData(isOn ? onColor : 0);
+			sendNeoPixelData(isOn ? pixelValue : 0);
 		}
 		neoPixelPinMask = oldPinMask; // restore the old NeoPixel pin
 	}
@@ -1084,6 +1105,7 @@ OBJ primMBDrawShape(int argCount, OBJ *args) {
 
 static PrimEntry entries[] = {
 	{"lightLevel", primLightLevel},
+	{"mbSetColor", primMBSetColor},
 	{"mbDisplay", primMBDisplay},
 	{"mbDisplayOff", primMBDisplayOff},
 	{"mbPlot", primMBPlot},

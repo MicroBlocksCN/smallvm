@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 29 2022
+# Last updated: March 14 2023
 
 #########################
 # Blocks and categories #
@@ -75,9 +75,13 @@ return _
 
 when _ received
 
+go!
+
 broadcast _
 
 comment _
+
+How this works...
 
 for _ in _ _
 
@@ -92,6 +96,10 @@ stop all
 last message
 
 call _
+
+function name
+
+parameter list
 
 with _
 
@@ -131,6 +139,8 @@ byte array
 
 Advanced:
 
+rescale _ from ( _ , _ ) to ( _ , _ )
+
 hex _
 
 Variables
@@ -155,6 +165,14 @@ Data
 
 list
 
+cat
+
+dog
+
+bird
+
+fish
+
 length of _
 
 item _ of _
@@ -168,6 +186,8 @@ add _ to list _
 join _ _
 
 copy _ from _
+
+smiles
 
 to _
 
@@ -188,6 +208,8 @@ new list length _
 new byte array _
 
 as byte array _
+
+aByteListOrString
 
 with all _
 
@@ -237,6 +259,8 @@ rpi channel _
 
 spi exchange bytes _
 
+aByteArray
+
 serial open _ baud
 
 serial close
@@ -246,6 +270,10 @@ serial read
 serial write _
 
 serial write _ starting at _
+
+aByteStringOrByteArray
+
+soft serial write byte _ pin _ baud _
 
 print _
 
@@ -283,7 +311,11 @@ radio send number _
 
 radio send string _
 
+Hello!
+
 radio send pair _ = _
+
+light
 
 radio message received?
 
@@ -526,6 +558,8 @@ Scrolling
 
 scroll text _
 
+HELLO ROSA!
+
 scroll number _
 
 pausing _ ms
@@ -553,6 +587,8 @@ LED Display
 display _
 
 clear display
+
+set display color _
 
 plot x _ y _
 
@@ -585,13 +621,17 @@ filled _
 
 write _ on TFT at x _ y _ color _
 
+Hello World!
+
 scale _ wrap _
 
 ####
 # BMP library
 # Can display BMP image files on a TFT display
 
-display BMP file _
+display BMP file _ at x _ y _
+
+image.bmp
 
 ####
 # HSV color library
@@ -645,6 +685,34 @@ play frequency _ for _ ms
 
 play midi key _ for _ ms
 
+start tone _ Hz
+
+stop tone
+
+c
+
+c#
+
+d
+
+d#
+
+e
+
+f
+
+f#
+
+g
+
+g#
+
+a
+
+a#
+
+b
+
 ####
 # Ringtone library
 # Can play Nokring-formatted music. Also known as RTTTL.
@@ -672,6 +740,8 @@ set pluck pin _
 # Play WAV sound files
 
 play WAV file _
+
+filename
 
 ####
 # Turtle geometry library
@@ -721,9 +791,15 @@ next line of file _
 
 next _ bytes of file _
 
+read into _ from file _
+
+a ByteArray
+
 starting at _
 
 file names
+
+in directory _
 
 size of file _
 
@@ -743,13 +819,25 @@ _ is uppercase
 
 _ begins with _
 
+prefix
+
+pre
+
 _ ends with _
+
+suffix
+
+fix
 
 _ contains _
 
 lowercase _
 
+THIS is a String! :)
+
 uppercase _
+
+Hello, world!
 
 _ without white space
 
@@ -757,7 +845,11 @@ join string list _ separator _
 
 unicodes _
 
+aString
+
 string from unicodes _
+
+aList
 
 num2str _
 
@@ -770,9 +862,13 @@ WiFi
 
 wifi connect to _ password _
 
+Network_Name
+
 IP _ gateway _ subnet _
 
 wifi create hotspot _ password _
+
+Network_Password
 
 IP address
 
@@ -845,6 +941,12 @@ bmx280 pressure
 
 bme280 humidity
 
+bmx280 set base altitude _ meters
+
+bmx280 altitude (cm)
+
+bmx280 altitude (feet)
+
 ####
 # TCS34725 color sensor
 
@@ -894,6 +996,8 @@ HTTP client
 
 _ data _ to http܃// _ 
 
+MicroBlocks is fun
+
 port _
 
 ####
@@ -908,6 +1012,8 @@ HTTP server request
 respond _ to HTTP request
 
 with body _
+
+Welcome to the MicroBlocks HTTP server
 
 and headers _
 
@@ -937,6 +1043,8 @@ payload for WebSocket event _
 type of WebSocket event _
 
 send _ to WebSocket client _
+
+Hello, Client!
 
 ####
 # Web Things library
@@ -1049,9 +1157,13 @@ MQTT disconnect
 
 MQTT sub _
 
+testTopic
+
 MQTT unsub _
 
 MQTT pub topic _ payload _
+
+Hello!
 
 retain _ QoS _
 
@@ -1062,6 +1174,14 @@ binary _
 topic for MQTT event _
 
 payload for MQTT event _
+
+MQTT set will topic _ payload _
+
+testWill
+
+Last will!
+
+buffer sizes _
 
 ####
 # UDP
@@ -1169,6 +1289,69 @@ NeZha stop all motors
 NeZha set _ servo _ angle to _
 
 NeZha set continuous rotation servo _ speed to _ %
+
+####
+# WuKong2040
+
+WuKong2040
+
+WuKong2040 rainbowLED _ color to _
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+
+WuKong2040 clear all rainbowLED
+
+WuKong2040 motor _ speed to _ (-100~100)
+
+WuKong2040 stop motor _
+
+WuKong2040 stop all motors
+
+WuKong2040 buzzer beep _ ms
+
+####
+# Octopus
+
+Octopus
+
+Octopus LED pin _ toggle to _
+
+Octopus LED pin _ brightness _ %
+
+Octopus motor fan pin _ speed to _ %
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+
+Octopus sonar trig _ echo _ distance (cm)
+
+Octopus value of light intensity (Lux) at pin _
+
+Octopus value of DHT11 temperature (°C) at pin _
+
+Octopus value of DHT11 humidity (0~100) at pin _
+
+Octopus value of water level (0~40mm) at pin _
+
+Octopus value of trimpot (0~1023) at pin _
+
+Octopus value of noise (dB) at pin _
+
+Octopus OLED show _ at x _ y _
+
+Octopus OLED clear
+
+Octopus OLED draw pixel x _ y _
+
+Octopus OLED draw line from x _ y _ to x _ y _
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+
+Octopus OLED draw circle x _ y _ radius _
+
+Octopus OLED fill circle x _ y _ radius _
+
 
 ##################
 # MicroBlocks UI #
