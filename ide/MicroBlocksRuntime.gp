@@ -894,9 +894,9 @@ method justConnected SmallRuntime {
 		readFromBoard = false
 		readCodeFromBoard this
 	} else {
-		codeReuseDisabled = true // set this to false to attempt to reuse code on board
+		codeReuseDisabled = false // set this to false to attempt to reuse code on board
 		if (or codeReuseDisabled (isEmpty chunkIDs) (not (boardHasSameProject this))) {
-			print 'Full download'
+			if (not codeReuseDisabled) { print 'Full download' }
 			clearBoardIfConnected this
 		} else {
 			print 'Incremental download'
