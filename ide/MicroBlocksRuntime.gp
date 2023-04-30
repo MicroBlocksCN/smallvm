@@ -894,7 +894,7 @@ method justConnected SmallRuntime {
 		readFromBoard = false
 		readCodeFromBoard this
 	} else {
-		codeReuseDisabled = true // set this to false to attempt to reuse code on board
+		codeReuseDisabled = false // set this to false to attempt to reuse code on board
 		if (or codeReuseDisabled (isEmpty chunkIDs) (not (boardHasSameProject this))) {
 			if (not codeReuseDisabled) { print 'Full download' }
 			clearBoardIfConnected this
@@ -2656,7 +2656,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
-//			addItem menu 'Elecrow Mbits'
+			addItem menu 'Elecrow Mbits'
 		} else {
 			addItem menu 'micro:bit'
 			addItem menu 'Calliope mini'
@@ -2676,7 +2676,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
-//			addItem menu 'Elecrow Mbits'
+			addItem menu 'Elecrow Mbits'
 		}
 		popUpAtHand menu (global 'page')
 	}
