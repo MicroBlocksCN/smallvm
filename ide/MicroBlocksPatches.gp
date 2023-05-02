@@ -350,9 +350,7 @@ method changeVar Block varName {
   expression = (newReporter 'v' varName)
   // update the block (inefficient, but works):
   scripter = (scripter (findProjectEditor))
-  saveScripts scripter
-  restoreScripts scripter
-  scriptChanged scripter
+  updateScriptAfterOperatorChange scripter this
 }
 
 method contextMenu Block {
