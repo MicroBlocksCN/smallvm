@@ -14,7 +14,7 @@
 #include "mem.h"
 #include "interp.h"
 
-#if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAM_DUE)) || \
+#if (defined(ARDUINO_ARCH_SAMD) && !defined(ARDUINO_SAM_DUE) && !defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)) || \
 	(defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED))
 
 #include "Keyboard.h"

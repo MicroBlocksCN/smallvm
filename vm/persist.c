@@ -35,6 +35,7 @@
 #if defined(NRF51) || defined(NRF52) || defined(ARDUINO_NRF52_PRIMO)
 	#include "nrf.h" // nRF51 and nRF52
 
+	// to check available FLASH, build with -Wl,-Map,output.map and make sure __etext < START
 	#if defined(NRF51)
 		// BBC micro:bit and Calliope: App: 0-96k; Persistent Mem: 96k-256k
 		#define START (96 * 1024)
@@ -44,8 +45,8 @@
 		#define START (210 * 1024)
 		#define HALF_SPACE (100 * 1024)
 	#elif defined(NRF52)
-		// nrf52832: SoftDevice + app: 0-300k; Persistent Mem: 300-436k; User data: 436k-464k; Boot: 464k-512k
-		#define START (300 * 1024)
+		// nrf52832: SoftDevice + app: 0-316k; Persistent Mem: 316-436k; User data: 436k-464k; Boot: 464k-512k
+		#define START (316 * 1024)
 		#define HALF_SPACE (60 * 1024)
 	#endif
 

@@ -14,7 +14,7 @@ to smallRuntime aScripter {
 	return (global 'smallRuntime')
 }
 
-defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
+defineClass SmallRuntime ideVersion latestVMVersion scripter chunkIDs chunkRunning chunkStopping msgDict portName port connectionStartTime lastScanMSecs pingSentMSecs lastPingRecvMSecs recvBuf oldVarNames vmVersion boardType lastBoardDrives loggedData loggedDataNext loggedDataCount vmInstallMSecs disconnected crcDict lastRcvMSecs readFromBoard decompiler decompilerStatus blockForResultImage fileTransferMsgs fileTransferProgress fileTransfer firmwareInstallTimer recompileAll
 
 method scripter SmallRuntime { return scripter }
 method serialPortOpen SmallRuntime { return (notNil port) }
@@ -519,19 +519,18 @@ method removeObsoleteChunks SmallRuntime {
 	// they are deleted or the library containing them is deleted.
 
 	for k (keys chunkIDs) {
+		isObsolete = false
 		if (isClass k 'Block') {
 			owner = (owner (morph k))
 			isObsolete = (or
 				(isNil owner)
 				(isNil (handler owner))
 				(not (isAnyClass (handler owner) 'Hand' 'ScriptEditor' 'BlocksPalette')))
-			if isObsolete {
-				deleteChunkForBlock this k
-			}
 		} (isClass k 'String') {
-			if (isNil (functionNamed (project scripter) k)) {
-				remove chunkIDs k
-			}
+			isObsolete = (isNil (functionNamed (project scripter) k))
+		}
+		if isObsolete {
+			deleteChunkFor this k
 		}
 	}
 }
@@ -586,10 +585,9 @@ method functionNameForID SmallRuntime chunkID {
 	return (join 'f' chunkID)
 }
 
-method deleteChunkForBlock SmallRuntime aBlock {
-	key = aBlock
-	if (isPrototypeHat aBlock) {
-		key = (functionName (function (editedPrototype aBlock)))
+method deleteChunkFor SmallRuntime key {
+	if (and (isClass key 'Block') (isPrototypeHat key)) {
+		key = (functionName (function (editedPrototype key)))
 	}
 	entry = (at chunkIDs key nil)
 	if (and (notNil entry) (notNil port)) {
@@ -610,9 +608,11 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 	clearRunningHighlights this
 	doOneCycle (global 'page')
 
+	if (shiftKeyDown (keyboard (global 'page'))) {
+		recompileAll = true
+	}
 	suspendCodeFileUpdates this
 	saveAllChunks this
-	verifyCRCs this
 	resumeCodeFileUpdates this
 }
 
@@ -894,18 +894,16 @@ method justConnected SmallRuntime {
 		readFromBoard = false
 		readCodeFromBoard this
 	} else {
-		clearBoardIfConnected this true
-		forceFunctionChecks this
+		codeReuseDisabled = false // set this to false to attempt to reuse code on board
+		if (or codeReuseDisabled (isEmpty chunkIDs) (not (boardHasSameProject this))) {
+			if (not codeReuseDisabled) { print 'Full download' }
+			clearBoardIfConnected this
+		} else {
+			print 'Incremental download'
+		}
+		recompileAll = true
 		stopAndSyncScripts this true
-// xxx Disable this attempt to reuse scripts already on board for now; it sometimes fails
-// 		if (isEmpty chunkIDs) {
-// 			clearBoardIfConnected this false
-// 			stopAndSyncScripts this true
-// 		} else {
-// 			forceFunctionChecks this
-// 			syncScripts this
-// 			verifyCRCs this
-// 		}
+		softReset this
 	}
 }
 
@@ -1200,7 +1198,7 @@ method reachableFunctions SmallRuntime {
 	for fName (keys result) { print '  ' fName }
 }
 
-method suspendCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 2 (list) }
+method suspendCodeFileUpdates SmallRuntime { sendMsgSync this 'extendedMsg' 2 (list) }
 method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
 
 method saveAllChunksAfterLoad SmallRuntime {
@@ -1216,9 +1214,6 @@ method saveAllChunks SmallRuntime {
 
 	setCursor 'wait'
 
-	if (saveVariableNames this) { recompileAll = true }
-	if recompileAll { print 'recompileAll'; suspendCodeFileUpdates this }
-
 	t = (newTimer)
 	editor = (findMicroBlocksEditor)
 	totalScripts = (
@@ -1228,10 +1223,15 @@ method saveAllChunks SmallRuntime {
 	processedScripts = 0
 
 	skipHiddenFunctions = true
-	if (or (saveVariableNames this) recompileAll) {
+	if (saveVariableNames this) { recompileAll = true }
+	if recompileAll {
 		// Clear the source code field of all chunk entries to force script recompilation
 		// and possible re-download since variable offsets have changed.
-		for entry (values chunkIDs) { atPut entry 4 '' }
+		suspendCodeFileUpdates this
+		for entry (values chunkIDs) {
+			atPut entry 4 ''
+			atPut entry 5 true
+		}
 		skipHiddenFunctions = false
 	}
 	assignFunctionIDs this
@@ -1273,22 +1273,13 @@ method saveAllChunks SmallRuntime {
 	setCursor 'default'
 }
 
-method forceFunctionChecks SmallRuntime {
-	// Mark the entries for all functions to disable the hidden function optimization.
-
-	for key (keys chunkIDs) {
-		if (isClass key 'String') {
-			entry = (at chunkIDs key)
-			atPut entry 5 true
-		}
-	}
-}
-
 method forceSaveChunk SmallRuntime aBlockOrFunction {
 	// Save the chunk for the given block or function even if it was previously saved.
 
 	if (contains chunkIDs aBlockOrFunction) {
-		atPut (at chunkIDs aBlockOrFunction) 4 '' // clear the old source to force re-save
+		// clear the old CRC and source to force re-save
+		atPut (at chunkIDs aBlockOrFunction) 2 nil // clear the old CRC
+		atPut (at chunkIDs aBlockOrFunction) 4 '' // clear the old source
 	}
 	saveChunk this aBlockOrFunction false
 }
@@ -1329,7 +1320,6 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 
 	if (currentSrc == (at entry 4)) { return false } // source hasn't changed; save not needed
 	atPut entry 4 currentSrc // remember the source of the code we're about to save
-	atPut entry 2 -1 // clear the CRC
 
 	// save the binary code for the chunk
 	chunkType = (chunkTypeFor this aBlockOrFunction)
@@ -1360,7 +1350,8 @@ method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
 
 	restartChunk = (and (isClass aBlockOrFunction 'Block') (isRunning this aBlockOrFunction))
 
-	if (((msecsSinceStart) - lastPingRecvMSecs) < 50) {
+	// Note: micro:bit v1 misses chunks if time window is over 10 or 15 msecs
+	if (((msecsSinceStart) - lastPingRecvMSecs) < 10) {
 		sendMsg this 'chunkCodeMsg' chunkID data
 		sendMsg this 'pingMsg'
 	} else {
@@ -1389,7 +1380,6 @@ method computeCRC SmallRuntime chunkData {
 	for i 4 { atPut result i (digitAt crc i) }
 	return result
 }
-
 
 method verifyCRCs SmallRuntime {
 	// Check that the CRCs of the chunks on the board match the ones in the IDE.
@@ -1447,6 +1437,56 @@ method verifyCRCs SmallRuntime {
 		processedCount += 1
 	}
 	showDownloadProgress editor 3 1
+}
+
+method boardHasSameProject SmallRuntime {
+	// Return true if the board appears to have the same project as the IDE.
+
+	if (isNil port) { return false }
+
+	// update chunkIDs dictionary for script/function additions or removals while disconnected
+	assignFunctionIDs this
+	for aBlock (sortedScripts (scriptEditor scripter)) {
+		if (not (isPrototypeHat aBlock)) { // skip function def hat; functions get IDs above
+			ensureChunkIdFor this aBlock
+		}
+	}
+
+	// collect CRCs from the board
+	crcDict = (dictionary)
+	collectCRCsBulk this
+
+	// build dictionaries:
+	//  ideChunks: chunkID -> block or functionName
+	//  crcForChunkID: chunkID -> CRC
+	ideChunks = (dictionary)
+	crcForChunkID = (dictionary)
+	for pair (sortedPairs chunkIDs) {
+		key = (last pair)
+		chunkID = (at (first pair) 1)
+		crc = (at (first pair) 2)
+		atPut ideChunks chunkID key
+		atPut crcForChunkID chunkID crc
+	}
+
+	// count matching chunks
+	matchCount = 0
+	for chunkID (keys crcDict) {
+		entry = (at ideChunks chunkID)
+		if (and (notNil entry) ((at crcDict chunkID) == (at crcForChunkID chunkID))) {
+			matchCount += 1
+		}
+	}
+
+	// count chunks missing from the board
+	missingCount = 0
+	for chunkID (keys ideChunks) {
+		if (not (contains crcDict chunkID)) {
+			missingCount += 1
+		}
+	}
+
+	return (matchCount >= missingCount)
 }
 
 method collectCRCsIndividually SmallRuntime {
@@ -1952,8 +1992,37 @@ method updateRunning SmallRuntime chunkID runFlag {
 	if (isNil chunkRunning) {
 		chunkRunning = (newArray 256 false)
 	}
-	atPut chunkRunning (chunkID + 1) runFlag
-	updateHighlights this
+	if (isNil chunkStopping) {
+		chunkStopping = (dictionary)
+	}
+	if runFlag {
+		atPut chunkRunning (chunkID + 1) runFlag
+		remove chunkStopping chunkID
+		updateHighlights this
+	} else {
+		// add chunkID to chunkStopping dictionary to be unhighlighted after a short pause
+		stepCount = 2 // two scripter steps, about half a second
+		atPut chunkStopping chunkID stepCount
+	}
+}
+
+method updateStopping SmallRuntime {
+	// Decrement the counts for chunks that are stopping.
+	// Turn off highlights for chunks whose counts reach zero.
+
+	if (and (isNil chunkStopping) (isEmpty chunkStopping))  { return }
+	highlightChanged = false
+	for chunkID (keys chunkStopping) {
+		count = ((at chunkStopping chunkID) - 1) // decrement count
+		if (count > 0) {
+			atPut chunkStopping chunkID count // continue to wait
+		} else {
+			atPut chunkRunning (chunkID + 1) false
+			remove chunkStopping chunkID
+			highlightChanged = true
+		}
+	}
+	if highlightChanged { updateHighlights this }
 }
 
 method isRunning SmallRuntime aBlock {
@@ -2571,6 +2640,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Circuit Playground Bluefruit'
 	} ('Clue' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Clue'
+	} ('Metro M0' == boardType) {
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Metro M0'
 	} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 		rp2040ResetMessage this
 	} (and

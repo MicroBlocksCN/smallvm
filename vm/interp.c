@@ -42,6 +42,7 @@ OBJ vars[MAX_VARS];
 // The VM stops the task and records the error code and IP where the error occurred.
 
 static uint8 errorCode = noError;
+static int taskSleepMSecs = 0;
 
 OBJ fail(uint8 errCode) {
 	errorCode = errCode;
@@ -51,6 +52,14 @@ OBJ fail(uint8 errCode) {
 int failure() {
 	return errorCode != noError;
 }
+
+#ifndef EMSCRIPTEN
+	void taskSleep(int msecs) {
+		// Make the current task sleep for the given number of milliseconds to free up cycles.
+		taskSleepMSecs = msecs;
+		errorCode = sleepSignal;
+	}
+#endif
 
 // Printing
 
@@ -556,6 +565,15 @@ static void runTask(Task *task) {
 	DISPATCH();
 
 	error:
+		// sleepSignal is not a actual error; it just suspends the current task
+		if (sleepSignal == errorCode) {
+			errorCode = noError; // clear the error
+			if (taskSleepMSecs > 0) {
+				task->status = waiting_micros;
+				task->wakeTime = microsecs() + (taskSleepMSecs * 1000);
+			}
+			goto suspend;
+		}
 		// tmp encodes the error location: <22 bit ip><8 bit chunkIndex>
 		tmp = ((ip - task->code) << 8) | (task->currentChunkIndex & 0xFF);
 		sendTaskError(task->taskChunkIndex, errorCode, tmp);
@@ -1341,15 +1359,15 @@ void vmLoop() {
 #define CLOCK_MASK 0xFFFFFFFF
 
 int shouldYield = false;
-void EMSCRIPTEN_KEEPALIVE yield() { shouldYield = true; }
+void EMSCRIPTEN_KEEPALIVE taskSleep(int msecs) { shouldYield = true; }
 
 void interpretStep() {
+	uint32 endTime = millisecs() + 15;
 	processMessage();
 	checkButtons();
 	updateMicrobitDisplay();
-	int cycles = 0;
 	shouldYield = false;
-	while ((cycles < 10000) && !shouldYield) {
+	while ((millisecs() < endTime) && !shouldYield) {
 		// Run the next runnable task. Wake up any waiting tasks whose wakeup time has arrived.
 		int runCount = 0;
 		uint32 usecs = microsecs(); // get usecs
@@ -1389,7 +1407,6 @@ void interpretStep() {
 				break;
 			} // relinquish control
 		}
-		cycles++;
 	}
 }
 

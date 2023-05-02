@@ -88,6 +88,9 @@ void hardwareInit() {
 	initPins();
 	initRandomSeed();
 	turnOffInternalNeoPixels();
+	#ifdef ARDUINO_NRF52840_CLUE
+		turnOffInternalNeoPixels(); // must be done twice on the Clue. Why? Haven't got a clue!
+	#endif
 	#if defined(ARDUINO_CITILAB_ED1)
 		dacWrite(26, 0); // prevents serial TX noise on buzzer
 		touchSetCycles(0x800, 0x800);

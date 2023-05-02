@@ -89,6 +89,7 @@ method languageChanged MicroBlocksScripter {
   updateBlocks this
   saveScripts this
   restoreScripts this
+  scriptChanged this
 }
 
 // library header
@@ -649,6 +650,7 @@ method step MicroBlocksScripter {
 	syncScripts (smallRuntime)
     saveNeeded = false
   }
+  updateStopping (smallRuntime)
 }
 
 method saveScripts MicroBlocksScripter oldScale {
@@ -725,6 +727,24 @@ method restoreScripts MicroBlocksScripter {
   }
   updateSliders scriptsFrame
   updateBlocks this
+}
+
+method updateScriptAfterOperatorChange MicroBlocksScripter aBlock {
+  // Rebuild the script containing aBlock after switching operators.
+
+  topBlock = (topBlock aBlock)
+  expr = (expression topBlock 'main')
+  if ('to' == (primName expr)) {
+    updateFunctionOrMethod this expr
+    func = (functionNamed mbProject (first (argList expr)))
+    newBlock = (scriptForFunction func)
+  } else {
+    newBlock = (toBlock expr)
+  }
+  removeFromOwner (morph topBlock)
+  fastMoveBy (morph newBlock) (left (morph topBlock)) (top (morph topBlock))
+  addPart (morph (contents scriptsFrame)) (morph newBlock)
+  scriptChanged this
 }
 
 // hide/show block definition

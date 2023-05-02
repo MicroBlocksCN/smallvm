@@ -156,7 +156,7 @@ static OBJ primReadBytes(int argCount, OBJ *args) {
 			$2++;
 			// yield from time to time when dealing with big files
 			if ((i - startIndex) % window.max_cycles == window.max_cycles - 1) {
-				_yield();
+				_taskSleep(1);
 			}
 		}
 
@@ -195,7 +195,7 @@ static OBJ primReadInto(int argCount, OBJ *args) {
 			$1++;
 			// yield from time to time when dealing with big files
 			if ((i - startIndex) % window.max_cycles == window.max_cycles - 1) {
-				_yield();
+				_taskSleep(1);
 			}
 		}
 		window.fileCharPositions[fileName] = endIndex + 1;

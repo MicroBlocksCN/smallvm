@@ -469,7 +469,7 @@ static int deferUpdates = false;
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT);
 
 		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() { if (!deferUpdates) tft.display(); }
+		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(10); }}
 
 		void tftInit() {
 			tft.begin(SSD1306_SWITCHCAPVCC, 0x3C);
@@ -490,7 +490,7 @@ static int deferUpdates = false;
 		Adafruit_SSD1306 tft = Adafruit_SSD1306(TFT_WIDTH, TFT_HEIGHT, &Wire, -1, 400000, 400000);
 
 		#undef UPDATE_DISPLAY
-		#define UPDATE_DISPLAY() { if (!deferUpdates) tft.display(); }
+		#define UPDATE_DISPLAY() { if (!deferUpdates) { tft.display(); taskSleep(10); }}
 
 		void tftInit() {
 			if (!hasI2CPullups()) return; // no OLED connected and no I2C pullups
