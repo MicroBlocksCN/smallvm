@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: July 07 2020
+# Last updated: May 12 2023
 
 #########################
 # Blocks and categories #
@@ -168,7 +168,7 @@ list
 список
 
 Advanced:
---MISSING--
+Продвинутый:
 
 hex _
 hex _
@@ -196,7 +196,7 @@ change _ by _
 изменить _ на _
 
 initialize local _ to _
---MISSING--
+инициализировать локальный _ для _
 
 Data
 Данные
@@ -250,7 +250,7 @@ new list length _
 новая длина списка _
 
 new byte array _
---MISSING--
+новый байтовый массив _ 
 
 free memory
 свободная память
@@ -323,7 +323,7 @@ play tone pin _ frequency _
 воспроизвести тон на контакте _ с частотой _
 
 has WiFi support
-имеет поддержку WiFi
+поддерживает WiFi
 
 start WiFi _ password _
 запустить WiFi _ пароль_
@@ -456,10 +456,10 @@ move motor 1 _ and motor 2 _ _ steps
 двигать мотор 1 _ и мотор 2 на _ _ шагов
 
 move motor _ angle _ °
---MISSING--
+Сдвинуть двигатель _ угол _ °
 
 move motor _ _ complete turns
---MISSING--
+переместить двигатель _ _ полных оборотов
 
 stop steppers
 остановить степперы
@@ -534,88 +534,88 @@ Other
 Прочее
 
 Finch Beak Red _ Green _ Blue _
---MISSING--
+Остановить Finch Красный _ Зеленый _ Синий _ 
 
 Finch Tail _ Red _ Green _ Blue _
---MISSING--
+Хвост Finch _ Красный _ Зеленый _ Синий _ 
 
 Finch Move _ _ cm at _ %
---MISSING--
+Пердвинуть Finch _ _ cм на _ %
 
 Finch Turn _ _ ° at _ %
---MISSING--
+Повернуть Finch _ _ ° на _ %
 
 Finch Wheels L _ % R _ %
---MISSING--
+Колеса Finch Л _ % П _ %
 
 Finch Stop
---MISSING--
+Остановить Finch
 
 Finch Distance (cm)
---MISSING--
+Дистанция Finch (см)
 
 Finch _ Light
---MISSING--
+Яркость _ Finch
 
 Finch _ Line
---MISSING--
+Строка _ Finch
 
 Finch Reset Encoders
---MISSING--
+Сброс кодировки Finch
 
 Finch _ Encoder
---MISSING--
+Кодировщик _ Finch
 
 Finch Accelerometer _
---MISSING--
+Ускоритель Finch
 
 Finch Battery
---MISSING--
+Батарейка Finch 
 
 All
---MISSING--
+Все
 
 Forward
---MISSING--
+Вперед
 
 Backward
---MISSING--
+Назад
 
 Right
---MISSING--
+Враво
 
 Left
---MISSING--
+Влево 
 
 Beak Up
---MISSING--
+Клюв вверх
 
 Beak Down
---MISSING--
+Клюв вниз
 
 Tilt Left
---MISSING--
+Наклон влево
 
 Tilt Right
---MISSING--
+Наклон вправо
 
 Level
---MISSING--
+Уровень
 
 Upside Down
---MISSING--
+Вверх дном
 
 x
---MISSING--
+X
 
 y
---MISSING--
+Y
 
 z
---MISSING--
+Z
 
 strength
---MISSING--
+Мощность
 
 ####
 # Ultrasound distance library
@@ -786,7 +786,7 @@ pen down
 перо опустить
 
 pen up
-перо поднять
+поднять перо
 
 set pen color to _
 установить цвет пера на _
@@ -1087,25 +1087,25 @@ Open
 Открыть
 
 Open from board
---MISSING--
+Открыть из платы
 
 Information
---MISSING--
+Информация
 
 Plug in the board.
---MISSING--
+Подключить плату
 
 Reading project from board...
---MISSING--
+Загрузить проект с платы
 
 Loading project...
---MISSING--
+Проект загружается...
 
 Found a newer version of
---MISSING--
+Нашел новую версию 
 
 Do you want me to update the one in the project?
---MISSING--
+Вы хотите, чтобы я обновил что в проекте?
 
 Save
 Сохранить
@@ -1123,7 +1123,7 @@ other...
 другие...
 
 none
-нет
+никакой
 
 Port name?
 Название порта?
@@ -1189,7 +1189,7 @@ Discard current project?
 Отменить этот проект?
 
 clean up
-очистка
+очистить
 
 arrange scripts
 расположить скрипты
@@ -1234,7 +1234,7 @@ stop WebThing server
 остановить сервер WebThing
 
 HTTP Server
---MISSING--
+HTTP Сервер
 
 MicroBlocks HTTP Server listening on port 6473
 HTTP-сервер MicroBlocks прослушивает порт 6473
@@ -1246,10 +1246,10 @@ enable autoloading board libraries
 включить автозагрузку библиотек платы
 
 enable PlugShare when project empty
---MISSING--
+включить PlugShare когда проект пуст
 
 disable PlugShare when project empty
---MISSING--
+Выключить PlugShare когда проект пуст
 
 erase flash and update firmware on ESP board
 стереть и переделить esp
