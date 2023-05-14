@@ -899,7 +899,11 @@ method justConnected SmallRuntime {
 			if (not codeReuseDisabled) { print 'Full download' }
 			clearBoardIfConnected this
 		} else {
-			print 'Incremental download'
+			print 'Incremental download' vmVersion boardType
+			if (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
+				print '*** Incremental download currently not supported on RP2040 boards ***'
+				clearBoardIfConnected this
+			}
 		}
 		recompileAll = true
 		stopAndSyncScripts this true
