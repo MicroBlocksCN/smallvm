@@ -345,7 +345,6 @@ method changeOperator Block newOp {
 }
 
 method changeVar Block varName {
-  // FIXME this only works when the var block is not inside an input slot!
   cancelSelection
   newVarReporter = (newReporter 'v' varName)
   blockOwner = (handler (owner morph))
