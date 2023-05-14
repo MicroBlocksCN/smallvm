@@ -207,12 +207,14 @@ void primDigitalSet(int pinNum, int flag) { };
 // Stubs for other functions not used on Linux
 
 void addSerialPrims() {}
+void addHIDPrims() {}
+void addOneWirePrims() {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
 void resetServos() {}
 void stopPWM() {}
 void systemReset() {}
 void turnOffPins() {}
-void stopServos() { }
+void stopServos() {}
 
 // Persistence support
 
