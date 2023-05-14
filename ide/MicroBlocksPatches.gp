@@ -347,8 +347,19 @@ method changeOperator Block newOp {
 method changeVar Block varName {
   // FIXME this only works when the var block is not inside an input slot!
   cancelSelection
-  expression = (newReporter 'v' varName)
-  // update the block (inefficient, but works):
+  newVarReporter = (newReporter 'v' varName)
+  blockOwner = (handler (owner morph))
+  if (isClass blockOwner 'Block') {
+    owningExpr = (expression blockOwner)
+    args = (argList owningExpr)
+    for i (count args) {
+      if ((at args i) == (expression this)) {
+        setArg owningExpr i newVarReporter
+      }
+    }
+  } else { // top level var reporter
+    expression = newVarReporter
+  }
   scripter = (scripter (findProjectEditor))
   updateScriptAfterOperatorChange scripter this
 }
@@ -404,7 +415,7 @@ method contextMenu Block {
 	}
   }
   addLine menu
-  
+
   if (contains (array 'v' '=' '+=') (primName expression)) {
 	  addItem menu 'find variable accessors' 'findVarAccessors' 'find scripts or block definitions where this variable is being read'
 	  addItem menu 'find variable modifiers' 'findVarModifiers' 'find scripts or block definitions where this variable is being set or changed'
