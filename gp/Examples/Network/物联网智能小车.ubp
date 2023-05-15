@@ -11,9 +11,9 @@ wifiConnect 'UIOT' 'uiot12345'
 waitMillis 1000
 comment '2. 连接 MQTT服务器'
 'MQTT connect to' 'mqtt.longan.link' 128 ('[data:join]' 'id' (random 1 1000)) 'guest' 'test'
-comment '3.请修改主题，同一组的小车和遥控器的主题保持一致'
+comment '3. 订阅主题,同一组的小车和遥控器的主题必须保持一致'
 'MQTT sub' 'zu0'
-comment '4.判断是否接收到消息'
+comment '4. 判断是否接收到消息'
 forever {
   if ('MQTT connected') {
     event = ('[net:MQTTLastEvent]')
