@@ -4,21 +4,21 @@ version 1 0
 description ''
 variables event 
 
-script 143 70 {
+script 143 46 {
 whenStarted
 comment '1. 连接 wifi'
 wifiConnect 'UIOT' 'uiot12345'
 waitMillis 1000
 comment '2. 连接 MQTT服务器'
 'MQTT connect to' 'mqtt.longan.link' 128 ('[data:join]' 'id' (random 1 1000)) 'guest' 'test'
-comment '请修改主题，同一组的小车和遥控器主题保持一致'
+comment '3.请修改主题，同一组的小车和遥控器的主题保持一致'
 'MQTT sub' 'zu0'
-comment 'receive mqtt message'
+comment '4.判断是否接收到消息'
 forever {
   if ('MQTT connected') {
     event = ('[net:MQTTLastEvent]')
     if (isType event 'list') {
-      sayIt 'topic' ('MQTT event topic' event) ', payload' ('MQTT event payload' event)
+      sayIt '主题:' ('MQTT event topic' event) '消息:' ('MQTT event payload' event)
     }
   } else {
     sayIt 'try to connect ...'
@@ -28,9 +28,9 @@ forever {
 }
 }
 
-script 690 350 {
-comment 'publish topic payload'
-'MQTT pub' 'zu0' 'Hello!'
+script 690 326 {
+comment '向主题发布消息'
+'MQTT pub' 'zu0' 'go'
 }
 
 
@@ -204,3 +204,4 @@ to wifiCreateHotspot ssid password {
   }
   sayIt 'My IP address is:' ('[net:myIPAddress]')
 }
+
