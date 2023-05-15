@@ -1408,7 +1408,7 @@ MQTT unsub _
 取消订阅主题 _
 
 MQTT pub topic _ payload _
-向主题 _ 发布载荷 _
+向主题 _ 发布消息 _
 
 retain _ QoS _
 保留 _ QoS _
@@ -1423,7 +1423,7 @@ topic for MQTT event _
 最新 MQTT 事件的主题 _
 
 payload for MQTT event _
-最新 MQTT 事件的载荷 _
+最新 MQTT 事件的消息 _
 
 ####
 # UDP
