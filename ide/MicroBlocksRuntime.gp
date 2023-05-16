@@ -1530,7 +1530,7 @@ method collectCRCsBulk SmallRuntime {
 	crcDict = nil
 
 	// request CRCs for all chunks on board
-	sendMsg this 'getAllCRCsMsg'
+	sendMsgSync this 'getAllCRCsMsg'
 
 	// wait until crcDict is filled in or timeout
 	startT = (msecsSinceStart)
