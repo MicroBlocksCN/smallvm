@@ -953,7 +953,7 @@ void restoreScripts() {
 	initPersistentMemory();
 
 	#if USE_CODE_FILE
-		codeFileBytes = initCodeFile(flash, HALF_SPACE);
+		int codeFileBytes = initCodeFile(flash, HALF_SPACE);
 		int *start = current ? start1 : start0;
 		freeStart = start + (codeFileBytes / 4);
 	#endif
