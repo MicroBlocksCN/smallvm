@@ -953,7 +953,9 @@ void restoreScripts() {
 	initPersistentMemory();
 
 	#if USE_CODE_FILE
-		initCodeFile(flash, HALF_SPACE);
+		codeFileBytes = initCodeFile(flash, HALF_SPACE);
+		int *start = current ? start1 : start0;
+		freeStart = start + (codeFileBytes / 4);
 	#endif
 
 	updateChunkTable();
