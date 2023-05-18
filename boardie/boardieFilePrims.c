@@ -198,7 +198,7 @@ static OBJ primReadInto(int argCount, OBJ *args) {
 				_taskSleep(1);
 			}
 		}
-		window.fileCharPositions[fileName] = endIndex + 1;
+		window.fileCharPositions[fileName] = endIndex;
 		return endIndex - startIndex;
 
 	}, fileName, (uint8 *) &FIELD(buf, 0), BYTES(buf)));
