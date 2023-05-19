@@ -2656,7 +2656,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
-			addItem menu 'Elecrow Mbits'
+			addItem menu 'Mbits'
 		} else {
 			addItem menu 'micro:bit'
 			addItem menu 'Calliope mini'
@@ -2676,7 +2676,7 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'M5Stack-Core'
 			addItem menu 'ESP32'
 			addItem menu 'ESP8266'
-			addItem menu 'Elecrow Mbits'
+			addItem menu 'Mbits'
 		}
 		popUpAtHand menu (global 'page')
 	}
