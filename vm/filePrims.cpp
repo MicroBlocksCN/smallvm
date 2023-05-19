@@ -323,10 +323,10 @@ static OBJ primAppendBytes(int argCount, OBJ *args) {
 static OBJ primFileSize(int argCount, OBJ *args) {
 	if (argCount < 1) return fail(notEnoughArguments);
 	char *fileName = extractFilename(args[0]);
-	if (!fileName[0]) return int2obj(0);
+	if (!fileName[0]) return int2obj(-1);
 
 	File file = myFS.open(fileName, "r");
-	if (!file) return int2obj(0);
+	if (!file) return int2obj(-1);
 	int size = file.size();
 	file.close();
 	return int2obj(size);
