@@ -204,6 +204,33 @@ static OBJ primReadInto(int argCount, OBJ *args) {
 	}, fileName, (uint8 *) &FIELD(buf, 0), BYTES(buf)));
 }
 
+// Read positioning
+
+static OBJ primReadPosition(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	char *fileName = obj2str(args[0]);
+	return int2obj(EM_ASM_INT({
+		var fileName = UTF8ToString($0);
+		if (!(fileName in window.fileCharPositions)) return 0;
+		return window.fileCharPositions[fileName];
+	}, fileName));
+}
+
+static OBJ primSetReadPosition(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	int newPosition = evalInt(args[0]);
+	char *fileName = obj2str(args[1]);
+
+	EM_ASM_({
+		var fileName = UTF8ToString($0);
+		var newPosition = $1;
+		if (!(fileName in window.fileCharPositions)) return;
+		window.fileCharPositions[fileName] = newPosition;
+	}, fileName, newPosition);
+
+	return falseObj;
+}
+
 // Writing
 
 static OBJ primAppendLine(int argCount, OBJ *args) {
@@ -341,6 +368,8 @@ static PrimEntry entries[] = {
 	{"readLine", primReadLine},
 	{"readBytes", primReadBytes},
 	{"readInto", primReadInto},
+	{"readPosition", primReadPosition},
+	{"setReadPosition", primSetReadPosition},
 	{"appendLine", primAppendLine},
 	{"appendBytes", primAppendBytes},
 	{"fileSize", primFileSize},
