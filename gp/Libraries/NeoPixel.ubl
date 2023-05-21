@@ -1,6 +1,6 @@
 module NeoPixel Output
 author MicroBlocks
-version 1 4 
+version 1 5 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -19,7 +19,7 @@ variables _np_pixels
   spec ' ' 'NeoPixel_brighten_all' 'brighten all NeoPixels by _' 'num' 10
   space
   spec ' ' '_NeoPixel_ensureInitialized' '_NeoPixel_ensureInitialized'
-  spec ' ' '_NeoPixel_increaseRGB' '_NeoPixel_increaseRGB of _ by _' 'num any' 10
+  spec ' ' '_NeoPixel_increaseRGB' '_NeoPixel_increaseRGB of _ by _' 'num num' 1 10
   spec ' ' '_NeoPixel_rotate' '_NeoPixel_rotate_left _' 'bool' true
   spec ' ' '_NeoPixel_update' '_NeoPixel_update'
 
