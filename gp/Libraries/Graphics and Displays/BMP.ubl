@@ -14,7 +14,8 @@ variables _bmpPalette _bmpIsRGB565 _bmpPixelsOffset _bmpWidth _bmpHeight _bmpBPP
   spec ' ' 'drawBMPfile' 'display BMP file _ at x _ y _' 'str num num' 'image.bmp' 0 0
   space
   spec 'r' '_bmp_readHeader' '_bmp_readHeader file _' 'str' ''
-  spec ' ' '_bmp_drawBMP' '_bmp_draw BMP of file _ x _ y _' 'str num num' '' 0 0
+  spec ' ' '_bmp_drawBMP' '_bmp_drawBMP file _ x _ y _' 'str num num' '' 0 0
+  spec ' ' '_bmp_drawBMPPixels' '_bmp_drawBMPPixels file _ x _ y _ with function _' 'str num num str' '' 0 0 '[tft:setPixel]'
   space
   spec 'r' '_bmp_readPixelLine' '_bmp_readPixelLine of file _' 'str' ''
   spec ' ' '_bmp_addOneBytePixelsTo' '_bmp_addBytePixels from _ starting at _ to _' 'str num str' '' 1 'aList'
@@ -92,6 +93,32 @@ to '_bmp_drawBMP' filename originX originY {
     } else {
       y += 1
     }
+  }
+}
+
+to '_bmp_drawBMPPixels' filename originX originY setPixelFunction {
+  comment 'Much slower than _bmp_drawBMP but allows client to supply
+a setPixelFunction, so it can be used to draw a BMP file
+file onto other devices such as a NeoPixel panel.'
+  '[file:open]' filename
+  '_bmp_skip' _bmpPixelsOffset filename
+  if (_bmpHeight >= 0) {
+    local 'y' ((originY + _bmpHeight) - 1)
+    local 'yIncrement' -1
+  } else {
+    local 'y' originY
+    local 'yIncrement' 1
+  }
+  local 'parameters' (newList 3)
+  repeat (absoluteValue _bmpHeight) {
+    local 'line' ('_bmp_readPixelLine' filename)
+    for x (size line) {
+      atPut parameters 1 (originX + (x - 1))
+      atPut parameters 2 y
+      atPut parameters 3 (at x line)
+      callCustomCommand setPixelFunction parameters
+    }
+    y += yIncrement
   }
 }
 
