@@ -1,105 +1,202 @@
 module BMP Output
 author 'José García Yeste'
-version 1 6 
-depends TFT 
+version 1 9 
+depends TFT Files 
 description 'Display BMP files on a TFT screen.
 
-BMP files can be transferred to and from boards with a file systems using the put/get commands in the IDE. (Those commands are only available in "show advanced blocks" mode.)
+BMP files can be transferred to and from boards with a file systems using the put/get commands in the IDE file menu (available in "show advanced blocks" mode).
+Dragging a BMP file over microBlocks also loads the file into the file system.
 
-This library works with 16, 24 and 32 bpp BMP files,
+This library works with uncompressed BMP files with 1, 4, 8, 16, 24 and 32 bits per pixel.
 '
+variables _bmpPalette _bmpIsRGB565 _bmpPixelsOffset _bmpWidth _bmpHeight _bmpBPP 
 
-  spec ' ' 'drawBMPfile' 'display BMP file _ at x _ y _' 'auto auto auto' 'image.bmp' 0 0
-  spec 'r' '_checkBMP' '_check BMP signature of file _' 'auto' ''
-  spec ' ' '_drawBMP from' '_draw BMP of file _ width _ height _ bpp _ x _ y _' 'auto auto auto auto auto auto' '' 0 0 24 0 0
-  spec 'r' '_readLineBMP' '_read BMPline of file _ width _ bpp _' 'auto auto auto' '' 0 24
-  spec ' ' '_ignoreBMP' '_ignore _ bytes of file _' 'auto auto' 0 ''
-  spec 'r' '_read int16 of BMP file' '_read int16 of file _' 'auto' ''
-  spec 'r' '_read int32 of BMP file' '_read int32 of file _' 'auto' ''
+  spec ' ' 'drawBMPfile' 'display BMP file _ at x _ y _' 'str num num' 'image.bmp' 0 0
+  space
+  spec 'r' '_bmp_readHeader' '_bmp_readHeader file _' 'str' ''
+  spec ' ' '_bmp_drawBMP' '_bmp_drawBMP file _ x _ y _' 'str num num' '' 0 0
+  spec ' ' '_bmp_drawBMPPixels' '_bmp_drawBMPPixels file _ x _ y _ with function _' 'str num num str' '' 0 0 '[tft:setPixel]'
+  space
+  spec 'r' '_bmp_readPixelLine' '_bmp_readPixelLine of file _' 'str' ''
+  spec ' ' '_bmp_addOneBytePixelsTo' '_bmp_addBytePixels from _ starting at _ to _' 'str num str' '' 1 'aList'
+  spec 'r' '_bmp_16BitPixel' '_bmp_16BitPixel from _ starting at _' 'str num' '' 1
+  spec 'r' '_bmp_24BitPixel' '_bmp_24BitPixel from _ starting at _' 'str num' '' 1
+  space
+  spec 'r' '_bmp_readInt16' '_bmp read int16 file _' 'str' ''
+  spec 'r' '_bmp_readInt32' '_bmp read int32 file _' 'str' ''
+  space
+  spec ' ' '_bmp_skip' '_bmp skip _ bytes of file _' 'num str' 0 ''
 
-to '_checkBMP' filename {
-  local 'signature' ''
-  local 'data' ('[file:readBytes]' 2 filename)
-  for i (size data) {
-    signature = ('[data:join]' signature ('[data:unicodeString]' (at i data)))
+to '_bmp_16BitPixel' data i {
+  local 'pixel' (((at (i + 1) data) << 8) | (at i data))
+  if _bmpIsRGB565 {
+    local 'r' ((pixel >> 8) & 248)
+    local 'g' ((pixel >> 3) & 248)
+    local 'b' ((pixel & 31) << 3)
+  } else {
+    local 'r' ((pixel >> 7) & 248)
+    local 'g' ((pixel >> 2) & 248)
+    local 'b' ((pixel & 31) << 3)
   }
-  return (signature == 'BM')
+  return ((r << 16) | ((g << 8) | b))
 }
 
-to '_drawBMP from' filename width height bpp 'origin x' 'origin y' {
-  local 'y' ((absoluteValue height) - 1)
-  repeatUntil (y < 0) {
-    local 'line' ('_readLineBMP' filename width bpp)
-    for x (size line) {
-      if (height < 0) {
-        '[tft:setPixel]' ((x - 1) + (v 'origin x')) ((absoluteValue height) - (y + (v 'origin y'))) (at x line)
-      } else {
-        '[tft:setPixel]' ((x - 1) + (v 'origin x')) (y + (v 'origin y')) (at x line)
+to '_bmp_24BitPixel' data i {
+  return ((((at (i + 2) data) << 16) | ((at (i + 1) data) << 8)) | (at i data))
+}
+
+to '_bmp_addOneBytePixelsTo' data i buf {
+  local 'mask' ((1 << _bmpBPP) - 1)
+  local 'pixels' (at i data)
+  local 'b' (8 / _bmpBPP)
+  repeatUntil (b < 1) {
+    b += -1
+    '[data:addLast]' (at (((pixels >> (_bmpBPP * b)) & mask) + 1) _bmpPalette) buf
+  }
+}
+
+to '_bmp_drawBMP' filename originX originY {
+  '[file:open]' filename
+  '_bmp_skip' _bmpPixelsOffset filename
+  if (_bmpHeight >= 0) {
+    local 'y' ((originY + _bmpHeight) - 1)
+  } else {
+    local 'y' originY
+  }
+  local 'optimize' ((boardType) != 'Boardie')
+  repeat (absoluteValue _bmpHeight) {
+    local 'line' ('_bmp_readPixelLine' filename)
+    if optimize {
+      local 'rep' 1
+      local 'lastColor' (at 1 line)
+      for x (size line) {
+        if ((at x line) != lastColor) {
+          if (rep > 1) {
+            '[tft:line]' (((x - 1) - rep) + originX) y ((x - 0) + originX) y lastColor
+          } else {
+            '[tft:setPixel]' ((x - 1) + originX) y lastColor
+          }
+          lastColor = (at x line)
+          rep = 1
+        } else {
+          rep += 1
+        }
+      }
+      '[tft:line]' ((x - rep) + originX) y (x + originX) y lastColor
+    } else {
+      for x (size line) {
+        '[tft:setPixel]' ((x - 1) + originX) y (at x line)
       }
     }
-    y += -1
-  }
-}
-
-to '_ignoreBMP' bytes filename {
-  local 'buf' 0
-  repeatUntil (bytes == 0) {
-    if (bytes > 800) {
-      buf = ('[file:readBytes]' 800 filename)
+    if (_bmpHeight >= 0) {
+      y += -1
     } else {
-      buf = ('[file:readBytes]' bytes filename)
+      y += 1
     }
-    bytes = (bytes - (size buf))
   }
 }
 
-to '_read int16 of BMP file' filename {
+to '_bmp_drawBMPPixels' filename originX originY setPixelFunction {
+  comment 'Much slower than _bmp_drawBMP but allows client to supply
+a setPixelFunction, so it can be used to draw a BMP file
+file onto other devices such as a NeoPixel panel.'
+  '[file:open]' filename
+  '_bmp_skip' _bmpPixelsOffset filename
+  if (_bmpHeight >= 0) {
+    local 'y' ((originY + _bmpHeight) - 1)
+    local 'yIncrement' -1
+  } else {
+    local 'y' originY
+    local 'yIncrement' 1
+  }
+  local 'parameters' (newList 3)
+  repeat (absoluteValue _bmpHeight) {
+    local 'line' ('_bmp_readPixelLine' filename)
+    for x (size line) {
+      atPut parameters 1 (originX + (x - 1))
+      atPut parameters 2 y
+      atPut parameters 3 (at x line)
+      callCustomCommand setPixelFunction parameters
+    }
+    y += yIncrement
+  }
+}
+
+to '_bmp_readHeader' filename {
+  '[file:open]' filename
+  if (or (('[file:fileSize]' filename) < 54) ('BM' != ('[data:join]' '' ('[file:readBytes]' 2 filename)))) {
+    printIt ('[data:join]' 'Not a BMP file: ' filename)
+    sayIt 'Not a BMP file: ' filename
+    return false
+  }
+  '_bmp_skip' 8 filename
+  _bmpPixelsOffset = ('_bmp_readInt32' filename)
+  '_bmp_skip' 4 filename
+  _bmpWidth = ('_bmp_readInt32' filename)
+  _bmpHeight = ('_bmp_readInt32' filename)
+  '_bmp_skip' 2 filename
+  _bmpBPP = ('_bmp_readInt16' filename)
+  local 'compression' ('_bmp_readInt32' filename)
+  _bmpIsRGB565 = false
+  '_bmp_skip' 20 filename
+  if (compression == 3) {
+    _bmpIsRGB565 = true
+    '_bmp_skip' 12 filename
+  } (compression != 0) {
+    sayIt 'Compressed BMP files are not supported'
+    return false
+  }
+  _bmpPalette = 0
+  if (_bmpBPP <= 8) {
+    comment 'Read color palette'
+    _bmpPalette = (newList (1 << _bmpBPP))
+    for i (size _bmpPalette) {
+      local 'data' ('[file:readBytes]' 4 filename)
+      local 'color' (((at 3 data) << 16) | (((at 2 data) << 8) | (at 1 data)))
+      atPut i _bmpPalette color
+    }
+  }
+  return true
+}
+
+to '_bmp_readInt16' filename {
   local 'data' ('[file:readBytes]' 2 filename)
   return (((at 2 data) << 8) | (at 1 data))
 }
 
-to '_read int32 of BMP file' filename {
+to '_bmp_readInt32' filename {
   local 'data' ('[file:readBytes]' 4 filename)
   return ((((at 4 data) << 24) | ((at 3 data) << 16)) | (((at 2 data) << 8) | (at 1 data)))
 }
 
-to '_readLineBMP' filename width bpp {
+to '_bmp_readPixelLine' filename {
   local 'result' ('[data:makeList]')
-  local 'i' (width * (bpp / 8))
-  local 'data' ('[data:newByteArray]' 0)
-  repeatUntil (i <= 0) {
-    data = ('[data:join]' data ('[file:readBytes]' (minimum 768 i) filename))
-    i += (0 - (minimum 768 i))
-  }
+  local 'bytes' (((_bmpWidth * _bmpBPP) + 7) / 8)
+  local 'data' ('[data:newByteArray]' bytes)
+  bytes = ('[file:readInto]' data filename)
   i = 1
-  repeatUntil (i >= (size data)) {
-    if (bpp == 16) {
-      '[data:addLast]' (((((at (i + 1) data) & 124) << 17) | (((((at (i + 1) data) & 3) << 3) | ((at i data) >> 5)) << 11)) | (((at i data) & 31) << 3)) result
+  repeatUntil (i > bytes) {
+    if (_bmpBPP <= 8) {
+      '_bmp_addOneBytePixelsTo' data i result
+    } (_bmpBPP == 16) {
+      '[data:addLast]' ('_bmp_16BitPixel' data i) result
     } else {
-      '[data:addLast]' ((((at (i + 2) data) << 16) | ((at (i + 1) data) << 8)) | (at i data)) result
+      '[data:addLast]' ('_bmp_24BitPixel' data i) result
     }
-    i += (bpp / 8)
+    i += (maximum (_bmpBPP / 8) 1)
   }
-  local 'mod4' ((size data) % 4)
-  if (mod4 != 0) {
-    '_ignoreBMP' (4 - mod4) filename
+  if (((size data) % 4) != 0) {
+    '_bmp_skip' (4 - ((size data) % 4)) filename
   }
   return result
 }
 
-to drawBMPfile filename 'origin x' 'origin y' {
-  '[file:open]' filename
-  if ('_checkBMP' filename) {
-    '_ignoreBMP' 8 filename
-    local 'start' ('_read int32 of BMP file' filename)
-    '_ignoreBMP' 4 filename
-    local 'width' ('_read int32 of BMP file' filename)
-    local 'height' ('_read int32 of BMP file' filename)
-    '_ignoreBMP' 2 filename
-    local 'bpp' ('_read int16 of BMP file' filename)
-    '_ignoreBMP' (start - 30) filename
-    '_drawBMP from' filename width height bpp (v 'origin x') (v 'origin y')
-  }
+to '_bmp_skip' bytes filename {
+  return ('[file:readInto]' ('[data:newByteArray]' bytes) filename)
+}
+
+to drawBMPfile filename originX originY {
+  if ('_bmp_readHeader' filename) {'_bmp_drawBMP' filename originX originY}
   '[file:close]' filename
 }
 

@@ -196,7 +196,7 @@ void processFileMessage(int msgType, int dataSize, char *data) {}
 
 // Stubs for code file (persistence) not yet used by Boardie
 
-void initCodeFile(uint8 *flash, int flashByteCount) {}
+int initCodeFile(uint8 *flash, int flashByteCount) { return 0; }
 void writeCodeFile(uint8 *code, int byteCount) { }
 void writeCodeFileWord(int word) { }
 void clearCodeFile(int ignore) { }
