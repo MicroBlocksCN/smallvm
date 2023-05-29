@@ -2468,6 +2468,9 @@ Sound
 System
 系统
 
+ELECFREAKS
+恩孚
+
 # File picker and library dialogs
 
 Libraries
