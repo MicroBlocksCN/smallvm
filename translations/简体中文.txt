@@ -518,6 +518,12 @@ set all NeoPixels color _
 rotate NeoPixels by _
 轮转 NeoPixel 间距 _
 
+brighten NeoPixel _ by _
+NeoPixel _ 亮度增加 _
+
+brighten all NeoPixels by _
+所有 NeoPixels 亮度增加 _
+
 color r _ g _ b _ (0-255)
 颜色 R _ G _ B _ (0-255)
 
@@ -525,7 +531,7 @@ random color
 随机颜色
 
 attach _ LED NeoPixel strip to pin _
-将 _ 个 LED NeoPixel 灯带 连接至引脚 _
+将 _ 个 LED NeoPixel 灯带 连接到引脚 _
 
 has white _
 具有白光 _
@@ -535,6 +541,33 @@ PIR
 
 PIR at pin _ detected movement
 位于引脚 _ 的人体红外传感器探测到运动
+
+
+#### NeoPanel library
+
+NeoPanel
+像素屏
+
+attach NeoPixel panel width _ height _ at pin _
+将宽度 _ 高度 _ 的像素屏连接到引脚 _
+
+NeoPanel set x _ y _ color _
+像素屏设置 x _ y _ 颜色 _
+
+NeoPanel fill column _ color _
+像素屏绘制 列 _ 颜色 _
+
+NeoPanel fill row _ color _
+像素屏绘制 行 _ 颜色 _
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+像素屏绘制长方形 x _ y _ 宽度 _ 高度 _ 颜色 _
+
+NeoPanel draw text _ at x _ y _ color _
+像素屏绘制文本 _ 于 x _ y _ 颜色 _
+
+NeoPanel draw BMP file _ at x _ y _
+像素屏绘制BMP图片 _ 于 x _ y _
 
 ####
 # Microphone library
@@ -760,6 +793,42 @@ attach IR receiver to pin _
 
 IR transmit device _ command _
 红外发射 设备 _ 指令 _
+
+#### 
+# Keyboard and Mouse
+
+Keyboard and Mouse
+键盘与鼠标
+
+press key _
+按下 _ 键
+
+while holding _
+同时按住 _ 键
+
+hold key _
+持续按住 _ 键
+
+release key _
+松开 _ 键
+
+release all keys
+松开所有按键
+
+_ mouse click
+点击鼠标 _ 键
+
+move mouse pointer by _ , _
+移动鼠标箭头 变化量 _ , _
+
+scroll mouse by _
+滚动鼠标 变化量 _
+
+hold _ mouse button
+持续按住鼠标 _ 键
+
+release mouse buttons
+松开鼠标按键
 
 ####
 # Radio comm library
@@ -2398,6 +2467,9 @@ Sound
 
 System
 系统
+
+ELECFREAKS
+恩孚
 
 # File picker and library dialogs
 

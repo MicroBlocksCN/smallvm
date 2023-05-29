@@ -376,6 +376,10 @@ set all NeoPixels color _
 
 rotate NeoPixels by _
 
+brighten NeoPixel _ by _
+
+brighten all NeoPixels by _
+
 color r _ g _ b _ (0-255)
 
 random color
@@ -387,6 +391,24 @@ has white _
 PIR
 
 PIR at pin _ detected movement
+
+#### NeoPanel library
+
+NeoPanel
+
+attach NeoPixel panel width _ height _ at pin _
+
+NeoPanel set x _ y _ color _
+
+NeoPanel fill column _ color _
+
+NeoPanel fill row _ color _
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+
+NeoPanel draw text _ at x _ y _ color _
+
+NeoPanel draw BMP file _ at x _ y _
 
 ####
 # Microphone library
@@ -542,6 +564,29 @@ test IR
 attach IR receiver to pin _
 
 IR transmit device _ command _
+
+#### 
+# Keyboard and Mouse
+
+Keyboard and Mouse
+
+press key _ : while holding _
+
+hold key _
+
+release key _
+
+release all keys
+
+_ mouse click
+
+move mouse pointer by _ , _
+
+scroll mouse by _
+
+hold _ mouse button
+
+release mouse buttons
 
 ####
 # Radio comm library
