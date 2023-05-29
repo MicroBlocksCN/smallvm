@@ -565,6 +565,29 @@ attach IR receiver to pin _
 
 IR transmit device _ command _
 
+#### 
+# Keyboard and Mouse
+
+Keyboard and Mouse
+
+press key _ : while holding _
+
+hold key _
+
+release key _
+
+release all keys
+
+_ mouse click
+
+move mouse pointer by _ , _
+
+scroll mouse by _
+
+hold _ mouse button
+
+release mouse buttons
+
 ####
 # Radio comm library
 # Allows micro:bit boards to exchange messages

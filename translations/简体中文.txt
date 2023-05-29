@@ -794,6 +794,42 @@ attach IR receiver to pin _
 IR transmit device _ command _
 红外发射 设备 _ 指令 _
 
+#### 
+# Keyboard and Mouse
+
+Keyboard and Mouse
+键盘与鼠标
+
+press key _
+按下 _ 键
+
+while holding _
+同时按住 _ 键
+
+hold key _
+持续按住 _ 键
+
+release key _
+松开 _ 键
+
+release all keys
+松开所有按键
+
+_ mouse click
+点击鼠标 _ 键
+
+move mouse pointer by _ , _
+移动鼠标箭头 变化量 _ , _
+
+scroll mouse by _
+滚动鼠标 变化量 _
+
+hold _ mouse button
+持续按住鼠标 _ 键
+
+release mouse buttons
+松开鼠标按键
+
 ####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
