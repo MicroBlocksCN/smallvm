@@ -389,6 +389,14 @@ void restartSerial() {
 	#define TOTAL_PINS (DIGITAL_PINS + ANALOG_PINS)
 	static const int analogPin[] = {A0, A1, A2, A3, A4, A5, A6};
 
+#elif defined(MAKERPORT) // must come before Zero
+
+	#define BOARD_TYPE "Makerport"
+	#define DIGITAL_PINS 22
+	#define ANALOG_PINS 9
+	#define TOTAL_PINS 22
+	static const int analogPin[] = {0, 1, 2, 3, 4, 5, 6, 13, 14};
+
 #elif defined(ADAFRUIT_METRO_M0_EXPRESS) // must come before Zero
 
 	#define BOARD_TYPE "Metro M0"
@@ -890,6 +898,10 @@ OBJ primAnalogRead(int argCount, OBJ *args) {
 	#if defined(ARDUINO_ARCH_RP2040) && !defined(PICO_ED)
 		if ((pinNum < 26) || (pinNum > 29)) return int2obj(0);
 		pinNum -= 26; // map pins 26-29 to A0-A3
+	#endif
+	#if defined(MAKERPORT)
+		if (13 == pinNum) pinNum = 7; // map pin 13 to A7
+		if (14 == pinNum) pinNum = 8; // map pin 14 to A8
 	#endif
 
 	if ((pinNum < 0) || (pinNum >= ANALOG_PINS)) return int2obj(0);
@@ -1538,14 +1550,20 @@ static void setServo(int pin, int usecs) {
 Servo servo[TOTAL_PINS];
 
 static void setServo(int pin, int usecs) {
+	int servoIndex = pin;
+	#if defined(MAKERPORT)
+		// MakerPort has only 12 servo channels and the first servo port is pin 16
+		servoIndex -= 16;
+		if (servoIndex < 0) return;
+	#endif
 	if (usecs <= 0) {
-		if (servo[pin].attached()) servo[pin].detach();
+		if (servo[servoIndex].attached()) servo[servoIndex].detach();
 	} else {
-		if (!servo[pin].attached()) {
+		if (!servo[servoIndex].attached()) {
 			// allow a wide range of pulse widths; MicroBlocks library imposes its own limits
-			servo[pin].attach(pin, 200, 3000);
+			servo[servoIndex].attach(pin, 200, 3000);
 		}
-		servo[pin].writeMicroseconds(usecs);
+		servo[servoIndex].writeMicroseconds(usecs);
 	}
 }
 
