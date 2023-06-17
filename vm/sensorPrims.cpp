@@ -1488,7 +1488,7 @@ static OBJ primReadDHT(int argCount, OBJ *args) {
 
 #if defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE)
 
-#define USE_PDM_MICROPHONE 1
+#define USE_DIGITAL_MICROPHONE 1
 
 static NRF_PDM_Type *nrf_pdm = NRF_PDM;
 static int mic_initialized = false;
@@ -1522,7 +1522,7 @@ static void initPDM() {
 	nrf_pdm->TASKS_START = 1;
 }
 
-static int readPDMMicrophone() {
+static int readDigitalMicrophone() {
 	if (!mic_initialized) initPDM();
 	nrf_pdm->EVENTS_END = 0;
 	while (!nrf_pdm->EVENTS_END) /* wait for next sample */;
@@ -1531,7 +1531,7 @@ static int readPDMMicrophone() {
 
 #elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 
-#define USE_PDM_MICROPHONE 1
+#define USE_DIGITAL_MICROPHONE 1
 
 // Note: Portions of the following code are from the pdm_analogout.cpp example
 // adapted from the AdaFruit ZeroPDM library.
@@ -1559,7 +1559,7 @@ static void initSAMDPDM() {
 	mic_initialized = true;
 }
 
-static int readPDMMicrophone() {
+static int readDigitalMicrophone() {
 	if (!mic_initialized) initSAMDPDM();
 
 	uint16_t runningsum = 0;
@@ -1585,6 +1585,68 @@ static int readPDMMicrophone() {
 	if (result < -512) result = -512;
 	if (result > 511) result = 511;
 	return result;
+}
+
+#elif defined(DATABOT)
+
+#define USE_DIGITAL_MICROPHONE 1
+
+#include <driver/i2s.h>
+
+// I2S port and pins
+#define I2S_PORT I2S_NUM_0
+#define I2S_WS 19
+#define I2S_SD 18
+#define I2S_SCK 5
+
+// Microphone input buffer (minimum sample count is 8)
+// Use smallest possible buffer to minimize latency
+#define MIC_BUF_LEN 8
+static int16_t micBuffer[MIC_BUF_LEN];
+static int micNextSample = MIC_BUF_LEN;
+
+static int microphoneInitialized = false;
+
+void initI2SMicrophone() {
+	if (microphoneInitialized) return;
+
+	// configure I2S driver
+	const i2s_config_t i2s_config = {
+		.mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX),
+		.sample_rate = 22050,
+		.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+		.channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
+		.communication_format = I2S_COMM_FORMAT_STAND_I2S,
+		.intr_alloc_flags = 0,
+		.dma_buf_count = 2, // 2 is the minumum
+		.dma_buf_len = MIC_BUF_LEN, // 8 is the minimum
+		.use_apll = false
+	};
+	i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
+
+	// configure microphone pins
+	const i2s_pin_config_t pin_config = {
+		.bck_io_num = I2S_SCK,
+		.ws_io_num = I2S_WS,
+		.data_out_num = -1,
+		.data_in_num = I2S_SD
+	};
+	i2s_set_pin(I2S_PORT, &pin_config);
+
+	// start I2S driver
+	i2s_start(I2S_PORT);
+	microphoneInitialized = true;
+}
+
+static int readDigitalMicrophone() {
+	if (!microphoneInitialized) initI2SMicrophone();
+	if (micNextSample >= MIC_BUF_LEN) {
+		// read another buffer of samples
+		size_t bytesIn = 0;
+		i2s_read(I2S_PORT, &micBuffer, sizeof(micBuffer), &bytesIn, 1);
+		micNextSample = 0;
+	}
+	return micBuffer[micNextSample++];
 }
 
 #elif defined(ARDUINO_BBC_MICROBIT_V2)
@@ -1683,8 +1745,8 @@ static OBJ primMicrophone(int argCount, OBJ *args) {
 
 	int result = 0;
 
-	#if defined(USE_PDM_MICROPHONE)
-		result = readPDMMicrophone();
+	#if defined(USE_DIGITAL_MICROPHONE)
+		result = readDigitalMicrophone();
 	#else
 		result = readAnalogMicrophone();
 	#endif
