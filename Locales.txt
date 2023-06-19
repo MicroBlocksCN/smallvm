@@ -565,7 +565,7 @@ attach IR receiver to pin _
 
 IR transmit device _ command _
 
-#### 
+####
 # Keyboard and Mouse
 
 Keyboard and Mouse
@@ -1039,7 +1039,7 @@ TFT touch pressure
 
 HTTP client
 
-_ data _ to http܃// _ 
+_ data _ to http܃// _
 
 MicroBlocks is fun
 
@@ -1186,6 +1186,99 @@ plotter pen up
 plotter stop
 
 set plotter speed to _ %
+
+####
+# Innova Didactic libraries
+
+red
+
+yellow
+
+green
+
+forward
+
+backward
+
+turn right
+
+turn left
+
+stop
+
+right sensor
+
+left sensor
+
+both sensors
+
+TdR test buzzer
+
+TdR set blue LED _
+
+TdR set red LED _
+
+TdR set RGB LED _
+
+TdR clear RGB LED
+
+TdR LM35 temperature ºC
+
+TdR DHT11 temperature ºC
+
+TdR DHT11 humidity
+
+TdR rotation
+
+TdR light level
+
+TdR button 1
+
+TdR button 2
+
+TdR receive IR code
+
+Imagina set _ led to _
+
+Imagina play _ octave _ for _ ms
+
+Imagina temperature (°C)
+
+Imagina light
+
+Imagina distance (cm)
+
+Imagina button (D2) pressed?
+
+Imagina digital reading _
+
+Imagina analog reading A1
+
+Imagina set digital pin _ to _
+
+Imagina stop servo _
+
+Imagina set servo _ to _ degrees (-90 to 90)
+
+Imagina set servo _ to speed _ (-100 to 100)
+
+Imagina set _ speed to _ %
+
+Imagina set _ to _
+
+Imagina IR reading
+
+Imagina IR transmit device _ command _
+
+_ steps
+
+at _ % speed
+
+3dBot set speed at _ %
+
+3dBot obstacle < _ cm?
+
+3dBot line on _ ?
 
 ####
 # MQTT
@@ -1422,7 +1515,7 @@ Reading project from board...
 
 Loading project...
 
-Found a newer version of 
+Found a newer version of
 
 Do you want me to update the one in the project?
 
