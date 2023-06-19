@@ -1,7 +1,7 @@
 module NeoPanel Output
 author 'José García Yeste & Víctor Casado'
-version 1 0 
-depends BMP NeoPixel 
+version 1 1 
+depends NeoPixel BMP 
 description 'Draw lines, rectangles, text, and images on a NeoPixel panels (e.g. 8x8, 16x16 or 32x8) in either horizontal or vertical orientation. Panels can be daisy-chained to create larger displays if there is sufficient power to drive them.
 See: https://www.btf-lighting.com/collections/led-matrix-display/products/ws2812b-panel-screen-8-8-16-16-8-32-pixel-256-pixels-digital-flexible-led-programmed-individually-addressable-full-color-dc5v#
 '
@@ -44,10 +44,9 @@ to neoPanel_attach width height pin {
   neoPixelAttach (_neoPanel_width * _neoPanel_height) pin
 }
 
-to neoPanel_drawBMP filename x0 y0 {
+to neoPanel_drawBMP filename originX originY {
   if (not ('_bmp_readHeader' filename)) {return}
-  '[file:open]' filename
-  '_bmp_skip' _bmpPixelsOffset filename
+  '[file:setReadPosition]' _bmpPixelsOffset filename
   if (_bmpHeight >= 0) {
     local 'y' ((originY + _bmpHeight) - 1)
     local 'yIncrement' -1
@@ -55,10 +54,10 @@ to neoPanel_drawBMP filename x0 y0 {
     local 'y' originY
     local 'yIncrement' 1
   }
-  repeat _bmpHeight {
+  repeat (absoluteValue _bmpHeight) {
     local 'line' ('_bmp_readPixelLine' filename)
     for x (size line) {
-      local 'pixel' ('_neoPanel_indexForXY' ((x0 - 1) + x) (y0 + y))
+      local 'pixel' ('_neoPanel_indexForXY' (originX + (x - 1)) y)
       if (pixel > 0) {
         atPut pixel _np_pixels (at x line)
       }
