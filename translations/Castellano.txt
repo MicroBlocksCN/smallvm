@@ -1522,6 +1522,144 @@ set plotter speed to _ %
 fija velocidad del plotter a _ %
 
 ####
+# Innova Didactic libraries
+
+red
+rojo
+
+yellow
+amarillo
+
+green
+verde
+
+forward
+adelante
+
+backward
+atrás
+
+turn right
+gira a la derecha
+
+turn left
+gira a la izquierda
+
+stop
+detén
+
+right sensor
+sensor derecho
+
+left sensor
+sensor izquierdo
+
+both sensors
+ambos sensores
+
+TdR test buzzer
+TdR prueba el zumbador
+
+TdR set blue LED _
+TdR pon el LED azul a _
+
+TdR set red LED _
+TdR pon el LED rojo a _
+
+TdR set RGB LED _
+TdR pon el LED RGB a _
+
+TdR clear RGB LED
+TdR apaga el LED RGB
+
+TdR LM35 temperature ºC
+TdR LM35 temperatura ºC
+
+TdR DHT11 temperature ºC
+TdR DHT11 temperatura ºC
+
+TdR DHT11 humidity
+TdR DHT11 humedad
+
+TdR rotation
+TdR rotación
+
+TdR light level
+TdR nivell de luz
+
+TdR button 1
+TdR botón 1
+
+TdR button 2
+TdR botón 2
+
+TdR receive IR code
+TdR código IR recibido
+
+Imagina set _ led to _
+Imagina pon el led _ a _
+
+Imagina play _ octave _ for _ ms
+Imagina toca la nota _ a la octava _ durante _ ms
+
+Imagina temperature (°C)
+Imagina temperatura (°C)
+
+Imagina light
+Imagina luz
+
+Imagina distance (cm)
+Imagina distancia (cm)
+
+Imagina button (D2) pressed?
+Imagina botón (D2) pulsado?
+
+Imagina digital reading _
+Imagina lectura digital _
+
+Imagina analog reading A1
+Imagina lectura analógica A1
+
+Imagina set digital pin _ to _
+Imagina pon el pin digital _ a _
+
+Imagina stop servo _
+Imagina detén el servo _
+
+Imagina set servo _ to _ degrees (-90 to 90)
+Imagina posiciona el servo _ a _ grados (-90 to 90)
+
+Imagina set servo _ to speed _ (-100 to 100)
+Imagina pon el servo _ a velocidad _ (-100 to 100)
+
+Imagina set _ speed to _ %
+Imagina pon la velocidad del _ al _ %
+
+Imagina set _ to _
+Imagina movimiento del _ : _ 
+
+Imagina IR reading
+Imagina lectura IR
+
+Imagina IR transmit device _ command _
+Imagina IR envía al dispositivo _ el valor _
+
+_ steps
+_ pasos
+
+at _ % speed
+al _ % de la velocidad
+
+3dBot set speed at _ %
+3dBot pon la velocidad al _ %
+
+3dBot obstacle < _ cm?
+3dBot obstaculo < _ cm?
+
+3dBot line on _ ?
+3dBot _ en la línea?
+
+####
 # MQTT
 
 MQTT connect to broker _
