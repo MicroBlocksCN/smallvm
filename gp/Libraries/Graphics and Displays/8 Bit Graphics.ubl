@@ -1,6 +1,6 @@
 module '8 Bit Graphics' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags graphics 
 choices eightBitPalettes MicroBlocks 'red hues' 'green hues' 'blue hues' grayscale 
 choices fourBitPalettes CGA 'Machintosh II' 'Win & OS/2' MSX 'RISC 2' grayscale 
@@ -17,6 +17,7 @@ variables _8bit_scale _8bit_alpha_index _8bit_buffer _8bit_palette
   spec ' ' 'set scale _' 'set scale _' 'num' 4
   spec ' ' 'set transparent color index _' 'set transparent color index _' 'num' 0
   spec ' ' 'merge' 'merge bitmap _ at _ , _' 'auto num num' '' 10 20
+  spec 'r' 'bitmap from BMP file' 'bitmap from BMP file _' 'auto' '8bit.bmp'
   spec 'r' 'bitmap from file' 'bitmap of width _ from raw indexed file _' 'num str' 32 'filename.data'
   spec 'r' 'bitmap' 'bitmap of width _ from string _' 'num str' 7 '0003000003B30003BFB30003B3000003000'
   spec ' ' 'draw buffer' 'draw buffer : starting at x _ y _ width _ height _' 'num num num num' 10 20 7 7
@@ -107,6 +108,23 @@ to bitmap width 'bitmap string' {
     }
   }
   return ('[data:makeList]' width ('[data:asByteArray]' list))
+}
+
+to 'bitmap from BMP file' filename {
+  if (not ('_bmp_readHeader' filename)) {return 0}
+  if (_bmpBPP > 8) {return 1}
+  '[file:setReadPosition]' _bmpPixelsOffset filename
+  local 'buf' ('[data:newByteArray]' 0)
+  repeat (absoluteValue _bmpHeight) {
+    '_bmp_readLine' filename
+    if (_bmpHeight >= 0) {
+      buf = ('[data:join]' _bmpLine buf)
+    } else {
+      buf = ('[data:join]' buf _bmpLine)
+    }
+    '_bmp_alignLineData' filename
+  }
+  return ('[data:makeList]' _bmpWidth buf)
 }
 
 to 'bitmap from file' width 'file name' {
