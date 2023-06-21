@@ -71,6 +71,9 @@ to '_touch_setRegister' reg value {
 to '_touch_update' {
   if (not _touch_initialized) {'_touch_init'}
   _touch_state = (((i2cGet 90 1) << 8) | (i2cGet 90 0))
+  if (_touch_state < 0) {
+    _touch_state = 0
+  }
 }
 
 to touch_isTouched pin {
