@@ -7,7 +7,7 @@ choices lineSensor 'right sensor' 'left sensor' 'both sensors'
 choices direction stop forward backward 'turn right' 'turn left' 
 description 'Blocks for Imagina 3dBot robot with ESP32 board (from Innova Didàctic)
 https://shop.innovadidactic.com/es/placas-kits-y-robots/1604-kit-3dbot-iot-esp32-steamakers-arduinoblocks-blynk-bachillerato.html'
-variables _3dBotPower 
+variables _3dBotPower _3dBotDirection
 
   spec ' ' 'bot3D_move' '3dBot _ : _ steps : at _ % speed' 'menu.direction num num' 'forward' 10 100
   spec ' ' 'bot3D_set_speed' '3dBot set speed at _ %' 'num' 100
@@ -20,40 +20,46 @@ variables _3dBotPower
 
 to '_bot3D_move' steps {
   local 'initialState' 0
+  'bot3D_move' _3dBotDirection
   repeat steps {
-    initialState = (('Imagina A1 pin') > 800)
-    waitUntil (not ((('Imagina A1 pin') > 800) == initialState))
+    initialState = (('imagina_read_A1') > 800)
+    waitUntil (not ((('imagina_read_A1') > 800) == initialState))
   }
-  'Imagina motor' 'Motor A' 'stop'
-  'Imagina motor' 'Motor B' 'stop'
+  'imagina_set_motor_rotation' 'Motor A' 'stop'
+  'imagina_set_motor_rotation' 'Motor B' 'stop'
 }
 
 to '_bot3D_set_direction' direction {
-  if (direction == 'turn right') {
-    'Imagina motor' 'Motor A' 'forward'
-    'Imagina motor' 'Motor B' 'backward'
-  } (direction == 'turn left') {
-    'Imagina motor' 'Motor A' 'backward'
-    'Imagina motor' 'Motor B' 'forward'
+  for item ('[data:makeList]' 'forward' 'backward' 'stop' 'turn right' 'turn left' ) {
+    if (direction == item) {_3dBotDirection = direction}
+  }
+  if (_3dBotDirection == 'turn right') {
+    'imagina_set_motor_rotation' 'Motor A' 'forward'
+    'imagina_set_motor_rotation' 'Motor B' 'backward'
+  } (_3dBotDirection == 'turn left') {
+    'imagina_set_motor_rotation' 'Motor A' 'backward'
+    'imagina_set_motor_rotation' 'Motor B' 'forward'
   } else {
-    'Imagina motor' 'Motor A' direction
-    'Imagina motor' 'Motor B' direction
+    'imagina_set_motor_rotation' 'Motor A' _3dBotDirection
+    'imagina_set_motor_rotation' 'Motor B' _3dBotDirection
   }
 }
 
-to bot3D_move direction steps power {
-  '_bot3D_set_direction' direction
+to bot3D_move direction steps power {  
   if ((pushArgCount) == 3) {
-    'Imagina set speed of motor' 'Motor A' power
-    'Imagina set speed of motor' 'Motor B' power
+    'imagina_set_motor_speed' 'Motor A' power
+    'imagina_set_motor_speed' 'Motor B' power
   }
+  '_bot3D_set_direction' direction
   if ((pushArgCount) > 1) {
     '_bot3D_move' steps
   }
 }
 
 to bot3D_obstacle_detected distance {
-  if ((distance) <= distance) {return (booleanConstant true)}
+  local 'aux_dist' (imagina_distance)
+  waitMillis 50
+  if ((imagina_distance) <= distance) {return (booleanConstant true)}
   return (booleanConstant false)
 }
 
@@ -71,7 +77,7 @@ to bot3D_sees_line sensor {
 
 to bot3D_set_speed power {
   _3dBotPower = power
-  'Imagina set speed of motor' 'Motor A' _3dBotPower
-  'Imagina set speed of motor' 'Motor B' _3dBotPower
+  'imagina_set_motor_speed' 'Motor A' _3dBotPower
+  'imagina_set_motor_speed' 'Motor B' _3dBotPower
 }
 
