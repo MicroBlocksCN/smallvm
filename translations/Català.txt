@@ -1680,11 +1680,11 @@ TdR posa el led RGB a _
 TdR clear RGB LED
 TdR apaga el led RGB
 
-TdR LM35 temperature ºC
-TdR LM35 temperatura ºC
+TdR LM35 temperature °C
+TdR LM35 temperatura °C
 
-TdR DHT11 temperature ºC
-TdR DHT11 temperatura ºC
+TdR DHT11 temperature °C
+TdR DHT11 temperatura °C
 
 TdR DHT11 humidity
 TdR DHT11 humitat
