@@ -1,5 +1,5 @@
 # MicroBlocks translation file
-# Last updated: November 29 2022
+# Last updated: March 14 2023
 
 #########################
 # Blocks and categories #
@@ -110,11 +110,17 @@ retorna _
 when _ received
 al recibir _
 
+go!
+--MISSING--
+
 broadcast _
 envía _
 
 comment _
 comentario _
+
+How this works...
+--MISSING--
 
 for _ in _ _
 por cada _ en _ _
@@ -136,6 +142,12 @@ last message
 
 call _
 llama _
+
+function name
+--MISSING--
+
+parameter list
+--MISSING--
 
 with _
 con parámetro(s) _
@@ -194,6 +206,9 @@ lista de bytes
 Advanced:
 Avanzado:
 
+rescale _ from ( _ , _ ) to ( _ , _ )
+--MISSING--
+
 hex _
 hexadecimal _
 
@@ -228,6 +243,18 @@ Datos
 list
 listas
 
+cat
+--MISSING--
+
+dog
+--MISSING--
+
+bird
+--MISSING--
+
+fish
+--MISSING--
+
 length of _
 tamaño de _
 
@@ -248,6 +275,9 @@ une _ _
 
 copy _ from _
 copia _ desde _
+
+smiles
+--MISSING--
 
 to _
 hasta _
@@ -278,6 +308,9 @@ nueva lista de bytes de tamaño _
 
 as byte array _
 lista de bytes a partir de _
+
+aByteListOrString
+--MISSING--
 
 with all _
 llena de _
@@ -349,6 +382,9 @@ canal de rpi _
 spi exchange bytes _
 bytes de intercambio de spi _
 
+aByteArray
+--MISSING--
+
 serial open _ baud
 abre puerto serie a _ baudios
 
@@ -363,6 +399,12 @@ escribe _ al puerto serie
 
 serial write _ starting at _
 escribe _ al puerto serie empezando por _
+
+aByteStringOrByteArray
+--MISSING--
+
+soft serial write byte _ pin _ baud _
+--MISSING--
 
 print _
 escribe _
@@ -415,8 +457,14 @@ envía número _ por radio
 radio send string _
 envía texto _ por radio
 
+Hello!
+--MISSING--
+
 radio send pair _ = _
 envía associación _ = _ por radio
+
+light
+--MISSING--
 
 radio message received?
 ¿mensaje de radio recibido?
@@ -503,6 +551,12 @@ pon todos los NeoPíxeles de color _
 rotate NeoPixels by _
 rota NeoPíxeles en _
 
+brighten NeoPixel _ by _
+--MISSING--
+
+brighten all NeoPixels by _
+--MISSING--
+
 color r _ g _ b _ (0-255)
 color r _ v _ a _ (0-255)
 
@@ -520,6 +574,33 @@ Sensor de movimiento
 
 PIR at pin _ detected movement
 Movimiento detectado por PIR en pin _
+
+#### NeoPanel library
+
+NeoPanel
+NeoPanel
+
+attach NeoPixel panel width _ height _ at pin _
+inicializa panel de NeoPíxels ancho _ alto _ en el pin _
+
+NeoPanel set x _ y _ color _
+pinta píxel x _ y _ de color _ en el NeoPanel
+
+NeoPanel fill column _ color _
+pinta columna _ color _ en el NeoPanel
+
+NeoPanel fill row _ color _
+pinta fila _ color _ en el NeoPanel
+
+NeoPanel fill rectangle x _ y _ width _ height _ color _
+pinta rectángulo x _ y _ ancho _ alto _ color _ en el NeoPanel
+
+NeoPanel draw text _ at x _ y _ color _
+escribe _ en x _ y _ color _ en el NeoPanel
+
+NeoPanel draw BMP file _ at x _ y _
+muestra imagen BMP _ x _ y _ en el NeoPanel
+
 
 ####
 # Microphone library
@@ -747,6 +828,39 @@ IR transmit device _ command _
 envía al dispositivo IR _ el comando _
 
 ####
+# Keyboard and Mouse
+
+Keyboard and Mouse
+--MISSING--
+
+press key _ : while holding _
+--MISSING--
+
+hold key _
+--MISSING--
+
+release key _
+--MISSING--
+
+release all keys
+--MISSING--
+
+_ mouse click
+--MISSING--
+
+move mouse pointer by _ , _
+--MISSING--
+
+scroll mouse by _
+--MISSING--
+
+hold _ mouse button
+--MISSING--
+
+release mouse buttons
+--MISSING--
+
+####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
 # All of its blocks are primitive (see "Primitives" section)
@@ -763,6 +877,9 @@ Texto animado
 
 scroll text _
 anima el texto _
+
+HELLO ROSA!
+--MISSING--
 
 scroll number _
 anima el número _
@@ -850,6 +967,9 @@ lleno _
 write _ on TFT at x _ y _ color _
 escribe _ en x _ y _ color _
 
+Hello World!
+--MISSING--
+
 scale _ wrap _
 escala _ con saltos de línea _
 
@@ -857,8 +977,11 @@ escala _ con saltos de línea _
 # BMP library
 # Can display BMP image files on a TFT display
 
-display BMP file _
-muestra archivo BMP _
+display BMP file _ at x _ y _
+muestra archivo BMP _ en x _ y _
+
+image.bmp
+--MISSING--
 
 ####
 # HSV color library
@@ -1011,6 +1134,9 @@ fija el pin de cuerda tañida a _
 play WAV file _
 reproduce el archivo WAV _
 
+filename
+--MISSING--
+
 ####
 # Turtle geometry library
 
@@ -1080,11 +1206,20 @@ siguiente línea del archivo _
 next _ bytes of file _
 siguientes _ bytes del archivo _
 
+read into _ from file _
+--MISSING--
+
+a ByteArray
+--MISSING--
+
 starting at _
 empezando desde _
 
 file names
 nombres de archivos
+
+in directory _
+--MISSING--
 
 size of file _
 tamaño del archivo _
@@ -1111,8 +1246,20 @@ _ está en mayúscula
 _ begins with _
 _ empieza por _
 
+prefix
+--MISSING--
+
+pre
+--MISSING--
+
 _ ends with _
 _ acaba en _
+
+suffix
+--MISSING--
+
+fix
+--MISSING--
 
 _ contains _
 _ contiene _
@@ -1120,8 +1267,14 @@ _ contiene _
 lowercase _
 _ en minúscula
 
+THIS is a String! :)
+--MISSING--
+
 uppercase _
 _ en mayúscula
+
+Hello, world!
+--MISSING--
 
 _ without white space
 _ sin espacios en blanco
@@ -1132,8 +1285,14 @@ une la lista de textos _ con separador _
 unicodes _
 unicodes de _
 
+aString
+--MISSING--
+
 string from unicodes _
 texto a partir de los unicodes _
+
+aList
+--MISSING--
 
 num2str _
 número _ a texto
@@ -1150,11 +1309,17 @@ WiFi
 wifi connect to _ password _
 conéctate a la wifi _ con contraseña _
 
+Network_Name
+--MISSING--
+
 IP _ gateway _ subnet _
 IP _ pasarela _ subred _
 
 wifi create hotspot _ password _
 crea punto de acceso wifi _ con contraseña _
+
+Network_Password
+--MISSING--
 
 IP address
 dirección IP
@@ -1253,6 +1418,15 @@ presión del bmx280
 bme280 humidity
 humedad del bme280
 
+bmx280 set base altitude _ meters
+--MISSING--
+
+bmx280 altitude (cm)
+--MISSING--
+
+bmx280 altitude (feet)
+--MISSING--
+
 ####
 # TCS34725 color sensor
 
@@ -1316,8 +1490,11 @@ pressión del toque a la TFT
 HTTP client
 Cliente HTTP
 
-_ data _ to http܃// _ 
-petición _ con contenido _ a http܃// _ 
+_ data _ to http܃// _
+petición _ con contenido _ a http܃// _
+
+MicroBlocks is fun
+--MISSING--
 
 port _
 puerto _
@@ -1339,6 +1516,9 @@ responde _ a la petición HTTP
 
 with body _
 con contenido _
+
+Welcome to the MicroBlocks HTTP server
+--MISSING--
 
 and headers _
 y cabeceras _
@@ -1381,6 +1561,9 @@ tipo del evento de WebSocket _
 
 send _ to WebSocket client _
 envía _ al cliente WebSocket _
+
+Hello, Client!
+--MISSING--
 
 ####
 # Web Things library
@@ -1522,6 +1705,144 @@ set plotter speed to _ %
 fija velocidad del plotter a _ %
 
 ####
+# Innova Didactic libraries
+
+red
+rojo
+
+yellow
+amarillo
+
+green
+verde
+
+forward
+adelante
+
+backward
+atrás
+
+turn right
+gira a la derecha
+
+turn left
+gira a la izquierda
+
+stop
+detén
+
+right sensor
+sensor derecho
+
+left sensor
+sensor izquierdo
+
+both sensors
+ambos sensores
+
+TdR test buzzer
+TdR prueba el zumbador
+
+TdR set blue LED _
+TdR pon el LED azul a _
+
+TdR set red LED _
+TdR pon el LED rojo a _
+
+TdR set RGB LED _
+TdR pon el LED RGB a _
+
+TdR clear RGB LED
+TdR apaga el LED RGB
+
+TdR LM35 temperature °C
+TdR LM35 temperatura °C
+
+TdR DHT11 temperature °C
+TdR DHT11 temperatura °C
+
+TdR DHT11 humidity
+TdR DHT11 humedad
+
+TdR rotation
+TdR rotación
+
+TdR light level
+TdR nivell de luz
+
+TdR button 1
+TdR botón 1
+
+TdR button 2
+TdR botón 2
+
+TdR receive IR code
+TdR código IR recibido
+
+Imagina set _ led to _
+Imagina pon el led _ a _
+
+Imagina play _ octave _ for _ ms
+Imagina toca la nota _ a la octava _ durante _ ms
+
+Imagina temperature (°C)
+Imagina temperatura (°C)
+
+Imagina light
+Imagina luz
+
+Imagina distance (cm)
+Imagina distancia (cm)
+
+Imagina button (D2) pressed?
+Imagina botón (D2) pulsado?
+
+Imagina digital reading _
+Imagina lectura digital _
+
+Imagina analog reading A1
+Imagina lectura analógica A1
+
+Imagina set digital pin _ to _
+Imagina pon el pin digital _ a _
+
+Imagina stop servo _
+Imagina detén el servo _
+
+Imagina set servo _ to _ degrees (-90 to 90)
+Imagina posiciona el servo _ a _ grados (-90 to 90)
+
+Imagina set servo _ to speed _ (-100 to 100)
+Imagina pon el servo _ a velocidad _ (-100 to 100)
+
+Imagina set _ speed to _ %
+Imagina pon la velocidad del _ al _ %
+
+Imagina set _ to _
+Imagina movimiento del _ : _
+
+Imagina IR reading
+Imagina lectura IR
+
+Imagina IR transmit device _ command _
+Imagina IR envía al dispositivo _ el valor _
+
+_ steps
+_ pasos
+
+at _ % speed
+al _ % de la velocidad
+
+3dBot set speed at _ %
+3dBot pon la velocidad al _ %
+
+3dBot obstacle < _ cm?
+3dBot obstaculo < _ cm?
+
+3dBot line on _ ?
+3dBot _ en la línea?
+
+####
 # MQTT
 
 MQTT connect to broker _
@@ -1542,11 +1863,17 @@ MQTT desconectado
 MQTT sub _
 suscríbete al tema de MQTT _
 
+testTopic
+--MISSING--
+
 MQTT unsub _
 abandona el tema de MQTT _
 
 MQTT pub topic _ payload _
 publica al tema de MQTT _ el contenido _
+
+Hello!
+--MISSING--
 
 retain _ QoS _
 con retención _ y calidad del servicio _
@@ -1562,6 +1889,18 @@ tema del evento MQTT
 
 payload for MQTT event _
 contenido del evento MQTT
+
+MQTT set will topic _ payload _
+--MISSING--
+
+testWill
+--MISSING--
+
+Last will!
+--MISSING--
+
+buffer sizes _
+--MISSING--
 
 ####
 # UDP
@@ -1715,6 +2054,97 @@ pon el motor de _ grados número _ a ángulo _
 NeZha set continuous rotation servo _ speed to _ %
 pon el servo de rotación contínua _ a velocidad _ %
 
+####
+# WuKong2040
+
+WuKong2040
+--MISSING--
+
+WuKong2040 rainbowLED _ color to _
+--MISSING--
+
+WuKong2040 rainbowLED _ R _ G _ B _ (0~255)
+--MISSING--
+
+WuKong2040 clear all rainbowLED
+--MISSING--
+
+WuKong2040 motor _ speed to _ (-100~100)
+--MISSING--
+
+WuKong2040 stop motor _
+--MISSING--
+
+WuKong2040 stop all motors
+--MISSING--
+
+WuKong2040 buzzer beep _ ms
+--MISSING--
+
+####
+# Octopus
+
+Octopus
+--MISSING--
+
+Octopus LED pin _ toggle to _
+--MISSING--
+
+Octopus LED pin _ brightness _ %
+--MISSING--
+
+Octopus motor fan pin _ speed to _ %
+--MISSING--
+
+Octopus 180° servo pin _ angle to _ ° (0~180)
+--MISSING--
+
+Octopus sonar trig _ echo _ distance (cm)
+--MISSING--
+
+Octopus value of light intensity (Lux) at pin _
+--MISSING--
+
+Octopus value of DHT11 temperature (°C) at pin _
+--MISSING--
+
+Octopus value of DHT11 humidity (0~100) at pin _
+--MISSING--
+
+Octopus value of water level (0~40mm) at pin _
+--MISSING--
+
+Octopus value of trimpot (0~1023) at pin _
+--MISSING--
+
+Octopus value of noise (dB) at pin _
+--MISSING--
+
+Octopus OLED show _ at x _ y _
+--MISSING--
+
+Octopus OLED clear
+--MISSING--
+
+Octopus OLED draw pixel x _ y _
+--MISSING--
+
+Octopus OLED draw line from x _ y _ to x _ y _
+--MISSING--
+
+Octopus OLED draw rectangle x _ y _ w _ h _ rounding _ (3~15)
+--MISSING--
+
+Octopus OLED fill rectangle x _ y _ w _ h _
+--MISSING--
+
+Octopus OLED draw circle x _ y _ radius _
+--MISSING--
+
+Octopus OLED fill circle x _ y _ radius _
+--MISSING--
+
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -1748,8 +2178,8 @@ Leyendo proyecto de la placa...
 Loading project...
 Cargando proyecto...
 
-Found a newer version of 
-Se ha encontrado una nueva versión de 
+Found a newer version of
+Se ha encontrado una nueva versión de
 
 Do you want me to update the one in the project?
 ¿Quieres actualizar a esta nueva versión en el proyecto?

@@ -54,7 +54,7 @@ const PinDescription g_APinDescription[] =
   // Pin 18 - IR Receiver
   { PORTB, 11, PIO_DIGITAL, PIN_ATTR_DIGITAL, No_ADC_Channel, NOT_ON_PWM, NOT_ON_TIMER, EXTERNAL_INT_11 },
 
-  // Pin 19 - Select audio source
+  // Pin 19 - Select audio source (low = mp3, high = mcu)
   { PORTA, 12, PIO_DIGITAL, PIN_ATTR_DIGITAL, No_ADC_Channel, NOT_ON_PWM, NOT_ON_TIMER, EXTERNAL_INT_NONE },
 
   // Pins 20-21 Serial Tx/Rx

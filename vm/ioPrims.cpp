@@ -97,6 +97,7 @@ void hardwareInit() {
 		writeI2CReg(0x20, 0, 0); // initialize IO expander
 	#endif
 	tftInit();
+	tftClear();
 	#if defined(DATABOT)
 		int yellow = 14864128;
 		setAllNeoPixels(-1, 3, yellow);
