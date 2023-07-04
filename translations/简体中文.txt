@@ -1015,6 +1015,12 @@ play frequency _ for _ ms
 play midi key _ for _ ms
 弹奏midi键 _ 持续 _ 毫秒
 
+start tone _ Hz
+弹奏音调 _ 赫兹
+
+stop tone
+停止音调
+
 ####
 # Ringtone library
 # Can play Nokring-formatted music. Also known as RTTTL.
@@ -2134,6 +2140,9 @@ erase flash and update firmware on ESP board
 
 Use board type
 使用主板类型信息
+
+connected to IDE
+已连接到 IDE?
 
 Firmware Installed
 完成固件安装
