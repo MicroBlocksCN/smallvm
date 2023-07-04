@@ -1,0 +1,129 @@
+module M5FireKits Input
+author 'Shao Yue'
+version 1 0 
+depends NeoPixel 
+tags m5fire 
+description 'M5Core Fire kits pinout
+button C 37
+NeoPixel RGB LED 15
+IRTxPin 13
+Mic 34
+PortA Red 21/22 
+PortB Black 26/36
+PortC Blue 16/17
+'
+variables _m5go_init_flag _np_pixels 
+
+  spec 'r' 'buttonC' 'buttonC'
+  spec 'r' 'LEDLightPin15' 'LEDStripPin15'
+  spec 'r' 'IRPin' 'IRTxPin'
+  spec 'r' 'readMicValue' 'readMicValue'
+  spec 'r' 'PortA' 'PortA _' 'auto' 22
+  spec 'r' 'PortB' 'PortB _' 'auto' 36
+  spec 'r' 'PortC' 'PortC _' 'auto' 17
+  space
+  spec ' ' 'clearStrip' 'clearStrip'
+  spec ' ' 'setStripLED' 'setStripLED _ _ _ _ _ _ _ _ _ _' 'color color color color color color color color color color'
+  spec ' ' 'setStripRight' 'setStripRight _ _ _ _ _' 'color color color color color'
+  spec ' ' 'setStripLeft' 'setStripLeft _ _ _ _ _' 'color color color color color'
+  spec ' ' '_m5go_init' '_m5go_init'
+  spec 'r' 'MicPin34' '_MicPin34'
+
+to IRPin {
+  comment 'm5go 底座红外发射 13'
+  return 13
+}
+
+to LEDLightPin15 {
+  comment 'm5go 底座(10 LED)灯带 15'
+  return 15
+}
+
+to MicPin34 {
+  comment 'm5go 底座 mic 34'
+  return 34
+}
+
+to PortA Pin {
+  comment 'PortA 21/22 红色 I2C'
+  if (Pin == 21) {
+    return 21
+  } else {
+    return 22
+  }
+}
+
+to PortB Pin {
+  comment 'm5go 底座 PortB 26/36 黑色 GPIO
+36 只能做输入'
+  if (Pin == 26) {
+    return 26
+  } else {
+    return 36
+  }
+}
+
+to PortC Pin {
+  comment 'm5go 底座 PortC 16/17 蓝色 UART'
+  if (Pin == 17) {
+    return 17
+  } else {
+    return 16
+  }
+}
+
+to '_m5go_init' {
+  if _m5go_init_flag {return 0}
+  neoPixelAttach 10 (LEDLightPin15)
+  _m5go_init_flag = (booleanConstant true)
+}
+
+to buttonC {
+  return (not (digitalReadOp 37))
+}
+
+to clearStrip {
+  '_m5go_init'
+  clearNeoPixels
+}
+
+to readMicValue {
+  comment '读取 m5go 底座 mic 数值'
+  return (analogReadOp (MicPin34))
+}
+
+to setStripLED foo bar baz quux garply spam frob corge grault waldo {
+  '_m5go_init'
+  atPut 1 _np_pixels foo
+  atPut 2 _np_pixels bar
+  atPut 3 _np_pixels baz
+  atPut 4 _np_pixels quux
+  atPut 5 _np_pixels garply
+  atPut 10 _np_pixels spam
+  atPut 9 _np_pixels frob
+  atPut 8 _np_pixels corge
+  atPut 7 _np_pixels grault
+  atPut 6 _np_pixels waldo
+  '_NeoPixel_update'
+}
+
+to setStripLeft foo bar baz quux garply {
+  '_m5go_init'
+  atPut 10 _np_pixels foo
+  atPut 9 _np_pixels bar
+  atPut 8 _np_pixels baz
+  atPut 7 _np_pixels quux
+  atPut 6 _np_pixels garply
+  '_NeoPixel_update'
+}
+
+to setStripRight foo bar baz quux garply {
+  '_m5go_init'
+  atPut 1 _np_pixels foo
+  atPut 2 _np_pixels bar
+  atPut 3 _np_pixels baz
+  atPut 4 _np_pixels quux
+  atPut 5 _np_pixels garply
+  '_NeoPixel_update'
+}
+
