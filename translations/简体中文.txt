@@ -1944,22 +1944,29 @@ Octopus OLED fill circle x _ y _ radius _
 八爪鱼 OLED 填充圆形 x _ y _ 半径 _
 
 ####
-# OctoStudio
+# TM1650
 
-Octo start
-Octo 启动
+clear
+清除显示
 
-Octo beam to phones _
-Octo 给手机发信号 _
+set intensity _
+设置亮度为 _
 
-duration _ ms
-持续 _ 毫秒
+show digit number _ at _
+显示单个数字 _ 在第 _ 几位
 
-Octo receive beam
-Octo 收到的信号
+show dot point _ show _
+小数点在第 _ 位 显示 _
 
-Octo stop
-Octo 停止
+
+show number _
+显示数字 _
+
+turn off display
+关闭屏幕
+
+turn on display
+打开屏幕
 
 ##################
 # MicroBlocks UI #
