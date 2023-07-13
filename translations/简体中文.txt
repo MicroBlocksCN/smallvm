@@ -1943,6 +1943,31 @@ Octopus OLED draw circle x _ y _ radius _
 Octopus OLED fill circle x _ y _ radius _
 八爪鱼 OLED 填充圆形 x _ y _ 半径 _
 
+####
+# TM1650
+
+clear
+清除显示
+
+set intensity _
+设置亮度为 _
+
+show digit number _ at _
+显示单个数字 _ 在第 _ 几位
+
+show dot point _ show _
+小数点在第 _ 位 显示 _
+
+
+show number _
+显示数字 _
+
+turn off display
+关闭屏幕
+
+turn on display
+打开屏幕
+
 ##################
 # MicroBlocks UI #
 ##################
