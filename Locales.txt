@@ -642,6 +642,43 @@ unplot x _ y _
 display character _
 
 ####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+
+write _ at x _ y _ inverse _
+
+show display buffer
+
+clear
+
+set contrast (1-4) _
+
+draw circle at x _ y _ radius _ erase _
+
+draw image _ at x _ y _
+
+draw line from x _ y _ to x _ y _ erase _
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+
+fill rectangle x _ y _ w _ h _ erase _
+
+_flip display top _
+
+make image _
+
+set pixel x _ y _ erase _
+
+set video _
+
+cursor location
+
+defer display updates
+
+####
 # TFT display library
 
 enable TFT _
