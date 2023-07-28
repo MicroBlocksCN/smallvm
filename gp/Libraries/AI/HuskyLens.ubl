@@ -1,6 +1,6 @@
 module HuskyLens Input
 author 'Murat Akguller'
-version 1 1 
+version 1 2
 choices requestByMenu Blocks Arrows 
 choices requestedMenu Blocks Arrows 'Learned Blocks' 'Learned Arrows' 
 choices changeAlgoMenu 'Color Recog' 'Face Recog' 'Line Track' 'Obj Classify' 'Obj Recog' 'Obj Track' 'Tag Recog' 
@@ -13,10 +13,11 @@ choices requestPhotoMenu 'Save Picture' 'Save Screenshot'
 description 'Integrates DFROBOT HuskyLens camera into MicroBlocks.
 Full functionality is supported.
 Changes: combine init routines.
+Fix init combo error
 '
 variables HuskyData HL_I2C_address _buffer _cmd_list _get_lists _bufferdata HL_initalized _currAlgo _algo_list 
 
-  spec ' ' 'HL init & set I2Caddr' 'HL init & set I2Caddr (hex) _' 'str' '32'
+  spec ' ' 'HL init & set I2Caddr (hex) ' 'HL init & set I2Caddr (hex) _' 'str' '32'
   spec ' ' 'HL change algorithm' 'HL change algorithm _' 'menu.changeAlgoMenu' 'Face Recog'
   spec 'r' 'HL do' 'HL do _' 'menu.doMenu' 'Knock'
   spec ' ' 'HL request' 'HL request _' 'menu.requestedMenu' 'Blocks'
@@ -41,7 +42,7 @@ variables HuskyData HL_I2C_address _buffer _cmd_list _get_lists _bufferdata HL_i
   spec ' ' '_HLsendCommand' '_HLsendCommand _ data _' 'auto auto' 10 '10'
 
 to 'HL change algorithm' algo {
-  if (not HL_initalized) {'HL initialize'}
+  if (not HL_initalized) {'HL init & set I2Caddr (hex) ' '32'}
   local 'data' ('[data:makeList]' (at (('[data:find]' algo _algo_list) + 1) _algo_list) 0)
   '_HLsendCommand' 45 data
   waitUntil ('_HLcheck')
@@ -49,7 +50,7 @@ to 'HL change algorithm' algo {
 }
 
 to 'HL do' command {
-  if (not HL_initalized) {'HL initialize'}
+  if (not HL_initalized) {'HL init & set I2Caddr (hex) ' '32'}
   local 'data' ('[data:makeList]')
   local 'cmd_num' ('_HLgetcmdnum' command)
   '_HLsendCommand' cmd_num data
@@ -59,7 +60,7 @@ to 'HL do' command {
 }
 
 to 'HL file' action fileNum {
-  if (not HL_initalized) {'HL initialize'}
+  if (not HL_initalized) {'HL init & set I2Caddr (hex) ' '32'}
   if (or (fileNum <= 0) (fileNum > 65535)) {return 'File number range: 0-65535'}
   local 'data' ('[data:makeList]' (fileNum % 256) (fileNum / 256))
   '_HLsendCommand' ('_HLgetcmdnum' action) data
@@ -104,7 +105,7 @@ to 'HL get info' infoDetails {
   return ((at ('[data:find]' infoDetails (at 3 _get_lists)) split_data) + 0)
 }
 
-to 'HL init & set I2Caddr' addr {
+to 'HL init & set I2Caddr (hex) ' addr {
   '_HLcmd_init'
   HL_I2C_address = (hexToInt addr)
   _get_lists = ('[data:makeList]' ('[data:makeList]' 'B' 'X center' 'Y center' 'Width' 'Height' 'id') ('[data:makeList]' 'A' 'X origin' 'Y origin' 'X target' 'Y target' 'id') ('[data:makeList]' 'I' 'Object Count' 'Learned Count' 'Frame Number'))
@@ -116,7 +117,7 @@ to 'HL init & set I2Caddr' addr {
 }
 
 to 'HL learn current object with ID' id {
-  if (not HL_initalized) {'HL initialize'}
+  if (not HL_initalized) {'HL init & set I2Caddr (hex) ' '32'}
   if (or (id <= 0) (id > 255)) {return 'ID must be 0 - 255'}
   local 'data' ('[data:makeList]' (id % 256) (id / 256))
   '_HLsendCommand' ('_HLgetcmdnum' 'Learn ById') data
@@ -130,7 +131,7 @@ to 'HL learn object with ID' id name {
 }
 
 to 'HL request' objName {
-  if (not HL_initalized) {'HL initialize'}
+  if (not HL_initalized) {'HL init & set I2Caddr (hex) ' '32'}
   local 'resultList' ('[data:makeList]')
   '_HLsendCommand' ('_HLgetcmdnum' objName) ('[data:makeList]')
   waitUntil ('_HLcheck')
@@ -142,7 +143,7 @@ to 'HL request' objName {
 }
 
 to 'HL request by ID' id objName {
-  if (not HL_initalized) {'HL initialize'}
+  if (not HL_initalized) {'HL init & set I2Caddr (hex) ' '32'}
   local 'resultList' ('[data:makeList]')
   if (or (id <= 0) (id > 65535)) {
     return 'ID must be greater than 0 and less than 65536'
@@ -158,7 +159,7 @@ to 'HL request by ID' id objName {
 }
 
 to 'HL set CustomName' name id {
-  if (not HL_initalized) {'HL initialize'}
+  if (not HL_initalized) {'HL init & set I2Caddr (hex) ' '32'}
   if (or (id <= 0) (id > 255)) {return 'ID must be 0 - 255'}
   local 'data' ('[data:makeList]' id ((size name) + 1))
   for byte ('[data:asByteArray]' name) {
@@ -172,7 +173,7 @@ to 'HL set CustomName' name id {
 }
 
 to 'HL write' text x y {
-  if (not HL_initalized) {'HL initialize'}
+  if (not HL_initalized) {'HL init & set I2Caddr (hex) ' '32'}
   if ((size text) >= 20) {
     sayIt 'Text string must be less than 20 characters'
     stopTask
