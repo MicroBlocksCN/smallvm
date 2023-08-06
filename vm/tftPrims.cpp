@@ -494,9 +494,8 @@ static int deferUpdates = false;
 
 		void tftInit() {
 			if (!hasI2CPullups()) return; // no OLED connected and no I2C pullups
-
-			int reg = readI2CReg(TFT_ADDR, 0); // test if OLED responds at TFT_ADDR
-			if (reg < 0) return; // no OLED display detected
+			int response = readI2CReg(TFT_ADDR, 0); // test if OLED responds at TFT_ADDR
+			if (response < 0) return; // no OLED display detected
 
 			tft.begin(SSD1306_SWITCHCAPVCC, TFT_ADDR);
 			tftClear();

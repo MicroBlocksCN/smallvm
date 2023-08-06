@@ -60,6 +60,8 @@ int hasI2CPullups() {
 	pinMode(PIN_WIRE_SCL, INPUT);
 	pinMode(PIN_WIRE_SDA, INPUT);
 
+	wireStarted = false; // force Wire to be restarted
+
 	// Both SCL and SDA should read high if those pins have pullups
 	return ((digitalRead(PIN_WIRE_SCL) == HIGH) && (digitalRead(PIN_WIRE_SDA) == HIGH));
 }
