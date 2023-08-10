@@ -363,6 +363,7 @@ static void startAccelerometer() {
 	} else if (0x33 == readI2CReg(LSM303_ID, 0x0F)) {
 		accelType = accel_LSM303;
 		writeI2CReg(LSM303_ID, 0x20, 0x8F); // 1620 Hz sample rate, low power, all axes
+		writeI2CReg(LSM303_ID, 0x23, 0); // clear BDU bit in case it was set by Makecode
 	} else if (0xC7 == readI2CReg(FXOS8700_ID, 0x0D)) {
 		accelType = accel_FXOS8700;
 		writeI2CReg(FXOS8700_ID, 0x2A, 0); // turn off chip before configuring
@@ -487,6 +488,7 @@ static void startAccelerometer() {
 	} else if (0x33 == readInternalI2CReg(LSM303_ID, 0x0F)) {
 		accelType = accel_LSM303;
 		writeInternalI2CReg(LSM303_ID, 0x20, 0x8F); // 1620 Hz sample rate, low power, all axes
+		writeInternalI2CReg(LSM303_ID, 0x23, 0); // clear BDU bit in case it was set by Makecode
 	} else if (0xC7 == readInternalI2CReg(FXOS8700_ID, 0x0D)) {
 		accelType = accel_FXOS8700;
 		writeInternalI2CReg(FXOS8700_ID, 0x2A, 0); // turn off chip before configuring
