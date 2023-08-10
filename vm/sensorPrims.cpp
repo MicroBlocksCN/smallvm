@@ -400,7 +400,7 @@ static int readAcceleration(int registerID) {
 	return val;
 }
 
-void setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 
 	if (!accelStarted) startAccelerometer();
@@ -524,7 +524,7 @@ static int readAcceleration(int registerID) {
 	return val;
 }
 
-void setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 
 	if (!accelStarted) startAccelerometer();
@@ -585,7 +585,7 @@ static int readTemperature() {
 	return (readI2CReg(BMX055, 8) / 2) + 23 - fudgeFactor;
 }
 
-void setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 	// See datasheet pg. 57, PMU_RANGE.
 
@@ -638,7 +638,7 @@ static int readAcceleration(int registerID) {
 	return val;
 }
 
-void setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 	// See datasheet pg. 37, CTRL_REG4.
 
@@ -698,7 +698,7 @@ static int readAcceleration(int registerID) {
 	return val;
 }
 
-void setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 	// See datasheet pg. 47, CTRL1_XL.
 
@@ -802,7 +802,7 @@ static int readAcceleration(int registerID) {
 	return sign * val;
 }
 
-void setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 	// See datasheet pg. 37, ACCELEROMETER CONFIGURATION.
 
@@ -876,7 +876,7 @@ static int readAcceleration(int registerID) {
 	return val;
 }
 
-void setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 	switch (accelType) {
 	case accel_LIS3DH:
@@ -964,7 +964,7 @@ static int readAcceleration(int registerID) {
 	return (100 * val) >> 14;
 }
 
-void setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 	// See MPU-9250 Register Map and Descriptions, ACCEL_CONFIG, pg. 14.
 
@@ -1050,7 +1050,7 @@ static int readAcceleration(int registerID) {
 	return (100 * val) >> 14;
 }
 
-void setAccelRange(int range) {
+static void setAccelRange(int range) {
 	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
 	// See MPU-9250 Register Map and Descriptions, ACCEL_CONFIG, pg. 14.
 
@@ -1113,13 +1113,13 @@ static int databotMageneticField() {
 
 static int readTemperature() { return analogReadTemp(); }
 static int readAcceleration(int reg) { return 0; } // RP2040 has no accelerometer
-void setAccelRange(int range) { } // RP2040 has no accelerometer
+static void setAccelRange(int range) { } // RP2040 has no accelerometer
 
 #else // stubs for non-micro:bit boards
 
 static int readAcceleration(int reg) { return 0; }
 static int readTemperature() { return 0; }
-void setAccelRange(int range) { }
+static void setAccelRange(int range) { }
 
 #endif // micro:bit primitve support
 

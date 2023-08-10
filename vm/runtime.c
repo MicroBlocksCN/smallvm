@@ -480,7 +480,6 @@ void softReset(int clearMemoryFlag) {
 		memClear();
 		outputString("Memory cleared");
 	}
-	setAccelRange(0);
 }
 
 // Sending Messages to IDE
