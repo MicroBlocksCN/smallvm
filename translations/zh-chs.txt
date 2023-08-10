@@ -3294,7 +3294,7 @@ set intensity _
 设置亮度为 _
 
 show digit number _ at _
-显示单个数字 _ 在第 _ 几位
+显示单个数字 _ 在第 _ 位
 
 show dot point _ show _
 小数点在第 _ 位 显示 _
