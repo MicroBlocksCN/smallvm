@@ -34,6 +34,8 @@ pio run -e wukong2040
 cp .pio/build/wukong2040/firmware.uf2 precompiled/vm_wukong2040.uf2
 pio run -e databot
 cp .pio/build/databot/firmware.bin precompiled/vm_databot.bin
+pio run -e makerport
+python precompiled/uf2conv.py -c .pio/build/makerport/firmware.bin -o precompiled/vm_makerport.uf2
 pio run -e mbits
 cp .pio/build/mbits/firmware.bin precompiled/vm_mbits.bin
 
