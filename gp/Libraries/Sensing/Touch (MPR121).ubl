@@ -1,8 +1,8 @@
 module 'Touch (MPR121)' Input
 author MicroBlocks
-version 1 5
+version 1 5 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
-variables _touch_state _touch_last_state _touch_queue _touch_release_queue _touch_last_touched_pin _touch_last_released_pin
+variables _touch_state _touch_last_state _touch_queue _touch_release_queue _touch_last_touched_pin _touch_last_released_pin 
 
   spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:1-12' 1
   space
@@ -10,7 +10,7 @@ variables _touch_state _touch_last_state _touch_queue _touch_release_queue _touc
   spec 'r' 'touch_last_touched_pin' 'last touched pin'
   space
   spec 'r' 'touch_release_event' 'pin release event'
-  spec 'r' 'touch_last_released_pin' 'last release pin'
+  spec 'r' 'touch_last_released_pin' 'last released pin'
   space
   spec 'r' 'touch_state_string' 'touch state string'
   space
@@ -90,7 +90,7 @@ to '_touch_setRegister' reg value {
 }
 
 to '_touch_update' {
-  _touch_init
+  '_touch_init'
   _touch_state = (((i2cGet 90 1) << 8) | (i2cGet 90 0))
   if (_touch_state < 0) {
     _touch_state = 0

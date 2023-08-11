@@ -244,7 +244,7 @@ variables _touch_state _touch_last_state _touch_queue _touch_release_queue _touc
   spec 'r' 'touch_last_touched_pin' 'last touched pin'
   space
   spec 'r' 'touch_release_event' 'pin release event'
-  spec 'r' 'touch_last_released_pin' 'last release pin'
+  spec 'r' 'touch_last_released_pin' 'last released pin'
   space
   spec 'r' 'touch_state_string' 'touch state string'
   space
@@ -252,7 +252,6 @@ variables _touch_state _touch_last_state _touch_queue _touch_release_queue _touc
   spec ' ' '_touch_record_changed_pins' '_touch_record_changed_pins'
   spec ' ' '_touch_update' '_touch_update'
   spec ' ' '_touch_setRegister' '_touch_setRegister _ to _' 'auto auto' 'hex register' 'hex value'
-  spec ' ' '_touch_record_touched_pins' 'obsolete _touch_record_touched_pins'
 
 to '_touch_init' {
   if (isType _touch_queue 'list') {
