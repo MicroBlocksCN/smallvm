@@ -1,8 +1,8 @@
 module 'Touch (MPR121)' Input
 author MicroBlocks
-version 1 5 
+version 1 5
 description 'Support for the MPR121 12-channel i2c touch sensor.'
-variables _touch_initialized _touch_state _touch_last_state _touch_queue _touch_release_queue _touch_last_touched_pin _touch_last_released_pin 
+variables _touch_state _touch_last_state _touch_queue _touch_release_queue _touch_last_touched_pin _touch_last_released_pin
 
   spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:1-12' 1
   space
@@ -20,6 +20,10 @@ variables _touch_initialized _touch_state _touch_last_state _touch_queue _touch_
   spec ' ' '_touch_setRegister' '_touch_setRegister _ to _' 'auto auto' 'hex register' 'hex value'
 
 to '_touch_init' {
+  if (isType _touch_queue 'list') {
+    comment 'Already initialized.'
+    return 0
+  }
   comment 'Create touch and release queues.'
   if (_touch_queue == 0) {
     _touch_queue = ('[data:makeList]')
@@ -27,6 +31,8 @@ to '_touch_init' {
   if (_touch_release_queue == 0) {
     _touch_release_queue = ('[data:makeList]')
   }
+  _touch_last_touched_pin = -1
+  _touch_last_released_pin = -1
   comment 'Soft reset -- sets all registers to defaults'
   '_touch_setRegister' '0x80' '0x63'
   comment 'Set filter parameters'
@@ -55,16 +61,13 @@ to '_touch_init' {
   }
   comment 'Start tracking all 12 inputs (proximity detection disabled)'
   '_touch_setRegister' '0x5E' '0xCC'
-  _touch_initialized = (booleanConstant true)
 }
 
 to '_touch_record_changed_pins' {
-  local 'last_state' _touch_last_state
+  comment 'Record pins that have been touched or released.'
   '_touch_update'
-  comment 'If a pin was just touched or released, return the index of that pin,
-otherwise, return zero.'
   for i 12 {
-    local 'previous' (last_state & (1 << (i - 1)))
+    local 'previous' (_touch_last_state & (1 << (i - 1)))
     local 'current' (_touch_state & (1 << (i - 1)))
     if (and (previous == 0) (current != 0)) {
       if (('[data:find]' i _touch_queue) < 0) {
@@ -87,7 +90,7 @@ to '_touch_setRegister' reg value {
 }
 
 to '_touch_update' {
-  if (not _touch_initialized) {'_touch_init'}
+  _touch_init
   _touch_state = (((i2cGet 90 1) << 8) | (i2cGet 90 0))
   if (_touch_state < 0) {
     _touch_state = 0
@@ -102,16 +105,17 @@ to touch_isTouched pin {
 
 to touch_last_released_pin {
   comment 'Return the pin that triggered the last release event.'
+  '_touch_init'
   return _touch_last_released_pin
 }
 
 to touch_last_touched_pin {
   comment 'Return the pin that triggered the last touch event.'
+  '_touch_init'
   return _touch_last_touched_pin
 }
 
 to touch_release_event {
-  if (not _touch_initialized) {'_touch_init'}
   if ((size _touch_release_queue) == 0) {'_touch_record_changed_pins'}
   if ((size _touch_release_queue) > 0) {
     _touch_last_released_pin = (at 1 _touch_release_queue)
@@ -136,7 +140,6 @@ to touch_state_string {
 }
 
 to touch_touch_event {
-  if (not _touch_initialized) {'_touch_init'}
   if ((size _touch_queue) == 0) {'_touch_record_changed_pins'}
   if ((size _touch_queue) > 0) {
     _touch_last_touched_pin = (at 1 _touch_queue)
