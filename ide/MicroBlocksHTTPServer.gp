@@ -157,23 +157,23 @@ method stepWorker MicroBlocksHTTPWorker {
 	// This is where data is actually received and transmited.
 
 	if (isNil sock) { return }
-	if (isNil (socketStatus sock)) { // connection closed by other end
-		closeConnection this
-		return
-	}
 	data = (readSocket sock true)
 	if ((byteCount data) > 0) {
 		inBuf = (join inBuf data)
 	}
+	processNext this
 	if ((byteCount outBuf) > 0) {
 		n = (writeSocket sock outBuf)
 		if (n < 0) { // connection closed by other end
 			closeConnection this
 		} (n > 0) {
-			outBuf = (copyFromTo outBuf (n + 1))
+			if (n == (byteCount outBuf)) {
+				closeConnection this // all data sent; close connection
+			} else {
+				outBuf = (copyFromTo outBuf (n + 1))
+			}
 		}
 	}
-	processNext this
 }
 
 method processNext MicroBlocksHTTPWorker {
