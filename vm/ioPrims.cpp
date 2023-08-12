@@ -392,7 +392,7 @@ void restartSerial() {
 
 #elif defined(MAKERPORT) // must come before Zero
 
-	#define BOARD_TYPE "Makerport"
+	#define BOARD_TYPE "MakerPort"
 	#define DIGITAL_PINS 22
 	#define ANALOG_PINS 9
 	#define TOTAL_PINS 22
