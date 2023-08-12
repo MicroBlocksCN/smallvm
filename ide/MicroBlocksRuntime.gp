@@ -2478,7 +2478,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 		if (and (contains (array 'ESP8266' 'ESP32' 'Citilab ED1' 'M5Stack-Core' 'Databot' 'Mbits') boardType)
 				(confirm (global 'page') nil (join (localized 'Use board type ') boardType '?'))) {
 			flashVM this boardType eraseFlashFlag downloadLatestFlag
-		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0') {
+		} (isOneOf boardType 'CircuitPlayground' 'CircuitPlayground Bluefruit' 'Clue' 'Metro M0' 'MakerPort') {
 			adaFruitResetMessage this
 		} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 			rp2040ResetMessage this
@@ -2502,6 +2502,7 @@ method installVM SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'ELECFREAKS Wukong2040' (action 'rp2040ResetMessage' this)
 			addItem menu 'RP2040 (Pico or Pico-W)' (action 'rp2040ResetMessage' this)
 			addItem menu 'Adafruit Board' (action 'adaFruitResetMessage' this)
+			addItem menu 'MakerPort' (action 'adaFruitResetMessage' this)
 		}
 		popUpAtHand menu (global 'page')
 	}
@@ -2567,6 +2568,7 @@ method getBoardDriveName SmallRuntime path {
 			if (notNil (nextMatchIn 'Adafruit Clue' contents)) { return 'CLUEBOOT' }
 			if (notNil (nextMatchIn 'Adafruit CLUE nRF52840' contents)) { return 'CLUEBOOT' } // bootloader 0.7
 			if (notNil (nextMatchIn 'Metro M0' contents)) { return 'METROBOOT' }
+			if (notNil (nextMatchIn 'MakerPort' contents)) { return 'MAKERBOOT' }
 			if (notNil (nextMatchIn 'RPI-RP2' contents)) { return 'RPI-RP2' }
 		}
 	}
@@ -2608,6 +2610,8 @@ method copyVMToBoard SmallRuntime driveName boardPath {
 		vmFileName = 'vm_clue.uf2'
 	} ('METROBOOT' == driveName) {
 		vmFileName = 'vm_metroM0.uf2'
+	} ('MAKERBOOT' == driveName) {
+		vmFileName = 'vm_makerport.uf2'
 	} ('RPI-RP2' == driveName) {
 		vmFileName = (picoVMFileName this)
 	} else {
@@ -2642,6 +2646,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Clue'
 	} ('Metro M0' == boardType) {
 		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Metro M0'
+	} ('MakerPort' == boardType) {
+		copyVMToBoardInBrowser this eraseFlashFlag downloadLatestFlag 'Metro M0'
 	} (isOneOf boardType 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040') {
 		rp2040ResetMessage this
 	} (and
@@ -2667,6 +2673,8 @@ method installVMInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag {
 			addItem menu 'ELECFREAKS Pico:ed'
 			addItem menu 'ELECFREAKS Wukong2040'
 			addItem menu 'RP2040 (Pico or Pico W)'
+			addLine menu
+			addItem menu 'MakerPort'
 			addLine menu
 			addItem menu 'Circuit Playground Express'
 			addItem menu 'Circuit Playground Bluefruit'
@@ -2727,6 +2735,9 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 	} ('Metro M0' == boardName) {
 		vmFileName = 'vm_metroM0.uf2'
 		driveName = 'METROBOOT'
+	} ('MakerPort' == boardName) {
+		vmFileName = 'vm_makerport.uf2'
+		driveName = 'MAKERBOOT'
 	} ('RP2040 (Pico or Pico W)' == boardName) {
 		vmFileName = 'vm_pico_w.uf2'
 		driveName = 'RPI-RP2'
@@ -2747,6 +2758,12 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 			prefix = (join
 				prefix
 				(localized 'Connect USB cable while holding down the white BOOTSEL button before proceeding.')
+				(newline) (newline))
+		} ('MAKERBOOT' == driveName) {
+			// Extra instruction for MakerPort
+			prefix = (join
+				prefix
+				(localized 'Press the reset button on the board twice before proceeding.')
 				(newline) (newline))
 		} else {
 			// Extra instruction for Adafruit boards
@@ -2785,7 +2802,7 @@ method copyVMToBoardInBrowser SmallRuntime eraseFlashFlag downloadLatestFlag boa
 
 	if (endsWith vmFileName '.uf2') {
 		waitMSecs 1000 // leave time for file dialog box to appear before showing next prompt
-		if ('RPI-RP2' == driveName) {
+		if (or ('MAKERBOOT' == driveName) ('RPI-RP2' == driveName)) {
 			otherReconnectMessage this
 		} else {
 			adaFruitReconnectMessage this
@@ -2798,7 +2815,7 @@ method noBoardFoundMessage SmallRuntime {
 }
 
 method adaFruitResetMessage SmallRuntime {
-	inform (localized 'For Adafruit boards, double-click reset button and try again.')
+	inform (localized 'For Adafruit boards and MakerPort, double-click reset button and try again.')
 }
 
 method adaFruitReconnectMessage SmallRuntime {
