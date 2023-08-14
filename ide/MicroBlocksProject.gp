@@ -854,6 +854,8 @@ method stringArgs MicroBlocksModule cmd {
 	for arg (argList cmd) {
 		if (isClass arg 'String') { // quoted item
 			add args arg
+		} (isClass arg 'Integer') {
+			add args arg
 		} else { // unquoted item: mapped to "(v 'varName')" block by the parser
 			add args (first (argList arg))
 		}
