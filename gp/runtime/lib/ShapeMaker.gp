@@ -327,10 +327,34 @@ method drawButton ShapeMaker x y width height buttonColor corner border isInset 
 // Blocks
 
 method drawReporter ShapeMaker rect blockColor radius {
-  fillRoundedRect this rect radius blockColor (blockBorder this) (topColor this blockColor) (darker blockColor)
+  borderColor = (outlineColor this blockColor)
+  fillRoundedRect this rect (reporterRadius this) blockColor (blockBorder this) borderColor borderColor
 }
 
-method drawBlock ShapeMaker rect blockColor radius dent inset {
+method reporterRadius ShapeMaker { return (8 * (blockScale)) }
+method dent ShapeMaker { return (2 * (blockScale)) }
+method inset ShapeMaker { return (4 * (blockScale)) }
+
+method drawBlock ShapeMaker rect blockColor radius {
+  dent = (dent this)
+  inset = (inset this)
+  borderColor = (outlineColor this blockColor)
+  beginPath pen (left rect) ((bottom rect) - (radius * 2))
+  blockTopPath this rect radius dent inset
+  blockBottomPath this rect radius dent inset
+  fill this blockColor
+  stroke this borderColor (blockBorder this)
+}
+
+method outlineColor ShapeMaker blockColor {
+  hsv = (hsv blockColor)
+  return (colorHSV (at hsv 1) (at hsv 2) (0.8 * (at hsv 3)))
+}
+
+method drawBlockOLD ShapeMaker rect blockColor radius {
+  dent = (dent this)
+  inset = (inset this)
+
   // fill the block
   beginPath pen (left rect) ((bottom rect) - (radius * 2))
   blockTopPath this rect radius dent inset
@@ -349,8 +373,12 @@ method drawBlock ShapeMaker rect blockColor radius dent inset {
   stroke this (darker blockColor) (blockBorder this)
 }
 
-method drawHatBlock ShapeMaker rect hatWidth blockColor radius dent inset {
+method drawHatBlock ShapeMaker rect hatWidth blockColor radius {
+  dent = (dent this)
+  inset = (inset this)
+
   hatHeight = ((hatWidth / (sqrt 2)) - (hatWidth / 2))
+  borderColor = (outlineColor this blockColor)
 
   // fill the block
   beginPath pen (left rect) ((bottom rect) - (radius * 2))
@@ -363,16 +391,19 @@ method drawHatBlock ShapeMaker rect hatWidth blockColor radius dent inset {
 
   beginPath pen (left rect) ((bottom rect) - (radius * 2))
   hatBlockTopPath this rect radius dent inset hatWidth
-  stroke this (topColor this blockColor) (blockBorder this)
+  stroke this borderColor (blockBorder this)
 
   beginPath pen (right rect) (+ (top rect) hatHeight radius)
   setHeading pen 90
   blockBottomPath this rect radius dent inset
-  stroke this (darker blockColor) (blockBorder this)
+  stroke this borderColor (blockBorder this)
 }
 
-method drawBlockWithCommandSlots ShapeMaker rect commandSlots blockColor radius dent inset {
+method drawBlockWithCommandSlots ShapeMaker rect commandSlots blockColor radius {
   scale = (blockScale)
+  borderColor = (outlineColor this blockColor)
+  dent = (dent this)
+  inset = (inset this)
 
   // contruct and fill a path including command slots
   beginPath pen (left rect) ((bottom rect) - (radius * 2))
@@ -389,23 +420,25 @@ method drawBlockWithCommandSlots ShapeMaker rect commandSlots blockColor radius 
 
   beginPath pen (left rect) ((bottom rect) - (radius * 2))
   blockTopPath this rect radius dent inset
-  stroke this (topColor this blockColor) (blockBorder this)
+  stroke this borderColor (blockBorder this)
   for cslot commandSlots {
     beginPathFromCurrentPostion pen
     slotTopPath this cslot rect radius dent inset
-    stroke this (darker blockColor) (blockBorder this)
+    stroke this borderColor (blockBorder this)
 
     beginPathFromCurrentPostion pen
     slotBottomPath this cslot rect radius dent inset
-    stroke this (topColor this blockColor) (blockBorder this)
+    stroke this borderColor (blockBorder this)
   }
   beginPathFromCurrentPostion pen
   blockBottomPath this rect radius dent inset
-  stroke this (darker blockColor) (blockBorder this)
+  stroke this borderColor (blockBorder this)
 }
 
 method slotTopPath ShapeMaker cslot rect radius dent inset {
   scale = (blockScale)
+  dent = (dent this)
+  inset = (inset this)
 
   slotTop = (((at cslot 1) - (2 * scale)) - 1)
   slotH = (((at cslot 2) - (12 * scale)) + 1)
@@ -523,9 +556,11 @@ method blockNotch ShapeMaker radius dent dir {
 }
 
 method topColor ShapeMaker blockColor {
-  if (global 'flatBlocks') { return (darker blockColor) }
-  return (lighter blockColor)
+  return (lighter blockColor 30)
+//   if (global 'flatBlocks') { return (darker blockColor) }
+//   return (lighter blockColor)
 }
 
-method blockBorder ShapeMaker { return (max 1 (half (blockScale))) }
+//method blockBorder ShapeMaker { return (max 1 (half (blockScale))) }
+method blockBorder ShapeMaker { return (max 3 (round (blockScale))) }
 method blockBorderInset ShapeMaker { return ((blockBorder this) / 2) }
