@@ -1,7 +1,7 @@
 // Block
 // Handlers for the GP blocks GUI
 
-defineClass Block morph blockSpec type expression labelParts corner rounding dent inset hatWidth border color expansionLevel function isAlternative layoutNeeded pathCache cacheW cacheH originalColor
+defineClass Block morph blockSpec type expression labelParts corner hatWidth color expansionLevel function isAlternative layoutNeeded pathCache cacheW cacheH originalColor
 
 to block type color opName {
   block = (new 'Block')
@@ -36,11 +36,7 @@ to block type color opName {
   setField block 'labelParts' labelParts
   setField block 'color' color
   setField block 'corner' 3
-  setField block 'rounding' 8
-  setField block 'dent' 2
   setField block 'hatWidth' 80
-  setField block 'inset' 4
-  setField block 'border' 1
   setField block 'expansionLevel' 1
   setField block 'layoutNeeded' true
   morph = (newMorph block)
@@ -104,6 +100,7 @@ method fixLayoutNow Block {
 method fixLayout Block {
   if (isNil layoutNeeded) { layoutNeeded = true }
   if (not layoutNeeded) { return }
+  border = 1
   scale = (blockScale)
   wasHighlighted = false
 
@@ -140,7 +137,7 @@ method fixLayout Block {
   if (type == 'hat') {
     indentation = (* scale (+ border space space))
   } (type == 'reporter') {
-    indentation = (* scale rounding)
+    indentation = (* scale 8)
   } (type == 'command') {
     indentation = (* scale (+ border space space border))
   }
@@ -285,7 +282,7 @@ method fixLayout Block {
     setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (scale * corner)))
     setHeight (bounds morph) (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace)
   } (type == 'reporter') {
-    setWidth (bounds morph) (max (scale * 20) (+ blockWidth indentation (scale * rounding)))
+    setWidth (bounds morph) (max (scale * 20) (blockWidth + (2 * indentation)))
     setHeight (bounds morph) (+ blockHeight (* scale border 4) extraSpace)
   }
 
@@ -352,16 +349,16 @@ method drawShape Block aShapeMaker {
 	if (type == 'command') {
 		commandSlots = (commandSlots this)
 		if (isEmpty commandSlots) {
-			drawBlock aShapeMaker r color (scale * corner) (scale * dent) (scale * inset)
+			drawBlock aShapeMaker r color (scale * corner)
 		} else {
-			drawBlockWithCommandSlots aShapeMaker r commandSlots color (scale * corner) (scale * dent) (scale * inset)
+			drawBlockWithCommandSlots aShapeMaker r commandSlots color (scale * corner)
 		}
 	} (type == 'reporter') {
 		clr = color
 		if (getAlternative this) { clr = (lighter color 17) }
-		drawReporter aShapeMaker r clr (scale * rounding)
+		drawReporter aShapeMaker r clr
 	} (type == 'hat') {
-		drawHatBlock aShapeMaker r (scale * hatWidth) color (scale * corner) (scale * dent) (scale * inset)
+		drawHatBlock aShapeMaker r (scale * hatWidth) color (scale * corner)
 	}
 }
 
@@ -1365,11 +1362,7 @@ method rawInitialize Block commandOrReporter {
   labelParts = (list (list (labelText this (primName expression))))
   group = (at labelParts 1)
   corner = 3
-  rounding = 8
-  dent = 2
-  inset = 4
   hatWidth = 80
-  border = 1
   expansionLevel = 1
 
   for each (argList expression) {
@@ -1546,11 +1539,7 @@ method initializeForSpec Block spec suppressExpansion {
   setTransparentTouch morph false
 
   corner = 3
-  rounding = 8
-  dent = 2
-  inset = 4
   hatWidth = 80
-  border = 1
   expansionLevel = 1
 
   // create the base label parts
