@@ -898,7 +898,8 @@ method addTransparentButton ColorPicker x y { } // don't add a transparent butto
 // Block colors
 
 method blockColorForOp AuthoringSpecs op {
-  if ('comment' == op) { return (colorHSV 55 0.6 0.93) }
+//  if ('comment' == op) { return (colorHSV 55 0.6 0.93) }
+  if ('comment' == op) { return (colorHex 'F2EEBF') }
   pe = (findProjectEditor)
   if (notNil pe) {
 	cat = (categoryForOp (project pe) op) // get category from project, if possible
@@ -918,6 +919,7 @@ method blockColorForCategory AuthoringSpecs cat {
 		cat = (moduleCategory lib)
 	}
   }
+if true { return (newBlockColorForCategory this cat) }
   // old Comm color: (colorHSV 195 0.50 0.60)
   // old default color: (colorHSV 200 0.98 0.86)
   defaultColor = (colorHSV 205 0.83 0.87)
@@ -932,6 +934,24 @@ method blockColorForCategory AuthoringSpecs cat {
   } ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
   } ('My Blocks' == cat) { return (colorHSV 205 0.83 0.90)
   } ('Library' == cat) {  return (colorHSV 165 0.80 0.60)
+  } ('Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
+  }
+  return defaultColor
+}
+
+method newBlockColorForCategory AuthoringSpecs cat {
+  defaultColor = (colorHSV 205 0.83 0.87)
+  if ('Output' == cat) { return (colorHex '4852BF')
+  } ('Input' == cat) { return (colorHex '9F42A5')
+  } ('Pins' == cat) { return (colorHex '548799')
+  } ('Comm' == cat) { return (colorHex '1E997A')
+  } ('Control' == cat) { return (colorHex 'D18C25')
+  } ('Operators' == cat) { return (colorHex '479D1D')
+  } ('Variables' == cat) { return (colorHex 'D3732A')
+  } ('Data' == cat) { return (colorHex 'C44E6B')
+  } ('Advanced' == cat) { return (colorHSV 30 0.70 0.70)
+  } ('My Blocks' == cat) { return (colorHex '1A8CDD')
+  } ('Library' == cat) { return (colorHSV 165 0.80 0.60)
   } ('Obsolete' == cat) { return (colorHSV 4.6 1.0 0.77)
   }
   return defaultColor

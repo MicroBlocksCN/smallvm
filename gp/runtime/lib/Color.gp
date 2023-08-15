@@ -24,6 +24,17 @@ to color r g b a {
   return (new 'Color' r g b a)
 }
 
+to colorHex s {
+  r = (hex (substring s 1 2))
+  g = (hex (substring s 3 4))
+  b = (hex (substring s 5 6))
+  a = 255
+  if (8 == (count s)) {
+    a = (hex (substring s 7 8))
+  }
+  return (new 'Color' r g b a)
+}
+
 to colorSwatch r g b a { return (color r g b a) }
 to colorFromSwatch c { return c }
 
