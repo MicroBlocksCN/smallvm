@@ -1,7 +1,7 @@
 // Block
 // Handlers for the GP blocks GUI
 
-defineClass Block morph blockSpec type expression labelParts corner hatWidth color expansionLevel function isAlternative layoutNeeded pathCache cacheW cacheH originalColor
+defineClass Block morph blockSpec type expression labelParts corner color expansionLevel function isAlternative layoutNeeded pathCache cacheW cacheH originalColor
 
 to block type color opName {
   block = (new 'Block')
@@ -36,7 +36,6 @@ to block type color opName {
   setField block 'labelParts' labelParts
   setField block 'color' color
   setField block 'corner' 3
-  setField block 'hatWidth' 80
   setField block 'expansionLevel' 1
   setField block 'layoutNeeded' true
   morph = (newMorph block)
@@ -279,7 +278,7 @@ method fixLayout Block {
     setWidth (bounds morph) (max (scale * 50) (+ blockWidth indentation (scale * corner)))
     setHeight (bounds morph) (+ blockHeight (* scale corner) (* scale border 4) extraSpace)
   } (type == 'hat') {
-    setWidth (bounds morph) (max (scale * (+ hatWidth 20)) (+ blockWidth indentation (scale * corner)))
+    setWidth (bounds morph) (max (scale * 100) (+ blockWidth indentation (scale * corner)))
     setHeight (bounds morph) (+ blockHeight (* scale corner 2) (* scale border) (hatHeight this) extraSpace)
   } (type == 'reporter') {
     setWidth (bounds morph) (max (scale * 20) (blockWidth + (2 * indentation)))
@@ -349,16 +348,16 @@ method drawShape Block aShapeMaker {
 	if (type == 'command') {
 		commandSlots = (commandSlots this)
 		if (isEmpty commandSlots) {
-			drawBlock aShapeMaker r color (scale * corner)
+			drawBlock aShapeMaker r color
 		} else {
-			drawBlockWithCommandSlots aShapeMaker r commandSlots color (scale * corner)
+			drawBlockWithCommandSlots aShapeMaker r commandSlots color
 		}
 	} (type == 'reporter') {
 		clr = color
 		if (getAlternative this) { clr = (lighter color 17) }
 		drawReporter aShapeMaker r clr
 	} (type == 'hat') {
-		drawHatBlock aShapeMaker r (scale * hatWidth) color (scale * corner)
+		drawHatBlock aShapeMaker r color
 	}
 }
 
@@ -372,8 +371,7 @@ method commandSlots Block {
 }
 
 method hatHeight Block {
-  scale = (blockScale)
-  hw = (scale * hatWidth)
+  hw = (80 * (blockScale))
   ru = (hw / (sqrt 2))
   return (truncate (ru - (hw / 2)))
 }
@@ -381,7 +379,6 @@ method hatHeight Block {
 // accessing
 
 method type Block {return type}
-method corner Block {return corner}
 method scale Block {return (blockScale)}
 method blockSpec Block {return blockSpec}
 method function Block {return function}
@@ -1362,7 +1359,6 @@ method rawInitialize Block commandOrReporter {
   labelParts = (list (list (labelText this (primName expression))))
   group = (at labelParts 1)
   corner = 3
-  hatWidth = 80
   expansionLevel = 1
 
   for each (argList expression) {
@@ -1539,7 +1535,6 @@ method initializeForSpec Block spec suppressExpansion {
   setTransparentTouch morph false
 
   corner = 3
-  hatWidth = 80
   expansionLevel = 1
 
   // create the base label parts
