@@ -42,6 +42,7 @@ to newVectorPenForSVG pageW pageH {
 
 method x VectorPen { return (penX - offsetX) }
 method y VectorPen { return (penY - offsetY) }
+method heading VectorPen { return heading }
 method bitmap VectorPen { return bitmap }
 method setColor VectorPen c { noop } // for compatability with pen; ignore
 method setClipRect VectorPen aRect { clipRect = aRect }
@@ -161,6 +162,14 @@ method cubicCurveTo VectorPen c1X c1Y c2X c2Y dstX dstY {
   addAll path (array 'C' pa2X pa2Y pc2X pc2Y)
   addAll path (array 'C' pa3X pa3Y pc3X pc3Y)
   addAll path (array 'C' dstX dstY pc4X pc4Y)
+}
+
+method moveBy VectorPen dx dy curvature {
+  startX = penX
+  startY = penY
+  penX += dx
+  penY += dy
+  addSegment this startX startY penX penY curvature
 }
 
 method forward VectorPen dist curvature {
