@@ -48,7 +48,7 @@
 #elif defined(ARDUINO_ARCH_SAMD)
   #define OBJSTORE_BYTES 16000
 #elif defined(ARDUINO_ARCH_ESP32)
-  #ifdef BLE_PRIMS
+  #if defined(BLE_PRIMS) || defined(LOLIN_S2_MINI)
     #define OBJSTORE_BYTES 8000
   #else
     #define OBJSTORE_BYTES 16000 // 48000 // max that compiles is 56000

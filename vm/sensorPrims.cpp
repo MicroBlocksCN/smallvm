@@ -1363,7 +1363,7 @@ OBJ primMagneticField(int argCount, OBJ *args) {
 
 	#if defined(DATABOT)
 		return int2obj(databotMageneticField());
-	#elif defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_C3)
+	#elif defined(ARDUINO_ARCH_ESP32) && !defined(ESP32_S2_OR_S3)
 		return int2obj(hall_sensor_read());
 	#elif defined(ARDUINO_BBC_MICROBIT) || defined(ARDUINO_CALLIOPE_MINI) || \
 			defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_SINOBIT)

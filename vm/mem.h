@@ -15,8 +15,11 @@
   #define NRF52 1
 #endif
 
-// Unify ESP32 S2 and S3
-#if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+// Unify ESP32 S2, S3, C3, and H2 (is H2 the same as C6?)
+#if defined(CONFIG_IDF_TARGET_ESP32S2) || \
+    defined(CONFIG_IDF_TARGET_ESP32S3) || \
+    defined(CONFIG_IDF_TARGET_ESP32C3) || \
+    defined(CONFIG_IDF_TARGET_ESP32H2)
   #define ESP32_S2_OR_S3 1
 #endif
 
