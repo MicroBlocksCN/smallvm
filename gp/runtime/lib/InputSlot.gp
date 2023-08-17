@@ -133,10 +133,10 @@ method isVarSlot InputSlot {
 method fixLayout InputSlot {
   scale = (blockScale)
   h = (height (morph text))
-  w = ((width (morph text)) + 1)
+  w = ((width (morph text)) + (5 * scale)) // xxx
   if ('Linux' == (platform)) { h += scale }
   if (notNil menuSelector) {w += (fontSize text)} // leave room for down-arrow
-  textX = (left morph)
+  textX = ((left morph) + (2 * scale)) // xxx
   textY = ((top morph) + 1)
   setPosition (morph text) textX textY
   setExtent morph w h
@@ -162,17 +162,10 @@ method drawOn InputSlot ctx {
 }
 
 method drawShape InputSlot aShapeMaker {
-  scale = (blockScale)
-  border = (max 1 (scale / 2))
-
   isNumber = ((editRule text) == 'numerical')
   if (and (isAuto == true) (representsANumber (text text))) {
     isNumber = (notNil (toNumber (text text) nil))
   }
-
-  white = (gray 255)
-  gray = (gray 180)
-  corner = scale
 
   if (isRecording aShapeMaker) {
     r = (rect 0 0 (width morph) (height morph))
@@ -180,19 +173,17 @@ method drawShape InputSlot aShapeMaker {
     r = (bounds morph)
   }
 
-  if isNumber {
-    corner = (((height morph) / 2) - 1)
-    fillRoundedRect aShapeMaker r corner white border gray white
-  } ((editRule text) == 'static') {
+  corner = (height morph)
+  if ((editRule text) == 'static') {
     c = (gray 220)
     if (notNil color) { c = color }
-    fillRoundedRect aShapeMaker r corner c border (darker c) (lighter c)
+    fillRoundedRect aShapeMaker r corner c
   } else {
-    fillRoundedRect aShapeMaker r corner white border gray white
+    fillRoundedRect aShapeMaker r corner (gray 255)
   }
   if (notNil menuSelector) { // draw down-arrow
 	fontH = (fontSize text)
-    border = scale
+    border = (blockScale)
     x = (left r)
     y = (top r)
     x += (((width morph) - fontH) - border)
