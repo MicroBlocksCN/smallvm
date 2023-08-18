@@ -26,6 +26,7 @@
 	#include <WebSocketsServer.h>
 #elif defined(PICO_WIFI)
 	#include <WiFi.h>
+	#include <WebSocketsServer.h>
 	extern bool __isPicoW;
 	#undef NO_WIFI
 	#define NO_WIFI() (!__isPicoW)
@@ -575,7 +576,7 @@ static OBJ primUDPRemotePort(int argCount, OBJ *args) {
 
 // Websocket support for ESP32
 
-#if defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_ARCH_ESP32) || defined(PICO_WIFI)
 
 #define WEBSOCKET_MAX_PAYLOAD 1024
 
@@ -594,6 +595,8 @@ static void webSocketEventCallback(uint8_t client_id, WStype_t type, uint8_t *pa
 }
 
 static OBJ primWebSocketStart(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	websocketServer.begin();
 	websocketServer.onEvent(webSocketEventCallback);
 	websocketEvtType = -1;
@@ -601,6 +604,8 @@ static OBJ primWebSocketStart(int argCount, OBJ *args) {
 }
 
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) {
+	if (NO_WIFI()) return fail(noWiFi);
+
 	websocketServer.loop();
 	if (websocketEvtType > -1) {
 		tempGCRoot = newObj(ListType, 4, zeroObj); // use tempGCRoot in case of GC
@@ -627,6 +632,8 @@ static OBJ primWebSocketLastEvent(int argCount, OBJ *args) {
 
 static OBJ primWebSocketSendToClient(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
+	if (NO_WIFI()) return fail(noWiFi);
+
 	int clientID = obj2int(args[1]);
 	if (StringType == objType(args[0])) {
 		char *msg = obj2str(args[0]);
@@ -666,7 +673,7 @@ static OBJ primUDPRemotePort(int argCount, OBJ *args) { return fail(noWiFi); }
 
 #endif
 
-#ifndef ARDUINO_ARCH_ESP32
+#if !(defined(ARDUINO_ARCH_ESP32) || defined(PICO_WIFI))
 
 static OBJ primWebSocketStart(int argCount, OBJ *args) { return fail(noWiFi); }
 static OBJ primWebSocketLastEvent(int argCount, OBJ *args) { return fail(noWiFi); }
