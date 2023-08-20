@@ -1,0 +1,506 @@
+module main
+author unknown
+version 1 0 
+description ''
+variables CharacterList CharacterNames last_state TPin 
+
+script 50 50 {
+whenStarted
+makerport_initialize
+CharacterNames = ('[data:makeList]' 'g' 'f' 'd' 's' 'a' 'w' 'click' 'space' 'right' 'left' 'down' 'up')
+CharacterList = ('[data:makeList]' 'g' 'f' 'd' 's' 'a' 'w' 'click' ' ' 215 216 217 218)
+}
+
+script 51 245 {
+whenCondition (touch_touch_event)
+local 'pin' (touch_last_touched_pin)
+digitalWriteOp pin true
+LCD1602_clear
+LCD1602_write_field ('[data:join]' 'Touch:' pin) 1 1 8
+LCD1602_write_field ('[data:join]' '"' (at pin CharacterNames) '"') 2 1 3
+if (pin == 7) {
+  LCD1602_write_field '"click!"' 2 1 8
+  'mouse click' 'left'
+} else {
+  '[hid:holdKey]' (at pin CharacterList)
+}
+mp3_playTrack pin 1
+}
+
+script 536 247 {
+whenCondition (touch_release_event)
+local 'pin' (touch_last_released_pin)
+digitalWriteOp pin false
+LCD1602_clear
+if (pin == 7) {
+  '[hid:mouseRelease]'
+} else {
+  '[hid:releaseKey]' (at pin CharacterList)
+}
+}
+
+script 582 1003 {
+sayIt (at pin CharacterNames)
+}
+
+
+module 'Keyboard and Mouse' Comm
+author MicroBlocks
+version 1 2 
+choices keyModifiers Shift Control 'Alt / ⌥' 'Logo / ⌘' AltGr 
+choices mouseButtons left right middle both 
+choices specialKeys 'enter:10' 'tab:179' 'backspace:178' 'delete:212' 'insert:209' 'home:210' 'end:213' 'PgUp:211' 'PgDown:214' '→:215' '←:216' '↓:217' '↑:218' 'F1:194' 'F2:195' 'F3:196' 'F4:197' 'F5:198' 'F6:199' 'F7:200' 'F8:201' 'F9:202' 'F10:203' 'F11:204' 'F12:205' 'CapsLock:193' 'NumLock:219' 'ScrollLock:207' 'PrintScreen:206' 'ESC:177' 
+description 'HID library. Emulates mouse and keyboard actions.
+
+It supports the Adafruit boards Trinket M0 and Metro M0 Express.'
+
+  spec ' ' 'press key' 'press key _ : while holding _' 'str.specialKeys menu.keyModifiers' 'n' 'Shift'
+  spec ' ' '[hid:holdKey]' 'hold key _' 'str.specialKeys' 'A'
+  spec ' ' '[hid:releaseKey]' 'release key _' 'str.specialKeys' 'A'
+  spec ' ' '[hid:releaseKeys]' 'release all keys'
+  space
+  spec ' ' 'mouse click' '_ mouse click' 'menu.mouseButtons' 'left'
+  spec ' ' '[hid:mouseMove]' 'move mouse pointer by _ , _' 'num num' 10 -20
+  spec ' ' '[hid:mouseScroll]' 'scroll mouse by _' 'num' -5
+  spec ' ' 'mouse hold' 'hold _ mouse button' 'menu.mouseButtons' 'left'
+  spec ' ' '[hid:mouseRelease]' 'release mouse buttons'
+
+to 'mouse click' which {
+  '[hid:mousePress]' ('[data:find]' which ('[data:makeList]' 'left' 'right' 'both' 'middle'))
+  waitMillis 50
+  '[hid:mouseRelease]'
+}
+
+to 'mouse hold' which {
+  '[hid:mousePress]' ('[data:find]' which ('[data:makeList]' 'left' 'right' 'both' 'middle'))
+}
+
+to 'press key' key modifier {
+  '[hid:pressKey]' key ('[data:find]' modifier ('[data:makeList]' 'Shift' 'Control' 'Alt / ⌥' 'Logo / ⌘' 'AltGr'))
+}
+
+
+module 'LCD Display' Output
+author MicroBlocks
+version 1 5 
+description 'Library for 16x2 LCD text displays with 1602 controller I2C "backpack" like the ones from DFRobot, SunFounder, and others. These displays have two lines of sixteen characters.
+
+Most of these displays require 5 volts to provide sufficient LCD contrast, so you will need an external power source for 3.3v boards like the micro:bit.'
+variables _LCD1602_ADDR _LCD1602_LINE1 _LCD1602_LINE2 _LCD1602_LOCK_MSECS 
+
+  spec ' ' 'LCD1602_write' 'write _ on LCD line _' 'str num num num' 'Hello, World!' 1 1 16
+  spec ' ' 'LCD1602_write_field' 'write field _ on LCD line _ from _ to _' 'str num num num' 'Moon!' 1 8 12
+  spec ' ' 'LCD1602_clear' 'clear LCD'
+  spec 'r' 'LCD1602_isConnected' 'is LCD connected?'
+  spec 'r' '_LCD1602 init' '_LCD1602 init'
+  spec ' ' '_LCD1602 send' '_LCD1602 send byte _ mode _' 'num num' 10 1
+  spec ' ' '_LCD1602 toggle enable' '_LCD1602 toggle enable _' 'num' 10
+
+to LCD1602_clear {
+  if (not ('_LCD1602 init')) {return}
+  waitUntil (((millisOp) - _LCD1602_LOCK_MSECS) > 500)
+  _LCD1602_LOCK_MSECS = (millisOp)
+  _LCD1602_LINE1 = ('[data:newByteArray]' 16 32)
+  _LCD1602_LINE2 = ('[data:newByteArray]' 16 32)
+  '_LCD1602 send' 1 0
+  _LCD1602_LOCK_MSECS = 0
+}
+
+to LCD1602_isConnected {
+  return ('_LCD1602 init')
+}
+
+to LCD1602_write string line {
+  LCD1602_write_field string line 1 16
+}
+
+to LCD1602_write_buffer line {
+  local 'bytes' 0
+  if (line == 1) {
+    '_LCD1602 send' (hexToInt '80') 0
+    bytes = _LCD1602_LINE1
+  } else {
+    '_LCD1602 send' (hexToInt 'C0') 0
+    bytes = _LCD1602_LINE2
+  }
+  for b bytes {
+    '_LCD1602 send' b 1
+  }
+}
+
+to LCD1602_write_field string line start end {
+  if (not ('_LCD1602 init')) {return}
+  string = ('[data:join]' '' string)
+  if (or (start < 1) (start > 16)) {
+    return
+  }
+  if (or (end < start) (end > 16)) {
+    return
+  }
+  if (line == 1) {
+    bytes = _LCD1602_LINE1
+  } else {
+    bytes = _LCD1602_LINE2
+  }
+  waitUntil (((millisOp) - _LCD1602_LOCK_MSECS) > 500)
+  _LCD1602_LOCK_MSECS = (millisOp)
+  local 'count' ((end - start) + 1)
+  for i count {
+    local 'char' 32
+    if (i <= (size string)) {
+      char = ('[data:unicodeAt]' i string)
+      if (char > 127) {
+        char = 32
+      }
+    }
+    atPut ((start - 1) + i) bytes char
+  }
+  LCD1602_write_buffer line
+  _LCD1602_LOCK_MSECS = 0
+}
+
+to '_LCD1602 init' {
+  comment 'Return true if already initialized'
+  if (_LCD1602_ADDR != 0) {
+    return true
+  }
+  comment 'Use slow I2C speed'
+  '[sensors:i2cSetClockSpeed]' 100000
+  comment 'Try two common I2C addresses and
+use the one that gets a response'
+  _LCD1602_ADDR = (hexToInt '27')
+  if ((i2cGet _LCD1602_ADDR 0) < 0) {
+    _LCD1602_ADDR = (hexToInt '3F')
+  }
+  if ((i2cGet _LCD1602_ADDR 0) < 0) {
+    _LCD1602_ADDR = 0
+    comment 'LCD panel not found'
+    return false
+  }
+  _LCD1602_LINE1 = ('[data:newByteArray]' 16 32)
+  _LCD1602_LINE2 = ('[data:newByteArray]' 16 32)
+  comment 'Initialize display'
+  '_LCD1602 send' (hexToInt '33') 0
+  '_LCD1602 send' (hexToInt '32') 0
+  '_LCD1602 send' (hexToInt '06') 0
+  '_LCD1602 send' (hexToInt '0C') 0
+  '_LCD1602 send' (hexToInt '28') 0
+  '_LCD1602 send' (hexToInt '01') 0
+  '[sensors:i2cSetClockSpeed]' 400000
+  waitMillis 250
+  return true
+}
+
+to '_LCD1602 send' bits mode {
+  comment 'Use slow I2C speed'
+  '[sensors:i2cSetClockSpeed]' 100000
+  local '_LCD1602 BACKLIGHT' (hexToInt '8')
+  local 'high bits' ((mode | (bits & (hexToInt 'F0'))) | (v '_LCD1602 BACKLIGHT'))
+  local 'low bits' ((mode | ((bits << 4) & (hexToInt 'F0'))) | (v '_LCD1602 BACKLIGHT'))
+  '[sensors:i2cWrite]' _LCD1602_ADDR (v 'high bits')
+  '_LCD1602 toggle enable' (v 'high bits')
+  '[sensors:i2cWrite]' _LCD1602_ADDR (v 'low bits')
+  '_LCD1602 toggle enable' (v 'low bits')
+  comment 'Revert to fast I2C speed'
+  '[sensors:i2cSetClockSpeed]' 400000
+  waitMillis 1
+}
+
+to '_LCD1602 toggle enable' bits {
+  local '_LCD1602 ENABLE' 4
+  waitMicros 5
+  '[sensors:i2cWrite]' _LCD1602_ADDR (bits | (v '_LCD1602 ENABLE'))
+  waitMicros 5
+  '[sensors:i2cWrite]' _LCD1602_ADDR (bits & ('~' (v '_LCD1602 ENABLE')))
+  waitMicros 5
+}
+
+
+module 'MP3 Player' Output
+author MicroBlocks
+version 1 5 
+choices mp3PlayerType MakerPort 'MakerBit/HyperDuino' DFRobot Octopus 
+description 'Support for Octopus (FN-M16P and YX6300 chips) and DFRobot/HyperDuino/MakerBit) MP3 Players (YX5300, A19HFA440, and GD3300B chips).
+Uses software serial via any digital pin on any board.
+Connect the player to TX pin of the board.
+'
+variables _mp3UseChecksum _mp3Pin 
+
+  spec ' ' 'mp3_initialize' 'mp3 initialize _ pin _' 'menu.mp3PlayerType num' 'MakerPort' 20
+  spec ' ' 'mp3_setVolume' 'mp3 set volume _ (0-30)' 'num' 20
+  spec ' ' 'mp3_playTrack' 'mp3 play track _ in folder _' 'num num' 1 1
+  spec ' ' 'mp3_nextTrack' 'mp3 play next track in folder'
+  spec ' ' 'mp3_repeatAllInFolder' 'mp3 repeat all in folder _' 'num' 1
+  spec ' ' 'mp3_pause' 'mp3 pause'
+  spec ' ' 'mp3_resume' 'mp3 resume'
+  spec ' ' '_mp3_sendMP3Cmd' '_mp3_sendMP3Cmd _ _ _' 'auto num num' '0x0C' 0 0
+
+to '_mp3_sendMP3Cmd' cmd arg1 arg2 {
+  if (_mp3UseChecksum == 0) {
+    sayIt 'MP3 Player is not initialized'
+    return 0
+  }
+  if _mp3UseChecksum {
+    comment 'Include checksum (10 bytes total)'
+    local 'msg' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt cmd) 0 arg1 arg2 0 0 (hexToInt 'EF'))
+    local 'sum' 0
+    for i 6 {
+      sum += (at (i + 1) msg)
+    }
+    sum = (65536 - sum)
+    atPut 8 msg ((sum >> 8) & 255)
+    atPut 9 msg (sum & 255)
+  } else {
+    comment 'No checksum (8 bytes total)'
+    local 'msg' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt cmd) 0 arg1 arg2 (hexToInt 'EF'))
+  }
+  comment 'Send the command'
+  for byte msg {
+    '[io:softWriteByte]' byte _mp3Pin 9600
+  }
+  waitMillis 100
+}
+
+to mp3_initialize type pin {
+  _mp3UseChecksum = ('Octopus' != type)
+  _mp3Pin = pin
+  comment 'Reset'
+  '_mp3_sendMP3Cmd' '0x0C' 0 0
+  waitMillis 700
+}
+
+to mp3_nextTrack {
+  comment 'Skip to the next track in the current folder, wrapping back to the first track.'
+  mp3_pause
+  comment 'Disable folder repeat'
+  '_mp3_sendMP3Cmd' '0x08' 0 0
+  waitMillis 50
+  '_mp3_sendMP3Cmd' '0x01' 0 0
+}
+
+to mp3_pause {
+  '_mp3_sendMP3Cmd' '0x0E' 0 0
+}
+
+to mp3_playTrack trackNum folderNum {
+  comment 'Play the given track in the given folder.
+If folder is 0, play the given track at the top level of the SD card.
+Folder names must start with two digits, 01-99.
+Track names in a folder must start with three digits, 001-999.
+Track names at the top level must start with four digits, 0001-9999.
+This sets the folder for the "play next track in folder" command.'
+  if (folderNum < 1) {
+    comment 'Play top-level track (e.g. 0001)'
+    '_mp3_sendMP3Cmd' '0x03' 0 trackNum
+  } else {
+    comment 'Play track in folder'
+    '_mp3_sendMP3Cmd' '0x0F' folderNum trackNum
+    comment 'Hack: Send command twice to increase reliability on MakerPort v1.00'
+    '_mp3_sendMP3Cmd' '0x0F' folderNum trackNum
+  }
+}
+
+to mp3_repeatAllInFolder folderNum {
+  comment 'Repeatedly play all files in the given folder. Does not work for top level (folder 0).'
+  '_mp3_sendMP3Cmd' '0x17' folderNum folderNum
+  mp3_resume
+}
+
+to mp3_resume {
+  '_mp3_sendMP3Cmd' '0x0D' 0 0
+}
+
+to mp3_setVolume level {
+  comment 'Range is 0-30'
+  '_mp3_sendMP3Cmd' '0x06' 0 level
+}
+
+
+module MakerPort Output
+author MicroBlocks
+version 1 1 
+depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 
+description 'Support for MakerPort (https://makerport.fun)'
+
+  spec ' ' 'makerport_initialize' 'MakerPort initialize'
+  spec ' ' 'makerport_beep' 'MakerPort beep _ Hz for _ msecs' 'num num' 440 100
+  spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' false
+
+to makerport_beep freq msecs {
+  digitalWriteOp 19 true
+  '[io:playTone]' 0 freq
+  waitMillis msecs
+  '[io:playTone]' 0 0
+}
+
+to makerport_initialize {
+  if (LCD1602_isConnected) {
+    LCD1602_clear
+    LCD1602_write ' Welcome to the' 1
+    LCD1602_write '   MakerPort!' 2
+  }
+  comment 'Set audio switch to MP3 player.'
+  digitalWriteOp 19 false
+  mp3_initialize 'MakerPort' 20
+  mp3_playTrack 3 99
+}
+
+to makerport_setAllLEDs bool {
+  for pin 12 {
+    digitalWriteOp pin bool
+  }
+}
+
+
+module 'Touch (MPR121)' Input
+author MicroBlocks
+version 1 5 
+description 'Support for the MPR121 12-channel i2c touch sensor.'
+variables _touch_state _touch_last_state _touch_queue _touch_release_queue _touch_last_touched_pin _touch_last_released_pin 
+
+  spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:1-12' 1
+  space
+  spec 'r' 'touch_touch_event' 'pin touch event'
+  spec 'r' 'touch_last_touched_pin' 'last touched pin'
+  space
+  spec 'r' 'touch_release_event' 'pin release event'
+  spec 'r' 'touch_last_released_pin' 'last released pin'
+  space
+  spec 'r' 'touch_state_string' 'touch state string'
+  space
+  spec ' ' '_touch_init' '_touch_init'
+  spec ' ' '_touch_record_changed_pins' '_touch_record_changed_pins'
+  spec ' ' '_touch_update' '_touch_update'
+  spec ' ' '_touch_setRegister' '_touch_setRegister _ to _' 'auto auto' 'hex register' 'hex value'
+
+to '_touch_init' {
+  if (isType _touch_queue 'list') {
+    comment 'Already initialized.'
+    return 0
+  }
+  comment 'Create touch and release queues.'
+  if (_touch_queue == 0) {
+    _touch_queue = ('[data:makeList]')
+  }
+  if (_touch_release_queue == 0) {
+    _touch_release_queue = ('[data:makeList]')
+  }
+  _touch_last_touched_pin = -1
+  _touch_last_released_pin = -1
+  comment 'Soft reset -- sets all registers to defaults'
+  '_touch_setRegister' '0x80' '0x63'
+  comment 'Set filter parameters'
+  '_touch_setRegister' '0x2B' '0x01'
+  '_touch_setRegister' '0x2C' '0x01'
+  '_touch_setRegister' '0x2D' '0x10'
+  '_touch_setRegister' '0x2E' '0x20'
+  '_touch_setRegister' '0x2F' '0x01'
+  '_touch_setRegister' '0x30' '0x01'
+  '_touch_setRegister' '0x31' '0x10'
+  '_touch_setRegister' '0x32' '0x20'
+  '_touch_setRegister' '0x33' '0x01'
+  '_touch_setRegister' '0x34' '0x10'
+  '_touch_setRegister' '0x35' '0xFF'
+  comment 'Init debounce and config registers'
+  '_touch_setRegister' '0x5B' '0x11'
+  '_touch_setRegister' '0x5C' '0xFF'
+  '_touch_setRegister' '0x5D' '0x30'
+  comment 'Set touch/release thresholds'
+  local 'touchThreshold' 40
+  local 'releaseThreshold' 20
+  for i 12 {
+    local 'reg' ((hexToInt '40') + (2 * i))
+    i2cSet 90 (reg - 1) touchThreshold
+    i2cSet 90 reg releaseThreshold
+  }
+  comment 'Start tracking all 12 inputs (proximity detection disabled)'
+  '_touch_setRegister' '0x5E' '0xCC'
+}
+
+to '_touch_record_changed_pins' {
+  comment 'Record pins that have been touched or released.'
+  '_touch_update'
+  for i 12 {
+    local 'previous' (_touch_last_state & (1 << (i - 1)))
+    local 'current' (_touch_state & (1 << (i - 1)))
+    if (and (previous == 0) (current != 0)) {
+      if (('[data:find]' i _touch_queue) < 0) {
+        comment 'Record the index of the newly touched pin'
+        '[data:addLast]' i _touch_queue
+      }
+    }
+    if (and (previous != 0) (current == 0)) {
+      if (('[data:find]' i _touch_release_queue) < 0) {
+        comment 'Record the index of the newly released pin'
+        '[data:addLast]' i _touch_release_queue
+      }
+    }
+  }
+  _touch_last_state = _touch_state
+}
+
+to '_touch_setRegister' reg value {
+  i2cSet 90 (hexToInt reg) (hexToInt value)
+}
+
+to '_touch_update' {
+  '_touch_init'
+  _touch_state = (((i2cGet 90 1) << 8) | (i2cGet 90 0))
+  if (_touch_state < 0) {
+    _touch_state = 0
+  }
+}
+
+to touch_isTouched pin {
+  if (or (pin < 1) (pin > 12)) {return (booleanConstant false)}
+  '_touch_update'
+  return ((_touch_state & (1 << (pin - 1))) != 0)
+}
+
+to touch_last_released_pin {
+  comment 'Return the pin that triggered the last release event.'
+  '_touch_init'
+  return _touch_last_released_pin
+}
+
+to touch_last_touched_pin {
+  comment 'Return the pin that triggered the last touch event.'
+  '_touch_init'
+  return _touch_last_touched_pin
+}
+
+to touch_release_event {
+  if ((size _touch_release_queue) == 0) {'_touch_record_changed_pins'}
+  if ((size _touch_release_queue) > 0) {
+    _touch_last_released_pin = (at 1 _touch_release_queue)
+    '[data:delete]' 1 _touch_release_queue
+    return (booleanConstant true)
+  }
+  _touch_last_released_pin = -1
+  return (booleanConstant false)
+}
+
+to touch_state_string {
+  '_touch_update'
+  local 'pin states' ('[data:makeList]')
+  for i 12 {
+    if ((_touch_state & (1 << (i - 1))) != 0) {
+      '[data:addLast]' '1' (v 'pin states')
+    } else {
+      '[data:addLast]' '0' (v 'pin states')
+    }
+  }
+  return ('[data:joinStrings]' (v 'pin states'))
+}
+
+to touch_touch_event {
+  if ((size _touch_queue) == 0) {'_touch_record_changed_pins'}
+  if ((size _touch_queue) > 0) {
+    _touch_last_touched_pin = (at 1 _touch_queue)
+    '[data:delete]' 1 _touch_queue
+    return (booleanConstant true)
+  }
+  _touch_last_touched_pin = -1
+  return (booleanConstant false)
+}
+

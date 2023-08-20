@@ -1,11 +1,19 @@
 module MakerPort Output
 author MicroBlocks
-version 1 0
-depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)'
-description 'Support for Roger Wagner''s MakerPort (https://makerport.fun)'
+version 1 1 
+depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 
+description 'Support for MakerPort (https://makerport.fun)'
 
   spec ' ' 'makerport_initialize' 'MakerPort initialize'
+  spec ' ' 'makerport_beep' 'MakerPort beep _ Hz for _ msecs' 'num num' 440 100
   spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' false
+
+to makerport_beep freq msecs {
+  digitalWriteOp 19 true
+  '[io:playTone]' 0 freq
+  waitMillis msecs
+  '[io:playTone]' 0 0
+}
 
 to makerport_initialize {
   if (LCD1602_isConnected) {
@@ -13,6 +21,8 @@ to makerport_initialize {
     LCD1602_write ' Welcome to the' 1
     LCD1602_write '   MakerPort!' 2
   }
+  comment 'Set audio switch to MP3 player.'
+  digitalWriteOp 19 false
   mp3_initialize 'MakerPort' 20
   mp3_playTrack 3 99
 }
