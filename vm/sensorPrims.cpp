@@ -611,6 +611,8 @@ static void setAccelRange(int range) {
 
 #define LIS3DH_ID 25
 
+static void setAccelRange(int range); // forward reference
+
 static int readAcceleration(int registerID) {
 	if (!accelStarted) {
 		Wire1.begin(); // use internal I2C bus
@@ -622,6 +624,7 @@ static int readAcceleration(int registerID) {
 		Wire1.write(0x8F); // 1600 Hz sampling rate, Low Power, Enable x/y/z
 		Wire1.endTransmission();
 		delay(2);
+		setAccelRange(0); // also disable block data update
 		accelStarted = true;
 	}
 	Wire1.beginTransmission(LIS3DH_ID);
@@ -845,6 +848,7 @@ static void startAccelerometer() {
 	if (0x33 == readI2CReg(LIS3DH_ID, 0x0F)) {
 		writeI2CReg(LIS3DH_ID, 0x20, 0x8F); // turn on accelerometer, 1600 Hz update, 8-bit (low power) mode
 		writeI2CReg(LIS3DH_ID, 0x1F, 0xC0); // enable temperature reporting
+		writeI2CReg(LIS3DH_ID, 0x23, 0); // disable block data update
 		accelType = accel_LIS3DH;
 	} else if (0x05 == readI2CReg(MXC6655_ID, 0x0F)) {
 		accelType = accel_MXC6655;
