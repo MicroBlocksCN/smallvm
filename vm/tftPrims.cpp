@@ -473,8 +473,8 @@ static int deferUpdates = false;
 
 		void tftInit() {
 			tft.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-			tftClear();
 			useTFT = true;
+			tftClear();
 		}
 
 	#elif defined(OLED_128_64)
@@ -498,11 +498,11 @@ static int deferUpdates = false;
 			if (response < 0) return; // no OLED display detected
 
 			tft.begin(SSD1306_SWITCHCAPVCC, TFT_ADDR);
-			tftClear();
 			// set to max OLED brightness
 			writeI2CReg(TFT_ADDR, 0x80, 0x81);
 			writeI2CReg(TFT_ADDR, 0x80, 0xFF);
 			useTFT = true;
+			tftClear();
 		}
 
 	#elif defined(TTGO_DISPLAY)

@@ -88,8 +88,8 @@
 	#include "samr.h" // SAM21D
 
 	// SAMD: App: 0-96k; Persistent Mem: 96k-256k
-	#define START (96 * 1024)
-	#define HALF_SPACE (80 * 1024)
+	#define START (136 * 1024)
+	#define HALF_SPACE (60 * 1024)
 
 	// SAM21 Non-Volatile Memory Controller Registers
 	#define NVMC_CTRLA		((volatile int *) 0x41004000)
