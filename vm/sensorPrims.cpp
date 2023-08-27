@@ -191,6 +191,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 	if ((argCount < 2) || !isInt(args[0])) return int2obj(0);
 	int deviceID = obj2int(args[0]);
 	OBJ data = args[1];
+	int stop = ((argCount < 3) || (trueObj == args[2]));
 
 	if (!wireStarted) startWire();
 	if (!wireStarted) {
@@ -228,7 +229,7 @@ static OBJ primI2cWrite(int argCount, OBJ *args) {
 			Wire.write(*src++);
 		}
 	}
-	int error = Wire.endTransmission();
+	int error = Wire.endTransmission(stop);
 	if (error) fail(i2cTransferFailed);
 	return falseObj;
 }

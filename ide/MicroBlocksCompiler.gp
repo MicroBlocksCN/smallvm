@@ -65,7 +65,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'i2cSet'				'i2c set device _ register _ to _' 'num num num')
 		'-'
 		(array ' ' '[sensors:i2cRead]'	'i2c device _ read list _' 'num auto')
-		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _' 'num auto')
+		(array ' ' '[sensors:i2cWrite]'	'i2c device _ write list _ : stop _' 'num auto bool')
 		'-'
 		(array ' ' 'spiSend'				'spi send _' 'num' 0)
 		(array 'r' 'spiRecv'				'spi receive')
