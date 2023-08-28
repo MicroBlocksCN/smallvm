@@ -241,14 +241,22 @@ method initialize MicroBlocksHelp {
 		(array 'HL request by ID' '/extension_libraries/huskylens#hl-request-by-id' 'Request only one object by id from HuskyLens.')
 		(array 'HL get info' '/extension_libraries/huskylens#hl-get-info' 'Get Info details from HuskyData.')
 		(array 'HL get block' '/extension_libraries/huskylens#hl-get-block' 'Get Block details from HuskyData.')
-		(array 'HL get arrow'  '/extension_libraries/huskylens#hl-get-arrow' 'Get Arrow details from HuskyData')
+		(array 'HL get arrow' '/extension_libraries/huskylens#hl-get-arrow' 'Get Arrow details from HuskyData')
 		(array 'HL learn current object as ID' '/extension_libraries/huskylens#hl-learn-as-id' 'Learn recognized object as ID#.')
 		(array 'HL learn object as ID' '/extension_libraries/huskylens#hl-learn-as-id-and-name' 'Learn recognized object as ID# and assigns name')
 		(array 'HL set CustomName' '/extension_libraries/huskylens#hl-set-custom-name' 'Set custom name for a learned object.')
 		(array 'HL write' '/extension_libraries/huskylens#hl-write' 'Write text to HuskyLens screen @ x,y [0,0 is top left].')
 		(array 'HL file' '/extension_libraries/huskylens#hl-file' 'Save/Load file to/from SDcard.')
 
- 	)
+		// WEBSOCKET SERVER
+		(array 'start WebSocket server' '/network_libraries/websocket-server#start-websocket-server' 'Start running the WebSocket server.')
+		(array '[net:webSocketLastEvent]' '/network_libraries/websocket-server#last-websocket-event' 'Return the last protocol message received.')
+		(array 'ws client id' '/network_libraries/websocket-server#client-id-for-websocket-event' 'Return the WebSocket client ID (0-4).')
+		(array 'ws event payload' '/network_libraries/websocket-server#payload-for-websocket-event' 'Return the content of the message received.')
+		(array 'ws event type' '/network_libraries/websocket-server#type-of-websocket-event' 'Return the WebSocket event type.')
+		(array '[net:webSocketSendToClient]' '/network_libraries/websocket-server#send-to-websocket-client'	'Send a message to any client using its client id.')
+
+	)
 
 	opDict = (dictionary)
 	for e opEntries {
