@@ -631,9 +631,7 @@ method codeString MicroBlocksModule owningProject newLibName {
 	}
 
 	// add description
-	desc = description
-	if (needsQuotes this desc) { desc = (join '''' desc '''') }
-	add result (join 'description ' desc (newline))
+	add result (join 'description ' (printString description) (newline))
 
 	// add variable declaration
 	if ((count variableNames) > 0) {
