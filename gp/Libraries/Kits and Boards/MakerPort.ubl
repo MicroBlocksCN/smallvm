@@ -11,6 +11,8 @@ description 'Support for MakerPort (https://makerport.fun)'
   spec ' ' 'makerport_setAudioSource' 'set MakerPort audio source to _' 'menu.makerport_audioSource' 'MP3'
   space
   spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' false
+  space
+  spec ' ' 'makerport_typeString' 'type _ to computer' 'str' 'Hello from MakerPort!'
 
 to makerport_beep freq msecs {
   digitalWriteOp 19 true
@@ -40,5 +42,11 @@ to makerport_setAllLEDs bool {
 
 to makerport_setAudioSource src {
   digitalWriteOp 19 (src != 'MP3')
+}
+
+to makerport_typeString s {
+  for ch s {
+    '[hid:pressKey]' ch -1
+  }
 }
 
