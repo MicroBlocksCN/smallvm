@@ -1,0 +1,57 @@
+module 'UV (VEML6075)' Output
+author MicroBlocks
+version 1 0 
+description 'Reports levels of UVA and UVB, as well as the approximate UV Index. The UV Index does not account for cloud cover, ozone level, or altitude, all of which are factored into the UV Index levels in weather reports.
+
+Datasheet:
+https://cdn.sparkfun.com/assets/3/c/3/2/f/veml6075.pdf'
+variables _veml6075_addr 
+
+  spec 'r' 'veml6075_uvIndex' 'UV Index'
+  spec 'r' 'veml6075_uva' 'veml6075_uva'
+  spec 'r' 'veml6075_uvb' 'veml6075_uvb'
+  space
+  spec ' ' '_veml6075_init' '_veml6075_init'
+  spec 'r' '_veml6075_readReg16' '_veml6075_readReg16 _' 'num' 12
+  spec ' ' '_veml6075_writeReg16' '_veml6075_writeReg16 _ value _' 'num num' 0 16
+
+to '_veml6075_init' {
+  if (_veml6075_addr != 0) {return 0}
+  _veml6075_addr = (hexToInt '10')
+  comment '100 mSec sample rate, normal dynamic range'
+  '_veml6075_writeReg16' 0 (hexToInt '10')
+}
+
+to '_veml6075_readReg16' register {
+  local 'buffer' (newList 2)
+  '[sensors:i2cWrite]' _veml6075_addr register false
+  '[sensors:i2cRead]' _veml6075_addr buffer
+  return (((at 2 buffer) << 8) | (at 1 buffer))
+}
+
+to '_veml6075_writeReg16' register value {
+  '[sensors:i2cWrite]' _veml6075_addr ('[data:makeList]' register (value & 255) ((value >> 8) & 255))
+}
+
+to veml6075_uvIndex {
+  comment 'Based on calculation from the SparkFun (not Adafruit)
+VEML6075 library.'
+  return ((((veml6075_uva) / 9) + ((veml6075_uvb) / 8)) / 200)
+}
+
+to veml6075_uva {
+  '_veml6075_init'
+  local 'rawUVA' ('_veml6075_readReg16' 7)
+  local 'uvComp1' ('_veml6075_readReg16' 10)
+  local 'uvComp2' ('_veml6075_readReg16' 11)
+  return (rawUVA - (((222 * uvComp1) + (133 * uvComp2)) / 100))
+}
+
+to veml6075_uvb {
+  '_veml6075_init'
+  local 'rawUVB' ('_veml6075_readReg16' 9)
+  local 'uvComp1' ('_veml6075_readReg16' 10)
+  local 'uvComp2' ('_veml6075_readReg16' 11)
+  return (rawUVB - (((295 * uvComp1) + (175 * uvComp2)) / 100))
+}
+
