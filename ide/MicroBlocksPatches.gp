@@ -432,7 +432,7 @@ method contextMenu Block {
 	varNames = (allVariableNames (project scripter))
 	if (and (not isInPalette) ((count varNames) > 1)) {
 		for varName varNames {
-			if (varName != (first (argList expression))) {
+			if (and (varName != (first (argList expression))) ((at varName 1) != '_')) {
 				b = (toBlock (newReporter 'v' varName))
 				fixLayout b
 				addItem menu (fullCostume (morph b)) (action 'changeVar' this varName)
