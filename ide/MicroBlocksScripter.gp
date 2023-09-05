@@ -446,7 +446,23 @@ method addVariableBlocks MicroBlocksScripter {
   visibleVars = (visibleVars this)
   if (notEmpty visibleVars) {
 	addButton this (localized 'Delete a variable') (action 'deleteVariableMenu' this)
-	nextY += (8 * scale)
+  }
+
+  // add set/change variable
+  nextY += (20 * scale)
+  defaultVarName = ''
+  if (notEmpty visibleVars) { defaultVarName = (first visibleVars) }
+
+  addBlock this (toBlock (newCommand '=' defaultVarName 0)) nil false
+  addBlock this (toBlock (newCommand '+=' defaultVarName 1)) nil false
+  if (devMode) {
+	nextY += (10 * scale)
+	addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
+  }
+
+  nextY += (20 * scale)
+
+  if (notEmpty visibleVars) {
 	for varName visibleVars {
 	    lastY = nextY
 	    b = (toBlock (newReporter 'v' varName))
@@ -461,16 +477,6 @@ method addVariableBlocks MicroBlocksScripter {
 	nextY += (5 * scale)
   }
 
-  defaultVarName = ''
-  if (notEmpty visibleVars) { defaultVarName = (first visibleVars) }
-
-  nextY += (10 * scale)
-  addBlock this (toBlock (newCommand '=' defaultVarName 0)) nil false
-  addBlock this (toBlock (newCommand '+=' defaultVarName 1)) nil false
-  if (devMode) {
-	nextY += (10 * scale)
-	addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
-  }
 }
 
 method addMyBlocks MicroBlocksScripter {
