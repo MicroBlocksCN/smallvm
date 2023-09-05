@@ -1319,7 +1319,7 @@ void stopPWM() {
 
 // NRF5 Servo State
 
-#define MAX_SERVOS 4
+#define MAX_SERVOS 8
 #define UNUSED 255
 
 static int servoIndex = 0;
@@ -1640,6 +1640,11 @@ int tonePin = -1;
 static void setTone(int pin, int frequency) {
 	if (pin != tonePin) stopTone();
 	tonePin = pin;
+	if (frequency < 46) {
+		// Lowest frequency on SAMD21 is 46 Hz
+		stopTone();
+		return;
+	}
 	tone(tonePin, frequency);
 }
 
