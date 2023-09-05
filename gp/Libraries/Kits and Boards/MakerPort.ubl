@@ -1,13 +1,13 @@
 module MakerPort Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
 
   spec ' ' 'makerport_initialize' 'MakerPort initialize'
   space
-  spec ' ' 'makerport_beep' 'MakerPort beep _ Hz for _ msecs' 'num num' 440 100
+  spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs' 'num num' 440 100
   spec ' ' 'makerport_setAudioSource' 'set MakerPort audio source to _' 'menu.makerport_audioSource' 'MP3'
   space
   spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' false
@@ -30,7 +30,7 @@ to makerport_initialize {
   }
   comment 'Set audio switch to MP3 player.'
   digitalWriteOp 19 false
-  mp3_initialize 'MakerPort' 20
+  mp3_initialize 'MakerPort' 20 21
   mp3_playTrack 3 99
 }
 
