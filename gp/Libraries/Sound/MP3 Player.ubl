@@ -73,6 +73,7 @@ to mp3_initialize type pin optionalRxPin {
   }
   comment 'Reset'
   '_mp3_sendMP3Cmd' '0x0C' 0 0
+  '_mp3_sendMP3Cmd' '0x0C' 0 0
   if (_mp3RxPin >= 0) {
     '_mp3_waitForResponse'
   } else {
