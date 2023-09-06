@@ -1,0 +1,33 @@
+module TFThanzi Output
+author Patch
+version 1 0 
+depends 'Graphics and Displays/TFT' 
+description '使用汉字取模数据在TFT屏幕上显示汉字
+取模工具：
+https://create.codelab.club/projects/53070
+https://create.codelab.club/projects/53122
+介绍视频：
+https://www.bilibili.com/video/BV1R14y1172r/'
+
+  spec ' ' 'han16' 'hanzi data _ x _ y _ size _' 'auto auto auto auto' 0 10 10 1
+
+to han16 data x y size {
+  local 'xx' 0
+  local 'yy' -1
+  local 'fbl' (hexToInt ('[data:join]' (at 1 data) (at 2 data)))
+  for j ((size data) - 4) {
+    if (1 == (j % (fbl * 2))) {
+      xx = 0
+      yy += 8
+    }
+    for i 4 {
+      if ((((hexToInt (at (j + 4) data)) >> (4 - i)) & 1) == 1) {'[tft:rect]' (x + (xx * size)) (y + (yy * size)) size size (colorSwatch 255 255 255 255)}
+      yy += -1
+    }
+    if ((j % 2) == 0) {
+      xx += 1
+      yy = (yy + 8)
+    }
+  }
+}
+
