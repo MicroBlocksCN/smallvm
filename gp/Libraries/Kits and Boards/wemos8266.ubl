@@ -1,0 +1,72 @@
+module wemos8266
+author Shaoyue
+version 1 0 
+description 'Wemos 8266 pinmap lib
+'
+variables _wr32_analog_pins_list _wr32_pin_D4 _wr32_pin_D3 _wr32_pin_D7 _wr32_pin_D12 _wr32_initialized _wr32_digital_pins_list _wr32_pin_A0 _wr32_pin_D5 _wr32_pin_D8 _wr32_pin_D10 _wr32_pin_D9 _wr32_pin_D13 _wr32_pin_D6 _wr32_pin_D2 _wr32_pin_D11 
+
+  spec ' ' '_wr32_init_pins' '_wr8266_init_pins'
+  spec 'r' 'wr32_GPIO_D' 'wr8266_GPIO_D _' 'menu.digitalPinMenu' 2
+  spec ' ' 'wr32 set pin D' 'wr8266 set pin D _ to _ (0-1023)' 'menu.digitalPinMenu num' '2' 100
+  spec 'r' '_wr32 read analog A' 'wr8266 read analog A _' 'menu.analogPinMenu' 0
+  spec 'r' 'Button Pin D' 'button pin D _' 'num' 2
+  spec 'r' 'rotary' 'rotary pin A _' 'menu.analogPinMenu' 0
+  spec ' ' 'wr32 set digital pin D' 'wr8266 set digital pin D _ to _' 'menu.digitalPinMenu bool' 2 true
+  spec 'r' 'wr32 read digital D' 'wr8266 read digital D _' 'menu.digitalPinMenu' 2
+  spec 'r' 'wr32_GPIOPin_A' 'wr8266_GPIO_A _' 'menu.analogPinMenu' 0
+
+to 'Button Pin D' pin {
+  return ('wr32 read digital D' pin)
+}
+
+to '_wr32 read analog A' pin {
+  return (analogReadOp (wr32_GPIOPin_A pin))
+}
+
+to '_wr32_init_pins' {
+  if _wr32_initialized {return}
+  _wr32_pin_A0 = 2
+  _wr32_pin_D2 = 0
+  _wr32_pin_D3 = 1
+  _wr32_pin_D4 = 2
+  _wr32_pin_D5 = 3
+  _wr32_pin_D6 = 4
+  _wr32_pin_D7 = 5
+  _wr32_pin_D8 = 6
+  _wr32_pin_D9 = 7
+  _wr32_pin_D10 = 8
+  _wr32_pin_D11 = 7
+  _wr32_pin_D12 = 6
+  _wr32_pin_D13 = 5
+  _wr32_analog_pins_list = ('[data:makeList]' _wr32_pin_A0)
+  _wr32_digital_pins_list = ('[data:makeList]' _wr32_pin_D2 _wr32_pin_D3 _wr32_pin_D4 _wr32_pin_D5 _wr32_pin_D6 _wr32_pin_D7 _wr32_pin_D8 _wr32_pin_D9 _wr32_pin_D10 _wr32_pin_D11 _wr32_pin_D12 _wr32_pin_D13)
+}
+
+to rotary pin {
+  return ('_wr32 read analog A' pin)
+}
+
+to 'wr32 read digital D' pin {
+  return (digitalReadOp (wr32_GPIO_D pin))
+}
+
+to 'wr32 set digital pin D' pin value {
+  digitalWriteOp (wr32_GPIO_D pin) value
+}
+
+to 'wr32 set pin D' pin value {
+  analogWriteOp (wr32_GPIO_D pin) value
+}
+
+to wr32_GPIOPin_A pin {
+  '_wr32_init_pins'
+  comment 'only 1ADC'
+  return 0
+}
+
+to wr32_GPIO_D pin {
+  '_wr32_init_pins'
+  comment 'pins D2~D13,D2 is list 1  '
+  return (at (pin - 1) _wr32_digital_pins_list)
+}
+
