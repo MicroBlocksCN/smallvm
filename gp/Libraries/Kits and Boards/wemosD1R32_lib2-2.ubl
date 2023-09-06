@@ -3,7 +3,10 @@ author '邵悦'
 version 1 0 
 choices analogPinMenu '0' '1' '2' '3' '4' '5' 
 choices digitalPinMenu '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' 
-description ' wemos D1R32 到 Arduino uno 的管脚映射'
+description ' wemos D1R32 到 Arduino uno 的管脚映射
+
+https://www.bilibili.com/video/BV18j411F7wh/
+'
 variables _wr32_pin_A0 _wr32_pin_A1 _wr32_pin_A2 _wr32_pin_A3 _wr32_pin_A4 _wr32_pin_D2 _wr32_pin_D3 _wr32_pin_D4 _wr32_pin_D5 _wr32_pin_D6 _wr32_pin_D7 _wr32_pin_D8 _wr32_pin_D9 _wr32_initialized _wr32_pin_A5 _wr32_pin_D10 _wr32_pin_D11 _wr32_pin_D12 _wr32_pin_D13 _wr32_pin_list _wr32_analog_pins_list _wr32_digital_pins_list 
 
   spec 'r' 'Button Pin D' 'button pin D _' 'num' 2
