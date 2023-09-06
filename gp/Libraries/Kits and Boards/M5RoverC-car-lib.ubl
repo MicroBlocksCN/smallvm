@@ -1,0 +1,54 @@
+module 'M5RoverC-car-lib'
+author 'Shao Yue'
+version 1 0 
+tags 'm5stickC plus' 
+description 'https://docs.m5stack.com/en/hat/hat_roverc_pro
+4 wheels and 2 servo
+I2C 0x38
+work with M5stickC plus'
+
+  spec ' ' 'setRCWheelSpeed pos' 'setRCWheelSpeed pos _ speed _' 'num auto' 1 50
+  spec ' ' 'setCServoAngle pos' 'setCServoAngle pos _ angle _' 'num num' 1 60
+  spec ' ' 'setRCSpeed x' 'setRCSpeed x _ y _ z _' 'auto auto auto' 0 0 0
+  spec ' ' 'stopRC' 'stopRC'
+
+to 'setCServoAngle pos' pos angle {
+  comment '0x38 i2c address , servo1 reg 0x10, servo2 reg 0x11'
+  if (pos == 1) {
+    i2cSet (hexToInt '38') (hexToInt '10') angle
+  } else {
+    i2cSet (hexToInt '38') (hexToInt '11') angle
+  }
+}
+
+to 'setRCSpeed x' x y z {
+  if (z != 0) {
+    x = ((x * (100 - (absoluteValue z))) / 100)
+    y = ((y * (100 - (absoluteValue z))) / 100)
+  }
+  'setRCWheelSpeed pos' 1 (maximum -100 (minimum 100 ((y + x) - z)))
+  'setRCWheelSpeed pos' 2 (maximum -100 (minimum 100 ((y - x) + z)))
+  'setRCWheelSpeed pos' 3 (maximum -100 (minimum 100 ((y + x) + z)))
+  'setRCWheelSpeed pos' 4 (maximum -100 (minimum 100 ((y - x) - z)))
+}
+
+to 'setRCWheelSpeed pos' pos speed {
+  comment '1 left front,2 right front,3 left back ,4 right back '
+  if (or (or (pos < 1) (pos > 4)) ((absoluteValue speed) > 100)) {
+    return 0
+  }
+  if ((absoluteValue speed) < 15) {
+    comment 'dead speed '
+    speed = 0
+  }
+  comment 'sign int to unsign int'
+  if (speed < 0) {
+    speed = (255 + speed)
+  }
+  i2cSet (hexToInt '38') (pos - 1) speed
+}
+
+to stopRC {
+  'setRCSpeed x' 0 0 0
+}
+

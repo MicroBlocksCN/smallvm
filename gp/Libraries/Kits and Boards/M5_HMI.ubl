@@ -1,0 +1,66 @@
+module M5_HMI
+author ShaoYue
+version 1 0 
+tags m5stack 
+description 'HMI Module with Encoder and 500mAh Battery
+ (STM32F030)'
+
+  spec 'r' 'HMI_EncoderValue' 'HMI_EncoderValue'
+  spec 'r' 'HMI_IncrementValue' 'HMI_IncrementValue'
+  spec 'r' 'HMI_ButtonS' 'HMI_ButtonS'
+  spec 'r' 'HMI_ButtonA' 'HMI_ButtonA'
+  spec 'r' 'HMI_ButtonB' 'HMI_ButtonB'
+  spec 'r' 'HMI_LED1' 'HMI_LED1'
+  spec 'r' 'HMI_LED2' 'HMI_LED2'
+  spec 'r' 'HMI_FwVersion' 'HMI_FwVersion'
+  spec ' ' 'HMI_resetCounter' 'HMI_resetCounter'
+  spec ' ' 'HMI_setLed' 'HMI_setLed _ _' 'auto bool' 1 true
+
+to HMI_ButtonA {
+  return (0 == (i2cGet (hexToInt '41') (hexToInt '21')))
+}
+
+to HMI_ButtonB {
+  return (0 == (i2cGet (hexToInt '41') (hexToInt '22')))
+}
+
+to HMI_ButtonS {
+  return (0 == (i2cGet (hexToInt '41') (hexToInt '20')))
+}
+
+to HMI_EncoderValue {
+  return (i2cGet (hexToInt '41') (hexToInt '00'))
+}
+
+to HMI_FwVersion {
+  return (i2cGet (hexToInt '41') (hexToInt 'FE'))
+}
+
+to HMI_IncrementValue {
+  return (i2cGet (hexToInt '41') (hexToInt '10'))
+}
+
+to HMI_LED1 {
+  return (i2cGet (hexToInt '41') (hexToInt '30'))
+}
+
+to HMI_LED2 {
+  return (i2cGet (hexToInt '41') (hexToInt '31'))
+}
+
+to HMI_resetCounter {
+  i2cSet (hexToInt '41') (hexToInt '40') (hexToInt '1')
+}
+
+to HMI_setLed index status {
+  local 'var' 0
+  if status {
+    var = 1
+  }
+  if (index == 1) {
+    i2cSet (hexToInt '41') (hexToInt '30') var
+  } else {
+    i2cSet (hexToInt '41') (hexToInt '31') var
+  }
+}
+

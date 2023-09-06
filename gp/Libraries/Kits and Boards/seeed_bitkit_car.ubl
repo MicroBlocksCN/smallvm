@@ -1,0 +1,90 @@
+module seeed_bitkit_car
+author ShaoYue
+version 1 0 
+description 'https://www.seeedstudio.com/Grove-Zero-Car-Kit-V2-0-p-4351.html
+
+https://www.bilibili.com/video/BV15u411D7DQ/
+'
+variables _zc_LED_init_ linefollowPosition 
+
+  spec ' ' 'set motor speed' 'set motor speed left _ right _' 'num num' 10 10
+  spec ' ' 'Chassis go' 'chassis go _ at _' 'auto auto' 'forward' 10
+  spec ' ' 'Chassis stop' 'chassis stop'
+  spec 'r' 'lineposition' 'lineposition'
+  spec ' ' 'myBlock' 'setAllLEDs _' 'color'
+  spec ' ' 'clearLEDs' 'clearLEDs'
+  spec 'r' 'linecolor' 'linecolor'
+  spec ' ' 'setLed' 'setLED _ with _' 'num color' 1
+
+to 'Chassis go' direction speed {
+  if (direction == 'forward') {
+    'set motor speed' speed speed
+  } (direction == 'backward') {
+    'set motor speed' (0 - speed) (0 - speed)
+  } (direction == 'left') {
+    'set motor speed' 10 speed
+  } (direction == 'right') {
+    'set motor speed' speed 10
+  } (direction == 'clockwise') {
+    'set motor speed' speed (0 - speed)
+  } (direction == 'anticlockwise') {
+    'set motor speed' (0 - speed) speed
+  }
+}
+
+to 'Chassis stop' {
+  'set motor speed' 0 0
+}
+
+to clearLEDs {
+  if (_zc_LED_init_ == 0) {
+    neoPixelAttach 4 1
+    _zc_LED_init_ = 1
+  }
+  clearNeoPixels
+}
+
+to linecolor {
+  local 'data' (newList 3)
+  '[sensors:i2cWrite]' (hexToInt '27') ('[data:makeList]' (hexToInt '4'))
+  '[sensors:i2cRead]' (hexToInt '27') data
+  return (((at 1 data) + ((at 2 data) << 8)) + ((at 3 data) << 16))
+}
+
+to lineposition {
+  local 'data' (newList 1)
+  '[sensors:i2cWrite]' (hexToInt '27') ('[data:makeList]' (hexToInt '2'))
+  '[sensors:i2cRead]' (hexToInt '27') data
+  return (at 1 data)
+}
+
+to myBlock color {
+  if (_zc_LED_init_ == 0) {
+    neoPixelAttach 4 1
+    _zc_LED_init_ = 1
+  }
+  neoPixelSetAllToColor color
+}
+
+to 'set motor speed' left right {
+  local 'data' ('[data:newByteArray]' 5)
+  atPut 1 data 1
+  atPut 2 data (left & 255)
+  atPut 3 data ((left >> 8) & 255)
+  atPut 4 data (right & 255)
+  atPut 5 data ((right >> 8) & 255)
+  '[sensors:i2cWrite]' (hexToInt '28') data
+}
+
+to setLed pos color {
+  if (_zc_LED_init_ == 0) {
+    neoPixelAttach 4 1
+    _zc_LED_init_ = 1
+  }
+  if (pos == -1) {
+    neoPixelSetAllToColor color
+  } else {
+    setNeoPixelColor pos color
+  }
+}
+
