@@ -6,9 +6,9 @@ variables CharacterList CharacterNames last_state TPin
 
 script 50 50 {
 whenStarted
-makerport_initialize
 CharacterNames = ('[data:makeList]' 'g' 'f' 'd' 's' 'a' 'w' 'click' 'space' 'right' 'left' 'down' 'up')
 CharacterList = ('[data:makeList]' 'g' 'f' 'd' 's' 'a' 'w' 'click' ' ' 215 216 217 218)
+makerport_initialize
 }
 
 script 51 245 {
@@ -37,10 +37,6 @@ if (pin == 7) {
 } else {
   '[hid:releaseKey]' (at pin CharacterList)
 }
-}
-
-script 582 1003 {
-sayIt (at pin CharacterNames)
 }
 
 
@@ -218,7 +214,7 @@ to '_LCD1602 toggle enable' bits {
 
 module 'MP3 Player' Output
 author MicroBlocks
-version 1 6 
+version 1 7 
 choices mp3PlayerType MakerPort 'MakerBit/HyperDuino' DFRobot Octopus 
 description 'Support for Octopus (FN-M16P and YX6300 chips) and DFRobot/HyperDuino/MakerBit) MP3 Players (YX5300, A19HFA440, and GD3300B chips).
 
@@ -291,10 +287,11 @@ to mp3_initialize type pin optionalRxPin {
   }
   comment 'Reset'
   '_mp3_sendMP3Cmd' '0x0C' 0 0
+  '_mp3_sendMP3Cmd' '0x0C' 0 0
   if (_mp3RxPin >= 0) {
     '_mp3_waitForResponse'
   } else {
-    waitMillis 700
+    waitMillis 1000
   }
 }
 
@@ -353,14 +350,14 @@ to mp3_setVolume level {
 
 module MakerPort Output
 author MicroBlocks
-version 1 2 
+version 1 3 
 depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
 
   spec ' ' 'makerport_initialize' 'MakerPort initialize'
   space
-  spec ' ' 'makerport_beep' 'MakerPort beep _ Hz for _ msecs' 'num num' 440 100
+  spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs' 'num num' 440 100
   spec ' ' 'makerport_setAudioSource' 'set MakerPort audio source to _' 'menu.makerport_audioSource' 'MP3'
   space
   spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' false
@@ -383,7 +380,7 @@ to makerport_initialize {
   }
   comment 'Set audio switch to MP3 player.'
   digitalWriteOp 19 false
-  mp3_initialize 'MakerPort' 20
+  mp3_initialize 'MakerPort' 20 21
   mp3_playTrack 3 99
 }
 
@@ -406,9 +403,9 @@ to makerport_typeString s {
 
 module 'Touch (MPR121)' Input
 author MicroBlocks
-version 1 5 
+version 1 6 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
-variables _touch_state _touch_last_state _touch_queue _touch_release_queue _touch_last_touched_pin _touch_last_released_pin 
+variables _touch_state _touch_isTouched _touch_last_touched_pin _touch_last_released_pin 
 
   spec 'r' 'touch_isTouched' 'is pin _ touched?' 'menu.range:1-12' 1
   space
@@ -421,22 +418,16 @@ variables _touch_state _touch_last_state _touch_queue _touch_release_queue _touc
   spec 'r' 'touch_state_string' 'touch state string'
   space
   spec ' ' '_touch_init' '_touch_init'
-  spec ' ' '_touch_record_changed_pins' '_touch_record_changed_pins'
   spec ' ' '_touch_update' '_touch_update'
   spec ' ' '_touch_setRegister' '_touch_setRegister _ to _' 'auto auto' 'hex register' 'hex value'
+  spec ' ' '_touch_record_changed_pins' 'obsolete _touch_record_changed_pins'
 
 to '_touch_init' {
-  if (isType _touch_queue 'list') {
+  if (isType _touch_isTouched 'list') {
     comment 'Already initialized.'
     return 0
   }
-  comment 'Create touch and release queues.'
-  if (_touch_queue == 0) {
-    _touch_queue = ('[data:makeList]')
-  }
-  if (_touch_release_queue == 0) {
-    _touch_release_queue = ('[data:makeList]')
-  }
+  _touch_isTouched = (newList 12 (booleanConstant false))
   _touch_last_touched_pin = -1
   _touch_last_released_pin = -1
   comment 'Soft reset -- sets all registers to defaults'
@@ -462,43 +453,24 @@ to '_touch_init' {
   local 'releaseThreshold' 20
   for i 12 {
     local 'reg' ((hexToInt '40') + (2 * i))
-    i2cSet 90 (reg - 1) touchThreshold
-    i2cSet 90 reg releaseThreshold
+    '_touch_setRegister' (reg - 1) touchThreshold
+    '_touch_setRegister' reg releaseThreshold
   }
   comment 'Start tracking all 12 inputs (proximity detection disabled)'
   '_touch_setRegister' '0x5E' '0xCC'
 }
 
-to '_touch_record_changed_pins' {
-  comment 'Record pins that have been touched or released.'
-  '_touch_update'
-  for i 12 {
-    local 'previous' (_touch_last_state & (1 << (i - 1)))
-    local 'current' (_touch_state & (1 << (i - 1)))
-    if (and (previous == 0) (current != 0)) {
-      if (('[data:find]' i _touch_queue) < 0) {
-        comment 'Record the index of the newly touched pin'
-        '[data:addLast]' i _touch_queue
-      }
-    }
-    if (and (previous != 0) (current == 0)) {
-      if (('[data:find]' i _touch_release_queue) < 0) {
-        comment 'Record the index of the newly released pin'
-        '[data:addLast]' i _touch_release_queue
-      }
-    }
-  }
-  _touch_last_state = _touch_state
-}
-
 to '_touch_setRegister' reg value {
-  i2cSet 90 (hexToInt reg) (hexToInt value)
+  if (isType reg 'string') {reg = (hexToInt reg)}
+  if (isType value 'string') {value = (hexToInt value)}
+  i2cSet 90 reg value
 }
 
 to '_touch_update' {
   '_touch_init'
   _touch_state = (((i2cGet 90 1) << 8) | (i2cGet 90 0))
   if (_touch_state < 0) {
+    comment 'i2c read operation failed'
     _touch_state = 0
   }
 }
@@ -522,11 +494,13 @@ to touch_last_touched_pin {
 }
 
 to touch_release_event {
-  if ((size _touch_release_queue) == 0) {'_touch_record_changed_pins'}
-  if ((size _touch_release_queue) > 0) {
-    _touch_last_released_pin = (at 1 _touch_release_queue)
-    '[data:delete]' 1 _touch_release_queue
-    return (booleanConstant true)
+  '_touch_update'
+  for i 12 {
+    if (and (at i _touch_isTouched) ((_touch_state & (1 << (i - 1))) == 0)) {
+      atPut i _touch_isTouched false
+      _touch_last_released_pin = i
+      return (booleanConstant true)
+    }
   }
   _touch_last_released_pin = -1
   return (booleanConstant false)
@@ -546,11 +520,13 @@ to touch_state_string {
 }
 
 to touch_touch_event {
-  if ((size _touch_queue) == 0) {'_touch_record_changed_pins'}
-  if ((size _touch_queue) > 0) {
-    _touch_last_touched_pin = (at 1 _touch_queue)
-    '[data:delete]' 1 _touch_queue
-    return (booleanConstant true)
+  '_touch_update'
+  for i 12 {
+    if (and (not (at i _touch_isTouched)) ((_touch_state & (1 << (i - 1))) != 0)) {
+      atPut i _touch_isTouched true
+      _touch_last_touched_pin = i
+      return (booleanConstant true)
+    }
   }
   _touch_last_touched_pin = -1
   return (booleanConstant false)
