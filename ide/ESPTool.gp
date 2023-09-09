@@ -63,30 +63,18 @@ method openPort ESPTool portName boardName {
 // m5atom - 115200 (42.5; 28.3 compressed) connects, but not reliable at 230400
 
 method baudForBoard ESPTool boardName {
-	if ('ESP8266' == boardName) {
-		return 230400
-	} ('D1-Mini' == boardName) {
-		return 921600
-	} ('ESP32' == boardName) {
-		return 230400
-	} ('micro:STEAMakers' == boardName) {
-		return 230400
-	} ('Citilab ED1' == boardName) {
-		return 230400
-	} ('M5Stack-Core' == boardName) {
-		return 230400
-	} ('M5StickC' == boardName) {
-		return 230400
-	} ('M5StickC+' == boardName) {
-		return 230400
-	} ('M5Atom-Matrix' == boardName) {
-		return 115200
-	} ('Databot' == boardName) {
-		return 230400
-	} ('Mbits' == boardName) {
-		return 230400
-	} (isOneOf boardName 'ESP32-S2' 'ESP32-S3' 'ESP32-C3') {
-		return 115200 // was 460800
+	if ('ESP8266' == boardName) { return 230400
+	} ('D1-Mini' == boardName) { return 921600
+	} ('ESP32' == boardName) { return 230400
+	} ('mPython' == boardName) { return 230400
+	} ('Citilab ED1' == boardName) { return 230400
+	} ('M5Stack-Core' == boardName) { return 230400
+	} ('M5StickC' == boardName) { return 230400
+	} ('M5StickC+' == boardName) { return 230400
+	} ('M5Atom-Matrix' == boardName) { return 115200
+	} ('Databot' == boardName) { return 230400
+	} ('Mbits' == boardName) { return 230400
+	} (isOneOf boardName 'ESP32-S2' 'ESP32-S3' 'ESP32-C3') { return 115200 // was 460800
 	}
 	return 115200
 }
@@ -446,6 +434,7 @@ method vmNameForBoard ESPTool boardName {
 	if ('ESP8266' == boardName) { return 'vm_nodemcu.bin'
 	} ('D1-Mini' == boardName) { return 'vm_nodemcu.bin'
 	} ('ESP32' == boardName) { return 'vm_esp32.bin'
+	} ('mPython' == boardName) { return 'vm_mpython.bin'
 	} ('Citilab ED1' == boardName) { return 'vm_citilab-ed1.bin'
 	} ('micro:STEAMakers' == boardName) { return 'vm_micro_steamakers.bin'
 	} ('M5Stack-Core' == boardName) { return 'vm_m5stack.bin'
