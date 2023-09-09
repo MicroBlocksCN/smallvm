@@ -185,7 +185,7 @@ static int serialWriteBytes(uint8 *buf, int byteCount) {
 
 #endif
 
-// help functions
+// helper functions
 
 static void serialWriteSync(uint8 *buf, int bytesToWrite) {
 	// Synchronously write the given buffer to the serial port, performing multipe write
@@ -270,7 +270,7 @@ static OBJ primSerialWrite(int argCount, OBJ *args) {
 
 	if (isInt(arg)) { // single byte
 		int byteValue = obj2int(arg);
-		if (((uint32) byteValue) > 255) return fail(byteOutOfRange);
+		if (byteValue > 255) return fail(byteOutOfRange);
 		uint8 oneByte = byteValue;
 		serialWriteSync(&oneByte, 1);
 	} else if (IS_TYPE(arg, StringType)) { // string
@@ -278,6 +278,17 @@ static OBJ primSerialWrite(int argCount, OBJ *args) {
 		serialWriteSync((uint8 *) s, strlen(s));
 	} else if (IS_TYPE(arg, ByteArrayType)) { // byte array
 		serialWriteSync((uint8 *) &FIELD(arg, 0), BYTES(arg));
+	} else if (IS_TYPE(arg, ListType)) { // list
+		int listCount = obj2int(FIELD(arg, 0));
+		for (int i = 1; i <= listCount; i++) {
+			OBJ item = FIELD(arg, i);
+			if (isInt(item)) {
+				int byteValue = obj2int(item);
+				if (byteValue > 255) return fail(byteOutOfRange);
+				uint8 oneByte = byteValue;
+				serialWriteSync(&oneByte, 1);
+			}
+		}
 	}
 	return falseObj;
 }
