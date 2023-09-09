@@ -66,6 +66,7 @@ method baudForBoard ESPTool boardName {
 	if ('ESP8266' == boardName) { return 230400
 	} ('D1-Mini' == boardName) { return 921600
 	} ('ESP32' == boardName) { return 230400
+	} ('mPython' == boardName) { return 230400
 	} ('Citilab ED1' == boardName) { return 230400
 	} ('M5Stack-Core' == boardName) { return 230400
 	} ('M5StickC' == boardName) { return 230400
@@ -433,6 +434,7 @@ method vmNameForBoard ESPTool boardName {
 	if ('ESP8266' == boardName) { return 'vm_nodemcu.bin'
 	} ('D1-Mini' == boardName) { return 'vm_nodemcu.bin'
 	} ('ESP32' == boardName) { return 'vm_esp32.bin'
+	} ('mPython' == boardName) { return 'vm_mpython.bin'
 	} ('Citilab ED1' == boardName) { return 'vm_citilab-ed1.bin'
 	} ('M5Stack-Core' == boardName) { return 'vm_m5stack.bin'
 	} ('M5StickC' == boardName) { return 'vm_m5stick.bin'
