@@ -298,13 +298,30 @@ static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
 
 	OBJ buf = args[0];
+	int startIndex = obj2int(args[1]) - 1; // convert 0-based index
+	if (startIndex < 0) return fail(indexOutOfRangeError);
+
 	int bufType = objType(buf);
-	if (!((bufType == StringType) || (bufType == ByteArrayType))) return fail(needsByteArray);
+	if (!((bufType == StringType) || (bufType == ByteArrayType) || (bufType == ListType))) return fail(needsByteArray);
 	if (!isInt(args[1])) return fail(needsIntegerIndexError);
 
+	if (bufType == ListType) { // list
+		int listCount = obj2int(FIELD(buf, 0));
+		if (startIndex >= listCount) return fail(indexOutOfRangeError);
+		for (int i = startIndex + 1; i <= listCount; i++) {
+			OBJ item = FIELD(buf, i);
+			if (isInt(item)) {
+				int byteValue = obj2int(item);
+				if (byteValue > 255) return fail(byteOutOfRange);
+				uint8 oneByte = byteValue;
+				serialWriteSync(&oneByte, 1);
+			}
+		}
+		return int2obj((listCount - startIndex) + 1);
+	}
+
 	int srcLen = (bufType == StringType) ? strlen(obj2str(buf)) : BYTES(buf);
-	int startIndex = obj2int(args[1]) - 1;
-	if ((startIndex < 0) || (startIndex >= srcLen)) return fail(indexOutOfRangeError);
+	if (startIndex >= srcLen) return fail(indexOutOfRangeError);
 
 	int bytesToWrite = srcLen - startIndex;
 	if (bytesToWrite > TX_BUF_SIZE) bytesToWrite = TX_BUF_SIZE;
