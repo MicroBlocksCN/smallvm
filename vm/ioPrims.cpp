@@ -1552,11 +1552,14 @@ Servo servo[TOTAL_PINS];
 
 static void setServo(int pin, int usecs) {
 	int servoIndex = pin;
+
 	#if defined(MAKERPORT)
-		// MakerPort has only 12 servo channels and the first servo port is pin 16
-		servoIndex -= 16;
+		// The MakerPort (SAM D21) can use only the first 12 servo channels.
+		// Map pins 7-18 to those channels. Servo capable pins are: 7-12, 14, 16-17
+		servoIndex -= 7;
 		if (servoIndex < 0) return;
 	#endif
+
 	if (usecs <= 0) {
 		if (servo[servoIndex].attached()) servo[servoIndex].detach();
 	} else {
