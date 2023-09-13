@@ -1,0 +1,101 @@
+module MIDI Output
+author MicroBlocks
+version 1 0 
+description 'Play notes through hardware MIDI. By default, it plays through the hardware serial port, which may interfere with the MicroBlocks IDE when programming it live unless you''re using a board with an extra hardware serial port, such as the Due. You can, however, specify a software serial port using the `set MIDI pin` block.
+
+Connect the MIDI pin 5 to the serial pin, MIDI pin 2 to GND through a 220Ω resistor, and MIDI pin 4 to 5v, also through a 220Ω resistor.
+'
+variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel 
+
+  spec ' ' 'play MIDI note' 'send MIDI note _ during _ ms' 'auto auto' 60 500
+  spec 'r' 'note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
+  spec ' ' 'set MIDI pin' 'set MIDI signal to pin _' 'auto' 8
+  spec ' ' '_MIDI init' '_MIDI init'
+  spec 'r' 'midi message' 'midi message type _ channel _ data _' 'num auto auto' 9 6 ''
+  spec 'r' '_MIDI note on' '_MIDI note on'
+  spec 'r' '_MIDI note off' '_MIDI note off'
+  spec ' ' 'set MIDI channel to' 'set MIDI channel to _' 'auto' 1
+  spec ' ' 'send MIDI message' 'send MIDI message _' 'auto' ''
+  spec ' ' 'send MIDI reset' 'send MIDI reset'
+  spec ' ' 'send MIDI start playing' 'send MIDI start playing'
+  spec ' ' 'send MIDI stop playing' 'send MIDI stop playing'
+  spec ' ' 'send MIDI continue playing' 'send MIDI continue playing'
+
+to '_MIDI init' {
+  if (not _MIDI_initialized) {
+    'set MIDI channel to' 1
+    if (_MIDI_pin == 0) {
+      '[serial:open]' 31250
+    } else {
+      '[serial:close]'
+      local 'index' ('[data:find]' (boardType) ('[data:makeList]' 'Citilab ED1' 'Due'))
+      if (index > 0) {
+        _MIDI_soft_baudrate = (at index ('[data:makeList]' 37000 31350))
+      } else {
+        _MIDI_soft_baudrate = 31250
+      }
+    }
+    _MIDI_initialized = (booleanConstant true)
+  }
+}
+
+to '_MIDI note off' {
+  return 8
+}
+
+to '_MIDI note on' {
+  return 9
+}
+
+to 'midi message' type channel data {
+  return ('[data:asByteArray]' ('[data:join]' ('[data:makeList]' ((type << 4) | (channel - 1))) data))
+}
+
+to 'note to MIDI' note octave {
+  return ((at ('[data:find]' ('_trimmedLowercase' note) ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')) ('[data:makeList]' 60 61 62 63 64 65 66 67 68 69 70 71 59 61 61 63 63 65 64 66 66 68 68 70 70 72)) + (octave * 12))
+}
+
+to 'play MIDI note' 'midi note' duration {
+  'send MIDI message' ('midi message' ('_MIDI note on') _MIDI_channel ('[data:makeList]' (v 'midi note') 127))
+  waitMillis duration
+  'send MIDI message' ('midi message' ('_MIDI note off') _MIDI_channel ('[data:makeList]' (v 'midi note') 0))
+}
+
+to 'send MIDI continue playing' {
+  'send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FB')))
+}
+
+to 'send MIDI message' message {
+  '_MIDI init'
+  if (_MIDI_pin == 0) {
+    '[serial:write]' message
+  } else {
+    for byte message {
+      '[io:softWriteByte]' byte _MIDI_pin _MIDI_soft_baudrate
+    }
+  }
+}
+
+to 'send MIDI reset' {
+  'send MIDI message' (hexToInt 'FF')
+}
+
+to 'send MIDI start playing' {
+  'send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FA')))
+}
+
+to 'send MIDI stop playing' {
+  'send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FC')))
+}
+
+to 'set MIDI channel to' channel {
+  _MIDI_channel = channel
+}
+
+to 'set MIDI pin' pin {
+  '[serial:close]'
+  _MIDI_pin = pin
+  _MIDI_initialized = (booleanConstant false)
+  '_MIDI init'
+}
+
