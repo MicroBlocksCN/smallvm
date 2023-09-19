@@ -20,6 +20,7 @@ variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel
   spec ' ' 'send MIDI stop playing' 'send MIDI stop playing'
   spec ' ' 'send MIDI continue playing' 'send MIDI continue playing'
   spec ' ' 'send note' 'send MIDI note _ on _ on channel _' 'auto bool auto' 60 true 1
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
 to '_MIDI init' {
   if (not _MIDI_initialized) {
@@ -44,6 +45,21 @@ to '_MIDI note off' {
 
 to '_MIDI note on' {
   return 9
+}
+
+to '_trimmedLowercase' s {
+  comment 'Return a copy of the given string without whitespace
+or periods and all lowercase.'
+  local 'result' (newList (size s))
+  '[data:delete]' 'all' result
+  for i (size s) {
+    local 'ch' ('[data:unicodeAt]' i s)
+    if (and (ch > 32) (ch != 46)) {
+      if (and (65 <= ch) (ch <= 90)) {ch = (ch + 32)}
+      '[data:addLast]' ch result
+    }
+  }
+  return ('[data:unicodeString]' result)
 }
 
 to 'midi message' type channel data {
@@ -87,11 +103,17 @@ to 'send MIDI stop playing' {
   'send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FC')))
 }
 
-to 'send note' note on/off channel {
-  if on/off {
-    'send MIDI message' ('midi message' ('_MIDI note on') channel ('[data:makeList]' note 127))
+to 'send note' 'midi note' on/off channel {
+  if (isType (v 'midi note') 'list') {
+    for note (v 'midi note') {
+      'send note' note on/off channel
+    }
   } else {
-    'send MIDI message' ('midi message' ('_MIDI note off') channel ('[data:makeList]' note 0))
+    if on/off {
+      'send MIDI message' ('midi message' ('_MIDI note on') channel ('[data:makeList]' (v 'midi note') 127))
+    } else {
+      'send MIDI message' ('midi message' ('_MIDI note off') channel ('[data:makeList]' (v 'midi note') 0))
+    }
   }
 }
 
