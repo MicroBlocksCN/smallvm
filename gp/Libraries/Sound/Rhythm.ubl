@@ -1,0 +1,47 @@
+module Rhythm Control
+author MicroBlocks
+version 1 0 
+description 'Set a tempo in beats per minute (BPM) and get the length in milliseconds of the different relative music durations.
+'
+variables _rhy_tempo
+
+  spec ' ' 'set tempo to' 'set tempo to _ bpm' 'auto' 200
+  spec 'r' 'whole duration' '𝅝'
+  spec 'r' 'half duration' '𝅗𝅥'
+  spec 'r' 'quarter duration' '♩'
+  spec 'r' 'eighth duration' '♪'
+  spec 'r' 'sixteenth duration' '𝅘𝅥𝅯'
+  spec 'r' 'dotted' '_ .' 'auto' ''
+  spec 'r' 'triplet' '‿³ _' 'auto' ''
+
+to 'set tempo to' tempo {
+  _rhy_tempo = tempo
+}
+
+to 'whole duration' {
+  return (240000 / _rhy_tempo)
+}
+
+to 'half duration' {
+  return (120000 / _rhy_tempo)
+}
+
+to 'quarter duration' {
+  return (60000 / _rhy_tempo)
+}
+
+to 'eighth duration' {
+  return (30000 / _rhy_tempo)
+}
+
+to 'sixteenth duration' {
+  return (15000 / _rhy_tempo)
+}
+
+to dotted duration {
+  return (duration + (duration / 2))
+}
+
+to triplet duration {
+  return ((duration * 2) / 3)
+}
