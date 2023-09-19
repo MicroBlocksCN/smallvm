@@ -708,10 +708,10 @@ OBJ primUnicodeAt(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerIndexError);
 	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
 	int i = obj2int(args[0]);
-	char *s = obj2str(args[1]);
-	if ((i < 1) || (i > countUTF8(s))) return fail(indexOutOfRangeError);
+	uint8 *s = (uint8 *) obj2str(args[1]);
+	if ((i < 1) || (i > countUTF8((char *) s))) return fail(indexOutOfRangeError);
 
-	for (; i > 1; i--) s = nextUTF8(s); // find first byte of desired Unicode character
+	for (; i > 1; i--) s = (uint8 *) nextUTF8((char *) s); // find first byte of desired Unicode character
 	int result = -1;
 	int firstByte = *s;
 	if (firstByte < 128) {
