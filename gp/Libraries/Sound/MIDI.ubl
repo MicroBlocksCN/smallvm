@@ -1,28 +1,37 @@
 module MIDI Output
 author MicroBlocks
 version 1 0 
+choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
 description 'Play notes through hardware MIDI. By default, it plays through the hardware serial port, which may interfere with the MicroBlocks IDE when programming it live unless you''re using a board with an extra hardware serial port, such as the Due. You can, however, specify a software serial port using the `set MIDI pin` block.
 
-Connect the MIDI pin 5 to the serial pin, MIDI pin 2 to GND through a 220Ω resistor, and MIDI pin 4 to 5v, also through a 220Ω resistor.
+Connect MIDI pin 5 to the serial pin, MIDI pin 2 to GND through a 220Ω resistor, and MIDI pin 4 to 5v, also through a 220Ω resistor.
 '
 variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel 
 
-  spec ' ' 'play MIDI note' 'send MIDI note _ during _ ms on channel _' 'auto auto auto' 60 500 1
+  spec ' ' 'play MIDI note' 'send MIDI note _ during _ ms on channel _ volume _' 'auto auto auto auto' 60 500 1 127
+  spec ' ' 'send note' 'send MIDI note _ on _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
   spec 'r' 'note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
+  spec ' ' 'select MIDI instrument' 'select MIDI instrument _ for channel _' 'auto auto' '10' 2
+  spec ' ' 'change MIDI control' 'change MIDI control _ on channel _ to _' 'menu.controls auto auto' 'modulation' 1 127
+  spec ' ' 'pitch bend channel' 'pitch bend MIDI channel _ to _ %' 'auto auto' 1 -50
+  spec ' ' 'send MIDI reset' 'send MIDI reset'
+  spec ' ' 'send MIDI start playing' 'send MIDI start playing'
+  spec ' ' 'send MIDI stop playing' 'send MIDI stop playing'
+  spec ' ' 'send MIDI continue playing' 'send MIDI continue playing'
   spec ' ' 'set MIDI pin' 'set MIDI signal to pin _' 'auto' 8
   spec ' ' '_MIDI init' '_MIDI init'
   spec 'r' '_MIDI message' '_MIDI message type _ channel _ data _' 'num auto auto' 9 6 ''
   spec 'r' '_MIDI note on' '_MIDI note on'
   spec 'r' '_MIDI note off' '_MIDI note off'
-  spec ' ' '_send MIDI message' '_send MIDI message _' 'auto' ''
-  spec ' ' 'send MIDI reset' 'send MIDI reset'
-  spec ' ' 'send MIDI start playing' 'send MIDI start playing'
-  spec ' ' 'send MIDI stop playing' 'send MIDI stop playing'
-  spec ' ' 'send MIDI continue playing' 'send MIDI continue playing'
-  spec ' ' 'send note' 'send MIDI note _ on _ on channel _' 'auto bool auto' 60 true 1
-  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
   spec 'r' '_MIDI program change' '_MIDI program change'
-  spec ' ' 'select MIDI instrument' 'select MIDI instrument _ for channel _' 'auto auto' '10' 2
+  spec 'r' '_MIDI pitch bend' '_MIDI pitch bend'
+  spec 'r' '_MIDI control change' '_MIDI control change'
+  spec ' ' '_send MIDI message' '_send MIDI message _' 'auto' ''
+  spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+
+to '_MIDI control change' {
+  return (hexToInt 'B')
+}
 
 to '_MIDI init' {
   if (not _MIDI_initialized) {
@@ -48,8 +57,23 @@ to '_MIDI note on' {
   return 9
 }
 
+to '_MIDI pitch bend' {
+  return (hexToInt 'E')
+}
+
 to '_MIDI program change' {
   return 12
+}
+
+to '_send MIDI message' message {
+  '_MIDI init'
+  if (_MIDI_pin == 0) {
+    '[serial:write]' message
+  } else {
+    for byte message {
+      '[io:softWriteByte]' byte _MIDI_pin _MIDI_soft_baudrate
+    }
+  }
 }
 
 to '_trimmedLowercase' s {
@@ -67,33 +91,30 @@ or periods and all lowercase.'
   return ('[data:unicodeString]' result)
 }
 
+to 'change MIDI control' control channel value {
+  '_send MIDI message' ('_MIDI message' ('_MIDI control change') channel ('[data:makeList]' (at ('[data:find]' control ('[data:makeList]'  'bank select 1' 'bank select 2' 'modulation' 'portamento time' 'volume' 'pan' 'expression' 'hold' 'portamento' 'sostenuto' 'soft' 'resonance' 'release time' 'attack time' 'cutoff' 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2')) ('[data:makeList]' 0 32 1 5 7 10 11 64 65 66 67 71 72 73 74 75 76 77 78 84 91 93)) value))
+}
+
 to 'note to MIDI' note octave {
   return ((at ('[data:find]' ('_trimmedLowercase' note) ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')) ('[data:makeList]' 60 61 62 63 64 65 66 67 68 69 70 71 59 61 61 63 63 65 64 66 66 68 68 70 70 72)) + (octave * 12))
 }
 
-to 'play MIDI note' 'midi note' duration channel {
-  'send note' (v 'midi note') true channel
+to 'pitch bend channel' channel percent {
+  '_send MIDI message' ('_MIDI message' ('_MIDI pitch bend') channel ('[data:makeList]' 0 (minimum 127 (((64 * percent) / 100) + 64))))
+}
+
+to 'play MIDI note' 'midi note' duration channel volume {
+  'send note' (v 'midi note') true channel volume
   waitMillis duration
-  'send note' (v 'midi note') false channel
+  'send note' (v 'midi note') false channel 0
 }
 
 to 'select MIDI instrument' 'instrument number' channel {
-  '_send MIDI message' ('_MIDI message' ('_MIDI program change') channel ('[data:makeList]' (v 'instrument number')))
+  '_send MIDI message' ('_MIDI message' ('_MIDI program change') channel ('[data:makeList]' ((v 'instrument number') - 1)))
 }
 
 to 'send MIDI continue playing' {
   '_send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FB')))
-}
-
-to '_send MIDI message' message {
-  '_MIDI init'
-  if (_MIDI_pin == 0) {
-    '[serial:write]' message
-  } else {
-    for byte message {
-      '[io:softWriteByte]' byte _MIDI_pin _MIDI_soft_baudrate
-    }
-  }
 }
 
 to 'send MIDI reset' {
@@ -109,14 +130,14 @@ to 'send MIDI stop playing' {
   '_send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FC')))
 }
 
-to 'send note' 'midi note' on/off channel {
+to 'send note' 'midi note' on/off channel volume {
   if (isType (v 'midi note') 'list') {
     for note (v 'midi note') {
       'send note' note on/off channel
     }
   } else {
     if on/off {
-      '_send MIDI message' ('_MIDI message' ('_MIDI note on') channel ('[data:makeList]' (v 'midi note') 127))
+      '_send MIDI message' ('_MIDI message' ('_MIDI note on') channel ('[data:makeList]' (v 'midi note') volume))
     } else {
       '_send MIDI message' ('_MIDI message' ('_MIDI note off') channel ('[data:makeList]' (v 'midi note') 0))
     }
