@@ -11,16 +11,18 @@ variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel
   spec 'r' 'note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
   spec ' ' 'set MIDI pin' 'set MIDI signal to pin _' 'auto' 8
   spec ' ' '_MIDI init' '_MIDI init'
-  spec 'r' 'midi message' 'midi message type _ channel _ data _' 'num auto auto' 9 6 ''
+  spec 'r' '_MIDI message' '_MIDI message type _ channel _ data _' 'num auto auto' 9 6 ''
   spec 'r' '_MIDI note on' '_MIDI note on'
   spec 'r' '_MIDI note off' '_MIDI note off'
-  spec ' ' 'send MIDI message' 'send MIDI message _' 'auto' ''
+  spec ' ' '_send MIDI message' '_send MIDI message _' 'auto' ''
   spec ' ' 'send MIDI reset' 'send MIDI reset'
   spec ' ' 'send MIDI start playing' 'send MIDI start playing'
   spec ' ' 'send MIDI stop playing' 'send MIDI stop playing'
   spec ' ' 'send MIDI continue playing' 'send MIDI continue playing'
   spec ' ' 'send note' 'send MIDI note _ on _ on channel _' 'auto bool auto' 60 true 1
   spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
+  spec 'r' '_MIDI program change' '_MIDI program change'
+  spec ' ' 'select MIDI instrument' 'select MIDI instrument _ for channel _' 'auto auto' '10' 2
 
 to '_MIDI init' {
   if (not _MIDI_initialized) {
@@ -28,15 +30,14 @@ to '_MIDI init' {
       '[serial:open]' 31250
     } else {
       '[serial:close]'
-      local 'index' ('[data:find]' (boardType) ('[data:makeList]' 'Citilab ED1' 'Due' 'RP2040'))
-      if (index > 0) {
-        _MIDI_soft_baudrate = (at index ('[data:makeList]' 37000 31350 31350))
-      } else {
-        _MIDI_soft_baudrate = 31250
-      }
+      _MIDI_soft_baudrate = 31350
     }
     _MIDI_initialized = (booleanConstant true)
   }
+}
+
+to '_MIDI message' type channel data {
+  return ('[data:asByteArray]' ('[data:join]' ('[data:makeList]' ((type << 4) | (channel - 1))) data))
 }
 
 to '_MIDI note off' {
@@ -45,6 +46,10 @@ to '_MIDI note off' {
 
 to '_MIDI note on' {
   return 9
+}
+
+to '_MIDI program change' {
+  return 12
 }
 
 to '_trimmedLowercase' s {
@@ -62,10 +67,6 @@ or periods and all lowercase.'
   return ('[data:unicodeString]' result)
 }
 
-to 'midi message' type channel data {
-  return ('[data:asByteArray]' ('[data:join]' ('[data:makeList]' ((type << 4) | (channel - 1))) data))
-}
-
 to 'note to MIDI' note octave {
   return ((at ('[data:find]' ('_trimmedLowercase' note) ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')) ('[data:makeList]' 60 61 62 63 64 65 66 67 68 69 70 71 59 61 61 63 63 65 64 66 66 68 68 70 70 72)) + (octave * 12))
 }
@@ -76,11 +77,15 @@ to 'play MIDI note' 'midi note' duration channel {
   'send note' (v 'midi note') false channel
 }
 
-to 'send MIDI continue playing' {
-  'send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FB')))
+to 'select MIDI instrument' 'instrument number' channel {
+  '_send MIDI message' ('_MIDI message' ('_MIDI program change') channel ('[data:makeList]' (v 'instrument number')))
 }
 
-to 'send MIDI message' message {
+to 'send MIDI continue playing' {
+  '_send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FB')))
+}
+
+to '_send MIDI message' message {
   '_MIDI init'
   if (_MIDI_pin == 0) {
     '[serial:write]' message
@@ -92,15 +97,16 @@ to 'send MIDI message' message {
 }
 
 to 'send MIDI reset' {
-  'send MIDI message' (hexToInt 'FF')
+  '_send MIDI message' (hexToInt 'FF')
+  '_send MIDI message' ('[data:makeList]' (hexToInt 'F0') (hexToInt '7E') (hexToInt '7F') (hexToInt '09') (hexToInt '01') (hexToInt 'F7'))
 }
 
 to 'send MIDI start playing' {
-  'send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FA')))
+  '_send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FA')))
 }
 
 to 'send MIDI stop playing' {
-  'send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FC')))
+  '_send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FC')))
 }
 
 to 'send note' 'midi note' on/off channel {
@@ -110,9 +116,9 @@ to 'send note' 'midi note' on/off channel {
     }
   } else {
     if on/off {
-      'send MIDI message' ('midi message' ('_MIDI note on') channel ('[data:makeList]' (v 'midi note') 127))
+      '_send MIDI message' ('_MIDI message' ('_MIDI note on') channel ('[data:makeList]' (v 'midi note') 127))
     } else {
-      'send MIDI message' ('midi message' ('_MIDI note off') channel ('[data:makeList]' (v 'midi note') 0))
+      '_send MIDI message' ('_MIDI message' ('_MIDI note off') channel ('[data:makeList]' (v 'midi note') 0))
     }
   }
 }
