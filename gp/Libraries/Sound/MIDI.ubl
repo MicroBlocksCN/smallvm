@@ -92,7 +92,7 @@ or periods and all lowercase.'
 }
 
 to 'change MIDI control' control channel value {
-  '_send MIDI message' ('_MIDI message' ('_MIDI control change') channel ('[data:makeList]' (at ('[data:find]' control ('[data:makeList]'  'bank select 1' 'bank select 2' 'modulation' 'portamento time' 'volume' 'pan' 'expression' 'hold' 'portamento' 'sostenuto' 'soft' 'resonance' 'release time' 'attack time' 'cutoff' 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2')) ('[data:makeList]' 0 32 1 5 7 10 11 64 65 66 67 71 72 73 74 75 76 77 78 84 91 93)) value))
+  '_send MIDI message' ('_MIDI message' ('_MIDI control change') channel ('[data:makeList]' (at ('[data:find]' control ('[data:makeList]' 'bank select 1' 'bank select 2' 'modulation' 'portamento time' 'volume' 'pan' 'expression' 'hold' 'portamento' 'sostenuto' 'soft' 'resonance' 'release time' 'attack time' 'cutoff' 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2')) ('[data:makeList]' 0 32 1 5 7 10 11 64 65 66 67 71 72 73 74 75 76 77 78 84 91 93)) value))
 }
 
 to 'note to MIDI' note octave {
@@ -133,7 +133,7 @@ to 'send MIDI stop playing' {
 to 'send note' 'midi note' on/off channel volume {
   if (isType (v 'midi note') 'list') {
     for note (v 'midi note') {
-      'send note' note on/off channel
+      'send note' note on/off channel volume
     }
   } else {
     if on/off {
