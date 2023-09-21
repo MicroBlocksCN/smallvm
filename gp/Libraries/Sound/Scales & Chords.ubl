@@ -1,4 +1,4 @@
-module 'Musical Scales' Data
+module 'Scales & Chords' Data
 author MicroBlocks
 version 1 0 
 description 'Lists of relative semitone intervals for all Western diatonic scales plus the major and minor pentatonic scales
