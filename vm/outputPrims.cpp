@@ -571,7 +571,9 @@ static OBJ primLightLevel(int argCount, OBJ *args) {
 		OBJ analogPin = int2obj(8);
 		lightLevel = obj2int(primAnalogRead(1, &analogPin));
 	#elif defined(ARDUINO_CITILAB_ED1)
-		lightLevel = analogRead(34) * 1000 / 4095; // output range 0-1000
+		lightLevel = analogRead(34) * 1000 / 4095;
+	#elif defined(MATRIXBIT) || defined(COCOROBO)
+		lightLevel = analogRead(39) * 1000 / 4095;
 	#elif defined(DATABOT)
 		const char *msg = "Use 'Light & Gesture' library on Databot.";
 		return newStringFromBytes(msg, strlen(msg));
