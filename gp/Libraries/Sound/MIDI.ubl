@@ -2,6 +2,8 @@ module MIDI Output
 author MicroBlocks
 version 1 0 
 choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
+choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
+choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare ' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom ' 'Pedal Hi-Hat ' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' 'Tambourine' 'Splash Cymbal' 'Cowbell' 'Crash Cymbal 2' 'Vibraslap' 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' 'Cabasa' 'Maracas' 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' 'Claves' 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle'
 description 'Play notes through hardware MIDI. By default, it plays through the hardware serial port, which may interfere with the MicroBlocks IDE when programming it live unless you''re using a board with an extra hardware serial port, such as the Due. You can, however, specify a software serial port using the `set MIDI pin` block.
 
 Connect MIDI pin 5 to the serial pin, MIDI pin 2 to GND through a 220Ω resistor, and MIDI pin 4 to 5v, also through a 220Ω resistor.
@@ -12,6 +14,8 @@ variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel
   spec ' ' 'send note' 'send MIDI note _ on _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
   spec 'r' 'note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
   spec ' ' 'select MIDI instrument' 'select MIDI instrument _ for channel _' 'auto auto' '10' 2
+  spec 'r' 'instrument' 'instrument _ number _' 'menu.instrument menu.range:1-8' 'piano' 1
+  spec 'r' 'drum note' 'drum note _' 'menu.druminst' 'Ride Cymbal 2'
   spec ' ' 'change MIDI control' 'change MIDI control _ on channel _ to _' 'menu.controls auto auto' 'modulation' 1 127
   spec ' ' 'pitch bend channel' 'pitch bend MIDI channel _ to _ %' 'auto auto' 1 -50
   spec ' ' 'send MIDI reset' 'send MIDI reset'
@@ -26,6 +30,8 @@ variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel
   spec 'r' '_MIDI program change' '_MIDI program change'
   spec 'r' '_MIDI pitch bend' '_MIDI pitch bend'
   spec 'r' '_MIDI control change' '_MIDI control change'
+  spec 'r' '_MIDI drum notes 1' '_MIDI drum notes 1'
+  spec 'r' '_MIDI drum notes 2' '_MIDI drum notes 2'
   spec ' ' '_send MIDI message' '_send MIDI message _' 'auto' ''
   spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 
@@ -74,6 +80,14 @@ to '_send MIDI message' message {
       '[io:softWriteByte]' byte _MIDI_pin _MIDI_soft_baudrate
     }
   }
+}
+
+to instrument instrument number {
+  return (((('[data:find]' instrument ('[data:makeList]' 'piano' 'chromatic percussion' 'organ' 'guitar' 'bass' 'strings' 'ensemble' 'brass' 'reed' 'pipe' 'synth lead' 'synth pad' 'synth SFX' 'ethnic' 'percussive' 'SFX')) - 1) * 8) + number)
+}
+
+to 'drum note' instrument {
+  return (('[data:find]' instrument ('[data:join]' ('_MIDI drum notes 1') ('_MIDI drum notes 2'))) + 34)
 }
 
 to '_trimmedLowercase' s {
@@ -151,3 +165,9 @@ to 'set MIDI pin' pin {
   '_MIDI init'
 }
 
+to '_MIDI drum notes 1' {
+	return ('[data:makeList]' 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare ' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom ' 'Pedal Hi-Hat ' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' 'Tambourine' 'Splash Cymbal' 'Cowbell')
+}
+to '_MIDI drum notes 2' {
+	return ('[data:makeList]' 'Crash Cymbal 2' 'Vibraslap' 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' 'Cabasa' 'Maracas' 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' 'Claves' 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle')
+}
