@@ -124,7 +124,7 @@ to 'rhy broadcast' message 'bar number' 'beat number' {
 
 to 'set tempo to' tempo {
   _rhy_tempo = tempo
-  if (_rhy_beat_note_value > 0) {
+  if (_rhy_beat_note_value == 0) {
     'set time signature to' 4 4
   }
 }
