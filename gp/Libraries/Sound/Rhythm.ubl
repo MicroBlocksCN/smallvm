@@ -55,7 +55,7 @@ to '_rhythm loop' {
 }
 
 to 'broadcast remove' message 'bar number' 'beat number' {
-  local 'beat' (at (v 'bar number') (at (v 'beat number') _rhy_pattern))
+  local 'beat' (at (v 'beat number') (at (v 'bar number') _rhy_pattern))
   local 'index' ('[data:find]' message beat)
   if (index > 0) {
     '[data:delete]' index beat
