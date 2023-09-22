@@ -1121,6 +1121,120 @@ static int readTemperature() {
 	return (fix16bitSign((msb << 8) | lsb) >> 8) - fudgeFactor; // temperture C
 }
 
+#elif defined(COCOROBO)
+
+#define MPU6050 0x68
+#define MPU6050_ACCEL_XOUT_H 59
+#define MPU6050_PWR_MGMT_1 107
+
+static uint8 mpuData[6];
+
+static void mpu6050readData() {
+	if (!accelStarted) {
+		if (!wireStarted) startWire();
+		if (!wireStarted) return;
+
+		writeI2CReg(MPU6050, MPU6050_PWR_MGMT_1, 1); // use x-gyro clock
+		delay(1); // xxx 10 works
+		accelStarted = true;
+	}
+
+	// Request accelerometer data
+	Wire.beginTransmission(MPU6050);
+	Wire.write(MPU6050_ACCEL_XOUT_H);
+	Wire.endTransmission();
+
+	// Read data
+	int count = sizeof(mpuData);
+	Wire.requestFrom(MPU6050, count);
+
+	for (int i = 0; i < count; i++) {
+		if (!Wire.available()) break; /* no more data */;
+		mpuData[i] = Wire.read();
+	}
+}
+
+static int readAcceleration(int registerID) {
+	mpu6050readData();
+
+	int val = 0;
+	if (1 == registerID) val = fix16bitSign((mpuData[2] << 8) | mpuData[3]); // x-axis
+	if (3 == registerID) val = -fix16bitSign((mpuData[0] << 8) | mpuData[1]); // y-axis
+	if (5 == registerID) val = -fix16bitSign((mpuData[4] << 8) | mpuData[5]); // z-axis
+
+	return (100 * val) >> 14;
+}
+
+static void setAccelRange(int range) {
+	// Range is 0, 1, 2, or 3 for +/- 2, 4, 8, or 16 g.
+	// See MPU-9250 Register Map and Descriptions, ACCEL_CONFIG, pg. 14.
+
+	if ((range < 0) || (range > 3)) return; // out of range
+	writeI2CReg(MPU6050, 0x1C, (range << 3));
+}
+
+#define AHT_ADDR 0x38
+#define AHT10_START_MEASURMENT_CMD 0xAC
+#define AHT10_DATA_MEASURMENT_CMD  0x33 
+#define AHT10_DATA_NOP             0x00
+
+static uint8 ahtData[6]; 
+
+static int readTemperature() {
+	
+	Wire1.begin(32, 33); 
+	Wire1.setClock(400000);
+	delay(5);
+	Wire1.beginTransmission(AHT_ADDR);
+	Wire1.write(AHT10_START_MEASURMENT_CMD);
+  	Wire1.write(AHT10_DATA_MEASURMENT_CMD);
+  	Wire1.write(AHT10_DATA_NOP);
+	Wire1.endTransmission();
+
+	int count = sizeof(ahtData);
+	Wire1.requestFrom(AHT_ADDR, count);
+	for (int i = 0; i < count; i++) {
+		if (!Wire1.available()) break; /* no more data */;
+		ahtData[i] = Wire1.read();
+	}
+
+	uint32_t tdata = ahtData[3] & 0x0F;
+	tdata <<= 8;
+	tdata |= ahtData[4];
+	tdata <<= 8;
+	tdata |= ahtData[5];
+	return (tdata * 191 / 1000000 - 50 );
+}
+
+static int readHumidity() {
+	
+	Wire1.begin(32, 33); 
+	Wire1.setClock(400000);
+	delay(5);
+	Wire1.beginTransmission(AHT_ADDR);
+	Wire1.write(AHT10_START_MEASURMENT_CMD);
+  	Wire1.write(AHT10_DATA_MEASURMENT_CMD);
+  	Wire1.write(AHT10_DATA_NOP);
+	Wire1.endTransmission();
+
+	int count = sizeof(ahtData);
+	Wire1.requestFrom(AHT_ADDR, count);
+	for (int i = 0; i < count; i++) {
+		if (!Wire1.available()) break; /* no more data */;
+		ahtData[i] = Wire1.read();
+	}
+	
+	uint32_t tdata = ahtData[1];
+	tdata <<= 8;
+	tdata |= ahtData[2];
+	tdata <<= 4;
+	tdata |= ahtData[3] >> 4;
+	return (tdata * 95 / 1000000);
+}
+static OBJ primHumidity(int argCount, OBJ *args) {
+	return int2obj(readHumidity());
+}
+
 #elif defined(DATABOT)
 
 typedef enum {
@@ -2101,9 +2215,10 @@ static PrimEntry entries[] = {
 	{"spiSetup", primSPISetup},
 	{"readDHT", primReadDHT},
 	{"microphone", primMicrophone},
-	{"captureStart", captureStartPrim},
-	{"captureCount", primCaptureCount},
-	{"captureEnd", primCaptureEnd},
+
+	#if defined(COCOROBO)
+	{"Humidity", primHumidity},		
+  	#endif
 };
 
 void addSensorPrims() {
