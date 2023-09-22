@@ -839,7 +839,7 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
 	static const int analogPin[] = {};
-	#define PIN_LED 14
+	#define PIN_LED 12
 	#define PIN_BUTTON_A 34
 	#define PIN_BUTTON_B 35
 	#define DEFAULT_TONE_PIN 26
