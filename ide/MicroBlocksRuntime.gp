@@ -37,7 +37,7 @@ method evalOnBoard SmallRuntime aBlock showBytes {
 		return
 	}
 	if ('not connected' == (updateConnection this)) {
-		showError (morph aBlock) 'Board not connected'
+		showError (morph aBlock) (localized 'Board not connected')
 		return
 	}
 	step scripter // save script changes if needed

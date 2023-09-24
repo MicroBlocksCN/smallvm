@@ -2168,6 +2168,9 @@ Installing firmware...
 Plug in the board.
 插上主板。
 
+Board not connected
+未连接主板
+
 Wiping board...
 擦除主板...
 
