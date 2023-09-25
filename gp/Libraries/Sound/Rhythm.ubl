@@ -12,6 +12,7 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures
   spec ' ' 'broadcast remove' 'remove _ from bar _ beat _' 'auto auto auto' 'kick' 1 1
   spec ' ' 'stop playing' 'stop playing'
   spec ' ' 'start playing' 'start playing'
+  spec 'r' 'current tick for duration' 'current beat of duration _ wrapping at _' 'auto auto' 200 4
   spec 'r' 'whole duration' '𝅝'
   spec 'r' 'half duration' '𝅗𝅥'
   spec 'r' 'quarter duration' '♩'
@@ -22,8 +23,6 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures
   spec ' ' '_rhythm loop' '_rhythm loop'
   spec 'r' '_rhy duration of note value' '_rhy duration of note value _' 'auto' 4
   spec 'r' '_rhy 2 ^' '_rhy 2 ^ _' 'auto' '10'
-  spec ' ' 'read pattern from dump' 'read pattern from file _' 'auto' 'rock.pat'
-  spec ' ' 'dump pattern to file' 'dump pattern to file _' 'auto' 'rock.pat'
 
 to '_rhy 2 ^' n {
   local 'result' 1
@@ -55,35 +54,37 @@ to '_rhythm loop' {
 }
 
 to 'broadcast remove' message 'bar number' 'beat number' {
-  local 'beat' (at (v 'beat number') (at (v 'bar number') _rhy_pattern))
-  local 'index' ('[data:find]' message beat)
-  if (index > 0) {
-    '[data:delete]' index beat
+  if ((v 'beat number') == '') {
+    for 'each beat' _rhy_measures {
+      'broadcast remove' message (v 'bar number') (v 'each beat')
+    }
+  } ((v 'bar number') == '') {
+    for 'each bar' (size _rhy_pattern) {
+      'broadcast remove' message (v 'each bar') (v 'beat number')
+    }
+  } (isType (v 'beat number') 'list') {
+    for 'each beat' (v 'beat number') {
+      'broadcast remove' message (v 'bar number') (v 'each beat')
+    }
+  } (isType (v 'bar number') 'list') {
+    for 'each bar' (v 'bar number') {
+      'broadcast remove' message (v 'each bar') (v 'beat number')
+    }
+  } else {
+    local 'beat' (at (v 'beat number') (at (v 'bar number') _rhy_pattern))
+    local 'index' ('[data:find]' message beat)
+    if (index > 0) {
+      '[data:delete]' index beat
+    }
   }
+}
+
+to 'current tick for duration' duration wrap {
+  return ((((timer) / duration) % wrap) + 1)
 }
 
 to dotted duration {
   return (duration + (duration / 2))
-}
-
-to 'dump pattern to file' filename {
-  '[file:delete]' filename
-  '[file:open]' filename
-  '[file:appendLine]' ('[data:join]' 't:' _rhy_tempo ',b:' _rhy_beat_duration ',m:' _rhy_measures) filename
-  local 'dump' ''
-  for bar _rhy_pattern {
-    for beat bar {
-      for trigger beat {
-        dump = ('[data:join]' dump trigger ',')
-      }
-      dump = ('[data:copyFromTo]' dump 1 ((size dump) - 1))
-      dump = ('[data:join]' dump '#')
-    }
-    dump = ('[data:copyFromTo]' dump 1 ((size dump) - 1))
-    dump = ('[data:join]' dump '|')
-  }
-  '[file:appendLine]' ('[data:copyFromTo]' dump 1 ((size dump) - 1)) filename
-  '[file:close]' filename
 }
 
 to 'eighth duration' {
@@ -98,27 +99,28 @@ to 'quarter duration' {
   return (60000 / _rhy_tempo)
 }
 
-to 'read pattern from dump' filename {
-  '[file:open]' filename
-  local 'header' ('[data:split]' ('[file:readLine]' filename) ',')
-  _rhy_measures = (at 2 ('[data:split]' (at 3 header) ':'))
-  _rhy_beat_duration = (at 2 ('[data:split]' (at 2 header) ':'))
-  _rhy_tempo = (at 2 ('[data:split]' (at 1 header) ':'))
-  _rhy_pattern = ('[data:makeList]')
-  for 'bar string' ('[data:split]' ('[file:readLine]' filename) '|') {
-    local 'bar' ('[data:makeList]')
-    for 'beat string' ('[data:split]' (v 'bar string') '#') {
-      '[data:addLast]' ('[data:split]' (v 'beat string') ',') bar
-    }
-    '[data:addLast]' bar _rhy_pattern
-  }
-  '[file:close]' filename
-}
-
 to 'rhy broadcast' message 'bar number' 'beat number' {
-  local 'beat' (at (v 'beat number') (at (v 'bar number') _rhy_pattern))
-  if (('[data:find]' message beat) < 0) {
-    '[data:addLast]' message beat
+  if ((v 'beat number') == '') {
+    for 'each beat' _rhy_measures {
+      'rhy broadcast' message (v 'bar number') (v 'each beat')
+    }
+  } ((v 'bar number') == '') {
+    for 'each bar' (size _rhy_pattern) {
+      'rhy broadcast' message (v 'each bar') (v 'beat number')
+    }
+  } (isType (v 'beat number') 'list') {
+    for 'each beat' (v 'beat number') {
+      'rhy broadcast' message (v 'bar number') (v 'each beat')
+    }
+  } (isType (v 'bar number') 'list') {
+    for 'each bar' (v 'bar number') {
+      'rhy broadcast' message (v 'each bar') (v 'beat number')
+    }
+  } else {
+    local 'beat' (at (v 'beat number') (at (v 'bar number') _rhy_pattern))
+    if (('[data:find]' message beat) < 0) {
+      '[data:addLast]' message beat
+    }
   }
 }
 
