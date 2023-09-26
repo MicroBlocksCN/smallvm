@@ -4,9 +4,9 @@ version 1 0
 choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare ' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom ' 'Pedal Hi-Hat ' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' 'Tambourine' 'Splash Cymbal' 'Cowbell' 'Crash Cymbal 2' 'Vibraslap' 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' 'Cabasa' 'Maracas' 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' 'Claves' 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle'
-description 'Play notes through hardware MIDI. By default, it plays through the hardware serial port, which may interfere with the MicroBlocks IDE when programming it live unless you''re using a board with an extra hardware serial port, such as the Due. You can, however, specify a software serial port using the `set MIDI pin` block.
+description 'Play notes through hardware MIDI. By default, it plays through the hardware serial port. You can, however, specify a software serial port using the `set MIDI pin` block. On most boards, however, the default serial pin is going to be pin 1, so there is no need to use the `set MIDI pin` block.
 
-Connect MIDI pin 5 to the serial pin, MIDI pin 2 to GND through a 220Ω resistor, and MIDI pin 4 to 5v, also through a 220Ω resistor.
+Connect MIDI pin 5 to the serial pin, and MIDI pin 4 to 3.3v or 5v.
 '
 variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel 
 

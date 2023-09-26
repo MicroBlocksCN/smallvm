@@ -12,7 +12,7 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures
   spec ' ' 'broadcast remove' 'remove _ from bar _ beat _' 'auto auto auto' 'kick' 1 1
   spec ' ' 'stop playing' 'stop playing'
   spec ' ' 'start playing' 'start playing'
-  spec 'r' 'current tick for duration' 'current beat of duration _ wrapping at _' 'auto auto' 200 4
+  spec 'r' 'current tick for duration' 'current beat'
   spec 'r' 'whole duration' '𝅝'
   spec 'r' 'half duration' '𝅗𝅥'
   spec 'r' 'quarter duration' '♩'
@@ -41,6 +41,7 @@ to '_rhy duration of note value' 'note value' {
 
 to '_rhythm loop' {
   repeatUntil (not _rhy_looping) {
+    '_rhy tick' = 0
     for bar _rhy_pattern {
       for beat bar {
         for trigger beat {
@@ -48,6 +49,7 @@ to '_rhythm loop' {
           waitMicros 50
         }
         waitMillis _rhy_beat_duration
+        '_rhy tick' += 1
       }
     }
   }
@@ -79,8 +81,8 @@ to 'broadcast remove' message 'bar number' 'beat number' {
   }
 }
 
-to 'current tick for duration' duration wrap {
-  return ((((timer) / duration) % wrap) + 1)
+to 'current tick for duration' {
+  return ((v '_rhy tick') + 1)
 }
 
 to dotted duration {
