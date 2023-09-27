@@ -3,7 +3,7 @@ author MicroBlocks
 version 1 0 
 description 'Set a tempo in beats per minute (BPM) and get the length in milliseconds of the different relative music durations.
 '
-variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures 
+variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures _rhy_tick
 
   spec ' ' 'set tempo to' 'set tempo to _ bpm' 'auto' 200
   spec ' ' 'set time signature to' 'set time signature to _ / _' 'auto auto' 4 4
