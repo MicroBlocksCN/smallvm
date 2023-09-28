@@ -13,14 +13,19 @@ It also includes intervals for the most common chord progressions.
   spec 'r' 'mixolydian scale' 'mixolydian scale root _' 'auto' '60'
   spec 'r' 'aeolian scale' 'aeolian scale root _' 'auto' '60'
   spec 'r' 'locrian scale' 'locrian scale root _' 'auto' '60'
+  space
   spec 'r' 'major pentatonic scale' 'major pentatonic scale root _' 'auto' '60'
   spec 'r' 'minor pentatonic scale' 'minor pentatonic scale root _' 'auto' '60'
+  space
   spec 'r' 'degrees' 'chord progression _ with root _' 'auto auto' 'I,IV,viiº,iii,vi,ii,V,I' 60
+  space
   spec 'r' 'major chord' 'major chord root _' 'auto' '60'
   spec 'r' 'minor chord' 'minor chord root _' 'auto' '60'
   spec 'r' 'diminished chord' 'diminished chord root _' 'auto' '60'
-  spec 'r' '7' '_ 7' 'auto' ''
   spec 'r' 'Maj7 chord' 'Maj7 chord root _' 'auto' '60'
+  space
+  spec 'r' '7' '_ 7' 'auto' ''
+  space
   spec 'r' '_scales degree index' '_scales chord for degree _ for root _' 'auto auto' 'II' 60
 
 to '7' chord {

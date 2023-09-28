@@ -12,17 +12,24 @@ variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel
 
   spec ' ' 'play MIDI note' 'send MIDI note _ during _ ms on channel _ volume _' 'auto auto auto auto' 60 500 1 127
   spec ' ' 'send note' 'send MIDI note _ on _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
+  space
   spec 'r' 'note to MIDI' 'note _ octave _ to MIDI key' 'auto auto' 'c' 0
+  space
   spec ' ' 'select MIDI instrument' 'select MIDI instrument _ for channel _' 'auto auto' '10' 2
   spec 'r' 'instrument' 'instrument _ number _' 'menu.instrument menu.range:1-8' 'piano' 1
   spec 'r' 'drum note' 'drum note _' 'menu.druminst' 'Ride Cymbal 2'
+  space
   spec ' ' 'change MIDI control' 'change MIDI control _ on channel _ to _' 'menu.controls auto auto' 'modulation' 1 127
   spec ' ' 'pitch bend channel' 'pitch bend MIDI channel _ to _ %' 'auto auto' 1 -50
+  space
   spec ' ' 'send MIDI reset' 'send MIDI reset'
+  space
   spec ' ' 'send MIDI start playing' 'send MIDI start playing'
   spec ' ' 'send MIDI stop playing' 'send MIDI stop playing'
   spec ' ' 'send MIDI continue playing' 'send MIDI continue playing'
+  space
   spec ' ' 'set MIDI pin' 'set MIDI signal to pin _' 'auto' 8
+  space
   spec ' ' '_MIDI init' '_MIDI init'
   spec 'r' '_MIDI message' '_MIDI message type _ channel _ data _' 'num auto auto' 9 6 ''
   spec 'r' '_MIDI note on' '_MIDI note on'
