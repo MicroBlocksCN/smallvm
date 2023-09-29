@@ -728,7 +728,7 @@ static int readTemperature() {
 }
 
 #elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || \
-	defined(ARDUINO_M5Atom_Matrix_ESP32)
+	defined(ARDUINO_M5Atom_Matrix_ESP32) || ARDUINO_M5STACK_Core2
 
 #ifdef ARDUINO_M5Stack_Core_ESP32
 	#define Wire1 Wire
@@ -1115,7 +1115,6 @@ static int databotMageneticField() {
 	return sqrt((magX * magX) + (magY * magY) + (magZ * magZ));
 }
 
-
 #elif defined(RP2040_PHILHOWER)
 
 static int readTemperature() { return analogReadTemp(); }
@@ -1134,6 +1133,7 @@ static void i2cReadBytes(int deviceID, int reg, int *buf, int bufSize) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
 		defined(ARDUINO_M5Stack_Core_ESP32) || \
+		defined(ARDUINO_M5STACK_Core2) || \
 		defined(ARDUINO_M5Stick_C) || \
 		defined(ARDUINO_M5Atom_Matrix_ESP32)
 
@@ -1207,7 +1207,7 @@ OBJ primAcceleration(int argCount, OBJ *args) {
 	#elif defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || defined(ARDUINO_NRF52840_CIRCUITPLAY)
 		deviceID = LIS3DH_ID;
 		reg = 0x29 | 0x80; // address + auto-increment flag
-	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Atom_Matrix_ESP32)
+	#elif defined(ARDUINO_M5Stack_Core_ESP32) || defined(ARDUINO_M5STACK_Core2) || defined(ARDUINO_M5Stick_C) || defined(ARDUINO_M5Atom_Matrix_ESP32)
 		deviceID = MPU6886_ID;
 		reg = 0x3B;
 	#endif
