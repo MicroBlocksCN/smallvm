@@ -57,6 +57,8 @@
   #define OBJSTORE_BYTES 262100 // max number of bytes that we can allocate for now
 #elif defined(ARDUINO_ARCH_RP2040)
   #define OBJSTORE_BYTES 100000
+#elif defined(ARDUINO_SAM_DUE)
+  #define OBJSTORE_BYTES 80000
 #else
   #define OBJSTORE_BYTES 4000
   // max that works on Wemos D1 mini (ESP8266) is 11000

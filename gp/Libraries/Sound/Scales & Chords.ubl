@@ -1,4 +1,4 @@
-module 'Musical Scales' Data
+module 'Scales & Chords' Data
 author MicroBlocks
 version 1 0 
 description 'Lists of relative semitone intervals for all Western diatonic scales plus the major and minor pentatonic scales
@@ -13,13 +13,20 @@ It also includes intervals for the most common chord progressions.
   spec 'r' 'mixolydian scale' 'mixolydian scale root _' 'auto' '60'
   spec 'r' 'aeolian scale' 'aeolian scale root _' 'auto' '60'
   spec 'r' 'locrian scale' 'locrian scale root _' 'auto' '60'
+  space
   spec 'r' 'major pentatonic scale' 'major pentatonic scale root _' 'auto' '60'
   spec 'r' 'minor pentatonic scale' 'minor pentatonic scale root _' 'auto' '60'
+  space
+  spec 'r' 'degrees' 'chord progression _ with root _' 'auto auto' 'I,IV,viiº,iii,vi,ii,V,I' 60
+  space
   spec 'r' 'major chord' 'major chord root _' 'auto' '60'
   spec 'r' 'minor chord' 'minor chord root _' 'auto' '60'
   spec 'r' 'diminished chord' 'diminished chord root _' 'auto' '60'
-  spec 'r' '7' '_ 7' 'auto' ''
   spec 'r' 'Maj7 chord' 'Maj7 chord root _' 'auto' '60'
+  space
+  spec 'r' '7' '_ 7' 'auto' ''
+  space
+  spec 'r' '_scales degree index' '_scales chord for degree _ for root _' 'auto auto' 'II' 60
 
 to '7' chord {
   return ('[data:join]' chord ('[data:makeList]' (10 + (at 1 chord))))
@@ -29,8 +36,55 @@ to 'Maj7 chord' root {
   return ('[data:makeList]' (root + 0) (root + 4) (root + 7) (root + 11))
 }
 
+to '_scales degree index' degree root {
+  local 'scale' ('ionian scale' root)
+  local 'majors' ('[data:makeList]' 'I' 'II' 'III' 'IV' 'V' 'VI' 'VII')
+  local 'minors' ('[data:makeList]' 'i' 'ii' 'iii' 'iv' 'v' 'vi' 'vii')
+  local 'add 7th' (('[data:find]' '7' degree) > 0)
+  local 'diminisdhed' ((('[data:find]' 'o' degree) + ('[data:find]' 'º' degree)) > 0)
+  if (v 'add 7th') {
+    degree = ('[data:copyFromTo]' degree 1 ((size degree) - 1))
+  }
+  if diminisdhed {
+    degree = ('[data:copyFromTo]' degree 1 ((size degree) - 1))
+  }
+  local 'chord' ''
+  local 'index' ('[data:find]' degree majors)
+  if (index > 0) {
+    chord = ('major chord' (at index scale))
+  } else {
+    index = ('[data:find]' degree minors)
+    if (index > 0) {
+      chord = ('minor chord' (at index scale))
+    }
+  }
+  if diminisdhed {
+    chord = ('diminished chord' (at index scale))
+  }
+  if (v 'add 7th') {
+    chord = ('7' chord)
+  }
+  return chord
+}
+
 to 'aeolian scale' root {
   return ('[data:makeList]' (root + 0) (root + 2) (root + 3) (root + 5) (root + 7) (root + 8) (root + 10) (root + 12))
+}
+
+to degrees degrees root {
+  local 'degree list' degrees
+  local 'chords' ('[data:makeList]')
+  if (isType degrees 'string') {
+    if (('[data:find]' ',' degrees) > 0) {
+      'degree list' = ('[data:split]' degrees ',')
+    } else {
+      'degree list' = ('[data:makeList]' degrees)
+    }
+  }
+  for degree (v 'degree list') {
+    '[data:addLast]' ('_scales degree index' degree root) chords
+  }
+  return chords
 }
 
 to 'diminished chord' root {
@@ -42,7 +96,7 @@ to 'dorian scale' root {
 }
 
 to 'ionian scale' root {
-  return ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 5) (root + 7) 9 (root + 11) (root + 12))
+  return ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 5) (root + 7) (root + 9) (root + 11) (root + 12))
 }
 
 to 'locrian scale' root {

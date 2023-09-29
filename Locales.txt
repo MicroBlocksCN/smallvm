@@ -1708,6 +1708,8 @@ Installing firmware...
 
 Plug in the board.
 
+Board not connected
+
 Wiping board...
 
 (press ESC to cancel)

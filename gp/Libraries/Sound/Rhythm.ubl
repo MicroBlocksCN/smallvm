@@ -3,23 +3,105 @@ author MicroBlocks
 version 1 0 
 description 'Set a tempo in beats per minute (BPM) and get the length in milliseconds of the different relative music durations.
 '
-variables _rhy_tempo
+variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures _rhy_tick 
 
   spec ' ' 'set tempo to' 'set tempo to _ bpm' 'auto' 200
+  spec ' ' 'set time signature to' 'set time signature to _ / _' 'auto auto' 4 4
+  spec ' ' 'set up measures' 'set up _ bars pattern' 'auto' 16
+  space
+  spec ' ' 'stop playing' 'stop playing'
+  spec ' ' 'start playing' 'start playing'
+  space
+  spec ' ' 'rhy broadcast' 'add _ at bar _ beat _' 'auto auto auto' 'kick' 1 1
+  spec ' ' 'broadcast remove' 'remove _ from bar _ beat _' 'auto auto auto' 'kick' 1 1
+  space
+  spec 'r' 'current tick for duration' 'current beat'
+  spec 'r' 'current bar' 'current bar'
+  space
   spec 'r' 'whole duration' '𝅝'
   spec 'r' 'half duration' '𝅗𝅥'
   spec 'r' 'quarter duration' '♩'
   spec 'r' 'eighth duration' '♪'
   spec 'r' 'sixteenth duration' '𝅘𝅥𝅯'
+  space
   spec 'r' 'dotted' '_ .' 'auto' ''
   spec 'r' 'triplet' '‿³ _' 'auto' ''
+  space
+  spec ' ' '_rhythm loop' '_rhythm loop'
+  spec 'r' '_rhy duration of note value' '_rhy duration of note value _' 'auto' 4
+  spec 'r' '_rhy 2 ^' '_rhy 2 ^ _' 'auto' '10'
 
-to 'set tempo to' tempo {
-  _rhy_tempo = tempo
+to '_rhy 2 ^' n {
+  local 'result' 1
+  repeat n {
+    result = (result * 2)
+  }
+  return result
 }
 
-to 'whole duration' {
-  return (240000 / _rhy_tempo)
+to '_rhy duration of note value' 'note value' {
+  for i (v 'note value') {
+    if (('_rhy 2 ^' i) == (v 'note value')) {return (at i ('[data:makeList]' ('half duration') ('quarter duration') ('eighth duration') ('sixteenth duration')))}
+  }
+  return ('whole duration')
+}
+
+to '_rhythm loop' {
+  repeatUntil (not _rhy_looping) {
+    _rhy_tick = 0
+    for bar _rhy_pattern {
+      for beat bar {
+        for trigger beat {
+          sendBroadcast trigger
+          waitMicros 1000
+        }
+        waitMillis _rhy_beat_duration
+        _rhy_tick += 1
+      }
+    }
+  }
+}
+
+to 'broadcast remove' message 'bar number' 'beat number' {
+  if ((v 'beat number') == '') {
+    for 'each beat' _rhy_measures {
+      'broadcast remove' message (v 'bar number') (v 'each beat')
+    }
+  } ((v 'bar number') == '') {
+    for 'each bar' (size _rhy_pattern) {
+      'broadcast remove' message (v 'each bar') (v 'beat number')
+    }
+  } (isType (v 'beat number') 'list') {
+    for 'each beat' (v 'beat number') {
+      'broadcast remove' message (v 'bar number') (v 'each beat')
+    }
+  } (isType (v 'bar number') 'list') {
+    for 'each bar' (v 'bar number') {
+      'broadcast remove' message (v 'each bar') (v 'beat number')
+    }
+  } else {
+    local 'beat' (at (v 'beat number') (at (v 'bar number') _rhy_pattern))
+    local 'index' ('[data:find]' message beat)
+    if (index > 0) {
+      '[data:delete]' index beat
+    }
+  }
+}
+
+to 'current bar' {
+  return ((_rhy_tick / _rhy_measures) + 1)
+}
+
+to 'current tick for duration' {
+  return ((_rhy_tick % _rhy_measures) + 1)
+}
+
+to dotted duration {
+  return (duration + (duration / 2))
+}
+
+to 'eighth duration' {
+  return (30000 / _rhy_tempo)
 }
 
 to 'half duration' {
@@ -30,18 +112,73 @@ to 'quarter duration' {
   return (60000 / _rhy_tempo)
 }
 
-to 'eighth duration' {
-  return (30000 / _rhy_tempo)
+to 'rhy broadcast' message 'bar number' 'beat number' {
+  if ((v 'beat number') == '') {
+    for 'each beat' _rhy_measures {
+      'rhy broadcast' message (v 'bar number') (v 'each beat')
+    }
+  } ((v 'bar number') == '') {
+    for 'each bar' (size _rhy_pattern) {
+      'rhy broadcast' message (v 'each bar') (v 'beat number')
+    }
+  } (isType (v 'beat number') 'list') {
+    for 'each beat' (v 'beat number') {
+      'rhy broadcast' message (v 'bar number') (v 'each beat')
+    }
+  } (isType (v 'bar number') 'list') {
+    for 'each bar' (v 'bar number') {
+      'rhy broadcast' message (v 'each bar') (v 'beat number')
+    }
+  } else {
+    local 'beat' (at (v 'beat number') (at (v 'bar number') _rhy_pattern))
+    if (('[data:find]' message beat) < 0) {
+      '[data:addLast]' message beat
+    }
+  }
+}
+
+to 'set tempo to' tempo {
+  _rhy_tempo = tempo
+  if (_rhy_beat_note_value == 0) {
+    'set time signature to' 4 4
+  }
+}
+
+to 'set time signature to' measures 'note value' {
+  if (_rhy_tempo == 0) {'set tempo to' 200}
+  _rhy_beat_duration = ('_rhy duration of note value' (v 'note value'))
+  _rhy_beat_note_value = (v 'note value')
+  _rhy_measures = measures
+}
+
+to 'set up measures' n {
+  _rhy_pattern = ('[data:makeList]')
+  for i n {
+    '[data:addLast]' ('[data:makeList]') _rhy_pattern
+    repeat _rhy_measures {
+      '[data:addLast]' ('[data:makeList]') (at i _rhy_pattern)
+    }
+  }
 }
 
 to 'sixteenth duration' {
   return (15000 / _rhy_tempo)
 }
 
-to dotted duration {
-  return (duration + (duration / 2))
+to 'start playing' {
+  _rhy_looping = (booleanConstant true)
+  sendBroadcast '_rhythm loop'
+}
+
+to 'stop playing' {
+  _rhy_looping = (booleanConstant false)
 }
 
 to triplet duration {
   return ((duration * 2) / 3)
 }
+
+to 'whole duration' {
+  return (240000 / _rhy_tempo)
+}
+
