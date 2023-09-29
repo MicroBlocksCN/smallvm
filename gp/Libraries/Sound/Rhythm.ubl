@@ -101,14 +101,17 @@ to dotted duration {
 }
 
 to 'eighth duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (30000 / _rhy_tempo)
 }
 
 to 'half duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (120000 / _rhy_tempo)
 }
 
 to 'quarter duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (60000 / _rhy_tempo)
 }
 
@@ -162,6 +165,7 @@ to 'set up measures' n {
 }
 
 to 'sixteenth duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (15000 / _rhy_tempo)
 }
 
@@ -179,6 +183,7 @@ to triplet duration {
 }
 
 to 'whole duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (240000 / _rhy_tempo)
 }
 
