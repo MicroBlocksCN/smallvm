@@ -9,11 +9,14 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures 
   spec ' ' 'set time signature to' 'set time signature to _ / _' 'auto auto' 4 4
   spec ' ' 'set up measures' 'set up _ bars pattern' 'auto' 16
   space
-  spec ' ' 'stop playing' 'stop playing'
   spec ' ' 'start playing' 'start playing'
+  spec ' ' 'stop playing' 'stop playing'
   space
   spec ' ' 'rhy broadcast' 'add _ at bar _ beat _' 'auto auto auto' 'kick' 1 1
   spec ' ' 'broadcast remove' 'remove _ from bar _ beat _' 'auto auto auto' 'kick' 1 1
+  space
+  spec ' ' 'mute' 'mute _ _' 'auto bool' 'hihat' true
+  spec ' ' 'solo' 'solo _ _' 'auto bool' 'bass' true
   space
   spec 'r' 'current tick for duration' 'current beat'
   spec 'r' 'current bar' 'current bar'
@@ -101,14 +104,38 @@ to dotted duration {
 }
 
 to 'eighth duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (30000 / _rhy_tempo)
 }
 
 to 'half duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (120000 / _rhy_tempo)
 }
 
+to mute message on/off {
+  local 'msg' 0
+  if (('[data:find]' '#M#' message) > 0) {
+    message = ('[data:copyFromTo]' message 1 (('[data:find]' '#M#' message) - 1))
+  }
+  if (not on/off) {
+    message = ('[data:join]' message '#M#')
+  }
+  for bar _rhy_pattern {
+    for beat bar {
+      for i (size beat) {
+        if ((at i beat) == message) {if on/off {
+          atPut i beat ('[data:join]' (at i beat) '#M#')
+        } else {
+          atPut i beat ('[data:copyFromTo]' (at i beat) 1 (('[data:find]' '#M#' (at i beat)) - 1))
+        }}
+      }
+    }
+  }
+}
+
 to 'quarter duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (60000 / _rhy_tempo)
 }
 
@@ -162,7 +189,23 @@ to 'set up measures' n {
 }
 
 to 'sixteenth duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (15000 / _rhy_tempo)
+}
+
+to solo message on/off {
+  mute message false
+  for bar _rhy_pattern {
+    for beat bar {
+      for trigger beat {
+        if on/off {
+          if (trigger != message) {mute trigger true}
+        } else {
+          mute trigger false
+        }
+      }
+    }
+  }
 }
 
 to 'start playing' {
@@ -179,6 +222,7 @@ to triplet duration {
 }
 
 to 'whole duration' {
+  if (_rhy_tempo == 0) {_rhy_tempo = 200}
   return (240000 / _rhy_tempo)
 }
 

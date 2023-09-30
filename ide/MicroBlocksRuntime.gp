@@ -501,7 +501,7 @@ method syncScripts SmallRuntime {
 		}
 	}
 
-	saveAllChunks this
+	saveAllChunks this true // force individual CRC collection
 }
 
 method lookupChunkID SmallRuntime key {
@@ -1207,7 +1207,7 @@ method saveAllChunksAfterLoad SmallRuntime {
 	resumeCodeFileUpdates this
 }
 
-method saveAllChunks SmallRuntime {
+method saveAllChunks SmallRuntime forceIndividualCRCs {
 	// Save the code for all scripts and user-defined functions.
 
 	if (isNil port) { return }
@@ -1266,7 +1266,7 @@ method saveAllChunks SmallRuntime {
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
 	recompileAll = false
-	verifyCRCs this
+	verifyCRCs this forceIndividualCRCs
 	resumeCodeFileUpdates this
 	showDownloadProgress editor 3 1
 
@@ -1381,15 +1381,16 @@ method computeCRC SmallRuntime chunkData {
 	return result
 }
 
-method verifyCRCs SmallRuntime {
+method verifyCRCs SmallRuntime forceIndividual {
 	// Check that the CRCs of the chunks on the board match the ones in the IDE.
 	// Resend the code of any chunks whose CRC's do not match.
 
 	if (isNil port) { return }
+	if (isNil forceIndividual) { forceIndividual = false }
 
 	// collect CRCs from the board
 	crcDict = (dictionary)
-	if (and (notNil vmVersion) (vmVersion >= 159)) {
+	if (and (notNil vmVersion) (vmVersion >= 159) (not forceIndividual)) {
 		collectCRCsBulk this
 	} else {
 		collectCRCsIndividually this
