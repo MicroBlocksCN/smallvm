@@ -42,7 +42,7 @@ method initialize MicroBlocksHelp {
 		(array '[sensors:i2cWrite]' 'comm#i2c-device-write' 'Send multiple bytes to an I2C device.')
 		(array 'spiSend' 'comm#spi-send' 'Send a byte (0-255) to an SPI device.')
 		(array 'spiRecv' 'comm#spi-receive' 'Read a byte from an SPI device while sending a zero byte. Report the byte received.')
-		(array '[sensors:spiSetup]' 'comm#xxx' 'Set the SPI clock speed and mode.')
+		(array '[sensors:spiSetup]' 'comm#xxx' 'Set the SPI clock speed, mode, channel (Raspberry Pi only), and bit order.')
 		(array '[sensors:spiExchange]' 'comm#xxx' 'Send a byte array via SPI, replacing its contents with the bytes received.')
 		(array '[serial:open]' 'comm#serial-open' 'Open the serial port at the given baud rate.')
 		(array '[serial:close]' 'comm#serial-close' 'Close the serial port.')

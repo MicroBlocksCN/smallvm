@@ -266,6 +266,7 @@ static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
 
 static int spiSpeed = 1000000;
 static int spiMode = SPI_MODE0;
+static BitOrder spiBitOrder = MSBFIRST;
 
 static void initSPI() {
 	#if defined(ARDUINO_ARCH_ESP32)
@@ -285,7 +286,7 @@ static void initSPI() {
 		SPI.setTX(PIN_SPI_MOSI);
 	#endif
 	SPI.begin();
-	SPI.beginTransaction(SPISettings(spiSpeed, MSBFIRST, spiMode));
+	SPI.beginTransaction(SPISettings(spiSpeed, spiBitOrder, spiMode));
 }
 
 OBJ primSPISend(OBJ *args) {
@@ -320,6 +321,10 @@ OBJ primSPISetup(int argCount, OBJ *args) {
 		case 2: spiMode = SPI_MODE2; break;
 		case 3: spiMode = SPI_MODE3; break;
 		default: spiMode = SPI_MODE0;
+	}
+	spiBitOrder = MSBFIRST;
+	if ((argCount > 3) && IS_TYPE(args[3], StringType) && strcmp(obj2str(args[3]), "LSB")) {
+		spiBitOrder = LSBFIRST;
 	}
 	return falseObj;
 }
