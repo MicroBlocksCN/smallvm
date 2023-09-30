@@ -264,6 +264,11 @@ static OBJ primI2cSetClockSpeed(int argCount, OBJ *args) {
   #define PIN_SPI_SCK  PIN_SPI0_SCK
 #endif
 
+#if defined(ESP32) || defined(ESP32_S2_OR_S3) || defined(ESP32_C3) || \
+	defined(ESP8266) || defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41)
+  #define BitOrder int
+#endif
+
 static int spiSpeed = 1000000;
 static int spiMode = SPI_MODE0;
 static BitOrder spiBitOrder = MSBFIRST;
