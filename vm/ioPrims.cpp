@@ -1019,11 +1019,13 @@ void primAnalogWrite(OBJ *args) {
 		#endif
 	#endif
 
-	#if defined(ESP32) && !defined(ESP32_C3)
-		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 DAC pins
+	#if defined(ESP32)
+	  #if !defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(ESP32_C3)
+		if ((25 == pinNum) || (26 == pinNum)) { // ESP32 and ESP32-S2 DAC pins
 			dacWrite(pinNum, (value >> 2)); // convert 10-bit to 8-bit value for ESP32 DAC
 			return;
 		}
+	  #endif
 		if (value == 0) {
 			pinDetach(pinNum);
 		} else {
