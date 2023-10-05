@@ -170,6 +170,8 @@ OBJ primSetRes2(int argCount, OBJ *args) {
 
 // stubs
 OBJ primTakePhoto(int argCount, OBJ *args) { return falseObj; }
+OBJ primSetRes1(int argCount, OBJ *args) { return falseObj; }
+OBJ primSetRes2(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
