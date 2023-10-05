@@ -21,10 +21,10 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures 
   spec 'r' 'current tick for duration' 'current beat'
   spec 'r' 'current bar' 'current bar'
   space
-  spec 'r' 'whole duration' '𝅝'
+  spec 'r' 'whole duration' '𝅝 '
   spec 'r' 'half duration' '𝅗𝅥'
-  spec 'r' 'quarter duration' '♩'
-  spec 'r' 'eighth duration' '♪'
+  spec 'r' 'quarter duration' '𝅘𝅥'
+  spec 'r' 'eighth duration' '𝅘𝅥𝅮'
   spec 'r' 'sixteenth duration' '𝅘𝅥𝅯'
   space
   spec 'r' 'dotted' '_ .' 'auto' ''
@@ -56,7 +56,11 @@ to '_rhythm loop' {
       for beat bar {
         for trigger beat {
           sendBroadcast trigger
-          waitMicros 1000
+          if (('[data:find]' trigger ('[data:join]' ('_MIDI drum notes 1') ('_MIDI drum notes 2'))) > 0) {
+            'send note' ('drum note' trigger) true 10 127
+          } else {
+            waitMicros 1000
+          }
         }
         waitMillis _rhy_beat_duration
         _rhy_tick += 1

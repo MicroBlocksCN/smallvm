@@ -1,18 +1,23 @@
 module Lists Data
 author MicroBlocks
-version 1 0 
+version 1 1 
 description 'Useful functions for working with lists.'
+variables list 
 
-	spec 'r' 'list_range' 'range _ to _ : by _' 'num num num' 1 10 1
-	spec 'r' 'list_contains' 'list _ contains _' 'auto auto' 'aList' 'cat'
-	space
-	spec 'r' 'list_map' 'map _ over _' 'str.functionNameMenu auto' 'aFunction' 'aList'
-	spec 'r' 'list_filter' 'filter _ with _' 'auto str.functionNameMenu' 'aList' 'aFunction'
-	space
-	spec ' ' 'list_reverse' 'reverse _' 'auto' 'aList'
-	spec ' ' 'list_shuffle' 'shuffle _' 'auto' 'aList'
-	spec ' ' 'list_mergesort' 'sort _' 'auto' 'aList'
-	spec ' ' '_list_mergeStep' '_mergeStep _ _ _ _ _' 'auto num num num auto' 'srcList' 1 2 3 'dstList'
+  spec 'r' 'list_contains' 'list _ contains _' 'auto auto' 'aList' 'cat'
+  space
+  spec 'r' 'list_map' 'map _ over _' 'str.functionNameMenu auto' 'aFunction' 'aList'
+  spec 'r' 'list_filter' 'filter _ with _' 'auto str.functionNameMenu' 'aList' 'aFunction'
+  space
+  spec ' ' 'list_reverse' 'reverse _' 'auto' 'aList'
+  spec ' ' 'list_shuffle' 'shuffle _' 'auto' 'aList'
+  spec ' ' 'list_mergesort' 'sort _' 'auto' 'aList'
+  space
+  spec 'r' 'list_shuffled' 'shuffled _' 'auto' 'aList'
+  spec 'r' 'list_reversed' 'reversed _' 'auto' 'aList'
+  spec 'r' 'list_sorted' 'sorted _' 'auto' 'aList'
+  space
+  spec ' ' '_list_mergeStep' '_mergeStep _ _ _ _ _' 'auto num num num auto' 'srcList' 1 2 3 'dstList'
 
 to '_list_mergeStep' src left right end dst {
   local 'i' left
@@ -71,29 +76,6 @@ to list_mergesort src {
   }
 }
 
-to list_range first last incr {
-  local 'result' ('[data:makeList]')
-  local 'n' first
-  local 'increment' 1
-  if ((pushArgCount) > 2) {
-    increment = incr
-  }
-  if (first <= last) {
-    increment = (absoluteValue increment)
-    repeatUntil (n > last) {
-      '[data:addLast]' n result
-      n += increment
-    }
-  } else {
-    increment = (0 - (absoluteValue increment))
-    repeatUntil (n < last) {
-      '[data:addLast]' n result
-      n += increment
-    }
-  }
-  return result
-}
-
 to list_reverse aList {
   local 'i' 1
   local 'j' (size aList)
@@ -114,5 +96,23 @@ to list_shuffle aList {
     atPut i aList (at j aList)
     atPut j aList tmp
   }
+}
+
+to list_reversed list {
+  local 'new list' ('[data:copyFromTo]' list 1)
+  list_reverse (v 'new list')
+  return (v 'new list')
+}
+
+to list_shuffled list {
+  local 'new list' ('[data:copyFromTo]' list 1)
+  list_shuffle (v 'new list')
+  return (v 'new list')
+}
+
+to list_sorted list {
+  local 'new list' ('[data:copyFromTo]' list 1)
+  list_mergesort (v 'new list')
+  return (v 'new list')
 }
 
