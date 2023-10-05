@@ -21,10 +21,10 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures 
   spec 'r' 'current tick for duration' 'current beat'
   spec 'r' 'current bar' 'current bar'
   space
-  spec 'r' 'whole duration' '𝅝'
+  spec 'r' 'whole duration' '𝅝 '
   spec 'r' 'half duration' '𝅗𝅥'
-  spec 'r' 'quarter duration' '♩'
-  spec 'r' 'eighth duration' '♪'
+  spec 'r' 'quarter duration' '𝅘𝅥'
+  spec 'r' 'eighth duration' '𝅘𝅥𝅮'
   spec 'r' 'sixteenth duration' '𝅘𝅥𝅯'
   space
   spec 'r' 'dotted' '_ .' 'auto' ''

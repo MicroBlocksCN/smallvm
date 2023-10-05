@@ -6,38 +6,37 @@ description 'Lists of relative semitone intervals for all Western diatonic scale
 It also includes intervals for the most common chord progressions.
 '
 
-  spec 'r' 'ionian scale' 'ionian scale root _' 'auto' '60'
-  spec 'r' 'dorian scale' 'dorian scale root _' 'auto' '60'
-  spec 'r' 'phrygian scale' 'phrygian scale root _' 'auto' '60'
-  spec 'r' 'lydian scale' 'lydian scale root _' 'auto' '60'
-  spec 'r' 'mixolydian scale' 'mixolydian scale root _' 'auto' '60'
-  spec 'r' 'aeolian scale' 'aeolian scale root _' 'auto' '60'
-  spec 'r' 'locrian scale' 'locrian scale root _' 'auto' '60'
+  spec 'r' 'ionian scale' 'ionian scale root _ : steps _' 'auto num' 60 7
+  spec 'r' 'dorian scale' 'dorian scale root _ : steps _' 'auto num' 60 7
+  spec 'r' 'phrygian scale' 'phrygian scale root _ : steps _' 'auto num' 60 7
+  spec 'r' 'lydian scale' 'lydian scale root _ : steps _' 'auto num' 60 7
+  spec 'r' 'mixolydian scale' 'mixolydian scale root _ : steps _' 'auto num' 60 7
+  spec 'r' 'aeolian scale' 'aeolian scale root _ : steps _' 'auto num' 60 7
+  spec 'r' 'locrian scale' 'locrian scale root _ : steps _' 'auto num' 60 7
   space
-  spec 'r' 'major pentatonic scale' 'major pentatonic scale root _' 'auto' '60'
-  spec 'r' 'minor pentatonic scale' 'minor pentatonic scale root _' 'auto' '60'
+  spec 'r' 'major pentatonic scale' 'major pentatonic scale root _ : steps _' 'auto num' 60 5
+  spec 'r' 'minor pentatonic scale' 'minor pentatonic scale root _ : steps _' 'auto num' 60 5
   space
   spec 'r' 'degrees' 'chord progression _ with root _' 'auto auto' 'I,IV,viiº,iii,vi,ii,V,I' 60
   space
-  spec 'r' 'major chord' 'major chord root _' 'auto' '60'
-  spec 'r' 'minor chord' 'minor chord root _' 'auto' '60'
-  spec 'r' 'diminished chord' 'diminished chord root _' 'auto' '60'
-  spec 'r' 'Maj7 chord' 'Maj7 chord root _' 'auto' '60'
-  space
-  spec 'r' '7' '_ 7' 'auto' ''
+  spec 'r' 'major chord' 'major chord root _ : steps _' 'auto auto' 60 4
+  spec 'r' 'minor chord' 'minor chord root _ : steps _' 'auto num' 60 4
+  spec 'r' 'diminished chord' 'diminished chord root _ : steps _' 'auto num' 60 4
+  spec 'r' 'Maj7 chord' 'Maj7 chord root _ : steps _' 'auto num' 60 5
   space
   spec 'r' '_scales degree index' '_scales chord for degree _ for root _' 'auto auto' 'II' 60
+  spec 'r' '_scales intervals' '_scales intervals _  with root _ and _ steps' 'auto auto auto' 'aList' 60 10
 
-to '7' chord {
-  return ('[data:join]' chord ('[data:makeList]' (10 + (at 1 chord))))
-}
-
-to 'Maj7 chord' root {
-  return ('[data:makeList]' (root + 0) (root + 4) (root + 7) (root + 11))
+to 'Maj7 chord' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 5
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 4 7 11) root steps)
 }
 
 to '_scales degree index' degree root {
-  local 'scale' ('ionian scale' root)
+  local 'scale' ('ionian scale' root 7)
   local 'majors' ('[data:makeList]' 'I' 'II' 'III' 'IV' 'V' 'VI' 'VII')
   local 'minors' ('[data:makeList]' 'i' 'ii' 'iii' 'iv' 'v' 'vi' 'vii')
   local 'add 7th' (('[data:find]' '7' degree) > 0)
@@ -62,13 +61,24 @@ to '_scales degree index' degree root {
     chord = ('diminished chord' (at index scale))
   }
   if (v 'add 7th') {
-    chord = ('7' chord)
   }
   return chord
 }
 
-to 'aeolian scale' root {
-  return ('[data:makeList]' (root + 0) (root + 2) (root + 3) (root + 5) (root + 7) (root + 8) (root + 10) (root + 12))
+to '_scales intervals' intervals root steps {
+  local 'notes' ('[data:makeList]')
+  for step steps {
+    '[data:addLast]' ((at (((step - 1) % (size intervals)) + 1) intervals) + (root + (12 * ((step - 1) / (size intervals))))) notes
+  }
+  return notes
+}
+
+to 'aeolian scale' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 7
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 2 3 5 7 8 10 12) root steps)
 }
 
 to degrees degrees root {
@@ -87,47 +97,91 @@ to degrees degrees root {
   return chords
 }
 
-to 'diminished chord' root {
-  return ('[data:makeList]' (root + 0) (root + 3) (root + 6))
+to 'diminished chord' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 4
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 3 6) root steps)
 }
 
-to 'dorian scale' root {
-  return ('[data:makeList]' (root + 0) (root + 2) (root + 3) (root + 5) (root + 7) (root + 9) (root + 10) (root + 12))
+to 'dorian scale' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 7
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 2 3 5 7 9 10 12) root steps)
 }
 
-to 'ionian scale' root {
-  return ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 5) (root + 7) (root + 9) (root + 11) (root + 12))
+to 'ionian scale' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 7
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 2 4 5 7 9 11 12) root steps)
 }
 
-to 'locrian scale' root {
-  return ('[data:makeList]' (root + 0) (root + 1) (root + 3) (root + 5) (root + 6) (root + 8) (root + 10) (root + 12))
+to 'locrian scale' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 7
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 1 3 5 6 8 10 12) root steps)
 }
 
-to 'lydian scale' root {
-  return ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 6) (root + 7) (root + 9) (root + 11) (root + 12))
+to 'lydian scale' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 7
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 2 4 6 7 9 11 12) root steps)
 }
 
-to 'major chord' root {
-  return ('[data:makeList]' (root + 0) (root + 4) (root + 7))
+to 'major chord' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 4
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 4 7) root steps)
 }
 
-to 'major pentatonic scale' root {
-  return ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 7) (root + 9) (root + 12))
+to 'major pentatonic scale' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 5
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 2 4 7 9 12) root steps)
 }
 
-to 'minor chord' root {
-  return ('[data:makeList]' (root + 0) (root + 3) (root + 7))
+to 'minor chord' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 4
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 3 7) root steps)
 }
 
-to 'minor pentatonic scale' root {
-  return ('[data:makeList]' (root + 0) (root + 3) (root + 5) (root + 7) (root + 10) (root + 12))
+to 'minor pentatonic scale' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 5
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 3 5 7 10 12) root steps)
 }
 
-to 'mixolydian scale' root {
-  return ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 5) (root + 7) (root + 9) (root + 10) (root + 12))
+to 'mixolydian scale' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 7
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 2 4 5 7 9 10 12) root steps)
 }
 
-to 'phrygian scale' root {
-  return ('[data:makeList]' (0 + root) (1 + root) (3 + root) (5 + root) (7 + root) (8 + root) (10 + root) (12 + root))
+to 'phrygian scale' root 'optional steps' {
+  local 'steps' (v 'optional steps')
+  if ((pushArgCount) < 2) {
+    steps = 7
+  }
+  return ('_scales intervals' ('[data:makeList]' 0 1 3 5 7 8 10 12) root steps)
 }
 
