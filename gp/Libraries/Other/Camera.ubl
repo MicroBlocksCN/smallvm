@@ -1,0 +1,11 @@
+module 'Camera' Input
+author MicroBlocks
+version 1 0
+description 'Primitives for ESP32 Camera boards (e.g. Freenove ESP32-WROVER).'
+choices camera_frameSize '320x240' '352x288' '640x480' '800x600' '1024x768' '1280x1024' '1600x1200'
+choices camera_format 'jpeg' 'rgb565' 'grayscale'
+
+	spec 'r' '[camera:hasCamera]'	'has camera'
+	spec 'r' '[camera:takePhoto]'	'get camera image'
+	spec ' ' '[camera:setSize]'		'set camera image size _' 'menu.camera_frameSize' '640x480'
+	spec ' ' '[camera:setEncoding]'	'set camera format _ jpeg quality _ (0-100)' 'menu.camera_format num' 'jpeg' 100
