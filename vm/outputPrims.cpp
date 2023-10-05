@@ -632,7 +632,7 @@ static void initNeoPixelPin(int pinNum) {
 		// use internal NeoPixel pin if there is one
 		#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS)
 			pinNum = 8; // internal NeoPixel pin
-		#elif defined(ADAFRUIT_METRO_M0_EXPRESS)
+		#elif defined(ADAFRUIT_METRO_M0_EXPRESS) && !defined(MAKERPORT)
 			pinNum = 40;
 			// clear the Neopixel pin's (GPIO A30) configuration register
 			volatile uint8_t *cnf = (uint8_t *) (PORT_BASE + 0x40 + 30);
@@ -641,6 +641,8 @@ static void initNeoPixelPin(int pinNum) {
 			pinNum = 0; // default to pin 0
 		#endif
 	}
+
+	setPinMode(pinNum, OUTPUT);
 
 	neoPixelPinMask = 1 << g_APinDescription[pinNum].ulPin;
 	int baseReg = PORT_BASE + (0x80 * g_APinDescription[pinNum].ulPort);
