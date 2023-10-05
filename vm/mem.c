@@ -47,12 +47,10 @@
   #define OBJSTORE_BYTES 160000 // max is 219000
 #elif defined(ARDUINO_ARCH_SAMD)
   #define OBJSTORE_BYTES 14000
+#elif defined(HAS_CAMERA)
+  #define OBJSTORE_BYTES 262000 // will be allocated from PSRAM
 #elif defined(ARDUINO_ARCH_ESP32)
-  #if defined(BLE_PRIMS) || defined(LOLIN_S2_MINI)
-    #define OBJSTORE_BYTES 8000
-  #else
-    #define OBJSTORE_BYTES 16000 // 48000 // max that compiles is 56000
-  #endif
+  #define OBJSTORE_BYTES 80000 // allocated from heap on ESP32
 #elif defined(GNUBLOCKS)
   #define OBJSTORE_BYTES 262100 // max number of bytes that we can allocate for now
 #elif defined(ARDUINO_ARCH_RP2040)
@@ -68,7 +66,13 @@
 #endif
 
 #define OBJSTORE_WORDS ((OBJSTORE_BYTES / 4) + 4)
-static OBJ objstore[OBJSTORE_WORDS];
+
+#if defined(ARDUINO_ARCH_ESP32)
+  static OBJ *objstore = NULL; // allocated from heap on ESP32
+#else
+  static OBJ objstore[OBJSTORE_WORDS];
+#endif
+
 static OBJ memStart = NULL;
 static OBJ memEnd = NULL;
 static OBJ freeChunk = NULL;
@@ -84,6 +88,11 @@ void memInit() {
 	if (!(sizeof(int) == 4 && sizeof(int*) == 4 && sizeof(float) == 4)) {
 		vmPanic("MicroBlocks expects int, int*, and float to all be 32-bits");
 	}
+
+	#if defined(ARDUINO_ARCH_ESP32)
+		objstore = (OBJ *) malloc(4 * OBJSTORE_WORDS);
+		if (!objstore) vmPanic("ESP32 could not allocate objectstore");
+	#endif
 
 	// initialize object heap memory
 	memStart = (OBJ) objstore;
