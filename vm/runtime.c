@@ -136,6 +136,7 @@ void primsInit() {
 	addVarPrims();
 	addHIDPrims();
 	addOneWirePrims();
+	addCameraPrims();
 }
 
 // Task Ops

@@ -353,6 +353,7 @@ void addTFTPrims();
 void addVarPrims();
 void addHIDPrims();
 void addOneWirePrims();
+void addCameraPrims();
 
 // Named Primitive Support
 

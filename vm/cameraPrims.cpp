@@ -4,10 +4,8 @@
 
 // Copyright 2023 John Maloney, Bernat Romagosa, and Jens Mönig
 
-// cameraPrims.cpp - ESP32 Camera Primitives for boards that support cameras
-//
-// Based partly on code by Rui Santos from:
-// https://RandomNerdTutorials.com/esp32-cam-ov2640-camera-settings/
+// cameraPrims.cpp - ESP32 Camera primitives for select ESP32 boards with cameras.
+// Requires 4MB of PSRam. Currently supports only the Freenova ESP32-WROVER board.
 
 #include <Arduino.h>
 #include <stdio.h>
@@ -21,17 +19,8 @@
 #include "esp_camera.h"
 #include "soc/rtc_cntl_reg.h"  // for brownout control
 
-/* Frame sizes:
-  QVGA  320x240
-  CIF   352x288
-  VGA   640x480
-  SVGA  800x600
-  XGA   1024x768
-  SXGA  1280x1024
-  UXGA  1600x1200
-*/
-
-// Change pin definitions if you're using another ESP32 with camera module
+// The following pin definitions depend on the specific camera board.
+// To support additional cameras, use #ifdefs to define the pins for each camera.
 
 // CAMERA_MODEL_WROVER_KIT
 #define PWDN_GPIO_NUM    -1
@@ -53,9 +42,30 @@
 #define PCLK_GPIO_NUM    22
 
 static int cameraIsInitialized;
+
 static camera_config_t config;
-static framesize_t frameSize = FRAMESIZE_UXGA;
 static camera_fb_t *fb = NULL;
+
+static framesize_t frameSize = FRAMESIZE_VGA;
+static pixformat_t pixelFormat = PIXFORMAT_JPEG;
+static int jpegQuality = 10;
+
+static void updateConfiguration() {
+	if (fb) {
+		esp_camera_fb_return(fb);
+		fb = NULL;
+	}
+ 	if (cameraIsInitialized) {
+		esp_camera_deinit(); // stop camera
+		gpio_uninstall_isr_service();
+
+		config.frame_size = frameSize; // FRAMESIZE_ + QVGA|CIF|VGA|SVGA|XGA|SXGA|UXGA
+		config.pixel_format = pixelFormat; // PIXFORMAT_ + YUV422,GRAYSCALE,RGB565,JPEG
+		config.jpeg_quality = jpegQuality; // 10-63, lower numbers are higher quality
+
+		esp_err_t err = esp_camera_init(&config); // restart camera with new config
+	}
+}
 
 static void initCamera() {
 	if (cameraIsInitialized) return;
@@ -80,18 +90,19 @@ static void initCamera() {
 	config.pin_sccb_scl = SIOC_GPIO_NUM;
 	config.pin_pwdn = PWDN_GPIO_NUM;
 	config.pin_reset = RESET_GPIO_NUM;
-	config.xclk_freq_hz = 8000000; // 5000000; // xxx was 20000000;
-	config.pixel_format = PIXFORMAT_JPEG; //YUV422,GRAYSCALE,RGB565,JPEG
+	config.xclk_freq_hz = 10000000; // 8000000; // xxx was 20000000;
 
-	// keeping the framebuffer in PSRAM may increase sync errors
+	// Does locating the framebuffer in PSRAM increase sync errors?
 	config.fb_location = CAMERA_FB_IN_PSRAM;
 
-	config.frame_size = frameSize; // FRAMESIZE_ + QVGA|CIF|VGA|SVGA|XGA|SXGA|UXGA
-	config.jpeg_quality = 10; //10-63 lower number means higher quality
-
-	// buffer just one image
+	// buffer only one image
 	config.fb_count = 1;
 	config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
+
+	// set initial frame size and format
+	config.frame_size = frameSize;
+	config.pixel_format = pixelFormat;
+	config.jpeg_quality = jpegQuality;
 
 	// Initialize the Camera
 	esp_err_t err = esp_camera_init(&config);
@@ -106,26 +117,10 @@ static void initCamera() {
 	s->set_brightness(s, 1);   // increase brightness
 	s->set_saturation(s, -1);  // decrease saturation
 
-// xxx
-outputString("PSRAM:");
-reportNum("  psram size", ESP.getPsramSize());
-reportNum("  psram free", ESP.getFreePsram());
-
 	cameraIsInitialized = true;
 }
 
-static void updateConfiguration() {
-	if (fb) {
-		esp_camera_fb_return(fb);
-		fb = NULL;
-	}
- 	if (cameraIsInitialized) {
-		esp_camera_deinit(); // stop camera
-		gpio_uninstall_isr_service();
-		config.frame_size = frameSize;
-		esp_err_t err = esp_camera_init(&config); // restart camera with new config
-	}
-}
+OBJ primHasCamera(int argCount, OBJ *args) { return trueObj; }
 
 OBJ primTakePhoto(int argCount, OBJ *args) {
 	if (!cameraIsInitialized) initCamera();
@@ -154,14 +149,40 @@ reportNum("  height", fb->height);
 	return result;
 }
 
-OBJ primSetRes1(int argCount, OBJ *args) {
-	frameSize = FRAMESIZE_QVGA;
+OBJ primSetSize(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
+	char *arg = obj2str(args[0]);
+
+	frameSize = FRAMESIZE_QVGA; // default
+	if (strcmp(arg, "320x240") == 0) frameSize = FRAMESIZE_QVGA;
+	if (strcmp(arg, "352x288") == 0) frameSize = FRAMESIZE_CIF;
+	if (strcmp(arg, "640x480") == 0) frameSize = FRAMESIZE_VGA;
+	if (strcmp(arg, "800x600") == 0) frameSize = FRAMESIZE_SVGA;
+	if (strcmp(arg, "1024x768") == 0) frameSize = FRAMESIZE_XGA;
+	if (strcmp(arg, "1280x1024") == 0) frameSize = FRAMESIZE_SXGA;
+	if (strcmp(arg, "1600x1200") == 0) frameSize = FRAMESIZE_UXGA;
+
 	updateConfiguration();
 	return falseObj;
 }
 
-OBJ primSetRes2(int argCount, OBJ *args) {
-	frameSize = FRAMESIZE_XGA;
+OBJ primSetEncoding(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	if (!IS_TYPE(args[0], StringType)) return fail(needsStringError);
+
+	char *encoding = obj2str(args[0]);
+	pixelFormat = PIXFORMAT_JPEG; // default
+	if (strcmp(encoding, "jpeg") == 0) pixelFormat = PIXFORMAT_JPEG;
+	if (strcmp(encoding, "rgb565") == 0) pixelFormat = PIXFORMAT_RGB565;
+	if (strcmp(encoding, "grayscale") == 0) pixelFormat = PIXFORMAT_GRAYSCALE;
+
+	int quality = 100; // default
+	if ((argCount > 1) && isInt(args[1])) quality = evalInt(args[1]); // 0-100
+	if (quality < 0) quality = 0;
+	if (quality > 100) quality = 100;
+	jpegQuality = 60 - (quality / 2); // lower jpegQuality numbers give higher quality
+
 	updateConfiguration();
 	return falseObj;
 }
@@ -169,16 +190,20 @@ OBJ primSetRes2(int argCount, OBJ *args) {
 #else
 
 // stubs
+OBJ primHasCamera(int argCount, OBJ *args) { return falseObj; }
 OBJ primTakePhoto(int argCount, OBJ *args) { return falseObj; }
+OBJ primSetSize(int argCount, OBJ *args) { return falseObj; }
+OBJ primSetEncoding(int argCount, OBJ *args) { return falseObj; }
 
 #endif
 
 // Primitives
 
 static PrimEntry entries[] = {
+	{"hasCamera", primHasCamera},
 	{"takePhoto", primTakePhoto},
-	{"setRes1", primSetRes1},
-	{"setRes2", primSetRes2},
+	{"setSize", primSetSize},
+	{"setEncoding", primSetEncoding},
 };
 
 void addCameraPrims() {
