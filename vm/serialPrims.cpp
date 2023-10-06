@@ -329,6 +329,32 @@ static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
 	return int2obj(bytesWritten);
 }
 
+#ifdef USB_MIDI
+
+#include "MIDIUSB.h"
+
+static OBJ primMIDISend(int argCount, OBJ *args) {
+	if (argCount < 1) return fail(notEnoughArguments);
+
+	midiEventPacket_t midiMsg;
+	int cmd = obj2int(args[0]);
+	midiMsg.header = (argCount == 1) ? cmd : ((cmd >> 4) & 0xF); // MIDI command w/o channel
+	midiMsg.byte1 = cmd;
+	midiMsg.byte2 = (argCount > 1) ? obj2int(args[1]) : 0;
+	midiMsg.byte3 = (argCount > 2) ? obj2int(args[2]) : 0;
+
+	MidiUSB.sendMIDI(midiMsg);
+	MidiUSB.flush();
+
+	return trueObj;
+}
+
+#else // no USB_MIDI
+
+static OBJ primMIDISend(int argCount, OBJ *args) { return falseObj; }
+
+#endif // USB_MIDI
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -338,6 +364,7 @@ static PrimEntry entries[] = {
 	{"readInto", primSerialReadInto},
 	{"write", primSerialWrite},
 	{"writeBytes", primSerialWriteBytes},
+	{"midiSend", primMIDISend},
 };
 
 void addSerialPrims() {
