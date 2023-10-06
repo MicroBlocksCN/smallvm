@@ -107,6 +107,7 @@ method microBlocksSpecs SmallCompiler {
 		(array ' ' 'waitMicros'			'wait _ microsecs' 'num' 1000)
 		'-'
 		(array 'r' 'getLastBroadcast'	'last message')
+		(array 'r' 'argOrDefault'		'arg _ default _' 'num auto' 1 'default')
 		'-'
 		(array ' ' 'callCustomCommand'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
 		(array 'r' 'callCustomReporter'	'call _ : with _' 'str.functionNameMenu str' 'function name' 'parameter list')
@@ -418,7 +419,7 @@ method initOpcodes SmallCompiler {
 		printIt 75
 		boardType 76
 		comment 77
-	RESERVED 78
+		argOrDefault 78
 	RESERVED 79
 		analogPins 80
 		digitalPins 81

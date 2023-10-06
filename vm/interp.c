@@ -321,6 +321,16 @@ static int stringsEqual(OBJ obj1, OBJ obj2) {
 	return true;
 }
 
+static OBJ argOrDefault(OBJ *fp, int argNum, OBJ defaultValue) {
+	// Useful for working with optional arguments.
+	// Return the given argument or defaultValue if the argument was not supplied by the caller.
+
+	if (argNum < 1) return defaultValue; // argNum index is 1-based
+	int actualArgCount = obj2int(*(fp - 3));
+	if (argNum > actualArgCount) return defaultValue; // argument not supplied, return default
+	return *(fp - (4 + actualArgCount) + argNum); // return the desired argument
+}
+
 static int functionNameMatches(int chunkIndex, char *functionName) {
 	// Return true if given chunk is the function with the given function name.
 	// by checking the function name in the function's metadata.
@@ -486,7 +496,7 @@ static void runTask(Task *task) {
 		&&longMultiply_op,
 		&&isType_op,
 		&&jmpFalse_op, // this is the waitUntil opcode, an alias for jmpFalse_op
-		&&pop_op,  // this is the ignoreArgs opcode, an alias for pop_op
+		&&pop_op, // this is the ignoreArgs opcode, an alias for pop_op
 		&&newList_op,
 		&&RESERVED_op,
 		&&fillList_op,
@@ -505,7 +515,7 @@ static void runTask(Task *task) {
 		&&logData_op,
 		&&boardType_op,
 		&&comment_op,
-		&&RESERVED_op,
+		&&argOrDefault_op,
 		&&RESERVED_op,
 		&&analogPins_op,
 		&&digitalPins_op,
@@ -1114,6 +1124,16 @@ static void runTask(Task *task) {
 		DISPATCH();
 	comment_op:
 		POP_ARGS_COMMAND();
+		DISPATCH();
+	argOrDefault_op:
+		if (arg < 2) {
+			*(sp - arg) = fail(notEnoughArguments); // not enough arguments to primitive
+		} else if (fp <= task->stack) {
+			*(sp - arg) = *(sp - 1); // not in a function call; return default value
+		} else {
+			*(sp - arg) = argOrDefault(fp, obj2int(*(sp - 2)), *(sp - 1));
+		}
+		POP_ARGS_REPORTER();
 		DISPATCH();
 
 	// I/O operations:
