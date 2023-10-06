@@ -1,38 +1,30 @@
 module 'Scales & Chords' Data
 author MicroBlocks
-version 1 0 
-description 'Lists of relative semitone intervals for all Western diatonic scales plus the major and minor pentatonic scales
+version 1 0
+choices scales ionian dorian phrygian lydian mixolydian aeolian locrian
+choices pentatonics major minor
+choices chords major minor diminished 'major 7th' 'minor 7th' Maj7
+description 'Lists of relative semitone intervals for all Western diatonic scales plus the major and minor pentatonic scales.
 
-It also includes intervals for the most common chord progressions.
+It also includes intervals for the most common chords and progressions.
 '
 
-  spec 'r' 'ionian scale' 'ionian scale root _ : steps _' 'auto num' 60 7
-  spec 'r' 'dorian scale' 'dorian scale root _ : steps _' 'auto num' 60 7
-  spec 'r' 'phrygian scale' 'phrygian scale root _ : steps _' 'auto num' 60 7
-  spec 'r' 'lydian scale' 'lydian scale root _ : steps _' 'auto num' 60 7
-  spec 'r' 'mixolydian scale' 'mixolydian scale root _ : steps _' 'auto num' 60 7
-  spec 'r' 'aeolian scale' 'aeolian scale root _ : steps _' 'auto num' 60 7
-  spec 'r' 'locrian scale' 'locrian scale root _ : steps _' 'auto num' 60 7
+  spec 'r' 'scale' '_ scale root _ : steps _' 'menu.scales num num' 'ionian' 60 7
   space
-  spec 'r' 'major pentatonic scale' 'major pentatonic scale root _ : steps _' 'auto num' 60 5
-  spec 'r' 'minor pentatonic scale' 'minor pentatonic scale root _ : steps _' 'auto num' 60 5
+  spec 'r' 'pentatonic scale' 'pentatonic _ scale root _ : steps _' 'menu.pentatonics num num' 'major' 60 7
   space
   spec 'r' 'degrees' 'chord progression _ with root _' 'auto auto' 'I,IV,viiº,iii,vi,ii,V,I' 60
   space
-  spec 'r' 'major chord' 'major chord root _ : steps _' 'auto auto' 60 4
-  spec 'r' 'minor chord' 'minor chord root _ : steps _' 'auto num' 60 4
-  spec 'r' 'diminished chord' 'diminished chord root _ : steps _' 'auto num' 60 4
-  spec 'r' 'Maj7 chord' 'Maj7 chord root _ : steps _' 'auto num' 60 5
+  spec 'r' 'chord' '_ chord root _ : steps _' 'menu.chords num num' 'major' 60 4
   space
   spec 'r' '_scales degree index' '_scales chord for degree _ for root _' 'auto auto' 'II' 60
   spec 'r' '_scales intervals' '_scales intervals _  with root _ and _ steps' 'auto auto auto' 'aList' 60 10
+  spec 'r' '_scales diatonic intervals' '_scales diatonic intervals for _ scale' 'auto' 'ionian'
+  spec 'r' '_scales pentatonic intervals for' '_scales pentatonic intervals for _ scale' 'auto' 'major'
+  spec 'r' '_scales chord intervals for' '_scales chord intervals for _ chord' 'auto' 'diminished'
 
-to 'Maj7 chord' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 5
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 4 7 11) root steps)
+to '_scales chord intervals for' which {
+  return (at ('[data:find]' which ('[data:makeList]' 'major' 'minor' 'diminished' 'major 7th' 'minor 7th' 'Maj7')) ('[data:makeList]' ('[data:makeList]' 0 4 7) ('[data:makeList]' 0 3 7) ('[data:makeList]' 0 3 6) ('[data:makeList]' 0 3 7 10) ('[data:makeList]' 0 3 7 10) ('[data:makeList]' 0 4 7 11)))
 }
 
 to '_scales degree index' degree root {
@@ -65,6 +57,10 @@ to '_scales degree index' degree root {
   return chord
 }
 
+to '_scales diatonic intervals' which {
+  return (at ('[data:find]' which ('[data:makeList]' 'ionian' 'dorian' 'phrygian' 'lydian' 'mixolydian' 'aeolian' 'locrian')) ('[data:makeList]' ('[data:makeList]' 0 2 4 5 7 9 11 12) ('[data:makeList]' 0 2 3 5 7 9 10 12) ('[data:makeList]' 0 1 3 5 7 8 10 12) ('[data:makeList]' 0 2 4 6 7 9 11 12) ('[data:makeList]' 0 2 4 5 7 9 10 12) ('[data:makeList]' 0 2 3 5 7 8 10 12) ('[data:makeList]' 0 1 3 5 6 8 10 12)))
+}
+
 to '_scales intervals' intervals root steps {
   local 'notes' ('[data:makeList]')
   for step steps {
@@ -73,12 +69,16 @@ to '_scales intervals' intervals root steps {
   return notes
 }
 
-to 'aeolian scale' root 'optional steps' {
+to '_scales pentatonic intervals for' which {
+  return (at ('[data:find]' which ('[data:makeList]' 'major' 'minor')) ('[data:makeList]' ('[data:makeList]' 0 2 4 7 9 12) ('[data:makeList]' 0 3 5 7 10 12)))
+}
+
+to chord which root 'optional steps' {
   local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 7
+  if ((pushArgCount) < 3) {
+    steps = 4
   }
-  return ('_scales intervals' ('[data:makeList]' 0 2 3 5 7 8 10 12) root steps)
+  return ('_scales intervals' ('_scales chord intervals for' which) root steps)
 }
 
 to degrees degrees root {
@@ -97,91 +97,19 @@ to degrees degrees root {
   return chords
 }
 
-to 'diminished chord' root 'optional steps' {
+to 'pentatonic scale' which root 'optional steps' {
   local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 4
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 3 6) root steps)
-}
-
-to 'dorian scale' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 7
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 2 3 5 7 9 10 12) root steps)
-}
-
-to 'ionian scale' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 7
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 2 4 5 7 9 11 12) root steps)
-}
-
-to 'locrian scale' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 7
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 1 3 5 6 8 10 12) root steps)
-}
-
-to 'lydian scale' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 7
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 2 4 6 7 9 11 12) root steps)
-}
-
-to 'major chord' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 4
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 4 7) root steps)
-}
-
-to 'major pentatonic scale' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
+  if ((pushArgCount) < 3) {
     steps = 5
   }
-  return ('_scales intervals' ('[data:makeList]' 0 2 4 7 9 12) root steps)
+  return ('_scales intervals' ('_scales pentatonic intervals for' which) root steps)
 }
 
-to 'minor chord' root 'optional steps' {
+to scale which root 'optional steps' {
   local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 4
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 3 7) root steps)
-}
-
-to 'minor pentatonic scale' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
+  if ((pushArgCount) < 3) {
     steps = 5
   }
-  return ('_scales intervals' ('[data:makeList]' 0 3 5 7 10 12) root steps)
-}
-
-to 'mixolydian scale' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 7
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 2 4 5 7 9 10 12) root steps)
-}
-
-to 'phrygian scale' root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 2) {
-    steps = 7
-  }
-  return ('_scales intervals' ('[data:makeList]' 0 1 3 5 7 8 10 12) root steps)
+  return ('_scales intervals' ('_scales diatonic intervals' which) root steps)
 }
 
