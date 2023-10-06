@@ -1,6 +1,6 @@
 module Rhythm Control
 author MicroBlocks
-version 1 0 
+version 1 1 
 description 'Set a tempo in beats per minute (BPM) and get the length in milliseconds of the different relative music durations.
 '
 variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures _rhy_tick 
