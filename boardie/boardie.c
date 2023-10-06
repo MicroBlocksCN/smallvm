@@ -191,6 +191,7 @@ void readScriptsFromURL() {
 void addSerialPrims() {}
 void addHIDPrims() {}
 void addOneWirePrims() {}
+void addCameraPrims() {}
 void delay(int msecs) {}
 void processFileMessage(int msgType, int dataSize, char *data) {}
 
