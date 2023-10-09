@@ -1,9 +1,9 @@
 module MIDI Output
 author MicroBlocks
 version 1 0 
-choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
+choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
-choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' 'Tambourine' 'Splash Cymbal' 'Cowbell' 'Crash Cymbal 2' 'Vibraslap' 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' 'Cabasa' 'Maracas' 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' 'Claves' 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle'
+choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
 description 'Play notes through hardware MIDI. By default, it plays through the hardware serial port. You can, however, specify a software serial port using the `set MIDI pin` block. On most boards, however, the default serial pin is going to be pin 1, so there is no need to use the `set MIDI pin` block.
 
 Connect MIDI pin 5 to the serial pin, and MIDI pin 4 to 3.3v or 5v.
@@ -28,7 +28,7 @@ variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel
   spec ' ' 'send MIDI stop playing' 'send MIDI stop playing'
   spec ' ' 'send MIDI continue playing' 'send MIDI continue playing'
   space
-  spec ' ' 'set MIDI pin' 'set MIDI signal to pin _' 'auto' 8
+  spec ' ' 'set MIDI pin' 'set MIDI signal to pin _ : use USB MIDI _' 'auto bool' 8 false
   space
   spec ' ' '_MIDI init' '_MIDI init'
   spec 'r' '_MIDI message' '_MIDI message type _ channel _ data _' 'num auto auto' 9 6 ''
@@ -46,6 +46,14 @@ to '_MIDI control change' {
   return (hexToInt 'B')
 }
 
+to '_MIDI drum notes 1' {
+  return ('[data:makeList]' 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' 'Tambourine' 'Splash Cymbal' 'Cowbell')
+}
+
+to '_MIDI drum notes 2' {
+  return ('[data:makeList]' 'Crash Cymbal 2' 'Vibraslap' 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' 'Cabasa' 'Maracas' 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' 'Claves' 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle')
+}
+
 to '_MIDI init' {
   if (not _MIDI_initialized) {
     if (_MIDI_pin == 0) {
@@ -59,7 +67,7 @@ to '_MIDI init' {
 }
 
 to '_MIDI message' type channel data {
-  return ('[data:asByteArray]' ('[data:join]' ('[data:makeList]' ((type << 4) | (channel - 1))) data))
+  return ('[data:join]' ('[data:makeList]' ((type << 4) | (channel - 1))) data)
 }
 
 to '_MIDI note off' {
@@ -82,19 +90,13 @@ to '_send MIDI message' message {
   '_MIDI init'
   if (_MIDI_pin == 0) {
     '[serial:write]' message
+  } (_MIDI_pin == 'USB') {
+    callCustomCommand '[serial:midiSend]' message
   } else {
     for byte message {
       '[io:softWriteByte]' byte _MIDI_pin _MIDI_soft_baudrate
     }
   }
-}
-
-to instrument instrument number {
-  return (((('[data:find]' instrument ('[data:makeList]' 'piano' 'chromatic percussion' 'organ' 'guitar' 'bass' 'strings' 'ensemble' 'brass' 'reed' 'pipe' 'synth lead' 'synth pad' 'synth SFX' 'ethnic' 'percussive' 'SFX')) - 1) * 8) + number)
-}
-
-to 'drum note' instrument {
-  return (('[data:find]' instrument ('[data:join]' ('_MIDI drum notes 1') ('_MIDI drum notes 2'))) + 34)
 }
 
 to '_trimmedLowercase' s {
@@ -116,6 +118,14 @@ to 'change MIDI control' control channel value {
   '_send MIDI message' ('_MIDI message' ('_MIDI control change') channel ('[data:makeList]' (at ('[data:find]' control ('[data:makeList]' 'bank select 1' 'bank select 2' 'modulation' 'portamento time' 'volume' 'pan' 'expression' 'hold' 'portamento' 'sostenuto' 'soft' 'resonance' 'release time' 'attack time' 'cutoff' 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2')) ('[data:makeList]' 0 32 1 5 7 10 11 64 65 66 67 71 72 73 74 75 76 77 78 84 91 93)) value))
 }
 
+to 'drum note' instrument {
+  return (('[data:find]' instrument ('[data:join]' ('_MIDI drum notes 1') ('_MIDI drum notes 2'))) + 34)
+}
+
+to instrument instrument number {
+  return (((('[data:find]' instrument ('[data:makeList]' 'piano' 'chromatic percussion' 'organ' 'guitar' 'bass' 'strings' 'ensemble' 'brass' 'reed' 'pipe' 'synth lead' 'synth pad' 'synth SFX' 'ethnic' 'percussive' 'SFX')) - 1) * 8) + number)
+}
+
 to 'note to MIDI' note octave {
   return ((at ('[data:find]' ('_trimmedLowercase' note) ('[data:makeList]' 'c' 'c#' 'd' 'd#' 'e' 'f' 'f#' 'g' 'g#' 'a' 'a#' 'b' 'c_' 'db' 'd_' 'eb' 'e_' 'e#' 'f_' 'gb' 'g_' 'ab' 'a_' 'bb' 'b_' 'b#')) ('[data:makeList]' 60 61 62 63 64 65 66 67 68 69 70 71 59 61 61 63 63 65 64 66 66 68 68 70 70 72)) + (octave * 12))
 }
@@ -135,7 +145,7 @@ to 'select MIDI instrument' 'instrument number' channel {
 }
 
 to 'send MIDI continue playing' {
-  '_send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FB')))
+  '_send MIDI message' ('[data:makeList]' (hexToInt 'FB'))
 }
 
 to 'send MIDI reset' {
@@ -144,11 +154,11 @@ to 'send MIDI reset' {
 }
 
 to 'send MIDI start playing' {
-  '_send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FA')))
+  '_send MIDI message' ('[data:makeList]' (hexToInt 'FA'))
 }
 
 to 'send MIDI stop playing' {
-  '_send MIDI message' ('[data:asByteArray]' ('[data:makeList]' (hexToInt 'FC')))
+  '_send MIDI message' ('[data:makeList]' (hexToInt 'FC'))
 }
 
 to 'send note' 'midi note' on/off channel volume {
@@ -165,16 +175,14 @@ to 'send note' 'midi note' on/off channel volume {
   }
 }
 
-to 'set MIDI pin' pin {
+to 'set MIDI pin' pin USB {
   '[serial:close]'
-  _MIDI_pin = pin
+  if USB {
+    _MIDI_pin = 'USB'
+  } else {
+    _MIDI_pin = pin
+  }
   _MIDI_initialized = (booleanConstant false)
   '_MIDI init'
 }
 
-to '_MIDI drum notes 1' {
-	return ('[data:makeList]' 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' 'Tambourine' 'Splash Cymbal' 'Cowbell')
-}
-to '_MIDI drum notes 2' {
-	return ('[data:makeList]' 'Crash Cymbal 2' 'Vibraslap' 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' 'Cabasa' 'Maracas' 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' 'Claves' 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle')
-}
