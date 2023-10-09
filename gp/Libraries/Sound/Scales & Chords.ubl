@@ -26,7 +26,7 @@ to '_scales chord intervals for' which {
 }
 
 to '_scales diatonic intervals' which {
-  return (at ('[data:find]' which ('[data:makeList]' 'ionian' 'dorian' 'phrygian' 'lydian' 'mixolydian' 'aeolian' 'locrian')) ('[data:makeList]' ('[data:makeList]' 0 2 4 5 7 9 11 12) ('[data:makeList]' 0 2 3 5 7 9 10 12) ('[data:makeList]' 0 1 3 5 7 8 10 12) ('[data:makeList]' 0 2 4 6 7 9 11 12) ('[data:makeList]' 0 2 4 5 7 9 10 12) ('[data:makeList]' 0 2 3 5 7 8 10 12) ('[data:makeList]' 0 1 3 5 6 8 10 12)))
+  return (at ('[data:find]' which ('[data:makeList]' 'ionian' 'dorian' 'phrygian' 'lydian' 'mixolydian' 'aeolian' 'locrian')) ('[data:makeList]' ('[data:makeList]' 0 2 4 5 7 9 11) ('[data:makeList]' 0 2 3 5 7 9 10) ('[data:makeList]' 0 1 3 5 7 8 10) ('[data:makeList]' 0 2 4 6 7 9 11) ('[data:makeList]' 0 2 4 5 7 9 10) ('[data:makeList]' 0 2 3 5 7 8 10) ('[data:makeList]' 0 1 3 5 6 8 10)))
 }
 
 to '_scales intervals' intervals root steps {
@@ -38,7 +38,7 @@ to '_scales intervals' intervals root steps {
 }
 
 to '_scales pentatonic intervals for' which {
-  return (at ('[data:find]' which ('[data:makeList]' 'major' 'minor')) ('[data:makeList]' ('[data:makeList]' 0 2 4 7 9 12) ('[data:makeList]' 0 3 5 7 10 12)))
+  return (at ('[data:find]' which ('[data:makeList]' 'major' 'minor')) ('[data:makeList]' ('[data:makeList]' 0 2 4 7 9) ('[data:makeList]' 0 3 5 7 10)))
 }
 
 to chord which root 'optional steps' {
