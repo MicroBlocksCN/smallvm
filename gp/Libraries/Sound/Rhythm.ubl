@@ -1,8 +1,9 @@
 module Rhythm Control
 author MicroBlocks
-version 1 1 
-description 'Set a tempo in beats per minute (BPM) and get the length in milliseconds of the different relative music durations.
-'
+version 1 2 
+description 'Sends broadcasts according to a tempo and time signature. Useful to create musical patterns.
+
+Includes abstractions for note durations, bars and beats.'
 variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures _rhy_tick 
 
   spec ' ' 'set tempo to' 'set tempo to _ bpm' 'auto' 200
@@ -15,8 +16,8 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures 
   spec ' ' 'rhy broadcast' 'add _ at bar _ beat _' 'auto auto auto' 'kick' 1 1
   spec ' ' 'broadcast remove' 'remove _ from bar _ beat _' 'auto auto auto' 'kick' 1 1
   space
-  spec ' ' 'mute' 'mute _ _' 'auto bool' 'hihat' true
-  spec ' ' 'solo' 'solo _ _' 'auto bool' 'bass' true
+  spec ' ' 'mute' 'mute _ _' 'str bool' 'text' true
+  spec ' ' 'solo' 'solo _ _' 'str bool' 'text' true
   space
   spec 'r' 'current tick for duration' 'current beat'
   spec 'r' 'current bar' 'current bar'
@@ -54,11 +55,12 @@ to '_rhythm loop' {
     _rhy_tick = 0
     for bar _rhy_pattern {
       for beat bar {
+        resetTimer
         for trigger beat {
           sendBroadcast trigger
           waitMicros 1000
         }
-        waitMillis _rhy_beat_duration
+        waitMillis (_rhy_beat_duration - (timer))
         _rhy_tick += 1
       }
     }
@@ -114,20 +116,15 @@ to 'half duration' {
 }
 
 to mute message on/off {
-  local 'msg' 0
-  if (('[data:find]' '#M#' message) > 0) {
-    message = ('[data:copyFromTo]' message 1 (('[data:find]' '#M#' message) - 1))
-  }
-  if (not on/off) {
-    message = ('[data:join]' message '#M#')
-  }
+  if (('[data:find]' '#M#' message) > 0) {message = ('[data:copyFromTo]' message 4)}
+  if (not on/off) {message = ('[data:join]' '#M#' message)}
   for bar _rhy_pattern {
     for beat bar {
       for i (size beat) {
         if ((at i beat) == message) {if on/off {
-          atPut i beat ('[data:join]' (at i beat) '#M#')
+          atPut i beat ('[data:join]' '#M#' (at i beat))
         } else {
-          atPut i beat ('[data:copyFromTo]' (at i beat) 1 (('[data:find]' '#M#' (at i beat)) - 1))
+          atPut i beat ('[data:copyFromTo]' (at i beat) 4)
         }}
       }
     }
@@ -140,6 +137,7 @@ to 'quarter duration' {
 }
 
 to 'rhy broadcast' message 'bar number' 'beat number' {
+  message = ('[data:join]' message '')
   if ((v 'beat number') == '') {
     for 'each beat' _rhy_measures {
       'rhy broadcast' message (v 'bar number') (v 'each beat')
