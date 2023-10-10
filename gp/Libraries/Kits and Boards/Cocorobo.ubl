@@ -1,0 +1,69 @@
+module Cocorobo
+author ShaoYue
+version 1 0 
+description 'Cocorobo kits
+ESP32 '
+choices LED_index '1' '2' '3' 
+choices LED_all '1' '2' '3' '4' '5' '6' '7' '8' '9'
+variables _LEDs 
+
+  spec 'r' '触摸键A' '触摸键A'
+  spec 'r' '触摸键B2' '触摸键B'
+  spec 'r' '按键P1' '按键P1'
+  spec 'r' '按键P2' '按键P2'
+  space
+  spec 'r' '湿度' '湿度'
+  space
+  spec ' ' '熄灭所有LED灯' '熄灭所有LED灯'
+  spec ' ' '设置LED' '设置LED _ _' 'menu.LED_all bool' 1 true
+  spec ' ' '设置' '设置 第 _ 行 第 _ 列 LED _' 'menu.LED_index menu.LED_index bool' 1 1 true
+  space
+  spec ' ' '_cocorobo_init' '_cocorobo_init'
+
+
+to '_cocorobo_init' {
+  if (_LEDs == 0) {_LEDs = ('[data:makeList]' 2 12 5 13 14 15 18 19 23)}
+}
+
+to '按键P1' {
+  return (digitalReadOp 34)
+}
+
+to '按键P2' {
+  return (digitalReadOp 35)
+}
+
+to '湿度' {
+  return (callCustomReporter '[sensors:Humidity]')
+}
+
+to '熄灭所有LED灯' {
+  '_cocorobo_init'
+  for i _LEDs {
+    analogWriteOp i 0
+  }
+}
+
+to '触摸键A' {
+  return ((callCustomReporter '[sensors:touchRead]' ('[data:makeList]' 4)) < 15)
+}
+
+to '触摸键B2' {
+  return ((callCustomReporter '[sensors:touchRead]' ('[data:makeList]' 27)) < 15)
+}
+
+to '设置' foo bar baz {
+  if (and (and (foo >= 1) (foo <= 3)) (and (bar >= 1) (bar <= 3))) {'设置LED' (((foo - 1) * 3) + bar) baz}
+}
+
+to '设置LED' num foo {
+  '_cocorobo_init'
+  if (and (num >= 1) (num <= 9)) {
+    if foo {
+      analogWriteOp (at num _LEDs) 200
+    } else {
+      analogWriteOp (at num _LEDs) 0
+    }
+  }
+}
+
