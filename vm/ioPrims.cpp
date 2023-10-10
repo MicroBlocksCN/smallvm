@@ -701,15 +701,15 @@ void hardwareInit() {
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
 	static const int analogPin[] = {};
-	#define PIN_LED 12
+	#define PIN_LED 14
 	#define PIN_BUTTON_A 34
 	#define PIN_BUTTON_B 35
 	#define DEFAULT_TONE_PIN 26
 	static const char reservedPin[TOTAL_PINS] = {
-		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
-		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		
 #elif defined(M5STAMP)
 	#define BOARD_TYPE "M5STAMP"
@@ -1021,6 +1021,13 @@ static void initPins(void) {
 		pinMode(14, INPUT_PULLUP); // X
 		pinMode(15, INPUT_PULLUP); // OK
 		pinMode(27, INPUT_PULLUP); // →
+	#endif
+	
+	#ifdef COCOROBO
+		// trun off led
+		pinMode(5, OUTPUT); // 
+		pinMode(14, OUTPUT); // 
+		pinMode(15, OUTPUT); // 
 	#endif
 }
 
