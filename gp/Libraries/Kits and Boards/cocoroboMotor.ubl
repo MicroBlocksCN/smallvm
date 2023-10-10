@@ -1,0 +1,127 @@
+module cocoroboMotor Output
+author '邵悦'
+version 1 1 
+depends 'Sensing/Distance (HC-SR04)' 
+description 'Cocorobot 电机扩展板的4电机驱动
+PCA9865
+超声波
+巡线 默认左接16 右接17
+'
+choices PosMenu left right
+variables _robotbitMicrosecsPerCycle 
+
+
+  spec ' ' '电机初始化' '电机初始化'
+  spec ' ' '电机' '电机 _ 速度 _ （-100～100）' 'auto num' 'A' 10
+  spec 'r' '超声波测距(cm)' '超声波测距(cm) 触发 _ 回声 _' 'auto auto' 16 17
+  spec 'r' '巡线传感器' '巡线传感器 _' 'menu.PosMenu' 'left'
+  spec 'r' '巡线状态' '巡线状态 左在线 _ 右在线 _' 'bool bool' true true
+  space
+  spec ' ' '_cocoroboMotorAllOff' '_cocoroboMotorAllOff'
+  spec ' ' '_setPWM2' '_setPWM2 _ _ _' 'auto auto auto' 1 0 2048
+
+to '_cocoroboMotorAllOff' {
+  comment 'Writing to egisters 250-253 sets the PWM parameters
+for all 16 channels at once. Here we turn them all off.
+See the PCA9685 datasheet for technical details.'
+  for i 4 {
+    i2cSet 64 (249 + i) 0
+  }
+}
+
+to '_setPWM2' channel on off {
+  comment 'Set the on and off time of the given PWM channel.
+The I2C message is: <starting register address> <start time (2 bytes) <end time (2 bytes)>
+The start and stop times (range 0-4096) are sent least significant byte first.
+Usually the start time is zero and the end time determines the duty cycle.
+'
+  if (or (channel < 0) (channel > 15)) {
+    return 0
+  }
+  local 'buf' ('[data:newByteArray]' 5)
+  atPut 1 buf (6 + (4 * channel))
+  atPut 2 buf (on & 255)
+  atPut 3 buf ((on >> 8) & 255)
+  atPut 4 buf (off & 255)
+  atPut 5 buf ((off >> 8) & 255)
+  '[sensors:i2cWrite]' 64 buf
+}
+
+to '巡线传感器' lr {
+  comment '在黑色线上返回0，否则在白色上返回1'
+  local '_pin_line_left' 16
+  local '_pin_line_right' 17
+  if (lr == 'left') {
+    return (digitalReadOp _pin_line_left)
+  } (lr == 'right') {
+    return (digitalReadOp _pin_line_right)
+  }
+}
+
+to '巡线状态' leftSide rightSide {
+  return (and (leftSide == (not ('巡线传感器' 'left'))) (rightSide == (not ('巡线传感器' 'right'))))
+}
+
+to '电机' foo speed {
+  if (speed < -100) {
+    speed = -100
+  } (100 < speed) {
+    speed = 100
+  }
+  if (speed < 0) {
+    speed = (0 - speed)
+    if (foo == 'A') {
+      '_setPWM2' 8 0 4000
+      '_setPWM2' 9 0 (speed * 40)
+      '_setPWM2' 10 0 0
+    } (foo == 'B') {
+      '_setPWM2' 11 0 0
+      '_setPWM2' 12 0 (speed * 40)
+      '_setPWM2' 13 0 4000
+    } (foo == 'C') {
+      '_setPWM2' 5 0 0
+      '_setPWM2' 6 0 (speed * 40)
+      '_setPWM2' 7 0 4000
+    } (foo == 'D') {
+      '_setPWM2' 2 0 4000
+      '_setPWM2' 3 0 (speed * 40)
+      '_setPWM2' 4 0 0
+    }
+  } else {
+    if (foo == 'A') {
+      '_setPWM2' 8 0 4000
+      '_setPWM2' 9 0 0
+      '_setPWM2' 10 0 (speed * 40)
+    } (foo == 'B') {
+      '_setPWM2' 11 0 (speed * 40)
+      '_setPWM2' 12 0 0
+      '_setPWM2' 13 0 4000
+    } (foo == 'C') {
+      '_setPWM2' 5 0 (speed * 40)
+      '_setPWM2' 6 0 0
+      '_setPWM2' 7 0 4000
+    } (foo == 'D') {
+      '_setPWM2' 2 0 4000
+      '_setPWM2' 3 0 0
+      '_setPWM2' 4 0 (speed * 40)
+    }
+  }
+}
+
+to '电机初始化' {
+  comment 'Initialize the Kittenbot Robobit servo and motor board.
+See the PCA9685 datasheet for technical details.'
+  comment 'Enter sleep mode'
+  i2cSet 64 0 (hexToInt '10')
+  comment 'Set prescale register to generate 50 Hz'
+  i2cSet 64 (hexToInt 'FE') (25000000 / (50 * 4096))
+  '_cocoroboMotorAllOff'
+  comment 'Start PWM again (with autoincrement enabled)'
+  i2cSet 64 0 (hexToInt '20')
+  _robotbitMicrosecsPerCycle = 20000
+}
+
+to '超声波测距(cm)' trig echo {
+  return ('distance (cm)' trig echo)
+}
+
