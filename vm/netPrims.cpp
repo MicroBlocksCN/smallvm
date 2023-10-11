@@ -496,6 +496,7 @@ WiFiUDP udp;
 
 static OBJ primUDPStart(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
+	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
 
 	if (argCount < 1) return fail(notEnoughArguments);
 	int port = evalInt(args[0]);
@@ -514,6 +515,7 @@ static OBJ primUDPStop(int argCount, OBJ *args) {
 
 static OBJ primUDPSendPacket(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
+	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
 
 	if (argCount < 3) return fail(notEnoughArguments);
 	OBJ data = args[0];
@@ -538,6 +540,7 @@ static OBJ primUDPSendPacket(int argCount, OBJ *args) {
 
 static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
+	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
 
 	int useBinary = ((argCount > 0) && (trueObj == args[0]));
 	int byteCount = udp.parsePacket();
@@ -561,6 +564,7 @@ static OBJ primUDPReceivePacket(int argCount, OBJ *args) {
 
 static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
+	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
 
 	char s[100];
 	IPAddress ip = udp.remoteIP();
@@ -570,6 +574,7 @@ static OBJ primUDPRemoteIPAddress(int argCount, OBJ *args) {
 
 static OBJ primUDPRemotePort(int argCount, OBJ *args) {
 	if (NO_WIFI()) return fail(noWiFi);
+	if (!isConnectedToWiFi()) return fail(wifiNotConnected);
 
 	return int2obj(udp.remotePort());
 }
