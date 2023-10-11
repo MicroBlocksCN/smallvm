@@ -27,18 +27,12 @@ to '_scales intervals' intervals root steps {
 }
 
 to chord which root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 3) {
-    steps = 4
-  }
+  local 'steps' (argOrDefault 3 4)
   return ('_scales intervals' (at ('[data:find]' which ('[data:makeList]' 'major' 'minor' 'diminished' 'major 7th' 'minor 7th' 'Maj7')) ('[data:makeList]' ('[data:makeList]' 0 4 7) ('[data:makeList]' 0 3 7) ('[data:makeList]' 0 3 6) ('[data:makeList]' 0 3 7 10) ('[data:makeList]' 0 3 7 10) ('[data:makeList]' 0 4 7 11))) root steps)
 }
 
 to 'chord2 with roman numeral' degree root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 3) {
-    steps = 3
-  }
+  local 'steps' (argOrDefault 3 3)
   local 'add 7th' (('[data:find]' '7' degree) > 0)
   local 'diminished' ((('[data:find]' 'o' degree) + ('[data:find]' 'º' degree)) > 0)
   local 'chord name' ''
@@ -65,11 +59,8 @@ to 'chord2 with roman numeral' degree root 'optional steps' {
 
 to degrees degrees root 'optional steps' {
   degrees = ('[data:split]' degrees ',')
+  local 'steps' (argOrDefault 3 3)
   local 'chords' ('[data:makeList]')
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 3) {
-    steps = 3
-  }
   for i (size degrees) {
     if (isType steps 'list') {
       local 'chord steps' (at i steps)
@@ -82,18 +73,12 @@ to degrees degrees root 'optional steps' {
 }
 
 to 'pentatonic scale' which root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 3) {
-    steps = 5
-  }
+  local 'steps' (argOrDefault 3 5)
   return ('_scales intervals' (at ('[data:find]' which ('[data:makeList]' 'major' 'minor')) ('[data:makeList]' ('[data:makeList]' 0 2 4 7 9) ('[data:makeList]' 0 3 5 7 10))) root steps)
 }
 
 to scale which root 'optional steps' {
-  local 'steps' (v 'optional steps')
-  if ((pushArgCount) < 3) {
-    steps = 5
-  }
+  local 'steps' (argOrDefault 3 7)
   return ('_scales intervals' (at ('[data:find]' which ('[data:makeList]' 'ionian' 'dorian' 'phrygian' 'lydian' 'mixolydian' 'aeolian' 'locrian')) ('[data:makeList]' ('[data:makeList]' 0 2 4 5 7 9 11) ('[data:makeList]' 0 2 3 5 7 9 10) ('[data:makeList]' 0 1 3 5 7 8 10) ('[data:makeList]' 0 2 4 6 7 9 11) ('[data:makeList]' 0 2 4 5 7 9 10) ('[data:makeList]' 0 2 3 5 7 8 10) ('[data:makeList]' 0 1 3 5 6 8 10))) root steps)
 }
 

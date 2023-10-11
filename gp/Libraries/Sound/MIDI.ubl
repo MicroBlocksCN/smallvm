@@ -16,8 +16,8 @@ Alternatively, if you want to use the MIDI library to control a USB MIDI device 
 '
 variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_channel 
 
-  spec ' ' 'play MIDI note' 'send MIDI note _ during _ ms on channel _ volume _' 'auto auto auto auto' 60 500 1 127
-  spec ' ' 'send note' 'send MIDI note _ on _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
+  spec ' ' 'play MIDI note' 'play MIDI note _ for _ ms on channel _ volume _' 'auto auto auto auto' 60 500 1 127
+  spec ' ' 'send note' 'set MIDI note _ to _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
   space
   spec ' ' 'arpeggiate' 'arpeggiate _ in order _ and duration _ on channel _' 'auto auto auto auto' 'aListOfNotes' 'aListOfPositions' 'aDurationOrListOfDurations' '1'
   space
@@ -124,12 +124,13 @@ or periods and all lowercase.'
 
 to arpeggiate 'note list' order duration channel {
   for i (size order) {
+    local 'start' (millisOp)
     if (isType duration 'list') {
       local 'dur' (at i duration)
     } else {
       local 'dur' duration
     }
-    'play MIDI note' (at (at i order) (v 'note list')) dur channel 127
+    'play MIDI note' (at (at i order) (v 'note list')) (dur - ((millisOp) - start)) channel 127
   }
 }
 
@@ -155,7 +156,7 @@ to 'pitch bend channel' channel percent {
 
 to 'play MIDI note' 'midi note' duration channel volume {
   'send note' (v 'midi note') true channel volume
-  waitMillis duration
+  waitMillis (duration - 3)
   'send note' (v 'midi note') false channel 0
 }
 

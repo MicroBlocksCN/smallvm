@@ -55,12 +55,12 @@ to '_rhythm loop' {
     _rhy_tick = 0
     for bar _rhy_pattern {
       for beat bar {
-        resetTimer
+        local 'start' (millisOp)
         for trigger beat {
           sendBroadcast trigger
           waitMicros 1000
         }
-        waitMillis (_rhy_beat_duration - (timer))
+        waitMillis (_rhy_beat_duration - ((millisOp) - start))
         _rhy_tick += 1
       }
     }
