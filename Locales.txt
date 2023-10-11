@@ -1568,6 +1568,8 @@ disconnect
 
 Serial port:
 
+Connect board and try again
+
 other...
 
 none
