@@ -1,0 +1,277 @@
+module 'Gas (BME680)' Input
+author 'José García Yeste'
+version 1 0 
+description 'Suport for Bosch BME680 sensor
+Temperature, Humidity, Air Pressure and Gas Sensor
+
+Based on https://github.com/Zanduino/BME680
+
+Tested on TeslaLAB Galileo Univestiy Board
+'
+variables _bme680 _bme680_last _bme680_raw _bme680_t _bme680_p _bme680_h _bme680_g 
+
+  spec ' ' '_bme680 setup' '_bme680 setup'
+  spec 'r' 'bme680 connected' 'bme680 connected'
+  spec 'r' '_bme680 read int' '_bme680 read int16 _' 'auto' 0
+  spec 'r' '_bme680 read word' '_bme680 read word _' 'auto' 0
+  spec ' ' '_bme680 read raw' '_bme680 read raw'
+  spec 'r' 'bme680 temperature' 'bme680 temperature (°C x10)'
+  spec 'r' '_bm680 read int8' '_bm680 read int8 _' 'auto' 0
+  spec 'r' 'bme680 pressure' 'bme680 pressure (mBar x10)'
+  spec ' ' '_bme680_set_bits' '_bme680_set_bits reg _ mask _ pos _ val _' 'auto auto auto auto' 0 0 0 0
+  spec 'r' '_bme680 temperature' '_bme680 temperature'
+  spec 'r' 'bme680 humidity' 'bme680 humidity (% x10)'
+  spec ' ' '_bm680 read humidity coefficients' '_bm680 read humidity coefficients'
+  spec ' ' '_bme680 read pressure coefficients' '_bme680 read pressure coefficients'
+  spec ' ' '_bme680 read temperature coefficients' '_bme680 read temperature coefficients'
+  spec ' ' '_read gas coefficients' '_read gas coefficients'
+  spec 'r' 'bme680 gas' 'bme680 gas resistance (mΩ x10)'
+  spec ' ' 'bme680 set gas' 'bme680 set gas to _ degrees for _ millisecs' 'auto auto' 320 150
+  spec ' ' 'bme680 set address to' 'bme680 set address to _' 'auto' 119
+
+to '_bm680 read humidity coefficients' {
+  _bme680_h = ('[data:makeList]')
+  local 'h' (i2cGet _bme680 ((hexToInt 'E1') + 1))
+  '[data:addLast]' (((i2cGet _bme680 ((hexToInt 'E1') + 2)) << 4) | ((h >> 4) & (hexToInt '0F'))) _bme680_h
+  '[data:addLast]' (((i2cGet _bme680 (hexToInt 'E1')) << 4) | ((h >> 4) & (hexToInt '0F'))) _bme680_h
+  '[data:addLast]' ('_bm680 read int8' 28) _bme680_h
+  '[data:addLast]' ('_bm680 read int8' 29) _bme680_h
+  '[data:addLast]' ('_bm680 read int8' 30) _bme680_h
+  '[data:addLast]' (i2cGet _bme680 ((hexToInt 'E1') + (31 - 25))) _bme680_h
+  '[data:addLast]' ('_bm680 read int8' 32) _bme680_h
+}
+
+to '_bm680 read int8' index {
+  if (index > 25) {
+    local 'reg' ((hexToInt 'E1') + (index - 25))
+  } else {
+    local 'reg' ((hexToInt '89') + index)
+  }
+  local 'val' (i2cGet _bme680 reg)
+  if (val > 128) {
+    return (val - 256)
+  } else {
+    return val
+  }
+}
+
+to '_bme680 read int' index {
+  if (index > 25) {
+    local 'reg' ((hexToInt 'E1') + (index - 25))
+  } else {
+    local 'reg' ((hexToInt '89') + index)
+  }
+  local 'val' (((i2cGet _bme680 (reg + 1)) << 8) | (i2cGet _bme680 reg))
+  if (val > 32768) {
+    return (val - 65536)
+  } else {
+    return val
+  }
+  local 'var' 0
+}
+
+to '_bme680 read pressure coefficients' {
+  _bme680_p = ('[data:makeList]')
+  '[data:addLast]' ('_bme680 read word' 5) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 7) _bme680_p
+  '[data:addLast]' ('_bm680 read int8' 9) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 11) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 13) _bme680_p
+  '[data:addLast]' ('_bm680 read int8' 16) _bme680_p
+  '[data:addLast]' ('_bm680 read int8' 15) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 19) _bme680_p
+  '[data:addLast]' ('_bme680 read int' 21) _bme680_p
+  '[data:addLast]' ('_bm680 read int8' 23) _bme680_p
+}
+
+to '_bme680 read raw' {
+  '_bme680 setup'
+  if (or (_bme680_raw == 0) ((millisOp) > (_bme680_last + 1000))) {
+    comment 'forced  mode'
+    '_bme680_set_bits' (hexToInt '74') 3 0 1
+    repeat 3 {
+      waitMillis 10
+      if (((i2cGet _bme680 (hexToInt '1D')) & (hexToInt '80')) != 0) {
+        _bme680_raw = (newList 15 0)
+        '[sensors:i2cWrite]' _bme680 ('[data:makeList]' (hexToInt '1D'))
+        '[sensors:i2cRead]' _bme680 _bme680_raw
+        _bme680_last = (millisOp)
+        return 0
+      }
+    }
+  }
+}
+
+to '_bme680 read temperature coefficients' {
+  _bme680_t = ('[data:makeList]')
+  '[data:addLast]' ('_bme680 read int' 33) _bme680_t
+  '[data:addLast]' ('_bme680 read word' 1) _bme680_t
+  '[data:addLast]' ('_bm680 read int8' 3) _bme680_t
+}
+
+to '_bme680 read word' index {
+  if (index > 25) {
+    local 'reg' ((hexToInt 'E1') + (index - 25))
+  } else {
+    local 'reg' ((hexToInt '89') + index)
+  }
+  return (((i2cGet _bme680 (reg + 1)) << 8) | (i2cGet _bme680 reg))
+}
+
+to '_bme680 setup' {
+  if (_bme680 == 0) {_bme680 = (hexToInt '77')}
+  if (_bme680_last == 0) {
+    comment 'soft reset'
+    i2cSet _bme680 (hexToInt 'E0') (hexToInt 'B6')
+    waitMillis 10
+    comment 'sleep mode'
+    i2cSet _bme680 (hexToInt '74') 0
+    '_bme680 read temperature coefficients'
+    '_bme680 read pressure coefficients'
+    '_bm680 read humidity coefficients'
+    '_read gas coefficients'
+    comment 'humidity oversample x2'
+    '_bme680_set_bits' (hexToInt '72') 7 0 2
+    comment 'pressure oversample x4'
+    '_bme680_set_bits' (hexToInt '74') (hexToInt '1C') 2 3
+    comment 'temperature oversample x8'
+    '_bme680_set_bits' (hexToInt '74') (hexToInt 'E0') 5 4
+    comment 'sef filter'
+    '_bme680_set_bits' (hexToInt '75') (hexToInt '1C') 2 2
+    _bme680_last = (millisOp)
+    waitMillis 1000
+  }
+}
+
+to '_bme680 temperature' {
+  '_bme680 read raw'
+  local 'v1' ((((at 6 _bme680_raw) << 12) | ((at 7 _bme680_raw) << 4)) | ((at 8 _bme680_raw) >> 4))
+  v1 = ((v1 >> 3) - ((at 1 _bme680_t) << 1))
+  local 'v2' ((v1 * (at 2 _bme680_t)) >> 11)
+  local 'v3' (((v1 >> 1) * (v1 >> 1)) >> 12)
+  v3 = ((v3 * ((at 3 _bme680_t) << 4)) >> 14)
+  return (v2 + v3)
+}
+
+to '_bme680_set_bits' reg mask pos val {
+  local 'reg_value' (i2cGet _bme680 reg)
+  if (reg_value >= 0) {
+    i2cSet _bme680 reg ((reg_value & ('~' mask)) | (val << pos))
+  }
+}
+
+to '_read gas coefficients' {
+  _bme680_g = ('[data:makeList]')
+  '[data:addLast]' ('_bm680 read int8' 37) _bme680_g
+  '[data:addLast]' ('_bme680 read int' 35) _bme680_g
+  '[data:addLast]' ('_bm680 read int8' 38) _bme680_g
+  comment 'heat_range, heat & rng_sw_err'
+  '[data:addLast]' (((i2cGet _bme680 2) & (hexToInt '30')) / 16) _bme680_g
+  '[data:addLast]' (i2cGet _bme680 0) _bme680_g
+  if ((at 'last' _bme680_g) > 128) {
+    atPut _bme680_g _bme680_g 10
+    return ((at 'last' _bme680_g) - 256)
+  }
+  '[data:addLast]' (((i2cGet _bme680 2) & (hexToInt 'F0')) / 16) _bme680_g
+}
+
+to 'bme680 connected' {
+  if (_bme680 == 0) {
+    local 'addr' (hexToInt '77')
+  } else {
+    addr = _bme680
+  }
+  return ((i2cGet addr (hexToInt 'D0')) == (hexToInt '61'))
+}
+
+to 'bme680 gas' {
+  '_bme680 read raw'
+  if ((i2cGet _bme680 (hexToInt '71')) == 0) {
+    'bme680 set gas' 320 150
+  }
+  local 'adc' (((at 14 _bme680_raw) << 2) | ((at 15 _bme680_raw) >> 6))
+  if (adc > 0) {
+    local 'range' (((at 15 _bme680_raw) & (hexToInt '0F')) + 1)
+    return (('[misc:bme680GasResistance]' adc range (at 6 _bme680_g)) / 10)
+  } else {
+    return 0
+  }
+}
+
+to 'bme680 humidity' {
+  local 't' (('bme680 temperature') * 10)
+  local 'v1' (((at 9 _bme680_raw) << 8) | (at 10 _bme680_raw))
+  v1 = ((v1 - ((at 1 _bme680_h) << 4)) - (((t * (at 3 _bme680_h)) / 100) >> 1))
+  local 'v2' (longMult (at 2 _bme680_h) ((((t * (at 4 _bme680_h)) / 100) + (((t * ((t * (at 5 _bme680_h)) / 100)) >> 6) / 100)) + 16384) 10)
+  local 'v3' (v1 * v2)
+  local 'v4' ((at 6 _bme680_h) << 7)
+  v4 = ((v4 + ((t * (at 7 _bme680_h)) / 100)) >> 4)
+  local 'v5' (longMult (v3 >> 14) (v3 >> 14) 10)
+  local 'v6' (longMult v4 v5 1)
+  return ((maximum 0 (minimum 100000 (longMult ((v3 + v6) >> 10) 1000 12))) / 100)
+}
+
+to 'bme680 pressure' {
+  local 'v1' ((('_bme680 temperature') >> 1) - 64000)
+  local 'v2' (((((v1 >> 2) * (v1 >> 2)) >> 11) * (at 6 _bme680_p)) >> 2)
+  v2 = (v2 + ((v1 * (at 5 _bme680_p)) << 1))
+  v2 = ((v2 >> 2) + ((at 4 _bme680_p) << 16))
+  v1 = ((((((v1 >> 2) * (v1 >> 2)) >> 13) * ((at 3 _bme680_p) << 5)) >> 3) + (((at 2 _bme680_p) * v1) >> 1))
+  v1 = (v1 >> 18)
+  v1 = (longMult (32768 + v1) (at 1 _bme680_p) 15)
+  local 'p' (1048576 - ((((at 3 _bme680_raw) << 12) | ((at 4 _bme680_raw) << 4)) | ((at 5 _bme680_raw) >> 4)))
+  comment 'original *3125, <<1'
+  p = ((p - (v2 >> 12)) * 1562)
+  p = ((p / v1) << 2)
+  v1 = (longMult (at 9 _bme680_p) (longMult (p >> 3) (p >> 3) 13) 12)
+  v2 = (longMult (p >> 2) (at 8 _bme680_p) 13)
+  local 'v3' (longMult ((p >> 8) * ((p >> 8) * (p >> 8))) (at 10 _bme680_p) 17)
+  return ((p + ((((v1 + v2) + v3) + ((at 7 _bme680_p) << 7)) >> 4)) / 10)
+}
+
+to 'bme680 set address to' addr {
+  _bme680 = addr
+  _bme680_last = 0
+  '_bme680 setup'
+}
+
+to 'bme680 set gas' degrees ms {
+  local 'gas_reg' (i2cGet _bme680 (hexToInt '71'))
+  if (or (degrees <= 0) (ms <= 0)) {
+    comment 'Turn off gas measurements'
+    i2cSet _bme680 (hexToInt '70') 8
+    i2cSet _bme680 (hexToInt '71') (gas_reg & (hexToInt 'EF'))
+  } else {
+    i2cSet _bme680 (hexToInt '70') 0
+    degrees = (maximum (minimum degrees 400) 200)
+    local 'v1' ((((('bme680 temperature') / 10) * (at 3 _bme680_g)) / 1000) << 8)
+    local 'v2' (((at 1 _bme680_g) + 784) * (((((((at 2 _bme680_g) + 154009) * degrees) * 5) / 100) + 3276800) / 10))
+    local 'v3' (v1 + (v2 / 2))
+    local 'v3' (v1 + (v2 / 2))
+    local 'v4' (v3 / ((at 4 _bme680_g) + 4))
+    local 'v5' ((131 * (at 5 _bme680_g)) + 65536)
+    local 'heatr_res' (((((v4 / v5) - 250) * 34) + 50) / 100)
+    i2cSet _bme680 (hexToInt '5A') heatr_res
+    local 'factor' 0
+    local 'durval' 0
+    if (ms > 4032) {
+      durval = (hexToInt 'FF')
+    } else {
+      repeatUntil (ms <= (hexToInt '3F')) {
+        ms = (ms >> 1)
+        if (ms > (hexToInt '3F')) {
+          factor += 1
+        }
+      }
+      durval = (ms + (factor * 64))
+    }
+    i2cSet _bme680 (hexToInt '70') 0
+    i2cSet _bme680 (hexToInt '64') durval
+    i2cSet _bme680 (hexToInt '71') (gas_reg | (hexToInt '10'))
+  }
+}
+
+to 'bme680 temperature' {
+  return ((((('_bme680 temperature') * 5) + 128) >> 8) / 10)
+}
+
