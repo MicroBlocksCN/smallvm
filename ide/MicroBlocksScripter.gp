@@ -439,6 +439,10 @@ method addBlocksForLibrary MicroBlocksScripter libName {
   }
 }
 
+to caseInsensitiveLessThan s1 s2 {
+  return ((toUpperCase s1) < (toUpperCase s2))
+}
+
 method addVariableBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
@@ -461,6 +465,7 @@ method addVariableBlocks MicroBlocksScripter {
   nextY += (20 * scale)
 
   if (notEmpty visibleVars) {
+    visibleVars = (sorted (toArray visibleVars) 'caseInsensitiveLessThan')
 	for varName visibleVars {
 	    lastY = nextY
 	    b = (toBlock (newReporter 'v' varName))
