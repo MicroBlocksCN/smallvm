@@ -134,11 +134,6 @@ OBJ primTakePhoto(int argCount, OBJ *args) {
 		return falseObj;
 	}
 
-// xxx
-reportNum("Got image! data bytecount", fb->len);
-reportNum("  width", fb->width);
-reportNum("  height", fb->height);
-
 	// copy data into a new byte array
 	int wordCount = (fb->len + 3) / 4;
 	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
