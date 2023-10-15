@@ -57,8 +57,13 @@ to '_rhythm loop' {
       for beat bar {
         local 'start' (millisOp)
         for trigger beat {
-          sendBroadcast trigger
-          waitMicros 1000
+          if ((0 + trigger) > 30) {
+            printIt trigger
+            'send note' (0 + trigger) true 10 80
+          } else {
+            sendBroadcast trigger
+            waitMicros 1000
+          }
         }
         waitMillis (_rhy_beat_duration - ((millisOp) - start))
         _rhy_tick += 1
@@ -116,8 +121,13 @@ to 'half duration' {
 }
 
 to mute message on/off {
-  if (('[data:find]' '#M#' message) > 0) {message = ('[data:copyFromTo]' message 4)}
-  if (not on/off) {message = ('[data:join]' '#M#' message)}
+  message = ('[data:join]' message '')
+  if (('[data:find]' '#M#' message) > 0) {
+    message = ('[data:copyFromTo]' message 4)
+  }
+  if (not on/off) {
+    message = ('[data:join]' '#M#' message)
+  }
   for bar _rhy_pattern {
     for beat bar {
       for i (size beat) {
@@ -192,6 +202,7 @@ to 'sixteenth duration' {
 }
 
 to solo message on/off {
+  message = ('[data:join]' message '')
   mute message false
   for bar _rhy_pattern {
     for beat bar {
