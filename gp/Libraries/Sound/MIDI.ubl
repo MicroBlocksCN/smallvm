@@ -157,7 +157,11 @@ to 'pitch bend channel' channel percent {
 }
 
 to 'play MIDI drum' drumName duration volume {
-  'send note' ('drum note' drumName) true 10 volume
+  if (isType drumName 'number') {
+    'send note' drumName true 10 volume
+  } else {
+    'send note' ('drum note' drumName) true 10 volume
+  }
   waitMillis (duration - 3)
 }
 

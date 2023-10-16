@@ -58,7 +58,6 @@ to '_rhythm loop' {
         local 'start' (millisOp)
         for trigger beat {
           if ((0 + trigger) > 30) {
-            printIt trigger
             'send note' (0 + trigger) true 10 80
           } else {
             sendBroadcast trigger
