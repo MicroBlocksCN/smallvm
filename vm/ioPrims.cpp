@@ -844,10 +844,10 @@ extern "C" void esp8266DeepSleep(uint64_t usecs) {
 	#define PIN_BUTTON_B 35
 	#define DEFAULT_TONE_PIN 26
 	static const char reservedPin[TOTAL_PINS] = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+		0, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+		1, 1, 0, 0, 0, 0, 0, 1, 1, 0};
 		
 #elif defined(M5STAMP)
 	#define BOARD_TYPE "M5STAMP"
