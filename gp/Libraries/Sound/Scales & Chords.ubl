@@ -43,6 +43,7 @@ to 'chord2 with roman numeral' degree root 'optional steps' {
     degree = ('[data:copyFromTo]' degree 1 ((size degree) - 1))
   }
   local 'index' ('[data:find]' degree ('[data:makeList]' 'I' 'II' 'III' 'IV' 'V' 'VI' 'VII' 'i' 'ii' 'iii' 'iv' 'v' 'vi' 'vii'))
+  waitMillis 500
   if (index > 7) {
     'chord name' = 'minor'
   } else {
@@ -54,7 +55,7 @@ to 'chord2 with roman numeral' degree root 'optional steps' {
   if diminished {
     'chord name' = 'diminished'
   }
-  return (chord (v 'chord name') (at ((index % 7) + 1) ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 5) (root + 7) (root + 9) (root + 11))) steps)
+  return (chord (v 'chord name') (at (((index - 1) % 7) + 1) ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 5) (root + 7) (root + 9) (root + 11))) steps)
 }
 
 to degrees degrees root 'optional steps' {
