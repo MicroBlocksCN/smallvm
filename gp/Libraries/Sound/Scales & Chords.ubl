@@ -54,7 +54,7 @@ to 'chord2 with roman numeral' degree root 'optional steps' {
   if diminished {
     'chord name' = 'diminished'
   }
-  return (chord (v 'chord name') (at ((index % 7) + 1) ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 5) (root + 7) (root + 9) (root + 11))) steps)
+  return (chord (v 'chord name') (at (((index - 1) % 7) + 1) ('[data:makeList]' (root + 0) (root + 2) (root + 4) (root + 5) (root + 7) (root + 9) (root + 11))) steps)
 }
 
 to degrees degrees root 'optional steps' {
