@@ -459,8 +459,10 @@ method addVariableBlocks MicroBlocksScripter {
 
   addBlock this (toBlock (newCommand '=' defaultVarName 0)) nil false
   addBlock this (toBlock (newCommand '+=' defaultVarName 1)) nil false
-  nextY += (10 * scale)
-  addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
+  if (or (devMode) (contains (commandLine) '--allowMorphMenu')) {
+    nextY += (10 * scale)
+    addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
+  }
 
   nextY += (20 * scale)
 
