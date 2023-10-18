@@ -16,6 +16,8 @@ It also includes intervals for the most common chords and progressions.
   spec 'r' 'chord2 with roman numeral' '_ chord for root _ : steps _' 'auto auto auto' 'IV' 60 4
   spec 'r' 'degrees' 'chord progression _ with root _ : and _ steps per chord' 'auto auto auto' 'I,IV,viiº,iii,vi,ii,V,I' 60 3
   space
+  spec 'r' 'transposed' '_ transposed _ semitones' 'auto auto' 60 12
+  space
   spec 'r' '_scales intervals' '_scales intervals _  with root _ and _ steps' 'auto auto auto' 'aList' 60 10
 
 to '_scales intervals' intervals root steps {
@@ -80,5 +82,17 @@ to 'pentatonic scale' which root 'optional steps' {
 to scale which root 'optional steps' {
   local 'steps' (argOrDefault 3 7)
   return ('_scales intervals' (at ('[data:find]' which ('[data:makeList]' 'ionian' 'dorian' 'phrygian' 'lydian' 'mixolydian' 'aeolian' 'locrian')) ('[data:makeList]' ('[data:makeList]' 0 2 4 5 7 9 11) ('[data:makeList]' 0 2 3 5 7 9 10) ('[data:makeList]' 0 1 3 5 7 8 10) ('[data:makeList]' 0 2 4 6 7 9 11) ('[data:makeList]' 0 2 4 5 7 9 10) ('[data:makeList]' 0 2 3 5 7 8 10) ('[data:makeList]' 0 1 3 5 6 8 10))) root steps)
+}
+
+to transposed 'note or chord' semitones {
+  if (isType (v 'note or chord') 'list') {
+    local 'notes' (newList (size (v 'note or chord')))
+    for i (size (v 'note or chord')) {
+      atPut i notes ((at i (v 'note or chord')) + semitones)
+    }
+    return notes
+  } else {
+    return ((v 'note or chord') + semitones)
+  }
 }
 

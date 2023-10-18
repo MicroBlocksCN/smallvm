@@ -44,7 +44,6 @@ variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_drums
   space
   spec ' ' '_MIDI command' '_MIDI command _ channel _ arg1 _ : arg2 _' 'num num num num' 9 1 60 127
   spec ' ' '_MIDI send bytes' '_MIDI send bytes _' 'auto' ''
-  spec ' ' '[serial:midiSend]' '_MIDI USB send _ : _ : _' 'num num num' 144 60 100
   space
   spec 'r' '_trimmedLowercase' '_trimmedLowercase _' 'str' 'A. b C...'
 

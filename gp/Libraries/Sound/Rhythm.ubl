@@ -56,6 +56,9 @@ to '_rhythm loop' {
     for bar _rhy_pattern {
       for beat bar {
         local 'start' (millisOp)
+        if (not _rhy_looping) {
+          stopTask
+        }
         for trigger beat {
           if ((0 + trigger) > 30) {
             'send note' (0 + trigger) true 10 80
