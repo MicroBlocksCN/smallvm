@@ -154,6 +154,7 @@ OBJ primAt(int argCount, OBJ *args) {
 		i = obj2int(arg0);
 		if ((i < 1) || (i > count)) return fail(indexOutOfRangeError);
 	} else if (matches("random", arg0)) {
+		if (count == 0) return fail(indexOutOfRangeError);
 		i = (rand() % count) + 1;
 	} else if (matches("last", arg0)) {
 		i = count;
