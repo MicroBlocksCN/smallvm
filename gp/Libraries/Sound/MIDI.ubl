@@ -1,8 +1,9 @@
 module MIDI Output
 author MicroBlocks
-version 1 3 
+version 1 4 
 choices druminst 'Acoustic Bass Drum' 'Bass Drum 1' 'Side Stick' 'Acoustic Snare' 'Hand Clap' 'Electric Snare' 'Low Floor Tom' 'Closed Hi-Hat' 'High Floor Tom' 'Pedal Hi-Hat' 'Low Tom' 'Open Hi-Hat' 'Low-Mid Tom' 'Hi-Mid Tom' 'Crash Cymbal 1' 'High Tom' 'Ride Cymbal 1' 'Chinese Cymbal' 'Ride Bell' Tambourine 'Splash Cymbal' Cowbell 'Crash Cymbal 2' Vibraslap 'Ride Cymbal 2' 'Hi Bongo' 'Low Bongo' 'Mute Hi Conga' 'Open Hi Conga' 'Low Conga' 'High Timbale' 'Low Timbale' 'High Agogo' 'Low Agogo' Cabasa Maracas 'Short Whistle' 'Long Whistle' 'Short Guiro' 'Long Guiro' Claves 'Hi Wood Block' 'Low Wood Block' 'Mute Cuica' 'Open Cuica' 'Mute Triangle' 'Open Triangle' 
 choices instrument piano 'chromatic percussion' organ guitar bass strings ensemble brass reed pipe 'synth lead' 'synth pad' 'synth SFX' ethnic percussive SFX 
+choices drumkits standard room power electronic 'TR-808' jazz brush orchestra SFX 'CM-64/CM-32L' 
 choices controls 'bank select 1' 'bank select 2' modulation 'portamento time' volume pan expression hold portamento sostenuto soft resonance 'release time' 'attack time' cutoff 'decay time' 'vibrato rate' 'vibrato depth' 'vibrato delay' 'portamento control' 'effect 1' 'effect 2' 
 description 'Control MIDI devices. By default, it interfaces the hardware serial port, but it also supports software serial and USB MIDI.
 
@@ -25,6 +26,7 @@ variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_drums
   space
   spec ' ' 'select MIDI instrument' 'select MIDI instrument _ for channel _' 'auto auto' '10' 2
   spec 'r' 'instrument' 'instrument _ number _' 'menu.instrument menu.range:1-8' 'piano' 1
+  spec ' ' 'select MIDI drum kit' 'select MIDI drum kit _' 'menu.drumkits' 'brush'
   space
   spec ' ' 'play MIDI drum' 'play MIDI drum _ for _ ms volume _' 'menu.druminst num num' 'Acoustic Snare' 100 80
   spec 'r' 'drum note' 'drum _' 'menu.druminst' 'Ride Cymbal 2'
@@ -168,6 +170,11 @@ to 'play MIDI note' 'midi note' duration channel volume {
   'send note' (v 'midi note') true channel volume
   waitMillis (duration - 3)
   'send note' (v 'midi note') false channel 0
+}
+
+to 'select MIDI drum kit' drumkit {
+  local 'programChangeCmd' 12
+  '_MIDI command' programChangeCmd 10 ((at ('[data:find]' drumkit ('[data:split]' 'standard,room,power,electronic,TR-808,jazz,brush,orchestra,SFX,CM-64/CM-32L' ',')) ('[data:split]' '1,9,17,25,26,33,41,49,57,128' ',')) - 1)
 }
 
 to 'select MIDI instrument' 'instrument number' channel {
