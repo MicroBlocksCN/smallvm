@@ -12,23 +12,23 @@ minode sensor lib
 '
 variables _wr32_analog_pins_list _wr32_pin_D4 _wr32_pin_A4 _wr32_pin_D3 _wr32_pin_A3 _wr32_pin_A2 _wr32_pin_A5 _wr32_pin_D7 _wr32_pin_D12 _wr32_initialized _wr32_digital_pins_list _wr32_pin_A0 _wr32_pin_D5 _wr32_pin_D8 _wr32_pin_D10 _wr32_pin_D9 _wr32_pin_A1 _wr32_pin_D13 _wr32_pin_D6 _wr32_pin_D2 _wr32_pin_D11 
 
-  spec ' ' 'RGB灯' 'RGB彩灯 _ 接口 _' 'color menu.DPinMenu' nil 'D5'
-  spec ' ' 'RGB灯关闭 端口 D' 'RGB彩灯关闭 接口 _' 'menu.DPinMenu' 'D5'
+  spec ' ' 'RGB灯' 'RGB彩灯 _ 接口 _' 'color menu.dPinMenu' nil 'D5'
+  spec ' ' 'RGB灯关闭 端口 D' 'RGB彩灯关闭 接口 _' 'menu.dPinMenu' 'D5'
   space
-  spec 'r' '旋钮' '旋钮 _' 'menu.APinMenu' 'A1'
-  spec 'r' '光线强度' '光线强度 _' 'menu.APinMenu' 'A2'
-  spec 'r' '麦克风' '麦克风 _' 'menu.APinMenu' 'A3'
+  spec 'r' '旋钮' '旋钮 _' 'menu.aPinMenu' 'A1'
+  spec 'r' '光线强度' '光线强度 _' 'menu.aPinMenu' 'A2'
+  spec 'r' '麦克风' '麦克风 _' 'menu.aPinMenu' 'A3'
   space
-  spec 'r' '拨动开关' '拨动开关 _' 'menu.DPinMenu' 'D2'
-  spec 'r' '温度（摄氏度）' '温度（摄氏度） _' 'menu.DPinMenu' 'D3'
-  spec 'r' '湿度' '湿度 _' 'menu.DPinMenu' 'D3'
-  spec 'r' '红外检测PIR 在接口' '红外检测PIR 在接口 _ 检测到运动' 'menu.DPinMenu' 'D4'
+  spec 'r' '拨动开关' '拨动开关 _' 'menu.dPinMenu' 'D2'
+  spec 'r' '温度（摄氏度）' '温度（摄氏度） _' 'menu.dPinMenu' 'D3'
+  spec 'r' '湿度' '湿度 _' 'menu.dPinMenu' 'D3'
+  spec 'r' '红外检测PIR 在接口' '红外检测PIR 在接口 _ 检测到运动' 'menu.dPinMenu' 'D4'
   space
-  spec ' ' '连接蜂鸣器' '连接蜂鸣器到 _' 'menu.DPinMenu' 'D6'
-  spec ' ' '风扇 速度' '风扇 速度(0-100) _ 接口 _' 'auto menu.DPinMenu' '10' 'D7'
-  spec ' ' '继电器' '继电器 在 _ 状态 _' 'menu.DPinMenu bool' 'D8' true
+  spec ' ' '连接蜂鸣器' '连接蜂鸣器到 _' 'menu.dPinMenu' 'D6'
+  spec ' ' '风扇 速度' '风扇 速度(0-100) _ 接口 _' 'auto menu.dPinMenu' '10' 'D7'
+  spec ' ' '继电器' '继电器 在 _ 状态 _' 'menu.dPinMenu bool' 'D8' true
   space
-  spec 'r' '参数处理' '_参数处理 _' 'menu.DPinMenu' '10'
+  spec 'r' '参数处理' '_参数处理 _' 'menu.dPinMenu' '10'
   spec ' ' 'minodeRGB' 'minodeRGB _ clkpin _ datapin _' 'color auto auto' nil 3 4
   spec ' ' 'minodeRGB r' 'minodeRGB r _ g _ b _ clkpin _ datapin _' 'num num num auto auto' 255 0 0 3 4
   spec ' ' '_wr32_init_pins' '_wr32_init_pins'
