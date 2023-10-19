@@ -1,0 +1,194 @@
+module 'ESP32Uno 扩展板'
+author '邵悦'
+version 1 0 
+depends Tone 'Sensing/Temperature Humidity (DHT11, DHT22)' 'Sensing/IR Motion (PIR)' 
+choices analogPinMenu '0' '1' '2' '3' '4' '5' 
+choices aPinMenu A0 A1 A2 A3 
+choices digitalPinMenu '2' '3' '4' '5' '6' '7' '8' '9' '10' '11' '12' '13' 
+choices dPinMenu D2 D3 D4 D5 D6 D7 D8 
+description 'Grove shield for Uno
+esp32 pin mapping
+minode sensor lib 
+'
+variables _wr32_analog_pins_list _wr32_pin_D4 _wr32_pin_A4 _wr32_pin_D3 _wr32_pin_A3 _wr32_pin_A2 _wr32_pin_A5 _wr32_pin_D7 _wr32_pin_D12 _wr32_initialized _wr32_digital_pins_list _wr32_pin_A0 _wr32_pin_D5 _wr32_pin_D8 _wr32_pin_D10 _wr32_pin_D9 _wr32_pin_A1 _wr32_pin_D13 _wr32_pin_D6 _wr32_pin_D2 _wr32_pin_D11 
+
+  spec ' ' 'RGB灯' 'RGB彩灯 _ 接口 _' 'color menu.DPinMenu' nil 'D5'
+  spec ' ' 'RGB灯关闭 端口 D' 'RGB彩灯关闭 接口 _' 'menu.DPinMenu' 'D5'
+  space
+  spec 'r' '旋钮' '旋钮 _' 'menu.APinMenu' 'A1'
+  spec 'r' '光线强度' '光线强度 _' 'menu.APinMenu' 'A2'
+  spec 'r' '麦克风' '麦克风 _' 'menu.APinMenu' 'A3'
+  space
+  spec 'r' '拨动开关' '拨动开关 _' 'menu.DPinMenu' 'D2'
+  spec 'r' '温度（摄氏度）' '温度（摄氏度） _' 'menu.DPinMenu' 'D3'
+  spec 'r' '湿度' '湿度 _' 'menu.DPinMenu' 'D3'
+  spec 'r' '红外检测PIR 在接口' '红外检测PIR 在接口 _ 检测到运动' 'menu.DPinMenu' 'D4'
+  space
+  spec ' ' '连接蜂鸣器' '连接蜂鸣器到 _' 'menu.DPinMenu' 'D6'
+  spec ' ' '风扇 速度' '风扇 速度(0-100) _ 接口 _' 'auto menu.DPinMenu' '10' 'D7'
+  spec ' ' '继电器' '继电器 在 _ 状态 _' 'menu.DPinMenu bool' 'D8' true
+  space
+  spec 'r' '参数处理' '_参数处理 _' 'menu.DPinMenu' '10'
+  spec ' ' 'minodeRGB' 'minodeRGB _ clkpin _ datapin _' 'color auto auto' nil 3 4
+  spec ' ' 'minodeRGB r' 'minodeRGB r _ g _ b _ clkpin _ datapin _' 'num num num auto auto' 255 0 0 3 4
+  spec ' ' '_wr32_init_pins' '_wr32_init_pins'
+  spec 'r' 'wr32_GPIO_D' 'wr32_GPIO_D _' 'menu.digitalPinMenu' 2
+  spec 'r' 'wr32_GPIOPin_A' 'wr32_GPIO_A _' 'menu.analogPinMenu' 0
+  spec 'r' '_wr32 read analog A' 'wr32 read analog A _' 'menu.analogPinMenu' 0
+  spec 'r' 'wr32 read digital D' 'wr32 read digital D _' 'menu.digitalPinMenu' 2
+  spec ' ' 'wr32 set pin D' 'wr32 set pin D _ to _ (0-1023)' 'menu.digitalPinMenu num' '2' 100
+  spec ' ' 'wr32 set digital pin D' 'wr32 set digital pin D _ to _' 'menu.digitalPinMenu bool' 2 true
+
+to RGB灯 foo bar {
+  minodeRGB foo (wr32_GPIO_D ('参数处理' bar)) (wr32_GPIO_D (('参数处理' bar) + 1))
+}
+
+to 'RGB灯关闭 端口 D' foo {
+  RGB灯 (0 + 0) foo
+}
+
+to '_wr32 read analog A' pin {
+  return (analogReadOp (wr32_GPIOPin_A pin))
+}
+
+to '_wr32_init_pins' {
+  if _wr32_initialized {return}
+  _wr32_pin_A0 = 2
+  _wr32_pin_A1 = 4
+  _wr32_pin_A2 = 35
+  _wr32_pin_A3 = 34
+  _wr32_pin_A4 = 36
+  _wr32_pin_A5 = 39
+  _wr32_pin_D2 = 26
+  _wr32_pin_D3 = 25
+  _wr32_pin_D4 = 17
+  _wr32_pin_D5 = 16
+  _wr32_pin_D6 = 27
+  _wr32_pin_D7 = 14
+  _wr32_pin_D8 = 12
+  _wr32_pin_D9 = 13
+  _wr32_pin_D10 = 5
+  _wr32_pin_D11 = 23
+  _wr32_pin_D12 = 19
+  _wr32_pin_D13 = 18
+  _wr32_analog_pins_list = ('[data:makeList]' _wr32_pin_A0 _wr32_pin_A1 _wr32_pin_A2 _wr32_pin_A3 _wr32_pin_A4 _wr32_pin_A5)
+  _wr32_digital_pins_list = ('[data:makeList]' _wr32_pin_D2 _wr32_pin_D3 _wr32_pin_D4 _wr32_pin_D5 _wr32_pin_D6 _wr32_pin_D7 _wr32_pin_D8 _wr32_pin_D9 _wr32_pin_D10 _wr32_pin_D11 _wr32_pin_D12 _wr32_pin_D13)
+  _wr32_initialized = (booleanConstant true)
+}
+
+to minodeRGB color clkpin datapin {
+  'minodeRGB r' (color >> 16) ((color % (1 << 16)) >> 8) (color % (1 << 8)) clkpin datapin
+}
+
+to 'minodeRGB r' r g b pin1 pin2 {
+  local '_clkpin' pin1
+  local '_datapin' pin2
+  local '_rr' (r >> 1)
+  local '_gg' (g >> 1)
+  local '_bb' (b >> 1)
+  local 'rgb' (hexToInt '808080')
+  rgb = (rgb | (_gg << 15))
+  rgb = (rgb | (_rr << 7))
+  rgb = (rgb | _bb)
+  repeat 32 {
+    digitalWriteOp _datapin false
+    digitalWriteOp _clkpin true
+    digitalWriteOp _clkpin false
+  }
+  repeat 24 {
+    if ((rgb & (hexToInt '800000')) != 0) {
+      digitalWriteOp _datapin true
+    } else {
+      digitalWriteOp _datapin false
+    }
+    digitalWriteOp _clkpin true
+    digitalWriteOp _clkpin false
+    rgb = (rgb << 1)
+  }
+  rgb = (hexToInt '808080')
+  repeat 24 {
+    if ((rgb & (hexToInt '800000')) != 0) {
+      digitalWriteOp _datapin true
+    } else {
+      digitalWriteOp _datapin false
+    }
+    digitalWriteOp _clkpin true
+    digitalWriteOp _clkpin false
+    rgb = (rgb << 1)
+  }
+}
+
+to 'wr32 read digital D' pin {
+  return (digitalReadOp (wr32_GPIO_D pin))
+}
+
+to 'wr32 set digital pin D' pin value {
+  digitalWriteOp (wr32_GPIO_D pin) value
+}
+
+to 'wr32 set pin D' pin value {
+  analogWriteOp (wr32_GPIO_D pin) value
+}
+
+to wr32_GPIOPin_A pin {
+  '_wr32_init_pins'
+  comment 'pins A0~ A5,  A0 is list 1'
+  return (at (pin + 1) _wr32_analog_pins_list)
+}
+
+to wr32_GPIO_D pin {
+  '_wr32_init_pins'
+  comment 'pins A2~A13,A2 is list 1  '
+  return (at (pin - 1) _wr32_digital_pins_list)
+}
+
+to '光线强度' foo {
+  return ('_wr32 read analog A' ('参数处理' foo))
+}
+
+to '参数处理' foo {
+  if (isType foo 'number') {
+    return foo
+  } ((size foo) == 2) {
+    return (at 'last' foo)
+  } else {
+    return 99
+  }
+}
+
+to '拨动开关' foo {
+  return ('wr32 read digital D' ('参数处理' foo))
+}
+
+to '旋钮' foo {
+  return ('_wr32 read analog A' ('参数处理' foo))
+}
+
+to '温度（摄氏度）' foo {
+  return (temperature_DHT11 (wr32_GPIO_D ('参数处理' foo)))
+}
+
+to '湿度' foo {
+  return (humidity_DHT11 (wr32_GPIO_D ('参数处理' foo)))
+}
+
+to '红外检测PIR 在接口' pin {
+  return (PIR (wr32_GPIO_D ('参数处理' pin)))
+}
+
+to '继电器' foo bar {
+  'wr32 set digital pin D' ('参数处理' foo) bar
+}
+
+to '连接蜂鸣器' foo {
+  'attach buzzer to pin' (wr32_GPIO_D ('参数处理' foo))
+}
+
+to '风扇 速度' foo bar {
+  'wr32 set pin D' ('参数处理' bar) (foo * 10)
+}
+
+to '麦克风' foo {
+  return ('_wr32 read analog A' ('参数处理' foo))
+}
+
