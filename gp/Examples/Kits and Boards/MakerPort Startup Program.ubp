@@ -2,7 +2,7 @@ module main
 author 'Roger Wagner'
 version 1 0 
 description ''
-variables CharacterList CharacterNames last_state TPin KeyboardOn folder IRCode Servo1Angle Servo2Angle MicroSDInserted IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList UltraSonicPresent NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn 
+variables CharacterList CharacterNames last_state TPin KeyboardOn folder IRCode Servo1Angle Servo2Angle MicroSDInserted IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList UltraSonicPresent NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn 
 
   spec ' ' 'Initialize lists' 'Initialize lists'
   spec ' ' 'NeoPixel initialize' 'NeoPixel initialize'
@@ -16,10 +16,12 @@ variables CharacterList CharacterNames last_state TPin KeyboardOn folder IRCode 
 
 to DoMenus {
   MenuNumber += 1
-  digitalWriteOp 19 true
-  makerport_beep 880 100
-  if MicroSDInserted {
-    digitalWriteOp 19 false
+  if MakerPortSpeakerOn {
+    digitalWriteOp 19 true
+    makerport_beep 880 100
+    if MicroSDInserted {
+      digitalWriteOp 19 false
+    }
   }
   if (MenuNumber == 1) {
     LCD1602_write 'Menu1' 1
@@ -55,8 +57,8 @@ to DoMenus {
 }
 
 to 'Initialize lists' {
-  CharacterNames = ('[data:makeList]' 'g' 'f' 'd' 's' 'a' 'w' 'click' 'space' 'right' 'left' 'down' 'up')
-  CharacterList = ('[data:makeList]' 'g' 'f' 'd' 's' 'a' 'w' 'click' ' ' 215 216 217 218)
+  CharacterNames = ('[data:makeList]' 'left' 'up' 'right' 'down' 'space' 'click' 'w' 'a' 's' 'd' 'f' 'g')
+  CharacterList = ('[data:makeList]' 216 218 215 217 ' ' 'click' 'w' 'a' 's' 'd' 'f' 'g')
   IRCodeList = ('[data:makeList]' 22 25 13 12 24 94 8 28 90 82 66 74 68 67 70 21 64)
   IRNameList = ('[data:makeList]' 1 2 3 4 5 6 7 8 9 0 '*' '#' 'left' 'right' 'up' 'down' 'OK')
   comment 'https://pages.mtu.edu/~suits/notefreqs.html'
@@ -154,7 +156,8 @@ makerport_setAllLEDs false
 script 40 49 {
 whenStarted
 'Initialize lists'
-KeyboardOn = (booleanConstant false)
+KeyboardOn = (booleanConstant true)
+MakerPortSpeakerOn = (booleanConstant true)
 PreviousPinTouched = 0
 MenuNumber = 0
 folder = 1
@@ -204,34 +207,40 @@ if (MenuNumber == 0) {
   LCD1602_write_field (at pin CharacterNames) 2 1 16
   comment 'KeyboardOn = true to output characters'
   if KeyboardOn {
-    if (pin == 7) {
+    if (pin == 6) {
       'mouse click' 'left'
     } else {
       '[hid:holdKey]' (at pin CharacterList)
     }
   }
-  if (not MicroSDInserted) {
-    makerport_beep (at pin ToneFreqList) 100
-  } else {
-    if (pin != 12) {mp3_playTrack pin folder}
+  if MakerPortSpeakerOn {
+    if (not MicroSDInserted) {
+      makerport_beep (at pin ToneFreqList) 100
+    } else {
+      if (pin != 12) {mp3_playTrack pin folder}
+    }
+    if (and (pin == 12) MicroSDInserted) {
+      folder += 1
+      if (folder > 4) {
+        folder = 1
+        MakerPortSpeakerOn = (booleanConstant true)
+      }
+      if (folder == 4) {
+        MakerPortSpeakerOn = (booleanConstant false)
+      }
+      LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
+      mp3_playTrack 99 folder
+    }
+    PreviousPinTouched = pin
   }
 }
-if (and (pin == 12) MicroSDInserted) {
-  folder += 1
-  if (folder > 12) {
-    folder = 1
-  }
-  LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
-  mp3_playTrack 99 folder
-}
-PreviousPinTouched = pin
 }
 
 script 538 1171 {
 whenCondition (touch_release_event)
 local 'pin' (touch_last_released_pin)
 if KeyboardOn {
-  if (pin == 7) {
+  if (pin == 6) {
     '[hid:mouseRelease]'
   } else {
     '[hid:releaseKey]' (at pin CharacterList)
@@ -246,27 +255,27 @@ if (MenuNumber == 0) {
 }
 }
 
-script 381 2199 {
+script 386 2149 {
 to MenuAction1 {}
 }
 
-script 379 2287 {
+script 392 2324 {
 to MenuAction2 {}
 }
 
-script 50 2290 {
+script 46 2467 {
 to DoMenus {}
 }
 
-script 379 2543 {
+script 390 2571 {
 to MenuAction3 {}
 }
 
-script 386 2897 {
+script 389 2947 {
 to MenuAction4 {}
 }
 
-script 381 3259 {
+script 389 3303 {
 to MenuAction5 {}
 }
 
@@ -862,19 +871,21 @@ to makerport_initialize {
     LCD1602_write ' Welcome to the' 1
     LCD1602_write '   MakerPort!' 2
   }
-  if MicroSDInserted {
-    comment 'Set audio switch to MP3 player.'
-    digitalWriteOp 19 false
-    mp3_playTrack 3 99
-  } else {
-    comment 'Set audio switch to tones'
-    digitalWriteOp 19 true
-    comment 'C4'
-    makerport_beep 262 250
-    comment 'G4'
-    makerport_beep 392 250
-    comment 'F4'
-    makerport_beep 349 250
+  if MakerPortSpeakerOn {
+    if MicroSDInserted {
+      comment 'Set audio switch to MP3 player.'
+      digitalWriteOp 19 false
+      mp3_playTrack 3 99
+    } else {
+      comment 'Set audio switch to tones'
+      digitalWriteOp 19 true
+      comment 'C4'
+      makerport_beep 262 250
+      comment 'G4'
+      makerport_beep 392 250
+      comment 'F4'
+      makerport_beep 349 250
+    }
   }
 }
 
