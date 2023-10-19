@@ -1159,6 +1159,14 @@ void primDigitalSet(int pinNum, int flag) {
 		}
 	#endif
 
+	#if defined(ESP32)
+		// stop PWM so we can do a normal digitalWrite
+		if (pwmRunning[pinNum]) {
+			pinDetach(pinNum);
+			pwmRunning[pinNum] = false;
+		}
+	#endif
+
 	if (pwmRunning[pinNum]) {
 		analogWrite(pinNum, (flag ? 1023 : 0));
 	} else {
