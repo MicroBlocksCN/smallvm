@@ -54,10 +54,10 @@ to '_MIDI command' cmd channel arg1 arg2 {
   local 'cmdByte' ((cmd << 4) | ((channel - 1) & 15))
   local 'oneArgByte' ((pushArgCount) < 4)
   if (_MIDI_pin == 0) {
-    '[serial:write]' cmdByte
-    '[serial:write]' arg1
-    if (not oneArgByte) {
-      '[serial:write]' arg2
+    if oneArgByte {
+      '[serial:write]' ('[data:makeList]' cmdByte arg1)
+    } else {
+      '[serial:write]' ('[data:makeList]' cmdByte arg1 arg2)
     }
   } (_MIDI_pin == 'USB') {
     if oneArgByte {
@@ -66,10 +66,10 @@ to '_MIDI command' cmd channel arg1 arg2 {
       '[serial:midiSend]' cmdByte arg1 arg2
     }
   } else {
-    '[io:softWriteByte]' cmdByte _MIDI_pin _MIDI_soft_baudrate
-    '[io:softWriteByte]' arg1 _MIDI_pin _MIDI_soft_baudrate
+    '[io:softWriteByte]' cmdByte _MIDI_pin 31250
+    '[io:softWriteByte]' arg1 _MIDI_pin 31250
     if (not oneArgByte) {
-      '[io:softWriteByte]' arg2 _MIDI_pin _MIDI_soft_baudrate
+      '[io:softWriteByte]' arg2 _MIDI_pin 31250
     }
   }
 }
@@ -80,7 +80,6 @@ to '_MIDI init' {
       '[serial:open]' 31250
     } else {
       '[serial:close]'
-      _MIDI_soft_baudrate = 31350
     }
     _MIDI_initialized = (booleanConstant true)
   }
@@ -97,7 +96,7 @@ to '_MIDI send bytes' byteList {
     } (_MIDI_pin == 'USB') {
       '[serial:midiSend]' byte
     } else {
-      '[io:softWriteByte]' byte _MIDI_pin _MIDI_soft_baudrate
+      '[io:softWriteByte]' byte _MIDI_pin 31250
     }
   }
 }
