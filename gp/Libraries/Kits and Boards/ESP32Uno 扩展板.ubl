@@ -28,7 +28,7 @@ variables _wr32_analog_pins_list _wr32_pin_D4 _wr32_pin_A4 _wr32_pin_D3 _wr32_pi
   spec ' ' '风扇 速度' '风扇 速度(0-100) _ 接口 _' 'auto menu.dPinMenu' '10' 'D7'
   spec ' ' '继电器' '继电器 在 _ 状态 _' 'menu.dPinMenu bool' 'D8' true
   space
-  spec 'r' '参数处理' '_参数处理 _' 'menu.dPinMenu' '10'
+  spec 'r' '参数处理' '_参数处理 _' 'auto' '10'
   spec ' ' 'minodeRGB' 'minodeRGB _ clkpin _ datapin _' 'color auto auto' nil 3 4
   spec ' ' 'minodeRGB r' 'minodeRGB r _ g _ b _ clkpin _ datapin _' 'num num num auto auto' 255 0 0 3 4
   spec ' ' '_wr32_init_pins' '_wr32_init_pins'
