@@ -15,7 +15,7 @@ USB MIDI
 --------
 Alternatively, if you want to use the MIDI library to control a USB MIDI device -or a virtual synth running in your PC, even while MicroBlocks is running- you can do so by setting the `use USB MIDI` flag to true in the `set MIDI pin` block.
 '
-variables _MIDI_initialized _MIDI_pin _MIDI_soft_baudrate _MIDI_drums 
+variables _MIDI_initialized _MIDI_pin _MIDI_drums 
 
   spec ' ' 'play MIDI note' 'play MIDI note _ for _ ms on channel _ volume _' 'auto auto auto auto' 60 500 1 127
   spec ' ' 'send note' 'set MIDI note _ to _ on channel _ volume _' 'auto bool auto auto' 60 true 1 127
