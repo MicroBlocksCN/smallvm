@@ -951,7 +951,7 @@ static void mpu6050readData() {
 		if (!wireStarted) return;
 
 		writeI2CReg(MPU6050, MPU6050_PWR_MGMT_1, 1); // use x-gyro clock
-		delay(1); // xxx 10 works
+		delay(1);
 		accelStarted = true;
 	}
 
@@ -1083,6 +1083,7 @@ static int readTemperature() {
 	val |= (readI2CReg(LPS22HD, 0x2C) << 8); // high byte
 	if (val >= 32768) val -= 65536;
 	int fudgeFactor = 1230; // partially compensate for the heat inside Databot case
+	taskSleep(10);
 	return (val - fudgeFactor) / 100; // degrees C
 }
 
@@ -1266,7 +1267,7 @@ OBJ primSetAccelerometerRange(int argCount, OBJ *args) {
 		rangeSetting = 3;
 	}
 	setAccelRange(rangeSetting);
-	delay(2);
+	taskSleep(2);
 	return falseObj;
 }
 

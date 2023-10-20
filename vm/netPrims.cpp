@@ -392,6 +392,7 @@ static OBJ primRespondToHttpRequest(int argCount, OBJ *args) {
 	}
 	delay(1); // allow some time for data to be sent
 	if (!keepAlive) client.stop(); // close the connection
+	taskSleep(10);
 	return falseObj;
 }
 
