@@ -1,6 +1,6 @@
 module MakerPort Output
 author MicroBlocks
-version 1 4 
+version 1 5 
 depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
@@ -24,16 +24,9 @@ to makerport_beep freq msecs {
 }
 
 to makerport_initialize {
-  makerport_beep 440 100
-  if (LCD1602_isConnected) {
-    LCD1602_clear
-    LCD1602_write ' Welcome to the' 1
-    LCD1602_write '   MakerPort!' 2
-  }
-  comment 'Set audio switch to MP3 player.'
-  digitalWriteOp 19 false
+  attachIR 18
   mp3_initialize 'MakerPort' 20 21
-  mp3_playTrack 3 99
+  makerport_setAudioSource 'MP3'
 }
 
 to makerport_mp3_hasCard {

@@ -1,9 +1,10 @@
 module main
 author 'Roger Wagner'
-version 1 0 
+version 1 1 
 description ''
-variables CharacterList CharacterNames last_state TPin KeyboardOn folder IRCode Servo1Angle Servo2Angle MicroSDInserted IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList UltraSonicPresent NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn 
+variables CharacterList CharacterNames last_state TPin KeyboardOn folder IRCode Servo1Angle Servo2Angle MicroSDInserted IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList UltraSonicPresent NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn MenuEnableOn 
 
+  spec ' ' 'Initialize_MakerPort' 'MakerPort initialize'
   spec ' ' 'Initialize lists' 'Initialize lists'
   spec ' ' 'NeoPixel initialize' 'NeoPixel initialize'
   spec ' ' 'DoMenus' 'DoMenus'
@@ -64,6 +65,36 @@ to 'Initialize lists' {
   comment 'https://pages.mtu.edu/~suits/notefreqs.html'
   ToneFreqList = ('[data:makeList]' 262 294 330 349 392 440 494 523 587 659 698 784 880 988 1047 1175 1319)
   ToneNameList = ('[data:makeList]' 'C4' 'D4' 'E4' 'F4' 'G4' 'A4' 'B4' 'C5' 'D5' 'E5' 'F5' 'G5' 'A5' 'B5' 'C6' 'D6' 'E6')
+}
+
+to Initialize_MakerPort {
+  mp3_initialize 'MakerPort' 20 21
+  MicroSDInserted = (makerport_mp3_hasCard)
+  attachIR 18
+  if (LCD1602_isConnected) {
+    LCD1602_clear
+    LCD1602_write ' Welcome to the' 1
+    LCD1602_write '   MakerPort!' 2
+    MenuEnableOn = (booleanConstant true)
+  } else {
+    MenuEnableOn = (booleanConstant false)
+  }
+  if MakerPortSpeakerOn {
+    if MicroSDInserted {
+      comment 'Set audio switch to MP3 player.'
+      digitalWriteOp 19 false
+      mp3_playTrack 3 99
+    } else {
+      comment 'Set audio switch to tones'
+      digitalWriteOp 19 true
+      comment 'C4'
+      makerport_beep 262 250
+      comment 'G4'
+      makerport_beep 392 250
+      comment 'F4'
+      makerport_beep 349 250
+    }
+  }
 }
 
 to MenuAction1 {
@@ -131,7 +162,11 @@ to 'NeoPixel initialize' {
   }
 }
 
-script 968 50 {
+script 543 50 {
+to Initialize_MakerPort {}
+}
+
+script 968 54 {
 whenCondition (ir_code_received)
 local 'IRCodeRcvd' (ir_last_code)
 digitalWriteOp 19 true
@@ -153,11 +188,12 @@ LCD1602_write 'waiting...' 1
 makerport_setAllLEDs false
 }
 
-script 50 59 {
+script 50 63 {
 whenStarted
 'Initialize lists'
 KeyboardOn = (booleanConstant true)
 MakerPortSpeakerOn = (booleanConstant true)
+MenuEnableOn = (booleanConstant true)
 PreviousPinTouched = 0
 MenuNumber = 0
 folder = 1
@@ -168,7 +204,7 @@ if (('distance (cm)' 14 15) == 0) {
   NeoPixelsOn = (booleanConstant false)
 }
 NumberOfNeopixels = 24
-makerport_initialize
+Initialize_MakerPort
 waitMillis 3000
 LCD1602_clear
 LCD1602_write 'waiting...' 1
@@ -180,25 +216,21 @@ if MicroSDInserted {
 }
 }
 
-script 543 61 {
-to makerport_initialize {}
-}
-
-script 54 695 {
+script 52 717 {
 to 'Initialize lists' {}
 }
 
-script 550 705 {
+script 540 783 {
 to 'NeoPixel initialize' {}
 }
 
-script 58 1179 {
+script 58 1183 {
 whenCondition (touch_touch_event)
 local 'pin' (touch_last_touched_pin)
 if (pin != 11) {
   MenuNumber = 0
 }
-if (and (pin == 11) (PreviousPinTouched == 11)) {
+if (and MenuEnableOn (and (pin == 11) (PreviousPinTouched == 11))) {
   DoMenus
 }
 if (MenuNumber == 0) {
@@ -236,7 +268,7 @@ if (MenuNumber == 0) {
 }
 }
 
-script 548 1181 {
+script 548 1185 {
 whenCondition (touch_release_event)
 local 'pin' (touch_last_released_pin)
 if KeyboardOn {
@@ -255,27 +287,27 @@ if (MenuNumber == 0) {
 }
 }
 
-script 396 2159 {
+script 396 2163 {
 to MenuAction1 {}
 }
 
-script 402 2334 {
+script 402 2338 {
 to MenuAction2 {}
 }
 
-script 56 2477 {
+script 56 2481 {
 to DoMenus {}
 }
 
-script 400 2581 {
+script 400 2585 {
 to MenuAction3 {}
 }
 
-script 399 2957 {
+script 399 2961 {
 to MenuAction4 {}
 }
 
-script 399 3313 {
+script 399 3317 {
 to MenuAction5 {}
 }
 
@@ -843,7 +875,7 @@ to mp3_setVolume level {
 
 module MakerPort Output
 author MicroBlocks
-version 1 4 
+version 1 5 
 depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
@@ -867,30 +899,9 @@ to makerport_beep freq msecs {
 }
 
 to makerport_initialize {
-  mp3_initialize 'MakerPort' 20 21
-  MicroSDInserted = (makerport_mp3_hasCard)
   attachIR 18
-  if (LCD1602_isConnected) {
-    LCD1602_clear
-    LCD1602_write ' Welcome to the' 1
-    LCD1602_write '   MakerPort!' 2
-  }
-  if MakerPortSpeakerOn {
-    if MicroSDInserted {
-      comment 'Set audio switch to MP3 player.'
-      digitalWriteOp 19 false
-      mp3_playTrack 3 99
-    } else {
-      comment 'Set audio switch to tones'
-      digitalWriteOp 19 true
-      comment 'C4'
-      makerport_beep 262 250
-      comment 'G4'
-      makerport_beep 392 250
-      comment 'F4'
-      makerport_beep 349 250
-    }
-  }
+  mp3_initialize 'MakerPort' 20 21
+  makerport_setAudioSource 'MP3'
 }
 
 to makerport_mp3_hasCard {
@@ -907,13 +918,11 @@ connected to the hardware serial pins.'
       comment 'Got a response message. Item 7 is 2 if
 a Flash card is inserted in the player.'
       '[serial:close]'
-      local 'tmp' (digitalReadOp 20)
       return ((at 7 bytesRead) == 2)
     }
     waitMillis 50
   }
   '[serial:close]'
-  local 'tmp' (digitalReadOp 20)
   return (booleanConstant false)
 }
 
