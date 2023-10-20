@@ -645,8 +645,16 @@ method deleteVariable MicroBlocksScripter varName {
 // save and restore scripts in class
 
 method scriptChanged MicroBlocksScripter {
-  updateHighlights (smallRuntime)
-  saveNeeded = true
+  runtime = (smallRuntime)
+  updateHighlights runtime
+  // check whether the block has just been moved
+  for m (parts (morph (contents scriptsFrame))) {
+	b = (handler m)
+    if (isClass b 'Block') {
+	  entry = (chunkEntryForBlock runtime b)
+	  saveNeeded = (or (isNil entry) ((sourceForChunk runtime b) != (at entry 4)))
+	}
+  }
 }
 
 method functionBodyChanged  MicroBlocksScripter { saveNeeded = true }

@@ -562,6 +562,10 @@ method ensureChunkIdFor SmallRuntime aBlock {
 	return (first entry)
 }
 
+method chunkEntryForBlock SmallRuntime aBlock {
+	return (at chunkIDs aBlock nil)
+}
+
 method assignFunctionIDs SmallRuntime {
 	// Ensure that there is a chunk ID for every user-defined function.
 	// This must be done before generating any code to allow for recursive calls.
@@ -1210,6 +1214,7 @@ method saveAllChunksAfterLoad SmallRuntime {
 method saveAllChunks SmallRuntime forceIndividualCRCs {
 	// Save the code for all scripts and user-defined functions.
 
+	if (isNil forceIndividualCRCs) { forceIndividualCRCs = false }
 	if (isNil port) { return }
 
 	setCursor 'wait'
@@ -1221,7 +1226,6 @@ method saveAllChunks SmallRuntime forceIndividualCRCs {
 		(count (sortedScripts (scriptEditor scripter))))
 	progressInterval = (max 1 (floor (totalScripts / 20)))
 	processedScripts = 0
-
 	skipHiddenFunctions = true
 	if (saveVariableNames this) { recompileAll = true }
 	if recompileAll {
@@ -1282,6 +1286,22 @@ method forceSaveChunk SmallRuntime aBlockOrFunction {
 		atPut (at chunkIDs aBlockOrFunction) 4 '' // clear the old source
 	}
 	saveChunk this aBlockOrFunction false
+}
+
+method sourceForChunk SmallRuntime aBlockOrFunction {
+	pp = (new 'PrettyPrinter')
+	source = ''
+	if (isClass aBlockOrFunction 'Function') {
+		source = (prettyPrintFunction pp aBlockOrFunction)
+	} else {
+		expr = (expression aBlockOrFunction)
+		if (isClass expr 'Reporter') {
+			source = (prettyPrint pp expr)
+		} else {
+			source = (prettyPrintList pp expr)
+		}
+	}
+	return source
 }
 
 method saveChunk SmallRuntime aBlockOrFunction skipHiddenFunctions {
