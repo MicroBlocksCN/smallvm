@@ -1,7 +1,7 @@
 module MakerPort Output
 author MicroBlocks
-version 1 5 
-depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 
+version 1 6 
+depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
 
@@ -24,9 +24,14 @@ to makerport_beep freq msecs {
 }
 
 to makerport_initialize {
+  makerport_setAllLEDs false
   attachIR 18
   mp3_initialize 'MakerPort' 20 21
-  makerport_setAudioSource 'MP3'
+  if (makerport_mp3_hasCard) {
+    makerport_setAudioSource 'MP3'
+  } else {
+    makerport_setAudioSource 'Tone'
+  }
 }
 
 to makerport_mp3_hasCard {
