@@ -1534,7 +1534,7 @@ UDP 远程端口
 # WiFi Radio
 
 WiFi Radio
-WIFI 广播
+WiFi 广播
 
 wifi send number _
 wifi 广播发送数字 _
