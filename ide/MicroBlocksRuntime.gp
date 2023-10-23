@@ -1534,7 +1534,6 @@ method collectCRCsIndividually SmallRuntime {
 method crcReceived SmallRuntime chunkID chunkCRC {
 	// Received an individual CRC message from board.
 	// Record the CRC for the given chunkID.
-
 	lastRcvMSecs = (msecsSinceStart)
 	if (notNil crcDict) {
 		atPut crcDict chunkID chunkCRC

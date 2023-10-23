@@ -19,11 +19,12 @@ method allVarsMenu InputSlot {
 
   // shared vars
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  pe = (findProjectEditor)
   if (notNil scripter) {
 	varNames = (allVariableNames (project (handler scripter)))
 	for varName varNames {
           // hide vars that start with underscore, used for libraries
-          if (or ((at varName 1) != '_') (devMode)) {
+          if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
             addItemNonlocalized menu varName (action 'setContents' this varName)
           }
 	}
@@ -432,7 +433,7 @@ method contextMenu Block {
 	varNames = (allVariableNames (project scripter))
 	if (and (not isInPalette) ((count varNames) > 1)) {
 		for varName varNames {
-			if (and (varName != (first (argList expression))) ((at varName 1) != '_')) {
+			if (and (varName != (first (argList expression))) ((at varName 1) != '_') (not (showHiddenBlocksEnabled pe))) {
 				b = (toBlock (newReporter 'v' varName))
 				fixLayout b
 				addItem menu (fullCostume (morph b)) (action 'changeVar' this varName)

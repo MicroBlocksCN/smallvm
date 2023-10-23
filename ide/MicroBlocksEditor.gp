@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -961,6 +961,9 @@ method applyUserPreferences MicroBlocksEditor {
 		setDevMode (global 'page') (at prefs 'devMode')
 		developerModeChanged this
 	}
+	if (notNil (at prefs 'showHiddenBlocks')) {
+		showHiddenBlocks = (at prefs 'showHiddenBlocks')
+	}
 }
 
 method saveToUserPreferences MicroBlocksEditor key value {
@@ -994,6 +997,16 @@ method toggleAutoDecompile MicroBlocksEditor flag {
 
 method autoDecompileEnabled MicroBlocksEditor {
 	return (autoDecompile == true)
+}
+
+method toggleShowHiddenBlocks MicroBlocksEditor flag {
+	showHiddenBlocks = flag
+	selectCategory scripter (currentCategory scripter)
+	saveToUserPreferences this 'showHiddenBlocks' showHiddenBlocks
+}
+
+method showHiddenBlocksEnabled MicroBlocksEditor {
+	return (showHiddenBlocks == true)
 }
 
 // developer mode
@@ -1182,6 +1195,11 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
   }
+if (showHiddenBlocksEnabled this) {
+	addItem menu 'do not show hidden blocks' (action 'toggleShowHiddenBlocks' this false) 'do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
+} else {
+	addItem menu 'show hidden blocks' (action 'toggleShowHiddenBlocks' this true) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
+}
   return menu
 }
 

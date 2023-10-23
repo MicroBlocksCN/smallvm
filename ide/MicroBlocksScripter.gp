@@ -430,7 +430,7 @@ method addBlocksForLibrary MicroBlocksScripter libName {
 	if ('-' == op) {
 	  // add some vertical space
 	   nextY += (20 * (global 'scale'))
-	} (or (devMode) (not (beginsWith op '_'))) {
+	} (or (showHiddenBlocksEnabled projectEditor) (not (beginsWith op '_'))) {
 	  spec = (specForOp (authoringSpecs) op)
 	  if (notNil spec) {
 	  	addBlock this (blockForSpec spec) spec
@@ -492,7 +492,7 @@ method addMyBlocks MicroBlocksScripter {
   nextY += (8 * scale)
 
   for f (functions (main mbProject)) {
-	if (or (devMode) (not (beginsWith (functionName f) '_'))) {
+	if (or (showHiddenBlocksEnabled projectEditor) (not (beginsWith (functionName f) '_'))) {
 	  spec = (specForOp (authoringSpecs) (functionName f))
 	  if (isNil spec) { spec = (blockSpecFor f) }
 	  addBlock this (blockForSpec spec) spec
@@ -587,7 +587,7 @@ method visibleVars MicroBlocksScripter {
   // Include vars that start with underscore only in dev mode.
 
   allVars = (allVariableNames mbProject)
-  if (devMode) {
+  if (showHiddenBlocksEnabled projectEditor) {
     return allVars
   } else {
     return (filter
@@ -647,14 +647,17 @@ method deleteVariable MicroBlocksScripter varName {
 method scriptChanged MicroBlocksScripter {
   runtime = (smallRuntime)
   updateHighlights runtime
-  // check whether the block has just been moved
-  for m (parts (morph (contents scriptsFrame))) {
-	b = (handler m)
-    if (isClass b 'Block') {
-	  entry = (chunkEntryForBlock runtime b)
-	  saveNeeded = (or (isNil entry) ((sourceForChunk runtime b) != (at entry 4)))
-	}
-  }
+  saveNeeded = true
+// Check whether the block has just been moved.
+// Commented out for now, since it seems to not be reliable enough, causing some
+// changes to fail to propagate to the board.
+//  for m (parts (morph (contents scriptsFrame))) {
+//	b = (handler m)
+//    if (isClass b 'Block') {
+//	  entry = (chunkEntryForBlock runtime b)
+//	  saveNeeded = (or (isNil entry) ((sourceForChunk runtime b) != (at entry 4)))
+//	}
+//  }
 }
 
 method functionBodyChanged  MicroBlocksScripter { saveNeeded = true }
