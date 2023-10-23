@@ -961,8 +961,8 @@ method applyUserPreferences MicroBlocksEditor {
 		setDevMode (global 'page') (at prefs 'devMode')
 		developerModeChanged this
 	}
-	if (notNil (at prefs 'showHiddenBlocks')) {
-		showHiddenBlocks = (at prefs 'showHiddenBlocks')
+	if (notNil (at prefs 'showImplementationBlocks')) {
+		showHiddenBlocks = (at prefs 'showImplementationBlocks')
 	}
 }
 
@@ -1001,8 +1001,8 @@ method autoDecompileEnabled MicroBlocksEditor {
 
 method toggleShowHiddenBlocks MicroBlocksEditor flag {
 	showHiddenBlocks = flag
-	selectCategory scripter (currentCategory scripter)
-	saveToUserPreferences this 'showHiddenBlocks' showHiddenBlocks
+	saveToUserPreferences this 'showImplementationBlocks' showHiddenBlocks
+	developerModeChanged this // updates the palette
 }
 
 method showHiddenBlocksEnabled MicroBlocksEditor {
@@ -1194,12 +1194,12 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 
 	addLine menu
 	addItem menu 'hide advanced blocks' 'hideAdvancedBlocks'
+	if (showHiddenBlocksEnabled this) {
+		addItem menu 'hide implementation blocks' (action 'toggleShowHiddenBlocks' this false) 'do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
+	} else {
+		addItem menu 'show implementation blocks' (action 'toggleShowHiddenBlocks' this true) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
+	}
   }
-if (showHiddenBlocksEnabled this) {
-	addItem menu 'do not show hidden blocks' (action 'toggleShowHiddenBlocks' this false) 'do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
-} else {
-	addItem menu 'show hidden blocks' (action 'toggleShowHiddenBlocks' this true) 'show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)'
-}
   return menu
 }
 
