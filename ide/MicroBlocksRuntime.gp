@@ -501,7 +501,7 @@ method syncScripts SmallRuntime {
 		}
 	}
 
-	saveAllChunks this true // force individual CRC collection
+	saveAllChunks this false
 }
 
 method lookupChunkID SmallRuntime key {
@@ -616,7 +616,7 @@ method stopAndSyncScripts SmallRuntime alreadyStopped {
 		recompileAll = true
 	}
 	suspendCodeFileUpdates this
-	saveAllChunks this
+	saveAllChunks this true
 	resumeCodeFileUpdates this
 }
 
@@ -1207,14 +1207,14 @@ method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) 
 
 method saveAllChunksAfterLoad SmallRuntime {
 	suspendCodeFileUpdates this
-	saveAllChunks this
+	saveAllChunks this true
 	resumeCodeFileUpdates this
 }
 
-method saveAllChunks SmallRuntime forceIndividualCRCs {
+method saveAllChunks SmallRuntime checkCRCs {
 	// Save the code for all scripts and user-defined functions.
 
-	if (isNil forceIndividualCRCs) { forceIndividualCRCs = false }
+	if (isNil checkCRCs) { checkCRCs = true }
 	if (isNil port) { return }
 
 	setCursor 'wait'
@@ -1270,7 +1270,7 @@ method saveAllChunks SmallRuntime forceIndividualCRCs {
 	if (scriptsSaved > 0) { print 'Downloaded' scriptsSaved 'scripts to board' (join '(' (msecSplit t) ' msecs)') }
 
 	recompileAll = false
-	verifyCRCs this forceIndividualCRCs
+	if checkCRCs { verifyCRCs this }
 	resumeCodeFileUpdates this
 	showDownloadProgress editor 3 1
 
@@ -1401,12 +1401,16 @@ method computeCRC SmallRuntime chunkData {
 	return result
 }
 
-method verifyCRCs SmallRuntime forceIndividual {
+method verifyCRCs SmallRuntime {
 	// Check that the CRCs of the chunks on the board match the ones in the IDE.
 	// Resend the code of any chunks whose CRC's do not match.
 
 	if (isNil port) { return }
-	if (isNil forceIndividual) { forceIndividual = false }
+
+	// For testing: control type of CRC collection (default: forceIndividual = false)
+	// collectCRCsIndividually is slower and less reliable than collectCRCsBulk but since
+	// it works incrementally on the board it interferes less with real-time music performance.
+	forceIndividual = false
 
 	// collect CRCs from the board
 	crcDict = (dictionary)
@@ -1521,9 +1525,20 @@ method collectCRCsIndividually SmallRuntime {
 		processMessages this
 	}
 
-	waitForResponse this // wait for the first response
+	// if there are any chunks, wait for first CRC to arrive
+	if ((count chunkIDs) > 0) {
+		timeoutFirstCRC = 4000 // max time to wait for first CRC
+		waitStartT = (msecsSinceStart)
+		while (and
+			(isEmpty crcDict)
+			(((msecsSinceStart) - waitStartT) < timeoutFirstCRC)) {
+				// wait for the first CRC to arrive
+				processMessages this
+				waitMSecs 10
+		}
+	}
 
-	timeout = 30
+	timeout = 120
 	lastRcvMSecs = (msecsSinceStart)
 	while (((msecsSinceStart) - lastRcvMSecs) < timeout) {
 		processMessages this
@@ -1534,6 +1549,7 @@ method collectCRCsIndividually SmallRuntime {
 method crcReceived SmallRuntime chunkID chunkCRC {
 	// Received an individual CRC message from board.
 	// Record the CRC for the given chunkID.
+
 	lastRcvMSecs = (msecsSinceStart)
 	if (notNil crcDict) {
 		atPut crcDict chunkID chunkCRC
@@ -1554,6 +1570,7 @@ method collectCRCsBulk SmallRuntime {
 		processMessages this
 		waitMSecs 5
 	}
+
 	if (isNil crcDict) { crcDict = (dictionary) } // timeout
 }
 
