@@ -1954,6 +1954,16 @@ static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, OUTPUT);
 
+	#if defined(ARDUINO_ARCH_SAMD)
+		// Clear PINCFG register in case pin was previously used for hardware serial
+		// Arduino pinMode() should do this but does not.
+		#define PORT_BASE 0x41004400
+		int ulPort = g_APinDescription[pinNum].ulPort;
+		int ulPin = g_APinDescription[pinNum].ulPin;
+		volatile uint8_t *cnf = (uint8_t *) (PORT_BASE + (0x80 * ulPort) + 0x40 + ulPin);
+		*cnf = 0;
+	#endif
+
 	#if defined(RP2040_PHILHOWER)
 		// improves timing stability on RP2040
 		digitalWrite(pinNum, HIGH);
