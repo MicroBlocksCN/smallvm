@@ -1001,7 +1001,7 @@ method autoDecompileEnabled MicroBlocksEditor {
 
 method toggleShowHiddenBlocks MicroBlocksEditor flag {
 	showHiddenBlocks = flag
-	selectCategory scripter (currentCategory scripter)
+   	updateBlocks scripter
 	saveToUserPreferences this 'showHiddenBlocks' showHiddenBlocks
 }
 
