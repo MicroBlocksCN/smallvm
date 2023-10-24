@@ -1997,6 +1997,9 @@ disconnect
 Serial port:
 串口:
 
+Connect board and try again
+连接板子并重试
+
 other...
 其他...
 

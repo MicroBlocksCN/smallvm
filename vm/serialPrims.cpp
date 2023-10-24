@@ -329,7 +329,9 @@ static OBJ primSerialWriteBytes(int argCount, OBJ *args) {
 	return int2obj(bytesWritten);
 }
 
-#ifdef USB_MIDI
+// USB MIDI Primitives
+
+#if defined(USB_MIDI) || defined(ARDUINO_ARCH_SAMD) || defined(ARDUINO_SAM_DUE)
 
 #include "MIDIUSB.h"
 

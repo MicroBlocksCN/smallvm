@@ -439,6 +439,10 @@ method addBlocksForLibrary MicroBlocksScripter libName {
   }
 }
 
+to caseInsensitiveLessThan s1 s2 {
+  return ((toUpperCase s1) < (toUpperCase s2))
+}
+
 method addVariableBlocks MicroBlocksScripter {
   scale = (global 'scale')
 
@@ -455,12 +459,15 @@ method addVariableBlocks MicroBlocksScripter {
 
   addBlock this (toBlock (newCommand '=' defaultVarName 0)) nil false
   addBlock this (toBlock (newCommand '+=' defaultVarName 1)) nil false
-  nextY += (10 * scale)
-  addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
+  if (or (devMode) (contains (commandLine) '--allowMorphMenu')) {
+    nextY += (10 * scale)
+    addBlock this (toBlock (newCommand 'local' 'var' 0)) nil false
+  }
 
   nextY += (20 * scale)
 
   if (notEmpty visibleVars) {
+    visibleVars = (sorted (toArray visibleVars) 'caseInsensitiveLessThan')
 	for varName visibleVars {
 	    lastY = nextY
 	    b = (toBlock (newReporter 'v' varName))

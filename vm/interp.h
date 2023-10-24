@@ -189,6 +189,7 @@ extern int extraByteDelay;
 #define byteOutOfRange			40	// Needs a value between 0 and 255
 #define needsPositiveIncrement	41	// Range increment must be a positive integer
 #define needsIntOrListOfInts	42	// Needs an integer or a list of integers
+#define wifiNotConnected		43	// Not connected to a WiFi network
 #define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations
