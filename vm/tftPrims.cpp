@@ -21,7 +21,7 @@ static int touchEnabled = false;
 static int deferUpdates = false;
 
 // Redefine this macro for displays that must explicitly push offscreen changes to the display
-#define UPDATE_DISPLAY() { processMessage(); }
+#define UPDATE_DISPLAY() { taskSleep(0); } // yield after potentially slow TFT operations
 
 #if defined(ARDUINO_CITILAB_ED1) || defined(ARDUINO_M5Stack_Core_ESP32) || \
 	defined(ARDUINO_M5Stick_C) || defined(ARDUINO_ESP8266_WEMOS_D1MINI) || \
