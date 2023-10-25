@@ -428,6 +428,9 @@ method contextMenu Block {
 	  addLine menu
 	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
 	}
+  } (beginsWith (at (specs blockSpec) 1) 'obsolete') {
+	  addLine menu
+	  addItem menu 'delete obsolete block...' 'deleteObsolete' 'delete this obsolete block from the project'
   }
   if ((primName expression) == 'v') {
 	varNames = (allVariableNames (project scripter))
@@ -568,6 +571,13 @@ method showDefinition Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
   showDefinition (scripter pe) (primName expression)
+}
+
+method deleteObsolete Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  remove (blockSpecs (project (scripter pe))) (primName expression)
+  updateBlocks (scripter pe)
 }
 
 method deleteBlockDefinition Block {
