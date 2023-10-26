@@ -428,7 +428,7 @@ method contextMenu Block {
 	  addLine menu
 	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
 	}
-  } (beginsWith (at (specs blockSpec) 1) 'obsolete') {
+  } (and (notNil blockSpec) (beginsWith (at (specs blockSpec) 1) 'obsolete')) {
 	  addLine menu
 	  addItem menu 'delete obsolete block...' 'deleteObsolete' 'delete this obsolete block from the project'
   }
