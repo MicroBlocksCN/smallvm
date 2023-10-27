@@ -1,6 +1,6 @@
 module 'Scales & Chords' Data
 author MicroBlocks
-version 1 4 
+version 1 5 
 choices scales ionian dorian phrygian lydian mixolydian aeolian locrian 
 choices pentatonics major minor 
 choices chords major minor diminished 'major 7th' 'minor 7th' Maj7 
@@ -8,13 +8,15 @@ description 'Lists of relative semitone intervals for all Western diatonic scale
 
 It also includes intervals for the most common chords and progressions, and an abstraction of the circle of fifths.
 '
-variables _scales_degrees _scales_circle5ths 
+variables _scales_degrees _scales_circle5ths _tonePin 
 
   spec 'r' 'scale' '_ scale root _ : steps _' 'menu.scales num num' 'ionian' 60 7
   spec 'r' 'pentatonic scale' 'pentatonic _ scale root _ : steps _' 'menu.pentatonics num num' 'major' 60 7
   space
   spec 'r' 'chord' '_ chord root _ : steps _' 'menu.chords num num' 'major' 60 4
   spec 'r' 'chord2 with roman numeral' '_ chord for root _ : steps _' 'auto auto auto' 'IV' 60 4
+  space
+  spec ' ' 'arpeggiate' 'arpeggiate _ in order _ and duration _ on _ _' 'auto auto auto menu.arpeggio_dst auto' 'aListOfNotes' 'aListOfPositions' 'aDurationOrListOfDurations' 'MIDI channel' 1
   space
   spec 'r' 'transposed' '_ transposed _ semitones' 'auto auto' 60 12
   space
@@ -49,6 +51,23 @@ to '_scales intervals' intervals root steps {
 
 to '_scales_init_circle' {
   if (_scales_circle5ths == 0) {_scales_circle5ths = ('[data:makeList]' ('[data:makeList]' 'I' 'V' 'II' 'VI' 'III' 'VII' 'bV' 'bII' 'bVI' 'bIII' 'bVII' 'IV') ('[data:makeList]' 'vi' 'iii' 'vii' 'bv' 'bii' 'bvi' 'biii' 'bvii' 'iv' 'i' 'v' 'ii') ('[data:makeList]' 'VIIº' 'bVº' 'bIIº' 'bVIº' 'bIIIº' 'bVIIº' 'IVº' 'Iº' 'Vº' 'IIº' 'VIº' 'IIIº'))}
+}
+
+to arpeggiate 'note list' order duration destination channel/pin {
+  for i (size order) {
+    local 'start' (millisOp)
+    if (isType duration 'list') {
+      local 'dur' (at i duration)
+    } else {
+      local 'dur' duration
+    }
+    if (destination == 'MIDI channel') {
+      callCustomCommand 'play MIDI note' ('[data:makeList]' (at (at i order) (v 'note list')) (dur - ((millisOp) - start)) channel/pin 127)
+    } else {
+      if (channel/pin != '') {_tonePin = channel/pin}
+      callCustomCommand 'playMIDIKey' ('[data:makeList]' (at (at i order) (v 'note list')) (dur - ((millisOp) - start)))
+    }
+  }
 }
 
 to chord which root 'optional steps' {
