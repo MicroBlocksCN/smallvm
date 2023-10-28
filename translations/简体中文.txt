@@ -2159,6 +2159,18 @@ enable PlugShare when project empty
 disable PlugShare when project empty
 禁止项目为空时从主板里获取代码
 
+hide implementation blocks
+隐藏实现块
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+不显示积木库私有的积木块和变量（即那些名称以下划线开头的变量）
+
+show implementation blocks
+显示实现块
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+显示积木库私有的积木块和变量（即那些名称以下划线开头的变量）
+
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 连接主板时，即使当前项目为空，也不要自动将主板里的代码读入 IDE
 
