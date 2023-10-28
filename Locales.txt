@@ -1703,6 +1703,14 @@ enable PlugShare when project empty
 
 disable PlugShare when project empty
 
+hide implementation blocks
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+
+show implementation blocks
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 
 when plugging a board, automatically read its contents into the IDE if the current project is empty
