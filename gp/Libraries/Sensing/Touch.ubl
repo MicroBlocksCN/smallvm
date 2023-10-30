@@ -1,4 +1,4 @@
-module PinTouch Input
+module Touch Input
 author MicroBlocks
 version 1 8 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
