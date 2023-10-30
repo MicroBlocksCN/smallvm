@@ -190,6 +190,12 @@ extern int extraByteDelay;
 #define needsPositiveIncrement	41	// Range increment must be a positive integer
 #define needsIntOrListOfInts	42	// Needs an integer or a list of integers
 #define wifiNotConnected		43	// Not connected to a WiFi network
+#define cannotConvertToInteger	44	// Cannot convert that to an integer
+#define cannotConvertToBoolean	45	// Cannot convert that to a boolean
+#define cannotConvertToList		46	// Cannot convert that to a list
+#define cannotConvertToByteArray 47	// Cannot convert that to a byte array
+#define unknownDatatype			48	// Unknown datatype
+#define invalidUnicodeValue		49	// Unicode values must be between 0 and 1114111 (0x10FFFF)
 #define sleepSignal				255	// Not a real error; used to make current task sleep
 
 // Runtime Operations

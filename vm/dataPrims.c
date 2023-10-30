@@ -67,6 +67,27 @@ static int countUTF8(char *s) {
 	return count;
 }
 
+static int unicodeCodePoint(char *s) {
+	// Return the Unicode code point starting at the given start byte.
+
+	int result = -1; // bad unicode character; should not happen
+	uint8_t *byte = (uint8_t *) s;
+	int firstByte = byte[0];
+	if (firstByte < 128) {
+		result = firstByte; // 7-bit ASCII
+	} else if (firstByte < 0xE0) {
+		result = ((firstByte & 0x1F) << 6) | (byte[1] & 0x3F);
+	} else if (firstByte < 0xF0) {
+		result = ((firstByte & 0xF) << 12) | ((byte[1] & 0x3F) << 6) | (byte[2] & 0x3F);
+	} else if (firstByte < 0xF8) {
+		result = ((firstByte & 0x7) << 18) |
+			((byte[1] & 0x3F) << 12) |
+			((byte[2] & 0x3F) << 6) |
+			 (byte[3] & 0x3F);
+	}
+	return result;
+}
+
 static int bytesForUnicode(int unicode) {
 	if (unicode < 0x80) return 1; // 7 bits, one byte
 	if (unicode < 0x800) return 2; // 11 bits, two bytes
@@ -709,24 +730,11 @@ OBJ primUnicodeAt(int argCount, OBJ *args) {
 	if (!isInt(args[0])) return fail(needsIntegerIndexError);
 	if (!IS_TYPE(args[1], StringType)) return fail(needsStringError);
 	int i = obj2int(args[0]);
-	uint8 *s = (uint8 *) obj2str(args[1]);
-	if ((i < 1) || (i > countUTF8((char *) s))) return fail(indexOutOfRangeError);
+	char *s = obj2str(args[1]);
+	if ((i < 1) || (i > countUTF8(s))) return fail(indexOutOfRangeError);
 
-	for (; i > 1; i--) s = (uint8 *) nextUTF8((char *) s); // find first byte of desired Unicode character
-	int result = -1;
-	int firstByte = *s;
-	if (firstByte < 128) {
-		result = firstByte; // 7-bit ASCII
-	} else if (firstByte < 0xE0) {
-		result = ((firstByte & 0x1F) << 6) | (*(s + 1) & 0x3F);
-	} else if (firstByte < 0xF0) {
-		result = ((firstByte & 0xF) << 12) | ((*(s + 1) & 0x3F) << 6) | (*(s + 2) & 0x3F);
-	} else if (firstByte < 0xF8) {
-		result = ((firstByte & 0x7) << 18) |
-			((*(s + 1) & 0x3F) << 12) |
-			((*(s + 2) & 0x3F) << 6) |
-			 (*(s + 3) & 0x3F);
-	}
+	for (; i > 1; i--) s = nextUTF8(s); // find first byte of desired Unicode character
+	int result = unicodeCodePoint(s);
 	return int2obj(result);
 }
 
@@ -831,6 +839,248 @@ OBJ primFreeMemory(int argCount, OBJ *args) {
 	return int2obj(wordsFree());
 }
 
+// Helper functions for convert primitive
+
+static OBJ stringToList(OBJ strObj) {
+	// Return a list containing the Unicode character values (codepoints) of the given string.
+
+	int itemCount = countUTF8(obj2str(strObj));
+
+	tempGCRoot = strObj; // record strObj in case allocation triggers GC that moves it
+	OBJ result = newObj(ListType, itemCount + 1, falseObj);
+	strObj = tempGCRoot; // restore strObj
+	if (!result) return fail(insufficientMemoryError); // allocation failed
+	FIELD(result, 0) = int2obj(itemCount);
+
+	char *codepointPtr = obj2str(strObj);
+	for (int i = 0; i < itemCount; i++) {
+		FIELD(result, i + 1) = int2obj(unicodeCodePoint(codepointPtr));
+		codepointPtr = nextUTF8(codepointPtr);
+	}
+	return result;
+}
+
+static OBJ stringToByteArray(OBJ strObj) {
+	// Return a byte array containing the bytes of the given string (i.e. its utf8 encoding).
+
+	int byteCount = strlen(obj2str(strObj));
+	int wordCount = (byteCount + 3) / 4;
+
+	tempGCRoot = strObj; // record strObj in case allocation triggers GC that moves it
+	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
+	strObj = tempGCRoot; // restore strObj
+	if (!result) return fail(insufficientMemoryError); // allocation failed
+	setByteCountAdjust(result, byteCount);
+
+	char *src = obj2str(strObj);
+	char *dst = (char *) &FIELD(result, 0);
+	for (int i = 0; i < byteCount; i++) {
+		*dst++ = src[i];
+	}
+	return result;
+}
+
+static OBJ listToString(OBJ listObj) {
+	// Return a string the given list of Unicode characters (code points).
+	// Assume the list contains only integers that represent valid Unicode characters.
+
+	int itemCount = obj2int(FIELD(listObj, 0));
+	int utfByteCount = 0;
+	for (int i = 1; i <= itemCount; i++) {
+		OBJ item = FIELD(listObj, i);
+		utfByteCount += bytesForUnicode(evalInt(item));
+	}
+	if (failure()) return fail(needsIntOrListOfInts); // evalInt failed on some list item
+
+	tempGCRoot = listObj; // record listObj in case allocation triggers GC that moves it
+	OBJ result = newString(utfByteCount);
+	listObj = tempGCRoot; // restore listObj
+	if (!result) return result; // allocation failed
+
+	uint8_t *s = (uint8_t *) obj2str(result);
+	for (int i = 1; i <= itemCount; i++) {
+		OBJ item = FIELD(listObj, i);
+		if (!isInt(item)) return fail(needsListOfIntegers);
+		int codepoint = obj2int(item);
+		if ((codepoint < 0) || (codepoint > 1114111)) return fail(invalidUnicodeValue);
+		s = appendUTF8(s, codepoint);
+	}
+	return result;
+}
+
+static OBJ listToByteArray(OBJ listObj) {
+	// Return a byte array containing the contents of the given list.
+	// Assume the list elements are integers between 0 and 255.
+
+	int byteCount = obj2int(FIELD(listObj, 0));
+	int wordCount = (byteCount + 3) / 4;
+
+	tempGCRoot = listObj; // record listObj in case allocation triggers GC that moves it
+	OBJ result = newObj(ByteArrayType, wordCount, falseObj);
+	listObj = tempGCRoot; // restore listObj
+	if (!result) return fail(insufficientMemoryError); // allocation failed
+	setByteCountAdjust(result, byteCount);
+
+	OBJ *src = &FIELD(listObj, 1);
+	char *dst = (char *) &FIELD(result, 0);
+	for (int i = 0; i < byteCount; i++) {
+		OBJ item = *src++;
+		if (!isInt(item)) return fail(needsListOfIntegers);
+		int byte = obj2int(item);
+		if ((byte < 0) || (byte > 255)) return fail(byteArrayStoreError);
+		*dst++ = byte;
+	}
+	return result;
+}
+
+static OBJ byteArrayToString(OBJ byteArrayObj) {
+	// Return a string containing the given bytes.
+	// Assume the byte array is a valid UTF8 string encoding.
+
+	int byteCount = BYTES(byteArrayObj);
+	tempGCRoot = byteArrayObj; // record byteArrayObj in case allocation triggers GC that moves it
+	OBJ result = newString(byteCount);
+	byteArrayObj = tempGCRoot; // restore byteArrayObj
+	if (!result) return fail(insufficientMemoryError); // allocation failed
+
+	char *src = (char *) &FIELD(byteArrayObj, 0);
+	char *dst = (char *) &FIELD(result, 0);
+	for (int i = 0; i < byteCount; i++) {
+		*dst++ = *src++;
+	}
+
+	return result;
+}
+
+static OBJ byteArrayToList(OBJ byteArrayObj) {
+	// Return a list containing the byte values of the given byte array.
+
+	int itemCount = BYTES(byteArrayObj);
+	tempGCRoot = byteArrayObj; // record byteArrayObj in case allocation triggers GC that moves it
+	OBJ result = newObj(ListType, itemCount + 1, falseObj);
+	byteArrayObj = tempGCRoot; // restore byteArrayObj
+	if (!result) return fail(insufficientMemoryError); // allocation failed
+	FIELD(result, 0) = int2obj(itemCount);
+
+	uint8_t *bytes = (uint8_t *) &FIELD(byteArrayObj, 0);
+	for (int i = 0; i < itemCount; i++) {
+		FIELD(result, i + 1) = int2obj(bytes[i]);
+	}
+	return result;
+}
+
+
+OBJ primConvertType(int argCount, OBJ *args) {
+	if (argCount < 2) return fail(notEnoughArguments);
+	OBJ srcObj = args[0];
+	int srcType = objType(srcObj);
+	char *dstTypeName = obj2str(args[1]);
+
+	int dstType = -1;
+	if (strcmp(dstTypeName, "boolean") == 0) dstType = BooleanType;
+	if (strcmp(dstTypeName, "number") == 0) dstType = IntegerType;
+	if (strcmp(dstTypeName, "string") == 0) dstType = StringType;
+	if (strcmp(dstTypeName, "list") == 0) dstType = ListType;
+	if (strcmp(dstTypeName, "byte array") == 0) dstType = ByteArrayType;
+	if (dstType < 0) return fail(unknownDatatype);
+
+	char s[32];
+	char *srcStr;
+	OBJ result = srcObj; // default used when converting object to its current type
+
+	switch (srcType) {
+	case BooleanType:
+		switch (dstType) {
+		case IntegerType:
+			result = int2obj((srcObj == trueObj) ? 1 : 0);
+			break;
+		case StringType:
+			result = (OBJ) ((srcObj == trueObj) ?
+				newStringFromBytes("true", 4) : newStringFromBytes("false", 5));
+			break;
+		case ListType:
+			return fail(cannotConvertToList);
+			break;
+		case ByteArrayType:
+			return fail(cannotConvertToByteArray);
+			break;
+		}
+		break;
+	case IntegerType:
+		switch (dstType) {
+		case BooleanType:
+			result = (obj2int(srcObj) == 0) ? falseObj : trueObj;
+			break;
+		case StringType:
+			itoa(obj2int(srcObj), s, 10);
+			result = newStringFromBytes(s, strlen(s));
+			break;
+		case ListType:
+			return fail(cannotConvertToList);
+			break;
+		case ByteArrayType:
+			return fail(cannotConvertToByteArray);
+			break;
+		}
+		break;
+	case StringType:
+		switch (dstType) {
+		case BooleanType:
+			srcStr = obj2str(srcObj);
+			if ((strcmp(srcStr, "true") == 0) || (strcmp(srcStr, "True") == 0)) {
+				// accept Python-style "True" as well as MicroBlocks "true"
+				result = trueObj;
+			} else {
+				result = falseObj;
+			}
+			break;
+		case IntegerType:
+			result = int2obj(evalInt(srcObj));
+			break;
+		case ListType:
+			result = stringToList(srcObj);
+			break;
+		case ByteArrayType:
+			result = stringToByteArray(srcObj);
+			break;
+		}
+		break;
+	case ListType:
+		switch (dstType) {
+		case BooleanType:
+			return fail(cannotConvertToBoolean);
+			break;
+		case IntegerType:
+			return fail(cannotConvertToInteger);
+			break;
+		case StringType:
+			result = listToString(srcObj);
+			break;
+		case ByteArrayType:
+			result = listToByteArray(srcObj);
+			break;
+		}
+		break;
+	case ByteArrayType:
+		switch (dstType) {
+		case BooleanType:
+			return fail(cannotConvertToBoolean);
+			break;
+		case IntegerType:
+			return fail(cannotConvertToInteger);
+			break;
+		case StringType:
+			result = byteArrayToString(srcObj);
+			break;
+		case ListType:
+			result = byteArrayToList(srcObj);
+			break;
+		}
+		break;
+	}
+	return result;
+}
+
 // Primitives
 
 static PrimEntry entries[] = {
@@ -848,6 +1098,7 @@ static PrimEntry entries[] = {
 	{"newByteArray", primNewByteArray},
 	{"asByteArray", primAsByteArray},
 	{"freeMemory", primFreeMemory},
+	{"convertType", primConvertType},
 };
 
 void addDataPrims() {

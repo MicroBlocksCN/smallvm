@@ -136,6 +136,7 @@ method microBlocksSpecs SmallCompiler {
 		(array 'r' 'or'					'_ or _ ' 'bool bool' true false)
 		'-'
 		(array 'r' 'isType'				'_ is a _' 'auto menu.typesMenu' 123 'number')
+		(array 'r' '[data:convertType]'	'convert _ to _' 'auto menu.typesMenu' 123 'number')
 	'Operators-Advanced'
 		(array 'r' '[misc:rescale]'		'rescale _ from ( _ , _ ) to ( _ , _ )' 'num num num num num' 3 0 10 0 100)
 		'-'
