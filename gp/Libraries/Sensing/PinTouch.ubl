@@ -1,4 +1,4 @@
-module 'Touch (MPR121)' Input
+module PinTouch Input
 author MicroBlocks
 version 1 7 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
@@ -77,6 +77,8 @@ to '_touch_update' {
       atPut i _touch_eventPending (booleanConstant true)
     }
   }
+  comment 'Leave some time between updates'
+  waitMillis 50
 }
 
 to touch_isTouched pin {
