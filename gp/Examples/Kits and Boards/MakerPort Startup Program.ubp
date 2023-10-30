@@ -2,9 +2,8 @@ module main
 author 'Roger Wagner'
 version 1 1 
 description ''
-variables CharacterList CharacterNames last_state TPin KeyboardOn folder IRCode Servo1Angle Servo2Angle MicroSDInserted IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList UltraSonicPresent NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn MenuEnableOn 
+variables CharacterList CharacterNames last_state TPin KeyboardOn folder IRCode Servo1Angle Servo2Angle MicroSDInserted IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList UltraSonicPresent NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn MenuEnableOn MicrophoneConnected Mp3Volume ToneVolume PrevVolume MyFolderPresent TimeStart MyFolder 
 
-  spec ' ' 'Initialize_MakerPort' 'MakerPort initialize'
   spec ' ' 'Initialize lists' 'Initialize lists'
   spec ' ' 'NeoPixel initialize' 'NeoPixel initialize'
   spec ' ' 'DoMenus' 'DoMenus'
@@ -14,6 +13,9 @@ variables CharacterList CharacterNames last_state TPin KeyboardOn folder IRCode 
   spec ' ' 'MenuAction4' 'MenuAction4'
   spec ' ' 'MenuAction5' 'MenuAction5'
   spec ' ' 'MenuAction6' 'MenuAction6'
+  spec ' ' 'MakerPort Setup' 'MakerPort Setup'
+  spec ' ' 'MicrophoneDetect' 'MicrophoneDetect'
+  spec ' ' 'IsThereMyFolder' 'IsThereMyFolder'
 
 to DoMenus {
   MenuNumber += 1
@@ -50,10 +52,11 @@ to DoMenus {
     MenuAction5
   }
   if (MenuNumber == 6) {
-    LCD1602_write 'Menu6' 1
-    LCD1602_write 'Piano' 2
+    LCD1602_write 'Piano' 1
+    LCD1602_write ' ' 2
     comment 'last menu item'
     MenuNumber = 0
+    waitMillis 1000
   }
 }
 
@@ -67,10 +70,25 @@ to 'Initialize lists' {
   ToneNameList = ('[data:makeList]' 'C4' 'D4' 'E4' 'F4' 'G4' 'A4' 'B4' 'C5' 'D5' 'E5' 'F5' 'G5' 'A5' 'B5' 'C6' 'D6' 'E6')
 }
 
-to Initialize_MakerPort {
-  mp3_initialize 'MakerPort' 20 21
-  MicroSDInserted = (makerport_mp3_hasCard)
-  attachIR 18
+to IsThereMyFolder {
+  if MicroSDInserted {
+    resetTimer
+    TimeStart = (timer)
+    mp3_playTrackUntilDone 99 MyFolder
+    comment 'not present 420, present: >600, '
+    if (((timer) - TimeStart) > 500) {
+      MyFolderPresent = (booleanConstant true)
+    } else {
+      MyFolderPresent = (booleanConstant false)
+    }
+    sayIt ('[data:join]' 'myfoldertime' TimeStart ',' (timer))
+    waitMillis 1000
+  } else {
+    MyFolderPresent = (booleanConstant false)
+  }
+}
+
+to 'MakerPort Setup' {
   if (LCD1602_isConnected) {
     LCD1602_clear
     LCD1602_write ' Welcome to the' 1
@@ -81,12 +99,10 @@ to Initialize_MakerPort {
   }
   if MakerPortSpeakerOn {
     if MicroSDInserted {
-      comment 'Set audio switch to MP3 player.'
-      digitalWriteOp 19 false
+      mp3_setVolume Mp3Volume
       mp3_playTrack 3 99
+      waitMillis 3000
     } else {
-      comment 'Set audio switch to tones'
-      digitalWriteOp 19 true
       comment 'C4'
       makerport_beep 262 250
       comment 'G4'
@@ -154,6 +170,21 @@ to MenuAction5 {
 to MenuAction6 {
 }
 
+to MicrophoneDetect {
+  MicrophoneConnected = (booleanConstant false)
+  comment '1st sample to calibrate, ignore'
+  PrevVolume = (timeAveragedLevel 13 25)
+  repeat 10 {
+    PrevVolume = (timeAveragedLevel 13 25)
+    printIt PrevVolume
+    if (10 < (absoluteValue (PrevVolume - (timeAveragedLevel 13 25)))) {
+      comment 'difference > threshold?'
+      MicrophoneConnected = (booleanConstant true)
+      return MicrophoneConnected
+    }
+  }
+}
+
 to 'NeoPixel initialize' {
   comment 'P14 = Extra port'
   neoPixelAttach 24 14
@@ -162,41 +193,21 @@ to 'NeoPixel initialize' {
   }
 }
 
-script 543 50 {
-to Initialize_MakerPort {}
-}
-
-script 968 54 {
-whenCondition (ir_code_received)
-local 'IRCodeRcvd' (ir_last_code)
-digitalWriteOp 19 true
-makerport_beep (IRCodeRcvd * 15) 100
-LCD1602_write ('[data:join]' 'IR code:' IRCodeRcvd) 1
-KeyPosition = ('[data:find]' IRCodeRcvd IRCodeList)
-if MicroSDInserted {
-  digitalWriteOp 19 false
-}
-if (KeyPosition == -1) {
-  LCD1602_write ('[data:join]' KeyPosition ', not found') 2
-} else {
-  digitalWriteOp KeyPosition true
-  LCD1602_write ('[data:join]' KeyPosition ',' (at KeyPosition IRNameList)) 2
-}
-waitMillis 1000
-LCD1602_clear
-LCD1602_write 'waiting...' 1
-makerport_setAllLEDs false
-}
-
-script 50 63 {
+script 56 50 {
 whenStarted
-'Initialize lists'
 KeyboardOn = (booleanConstant true)
 MakerPortSpeakerOn = (booleanConstant true)
+MicrophoneConnected = (booleanConstant false)
+MicroSDInserted = (booleanConstant true)
+MyFolderPresent = (booleanConstant false)
 MenuEnableOn = (booleanConstant true)
 PreviousPinTouched = 0
 MenuNumber = 0
-folder = 1
+Mp3Volume = 30
+ToneVolume = 1
+folder = 51
+MyFolder = 1
+'Initialize lists'
 comment 'Neopixels OR ultrasonic in Extra port'
 if (('distance (cm)' 14 15) == 0) {
   NeoPixelsOn = (booleanConstant true)
@@ -204,27 +215,125 @@ if (('distance (cm)' 14 15) == 0) {
   NeoPixelsOn = (booleanConstant false)
 }
 NumberOfNeopixels = 24
-Initialize_MakerPort
-waitMillis 3000
+makerport_initialize
+'MakerPort Setup'
+MicrophoneDetect
+IsThereMyFolder
 LCD1602_clear
-LCD1602_write 'waiting...' 1
+LCD1602_write 'Ready...' 1
 if NeoPixelsOn {
   'NeoPixel initialize'
 }
 if MicroSDInserted {
   LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
 }
+if MicrophoneConnected {
+  forever {
+    comment 'servos respond to sound'
+    MenuAction4
+  }
+}
+sayIt ('[data:join]' 'myfolder ' MyFolderPresent)
+if MyFolderPresent {
+  makerport_setAllLEDs true
+  mp3_repeatAllInFolder MyFolder
+}
 }
 
-script 52 717 {
-to 'Initialize lists' {}
+script 1060 50 {
+whenCondition (ir_code_received)
+local 'IRCodeRcvd' (ir_last_code)
+LCD1602_write ('[data:join]' 'IR code:' IRCodeRcvd) 1
+KeyPosition = ('[data:find]' IRCodeRcvd IRCodeList)
+if (KeyPosition <= 12) {
+  TPin = KeyPosition
+  digitalWriteOp TPin true
+} else {
+  TPin = 0
+}
+if (KeyPosition > 0) {
+  LCD1602_write ('[data:join]' KeyPosition ',' (at KeyPosition IRNameList)) 2
+} else {
+  LCD1602_write ('[data:join]' KeyPosition ', not found') 2
+}
+if (KeyPosition == 15) {
+  comment 'up arrow'
+  ToneVolume += 10
+  Mp3Volume += 10
+  if (ToneVolume > 30) {
+    ToneVolume = 0
+  }
+  if (Mp3Volume > 30) {
+    Mp3Volume = 30
+  }
+}
+if (KeyPosition == 16) {
+  comment 'down arrow'
+  ToneVolume += -10
+  Mp3Volume += -10
+  if (ToneVolume < 0) {
+    ToneVolume = 0
+  }
+  if (Mp3Volume < 0) {
+    Mp3Volume = 0
+  }
+}
+mp3_setVolume Mp3Volume
+if MakerPortSpeakerOn {
+  if MicroSDInserted {
+    if (TPin != 12) {mp3_playTrack TPin folder}
+    if (TPin == 12) {
+      folder += 1
+      if (folder > 54) {
+        folder = 51
+      }
+      mp3_playTrack 99 folder
+    }
+    LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
+  } else {
+    makerport_beep (at TPin ToneFreqList) 100
+  }
+}
+waitMillis 250
+makerport_setAllLEDs false
 }
 
-script 540 783 {
+script 663 62 {
+to makerport_initialize {}
+}
+
+script 665 405 {
+to 'MakerPort Setup' {}
+}
+
+script 662 1046 {
 to 'NeoPixel initialize' {}
 }
 
-script 58 1183 {
+script 50 1243 {
+to 'Initialize lists' {}
+}
+
+script 703 1394 {
+whenCondition (touch_release_event)
+local 'pin' (touch_last_released_pin)
+if KeyboardOn {
+  if (pin == 6) {
+    '[hid:mouseRelease]'
+  } else {
+    '[hid:releaseKey]' (at pin CharacterList)
+  }
+}
+if (MenuNumber == 0) {
+  comment 'delay to keep LED on for a while'
+  waitMillis 1000
+  digitalWriteOp pin false
+  LCD1602_clear
+  LCD1602_write 'Ready...' 1
+}
+}
+
+script 50 1730 {
 whenCondition (touch_touch_event)
 local 'pin' (touch_last_touched_pin)
 if (pin != 11) {
@@ -246,19 +355,15 @@ if (MenuNumber == 0) {
     }
   }
   if MakerPortSpeakerOn {
-    if (not MicroSDInserted) {
-      makerport_beep (at pin ToneFreqList) 100
-    } else {
+    if MicroSDInserted {
       if (pin != 12) {mp3_playTrack pin folder}
+    } else {
+      makerport_beep (at pin ToneFreqList) 100
     }
     if (and (pin == 12) MicroSDInserted) {
       folder += 1
-      if (folder > 4) {
-        folder = 1
-        MakerPortSpeakerOn = (booleanConstant true)
-      }
-      if (folder == 4) {
-        MakerPortSpeakerOn = (booleanConstant false)
+      if (folder > 54) {
+        folder = 51
       }
       LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
       mp3_playTrack 99 folder
@@ -268,46 +373,35 @@ if (MenuNumber == 0) {
 }
 }
 
-script 548 1185 {
-whenCondition (touch_release_event)
-local 'pin' (touch_last_released_pin)
-if KeyboardOn {
-  if (pin == 6) {
-    '[hid:mouseRelease]'
-  } else {
-    '[hid:releaseKey]' (at pin CharacterList)
-  }
-}
-if (MenuNumber == 0) {
-  comment 'delay to keep LED on for a while'
-  waitMillis 1000
-  digitalWriteOp pin false
-  LCD1602_clear
-  LCD1602_write 'waiting...' 1
-}
+script 708 1855 {
+to MicrophoneDetect {}
 }
 
-script 396 2163 {
+script 939 2268 {
+to IsThereMyFolder {}
+}
+
+script 511 2292 {
 to MenuAction1 {}
 }
 
-script 402 2338 {
+script 517 2435 {
 to MenuAction2 {}
 }
 
-script 56 2481 {
-to DoMenus {}
-}
-
-script 400 2585 {
+script 520 2739 {
 to MenuAction3 {}
 }
 
-script 399 2961 {
+script 57 2972 {
+to DoMenus {}
+}
+
+script 520 3246 {
 to MenuAction4 {}
 }
 
-script 399 3317 {
+script 519 3609 {
 to MenuAction5 {}
 }
 
@@ -565,7 +659,7 @@ to receiveIR {
 
 module 'Keyboard and Mouse' Comm
 author MicroBlocks
-version 1 3 
+version 1 4 
 choices keyModifiers Shift Control 'Alt / ⌥' 'Logo / ⌘' AltGr 
 choices mouseButtons left right middle both 
 choices specialKeys 'enter:10' 'tab:179' 'backspace:178' 'delete:212' 'insert:209' 'home:210' 'end:213' 'PgUp:211' 'PgDown:214' '→:215' '←:216' '↓:217' '↑:218' 'F1:194' 'F2:195' 'F3:196' 'F4:197' 'F5:198' 'F6:199' 'F7:200' 'F8:201' 'F9:202' 'F10:203' 'F11:204' 'F12:205' 'CapsLock:193' 'NumLock:219' 'ScrollLock:207' 'PrintScreen:206' 'ESC:177' 
@@ -573,9 +667,9 @@ description 'HID library. Emulates mouse and keyboard actions.
 
 It supports the Adafruit boards Trinket M0 and Metro M0 Express.'
 
-  spec ' ' 'press key' 'press key _ : while holding _' 'auto menu.keyModifiers' 'n' 'Shift'
-  spec ' ' '[hid:holdKey]' 'hold key _' 'auto' 'A'
-  spec ' ' '[hid:releaseKey]' 'release key _' 'auto' 'A'
+  spec ' ' 'press key' 'press key _ : while holding _' 'auto.specialKeys menu.keyModifiers' 'n' 'Shift'
+  spec ' ' '[hid:holdKey]' 'hold key _' 'auto.specialKeys' 'A'
+  spec ' ' '[hid:releaseKey]' 'release key _' 'auto.specialKeys' 'A'
   spec ' ' '[hid:releaseKeys]' 'release all keys'
   space
   spec ' ' 'mouse click' '_ mouse click' 'menu.mouseButtons' 'left'
@@ -875,8 +969,8 @@ to mp3_setVolume level {
 
 module MakerPort Output
 author MicroBlocks
-version 1 5 
-depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 
+version 1 6 
+depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
 
@@ -899,9 +993,16 @@ to makerport_beep freq msecs {
 }
 
 to makerport_initialize {
+  makerport_setAllLEDs false
   attachIR 18
   mp3_initialize 'MakerPort' 20 21
-  makerport_setAudioSource 'MP3'
+  if (makerport_mp3_hasCard) {
+    MicroSDInserted = (booleanConstant true)
+    makerport_setAudioSource 'MP3'
+  } else {
+    MicroSDInserted = (booleanConstant false)
+    makerport_setAudioSource 'Tone'
+  }
 }
 
 to makerport_mp3_hasCard {
@@ -940,199 +1041,6 @@ to makerport_typeString s {
   for ch s {
     '[hid:pressKey]' ch -1
   }
-}
-
-
-module MultiTone Output
-author MicroBlocks
-version 1 1 
-description 'On boards that support it, play up to four simultaneous voices of music through a single speaker. The best sound quality is obtained by playing through through an amplified external speaker, but you can hear it through the built-in speakers on the micro:bit V2, Circuit Playground Express and Bluefruit, and M5 Stack/Core.
-
-Note: This library does NOT work on the original micro:bit or Calliope mini!
-
-To output the audio waveform, the board must have a DAC (e.g. SAMD21 and ESP32 boards) or fast enough pulse-width modulation (PWM) hardware to simulate a DAC (e.g. nRF52 boards). To tune the output to standard A=440 pitch on boards with different clock speeds, change the tuningConstant variable in _stepForNote.'
-variables _multiTonePin _multiToneInitialized _v1 _v2 _v3 _v4 _v1Step _v2Step _v3Step _v4Step 
-
-  spec ' ' 'playNoteOnVoice' 'play note _ octave _ for _ ms voice _' 'auto num num num' 'A' 0 500 1
-  spec ' ' 'setMultitonePin' 'set multitone pin _' 'auto' ''
-  spec 'r' '_baseFreqForNoteMulti' '_baseFreqForNoteMulti _' 'auto' 'A'
-  spec ' ' '_initMultiTone' '_initMultiTone'
-  spec ' ' '_multiToneLoop' '_multiToneLoop'
-  spec 'r' '_nextSample' '_nextSample'
-  spec 'r' '_stepForNote' '_stepForNote _ octave _' 'str num' 'A' 0
-  spec 'r' '_uppercaseNote' '_uppercaseNote _' 'auto' ' a '
-
-to '_baseFreqForNoteMulti' note {
-  comment 'Return the frequency for the given note in the middle-C octave
-scaled by 1000. For example, return 440000 (440Hz) for A.
-Note names may be upper or lower case and may be followed
-by # for a sharp or _ for a flat.'
-  note = ('_uppercaseNote' note)
-  if (note == 'C') {
-    return 261626
-  } (note == 'D') {
-    return 293665
-  } (note == 'E') {
-    return 329628
-  } (note == 'F') {
-    return 349228
-  } (note == 'G') {
-    return 391995
-  } (note == 'A') {
-    return 440000
-  } (note == 'B') {
-    return 493883
-  }
-  if (or (note == 'C#') (note == 'D_')) {
-    return 277183
-  } (or (note == 'D#') (note == 'E_')) {
-    return 311127
-  } (or (note == 'F#') (note == 'G_')) {
-    return 369994
-  } (or (note == 'G#') (note == 'A_')) {
-    return 415305
-  } (or (note == 'A#') (note == 'B_')) {
-    return 466164
-  }
-  comment 'Unrecognized note names map to 0.1 Hz, which is inaudible.
-This helps users find typos in their tunes.'
-  return 100
-}
-
-to '_initMultiTone' {
-  if ((boardType) == 'micro:bit v2') {
-    _multiTonePin = 27
-  } ((boardType) == 'Clue') {
-    _multiTonePin = 21
-  } (or ((boardType) == 'Citilab ED1') ((boardType) == 'M5StickC')) {
-    _multiTonePin = 26
-  } ((boardType) == 'M5Stack-Core') {
-    _multiTonePin = 25
-  } else {
-    _multiTonePin = 0
-  }
-  _multiToneInitialized = true
-}
-
-to '_multiToneLoop' {
-  if (not _multiToneInitialized) {'_initMultiTone'}
-  comment 'Set initial sample values to virtual zero (the middle of their range).'
-  _v1 = 65536
-  _v2 = 65536
-  _v3 = 65536
-  _v4 = 65536
-  comment 'Generate and output sound samples. The DAC on the ESP32
-is only 8-bits. Other boards have 10-bit DAC or PWM output.'
-  if (or ((boardType) == 'Citilab ED1') ((boardType) == 'M5Stack-Core')) {
-    forever {
-      analogWriteOp _multiTonePin ((('_nextSample') >> 3) + 128)
-    }
-  } else {
-    forever {
-      analogWriteOp _multiTonePin (('_nextSample') + 512)
-    }
-  }
-}
-
-to '_nextSample' {
-  comment 'Generate up to four triangle waves. v1-v4 hold the current state of
-each voice. These numbers range from 0-262143 and are increased by _v1Step-v4Step
-each time this function is called. When the state rises above 131072, the output
-value begins to decreases back to zero, so the output value for each voice ranges
-from 0-131072 with the middle (65536) being "zero". This code has been optimized
-to all four voices to be generated fast enough to play in real time on micro:bit v2.'
-  _v1 = ((_v1 + _v1Step) & 262143)
-  _v2 = ((_v2 + _v2Step) & 262143)
-  _v3 = ((_v3 + _v3Step) & 262143)
-  _v4 = ((_v4 + _v4Step) & 262143)
-  local 'out' 0
-  if (_v1 < 131072) {
-    out += (_v1 - 65536)
-  } else {
-    out += (196608 - _v1)
-  }
-  if (_v2 < 131072) {
-    out += (_v2 - 65536)
-  } else {
-    out += (196608 - _v2)
-  }
-  if (_v3 < 131072) {
-    out += (_v3 - 65536)
-  } else {
-    out += (196608 - _v3)
-  }
-  if (_v4 < 131072) {
-    out += (_v4 - 65536)
-  } else {
-    out += (196608 - _v4)
-  }
-  return (out >> 9)
-}
-
-to '_stepForNote' note octave {
-  comment 'Return the step size required to generate the given note name in the given octave.
-To make the pitches match other instruments, adjust tuningConstant so that an A
-in octave zero generates a pitch as close as possible to 440Hz.'
-  local 'tuningConstant' 329
-  local 'freq' ('_baseFreqForNoteMulti' note)
-  if (octave < 0) {
-    repeat (absoluteValue octave) {
-      freq = (freq / 2)
-    }
-  }
-  repeat octave {
-    freq = (freq * 2)
-  }
-  return ((freq * tuningConstant) >> 14)
-}
-
-to '_uppercaseNote' aString {
-  local 'result' (newList (size aString))
-  '[data:delete]' 'all' result
-  for i (size aString) {
-    local 'ch' ('[data:unicodeAt]' i aString)
-    if (ch > 32) {
-      if (and (97 <= ch) (ch <= 122)) {
-        '[data:addLast]' (ch - 32) result
-      } else {
-        '[data:addLast]' ch result
-      }
-    }
-  }
-  return ('[data:unicodeString]' result)
-}
-
-to playNoteOnVoice note octave ms voice {
-  comment 'Make sure _multiToneLoop is running. Set the step size for the given
-voice to start playing the note, wait ms miliseconds, then set step size
-to zero to to stop the note.'
-  sendBroadcast '_multiToneLoop'
-  if (1 == voice) {
-    _v1Step = ('_stepForNote' note octave)
-    waitMillis ms
-    _v1Step = 0
-  } (2 == voice) {
-    _v2Step = ('_stepForNote' note octave)
-    waitMillis ms
-    _v2Step = 0
-  } (3 == voice) {
-    _v3Step = ('_stepForNote' note octave)
-    waitMillis ms
-    _v3Step = 0
-  } (4 == voice) {
-    _v4Step = ('_stepForNote' note octave)
-    waitMillis ms
-    _v4Step = 0
-  }
-}
-
-to setMultitonePin pin {
-  if (pin == '') {
-    _multiToneInitialized = false
-    return 0
-  }
-  _multiTonePin = pin
-  _multiToneInitialized = true
 }
 
 
