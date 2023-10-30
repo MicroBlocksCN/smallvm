@@ -706,7 +706,7 @@ to 'trigger event' 'event name' {
 
 module WiFi Comm
 author MicroBlocks
-version 1 5 
+version 1 6 
 tags communication network 
 description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
 '
@@ -731,7 +731,7 @@ to wifiConnect ssid password fixedIP gatewayIP subnetIP {
   local 'startMSecs' (millisOp)
   repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
     comment 'Timeout after N seconds'
-    if (((millisOp) - startMSecs) > 10000) {
+    if (((millisOp) - startMSecs) > 30000) {
       sayIt 'Could not connect'
       return 0
     }
