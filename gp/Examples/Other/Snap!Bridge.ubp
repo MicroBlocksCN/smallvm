@@ -210,6 +210,10 @@ whenBroadcastReceived 'Get Info'
 sendBroadcast ('[data:join]' 'info,SnapBridge 1.0 ' (boardType))
 }
 
+script 50 426 {
+to snapConnect_sendPinState {}
+}
+
 
 module 'Basic Sensors' Input
 author MicroBlocks
@@ -232,9 +236,9 @@ to '_setAccelRange' n {
 }
 
 
-module 'Touch (MPR121)' Input
+module Touch Input
 author MicroBlocks
-version 1 7 
+version 1 8 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
 variables _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
 
@@ -311,6 +315,8 @@ to '_touch_update' {
       atPut i _touch_eventPending (booleanConstant true)
     }
   }
+  comment 'Leave some time between updates'
+  waitMillis 30
 }
 
 to touch_isTouched pin {

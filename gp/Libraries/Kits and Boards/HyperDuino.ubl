@@ -1,7 +1,7 @@
 module HyperDuino Output
 author MicroBlocks
-version 1 5 
-depends 'Touch (MPR121)' 
+version 1 6 
+depends Touch 
 choices hyperduino_motor A B 
 description 'Support for HyperDuino (https://hyperduino.com).'
 
