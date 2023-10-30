@@ -78,7 +78,7 @@ to '_touch_update' {
     }
   }
   comment 'Leave some time between updates'
-  waitMillis 50
+  waitMillis 30
 }
 
 to touch_isTouched pin {
