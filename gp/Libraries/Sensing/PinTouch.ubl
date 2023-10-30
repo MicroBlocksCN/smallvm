@@ -1,6 +1,6 @@
 module PinTouch Input
 author MicroBlocks
-version 1 7 
+version 1 8 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
 variables _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
 
