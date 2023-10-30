@@ -579,11 +579,11 @@ void restartSerial() {
 	#define BOARD_TYPE "Mbits"
 	#define PIN_BUTTON_A 36
 	#define PIN_BUTTON_B 39
-	#define DIGITAL_PINS 40
+	#define DIGITAL_PINS 21
 	#define ANALOG_PINS 16
 	#define TOTAL_PINS 40
 	static const int analogPin[] = {};
-	static const char digitalPin[] = {
+	static const char digitalPin[21] = {
 		26, 32, 25, 13, 27, 36, 5, 12, 4, 34,
 		14, 39, 15, 18, 19, 23, 2, 255, 255, 21, 22}; // edge connector pins 17 & 18 are not used
 	#define DEFAULT_TONE_PIN 33
@@ -1194,6 +1194,14 @@ void primDigitalSet(int pinNum, int flag) {
 		if (28 == pinNum) {
 			stopPWM();
 			setHighDrive(pinNum); // use high drive for microphone
+		}
+	#endif
+
+	#if defined(ESP32)
+		// stop PWM so we can do a normal digitalWrite
+		if (pwmRunning[pinNum]) {
+			pinDetach(pinNum);
+			pwmRunning[pinNum] = false;
 		}
 	#endif
 
@@ -1969,6 +1977,7 @@ static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
 	#if defined(ARDUINO_SAMD_CIRCUITPLAYGROUND_EXPRESS) || \
 		defined(ARDUINO_NRF52840_CIRCUITPLAY) || \
 		defined(ARDUINO_NRF52840_CLUE) || defined(ESP8266) || defined(PICO_ED)
+			if ((pinNum < 0) || (pinNum >= DIGITAL_PINS)) return falseObj;
 			pinNum = digitalPin[pinNum];
 	#endif
 
@@ -1983,6 +1992,16 @@ static OBJ primSoftwareSerialWriteByte(int argCount, OBJ *args) {
 
 	if ((pinNum < 0) || (pinNum >= TOTAL_PINS)) return falseObj;
 	SET_MODE(pinNum, OUTPUT);
+
+	#if defined(ARDUINO_ARCH_SAMD)
+		// Clear PINCFG register in case pin was previously used for hardware serial
+		// Arduino pinMode() should do this but does not.
+		#define PORT_BASE 0x41004400
+		int ulPort = g_APinDescription[pinNum].ulPort;
+		int ulPin = g_APinDescription[pinNum].ulPin;
+		volatile uint8_t *cnf = (uint8_t *) (PORT_BASE + (0x80 * ulPort) + 0x40 + ulPin);
+		*cnf = *cnf & 0xFFFFFFFE; // turn off the PMUXEN bit (bit 0)
+	#endif
 
 	#if defined(RP2040_PHILHOWER)
 		// improves timing stability on RP2040

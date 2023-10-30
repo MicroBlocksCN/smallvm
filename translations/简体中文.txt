@@ -144,7 +144,7 @@ stop all
 停止全部
 
 last message
-最新消息
+最后消息
 
 call _
 调用 _
@@ -301,7 +301,7 @@ all
 所有
 
 last
-最新
+最后
 
 random
 随机
@@ -437,13 +437,13 @@ radio message received?
 广播消息已收到?
 
 radio last number
-最新广播的数字
+最后广播的数字
 
 radio last string
-最新广播的字符串
+最后广播的字符串
 
 radio last message type
-最新广播消息类型
+最后广播的消息类型
 
 radio set group _ (0-255)
 设置广播分组 _ (0-255)
@@ -455,7 +455,7 @@ radio set power (0-7) _
 设置广播信号强度 (0-7) _
 
 radio last signal strength
-最新广播信号强度
+最后广播的信号强度
 
 radio receive packet _
 广播收到包 _
@@ -1396,7 +1396,7 @@ start WebSocket server
 启动 WebSocket 服务器
 
 last WebSocket event
-最新的 WebSocket 事件
+最后的 WebSocket 事件
 
 client ID for WebSocket event _
 WebSocket 事件 _ 的客户端 ID
@@ -1495,10 +1495,10 @@ binary _
 二进制 _
 
 topic for MQTT event _
-最新 MQTT 事件的主题 _
+MQTT 事件的主题 _
 
 payload for MQTT event _
-最新 MQTT 事件的载荷 _
+MQTT 事件的载荷 _
 
 MQTT set will topic _ payload _
 MQTT 设置遗嘱 主题 _ 载荷 _
@@ -2173,6 +2173,18 @@ enable PlugShare when project empty
 
 disable PlugShare when project empty
 禁止项目为空时从主板里获取代码
+
+hide implementation blocks
+隐藏实现块
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+不显示积木库私有的积木块和变量（即那些名称以下划线开头的变量）
+
+show implementation blocks
+显示实现块
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+显示积木库私有的积木块和变量（即那些名称以下划线开头的变量）
 
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 连接主板时，即使当前项目为空，也不要自动将主板里的代码读入 IDE
@@ -2866,7 +2878,7 @@ Wait the given number of microseconds.
 等待输入的微秒时长
 
 Report the last broadcast message received.
-报告接受到的最新广播消息
+报告接受到的最后广播消息
 
 Call the function with the given name and optional parameter list.
 调用输入的函数或可选列表中的函数

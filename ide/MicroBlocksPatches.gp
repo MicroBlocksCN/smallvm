@@ -19,11 +19,12 @@ method allVarsMenu InputSlot {
 
   // shared vars
   scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  pe = (findProjectEditor)
   if (notNil scripter) {
 	varNames = (allVariableNames (project (handler scripter)))
 	for varName varNames {
           // hide vars that start with underscore, used for libraries
-          if (or ((at varName 1) != '_') (devMode)) {
+          if (or ((at varName 1) != '_') (showHiddenBlocksEnabled pe)) {
             addItemNonlocalized menu varName (action 'setContents' this varName)
           }
 	}
@@ -427,12 +428,15 @@ method contextMenu Block {
 	  addLine menu
 	  addItem menu 'delete block definition...' 'deleteBlockDefinition' 'delete the definition of this block'
 	}
+  } (and (notNil blockSpec) (beginsWith (at (specs blockSpec) 1) 'obsolete')) {
+	  addLine menu
+	  addItem menu 'delete obsolete block...' 'deleteObsolete' 'delete this obsolete block from the project'
   }
   if ((primName expression) == 'v') {
 	varNames = (allVariableNames (project scripter))
 	if (and (not isInPalette) ((count varNames) > 1)) {
 		for varName varNames {
-			if (and (varName != (first (argList expression))) ((at varName 1) != '_')) {
+			if (and (varName != (first (argList expression))) ((at varName 1) != '_') (not (showHiddenBlocksEnabled pe))) {
 				b = (toBlock (newReporter 'v' varName))
 				fixLayout b
 				addItem menu (fullCostume (morph b)) (action 'changeVar' this varName)
@@ -567,6 +571,13 @@ method showDefinition Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
   showDefinition (scripter pe) (primName expression)
+}
+
+method deleteObsolete Block {
+  pe = (findProjectEditor)
+  if (isNil pe) { return }
+  remove (blockSpecs (project (scripter pe))) (primName expression)
+  updateBlocks (scripter pe)
 }
 
 method deleteBlockDefinition Block {

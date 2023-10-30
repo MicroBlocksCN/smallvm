@@ -144,7 +144,7 @@ to color color {
 
 module TFT Output
 author MicroBlocks
-version 1 4 
+version 1 5 
 description 'Draw graphics and write text on boards with a TFT display, such as the M5Stack, M5Stick, Citilab ED1 or (discontinued) IoT-Bus.'
 
   spec ' ' '[display:mbDisplayOff]' 'clear display'
@@ -166,9 +166,16 @@ description 'Draw graphics and write text on boards with a TFT display, such as 
   space
   spec ' ' '[tft:setBacklight]' 'set TFT backlight _ (0-10)' 'num' 10
   space
-  spec ' ' '[tft:deferUpdates]' 'defer TFT display updates'
-  spec ' ' '[tft:resumeUpdates]' 'resume TFT display updates'
-  spec ' ' '[tft:enableDisplay]' 'obsolete obsolete enable TFT _' 'bool' true
+  spec ' ' '_deferMonochromeDisplayUpdates' '_defer monochrome display updates'
+  spec ' ' '_resumeMonochromeDisplayUpdates' '_resume monochrome display updates'
+
+to '_deferMonochromeDisplayUpdates' {
+  '[tft:deferUpdates]'
+}
+
+to '_resumeMonochromeDisplayUpdates' {
+  '[tft:resumeUpdates]'
+}
 
 to makeColor r g b {
   r = (maximum 0 (minimum r 255))

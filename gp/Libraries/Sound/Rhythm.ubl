@@ -1,6 +1,6 @@
 module Rhythm Control
 author MicroBlocks
-version 1 2 
+version 1 3 
 description 'Sends broadcasts according to a tempo and time signature. Useful to create musical patterns.
 
 Includes abstractions for note durations, bars and beats.'
@@ -14,7 +14,7 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures 
   spec ' ' 'stop playing' 'stop playing'
   space
   spec ' ' 'rhy broadcast' 'add _ at bar _ beat _' 'auto auto auto' 'kick' 1 1
-  spec ' ' 'broadcast remove' 'remove _ from bar _ beat _' 'auto auto auto' 'kick' 1 1
+  spec ' ' 'broadcast remove' 'remove _ from bar _ beat _' 'str auto auto' 'text' 1 1
   space
   spec ' ' 'mute' 'mute _ _' 'str bool' 'text' true
   spec ' ' 'solo' 'solo _ _' 'str bool' 'text' true
@@ -22,11 +22,11 @@ variables _rhy_tempo _rhy_looping _rhy_pattern _rhy_beat_duration _rhy_measures 
   spec 'r' 'current tick for duration' 'current beat'
   spec 'r' 'current bar' 'current bar'
   space
-  spec 'r' 'whole duration' '𝅝 '
-  spec 'r' 'half duration' '𝅗𝅥'
-  spec 'r' 'quarter duration' '𝅘𝅥'
-  spec 'r' 'eighth duration' '𝅘𝅥𝅮'
-  spec 'r' 'sixteenth duration' '𝅘𝅥𝅯'
+  spec 'r' 'whole duration' '¹⁄₁'
+  spec 'r' 'half duration' '½'
+  spec 'r' 'quarter duration' '¼'
+  spec 'r' 'eighth duration' '⅛'
+  spec 'r' 'sixteenth duration' '¹⁄₁₆'
   space
   spec 'r' 'dotted' '_ .' 'auto' ''
   spec 'r' 'triplet' '‿³ _' 'auto' ''
@@ -75,6 +75,7 @@ to '_rhythm loop' {
 }
 
 to 'broadcast remove' message 'bar number' 'beat number' {
+  message = ('[data:join]' message '')
   if ((v 'beat number') == '') {
     for 'each beat' _rhy_measures {
       'broadcast remove' message (v 'bar number') (v 'each beat')
