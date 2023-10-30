@@ -1531,31 +1531,6 @@ UDP remote port
 UDP 远程端口
 
 ####
-# WiFi Radio
-
-WiFi Radio
-WiFi 广播
-
-wifi send number _
-wifi 广播发送数字 _
-
-wifi send string _
-wifi 广播发送字符串 _
-
-wifi send pair _ = _
-wifi 广播发送配对信息 _ = _
-
-wifi message received?
-wifi 广播消息已收到?
-
-wifi last number
-wifi 最后广播的数字
-
-wifi last string
-wifi 最后广播的字符串
-
-wifi set group _ (0-255)
-wifi 设置广播分组 _ (0-255)
 # BLE UART server
 start BLE UART server _
 创建蓝牙广播 _
