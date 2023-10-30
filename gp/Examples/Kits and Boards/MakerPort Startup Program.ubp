@@ -216,6 +216,7 @@ if (('distance (cm)' 14 15) == 0) {
 }
 NumberOfNeopixels = 24
 makerport_initialize
+MicroSDInserted = (makerport_mp3_hasCard)
 'MakerPort Setup'
 MicrophoneDetect
 IsThereMyFolder
@@ -296,10 +297,6 @@ if MakerPortSpeakerOn {
 }
 waitMillis 250
 makerport_setAllLEDs false
-}
-
-script 663 62 {
-to makerport_initialize {}
 }
 
 script 665 405 {
@@ -969,14 +966,15 @@ to mp3_setVolume level {
 
 module MakerPort Output
 author MicroBlocks
-version 1 6 
-depends 'LCD Display' 'MP3 Player' 'Touch (MPR121)' 'IR Remote' 
+version 1 7 
+depends 'LCD Display' 'MP3 Player' Touch 'IR Remote' 
 choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
+variables makerport_microSDInserted 
 
   spec ' ' 'makerport_initialize' 'MakerPort initialize'
   space
-  spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs' 'num num' 440 100
+  spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs volume _ (0-10)' 'num num num' 440 100 5
   spec ' ' 'makerport_setAudioSource' 'set MakerPort audio source to _' 'menu.makerport_audioSource' 'MP3'
   space
   spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' false
@@ -985,11 +983,19 @@ description 'Support for MakerPort (https://makerport.fun)'
   space
   spec 'r' 'makerport_mp3_hasCard' 'mp3 player has Flash card'
 
-to makerport_beep freq msecs {
+to makerport_beep freq msecs volume {
+  if (freq < 1) {return 0}
+  local 'halfCycleTime' (500000 / freq)
+  local 'cycles' ((500 * msecs) / halfCycleTime)
+  local 'amplitude' (50 * volume)
+  amplitude = (maximum 0 (minimum amplitude 1023))
   digitalWriteOp 19 true
-  '[io:playTone]' 0 freq
-  waitMillis msecs
-  '[io:playTone]' 0 0
+  repeat cycles {
+    analogWriteOp 0 amplitude
+    waitMicros halfCycleTime
+    analogWriteOp 0 0
+    waitMicros halfCycleTime
+  }
 }
 
 to makerport_initialize {
@@ -997,10 +1003,8 @@ to makerport_initialize {
   attachIR 18
   mp3_initialize 'MakerPort' 20 21
   if (makerport_mp3_hasCard) {
-    MicroSDInserted = (booleanConstant true)
     makerport_setAudioSource 'MP3'
   } else {
-    MicroSDInserted = (booleanConstant false)
     makerport_setAudioSource 'Tone'
   }
 }
@@ -1008,6 +1012,10 @@ to makerport_initialize {
 to makerport_mp3_hasCard {
   comment 'Note: This command works only if MP3 player is
 connected to the hardware serial pins.'
+  if (isType makerport_microSDInserted 'boolean') {
+    comment 'return previously determined value'
+    return makerport_microSDInserted
+  }
   '[serial:open]' 9600
   comment 'Send MP3 player initialization command'
   '[serial:write]' ('[data:makeList]' (hexToInt '7E') (hexToInt 'FF') 6 (hexToInt '0C') 0 0 0 254 239 (hexToInt 'EF'))
@@ -1019,12 +1027,14 @@ connected to the hardware serial pins.'
       comment 'Got a response message. Item 7 is 2 if
 a Flash card is inserted in the player.'
       '[serial:close]'
-      return ((at 7 bytesRead) == 2)
+      makerport_microSDInserted = ((at 7 bytesRead) == 2)
+      return makerport_microSDInserted
     }
     waitMillis 50
   }
   '[serial:close]'
-  return (booleanConstant false)
+  makerport_microSDInserted = (booleanConstant false)
+  return makerport_microSDInserted
 }
 
 to makerport_setAllLEDs bool {
@@ -1330,9 +1340,9 @@ to stopServo which {
 }
 
 
-module 'Touch (MPR121)' Input
+module Touch Input
 author MicroBlocks
-version 1 7 
+version 1 8 
 description 'Support for the MPR121 12-channel i2c touch sensor.'
 variables _touch_state _touch_isTouched _touch_eventPending _touch_last_touched_pin _touch_last_released_pin 
 
@@ -1409,6 +1419,8 @@ to '_touch_update' {
       atPut i _touch_eventPending (booleanConstant true)
     }
   }
+  comment 'Leave some time between updates'
+  waitMillis 30
 }
 
 to touch_isTouched pin {
