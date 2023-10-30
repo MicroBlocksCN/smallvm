@@ -1,6 +1,7 @@
 module 'WiFi Radio' Comm
 author MicroBlocks
-version 1 0 
+version 1 1 
+depends WiFi 
 tags radio communication messaging network 
 description 'This library supports easy message exchange among WiFi-enabled boards on the same network.
 
