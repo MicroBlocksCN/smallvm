@@ -71,7 +71,7 @@ static int unicodeCodePoint(char *s) {
 	// Return the Unicode code point starting at the given start byte.
 
 	int result = -1; // bad unicode character; should not happen
-	uint8_t *byte = (uint8_t *) s;
+	uint8 *byte = (uint8 *) s;
 	int firstByte = byte[0];
 	if (firstByte < 128) {
 		result = firstByte; // 7-bit ASCII
@@ -897,7 +897,7 @@ static OBJ listToString(OBJ listObj) {
 	listObj = tempGCRoot; // restore listObj
 	if (!result) return result; // allocation failed
 
-	uint8_t *s = (uint8_t *) obj2str(result);
+	uint8 *s = (uint8 *) obj2str(result);
 	for (int i = 1; i <= itemCount; i++) {
 		OBJ item = FIELD(listObj, i);
 		if (!isInt(item)) return fail(needsListOfIntegers);
@@ -962,7 +962,7 @@ static OBJ byteArrayToList(OBJ byteArrayObj) {
 	if (!result) return fail(insufficientMemoryError); // allocation failed
 	FIELD(result, 0) = int2obj(itemCount);
 
-	uint8_t *bytes = (uint8_t *) &FIELD(byteArrayObj, 0);
+	uint8 *bytes = (uint8 *) &FIELD(byteArrayObj, 0);
 	for (int i = 0; i < itemCount; i++) {
 		FIELD(result, i + 1) = int2obj(bytes[i]);
 	}
