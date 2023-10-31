@@ -4,6 +4,7 @@ version 1 5
 choices scales ionian dorian phrygian lydian mixolydian aeolian locrian 
 choices pentatonics major minor 
 choices chords major minor diminished 'major 7th' 'minor 7th' Maj7 
+choices arpeggio_dst 'MIDI channel' 'tone pin'
 description 'Lists of relative semitone intervals for all Western diatonic scales plus the major and minor pentatonic scales.
 
 It also includes intervals for the most common chords and progressions, and an abstraction of the circle of fifths.
@@ -62,10 +63,10 @@ to arpeggiate 'note list' order duration destination channel/pin {
       local 'dur' duration
     }
     if (destination == 'MIDI channel') {
-      callCustomCommand 'play MIDI note' ('[data:makeList]' (at (at i order) (v 'note list')) (dur - ((millisOp) - start)) channel/pin 127)
+      callCustomCommand 'play MIDI note' ('[data:makeList]' (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1) channel/pin 127)
     } else {
       if (channel/pin != '') {_tonePin = channel/pin}
-      callCustomCommand 'playMIDIKey' ('[data:makeList]' (at (at i order) (v 'note list')) (dur - ((millisOp) - start)))
+      callCustomCommand 'playMIDIKey' ('[data:makeList]' (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1))
     }
   }
 }
