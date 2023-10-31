@@ -36,8 +36,8 @@ static void printIntegerOrBooleanInto(OBJ obj, char *buf) {
 
 	*buf = 0; // null terminator
 	if (isInt(obj)) sprintf(buf, "%d", obj2int(obj));
-	else if (obj == falseObj) strcat(buf, "false");
-	else if (obj == trueObj) strcat(buf, "true");
+	else if (obj == falseObj) strcat(buf, "0");
+	else if (obj == trueObj) strcat(buf, "1");
 	else if (IS_TYPE(obj, StringType)) sprintf(buf, "%.15s...", obj2str(obj));
 }
 
@@ -995,8 +995,7 @@ OBJ primConvertType(int argCount, OBJ *args) {
 			result = int2obj((srcObj == trueObj) ? 1 : 0);
 			break;
 		case StringType:
-			result = (OBJ) ((srcObj == trueObj) ?
-				newStringFromBytes("true", 4) : newStringFromBytes("false", 5));
+			result = newStringFromBytes(((srcObj == trueObj) ? "1" : "0"), 1);
 			break;
 		case ListType:
 			return fail(cannotConvertToList);
@@ -1009,6 +1008,7 @@ OBJ primConvertType(int argCount, OBJ *args) {
 	case IntegerType:
 		switch (dstType) {
 		case BooleanType:
+			// 0 is false; all other numbers are true
 			result = (obj2int(srcObj) == 0) ? falseObj : trueObj;
 			break;
 		case StringType:
@@ -1027,12 +1027,8 @@ OBJ primConvertType(int argCount, OBJ *args) {
 		switch (dstType) {
 		case BooleanType:
 			srcStr = obj2str(srcObj);
-			if ((strcmp(srcStr, "true") == 0) || (strcmp(srcStr, "True") == 0)) {
-				// accept Python-style "True" as well as MicroBlocks "true"
-				result = trueObj;
-			} else {
-				result = falseObj;
-			}
+			// "0" is false; all other strings are true
+			result = (strcmp(srcStr, "0") == 0) ? falseObj : trueObj;
 			break;
 		case IntegerType:
 			result = int2obj(evalInt(srcObj));
