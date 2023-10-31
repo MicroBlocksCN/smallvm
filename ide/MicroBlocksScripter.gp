@@ -551,6 +551,7 @@ method addSectionLabel MicroBlocksScripter label {
 
 method createEmptyProject MicroBlocksScripter {
   mbProject = (newMicroBlocksProject)
+  clearBoardIfConnected (smallRuntime) true
   if (notNil scriptsFrame) {
 	removeAllParts (morph (contents scriptsFrame))
 	restoreScripts this
@@ -562,6 +563,7 @@ method loadOldProjectFromClass MicroBlocksScripter aClass specs {
   // Load an old-style (GP-format) MicroBlocks project from the given class and spec list.
 
   mbProject = (newMicroBlocksProject)
+  clearBoardIfConnected (smallRuntime) true
   if (notNil aClass) {
 	loadFromOldProjectClassAndSpecs mbProject aClass specs
   }
@@ -572,6 +574,7 @@ method loadNewProjectFromData MicroBlocksScripter aString updateLibraries {
   // Load an new-style MicroBlocks project from the given string.
 
   mbProject = (newMicroBlocksProject)
+  clearBoardIfConnected (smallRuntime) true
   loadFromString mbProject aString updateLibraries
   restoreScripts this
 }
