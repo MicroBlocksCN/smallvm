@@ -21,7 +21,7 @@ to DoMenus {
   MenuNumber += 1
   if MakerPortSpeakerOn {
     digitalWriteOp 19 true
-    makerport_beep 880 100
+    makerport_beep 880 100 10
     if MicroSDInserted {
       digitalWriteOp 19 false
     }
@@ -104,11 +104,11 @@ to 'MakerPort Setup' {
       waitMillis 3000
     } else {
       comment 'C4'
-      makerport_beep 262 250
+      makerport_beep 262 250 10
       comment 'G4'
-      makerport_beep 392 250
+      makerport_beep 392 250 10
       comment 'F4'
-      makerport_beep 349 250
+      makerport_beep 349 250 10
     }
   }
 }
@@ -204,7 +204,7 @@ MenuEnableOn = (booleanConstant true)
 PreviousPinTouched = 0
 MenuNumber = 0
 Mp3Volume = 30
-ToneVolume = 1
+ToneVolume = 5
 folder = 51
 MyFolder = 1
 'Initialize lists'
@@ -259,10 +259,10 @@ if (KeyPosition > 0) {
 }
 if (KeyPosition == 15) {
   comment 'up arrow'
-  ToneVolume += 10
+  ToneVolume += 2
   Mp3Volume += 10
-  if (ToneVolume > 30) {
-    ToneVolume = 0
+  if (ToneVolume > 10) {
+    ToneVolume = 10
   }
   if (Mp3Volume > 30) {
     Mp3Volume = 30
@@ -270,10 +270,10 @@ if (KeyPosition == 15) {
 }
 if (KeyPosition == 16) {
   comment 'down arrow'
-  ToneVolume += -10
+  ToneVolume += -2
   Mp3Volume += -10
-  if (ToneVolume < 0) {
-    ToneVolume = 0
+  if (ToneVolume < 1) {
+    ToneVolume = 1
   }
   if (Mp3Volume < 0) {
     Mp3Volume = 0
@@ -292,7 +292,7 @@ if MakerPortSpeakerOn {
     }
     LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
   } else {
-    makerport_beep (at TPin ToneFreqList) 100
+    makerport_beep (at TPin ToneFreqList) 100 10
   }
 }
 waitMillis 250
@@ -355,7 +355,7 @@ if (MenuNumber == 0) {
     if MicroSDInserted {
       if (pin != 12) {mp3_playTrack pin folder}
     } else {
-      makerport_beep (at pin ToneFreqList) 100
+      makerport_beep (at pin ToneFreqList) 100 10
     }
     if (and (pin == 12) MicroSDInserted) {
       folder += 1
