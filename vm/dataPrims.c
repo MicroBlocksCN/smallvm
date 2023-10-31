@@ -1012,7 +1012,7 @@ OBJ primConvertType(int argCount, OBJ *args) {
 			result = (obj2int(srcObj) == 0) ? falseObj : trueObj;
 			break;
 		case StringType:
-			itoa(obj2int(srcObj), s, 10);
+			sprintf(s, "%d", obj2int(srcObj));
 			result = newStringFromBytes(s, strlen(s));
 			break;
 		case ListType:
