@@ -613,7 +613,7 @@ method wantsDropOf BlocksPalette aHandler {
 }
 
 method justReceivedDrop BlocksPalette aHandler {
-  // Hide a block definitions when it is is dropped on the palette.
+  // Hide a block definition when it is is dropped on the palette.
   pe = (findProjectEditor)
   if (isClass aHandler 'Block') { stopRunningBlock (smallRuntime) aHandler }
   if (and (isClass aHandler 'Block') (isPrototypeHat aHandler)) {
@@ -626,8 +626,9 @@ method justReceivedDrop BlocksPalette aHandler {
   }
   if (and (isClass aHandler 'Block') (notNil pe)) {
 	recordDrop (scriptEditor (scripter pe)) aHandler
+	deleteChunkFor (smallRuntime) aHandler
   }
-  if (and (isClass aHandler 'MicroBlocksSelectionContents')) {
+  if (isClass aHandler 'MicroBlocksSelectionContents') {
 	for part (parts (morph aHandler)) {
 		justReceivedDrop this (handler part)
 	}
