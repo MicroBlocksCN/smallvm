@@ -1663,6 +1663,11 @@ static void setTone(int pin, int frequency) {
 
 void stopTone() {
 	if (tonePin >= 0) {
+		#if defined(ARDUINO_SAMD_ZERO)
+			// workaround for intermittent Tone library lockup when generating 38k IR Remote signal
+			NVIC_DisableIRQ(TC5_IRQn);
+			NVIC_ClearPendingIRQ(TC5_IRQn);
+		#endif
 		noTone(tonePin);
 		SET_MODE(tonePin, INPUT);
 	}
