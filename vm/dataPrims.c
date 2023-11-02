@@ -969,6 +969,36 @@ static OBJ byteArrayToList(OBJ byteArrayObj) {
 	return result;
 }
 
+static OBJ singletonList(OBJ anObj) {
+	// Return a singleton list containing the given object.
+
+	tempGCRoot = anObj; // record anObj in case allocation triggers GC that moves it
+	OBJ result = newObj(ListType, 2, falseObj);
+	anObj = tempGCRoot; // restore anObj
+	if (!result) return fail(insufficientMemoryError); // allocation failed
+	FIELD(result, 0) = int2obj(1);
+	FIELD(result, 1) = anObj;
+	return result;
+}
+
+static OBJ singletonByteArray(OBJ anObj) {
+	// Return a singleton list containing the given number or boolean object.
+
+	int byteValue = 0;
+	if (isInt(anObj)) {
+		byteValue = obj2int(anObj);
+		if ((byteValue < 0) || (byteValue > 255) return fail(byteArrayStoreError);
+	} else {
+		// Convert boolean to byte value.
+		byteValue = (anObj == falseObj) ? 0 : 1;
+	}
+
+	OBJ result = newObj(ByteArrayType, 1, falseObj);
+	if (!result) return fail(insufficientMemoryError); // allocation failed
+	setByteCountAdjust(result, 1);
+	*((uint8 *) &FIELD(result, 0)) = byteValue;
+	return result;
+}
 
 OBJ primConvertType(int argCount, OBJ *args) {
 	if (argCount < 2) return fail(notEnoughArguments);
@@ -987,6 +1017,7 @@ OBJ primConvertType(int argCount, OBJ *args) {
 	char s[32];
 	char *srcStr;
 	OBJ result = srcObj; // default used when converting object to its current type
+	int srcItemCount = 0;
 
 	switch (srcType) {
 	case BooleanType:
@@ -998,10 +1029,10 @@ OBJ primConvertType(int argCount, OBJ *args) {
 			result = newStringFromBytes(((srcObj == trueObj) ? "1" : "0"), 1);
 			break;
 		case ListType:
-			return fail(cannotConvertToList);
+			return singletonList(srcObj);
 			break;
 		case ByteArrayType:
-			return fail(cannotConvertToByteArray);
+			return singletonByteArray(srcObj);
 			break;
 		}
 		break;
@@ -1016,10 +1047,10 @@ OBJ primConvertType(int argCount, OBJ *args) {
 			result = newStringFromBytes(s, strlen(s));
 			break;
 		case ListType:
-			return fail(cannotConvertToList);
+			return singletonList(srcObj);
 			break;
 		case ByteArrayType:
-			return fail(cannotConvertToByteArray);
+			return singletonByteArray(srcObj);
 			break;
 		}
 		break;
@@ -1042,12 +1073,19 @@ OBJ primConvertType(int argCount, OBJ *args) {
 		}
 		break;
 	case ListType:
+		srcItemCount = obj2int(FIELD(srcObj, 0));
 		switch (dstType) {
 		case BooleanType:
-			return fail(cannotConvertToBoolean);
+			if ((srcItemCount != 1) || (objType(FIELD(srcObj, 1)) != BooleanType)) {
+				 return fail(cannotConvertToBoolean);
+			}
+			return FIELD(srcObj, 1);
 			break;
 		case IntegerType:
-			return fail(cannotConvertToInteger);
+			if ((srcItemCount != 1) || !isInt(FIELD(srcObj, 1))) {
+				 return fail(cannotConvertToInteger);
+			}
+			return FIELD(srcObj, 1);
 			break;
 		case StringType:
 			result = listToString(srcObj);
@@ -1058,12 +1096,15 @@ OBJ primConvertType(int argCount, OBJ *args) {
 		}
 		break;
 	case ByteArrayType:
+		srcItemCount = BYTES(srcObj);
 		switch (dstType) {
 		case BooleanType:
-			return fail(cannotConvertToBoolean);
+			if (srcItemCount != 1) return fail(cannotConvertToBoolean);
+			return (*((uint8 *) &FIELD(result, 0)) ? trueObj : falseObj);
 			break;
 		case IntegerType:
-			return fail(cannotConvertToInteger);
+			if (srcItemCount != 1) return fail(cannotConvertToInteger);
+			return int2obj(*((uint8 *) &FIELD(result, 0)));
 			break;
 		case StringType:
 			result = byteArrayToString(srcObj);
