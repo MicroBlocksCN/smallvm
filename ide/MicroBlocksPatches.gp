@@ -579,6 +579,7 @@ method deleteObsolete Block {
 
   // find out whether block is being used in the project
   finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
   if (notEmpty (allEntries finder)) {
     if (not
       (confirm
