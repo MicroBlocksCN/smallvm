@@ -351,9 +351,33 @@ static OBJ primMIDISend(int argCount, OBJ *args) {
 	return trueObj;
 }
 
+static OBJ primMIDIRecv(int argCount, OBJ *args) {
+	// Return a MIDI message packet or false if none is available.
+	// Packets are always 3-bytes. The first byte is the MIDI command bytes.
+	// The following two bytes are argument bytes. The unused argument bytes
+	// of 1-byte and 2-byte MIDI commands are zero.
+
+	midiEventPacket_t midiEvent = MidiUSB.read(); // get the MIDI packet
+	if (midiEvent.header == 0) return falseObj; // no data
+
+	// allocate 3-byte byte array
+	OBJ result = newObj(ByteArrayType, 1, falseObj);
+	if (!result) return fail(insufficientMemoryError);
+	setByteCountAdjust(result, 3);
+
+	// read MIDI data into result
+	uint8 *bytes = (uint8 *) &FIELD(result, 0);
+	bytes[0] = midiEvent.byte1;
+	bytes[1] = midiEvent.byte2;
+	bytes[2] = midiEvent.byte3;
+
+	return result;
+}
+
 #else // no USB_MIDI
 
 static OBJ primMIDISend(int argCount, OBJ *args) { return falseObj; }
+static OBJ primMIDIRecv(int argCount, OBJ *args) { return falseObj; }
 
 #endif // USB_MIDI
 
@@ -367,6 +391,7 @@ static PrimEntry entries[] = {
 	{"write", primSerialWrite},
 	{"writeBytes", primSerialWriteBytes},
 	{"midiSend", primMIDISend},
+	{"midiRecv", primMIDIRecv},
 };
 
 void addSerialPrims() {
