@@ -576,17 +576,52 @@ method showDefinition Block {
 method deleteObsolete Block {
   pe = (findProjectEditor)
   if (isNil pe) { return }
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  if (notEmpty (allEntries finder)) {
+    if (not
+      (confirm
+	    (global 'page')
+	    nil
+        (join
+          'This block is still being used in '
+          (count (allEntries finder))
+          ' scripts or functions.'
+          (newline)
+          (newline)
+          'Are you sure you want to remove this obsolete block definition?'
+        )
+	  )
+	) { return }
+  }
+
   remove (blockSpecs (project (scripter pe))) (primName expression)
   updateBlocks (scripter pe)
 }
 
 method deleteBlockDefinition Block {
-  if (not (confirm (global 'page') nil
-  	'Are you sure you want to remove this block definition?')) {
-		return
-  }
   pe = (findProjectEditor)
   if (isNil pe) { return }
+
+  confirmation = 'Are you sure you want to remove this block definition?'
+
+  // find out whether block is being used in the project
+  finder = (initialize (new 'BlockFinder') (project (scripter pe)) this)
+  find finder 'users'
+  if (notEmpty (allEntries finder)) {
+    confirmation = (join
+      'This block is still being used in '
+      (count (allEntries finder))
+      ' scripts or functions.'
+	  (newline)
+	  (newline)
+	  confirmation
+	)
+  }
+
+  if (not (confirm (global 'page') nil confirmation)) { return }
+
   deleteFunction (scripter pe) (primName expression)
 }
 
