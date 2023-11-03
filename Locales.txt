@@ -127,6 +127,8 @@ or _
 
 _ is a _
 
+convert _ to _
+
 boolean
 
 number

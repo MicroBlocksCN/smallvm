@@ -188,6 +188,9 @@ or _
 _ is a _
 _ 的类型是 _
 
+convert _ to _
+把 _ 转化为 _
+
 boolean
 布尔
 
