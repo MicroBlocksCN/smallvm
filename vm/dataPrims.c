@@ -987,7 +987,7 @@ static OBJ singletonByteArray(OBJ anObj) {
 	int byteValue = 0;
 	if (isInt(anObj)) {
 		byteValue = obj2int(anObj);
-		if ((byteValue < 0) || (byteValue > 255) return fail(byteArrayStoreError);
+		if ((byteValue < 0) || (byteValue > 255)) return fail(byteArrayStoreError);
 	} else {
 		// Convert boolean to byte value.
 		byteValue = (anObj == falseObj) ? 0 : 1;
