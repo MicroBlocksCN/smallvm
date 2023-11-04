@@ -1071,6 +1071,143 @@ static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
 
 #endif // BLE_PRIMS
 
+#if defined(OCTO_PRIMS)
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEAdvertisedDevice.h>
+#include <set>
+#include <string>
+
+BLEServer* pServer = NULL;
+BLEAdvertising* pAdvertising = NULL;
+BLEScan* pBLEScan;
+
+const char* octoUUIDs[] = {
+  "2540b6b0-0002-4538-bcd7-7ecfb51297c1", // iOS
+  "2540b6b0-0001-4538-bcd7-7ecfb51297c1" // Android
+};
+int shape_id;
+int scanTime=1; // Compared with 5, 1 can improve the response speed of iPhone OctoStudio
+bool hasOctoMessage = false;
+std::set<std::string> ReceivedOctoDatas;
+
+static OBJ primOctoGetBLEInitialized(int argCount, OBJ *args) {
+  if (BLEDevice::getInitialized()) {
+	return trueObj;
+  } else {
+	return falseObj;
+  }
+}
+class OctoAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice advertisedDevice) {
+    if (advertisedDevice.haveServiceUUID()) {
+      // iOS
+      BLEUUID serviceUUID = advertisedDevice.getServiceUUID();
+      std::string UUID_string = serviceUUID.toString().c_str();
+      if (UUID_string == octoUUIDs[0]) {
+        std::string deviceName = advertisedDevice.getName();
+		if (ReceivedOctoDatas.find(deviceName) == ReceivedOctoDatas.end()) {
+			shape_id = deviceName.back() - '0';
+			hasOctoMessage = true;
+			ReceivedOctoDatas.insert(deviceName);
+        }
+      }
+    }
+
+    if (advertisedDevice.haveServiceData()) {
+      // Android
+      std::string serviceData = advertisedDevice.getServiceData();
+      BLEUUID serviceUUID = advertisedDevice.getServiceDataUUID();
+      std::string UUID_string = serviceUUID.toString().c_str();
+      if (UUID_string == octoUUIDs[1]) {
+		if (ReceivedOctoDatas.find(serviceData) == ReceivedOctoDatas.end()) {
+			shape_id = serviceData[7];
+			hasOctoMessage = true;
+			ReceivedOctoDatas.insert(serviceData);
+        }
+      }
+    }
+  }
+};
+
+static OBJ primOctoInitBLE(int argCount, OBJ *args) {
+  outputString("primInitBLE...");
+  BLEDevice::init("MicroBlocks OctoStudio");
+
+  pBLEScan = BLEDevice::getScan(); //create new scan
+  pBLEScan->setAdvertisedDeviceCallbacks(new OctoAdvertisedDeviceCallbacks());
+  pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
+  pBLEScan->setInterval(100);
+  pBLEScan->setWindow(99);  // less or equal setInterval value
+
+  pServer = BLEDevice::createServer();
+  pAdvertising = pServer->getAdvertising();
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+  ReceivedOctoDatas.clear();
+  return falseObj;
+}
+
+static OBJ primOctoDeinitBLE(int argCount, OBJ *args) {
+	ReceivedOctoDatas.clear();
+	BLEDevice::deinit(false);
+	return falseObj;
+}
+
+static OBJ primOctoStartAdvertising(int argCount, OBJ *args) {
+	pAdvertising->start();
+	return falseObj;
+}
+
+static OBJ primOctoStopAdvertising(int argCount, OBJ *args) {
+	pAdvertising->stop();
+	return falseObj;
+}
+
+static OBJ primOctoGetOctoShapeId(int argCount, OBJ *args) {
+	if (hasOctoMessage) {
+		hasOctoMessage = false;
+		return int2obj(shape_id);
+	} else {
+		return falseObj;
+	}
+}
+
+void EndofBLEScan(BLEScanResults scanResults) {
+	outputString("EndofBLEScan, restart...");
+	pBLEScan->clearResults();
+    pBLEScan->start(scanTime, EndofBLEScan, false);
+}
+
+static OBJ primOctoStartScanning(int argCount, OBJ *args) {
+	pBLEScan->start(scanTime, EndofBLEScan, false);
+	return falseObj;
+}
+
+static OBJ primOctoStopScanning(int argCount, OBJ *args) {
+  pBLEScan->stop();
+  pBLEScan->clearResults();
+  return falseObj;
+}
+
+static OBJ primOctoSetAdvertisementData(int argCount, OBJ *args) {
+  uint8 *service_data = (uint8 *) &FIELD(args[0], 0);
+  BLEAdvertisementData advertisementData = BLEAdvertisementData();
+  // 13-byte service data. Mimic Android phones
+  advertisementData.setServiceData(BLEUUID(octoUUIDs[1]), std::string((char*)service_data, 13));
+  pAdvertising->setAdvertisementData(advertisementData);
+  return falseObj;
+}
+
+static OBJ primOctoSetBLEScan(int argCount, OBJ *args) {
+	pBLEScan->setInterval(obj2int(args[0]));
+    pBLEScan->setWindow(obj2int(args[1]));
+	scanTime = obj2int(args[2]);
+	return falseObj;
+}
+
+#endif // OCTO_PRIMS
+
 // Experimental! Optional ESP Now support (compile with -D ESP_NOW_PRIMS)
 // Code provided by Wenji Wu
 
@@ -1176,6 +1313,19 @@ static PrimEntry entries[] = {
 	{"BLE_UART_LastEvent", primBLE_UART_LastEvent},
 	{"BLE_UART_Write", primBLE_UART_Write},
 	{"StartAdvertisingAndReconnectLoop", primStartAdvertisingAndReconnectLoop},
+  #endif
+
+  #if defined(OCTO_PRIMS)
+	{"OctoGetBLEInitialized", primOctoGetBLEInitialized},
+	{"OctoInitBLE", primOctoInitBLE},
+	{"OctoDeinitBLE", primOctoDeinitBLE},
+	{"OctoStartAdvertising", primOctoStartAdvertising},
+	{"OctoStopAdvertising", primOctoStopAdvertising},
+	{"OctoStartScanning", primOctoStartScanning},
+	{"OctoStopScanning", primOctoStopScanning},
+	{"OctoSetAdvertisementData", primOctoSetAdvertisementData},
+	{"OctoGetOctoShapeId", primOctoGetOctoShapeId},
+	{"OctoSetBLEScan", primOctoSetBLEScan}, // for debugging
   #endif
 
   #if defined(ESP_NOW_PRIMS)
