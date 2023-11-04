@@ -58,7 +58,11 @@ to '_shape_map' {
   return ('[data:makeList]' ('[data:makeList]' 'circle' 0) ('[data:makeList]' 'square' 1) ('[data:makeList]' 'star' 2) ('[data:makeList]' 'heart' 3) ('[data:makeList]' 'triangle' 4))
 }
 
-to 'beam to phones' shape duration {
+to 'beam to phones' shape optionalDuration {
+  local 'duration' 200
+  if ((pushArgCount) > 1) {
+    duration = optionalDuration
+  }
   if (callCustomReporter '[net:OctoGetBLEInitialized]') {
     if (_OctoAdvertising == 1) {
       sayIt 'waiting...'
