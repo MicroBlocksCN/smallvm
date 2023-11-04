@@ -1081,6 +1081,7 @@ static OBJ primBLE_UART_Write(int argCount, OBJ *args) {
 BLEServer* pServer = NULL;
 BLEAdvertising* pAdvertising = NULL;
 BLEScan* pBLEScan;
+bool BLEScanning = false;
 
 const char* octoUUIDs[] = {
   "2540b6b0-0002-4538-bcd7-7ecfb51297c1", // iOS
@@ -1180,14 +1181,24 @@ void EndofBLEScan(BLEScanResults scanResults) {
 }
 
 static OBJ primOctoStartScanning(int argCount, OBJ *args) {
+	BLEScanning = true;
 	pBLEScan->start(scanTime, EndofBLEScan, false);
 	return falseObj;
 }
 
 static OBJ primOctoStopScanning(int argCount, OBJ *args) {
   pBLEScan->stop();
+  BLEScanning = false;
   pBLEScan->clearResults();
   return falseObj;
+}
+
+static OBJ primOctoScanning(int argCount, OBJ *args) {
+  if (BLEScanning) {
+	return trueObj;
+  } else {
+	return falseObj;
+  }
 }
 
 static OBJ primOctoSetAdvertisementData(int argCount, OBJ *args) {
@@ -1323,6 +1334,8 @@ static PrimEntry entries[] = {
 	{"OctoStopAdvertising", primOctoStopAdvertising},
 	{"OctoStartScanning", primOctoStartScanning},
 	{"OctoStopScanning", primOctoStopScanning},
+	{"OctoScanning", primOctoScanning},
+	
 	{"OctoSetAdvertisementData", primOctoSetAdvertisementData},
 	{"OctoGetOctoShapeId", primOctoGetOctoShapeId},
 	{"OctoSetBLEScan", primOctoSetBLEScan}, // for debugging

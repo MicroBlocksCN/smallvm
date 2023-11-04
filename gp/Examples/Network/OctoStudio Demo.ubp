@@ -2,9 +2,9 @@ module main
 author wwj
 version 1 0 
 description ''
-variables count _OctoScanning _OctoAdvertising shape 
+variables count _OctoAdvertising shape 
 
-script 306 40 {
+script 296 40 {
 comment 'OctoStudio on Android phones is not very stable. 
 After running for some time, 
 the beam and wait for blocks might not work. 
@@ -12,7 +12,7 @@ If you''re not receiving messages,
 try restarting the OctoStudio  APP.'
 }
 
-script 56 59 {
+script 46 59 {
 whenStarted
 'Octo start'
 count = 0
@@ -26,17 +26,17 @@ forever {
 }
 }
 
-script 342 193 {
+script 332 193 {
 'beam to phones' 'heart'
 }
 
 
 module OctoStudio Comm
 author wwj718
-version 1 1 
+version 1 2 
 choices shape_choices triangle circle square heart star 
 description 'Communicate with OctoStudio (https://octostudio.org/)'
-variables _OctoScanning _OctoAdvertising 
+variables _OctoAdvertising 
 
   spec ' ' 'Octo start' 'Octo start'
   spec ' ' 'beam to phones' 'Octo beam to phones _ : duration _ ms' 'menu.shape_choices num' 'heart' 200
@@ -59,15 +59,11 @@ to 'Octo receive beam' {
 
 to 'Octo start' {
   if (not (callCustomReporter '[net:OctoGetBLEInitialized]')) {callCustomCommand '[net:OctoInitBLE]'}
-  if (_OctoScanning == 0) {callCustomCommand '[net:OctoStartScanning]'}
-  _OctoScanning = 1
+  if (not (callCustomReporter '[net:OctoScanning]')) {callCustomCommand '[net:OctoStartScanning]'}
 }
 
 to 'Octo stop' {
-  if (_OctoScanning == 1) {
-    callCustomCommand '[net:OctoStopScanning]'
-    _OctoScanning = 0
-  }
+  if (callCustomReporter '[net:OctoScanning]') {callCustomCommand '[net:OctoStopScanning]'}
 }
 
 to '_Octo deinit' {
