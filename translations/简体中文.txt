@@ -1937,6 +1937,9 @@ Octo 启动
 Octo beam to phones _
 Octo 给手机发信号 _
 
+duration _ ms
+持续 _ 毫秒
+
 Octo receive beam
 Octo 收到的信号
 

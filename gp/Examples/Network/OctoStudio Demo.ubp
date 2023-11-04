@@ -2,7 +2,7 @@ module main
 author wwj
 version 1 0 
 description ''
-variables count _OctoScanning shape 
+variables count _OctoScanning _OctoAdvertising shape 
 
 script 306 40 {
 comment 'OctoStudio on Android phones is not very stable. 
@@ -33,13 +33,13 @@ script 342 193 {
 
 module OctoStudio Comm
 author wwj718
-version 1 0 
+version 1 1 
 choices shape_choices triangle circle square heart star 
 description 'Communicate with OctoStudio (https://octostudio.org/)'
-variables _OctoScanning 
+variables _OctoScanning _OctoAdvertising 
 
   spec ' ' 'Octo start' 'Octo start'
-  spec ' ' 'beam to phones' 'Octo beam to phones _' 'menu.shape_choices' 'heart'
+  spec ' ' 'beam to phones' 'Octo beam to phones _ : duration _ ms' 'menu.shape_choices num' 'heart' 200
   spec 'r' 'Octo receive beam' 'Octo receive beam'
   spec ' ' 'Octo stop' 'Octo stop'
   spec 'r' '_generate_full_shape_id' '_generate_full_shape_id shape _' 'auto' 'heart'
@@ -91,12 +91,19 @@ to '_shape_map' {
   return ('[data:makeList]' ('[data:makeList]' 'circle' 0) ('[data:makeList]' 'square' 1) ('[data:makeList]' 'star' 2) ('[data:makeList]' 'heart' 3) ('[data:makeList]' 'triangle' 4))
 }
 
-to 'beam to phones' shape {
+to 'beam to phones' shape duration {
   if (callCustomReporter '[net:OctoGetBLEInitialized]') {
+    if (_OctoAdvertising == 1) {
+      sayIt 'waiting...'
+      waitUntil (_OctoAdvertising == 0)
+      sayIt ''
+    }
+    _OctoAdvertising = 1
     callCustomCommand '[net:OctoSetAdvertisementData]' ('[data:makeList]' ('_generate_full_shape_id' shape))
     callCustomCommand '[net:OctoStartAdvertising]'
-    waitMillis 200
+    waitMillis duration
     callCustomCommand '[net:OctoStopAdvertising]'
+    _OctoAdvertising = 0
   } else {
     sayIt 'Please start Octo first'
   }
