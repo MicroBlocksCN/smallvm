@@ -1,0 +1,66 @@
+module 'Square Wave Chords' Output
+author MicroBlocks
+version 1 0 
+description 'Play square wave chords on three digital pins. It is recommended to mix them together through 4.7KΩ resistors.'
+variables '_digichord harmonies' '_digichord pins' 
+
+  spec ' ' 'digichord chord' 'play chord _ for _ ms' 'auto auto' 'aListOfMIDIkeys' 500
+  spec ' ' 'digichord set pins' 'set digital chord pins _ _ _' 'num num num' 4 5 6
+  space
+  spec ' ' '_digichord harmony 1' '_digichord harmony 1'
+  spec ' ' '_digichord harmony 2' '_digichord harmony 2'
+  spec ' ' '_digichord harmony 3' '_digichord harmony 3'
+  spec 'r' '_baseFreqForSemitone' '_baseFreqForSemitone _' 'num' 0
+
+to '_digichord harmony 1' {
+  repeatUntil ((v '_digichord harmonies') == 0) {
+    digitalWriteOp (at 1 (v '_digichord pins')) true
+    waitMicros (at 1 (v '_digichord harmonies'))
+    digitalWriteOp (at 1 (v '_digichord pins')) false
+    waitMicros (at 1 (v '_digichord harmonies'))
+  }
+}
+
+to '_digichord harmony 2' {
+  repeatUntil ((v '_digichord harmonies') == 0) {
+    digitalWriteOp (at 2 (v '_digichord pins')) true
+    waitMicros (at 2 (v '_digichord harmonies'))
+    digitalWriteOp (at 2 (v '_digichord pins')) false
+    waitMicros (at 2 (v '_digichord harmonies'))
+  }
+}
+
+to '_digichord harmony 3' {
+  repeatUntil ((v '_digichord harmonies') == 0) {
+    digitalWriteOp (at 3 (v '_digichord pins')) true
+    waitMicros (at 3 (v '_digichord harmonies'))
+    digitalWriteOp (at 3 (v '_digichord pins')) false
+    waitMicros (at 3 (v '_digichord harmonies'))
+  }
+}
+
+to '_baseFreqForSemitone' semitone {
+  if (_toneFrequencies == 0) {_toneFrequencies = ('[data:makeList]' 261626 277183 293665 311127 329628 349228 369994 391995 415305 440000 466164 493883 246942 277183 277183 311127 311127 349228 329628 369994 369994 415305 415305 466164 466164 523252)}
+  if (and (1 <= semitone) (semitone <= (size _toneFrequencies))) {
+    return (at semitone _toneFrequencies)
+  } else {
+    comment 'Bad note name; return 10 Hz'
+    return 10000
+  }
+}
+
+to 'digichord chord' chord ms {
+  local 'start' (millisOp)
+  '_digichord harmonies' = (newList 3)
+  for i 3 {
+    atPut i (v '_digichord harmonies') ((500000000 / ('_baseFreqForSemitone' (((at i chord) % 12) + 1))) - _toneLoopOverhead)
+    sendBroadcast ('[data:join]' '_digichord harmony ' i)
+  }
+  waitMillis (ms - ((millisOp) - start))
+  '_digichord harmonies' = 0
+}
+
+to 'digichord set pins' pin1 pin2 pin3 {
+  '_digichord pins' = ('[data:makeList]' pin1 pin2 pin3)
+}
+
