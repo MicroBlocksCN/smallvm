@@ -1,0 +1,78 @@
+module Chiptune Output
+author MicroBlocks
+version 1 0 
+description 'Play 1-bit drum sounds and other sound effects on regular digital pins, and 8-bit snares and cymbals on DAC pins, on boards that have them.
+
+It is recommended to mix all pin signals together through 4.7KΩ resistors and into the positive lead of the audio line. Ground should also pass through a 4.7KΩ resistor and be connected to the negative lead of the audio line.'
+
+  spec ' ' 'ct kick' 'kick for _ ms on pin _' 'auto auto' 250 4
+  spec ' ' 'ct tom' 'tom for _ ms pitch shifted by _ on pin _' 'auto auto auto' 250 1000 4
+  space
+  spec ' ' 'ct laser' 'laser for _ ms with frequency _ speed _ on pin _' 'auto auto auto auto' 500 500 5 4
+  spec ' ' 'ct noise' 'noise for _ ms pitch shifted by _ on pin _' 'auto auto auto' 500 1000 4
+  space
+  spec ' ' 'ct fadenoise' 'fade noise for _ ms pitch shifted by _ on DAC pin _' 'auto auto auto' 1000 800 10
+  spec ' ' 'ct snare' 'snare for _ ms on DAC pin _' 'auto auto' 200 10
+  spec ' ' 'ct hihat' 'hihat for _ ms on DAC pin _' 'auto auto' 250 10
+
+to 'ct fadenoise' ms delay pin {
+  local 'start' (millisOp)
+  for i ('[data:range]' 10000 0 (10000 / ms)) {
+    analogWriteOp pin (i / 10)
+    waitMicros (random 0 delay)
+    analogWriteOp pin 0
+    waitMicros (random 0 delay)
+    if (((millisOp) - start) >= ms) {
+      return ''
+    }
+  }
+}
+
+to 'ct hihat' ms pin {
+  'ct fadenoise' ms 250 pin
+}
+
+to 'ct kick' ms pin {
+  for i ('[data:range]' 1 10000 (100000 / ms)) {
+    digitalWriteOp pin true
+    waitMicros i
+    digitalWriteOp pin false
+    waitMicros i
+  }
+}
+
+to 'ct laser' ms mod speed pin {
+  local 'i' 0
+  local 'start' (millisOp)
+  repeatUntil (((millisOp) - start) >= ms) {
+    digitalWriteOp pin true
+    waitMicros (i % mod)
+    digitalWriteOp pin false
+    waitMicros (i % mod)
+    i += speed
+  }
+}
+
+to 'ct noise' ms delay pin {
+  local 'start' (millisOp)
+  repeatUntil (((millisOp) - start) >= ms) {
+    digitalWriteOp pin true
+    waitMicros (random 0 delay)
+    digitalWriteOp pin false
+    waitMicros (random 0 delay)
+  }
+}
+
+to 'ct snare' ms pin {
+  'ct fadenoise' ms 1000 pin 
+}
+
+to 'ct tom' ms delay pin {
+  for i ('[data:range]' 1 10000 ((50000 + (10 * delay)) / ms)) {
+    digitalWriteOp pin true
+    waitMicros i
+    digitalWriteOp pin false
+    waitMicros delay
+  }
+}
+
