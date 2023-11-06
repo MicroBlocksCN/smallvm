@@ -4,7 +4,7 @@ version 1 0
 description ''
 variables count _OctoAdvertising shape 
 
-script 296 40 {
+script 306 40 {
 comment 'OctoStudio on Android phones is not very stable. 
 After running for some time, 
 the beam and wait for blocks might not work. 
@@ -12,7 +12,7 @@ If you''re not receiving messages,
 try restarting the OctoStudio  APP.'
 }
 
-script 46 59 {
+script 56 59 {
 whenStarted
 'Octo start'
 count = 0
@@ -26,14 +26,14 @@ forever {
 }
 }
 
-script 332 193 {
+script 400 196 {
 'beam to phones' 'heart'
 }
 
 
 module OctoStudio Comm
 author wwj718
-version 1 2 
+version 1 3 
 choices shape_choices triangle circle square heart star 
 description 'Communicate with OctoStudio (https://octostudio.org/)'
 variables _OctoAdvertising 
@@ -71,9 +71,19 @@ to '_Octo deinit' {
 }
 
 to '_generate_full_shape_id' shape_name {
-  local 'shape_id' -1
+  comment 'Mimic iOS, eg: ECA7059C00000001'
+  local 'full_shap_id' ('[data:makeList]')
+  repeat 8 {
+    '[data:addLast]' (at 'random' '0123456789ABCDEF') full_shap_id
+  }
   for s ('_shape_map') {
-    if ((at 1 s) == shape_name) {return ('[data:asByteArray]' ('[data:makeList]' (random 0 255) (random 0 255) (random 0 255) (random 0 255) 0 0 0 (at 2 s) 0 0 0 0 0))}
+    if ((at 1 s) == shape_name) {
+      repeat 7 {
+        '[data:addLast]' 0 full_shap_id
+      }
+      '[data:addLast]' (at 2 s) full_shap_id
+      return ('[data:joinStrings]' full_shap_id)
+    }
   }
   return 'This shape does not exist'
 }
@@ -99,7 +109,7 @@ to 'beam to phones' shape optionalDuration {
       sayIt ''
     }
     _OctoAdvertising = 1
-    callCustomCommand '[net:OctoSetAdvertisementData]' ('[data:makeList]' ('_generate_full_shape_id' shape))
+    callCustomCommand '[net:OctoSetDeviceName]' ('[data:makeList]' ('_generate_full_shape_id' shape))
     callCustomCommand '[net:OctoStartAdvertising]'
     waitMillis duration
     callCustomCommand '[net:OctoStopAdvertising]'
