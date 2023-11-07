@@ -2984,3 +2984,26 @@ method loggedData SmallRuntime howMany {
 	}
 	return result
 }
+
+// Install ESP firmware from URL
+
+method installESPFirmwareFromURL SmallRuntime {
+	defaultURL = ''
+	if ('databotxxx' == boardType) {
+		defaultURL = 'https://raw.githubusercontent.com/arbotics-llc/databot2.0_web_flash/main/Fw/databot2.0_V2.18.bin'
+	}
+	url = (trim (freshPrompt (global 'page') 'ESP32 firmware URL?' defaultURL))
+	if ('' == url) { return }
+
+	if ('Browser' == (platform)) {
+		disconnected = true
+		flasherPort = port
+		port = nil
+	} else {
+		setPort this 'disconnect'
+		flasherPort = nil
+	}
+	flasher = (newFlasher boardName portName false false)
+	addPart (global 'page') (spinner flasher)
+	installFromURL flasher flasherPort url
+}

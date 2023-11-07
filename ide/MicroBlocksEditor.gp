@@ -1165,6 +1165,7 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 // Commented out for now since all precompiled VM's are already included in IDE
 //	addItem menu 'download and install latest VM' (action 'installVM' (smallRuntime) false true) // do not wipe flash, download latest VM from server
 	addItem menu 'erase flash and update firmware on ESP board' (action 'installVM' (smallRuntime) true false) // wipe flash first, do not download VM from server
+	addItem menu 'install ESP firmware from URL' (action 'installESPFirmwareFromURL' (smallRuntime)) // wipe flash first, do not download VM from server
 	if ('Browser' != (platform)) {
 	  addLine menu
 	  if (not (isRunning httpServer)) {
@@ -1201,6 +1202,13 @@ if (contains (commandLine) '--allowMorphMenu') { // xxx testing (used by John)
 	}
   }
   return menu
+}
+
+method downloadTest MicroBlocksEditor {
+  fileName = (trim (freshPrompt (global 'page') 'URL?' 'vm_esp32.bin'))
+  t = (newTimer)
+  data = (httpGetBinary 'microblocks.fun' (join '/downloads/pilot/vm/' fileName))
+  print 'got' (byteCount data) 'bytes in' (msecs t) 'msecs'
 }
 
 method hasHelpEntryFor MicroBlocksEditor aBlock {
