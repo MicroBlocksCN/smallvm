@@ -347,7 +347,7 @@ method bytesAsHex ESPTool bytes {
 
 // Installing Firmware
 
-method installFirmware ESPTool boardName eraseFlag downloadFlag {
+method installFirmware ESPTool boardName eraseFlag downloadFlag vmData {
 	// Install the firmware for the current board, erasing Flash if optional eraseFlag is true.
 	// If optional downloadFlag is true, download the latest version from the server.
 	// Assume the board is connected.
@@ -355,7 +355,7 @@ method installFirmware ESPTool boardName eraseFlag downloadFlag {
 	if (isNil eraseFlag) { eraseFlag = false }
 	if (isNil downloadFlag) { downloadFlag = false }
 
-	vmData = (readVMData this boardName downloadFlag)
+	if (isNil vmData) { vmData = (readVMData this boardName downloadFlag) }
 	if (isNil vmData) { return }
 
 	if (isOneOf boardName 'ESP8266' 'D1-Mini') {
