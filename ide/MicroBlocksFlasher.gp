@@ -84,7 +84,7 @@ method installFromURL MicroBlocksFlasher serialPortID url {
 	spinner = (newSpinner (action 'espToolStatus' this) (action 'espToolDone' this))
 	setTask spinner (launch
 		(global 'page')
-		(action 'installFirmware' espTool '' false false data))
+		(action 'installFirmware' espTool url false false data))
 	addPart (global 'page') spinner
 }
 
