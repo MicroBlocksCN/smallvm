@@ -7,7 +7,7 @@
 // MicroBlocksFlasher.gp - An interface to internal ESPTool to flash Espressif boards
 // Bernat Romagosa, September 2019
 
-defineClass MicroBlocksFlasher spinner boardName portName eraseFlag downloadFlag espTool socket fetchID downloadProgress
+defineClass MicroBlocksFlasher spinner boardName portName eraseFlag downloadFlag espTool socket downloadProgress
 
 to newFlasher board serialPortName eraseFlashFlag downloadLatestFlag {
 	return (initialize (new 'MicroBlocksFlasher') board serialPortName eraseFlashFlag downloadLatestFlag)
@@ -58,8 +58,6 @@ method startFlasher MicroBlocksFlasher serialPortID {
 // Downloading from URL
 
 method installFromURL MicroBlocksFlasher serialPortID url {
-url = 'https://microblocks.fun/downloads/pilot/vm/vm_esp32.bin'
-
 	if ('Browser' == (platform)) {
 		data = (downloadURLInBrowser this url)
 	} else {
@@ -68,6 +66,8 @@ url = 'https://microblocks.fun/downloads/pilot/vm/vm_esp32.bin'
 	if ((byteCount data) == 0) { return }
 
 	espTool = (newESPTool)
+	if (notNil (findSubstring 'databot2.0_' url)) { setAllInOneBinary espTool true }
+
 	if (notNil serialPortID) {
 		setPort espTool serialPortID
 		ok = true
@@ -92,9 +92,9 @@ url = 'https://microblocks.fun/downloads/pilot/vm/vm_esp32.bin'
 
 method downloadProgress MicroBlocksFlasher actionLabel {
 	if ('Browser' == (platform)) {
-		return 'Downloading...'
+		return (localized 'Downloading...')
 	} else {
-		return (join '' downloadProgress '%' )
+		return (join (localized 'Downloading...') ' ' downloadProgress '%' )
 	}
 }
 

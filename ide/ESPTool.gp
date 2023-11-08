@@ -8,7 +8,7 @@
 // See https://github.com/espressif/esptool/wiki/Serial-Protocol#reading-flash
 // John Maloney, September, 2019
 
-defineClass ESPTool port recvBuf closeWhenDone status success
+defineClass ESPTool port recvBuf closeWhenDone status success allInOneBinary
 
 to newESPTool { return (initialize (new 'ESPTool')) }
 
@@ -18,11 +18,14 @@ method initialize ESPTool {
 	recvBuf = (newBinaryData)
 	closeWhenDone = true
 	success = false
+	allInOneBinary = false
 	return this
 }
 
 method status ESPTool { return status } // return a status/progress string
 method success ESPTool { return success } // return true if upload was successful
+
+method setAllInOneBinary ESPTool aBoolean { allInOneBinary = aBoolean }
 
 // Serial Port
 
@@ -446,6 +449,11 @@ method uploadESP32VM ESPTool vmData eraseFlag {
 	if (not ok) { return false }
 
 	if eraseFlag { eraseFlash this }
+
+	if allInOneBinary {
+		uploadCompressed this 0 vmData // binary includes all subparts and loads at address 0
+		return true
+	}
 
 	data = (readEmbeddedFile (join 'esp32/bootloader_dio_40m.bin') true)
 	uploadCompressed this (hex '1000') data
