@@ -97,7 +97,7 @@ to makerport_setAudioSource src {
 
 to makerport_timeAveragedLevel pin timeSample {
   if ((size timeAverages) == 0) {timeAverages = (newList 32 0)}
-  average = ('_compute time average' pin timeSample (at pin timeAverages))
+  average = ('_makerport_compute_time_average' pin timeSample (at pin timeAverages))
   if ((at pin timeAverages) == 0) {
     atPut pin timeAverages average
     average = 0
