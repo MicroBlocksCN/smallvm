@@ -1,0 +1,129 @@
+module 'Qiboshi-AIoT-Kit'
+author 'Qiboshi Tech.'
+version 1 0 
+depends 'Temperature Humidity (DHT11, DHT22)' 'OLED Graphics' 
+description ''
+variables _qak_pin_redled _qak_pin_ht _qak_pin_button _qak_pin_ir_rx _qak_pin_buzzer _qak_pin_adj _qak_pin_rgbled _qak_pin_rgbled2 
+
+  spec ' ' '_init_pins' '_init_pins'
+  spec ' ' '关闭红色LED' '关闭红色LED'
+  spec ' ' '初始化显示屏' '初始化显示屏'
+  spec 'r' '按钮按下' '按钮按下'
+  spec 'r' '温度值' '温度值'
+  spec 'r' '湿度值' '湿度值'
+  spec ' ' '点亮红色LED' '点亮红色LED'
+  spec ' ' '在第y行第x列处写英文xxx' '在第 _ 行第 _ 列写英文 _' 'auto auto str' 1 2 'text'
+  spec 'r' '字节数组转字符串' '字节数组转字符串 _' 'auto' '10'
+  spec ' ' '开启语音识别' '连接语音识别模块'
+  spec 'r' '读取命令' '接收语音命令'
+  spec ' ' '清空显示屏' '清空显示屏'
+  spec ' ' '关闭RGB LED灯' '关闭RGB LED灯'
+  spec ' ' '设置RGB LED灯颜色' '设置RGB LED灯颜色 _' 'color'
+  spec 'r' '光敏传感器（0-100）%' '光敏传感器（0-100）%'
+  spec ' ' '发送语音命令' '发送语音命令 _' 'auto' ''
+  spec 'r' '旋钮控制' '电位器'
+
+to '_init_pins' {
+  _qak_pin_redled = 19
+  _qak_pin_ht = 18
+  _qak_pin_button = 23
+  _qak_pin_ir_rx = 33
+  _qak_pin_buzzer = 32
+  _qak_pin_adj = 36
+  _qak_pin_rgbled = 2
+}
+
+to '光敏传感器（0-100）%' {
+  return ('[misc:rescale]' (analogReadOp 39) 0 1023 0 100)
+}
+
+to '关闭RGB LED灯' {
+  clearNeoPixels
+  '_init_pins'
+  '[display:neoPixelSetPin]' _qak_pin_rgbled false
+  '[display:neoPixelSend]' 0
+  waitMillis 1
+}
+
+to '关闭红色LED' {
+  '_init_pins'
+  digitalWriteOp _qak_pin_redled false
+}
+
+to '初始化显示屏' {
+  OLEDInit_I2C 'OLED_0.96in' '3C' 0 false
+  OLEDclear
+}
+
+to '发送语音命令' cmd {
+  '[serial:write]' cmd
+  waitMillis 200
+}
+
+to '在第y行第x列处写英文xxx' row column words {
+  OLEDwrite words (10 * (column - 1)) (10 * (row - 1)) false
+}
+
+to '字节数组转字符串' barray {
+  local 'bs' ''
+  for b barray {
+    bs = ('[data:join]' bs ('[data:unicodeString]' b))
+  }
+  return bs
+}
+
+to '开启语音识别' {
+  '[serial:open]' 9600
+  waitMillis 200
+}
+
+to '按钮按下' {
+  '_init_pins'
+  return (not (digitalReadOp _qak_pin_button))
+}
+
+to '旋钮控制' {
+  '_init_pins'
+  return (analogReadOp _qak_pin_adj)
+}
+
+to '清空显示屏' {
+  OLEDclear
+}
+
+to '温度值' {
+  '_init_pins'
+  return (temperature_DHT11 _qak_pin_ht)
+}
+
+to '湿度值' {
+  '_init_pins'
+  return (humidity_DHT11 _qak_pin_ht)
+}
+
+to '点亮红色LED' {
+  '_init_pins'
+  digitalWriteOp _qak_pin_redled true
+}
+
+to '设置RGB LED灯颜色' color {
+  '_init_pins'
+  '[display:neoPixelSetPin]' _qak_pin_rgbled false
+  '[display:neoPixelSend]' color
+  waitMillis 1
+}
+
+to '读取命令' {
+  local 'ss' ''
+  forever {
+    local 'ck' ('[serial:read]')
+    if ((size ck) > 0) {
+      ss = ('[data:join]' ss '' ('字节数组转字符串' ck))
+      comment '旗博士语音识别模块发给esp32的命令长度固定为3'
+      if ((size ss) >= 3) {
+        return ss
+      }
+    }
+  }
+}
+
