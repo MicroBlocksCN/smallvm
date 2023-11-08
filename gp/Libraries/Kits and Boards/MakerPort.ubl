@@ -16,6 +16,20 @@ variables _makerport_microSDInserted
   spec ' ' 'makerport_typeString' 'type _ to computer' 'str' 'Hello from MakerPort!'
   space
   spec 'r' 'makerport_mp3_hasCard' 'mp3 player has Flash card'
+  space
+  spec 'r' 'makerport_timeAveragedLevel' 'time average of pin _ with time samples _' 'auto auto' 1 64
+  spec 'r' '_makerport_compute_time_average' '_compute time average _ _ _' 'auto auto auto' 1 64 0
+
+to '_makerport_compute_time_average' pin timeSample timeAverage {
+  samples = 0
+  average = 0
+  timeToFinish = ((millisOp) + timeSample)
+  repeatUntil ((millisOp) >= timeToFinish) {
+    samples += 1
+    average += (absoluteValue ((analogReadOp pin) - timeAverage))
+  }
+  return (average / (maximum samples 1))
+}
 
 to makerport_beep freq msecs volume {
   if (freq < 1) {return 0}
@@ -79,6 +93,16 @@ to makerport_setAllLEDs bool {
 
 to makerport_setAudioSource src {
   digitalWriteOp 19 (src != 'MP3')
+}
+
+to makerport_timeAveragedLevel pin timeSample {
+  if ((size timeAverages) == 0) {timeAverages = (newList 32 0)}
+  average = ('_compute time average' pin timeSample (at pin timeAverages))
+  if ((at pin timeAverages) == 0) {
+    atPut pin timeAverages average
+    average = 0
+  }
+  return average
 }
 
 to makerport_typeString s {
