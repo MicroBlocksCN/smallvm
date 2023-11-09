@@ -2990,7 +2990,7 @@ method loggedData SmallRuntime howMany {
 method installESPFirmwareFromURL SmallRuntime {
 	defaultURL = ''
 	if ('Databot' == boardType) {
-		defaultURL = 'http://microblocks.fun/downloads/databot/databot2.0_V2.8.bin'
+		defaultURL = 'http://microblocks.fun/downloads/databot/databot2.0_V2.18.bin'
 	}
 	url = (trim (freshPrompt (global 'page') 'ESP32 firmware URL?' defaultURL))
 	if ('' == url) { return }
