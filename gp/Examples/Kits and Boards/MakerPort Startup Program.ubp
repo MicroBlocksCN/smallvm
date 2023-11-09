@@ -2,7 +2,7 @@ module main
 author 'Roger Wagner'
 version 1 1 
 description ''
-variables CharacterList CharacterNames last_state TPin KeyboardOn folder IRCode Servo1Angle Servo2Angle MicroSDInserted IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList UltraSonicPresent NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn MenuEnableOn MicrophoneConnected Mp3Volume ToneVolume PrevVolume MyFolderPresent TimeStart MyFolder 
+variables CharacterList CharacterNames TPin KeyboardOn folder MicroSDInserted IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn MenuEnableOn MicrophoneConnected Mp3Volume ToneVolume PrevVolume MyFolderPresent TimeStart MyFolder 
 
   spec ' ' 'Initialize lists' 'Initialize lists'
   spec ' ' 'NeoPixel initialize' 'NeoPixel initialize'
@@ -149,7 +149,7 @@ to MenuAction4 {
   for i (8 * 10) {
     CharPosn = ('[misc:rescale]' i 1 (8 * 10) 6 16)
     LCD1602_write_field '.' 1 CharPosn CharPosn
-    VolLevel = (timeAveragedLevel 13 125)
+    VolLevel = (makerport_timeAveragedLevel 13 125)
     setServoAngle 16 ('[misc:rescale]' VolLevel 0 250 0 90)
     LCD1602_write_field ('[data:join]' 'Vol:' VolLevel) 2 10 16
   }
@@ -173,11 +173,11 @@ to MenuAction6 {
 to MicrophoneDetect {
   MicrophoneConnected = (booleanConstant false)
   comment '1st sample to calibrate, ignore'
-  PrevVolume = (timeAveragedLevel 13 25)
+  PrevVolume = (makerport_timeAveragedLevel 13 25)
   repeat 10 {
-    PrevVolume = (timeAveragedLevel 13 25)
+    PrevVolume = (makerport_timeAveragedLevel 13 25)
     printIt PrevVolume
-    if (10 < (absoluteValue (PrevVolume - (timeAveragedLevel 13 25)))) {
+    if (10 < (absoluteValue (PrevVolume - (makerport_timeAveragedLevel 13 25)))) {
       comment 'difference > threshold?'
       MicrophoneConnected = (booleanConstant true)
       return MicrophoneConnected
@@ -193,7 +193,7 @@ to 'NeoPixel initialize' {
   }
 }
 
-script 56 50 {
+script 60 54 {
 whenStarted
 KeyboardOn = (booleanConstant true)
 MakerPortSpeakerOn = (booleanConstant true)
@@ -204,7 +204,7 @@ MenuEnableOn = (booleanConstant true)
 PreviousPinTouched = 0
 MenuNumber = 0
 Mp3Volume = 30
-ToneVolume = 5
+ToneVolume = 1
 folder = 51
 MyFolder = 1
 'Initialize lists'
@@ -241,7 +241,7 @@ if MyFolderPresent {
 }
 }
 
-script 1060 50 {
+script 1064 54 {
 whenCondition (ir_code_received)
 local 'IRCodeRcvd' (ir_last_code)
 LCD1602_write ('[data:join]' 'IR code:' IRCodeRcvd) 1
@@ -292,26 +292,26 @@ if MakerPortSpeakerOn {
     }
     LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
   } else {
-    makerport_beep (at TPin ToneFreqList) 100 10
+    makerport_beep (at TPin ToneFreqList) 100 ToneVolume
   }
 }
 waitMillis 250
 makerport_setAllLEDs false
 }
 
-script 665 405 {
+script 669 409 {
 to 'MakerPort Setup' {}
 }
 
-script 662 1046 {
+script 666 1050 {
 to 'NeoPixel initialize' {}
 }
 
-script 50 1243 {
+script 54 1247 {
 to 'Initialize lists' {}
 }
 
-script 703 1394 {
+script 707 1398 {
 whenCondition (touch_release_event)
 local 'pin' (touch_last_released_pin)
 if KeyboardOn {
@@ -330,7 +330,7 @@ if (MenuNumber == 0) {
 }
 }
 
-script 50 1730 {
+script 54 1734 {
 whenCondition (touch_touch_event)
 local 'pin' (touch_last_touched_pin)
 if (pin != 11) {
@@ -355,7 +355,7 @@ if (MenuNumber == 0) {
     if MicroSDInserted {
       if (pin != 12) {mp3_playTrack pin folder}
     } else {
-      makerport_beep (at pin ToneFreqList) 100 10
+      makerport_beep (at pin ToneFreqList) 100 ToneVolume
     }
     if (and (pin == 12) MicroSDInserted) {
       folder += 1
@@ -370,35 +370,35 @@ if (MenuNumber == 0) {
 }
 }
 
-script 708 1855 {
+script 712 1859 {
 to MicrophoneDetect {}
 }
 
-script 939 2268 {
+script 943 2272 {
 to IsThereMyFolder {}
 }
 
-script 511 2292 {
+script 515 2296 {
 to MenuAction1 {}
 }
 
-script 517 2435 {
+script 521 2439 {
 to MenuAction2 {}
 }
 
-script 520 2739 {
+script 524 2743 {
 to MenuAction3 {}
 }
 
-script 57 2972 {
+script 61 2976 {
 to DoMenus {}
 }
 
-script 520 3246 {
+script 524 3250 {
 to MenuAction4 {}
 }
 
-script 519 3609 {
+script 523 3613 {
 to MenuAction5 {}
 }
 
@@ -974,7 +974,7 @@ variables _makerport_microSDInserted
 
   spec ' ' 'makerport_initialize' 'MakerPort initialize'
   space
-  spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs volume _ (0-10)' 'num num num' 440 100 5
+  spec ' ' 'makerport_beep' 'MakerPort tone _ Hz for _ msecs : volume _ (0-10)' 'num num num' 440 100 10
   spec ' ' 'makerport_setAudioSource' 'set MakerPort audio source to _' 'menu.makerport_audioSource' 'MP3'
   space
   spec ' ' 'makerport_setAllLEDs' 'set all MakerPort LEDs _' 'bool' false
@@ -982,12 +982,26 @@ variables _makerport_microSDInserted
   spec ' ' 'makerport_typeString' 'type _ to computer' 'str' 'Hello from MakerPort!'
   space
   spec 'r' 'makerport_mp3_hasCard' 'mp3 player has Flash card'
+  space
+  spec 'r' 'makerport_timeAveragedLevel' 'time average of pin _ with time samples _' 'auto auto' 1 64
+  spec 'r' '_makerport_compute_time_average' '_compute time average _ _ _' 'auto auto auto' 1 64 0
 
-to makerport_beep freq msecs volume {
+to '_makerport_compute_time_average' pin timeSample timeAverage {
+  samples = 0
+  average = 0
+  timeToFinish = ((millisOp) + timeSample)
+  repeatUntil ((millisOp) >= timeToFinish) {
+    samples += 1
+    average += (absoluteValue ((analogReadOp pin) - timeAverage))
+  }
+  return (average / (maximum samples 1))
+}
+
+to makerport_beep freq msecs optionalVolume {
   if (freq < 1) {return 0}
   local 'halfCycleTime' (500000 / freq)
   local 'cycles' ((500 * msecs) / halfCycleTime)
-  local 'amplitude' (50 * volume)
+  local 'amplitude' (50 * (argOrDefault 3 10))
   amplitude = (maximum 0 (minimum amplitude 1023))
   digitalWriteOp 19 true
   repeat cycles {
@@ -1045,6 +1059,16 @@ to makerport_setAllLEDs bool {
 
 to makerport_setAudioSource src {
   digitalWriteOp 19 (src != 'MP3')
+}
+
+to makerport_timeAveragedLevel pin timeSample {
+  if ((size timeAverages) == 0) {timeAverages = (newList 32 0)}
+  average = ('_makerport_compute_time_average' pin timeSample (at pin timeAverages))
+  if ((at pin timeAverages) == 0) {
+    atPut pin timeAverages average
+    average = 0
+  }
+  return average
 }
 
 to makerport_typeString s {
@@ -1478,36 +1502,5 @@ to touch_touch_event {
   }
   _touch_last_touched_pin = -1
   return (booleanConstant false)
-}
-
-
-module 'timeAveragedLevel.ubp'
-author unknown
-version 1 0 
-description ''
-variables samples average timeAverages timeToFinish 
-
-  spec 'r' '_compute time average' '_compute time average _ _ _' 'auto auto auto' 1 64 0
-  spec 'r' 'timeAveragedLevel' 'time average of pin _ with time samples _' 'auto auto' 1 64
-
-to '_compute time average' pin timeSample timeAverage {
-  samples = 0
-  average = 0
-  timeToFinish = ((millisOp) + timeSample)
-  repeatUntil ((millisOp) >= timeToFinish) {
-    samples += 1
-    average += (absoluteValue ((analogReadOp pin) - timeAverage))
-  }
-  return (average / (maximum samples 1))
-}
-
-to timeAveragedLevel pin timeSample {
-  if ((size timeAverages) == 0) {timeAverages = (newList 32 0)}
-  average = ('_compute time average' pin timeSample (at pin timeAverages))
-  if ((at pin timeAverages) == 0) {
-    atPut pin timeAverages average
-    average = 0
-  }
-  return average
 }
 
