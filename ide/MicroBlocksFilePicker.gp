@@ -280,6 +280,7 @@ method addIconButton MicroBlocksFilePicker x y iconName anAction label {
 	s = (join (toUpperCase (substring s 1 1)) (substring s 2))
 	label = s
   }
+  isChinese = ('简体中文' == (language (authoringSpecs)))
   scale = (global 'scale')
   iconBM = (call iconName (new 'MicroBlocksFilePickerIcons'))
 //  iconBM = (scaledIcon this iconName) // don't activate this until warpBitmap works in browsers
@@ -292,6 +293,9 @@ method addIconButton MicroBlocksFilePicker x y iconName anAction label {
   }
   if ('Browser' == (platform)) {
 	setFont 'Helvetica' (13 * scale)
+  }
+  if (and isChinese ('Win' == (platform))) {
+	setFont 'Arial Bold' (12 * scale)
   }
   labelX = (half ((width bm) - (stringWidth (localized label))))
   labelY = ((height bm) - (fontHeight))
