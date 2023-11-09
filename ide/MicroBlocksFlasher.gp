@@ -65,6 +65,22 @@ method installFromURL MicroBlocksFlasher serialPortID url {
 	}
 	if ((byteCount data) == 0) { return }
 
+    if (and ('Browser' == (platform)) (isNil serialPortID)) {
+        // must request a user gesture to open port in browser after long download
+        confirm (global 'page') nil (join (localized 'Open port?'))
+
+		timeout = 20000 // ten seconds
+        openSerialPort 'webserial' 115200
+		start = (msecsSinceStart)
+		while (and (not (isOpenSerialPort 1)) (((msecsSinceStart) - start) < timeout)) {
+			// do UI cycles until serial port is opened or timeout
+			doOneCycle (global 'page')
+			waitMSecs 10 // refresh screen
+		}
+
+        if (isOpenSerialPort 1) { serialPortID = 1 }
+    }
+
 	espTool = (newESPTool)
 	if (notNil (findSubstring 'databot2.0_' url)) { setAllInOneBinary espTool true }
 
@@ -111,16 +127,29 @@ method downloadCompleted MicroBlocksFlasher {
 }
 
 method downloadURLInBrowser MicroBlocksFlasher url {
+    if (beginsWith url 'http:') {
+        url = (join 'https:' (substring url 6))
+    }
+
 	fetchID = (startFetch url)
+	if (isNil fetchID) { return }
+
+	downloadProgress = 0
+	spinner = (newSpinner (action 'downloadProgress' this) (action 'downloadCompleted' this))
+	setStopAction spinner (action 'abortDownload' this)
+	addPart (global 'page') spinner
+
 	result = nil
 	while (and (notNil fetchID) (isNil result)) {
 		doOneCycle (global 'page')
-		waitMSecs 1
+		waitMSecs 10
 		result = (fetchResult fetchID)
 	}
 	if (or (isNil result) (false == result)) {
 		result = (newBinaryData)
 	}
+
+	removeFromOwner (morph spinner)
 	return result
 }
 
