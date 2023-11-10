@@ -1,21 +1,24 @@
-module cocoroboMotor Output
+module '未来板电机驱动板'
 author '邵悦'
 version 1 1 
-depends 'Sensing/Distance (HC-SR04)' 
-description 'Cocorobot 电机扩展板的4电机驱动
-PCA9865
-超声波
-巡线 默认左接16 右接17
+choices motorMenu A B C D 
+choices PosMenu left right 
+description '腾讯未来科技盒子配套未来板电机扩展板
+小车项目需要用的库
+PCA9865 控制芯片I2C控制 A B C D 4路电机
+超声波HC-SR04 触发16 接收17
+巡线 左接16 右接17
 '
-choices PosMenu left right
-variables _robotbitMicrosecsPerCycle 
-
+variables _robotbitMicrosecsPerCycle _sr04_last zeroCount 
 
   spec ' ' '电机初始化' '电机初始化'
-  spec ' ' '电机' '电机 _ 速度 _ （-100～100）' 'auto num' 'A' 10
-  spec 'r' '超声波测距(cm)' '超声波测距(cm) 触发 _ 回声 _' 'auto auto' 16 17
+  spec ' ' '电机全部停止' '电机全部停止'
+  spec ' ' '电机' '电机 _ 速度 _ （-100～100）' 'menu.motorMenu num' 'A' 60
+  spec ' ' '平滑调速' '平稳调速 初始速度 _ 目标速度 _ 耗时 _ （毫秒） 电机 _' 'auto auto auto menu.motorMenu' 0 100 1000 'A'
+  space
   spec 'r' '巡线传感器' '巡线传感器 _' 'menu.PosMenu' 'left'
   spec 'r' '巡线状态' '巡线状态 左在线 _ 右在线 _' 'bool bool' true true
+  spec 'r' 'distance (cm)' 'distance (cm) trigger _ echo _' 'num num' 16 17
   space
   spec ' ' '_cocoroboMotorAllOff' '_cocoroboMotorAllOff'
   spec ' ' '_setPWM2' '_setPWM2 _ _ _' 'auto auto auto' 1 0 2048
@@ -30,14 +33,7 @@ See the PCA9685 datasheet for technical details.'
 }
 
 to '_setPWM2' channel on off {
-  comment 'Set the on and off time of the given PWM channel.
-The I2C message is: <starting register address> <start time (2 bytes) <end time (2 bytes)>
-The start and stop times (range 0-4096) are sent least significant byte first.
-Usually the start time is zero and the end time determines the duty cycle.
-'
-  if (or (channel < 0) (channel > 15)) {
-    return 0
-  }
+  if (or (channel < 0) (channel > 15)) {return 0}
   local 'buf' ('[data:newByteArray]' 5)
   atPut 1 buf (6 + (4 * channel))
   atPut 2 buf (on & 255)
@@ -47,8 +43,34 @@ Usually the start time is zero and the end time determines the duty cycle.
   '[sensors:i2cWrite]' 64 buf
 }
 
+to 'distance (cm)' trig ech {
+  comment 'Contributed by Joan Guillén and Josep Ferràndiz'
+  digitalWriteOp trig false
+  waitMicros 2
+  digitalWriteOp trig true
+  waitMicros 50
+  digitalWriteOp trig false
+  local 'start' (microsOp)
+  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - start) > 23320))
+  waitUntil (or (digitalReadOp ech) (((microsOp) - start) > 23320))
+  if (((microsOp) - start) > 23320) {
+    comment 'Distance sensor not ready; return the last distance reading'
+    return _sr04_last
+  }
+  comment 'Pulse sent. Measure time until echo is detected.'
+  start = (microsOp)
+  waitUntil (or (not (digitalReadOp ech)) (((microsOp) - start) > 23320))
+  _sr04_last = ((10 * ((microsOp) - start)) / 583)
+  comment 'Leave some time for reverberations to die away.'
+  waitMillis 10
+  if (_sr04_last == 0) {
+    zeroCount += 1
+  }
+  return _sr04_last
+}
+
 to '巡线传感器' lr {
-  comment '在黑色线上返回0，否则在白色上返回1'
+  comment '检测到在黑线上返回0，否则返回1'
   local '_pin_line_left' 16
   local '_pin_line_right' 17
   if (lr == 'left') {
@@ -59,7 +81,16 @@ to '巡线传感器' lr {
 }
 
 to '巡线状态' leftSide rightSide {
+  comment '在线上是指检测到在黑线上'
   return (and (leftSide == (not ('巡线传感器' 'left'))) (rightSide == (not ('巡线传感器' 'right'))))
+}
+
+to '平滑调速' start target time motor {
+  comment '在指定时间内电机从起始速度分10档匀速达到设定速度'
+  for i ('[data:range]' start target 10) {
+    '电机' motor i
+    waitMillis (time / 10)
+  }
 }
 
 to '电机' foo speed {
@@ -108,9 +139,15 @@ to '电机' foo speed {
   }
 }
 
+to '电机全部停止' {
+  '电机' 'A' 0
+  '电机' 'B' 0
+  '电机' 'C' 0
+  '电机' 'D' 0
+}
+
 to '电机初始化' {
-  comment 'Initialize the Kittenbot Robobit servo and motor board.
-See the PCA9685 datasheet for technical details.'
+  comment 'PCA9865 初始化'
   comment 'Enter sleep mode'
   i2cSet 64 0 (hexToInt '10')
   comment 'Set prescale register to generate 50 Hz'
@@ -119,9 +156,5 @@ See the PCA9685 datasheet for technical details.'
   comment 'Start PWM again (with autoincrement enabled)'
   i2cSet 64 0 (hexToInt '20')
   _robotbitMicrosecsPerCycle = 20000
-}
-
-to '超声波测距(cm)' trig echo {
-  return ('distance (cm)' trig echo)
 }
 
