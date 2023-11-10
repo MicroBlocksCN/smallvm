@@ -260,9 +260,9 @@ method loadFromString MicroBlocksProject s updateLibraries {
 	initialize this
 	cmdList = (parse s)
 	if (and (notEmpty cmdList) ('projectName' == (primName (first cmdList)))) {
-      // skip projectName line, if any
-      cmdList = (copyFromTo cmdList 2)
-    }
+		// skip projectName line, if any
+		cmdList = (copyFromTo cmdList 2)
+	}
 	loadSpecs this cmdList
 	cmdsByModule = (splitCmdListIntoModules this cmdList)
 	isFirst = true
