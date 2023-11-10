@@ -82,8 +82,6 @@ method installFromURL MicroBlocksFlasher serialPortID url {
     }
 
 	espTool = (newESPTool)
-	if (notNil (findSubstring 'databot2.0_' url)) { setAllInOneBinary espTool true }
-
 	if (notNil serialPortID) {
 		setPort espTool serialPortID
 		ok = true
@@ -95,6 +93,8 @@ method installFromURL MicroBlocksFlasher serialPortID url {
 		inform 'Could not open serial port'
 		return
 	}
+
+	if (notNil (findSubstring 'databot2.0_' url)) { setAllInOneBinary espTool true }
 
     // install the downloaded firmware
 	spinner = (newSpinner (action 'espToolStatus' this) (action 'espToolDone' this))
