@@ -1,28 +1,38 @@
-module Cocorobo
-author ShaoYue
+module '未来板主控板'
+author '邵悦 '
 version 1 0 
-description 'Cocorobo kits
-ESP32 '
+depends 'Basic Sensors' 
+choices LED_all '1' '2' '3' '4' '5' '6' '7' '8' '9' 
 choices LED_index '1' '2' '3' 
-choices LED_all '1' '2' '3' '4' '5' '6' '7' '8' '9'
+description '腾讯未来科技盒子配套未来板
+ESP32 核心 LED 灯、按钮和蜂鸣器，可用于基础教学。
+运动传感器、温湿度传感器、光线传感器、声音传感器以及电容触摸功能，可用于进阶项目开发。
+'
 variables _LEDs 
 
-  spec 'r' '触摸键A' '触摸键A'
-  spec 'r' '触摸键B2' '触摸键B'
-  spec 'r' '按键P1' '按键P1'
-  spec 'r' '按键P2' '按键P2'
-  space
+  spec 'r' '按键P1' '按键 P1'
+  spec 'r' '按键P2' '按键 P2'
+  spec 'r' '触摸键A' '触摸键 A'
+  spec 'r' '触摸键B2' '触摸键 B'
+  spec 'r' '板子温度' '板子温度'
   spec 'r' '湿度' '湿度'
   space
-  spec ' ' '熄灭所有LED灯' '熄灭所有LED灯'
-  spec ' ' '设置LED' '设置LED _ _' 'menu.LED_all bool' 1 true
+  spec ' ' '全部点亮' '点亮所有 LED灯'
+  spec ' ' '熄灭所有LED灯' '熄灭所有 LED灯'
+  spec ' ' '设置LED' '设置 LED _ _' 'menu.LED_all bool' 1 true
   spec ' ' '设置' '设置 第 _ 行 第 _ 列 LED _' 'menu.LED_index menu.LED_index bool' 1 1 true
-  space
   spec ' ' '_cocorobo_init' '_cocorobo_init'
-
+  space
 
 to '_cocorobo_init' {
   if (_LEDs == 0) {_LEDs = ('[data:makeList]' 2 12 5 13 14 15 18 19 23)}
+}
+
+to '全部点亮' {
+  '_cocorobo_init'
+  for i _LEDs {
+    analogWriteOp i 1023
+  }
 }
 
 to '按键P1' {
@@ -31,6 +41,10 @@ to '按键P1' {
 
 to '按键P2' {
   return (digitalReadOp 35)
+}
+
+to '板子温度' {
+  return ('[sensors:temperature]')
 }
 
 to '湿度' {
