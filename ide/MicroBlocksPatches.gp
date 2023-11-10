@@ -207,6 +207,26 @@ to gpFolder {
   return path
 }
 
+// Broadcast menu
+
+method broadcastMenu InputSlot {
+  menu = (menu)
+
+  scripter = (ownerThatIsA morph 'MicroBlocksScripter')
+  if (notNil scripter) {
+    saveScripts (handler scripter)
+    msgList = (allBroadcasts (project (handler scripter)))
+    defaultBroadcast = (localized 'go!')
+    if (not (contains msgList defaultBroadcast)) {
+       addFirst msgList defaultBroadcast
+    }
+	for s msgList {
+      addItemNonlocalized menu s (action 'setContents' this s)
+	}
+  }
+  return menu
+}
+
 // Block additions
 
 method clicked Block hand {

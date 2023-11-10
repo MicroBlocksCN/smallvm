@@ -240,6 +240,21 @@ method deleteVariable MicroBlocksProject varName {
 	}
 }
 
+// Variables
+
+method allBroadcasts MicroBlocksProject {
+	result = (dictionary)
+	for entry (scripts main) {
+		for b (allBlocks (last entry)) {
+			if (isOneOf (primName b) 'sendBroadcast' 'whenBroadcastReceived') {
+				print (primName b) (argList b)
+				add result (first (argList b))
+			}
+		}
+	}
+	return (toList (sorted (keys result)))
+}
+
 // Loading
 
 method loadFromOldProjectClassAndSpecs MicroBlocksProject aClass specList {

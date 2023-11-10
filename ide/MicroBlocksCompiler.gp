@@ -93,8 +93,8 @@ method microBlocksSpecs SmallCompiler {
 		'-'
 		(array ' ' 'return'				'return _' 'auto' 0)
 		'-'
-		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str' 'go!')
-		(array ' ' 'sendBroadcast'		'broadcast _' 'str' 'go!' '')
+		(array 'h' 'whenBroadcastReceived'	'when _ received' 'str.broadcastMenu' 'go!')
+		(array ' ' 'sendBroadcast'		'broadcast _' 'str.broadcastMenu' 'go!' '')
 		'-'
 		(array ' ' 'comment'			'comment _' 'str' 'How this works...')
 		(array 'r' '[data:range]'		'range _ to _ : by _' 'num num num' 1 10 2)
