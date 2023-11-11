@@ -464,7 +464,11 @@ method uploadESP32VM ESPTool vmData eraseFlag {
 	data = (readEmbeddedFile (join 'esp32/boot_app0.bin') true)
 	uploadCompressed this (hex 'e000') data
 
-	data = (readEmbeddedFile (join 'esp32/partitions.bin') true)
+	if ((byteCount vmData) > 1000000) {
+		data = (readEmbeddedFile (join 'esp32/partitions2MB.bin') true)
+	} else {
+		data = (readEmbeddedFile (join 'esp32/partitions.bin') true)
+	}
 	uploadCompressed this (hex '8000') data
 
 	uploadCompressed this (hex '10000') vmData
