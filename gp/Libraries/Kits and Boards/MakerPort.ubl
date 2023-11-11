@@ -1,10 +1,10 @@
 module MakerPort Output
 author MicroBlocks
-version 1 8 
-depends 'LCD Display' 'MP3 Player' Touch 'IR Remote' 
-choices makerport_audioSource MP3 Tone 
+version 1 9
+depends 'LCD Display' 'MP3 Player' Touch 'IR Remote'
+choices makerport_audioSource MP3 Tone
 description 'Support for MakerPort (https://makerport.fun)'
-variables _makerport_microSDInserted 
+variables _makerport_microSDInserted _makerport_time_averages
 
   spec ' ' 'makerport_initialize' 'MakerPort initialize'
   space
@@ -17,14 +17,16 @@ variables _makerport_microSDInserted
   space
   spec 'r' 'makerport_mp3_hasCard' 'mp3 player has Flash card'
   space
-  spec 'r' 'makerport_timeAveragedLevel' 'time average of pin _ with time samples _' 'auto auto' 1 64
-  spec 'r' '_makerport_compute_time_average' '_compute time average _ _ _' 'auto auto auto' 1 64 0
+  spec 'r' 'makerport_loudness' 'loudness'
+  space
+  spec 'r' 'makerport_timeAveragedLevel' 'input level from _ with time sample _ ms' 'num num' 13 64
+  spec 'r' '_makerport_compute_time_average' '_compute time average _ _ _' 'num num num' 13 64 0
 
 to '_makerport_compute_time_average' pin timeSample timeAverage {
-  samples = 0
-  average = 0
-  timeToFinish = ((millisOp) + timeSample)
-  repeatUntil ((millisOp) >= timeToFinish) {
+  local 'samples' 0
+  local 'average' 0
+  local 'endTime' ((millisOp) + timeSample)
+  repeatUntil ((millisOp) >= endTime) {
     samples += 1
     average += (absoluteValue ((analogReadOp pin) - timeAverage))
   }
@@ -96,10 +98,11 @@ to makerport_setAudioSource src {
 }
 
 to makerport_timeAveragedLevel pin timeSample {
-  if ((size timeAverages) == 0) {timeAverages = (newList 32 0)}
-  average = ('_makerport_compute_time_average' pin timeSample (at pin timeAverages))
-  if ((at pin timeAverages) == 0) {
-    atPut pin timeAverages average
+  if (_makerport_time_averages == 0) {_makerport_time_averages = (newList 32 0)}
+  pin = (max 1 (min pin 32))
+  local 'average' ('_makerport_compute_time_average' pin timeSample (at pin _makerport_time_averages))
+  if ((at pin _makerport_time_averages) == 0) {
+    atPut pin _makerport_time_averages average
     average = 0
   }
   return average
@@ -111,3 +114,15 @@ to makerport_typeString s {
   }
 }
 
+to makerport_loudness {
+local 'low' 10000
+local 'high' -10000
+for i 40 {
+  comment 'Sample microphone connected to analog port for ~20 msecs at ~2000 samples/sec.'
+  local 'sample' (analogReadOp 13)
+  low = (minimum low sample)
+  high = (maximum high sample)
+  waitMicros 500
+}
+return (high - low)
+}
