@@ -1,10 +1,10 @@
 module MakerPort Output
 author MicroBlocks
-version 1 9
-depends 'LCD Display' 'MP3 Player' Touch 'IR Remote'
-choices makerport_audioSource MP3 Tone
+version 1 9 
+depends 'LCD Display' 'MP3 Player' Touch 'IR Remote' 
+choices makerport_audioSource MP3 Tone 
 description 'Support for MakerPort (https://makerport.fun)'
-variables _makerport_microSDInserted _makerport_time_averages
+variables _makerport_microSDInserted _makerport_time_averages 
 
   spec ' ' 'makerport_initialize' 'MakerPort initialize'
   space
@@ -59,6 +59,19 @@ to makerport_initialize {
   }
 }
 
+to makerport_loudness {
+  local 'low' 10000
+  local 'high' -10000
+  for i 40 {
+    comment 'Sample microphone connected to analog port for ~20 msecs at ~2000 samples/sec.'
+    local 'sample' (analogReadOp 13)
+    low = (minimum low sample)
+    high = (maximum high sample)
+    waitMicros 500
+  }
+  return (high - low)
+}
+
 to makerport_mp3_hasCard {
   comment 'Note: This command works only if MP3 player is
 connected to the hardware serial pins.'
@@ -99,7 +112,7 @@ to makerport_setAudioSource src {
 
 to makerport_timeAveragedLevel pin timeSample {
   if (_makerport_time_averages == 0) {_makerport_time_averages = (newList 32 0)}
-  pin = (max 1 (min pin 32))
+  pin = (maximum 1 (minimum pin 32))
   local 'average' ('_makerport_compute_time_average' pin timeSample (at pin _makerport_time_averages))
   if ((at pin _makerport_time_averages) == 0) {
     atPut pin _makerport_time_averages average
@@ -114,15 +127,3 @@ to makerport_typeString s {
   }
 }
 
-to makerport_loudness {
-local 'low' 10000
-local 'high' -10000
-for i 40 {
-  comment 'Sample microphone connected to analog port for ~20 msecs at ~2000 samples/sec.'
-  local 'sample' (analogReadOp 13)
-  low = (minimum low sample)
-  high = (maximum high sample)
-  waitMicros 500
-}
-return (high - low)
-}
