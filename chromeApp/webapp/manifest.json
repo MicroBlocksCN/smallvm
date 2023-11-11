@@ -11,7 +11,7 @@
       "type": "image/png"
     }],
   "lang": "en-US",
-  "start_url": "/run/microblocks.html",
+  "start_url": "./microblocks.html",
   "display": "standalone",
   "background_color": "white",
   "theme_color": "white"
