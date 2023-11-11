@@ -1719,6 +1719,8 @@ when plugging a board, automatically read its contents into the IDE if the curre
 
 erase flash and update firmware on ESP board
 
+install ESP firmware from URL
+
 Use board type
 
 Firmware Installed

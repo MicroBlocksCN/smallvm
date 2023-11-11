@@ -2183,6 +2183,9 @@ when plugging a board, automatically read its contents into the IDE if the curre
 erase flash and update firmware on ESP board
 擦除信息并升级 ESP 固件
 
+install ESP firmware from URL
+从 URL 安装 ESP 固件
+
 Use board type
 使用主板类型信息
 
