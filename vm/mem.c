@@ -52,7 +52,7 @@
 #elif defined(ARDUINO_ARCH_ESP32)
   // object store is allocated from heap on ESP32
   #if defined(BLE_PRIMS) || defined(OCTO_PRIMS)
-    #define OBJSTORE_BYTES 8000
+    #define OBJSTORE_BYTES 48000
   #else
     #define OBJSTORE_BYTES 80000
   #endif
