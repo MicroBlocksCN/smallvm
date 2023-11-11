@@ -7,7 +7,7 @@
 // MicroBlocksFlasher.gp - An interface to internal ESPTool to flash Espressif boards
 // Bernat Romagosa, September 2019
 
-defineClass MicroBlocksFlasher spinner boardName portName eraseFlag downloadFlag espTool socket downloadProgress
+defineClass MicroBlocksFlasher spinner boardName portName eraseFlag downloadFlag espTool socket fetchID downloadProgress
 
 to newFlasher board serialPortName eraseFlashFlag downloadLatestFlag {
 	return (initialize (new 'MicroBlocksFlasher') board serialPortName eraseFlashFlag downloadLatestFlag)
@@ -67,7 +67,8 @@ method installFromURL MicroBlocksFlasher serialPortID url {
 
     if (and ('Browser' == (platform)) (isNil serialPortID)) {
         // must request a user gesture to open port in browser after long download
-        confirm (global 'page') nil (join (localized 'Open port?'))
+        ok = (confirm (global 'page') nil (join (localized 'Open port?')))
+        if (not ok) { return }
 
 		timeout = 20000 // ten seconds
         openSerialPort 'webserial' 115200
@@ -107,11 +108,16 @@ method installFromURL MicroBlocksFlasher serialPortID url {
 // Support for downloading files from URLs
 
 method downloadProgress MicroBlocksFlasher actionLabel {
+	percent = 0
 	if ('Browser' == (platform)) {
-		return (localized 'Downloading...')
+	    bytesExpected = (fetchBytesExpected fetchID)
+	    if (bytesExpected > 0) {
+	        percent = (round ((100 * (fetchBytesReceived fetchID)) / bytesExpected))
+	    }
 	} else {
-		return (join (localized 'Downloading...') ' ' downloadProgress '%' )
+		percent = downloadProgress
 	}
+	return (join (localized 'Downloading...') ' ' percent  '%')
 }
 
 method abortDownload MicroBlocksFlasher {
