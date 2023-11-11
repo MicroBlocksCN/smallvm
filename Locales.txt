@@ -1547,6 +1547,19 @@ Octopus OLED draw circle x _ y _ radius _
 Octopus OLED fill circle x _ y _ radius _
 
 
+####
+# OctoStudio
+
+Octo start
+
+Octo beam to phones _
+
+duration _ ms
+
+Octo receive beam
+
+Octo stop
+
 ##################
 # MicroBlocks UI #
 ##################

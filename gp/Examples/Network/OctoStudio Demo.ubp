@@ -1,0 +1,121 @@
+module main
+author wwj
+version 1 0 
+description ''
+variables count _OctoAdvertising shape 
+
+script 306 40 {
+comment 'OctoStudio on Android phones is not very stable. 
+After running for some time, 
+the beam and wait for blocks might not work. 
+If you''re not receiving messages, 
+try restarting the OctoStudio  APP.'
+}
+
+script 56 59 {
+whenStarted
+'Octo start'
+count = 0
+forever {
+  shape = ('Octo receive beam')
+  if (shape != (booleanConstant false)) {
+    count += 1
+    sayIt shape count
+  }
+  waitMillis 100
+}
+}
+
+script 400 196 {
+'beam to phones' 'heart'
+}
+
+
+module OctoStudio Comm
+author wwj718
+version 1 3 
+choices shape_choices triangle circle square heart star 
+description 'Communicate with OctoStudio (https://octostudio.org/)'
+variables _OctoAdvertising 
+
+  spec ' ' 'Octo start' 'Octo start'
+  spec ' ' 'beam to phones' 'Octo beam to phones _ : duration _ ms' 'menu.shape_choices num' 'heart' 200
+  spec 'r' 'Octo receive beam' 'Octo receive beam'
+  spec ' ' 'Octo stop' 'Octo stop'
+  spec 'r' '_generate_full_shape_id' '_generate_full_shape_id shape _' 'auto' 'heart'
+  spec ' ' '_Octo deinit' '_Octo deinit'
+  spec 'r' '_shape_map' '_shape_map'
+
+to 'Octo receive beam' {
+  local 'shape_id' (callCustomReporter '[net:OctoGetOctoShapeId]')
+  if (shape_id != (booleanConstant false)) {
+    for s ('_shape_map') {
+      if ((at 2 s) == shape_id) {return (at 1 s)}
+    }
+  } else {
+    return (booleanConstant false)
+  }
+}
+
+to 'Octo start' {
+  if (not (callCustomReporter '[net:OctoGetBLEInitialized]')) {callCustomCommand '[net:OctoInitBLE]'}
+  if (not (callCustomReporter '[net:OctoScanning]')) {callCustomCommand '[net:OctoStartScanning]'}
+}
+
+to 'Octo stop' {
+  if (callCustomReporter '[net:OctoScanning]') {callCustomCommand '[net:OctoStopScanning]'}
+}
+
+to '_Octo deinit' {
+  callCustomCommand '[net:OctoDeinitBLE]'
+}
+
+to '_generate_full_shape_id' shape_name {
+  comment 'Mimic iOS, eg: ECA7059C00000001'
+  local 'full_shap_id' ('[data:makeList]')
+  repeat 8 {
+    '[data:addLast]' (at 'random' '0123456789ABCDEF') full_shap_id
+  }
+  for s ('_shape_map') {
+    if ((at 1 s) == shape_name) {
+      repeat 7 {
+        '[data:addLast]' 0 full_shap_id
+      }
+      '[data:addLast]' (at 2 s) full_shap_id
+      return ('[data:joinStrings]' full_shap_id)
+    }
+  }
+  return 'This shape does not exist'
+}
+
+to '_shape_map' {
+  comment '"0": "circle",
+"1": "square",
+"2": "star",
+"3": "heart",
+"4": "triangle",'
+  return ('[data:makeList]' ('[data:makeList]' 'circle' 0) ('[data:makeList]' 'square' 1) ('[data:makeList]' 'star' 2) ('[data:makeList]' 'heart' 3) ('[data:makeList]' 'triangle' 4))
+}
+
+to 'beam to phones' shape optionalDuration {
+  local 'duration' 200
+  if ((pushArgCount) > 1) {
+    duration = optionalDuration
+  }
+  if (callCustomReporter '[net:OctoGetBLEInitialized]') {
+    if (_OctoAdvertising == 1) {
+      sayIt 'waiting...'
+      waitUntil (_OctoAdvertising == 0)
+      sayIt ''
+    }
+    _OctoAdvertising = 1
+    callCustomCommand '[net:OctoSetDeviceName]' ('[data:makeList]' ('_generate_full_shape_id' shape))
+    callCustomCommand '[net:OctoStartAdvertising]'
+    waitMillis duration
+    callCustomCommand '[net:OctoStopAdvertising]'
+    _OctoAdvertising = 0
+  } else {
+    sayIt 'Please start Octo first'
+  }
+}
+
