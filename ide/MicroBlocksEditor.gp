@@ -937,6 +937,7 @@ method isChineseWebapp MicroBlocksEditor {
 	return (or
 		((containsSubString url 'microblocksfun.cn') > 0)
 		((containsSubString url 'blocks.aimaker.space') > 0)
+		(browserHasLanguage 'zh')
 	)
 }
 
