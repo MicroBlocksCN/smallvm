@@ -1,29 +1,32 @@
 module main
 author 'Roger Wagner'
-version 1 1 
+version 1 0 
 description ''
-variables CharacterList CharacterNames TPin KeyboardOn folder MicroSDInserted IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn MenuEnableOn MicrophoneConnected Mp3Volume ToneVolume PrevVolume MyFolderPresent TimeStart MyFolder 
+variables CharacterList CharacterNames TPin KeyboardOn folder IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn MenuEnableOn MicrophoneConnected Mp3Volume ToneVolume MyFolderPresent TimeStart MyFolder ReadyForTasks DistanceSensorConnected ReleasedTPin PrevVolume PinTouched IRCodeReceived 
 
   spec ' ' 'Initialize lists' 'Initialize lists'
   spec ' ' 'NeoPixel initialize' 'NeoPixel initialize'
   spec ' ' 'DoMenus' 'DoMenus'
   spec ' ' 'MenuAction1' 'MenuAction1'
-  spec ' ' 'MenuAction2' 'MenuAction2'
-  spec ' ' 'MenuAction3' 'MenuAction3'
-  spec ' ' 'MenuAction4' 'MenuAction4'
-  spec ' ' 'MenuAction5' 'MenuAction5'
+  spec ' ' 'MenuAction2' 'MenuActionRing'
+  spec ' ' 'MenuAction3' 'MenuActionServoTest'
+  spec ' ' 'MenuAction4' 'MenuActionMicrophone'
+  spec ' ' 'MenuAction5' 'MenuActionDistance'
   spec ' ' 'MenuAction6' 'MenuAction6'
   spec ' ' 'MakerPort Setup' 'MakerPort Setup'
   spec ' ' 'MicrophoneDetect' 'MicrophoneDetect'
   spec ' ' 'IsThereMyFolder' 'IsThereMyFolder'
+  spec ' ' 'PinKeyTouched' 'PinKeyTouched'
+  spec ' ' 'UpArrowVolume' 'UpArrowVolume'
+  spec ' ' 'DownArrowVolume' 'DownArrowVolume'
 
 to DoMenus {
   MenuNumber += 1
   if MakerPortSpeakerOn {
-    digitalWriteOp 19 true
-    makerport_beep 880 100 10
-    if MicroSDInserted {
-      digitalWriteOp 19 false
+    makerport_setAudioSource 'Tone'
+    makerport_beep 880 100 ToneVolume
+    if (makerport_mp3_hasCard) {
+      makerport_setAudioSource 'MP3'
     }
   }
   if (MenuNumber == 1) {
@@ -33,8 +36,15 @@ to DoMenus {
   }
   if (MenuNumber == 2) {
     LCD1602_write 'Menu2' 1
-    LCD1602_write 'Ring Test' 2
-    MenuAction2
+    if DistanceSensorConnected {
+      LCD1602_write 'Distance' 2
+      MenuAction5
+    } else {
+      if NeoPixelsOn {
+        LCD1602_write 'Ring Test' 2
+        MenuAction2
+      }
+    }
   }
   if (MenuNumber == 3) {
     LCD1602_write 'Menu3' 1
@@ -42,21 +52,39 @@ to DoMenus {
     MenuAction3
   }
   if (MenuNumber == 4) {
-    LCD1602_write 'Menu4' 1
-    LCD1602_write 'Mic Test' 2
-    MenuAction4
+    if MicrophoneConnected {
+      LCD1602_write 'Menu4' 1
+      LCD1602_write 'Mic Test' 2
+      MenuAction4
+    } else {
+      MenuNumber = 5
+    }
   }
   if (MenuNumber == 5) {
-    LCD1602_write 'Menu5' 1
-    LCD1602_write 'Distance' 2
-    MenuAction5
-  }
-  if (MenuNumber == 6) {
     LCD1602_write 'Piano' 1
     LCD1602_write ' ' 2
     comment 'last menu item'
     MenuNumber = 0
     waitMillis 1000
+  }
+}
+
+to DownArrowVolume {
+  if (makerport_mp3_hasCard) {
+    Mp3Volume += -5
+    if (Mp3Volume < 0) {
+      Mp3Volume = 0
+    }
+    mp3_setVolume Mp3Volume
+    mp3_playTrack 1 51
+    LCD1602_write_field ('[data:join]' 'V' Mp3Volume) 1 14 16
+  } else {
+    ToneVolume += -2
+    if (ToneVolume < 0) {
+      ToneVolume = 0
+    }
+    makerport_beep 392 100 ToneVolume
+    LCD1602_write_field ('[data:join]' 'V' ToneVolume) 1 14 16
   }
 }
 
@@ -71,7 +99,7 @@ to 'Initialize lists' {
 }
 
 to IsThereMyFolder {
-  if MicroSDInserted {
+  if (makerport_mp3_hasCard) {
     resetTimer
     TimeStart = (timer)
     mp3_playTrackUntilDone 99 MyFolder
@@ -81,7 +109,6 @@ to IsThereMyFolder {
     } else {
       MyFolderPresent = (booleanConstant false)
     }
-    sayIt ('[data:join]' 'myfoldertime' TimeStart ',' (timer))
     waitMillis 1000
   } else {
     MyFolderPresent = (booleanConstant false)
@@ -98,17 +125,18 @@ to 'MakerPort Setup' {
     MenuEnableOn = (booleanConstant false)
   }
   if MakerPortSpeakerOn {
-    if MicroSDInserted {
+    if (makerport_mp3_hasCard) {
       mp3_setVolume Mp3Volume
       mp3_playTrack 3 99
+      MicrophoneDetect
       waitMillis 3000
     } else {
       comment 'C4'
-      makerport_beep 262 250 10
+      makerport_beep 262 250
       comment 'G4'
-      makerport_beep 392 250 10
+      makerport_beep 392 250
       comment 'F4'
-      makerport_beep 349 250 10
+      makerport_beep 349 250
     }
   }
 }
@@ -131,13 +159,13 @@ to MenuAction3 {
   repeat 3 {
     setServoAngle 16 0
     setServoAngle 17 0
-    waitMillis 100
+    waitMillis 500
     setServoAngle 16 90
     setServoAngle 17 90
     waitMillis 500
     setServoAngle 16 0
     setServoAngle 17 0
-    waitMillis 250
+    waitMillis 500
   }
   stopServo 16
   stopServo 17
@@ -145,12 +173,13 @@ to MenuAction3 {
 }
 
 to MenuAction4 {
+  mp3_playTrack 1 99
   comment 'loop for 10 seconds @ 1/8 sec per loop'
   for i (8 * 10) {
     CharPosn = ('[misc:rescale]' i 1 (8 * 10) 6 16)
     LCD1602_write_field '.' 1 CharPosn CharPosn
-    VolLevel = (makerport_timeAveragedLevel 13 125)
-    setServoAngle 16 ('[misc:rescale]' VolLevel 0 250 0 90)
+    VolLevel = (makerport_timeAveragedLevel 13 64)
+    setServoAngle 16 ('[misc:rescale]' VolLevel 0 50 0 90)
     LCD1602_write_field ('[data:join]' 'Vol:' VolLevel) 2 10 16
   }
   LCD1602_write_field '(next)' 2 10 16
@@ -172,16 +201,17 @@ to MenuAction6 {
 
 to MicrophoneDetect {
   MicrophoneConnected = (booleanConstant false)
-  comment '1st sample to calibrate, ignore'
-  PrevVolume = (makerport_timeAveragedLevel 13 25)
+  comment '1st sample to calibrate background sound level'
+  PrevVolume = (makerport_timeAveragedLevel 13 125)
   repeat 10 {
-    PrevVolume = (makerport_timeAveragedLevel 13 25)
-    printIt PrevVolume
-    if (10 < (absoluteValue (PrevVolume - (makerport_timeAveragedLevel 13 25)))) {
+    VolLevel = (absoluteValue (PrevVolume - (makerport_timeAveragedLevel 13 25)))
+    printIt VolLevel
+    if (10 < VolLevel) {
       comment 'difference > threshold?'
       MicrophoneConnected = (booleanConstant true)
       return MicrophoneConnected
     }
+    PrevVolume = (makerport_timeAveragedLevel 13 25)
   }
 }
 
@@ -193,171 +223,15 @@ to 'NeoPixel initialize' {
   }
 }
 
-script 60 54 {
-whenStarted
-KeyboardOn = (booleanConstant true)
-MakerPortSpeakerOn = (booleanConstant true)
-MicrophoneConnected = (booleanConstant false)
-MicroSDInserted = (booleanConstant true)
-MyFolderPresent = (booleanConstant false)
-MenuEnableOn = (booleanConstant true)
-PreviousPinTouched = 0
-MenuNumber = 0
-Mp3Volume = 30
-ToneVolume = 1
-folder = 51
-MyFolder = 1
-'Initialize lists'
-comment 'Neopixels OR ultrasonic in Extra port'
-if (('distance (cm)' 14 15) == 0) {
-  NeoPixelsOn = (booleanConstant true)
-} else {
-  NeoPixelsOn = (booleanConstant false)
-}
-NumberOfNeopixels = 24
-makerport_initialize
-MicroSDInserted = (makerport_mp3_hasCard)
-'MakerPort Setup'
-MicrophoneDetect
-IsThereMyFolder
-LCD1602_clear
-LCD1602_write 'Ready...' 1
-if NeoPixelsOn {
-  'NeoPixel initialize'
-}
-if MicroSDInserted {
-  LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
-}
-if MicrophoneConnected {
-  forever {
-    comment 'servos respond to sound'
-    MenuAction4
-  }
-}
-sayIt ('[data:join]' 'myfolder ' MyFolderPresent)
-if MyFolderPresent {
-  makerport_setAllLEDs true
-  mp3_repeatAllInFolder MyFolder
-}
-}
-
-script 1064 54 {
-whenCondition (ir_code_received)
-local 'IRCodeRcvd' (ir_last_code)
-LCD1602_write ('[data:join]' 'IR code:' IRCodeRcvd) 1
-KeyPosition = ('[data:find]' IRCodeRcvd IRCodeList)
-if (KeyPosition <= 12) {
-  TPin = KeyPosition
-  digitalWriteOp TPin true
-} else {
-  TPin = 0
-}
-if (KeyPosition > 0) {
-  LCD1602_write ('[data:join]' KeyPosition ',' (at KeyPosition IRNameList)) 2
-} else {
-  LCD1602_write ('[data:join]' KeyPosition ', not found') 2
-}
-if (KeyPosition == 15) {
-  comment 'up arrow'
-  ToneVolume += 2
-  Mp3Volume += 10
-  if (ToneVolume > 10) {
-    ToneVolume = 10
-  }
-  if (Mp3Volume > 30) {
-    Mp3Volume = 30
-  }
-}
-if (KeyPosition == 16) {
-  comment 'down arrow'
-  ToneVolume += -2
-  Mp3Volume += -10
-  if (ToneVolume < 1) {
-    ToneVolume = 1
-  }
-  if (Mp3Volume < 0) {
-    Mp3Volume = 0
-  }
-}
-mp3_setVolume Mp3Volume
-if MakerPortSpeakerOn {
-  if MicroSDInserted {
-    if (TPin != 12) {mp3_playTrack TPin folder}
-    if (TPin == 12) {
-      folder += 1
-      if (folder > 54) {
-        folder = 51
-      }
-      mp3_playTrack 99 folder
-    }
-    LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
-  } else {
-    makerport_beep (at TPin ToneFreqList) 100 ToneVolume
-  }
-}
-waitMillis 250
-makerport_setAllLEDs false
-}
-
-script 669 409 {
-to 'MakerPort Setup' {}
-}
-
-script 666 1050 {
-to 'NeoPixel initialize' {}
-}
-
-script 54 1247 {
-to 'Initialize lists' {}
-}
-
-script 707 1398 {
-whenCondition (touch_release_event)
-local 'pin' (touch_last_released_pin)
-if KeyboardOn {
-  if (pin == 6) {
-    '[hid:mouseRelease]'
-  } else {
-    '[hid:releaseKey]' (at pin CharacterList)
-  }
-}
-if (MenuNumber == 0) {
-  comment 'delay to keep LED on for a while'
-  waitMillis 1000
-  digitalWriteOp pin false
-  LCD1602_clear
-  LCD1602_write 'Ready...' 1
-}
-}
-
-script 54 1734 {
-whenCondition (touch_touch_event)
-local 'pin' (touch_last_touched_pin)
-if (pin != 11) {
-  MenuNumber = 0
-}
-if (and MenuEnableOn (and (pin == 11) (PreviousPinTouched == 11))) {
-  DoMenus
-}
-if (MenuNumber == 0) {
-  digitalWriteOp pin true
-  LCD1602_write_field ('[data:join]' 'Touch:' pin) 1 1 16
-  LCD1602_write_field (at pin CharacterNames) 2 1 16
-  comment 'KeyboardOn = true to output characters'
-  if KeyboardOn {
-    if (pin == 6) {
-      'mouse click' 'left'
-    } else {
-      '[hid:holdKey]' (at pin CharacterList)
-    }
-  }
+to PinKeyTouched {
   if MakerPortSpeakerOn {
-    if MicroSDInserted {
-      if (pin != 12) {mp3_playTrack pin folder}
+    if (makerport_mp3_hasCard) {
+      if (TPin != 12) {sendBroadcast 'PlayTrack'}
     } else {
-      makerport_beep (at pin ToneFreqList) 100 ToneVolume
+      makerport_beep (at TPin ToneFreqList) 100 ToneVolume
+      digitalWriteOp TPin false
     }
-    if (and (pin == 12) MicroSDInserted) {
+    if (and (TPin == 12) (makerport_mp3_hasCard)) {
       folder += 1
       if (folder > 54) {
         folder = 51
@@ -365,41 +239,254 @@ if (MenuNumber == 0) {
       LCD1602_write_field ('[data:join]' 'Folder:' folder) 2 8 16
       mp3_playTrack 99 folder
     }
-    PreviousPinTouched = pin
+  }
+}
+
+to UpArrowVolume {
+  if (makerport_mp3_hasCard) {
+    Mp3Volume += 5
+    if (Mp3Volume > 30) {
+      Mp3Volume = 30
+    }
+    mp3_setVolume Mp3Volume
+    mp3_playTrack 1 51
+    LCD1602_write_field ('[data:join]' 'V' Mp3Volume) 1 14 16
+  } else {
+    ToneVolume += 2
+    if (ToneVolume > 10) {
+      ToneVolume = 10
+    }
+    makerport_beep 392 100 ToneVolume
+    LCD1602_write_field ('[data:join]' 'V' ToneVolume) 1 14 16
+  }
+}
+
+script 43 40 {
+whenStarted
+ReadyForTasks = (booleanConstant false)
+KeyboardOn = (booleanConstant false)
+MakerPortSpeakerOn = (booleanConstant true)
+MicrophoneConnected = (booleanConstant false)
+DistanceSensorConnected = (booleanConstant false)
+MyFolderPresent = (booleanConstant false)
+MenuEnableOn = (booleanConstant true)
+PreviousPinTouched = 0
+MenuNumber = 0
+Mp3Volume = 30
+ToneVolume = 5
+folder = 51
+MyFolder = 1
+'Initialize lists'
+comment 'Neopixels OR ultrasonic in Extra port'
+if (('distance (cm)' 14 15) == 0) {
+  NeoPixelsOn = (booleanConstant true)
+  DistanceSensorConnected = (booleanConstant false)
+} else {
+  NeoPixelsOn = (booleanConstant false)
+  DistanceSensorConnected = (booleanConstant true)
+}
+NumberOfNeopixels = 24
+makerport_initialize
+'MakerPort Setup'
+if NeoPixelsOn {
+  'NeoPixel initialize'
+}
+IsThereMyFolder
+ReadyForTasks = (booleanConstant true)
+if (makerport_mp3_hasCard) {
+  if MyFolderPresent {
+    LCD1602_write ' Auto-Play Mode' 1
+    LCD1602_write_field 'Ready...' 2 1 10
+    makerport_setAllLEDs true
+    mp3_repeatAllInFolder MyFolder
+    sendBroadcast 'ServoLightShow'
+  } else {
+    LCD1602_write 'Ready...' 1
+    LCD1602_write_field ('[data:join]' '       Folder:' folder) 2 1 16
+  }
+} else {
+  LCD1602_write 'Ready...' 1
+  LCD1602_write '' 2
+}
+sendBroadcast 'WatchForTouch'
+sendBroadcast 'WatchForIRCommand'
+}
+
+script 674 162 {
+to makerport_initialize {}
+}
+
+script 1018 169 {
+whenBroadcastReceived 'WatchForIRCommand'
+forever {
+  waitMillis 5
+  if (and (ir_code_received) ReadyForTasks) {
+    stopAll
+    digitalWriteOp TPin false
+    IRCodeReceived = (ir_last_code)
+    LCD1602_write ('[data:join]' 'IR code:' IRCodeReceived) 1
+    KeyPosition = ('[data:find]' IRCodeReceived IRCodeList)
+    if (KeyPosition <= 12) {
+      TPin = KeyPosition
+      digitalWriteOp TPin true
+      PinKeyTouched
+    } else {
+      TPin = 0
+    }
+    if (KeyPosition == 15) {
+      comment 'up arrow = increase volume'
+      UpArrowVolume
+    }
+    if (KeyPosition == 16) {
+      comment 'down arrow = decrease volume'
+      DownArrowVolume
+    }
+    if (KeyPosition > 0) {
+      LCD1602_write_field ('[data:join]' KeyPosition ',' (at KeyPosition IRNameList)) 2 1 7
+    } else {
+      LCD1602_write ('[data:join]' KeyPosition ', not found') 2
+    }
+    sendBroadcast 'WatchForTouch'
   }
 }
 }
 
-script 712 1859 {
+script 1572 173 {
+to UpArrowVolume {}
+}
+
+script 687 483 {
+to 'MakerPort Setup' {}
+}
+
+script 1573 719 {
+to DownArrowVolume {}
+}
+
+script 695 1120 {
+to 'NeoPixel initialize' {}
+}
+
+script 41 1264 {
+whenBroadcastReceived 'ServoLightShow'
+comment 'servos respond to sound'
+VolLevel = (makerport_timeAveragedLevel 13 125)
+forever {
+  comment 'servos respond to sound'
+  VolLevel = (makerport_timeAveragedLevel 13 64)
+  setServoAngle 16 ('[misc:rescale]' VolLevel 0 100 0 90)
+  LCD1602_write_field ('[data:join]' 'Vol:' VolLevel) 2 10 16
+  'NeoPixel initialize'
+}
+}
+
+script 691 1296 {
 to MicrophoneDetect {}
 }
 
-script 943 2272 {
+script 43 1574 {
+to 'Initialize lists' {}
+}
+
+script 689 1782 {
+whenBroadcastReceived 'WatchForRelease'
+forever {
+  if ReadyForTasks {
+    if (touch_release_event) {
+      ReleasedTPin = (touch_last_released_pin)
+      if KeyboardOn {
+        if (ReleasedTPin == 6) {
+          '[hid:mouseRelease]'
+        } else {
+          '[hid:releaseKey]' (at ReleasedTPin CharacterList)
+        }
+      }
+    }
+    waitMillis 10
+    sendBroadcast 'WatchForIRCommand'
+  }
+}
+}
+
+script 51 2025 {
+whenBroadcastReceived 'WatchForTouch'
+forever {
+  waitMillis 5
+  if (and (touch_touch_event) ReadyForTasks) {
+    stopAll
+    comment 'Cancel auto-play if a touchpoint is touched'
+    MyFolderPresent = (booleanConstant false)
+    TPin = (touch_last_touched_pin)
+    makerport_setAllLEDs false
+    if (TPin != 11) {
+      MenuNumber = 0
+    }
+    if (and MenuEnableOn (and (TPin == 11) (PreviousPinTouched == 11))) {
+      DoMenus
+    }
+    PreviousPinTouched = TPin
+    if (MenuNumber == 0) {
+      digitalWriteOp TPin true
+      LCD1602_write_field ('[data:join]' 'Touch:' TPin) 1 1 16
+      LCD1602_write_field (at TPin CharacterNames) 2 1 16
+      comment 'KeyboardOn = true to output characters'
+      if KeyboardOn {
+        if (TPin == 6) {
+          'mouse click' 'left'
+        } else {
+          '[hid:holdKey]' (at TPin CharacterList)
+        }
+      }
+      PinKeyTouched
+      sendBroadcast 'WatchForRelease'
+    }
+  }
+}
+}
+
+script 777 2271 {
 to IsThereMyFolder {}
 }
 
-script 515 2296 {
+script 783 2728 {
+to PinKeyTouched {}
+}
+
+script 40 3050 {
+whenBroadcastReceived 'PlayTrack'
+makerport_setAudioSource 'MP3'
+mp3_playTrackUntilDone TPin folder
+makerport_setAllLEDs false
+LCD1602_clear
+LCD1602_write_field 'Ready...' 1 1 10
+}
+
+script 522 3242 {
 to MenuAction1 {}
 }
 
-script 521 2439 {
-to MenuAction2 {}
-}
-
-script 524 2743 {
-to MenuAction3 {}
-}
-
-script 61 2976 {
+script 44 3257 {
 to DoMenus {}
 }
 
-script 524 3250 {
-to MenuAction4 {}
+script 526 3357 {
+to MenuAction5 {}
 }
 
-script 523 3613 {
-to MenuAction5 {}
+script 529 3668 {
+to MenuAction2 {}
+}
+
+script 536 3911 {
+to MenuAction3 {}
+}
+
+script 311 4289 {
+sayIt DistanceSensorConnected
+}
+
+script 547 4317 {
+to MenuAction4 {}
 }
 
 
