@@ -2,7 +2,7 @@ module main
 author 'Roger Wagner'
 version 1 0 
 description ''
-variables CharacterList CharacterNames TPin KeyboardOn folder IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn MenuEnableOn MicrophoneConnected Mp3Volume ToneVolume MyFolderPresent TimeStart MyFolder ReadyForTasks DistanceSensorConnected ReleasedTPin PrevVolume PinTouched IRCodeReceived 
+variables CharacterList CharacterNames TPin KeyboardOn folder IRCodeList IRNameList KeyPosition VolLevel ToneFreqList ToneNameList NeoPixelsOn NumberOfNeopixels PreviousPinTouched MenuNumber CharPosn MakerPortSpeakerOn MenuEnableOn MicrophoneConnected Mp3Volume ToneVolume MyFolderPresent TimeStart MyFolder ReadyForTasks DistanceSensorConnected ReleasedTPin PrevVolume IRCodeReceived 
 
   spec ' ' 'Initialize lists' 'Initialize lists'
   spec ' ' 'NeoPixel initialize' 'NeoPixel initialize'
