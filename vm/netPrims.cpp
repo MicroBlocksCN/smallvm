@@ -1116,7 +1116,7 @@ class OctoAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
       std::string UUID_string = serviceUUID.toString().c_str();
       if (UUID_string == octoUUIDs[0]) {
         std::string deviceName = advertisedDevice->getName();
-		if (receivedOctoDatas.find(deviceName) == receivedOctoDatas.end()) {
+		if ((deviceName != "0000000000000000") && (receivedOctoDatas.find(deviceName) == receivedOctoDatas.end())) {
 			shape_id = deviceName.back() - '0';
 			hasOctoMessage = true;
 			receivedOctoDatas.insert(deviceName);
