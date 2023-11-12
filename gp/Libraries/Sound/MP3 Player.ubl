@@ -1,8 +1,8 @@
 module 'MP3 Player' Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 choices mp3PlayerType MakerPort 'MakerBit/HyperDuino' DFRobot Octopus 
-description 'Support for Octopus (FN-M16P and YX6300 chips) and DFRobot/HyperDuino/MakerBit) MP3 Players (YX5300, A19HFA440, and GD3300B chips).
+description 'Support for Octopus (FN-M16P and YX6300 chips) and DFRobot/HyperDuino/MakerBit/MakerPort) MP3 Players (YX5300, A19HFA440, and GD3300B chips).
 
 Sends commands to MP3 player using software serial via any digital pin on any board.
 
