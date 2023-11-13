@@ -1,19 +1,19 @@
-module 'LED Dot Matrix' Output
+module 'LED Dot Matrix (d1 mini)' Output
 author MicroBlocks
-version 1 0 
+version 1 1 
 tags display d1mini 
 description 'Support for the WEMOS 8x8 LED Dot Matrix D1 Mini shield.'
 variables '_MLED data pin' '_MLED clock pin' '_MLED buffer' '_MLED intensity' 
 
-	spec ' ' '_MLED display' '_MLED display'
-	spec ' ' '_MLED init' '_MLED init'
-	spec ' ' '_MLED send' '_MLED send byte _' 'auto' '10'
-	spec ' ' '_MLED send command' '_MLED send command _' 'auto' '10'
-	spec ' ' '_MLED send data' '_MLED send data _ to address _' 'auto auto' '10' '10'
-	spec ' ' 'set dot' 'set dot x _ y _ to _' 'auto auto bool' 3 4 true
-	spec ' ' '_MLED stealth set dot x' '_MLED stealth set dot x _ y _ to _' 'auto auto bool' '10' '10' true
-	spec ' ' 'clear LED matrix' 'clear LED matrix'
-	spec ' ' 'set LED matrix intensity to' 'set LED matrix intensity to _ (1-8)' 'auto' 5
+  spec ' ' '_MLED display' '_MLED display'
+  spec ' ' '_MLED init' '_MLED init'
+  spec ' ' '_MLED send' '_MLED send byte _' 'auto' '10'
+  spec ' ' '_MLED send command' '_MLED send command _' 'auto' '10'
+  spec ' ' '_MLED send data' '_MLED send data _ to address _' 'auto auto' '10' '10'
+  spec ' ' 'set dot' 'set dot x _ y _ to _' 'auto auto bool' 3 4 true
+  spec ' ' '_MLED stealth set dot x' '_MLED stealth set dot x _ y _ to _' 'auto auto bool' '10' '10' true
+  spec ' ' 'clear LED matrix' 'clear LED matrix'
+  spec ' ' 'set LED matrix intensity to' 'set LED matrix intensity to _ (1-8)' 'auto' 5
 
 to '_MLED display' {
   for byte 8 {
@@ -60,8 +60,8 @@ to '_MLED send data' data address {
 }
 
 to '_MLED stealth set dot x' x y draw {
-  local 'x' (((x - 1) % 8) + 1)
-  local 'y' (((y - 1) % 8) + 1)
+  x = (maximum 1 (minimum x 8))
+  y = (maximum 1 (minimum y 8))
   if ((v '_MLED buffer') == 0) {
     '_MLED init'
   }
