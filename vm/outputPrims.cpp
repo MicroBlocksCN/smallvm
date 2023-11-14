@@ -892,7 +892,7 @@ static void sendNeoPixelData(int val) { }
 #endif // NeoPixel Support
 
 static inline int gamma(int val) {
-	// This function computes the n^3 gamma curve, where n is a brightness in the range 0.0..1.0,
+	// This function computes the n^2 gamma curve, where n is a brightness in the range 0.0..1.0,
 	// with the result scaled to the integer range 0..neoMax, but it uses only integer arithmetic.
 	// The input is assumed to be an integer in the range 0..255, and what's computed is the
 	// neoMax * ((val / 255) ^ 3). Since (val / 255) has the range 0.0 and 1.0, ((val / 255) ^ 3)
