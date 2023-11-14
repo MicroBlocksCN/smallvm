@@ -224,6 +224,16 @@ OBJ primBoardType() {
 
 // Misc primitives
 
+static OBJ primModulo(int argCount, OBJ *args) {
+	int n = evalInt(args[0]);
+	int modulus = evalInt(args[1]);
+	if (0 == modulus) return fail(zeroDivide);
+	if (modulus < 0) modulus = -modulus;
+	int result = n % modulus;
+	if (result < 0) result += modulus;
+	return int2obj(result);
+}
+
 static OBJ primRandom(int argCount, OBJ *args) {
 	int first = 1, last = 100; // defaults for zero arguments
 	if (argCount == 1) { // use range [1..arg]
@@ -971,8 +981,7 @@ static void runTask(Task *task) {
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	modulo_op:
-		tmp = evalInt(*(sp - 1));
-		*(sp - arg) = ((0 == tmp) ? fail(zeroDivide) : int2obj(evalInt(*(sp - 2)) % tmp));
+		*(sp - arg) = primModulo(arg, sp - arg);
 		POP_ARGS_REPORTER();
 		DISPATCH();
 	absoluteValue_op:
