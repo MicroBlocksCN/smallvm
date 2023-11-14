@@ -337,7 +337,6 @@ method clearProject MicroBlocksEditor {
   setText title ''
   fileName = ''
   createEmptyProject scripter
-  clearBoardIfConnected (smallRuntime) true
   if (isRunning httpServer) {
 	clearVars httpServer
   }
@@ -384,7 +383,6 @@ method openProjectFromFile MicroBlocksEditor location {
 
 method openProject MicroBlocksEditor projectData projectName updateLibraries {
   if (downloadInProgress this) { return }
-  clearProject this
   fileName = projectName
   updateTitle this
   if (endsWith projectName '.gpp') {
