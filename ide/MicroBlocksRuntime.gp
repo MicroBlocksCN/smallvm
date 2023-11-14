@@ -832,6 +832,13 @@ method tryToInstallVM SmallRuntime {
 	}
 }
 
+method connectedToBoard SmallRuntime {
+    pingTimeout = 8000
+    if (or (isNil port) (not (isOpenSerialPort port))) { return false }
+ 	if (or (isNil lastPingRecvMSecs) (lastPingRecvMSecs == 0)) { return false }
+    return (((msecsSinceStart) - lastPingRecvMSecs) < pingTimeout)
+}
+
 method updateConnection SmallRuntime {
 	pingSendInterval = 2000 // msecs between pings
 	pingTimeout = 8000
@@ -1216,7 +1223,7 @@ method saveAllChunks SmallRuntime checkCRCs {
 	// Save the code for all scripts and user-defined functions.
 
 	if (isNil checkCRCs) { checkCRCs = true }
-	if (isNil port) { return }
+	if (not (connectedToBoard this)) { return }
 
 	setCursor 'wait'
 
@@ -1250,7 +1257,7 @@ method saveAllChunks SmallRuntime checkCRCs {
 				showDownloadProgress editor 3 (processedScripts / totalScripts)
 			}
 		}
-		if (isNil port) { return } // connection closed
+		if (not (connectedToBoard this)) { return } // connection closed
 		processedScripts += 1
 	}
 	if (functionsSaved > 0) { print 'Downloaded' functionsSaved 'functions to board' (join '(' (msecSplit t) ' msecs)') }
@@ -1264,7 +1271,7 @@ method saveAllChunks SmallRuntime checkCRCs {
 					showDownloadProgress editor 3 (processedScripts / totalScripts)
 				}
 			}
-			if (isNil port) { return } // connection closed
+			if (not (connectedToBoard this)) { return } // connection closed
 		}
 		processedScripts += 1
 	}
@@ -1406,7 +1413,7 @@ method verifyCRCs SmallRuntime {
 	// Check that the CRCs of the chunks on the board match the ones in the IDE.
 	// Resend the code of any chunks whose CRC's do not match.
 
-	if (isNil port) { return }
+	if (not (connectedToBoard this)) { return }
 
 	// For testing: control type of CRC collection (default: forceIndividual = false)
 	// collectCRCsIndividually is slower and less reliable than collectCRCsBulk but since
@@ -1468,7 +1475,7 @@ method verifyCRCs SmallRuntime {
 method boardHasSameProject SmallRuntime {
 	// Return true if the board appears to have the same project as the IDE.
 
-	if (isNil port) { return false }
+	if (not (connectedToBoard this)) { return false }
 
 	// update chunkIDs dictionary for script/function additions or removals while disconnected
 	assignFunctionIDs this
@@ -1855,6 +1862,8 @@ method sendMsgSync SmallRuntime msgName chunkID byteList {
 	sendMsg this msgName chunkID byteList
 	if ('boardie' == portName) { return } // don't wait for a response
 
+    if (not (connectedToBoard this)) { return }
+
 	ok = (waitForResponse this)
 	if (not ok) {
 		print 'Lost communication to the board in sendMsgSync'
@@ -2081,7 +2090,7 @@ method isRunning SmallRuntime aBlock {
 method boardHasFileSystem SmallRuntime {
 	if (true == disconnected) { return false }
 	if (and (isWebSerial this) (not (isOpenSerialPort 1))) { return false }
-	if (isNil port) { return false }
+	if (not (connectedToBoard this)) { return false }
 	if (isNil boardType) { getVersion this }
 	return (isOneOf boardType 'Citilab ED1' 'M5Stack-Core' 'M5StickC+' 'M5StickC' 'M5Atom-Matrix' 'ESP32' 'ESP8266' 'RP2040' 'Pico W' 'Pico:ed' 'Wukong2040' 'TTGO RP2040' 'Boardie' 'Databot' 'Mbits')
 }
