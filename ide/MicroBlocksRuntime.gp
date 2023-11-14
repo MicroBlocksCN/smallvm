@@ -1206,6 +1206,7 @@ method suspendCodeFileUpdates SmallRuntime { sendMsgSync this 'extendedMsg' 2 (l
 method resumeCodeFileUpdates SmallRuntime { sendMsg this 'extendedMsg' 3 (list) }
 
 method saveAllChunksAfterLoad SmallRuntime {
+	if (isNil port) { return }
 	suspendCodeFileUpdates this
 	saveAllChunks this true
 	resumeCodeFileUpdates this
