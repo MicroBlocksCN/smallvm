@@ -130,7 +130,7 @@ to 'request method' request {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 5 
+version 1 6 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -185,6 +185,12 @@ to '_NeoPixel_increaseRGB' i delta {
     local 'r' ((rgb >> 16) & 255)
     local 'g' ((rgb >> 8) & 255)
     local 'b' (rgb & 255)
+    local 'brightness' (maximum r g b)
+    if (delta > 0) {
+      delta = (minimum delta (255 - brightness))
+    } else {
+      delta = (maximum delta (42 - brightness))
+    }
     r = (maximum 0 (minimum (r + delta) 255))
     g = (maximum 0 (minimum (g + delta) 255))
     b = (maximum 0 (minimum (b + delta) 255))
