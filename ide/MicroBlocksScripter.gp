@@ -203,6 +203,7 @@ method removeLibraryNamed MicroBlocksScripter libName {
   removeLibraryNamed mbProject libName
   variablesChanged (smallRuntime)
   updateLibraryList this
+  languageChanged this
 }
 
 method showLibraryInfo MicroBlocksScripter libName {
