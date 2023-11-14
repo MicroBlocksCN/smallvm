@@ -261,10 +261,11 @@ to UpArrowVolume {
   }
 }
 
-script 43 40 {
+script 53 50 {
 whenStarted
+comment 'MakerPort Startup Program v11.13.23'
 ReadyForTasks = (booleanConstant false)
-KeyboardOn = (booleanConstant false)
+KeyboardOn = (booleanConstant true)
 MakerPortSpeakerOn = (booleanConstant true)
 MicrophoneConnected = (booleanConstant false)
 DistanceSensorConnected = (booleanConstant false)
@@ -312,11 +313,11 @@ sendBroadcast 'WatchForTouch'
 sendBroadcast 'WatchForIRCommand'
 }
 
-script 674 162 {
+script 684 195 {
 to makerport_initialize {}
 }
 
-script 1018 169 {
+script 1028 202 {
 whenBroadcastReceived 'WatchForIRCommand'
 forever {
   waitMillis 5
@@ -351,23 +352,23 @@ forever {
 }
 }
 
-script 1572 173 {
+script 1582 206 {
 to UpArrowVolume {}
 }
 
-script 687 483 {
+script 697 516 {
 to 'MakerPort Setup' {}
 }
 
-script 1573 719 {
+script 1583 752 {
 to DownArrowVolume {}
 }
 
-script 695 1120 {
+script 705 1153 {
 to 'NeoPixel initialize' {}
 }
 
-script 41 1264 {
+script 51 1297 {
 whenBroadcastReceived 'ServoLightShow'
 comment 'servos respond to sound'
 VolLevel = (makerport_timeAveragedLevel 13 125)
@@ -380,15 +381,15 @@ forever {
 }
 }
 
-script 691 1296 {
+script 701 1329 {
 to MicrophoneDetect {}
 }
 
-script 43 1574 {
+script 53 1607 {
 to 'Initialize lists' {}
 }
 
-script 689 1782 {
+script 699 1815 {
 whenBroadcastReceived 'WatchForRelease'
 forever {
   if ReadyForTasks {
@@ -408,7 +409,7 @@ forever {
 }
 }
 
-script 51 2025 {
+script 61 2058 {
 whenBroadcastReceived 'WatchForTouch'
 forever {
   waitMillis 5
@@ -444,15 +445,15 @@ forever {
 }
 }
 
-script 777 2271 {
+script 787 2304 {
 to IsThereMyFolder {}
 }
 
-script 783 2728 {
+script 793 2761 {
 to PinKeyTouched {}
 }
 
-script 40 3050 {
+script 50 3083 {
 whenBroadcastReceived 'PlayTrack'
 makerport_setAudioSource 'MP3'
 mp3_playTrackUntilDone TPin folder
@@ -461,31 +462,31 @@ LCD1602_clear
 LCD1602_write_field 'Ready...' 1 1 10
 }
 
-script 522 3242 {
+script 532 3275 {
 to MenuAction1 {}
 }
 
-script 44 3257 {
+script 54 3290 {
 to DoMenus {}
 }
 
-script 526 3357 {
+script 536 3390 {
 to MenuAction5 {}
 }
 
-script 529 3668 {
+script 539 3701 {
 to MenuAction2 {}
 }
 
-script 536 3911 {
+script 546 3944 {
 to MenuAction3 {}
 }
 
-script 311 4289 {
+script 321 4322 {
 sayIt DistanceSensorConnected
 }
 
-script 547 4317 {
+script 557 4350 {
 to MenuAction4 {}
 }
 
