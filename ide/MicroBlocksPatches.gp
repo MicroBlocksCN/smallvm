@@ -216,12 +216,19 @@ method broadcastMenu InputSlot {
   if (notNil scripter) {
     saveScripts (handler scripter)
     msgList = (allBroadcasts (project (handler scripter)))
-    defaultBroadcast = (localized 'go!')
-    if (not (contains msgList defaultBroadcast)) {
-       addFirst msgList defaultBroadcast
-    }
+
+    // move default to front of list
+    defaultBroadcast = 'go!'
+    remove msgList defaultBroadcast
+    addFirst msgList defaultBroadcast
+
 	for s msgList {
-      addItemNonlocalized menu s (action 'setContents' this s)
+	  if (s == defaultBroadcast) {
+        addItemNonlocalized menu (localized s) (action 'setContents' this s)
+        addLine menu
+	  } else {
+        addItemNonlocalized menu s (action 'setContents' this s)
+      }
 	}
   }
   return menu

@@ -247,7 +247,6 @@ method allBroadcasts MicroBlocksProject {
 	for entry (scripts main) {
 		for b (allBlocks (last entry)) {
 			if (isOneOf (primName b) 'sendBroadcast' 'whenBroadcastReceived') {
-				print (primName b) (argList b)
 				add result (first (argList b))
 			}
 		}
