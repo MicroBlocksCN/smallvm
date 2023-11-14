@@ -744,13 +744,16 @@ to receiveIR {
 
 module 'Keyboard and Mouse' Comm
 author MicroBlocks
-version 1 4 
+version 1 5 
 choices keyModifiers Shift Control 'Alt / ⌥' 'Logo / ⌘' AltGr 
 choices mouseButtons left right middle both 
-choices specialKeys 'enter:10' 'tab:179' 'backspace:178' 'delete:212' 'insert:209' 'home:210' 'end:213' 'PgUp:211' 'PgDown:214' '→:215' '←:216' '↓:217' '↑:218' 'F1:194' 'F2:195' 'F3:196' 'F4:197' 'F5:198' 'F6:199' 'F7:200' 'F8:201' 'F9:202' 'F10:203' 'F11:204' 'F12:205' 'CapsLock:193' 'NumLock:219' 'ScrollLock:207' 'PrintScreen:206' 'ESC:177' 
-description 'HID library. Emulates mouse and keyboard actions.
+choices specialKeys 'enter:10' 'return:13' 'tab:179' 'backspace:178' 'delete:212' 'insert:209' 'home:210' 'end:213' 'PgUp:211' 'PgDown:214' '→:215' '←:216' '↓:217' '↑:218' 'F1:194' 'F2:195' 'F3:196' 'F4:197' 'F5:198' 'F6:199' 'F7:200' 'F8:201' 'F9:202' 'F10:203' 'F11:204' 'F12:205' 'CapsLock:193' 'NumLock:219' 'ScrollLock:207' 'PrintScreen:206' 'ESC:177' 
+description 'This library can send mouse and keyboard events to a computer over USB (i.e. it emulates a USB HID device) on boards with the necessary hardware. It currently works on RP2040 and SAMD21 boards such as the Adafruit Circuit Playground Express, Trinket M0, and Metro M0 Express. It also works on the MakerPort.
 
-It supports the Adafruit boards Trinket M0 and Metro M0 Express.'
+It is based on the Arduino Mouse and Keyboard libraries. The list of special, non-ascii keys and modifiers is here:
+
+https://www.arduino.cc/reference/en/language/functions/usb/keyboard/keyboardmodifiers/
+'
 
   spec ' ' 'press key' 'press key _ : while holding _' 'auto.specialKeys menu.keyModifiers' 'n' 'Shift'
   spec ' ' '[hid:holdKey]' 'hold key _' 'auto.specialKeys' 'A'
@@ -916,9 +919,9 @@ to '_LCD1602 toggle enable' bits {
 
 module 'MP3 Player' Output
 author MicroBlocks
-version 1 9 
+version 1 10 
 choices mp3PlayerType MakerPort 'MakerBit/HyperDuino' DFRobot Octopus 
-description 'Support for Octopus (FN-M16P and YX6300 chips) and DFRobot/HyperDuino/MakerBit) MP3 Players (YX5300, A19HFA440, and GD3300B chips).
+description 'Support for Octopus (FN-M16P and YX6300 chips) and DFRobot/HyperDuino/MakerBit/MakerPort) MP3 Players (YX5300, A19HFA440, and GD3300B chips).
 
 Sends commands to MP3 player using software serial via any digital pin on any board.
 
@@ -1189,7 +1192,7 @@ to makerport_typeString s {
 
 module NeoPixel Output
 author MicroBlocks
-version 1 5 
+version 1 6 
 description 'Control NeoPixel (WS2812) RGB LED strips and rings.
 '
 variables _np_pixels 
@@ -1244,6 +1247,12 @@ to '_NeoPixel_increaseRGB' i delta {
     local 'r' ((rgb >> 16) & 255)
     local 'g' ((rgb >> 8) & 255)
     local 'b' (rgb & 255)
+    local 'brightness' (maximum r g b)
+    if (delta > 0) {
+      delta = (minimum delta (255 - brightness))
+    } else {
+      delta = (maximum delta (42 - brightness))
+    }
     r = (maximum 0 (minimum (r + delta) 255))
     g = (maximum 0 (minimum (g + delta) 255))
     b = (maximum 0 (minimum (b + delta) 255))
