@@ -24,7 +24,7 @@ to uload fileName {
   return (load fileName (topLevelModule))
 }
 
-defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay
+defineClass MicroBlocksEditor morph fileName scripter leftItems title rightItems tipBar zoomButtons indicator nextIndicatorUpdateMSecs progressIndicator lastStatus httpServer lastProjectFolder lastScriptPicFolder boardLibAutoLoadDisabled autoDecompile showHiddenBlocks frameRate frameCount lastFrameTime newerVersion putNextDroppedFileOnBoard isDownloading trashcan overlay
 
 method fileName MicroBlocksEditor { return fileName }
 method project MicroBlocksEditor { return (project scripter) }
@@ -77,6 +77,7 @@ method initialize MicroBlocksEditor {
   addZoomButtons this
   clearProject this
   fixLayout this
+  nextIndicatorUpdateMSecs = 0
   setFPS morph 200
   newerVersion = 'unknown'
   putNextDroppedFileOnBoard = false
@@ -527,7 +528,12 @@ method step MicroBlocksEditor {
 	processBrowserFileSave this
   }
   processDroppedFiles this
-  updateIndicator this
+
+  if (((msecsSinceStart) > nextIndicatorUpdateMSecs)) {
+    updateIndicator this
+    nextIndicatorUpdateMSecs = ((msecsSinceStart) + 200)
+  }
+
   if (not (busy (smallRuntime))) { processMessages (smallRuntime) }
   if (isRunning httpServer) {
 	step httpServer
