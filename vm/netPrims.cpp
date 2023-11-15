@@ -1051,7 +1051,7 @@ static OBJ primBLE_UART_ServerStart(int argCount, OBJ *args) {
   // Create a BLE Characteristic
   pTxCharacteristic = pService->createCharacteristic(
 										CHARACTERISTIC_UUID_TX,
-										BLECharacteristic::PROPERTY_NOTIFY
+										BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ
 									);
 
   pTxCharacteristic->addDescriptor(new BLE2902());
