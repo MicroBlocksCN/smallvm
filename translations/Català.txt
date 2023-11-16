@@ -188,6 +188,9 @@ o _
 _ is a _
 _ és un _
 
+convert _ to _
+convertir _ a _
+
 boolean
 booleà
 
@@ -552,10 +555,10 @@ rotate NeoPixels by _
 rota NeoPíxels en _
 
 brighten NeoPixel _ by _
---MISSING--
+il·luminar NeoPíxel _ en _ 
 
 brighten all NeoPixels by _
---MISSING--
+il·luminar tots els NeoPíxels en _
 
 color r _ g _ b _ (0-255)
 color vermell _ verd _ blau _ (0-255)
@@ -929,6 +932,60 @@ apaga x _ y _
 
 display character _
 mostra caràcter _
+
+####
+# OLED Graphics library
+
+initialize i2c _ address(hex) _ reset pin# _ flip _
+--MISSING--
+
+initialize spi _ d/c pin# _ reset pin# _ flip _
+--MISSING--
+
+write _ at x _ y _ inverse _
+--MISSING--
+
+show display buffer
+--MISSING--
+
+clear
+--MISSING--
+
+set contrast (1-4) _
+--MISSING--
+
+draw circle at x _ y _ radius _ erase _
+--MISSING--
+
+draw image _ at x _ y _
+--MISSING--
+
+draw line from x _ y _ to x _ y _ erase _
+--MISSING--
+
+draw rectangle x _ y _ w _ h _ erase _ rounding(3-15) _
+--MISSING--
+
+fill rectangle x _ y _ w _ h _ erase _
+--MISSING--
+
+_flip display top _
+--MISSING--
+
+make image _
+--MISSING--
+
+set pixel x _ y _ erase _
+--MISSING--
+
+set video _
+--MISSING--
+
+cursor location
+--MISSING--
+
+defer display updates
+--MISSING--
 
 ####
 # TFT display library
@@ -1754,11 +1811,11 @@ TdR posa el led RGB a _
 TdR clear RGB LED
 TdR apaga el led RGB
 
-TdR LM35 temperature °C
-TdR LM35 temperatura °C
+TdR LM35 temperature ºC
+--MISSING--
 
-TdR DHT11 temperature °C
-TdR DHT11 temperatura °C
+TdR DHT11 temperature ºC
+--MISSING--
 
 TdR DHT11 humidity
 TdR DHT11 humitat
@@ -1924,6 +1981,30 @@ adreça IP remota UDP
 
 UDP remote port
 port remot UDP
+
+####
+# WiFi Radio
+
+wifi send number _
+--MISSING--
+
+wifi send string _
+--MISSING--
+
+wifi send pair _ = _
+--MISSING--
+
+wifi message received?
+--MISSING--
+
+wifi last number
+--MISSING--
+
+wifi last string
+--MISSING--
+
+wifi set group _ (0-255)
+--MISSING--
 
 ####
 # Cutebot
@@ -2144,6 +2225,24 @@ Octopus OLED fill circle x _ y _ radius _
 --MISSING--
 
 
+####
+# OctoStudio
+
+Octo start
+--MISSING--
+
+Octo beam to phones _
+--MISSING--
+
+duration _ ms
+--MISSING--
+
+Octo receive beam
+--MISSING--
+
+Octo stop
+--MISSING--
+
 ##################
 # MicroBlocks UI #
 ##################
@@ -2178,7 +2277,7 @@ Loading project...
 Carregant projecte...
 
 Found a newer version of
---MISSING--
+S'ha trobat una nova versió de 
 
 Do you want me to update the one in the project?
 Vols actualitzar el projecte amb aquesta nova versió?
@@ -2200,6 +2299,9 @@ desconnecta
 
 Serial port:
 Port sèrie:
+
+Connect board and try again
+Connecta la placa i prova de nou
 
 other...
 un altre...
@@ -2374,6 +2476,19 @@ activa PlugShare en projectes en blanc
 disable PlugShare when project empty
 desactiva PlugShare en projectes en blanc
 
+hide implementation blocks
+amaga els blocs d'implementació
+
+do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+no mostris blocs i variables que siguin interns a les llibreries (aquells que el seu nom comença amb guió baix)
+
+
+show implementation blocks
+mostra els blocs d'implementació
+
+show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
+mostra els blocs i variables que siguin interns a les llibreries (aquells que el nom comença amb guió baix)
+
 when plugging a board, do not automatically read its contents into the IDE even if the current project is empty
 en connectar una placa, no en llegeixis els continguts automàticament encara que el projecte actual estigui en blanc
 
@@ -2382,6 +2497,9 @@ en connectar una placa, llegeix-ne els continguts automàticament si el projecte
 
 erase flash and update firmware on ESP board
 esborra i reparticiona el firmware en placa ESP
+
+install ESP firmware from URL
+instal·lar firmware ESP des de l'URL 
 
 Use board type
 La placa connectada és de tipus
@@ -2409,6 +2527,9 @@ Instal·lant firmware...
 
 Plug in the board.
 Connecta la placa.
+
+Board not connected
+Placa no connectada
 
 Wiping board...
 Esborrant placa...
@@ -3192,5 +3313,4 @@ Reporta una llista de bytes que contingui els bytes UTF-8 de la cadena de text e
 
 Report the number of words of memory available. Stop button frees up memory.
 Reporta el número de paraules (grups de 32 bits, o 4 bytes) de memòria disponibles.
-
 
