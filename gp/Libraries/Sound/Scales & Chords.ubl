@@ -1,6 +1,6 @@
 module 'Scales & Chords' Data
 author MicroBlocks
-version 1 5 
+version 1 6 
 choices scales ionian dorian phrygian lydian mixolydian aeolian locrian 
 choices pentatonics major minor 
 choices chords major minor diminished 'major 7th' 'minor 7th' Maj7 
@@ -17,7 +17,7 @@ variables _scales_degrees _scales_circle5ths _tonePin
   spec 'r' 'chord' '_ chord root _ : steps _' 'menu.chords num num' 'major' 60 4
   spec 'r' 'chord2 with roman numeral' '_ chord for root _ : steps _' 'auto auto auto' 'IV' 60 4
   space
-  spec ' ' 'arpeggiate' 'arpeggiate _ in order _ and duration _ on _ _' 'auto auto auto menu.arpeggio_dst auto' 'aListOfNotes' 'aListOfPositions' 'aDurationOrListOfDurations' 'MIDI channel' 1
+  spec ' ' 'arpeggiate' 'arpeggiate _ in order _ duration _ and volume _ on _ _' 'auto auto auto num menu.arpeggio_dst auto' 'aListOfNotes' 'aListOfPositions' 'aDurationOrListOfDurations' 100 'MIDI channel' 1
   space
   spec 'r' 'transposed' '_ transposed _ semitones' 'auto auto' 60 12
   space
@@ -54,7 +54,7 @@ to '_scales_init_circle' {
   if (_scales_circle5ths == 0) {_scales_circle5ths = ('[data:makeList]' ('[data:makeList]' 'I' 'V' 'II' 'VI' 'III' 'VII' 'bV' 'bII' 'bVI' 'bIII' 'bVII' 'IV') ('[data:makeList]' 'vi' 'iii' 'vii' 'bv' 'bii' 'bvi' 'biii' 'bvii' 'iv' 'i' 'v' 'ii') ('[data:makeList]' 'VIIº' 'bVº' 'bIIº' 'bVIº' 'bIIIº' 'bVIIº' 'IVº' 'Iº' 'Vº' 'IIº' 'VIº' 'IIIº'))}
 }
 
-to arpeggiate 'note list' order duration destination channel/pin {
+to arpeggiate 'note list' order duration volume destination channel/pin {
   for i (size order) {
     local 'start' (millisOp)
     if (isType duration 'list') {
@@ -63,7 +63,7 @@ to arpeggiate 'note list' order duration destination channel/pin {
       local 'dur' duration
     }
     if (destination == 'MIDI channel') {
-      callCustomCommand 'play MIDI note' ('[data:makeList]' (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1) channel/pin 127)
+      callCustomCommand 'play MIDI note' ('[data:makeList]' (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1) channel/pin volume)
     } else {
       if (channel/pin != '') {_tonePin = channel/pin}
       callCustomCommand 'playMIDIKey' ('[data:makeList]' (at (at i order) (v 'note list')) ((dur - ((millisOp) - start)) - 1))
