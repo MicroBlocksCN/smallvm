@@ -110,8 +110,6 @@ async function readGPClipboard(s) {
 	} else if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.readText)) {
 		var s = await navigator.clipboard.readText().catch(() => {});
 		if (s) GP.clipboard.value = s;
-	} else {
-		console.log('readGPClipboard failed');
 	}
 	GP.clipboardBytes = toUTF8Array(GP.clipboard.value);
 	return GP.clipboardBytes.length;
@@ -252,8 +250,11 @@ function initGPEventHandlers() {
 		if ((112 <= evt.which) && (evt.which <= 123)) evt.preventDefault(); // function keys
 		if (evt.ctrlKey || evt.metaKey) {
 			// disable browser's handling of ctrl/cmd-X, ctrl/cmd-C, and ctrl/cmd-V
-			if ((88 == evt.keyCode) || (67 == evt.keyCode) || (86 == evt.keyCode)) evt.preventDefault();
-        }
+			if ((88 == evt.keyCode) || (67 == evt.keyCode) || (86 == evt.keyCode)) {
+				GP.clipboard.focus();
+				GP.clipboard.value = '';
+			}
+		}
 	}
 	document.onkeyup = function(evt) {
 		GP.events.push(keyEvent(KEY_UP, evt));
