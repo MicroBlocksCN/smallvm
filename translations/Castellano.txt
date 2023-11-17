@@ -111,7 +111,7 @@ when _ received
 al recibir _
 
 go!
---MISSING--
+adelante!
 
 broadcast _
 envía _
@@ -120,7 +120,7 @@ comment _
 comentario _
 
 How this works...
---MISSING--
+Así funciona...
 
 for _ in _ _
 por cada _ en _ _
@@ -144,10 +144,10 @@ call _
 llama _
 
 function name
---MISSING--
+nombre de la función
 
 parameter list
---MISSING--
+lista de parámetros
 
 with _
 con parámetro(s) _
@@ -212,7 +212,6 @@ Avanzado:
 rescale _ from ( _ , _ ) to ( _ , _ )
 reescalar _ de ( _ , _ ) a ( _ , _ )
 
-
 hex _
 hexadecimal _
 
@@ -248,16 +247,16 @@ list
 listas
 
 cat
---MISSING--
+gato
 
 dog
---MISSING--
+perro
 
 bird
---MISSING--
+pájaro
 
 fish
---MISSING--
+pez
 
 length of _
 tamaño de _
@@ -281,7 +280,7 @@ copy _ from _
 copia _ desde _
 
 smiles
---MISSING--
+foca
 
 to _
 hasta _
@@ -314,7 +313,7 @@ as byte array _
 lista de bytes a partir de _
 
 aByteListOrString
---MISSING--
+listaDeBytesOCadenaDeTexto
 
 with all _
 llena de _
@@ -387,7 +386,7 @@ spi exchange bytes _
 bytes de intercambio de spi _
 
 aByteArray
---MISSING--
+listaDeBytes
 
 serial open _ baud
 abre puerto serie a _ baudios
@@ -405,10 +404,10 @@ serial write _ starting at _
 escribe _ al puerto serie empezando por _
 
 aByteStringOrByteArray
---MISSING--
+cadenaDeTextoOListaDeBytes
 
 soft serial write byte _ pin _ baud _
---MISSING--
+escribe byte _ al puerto serie virtual en pin _ a _ baudios
 
 print _
 escribe _
@@ -462,13 +461,13 @@ radio send string _
 envía texto _ por radio
 
 Hello!
---MISSING--
+¡Hola!
 
 radio send pair _ = _
 envía associación _ = _ por radio
 
 light
---MISSING--
+luz
 
 radio message received?
 ¿mensaje de radio recibido?
@@ -834,34 +833,106 @@ envía al dispositivo IR _ el comando _
 # Keyboard and Mouse
 
 Keyboard and Mouse
---MISSING--
+Teclado y Ratón
 
 press key _ : while holding _
---MISSING--
+pulsa la tecla _ : manteniendo _
 
 hold key _
---MISSING--
+mantén la tecla _ pulsada
 
 release key _
---MISSING--
+suelta la tecla _
 
 release all keys
---MISSING--
+suelta todas las teclas
+
+Shift
+Mayúsculas
+
+Control
+Control
+
+Alt / ⌥
+Alt / ⌥
+
+Logo / ⌘
+Logo / ⌘
+
+AltGr 
+AltGr 
+
+enter
+intro
+
+return
+retorno
+
+tab
+tabulador
+
+backspace
+retroceso
+
+delete
+elimina
+
+insert
+insertar
+
+home
+vuelve a casa
+
+end
+fin
+
+PgUp
+AvPg
+
+PgDown
+RePg
+
+CapsLock
+BloqMayús
+
+NumLock
+BloqNum
+
+ScrollLock
+BloqDespl
+
+PrintScreen
+ImprPant
+
+ESC
+ESC
 
 _ mouse click
---MISSING--
+click _ del ratón
+
+left
+izquierdo
+
+right
+derecho
+
+middle
+medio
+
+both
+ambos
 
 move mouse pointer by _ , _
---MISSING--
+mueve puntero del ratón en _ , _
 
 scroll mouse by _
---MISSING--
+desplaza el ratón en _
 
 hold _ mouse button
---MISSING--
+mantén pulsado el botón _ del ratón
 
 release mouse buttons
---MISSING--
+suelta los botones del ratón
 
 ####
 # Radio comm library
@@ -882,7 +953,7 @@ scroll text _
 anima el texto _
 
 HELLO ROSA!
---MISSING--
+¡HOLA, ROSA!
 
 scroll number _
 anima el número _
@@ -1025,7 +1096,7 @@ write _ on TFT at x _ y _ color _
 escribe _ en x _ y _ color _
 
 Hello World!
---MISSING--
+¡Hola, Mundo!
 
 scale _ wrap _
 escala _ con saltos de línea _
@@ -1038,7 +1109,7 @@ display BMP file _ at x _ y _
 muestra archivo BMP _ en x _ y _
 
 image.bmp
---MISSING--
+imagen.bmp
 
 ####
 # HSV color library
@@ -1192,7 +1263,7 @@ play WAV file _
 reproduce el archivo WAV _
 
 filename
---MISSING--
+nombre de archivo
 
 ####
 # Turtle geometry library
@@ -1264,10 +1335,10 @@ next _ bytes of file _
 siguientes _ bytes del archivo _
 
 read into _ from file _
---MISSING--
+lee a _ desde archivo _
 
 a ByteArray
---MISSING--
+una ListaDeBytes
 
 starting at _
 empezando desde _
@@ -1276,7 +1347,7 @@ file names
 nombres de archivos
 
 in directory _
---MISSING--
+en el directorio _
 
 size of file _
 tamaño del archivo _
@@ -1304,19 +1375,19 @@ _ begins with _
 _ empieza por _
 
 prefix
---MISSING--
+prefijo
 
 pre
---MISSING--
+pre
 
 _ ends with _
 _ acaba en _
 
 suffix
---MISSING--
+sufijo
 
 fix
---MISSING--
+fijo
 
 _ contains _
 _ contiene _
@@ -1325,13 +1396,13 @@ lowercase _
 _ en minúscula
 
 THIS is a String! :)
---MISSING--
+¡ESTO es un Texto! :)
 
 uppercase _
 _ en mayúscula
 
 Hello, world!
---MISSING--
+¡Hola, mundo!
 
 _ without white space
 _ sin espacios en blanco
@@ -1343,13 +1414,13 @@ unicodes _
 unicodes de _
 
 aString
---MISSING--
+unaCadenaDeTexto
 
 string from unicodes _
 texto a partir de los unicodes _
 
 aList
---MISSING--
+unaLista
 
 num2str _
 número _ a texto
@@ -1367,7 +1438,7 @@ wifi connect to _ password _
 conéctate a la wifi _ con contraseña _
 
 Network_Name
---MISSING--
+Nombre_de_red
 
 IP _ gateway _ subnet _
 IP _ pasarela _ subred _
@@ -1376,7 +1447,7 @@ wifi create hotspot _ password _
 crea punto de acceso wifi _ con contraseña _
 
 Network_Password
---MISSING--
+Contraseña_de_red
 
 IP address
 dirección IP
@@ -1551,7 +1622,7 @@ _ data _ to http܃// _
 petición _ con contenido _ a http܃// _
 
 MicroBlocks is fun
---MISSING--
+MicroBlocks es divertido
 
 port _
 puerto _
@@ -1575,7 +1646,7 @@ with body _
 con contenido _
 
 Welcome to the MicroBlocks HTTP server
---MISSING--
+El servicor HTTP de MicroBlocks os da la bienvenida
 
 and headers _
 y cabeceras _
@@ -1620,7 +1691,7 @@ send _ to WebSocket client _
 envía _ al cliente WebSocket _
 
 Hello, Client!
---MISSING--
+¡Hola, cliente!
 
 ####
 # Web Things library
@@ -1669,6 +1740,15 @@ JSON de las definiciones de eventos
 
 events JSON
 JSON de los eventos
+
+####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+gira el fantàstic en _ grados
+
+move fantàstic _ mm
+mueve el fantàstic en _ mm
 
 ####
 # MiKe Robot library
@@ -1930,7 +2010,7 @@ MQTT pub topic _ payload _
 publica al tema de MQTT _ el contenido _
 
 Hello!
---MISSING--
+¡Hola!
 
 retain _ QoS _
 con retención _ y calidad del servicio _

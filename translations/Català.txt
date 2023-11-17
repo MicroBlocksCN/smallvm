@@ -833,34 +833,106 @@ envia al dispositiu IR _ la comanda _
 # Keyboard and Mouse
 
 Keyboard and Mouse
---MISSING--
+Teclat i Ratolí
 
 press key _ : while holding _
---MISSING--
+prem la tecla _ : mantenint _ premut
 
 hold key _
---MISSING--
+mantingues la tecla _ premuda
 
 release key _
---MISSING--
+deixa anar la tecla _
 
 release all keys
---MISSING--
+deixa anar totes les tecles
+
+Shift
+Majúscules
+
+Control
+Control
+
+Alt / ⌥
+Alt / ⌥
+
+Logo / ⌘
+Logo / ⌘
+
+AltGr 
+AltGr 
+
+enter
+intro
+
+return
+retorn
+
+tab
+tab
+
+backspace
+retrocés
+
+delete
+elimina
+
+insert
+inserir
+
+home
+torna a casa
+
+end
+fi
+
+PgUp
+RePg
+
+PgDown
+AvPg
+
+CapsLock
+Bloqueig de majúscules
+
+NumLock
+Bloqueig numèric
+
+ScrollLock
+Bloqueig de desplaçament
+
+PrintScreen
+ImprPant
+
+ESC
+ESC
 
 _ mouse click
---MISSING--
+clic _ del ratolí
+
+left
+esquerre
+
+right
+dret
+
+middle
+mig
+
+both
+ambdós
 
 move mouse pointer by _ , _
---MISSING--
+mou cursor del ratolí _ , _
 
 scroll mouse by _
---MISSING--
+desplaça el ratolí en _
 
 hold _ mouse button
---MISSING--
+manté premut el botó _ del ratolí
 
 release mouse buttons
---MISSING--
+deixa anar els botons del ratolí
 
 ####
 # Radio comm library
@@ -1547,7 +1619,7 @@ HTTP client
 Client HTTP
 
 _ data _ to http܃// _
---MISSING--
+petició _ amb dades _ a http܃// _
 
 MicroBlocks is fun
 MicroBlocks és divertit
@@ -1574,7 +1646,7 @@ with body _
 amb contingut _
 
 Welcome to the MicroBlocks HTTP server
-Benvinguts al servidor HTTP de MicroBlocks
+El servidor HTTP de MicroBlocks us dona la benvinguda
 
 and headers _
 i capçaleres _
@@ -1668,6 +1740,15 @@ JSON de la definició d'esdeveniments
 
 events JSON
 JSON dels esdeveniments
+
+####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+gira el fantàstic _ graus
+
+move fantàstic _ mm
+mou el fantàstic _ mm
 
 ####
 # MiKe Robot library
@@ -2481,7 +2562,6 @@ amaga els blocs d'implementació
 
 do not show blocks and variables that are internal to libraries (i.e. those whose name begins with underscore)
 no mostris blocs i variables que siguin interns a les llibreries (aquells que el seu nom comença amb guió baix)
-
 
 show implementation blocks
 mostra els blocs d'implementació
@@ -3313,4 +3393,5 @@ Reporta una llista de bytes que contingui els bytes UTF-8 de la cadena de text e
 
 Report the number of words of memory available. Stop button frees up memory.
 Reporta el número de paraules (grups de 32 bits, o 4 bytes) de memòria disponibles.
+
 

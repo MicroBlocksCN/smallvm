@@ -580,7 +580,55 @@ release key _
 
 release all keys
 
+Shift
+
+Control
+
+Alt / ⌥
+
+Logo / ⌘
+
+AltGr 
+
+enter
+
+return
+
+tab
+
+backspace
+
+delete
+
+insert
+
+home
+
+end
+
+PgUp
+
+PgDown
+
+CapsLock
+
+NumLock
+
+ScrollLock
+
+PrintScreen
+
+ESC
+
 _ mouse click
+
+left
+
+right
+
+middle
+
+both
 
 move mouse pointer by _ , _
 
@@ -1162,6 +1210,13 @@ properties JSON
 event definitions JSON
 
 events JSON
+
+####
+# Citilab Fantàstic Robot
+
+turn fantàstic _ degrees
+
+move fantàstic _ mm
 
 ####
 # MiKe Robot library
