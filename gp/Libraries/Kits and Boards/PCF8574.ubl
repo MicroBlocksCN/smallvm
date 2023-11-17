@@ -1,0 +1,51 @@
+module PCF8574
+author '邵悦'
+version 1 0 
+description 'PCF8574 GPIO Extender run on the I2C bus,
+extending the ''IO Pins'' which can be controlled by 
+a single host I2C bus. The Address range of 
+PCF8574 is from 0x20 to 0x27 (7 bit address mode). 
+at the max 8 of these devices can be connected 
+in a project to the I2C bus.'
+variables _PCF8574_address 
+
+  spec ' ' 'PCF8574_set_i2c_address' 'PCF8574_set_i2c_address _' 'auto' 32
+  spec 'r' '_read' '_read'
+  spec 'r' 'PCF8574_pin' 'PCF8574_pin _' 'num' 0
+  spec ' ' 'set_PCF8574_pin' 'set_PCF8574_pin _ _' 'auto bool' 0 true
+  spec ' ' 'toggle_PCF8574_pin' 'toggle_PCF8574_pin _' 'auto' 0
+
+to PCF8574_pin foo {
+  return ('[data:convertType]' (1 & (('_read') >> foo)) 'boolean')
+}
+
+to PCF8574_set_i2c_address foo {
+  _PCF8574_address = foo
+  if ((i2cGet _PCF8574_address 0) < 0) {
+    sayIt 'init fail, please check i2c address and try again.'
+    return 0
+  }
+  '[sensors:i2cWrite]' _PCF8574_address ('[data:convertType]' (hexToInt 'FF') 'list')
+}
+
+to '_read' {
+  if (_PCF8574_address == 0) {PCF8574_set_i2c_address 32}
+  local 'var' (newList 1)
+  '[sensors:i2cRead]' _PCF8574_address var
+  return (at 1 var)
+}
+
+to set_PCF8574_pin foo bar {
+  local 'var' ('_read')
+  if bar {
+    var = (var | (1 << foo))
+  } else {
+    var = (var & ('~' (1 << foo)))
+  }
+  '[sensors:i2cWrite]' _PCF8574_address ('[data:convertType]' var 'list')
+}
+
+to toggle_PCF8574_pin foo {
+  set_PCF8574_pin foo (not (PCF8574_pin foo))
+}
+
