@@ -4,7 +4,9 @@ version 1 0
 choices keyModifiers Shift Control 'Alt / ⌥' 'Logo / ⌘' AltGr 
 choices mouseButtons left right middle both 
 choices specialKeys 'enter:10' 'tab:179' 'backspace:178' 'delete:212' 'insert:209' 'home:210' 'end:213' 'PgUp:211' 'PgDown:214' '→:215' '←:216' '↓:217' '↑:218' 'F1:194' 'F2:195' 'F3:196' 'F4:197' 'F5:198' 'F6:199' 'F7:200' 'F8:201' 'F9:202' 'F10:203' 'F11:204' 'F12:205' 'CapsLock:193' 'NumLock:219' 'ScrollLock:207' 'PrintScreen:206' 'ESC:177' 
-description 'BLE keyboard'
+description 'This library can send keyboard events to a computer over Bluetooth (i.e. it emulates a Bluetooth Keyboard device).
+It currently works on ESP32.
+'
 
   spec ' ' 'start BLE Keyboard' 'start BLE Keyboard'
   spec ' ' 'press key' 'press key _ : while holding _' 'str.specialKeys menu.keyModifiers' 'n' 'Shift'

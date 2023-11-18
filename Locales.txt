@@ -638,6 +638,12 @@ hold _ mouse button
 
 release mouse buttons
 
+#### BLE Keyboard
+
+BLE Keyboard
+
+start BLE Keyboard
+
 ####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
