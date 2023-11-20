@@ -1,0 +1,181 @@
+module main
+author wwj
+version 1 0 
+description ''
+variables message 
+
+
+script 68 34 {
+whenStarted
+wifiConnect 'Network_Name' ''
+forever {
+  if (wifiRadio_messageReceived) {
+    message = (wifiRadio_receivedString)
+    sayIt message
+  }
+  waitMillis 50
+}
+}
+
+
+module WiFi Comm
+author MicroBlocks
+version 1 6 
+tags communication network 
+description 'Connect to a WiFi network. Used in conjunction with other network libraries, such as HTTP client, HTTP server or Web Thing.
+'
+
+  spec ' ' 'wifiConnect' 'wifi connect to _ password _ : IP _ gateway _ subnet _' 'str str auto auto auto' 'Network_Name' '' '192.168.1.42' '192.168.1.1' '255.255.255.0'
+  spec ' ' 'wifiCreateHotspot' 'wifi create hotspot _ password _' 'str str' 'Network_Name' 'Network_Password'
+  spec 'r' 'getIPAddress' 'IP address'
+  spec 'r' '[net:myMAC]' 'MAC address'
+
+to getIPAddress {
+  return ('[net:myIPAddress]')
+}
+
+to wifiConnect ssid password fixedIP gatewayIP subnetIP {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:stopWiFi]'
+  if ((pushArgCount) < 5) {
+    '[net:startWiFi]' ssid password
+  } else {
+    '[net:startWiFi]' ssid password false fixedIP gatewayIP subnetIP
+  }
+  local 'startMSecs' (millisOp)
+  repeatUntil (('[net:myIPAddress]') != '0.0.0.0') {
+    comment 'Timeout after N seconds'
+    if (((millisOp) - startMSecs) > 30000) {
+      sayIt 'Could not connect'
+      return 0
+    }
+    comment 'Slow blink while trying to connect'
+    setUserLED true
+    waitMillis 300
+    setUserLED false
+    waitMillis 300
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+to wifiCreateHotspot ssid password {
+  if (not ('[net:hasWiFi]')) {return}
+  '[net:startWiFi]' ssid password true
+  if ('Connected' != ('[net:wifiStatus]')) {
+    sayIt 'Could not create hotspot'
+    return 0
+  }
+  repeat 6 {
+    comment 'Quick blinks when connected'
+    setUserLED true
+    waitMillis 50
+    setUserLED false
+    waitMillis 50
+  }
+  sayIt 'My IP address is:' ('[net:myIPAddress]')
+}
+
+
+module 'WiFi Radio' Comm
+author MicroBlocks
+version 1 1 
+depends WiFi 
+tags radio communication messaging network 
+description 'This library supports easy message exchange among WiFi-enabled boards on the same network.
+
+A message can contain a string, a number, or both. Messages are received by all boards in the same radio group as the sender.
+
+This library is similar to the Radio library, but messages are sent via UDP over WiFi instead of the Nordic radio system. Since UDP supports larger packets, this library can send longer strings.
+
+This library can only communicate with other boards that support WiFi; it cannot interoperate with Nordic-based boards like the micro:bit.
+'
+variables _wifiRadio_Started _wifiRadio_group _wifiRadio_lastNumber _wifiRadio_lastString 
+
+  spec ' ' 'wifiRadio_sendNumber' 'wifi send number _' 'num' 123
+  spec ' ' 'wifiRadio_sendString' 'wifi send string _' 'str' 'Hello!'
+  spec ' ' 'wifiRadio_sendPair' 'wifi send pair _ = _' 'str num' 'light' 10
+  space
+  spec 'r' 'wifiRadio_messageReceived' 'wifi message received?'
+  spec 'r' 'wifiRadio_receivedInteger' 'wifi last number'
+  spec 'r' 'wifiRadio_receivedString' 'wifi last string'
+  space
+  spec ' ' 'wifiRadio_setGroup' 'wifi set group _ (0-255)' 'num' 0
+  space
+  spec ' ' '_wifiRadio_init' '_wifiRadio_init'
+
+to '_wifiRadio_init' {
+  comment 'Open WiFi Radio UDP port if necessary.'
+  if (not _wifiRadio_Started) {
+    '[net:udpStart]' 34567
+    _wifiRadio_group = 0
+    _wifiRadio_Started = true
+  }
+}
+
+to wifiRadio_messageReceived {
+  '_wifiRadio_init'
+  local 'msg' ('[net:udpReceivePacket]' true)
+  if ((size msg) < 8) {
+    return (booleanConstant false)
+  }
+  if (not (and ((at 1 msg) == 77) (and ((at 2 msg) == 66) ((at 3 msg) == 82)))) {
+    return (booleanConstant false)
+  }
+  if ((at 4 msg) != _wifiRadio_group) {
+    return (booleanConstant false)
+  }
+  _wifiRadio_lastNumber = ((at 5 msg) | (((at 6 msg) << 8) | (((at 7 msg) << 16) | ((at 8 msg) << 24))))
+  _wifiRadio_lastString = ('[data:join]' '' ('[data:copyFromTo]' msg 9))
+  return (booleanConstant true)
+}
+
+to wifiRadio_receivedInteger {
+  return _wifiRadio_lastNumber
+}
+
+to wifiRadio_receivedString {
+  if (_wifiRadio_lastString == 0) {_wifiRadio_lastString = ''}
+  return _wifiRadio_lastString
+}
+
+to wifiRadio_sendNumber n {
+  wifiRadio_sendPair '' n
+}
+
+to wifiRadio_sendPair s n {
+  '_wifiRadio_init'
+  local 'msg' ('[data:newByteArray]' 8)
+  comment 'MicroBlocks WiFi Radio message format:
+  tag: ''MBR'' (3 bytes)
+  group (1 byte)
+  number, LSB (4 bytes)
+  utf8 string datat (variable length)'
+  atPut 1 msg 77
+  atPut 2 msg 66
+  atPut 3 msg 82
+  atPut 4 msg _wifiRadio_group
+  atPut 5 msg (n & 255)
+  atPut 6 msg ((n >> 8) & 255)
+  atPut 7 msg ((n >> 16) & 255)
+  atPut 8 msg ((n >> 24) & 255)
+  msg = ('[data:join]' msg ('[data:asByteArray]' s))
+  comment 'Broadcast msg to the WiFi Radio port number on all boards on the WiFi network.'
+  '[net:udpSendPacket]' msg '255.255.255.255' 34567
+}
+
+to wifiRadio_sendString s {
+  wifiRadio_sendPair s 0
+}
+
+to wifiRadio_setGroup n {
+  '_wifiRadio_init'
+  _wifiRadio_group = n
+}
+
