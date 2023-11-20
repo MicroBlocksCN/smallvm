@@ -1,9 +1,9 @@
-module '未来板电机驱动板'
+module '未来科技盒电机扩展'
 author '邵悦'
 version 1 1 
 choices motorMenu A B C D 
 choices PosMenu left right 
-description '腾讯未来科技盒子配套未来板电机扩展板
+description '腾讯未来科技盒子配套电机扩展
 小车项目需要用的库
 PCA9865 控制芯片I2C控制 A B C D 4路电机
 超声波HC-SR04 触发16 接收17

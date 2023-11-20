@@ -1,10 +1,10 @@
-module '未来板主控板'
+module '未来科技盒主控'
 author '邵悦 '
 version 1 0 
 depends 'Basic Sensors' 
 choices LED_all '1' '2' '3' '4' '5' '6' '7' '8' '9' 
 choices LED_index '1' '2' '3' 
-description '腾讯未来科技盒子配套未来板
+description '腾讯未来科技盒子配套主控
 ESP32 核心 LED 灯、按钮和蜂鸣器，可用于基础教学。
 运动传感器、温湿度传感器、光线传感器、声音传感器以及电容触摸功能，可用于进阶项目开发。
 '
