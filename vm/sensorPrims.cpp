@@ -22,7 +22,7 @@
 
 // Override the default i2c pins on some boards
 
-#if defined(PICO_ED)
+#if defined(PICO_ED) || defined(XRP)
 	#define PIN_WIRE_SCL 19
 	#define PIN_WIRE_SDA 18
 #elif defined(WUKONG2040)
@@ -690,9 +690,13 @@ static int readTemperature() {
 	return (int) round(result);
 }
 
-#elif defined(ARDUINO_NRF52840_CLUE)
+#elif defined(ARDUINO_NRF52840_CLUE) || defined(XRP)
 
-#define LSM6DS 106
+#if defined(XRP)
+  #define LSM6DS 107
+#else
+  #define LSM6DS 106
+#endif
 
 static void startAccelerometer() {
 	writeI2CReg(LSM6DS, 0x10, 0x80); // enable accelerometer, 1660 Hz sample rate
