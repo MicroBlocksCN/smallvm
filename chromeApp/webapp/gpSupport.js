@@ -83,7 +83,9 @@ function setGPClipboard(s) {
 	GP.clipboardBytes = toUTF8Array(s);
 	GP.clipboard.value = s;
 
-	if (isChromeOS()) {
+	if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.writeText)) {
+		navigator.clipboard.writeText(s).catch(() => {});
+	} else {
 		GP.clipboard.focus();
 		GP.clipboard.select();
 		try {
@@ -91,15 +93,14 @@ function setGPClipboard(s) {
 		} catch (err) {
 			console.error('setGPClipboard failed', err);
 		}
-	} else if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.writeText)) {
-		navigator.clipboard.writeText(s).catch(() => {});
-	} else {
-		console.log('setGPClipboard failed');
 	}
 }
 
 async function readGPClipboard(s) {
-	if (isChromeOS()) {
+	if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.readText)) {
+		var s = await navigator.clipboard.readText().catch(() => {});
+		if (s) GP.clipboard.value = s;
+	} else {
 		GP.clipboard.focus();
 		GP.clipboard.select();
 		try {
@@ -107,9 +108,6 @@ async function readGPClipboard(s) {
 		} catch (err) {
 			console.error('readGPClipboard failed', err);
 		}
-	} else if ((typeof navigator.clipboard !== 'undefined') && (navigator.clipboard.readText)) {
-		var s = await navigator.clipboard.readText().catch(() => {});
-		if (s) GP.clipboard.value = s;
 	}
 	GP.clipboardBytes = toUTF8Array(GP.clipboard.value);
 	return GP.clipboardBytes.length;
@@ -249,10 +247,15 @@ function initGPEventHandlers() {
 		if ((37 <= evt.which) && (evt.which <= 40)) evt.preventDefault(); // arrow keys
 		if ((112 <= evt.which) && (evt.which <= 123)) evt.preventDefault(); // function keys
 		if (evt.ctrlKey || evt.metaKey) {
-			// disable browser's handling of ctrl/cmd-X, ctrl/cmd-C, and ctrl/cmd-V
-			if ((88 == evt.keyCode) || (67 == evt.keyCode) || (86 == evt.keyCode)) {
+			// special case for ctrl/cmd-C, ctrl/cmd-V, and ctrl/cmd-X  (copy, paste, cut)
+			if ((67 == evt.keyCode) || (86 == evt.keyCode) || (88 == evt.keyCode)) {
+				// push key down/up events for GP
+				GP.events.push(keyEvent(KEY_DOWN, evt));
+				GP.events.push(keyEvent(KEY_UP, evt));
+
+				// focus and select clipboard element
 				GP.clipboard.focus();
-				GP.clipboard.value = '';
+				GP.clipboard.select();
 			}
 		}
 	}
