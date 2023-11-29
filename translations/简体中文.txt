@@ -833,6 +833,16 @@ hold _ mouse button
 release mouse buttons
 松开鼠标按键
 
+
+#### BLE Keyboard
+
+BLE Keyboard
+蓝牙键盘
+
+start BLE Keyboard
+启动蓝牙键盘
+
+
 ####
 # Radio comm library
 # Allows micro:bit boards to exchange messages
