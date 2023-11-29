@@ -1280,6 +1280,109 @@ static OBJ primOctoScanning(int argCount, OBJ *args) {
 
 #endif // OCTO_PRIMS
 
+#if defined(BLE_KEYBOARD)
+
+// remix from hidPrims.cpp
+
+#include <BleKeyboard.h>
+
+#if defined(ARDUINO_ARCH_RP2040)
+	#define DELAY_IF_NEEDED() { taskSleep(8); } // workaround for issue with Pico HID library
+#else
+	#define DELAY_IF_NEEDED() { } // noop on SAM boards
+#endif
+
+BleKeyboard bleKeyboard;
+char bleKeyboardInitialized = 0;
+
+void initBLEKeyboard () {
+	if (!bleKeyboardInitialized) {
+		bleKeyboard.begin(); // name
+		bleKeyboardInitialized = 1;
+	}
+}
+
+OBJ primBLEPressKey(int argCount, OBJ *args) {
+	initBLEKeyboard();
+	OBJ key = args[0];
+	int modifier = (argCount > 1) ? obj2int(args[1]) : 0;
+	if (modifier) {
+		switch (modifier) {
+			case 1: // shift
+				bleKeyboard.press(KEY_LEFT_SHIFT);
+				break;
+			case 2: // control
+				bleKeyboard.press(KEY_LEFT_CTRL);
+				break;
+			case 3: // alt (option on Mac)
+				bleKeyboard.press(KEY_LEFT_ALT);
+				break;
+			case 4: // meta (command on Mac)
+				bleKeyboard.press(KEY_LEFT_GUI);
+				break;
+			case 5: // AltGr (option on Mac)
+				bleKeyboard.press(KEY_RIGHT_ALT);
+				break;
+		}
+		DELAY_IF_NEEDED();
+	}
+
+	// accept both characters and ASCII values
+	if (IS_TYPE(key, StringType)) {
+		bleKeyboard.write(obj2str(key)[0]);
+	} else if (isInt(key)) {
+		bleKeyboard.write(obj2int(key));
+	}
+	DELAY_IF_NEEDED();
+
+	if (modifier) bleKeyboard.releaseAll();
+	return falseObj;
+}
+
+
+OBJ primBLEHoldKey(int argCount, OBJ *args) {
+	initBLEKeyboard();
+	OBJ key = args[0];
+
+	// accept both characters and ASCII values
+	if (IS_TYPE(key, StringType)) {
+		bleKeyboard.press(obj2str(key)[0]);
+	} else if (isInt(key)) {
+		bleKeyboard.press(obj2int(key));
+	}
+	DELAY_IF_NEEDED();
+	return falseObj;
+}
+
+OBJ primBLEReleaseKey(int argCount, OBJ *args) {
+	initBLEKeyboard();
+	OBJ key = args[0];
+
+	// accept both characters and ASCII values
+	if (IS_TYPE(key, StringType)) {
+		bleKeyboard.release(obj2str(key)[0]);
+	} else if (isInt(key)) {
+		bleKeyboard.release(obj2int(key));
+	}
+	DELAY_IF_NEEDED();
+	return falseObj;
+}
+
+OBJ primBLEReleaseAllKeys(int argCount, OBJ *args) {
+	bleKeyboard.releaseAll();
+	DELAY_IF_NEEDED();
+	return falseObj;
+}
+
+
+static OBJ primStartBLEKeyboard(int argCount, OBJ *args) {
+       initBLEKeyboard();
+	   return falseObj;
+}
+
+
+#endif // BLE_KEYBOARD
+
 // Experimental! Optional ESP Now support (compile with -D ESP_NOW_PRIMS)
 // Code provided by Wenji Wu
 
@@ -1401,6 +1504,14 @@ static PrimEntry entries[] = {
 	
 	{"OctoSetDeviceName", primOctoSetDeviceName},
 	{"OctoGetOctoShapeId", primOctoGetOctoShapeId},
+  #endif
+
+  #if defined(BLE_KEYBOARD)	
+	{"startKeyboard", primStartBLEKeyboard},
+	{"PressKey", primBLEPressKey},
+	{"holdKey", primBLEHoldKey},
+	{"releaseKey", primBLEReleaseKey},
+	{"releaseKeys", primBLEReleaseAllKeys},
   #endif
 
   #if defined(ESP_NOW_PRIMS)

@@ -979,71 +979,15 @@ hold _ mouse button
 release mouse buttons
 松开鼠标按键
 
-####
-# Lists library
-# Extra utilities for list manipulation and access
 
-Lists
-列表
-
-list _ contains _
-列表 _ 包含 _
-
-
-circular item _ of _
-列表项 _ 属于 _
-
-aListOrString
---MISSING--
-
-map _ over _
-映射 _ 与 _
-
-aFunction
-aFunction
-
-filter _ with _
-过滤 _ 用 _
-
-pick _ from _
-选择 _ 从 _
-
-
-a few
-a few
-
-some
-some
-
-most
-most
-
-reverse _
-颠倒 _
-
-shuffle _
-打乱 _
-
-sort _
-排序 _
-
-shuffled _
-已打乱的 _
-
-reversed _
-已颠倒的 _
-
-sorted _
-已排序的 _
-
-####
-# BLE Keyboard library
+#### BLE Keyboard
 
 BLE Keyboard
 蓝牙键盘
 
 start BLE Keyboard
 启动蓝牙键盘
+
 
 ####
 # Radio comm library
