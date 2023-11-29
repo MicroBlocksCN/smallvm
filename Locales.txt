@@ -650,46 +650,8 @@ hold _ mouse button
 
 release mouse buttons
 
-####
-# Lists library
-# Extra utilities for list manipulation and access
 
-Lists
-
-list _ contains _
-
-circular item _ of _
-
-aListOrString
-
-map _ over _
-
-aFunction
-
-filter _ with _
-
-pick _ from _
-
-a few
-
-some
-
-most
-
-reverse _
-
-shuffle _
-
-sort _
-
-shuffled _
-
-reversed _
-
-sorted _
-
-####
-# BLE Keyboard library
+#### BLE Keyboard
 
 BLE Keyboard
 
