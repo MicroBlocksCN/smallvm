@@ -650,60 +650,8 @@ hold _ mouse button
 
 release mouse buttons
 
-####
-# Lists library
-# Extra utilities for list manipulation and access
 
-Lists
-
-list _ contains _
-
-circular item _ of _
-
-aListOrString
-
-map _ over _
-
-aFunction
-
-filter _ with _
-
-pick _ from _
-
-a few
-
-some
-
-most
-
-reverse _
-
-shuffle _
-
-sort _
-
-unique _
-
-shuffled _
-
-reversed _
-
-sorted _
-
-uniqued _
-
-####
-# Pseudorandomness
-# Creates pseudorandom numbers and lists of numbers given a particular seed
-
-Pseudorandomness
-
-pseudorandom _ to _ with seed _
-
-_ pseudorandom numbers _ to _ with seed _
-
-####
-# BLE Keyboard library
+#### BLE Keyboard
 
 BLE Keyboard
 
